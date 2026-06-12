@@ -1,0 +1,15 @@
+# 仿真/FM 产物
+simv*
+csrc/
+*.daidir/
+*.log
+ucli.key
+novas.*
+verdiLog/
+fm_work/
+*.fsdb
+vc_hdrs.h
+formality*
+fm_shell_command.log*
+*.fdc
+default.svf
