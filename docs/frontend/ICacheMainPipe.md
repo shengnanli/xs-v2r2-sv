@@ -1,85 +1,112 @@
-# ICacheMainPipe —— ICache 主流水（取指数据通路）
+# ICacheMainPipe —— ICache 主流水（取指数据通路，学习文档）
 
 | | |
 |---|---|
-| 手写 SV | `rtl/frontend/ICacheMainPipe.sv`（`xs_ICacheMainPipe_core`）+ `rtl/frontend/ICacheMainPipe_wrapper.sv` |
-| Scala 来源 | `src/main/scala/xiangshan/frontend/icache/ICacheMainPipe.scala`（class ICacheMainPipe） |
-| 生成器 | `scripts/gen_icachemainpipe.py`（解析 golden 端口生成 wrapper+_xs+tb） |
-| 验证状态 | UT ✅（12 万随机向量 0 错，checks=120000）/ FM ✅（SUCCEEDED，2793 比对点全配对，0 unmatched / 0 failing） |
+| 手写 SV | `rtl/frontend/ICacheMainPipe.sv`（`xs_ICacheMainPipe` + `xs_icache_mainpipe_pkg`）+ `rtl/frontend/ICacheMainPipe_wrapper.sv`（golden 同名扁平端口适配层） |
+| Scala 来源 | `src/main/scala/xiangshan/frontend/icache/ICacheMainPipe.scala`（class `ICacheMainPipe`） |
+| 验证状态 | UT ✅（4 个随机种子 ×60000 拍，checks=60000 / errors=0）/ FM ✅（SUCCEEDED，2793 比对点全配对，其中 1110 点靠**签名分析**配对、0 unmatched / 0 failing） |
+| 重写标准 | 符合 `docs/REWRITE_STYLE.md`（流水级 struct、way/bank/port 用数组、注释讲"为什么"、无 firtool 生成痕迹） |
 
-## 1. 功能概述
+## 1. 它在前端的位置
 
-ICacheMainPipe 是 ICache 的**取指数据读出主流水**，三级流水 s0/s1/s2，每级一拍寄存器，
-标准 valid/ready 反压（`generatePipeControl` 风格：`sN_valid <= ~flush & (lastFire | ~thisFire & sN_valid)`）。
+```mermaid
+flowchart LR
+  FTQ["FTQ"] -->|req: pcMemRead| MP["ICacheMainPipe (s0~s2)"]
+  WL["WayLookup FIFO"] -->|waymask/ptag/itlb/meta_ecc| MP
+  MP -->|toIData: vSetIdx+waymask| DS["Data SRAM (8 bank x 512b)"]
+  DS -->|datas/codes| MP
+  MP -->|pmp.req.addr| PMP["PMP"]
+  MP -->|mshr.req: blkPaddr| MU["MissUnit (MSHR)"]
+  MU -->|mshr.resp: refill data| MP
+  MP -->|resp: 512b 取指数据 + 例外| IFU["IFU"]
+  MP -->|metaArrayFlush / touch / errors| MISC["MetaArray / Replacer / BEU"]
+```
 
-- **s0**：接收 FTQ 取指请求（`io_fetch_req`）与 WayLookup 读出（`io_wayLookupRead`，含 waymask/
-  ptag/itlb 异常/pbmt/meta ECC code/gpf）；向数据 SRAM 发读请求（`io_dataArray_toIData_*`，
-  partWayNum=4 个口，末口 `_3` 的 ready 参与流控）；更新替换器 touch（延迟一拍发出）。
-  `s0_fire = req_valid & toIData_3.ready & wayLookup.valid & s1_ready & ~flush`。
-- **s1**：发 PMP 检查（`io_pmp_*_req`），锁存数据 SRAM 读回（带 MSHR 回填旁路），做
-  metaArray ECC 检查，监听 MSHR 回填命中。
-- **s2**：数据 ECC 检查；缺失或 ECC 损坏时经 2 路 Arbiter 向 MSHR 发再取请求；合并异常；
-  向 IFU 返回取指结果（`io_fetch_resp`）；上报 BEU error（`io_errors_*`）；输出性能信息。
+香山把「查 meta SRAM、算命中路」前移到了 **IPrefetch**，结果存进 **WayLookup FIFO**。
+MainPipe 不再查 meta，而是直接拿 WayLookup 给的 `waymask` 去 **data SRAM** 取指令数据，
+自己负责 PMP 检查、ECC 校验、miss 时向 MSHR 再取、最后响应 IFU。一次取指最多跨
+**两条 cacheline**（`PortNumber=2`：startAddr 所在 line 与 nextline）；一条 line = 64B =
+512bit，切成 `ICacheDataBanks=8` 个 64bit bank，便于跨行时把两条 line 的 bank 拼成一块。
 
-双取指端口 PortNumber=2（vaddr/ptag/exception/pbmt/waymask 各两份；端口 1 仅在 doubleline
-跨缓存行时有效）。一个取指数据块 512bit，分 8 个 64bit bank（ICacheDataBanks=8）。
+## 2. 数据结构（见 `xs_icache_mainpipe_pkg`）
 
-golden 例化了一个子模块 `Arbiter2_ICacheMissReq`（2 路组合优先级仲裁，端口 0 优先）。手写核
-**直接内联**该仲裁（`_toMSHRArbiter_*` 信号 + `io_mshr_req_bits_*` 的二选一），UT/FM 的 golden
-（reference）侧仍需带上该子模块文件。
+用 `struct packed` + 数组把 golden 的几百个展平标量（`s1_waymasks_0_3`、`s2_datas_7`、
+`s2_bankSel_bankSel_14` 之类）重新组织为有意义的形状：
 
-## 2. 关键实现点
+| 类型 | 形状 | 取代的 golden 展平名 |
+|------|------|------|
+| `way_lookup_entry_t` | `port[2]` × {waymask[4], ptag, itlb_exception, itlb_pbmt, meta_codes} | `io_wayLookupRead_bits_entry_*_0/1` |
+| `data_sram_req_t` | `vSetIdx[2]`, `waymask[2][4]`, blkOffset, isDoubleLine | `io_dataArray_toIData_0_bits_*` |
+| `ifu_resp_t` | doubleline, `vaddr[2]`, data[512], `paddr[2]`, `exception[2]`, `pmp_mmio[2]`, `itlb_pbmt[2]`, gpaddr … | `io_fetch_resp_bits_*` |
+| `meta_flush_t` / `touch_t` / `l1_error_t` / `perf_info_t` | 各功能单元一个 struct | `io_metaArrayFlush_* / io_touch_* / io_errors_* / io_perfInfo_*` |
 
-### 2.1 数据/命中的 HoldBypass（s1 旁路 MSHR 回填）
-s1 数据来源在「数据 SRAM 读回」与「MSHR 本拍回填」间二选一，并用 `s1_datas_r*`/`s1_datas_REG*`
-寄存器做 `DataHoldBypass`（数据在 s1 停顿时保持）。每个 bank 由哪个端口的 MSHR 命中覆盖，取决于
-`bankIdx >= bankIdxLow(=vaddr[5:3])`：高 bank 用端口 0，低 bank 用端口 1（`s1_bankMSHRHit_*`）。
-`s1_data_is_from_MSHR_*` 标记该 bank 数据是否来自 MSHR（来自 MSHR 则数据 ECC 检查跳过）。
-命中 `s1_hits` 用 `ValidHoldBypass`（`s1_hits_valid*` 状态位）。
+流水内部一律用数组：`s1_waymask[port][way]`、`s2_datas[bank]`、`s2_bankSel[16]`、
+`s2_hit[port]` 等，配 `for(genvar …)` 分节展开，而非手工复制 8/16 份标量。
 
-### 2.2 ECC 检查
-- **meta ECC（s1 算，s2 锁存）**：`hit_num = PopCount(waymask)`；`(encodeMetaECC(ptag) != code &&
-  hit_num==1) || hit_num>1` 判损坏（`io_ecc_enable` 关时强制清零）。`encodeMetaECC` 即按位异或奇偶。
-- **data ECC（s2 算）**：每 bank `^data != code`，叠加 `s2_bankSel`（该 bank 是否被本次取指占用）、
-  `s2_SRAMhits`、且非 MSHR 来源。`s2_bankSel` 用 golden 同款的 `bankIdxLow / bankIdxHigh=vaddr[5:0]+0x20`
-  推导出 15 个 bankSel（sel_0..7→端口0，sel_8..14 + `&high[6:3]`→端口1）。
-- ECC 损坏 → `s2_corrupt_refetch` → 触发 metaArray flush + 经 MSHR 重取 + 上报 BEU。
+## 3. 三级流水
 
-### 2.3 s2 停留期的 MSHR 监听
-s2 在等待回填时（`!s1_fire` 分支）持续监听 MSHR：命中则更新 `s2_hits/s2_datas/s2_data_is_from_MSHR`，
-清 `s2_meta_corrupt`，并把 `s2_l2_corrupt` 取自 `mshr_resp.corrupt`（用于后续 raise af）。
-`s2_has_send_*` 防止向 MSHR 发重复请求。
+### s0 —— 取指请求 + 用 waymask 向 data SRAM 发读
+- FTQ 主请求取 `pcMemRead` 的最后一个端口（`index = partWayNum`）得到 startAddr/nextlineStart；
+  前 `partWayNum=4` 个端口只驱动 data SRAM 各分路读口的 `valid`。
+- `doubleline = readValid & startAddr[5]`：取指块尾越过 32B 半行边界即跨入下一 line。
+- 从 WayLookup 取 `waymask`（命中路 one-hot，全 0=miss）、`ptag`、`itlb_exception/pbmt`、
+  `meta_codes`、`gpf`，连同 vaddr 一起送入 data SRAM 读请求并打入 s1 流水寄存器。
+- 推进条件 `s0_fire = req.valid & toData.last.ready & wayLookup.valid & s1_ready & !flush`。
 
-### 2.4 异常合并
-- s1：`s1_exception = itlb 异常优先，否则 PMP instr af`（端口各一份）。
-- s2 给 IFU：`itlb/pmp 异常优先，否则 l2_corrupt → af`；端口 1 仅在 doubleline 时给出，否则置 0。
-- mmio = `pmp_mmio | Pbmt.isUncache(pbmt)`（pbmt==1(NC) 或 ==2(IO)）。
-- `should_fetch`：未命中或需重取 & 无异常 & 非 mmio（端口 1 还需 doubleline 且端口 0 也无异常/mmio）。
+### s1 —— PMP / 锁存 SRAM 回读 / meta ECC / 监听 MSHR / touch
+- **PMP**：用 s1 物理地址 `paddr = ptag || vaddr[11:0]` 查 PMP；`pmp_exception = instr ? af : none`。
+  例外合并 `s1_exception = itlb ? itlb : pmp`（itlb 优先）。
+- **meta ECC**：命中一路但 `^ptag != meta_codes` → ECC 失败；命中多路 → 必为 ECC 失败。
+- **监听 MSHR**：若本拍 refill 的 line 正是要的（vSetIdx+ptag 匹配且 `!corrupt`），
+  逐 bank 用 MSHR 数据旁路替换 SRAM 数据（`DataHoldBypass`），并锁存数据/code/来源标志。
+- **touch**：`RegNext(s0_fire) & SRAMhit` 时把命中路更新进替换器 LRU。
+- hit 用 `ValidHoldBypass`：`MSHR_hit | (RegNext(s0_fire) & SRAMhit)`，保持到 `s1_fire/flush`。
 
-### 2.5 BEU error 二级延迟
-`io_errors_*` 有两层：`REG_4/5 = RegNext(s2_fire & s2_l2_corrupt)` 优先（l2 已上报，不再 report_to_beu），
-否则用 `s2_corrupt_refetch & RegNext(s1_fire)` 上报 meta/data 损坏。
+### s2 —— data ECC / miss 再取 / 监听 MSHR / 响应 IFU
+- **data ECC**：每 bank 奇偶 `^datas[b] != codes[b]`；仅当该 bank 被本次取指选中
+  (`bankSel`) 且非 MSHR 来源时才算损坏（refill 数据是新的，跳过校验）。
+- **bankSel**：`bankIdxLow = offset>>3`，`bankIdxHigh = (offset+32)>>3`；16 项里低 8 给
+  port0、高 8 给 port1，描述两条 line 各占哪些物理 bank。
+- **持续监听 MSHR**：s2 同样监听 refill，命中则更新 `s2_datas/hit`、清 `meta_corrupt`、
+  记 `l2_corrupt`（这里**不要求** `!corrupt`，corrupt 也要更新以放行 `s2_fire`）。
+- **should_fetch / 再取**：miss 或 ECC 损坏需向 MSHR 再取；但例外/mmio/前序端口异常时不取。
+  port0 无 doubleline 限制；port1 要求 doubleline 且两端口都无例外、都非 mmio。
+  两端口经 **Arbiter2**（port0 优先）合并成一路 MSHR 请求，`has_send` 去重避免重复发。
+- **例外汇总**：`s2_exception_out = (itlb/pmp) ? : (l2_corrupt ? af : none)`，
+  注意 meta/data ECC 损坏**不**报 af，而是 `metaArrayFlush` + 再取自动恢复。
+- **响应 IFU**：`resp.valid = s2_fire`；data = 8 bank 拼成 512bit；port1 字段仅
+  doubleline 有效，否则 none/pma。
 
-## 3. 寄存器与 FM 策略
+## 4. 关键设计点（为什么这么设计）
 
-手写核**完全沿用 golden 的寄存器命名**（`s1_*`/`s2_*`/`s1_datas_r*`/`s1_codes_r*`/`io_*_REG`/
-`REG`、`REG_1..5` 等），并把时序逻辑拆成与 golden 一致的两个 always 块：
+- **waymask 前移**：meta 查找放到 IPrefetch，MainPipe 直接用 waymask 选路，缩短主路径延迟。
+- **8 bank 切分 + 跨行拼接**：取指可能从一条 line 中部开始、跨入下一 line，按 bank 粒度
+  组织数据让「line0 的高 bank + line1 的低 bank」能无缝拼成连续 512bit。
+- **MSHR 旁路（s1 与 s2 两处）**：refill 回来的数据可在数据还没写回 SRAM 时就被正在流水里
+  的请求直接取用，省去「等写回再重读」的往返，降低 miss 惩罚。
+- **ECC 损坏走 refetch 而非报异常**：单/多 bit 错误通过 flush metaArray + 向 L2 再取自动修复，
+  只有 L2 也返回 corrupt（`l2_corrupt`）才升级为 access fault。
 
-- 主块 `always @(posedge clock or posedge reset)`：带异步复位的 s1/s2 流水寄存器 + 计数器。
-- 同步块 `always @(posedge clock)`：各 `RegNext(s0_fire)/RegNext(s1_fire)` 使能寄存器、
-  DataHoldBypass 的 `*_r/*_REG` 锁存。
+## 5. 接口（简表，详见 `xs_ICacheMainPipe` 端口）
 
-因此 Formality 全部 **2793 个比对点（1123 端口 + 1670 DFF）按名直接配对**，无需 fm_map 字段映射、
-无需 signature/topology 匹配，0 unmatched / 0 failing。子模块 Arbiter 内联不影响等价（其逻辑被合进
-顶层组合）。
+| 方向 | 端口 | 含义 |
+|------|------|------|
+| in  | `fetch_req_*` | FTQ 取指请求（pcMemRead[5]、readValid[5]、backendException） |
+| in  | `wayLookup_*` | WayLookup 读出的命中信息 {entry, gpf} |
+| out/in | `toData_* / fromData_*` | data SRAM 读请求 / 回读数据+ECC code |
+| out/in | `pmp_req_addr / pmp_resp_*` | PMP 检查 |
+| out/in | `mshr_req_* / mshr_resp_*` | 向 MissUnit 再取 / refill 回填 |
+| out | `fetch_resp_*` | 响应 IFU（512b 数据 + 两端口例外/属性） |
+| out | `metaFlush_* / touch_* / errors_* / perfInfo` | 清表重取 / 替换器 / BEU 错误 / 性能 |
 
-## 4. 验证
+## 6. 验证
 
-- **UT**（`verif/ut/ICacheMainPipe/`）：golden `ICacheMainPipe` vs 手写 `ICacheMainPipe_xs` 双例化，
-  12 万拍随机激励逐拍比对全部 75 个输出端口；`make run` → `checks=120000 errors=0`，TEST PASSED。
-  - 激励要点：握手位（flush/req_valid/wayLookup_valid/toIData_3_ready/mshr_req_ready/mshr_resp_valid/
-    respStall/ecc_enable）独立随机以制造反压/前压；`ftq.pcMemRead_4` 的 vSet[13:6] 与
-    `wayLookup.vSetIdx` 绑同源随机量（golden 有一致性断言，SYNTHESIS 下虽关闭但保持一致更贴近真实）；
-    ptag/blkPaddr/vSetIdx 压缩到小值域以提高 MSHR tag 命中率，覆盖回填/旁路路径。
-- **FM**（`make fm`）：SUCCEEDED。golden 侧带上 `Arbiter2_ICacheMissReq.sv`（`FM_REF_DEPS`）。
-- **未改** `scripts/fm_eq.tcl`、`scripts/ut_common.mk`（通用脚本已足够，无需特例化）。
+- **UT**（`verif/ut/ICacheMainPipe/`）：`tb.sv` 双例化 golden `ICacheMainPipe` 与
+  `ICacheMainPipe_xs`（= wrapper 改名），约束随机激励（vSetIdx/ptag 收窄以制造 MSHR/命中
+  碰撞、各 valid/ready/flush 带概率、例外/pbmt/corrupt 小范围），复位后逐拍比对**全部 75 个
+  输出端口**。4 个种子各 60000 拍，checks=60000 / errors=0。
+- **FM**（`make fm`）：`xs_ICacheMainPipe` + wrapper 对 golden 做等价。
+  2793 个比对点全部 passing，其中 **1110 个靠签名分析**配对（证明可读重写的命名/结构与
+  golden 不同也仍逻辑等价），0 unmatched compare points、0 failing。
+  reference 侧 32 个 unmatched **unread** points 是 firtool 的死寄存器/性能计数器
+  （如 `cntFtqFireInterval`、`*_probe` 线），不被读取、不影响等价。
