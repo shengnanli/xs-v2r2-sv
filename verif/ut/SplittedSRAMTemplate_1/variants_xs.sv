@@ -1,4 +1,4 @@
-module SplittedSRAMTemplate_xs(
+module SplittedSRAMTemplate_1_xs(
   input         clock,
   input         reset,
   output        io_r_req_ready,
@@ -32,7 +32,7 @@ module SplittedSRAMTemplate_xs(
   output [73:0] boreChildrenBd_bore_rdata,
   input         boreChildrenBd_bore_ack,
   input         boreChildrenBd_bore_selectedOH,
-  input         boreChildrenBd_bore_array,
+  input  [1:0]  boreChildrenBd_bore_array,
   input  [7:0]  boreChildrenBd_bore_1_addr,
   input  [7:0]  boreChildrenBd_bore_1_addr_rd,
   input  [73:0] boreChildrenBd_bore_1_wdata,
@@ -42,7 +42,7 @@ module SplittedSRAMTemplate_xs(
   output [73:0] boreChildrenBd_bore_1_rdata,
   input         boreChildrenBd_bore_1_ack,
   input         boreChildrenBd_bore_1_selectedOH,
-  input         boreChildrenBd_bore_1_array,
+  input  [1:0]  boreChildrenBd_bore_1_array,
   input         sigFromSrams_bore_ram_hold,
   input         sigFromSrams_bore_ram_bypass,
   input         sigFromSrams_bore_ram_bp_clken,
@@ -58,12 +58,10 @@ module SplittedSRAMTemplate_xs(
   input         sigFromSrams_bore_1_ram_mcp_hold,
   input         sigFromSrams_bore_1_cgen
 );
-  // 每路数据 = {meta_tag[35:0], code} = 37 位（与内层 SRAMTemplate 一致）
   wire [36:0] inner0_rdata_0, inner0_rdata_1;  // way0, way1
   wire [36:0] inner1_rdata_0, inner1_rdata_1;  // way2, way3
 
-  // inner0：承载 way0/way1，bore/broadcast 用第 0 套
-  SRAMTemplate array_0_0_0 (
+  SRAMTemplate_2 array_0_0_0 (
     .clock(clock), .reset(reset),
     .io_r_req_ready(io_r_req_ready),
     .io_r_req_valid(io_r_req_valid), .io_r_req_bits_setIdx(io_r_req_bits_setIdx),
@@ -90,9 +88,7 @@ module SplittedSRAMTemplate_xs(
     .boreChildrenBd_bore_selectedOH(boreChildrenBd_bore_selectedOH),
     .boreChildrenBd_bore_array(boreChildrenBd_bore_array)
   );
-
-  // inner1：承载 way2/way3，bore/broadcast 用第 1 套；ready 不引出
-  SRAMTemplate array_0_1_0 (
+  SRAMTemplate_2 array_0_1_0 (
     .clock(clock), .reset(reset),
     .io_r_req_ready(/* unused */),
     .io_r_req_valid(io_r_req_valid), .io_r_req_bits_setIdx(io_r_req_bits_setIdx),
@@ -119,8 +115,6 @@ module SplittedSRAMTemplate_xs(
     .boreChildrenBd_bore_selectedOH(boreChildrenBd_bore_1_selectedOH),
     .boreChildrenBd_bore_array(boreChildrenBd_bore_1_array)
   );
-
-  // 读响应：每路 37 位拆回 {meta_tag[36:1], code[0]}
   assign io_r_resp_data_0_meta_tag = inner0_rdata_0[36:1];
   assign io_r_resp_data_0_code     = inner0_rdata_0[0];
   assign io_r_resp_data_1_meta_tag = inner0_rdata_1[36:1];
@@ -129,5 +123,4 @@ module SplittedSRAMTemplate_xs(
   assign io_r_resp_data_2_code     = inner1_rdata_0[0];
   assign io_r_resp_data_3_meta_tag = inner1_rdata_1[36:1];
   assign io_r_resp_data_3_code     = inner1_rdata_1[0];
-
 endmodule

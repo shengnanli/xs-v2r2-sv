@@ -1,0 +1,1 @@
+# IBuffer 无打包 payload; 寄存器名与 golden 一致, 由 FM 按名匹配
