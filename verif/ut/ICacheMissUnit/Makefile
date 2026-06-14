@@ -1,0 +1,42 @@
+MODULE = ICacheMissUnit
+
+RTL_DIR = ../../../rtl
+GOLDEN_RTL = ../../../golden/chisel-rtl
+
+# golden 子模块（FM 两侧、UT 两侧共用同一份实现；只编译一次）
+SUBMODS = \
+  $(GOLDEN_RTL)/DeMultiplexer.sv $(GOLDEN_RTL)/DeMultiplexer_1.sv \
+  $(GOLDEN_RTL)/MuxBundle.sv $(GOLDEN_RTL)/Arbiter5_MSHRAcquire.sv \
+  $(GOLDEN_RTL)/FIFOReg.sv \
+  $(GOLDEN_RTL)/ICacheMSHR.sv $(GOLDEN_RTL)/ICacheMSHR_1.sv \
+  $(GOLDEN_RTL)/ICacheMSHR_2.sv $(GOLDEN_RTL)/ICacheMSHR_3.sv \
+  $(GOLDEN_RTL)/ICacheMSHR_4.sv $(GOLDEN_RTL)/ICacheMSHR_5.sv \
+  $(GOLDEN_RTL)/ICacheMSHR_6.sv $(GOLDEN_RTL)/ICacheMSHR_7.sv \
+  $(GOLDEN_RTL)/ICacheMSHR_8.sv $(GOLDEN_RTL)/ICacheMSHR_9.sv \
+  $(GOLDEN_RTL)/ICacheMSHR_10.sv $(GOLDEN_RTL)/ICacheMSHR_11.sv \
+  $(GOLDEN_RTL)/ICacheMSHR_12.sv $(GOLDEN_RTL)/ICacheMSHR_13.sv
+
+# 手写核（结构化，例化上述 golden 子模块）+ 包装层
+RTL_SRCS = $(RTL_DIR)/frontend/ICacheMissUnit.sv
+WRAPPER_SRCS = $(RTL_DIR)/frontend/ICacheMissUnit_wrapper.sv
+# UT：golden 顶层 + 子模块（双例化共用）
+GOLDEN_SRCS = $(GOLDEN_RTL)/ICacheMissUnit.sv $(SUBMODS)
+TB_SRCS = variants_xs.sv tb.sv
+
+FM_VARIANTS = ICacheMissUnit
+# FM ref 依赖：golden 顶层的子模块
+FM_REF_DEPS_ICacheMissUnit = \
+  DeMultiplexer.sv DeMultiplexer_1.sv MuxBundle.sv Arbiter5_MSHRAcquire.sv FIFOReg.sv \
+  ICacheMSHR.sv ICacheMSHR_1.sv ICacheMSHR_2.sv ICacheMSHR_3.sv \
+  ICacheMSHR_4.sv ICacheMSHR_5.sv ICacheMSHR_6.sv ICacheMSHR_7.sv \
+  ICacheMSHR_8.sv ICacheMSHR_9.sv ICacheMSHR_10.sv ICacheMSHR_11.sv \
+  ICacheMSHR_12.sv ICacheMSHR_13.sv
+
+# FM impl 侧也需例化同一份 golden 子模块（与 ref 同名，按名匹配/黑盒）
+WRAPPER_SRCS += $(SUBMODS)
+
+include ../../../scripts/ut_common.mk
+
+# golden 含 `ifndef SYNTHESIS 的随机初始化/断言；UT 随机激励下定义 SYNTHESIS 关掉。
+# 须放在 include 之后：ut_common.mk 用 := 重置 VCS，会丢弃 include 前的 +=。
+VCS += +define+SYNTHESIS
