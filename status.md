@@ -83,3 +83,5 @@
 
 ## 设计模块（无SRAM，已完成）
 - PreDecode ✅ / F3Predecoder ✅ / FauFTBWay ✅（均 UT+FM 通过）
+- SplittedSRAMTemplate（base 变体）✅ — Splitted 层，内层 SRAMTemplate 当黑盒，UT+FM 过
+- FauFTB ✅（并行 agent 重写，主线核验）— uFTB 32路全相联，复用 FauFTBWay；UT 4万拍0错+FM SUCCEEDED
