@@ -27,7 +27,8 @@ GOLDEN = XSSV / "golden/chisel-rtl"
 #   BPU 内层（被 Splitted/Folded 包裹）：bp_ftb(_36)、bp_tage(_45)
 VARIANTS = ["SRAMTemplate", "SRAMTemplate_2",
             "SRAMTemplate_4", "SRAMTemplate_8", "SRAMTemplate_16", "SRAMTemplate_32",
-            "SRAMTemplate_36", "SRAMTemplate_45", "SRAMTemplate_44"]
+            "SRAMTemplate_36", "SRAMTemplate_45", "SRAMTemplate_44",
+            "SRAMTemplate_70", "SRAMTemplate_72"]
 
 
 def read(name):
@@ -94,9 +95,10 @@ def analyze(name):
     info["read_ports"] = nresp // max(info["way"], 1)
     info["ports"] = ports
     info["macro"], info["child"], info["ext"], info["m_wmask"], info["m_bypass"] = macro_chain(name)
-    # 兼容性：单读口、无 bitmask、单端口（无独立 W 口/无 conflict）
+    info["bitmask"] = has_port(ports, "io_w_req_bits_flattened_bitmask")
+    info["wmask_w"] = info["way"] * info["data_w"] if info["bitmask"] else info["way"]
+    # 兼容性：单读口、单端口（无独立 W 口/无 conflict）；bitmask 已支持
     info["supported"] = (info["read_ports"] == 1
-                         and not has_port(ports, "io_w_req_bits_flattened_bitmask")
                          and pwidth(ports, "io_r_resp_data_0") is not None)
     return info
 
@@ -109,29 +111,36 @@ def emit_wrapper(info, suffix=""):
     for d, w, nm in ports:
         ws = f"[{w-1}:0] " if w > 1 else ""
         decls.append(f"  {d:6s} {ws}{nm}")
+    wmask_w = info["wmask_w"]
     L = [f"module {n}(", ",\n".join(decls) + "\n);"]
     L.append(f"  wire        ram_clk, ram_bypass, ram_bp_clken, ram_en, ram_wmode;")
     L.append(f"  wire [{info['aw']-1}:0]  ram_addr;")
-    L.append(f"  wire [{way-1}:0]  ram_wmask;")
+    L.append(f"  wire [{wmask_w-1}:0]  ram_wmask;")
     L.append(f"  wire [{mw-1}:0] ram_wdata, ram_rdata;")
 
     # core 连接
     rdata_cat = "{" + ", ".join(f"io_r_resp_data_{i}" for i in reversed(range(way))) + "}" if way > 1 else "io_r_resp_data_0"
     wdata_cat = "{" + ", ".join(f"io_w_req_bits_data_{i}" for i in reversed(range(way))) + "}" if way > 1 else "io_w_req_bits_data_0"
     rdy = "io_r_req_ready" if info["has_ready"] else "/* no ready port */"
-    wmask = "io_w_req_bits_waymask" if info["has_waymask"] else "1'b1"
+    if info["bitmask"]:
+        wmask = "io_w_req_bits_flattened_bitmask"
+    elif info["has_waymask"]:
+        wmask = "io_w_req_bits_waymask"
+    else:
+        wmask = "1'b1"
     extra = "extra_reset" if info["extra_reset"] else "1'b0"
     L.append(f"  xs_SRAMTemplate_core #(")
     L.append(f"    .SET({info['set']}), .WAY({way}), .DATA_WIDTH({dw}), .BORE_AW({info['bore_aw']}),")
     L.append(f"    .ENABLE_RESET({int(info['reset'])}), .ENABLE_HOLDREAD({int(info['hold'])}),")
-    L.append(f"    .ENABLE_CLOCKGATE({int(info['clockgate'])}), .EXTRA_RESET({int(info['extra_reset'])})")
+    L.append(f"    .ENABLE_CLOCKGATE({int(info['clockgate'])}), .EXTRA_RESET({int(info['extra_reset'])}),")
+    L.append(f"    .USE_BITMASK({int(info['bitmask'])})")
     L.append(f"  ) u_core (")
     L.append(f"    .clock(clock), .reset(reset), .io_extra_reset({extra}),")
     L.append(f"    .io_r_req_ready({rdy}),")
     L.append(f"    .io_r_req_valid(io_r_req_valid), .io_r_req_bits_setIdx(io_r_req_bits_setIdx),")
     L.append(f"    .io_r_resp_data({rdata_cat}),")
     L.append(f"    .io_w_req_valid(io_w_req_valid), .io_w_req_bits_setIdx(io_w_req_bits_setIdx),")
-    L.append(f"    .io_w_req_bits_data({wdata_cat}), .io_w_req_bits_waymask({wmask}),")
+    L.append(f"    .io_w_req_bits_data({wdata_cat}), .io_w_mask({wmask}),")
     L.append(f"    .io_broadcast_ram_hold(io_broadcast_ram_hold),")
     L.append(f"    .io_broadcast_ram_bypass(io_broadcast_ram_bypass),")
     L.append(f"    .io_broadcast_ram_bp_clken(io_broadcast_ram_bp_clken),")

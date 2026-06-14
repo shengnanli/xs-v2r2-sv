@@ -22,8 +22,10 @@ module xs_SRAMTemplate_core #(
   parameter bit          ENABLE_HOLDREAD  = 1'b1,  // 读数据保持
   parameter bit          ENABLE_CLOCKGATE = 1'b1,  // 内部时钟门控（否则 ram_clk 直连 clock）
   parameter bit          EXTRA_RESET      = 1'b0,  // 额外复位口（重触发清零 FSM，如 TAGE useful 表）
+  parameter bit          USE_BITMASK      = 1'b0,  // 1: per-bit 写掩码(MW位)；0: per-way(WAY位)
   localparam int unsigned AW = (SET > 1) ? $clog2(SET) : 1,
-  localparam int unsigned MW = WAY * DATA_WIDTH   // 宏数据总位宽（无 bitmask）
+  localparam int unsigned MW = WAY * DATA_WIDTH,  // 宏数据总位宽
+  localparam int unsigned WMASK_W = USE_BITMASK ? MW : WAY  // 写掩码位宽
 )(
   input  logic                  clock,
   input  logic                  reset,
@@ -36,7 +38,7 @@ module xs_SRAMTemplate_core #(
   input  logic                  io_w_req_valid,
   input  logic [AW-1:0]         io_w_req_bits_setIdx,
   input  logic [MW-1:0]         io_w_req_bits_data,    // {way(WAY-1)..way0}
-  input  logic [WAY-1:0]        io_w_req_bits_waymask,
+  input  logic [WMASK_W-1:0]    io_w_mask,             // per-way(WAY) 或 per-bit(MW) 写掩码
   // broadcast（DFT 控制，多数透传给宏或仅 hold/bypass/cgen 参与逻辑）
   input  logic                  io_broadcast_ram_hold,
   input  logic                  io_broadcast_ram_bypass,
@@ -47,7 +49,7 @@ module xs_SRAMTemplate_core #(
   input  logic [BORE_AW-1:0]    boreChildrenBd_bore_addr,
   input  logic [BORE_AW-1:0]    boreChildrenBd_bore_addr_rd,
   input  logic [MW-1:0]         boreChildrenBd_bore_wdata,
-  input  logic [WAY-1:0]        boreChildrenBd_bore_wmask,
+  input  logic [WMASK_W-1:0]    boreChildrenBd_bore_wmask,
   input  logic                  boreChildrenBd_bore_re,
   input  logic                  boreChildrenBd_bore_we,
   output logic [MW-1:0]         boreChildrenBd_bore_rdata,
@@ -60,7 +62,7 @@ module xs_SRAMTemplate_core #(
   output logic [AW-1:0]         ram_addr,
   output logic                  ram_en,
   output logic                  ram_wmode,
-  output logic [WAY-1:0]        ram_wmask,
+  output logic [WMASK_W-1:0]    ram_wmask,
   output logic [MW-1:0]         ram_wdata,
   input  logic [MW-1:0]         ram_rdata
 );
@@ -145,8 +147,8 @@ module xs_SRAMTemplate_core #(
   assign ram_en    = finalRamWen | rckEn;
   assign ram_wmode = finalRamWen;
   assign ram_wmask =
-    boreChildrenBd_bore_ack ? ({WAY{boreChildrenBd_bore_selectedOH}} & boreChildrenBd_bore_wmask)
-                            : (resetState ? {WAY{1'b1}} : io_w_req_bits_waymask);
+    boreChildrenBd_bore_ack ? ({WMASK_W{boreChildrenBd_bore_selectedOH}} & boreChildrenBd_bore_wmask)
+                            : (resetState ? {WMASK_W{1'b1}} : io_w_mask);
   assign ram_wdata =
     boreChildrenBd_bore_ack ? boreChildrenBd_bore_wdata
                             : (resetState ? '0 : io_w_req_bits_data);

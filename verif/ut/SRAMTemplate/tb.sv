@@ -797,6 +797,182 @@ module tb;
       $display("[%0t] SRAMTemplate_44.boreChildrenBd_bore_rdata g=%h i=%h", $time, vSRAMTemplate_44_g_boreChildrenBd_bore_rdata, vSRAMTemplate_44_i_boreChildrenBd_bore_rdata); end
   end
 
+  logic vSRAMTemplate_70_io_r_req_valid;
+  logic [6:0] vSRAMTemplate_70_io_r_req_bits_setIdx;
+  logic vSRAMTemplate_70_io_w_req_valid;
+  logic [6:0] vSRAMTemplate_70_io_w_req_bits_setIdx;
+  logic [37:0] vSRAMTemplate_70_io_w_req_bits_data_0;
+  logic [37:0] vSRAMTemplate_70_io_w_req_bits_data_1;
+  logic [75:0] vSRAMTemplate_70_io_w_req_bits_flattened_bitmask;
+  logic vSRAMTemplate_70_io_broadcast_ram_hold;
+  logic vSRAMTemplate_70_io_broadcast_ram_bypass;
+  logic vSRAMTemplate_70_io_broadcast_ram_bp_clken;
+  logic vSRAMTemplate_70_io_broadcast_ram_aux_clk;
+  logic vSRAMTemplate_70_io_broadcast_ram_aux_ckbp;
+  logic vSRAMTemplate_70_io_broadcast_ram_mcp_hold;
+  logic [63:0] vSRAMTemplate_70_io_broadcast_ram_ctl;
+  logic vSRAMTemplate_70_io_broadcast_cgen;
+  logic [7:0] vSRAMTemplate_70_boreChildrenBd_bore_addr;
+  logic [7:0] vSRAMTemplate_70_boreChildrenBd_bore_addr_rd;
+  logic [75:0] vSRAMTemplate_70_boreChildrenBd_bore_wdata;
+  logic [75:0] vSRAMTemplate_70_boreChildrenBd_bore_wmask;
+  logic vSRAMTemplate_70_boreChildrenBd_bore_re;
+  logic vSRAMTemplate_70_boreChildrenBd_bore_we;
+  logic vSRAMTemplate_70_boreChildrenBd_bore_ack;
+  logic vSRAMTemplate_70_boreChildrenBd_bore_selectedOH;
+  logic [6:0] vSRAMTemplate_70_boreChildrenBd_bore_array;
+  wire vSRAMTemplate_70_g_io_r_req_ready;
+  wire vSRAMTemplate_70_i_io_r_req_ready;
+  wire [37:0] vSRAMTemplate_70_g_io_r_resp_data_0;
+  wire [37:0] vSRAMTemplate_70_i_io_r_resp_data_0;
+  wire [37:0] vSRAMTemplate_70_g_io_r_resp_data_1;
+  wire [37:0] vSRAMTemplate_70_i_io_r_resp_data_1;
+  wire [75:0] vSRAMTemplate_70_g_boreChildrenBd_bore_rdata;
+  wire [75:0] vSRAMTemplate_70_i_boreChildrenBd_bore_rdata;
+  SRAMTemplate_70 u_g_SRAMTemplate_70 (.clock(clk), .reset(rst), .io_r_req_valid(vSRAMTemplate_70_io_r_req_valid), .io_r_req_bits_setIdx(vSRAMTemplate_70_io_r_req_bits_setIdx), .io_w_req_valid(vSRAMTemplate_70_io_w_req_valid), .io_w_req_bits_setIdx(vSRAMTemplate_70_io_w_req_bits_setIdx), .io_w_req_bits_data_0(vSRAMTemplate_70_io_w_req_bits_data_0), .io_w_req_bits_data_1(vSRAMTemplate_70_io_w_req_bits_data_1), .io_w_req_bits_flattened_bitmask(vSRAMTemplate_70_io_w_req_bits_flattened_bitmask), .io_broadcast_ram_hold(vSRAMTemplate_70_io_broadcast_ram_hold), .io_broadcast_ram_bypass(vSRAMTemplate_70_io_broadcast_ram_bypass), .io_broadcast_ram_bp_clken(vSRAMTemplate_70_io_broadcast_ram_bp_clken), .io_broadcast_ram_aux_clk(vSRAMTemplate_70_io_broadcast_ram_aux_clk), .io_broadcast_ram_aux_ckbp(vSRAMTemplate_70_io_broadcast_ram_aux_ckbp), .io_broadcast_ram_mcp_hold(vSRAMTemplate_70_io_broadcast_ram_mcp_hold), .io_broadcast_ram_ctl(vSRAMTemplate_70_io_broadcast_ram_ctl), .io_broadcast_cgen(vSRAMTemplate_70_io_broadcast_cgen), .boreChildrenBd_bore_addr(vSRAMTemplate_70_boreChildrenBd_bore_addr), .boreChildrenBd_bore_addr_rd(vSRAMTemplate_70_boreChildrenBd_bore_addr_rd), .boreChildrenBd_bore_wdata(vSRAMTemplate_70_boreChildrenBd_bore_wdata), .boreChildrenBd_bore_wmask(vSRAMTemplate_70_boreChildrenBd_bore_wmask), .boreChildrenBd_bore_re(vSRAMTemplate_70_boreChildrenBd_bore_re), .boreChildrenBd_bore_we(vSRAMTemplate_70_boreChildrenBd_bore_we), .boreChildrenBd_bore_ack(vSRAMTemplate_70_boreChildrenBd_bore_ack), .boreChildrenBd_bore_selectedOH(vSRAMTemplate_70_boreChildrenBd_bore_selectedOH), .boreChildrenBd_bore_array(vSRAMTemplate_70_boreChildrenBd_bore_array), .io_r_req_ready(vSRAMTemplate_70_g_io_r_req_ready), .io_r_resp_data_0(vSRAMTemplate_70_g_io_r_resp_data_0), .io_r_resp_data_1(vSRAMTemplate_70_g_io_r_resp_data_1), .boreChildrenBd_bore_rdata(vSRAMTemplate_70_g_boreChildrenBd_bore_rdata));
+  SRAMTemplate_70_xs u_i_SRAMTemplate_70 (.clock(clk), .reset(rst), .io_r_req_valid(vSRAMTemplate_70_io_r_req_valid), .io_r_req_bits_setIdx(vSRAMTemplate_70_io_r_req_bits_setIdx), .io_w_req_valid(vSRAMTemplate_70_io_w_req_valid), .io_w_req_bits_setIdx(vSRAMTemplate_70_io_w_req_bits_setIdx), .io_w_req_bits_data_0(vSRAMTemplate_70_io_w_req_bits_data_0), .io_w_req_bits_data_1(vSRAMTemplate_70_io_w_req_bits_data_1), .io_w_req_bits_flattened_bitmask(vSRAMTemplate_70_io_w_req_bits_flattened_bitmask), .io_broadcast_ram_hold(vSRAMTemplate_70_io_broadcast_ram_hold), .io_broadcast_ram_bypass(vSRAMTemplate_70_io_broadcast_ram_bypass), .io_broadcast_ram_bp_clken(vSRAMTemplate_70_io_broadcast_ram_bp_clken), .io_broadcast_ram_aux_clk(vSRAMTemplate_70_io_broadcast_ram_aux_clk), .io_broadcast_ram_aux_ckbp(vSRAMTemplate_70_io_broadcast_ram_aux_ckbp), .io_broadcast_ram_mcp_hold(vSRAMTemplate_70_io_broadcast_ram_mcp_hold), .io_broadcast_ram_ctl(vSRAMTemplate_70_io_broadcast_ram_ctl), .io_broadcast_cgen(vSRAMTemplate_70_io_broadcast_cgen), .boreChildrenBd_bore_addr(vSRAMTemplate_70_boreChildrenBd_bore_addr), .boreChildrenBd_bore_addr_rd(vSRAMTemplate_70_boreChildrenBd_bore_addr_rd), .boreChildrenBd_bore_wdata(vSRAMTemplate_70_boreChildrenBd_bore_wdata), .boreChildrenBd_bore_wmask(vSRAMTemplate_70_boreChildrenBd_bore_wmask), .boreChildrenBd_bore_re(vSRAMTemplate_70_boreChildrenBd_bore_re), .boreChildrenBd_bore_we(vSRAMTemplate_70_boreChildrenBd_bore_we), .boreChildrenBd_bore_ack(vSRAMTemplate_70_boreChildrenBd_bore_ack), .boreChildrenBd_bore_selectedOH(vSRAMTemplate_70_boreChildrenBd_bore_selectedOH), .boreChildrenBd_bore_array(vSRAMTemplate_70_boreChildrenBd_bore_array), .io_r_req_ready(vSRAMTemplate_70_i_io_r_req_ready), .io_r_resp_data_0(vSRAMTemplate_70_i_io_r_resp_data_0), .io_r_resp_data_1(vSRAMTemplate_70_i_io_r_resp_data_1), .boreChildrenBd_bore_rdata(vSRAMTemplate_70_i_boreChildrenBd_bore_rdata));
+  always @(negedge clk) begin
+    if (rst) begin
+      vSRAMTemplate_70_io_r_req_valid <= 1'b0;
+      vSRAMTemplate_70_io_w_req_valid <= 1'b0;
+      vSRAMTemplate_70_io_broadcast_ram_hold <= 1'b0;
+      vSRAMTemplate_70_io_broadcast_ram_mcp_hold <= 1'b0;
+      vSRAMTemplate_70_boreChildrenBd_bore_re <= 1'b0;
+      vSRAMTemplate_70_boreChildrenBd_bore_we <= 1'b0;
+      vSRAMTemplate_70_boreChildrenBd_bore_ack <= 1'b0;
+    end else begin
+      vSRAMTemplate_70_io_r_req_valid <= ($urandom_range(0,3)!=0);
+      vSRAMTemplate_70_io_r_req_bits_setIdx <= 7'($urandom);
+      vSRAMTemplate_70_io_w_req_valid <= ($urandom_range(0,2)==0);
+      vSRAMTemplate_70_io_w_req_bits_setIdx <= 7'($urandom);
+      vSRAMTemplate_70_io_w_req_bits_data_0 <= 38'({$urandom(), $urandom()});
+      vSRAMTemplate_70_io_w_req_bits_data_1 <= 38'({$urandom(), $urandom()});
+      vSRAMTemplate_70_io_w_req_bits_flattened_bitmask <= 76'({$urandom(), $urandom(), $urandom()});
+      vSRAMTemplate_70_io_broadcast_ram_hold <= ($urandom_range(0,15)==0);
+      vSRAMTemplate_70_io_broadcast_ram_bypass <= 1'b0;
+      vSRAMTemplate_70_io_broadcast_ram_bp_clken <= 1'b0;
+      vSRAMTemplate_70_io_broadcast_ram_aux_clk <= 1'b0;
+      vSRAMTemplate_70_io_broadcast_ram_aux_ckbp <= 1'b0;
+      vSRAMTemplate_70_io_broadcast_ram_mcp_hold <= 1'b0;
+      vSRAMTemplate_70_io_broadcast_ram_ctl <= 64'({$urandom(), $urandom()});
+      vSRAMTemplate_70_io_broadcast_cgen <= 1'($urandom);
+      vSRAMTemplate_70_boreChildrenBd_bore_addr <= 8'($urandom);
+      vSRAMTemplate_70_boreChildrenBd_bore_addr_rd <= 8'($urandom);
+      vSRAMTemplate_70_boreChildrenBd_bore_wdata <= 76'({$urandom(), $urandom(), $urandom()});
+      vSRAMTemplate_70_boreChildrenBd_bore_wmask <= 76'({$urandom(), $urandom(), $urandom()});
+      vSRAMTemplate_70_boreChildrenBd_bore_re <= ($urandom_range(0,7)==0);
+      vSRAMTemplate_70_boreChildrenBd_bore_we <= ($urandom_range(0,7)==0);
+      vSRAMTemplate_70_boreChildrenBd_bore_ack <= ($urandom_range(0,7)==0);
+      vSRAMTemplate_70_boreChildrenBd_bore_selectedOH <= 1'($urandom);
+      vSRAMTemplate_70_boreChildrenBd_bore_array <= 7'($urandom);
+    end
+  end
+  always @(negedge clk) if (!rst && cycle > WARMUP) begin
+    #4; checks++;
+    if (vSRAMTemplate_70_g_io_r_req_ready !== vSRAMTemplate_70_i_io_r_req_ready) begin errors++;
+      $display("[%0t] SRAMTemplate_70.io_r_req_ready g=%h i=%h", $time, vSRAMTemplate_70_g_io_r_req_ready, vSRAMTemplate_70_i_io_r_req_ready); end
+    if (vSRAMTemplate_70_g_io_r_resp_data_0 !== vSRAMTemplate_70_i_io_r_resp_data_0) begin errors++;
+      $display("[%0t] SRAMTemplate_70.io_r_resp_data_0 g=%h i=%h", $time, vSRAMTemplate_70_g_io_r_resp_data_0, vSRAMTemplate_70_i_io_r_resp_data_0); end
+    if (vSRAMTemplate_70_g_io_r_resp_data_1 !== vSRAMTemplate_70_i_io_r_resp_data_1) begin errors++;
+      $display("[%0t] SRAMTemplate_70.io_r_resp_data_1 g=%h i=%h", $time, vSRAMTemplate_70_g_io_r_resp_data_1, vSRAMTemplate_70_i_io_r_resp_data_1); end
+    if (vSRAMTemplate_70_g_boreChildrenBd_bore_rdata !== vSRAMTemplate_70_i_boreChildrenBd_bore_rdata) begin errors++;
+      $display("[%0t] SRAMTemplate_70.boreChildrenBd_bore_rdata g=%h i=%h", $time, vSRAMTemplate_70_g_boreChildrenBd_bore_rdata, vSRAMTemplate_70_i_boreChildrenBd_bore_rdata); end
+  end
+
+  logic vSRAMTemplate_72_io_r_req_valid;
+  logic [6:0] vSRAMTemplate_72_io_r_req_bits_setIdx;
+  logic vSRAMTemplate_72_io_w_req_valid;
+  logic [6:0] vSRAMTemplate_72_io_w_req_bits_setIdx;
+  logic [18:0] vSRAMTemplate_72_io_w_req_bits_data_0;
+  logic [18:0] vSRAMTemplate_72_io_w_req_bits_data_1;
+  logic [18:0] vSRAMTemplate_72_io_w_req_bits_data_2;
+  logic [18:0] vSRAMTemplate_72_io_w_req_bits_data_3;
+  logic [75:0] vSRAMTemplate_72_io_w_req_bits_flattened_bitmask;
+  logic vSRAMTemplate_72_io_broadcast_ram_hold;
+  logic vSRAMTemplate_72_io_broadcast_ram_bypass;
+  logic vSRAMTemplate_72_io_broadcast_ram_bp_clken;
+  logic vSRAMTemplate_72_io_broadcast_ram_aux_clk;
+  logic vSRAMTemplate_72_io_broadcast_ram_aux_ckbp;
+  logic vSRAMTemplate_72_io_broadcast_ram_mcp_hold;
+  logic [63:0] vSRAMTemplate_72_io_broadcast_ram_ctl;
+  logic vSRAMTemplate_72_io_broadcast_cgen;
+  logic [7:0] vSRAMTemplate_72_boreChildrenBd_bore_addr;
+  logic [7:0] vSRAMTemplate_72_boreChildrenBd_bore_addr_rd;
+  logic [75:0] vSRAMTemplate_72_boreChildrenBd_bore_wdata;
+  logic [75:0] vSRAMTemplate_72_boreChildrenBd_bore_wmask;
+  logic vSRAMTemplate_72_boreChildrenBd_bore_re;
+  logic vSRAMTemplate_72_boreChildrenBd_bore_we;
+  logic vSRAMTemplate_72_boreChildrenBd_bore_ack;
+  logic vSRAMTemplate_72_boreChildrenBd_bore_selectedOH;
+  logic [6:0] vSRAMTemplate_72_boreChildrenBd_bore_array;
+  wire vSRAMTemplate_72_g_io_r_req_ready;
+  wire vSRAMTemplate_72_i_io_r_req_ready;
+  wire [18:0] vSRAMTemplate_72_g_io_r_resp_data_0;
+  wire [18:0] vSRAMTemplate_72_i_io_r_resp_data_0;
+  wire [18:0] vSRAMTemplate_72_g_io_r_resp_data_1;
+  wire [18:0] vSRAMTemplate_72_i_io_r_resp_data_1;
+  wire [18:0] vSRAMTemplate_72_g_io_r_resp_data_2;
+  wire [18:0] vSRAMTemplate_72_i_io_r_resp_data_2;
+  wire [18:0] vSRAMTemplate_72_g_io_r_resp_data_3;
+  wire [18:0] vSRAMTemplate_72_i_io_r_resp_data_3;
+  wire [75:0] vSRAMTemplate_72_g_boreChildrenBd_bore_rdata;
+  wire [75:0] vSRAMTemplate_72_i_boreChildrenBd_bore_rdata;
+  SRAMTemplate_72 u_g_SRAMTemplate_72 (.clock(clk), .reset(rst), .io_r_req_valid(vSRAMTemplate_72_io_r_req_valid), .io_r_req_bits_setIdx(vSRAMTemplate_72_io_r_req_bits_setIdx), .io_w_req_valid(vSRAMTemplate_72_io_w_req_valid), .io_w_req_bits_setIdx(vSRAMTemplate_72_io_w_req_bits_setIdx), .io_w_req_bits_data_0(vSRAMTemplate_72_io_w_req_bits_data_0), .io_w_req_bits_data_1(vSRAMTemplate_72_io_w_req_bits_data_1), .io_w_req_bits_data_2(vSRAMTemplate_72_io_w_req_bits_data_2), .io_w_req_bits_data_3(vSRAMTemplate_72_io_w_req_bits_data_3), .io_w_req_bits_flattened_bitmask(vSRAMTemplate_72_io_w_req_bits_flattened_bitmask), .io_broadcast_ram_hold(vSRAMTemplate_72_io_broadcast_ram_hold), .io_broadcast_ram_bypass(vSRAMTemplate_72_io_broadcast_ram_bypass), .io_broadcast_ram_bp_clken(vSRAMTemplate_72_io_broadcast_ram_bp_clken), .io_broadcast_ram_aux_clk(vSRAMTemplate_72_io_broadcast_ram_aux_clk), .io_broadcast_ram_aux_ckbp(vSRAMTemplate_72_io_broadcast_ram_aux_ckbp), .io_broadcast_ram_mcp_hold(vSRAMTemplate_72_io_broadcast_ram_mcp_hold), .io_broadcast_ram_ctl(vSRAMTemplate_72_io_broadcast_ram_ctl), .io_broadcast_cgen(vSRAMTemplate_72_io_broadcast_cgen), .boreChildrenBd_bore_addr(vSRAMTemplate_72_boreChildrenBd_bore_addr), .boreChildrenBd_bore_addr_rd(vSRAMTemplate_72_boreChildrenBd_bore_addr_rd), .boreChildrenBd_bore_wdata(vSRAMTemplate_72_boreChildrenBd_bore_wdata), .boreChildrenBd_bore_wmask(vSRAMTemplate_72_boreChildrenBd_bore_wmask), .boreChildrenBd_bore_re(vSRAMTemplate_72_boreChildrenBd_bore_re), .boreChildrenBd_bore_we(vSRAMTemplate_72_boreChildrenBd_bore_we), .boreChildrenBd_bore_ack(vSRAMTemplate_72_boreChildrenBd_bore_ack), .boreChildrenBd_bore_selectedOH(vSRAMTemplate_72_boreChildrenBd_bore_selectedOH), .boreChildrenBd_bore_array(vSRAMTemplate_72_boreChildrenBd_bore_array), .io_r_req_ready(vSRAMTemplate_72_g_io_r_req_ready), .io_r_resp_data_0(vSRAMTemplate_72_g_io_r_resp_data_0), .io_r_resp_data_1(vSRAMTemplate_72_g_io_r_resp_data_1), .io_r_resp_data_2(vSRAMTemplate_72_g_io_r_resp_data_2), .io_r_resp_data_3(vSRAMTemplate_72_g_io_r_resp_data_3), .boreChildrenBd_bore_rdata(vSRAMTemplate_72_g_boreChildrenBd_bore_rdata));
+  SRAMTemplate_72_xs u_i_SRAMTemplate_72 (.clock(clk), .reset(rst), .io_r_req_valid(vSRAMTemplate_72_io_r_req_valid), .io_r_req_bits_setIdx(vSRAMTemplate_72_io_r_req_bits_setIdx), .io_w_req_valid(vSRAMTemplate_72_io_w_req_valid), .io_w_req_bits_setIdx(vSRAMTemplate_72_io_w_req_bits_setIdx), .io_w_req_bits_data_0(vSRAMTemplate_72_io_w_req_bits_data_0), .io_w_req_bits_data_1(vSRAMTemplate_72_io_w_req_bits_data_1), .io_w_req_bits_data_2(vSRAMTemplate_72_io_w_req_bits_data_2), .io_w_req_bits_data_3(vSRAMTemplate_72_io_w_req_bits_data_3), .io_w_req_bits_flattened_bitmask(vSRAMTemplate_72_io_w_req_bits_flattened_bitmask), .io_broadcast_ram_hold(vSRAMTemplate_72_io_broadcast_ram_hold), .io_broadcast_ram_bypass(vSRAMTemplate_72_io_broadcast_ram_bypass), .io_broadcast_ram_bp_clken(vSRAMTemplate_72_io_broadcast_ram_bp_clken), .io_broadcast_ram_aux_clk(vSRAMTemplate_72_io_broadcast_ram_aux_clk), .io_broadcast_ram_aux_ckbp(vSRAMTemplate_72_io_broadcast_ram_aux_ckbp), .io_broadcast_ram_mcp_hold(vSRAMTemplate_72_io_broadcast_ram_mcp_hold), .io_broadcast_ram_ctl(vSRAMTemplate_72_io_broadcast_ram_ctl), .io_broadcast_cgen(vSRAMTemplate_72_io_broadcast_cgen), .boreChildrenBd_bore_addr(vSRAMTemplate_72_boreChildrenBd_bore_addr), .boreChildrenBd_bore_addr_rd(vSRAMTemplate_72_boreChildrenBd_bore_addr_rd), .boreChildrenBd_bore_wdata(vSRAMTemplate_72_boreChildrenBd_bore_wdata), .boreChildrenBd_bore_wmask(vSRAMTemplate_72_boreChildrenBd_bore_wmask), .boreChildrenBd_bore_re(vSRAMTemplate_72_boreChildrenBd_bore_re), .boreChildrenBd_bore_we(vSRAMTemplate_72_boreChildrenBd_bore_we), .boreChildrenBd_bore_ack(vSRAMTemplate_72_boreChildrenBd_bore_ack), .boreChildrenBd_bore_selectedOH(vSRAMTemplate_72_boreChildrenBd_bore_selectedOH), .boreChildrenBd_bore_array(vSRAMTemplate_72_boreChildrenBd_bore_array), .io_r_req_ready(vSRAMTemplate_72_i_io_r_req_ready), .io_r_resp_data_0(vSRAMTemplate_72_i_io_r_resp_data_0), .io_r_resp_data_1(vSRAMTemplate_72_i_io_r_resp_data_1), .io_r_resp_data_2(vSRAMTemplate_72_i_io_r_resp_data_2), .io_r_resp_data_3(vSRAMTemplate_72_i_io_r_resp_data_3), .boreChildrenBd_bore_rdata(vSRAMTemplate_72_i_boreChildrenBd_bore_rdata));
+  always @(negedge clk) begin
+    if (rst) begin
+      vSRAMTemplate_72_io_r_req_valid <= 1'b0;
+      vSRAMTemplate_72_io_w_req_valid <= 1'b0;
+      vSRAMTemplate_72_io_broadcast_ram_hold <= 1'b0;
+      vSRAMTemplate_72_io_broadcast_ram_mcp_hold <= 1'b0;
+      vSRAMTemplate_72_boreChildrenBd_bore_re <= 1'b0;
+      vSRAMTemplate_72_boreChildrenBd_bore_we <= 1'b0;
+      vSRAMTemplate_72_boreChildrenBd_bore_ack <= 1'b0;
+    end else begin
+      vSRAMTemplate_72_io_r_req_valid <= ($urandom_range(0,3)!=0);
+      vSRAMTemplate_72_io_r_req_bits_setIdx <= 7'($urandom);
+      vSRAMTemplate_72_io_w_req_valid <= ($urandom_range(0,2)==0);
+      vSRAMTemplate_72_io_w_req_bits_setIdx <= 7'($urandom);
+      vSRAMTemplate_72_io_w_req_bits_data_0 <= 19'($urandom);
+      vSRAMTemplate_72_io_w_req_bits_data_1 <= 19'($urandom);
+      vSRAMTemplate_72_io_w_req_bits_data_2 <= 19'($urandom);
+      vSRAMTemplate_72_io_w_req_bits_data_3 <= 19'($urandom);
+      vSRAMTemplate_72_io_w_req_bits_flattened_bitmask <= 76'({$urandom(), $urandom(), $urandom()});
+      vSRAMTemplate_72_io_broadcast_ram_hold <= ($urandom_range(0,15)==0);
+      vSRAMTemplate_72_io_broadcast_ram_bypass <= 1'b0;
+      vSRAMTemplate_72_io_broadcast_ram_bp_clken <= 1'b0;
+      vSRAMTemplate_72_io_broadcast_ram_aux_clk <= 1'b0;
+      vSRAMTemplate_72_io_broadcast_ram_aux_ckbp <= 1'b0;
+      vSRAMTemplate_72_io_broadcast_ram_mcp_hold <= 1'b0;
+      vSRAMTemplate_72_io_broadcast_ram_ctl <= 64'({$urandom(), $urandom()});
+      vSRAMTemplate_72_io_broadcast_cgen <= 1'($urandom);
+      vSRAMTemplate_72_boreChildrenBd_bore_addr <= 8'($urandom);
+      vSRAMTemplate_72_boreChildrenBd_bore_addr_rd <= 8'($urandom);
+      vSRAMTemplate_72_boreChildrenBd_bore_wdata <= 76'({$urandom(), $urandom(), $urandom()});
+      vSRAMTemplate_72_boreChildrenBd_bore_wmask <= 76'({$urandom(), $urandom(), $urandom()});
+      vSRAMTemplate_72_boreChildrenBd_bore_re <= ($urandom_range(0,7)==0);
+      vSRAMTemplate_72_boreChildrenBd_bore_we <= ($urandom_range(0,7)==0);
+      vSRAMTemplate_72_boreChildrenBd_bore_ack <= ($urandom_range(0,7)==0);
+      vSRAMTemplate_72_boreChildrenBd_bore_selectedOH <= 1'($urandom);
+      vSRAMTemplate_72_boreChildrenBd_bore_array <= 7'($urandom);
+    end
+  end
+  always @(negedge clk) if (!rst && cycle > WARMUP) begin
+    #4; checks++;
+    if (vSRAMTemplate_72_g_io_r_req_ready !== vSRAMTemplate_72_i_io_r_req_ready) begin errors++;
+      $display("[%0t] SRAMTemplate_72.io_r_req_ready g=%h i=%h", $time, vSRAMTemplate_72_g_io_r_req_ready, vSRAMTemplate_72_i_io_r_req_ready); end
+    if (vSRAMTemplate_72_g_io_r_resp_data_0 !== vSRAMTemplate_72_i_io_r_resp_data_0) begin errors++;
+      $display("[%0t] SRAMTemplate_72.io_r_resp_data_0 g=%h i=%h", $time, vSRAMTemplate_72_g_io_r_resp_data_0, vSRAMTemplate_72_i_io_r_resp_data_0); end
+    if (vSRAMTemplate_72_g_io_r_resp_data_1 !== vSRAMTemplate_72_i_io_r_resp_data_1) begin errors++;
+      $display("[%0t] SRAMTemplate_72.io_r_resp_data_1 g=%h i=%h", $time, vSRAMTemplate_72_g_io_r_resp_data_1, vSRAMTemplate_72_i_io_r_resp_data_1); end
+    if (vSRAMTemplate_72_g_io_r_resp_data_2 !== vSRAMTemplate_72_i_io_r_resp_data_2) begin errors++;
+      $display("[%0t] SRAMTemplate_72.io_r_resp_data_2 g=%h i=%h", $time, vSRAMTemplate_72_g_io_r_resp_data_2, vSRAMTemplate_72_i_io_r_resp_data_2); end
+    if (vSRAMTemplate_72_g_io_r_resp_data_3 !== vSRAMTemplate_72_i_io_r_resp_data_3) begin errors++;
+      $display("[%0t] SRAMTemplate_72.io_r_resp_data_3 g=%h i=%h", $time, vSRAMTemplate_72_g_io_r_resp_data_3, vSRAMTemplate_72_i_io_r_resp_data_3); end
+    if (vSRAMTemplate_72_g_boreChildrenBd_bore_rdata !== vSRAMTemplate_72_i_boreChildrenBd_bore_rdata) begin errors++;
+      $display("[%0t] SRAMTemplate_72.boreChildrenBd_bore_rdata g=%h i=%h", $time, vSRAMTemplate_72_g_boreChildrenBd_bore_rdata, vSRAMTemplate_72_i_boreChildrenBd_bore_rdata); end
+  end
+
   initial begin
     if (!$value$plusargs("ncycles=%d", NCYCLES)) NCYCLES = 40000;
     $fsdbDumpfile("novas.fsdb"); $fsdbDumpvars(0, tb);

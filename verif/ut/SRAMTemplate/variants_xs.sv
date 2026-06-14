@@ -38,14 +38,15 @@ module SRAMTemplate_xs(
   xs_SRAMTemplate_core #(
     .SET(128), .WAY(2), .DATA_WIDTH(37), .BORE_AW(8),
     .ENABLE_RESET(1), .ENABLE_HOLDREAD(1),
-    .ENABLE_CLOCKGATE(1), .EXTRA_RESET(0)
+    .ENABLE_CLOCKGATE(1), .EXTRA_RESET(0),
+    .USE_BITMASK(0)
   ) u_core (
     .clock(clock), .reset(reset), .io_extra_reset(1'b0),
     .io_r_req_ready(io_r_req_ready),
     .io_r_req_valid(io_r_req_valid), .io_r_req_bits_setIdx(io_r_req_bits_setIdx),
     .io_r_resp_data({io_r_resp_data_1, io_r_resp_data_0}),
     .io_w_req_valid(io_w_req_valid), .io_w_req_bits_setIdx(io_w_req_bits_setIdx),
-    .io_w_req_bits_data({io_w_req_bits_data_1, io_w_req_bits_data_0}), .io_w_req_bits_waymask(io_w_req_bits_waymask),
+    .io_w_req_bits_data({io_w_req_bits_data_1, io_w_req_bits_data_0}), .io_w_mask(io_w_req_bits_waymask),
     .io_broadcast_ram_hold(io_broadcast_ram_hold),
     .io_broadcast_ram_bypass(io_broadcast_ram_bypass),
     .io_broadcast_ram_bp_clken(io_broadcast_ram_bp_clken),
@@ -110,14 +111,15 @@ module SRAMTemplate_2_xs(
   xs_SRAMTemplate_core #(
     .SET(128), .WAY(2), .DATA_WIDTH(37), .BORE_AW(8),
     .ENABLE_RESET(1), .ENABLE_HOLDREAD(1),
-    .ENABLE_CLOCKGATE(1), .EXTRA_RESET(0)
+    .ENABLE_CLOCKGATE(1), .EXTRA_RESET(0),
+    .USE_BITMASK(0)
   ) u_core (
     .clock(clock), .reset(reset), .io_extra_reset(1'b0),
     .io_r_req_ready(io_r_req_ready),
     .io_r_req_valid(io_r_req_valid), .io_r_req_bits_setIdx(io_r_req_bits_setIdx),
     .io_r_resp_data({io_r_resp_data_1, io_r_resp_data_0}),
     .io_w_req_valid(io_w_req_valid), .io_w_req_bits_setIdx(io_w_req_bits_setIdx),
-    .io_w_req_bits_data({io_w_req_bits_data_1, io_w_req_bits_data_0}), .io_w_req_bits_waymask(io_w_req_bits_waymask),
+    .io_w_req_bits_data({io_w_req_bits_data_1, io_w_req_bits_data_0}), .io_w_mask(io_w_req_bits_waymask),
     .io_broadcast_ram_hold(io_broadcast_ram_hold),
     .io_broadcast_ram_bypass(io_broadcast_ram_bypass),
     .io_broadcast_ram_bp_clken(io_broadcast_ram_bp_clken),
@@ -178,14 +180,15 @@ module SRAMTemplate_4_xs(
   xs_SRAMTemplate_core #(
     .SET(256), .WAY(1), .DATA_WIDTH(66), .BORE_AW(9),
     .ENABLE_RESET(1), .ENABLE_HOLDREAD(1),
-    .ENABLE_CLOCKGATE(0), .EXTRA_RESET(0)
+    .ENABLE_CLOCKGATE(0), .EXTRA_RESET(0),
+    .USE_BITMASK(0)
   ) u_core (
     .clock(clock), .reset(reset), .io_extra_reset(1'b0),
     .io_r_req_ready(/* no ready port */),
     .io_r_req_valid(io_r_req_valid), .io_r_req_bits_setIdx(io_r_req_bits_setIdx),
     .io_r_resp_data(io_r_resp_data_0),
     .io_w_req_valid(io_w_req_valid), .io_w_req_bits_setIdx(io_w_req_bits_setIdx),
-    .io_w_req_bits_data(io_w_req_bits_data_0), .io_w_req_bits_waymask(1'b1),
+    .io_w_req_bits_data(io_w_req_bits_data_0), .io_w_mask(1'b1),
     .io_broadcast_ram_hold(io_broadcast_ram_hold),
     .io_broadcast_ram_bypass(io_broadcast_ram_bypass),
     .io_broadcast_ram_bp_clken(io_broadcast_ram_bp_clken),
@@ -245,14 +248,15 @@ module SRAMTemplate_8_xs(
   xs_SRAMTemplate_core #(
     .SET(256), .WAY(1), .DATA_WIDTH(66), .BORE_AW(9),
     .ENABLE_RESET(1), .ENABLE_HOLDREAD(1),
-    .ENABLE_CLOCKGATE(0), .EXTRA_RESET(0)
+    .ENABLE_CLOCKGATE(0), .EXTRA_RESET(0),
+    .USE_BITMASK(0)
   ) u_core (
     .clock(clock), .reset(reset), .io_extra_reset(1'b0),
     .io_r_req_ready(/* no ready port */),
     .io_r_req_valid(io_r_req_valid), .io_r_req_bits_setIdx(io_r_req_bits_setIdx),
     .io_r_resp_data(io_r_resp_data_0),
     .io_w_req_valid(io_w_req_valid), .io_w_req_bits_setIdx(io_w_req_bits_setIdx),
-    .io_w_req_bits_data(io_w_req_bits_data_0), .io_w_req_bits_waymask(1'b1),
+    .io_w_req_bits_data(io_w_req_bits_data_0), .io_w_mask(1'b1),
     .io_broadcast_ram_hold(io_broadcast_ram_hold),
     .io_broadcast_ram_bypass(io_broadcast_ram_bypass),
     .io_broadcast_ram_bp_clken(io_broadcast_ram_bp_clken),
@@ -312,14 +316,15 @@ module SRAMTemplate_16_xs(
   xs_SRAMTemplate_core #(
     .SET(256), .WAY(1), .DATA_WIDTH(66), .BORE_AW(9),
     .ENABLE_RESET(1), .ENABLE_HOLDREAD(1),
-    .ENABLE_CLOCKGATE(0), .EXTRA_RESET(0)
+    .ENABLE_CLOCKGATE(0), .EXTRA_RESET(0),
+    .USE_BITMASK(0)
   ) u_core (
     .clock(clock), .reset(reset), .io_extra_reset(1'b0),
     .io_r_req_ready(/* no ready port */),
     .io_r_req_valid(io_r_req_valid), .io_r_req_bits_setIdx(io_r_req_bits_setIdx),
     .io_r_resp_data(io_r_resp_data_0),
     .io_w_req_valid(io_w_req_valid), .io_w_req_bits_setIdx(io_w_req_bits_setIdx),
-    .io_w_req_bits_data(io_w_req_bits_data_0), .io_w_req_bits_waymask(1'b1),
+    .io_w_req_bits_data(io_w_req_bits_data_0), .io_w_mask(1'b1),
     .io_broadcast_ram_hold(io_broadcast_ram_hold),
     .io_broadcast_ram_bypass(io_broadcast_ram_bypass),
     .io_broadcast_ram_bp_clken(io_broadcast_ram_bp_clken),
@@ -379,14 +384,15 @@ module SRAMTemplate_32_xs(
   xs_SRAMTemplate_core #(
     .SET(256), .WAY(1), .DATA_WIDTH(66), .BORE_AW(9),
     .ENABLE_RESET(1), .ENABLE_HOLDREAD(1),
-    .ENABLE_CLOCKGATE(0), .EXTRA_RESET(0)
+    .ENABLE_CLOCKGATE(0), .EXTRA_RESET(0),
+    .USE_BITMASK(0)
   ) u_core (
     .clock(clock), .reset(reset), .io_extra_reset(1'b0),
     .io_r_req_ready(/* no ready port */),
     .io_r_req_valid(io_r_req_valid), .io_r_req_bits_setIdx(io_r_req_bits_setIdx),
     .io_r_resp_data(io_r_resp_data_0),
     .io_w_req_valid(io_w_req_valid), .io_w_req_bits_setIdx(io_w_req_bits_setIdx),
-    .io_w_req_bits_data(io_w_req_bits_data_0), .io_w_req_bits_waymask(1'b1),
+    .io_w_req_bits_data(io_w_req_bits_data_0), .io_w_mask(1'b1),
     .io_broadcast_ram_hold(io_broadcast_ram_hold),
     .io_broadcast_ram_bypass(io_broadcast_ram_bypass),
     .io_broadcast_ram_bp_clken(io_broadcast_ram_bp_clken),
@@ -454,14 +460,15 @@ module SRAMTemplate_36_xs(
   xs_SRAMTemplate_core #(
     .SET(512), .WAY(4), .DATA_WIDTH(10), .BORE_AW(10),
     .ENABLE_RESET(1), .ENABLE_HOLDREAD(0),
-    .ENABLE_CLOCKGATE(1), .EXTRA_RESET(0)
+    .ENABLE_CLOCKGATE(1), .EXTRA_RESET(0),
+    .USE_BITMASK(0)
   ) u_core (
     .clock(clock), .reset(reset), .io_extra_reset(1'b0),
     .io_r_req_ready(io_r_req_ready),
     .io_r_req_valid(io_r_req_valid), .io_r_req_bits_setIdx(io_r_req_bits_setIdx),
     .io_r_resp_data({io_r_resp_data_3, io_r_resp_data_2, io_r_resp_data_1, io_r_resp_data_0}),
     .io_w_req_valid(io_w_req_valid), .io_w_req_bits_setIdx(io_w_req_bits_setIdx),
-    .io_w_req_bits_data({io_w_req_bits_data_3, io_w_req_bits_data_2, io_w_req_bits_data_1, io_w_req_bits_data_0}), .io_w_req_bits_waymask(io_w_req_bits_waymask),
+    .io_w_req_bits_data({io_w_req_bits_data_3, io_w_req_bits_data_2, io_w_req_bits_data_1, io_w_req_bits_data_0}), .io_w_mask(io_w_req_bits_waymask),
     .io_broadcast_ram_hold(io_broadcast_ram_hold),
     .io_broadcast_ram_bypass(io_broadcast_ram_bypass),
     .io_broadcast_ram_bp_clken(io_broadcast_ram_bp_clken),
@@ -526,14 +533,15 @@ module SRAMTemplate_45_xs(
   xs_SRAMTemplate_core #(
     .SET(512), .WAY(2), .DATA_WIDTH(12), .BORE_AW(10),
     .ENABLE_RESET(1), .ENABLE_HOLDREAD(1),
-    .ENABLE_CLOCKGATE(1), .EXTRA_RESET(0)
+    .ENABLE_CLOCKGATE(1), .EXTRA_RESET(0),
+    .USE_BITMASK(0)
   ) u_core (
     .clock(clock), .reset(reset), .io_extra_reset(1'b0),
     .io_r_req_ready(io_r_req_ready),
     .io_r_req_valid(io_r_req_valid), .io_r_req_bits_setIdx(io_r_req_bits_setIdx),
     .io_r_resp_data({io_r_resp_data_1, io_r_resp_data_0}),
     .io_w_req_valid(io_w_req_valid), .io_w_req_bits_setIdx(io_w_req_bits_setIdx),
-    .io_w_req_bits_data({io_w_req_bits_data_1, io_w_req_bits_data_0}), .io_w_req_bits_waymask(io_w_req_bits_waymask),
+    .io_w_req_bits_data({io_w_req_bits_data_1, io_w_req_bits_data_0}), .io_w_mask(io_w_req_bits_waymask),
     .io_broadcast_ram_hold(io_broadcast_ram_hold),
     .io_broadcast_ram_bypass(io_broadcast_ram_bypass),
     .io_broadcast_ram_bp_clken(io_broadcast_ram_bp_clken),
@@ -627,14 +635,15 @@ module SRAMTemplate_44_xs(
   xs_SRAMTemplate_core #(
     .SET(256), .WAY(16), .DATA_WIDTH(1), .BORE_AW(9),
     .ENABLE_RESET(1), .ENABLE_HOLDREAD(1),
-    .ENABLE_CLOCKGATE(1), .EXTRA_RESET(1)
+    .ENABLE_CLOCKGATE(1), .EXTRA_RESET(1),
+    .USE_BITMASK(0)
   ) u_core (
     .clock(clock), .reset(reset), .io_extra_reset(extra_reset),
     .io_r_req_ready(io_r_req_ready),
     .io_r_req_valid(io_r_req_valid), .io_r_req_bits_setIdx(io_r_req_bits_setIdx),
     .io_r_resp_data({io_r_resp_data_15, io_r_resp_data_14, io_r_resp_data_13, io_r_resp_data_12, io_r_resp_data_11, io_r_resp_data_10, io_r_resp_data_9, io_r_resp_data_8, io_r_resp_data_7, io_r_resp_data_6, io_r_resp_data_5, io_r_resp_data_4, io_r_resp_data_3, io_r_resp_data_2, io_r_resp_data_1, io_r_resp_data_0}),
     .io_w_req_valid(io_w_req_valid), .io_w_req_bits_setIdx(io_w_req_bits_setIdx),
-    .io_w_req_bits_data({io_w_req_bits_data_15, io_w_req_bits_data_14, io_w_req_bits_data_13, io_w_req_bits_data_12, io_w_req_bits_data_11, io_w_req_bits_data_10, io_w_req_bits_data_9, io_w_req_bits_data_8, io_w_req_bits_data_7, io_w_req_bits_data_6, io_w_req_bits_data_5, io_w_req_bits_data_4, io_w_req_bits_data_3, io_w_req_bits_data_2, io_w_req_bits_data_1, io_w_req_bits_data_0}), .io_w_req_bits_waymask(io_w_req_bits_waymask),
+    .io_w_req_bits_data({io_w_req_bits_data_15, io_w_req_bits_data_14, io_w_req_bits_data_13, io_w_req_bits_data_12, io_w_req_bits_data_11, io_w_req_bits_data_10, io_w_req_bits_data_9, io_w_req_bits_data_8, io_w_req_bits_data_7, io_w_req_bits_data_6, io_w_req_bits_data_5, io_w_req_bits_data_4, io_w_req_bits_data_3, io_w_req_bits_data_2, io_w_req_bits_data_1, io_w_req_bits_data_0}), .io_w_mask(io_w_req_bits_waymask),
     .io_broadcast_ram_hold(io_broadcast_ram_hold),
     .io_broadcast_ram_bypass(io_broadcast_ram_bypass),
     .io_broadcast_ram_bp_clken(io_broadcast_ram_bp_clken),
@@ -653,6 +662,156 @@ module SRAMTemplate_44_xs(
     .ram_wmask(ram_wmask), .ram_wdata(ram_wdata), .ram_rdata(ram_rdata)
   );
   sram_array_1p256x16m1s1h0l1b_bp_tage_us array (
+    .mbist_dft_ram_bypass(ram_bypass), .mbist_dft_ram_bp_clken(ram_bp_clken),
+    .RW0_clk(ram_clk), .RW0_addr(ram_addr), .RW0_en(ram_en), .RW0_wmode(ram_wmode),
+    .RW0_wmask(ram_wmask),
+    .RW0_wdata(ram_wdata), .RW0_rdata(ram_rdata)
+  );
+endmodule
+
+module SRAMTemplate_70_xs(
+  input  clock,
+  input  reset,
+  output io_r_req_ready,
+  input  io_r_req_valid,
+  input  [6:0] io_r_req_bits_setIdx,
+  output [37:0] io_r_resp_data_0,
+  output [37:0] io_r_resp_data_1,
+  input  io_w_req_valid,
+  input  [6:0] io_w_req_bits_setIdx,
+  input  [37:0] io_w_req_bits_data_0,
+  input  [37:0] io_w_req_bits_data_1,
+  input  [75:0] io_w_req_bits_flattened_bitmask,
+  input  io_broadcast_ram_hold,
+  input  io_broadcast_ram_bypass,
+  input  io_broadcast_ram_bp_clken,
+  input  io_broadcast_ram_aux_clk,
+  input  io_broadcast_ram_aux_ckbp,
+  input  io_broadcast_ram_mcp_hold,
+  input  [63:0] io_broadcast_ram_ctl,
+  input  io_broadcast_cgen,
+  input  [7:0] boreChildrenBd_bore_addr,
+  input  [7:0] boreChildrenBd_bore_addr_rd,
+  input  [75:0] boreChildrenBd_bore_wdata,
+  input  [75:0] boreChildrenBd_bore_wmask,
+  input  boreChildrenBd_bore_re,
+  input  boreChildrenBd_bore_we,
+  output [75:0] boreChildrenBd_bore_rdata,
+  input  boreChildrenBd_bore_ack,
+  input  boreChildrenBd_bore_selectedOH,
+  input  [6:0] boreChildrenBd_bore_array
+);
+  wire        ram_clk, ram_bypass, ram_bp_clken, ram_en, ram_wmode;
+  wire [6:0]  ram_addr;
+  wire [75:0]  ram_wmask;
+  wire [75:0] ram_wdata, ram_rdata;
+  xs_SRAMTemplate_core #(
+    .SET(128), .WAY(2), .DATA_WIDTH(38), .BORE_AW(8),
+    .ENABLE_RESET(1), .ENABLE_HOLDREAD(1),
+    .ENABLE_CLOCKGATE(1), .EXTRA_RESET(0),
+    .USE_BITMASK(1)
+  ) u_core (
+    .clock(clock), .reset(reset), .io_extra_reset(1'b0),
+    .io_r_req_ready(io_r_req_ready),
+    .io_r_req_valid(io_r_req_valid), .io_r_req_bits_setIdx(io_r_req_bits_setIdx),
+    .io_r_resp_data({io_r_resp_data_1, io_r_resp_data_0}),
+    .io_w_req_valid(io_w_req_valid), .io_w_req_bits_setIdx(io_w_req_bits_setIdx),
+    .io_w_req_bits_data({io_w_req_bits_data_1, io_w_req_bits_data_0}), .io_w_mask(io_w_req_bits_flattened_bitmask),
+    .io_broadcast_ram_hold(io_broadcast_ram_hold),
+    .io_broadcast_ram_bypass(io_broadcast_ram_bypass),
+    .io_broadcast_ram_bp_clken(io_broadcast_ram_bp_clken),
+    .io_broadcast_cgen(io_broadcast_cgen),
+    .boreChildrenBd_bore_addr(boreChildrenBd_bore_addr),
+    .boreChildrenBd_bore_addr_rd(boreChildrenBd_bore_addr_rd),
+    .boreChildrenBd_bore_wdata(boreChildrenBd_bore_wdata),
+    .boreChildrenBd_bore_wmask(boreChildrenBd_bore_wmask),
+    .boreChildrenBd_bore_re(boreChildrenBd_bore_re),
+    .boreChildrenBd_bore_we(boreChildrenBd_bore_we),
+    .boreChildrenBd_bore_rdata(boreChildrenBd_bore_rdata),
+    .boreChildrenBd_bore_ack(boreChildrenBd_bore_ack),
+    .boreChildrenBd_bore_selectedOH(boreChildrenBd_bore_selectedOH),
+    .ram_clk(ram_clk), .ram_bypass(ram_bypass), .ram_bp_clken(ram_bp_clken),
+    .ram_addr(ram_addr), .ram_en(ram_en), .ram_wmode(ram_wmode),
+    .ram_wmask(ram_wmask), .ram_wdata(ram_wdata), .ram_rdata(ram_rdata)
+  );
+  sram_array_1p128x76m1s1h0l1b_bp_ittage array (
+    .mbist_dft_ram_bypass(ram_bypass), .mbist_dft_ram_bp_clken(ram_bp_clken),
+    .RW0_clk(ram_clk), .RW0_addr(ram_addr), .RW0_en(ram_en), .RW0_wmode(ram_wmode),
+    .RW0_wmask(ram_wmask),
+    .RW0_wdata(ram_wdata), .RW0_rdata(ram_rdata)
+  );
+endmodule
+
+module SRAMTemplate_72_xs(
+  input  clock,
+  input  reset,
+  output io_r_req_ready,
+  input  io_r_req_valid,
+  input  [6:0] io_r_req_bits_setIdx,
+  output [18:0] io_r_resp_data_0,
+  output [18:0] io_r_resp_data_1,
+  output [18:0] io_r_resp_data_2,
+  output [18:0] io_r_resp_data_3,
+  input  io_w_req_valid,
+  input  [6:0] io_w_req_bits_setIdx,
+  input  [18:0] io_w_req_bits_data_0,
+  input  [18:0] io_w_req_bits_data_1,
+  input  [18:0] io_w_req_bits_data_2,
+  input  [18:0] io_w_req_bits_data_3,
+  input  [75:0] io_w_req_bits_flattened_bitmask,
+  input  io_broadcast_ram_hold,
+  input  io_broadcast_ram_bypass,
+  input  io_broadcast_ram_bp_clken,
+  input  io_broadcast_ram_aux_clk,
+  input  io_broadcast_ram_aux_ckbp,
+  input  io_broadcast_ram_mcp_hold,
+  input  [63:0] io_broadcast_ram_ctl,
+  input  io_broadcast_cgen,
+  input  [7:0] boreChildrenBd_bore_addr,
+  input  [7:0] boreChildrenBd_bore_addr_rd,
+  input  [75:0] boreChildrenBd_bore_wdata,
+  input  [75:0] boreChildrenBd_bore_wmask,
+  input  boreChildrenBd_bore_re,
+  input  boreChildrenBd_bore_we,
+  output [75:0] boreChildrenBd_bore_rdata,
+  input  boreChildrenBd_bore_ack,
+  input  boreChildrenBd_bore_selectedOH,
+  input  [6:0] boreChildrenBd_bore_array
+);
+  wire        ram_clk, ram_bypass, ram_bp_clken, ram_en, ram_wmode;
+  wire [6:0]  ram_addr;
+  wire [75:0]  ram_wmask;
+  wire [75:0] ram_wdata, ram_rdata;
+  xs_SRAMTemplate_core #(
+    .SET(128), .WAY(4), .DATA_WIDTH(19), .BORE_AW(8),
+    .ENABLE_RESET(1), .ENABLE_HOLDREAD(1),
+    .ENABLE_CLOCKGATE(1), .EXTRA_RESET(0),
+    .USE_BITMASK(1)
+  ) u_core (
+    .clock(clock), .reset(reset), .io_extra_reset(1'b0),
+    .io_r_req_ready(io_r_req_ready),
+    .io_r_req_valid(io_r_req_valid), .io_r_req_bits_setIdx(io_r_req_bits_setIdx),
+    .io_r_resp_data({io_r_resp_data_3, io_r_resp_data_2, io_r_resp_data_1, io_r_resp_data_0}),
+    .io_w_req_valid(io_w_req_valid), .io_w_req_bits_setIdx(io_w_req_bits_setIdx),
+    .io_w_req_bits_data({io_w_req_bits_data_3, io_w_req_bits_data_2, io_w_req_bits_data_1, io_w_req_bits_data_0}), .io_w_mask(io_w_req_bits_flattened_bitmask),
+    .io_broadcast_ram_hold(io_broadcast_ram_hold),
+    .io_broadcast_ram_bypass(io_broadcast_ram_bypass),
+    .io_broadcast_ram_bp_clken(io_broadcast_ram_bp_clken),
+    .io_broadcast_cgen(io_broadcast_cgen),
+    .boreChildrenBd_bore_addr(boreChildrenBd_bore_addr),
+    .boreChildrenBd_bore_addr_rd(boreChildrenBd_bore_addr_rd),
+    .boreChildrenBd_bore_wdata(boreChildrenBd_bore_wdata),
+    .boreChildrenBd_bore_wmask(boreChildrenBd_bore_wmask),
+    .boreChildrenBd_bore_re(boreChildrenBd_bore_re),
+    .boreChildrenBd_bore_we(boreChildrenBd_bore_we),
+    .boreChildrenBd_bore_rdata(boreChildrenBd_bore_rdata),
+    .boreChildrenBd_bore_ack(boreChildrenBd_bore_ack),
+    .boreChildrenBd_bore_selectedOH(boreChildrenBd_bore_selectedOH),
+    .ram_clk(ram_clk), .ram_bypass(ram_bypass), .ram_bp_clken(ram_bp_clken),
+    .ram_addr(ram_addr), .ram_en(ram_en), .ram_wmode(ram_wmode),
+    .ram_wmask(ram_wmask), .ram_wdata(ram_wdata), .ram_rdata(ram_rdata)
+  );
+  sram_array_1p128x76m1s1h0l1b_bp_ittage array (
     .mbist_dft_ram_bypass(ram_bypass), .mbist_dft_ram_bp_clken(ram_bp_clken),
     .RW0_clk(ram_clk), .RW0_addr(ram_addr), .RW0_en(ram_en), .RW0_wmode(ram_wmode),
     .RW0_wmask(ram_wmask),
