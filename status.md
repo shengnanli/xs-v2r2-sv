@@ -8,12 +8,12 @@
 | # | 模块 | 来源 | Scala行数 | 变体数 | SV | DOC | UT | FM | 备注 |
 |---|------|------|------|------|----|----|----|----|------|
 | 1.1 | WrBypass | frontend/WrBypass.scala | 128 | 5 | ✅ | ✅ | ✅ | ✅ | 样板模块，含 xs_IndexableCAM / xs_PlruReplacer；UT 25万拍0错，FM 5变体全过 |
-| 1.2 | CircularQueuePtr | utility | ~300 | 参数化 | ⬜ | ⬜ | ⬜ | ⬜ | FTQ/IBuffer 指针 |
+| 1.2 | CircularQueuePtr | utility | ~300 | 参数化 | — | — | — | — | 是 Chisel Bundle 类型不生成独立模块，并入使用者(FTQ/IBuffer)随其重写为 SV package |
 | 1.3 | SRAMTemplate | utility/sram | ~1500 | 100+ | ⬜ | ⬜ | ⬜ | ⬜ | 单/双口、ECC、bypass |
 | 1.4 | FoldedSRAMTemplate | utility/sram | ~400 | 24 | ⬜ | ⬜ | ⬜ | ⬜ | TAGE/SC/ITTAGE 用 |
 | 1.5 | SplittedSRAMTemplate | utility/sram | ~300 | 7 | ⬜ | ⬜ | ⬜ | ⬜ | FTB/FTQ 用 |
-| 1.6 | SyncDataModuleTemplate | utility/sram | ~200 | 5 | ⬜ | ⬜ | ⬜ | ⬜ | FTQ 用 |
-| 1.7 | DataModuleTemplate | utility | ~250 | 20+ | ⬜ | ⬜ | ⬜ | ⬜ | FTQ/IBuffer 用 |
+| 1.6 | SyncDataModuleTemplate | utility/sram | ~200 | 9 | ✅ | ✅ | ✅ | ✅ | xs_SyncDataModule，含分bank/扇出复制；9变体全过 |
+| 1.7 | DataModuleTemplate | utility | ~250 | 9 | ✅ | ✅ | ✅ | ✅ | xs_DataModule（内层），随 1.6 一起完成；9变体全过 |
 | 1.8 | PipelineConnect | utility | ~350 | 33+ | ⬜ | ⬜ | ⬜ | ⬜ | 流水级握手连接 |
 
 ## 第 2 阶段：BPU 分支预测（叶子表→预测器→Composer）

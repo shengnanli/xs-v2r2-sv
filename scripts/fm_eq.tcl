@@ -11,6 +11,12 @@ set impl_srcs $env(FM_IMPL_SRCS)
 # 寄存器无观测路径（如被 firtool 裁剪的输出对应的 valids）时不作为比对点
 set_app_var verification_verify_unread_compare_points false
 
+# 合并由同一逻辑驱动的重复寄存器（如分 bank 的读地址扇出复制：每 bank 一份、
+# 输出级一份，值完全相同）。否则两侧各有 N 个同值寄存器，名字（展平 vs generate
+# 层次）和签名（值相同）都无法配对，导致大量 unmatched。FTQ/IFU 等扇出复制
+# 普遍存在，作为通用设置。
+set_app_var verification_merge_duplicated_registers true
+
 # Reference: Chisel 生成的 golden RTL（SYNTHESIS 关掉随机初始化 initial 块）
 read_sverilog -r -define {SYNTHESIS} $ref_srcs
 set_top r:/WORK/$top
