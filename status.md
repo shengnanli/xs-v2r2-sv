@@ -9,7 +9,7 @@
 |---|------|------|------|------|----|----|----|----|------|
 | 1.1 | WrBypass | frontend/WrBypass.scala | 128 | 5 | ✅ | ✅ | ✅ | ✅ | 样板模块，含 xs_IndexableCAM / xs_PlruReplacer；UT 25万拍0错，FM 5变体全过 |
 | 1.2 | CircularQueuePtr | utility | ~300 | 参数化 | — | — | — | — | 是 Chisel Bundle 类型不生成独立模块，并入使用者(FTQ/IBuffer)随其重写为 SV package |
-| 1.3 | SRAMTemplate | utility/sram | ~1500 | 100+ | ⬜ | ⬜ | ⬜ | ⬜ | 单/双口、ECC、bypass |
+| 1.3 | SRAMTemplate | utility/sram | ~1500 | 50 | 🔨 | 🔨 | 🔨 | 🔨 | xs_SRAMTemplate_core；已打通代表变体(128×2×37 单口/reset/holdRead/mbist)UT+FM；SRAM宏/门控当黑盒；其余49变体待生成器批量覆盖 |
 | 1.4 | FoldedSRAMTemplate | utility/sram | ~400 | 24 | ⬜ | ⬜ | ⬜ | ⬜ | TAGE/SC/ITTAGE 用 |
 | 1.5 | SplittedSRAMTemplate | utility/sram | ~300 | 7 | ⬜ | ⬜ | ⬜ | ⬜ | FTB/FTQ 用 |
 | 1.6 | SyncDataModuleTemplate | utility/sram | ~200 | 9 | ✅ | ✅ | ✅ | ✅ | xs_SyncDataModule，含分bank/扇出复制；9变体全过 |
