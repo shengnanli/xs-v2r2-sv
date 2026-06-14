@@ -14,7 +14,7 @@
 | 1.5 | SplittedSRAMTemplate | utility/sram | ~300 | 7 | ⬜ | ⬜ | ⬜ | ⬜ | FTB/FTQ 用 |
 | 1.6 | SyncDataModuleTemplate | utility/sram | ~200 | 9 | ✅ | ✅ | ✅ | ✅ | xs_SyncDataModule，含分bank/扇出复制；9变体全过 |
 | 1.7 | DataModuleTemplate | utility | ~250 | 9 | ✅ | ✅ | ✅ | ✅ | xs_DataModule（内层），随 1.6 一起完成；9变体全过 |
-| 1.8 | PipelineConnect | utility | ~350 | 33+ | ⬜ | ⬜ | ⬜ | ⬜ | 流水级握手连接 |
+| 1.8 | PipelineConnect | backend/datapath | ~80 | 18 | ✅ | ✅ | ✅ | ✅ | xs_PipelineConnect；18变体(11完整握手+7下游恒就绪)全过；新增FM扁平payload字段映射机制 |
 
 ## 第 2 阶段：BPU 分支预测（叶子表→预测器→Composer）
 

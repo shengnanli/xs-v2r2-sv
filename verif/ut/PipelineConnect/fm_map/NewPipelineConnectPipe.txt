@@ -1,0 +1,11 @@
+fuType 347 35
+fuOpType 338 9
+src_0 274 64
+src_1 210 64
+robIdx_flag 209 1
+robIdx_value 201 8
+pdest 193 8
+rfWen 192 1
+perfDebugInfo_enqRsTime 128 64
+perfDebugInfo_selectTime 64 64
+perfDebugInfo_issueTime 0 64

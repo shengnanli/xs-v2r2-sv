@@ -1,0 +1,7 @@
+fuType 89 35
+fuOpType 80 9
+src_0 16 64
+robIdx_flag 15 1
+robIdx_value 7 8
+sqIdx_flag 6 1
+sqIdx_value 0 6

@@ -1,0 +1,16 @@
+fuType 365 35
+fuOpType 356 9
+src_0 292 64
+imm 228 64
+robIdx_flag 227 1
+robIdx_value 219 8
+isFirstIssue 218 1
+pdest 210 8
+rfWen 209 1
+ftqIdx_value 203 6
+ftqOffset 199 4
+sqIdx_flag 198 1
+sqIdx_value 192 6
+perfDebugInfo_enqRsTime 128 64
+perfDebugInfo_selectTime 64 64
+perfDebugInfo_issueTime 0 64
