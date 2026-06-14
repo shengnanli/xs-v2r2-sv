@@ -10,7 +10,8 @@ TB_SRCS = variants_xs.sv tb.sv
 
 FM_VARIANTS = WayLookup
 
-# golden 含 `ifndef SYNTHESIS 的随机初始化/断言；UT 随机激励下定义 SYNTHESIS 关掉
-VCS += +define+SYNTHESIS
-
 include ../../../scripts/ut_common.mk
+
+# golden 含 `ifndef SYNTHESIS 的随机初始化/断言；UT 随机激励下定义 SYNTHESIS 关掉。
+# 必须在 include 之后 append（ut_common.mk 用 := 定义 VCS）。
+VCS += +define+SYNTHESIS
