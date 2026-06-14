@@ -1,3 +1,17 @@
+// =============================================================================
+// SplittedSRAMTemplate 变体包装层（golden 同名，FM/ST 用）
+//
+// 对应 Chisel: utility.sram.SplittedSRAMTemplate —— 把一个逻辑 SRAM 按
+// setSplit×waySplit×dataSplit 拆到多个物理 SRAMTemplate 实例。纯结构层（本变体
+// setSplit=1/dataSplit=1，无自身时序逻辑）。内层 SRAMTemplate 作为已单独验证的
+// 子模块复用（FM 时当黑盒）。
+//
+// 已覆盖变体：
+//   SplittedSRAMTemplate : 逻辑 128set×4way×37b(struct{meta_tag[35:0],code})
+//     waySplit=2 → 2 个 SRAMTemplate(128×2×37, icsh_tag)：
+//       way0,1 → array_0_0_0   way2,3 → array_0_1_0
+//     两套 MBIST bore（bore→inner0, bore_1→inner1）
+// =============================================================================
 module SplittedSRAMTemplate_xs(
   input         clock,
   input         reset,
