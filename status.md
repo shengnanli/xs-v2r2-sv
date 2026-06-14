@@ -91,3 +91,4 @@
 - SRAMTemplate BP变体 _36(bp_ftb)/_45(bp_tage) ✅（主线）— 8变体UT+FM全过
 - IPrefetchPipe ✅（agent，主线核验）— ICache预取3级流水；UT 8万拍0错+FM 901点全过
 - ICacheMainPipe ✅（agent，主线核验）— ICache主流水3级s0/s1/s2；UT 12万拍0错+FM 2793点全过
+- ICacheCtrlUnit (+Queue1) ✅（agent，主线核验）— ECC控制/注入FSM+TileLink寄存器映射；UT 6万拍0错+FM 2模块全过
