@@ -88,3 +88,5 @@
 - InstrMMIOEntry/InstrUncache ✅（主线）— MMIO取指FSM+TileLink路由；UT 6万拍0错，3模块FM全过
 - FTBEntryGen ✅（agent，主线核验）— FTB条目生成纯组合；UT 20万向量0错+FM
 - WayLookup ✅（agent，主线核验）— ICache way查询FIFO；UT 6万拍0错+FM
+- SRAMTemplate BP变体 _36(bp_ftb)/_45(bp_tage) ✅（主线）— 8变体UT+FM全过
+- IPrefetchPipe ✅（agent，主线核验）— ICache预取3级流水；UT 8万拍0错+FM 901点全过
