@@ -93,3 +93,4 @@
 - ICacheMainPipe ✅（agent，主线核验）— ICache主流水3级s0/s1/s2；UT 12万拍0错+FM 2793点全过
 - ICacheCtrlUnit (+Queue1) ✅（agent，主线核验）— ECC控制/注入FSM+TileLink寄存器映射；UT 6万拍0错+FM 2模块全过
 - ICacheMissUnit ✅（agent，主线核验）— miss处理顶层连线+grant通路(19子模块暂用golden:ICacheMSHR×14等)；UT 8万拍0错+FM 2613点全过
+- RAS ✅（agent，主线核验）— 返回地址栈预测器(spec/commit双栈+指针管理+重定向恢复)；UT 4万拍0错+FM 0failing
