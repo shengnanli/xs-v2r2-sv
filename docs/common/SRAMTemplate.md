@@ -42,14 +42,35 @@ MBIST bore 与正常读写的多路复用、送宏的控制/数据生成。
 总宽 `MW = WAY*DATA_WIDTH`。端口名与 golden 一致；SRAM 宏接口以 `ram_*` 暴露，由变体
 wrapper 连到具体宏。
 
-## 4. 已覆盖变体
+## 4. 参数化开关
 
-| golden 模块 | set×way×bit | 宏 | 特性 |
+核 `xs_SRAMTemplate_core` 通过参数适配单端口族的特征差异：
+
+| 参数 | 作用 |
+|------|------|
+| `ENABLE_RESET` | 上电清零 FSM（否则无 FSM，ready 仅看 ~w_valid） |
+| `ENABLE_HOLDREAD` | 读数据保持（否则直接透出宏读数据） |
+| `ENABLE_CLOCKGATE` | 内部 MbistClockGateCell（否则 ram_clk 直连 clock） |
+
+`io_r_req_ready` 是否引出、`io_w_req_bits_waymask` 是否存在、宏是否有 `RW0_wmask`/
+`mbist_dft_ram_bypass` 端口，均由变体 wrapper 按 golden 实际端口处理（生成器自动检测）。
+
+## 5. 已覆盖变体（生成器 scripts/gen_sram_wrappers.py）
+
+ICache 单端口族全部 6 个变体（UT 23.7 万拍 0 错，FM 全 SUCCEEDED）：
+
+| golden 模块 | set×way×bit | 宏 | cg/ready/wmask |
 |------|------|----|------|
-| `SRAMTemplate` | 128×2×37 | `sram_array_1p128x74m37s1h0l1b_icsh_tag` | 单端口, reset清零, holdRead, hasMbist |
+| `SRAMTemplate` / `_2` | 128×2×37 | `..._icsh_tag` | 1/1/1 |
+| `_4` `_8` `_16` `_32` | 256×1×66 | `..._icsh_dat` | 0/0/0 |
 
-> 其余 ~49 个 SRAMTemplate 变体（不同 set/way/位宽、单/双口、有无 holdRead/reset/
-> bitmask、latency）待后续用生成器按本套路批量覆盖。
+生成器从 golden 自动提取 SET/WAY/DATA/BORE_AW 与 reset/hold/clockgate/ready/waymask
+特征、解析宏子模块链（sram_array_*→array_N→array_N_ext），生成 wrapper + _xs + tb +
+依赖 makefile；不支持的形态（多读口/双口/bitmask）会被检测并 SKIP。
+
+> 其余 SRAMTemplate 变体多属后端/L2/DCache/PTW（非前端范围）及双口/多读口/bitmask
+> 族，待对应子系统重写时按族扩展核与生成器。前端 BP 表的 SRAM 经 Folded/Splitted
+> SRAMTemplate 使用，在 1.4/1.5 处理。
 
 ## 5. 验证
 

@@ -18,6 +18,9 @@ module xs_SRAMTemplate_core #(
   parameter int unsigned WAY        = 2,
   parameter int unsigned DATA_WIDTH = 37,   // 每 way 位宽
   parameter int unsigned BORE_AW    = 8,    // MBIST bore 地址位宽（由 MBIST 分组决定）
+  parameter bit          ENABLE_RESET     = 1'b1,  // 上电清零 FSM
+  parameter bit          ENABLE_HOLDREAD  = 1'b1,  // 读数据保持
+  parameter bit          ENABLE_CLOCKGATE = 1'b1,  // 内部时钟门控（否则 ram_clk 直连 clock）
   localparam int unsigned AW = (SET > 1) ? $clog2(SET) : 1,
   localparam int unsigned MW = WAY * DATA_WIDTH   // 宏数据总位宽（无 bitmask）
 )(
@@ -66,10 +69,11 @@ module xs_SRAMTemplate_core #(
 
   // ---- 控制 ----
   logic ren, wckEn, rckEn, finalRamWen;
-  assign io_r_req_ready = ~resetState & ~io_w_req_valid;   // 单端口：写时不接受读
+  // 单端口：写时不接受读；带 reset 时清零期间也不接受读
+  assign io_r_req_ready = (ENABLE_RESET ? ~resetState : 1'b1) & ~io_w_req_valid;
   assign ren         = io_r_req_ready & io_r_req_valid;
   assign wckEn       = boreChildrenBd_bore_ack ? boreChildrenBd_bore_we
-                                               : (io_w_req_valid | resetState);
+                       : (io_w_req_valid | (ENABLE_RESET ? resetState : 1'b0));
   assign rckEn       = boreChildrenBd_bore_ack ? boreChildrenBd_bore_re : ren;
   assign finalRamWen = wckEn & ~io_broadcast_ram_hold;
 
@@ -79,35 +83,54 @@ module xs_SRAMTemplate_core #(
   logic [MW-1:0]  rdata_hold;
   logic [MW-1:0]  rdataReg;       // MBIST 读数据
 
+  generate
+  if (ENABLE_RESET) begin : g_reset
+    always_ff @(posedge clock or posedge reset) begin
+      if (reset) begin
+        resetState <= 1'b1;
+        resetSet   <= '0;
+      end else begin
+        resetState <= ~(resetState & (&resetSet)) & resetState;
+        if (resetState) resetSet <= resetSet + AW'(1);
+      end
+    end
+  end else begin : g_noreset
+    assign resetState = 1'b0;
+    assign resetSet   = '0;
+  end
+  endgenerate
+
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
-      resetState     <= 1'b1;
-      resetSet       <= '0;
       respReg        <= 1'b0;
       rdata_last_REG <= 1'b0;
     end else begin
-      resetState <= ~(resetState & (&resetSet)) & resetState;
-      if (resetState) resetSet <= resetSet + AW'(1);
       respReg        <= rckEn;
       rdata_last_REG <= ren;
     end
   end
 
   always_ff @(posedge clock) begin
-    if (rdata_last_REG) rdata_hold <= ram_rdata;
-    if (respReg)        rdataReg   <= ram_rdata;
+    if (ENABLE_HOLDREAD && rdata_last_REG) rdata_hold <= ram_rdata;
+    if (respReg)                           rdataReg   <= ram_rdata;
   end
 
-  // ---- 时钟门控（通用 DFT 单元，核内例化）----
-  MbistClockGateCell rcg (
-    .clock         (clock),
-    .mbist_writeen (wckEn),
-    .mbist_readen  (rckEn),
-    .mbist_req     (boreChildrenBd_bore_ack),
-    .E             (rckEn | wckEn),
-    .dft_cgen      (io_broadcast_cgen),
-    .out_clock     (ram_clk)
-  );
+  // ---- 时钟门控（通用 DFT 单元，核内例化）；关闭时直连时钟 ----
+  generate
+  if (ENABLE_CLOCKGATE) begin : g_cg
+    MbistClockGateCell rcg (
+      .clock         (clock),
+      .mbist_writeen (wckEn),
+      .mbist_readen  (rckEn),
+      .mbist_req     (boreChildrenBd_bore_ack),
+      .E             (rckEn | wckEn),
+      .dft_cgen      (io_broadcast_cgen),
+      .out_clock     (ram_clk)
+    );
+  end else begin : g_nocg
+    assign ram_clk = clock;
+  end
+  endgenerate
 
   // ---- 送宏的控制/数据 ----
   assign ram_bypass   = io_broadcast_ram_bypass;
@@ -126,7 +149,9 @@ module xs_SRAMTemplate_core #(
                             : (resetState ? '0 : io_w_req_bits_data);
 
   // ---- 输出 ----
-  assign io_r_resp_data = rdata_last_REG ? ram_rdata : rdata_hold;
+  // holdRead：非读拍输出保持上次读值；关闭时直接透出宏读数据
+  assign io_r_resp_data = ENABLE_HOLDREAD ? (rdata_last_REG ? ram_rdata : rdata_hold)
+                                          : ram_rdata;
   assign boreChildrenBd_bore_rdata = rdataReg;
 
 endmodule
