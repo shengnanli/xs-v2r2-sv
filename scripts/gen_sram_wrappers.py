@@ -21,9 +21,13 @@ from pathlib import Path
 XSSV = Path(__file__).resolve().parent.parent
 GOLDEN = XSSV / "golden/chisel-rtl"
 
-# 要覆盖的变体（ICache 单端口族：icsh_tag / icsh_dat）
+# 要覆盖的单端口 SRAMTemplate 变体（generator 自动提参/检测特征/解析宏链；
+# 不支持形态——多读口/双口/bitmask/extra_reset——会被 supported 检测并 SKIP）
+#   ICache：icsh_tag / icsh_dat
+#   BPU 内层（被 Splitted/Folded 包裹）：bp_ftb(_36)、bp_tage(_45)
 VARIANTS = ["SRAMTemplate", "SRAMTemplate_2",
-            "SRAMTemplate_4", "SRAMTemplate_8", "SRAMTemplate_16", "SRAMTemplate_32"]
+            "SRAMTemplate_4", "SRAMTemplate_8", "SRAMTemplate_16", "SRAMTemplate_32",
+            "SRAMTemplate_36", "SRAMTemplate_45"]
 
 
 def read(name):
