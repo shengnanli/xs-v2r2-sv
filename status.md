@@ -94,3 +94,12 @@
 - ICacheCtrlUnit (+Queue1) ✅（agent，主线核验）— ECC控制/注入FSM+TileLink寄存器映射；UT 6万拍0错+FM 2模块全过
 - ICacheMissUnit ✅（agent，主线核验）— miss处理顶层连线+grant通路(19子模块暂用golden:ICacheMSHR×14等)；UT 8万拍0错+FM 2613点全过
 - RAS ✅（agent，主线核验）— 返回地址栈预测器(spec/commit双栈+指针管理+重定向恢复)；UT 4万拍0错+FM 0failing
+
+## 可读重写重置（2026-06，用户指出转写问题后）
+- 标准：docs/REWRITE_STYLE.md（可读优先，struct/enum/数组/注释，禁生成痕迹）
+- 已按可读标准完成(UT+FM双过，主线核验)：
+  - FTBEntryGen + ftb_pkg(共享FTB类型，FTB/FTBBank/FTQ复用)
+  - WayLookup(验证了"严格prompt+范例→agent可达可读标准"的规模化路径)
+- 可读重做进行中(agent)：IPrefetchPipe / ICacheMainPipe / ICacheMissUnit
+- 待重做(转写占位，已过UT+FM)：FauFTB / ICacheCtrlUnit / RAS
+- 核心模块(FTB/FTBBank/IFU/BPU)主线亲自做
