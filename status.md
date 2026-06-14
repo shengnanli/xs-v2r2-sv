@@ -85,3 +85,6 @@
 - PreDecode ✅ / F3Predecoder ✅ / FauFTBWay ✅（均 UT+FM 通过）
 - SplittedSRAMTemplate（base 变体）✅ — Splitted 层，内层 SRAMTemplate 当黑盒，UT+FM 过
 - FauFTB ✅（并行 agent 重写，主线核验）— uFTB 32路全相联，复用 FauFTBWay；UT 4万拍0错+FM SUCCEEDED
+- InstrMMIOEntry/InstrUncache ✅（主线）— MMIO取指FSM+TileLink路由；UT 6万拍0错，3模块FM全过
+- FTBEntryGen ✅（agent，主线核验）— FTB条目生成纯组合；UT 20万向量0错+FM
+- WayLookup ✅（agent，主线核验）— ICache way查询FIFO；UT 6万拍0错+FM
