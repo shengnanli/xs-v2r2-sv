@@ -21,6 +21,7 @@ module xs_SRAMTemplate_core #(
   parameter bit          ENABLE_RESET     = 1'b1,  // 上电清零 FSM
   parameter bit          ENABLE_HOLDREAD  = 1'b1,  // 读数据保持
   parameter bit          ENABLE_CLOCKGATE = 1'b1,  // 内部时钟门控（否则 ram_clk 直连 clock）
+  parameter bit          EXTRA_RESET      = 1'b0,  // 额外复位口（重触发清零 FSM，如 TAGE useful 表）
   localparam int unsigned AW = (SET > 1) ? $clog2(SET) : 1,
   localparam int unsigned MW = WAY * DATA_WIDTH   // 宏数据总位宽（无 bitmask）
 )(
@@ -41,6 +42,7 @@ module xs_SRAMTemplate_core #(
   input  logic                  io_broadcast_ram_bypass,
   input  logic                  io_broadcast_ram_bp_clken,
   input  logic                  io_broadcast_cgen,
+  input  logic                  io_extra_reset,        // EXTRA_RESET=1 时有效，否则接 1'b0
   // MBIST bore
   input  logic [BORE_AW-1:0]    boreChildrenBd_bore_addr,
   input  logic [BORE_AW-1:0]    boreChildrenBd_bore_addr_rd,
@@ -90,7 +92,8 @@ module xs_SRAMTemplate_core #(
         resetState <= 1'b1;
         resetSet   <= '0;
       end else begin
-        resetState <= ~(resetState & (&resetSet)) & resetState;
+        // extra_reset 重触发清零；否则正常推进（清满 SET 个 set 后退出）
+        resetState <= (EXTRA_RESET & io_extra_reset) | (~(resetState & (&resetSet)) & resetState);
         if (resetState) resetSet <= resetSet + AW'(1);
       end
     end

@@ -27,7 +27,7 @@ GOLDEN = XSSV / "golden/chisel-rtl"
 #   BPU 内层（被 Splitted/Folded 包裹）：bp_ftb(_36)、bp_tage(_45)
 VARIANTS = ["SRAMTemplate", "SRAMTemplate_2",
             "SRAMTemplate_4", "SRAMTemplate_8", "SRAMTemplate_16", "SRAMTemplate_32",
-            "SRAMTemplate_36", "SRAMTemplate_45"]
+            "SRAMTemplate_36", "SRAMTemplate_45", "SRAMTemplate_44"]
 
 
 def read(name):
@@ -83,6 +83,7 @@ def analyze(name):
     info["data_w"] = pwidth(ports, "io_r_resp_data_0")
     info["has_ready"] = has_port(ports, "io_r_req_ready")
     info["has_waymask"] = has_port(ports, "io_w_req_bits_waymask")
+    info["extra_reset"] = has_port(ports, "extra_reset")
     info["bore_aw"] = pwidth(ports, "boreChildrenBd_bore_addr")
     info["bore_array_w"] = pwidth(ports, "boreChildrenBd_bore_array")
     info["reset"] = "_resetState" in text
@@ -119,11 +120,13 @@ def emit_wrapper(info, suffix=""):
     wdata_cat = "{" + ", ".join(f"io_w_req_bits_data_{i}" for i in reversed(range(way))) + "}" if way > 1 else "io_w_req_bits_data_0"
     rdy = "io_r_req_ready" if info["has_ready"] else "/* no ready port */"
     wmask = "io_w_req_bits_waymask" if info["has_waymask"] else "1'b1"
+    extra = "extra_reset" if info["extra_reset"] else "1'b0"
     L.append(f"  xs_SRAMTemplate_core #(")
     L.append(f"    .SET({info['set']}), .WAY({way}), .DATA_WIDTH({dw}), .BORE_AW({info['bore_aw']}),")
-    L.append(f"    .ENABLE_RESET({int(info['reset'])}), .ENABLE_HOLDREAD({int(info['hold'])}), .ENABLE_CLOCKGATE({int(info['clockgate'])})")
+    L.append(f"    .ENABLE_RESET({int(info['reset'])}), .ENABLE_HOLDREAD({int(info['hold'])}),")
+    L.append(f"    .ENABLE_CLOCKGATE({int(info['clockgate'])}), .EXTRA_RESET({int(info['extra_reset'])})")
     L.append(f"  ) u_core (")
-    L.append(f"    .clock(clock), .reset(reset),")
+    L.append(f"    .clock(clock), .reset(reset), .io_extra_reset({extra}),")
     L.append(f"    .io_r_req_ready({rdy}),")
     L.append(f"    .io_r_req_valid(io_r_req_valid), .io_r_req_bits_setIdx(io_r_req_bits_setIdx),")
     L.append(f"    .io_r_resp_data({rdata_cat}),")
