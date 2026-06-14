@@ -15,6 +15,8 @@
 // 是有效起点）与 halfPlus1（假设 8 是上一条 RVI 的后半、9 才是起点），最后按前半
 // 是否在 7 处干净结束(validEnd[7]) 选择。如此在中点打断长依赖链，改善时序。
 // =============================================================================
+import xs_predecode_pkg::*;
+
 module xs_PreDecode_core #(
   parameter int unsigned PW   = 16,   // PredictWidth
   parameter int unsigned XLEN = 64
@@ -33,13 +35,7 @@ module xs_PreDecode_core #(
 );
   localparam int unsigned HALF = PW / 2;
 
-  // BrType 编码（与 Chisel object BrType 一致）
-  localparam logic [1:0] BR_NOTCFI = 2'b00, BR_BRANCH = 2'b01,
-                         BR_JAL = 2'b10, BR_JALR = 2'b11;
-
-  function automatic logic is_link(input logic [4:0] r);
-    return (r == 5'd1) || (r == 5'd5);
-  endfunction
+  // 分支类型译码/isCall/isRet/isLink 来自 xs_predecode_pkg（与 F3Predecoder 共享）
 
   // jal 偏移：RVC(C.J) / RVI(JAL) 立即数，符号扩展到 XLEN（显式符号位复制）
   function automatic logic [XLEN-1:0] jal_offset(input logic [31:0] inst, input logic rvc);
@@ -63,48 +59,22 @@ module xs_PreDecode_core #(
     return {{(XLEN-13){sel[12]}}, sel};
   endfunction
 
-  // 分支类型译码（优先级：C.EBREAK→notCFI 高于 C.JALR；其余互斥）
-  function automatic logic [1:0] br_type(input logic [31:0] inst);
-    logic c_ebreak, c_j, c_jalr, c_branch, i_jal, i_jalr, i_branch;
-    c_ebreak = (inst[15:13] == 3'b100) && (inst[11:2] == 10'b0) && (inst[1:0] == 2'b10);
-    c_j      = (inst[15:13] == 3'b101) && (inst[1:0] == 2'b01);
-    c_jalr   = (inst[15:13] == 3'b100) && (inst[6:2] == 5'b0) && (inst[1:0] == 2'b10);
-    c_branch = (inst[15:14] == 2'b11) && (inst[1:0] == 2'b01);
-    i_jal    = (inst[6:0] == 7'b1101111);
-    i_jalr   = (inst[14:12] == 3'b000) && (inst[6:0] == 7'b1100111);
-    i_branch = (inst[6:0] == 7'b1100011);
-    if (c_ebreak)            return BR_NOTCFI;
-    else if (c_j || i_jal)   return BR_JAL;
-    else if (c_jalr || i_jalr) return BR_JALR;
-    else if (c_branch || i_branch) return BR_BRANCH;
-    else                     return BR_NOTCFI;
-  endfunction
-
   // ---- 逐位置：指令、RVC、类型、call/ret、偏移 ----
   logic [PW-1:0]      isRVCv;
-  logic [PW-1:0][1:0] brTypev;
-  logic [PW-1:0]      isCallv, isRetv;
 
   for (genvar i = 0; i < PW; i++) begin : g_dec
     wire [31:0] inst = {io_data[i+1], io_data[i]};
-    wire        rvc  = (inst[1:0] != 2'b11);
-    wire [1:0]  bt   = br_type(inst);
-    wire [4:0]  rd   = rvc ? {4'b0, inst[12]} : inst[11:7];
-    wire [4:0]  rs   = rvc ? (bt == BR_JAL ? 5'b0 : inst[11:7]) : inst[19:15];
-    wire        call = ((bt == BR_JAL && !rvc) || bt == BR_JALR) && is_link(rd);
-    wire        ret  = (bt == BR_JALR) && is_link(rs) && !call;
+    wire        rvc  = xs_is_rvc(inst);
+    wire [1:0]  bt   = xs_br_type(inst);
 
     assign isRVCv[i]   = rvc;
-    assign brTypev[i]  = bt;
-    assign isCallv[i]  = call;
-    assign isRetv[i]   = ret;
     assign instr[i]    = inst;
     assign jumpOffset[i] = (bt == BR_BRANCH) ? br_offset(inst, rvc) : jal_offset(inst, rvc);
 
     assign pd_isRVC[i]  = rvc;
     assign pd_brType[i] = bt;
-    assign pd_isCall[i] = call;
-    assign pd_isRet[i]  = ret;
+    assign pd_isCall[i] = xs_is_call(inst);
+    assign pd_isRet[i]  = xs_is_ret(inst);
   end
 
   // ---- 两段式有效起点/结束边界检测 ----
