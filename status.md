@@ -80,3 +80,6 @@
 - 寄存器命名尽量沿用 Scala 源码信号名（即 golden RTL 的寄存器名），帮助 FM 名字匹配。
 - firtool 会裁剪上层未用的输出端口（如 WrBypass_41 没有 io_hit_data_0_valid），包装层
   按 golden 实际端口写，未用输出悬空。
+
+## 设计模块（无SRAM，已完成）
+- PreDecode ✅ / F3Predecoder ✅ / FauFTBWay ✅（均 UT+FM 通过）
