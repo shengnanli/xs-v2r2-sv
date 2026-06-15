@@ -277,10 +277,19 @@ module tb;
     if (g_io_wayLookupWrite_bits_gpf_isForVSnonLeafPTE !== i_io_wayLookupWrite_bits_gpf_isForVSnonLeafPTE) begin errors++;
       if(errors<=40) $display("[%0t] io_wayLookupWrite_bits_gpf_isForVSnonLeafPTE g=%h i=%h", $time, g_io_wayLookupWrite_bits_gpf_isForVSnonLeafPTE, i_io_wayLookupWrite_bits_gpf_isForVSnonLeafPTE); end
   end
+  // 内部寄存器层次探针：定论 FM 失败点是真 bug 还是不可达假阳性
+  int iperr = 0;
+  always @(posedge clk) if (!rst) begin
+    if (u_g.s0_fire_r !== u_i.u_core.s0_fire_r) begin iperr++;
+      if(iperr<=10) $display("[%0t] INT s0_fire_r g=%b i=%b", $time, u_g.s0_fire_r, u_i.u_core.s0_fire_r); end
+    if (u_g.s1_req_ftqIdx_value !== u_i.u_core.s1_req_ftqIdx_value) begin iperr++;
+      if(iperr<=10) $display("[%0t] INT s1_req_ftqIdx_value g=%h i=%h", $time, u_g.s1_req_ftqIdx_value, u_i.u_core.s1_req_ftqIdx_value); end
+  end
+
   initial begin
     rst = 1; repeat (5) @(posedge clk); rst = 0;
     repeat (NCYCLES) @(posedge clk);
-    $display("checks=%0d errors=%0d", checks, errors);
+    $display("checks=%0d errors=%0d  internal_probe_err=%0d", checks, errors, iperr);
     if (errors == 0 && checks > 1000) $display("TEST PASSED"); else $display("TEST FAILED");
     $finish;
   end
