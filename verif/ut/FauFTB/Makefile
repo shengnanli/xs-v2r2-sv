@@ -6,7 +6,8 @@ GOLDEN_RTL = ../../../golden/chisel-rtl
 # 参数化核（不含 golden 同名模块）：UT 编译 + FM impl 都用。
 #   - FauFTB.sv      : xs_FauFTB_core
 #   - FauFTBWay.sv   : xs_FauFTBWay（FM impl 侧 FauFTBWay 子模块的核；UT 中不被例化）
-RTL_SRCS = $(RTL_DIR)/frontend/FauFTBWay.sv \
+RTL_SRCS = $(RTL_DIR)/frontend/ftb_pkg.sv \
+           $(RTL_DIR)/frontend/FauFTBWay.sv \
            $(RTL_DIR)/frontend/FauFTB.sv
 
 # golden 同名包装层，仅 FM 用（FM impl = RTL_SRCS + WRAPPER_SRCS）：

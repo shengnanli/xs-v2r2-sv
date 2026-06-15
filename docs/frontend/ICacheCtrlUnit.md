@@ -1,82 +1,117 @@
-# ICacheCtrlUnit —— ICache ECC 控制/注入单元
+# ICacheCtrlUnit —— ICache ECC 控制 / 错误注入单元
 
 | | |
 |---|---|
 | 手写 SV | `rtl/frontend/ICacheCtrlUnit.sv`（`xs_ICacheCtrlUnit_core` + `xs_Queue1_RegMapperInput`）+ `rtl/frontend/ICacheCtrlUnit_wrapper.sv`（golden 同名顶层 `ICacheCtrlUnit`）+ `rtl/frontend/Queue1_RegMapperInput_3_wrapper.sv`（golden 同名队列） |
 | Scala 来源 | `src/main/scala/xiangshan/frontend/icache/ICacheCtrlUnit.scala` |
-| 验证状态 | UT ✅（6 万拍 0 错，checks=60000）/ FM ✅（Queue1_RegMapperInput_3 与 ICacheCtrlUnit 均 SUCCEEDED，0 unmatched） |
+| 验证状态 | UT ✅（6 万拍 0 错，checks=60000）/ FM ✅（`Queue1_RegMapperInput_3` 与 `ICacheCtrlUnit` 均 SUCCEEDED） |
 
-## 功能
+## 它是什么、为什么存在
 
-ICacheCtrlUnit 通过一个 **TileLink-UL 寄存器映射（RegMapper）** 总线挂在 ICache 旁，给软件
-提供 ECC 控制与「注错」（error injection）能力，用于诊断/测试 ICache 的 ECC 通路。
+ICache 的 meta / data SRAM 都带 ECC。为了在硅后/仿真里验证「ECC 检错-纠错-上报」整条通路，
+需要能**主动往某个 cacheline 注入 ECC 错误**。ICacheCtrlUnit 就是这个旁路单元：以一条
+**TileLink-UL（uncached lightweight）寄存器总线**挂在 ICache 旁，由 M 模式软件通过读写两个
+MMIO 寄存器来 (1) 开关 ECC、(2) 指定注入地址、(3) 触发一次注入。
 
-它做两件事：
-1. **寄存器读写**：把 A 通道的读/写请求解码成对 3 组寄存器（eccctrl / ecciaddr / iwaymask）
-   的访问，并在 D 通道回 AccessAck/AccessAckData。
-2. **ECC 注入 FSM**：软件写下注入命令后，自动「读 meta → 比较 tag 选 way → 写 meta 或写 data」
-   往指定物理地址注入 ECC 错误。
+```
+软件 ──TileLink A/D──▶ [ RegMapper 寄存器组 ] ──注入命令──▶ 注入 FSM
+                                                              │
+                      io_metaRead  ◀──── 读 meta，选命中路 ───┤
+                      io_metaWrite/io_dataWrite ─ 写"中毒"项 ─▶ ICache SRAM
+```
+
+注入手段是给目标 way 的 meta 或 data 写一条 `poison=1` 的表项：SRAM 写通路会按 poison 故意
+翻坏 ECC 校验位，于是下次正常读到该 line 时 ECC 就会报错。
+
+## 两大功能块
+
+1. **寄存器读写**：把 TileLink A 通道（经一个深度 1 队列）解码成对 2 个寄存器的访问，并在 D 通道
+   回 AccessAck / AccessAckData。
+2. **注入 FSM（`inject_state`）**：软件写下注入命令后，自动「读 meta → 比 tag 选命中路 →
+   写 meta 或写 data 注错」。
 
 ## 寄存器映射
 
-A 通道地址按 8 字节对齐，`index = address[6:3]` 选寄存器；合法寄存器写要求字节掩码全 1
-（`&mask`）。本配置只用到 index 0 / 1（`index[3:1]==0` 判定为低寄存器区）。
+A 通道地址按 8 字节对齐，`index = address[6:3]` 选寄存器。合法寄存器**写**要求字节掩码全 1
+（`&mask`，字段须被完整覆盖）；**读**只要任一字节使能即可。本配置只用到 index 0 / 1
+（`index[3:1]==0` 判为低寄存器区）。
 
-| index | 寄存器 | 写 | 读回（D 通道 data） |
-|-------|--------|----|---------------------|
-| 0 | **eccctrl** | `data[0]`→enable、`data[1]`→注入使能、`data[3:2]`→itarget | `{…, ierror[2:0], istatus[2:0], itarget[1:0], 1'b0, enable}` |
-| 1 | **ecciaddr** | `data[47:0]`→注入物理地址 paddr | `{16'h0, paddr[47:0]}` |
-| 其它 | — | — | 0 |
+| index | 寄存器 | 写语义 | 读回（D 通道 data） |
+|-------|--------|--------|---------------------|
+| 0(偶) | **eccctrl**  | `data[0]`→enable、`data[1]`→inject(触发)、`data[3:2]`→itarget | `{ierror[2:0], istatus[2:0], itarget[1:0], 1'b0, enable}` |
+| 1(奇) | **ecciaddr** | `data[47:0]`→注入物理地址 | `{16'h0, paddr[47:0]}` |
+| 其它  | —            | —      | 0 |
 
-eccctrl 内部字段：
+eccctrl 内部字段（手写 SV 里用有含义命名 + `typedef enum`，不照抄 golden 的 `eccctrl_*`）：
 
-- `enable`：ECC 检查总开关（复位值 1），驱动 `io_ecc_enable`。
-- `itarget[1:0]`：注入目标，`0`=注 meta（tag），`2`=注 data；其余为非法。
-- `istatus[2:0]`：`0`=idle，`1`=working（正在注入，驱动 `io_injecting`），`2`=injected（注入完成），`7`=error（命令非法/不注入即结束）。
-- `ierror[2:0]`：`0`=无错，`1`=参数非法（itarget 非法），`2`=未命中（选 way 没命中）。
+| 字段（SV 名） | 含义 | 编码（enum） |
+|---------------|------|--------------|
+| `ecc_enable`        | ECC 检查总开关（复位 1），驱动 `io_ecc_enable` | 1 bit |
+| `ecc_inject_target` | 注入目标阵列 | `INJ_TARGET_META=0` / `INJ_TARGET_DATA=2`（1/3 非法） |
+| `ecc_inject_status` | 注入业务状态（软件可见） | `IDLE=0` / `WORKING=1`（驱动 `io_injecting`）/ `INJECTED=2` / `ERROR=7` |
+| `ecc_inject_error`  | 失败原因（istatus==ERROR 时有效） | `NOT_ENABLED=0` / `TARGET_INVAL=1` / `NOT_FOUND=2` |
 
-ecciaddr_paddr 字段切分：`paddr[13:6]`→vSetIdx、`paddr[47:12]`→phyTag、`paddr[6]`→bankIdx。
+注入地址字段切分（与 ICache `get_idx/get_tag` 一致）：
+`vSetIdx=paddr[13:6]`、`phyTag=paddr[47:12]`、`bankIdx=paddr[6]`。
 
-读 eccctrl 且 istatus 处于完成态（2 或 7）时，该读动作会顺带清状态/错误，回到 idle。
+**读副作用**：读 eccctrl 且 istatus 处于完成态（INJECTED 或 ERROR）时，该读动作顺带把
+istatus 清回 IDLE、ierror 清回 NOT_ENABLED（对应 Scala `RegReadFn` 的 `ready` 回调）。
+`inject` 是 write-only 触发位，读恒 0。`istatus`/`ierror` 是 read-only，软件写被忽略。
 
-## 注入 FSM（istate）
+## 注入 FSM（`inject_state`）
 
-软件向 eccctrl 写「注入使能=1 且 istatus 当前为 idle」即下发命令；若 `data[0]=1` 且 itarget
-合法，istatus 进 working，istate FSM 启动：
+软件向 eccctrl 写「`inject=1` 且当前 istatus==IDLE」即下发命令（重复触发被忽略）：
+- `enable=0` → 立即 ERROR / NOT_ENABLED（没开 ECC 不让注）；
+- `itarget` 非法 → 立即 ERROR / TARGET_INVAL；
+- 否则 → istatus 进 WORKING，启动 FSM。
 
-| istate | 行为 |
-|--------|------|
-| INJ_IDLE(0) | istatus==working 时 → INJ_READ |
-| INJ_READ(1) | 发 `io_metaRead`（vSetIdx=paddr[13:6]）；握手 → INJ_SELECT |
-| INJ_SELECT(2) | 用 metaReadResp 的 entryValid & tag 比 paddr[47:12] 选命中 way（waymask）；锁存 iwaymask。命中：itarget==0→INJ_WMETA，否则→INJ_WDATA；未命中：→IDLE 且 istatus=error、ierror=miss |
-| INJ_WMETA(3) | 发 `io_metaWrite`（phyTag/waymask/bankIdx）；握手 → IDLE，istatus=injected |
-| INJ_WDATA(4) | 发 `io_dataWrite`（virIdx/waymask）；握手 → IDLE，istatus=injected |
+注意 `istatus`（软件接口语义）与内部微状态机 `inject_state` 是两层：WORKING 期间 FSM 还会
+走 read / select / write 几个微步。
 
-ierror 在命令下发时按「itarget 非法→param、读清→none、select 未命中→miss」更新。
+| inject_state | 行为 |
+|--------------|------|
+| `S_IDLE`(0)       | istatus==WORKING 时 → `S_READ_META` |
+| `S_READ_META`(1)  | 发 `io_metaRead`（vSetIdx=paddr[13:6]）；握手 → `S_SELECT_WAY` |
+| `S_SELECT_WAY`(2) | 用 metaReadResp 的 `entryValid & tag==phyTag` 选命中路 `hit_waymask`，锁存到 `inject_waymask`。命中：itarget==META→`S_WRITE_META`，否则→`S_WRITE_DATA`；未命中：→`S_IDLE` 且 istatus=ERROR、ierror=NOT_FOUND |
+| `S_WRITE_META`(3) | 发 `io_metaWrite`（phyTag/waymask/bankIdx，poison）；握手 → `S_IDLE`，istatus=INJECTED |
+| `S_WRITE_DATA`(4) | 发 `io_dataWrite`（virIdx/waymask，poison）；握手 → `S_IDLE`，istatus=INJECTED |
 
-## 结构
+## 结构与可读性
 
-- **xs_ICacheCtrlUnit_core**：寄存器组 + 注入 FSM + D 通道读数据组合逻辑。
-  寄存器名沿用 golden（`eccctrl_*`/`ecciaddr_paddr`/`iwaymask`/`istate`）。
-- **xs_Queue1_RegMapperInput**：深度 1 的 skid buffer（`full` + 82 位打包 `ram`），
-  把 A 通道请求（read/index/data/mask/source/size）缓存一拍后送核心，并提供 D 通道的
-  valid/source/size 反压。
-- **ICacheCtrlUnit（wrapper）**：在顶层例化队列 + 核心，完成 TileLink A/D 对接：
-  A 通道 `opcode==4'h4`(Get) 判读、`address[6:3]` 取 index 入队；
-  D 通道 `valid=队列有响应`、`opcode={3'h0, read}`。
+- **xs_ICacheCtrlUnit_core**：从 Scala 设计意图重写——
+  - 用 `typedef enum` 表达 istatus / ierror / itarget / inject_state 四组编码（带有含义状态名），
+    取代 golden 的 `3'h1/3'h7` 魔数与 `_GEN_*` 临时名；
+  - 寄存器/信号用领域命名（`ecc_enable` / `ecc_inject_paddr` / `inject_waymask` / `hit_waymask` /
+    `inject_cmd` / `read_eccctrl_clears` 等），不照抄 golden 的 `eccctrl_*` / `out_backMask` / `keep_ierror`；
+  - 用 `logic` + `always_ff` / `always_comb`，按「寄存器更新 / 注入 FSM / D 通道读数据」分节，
+    每节注释讲「为什么」（RegMapper valid/ready 语义、ierror 优先级、未列状态保持等）。
+- **xs_Queue1_RegMapperInput**：深度 1 skid buffer，槽内字段用 `typedef struct packed`（read/index/
+  data/mask/source/size）而非裸位打包，可读地表达 RegMapper 在 A→D 间打一拍解耦的意图。
+- **ICacheCtrlUnit（wrapper）**：机械端口适配——例化队列 + 核心，完成 TileLink A/D 对接：
+  A 通道 `opcode==4'h4`(Get) 判读、`address[6:3]` 取 index 入队；D 通道 `valid=队列有响应`、
+  `opcode={3'h0, read}`（AccessAck / AccessAckData）。
 
 ## 验证
 
 - **UT**：golden `ICacheCtrlUnit` vs `ICacheCtrlUnit_xs` 双例化，复位后逐拍比对全部 19 个输出。
   随机激励覆盖：A 通道随机读/写请求（opcode 偏 Put/Get、index 偏 0/1 偶发越界、mask 偏全 1）、
   D 通道随机背压、meta/data 读写 ready 随机、metaReadResp 的 ptag 压缩值域以提高注入命中率。
-  6 万拍 0 错。
-- **FM**：`Queue1_RegMapperInput_3`（167 点）与 `ICacheCtrlUnit`（287 点）均 SUCCEEDED，
-  全部按名配对、0 unmatched，无需 fm_map（寄存器名沿用 golden）。
-  注：核心里 ierror/istatus、itarget/enable、ecciaddr、iwaymask、istate 各自拆成独立
-  `always_ff`，结构对齐 golden 的分块条件赋值，避免 FM 把部分位判不等价。
+  60000 拍、0 错。
+- **FM**：`Queue1_RegMapperInput_3` 与 `ICacheCtrlUnit` 均 SUCCEEDED，全部 compare point 按
+  **签名分析 / 名字**配对（158 by name + 129 by signature），0 unmatched、0 failing，无需 fm_map。
+
+### 重写过程中暴露/规避的两个坑（均为真因，已对齐 golden 语义）
+
+1. **D 通道读数据的 X 悲观**：队列空槽时 `req_index` 为 X，golden 用三目 `index[3:1]==0 ? … : 0`
+   会把 X 透传进 `auto_in_d_bits_data`（此时 D.valid=0，数据本无意义）。最初写成 `always_comb`
+   的 `if/else` 会把 X 当 false → 输出 0，与 golden 不符（UT 报 3 处假阳性）。改用连续赋值三目
+   令 X 同样透传，UT 即干净。属 golden X 悲观，非真 bug。
+2. **注入 FSM 未列状态须"保持"**：golden 对 istate 的 5..7（不可达）无 else 分支即保持原值。
+   若手写 FSM 用 `default: <= S_IDLE`，FM 会在这些 don't-care 状态判 `inject_state_reg[2:0]`
+   不等价（3 个失败点）。改成 `default: ;`（保持）后 FM 全过。UT 不暴露（这些状态不可达），
+   靠 FM 兜底。
 
 ## 未改动
 
-未修改 `scripts/fm_eq.tcl`、`scripts/ut_common.mk` 及其它模块；本模块 FM 通用脚本即可通过，
-无需改 fm_eq.tcl。
+仅改动 ICacheCtrlUnit 相关文件（核心 / 两个 wrapper / 本文档 / verif 下的 variants/tb 端口适配）。
+未修改 `scripts/fm_eq.tcl`、`scripts/ut_common.mk` 及其它模块；通用 FM 脚本即可通过。
