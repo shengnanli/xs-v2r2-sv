@@ -103,3 +103,10 @@
 - 可读重做进行中(agent)：IPrefetchPipe / ICacheMainPipe / ICacheMissUnit
 - 待重做(转写占位，已过UT+FM)：FauFTB / ICacheCtrlUnit / RAS
 - 核心模块(FTB/FTBBank/IFU/BPU)主线亲自做
+
+## 可读重做批次2完成（2026-06，主线逐个核验入库）
+- FauFTB ✅(UT 4万拍+FM) · ICacheCtrlUnit ✅(+Queue1, UT 6万拍+FM)
+- ICacheMissUnit ✅(UT 8万拍+探针, FM假阳性已探针证伪)
+- RAS(RASStack) ✅(UT 6万拍×4seed + FM完全干净, agent修4个真bug)
+- 新增 docs/FRONTEND_OVERVIEW.md 学习总览
+- 仍运行: SRAM Splitted/Folded 结构层(解阻塞 FTB/FTBBank/BPU表)
