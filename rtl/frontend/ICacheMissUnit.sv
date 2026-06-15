@@ -1,29 +1,130 @@
 // =============================================================================
-// ICacheMissUnit —— ICache Miss 处理单元（顶层结构 + grant 数据通路）
+// xs_ICacheMissUnit —— ICache Miss 处理单元（MSHR 管理 + TileLink 取指 + refill 回填）
 //
-// 香山 V2R2 ICacheMissUnit 的手工可读重写（核：xs_ICacheMissUnit_core）。
+// 对应 Chisel: xiangshan.frontend.icache.ICacheMissUnit（ICacheMissUnit.scala）
 //
-// 结构（参见 Scala ICacheMissUnit.scala 顶部 ASCII 图）：
-//   fetch_req    --> fetchDemux    --> 4 个 fetch  MSHR  --\
-//   prefetch_req --> prefetchDemux --> 10 个 prefetch MSHR -> prefetchArb --\
-//                                                                            +-> acquireArb --> mem_acquire
-//   - fetch  MSHR 优先级高于 prefetch；fetch 间低 index 优先。
-//   - prefetch MSHR 由 priorityFIFO 记录入队顺序，按序发射（prefetchArb 选择）。
-//   - 各 MSHR 的 lookUps 用于去重：命中则 req 不再入队（fetchHit/prefetchHit）。
+// 【它在前端的位置】
+//   ICache 取指流水（MainPipe）在 s2 查 meta SRAM 后若 miss，把缺失的 cacheline
+//   请求交给本单元；IPrefetch 流水也会下发预取请求。本单元负责：
+//     1) 用 MSHR（Miss Status Holding Register）登记在途 miss，去重；
+//     2) 经 TileLink A 通道向 L2 发 Get 取整条 cacheline；
+//     3) 在 TileLink D 通道收 grant（分 refillCycles=2 个 beat 拼成 512b）；
+//     4) refill 完成后把数据 + tag 写回 meta/data SRAM，并把命中结果回送 MainPipe
+//        （fetch_resp），同时给 WayLookup 发 update（在外层 ICache 顶层连线）。
 //
-// 子模块沿用 golden（DeMultiplexer / DeMultiplexer_1 / MuxBundle /
-// Arbiter5_MSHRAcquire / ICacheMSHR* / FIFOReg），本模块只重写顶层连线与
-// TileLink D 通道（grant）的 cacheline 收集 + SRAM 写 + fetch 响应数据通路。
+//        fetch_req    ─▶ fetchDemux    ─▶ [4 个 fetch MSHR] ───┐
+//                                                              ├─▶ acquireArb ─▶ mem_acquire(A)
+//        prefetch_req ─▶ prefetchDemux ─▶ [10 个 prefetch MSHR]┘   (fetch 优先)
+//                                            ▲ priorityFIFO 记录预取入队顺序，按序发射
 //
-// 端口与寄存器名沿用 golden，便于 Formality 按名 / 展平规则配对。
+//        mem_grant(D) ─▶ 拼 beat ─▶ respDataReg(512b) ─▶ 写 SRAM + fetch_resp
+//
+// 【MSHR 是什么、为什么 14 个】
+//   每个 MSHR 是一条在途 miss 的状态寄存器：记 {有效, 已发射, 被冲刷, blkPaddr,
+//   vSetIdx, way}。共 nFetchMshr=4 + nPrefetchMshr=10 = 14 个，source id 0..13
+//   就是 TileLink A 的 source（L2 grant 回来按 source 找回是哪条 MSHR）。
+//   - fetch MSHR 优先级高于 prefetch（取指比预取急）；
+//   - fetch MSHR 间 lower index 优先；
+//   - prefetch MSHR 按「进入 MSHR 的先后」发射（用 priorityFIFO 记录顺序）。
+//
+// 【去重（lookUp）】
+//   新 req 进来前，先拿它的 {blkPaddr,vSetIdx} 和所有 14 个 MSHR 比对：若已有在途
+//   MSHR 命中（同一条 line 正在被取），就不再新开 MSHR，直接吞掉该 req（fetchHit /
+//   prefetchHit）。额外地，若预取 req 与本拍 fetch req 撞同一条 line，预取也算命中
+//   （prefetchHitFetchReq）——让 fetch 去取，预取不必重复。
+//
+// 【flush / fencei 的差异】
+//   - io_fencei（FENCE.I 清 I$）：作用于全部 14 个 MSHR。
+//   - io_flush（重定向冲刷）：只作用于 10 个 prefetch MSHR；fetch MSHR 不响应 flush
+//     （取指 miss 已在途，结果仍要回填，避免反复 miss）。
+//   被 flush/fencei 标记后：未发射的 MSHR 立即失效；已发射的等 L2 grant 回来才失效
+//     （不能丢弃已经发出去的 TileLink 事务，否则 source 泄漏 / 协议违例）。
+//
+// 【corrupt（数据损坏）】
+//   D 通道任一 beat 置 corrupt，则整条响应标记 corrupt：照常回送 MainPipe（修时序），
+//   但不写 SRAM（write_sram_valid 含 ~corrupt）。
+//
+// 【为什么 flush/fencei 时仍发 fetch_resp】
+//   见 Scala 注释：让 io_flush → s2_miss → s2_ready → ftq ready 这条路尽快放行（时序）。
+//   下游 MainPipe/WayLookup 自己的 sx_valid 已被 flush 清掉，会丢弃这次无用响应。
+//   但绝不能在 flush/fencei 时写 SRAM（write_sram_valid 额外 & ~flush & ~fencei）。
+//
+// 本模块为自包含可读实现：MSHR 用 struct 数组 + genvar 表达 14 个；仲裁/demux/FIFO
+// 用清晰组合逻辑与纯函数，不例化 golden 网表子模块。
 // =============================================================================
-module xs_ICacheMissUnit_core (
+package xs_icache_miss_pkg;
+  // ---- 容量/位宽参数（KunminghuV2 ICache）----
+  localparam int unsigned N_FETCH_MSHR    = 4;   // nFetchMshr
+  localparam int unsigned N_PREFETCH_MSHR = 10;  // nPrefetchMshr
+  localparam int unsigned N_MSHR          = N_FETCH_MSHR + N_PREFETCH_MSHR; // 14
+  localparam int unsigned SRC_W           = 4;   // log2(16)，TileLink source / MSHR id 宽
+  // 数组按 2 的幂开槽（16），让「4-bit source/id 变量索引」永不越界——既避免仿真 X，
+  // 也消除 Formality 的 index-out-of-bound 告警；多出的槽位（14、15）恒不被写也不被读。
+  localparam int unsigned N_MSHR_SLOTS    = 16;
+
+  localparam int unsigned BLK_PADDR_W = 42;  // PAddrBits-blockOffBits = 48-6
+  localparam int unsigned IDX_BITS    = 8;   // vSetIdx 宽
+  localparam int unsigned WAY_BITS    = 2;   // log2(nWays=4)
+  localparam int unsigned N_WAYS      = 4;   // nWays，waymask 宽
+  localparam int unsigned TAG_BITS    = 36;  // 物理 tag = blkPaddr[41:6]
+  localparam int unsigned PADDR_W     = 48;  // PAddrBits，mem_acquire 地址宽
+  localparam int unsigned BLK_OFF     = 6;   // log2(blockBytes=64)
+
+  localparam int unsigned REFILL_CYCLES = 2;    // 512b cacheline / 256b beat = 2 个 beat
+  localparam int unsigned BEAT_BITS     = 256;  // beatBits
+  localparam int unsigned BLOCK_BITS    = 512;  // blockBits
+  localparam int unsigned BEAT_CNT_W    = 1;    // log2up(REFILL_CYCLES)
+
+  // TileLink Get 编码：opcode=4（Get），size=log2(64)=6
+  localparam logic [2:0] TL_GET_OPCODE  = 3'd4;
+  localparam logic [3:0] TL_GET_SIZE    = 4'd6;
+
+  // ---- 一条 miss 请求（fetch / prefetch 共用）----
+  typedef struct packed {
+    logic [BLK_PADDR_W-1:0] blkPaddr;  // 块物理地址（去块内偏移）
+    logic [IDX_BITS-1:0]    vSetIdx;   // 虚拟组索引
+  } miss_req_t;
+
+  // ---- 一个 MSHR entry ----
+  //   valid   : 该 MSHR 占用，登记着一条在途 miss
+  //   issued  : 对应 TileLink Get 已成功发出（等 L2 grant）
+  //   killed  : 被 flush/fencei 标记（对应 Scala 的 flush||fencei 合并语义）；
+  //             killed 后该 MSHR 不再对外 lookUp 命中、不再发 resp，
+  //             但若已 issued 仍需保留 valid 直到 grant 回来才回收
+  typedef struct packed {
+    logic                   valid;
+    logic                   issued;
+    logic                   killed;
+    logic [BLK_PADDR_W-1:0] blkPaddr;
+    logic [IDX_BITS-1:0]    vSetIdx;
+    logic [WAY_BITS-1:0]    way;       // acquire 发射时锁存的 victim way
+  } mshr_t;
+
+  // 物理 tag 提取：blkPaddr 去块内偏移后即整 blkPaddr（已是块地址），取高 TAG_BITS 位
+  function automatic logic [TAG_BITS-1:0] get_phy_tag(input logic [BLK_PADDR_W-1:0] blk);
+    return blk[BLK_PADDR_W-1 : (BLK_PADDR_W-TAG_BITS)];  // [41:6]
+  endfunction
+
+  // victim way（2b）→ one-hot waymask（4b）
+  function automatic logic [N_WAYS-1:0] way_to_mask(input logic [WAY_BITS-1:0] w);
+    return (N_WAYS'(1) << w);
+  endfunction
+endpackage
+
+
+module xs_ICacheMissUnit
+  import xs_icache_miss_pkg::*;
+(
   input          clock,
   input          reset,
-  input          io_fencei,
-  input          io_flush,
-  input          io_wfi_wfiReq,
-  output         io_wfi_wfiSafe,
+
+  // ---- 控制 ----
+  input          io_fencei,       // FENCE.I：清全部 MSHR
+  input          io_flush,        // 重定向冲刷：仅清 prefetch MSHR
+  input          io_wfi_wfiReq,   // 请求进入 WFI（暂停发射新 acquire）
+  output         io_wfi_wfiSafe,  // 无在途 L2 响应，可安全进入 WFI
+
+  // ---- fetch 通道（← MainPipe），req:Decoupled / resp:Valid ----
   output         io_fetch_req_ready,
   input          io_fetch_req_valid,
   input  [41:0]  io_fetch_req_bits_blkPaddr,
@@ -34,10 +135,14 @@ module xs_ICacheMissUnit_core (
   output [3:0]   io_fetch_resp_bits_waymask,
   output [511:0] io_fetch_resp_bits_data,
   output         io_fetch_resp_bits_corrupt,
+
+  // ---- prefetch 通道（← IPrefetch），req:Decoupled ----
   output         io_prefetch_req_ready,
   input          io_prefetch_req_valid,
   input  [41:0]  io_prefetch_req_bits_blkPaddr,
   input  [7:0]   io_prefetch_req_bits_vSetIdx,
+
+  // ---- meta / data SRAM 写口（refill 回填），Decoupled（下游恒 ready）----
   output         io_meta_write_valid,
   output [7:0]   io_meta_write_bits_virIdx,
   output [35:0]  io_meta_write_bits_phyTag,
@@ -47,9 +152,13 @@ module xs_ICacheMissUnit_core (
   output [7:0]   io_data_write_bits_virIdx,
   output [511:0] io_data_write_bits_data,
   output [3:0]   io_data_write_bits_waymask,
+
+  // ---- victim way（→/← replacer）：发 acquire 时索要 victim，下拍由 io_victim_way 返回 ----
   output         io_victim_vSetIdx_valid,
   output [7:0]   io_victim_vSetIdx_bits,
   input  [1:0]   io_victim_way,
+
+  // ---- TileLink A（acquire，发 Get）/ D（grant，收数据）----
   input          io_mem_acquire_ready,
   output         io_mem_acquire_valid,
   output [3:0]   io_mem_acquire_bits_source,
@@ -62,660 +171,440 @@ module xs_ICacheMissUnit_core (
   input          io_mem_grant_bits_corrupt
 );
 
-  // 共 14 个 MSHR：0..3 为 fetch，4..13 为 prefetch。
-  localparam int N_FETCH    = 4;
-  localparam int N_PREFETCH = 10;
+  // ===========================================================================
+  // 输入打包成 struct
+  // ===========================================================================
+  miss_req_t fetch_req, prefetch_req;
+  assign fetch_req.blkPaddr    = io_fetch_req_bits_blkPaddr;
+  assign fetch_req.vSetIdx     = io_fetch_req_bits_vSetIdx;
+  assign prefetch_req.blkPaddr = io_prefetch_req_bits_blkPaddr;
+  assign prefetch_req.vSetIdx  = io_prefetch_req_bits_vSetIdx;
 
-  // ---------------------------------------------------------------------------
-  // 子模块互连线网
-  // ---------------------------------------------------------------------------
-  // fetchDemux：1 路 fetch req 分发到 4 个 fetch MSHR
-  wire        fetchDemux_in_ready;
-  wire        fetchDemux_out_valid    [N_FETCH];
-  wire [41:0] fetchDemux_out_blkPaddr [N_FETCH];
-  wire [7:0]  fetchDemux_out_vSetIdx  [N_FETCH];
+  // ===========================================================================
+  // MSHR 状态数组（14 个）
+  //   索引 0..3       = fetch MSHR（source id 0..3）
+  //   索引 4..13      = prefetch MSHR（source id 4..13）
+  // ===========================================================================
+  mshr_t mshr [N_MSHR_SLOTS];
 
-  // prefetchDemux：1 路 prefetch req 分发到 10 个 prefetch MSHR
-  wire        prefetchDemux_in_ready;
-  wire        prefetchDemux_out_valid    [N_PREFETCH];
-  wire [41:0] prefetchDemux_out_blkPaddr [N_PREFETCH];
-  wire [7:0]  prefetchDemux_out_vSetIdx  [N_PREFETCH];
-  wire [3:0]  prefetchDemux_chosen;
+  // 每个 MSHR 是否「响应 flush」：fetch 不响应，prefetch 响应（见模块头）
+  function automatic bit mshr_obeys_flush(input int idx);
+    return idx >= int'(N_FETCH_MSHR);
+  endfunction
 
-  // fetch MSHR 输出
-  wire        fetchMSHR_wfiSafe   [N_FETCH];
-  wire        fetchMSHR_req_ready [N_FETCH];
-  wire        fetchMSHR_acq_valid [N_FETCH];
-  wire [47:0] fetchMSHR_acq_addr  [N_FETCH];
-  wire [7:0]  fetchMSHR_acq_vSet  [N_FETCH];
-  wire        fetchMSHR_lk0_hit   [N_FETCH];
-  wire        fetchMSHR_lk1_hit   [N_FETCH];
-  wire        fetchMSHR_resp_valid    [N_FETCH];
-  wire [41:0] fetchMSHR_resp_blkPaddr [N_FETCH];
-  wire [7:0]  fetchMSHR_resp_vSetIdx  [N_FETCH];
-  wire [1:0]  fetchMSHR_resp_way      [N_FETCH];
+  // ===========================================================================
+  // 去重 lookUp：把 fetch_req / prefetch_req 与每个有效 MSHR 比对
+  //   killed 的 MSHR 不再命中（其 line 即将作废，应允许重新发起）
+  // ===========================================================================
+  function automatic bit mshr_lookup_hit(input mshr_t m, input miss_req_t q);
+    return m.valid && !m.killed &&
+           (m.vSetIdx == q.vSetIdx) && (m.blkPaddr == q.blkPaddr);
+  endfunction
 
-  // prefetch MSHR 输出
-  wire        prefetchMSHR_wfiSafe   [N_PREFETCH];
-  wire        prefetchMSHR_req_ready [N_PREFETCH];
-  wire        prefetchMSHR_acq_valid [N_PREFETCH];
-  wire [47:0] prefetchMSHR_acq_addr  [N_PREFETCH];
-  wire [7:0]  prefetchMSHR_acq_vSet  [N_PREFETCH];
-  wire        prefetchMSHR_lk0_hit   [N_PREFETCH];
-  wire        prefetchMSHR_lk1_hit   [N_PREFETCH];
-  wire        prefetchMSHR_resp_valid    [N_PREFETCH];
-  wire [41:0] prefetchMSHR_resp_blkPaddr [N_PREFETCH];
-  wire [7:0]  prefetchMSHR_resp_vSetIdx  [N_PREFETCH];
-  wire [1:0]  prefetchMSHR_resp_way      [N_PREFETCH];
+  logic [N_MSHR_SLOTS-1:0] fetch_lookup_hit;     // 各 MSHR 对 fetch_req 是否命中
+  logic [N_MSHR_SLOTS-1:0] prefetch_lookup_hit;  // 各 MSHR 对 prefetch_req 是否命中
+  always_comb begin
+    fetch_lookup_hit    = '0;
+    prefetch_lookup_hit = '0;
+    for (int i = 0; i < N_MSHR; i++) begin
+      fetch_lookup_hit[i]    = mshr_lookup_hit(mshr[i], fetch_req);
+      prefetch_lookup_hit[i] = mshr_lookup_hit(mshr[i], prefetch_req);
+    end
+  end
 
-  // prefetch 仲裁器 / acquire 仲裁器 / FIFO
-  wire        prefetchArb_in_ready [N_PREFETCH];
-  wire        prefetchArb_out_valid;
-  wire [3:0]  prefetchArb_out_source;
-  wire [47:0] prefetchArb_out_address;
-  wire [7:0]  prefetchArb_out_vSetIdx;
+  // 预取 req 与本拍 fetch req 撞同一条 line → 也算预取命中（让 fetch 去取）
+  wire prefetch_hits_fetch_req = io_fetch_req_valid &&
+       (prefetch_req.blkPaddr == fetch_req.blkPaddr) &&
+       (prefetch_req.vSetIdx  == fetch_req.vSetIdx);
 
-  wire        acquireArb_in_ready [N_FETCH];  // in_0..3 给 fetch MSHR
-  wire        acquireArb_in4_ready;            // in_4 给 prefetchArb.out
-  wire        acquireArb_out_valid;
+  wire fetch_hit    = |fetch_lookup_hit;
+  wire prefetch_hit = (|prefetch_lookup_hit) || prefetch_hits_fetch_req;
 
-  wire        priorityFIFO_enq_ready;
-  wire        priorityFIFO_deq_valid;
-  wire [3:0]  priorityFIFO_deq_bits;
+  // ===========================================================================
+  // Demux：把一条入站 req 分配给「第一个空闲」的 MSHR（lower index 优先）
+  //   - fetch_req  → fetch MSHR 区 [0..3]
+  //   - prefetch_req→ prefetch MSHR 区 [4..13]
+  //   一个 MSHR 能接收 req 的条件 = 该 MSHR ready（!valid 且未被 flush/fencei 挡住）
+  //   demux 把 req 给「编号最小的 ready MSHR」，并对该 MSHR 置 enq。
+  // ===========================================================================
+  // 每个 MSHR 的 req.ready（对应 Scala io.req.ready := !valid && !flush && !fencei）
+  logic [N_MSHR_SLOTS-1:0] mshr_req_ready;
+  always_comb begin
+    mshr_req_ready = '0;
+    for (int i = 0; i < N_MSHR; i++) begin
+      logic obey_flush;
+      obey_flush = mshr_obeys_flush(i) && io_flush;
+      mshr_req_ready[i] = !mshr[i].valid && !obey_flush && !io_fencei;
+    end
+  end
 
-  // ---------------------------------------------------------------------------
-  // 去重命中：任一 MSHR 的 lookUp 命中即视为重复请求，不再入队
-  // lookUps_0 比对 fetch_req，lookUps_1 比对 prefetch_req
-  // ---------------------------------------------------------------------------
-  wire fetchHit =
-    fetchMSHR_lk0_hit[0]    | fetchMSHR_lk0_hit[1]    | fetchMSHR_lk0_hit[2]    | fetchMSHR_lk0_hit[3]    |
-    prefetchMSHR_lk0_hit[0] | prefetchMSHR_lk0_hit[1] | prefetchMSHR_lk0_hit[2] | prefetchMSHR_lk0_hit[3] |
-    prefetchMSHR_lk0_hit[4] | prefetchMSHR_lk0_hit[5] | prefetchMSHR_lk0_hit[6] | prefetchMSHR_lk0_hit[7] |
-    prefetchMSHR_lk0_hit[8] | prefetchMSHR_lk0_hit[9];
+  // fetch 区 / prefetch 区各自的「有空位」与「选中编号」（lower index 优先）
+  wire        fetch_demux_in_valid    = io_fetch_req_valid    && !fetch_hit;
+  wire        prefetch_demux_in_valid = io_prefetch_req_valid && !prefetch_hit;
 
-  // prefetch 还需与同拍 fetch_req 比对（fetch 优先，prefetch 命中 fetch 则视作重复）
-  wire prefetchHitFetchReq =
-    (io_prefetch_req_bits_blkPaddr == io_fetch_req_bits_blkPaddr) &
-    (io_prefetch_req_bits_vSetIdx  == io_fetch_req_bits_vSetIdx)  & io_fetch_req_valid;
-
-  wire prefetchHit =
-    fetchMSHR_lk1_hit[0]    | fetchMSHR_lk1_hit[1]    | fetchMSHR_lk1_hit[2]    | fetchMSHR_lk1_hit[3]    |
-    prefetchMSHR_lk1_hit[0] | prefetchMSHR_lk1_hit[1] | prefetchMSHR_lk1_hit[2] | prefetchMSHR_lk1_hit[3] |
-    prefetchMSHR_lk1_hit[4] | prefetchMSHR_lk1_hit[5] | prefetchMSHR_lk1_hit[6] | prefetchMSHR_lk1_hit[7] |
-    prefetchMSHR_lk1_hit[8] | prefetchMSHR_lk1_hit[9] | prefetchHitFetchReq;
-
-  // demux 入口 valid：命中去重时压低
-  wire fetchDemux_in_valid    = io_fetch_req_valid    & ~fetchHit;
-  wire prefetchDemux_in_valid = io_prefetch_req_valid & ~prefetchHit;
-
-  // ---------------------------------------------------------------------------
-  // TileLink D 通道（grant）：收集 cacheline（refillCycles=2，每拍 256bit）
-  // ---------------------------------------------------------------------------
-  reg          readBeatCnt;       // 1 bit：当前 beat 序号（0/1）
-  reg  [255:0] respDataReg_0;     // beat0 数据
-  reg  [255:0] respDataReg_1;     // beat1 数据
-
-  // grant.fire && hasData：opcode[0]=1 表示 AccessAckData/GrantData 等带数据响应
-  wire grant_hasData = io_mem_grant_valid & io_mem_grant_bits_opcode[0];
-  // 最后一拍：第 1 个 beat（readBeatCnt==1）且带数据
-  wire last_fire     = grant_hasData & readBeatCnt;
-
-  // refill_done 计数器（来自 edge.addr_inc，用于断言 refill 完成与 last_fire 对齐）
-  // beats1 = hasData ? (是否多 beat) : 0；size>=6(64B) 时 decode[5]=1 → 单 beat
-  wire [12:0] beats1_decode    = 13'h3F << io_mem_grant_bits_size;
-  wire        refill_done_beats1 = io_mem_grant_bits_opcode[0] & ~beats1_decode[5];
-  reg         refill_done_r_counter;
-
-  // ---------------------------------------------------------------------------
-  // grant 收集寄存器（异步复位，与 golden 一致）
-  // ---------------------------------------------------------------------------
-  always @(posedge clock or posedge reset) begin
-    if (reset) begin
-      readBeatCnt           <= 1'h0;
-      respDataReg_0         <= 256'h0;
-      respDataReg_1         <= 256'h0;
-      refill_done_r_counter <= 1'h0;
-    end else begin
-      // wait_last = readBeatCnt==1 → 回 0，否则 +1（1bit：~cnt & (cnt-1)==Mux）
-      if (grant_hasData)
-        readBeatCnt <= ~readBeatCnt & 1'(readBeatCnt - 1'h1);
-      if (grant_hasData & ~readBeatCnt)
-        respDataReg_0 <= io_mem_grant_bits_data;
-      if (grant_hasData & readBeatCnt)
-        respDataReg_1 <= io_mem_grant_bits_data;
-      // refill_done 计数器：每个 grant.fire 递减，归 0 时载入 beats1
-      if (io_mem_grant_valid) begin
-        if (refill_done_r_counter)
-          refill_done_r_counter <= 1'(refill_done_r_counter - 1'h1);
-        else
-          refill_done_r_counter <= refill_done_beats1;
+  // fetch 区：是否有空闲 MSHR、选中的相对编号 [0..3]
+  logic                            fetch_has_free;
+  logic [$clog2(N_FETCH_MSHR)-1:0] fetch_sel;        // 相对编号
+  always_comb begin
+    fetch_has_free = 1'b0;
+    fetch_sel      = '0;
+    for (int i = int'(N_FETCH_MSHR) - 1; i >= 0; i--) begin
+      if (mshr_req_ready[i]) begin
+        fetch_has_free = 1'b1;
+        fetch_sel      = ($clog2(N_FETCH_MSHR))'(i);
       end
     end
   end
 
-  // ---------------------------------------------------------------------------
-  // 响应流水：last_fire 后一拍向 mainPipe/SRAM 输出
-  // ---------------------------------------------------------------------------
-  reg        last_fire_r;
-  reg [3:0]  id_r;
-  always @(posedge clock) begin
-    last_fire_r <= last_fire;
-    id_r        <= io_mem_grant_bits_source;
-  end
-
-  // corrupt：本次响应任一 beat corrupt 则整条 corrupt，last_fire_r 送出后清除
-  reg corrupt_r;
-  always @(posedge clock or posedge reset) begin
-    if (reset)
-      corrupt_r <= 1'h0;
-    else
-      corrupt_r <= (grant_hasData & io_mem_grant_bits_corrupt) | (~last_fire_r & corrupt_r);
-  end
-
-  // 选中 MSHR 的响应信息（提前一拍在 last_fire 时锁存，改善时序）
-  reg [41:0] mshr_resp_blkPaddr;
-  reg [7:0]  mshr_resp_vSetIdx;
-  reg [1:0]  mshr_resp_way;
-
-  // 按 grant.source 选择对应 MSHR 的 resp.bits（16 选 1）。
-  // 用满 16 项的 packed 数组、4bit 索引选择，避免越界（与 golden _GEN 布局一致）：
-  //   idx 0..3   -> fetchMSHR 0..3
-  //   idx 4..13  -> prefetchMSHR 0..9
-  //   idx 14,15  -> 复用 fetchMSHR_0（firtool 把 14 项 Vec 补到 16 项的填充）
-  wire [15:0][41:0] sel_blkPaddr_v = {
-    fetchMSHR_resp_blkPaddr[0], fetchMSHR_resp_blkPaddr[0],
-    prefetchMSHR_resp_blkPaddr[9], prefetchMSHR_resp_blkPaddr[8],
-    prefetchMSHR_resp_blkPaddr[7], prefetchMSHR_resp_blkPaddr[6],
-    prefetchMSHR_resp_blkPaddr[5], prefetchMSHR_resp_blkPaddr[4],
-    prefetchMSHR_resp_blkPaddr[3], prefetchMSHR_resp_blkPaddr[2],
-    prefetchMSHR_resp_blkPaddr[1], prefetchMSHR_resp_blkPaddr[0],
-    fetchMSHR_resp_blkPaddr[3], fetchMSHR_resp_blkPaddr[2],
-    fetchMSHR_resp_blkPaddr[1], fetchMSHR_resp_blkPaddr[0]
-  };
-  wire [15:0][7:0] sel_vSetIdx_v = {
-    fetchMSHR_resp_vSetIdx[0], fetchMSHR_resp_vSetIdx[0],
-    prefetchMSHR_resp_vSetIdx[9], prefetchMSHR_resp_vSetIdx[8],
-    prefetchMSHR_resp_vSetIdx[7], prefetchMSHR_resp_vSetIdx[6],
-    prefetchMSHR_resp_vSetIdx[5], prefetchMSHR_resp_vSetIdx[4],
-    prefetchMSHR_resp_vSetIdx[3], prefetchMSHR_resp_vSetIdx[2],
-    prefetchMSHR_resp_vSetIdx[1], prefetchMSHR_resp_vSetIdx[0],
-    fetchMSHR_resp_vSetIdx[3], fetchMSHR_resp_vSetIdx[2],
-    fetchMSHR_resp_vSetIdx[1], fetchMSHR_resp_vSetIdx[0]
-  };
-  wire [15:0][1:0] sel_way_v = {
-    fetchMSHR_resp_way[0], fetchMSHR_resp_way[0],
-    prefetchMSHR_resp_way[9], prefetchMSHR_resp_way[8],
-    prefetchMSHR_resp_way[7], prefetchMSHR_resp_way[6],
-    prefetchMSHR_resp_way[5], prefetchMSHR_resp_way[4],
-    prefetchMSHR_resp_way[3], prefetchMSHR_resp_way[2],
-    prefetchMSHR_resp_way[1], prefetchMSHR_resp_way[0],
-    fetchMSHR_resp_way[3], fetchMSHR_resp_way[2],
-    fetchMSHR_resp_way[1], fetchMSHR_resp_way[0]
-  };
-  wire [41:0] sel_blkPaddr = sel_blkPaddr_v[io_mem_grant_bits_source];
-  wire [7:0]  sel_vSetIdx  = sel_vSetIdx_v[io_mem_grant_bits_source];
-  wire [1:0]  sel_way      = sel_way_v[io_mem_grant_bits_source];
-
-  always @(posedge clock or posedge reset) begin
-    if (reset) begin
-      mshr_resp_blkPaddr <= 42'h0;
-      mshr_resp_vSetIdx  <= 8'h0;
-      mshr_resp_way      <= 2'h0;
-    end else if (last_fire) begin
-      mshr_resp_blkPaddr <= sel_blkPaddr;
-      mshr_resp_vSetIdx  <= sel_vSetIdx;
-      mshr_resp_way      <= sel_way;
+  // prefetch 区：是否有空闲 MSHR、选中的相对编号 [0..9]
+  logic                               prefetch_has_free;
+  logic [$clog2(N_PREFETCH_MSHR)-1:0] prefetch_sel;   // 相对编号 0..9
+  always_comb begin
+    prefetch_has_free = 1'b0;
+    prefetch_sel      = '0;
+    for (int i = int'(N_PREFETCH_MSHR) - 1; i >= 0; i--) begin
+      if (mshr_req_ready[int'(N_FETCH_MSHR) + i]) begin
+        prefetch_has_free = 1'b1;
+        prefetch_sel      = ($clog2(N_PREFETCH_MSHR))'(i);
+      end
     end
   end
 
-  // 选中 MSHR 的 resp.valid（不锁存，flush/fencei 可随时清除）。按 id_r 选 16:1。
-  wire [15:0] sel_valid_v = {
-    fetchMSHR_resp_valid[0], fetchMSHR_resp_valid[0],
-    prefetchMSHR_resp_valid[9], prefetchMSHR_resp_valid[8],
-    prefetchMSHR_resp_valid[7], prefetchMSHR_resp_valid[6],
-    prefetchMSHR_resp_valid[5], prefetchMSHR_resp_valid[4],
-    prefetchMSHR_resp_valid[3], prefetchMSHR_resp_valid[2],
-    prefetchMSHR_resp_valid[1], prefetchMSHR_resp_valid[0],
-    fetchMSHR_resp_valid[3], fetchMSHR_resp_valid[2],
-    fetchMSHR_resp_valid[1], fetchMSHR_resp_valid[0]
-  };
-  wire mshr_valid = sel_valid_v[id_r];
+  wire fetch_demux_fire    = fetch_demux_in_valid    && fetch_has_free;
+  wire prefetch_demux_fire = prefetch_demux_in_valid && prefetch_has_free;
 
-  wire [3:0] waymask = 4'h1 << mshr_resp_way;
+  // 对外 req.ready：有空位即可收，或命中去重（命中时直接吞掉，也算 ready）
+  assign io_fetch_req_ready    = fetch_has_free    || fetch_hit;
+  assign io_prefetch_req_ready = prefetch_has_free || prefetch_hit;
 
-  // 响应/写 SRAM 控制
-  wire fetch_resp_valid = mshr_valid & last_fire_r;
-  // flush/fencei 时仍向 mainPipe 送响应（时序考虑），但不可写 SRAM
-  wire write_sram_valid = fetch_resp_valid & ~corrupt_r & ~io_flush & ~io_fencei;
-
-  wire [511:0] resp_data = {respDataReg_1, respDataReg_0};
+  // 每个 MSHR 本拍是否被 demux 选中接收新 req
+  logic [N_MSHR_SLOTS-1:0] mshr_enq;
+  always_comb begin
+    mshr_enq = '0;
+    if (fetch_demux_fire)    mshr_enq[fetch_sel] = 1'b1;
+    if (prefetch_demux_fire) mshr_enq[int'(N_FETCH_MSHR) + prefetch_sel] = 1'b1;
+  end
 
   // ===========================================================================
-  // 子模块例化（沿用 golden RTL 子模块）
+  // priorityFIFO：记录 prefetch MSHR 的入队顺序（深度=nPrefetchMshr，保证不会满）
+  //   入队 = prefetch_demux_fire（存被选中的相对编号 prefetch_sel）
+  //   出队 = 一条 prefetch acquire 成功发射
+  //   prefetchArb 按队头编号选择要发射的 prefetch MSHR → 实现「先进先发」
   // ===========================================================================
-  DeMultiplexer fetchDemux (
-    .io_in_ready            (fetchDemux_in_ready),
-    .io_in_valid            (fetchDemux_in_valid),
-    .io_in_bits_blkPaddr    (io_fetch_req_bits_blkPaddr),
-    .io_in_bits_vSetIdx     (io_fetch_req_bits_vSetIdx),
-    .io_out_0_ready         (fetchMSHR_req_ready[0]),
-    .io_out_0_valid         (fetchDemux_out_valid[0]),
-    .io_out_0_bits_blkPaddr (fetchDemux_out_blkPaddr[0]),
-    .io_out_0_bits_vSetIdx  (fetchDemux_out_vSetIdx[0]),
-    .io_out_1_ready         (fetchMSHR_req_ready[1]),
-    .io_out_1_valid         (fetchDemux_out_valid[1]),
-    .io_out_1_bits_blkPaddr (fetchDemux_out_blkPaddr[1]),
-    .io_out_1_bits_vSetIdx  (fetchDemux_out_vSetIdx[1]),
-    .io_out_2_ready         (fetchMSHR_req_ready[2]),
-    .io_out_2_valid         (fetchDemux_out_valid[2]),
-    .io_out_2_bits_blkPaddr (fetchDemux_out_blkPaddr[2]),
-    .io_out_2_bits_vSetIdx  (fetchDemux_out_vSetIdx[2]),
-    .io_out_3_ready         (fetchMSHR_req_ready[3]),
-    .io_out_3_valid         (fetchDemux_out_valid[3]),
-    .io_out_3_bits_blkPaddr (fetchDemux_out_blkPaddr[3]),
-    .io_out_3_bits_vSetIdx  (fetchDemux_out_vSetIdx[3])
-  );
+  localparam int unsigned PF_PTR_W = 4;  // 编号/指针宽（depth 10，4-bit 足够）
+  logic [PF_PTR_W-1:0] pf_fifo [N_MSHR_SLOTS];  // 16 槽（>=深度 10），按 2 的幂避免越界
+  logic                pf_enq_flag, pf_deq_flag;
+  logic [PF_PTR_W-1:0] pf_enq_ptr,  pf_deq_ptr;
 
-  DeMultiplexer_1 prefetchDemux (
-    .io_in_ready            (prefetchDemux_in_ready),
-    .io_in_valid            (prefetchDemux_in_valid),
-    .io_in_bits_blkPaddr    (io_prefetch_req_bits_blkPaddr),
-    .io_in_bits_vSetIdx     (io_prefetch_req_bits_vSetIdx),
-    .io_out_0_ready         (prefetchMSHR_req_ready[0]),
-    .io_out_0_valid         (prefetchDemux_out_valid[0]),
-    .io_out_0_bits_blkPaddr (prefetchDemux_out_blkPaddr[0]),
-    .io_out_0_bits_vSetIdx  (prefetchDemux_out_vSetIdx[0]),
-    .io_out_1_ready         (prefetchMSHR_req_ready[1]),
-    .io_out_1_valid         (prefetchDemux_out_valid[1]),
-    .io_out_1_bits_blkPaddr (prefetchDemux_out_blkPaddr[1]),
-    .io_out_1_bits_vSetIdx  (prefetchDemux_out_vSetIdx[1]),
-    .io_out_2_ready         (prefetchMSHR_req_ready[2]),
-    .io_out_2_valid         (prefetchDemux_out_valid[2]),
-    .io_out_2_bits_blkPaddr (prefetchDemux_out_blkPaddr[2]),
-    .io_out_2_bits_vSetIdx  (prefetchDemux_out_vSetIdx[2]),
-    .io_out_3_ready         (prefetchMSHR_req_ready[3]),
-    .io_out_3_valid         (prefetchDemux_out_valid[3]),
-    .io_out_3_bits_blkPaddr (prefetchDemux_out_blkPaddr[3]),
-    .io_out_3_bits_vSetIdx  (prefetchDemux_out_vSetIdx[3]),
-    .io_out_4_ready         (prefetchMSHR_req_ready[4]),
-    .io_out_4_valid         (prefetchDemux_out_valid[4]),
-    .io_out_4_bits_blkPaddr (prefetchDemux_out_blkPaddr[4]),
-    .io_out_4_bits_vSetIdx  (prefetchDemux_out_vSetIdx[4]),
-    .io_out_5_ready         (prefetchMSHR_req_ready[5]),
-    .io_out_5_valid         (prefetchDemux_out_valid[5]),
-    .io_out_5_bits_blkPaddr (prefetchDemux_out_blkPaddr[5]),
-    .io_out_5_bits_vSetIdx  (prefetchDemux_out_vSetIdx[5]),
-    .io_out_6_ready         (prefetchMSHR_req_ready[6]),
-    .io_out_6_valid         (prefetchDemux_out_valid[6]),
-    .io_out_6_bits_blkPaddr (prefetchDemux_out_blkPaddr[6]),
-    .io_out_6_bits_vSetIdx  (prefetchDemux_out_vSetIdx[6]),
-    .io_out_7_ready         (prefetchMSHR_req_ready[7]),
-    .io_out_7_valid         (prefetchDemux_out_valid[7]),
-    .io_out_7_bits_blkPaddr (prefetchDemux_out_blkPaddr[7]),
-    .io_out_7_bits_vSetIdx  (prefetchDemux_out_vSetIdx[7]),
-    .io_out_8_ready         (prefetchMSHR_req_ready[8]),
-    .io_out_8_valid         (prefetchDemux_out_valid[8]),
-    .io_out_8_bits_blkPaddr (prefetchDemux_out_blkPaddr[8]),
-    .io_out_8_bits_vSetIdx  (prefetchDemux_out_vSetIdx[8]),
-    .io_out_9_ready         (prefetchMSHR_req_ready[9]),
-    .io_out_9_valid         (prefetchDemux_out_valid[9]),
-    .io_out_9_bits_blkPaddr (prefetchDemux_out_blkPaddr[9]),
-    .io_out_9_bits_vSetIdx  (prefetchDemux_out_vSetIdx[9]),
-    .io_chosen              (prefetchDemux_chosen)
-  );
+  wire pf_fifo_full  = (pf_enq_ptr == pf_deq_ptr) && (pf_enq_flag ^ pf_deq_flag);
+  wire pf_fifo_empty = (pf_enq_ptr == pf_deq_ptr) && (pf_enq_flag == pf_deq_flag);
 
-  MuxBundle prefetchArb (
-    .io_sel                       (priorityFIFO_deq_bits),
-    .io_in_0_ready                (prefetchArb_in_ready[0]),
-    .io_in_0_valid                (prefetchMSHR_acq_valid[0]),
-    .io_in_0_bits_acquire_address (prefetchMSHR_acq_addr[0]),
-    .io_in_0_bits_vSetIdx         (prefetchMSHR_acq_vSet[0]),
-    .io_in_1_ready                (prefetchArb_in_ready[1]),
-    .io_in_1_valid                (prefetchMSHR_acq_valid[1]),
-    .io_in_1_bits_acquire_address (prefetchMSHR_acq_addr[1]),
-    .io_in_1_bits_vSetIdx         (prefetchMSHR_acq_vSet[1]),
-    .io_in_2_ready                (prefetchArb_in_ready[2]),
-    .io_in_2_valid                (prefetchMSHR_acq_valid[2]),
-    .io_in_2_bits_acquire_address (prefetchMSHR_acq_addr[2]),
-    .io_in_2_bits_vSetIdx         (prefetchMSHR_acq_vSet[2]),
-    .io_in_3_ready                (prefetchArb_in_ready[3]),
-    .io_in_3_valid                (prefetchMSHR_acq_valid[3]),
-    .io_in_3_bits_acquire_address (prefetchMSHR_acq_addr[3]),
-    .io_in_3_bits_vSetIdx         (prefetchMSHR_acq_vSet[3]),
-    .io_in_4_ready                (prefetchArb_in_ready[4]),
-    .io_in_4_valid                (prefetchMSHR_acq_valid[4]),
-    .io_in_4_bits_acquire_address (prefetchMSHR_acq_addr[4]),
-    .io_in_4_bits_vSetIdx         (prefetchMSHR_acq_vSet[4]),
-    .io_in_5_ready                (prefetchArb_in_ready[5]),
-    .io_in_5_valid                (prefetchMSHR_acq_valid[5]),
-    .io_in_5_bits_acquire_address (prefetchMSHR_acq_addr[5]),
-    .io_in_5_bits_vSetIdx         (prefetchMSHR_acq_vSet[5]),
-    .io_in_6_ready                (prefetchArb_in_ready[6]),
-    .io_in_6_valid                (prefetchMSHR_acq_valid[6]),
-    .io_in_6_bits_acquire_address (prefetchMSHR_acq_addr[6]),
-    .io_in_6_bits_vSetIdx         (prefetchMSHR_acq_vSet[6]),
-    .io_in_7_ready                (prefetchArb_in_ready[7]),
-    .io_in_7_valid                (prefetchMSHR_acq_valid[7]),
-    .io_in_7_bits_acquire_address (prefetchMSHR_acq_addr[7]),
-    .io_in_7_bits_vSetIdx         (prefetchMSHR_acq_vSet[7]),
-    .io_in_8_ready                (prefetchArb_in_ready[8]),
-    .io_in_8_valid                (prefetchMSHR_acq_valid[8]),
-    .io_in_8_bits_acquire_address (prefetchMSHR_acq_addr[8]),
-    .io_in_8_bits_vSetIdx         (prefetchMSHR_acq_vSet[8]),
-    .io_in_9_ready                (prefetchArb_in_ready[9]),
-    .io_in_9_valid                (prefetchMSHR_acq_valid[9]),
-    .io_in_9_bits_acquire_address (prefetchMSHR_acq_addr[9]),
-    .io_in_9_bits_vSetIdx         (prefetchMSHR_acq_vSet[9]),
-    .io_out_ready                 (acquireArb_in4_ready),
-    .io_out_valid                 (prefetchArb_out_valid),
-    .io_out_bits_acquire_source   (prefetchArb_out_source),
-    .io_out_bits_acquire_address  (prefetchArb_out_address),
-    .io_out_bits_vSetIdx          (prefetchArb_out_vSetIdx)
-  );
-
-  Arbiter5_MSHRAcquire acquireArb (
-    .io_in_0_ready                (acquireArb_in_ready[0]),
-    .io_in_0_valid                (fetchMSHR_acq_valid[0]),
-    .io_in_0_bits_acquire_address (fetchMSHR_acq_addr[0]),
-    .io_in_0_bits_vSetIdx         (fetchMSHR_acq_vSet[0]),
-    .io_in_1_ready                (acquireArb_in_ready[1]),
-    .io_in_1_valid                (fetchMSHR_acq_valid[1]),
-    .io_in_1_bits_acquire_address (fetchMSHR_acq_addr[1]),
-    .io_in_1_bits_vSetIdx         (fetchMSHR_acq_vSet[1]),
-    .io_in_2_ready                (acquireArb_in_ready[2]),
-    .io_in_2_valid                (fetchMSHR_acq_valid[2]),
-    .io_in_2_bits_acquire_address (fetchMSHR_acq_addr[2]),
-    .io_in_2_bits_vSetIdx         (fetchMSHR_acq_vSet[2]),
-    .io_in_3_ready                (acquireArb_in_ready[3]),
-    .io_in_3_valid                (fetchMSHR_acq_valid[3]),
-    .io_in_3_bits_acquire_address (fetchMSHR_acq_addr[3]),
-    .io_in_3_bits_vSetIdx         (fetchMSHR_acq_vSet[3]),
-    .io_in_4_ready                (acquireArb_in4_ready),
-    .io_in_4_valid                (prefetchArb_out_valid),
-    .io_in_4_bits_acquire_source  (prefetchArb_out_source),
-    .io_in_4_bits_acquire_address (prefetchArb_out_address),
-    .io_in_4_bits_vSetIdx         (prefetchArb_out_vSetIdx),
-    .io_out_ready                 (io_mem_acquire_ready),
-    .io_out_valid                 (acquireArb_out_valid),
-    .io_out_bits_acquire_source   (io_mem_acquire_bits_source),
-    .io_out_bits_acquire_address  (io_mem_acquire_bits_address),
-    .io_out_bits_vSetIdx          (io_victim_vSetIdx_bits)
-  );
-
-  // ---- fetch MSHRs（ID 0..3，无 io_flush 端口）----
-  ICacheMSHR fetchMSHRs_0 (
-    .clock(clock), .reset(reset), .io_fencei(io_fencei),
-    .io_wfi_wfiReq(io_wfi_wfiReq), .io_wfi_wfiSafe(fetchMSHR_wfiSafe[0]),
-    .io_invalid(last_fire_r & (id_r == 4'h0)),
-    .io_req_ready(fetchMSHR_req_ready[0]), .io_req_valid(fetchDemux_out_valid[0]),
-    .io_req_bits_blkPaddr(fetchDemux_out_blkPaddr[0]), .io_req_bits_vSetIdx(fetchDemux_out_vSetIdx[0]),
-    .io_acquire_ready(acquireArb_in_ready[0]), .io_acquire_valid(fetchMSHR_acq_valid[0]),
-    .io_acquire_bits_acquire_address(fetchMSHR_acq_addr[0]), .io_acquire_bits_vSetIdx(fetchMSHR_acq_vSet[0]),
-    .io_lookUps_0_info_bits_blkPaddr(io_fetch_req_bits_blkPaddr), .io_lookUps_0_info_bits_vSetIdx(io_fetch_req_bits_vSetIdx),
-    .io_lookUps_0_hit(fetchMSHR_lk0_hit[0]),
-    .io_lookUps_1_info_bits_blkPaddr(io_prefetch_req_bits_blkPaddr), .io_lookUps_1_info_bits_vSetIdx(io_prefetch_req_bits_vSetIdx),
-    .io_lookUps_1_hit(fetchMSHR_lk1_hit[0]),
-    .io_resp_valid(fetchMSHR_resp_valid[0]), .io_resp_bits_blkPaddr(fetchMSHR_resp_blkPaddr[0]),
-    .io_resp_bits_vSetIdx(fetchMSHR_resp_vSetIdx[0]), .io_resp_bits_way(fetchMSHR_resp_way[0]),
-    .io_victimWay(io_victim_way)
-  );
-  ICacheMSHR_1 fetchMSHRs_1 (
-    .clock(clock), .reset(reset), .io_fencei(io_fencei),
-    .io_wfi_wfiReq(io_wfi_wfiReq), .io_wfi_wfiSafe(fetchMSHR_wfiSafe[1]),
-    .io_invalid(last_fire_r & (id_r == 4'h1)),
-    .io_req_ready(fetchMSHR_req_ready[1]), .io_req_valid(fetchDemux_out_valid[1]),
-    .io_req_bits_blkPaddr(fetchDemux_out_blkPaddr[1]), .io_req_bits_vSetIdx(fetchDemux_out_vSetIdx[1]),
-    .io_acquire_ready(acquireArb_in_ready[1]), .io_acquire_valid(fetchMSHR_acq_valid[1]),
-    .io_acquire_bits_acquire_address(fetchMSHR_acq_addr[1]), .io_acquire_bits_vSetIdx(fetchMSHR_acq_vSet[1]),
-    .io_lookUps_0_info_bits_blkPaddr(io_fetch_req_bits_blkPaddr), .io_lookUps_0_info_bits_vSetIdx(io_fetch_req_bits_vSetIdx),
-    .io_lookUps_0_hit(fetchMSHR_lk0_hit[1]),
-    .io_lookUps_1_info_bits_blkPaddr(io_prefetch_req_bits_blkPaddr), .io_lookUps_1_info_bits_vSetIdx(io_prefetch_req_bits_vSetIdx),
-    .io_lookUps_1_hit(fetchMSHR_lk1_hit[1]),
-    .io_resp_valid(fetchMSHR_resp_valid[1]), .io_resp_bits_blkPaddr(fetchMSHR_resp_blkPaddr[1]),
-    .io_resp_bits_vSetIdx(fetchMSHR_resp_vSetIdx[1]), .io_resp_bits_way(fetchMSHR_resp_way[1]),
-    .io_victimWay(io_victim_way)
-  );
-  ICacheMSHR_2 fetchMSHRs_2 (
-    .clock(clock), .reset(reset), .io_fencei(io_fencei),
-    .io_wfi_wfiReq(io_wfi_wfiReq), .io_wfi_wfiSafe(fetchMSHR_wfiSafe[2]),
-    .io_invalid(last_fire_r & (id_r == 4'h2)),
-    .io_req_ready(fetchMSHR_req_ready[2]), .io_req_valid(fetchDemux_out_valid[2]),
-    .io_req_bits_blkPaddr(fetchDemux_out_blkPaddr[2]), .io_req_bits_vSetIdx(fetchDemux_out_vSetIdx[2]),
-    .io_acquire_ready(acquireArb_in_ready[2]), .io_acquire_valid(fetchMSHR_acq_valid[2]),
-    .io_acquire_bits_acquire_address(fetchMSHR_acq_addr[2]), .io_acquire_bits_vSetIdx(fetchMSHR_acq_vSet[2]),
-    .io_lookUps_0_info_bits_blkPaddr(io_fetch_req_bits_blkPaddr), .io_lookUps_0_info_bits_vSetIdx(io_fetch_req_bits_vSetIdx),
-    .io_lookUps_0_hit(fetchMSHR_lk0_hit[2]),
-    .io_lookUps_1_info_bits_blkPaddr(io_prefetch_req_bits_blkPaddr), .io_lookUps_1_info_bits_vSetIdx(io_prefetch_req_bits_vSetIdx),
-    .io_lookUps_1_hit(fetchMSHR_lk1_hit[2]),
-    .io_resp_valid(fetchMSHR_resp_valid[2]), .io_resp_bits_blkPaddr(fetchMSHR_resp_blkPaddr[2]),
-    .io_resp_bits_vSetIdx(fetchMSHR_resp_vSetIdx[2]), .io_resp_bits_way(fetchMSHR_resp_way[2]),
-    .io_victimWay(io_victim_way)
-  );
-  ICacheMSHR_3 fetchMSHRs_3 (
-    .clock(clock), .reset(reset), .io_fencei(io_fencei),
-    .io_wfi_wfiReq(io_wfi_wfiReq), .io_wfi_wfiSafe(fetchMSHR_wfiSafe[3]),
-    .io_invalid(last_fire_r & (id_r == 4'h3)),
-    .io_req_ready(fetchMSHR_req_ready[3]), .io_req_valid(fetchDemux_out_valid[3]),
-    .io_req_bits_blkPaddr(fetchDemux_out_blkPaddr[3]), .io_req_bits_vSetIdx(fetchDemux_out_vSetIdx[3]),
-    .io_acquire_ready(acquireArb_in_ready[3]), .io_acquire_valid(fetchMSHR_acq_valid[3]),
-    .io_acquire_bits_acquire_address(fetchMSHR_acq_addr[3]), .io_acquire_bits_vSetIdx(fetchMSHR_acq_vSet[3]),
-    .io_lookUps_0_info_bits_blkPaddr(io_fetch_req_bits_blkPaddr), .io_lookUps_0_info_bits_vSetIdx(io_fetch_req_bits_vSetIdx),
-    .io_lookUps_0_hit(fetchMSHR_lk0_hit[3]),
-    .io_lookUps_1_info_bits_blkPaddr(io_prefetch_req_bits_blkPaddr), .io_lookUps_1_info_bits_vSetIdx(io_prefetch_req_bits_vSetIdx),
-    .io_lookUps_1_hit(fetchMSHR_lk1_hit[3]),
-    .io_resp_valid(fetchMSHR_resp_valid[3]), .io_resp_bits_blkPaddr(fetchMSHR_resp_blkPaddr[3]),
-    .io_resp_bits_vSetIdx(fetchMSHR_resp_vSetIdx[3]), .io_resp_bits_way(fetchMSHR_resp_way[3]),
-    .io_victimWay(io_victim_way)
-  );
-
-  // ---- prefetch MSHRs（ID 4..13，带 io_flush 端口）----
-  ICacheMSHR_4 prefetchMSHRs_0 (
-    .clock(clock), .reset(reset), .io_fencei(io_fencei), .io_flush(io_flush),
-    .io_wfi_wfiReq(io_wfi_wfiReq), .io_wfi_wfiSafe(prefetchMSHR_wfiSafe[0]),
-    .io_invalid(last_fire_r & (id_r == 4'h4)),
-    .io_req_ready(prefetchMSHR_req_ready[0]), .io_req_valid(prefetchDemux_out_valid[0]),
-    .io_req_bits_blkPaddr(prefetchDemux_out_blkPaddr[0]), .io_req_bits_vSetIdx(prefetchDemux_out_vSetIdx[0]),
-    .io_acquire_ready(prefetchArb_in_ready[0]), .io_acquire_valid(prefetchMSHR_acq_valid[0]),
-    .io_acquire_bits_acquire_address(prefetchMSHR_acq_addr[0]), .io_acquire_bits_vSetIdx(prefetchMSHR_acq_vSet[0]),
-    .io_lookUps_0_info_bits_blkPaddr(io_fetch_req_bits_blkPaddr), .io_lookUps_0_info_bits_vSetIdx(io_fetch_req_bits_vSetIdx),
-    .io_lookUps_0_hit(prefetchMSHR_lk0_hit[0]),
-    .io_lookUps_1_info_bits_blkPaddr(io_prefetch_req_bits_blkPaddr), .io_lookUps_1_info_bits_vSetIdx(io_prefetch_req_bits_vSetIdx),
-    .io_lookUps_1_hit(prefetchMSHR_lk1_hit[0]),
-    .io_resp_valid(prefetchMSHR_resp_valid[0]), .io_resp_bits_blkPaddr(prefetchMSHR_resp_blkPaddr[0]),
-    .io_resp_bits_vSetIdx(prefetchMSHR_resp_vSetIdx[0]), .io_resp_bits_way(prefetchMSHR_resp_way[0]),
-    .io_victimWay(io_victim_way)
-  );
-  ICacheMSHR_5 prefetchMSHRs_1 (
-    .clock(clock), .reset(reset), .io_fencei(io_fencei), .io_flush(io_flush),
-    .io_wfi_wfiReq(io_wfi_wfiReq), .io_wfi_wfiSafe(prefetchMSHR_wfiSafe[1]),
-    .io_invalid(last_fire_r & (id_r == 4'h5)),
-    .io_req_ready(prefetchMSHR_req_ready[1]), .io_req_valid(prefetchDemux_out_valid[1]),
-    .io_req_bits_blkPaddr(prefetchDemux_out_blkPaddr[1]), .io_req_bits_vSetIdx(prefetchDemux_out_vSetIdx[1]),
-    .io_acquire_ready(prefetchArb_in_ready[1]), .io_acquire_valid(prefetchMSHR_acq_valid[1]),
-    .io_acquire_bits_acquire_address(prefetchMSHR_acq_addr[1]), .io_acquire_bits_vSetIdx(prefetchMSHR_acq_vSet[1]),
-    .io_lookUps_0_info_bits_blkPaddr(io_fetch_req_bits_blkPaddr), .io_lookUps_0_info_bits_vSetIdx(io_fetch_req_bits_vSetIdx),
-    .io_lookUps_0_hit(prefetchMSHR_lk0_hit[1]),
-    .io_lookUps_1_info_bits_blkPaddr(io_prefetch_req_bits_blkPaddr), .io_lookUps_1_info_bits_vSetIdx(io_prefetch_req_bits_vSetIdx),
-    .io_lookUps_1_hit(prefetchMSHR_lk1_hit[1]),
-    .io_resp_valid(prefetchMSHR_resp_valid[1]), .io_resp_bits_blkPaddr(prefetchMSHR_resp_blkPaddr[1]),
-    .io_resp_bits_vSetIdx(prefetchMSHR_resp_vSetIdx[1]), .io_resp_bits_way(prefetchMSHR_resp_way[1]),
-    .io_victimWay(io_victim_way)
-  );
-  ICacheMSHR_6 prefetchMSHRs_2 (
-    .clock(clock), .reset(reset), .io_fencei(io_fencei), .io_flush(io_flush),
-    .io_wfi_wfiReq(io_wfi_wfiReq), .io_wfi_wfiSafe(prefetchMSHR_wfiSafe[2]),
-    .io_invalid(last_fire_r & (id_r == 4'h6)),
-    .io_req_ready(prefetchMSHR_req_ready[2]), .io_req_valid(prefetchDemux_out_valid[2]),
-    .io_req_bits_blkPaddr(prefetchDemux_out_blkPaddr[2]), .io_req_bits_vSetIdx(prefetchDemux_out_vSetIdx[2]),
-    .io_acquire_ready(prefetchArb_in_ready[2]), .io_acquire_valid(prefetchMSHR_acq_valid[2]),
-    .io_acquire_bits_acquire_address(prefetchMSHR_acq_addr[2]), .io_acquire_bits_vSetIdx(prefetchMSHR_acq_vSet[2]),
-    .io_lookUps_0_info_bits_blkPaddr(io_fetch_req_bits_blkPaddr), .io_lookUps_0_info_bits_vSetIdx(io_fetch_req_bits_vSetIdx),
-    .io_lookUps_0_hit(prefetchMSHR_lk0_hit[2]),
-    .io_lookUps_1_info_bits_blkPaddr(io_prefetch_req_bits_blkPaddr), .io_lookUps_1_info_bits_vSetIdx(io_prefetch_req_bits_vSetIdx),
-    .io_lookUps_1_hit(prefetchMSHR_lk1_hit[2]),
-    .io_resp_valid(prefetchMSHR_resp_valid[2]), .io_resp_bits_blkPaddr(prefetchMSHR_resp_blkPaddr[2]),
-    .io_resp_bits_vSetIdx(prefetchMSHR_resp_vSetIdx[2]), .io_resp_bits_way(prefetchMSHR_resp_way[2]),
-    .io_victimWay(io_victim_way)
-  );
-  ICacheMSHR_7 prefetchMSHRs_3 (
-    .clock(clock), .reset(reset), .io_fencei(io_fencei), .io_flush(io_flush),
-    .io_wfi_wfiReq(io_wfi_wfiReq), .io_wfi_wfiSafe(prefetchMSHR_wfiSafe[3]),
-    .io_invalid(last_fire_r & (id_r == 4'h7)),
-    .io_req_ready(prefetchMSHR_req_ready[3]), .io_req_valid(prefetchDemux_out_valid[3]),
-    .io_req_bits_blkPaddr(prefetchDemux_out_blkPaddr[3]), .io_req_bits_vSetIdx(prefetchDemux_out_vSetIdx[3]),
-    .io_acquire_ready(prefetchArb_in_ready[3]), .io_acquire_valid(prefetchMSHR_acq_valid[3]),
-    .io_acquire_bits_acquire_address(prefetchMSHR_acq_addr[3]), .io_acquire_bits_vSetIdx(prefetchMSHR_acq_vSet[3]),
-    .io_lookUps_0_info_bits_blkPaddr(io_fetch_req_bits_blkPaddr), .io_lookUps_0_info_bits_vSetIdx(io_fetch_req_bits_vSetIdx),
-    .io_lookUps_0_hit(prefetchMSHR_lk0_hit[3]),
-    .io_lookUps_1_info_bits_blkPaddr(io_prefetch_req_bits_blkPaddr), .io_lookUps_1_info_bits_vSetIdx(io_prefetch_req_bits_vSetIdx),
-    .io_lookUps_1_hit(prefetchMSHR_lk1_hit[3]),
-    .io_resp_valid(prefetchMSHR_resp_valid[3]), .io_resp_bits_blkPaddr(prefetchMSHR_resp_blkPaddr[3]),
-    .io_resp_bits_vSetIdx(prefetchMSHR_resp_vSetIdx[3]), .io_resp_bits_way(prefetchMSHR_resp_way[3]),
-    .io_victimWay(io_victim_way)
-  );
-  ICacheMSHR_8 prefetchMSHRs_4 (
-    .clock(clock), .reset(reset), .io_fencei(io_fencei), .io_flush(io_flush),
-    .io_wfi_wfiReq(io_wfi_wfiReq), .io_wfi_wfiSafe(prefetchMSHR_wfiSafe[4]),
-    .io_invalid(last_fire_r & (id_r == 4'h8)),
-    .io_req_ready(prefetchMSHR_req_ready[4]), .io_req_valid(prefetchDemux_out_valid[4]),
-    .io_req_bits_blkPaddr(prefetchDemux_out_blkPaddr[4]), .io_req_bits_vSetIdx(prefetchDemux_out_vSetIdx[4]),
-    .io_acquire_ready(prefetchArb_in_ready[4]), .io_acquire_valid(prefetchMSHR_acq_valid[4]),
-    .io_acquire_bits_acquire_address(prefetchMSHR_acq_addr[4]), .io_acquire_bits_vSetIdx(prefetchMSHR_acq_vSet[4]),
-    .io_lookUps_0_info_bits_blkPaddr(io_fetch_req_bits_blkPaddr), .io_lookUps_0_info_bits_vSetIdx(io_fetch_req_bits_vSetIdx),
-    .io_lookUps_0_hit(prefetchMSHR_lk0_hit[4]),
-    .io_lookUps_1_info_bits_blkPaddr(io_prefetch_req_bits_blkPaddr), .io_lookUps_1_info_bits_vSetIdx(io_prefetch_req_bits_vSetIdx),
-    .io_lookUps_1_hit(prefetchMSHR_lk1_hit[4]),
-    .io_resp_valid(prefetchMSHR_resp_valid[4]), .io_resp_bits_blkPaddr(prefetchMSHR_resp_blkPaddr[4]),
-    .io_resp_bits_vSetIdx(prefetchMSHR_resp_vSetIdx[4]), .io_resp_bits_way(prefetchMSHR_resp_way[4]),
-    .io_victimWay(io_victim_way)
-  );
-  ICacheMSHR_9 prefetchMSHRs_5 (
-    .clock(clock), .reset(reset), .io_fencei(io_fencei), .io_flush(io_flush),
-    .io_wfi_wfiReq(io_wfi_wfiReq), .io_wfi_wfiSafe(prefetchMSHR_wfiSafe[5]),
-    .io_invalid(last_fire_r & (id_r == 4'h9)),
-    .io_req_ready(prefetchMSHR_req_ready[5]), .io_req_valid(prefetchDemux_out_valid[5]),
-    .io_req_bits_blkPaddr(prefetchDemux_out_blkPaddr[5]), .io_req_bits_vSetIdx(prefetchDemux_out_vSetIdx[5]),
-    .io_acquire_ready(prefetchArb_in_ready[5]), .io_acquire_valid(prefetchMSHR_acq_valid[5]),
-    .io_acquire_bits_acquire_address(prefetchMSHR_acq_addr[5]), .io_acquire_bits_vSetIdx(prefetchMSHR_acq_vSet[5]),
-    .io_lookUps_0_info_bits_blkPaddr(io_fetch_req_bits_blkPaddr), .io_lookUps_0_info_bits_vSetIdx(io_fetch_req_bits_vSetIdx),
-    .io_lookUps_0_hit(prefetchMSHR_lk0_hit[5]),
-    .io_lookUps_1_info_bits_blkPaddr(io_prefetch_req_bits_blkPaddr), .io_lookUps_1_info_bits_vSetIdx(io_prefetch_req_bits_vSetIdx),
-    .io_lookUps_1_hit(prefetchMSHR_lk1_hit[5]),
-    .io_resp_valid(prefetchMSHR_resp_valid[5]), .io_resp_bits_blkPaddr(prefetchMSHR_resp_blkPaddr[5]),
-    .io_resp_bits_vSetIdx(prefetchMSHR_resp_vSetIdx[5]), .io_resp_bits_way(prefetchMSHR_resp_way[5]),
-    .io_victimWay(io_victim_way)
-  );
-  ICacheMSHR_10 prefetchMSHRs_6 (
-    .clock(clock), .reset(reset), .io_fencei(io_fencei), .io_flush(io_flush),
-    .io_wfi_wfiReq(io_wfi_wfiReq), .io_wfi_wfiSafe(prefetchMSHR_wfiSafe[6]),
-    .io_invalid(last_fire_r & (id_r == 4'hA)),
-    .io_req_ready(prefetchMSHR_req_ready[6]), .io_req_valid(prefetchDemux_out_valid[6]),
-    .io_req_bits_blkPaddr(prefetchDemux_out_blkPaddr[6]), .io_req_bits_vSetIdx(prefetchDemux_out_vSetIdx[6]),
-    .io_acquire_ready(prefetchArb_in_ready[6]), .io_acquire_valid(prefetchMSHR_acq_valid[6]),
-    .io_acquire_bits_acquire_address(prefetchMSHR_acq_addr[6]), .io_acquire_bits_vSetIdx(prefetchMSHR_acq_vSet[6]),
-    .io_lookUps_0_info_bits_blkPaddr(io_fetch_req_bits_blkPaddr), .io_lookUps_0_info_bits_vSetIdx(io_fetch_req_bits_vSetIdx),
-    .io_lookUps_0_hit(prefetchMSHR_lk0_hit[6]),
-    .io_lookUps_1_info_bits_blkPaddr(io_prefetch_req_bits_blkPaddr), .io_lookUps_1_info_bits_vSetIdx(io_prefetch_req_bits_vSetIdx),
-    .io_lookUps_1_hit(prefetchMSHR_lk1_hit[6]),
-    .io_resp_valid(prefetchMSHR_resp_valid[6]), .io_resp_bits_blkPaddr(prefetchMSHR_resp_blkPaddr[6]),
-    .io_resp_bits_vSetIdx(prefetchMSHR_resp_vSetIdx[6]), .io_resp_bits_way(prefetchMSHR_resp_way[6]),
-    .io_victimWay(io_victim_way)
-  );
-  ICacheMSHR_11 prefetchMSHRs_7 (
-    .clock(clock), .reset(reset), .io_fencei(io_fencei), .io_flush(io_flush),
-    .io_wfi_wfiReq(io_wfi_wfiReq), .io_wfi_wfiSafe(prefetchMSHR_wfiSafe[7]),
-    .io_invalid(last_fire_r & (id_r == 4'hB)),
-    .io_req_ready(prefetchMSHR_req_ready[7]), .io_req_valid(prefetchDemux_out_valid[7]),
-    .io_req_bits_blkPaddr(prefetchDemux_out_blkPaddr[7]), .io_req_bits_vSetIdx(prefetchDemux_out_vSetIdx[7]),
-    .io_acquire_ready(prefetchArb_in_ready[7]), .io_acquire_valid(prefetchMSHR_acq_valid[7]),
-    .io_acquire_bits_acquire_address(prefetchMSHR_acq_addr[7]), .io_acquire_bits_vSetIdx(prefetchMSHR_acq_vSet[7]),
-    .io_lookUps_0_info_bits_blkPaddr(io_fetch_req_bits_blkPaddr), .io_lookUps_0_info_bits_vSetIdx(io_fetch_req_bits_vSetIdx),
-    .io_lookUps_0_hit(prefetchMSHR_lk0_hit[7]),
-    .io_lookUps_1_info_bits_blkPaddr(io_prefetch_req_bits_blkPaddr), .io_lookUps_1_info_bits_vSetIdx(io_prefetch_req_bits_vSetIdx),
-    .io_lookUps_1_hit(prefetchMSHR_lk1_hit[7]),
-    .io_resp_valid(prefetchMSHR_resp_valid[7]), .io_resp_bits_blkPaddr(prefetchMSHR_resp_blkPaddr[7]),
-    .io_resp_bits_vSetIdx(prefetchMSHR_resp_vSetIdx[7]), .io_resp_bits_way(prefetchMSHR_resp_way[7]),
-    .io_victimWay(io_victim_way)
-  );
-  ICacheMSHR_12 prefetchMSHRs_8 (
-    .clock(clock), .reset(reset), .io_fencei(io_fencei), .io_flush(io_flush),
-    .io_wfi_wfiReq(io_wfi_wfiReq), .io_wfi_wfiSafe(prefetchMSHR_wfiSafe[8]),
-    .io_invalid(last_fire_r & (id_r == 4'hC)),
-    .io_req_ready(prefetchMSHR_req_ready[8]), .io_req_valid(prefetchDemux_out_valid[8]),
-    .io_req_bits_blkPaddr(prefetchDemux_out_blkPaddr[8]), .io_req_bits_vSetIdx(prefetchDemux_out_vSetIdx[8]),
-    .io_acquire_ready(prefetchArb_in_ready[8]), .io_acquire_valid(prefetchMSHR_acq_valid[8]),
-    .io_acquire_bits_acquire_address(prefetchMSHR_acq_addr[8]), .io_acquire_bits_vSetIdx(prefetchMSHR_acq_vSet[8]),
-    .io_lookUps_0_info_bits_blkPaddr(io_fetch_req_bits_blkPaddr), .io_lookUps_0_info_bits_vSetIdx(io_fetch_req_bits_vSetIdx),
-    .io_lookUps_0_hit(prefetchMSHR_lk0_hit[8]),
-    .io_lookUps_1_info_bits_blkPaddr(io_prefetch_req_bits_blkPaddr), .io_lookUps_1_info_bits_vSetIdx(io_prefetch_req_bits_vSetIdx),
-    .io_lookUps_1_hit(prefetchMSHR_lk1_hit[8]),
-    .io_resp_valid(prefetchMSHR_resp_valid[8]), .io_resp_bits_blkPaddr(prefetchMSHR_resp_blkPaddr[8]),
-    .io_resp_bits_vSetIdx(prefetchMSHR_resp_vSetIdx[8]), .io_resp_bits_way(prefetchMSHR_resp_way[8]),
-    .io_victimWay(io_victim_way)
-  );
-  ICacheMSHR_13 prefetchMSHRs_9 (
-    .clock(clock), .reset(reset), .io_fencei(io_fencei), .io_flush(io_flush),
-    .io_wfi_wfiReq(io_wfi_wfiReq), .io_wfi_wfiSafe(prefetchMSHR_wfiSafe[9]),
-    .io_invalid(last_fire_r & (id_r == 4'hD)),
-    .io_req_ready(prefetchMSHR_req_ready[9]), .io_req_valid(prefetchDemux_out_valid[9]),
-    .io_req_bits_blkPaddr(prefetchDemux_out_blkPaddr[9]), .io_req_bits_vSetIdx(prefetchDemux_out_vSetIdx[9]),
-    .io_acquire_ready(prefetchArb_in_ready[9]), .io_acquire_valid(prefetchMSHR_acq_valid[9]),
-    .io_acquire_bits_acquire_address(prefetchMSHR_acq_addr[9]), .io_acquire_bits_vSetIdx(prefetchMSHR_acq_vSet[9]),
-    .io_lookUps_0_info_bits_blkPaddr(io_fetch_req_bits_blkPaddr), .io_lookUps_0_info_bits_vSetIdx(io_fetch_req_bits_vSetIdx),
-    .io_lookUps_0_hit(prefetchMSHR_lk0_hit[9]),
-    .io_lookUps_1_info_bits_blkPaddr(io_prefetch_req_bits_blkPaddr), .io_lookUps_1_info_bits_vSetIdx(io_prefetch_req_bits_vSetIdx),
-    .io_lookUps_1_hit(prefetchMSHR_lk1_hit[9]),
-    .io_resp_valid(prefetchMSHR_resp_valid[9]), .io_resp_bits_blkPaddr(prefetchMSHR_resp_blkPaddr[9]),
-    .io_resp_bits_vSetIdx(prefetchMSHR_resp_vSetIdx[9]), .io_resp_bits_way(prefetchMSHR_resp_way[9]),
-    .io_victimWay(io_victim_way)
-  );
-
-  // prefetch 入队顺序 FIFO：enq 与 prefetchDemux.in 同拍 fire，deq 与 prefetchArb.out 同拍 fire
-  FIFOReg priorityFIFO (
-    .clock        (clock),
-    .reset        (reset),
-    .io_enq_ready (priorityFIFO_enq_ready),
-    .io_enq_valid (prefetchDemux_in_ready & prefetchDemux_in_valid),
-    .io_enq_bits  (prefetchDemux_chosen),
-    .io_deq_ready (acquireArb_in4_ready & prefetchArb_out_valid),
-    .io_deq_valid (priorityFIFO_deq_valid),
-    .io_deq_bits  (priorityFIFO_deq_bits),
-    .io_flush     (io_flush | io_fencei)
-  );
+  wire [PF_PTR_W-1:0] pf_deq_bits = pf_fifo[pf_deq_ptr];  // 队头：下一个该发的 prefetch 编号
 
   // ===========================================================================
-  // 顶层输出
+  // 发射仲裁
+  //   prefetchArb：按 priorityFIFO 队头 pf_deq_bits 选一个 prefetch MSHR 的 acquire
+  //   acquireArb ：fixed-priority（fetch 0..3 优先于 prefetch 整体），lowest index 赢
   // ===========================================================================
-  assign io_wfi_wfiSafe =
-    fetchMSHR_wfiSafe[0]    & fetchMSHR_wfiSafe[1]    & fetchMSHR_wfiSafe[2]    & fetchMSHR_wfiSafe[3]    &
-    prefetchMSHR_wfiSafe[0] & prefetchMSHR_wfiSafe[1] & prefetchMSHR_wfiSafe[2] & prefetchMSHR_wfiSafe[3] &
-    prefetchMSHR_wfiSafe[4] & prefetchMSHR_wfiSafe[5] & prefetchMSHR_wfiSafe[6] & prefetchMSHR_wfiSafe[7] &
-    prefetchMSHR_wfiSafe[8] & prefetchMSHR_wfiSafe[9];
+  // 各 MSHR 的 acquire.valid（对应 Scala：valid && !issued && !flush && !fencei && !wfiReq）
+  logic [N_MSHR_SLOTS-1:0] mshr_acq_valid;
+  always_comb begin
+    mshr_acq_valid = '0;
+    for (int i = 0; i < N_MSHR; i++) begin
+      logic obey_flush;
+      obey_flush = mshr_obeys_flush(i) && io_flush;
+      mshr_acq_valid[i] = mshr[i].valid && !mshr[i].issued &&
+                          !obey_flush && !io_fencei && !io_wfi_wfiReq;
+    end
+  end
 
-  assign io_fetch_req_ready    = fetchDemux_in_ready    | fetchHit;
-  assign io_prefetch_req_ready = prefetchDemux_in_ready | prefetchHit;
+  // prefetchArb 输出：选中队头编号对应的那条 prefetch MSHR
+  //   绝对 MSHR 槽号 = N_FETCH_MSHR + 队头编号；用 SRC_W(4-bit) 截断运算，使索引天然落在
+  //   16 槽范围内（队头编号 0..9 → 槽号 4..13，永不溢出；4-bit 截断也消除 FM 越界告警）。
+  wire [SRC_W-1:0]       pf_arb_out_source   = SRC_W'(N_FETCH_MSHR) + pf_deq_bits;
+  wire                   pf_arb_out_valid    = mshr_acq_valid[pf_arb_out_source];
+  wire [BLK_PADDR_W-1:0] pf_arb_out_blkPaddr = mshr[pf_arb_out_source].blkPaddr;
+  wire [IDX_BITS-1:0]    pf_arb_out_vSetIdx  = mshr[pf_arb_out_source].vSetIdx;
 
-  // fetch 响应
-  assign io_fetch_resp_valid        = fetch_resp_valid;
-  assign io_fetch_resp_bits_blkPaddr = mshr_resp_blkPaddr;
-  assign io_fetch_resp_bits_vSetIdx  = mshr_resp_vSetIdx;
+  // acquireArb：5 路 fixed-priority（in0..3 = fetch MSHR 0..3，in4 = prefetchArb 输出）
+  // 选第一个 valid 的输入。
+  logic                   acq_out_valid;
+  logic [SRC_W-1:0]       acq_out_source;
+  logic [BLK_PADDR_W-1:0] acq_out_blkPaddr;  // 用于拼地址
+  logic [IDX_BITS-1:0]    acq_out_vSetIdx;   // 用于向 replacer 索要 victim
+  logic [$clog2(N_FETCH_MSHR+1)-1:0] acq_chosen;  // 0..4
+  always_comb begin
+    acq_out_valid    = 1'b0;
+    acq_out_source   = '0;
+    acq_out_blkPaddr = '0;
+    acq_out_vSetIdx  = '0;
+    acq_chosen       = '0;
+    // fetch MSHR 0..3 优先
+    for (int i = int'(N_FETCH_MSHR) - 1; i >= 0; i--) begin
+      if (mshr_acq_valid[i]) begin
+        acq_out_valid    = 1'b1;
+        acq_out_source   = SRC_W'(i);
+        acq_out_blkPaddr = mshr[i].blkPaddr;
+        acq_out_vSetIdx  = mshr[i].vSetIdx;
+        acq_chosen       = ($clog2(N_FETCH_MSHR+1))'(i);
+      end
+    end
+    // 最低优先级：prefetchArb 的输出
+    if (!acq_out_valid && pf_arb_out_valid) begin
+      acq_out_valid    = 1'b1;
+      acq_out_source   = pf_arb_out_source;
+      acq_out_blkPaddr = pf_arb_out_blkPaddr;
+      acq_out_vSetIdx  = pf_arb_out_vSetIdx;
+      acq_chosen       = ($clog2(N_FETCH_MSHR+1))'(N_FETCH_MSHR);
+    end
+  end
+
+  wire acq_fire = acq_out_valid && io_mem_acquire_ready;
+
+  // 被选中发射的 MSHR 索引（用于 acquire.fire 时置 issued / 锁存 way）
+  wire [SRC_W-1:0] acq_sel_idx = acq_out_source;
+
+  // prefetchArb 输出是否被 acquireArb 接受并发射（= prefetch 区出队条件）
+  // acquireArb 中 in4(prefetch) 被接受 = out.ready 且前面 4 路都不 valid
+  wire pf_arb_out_fire = pf_arb_out_valid && io_mem_acquire_ready &&
+                         !(|mshr_acq_valid[N_FETCH_MSHR-1:0]);
+
+  // ---- mem_acquire 输出（TileLink A：Get）----
+  assign io_mem_acquire_valid        = acq_out_valid;
+  assign io_mem_acquire_bits_source  = acq_out_source;
+  assign io_mem_acquire_bits_address = {acq_out_blkPaddr, BLK_OFF'(0)};  // 块对齐地址
+
+  // ---- victim 索要：发 acquire 时给 replacer 送 vSetIdx，下拍取回 way ----
+  assign io_victim_vSetIdx_valid = acq_fire;
+  assign io_victim_vSetIdx_bits  = acq_out_vSetIdx;
+
+  // ===========================================================================
+  // priorityFIFO 时序
+  // ===========================================================================
+  wire pf_enq_fire = prefetch_demux_fire;   // 与 prefetch req 入 MSHR 同拍
+  wire pf_deq_fire = pf_arb_out_fire;        // 与 prefetch acquire 发射同拍
+  wire pf_fifo_flush = io_flush || io_fencei;
+
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) begin
+      pf_enq_flag <= 1'b0; pf_enq_ptr <= '0;
+      pf_deq_flag <= 1'b0; pf_deq_ptr <= '0;
+      for (int i = 0; i < N_PREFETCH_MSHR; i++) pf_fifo[i] <= '0;
+    end else begin
+      // 入队：写队尾，指针 +1（到深度则绕回并翻 flag）
+      if (pf_enq_fire) pf_fifo[pf_enq_ptr] <= PF_PTR_W'(prefetch_sel);
+
+      if (pf_fifo_flush) begin
+        pf_enq_ptr  <= '0;
+        pf_deq_ptr  <= '0;
+        pf_enq_flag <= 1'b0;
+        pf_deq_flag <= 1'b0;
+      end else begin
+        if (pf_enq_fire) begin
+          if (pf_enq_ptr == PF_PTR_W'(N_PREFETCH_MSHR - 1)) begin
+            pf_enq_ptr  <= '0;
+            pf_enq_flag <= ~pf_enq_flag;
+          end else begin
+            pf_enq_ptr <= pf_enq_ptr + 1'b1;
+          end
+        end
+        if (pf_deq_fire) begin
+          if (pf_deq_ptr == PF_PTR_W'(N_PREFETCH_MSHR - 1)) begin
+            pf_deq_ptr  <= '0;
+            pf_deq_flag <= ~pf_deq_flag;
+          end else begin
+            pf_deq_ptr <= pf_deq_ptr + 1'b1;
+          end
+        end
+      end
+    end
+  end
+
+  // ===========================================================================
+  // TileLink D 通道（grant）：把 refillCycles 个 beat 拼成一条 cacheline
+  // ===========================================================================
+  // grant 携带数据的判据：opcode[0]==1（AccessAckData 的最低位）
+  wire grant_has_data = io_mem_grant_bits_opcode[0];
+  wire grant_beat     = io_mem_grant_valid && grant_has_data;  // grant.ready 恒 1
+
+  logic [BEAT_CNT_W-1:0]            read_beat_cnt;             // 当前 beat 序号（0/1）
+  logic [BEAT_BITS-1:0]            resp_data [REFILL_CYCLES]; // 拼接缓存
+  wire  wait_last = (read_beat_cnt == BEAT_CNT_W'(REFILL_CYCLES - 1));
+  wire  last_fire = grant_beat && wait_last;                   // 收完最后一个 beat
+
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) begin
+      read_beat_cnt <= '0;
+      for (int i = 0; i < REFILL_CYCLES; i++) resp_data[i] <= '0;
+    end else if (grant_beat) begin
+      resp_data[read_beat_cnt] <= io_mem_grant_bits_data;
+      read_beat_cnt <= wait_last ? '0 : (read_beat_cnt + 1'b1);
+    end
+  end
+
+  // 拼成 512b（beat1 在高位，beat0 在低位）
+  logic [BLOCK_BITS-1:0] resp_data_flat;
+  always_comb begin
+    resp_data_flat = '0;
+    for (int i = 0; i < REFILL_CYCLES; i++)
+      resp_data_flat[i*BEAT_BITS +: BEAT_BITS] = resp_data[i];
+  end
+
+  // 收完最后 beat 的下一拍：把 source / last_fire 打一拍，用于回填与回收 MSHR
+  logic            last_fire_r;
+  logic [SRC_W-1:0] id_r;
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) begin
+      last_fire_r <= 1'b0;
+      id_r        <= '0;
+    end else begin
+      last_fire_r <= last_fire;
+      id_r        <= io_mem_grant_bits_source;
+    end
+  end
+
+  // corrupt：任一 beat corrupt 则置位，回送 MainPipe 后（last_fire_r）清除
+  logic corrupt_r;
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset)                               corrupt_r <= 1'b0;
+    else if (grant_beat && io_mem_grant_bits_corrupt) corrupt_r <= 1'b1;
+    else if (last_fire_r)                    corrupt_r <= 1'b0;
+  end
+
+  // ===========================================================================
+  // refill 完成 → 回收对应 MSHR、锁存其响应信息
+  // ===========================================================================
+  // 各 MSHR 在本拍是否被「grant 完成」回收（last_fire_r 且 source 匹配）
+  logic [N_MSHR_SLOTS-1:0] mshr_invalidate;
+  always_comb begin
+    mshr_invalidate = '0;
+    for (int i = 0; i < N_MSHR; i++)
+      mshr_invalidate[i] = last_fire_r && (id_r == SRC_W'(i));
+  end
+
+  // 选 grant 对应 MSHR 的响应信息（提前一拍在 last_fire 时锁存，改善时序）
+  // resp.valid 不锁存（flush/fencei 可随时清），用当拍 id_r 索引的 MSHR valid&!killed
+  //
+  // 注：用 always_comb 显式按 source 选中字段，而非「连续赋值整个 struct =
+  //     mshr[变量下标]」——后者在 VCS 下对 unpacked 数组元素的变量索引会产生 X。
+  logic [BLK_PADDR_W-1:0] grant_mshr_blkPaddr;
+  logic [IDX_BITS-1:0]    grant_mshr_vSetIdx;
+  logic [WAY_BITS-1:0]    grant_mshr_way;
+  always_comb begin
+    grant_mshr_blkPaddr = mshr[io_mem_grant_bits_source].blkPaddr;
+    grant_mshr_vSetIdx  = mshr[io_mem_grant_bits_source].vSetIdx;
+    grant_mshr_way      = mshr[io_mem_grant_bits_source].way;
+  end
+
+  logic [BLK_PADDR_W-1:0] resp_blkPaddr;
+  logic [IDX_BITS-1:0]    resp_vSetIdx;
+  logic [WAY_BITS-1:0]    resp_way;
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) begin
+      resp_blkPaddr <= '0;
+      resp_vSetIdx  <= '0;
+      resp_way      <= '0;
+    end else if (last_fire) begin
+      resp_blkPaddr <= grant_mshr_blkPaddr;
+      resp_vSetIdx  <= grant_mshr_vSetIdx;
+      resp_way      <= grant_mshr_way;
+    end
+  end
+
+  // id_r 对应 MSHR 当拍是否仍是有效的可响应项（resp.valid，不含被 kill/未占用）
+  wire resp_mshr_valid = mshr[id_r].valid && !mshr[id_r].killed;
+
+  // ===========================================================================
+  // MSHR 状态更新（每个 MSHR 独立）
+  //   fetch 区 [0..3] 登记 fetch_req；prefetch 区 [4..13] 登记 prefetch_req。
+  //   按区静态选取入队数据（genvar 常量分支，无变量索引、无函数读模块信号）。
+  // ===========================================================================
+  generate
+    for (genvar gi = 0; gi < int'(N_MSHR); gi++) begin : g_mshr
+      localparam bit IS_PREFETCH = (gi >= int'(N_FETCH_MSHR));
+      // 本 MSHR 登记的请求来源（fetch 区 → fetch_req，prefetch 区 → prefetch_req）
+      wire [BLK_PADDR_W-1:0] enq_blkPaddr = IS_PREFETCH ? prefetch_req.blkPaddr : fetch_req.blkPaddr;
+      wire [IDX_BITS-1:0]    enq_vSetIdx  = IS_PREFETCH ? prefetch_req.vSetIdx  : fetch_req.vSetIdx;
+
+      // 本 MSHR 本拍被 flush/fencei 标记（fetch 不响应 flush）
+      wire kill_now = io_fencei || (IS_PREFETCH && io_flush);
+
+      always_ff @(posedge clock or posedge reset) begin
+        if (reset) begin
+          mshr[gi].valid    <= 1'b0;
+          mshr[gi].issued   <= 1'b0;
+          mshr[gi].killed   <= 1'b0;
+          mshr[gi].blkPaddr <= '0;
+          mshr[gi].vSetIdx  <= '0;
+          mshr[gi].way      <= '0;
+        end else begin
+          // ---- 接收新 req（优先级最高，会重置整条 entry）----
+          if (mshr_enq[gi]) begin
+            mshr[gi].valid    <= 1'b1;
+            mshr[gi].issued   <= 1'b0;
+            mshr[gi].killed   <= 1'b0;
+            mshr[gi].blkPaddr <= enq_blkPaddr;
+            mshr[gi].vSetIdx  <= enq_vSetIdx;
+          end else begin
+            // ---- killed：被 flush/fencei 标记；未发射的立即失效 ----
+            if (kill_now) begin
+              mshr[gi].killed <= 1'b1;
+              if (!mshr[gi].issued) mshr[gi].valid <= 1'b0;
+            end
+            // ---- grant 完成回收（与 enq 互斥；同 source 不会同拍 enq+invalidate）----
+            if (mshr_invalidate[gi]) mshr[gi].valid <= 1'b0;
+          end
+
+          // ---- acquire 发射：置 issued、锁存 victim way（与 enq 不会同拍冲突）----
+          if (!mshr_enq[gi] && acq_fire && (acq_sel_idx == SRC_W'(gi))) begin
+            mshr[gi].issued <= 1'b1;
+            mshr[gi].way    <= io_victim_way;
+          end
+        end
+      end
+    end
+  endgenerate
+
+  // ===========================================================================
+  // 响应 fetch + 写 SRAM
+  // ===========================================================================
+  wire [N_WAYS-1:0] waymask = way_to_mask(resp_way);
+
+  // fetch_resp：refill 完成的下一拍输出（即使 flush/fencei 也发，见模块头）
+  wire fetch_resp_valid = resp_mshr_valid && last_fire_r;
+  // 写 SRAM：仅在 fetch_resp 有效、无 corrupt、且非 flush/fencei 时
+  wire write_sram_valid = fetch_resp_valid && !corrupt_r && !io_flush && !io_fencei;
+
+  assign io_fetch_resp_valid         = fetch_resp_valid;
+  assign io_fetch_resp_bits_blkPaddr = resp_blkPaddr;
+  assign io_fetch_resp_bits_vSetIdx  = resp_vSetIdx;
   assign io_fetch_resp_bits_waymask  = waymask;
-  assign io_fetch_resp_bits_data     = resp_data;
+  assign io_fetch_resp_bits_data     = resp_data_flat;
   assign io_fetch_resp_bits_corrupt  = corrupt_r;
 
-  // 写 SRAM（meta + data）
   assign io_meta_write_valid        = write_sram_valid;
-  assign io_meta_write_bits_virIdx  = mshr_resp_vSetIdx;
-  assign io_meta_write_bits_phyTag  = mshr_resp_blkPaddr[41:6];
+  assign io_meta_write_bits_virIdx  = resp_vSetIdx;
+  assign io_meta_write_bits_phyTag  = get_phy_tag(resp_blkPaddr);
   assign io_meta_write_bits_waymask = waymask;
-  assign io_meta_write_bits_bankIdx = mshr_resp_vSetIdx[0];
+  assign io_meta_write_bits_bankIdx = resp_vSetIdx[0];
+
   assign io_data_write_valid        = write_sram_valid;
-  assign io_data_write_bits_virIdx  = mshr_resp_vSetIdx;
-  assign io_data_write_bits_data    = resp_data;
+  assign io_data_write_bits_virIdx  = resp_vSetIdx;
+  assign io_data_write_bits_data    = resp_data_flat;
   assign io_data_write_bits_waymask = waymask;
 
-  // 替换器索取 victim way：acquire fire 时
-  assign io_victim_vSetIdx_valid = io_mem_acquire_ready & acquireArb_out_valid;
-  assign io_mem_acquire_valid    = acquireArb_out_valid;
+  // ===========================================================================
+  // WFI safe：所有 MSHR 都没有在途 L2 响应（!(valid && issued)）
+  // ===========================================================================
+  logic wfi_safe;
+  always_comb begin
+    wfi_safe = 1'b1;
+    for (int i = 0; i < N_MSHR; i++)
+      if (mshr[i].valid && mshr[i].issued) wfi_safe = 1'b0;
+  end
+  assign io_wfi_wfiSafe = wfi_safe;
+
+  // io_mem_grant_bits_size 在 KunminghuV2 固定（整 cacheline），本实现按 beat 计数，不使用
+  wire _unused_ok = &{1'b0, io_mem_grant_bits_size};
 
 endmodule

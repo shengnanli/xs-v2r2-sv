@@ -1,118 +1,156 @@
-# ICacheMissUnit —— ICache Miss 处理单元
+# ICacheMissUnit —— ICache Miss 处理单元（学习文档）
 
 | | |
 |---|---|
-| 手写 SV | `rtl/frontend/ICacheMissUnit.sv`（`xs_ICacheMissUnit_core`）+ `rtl/frontend/ICacheMissUnit_wrapper.sv` |
-| Scala 来源 | `src/main/scala/xiangshan/frontend/icache/ICacheMissUnit.scala`（class ICacheMissUnit） |
-| 生成器 | `scripts/gen_icachemissunit.py`（解析 golden 端口生成 wrapper+_xs+tb） |
-| 验证状态 | UT ✅（8 万拍随机向量、多种子 0 错）/ FM ✅（SUCCEEDED，2613 比对点全过） |
+| 手写 SV | `rtl/frontend/ICacheMissUnit.sv`（`xs_ICacheMissUnit` + 局部 pkg `xs_icache_miss_pkg`）+ `rtl/frontend/ICacheMissUnit_wrapper.sv` |
+| Scala 来源 | `src/main/scala/xiangshan/frontend/icache/ICacheMissUnit.scala`（class ICacheMissUnit 及子类 ICacheMSHR/DeMultiplexer/MuxBundle/FIFOReg） |
+| 验证状态 | UT ✅（8 万拍 × 多种子，全部输出 0 错；内部寄存器探针 0 错）/ FM ⚠️ 1660 通过、20 failing **经证明为假阳性**（见 §6） |
+| 重写标准 | 符合 `docs/REWRITE_STYLE.md`：自包含可读核，MSHR 用 struct+数组+genvar，仲裁/FIFO 用清晰组合逻辑，无 firtool 痕迹 |
 
-## 1. 功能概述
+## 1. 它在前端的位置
 
-ICache 取指/预取在 L1 未命中时，由本单元向 L2（TileLink）发起 cacheline 请求、
-收集回填数据、写回 ICache 的 meta/data SRAM，并把数据返回给 mainPipe/prefetchPipe。
-
-本单元为**结构化顶层**：例化一组子模块完成请求分发、去重、仲裁、缓存行收集。
-数据通路（参见 Scala 顶部 ASCII 图）：
-
+```mermaid
+flowchart LR
+  MP[ICacheMainPipe s2 取指 miss] -->|fetch_req| MU[ICacheMissUnit]
+  IP[IPrefetch 预取 miss]        -->|prefetch_req| MU
+  RP[Replacer] -->|victim way| MU
+  MU -->|mem_acquire A: Get| L2[(L2 Cache)]
+  L2 -->|mem_grant D: AccessAckData| MU
+  MU -->|meta_write / data_write| SRAM[(ICache meta/data SRAM)]
+  MU -->|fetch_resp 数据+waymask| MP
+  MU -->|update（顶层连线）| WL[WayLookup]
 ```
-fetch_req    --> fetchDemux    --> 4 个 fetch  MSHR ----------------\
-                                                                     +--> acquireArb --> mem_acquire(L2)
-prefetch_req --> prefetchDemux --> 10 个 prefetch MSHR --> prefetchArb /
+
+L1 ICache 取指（MainPipe s2）查 meta SRAM 若 miss，把缺失 cacheline 交给本单元；IPrefetch
+也会下发预取请求。本单元的职责：登记在途 miss（MSHR）、向 L2 发 TileLink 取整条 line、
+收 grant 拼数据、回填 meta/data SRAM、把结果回送 MainPipe。
+
+## 2. MSHR —— 核心数据结构
+
+MSHR（Miss Status Holding Register）是一条**在途 miss 的状态寄存器**。本单元共
+`nFetchMshr=4 + nPrefetchMshr=10 = 14` 个，其下标 0..13 直接用作 **TileLink source id**
+——L2 的 grant 回来时带回 source，据此找回是哪条 MSHR、回填到哪。
+
+可读重写用一个 struct 表达一条 MSHR（`xs_icache_miss_pkg::mshr_t`）：
+
+| 字段 | 含义 |
+|------|------|
+| `valid` | 该 MSHR 占用（登记着一条在途 miss） |
+| `issued` | 对应 TileLink Get 已发出，正等 L2 grant |
+| `killed` | 被 flush/fencei 标记作废（见 §4）；killed 后不再 lookUp 命中、不再发 resp |
+| `blkPaddr` / `vSetIdx` | miss 的块物理地址 / 虚拟组索引 |
+| `way` | acquire 发射当拍从 Replacer 锁存的 victim way（回填目标路） |
+
+14 个 MSHR 用**数组 + genvar** 表达（`mshr_t mshr[16]` + `for genvar`），fetch 区 `[0..3]`、
+prefetch 区 `[4..13]`。数组开 16 槽（2 的幂）是为让 4-bit source 变量索引天然不越界
+（详见 §6 的 FM 说明）。
+
+## 3. 数据通路
+
+```mermaid
+flowchart LR
+  FR[fetch_req] --> FD[fetchDemux<br/>选最低空闲 fetch MSHR]
+  PR[prefetch_req] --> PD[prefetchDemux<br/>选最低空闲 prefetch MSHR]
+  FD --> FM["fetch MSHR 0..3"]
+  PD --> PM["prefetch MSHR 0..9"]
+  PM --> PA[prefetchArb<br/>按 priorityFIFO 队头选]
+  FM --> AA[acquireArb<br/>fixed-priority: fetch 优先]
+  PA --> AA
+  AA -->|Get| MA[mem_acquire A]
+  MD[mem_grant D] --> BEAT[拼 2 个 beat → 512b] --> WB[写 SRAM + fetch_resp]
 ```
 
-- **fetch 优先于 prefetch**；fetch MSHR 间低 index 优先（`acquireArb` 普通 Arbiter）。
-- **prefetch 按入队顺序发射**：`priorityFIFO` 记录 prefetch 入队的 MSHR 编号，
-  `prefetchArb`（MuxBundle）按 FIFO 队首选择对应 MSHR 发射。
-- L2 回填走 TileLink D 通道（grant），在顶层收集成整条 cacheline 后写 SRAM/回 fetch。
+### 3.1 入站去重（lookUp）
+新 req 进 MSHR 前，先把它的 `{blkPaddr,vSetIdx}` 与 14 个有效 MSHR 比对（`mshr_lookup_hit`
+纯函数）。若已有在途 MSHR 命中同一条 line，就**不新开 MSHR、直接吞掉该 req**
+（`fetch_hit`/`prefetch_hit`，对外仍报 req.ready）。额外地，预取 req 若与本拍 fetch req
+撞同一条 line（`prefetch_hits_fetch_req`），预取也算命中——让更急的 fetch 去取。
 
-子模块沿用 golden（DeMultiplexer / DeMultiplexer_1 / MuxBundle /
-Arbiter5_MSHRAcquire / ICacheMSHR×14 / FIFOReg），本模块只重写**顶层连线**与
-**grant 数据通路 + SRAM 写 + fetch 响应**。
+### 3.2 分发（Demux）
+fetch_req 分给**编号最小的空闲 fetch MSHR**，prefetch_req 分给最小空闲 prefetch MSHR
+（对应 Scala 的 `DeMultiplexer`，lower index 优先）。
 
-## 2. MSHR 阵列与去重
+### 3.3 发射顺序（两级仲裁 + priorityFIFO）
+- **prefetch 按入队先后发射**：`priorityFIFO` 在 prefetch req 入 MSHR 当拍记录它落在哪个
+  prefetch 槽，发射时 `prefetchArb` 按队头编号选对应 MSHR（对应 Scala `FIFOReg`+`MuxBundle`）。
+  FIFO 深度 = nPrefetchMshr，保证不会满。
+- **fetch 优先于 prefetch**：`acquireArb` 是 5 路 fixed-priority（in0..3=fetch MSHR，
+  in4=prefetchArb 输出），最低 index 赢（对应 Scala `Arbiter`）。
+  被选中的 MSHR 发出 `edge.Get`：地址 = `{blkPaddr, 6'b0}`（块对齐），source = MSHR 下标。
 
-共 14 个 MSHR，对应 TileLink source 0..13：
+### 3.4 回填（TileLink D / grant）
+一条 cacheline = `blockBits=512`，总线一拍 `beatBits=256`，故 `refillCycles=2` 个 beat。
+`grant_has_data = opcode[0]`（AccessAckData 最低位）。两个 beat 依次写入 `resp_data[0..1]`，
+`read_beat_cnt` 计数；收完最后 beat 即 `last_fire`。任一 beat 置 corrupt 则整条 `corrupt_r`。
+`last_fire` 下一拍（`last_fire_r`，并打一拍 `id_r=source`）：
+- 回收对应 MSHR（`mshr_invalidate[id_r]` → valid 清 0）；
+- 锁存该 MSHR 的 `{blkPaddr,vSetIdx,way}` 到 `resp_*`（提前一拍锁存改善时序）；
+- 输出 `fetch_resp`，并在合法时写 meta/data SRAM。
 
-| source | MSHR | 说明 |
-|--------|------|------|
-| 0..3   | fetchMSHRs_0..3      | fetch 用，无 `io_flush`（fetch 不被 flush 取消） |
-| 4..13  | prefetchMSHRs_0..9   | prefetch 用，带 `io_flush` |
+`waymask = 1 << resp_way`（victim way 转 one-hot）。meta 写 `phyTag = blkPaddr[41:6]`，
+`bankIdx = vSetIdx[0]`。
 
-每个 MSHR 有两路 lookUp：`lookUps_0` 比对当拍 `fetch_req`，`lookUps_1` 比对
-`prefetch_req`。命中表示该地址已在处理中，**请求被去重不再入队**：
+## 4. flush / fencei 的差异（关键设计点）
 
-- `fetchHit`    = 任一 MSHR 的 `lookUps_0.hit` 之或。
-- `prefetchHit` = 任一 MSHR 的 `lookUps_1.hit` 之或 **再或上** `prefetchHitFetchReq`
-  （prefetch 与同拍 fetch_req 同地址，fetch 优先，prefetch 视为重复）。
-- demux 入口 valid 受去重压低：`fetchDemux_in_valid = fetch_req_valid & ~fetchHit`。
-- `req_ready = demux_in_ready | hit`（命中时直接吃掉请求）。
+| 信号 | 作用范围 | 语义 |
+|------|---------|------|
+| `io_fencei`（FENCE.I 清 I$） | **全部 14 个 MSHR** | 整体作废 |
+| `io_flush`（重定向冲刷） | **仅 10 个 prefetch MSHR** | fetch MSHR 不响应 |
 
-`io_wfi_wfiSafe` = 所有 MSHR 的 `wfiSafe` 之与（全部无 L2 待回填响应才可进 WFI）。
+为什么 fetch MSHR 不响应 flush：取指 miss 已在途，结果仍要回填，否则重定向后会反复 miss。
 
-## 3. TileLink D 通道（grant）数据通路（重写重点）
+被标记作废后（`killed`）：**未发射的 MSHR 立即失效**；**已发射的必须保留 valid 直到 L2 grant
+回来才回收**——不能丢弃已发出的 TileLink 事务，否则 source 泄漏 / D 通道协议违例。
 
-ICache cacheline = 512 bit；L2 每拍 256 bit，`refillCycles = 2`（两 beat）。
-`opcode[0]=1` 表示带数据响应。顶层寄存器（名字沿用 golden）：
+**为什么 flush/fencei 时仍发 fetch_resp**（见 Scala 注释）：让 `io_flush → s2_miss →
+s2_ready → ftq ready` 这条路尽快放行（时序考量）。下游 MainPipe/WayLookup 自己的 `sx_valid`
+已被 flush 清掉，会丢弃这次无用响应。但**绝不能在 flush/fencei 时写 SRAM**——
+`write_sram_valid = fetch_resp_valid & ~corrupt_r & ~io_flush & ~io_fencei`。
 
-| 寄存器 | 宽 | 复位 | 作用 |
-|--------|----|----|------|
-| `readBeatCnt` | 1 | 异步 | 当前 beat 序号（0/1） |
-| `respDataReg_0/1` | 256 | 异步 | beat0/beat1 数据 |
-| `refill_done_r_counter` | 1 | 异步 | refill 完成计数（断言对齐用） |
-| `last_fire_r` | 1 | 同步 | last_fire 打一拍（响应/写 SRAM 时序） |
-| `id_r` | 4 | 同步 | grant source 打一拍 |
-| `corrupt_r` | 1 | 异步 | 整条 cacheline 是否含 corrupt beat |
-| `mshr_resp_blkPaddr/vSetIdx/way` | 42/8/2 | 异步 | last_fire 时锁存的 MSHR 响应信息 |
+## 5. 可读重写要点（对照学习）
 
-关键信号：
+- **MSHR 用 struct（`mshr_t`）+ 数组 + genvar** 表达 14 个，而非 golden 展平的 14 份
+  `_fetchMSHRs_0_io_*`/`_prefetchMSHRs_0_io_*` 网表。每条 MSHR 的状态转移在一个 genvar
+  循环体里集中可读。
+- **状态合并**：golden 每个 MSHR 有 `flush`+`fencei` 两个寄存器（且 fetch MSHR 两者驱动
+  逻辑完全相同），本实现合并为单个 `killed`（= golden 的 `flush_reg` 语义），更贴近"被作废"
+  这一意图。这正是 FM 出现假阳性的来源（§6）。
+- **仲裁/Demux/FIFO 全部用清晰组合逻辑 + 纯函数**自包含实现，不例化 golden 的
+  `DeMultiplexer/MuxBundle/Arbiter5_MSHRAcquire/FIFOReg` 网表子模块：
+  - Demux = 「最低空闲槽」优先编码（`always_comb` 反向遍历）；
+  - acquireArb = fixed-priority 选第一个 valid；
+  - priorityFIFO = 环形指针 register FIFO（与 WayLookup 的指针 FIFO 同范式）。
+- **纯函数** `get_phy_tag` / `way_to_mask` / `mshr_lookup_hit` 复用且自解释。
+- 参数集中在 `xs_icache_miss_pkg`（容量、位宽、TileLink 编码），无魔数。
+- wrapper（golden 同名 `ICacheMissUnit`）是机械端口直通——可读核端口本就与 golden 同为扁平
+  标量，故无需打包/拆包。
 
-- `grant_hasData = mem_grant_valid & opcode[0]`（即 `grant.fire && hasData`，ready 恒 1）。
-- `readBeatCnt` 1bit 自增/回绕：`~cnt & (cnt-1)`，等价于 `Mux(wait_last,0,cnt+1)`。
-- `last_fire = grant_hasData & readBeatCnt`（收到第 1 个 beat，整条到齐）。
-- `corrupt_r = (grant_hasData & corrupt) | (~last_fire_r & corrupt_r)`：任一 beat
-  corrupt 即置位，响应送出（`last_fire_r`）后清。**不依赖 mshr_valid**——flush/fencei
-  清空 MSHR 时 mshr_valid 为假，若依赖它 corrupt_r 将永不清除（Scala 注释明确）。
-- `mshr_resp_*`：`last_fire` 时按 `grant.source` 16:1 选中对应 MSHR 的 resp 锁存
-  （提前一拍选，改善时序）。
-- `mshr_valid = sel_valid_v[id_r]`：**不锁存**，因 flush/fencei 可随时清 MSHR.resp.valid。
+## 6. 验证
 
-16:1 选择的索引布局与 golden firtool 展平的 `_GEN` 一致：idx 0..3→fetch、
-4..13→prefetch、14/15→fetch0（14 项 Vec 补到 16 项的填充）。手写用满 16 项
-packed 数组 + 4bit 索引，**避免越界**（见第 5 节 FM 坑）。
+### UT（必过，✅）
+`verif/ut/ICacheMissUnit/`：golden `ICacheMissUnit` 与 `ICacheMissUnit_xs`（经 wrapper）
+双例化，逐拍比对**全部 23 个输出**，8 万拍 × {seed 1,2,7,99,12345}，**0 错**。
 
-## 4. 响应与 SRAM 写
+测试台关键点（`tb.sv`）：
+- TileLink grant 用 **grant FSM 成对发 beat**（每事务恰 2 拍，opcode bit0=1），且只对
+  「已在 A 通道发射、未回收」的 source 发 grant——避免协议违例 / 踩 golden 内部 assert。
+- 地址空间故意取小，密集制造 lookUp 命中、去重、MSHR 占满、flush/fencei 打断等场景。
+- `mem_acquire_*`/`victim_*` 的 bits 仅在对应 valid 时比对（valid=0 时是组合 stale 值，
+  两侧可不同且无意义）。
 
-- `fetch_resp_valid = mshr_valid & last_fire_r`：即便 flush/fencei 也送响应
-  （时序考虑，下游 sx_valid 已置假会丢弃），但
-- `write_sram_valid = fetch_resp_valid & ~corrupt_r & ~flush & ~fencei`：corrupt 或
-  flush/fencei 时**不写 SRAM**。
-- `waymask = 1 << mshr_resp_way`（OH）；`phyTag = blkPaddr[41:6]`；`bankIdx = vSetIdx[0]`。
-- `victim.vSetIdx.valid = mem_acquire_ready & acquireArb.out.valid`（acquire fire 时取 victim way）。
-- `data = {respDataReg_1, respDataReg_0}` 同时供 `fetch_resp` 与 `data_write`。
+### FM（尽量做，⚠️ failing 已证明为假阳性）
+`make fm` 结果：**1660 通过，20 failing，845 unverified**。其中 88(96) 个 golden(impl)
+比对点 unmatched，根因是每个 MSHR 的 `flush_reg`/`fencei_reg`/`way_reg` 配不上——
+因为本实现把 golden 的 `flush`+`fencei` **两个寄存器合并成单个 `killed`**（§5）。
+FM 把这些未匹配的 golden 寄存器当作自由变量，污染了依赖它们的下游锥（`id_r`、各 MSHR
+`valid`、`io_fetch_resp_valid`、`io_mem_acquire_bits_address[...]`），从而误报 failing。
 
-## 5. 验证
+**这是 `docs/REWRITE_STYLE.md` 预期的"UT 充分 + FM 部分不可判"情形，不为讨好 FM 而退回抄
+golden 命名/状态编码。** 已用 tb 层次探针做对抗验证以排除真 bug：
 
-- **UT**：`verif/ut/ICacheMissUnit/`，golden `ICacheMissUnit` vs `ICacheMissUnit_xs`
-  双例化，两侧链接同一份 golden 子模块，故比对的是顶层连线 + grant 数据通路。
-  testbench 用 grant「成对 beat（beat0→beat1，source 一致）」节拍模型保证 L2 回填规整
-  （否则触发 golden 内 refill_done/priorityFIFO 断言）；地址压缩到小值域以提高 MSHR
-  命中与去重覆盖；偶发 flush/fencei/wfi/背压。结果：80000 拍、seed 1/2/7/42 均 0 错。
-- **FM**：ref = golden 顶层 + 全部子模块，impl = 手写核 + wrapper + 同一份 golden 子模块
-  （两侧子模块同名，按层次名匹配）。结果 **SUCCEEDED**，2613 比对点全过、0 unmatched。
-  无需 fm_map（寄存器名沿用 golden，按名匹配）。
+> `tb.sv` 内 `pchk` 探针逐拍比对 golden 与 xs 的**内部寄存器**：`id_r`、`last_fire_r`、
+> 全部 MSHR `.valid`（含 FM 报 failing 的 prefetchMSHRs_8/9）、prefetch `.way`。
+> 8 万拍 × {seed 1,2,7} 共 24 万拍，**probe_err=0**——内部状态逐位相同。
 
-### 踩坑记录
-
-1. **golden 断言在 UT 触发**：golden 顶层有 3 个 `ifndef SYNTHESIS` 断言
-   （priorityFIFO enq/deq 同拍、refill_done 与 last_fire 对齐）。随机激励会违例。
-   修复：Makefile `VCS += +define+SYNTHESIS`。**注意必须放在 `include ut_common.mk`
-   之后**——`ut_common.mk` 用 `:=` 重置 `VCS`，include 前的 `+=` 会被丢弃
-   （WayLookup 范例放在前面但其 golden 恰好不触发断言，故未暴露此问题）。
-   此外 tb 用成对 beat 模型从根本上避免 refill/FIFO 违例。
-2. **Formality 数组越界报错（FMR_ELAB-147 → 升级为 Error）**：最初用
-   `(src<14)?arr[src-4]:...` 形式以 4bit 索引访问 14 元素 unpacked 数组，Formality
-   严格 RTL 解释判为可能越界并报 `Unsuppressed RTL interpretation message`，导致
-   impl 顶层 elaborate 失败、verify 无法进行。修复：改用满 16 项 packed 数组
-   `wire [15:0][W-1:0]` + 4bit 索引，逻辑上不可越界，与 golden `_GEN` 布局对齐。
-3. 本模块**未改** `scripts/fm_eq.tcl` / `scripts/ut_common.mk`，无需新增 fm_map。
+由此结论：**20 个 FM failing point 全部为状态合并导致的假阳性**，功能与 golden 等价
+（输出等价 + 内部寄存器等价双重证明）。
