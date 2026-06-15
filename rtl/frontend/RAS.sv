@@ -1,656 +1,635 @@
 // =============================================================================
-// UT-only: 关闭 golden RASStack 内仅供仿真的 $fatal 越界断言 (随机激励会触发
-//   distanceBetween(commit_meta_TOSW, BOS) > 2 的非法 RAS 使用断言)。
-//   仅在非 SYNTHESIS (即 VCS UT) 下生效; FM 用 -define SYNTHESIS, 不受影响,
-//   断言本身在 SYNTHESIS 下也被 golden 用 `ifndef SYNTHESIS 剔除。
-//   本文件是 RTL_SRCS 首个被编译的文件, 抢先 define 使 golden 的 `ifndef 跳过。
+// xs_RASStack —— 返回地址栈（RAS）的核心：投机栈 + 提交栈 双栈结构
+//
+// 对应 Chisel: xiangshan.frontend.RAS.RASStack（newRAS.scala 内部类 RASStack）
+//
+// 【它在前端的位置】
+//   RAS 是分支预测器之一（BasePredictor），专门预测「函数返回（ret）的目标地址」。
+//   调用约定保证 call 之后必然返回到 call 的下一条指令，所以维护一个栈：
+//     · 遇到 call（taken）→ push「返回地址」（= call 落地址，RVI call 还要 +2）；
+//     · 遇到 ret （taken）→ pop 栈顶作为预测的返回目标。
+//   RASStack 是这套栈的「存储 + 指针 + 恢复」核心。外层 RAS（本工程未重写）负责从
+//   s2/s3 流水译码结果里识别 call/ret 并驱动本模块，并把本模块输出的指针打成快照
+//   随预测块下发，供 redirect 时回滚。
+//
+// 【为什么要「投机栈 + 提交栈」两套？】
+//   预测发生在取指阶段（s2/s3），此时分支是否真的 taken 还没确认；若预测错了
+//   （s3 自纠、后端 redirect），已经做过的 push/pop 必须能回滚。设计因此分两层：
+//
+//     spec_queue[32] + spec_nos[32]  —— 投机栈（speculative，持久栈 persistent stack）。
+//        环形缓冲，记录所有「在途（in-flight，已预测未提交）」的 push。
+//        指针：TOSW（写指针，下一个要写的槽）/ TOSR（读指针，当前逻辑栈顶所在槽）
+//        / BOS（底，已提交边界）/ NOS（next-on-stack，每项记的「下一项位置」，存 spec_nos）。
+//        关键点：pop 不抹数据，只移动 TOSR，靠每项的 NOS 链把逻辑栈顶往下指。
+//        于是 redirect 只需恢复几个指针即可，无需恢复数据 —— 这正是双栈廉价回滚的根源。
+//
+//     commit_stack[16]               —— 提交栈（committed，真值）。后端 commit/update 后才更新。
+//        当投机栈因 pop/redirect 把逻辑栈顶退到 BOS 以下时，回落到提交栈取数据
+//        （getCommitTop）。指针 nsp。
+//
+// 【ctr：尾递归 / 重复返回地址的压缩】
+//   连续 call 到「同一返回地址」（循环里反复调用同一函数、自递归）不分配新槽，而是把
+//   栈顶 entry 的 ctr +1（饱和到 CTR_MAX=7）；pop 时先 ctr-1，ctr 到 0 才真正退栈。
+//   有限栈深因此能容纳很深的同地址嵌套，避免溢出丢预测。
+//
+// 【三个恢复入口（优先级从高到低）】
+//   redirect（后端重定向） > s3_cancel（s2/s3 预测不一致，自我纠正） > 正常 s2 push/pop。
+//   redirect / s3_cancel 都带一份「快照 meta」（ssp/sctr/TOSR/TOSW/NOS），恢复时把指针
+//   写回快照，再按需补做一次 push（误预测的 call 漏 push）或 pop（漏 pop）。
+//
+// 【时序：writeBypass 与 timingTop】
+//   spec_queue 是寄存器堆：s2 决定 push，但要到 s3 才真正写入（realPush）。为让「下一拍
+//   栈顶预测地址」及时可用，用 writeBypassEntry 旁路本拍刚算出的 push entry，并用
+//   timingTop 寄存器**提前一拍**算好「下一拍栈顶 retAddr」（= 输出 spec_pop_addr）。
+//
+// 【与外层接口约定】
+//   外层在 push/pop/redirect/commit 各端口已做好 spec_near_overflow 反压与时序对齐，
+//   本模块只需按上述优先级维护状态并提前算好输出。
 // =============================================================================
-`ifndef SYNTHESIS
-  `ifndef STOP_COND_
-    `define STOP_COND_ 0
-  `endif
-  `ifndef ASSERT_VERBOSE_COND_
-    `define ASSERT_VERBOSE_COND_ 0
-  `endif
-`endif
+package xs_ras_pkg;
+  // ---- 容量/位宽参数（KunminghuV2：RasSize=16, RasSpecSize=32, RasCtrSize=3）----
+  localparam int unsigned VADDR_W       = 50;  // VAddrBits：返回地址宽
+  localparam int unsigned RAS_SIZE      = 16;  // 提交栈深度
+  localparam int unsigned RAS_SPEC_SIZE = 32;  // 投机环形栈深度（必须是 2 的幂）
+  localparam int unsigned CTR_W         = 3;   // ctr 位宽
+  localparam int unsigned SSP_W         = 4;   // log2Up(RAS_SIZE)：ssp/nsp 宽
+  localparam int unsigned SPTR_W        = 5;   // log2(RAS_SPEC_SIZE)：环形指针 value 宽
 
-// =============================================================================
-// xs_RAS_core / xs_RASStack —— 返回地址栈预测器 (Return Address Stack)
-//
-// 对应 Chisel: xiangshan.frontend.RAS / RAS.RASStack
-//
-// 顶层 xs_RAS_core 是 BasePredictor 的一个预测器：io_in / io_out 流水 bundle 绝大
-// 部分原样透传 (passthrough)，RAS 只改写其中 jalr_target / targets.last 等与返回
-// 目标相关的少数字段，并维护 s1/s2/s3 流水的 pc 复制寄存器、redirect/update 的
-// 输入打拍寄存器、s3 meta 寄存器等。真正的栈逻辑在子模块 xs_RASStack 中。
-//
-// xs_RASStack 维护两套栈：
-//   - spec 推测栈: spec_queue[RasSpecSize] (retAddr+ctr) + spec_nos[RasSpecSize]
-//     (每条记录指向其下一项 NOS 的环形指针)，配 ssp/sctr/TOSR/TOSW/BOS 指针。
-//   - commit 提交栈: commit_stack[RasSize] (retAddr+ctr) + nsp。
-//   还有 s2→s3 写旁路 (writeBypass*) 与 redirect / s3_cancel 的恢复逻辑。
-//
-// 环形指针 (RASPtr) = {flag, value}；flag 为环绕翻转位。比较函数:
-//   isBefore(a,b) = (a.flag ^ b.flag) ^ (a.value < b.value)
-//   即 a 严格早于 b。distanceBetween 用 6 位带翻转的差值。
-//
-// 为便于 Formality 按名字自动配对寄存器，本文件里栈的状态元件采用与 golden 完全
-// 一致的"展平标量"命名 (commit_stack_<i>_retAddr 等)；组合读出与控制逻辑则用可读
-// 的聚合 wire / 函数重写。
-//
-// 参数 (KunmingHu V2R2): RasSize=16, RasSpecSize=32, RasCtrSize=3, VAddrBits=50。
-// =============================================================================
+  localparam logic [CTR_W-1:0] CTR_MAX = 3'h7; // ctr 饱和值 ((1<<CTR_W)-1)
 
-// -----------------------------------------------------------------------------
-// xs_RASStack: 双栈返回地址栈核心
-// -----------------------------------------------------------------------------
-module xs_RASStack (
-  input         clock,
-  input         reset,
-  input         io_spec_push_valid,
-  input         io_spec_pop_valid,
-  input  [49:0] io_spec_push_addr,
-  input         io_s2_fire,
-  input         io_s3_fire,
-  input         io_s3_cancel,
-  input  [3:0]  io_s3_meta_ssp,
-  input  [2:0]  io_s3_meta_sctr,
-  input         io_s3_meta_TOSW_flag,
-  input  [4:0]  io_s3_meta_TOSW_value,
-  input         io_s3_meta_TOSR_flag,
-  input  [4:0]  io_s3_meta_TOSR_value,
-  input         io_s3_meta_NOS_flag,
-  input  [4:0]  io_s3_meta_NOS_value,
-  input         io_s3_missed_pop,
-  input         io_s3_missed_push,
-  input  [49:0] io_s3_pushAddr,
-  output [49:0] io_spec_pop_addr,
-  input         io_commit_valid,
-  input         io_commit_push_valid,
-  input         io_commit_pop_valid,
-  input         io_commit_meta_TOSW_flag,
-  input  [4:0]  io_commit_meta_TOSW_value,
-  input  [3:0]  io_commit_meta_ssp,
-  input         io_redirect_valid,
-  input         io_redirect_isCall,
-  input         io_redirect_isRet,
-  input  [3:0]  io_redirect_meta_ssp,
-  input  [2:0]  io_redirect_meta_sctr,
-  input         io_redirect_meta_TOSW_flag,
-  input  [4:0]  io_redirect_meta_TOSW_value,
-  input         io_redirect_meta_TOSR_flag,
-  input  [4:0]  io_redirect_meta_TOSR_value,
-  input         io_redirect_meta_NOS_flag,
-  input  [4:0]  io_redirect_meta_NOS_value,
-  input  [49:0] io_redirect_callAddr,
-  output [3:0]  io_ssp,
-  output [2:0]  io_sctr,
-  output        io_TOSR_flag,
-  output [4:0]  io_TOSR_value,
-  output        io_TOSW_flag,
-  output [4:0]  io_TOSW_value,
-  output        io_NOS_flag,
-  output [4:0]  io_NOS_value,
-  output        io_spec_near_overflow
+  // ---- 栈中一项：返回地址 + 重复计数 ----
+  typedef struct packed {
+    logic [VADDR_W-1:0] retAddr;
+    logic [CTR_W-1:0]   ctr;     // 同一 retAddr 连续 call 的层数（尾递归压缩）
+  } ras_entry_t;
+
+  // ---- 投机环形指针：{flag, value}。flag 是绕回标志，用于区分「写追上读」与「空」----
+  typedef struct packed {
+    logic              flag;
+    logic [SPTR_W-1:0] value;
+  } ras_ptr_t;
+
+  // 环形指针 +1 / -1（value 自然回绕时翻转 flag，由多一位的进位/借位实现）
+  function automatic ras_ptr_t ptr_inc(input ras_ptr_t p);
+    logic [SPTR_W:0] nxt;
+    nxt = {p.flag, p.value} + 1'b1;
+    return '{flag: nxt[SPTR_W], value: nxt[SPTR_W-1:0]};
+  endfunction
+
+  function automatic ras_ptr_t ptr_dec(input ras_ptr_t p);
+    logic [SPTR_W:0] nxt;
+    nxt = {p.flag, p.value} - 1'b1;
+    return '{flag: nxt[SPTR_W], value: nxt[SPTR_W-1:0]};
+  endfunction
+
+  // CircularQueuePtr 的 a < b（环形「在 b 之前」）：flag 相同比 value，flag 不同则取反。
+  function automatic logic is_before(input ras_ptr_t a, input ras_ptr_t b);
+    return (a.flag ^ b.flag) ^ (a.value < b.value);
+  endfunction
+
+  // distanceBetween(enq, deq)：enq 领先 deq 多少（6 位含绕回）。
+  // 注意：flag 相同时是「value 域内的 5 位减法」再零扩展（与 Chisel UInt 减法等宽语义一致）；
+  // 对合法环形指针 enq>=deq 时两者相同，但非法 meta（value 回绕）下必须保持此语义才与 golden 等价。
+  function automatic logic [SPTR_W:0] distance(input ras_ptr_t enq, input ras_ptr_t deq);
+    if (enq.flag == deq.flag) return {1'b0, (enq.value - deq.value)};
+    else return (SPTR_W+1)'(RAS_SPEC_SIZE) + {1'b0, enq.value} - {1'b0, deq.value};
+  endfunction
+
+  // 提交栈 / 普通深度指针（ssp/nsp，模 RAS_SIZE）的 +1/-1
+  function automatic logic [SSP_W-1:0] sp_inc(input logic [SSP_W-1:0] p);
+    return p + 1'b1;
+  endfunction
+  function automatic logic [SSP_W-1:0] sp_dec(input logic [SSP_W-1:0] p);
+    return p - 1'b1;
+  endfunction
+endpackage
+
+
+module xs_RASStack
+  import xs_ras_pkg::*;
+(
+  input  logic       clock,
+  input  logic       reset,
+
+  // ---- 投机 push/pop（来自 s2，外层已用 spec_near_overflow 反压）----
+  input  logic               spec_push_valid,
+  input  logic               spec_pop_valid,
+  input  logic [VADDR_W-1:0] spec_push_addr,
+  output logic [VADDR_W-1:0] spec_pop_addr,   // 预测的返回目标（栈顶 retAddr）
+
+  // ---- s2→s3 旁路 / s3 自我纠正 ----
+  input  logic               s2_fire,
+  input  logic               s3_fire,
+  input  logic               s3_cancel,       // s3 与 s2 预测不一致，回滚到 s3 快照
+  input  logic [SSP_W-1:0]   s3_meta_ssp,     // s3 快照 meta（push 时记录的指针状态）
+  input  logic [CTR_W-1:0]   s3_meta_sctr,
+  input  ras_ptr_t           s3_meta_TOSW,
+  input  ras_ptr_t           s3_meta_TOSR,
+  input  ras_ptr_t           s3_meta_NOS,
+  input  logic               s3_missed_pop,   // s2 漏了 pop，s3 补做
+  input  logic               s3_missed_push,  // s2 漏了 push，s3 补做
+  input  logic [VADDR_W-1:0] s3_pushAddr,
+
+  // ---- commit（来自后端 update，维护提交栈）----
+  input  logic               commit_valid,
+  input  logic               commit_push_valid,
+  input  logic               commit_pop_valid,
+  input  ras_ptr_t           commit_meta_TOSW,
+  input  logic [SSP_W-1:0]   commit_meta_ssp,
+
+  // ---- redirect（后端重定向，最高优先级恢复）----
+  input  logic               redirect_valid,
+  input  logic               redirect_isCall, // 误预测的是 call → 需补 push
+  input  logic               redirect_isRet,  // 误预测的是 ret  → 需补 pop
+  input  logic [SSP_W-1:0]   redirect_meta_ssp,
+  input  logic [CTR_W-1:0]   redirect_meta_sctr,
+  input  ras_ptr_t           redirect_meta_TOSW,
+  input  ras_ptr_t           redirect_meta_TOSR,
+  input  ras_ptr_t           redirect_meta_NOS,
+  input  logic [VADDR_W-1:0] redirect_callAddr,
+
+  // ---- 指针输出（外层打快照写进 cfiUpdate / spec_info）----
+  output logic [SSP_W-1:0]   ssp_o,
+  output logic [CTR_W-1:0]   sctr_o,
+  output ras_ptr_t           TOSR_o,
+  output ras_ptr_t           TOSW_o,
+  output ras_ptr_t           NOS_o,
+  output logic               spec_near_overflow_o
 );
 
-  localparam int RAS_SIZE      = 16;  // commit 栈深度
-  localparam int RAS_SPEC_SIZE = 32;  // spec 栈深度
-  localparam int CTR_MAX       = 7;   // (1<<RasCtrSize)-1
-
-  // --------------------------------------------------------------------------
+  // ===========================================================================
   // 状态寄存器
-  // commit 栈用与 golden 一致的"展平标量"命名 (commit_stack_<N>_retAddr/ctr), 这样
-  // Formality 能按名字 1:1 配对 (含正确位序); 否则二维数组寄存器的位序会被签名分析
-  // 弄混。读出/写入仍用可读的数组视图 + 译码, 见下。spec 栈用普通数组 (FM 可正常配对)。
-  // --------------------------------------------------------------------------
-  // commit 栈: 展平标量存储
-  reg  [49:0] commit_stack_0_retAddr,  commit_stack_1_retAddr,  commit_stack_2_retAddr,  commit_stack_3_retAddr;
-  reg  [49:0] commit_stack_4_retAddr,  commit_stack_5_retAddr,  commit_stack_6_retAddr,  commit_stack_7_retAddr;
-  reg  [49:0] commit_stack_8_retAddr,  commit_stack_9_retAddr,  commit_stack_10_retAddr, commit_stack_11_retAddr;
-  reg  [49:0] commit_stack_12_retAddr, commit_stack_13_retAddr, commit_stack_14_retAddr, commit_stack_15_retAddr;
-  reg  [2:0]  commit_stack_0_ctr,  commit_stack_1_ctr,  commit_stack_2_ctr,  commit_stack_3_ctr;
-  reg  [2:0]  commit_stack_4_ctr,  commit_stack_5_ctr,  commit_stack_6_ctr,  commit_stack_7_ctr;
-  reg  [2:0]  commit_stack_8_ctr,  commit_stack_9_ctr,  commit_stack_10_ctr, commit_stack_11_ctr;
-  reg  [2:0]  commit_stack_12_ctr, commit_stack_13_ctr, commit_stack_14_ctr, commit_stack_15_ctr;
-  // commit 栈: 可读数组视图 (组合, 供索引读出)
-  wire [49:0] commit_stack_retAddr [0:RAS_SIZE-1];
-  wire [2:0]  commit_stack_ctr     [0:RAS_SIZE-1];
-  assign commit_stack_retAddr[0]=commit_stack_0_retAddr;   assign commit_stack_ctr[0]=commit_stack_0_ctr;
-  assign commit_stack_retAddr[1]=commit_stack_1_retAddr;   assign commit_stack_ctr[1]=commit_stack_1_ctr;
-  assign commit_stack_retAddr[2]=commit_stack_2_retAddr;   assign commit_stack_ctr[2]=commit_stack_2_ctr;
-  assign commit_stack_retAddr[3]=commit_stack_3_retAddr;   assign commit_stack_ctr[3]=commit_stack_3_ctr;
-  assign commit_stack_retAddr[4]=commit_stack_4_retAddr;   assign commit_stack_ctr[4]=commit_stack_4_ctr;
-  assign commit_stack_retAddr[5]=commit_stack_5_retAddr;   assign commit_stack_ctr[5]=commit_stack_5_ctr;
-  assign commit_stack_retAddr[6]=commit_stack_6_retAddr;   assign commit_stack_ctr[6]=commit_stack_6_ctr;
-  assign commit_stack_retAddr[7]=commit_stack_7_retAddr;   assign commit_stack_ctr[7]=commit_stack_7_ctr;
-  assign commit_stack_retAddr[8]=commit_stack_8_retAddr;   assign commit_stack_ctr[8]=commit_stack_8_ctr;
-  assign commit_stack_retAddr[9]=commit_stack_9_retAddr;   assign commit_stack_ctr[9]=commit_stack_9_ctr;
-  assign commit_stack_retAddr[10]=commit_stack_10_retAddr; assign commit_stack_ctr[10]=commit_stack_10_ctr;
-  assign commit_stack_retAddr[11]=commit_stack_11_retAddr; assign commit_stack_ctr[11]=commit_stack_11_ctr;
-  assign commit_stack_retAddr[12]=commit_stack_12_retAddr; assign commit_stack_ctr[12]=commit_stack_12_ctr;
-  assign commit_stack_retAddr[13]=commit_stack_13_retAddr; assign commit_stack_ctr[13]=commit_stack_13_ctr;
-  assign commit_stack_retAddr[14]=commit_stack_14_retAddr; assign commit_stack_ctr[14]=commit_stack_14_ctr;
-  assign commit_stack_retAddr[15]=commit_stack_15_retAddr; assign commit_stack_ctr[15]=commit_stack_15_ctr;
-  // spec 栈
-  reg  [49:0] spec_queue_retAddr   [0:RAS_SPEC_SIZE-1];
-  reg  [2:0]  spec_queue_ctr       [0:RAS_SPEC_SIZE-1];
-  reg         spec_nos_flag        [0:RAS_SPEC_SIZE-1];
-  reg  [4:0]  spec_nos_value       [0:RAS_SPEC_SIZE-1];
+  // ===========================================================================
+  ras_entry_t [RAS_SIZE-1:0]      commit_stack;   // 提交栈（真值）
+  ras_entry_t [RAS_SPEC_SIZE-1:0] spec_queue;     // 投机栈：每项的 retAddr+ctr
+  ras_ptr_t   [RAS_SPEC_SIZE-1:0] spec_nos;       // 投机栈：每项的 NOS（下一项位置）
 
-  // commit 栈 retAddr 写译码 (组合): 仅 push 新建项时写 1 个 retAddr (索引 meta_ssp+1)
-  reg        commit_adr_we;   reg [3:0] commit_adr_idx;   reg [49:0] commit_adr_val;
+  logic [SSP_W-1:0] nsp;   // 提交栈指针
+  logic [SSP_W-1:0] ssp;   // 投机栈逻辑深度指针
+  logic [CTR_W-1:0] sctr;  // 投机栈顶 ctr
+  ras_ptr_t TOSR;          // top-of-spec-read：当前逻辑栈顶所在的 spec 槽
+  ras_ptr_t TOSW;          // top-of-spec-write：下一个要写入的 spec 槽
+  ras_ptr_t BOS;           // bottom-of-spec：已提交边界
 
-  reg  [3:0]  nsp;
-  reg  [3:0]  ssp;
-  reg  [2:0]  sctr;
-  reg         TOSR_flag;  reg [4:0] TOSR_value;
-  reg         TOSW_flag;  reg [4:0] TOSW_value;
-  reg         BOS_flag;   reg [4:0] BOS_value;
-  reg         spec_near_overflowed;
+  logic spec_near_overflowed;
 
-  reg  [49:0] writeBypassEntry_retAddr;
-  reg  [2:0]  writeBypassEntry_ctr;
-  reg         writeBypassNos_flag;
-  reg  [4:0]  writeBypassNos_value;
-  reg         writeBypassValid;
+  // 旁路：本拍刚算出的 push entry，供「同拍即用」与下一拍 timingTop
+  ras_entry_t writeBypassEntry;
+  ras_ptr_t   writeBypassNos;
+  logic       writeBypassValid;
 
-  reg  [49:0] timingTop_retAddr;
+  wire redir_call = redirect_valid & redirect_isCall;
 
-  // s2 锁存、待 s3 真正写入的条目
-  reg  [49:0] realWriteEntry_next_retAddr;
-  reg  [2:0]  realWriteEntry_next_ctr;
-  reg  [4:0]  realWriteAddr_next_value;
-  reg         realNos_next_flag;
-  reg  [4:0]  realNos_next_value;
-  reg         realPush_r;    // s2 锁存的 spec_push_valid
-  reg         realPush_REG;  // 上拍 redirect&isCall
-
-  // --------------------------------------------------------------------------
-  // 环形指针比较辅助
-  // --------------------------------------------------------------------------
-  // isBefore(a, b): a 严格早于 b
-  function automatic logic isBefore(input logic af, input logic [4:0] av,
-                                    input logic bf, input logic [4:0] bv);
-    isBefore = (af ^ bf) ^ (av < bv);
-  endfunction
-  // 指针在 [BOS, TOSW) 范围内: 不早于 BOS 且 严格早于 TOSW
-  // 注意: BOS 显式作为入参传入 (而非读模块级寄存器), 这样 wire 连续赋值能正确将
-  // BOS 纳入敏感列表 —— 否则 BOS 变化而 r/w 不变时组合输出不会重算 (VCS 仿真坑)。
-  function automatic logic ptrInRange(input logic rf, input logic [4:0] rv,
-                                      input logic wf, input logic [4:0] wv,
-                                      input logic bf, input logic [4:0] bv);
-    ptrInRange = (~isBefore(rf, rv, bf, bv)) & isBefore(rf, rv, wf, wv);
+  // ===========================================================================
+  // 组合：栈顶查询
+  //   tosr_in_range：TOSR 是否落在「有效在途区间」[BOS, TOSW)。
+  //     在区间内 → 栈顶数据在 spec_queue；否则逻辑栈已退到提交边界以下 → 取 commit_stack。
+  // ===========================================================================
+  // 纯函数（所有读入都经实参传入，便于 FM 签名分析，无 FMR_VLOG-091）。
+  // tosr_in_range：不早于 BOS（!isBefore(tosr,BOS)）且 严格早于 TOSW（isBefore(tosr,tosw)）。
+  function automatic logic tosr_in_range(input ras_ptr_t cur_tosr, input ras_ptr_t cur_tosw,
+                                         input ras_ptr_t cur_bos);
+    return (~is_before(cur_tosr, cur_bos)) & is_before(cur_tosr, cur_tosw);
   endfunction
 
-  // --------------------------------------------------------------------------
-  // 组合读出: spec_queue / spec_nos / commit_stack 的索引读
-  // --------------------------------------------------------------------------
-  wire [49:0] specQ_at_TOSR_addr = spec_queue_retAddr[TOSR_value];
-  wire [2:0]  specQ_at_TOSR_ctr  = spec_queue_ctr   [TOSR_value];
-  wire [49:0] commit_at_ssp_addr = commit_stack_retAddr[ssp];
-  wire [2:0]  commit_at_ssp_ctr  = commit_stack_ctr   [ssp];
-
-  // 当前 top: writeBypass 优先 → spec 在范围内 → commit
-  wire        topEntry_inRange = ptrInRange(TOSR_flag, TOSR_value, TOSW_flag, TOSW_value, BOS_flag, BOS_value);
-  wire [49:0] topEntry_inflight_addr = topEntry_inRange ? specQ_at_TOSR_addr : commit_at_ssp_addr;
-  wire [49:0] topEntry_retAddr = writeBypassValid ? writeBypassEntry_retAddr : topEntry_inflight_addr;
-
-  // 当前 topNos: writeBypass 优先 → spec_nos[TOSR]
-  wire        topNos_flag  = writeBypassValid ? writeBypassNos_flag  : spec_nos_flag [TOSR_value];
-  wire [4:0]  topNos_value = writeBypassValid ? writeBypassNos_value : spec_nos_value[TOSR_value];
-
-  // --------------------------------------------------------------------------
-  // writeBypassValid 的下一拍值 (组合)
-  //   redirect&isCall → 1; redirect → 0; s2_fire → spec_push_valid;
-  //   s3_fire → 0; else 保持
-  // --------------------------------------------------------------------------
-  wire redirectIsCall = io_redirect_valid & io_redirect_isCall;
-  wire writeBypassValidWire =
-        redirectIsCall |
-        (~io_redirect_valid &
-          (io_s2_fire ? io_spec_push_valid : (~io_s3_fire & writeBypassValid)));
-
-  // --------------------------------------------------------------------------
-  // writeEntry: 本拍要写入 spec 的条目 (push 来源 = redirect call 地址 或 s2 地址)
-  // --------------------------------------------------------------------------
-  wire [49:0] writeEntry_retAddr = redirectIsCall ? io_redirect_callAddr : io_spec_push_addr;
-
-  // redirect 路径上的 top (不走 bypass)
-  wire        redTop_inRange =
-        ptrInRange(io_redirect_meta_TOSR_flag, io_redirect_meta_TOSR_value,
-                   io_redirect_meta_TOSW_flag, io_redirect_meta_TOSW_value, BOS_flag, BOS_value);
-  wire [49:0] redTop_addr = redTop_inRange ? spec_queue_retAddr[io_redirect_meta_TOSR_value]
-                                           : commit_stack_retAddr[io_redirect_meta_ssp];
-  wire [2:0]  redTop_ctr  = redTop_inRange ? spec_queue_ctr[io_redirect_meta_TOSR_value]
-                                           : commit_stack_ctr[io_redirect_meta_ssp];
-
-  // s3 路径上的 top
-  wire        s3Top_inRange =
-        ptrInRange(io_s3_meta_TOSR_flag, io_s3_meta_TOSR_value,
-                   io_s3_meta_TOSW_flag, io_s3_meta_TOSW_value, BOS_flag, BOS_value);
-  wire [49:0] s3Top_addr = s3Top_inRange ? spec_queue_retAddr[io_s3_meta_TOSR_value]
-                                         : commit_stack_retAddr[io_s3_meta_ssp];
-  wire [2:0]  s3Top_ctr  = s3Top_inRange ? spec_queue_ctr[io_s3_meta_TOSR_value]
-                                         : commit_stack_ctr[io_s3_meta_ssp];
-
-  wire [2:0] sctr_p1    = sctr + 3'h1;
-  wire [2:0] redSctr_p1 = io_redirect_meta_sctr + 3'h1;
-
-  // 当前 top 的 ctr (走 bypass 优先)，用于计算"新 writeEntry 的 ctr"
-  wire [2:0] topEntry_ctr =
-        writeBypassValid ? writeBypassEntry_ctr
-                         : (topEntry_inRange ? specQ_at_TOSR_ctr : commit_at_ssp_ctr);
-
-  // -- writeEntry.ctr 自增判定 (Scala: topEntry.retAddr==addr && topEntry.ctr<max) --
-  // redirect call 路径用 redirectTopEntry; 普通 push 路径用当前 topEntry
-  wire writeEntry_ctr_redInc  = (redTop_addr == io_redirect_callAddr) & (redTop_ctr  != CTR_MAX[2:0]);
-  wire writeEntry_ctr_specInc = (topEntry_retAddr == io_spec_push_addr) & (topEntry_ctr != CTR_MAX[2:0]);
-
-  // -- 推测栈 sctr 寄存器自增判定 (Scala specPush: topEntry.retAddr==addr && currentSctr<max) --
-  // 注意: 用的是 currentSctr (指针 sctr / meta_sctr), 不是 topEntry.ctr
-  wire push_addr_hit     = (topEntry_retAddr == io_spec_push_addr);
-  wire redPush_addr_hit  = (redTop_addr == io_redirect_callAddr);
-  wire specPush_sctr_inc = push_addr_hit    & (sctr != CTR_MAX[2:0]);
-  wire redPush_sctr_inc  = redPush_addr_hit & (io_redirect_meta_sctr != CTR_MAX[2:0]);
-
-  // --------------------------------------------------------------------------
-  // realPush: s3 真正提交到 spec 栈
-  // --------------------------------------------------------------------------
-  wire realPush = (io_s3_fire & ((~io_s3_cancel & realPush_r) | io_s3_missed_push)) | realPush_REG;
-
-  // realWrite*: redirect 路径用 s2 锁存值; s3_missed_push 用 s3 现场值
-  wire use_next = io_redirect_isCall | ~io_s3_missed_push;
-  wire [49:0] realWriteEntry_retAddr = use_next ? realWriteEntry_next_retAddr : io_s3_pushAddr;
-  wire [4:0]  realWriteAddr_value    = use_next ? realWriteAddr_next_value   : io_s3_meta_TOSW_value;
-  wire        realNos_flag           = use_next ? realNos_next_flag          : io_s3_meta_TOSR_flag;
-  wire [4:0]  realNos_value          = use_next ? realNos_next_value         : io_s3_meta_TOSR_value;
-  // s3_missed_push 时计算的 ctr
-  // spec_queue 写入用 s3TopEntry.ctr; sctr 寄存器用 s3_meta.sctr (两套判定)
-  wire s3Push_addr_hit   = (s3Top_addr == io_s3_pushAddr);
-  wire s3miss_queue_inc  = s3Push_addr_hit & (s3Top_ctr != CTR_MAX[2:0]);
-  wire s3Push_sctr_inc   = s3Push_addr_hit & (io_s3_meta_sctr != CTR_MAX[2:0]);
-  wire [2:0] s3meta_sctr_p1 = io_s3_meta_sctr + 3'h1;
-
-  // --------------------------------------------------------------------------
-  // commit 栈访问
-  // --------------------------------------------------------------------------
-  wire [2:0] commit_top_ctr = commit_stack_ctr[nsp];
-  // commit_push_addr 来自 spec 栈 @ TOSW
-  wire [49:0] commit_push_addr = spec_queue_retAddr[io_commit_meta_TOSW_value];
-  // nsp_update: ssp != nsp 时强制对齐到 commit ssp
-  wire [3:0] nsp_update = (io_commit_meta_ssp != nsp) ? io_commit_meta_ssp : nsp;
-  // commit push: ctr<max && top.addr==push.addr → ++ctr@nsp_update 否则 ++nsp 新建
-  wire commit_push_incCtr = (commit_top_ctr != CTR_MAX[2:0]) & (commit_stack_retAddr[nsp] == commit_push_addr);
-  wire [3:0] nsp_update_p1 = io_commit_meta_ssp + 4'h1;
-  // commit pop: ctr>0 → --ctr 否则 --nsp
-  wire commit_pop_decCtr = |commit_top_ctr;
-
-  // --------------------------------------------------------------------------
-  // BOS 更新 / near overflow / 越界断言
-  // --------------------------------------------------------------------------
-  // distanceBetween(a,b) = a - b 的 6 位带翻转环形差
-  function automatic logic [5:0] distBetween(input logic af, input logic [4:0] av,
-                                             input logic bf, input logic [4:0] bv);
-    distBetween = (af == bf) ? {1'b0, (av - bv)}
-                             : ({1'b0, av} - 6'h20) - {1'b0, bv};
+  // getTop：在「旁路项 / 在途项 / 提交项」三者间选逻辑栈顶。三个候选与判定均由调用处算好传入。
+  function automatic ras_entry_t sel_top(
+      input logic allow_bypass, input logic bypass_valid, input logic in_range,
+      input ras_entry_t bypass_entry, input ras_entry_t spec_entry, input ras_entry_t commit_entry);
+    if (allow_bypass && bypass_valid) return bypass_entry;
+    else if (in_range)                return spec_entry;
+    else                              return commit_entry;
   endfunction
-  wire [5:0] dist_commitTOSW_BOS = distBetween(io_commit_meta_TOSW_flag, io_commit_meta_TOSW_value,
-                                               BOS_flag, BOS_value);
-  wire commit_BOS_advance = io_commit_valid & (dist_commitTOSW_BOS > 6'h2);
-  // BOS = specPtrDec(commit_meta_TOSW)
-  wire [5:0] bos_dec = {io_commit_meta_TOSW_flag, io_commit_meta_TOSW_value} + 6'h1F;
 
-  // TOSW 自增 (push)
-  wire [5:0] TOSW_inc      = {TOSW_flag, TOSW_value} + 6'h1;
-  wire [5:0] redTOSW_inc   = {io_redirect_meta_TOSW_flag, io_redirect_meta_TOSW_value} + 6'h1;
-  wire [5:0] s3TOSW_inc    = {io_s3_meta_TOSW_flag, io_s3_meta_TOSW_value} + 6'h1;
+  // 各路径的栈顶/NOS：把数组索引、旁路、in_range 在 always_comb 里算好（数组读在过程块内，FM 友好）
+  ras_entry_t topEntry, redirectTopEntry, s3TopEntry;
+  ras_ptr_t   topNos;
+  always_comb topEntry = sel_top(1'b1, writeBypassValid,
+                                 tosr_in_range(TOSR, TOSW, BOS),
+                                 writeBypassEntry, spec_queue[TOSR.value], commit_stack[ssp]);
+  always_comb topNos   = writeBypassValid ? writeBypassNos : spec_nos[TOSR.value];
+  always_comb redirectTopEntry = sel_top(1'b0, writeBypassValid,
+                                 tosr_in_range(redirect_meta_TOSR, redirect_meta_TOSW, BOS),
+                                 writeBypassEntry, spec_queue[redirect_meta_TOSR.value],
+                                 commit_stack[redirect_meta_ssp]);
+  always_comb s3TopEntry = sel_top(1'b0, writeBypassValid,
+                                 tosr_in_range(s3_meta_TOSR, s3_meta_TOSW, BOS),
+                                 writeBypassEntry, spec_queue[s3_meta_TOSR.value],
+                                 commit_stack[s3_meta_ssp]);
 
-  wire [3:0] ssp_dec       = ssp - 4'h1;
-  wire [3:0] redSsp_dec    = io_redirect_meta_ssp - 4'h1;
-  wire [3:0] s3Ssp_dec     = io_s3_meta_ssp - 4'h1;
+  // ===========================================================================
+  // 组合：本拍要写入投机栈的 entry（writeEntry）/ 其 NOS（writeNos）
+  //   来源二选一：redirect 补 push（用 redirect_callAddr / redirect 快照）
+  //              或 正常 s2 push（用 spec_push_addr / 当前栈顶）。
+  //   ctr：新地址 == 栈顶地址 且未饱和 → 复用栈顶并 +1（尾递归）；否则 0。
+  // ===========================================================================
+  ras_entry_t writeEntry;
+  ras_ptr_t   writeNos;
+  always_comb begin
+    if (redir_call) begin
+      writeEntry.retAddr = redirect_callAddr;
+      writeEntry.ctr     = (redirectTopEntry.retAddr == redirect_callAddr
+                            && redirectTopEntry.ctr < CTR_MAX) ? (redirect_meta_sctr + 1'b1) : '0;
+      writeNos           = redirect_meta_TOSR;
+    end else begin
+      writeEntry.retAddr = spec_push_addr;
+      writeEntry.ctr     = (topEntry.retAddr == spec_push_addr
+                            && topEntry.ctr < CTR_MAX) ? (sctr + 1'b1) : '0;
+      writeNos           = TOSR;
+    end
+  end
 
-  // --------------------------------------------------------------------------
-  // timingTop 的下一拍值 (组合, 与主时序分支优先级一致)
-  // 用 always_comb 而非 function, 以免 Formality 把"函数读非局部变量"判为 RTL
-  // 解释错误而无法 elaborate。
-  // --------------------------------------------------------------------------
-  reg  [49:0] timingTop_next;
-  reg  [3:0]  tt_ssp_sel;
-  always @* begin
-    if (writeBypassValidWire) begin
-      timingTop_next = (redirectIsCall | io_spec_push_valid)
-                        ? writeEntry_retAddr : writeBypassEntry_retAddr;
-    end else if (io_redirect_valid & io_redirect_isRet) begin
-      if (ptrInRange(io_redirect_meta_NOS_flag, io_redirect_meta_NOS_value,
-                     io_redirect_meta_TOSW_flag, io_redirect_meta_TOSW_value, BOS_flag, BOS_value)) begin
-        timingTop_next = spec_queue_retAddr[io_redirect_meta_NOS_value];
-      end else begin
-        tt_ssp_sel = (|io_redirect_meta_sctr) ? io_redirect_meta_ssp : redSsp_dec;
-        timingTop_next = commit_stack_retAddr[tt_ssp_sel];
+  // ===========================================================================
+  // 组合：writeBypassValid 的下一拍值
+  //   redirect-call 置 1（旁路补 push 的项）；其它 redirect 清 0；s2_fire 跟随 push_valid；
+  //   s3_fire 清 0；否则保持。
+  // ===========================================================================
+  logic writeBypassValidWire;
+  always_comb begin
+    if (redir_call)          writeBypassValidWire = 1'b1;
+    else if (redirect_valid) writeBypassValidWire = 1'b0;
+    else if (s2_fire)        writeBypassValidWire = spec_push_valid;
+    else if (s3_fire)        writeBypassValidWire = 1'b0;
+    else                     writeBypassValidWire = writeBypassValid;
+  end
+
+  // ===========================================================================
+  // realPush —— s3 真正写入 spec_queue 的时机
+  //   = s3_fire 时 (s2 预测的 push 未被取消) 或 (s3 补 push)，或 redirect-call 的下一拍。
+  // ===========================================================================
+  logic realPush_specPush_q;  // RegEnable(spec_push_valid, s2_fire)
+  logic realPush_redir_q;     // RegNext(redirect_valid & redirect_isCall)
+  wire  realPush = (s3_fire & ((~s3_cancel & realPush_specPush_q) | s3_missed_push)) | realPush_redir_q;
+
+  // realPush 写入用的 entry / 地址 / NOS：
+  //   use_snapshot_push 时用 s2 打拍快照（realWriteEntry_next 等），否则用 s3 补 push 现算值。
+  ras_entry_t realWriteEntry_next;
+  ras_ptr_t   realWriteAddr_next;  // 写到哪个 spec 槽（= 当时的 TOSW）
+  ras_ptr_t   realNos_next;
+
+  wire use_snapshot_push = redirect_isCall | ~s3_missed_push;  // golden _GEN_11
+
+  // s3 补 push 时现算的 entry（含尾递归 ctr）
+  ras_entry_t s3_missPushEntry;
+  always_comb begin
+    s3_missPushEntry.retAddr = s3_pushAddr;
+    s3_missPushEntry.ctr     = (s3TopEntry.retAddr == s3_pushAddr && s3TopEntry.ctr < CTR_MAX)
+                               ? (s3_meta_sctr + 1'b1) : '0;
+  end
+
+  wire ras_entry_t realWriteEntry = use_snapshot_push ? realWriteEntry_next : s3_missPushEntry;
+  wire ras_ptr_t   realWriteAddr  = use_snapshot_push ? realWriteAddr_next  : s3_meta_TOSW;
+  wire ras_ptr_t   realNos        = use_snapshot_push ? realNos_next        : s3_meta_TOSR;
+
+  // ===========================================================================
+  // 时序：spec_queue / spec_nos 写入（realPush 时写 realWriteAddr 指向的槽）
+  //   每槽独立 always_ff，靠 index 比较选中（与 golden 结构一致，便于 FM 签名分析）。
+  // ===========================================================================
+  genvar gs;
+  generate
+    for (gs = 0; gs < RAS_SPEC_SIZE; gs++) begin : g_spec
+      wire hit = realPush & (realWriteAddr.value == SPTR_W'(gs));
+      always_ff @(posedge clock or posedge reset) begin
+        if (reset) begin
+          spec_queue[gs] <= '0;
+          spec_nos[gs]   <= '0;
+        end else if (hit) begin
+          spec_queue[gs] <= realWriteEntry;
+          spec_nos[gs]   <= realNos;
+        end
       end
-    end else if (io_redirect_valid) begin
-      timingTop_next = redTop_inRange ? spec_queue_retAddr[io_redirect_meta_TOSR_value]
-                                      : commit_stack_retAddr[io_redirect_meta_ssp];
-    end else if (io_spec_pop_valid) begin
-      if (ptrInRange(topNos_flag, topNos_value, TOSW_flag, TOSW_value, BOS_flag, BOS_value)) begin
-        timingTop_next = spec_queue_retAddr[topNos_value];
-      end else begin
-        tt_ssp_sel = (|sctr) ? ssp : ssp_dec;
-        timingTop_next = commit_stack_retAddr[tt_ssp_sel];
+    end
+  endgenerate
+
+  // ===========================================================================
+  // 组合：specPush / specPop 的「下一拍指针值」纯函数
+  //   把 Scala 的 specPush/specPop 写成「目标值计算」，再在统一的指针 always_ff
+  //   里按优先级（redirect > s3_cancel > 正常）选用。
+  // ===========================================================================
+  // specPush：push 后的 (ssp,sctr,TOSR,TOSW)。
+  //   ssp_we：是否写 ssp —— 仅「新地址」分支写（栈深 +1）；尾递归分支只 +ctr，不写 ssp。
+  //   这与 specPop 的 ssp_we 同理：push 与 pop 同拍 last-connect 时，尾递归 push 不能
+  //   覆盖 pop 已写好的 ssp（Scala 中 specPush 的 ssp 赋值只在 .otherwise 分支）。
+  function automatic void calc_push(
+      input logic [VADDR_W-1:0] ret_addr,
+      input logic [SSP_W-1:0] c_ssp, input logic [CTR_W-1:0] c_sctr,
+      input ras_ptr_t c_tosr, input ras_ptr_t c_tosw, input ras_entry_t c_top,
+      output logic [SSP_W-1:0] n_ssp, output logic [CTR_W-1:0] n_sctr,
+      output ras_ptr_t n_tosr, output ras_ptr_t n_tosw, output logic ssp_we);
+    n_tosr = c_tosw;             // 新栈顶 = 刚写入的槽
+    n_tosw = ptr_inc(c_tosw);    // 写指针前移
+    if (c_top.retAddr == ret_addr && c_sctr < CTR_MAX) begin
+      n_ssp   = c_ssp;           // 尾递归：不增深度，只 +ctr
+      n_sctr  = c_sctr + 1'b1;
+      ssp_we  = 1'b0;            // 不写 ssp
+    end else begin
+      n_ssp   = sp_inc(c_ssp);   // 新地址：栈深 +1，ctr 清 0
+      n_sctr  = '0;
+      ssp_we  = 1'b1;
+    end
+  endfunction
+
+  // specPop：pop 后的 (ssp,sctr,TOSR)（TOSW 不变）。
+  //   tosr_we：是否更新 TOSR（仅栈非空）。
+  //   ssp_we ：是否更新 ssp（仅 sctr==0，即真正退一层时；sctr>0 只 ctr-1 不动 ssp）。
+  //   这两个「写使能」对应 Scala 中 specPop 只在特定分支才写对应寄存器 —— 当 push 与 pop
+  //   同拍时（last-connect），未被 pop 写的寄存器要保留 push 的结果，故必须显式区分。
+  //   下层 ctr 的两个候选（nos_spec_ctr=spec_queue[topNos].ctr、commit_dec_ctr=commit_stack[ssp-1].ctr）
+  //   与 c_bos 都由调用处传入，保持本函数纯净。
+  function automatic void calc_pop(
+      input logic [SSP_W-1:0] c_ssp, input logic [CTR_W-1:0] c_sctr,
+      input ras_ptr_t c_tosr, input ras_ptr_t c_tosw, input ras_ptr_t c_topnos, input ras_ptr_t c_bos,
+      input logic [CTR_W-1:0] nos_spec_ctr, input logic [CTR_W-1:0] commit_dec_ctr,
+      output logic [SSP_W-1:0] n_ssp, output logic [CTR_W-1:0] n_sctr,
+      output ras_ptr_t n_tosr, output logic tosr_we, output logic ssp_we);
+    tosr_we = tosr_in_range(c_tosr, c_tosw, c_bos);  // 仅栈非空时回退 TOSR
+    ssp_we  = (c_sctr == 0);                         // 仅退一层时写 ssp
+    n_tosr  = c_topnos;
+    if (c_sctr > 0) begin
+      n_ssp  = c_ssp;            // 尾递归层未退完：只 ctr-1
+      n_sctr = c_sctr - 1'b1;
+    end else if (tosr_in_range(c_topnos, c_tosw, c_bos)) begin
+      n_ssp  = sp_dec(c_ssp);    // 退一层，下层 ctr 来自在途数据
+      n_sctr = nos_spec_ctr;
+    end else begin
+      n_ssp  = sp_dec(c_ssp);    // 退到提交边界以下，下层 ctr 来自提交栈
+      n_sctr = commit_dec_ctr;
+    end
+  endfunction
+
+  // 各恢复/正常路径的 calc 结果
+  logic [SSP_W-1:0] rp_ssp, rpop_ssp, pop_ssp, push_ssp, s3p_ssp, s3pop_ssp;
+  logic [CTR_W-1:0] rp_sctr, rpop_sctr, pop_sctr, push_sctr, s3p_sctr, s3pop_sctr;
+  ras_ptr_t         rp_tosr, rpop_tosr, pop_tosr, push_tosr, s3p_tosr, s3pop_tosr;
+  ras_ptr_t         rp_tosw, push_tosw, s3p_tosw;
+  logic             rpop_we, pop_we, s3pop_we;
+  logic             rpop_ssp_we, pop_ssp_we, s3pop_ssp_we;
+  logic             rp_ssp_we, push_ssp_we, s3p_ssp_we;
+
+  always_comb begin
+    calc_push(redirect_callAddr, redirect_meta_ssp, redirect_meta_sctr,
+              redirect_meta_TOSR, redirect_meta_TOSW, redirectTopEntry,
+              rp_ssp, rp_sctr, rp_tosr, rp_tosw, rp_ssp_we);            // redirect 补 push
+    calc_pop(redirect_meta_ssp, redirect_meta_sctr, redirect_meta_TOSR,
+             redirect_meta_TOSW, redirect_meta_NOS, BOS,
+             spec_queue[redirect_meta_NOS.value].ctr, commit_stack[sp_dec(redirect_meta_ssp)].ctr,
+             rpop_ssp, rpop_sctr, rpop_tosr, rpop_we, rpop_ssp_we);     // redirect 补 pop
+    calc_pop(ssp, sctr, TOSR, TOSW, topNos, BOS,
+             spec_queue[topNos.value].ctr, commit_stack[sp_dec(ssp)].ctr,
+             pop_ssp, pop_sctr, pop_tosr, pop_we, pop_ssp_we);          // 正常 pop
+    calc_push(spec_push_addr, ssp, sctr, TOSR, TOSW, topEntry,
+              push_ssp, push_sctr, push_tosr, push_tosw, push_ssp_we);  // 正常 push
+    calc_push(s3_pushAddr, s3_meta_ssp, s3_meta_sctr, s3_meta_TOSR, s3_meta_TOSW, s3TopEntry,
+              s3p_ssp, s3p_sctr, s3p_tosr, s3p_tosw, s3p_ssp_we);       // s3 补 push
+    calc_pop(s3_meta_ssp, s3_meta_sctr, s3_meta_TOSR, s3_meta_TOSW, s3_meta_NOS, BOS,
+             spec_queue[s3_meta_NOS.value].ctr, commit_stack[sp_dec(s3_meta_ssp)].ctr,
+             s3pop_ssp, s3pop_sctr, s3pop_tosr, s3pop_we, s3pop_ssp_we);// s3 补 pop
+  end
+
+  // ===========================================================================
+  // 时序：投机指针 (ssp, sctr, TOSR, TOSW) 更新
+  //   优先级：redirect（含补 push/pop） > s3_cancel（含补 push/pop） > 正常 push/pop。
+  // ===========================================================================
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) begin
+      ssp  <= '0;
+      sctr <= '0;
+      TOSR <= '{flag: 1'b1, value: SPTR_W'(RAS_SPEC_SIZE-1)};  // 见模块头初值说明
+      TOSW <= '{flag: 1'b0, value: '0};
+    end else if (redirect_valid) begin
+      // 先恢复到 redirect 快照，再按需补 push/pop。
+      // 注意：Scala 用两个独立 when（isCall→specPush，isRet→specPop），并非互斥 elsewhen。
+      // 正常 CFI 不会既是 call 又是 ret，但 RTL 语义是「last-connect 胜出」：两者都置位时
+      // specPop（isRet）在 ssp/sctr/TOSR 上覆盖 specPush，而 TOSW 仍保留 push 的值。
+      ssp  <= redirect_meta_ssp;
+      sctr <= redirect_meta_sctr;
+      TOSR <= redirect_meta_TOSR;
+      TOSW <= redirect_meta_TOSW;
+      // push 先（isCall），pop 后（isRet）—— pop 以「写使能」局部覆盖 push 的结果
+      if (redirect_isCall) begin
+        sctr <= rp_sctr; TOSR <= rp_tosr; TOSW <= rp_tosw;
+        if (rp_ssp_we) ssp <= rp_ssp;
       end
+      if (redirect_isRet) begin
+        sctr <= rpop_sctr;
+        if (rpop_ssp_we) ssp  <= rpop_ssp;
+        if (rpop_we)     TOSR <= rpop_tosr;
+      end
+    end else if (s3_cancel) begin
+      // 恢复到 s3 快照，再按需补 push/pop。Scala 序：specPop（missed_pop）先、
+      // specPush（missed_push）后 —— push 后写，整体覆盖 pop。
+      ssp  <= s3_meta_ssp;
+      sctr <= s3_meta_sctr;
+      TOSR <= s3_meta_TOSR;
+      TOSW <= s3_meta_TOSW;
+      if (s3_missed_pop) begin
+        sctr <= s3pop_sctr;
+        if (s3pop_ssp_we) ssp  <= s3pop_ssp;
+        if (s3pop_we)     TOSR <= s3pop_tosr;
+      end
+      if (s3_missed_push) begin
+        sctr <= s3p_sctr; TOSR <= s3p_tosr; TOSW <= s3p_tosw;
+        if (s3p_ssp_we) ssp <= s3p_ssp;
+      end
+    end else begin
+      // 正常路径：Scala 序为 specPush 先、specPop 后（pop 后写，局部覆盖 push）。
+      // 二者可同拍有效：ssp 取 push 结果但若 pop 真正退一层(sctr==0)则由 pop 覆盖；
+      // sctr/TOSR 优先 pop；TOSW 仅 push 推进。
+      if (spec_push_valid) begin
+        sctr <= push_sctr; TOSR <= push_tosr; TOSW <= push_tosw;
+        if (push_ssp_we) ssp <= push_ssp;
+      end
+      if (spec_pop_valid) begin
+        sctr <= pop_sctr;
+        if (pop_ssp_we) ssp  <= pop_ssp;
+        if (pop_we)     TOSR <= pop_tosr;
+      end
+    end
+  end
+
+  // ===========================================================================
+  // 时序：提交栈 commit_stack / nsp / BOS（后端 commit 维护「真值」）
+  // ===========================================================================
+  wire ras_entry_t   commitTop        = commit_stack[nsp];
+  // 提交侧要 push 的地址：来自投机栈在 commit_meta_TOSW 槽记录的 retAddr
+  wire [VADDR_W-1:0] commit_push_addr = spec_queue[commit_meta_TOSW.value].retAddr;
+
+  // 若提交侧记录的 ssp 与本地 nsp 不一致，强制对齐（容错，避免永久错位）
+  wire [SSP_W-1:0] nsp_aligned = (commit_meta_ssp != nsp) ? commit_meta_ssp : nsp;
+
+  // commit pop：ctr>0 → --ctr（nsp 对齐不动）；否则 --nsp
+  wire commit_pop_dec_ctr  = commit_pop_valid & (commitTop.ctr > 0);
+  // commit push：未饱和且地址相同 → ++ctr；否则 ++nsp 并写新项
+  wire commit_push_inc_ctr = commit_push_valid & (commitTop.ctr < CTR_MAX)
+                                              & (commitTop.retAddr == commit_push_addr);
+  wire [SSP_W-1:0] nsp_pushed = sp_inc(nsp_aligned);
+
+  genvar gc;
+  generate
+    for (gc = 0; gc < RAS_SIZE; gc++) begin : g_commit
+      wire pop_hit_ctr  = commit_pop_dec_ctr  & (nsp_aligned == SSP_W'(gc)); // --ctr 目标
+      wire push_hit_ctr = commit_push_inc_ctr & (nsp_aligned == SSP_W'(gc)); // ++ctr 目标
+      wire push_hit_new = commit_push_valid & ~commit_push_inc_ctr
+                                            & (nsp_pushed == SSP_W'(gc));     // 新项目标
+      always_ff @(posedge clock or posedge reset) begin
+        if (reset) begin
+          commit_stack[gc] <= '0;
+        end else if (push_hit_new) begin
+          commit_stack[gc].retAddr <= commit_push_addr;
+          commit_stack[gc].ctr     <= '0;
+        end else if (push_hit_ctr) begin
+          commit_stack[gc].ctr <= commitTop.ctr + 1'b1;
+        end else if (pop_hit_ctr) begin
+          commit_stack[gc].ctr <= commitTop.ctr - 1'b1;
+        end
+      end
+    end
+  endgenerate
+
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) begin
+      nsp <= '0;
+      BOS <= '{flag: 1'b0, value: '0};
+    end else begin
+      // nsp
+      if (commit_push_valid)
+        nsp <= commit_push_inc_ctr ? nsp_aligned : nsp_pushed;
+      else if (commit_pop_valid)
+        nsp <= commit_pop_dec_ctr ? nsp_aligned : sp_dec(nsp_aligned);
+      // BOS：commit push 跟到 commit_meta_TOSW；否则提交边界落后太多时推进一格
+      if (commit_push_valid)
+        BOS <= commit_meta_TOSW;
+      else if (commit_valid && (distance(commit_meta_TOSW, BOS) > (SPTR_W+1)'(2)))
+        BOS <= ptr_dec(commit_meta_TOSW);
+    end
+  end
+
+  // ===========================================================================
+  // 时序：spec_near_overflow —— 投机栈快满（在途项逼近容量）时反压上游
+  //   distance(TOSW, BOS) > RAS_SPEC_SIZE-2 即认为将溢出。
+  // ===========================================================================
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) spec_near_overflowed <= 1'b0;
+    else       spec_near_overflowed <= distance(TOSW, BOS) > (SPTR_W+1)'(RAS_SPEC_SIZE-2);
+  end
+
+  // ===========================================================================
+  // 时序：writeBypass 旁路寄存器
+  // ===========================================================================
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) writeBypassValid <= 1'b0;
+    else       writeBypassValid <= writeBypassValidWire;
+  end
+
+  always_ff @(posedge clock) begin
+    // 仅在「有 push（正常或 redirect-call）」时刷新旁路 entry/NOS
+    if (spec_push_valid | redir_call) begin
+      writeBypassEntry <= writeEntry;
+      writeBypassNos   <= writeNos;
+    end
+  end
+
+  // ===========================================================================
+  // 时序：realPush 写入用的「s2 打拍快照」
+  //   注意两组 enable 不同（与 Scala 一致）：
+  //     · realWriteEntry_next 的 enable 是 (s2_fire | redirect_isCall)——用「裸 isCall」，
+  //       不要求 redirect_valid；
+  //     · realWriteAddr_next / realNos_next 的 enable 是 (s2_fire | redir_call)。
+  //   写入值里仍用 redir_call（=valid&isCall）选 redirect 快照还是当前 TOSW/TOSR。
+  // ===========================================================================
+  always_ff @(posedge clock) begin
+    if (s2_fire | redirect_isCall) begin
+      realWriteEntry_next <= writeEntry;
+    end
+    if (s2_fire | redir_call) begin
+      realWriteAddr_next  <= redir_call ? redirect_meta_TOSW : TOSW;
+      realNos_next        <= redir_call ? redirect_meta_TOSR : TOSR;
+    end
+    if (s2_fire) realPush_specPush_q <= spec_push_valid;
+    realPush_redir_q <= redir_call;
+  end
+
+  // ===========================================================================
+  // 时序：timingTop —— 提前一拍算好「下一拍栈顶 retAddr」，作为 spec_pop_addr 输出
+  //   按与指针更新相同的优先级，预测下一拍逻辑栈顶会落在哪。
+  // ===========================================================================
+  // pop 后的「下一拍栈顶」（不走旁路），用 NOS 作为新 TOSR；下一拍 ssp 由 sctr 决定。
+  //   纯函数：候选项（spec_entry/commit_entry）与 in_range 由调用处算好传入。
+  function automatic ras_entry_t pop_next_top(
+      input logic [CTR_W-1:0] c_sctr, input logic in_range,
+      input ras_entry_t spec_entry, input ras_entry_t commit_entry);
+    // 注：c_sctr>0 时下一拍仍在同一深度（ssp 不变），否则退一层（ssp-1）——
+    // 但取栈顶只看 in_range：在途则取 spec_entry，否则取 commit_entry（已按正确 ssp 取好）。
+    return sel_top(1'b0, 1'b0, in_range, '0, spec_entry, commit_entry);
+  endfunction
+
+  // 各 timingTop 分支的候选栈顶（在 always_comb 内做数组索引，FM 友好）
+  ras_entry_t tt_redir_ret, tt_redir, tt_pop, tt_s3, tt_cur, s3_cancel_top;
+  // 下一拍 ssp（pop 路径）：sctr>0 不变，否则 -1
+  wire [SSP_W-1:0] pop_nssp_cur   = (sctr > 0)                ? ssp                : sp_dec(ssp);
+  wire [SSP_W-1:0] pop_nssp_redir = (redirect_meta_sctr > 0)  ? redirect_meta_ssp  : sp_dec(redirect_meta_ssp);
+  wire [SSP_W-1:0] pop_nssp_s3    = (s3_meta_sctr > 0)        ? s3_meta_ssp        : sp_dec(s3_meta_ssp);
+  always_comb begin
+    // redirect-ret 下一拍栈顶：新 TOSR=NOS
+    tt_redir_ret = pop_next_top(redirect_meta_sctr,
+                     tosr_in_range(redirect_meta_NOS, redirect_meta_TOSW, BOS),
+                     spec_queue[redirect_meta_NOS.value], commit_stack[pop_nssp_redir]);
+    // redirect 非 ret：当前快照栈顶
+    tt_redir = sel_top(1'b0, writeBypassValid,
+                 tosr_in_range(redirect_meta_TOSR, redirect_meta_TOSW, BOS),
+                 writeBypassEntry, spec_queue[redirect_meta_TOSR.value], commit_stack[redirect_meta_ssp]);
+    // 正常 pop 下一拍栈顶
+    tt_pop = pop_next_top(sctr, tosr_in_range(topNos, TOSW, BOS),
+                 spec_queue[topNos.value], commit_stack[pop_nssp_cur]);
+    // 当前栈顶（不走旁路）
+    tt_cur = sel_top(1'b0, writeBypassValid, tosr_in_range(TOSR, TOSW, BOS),
+                 writeBypassEntry, spec_queue[TOSR.value], commit_stack[ssp]);
+    // s3 快照栈顶（不走旁路）
+    tt_s3 = sel_top(1'b0, writeBypassValid, tosr_in_range(s3_meta_TOSR, s3_meta_TOSW, BOS),
+                 writeBypassEntry, spec_queue[s3_meta_TOSR.value], commit_stack[s3_meta_ssp]);
+    // s3_cancel 路径的下一拍栈顶
+    if (s3_missed_push) begin
+      s3_cancel_top.retAddr = s3_pushAddr;   // golden 此分支只用 retAddr，ctr 不参与输出
+      s3_cancel_top.ctr     = '0;
+    end else if (s3_missed_pop) begin
+      s3_cancel_top = pop_next_top(s3_meta_sctr,
+                        tosr_in_range(s3_meta_NOS, s3_meta_TOSW, BOS),
+                        spec_queue[s3_meta_NOS.value], commit_stack[pop_nssp_s3]);
+    end else begin
+      s3_cancel_top = tt_s3;
+    end
+  end
+
+  ras_entry_t timingTop;
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) begin
+      timingTop <= '0;
+    end else if (writeBypassValidWire) begin
+      timingTop <= (redir_call | spec_push_valid) ? writeEntry : writeBypassEntry;
+    end else if (redirect_valid & redirect_isRet) begin
+      timingTop <= tt_redir_ret;
+    end else if (redirect_valid) begin
+      timingTop <= tt_redir;
+    end else if (spec_pop_valid) begin
+      timingTop <= tt_pop;
     end else if (realPush) begin
-      timingTop_next = realWriteEntry_retAddr;
-    end else if (io_s3_cancel) begin
-      if (io_s3_missed_push) begin
-        timingTop_next = io_s3_pushAddr;
-      end else if (io_s3_missed_pop) begin
-        if (ptrInRange(io_s3_meta_NOS_flag, io_s3_meta_NOS_value,
-                       io_s3_meta_TOSW_flag, io_s3_meta_TOSW_value, BOS_flag, BOS_value)) begin
-          timingTop_next = spec_queue_retAddr[io_s3_meta_NOS_value];
-        end else begin
-          tt_ssp_sel = (|io_s3_meta_sctr) ? io_s3_meta_ssp : s3Ssp_dec;
-          timingTop_next = commit_stack_retAddr[tt_ssp_sel];
-        end
-      end else begin
-        timingTop_next = s3Top_inRange ? spec_queue_retAddr[io_s3_meta_TOSR_value]
-                                       : commit_stack_retAddr[io_s3_meta_ssp];
-      end
+      timingTop <= realWriteEntry;
+    end else if (s3_cancel) begin
+      timingTop <= s3_cancel_top;
     end else begin
-      timingTop_next = topEntry_inRange ? specQ_at_TOSR_addr : commit_at_ssp_addr;
+      timingTop <= tt_cur;
     end
   end
 
-  // commit retAddr 写译码 (组合)
-  always @* begin
-    commit_adr_we = 1'b0; commit_adr_idx = 4'h0; commit_adr_val = 50'h0;
-    if (io_commit_push_valid & ~commit_push_incCtr) begin
-      commit_adr_we = 1'b1; commit_adr_idx = nsp_update_p1; commit_adr_val = commit_push_addr;
-    end
-  end
-
-  // commit ctr 写的公共组合量 (与 golden 一致, 支持 push 与 pop 同周期写不同项)
-  wire [2:0] commit_ctr_inc = commit_top_ctr + 3'h1;   // ctr[nsp]+1
-  wire [2:0] commit_ctr_dec = commit_top_ctr - 3'h1;   // ctr[nsp]-1
-  wire       commit_pop_dec = io_commit_pop_valid & commit_pop_decCtr; // pop 且 ctr[nsp]>0
-
-  // --------------------------------------------------------------------------
-  // 时序: commit 栈展平寄存器锁存 (异步复位)
-  // 每索引 N 的 ctr 下一拍逻辑严格复刻 golden:
-  //   push&incCtr:   N==meta_ssp        -> ctr[nsp]+1
-  //   push&!incCtr:  N==meta_ssp+1      -> 0; 否则 pop_dec & N==meta_ssp -> ctr[nsp]-1
-  //   !push:         pop_dec & N==meta_ssp -> ctr[nsp]-1
-  // (push 新建项与 pop 递减可同周期命中不同索引)
-  // --------------------------------------------------------------------------
-  `define CMT_RST(N)  begin commit_stack_``N``_retAddr <= 50'h0; commit_stack_``N``_ctr <= 3'h0; end
-  `define CMT_WR(N) \
-      if (commit_adr_we & (commit_adr_idx == 4'd``N``)) commit_stack_``N``_retAddr <= commit_adr_val; \
-      if (io_commit_push_valid) begin \
-        if (commit_push_incCtr) begin \
-          if (nsp_update == 4'd``N``)             commit_stack_``N``_ctr <= commit_ctr_inc; \
-        end else begin \
-          if (nsp_update_p1 == 4'd``N``)          commit_stack_``N``_ctr <= 3'h0; \
-          else if (commit_pop_dec & (nsp_update == 4'd``N``)) commit_stack_``N``_ctr <= commit_ctr_dec; \
-        end \
-      end else if (commit_pop_dec & (nsp_update == 4'd``N``)) commit_stack_``N``_ctr <= commit_ctr_dec;
-  always @(posedge clock or posedge reset) begin
-    if (reset) begin
-      `CMT_RST(0)  `CMT_RST(1)  `CMT_RST(2)  `CMT_RST(3)
-      `CMT_RST(4)  `CMT_RST(5)  `CMT_RST(6)  `CMT_RST(7)
-      `CMT_RST(8)  `CMT_RST(9)  `CMT_RST(10) `CMT_RST(11)
-      `CMT_RST(12) `CMT_RST(13) `CMT_RST(14) `CMT_RST(15)
-    end else begin
-      `CMT_WR(0)  `CMT_WR(1)  `CMT_WR(2)  `CMT_WR(3)
-      `CMT_WR(4)  `CMT_WR(5)  `CMT_WR(6)  `CMT_WR(7)
-      `CMT_WR(8)  `CMT_WR(9)  `CMT_WR(10) `CMT_WR(11)
-      `CMT_WR(12) `CMT_WR(13) `CMT_WR(14) `CMT_WR(15)
-    end
-  end
-  `undef CMT_RST
-  `undef CMT_WR
-
-  // --------------------------------------------------------------------------
-  // 时序: 主状态更新 (异步复位)
-  // --------------------------------------------------------------------------
-  integer i;
-  always @(posedge clock or posedge reset) begin
-    if (reset) begin
-      for (i = 0; i < RAS_SPEC_SIZE; i = i + 1) begin
-        spec_queue_retAddr[i] <= 50'h0;
-        spec_queue_ctr[i]     <= 3'h0;
-        spec_nos_flag[i]      <= 1'h0;
-        spec_nos_value[i]     <= 5'h0;
-      end
-      nsp <= 4'h0;  ssp <= 4'h0;  sctr <= 3'h0;
-      TOSR_flag <= 1'h1;  TOSR_value <= 5'h1F;
-      TOSW_flag <= 1'h0;  TOSW_value <= 5'h0;
-      BOS_flag  <= 1'h0;  BOS_value  <= 5'h0;
-      spec_near_overflowed <= 1'h0;
-      writeBypassValid <= 1'h0;
-      timingTop_retAddr <= 50'h0;
-    end else begin
-      // ---- commit 栈指针 nsp / BOS 更新 (commit_stack 内容由 CMT_LATCH 译码写入) ----
-      if (io_commit_push_valid) begin
-        if (commit_push_incCtr)
-          nsp <= nsp_update;
-        else
-          nsp <= nsp_update_p1;
-        BOS_flag  <= io_commit_meta_TOSW_flag;
-        BOS_value <= io_commit_meta_TOSW_value;
-      end else begin
-        if (io_commit_pop_valid) begin
-          if (commit_pop_decCtr)
-            nsp <= nsp_update;
-          else
-            nsp <= nsp_update - 4'h1;
-        end
-        if (commit_BOS_advance) begin
-          BOS_flag  <= ~bos_dec[5];
-          BOS_value <= bos_dec[4:0];
-        end
-      end
-
-      // ---- spec 栈写入 (realPush) ----
-      if (realPush) begin
-        spec_queue_retAddr[realWriteAddr_value] <= realWriteEntry_retAddr;
-        if (use_next)
-          spec_queue_ctr[realWriteAddr_value] <= realWriteEntry_next_ctr;
-        else if (s3miss_queue_inc)
-          spec_queue_ctr[realWriteAddr_value] <= s3meta_sctr_p1;
-        else
-          spec_queue_ctr[realWriteAddr_value] <= 3'h0;
-        spec_nos_flag [realWriteAddr_value] <= realNos_flag;
-        spec_nos_value[realWriteAddr_value] <= realNos_value;
-      end
-
-      // ---- spec 指针 ssp/sctr/TOSR/TOSW 更新 ----
-      if (io_redirect_valid) begin
-        // redirect (与 Scala 一致): 先整体恢复到 meta, 再 isCall 时 specPush 覆盖,
-        // 最后 isRet 时 specPop 覆盖 —— 故 isCall 与 isRet 同时为真这种异常激励下,
-        // specPop 对 TOSR/ssp/sctr 的写覆盖 specPush, 而 TOSW 仅 specPush 改写。
-        // (各寄存器用独立 if, 后写者胜, 复刻 Chisel last-connect 语义)
-        // -- 基础恢复 --
-        TOSR_flag  <= io_redirect_meta_TOSR_flag;
-        TOSR_value <= io_redirect_meta_TOSR_value;
-        TOSW_flag  <= io_redirect_meta_TOSW_flag;
-        TOSW_value <= io_redirect_meta_TOSW_value;
-        ssp  <= io_redirect_meta_ssp;
-        sctr <= io_redirect_meta_sctr;
-        // -- specPush (isCall) 覆盖 --
-        if (io_redirect_isCall) begin
-          TOSR_flag  <= io_redirect_meta_TOSW_flag;
-          TOSR_value <= io_redirect_meta_TOSW_value;
-          TOSW_flag  <= redTOSW_inc[5];
-          TOSW_value <= redTOSW_inc[4:0];
-          if (redPush_sctr_inc) begin
-            // specPush 在 ctr 自增时只动 sctr, 不动 ssp
-            sctr <= redSctr_p1;
-          end else begin
-            ssp  <= io_redirect_meta_ssp + 4'h1;
-            sctr <= 3'h0;
-          end
-        end
-        // -- specPop (isRet) 覆盖 (TOSW 不动) --
-        if (io_redirect_isRet) begin
-          // specPop: 仅当 currentTOSR 在范围内才把 TOSR 移到 NOS; 否则不动 TOSR
-          if (ptrInRange(io_redirect_meta_TOSR_flag, io_redirect_meta_TOSR_value,
-                         io_redirect_meta_TOSW_flag, io_redirect_meta_TOSW_value, BOS_flag, BOS_value)) begin
-            TOSR_flag  <= io_redirect_meta_NOS_flag;
-            TOSR_value <= io_redirect_meta_NOS_value;
-          end
-          if (|io_redirect_meta_sctr) begin
-            // specPop 在 sctr>0 时只动 sctr, 不动 ssp (保留 base/specPush 写的 ssp)
-            sctr <= io_redirect_meta_sctr - 3'h1;
-          end else if (ptrInRange(io_redirect_meta_NOS_flag, io_redirect_meta_NOS_value,
-                                  io_redirect_meta_TOSW_flag, io_redirect_meta_TOSW_value, BOS_flag, BOS_value)) begin
-            ssp  <= redSsp_dec;
-            sctr <= spec_queue_ctr[io_redirect_meta_NOS_value];
-          end else begin
-            ssp  <= redSsp_dec;
-            sctr <= commit_stack_ctr[redSsp_dec];
-          end
-        end
-      end else if (io_s3_cancel) begin
-        // s3 取消 (与 Scala 一致): 先整体恢复到 s3_meta, 再 missed_pop 时 specPop 覆盖,
-        // 最后 missed_push 时 specPush 覆盖 —— 二者同真时 specPush 对 TOSR/ssp/sctr/TOSW
-        // 的写胜出 (specPop 不动 TOSW)。各寄存器独立 if, 后写者胜。
-        // -- 基础恢复 --
-        TOSR_flag  <= io_s3_meta_TOSR_flag;
-        TOSR_value <= io_s3_meta_TOSR_value;
-        TOSW_flag  <= io_s3_meta_TOSW_flag;
-        TOSW_value <= io_s3_meta_TOSW_value;
-        ssp  <= io_s3_meta_ssp;
-        sctr <= io_s3_meta_sctr;
-        // -- specPop (missed_pop) 覆盖 (TOSW 不动) --
-        if (io_s3_missed_pop) begin
-          // specPop: 仅当 currentTOSR 在范围内才把 TOSR 移到 NOS; 否则不动 TOSR
-          if (ptrInRange(io_s3_meta_TOSR_flag, io_s3_meta_TOSR_value,
-                         io_s3_meta_TOSW_flag, io_s3_meta_TOSW_value, BOS_flag, BOS_value)) begin
-            TOSR_flag  <= io_s3_meta_NOS_flag;
-            TOSR_value <= io_s3_meta_NOS_value;
-          end
-          if (|io_s3_meta_sctr) begin
-            // specPop 在 sctr>0 时只动 sctr, 不动 ssp
-            sctr <= io_s3_meta_sctr - 3'h1;
-          end else if (ptrInRange(io_s3_meta_NOS_flag, io_s3_meta_NOS_value,
-                                  io_s3_meta_TOSW_flag, io_s3_meta_TOSW_value, BOS_flag, BOS_value)) begin
-            ssp  <= s3Ssp_dec;
-            sctr <= spec_queue_ctr[io_s3_meta_NOS_value];
-          end else begin
-            ssp  <= s3Ssp_dec;
-            sctr <= commit_stack_ctr[s3Ssp_dec];
-          end
-        end
-        // -- specPush (missed_push) 覆盖 --
-        if (io_s3_missed_push) begin
-          TOSR_flag  <= io_s3_meta_TOSW_flag;
-          TOSR_value <= io_s3_meta_TOSW_value;
-          TOSW_flag  <= s3TOSW_inc[5];
-          TOSW_value <= s3TOSW_inc[4:0];
-          if (s3Push_sctr_inc) begin
-            // specPush 在 ctr 自增时只动 sctr, 不动 ssp (保留 specPop/base 的 ssp)
-            sctr <= s3meta_sctr_p1;
-          end else begin
-            ssp  <= io_s3_meta_ssp + 4'h1;
-            sctr <= 3'h0;
-          end
-        end
-      end else begin
-        // 正常推测 push / pop —— 与 golden 一致, 对各指针用相互独立的 if
-        // (当 push 与 pop 同时为真这种非常规激励下, 每个指针各自按其优先级更新)。
-        // ssp: pop 优先决定, 其次 push
-        if ((~io_spec_pop_valid) | (|sctr)) begin
-          if (io_spec_push_valid & ~specPush_sctr_inc)
-            ssp <= ssp + 4'h1;
-        end else if (ptrInRange(topNos_flag, topNos_value, TOSW_flag, TOSW_value, BOS_flag, BOS_value)) begin
-          ssp <= ssp_dec;
-        end else begin
-          ssp <= ssp_dec;
-        end
-        // sctr: pop 优先, 其次 push
-        if (io_spec_pop_valid) begin
-          if (|sctr)
-            sctr <= sctr - 3'h1;
-          else if (ptrInRange(topNos_flag, topNos_value, TOSW_flag, TOSW_value, BOS_flag, BOS_value))
-            sctr <= spec_queue_ctr[topNos_value];
-          else
-            sctr <= commit_stack_ctr[ssp_dec];
-        end else if (io_spec_push_valid) begin
-          sctr <= specPush_sctr_inc ? sctr_p1 : 3'h0;
-        end
-        // TOSR: pop (且 spec 非空) 优先, 其次 push
-        if (io_spec_pop_valid & ptrInRange(TOSR_flag, TOSR_value, TOSW_flag, TOSW_value, BOS_flag, BOS_value)) begin
-          TOSR_flag  <= topNos_flag;
-          TOSR_value <= topNos_value;
-        end else if (io_spec_push_valid) begin
-          TOSR_flag  <= TOSW_flag;
-          TOSR_value <= TOSW_value;
-        end
-        // TOSW: 仅 push 影响 (独立, 即使同时 pop 也照常自增)
-        if (io_spec_push_valid) begin
-          TOSW_flag  <= TOSW_inc[5];
-          TOSW_value <= TOSW_inc[4:0];
-        end
-      end
-
-      // ---- near overflow ----
-      spec_near_overflowed <=
-        (distBetween(TOSW_flag, TOSW_value, BOS_flag, BOS_value) > 6'h1E);
-
-      // ---- writeBypassValid ----
-      writeBypassValid <= writeBypassValidWire;
-
-      // ---- timingTop_retAddr: 下一拍 top 地址的预计算 ----
-      timingTop_retAddr <= timingTop_next;
-    end
-  end
-
-
-  // --------------------------------------------------------------------------
-  // 时序: 写旁路 / s2 锁存 (同步)
-  // --------------------------------------------------------------------------
-  always @(posedge clock) begin
-    if (io_spec_push_valid | redirectIsCall) begin
-      writeBypassEntry_retAddr <= writeEntry_retAddr;
-      if (redirectIsCall)
-        writeBypassEntry_ctr <= (writeEntry_ctr_redInc ? redSctr_p1 : 3'h0);
-      else if (writeEntry_ctr_specInc)
-        writeBypassEntry_ctr <= sctr_p1;
-      else
-        writeBypassEntry_ctr <= 3'h0;
-      writeBypassNos_flag  <= redirectIsCall ? io_redirect_meta_TOSR_flag  : TOSR_flag;
-      writeBypassNos_value <= redirectIsCall ? io_redirect_meta_TOSR_value : TOSR_value;
-    end
-
-    if (io_s2_fire | io_redirect_isCall) begin
-      realWriteEntry_next_retAddr <= writeEntry_retAddr;
-      realWriteEntry_next_ctr <=
-        redirectIsCall ? (writeEntry_ctr_redInc ? redSctr_p1 : 3'h0)
-                       : (writeEntry_ctr_specInc ? sctr_p1 : 3'h0);
-    end
-    if (io_s2_fire | redirectIsCall)
-      realWriteAddr_next_value <= redirectIsCall ? io_redirect_meta_TOSW_value : TOSW_value;
-    if (io_s2_fire | redirectIsCall) begin
-      realNos_next_flag  <= redirectIsCall ? io_redirect_meta_TOSR_flag  : TOSR_flag;
-      realNos_next_value <= redirectIsCall ? io_redirect_meta_TOSR_value : TOSR_value;
-    end
-    if (io_s2_fire)
-      realPush_r <= io_spec_push_valid;
-    realPush_REG <= redirectIsCall;
-  end
-
-  // --------------------------------------------------------------------------
+  // ===========================================================================
   // 输出
-  // --------------------------------------------------------------------------
-  assign io_spec_pop_addr      = timingTop_retAddr;
-  assign io_ssp                = ssp;
-  assign io_sctr               = sctr;
-  assign io_TOSR_flag          = TOSR_flag;
-  assign io_TOSR_value         = TOSR_value;
-  assign io_TOSW_flag          = TOSW_flag;
-  assign io_TOSW_value         = TOSW_value;
-  assign io_NOS_flag           = topNos_flag;
-  assign io_NOS_value          = topNos_value;
-  assign io_spec_near_overflow = spec_near_overflowed;
+  // ===========================================================================
+  assign spec_pop_addr        = timingTop.retAddr;
+  assign ssp_o                = ssp;
+  assign sctr_o               = sctr;
+  assign TOSR_o               = TOSR;
+  assign TOSW_o               = TOSW;
+  assign NOS_o                = topNos;
+  assign spec_near_overflow_o = spec_near_overflowed;
 
 endmodule
