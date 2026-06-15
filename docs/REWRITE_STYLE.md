@@ -49,3 +49,24 @@
 
 可读核范例见 `rtl/common/SRAMTemplate_core.sv`、`rtl/frontend/PreDecode.sv`、
 `rtl/frontend/InstrMMIOEntry.sv`（命名/结构/注释达标）。后续所有模块对齐或超过此标准。
+
+## ⚠️ 硬性闸门(2026-06-15 加强,违者一律拒收返工)
+
+**根本原则:从设计意图(Scala 源)重新实现,不是读 firtool golden RTL 改变量名。**
+- Chisel/Scala 源在 `/home/eda/xs-env/XiangShan/src/main/scala/xiangshan/...`(人写的、有结构有命名)。
+  **按 Scala 的结构与意图用 SV 重写**;golden RTL(`golden/chisel-rtl/*.sv`)**只用于 UT/FM 对照验证**。
+- "把 golden 的 wire/assign 改个表意名 + 加分节注释" = **转写,不是重写,拒收**。
+  (反面教材:LoadUnit 首版 312 wire+469 assign、0 struct/enum/function/genvar、满是 `io_x_10_0`/`_REG_1`
+   /手工 acc1/acc2/acc3 链——FM 因结构与 golden 逐位相同而"0 failing",这恰恰证明它是转写。)
+
+**结构硬指标(可读核必须满足,验收逐条 grep)**:
+1. `typedef struct packed` > 0（流水级寄存器、条目、bundle 用 struct,不许散落几十个标量 reg）。
+2. `typedef enum` > 0（状态、来源选择、cause 等离散量用 enum）。
+3. `function automatic` > 0（对齐/选择/编解码/逐字节合并等用纯函数;**byte-mux/移位等禁止手工 accN 链**,用 for/函数）。
+4. `genvar`/`for` > 0（多路/多源/多 bank 用 generate,不许手工展开 _0.._N）。
+5. 展平名/生成痕迹 = 0:`grep -E "io_[a-z_]+_[0-9]+_[0-9]+|_REG_[0-9]|_GEN_|_T_[0-9]|RANDOMIZE"` 必须为 0
+   （注意 `_[0-9]+_[0-9]+` 覆盖**两位数**展平名如 `_10_0`,旧 grep 漏了)。
+6. 行数应显著小于 golden(firtool 展平),或有清晰的结构分解;仅压缩 ~10% 基本等于转写。
+
+**复核流程(主线必做)**:① 上述结构 grep ② 读核中段样本人工判断 ③ 多种子 UT(seed 1/7/42) ④ FM。
+任一不达标 → 退回,用"从 Scala 重实现 + 结构硬指标"的强 prompt 重做。
