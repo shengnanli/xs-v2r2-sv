@@ -92,6 +92,73 @@ module tb;
     if (g_brdata !== i_brdata) begin errors++; $display("[%0t] brdata g=%h i=%h", $time, g_brdata, i_brdata); end
   end
 
+  // =========================================================================
+  //  SRAMTemplate_64 (bp_tage_bt 256set×8way×2bit)  —— 独立激励/比对
+  // =========================================================================
+  logic        r64_valid, w64_valid;
+  logic [7:0]  r64_setIdx, w64_setIdx;
+  logic [1:0]  w64_d [0:7];
+  logic [7:0]  w64_waymask;
+  logic [8:0]  b64_addr, b64_addr_rd;
+  logic [15:0] b64_wdata;
+  logic [7:0]  b64_wmask;
+  logic        b64_re, b64_we, b64_ack, b64_selOH;
+  logic [6:0]  b64_array;
+  int unsigned mb64;
+  wire [1:0]  g64_rd [0:7];  wire [15:0] g64_brdata;
+  wire [1:0]  i64_rd [0:7];  wire [15:0] i64_brdata;
+
+  `define PORTS64(P) \
+    .clock(clk), .reset(rst), \
+    .io_r_req_valid(r64_valid), .io_r_req_bits_setIdx(r64_setIdx), \
+    .io_r_resp_data_0(P``rd[0]), .io_r_resp_data_1(P``rd[1]), \
+    .io_r_resp_data_2(P``rd[2]), .io_r_resp_data_3(P``rd[3]), \
+    .io_r_resp_data_4(P``rd[4]), .io_r_resp_data_5(P``rd[5]), \
+    .io_r_resp_data_6(P``rd[6]), .io_r_resp_data_7(P``rd[7]), \
+    .io_w_req_valid(w64_valid), .io_w_req_bits_setIdx(w64_setIdx), \
+    .io_w_req_bits_data_0(w64_d[0]), .io_w_req_bits_data_1(w64_d[1]), \
+    .io_w_req_bits_data_2(w64_d[2]), .io_w_req_bits_data_3(w64_d[3]), \
+    .io_w_req_bits_data_4(w64_d[4]), .io_w_req_bits_data_5(w64_d[5]), \
+    .io_w_req_bits_data_6(w64_d[6]), .io_w_req_bits_data_7(w64_d[7]), \
+    .io_w_req_bits_waymask(w64_waymask), \
+    .io_broadcast_ram_hold(b_hold), .io_broadcast_ram_bypass(b_bypass), \
+    .io_broadcast_ram_bp_clken(b_bpclken), .io_broadcast_ram_aux_clk(b_auxclk), \
+    .io_broadcast_ram_aux_ckbp(b_auxckbp), .io_broadcast_ram_mcp_hold(b_mcphold), \
+    .io_broadcast_ram_ctl(b_ctl), .io_broadcast_cgen(b_cgen), \
+    .boreChildrenBd_bore_addr(b64_addr), .boreChildrenBd_bore_addr_rd(b64_addr_rd), \
+    .boreChildrenBd_bore_wdata(b64_wdata), .boreChildrenBd_bore_wmask(b64_wmask), \
+    .boreChildrenBd_bore_re(b64_re), .boreChildrenBd_bore_we(b64_we), \
+    .boreChildrenBd_bore_rdata(P``brdata), .boreChildrenBd_bore_ack(b64_ack), \
+    .boreChildrenBd_bore_selectedOH(b64_selOH), .boreChildrenBd_bore_array(b64_array)
+
+  SRAMTemplate_64    u_g64 (`PORTS64(g64_));
+  SRAMTemplate_64_xs u_i64 (`PORTS64(i64_));
+
+  always @(negedge clk) begin
+    if (rst) begin
+      r64_valid <= 1'b0; w64_valid <= 1'b0; b64_re <= 1'b0; b64_we <= 1'b0; b64_ack <= 1'b0;
+    end else begin
+      r64_valid <= ($urandom_range(0,3) != 0);
+      w64_valid <= ($urandom_range(0,2) == 0);
+      r64_setIdx <= 8'($urandom); w64_setIdx <= 8'($urandom);
+      for (int k = 0; k < 8; k++) w64_d[k] <= 2'($urandom);
+      w64_waymask <= 8'($urandom_range(1,255));   // 写掩码恒非零
+      mb64 <= 0; mb64 = $urandom_range(0,3);
+      b64_ack <= ($urandom_range(0,7) == 0);
+      b64_re <= (mb64 == 0); b64_we <= (mb64 == 1);
+      b64_addr <= 9'($urandom); b64_addr_rd <= 9'($urandom);
+      b64_wdata <= 16'($urandom); b64_wmask <= 8'($urandom);
+      b64_selOH <= $urandom; b64_array <= 7'($urandom);
+    end
+  end
+
+  always @(negedge clk) if (!rst && cycle > WARMUP) begin
+    #4; checks++;
+    for (int k = 0; k < 8; k++)
+      if (g64_rd[k] !== i64_rd[k]) begin errors++; $display("[%0t] _64.rd%0d g=%h i=%h", $time, k, g64_rd[k], i64_rd[k]); end
+    if (g64_brdata !== i64_brdata) begin errors++; $display("[%0t] _64.brdata g=%h i=%h", $time, g64_brdata, i64_brdata); end
+  end
+
   initial begin
     if (!$value$plusargs("ncycles=%d", NCYCLES)) NCYCLES = 40000;
     $fsdbDumpfile("novas.fsdb"); $fsdbDumpvars(0, tb);

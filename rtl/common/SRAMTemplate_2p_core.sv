@@ -18,6 +18,8 @@ module xs_SRAMTemplate_2p_core #(
   parameter int unsigned WAY        = 4,
   parameter int unsigned DATA_WIDTH = 6,    // 每 way 位宽
   parameter int unsigned BORE_AW    = 9,
+  parameter bit          ENABLE_RESET = 1,  // 1：上电逐 set 清零；0：不清零（读出 X 直到被写）
+                                            //   bp_sc(_66) 清零；bp_tage_bt(_64)/ftq(_78) 不清零
   localparam int unsigned AW = (SET > 1) ? $clog2(SET) : 1,
   localparam int unsigned MW = WAY * DATA_WIDTH
 )(
@@ -61,16 +63,21 @@ module xs_SRAMTemplate_2p_core #(
 );
   localparam logic [WAY-1:0] WAY_ALL1 = {WAY{1'b1}};
 
-  // ---- 上电清零 FSM（经写口 W0 逐 set 写 0）----
+  // ---- 上电清零 FSM（经写口 W0 逐 set 写 0；ENABLE_RESET=0 时整体省去，恒 0）----
   logic           resetState;
   logic [AW-1:0]  resetSet;
-  always_ff @(posedge clock or posedge reset) begin
-    if (reset) begin resetState <= 1'b1; resetSet <= '0; end
-    else begin
-      resetState <= ~(resetState & (&resetSet)) & resetState;
-      if (resetState) resetSet <= resetSet + AW'(1);
+  generate if (ENABLE_RESET) begin : g_reset
+    always_ff @(posedge clock or posedge reset) begin
+      if (reset) begin resetState <= 1'b1; resetSet <= '0; end
+      else begin
+        resetState <= ~(resetState & (&resetSet)) & resetState;
+        if (resetState) resetSet <= resetSet + AW'(1);
+      end
     end
-  end
+  end else begin : g_noreset
+    assign resetState = 1'b0;
+    assign resetSet   = '0;
+  end endgenerate
 
   wire bore_ack = boreChildrenBd_bore_ack;
 
