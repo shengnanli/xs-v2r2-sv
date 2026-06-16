@@ -1,0 +1,660 @@
+// 自动生成：scripts/gen_storemisalignbuffer.py —— 勿手改
+`timescale 1ns/1ps
+module tb;
+  int unsigned NCYCLES = 200000;
+  bit clk = 0, rst;
+  int errors = 0, checks = 0;
+  always #5 clk = ~clk;
+
+  logic io_redirect_valid;
+  logic io_redirect_bits_robIdx_flag;
+  logic [7:0] io_redirect_bits_robIdx_value;
+  logic io_redirect_bits_level;
+  logic io_enq_0_req_valid;
+  logic io_enq_0_req_bits_uop_exceptionVec_0;
+  logic io_enq_0_req_bits_uop_exceptionVec_1;
+  logic io_enq_0_req_bits_uop_exceptionVec_2;
+  logic io_enq_0_req_bits_uop_exceptionVec_4;
+  logic io_enq_0_req_bits_uop_exceptionVec_5;
+  logic io_enq_0_req_bits_uop_exceptionVec_8;
+  logic io_enq_0_req_bits_uop_exceptionVec_9;
+  logic io_enq_0_req_bits_uop_exceptionVec_10;
+  logic io_enq_0_req_bits_uop_exceptionVec_11;
+  logic io_enq_0_req_bits_uop_exceptionVec_12;
+  logic io_enq_0_req_bits_uop_exceptionVec_13;
+  logic io_enq_0_req_bits_uop_exceptionVec_14;
+  logic io_enq_0_req_bits_uop_exceptionVec_16;
+  logic io_enq_0_req_bits_uop_exceptionVec_17;
+  logic io_enq_0_req_bits_uop_exceptionVec_18;
+  logic io_enq_0_req_bits_uop_exceptionVec_19;
+  logic io_enq_0_req_bits_uop_exceptionVec_20;
+  logic io_enq_0_req_bits_uop_exceptionVec_21;
+  logic io_enq_0_req_bits_uop_exceptionVec_22;
+  logic [3:0] io_enq_0_req_bits_uop_trigger;
+  logic [5:0] io_enq_0_req_bits_uop_ftqPtr_value;
+  logic [3:0] io_enq_0_req_bits_uop_ftqOffset;
+  logic [8:0] io_enq_0_req_bits_uop_fuOpType;
+  logic [7:0] io_enq_0_req_bits_uop_vpu_vstart;
+  logic [1:0] io_enq_0_req_bits_uop_vpu_veew;
+  logic [6:0] io_enq_0_req_bits_uop_uopIdx;
+  logic io_enq_0_req_bits_uop_robIdx_flag;
+  logic [7:0] io_enq_0_req_bits_uop_robIdx_value;
+  logic [63:0] io_enq_0_req_bits_uop_debugInfo_enqRsTime;
+  logic [63:0] io_enq_0_req_bits_uop_debugInfo_selectTime;
+  logic [63:0] io_enq_0_req_bits_uop_debugInfo_issueTime;
+  logic io_enq_0_req_bits_uop_sqIdx_flag;
+  logic [5:0] io_enq_0_req_bits_uop_sqIdx_value;
+  logic [49:0] io_enq_0_req_bits_vaddr;
+  logic [15:0] io_enq_0_req_bits_mask;
+  logic io_enq_0_req_bits_isvec;
+  logic [7:0] io_enq_0_req_bits_elemIdx;
+  logic [2:0] io_enq_0_req_bits_alignedType;
+  logic [3:0] io_enq_0_req_bits_mbIndex;
+  logic io_enq_0_revoke;
+  logic io_enq_1_req_valid;
+  logic io_enq_1_req_bits_uop_exceptionVec_0;
+  logic io_enq_1_req_bits_uop_exceptionVec_1;
+  logic io_enq_1_req_bits_uop_exceptionVec_2;
+  logic io_enq_1_req_bits_uop_exceptionVec_4;
+  logic io_enq_1_req_bits_uop_exceptionVec_5;
+  logic io_enq_1_req_bits_uop_exceptionVec_8;
+  logic io_enq_1_req_bits_uop_exceptionVec_9;
+  logic io_enq_1_req_bits_uop_exceptionVec_10;
+  logic io_enq_1_req_bits_uop_exceptionVec_11;
+  logic io_enq_1_req_bits_uop_exceptionVec_12;
+  logic io_enq_1_req_bits_uop_exceptionVec_13;
+  logic io_enq_1_req_bits_uop_exceptionVec_14;
+  logic io_enq_1_req_bits_uop_exceptionVec_16;
+  logic io_enq_1_req_bits_uop_exceptionVec_17;
+  logic io_enq_1_req_bits_uop_exceptionVec_18;
+  logic io_enq_1_req_bits_uop_exceptionVec_19;
+  logic io_enq_1_req_bits_uop_exceptionVec_20;
+  logic io_enq_1_req_bits_uop_exceptionVec_21;
+  logic io_enq_1_req_bits_uop_exceptionVec_22;
+  logic [3:0] io_enq_1_req_bits_uop_trigger;
+  logic [5:0] io_enq_1_req_bits_uop_ftqPtr_value;
+  logic [3:0] io_enq_1_req_bits_uop_ftqOffset;
+  logic [8:0] io_enq_1_req_bits_uop_fuOpType;
+  logic [7:0] io_enq_1_req_bits_uop_vpu_vstart;
+  logic [1:0] io_enq_1_req_bits_uop_vpu_veew;
+  logic [6:0] io_enq_1_req_bits_uop_uopIdx;
+  logic io_enq_1_req_bits_uop_robIdx_flag;
+  logic [7:0] io_enq_1_req_bits_uop_robIdx_value;
+  logic [63:0] io_enq_1_req_bits_uop_debugInfo_enqRsTime;
+  logic [63:0] io_enq_1_req_bits_uop_debugInfo_selectTime;
+  logic [63:0] io_enq_1_req_bits_uop_debugInfo_issueTime;
+  logic io_enq_1_req_bits_uop_sqIdx_flag;
+  logic [5:0] io_enq_1_req_bits_uop_sqIdx_value;
+  logic [49:0] io_enq_1_req_bits_vaddr;
+  logic [15:0] io_enq_1_req_bits_mask;
+  logic io_enq_1_req_bits_isvec;
+  logic [7:0] io_enq_1_req_bits_elemIdx;
+  logic [2:0] io_enq_1_req_bits_alignedType;
+  logic [3:0] io_enq_1_req_bits_mbIndex;
+  logic io_enq_1_revoke;
+  logic io_rob_pendingst;
+  logic io_rob_pendingPtr_flag;
+  logic [7:0] io_rob_pendingPtr_value;
+  logic io_splitStoreReq_ready;
+  logic io_splitStoreResp_valid;
+  logic io_splitStoreResp_bits_uop_exceptionVec_3;
+  logic io_splitStoreResp_bits_uop_exceptionVec_6;
+  logic io_splitStoreResp_bits_uop_exceptionVec_7;
+  logic io_splitStoreResp_bits_uop_exceptionVec_15;
+  logic io_splitStoreResp_bits_uop_exceptionVec_19;
+  logic io_splitStoreResp_bits_uop_exceptionVec_23;
+  logic [3:0] io_splitStoreResp_bits_uop_trigger;
+  logic [47:0] io_splitStoreResp_bits_paddr;
+  logic io_splitStoreResp_bits_nc;
+  logic io_splitStoreResp_bits_mmio;
+  logic io_splitStoreResp_bits_memBackTypeMM;
+  logic io_splitStoreResp_bits_vecActive;
+  logic io_splitStoreResp_bits_need_rep;
+  logic io_writeBack_ready;
+  logic io_storeOutValid;
+  logic io_storeVecOutValid;
+  logic io_sqControl_toStoreMisalignBuffer_sqPtr_flag;
+  logic [5:0] io_sqControl_toStoreMisalignBuffer_sqPtr_value;
+  logic io_sqControl_toStoreMisalignBuffer_doDeq;
+  logic [6:0] io_sqControl_toStoreMisalignBuffer_uop_uopIdx;
+  logic io_sqControl_toStoreMisalignBuffer_uop_robIdx_flag;
+  logic [7:0] io_sqControl_toStoreMisalignBuffer_uop_robIdx_value;
+  wire g_io_enq_0_req_ready;
+  wire i_io_enq_0_req_ready;
+  wire g_io_enq_1_req_ready;
+  wire i_io_enq_1_req_ready;
+  wire g_io_splitStoreReq_valid;
+  wire i_io_splitStoreReq_valid;
+  wire g_io_splitStoreReq_bits_uop_exceptionVec_0;
+  wire i_io_splitStoreReq_bits_uop_exceptionVec_0;
+  wire g_io_splitStoreReq_bits_uop_exceptionVec_1;
+  wire i_io_splitStoreReq_bits_uop_exceptionVec_1;
+  wire g_io_splitStoreReq_bits_uop_exceptionVec_2;
+  wire i_io_splitStoreReq_bits_uop_exceptionVec_2;
+  wire g_io_splitStoreReq_bits_uop_exceptionVec_4;
+  wire i_io_splitStoreReq_bits_uop_exceptionVec_4;
+  wire g_io_splitStoreReq_bits_uop_exceptionVec_5;
+  wire i_io_splitStoreReq_bits_uop_exceptionVec_5;
+  wire g_io_splitStoreReq_bits_uop_exceptionVec_8;
+  wire i_io_splitStoreReq_bits_uop_exceptionVec_8;
+  wire g_io_splitStoreReq_bits_uop_exceptionVec_9;
+  wire i_io_splitStoreReq_bits_uop_exceptionVec_9;
+  wire g_io_splitStoreReq_bits_uop_exceptionVec_10;
+  wire i_io_splitStoreReq_bits_uop_exceptionVec_10;
+  wire g_io_splitStoreReq_bits_uop_exceptionVec_11;
+  wire i_io_splitStoreReq_bits_uop_exceptionVec_11;
+  wire g_io_splitStoreReq_bits_uop_exceptionVec_12;
+  wire i_io_splitStoreReq_bits_uop_exceptionVec_12;
+  wire g_io_splitStoreReq_bits_uop_exceptionVec_13;
+  wire i_io_splitStoreReq_bits_uop_exceptionVec_13;
+  wire g_io_splitStoreReq_bits_uop_exceptionVec_14;
+  wire i_io_splitStoreReq_bits_uop_exceptionVec_14;
+  wire g_io_splitStoreReq_bits_uop_exceptionVec_16;
+  wire i_io_splitStoreReq_bits_uop_exceptionVec_16;
+  wire g_io_splitStoreReq_bits_uop_exceptionVec_17;
+  wire i_io_splitStoreReq_bits_uop_exceptionVec_17;
+  wire g_io_splitStoreReq_bits_uop_exceptionVec_18;
+  wire i_io_splitStoreReq_bits_uop_exceptionVec_18;
+  wire g_io_splitStoreReq_bits_uop_exceptionVec_19;
+  wire i_io_splitStoreReq_bits_uop_exceptionVec_19;
+  wire g_io_splitStoreReq_bits_uop_exceptionVec_20;
+  wire i_io_splitStoreReq_bits_uop_exceptionVec_20;
+  wire g_io_splitStoreReq_bits_uop_exceptionVec_21;
+  wire i_io_splitStoreReq_bits_uop_exceptionVec_21;
+  wire g_io_splitStoreReq_bits_uop_exceptionVec_22;
+  wire i_io_splitStoreReq_bits_uop_exceptionVec_22;
+  wire [3:0] g_io_splitStoreReq_bits_uop_trigger;
+  wire [3:0] i_io_splitStoreReq_bits_uop_trigger;
+  wire [5:0] g_io_splitStoreReq_bits_uop_ftqPtr_value;
+  wire [5:0] i_io_splitStoreReq_bits_uop_ftqPtr_value;
+  wire [3:0] g_io_splitStoreReq_bits_uop_ftqOffset;
+  wire [3:0] i_io_splitStoreReq_bits_uop_ftqOffset;
+  wire [8:0] g_io_splitStoreReq_bits_uop_fuOpType;
+  wire [8:0] i_io_splitStoreReq_bits_uop_fuOpType;
+  wire [7:0] g_io_splitStoreReq_bits_uop_vpu_vstart;
+  wire [7:0] i_io_splitStoreReq_bits_uop_vpu_vstart;
+  wire [1:0] g_io_splitStoreReq_bits_uop_vpu_veew;
+  wire [1:0] i_io_splitStoreReq_bits_uop_vpu_veew;
+  wire [6:0] g_io_splitStoreReq_bits_uop_uopIdx;
+  wire [6:0] i_io_splitStoreReq_bits_uop_uopIdx;
+  wire g_io_splitStoreReq_bits_uop_robIdx_flag;
+  wire i_io_splitStoreReq_bits_uop_robIdx_flag;
+  wire [7:0] g_io_splitStoreReq_bits_uop_robIdx_value;
+  wire [7:0] i_io_splitStoreReq_bits_uop_robIdx_value;
+  wire [63:0] g_io_splitStoreReq_bits_uop_debugInfo_enqRsTime;
+  wire [63:0] i_io_splitStoreReq_bits_uop_debugInfo_enqRsTime;
+  wire [63:0] g_io_splitStoreReq_bits_uop_debugInfo_selectTime;
+  wire [63:0] i_io_splitStoreReq_bits_uop_debugInfo_selectTime;
+  wire [63:0] g_io_splitStoreReq_bits_uop_debugInfo_issueTime;
+  wire [63:0] i_io_splitStoreReq_bits_uop_debugInfo_issueTime;
+  wire g_io_splitStoreReq_bits_uop_sqIdx_flag;
+  wire i_io_splitStoreReq_bits_uop_sqIdx_flag;
+  wire [5:0] g_io_splitStoreReq_bits_uop_sqIdx_value;
+  wire [5:0] i_io_splitStoreReq_bits_uop_sqIdx_value;
+  wire [49:0] g_io_splitStoreReq_bits_vaddr;
+  wire [49:0] i_io_splitStoreReq_bits_vaddr;
+  wire [15:0] g_io_splitStoreReq_bits_mask;
+  wire [15:0] i_io_splitStoreReq_bits_mask;
+  wire g_io_splitStoreReq_bits_isvec;
+  wire i_io_splitStoreReq_bits_isvec;
+  wire g_io_splitStoreReq_bits_is128bit;
+  wire i_io_splitStoreReq_bits_is128bit;
+  wire g_io_splitStoreReq_bits_isFinalSplit;
+  wire i_io_splitStoreReq_bits_isFinalSplit;
+  wire g_io_writeBack_valid;
+  wire i_io_writeBack_valid;
+  wire g_io_writeBack_bits_uop_exceptionVec_3;
+  wire i_io_writeBack_bits_uop_exceptionVec_3;
+  wire g_io_writeBack_bits_uop_exceptionVec_6;
+  wire i_io_writeBack_bits_uop_exceptionVec_6;
+  wire g_io_writeBack_bits_uop_exceptionVec_7;
+  wire i_io_writeBack_bits_uop_exceptionVec_7;
+  wire g_io_writeBack_bits_uop_exceptionVec_15;
+  wire i_io_writeBack_bits_uop_exceptionVec_15;
+  wire g_io_writeBack_bits_uop_exceptionVec_19;
+  wire i_io_writeBack_bits_uop_exceptionVec_19;
+  wire g_io_writeBack_bits_uop_exceptionVec_23;
+  wire i_io_writeBack_bits_uop_exceptionVec_23;
+  wire [3:0] g_io_writeBack_bits_uop_trigger;
+  wire [3:0] i_io_writeBack_bits_uop_trigger;
+  wire g_io_writeBack_bits_uop_flushPipe;
+  wire i_io_writeBack_bits_uop_flushPipe;
+  wire g_io_writeBack_bits_uop_robIdx_flag;
+  wire i_io_writeBack_bits_uop_robIdx_flag;
+  wire [7:0] g_io_writeBack_bits_uop_robIdx_value;
+  wire [7:0] i_io_writeBack_bits_uop_robIdx_value;
+  wire [63:0] g_io_writeBack_bits_uop_debugInfo_enqRsTime;
+  wire [63:0] i_io_writeBack_bits_uop_debugInfo_enqRsTime;
+  wire [63:0] g_io_writeBack_bits_uop_debugInfo_selectTime;
+  wire [63:0] i_io_writeBack_bits_uop_debugInfo_selectTime;
+  wire [63:0] g_io_writeBack_bits_uop_debugInfo_issueTime;
+  wire [63:0] i_io_writeBack_bits_uop_debugInfo_issueTime;
+  wire g_io_writeBack_bits_debug_isMMIO;
+  wire i_io_writeBack_bits_debug_isMMIO;
+  wire g_io_writeBack_bits_debug_isNCIO;
+  wire i_io_writeBack_bits_debug_isNCIO;
+  wire g_io_vecWriteBack_0_valid;
+  wire i_io_vecWriteBack_0_valid;
+  wire [3:0] g_io_vecWriteBack_0_bits_mBIndex;
+  wire [3:0] i_io_vecWriteBack_0_bits_mBIndex;
+  wire g_io_vecWriteBack_0_bits_exceptionVec_3;
+  wire i_io_vecWriteBack_0_bits_exceptionVec_3;
+  wire g_io_vecWriteBack_0_bits_exceptionVec_6;
+  wire i_io_vecWriteBack_0_bits_exceptionVec_6;
+  wire g_io_vecWriteBack_0_bits_exceptionVec_7;
+  wire i_io_vecWriteBack_0_bits_exceptionVec_7;
+  wire g_io_vecWriteBack_0_bits_exceptionVec_15;
+  wire i_io_vecWriteBack_0_bits_exceptionVec_15;
+  wire g_io_vecWriteBack_0_bits_exceptionVec_19;
+  wire i_io_vecWriteBack_0_bits_exceptionVec_19;
+  wire g_io_vecWriteBack_0_bits_exceptionVec_23;
+  wire i_io_vecWriteBack_0_bits_exceptionVec_23;
+  wire g_io_vecWriteBack_0_bits_hasException;
+  wire i_io_vecWriteBack_0_bits_hasException;
+  wire [63:0] g_io_vecWriteBack_0_bits_vaddr;
+  wire [63:0] i_io_vecWriteBack_0_bits_vaddr;
+  wire g_io_vecWriteBack_0_bits_vaNeedExt;
+  wire i_io_vecWriteBack_0_bits_vaNeedExt;
+  wire [63:0] g_io_vecWriteBack_0_bits_gpaddr;
+  wire [63:0] i_io_vecWriteBack_0_bits_gpaddr;
+  wire g_io_vecWriteBack_0_bits_isForVSnonLeafPTE;
+  wire i_io_vecWriteBack_0_bits_isForVSnonLeafPTE;
+  wire [7:0] g_io_vecWriteBack_0_bits_vstart;
+  wire [7:0] i_io_vecWriteBack_0_bits_vstart;
+  wire [7:0] g_io_vecWriteBack_0_bits_elemIdx;
+  wire [7:0] i_io_vecWriteBack_0_bits_elemIdx;
+  wire [15:0] g_io_vecWriteBack_0_bits_mask;
+  wire [15:0] i_io_vecWriteBack_0_bits_mask;
+  wire g_io_vecWriteBack_1_valid;
+  wire i_io_vecWriteBack_1_valid;
+  wire [3:0] g_io_vecWriteBack_1_bits_mBIndex;
+  wire [3:0] i_io_vecWriteBack_1_bits_mBIndex;
+  wire g_io_vecWriteBack_1_bits_exceptionVec_3;
+  wire i_io_vecWriteBack_1_bits_exceptionVec_3;
+  wire g_io_vecWriteBack_1_bits_exceptionVec_6;
+  wire i_io_vecWriteBack_1_bits_exceptionVec_6;
+  wire g_io_vecWriteBack_1_bits_exceptionVec_7;
+  wire i_io_vecWriteBack_1_bits_exceptionVec_7;
+  wire g_io_vecWriteBack_1_bits_exceptionVec_15;
+  wire i_io_vecWriteBack_1_bits_exceptionVec_15;
+  wire g_io_vecWriteBack_1_bits_exceptionVec_19;
+  wire i_io_vecWriteBack_1_bits_exceptionVec_19;
+  wire g_io_vecWriteBack_1_bits_exceptionVec_23;
+  wire i_io_vecWriteBack_1_bits_exceptionVec_23;
+  wire g_io_vecWriteBack_1_bits_hasException;
+  wire i_io_vecWriteBack_1_bits_hasException;
+  wire [63:0] g_io_vecWriteBack_1_bits_vaddr;
+  wire [63:0] i_io_vecWriteBack_1_bits_vaddr;
+  wire g_io_vecWriteBack_1_bits_vaNeedExt;
+  wire i_io_vecWriteBack_1_bits_vaNeedExt;
+  wire [63:0] g_io_vecWriteBack_1_bits_gpaddr;
+  wire [63:0] i_io_vecWriteBack_1_bits_gpaddr;
+  wire g_io_vecWriteBack_1_bits_isForVSnonLeafPTE;
+  wire i_io_vecWriteBack_1_bits_isForVSnonLeafPTE;
+  wire [7:0] g_io_vecWriteBack_1_bits_vstart;
+  wire [7:0] i_io_vecWriteBack_1_bits_vstart;
+  wire [7:0] g_io_vecWriteBack_1_bits_elemIdx;
+  wire [7:0] i_io_vecWriteBack_1_bits_elemIdx;
+  wire [15:0] g_io_vecWriteBack_1_bits_mask;
+  wire [15:0] i_io_vecWriteBack_1_bits_mask;
+  wire g_io_sqControl_toStoreQueue_crossPageWithHit;
+  wire i_io_sqControl_toStoreQueue_crossPageWithHit;
+  wire g_io_sqControl_toStoreQueue_crossPageCanDeq;
+  wire i_io_sqControl_toStoreQueue_crossPageCanDeq;
+  wire [47:0] g_io_sqControl_toStoreQueue_paddr;
+  wire [47:0] i_io_sqControl_toStoreQueue_paddr;
+  wire g_io_sqControl_toStoreQueue_withSameUop;
+  wire i_io_sqControl_toStoreQueue_withSameUop;
+  wire [3:0] g_io_toVecStoreMergeBuffer_0_mbIndex;
+  wire [3:0] i_io_toVecStoreMergeBuffer_0_mbIndex;
+  wire g_io_toVecStoreMergeBuffer_0_flush;
+  wire i_io_toVecStoreMergeBuffer_0_flush;
+  wire [3:0] g_io_toVecStoreMergeBuffer_1_mbIndex;
+  wire [3:0] i_io_toVecStoreMergeBuffer_1_mbIndex;
+  wire g_io_toVecStoreMergeBuffer_1_flush;
+  wire i_io_toVecStoreMergeBuffer_1_flush;
+  wire g_io_full;
+  wire i_io_full;
+  StoreMisalignBuffer    u_g (.clock(clk), .reset(rst), .io_redirect_valid(io_redirect_valid), .io_redirect_bits_robIdx_flag(io_redirect_bits_robIdx_flag), .io_redirect_bits_robIdx_value(io_redirect_bits_robIdx_value), .io_redirect_bits_level(io_redirect_bits_level), .io_enq_0_req_valid(io_enq_0_req_valid), .io_enq_0_req_bits_uop_exceptionVec_0(io_enq_0_req_bits_uop_exceptionVec_0), .io_enq_0_req_bits_uop_exceptionVec_1(io_enq_0_req_bits_uop_exceptionVec_1), .io_enq_0_req_bits_uop_exceptionVec_2(io_enq_0_req_bits_uop_exceptionVec_2), .io_enq_0_req_bits_uop_exceptionVec_4(io_enq_0_req_bits_uop_exceptionVec_4), .io_enq_0_req_bits_uop_exceptionVec_5(io_enq_0_req_bits_uop_exceptionVec_5), .io_enq_0_req_bits_uop_exceptionVec_8(io_enq_0_req_bits_uop_exceptionVec_8), .io_enq_0_req_bits_uop_exceptionVec_9(io_enq_0_req_bits_uop_exceptionVec_9), .io_enq_0_req_bits_uop_exceptionVec_10(io_enq_0_req_bits_uop_exceptionVec_10), .io_enq_0_req_bits_uop_exceptionVec_11(io_enq_0_req_bits_uop_exceptionVec_11), .io_enq_0_req_bits_uop_exceptionVec_12(io_enq_0_req_bits_uop_exceptionVec_12), .io_enq_0_req_bits_uop_exceptionVec_13(io_enq_0_req_bits_uop_exceptionVec_13), .io_enq_0_req_bits_uop_exceptionVec_14(io_enq_0_req_bits_uop_exceptionVec_14), .io_enq_0_req_bits_uop_exceptionVec_16(io_enq_0_req_bits_uop_exceptionVec_16), .io_enq_0_req_bits_uop_exceptionVec_17(io_enq_0_req_bits_uop_exceptionVec_17), .io_enq_0_req_bits_uop_exceptionVec_18(io_enq_0_req_bits_uop_exceptionVec_18), .io_enq_0_req_bits_uop_exceptionVec_19(io_enq_0_req_bits_uop_exceptionVec_19), .io_enq_0_req_bits_uop_exceptionVec_20(io_enq_0_req_bits_uop_exceptionVec_20), .io_enq_0_req_bits_uop_exceptionVec_21(io_enq_0_req_bits_uop_exceptionVec_21), .io_enq_0_req_bits_uop_exceptionVec_22(io_enq_0_req_bits_uop_exceptionVec_22), .io_enq_0_req_bits_uop_trigger(io_enq_0_req_bits_uop_trigger), .io_enq_0_req_bits_uop_ftqPtr_value(io_enq_0_req_bits_uop_ftqPtr_value), .io_enq_0_req_bits_uop_ftqOffset(io_enq_0_req_bits_uop_ftqOffset), .io_enq_0_req_bits_uop_fuOpType(io_enq_0_req_bits_uop_fuOpType), .io_enq_0_req_bits_uop_vpu_vstart(io_enq_0_req_bits_uop_vpu_vstart), .io_enq_0_req_bits_uop_vpu_veew(io_enq_0_req_bits_uop_vpu_veew), .io_enq_0_req_bits_uop_uopIdx(io_enq_0_req_bits_uop_uopIdx), .io_enq_0_req_bits_uop_robIdx_flag(io_enq_0_req_bits_uop_robIdx_flag), .io_enq_0_req_bits_uop_robIdx_value(io_enq_0_req_bits_uop_robIdx_value), .io_enq_0_req_bits_uop_debugInfo_enqRsTime(io_enq_0_req_bits_uop_debugInfo_enqRsTime), .io_enq_0_req_bits_uop_debugInfo_selectTime(io_enq_0_req_bits_uop_debugInfo_selectTime), .io_enq_0_req_bits_uop_debugInfo_issueTime(io_enq_0_req_bits_uop_debugInfo_issueTime), .io_enq_0_req_bits_uop_sqIdx_flag(io_enq_0_req_bits_uop_sqIdx_flag), .io_enq_0_req_bits_uop_sqIdx_value(io_enq_0_req_bits_uop_sqIdx_value), .io_enq_0_req_bits_vaddr(io_enq_0_req_bits_vaddr), .io_enq_0_req_bits_mask(io_enq_0_req_bits_mask), .io_enq_0_req_bits_isvec(io_enq_0_req_bits_isvec), .io_enq_0_req_bits_elemIdx(io_enq_0_req_bits_elemIdx), .io_enq_0_req_bits_alignedType(io_enq_0_req_bits_alignedType), .io_enq_0_req_bits_mbIndex(io_enq_0_req_bits_mbIndex), .io_enq_0_revoke(io_enq_0_revoke), .io_enq_1_req_valid(io_enq_1_req_valid), .io_enq_1_req_bits_uop_exceptionVec_0(io_enq_1_req_bits_uop_exceptionVec_0), .io_enq_1_req_bits_uop_exceptionVec_1(io_enq_1_req_bits_uop_exceptionVec_1), .io_enq_1_req_bits_uop_exceptionVec_2(io_enq_1_req_bits_uop_exceptionVec_2), .io_enq_1_req_bits_uop_exceptionVec_4(io_enq_1_req_bits_uop_exceptionVec_4), .io_enq_1_req_bits_uop_exceptionVec_5(io_enq_1_req_bits_uop_exceptionVec_5), .io_enq_1_req_bits_uop_exceptionVec_8(io_enq_1_req_bits_uop_exceptionVec_8), .io_enq_1_req_bits_uop_exceptionVec_9(io_enq_1_req_bits_uop_exceptionVec_9), .io_enq_1_req_bits_uop_exceptionVec_10(io_enq_1_req_bits_uop_exceptionVec_10), .io_enq_1_req_bits_uop_exceptionVec_11(io_enq_1_req_bits_uop_exceptionVec_11), .io_enq_1_req_bits_uop_exceptionVec_12(io_enq_1_req_bits_uop_exceptionVec_12), .io_enq_1_req_bits_uop_exceptionVec_13(io_enq_1_req_bits_uop_exceptionVec_13), .io_enq_1_req_bits_uop_exceptionVec_14(io_enq_1_req_bits_uop_exceptionVec_14), .io_enq_1_req_bits_uop_exceptionVec_16(io_enq_1_req_bits_uop_exceptionVec_16), .io_enq_1_req_bits_uop_exceptionVec_17(io_enq_1_req_bits_uop_exceptionVec_17), .io_enq_1_req_bits_uop_exceptionVec_18(io_enq_1_req_bits_uop_exceptionVec_18), .io_enq_1_req_bits_uop_exceptionVec_19(io_enq_1_req_bits_uop_exceptionVec_19), .io_enq_1_req_bits_uop_exceptionVec_20(io_enq_1_req_bits_uop_exceptionVec_20), .io_enq_1_req_bits_uop_exceptionVec_21(io_enq_1_req_bits_uop_exceptionVec_21), .io_enq_1_req_bits_uop_exceptionVec_22(io_enq_1_req_bits_uop_exceptionVec_22), .io_enq_1_req_bits_uop_trigger(io_enq_1_req_bits_uop_trigger), .io_enq_1_req_bits_uop_ftqPtr_value(io_enq_1_req_bits_uop_ftqPtr_value), .io_enq_1_req_bits_uop_ftqOffset(io_enq_1_req_bits_uop_ftqOffset), .io_enq_1_req_bits_uop_fuOpType(io_enq_1_req_bits_uop_fuOpType), .io_enq_1_req_bits_uop_vpu_vstart(io_enq_1_req_bits_uop_vpu_vstart), .io_enq_1_req_bits_uop_vpu_veew(io_enq_1_req_bits_uop_vpu_veew), .io_enq_1_req_bits_uop_uopIdx(io_enq_1_req_bits_uop_uopIdx), .io_enq_1_req_bits_uop_robIdx_flag(io_enq_1_req_bits_uop_robIdx_flag), .io_enq_1_req_bits_uop_robIdx_value(io_enq_1_req_bits_uop_robIdx_value), .io_enq_1_req_bits_uop_debugInfo_enqRsTime(io_enq_1_req_bits_uop_debugInfo_enqRsTime), .io_enq_1_req_bits_uop_debugInfo_selectTime(io_enq_1_req_bits_uop_debugInfo_selectTime), .io_enq_1_req_bits_uop_debugInfo_issueTime(io_enq_1_req_bits_uop_debugInfo_issueTime), .io_enq_1_req_bits_uop_sqIdx_flag(io_enq_1_req_bits_uop_sqIdx_flag), .io_enq_1_req_bits_uop_sqIdx_value(io_enq_1_req_bits_uop_sqIdx_value), .io_enq_1_req_bits_vaddr(io_enq_1_req_bits_vaddr), .io_enq_1_req_bits_mask(io_enq_1_req_bits_mask), .io_enq_1_req_bits_isvec(io_enq_1_req_bits_isvec), .io_enq_1_req_bits_elemIdx(io_enq_1_req_bits_elemIdx), .io_enq_1_req_bits_alignedType(io_enq_1_req_bits_alignedType), .io_enq_1_req_bits_mbIndex(io_enq_1_req_bits_mbIndex), .io_enq_1_revoke(io_enq_1_revoke), .io_rob_pendingst(io_rob_pendingst), .io_rob_pendingPtr_flag(io_rob_pendingPtr_flag), .io_rob_pendingPtr_value(io_rob_pendingPtr_value), .io_splitStoreReq_ready(io_splitStoreReq_ready), .io_splitStoreResp_valid(io_splitStoreResp_valid), .io_splitStoreResp_bits_uop_exceptionVec_3(io_splitStoreResp_bits_uop_exceptionVec_3), .io_splitStoreResp_bits_uop_exceptionVec_6(io_splitStoreResp_bits_uop_exceptionVec_6), .io_splitStoreResp_bits_uop_exceptionVec_7(io_splitStoreResp_bits_uop_exceptionVec_7), .io_splitStoreResp_bits_uop_exceptionVec_15(io_splitStoreResp_bits_uop_exceptionVec_15), .io_splitStoreResp_bits_uop_exceptionVec_19(io_splitStoreResp_bits_uop_exceptionVec_19), .io_splitStoreResp_bits_uop_exceptionVec_23(io_splitStoreResp_bits_uop_exceptionVec_23), .io_splitStoreResp_bits_uop_trigger(io_splitStoreResp_bits_uop_trigger), .io_splitStoreResp_bits_paddr(io_splitStoreResp_bits_paddr), .io_splitStoreResp_bits_nc(io_splitStoreResp_bits_nc), .io_splitStoreResp_bits_mmio(io_splitStoreResp_bits_mmio), .io_splitStoreResp_bits_memBackTypeMM(io_splitStoreResp_bits_memBackTypeMM), .io_splitStoreResp_bits_vecActive(io_splitStoreResp_bits_vecActive), .io_splitStoreResp_bits_need_rep(io_splitStoreResp_bits_need_rep), .io_writeBack_ready(io_writeBack_ready), .io_storeOutValid(io_storeOutValid), .io_storeVecOutValid(io_storeVecOutValid), .io_sqControl_toStoreMisalignBuffer_sqPtr_flag(io_sqControl_toStoreMisalignBuffer_sqPtr_flag), .io_sqControl_toStoreMisalignBuffer_sqPtr_value(io_sqControl_toStoreMisalignBuffer_sqPtr_value), .io_sqControl_toStoreMisalignBuffer_doDeq(io_sqControl_toStoreMisalignBuffer_doDeq), .io_sqControl_toStoreMisalignBuffer_uop_uopIdx(io_sqControl_toStoreMisalignBuffer_uop_uopIdx), .io_sqControl_toStoreMisalignBuffer_uop_robIdx_flag(io_sqControl_toStoreMisalignBuffer_uop_robIdx_flag), .io_sqControl_toStoreMisalignBuffer_uop_robIdx_value(io_sqControl_toStoreMisalignBuffer_uop_robIdx_value), .io_enq_0_req_ready(g_io_enq_0_req_ready), .io_enq_1_req_ready(g_io_enq_1_req_ready), .io_splitStoreReq_valid(g_io_splitStoreReq_valid), .io_splitStoreReq_bits_uop_exceptionVec_0(g_io_splitStoreReq_bits_uop_exceptionVec_0), .io_splitStoreReq_bits_uop_exceptionVec_1(g_io_splitStoreReq_bits_uop_exceptionVec_1), .io_splitStoreReq_bits_uop_exceptionVec_2(g_io_splitStoreReq_bits_uop_exceptionVec_2), .io_splitStoreReq_bits_uop_exceptionVec_4(g_io_splitStoreReq_bits_uop_exceptionVec_4), .io_splitStoreReq_bits_uop_exceptionVec_5(g_io_splitStoreReq_bits_uop_exceptionVec_5), .io_splitStoreReq_bits_uop_exceptionVec_8(g_io_splitStoreReq_bits_uop_exceptionVec_8), .io_splitStoreReq_bits_uop_exceptionVec_9(g_io_splitStoreReq_bits_uop_exceptionVec_9), .io_splitStoreReq_bits_uop_exceptionVec_10(g_io_splitStoreReq_bits_uop_exceptionVec_10), .io_splitStoreReq_bits_uop_exceptionVec_11(g_io_splitStoreReq_bits_uop_exceptionVec_11), .io_splitStoreReq_bits_uop_exceptionVec_12(g_io_splitStoreReq_bits_uop_exceptionVec_12), .io_splitStoreReq_bits_uop_exceptionVec_13(g_io_splitStoreReq_bits_uop_exceptionVec_13), .io_splitStoreReq_bits_uop_exceptionVec_14(g_io_splitStoreReq_bits_uop_exceptionVec_14), .io_splitStoreReq_bits_uop_exceptionVec_16(g_io_splitStoreReq_bits_uop_exceptionVec_16), .io_splitStoreReq_bits_uop_exceptionVec_17(g_io_splitStoreReq_bits_uop_exceptionVec_17), .io_splitStoreReq_bits_uop_exceptionVec_18(g_io_splitStoreReq_bits_uop_exceptionVec_18), .io_splitStoreReq_bits_uop_exceptionVec_19(g_io_splitStoreReq_bits_uop_exceptionVec_19), .io_splitStoreReq_bits_uop_exceptionVec_20(g_io_splitStoreReq_bits_uop_exceptionVec_20), .io_splitStoreReq_bits_uop_exceptionVec_21(g_io_splitStoreReq_bits_uop_exceptionVec_21), .io_splitStoreReq_bits_uop_exceptionVec_22(g_io_splitStoreReq_bits_uop_exceptionVec_22), .io_splitStoreReq_bits_uop_trigger(g_io_splitStoreReq_bits_uop_trigger), .io_splitStoreReq_bits_uop_ftqPtr_value(g_io_splitStoreReq_bits_uop_ftqPtr_value), .io_splitStoreReq_bits_uop_ftqOffset(g_io_splitStoreReq_bits_uop_ftqOffset), .io_splitStoreReq_bits_uop_fuOpType(g_io_splitStoreReq_bits_uop_fuOpType), .io_splitStoreReq_bits_uop_vpu_vstart(g_io_splitStoreReq_bits_uop_vpu_vstart), .io_splitStoreReq_bits_uop_vpu_veew(g_io_splitStoreReq_bits_uop_vpu_veew), .io_splitStoreReq_bits_uop_uopIdx(g_io_splitStoreReq_bits_uop_uopIdx), .io_splitStoreReq_bits_uop_robIdx_flag(g_io_splitStoreReq_bits_uop_robIdx_flag), .io_splitStoreReq_bits_uop_robIdx_value(g_io_splitStoreReq_bits_uop_robIdx_value), .io_splitStoreReq_bits_uop_debugInfo_enqRsTime(g_io_splitStoreReq_bits_uop_debugInfo_enqRsTime), .io_splitStoreReq_bits_uop_debugInfo_selectTime(g_io_splitStoreReq_bits_uop_debugInfo_selectTime), .io_splitStoreReq_bits_uop_debugInfo_issueTime(g_io_splitStoreReq_bits_uop_debugInfo_issueTime), .io_splitStoreReq_bits_uop_sqIdx_flag(g_io_splitStoreReq_bits_uop_sqIdx_flag), .io_splitStoreReq_bits_uop_sqIdx_value(g_io_splitStoreReq_bits_uop_sqIdx_value), .io_splitStoreReq_bits_vaddr(g_io_splitStoreReq_bits_vaddr), .io_splitStoreReq_bits_mask(g_io_splitStoreReq_bits_mask), .io_splitStoreReq_bits_isvec(g_io_splitStoreReq_bits_isvec), .io_splitStoreReq_bits_is128bit(g_io_splitStoreReq_bits_is128bit), .io_splitStoreReq_bits_isFinalSplit(g_io_splitStoreReq_bits_isFinalSplit), .io_writeBack_valid(g_io_writeBack_valid), .io_writeBack_bits_uop_exceptionVec_3(g_io_writeBack_bits_uop_exceptionVec_3), .io_writeBack_bits_uop_exceptionVec_6(g_io_writeBack_bits_uop_exceptionVec_6), .io_writeBack_bits_uop_exceptionVec_7(g_io_writeBack_bits_uop_exceptionVec_7), .io_writeBack_bits_uop_exceptionVec_15(g_io_writeBack_bits_uop_exceptionVec_15), .io_writeBack_bits_uop_exceptionVec_19(g_io_writeBack_bits_uop_exceptionVec_19), .io_writeBack_bits_uop_exceptionVec_23(g_io_writeBack_bits_uop_exceptionVec_23), .io_writeBack_bits_uop_trigger(g_io_writeBack_bits_uop_trigger), .io_writeBack_bits_uop_flushPipe(g_io_writeBack_bits_uop_flushPipe), .io_writeBack_bits_uop_robIdx_flag(g_io_writeBack_bits_uop_robIdx_flag), .io_writeBack_bits_uop_robIdx_value(g_io_writeBack_bits_uop_robIdx_value), .io_writeBack_bits_uop_debugInfo_enqRsTime(g_io_writeBack_bits_uop_debugInfo_enqRsTime), .io_writeBack_bits_uop_debugInfo_selectTime(g_io_writeBack_bits_uop_debugInfo_selectTime), .io_writeBack_bits_uop_debugInfo_issueTime(g_io_writeBack_bits_uop_debugInfo_issueTime), .io_writeBack_bits_debug_isMMIO(g_io_writeBack_bits_debug_isMMIO), .io_writeBack_bits_debug_isNCIO(g_io_writeBack_bits_debug_isNCIO), .io_vecWriteBack_0_valid(g_io_vecWriteBack_0_valid), .io_vecWriteBack_0_bits_mBIndex(g_io_vecWriteBack_0_bits_mBIndex), .io_vecWriteBack_0_bits_exceptionVec_3(g_io_vecWriteBack_0_bits_exceptionVec_3), .io_vecWriteBack_0_bits_exceptionVec_6(g_io_vecWriteBack_0_bits_exceptionVec_6), .io_vecWriteBack_0_bits_exceptionVec_7(g_io_vecWriteBack_0_bits_exceptionVec_7), .io_vecWriteBack_0_bits_exceptionVec_15(g_io_vecWriteBack_0_bits_exceptionVec_15), .io_vecWriteBack_0_bits_exceptionVec_19(g_io_vecWriteBack_0_bits_exceptionVec_19), .io_vecWriteBack_0_bits_exceptionVec_23(g_io_vecWriteBack_0_bits_exceptionVec_23), .io_vecWriteBack_0_bits_hasException(g_io_vecWriteBack_0_bits_hasException), .io_vecWriteBack_0_bits_vaddr(g_io_vecWriteBack_0_bits_vaddr), .io_vecWriteBack_0_bits_vaNeedExt(g_io_vecWriteBack_0_bits_vaNeedExt), .io_vecWriteBack_0_bits_gpaddr(g_io_vecWriteBack_0_bits_gpaddr), .io_vecWriteBack_0_bits_isForVSnonLeafPTE(g_io_vecWriteBack_0_bits_isForVSnonLeafPTE), .io_vecWriteBack_0_bits_vstart(g_io_vecWriteBack_0_bits_vstart), .io_vecWriteBack_0_bits_elemIdx(g_io_vecWriteBack_0_bits_elemIdx), .io_vecWriteBack_0_bits_mask(g_io_vecWriteBack_0_bits_mask), .io_vecWriteBack_1_valid(g_io_vecWriteBack_1_valid), .io_vecWriteBack_1_bits_mBIndex(g_io_vecWriteBack_1_bits_mBIndex), .io_vecWriteBack_1_bits_exceptionVec_3(g_io_vecWriteBack_1_bits_exceptionVec_3), .io_vecWriteBack_1_bits_exceptionVec_6(g_io_vecWriteBack_1_bits_exceptionVec_6), .io_vecWriteBack_1_bits_exceptionVec_7(g_io_vecWriteBack_1_bits_exceptionVec_7), .io_vecWriteBack_1_bits_exceptionVec_15(g_io_vecWriteBack_1_bits_exceptionVec_15), .io_vecWriteBack_1_bits_exceptionVec_19(g_io_vecWriteBack_1_bits_exceptionVec_19), .io_vecWriteBack_1_bits_exceptionVec_23(g_io_vecWriteBack_1_bits_exceptionVec_23), .io_vecWriteBack_1_bits_hasException(g_io_vecWriteBack_1_bits_hasException), .io_vecWriteBack_1_bits_vaddr(g_io_vecWriteBack_1_bits_vaddr), .io_vecWriteBack_1_bits_vaNeedExt(g_io_vecWriteBack_1_bits_vaNeedExt), .io_vecWriteBack_1_bits_gpaddr(g_io_vecWriteBack_1_bits_gpaddr), .io_vecWriteBack_1_bits_isForVSnonLeafPTE(g_io_vecWriteBack_1_bits_isForVSnonLeafPTE), .io_vecWriteBack_1_bits_vstart(g_io_vecWriteBack_1_bits_vstart), .io_vecWriteBack_1_bits_elemIdx(g_io_vecWriteBack_1_bits_elemIdx), .io_vecWriteBack_1_bits_mask(g_io_vecWriteBack_1_bits_mask), .io_sqControl_toStoreQueue_crossPageWithHit(g_io_sqControl_toStoreQueue_crossPageWithHit), .io_sqControl_toStoreQueue_crossPageCanDeq(g_io_sqControl_toStoreQueue_crossPageCanDeq), .io_sqControl_toStoreQueue_paddr(g_io_sqControl_toStoreQueue_paddr), .io_sqControl_toStoreQueue_withSameUop(g_io_sqControl_toStoreQueue_withSameUop), .io_toVecStoreMergeBuffer_0_mbIndex(g_io_toVecStoreMergeBuffer_0_mbIndex), .io_toVecStoreMergeBuffer_0_flush(g_io_toVecStoreMergeBuffer_0_flush), .io_toVecStoreMergeBuffer_1_mbIndex(g_io_toVecStoreMergeBuffer_1_mbIndex), .io_toVecStoreMergeBuffer_1_flush(g_io_toVecStoreMergeBuffer_1_flush), .io_full(g_io_full));
+  StoreMisalignBuffer_xs u_i (.clock(clk), .reset(rst), .io_redirect_valid(io_redirect_valid), .io_redirect_bits_robIdx_flag(io_redirect_bits_robIdx_flag), .io_redirect_bits_robIdx_value(io_redirect_bits_robIdx_value), .io_redirect_bits_level(io_redirect_bits_level), .io_enq_0_req_valid(io_enq_0_req_valid), .io_enq_0_req_bits_uop_exceptionVec_0(io_enq_0_req_bits_uop_exceptionVec_0), .io_enq_0_req_bits_uop_exceptionVec_1(io_enq_0_req_bits_uop_exceptionVec_1), .io_enq_0_req_bits_uop_exceptionVec_2(io_enq_0_req_bits_uop_exceptionVec_2), .io_enq_0_req_bits_uop_exceptionVec_4(io_enq_0_req_bits_uop_exceptionVec_4), .io_enq_0_req_bits_uop_exceptionVec_5(io_enq_0_req_bits_uop_exceptionVec_5), .io_enq_0_req_bits_uop_exceptionVec_8(io_enq_0_req_bits_uop_exceptionVec_8), .io_enq_0_req_bits_uop_exceptionVec_9(io_enq_0_req_bits_uop_exceptionVec_9), .io_enq_0_req_bits_uop_exceptionVec_10(io_enq_0_req_bits_uop_exceptionVec_10), .io_enq_0_req_bits_uop_exceptionVec_11(io_enq_0_req_bits_uop_exceptionVec_11), .io_enq_0_req_bits_uop_exceptionVec_12(io_enq_0_req_bits_uop_exceptionVec_12), .io_enq_0_req_bits_uop_exceptionVec_13(io_enq_0_req_bits_uop_exceptionVec_13), .io_enq_0_req_bits_uop_exceptionVec_14(io_enq_0_req_bits_uop_exceptionVec_14), .io_enq_0_req_bits_uop_exceptionVec_16(io_enq_0_req_bits_uop_exceptionVec_16), .io_enq_0_req_bits_uop_exceptionVec_17(io_enq_0_req_bits_uop_exceptionVec_17), .io_enq_0_req_bits_uop_exceptionVec_18(io_enq_0_req_bits_uop_exceptionVec_18), .io_enq_0_req_bits_uop_exceptionVec_19(io_enq_0_req_bits_uop_exceptionVec_19), .io_enq_0_req_bits_uop_exceptionVec_20(io_enq_0_req_bits_uop_exceptionVec_20), .io_enq_0_req_bits_uop_exceptionVec_21(io_enq_0_req_bits_uop_exceptionVec_21), .io_enq_0_req_bits_uop_exceptionVec_22(io_enq_0_req_bits_uop_exceptionVec_22), .io_enq_0_req_bits_uop_trigger(io_enq_0_req_bits_uop_trigger), .io_enq_0_req_bits_uop_ftqPtr_value(io_enq_0_req_bits_uop_ftqPtr_value), .io_enq_0_req_bits_uop_ftqOffset(io_enq_0_req_bits_uop_ftqOffset), .io_enq_0_req_bits_uop_fuOpType(io_enq_0_req_bits_uop_fuOpType), .io_enq_0_req_bits_uop_vpu_vstart(io_enq_0_req_bits_uop_vpu_vstart), .io_enq_0_req_bits_uop_vpu_veew(io_enq_0_req_bits_uop_vpu_veew), .io_enq_0_req_bits_uop_uopIdx(io_enq_0_req_bits_uop_uopIdx), .io_enq_0_req_bits_uop_robIdx_flag(io_enq_0_req_bits_uop_robIdx_flag), .io_enq_0_req_bits_uop_robIdx_value(io_enq_0_req_bits_uop_robIdx_value), .io_enq_0_req_bits_uop_debugInfo_enqRsTime(io_enq_0_req_bits_uop_debugInfo_enqRsTime), .io_enq_0_req_bits_uop_debugInfo_selectTime(io_enq_0_req_bits_uop_debugInfo_selectTime), .io_enq_0_req_bits_uop_debugInfo_issueTime(io_enq_0_req_bits_uop_debugInfo_issueTime), .io_enq_0_req_bits_uop_sqIdx_flag(io_enq_0_req_bits_uop_sqIdx_flag), .io_enq_0_req_bits_uop_sqIdx_value(io_enq_0_req_bits_uop_sqIdx_value), .io_enq_0_req_bits_vaddr(io_enq_0_req_bits_vaddr), .io_enq_0_req_bits_mask(io_enq_0_req_bits_mask), .io_enq_0_req_bits_isvec(io_enq_0_req_bits_isvec), .io_enq_0_req_bits_elemIdx(io_enq_0_req_bits_elemIdx), .io_enq_0_req_bits_alignedType(io_enq_0_req_bits_alignedType), .io_enq_0_req_bits_mbIndex(io_enq_0_req_bits_mbIndex), .io_enq_0_revoke(io_enq_0_revoke), .io_enq_1_req_valid(io_enq_1_req_valid), .io_enq_1_req_bits_uop_exceptionVec_0(io_enq_1_req_bits_uop_exceptionVec_0), .io_enq_1_req_bits_uop_exceptionVec_1(io_enq_1_req_bits_uop_exceptionVec_1), .io_enq_1_req_bits_uop_exceptionVec_2(io_enq_1_req_bits_uop_exceptionVec_2), .io_enq_1_req_bits_uop_exceptionVec_4(io_enq_1_req_bits_uop_exceptionVec_4), .io_enq_1_req_bits_uop_exceptionVec_5(io_enq_1_req_bits_uop_exceptionVec_5), .io_enq_1_req_bits_uop_exceptionVec_8(io_enq_1_req_bits_uop_exceptionVec_8), .io_enq_1_req_bits_uop_exceptionVec_9(io_enq_1_req_bits_uop_exceptionVec_9), .io_enq_1_req_bits_uop_exceptionVec_10(io_enq_1_req_bits_uop_exceptionVec_10), .io_enq_1_req_bits_uop_exceptionVec_11(io_enq_1_req_bits_uop_exceptionVec_11), .io_enq_1_req_bits_uop_exceptionVec_12(io_enq_1_req_bits_uop_exceptionVec_12), .io_enq_1_req_bits_uop_exceptionVec_13(io_enq_1_req_bits_uop_exceptionVec_13), .io_enq_1_req_bits_uop_exceptionVec_14(io_enq_1_req_bits_uop_exceptionVec_14), .io_enq_1_req_bits_uop_exceptionVec_16(io_enq_1_req_bits_uop_exceptionVec_16), .io_enq_1_req_bits_uop_exceptionVec_17(io_enq_1_req_bits_uop_exceptionVec_17), .io_enq_1_req_bits_uop_exceptionVec_18(io_enq_1_req_bits_uop_exceptionVec_18), .io_enq_1_req_bits_uop_exceptionVec_19(io_enq_1_req_bits_uop_exceptionVec_19), .io_enq_1_req_bits_uop_exceptionVec_20(io_enq_1_req_bits_uop_exceptionVec_20), .io_enq_1_req_bits_uop_exceptionVec_21(io_enq_1_req_bits_uop_exceptionVec_21), .io_enq_1_req_bits_uop_exceptionVec_22(io_enq_1_req_bits_uop_exceptionVec_22), .io_enq_1_req_bits_uop_trigger(io_enq_1_req_bits_uop_trigger), .io_enq_1_req_bits_uop_ftqPtr_value(io_enq_1_req_bits_uop_ftqPtr_value), .io_enq_1_req_bits_uop_ftqOffset(io_enq_1_req_bits_uop_ftqOffset), .io_enq_1_req_bits_uop_fuOpType(io_enq_1_req_bits_uop_fuOpType), .io_enq_1_req_bits_uop_vpu_vstart(io_enq_1_req_bits_uop_vpu_vstart), .io_enq_1_req_bits_uop_vpu_veew(io_enq_1_req_bits_uop_vpu_veew), .io_enq_1_req_bits_uop_uopIdx(io_enq_1_req_bits_uop_uopIdx), .io_enq_1_req_bits_uop_robIdx_flag(io_enq_1_req_bits_uop_robIdx_flag), .io_enq_1_req_bits_uop_robIdx_value(io_enq_1_req_bits_uop_robIdx_value), .io_enq_1_req_bits_uop_debugInfo_enqRsTime(io_enq_1_req_bits_uop_debugInfo_enqRsTime), .io_enq_1_req_bits_uop_debugInfo_selectTime(io_enq_1_req_bits_uop_debugInfo_selectTime), .io_enq_1_req_bits_uop_debugInfo_issueTime(io_enq_1_req_bits_uop_debugInfo_issueTime), .io_enq_1_req_bits_uop_sqIdx_flag(io_enq_1_req_bits_uop_sqIdx_flag), .io_enq_1_req_bits_uop_sqIdx_value(io_enq_1_req_bits_uop_sqIdx_value), .io_enq_1_req_bits_vaddr(io_enq_1_req_bits_vaddr), .io_enq_1_req_bits_mask(io_enq_1_req_bits_mask), .io_enq_1_req_bits_isvec(io_enq_1_req_bits_isvec), .io_enq_1_req_bits_elemIdx(io_enq_1_req_bits_elemIdx), .io_enq_1_req_bits_alignedType(io_enq_1_req_bits_alignedType), .io_enq_1_req_bits_mbIndex(io_enq_1_req_bits_mbIndex), .io_enq_1_revoke(io_enq_1_revoke), .io_rob_pendingst(io_rob_pendingst), .io_rob_pendingPtr_flag(io_rob_pendingPtr_flag), .io_rob_pendingPtr_value(io_rob_pendingPtr_value), .io_splitStoreReq_ready(io_splitStoreReq_ready), .io_splitStoreResp_valid(io_splitStoreResp_valid), .io_splitStoreResp_bits_uop_exceptionVec_3(io_splitStoreResp_bits_uop_exceptionVec_3), .io_splitStoreResp_bits_uop_exceptionVec_6(io_splitStoreResp_bits_uop_exceptionVec_6), .io_splitStoreResp_bits_uop_exceptionVec_7(io_splitStoreResp_bits_uop_exceptionVec_7), .io_splitStoreResp_bits_uop_exceptionVec_15(io_splitStoreResp_bits_uop_exceptionVec_15), .io_splitStoreResp_bits_uop_exceptionVec_19(io_splitStoreResp_bits_uop_exceptionVec_19), .io_splitStoreResp_bits_uop_exceptionVec_23(io_splitStoreResp_bits_uop_exceptionVec_23), .io_splitStoreResp_bits_uop_trigger(io_splitStoreResp_bits_uop_trigger), .io_splitStoreResp_bits_paddr(io_splitStoreResp_bits_paddr), .io_splitStoreResp_bits_nc(io_splitStoreResp_bits_nc), .io_splitStoreResp_bits_mmio(io_splitStoreResp_bits_mmio), .io_splitStoreResp_bits_memBackTypeMM(io_splitStoreResp_bits_memBackTypeMM), .io_splitStoreResp_bits_vecActive(io_splitStoreResp_bits_vecActive), .io_splitStoreResp_bits_need_rep(io_splitStoreResp_bits_need_rep), .io_writeBack_ready(io_writeBack_ready), .io_storeOutValid(io_storeOutValid), .io_storeVecOutValid(io_storeVecOutValid), .io_sqControl_toStoreMisalignBuffer_sqPtr_flag(io_sqControl_toStoreMisalignBuffer_sqPtr_flag), .io_sqControl_toStoreMisalignBuffer_sqPtr_value(io_sqControl_toStoreMisalignBuffer_sqPtr_value), .io_sqControl_toStoreMisalignBuffer_doDeq(io_sqControl_toStoreMisalignBuffer_doDeq), .io_sqControl_toStoreMisalignBuffer_uop_uopIdx(io_sqControl_toStoreMisalignBuffer_uop_uopIdx), .io_sqControl_toStoreMisalignBuffer_uop_robIdx_flag(io_sqControl_toStoreMisalignBuffer_uop_robIdx_flag), .io_sqControl_toStoreMisalignBuffer_uop_robIdx_value(io_sqControl_toStoreMisalignBuffer_uop_robIdx_value), .io_enq_0_req_ready(i_io_enq_0_req_ready), .io_enq_1_req_ready(i_io_enq_1_req_ready), .io_splitStoreReq_valid(i_io_splitStoreReq_valid), .io_splitStoreReq_bits_uop_exceptionVec_0(i_io_splitStoreReq_bits_uop_exceptionVec_0), .io_splitStoreReq_bits_uop_exceptionVec_1(i_io_splitStoreReq_bits_uop_exceptionVec_1), .io_splitStoreReq_bits_uop_exceptionVec_2(i_io_splitStoreReq_bits_uop_exceptionVec_2), .io_splitStoreReq_bits_uop_exceptionVec_4(i_io_splitStoreReq_bits_uop_exceptionVec_4), .io_splitStoreReq_bits_uop_exceptionVec_5(i_io_splitStoreReq_bits_uop_exceptionVec_5), .io_splitStoreReq_bits_uop_exceptionVec_8(i_io_splitStoreReq_bits_uop_exceptionVec_8), .io_splitStoreReq_bits_uop_exceptionVec_9(i_io_splitStoreReq_bits_uop_exceptionVec_9), .io_splitStoreReq_bits_uop_exceptionVec_10(i_io_splitStoreReq_bits_uop_exceptionVec_10), .io_splitStoreReq_bits_uop_exceptionVec_11(i_io_splitStoreReq_bits_uop_exceptionVec_11), .io_splitStoreReq_bits_uop_exceptionVec_12(i_io_splitStoreReq_bits_uop_exceptionVec_12), .io_splitStoreReq_bits_uop_exceptionVec_13(i_io_splitStoreReq_bits_uop_exceptionVec_13), .io_splitStoreReq_bits_uop_exceptionVec_14(i_io_splitStoreReq_bits_uop_exceptionVec_14), .io_splitStoreReq_bits_uop_exceptionVec_16(i_io_splitStoreReq_bits_uop_exceptionVec_16), .io_splitStoreReq_bits_uop_exceptionVec_17(i_io_splitStoreReq_bits_uop_exceptionVec_17), .io_splitStoreReq_bits_uop_exceptionVec_18(i_io_splitStoreReq_bits_uop_exceptionVec_18), .io_splitStoreReq_bits_uop_exceptionVec_19(i_io_splitStoreReq_bits_uop_exceptionVec_19), .io_splitStoreReq_bits_uop_exceptionVec_20(i_io_splitStoreReq_bits_uop_exceptionVec_20), .io_splitStoreReq_bits_uop_exceptionVec_21(i_io_splitStoreReq_bits_uop_exceptionVec_21), .io_splitStoreReq_bits_uop_exceptionVec_22(i_io_splitStoreReq_bits_uop_exceptionVec_22), .io_splitStoreReq_bits_uop_trigger(i_io_splitStoreReq_bits_uop_trigger), .io_splitStoreReq_bits_uop_ftqPtr_value(i_io_splitStoreReq_bits_uop_ftqPtr_value), .io_splitStoreReq_bits_uop_ftqOffset(i_io_splitStoreReq_bits_uop_ftqOffset), .io_splitStoreReq_bits_uop_fuOpType(i_io_splitStoreReq_bits_uop_fuOpType), .io_splitStoreReq_bits_uop_vpu_vstart(i_io_splitStoreReq_bits_uop_vpu_vstart), .io_splitStoreReq_bits_uop_vpu_veew(i_io_splitStoreReq_bits_uop_vpu_veew), .io_splitStoreReq_bits_uop_uopIdx(i_io_splitStoreReq_bits_uop_uopIdx), .io_splitStoreReq_bits_uop_robIdx_flag(i_io_splitStoreReq_bits_uop_robIdx_flag), .io_splitStoreReq_bits_uop_robIdx_value(i_io_splitStoreReq_bits_uop_robIdx_value), .io_splitStoreReq_bits_uop_debugInfo_enqRsTime(i_io_splitStoreReq_bits_uop_debugInfo_enqRsTime), .io_splitStoreReq_bits_uop_debugInfo_selectTime(i_io_splitStoreReq_bits_uop_debugInfo_selectTime), .io_splitStoreReq_bits_uop_debugInfo_issueTime(i_io_splitStoreReq_bits_uop_debugInfo_issueTime), .io_splitStoreReq_bits_uop_sqIdx_flag(i_io_splitStoreReq_bits_uop_sqIdx_flag), .io_splitStoreReq_bits_uop_sqIdx_value(i_io_splitStoreReq_bits_uop_sqIdx_value), .io_splitStoreReq_bits_vaddr(i_io_splitStoreReq_bits_vaddr), .io_splitStoreReq_bits_mask(i_io_splitStoreReq_bits_mask), .io_splitStoreReq_bits_isvec(i_io_splitStoreReq_bits_isvec), .io_splitStoreReq_bits_is128bit(i_io_splitStoreReq_bits_is128bit), .io_splitStoreReq_bits_isFinalSplit(i_io_splitStoreReq_bits_isFinalSplit), .io_writeBack_valid(i_io_writeBack_valid), .io_writeBack_bits_uop_exceptionVec_3(i_io_writeBack_bits_uop_exceptionVec_3), .io_writeBack_bits_uop_exceptionVec_6(i_io_writeBack_bits_uop_exceptionVec_6), .io_writeBack_bits_uop_exceptionVec_7(i_io_writeBack_bits_uop_exceptionVec_7), .io_writeBack_bits_uop_exceptionVec_15(i_io_writeBack_bits_uop_exceptionVec_15), .io_writeBack_bits_uop_exceptionVec_19(i_io_writeBack_bits_uop_exceptionVec_19), .io_writeBack_bits_uop_exceptionVec_23(i_io_writeBack_bits_uop_exceptionVec_23), .io_writeBack_bits_uop_trigger(i_io_writeBack_bits_uop_trigger), .io_writeBack_bits_uop_flushPipe(i_io_writeBack_bits_uop_flushPipe), .io_writeBack_bits_uop_robIdx_flag(i_io_writeBack_bits_uop_robIdx_flag), .io_writeBack_bits_uop_robIdx_value(i_io_writeBack_bits_uop_robIdx_value), .io_writeBack_bits_uop_debugInfo_enqRsTime(i_io_writeBack_bits_uop_debugInfo_enqRsTime), .io_writeBack_bits_uop_debugInfo_selectTime(i_io_writeBack_bits_uop_debugInfo_selectTime), .io_writeBack_bits_uop_debugInfo_issueTime(i_io_writeBack_bits_uop_debugInfo_issueTime), .io_writeBack_bits_debug_isMMIO(i_io_writeBack_bits_debug_isMMIO), .io_writeBack_bits_debug_isNCIO(i_io_writeBack_bits_debug_isNCIO), .io_vecWriteBack_0_valid(i_io_vecWriteBack_0_valid), .io_vecWriteBack_0_bits_mBIndex(i_io_vecWriteBack_0_bits_mBIndex), .io_vecWriteBack_0_bits_exceptionVec_3(i_io_vecWriteBack_0_bits_exceptionVec_3), .io_vecWriteBack_0_bits_exceptionVec_6(i_io_vecWriteBack_0_bits_exceptionVec_6), .io_vecWriteBack_0_bits_exceptionVec_7(i_io_vecWriteBack_0_bits_exceptionVec_7), .io_vecWriteBack_0_bits_exceptionVec_15(i_io_vecWriteBack_0_bits_exceptionVec_15), .io_vecWriteBack_0_bits_exceptionVec_19(i_io_vecWriteBack_0_bits_exceptionVec_19), .io_vecWriteBack_0_bits_exceptionVec_23(i_io_vecWriteBack_0_bits_exceptionVec_23), .io_vecWriteBack_0_bits_hasException(i_io_vecWriteBack_0_bits_hasException), .io_vecWriteBack_0_bits_vaddr(i_io_vecWriteBack_0_bits_vaddr), .io_vecWriteBack_0_bits_vaNeedExt(i_io_vecWriteBack_0_bits_vaNeedExt), .io_vecWriteBack_0_bits_gpaddr(i_io_vecWriteBack_0_bits_gpaddr), .io_vecWriteBack_0_bits_isForVSnonLeafPTE(i_io_vecWriteBack_0_bits_isForVSnonLeafPTE), .io_vecWriteBack_0_bits_vstart(i_io_vecWriteBack_0_bits_vstart), .io_vecWriteBack_0_bits_elemIdx(i_io_vecWriteBack_0_bits_elemIdx), .io_vecWriteBack_0_bits_mask(i_io_vecWriteBack_0_bits_mask), .io_vecWriteBack_1_valid(i_io_vecWriteBack_1_valid), .io_vecWriteBack_1_bits_mBIndex(i_io_vecWriteBack_1_bits_mBIndex), .io_vecWriteBack_1_bits_exceptionVec_3(i_io_vecWriteBack_1_bits_exceptionVec_3), .io_vecWriteBack_1_bits_exceptionVec_6(i_io_vecWriteBack_1_bits_exceptionVec_6), .io_vecWriteBack_1_bits_exceptionVec_7(i_io_vecWriteBack_1_bits_exceptionVec_7), .io_vecWriteBack_1_bits_exceptionVec_15(i_io_vecWriteBack_1_bits_exceptionVec_15), .io_vecWriteBack_1_bits_exceptionVec_19(i_io_vecWriteBack_1_bits_exceptionVec_19), .io_vecWriteBack_1_bits_exceptionVec_23(i_io_vecWriteBack_1_bits_exceptionVec_23), .io_vecWriteBack_1_bits_hasException(i_io_vecWriteBack_1_bits_hasException), .io_vecWriteBack_1_bits_vaddr(i_io_vecWriteBack_1_bits_vaddr), .io_vecWriteBack_1_bits_vaNeedExt(i_io_vecWriteBack_1_bits_vaNeedExt), .io_vecWriteBack_1_bits_gpaddr(i_io_vecWriteBack_1_bits_gpaddr), .io_vecWriteBack_1_bits_isForVSnonLeafPTE(i_io_vecWriteBack_1_bits_isForVSnonLeafPTE), .io_vecWriteBack_1_bits_vstart(i_io_vecWriteBack_1_bits_vstart), .io_vecWriteBack_1_bits_elemIdx(i_io_vecWriteBack_1_bits_elemIdx), .io_vecWriteBack_1_bits_mask(i_io_vecWriteBack_1_bits_mask), .io_sqControl_toStoreQueue_crossPageWithHit(i_io_sqControl_toStoreQueue_crossPageWithHit), .io_sqControl_toStoreQueue_crossPageCanDeq(i_io_sqControl_toStoreQueue_crossPageCanDeq), .io_sqControl_toStoreQueue_paddr(i_io_sqControl_toStoreQueue_paddr), .io_sqControl_toStoreQueue_withSameUop(i_io_sqControl_toStoreQueue_withSameUop), .io_toVecStoreMergeBuffer_0_mbIndex(i_io_toVecStoreMergeBuffer_0_mbIndex), .io_toVecStoreMergeBuffer_0_flush(i_io_toVecStoreMergeBuffer_0_flush), .io_toVecStoreMergeBuffer_1_mbIndex(i_io_toVecStoreMergeBuffer_1_mbIndex), .io_toVecStoreMergeBuffer_1_flush(i_io_toVecStoreMergeBuffer_1_flush), .io_full(i_io_full));
+  always @(negedge clk) begin
+    if (rst) begin
+      io_enq_0_req_valid <= 1'b0;
+      io_enq_1_req_valid <= 1'b0;
+      io_redirect_valid <= 1'b0;
+      io_splitStoreResp_valid <= 1'b0;
+    end else begin
+      io_redirect_valid <= ($urandom_range(0,15)==0);
+      io_redirect_bits_robIdx_flag <= $urandom_range(0,1);
+      io_redirect_bits_robIdx_value <= {4'h0, 4'($urandom)};
+      io_enq_0_req_valid <= ($urandom_range(0,1));
+      io_enq_0_req_bits_uop_exceptionVec_0 <= ($urandom_range(0,7)==0);
+      io_enq_0_req_bits_uop_exceptionVec_1 <= ($urandom_range(0,7)==0);
+      io_enq_0_req_bits_uop_exceptionVec_2 <= ($urandom_range(0,7)==0);
+      io_enq_0_req_bits_uop_exceptionVec_4 <= ($urandom_range(0,7)==0);
+      io_enq_0_req_bits_uop_exceptionVec_5 <= ($urandom_range(0,7)==0);
+      io_enq_0_req_bits_uop_exceptionVec_8 <= ($urandom_range(0,7)==0);
+      io_enq_0_req_bits_uop_exceptionVec_9 <= ($urandom_range(0,7)==0);
+      io_enq_0_req_bits_uop_exceptionVec_10 <= ($urandom_range(0,7)==0);
+      io_enq_0_req_bits_uop_exceptionVec_11 <= ($urandom_range(0,7)==0);
+      io_enq_0_req_bits_uop_exceptionVec_12 <= ($urandom_range(0,7)==0);
+      io_enq_0_req_bits_uop_exceptionVec_13 <= ($urandom_range(0,7)==0);
+      io_enq_0_req_bits_uop_exceptionVec_14 <= ($urandom_range(0,7)==0);
+      io_enq_0_req_bits_uop_exceptionVec_16 <= ($urandom_range(0,7)==0);
+      io_enq_0_req_bits_uop_exceptionVec_17 <= ($urandom_range(0,7)==0);
+      io_enq_0_req_bits_uop_exceptionVec_18 <= ($urandom_range(0,7)==0);
+      io_enq_0_req_bits_uop_exceptionVec_19 <= ($urandom_range(0,7)==0);
+      io_enq_0_req_bits_uop_exceptionVec_20 <= ($urandom_range(0,7)==0);
+      io_enq_0_req_bits_uop_exceptionVec_21 <= ($urandom_range(0,7)==0);
+      io_enq_0_req_bits_uop_exceptionVec_22 <= ($urandom_range(0,7)==0);
+      io_enq_0_req_bits_uop_trigger <= 4'($urandom);
+      io_enq_0_req_bits_uop_ftqPtr_value <= 6'($urandom);
+      io_enq_0_req_bits_uop_ftqOffset <= 4'($urandom);
+      io_enq_0_req_bits_uop_fuOpType <= {4'h0, 5'($urandom_range(0,24))};
+      io_enq_0_req_bits_uop_vpu_vstart <= 8'($urandom);
+      io_enq_0_req_bits_uop_vpu_veew <= 2'($urandom);
+      io_enq_0_req_bits_uop_uopIdx <= 7'($urandom);
+      io_enq_0_req_bits_uop_robIdx_flag <= $urandom_range(0,1);
+      io_enq_0_req_bits_uop_robIdx_value <= {4'h0, 4'($urandom)};
+      io_enq_0_req_bits_uop_debugInfo_enqRsTime <= 64'({$urandom(), $urandom()});
+      io_enq_0_req_bits_uop_debugInfo_selectTime <= 64'({$urandom(), $urandom()});
+      io_enq_0_req_bits_uop_debugInfo_issueTime <= 64'({$urandom(), $urandom()});
+      io_enq_0_req_bits_uop_sqIdx_flag <= $urandom_range(0,1);
+      io_enq_0_req_bits_uop_sqIdx_value <= 6'($urandom);
+      io_enq_0_req_bits_vaddr <= {37'($urandom_range(0,1)), 13'($urandom)};
+      io_enq_0_req_bits_mask <= 16'($urandom);
+      io_enq_0_req_bits_isvec <= $urandom_range(0,1);
+      io_enq_0_req_bits_elemIdx <= 8'($urandom);
+      io_enq_0_req_bits_alignedType <= {1'b0, 2'($urandom)};
+      io_enq_0_req_bits_mbIndex <= 4'($urandom);
+      io_enq_0_revoke <= ($urandom_range(0,7)==0);
+      io_enq_1_req_valid <= ($urandom_range(0,2)==0);
+      io_enq_1_req_bits_uop_exceptionVec_0 <= ($urandom_range(0,7)==0);
+      io_enq_1_req_bits_uop_exceptionVec_1 <= ($urandom_range(0,7)==0);
+      io_enq_1_req_bits_uop_exceptionVec_2 <= ($urandom_range(0,7)==0);
+      io_enq_1_req_bits_uop_exceptionVec_4 <= ($urandom_range(0,7)==0);
+      io_enq_1_req_bits_uop_exceptionVec_5 <= ($urandom_range(0,7)==0);
+      io_enq_1_req_bits_uop_exceptionVec_8 <= ($urandom_range(0,7)==0);
+      io_enq_1_req_bits_uop_exceptionVec_9 <= ($urandom_range(0,7)==0);
+      io_enq_1_req_bits_uop_exceptionVec_10 <= ($urandom_range(0,7)==0);
+      io_enq_1_req_bits_uop_exceptionVec_11 <= ($urandom_range(0,7)==0);
+      io_enq_1_req_bits_uop_exceptionVec_12 <= ($urandom_range(0,7)==0);
+      io_enq_1_req_bits_uop_exceptionVec_13 <= ($urandom_range(0,7)==0);
+      io_enq_1_req_bits_uop_exceptionVec_14 <= ($urandom_range(0,7)==0);
+      io_enq_1_req_bits_uop_exceptionVec_16 <= ($urandom_range(0,7)==0);
+      io_enq_1_req_bits_uop_exceptionVec_17 <= ($urandom_range(0,7)==0);
+      io_enq_1_req_bits_uop_exceptionVec_18 <= ($urandom_range(0,7)==0);
+      io_enq_1_req_bits_uop_exceptionVec_19 <= ($urandom_range(0,7)==0);
+      io_enq_1_req_bits_uop_exceptionVec_20 <= ($urandom_range(0,7)==0);
+      io_enq_1_req_bits_uop_exceptionVec_21 <= ($urandom_range(0,7)==0);
+      io_enq_1_req_bits_uop_exceptionVec_22 <= ($urandom_range(0,7)==0);
+      io_enq_1_req_bits_uop_trigger <= 4'($urandom);
+      io_enq_1_req_bits_uop_ftqPtr_value <= 6'($urandom);
+      io_enq_1_req_bits_uop_ftqOffset <= 4'($urandom);
+      io_enq_1_req_bits_uop_fuOpType <= {4'h0, 5'($urandom_range(0,24))};
+      io_enq_1_req_bits_uop_vpu_vstart <= 8'($urandom);
+      io_enq_1_req_bits_uop_vpu_veew <= 2'($urandom);
+      io_enq_1_req_bits_uop_uopIdx <= 7'($urandom);
+      io_enq_1_req_bits_uop_robIdx_flag <= $urandom_range(0,1);
+      io_enq_1_req_bits_uop_robIdx_value <= {4'h0, 4'($urandom)};
+      io_enq_1_req_bits_uop_debugInfo_enqRsTime <= 64'({$urandom(), $urandom()});
+      io_enq_1_req_bits_uop_debugInfo_selectTime <= 64'({$urandom(), $urandom()});
+      io_enq_1_req_bits_uop_debugInfo_issueTime <= 64'({$urandom(), $urandom()});
+      io_enq_1_req_bits_uop_sqIdx_flag <= $urandom_range(0,1);
+      io_enq_1_req_bits_uop_sqIdx_value <= 6'($urandom);
+      io_enq_1_req_bits_vaddr <= {37'($urandom_range(0,1)), 13'($urandom)};
+      io_enq_1_req_bits_mask <= 16'($urandom);
+      io_enq_1_req_bits_isvec <= $urandom_range(0,1);
+      io_enq_1_req_bits_elemIdx <= 8'($urandom);
+      io_enq_1_req_bits_alignedType <= {1'b0, 2'($urandom)};
+      io_enq_1_req_bits_mbIndex <= 4'($urandom);
+      io_enq_1_revoke <= ($urandom_range(0,7)==0);
+      io_rob_pendingst <= ($urandom_range(0,2)!=0);
+      io_rob_pendingPtr_flag <= $urandom_range(0,1);
+      io_rob_pendingPtr_value <= {4'h0, 4'($urandom)};
+      io_splitStoreReq_ready <= ($urandom_range(0,2)!=0);
+      io_splitStoreResp_valid <= ($urandom_range(0,2)!=0);
+      io_splitStoreResp_bits_uop_exceptionVec_3 <= ($urandom_range(0,7)==0);
+      io_splitStoreResp_bits_uop_exceptionVec_6 <= ($urandom_range(0,7)==0);
+      io_splitStoreResp_bits_uop_exceptionVec_7 <= ($urandom_range(0,7)==0);
+      io_splitStoreResp_bits_uop_exceptionVec_15 <= ($urandom_range(0,7)==0);
+      io_splitStoreResp_bits_uop_exceptionVec_19 <= ($urandom_range(0,7)==0);
+      io_splitStoreResp_bits_uop_exceptionVec_23 <= ($urandom_range(0,7)==0);
+      io_splitStoreResp_bits_uop_trigger <= 4'($urandom);
+      io_splitStoreResp_bits_paddr <= {43'($urandom_range(0,3)), 5'($urandom)};
+      io_splitStoreResp_bits_nc <= $urandom_range(0,1);
+      io_splitStoreResp_bits_mmio <= $urandom_range(0,1);
+      io_splitStoreResp_bits_memBackTypeMM <= $urandom_range(0,1);
+      io_splitStoreResp_bits_vecActive <= $urandom_range(0,1);
+      io_splitStoreResp_bits_need_rep <= ($urandom_range(0,4)==0);
+      io_writeBack_ready <= ($urandom_range(0,2)!=0);
+      io_storeOutValid <= ($urandom_range(0,7)==0);
+      io_storeVecOutValid <= ($urandom_range(0,7)==0);
+      io_sqControl_toStoreMisalignBuffer_sqPtr_flag <= $urandom_range(0,1);
+      io_sqControl_toStoreMisalignBuffer_sqPtr_value <= 6'($urandom);
+      io_sqControl_toStoreMisalignBuffer_doDeq <= ($urandom_range(0,2)!=0);
+      io_sqControl_toStoreMisalignBuffer_uop_uopIdx <= 7'($urandom);
+      io_sqControl_toStoreMisalignBuffer_uop_robIdx_flag <= $urandom_range(0,1);
+      io_sqControl_toStoreMisalignBuffer_uop_robIdx_value <= {4'h0, 4'($urandom)};
+      io_redirect_bits_level <= $urandom_range(0,1);
+    end
+  end
+  // 内部层次探针：证明 FM 失败点 req.alignedType / req.dbg_enqRsTime 在所有可达状态等价。
+  int probe_mismatch = 0;
+  always @(negedge clk) if (!rst) begin
+    #2;
+    if (u_g.req_valid) begin
+      if (!$isunknown(u_g.req_alignedType) &&
+          u_g.req_alignedType !== u_i.u_core.req.alignedType) probe_mismatch++;
+      if (!$isunknown(u_g.req_uop_debugInfo_enqRsTime) &&
+          u_g.req_uop_debugInfo_enqRsTime !== u_i.u_core.req.dbg_enqRsTime) probe_mismatch++;
+    end
+  end
+  always @(negedge clk) if (!rst) begin
+    #4; checks++;
+    if (!$isunknown(g_io_enq_0_req_ready) && g_io_enq_0_req_ready !== i_io_enq_0_req_ready) begin errors++;
+      if(errors<=60) $display("[%0t] io_enq_0_req_ready g=%h i=%h", $time, g_io_enq_0_req_ready, i_io_enq_0_req_ready); end
+    if (!$isunknown(g_io_enq_1_req_ready) && g_io_enq_1_req_ready !== i_io_enq_1_req_ready) begin errors++;
+      if(errors<=60) $display("[%0t] io_enq_1_req_ready g=%h i=%h", $time, g_io_enq_1_req_ready, i_io_enq_1_req_ready); end
+    if (!$isunknown(g_io_splitStoreReq_valid) && g_io_splitStoreReq_valid !== i_io_splitStoreReq_valid) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_valid g=%h i=%h", $time, g_io_splitStoreReq_valid, i_io_splitStoreReq_valid); end
+    if (!$isunknown(g_io_splitStoreReq_bits_uop_exceptionVec_0) && g_io_splitStoreReq_bits_uop_exceptionVec_0 !== i_io_splitStoreReq_bits_uop_exceptionVec_0) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_uop_exceptionVec_0 g=%h i=%h", $time, g_io_splitStoreReq_bits_uop_exceptionVec_0, i_io_splitStoreReq_bits_uop_exceptionVec_0); end
+    if (!$isunknown(g_io_splitStoreReq_bits_uop_exceptionVec_1) && g_io_splitStoreReq_bits_uop_exceptionVec_1 !== i_io_splitStoreReq_bits_uop_exceptionVec_1) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_uop_exceptionVec_1 g=%h i=%h", $time, g_io_splitStoreReq_bits_uop_exceptionVec_1, i_io_splitStoreReq_bits_uop_exceptionVec_1); end
+    if (!$isunknown(g_io_splitStoreReq_bits_uop_exceptionVec_2) && g_io_splitStoreReq_bits_uop_exceptionVec_2 !== i_io_splitStoreReq_bits_uop_exceptionVec_2) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_uop_exceptionVec_2 g=%h i=%h", $time, g_io_splitStoreReq_bits_uop_exceptionVec_2, i_io_splitStoreReq_bits_uop_exceptionVec_2); end
+    if (!$isunknown(g_io_splitStoreReq_bits_uop_exceptionVec_4) && g_io_splitStoreReq_bits_uop_exceptionVec_4 !== i_io_splitStoreReq_bits_uop_exceptionVec_4) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_uop_exceptionVec_4 g=%h i=%h", $time, g_io_splitStoreReq_bits_uop_exceptionVec_4, i_io_splitStoreReq_bits_uop_exceptionVec_4); end
+    if (!$isunknown(g_io_splitStoreReq_bits_uop_exceptionVec_5) && g_io_splitStoreReq_bits_uop_exceptionVec_5 !== i_io_splitStoreReq_bits_uop_exceptionVec_5) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_uop_exceptionVec_5 g=%h i=%h", $time, g_io_splitStoreReq_bits_uop_exceptionVec_5, i_io_splitStoreReq_bits_uop_exceptionVec_5); end
+    if (!$isunknown(g_io_splitStoreReq_bits_uop_exceptionVec_8) && g_io_splitStoreReq_bits_uop_exceptionVec_8 !== i_io_splitStoreReq_bits_uop_exceptionVec_8) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_uop_exceptionVec_8 g=%h i=%h", $time, g_io_splitStoreReq_bits_uop_exceptionVec_8, i_io_splitStoreReq_bits_uop_exceptionVec_8); end
+    if (!$isunknown(g_io_splitStoreReq_bits_uop_exceptionVec_9) && g_io_splitStoreReq_bits_uop_exceptionVec_9 !== i_io_splitStoreReq_bits_uop_exceptionVec_9) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_uop_exceptionVec_9 g=%h i=%h", $time, g_io_splitStoreReq_bits_uop_exceptionVec_9, i_io_splitStoreReq_bits_uop_exceptionVec_9); end
+    if (!$isunknown(g_io_splitStoreReq_bits_uop_exceptionVec_10) && g_io_splitStoreReq_bits_uop_exceptionVec_10 !== i_io_splitStoreReq_bits_uop_exceptionVec_10) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_uop_exceptionVec_10 g=%h i=%h", $time, g_io_splitStoreReq_bits_uop_exceptionVec_10, i_io_splitStoreReq_bits_uop_exceptionVec_10); end
+    if (!$isunknown(g_io_splitStoreReq_bits_uop_exceptionVec_11) && g_io_splitStoreReq_bits_uop_exceptionVec_11 !== i_io_splitStoreReq_bits_uop_exceptionVec_11) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_uop_exceptionVec_11 g=%h i=%h", $time, g_io_splitStoreReq_bits_uop_exceptionVec_11, i_io_splitStoreReq_bits_uop_exceptionVec_11); end
+    if (!$isunknown(g_io_splitStoreReq_bits_uop_exceptionVec_12) && g_io_splitStoreReq_bits_uop_exceptionVec_12 !== i_io_splitStoreReq_bits_uop_exceptionVec_12) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_uop_exceptionVec_12 g=%h i=%h", $time, g_io_splitStoreReq_bits_uop_exceptionVec_12, i_io_splitStoreReq_bits_uop_exceptionVec_12); end
+    if (!$isunknown(g_io_splitStoreReq_bits_uop_exceptionVec_13) && g_io_splitStoreReq_bits_uop_exceptionVec_13 !== i_io_splitStoreReq_bits_uop_exceptionVec_13) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_uop_exceptionVec_13 g=%h i=%h", $time, g_io_splitStoreReq_bits_uop_exceptionVec_13, i_io_splitStoreReq_bits_uop_exceptionVec_13); end
+    if (!$isunknown(g_io_splitStoreReq_bits_uop_exceptionVec_14) && g_io_splitStoreReq_bits_uop_exceptionVec_14 !== i_io_splitStoreReq_bits_uop_exceptionVec_14) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_uop_exceptionVec_14 g=%h i=%h", $time, g_io_splitStoreReq_bits_uop_exceptionVec_14, i_io_splitStoreReq_bits_uop_exceptionVec_14); end
+    if (!$isunknown(g_io_splitStoreReq_bits_uop_exceptionVec_16) && g_io_splitStoreReq_bits_uop_exceptionVec_16 !== i_io_splitStoreReq_bits_uop_exceptionVec_16) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_uop_exceptionVec_16 g=%h i=%h", $time, g_io_splitStoreReq_bits_uop_exceptionVec_16, i_io_splitStoreReq_bits_uop_exceptionVec_16); end
+    if (!$isunknown(g_io_splitStoreReq_bits_uop_exceptionVec_17) && g_io_splitStoreReq_bits_uop_exceptionVec_17 !== i_io_splitStoreReq_bits_uop_exceptionVec_17) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_uop_exceptionVec_17 g=%h i=%h", $time, g_io_splitStoreReq_bits_uop_exceptionVec_17, i_io_splitStoreReq_bits_uop_exceptionVec_17); end
+    if (!$isunknown(g_io_splitStoreReq_bits_uop_exceptionVec_18) && g_io_splitStoreReq_bits_uop_exceptionVec_18 !== i_io_splitStoreReq_bits_uop_exceptionVec_18) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_uop_exceptionVec_18 g=%h i=%h", $time, g_io_splitStoreReq_bits_uop_exceptionVec_18, i_io_splitStoreReq_bits_uop_exceptionVec_18); end
+    if (!$isunknown(g_io_splitStoreReq_bits_uop_exceptionVec_19) && g_io_splitStoreReq_bits_uop_exceptionVec_19 !== i_io_splitStoreReq_bits_uop_exceptionVec_19) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_uop_exceptionVec_19 g=%h i=%h", $time, g_io_splitStoreReq_bits_uop_exceptionVec_19, i_io_splitStoreReq_bits_uop_exceptionVec_19); end
+    if (!$isunknown(g_io_splitStoreReq_bits_uop_exceptionVec_20) && g_io_splitStoreReq_bits_uop_exceptionVec_20 !== i_io_splitStoreReq_bits_uop_exceptionVec_20) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_uop_exceptionVec_20 g=%h i=%h", $time, g_io_splitStoreReq_bits_uop_exceptionVec_20, i_io_splitStoreReq_bits_uop_exceptionVec_20); end
+    if (!$isunknown(g_io_splitStoreReq_bits_uop_exceptionVec_21) && g_io_splitStoreReq_bits_uop_exceptionVec_21 !== i_io_splitStoreReq_bits_uop_exceptionVec_21) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_uop_exceptionVec_21 g=%h i=%h", $time, g_io_splitStoreReq_bits_uop_exceptionVec_21, i_io_splitStoreReq_bits_uop_exceptionVec_21); end
+    if (!$isunknown(g_io_splitStoreReq_bits_uop_exceptionVec_22) && g_io_splitStoreReq_bits_uop_exceptionVec_22 !== i_io_splitStoreReq_bits_uop_exceptionVec_22) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_uop_exceptionVec_22 g=%h i=%h", $time, g_io_splitStoreReq_bits_uop_exceptionVec_22, i_io_splitStoreReq_bits_uop_exceptionVec_22); end
+    if (!$isunknown(g_io_splitStoreReq_bits_uop_trigger) && g_io_splitStoreReq_bits_uop_trigger !== i_io_splitStoreReq_bits_uop_trigger) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_uop_trigger g=%h i=%h", $time, g_io_splitStoreReq_bits_uop_trigger, i_io_splitStoreReq_bits_uop_trigger); end
+    if (!$isunknown(g_io_splitStoreReq_bits_uop_ftqPtr_value) && g_io_splitStoreReq_bits_uop_ftqPtr_value !== i_io_splitStoreReq_bits_uop_ftqPtr_value) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_uop_ftqPtr_value g=%h i=%h", $time, g_io_splitStoreReq_bits_uop_ftqPtr_value, i_io_splitStoreReq_bits_uop_ftqPtr_value); end
+    if (!$isunknown(g_io_splitStoreReq_bits_uop_ftqOffset) && g_io_splitStoreReq_bits_uop_ftqOffset !== i_io_splitStoreReq_bits_uop_ftqOffset) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_uop_ftqOffset g=%h i=%h", $time, g_io_splitStoreReq_bits_uop_ftqOffset, i_io_splitStoreReq_bits_uop_ftqOffset); end
+    if (!$isunknown(g_io_splitStoreReq_bits_uop_fuOpType) && g_io_splitStoreReq_bits_uop_fuOpType !== i_io_splitStoreReq_bits_uop_fuOpType) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_uop_fuOpType g=%h i=%h", $time, g_io_splitStoreReq_bits_uop_fuOpType, i_io_splitStoreReq_bits_uop_fuOpType); end
+    if (!$isunknown(g_io_splitStoreReq_bits_uop_vpu_vstart) && g_io_splitStoreReq_bits_uop_vpu_vstart !== i_io_splitStoreReq_bits_uop_vpu_vstart) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_uop_vpu_vstart g=%h i=%h", $time, g_io_splitStoreReq_bits_uop_vpu_vstart, i_io_splitStoreReq_bits_uop_vpu_vstart); end
+    if (!$isunknown(g_io_splitStoreReq_bits_uop_vpu_veew) && g_io_splitStoreReq_bits_uop_vpu_veew !== i_io_splitStoreReq_bits_uop_vpu_veew) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_uop_vpu_veew g=%h i=%h", $time, g_io_splitStoreReq_bits_uop_vpu_veew, i_io_splitStoreReq_bits_uop_vpu_veew); end
+    if (!$isunknown(g_io_splitStoreReq_bits_uop_uopIdx) && g_io_splitStoreReq_bits_uop_uopIdx !== i_io_splitStoreReq_bits_uop_uopIdx) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_uop_uopIdx g=%h i=%h", $time, g_io_splitStoreReq_bits_uop_uopIdx, i_io_splitStoreReq_bits_uop_uopIdx); end
+    if (!$isunknown(g_io_splitStoreReq_bits_uop_robIdx_flag) && g_io_splitStoreReq_bits_uop_robIdx_flag !== i_io_splitStoreReq_bits_uop_robIdx_flag) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_uop_robIdx_flag g=%h i=%h", $time, g_io_splitStoreReq_bits_uop_robIdx_flag, i_io_splitStoreReq_bits_uop_robIdx_flag); end
+    if (!$isunknown(g_io_splitStoreReq_bits_uop_robIdx_value) && g_io_splitStoreReq_bits_uop_robIdx_value !== i_io_splitStoreReq_bits_uop_robIdx_value) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_uop_robIdx_value g=%h i=%h", $time, g_io_splitStoreReq_bits_uop_robIdx_value, i_io_splitStoreReq_bits_uop_robIdx_value); end
+    if (!$isunknown(g_io_splitStoreReq_bits_uop_debugInfo_enqRsTime) && g_io_splitStoreReq_bits_uop_debugInfo_enqRsTime !== i_io_splitStoreReq_bits_uop_debugInfo_enqRsTime) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_uop_debugInfo_enqRsTime g=%h i=%h", $time, g_io_splitStoreReq_bits_uop_debugInfo_enqRsTime, i_io_splitStoreReq_bits_uop_debugInfo_enqRsTime); end
+    if (!$isunknown(g_io_splitStoreReq_bits_uop_debugInfo_selectTime) && g_io_splitStoreReq_bits_uop_debugInfo_selectTime !== i_io_splitStoreReq_bits_uop_debugInfo_selectTime) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_uop_debugInfo_selectTime g=%h i=%h", $time, g_io_splitStoreReq_bits_uop_debugInfo_selectTime, i_io_splitStoreReq_bits_uop_debugInfo_selectTime); end
+    if (!$isunknown(g_io_splitStoreReq_bits_uop_debugInfo_issueTime) && g_io_splitStoreReq_bits_uop_debugInfo_issueTime !== i_io_splitStoreReq_bits_uop_debugInfo_issueTime) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_uop_debugInfo_issueTime g=%h i=%h", $time, g_io_splitStoreReq_bits_uop_debugInfo_issueTime, i_io_splitStoreReq_bits_uop_debugInfo_issueTime); end
+    if (!$isunknown(g_io_splitStoreReq_bits_uop_sqIdx_flag) && g_io_splitStoreReq_bits_uop_sqIdx_flag !== i_io_splitStoreReq_bits_uop_sqIdx_flag) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_uop_sqIdx_flag g=%h i=%h", $time, g_io_splitStoreReq_bits_uop_sqIdx_flag, i_io_splitStoreReq_bits_uop_sqIdx_flag); end
+    if (!$isunknown(g_io_splitStoreReq_bits_uop_sqIdx_value) && g_io_splitStoreReq_bits_uop_sqIdx_value !== i_io_splitStoreReq_bits_uop_sqIdx_value) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_uop_sqIdx_value g=%h i=%h", $time, g_io_splitStoreReq_bits_uop_sqIdx_value, i_io_splitStoreReq_bits_uop_sqIdx_value); end
+    if (!$isunknown(g_io_splitStoreReq_bits_vaddr) && g_io_splitStoreReq_bits_vaddr !== i_io_splitStoreReq_bits_vaddr) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_vaddr g=%h i=%h", $time, g_io_splitStoreReq_bits_vaddr, i_io_splitStoreReq_bits_vaddr); end
+    if (!$isunknown(g_io_splitStoreReq_bits_mask) && g_io_splitStoreReq_bits_mask !== i_io_splitStoreReq_bits_mask) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_mask g=%h i=%h", $time, g_io_splitStoreReq_bits_mask, i_io_splitStoreReq_bits_mask); end
+    if (!$isunknown(g_io_splitStoreReq_bits_isvec) && g_io_splitStoreReq_bits_isvec !== i_io_splitStoreReq_bits_isvec) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_isvec g=%h i=%h", $time, g_io_splitStoreReq_bits_isvec, i_io_splitStoreReq_bits_isvec); end
+    if (!$isunknown(g_io_splitStoreReq_bits_is128bit) && g_io_splitStoreReq_bits_is128bit !== i_io_splitStoreReq_bits_is128bit) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_is128bit g=%h i=%h", $time, g_io_splitStoreReq_bits_is128bit, i_io_splitStoreReq_bits_is128bit); end
+    if (!$isunknown(g_io_splitStoreReq_bits_isFinalSplit) && g_io_splitStoreReq_bits_isFinalSplit !== i_io_splitStoreReq_bits_isFinalSplit) begin errors++;
+      if(errors<=60) $display("[%0t] io_splitStoreReq_bits_isFinalSplit g=%h i=%h", $time, g_io_splitStoreReq_bits_isFinalSplit, i_io_splitStoreReq_bits_isFinalSplit); end
+    if (!$isunknown(g_io_writeBack_valid) && g_io_writeBack_valid !== i_io_writeBack_valid) begin errors++;
+      if(errors<=60) $display("[%0t] io_writeBack_valid g=%h i=%h", $time, g_io_writeBack_valid, i_io_writeBack_valid); end
+    if (!$isunknown(g_io_writeBack_bits_uop_exceptionVec_3) && g_io_writeBack_bits_uop_exceptionVec_3 !== i_io_writeBack_bits_uop_exceptionVec_3) begin errors++;
+      if(errors<=60) $display("[%0t] io_writeBack_bits_uop_exceptionVec_3 g=%h i=%h", $time, g_io_writeBack_bits_uop_exceptionVec_3, i_io_writeBack_bits_uop_exceptionVec_3); end
+    if (!$isunknown(g_io_writeBack_bits_uop_exceptionVec_6) && g_io_writeBack_bits_uop_exceptionVec_6 !== i_io_writeBack_bits_uop_exceptionVec_6) begin errors++;
+      if(errors<=60) $display("[%0t] io_writeBack_bits_uop_exceptionVec_6 g=%h i=%h", $time, g_io_writeBack_bits_uop_exceptionVec_6, i_io_writeBack_bits_uop_exceptionVec_6); end
+    if (!$isunknown(g_io_writeBack_bits_uop_exceptionVec_7) && g_io_writeBack_bits_uop_exceptionVec_7 !== i_io_writeBack_bits_uop_exceptionVec_7) begin errors++;
+      if(errors<=60) $display("[%0t] io_writeBack_bits_uop_exceptionVec_7 g=%h i=%h", $time, g_io_writeBack_bits_uop_exceptionVec_7, i_io_writeBack_bits_uop_exceptionVec_7); end
+    if (!$isunknown(g_io_writeBack_bits_uop_exceptionVec_15) && g_io_writeBack_bits_uop_exceptionVec_15 !== i_io_writeBack_bits_uop_exceptionVec_15) begin errors++;
+      if(errors<=60) $display("[%0t] io_writeBack_bits_uop_exceptionVec_15 g=%h i=%h", $time, g_io_writeBack_bits_uop_exceptionVec_15, i_io_writeBack_bits_uop_exceptionVec_15); end
+    if (!$isunknown(g_io_writeBack_bits_uop_exceptionVec_19) && g_io_writeBack_bits_uop_exceptionVec_19 !== i_io_writeBack_bits_uop_exceptionVec_19) begin errors++;
+      if(errors<=60) $display("[%0t] io_writeBack_bits_uop_exceptionVec_19 g=%h i=%h", $time, g_io_writeBack_bits_uop_exceptionVec_19, i_io_writeBack_bits_uop_exceptionVec_19); end
+    if (!$isunknown(g_io_writeBack_bits_uop_exceptionVec_23) && g_io_writeBack_bits_uop_exceptionVec_23 !== i_io_writeBack_bits_uop_exceptionVec_23) begin errors++;
+      if(errors<=60) $display("[%0t] io_writeBack_bits_uop_exceptionVec_23 g=%h i=%h", $time, g_io_writeBack_bits_uop_exceptionVec_23, i_io_writeBack_bits_uop_exceptionVec_23); end
+    if (!$isunknown(g_io_writeBack_bits_uop_trigger) && g_io_writeBack_bits_uop_trigger !== i_io_writeBack_bits_uop_trigger) begin errors++;
+      if(errors<=60) $display("[%0t] io_writeBack_bits_uop_trigger g=%h i=%h", $time, g_io_writeBack_bits_uop_trigger, i_io_writeBack_bits_uop_trigger); end
+    if (!$isunknown(g_io_writeBack_bits_uop_flushPipe) && g_io_writeBack_bits_uop_flushPipe !== i_io_writeBack_bits_uop_flushPipe) begin errors++;
+      if(errors<=60) $display("[%0t] io_writeBack_bits_uop_flushPipe g=%h i=%h", $time, g_io_writeBack_bits_uop_flushPipe, i_io_writeBack_bits_uop_flushPipe); end
+    if (!$isunknown(g_io_writeBack_bits_uop_robIdx_flag) && g_io_writeBack_bits_uop_robIdx_flag !== i_io_writeBack_bits_uop_robIdx_flag) begin errors++;
+      if(errors<=60) $display("[%0t] io_writeBack_bits_uop_robIdx_flag g=%h i=%h", $time, g_io_writeBack_bits_uop_robIdx_flag, i_io_writeBack_bits_uop_robIdx_flag); end
+    if (!$isunknown(g_io_writeBack_bits_uop_robIdx_value) && g_io_writeBack_bits_uop_robIdx_value !== i_io_writeBack_bits_uop_robIdx_value) begin errors++;
+      if(errors<=60) $display("[%0t] io_writeBack_bits_uop_robIdx_value g=%h i=%h", $time, g_io_writeBack_bits_uop_robIdx_value, i_io_writeBack_bits_uop_robIdx_value); end
+    if (!$isunknown(g_io_writeBack_bits_uop_debugInfo_enqRsTime) && g_io_writeBack_bits_uop_debugInfo_enqRsTime !== i_io_writeBack_bits_uop_debugInfo_enqRsTime) begin errors++;
+      if(errors<=60) $display("[%0t] io_writeBack_bits_uop_debugInfo_enqRsTime g=%h i=%h", $time, g_io_writeBack_bits_uop_debugInfo_enqRsTime, i_io_writeBack_bits_uop_debugInfo_enqRsTime); end
+    if (!$isunknown(g_io_writeBack_bits_uop_debugInfo_selectTime) && g_io_writeBack_bits_uop_debugInfo_selectTime !== i_io_writeBack_bits_uop_debugInfo_selectTime) begin errors++;
+      if(errors<=60) $display("[%0t] io_writeBack_bits_uop_debugInfo_selectTime g=%h i=%h", $time, g_io_writeBack_bits_uop_debugInfo_selectTime, i_io_writeBack_bits_uop_debugInfo_selectTime); end
+    if (!$isunknown(g_io_writeBack_bits_uop_debugInfo_issueTime) && g_io_writeBack_bits_uop_debugInfo_issueTime !== i_io_writeBack_bits_uop_debugInfo_issueTime) begin errors++;
+      if(errors<=60) $display("[%0t] io_writeBack_bits_uop_debugInfo_issueTime g=%h i=%h", $time, g_io_writeBack_bits_uop_debugInfo_issueTime, i_io_writeBack_bits_uop_debugInfo_issueTime); end
+    if (!$isunknown(g_io_writeBack_bits_debug_isMMIO) && g_io_writeBack_bits_debug_isMMIO !== i_io_writeBack_bits_debug_isMMIO) begin errors++;
+      if(errors<=60) $display("[%0t] io_writeBack_bits_debug_isMMIO g=%h i=%h", $time, g_io_writeBack_bits_debug_isMMIO, i_io_writeBack_bits_debug_isMMIO); end
+    if (!$isunknown(g_io_writeBack_bits_debug_isNCIO) && g_io_writeBack_bits_debug_isNCIO !== i_io_writeBack_bits_debug_isNCIO) begin errors++;
+      if(errors<=60) $display("[%0t] io_writeBack_bits_debug_isNCIO g=%h i=%h", $time, g_io_writeBack_bits_debug_isNCIO, i_io_writeBack_bits_debug_isNCIO); end
+    if (!$isunknown(g_io_vecWriteBack_0_valid) && g_io_vecWriteBack_0_valid !== i_io_vecWriteBack_0_valid) begin errors++;
+      if(errors<=60) $display("[%0t] io_vecWriteBack_0_valid g=%h i=%h", $time, g_io_vecWriteBack_0_valid, i_io_vecWriteBack_0_valid); end
+    if (!$isunknown(g_io_vecWriteBack_0_bits_mBIndex) && g_io_vecWriteBack_0_bits_mBIndex !== i_io_vecWriteBack_0_bits_mBIndex) begin errors++;
+      if(errors<=60) $display("[%0t] io_vecWriteBack_0_bits_mBIndex g=%h i=%h", $time, g_io_vecWriteBack_0_bits_mBIndex, i_io_vecWriteBack_0_bits_mBIndex); end
+    if (!$isunknown(g_io_vecWriteBack_0_bits_exceptionVec_3) && g_io_vecWriteBack_0_bits_exceptionVec_3 !== i_io_vecWriteBack_0_bits_exceptionVec_3) begin errors++;
+      if(errors<=60) $display("[%0t] io_vecWriteBack_0_bits_exceptionVec_3 g=%h i=%h", $time, g_io_vecWriteBack_0_bits_exceptionVec_3, i_io_vecWriteBack_0_bits_exceptionVec_3); end
+    if (!$isunknown(g_io_vecWriteBack_0_bits_exceptionVec_6) && g_io_vecWriteBack_0_bits_exceptionVec_6 !== i_io_vecWriteBack_0_bits_exceptionVec_6) begin errors++;
+      if(errors<=60) $display("[%0t] io_vecWriteBack_0_bits_exceptionVec_6 g=%h i=%h", $time, g_io_vecWriteBack_0_bits_exceptionVec_6, i_io_vecWriteBack_0_bits_exceptionVec_6); end
+    if (!$isunknown(g_io_vecWriteBack_0_bits_exceptionVec_7) && g_io_vecWriteBack_0_bits_exceptionVec_7 !== i_io_vecWriteBack_0_bits_exceptionVec_7) begin errors++;
+      if(errors<=60) $display("[%0t] io_vecWriteBack_0_bits_exceptionVec_7 g=%h i=%h", $time, g_io_vecWriteBack_0_bits_exceptionVec_7, i_io_vecWriteBack_0_bits_exceptionVec_7); end
+    if (!$isunknown(g_io_vecWriteBack_0_bits_exceptionVec_15) && g_io_vecWriteBack_0_bits_exceptionVec_15 !== i_io_vecWriteBack_0_bits_exceptionVec_15) begin errors++;
+      if(errors<=60) $display("[%0t] io_vecWriteBack_0_bits_exceptionVec_15 g=%h i=%h", $time, g_io_vecWriteBack_0_bits_exceptionVec_15, i_io_vecWriteBack_0_bits_exceptionVec_15); end
+    if (!$isunknown(g_io_vecWriteBack_0_bits_exceptionVec_19) && g_io_vecWriteBack_0_bits_exceptionVec_19 !== i_io_vecWriteBack_0_bits_exceptionVec_19) begin errors++;
+      if(errors<=60) $display("[%0t] io_vecWriteBack_0_bits_exceptionVec_19 g=%h i=%h", $time, g_io_vecWriteBack_0_bits_exceptionVec_19, i_io_vecWriteBack_0_bits_exceptionVec_19); end
+    if (!$isunknown(g_io_vecWriteBack_0_bits_exceptionVec_23) && g_io_vecWriteBack_0_bits_exceptionVec_23 !== i_io_vecWriteBack_0_bits_exceptionVec_23) begin errors++;
+      if(errors<=60) $display("[%0t] io_vecWriteBack_0_bits_exceptionVec_23 g=%h i=%h", $time, g_io_vecWriteBack_0_bits_exceptionVec_23, i_io_vecWriteBack_0_bits_exceptionVec_23); end
+    if (!$isunknown(g_io_vecWriteBack_0_bits_hasException) && g_io_vecWriteBack_0_bits_hasException !== i_io_vecWriteBack_0_bits_hasException) begin errors++;
+      if(errors<=60) $display("[%0t] io_vecWriteBack_0_bits_hasException g=%h i=%h", $time, g_io_vecWriteBack_0_bits_hasException, i_io_vecWriteBack_0_bits_hasException); end
+    if (!$isunknown(g_io_vecWriteBack_0_bits_vaddr) && g_io_vecWriteBack_0_bits_vaddr !== i_io_vecWriteBack_0_bits_vaddr) begin errors++;
+      if(errors<=60) $display("[%0t] io_vecWriteBack_0_bits_vaddr g=%h i=%h", $time, g_io_vecWriteBack_0_bits_vaddr, i_io_vecWriteBack_0_bits_vaddr); end
+    if (!$isunknown(g_io_vecWriteBack_0_bits_vaNeedExt) && g_io_vecWriteBack_0_bits_vaNeedExt !== i_io_vecWriteBack_0_bits_vaNeedExt) begin errors++;
+      if(errors<=60) $display("[%0t] io_vecWriteBack_0_bits_vaNeedExt g=%h i=%h", $time, g_io_vecWriteBack_0_bits_vaNeedExt, i_io_vecWriteBack_0_bits_vaNeedExt); end
+    if (!$isunknown(g_io_vecWriteBack_0_bits_gpaddr) && g_io_vecWriteBack_0_bits_gpaddr !== i_io_vecWriteBack_0_bits_gpaddr) begin errors++;
+      if(errors<=60) $display("[%0t] io_vecWriteBack_0_bits_gpaddr g=%h i=%h", $time, g_io_vecWriteBack_0_bits_gpaddr, i_io_vecWriteBack_0_bits_gpaddr); end
+    if (!$isunknown(g_io_vecWriteBack_0_bits_isForVSnonLeafPTE) && g_io_vecWriteBack_0_bits_isForVSnonLeafPTE !== i_io_vecWriteBack_0_bits_isForVSnonLeafPTE) begin errors++;
+      if(errors<=60) $display("[%0t] io_vecWriteBack_0_bits_isForVSnonLeafPTE g=%h i=%h", $time, g_io_vecWriteBack_0_bits_isForVSnonLeafPTE, i_io_vecWriteBack_0_bits_isForVSnonLeafPTE); end
+    if (!$isunknown(g_io_vecWriteBack_0_bits_vstart) && g_io_vecWriteBack_0_bits_vstart !== i_io_vecWriteBack_0_bits_vstart) begin errors++;
+      if(errors<=60) $display("[%0t] io_vecWriteBack_0_bits_vstart g=%h i=%h", $time, g_io_vecWriteBack_0_bits_vstart, i_io_vecWriteBack_0_bits_vstart); end
+    if (!$isunknown(g_io_vecWriteBack_0_bits_elemIdx) && g_io_vecWriteBack_0_bits_elemIdx !== i_io_vecWriteBack_0_bits_elemIdx) begin errors++;
+      if(errors<=60) $display("[%0t] io_vecWriteBack_0_bits_elemIdx g=%h i=%h", $time, g_io_vecWriteBack_0_bits_elemIdx, i_io_vecWriteBack_0_bits_elemIdx); end
+    if (!$isunknown(g_io_vecWriteBack_0_bits_mask) && g_io_vecWriteBack_0_bits_mask !== i_io_vecWriteBack_0_bits_mask) begin errors++;
+      if(errors<=60) $display("[%0t] io_vecWriteBack_0_bits_mask g=%h i=%h", $time, g_io_vecWriteBack_0_bits_mask, i_io_vecWriteBack_0_bits_mask); end
+    if (!$isunknown(g_io_vecWriteBack_1_valid) && g_io_vecWriteBack_1_valid !== i_io_vecWriteBack_1_valid) begin errors++;
+      if(errors<=60) $display("[%0t] io_vecWriteBack_1_valid g=%h i=%h", $time, g_io_vecWriteBack_1_valid, i_io_vecWriteBack_1_valid); end
+    if (!$isunknown(g_io_vecWriteBack_1_bits_mBIndex) && g_io_vecWriteBack_1_bits_mBIndex !== i_io_vecWriteBack_1_bits_mBIndex) begin errors++;
+      if(errors<=60) $display("[%0t] io_vecWriteBack_1_bits_mBIndex g=%h i=%h", $time, g_io_vecWriteBack_1_bits_mBIndex, i_io_vecWriteBack_1_bits_mBIndex); end
+    if (!$isunknown(g_io_vecWriteBack_1_bits_exceptionVec_3) && g_io_vecWriteBack_1_bits_exceptionVec_3 !== i_io_vecWriteBack_1_bits_exceptionVec_3) begin errors++;
+      if(errors<=60) $display("[%0t] io_vecWriteBack_1_bits_exceptionVec_3 g=%h i=%h", $time, g_io_vecWriteBack_1_bits_exceptionVec_3, i_io_vecWriteBack_1_bits_exceptionVec_3); end
+    if (!$isunknown(g_io_vecWriteBack_1_bits_exceptionVec_6) && g_io_vecWriteBack_1_bits_exceptionVec_6 !== i_io_vecWriteBack_1_bits_exceptionVec_6) begin errors++;
+      if(errors<=60) $display("[%0t] io_vecWriteBack_1_bits_exceptionVec_6 g=%h i=%h", $time, g_io_vecWriteBack_1_bits_exceptionVec_6, i_io_vecWriteBack_1_bits_exceptionVec_6); end
+    if (!$isunknown(g_io_vecWriteBack_1_bits_exceptionVec_7) && g_io_vecWriteBack_1_bits_exceptionVec_7 !== i_io_vecWriteBack_1_bits_exceptionVec_7) begin errors++;
+      if(errors<=60) $display("[%0t] io_vecWriteBack_1_bits_exceptionVec_7 g=%h i=%h", $time, g_io_vecWriteBack_1_bits_exceptionVec_7, i_io_vecWriteBack_1_bits_exceptionVec_7); end
+    if (!$isunknown(g_io_vecWriteBack_1_bits_exceptionVec_15) && g_io_vecWriteBack_1_bits_exceptionVec_15 !== i_io_vecWriteBack_1_bits_exceptionVec_15) begin errors++;
+      if(errors<=60) $display("[%0t] io_vecWriteBack_1_bits_exceptionVec_15 g=%h i=%h", $time, g_io_vecWriteBack_1_bits_exceptionVec_15, i_io_vecWriteBack_1_bits_exceptionVec_15); end
+    if (!$isunknown(g_io_vecWriteBack_1_bits_exceptionVec_19) && g_io_vecWriteBack_1_bits_exceptionVec_19 !== i_io_vecWriteBack_1_bits_exceptionVec_19) begin errors++;
+      if(errors<=60) $display("[%0t] io_vecWriteBack_1_bits_exceptionVec_19 g=%h i=%h", $time, g_io_vecWriteBack_1_bits_exceptionVec_19, i_io_vecWriteBack_1_bits_exceptionVec_19); end
+    if (!$isunknown(g_io_vecWriteBack_1_bits_exceptionVec_23) && g_io_vecWriteBack_1_bits_exceptionVec_23 !== i_io_vecWriteBack_1_bits_exceptionVec_23) begin errors++;
+      if(errors<=60) $display("[%0t] io_vecWriteBack_1_bits_exceptionVec_23 g=%h i=%h", $time, g_io_vecWriteBack_1_bits_exceptionVec_23, i_io_vecWriteBack_1_bits_exceptionVec_23); end
+    if (!$isunknown(g_io_vecWriteBack_1_bits_hasException) && g_io_vecWriteBack_1_bits_hasException !== i_io_vecWriteBack_1_bits_hasException) begin errors++;
+      if(errors<=60) $display("[%0t] io_vecWriteBack_1_bits_hasException g=%h i=%h", $time, g_io_vecWriteBack_1_bits_hasException, i_io_vecWriteBack_1_bits_hasException); end
+    if (!$isunknown(g_io_vecWriteBack_1_bits_vaddr) && g_io_vecWriteBack_1_bits_vaddr !== i_io_vecWriteBack_1_bits_vaddr) begin errors++;
+      if(errors<=60) $display("[%0t] io_vecWriteBack_1_bits_vaddr g=%h i=%h", $time, g_io_vecWriteBack_1_bits_vaddr, i_io_vecWriteBack_1_bits_vaddr); end
+    if (!$isunknown(g_io_vecWriteBack_1_bits_vaNeedExt) && g_io_vecWriteBack_1_bits_vaNeedExt !== i_io_vecWriteBack_1_bits_vaNeedExt) begin errors++;
+      if(errors<=60) $display("[%0t] io_vecWriteBack_1_bits_vaNeedExt g=%h i=%h", $time, g_io_vecWriteBack_1_bits_vaNeedExt, i_io_vecWriteBack_1_bits_vaNeedExt); end
+    if (!$isunknown(g_io_vecWriteBack_1_bits_gpaddr) && g_io_vecWriteBack_1_bits_gpaddr !== i_io_vecWriteBack_1_bits_gpaddr) begin errors++;
+      if(errors<=60) $display("[%0t] io_vecWriteBack_1_bits_gpaddr g=%h i=%h", $time, g_io_vecWriteBack_1_bits_gpaddr, i_io_vecWriteBack_1_bits_gpaddr); end
+    if (!$isunknown(g_io_vecWriteBack_1_bits_isForVSnonLeafPTE) && g_io_vecWriteBack_1_bits_isForVSnonLeafPTE !== i_io_vecWriteBack_1_bits_isForVSnonLeafPTE) begin errors++;
+      if(errors<=60) $display("[%0t] io_vecWriteBack_1_bits_isForVSnonLeafPTE g=%h i=%h", $time, g_io_vecWriteBack_1_bits_isForVSnonLeafPTE, i_io_vecWriteBack_1_bits_isForVSnonLeafPTE); end
+    if (!$isunknown(g_io_vecWriteBack_1_bits_vstart) && g_io_vecWriteBack_1_bits_vstart !== i_io_vecWriteBack_1_bits_vstart) begin errors++;
+      if(errors<=60) $display("[%0t] io_vecWriteBack_1_bits_vstart g=%h i=%h", $time, g_io_vecWriteBack_1_bits_vstart, i_io_vecWriteBack_1_bits_vstart); end
+    if (!$isunknown(g_io_vecWriteBack_1_bits_elemIdx) && g_io_vecWriteBack_1_bits_elemIdx !== i_io_vecWriteBack_1_bits_elemIdx) begin errors++;
+      if(errors<=60) $display("[%0t] io_vecWriteBack_1_bits_elemIdx g=%h i=%h", $time, g_io_vecWriteBack_1_bits_elemIdx, i_io_vecWriteBack_1_bits_elemIdx); end
+    if (!$isunknown(g_io_vecWriteBack_1_bits_mask) && g_io_vecWriteBack_1_bits_mask !== i_io_vecWriteBack_1_bits_mask) begin errors++;
+      if(errors<=60) $display("[%0t] io_vecWriteBack_1_bits_mask g=%h i=%h", $time, g_io_vecWriteBack_1_bits_mask, i_io_vecWriteBack_1_bits_mask); end
+    if (!$isunknown(g_io_sqControl_toStoreQueue_crossPageWithHit) && g_io_sqControl_toStoreQueue_crossPageWithHit !== i_io_sqControl_toStoreQueue_crossPageWithHit) begin errors++;
+      if(errors<=60) $display("[%0t] io_sqControl_toStoreQueue_crossPageWithHit g=%h i=%h", $time, g_io_sqControl_toStoreQueue_crossPageWithHit, i_io_sqControl_toStoreQueue_crossPageWithHit); end
+    if (!$isunknown(g_io_sqControl_toStoreQueue_crossPageCanDeq) && g_io_sqControl_toStoreQueue_crossPageCanDeq !== i_io_sqControl_toStoreQueue_crossPageCanDeq) begin errors++;
+      if(errors<=60) $display("[%0t] io_sqControl_toStoreQueue_crossPageCanDeq g=%h i=%h", $time, g_io_sqControl_toStoreQueue_crossPageCanDeq, i_io_sqControl_toStoreQueue_crossPageCanDeq); end
+    if (!$isunknown(g_io_sqControl_toStoreQueue_paddr) && g_io_sqControl_toStoreQueue_paddr !== i_io_sqControl_toStoreQueue_paddr) begin errors++;
+      if(errors<=60) $display("[%0t] io_sqControl_toStoreQueue_paddr g=%h i=%h", $time, g_io_sqControl_toStoreQueue_paddr, i_io_sqControl_toStoreQueue_paddr); end
+    if (!$isunknown(g_io_sqControl_toStoreQueue_withSameUop) && g_io_sqControl_toStoreQueue_withSameUop !== i_io_sqControl_toStoreQueue_withSameUop) begin errors++;
+      if(errors<=60) $display("[%0t] io_sqControl_toStoreQueue_withSameUop g=%h i=%h", $time, g_io_sqControl_toStoreQueue_withSameUop, i_io_sqControl_toStoreQueue_withSameUop); end
+    if (!$isunknown(g_io_toVecStoreMergeBuffer_0_mbIndex) && g_io_toVecStoreMergeBuffer_0_mbIndex !== i_io_toVecStoreMergeBuffer_0_mbIndex) begin errors++;
+      if(errors<=60) $display("[%0t] io_toVecStoreMergeBuffer_0_mbIndex g=%h i=%h", $time, g_io_toVecStoreMergeBuffer_0_mbIndex, i_io_toVecStoreMergeBuffer_0_mbIndex); end
+    if (!$isunknown(g_io_toVecStoreMergeBuffer_0_flush) && g_io_toVecStoreMergeBuffer_0_flush !== i_io_toVecStoreMergeBuffer_0_flush) begin errors++;
+      if(errors<=60) $display("[%0t] io_toVecStoreMergeBuffer_0_flush g=%h i=%h", $time, g_io_toVecStoreMergeBuffer_0_flush, i_io_toVecStoreMergeBuffer_0_flush); end
+    if (!$isunknown(g_io_toVecStoreMergeBuffer_1_mbIndex) && g_io_toVecStoreMergeBuffer_1_mbIndex !== i_io_toVecStoreMergeBuffer_1_mbIndex) begin errors++;
+      if(errors<=60) $display("[%0t] io_toVecStoreMergeBuffer_1_mbIndex g=%h i=%h", $time, g_io_toVecStoreMergeBuffer_1_mbIndex, i_io_toVecStoreMergeBuffer_1_mbIndex); end
+    if (!$isunknown(g_io_toVecStoreMergeBuffer_1_flush) && g_io_toVecStoreMergeBuffer_1_flush !== i_io_toVecStoreMergeBuffer_1_flush) begin errors++;
+      if(errors<=60) $display("[%0t] io_toVecStoreMergeBuffer_1_flush g=%h i=%h", $time, g_io_toVecStoreMergeBuffer_1_flush, i_io_toVecStoreMergeBuffer_1_flush); end
+    if (!$isunknown(g_io_full) && g_io_full !== i_io_full) begin errors++;
+      if(errors<=60) $display("[%0t] io_full g=%h i=%h", $time, g_io_full, i_io_full); end
+  end
+  initial begin
+    rst = 1; repeat (8) @(posedge clk); rst = 0;
+    repeat (NCYCLES) @(posedge clk);
+    $display("checks=%0d errors=%0d", checks, errors);
+    $display("PROBE req.alignedType/dbg_enqRsTime mismatch=%0d", probe_mismatch);
+    if (errors == 0 && checks > 1000) $display("TEST PASSED"); else $display("TEST FAILED");
+    $finish;
+  end
+endmodule
