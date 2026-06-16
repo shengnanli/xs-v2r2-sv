@@ -80,11 +80,23 @@ MemBlock (31138 行, 1346 端口)
 | PTW (页表遍历器) | 2 | ✅ 完成(codex产出+resume) | [PTW.md](PTW.md) |
 | L2TLBWrapper | 3 | ✅ 完成(L2TLB黑盒) | [L2TLBWrapper.md](L2TLBWrapper.md) |
 | StorePfWrapper | 2 | ✅ 完成(codex产出) | [StorePfWrapper.md](StorePfWrapper.md) |
-| L2TLB (PTW/page cache 内层) | 2 | ⏳ 待开(13k行,内含PtwCache/LLPTW/HPTW/MissQueue) | — |
-| DCache内层(MainPipe/MissQueue/Meta/Data/Replacer) | 2 | ⏳ 待开 | — |
+| HPTW | 2 | ✅ 完成(H扩展G-stage) | [HPTW.md](HPTW.md) |
+| LLPTW | 2 | ✅ 完成(末级PTW,6路并发) | [LLPTW.md](LLPTW.md) |
+| L2TlbMissQueue | 2 | ✅ 完成 | [L2TlbMissQueue.md](L2TlbMissQueue.md) |
+| L2TlbPrefetch | 2 | ✅ 完成 | [L2TlbPrefetch.md](L2TlbPrefetch.md) |
+| MainPipe (DCache主流水) | 2 | ✅ 完成(MESI一致性) | [MainPipe.md](MainPipe.md) |
+| WritebackQueue (DCache) | 2 | ✅ 完成 | [WritebackQueue.md](WritebackQueue.md) |
+| ProbeQueue (DCache) | 2 | ✅ 完成 | [ProbeQueue.md](ProbeQueue.md) |
+| LoadPipe (DCache) | 2 | ✅ 完成 | [LoadPipe.md](LoadPipe.md) |
+| StorePipe (DCache) | 2 | ✅ 完成(golden空壳+学习核) | [StorePipe.md](StorePipe.md) |
+| PtwCache (页表cache) | 2 | ⏳ 待开(19.6k行,SRAM黑盒) | — |
+| DCache MissQueue | 2 | ⏳ 待开(8.4k行) | — |
+| DCache 阵列(BankedData/Tag/Meta/Replacer) | 2 | ⏳ 待开(SRAM类) | — |
+| L2TLB 顶层 | 3 | ⏳ 待开(互联,子模块已黑盒就绪) | — |
+| DCache 顶层 | 3 | ⏳ 待开(23.6k行互联) | — |
 | TileLink(TLBuffer/TLXbar/Pipeline) | 2 | ⏳ 待开 | — |
 | MemBlock 顶层 | 4 | ⏳ 待开(总集成1346端口) | — |
 
-> **已完成 24 个模块**(截至本轮)。验证标准:可读核结构闸门(struct/enum/function/genvar>0,0生成痕迹) + 多种子UT(seed1/7/42全输出逐拍0错)
+> **已完成 33 个模块**(截至本轮)。验证标准:可读核结构闸门(struct/enum/function/genvar>0,0生成痕迹) + 多种子UT(seed1/7/42全输出逐拍0错)
 > + FM等价(叶子模块直接SUCCEEDED;大队列模块因struct数组vs golden扁平标量配对不收敛→以UT为权威+层次探针证伪failing点)。
 > 部分模块由 codex(gpt-5.5)并行产出(PTW/LoadQueueUncache/StorePfWrapper),其余由 Claude 子agent产出,**全部经独立复核**(不凭自报)。
