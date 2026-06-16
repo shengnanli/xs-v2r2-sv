@@ -1,0 +1,38 @@
+MODULE = LoadQueueReplay
+
+RTL_DIR = ../../../rtl
+GOLDEN_RTL = ../../../golden/chisel-rtl
+
+# 手写可读核 + svh（include 进核）+ 类型包。核内例化 3 个黑盒子模块。
+RTL_SRCS = $(RTL_DIR)/memblock/loadqueuereplay_pkg.sv \
+           $(RTL_DIR)/memblock/LoadQueueReplay.sv
+
+TB_SRCS = variants_xs.sv tb.sv
+
+# UT 双例化：golden 顶层 LoadQueueReplay vs 手写 _xs 镜像（→ 可读核）。
+# 两侧共用同一份 golden 子模块（AgeDetector_38 / FreeList_5 / LqVAddrModule）。
+GOLDEN_SRCS = $(GOLDEN_RTL)/LoadQueueReplay.sv \
+              $(GOLDEN_RTL)/AgeDetector_38.sv \
+              $(GOLDEN_RTL)/FreeList_5.sv \
+              $(GOLDEN_RTL)/LqVAddrModule.sv \
+              $(GOLDEN_RTL)/DelayN_13.sv \
+              $(GOLDEN_RTL)/DelayNWithValid_152.sv \
+              $(GOLDEN_RTL)/DelayNWithValid_155.sv
+
+# FM：golden 顶层（含 3 子模块）vs 手写同名 wrapper（→ 可读核 + 同 3 子模块黑盒）。
+WRAPPER_SRCS = $(RTL_DIR)/memblock/LoadQueueReplay_wrapper.sv
+FM_VARIANTS = LoadQueueReplay
+FM_REF_DEPS_LoadQueueReplay = AgeDetector_38.sv FreeList_5.sv LqVAddrModule.sv \
+              DelayN_13.sv DelayNWithValid_152.sv DelayNWithValid_155.sv
+
+# 关闭 FM「合并同值重复寄存器」：本模块状态规模大（72 entry × 多字段 + 3 流水级 +
+# 冷却/perf），合并后未配对寄存器搜索空间组合爆炸。关掉由 fm_eq.tcl 按展平名配对阵列。
+FM_MERGE_DUP = false
+
+include ../../../scripts/ut_common.mk
+
+# 让 `include 找到 rtl/memblock 下的 .svh（端口表 / 子模块实例表 / 各分节 body）
+VCS += +incdir+$(RTL_DIR)/memblock
+
+# golden 含 XSError/XSPerf 行为断言（非综合）；UT 关掉避免随机激励触发 $fatal/随机初始化
+VCS += +define+SYNTHESIS
