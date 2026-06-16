@@ -71,12 +71,20 @@ MemBlock (31138 行, 1346 端口)
 | StoreQueue | 2 | ✅ 完成 | [StoreQueue.md](StoreQueue.md) |
 | DCacheWrapper | 3 | ✅ 完成(DCache内层黑盒) | [DCacheWrapper.md](DCacheWrapper.md) |
 | LsqWrapper | 3 | ✅ 完成(LoadQueue/StoreQueue黑盒) | [LsqWrapper.md](LsqWrapper.md) |
-| LoadQueueReplay | 2 | ⏳ 待开(55k行,replay调度器) | — |
-| LoadQueueUncache / LoadQueue顶 | 2-3 | ⏳ 待开 | — |
-| L2TLBWrapper / L2TLB (PTW/MMU) | 2 | ⏳ 待开(13k行) | — |
+| VirtualLoadQueue | 2 | ✅ 完成 | [VirtualLoadQueue.md](VirtualLoadQueue.md) |
+| LoadQueueReplay | 2 | ✅ 完成(replay调度器55k→1243行) | [LoadQueueReplay.md](LoadQueueReplay.md) |
+| LoadQueueUncache | 2 | ✅ 完成(codex产出+resume) | [LoadQueueUncache.md](LoadQueueUncache.md) |
+| Lq/StoreExceptionBuffer | 2 | ✅ 完成 | [LqExceptionBuffer.md](LqExceptionBuffer.md) |
+| Load/StoreMisalignBuffer | 2 | ✅ 完成 | [LoadMisalignBuffer.md](LoadMisalignBuffer.md) |
+| LoadQueue 顶层 | 3 | ✅ 完成(6子队列黑盒互联) | [LoadQueue.md](LoadQueue.md) |
+| PTW (页表遍历器) | 2 | ✅ 完成(codex产出+resume) | [PTW.md](PTW.md) |
+| L2TLBWrapper | 3 | ✅ 完成(L2TLB黑盒) | [L2TLBWrapper.md](L2TLBWrapper.md) |
+| StorePfWrapper | 2 | ✅ 完成(codex产出) | [StorePfWrapper.md](StorePfWrapper.md) |
+| L2TLB (PTW/page cache 内层) | 2 | ⏳ 待开(13k行,内含PtwCache/LLPTW/HPTW/MissQueue) | — |
 | DCache内层(MainPipe/MissQueue/Meta/Data/Replacer) | 2 | ⏳ 待开 | — |
-| TileLink(TLBuffer/TLXbar/Pipeline) / StorePfWrapper | 2 | ⏳ 待开 | — |
+| TileLink(TLBuffer/TLXbar/Pipeline) | 2 | ⏳ 待开 | — |
 | MemBlock 顶层 | 4 | ⏳ 待开(总集成1346端口) | — |
 
-> ✅ 验证标准:可读核结构闸门(struct/enum/function/genvar>0,0生成痕迹) + 多种子UT(seed1/7/42全输出逐拍0错)
+> **已完成 24 个模块**(截至本轮)。验证标准:可读核结构闸门(struct/enum/function/genvar>0,0生成痕迹) + 多种子UT(seed1/7/42全输出逐拍0错)
 > + FM等价(叶子模块直接SUCCEEDED;大队列模块因struct数组vs golden扁平标量配对不收敛→以UT为权威+层次探针证伪failing点)。
+> 部分模块由 codex(gpt-5.5)并行产出(PTW/LoadQueueUncache/StorePfWrapper),其余由 Claude 子agent产出,**全部经独立复核**(不凭自报)。
