@@ -89,14 +89,17 @@ MemBlock (31138 行, 1346 端口)
 | ProbeQueue (DCache) | 2 | ✅ 完成 | [ProbeQueue.md](ProbeQueue.md) |
 | LoadPipe (DCache) | 2 | ✅ 完成 | [LoadPipe.md](LoadPipe.md) |
 | StorePipe (DCache) | 2 | ✅ 完成(golden空壳+学习核) | [StorePipe.md](StorePipe.md) |
-| PtwCache (页表cache) | 2 | ⏳ 待开(19.6k行,SRAM黑盒) | — |
-| DCache MissQueue | 2 | ⏳ 待开(8.4k行) | — |
-| DCache 阵列(BankedData/Tag/Meta/Replacer) | 2 | ⏳ 待开(SRAM类) | — |
-| L2TLB 顶层 | 3 | ⏳ 待开(互联,子模块已黑盒就绪) | — |
-| DCache 顶层 | 3 | ⏳ 待开(23.6k行互联) | — |
-| TileLink(TLBuffer/TLXbar/Pipeline) | 2 | ⏳ 待开 | — |
-| MemBlock 顶层 | 4 | ⏳ 待开(总集成1346端口) | — |
+| PtwCache (页表cache) | 2 | ✅ 完成(最大模块,探针揪出两轮真bug) | [PtwCache.md](PtwCache.md) |
+| DCache MissQueue | 2 | ✅ 完成 | [MissQueue.md](MissQueue.md) |
+| BankedDataArray | 2 | ✅ 完成 | [BankedDataArray.md](BankedDataArray.md) |
+| DuplicatedTagArray | 2 | ✅ 完成 | [DuplicatedTagArray.md](DuplicatedTagArray.md) |
+| L1Coh/FlagMetaArray | 2 | ✅ 完成 | [L1CohMetaArray.md](L1CohMetaArray.md) |
+| L2TLB 顶层 | 3 | ✅ 完成(MMU总集成,子模块黑盒) | [L2TLB.md](L2TLB.md) |
+| DCache 顶层 | 3 | ✅ 完成(23.6k行互联,setPLRU) | [DCache.md](DCache.md) |
+| TLBuffer / Pipeline | 2 | ✅ 完成(codex产出) | [TLBuffer.md](TLBuffer.md) |
+| MemBlock 顶层 | 4 | ✅ 完成(总集成1346端口/71实例,全子模块黑盒) | [MemBlock.md](MemBlock.md) |
 
-> **已完成 33 个模块**(截至本轮)。验证标准:可读核结构闸门(struct/enum/function/genvar>0,0生成痕迹) + 多种子UT(seed1/7/42全输出逐拍0错)
-> + FM等价(叶子模块直接SUCCEEDED;大队列模块因struct数组vs golden扁平标量配对不收敛→以UT为权威+层次探针证伪failing点)。
-> 部分模块由 codex(gpt-5.5)并行产出(PTW/LoadQueueUncache/StorePfWrapper),其余由 Claude 子agent产出,**全部经独立复核**(不凭自报)。
+> **访存子系统 MemBlock 全部模块重写完成**(约 43 个模块,含 capstone 顶层)。验证标准:可读核结构闸门(struct/enum/function/genvar>0,0生成痕迹) + 多种子UT(seed1/7/42全输出逐拍0错)
+> + FM等价(叶子模块直接SUCCEEDED;大模块因struct数组vs golden扁平标量配对不收敛→以UT为权威+层次探针证伪failing点)。
+> 部分模块由 codex(gpt-5.5)并行产出/调试(PTW/LoadQueueUncache/StorePfWrapper/TileLink/PtwCache起步),其余由 Claude 子agent产出,**全部经独立复核**(结构grep+多种子UT重跑+FM,不凭自报)。
+> **关键教训**:UT输出会漏覆盖内部状态分叉,必须用tb内部层次探针逐拍比对golden内部寄存器才能抓到真bug(PtwCache的l1v/l3v valid分叉、l1/l2/l3replace漏reset即此类,UT全过却是真潜伏bug)。
