@@ -1,0 +1,35 @@
+// 自动生成：scripts/gen_dcache.py —— 勿手改
+
+// 32 路 perf 计数原始源（子模块 perf 输出网），喂给可读核 2 级打拍。
+  assign perf_raw[0] = _wb_io_perf_0_value;
+  assign perf_raw[1] = _wb_io_perf_1_value;
+  assign perf_raw[2] = _wb_io_perf_2_value;
+  assign perf_raw[3] = _wb_io_perf_3_value;
+  assign perf_raw[4] = _wb_io_perf_4_value;
+  assign perf_raw[5] = _mainPipe_io_perf_0_value;
+  assign perf_raw[6] = _mainPipe_io_perf_1_value;
+  assign perf_raw[7] = _missQueue_io_perf_0_value;
+  assign perf_raw[8] = _missQueue_io_perf_1_value;
+  assign perf_raw[9] = _missQueue_io_perf_2_value;
+  assign perf_raw[10] = _missQueue_io_perf_3_value;
+  assign perf_raw[11] = _missQueue_io_perf_4_value;
+  assign perf_raw[12] = _probeQueue_io_perf_0_value;
+  assign perf_raw[13] = _probeQueue_io_perf_1_value;
+  assign perf_raw[14] = _probeQueue_io_perf_2_value;
+  assign perf_raw[15] = _probeQueue_io_perf_3_value;
+  assign perf_raw[16] = _probeQueue_io_perf_4_value;
+  assign perf_raw[17] = _ldu_0_io_perf_0_value;
+  assign perf_raw[18] = _ldu_0_io_perf_1_value;
+  assign perf_raw[19] = _ldu_0_io_perf_2_value;
+  assign perf_raw[20] = _ldu_0_io_perf_3_value;
+  assign perf_raw[21] = _ldu_0_io_perf_4_value;
+  assign perf_raw[22] = _ldu_1_io_perf_0_value;
+  assign perf_raw[23] = _ldu_1_io_perf_1_value;
+  assign perf_raw[24] = _ldu_1_io_perf_2_value;
+  assign perf_raw[25] = _ldu_1_io_perf_3_value;
+  assign perf_raw[26] = _ldu_1_io_perf_4_value;
+  assign perf_raw[27] = _ldu_2_io_perf_0_value;
+  assign perf_raw[28] = _ldu_2_io_perf_1_value;
+  assign perf_raw[29] = _ldu_2_io_perf_2_value;
+  assign perf_raw[30] = _ldu_2_io_perf_3_value;
+  assign perf_raw[31] = _ldu_2_io_perf_4_value;
