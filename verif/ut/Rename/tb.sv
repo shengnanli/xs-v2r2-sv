@@ -3288,7 +3288,14 @@ module tb;
       io_in_0_bits_crossPageIPFFix <= $urandom_range(0,1);
       io_in_0_bits_isFetchMalAddr <= $urandom_range(0,1);
       io_in_0_bits_vpu_isVleff <= $urandom_range(0,1);
-      io_in_0_bits_fuType <= ($urandom_range(0,99)<25) ? (($urandom_range(0,3)==0)?35'h40:($urandom_range(0,2)==0)?35'h8000:($urandom_range(0,1)==0)?35'h200:35'h1) : $urandom_range(0,40);
+      io_in_0_bits_fuType <= ($urandom_range(0,99)<25) ? (($urandom_range(0,3)==0)?35'h40:($urandom_range(0,2)==0)?35'h8000:($urandom_range(0,1)==0)?35'h200:35'h1) : ($urandom_range(0,99)<30) ? ((35'h1)<<($urandom_range(0,4)==0?31:$urandom_range(0,3)==0?32:$urandom_range(0,2)==0?33:$urandom_range(0,1)==0?34:24)) : ($urandom_range(0,99)<15) ? ((35'h1)<<($urandom_range(0,1)==0?18:5)) : $urandom_range(0,40);
+      io_in_0_bits_fuOpType <= $urandom_range(0,511);
+      io_in_0_bits_vpu_nf <= $urandom_range(0,7);
+      io_in_0_bits_vpu_veew <= $urandom_range(0,3);
+      io_in_0_bits_vpu_vsew <= $urandom_range(0,3);
+      io_in_0_bits_vpu_vlmul <= $urandom_range(0,7);
+      io_in_0_bits_uopSplitType <= ($urandom_range(0,99)<20) ? 6'h0 : ($urandom_range(0,99)<15) ? (6'h35+$urandom_range(0,2)) : $urandom_range(0,63);
+      io_in_0_bits_numWB <= $urandom_range(0,127);
       io_in_0_bits_selImm <= rst4();
       io_in_0_bits_imm <= $urandom;
       io_in_0_bits_commitType <= $urandom_range(0,7);
@@ -3359,7 +3366,14 @@ module tb;
       io_in_1_bits_crossPageIPFFix <= $urandom_range(0,1);
       io_in_1_bits_isFetchMalAddr <= $urandom_range(0,1);
       io_in_1_bits_vpu_isVleff <= $urandom_range(0,1);
-      io_in_1_bits_fuType <= ($urandom_range(0,99)<25) ? (($urandom_range(0,3)==0)?35'h40:($urandom_range(0,2)==0)?35'h8000:($urandom_range(0,1)==0)?35'h200:35'h1) : $urandom_range(0,40);
+      io_in_1_bits_fuType <= ($urandom_range(0,99)<25) ? (($urandom_range(0,3)==0)?35'h40:($urandom_range(0,2)==0)?35'h8000:($urandom_range(0,1)==0)?35'h200:35'h1) : ($urandom_range(0,99)<30) ? ((35'h1)<<($urandom_range(0,4)==0?31:$urandom_range(0,3)==0?32:$urandom_range(0,2)==0?33:$urandom_range(0,1)==0?34:24)) : ($urandom_range(0,99)<15) ? ((35'h1)<<($urandom_range(0,1)==0?18:5)) : $urandom_range(0,40);
+      io_in_1_bits_fuOpType <= $urandom_range(0,511);
+      io_in_1_bits_vpu_nf <= $urandom_range(0,7);
+      io_in_1_bits_vpu_veew <= $urandom_range(0,3);
+      io_in_1_bits_vpu_vsew <= $urandom_range(0,3);
+      io_in_1_bits_vpu_vlmul <= $urandom_range(0,7);
+      io_in_1_bits_uopSplitType <= ($urandom_range(0,99)<20) ? 6'h0 : ($urandom_range(0,99)<15) ? (6'h35+$urandom_range(0,2)) : $urandom_range(0,63);
+      io_in_1_bits_numWB <= $urandom_range(0,127);
       io_in_1_bits_selImm <= rst4();
       io_in_1_bits_imm <= $urandom;
       io_in_1_bits_commitType <= $urandom_range(0,7);
@@ -3430,7 +3444,14 @@ module tb;
       io_in_2_bits_crossPageIPFFix <= $urandom_range(0,1);
       io_in_2_bits_isFetchMalAddr <= $urandom_range(0,1);
       io_in_2_bits_vpu_isVleff <= $urandom_range(0,1);
-      io_in_2_bits_fuType <= ($urandom_range(0,99)<25) ? (($urandom_range(0,3)==0)?35'h40:($urandom_range(0,2)==0)?35'h8000:($urandom_range(0,1)==0)?35'h200:35'h1) : $urandom_range(0,40);
+      io_in_2_bits_fuType <= ($urandom_range(0,99)<25) ? (($urandom_range(0,3)==0)?35'h40:($urandom_range(0,2)==0)?35'h8000:($urandom_range(0,1)==0)?35'h200:35'h1) : ($urandom_range(0,99)<30) ? ((35'h1)<<($urandom_range(0,4)==0?31:$urandom_range(0,3)==0?32:$urandom_range(0,2)==0?33:$urandom_range(0,1)==0?34:24)) : ($urandom_range(0,99)<15) ? ((35'h1)<<($urandom_range(0,1)==0?18:5)) : $urandom_range(0,40);
+      io_in_2_bits_fuOpType <= $urandom_range(0,511);
+      io_in_2_bits_vpu_nf <= $urandom_range(0,7);
+      io_in_2_bits_vpu_veew <= $urandom_range(0,3);
+      io_in_2_bits_vpu_vsew <= $urandom_range(0,3);
+      io_in_2_bits_vpu_vlmul <= $urandom_range(0,7);
+      io_in_2_bits_uopSplitType <= ($urandom_range(0,99)<20) ? 6'h0 : ($urandom_range(0,99)<15) ? (6'h35+$urandom_range(0,2)) : $urandom_range(0,63);
+      io_in_2_bits_numWB <= $urandom_range(0,127);
       io_in_2_bits_selImm <= rst4();
       io_in_2_bits_imm <= $urandom;
       io_in_2_bits_commitType <= $urandom_range(0,7);
@@ -3501,7 +3522,14 @@ module tb;
       io_in_3_bits_crossPageIPFFix <= $urandom_range(0,1);
       io_in_3_bits_isFetchMalAddr <= $urandom_range(0,1);
       io_in_3_bits_vpu_isVleff <= $urandom_range(0,1);
-      io_in_3_bits_fuType <= ($urandom_range(0,99)<25) ? (($urandom_range(0,3)==0)?35'h40:($urandom_range(0,2)==0)?35'h8000:($urandom_range(0,1)==0)?35'h200:35'h1) : $urandom_range(0,40);
+      io_in_3_bits_fuType <= ($urandom_range(0,99)<25) ? (($urandom_range(0,3)==0)?35'h40:($urandom_range(0,2)==0)?35'h8000:($urandom_range(0,1)==0)?35'h200:35'h1) : ($urandom_range(0,99)<30) ? ((35'h1)<<($urandom_range(0,4)==0?31:$urandom_range(0,3)==0?32:$urandom_range(0,2)==0?33:$urandom_range(0,1)==0?34:24)) : ($urandom_range(0,99)<15) ? ((35'h1)<<($urandom_range(0,1)==0?18:5)) : $urandom_range(0,40);
+      io_in_3_bits_fuOpType <= $urandom_range(0,511);
+      io_in_3_bits_vpu_nf <= $urandom_range(0,7);
+      io_in_3_bits_vpu_veew <= $urandom_range(0,3);
+      io_in_3_bits_vpu_vsew <= $urandom_range(0,3);
+      io_in_3_bits_vpu_vlmul <= $urandom_range(0,7);
+      io_in_3_bits_uopSplitType <= ($urandom_range(0,99)<20) ? 6'h0 : ($urandom_range(0,99)<15) ? (6'h35+$urandom_range(0,2)) : $urandom_range(0,63);
+      io_in_3_bits_numWB <= $urandom_range(0,127);
       io_in_3_bits_selImm <= rst4();
       io_in_3_bits_imm <= $urandom;
       io_in_3_bits_commitType <= $urandom_range(0,7);
@@ -3572,7 +3600,14 @@ module tb;
       io_in_4_bits_crossPageIPFFix <= $urandom_range(0,1);
       io_in_4_bits_isFetchMalAddr <= $urandom_range(0,1);
       io_in_4_bits_vpu_isVleff <= $urandom_range(0,1);
-      io_in_4_bits_fuType <= ($urandom_range(0,99)<25) ? (($urandom_range(0,3)==0)?35'h40:($urandom_range(0,2)==0)?35'h8000:($urandom_range(0,1)==0)?35'h200:35'h1) : $urandom_range(0,40);
+      io_in_4_bits_fuType <= ($urandom_range(0,99)<25) ? (($urandom_range(0,3)==0)?35'h40:($urandom_range(0,2)==0)?35'h8000:($urandom_range(0,1)==0)?35'h200:35'h1) : ($urandom_range(0,99)<30) ? ((35'h1)<<($urandom_range(0,4)==0?31:$urandom_range(0,3)==0?32:$urandom_range(0,2)==0?33:$urandom_range(0,1)==0?34:24)) : ($urandom_range(0,99)<15) ? ((35'h1)<<($urandom_range(0,1)==0?18:5)) : $urandom_range(0,40);
+      io_in_4_bits_fuOpType <= $urandom_range(0,511);
+      io_in_4_bits_vpu_nf <= $urandom_range(0,7);
+      io_in_4_bits_vpu_veew <= $urandom_range(0,3);
+      io_in_4_bits_vpu_vsew <= $urandom_range(0,3);
+      io_in_4_bits_vpu_vlmul <= $urandom_range(0,7);
+      io_in_4_bits_uopSplitType <= ($urandom_range(0,99)<20) ? 6'h0 : ($urandom_range(0,99)<15) ? (6'h35+$urandom_range(0,2)) : $urandom_range(0,63);
+      io_in_4_bits_numWB <= $urandom_range(0,127);
       io_in_4_bits_selImm <= rst4();
       io_in_4_bits_imm <= $urandom;
       io_in_4_bits_commitType <= $urandom_range(0,7);
@@ -3643,7 +3678,14 @@ module tb;
       io_in_5_bits_crossPageIPFFix <= $urandom_range(0,1);
       io_in_5_bits_isFetchMalAddr <= $urandom_range(0,1);
       io_in_5_bits_vpu_isVleff <= $urandom_range(0,1);
-      io_in_5_bits_fuType <= ($urandom_range(0,99)<25) ? (($urandom_range(0,3)==0)?35'h40:($urandom_range(0,2)==0)?35'h8000:($urandom_range(0,1)==0)?35'h200:35'h1) : $urandom_range(0,40);
+      io_in_5_bits_fuType <= ($urandom_range(0,99)<25) ? (($urandom_range(0,3)==0)?35'h40:($urandom_range(0,2)==0)?35'h8000:($urandom_range(0,1)==0)?35'h200:35'h1) : ($urandom_range(0,99)<30) ? ((35'h1)<<($urandom_range(0,4)==0?31:$urandom_range(0,3)==0?32:$urandom_range(0,2)==0?33:$urandom_range(0,1)==0?34:24)) : ($urandom_range(0,99)<15) ? ((35'h1)<<($urandom_range(0,1)==0?18:5)) : $urandom_range(0,40);
+      io_in_5_bits_fuOpType <= $urandom_range(0,511);
+      io_in_5_bits_vpu_nf <= $urandom_range(0,7);
+      io_in_5_bits_vpu_veew <= $urandom_range(0,3);
+      io_in_5_bits_vpu_vsew <= $urandom_range(0,3);
+      io_in_5_bits_vpu_vlmul <= $urandom_range(0,7);
+      io_in_5_bits_uopSplitType <= ($urandom_range(0,99)<20) ? 6'h0 : ($urandom_range(0,99)<15) ? (6'h35+$urandom_range(0,2)) : $urandom_range(0,63);
+      io_in_5_bits_numWB <= $urandom_range(0,127);
       io_in_5_bits_selImm <= rst4();
       io_in_5_bits_imm <= $urandom;
       io_in_5_bits_commitType <= $urandom_range(0,7);
@@ -3860,6 +3902,12 @@ module tb;
       if(errors<=120) $display("[%0t] io_out_0_bits_srcType_0 g=%h i=%h", $time, g_io_out_0_bits_srcType_0, i_io_out_0_bits_srcType_0); end
     if (!$isunknown(g_io_out_0_bits_imm) && g_io_out_0_bits_imm !== i_io_out_0_bits_imm) begin errors++;
       if(errors<=120) $display("[%0t] io_out_0_bits_imm g=%h i=%h", $time, g_io_out_0_bits_imm, i_io_out_0_bits_imm); end
+    if (!$isunknown(g_io_out_0_bits_wfflags) && g_io_out_0_bits_wfflags !== i_io_out_0_bits_wfflags) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_0_bits_wfflags g=%h i=%h", $time, g_io_out_0_bits_wfflags, i_io_out_0_bits_wfflags); end
+    if (!$isunknown(g_io_out_0_bits_lastUop) && g_io_out_0_bits_lastUop !== i_io_out_0_bits_lastUop) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_0_bits_lastUop g=%h i=%h", $time, g_io_out_0_bits_lastUop, i_io_out_0_bits_lastUop); end
+    if (!$isunknown(g_io_out_0_bits_numWB) && g_io_out_0_bits_numWB !== i_io_out_0_bits_numWB) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_0_bits_numWB g=%h i=%h", $time, g_io_out_0_bits_numWB, i_io_out_0_bits_numWB); end
     if (!$isunknown(g_io_out_0_bits_psrc_0) && g_io_out_0_bits_psrc_0 !== i_io_out_0_bits_psrc_0) begin errors++;
       if(errors<=120) $display("[%0t] io_out_0_bits_psrc_0 g=%h i=%h", $time, g_io_out_0_bits_psrc_0, i_io_out_0_bits_psrc_0); end
     if (!$isunknown(g_io_out_0_bits_psrc_1) && g_io_out_0_bits_psrc_1 !== i_io_out_0_bits_psrc_1) begin errors++;
@@ -3876,10 +3924,24 @@ module tb;
       if(errors<=120) $display("[%0t] io_out_0_bits_robIdx_flag g=%h i=%h", $time, g_io_out_0_bits_robIdx_flag, i_io_out_0_bits_robIdx_flag); end
     if (!$isunknown(g_io_out_0_bits_robIdx_value) && g_io_out_0_bits_robIdx_value !== i_io_out_0_bits_robIdx_value) begin errors++;
       if(errors<=120) $display("[%0t] io_out_0_bits_robIdx_value g=%h i=%h", $time, g_io_out_0_bits_robIdx_value, i_io_out_0_bits_robIdx_value); end
+    if (!$isunknown(g_io_out_0_bits_instrSize) && g_io_out_0_bits_instrSize !== i_io_out_0_bits_instrSize) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_0_bits_instrSize g=%h i=%h", $time, g_io_out_0_bits_instrSize, i_io_out_0_bits_instrSize); end
+    if (!$isunknown(g_io_out_0_bits_dirtyFs) && g_io_out_0_bits_dirtyFs !== i_io_out_0_bits_dirtyFs) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_0_bits_dirtyFs g=%h i=%h", $time, g_io_out_0_bits_dirtyFs, i_io_out_0_bits_dirtyFs); end
+    if (!$isunknown(g_io_out_0_bits_dirtyVs) && g_io_out_0_bits_dirtyVs !== i_io_out_0_bits_dirtyVs) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_0_bits_dirtyVs g=%h i=%h", $time, g_io_out_0_bits_dirtyVs, i_io_out_0_bits_dirtyVs); end
+    if (!$isunknown(g_io_out_0_bits_traceBlockInPipe_itype) && g_io_out_0_bits_traceBlockInPipe_itype !== i_io_out_0_bits_traceBlockInPipe_itype) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_0_bits_traceBlockInPipe_itype g=%h i=%h", $time, g_io_out_0_bits_traceBlockInPipe_itype, i_io_out_0_bits_traceBlockInPipe_itype); end
+    if (!$isunknown(g_io_out_0_bits_traceBlockInPipe_iretire) && g_io_out_0_bits_traceBlockInPipe_iretire !== i_io_out_0_bits_traceBlockInPipe_iretire) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_0_bits_traceBlockInPipe_iretire g=%h i=%h", $time, g_io_out_0_bits_traceBlockInPipe_iretire, i_io_out_0_bits_traceBlockInPipe_iretire); end
+    if (!$isunknown(g_io_out_0_bits_traceBlockInPipe_ilastsize) && g_io_out_0_bits_traceBlockInPipe_ilastsize !== i_io_out_0_bits_traceBlockInPipe_ilastsize) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_0_bits_traceBlockInPipe_ilastsize g=%h i=%h", $time, g_io_out_0_bits_traceBlockInPipe_ilastsize, i_io_out_0_bits_traceBlockInPipe_ilastsize); end
     if (!$isunknown(g_io_out_0_bits_eliminatedMove) && g_io_out_0_bits_eliminatedMove !== i_io_out_0_bits_eliminatedMove) begin errors++;
       if(errors<=120) $display("[%0t] io_out_0_bits_eliminatedMove g=%h i=%h", $time, g_io_out_0_bits_eliminatedMove, i_io_out_0_bits_eliminatedMove); end
     if (!$isunknown(g_io_out_0_bits_snapshot) && g_io_out_0_bits_snapshot !== i_io_out_0_bits_snapshot) begin errors++;
       if(errors<=120) $display("[%0t] io_out_0_bits_snapshot g=%h i=%h", $time, g_io_out_0_bits_snapshot, i_io_out_0_bits_snapshot); end
+    if (!$isunknown(g_io_out_0_bits_numLsElem) && g_io_out_0_bits_numLsElem !== i_io_out_0_bits_numLsElem) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_0_bits_numLsElem g=%h i=%h", $time, g_io_out_0_bits_numLsElem, i_io_out_0_bits_numLsElem); end
     if (!$isunknown(g_io_out_1_valid) && g_io_out_1_valid !== i_io_out_1_valid) begin errors++;
       if(errors<=120) $display("[%0t] io_out_1_valid g=%h i=%h", $time, g_io_out_1_valid, i_io_out_1_valid); end
     if (!$isunknown(g_io_out_1_bits_hasException) && g_io_out_1_bits_hasException !== i_io_out_1_bits_hasException) begin errors++;
@@ -3888,6 +3950,12 @@ module tb;
       if(errors<=120) $display("[%0t] io_out_1_bits_srcType_0 g=%h i=%h", $time, g_io_out_1_bits_srcType_0, i_io_out_1_bits_srcType_0); end
     if (!$isunknown(g_io_out_1_bits_imm) && g_io_out_1_bits_imm !== i_io_out_1_bits_imm) begin errors++;
       if(errors<=120) $display("[%0t] io_out_1_bits_imm g=%h i=%h", $time, g_io_out_1_bits_imm, i_io_out_1_bits_imm); end
+    if (!$isunknown(g_io_out_1_bits_wfflags) && g_io_out_1_bits_wfflags !== i_io_out_1_bits_wfflags) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_1_bits_wfflags g=%h i=%h", $time, g_io_out_1_bits_wfflags, i_io_out_1_bits_wfflags); end
+    if (!$isunknown(g_io_out_1_bits_lastUop) && g_io_out_1_bits_lastUop !== i_io_out_1_bits_lastUop) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_1_bits_lastUop g=%h i=%h", $time, g_io_out_1_bits_lastUop, i_io_out_1_bits_lastUop); end
+    if (!$isunknown(g_io_out_1_bits_numWB) && g_io_out_1_bits_numWB !== i_io_out_1_bits_numWB) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_1_bits_numWB g=%h i=%h", $time, g_io_out_1_bits_numWB, i_io_out_1_bits_numWB); end
     if (!$isunknown(g_io_out_1_bits_psrc_0) && g_io_out_1_bits_psrc_0 !== i_io_out_1_bits_psrc_0) begin errors++;
       if(errors<=120) $display("[%0t] io_out_1_bits_psrc_0 g=%h i=%h", $time, g_io_out_1_bits_psrc_0, i_io_out_1_bits_psrc_0); end
     if (!$isunknown(g_io_out_1_bits_psrc_1) && g_io_out_1_bits_psrc_1 !== i_io_out_1_bits_psrc_1) begin errors++;
@@ -3904,10 +3972,24 @@ module tb;
       if(errors<=120) $display("[%0t] io_out_1_bits_robIdx_flag g=%h i=%h", $time, g_io_out_1_bits_robIdx_flag, i_io_out_1_bits_robIdx_flag); end
     if (!$isunknown(g_io_out_1_bits_robIdx_value) && g_io_out_1_bits_robIdx_value !== i_io_out_1_bits_robIdx_value) begin errors++;
       if(errors<=120) $display("[%0t] io_out_1_bits_robIdx_value g=%h i=%h", $time, g_io_out_1_bits_robIdx_value, i_io_out_1_bits_robIdx_value); end
+    if (!$isunknown(g_io_out_1_bits_instrSize) && g_io_out_1_bits_instrSize !== i_io_out_1_bits_instrSize) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_1_bits_instrSize g=%h i=%h", $time, g_io_out_1_bits_instrSize, i_io_out_1_bits_instrSize); end
+    if (!$isunknown(g_io_out_1_bits_dirtyFs) && g_io_out_1_bits_dirtyFs !== i_io_out_1_bits_dirtyFs) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_1_bits_dirtyFs g=%h i=%h", $time, g_io_out_1_bits_dirtyFs, i_io_out_1_bits_dirtyFs); end
+    if (!$isunknown(g_io_out_1_bits_dirtyVs) && g_io_out_1_bits_dirtyVs !== i_io_out_1_bits_dirtyVs) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_1_bits_dirtyVs g=%h i=%h", $time, g_io_out_1_bits_dirtyVs, i_io_out_1_bits_dirtyVs); end
+    if (!$isunknown(g_io_out_1_bits_traceBlockInPipe_itype) && g_io_out_1_bits_traceBlockInPipe_itype !== i_io_out_1_bits_traceBlockInPipe_itype) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_1_bits_traceBlockInPipe_itype g=%h i=%h", $time, g_io_out_1_bits_traceBlockInPipe_itype, i_io_out_1_bits_traceBlockInPipe_itype); end
+    if (!$isunknown(g_io_out_1_bits_traceBlockInPipe_iretire) && g_io_out_1_bits_traceBlockInPipe_iretire !== i_io_out_1_bits_traceBlockInPipe_iretire) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_1_bits_traceBlockInPipe_iretire g=%h i=%h", $time, g_io_out_1_bits_traceBlockInPipe_iretire, i_io_out_1_bits_traceBlockInPipe_iretire); end
+    if (!$isunknown(g_io_out_1_bits_traceBlockInPipe_ilastsize) && g_io_out_1_bits_traceBlockInPipe_ilastsize !== i_io_out_1_bits_traceBlockInPipe_ilastsize) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_1_bits_traceBlockInPipe_ilastsize g=%h i=%h", $time, g_io_out_1_bits_traceBlockInPipe_ilastsize, i_io_out_1_bits_traceBlockInPipe_ilastsize); end
     if (!$isunknown(g_io_out_1_bits_eliminatedMove) && g_io_out_1_bits_eliminatedMove !== i_io_out_1_bits_eliminatedMove) begin errors++;
       if(errors<=120) $display("[%0t] io_out_1_bits_eliminatedMove g=%h i=%h", $time, g_io_out_1_bits_eliminatedMove, i_io_out_1_bits_eliminatedMove); end
     if (!$isunknown(g_io_out_1_bits_snapshot) && g_io_out_1_bits_snapshot !== i_io_out_1_bits_snapshot) begin errors++;
       if(errors<=120) $display("[%0t] io_out_1_bits_snapshot g=%h i=%h", $time, g_io_out_1_bits_snapshot, i_io_out_1_bits_snapshot); end
+    if (!$isunknown(g_io_out_1_bits_numLsElem) && g_io_out_1_bits_numLsElem !== i_io_out_1_bits_numLsElem) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_1_bits_numLsElem g=%h i=%h", $time, g_io_out_1_bits_numLsElem, i_io_out_1_bits_numLsElem); end
     if (!$isunknown(g_io_out_2_valid) && g_io_out_2_valid !== i_io_out_2_valid) begin errors++;
       if(errors<=120) $display("[%0t] io_out_2_valid g=%h i=%h", $time, g_io_out_2_valid, i_io_out_2_valid); end
     if (!$isunknown(g_io_out_2_bits_hasException) && g_io_out_2_bits_hasException !== i_io_out_2_bits_hasException) begin errors++;
@@ -3916,6 +3998,12 @@ module tb;
       if(errors<=120) $display("[%0t] io_out_2_bits_srcType_0 g=%h i=%h", $time, g_io_out_2_bits_srcType_0, i_io_out_2_bits_srcType_0); end
     if (!$isunknown(g_io_out_2_bits_imm) && g_io_out_2_bits_imm !== i_io_out_2_bits_imm) begin errors++;
       if(errors<=120) $display("[%0t] io_out_2_bits_imm g=%h i=%h", $time, g_io_out_2_bits_imm, i_io_out_2_bits_imm); end
+    if (!$isunknown(g_io_out_2_bits_wfflags) && g_io_out_2_bits_wfflags !== i_io_out_2_bits_wfflags) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_2_bits_wfflags g=%h i=%h", $time, g_io_out_2_bits_wfflags, i_io_out_2_bits_wfflags); end
+    if (!$isunknown(g_io_out_2_bits_lastUop) && g_io_out_2_bits_lastUop !== i_io_out_2_bits_lastUop) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_2_bits_lastUop g=%h i=%h", $time, g_io_out_2_bits_lastUop, i_io_out_2_bits_lastUop); end
+    if (!$isunknown(g_io_out_2_bits_numWB) && g_io_out_2_bits_numWB !== i_io_out_2_bits_numWB) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_2_bits_numWB g=%h i=%h", $time, g_io_out_2_bits_numWB, i_io_out_2_bits_numWB); end
     if (!$isunknown(g_io_out_2_bits_psrc_0) && g_io_out_2_bits_psrc_0 !== i_io_out_2_bits_psrc_0) begin errors++;
       if(errors<=120) $display("[%0t] io_out_2_bits_psrc_0 g=%h i=%h", $time, g_io_out_2_bits_psrc_0, i_io_out_2_bits_psrc_0); end
     if (!$isunknown(g_io_out_2_bits_psrc_1) && g_io_out_2_bits_psrc_1 !== i_io_out_2_bits_psrc_1) begin errors++;
@@ -3932,10 +4020,24 @@ module tb;
       if(errors<=120) $display("[%0t] io_out_2_bits_robIdx_flag g=%h i=%h", $time, g_io_out_2_bits_robIdx_flag, i_io_out_2_bits_robIdx_flag); end
     if (!$isunknown(g_io_out_2_bits_robIdx_value) && g_io_out_2_bits_robIdx_value !== i_io_out_2_bits_robIdx_value) begin errors++;
       if(errors<=120) $display("[%0t] io_out_2_bits_robIdx_value g=%h i=%h", $time, g_io_out_2_bits_robIdx_value, i_io_out_2_bits_robIdx_value); end
+    if (!$isunknown(g_io_out_2_bits_instrSize) && g_io_out_2_bits_instrSize !== i_io_out_2_bits_instrSize) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_2_bits_instrSize g=%h i=%h", $time, g_io_out_2_bits_instrSize, i_io_out_2_bits_instrSize); end
+    if (!$isunknown(g_io_out_2_bits_dirtyFs) && g_io_out_2_bits_dirtyFs !== i_io_out_2_bits_dirtyFs) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_2_bits_dirtyFs g=%h i=%h", $time, g_io_out_2_bits_dirtyFs, i_io_out_2_bits_dirtyFs); end
+    if (!$isunknown(g_io_out_2_bits_dirtyVs) && g_io_out_2_bits_dirtyVs !== i_io_out_2_bits_dirtyVs) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_2_bits_dirtyVs g=%h i=%h", $time, g_io_out_2_bits_dirtyVs, i_io_out_2_bits_dirtyVs); end
+    if (!$isunknown(g_io_out_2_bits_traceBlockInPipe_itype) && g_io_out_2_bits_traceBlockInPipe_itype !== i_io_out_2_bits_traceBlockInPipe_itype) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_2_bits_traceBlockInPipe_itype g=%h i=%h", $time, g_io_out_2_bits_traceBlockInPipe_itype, i_io_out_2_bits_traceBlockInPipe_itype); end
+    if (!$isunknown(g_io_out_2_bits_traceBlockInPipe_iretire) && g_io_out_2_bits_traceBlockInPipe_iretire !== i_io_out_2_bits_traceBlockInPipe_iretire) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_2_bits_traceBlockInPipe_iretire g=%h i=%h", $time, g_io_out_2_bits_traceBlockInPipe_iretire, i_io_out_2_bits_traceBlockInPipe_iretire); end
+    if (!$isunknown(g_io_out_2_bits_traceBlockInPipe_ilastsize) && g_io_out_2_bits_traceBlockInPipe_ilastsize !== i_io_out_2_bits_traceBlockInPipe_ilastsize) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_2_bits_traceBlockInPipe_ilastsize g=%h i=%h", $time, g_io_out_2_bits_traceBlockInPipe_ilastsize, i_io_out_2_bits_traceBlockInPipe_ilastsize); end
     if (!$isunknown(g_io_out_2_bits_eliminatedMove) && g_io_out_2_bits_eliminatedMove !== i_io_out_2_bits_eliminatedMove) begin errors++;
       if(errors<=120) $display("[%0t] io_out_2_bits_eliminatedMove g=%h i=%h", $time, g_io_out_2_bits_eliminatedMove, i_io_out_2_bits_eliminatedMove); end
     if (!$isunknown(g_io_out_2_bits_snapshot) && g_io_out_2_bits_snapshot !== i_io_out_2_bits_snapshot) begin errors++;
       if(errors<=120) $display("[%0t] io_out_2_bits_snapshot g=%h i=%h", $time, g_io_out_2_bits_snapshot, i_io_out_2_bits_snapshot); end
+    if (!$isunknown(g_io_out_2_bits_numLsElem) && g_io_out_2_bits_numLsElem !== i_io_out_2_bits_numLsElem) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_2_bits_numLsElem g=%h i=%h", $time, g_io_out_2_bits_numLsElem, i_io_out_2_bits_numLsElem); end
     if (!$isunknown(g_io_out_3_valid) && g_io_out_3_valid !== i_io_out_3_valid) begin errors++;
       if(errors<=120) $display("[%0t] io_out_3_valid g=%h i=%h", $time, g_io_out_3_valid, i_io_out_3_valid); end
     if (!$isunknown(g_io_out_3_bits_hasException) && g_io_out_3_bits_hasException !== i_io_out_3_bits_hasException) begin errors++;
@@ -3944,6 +4046,12 @@ module tb;
       if(errors<=120) $display("[%0t] io_out_3_bits_srcType_0 g=%h i=%h", $time, g_io_out_3_bits_srcType_0, i_io_out_3_bits_srcType_0); end
     if (!$isunknown(g_io_out_3_bits_imm) && g_io_out_3_bits_imm !== i_io_out_3_bits_imm) begin errors++;
       if(errors<=120) $display("[%0t] io_out_3_bits_imm g=%h i=%h", $time, g_io_out_3_bits_imm, i_io_out_3_bits_imm); end
+    if (!$isunknown(g_io_out_3_bits_wfflags) && g_io_out_3_bits_wfflags !== i_io_out_3_bits_wfflags) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_3_bits_wfflags g=%h i=%h", $time, g_io_out_3_bits_wfflags, i_io_out_3_bits_wfflags); end
+    if (!$isunknown(g_io_out_3_bits_lastUop) && g_io_out_3_bits_lastUop !== i_io_out_3_bits_lastUop) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_3_bits_lastUop g=%h i=%h", $time, g_io_out_3_bits_lastUop, i_io_out_3_bits_lastUop); end
+    if (!$isunknown(g_io_out_3_bits_numWB) && g_io_out_3_bits_numWB !== i_io_out_3_bits_numWB) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_3_bits_numWB g=%h i=%h", $time, g_io_out_3_bits_numWB, i_io_out_3_bits_numWB); end
     if (!$isunknown(g_io_out_3_bits_psrc_0) && g_io_out_3_bits_psrc_0 !== i_io_out_3_bits_psrc_0) begin errors++;
       if(errors<=120) $display("[%0t] io_out_3_bits_psrc_0 g=%h i=%h", $time, g_io_out_3_bits_psrc_0, i_io_out_3_bits_psrc_0); end
     if (!$isunknown(g_io_out_3_bits_psrc_1) && g_io_out_3_bits_psrc_1 !== i_io_out_3_bits_psrc_1) begin errors++;
@@ -3960,10 +4068,24 @@ module tb;
       if(errors<=120) $display("[%0t] io_out_3_bits_robIdx_flag g=%h i=%h", $time, g_io_out_3_bits_robIdx_flag, i_io_out_3_bits_robIdx_flag); end
     if (!$isunknown(g_io_out_3_bits_robIdx_value) && g_io_out_3_bits_robIdx_value !== i_io_out_3_bits_robIdx_value) begin errors++;
       if(errors<=120) $display("[%0t] io_out_3_bits_robIdx_value g=%h i=%h", $time, g_io_out_3_bits_robIdx_value, i_io_out_3_bits_robIdx_value); end
+    if (!$isunknown(g_io_out_3_bits_instrSize) && g_io_out_3_bits_instrSize !== i_io_out_3_bits_instrSize) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_3_bits_instrSize g=%h i=%h", $time, g_io_out_3_bits_instrSize, i_io_out_3_bits_instrSize); end
+    if (!$isunknown(g_io_out_3_bits_dirtyFs) && g_io_out_3_bits_dirtyFs !== i_io_out_3_bits_dirtyFs) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_3_bits_dirtyFs g=%h i=%h", $time, g_io_out_3_bits_dirtyFs, i_io_out_3_bits_dirtyFs); end
+    if (!$isunknown(g_io_out_3_bits_dirtyVs) && g_io_out_3_bits_dirtyVs !== i_io_out_3_bits_dirtyVs) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_3_bits_dirtyVs g=%h i=%h", $time, g_io_out_3_bits_dirtyVs, i_io_out_3_bits_dirtyVs); end
+    if (!$isunknown(g_io_out_3_bits_traceBlockInPipe_itype) && g_io_out_3_bits_traceBlockInPipe_itype !== i_io_out_3_bits_traceBlockInPipe_itype) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_3_bits_traceBlockInPipe_itype g=%h i=%h", $time, g_io_out_3_bits_traceBlockInPipe_itype, i_io_out_3_bits_traceBlockInPipe_itype); end
+    if (!$isunknown(g_io_out_3_bits_traceBlockInPipe_iretire) && g_io_out_3_bits_traceBlockInPipe_iretire !== i_io_out_3_bits_traceBlockInPipe_iretire) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_3_bits_traceBlockInPipe_iretire g=%h i=%h", $time, g_io_out_3_bits_traceBlockInPipe_iretire, i_io_out_3_bits_traceBlockInPipe_iretire); end
+    if (!$isunknown(g_io_out_3_bits_traceBlockInPipe_ilastsize) && g_io_out_3_bits_traceBlockInPipe_ilastsize !== i_io_out_3_bits_traceBlockInPipe_ilastsize) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_3_bits_traceBlockInPipe_ilastsize g=%h i=%h", $time, g_io_out_3_bits_traceBlockInPipe_ilastsize, i_io_out_3_bits_traceBlockInPipe_ilastsize); end
     if (!$isunknown(g_io_out_3_bits_eliminatedMove) && g_io_out_3_bits_eliminatedMove !== i_io_out_3_bits_eliminatedMove) begin errors++;
       if(errors<=120) $display("[%0t] io_out_3_bits_eliminatedMove g=%h i=%h", $time, g_io_out_3_bits_eliminatedMove, i_io_out_3_bits_eliminatedMove); end
     if (!$isunknown(g_io_out_3_bits_snapshot) && g_io_out_3_bits_snapshot !== i_io_out_3_bits_snapshot) begin errors++;
       if(errors<=120) $display("[%0t] io_out_3_bits_snapshot g=%h i=%h", $time, g_io_out_3_bits_snapshot, i_io_out_3_bits_snapshot); end
+    if (!$isunknown(g_io_out_3_bits_numLsElem) && g_io_out_3_bits_numLsElem !== i_io_out_3_bits_numLsElem) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_3_bits_numLsElem g=%h i=%h", $time, g_io_out_3_bits_numLsElem, i_io_out_3_bits_numLsElem); end
     if (!$isunknown(g_io_out_4_valid) && g_io_out_4_valid !== i_io_out_4_valid) begin errors++;
       if(errors<=120) $display("[%0t] io_out_4_valid g=%h i=%h", $time, g_io_out_4_valid, i_io_out_4_valid); end
     if (!$isunknown(g_io_out_4_bits_hasException) && g_io_out_4_bits_hasException !== i_io_out_4_bits_hasException) begin errors++;
@@ -3972,6 +4094,12 @@ module tb;
       if(errors<=120) $display("[%0t] io_out_4_bits_srcType_0 g=%h i=%h", $time, g_io_out_4_bits_srcType_0, i_io_out_4_bits_srcType_0); end
     if (!$isunknown(g_io_out_4_bits_imm) && g_io_out_4_bits_imm !== i_io_out_4_bits_imm) begin errors++;
       if(errors<=120) $display("[%0t] io_out_4_bits_imm g=%h i=%h", $time, g_io_out_4_bits_imm, i_io_out_4_bits_imm); end
+    if (!$isunknown(g_io_out_4_bits_wfflags) && g_io_out_4_bits_wfflags !== i_io_out_4_bits_wfflags) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_4_bits_wfflags g=%h i=%h", $time, g_io_out_4_bits_wfflags, i_io_out_4_bits_wfflags); end
+    if (!$isunknown(g_io_out_4_bits_lastUop) && g_io_out_4_bits_lastUop !== i_io_out_4_bits_lastUop) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_4_bits_lastUop g=%h i=%h", $time, g_io_out_4_bits_lastUop, i_io_out_4_bits_lastUop); end
+    if (!$isunknown(g_io_out_4_bits_numWB) && g_io_out_4_bits_numWB !== i_io_out_4_bits_numWB) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_4_bits_numWB g=%h i=%h", $time, g_io_out_4_bits_numWB, i_io_out_4_bits_numWB); end
     if (!$isunknown(g_io_out_4_bits_psrc_0) && g_io_out_4_bits_psrc_0 !== i_io_out_4_bits_psrc_0) begin errors++;
       if(errors<=120) $display("[%0t] io_out_4_bits_psrc_0 g=%h i=%h", $time, g_io_out_4_bits_psrc_0, i_io_out_4_bits_psrc_0); end
     if (!$isunknown(g_io_out_4_bits_psrc_1) && g_io_out_4_bits_psrc_1 !== i_io_out_4_bits_psrc_1) begin errors++;
@@ -3988,10 +4116,24 @@ module tb;
       if(errors<=120) $display("[%0t] io_out_4_bits_robIdx_flag g=%h i=%h", $time, g_io_out_4_bits_robIdx_flag, i_io_out_4_bits_robIdx_flag); end
     if (!$isunknown(g_io_out_4_bits_robIdx_value) && g_io_out_4_bits_robIdx_value !== i_io_out_4_bits_robIdx_value) begin errors++;
       if(errors<=120) $display("[%0t] io_out_4_bits_robIdx_value g=%h i=%h", $time, g_io_out_4_bits_robIdx_value, i_io_out_4_bits_robIdx_value); end
+    if (!$isunknown(g_io_out_4_bits_instrSize) && g_io_out_4_bits_instrSize !== i_io_out_4_bits_instrSize) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_4_bits_instrSize g=%h i=%h", $time, g_io_out_4_bits_instrSize, i_io_out_4_bits_instrSize); end
+    if (!$isunknown(g_io_out_4_bits_dirtyFs) && g_io_out_4_bits_dirtyFs !== i_io_out_4_bits_dirtyFs) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_4_bits_dirtyFs g=%h i=%h", $time, g_io_out_4_bits_dirtyFs, i_io_out_4_bits_dirtyFs); end
+    if (!$isunknown(g_io_out_4_bits_dirtyVs) && g_io_out_4_bits_dirtyVs !== i_io_out_4_bits_dirtyVs) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_4_bits_dirtyVs g=%h i=%h", $time, g_io_out_4_bits_dirtyVs, i_io_out_4_bits_dirtyVs); end
+    if (!$isunknown(g_io_out_4_bits_traceBlockInPipe_itype) && g_io_out_4_bits_traceBlockInPipe_itype !== i_io_out_4_bits_traceBlockInPipe_itype) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_4_bits_traceBlockInPipe_itype g=%h i=%h", $time, g_io_out_4_bits_traceBlockInPipe_itype, i_io_out_4_bits_traceBlockInPipe_itype); end
+    if (!$isunknown(g_io_out_4_bits_traceBlockInPipe_iretire) && g_io_out_4_bits_traceBlockInPipe_iretire !== i_io_out_4_bits_traceBlockInPipe_iretire) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_4_bits_traceBlockInPipe_iretire g=%h i=%h", $time, g_io_out_4_bits_traceBlockInPipe_iretire, i_io_out_4_bits_traceBlockInPipe_iretire); end
+    if (!$isunknown(g_io_out_4_bits_traceBlockInPipe_ilastsize) && g_io_out_4_bits_traceBlockInPipe_ilastsize !== i_io_out_4_bits_traceBlockInPipe_ilastsize) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_4_bits_traceBlockInPipe_ilastsize g=%h i=%h", $time, g_io_out_4_bits_traceBlockInPipe_ilastsize, i_io_out_4_bits_traceBlockInPipe_ilastsize); end
     if (!$isunknown(g_io_out_4_bits_eliminatedMove) && g_io_out_4_bits_eliminatedMove !== i_io_out_4_bits_eliminatedMove) begin errors++;
       if(errors<=120) $display("[%0t] io_out_4_bits_eliminatedMove g=%h i=%h", $time, g_io_out_4_bits_eliminatedMove, i_io_out_4_bits_eliminatedMove); end
     if (!$isunknown(g_io_out_4_bits_snapshot) && g_io_out_4_bits_snapshot !== i_io_out_4_bits_snapshot) begin errors++;
       if(errors<=120) $display("[%0t] io_out_4_bits_snapshot g=%h i=%h", $time, g_io_out_4_bits_snapshot, i_io_out_4_bits_snapshot); end
+    if (!$isunknown(g_io_out_4_bits_numLsElem) && g_io_out_4_bits_numLsElem !== i_io_out_4_bits_numLsElem) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_4_bits_numLsElem g=%h i=%h", $time, g_io_out_4_bits_numLsElem, i_io_out_4_bits_numLsElem); end
     if (!$isunknown(g_io_out_5_valid) && g_io_out_5_valid !== i_io_out_5_valid) begin errors++;
       if(errors<=120) $display("[%0t] io_out_5_valid g=%h i=%h", $time, g_io_out_5_valid, i_io_out_5_valid); end
     if (!$isunknown(g_io_out_5_bits_hasException) && g_io_out_5_bits_hasException !== i_io_out_5_bits_hasException) begin errors++;
@@ -4000,6 +4142,12 @@ module tb;
       if(errors<=120) $display("[%0t] io_out_5_bits_srcType_0 g=%h i=%h", $time, g_io_out_5_bits_srcType_0, i_io_out_5_bits_srcType_0); end
     if (!$isunknown(g_io_out_5_bits_imm) && g_io_out_5_bits_imm !== i_io_out_5_bits_imm) begin errors++;
       if(errors<=120) $display("[%0t] io_out_5_bits_imm g=%h i=%h", $time, g_io_out_5_bits_imm, i_io_out_5_bits_imm); end
+    if (!$isunknown(g_io_out_5_bits_wfflags) && g_io_out_5_bits_wfflags !== i_io_out_5_bits_wfflags) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_5_bits_wfflags g=%h i=%h", $time, g_io_out_5_bits_wfflags, i_io_out_5_bits_wfflags); end
+    if (!$isunknown(g_io_out_5_bits_lastUop) && g_io_out_5_bits_lastUop !== i_io_out_5_bits_lastUop) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_5_bits_lastUop g=%h i=%h", $time, g_io_out_5_bits_lastUop, i_io_out_5_bits_lastUop); end
+    if (!$isunknown(g_io_out_5_bits_numWB) && g_io_out_5_bits_numWB !== i_io_out_5_bits_numWB) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_5_bits_numWB g=%h i=%h", $time, g_io_out_5_bits_numWB, i_io_out_5_bits_numWB); end
     if (!$isunknown(g_io_out_5_bits_psrc_0) && g_io_out_5_bits_psrc_0 !== i_io_out_5_bits_psrc_0) begin errors++;
       if(errors<=120) $display("[%0t] io_out_5_bits_psrc_0 g=%h i=%h", $time, g_io_out_5_bits_psrc_0, i_io_out_5_bits_psrc_0); end
     if (!$isunknown(g_io_out_5_bits_psrc_1) && g_io_out_5_bits_psrc_1 !== i_io_out_5_bits_psrc_1) begin errors++;
@@ -4016,10 +4164,24 @@ module tb;
       if(errors<=120) $display("[%0t] io_out_5_bits_robIdx_flag g=%h i=%h", $time, g_io_out_5_bits_robIdx_flag, i_io_out_5_bits_robIdx_flag); end
     if (!$isunknown(g_io_out_5_bits_robIdx_value) && g_io_out_5_bits_robIdx_value !== i_io_out_5_bits_robIdx_value) begin errors++;
       if(errors<=120) $display("[%0t] io_out_5_bits_robIdx_value g=%h i=%h", $time, g_io_out_5_bits_robIdx_value, i_io_out_5_bits_robIdx_value); end
+    if (!$isunknown(g_io_out_5_bits_instrSize) && g_io_out_5_bits_instrSize !== i_io_out_5_bits_instrSize) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_5_bits_instrSize g=%h i=%h", $time, g_io_out_5_bits_instrSize, i_io_out_5_bits_instrSize); end
+    if (!$isunknown(g_io_out_5_bits_dirtyFs) && g_io_out_5_bits_dirtyFs !== i_io_out_5_bits_dirtyFs) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_5_bits_dirtyFs g=%h i=%h", $time, g_io_out_5_bits_dirtyFs, i_io_out_5_bits_dirtyFs); end
+    if (!$isunknown(g_io_out_5_bits_dirtyVs) && g_io_out_5_bits_dirtyVs !== i_io_out_5_bits_dirtyVs) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_5_bits_dirtyVs g=%h i=%h", $time, g_io_out_5_bits_dirtyVs, i_io_out_5_bits_dirtyVs); end
+    if (!$isunknown(g_io_out_5_bits_traceBlockInPipe_itype) && g_io_out_5_bits_traceBlockInPipe_itype !== i_io_out_5_bits_traceBlockInPipe_itype) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_5_bits_traceBlockInPipe_itype g=%h i=%h", $time, g_io_out_5_bits_traceBlockInPipe_itype, i_io_out_5_bits_traceBlockInPipe_itype); end
+    if (!$isunknown(g_io_out_5_bits_traceBlockInPipe_iretire) && g_io_out_5_bits_traceBlockInPipe_iretire !== i_io_out_5_bits_traceBlockInPipe_iretire) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_5_bits_traceBlockInPipe_iretire g=%h i=%h", $time, g_io_out_5_bits_traceBlockInPipe_iretire, i_io_out_5_bits_traceBlockInPipe_iretire); end
+    if (!$isunknown(g_io_out_5_bits_traceBlockInPipe_ilastsize) && g_io_out_5_bits_traceBlockInPipe_ilastsize !== i_io_out_5_bits_traceBlockInPipe_ilastsize) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_5_bits_traceBlockInPipe_ilastsize g=%h i=%h", $time, g_io_out_5_bits_traceBlockInPipe_ilastsize, i_io_out_5_bits_traceBlockInPipe_ilastsize); end
     if (!$isunknown(g_io_out_5_bits_eliminatedMove) && g_io_out_5_bits_eliminatedMove !== i_io_out_5_bits_eliminatedMove) begin errors++;
       if(errors<=120) $display("[%0t] io_out_5_bits_eliminatedMove g=%h i=%h", $time, g_io_out_5_bits_eliminatedMove, i_io_out_5_bits_eliminatedMove); end
     if (!$isunknown(g_io_out_5_bits_snapshot) && g_io_out_5_bits_snapshot !== i_io_out_5_bits_snapshot) begin errors++;
       if(errors<=120) $display("[%0t] io_out_5_bits_snapshot g=%h i=%h", $time, g_io_out_5_bits_snapshot, i_io_out_5_bits_snapshot); end
+    if (!$isunknown(g_io_out_5_bits_numLsElem) && g_io_out_5_bits_numLsElem !== i_io_out_5_bits_numLsElem) begin errors++;
+      if(errors<=120) $display("[%0t] io_out_5_bits_numLsElem g=%h i=%h", $time, g_io_out_5_bits_numLsElem, i_io_out_5_bits_numLsElem); end
     // 内部状态层次探针(robIdxHead / FreeList headPtr)
     if (!$isunknown(g_u.robIdxHead_value) && g_u.robIdxHead_value !== i_u.u_core.robIdxHead_value) begin errors++;
       if(errors<=120) $display("[%0t] PROBE robIdxHead_value g=%h i=%h", $time, g_u.robIdxHead_value, i_u.u_core.robIdxHead_value); end

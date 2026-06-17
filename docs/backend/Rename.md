@@ -3,7 +3,7 @@
 > 可读核：`rtl/backend/Rename.sv`（`xs_Rename_core`）+ 类型包 `rtl/backend/rename_pkg.sv`。
 > 黑盒子模块：`CompressUnit` / `MEFreeList` / `StdFreeList`(×4 变体) / `SnapshotGenerator`(golden 同名)。
 > golden 顶层 `golden/chisel-rtl/Rename.sv`（6470 行 / 1579 端口）。
-> 本批为 **A 批（重命名教学核心）**，B 批（译码级机器）仅占位，见文末。
+> **A 批（重命名教学核心）+ B 批（译码级机器）均已实现并验证**，详见 §3 / §5 / §6。
 
 ---
 
@@ -161,23 +161,33 @@ wrapper 再把 struct 成员摊回 golden 扁平端口。
 
 ---
 
-## 5. B 批占位（本批未实现）
+## 5. B 批：译码级组合机器（本批已实现）
 
-下列字段是**译码级组合机器**（依赖 CompressUnit 的 masks/instrSizes 做跨口归并/压缩），
-本批不实现，核里输出置 0 或简化直通，**UT 跳过比对、FM 对这些点不可判**：
+下列字段是**译码级组合机器**（依赖 CompressUnit 的 masks/instrSizes/needRobFlags/
+canCompressVec 做跨口归并/压缩，或依赖 vtype/emul 计算向量流数）。本批**已全部按 Scala
+帮助函数语义重写**，UT 纳入逐拍比对（0 错）、FM 全部 passing（除自由计数器外）。
 
-| 字段 | 含义 | 现状 |
-|------|------|------|
-| `numWB` | 压缩后写回个数 | 置 0 |
-| `wfflags`（聚合） | 压缩窗口内任一置位 | 置 0 |
-| `dirtyFs` / `dirtyVs` | 浮点/向量脏标志（压缩聚合） | 置 0 |
-| `instrSize` | 压缩后指令字节数 | 置 0 |
-| `traceBlockInPipe_{itype,iretire,ilastsize}` | trace 用 | 置 0 |
-| `numLsElem` | 向量访存流元素数（依赖 vtype/emul 计算） | 置 0 |
-| `lastUop`（压缩） | 压缩后是否末 uop | 简化直通 in.lastUop |
-| `debugInfo_renameTime` | 自由计数器 | 全局计数器，UT 跳过 |
+| 字段 | 含义 | 算法根因 |
+|------|------|----------|
+| `wfflags`（聚合） | 压缩窗口内任一写 fflags | `\|(masks(i) & Cat(in.wfflags))` |
+| `dirtyFs` | 浮点脏标志（压缩聚合） | `\|(masks(i) & Cat(in.fpWen))` |
+| `dirtyVs` | 向量脏标志（压缩聚合） | `\|(masks(i) & Cat(isDirtyVsUop))`；逐口排除标量(SCA_SIM)、原子 CAS(0x35..37)、4 条不改状态向量指令(vfmv.f.s/vcpop.m/vfirst.m/vmv.x.s) |
+| `instrSize` | 压缩后指令数 | 直取 `CompressUnit.instrSizes(i)` |
+| `numWB` | 压缩后写回个数 | `needRobFlags(i) ? ((i==0\|\|needRobFlags(i-1)) ? (isMove\|hasExc?0:in.numWB) : compressedWB) : compressedWB`；`compressedWB = instrSize - PopCount(mask & isMove)` |
+| `lastUop`（压缩精确化） | 压缩后是否末 uop | `needRobFlags(i) & in.lastUop` |
+| `traceBlockInPipe.itype` | trace 跳转类型 | isXret(csr systemop) → ExpIntReturn(3)；否则 `jumpTypeGen(brType, rd=ldest, rs=lsrc0)`（依 jal/jalr/branch 与 rd/rs 是否链接寄存器 x1/x5、是否 x0 分类 8..15，非分支跳转→None） |
+| `traceBlockInPipe.iretire` | 退休半字数 | 可压缩→Σ组内 halfWordNum；否则本口+（融合则下口）halfWordNum。RVC→1、非 RVC→2 |
+| `traceBlockInPipe.ilastsize` | 末指令尺寸 | 可压缩→最高命中口的 isRVC；否则本口(融合取下口)isRVC，取反（RVC→0/HalfWord、非 RVC→1/Word） |
+| `numLsElem` | 向量访存元素流数 | 门控 `valid & isVlsType & ~(isVleff & lastUop)`；US(isAllUS)→2(VecMemUnitStrideMaxFlowNum)；否则按 instType={isSegment,mop} 选 `MulDataSize(emul/lmul) >> eew/sew`；emul = isWhole?GenUSWholeEmul(nf):isMasked?0:(veew-vsew+vlmul) |
+| `debugInfo_renameTime` | 自由计数器 | 全局 GTimer，**仍 UT 跳过、FM 不可判**（非功能 debug 口） |
 
-> 这些都不影响 A 批教学核心；B 批留作后续工程。
+> **FuType 位序**（取自 Scala `FuType.addType` 顺序，已写入 `rename_pkg.sv`）：
+> csr=5、vipu=18、vfalu=24、vldu=31、vstu=32、vsegldu=33、vsegstu=34。
+> `isVlsType = fuType[31\|32\|33\|34]`、`isSegment = fuType[33\|34]`。
+>
+> **坑（已踩）**：`MulDataSize(mul)` 把 emul/lmul 译成「整寄存器需写字节数」(2/4/8/16)，
+> 用 `priority case` 复刻查表（mul∈{0..3}→16、7→8、6→4、5→2），再 `>> eew` 得元素流数。
+> emul/lmul 是 3bit 有符号（5/6/7 表示 1/8..1/2 即负），`emul>lmul` 比较必须用 `$signed`。
 
 ---
 
@@ -190,24 +200,29 @@ wrapper 再把 struct 成员摊回 golden 扁平端口。
 - tb 随机激励（窄寄存器号域提高旁路命中率；redirect/walk/snapshot 稀疏触发）。
 - 比对 **A 批字段**：`psrc_0..4 / pdest / robIdx_{flag,value} / *RenamePorts(wen/addr/data) /
   out_valid / in_ready / snapshot / eliminatedMove / hasException / srcType_0 / imm`。
+- 比对 **B 批字段**（本批新增逐拍比对）：`instrSize / dirtyFs / dirtyVs /
+  traceBlockInPipe_{itype,iretire,ilastsize} / lastUop / numWB / wfflags / numLsElem`。
+  stim 增加 `fuOpType / vpu_{nf,veew,vsew,vlmul} / uopSplitType / numWB` 随机化，并偏置
+  fuType 命中向量访存(31..34)/向量算术(vfalu24/vipu18)/csr(5) 以覆盖各 B 批分支。
 - **内部层次探针**：`robIdxHead_value`、`intFreeList.headPtrOH`、`fpFreeList.headPtrOH`
   两侧逐拍比对（`!$isunknown` 跳 golden 启动期 X）。
-- B 批/不可判端口在 tb 内跳过（不进比对列表）。
+- 仅 `debugInfo_renameTime`（自由计数器）与 85 直通字段在 tb 内跳过（直通字段由 FM 覆盖）。
 
-**结果**：seed 1 / 7 / 42 各 200000 拍，errors = 0，TEST PASSED。
+**结果**：seed 1 / 7 / 42 各 200000 拍，errors = 0，TEST PASSED（已含全部 B 批字段）。
 
 ### 6.2 FM（Formality 等价）
 
 - `make fm`：golden `Rename` vs 手写 `Rename_wrapper`（→核）。impl 侧也带上 golden 子模块
   （Makefile `WRAPPER_SRCS`），两侧用同一套真实子模块，其内部寄存器逐一配对。
-- **实测结果**：**8338 passing / 20 failing / 0 aborted**，400 unmatched(ref)。
-  - 20 个 failing **全部是 B 批占位字段**（`dirtyFs / dirtyVs / instrSize / numLsElem /
-    traceBlockInPipe_{itype,iretire,ilastsize} / wfflags / debugInfo_renameTime`，port 0），
-    因本批把它们接 0 而 golden 真算 → **不可判属预期**。
-  - **零个 A 批字段 failing**：所有 `psrc/pdest/robIdx/*RenamePorts/snapshot/out_valid/
-    in_ready/hasException/eliminatedMove/srcType_0/imm` 及子模块内部寄存器全部 passing。
-  - 400 unmatched(ref) 为 golden 侧 B 批/perf 输出锥（impl 接 0，无对应锥）。
-  - 详见 `fm_work/Rename/{fm.log,failing.rpt,matched.rpt}`。
+- **实测结果（B 批补完后）**：**8375 passing / 20 failing / 0 aborted**。
+  - 20 个 failing **全部是 `io_out_0_bits_debugInfo_renameTime[*]` 位**（自由计数器 GTimer，
+    两侧独立计数，结构上不可等价 → 属预期，UT 亦跳过为 don't-care）。
+  - **原 20 个 B 批功能字段 failing 全部消除**：`dirtyFs / dirtyVs / instrSize / numLsElem /
+    traceBlockInPipe_{itype,iretire,ilastsize} / wfflags` 现全部 passing（passing 从 8338 升到 8375）。
+  - **A 批字段 + 子模块内部寄存器**全部 passing（无回归）。
+  - 残留 renameTime failing 由 **UT 探针证伪**：UT 把全部 B 批字段纳入逐拍比对，600K 拍 0 错，
+    仅 renameTime 跳过；即除自由计数器外功能完全等价。
+  - 详见 `fm_work/Rename/{fm.log,failing.rpt}`。
 
 ---
 

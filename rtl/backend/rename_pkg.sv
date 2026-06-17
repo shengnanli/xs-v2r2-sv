@@ -60,6 +60,49 @@ package rename_pkg;
   localparam logic [FUTYPE_W-1:0] FU_FENCE = 35'h200;   // fence(imm 取 {lsrc1,lsrc0})
   // FuType.isJump：fuType[0]==1(jmp 在 bit0)。snapshot CFI 判定用。
 
+  // ---------------- FuType one-hot 位序(取自 Scala FuType.addType 顺序) ----------------
+  // 这些位序用于 B 批译码级判定(isVls / isSegment / isXret / dirtyVs 特例)。
+  localparam int FUB_CSR     = 5;    // csr：isXret 判定(CSR systemop)
+  localparam int FUB_VIPU    = 18;   // vipu：dirtyVs 特例(vcpop.m/vfirst.m/vmv.x.s)
+  localparam int FUB_VFALU   = 24;   // vfalu：dirtyVs 特例(vfmv.f.s)
+  localparam int FUB_VLDU    = 31;   // 向量 load
+  localparam int FUB_VSTU    = 32;   // 向量 store
+  localparam int FUB_VSEGLDU = 33;   // 段向量 load(isSegment)
+  localparam int FUB_VSEGSTU = 34;   // 段向量 store(isSegment)
+
+  // ---------------- 向量访存流数(numLsElem)用常量 ----------------
+  localparam int VEC_US_MAX_FLOW = 2;   // VecMemUnitStrideMaxFlowNum
+
+  // ---------------- UopSplitType / FuOpType 特例编码(dirtyVs 用) ----------------
+  // SCA_SIM=0(标量, dirtyVs 不置)；AMO_CAS_{W,D,Q}=0x35/0x36/0x37(原子 CAS, 不算向量脏)
+  localparam logic [5:0] USPLIT_AMOCAS_W = 6'h35;
+  localparam logic [5:0] USPLIT_AMOCAS_D = 6'h36;
+  localparam logic [5:0] USPLIT_AMOCAS_Q = 6'h37;
+  // 不改变向量状态的 4 条指令的 fuOpType(配合 vfalu/vipu 判别)
+  localparam logic [FUOP_W-1:0] VOP_VFMV_F_S = 9'h11;  // vfmv.f.s  (vfalu)
+  localparam logic [FUOP_W-1:0] VOP_VCPOP_M  = 9'h4B;  // vcpop.m   (vipu)
+  localparam logic [FUOP_W-1:0] VOP_VFIRST_M = 9'h4C;  // vfirst.m  (vipu)
+  localparam logic [FUOP_W-1:0] VOP_VMV_X_S  = 9'h53;  // vmv.x.s   (vipu)
+
+  // ---------------- trace itype 编码(取自 backend.trace.Itype) ----------------
+  localparam logic [3:0] ITYPE_NONE                 = 4'h0;
+  localparam logic [3:0] ITYPE_EXP_INT_RETURN       = 4'h3;
+  localparam logic [3:0] ITYPE_BRANCH               = 4'h4;  // = NonTaken
+  localparam logic [3:0] ITYPE_UNINFERABLE_CALL     = 4'h8;
+  localparam logic [3:0] ITYPE_INFERABLE_CALL       = 4'h9;
+  localparam logic [3:0] ITYPE_UNINFERABLE_TAILCALL = 4'hA;
+  localparam logic [3:0] ITYPE_INFERABLE_TAILCALL   = 4'hB;
+  localparam logic [3:0] ITYPE_COROUTINE_SWAP       = 4'hC;
+  localparam logic [3:0] ITYPE_FUNCTION_RETURN      = 4'hD;
+  localparam logic [3:0] ITYPE_OTHER_UNINFER_JUMP   = 4'hE;
+  localparam logic [3:0] ITYPE_OTHER_INFER_JUMP     = 4'hF;
+
+  // BrType(取自 frontend.PreDecode.BrType)：notCFI=0 / branch=1 / jal=2 / jalr=3
+  localparam logic [1:0] BRTYPE_NOTCFI = 2'h0;
+  localparam logic [1:0] BRTYPE_BRANCH = 2'h1;
+  localparam logic [1:0] BRTYPE_JAL    = 2'h2;
+  localparam logic [1:0] BRTYPE_JALR   = 2'h3;
+
   // ===================================================================
   // DecodedInst(Rename 的输入 bits)—— 用 struct 聚合 golden 的 98 个扁平字段。
   // 字段顺序与位宽严格对应 io_in_N_bits_*，供 wrapper 机械打平 / 重组。

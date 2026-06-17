@@ -40,10 +40,10 @@
 // 子模块全部 golden 黑盒：CompressUnit / MEFreeList(intFreeList) /
 //   StdFreeList×4(fp/vec/v0/vl)。它们内部已各自重写并验证。
 //
-// 【B 批未实现，仅占位并标注】：见文中 "B批占位" 注释。具体为
-//   numLsElem / dirtyVs / itype / iretire / ilastsize / numWB(压缩分支) /
-//   wfflags(压缩聚合)。这些是译码级组合机器，留待后续；本核对应输出口接 0
-//   或简化直通，UT/ FM 对这些点不可判(文档注明)。
+// 【B 批已实现】：见文末 "B批" 各节注释。具体为 numLsElem / dirtyVs / dirtyFs /
+//   wfflags / instrSize / numWB / lastUop(压缩精确化) / traceBlockInPipe.{itype,
+//   iretire,ilastsize}。这些是译码级组合机器，按 Scala 帮助函数语义重写。
+//   仅 debugInfo_renameTime 为自由计数器(GTimer)，UT 跳过、FM 不可判(非功能 debug 口)。
 // =====================================================================
 module xs_Rename_core
   import rename_pkg::*;
@@ -739,22 +739,291 @@ module xs_Rename_core
   always_comb for (int i = 0; i < RENAME_WIDTH; i++) io_out_passthru[i] = io_in_bits[i];
 
   // ===================================================================
-  // B批占位(本批未实现，置 0；详见 docs/backend/Rename.md "B批"一节)。
-  //   instrSize/dirtyFs/dirtyVs/itype/iretire/ilastsize/lastUop(压缩)/numWB/
-  //   wfflags(压缩)/numLsElem —— UT 对这些点跳过比对，FM 不可判。
+  // B批：译码级组合机器(依赖 CompressUnit 的 masks/instrSizes/needRobFlags/canCompressVec)
+  //   实现 numLsElem / dirtyVs / dirtyFs / wfflags / instrSize / numWB /
+  //   traceBlockInPipe.{itype,iretire,ilastsize} / lastUop(压缩精确化)。
+  //   全部按 Scala (class Rename) 帮助函数语义逐口重写。
   // ===================================================================
+
+  // ---- 公共：压缩窗口聚合(mask 为 6 位，位 j=1 表示口 j 属于本口的压缩组) ----
+  // wfflags/dirtyFs/dirtyVs 均为「mask & 各口某属性位向量」的 OR 归并。
+
+  // B-1. wfflags(压缩聚合)：本口压缩组里任一指令带 wfflags(写 fflags)即置位。
+  //      golden：|(masks(i) & Cat(in.wfflags.reverse))。
   always_comb
     for (int i = 0; i < RENAME_WIDTH; i++) begin
-      io_out_instrSize[i] = '0;
-      io_out_dirtyFs[i]   = 1'b0;
-      io_out_dirtyVs[i]   = 1'b0;
-      io_out_itype[i]     = '0;
-      io_out_iretire[i]   = '0;
-      io_out_ilastsize[i] = 1'b0;
-      io_out_lastUop_o[i] = io_in_bits[i].lastUop; // 简化直通(真值需压缩 needRobFlags)
-      io_out_numWB[i]     = '0;
-      io_out_wfflags_o[i] = 1'b0;
-      io_out_numLsElem[i] = '0;
+      logic acc; acc = 1'b0;
+      for (int j = 0; j < RENAME_WIDTH; j++)
+        acc |= cmpMasks[i][j] & io_in_bits[j].wfflags;
+      io_out_wfflags_o[i] = acc;
+    end
+
+  // B-2. dirtyFs(浮点脏)：压缩组里任一指令 fpWen=1 即置位。
+  //      golden：|(masks(i) & Cat(in.fpWen.reverse))。
+  always_comb
+    for (int i = 0; i < RENAME_WIDTH; i++) begin
+      logic acc; acc = 1'b0;
+      for (int j = 0; j < RENAME_WIDTH; j++)
+        acc |= cmpMasks[i][j] & io_in_bits[j].fpWen;
+      io_out_dirtyFs[i] = acc;
+    end
+
+  // B-3. dirtyVs(向量脏)：压缩组里任一「真正改写向量状态」的向量指令即置位。
+  //   单口判定 isDirtyVsUop(j)：
+  //     ① uopSplitType != SCA_SIM(=0)，即确为向量 uop(标量 SCA_SIM 不算)；
+  //     ② 排除原子 CAS(uopSplitType ∈ {AMO_CAS_W/D/Q})——它们走 mou，不改向量状态；
+  //     ③ 排除 4 条「读向量但不改向量状态」的指令：
+  //          vfmv.f.s(vfalu & fuOp=0x11)、vcpop.m(vipu & 0x4B)、
+  //          vfirst.m(vipu & 0x4C)、vmv.x.s(vipu & 0x53)。
+  //   再 |(masks(i) & Cat(isDirtyVsUop.reverse))。
+  logic [RENAME_WIDTH-1:0] isDirtyVsUop;
+  always_comb
+    for (int j = 0; j < RENAME_WIDTH; j++) begin
+      logic isVecUop, isAmoCas, isVfmvFs, isVcpopM, isVfirstM, isVmvXs, isStateKeep;
+      isVecUop  = |io_in_bits[j].uopSplitType;            // != SCA_SIM
+      isAmoCas  = (io_in_bits[j].uopSplitType == USPLIT_AMOCAS_W)
+                | (io_in_bits[j].uopSplitType == USPLIT_AMOCAS_D)
+                | (io_in_bits[j].uopSplitType == USPLIT_AMOCAS_Q);
+      isVfmvFs  = io_in_bits[j].fuType[FUB_VFALU] & (io_in_bits[j].fuOpType == VOP_VFMV_F_S);
+      isVcpopM  = io_in_bits[j].fuType[FUB_VIPU]  & (io_in_bits[j].fuOpType == VOP_VCPOP_M);
+      isVfirstM = io_in_bits[j].fuType[FUB_VIPU]  & (io_in_bits[j].fuOpType == VOP_VFIRST_M);
+      isVmvXs   = io_in_bits[j].fuType[FUB_VIPU]  & (io_in_bits[j].fuOpType == VOP_VMV_X_S);
+      isStateKeep = isVfmvFs | isVcpopM | isVfirstM | isVmvXs;
+      isDirtyVsUop[j] = isVecUop & ~isAmoCas & ~isStateKeep;
+    end
+  always_comb
+    for (int i = 0; i < RENAME_WIDTH; i++) begin
+      logic acc; acc = 1'b0;
+      for (int j = 0; j < RENAME_WIDTH; j++)
+        acc |= cmpMasks[i][j] & isDirtyVsUop[j];
+      io_out_dirtyVs[i] = acc;
+    end
+
+  // B-4. instrSize：直接取 CompressUnit 的 instrSizes(压缩后本组指令数)。
+  always_comb for (int i = 0; i < RENAME_WIDTH; i++) io_out_instrSize[i] = instrSizes[i];
+
+  // B-5. lastUop(压缩精确化)：仅当本口需独占 ROB 槽(needRobFlags)且原本就是 lastUop 时为真。
+  //      golden：lastUop = needRobFlags(i) & in.lastUop。
+  always_comb
+    for (int i = 0; i < RENAME_WIDTH; i++)
+      io_out_lastUop_o[i] = needRobFlags[i] & io_in_bits[i].lastUop;
+
+  // B-6. numWB(压缩后写回个数)：
+  //   压缩值 compressedWB = instrSizes(i) - PopCount(masks(i) & isMove)
+  //     —— 压缩组里被 move 消除的 uop 不写回。
+  //   优先级(高→低，对应 Scala 后置 when 覆盖前置)：
+  //     ① !needRobFlags(i)                → compressedWB
+  //     ② i>0 且 !needRobFlags(i-1)       → compressedWB
+  //     ③ isMove(i) | hasException(i)     → 0
+  //     ④ 否则                            → in.numWB
+  //   golden 等价改写：needRobFlags(i) ?
+  //        ((i==0 || needRobFlags(i-1)) ? ((isMove|hasExc)?0:in.numWB) : compressedWB)
+  //      : compressedWB
+  logic [2:0] compressedWB [RENAME_WIDTH];
+  always_comb
+    for (int i = 0; i < RENAME_WIDTH; i++) begin
+      logic [2:0] moveCnt; moveCnt = '0;
+      for (int j = 0; j < RENAME_WIDTH; j++)
+        if (cmpMasks[i][j] & isMove[j]) moveCnt += 3'b1;
+      compressedWB[i] = instrSizes[i] - moveCnt;
+    end
+  always_comb
+    for (int i = 0; i < RENAME_WIDTH; i++) begin
+      logic prevNoRob, exc0;
+      prevNoRob = (i > 0) ? ~needRobFlags[i-1] : 1'b0;        // port0 视作前序需 ROB
+      exc0      = isMove[i] | io_out_hasException[i];
+      if (!needRobFlags[i])
+        io_out_numWB[i] = {4'h0, compressedWB[i]};
+      else if (prevNoRob)
+        io_out_numWB[i] = {4'h0, compressedWB[i]};
+      else
+        io_out_numWB[i] = exc0 ? 7'h0 : io_in_bits[i].numWB;
+    end
+
+  // ---- trace 用 halfWordNum / iLastSize(单口) ----
+  // RVC(16bit)算 1 个半字、非 RVC(32bit)算 2 个半字；ilastsize：RVC→HalfWord(0)、否则 Word(1)。
+  logic [1:0] halfWordNum [RENAME_WIDTH];
+  always_comb
+    for (int j = 0; j < RENAME_WIDTH; j++)
+      halfWordNum[j] = io_in_bits[j].preDecodeInfo_isRVC ? 2'h1 : 2'h2;
+
+  // isFusion：commitType[2]=1 表示该口是融合指令(吞掉下一条)。
+  logic [RENAME_WIDTH-1:0] isFusion;
+  always_comb for (int j = 0; j < RENAME_WIDTH; j++) isFusion[j] = io_in_bits[j].commitType[2];
+
+  // B-7. traceBlockInPipe.iretire：本块退休的「半字数」。
+  //   可压缩(canCompressVec)：累加压缩组里各口 halfWordNum；
+  //   否则：本口 halfWordNum + (若本口是融合指令则再加下一口 halfWordNum)。
+  always_comb
+    for (int i = 0; i < RENAME_WIDTH; i++) begin
+      logic [3:0] sum;
+      if (canCompressVec[i]) begin
+        sum = '0;
+        for (int j = 0; j < RENAME_WIDTH; j++)
+          if (cmpMasks[i][j]) sum += {2'h0, halfWordNum[j]};
+      end else begin
+        sum = {2'h0, halfWordNum[i]};
+        if ((i < RENAME_WIDTH-1) && isFusion[i]) sum += {2'h0, halfWordNum[i+1]};
+      end
+      io_out_iretire[i] = sum;
+    end
+
+  // B-8. traceBlockInPipe.ilastsize：本块最后一条指令的尺寸(0=HalfWord/RVC, 1=Word)。
+  //   可压缩：取压缩组里【最高被置位口】的 isRVC(取反得 ilastsize)；
+  //   否则：本口(融合时取下一口)的 isRVC 取反。
+  always_comb
+    for (int i = 0; i < RENAME_WIDTH; i++) begin
+      logic lastIsRVC;
+      if (canCompressVec[i]) begin
+        lastIsRVC = 1'b0;
+        // foldLeft 等价：从低到高遍历，命中口覆盖 → 最终最高命中口生效
+        for (int j = 0; j < RENAME_WIDTH; j++)
+          if (cmpMasks[i][j]) lastIsRVC = io_in_bits[j].preDecodeInfo_isRVC;
+      end else begin
+        if ((i < RENAME_WIDTH-1) && isFusion[i]) lastIsRVC = io_in_bits[i+1].preDecodeInfo_isRVC;
+        else                                      lastIsRVC = io_in_bits[i].preDecodeInfo_isRVC;
+      end
+      io_out_ilastsize[i] = ~lastIsRVC;  // RVC→0(HalfWord)，非 RVC→1(Word)
+    end
+
+  // B-9. traceBlockInPipe.itype：跳转/分支类型(供 trace 推断控制流)。
+  //   isXret：CSR systemop(fuType[csr] & fuOpType[4] & csrAddr[11:1]非零) → ExpIntReturn(3)。
+  //   否则用 jumpTypeGen(brType, rd=ldest, rs=lsrc0)：
+  //     依 brType(jal/jalr/branch) 与 rd/rs 是否链接寄存器(x1/x5)/x0 分类(8..15)。
+  //     非分支非跳转 → None(0)。
+  function automatic logic [3:0] jump_type_gen
+      (input logic [1:0] brType, input logic [LREG_W-1:0] rd, input logic [LREG_W-1:0] rs);
+    logic isEqualRdRs, isJal, isJalr, isBranch;
+    logic rdLink, rsLink, rdX0;
+    logic isUninferCall, isInferCall, isUninferTail, isInferTail;
+    logic isCoSwap, isFuncRet, isOtherUninfer, isOtherInfer;
+    begin
+      isEqualRdRs = (rd == rs);
+      isJal       = (brType == BRTYPE_JAL);
+      isJalr      = (brType == BRTYPE_JALR);
+      isBranch    = (brType == BRTYPE_BRANCH);
+      rdLink = (rd == 6'h1) | (rd == 6'h5);    // x1/x5 为链接寄存器
+      rsLink = (rs == 6'h1) | (rs == 6'h5);
+      rdX0   = (rd == 6'h0);
+      isUninferCall  = isJalr & rdLink & (~rsLink | (rsLink & isEqualRdRs));   // 8
+      isInferCall    = isJal  & rdLink;                                        // 9
+      isUninferTail  = isJalr & rdX0 & ~rsLink;                                // 10
+      isInferTail    = isJal  & rdX0;                                          // 11
+      isCoSwap       = isJalr & rdLink & rsLink & ~isEqualRdRs;                // 12
+      isFuncRet      = isJalr & ~rdLink & rsLink;                              // 13
+      isOtherUninfer = isJalr & ~rdLink & ~rdX0 & ~rsLink;                     // 14
+      isOtherInfer   = isJal  & ~rdLink & ~rdX0;                               // 15
+      // Mux1H(各互斥条件 → 对应编码)；非分支/非跳转 → None
+      if      (isBranch)        jump_type_gen = ITYPE_BRANCH;
+      else if (isUninferCall)   jump_type_gen = ITYPE_UNINFERABLE_CALL;
+      else if (isInferCall)     jump_type_gen = ITYPE_INFERABLE_CALL;
+      else if (isUninferTail)   jump_type_gen = ITYPE_UNINFERABLE_TAILCALL;
+      else if (isInferTail)     jump_type_gen = ITYPE_INFERABLE_TAILCALL;
+      else if (isCoSwap)        jump_type_gen = ITYPE_COROUTINE_SWAP;
+      else if (isFuncRet)       jump_type_gen = ITYPE_FUNCTION_RETURN;
+      else if (isOtherUninfer)  jump_type_gen = ITYPE_OTHER_UNINFER_JUMP;
+      else if (isOtherInfer)    jump_type_gen = ITYPE_OTHER_INFER_JUMP;
+      else                      jump_type_gen = ITYPE_NONE;
+    end
+  endfunction
+
+  always_comb
+    for (int i = 0; i < RENAME_WIDTH; i++) begin
+      logic isXret;
+      // CSR systemop 且 csrAddr[11:1] 非零(排除 ebreak/ecall)；csrAddr 取自 imm[11:0]。
+      isXret = io_in_bits[i].fuType[FUB_CSR] & io_in_bits[i].fuOpType[4]
+             & (|io_in_bits[i].imm[11:1]);
+      io_out_itype[i] = isXret ? ITYPE_EXP_INT_RETURN
+                              : jump_type_gen(io_in_bits[i].preDecodeInfo_brType,
+                                              io_in_bits[i].ldest, io_in_bits[i].lsrc[0]);
+    end
+
+  // ===================================================================
+  // B-10. numLsElem(向量访存元素流数)
+  //   仅对向量访存(isVlsType)、非 vleff-末uop 的有效指令计算，否则为 0。
+  //   instType = {isSegment(fuType[vseg*]), mop(fuOpType[6:5])}；
+  //   emul：isWhole → GenUSWholeEmul(nf)；isMasked → 0；否则 veew - vsew + vlmul。
+  //   numLsElem：
+  //     unit-stride(isAllUS)        → VEC_US_MAX_FLOW(=2)
+  //     else 按 instType 选流数(GenRealFlowNum)：
+  //       000/010/100/110(US/strided/segUS/segStrided) → MulDataSize(emul) >> veew
+  //       001/011(indexed)         → emul>lmul ? (MulDataSize(emul)>>veew) : (MulDataSize(lmul)>>vsew)
+  //       101/111(seg indexed)     → 同上(段)
+  //   MulDataSize(mul) 把 emul/lmul 译成「整寄存器需写字节数」(2/4/8/16)，
+  //   再 >> eew(每次写字节数 log2)得到元素流数。本核用 mul_data_size 函数复刻该查表。
+  // ===================================================================
+  // MulDataSize 查表(返回 5bit, 足够容纳 16)：mul∈{0,1,2,3}→16; 7→8; 6→4; 5→2(其余→0)
+  function automatic logic [4:0] mul_data_size(input logic [2:0] mul);
+    begin
+      priority case (mul)
+        3'h0, 3'h1, 3'h2, 3'h3: mul_data_size = 5'd16;
+        3'h7:                   mul_data_size = 5'd8;
+        3'h6:                   mul_data_size = 5'd4;
+        3'h5:                   mul_data_size = 5'd2;
+        default:                mul_data_size = 5'd0;
+      endcase
+    end
+  endfunction
+
+  logic [2:0] vlsNf   [RENAME_WIDTH];   // 整寄存器 whole-load 的 nf 修正
+  logic [2:0] vlsEmul [RENAME_WIDTH];
+  logic [2:0] vlsInstType [RENAME_WIDTH];
+  logic [RENAME_WIDTH-1:0] vlsIsVls, vlsIsAllUS;
+  always_comb
+    for (int i = 0; i < RENAME_WIDTH; i++) begin
+      logic [8:0] op; logic isWhole, isMasked, usSel, segBit;
+      logic [2:0] eewSubSew;
+      op = io_in_bits[i].fuOpType;
+      // isWhole/isMasked/isAllUS：均要求 mop(op[6:5])==0 且 (op[8]^op[7])
+      usSel    = (op[8] ^ op[7]) & ~(|op[6:5]);
+      isWhole  = usSel & (op[4:0] == 5'h08);
+      isMasked = usSel & (op[4:0] == 5'h0B);
+      vlsIsAllUS[i] = usSel;
+      // nf：whole-load 强制 0(整寄存器搬运不分 field)，否则取 vpu.nf
+      vlsNf[i] = isWhole ? 3'h0 : io_in_bits[i].vpu_nf;
+      // GenUSWholeEmul(nf)：000→0,001→1,011→2,111→3(其余 0)；用三元 mux 表
+      // emul 选择：isWhole→USWholeEmul(nf)；isMasked→0；否则 veew - vsew + vlmul
+      eewSubSew = {1'b0, io_in_bits[i].vpu_veew} - {1'b0, io_in_bits[i].vpu_vsew}
+                + io_in_bits[i].vpu_vlmul;
+      if (isWhole) begin
+        vlsEmul[i] = ((vlsNf[i] == 3'h1) ? 3'h1 : 3'h0)
+                   | ((vlsNf[i] == 3'h3) ? 3'h2 : 3'h0)
+                   | ((vlsNf[i] == 3'h7) ? 3'h3 : 3'h0);
+      end else if (isMasked) begin
+        vlsEmul[i] = 3'h0;
+      end else begin
+        vlsEmul[i] = eewSubSew;
+      end
+      // instType = {isSegment, mop}
+      segBit = io_in_bits[i].fuType[FUB_VSEGLDU] | io_in_bits[i].fuType[FUB_VSEGSTU];
+      vlsInstType[i] = {segBit, op[6:5]};
+      // isVlsType = 任一向量访存 fuType
+      vlsIsVls[i] = io_in_bits[i].fuType[FUB_VLDU] | io_in_bits[i].fuType[FUB_VSTU]
+                  | io_in_bits[i].fuType[FUB_VSEGLDU] | io_in_bits[i].fuType[FUB_VSEGSTU];
+    end
+
+  always_comb
+    for (int i = 0; i < RENAME_WIDTH; i++) begin
+      logic [4:0] flowNum, eewFlow, sewFlow, idxFlow;
+      logic       emulGtLmul, gateOK;
+      // emul/lmul 有符号比较(3bit, 5/6/7 表示 1/8..1/2 即负数, 0..3 表示 1..8)
+      emulGtLmul = ($signed(vlsEmul[i]) > $signed(io_in_bits[i].vpu_vlmul));
+      eewFlow = mul_data_size(vlsEmul[i])              >> io_in_bits[i].vpu_veew;
+      sewFlow = mul_data_size(io_in_bits[i].vpu_vlmul) >> io_in_bits[i].vpu_vsew;
+      idxFlow = emulGtLmul ? eewFlow : sewFlow;        // indexed / seg-indexed
+      // GenRealFlowNum 按 instType 选择(priority 互斥)
+      priority case (vlsInstType[i])
+        3'b000, 3'b010, 3'b100, 3'b110: flowNum = eewFlow;  // US / strided / segUS / segStrided
+        3'b001, 3'b011:                 flowNum = idxFlow;  // indexed un/ordered
+        3'b101, 3'b111:                 flowNum = idxFlow;  // seg indexed un/ordered
+        default:                        flowNum = 5'h0;
+      endcase
+      // unit-stride 走固定上限 VEC_US_MAX_FLOW
+      flowNum = vlsIsAllUS[i] ? VEC_US_MAX_FLOW[4:0] : flowNum;
+      // 门控：有效 & 向量访存 & 非(vleff 且压缩后末 uop)
+      gateOK = io_in_valid[i] & vlsIsVls[i]
+             & ~(io_in_bits[i].vpu_isVleff & io_out_lastUop_o[i]);
+      io_out_numLsElem[i] = gateOK ? flowNum : 5'h0;
     end
 
   // ===================================================================

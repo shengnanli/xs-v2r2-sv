@@ -321,11 +321,19 @@ def make_wrapper(ps, modname="Rename"):
 # =====================================================================
 #  Testbench
 # =====================================================================
-# A 批要逐拍比对的输出端口(子串匹配 io_out_N_bits_<x>)
+# 逐拍比对的输出端口(精确匹配 io_out_N_bits_<x>)
+#   A 批：psrc/pdest/robIdx/eliminatedMove/snapshot/hasException/srcType_0/imm
+#   B 批(本批补完)：instrSize/dirtyFs/dirtyVs/traceBlockInPipe_*/lastUop/numWB/
+#     wfflags/numLsElem —— 全部纳入逐拍比对。
+#   仅 debugInfo_renameTime 仍跳过(自由计数器, don't-care)。
 ABATCH_OUT_SUFFIX = [
     "psrc_0","psrc_1","psrc_2","psrc_3","psrc_4","pdest",
     "robIdx_flag","robIdx_value","eliminatedMove","snapshot","hasException",
     "srcType_0","imm",
+    # ---- B 批字段(本批补完, 纳入逐拍比对) ----
+    "instrSize","dirtyFs","dirtyVs",
+    "traceBlockInPipe_itype","traceBlockInPipe_iretire","traceBlockInPipe_ilastsize",
+    "lastUop","numWB","wfflags","numLsElem",
 ]
 # A 批也比对的非 io_out 输出口(前缀匹配)
 ABATCH_OTHER_PREFIX = [
@@ -410,8 +418,24 @@ def make_stim(ins):
                   "waitForward","blockBackward","flushPipe","preDecodeInfo_isRVC",
                   "pred_taken","crossPageIPFFix","isFetchMalAddr","vpu_isVleff"]:
             L.append(f"      io_in_{i}_bits_{f} <= $urandom_range(0,1);")
+        # fuType：偏置覆盖 A 批特例(alu/load/fence/jmp)与 B 批向量访存/向量算术(脏标志/流数)。
+        #   向量访存(31..34)驱动 numLsElem；vfalu(24)/vipu(18) 驱动 dirtyVs 特例；csr(5) 驱动 itype Xret。
         L.append(f"      io_in_{i}_bits_fuType <= ($urandom_range(0,99)<25) ? "
-                 "(($urandom_range(0,3)==0)?35'h40:($urandom_range(0,2)==0)?35'h8000:($urandom_range(0,1)==0)?35'h200:35'h1) : $urandom_range(0,40);")
+                 "(($urandom_range(0,3)==0)?35'h40:($urandom_range(0,2)==0)?35'h8000:($urandom_range(0,1)==0)?35'h200:35'h1) "
+                 ": ($urandom_range(0,99)<30) ? "
+                 "((35'h1)<<($urandom_range(0,4)==0?31:$urandom_range(0,3)==0?32:$urandom_range(0,2)==0?33:$urandom_range(0,1)==0?34:24)) "
+                 ": ($urandom_range(0,99)<15) ? ((35'h1)<<($urandom_range(0,1)==0?18:5)) : $urandom_range(0,40);")
+        # fuOpType：9bit；偏置低位 mop/whole/masked 组合以覆盖 emul/instType 分支。
+        L.append(f"      io_in_{i}_bits_fuOpType <= $urandom_range(0,511);")
+        # vpu 向量配置：nf/veew/vsew/vlmul 直接影响 emul 与 MulDataSize>>eew。
+        L.append(f"      io_in_{i}_bits_vpu_nf <= $urandom_range(0,7);")
+        L.append(f"      io_in_{i}_bits_vpu_veew <= $urandom_range(0,3);")
+        L.append(f"      io_in_{i}_bits_vpu_vsew <= $urandom_range(0,3);")
+        L.append(f"      io_in_{i}_bits_vpu_vlmul <= $urandom_range(0,7);")
+        # uopSplitType：6bit；0=SCA_SIM(标量)，偏置覆盖向量/AMOCAS(0x35..0x37)。
+        L.append(f"      io_in_{i}_bits_uopSplitType <= ($urandom_range(0,99)<20) ? 6'h0 : "
+                 "($urandom_range(0,99)<15) ? (6'h35+$urandom_range(0,2)) : $urandom_range(0,63);")
+        L.append(f"      io_in_{i}_bits_numWB <= $urandom_range(0,127);")
         L.append(f"      io_in_{i}_bits_selImm <= rst4();")
         L.append(f"      io_in_{i}_bits_imm <= $urandom;")
         L.append(f"      io_in_{i}_bits_commitType <= $urandom_range(0,7);")
