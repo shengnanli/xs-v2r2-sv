@@ -54,6 +54,10 @@ golden 双例化多种子 UT(seed 1/7/42 全输出逐拍 0 错)→ Formality 等
 | [MulUnit](MulUnit.md) | 1 | ✅ UT(seed1/7/42 各 200000 拍 errors=0) + FM SUCCEEDED |
 | [DivUnit](DivUnit.md) | 1 | ✅ UT(seed1/7/42 各 200000 拍 errors=0) + FM SUCCEEDED |
 | [Bku](Bku.md) | 1 | ✅ UT(seed1/7/42 各 1.8M checks/0 err)；FM 主体配平，funcReg 同值副本失配已用层次探针证伪(mismatch=0) |
+| [FAlu](FAlu.md) | 1 | ✅ UT(seed1/7/42 各 200000 拍 errors=0) + FM SUCCEEDED（FloatAdder 黑盒，FM_MERGE_DUP=false） |
+| [FMA](FMA.md) | 1 | ✅ UT(seed1/7/42 各 200000 拍 errors=0) + FM SUCCEEDED（FloatFMA 黑盒，FM_MERGE_DUP=false） |
+| [FCVT](FCVT.md) | 1 | ✅ UT(seed1/7/42 各 200000 拍 errors=0) + FM SUCCEEDED（FPCVT 黑盒，FM_MERGE_DUP=false） |
+| [FDivSqrt](FDivSqrt.md) | 1 | ✅ UT(seed1/7/42 各 200000 拍 errors=0，含随机 flush/out_ready) + FM SUCCEEDED（FloatDivider 黑盒，FM_MERGE_DUP=true：robIdx 双副本归并） |
 | (其余 FU 叶子) | 1 | 🔄 |
 | 其余 | 2-4 | ⏳ 待开 |
 
