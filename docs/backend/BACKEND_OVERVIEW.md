@@ -59,6 +59,11 @@ golden 双例化多种子 UT(seed 1/7/42 全输出逐拍 0 错)→ Formality 等
 | [FCVT](FCVT.md) | 1 | ✅ UT(seed1/7/42 各 200000 拍 errors=0) + FM SUCCEEDED（FPCVT 黑盒，FM_MERGE_DUP=false） |
 | [FDivSqrt](FDivSqrt.md) | 1 | ✅ UT(seed1/7/42 各 200000 拍 errors=0，含随机 flush/out_ready) + FM SUCCEEDED（FloatDivider 黑盒，FM_MERGE_DUP=true：robIdx 双副本归并） |
 | (其余 FU 叶子) | 1 | 🔄 |
+| [WbFuBusyTable](WbFuBusyTable.md) | 2 | ✅ UT(seed1/7/42 各 5.2M checks errors=0) + FM SUCCEEDED（纯组合叶子；conflict 路本配置被 OptionWrapper 优化掉） |
+| [WbDataPath](WbDataPath.md) | 2 | ✅ UT(seed1/7/42 各 101.8M 输出级 checks errors=0，509/509 输出全激励) + FM SUCCEEDED（VldMergeUnit/RealWBCollideChecker 真子模块两侧共享，DummyDPICWrapper×26 difftest 探针黑盒 stub） |
+| [StdFreeList](StdFreeList.md) | 2 | ✅ UT(seed1/7/42 各 200000 拍 errors=0) + FM SUCCEEDED（fp/vec 空闲列表；SnapshotGenerator 黑盒，FM_MERGE_DUP=true） |
+| [MEFreeList](MEFreeList.md) | 2 | ✅ UT(seed1/7/42 各 200000 拍 errors=0) + FM SUCCEEDED（整数空闲列表 size=224，move-elimination；SnapshotGenerator 黑盒，FM_MERGE_DUP=true） |
+| [RenameTable](RenameTable.md) | 2 | ✅ UT(seed1/7/42 各 200000 拍 errors=0) + FM SUCCEEDED（整数 RAT Reg_I；SnapshotGenerator_4 黑盒；FM 坑：function 读模块级信号→改 always_comb） |
 | 其余 | 2-4 | ⏳ 待开 |
 
 > 完成的模块标 ✅ 并链接到各自 `docs/backend/<M>.md`。
