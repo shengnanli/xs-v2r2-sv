@@ -33,11 +33,23 @@
 | 物理寄存器/缓存 | RegFilePart(Int/Fp×4)·RegCache |
 | 写回/旁路/工具 | WbDataPath·WbFuBusyTable·BypassNetwork·ImmExtractor·DelayReg |
 | 乱序核心 | **Rob**(控制核 golden-tap 验证)·**DataPath**(真重写,逻辑入核)·**NewDispatch**(真重写) |
+| 执行容器 | **ExuBlock·ExuBlock_1**(FU 黑盒,frm/error glue) |
+| 发射队列 | **IssueQueueAluCsrFenceDiv + EntriesAluCsrFenceDiv + IqEntryAcfd**(乱序唤醒-选择全栈真重写,UT+FM 全过,作其余变体样板) |
 
 **⏳ 待做**
-- 发射/调度:Scheduler×4、IssueQueue×N、Entries×N(唤醒-选择,最复杂)
-- 执行容器:ExuBlock×3、ExeUnit
-- 控制聚合:CtrlBlock
+- 发射/调度:其余 9 个 IssueQueue/Entries 变体(有 AluCsrFenceDiv 样板)、Scheduler×4(唤醒/仲裁 glue)
+- 执行容器:ExeUnit(各变体)
+- 控制聚合:CtrlBlock 🔨 **进行中(基础设施已搭,glue 逻辑核未完成)**
+  - 已完成:ctrlblock_pkg.sv(参数/redirect-level/decin-src/融合 commitType enum,vlogan 通过)、
+    gen_ctrlblock.py(端口解析→ctrlblock_ports.svh 2520 功能端口与 golden 2522 精确对齐;
+    16 类子模块例化枚举,全部外部黑盒:Rob/NewDispatch/DecodeStage/FusionDecoder/
+    RenameTableWrapper/Rename/RedirectGenerator/pcMem/MemCtrl/Trace/GPAMem/Snapshot/
+    6×PipelineConnectPipe/PipeGroupConnect/DelayN×3)。
+  - 待做:可读核 glue 逻辑(重定向流水 s0-s5 / decode-buffer FSM / 写回打拍压缩 /
+    快照选择 / frontend flush 路由 / pcMem 命名读口驱动)从 Scala 重实现入核;
+    ctrlblock_inst.svh 黑盒例化连线;wrapper/stubs/tb/Makefile;多种子 UT + FM。
+    (golden 41426 行中 2610-19294 区是真 CtrlBlock 逻辑含 2599 个 _GEN_/_T_,须重写入核;
+     19295-end 是子模块例化区,黑盒。)
 - CSR:NewCSR(14k 行)
 - **Backend 顶层**(capstone,1230 端口)
 
