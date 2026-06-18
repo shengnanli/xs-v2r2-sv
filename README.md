@@ -3,6 +3,16 @@
 将香山 V2R2（XiangShan `kunminghu-v2r2` 分支）的 Chisel/Scala 代码逐模块手工重写为
 **可读、可维护的 SystemVerilog**，为每个模块撰写设计文档，并建立 UT/IT/BT/ST 四级验证体系。
 
+## 当前进度
+
+| 子系统 | 状态 | 说明 |
+|--------|------|------|
+| **Frontend 前端** | ✅ 100% | 分支预测 / 取指 / ICache / Ftq / 顶层（34 模块） |
+| **MemBlock 访存** | ✅ 100% | LSU / 队列 / MMU（含 L2TLB·PtwCache） / DCache / 顶层（46 模块） |
+| **Backend 后端** | 🔨 进行中 | FU / 译码 / 重命名 / 写回 / 旁路 / ROB / DataPath / Dispatch 已完成（33 模块）；发射调度 / CSR / 顶层待做 |
+
+详细模块清单与验证状态见 `status.md`；各子系统导读见 `docs/{frontend,memblock,backend}/`（`MEMBLOCK_OVERVIEW.md` / `BACKEND_OVERVIEW.md`）。重写硬性标准见 `docs/REWRITE_STYLE.md`。
+
 ## 总体方法学
 
 每个模块的交付物与验证闭环：
@@ -44,9 +54,14 @@ xs-v2r2-sv/
 ├── status.md            模块进度跟踪表（重写顺序、各级验证状态）
 ├── rtl/
 │   ├── common/          公共 package / 工具模块（如参数化队列、SRAM wrapper）
-│   └── frontend/        前端手写 SV，一个模块一个文件
+│   ├── frontend/        前端手写 SV（✅ 完成）
+│   ├── memblock/        访存手写 SV（✅ 完成）
+│   └── backend/         后端手写 SV（🔨 进行中）
 ├── docs/
-│   └── frontend/        每模块一份中文 Markdown 设计文档
+│   ├── frontend/        每模块一份中文 Markdown 设计文档
+│   ├── memblock/        访存（含 MEMBLOCK_OVERVIEW.md 导读）
+│   ├── backend/         后端（含 BACKEND_OVERVIEW.md 导读）
+│   └── REWRITE_STYLE.md 可读重写硬性闸门（结构指标 + .svh 套壳检查）
 ├── golden/chisel-rtl@   软链 → XiangShan/build/rtl（Chisel 生成的参考 RTL）
 ├── verif/
 │   ├── ut/<Module>/     单元级：tb.sv + Makefile + fm/ 等价检查
