@@ -28,6 +28,105 @@ Backend
 └─ NewPipelineConnectPipe / DelayN / PFEvent / HPerfMonitor  流水连接/性能
 ```
 
+### 2.1 子系统级互联大图(模块到模块)
+
+> 下图把后端各**真实模块**(对应 `rtl/backend/*.sv`)连成互联图,顺乱序执行主流水:
+> 取指→译码→重命名→派遣→发射→读寄存器/旁路→执行 FU→写回→提交。
+> 虚线框 Scheduler/IssueQueue/ExuBlock 为 golden 聚合容器(无单独可读核文档),其内 FU 已逐个重写。
+> 点划线为唤醒/旁路/重定向反馈。框可点开对应文档(链接见图下)。
+
+```mermaid
+flowchart TD
+  FE["前端 IBuffer<br/>(取好的指令包)"]
+
+  subgraph DEC["译码 DecodeStage"]
+    direction LR
+    DU["DecodeUnit ×6"]
+    FPD["FPDecoder"]
+    UIG["UopInfoGen<br/>向量 uop 数"]
+    VS0["VSetRiWi / VSetRvfWvf"]
+    DU --- FPD
+    DU --- UIG
+    DU --- VS0
+  end
+
+  subgraph RNM["重命名 Rename"]
+    direction LR
+    RAT["RenameTable (RAT)"]
+    MEFL["MEFreeList<br/>(整数, move-elim)"]
+    STDFL["StdFreeList<br/>(fp/vec)"]
+    RBUF["RenameBuffer<br/>(walk/恢复)"]
+    CU["CompressUnit"]
+    RAT --- MEFL
+    RAT --- STDFL
+  end
+
+  DISP["NewDispatch 派遣"]
+
+  subgraph SCH["Scheduler ×4 + IssueQueue (golden 聚合)"]
+    direction TB
+    IQ["IssueQueue / Entries<br/>唤醒-选择发射"]
+    WBT["WbFuBusyTable<br/>FU 忙表"]
+    IQ --- WBT
+  end
+
+  subgraph DP["DataPath 读寄存器 + 旁路"]
+    direction LR
+    RF["RegFile<br/>(Int/Fp RegFilePart)"]
+    RC["RegCache"]
+    BYP["BypassNetwork<br/>(+ImmExtractor)"]
+    DLY["DelayReg"]
+    RF --- RC
+    RF --- BYP
+  end
+
+  subgraph EXU["ExuBlock ×3 (golden 聚合) — 执行 FU"]
+    direction LR
+    subgraph INT["整数"]
+      ALU["Alu"]
+      MUL["MulUnit"]
+      DIV["DivUnit"]
+      BR["BranchUnit"]
+      JMP["JumpUnit"]
+      BKU["Bku"]
+      FEN["Fence"]
+    end
+    subgraph FP["浮点"]
+      FALU["FAlu"]
+      FMAm["FMA"]
+      FDIV["FDivSqrt"]
+      FCVTm["FCVT"]
+    end
+  end
+
+  WB["WbDataPath 写回数据通路"]
+  ROB["Rob 按序提交<br/>异常/重定向/精确状态"]
+
+  FE -->|指令| DU
+  DEC -->|uop| RNM
+  RNM -->|物理寄存器 uop| DISP
+  CU -.压缩游程.-> ROB
+  RBUF -.分配/walk.-> ROB
+  DISP -->|分发| IQ
+  IQ -->|发射 uop| RF
+  DP -->|操作数| EXU
+  DLY -.延迟读.-> EXU
+  EXU -->|执行结果| WB
+  WB -->|写回| RF
+  WB -.唤醒.-> IQ
+  WB -.busy 更新.-> WBT
+  WB -->|完成| ROB
+  BR -.分支结果 redirect.-> FE
+  JMP -.跳转 redirect.-> FE
+  ROB -.提交/异常 redirect.-> FE
+  ROB -.释放物理寄存器.-> MEFL
+  ROB -.恢复 RAT.-> RAT
+  BYP -.在飞结果旁路.-> EXU
+```
+
+**图中模块 → 文档**:
+[DecodeStage](DecodeStage.md) / [DecodeUnit](DecodeUnit.md) / [FPDecoder](FPDecoder.md) / [UopInfoGen](UopInfoGen.md) / [VSetRiWi](VSetRiWi.md) / [VSetRvfWvf](VSetRvfWvf.md) · [Rename](Rename.md) / [RenameTable](RenameTable.md) / [MEFreeList](MEFreeList.md) / [StdFreeList](StdFreeList.md) / [RenameBuffer](RenameBuffer.md) / [CompressUnit](CompressUnit.md) · [NewDispatch](NewDispatch.md) · [WbFuBusyTable](WbFuBusyTable.md) · [DataPath](DataPath.md) / [RegFile](RegFile.md) / [RegCache](RegCache.md) / [BypassNetwork](BypassNetwork.md) / [ImmExtractor](ImmExtractor.md) / [DelayReg](DelayReg.md) · FU: [Alu](Alu.md) / [MulUnit](MulUnit.md) / [DivUnit](DivUnit.md) / [BranchUnit](BranchUnit.md) / [JumpUnit](JumpUnit.md) / [Bku](Bku.md) / [Fence](Fence.md) / [FAlu](FAlu.md) / [FMA](FMA.md) / [FDivSqrt](FDivSqrt.md) / [FCVT](FCVT.md) · [WbDataPath](WbDataPath.md) · [Rob](Rob.md)
+
 ## 3. 重写顺序(自底向上 + 并行, 沿用既定方法学)
 **第 1 层 FU 叶子(纯逻辑/小, 教学价值最高, 可并行)**:
 - 整数: Alu(125)、Bku(241)、BranchUnit(340)、JumpUnit(337)、Fence(241)、MulUnit(246)、DivUnit(223)、VsetUnit

@@ -21,12 +21,68 @@ TAGE-SC 是 BPU 的主方向预测器，对每个取指块的 2 个分支槽（b
 
 `s2_taken`/`s3_taken` 各有 4 份 dup，分别由各自的 `io_s1_fire[d]` / `io_s2_fire[d]` 使能寄存。
 
+下图为 Tage_SC 顶层组成（子表为黑盒，本核做表间组合；信号名对应 `Tage_SC.sv`）：
+
+```mermaid
+flowchart TB
+  PC["s0_pc / s0_fire"] --> TBL["4× TageTable<br/>(历史 8/13/32/119)"]
+  PC --> BT["TageBTable<br/>(基预测器 bimodal)"]
+  PC --> SC["4× SCTable<br/>(带符号 6bit ctr)"]
+
+  TBL -->|tbl_resp valid/ctr/u/unconf| SEL["provider 选择<br/>命中且历史最长 (s1)"]
+  BT -->|bt_s1_cnt| TAGE
+  UAON["use_alt_on_na[bank][128]<br/>(4bit, 按 pc 索引)"] --> SEL
+  SEL --> TAGE["altUsed? 基预测器:provider.ctr[MSB]<br/>→ s1_tage_taken"]
+
+  SC -->|sc_resp_ctrs| SUM["scSum = Σ getCentered (s1)"]
+  SEL -->|provider ctr 居中化| SUM
+  SUM --> THR["aboveThreshold ? scPred:tageTaken<br/>(s2, 自适应阈值 scThresholds[bank])"]
+  TAGE --> THR
+
+  TAGE -->|s2 dup| O2["io_out_s2_taken (TAGE, tage_enable门控)"]
+  THR -->|s3 dup| O3["io_out_s3_taken (SC校正, sc_enable门控)"]
+  SEL --> META["io_out_last_stage_meta (144位快照)"]
+  SUM --> META
+
+  LFSR["alloc_lfsr[bank]"] -.分配随机.-> SEL
+```
+
+图注：4 张 TageTable 出 provider、基预测器 TageBTable 出 altpred、4 张 SCTable 出统计校正和；本核串起 `provider 选择 → TAGE 方向 → SC 求和 → 阈值校正` 三步，并把预测快照打进 meta 供提交侧更新。
+
 ---
 
 ## 2. 核心机制（预测 + 更新）
 
 > 下面按数据流补全 TAGE-SC 的核心算法，RTL 依据见 `rtl/frontend/Tage_SC.sv` 文件头注释
 > （§预测 / §更新）及对应行号。
+
+下图把预测三级流水（s1→s2→s3）与提交更新两拍并排，箭头对应主要中间信号：
+
+```mermaid
+flowchart LR
+  subgraph 预测["预测 s1 → s2 → s3"]
+    direction TB
+    P1["s1: provider 扫描 (从高到低)<br/>s1_provided/s1_prov_ctr<br/>s1_alt_used / s1_tage_taken<br/>s1_allocatable"]
+    P1 --> P2["s2: 寄存 + 阈值比较<br/>s2_total_sum = scSum + provider居中<br/>s2_above_thr / s2_sc_pred<br/>s2_pred = (provided&aboveThr)?scPred:tageTaken"]
+    P1 --> PSUM["s1_sc_sum (4表居中求和)"]
+    PSUM --> P2
+    P2 --> P3["s3: s3_pred_dup (sc_enable门控)<br/>s3_disagree"]
+    P2 --> PM["meta 打包<br/>(provider/ctr/altUsed/basecnt<br/>/allocates/scPreds/scCtrs/useAltOnNa)"]
+  end
+
+  subgraph 更新["提交 commit (两拍)"]
+    direction TB
+    C0["io_update_* + io_update_meta"] --> C1["拍1: 寄请求 + 解包 meta<br/>(um_prov_*/um_basecnt/um_sc_*)"]
+    C1 --> C2["拍2: 算更新写口"]
+    C2 --> CA["TAGE: useAltOnNa 增减<br/>provider ctr/useful 更新<br/>分配 fin_updateAlloc / tick 老化"]
+    C2 --> CB["SC: scThresholds 自适应<br/>scUpdateMask 写 4 表"]
+    C2 --> CC["基预测器 bt_upd_* (altUsed 时)"]
+  end
+
+  PM -. last_stage_meta 随预测带出, 提交时回灌 .-> C0
+```
+
+图注：左半为预测路径（provider 选择 → SC 求和 → 阈值校正 → 三级 dup 输出），右半为提交路径（解包 meta → 更新 useAltOnNa/provider/分配/tick/阈值/SC 表/基预测器）。两者通过 `last_stage_meta` 把预测时刻的快照带到提交时刻闭环。
 
 ### 2.1 provider / altpred 选择与 useAltOnNa
 - **provider**：命中（tag 匹配）的 TAGE 表里**历史最长**者（序号最大）。本核从高序号往低扫描，
@@ -49,6 +105,31 @@ TAGE-SC 是 BPU 的主方向预测器，对每个取指块的 2 个分支槽（b
   `scPred != taken` 或 `~sumAboveThreshold`（line 794,838）。
 
 ### 2.3 分配（allocate）与 tick 老化
+
+`bankTickCtrs` 的老化是一个饱和计数状态机（每 bank 一份，仅在 `needToAlloc` 拍推进，RTL `Tage_SC.sv:887~921`）：
+
+```mermaid
+stateDiagram-v2
+  [*] --> Idle: reset (ctr=0, dist=MAX)
+  Idle --> Idle: ~needToAlloc (保持)
+  Idle --> Inc: needToAlloc & tickInc<br/>(allocFail > canAlloc)
+  Idle --> Dec: needToAlloc & tickDec<br/>(canAlloc > allocFail)
+  Inc --> Idle: ctr += tickIncVal<br/>dist -= tickIncVal
+  Inc --> Saturated: tickToPosSat<br/>(tickIncVal >= dist)
+  Dec --> Idle: ctr -= tickDecVal<br/>dist += tickDecVal
+  Saturated --> Idle: 下一 needToAlloc 拍<br/>清 ctr=0, dist=MAX
+  Saturated: ctr == TICK_MAX
+  note right of Saturated
+    ctr==MAX 时本拍
+    u_updateResetU=1
+    → 给该 bank 所有表
+    发 tbl_upd_reset_u
+    (useful 整体清 0)
+  end note
+```
+
+图注：分配失败多于成功（`allocFail > canAlloc`）则 tick 增、反之减；增到饱和（`ctr==TICK_MAX`）即触发 `reset_u` 把该 bank 各表 useful 位整体老化清零，随后复位计数器。这是防止表项长期占位无法回收的机制。
+
 - **allocatableSlots**：命中失败、`useful=0`、且历史比 provider 更长的表的 one-hot 集合（line ~229）；
   用 `MaxPeriodFibonacciLFSR` 随机从中选一张分配新条目。
 - **tick 老化**：mispred 时按 tick 计数器（`bankTickCtrs` / `bankTickCtrDistanceToTops`）节奏择机分配；

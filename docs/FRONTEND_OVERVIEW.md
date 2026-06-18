@@ -47,6 +47,93 @@ flowchart TB
 - **训练回路**：后端 commit 时把真实结果经 FTQ 回送，update 各预测器（FTB 条目、TAGE 计数、
   RAS 栈、uFTB 等）。
 
+### 2.1 子系统级互联大图（模块到模块）
+
+> 下图把前端各**真实模块**（与 `rtl/frontend/*.sv` 一一对应）连成一张互联图：左到右是
+> 预测→排队→取指/缓存→预解码→缓冲→后端 的主数据流；点划线是 redirect/update 反馈回路。
+> 每个框可点开对应模块文档（链接见图下）。
+
+```mermaid
+flowchart LR
+  subgraph BPU["BPU 分支预测 (Predictor 顶层)"]
+    direction TB
+    COMP["Composer<br/>按级覆盖组合"]
+    FAUFTB["FauFTB / FauFTBWay<br/>uFTB S1 最快"]
+    FTBp["FTB / FTBBank"]
+    TAGESC["Tage_SC<br/>(TageTable/TageBTable/SCTable)"]
+    ITT["ITTage / ITTageTable"]
+    RASm["RAS 返回地址栈"]
+    GEN["FTBEntryGen<br/>生成回写条目"]
+    COMP --- FAUFTB
+    COMP --- FTBp
+    COMP --- TAGESC
+    COMP --- ITT
+    COMP --- RASm
+  end
+
+  subgraph FTQg["Ftq 取指目标队列"]
+    direction TB
+    FTQc["Ftq 主控"]
+    FPM["FtqPcMemWrapper<br/>PC 存储"]
+    FTQc --- FPM
+  end
+
+  subgraph ICACHEg["ICache 指令缓存 (ICache 顶层)"]
+    direction TB
+    MAIN["ICacheMainPipe<br/>s0/s1/s2"]
+    PF["IPrefetchPipe 预取"]
+    WL["WayLookup way-FIFO"]
+    META["ICacheMetaArray"]
+    DATA["ICacheDataArray"]
+    REP["ICacheReplacer"]
+    MISS["ICacheMissUnit MSHR"]
+    CTRL["ICacheCtrlUnit ECC"]
+    PF -->|命中路 way| WL
+    WL -->|waymask| MAIN
+    PF -.查.-> META
+    MAIN -->|查 tag| META
+    MAIN -->|取指令| DATA
+    REP --- META
+    MISS -->|refill| DATA
+    MISS -->|refill| META
+    CTRL --- META
+  end
+
+  subgraph IFUg["IFU 取指 (NewIFU)"]
+    direction TB
+    IFU["NewIFU 取指主控"]
+    PD["PreDecode 预解码"]
+    F3["F3Predecoder"]
+    RVC["RVCExpander"]
+    IFU --- PD
+    IFU --- F3
+    IFU --- RVC
+  end
+
+  IUNC["InstrUncache<br/>MMIO 取指"]
+  IBUF["IBuffer 指令缓冲"]
+  BE["后端 Backend"]
+
+  BPU -->|预测块| FTQg
+  FTQg -->|取指请求 ftqPtr/PC| IFU
+  IFU <-->|取指/命中| MAIN
+  MISS -.未命中向 L2 取.-> L2["L2 / 总线"]
+  IFU <-->|MMIO| IUNC
+  IFU -->|预解码后指令| IBUF
+  IBUF -->|指令包| BE
+
+  IFU -.预解码发现预测错.-> FTQc
+  BE -.分支误预测/异常 redirect.-> FTQc
+  FTQc -.重定向.-> BPU
+  BE -.commit 实际结果.-> FTQc
+  FTQc -.update 训练.-> COMP
+  GEN -.新条目.-> FTBp
+  FTQc -.训练数据.-> GEN
+```
+
+**图中模块 → 文档**：
+[Predictor](frontend/Predictor.md) · [Composer](frontend/Composer.md) · [FauFTB](frontend/FauFTB.md) / [FauFTBWay](frontend/FauFTBWay.md) · [FTB](frontend/FTB.md) / [FTBBank](frontend/FTBBank.md) · [Tage_SC](frontend/Tage_SC.md)（[TageTable](frontend/TageTable.md)/[TageBTable](frontend/TageBTable.md)/[SCTable](frontend/SCTable.md)）· [ITTage](frontend/ITTage.md) / [ITTageTable](frontend/ITTageTable.md) · [RAS](frontend/RAS.md) · [FTBEntryGen](frontend/FTBEntryGen.md) · [Ftq](frontend/Ftq.md) / [FtqPcMemWrapper](frontend/FtqPcMemWrapper.md) · [ICache](frontend/ICache.md) / [ICacheMainPipe](frontend/ICacheMainPipe.md) / [IPrefetchPipe](frontend/IPrefetchPipe.md) / [WayLookup](frontend/WayLookup.md) / [ICacheMetaArray](frontend/ICacheMetaArray.md) / [ICacheDataArray](frontend/ICacheDataArray.md) / [ICacheReplacer](frontend/ICacheReplacer.md) / [ICacheMissUnit](frontend/ICacheMissUnit.md) / [ICacheCtrlUnit](frontend/ICacheCtrlUnit.md) · [NewIFU](frontend/NewIFU.md) / [PreDecode](frontend/PreDecode.md) / [F3Predecoder](frontend/F3Predecoder.md) / [RVCExpander](frontend/RVCExpander.md) · [InstrUncache](frontend/InstrUncache.md) · [IBuffer](frontend/IBuffer.md) · [Frontend](frontend/Frontend.md)（顶层集成）
+
 ## 3. 三条主线与对应模块
 
 ### 3.1 分支预测（BPU）—— "下一条取哪"

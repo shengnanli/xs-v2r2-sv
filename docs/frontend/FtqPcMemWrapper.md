@@ -32,6 +32,54 @@ IFU（取指单元）之间的桥梁：BPU 每次预测产生一个 **fetch bloc
      commPtr / commPtrPlus1             → 提交 / 重定向 PC 还原
 ```
 
+### 结构图（多读口 / 单写口）
+
+七个读地址都是 `FtqPtr.value`（6 位），即 golden 的 `io_<ptr>_w_value` 端口——是**读地址而非写口**；
+真正的写口只有 `io_wen`/`io_waddr`/`io_wdata`。读口按下标 0..6 聚成数组喂给底层 `xs_SyncDataModule`，
+注意 **5=commPtrPlus1、6=commPtr**（`FtqPcMemWrapper.sv:96-104`）。
+
+```mermaid
+flowchart TD
+    subgraph WR["写口 (FTQ 入队 / 回填)"]
+        WEN["io_wen"]
+        WADDR["io_waddr (6b ftqPtr)"]
+        WDATA["io_wdata<br/>{fallThruError, nextLineAddr, startAddr}"]
+    end
+
+    subgraph RA["七个读地址 = FtqPtr.value (各阶段)"]
+        R0["io_ifuPtr_w_value → raddr[0]"]
+        R1["io_ifuPtrPlus1_w_value → raddr[1]"]
+        R2["io_ifuPtrPlus2_w_value → raddr[2]"]
+        R3["io_pfPtr_w_value → raddr[3]"]
+        R4["io_pfPtrPlus1_w_value → raddr[4]"]
+        R5["io_commPtrPlus1_w_value → raddr[5]"]
+        R6["io_commPtr_w_value → raddr[6]"]
+    end
+
+    MEM["xs_SyncDataModule<br/>64 项 × 101 bit<br/>HAS_REN=0, NUM_WRITE=1<br/>BYPASS_EN 全 1, 读延迟 1 拍"]
+
+    WEN --> MEM
+    WADDR --> MEM
+    WDATA --> MEM
+    R0 --> MEM
+    R1 --> MEM
+    R2 --> MEM
+    R3 --> MEM
+    R4 --> MEM
+    R5 --> MEM
+    R6 --> MEM
+
+    MEM --> O0["ifuPtr_rdata (全字段)"]
+    MEM --> O1["ifuPtrPlus1_rdata (全字段)"]
+    MEM --> O2["ifuPtrPlus2_rdata (startAddr)"]
+    MEM --> O3["pfPtr_rdata (start+nextLine)"]
+    MEM --> O4["pfPtrPlus1_rdata (start+nextLine)"]
+    MEM --> O5["commPtrPlus1_rdata (startAddr)"]
+    MEM --> O6["commPtr_rdata (startAddr)"]
+```
+
+*图注：注意 raddr 下标 5/6 是 commPtrPlus1 在前、commPtr 在后（与命名直觉相反，`FtqPcMemWrapper.sv:97-98`）。各读口实际暴露的字段子集见第 3 节。*
+
 ## 2. 存储条目与索引
 
 - **索引**：`ftqPtr`，6 位，共 64 个 FTQ 条目（`FTQ_SIZE=64`）。
@@ -75,6 +123,22 @@ IFU（取指单元）之间的桥梁：BPU 每次预测产生一个 **fetch bloc
   地址）。这对前端「刚入队随即被取」的场景很重要。
 - 底层按容量分 bank（64 项 → 4 个 16 项 bank），写按地址高 2 位选 bank，读出按
   打拍后地址高 2 位多路选择——这些都封装在 `xs_SyncDataModule` 内，本包装无需关心。
+
+读时序数据流（以单个读口为例，写旁路命中「本拍写、下拍读同址」）：
+
+```mermaid
+flowchart LR
+    RADDR["读地址 raddr[i]<br/>(FtqPtr.value)"] --> RREG["地址寄存器<br/>(打拍 1 拍)"]
+    RREG --> RD["bank 内组合读"]
+    WADDR2["io_waddr"] --> CMP{"旁路比较<br/>打拍后 raddr == waddr ?"}
+    RREG --> CMP
+    WDATA2["io_wdata"] --> MUX["写旁路 MUX"]
+    RD --> MUX
+    CMP -->|命中| MUX
+    MUX --> RDATA["rdata[i] → io_&lt;ptr&gt;_rdata_*"]
+```
+
+*图注：读地址打 1 拍后做组合读，故读延迟为 1；旁路比较用的是**打拍后**的读地址与写地址，命中则用刚写入的 `io_wdata` 替换读出值，实现「刚入队随即被取」读到新值。*
 
 ## 5. 接口表（golden 扁平端口）
 

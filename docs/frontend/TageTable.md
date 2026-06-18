@@ -15,6 +15,37 @@ TAGE = **1 个基预测器([TageBTable](TageBTable.md)) + N 张标签表(TageTab
 捕捉远距离相关性。预测时所有表并行查询，外层 Tage 选「命中且历史最长」的表作 provider；
 都不命中则回退基预测器(altpred)。
 
+## 1.1 内部结构
+
+下图为单张 TageTable 的内部子块与阵列组成（信号名对应 `TageTable.sv` `xs_TageTable_core`）：
+
+```mermaid
+flowchart TB
+  subgraph 读hash["S0 读 hash"]
+    PC["io_req_bits_pc"] --> IDXC["s0_idx = (pc>>1) ^ idx_fh"]
+    IFH["io_req_idx_fh"] --> IDXC
+    PC --> TAGC["s0_tag = (pc>>1) ^ tag_fh ^ (alt_fh<<1)"]
+    TFH["io_req_tag_fh"] --> TAGC
+    AFH["io_req_alt_fh"] --> TAGC
+    IDXC --> B1H["s0_bank_1h (idx 低2位)"]
+  end
+
+  IDXC --> US[("us: FoldedSRAMTemplate<br/>useful 位 2048×2way×1b")]
+  B1H --> BK0[("table_bank0")] & BK1[("table_bank1")] & BK2[("table_bank2")] & BK3[("table_bank3")]
+  IDXC -. setIdx>>2 .-> BK0
+
+  BK0 & BK1 & BK2 & BK3 --> RD["bank_rdata[bank][way]<br/>{valid,tag,ctr}"]
+  US --> URD["us_r_d0/d1"]
+
+  TAGC -.s1锁存 s1_tag.-> CMP["tag 比对 + valid<br/>phy_hit / phy_unconf (Mux1H over bank)"]
+  RD --> CMP
+  CMP --> REMAP["物理way → 逻辑分支 反映射<br/>(pi = li ^ s1_swap)"]
+  URD --> REMAP
+  REMAP --> RESP["io_resps_0/1<br/>{valid,ctr,u,unconf}"]
+```
+
+图注：一张表 = useful 位阵列 `us` + 4 个条目 bank（按 idx 低 2 位分流，单口省功耗）+ 折叠历史算 idx/tag + 命中比较；条目结构 `{valid,tag,ctr}` 与 `u` 分开存。读出经物理/逻辑 way 反映射后给每条逻辑分支一份响应。
+
 ## 2. 一条目存什么
 
 条目 = `{valid, tag(8位), ctr(3位饱和)}`，另存一份 `u`(useful) 位。
@@ -23,6 +54,36 @@ TAGE = **1 个基预测器([TageBTable](TageBTable.md)) + N 张标签表(TageTab
 - **u**：本表命中且预测对、而 altpred 会错时置 1；分配新条目只挑 u=0 空槽；u 周期性老化清零。
 
 ## 3. 关键技巧
+
+下图对比查询（s0→s1）与更新（commit）两条数据流，重点是更新路径要现折历史、查 WrBypass、判 silent：
+
+```mermaid
+flowchart LR
+  subgraph 查询["查询 s0 → s1"]
+    Q1["pc + 外层折叠历史<br/>(idx_fh/tag_fh/alt_fh)"] --> Q2["算 s0_idx/s0_tag<br/>选 bank (s0_bank_1h)"]
+    Q2 --> Q3["读 bank + us"]
+    Q3 --> Q4["tag==s1_tag & valid<br/>→ hit; ctr→方向; us→u"]
+    Q4 --> Q5["反映射 → io_resps"]
+  end
+
+  subgraph 更新["更新 commit"]
+    U1["update_pc + 原始 ghist"] --> U2["fold_hist 现折<br/>算 update_idx/tag/bank"]
+    U2 --> U3{"alloc?"}
+    U3 -->|是| U4["ctr=弱态(4/3)<br/>valid=1"]
+    U3 -->|否| U5["oldCtr=WrBypass命中?旁路:commit<br/>newCtr=inc_ctr(oldCtr,taken)"]
+    WB["WrBypass<br/>(每bank每分支)"] -->|wb_hit_ctr| U5
+    U4 --> U6["bank_wdata / way_mask"]
+    U5 --> U6
+    U5 --> SIL{"is_silent?<br/>(饱和同向且非alloc)"}
+    SIL -->|是| SKIP["not_silent=0<br/>跳过SRAM写"]
+    SIL -->|否| U6
+    U6 --> BANKW[("写 table_bank")]
+    U6 --> WB
+    UU["update_us / uMask / reset_u"] --> USW[("写 us 阵列")]
+  end
+```
+
+图注：查询直接吃外层算好的折叠历史；更新拿原始 ghist 在核内 `fold_hist` 现折。更新时 `oldCtr` 优先取 WrBypass 最近写值，分配条目直接置弱态 ctr；`is_silent`（饱和后同向且非分配）时静默跳过 SRAM 写以省功耗。useful 位走单独的 `us` 写口（含 `reset_u` 老化）。
 
 ### 3.1 折叠历史索引（FoldedHistory）
 用「最长 119 拍历史」索引 2048 entry 的表，直接取低位会丢信息。折叠历史把 HIST_LEN 位历史

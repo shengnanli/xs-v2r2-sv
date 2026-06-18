@@ -12,6 +12,24 @@
 ICache 预取流水（s0/s1/s2 **三级流水**）：接收预取请求，经 ITLB 翻译、查 meta 判命中、
 未命中向 MissUnit 发预取请求。内联了一个纯组合优先级仲裁器 `Arbiter2_ICacheMissReq`。
 
+```mermaid
+flowchart LR
+    REQ["FTQ/软预取请求<br/>(io_req)"] --> S0
+    S0["s0：接收请求<br/>旁路发 ITLB / meta 读<br/>s0_fire 打入 s1"] -->|s0_fire| S1
+    S1["s1：ITLB 翻译 / meta 查表判命中<br/>MSHR refill 就地修正 waymask<br/>写 WayLookup（5 态 FSM）"] -->|s1_real_fire| S2
+    S2["s2：判 miss / 监听 MSHR<br/>经 2 路优先级 Arbiter 发预取"] 
+    ITLB["ITLB"] <-->|req/resp| S1
+    META["ICacheMetaArray"] <-->|toIMeta/fromIMeta| S1
+    S1 --> WL["WayLookup FIFO（命中信息）"]
+    S2 -->|miss| MSHR["MissUnit / MSHR<br/>(io_MSHRReq)"]
+    MSHR -.refill resp.-> S1
+    MSHR -.refill resp.-> S2
+```
+
+> 图注：s0 收请求并旁路启动 ITLB/meta 读；s1 收翻译与 meta 结果、判命中并写 WayLookup
+> （仅此级含状态机）；s2 对 miss 行经优先级仲裁向 MSHR 发预取。MSHR refill 回应可在
+> s1/s2 就地修正 waymask（miss→hit）。
+
 三级中只有 **s1 含一个 5 态 FSM**（`rtl/frontend/IPrefetchPipe.sv:115-119`，3-bit `state`），
 s0/s2 无状态机。s1 FSM 状态与含义：
 
@@ -31,6 +49,24 @@ s0/s2 无状态机。s1 FSM 状态与含义：
 - `S_META_RESEND`：meta 读口 ready → `S_ENQ_WAY`。
 - `S_ENQ_WAY`：WayLookup 接收（或软预取）后，按 `s2_ready` 转 `S_IDLE` / `S_ENTER_S2`。
 - `S_ENTER_S2`：`s2_ready` → `S_IDLE`。
+
+```mermaid
+stateDiagram-v2
+    [*] --> S_IDLE
+    S_IDLE --> S_ITLB_RESEND: s1_valid &&<br/>!itlb_finish
+    S_IDLE --> S_ENQ_WAY: itlb_finish &&<br/>WayLookup 未接收
+    S_IDLE --> S_ENTER_S2: 已接收 && !s2_ready
+    S_ITLB_RESEND --> S_ENQ_WAY: itlb_finish &&<br/>meta ready
+    S_ITLB_RESEND --> S_META_RESEND: itlb_finish &&<br/>!meta ready
+    S_META_RESEND --> S_ENQ_WAY: meta ready
+    S_ENQ_WAY --> S_IDLE: WayLookup 接收 (或软预取)<br/>&& s2_ready
+    S_ENQ_WAY --> S_ENTER_S2: WayLookup 接收 (或软预取)<br/>&& !s2_ready
+    S_ENTER_S2 --> S_IDLE: s2_ready
+```
+
+> 图注：转移对照 `rtl/frontend/IPrefetchPipe.sv:570-598`。`s1_flush` 一律优先复位到
+> `S_IDLE`（图中省略该全局边）。S_IDLE 在 itlb 命中且 meta 同拍读到、WayLookup 同拍接收、
+> s2 有位置时自留 S_IDLE（一拍走完）。
 
 ## 关键实现点
 

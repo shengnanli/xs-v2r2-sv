@@ -29,6 +29,117 @@ MemBlock (31138 行, 1346 端口)
     (Backend/XSCore 级例化),但功能上是访存的心脏,一并纳入访存重写范围。
 ```
 
+### 2.1 子系统级互联大图(模块到模块)
+
+> 下图把访存各**真实模块**(对应 `rtl/memblock/*.sv`)连成互联图:后端发 load/store →
+> 地址翻译(DTLB+PMP)→执行单元(Load/StoreUnit)→顺序队列(LsqWrapper)→缓存(DCache/SBuffer/Uncache)→L2;
+> MMU(L2TLB/PtwCache/PTW)作为 TLB miss 时的旁路页表服务。框可点开对应文档(链接见图下)。
+
+```mermaid
+flowchart TD
+  BE["后端 Backend<br/>(发射 load/store/atomic)"]
+
+  subgraph TLBg["地址翻译 DTLB + PMP"]
+    direction LR
+    DTLBL["TLBNonBlock (load)"]
+    DTLBS["TLBNonBlock (store)"]
+    DTLBP["TLBNonBlock (prefetch)"]
+    TSW["TlbStorageWrapper<br/>(TLBFA 存储)"]
+    PMPm["PMP / PMPChecker×8"]
+    DTLBL --- TSW
+    DTLBS --- TSW
+    DTLBP --- TSW
+    DTLBL --- PMPm
+    DTLBS --- PMPm
+  end
+
+  subgraph EXEC["执行流水单元"]
+    direction LR
+    LU["LoadUnit"]
+    SU["StoreUnit"]
+    LMAB["LoadMisalignBuffer"]
+    SMAB["StoreMisalignBuffer"]
+    LU --- LMAB
+    SU --- SMAB
+  end
+
+  subgraph LSQ["LsqWrapper 顺序队列"]
+    direction TB
+    LQ["LoadQueue<br/>(VirtualLoadQueue/RAR/RAW/<br/>Replay/Uncache/LqExceptionBuffer)"]
+    SQ["StoreQueue<br/>(+StoreExceptionBuffer)"]
+  end
+
+  subgraph DCg["DCache (DCacheWrapper)"]
+    direction TB
+    LP["LoadPipe ×N"]
+    SP["StorePipe"]
+    MP["MainPipe (MESI)"]
+    MQ["MissQueue"]
+    WBQ["WritebackQueue"]
+    PRBQ["ProbeQueue"]
+    BDA["BankedDataArray"]
+    DTA["DuplicatedTagArray"]
+    CMA["L1CohMetaArray / L1FlagMetaArray"]
+    LP --- DTA
+    LP --- BDA
+    MP --- CMA
+    MP --- BDA
+    MP --- DTA
+    MQ -->|refill| MP
+    MP --> WBQ
+    PRBQ --> MP
+  end
+
+  SBUF["Sbuffer<br/>store 写合并"]
+  UNC["Uncache<br/>MMIO/非缓存"]
+  SPF["StorePfWrapper<br/>store 预取"]
+
+  subgraph MMU["MMU 旁路 (L2TLBWrapper)"]
+    direction TB
+    L2TLB["L2TLB"]
+    PTWc["PtwCache page cache"]
+    PTWm["PTW / LLPTW / HPTW"]
+    L2MQ["L2TlbMissQueue"]
+    L2PF["L2TlbPrefetch"]
+    L2TLB --- PTWc
+    L2TLB --- PTWm
+    L2TLB --- L2MQ
+    L2TLB --- L2PF
+  end
+
+  L2["L2 Cache / 总线"]
+
+  BE -->|load 请求| LU
+  BE -->|store 请求| SU
+  LU -->|VA| DTLBL
+  SU -->|VA| DTLBS
+  SPF -->|预取 VA| DTLBP
+
+  DTLBL -. miss .-> L2TLB
+  DTLBS -. miss .-> L2TLB
+  DTLBP -. miss .-> L2TLB
+  L2TLB -->|PTE| TLBg
+  PTWm -. PTE 访存 .-> L2
+
+  LU <-->|访 cache| LP
+  LU -->|入队/forward| LQ
+  SU -->|地址+数据| SQ
+  LQ -. forward 数据 .-> LU
+  SQ -. forward 数据 .-> LU
+  SQ -->|提交后| SBUF
+  SBUF -->|写合并| SP
+  SQ <-->|MMIO| UNC
+  LQ <-->|uncache load| UNC
+
+  MQ -. miss 向 L2 取 .-> L2
+  WBQ -. writeback .-> L2
+  PRBQ -. probe .- L2
+  UNC <-->|TileLink| L2
+```
+
+**图中模块 → 文档**:
+[MemBlock](MemBlock.md)(顶层) · [LoadUnit](LoadUnit.md) / [StoreUnit](StoreUnit.md) · [LoadMisalignBuffer](LoadMisalignBuffer.md) / [StoreMisalignBuffer](StoreMisalignBuffer.md) · [TLBNonBlock](TLBNonBlock.md) / [TlbStorageWrapper](TlbStorageWrapper.md) / [TLBFA](TLBFA.md) · [PMP](PMP.md) / [PMPChecker](PMPChecker.md) · [LsqWrapper](LsqWrapper.md) · [LoadQueue](LoadQueue.md)([VirtualLoadQueue](VirtualLoadQueue.md)/[LoadQueueRAR](LoadQueueRAR.md)/[LoadQueueRAW](LoadQueueRAW.md)/[LoadQueueReplay](LoadQueueReplay.md)/[LoadQueueUncache](LoadQueueUncache.md)/[LqExceptionBuffer](LqExceptionBuffer.md)) · [StoreQueue](StoreQueue.md)([StoreExceptionBuffer](StoreExceptionBuffer.md)) · [DCache](DCache.md) / [DCacheWrapper](DCacheWrapper.md) · [LoadPipe](LoadPipe.md) / [StorePipe](StorePipe.md) / [MainPipe](MainPipe.md) / [MissQueue](MissQueue.md) / [WritebackQueue](WritebackQueue.md) / [ProbeQueue](ProbeQueue.md) · [BankedDataArray](BankedDataArray.md) / [DuplicatedTagArray](DuplicatedTagArray.md) / [L1CohMetaArray](L1CohMetaArray.md) / [L1FlagMetaArray](L1FlagMetaArray.md) · [Sbuffer](Sbuffer.md) · [Uncache](Uncache.md) · [StorePfWrapper](StorePfWrapper.md) · [L2TLB](L2TLB.md) / [L2TLBWrapper](L2TLBWrapper.md) / [PtwCache](PtwCache.md) / [PTW](PTW.md) / [LLPTW](LLPTW.md) / [HPTW](HPTW.md) / [L2TlbMissQueue](L2TlbMissQueue.md) / [L2TlbPrefetch](L2TlbPrefetch.md) · [TLBuffer](TLBuffer.md) / [Pipeline](Pipeline.md)(TileLink)
+
 ## 3. 重写顺序(自底向上 + 并行,沿用前端方法学)
 
 **第 1 层 叶子(纯逻辑/无子模块,FM 直接干净,可并行)**：

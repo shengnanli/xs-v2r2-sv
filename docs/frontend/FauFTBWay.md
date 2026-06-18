@@ -16,6 +16,55 @@ tag（16 位）+ valid：
 - **更新查询**：`io_update_hit = (tag命中且valid) | (本拍写同tag)`（写旁路避免重复命中）
 - **写**：`io_write_valid` 时写入 tag/entry，置 valid
 
+### 结构图
+
+单路内部只有三个状态寄存器（`tag`/`data`/`valid`）+ 两个比较器，外加更新查询的写旁路或门。
+对应 `FauFTBWay.sv:27-47`。
+
+```mermaid
+flowchart TD
+    subgraph WAY["xs_FauFTBWay 单路"]
+        direction TB
+        REG_TAG["tag 寄存器<br/>(TAG_W=16)"]
+        REG_DATA["data 寄存器<br/>(ENTRY_W=60, 不透明打包)"]
+        REG_VALID["valid 寄存器<br/>(reset→0, write→1)"]
+
+        CMP_R{"== 比较<br/>tag == io_req_tag"}
+        AND_R["&amp; valid"]
+        CMP_U{"== 比较<br/>tag == io_update_req_tag"}
+        CMP_W{"== 比较<br/>io_write_tag == io_update_req_tag"}
+        OR_U["更新命中或门<br/>(写旁路)"]
+    end
+
+    %% 读端口分组
+    IN_RTAG["io_req_tag"] --> CMP_R
+    REG_TAG --> CMP_R
+    CMP_R --> AND_R
+    REG_VALID --> AND_R
+    AND_R --> OUT_HIT["io_resp_hit"]
+    REG_DATA --> OUT_RESP["io_resp"]
+
+    %% 更新查询端口分组（含写旁路）
+    IN_UTAG["io_update_req_tag"] --> CMP_U
+    IN_UTAG --> CMP_W
+    REG_TAG --> CMP_U
+    REG_VALID --> CMP_U
+    IN_WTAG["io_write_tag"] --> CMP_W
+    IN_WVALID["io_write_valid"] --> CMP_W
+    CMP_U --> OR_U
+    CMP_W --> OR_U
+    OR_U --> OUT_UHIT["io_update_hit"]
+
+    %% 写端口分组
+    IN_WVALID --> REG_VALID
+    IN_WTAG --> REG_TAG
+    IN_WENTRY["io_write_entry"] --> REG_DATA
+    IN_WVALID --> REG_TAG
+    IN_WVALID --> REG_DATA
+```
+
+*图注：读路径（`io_req_tag`→比较→`io_resp_hit`/`io_resp`）与更新查询路径（含 `io_write_tag` 写旁路或门，`FauFTBWay.sv:34-35`）分别成组；写路径（`io_write_valid` 门控 tag/data，置 valid）单独成组。entry 作为打包向量整体读写。*
+
 ## 接口
 
 > **端口命名约定**：下表列的是 **golden wrapper 的扁平字段名**（`io_resp_isCall/_brSlots_*`、
