@@ -65,10 +65,12 @@ golden 双例化多种子 UT(seed 1/7/42 全输出逐拍 0 错)→ Formality 等
 | [MEFreeList](MEFreeList.md) | 2 | ✅ UT(seed1/7/42 各 200000 拍 errors=0) + FM SUCCEEDED（整数空闲列表 size=224，move-elimination；SnapshotGenerator 黑盒，FM_MERGE_DUP=true） |
 | [RenameTable](RenameTable.md) | 2 | ✅ UT(seed1/7/42 各 200000 拍 errors=0) + FM SUCCEEDED（整数 RAT Reg_I；SnapshotGenerator_4 黑盒；FM 坑：function 读模块级信号→改 always_comb） |
 | [Rename](Rename.md) | 2 | 🟢 **A 批**(psrc 同拍 RAW 旁路/pdest move-elim/robIdx/FreeList 五路互联/snapshot/各 SpecWen + 85 直通)：UT(seed1/7/42 各 200000 拍 errors=0，含 robIdxHead/headPtrOH 内部探针) + FM 8338 passing / 0 A批 failing(20 failing 全为 B批占位)。子模块 CompressUnit/MEFreeList/StdFreeList×4/SnapshotGenerator 黑盒。**B 批**(numWB-compress/dirtyVs/itype/iretire/ilastsize/numLsElem/wfflags)占位待续 |
+| [Rob](Rob.md) | 3 | 🟡 可读核(enq/8bank行读/wb/commit/异常优先级/walk/指针)结构闸门全过(struct3/enum2/func19/for43/0痕迹, 924行≪220873)+ 核独立编译0err + 不变量自检UT(seed1/7/42 各200000拍0err)。子模块EnqPtr/DeqPtr/ExceptionGen/Snapshot/Rab/VTypeBuffer/DelayReg/DummyDPIC 全黑盒。**未达**: 与golden cycle-exact双例化(需先补vls异常2拍延迟/misPred/行读流水, 见Rob.md §12) |
 | [RenameBuffer](RenameBuffer.md) | 3 | ✅ UT(seed1/7/42 各 200000 拍 errors=0，含 state/五指针/deqOH/三 size/vecExcp/全 256 条目内部探针) + FM（见文档）；SnapshotGenerator 黑盒。坑：numValidEntries 同 flag 路是 8 位减法再零扩展(借位不进 bit8)；specialWalkEndNext/walkEndNextCycle 用 `< 7` |
 | [CompressUnit](CompressUnit.md) | 2 | ✅ UT(seed1/7/42 各 4.8M checks errors=0) + FM SUCCEEDED（ROB 压缩游程统计；坑：mask 构造须用固定上界 for，否则 FM 无法展开变界循环） |
 | [UopInfoGen](UopInfoGen.md) | 2 | ✅ UT(seed1/7/42 各 800000 拍 errors=0) + FM SUCCEEDED（向量 uop 数;两张 LS 真值表按生成算法重写为 function,签名等价） |
 | [FPDecoder](FPDecoder.md) | 2 | ✅ UT(seed1/7/42 各 1M 拍 errors=0 + 753 合法编码穷举 0 mismatch)；FM 仅 5 个 DecodeLogic don't-care 位(typeTagOut/wflags/fmt)失配,已证伪为表外 off-set(typ/rm 直连过) |
+| [DecodeStage](DecodeStage.md) | 2 | ✅ UT(seed1/7/42 各 250000 拍 / 177.25M checks errors=0，707 路输出全比对) + FM SUCCEEDED(4103 passing / 0 failing)。DecodeUnit×6/DecodeUnitComp/VTypeGen 及闭包(FPDecoder/UopInfoGen/VecExceptionGen/VsetModule/indexedLSUopTable×7 等)全黑盒，FM_MERGE_DUP=false。坑：①复杂译码器仅 ch0 出 firstUop(i>0 端口不存在)→简单/复杂路径单独算；②简单译码器缺 9 字段(uopIdx/first/last/numWB/v0Wen/vlWen/isFoldTo1)本级补常量；③function 不可读模块级信号(FMR_VLOG-091 阻断 impl)→改 always_comb；④fusion_r/invnr_r/recoveryFlag 须用异步复位对齐 golden(否则 FM 判 12 个 DFF not-equiv)；⑤UT 须下降沿驱动/上升沿后 #1 采样，否则 perf 寄存器有 delta-cycle 伪 1 拍偏差 |
 | 其余 | 2-4 | ⏳ 待开 |
 
 > 完成的模块标 ✅ 并链接到各自 `docs/backend/<M>.md`。
