@@ -98,9 +98,15 @@ flowchart TB
 ### 4.2 写（write）—— refill
 
 - `way_num = onehot_to_waynum(waymask)`；把 `valid_array[way_num][virIdx]` 置 1。
-- tag SRAM：两 bank 共用写地址 `virIdx[7:1]` 与写数据（4 路相同 tag/code），仅写 valid 按
-  `bankIdx`（= `virIdx[0]`）选 bank；SRAM 内部再按 `waymask` 选路落盘。
+- **valid 写不分 bank**：用完整 8b `io_write_bits_virIdx` 索引 `valid_array`，直接置该组该路
+  为 1（RTL `:214`），不按 bankIdx 选 bank。
+- **tag SRAM 写按 bankIdx 选 bank**：两 bank 共用写地址 `virIdx[7:1]` 与写数据（4 路相同
+  tag/code），由 `bankIdx`（= `virIdx[0]`）决定写 bank0 还是 bank1（RTL `:223-224`
+  `sram_w_valid[0]/[1]`）；SRAM 内部再按 `waymask` 选路落盘。
 - code = `encode_meta_code(phyTag, poison)`。
+
+> 这与 §4.1 一致：valid 阵列始终按完整 `vSetIdx`/`virIdx` 全覆盖 4×256，bank 交织只作用于
+> tag SRAM。
 
 ### 4.3 flush / flushAll —— 清 valid（**优先级：flushAll > flush > write**）
 

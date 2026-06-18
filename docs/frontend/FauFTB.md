@@ -161,6 +161,7 @@ flowchart TB
 | 方向 | 端口（代表） | 含义 |
 |------|------|------|
 | in | `io_in_bits_s0_pc_*` | s0 取指地址（4 dup，内容相同） |
+| in | `io_reset_vector` | 复位向量；复位释放时灌入 s1_pc（`s1_pc_dup_*`），作冷启动首个取指地址（RTL `:66` 输入、`:333-340` `reset_pc` 在 `reset_d1` 时赋给各 dup） |
 | in | `io_s0_fire/s1_fire/s2_fire_*` | 各级流水 fire |
 | in | `io_ctrl_ubtb_enable` | uFTB 总开关（延一拍成 `fauftb_enable`） |
 | in | `io_update_valid` + `io_update_bits_*` | FTQ commit 回送：pc / ftb_entry / br_taken_mask / meta |

@@ -17,13 +17,20 @@ firtool 未引出对应端口）。纯组合。
 F3Predecoder 输入已是对齐指令，只取分支译码这一子集。两者的分支译码（brType/isCall/
 isRet）语义完全相同，统一由 `xs_predecode_pkg` 提供（单一来源，避免分叉）。
 
-## 接口
+## 接口（手写核 `xs_F3Predecoder_core` 端口，打包向量）
+
+`PW = PredictWidth = 16`。手写核端口是**打包向量**（非 golden 的扁平 `_0.._15` 标量），
+对应 `rtl/frontend/F3Predecoder.sv:14-17`：
 
 | 信号 | 方向 | 说明 |
 |------|------|------|
-| `io_in_instr_0..15` | in [31:0] | 16 条对齐指令 |
-| `io_out_pd_i_brType` | out [1:0] | 分支类型（notCFI/branch/jal/jalr） |
-| `io_out_pd_i_isCall` / `isRet` | out | 是否 call / ret |
+| `io_instr` | in `[PW-1:0][31:0]` | 16 条对齐指令（打包向量） |
+| `pd_brType` | out `[PW-1:0][1:0]` | 各条分支类型（notCFI/branch/jal/jalr） |
+| `pd_isCall` | out `[PW-1:0]` | 各条是否 call |
+| `pd_isRet` | out `[PW-1:0]` | 各条是否 ret |
+
+> golden 的扁平端口名（`io_in_instr_0..15` / `io_out_pd_i_brType` …）由
+> `F3Predecoder_wrapper.sv` 适配，手写核内部不存在这些名字（核里 grep `io_in_instr` 0 命中）。
 
 ## 验证
 

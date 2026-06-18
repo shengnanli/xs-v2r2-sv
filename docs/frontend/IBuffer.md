@@ -115,8 +115,10 @@ deqPtr/deqInBankPtr→0），`outputEntries` 只清 valid（bits 保留），`al
 | illegalInstr | `100` | `EX_II = type==100` |
 | 否则 | `000` | 无异常 |
 
-出口映射到 `CtrlFlow.exceptionVec` 的位：`_1`=AccessFault、`_2`=EX_II、`_12`=PageFault、
-`_20`=GuestPageFault（端口后缀是 ExceptionVec 的 bit 下标）。
+出口映射到 `CtrlFlow.exceptionVec` 的位（端口后缀是 ExceptionVec 的 bit 下标，
+对照 `rtl/frontend/IBuffer.sv:87-90` 端口注释）：`_1`=instrPageFault（指令缺页）、
+`_2`=instrAccessFault（指令访问错）、`_12`=instrGuestPageFault（指令客户机缺页，H 扩展）、
+`_20`=EX_II（非法指令 illegal instruction）。
 
 ### TopDown / 性能
 

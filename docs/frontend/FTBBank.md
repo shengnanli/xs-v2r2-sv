@@ -65,8 +65,9 @@ req_tag = pc[29:10]                  // get_tag
 ### tag 与 entry 同存一块多路 SRAM
 
 tag 不是单独的 tag 阵列，而是和 entry 一起作为 `{entry, tag}` 写进多路 SRAM
-（`SplittedSRAMTemplate_2`）。SRAM 内部用 `dataSplit=8` 把每路约 70-bit 的 `{entry, tag}`
-切成 8 片以适配物理 SRAM 位宽——这层切分/拼回在 SRAM 内完成，`xs_FTBBank` 把它当黑盒，
+（`SplittedSRAMTemplate_2`）。SRAM 内部用 `dataSplit=8` 把每路 80-bit 的 `{entry, tag}`
+切成 8×10-bit 片以适配物理 SRAM 位宽（512set × 4way × 80b，见
+`SplittedSRAMTemplate_variants.sv:883-885,1151` `WORD_W=80`）——这层切分/拼回在 SRAM 内完成，`xs_FTBBank` 把它当黑盒，
 只面向 `ftb_entry_t sram_r_entry[4]` 与 `[19:0] sram_r_tag[4]` 的结构体数组。
 
 ---
