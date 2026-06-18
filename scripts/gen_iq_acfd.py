@@ -430,10 +430,130 @@ def emit_entries_xs_variant():
     print("wrote entries_variant_xs.sv")
 
 
+# ============================================================================
+# IssueQueueAluCsrFenceDiv 顶层: 可读核 xs_IssueQueueAluCsrFenceDiv_core 与 golden
+# 同名顶层接口一致, 故 svh 仅是端口声明 + 纯穿透连线。本段生成:
+#   issuequeue_acfd_ports.svh   —— 顶层端口声明(去 clock/reset)
+#   issuequeue_acfd_connect.svh —— 例化核, 同名端口直连
+#   verif/ut/IssueQueueAluCsrFenceDiv/iq_tb.sv —— 双例化(u_g golden vs u_i 顶层)
+#   verif/ut/IssueQueueAluCsrFenceDiv/iq_variant_xs.sv —— 顶层重命名 _xs 供 tb 共存
+# ============================================================================
+def emit_iq_svh():
+    ports = parse_ports("IssueQueueAluCsrFenceDiv", "IssueQueueAluCsrFenceDiv.sv")
+    p = [GEN_HDR.replace("\n", " (顶层端口) \n")]
+    for d, w, n in ports:
+        p.append(decl(d, w, n))
+    p[-1] = p[-1].rstrip(",\n") + "\n"   # 最后一个端口去逗号
+    (BK / "issuequeue_acfd_ports.svh").write_text("".join(p))
+
+    c = [GEN_HDR.replace("\n", " (顶层连线) \n")]
+    c.append("  // 顶层端口与可读核完全同名, 纯穿透例化。\n")
+    c.append("  xs_IssueQueueAluCsrFenceDiv_core u_core (\n")
+    c.append("    .clock(clock), .reset(reset),\n")
+    conn = [f"    .{n}({n})" for d, w, n in ports]
+    c.append(",\n".join(conn))
+    c.append("\n  );\n")
+    (BK / "issuequeue_acfd_connect.svh").write_text("".join(c))
+    print("wrote issuequeue_acfd_{ports,connect}.svh (ports=%d)" % len(ports))
+
+
+def emit_iq_tb():
+    ports = parse_ports("IssueQueueAluCsrFenceDiv", "IssueQueueAluCsrFenceDiv.sv")
+    ins  = [(w, n) for d, w, n in ports if d == "input"]
+    outs = [(w, n) for d, w, n in ports if d == "output"]
+    L = []
+    L.append("// 自动生成: scripts/gen_iq_acfd.py(iq tb)—— 勿手改\n")
+    L.append("`timescale 1ns/1ps\nmodule tb;\n")
+    L.append("  int unsigned NCYCLES = 200000;\n")
+    L.append("  bit clk=0, rst; int errors=0, checks=0;\n")
+    L.append("  bit no_flush;\n")
+    L.append("  always #5 clk = ~clk;\n")
+    for w, n in ins:
+        rng = f"[{w-1}:0] " if w > 1 else ""
+        L.append(f"  logic {rng}{n};\n")
+    for w, n in outs:
+        rng = f"[{w-1}:0] " if w > 1 else ""
+        L.append(f"  wire {rng}g_{n};\n  wire {rng}i_{n};\n")
+
+    def inst(mod, pfx):
+        s = [f"  {mod} u_{pfx} (\n    .clock(clk), .reset(rst),\n"]
+        conn = []
+        for w, n in ins:
+            conn.append(f"    .{n}({n})")
+        for w, n in outs:
+            conn.append(f"    .{n}({pfx}_{n})")
+        s.append(",\n".join(conn))
+        s.append("\n  );\n")
+        return "".join(s)
+    L.append(inst("IssueQueueAluCsrFenceDiv", "g"))
+    L.append(inst("IssueQueueAluCsrFenceDiv_xs", "i"))
+
+    L.append("  task drive_rand();\n")
+    for w, n in ins:
+        L.append(f"    {n} = $urandom;\n")
+    L.append("    // 适度降低各 valid/handshake 密度, 覆盖 enq/发射/背压/唤醒/重定向\n")
+    for w, n in ins:
+        if n.endswith("_valid") and ("Resp" not in n):
+            L.append(f"    {n} = ($urandom % 4 == 0);\n")
+    # deq ready 偏高(让发射常被接受), 制造背压时偶尔拉低
+    L.append("    io_deqDelay_0_ready = ($urandom % 8 != 0);\n")
+    L.append("    io_deqDelay_1_ready = ($urandom % 8 != 0);\n")
+    L.append("    if (no_flush) io_flush_valid = 1'b0;\n")
+    L.append("    else io_flush_valid = ($urandom % 16 == 0);\n")
+    L.append("  endtask\n")
+
+    L.append("  task check();\n")
+    for w, n in outs:
+        L.append(f"    if (!$isunknown(g_{n}) && g_{n} !== i_{n}) begin errors++;\n")
+        L.append(f"      if(errors<=120) $display(\"[%0t] {n} g=%h i=%h\", $time, g_{n}, i_{n}); end\n")
+    L.append("    checks++;\n  endtask\n")
+    L.append("""  initial begin
+    no_flush = $test$plusargs("NO_FLUSH");
+    rst = 1; drive_rand();
+    repeat (16) @(posedge clk); rst = 0;
+    repeat (NCYCLES) begin
+      @(negedge clk); drive_rand();
+      @(posedge clk); #1 check();
+    end
+    $display("checks=%0d errors=%0d", checks, errors);
+    if (errors==0 && checks>1000) $display("TEST PASSED"); else $display("TEST FAILED");
+    $finish;
+  end
+endmodule
+""")
+    UT.mkdir(parents=True, exist_ok=True)
+    (UT / "iq_tb.sv").write_text("".join(L))
+    print("wrote iq_tb.sv (ins=%d outs=%d)" % (len(ins), len(outs)))
+
+
+def emit_iq_xs_variant():
+    """顶层重命名 IssueQueueAluCsrFenceDiv_xs 供 tb 与 golden 共存。
+    只出「重命名的顶层 wrapper」(核 xs_..._core 在 IssueQueueAluCsrFenceDiv.sv 里定义一次,
+    g/i 两侧顶层共用同一个核, 不重复定义)。"""
+    L = [GEN_HDR.replace("\n", " (顶层 _xs 变体) \n")]
+    L.append("module IssueQueueAluCsrFenceDiv_xs (\n")
+    L.append("  input  clock,\n  input  reset,\n")
+    L.append('`include "issuequeue_acfd_ports.svh"\n')
+    L.append(");\n")
+    L.append('`include "issuequeue_acfd_connect.svh"\n')
+    L.append("endmodule\n")
+    (UT / "iq_variant_xs.sv").write_text("".join(L))
+    print("wrote iq_variant_xs.sv")
+
+
 if __name__ == "__main__":
-    emit_entries_wrapper()
-    emit_entries_tb()
-    emit_entries_xs_variant()
+    import sys
+    # 默认只生成 IQ 顶层产物; entries_tb.sv 已含手工调好的掩蔽/探针, 不自动覆盖。
+    # 传 --entries 才重生成 Entries wrapper/tb(会覆盖手工内容, 慎用)。
+    if "--entries" in sys.argv:
+        emit_entries_wrapper()
+        emit_entries_tb()
+        emit_entries_xs_variant()
+    else:
+        emit_entries_wrapper()   # wrapper 是确定性生成, 安全
+    emit_iq_svh()
+    emit_iq_tb()
+    emit_iq_xs_variant()
 
 
 # ============================================================================
