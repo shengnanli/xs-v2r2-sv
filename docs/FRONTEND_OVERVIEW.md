@@ -52,32 +52,40 @@ flowchart TB
 ### 3.1 分支预测（BPU）—— "下一条取哪"
 
 香山用**多级覆盖式预测**：地址一产生，最快的预测器先出结果让取指立刻动；后面更慢更准的
-在随后几拍覆盖。各预测器由 **Composer** 组合，结果写入 FTQ。
+在随后几拍覆盖。各预测器由 **Composer** 串联组合，外层 **Predictor** 顶层封装 BPU 的流水/握手/
+冲刷与对 FTQ 的输出，结果写入 FTQ。
 
 | 预测器 | 角色 | 文档 / 状态 |
 |------|------|------|
-| uFTB (FauFTB) | S1 当拍最快预测，32 路全相联微 FTB | [FauFTB](frontend/FauFTB.md) ✅ / [FauFTBWay](frontend/FauFTBWay.md) ✅ |
-| FTB | 容量大的取指目标缓冲，给 fall-through 与分支槽 | （进行中：复用 [ftb_pkg](#) 类型） |
-| TAGE-SC | 主方向预测器（带几何历史长度的标签表 + 统计校正） | （计划） |
-| ITTAGE | 间接跳转目标预测 | （计划） |
-| RAS | 返回地址栈，预测 ret 目标 | [RAS](frontend/RAS.md)（重做中） |
+| Predictor | BPU 顶层：封装 Composer + 三级流水 s1/s2/s3、冲刷、对 FTQ 的预测/update 接口 | [Predictor](frontend/Predictor.md) ✅ |
+| Composer | 组合各预测器，按级覆盖、串联 meta/历史 | [Composer](frontend/Composer.md) ✅ |
+| uFTB (FauFTB) | S1 当拍最快预测，全相联微 FTB（多路 FauFTBWay）| [FauFTB](frontend/FauFTB.md) ✅ / [FauFTBWay](frontend/FauFTBWay.md) ✅ |
+| FTB | 容量大的取指目标缓冲，给 fall-through 与分支槽（内含 FTBBank）| [FTB](frontend/FTB.md) ✅ / [FTBBank](frontend/FTBBank.md) ✅ |
+| TAGE-SC | 主方向预测器（带几何历史长度的标签表 8/13/32/119 + 统计校正）| [Tage_SC](frontend/Tage_SC.md) ✅（含 [TageTable](frontend/TageTable.md) ✅ / [TageBTable](frontend/TageBTable.md) ✅ / [SCTable](frontend/SCTable.md) ✅）|
+| ITTAGE | 间接跳转目标预测 | [ITTage](frontend/ITTage.md) ✅ / [ITTageTable](frontend/ITTageTable.md) ✅ |
+| RAS | 返回地址栈，预测 ret 目标 | [RAS](frontend/RAS.md) ✅ |
 | FTBEntryGen | 据执行结果生成要写回 FTB 的新条目 | [FTBEntryGen](frontend/FTBEntryGen.md) ✅ |
 
 > FTB 条目编码（lower+tarStat 压缩目标、brSlot/tailSlot、sharing 共享槽）是 BPU 一大关键，
-> 集中在 [`ftb_pkg`](frontend/ftb_pkg.sv)，被 FauFTB/FTB/FTBEntryGen/FTQ 复用。先读
+> 集中在 [`ftb_pkg`](../rtl/frontend/ftb_pkg.sv)，被 FauFTB/FTB/FTBEntryGen/FTQ 复用。先读
 > [FTBEntryGen 文档](frontend/FTBEntryGen.md) 的"FTB 条目怎么存"一节最易入门。
 
 ### 3.2 取指与指令缓存（IFU + ICache）—— "怎么取回来"
 
 | 模块 | 角色 | 文档 / 状态 |
 |------|------|------|
-| NewIFU | 取指主控：发请求、收数据、预解码、送 IBuffer | （重做中） |
+| NewIFU | 取指主控：发请求、收数据、预解码、送 IBuffer | [NewIFU](frontend/NewIFU.md) ✅ |
 | PreDecode | 预解码：RVC 判定、两段式指令边界、分支类型/跳转偏移 | [PreDecode](frontend/PreDecode.md) ✅ |
 | F3Predecoder | F3 级分支预译码（复用 PreDecode 的分支译码） | [F3Predecoder](frontend/F3Predecoder.md) ✅ |
+| RVCExpander | 16-bit 压缩指令展开成 32-bit | [RVCExpander](frontend/RVCExpander.md) ✅ |
+| ICache | ICache 顶层：仲裁、错误上报、array 读写源选择 | [ICache](frontend/ICache.md) ✅ |
 | ICacheMainPipe | ICache 主流水 s0/s1/s2：查 meta→取 data→响应 IFU | [ICacheMainPipe](frontend/ICacheMainPipe.md) ✅ |
 | IPrefetchPipe | ICache 预取流水：提前查 meta、未命中发预取 | [IPrefetchPipe](frontend/IPrefetchPipe.md) ✅ |
 | WayLookup | 预取与主流水之间的 way 命中信息 FIFO | [WayLookup](frontend/WayLookup.md) ✅ |
-| ICacheMissUnit | miss 处理：MSHR + 向 L2 取 + refill 回填 | （重做中） |
+| ICacheMetaArray | meta（tag/valid/ECC）存储阵列 | [ICacheMetaArray](frontend/ICacheMetaArray.md) ✅ |
+| ICacheDataArray | data（指令）存储阵列 | [ICacheDataArray](frontend/ICacheDataArray.md) ✅ |
+| ICacheReplacer | 替换策略（way 选择/更新）| [ICacheReplacer](frontend/ICacheReplacer.md) ✅ |
+| ICacheMissUnit | miss 处理：MSHR + 向 L2 取 + refill 回填 | [ICacheMissUnit](frontend/ICacheMissUnit.md) ✅ |
 | ICacheCtrlUnit | ECC 控制/错误注入（TileLink 寄存器映射） | [ICacheCtrlUnit](frontend/ICacheCtrlUnit.md) ✅ |
 | InstrUncache | MMIO（非缓存）取指 | [InstrUncache](frontend/InstrUncache.md) ✅ |
 
@@ -89,10 +97,12 @@ flowchart TB
 
 ### 3.3 队列与缓冲（FTQ + IBuffer）—— "解耦与纠错"
 
-| 模块 | 角色 | 状态 |
+| 模块 | 角色 | 文档 / 状态 |
 |------|------|------|
-| FTQ | 取指目标队列：连接 BPU 与 IFU，承载 redirect/commit/update | （计划，最复杂） |
-| IBuffer | 指令缓冲：解耦 IFU 与后端取指节奏 | （重做中） |
+| FTQ (Ftq) | 取指目标队列：连接 BPU 与 IFU，承载 redirect/commit/update | [Ftq](frontend/Ftq.md) ✅ |
+| FtqPcMemWrapper | FTQ 的 PC 存储（多读口 + 写口）| [FtqPcMemWrapper](frontend/FtqPcMemWrapper.md) ✅ |
+| IBuffer | 指令缓冲：解耦 IFU 与后端取指节奏 | [IBuffer](frontend/IBuffer.md) ✅ |
+| Frontend | 前端顶层：把 BPU/FTQ/IFU/ICache/IBuffer 接成整体 + PC 连续性校验 | [Frontend](frontend/Frontend.md) ✅ |
 
 ## 4. 基础库（被各模块复用）
 
@@ -100,12 +110,14 @@ flowchart TB
 |------|------|------|
 | WrBypass | 预测器表的 SRAM 写旁路 | [WrBypass](frontend/WrBypass.md) ✅ |
 | SRAMTemplate | 带 DFT 的同步 SRAM（ICache/BPU 表的存储） | [SRAMTemplate](common/SRAMTemplate.md) ✅ |
-| SplittedSRAMTemplate | 把逻辑 SRAM 拆到多个物理 SRAM | [SplittedSRAMTemplate](common/SplittedSRAMTemplate.md) ✅(base) |
-| FoldedSRAMTemplate | 折叠索引 SRAM（TAGE/SC/ITTAGE 用） | （进行中） |
+| SplittedSRAMTemplate | 把逻辑 SRAM 拆到多个物理 SRAM | [SplittedSRAMTemplate](common/SplittedSRAMTemplate.md) ✅ |
+| FoldedSRAMTemplate | 折叠索引 SRAM（TAGE/SC/ITTAGE 用） | [FoldedSRAMTemplate](common/FoldedSRAMTemplate.md) ✅ |
 | (Sync)DataModule | 多读写寄存器堆（FTQ 用） | [SyncDataModule](common/SyncDataModule.md) ✅ |
 | PipelineConnect | 带握手的流水级缓冲 | [PipelineConnect](common/PipelineConnect.md) ✅ |
-| ftb_pkg | FTB 条目类型与目标编解码 | [ftb_pkg](frontend/ftb_pkg.sv) ✅ |
-| predecode_pkg | 分支译码共享函数 | [predecode_pkg](frontend/predecode_pkg.sv) ✅ |
+| PlruReplacer | PLRU 替换器 | [PlruReplacer](common/PlruReplacer.md) ✅ |
+| IndexableCAM | 可索引 CAM | [IndexableCAM](common/IndexableCAM.md) ✅ |
+| ftb_pkg | FTB 条目类型与目标编解码 | RTL: [`rtl/frontend/ftb_pkg.sv`](../rtl/frontend/ftb_pkg.sv) ✅ |
+| predecode_pkg | 分支译码共享函数 | RTL: [`rtl/frontend/predecode_pkg.sv`](../rtl/frontend/predecode_pkg.sv) ✅ |
 
 ## 5. 怎么读这套代码（建议路径）
 
@@ -113,9 +125,13 @@ flowchart TB
 2. **存储与编码**：[SRAMTemplate](common/SRAMTemplate.md) + [FTBEntryGen](frontend/FTBEntryGen.md)
    （理解 FTB 条目压缩编码）。
 3. **预测器**：[FauFTB](frontend/FauFTB.md)（完整但小的预测器，含 PLRU/饱和计数/全相联查询）
-   → RAS → （TAGE 等）。
-4. **ICache 子系统**：IPrefetchPipe → WayLookup → ICacheMainPipe → ICacheMissUnit。
-5. **整合**：FTQ → NewIFU → IBuffer → Frontend 顶层。
+   → [RAS](frontend/RAS.md) → [FTB](frontend/FTB.md) → [Tage_SC](frontend/Tage_SC.md) →
+   [ITTage](frontend/ITTage.md) → 顶层 [Composer](frontend/Composer.md) → [Predictor](frontend/Predictor.md)。
+4. **ICache 子系统**：[IPrefetchPipe](frontend/IPrefetchPipe.md) → [WayLookup](frontend/WayLookup.md) →
+   [ICacheMainPipe](frontend/ICacheMainPipe.md) → [ICacheMissUnit](frontend/ICacheMissUnit.md) →
+   [ICache](frontend/ICache.md) 顶层。
+5. **整合**：[Ftq](frontend/Ftq.md) → [NewIFU](frontend/NewIFU.md) → [IBuffer](frontend/IBuffer.md) →
+   [Frontend](frontend/Frontend.md) 顶层。
 
 ## 6. 工程约定（读代码前须知）
 
@@ -123,4 +139,4 @@ flowchart TB
   + golden 同名 wrapper（把核的 struct/数组端口机械适配成 Chisel 生成的扁平端口）。
 - 验证：UT（与 Chisel 生成的 golden RTL 双例化随机比对）+ FM（Formality 形式等价）。
   详见 [REWRITE_STYLE.md](REWRITE_STYLE.md)。
-- 进度表见 `status.md`。
+- 进度表见 [`status.md`](../status.md)（在仓库根，相对本文为 `../status.md`）。

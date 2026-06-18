@@ -81,7 +81,7 @@ IFU（取指单元）之间的桥梁：BPU 每次预测产生一个 **fetch bloc
 | 方向 | 端口 | 位宽 | 说明 |
 |------|------|------|------|
 | in  | `clock`, `reset` | 1 | reset 异步，仅复位写使能寄存器 |
-| in  | `io_<ptr>_w_value` | 6 | 7 个读地址（ifuPtr/ifuPtrPlus1/ifuPtrPlus2/pfPtr/pfPtrPlus1/commPtr/commPtrPlus1） |
+| in  | `io_<ptr>_w_value` | 6 | 7 个读地址（ifuPtr/ifuPtrPlus1/ifuPtrPlus2/pfPtr/pfPtrPlus1/commPtr/commPtrPlus1）。**注**：名字里的 `_w_value` 是 Chisel `FtqPtr.value`（指针的 value 字段）展平而来，是**读地址**，并非写口；真正的写口是下面的 `io_wen`/`io_waddr`/`io_wdata_*`。 |
 | out | `io_<ptr>_rdata_*` | 50/1 | 各读口读出字段（字段子集见上表） |
 | in  | `io_wen` | 1 | 写使能 |
 | in  | `io_waddr` | 6 | 写地址（ftqPtr） |

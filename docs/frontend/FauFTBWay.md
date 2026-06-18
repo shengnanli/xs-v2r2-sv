@@ -18,14 +18,18 @@ tag（16 位）+ valid：
 
 ## 接口
 
+> **端口命名约定**：下表列的是 **golden wrapper 的扁平字段名**（`io_resp_isCall/_brSlots_*`、
+> `io_write_entry_*` 等，见 `rtl/frontend/FauFTBWay_wrapper.sv`）。**可读核 `FauFTBWay` 的对应端口
+> 是单根打包向量**：`io_resp` / `io_write_entry` 均为 `[ENTRY_W-1:0]`（ENTRY_W=60，见
+> `rtl/frontend/FauFTBWay.sv:18,23`），entry 作为不透明打包数据整体存取，扁平字段的拼接/拆分由
+> wrapper 完成。下表用 `_*` 表示这一组被 wrapper 展开的字段。
+
 | 信号 | 方向 | 说明 |
 |------|------|------|
 | `io_req_tag` | in[15:0] | 查询 tag |
-| `io_resp_*` / `io_resp_hit` | out | 条目各字段 / 命中 |
+| `io_resp` (核) / `io_resp_*`(golden) / `io_resp_hit` | out | 条目（核为打包向量；golden 拆成各字段）/ 命中 |
 | `io_update_req_tag` / `io_update_hit` | in/out | 更新查询 |
-| `io_write_valid` / `io_write_entry_*` / `io_write_tag` | in | 写入 |
-
-entry 作为不透明打包数据（ENTRY_W=60）整体存取，字段拼接由 wrapper 处理。
+| `io_write_valid` / `io_write_entry`(核)·`io_write_entry_*`(golden) / `io_write_tag` | in | 写入（核为打包 entry 向量；golden 拆成各字段）|
 
 ## 验证
 

@@ -3,6 +3,12 @@
 > 对应 Chisel：`xiangshan.frontend.SCTable`（`SC.scala`）
 > 可读重写：`rtl/frontend/SCTable.sv`（核 `xs_SCTable_core` + DFT 流水 `xs_MbistPipeSc_core`）
 > 包装层：`rtl/frontend/SCTable_wrapper.sv`（golden 同名 `SCTable/_1/_2/_3`）
+>
+> **端口命名约定**：本文用的多为**可读核 `xs_SCTable_core` 的端口名**（`io_req_folded_hist`、
+> `io_resp_ctrs_*`、`io_update_*` 等，见 `rtl/frontend/SCTable.sv:77-110`）。其中折叠历史 `io_req_folded_hist`
+> 在核里是**单根打包向量** `[HIST_W-1:0]`；golden 对应的是按子历史展开的长名端口
+> `io_req_bits_folded_hist_hist_<N>_folded_hist`（每个变体接的子历史不同，见 `SCTable_wrapper.sv`，
+> 变体 0 不接、悬空 0）。扁平↔打包的桥接由 wrapper 完成。
 
 ---
 

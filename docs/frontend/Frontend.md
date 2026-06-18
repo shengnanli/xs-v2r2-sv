@@ -117,7 +117,14 @@ ftqPtr 复制成两份（`_1` 后缀），逻辑等价。
 
 **checkPcMem**：FTQ `pc_mem`（每个 FTQ 项的 startAddr）的一份 64 项镜像，随 FTQ
 `io_toBackend_pc_mem` 写口同步写入。检查 taken 目标时，按"目标块的 ftqPtr+1"索引读出其
-startAddr 作为应有的下一 PC；读最新项时优先用 `newest_entry` 旁路（规避 pc_mem 写后读冒险）。
+startAddr 作为应有的下一 PC。
+
+> **newest 旁路的适用范围**（易过度概括，按 RTL 订正）：`newest_entry` 旁路（`ptr==newest_ptr`
+> 时用 `ftq_newest_target` 替代镜像读，规避 pc_mem 写后读冒险）**只用于块内（intra-block）
+> taken 目标检查**——即经 `read_block_start()` 的那条路径（`rtl/frontend/Frontend.sv:391-395`）。
+> **跨块（cross-block）的 `vio_cross_target` 不走 newest 旁路**：它直接读
+> `checkPcMem[prevTakenFtqPtr_1+1]` 与本拍 lane0 PC 比对（`rtl/frontend/Frontend.sv:413-414`），
+> 不经 `read_block_start`、也不替换为 newest_target。
 
 **可读核实现要点**（相对 golden 的 `inner_`/`inner__0..31` 链）：
 - 6 条 lane 聚合成 `ib_lane_t[6]` 结构数组（golden 展平为 `io_out_<i>_valid/_bits_*`）；
