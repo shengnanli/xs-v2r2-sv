@@ -960,6 +960,11 @@ module xs_NewIFU_core (
     if (f3_req_is_mmio) begin
       enqEnable_w = f3_mmio_range;
     end
+    // bit0 与 golden 完全一致：io.toIbuffer.bits.valid[0] 恒为 ~f3_lastHalf_valid
+    // （golden 把第 0 位硬接 ~f3_lastHalf_valid，不依赖 f3_pd[0].valid 寄存器；
+    //  否则流水空闲/初值态下读到未更新的 f3_pd_wire 寄存器，与 golden 的组合常量分歧。
+    //  功能流动时 f3_pd[0].valid 恒被置 1，二者一致；此处仅消除空闲/初值态分歧。）
+    valid_vec_w[0] = ~f3_lastHalf_valid;
   end
   assign ibuffer_enqEnable = enqEnable_w;
   assign ibuffer_valid_vec = valid_vec_w;
