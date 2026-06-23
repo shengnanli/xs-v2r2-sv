@@ -171,6 +171,7 @@ golden 双例化多种子 UT(seed 1/7/42 全输出逐拍 0 错)→ Formality 等
 | [UopInfoGen](UopInfoGen.md) | 2 | ✅ UT(seed1/7/42 各 800000 拍 errors=0) + FM SUCCEEDED（向量 uop 数;两张 LS 真值表按生成算法重写为 function,签名等价） |
 | [FPDecoder](FPDecoder.md) | 2 | ✅ UT(seed1/7/42 各 1M 拍 errors=0 + 753 合法编码穷举 0 mismatch)；FM 仅 5 个 DecodeLogic don't-care 位(typeTagOut/wflags/fmt)失配,已证伪为表外 off-set(typ/rm 直连过) |
 | [DecodeStage](DecodeStage.md) | 2 | ✅ UT(seed1/7/42 各 250000 拍 / 177.25M checks errors=0，707 路输出全比对) + FM SUCCEEDED(4103 passing / 0 failing)。DecodeUnit×6/DecodeUnitComp/VTypeGen 及闭包(FPDecoder/UopInfoGen/VecExceptionGen/VsetModule/indexedLSUopTable×7 等)全黑盒，FM_MERGE_DUP=false。坑：①复杂译码器仅 ch0 出 firstUop(i>0 端口不存在)→简单/复杂路径单独算；②简单译码器缺 9 字段(uopIdx/first/last/numWB/v0Wen/vlWen/isFoldTo1)本级补常量；③function 不可读模块级信号(FMR_VLOG-091 阻断 impl)→改 always_comb；④fusion_r/invnr_r/recoveryFlag 须用异步复位对齐 golden(否则 FM 判 12 个 DFF not-equiv)；⑤UT 须下降沿驱动/上升沿后 #1 采样，否则 perf 寄存器有 delta-cycle 伪 1 拍偏差 |
+| [NewCSR](NewCSR.md) | 3-4 | ✅ UT(seed1/7/42 各 200000 拍 errors=0，含 PRVM/V/state/intrVec/nmip/debugMode 内部探针) + FM SUCCEEDED(37934 compare points matched / 0 failing)。CSR 文件聚合器(读写/特权管理/中断异常派发/AIA-IMSIC)；可读核 3860 行从 golden 14259 行 glue 还原(addrHit_/读出 OR-tree/写 fanout/特权 FSM/9 路 trap 派发/difftest 打拍)，300+ CSRModule + permitMod/intrMod/trapHandleMod/各 *Event/29×Mhpmcounter/28×DelayReg 全黑盒(newcsr_stub.sv)。inst.svh 的 _T_/_GEN_ 已全部重映射为语义网(残留 0) |
 | 其余 | 2-4 | ⏳ 待开 |
 
 > 完成的模块标 ✅ 并链接到各自 `docs/backend/<M>.md`。
