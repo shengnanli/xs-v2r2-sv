@@ -1,0 +1,42 @@
+// 自动生成:scripts/gen_exeunit.py（ExeUnit）—— 勿手改(逻辑为从设计意图的可读重写)
+
+// ExeUnit 执行单元包装:FU 周围 glue 的配置常量与可读类型。
+// 单态化(昆明湖)后 FU 个数 / 各 FU 延迟 / 控制位集合均为定值,可读核据此用
+// struct + function + genvar 表达流水对齐、时钟门控使能、输出 one-hot 仲裁。
+package exeunit_pkg;
+  localparam int NUM_FU      = 3;   // 本执行单元里的功能单元个数
+  localparam int LAT_MAX     = 2;   // 各 FU 中最大固定延迟(inPipe 深度)
+
+  // ------------------------------------------------------------------------
+  // §1 inPipe 控制位:随 uop 一同打拍、在 FU 出结果那拍交给该 FU 的控制信息。
+  //   字段集合来自单态化后实际被下游 FU 消费的控制位(robIdx/pdest/写使能等)。
+  // ------------------------------------------------------------------------
+  typedef struct packed {
+    logic       robIdx_flag;
+    logic [7:0] robIdx_value;
+    logic [7:0] pdest;
+    logic       rfWen;
+  } ctrl_t;
+
+  // ------------------------------------------------------------------------
+  // flush-kill:一条在飞 uop 是否被本次重定向(redirect)冲刷掉。
+  //   Chisel: robIdx.needFlush(flush) = flush.valid &&
+  //     (flush.level==flushItself && robIdx==flush.robIdx) || robIdx 比 flush 更年轻。
+  //   {flag,value} 大小比较即 robIdx 的环形新旧:flag 不同则 value 大者为旧/新由异或定。
+  // ------------------------------------------------------------------------
+  function automatic logic need_flush(
+      logic flush_valid, logic flush_level,
+      logic flush_flag, logic [7:0] flush_value,
+      logic rob_flag,   logic [7:0] rob_value);
+    need_flush = flush_valid &
+      ( (flush_level & ({rob_flag, rob_value} == {flush_flag, flush_value}))
+        | (rob_flag ^ flush_flag ^ (rob_value > flush_value)) );
+  endfunction
+
+  // ------------------------------------------------------------------------
+  // §3 输出 one-hot 仲裁:各 FU 至多一个 valid,对每个输出字段做
+  //   "选中则取该 FU 值、否则取 0" 的或归约(等价 Mux1H,综合为与-或选择)。
+  //   下面给标量 1bit 与各数据位宽各一个纯函数,connect/logic 里逐字段调用。
+  // ------------------------------------------------------------------------
+  // 标量 1bit:sel & bit 的或归约由调用方按 FU 展开(见 logic.svh)。
+endpackage : exeunit_pkg
