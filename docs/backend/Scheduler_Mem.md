@@ -20,8 +20,8 @@
 | IQ4 | `IssueQueueLdu_2`      | `IssueQueueLdu`    | Load #2 | bit4 |
 | IQ5 | `IssueQueueVlduVstuVseglduVsegstu` | 同名 | 向量访存(含段) | bit5 |
 | IQ6 | `IssueQueueVlduVstu`   | `IssueQueueVlduVstu` | 向量 Load/Store | bit6 |
-| IQ7 | `IssueQueueStdMoud`    | `IssueQueueStdMoud` | 存数据/AMO #0 | bit7 |
-| IQ8 | `IssueQueueStdMoud_1`  | `IssueQueueStdMoud` | 存数据/AMO #1 | bit8 |
+| IQ7 | `IssueQueueStdMoud`    | [`IssueQueueStdMoud`](IssueQueueStdMoud.md) | 存数据/AMO #0 | bit7 |
+| IQ8 | `IssueQueueStdMoud_1`  | [`IssueQueueStdMoud`](IssueQueueStdMoud.md) | 存数据/AMO #1 | bit8 |
 
 ## 2. Scheduler 做的四件事 + Mem 专属 glue
 

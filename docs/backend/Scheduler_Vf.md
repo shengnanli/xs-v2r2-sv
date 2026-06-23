@@ -14,7 +14,7 @@
 |------|----------------|---------------|---------|-------------|
 | IQ0  | `IssueQueueVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf` | 向量乘加/定点 ALU/乘累加/排列/浮点 ALU/转换/IPU/vset | uops 0,1 | bit0 |
 | IQ1  | `IssueQueueVfmaVialuFixVfalu` | 向量乘加/定点 ALU/浮点 ALU | uops 2,3 | bit1 |
-| IQ2  | `IssueQueueVfdivVidiv`        | 向量浮点/整数除法 | uops 4,5 | bit2 |
+| IQ2  | [`IssueQueueVfdivVidiv`](IssueQueueVfdivVidiv.md) | 向量浮点/整数除法 | uops 4,5 | bit2 |
 
 ## 2. Scheduler 做的四件事(可读核四节)
 
