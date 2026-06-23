@@ -1,0 +1,38 @@
+MODULE = IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v
+
+RTL_DIR = ../../../rtl
+GOLDEN_RTL = ../../../golden/chisel-rtl
+
+# 手写可读核(含顶层 wrapper)+ 类型包。svh 由顶层 wrapper / 核 include。
+RTL_SRCS = $(RTL_DIR)/backend/iq_abjivvi_pkg.sv \
+           $(RTL_DIR)/backend/IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v.sv
+
+# golden 黑盒(IQ 子模块 + 它们各自依赖)。两侧 u_g/u_i 共享。
+#   entries 阵列(24 单条目 + EnqPolicy + UIntCompressor)、端口1 功能单元忙表、
+#   端口0 int / 端口1 fp/vf/v0 写回忙表读写、唤醒队列(+PipeWithFlush)、3 个年龄检测器。
+BB_DEPS = EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v.sv \
+          EnqEntry_4.sv OthersEntry_44.sv OthersEntry_50.sv \
+          EnqPolicy.sv UIntCompressor_27_000011100000000000001010101.sv \
+          FuBusyTableRead_22.sv FuBusyTableWrite_22.sv \
+          FuBusyTableRead_23.sv \
+          FuBusyTableRead_26.sv FuBusyTableWrite_26.sv \
+          FuBusyTableRead_28.sv \
+          MultiWakeupQueue_2.sv PipeWithFlush.sv \
+          NewAgeDetector.sv AgeDetector.sv AgeDetector_1.sv
+
+# UT: u_g=golden IQ 顶层, u_i=可读核顶层(重命名 _xs)。
+TB_SRCS = iq_variant_xs.sv iq_tb.sv
+GOLDEN_SRCS = $(GOLDEN_RTL)/IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v.sv \
+              $(addprefix $(GOLDEN_RTL)/,$(BB_DEPS))
+
+# FM: ref = golden IQ 顶层 + 全部依赖; impl = 可读核(顶层 wrapper)+ 同一批 golden 黑盒。
+WRAPPER_SRCS = $(addprefix $(GOLDEN_RTL)/,$(BB_DEPS))
+FM_VARIANTS = IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v
+FM_REF_DEPS_IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v = $(BB_DEPS)
+
+include ../../../scripts/ut_common.mk
+
+VCS += +define+SYNTHESIS
+VCS += +incdir+$(RTL_DIR)/backend
+VCS      += +vcs+initreg+random
+SIM_ARGS += +vcs+initreg+0
