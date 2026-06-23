@@ -1,0 +1,35 @@
+MODULE = IssueQueueStaMou
+
+RTL_DIR = ../../../rtl
+GOLDEN_RTL = ../../../golden/chisel-rtl
+
+# 手写可读核(含顶层 wrapper)+ 类型包。svh 由顶层 wrapper include。
+RTL_SRCS = $(RTL_DIR)/backend/iq_stamou_pkg.sv \
+           $(RTL_DIR)/backend/IssueQueueStaMou.sv
+
+# golden 黑盒(IQ 的子模块 + 它们各自的依赖)。两侧 u_g/u_i 共享。
+#   entries 阵列(16 单条目: EnqEntry_20 / OthersEntry_172 / OthersEntry_174,
+#   + EnqPolicy_14 转移策略 + UIntCompressor exuSources 编码), 3 个年龄检测器。
+BB_DEPS = EntriesStaMou.sv EnqEntry_20.sv OthersEntry_172.sv OthersEntry_174.sv \
+          EnqPolicy_14.sv UIntCompressor_27_000011100000000000001010101.sv \
+          NewAgeDetector_6.sv AgeDetector_12.sv AgeDetector_21.sv
+
+# UT: u_g=golden IQ 顶层, u_i=可读核顶层(重命名 _xs)。
+TB_SRCS = iq_variant_xs.sv iq_tb.sv
+GOLDEN_SRCS = $(GOLDEN_RTL)/IssueQueueStaMou.sv \
+              $(addprefix $(GOLDEN_RTL)/,$(BB_DEPS))
+
+# FM: ref = golden IQ 顶层 + 全部依赖; impl = 可读核(顶层 wrapper)+ 同一批 golden 黑盒。
+WRAPPER_SRCS = $(addprefix $(GOLDEN_RTL)/,$(BB_DEPS))
+FM_VARIANTS = IssueQueueStaMou
+FM_REF_DEPS_IssueQueueStaMou = $(BB_DEPS)
+
+include ../../../scripts/ut_common.mk
+
+VCS += +define+SYNTHESIS
+VCS += +incdir+$(RTL_DIR)/backend
+# golden(firtool 输出)状态寄存器无 reset, 上电为 X; flush 会反复把 X 衍生值灌进
+#   空/被冲刷条目的 don't-care 派生输出, 造成假阳性。用 initreg 让两侧寄存器都从 0
+#   上电, 消除 golden 上电 X 假象。
+VCS      += +vcs+initreg+random
+SIM_ARGS += +vcs+initreg+0
