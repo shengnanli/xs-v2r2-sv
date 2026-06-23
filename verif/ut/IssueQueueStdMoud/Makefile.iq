@@ -1,0 +1,29 @@
+MODULE = IssueQueueStdMoud
+
+RTL_DIR = ../../../rtl
+GOLDEN_RTL = ../../../golden/chisel-rtl
+
+# 手写可读核(含顶层 wrapper)+ 类型包。svh 由 wrapper / 核 include。
+RTL_SRCS = $(RTL_DIR)/backend/iq_stdmoud_pkg.sv \
+           $(RTL_DIR)/backend/IssueQueueStdMoud.sv
+
+# golden 黑盒(IQ 的子模块 + 它们各自的依赖)。两侧 u_g/u_i 共享。
+BB_DEPS = EntriesStdMoud.sv EnqEntry_30.sv OthersEntry_242.sv OthersEntry_244.sv \
+          EnqPolicy_14.sv UIntCompressor_27_000011100000000000001010101.sv \
+          NewAgeDetector_6.sv AgeDetector_12.sv AgeDetector_21.sv
+
+TB_SRCS = iq_variant_xs.sv iq_tb.sv
+GOLDEN_SRCS = $(GOLDEN_RTL)/IssueQueueStdMoud.sv \
+              $(addprefix $(GOLDEN_RTL)/,$(BB_DEPS))
+
+WRAPPER_SRCS = $(addprefix $(GOLDEN_RTL)/,$(BB_DEPS))
+FM_VARIANTS = IssueQueueStdMoud
+FM_REF_DEPS_IssueQueueStdMoud = $(BB_DEPS)
+
+include ../../../scripts/ut_common.mk
+
+VCS += +define+SYNTHESIS
+VCS += +incdir+$(RTL_DIR)/backend
+# golden 状态寄存器无 reset, 上电为 X; 用 initreg 让两侧都从 0 上电消除假阳性。
+VCS      += +vcs+initreg+random
+SIM_ARGS += +vcs+initreg+0
