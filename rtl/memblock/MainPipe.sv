@@ -1021,10 +1021,12 @@ module xs_MainPipe_core
   wire miss_wb    = s3_req.miss && s3_need_replacement && (s3_coh != COH_NOTHING);
   wire need_wb    = miss_wb || s3_req.probe || s3_req.replace;
   wire [2:0] writeback_param = s3_req.probe ? probe_shrink_param : miss_shrink_param;
-  // alwaysReleaseData=true：probe 要数据 / Dirty / (miss|replace 且非 Nothing) 才带数据
+  // alwaysReleaseData=false（本 DCache 配置）：仅 probe 要数据 / 行为 Dirty 时带数据。
+  //   自愿写回（miss/replace）若行不脏（Trunk/Branch clean）则发无数据的 Release，
+  //   不能因 coh!=Nothing 就带数据——否则 TL-C opcode 由 Release(6) 误升为 ReleaseData(7)。
+  //   与 golden io_wb_bits_hasData 逐字一致：(probe&tag_match&need_data | Dirty) & ~tag_err。
   wire writeback_data = (s3_tag_match && s3_req.probe && s3_req.probe_need_data)
-                        || (s3_coh == COH_DIRTY)
-                        || ((miss_wb || s3_req.replace) && (s3_coh != COH_NOTHING));
+                        || (s3_coh == COH_DIRTY);
 
   // ---- s3 error 上报寄存器（beu / wb 两条路径）----
   logic s3_tag_error_beu, s3_tag_error_wb, s3_data_error_beu_r, s3_data_error_wb_r;

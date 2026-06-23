@@ -79,18 +79,38 @@ module xs_FPDecoder_core (
     r.found  = 1'b1;
     r.tagOut = selfTag; // 默认:结果为本族浮点
     r.wflags = 1'b0;
-    // funct7[31:27] 决定运算大类(bit26:25 是 fmt,已匹配本族)
+    // funct7[31:27] 决定运算大类(bit26:25 是 fmt,已匹配本族)。
+    //
+    // 【关键:必须用 funct3/rs2 守卫只命中"合法子码"】
+    //   Scala 真值表只列了每条助记符的合法 BitPat;DecodeLogic 最小化后,对
+    //   每个大类里**保留/非法的子码**(off-set)统一落到 default = {tagOut=??,
+    //   wflags=0},firtool 进一步把 ?? 固定成 0。即:这些保留子码 golden 恒
+    //   取 typeTagOut=0(=TAG_S)、wflags=0。
+    //   早先实现只看 funct7[6:2]、不看 funct3/rs2,对保留子码也按本大类输出
+    //   (tagOut=selfTag/D、wflags=1),与 golden 不符 —— 随机指令下被 IT 抓出。
+    //   现按各助记符 BitPat 精确加守卫:不合法子码 found=0 → 主译码回落默认
+    //   (tagOut=TAG_S、wflags=0),逐位对齐 golden。
     casez (f7[6:2])
-      // -- 算术(结果浮点,产生 fflags) ------------------------------------
+      // -- 算术(结果浮点,产生 fflags;f3=rm、rs2=源2,均不约束) -----------
       5'b00000: r.wflags = 1'b1;               // FADD
       5'b00001: r.wflags = 1'b1;               // FSUB
       5'b00010: r.wflags = 1'b1;               // FMUL
       5'b00011: r.wflags = 1'b1;               // FDIV
-      5'b01011: r.wflags = 1'b1;               // FSQRT (rs2=0)
-      // -- 符号注入 FSGNJ/N/X(结果浮点,无 fflags) -----------------------
-      5'b00100: r.wflags = 1'b0;               // FSGNJ.* (f3=000/001/010)
-      // -- MIN/MAX(结果浮点,产生 fflags) --------------------------------
-      5'b00101: r.wflags = 1'b1;               // FMIN/FMAX (f3=000/001)
+      // -- FSQRT(rs2 必须为 0,否则保留编码) ------------------------------
+      5'b01011: begin
+        if (rs2_ == 5'd0) r.wflags = 1'b1;     // FSQRT
+        else              r.found  = 1'b0;
+      end
+      // -- 符号注入 FSGNJ/N/X(f3∈{0,1,2},结果浮点,无 fflags) ------------
+      5'b00100: begin
+        if (f3 inside {3'b000, 3'b001, 3'b010}) r.wflags = 1'b0;
+        else                                    r.found  = 1'b0;
+      end
+      // -- MIN/MAX(f3∈{0,1},结果浮点,产生 fflags) -----------------------
+      5'b00101: begin
+        if (f3 inside {3'b000, 3'b001}) r.wflags = 1'b1; // FMIN/FMAX
+        else                            r.found  = 1'b0; // f3∈{2..7} 保留
+      end
       // -- 浮点->浮点跨精度转换 FCVT.fp.fp -------------------------------
       //    注意:typeTagOut/wflags 真值表里**只有 FCVT.S.D 与 FCVT.D.S**两条
       //    (Scala double 表),涉及 H 的 FCVT(H.S/S.H/D.H/H.D)不在此表内,
@@ -105,16 +125,36 @@ module xs_FPDecoder_core (
           r.found = 1'b0; // 涉及 H 的跨精度 cvt:typeTagOut/wflags 是 don't-care
         end
       end
-      // -- 比较 FEQ/FLT/FLE(结果整数,产生 fflags) -----------------------
-      5'b10100: begin r.tagOut = TAG_D; r.wflags = 1'b1; end
-      // -- FMV.X.fp / FCLASS(结果整数,无 fflags) -------------------------
-      5'b11100: begin r.tagOut = TAG_D; r.wflags = 1'b0; end // f3=000:FMV.X / 001:FCLASS
-      // -- FMV.fp.X(整数->浮点搬移,结果浮点,无 fflags) -------------------
-      5'b11110: begin r.tagOut = selfTag; r.wflags = 1'b0; end
-      // -- FCVT.fp.int(浮点->整数,结果整数,产生 fflags) -----------------
-      5'b11000: begin r.tagOut = TAG_D; r.wflags = 1'b1; end
-      // -- FCVT.int.fp(整数->浮点,结果浮点,产生 fflags) -----------------
-      5'b11010: begin r.tagOut = selfTag; r.wflags = 1'b1; end
+      // -- 比较 FEQ/FLT/FLE(f3∈{0,1,2},结果整数,产生 fflags) ------------
+      5'b10100: begin
+        if (f3 inside {3'b000, 3'b001, 3'b010}) begin
+          r.tagOut = TAG_D; r.wflags = 1'b1;
+        end else r.found = 1'b0;               // f3∈{3..7} 保留
+      end
+      // -- FMV.X.fp / FCLASS(f3∈{0,1} 且 rs2=0,结果整数,无 fflags) ------
+      5'b11100: begin
+        if ((f3 inside {3'b000, 3'b001}) && rs2_ == 5'd0) begin
+          r.tagOut = TAG_D; r.wflags = 1'b0;   // f3=000:FMV.X / 001:FCLASS
+        end else r.found = 1'b0;
+      end
+      // -- FMV.fp.X(f3=000 且 rs2=0,整数->浮点搬移,结果浮点,无 fflags) --
+      5'b11110: begin
+        if (f3 == 3'b000 && rs2_ == 5'd0) begin
+          r.tagOut = selfTag; r.wflags = 1'b0;
+        end else r.found = 1'b0;
+      end
+      // -- FCVT.fp.int(rs2∈{0..3}=W/WU/L/LU,结果整数,产生 fflags) -------
+      5'b11000: begin
+        if (rs2_[4:2] == 3'b000) begin         // rs2 ∈ {0,1,2,3}
+          r.tagOut = TAG_D; r.wflags = 1'b1;
+        end else r.found = 1'b0;
+      end
+      // -- FCVT.int.fp(rs2∈{0..3}=W/WU/L/LU,结果浮点,产生 fflags) -------
+      5'b11010: begin
+        if (rs2_[4:2] == 3'b000) begin         // rs2 ∈ {0,1,2,3}
+          r.tagOut = selfTag; r.wflags = 1'b1;
+        end else r.found = 1'b0;
+      end
       default: r.found = 1'b0; // 非本族已知浮点指令
     endcase
     return r;
@@ -147,10 +187,19 @@ module xs_FPDecoder_core (
     fp_dec       = '0;
     if (opcode == OPC_FMADD || opcode == OPC_FMSUB ||
         opcode == OPC_FNMADD || opcode == OPC_FNMSUB) begin
-      // 乘加融合:结果浮点(本族),且都产生 fflags
-      type_tag_out = fmt_to_tag(fmt2);
-      wflags       = 1'b1;
-    end else if (opcode == OPC_OP_FP) begin
+      // 乘加融合:fmt2∈{S,D,H} 时结果浮点(本族)且产生 fflags。
+      // fmt2=11 是非法浮点宽度(off-set);DecodeLogic 最小化后 golden 在此处
+      // 恒取 typeTagOut=H(2)、wflags=0(don't-care 取值,非语义)。逐位对齐。
+      if (fmt2 == 2'b11) begin
+        type_tag_out = TAG_H;
+        wflags       = 1'b0;
+      end else begin
+        type_tag_out = fmt_to_tag(fmt2);
+        wflags       = 1'b1;
+      end
+    end else if (opcode == OPC_OP_FP && fmt2 != 2'b11) begin
+      // fmt2=11 非法浮点宽度:golden 在 OP-FP 全空间恒取 typeTagOut=S(0)、
+      // wflags=0(off-set 最小化值),故直接走默认,不进单族译码。
       fp_dec = decode_fp_family(fmt_to_tag(fmt2), funct7, funct3, rs2);
       if (fp_dec.found) begin
         type_tag_out = fp_dec.tagOut;
@@ -170,46 +219,64 @@ module xs_FPDecoder_core (
   // ---------------------------------------------------------------------------
   // (1) "进浮点运算 FU"的算术/比较/sgnj/min/max/class 族(isFP{16,32,64}Instr):
   //     这些指令宽度直接取 fmt2(S->e32, H->e16, D->e64),含 FMADD 系列。
-  function automatic logic is_fp_arith_family(input logic [4:0] f7hi, input logic [2:0] f3);
+  //     【守卫与 typeTagOut 路径相同的考量】golden 的 fmt(vsew)真值表同样经过
+  //     DecodeLogic 最小化:对各大类的保留 funct3 子码,fmt 落回默认 e64,故须按
+  //     golden 实测的"会命中 vsew 表"的 funct3 集合加守卫,逐位对齐:
+  //       FSGNJ/N/X (00100) : f3∈{0,1,2}
+  //       FMIN/FMAX (00101) : f3∈{0,1,2,3}   (比 typeTagOut 路径多 f3=3)
+  //       FEQ/FLT/FLE(10100): f3∈{0,1,2,4,5} (最小化产生的不规则集合)
+  //       FADD/SUB/MUL/DIV  : f3 不约束(f3=rm)
+  //       FSQRT (01011)     : rs2=0
+  //       FCLASS (11100)    : f3=001 且 rs2=0(FMV.X 的 f3=000 走 sew2cvt 清单)
+  function automatic logic is_fp_arith_family(input logic [4:0] f7hi, input logic [2:0] f3,
+                                              input logic [4:0] rs2_);
     casez (f7hi)
-      5'b00000,5'b00001,5'b00010,5'b00011, // FADD/FSUB/FMUL/FDIV
-      5'b01011,                            // FSQRT
-      5'b00100,                            // FSGNJ/N/X
-      5'b00101,                            // FMIN/FMAX
-      5'b10100: return 1'b1;               // FEQ/FLT/FLE
-      5'b11100: return (f3 == 3'b001);     // FCLASS 计入;FMV.X.fp(f3=000)不计入
+      5'b00000,5'b00001,5'b00010,5'b00011: return 1'b1;            // FADD/FSUB/FMUL/FDIV
+      5'b01011: return (rs2_ == 5'd0);                             // FSQRT
+      5'b00100: return (f3 inside {3'b000,3'b001,3'b010});         // FSGNJ/N/X
+      5'b00101: return (f3 inside {3'b000,3'b001,3'b010,3'b011});  // FMIN/FMAX
+      5'b10100: return (f3 inside {3'b000,3'b001,3'b010,3'b100,3'b101}); // FEQ/FLT/FLE
+      5'b11100: return (f3 == 3'b001) && (rs2_ == 5'd0);           // FCLASS(FMV.X 见 cvt 清单)
       default:  return 1'b0;
     endcase
   endfunction
 
-  // (2) isSew2Cvt32 清单(归 e32),逐条按 {f7hi, fmt2, rs2} 识别:
-  //     FCVT.{W,WU,L,LU}.S | FCVT.{W,WU}.D | FCVT.S.D | FCVT.D.S | FMV.X.W | FCVTMOD.W.D
+  // (2) isSew2Cvt32 清单(归 e32),逐条按 {f7hi, fmt2, rs2} 识别。
+  //     真值表 = 真实指令 + DecodeLogic 给保留 rs2 子码填的 don't-care(golden
+  //     实测亦命中,须逐位对齐):
+  //       FCVT.{W,WU,L,LU}.S (11000/S, rs2 0..3)
+  //       FCVT.{W,WU}.D + FCVTMOD.W.D (11000/D, rs2∈{0,1}任意f3, 或 rs2=8&f3=1)
+  //       FCVT.S.D (01000/S rs2=1) + 最小化 don't-care rs2∈{4,5}
+  //       FCVT.D.S (01000/D rs2=0)
+  //       FMV.X.W  (11100/S f3=0 rs2=0)
   function automatic logic in_sew2cvt32(input logic [4:0] f7hi, input logic [1:0] fmt,
                                         input logic [4:0] rs2_, input logic [2:0] f3);
     logic r;
     r = 1'b0;
-    if (f7hi == 5'b11000 && fmt == 2'b00) r = 1'b1;                       // FCVT.{W,WU,L,LU}.S (rs2 0..3)
+    if (f7hi == 5'b11000 && fmt == 2'b00 && rs2_[4:2] == 3'b000) r = 1'b1; // FCVT.{W,WU,L,LU}.S
     if (f7hi == 5'b11000 && fmt == 2'b01 && rs2_[4:1] == 4'b0000) r = 1'b1;// FCVT.{W,WU}.D (rs2 0/1)
-    if (f7hi == 5'b01000 && fmt == 2'b00 && rs2_ == 5'd1) r = 1'b1;       // FCVT.S.D (src D)
-    if (f7hi == 5'b01000 && fmt == 2'b01 && rs2_ == 5'd0) r = 1'b1;       // FCVT.D.S (src S)
-    if (f7hi == 5'b11100 && fmt == 2'b00 && f3 == 3'b000) r = 1'b1;       // FMV.X.W
     if (f7hi == 5'b11000 && fmt == 2'b01 && rs2_ == 5'd8 && f3 == 3'b001) r = 1'b1; // FCVTMOD.W.D
+    if (f7hi == 5'b01000 && fmt == 2'b00 && rs2_ inside {5'd1,5'd4,5'd5}) r = 1'b1; // FCVT.S.D(+dc)
+    if (f7hi == 5'b01000 && fmt == 2'b01 && rs2_ == 5'd0) r = 1'b1;       // FCVT.D.S (src S)
+    if (f7hi == 5'b11100 && fmt == 2'b00 && f3 == 3'b000 && rs2_ == 5'd0) r = 1'b1; // FMV.X.W
     return r;
   endfunction
 
-  // (3) isSew2Cvt16 清单(归 e16):凡涉及 H(fmt2=10 的 cvt/mv,或源/目标为 H):
-  //     FCVT.S.H | FCVT.H.S | FCVT.D.H | FMV.X.H | FCVT.{W,L,WU,LU}.H |
-  //     FCVT.H.{W,L,WU,LU}
+  // (3) isSew2Cvt16 清单(归 e16):凡涉及 H 的 cvt/mv,含最小化 don't-care:
+  //     FCVT.S.H (01000/S rs2=2) | FCVT.D.H (01000/D rs2=2) |
+  //     FCVT.H.S (01000/H rs2=0) + don't-care rs2∈{4,5} |
+  //     FMV.X.H (11100/H f3=0 rs2=0) |
+  //     FCVT.{W,WU,L,LU}.H (11000/H rs2 0..3) | FCVT.H.{W,WU,L,LU} (11010/H rs2 0..3)
   function automatic logic in_sew2cvt16(input logic [4:0] f7hi, input logic [1:0] fmt,
                                         input logic [4:0] rs2_, input logic [2:0] f3);
     logic r;
     r = 1'b0;
     if (f7hi == 5'b01000 && fmt == 2'b00 && rs2_ == 5'd2) r = 1'b1;       // FCVT.S.H (src H)
-    if (f7hi == 5'b01000 && fmt == 2'b10 && rs2_ == 5'd0) r = 1'b1;       // FCVT.H.S (dst H)
     if (f7hi == 5'b01000 && fmt == 2'b01 && rs2_ == 5'd2) r = 1'b1;       // FCVT.D.H (src H)
-    if (f7hi == 5'b11100 && fmt == 2'b10 && f3 == 3'b000) r = 1'b1;       // FMV.X.H
-    if (f7hi == 5'b11000 && fmt == 2'b10) r = 1'b1;                       // FCVT.{W,WU,L,LU}.H (src H)
-    if (f7hi == 5'b11010 && fmt == 2'b10) r = 1'b1;                       // FCVT.H.{W,WU,L,LU} (dst H)
+    if (f7hi == 5'b01000 && fmt == 2'b10 && rs2_ inside {5'd0,5'd4,5'd5}) r = 1'b1; // FCVT.H.S(+dc)
+    if (f7hi == 5'b11100 && fmt == 2'b10 && f3 == 3'b000 && rs2_ == 5'd0) r = 1'b1; // FMV.X.H
+    if (f7hi == 5'b11000 && fmt == 2'b10 && rs2_[4:2] == 3'b000) r = 1'b1; // FCVT.{W,WU,L,LU}.H
+    if (f7hi == 5'b11010 && fmt == 2'b10 && rs2_[4:2] == 3'b000) r = 1'b1; // FCVT.H.{W,WU,L,LU}
     return r;
   endfunction
 
@@ -223,7 +290,7 @@ module xs_FPDecoder_core (
       is_fp32 = (fmt2 == 2'b00);
       is_fp16 = (fmt2 == 2'b10);
     end else if (opcode == OPC_OP_FP) begin
-      if (is_fp_arith_family(funct7[6:2], funct3)) begin
+      if (is_fp_arith_family(funct7[6:2], funct3, rs2)) begin
         is_fp32 = (fmt2 == 2'b00);
         is_fp16 = (fmt2 == 2'b10);
       end else begin

@@ -13,11 +13,14 @@
 //  C_DR/C_WF/C_BC/C_NK 无解除分支（它们在入队时就已置 blocking=0，下拍即可重放）。
 
   // 按 sqIdx 读 StoreQueue 就绪向量（SQ_SIZE=56 非 2 的幂，6 位下标可能 56..63 越界）。
-  //  用循环展开成 56 选 1（越界返回 0，与 golden 的 one-hot mux 行为一致），既正确又
-  //  避免 Formality 对「非 2 幂数组动态下标」的 out-of-bound elab 误报。
+  //  ⚠ golden 把读端口展开成 64 深 _GEN：idx∈[0,55] 取真值，idx∈[56,63]（越界）**取 vec[0]**
+  //  （chisel Vec(56) 在 idx>=56 时硬件回绕到 0 号元素的具体实现）。务必复刻此越界语义：
+  //  越界返回 0 会让 C_FF/C_MA 的 blocking 解除晚一拍（当 blockSqIdx.value∈[56,63] 时），
+  //  造成 replay 选择整拍相位差→顶层 io_replay_* 失配（实测 seed1 失配源头）。
+  //  循环展开仍对 Formality 友好（消除非 2 幂动态下标 out-of-bound elab 误报）。
   function automatic logic sq_vec_read(input logic [SQ_SIZE-1:0] vec, input logic [SQ_IDX_W-1:0] idx);
     logic r;
-    r = 1'b0;
+    r = vec[0];   // 默认（含越界 idx>=SQ_SIZE）= vec[0]，与 golden _GEN/_GEN_0 越界回绕一致
     for (int k = 0; k < SQ_SIZE; k++) if (idx == k[SQ_IDX_W-1:0]) r = vec[k];
     return r;
   endfunction
