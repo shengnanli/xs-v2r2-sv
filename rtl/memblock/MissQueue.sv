@@ -169,7 +169,7 @@ module xs_MissQueue_core (
     for (int i = 0; i < N_ENTRY; i++)
       if (e_req_handled[i]) req_handled_idx |= ENTRY_IDX_W'(i);
   end
-  assign io_resp_id      = req_pipeline_reg_handled ? mqpr.id[ENTRY_IDX_W-1:0] : req_handled_idx;
+  assign io_resp_id      = req_pipeline_reg_handled ? mqpr_mshr_id : req_handled_idx;
   assign io_resp_handled = (|e_req_handled) | req_pipeline_reg_handled;
 
   // ===========================================================================

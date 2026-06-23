@@ -273,10 +273,16 @@ package mainpipe_pkg;
   // 9. one-hot / 优先级编码辅助
   // ---------------------------------------------------------------------------
   // 4-way one-hot → way 编号（用于 replace_access.way = OHToUInt(way_en)）。
+  // 与 golden Chisel OHToUInt 一致：按位 OR 归约 —— 输出位 b = OR(oh[i] | i 的第 b 位为 1)。
+  // 注意：必须用 OR 归约而非「最后置位胜出」循环；当 oh 非严格 one-hot（瞬态多位）时，
+  // golden 的 {|oh[3:2], oh[3]|oh[1]} 取 OR 语义，last-wins 循环会算错（如 oh=4'b0110
+  // golden→3，last-wins→2），导致 replace_access.way 分叉、污染 PLRU 状态。
   function automatic logic [WAY_BITS-1:0] oh_to_way(input logic [N_WAYS-1:0] oh);
     logic [WAY_BITS-1:0] r;
     r = '0;
-    for (int w = 0; w < N_WAYS; w++) if (oh[w]) r = w[WAY_BITS-1:0];
+    for (int b = 0; b < WAY_BITS; b++)
+      for (int w = 0; w < N_WAYS; w++)
+        if (oh[w] && ((w >> b) & 1)) r[b] = 1'b1;
     return r;
   endfunction
   // 最低位优先的 one-hot（PriorityEncoderOH）。
