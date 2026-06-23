@@ -158,6 +158,7 @@ golden 双例化多种子 UT(seed 1/7/42 全输出逐拍 0 错)→ Formality 等
 | [FCVT](FCVT.md) | 1 | ✅ UT(seed1/7/42 各 200000 拍 errors=0) + FM SUCCEEDED（FPCVT 黑盒，FM_MERGE_DUP=false） |
 | [FDivSqrt](FDivSqrt.md) | 1 | ✅ UT(seed1/7/42 各 200000 拍 errors=0，含随机 flush/out_ready) + FM SUCCEEDED（FloatDivider 黑盒，FM_MERGE_DUP=true：robIdx 双副本归并） |
 | (其余 FU 叶子) | 1 | 🔄 |
+| [ExeUnit](ExeUnit.md) | 2 | ✅ ExeUnit_4(Alu)/ExeUnit(Alu+Mul+Bku)/ExeUnit_8(Falu+Fcvt+f2v+Fmac) 三变体 UT(seed1/7/42 各 200000 拍 errors=0) + FM SUCCEEDED（FU/Dispatcher/ClockGate 黑盒）。FU 周围 glue：inPipe 打拍对齐 + flush-kill、时钟门控有效链、输出 one-hot 仲裁。其余变体(1/5/7/9/10/13-17)同构 |
 | [WbFuBusyTable](WbFuBusyTable.md) | 2 | ✅ UT(seed1/7/42 各 5.2M checks errors=0) + FM SUCCEEDED（纯组合叶子；conflict 路本配置被 OptionWrapper 优化掉） |
 | [WbDataPath](WbDataPath.md) | 2 | ✅ UT(seed1/7/42 各 101.8M 输出级 checks errors=0，509/509 输出全激励) + FM SUCCEEDED（VldMergeUnit/RealWBCollideChecker 真子模块两侧共享，DummyDPICWrapper×26 difftest 探针黑盒 stub） |
 | [StdFreeList](StdFreeList.md) | 2 | ✅ UT(seed1/7/42 各 200000 拍 errors=0) + FM SUCCEEDED（fp/vec 空闲列表；SnapshotGenerator 黑盒，FM_MERGE_DUP=true） |
