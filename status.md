@@ -63,6 +63,18 @@
     wb_delayed addr 改 per-域位宽(int/fp=8,vf=7,v0/vl=5)后已清 0。**UT 200k bit-exact 为权威**。
   - 文档 docs/backend/Backend.md(子模块清单 / 7 类 glue 表 / issueTimeout 时序 / gen 产物 / 验证)。
 
+## 验证平台(UT / IT / BT / ST)
+| 级别 | 状态 | 说明 |
+|------|------|------|
+| **UT 单元级** | ✅ 156 模块 | VCS 双例化逐拍比对 golden + Formality 等价 |
+| **IT 集成级** | ✅ 8 簇 | 重写 glue 核↔重写叶子核全部直连(非黑盒 golden 叶子), 整簇 vs golden 双例化, seed1/7/42 各 200k errors=0。簇:BPU/IFU/MMU/Issue/RenameDispatch/Decode/LoadQueue/DCache。方法学见 verif/it/README.md |
+| **BT 块级** | ⬜ 待做 | Frontend 子系统级 vs golden |
+| **ST 系统级** | ⬜ 待做 | 重写 SV 替换进香山 build/rtl, difftest+NEMU 跑真实程序 |
+
+> **IT 抓出并修复 6 个 per-module UT 漏掉的真 bug**(整簇直连才暴露):NewIFU toIbuffer valid[0]、
+> FPDecoder 半精度/保留编码 typeTagOut/wflags、MainPipe writeback hasData(alwaysReleaseData)、
+> LoadQueueReplay Vec(56) 越界读回绕、MainPipe oh_to_way OHToUInt 语义、MissQueue resp_id。
+
 ## 方法学与闸门(见 docs/REWRITE_STYLE.md)
 从 Scala 设计意图重写(非 golden 转写)→ 结构硬闸门(struct/enum/function/genvar>0、0 生成痕迹)→ 多种子 UT → FM。
 - 大互联模块:可读核(真逻辑)+ `*.svh`(纯子模块例化+连线);**.svh 套壳闸门**:`grep _GEN_/_T_` 必须≈0,上百即 golden 逻辑套壳→拒收(DataPath/NewDispatch 首版曾犯,已回退重做)。
