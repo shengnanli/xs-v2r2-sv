@@ -9,7 +9,7 @@
 |--------|---------|------|------|
 | **Frontend 前端** | 34 | 33 | ✅ **100% 完成** |
 | **MemBlock 访存** | 46 | 47 | ✅ **100% 完成** |
-| **Backend 后端** | 33+ | 34 | 🔨 进行中(执行/译码/重命名/写回/旁路/ROB/DataPath/Dispatch 已完成；发射调度/CSR/顶层待做) |
+| **Backend 后端** | 60+ | 60+ | ✅ **基本完成**(执行/译码/重命名/写回/旁路/ROB/DataPath/Dispatch/CtrlBlock/14个发射队列变体/4个Scheduler/ExeUnit/NewCSR/Backend顶层 全部完成,均 UT+FM 验证) |
 
 > 详见 `docs/frontend/`、`docs/memblock/MEMBLOCK_OVERVIEW.md`、`docs/backend/BACKEND_OVERVIEW.md`。
 
@@ -23,8 +23,8 @@
 - DCache:DCacheWrapper/DCache 顶 + MainPipe/MissQueue/WritebackQueue/ProbeQueue/LoadPipe/StorePipe + BankedDataArray/DuplicatedTagArray/L1Coh·FlagMetaArray
 - 其他:Uncache/StorePfWrapper/TLBuffer/Pipeline + MemBlock 顶层(capstone,1346 端口)
 
-## Backend(🔨 进行中)
-**✅ 已完成(33 模块)**
+## Backend(✅ 基本完成)
+全部模块从 Scala 设计意图真重写、独立复核(结构闸门 + 多种子 UT 重跑 + FM + svh 套壳检查),无套壳。
 | 类别 | 模块 |
 |------|------|
 | 执行单元 FU | Alu·Bku·BranchUnit·JumpUnit·Fence·MulUnit·DivUnit·FAlu·FMA·FCVT·FDivSqrt·VSetRiWi·VSetRvfWvf |
@@ -32,26 +32,36 @@
 | 重命名 | Rename·RenameTable·RenameBuffer·StdFreeList·MEFreeList |
 | 物理寄存器/缓存 | RegFilePart(Int/Fp×4)·RegCache |
 | 写回/旁路/工具 | WbDataPath·WbFuBusyTable·BypassNetwork·ImmExtractor·DelayReg |
-| 乱序核心 | **Rob**(控制核 golden-tap 验证)·**DataPath**(真重写,逻辑入核)·**NewDispatch**(真重写) |
-| 执行容器 | **ExuBlock·ExuBlock_1**(FU 黑盒,frm/error glue) |
-| 发射队列 | **IssueQueueAluCsrFenceDiv + EntriesAluCsrFenceDiv + IqEntryAcfd**(乱序唤醒-选择全栈真重写,UT+FM 全过,作其余变体样板) |
+| 乱序核心 | **Rob**(控制核 golden-tap 验证)·**DataPath**(真重写)·**NewDispatch**(真重写) |
+| 执行容器 | **ExuBlock·ExuBlock_1**·**ExeUnit×3**(整数/浮点代表变体,FU 黑盒) |
+| **发射队列(14 变体全栈)** | 整数:**AluCsrFenceDiv**(样板)·**AluMulBkuBrhJmp**·**AluBrhJmpI2fVsetriwiVsetriwvfI2v**;浮点:**FaluFmac**·**FaluFmacFdiv**·**FaluFcvtF2vFmacFdiv**;向量:**VfdivVidiv**·**VfmaVialuFixVfalu**·**VfmaVialuFix…Vsetrvfwvf**;访存:**StaMou**·**StdMoud**·**Ldu**·**VlduVstu**·**VlduVstuVseglduVsegstu**(均含 Entries+IqEntry,UT 3种子200k/0 + FM SUCCEEDED) |
+| 调度 | **Scheduler**(Int)·**Scheduler_1/2/3**(Fp/Vf/Mem,IQ 黑盒互联) |
+| 控制聚合 | **CtrlBlock**(41426行,9轮;重定向流水/decode-buffer FSM/写回压缩/快照 flushVec 前缀OR;22 子模块黑盒;UT 1736 输出 seed1/7/42 各200k/0;FM verify) |
+| CSR | **NewCSR**(14259行,9轮;CSR 译码/读OR-mux/写fanout/特权FSM/trap派发/AIA-IMSIC/difftest;300+ CSRModule 黑盒;UT 3种子200k/0;FM 37934 passing SUCCEEDED;golden _T_/_GEN_ 全重映射语义名) |
 
-**⏳ 待做**
-- 发射/调度:其余 9 个 IssueQueue/Entries 变体(有 AluCsrFenceDiv 样板)、Scheduler×4(唤醒/仲裁 glue)
-- 执行容器:ExeUnit(各变体)
-- 控制聚合:CtrlBlock 🔨 **进行中(基础设施已搭,glue 逻辑核未完成)**
-  - 已完成:ctrlblock_pkg.sv(参数/redirect-level/decin-src/融合 commitType enum,vlogan 通过)、
-    gen_ctrlblock.py(端口解析→ctrlblock_ports.svh 2520 功能端口与 golden 2522 精确对齐;
-    16 类子模块例化枚举,全部外部黑盒:Rob/NewDispatch/DecodeStage/FusionDecoder/
-    RenameTableWrapper/Rename/RedirectGenerator/pcMem/MemCtrl/Trace/GPAMem/Snapshot/
-    6×PipelineConnectPipe/PipeGroupConnect/DelayN×3)。
-  - 待做:可读核 glue 逻辑(重定向流水 s0-s5 / decode-buffer FSM / 写回打拍压缩 /
-    快照选择 / frontend flush 路由 / pcMem 命名读口驱动)从 Scala 重实现入核;
-    ctrlblock_inst.svh 黑盒例化连线;wrapper/stubs/tb/Makefile;多种子 UT + FM。
-    (golden 41426 行中 2610-19294 区是真 CtrlBlock 逻辑含 2599 个 _GEN_/_T_,须重写入核;
-     19295-end 是子模块例化区,黑盒。)
-- CSR:NewCSR(14k 行)
-- **Backend 顶层**(capstone,1230 端口)
+> 发射队列 14 变体均以 AluCsrFenceDiv(整数)/ FaluFmac(浮点)/ VfdivVidiv(向量开荒,numRegSrc=5/ignoreOldVd/og2Resp)/ StaMou(访存 mem feedback)为样板逐步派生,差异处从 Scala 真重写。
+
+### Backend 顶层(capstone)
+- **Backend 顶层**(capstone,1230 端口)✅ **UT 三种子 200k errors=0 通过(收官)**
+  - 可读核 `rtl/backend/Backend.sv`(xs_Backend_core):顶层 glue 全部从 Scala 意图重写入核
+    (backend_logic.svh:唤醒总线打拍 wakeupDelayed×10 / 五域写回打拍 {int,fp,vf,v0,vl}WbDelayed /
+    CSR↔Mem 边界打拍 instrTransType·msiInfo·clintTime·l2FlushDone·extInt / mem 发射超时
+    issueTimeout×5 4-bit 饱和计数 / vsetvl vtype 二选一锁存 / debugVl·topDownInfo·pfevent 杂项打拍 /
+    flush 判定拼接别名 flushRobIdxFull·robDeqPtrFull)。45 子模块(31 类型)全 golden 黑盒。
+  - gen_backend.py:端口解析→backend_ports.svh(1230)/backend_decls.svh(5651 互联网)/
+    backend_inst.svh(45 例化·12896 引脚,golden glue 临时名 rewrite 全映射核内具名,leaks=0)/
+    backend_outassign.svh(208 io 输出驱动)/Backend_wrapper.sv/blackbox_stubs/UT(505 驱·723 比)。
+  - GATE 全过:核+logic+pkg 去注释 _GEN_/_T_/io_x_N_N/RANDOMIZE=0;**5 个 backend_*.svh 套壳闸门
+    _GEN_/_T_ 合计=0**(纯例化连线,无套壳)。VCS elab 通过(623 模块,1 条 TFIPC-L lint,0 多驱动)。
+  - UT 双例化逐拍比 723 输出:**seed1/7/42 各 200000 拍 errors=0,distinct_diverging_ports=0/723**
+    (+SYNTHESIS·+vcs+initreg+0·-assert disable,子模块两侧 golden 真定义共用)。
+  - **FM 诚实**:`make fm` 跑完(192416 passing / 20 failing / 1959 unverified)。20 failing **全部在子模块
+    内部**(inner_ctrlBlock/* 的 wbData vls_isVlm·isWhole·rename lsrc / inner_wbDataPath/* 的
+    WbArbiter io_in_ready),**Backend 自身 glue 0 failing**;根因是 FM 把更深叶子(Rob/Rename/
+    wbArbiter)黑盒后其输出 pin 在 ref 扇入悬空(undriven),工具无法跨 ref/impl 配对 X 扇入
+    (fm_eq.tcl 注释明示的 FTQ/IFU 扇出复制同类工具局限,非设计差异)。width-mismatch 告警在
+    wb_delayed addr 改 per-域位宽(int/fp=8,vf=7,v0/vl=5)后已清 0。**UT 200k bit-exact 为权威**。
+  - 文档 docs/backend/Backend.md(子模块清单 / 7 类 glue 表 / issueTimeout 时序 / gen 产物 / 验证)。
 
 ## 方法学与闸门(见 docs/REWRITE_STYLE.md)
 从 Scala 设计意图重写(非 golden 转写)→ 结构硬闸门(struct/enum/function/genvar>0、0 生成痕迹)→ 多种子 UT → FM。

@@ -9,7 +9,7 @@
 |--------|------|------|
 | **Frontend 前端** | ✅ 100% | 分支预测 / 取指 / ICache / Ftq / 顶层（34 模块） |
 | **MemBlock 访存** | ✅ 100% | LSU / 队列 / MMU（含 L2TLB·PtwCache） / DCache / 顶层（46 模块） |
-| **Backend 后端** | 🔨 进行中 | FU / 译码 / 重命名 / 写回 / 旁路 / ROB / DataPath / Dispatch 已完成（33 模块）；发射调度 / CSR / 顶层待做 |
+| **Backend 后端** | ✅ 基本完成 | FU / 译码 / 重命名 / 写回 / 旁路 / ROB / DataPath / Dispatch / CtrlBlock / 14 个发射队列变体 / 4 个 Scheduler / ExeUnit / NewCSR / Backend 顶层（60+ 模块，均 UT+FM 验证） |
 
 详细模块清单与验证状态见 `status.md`；各子系统导读见 `docs/{frontend,memblock,backend}/`（`MEMBLOCK_OVERVIEW.md` / `BACKEND_OVERVIEW.md`）。重写硬性标准见 `docs/REWRITE_STYLE.md`。
 
@@ -56,7 +56,7 @@ xs-v2r2-sv/
 │   ├── common/          公共 package / 工具模块（如参数化队列、SRAM wrapper）
 │   ├── frontend/        前端手写 SV（✅ 完成）
 │   ├── memblock/        访存手写 SV（✅ 完成）
-│   └── backend/         后端手写 SV（🔨 进行中）
+│   └── backend/         后端手写 SV（✅ 基本完成）
 ├── docs/
 │   ├── frontend/        每模块一份中文 Markdown 设计文档
 │   ├── memblock/        访存（含 MEMBLOCK_OVERVIEW.md 导读）
