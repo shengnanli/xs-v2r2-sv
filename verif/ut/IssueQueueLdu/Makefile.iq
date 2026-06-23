@@ -1,0 +1,44 @@
+MODULE = IssueQueueLdu
+
+RTL_DIR = ../../../rtl
+GOLDEN_RTL = ../../../golden/chisel-rtl
+
+# 手写可读核(含顶层 wrapper)+ 类型包。svh 由顶层 wrapper include。
+RTL_SRCS = $(RTL_DIR)/backend/iq_ldu_pkg.sv \
+           $(RTL_DIR)/backend/IssueQueueLdu.sv
+
+# golden 黑盒(IQ 的子模块 + 它们各自的依赖)。两侧 u_g/u_i 共享。
+#   entries 阵列(16 单条目: EnqEntry_24 / OthersEntry_200 / OthersEntry_202,
+#   + EnqPolicy_14 转移策略 + UIntCompressor exuSources 编码),
+#   功能单元忙表 FuBusyTableWrite_105 / FuBusyTableRead_105, 3 个年龄检测器。
+BB_DEPS = EntriesLdu.sv EnqEntry_24.sv OthersEntry_200.sv OthersEntry_202.sv \
+          EnqPolicy_14.sv UIntCompressor_27_000011100000000000001010101.sv \
+          FuBusyTableWrite_105.sv FuBusyTableRead_105.sv \
+          NewAgeDetector_6.sv AgeDetector_12.sv AgeDetector_21.sv
+
+# UT: u_g=golden IQ 顶层, u_i=可读核顶层(重命名 _xs)。
+TB_SRCS = iq_variant_xs.sv iq_tb.sv
+GOLDEN_SRCS = $(GOLDEN_RTL)/IssueQueueLdu.sv \
+              $(addprefix $(GOLDEN_RTL)/,$(BB_DEPS))
+
+# FM: ref = golden IQ 顶层 + 全部依赖; impl = 可读核(顶层 wrapper)+ 同一批 golden 黑盒。
+WRAPPER_SRCS = $(addprefix $(GOLDEN_RTL)/,$(BB_DEPS))
+FM_VARIANTS = IssueQueueLdu
+FM_REF_DEPS_IssueQueueLdu = $(BB_DEPS)
+
+# EntriesLdu 内含 load 专属的「常量 0」死寄存器(entryReg_payload_storeSetHit /
+#   waitForRobIdx / loadWaitStrict —— 自递减衰减到 0, 无外部输入, 仅透传到 deqEntry)。
+#   合并重复寄存器 pass 会在 wrapper/u_core 层次边界两侧做不对称常量传播, 把这些同值
+#   常量寄存器误判 DFF0X vs DFFX 而 fail。关掉合并即可干净比对(UT 已 600k 拍 errors=0
+#   证明功能等价)。详见 scripts/fm_eq.tcl 注释。
+FM_MERGE_DUP = false
+
+include ../../../scripts/ut_common.mk
+
+VCS += +define+SYNTHESIS
+VCS += +incdir+$(RTL_DIR)/backend
+# golden(firtool 输出)状态寄存器无 reset, 上电为 X; flush 会反复把 X 衍生值灌进
+#   空/被冲刷条目的 don't-care 派生输出, 造成假阳性。用 initreg 让两侧寄存器都从 0
+#   上电, 消除 golden 上电 X 假象。
+VCS      += +vcs+initreg+random
+SIM_ARGS += +vcs+initreg+0
