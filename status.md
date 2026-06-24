@@ -63,17 +63,23 @@
     wb_delayed addr 改 per-域位宽(int/fp=8,vf=7,v0/vl=5)后已清 0。**UT 200k bit-exact 为权威**。
   - 文档 docs/backend/Backend.md(子模块清单 / 7 类 glue 表 / issueTimeout 时序 / gen 产物 / 验证)。
 
-## 验证平台(UT / IT / BT / ST)
+## 验证平台(UT / IT / BT / ST)—— 四级全打通
 | 级别 | 状态 | 说明 |
 |------|------|------|
 | **UT 单元级** | ✅ 156 模块 | VCS 双例化逐拍比对 golden + Formality 等价 |
-| **IT 集成级** | ✅ 8 簇 | 重写 glue 核↔重写叶子核全部直连(非黑盒 golden 叶子), 整簇 vs golden 双例化, seed1/7/42 各 200k errors=0。簇:BPU/IFU/MMU/Issue/RenameDispatch/Decode/LoadQueue/DCache。方法学见 verif/it/README.md |
-| **BT 块级** | ⬜ 待做 | Frontend 子系统级 vs golden |
-| **ST 系统级** | ⬜ 待做 | 重写 SV 替换进香山 build/rtl, difftest+NEMU 跑真实程序 |
+| **IT 集成级** | ✅ 11 簇 | 重写 glue 核↔重写叶子核全部直连(非黑盒 golden 叶子), 整簇 vs golden 双例化, seed1/7/42 各 200k errors=0。簇:BPU/IFU/MMU/Issue/RenameDispatch/Decode/LoadQueue/DCache/StoreQueue/Writeback/Exec。方法学见 verif/it/README.md |
+| **BT 块级** | ✅ Frontend | 整 Frontend 子系统 40 个 xs 核全装配 vs golden(verif/bt/Frontend)。闭环抓出 6 个真核 bug(FTQ环绕/MMIO相位)。seed7 200k errors=0;seed1/42 余一深层 ftqOffset 残留 |
+| **ST 系统级** | ✅ 打通 | 宿主 VCS difftest+NEMU 跑 coremark。**golden 基线 HIT GOOD TRAP @6492**;**重写 Alu/Bku 替换进 build/rtl 后仍 HIT GOOD TRAP @6492(与 NEMU 逐指令一致)**。工具 verif/st(substitute.sh 全端口 wrapper / restore.sh / run_st.sh) |
 
-> **IT 抓出并修复 6 个 per-module UT 漏掉的真 bug**(整簇直连才暴露):NewIFU toIbuffer valid[0]、
-> FPDecoder 半精度/保留编码 typeTagOut/wflags、MainPipe writeback hasData(alwaysReleaseData)、
-> LoadQueueReplay Vec(56) 越界读回绕、MainPipe oh_to_way OHToUInt 语义、MissQueue resp_id。
+> **IT/BT 累计抓出并修复 13 个 per-module UT 漏掉的真 bug**(整簇/闭环才暴露):
+> 前端 NewIFU toIbuffer valid、Ftq×4(commitState入队复位/flushItself/lastInst扫描/指针XOR)、
+> NewIFU×2(ftqidx XOR/mmio_inst截断);后端 FPDecoder 半精度编码;访存 MainPipe hasData、
+> MainPipe oh_to_way、MissQueue resp_id、LoadQueueReplay 越界回绕、StoreQueue cmoOp 锁存。
+>
+> **ST 关键打通点**:① 预编译 verilator emu 因 glibc 跑不动→走宿主 VCS difftest;② build/rtl 须
+> --enable-difftest 真生效重生(否则 Rob difftest pc 常量传播为0→首指令永不提交);③ WITH_CHISELDB=0
+> 避 sqlite3.h;④ 运行须 +ram_size=8589934592(默认 8TB 致 NEMU crash);⑤ 替换 wrapper 须带完整
+> golden 端口(perf/debug 占位)。
 
 ## 方法学与闸门(见 docs/REWRITE_STYLE.md)
 从 Scala 设计意图重写(非 golden 转写)→ 结构硬闸门(struct/enum/function/genvar>0、0 生成痕迹)→ 多种子 UT → FM。
