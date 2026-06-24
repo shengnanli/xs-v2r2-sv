@@ -598,13 +598,18 @@ module xs_Ftq_core(
     ptr_dist = (ef == sf) ? {1'b0, (ev - sv)}
                           : ({1'b0, ev} + 7'(FTQ_SIZE) - {1'b0, sv});
   endfunction
-  // isBefore(a,b)：a 在 b 之前（更旧）。CircularQueuePtr：a<b 当 (a.flag==b.flag) ? a.v<b.v : a.v>b.v
+  // isBefore(a,b) = (a < b)；isAfter(a,b) = (a > b)。
+  //   CircularQueuePtr.scala 权威定义：
+  //     a < b = (a.flag ^ b.flag) ^ (a.value < b.value)
+  //     a > b = (a.flag ^ b.flag) ^ (a.value > b.value)
+  //   ★必须用此 XOR 展开式★。早先写法 (sameFlag? a.v<b.v : a.v>b.v) 在“异 flag 且 value 相等”
+  //   处与 golden 不同：golden 视 a 比 b 整整领先/落后一圈(64)，旧式判反 → commit_done/
+  //   robCommPtr 推进错相一拍(BT 实测 canCommit 失配)。
   function automatic logic ptr_before(input logic [PTR_W:0] a, input logic [PTR_W:0] b);
-    ptr_before = (a[PTR_W] == b[PTR_W]) ? (a[PTR_W-1:0] < b[PTR_W-1:0])
-                                        : (a[PTR_W-1:0] > b[PTR_W-1:0]);
+    ptr_before = (a[PTR_W] ^ b[PTR_W]) ^ (a[PTR_W-1:0] < b[PTR_W-1:0]);
   endfunction
   function automatic logic ptr_after(input logic [PTR_W:0] a, input logic [PTR_W:0] b);
-    ptr_after = ptr_before(b, a);
+    ptr_after = (a[PTR_W] ^ b[PTR_W]) ^ (a[PTR_W-1:0] > b[PTR_W-1:0]);
   endfunction
   // s2/s3 重定向时是否需回拉取指指针 = !isBefore(ptr, idx)。golden 展开为
   //   ptr.flag ^ idx.flag ^ (ptr.value >= idx.value)
@@ -1492,7 +1497,10 @@ module xs_Ftq_core(
                   ? mk_ptr(io_fromBackend_redirect_bits_ftqIdx_flag, io_fromBackend_redirect_bits_ftqIdx_value)
                   : ifu_redir_ptr;
   wire [3:0]  redir_offset = be_redir_valid ? io_fromBackend_redirect_bits_ftqOffset : ifu_redir_offset;
-  wire        redir_level  = be_redir_valid ? io_fromBackend_redirect_bits_level : 1'b1; // IFU = flushAfter(1)
+  // flushItself = RedirectLevel.flushItself(level) = level(0)（见 xiangshan/Bundle.scala
+  //   object RedirectLevel: flushAfter="b0", flushItself(level)=level(0)）。
+  //   backend redirect 用其 level；IFU redirect 固定 flushAfter(=0) → flushItself=0。
+  wire        redir_flushItself = be_redir_valid ? io_fromBackend_redirect_bits_level : 1'b0;
 
   assign io_icacheFlush = redir_any;
 
@@ -1574,11 +1582,14 @@ module xs_Ftq_core(
   wire [PREDICT_W-1:0][1:0] commSt = commitStateQueue[commPtr[PTR_W-1:0]];
   logic [PREDICT_W-1:0] valid_insts;       // c_toCommit 或 c_committed
   always_comb for (int i=0;i<PREDICT_W;i++) valid_insts[i] = (commSt[i]==C_TO_COMMIT)|(commSt[i]==C_COMMITTED);
-  // 最后一条有效指令的状态（从高位往低位的优先选择）
+  // 最后一条有效指令的状态 = 最高位有效槽的状态
+  //   golden: PriorityMux(validInstructions.reverse zip commSt.reverse) → 取“最高位的有效项”。
+  //   故必须 i 从低到高扫描、last-wins，使最终落在最高有效 index（原 high→low 扫描 last-wins
+  //   会落在最低有效 index，是 bug：环绕重用时 lastInst 取错，canCommit 误判）。
   logic [1:0] lastInstStatus;
   always_comb begin
     lastInstStatus = commSt[0];
-    for (int i=PREDICT_W-1;i>=0;i--) if (valid_insts[i]) lastInstStatus = commSt[i];
+    for (int i=0;i<PREDICT_W;i++) if (valid_insts[i]) lastInstStatus = commSt[i];
   end
   wire firstInstFlushed = (commSt[0]==C_FLUSHED) | ((commSt[0]==C_EMPTY)&(commSt[1]==C_FLUSHED));
   wire commit_done_cond = ptr_after(robCommPtr, commPtr) | (|valid_insts & (lastInstStatus==C_COMMITTED));
@@ -1949,6 +1960,11 @@ module xs_Ftq_core(
         update_target[last_cycle_bpu_in_ptr[PTR_W-1:0]]      <= last_cycle_bpu_target;
         newest_entry_target_modified<=1'b1; newest_entry_target<=last_cycle_bpu_target;
         newest_entry_ptr_modified   <=1'b1; newest_entry_ptr   <=last_cycle_bpu_in_ptr;
+        // 新入队块一拍后把其 commitStateQueue 复位为全 C_EMPTY（对应 Scala 748-757
+        // copied_last_cycle_bpu_in 复位块）。否则 FTQ 64 项环绕重用旧项时, 残留的
+        // C_COMMITTED/C_TO_COMMIT/C_FLUSHED 会污染 canCommit/commPtr 推进。
+        // 此处优先级最低: 后面的 ifu_wb(C_TO_COMMIT)/redirect-flush/rob-commit 写同一项会覆盖。
+        commitStateQueue[last_cycle_bpu_in_ptr[PTR_W-1:0]] <= '0;
       end
       // 再延后一拍清 mispred（reduce fanout）
       if (last2_bpu_in) mispred_block[last2_bpu_in_ptr[PTR_W-1:0]] <= '0;
@@ -2060,7 +2076,7 @@ module xs_Ftq_core(
       flush_csq_notIfu_q<= redir_notIfu;
       flush_csq_idx_q   <= redir_idx[PTR_W-1:0];
       flush_csq_off_q   <= redir_offset;
-      flush_csq_flushItself_q <= ~redir_level; // flushItself = level==flushItself(0)
+      flush_csq_flushItself_q <= redir_flushItself; // flushItself = redirect.level(0)（修正：原 ~level 取反错误）
       if (flush_csq_valid_q & flush_csq_notIfu_q)
         for (int i=0;i<PREDICT_W;i++) begin
           if (i[3:0] >  flush_csq_off_q)                              commitStateQueue[flush_csq_idx_q][i]<=C_EMPTY;

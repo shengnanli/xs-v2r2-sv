@@ -699,9 +699,14 @@ module xs_NewIFU_core (
   always_ff @(posedge clock or posedge reset)
     if (reset) mmioF3Flush <= 1'b0; else mmioF3Flush <= f3_flush;
 
-  // 环形比较：a 早于 b
+  // 环形比较：a 早于 b（CircularQueuePtr a < b）。
+  //   权威定义 a < b = (a.flag ^ b.flag) ^ (a.value < b.value)（见 CircularQueuePtr.scala）。
+  //   ★必须 XOR 展开式★：原写法 (sameFlag? a.v<b.v : a.v>b.v) 在“异 flag 且 value 相等”
+  //   处与 golden 不同(golden 视为 a 早于 b)，导致 MMIO in-flight 被 older redirect 冲刷时
+  //   f3_ftq_flush_by_older 漏判 → MMIO FSM 不复位、f3 滞留(BT 实测 gpaddrMem_waddr off-by-one、
+  //   f3_req_is_mmio 失配)。与同模块 should_flush 同口径。
   function automatic logic ftqidx_before(input logic af, input logic [5:0] av, input logic bf, input logic [5:0] bv);
-    return (af ^ bf) ? (av > bv) : (av < bv);
+    return (af ^ bf) ^ (av < bv);
   endfunction
   wire f3_ftq_flush_self     = fromFtqRedirectReg_valid && redirReg_level; // flushItself
   wire f3_ftq_flush_by_older = fromFtqRedirectReg_valid &&
@@ -819,7 +824,12 @@ module xs_NewIFU_core (
     end
   end
 
-  wire [15:0] mmio_inst = {mmio_hw1, mmio_hw0};
+  // MMIO 取回的 32 位指令 = {高半字 hw1, 低半字 hw0}（对应 golden
+  //   _mmioRVCExpander_io_in_T_1 = {f3_mmio_data_1, f3_mmio_data_0}）。
+  //   ★必须 32 位★：原先误声明 [15:0] 截掉高半字，使 32 位 MMIO 指令(op=11)的
+  //   高 16 位被清零 → ibuffer instr 高位失配、jal 类 isCall 误判（BT 实测
+  //   cfVec_*_bits_instr g=807c588b i=0000588b）。
+  wire [31:0] mmio_inst = {mmio_hw1, mmio_hw0};
 
   // MMIO 对外请求
   assign uncache_req_valid = ((mmio_state == M_SEND_REQ) || (mmio_state == M_RESEND_REQ)) && f3_req_is_mmio;
@@ -970,15 +980,15 @@ module xs_NewIFU_core (
   assign ibuffer_valid_vec = valid_vec_w;
 
   // MMIO 外部预解码(覆盖第 0 条)
-  wire [1:0] mmio_brType = xs_predecode_pkg::xs_br_type({16'b0, mmio_inst});
-  wire       mmio_isCall = xs_predecode_pkg::xs_is_call({16'b0, mmio_inst});
-  wire       mmio_isRet  = xs_predecode_pkg::xs_is_ret({16'b0, mmio_inst});
+  wire [1:0] mmio_brType = xs_predecode_pkg::xs_br_type(mmio_inst);
+  wire       mmio_isCall = xs_predecode_pkg::xs_is_call(mmio_inst);
+  wire       mmio_isRet  = xs_predecode_pkg::xs_is_ret(mmio_inst);
 
   // MMIO RVC 展开器(黑盒)
   wire [31:0] mmioExp_out;
   wire        mmioExp_ill;
   xs_newifu_rvcexpander u_mmio_exp (
-    .io_in     (f3_req_is_mmio ? {16'b0, mmio_inst} : 32'b0),
+    .io_in     (f3_req_is_mmio ? mmio_inst : 32'b0),  // 32 位整指令(对应 golden _mmioRVCExpander_io_in_T_1)
     .io_fsIsOff(csr_fsIsOff),
     .io_out_bits(mmioExp_out),
     .io_ill    (mmioExp_ill)
@@ -989,7 +999,7 @@ module xs_NewIFU_core (
   always_comb begin
     ibuf_instrs_w = f3_expd_instr;
     if (f3_req_is_mmio)
-      ibuf_instrs_w[0] = mmioExp_ill ? {16'b0, mmio_inst} : mmioExp_out;
+      ibuf_instrs_w[0] = mmioExp_ill ? mmio_inst : mmioExp_out;  // ill 时回退整 32 位输入(golden 同)
   end
   assign ibuffer_instrs = ibuf_instrs_w;
 
