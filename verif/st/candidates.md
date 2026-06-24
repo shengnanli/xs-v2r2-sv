@@ -9,6 +9,11 @@
 
 > 干跑已验证（独立 VCS elaborate，exit 0）：**Alu**（纯叶子）、**Bku**（自带 6 子单元）、
 > **FAlu**（黑盒 FloatAdder）。其余候选结构同型。
+>
+> **系统级实测通过（coremark + NEMU difftest，全端口 wrapper）**：
+> **Alu**(组合) 与 **Bku**(2 拍流水) 单替、Alu+Bku 同替——均 **HIT GOOD TRAP @ cycle 6492**
+> (== golden)。证明 substitute.sh 的全端口 wrapper（见 README §2.1）能让重写 SV 进全片跑
+> 真实程序、与 NEMU 逐指令一致。其余 A/B 类候选同机制，预期照此可逐个上。
 
 ---
 

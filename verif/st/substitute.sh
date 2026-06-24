@@ -8,8 +8,20 @@
 #   香山 difftest VCS 用 `-y $NOOP_HOME/build/rtl +libext+.v +libext+.sv` 作库目录,
 #   按 "文件名=模块名" 解析全部 RTL。把 bundle 命名为 M.sv 覆盖原文件后, 凡引用
 #   module M 处都会拉到本 bundle, 整文件一起编译。bundle 内顺序: package 在前
-#   (先编)→ 可读核 xs_M_core → wrapper(golden 同名 module M, 例化核)。svh 必须
-#   内联(difftest VCS 只 +incdir GEN_VSRC_DIR, 不含 rtl/ 子目录, 故 `include 失败)。
+#   (先编)→ 可读核 xs_M_core → 改名子集 wrapper xs_M_subset → **全端口 wrapper**
+#   (golden 同名 module M)。svh 必须内联(difftest VCS 只 +incdir GEN_VSRC_DIR,
+#   不含 rtl/ 子目录, 故 `include 失败)。
+#
+# ★ 全端口 wrapper(gen_full_wrapper.py): 重写子集 wrapper 为可读性会省略 golden 的
+#   perf/debug/背压口(io_in_ready / io_in_bits_perfDebugInfo_* / io_out_ready / ...),
+#   父模块(ExeUnit)例化时连了这些口 → "Undefined port(UPIMI)"。故据 golden 完整
+#   端口表生成 module M, 端口与 golden 1:1; 功能子集接 xs_M_subset(→核), golden
+#   多余口: io_in_ready 直通 io_out_ready, perf/debug 输出零延迟直通对应输入, 余者占位 '0。
+#   perf/debug 不参与 difftest 架构比对, 不影响 HIT GOOD TRAP。
+#
+# ★ root-scope 守护(2b): 有的核(Bku.sv)在 $root 写裸 typedef; VCS 库文件 -y 再读
+#   会二次解析报 IPD/ICILF。脚本把所有 root-scope typedef/parameter 各自用独立
+#   `ifndef/`define guard 包裹, 令库重读跳过。
 #
 # 用法:
 #   verif/st/substitute.sh <模块名> [--dry-run] [--out <文件>]
@@ -61,6 +73,23 @@ grep -qE "^[[:space:]]*module[[:space:]]+${MODULE}\b" "$WRAPPER" \
 CORE="$SUBDIR/${MODULE}.sv"
 [[ -f "$CORE" ]] || die "core file $CORE not found (expected rtl core <M>.sv)"
 log "core    : $CORE"
+
+# golden 参考(用于生成全端口 wrapper): 优先 build/rtl/<M>.sv.golden(已替换过),
+# 否则 build/rtl/<M>.sv(尚未替换的原 golden)。解析其完整端口表, 让生成的
+# wrapper 声明 **所有** golden 端口(子集 wrapper 故意省略的 perf/debug/背压口也补齐),
+# 否则父模块例化时会 "Undefined port" 报错(UPIMI)。
+GEN_FULL="$SCRIPT_DIR/gen_full_wrapper.py"
+GOLDEN_REF=""
+if [[ -f "$BUILD_RTL/${MODULE}.sv.golden" ]]; then
+  GOLDEN_REF="$BUILD_RTL/${MODULE}.sv.golden"
+elif [[ -f "$BUILD_RTL/${MODULE}.sv" ]]; then
+  GOLDEN_REF="$BUILD_RTL/${MODULE}.sv"
+fi
+if [[ -n "$GOLDEN_REF" && -f "$GEN_FULL" ]]; then
+  log "golden  : $GOLDEN_REF (full-port wrapper mode)"
+else
+  log "warn    : no golden ref / generator; emitting subset wrapper as-is (父模块例化可能 Undefined port)"
+fi
 
 # 收集 wrapper + core 引用的 package 名(import X::*), 解析到声明 'package X;' 的文件。
 collect_pkgs() {
@@ -162,10 +191,104 @@ PY
   echo "// ---- readable core: $CORE ----"
   inline_includes "$CORE"
   echo ""
-  echo "// ---- wrapper (golden-named module ${MODULE}): $WRAPPER ----"
-  inline_includes "$WRAPPER"
+
+  # wrapper: 先把子集 wrapper 的 svh `include 内联到临时文件(子集 wrapper 大都没有,
+  # 但大模块的端口分片在此处理), 再据 golden 全端口表生成 **全端口 wrapper**。
+  SUBSET_INLINED="$(mktemp /tmp/st_subset_${MODULE}.XXXXXX.sv)"
+  inline_includes "$WRAPPER" > "$SUBSET_INLINED"
+  if [[ -n "$GOLDEN_REF" && -f "$GEN_FULL" ]]; then
+    echo "// ---- FULL-PORT wrapper (golden-named module ${MODULE}); subset -> renamed inner ----"
+    python3 "$GEN_FULL" "$MODULE" "$GOLDEN_REF" "$SUBSET_INLINED"
+  else
+    echo "// ---- wrapper (golden-named module ${MODULE}): $WRAPPER ----"
+    cat "$SUBSET_INLINED"
+  fi
+  rm -f "$SUBSET_INLINED"
   echo ""
 } > "$TMP_BUNDLE"
+
+# ---------------------------------------------------------------------------
+# 2b) 守护 root-scope 裸构件(typedef/parameter)。
+#   有的重写核(如 Bku.sv)在 $root 作用域(任何 package/module 之外)直接写了
+#   typedef struct {...} NAME;。VCS 把 build/rtl/M.sv 当 **库文件**(-y)用: 先扫描
+#   建索引, 解析 module M 时再 **重读** 整个文件 → 这些 $root 裸构件被解析两次,
+#   报 IPD "Identifier previously declared" + ICILF "constructs in $root of library
+#   files must be enclosed in `ifndef/`define/`endif"。(package 与 module 不受此限,
+#   故纯 pkg+module 的 Alu bundle 无此问题。)
+#   修法(不动重写源, 只处理 bundle): 把所有 **不在 package/module 内的** 顶层
+#   typedef/localparam/parameter 用 `ifndef ST_<M>_ROOT_GUARD ... `endif 包起来,
+#   令库重读时跳过第二次解析。
+# ---------------------------------------------------------------------------
+python3 - "$TMP_BUNDLE" "$MODULE" <<'PY'
+import sys, re
+path, M = sys.argv[1], sys.argv[2]
+text = open(path).read()
+
+# 关键: 注释里出现的 "module"/"package"/"endmodule" 会污染 depth 计数(本工程 bundle
+# 含大量中文注释提到这些词)。先把 //... 与 /*...*/ 注释 **原位置空格化**(保持长度,
+# 使 span 偏移仍可映射回原文), 再做关键字扫描。
+def blank_comments(s):
+    out = list(s)
+    i = 0; n = len(s)
+    while i < n:
+        if s[i] == '/' and i+1 < n and s[i+1] == '/':
+            j = i
+            while j < n and s[j] != '\n':
+                out[j] = ' '; j += 1
+            i = j
+        elif s[i] == '/' and i+1 < n and s[i+1] == '*':
+            j = i
+            while j < n and not (s[j] == '*' and j+1 < n and s[j+1] == '/'):
+                if s[j] != '\n': out[j] = ' '
+                j += 1
+            if j+1 < n:
+                out[j] = ' '; out[j+1] = ' '; j += 2
+            i = j
+        else:
+            i += 1
+    return "".join(out)
+
+scan = blank_comments(text)
+
+# 用 token 扫描确定 root-scope(任何 package/module 之外)区间: 维护 depth,
+# 遇 package/module +1(到对应 endpackage/endmodule -1)。depth==0 处的
+# typedef/parameter/localparam 即 $root 裸构件, 需各自用 **独立** guard 包裹
+# (同一 guard 会在同次解析里跳过后续块, 故每块一个名)。
+tok = re.compile(r'\b(package|module|endpackage|endmodule|typedef|parameter|localparam)\b')
+depth = 0
+spans = []
+for m in tok.finditer(scan):
+    kw = m.group(1)
+    if kw in ('package', 'module'):
+        depth += 1
+    elif kw in ('endpackage', 'endmodule'):
+        depth = max(0, depth - 1)
+    elif kw in ('typedef', 'parameter', 'localparam') and depth == 0:
+        s = m.start(); j = m.end(); brace = 0; end = None
+        while j < len(scan):
+            c = scan[j]            # 用空格化后的副本找语句尾, 避免注释里的 ;/{}
+            if c == '{': brace += 1
+            elif c == '}': brace -= 1
+            elif c == ';' and brace == 0:
+                end = j + 1; break
+            j += 1
+        if end:
+            spans.append((s, end))
+
+if spans:
+    out = []; last = 0
+    for k, (s, e) in enumerate(spans):
+        g = "ST_%s_ROOT_G%d" % (M.upper(), k)
+        out.append(text[last:s])
+        out.append("`ifndef %s\n`define %s\n" % (g, g))
+        out.append(text[s:e])
+        out.append("\n`endif // %s\n" % g)
+        last = e
+    out.append(text[last:])
+    open(path, "w").write("".join(out))
+    sys.stderr.write("[substitute] guarded %d root-scope decl(s) against library re-read\n"
+                     % len(spans))
+PY
 
 log "bundle generated: $TMP_BUNDLE ($(wc -l < "$TMP_BUNDLE") lines)"
 

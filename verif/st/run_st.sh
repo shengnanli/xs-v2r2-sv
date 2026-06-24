@@ -18,6 +18,13 @@
 #   - NUM_CORES=1      单核 difftest。
 #   - RTL_SUFFIX=sv    库文件后缀。
 #   - VCS_ARCH_OVERRIDE=linux 必须配 -full64(VCS 环境怪癖)。
+#   - 重编 simv 前 **必须 rm -f build/simv**(否则 make 不重链, 替换不进 simv)。
+#   - 跑 coremark 必须 +ram_size=8589934592。
+#
+# 全端口 wrapper(已固化, 见 README §2.1): substitute.sh 解析 golden M 的完整端口表,
+#   生成的 module M 端口与 golden 1:1; 功能子集接重写核(经改名的子集 wrapper),
+#   golden 多余的 perf/debug/背压口直通/占位。**已系统级实测**: Alu(组合) 与
+#   Bku(2 拍流水) 替换后 coremark difftest 均 HIT GOOD TRAP @ cycle 6492(== golden)。
 #
 # 纪律: `sub` 会写 $NOOP_HOME/build/rtl。golden 基线在后台编时**不要**跑 build/sub;
 #       只有基线编完、确认无其它进程占用 build/rtl 后再用。先用 substitute.sh --dry-run
@@ -37,8 +44,10 @@ export WITH_CHISELDB="${WITH_CHISELDB:-0}"
 export VCS_ARCH_OVERRIDE="${VCS_ARCH_OVERRIDE:-linux}"
 # 默认负载: coremark(2 迭代), 在 ready-to-run 下。
 RUN_BIN="${RUN_BIN:-$NOOP_HOME/ready-to-run/coremark-2-iteration.bin}"
-# NEMU 参考 so(difftest), 若未设留空则不开 diff。
-REF_SO="${REF_SO:-}"
+# NEMU 参考 so(difftest)。默认指向 ready-to-run 的 nemu-so, 即开 diff 逐指令比对。
+REF_SO="${REF_SO:-$NOOP_HOME/ready-to-run/riscv64-nemu-interpreter-so}"
+# 仿真内存大小: coremark difftest **必需** +ram_size=8589934592 (8GiB), 否则跑挂。
+RAM_SIZE="${RAM_SIZE:-8589934592}"
 
 DIFFTEST="$NOOP_HOME/difftest"
 MAKE_COMMON=( -C "$DIFFTEST" DESIGN_DIR="$DESIGN_DIR" NOOP_HOME="$NOOP_HOME" \
@@ -57,6 +66,7 @@ cmd_env() {
   echo "VCS_ARCH_OVERRIDE = $VCS_ARCH_OVERRIDE"
   echo "RUN_BIN        = $RUN_BIN"
   echo "REF_SO         = ${REF_SO:-<unset, diff disabled>}"
+  echo "RAM_SIZE       = $RAM_SIZE"
   echo "--- self-check ---"
   command -v vcs >/dev/null 2>&1 && echo "vcs            : $(command -v vcs)" || echo "vcs            : NOT FOUND"
   [[ -n "${VCS_HOME:-}" ]] && echo "VCS_HOME       : $VCS_HOME" || echo "VCS_HOME       : NOT SET"
@@ -67,15 +77,23 @@ cmd_env() {
 }
 
 cmd_build() {
-  log "compiling golden-baseline difftest simv (VCS path)..."
+  # **必须 rm -f build/simv**: 否则 make 认为 simv 已是最新而不重链, 替换的模块
+  # 不会进 simv。VCS 增量编译只重编改过的文件(替 1 模块 ~30s-2min)。
+  log "compiling difftest simv (rm -f build/simv first; VCS incremental)..."
+  rm -f "$NOOP_HOME/build/simv"
   make "${MAKE_COMMON[@]}" simv
 }
 
 cmd_run() {
-  local opts=( RUN_BIN="$RUN_BIN" )
-  [[ -n "$REF_SO" ]] && opts+=( REF_SO="$REF_SO" )
-  log "running simv on $(basename "$RUN_BIN")..."
-  make "${MAKE_COMMON[@]}" "${opts[@]}" simv-run
+  # 走 **确认可用** 的直跑命令(非 make simv-run): 直接 ./simv +workload +diff
+  # +ram_size。+ram_size=8589934592 必需。golden 与 Alu/Bku 替换均 HIT GOOD TRAP@6492。
+  [[ -x "$NOOP_HOME/build/simv" ]] || die "no build/simv — run '$0 build' first"
+  local diff_opt=()
+  [[ -n "$REF_SO" ]] && diff_opt=( "+diff=$REF_SO" )
+  log "running simv on $(basename "$RUN_BIN") (ram_size=$RAM_SIZE, diff=${REF_SO:-off})..."
+  ( cd "$NOOP_HOME/build/${RUN_BIN##*/}" 2>/dev/null || cd "$NOOP_HOME/build"
+    "$NOOP_HOME/build/simv" "+workload=$RUN_BIN" "${diff_opt[@]}" \
+      "+ram_size=$RAM_SIZE" -suppress=ASLR_DETECTED_INFO )
 }
 
 cmd_sub() {

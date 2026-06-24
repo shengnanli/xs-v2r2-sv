@@ -4,8 +4,9 @@
 （coremark）做系统级（System Test）验证：重写模块在整片真实激励下与 NEMU 黄金模型逐
 指令比对。本目录是该流程的**工具 + 脚手架**。
 
-> 状态：工具就绪并已用 Alu / Bku / FAlu 三个 bundle 做过独立 VCS elaborate 干跑（exit 0）。
-> 全片替换+difftest 实跑须等 golden 基线编完（基线在编时严禁碰 `build/rtl`）。
+> 状态：**已系统级实测通过**。golden 基线、替换 **Alu**(组合)、替换 **Bku**(2 拍流水)、
+> 以及 **Alu+Bku 同替** 三种情形, coremark + NEMU difftest 均 **HIT GOOD TRAP @ cycle 6492**
+> (与 golden 完全一致)。工具支持 **全端口 wrapper**(见 §2.1), 父模块例化不再 Undefined port。
 
 ---
 
@@ -56,6 +57,48 @@ wrapper（golden 同名 module M）在最后，被全片其它模块例化。
 - 黑盒叶子核（如 `xs_FAlu_core` 黑盒 golden `FloatAdder`、`xs_MulUnit_core` 黑盒
   `ArrayMulDataModule`）：bundle 里**不带**那个叶子，靠 `-y` 在 `build/rtl` 里自动解析到
   原 golden 叶子文件。这些叶子文件保持原样、不替换。
+
+---
+
+## 2.1 全端口 wrapper（核心机制，已系统级实测）
+
+**问题**：重写的子集 wrapper（`Alu_wrapper.sv` 等）为可读性**故意省略** golden 的
+非功能口——背压 `io_in_ready`/`io_out_ready`、性能调试 `io_in/out_bits_perfDebugInfo_*`
+（eliminatedMove/renameTime/dispatchTime/writebackTime/runahead_checkpoint_id/
+tlbFirstReqTime/tlbRespTime）、`io_*_bits_debug_seqNum` 等（Alu ~22 个）。父模块
+（`ExeUnit`）例化时**按 golden 全端口连线**，wrapper 少了这些口 → VCS
+`Error-[UPIMI-E] Undefined port`，全片编译失败。
+
+**解法**（`gen_full_wrapper.py`，`substitute.sh` 自动调用）：
+
+1. 解析 **golden** `build/rtl/M.sv`（或已替换时的 `M.sv.golden` 备份）的**完整端口表**
+   （名字 + 方向 + 位宽，逐行原样）。
+2. 把重写子集 wrapper `module M(...)` **改名**为 `module xs_M_subset(...)`，原样保留
+   （它例化重写核 `xs_M_core`），作为内部子模块。
+3. 生成新的 `module M`：端口 = **golden 全端口 1:1**；内部例化 `xs_M_subset`，按名直连
+   两边都有的口；golden 多余口这样驱动——
+   - `io_in_ready` → `assign io_in_ready = io_out_ready;`（背压直通，等同 golden）；
+   - 多余输出 `io_out_bits_X`，若有同位宽的 `io_in_bits_X` → `assign out = in;`
+     （perf/debug **零延迟直通**）；否则 `assign out = '0;`（占位）；
+   - 多余输入：声明即可，内部不接（无害）。
+
+> **为什么对 difftest 无害**：difftest 的架构正确性比对（NEMU 逐指令）只看 ROB 提交的
+> PC/指令/写回值/CSR/内存，**不看** FU 的 perf/debug/seqNum 旁路。真正功能相关的
+> `io_out_valid`/`io_out_bits_ctrl_*`/`io_out_bits_res_data` 全部来自重写核；
+> `io_in_ready` 背压直通 `io_out_ready`——这些 FU 写回端 `io_out_ready` 在本配置恒就绪，
+> 故直通与 golden 行为一致，不死锁、不改时序。
+>
+> **实测**：替 Alu（组合，perf 本就零延迟直通 → 与 golden **逐位一致**）、替 Bku（2 拍
+> 流水，5 个未建模 perf 字段零延迟直通、3 个建模字段经核打两拍）、Alu+Bku 同替——
+> coremark difftest 均 **HIT GOOD TRAP @ cycle 6492**（== golden cycle 数）。
+
+**root-scope 守护**：个别重写核（`Bku.sv`）在 `$root`（任何 package/module 之外）写了裸
+`typedef struct {...} NAME;`。VCS 把 `build/rtl/M.sv` 当 `-y` 库文件用：先扫描建索引，
+解析 `module M` 时**重读**整文件 → `$root` 裸构件被解析两次，报
+`Identifier previously declared (IPD)` + `ICILF`（root 构件须包在
+`` `ifndef/`define/`endif `` 内）。`substitute.sh` 的 **2b 步**把每个 root-scope
+typedef/parameter 各自用**独立** guard（`ST_<M>_ROOT_G<n>`）包裹，令库重读时跳过。
+（纯 `package + module` 的 bundle 如 Alu 无此问题——package/module 不受该规则限制。）
 
 ---
 
