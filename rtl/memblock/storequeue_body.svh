@@ -243,6 +243,9 @@
   logic [63:0]         uncUop_dbgEnq, uncUop_dbgSel, uncUop_dbgIss;
   logic                uncUop_excHwErr;   // exceptionVec(hardwareError=19) 唯一可能置位的
   logic [SQ_IDX_W-1:0] uncUop_sqIdxV;
+  logic [8:0]          uncUop_fuOpType;   // s_idle 捕获的 fuOpType（CMO opcode 源，与 golden 一致：
+                                          //   io_cmoOpReq_bits_opcode 取此**锁存**值而非 live uop[deqPtr]，
+                                          //   保证 valid=0 时 bits 保持上次锁存值，逐拍等于 golden）。
   logic                cboFlushedSb;
   logic [PADDR_BITS-1:0] cboMmioPAddr;
   logic                noPending;
@@ -262,7 +265,10 @@
   logic deqCanDoCbo;        // = GatedRegNext(deqCbo_now)
   always_ff @(posedge clock) deqCanDoCbo <= deqCbo_now;
 
-  wire [1:0] cmoOpCode = uop[deqPtr].fuOpType[1:0]; // CMO opcode 低 2 位
+  // CMO opcode：取 s_idle **锁存**的 uncUop_fuOpType 低 2 位（与 golden
+  //   io_cmoOpReq_bits_opcode = uncacheUop_fuOpType[1:0] 一致）。不能用 live
+  //   uop[deqPtr].fuOpType——否则 valid=0 时 bits 随 deqPtr 漂移，与 golden 锁存值不符。
+  wire [1:0] cmoOpCode = uncUop_fuOpType[1:0];
   // get_block_addr：cacheline 对齐（低 6 位清零）
   wire [63:0] cboMmioAddr = {{16{1'b0}}, cboMmioPAddr[PADDR_BITS-1:6], 6'b0};
 
@@ -297,6 +303,7 @@
             uncUop_dbgSel <= uop[deqPtr].dbg_selectTime;
             uncUop_dbgIss <= uop[deqPtr].dbg_issueTime;
             uncUop_sqIdxV <= uop[deqPtr].sqIdx_value;
+            uncUop_fuOpType <= uop[deqPtr].fuOpType;
             uncUop_excHwErr <= 1'b0;
             cboFlushedSb  <= 1'b0;
             cboMmioPAddr  <= pa_rdata[0];
