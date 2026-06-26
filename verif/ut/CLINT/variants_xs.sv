@@ -1,0 +1,48 @@
+// 自动生成：scripts/gen_clint.py —— 勿手改
+module CLINT_xs(
+  input clock,
+  input reset,
+  output auto_int_out_0,
+  output auto_int_out_1,
+  output auto_in_a_ready,
+  input auto_in_a_valid,
+  input [3:0] auto_in_a_bits_opcode,
+  input [1:0] auto_in_a_bits_size,
+  input [14:0] auto_in_a_bits_source,
+  input [29:0] auto_in_a_bits_address,
+  input [7:0] auto_in_a_bits_mask,
+  input [63:0] auto_in_a_bits_data,
+  input auto_in_d_ready,
+  output auto_in_d_valid,
+  output [3:0] auto_in_d_bits_opcode,
+  output [1:0] auto_in_d_bits_size,
+  output [14:0] auto_in_d_bits_source,
+  output [63:0] auto_in_d_bits_data,
+  input io_rtcTick,
+  output io_time_valid,
+  output [63:0] io_time_bits
+);
+  xs_CLINT_core u_core (
+    .clock(clock),
+    .reset(reset),
+    .auto_int_out_0(auto_int_out_0),
+    .auto_int_out_1(auto_int_out_1),
+    .auto_in_a_ready(auto_in_a_ready),
+    .auto_in_a_valid(auto_in_a_valid),
+    .auto_in_a_bits_opcode(auto_in_a_bits_opcode),
+    .auto_in_a_bits_size(auto_in_a_bits_size),
+    .auto_in_a_bits_source(auto_in_a_bits_source),
+    .auto_in_a_bits_address(auto_in_a_bits_address),
+    .auto_in_a_bits_mask(auto_in_a_bits_mask),
+    .auto_in_a_bits_data(auto_in_a_bits_data),
+    .auto_in_d_ready(auto_in_d_ready),
+    .auto_in_d_valid(auto_in_d_valid),
+    .auto_in_d_bits_opcode(auto_in_d_bits_opcode),
+    .auto_in_d_bits_size(auto_in_d_bits_size),
+    .auto_in_d_bits_source(auto_in_d_bits_source),
+    .auto_in_d_bits_data(auto_in_d_bits_data),
+    .io_rtcTick(io_rtcTick),
+    .io_time_valid(io_time_valid),
+    .io_time_bits(io_time_bits)
+  );
+endmodule
