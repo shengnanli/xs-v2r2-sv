@@ -932,8 +932,20 @@ module xs_NewIFU_core (
   always_comb for (int i = 0; i < PredictWidth; i++) f3_pd_valid_vec[i] = f3_pd[i].valid;
 
   // f3_instr_valid：有 lastHalf 时用 hasHalfValid，否则用 pd.valid
-  always_comb
-    f3_instr_valid = f3_lastHalf_valid ? f3_hasHalfValid : f3_pd_valid_vec;
+  //   = Mux(f3_lastHalf_valid, f3_hasHalfValid, f3_pd.valid)（对应 Chisel IFU 第913行）
+  // 但 hasHalfValid[0]/[1] 在 PreDecode 里是「常量」：
+  //   - hasHalfValid[0] 恒 0（h_validStart(0)=false）
+  //   - hasHalfValid[1] 恒 1（h_validEnd(0)=1 ⇒ h_validStart(1)=1）  ★关键★
+  // golden 适配器只引出 PreDecode 的 hasHalfValid[2..15] 端口，把 [0]/[1] 都接 0，
+  // 但 firtool 在 NewIFU 内把 hasHalfValid[1] 的常量 1 内联，使
+  //   f3_instr_valid_1 = Mux(lhV, 1, pd_1) = lhV | pd_1（golden RTL 第1731行）。
+  // 本重写核若直接读适配器送来的 f3_hasHalfValid[1](=0) 会在 lastHalf 续接块把第 1 槽
+  // 误判为无效 → IBuffer 入队整体偏移一条(cfVec ftqOffset/foldpc off-by-one)。
+  // 这里对 bit1 显式还原常量语义，与 golden 逐位一致，且不依赖适配器对 [1] 的取值。
+  always_comb begin
+    f3_instr_valid    = f3_lastHalf_valid ? f3_hasHalfValid : f3_pd_valid_vec;
+    f3_instr_valid[1] = f3_lastHalf_valid | f3_pd[1].valid;
+  end
 
   // ===========================================================================
   // FrontendTrigger（黑盒）：逐指令断点触发
