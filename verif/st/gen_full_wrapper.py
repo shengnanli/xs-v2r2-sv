@@ -39,9 +39,17 @@ PORT_RE = re.compile(
     r'(\[[^\]]*\]\s*)?([A-Za-z_]\w*)\s*$')
 
 def parse_ports(text, module):
-    # 取 module <name> ( ... ); 的端口块
-    m = re.search(r'\bmodule\s+' + re.escape(module) + r'\b\s*(#\s*\([^)]*\)\s*)?\(',
-                  text)
+    # 取 module <name> ( ... ); 的端口块。
+    # 兼容 ANSI 头里 module 名与端口左括号之间的可选构件:
+    #   - 参数块 #( ... )
+    #   - 一个或多个 import pkg::*; 子句(如 Fence_wrapper 的 `import fence_pkg::*;`)
+    # 这些都要在到达端口块 `(` 之前被跳过。
+    m = re.search(
+        r'\bmodule\s+' + re.escape(module) + r'\b\s*'
+        r'(?:#\s*\([^)]*\)\s*)?'                       # 可选参数块
+        r'(?:import\s+[^;]+;\s*)*'                     # 可选 import 子句(0+)
+        r'\(',
+        text)
     if not m:
         raise SystemExit("gen_full_wrapper: module %s not found" % module)
     start = m.end()  # 紧跟左括号后
@@ -80,6 +88,66 @@ def parse_ports(text, module):
         n = pm.group(3)
         ports.append((n, d, w))
     return ports
+
+# ---- 抠 golden 模块体里被 SimTop "bore"(BoringUtils 跨模块引用)直接探出的内部
+#      探针 wire, 在全端口 wrapper 里原样复刻, 让顶层 XMR 能解析。
+#
+# 背景: firtool 给某些 FU(浮点 FAlu/FMA/FDivSqrt/FCVT)的非法操作码断言生成
+#   `wire _GEN = io_in_valid & io_in_bits_ctrl_fuOpType == 9'hFF;`, 并经 BoringUtils
+#   把这个 _GEN 探到 SimTop(SimTop.sv 里 `.x1_bore_NNN (...exus_N.Falu._GEN)`)。
+#   重写 wrapper 没有这个 net → 顶层 XMRE "token '_GEN' ... cannot resolve"。
+#   _GEN 是 **纯端口组合**(只依赖 golden 端口), 故在 wrapper 里照抄这条 wire 即可
+#   忠实复刻探针值, 让 bore 解析通过(断言本身 sim-only, 不参与 difftest 架构比对)。
+#
+# 提取规则(保守): 在 golden 模块体(端口块之后)抓 module 作用域(depth==0,
+#   不在子例化的命名块里)的顶层 `wire [..] NAME = <expr>;`, 其中 NAME 形如 `_GEN`
+#   或 `_GEN_<n>`(firtool 给 bore 探针的命名), 且 <expr> 内引用到的标识符都是
+#   golden 端口(纯端口组合, 复刻必可编)。返回 [(decl_text, name)]。
+def scavenge_bored_wires(gtext, module, port_names):
+    # 截出 module 体: 从端口块结束 ");" 到对应 endmodule。
+    m = re.search(
+        r'\bmodule\s+' + re.escape(module) + r'\b\s*'
+        r'(?:#\s*\([^)]*\)\s*)?(?:import\s+[^;]+;\s*)*\(', gtext)
+    if not m:
+        return []
+    i = m.end(); depth = 1
+    while i < len(gtext) and depth > 0:
+        c = gtext[i]
+        if c == '(': depth += 1
+        elif c == ')': depth -= 1
+        i += 1
+    # i 现在指向端口块 ");" 之后; 找 endmodule。
+    body_end = gtext.find('endmodule', i)
+    body = gtext[i:body_end if body_end >= 0 else len(gtext)]
+    # 抓 top-level wire NAME = expr;  (NAME == _GEN or _GEN_<n>)
+    wire_re = re.compile(
+        r'^[ \t]*wire\b([^=;]*?)\b(_GEN(?:_\d+)?)\s*=\s*([^;]+);',
+        re.M)
+    ident_re = re.compile(r"\b([A-Za-z_]\w*)\b")
+    found = []
+    seen = set()
+    for wm in wire_re.finditer(body):
+        width_part, name, expr = wm.group(1), wm.group(2), wm.group(3)
+        if name in seen:
+            continue
+        # expr 里引用到的标识符必须都是端口(或 SV 字面量关键字), 否则跳过(不安全)。
+        # 先剔除 SV 基数字面量(9'hFF / 1'b0 / 32'd10 ...), 否则其十六进制尾巴
+        # (hFF 等)会被当成标识符误判为 "非端口"。
+        expr_nolit = re.sub(r"\b\d+'[sS]?[bBoOdDhH][0-9a-fA-F_xXzZ]+", " ", expr)
+        ids = set(ident_re.findall(expr_nolit))
+        bad = [x for x in ids if x not in port_names
+               and not re.fullmatch(r'\d+|reset|clock', x)]
+        if bad:
+            sys.stderr.write(
+                "[gen_full_wrapper] note: bored wire %s depends on non-port %s; "
+                "skip re-emit\n" % (name, bad))
+            continue
+        decl = "  wire%s%s = %s;" % (width_part if width_part.strip() else ' ',
+                                     name, expr.strip())
+        found.append((decl, name))
+        seen.add(name)
+    return found
+
 
 def main():
     if len(sys.argv) != 4:
@@ -142,6 +210,16 @@ def main():
     out.append(",\n".join(conn))
     out.append("  );")
     out.append("")
+
+    # ---- 复刻被 SimTop bore 探出的内部探针 wire(纯端口组合), 让顶层 XMR 解析 ----
+    bored = scavenge_bored_wires(gtext, M, gnames)
+    if bored:
+        out.append("  // ---- bored-out probe wires re-emitted for top-level XMR (BoringUtils) ----")
+        for (decl, name) in bored:
+            out.append(decl)
+            sys.stderr.write("[gen_full_wrapper] re-emitted bored wire '%s' in module %s\n"
+                             % (name, M))
+        out.append("")
 
     # golden 独有输出 → 驱动
     golden_only = [(n, d, w) for (n, d, w) in gports if n not in snames]

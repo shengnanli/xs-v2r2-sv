@@ -292,6 +292,15 @@ PY
 
 log "bundle generated: $TMP_BUNDLE ($(wc -l < "$TMP_BUNDLE") lines)"
 
+# 完整性守卫: bundle **必须** 含 golden 同名 `module <M>(`。早先 gen_full_wrapper
+# 的 ANSI 头解析(import/参数块在端口左括号前)会在解析子集 wrapper 时 SystemExit,
+# 但 python stderr 被吞、shell 仍 exit 0, 导致装进一个 **没有 module M** 的残缺
+# bundle(只剩改名后的 xs_M_subset), 父模块例化时才报 "module M undefined"。
+# 在落地前显式校验, 缺则直接报错退出, 不污染 build/rtl。
+if ! grep -qE "^[[:space:]]*module[[:space:]]+${MODULE}[[:space:]]*[(#]" "$TMP_BUNDLE"; then
+  die "generated bundle has no 'module ${MODULE}(' — full-port wrapper generation likely failed (check gen_full_wrapper.py ANSI-header parse). bundle: $TMP_BUNDLE"
+fi
+
 # 受影响文件清单
 echo "[substitute] === affected source files for ${MODULE} ===" >&2
 for f in "${PKG_FILES[@]}" "$CORE" "${SVH_FILES[@]}" "$WRAPPER"; do echo "  $f" >&2; done
