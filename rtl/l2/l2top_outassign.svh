@@ -1,0 +1,55 @@
+// 自动生成:scripts/gen_l2top.py —— 勿手改(顶层 glue 为从 Scala 意图的可读重写)
+
+// 顶层 io 输出 assign + 中断端口直通(auto_inner_*_int_out=in,L2Top 仅中转)。
+// 绝大多数纯连线;唯一带运算:io_l2_hint_bits_sourceId 取低 4 位([3:0])。
+
+  assign auto_inner_nmi_int_out_0 = auto_inner_nmi_int_in_0;
+  assign auto_inner_nmi_int_out_1 = auto_inner_nmi_int_in_1;
+  assign auto_inner_plic_int_out_1_0 = auto_inner_plic_int_in_1_0;
+  assign auto_inner_plic_int_out_0_0 = auto_inner_plic_int_in_0_0;
+  assign auto_inner_debug_int_out_0 = auto_inner_debug_int_in_0;
+  assign auto_inner_clint_int_out_0 = auto_inner_clint_int_in_0;
+  assign auto_inner_clint_int_out_1 = auto_inner_clint_int_in_1;
+  assign io_hartId_toCore = inner_io_hartId_toCore;
+  assign io_msiInfo_toCore_valid = io_msiInfo_fromTile_valid;
+  assign io_msiInfo_toCore_bits = io_msiInfo_fromTile_bits;
+  assign io_cpu_halt_toTile = inner_io_cpu_halt_toTile;
+  assign io_cpu_critical_error_toTile = inner_io_cpu_critical_error_toTile;
+  assign io_hartIsInReset_toTile = inner_hartIsInReset;
+  assign io_traceCoreInterface_fromCore_fromEncoder_enable = inner_io_traceCoreInterface_fromCore_fromEncoder_REG_enable;
+  assign io_traceCoreInterface_fromCore_fromEncoder_stall = inner_io_traceCoreInterface_fromCore_fromEncoder_REG_stall;
+  assign io_traceCoreInterface_toTile_toEncoder_priv = inner_io_traceCoreInterface_toTile_toEncoder_priv_r;
+  assign io_traceCoreInterface_toTile_toEncoder_trap_cause = inner_io_traceCoreInterface_toTile_toEncoder_trap_r_cause;
+  assign io_traceCoreInterface_toTile_toEncoder_trap_tval = inner_io_traceCoreInterface_toTile_toEncoder_trap_r_tval;
+  assign io_traceCoreInterface_toTile_toEncoder_groups_0_bits_iaddr = inner_io_traceCoreInterface_toTile_toEncoder_groups_0_bits_iaddr_r;
+  assign io_traceCoreInterface_toTile_toEncoder_groups_0_bits_itype = inner_io_traceCoreInterface_toTile_toEncoder_groups_0_bits_itype_REG;
+  assign io_traceCoreInterface_toTile_toEncoder_groups_0_bits_iretire = inner_io_traceCoreInterface_toTile_toEncoder_groups_0_bits_iretire_REG;
+  assign io_traceCoreInterface_toTile_toEncoder_groups_0_bits_ilastsize = inner_io_traceCoreInterface_toTile_toEncoder_groups_0_bits_ilastsize_r;
+  assign io_traceCoreInterface_toTile_toEncoder_groups_1_bits_iaddr = inner_io_traceCoreInterface_toTile_toEncoder_groups_1_bits_iaddr_r;
+  assign io_traceCoreInterface_toTile_toEncoder_groups_1_bits_itype = inner_io_traceCoreInterface_toTile_toEncoder_groups_1_bits_itype_REG;
+  assign io_traceCoreInterface_toTile_toEncoder_groups_1_bits_iretire = inner_io_traceCoreInterface_toTile_toEncoder_groups_1_bits_iretire_REG;
+  assign io_traceCoreInterface_toTile_toEncoder_groups_1_bits_ilastsize = inner_io_traceCoreInterface_toTile_toEncoder_groups_1_bits_ilastsize_r;
+  assign io_traceCoreInterface_toTile_toEncoder_groups_2_bits_iaddr = inner_io_traceCoreInterface_toTile_toEncoder_groups_2_bits_iaddr_r;
+  assign io_traceCoreInterface_toTile_toEncoder_groups_2_bits_itype = inner_io_traceCoreInterface_toTile_toEncoder_groups_2_bits_itype_REG;
+  assign io_traceCoreInterface_toTile_toEncoder_groups_2_bits_iretire = inner_io_traceCoreInterface_toTile_toEncoder_groups_2_bits_iretire_REG;
+  assign io_traceCoreInterface_toTile_toEncoder_groups_2_bits_ilastsize = inner_io_traceCoreInterface_toTile_toEncoder_groups_2_bits_ilastsize_r;
+  assign io_l3Miss_toCore = io_l3Miss_fromTile;
+  assign io_clintTime_toCore_valid = io_clintTime_fromTile_valid;
+  assign io_clintTime_toCore_bits = io_clintTime_fromTile_bits;
+  assign io_chi_txsactive = inner_io_chi_txsactive;
+  assign io_chi_syscoreq = inner_io_chi_syscoreq;
+  assign io_chi_tx_linkactivereq = inner_io_chi_tx_linkactivereq;
+  assign io_chi_tx_req_flitpend = inner_io_chi_tx_req_flitpend;
+  assign io_chi_tx_req_flitv = inner_io_chi_tx_req_flitv;
+  assign io_chi_tx_req_flit = inner_io_chi_tx_req_flit;
+  assign io_chi_tx_rsp_flitpend = inner_io_chi_tx_rsp_flitpend;
+  assign io_chi_tx_rsp_flitv = inner_io_chi_tx_rsp_flitv;
+  assign io_chi_tx_rsp_flit = inner_io_chi_tx_rsp_flit;
+  assign io_chi_tx_dat_flitpend = inner_io_chi_tx_dat_flitpend;
+  assign io_chi_tx_dat_flitv = inner_io_chi_tx_dat_flitv;
+  assign io_chi_tx_dat_flit = inner_io_chi_tx_dat_flit;
+  assign io_chi_rx_linkactiveack = inner_io_chi_rx_linkactiveack;
+  assign io_chi_rx_rsp_lcrdv = inner_io_chi_rx_rsp_lcrdv;
+  assign io_chi_rx_dat_lcrdv = inner_io_chi_rx_dat_lcrdv;
+  assign io_chi_rx_snp_lcrdv = inner_io_chi_rx_snp_lcrdv;
+  assign io_l2_hint_bits_sourceId = _inner_l2cache_io_l2_hint_bits_sourceId[3:0];
