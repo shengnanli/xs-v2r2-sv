@@ -43,4 +43,26 @@ package plic_pkg;
   // 0 号占位设备的有效优先级常量 = 1 << prioBits
   localparam logic [PLIC_EP_BITS-1:0] PLIC_PLACEHOLDER_EP =
     (PLIC_EP_BITS'(1) << PLIC_PRIO_BITS);
+
+  // ===========================================================================
+  //  TLPLIC 顶层实例参数 (对照 golden TLPLIC.sv 端口)
+  // ---------------------------------------------------------------------------
+  //  本实例: nDevices=65, nHarts=2, nPriorities=7 (prioBits=3)。
+  //  设备号 1..65 对应中断源, 0 号保留(无中断)。device d (0-based, 0..64) 的
+  //  挂起/优先级寄存器对应中断号 d+1。
+  //
+  //  TileLink 寄存器地址映射 (字节地址, 每寄存器 32 位, PLIC 标准布局):
+  //    priorityBase 0x0000 : 中断源优先级, 源 i 在 0x4*i (源 0 保留 ⇒ 从 0x4 起)
+  //    pendingBase  0x1000 : 挂起位数组 (只读), 1 bit/源
+  //    enableBase   0x2000 : 每 hart 一组使能位; hart i 基址 0x2000 + i*0x80
+  //    hartBase     0x200000: 每 hart 的 {threshold, claim/complete}; hart i 基址
+  //                          0x200000 + i*0x1000
+  //  firtool 把字节地址压成 8 字节字索引 index=addr[25:3] (23 位), 再压成 9 位
+  //  oindex = {index[18], index[10:9], index[5:0]} 做寄存器选择 (见 TLPLIC.sv)。
+  // ===========================================================================
+  localparam int PLIC_N_HARTS = 2;                          // hart 数
+
+  // 使能寄存器分块: firstEnable = min(nDevices,7)=7, 之后每 8 个一块。
+  //   65 = 7 + 8*7 + 2 ⇒ 9 块: [7,8,8,8,8,8,8,8,2] (每 hart)
+  localparam int PLIC_EN_CHUNKS  = 9;
 endpackage
