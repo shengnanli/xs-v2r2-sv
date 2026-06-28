@@ -1,0 +1,77 @@
+// 自动生成:scripts/gen_coupledl2.py —— 勿手改(顶层 glue 为从 firtool 意图的具名可读重写)
+
+// 顶层 io/auto 输出 assign + _probe 探针。多数为子模块输出网直连;
+// 带运算的:auto_in_i_b_bits_address 插入 bank 号({addr[45:6],2'hi,addr[5:0]})、
+// auto_in_i_d_valid = slice d_valid & sliceDArbWin[i]、io_perf_* = perfStage2[N]、
+// io_l2Miss = l2MissReg。RENAME 表已把 firtool 临时名换成 glue 具名信号。
+
+  assign _probe = _topDown_io_debugTopDown_l2MissMatch;
+  assign auto_in_3_b_bits_address = {_slices_3_io_in_b_bits_address[45:6], 2'h3, _slices_3_io_in_b_bits_address[5:0]};
+  assign auto_in_3_d_valid = _slices_3_io_in_d_valid & sliceDArbWin[3];
+  assign auto_in_3_d_bits_opcode = _slices_3_io_in_d_bits_opcode;
+  assign auto_in_3_d_bits_source = _slices_3_io_in_d_bits_source;
+  assign auto_in_2_b_bits_address = {_slices_2_io_in_b_bits_address[45:6], 2'h2, _slices_2_io_in_b_bits_address[5:0]};
+  assign auto_in_2_d_valid = _slices_2_io_in_d_valid & sliceDArbWin[2];
+  assign auto_in_2_d_bits_opcode = _slices_2_io_in_d_bits_opcode;
+  assign auto_in_2_d_bits_source = _slices_2_io_in_d_bits_source;
+  assign auto_in_1_b_bits_address = {_slices_1_io_in_b_bits_address[45:6], 2'h1, _slices_1_io_in_b_bits_address[5:0]};
+  assign auto_in_1_d_valid = _slices_1_io_in_d_valid & sliceDArbWin[1];
+  assign auto_in_1_d_bits_opcode = _slices_1_io_in_d_bits_opcode;
+  assign auto_in_1_d_bits_source = _slices_1_io_in_d_bits_source;
+  assign auto_in_0_b_bits_address = {_slices_0_io_in_b_bits_address[45:6], 2'h0, _slices_0_io_in_b_bits_address[5:0]};
+  assign auto_in_0_d_valid = _slices_0_io_in_d_valid & sliceDArbWin[0];
+  assign auto_in_0_d_bits_opcode = _slices_0_io_in_d_bits_opcode;
+  assign auto_in_0_d_bits_source = _slices_0_io_in_d_bits_source;
+  assign io_l2_hint_valid = hintFire;
+  assign io_l2_hint_bits_sourceId = _l1HintArb_io_out_bits_sourceId;
+  assign io_debugTopDown_l2MissMatch = _topDown_io_debugTopDown_l2MissMatch;
+  assign io_l2Miss = l2MissReg;
+  assign io_error_valid = _l2ECCArb_io_out_valid & _l2ECCArb_io_out_bits_valid;
+  assign io_perf_1_value = perfStage2[1];
+  assign io_perf_2_value = perfStage2[2];
+  assign io_perf_3_value = perfStage2[3];
+  assign io_perf_4_value = perfStage2[4];
+  assign io_perf_5_value = perfStage2[5];
+  assign io_perf_6_value = perfStage2[6];
+  assign io_perf_7_value = perfStage2[7];
+  assign io_perf_8_value = perfStage2[8];
+  assign io_perf_9_value = perfStage2[9];
+  assign io_perf_10_value = perfStage2[10];
+  assign io_perf_11_value = perfStage2[11];
+  assign io_perf_12_value = perfStage2[12];
+  assign io_perf_13_value = perfStage2[13];
+  assign io_perf_14_value = perfStage2[14];
+  assign io_perf_15_value = perfStage2[15];
+  assign io_perf_16_value = perfStage2[16];
+  assign io_perf_17_value = perfStage2[17];
+  assign io_perf_18_value = perfStage2[18];
+  assign io_perf_19_value = perfStage2[19];
+  assign io_perf_20_value = perfStage2[20];
+  assign io_perf_21_value = perfStage2[21];
+  assign io_perf_22_value = perfStage2[22];
+  assign io_perf_23_value = perfStage2[23];
+  assign io_perf_24_value = perfStage2[24];
+  assign io_perf_25_value = perfStage2[25];
+  assign io_perf_26_value = perfStage2[26];
+  assign io_perf_27_value = perfStage2[27];
+  assign io_perf_28_value = perfStage2[28];
+  assign io_perf_29_value = perfStage2[29];
+  assign io_perf_30_value = perfStage2[30];
+  assign io_perf_31_value = perfStage2[31];
+  assign io_perf_32_value = perfStage2[32];
+  assign io_perf_33_value = perfStage2[33];
+  assign io_perf_34_value = perfStage2[34];
+  assign io_perf_35_value = perfStage2[35];
+  assign io_perf_36_value = perfStage2[36];
+  assign io_perf_37_value = perfStage2[37];
+  assign io_perf_38_value = perfStage2[38];
+  assign io_perf_39_value = perfStage2[39];
+  assign io_perf_40_value = perfStage2[40];
+  assign io_perf_41_value = perfStage2[41];
+  assign io_perf_42_value = perfStage2[42];
+  assign io_perf_43_value = perfStage2[43];
+  assign io_perf_44_value = perfStage2[44];
+  assign io_perf_45_value = perfStage2[45];
+  assign io_perf_46_value = perfStage2[46];
+  assign io_perf_47_value = perfStage2[47];
+  assign io_perf_48_value = perfStage2[48];
