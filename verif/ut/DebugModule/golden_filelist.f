@@ -1,0 +1,36 @@
+// 自动生成：scripts/gen_debugmodule.py —— DebugModule 两大黑盒子块的 golden 依赖闭包
+// (UT 双例化需编入真实子模块; -f 显式列出, 每文件一次)
+../../../golden/chisel-rtl/AsyncQueueSink.sv
+../../../golden/chisel-rtl/AsyncQueueSink_1.sv
+../../../golden/chisel-rtl/AsyncQueueSink_2.sv
+../../../golden/chisel-rtl/AsyncQueueSource.sv
+../../../golden/chisel-rtl/AsyncQueueSource_1.sv
+../../../golden/chisel-rtl/AsyncQueueSource_2.sv
+../../../golden/chisel-rtl/AsyncResetSynchronizerPrimitiveShiftReg_d3_i0.sv
+../../../golden/chisel-rtl/AsyncResetSynchronizerShiftReg_w1_d3_i0.sv
+../../../golden/chisel-rtl/CaptureChain.sv
+../../../golden/chisel-rtl/CaptureUpdateChain.sv
+../../../golden/chisel-rtl/CaptureUpdateChain_1.sv
+../../../golden/chisel-rtl/CaptureUpdateChain_2.sv
+../../../golden/chisel-rtl/ClockCrossingReg_w15.sv
+../../../golden/chisel-rtl/ClockCrossingReg_w44.sv
+../../../golden/chisel-rtl/ClockCrossingReg_w56.sv
+../../../golden/chisel-rtl/DMIToTL.sv
+../../../golden/chisel-rtl/DebugTransportModuleJTAG.sv
+../../../golden/chisel-rtl/JtagBypassChain.sv
+../../../golden/chisel-rtl/JtagStateMachine.sv
+../../../golden/chisel-rtl/JtagTapController.sv
+../../../golden/chisel-rtl/Queue2_TLBundleD_2.sv
+../../../golden/chisel-rtl/SBToTL.sv
+../../../golden/chisel-rtl/TLAsyncCrossingSink.sv
+../../../golden/chisel-rtl/TLAsyncCrossingSource.sv
+../../../golden/chisel-rtl/TLBusBypass.sv
+../../../golden/chisel-rtl/TLBusBypassBar.sv
+../../../golden/chisel-rtl/TLDebugModule.sv
+../../../golden/chisel-rtl/TLDebugModuleInner.sv
+../../../golden/chisel-rtl/TLDebugModuleInnerAsync.sv
+../../../golden/chisel-rtl/TLDebugModuleOuter.sv
+../../../golden/chisel-rtl/TLDebugModuleOuterAsync.sv
+../../../golden/chisel-rtl/TLError_1.sv
+../../../golden/chisel-rtl/TLXbar_3.sv
+../../../golden/chisel-rtl/ram_2x66.sv
