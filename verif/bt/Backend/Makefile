@@ -38,19 +38,54 @@ UT_DIR     = ../../ut
 # 会在顶层产生大量量化分叉。故 DataPath 作可选扩展，需先解决探针重名（局部 stub）。
 XS_PKGS = \
     $(RTL_DIR)/backend/bypassnetwork_pkg.sv \
-    $(RTL_DIR)/backend/wbfubusytable_pkg.sv
+    $(RTL_DIR)/backend/wbfubusytable_pkg.sv \
+    $(RTL_DIR)/backend/wbdatapath_pkg.sv \
+    $(RTL_DIR)/backend/iq_acfd_pkg.sv \
+    $(RTL_DIR)/backend/iq_ambb_pkg.sv \
+    $(RTL_DIR)/backend/iq_abjivvi_pkg.sv \
+    $(RTL_DIR)/backend/scheduler_int_pkg.sv
 
 XS_CORES = \
     $(RTL_DIR)/backend/BypassNetwork.sv \
-    $(RTL_DIR)/backend/WbFuBusyTable.sv
+    $(RTL_DIR)/backend/WbFuBusyTable.sv \
+    $(RTL_DIR)/backend/WbDataPath.sv
+
+# Int Scheduler 子树共享重写核(名字 xs_* / Iq* 唯一, 不撞 golden, 两侧/-y 共享原文件)。
+SCHED_XS_CORES = \
+    $(RTL_DIR)/backend/EntriesAluCsrFenceDiv.sv \
+    $(RTL_DIR)/backend/EntriesAluMulBkuBrhJmp.sv \
+    $(RTL_DIR)/backend/EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v.sv \
+    $(RTL_DIR)/backend/IqEntryAcfd.sv \
+    $(RTL_DIR)/backend/IqEntryAmbb.sv \
+    $(RTL_DIR)/backend/IqEntryAbjivvi.sv
 
 XS_ADAPTERS = \
     $(UT_DIR)/BypassNetwork/variants_xs.sv \
     $(UT_DIR)/WbFuBusyTable/variants_xs.sv
 
+# WbDataPath 适配器经 gen_bt.py 改名(difftest 探针 DummyDPICWrapper_24/32/38/44 → _wbdp,
+# 避开 golden Backend 全闭包里同号不同端口的真探针), 配套本地空 stub(纯 sink, 不驱动设计)。
+XS_LOCAL_ADAPTERS = \
+    WbDataPath_xs_bt.sv \
+    WbDataPath_dpic_stub_bt.sv
+
+# Int Scheduler 子树 _bt 改名件(gen_bt.py 的 gen_scheduler_int_subtree 生成;
+# 6 个 golden 同名算法模块 + Scheduler 顶层加 _bt, 内含 xs_*_core。include 的
+# issuequeue_*_ports/connect.svh 复用 rtl/backend(经 +incdir, 只例化 xs core 无撞名)。
+SCHED_BT_SUBTREE = \
+    IssueQueueAluCsrFenceDiv_bt.sv \
+    IssueQueueAluMulBkuBrhJmp_bt.sv \
+    IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v_bt.sv \
+    EntriesAluCsrFenceDiv_wrapper_bt.sv \
+    EntriesAluMulBkuBrhJmp_wrapper_bt.sv \
+    EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v_wrapper_bt.sv \
+    Scheduler_core_bt.sv
+
 BT_WRAPPERS = \
     BypassNetwork_bt.sv \
-    WbFuBusyTable_bt.sv
+    WbFuBusyTable_bt.sv \
+    WbDataPath_bt.sv \
+    Scheduler_bt.sv
 
 BT_ASSEMBLY = Backend_bt.sv
 
@@ -94,7 +129,8 @@ SUB_DEPS = $(GOLDEN_RTL)/BypassNetwork.sv \
 # 汇总给 ut_common.mk
 # ---------------------------------------------------------------------------
 RTL_SRCS = \
-    $(XS_PKGS) $(XS_CORES) $(XS_ADAPTERS) $(BT_WRAPPERS) \
+    $(XS_PKGS) $(XS_CORES) $(SCHED_XS_CORES) $(XS_ADAPTERS) $(XS_LOCAL_ADAPTERS) \
+    $(SCHED_BT_SUBTREE) $(BT_WRAPPERS) \
     $(BT_ASSEMBLY)
 
 GOLDEN_SRCS = $(GOLDEN_RTL)/Backend.sv $(SUB_DEPS)
@@ -108,7 +144,7 @@ include ../../../scripts/ut_common.mk
 
 # golden 含非综合断言/difftest;关 SYNTHESIS 随机初值 + 关随机化,处理 flush-X。
 VCS += +define+SYNTHESIS
-VCS += +incdir+$(RTL_DIR)/backend
+VCS += +incdir+$(RTL_DIR)/backend +incdir+.
 VCS += +vcs+initreg+random
 SIM_ARGS += +vcs+initreg+0
 VCS += -y $(GOLDEN_RTL) +libext+.sv+.v
