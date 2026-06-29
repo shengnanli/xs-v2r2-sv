@@ -1,0 +1,46 @@
+// 自动生成 scripts/gen_chi_channel.py —— 勿手改
+module TXRSP_4_xs(
+  output io_task_ready,
+  input io_task_valid,
+  input [10:0] io_task_bits_tgtID,
+  input [10:0] io_task_bits_srcID,
+  input [11:0] io_task_bits_txnID,
+  input [11:0] io_task_bits_dbID,
+  input [6:0] io_task_bits_chiOpcode,
+  input [2:0] io_task_bits_resp,
+  input [2:0] io_task_bits_fwdState,
+  input [3:0] io_task_bits_pCrdType,
+  input io_rsp_ready,
+  output io_rsp_valid,
+  output [10:0] io_rsp_bits_tgtID,
+  output [10:0] io_rsp_bits_srcID,
+  output [11:0] io_rsp_bits_txnID,
+  output [4:0] io_rsp_bits_opcode,
+  output [2:0] io_rsp_bits_resp,
+  output [2:0] io_rsp_bits_fwdState,
+  output [11:0] io_rsp_bits_dbID,
+  output [3:0] io_rsp_bits_pCrdType
+);
+  xs_TXRSP_4_core u_core (
+    .io_task_ready(io_task_ready),
+    .io_task_valid(io_task_valid),
+    .io_task_bits_tgtID(io_task_bits_tgtID),
+    .io_task_bits_srcID(io_task_bits_srcID),
+    .io_task_bits_txnID(io_task_bits_txnID),
+    .io_task_bits_dbID(io_task_bits_dbID),
+    .io_task_bits_chiOpcode(io_task_bits_chiOpcode),
+    .io_task_bits_resp(io_task_bits_resp),
+    .io_task_bits_fwdState(io_task_bits_fwdState),
+    .io_task_bits_pCrdType(io_task_bits_pCrdType),
+    .io_rsp_ready(io_rsp_ready),
+    .io_rsp_valid(io_rsp_valid),
+    .io_rsp_bits_tgtID(io_rsp_bits_tgtID),
+    .io_rsp_bits_srcID(io_rsp_bits_srcID),
+    .io_rsp_bits_txnID(io_rsp_bits_txnID),
+    .io_rsp_bits_opcode(io_rsp_bits_opcode),
+    .io_rsp_bits_resp(io_rsp_bits_resp),
+    .io_rsp_bits_fwdState(io_rsp_bits_fwdState),
+    .io_rsp_bits_dbID(io_rsp_bits_dbID),
+    .io_rsp_bits_pCrdType(io_rsp_bits_pCrdType)
+  );
+endmodule
