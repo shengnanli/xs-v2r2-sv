@@ -36,9 +36,11 @@
 一个预测块最多记录 **NUM_BR=2 个条件分支槽 + 1 个 tailSlot（块尾跳转）**：
 
 - **brSlot（slot0）**：块内第 1 个条件分支；
-- **tailSlot（slot1）**：块尾跳转，也可被「共享（sharing）」当作第 2 个条件分支；
+- **tailSlot（slot1）**：块尾跳转 `jal/jalr/call/ret`，也可被「共享（sharing）」当作第 2 个条件分支；
 - **fall-through**：用 `pftAddr + carry` 紧凑编码顺序落点；
 - `isCall/isRet/isJalr`、`strong_bias` 等标志描述块尾跳转类型与置信。
+
+注意槽位是按**位置**切的、不是按类型切的：无条件转移（`jal/jalr/call/ret`）一旦执行到就必然 taken、必然落在块尾，所以整块至多一个、统一占 `tailSlot`（用 `isJalr/isCall/isRet` 区分，默认即 `jal`）；条件分支可以不跳而继续，因此独占 `brSlot` 并最多记两个。这也是为什么槽位是「1 brSlot + 1 tailSlot」而非「每类分支一个槽」。
 
 这套结构就是 **FTB 条目（FTBEntry）**。目标地址不存完整 50 位，而用「低位 lower + 2 位 tarStat（高位相对当前 PC 高位 FIT/OVF/UDF）」压缩，取出时用 PC 高位 ±1 重建。条目字段、目标压缩编码的精确定义见 [DATA_STRUCTURES](5-DATA_STRUCTURES.md) 与 [FTBEntryGen](../FTBEntryGen.md)。
 
@@ -169,6 +171,13 @@ flowchart LR
   RAS --> OUT["s2/s3 full_pred · s2/s3 pc · last_stage"]
   UFTB -.->|"s1 full_pred / s1_pc"| OUT
 ```
+
+怎么看这张图（呼应本节开头「覆盖发生在各预测器内部」）：
+
+- **实线 = resp 菊花链**：每个预测器吃上一级的 `resp_in`，只在自己负责的字段上覆盖，再把**整包** full_pred 往下传。箭头上的标签就是「这一段覆盖/补充了什么」——所以一个预测请求是被链上各级**逐字段改写**、而非各算各的再投票。
+- **链序是 `uFTB → FTB(+TAGE) → ITTAGE → RAS`**：注意 **TAGE-SC 不是独立一环**，它和 FTB 同属 **s2 那一簇**——FTB 在 s2 给条目/目标/fall-through，TAGE-SC 把**方向**覆盖进同一包结果，所以图里画成「TAGE-SC → FTB」（方向汇入 FTB 这个节点），而不是排在 FTB 后面。
+- **虚线 = uFTB 的 s1 旁路**：s1 输出必须当拍就绪（零气泡取指，§3.1），等不及走完整条链，所以链首 uFTB 的 s1 full_pred / s1_pc **直接旁路**驱动顶层 s1 输出；只有 s2/s3 输出才流过整条链、由链尾 RAS 驱动。
+- **每段覆盖了什么**：FTB 覆盖条目/目标/fall-through（s2）、TAGE-SC 覆盖方向（s2/s3）、ITTAGE 覆盖 `jalr_target`（s3）、RAS 覆盖 `ret` 目标（s3、链尾）。越靠链尾的预测器级数越高、越准，优先级也越高。
 
 链首 **uFTB** 在 s1 直接驱动顶层的 s1 输出；链尾 **RAS** 把已被层层覆盖的 s2/s3 full_pred、last_stage 直接驱动到顶层。各预测器在各自的覆盖窗口（uFTB→s1、FTB/TAGE→s2、ITTAGE/RAS/TAGE→s3）修改流经链上的预测。4 个 `DelayN` 把 ctrl 使能延迟对齐到各预测器所在的流水级。
 

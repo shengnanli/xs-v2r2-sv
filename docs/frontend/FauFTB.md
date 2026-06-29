@@ -37,15 +37,28 @@ flowchart LR
 
 | 维度 | uFTB（本模块） | 大 FTB |
 |------|----------------|--------|
-| 容量 | `numWays=32` 条，**全相联** | 几千条，组相联（带 SRAM） |
-| 索引 | 无 set index，16-bit tag **并行比所有 32 路** | set index 选组 + 组内比 tag |
-| 延迟 | S1 当拍出结果（全寄存器） | 需读 meta/data SRAM，晚一两级 |
-| 替换 | 32 路里 PLRU 选 victim | set 内替换 |
-| 方向 | 每路每分支自带 2-bit 饱和计数器 | 由独立的 TAGE 等给方向 |
+| 容量 | `numWays=32` 条，**全相联**（共 32 条） | **2048 条 = 4 路 × 512 组**，组相联，约 64 倍 |
+| 索引 | 无 set index，16-bit tag=`pc[16:1]` **并行比全部 32 路** | skewed idx=`pc[9:1]^pc[12:4]` 选组，再 20-bit tag=`pc[29:10]` 比组内 4 路 |
+| 存储/延迟 | **纯寄存器**，S1 当拍出结果、零读延迟 | 单端口 **SRAM** 存 {entry,tag}，S1 发地址、s2 才得数据，晚一两级 |
+| 替换 | 全 32 路**一棵** PLRU 树（31 状态位），全局替换 | 每组**一棵** 4 路 PLRU（3 位/组），先填空路、满了才替，范围限 set 内 |
+| 命中查找 | 保证最多一路命中（有断言），直接 Mux1H | 4 路可能撞 tag → **multi-hit 兜底**（PriorityMux 选最低位命中 + s3 纠正重定向） |
+| 方向 | **自带**每路每分支 2-bit 饱和计数器，命中即可独立给方向 | **无方向计数器**，只把 `strong_bias` OR 进上游 TAGE/SC 的方向掩码 |
+| 省功耗 | 无，永远当拍预测 | **close 机制**：与 uFTB 条目连续多拍逐字段一致就关 SRAM 读、直接采信 uFTB 条目 |
 
 容量小但全相联 → 任意 PC 都能落到任意一路，小表也有高利用率；32 路并行 tag 比较在面积/时序
-上仍可接受。**条目本身就是一个标准 FTBEntry**（与大 FTB 同构，见 `ftb_pkg`），所以 uFTB 命中
-时能直接把条目透出给后级（`fauftb_entry_out`）复用。
+上仍可接受。
+
+**功能/算法上，uFTB 与大 FTB 本质同构——是同一套「取指目标缓冲」的大小两个实例**：共用同一份
+`ftb_entry_t` 条目格式（brSlot/tailSlot/pftAddr/strong_bias…）、同一目标压缩编码 `get_target`、
+同一 fall-through 重建与越界回退；新条目都由 FTQ 里**唯一的 `FTBEntryGen`** 训练产出、走同一
+update 通道回送；写回也都是「命中改写 / 未命中 PLRU 分配」。正因条目语义完全等价，uFTB 命中条目
+才能直接透出给后级（`fauftb_entry_out`）供大 FTB 复用、逐字段比对、乃至一致时让大 FTB close 省功耗。
+
+所以上表那些差异**都落在物理实现维度**（容量、介质、流水级、PLRU 规模、多命中兜底、省功耗），
+**唯一的算法级差异是方向**：uFTB 自带 2-bit 饱和计数器，一家就能在 S1 给出「目标 + taken +
+fall-through」的完整块预测；大 FTB 不做方向饱和计数，只出 `strong_bias`、把条件分支方向让给独立
+的 TAGE-SC。二者在多级覆盖里是接力关系：**s1 uFTB 出首版 → s2/s3 大 FTB 用更大容量覆盖条目/目标、
+TAGE-SC 覆盖方向**（详见 `docs/frontend/arch/2-BPU_PRINCIPLES.md`）。
 
 ---
 

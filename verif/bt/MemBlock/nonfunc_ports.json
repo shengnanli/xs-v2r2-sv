@@ -1,0 +1,7 @@
+{
+ "DCacheWrapper": [],
+ "Uncache": [],
+ "L2TLBWrapper": [],
+ "Sbuffer": [],
+ "TLBNonBlock": []
+}
