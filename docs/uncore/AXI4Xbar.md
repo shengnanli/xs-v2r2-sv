@@ -59,7 +59,7 @@
 
 - **结构闸门**：核 + pkg 去注释 `io_*_N_N` / `_GEN_` / `_T_<n>` / `_REG_<n>` / `RANDOMIZE` = **0**；
   无 `.svh` 套壳（逻辑全在单文件可读核内）。pkg 含 4 函数（`dec_mem`/`dec_mmio`/`rr2`/`leftor2`）
-  + 11 localparam（仲裁器编号 + ID 数 + flight）。
+  + 12 localparam（仲裁器编号 + ID 数 + flight）。
 - **UT**：golden `AXI4Xbar` vs 可读 `AXI4Xbar_xs` 双例化（共用黑盒 `Queue2_UInt2`/`ram_2x2`），两
   主口随机 AW/AR（49 位地址 ≈各 50% 落 MEM/MMIO）+ 随机响应/握手，逐拍比对全部输出：
   **seed 1 / 7 / 42 各 200000 拍 errors=0**（各 12.4M 端口比对）。

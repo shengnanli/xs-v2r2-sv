@@ -47,7 +47,7 @@ flowchart LR
 | 写回 | `WbDataPath`×1、`WbFuBusyTable`×1 |
 | 向量异常 | `VecExcpDataMergeModule`×1、`Og2ForVector`×1 |
 | 性能/事件 | `HPerfMonitor_2`×1、`PFEvent`×1 |
-| 流水连接 | `NewPipelineConnectPipe`（多变体后缀）共 28 实例、`DelayN_1`×2 |
+| 流水连接 | `NewPipelineConnectPipe`（多变体后缀）共 27 实例、`DelayN_1`×2 |
 
 ---
 

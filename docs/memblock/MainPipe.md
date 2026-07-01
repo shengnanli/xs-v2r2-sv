@@ -63,6 +63,38 @@ flowchart TD
   end
 ```
 
+### 2.1 s2 分流细节：refill 未到的「阻 1 拍再 replay」两态 FSM
+
+miss 请求进 s2 但 **refill 数据还没到**（`s2_req_miss_without_data = s2_valid & s2_req.miss &
+~io_refill_info_valid`，`MainPipe.sv:788`）时，**不立刻 replay**，而是先强制阻 1 拍。用一个单 bit
+寄存器 `s2_can_go_to_mq_no_data_r` 做两态节流（`:790-795`）：
+
+- `s2_valid` 时更新：`s2_can_go_to_mq_no_data_r <= s2_req_miss_without_data & ~s2_can_go_to_mq_no_data`；
+- 判定：`s2_can_go_to_mq_no_data = s2_req_miss_without_data & s2_can_go_to_mq_no_data_r`。
+
+第一拍 reg=0 → `can_go=0`（强制停一拍），第二拍 reg=1 → `can_go=1` 放行去 MissQueue replay；放行同
+拍 reg 又被清 0，形成「阻 1 拍 → 放 1 拍」的交替节流，避免 refill 未到时同一条 miss 反复空转 replay。
+最终 `s2_can_go_to_mq_replay = s2_can_go_to_mq_no_data | s2_replace_block`（`:796`，后者是 evict
+冲突阻塞）。
+
+### 2.2 s3 LR/SC 保留锁 + backoff 窗口
+
+s3 维护 LR/SC 保留锁（`MainPipe.sv:906-1018`）：
+
+- **保留计数 `lrsc_count`**（6 位，`LRSC_CYCLES=64`）：LR 命中且可做 AMO（`s3_can_do_amo & s3_lr`）时
+  置 `LRSC_CYCLES-1`(=63) 并把块地址存入 `lrsc_addr`（`:1005/1011`）；其它 LR/SC 处理拍（如 SC）清 0；
+  `io_invalid_resv_set`（外部使能，如别的核抢锁）清 0；否则每拍自减（`:1002-1009`）。
+- **backoff 窗口**：保留锁**只在 `lrsc_valid = lrsc_count > LRSC_BACKOFF`(=3) 时才算有效**
+  （`:908`）——计数尾部 3 拍（count 1..3）刻意判为失效。这是 LR/SC 活锁避免（back-off）：两核互相
+  打断对方保留时，尾窗让 SC 必然失败一次，打破对称重试死循环。
+- **SC 成败**：`s3_sc_fail = s3_sc & (~s3_lrsc_addr_match | ~s3_hit)`（`:911`），其中
+  `s3_lrsc_addr_match = lrsc_valid & (lrsc_addr == s3_block_addr)`（`:910`）。即 SC 要求保留仍有效、
+  地址匹配且命中，否则失败（不写数据、不更新 meta、回失败码）。
+- **对外锁信息**：`io_lrsc_locked_block_valid = lrsc_valid` / `io_lrsc_locked_block_bits = lrsc_addr`
+  把当前被保留的块告知外部（供 load/store 冲突判定）；`io_update_resv_set = s3_valid & s3_lr &
+  s3_can_do_amo`（`:1018`）通知新建保留集；**`io_block_lr = RegNext(lrsc_count > 0)`**（`:1013-1017`）
+  ——只要保留在途（含 backoff 尾窗）就打一拍后阻止新的 LR 发起。
+
 ## 3. 一致性状态机（MESI on TileLink）
 
 一致性状态 `coh_e`（2 bit）：`Nothing(I) / Branch(S,只读) / Trunk(E,可写未脏) / Dirty(M)`。
@@ -81,11 +113,21 @@ stateDiagram-v2
   Nothing --> Trunk: refill NtoT(写意图)
   Branch --> Trunk: 写命中(grow BtoT)→refill
   Trunk --> Dirty: 写命中
-  Dirty --> Branch: probe toB(写回脏数据)
-  Dirty --> Nothing: probe toN(写回脏数据)
-  Trunk --> Nothing: probe toN
-  Branch --> Nothing: probe toN
+  Dirty --> Branch: probe toB(脏→带数据)
+  Dirty --> Nothing: probe toN(脏→带数据)
+  Trunk --> Branch: probe toB(clean)
+  Trunk --> Nothing: probe toN(clean)
+  Branch --> Nothing: probe toN(clean)
 ```
+
+> **写回是否带数据 ≠ coh 转移方向**：上图给出 probe/降级引起的 coh 迁移（含此前漏画的
+> `Trunk --toB--> Branch`，见 `shrink_helper` 的 `{PERM_toB,COH_TRUNK}` 分支 `mainpipe_pkg.sv:185`，
+> clean 行降到 Branch 不产生脏数据）。而**写回是否携带数据、进而决定 TL-C opcode Release(6) vs
+> ReleaseData(7)**，由独立信号判定：`writeback_data = (s3_tag_match & probe & probe_need_data) ||
+> (s3_coh == Dirty)`（`MainPipe.sv:1028`）。即：脏行降级（Dirty→\*）**恒带数据**；clean 行（Trunk/
+> Branch）的 probe 只有在 `probe_need_data` 时才带数据，否则发无数据的 Release。自愿写回（miss/
+> replace）同理——行不脏就发无数据 Release，**不能因 `coh != Nothing` 就带数据**，否则 opcode 会
+> 由 Release 误升为 ReleaseData。
 
 关键点 **BtoT 升权失败**（`s2_grow_perm_fail`）：写一个 Branch(只读) 行需要升到 Trunk，会同时占用一个 cache way 和一个 MissQueue 项；当本组里已有 > nWays-2 个 way 处于 BtoT 在途时，拒绝本次升权（`miss_req.cancel`），让 store/AMO replay，避免组内 way 被 BtoT 占满死锁。
 

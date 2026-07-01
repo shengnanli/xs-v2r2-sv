@@ -4,7 +4,7 @@
 |---|---|
 | 手写 SV | `rtl/common/SRAMTemplate_core.sv`（`xs_SRAMTemplate_core`）+ `rtl/common/SRAMTemplate_variants.sv` |
 | Scala 来源 | `utility/src/main/scala/utility/sram/SRAMTemplate.scala` |
-| 验证状态 | UT ✅（代表变体双例化 6 万拍 0 错）/ FM ✅（SRAMTemplate SUCCEEDED） |
+| 验证状态 | UT ✅（单端口 11 变体 + 双端口 2 变体双例化 0 错）/ FM ✅（全 SUCCEEDED） |
 
 ## 1. SRAM 路线决策（重要）
 
@@ -51,30 +51,46 @@ wrapper 连到具体宏。
 | `ENABLE_RESET` | 上电清零 FSM（否则无 FSM，ready 仅看 ~w_valid） |
 | `ENABLE_HOLDREAD` | 读数据保持（否则直接透出宏读数据） |
 | `ENABLE_CLOCKGATE` | 内部 MbistClockGateCell（否则 ram_clk 直连 clock） |
+| `EXTRA_RESET` | 额外复位口 `io_extra_reset`（可重触发清零 FSM，如 TAGE useful 表，变体 `_44`） |
+| `USE_BITMASK` | 1=逐位写掩码（宽 `MW=WAY*DATA_WIDTH` 位），0=逐路（宽 `WAY` 位）；ITTAGE 变体 `_70`/`_72` 用 |
 
 `io_r_req_ready` 是否引出、`io_w_req_bits_waymask` 是否存在、宏是否有 `RW0_wmask`/
 `mbist_dft_ram_bypass` 端口，均由变体 wrapper 按 golden 实际端口处理（生成器自动检测）。
+双端口族（独立读/写口）由并列的 `xs_SRAMTemplate_2p_core` 承担（见 §5）。
 
 ## 5. 已覆盖变体（生成器 scripts/gen_sram_wrappers.py）
 
-ICache 单端口族全部 6 个变体（UT 23.7 万拍 0 错，FM 全 SUCCEEDED）：
+### 5.1 单端口族（`xs_SRAMTemplate_core`，共 11 个变体，UT 全 0 错、FM 全 SUCCEEDED）
 
-| golden 模块 | set×way×bit | 宏 | cg/ready/wmask |
+| golden 模块 | set×way×bit | 用途/宏 | 特征（cg/hold/其它） |
 |------|------|----|------|
-| `SRAMTemplate` / `_2` | 128×2×37 | `..._icsh_tag` | 1/1/1 |
-| `_4` `_8` `_16` `_32` | 256×1×66 | `..._icsh_dat` | 0/0/0 |
+| `SRAMTemplate` / `_2` | 128×2×37 | ICache tag（`..._icsh_tag`） | cg1 / hold1 |
+| `_4` `_8` `_16` `_32` | 256×1×66 | ICache data（`..._icsh_dat`） | cg0 / hold1 |
+| `_36` | 512×4×10 | BP FTB（`..._bp_ftb`） | cg1 / hold0 |
+| `_45` | 512×2×12 | TAGE 表（`..._bp_tage`） | cg1 / hold1 |
+| `_44` | 256×16×1 | TAGE useful（`..._tage_us`） | cg1 / hold1 / **EXTRA_RESET** |
+| `_70` | 128×2×38 | ITTAGE（`..._ittage`） | cg1 / hold1 / **USE_BITMASK** |
+| `_72` | 128×4×19 | ITTAGE（`..._ittage`） | cg1 / hold1 / **USE_BITMASK** |
 
-生成器从 golden 自动提取 SET/WAY/DATA/BORE_AW 与 reset/hold/clockgate/ready/waymask
-特征、解析宏子模块链（sram_array_*→array_N→array_N_ext），生成 wrapper + _xs + tb +
-依赖 makefile；不支持的形态（多读口/双口/bitmask）会被检测并 SKIP。
+### 5.2 双端口族（`xs_SRAMTemplate_2p_core`，2 个变体）
 
-> 其余 SRAMTemplate 变体多属后端/L2/DCache/PTW（非前端范围）及双口/多读口/bitmask
-> 族，待对应子系统重写时按族扩展核与生成器。前端 BP 表的 SRAM 经 Folded/Splitted
-> SRAMTemplate 使用，在 1.4/1.5 处理。
+独立读口 + 独立写口（真双口宏），核与单端口核并列（`SRAMTemplate_2p_core.sv`）：
 
-## 5. 验证
+| golden 模块 | set×way×bit | 特征 |
+|------|------|------|
+| `SRAMTemplate_66` | 256×4×6 | 双口，上电清零 |
+| `SRAMTemplate_64` | 256×8×2 | 双口，`ENABLE_RESET=0`（不清零，读出 X 直到被写） |
 
-- **UT**（`verif/ut/SRAMTemplate/`）：golden `SRAMTemplate` vs 手写 `SRAMTemplate_xs`
-  双例化，随机读/写/MBIST bore/hold；`make run` 6 万拍 0 错误。
-- **FM**（`make fm`）：`SRAMTemplate` SUCCEEDED。依赖 `fm_eq.tcl` 新增的
+生成器从 golden 自动提取 SET/WAY/DATA/BORE_AW 与 reset/hold/clockgate/ready/waymask/
+bitmask/extra_reset/单双口特征、解析宏子模块链（sram_array_*→array_N→array_N_ext），
+生成 wrapper + _xs + tb + 依赖 makefile；剩余的多读口形态会被检测并 SKIP。
+
+> Folded/Splitted SRAMTemplate 层（前端 BP 表用）把上述单/双口变体当内层例化，
+> 见 [SplittedSRAMTemplate](SplittedSRAMTemplate.md) / [FoldedSRAMTemplate](FoldedSRAMTemplate.md)。
+
+## 6. 验证
+
+- **UT**（`verif/ut/SRAMTemplate/`、`verif/ut/SRAMTemplate_2p/`）：golden vs 手写 `_xs`
+  双例化，随机读/写/MBIST bore/hold；单端口 `checks=435644`、双端口 `checks=79208`，均 errors=0。
+- **FM**（`make fm`）：单端口与双端口族均 SUCCEEDED。依赖 `fm_eq.tcl` 的
   `hdlin_unresolved_modules black_box`（外部 SRAM 叶子当黑盒）。

@@ -1,6 +1,6 @@
 # Bku —— 位操作 / 加密功能单元（学习文档）
 
-> 可读重写：`rtl/backend/Bku.sv` + `rtl/backend/bku_pkg.sv`
+> 可读重写：`rtl/backend/Bku.sv` + `rtl/backend/bku_pkg.sv`（文件名 `bku_pkg.sv`，包名为 `xs_bku_pkg`）
 > golden 对照：`golden/chisel-rtl/Bku.sv`（+ 6 个子模块）
 > 设计源：`src/main/scala/xiangshan/backend/fu/Bku.scala`、
 > `xiangshan/backend/fu/util/CryptoUtils.scala`、`xiangshan/package.scala`（`object BKUOpType`）

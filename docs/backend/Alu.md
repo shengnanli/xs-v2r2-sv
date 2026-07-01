@@ -20,8 +20,9 @@ flowchart LR
 ALU 是 **单周期纯组合** 的叶子功能单元:
 - 输入:两个 64bit 操作数 `src1/src2`、7 位运算码 `fuOpType`。
 - 输出:64bit 结果 `res.data`。
-- 流水寄存/握手由外层 `PipedFuncUnit`(golden 顶层 `Alu`)负责;本核只做运算,
-  并把 valid / robIdx / pdest / rfWen / perfDebugInfo 等控制位 **原样直通**。
+- 流水寄存/握手,以及 valid / robIdx / pdest / rfWen / perfDebugInfo 等控制位的**原样直通**,
+  都由外层 `PipedFuncUnit`(golden 顶层 `Alu`)负责——**不在本核**。可读核 `xs_Alu_core`
+  端口只有 `src1 / src2 / func → result`(见 `Alu.sv:22-29`),是纯组合运算,不接触任何控制位。
 
 覆盖的指令:RV64I 的加减/比较/移位/逻辑,RV64 的 *W 字指令,以及 B 扩展
 (Zba 移位加、Zbb 基本位操作、Zbs 单 bit 操作)与 Zicond 条件置零。

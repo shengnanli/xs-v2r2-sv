@@ -79,7 +79,7 @@ flowchart TD
 | src1         | in   | 128  | rs2 VtypeStruct / 立即数载体 |
 | res_data     | out  | 64   | 写回 rd 的 vl(csrrvl 时为旧 vl) |
 | vtype_valid  | out  | 1    | vtype 寄存器写使能 |
-| vtype_out    | out  | 7    | 写回的 vtype(struct:vill/vma/vta/vsew/vlmul) |
+| vtype_out    | out  | 8    | 写回的 vtype(struct:vill/vma/vta/vsew[2]/vlmul[3] = 1+1+1+2+3 = 8) |
 | vl_is_zero   | out  | 1    | 新 vl == 0 |
 | vl_is_vlmax  | out  | 1    | 新 vl == VLMAX |
 

@@ -27,13 +27,14 @@ graph LR
   TLB["TLB hint"] -.tlb miss 回填.-> LQR
   RAR["LoadQueueRAR"] -.rarFull.-> LQR
   RAW["LoadQueueRAW"] -.rawFull.-> LQR
-  RED["Redirect / vecFeedback"] -.冲刷/取消.-> LQR
+  RED["Redirect"] -.冲刷/清队列.-> LQR
+  VEC["vecFeedback<br/>(merge buf flush/commit)"] -.解码但不清队列.-> LQR
 ```
 
 与上下游的关系：
 - **入队源**：LoadUnit s3（`io.enq`，3 路，`LoadPipelineWidth=3`）。
 - **唤醒源**：StoreQueue（store 地址/数据就绪向量 + 指针）、DCache D-channel refill (`tl_d_channel`)、L2 提前唤醒提示 (`l2_hint`)、TLB hint (`tlb_hint`)、RAR/RAW 队列空满信号。
-- **取消源**：Redirect（分支误预测/异常冲刷 ROB）、vecFeedback（向量 load 的 merge buffer flush/commit）。
+- **取消源**：**仅 Redirect**（分支误预测/异常冲刷 ROB）会清 entry（清 `allocated`、喂回 FreeList）。vecFeedback（向量 load 的 merge buffer flush/commit）虽被解码成 `vecLdCancel/vecLdCommit`，但在本模块 RTL 里**算出后从未被使用**——**vec flush 不清本队列**（详见 §7）。
 - **出口**：`io.replay`（3 路），把选中的 entry 组装成 replay 请求发回 LoadUnit。
 
 ---
@@ -137,6 +138,12 @@ graph TD
 
 RTL 里写成 `if/else if` 链（priority），**绝不能写成「任一 cause 解除即清」的 OR**。`C_DR/C_WF/C_BC/C_NK` 没有解除分支——它们入队时就把 `blocking = 0`，下一拍即可重放。
 
+**入队当拍即可预清 `blocking`（不止上面 4 个 cause）**：入队时 `blocking` 初值默认为 1，除 `C_DR/C_WF/C_BC/C_NK` 置 0 外，`C_TM` 与 `C_DM` 还各有一条**入队即预清**的特判（`loadqueuereplay_regupd.svh` 入队段，非 §5 这里的 `blkNext` 稳态解除）：
+
+- **`C_TM`**：入队 `blocking` 初值 = `~enq_tlb_full & ~(tlb_hint_valid & (id 命中 或 replay_all))`。即 **TLB filter 已满**、**或**入队当拍已有匹配的 tlb hint，二者任一成立即预清 `blocking = 0`（可立即重放，不必再等一轮 hint）；只有「filter 未满 **且** 尚无匹配 hint」才保持 `blocking = 1` 去等 hint。
+- **`C_DM & handledByMSHR`**：入队 `blocking` 初值 = `~enq_full_fwd & ~(tl_d_valid & mshrId 命中)`。即**可全量 forward**（`full_fwd`）、**或**入队当拍 refill 已在 D-channel 命中该 mshrId，任一成立即预清 `blocking = 0`；否则 `blocking = 1` 去等 refill。
+- **`C_DM & ~handledByMSHR`（MSHR 未受理该 miss，如 MSHR 满）**：**不进上面那条 `C_DM` 特判**，`blocking` 走默认 1（继续阻塞等待）；且 `missMSHRId` **不写**（门控 = `needEnqueue & handledByMSHR`，见 §7），保留旧值——没拿到 mshrId 就无从靠 refill 匹配唤醒，只能后续重走 dcache 访问。
+
 实现上 `clr_*` 各条件就地展开（不封装成 function），因为这些条件要读 entry 数组与多个模块端口（非局部变量），Formality 读 RTL 时对「函数内引用非局部变量」会报 `FMR_VLOG-091` 并升级为 elaboration error。
 
 > StoreQueue 就绪向量 `stAddrReadyVec/stDataReadyVec` 宽 56（`SQ_SIZE`，非 2 的幂），按 6 位 sqIdx 下标读用 `sq_vec_read` 循环展开成 56 选 1（越界返 0），既正确又规避 Formality 越界误报。
@@ -216,7 +223,7 @@ sequenceDiagram
 (3) s0 选中 → scheduled := 1
 (4) 入队写入 (needEnqueue & ready) → allocated/scheduled/blocking/cause/uop/...
 (4b) allocated/scheduled 与 isLoadReplay 回流释放/清 scheduled 逐口交错
-(6) redirect / vec 取消 → allocated := 0  (最高优先)
+(6) redirect 取消 (needCancel) → allocated := 0  (最高优先；vec flush 不在此列)
 ```
 
 两个**致命陷阱**（已在 RTL 详注）：
@@ -231,7 +238,7 @@ sequenceDiagram
 
 2. **enqueue 与 isLoadReplay 回流在 Scala 是同一 `for((enq,w))` 循环体内交错**（enqueue 在前、replay 在后）：真实先后是 `w0:{enq,replay}, w1:{enq,replay}, w2:{enq,replay}`。**绝不能拆成「先所有 enqueue，再所有 replay」**——否则低编号口的 replay-free 会错误覆盖高编号口的 enqueue-set。RTL 里 (4b) 对每 entry 按 `w=0..2` 顺序施加 set/clear 实现「同 entry 后写赢」。
 
-`freeMaskVec`（喂回 FreeList 的 `io_free`）= redirect 取消的槽 | isLoadReplay 回流且不再需重放的槽。
+`freeMaskVec`（喂回 FreeList 的 `io_free`）= redirect 取消的槽（`needCancel`）| isLoadReplay 回流且不再需重放的槽。**注意这里没有 vec 分支**——与上面 (6) 一致：`needCancel` 只由 redirect（`rob_need_flush`）决定，`vecLdCancel/vecLdCommit` 不参与清 `allocated`、也不参与 `freeMaskVec`。故 **vec merge buffer flush/commit 既不清队列也不释放槽**，只有 redirect 会。（`vecLdCancel/vecLdCommit` 在 RTL 里算出后为死信号，参见 §1。）
 
 ---
 
@@ -277,7 +284,7 @@ sequenceDiagram
 
 ### 单元测试（UT）
 
-方法：golden `LoadQueueReplay`（`u_g`）与可读重写镜像 `LoadQueueReplay_xs`（`u_i`，内部例化 `xs_LoadQueueReplay_core`）**双例化逐拍比对所有输出**。两侧共用同一份 golden 子模块（AgeDetector_38 / FreeList_5 / LqVAddrModule）。受限随机激励覆盖各 cause、年龄选择、流水背压/冷却、redirect/vec 取消、freelist 分配/释放。`+define+SYNTHESIS` 关闭随机初始化与行为断言。X 比对用 `!$isunknown(golden)` 跳过 don't-care；`replay_*_bits_*` 按对应 `valid` 选通（不 valid 时是陈旧值，don't-care）。
+方法：golden `LoadQueueReplay`（`u_g`）与可读重写镜像 `LoadQueueReplay_xs`（`u_i`，内部例化 `xs_LoadQueueReplay_core`）**双例化逐拍比对所有输出**。两侧共用同一份 golden 子模块（AgeDetector_38 / FreeList_5 / LqVAddrModule）。受限随机激励覆盖各 cause、年龄选择、流水背压/冷却、redirect 取消、vecFeedback 输入（驱动但不清队列，见 §7）、freelist 分配/释放。`+define+SYNTHESIS` 关闭随机初始化与行为断言。X 比对用 `!$isunknown(golden)` 跳过 don't-care；`replay_*_bits_*` 按对应 `valid` 选通（不 valid 时是陈旧值，don't-care）。
 
 | seed | checks | errors | 结果 |
 |------|--------|--------|------|

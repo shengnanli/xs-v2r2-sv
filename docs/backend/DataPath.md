@@ -81,26 +81,45 @@ flowchart TB
 立即数信息 `s1_immInfo`（imm + immType）打一拍后直接输出 `og1ImmInfo` 供 BypassNetwork
 的 ImmExtractor 使用——**DataPath 不做立即数扩展**。
 
+其中 **`s0_ldCancel`（load 唤醒取消）** 是关键门控：某源若被上游标注为「依赖某条 load 的
+第 1 拍推测唤醒」（`loadDependency[i][1]`），而该 load 在本拍被对应 LoadUnit 判失败
+（输入 `io_ldCancel_{0,1,2}_ld2Cancel`，3 路），则
+
+```
+s0_ldCancel = Σ_i (io_ldCancel_i_ld2Cancel & loadDependency_i[1])   // i = 0..2
+```
+
+拉高，**压掉本拍 `s1_valid`**（`s1_valid <= fromIQ_fire & ~s1_flush & ~s0_ldCancel`），
+不让这条依赖了被取消 load 的 uop 进入 s1。这是 load 命中/miss 推测唤醒的纠正路径，
+与 `s0_cancel`（0 延迟 EXU 在 og0 失败取消，见 §2.2）互补：前者取消对 load 的依赖、
+后者取消对 0 延迟 EXU 的依赖。
+
 ### 2.4 s1 操作数选择（读出 → EXU）
 
-s1 拍 RegFile 读出有效。先把各域读出数据按端口配置 `rfrPortConfigs`（该 EXU 端口的某
-源读哪个域的哪个读口）分发到 `s1_intPregRData/s1_fpPregRData/...`；再对每个源按
-`srcType` 用 **Mux1H** 选出真值：
+s1 拍 RegFile 读出有效。每个 EXU 端口的每个源**读哪个域的哪个读口**在 `BackendParams`
+里早已定死（`rfrPortConfigs`），故绝大多数源是**固定直连**某域某读口的读数据，**没有运行时
+选择**（不是"每源 5 路 Mux1H"）：
 
 ```
-sinkData.src(k) = Mux1H(Seq(
-  isXp(srcType) -> s1_intPregRData,
-  isFp(srcType) -> s1_fpPregRData,
-  isVp(srcType) -> s1_vfPregRData,   // 向量
-  isV0(srcType) -> s1_v0PregRData,   // k==3
-  isVp(srcType) -> s1_vlPregRData))  // k==4 (vl)
+io_toIntExu_0_0_bits_src_0 = int_rdata[0];                 // 整数端口 → 直连 int 读口
+io_toVecExu_0_0_bits_src_3 = v0_rdata[0];                  // 向量端口 src3 → 直连 v0
+io_toVecExu_0_0_bits_src_4 = {120'h0, vl_rdata[0][7:0]};   // vl 源零扩展到 XLEN
+io_toMemExu_2_0_bits_pc    = io_fromPcTargetMem_toDataPathPC_3;  // pc 直连
 ```
 
-不同 EXU 端口的某源**可读域子集不同**（整数端口只读 int，向量端口读 vec/v0/vl……），
-Scala 用 `srcDataTypeSet.intersect(...)` 过滤候选；可读核把它抽成 `sel_src_scalar` /
-`sel_src_vec` 两个 `function automatic`，调用点（`datapath_body.svh`）按该端口真实可读
-域传入候选，不支持的域传 `'0`。`pc`/`target`（含 Jmp/Load 的端口）从 `fromPcTargetMem`
-按端口在 `pcReadFtqPtrFormIQ` 里的序号取。
+**全 DataPath 里唯一的运行时 Mux** 是两个 **STD 类访存端口**（`io_toMemExu_7_0` /
+`io_toMemExu_8_0`）的 `src0`：store 数据可能来自整数或浮点寄存器，故按 s1 寄存的 `srcType`
+在 **int / fp 两域间 2 路选**（不是 5 路），用 pkg 纯函数 `sel_src_intfp`：
+
+```
+io_toMemExu_7_0_bits_src_0 = sel_src_intfp(s1_srctype_17_0_0, int_rdata[5], fp_rdata[9]);
+io_toMemExu_8_0_bits_src_0 = sel_src_intfp(s1_srctype_18_0_0, int_rdata[3], fp_rdata[10]);
+```
+
+（不存在 `sel_src_scalar` / `sel_src_vec` 这两个函数——pkg 里选源的函数只有 `sel_src_intfp`；
+选源逻辑直接落在 `datapath_logic.svh`，不存在 `datapath_body.svh` 这个文件。）
+`pc`/`target`（含 Jmp/Load 的端口）从 `fromPcTargetMem` 按端口在 `pcReadFtqPtrFormIQ`
+里的序号直连取。
 
 ### 2.5 RegCache 读路由
 
@@ -127,7 +146,11 @@ flowchart LR
 - **og0resp**：`og0FailedVec2 = IQ.valid & !IQ.ready`；失败发 `block`，让 IQ 保留并重发。
 - **og1resp**：`s1_valid & !s1_ready` 发 `block`；否则按 IQ 类型给 `uncertain`
   （ld/st addr、向量 ld/st、vf 域——这些要到 og2 才确定）或 `success`。
-- **og0Cancel / og1Cancel**：0 延迟唤醒源在 og0/og1 失败时广播取消，供消费者 squash。
+- **og0Cancel**（**没有 `og1Cancel`**）：0 延迟唤醒源在 og0 失败（`og0Failed = IQ.valid &
+  !IQ.ready`）时广播取消，供下游消费者 squash 这条被推测唤醒的指令。**只有 5 个 0 延迟
+  EXU 端口**有此输出——4 个整数 ALU 的 subport 0 + 1 个 Fp EXU 的 subport 0：
+  `io_og0Cancel_{0,2,4,6,8} = og0Failed_{0,1,2,3,4}_0`（下标是全局 EXU 号，偶数间隔）。
+  og1 失败**不**额外广播取消，只经 `og1resp = block` 回送 IQ。
 
 ## 4. 子模块（全部 golden 黑盒）
 
@@ -141,7 +164,8 @@ flowchart LR
 | `DelayN_1` / `DelayReg_*` / `DummyDPICWrapper_*` | top-down 延迟 / difftest 寄存器探针 | — |
 
 可读核 `xs_DataPath_core` 是这些黑盒之间的**路由/仲裁 glue**：写口流水、读口仲裁请求/
-输出路由、s0→s1 流水、s1 操作数 Mux1H、RegCache 路由、og 响应、立即数透传。
+输出路由、s0→s1 流水、s1 操作数选择（多数固定直连 / 仅 STD src0 走 2 路 Mux）、s0_cancel /
+s0_ldCancel 取消、RegCache 路由、og 响应、立即数透传。
 
 ## 5. 关键设计点（为什么这么设计）
 
@@ -151,8 +175,9 @@ flowchart LR
   这把「读口资源」纳入发射的背压环，避免读口溢出。
 - **立即数延后扩展**：DataPath 只透传 imm/immType，扩展放到 BypassNetwork（省 IQ 面积、
   把扩展逻辑与旁路选择合并在同一拍）。见 [ImmExtractor.md](ImmExtractor.md)。
-- **按 srcType 的 Mux1H 而非 pdest 比较**：哪个源读哪个域早在端口配置/译码定死，s1 只按
-  srcType 选域，无需运行时比地址。
+- **读域在端口配置里定死 → 多数源固定直连**：哪个源读哪个域早在 `BackendParams`/译码里
+  定死，故 s1 绝大多数源直连对应域读口，无需运行时选择；仅 STD 类 src0 因数据可能来自
+  int 或 fp，才按 `srcType` 做 2 路选（`sel_src_intfp`）。全程不比 pdest 地址（那是旁路网络的活）。
 
 ## 6. 实现分层（可读重写，非 golden 套壳）
 
@@ -164,7 +189,8 @@ og1 类型 / ctrl 字段集 / imm / pc-target / cancel 等）由 `BackendParams`
   落为 `datapath_cfg_pkg.sv` 的 localparam —— 这是配置常量，不是 golden 的组合逻辑。
 - **五条数据流的逻辑**由 `scripts/gen_datapath.py` 从设计意图重新生成为可读 SV：
   - `datapath_pkg.sv`：`enum`（`data_source_e`/`resp_type_e`）+ `struct`（`flush_info_t`）+
-    `function`（`ds_read_reg`/`ds_read_regcache`/`sel_src_intfp`/`rob_need_flush`/`is_0latency`）。
+    `function`（`ds_read_reg`/`ds_read_regcache`/`ds_from_forward`/`sel_src_intfp`/`rob_need_flush`/
+    `is_0latency`/`wakeup_failed_int`/`wakeup_failed_fp`——后两者供 s0_cancel 判取消）。
   - `datapath_logic.svh`：五条数据流的逻辑（`genvar`/`for` 跑 5 域多口，调 pkg 纯函数）。
   - `datapath_ctrl.svh`：s0→s1 控制流水寄存器 + srcType/flush 寄存。
   - 这三个 svh 的 `_GEN_/_T_` 计数 **= 0**（不是 golden 套壳）。
@@ -174,15 +200,23 @@ og1 类型 / ctrl 字段集 / imm / pc-target / cancel 等）由 `BackendParams`
 
 ## 7. 验证
 
+- **`s0_cancel` 与 `perf` 均已按 golden 实现**（早期文档记的「接 0 / 待重写」两处**已完成**）：
+  - `s0_cancel`（0 延迟唤醒取消）：`og0_cancel_delay`（对上拍 og0 失败且 `is_0latency` 的
+    非 load EXU 打一拍）经 `UIntExtractor` 散布到全局 EXU 取消向量，各发射端口用
+    `wakeup_failed_int` / `wakeup_failed_fp` 检查「本端口某源（`dataSources==forward`）是否依赖被取消的 0 延迟
+    EXU」，命中则拉低该端口 `ready`（见 `datapath_logic.svh` 的 `s0_cancel_*` 段）。少数无 0
+    延迟唤醒交集的端口（Vf 域、MemIQ_5/6）恒 0。
+  - `io_perf_0..4`（**5 路**）：由 topdown 派生量（`fewUopsIssued`、`memStall{Store,L1,L2,L3}Miss`）
+    经 2 级 `RegNext` 打拍、零扩展到 6 位输出。
 - **UT**：golden `DataPath` 与可读核 `xs_DataPath_core`（经同名 wrapper）双例化，随机激励逐拍
-  比对全部 914 输出，子模块两侧共用 golden 黑盒，`+define+SYNTHESIS`。
-  - 实测（seed 1）：914 输出中 888 匹配，仅 26 不匹配，且 **100% 属于两处已知未完成**：
-    - **s0_cancel（0 延迟唤醒取消）当前接 0** → Fp 唤醒-接收 EXU 的 ready/og 响应/og0Cancel
-      （~23 路）。该交集表达式逐 EXU 不同，待精确重写（基础设施 og0_cancel_delay /
-      cancel_exuOH / UIntExtractor 黑盒已就位）。
-    - **io_perf_0/1/2（perf 计数器，非功能数据流）当前接 0**（3 路）。
-  - 其余五条主数据流（Int/Vec/Mem 全数据通路、源数据、控制字段、写口、RegCache、flush、
-    pc/target、og 响应）逐拍匹配 → 主数据流重写功能正确。
-- **FM**：golden vs wrapper（→ 可读核），子模块黑盒，签名等价（待 s0_cancel 完成后跑）。
+  比对全部 914 输出，子模块两侧共用 golden 黑盒，`+define+SYNTHESIS`。五条主数据流
+  （Int/Vec/Mem 全数据通路、源数据、控制字段、写口、RegCache、flush、pc/target、og 响应）
+  加上 s0_cancel / perf 均在比对范围内。
+- **FM**：golden vs 同名 wrapper（→ 可读核），子模块黑盒。实测 **82746 passing / 20 failing /
+  16334 unverified**；20 个 failing 点**全部**落在
+  `difftestArch{Int,Fp,Vec}RegState_delayer/REG_value_0_reg[*]`——即 difftest 归档寄存器探针
+  （`DelayReg`/DPIC 打拍）的延迟寄存器，**difftest-only、不在功能数据通路上**（可读核未完整
+  建模该 difftest 探针，故此处配对失败），功能数据流部分等价通过。
 
-> 验证状态见本目录 `BACKEND_OVERVIEW.md` 与 `scripts/gen_datapath.py` 末 STATUS。
+> 验证状态另见本目录 `BACKEND_OVERVIEW.md`。（注：`scripts/gen_datapath.py` 末 STATUS 注释
+> 早于 s0_cancel/perf 落地，仍写「接 0」，以本节与 RTL 为准。）

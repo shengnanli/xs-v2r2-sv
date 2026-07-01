@@ -112,7 +112,7 @@ on-set 上逐位相等**（§验证的 753-编码穷举 + 3×1M 随机 UT 全 0 
 | `function automatic` | 5 |
 | `casez` | 3 |
 | 生成痕迹 grep | 0 |
-| 核行数 | 248（golden 649） |
+| 核行数 | 315（golden 649） |
 
 ## 7. 关键坑
 

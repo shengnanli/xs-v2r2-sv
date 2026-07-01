@@ -195,8 +195,8 @@ hasBlockBackward/hasWaitForward/deqHasFlushed/各阻塞计数器）。
 > 诚实记录（人会独立复跑核验）：
 
 - **结构闸门（全部达标）**：`typedef struct packed`=3、`typedef enum`=2、
-  `function automatic`=19、`for`=43；生成痕迹 grep=0；
-  核 924 行 ≪ golden 220873 行（结构化分解 + 黑盒承担 difftest/debug/trace/perf）。
+  `function automatic`=20、`for`=48；生成痕迹 grep=0；
+  核 1055 行 ≪ golden 220873 行（结构化分解 + 黑盒承担 difftest/debug/trace/perf）。
 - **编译**：`xs_Rob_core` + `rob_pkg` 经 VCS 独立编译通过（0 error）。
 - **自检 UT**：seed 1/7/42 各 200000 拍 `errors=0`（不变量自检：numValid 不溢出、
   redirect→walk、commit 槽就绪、输出无 X、commit/walk 互斥）。

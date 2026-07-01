@@ -5,7 +5,7 @@
 | 手写 SV | `rtl/common/FoldedSRAMTemplate_variants.sv` |
 | Scala 来源 | `utility/src/main/scala/utility/sram/SRAMTemplate.scala`（class FoldedSRAMTemplate） |
 | 依赖 | [SplittedSRAMTemplate](SplittedSRAMTemplate.md)（内层，已单独验证） |
-| 验证状态 | UT ✅（4 个变体各 4 万拍 0 错）/ FM ✅（内层 Splitted 当黑盒，全部 SUCCEEDED） |
+| 验证状态 | UT ✅（5 个变体各 4 万拍 0 错）/ FM ✅（内层 Splitted 当黑盒，全部 SUCCEEDED） |
 
 ## 功能与动机
 
@@ -71,22 +71,20 @@ base 变体有 2 条逻辑输出 lane，golden 为每条 lane 复制一套 ridx 
 | `FoldedSRAMTemplate_1` | 1 | 512×2×12（TAGE 表） | SplittedSRAMTemplate_4 | width=1 即关闭折叠 → 纯透传 |
 | `FoldedSRAMTemplate_21` | 2 | 256×1×38（ITTAGE） | SplittedSRAMTemplate_24 | width=2，单 way，holdRidx 二选一，bitmask 透传 |
 | `FoldedSRAMTemplate_23` | 4 | 512×1×38（ITTAGE） | SplittedSRAMTemplate_26 | width=4，holdRidx 四选一，内层 dataSplit+双 bore |
+| `FoldedSRAMTemplate_20` | 4 | 2048×2×2（TageBTable） | SplittedSRAMTemplate_23 | width=4，2 逻辑 way×4 折叠组=8 物理 way，逐 lane holdRidx；内层 setSplit=2 双 bank（2 套 bore） |
 
 写 waymask 展开：`phys_waymask[group*NWAY+way] = (w_group==group) & waymask[way]`
 （单 way 变体简化为 `waymask = (1 << w_group)`）；读 mux：`out = phys_rdata[holdRidx]`。
 
-## 未覆盖（内层未就绪，跳过）
-
-| golden | 内层链 | 跳过原因 |
-|------|------|------|
-| `FoldedSRAMTemplate_20` | SplittedSRAMTemplate_23 → SRAMTemplate_64 | 最内层 SRAMTemplate_64 未就绪 |
+> 全部 5 个 FoldedSRAMTemplate 变体（含 `_20`，内层链 `SplittedSRAMTemplate_23 → SRAMTemplate_64`）
+> 均已覆盖，无跳过项。
 
 ## 验证
 
 - **UT**：golden vs `<变体>_xs`，两者均例化 golden 内层 SplittedSRAMTemplate +
   golden SRAMTemplate + 宏链（共用），随机 r/w/bore，4 万拍逐拍比对所有输出 0 错——
   验证折叠地址拆分、ridx/holdRidx 时序、waymask 按组展开、读 mux 选组。
-  4 个变体均 `checks≈39604, errors=0`。
+  5 个变体均 `checks≈39604, errors=0`。
 - **FM**：内层 SplittedSRAMTemplate 与最内层 SRAMTemplate 经
   `hdlin_unresolved_modules black_box` 当**已验证黑盒**，两侧都黑盒内层，只比对
-  Folded 自身的折叠逻辑（组号寄存器、mask 展开、读 mux）。4 个变体均 SUCCEEDED。
+  Folded 自身的折叠逻辑（组号寄存器、mask 展开、读 mux）。5 个变体均 SUCCEEDED。

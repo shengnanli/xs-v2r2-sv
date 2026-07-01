@@ -88,7 +88,7 @@ flowchart TB
 | 文件 | 说明 |
 |------|------|
 | `rtl/memblock/l2tlb_pkg.sv` | 参数 + `l2tlb_csr_t`/`l2tlb_sfence_t`/`sector_entry_t`/`sector_resp_t` struct + `contiguous_pte_to_merge`/`merge_to_sector`/`oh_to_uint8`/`get_part`/`addr_low_*` 纯函数（复用 `xs_ptw_pkg` 的 pte/merge/hptw 类型与 fault 函数）|
-| `rtl/memblock/L2TLB.sv` | 可读核 `xs_L2TLB_core`（手写 11 节 glue，657 行）|
+| `rtl/memblock/L2TLB.sv` | 可读核 `xs_L2TLB_core`（手写 11 节 glue，675 行）|
 | `rtl/memblock/L2TLB_ports.svh` | 核端口表（生成，292 端口）|
 | `rtl/memblock/L2TLB_wires.svh` | 子模块输出网声明（生成）|
 | `rtl/memblock/L2TLB_driven.svh` | 核手写驱动的 glue 输入网声明（生成，~519 个）|
@@ -98,7 +98,7 @@ flowchart TB
 | `scripts/gen_l2tlb.py` | 生成器 |
 | `verif/ut/L2TLB/` | UT（Makefile / variants_xs.sv / tb.sv）|
 
-> 说明：可读核例化 24 个 golden 子模块实例（与 golden 完全一致）。手写 glue 约 657 行
+> 说明：可读核例化 24 个 golden 子模块实例（与 golden 完全一致）。手写 glue 约 675 行
 > （核）+ 249 行（pkg）；`L2TLB_inst.svh` 等生成的连接/装配表约 6000 行纯属与子模块的机械
 > 互联（无生成临时名），是不可约的接线。golden 顶层 `L2TLB.sv` 为 13062 行（含 RANDOMIZE
 > 样板 / 展平连接 / 子模块输出网）。生成器**只**做端口/连接解析与 struct↔扁平网装配，
@@ -115,7 +115,7 @@ flowchart TB
   `get_part`/`addr_low_from_vpn`/`addr_low_from_paddr`）。
 - `genvar`/`for` ×11（csr/sfence dup、waiting/flush、refill_data、resp_sector、llptw_stage1、
   llptw_mem、perf 等多路用 generate）。
-- 核 657 行（golden 13062 行的 ~1/20）；核+pkg 中展平名/生成痕迹
+- 核 675 行（golden 13062 行的 ~1/19）；核+pkg 中展平名/生成痕迹
   （`io_x_n_m`/`_REG_n`/`_GEN_`/`_T_n`/`RANDOMIZE`）计数 **= 0**。
 
 ### 4.2 UT（golden L2TLB vs 手写 L2TLB_xs 双例化，3 种子各 200000 拍）

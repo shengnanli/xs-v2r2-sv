@@ -100,9 +100,13 @@ load 发射后执行端给 **两路** 反馈:`finalIssueResp`(最终发射响应
 enq 带入 load 字段 → 条目 payload → deqEntry 读出 → deqDelay 输出:
 - `lqIdx`(LqPtr,flag+7 位)、`preDecodeInfo.isRVC`、`ftqPtr.flag`、`fpWen`。
 
-另有 4 个字段 `loadWaitBit/storeSetHit/waitForRobIdx/loadWaitStrict` **不是 enq 输入**,
-而是由条目阵列内部从 `imm`/`fuOpType` 派生(store-set 依赖训练用),仅 deqEntry 输出,
-IQ 核 **透传** 到 deqDelay。可读核不参与其派生(在黑盒内)。
+另有一组字段 `loadWaitBit/storeSetHit/waitForRobIdx/loadWaitStrict`(及 `ssid`)是
+**store-set 内存依赖预测**字段(判定 load 是否要等某条 store):由 dispatch 阶段的 store-set
+预测器(SSIT/LFST)算好后 **随 enq payload 带入**,条目在 enq 拍**锁存后原样保持**,经
+deqEntry → deqDelay 输出——**既非从 imm 派生、也无衰减**。这一点在 golden 条目里可直接坐实:
+`EnqEntry_24`/`OthersEntry_200` 中这些寄存器唯一的功能赋值就是
+`entryReg_payload_* <= io_commonIn_enq_bits_payload_*`(`OthersEntry_200.sv:1406-1413`、
+`EnqEntry_24.sv:1845-1852`),此后只保持、不重算。可读核只做 deq 侧透传,不参与预测/派生。
 —— 无 StaMou 的 `isFirstIssue` 输出。
 
 ### 3.6 [L6] imm 全宽 32 位
@@ -121,6 +125,30 @@ load 的 imm 全宽 32 位透传(`deqDelay.imm = {32'h0, imm}`);**无 immType/se
 `numRegSrc=1`(load 地址只需基址 1 个源寄存器)、`numDeq=1`(单 LDU 流水)。故
 `dataSources/exuSources/loadDependency` 的 16-way Mux1H 只对「源 0」「端口 0」归约一次
 (与 StaMou 同),用 `always_comb` 显式按位与 OR 展开,X 安全。
+
+### 3.9 推测唤醒取消(load 核心机制:og0Cancel / ldCancel / is0Lat)
+
+> 这段不是 Ldu 相对 StaMou 的增量——StaMou 有**完全相同**的
+> `is0Lat`/`og0Cancel_{0,2,4,6}`/`ldCancel_{0,1,2}_ld2Cancel` 端口(`IssueQueueStaMou.sv:118-179`),
+> 属访存 IQ 共有骨架。此处专门补记,因为它是 load 推测唤醒的核心、而样板文档未展开。
+
+load 是变长延迟源,为让依赖它的 uop **背靠背发射**,唤醒是**推测**发出的:生产者还没
+确认结果就先广播唤醒,消费者据此提前就绪、参与本拍选择。一旦生产者事后失败(load 命中
+bank 冲突 / TLB 缺失 / DCache miss / 需 replay;或 0 延迟源被取消),必须**回收**这次推测
+唤醒,否则消费者会带着错/缺数据发射。三个信号构成这条取消链:
+
+- **`is0Lat`**(每个唤醒源一位,`wakeupFromIQ`/`wakeupFromIQDelayed` 都带):标记该源是
+  **0 周期延迟**(立即)源——是唯一会被 `og0Cancel` 回收的源。
+- **`io_og0Cancel_{0,2,4,6}`**(按全局 EXU 号索引的取消向量):在 OG0(操作数生成第 0 级),
+  若某条目当初是被一个 `is0Lat` 源推测唤醒、而该源此拍被取消,则把对应源重新打回
+  「未就绪」。Ldu 只引用 EXU {0,2,4,6} 这几路(`iq_ldu_pkg.sv:86-88`),不接 `og1Cancel`。
+- **`io_ldCancel_{0,1,2}_ld2Cancel`**(3 条 load 流水各一路):某条 load 推测唤醒了消费者,
+  却在流水**第 2 级**失败时拉高。条目为每个源记 `loadDependency`(每条 load 流水一个
+  2 位移位向量,表示「几拍前、被哪条 load 唤醒」),与 `ldCancel` 逐路匹配来回收对应源。
+
+可读核把 `og0Cancel_{0,2,4,6}` / `ldCancel_{0,1,2}_ld2Cancel` 与各源的 `is0Lat` **直通**
+连进条目阵列黑盒(`IssueQueueLdu.sv:752-758`);真正的取消匹配(golden `OthersEntry` 内的
+`srcCancelByLoad`/`cancelBypass`)在黑盒里完成,可读核不重写这段逻辑。
 
 ## 4. X 与位宽纪律(沿用样板)
 
@@ -164,12 +192,13 @@ Matched primary inputs, black-box outputs  615
 
 2727 个比对点全 passing,0 unmatched、0 failing——真实全等价,非降级通过。
 
-**FM 注意**:EntriesLdu 内含 load 专属的「常量 0」死寄存器
-(`entryReg_payload_{storeSetHit,waitForRobIdx,loadWaitStrict}`——自递减衰减到 0、无
-外部输入,仅透传到 deqEntry)。FM 默认的「合并重复寄存器」pass 会在 wrapper/u_core 层次
-边界两侧做不对称常量传播,把这些同值常量寄存器误判 `DFF0X vs DFFX` 而 fail(初次跑出
-11 failing + 66 unmatched)。Makefile 里设 `FM_MERGE_DUP = false` 关掉合并即干净全 pass
-(UT 已 600k 拍 errors=0 证明功能等价)。此机制 fm_eq.tcl 已为 LoadUnit 类模块预留。
+**FM 注意**:EntriesLdu 里的 load store-set payload 寄存器
+(`entryReg_payload_{storeSetHit,waitForRobIdx,loadWaitStrict}` 等)是**纯透传**寄存器
+——enq 拍锁存后原样保持、经 deqEntry 输出,条目内无任何重算或衰减(见 §3.5,唯一赋值是
+`<= io_commonIn_enq_bits_payload_*`)。这类跨 wrapper/u_core 层次边界、两侧同值的透传
+寄存器,会被 FM 默认的「合并重复寄存器」pass 做不对称传播,误判 `DFF0X vs DFFX` 而 fail
+(初次跑出 11 failing + 66 unmatched)。Makefile 里设 `FM_MERGE_DUP = false` 关掉合并即
+干净全 pass(UT 已 600k 拍 errors=0 证明功能等价)。此机制 fm_eq.tcl 已为 LoadUnit 类模块预留。
 
 ### 5.3 套壳闸门
 

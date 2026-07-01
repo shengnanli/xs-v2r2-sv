@@ -25,8 +25,8 @@ MemBlock (31138 行, 1346 端口)
 ├─ Uncache         (1740)  非缓存/MMIO 访问(TileLink)
 └─ TLBuffer/TLXbar/Pipeline/PFEvent/DelayN  TileLink 缓冲/交叉开关/性能
 
-注:LoadUnit(5435)/StoreUnit(1640) 是 load/store 执行流水单元,RTL 层级上在 MemBlock 之外
-    (Backend/XSCore 级例化),但功能上是访存的心脏,一并纳入访存重写范围。
+注:LoadUnit(5435)/StoreUnit(1640) 是 load/store 执行流水单元,在 golden `MemBlock` 内**直接
+    例化**(`inner_LoadUnit_0/1/2`、`inner_StoreUnit_0/1`),是访存执行的心脏,一并纳入访存重写范围。
 ```
 
 ### 2.1 子系统级互联大图(模块到模块)
@@ -138,7 +138,7 @@ flowchart TD
 ```
 
 **图中模块 → 文档**:
-[MemBlock](MemBlock.md)(顶层) · [LoadUnit](LoadUnit.md) / [StoreUnit](StoreUnit.md) · [LoadMisalignBuffer](LoadMisalignBuffer.md) / [StoreMisalignBuffer](StoreMisalignBuffer.md) · [TLBNonBlock](TLBNonBlock.md) / [TlbStorageWrapper](TlbStorageWrapper.md) / [TLBFA](TLBFA.md) · [PMP](PMP.md) / [PMPChecker](PMPChecker.md) · [LsqWrapper](LsqWrapper.md) · [LoadQueue](LoadQueue.md)([VirtualLoadQueue](VirtualLoadQueue.md)/[LoadQueueRAR](LoadQueueRAR.md)/[LoadQueueRAW](LoadQueueRAW.md)/[LoadQueueReplay](LoadQueueReplay.md)/[LoadQueueUncache](LoadQueueUncache.md)/[LqExceptionBuffer](LqExceptionBuffer.md)) · [StoreQueue](StoreQueue.md)([StoreExceptionBuffer](StoreExceptionBuffer.md)) · [DCache](DCache.md) / [DCacheWrapper](DCacheWrapper.md) · [LoadPipe](LoadPipe.md) / [StorePipe](StorePipe.md) / [MainPipe](MainPipe.md) / [MissQueue](MissQueue.md) / [WritebackQueue](WritebackQueue.md) / [ProbeQueue](ProbeQueue.md) · [BankedDataArray](BankedDataArray.md) / [DuplicatedTagArray](DuplicatedTagArray.md) / [L1CohMetaArray](L1CohMetaArray.md) / [L1FlagMetaArray](L1FlagMetaArray.md) · [Sbuffer](Sbuffer.md) · [Uncache](Uncache.md) · [StorePfWrapper](StorePfWrapper.md) · [L2TLB](L2TLB.md) / [L2TLBWrapper](L2TLBWrapper.md) / [PtwCache](PtwCache.md) / [PTW](PTW.md) / [LLPTW](LLPTW.md) / [HPTW](HPTW.md) / [L2TlbMissQueue](L2TlbMissQueue.md) / [L2TlbPrefetch](L2TlbPrefetch.md) · [TLBuffer](TLBuffer.md) / [Pipeline](Pipeline.md)(TileLink)
+[MemBlock](MemBlock.md)(顶层) · [LoadUnit](LoadUnit.md) / [StoreUnit](StoreUnit.md) · [LoadMisalignBuffer](LoadMisalignBuffer.md) / [StoreMisalignBuffer](StoreMisalignBuffer.md) · [TLBNonBlock](TLBNonBlock.md) / [TlbStorageWrapper](TlbStorageWrapper.md) / [TLBFA](TLBFA.md) · [PMP](PMP.md) / [PMPChecker](PMPChecker.md) · [LsqWrapper](LsqWrapper.md) · [LoadQueue](LoadQueue.md)([VirtualLoadQueue](VirtualLoadQueue.md)/[LoadQueueRAR](LoadQueueRAR.md)/[LoadQueueRAW](LoadQueueRAW.md)/[LoadQueueReplay](LoadQueueReplay.md)/[LoadQueueUncache](LoadQueueUncache.md)/[LqExceptionBuffer](LqExceptionBuffer.md)/[FreeList](FreeList.md)) · [StoreQueue](StoreQueue.md)([StoreExceptionBuffer](StoreExceptionBuffer.md)) · [DCache](DCache.md) / [DCacheWrapper](DCacheWrapper.md) · [LoadPipe](LoadPipe.md) / [StorePipe](StorePipe.md) / [MainPipe](MainPipe.md) / [MissQueue](MissQueue.md) / [WritebackQueue](WritebackQueue.md) / [ProbeQueue](ProbeQueue.md) · [BankedDataArray](BankedDataArray.md) / [DuplicatedTagArray](DuplicatedTagArray.md) / [L1CohMetaArray](L1CohMetaArray.md) / [L1FlagMetaArray](L1FlagMetaArray.md) · [Sbuffer](Sbuffer.md) · [Uncache](Uncache.md) · [StorePfWrapper](StorePfWrapper.md) · [L2TLB](L2TLB.md) / [L2TLBWrapper](L2TLBWrapper.md) / [PtwCache](PtwCache.md) / [PTW](PTW.md) / [LLPTW](LLPTW.md) / [HPTW](HPTW.md) / [L2TlbMissQueue](L2TlbMissQueue.md) / [L2TlbPrefetch](L2TlbPrefetch.md) · [TLBuffer](TLBuffer.md) / [Pipeline](Pipeline.md)(TileLink)
 
 ## 3. 重写顺序(自底向上 + 并行,沿用前端方法学)
 
@@ -186,6 +186,7 @@ flowchart TD
 | LoadQueueReplay | 2 | ✅ 完成(replay调度器55k→1243行) | [LoadQueueReplay.md](LoadQueueReplay.md) |
 | LoadQueueUncache | 2 | ✅ 完成(codex产出+resume) | [LoadQueueUncache.md](LoadQueueUncache.md) |
 | Lq/StoreExceptionBuffer | 2 | ✅ 完成 | [LqExceptionBuffer.md](LqExceptionBuffer.md) |
+| FreeList (队列空闲槽位表) | 2 | ✅ 完成(seed1/7/42 各 200000 拍 errors=0 + 内部指针探针) | [FreeList.md](FreeList.md) |
 | Load/StoreMisalignBuffer | 2 | ✅ 完成 | [LoadMisalignBuffer.md](LoadMisalignBuffer.md) |
 | LoadQueue 顶层 | 3 | ✅ 完成(6子队列黑盒互联) | [LoadQueue.md](LoadQueue.md) |
 | PTW (页表遍历器) | 2 | ✅ 完成(codex产出+resume) | [PTW.md](PTW.md) |

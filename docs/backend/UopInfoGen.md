@@ -44,7 +44,7 @@ flowchart TD
 - `emul`/`simple_emul` 同 lmul 的方式从 `vemul` 推出。
 
 ### 3.2 numOfUop 大 case
-Scala 用一个 `MuxLookup(typeOfSplit -> 表达式)` 罗列 47 种 split 的 uop 数公式。
+Scala 用一个 `MuxLookup(typeOfSplit -> 表达式)` 罗列 44 种 split 的 uop 数公式。
 可读核用 `unique case (uop_split_e'(typeOfSplit))`，**每条 case 对应一种 split**，
 并配有意义的枚举名（`SPLIT_VEC_VVV` / `SPLIT_VEC_SLIDEUP` / `SPLIT_AMO_CAS_Q`…）。
 公式直接照 Scala 意图（如 `VEC_VFV → lmul+1`、`VEC_SLIDE1DOWN → lmul*2`、
@@ -76,7 +76,7 @@ Scala 用 `QMCMinimizer` 把两张表的**生成规则**压成真值表（golden
 
 ### UT（`verif/ut/UopInfoGen/`）
 golden（含两张表子模块）vs 可读核双例化，每拍随机驱动 PreInfo（`typeOfSplit`
-大概率取 47 种合法 split 码、偶尔随机；vsew/vlmul/vwidth/nf/vmvn 全随机），
+大概率取 44 种合法 split 码、偶尔随机；vsew/vlmul/vwidth/nf/vmvn 全随机），
 逐输出 `!$isunknown` 比对 isComplex/numOfUop/numOfWB/lmul。
 
 | seed | checks | errors |
@@ -93,7 +93,7 @@ golden（含两张表子模块）vs 可读核双例化，每拍随机驱动 PreI
 
 | 指标 | 值 |
 |------|----|
-| `typedef enum` | 1（uop_split_e，47 种 split） |
+| `typedef enum` | 1（uop_split_e，44 种 split） |
 | `typedef struct` | 2（preinfo_t / uopinfo_t） |
 | `function automatic` | 7（lmul/simple/VFRED 系/两张 LS 表 等） |
 | `case` 使用 | 16 |

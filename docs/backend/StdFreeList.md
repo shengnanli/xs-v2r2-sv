@@ -69,7 +69,8 @@ flowchart TD
 某口的写入下标"）而非变量下标写，既避免越界 X（利于 FM/综合），也把回收的地址译码讲得很直白。
 
 > 为何 free 路径可直接用组合的 `io_freeReq` 而非寄存？因为 `canAllocate` 仅在
-> `空闲数 > RenameWidth` 时才置位（打一拍），保证"本拍回收的寄存器至少下一拍才会被分配"，
+> `空闲数 >= RenameWidth` 时才置位（打一拍；RTL 为 `freeRegCnt >= RENAME_WIDTH`，golden 写作
+> `freeRegCnt > 5`，RenameWidth=6 时两者等价），保证"本拍回收的寄存器至少下一拍才会被分配"，
 > 故回收写入与分配读出不冲突。
 
 ### 3.3 重定向回滚 (redirect / walk)

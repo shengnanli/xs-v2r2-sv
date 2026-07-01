@@ -224,6 +224,32 @@ trapEntryD > trapEntryM > trapEntryHS > trapEntryVS > trapEntryMN
 派生信号(NewCSR.sv:591-618):5 种模式布尔、`privForTrace`(给 trace 的特权编码)、`instrAddrTransType`
 (bare/sv39/sv48/sv39x4/sv48x4,由 privState + satp/vsatp/hgatp 的 MODE 域 one-hot 译出)。
 
+### 步 2(续):critical-error 致命错误锁存
+
+核里有一条独立的**致命错误状态机**——它不止是 difftest 事件,还有对外功能端口。当 `mnstatus.NMIE=0`(正
+处理 NMI、不可再嵌套) 时又来了一次 trap(且不是进 Debug 模式),即认定发生不可恢复的致命错误:
+
+```systemverilog
+criticalErrorStateInCSR = ~mnstatus.NMIE & io_fromRob_trap_valid & ~entryDebugMode;  // NewCSR.sv:588-589
+```
+
+该条件一旦置起就**永久 sticky 锁存**,再也不会自己清(NewCSR.sv:683-684,在特权态那同一个 always 块里):
+
+```systemverilog
+criticalErrorState <= io_fromTop_criticalErrorState | criticalErrorStateInCSR | criticalErrorState;
+```
+
+即顶层 `io_fromTop_criticalErrorState`(输入,NewCSR.sv:33)灌入的外部致命错误也一并锁进来。它对外产生两个
+**功能输出端口**(非纯 difftest):
+
+- `io_status_criticalErrorState = criticalErrorState & ~dcsr.CETRIG`(NewCSR.sv:3763)——广播致命错误态,
+  可被 dcsr 的 CETRIG(critical-error trigger 使能)位屏蔽。
+- `io_error_0`(NewCSR.sv:2161-2162)——`criticalErrorStateInCSR` 经两级打拍(`io_error_0_REG →
+  io_error_0_REG_1`)后送出的错误脉冲。
+
+(步 8 difftest 里的 `diffCriticalErrorEvent`(NewCSR.sv:1865)是同一状态的联合仿真快照,不要与这里的功能
+端口混为一谈。)
+
 ### 步 2(续):访问 FSM(idle / waitIMSIC / finish)
 
 CSR 访问用三态机握手(NewCSR.sv:1326-1477,`csr_fsm_e`)。多数 CSR 是同步的(当拍就能读出),但 AIA
@@ -243,6 +269,24 @@ stateDiagram-v2
 `io_in_ready = ~(|state)`(仅 idle 收新请求);`io_out_valid` 在 finish 或 waitIMSIC 拿到回数时拉高。
 读数据/EX_II/EX_VI/isPerfCnt 走 **DataHoldBypass**:当拍是普通读就用组合值,否则用锁存寄存器
 (NewCSR.sv:1529-1547),这样握手等待期间输出保持稳定。
+
+**EX_II / EX_VI 何时置起**(NewCSR.sv:1323-1341):非法访问的报告分两类——
+
+```systemverilog
+exII_comb = normalCSRValid & (permitMod.EX_II | noCSRIllegal)  // 权限不足 或 访问未实现 CSR
+          | waitIMSICValid & imsicIllegal & ~V;                // IMSIC illegal 且 非 V 态
+exVI_comb = normalCSRValid & permitMod.EX_VI                   // 虚拟非法(HS 合法/VS 受禁)
+          | waitIMSICValid & imsicIllegal & V;                 // IMSIC illegal 且 V 态
+```
+
+- **EX_II(illegal instruction)** 三个来源:① `permitMod` 按 privState/counteren/stateen/envcfg 判权限
+  不足;② `noCSRIllegal`——访问地址**命中不了任何已实现 CSR**(`isCsrAccess & (&csrAddrLegalVec)`,即所有
+  `~addrHit_*` 全 1),读写未实现寄存器;③ 异步 IMSIC 回数 `fromAIA.illegal` 且当前**非** V 态。
+- **EX_VI(virtual instruction)** 两个来源:① `permitMod` 判为「HS 下合法、VS 下受禁」的虚拟非法;
+  ② 异步 IMSIC 回数 illegal 且当前 V 态。
+
+即**同一个 IMSIC illegal 按当前 V 态分流**:V=0 报 EX_II、V=1 报 EX_VI(NewCSR.sv:1338/1341)。二者最终经
+DataHoldBypass 打拍走 `io_out_bits_EX_II/EX_VI`。
 
 ### 步 3:中断过滤 + 锁存
 
@@ -267,6 +311,19 @@ flowchart TB
     H --> I["trapHandleMod<br/>选 entryPrivState"]
     I --> J["trapEntry{MN,M,HS,VS,D} valid"]
 ```
+
+**trapEntry* valid 的门控与 double-trap 路由**(newcsr_inst.svh:5011/5085/5119/5208):5 个 trap-entry 事件
+的 `.valid` 不是裸的 `trap_valid`,普通 M/HS/VS/MN 入口都还 `& mnstatus.NMIE`——**NMI 处理期间
+(NMIE=0)屏蔽掉这些入口**,防止在 NMI handler 里再被抢入(NMIE 由 mnret 恢复)。逐入口:
+
+- **M 入口**(:5011):`trap_valid & M候选 & ~dbltrpToMN & ~entryDebugMode & ~debugMode & ~nmi & NMIE`。
+- **M-NMI 入口**(:5085):`(trap_valid & nmi | dbltrpToMN) & ~entryDebugMode & ~debugMode & NMIE`。
+- **HS/VS 入口**(:5119/:5208):`trap_valid & HS/VS候选 & ~entryDebugMode & ~debugMode & NMIE`。
+
+**double-trap 路由**:`trapHandleMod` 判出的 `dbltrpToMN`(陷入处理过程中又发生陷入)会把入口**从 M 抢到
+M-NMI**——M 入口用 `~dbltrpToMN` 把自己排除,MN 入口用 `| dbltrpToMN` 把它纳入。真 NMI(`nmi`)同理只走
+MN 入口(M 入口的 `~nmi` 排除、MN 入口的 `nmi` 纳入)。这样 M-NMI 入口就同时承接了「不可屏蔽中断」与「双重
+陷入」两类最高优先级事件,与 §1.4 说的「NMI 走独立 M-NMI 入口」一致。
 
 ### 步 3(续):trap 派发 + targetPc
 
@@ -323,10 +380,23 @@ NewCSR.sv:1580),并向前端/访存广播 trigger 配置。
 ### 步 7:AIA-IMSIC 异步接口
 
 AIA(Advanced Interrupt Architecture)的 IMSIC 是片外异步部件。核通过 `toAIA`(addr/wdata/claim/vgein)
-发起、`fromAIA`(rdata/中断 pending)收回(NewCSR.sv:1535-1565)。读 miselect/siselect/vsiselect 指向
-IMSIC 区间时,`toAIA_addr` 转发间接地址;写则 `toAIA_wdata` 转发(op/data 打拍);topei 读则发 claim。
-配合步 2 FSM 的 waitIMSIC 路径完成跨时钟域握手。`csrAccess`(NewCSR.sv:1436)= 本拍写合法位或上拍读位,
-用于 toAIA 寻址有效判定。
+发起、`fromAIA`(rdata/中断 pending)收回(NewCSR.sv:1535-1565)。读/写 miselect/siselect/vsiselect
+指向 IMSIC 区间时,`toAIA_addr` 转发间接地址;写则 `toAIA_wdata` 转发(op/data 打拍)。
+
+**claim(中断认领)由「写」topei 触发,不是「读」**(NewCSR.sv:1045-1054, 1541-1543):
+
+```systemverilog
+assign toAIA_mClaim  = mtopeiClaimWen;   // = wenLegalReg_last_REG & addrHit_mtopei
+assign toAIA_sClaim  = stopeiClaimWen;   // = wenLegalReg_last_REG & ~isModeVS & addrHit_stopei
+assign toAIA_vsClaim = vstopeiClaimWen;  // = wenLegalReg_last_REG & (VS/S 别名 & addrHit_[v]stopei)
+```
+
+即必须是对 `[m|s|vs]topei` 的一次**合法写**(`wenLegalReg_last_REG` 门控)才拉起对应 claim;单纯读 topei
+只返回当前 IID/IPRIO,并不向 IMSIC 认领中断。配合步 2 FSM 的 waitIMSIC 路径完成跨时钟域握手。
+
+`csrAccess`(NewCSR.sv:1436)= `wenLegalReg_last_REG | csrAccess_REG`,**两项都是寄存后的上拍值**:
+`wenLegalReg_last_REG` 是「**上拍**写合法位」(NewCSR.sv:1451,`<= permitMod.hasLegalWen`),`csrAccess_REG`
+是「**上拍**读位」(NewCSR.sv:1496,`<= ren`)。它用于 toAIA 寻址有效判定。
 
 ### 步 8:difftest 打拍
 

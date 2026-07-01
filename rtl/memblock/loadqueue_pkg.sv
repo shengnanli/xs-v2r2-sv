@@ -33,9 +33,10 @@ package loadqueue_pkg;
   //    3..4   ← LoadQueueRAW.perf_0..1
   //    5..17  ← LoadQueueReplay.perf_0..12
   //   （以上 18 路为子队列给出的 6-bit 计数，PERF_SUBQ_NUM=18）
-  //    18..26 ← full_mask 取值 0..6、全 1（=7）的 9 个译码 + 18..25，外加 26=nuke_rollback
+  //    18..25 ← full_mask 8 个译码：0..6（18..24）+ 全 1（=7，25）
+  //    26     ← nuke_rollback（RAW 任一路回滚）
   //    27     ← uncache(nack) rollback
-  //   （后 10 路为 1-bit 组合条件，零扩展到 6 bit）
+  //   （后 10 路为 1-bit 组合条件，零扩展到 6 bit；与 LoadQueue.sv:116-137 一致）
   localparam int PERF_NUM      = 28;
   localparam int PERF_SUBQ_NUM = 18;  // 前 18 路来自子队列
   localparam int PERF_W        = 6;   // 每个计数器位宽

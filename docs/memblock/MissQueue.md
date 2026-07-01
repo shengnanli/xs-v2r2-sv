@@ -16,7 +16,7 @@ MissQueue 是 L1 DCache 的 **未命中处理队列**（MSHR file，lockup-free 
 DCache 并唤醒等待的 load/store。
 
 ```
-   LoadPipe×2 / MainPipe ──req────▶┌─────────────── MissQueue ───────────────┐
+   LoadPipe×3 / MainPipe ──req────▶┌─────────────── MissQueue ───────────────┐
    （miss 访存请求）       queryMQ─▶│  s0 arbiter: alloc / merge / reject       │──mem_acquire──▶ L2 (TL A)
                                    │  miss_req_pipe_reg（入队第二级流水）       │◀─mem_grant────  L2 (TL D)
    MainPipe ◀──main_pipe_req───────│  16×MissEntry（每条一个 MSHR 状态机, 黑盒）│──mem_finish───▶ L2 (TL E)
@@ -123,8 +123,11 @@ flowchart LR
   `accept = alloc | merge` → `io_req_ready`。
 - **miss_req_pipe_reg**（§C）：`io_req.valid` 拍锁存 payload；同拍据判定置 alloc/merge/cancel/mshr_id。
   下一拍把该 reg 注入 `mshr_id` 指定的那条 entry（其余 entry 的 pipe_reg.alloc/merge 拉 0）。
-- **acquire_from_pipereg**（§C）：pipereg 正 alloc 且「不会被一条新 store 合并」时，**立刻**替这条 miss
-  发一条 acquire（不等它真正写进 entry，降低 miss 延迟）。它在 A 通道里以 idx1（仅次于 CMO）参与仲裁。
+- **acquire_from_pipereg**（§C）：`acquire_from_pipereg_valid = mqpr_alloc & ~pr_merge_by_new_store &
+  ~io_wfi_wfiReq`（`MissQueue.sv:189`）——**三个门控**同时满足才**立刻**替这条 miss 发 acquire（不等它
+  真正写进 entry，降低 miss 延迟）：① pipereg 正 alloc；② 不会被一条新 store 合并进来
+  （`pr_merge_by_new_store`）；③ **不处于 WFI 低功耗请求**（`io_wfi_wfiReq`——WFI 期间不发起外部
+  acquire，见 §4.6）。发出的 acquire 在 A 通道里以 idx1（仅次于 CMO）参与仲裁。
 - **resp**（§B）：`resp.id = pipeline处理? pipereg.mshr_id : OHToUInt(entry命中)`；`resp.handled`；`resp.merged`。
 
 ### 4.2 每条 entry 例化（§E，genvar 16 路）

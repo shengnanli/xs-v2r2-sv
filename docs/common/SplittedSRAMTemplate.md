@@ -5,7 +5,7 @@
 | 手写 SV | `rtl/common/SplittedSRAMTemplate_variants.sv` |
 | Scala 来源 | `utility/src/main/scala/utility/sram/SRAMTemplate.scala`（class SplittedSRAMTemplate） |
 | 依赖 | [SRAMTemplate](SRAMTemplate.md)（内层，已单独验证） |
-| 验证状态 | UT ✅（7 个变体各 4 万拍 0 错）/ FM ✅（内层 SRAMTemplate 当黑盒，全部 SUCCEEDED） |
+| 验证状态 | UT ✅（8 个变体各 4 万拍 0 错）/ FM ✅（内层 SRAMTemplate 当黑盒，全部 SUCCEEDED） |
 
 ## 功能
 
@@ -20,7 +20,7 @@ ren_vec 寄存器被优化掉），核心工作是 **struct↔扁平位的打包
 |------|------|------|
 | `waySplit` | 把逻辑「路」分到多个内层（每内层管一部分路） | base：4 路拆成 2 内层×2 路 |
 | `dataSplit` | 把每路「数据字」沿位宽切片，分到多个内层 | `_2`：80b 切 8×10b；`_26`：38b 切 2×19b |
-| `setSplit` | 把逻辑「set」分到多个内层（带 bank 选择） | 本批次内层均 setSplit=1 |
+| `setSplit` | 把逻辑「set」分到多个内层（带 bank 选择） | 多数 setSplit=1；`_23` setSplit=2（奇/偶双 bank） |
 
 ## 已覆盖变体
 
@@ -33,6 +33,7 @@ ren_vec 寄存器被优化掉），核心工作是 **struct↔扁平位的打包
 | `SplittedSRAMTemplate_24` | 128×2×38（ITTAGE） | 不拆 | 1×SRAMTemplate_70(ittage) | 逐位写掩码 flattened_bitmask |
 | `SplittedSRAMTemplate_26` | 128×4×38（ITTAGE） | dataSplit=2 | 2×SRAMTemplate_72(ittage) | 数据切片 + bitmask + 双 bore |
 | `SplittedSRAMTemplate_2` | 512×4×80（FTB） | dataSplit=8 | 8×SRAMTemplate_36(bp_ftb) | FTB 条目精确 80b 打包切 8×10b |
+| `SplittedSRAMTemplate_23` | 512×8×2（TageBTable） | setSplit=2 | 1×SRAMTemplate_64(2p) | set 拆奇/偶双 bank，读用 ren_vec 寄存+Mux1H 选 bank |
 
 ### 几个关键设计点
 
@@ -49,15 +50,14 @@ ren_vec 寄存器被优化掉），核心工作是 **struct↔扁平位的打包
 
 | golden | 内层 | 跳过原因 |
 |------|------|------|
-| `SplittedSRAMTemplate_23` | SRAMTemplate_64 | 内层变体未就绪 |
 | `SplittedSRAMTemplate_29` | SRAMTemplate_78 | 内层变体未就绪 |
 
 ## 验证
 
 - **UT**：golden vs `<变体>_xs`，两者均例化 golden 内层 SRAMTemplate（共用），随机
   r/w/bore（含全 1 与随机 bitmask），4 万拍比对所有输出 0 错——验证 Splitted 层的
-  way/data 拆分、struct 拆拼、bitmask 铺开、bore 路由。7 个变体均 `checks≈39604, errors=0`。
+  way/data/set 拆分、struct 拆拼、bitmask 铺开、bore 路由。8 个变体均 `checks≈39604, errors=0`。
 - **FM**：内层 SRAMTemplate 经 `hdlin_unresolved_modules black_box` 当**已验证黑盒**
-  （模块化等价），只比对 Splitted 自身结构连线。7 个变体均 SUCCEEDED。
+  （模块化等价），只比对 Splitted 自身结构连线。8 个变体均 SUCCEEDED。
 
 > 折叠层见 [FoldedSRAMTemplate](FoldedSRAMTemplate.md)（folding 包 Splitted）。

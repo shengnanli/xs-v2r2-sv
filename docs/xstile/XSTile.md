@@ -73,7 +73,8 @@ clock·reset / 常量 / 悬空端口）。
   `auto_out`（给 XSTop 的 PLIC）。
 - **tile 边界透传**：`io_chi`（CHI 总线 tx/rx 全 5 通道）、`traceCoreInterface`、
   `debugTopDown`、`l3Miss`、`hartIsInReset`、`cpu_halt`、`cpu_crtical_error`、`reset_vector`。
-- **悬空端口**：L2Top 的 `io_l2_flush_en` / `io_power_down_en` 在 XSTile 这层故意不连
+- **悬空端口**：`core`（XSCore）的**输出** `io_l2_flush_en` / `io_power_down_en`（由 CSR 的
+  `flush_l2_enable` / `power_down_enable` 经 MemBlock 引出）在 XSTile 这层故意不连
   （golden 写 `(/* unused */)`），可读核落成合法悬空端口 `( )`。
 
 ---
@@ -121,7 +122,7 @@ assign io_debugTopDown_robHeadPaddr_bits  = _core_io_debugTopDown_robHeadPaddr_b
 | inst 引脚数 vs golden | **642 = 642** |
 | 互联网宽度收割 missing | **0 / 275** |
 | golden 临时名 leaks（inst / outassign） | **0 / 0** |
-| 悬空端口处理 | L2Top `io_l2_flush_en` / `io_power_down_en` → `( )` |
+| 悬空端口处理 | XSCore(`core`) 输出 `io_l2_flush_en` / `io_power_down_en` → `( )` |
 
 ---
 

@@ -43,7 +43,7 @@ flowchart LR
 | **L3** | level-3 非叶 PTE | 全相联 | 16 项 | 11 b | 寄存器堆 | 否 |
 | **L2** | level-2 非叶 PTE | 全相联 | 16 项 | 20 b | 寄存器堆 | 否 |
 | **L1** | level-1 非叶 PTE | 8 set × 2 way | 16 项 | 23 b | SplittedSRAM | 否 |
-| **L0** | level-0 叶 PTE（4KB） | 32 set × 4 way | 128 项 | 24 b | SplittedSRAM_1 | **是**（叶子） |
+| **L0** | level-0 叶 PTE（4KB） | 32 set × 4 way | 128 项 | 30 b | SplittedSRAM_1 | **是**（叶子） |
 | **SP** | 超级页/svnapot 叶（512G/1G/2M） | 全相联 | 16 项 | 38 b | 寄存器堆 | 是 + level + napot |
 
 设计取舍（从 Scala 意图）：
