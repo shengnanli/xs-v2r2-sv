@@ -1,5 +1,16 @@
 # 香山 V2R2（昆明湖）访存子系统 MemBlock —— 学习导读 + 重写计划
 
+## 背景文档(原理篇,建议先读)
+
+| 文档 | 讲什么 |
+|---|---|
+| [需求与设计目标](1-REQUIREMENTS.md) | 需求与设计目标 |
+| [load/store 流水与队列原理](2-LOAD_STORE_PIPELINE_PRINCIPLES.md) | load/store 流水与队列原理 |
+| [DCache 原理](3-DCACHE_PRINCIPLES.md) | DCache 原理 |
+| [地址翻译(TLB/MMU/PTW)原理](4-TLB_MMU_PRINCIPLES.md) | 地址翻译(TLB/MMU/PTW)原理 |
+| [内存序、一致性与时序 ⭐](5-MEMORY_ORDERING_AND_TIMING.md) | 内存序、一致性与时序 ⭐ |
+
+
 > 前端(Frontend)已全部可读重写+验证完成(见 `docs/frontend/`)。本文是访存子系统的总览与
 > 重写进度索引,作为阅读 `docs/memblock/` 下各模块文档的脉络。
 
@@ -138,7 +149,7 @@ flowchart TD
 ```
 
 **图中模块 → 文档**:
-[MemBlock](MemBlock.md)(顶层) · [LoadUnit](LoadUnit.md) / [StoreUnit](StoreUnit.md) · [LoadMisalignBuffer](LoadMisalignBuffer.md) / [StoreMisalignBuffer](StoreMisalignBuffer.md) · [TLBNonBlock](TLBNonBlock.md) / [TlbStorageWrapper](TlbStorageWrapper.md) / [TLBFA](TLBFA.md) · [PMP](PMP.md) / [PMPChecker](PMPChecker.md) · [LsqWrapper](LsqWrapper.md) · [LoadQueue](LoadQueue.md)([VirtualLoadQueue](VirtualLoadQueue.md)/[LoadQueueRAR](LoadQueueRAR.md)/[LoadQueueRAW](LoadQueueRAW.md)/[LoadQueueReplay](LoadQueueReplay.md)/[LoadQueueUncache](LoadQueueUncache.md)/[LqExceptionBuffer](LqExceptionBuffer.md)/[FreeList](FreeList.md)) · [StoreQueue](StoreQueue.md)([StoreExceptionBuffer](StoreExceptionBuffer.md)) · [DCache](DCache.md) / [DCacheWrapper](DCacheWrapper.md) · [LoadPipe](LoadPipe.md) / [StorePipe](StorePipe.md) / [MainPipe](MainPipe.md) / [MissQueue](MissQueue.md) / [WritebackQueue](WritebackQueue.md) / [ProbeQueue](ProbeQueue.md) · [BankedDataArray](BankedDataArray.md) / [DuplicatedTagArray](DuplicatedTagArray.md) / [L1CohMetaArray](L1CohMetaArray.md) / [L1FlagMetaArray](L1FlagMetaArray.md) · [Sbuffer](Sbuffer.md) · [Uncache](Uncache.md) · [StorePfWrapper](StorePfWrapper.md) · [L2TLB](L2TLB.md) / [L2TLBWrapper](L2TLBWrapper.md) / [PtwCache](PtwCache.md) / [PTW](PTW.md) / [LLPTW](LLPTW.md) / [HPTW](HPTW.md) / [L2TlbMissQueue](L2TlbMissQueue.md) / [L2TlbPrefetch](L2TlbPrefetch.md) · [TLBuffer](TLBuffer.md) / [Pipeline](Pipeline.md)(TileLink)
+[MemBlock](../MemBlock.md)(顶层) · [LoadUnit](../LoadUnit.md) / [StoreUnit](../StoreUnit.md) · [LoadMisalignBuffer](../LoadMisalignBuffer.md) / [StoreMisalignBuffer](../StoreMisalignBuffer.md) · [TLBNonBlock](../TLBNonBlock.md) / [TlbStorageWrapper](../TlbStorageWrapper.md) / [TLBFA](../TLBFA.md) · [PMP](../PMP.md) / [PMPChecker](../PMPChecker.md) · [LsqWrapper](../LsqWrapper.md) · [LoadQueue](../LoadQueue.md)([VirtualLoadQueue](../VirtualLoadQueue.md)/[LoadQueueRAR](../LoadQueueRAR.md)/[LoadQueueRAW](../LoadQueueRAW.md)/[LoadQueueReplay](../LoadQueueReplay.md)/[LoadQueueUncache](../LoadQueueUncache.md)/[LqExceptionBuffer](../LqExceptionBuffer.md)/[FreeList](../FreeList.md)) · [StoreQueue](../StoreQueue.md)([StoreExceptionBuffer](../StoreExceptionBuffer.md)) · [DCache](../DCache.md) / [DCacheWrapper](../DCacheWrapper.md) · [LoadPipe](../LoadPipe.md) / [StorePipe](../StorePipe.md) / [MainPipe](../MainPipe.md) / [MissQueue](../MissQueue.md) / [WritebackQueue](../WritebackQueue.md) / [ProbeQueue](../ProbeQueue.md) · [BankedDataArray](../BankedDataArray.md) / [DuplicatedTagArray](../DuplicatedTagArray.md) / [L1CohMetaArray](../L1CohMetaArray.md) / [L1FlagMetaArray](../L1FlagMetaArray.md) · [Sbuffer](../Sbuffer.md) · [Uncache](../Uncache.md) · [StorePfWrapper](../StorePfWrapper.md) · [L2TLB](../L2TLB.md) / [L2TLBWrapper](../L2TLBWrapper.md) / [PtwCache](../PtwCache.md) / [PTW](../PTW.md) / [LLPTW](../LLPTW.md) / [HPTW](../HPTW.md) / [L2TlbMissQueue](../L2TlbMissQueue.md) / [L2TlbPrefetch](../L2TlbPrefetch.md) · [TLBuffer](../TLBuffer.md) / [Pipeline](../Pipeline.md)(TileLink)
 
 ## 3. 重写顺序(自底向上 + 并行,沿用前端方法学)
 
@@ -169,47 +180,47 @@ flowchart TD
 
 | 模块 | 层 | 状态 | 文档 |
 |------|----|------|------|
-| LoadUnit | 1 | ✅ 完成 | [LoadUnit.md](LoadUnit.md) |
-| StoreUnit | 1 | ✅ 完成 | [StoreUnit.md](StoreUnit.md) |
-| PMP / PMPChecker | 1 | ✅ 完成 | [PMP.md](PMP.md) |
-| TlbStorageWrapper | 1 | ✅ 完成 | [TlbStorageWrapper.md](TlbStorageWrapper.md) |
-| TLBFA | 1 | ✅ 完成 | [TLBFA.md](TLBFA.md) |
-| Uncache | 2 | ✅ 完成 | [Uncache.md](Uncache.md) |
-| TLBNonBlock (DTLB) | 2 | ✅ 完成 | [TLBNonBlock.md](TLBNonBlock.md) |
-| Sbuffer | 2 | ✅ 完成 | [Sbuffer.md](Sbuffer.md) |
-| LoadQueueRAR | 2 | ✅ 完成 | [LoadQueueRAR.md](LoadQueueRAR.md) |
-| LoadQueueRAW | 2 | ✅ 完成 | [LoadQueueRAW.md](LoadQueueRAW.md) |
-| StoreQueue | 2 | ✅ 完成 | [StoreQueue.md](StoreQueue.md) |
-| DCacheWrapper | 3 | ✅ 完成(DCache内层黑盒) | [DCacheWrapper.md](DCacheWrapper.md) |
-| LsqWrapper | 3 | ✅ 完成(LoadQueue/StoreQueue黑盒) | [LsqWrapper.md](LsqWrapper.md) |
-| VirtualLoadQueue | 2 | ✅ 完成 | [VirtualLoadQueue.md](VirtualLoadQueue.md) |
-| LoadQueueReplay | 2 | ✅ 完成(replay调度器55k→1243行) | [LoadQueueReplay.md](LoadQueueReplay.md) |
-| LoadQueueUncache | 2 | ✅ 完成(codex产出+resume) | [LoadQueueUncache.md](LoadQueueUncache.md) |
-| Lq/StoreExceptionBuffer | 2 | ✅ 完成 | [LqExceptionBuffer.md](LqExceptionBuffer.md) |
-| FreeList (队列空闲槽位表) | 2 | ✅ 完成(seed1/7/42 各 200000 拍 errors=0 + 内部指针探针) | [FreeList.md](FreeList.md) |
-| Load/StoreMisalignBuffer | 2 | ✅ 完成 | [LoadMisalignBuffer.md](LoadMisalignBuffer.md) |
-| LoadQueue 顶层 | 3 | ✅ 完成(6子队列黑盒互联) | [LoadQueue.md](LoadQueue.md) |
-| PTW (页表遍历器) | 2 | ✅ 完成(codex产出+resume) | [PTW.md](PTW.md) |
-| L2TLBWrapper | 3 | ✅ 完成(L2TLB黑盒) | [L2TLBWrapper.md](L2TLBWrapper.md) |
-| StorePfWrapper | 2 | ✅ 完成(codex产出) | [StorePfWrapper.md](StorePfWrapper.md) |
-| HPTW | 2 | ✅ 完成(H扩展G-stage) | [HPTW.md](HPTW.md) |
-| LLPTW | 2 | ✅ 完成(末级PTW,6路并发) | [LLPTW.md](LLPTW.md) |
-| L2TlbMissQueue | 2 | ✅ 完成 | [L2TlbMissQueue.md](L2TlbMissQueue.md) |
-| L2TlbPrefetch | 2 | ✅ 完成 | [L2TlbPrefetch.md](L2TlbPrefetch.md) |
-| MainPipe (DCache主流水) | 2 | ✅ 完成(MESI一致性) | [MainPipe.md](MainPipe.md) |
-| WritebackQueue (DCache) | 2 | ✅ 完成 | [WritebackQueue.md](WritebackQueue.md) |
-| ProbeQueue (DCache) | 2 | ✅ 完成 | [ProbeQueue.md](ProbeQueue.md) |
-| LoadPipe (DCache) | 2 | ✅ 完成 | [LoadPipe.md](LoadPipe.md) |
-| StorePipe (DCache) | 2 | ✅ 完成(golden空壳+学习核) | [StorePipe.md](StorePipe.md) |
-| PtwCache (页表cache) | 2 | ✅ 完成(最大模块,探针揪出两轮真bug) | [PtwCache.md](PtwCache.md) |
-| DCache MissQueue | 2 | ✅ 完成 | [MissQueue.md](MissQueue.md) |
-| BankedDataArray | 2 | ✅ 完成 | [BankedDataArray.md](BankedDataArray.md) |
-| DuplicatedTagArray | 2 | ✅ 完成 | [DuplicatedTagArray.md](DuplicatedTagArray.md) |
-| L1Coh/FlagMetaArray | 2 | ✅ 完成 | [L1CohMetaArray.md](L1CohMetaArray.md) |
-| L2TLB 顶层 | 3 | ✅ 完成(MMU总集成,子模块黑盒) | [L2TLB.md](L2TLB.md) |
-| DCache 顶层 | 3 | ✅ 完成(23.6k行互联,setPLRU) | [DCache.md](DCache.md) |
-| TLBuffer / Pipeline | 2 | ✅ 完成(codex产出) | [TLBuffer.md](TLBuffer.md) |
-| MemBlock 顶层 | 4 | ✅ 完成(总集成1346端口/71实例,全子模块黑盒) | [MemBlock.md](MemBlock.md) |
+| LoadUnit | 1 | ✅ 完成 | [LoadUnit.md](../LoadUnit.md) |
+| StoreUnit | 1 | ✅ 完成 | [StoreUnit.md](../StoreUnit.md) |
+| PMP / PMPChecker | 1 | ✅ 完成 | [PMP.md](../PMP.md) |
+| TlbStorageWrapper | 1 | ✅ 完成 | [TlbStorageWrapper.md](../TlbStorageWrapper.md) |
+| TLBFA | 1 | ✅ 完成 | [TLBFA.md](../TLBFA.md) |
+| Uncache | 2 | ✅ 完成 | [Uncache.md](../Uncache.md) |
+| TLBNonBlock (DTLB) | 2 | ✅ 完成 | [TLBNonBlock.md](../TLBNonBlock.md) |
+| Sbuffer | 2 | ✅ 完成 | [Sbuffer.md](../Sbuffer.md) |
+| LoadQueueRAR | 2 | ✅ 完成 | [LoadQueueRAR.md](../LoadQueueRAR.md) |
+| LoadQueueRAW | 2 | ✅ 完成 | [LoadQueueRAW.md](../LoadQueueRAW.md) |
+| StoreQueue | 2 | ✅ 完成 | [StoreQueue.md](../StoreQueue.md) |
+| DCacheWrapper | 3 | ✅ 完成(DCache内层黑盒) | [DCacheWrapper.md](../DCacheWrapper.md) |
+| LsqWrapper | 3 | ✅ 完成(LoadQueue/StoreQueue黑盒) | [LsqWrapper.md](../LsqWrapper.md) |
+| VirtualLoadQueue | 2 | ✅ 完成 | [VirtualLoadQueue.md](../VirtualLoadQueue.md) |
+| LoadQueueReplay | 2 | ✅ 完成(replay调度器55k→1243行) | [LoadQueueReplay.md](../LoadQueueReplay.md) |
+| LoadQueueUncache | 2 | ✅ 完成(codex产出+resume) | [LoadQueueUncache.md](../LoadQueueUncache.md) |
+| Lq/StoreExceptionBuffer | 2 | ✅ 完成 | [LqExceptionBuffer.md](../LqExceptionBuffer.md) |
+| FreeList (队列空闲槽位表) | 2 | ✅ 完成(seed1/7/42 各 200000 拍 errors=0 + 内部指针探针) | [FreeList.md](../FreeList.md) |
+| Load/StoreMisalignBuffer | 2 | ✅ 完成 | [LoadMisalignBuffer.md](../LoadMisalignBuffer.md) |
+| LoadQueue 顶层 | 3 | ✅ 完成(6子队列黑盒互联) | [LoadQueue.md](../LoadQueue.md) |
+| PTW (页表遍历器) | 2 | ✅ 完成(codex产出+resume) | [PTW.md](../PTW.md) |
+| L2TLBWrapper | 3 | ✅ 完成(L2TLB黑盒) | [L2TLBWrapper.md](../L2TLBWrapper.md) |
+| StorePfWrapper | 2 | ✅ 完成(codex产出) | [StorePfWrapper.md](../StorePfWrapper.md) |
+| HPTW | 2 | ✅ 完成(H扩展G-stage) | [HPTW.md](../HPTW.md) |
+| LLPTW | 2 | ✅ 完成(末级PTW,6路并发) | [LLPTW.md](../LLPTW.md) |
+| L2TlbMissQueue | 2 | ✅ 完成 | [L2TlbMissQueue.md](../L2TlbMissQueue.md) |
+| L2TlbPrefetch | 2 | ✅ 完成 | [L2TlbPrefetch.md](../L2TlbPrefetch.md) |
+| MainPipe (DCache主流水) | 2 | ✅ 完成(MESI一致性) | [MainPipe.md](../MainPipe.md) |
+| WritebackQueue (DCache) | 2 | ✅ 完成 | [WritebackQueue.md](../WritebackQueue.md) |
+| ProbeQueue (DCache) | 2 | ✅ 完成 | [ProbeQueue.md](../ProbeQueue.md) |
+| LoadPipe (DCache) | 2 | ✅ 完成 | [LoadPipe.md](../LoadPipe.md) |
+| StorePipe (DCache) | 2 | ✅ 完成(golden空壳+学习核) | [StorePipe.md](../StorePipe.md) |
+| PtwCache (页表cache) | 2 | ✅ 完成(最大模块,探针揪出两轮真bug) | [PtwCache.md](../PtwCache.md) |
+| DCache MissQueue | 2 | ✅ 完成 | [MissQueue.md](../MissQueue.md) |
+| BankedDataArray | 2 | ✅ 完成 | [BankedDataArray.md](../BankedDataArray.md) |
+| DuplicatedTagArray | 2 | ✅ 完成 | [DuplicatedTagArray.md](../DuplicatedTagArray.md) |
+| L1Coh/FlagMetaArray | 2 | ✅ 完成 | [L1CohMetaArray.md](../L1CohMetaArray.md) |
+| L2TLB 顶层 | 3 | ✅ 完成(MMU总集成,子模块黑盒) | [L2TLB.md](../L2TLB.md) |
+| DCache 顶层 | 3 | ✅ 完成(23.6k行互联,setPLRU) | [DCache.md](../DCache.md) |
+| TLBuffer / Pipeline | 2 | ✅ 完成(codex产出) | [TLBuffer.md](../TLBuffer.md) |
+| MemBlock 顶层 | 4 | ✅ 完成(总集成1346端口/71实例,全子模块黑盒) | [MemBlock.md](../MemBlock.md) |
 
 > **访存子系统 MemBlock 全部模块重写完成**(约 43 个模块,含 capstone 顶层)。验证标准:可读核结构闸门(struct/enum/function/genvar>0,0生成痕迹) + 多种子UT(seed1/7/42全输出逐拍0错)
 > + FM等价(叶子模块直接SUCCEEDED;大模块因struct数组vs golden扁平标量配对不收敛→以UT为权威+层次探针证伪failing点)。
