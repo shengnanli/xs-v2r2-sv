@@ -69,13 +69,13 @@ L2 目录 `state` 用 4 态编码(TileLink TL-C 语义)：
 
 ### 3.2 与 CHI 的桥接
 
-对下 CHI 侧另有一套响应态编码：`CHI_I / SC / UC / SD / PD`(Invalid / SharedClean / UniqueClean / SharedDirty / UniqueDirty)。主流水在处理 snoop 时，把内部 MESI 态**翻译**成 CHI 响应态：`resp = setPD(state, passDirty)`——当命中 T 态且脏时置 PassDirty，把脏数据的所有权顺带交出。CHI 的 opcode/态定义与通道适配见 [`CHIChannels.md`](../CHIChannels.md)；错误响应编码 `NDERR=2'h2 / DERR=2'h3`。
+对下 CHI 侧另有一套响应态编码：`CHI_I=0 / SC=1 / UC=2 / SD=3`(Invalid / SharedClean / UniqueClean / SharedDirty；其中 UniqueDirty 与 UC 同编码 2)，外加叠加位 `PD=4`(**PassDirty**，脏所有权移交，非独立缓存态)。主流水在处理 snoop 时，把内部 MESI 态**翻译**成 CHI 响应态：`resp = setPD(state, passDirty)`——当命中 T 态且脏时置 PassDirty，把脏数据的所有权顺带交出。CHI 的 opcode/态定义与通道适配见 [`CHIChannels.md`](../CHIChannels.md)；错误响应编码 `NDERR=2'h2 / DERR=2'h3`。
 
 ---
 
 ## 4. MainPipe：一致性决策流水
 
-一切一致性动作都在 [`MainPipe`](../MainPipe.md) 里拍板。它是一条五级流水(s2~s5)，其中 **s3 是决策核心**：拿到本拍的目录读结果 `dirResp_s3`，判命中、判一致性、然后**派发**。请求按 one-hot 通道分三类：
+一切一致性动作都在 [`MainPipe`](../MainPipe.md) 里拍板。它是一条四级流水(s2~s5)，其中 **s3 是决策核心**：拿到本拍的目录读结果 `dirResp_s3`，判命中、判一致性、然后**派发**。请求按 one-hot 通道分三类：
 
 - `channel[0]` = **fromA**：上层 L1 的 Acquire / Get / Hint / CBO；
 - `channel[1]` = **fromB**：CHI 下来的 Snoop(经 RXSNP);

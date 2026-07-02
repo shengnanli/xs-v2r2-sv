@@ -74,7 +74,7 @@ flowchart TB
 
 ### 3.1 非阻塞数据 TLB —— [TLBNonBlock](../TLBNonBlock.md)
 
-数据侧（load/store/prefetch，本配置 `Width=4`）用**非阻塞** TLB：
+数据侧（load/store/prefetch）用**非阻塞** TLB，三者端口数不同：load DTLB 4 路、store/prefetch DTLB 各 2 路（本篇多以 load 的 `Width=4` 为例）：
 
 - **两拍流水**：s0 收请求、算翻译模式 `s2xlate` 与预检异常、把 vpn 送存储读口；s1 合成命中/物理地址/权限，
   miss 时向 PTW 发请求。`req.ready` 恒 1——**miss 不扣住后续请求**，而是直接回一个 `miss=1`，由下游 LSU 自行重放。

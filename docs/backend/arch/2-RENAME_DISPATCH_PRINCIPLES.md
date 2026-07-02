@@ -171,7 +171,7 @@ ROB / LSQ 的按序入队与各类容量反压。三大职责：
 ```mermaid
 flowchart TB
   RN["Rename<br/>(6× uop, 物理号)"] --> ND["NewDispatch 派遣"]
-  ND -->|"toIssueQueues (34 端口)"| IQ["IssueQueue ×17<br/>int / fp / vf / mem 调度"]
+  ND -->|"toIssueQueues (34 端口)"| IQ["IssueQueue ×17(派遣口径)<br/>std IQ 已过滤; 实际例化 19 = int4+fp3+vf3+mem9"]
   ND -->|"enqRob.req 6"| ROB[("ROB 按序入队")]
   ND -->|"lsqEnqIO"| LSQ[("LoadQueue / StoreQueue")]
   ND -->|"ready 反压"| RN

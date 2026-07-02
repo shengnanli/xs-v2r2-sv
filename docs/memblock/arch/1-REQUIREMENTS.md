@@ -57,7 +57,7 @@
 
 ### ② DCache 组相联 + MSHR 非阻塞
 
-L1 数据缓存 [`DCache`](../DCache.md) 采用 **256 组 × 4 路组相联**、64B cacheline、Tree-PLRU 替换（`setplru`）。命中路径由 3 条 LoadPipe / StorePipe / MainPipe 组成。
+L1 数据缓存 [`DCache`](../DCache.md) 采用 **256 组 × 4 路组相联**、64B cacheline、Tree-PLRU 替换（`setplru`）。命中路径由 3 条 LoadPipe、2 条 StorePipe、1 条 MainPipe 组成（合计 6 条命中流水）。
 
 隐藏 miss 延迟靠 **[`MissQueue`](../MissQueue.md)（MSHR file，非阻塞缓存，Kroft 1981）**：持有 **16 条 MSHR**（`nMissEntries=16`），每条对应一条在途 cacheline 缺失。一条 load miss 后登记进 MSHR 便让出流水，后续命中的访存继续走——**miss 不停机**。在途 refill 数据还能被 3 路 load 直接 forward。一致性由 MainPipe（MESI）配合 [`ProbeQueue`](../ProbeQueue.md)/[`WritebackQueue`](../WritebackQueue.md) 维护。
 

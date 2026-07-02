@@ -214,7 +214,7 @@ nextPcOffset、Load 的内联 U 型立即数也在此就地展开。
 flowchart LR
   IQ["源命中 RegCache?<br/>(dataSources==regcache)"] -->|"rcIdx"| RC["RegCache 读"]
   RC -->|"s1 寄存"| BN["BypassNetwork"]
-  BNW["BypassNetwork 会写整数寄存器的<br/>7 路旁路源"] -.->|"回写"| RC
+  BNW["BypassNetwork 回写 RegCache<br/>INT 组 7 路 = 4→整数半区 + 3→访存半区"] -.->|"回写"| RC
 ```
 
 RegCache 分两个对称半区(整数域 / 访存域,条目数不同);读地址最高位选半区、同步读出后回选。

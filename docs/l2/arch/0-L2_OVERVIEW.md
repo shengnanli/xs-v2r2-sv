@@ -88,7 +88,7 @@ flowchart LR
 
 1. **入口 + 仲裁**:L1 的 TileLink A 请求进 `SinkA`;`RequestArb` 把 A/B/C/MSHR 重发四类请求按 **C > B > A、MSHR 优先于通道**合流,同拍向 `Directory` 发起目录读(`dirRead_s1`)。
 2. **目录查询**:`Directory` 读 tag/meta SRAM,给出命中路/替换路与一致性态(该 bank 的 snoop filter 也在目录里)。
-3. **主计算**:`MainPipe`(s2~s5 五级)在 s3 拿到目录结果,判命中/一致性态(INVALID/BRANCH/TRUNK/TIP)→ 派发:
+3. **主计算**:`MainPipe`(s2~s5，共 4 级)在 s3 拿到目录结果,判命中/一致性态(INVALID/BRANCH/TRUNK/TIP)→ 派发:
    - **命中且不需升级**:直接读 `DataStorage`,经 s5 发 Grant/GrantData。
    - **缺失 / 需要 T 权限 / 需 probe 上层 / cache alias**:在 s3 向 `MSHRCtl` 分配一个 **MSHR**(每 slice 16 个),由 MSHR 状态机驱动后续多拍事务。
 4. **CHI 出向**:MSHR 经 `TXREQ/TXRSP/TXDAT` 把请求/响应/数据组装成 CHI flit 下发;若需先 probe 本地 L1,则经 `SourceB`(B 通道)下发 Probe、`SinkC` 回收 ProbeAck。
