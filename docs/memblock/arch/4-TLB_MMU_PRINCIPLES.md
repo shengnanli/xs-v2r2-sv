@@ -13,7 +13,7 @@
 内存查页表太慢，于是引入**多级缓存 + 遍历器**：
 
 - **L1 TLB**（每个访问口一个）：缓存最近用过的翻译结果，命中即 1~2 拍出物理地址；
-- **L2TLB / MMU**（全芯片共享）：L1 miss 的公共后端，内含**页表 cache（PtwCache）**与三个**页表遍历器**；
+- **L2TLB / MMU**（**核内共享**，即本核各 L1 TLB 的公共后端；每个核有自己的 L2TLB，非跨核）：L1 miss 的公共后端，内含**页表 cache（PtwCache）**与三个**页表遍历器**；
 - **PTW / LLPTW / HPTW**：真正去内存（经 L2 cache）逐级读页表项的“走表”硬件；
 - **PMP / PMPChecker**：翻出物理地址后的**物理内存权限/属性关卡**，与翻译并行把关。
 
@@ -116,7 +116,7 @@ PTE 的解析（reserved / PBMT / 非法 `W&&!R` / NAPOT / superpage 对齐等 p
 
 ---
 
-## 5. L2TLB：全芯片共享的二级 MMU —— [L2TLB](../L2TLB.md)
+## 5. L2TLB：核内共享的二级 MMU —— [L2TLB](../L2TLB.md)
 
 [L2TLB](../L2TLB.md) 是所有 L1 TLB（ITLB / DTLB）的**共享后端**。它本身只做**仲裁 / 路由 / 分发 / 访存数据通路的
 glue**，把遍历、缓存、预取、检查都委托给子模块。核心是三个协作件：**PtwCache（页表 cache）+ 三个遍历器 +
