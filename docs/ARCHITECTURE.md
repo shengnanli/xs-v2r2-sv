@@ -109,7 +109,7 @@ flowchart TB
 ```
 
 - **数据/指令缓存**：L1 私有（DCache 4 路×256 组×64B，非阻塞 MSHR）→ L2 私有 slice（目录分 client/self，MESI/CHI 状态）→ OpenLLC 共享 → CHI → 内存。
-- **地址翻译**：ITLB/DTLB（L1，全相联 TLBFA 48 路）→ 共享 **L2TLB**（PtwCache 五级 + 硬件 PTW；H 扩展两阶段用 HPTW/LLPTW）→ PMP/PMA 物理权限检查。前端 ITLB 与访存 DTLB 共享同一 L2TLB/PTW。
+- **地址翻译**：ITLB/DTLB（L1，全相联 TLBFA 48 路）→ 共享 **L2TLB**（PtwCache L0/L1/L2/L3 四级页表缓存 + 硬件 PTW；H 扩展两阶段用 HPTW/LLPTW）→ PMP/PMA 物理权限检查。前端 ITLB 与访存 DTLB 共享同一 L2TLB/PTW。
 
 详见 [DCache 原理](memblock/arch/3-DCACHE_PRINCIPLES.md)、[TLB/MMU 原理](memblock/arch/4-TLB_MMU_PRINCIPLES.md)、[L2 一致性](l2/arch/2-COHERENCE_DIRECTORY_PRINCIPLES.md)。
 

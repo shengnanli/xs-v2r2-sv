@@ -6,14 +6,14 @@
 
 ## 1. L2 是什么、在哪一层
 
-L2 是**多核共享的二级缓存**,夹在 L1(每核私有,走 TileLink)与片上互联/L3(走 CHI)之间:
+L2 是**每核私有的二级缓存**(香山 V2R2 里每个 core tile `XSTile` 内例化一份 `L2Top`/CoupledL2,与 XSCore 一对一,不跨核;真正跨核共享的是顶层 `XSTop` 里的 L3 `OpenLLC`),对本核而言是其**各 L1 master 的共享后端**——夹在 L1(每核私有,走 TileLink)与片上互联/L3(走 CHI)之间:
 
 - **北侧对 core 集群**:以 **TileLink** 协议接多个 L1/PTW/ICache client(A/B/C/D/E 五通道)。
 - **南侧对片上网络**:以 **CHI** 协议接 home node(本项目里是外挂 L3 [`OpenLLC`](../OpenLLC.md),再到内存)。
 
 因此 L2 天然承担三重职责:
 
-1. **多核共享缓存** —— 为多个 L1 提供更大、共享的一级下游缓存,吸收 L1 miss、减少访存往返。
+1. **本核 L1 master 的共享缓存** —— 为本核多个 L1 master(ICache / DCache / MMU 的 PTW / 预取)提供更大、共享的下游缓存,吸收 L1 miss、减少访存往返(注意:是"核内各 L1 共享",非"跨核共享")。
 2. **一致性目录** —— 作为其覆盖范围内的一致性交汇点,记录「哪些 L1 持有哪些行」,据此发起 probe/snoop、维护 MESI/MOESI 风格状态。
 3. **协议桥接(TL↔CHI)** —— 把上层 TileLink 的 Acquire/Release/Probe 语义,翻译成下层 CHI 的 REQ/RSP/DAT/SNP 语义,反之亦然。这是 L2 相对纯私有 cache 最特殊的地方。
 
@@ -58,7 +58,7 @@ flowchart LR
 - **self 目录**:本级 cache 自己的 tag + 一致性态。态编码 2 bit(`INVALID / BRANCH / TRUNK / TIP`,见 [`../MainPipe.md`](../MainPipe.md)),供命中判定与 MESI 状态转换。
 - **client 目录**:记录**上层 L1 是否持有该行**(`clientBits=1`)。它使 L2 能在需要独占/替换/被 snoop 时,**向上发 probe** 收回 L1 副本;也用于检测 `cache_alias`(同物理行的不同虚拟别名)。
 
-两者合一,L2 才能同时对**上**(经 client 目录 probe L1)和对**下**(经 self 目录响应 CHI snoop)维护一致性——这是共享 L2 区别于私有 cache 的关键。目录替换采用 DRRIP 类算法(在 coupledL2 `Directory` 内实现)。
+两者合一,L2 才能同时对**上**(经 client 目录 probe L1)和对**下**(经 self 目录响应 CHI snoop)维护一致性——这是作为一致性代理的 L2 区别于纯 L1 私有 cache 的关键(L2 本身仍是每核私有,只是要为本核多个 L1 维护一致性)。目录替换采用 DRRIP 类算法(在 coupledL2 `Directory` 内实现)。
 
 > 说明:外挂 L3 [`OpenLLC`](../OpenLLC.md) 也采用「self 目录 + client 目录(snoop filter)」双子目录结构,但那是 CHI home node 侧的独立实现(见 [`../SubDirectory.md`](../SubDirectory.md),self=16 way PLRU、client=10 way random),与本文所述 L2 侧目录是两码事,勿混淆。
 

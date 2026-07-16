@@ -6,7 +6,7 @@
 
 ## 1. 为什么 L2 需要目录
 
-L2 是 L1 集群与 CHI 家节点(home node)之间的**共享缓存兼一致性代理**。它同时扮演两个角色：
+L2 是本核 L1 集群与 CHI 家节点(home node)之间的**共享缓存兼一致性代理**(每核私有一份,共享对象是本核各 L1 master,非跨核)。它同时扮演两个角色：
 
 - **对上(TileLink)**：给多个 L1 client 提供 Acquire/Release/Probe 的一致性握手，是 L1 的**上级(inclusive-ish snoop filter)**；
 - **对下(CHI)**：作为 CHI 的 request node(RN)，向家节点发 ReadShared/ReadUnique/WriteBack 等，并接收 Snoop。

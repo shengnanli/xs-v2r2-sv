@@ -12,9 +12,9 @@ flowchart TB
     L1I["L1 ICache"]
     L1D["L1 DCache / MMU"]
   end
-  L2["L2 共享缓存<br/>(本子系统 l2)"]
-  subgraph SoC["片上网络 / 下游"]
-    L3["L3 / OpenLLC<br/>(CHI Home Node)"]
+  L2["L2 缓存<br/>(本子系统 l2, 每核私有)"]
+  subgraph SoC["片上网络 / 下游 (跨核共享)"]
+    L3["L3 / OpenLLC<br/>(CHI Home Node, 跨核共享 LLC)"]
     MEM["内存 (SN)"]
   end
   L1I -- "TileLink (A/B/C/D/E)" --> L2
@@ -25,7 +25,7 @@ flowchart TB
 
 L2 处在**私有 L1 与 CHI 片上网络之间**,同时扮演两个角色:
 
-- **共享缓存**:比 L1 大、被同一核簇内多个 L1 master(ICache / DCache / MMU 的 PTW / 预取)共享,吸收 L1 miss,减少下探到 L3/内存的次数。
+- **本核 L1 的共享缓存**:比 L1 大、被**本核**多个 L1 master(ICache / DCache / MMU 的 PTW / 预取)共享,吸收 L1 miss,减少下探到 L3/内存的次数。注意 L2 是**每核私有**——每个 core tile(`XSTile`)内例化一份 `L2Top`/CoupledL2,与 XSCore 一对一;它只是核内各 L1 的共享后端,并非跨核共享(跨核共享的是下游 L3 `OpenLLC`,见第 2 节)。
 - **一致性中枢**:向上以 **TileLink** 五通道(A/B/C/D/E)跟 L1 维持 MESI 类一致性——通过 B 通道下发 Probe、C 通道回收 ProbeAck/Release、D 通道下发 Grant;向下以 **CHI**(Coherent Hub Interface)接入 SoC 一致性网络,把本地无法满足的请求转成 CHI 事务(Acquire→ReadShared/ReadUnique 等),并处理来自网络的 CHI Snoop(经 RXSNP 进入,由 B 通道向 L1 传播)。
 
 因此 L2 的核心工作可以概括成一句话:**把 L1 的 TileLink 请求,翻译成对本地目录/数据阵列的查询与更新,必要时转成 CHI 事务下探,并在两侧协议之间维持一致性**。
@@ -61,7 +61,7 @@ flowchart TB
 - **TL2CHICoupledL2**:**L2 cache 的主体**。核心是 **4 个 slice(BANKS=4,按地址 bank 分片)**,每个 slice 是一个 bank 的完整 cache 流水;外围拼上 **Prefetcher**(预取器)、**MMIOBridge**(uncacheable 请求桥,绕过缓存)、CHI 各通道仲裁器(txreq/txrsp/txdat 等)、**LinkMonitor**(CHI 链路层监视:linkactive 握手 / lcredit 信用 / flit)、MBIST 自测分发,以及一段较重的顶层 glue——L2→L1 hint 与各 slice D 通道发射仲裁、Grant 节拍计数、48 路(4 slice × 12 事件)性能计数打拍、l2Miss 汇聚、CHI rx 五通道**按 bank 路由**(依 `txnID[10:9]` / snp `addr[4:3]` 选 bank)、CHI P-Credit 流水。
   - **分片(Slice / bank)的意义**:地址按低位 bank 号散列到 4 个 slice,使 4 条 cache 流水可**并行**服务不同 bank 的请求,提升吞吐、缓解目录/数据阵列端口压力。北侧 `auto_in_0..3` 是 4 个 TileLink client 节点,南侧 `io_chi_*` 是 CHI 五通道。
 
-- **OpenLLC**:与 L2 并列的、**独立的外挂 L3 缓存 IP**(CHI home node/归属节点)。它自成一体:北侧接 core 集群(RN,Request Node),南侧接内存(SN,Subordinate Node);内部同样是 4 个 LLC slice(`Slice_4`,与 L2 的 slice 是**不同模块**)加 RN/SN 交叉开关(RNXbar/SNXbar)、MMIO 分流/合并(MMIODiverger/MMIOMerger)、CHI 链路监视。L2 通过 CHI 与它对接,但 OpenLLC 不在 L2 的装配层次内——本子系统的目录/通道叶子(SubDirectory、各 RX/TX、LCredit 转换器)被 L2 与 OpenLLC 两侧复用,故一并归在 l2 文档里。
+- **OpenLLC**:**独立的外挂 L3 缓存 IP**(CHI home node/归属节点),是**跨核共享**的 LLC。层次上它比 L2 高一级——L2(`L2Top`)在每个 core tile `XSTile` 内(每核一份),而 OpenLLC 例化在顶层 `XSTop`(全芯片一份,汇聚各核 L2 的 CHI 请求),二者并非同层"并列"。它自成一体:北侧接各核 L2(RN,Request Node),南侧接内存(SN,Subordinate Node);内部是 4 个 LLC slice(`Slice_4`,与 L2 的 slice 是**不同模块**)加 RN/SN 交叉开关(RNXbar/SNXbar)、MMIO 分流/合并(MMIODiverger/MMIOMerger)、CHI 链路监视。L2 通过 CHI 与它对接,但 OpenLLC 不在 L2 的装配层次内——本子系统的目录/通道叶子(SubDirectory、各 RX/TX、LCredit 转换器)被 L2 与 OpenLLC 两侧复用,故一并归在 l2 文档里。
 
 ## 3. 一个 slice 内部:cache 流水的心脏
 
