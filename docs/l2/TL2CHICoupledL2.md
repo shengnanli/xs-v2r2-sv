@@ -121,21 +121,25 @@ golden 把这部分散成 131 个匿名/半匿名寄存器与一堆 `_T_<n>`/`_G
 > UT 能彻底暴露任何一处接错——非纯前馈装配。
 
 **FM(best-effort,巨型 UT 权威)**:`make fm-TL2CHICoupledL2`——impl(wrapper→可读核)
-与 ref 两侧在相同层次黑盒化 23 个子模块顶。结果:**151217 passing / 20 failing / 0 aborted /
-661 unverified**。**20 个 failing 全部落在 `io_perf_1_value` 与 `io_perf_2_value` 两路**
+与 ref 两侧在相同层次黑盒化 23 个子模块顶。结果 **FAILED**:**151217 passing / 20 failing /
+0 aborted / 661 unverified**。failing=20 恰为 Formality 默认
+`verification_failing_point_limit=20`,verify 触限提前中止,另有 661 个 compare point 未验证。
+**前 20 个 failing 全部落在 `io_perf_1_value` 与 `io_perf_2_value` 两路**
 (各 6 bit 端口 + 其打拍寄存器),其余 46 路 perf 与全部 hint/D 仲裁/CHI 路由/l2Miss/
-P-Credit glue、所有互联端口均 passing。
+P-Credit glue、所有互联端口均 passing——「全落在 perf 两路」的论证只覆盖这前 20 个。
 
-这 20 个 failing 是 **FM 在 slice 黑盒边界的保守判负**,非真 bug:`io_perf_1/2_value` 的源
+这前 20 个 failing 是 **FM 在 slice 黑盒边界的保守判负**,非真 bug:`io_perf_1/2_value` 的源
 `_slices_0_io_perf_0_value` / `_perf_1_value` 在 golden `Slice` 内部本就 2 级寄存,再经
 更深的 `mainPipe`/`mshrCtl`(FM 黑盒)馈入,FM 的寄存器合并/常量传播启发式无法在 ref 与
 impl 间关联这条深黑盒链(把 golden 第 2 拍寄存器误配到本核第 1 拍)。本核 perf 变换是
 **逐拍照搬 golden**(`slicePerfRaw[N]` 源表达式由 `gen_coupledl2.py` 从 golden always 块
 **逐条收割**,变换为 `RegNext∘RegNext`,与 golden 字面一致),且已分别用「unpacked 数组 +
 for 循环」与「48×2 具名标量寄存器(与 golden 命名 1:1)」两种写法各跑一遍 FM,**结果完全相同
-(均 20 failing)**——证明与本核表示无关,纯属源侧黑盒关联。`io_perf_1/2_value` 作为 150 个
+(均 20 failing——两次都触到 20 点截断上限,比较的是前 20 个 failing 的落点)**——证明与本核
+表示无关,纯属源侧黑盒关联。`io_perf_1/2_value` 作为 150 个
 被比对输出的一部分,在 **100k×3 UT 中逐拍 0 错**,等价性由 UT 权威证明。同 L2Top/OpenLLC
-的既定结论(FM 在部分黑盒边界保守判负,UT 权威)。
+的既定结论——**结论口径:UT 为权威;FM 为部分验证、未收敛**(在部分黑盒边界保守判负 +
+截断后 661 点未验证)。
 
 ## -f 闭包 filelist 机制
 

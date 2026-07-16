@@ -154,10 +154,11 @@ specialWalkSizeNxt = specialWalkSize + newSpecialWalkSize - specialWalkCount
   seed 1/7/42 各 200000 拍 `errors=0`。激励覆盖 rename 入队、commit 出队、redirect 的快照
   walk 与无快照 special_walk、walkEnd。
 - **FM**：golden `RenameBuffer` vs 手写 `RenameBuffer_wrapper`(→核)，`SnapshotGenerator`
-  两侧同一黑盒。**不可判**：golden 是 47092 行的极大扁平叶子(256×8bit 队列数组扇出到 6 路
-  commit + 255 路 diff 的巨型 Mux1H/OH 选择树)，fm_shell 在 `match` 阶段的「Building
-  verification models / Merging duplicated registers」步骤上反复静默终止，始终无法走到
-  `verify`(三次重试均如此，非设计失配)。
+  两侧同一黑盒。**FM 未完成、无任何比对结果**：golden 是 47092 行的极大扁平叶子(256×8bit
+  队列数组扇出到 6 路 commit + 255 路 diff 的巨型 Mux1H/OH 选择树)，fm_shell 在 `match`
+  阶段的「Building verification models / Merging duplicated registers」步骤上反复被中止
+  (fm.log 末尾为 SIGTERM `Process terminated by kill`)，始终无法走到 `verify`(三次重试
+  均如此)——**从未产生 passing/failing 任何比对点结果**，既非通过也非失配，如实记录。
   **正确性改由 UT 内部层次探针保证**：tb 每拍把手写核的 `state`/五个指针(value+flag)/
   256 位 `deq_ptr_oh`/三个 size/`vec_load_excp_valid`/**全部 256 个队列条目(ldest+pdest)**
   逐一与 golden 同名内部寄存器比对，seed 1/7/42 各 200000 拍全部 0 失配——等价于对

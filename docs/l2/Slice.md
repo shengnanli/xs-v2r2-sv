@@ -97,7 +97,8 @@ golden `Slice.sv` 全文 10019 行,firtool 实测**无 `_T_<n>` / `_GEN_<n>` 匿
 | 42 | 120000 | 120000 | 0 | TEST PASSED(0/260) |
 
 **FM(子模块两侧黑盒,纯比对装配层 glue)**:`ref = golden Slice.sv` 单文件、`impl = slice_pkg
-+ Slice 核 + wrapper`,两侧 18 个直接子模块全部 `hdlin_unresolved_modules black_box`。结果
++ Slice 核 + wrapper`,两侧 18 个直接子模块全部 `hdlin_unresolved_modules black_box`。结果行为
+**FAILED**,但 verify **完整跑完**(35733 passing / 1 failing / 0 unverified,**非** 20 点截断):
 **35733 / 35734 compare point Passing**,**唯一 1 个 Failing 是 BBPin `reqBuf/io_hasMergeA`**——它
 驱动 golden 的 dontTouch 死网 `_probe`(`Slice.sv:557 wire _probe;`,仅被 `reqBuf.io_hasMergeA` 驱动、
 之后从不读取),在 ref 侧是 undriven cut-point,FM 无法对这一个黑盒悬空管脚证明等价。这是

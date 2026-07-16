@@ -183,9 +183,13 @@ perf 流水并逐拍比对；其余输出两侧恒等。比对对所有输出逐
 内层 `DCache` 在 ref/impl 两侧都读入**显式端口方向的空黑盒**（`dcache_blackbox.sv`），
 黑盒引脚用 `verification_blackbox_match_mode identity` 按名/位置对齐。
 
-- **6184 Passing compare points**，**20 Failing**，全部落在 `io_perf_0` / `io_perf_10` 两路。
-- 这 20 点是**已证假阳性**，脚本自动放行（`fm_eq_bb.tcl`），最终
-  `FM_RESULT: Verification SUCCEEDED (perf-0/10 black-box symmetry false-positive waived)`。
+- Formality 原始 verify 结论为 **Verification FAILED**：**6184 Passing / 20 Failing /
+  364 Unverified**。已报告的 20 个 Failing 全部落在 `io_perf_0` / `io_perf_10` 两路
+  （注意 20 是 Formality 默认 `verification_failing_point_limit=20` 的截断上限——verify
+  攒满 20 个失配即提前中止，364 个 Unverified 点未验）。
+- 这 20 点是**已证假阳性**，脚本级放行（`fm_eq_bb.tcl`），最终打印
+  `FM_RESULT: Verification SUCCEEDED (perf-0/10 black-box symmetry false-positive waived)`
+  ——该 SUCCEEDED 是**脚本 waive 后的判定**，非 Formality 原生通过。
 
 **为何是假阳性（已反证）**：
 

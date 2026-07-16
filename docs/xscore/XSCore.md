@@ -159,7 +159,7 @@ package」和「为提供 module」各拉一次，触发 `Error-[SV-PPD] Package
 impl 侧（`XSCore_wrapper.sv` → `xs_XSCore_core`）与 ref 侧（golden `XSCore.sv`）只显式给到
 3 个子模块顶（Frontend/Backend/MemBlock.sv），更深的 96 个叶子两侧都被 FM 黑盒化。
 
-`make fm` 跑完，结果：
+`make fm` 结果：**FAILED**——
 
 | | 数量 |
 |---|---|
@@ -168,9 +168,13 @@ impl 侧（`XSCore_wrapper.sv` → `xs_XSCore_core`）与 ref 侧（golden `XSCo
 | Aborted | 0 |
 | Unverified | 10379 |
 
-**20 failing 全部在 memBlock 子模块内部**（`u_core/memBlock/inner_xbar/*` 与
+注意：failing=20 恰为 Formality 默认 `verification_failing_point_limit=20`，verify 在
+**98%** 处触限提前中止，尚有 10379 个 compare point 未验证——下述「全在 memBlock 内部」
+的论证只覆盖这前 20 个。
+
+**前 20 个 failing 全部在 memBlock 子模块内部**（`u_core/memBlock/inner_xbar/*` 与
 `inner_buffers*/auto_in_*` 的 TileLink crossbar/buffer data/param/ready/corrupt 引脚），
-**XSCore 自身 top glue 0 failing**（`grep -v u_core/(memBlock|backend|frontend)/` 为空）。
+**XSCore 自身 top glue 在前 20 中 0 failing**（`grep -v u_core/(memBlock|backend|frontend)/` 为空）。
 
 根因是 FM 工具局限（与 Backend.md 同类）：FM 把更深的 TL 叶子（xbar/buffer 内部）黑盒后，
 其输出 pin 在 ref 扇入悬空（undriven），工具无法跨 ref/impl 配对 X 扇入——FM 自己也明示
@@ -178,7 +182,7 @@ impl 侧（`XSCore_wrapper.sv` → `xs_XSCore_core`）与 ref 侧（golden `XSCo
 两侧共用同一份 golden 子模块,非设计差异。BEU glue（frontend `report_to_beu_reg` /
 memBlock icache BEU 寄存器）均 matched 且 verified。
 
-**UT 三种子 120k bit-exact（129 输出端口逐拍 0 错）为权威。**
+**结论口径：UT 三种子 120k bit-exact（129 输出端口逐拍 0 错）为权威；FM 为部分验证、未收敛。**
 
 ---
 

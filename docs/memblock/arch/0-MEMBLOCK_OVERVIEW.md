@@ -223,6 +223,6 @@ flowchart TD
 | MemBlock 顶层 | 4 | ✅ 完成(总集成1346端口/71实例,全子模块黑盒) | [MemBlock.md](../MemBlock.md) |
 
 > **访存子系统 MemBlock 全部模块重写完成**(约 43 个模块,含 capstone 顶层)。验证标准:可读核结构闸门(struct/enum/function/genvar>0,0生成痕迹) + 多种子UT(seed1/7/42全输出逐拍0错)
-> + FM等价(叶子模块直接SUCCEEDED;大模块因struct数组vs golden扁平标量配对不收敛→以UT为权威+层次探针证伪failing点)。
+> + FM等价比对(叶子模块直接SUCCEEDED;**大模块末次verify实为FAILED、属部分验证**——failing=20是Formality默认`verification_failing_point_limit=20`的截断上限,verify提前中止后另有大量unverified点未验(如PtwCache 71912/LoadQueueReplay 17141),因struct数组vs golden扁平标量配对不收敛→以UT为权威+层次探针证伪已报告failing点;StorePipe/L2TLB/L2TlbMissQueue的FM因golden侧固有原因未跑成,详见各doc)。
 > 部分模块由 codex(gpt-5.5)并行产出/调试(PTW/LoadQueueUncache/StorePfWrapper/TileLink/PtwCache起步),其余由 Claude 子agent产出,**全部经独立复核**(结构grep+多种子UT重跑+FM,不凭自报)。
 > **关键教训**:UT输出会漏覆盖内部状态分叉,必须用tb内部层次探针逐拍比对golden内部寄存器才能抓到真bug(PtwCache的l1v/l3v valid分叉、l1/l2/l3replace漏reset即此类,UT全过却是真潜伏bug)。

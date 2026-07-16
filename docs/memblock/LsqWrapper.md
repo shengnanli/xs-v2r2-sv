@@ -97,9 +97,15 @@ LoadQueue 给出的 7 个异常地址字段间选择。
 - **UT**：与 golden `LsqWrapper` 双例化逐拍比对全部 682 个输出。
   种子 1 / 7 / 42 各 200000 检查 **errors=0 TEST PASSED**。
   两侧共用同一批 golden 子模块（LoadQueue/StoreQueue 及其 41 个闭包子件）。
-- **FM**：两侧均读入真实 golden 队列定义，队列内部寄存器逐位等价、自动配对；
-  真正验证包装级逻辑（enq 拆分 / uncache 仲裁 FSM / exceptionAddr / perf）等价。
-  结果见下文 `FM_RESULT`（队列实化后比对点数量大，比对的核心是包装级控制锥）。
+- **FM**：两侧均读入真实 golden 队列定义，比对的核心是包装级控制锥（enq 拆分 /
+  uncache 仲裁 FSM / exceptionAddr / perf）。末次 verify 结论 **Verification FAILED**：
+  **26520 passing / 20 failing / 4786 unverified**（fm.log 记录 verify 在 84% 完成度、
+  攒满 Formality 默认 `verification_failing_point_limit=20` 的 20 个失配后**截断中止**）。
+  已报告的 20 个 failing 全部落在子队列 `loadQueueReplay` 内部
+  （`s2_oldestSel_2_*` / `s2_replayCauses_2` / `s2_replayMSHRId_2` / `s2_replayUop_2_debugInfo_*`
+  寄存器，与 LoadQueue.md 记录的同源级联假象——两侧子队列 golden 源逐字相同，failing 来自
+  输入锥 unmatched 寄存器被当作自由变量），**不在本层包装 glue**；4786 个 unverified 点未验。
+  故 FM 为**部分验证**，等价性以 UT（682 个输出、3 种子各 200k 拍逐拍 errors=0）为权威。
 
 ## 5. 结构门槛（可读性自检）
 

@@ -154,5 +154,10 @@ in_ready[i] = ~redirect & ~isResumeVType & (
 - **UT**：可读核 vs golden DecodeStage 双例化逐拍比对全部 707 路输出端口；
   seed 1/7/42 各 250000 拍 errors=0（见报告）。激励为合法指令池 + 随机 don't-care +
   随机 valid/ready/redirect/vtype/csr/fromRob/stallReason/fusion。
-- **FM**：golden DecodeStage vs 可读 wrapper（三类子模块两侧共享 golden 黑盒定义），
-  `make fm` 结果见报告。
+- **FM**：golden DecodeStage vs 可读 wrapper（三类子模块两侧共享 golden 黑盒定义）。
+  末次运行 **SUCCEEDED：4103 passing / 0 failing / 0 unverified（100% 完成）**，结果在
+  `fm_work/DecodeStage/fm_long.log`（2026-06-17 03:57）。说明：同目录 `fm.log` 是更早
+  一次 verify 中被超时 SIGTERM 杀掉的会话、**无结果行**；其间一次 verify 曾 12 个 DFF
+  failing（fusion_r/invnr_r/recoveryFlag 复位方式未对齐 golden，见 failing.rpt），
+  改为异步复位修复 RTL 后复跑即 SUCCEEDED（此坑另见 arch/0-BACKEND_OVERVIEW.md
+  进度表 DecodeStage 行坑④）。

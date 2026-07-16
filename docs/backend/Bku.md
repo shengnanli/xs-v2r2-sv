@@ -168,14 +168,21 @@ SubWord ⊕ 8 位 rcon 的零扩展），不能 4 字节都异或。且 Rcon 表
 
 - 全部 36 个 opType 的 res_data 在 UT 中逐位 0 错；FM 主体
   （子单元归约树、S-box、MixColumns、各 mux）经签名分析配平。
+- **末次 verify 结果（如实）**：**FAILED**——**1902 passing / 20 failing / 120 unverified**。
+  failing=20 恰为 Formality 默认 `verification_failing_point_limit=20` 截断上限，verify
+  触限提前中止，尚有 120 个 DFF compare point 未验证；前 20 个 failing 全为
+  `res_data_r` 位 DFF。
 - **遗留**：FM 报 13 个 `funcReg` DFF unmatched（clmul/blockCipher/crypto 各自的
-  func 寄存器副本）及其下游 20 个 `res_data_r` 位 inconclusive。原因是这些
+  func 寄存器副本；unmatched.rpt 共 26 点 = 13 ref / 13 impl），其下游 `res_data_r`
+  位即上述 failing/unverified 的来源。原因是这些
   func 寄存器副本**取值完全相同**（同一 `func`、同序使能），FM 的多份同值寄存器
   消歧失败（开启 merge-dup 反而把子单元中间寄存器误折叠，更差，故设
   `FM_MERGE_DUP=false`）。
 - **证伪（mismatch=0）**：用 tb 层次探针对这三处 `funcReg` 副本和 `res_data`
   做 golden-vs-impl 逐拍比对，30 万随机向量（含非法 func 值）下
   `funcReg_mismatch=0、res_data_mismatch=0`，证明失配点为 FM 配对工件而非真实差异。
+- **结论口径**：UT（3×1.8M checks）+ 层次探针证伪为权威；FM 为部分验证、未收敛
+  （截断后 120 点未验证，逐点证伪只覆盖 funcReg/res_data 探针路径）。
 
 ## 6. 结构闸门实测
 

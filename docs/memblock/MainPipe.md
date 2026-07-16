@@ -178,12 +178,13 @@ stateDiagram-v2
 | UT seed 7  | checks=200000, **errors=0** |
 | UT seed 42 | checks=200000, **errors=0** |
 | 额外 seed 2/3/99/12345 | 均 **TEST PASSED** |
-| FM（golden MainPipe vs 手写 wrapper→核） | 3187 passing / **20 failing(均为 valid/fire 控制锥相关寄存器)** / 0 unmatched |
+| FM（golden MainPipe vs 手写 wrapper→核） | **FAILED**：3187 passing / **20 failing(截断上限，均为 valid/fire 控制锥相关寄存器)** / 4943 unverified 未验 / 0 unmatched |
 
 - **UT**：`verif/ut/MainPipe/`，golden 与手写核双例化、共用同一份 golden `AMOALU`/`Arbiter4_MainPipeReq`
   黑盒；四源 valid 独立随机覆盖仲裁优先级，下游 ready 偶发 backpressure 练 stall，
   cmd 限合法访存编码，地址压窄高位提高跨级 set/tag 命中，逐拍比对全部 359 个输出（跳过 golden 为 X 的不可达态）。
-- **FM**：子模块作黑盒。20 个 failing 均为 **valid/fire 控制锥**寄存器
+- **FM**：子模块作黑盒。末次 verify 结论 **Verification FAILED**：3187 passing / 20
+  failing / 4943 unverified。已报告的 20 个 failing 均为 **valid/fire 控制锥**寄存器
   （`s1_valid`/`s2_valid`/`s2_fire_to_s3_q`/`meta_hold`/`replace_access_valid_q`/`error_*`/`s3_data_error_*` 等），
   且 **0 unmatched**（按名全配上）。这些寄存器的次态函数与 golden **逐式等价**
   （`s1_valid <= s0_fire | ~s1_fire & s1_valid` 等已逐条核对），其控制锥
@@ -192,7 +193,10 @@ stateDiagram-v2
   违反 golden `assert(RegNext(io.meta_read.ready))`、`probe_param` 非法值、`way_en` 全 1 等
   被 golden 行为断言排除的状态）才报不等价。**600k 拍（3+4 种子）密集随机激励 0 失配**佐证：
   差异点在可达状态集合上等价，属「UT 充分 + FM 在不可达控制锥上不可判」先例
-  （同 LoadUnit/StoreUnit 处理）。组合输出（命中/数据合并/一致性/写回/响应）FM 全部 passing。
+  （同 LoadUnit/StoreUnit 处理）。注意 **20 是 Formality 默认
+  `verification_failing_point_limit=20` 的截断上限**——verify 攒满 20 个失配即提前中止，
+  4943 个 unverified 点未验；已判的组合输出比对点（命中/数据合并/一致性/写回/响应）全部
+  passing。故 FM 为**部分验证**，以 UT 为权威。
 
 ## 8. 结构闸门自查
 

@@ -89,12 +89,15 @@ catResult[i] = (i < lowResultWidth) ? lowSeg[i] : highSeg[i - lowResultWidth]   
 | UT seed 1 | checks=200000, **errors=0** |
 | UT seed 7 | checks=200000, **errors=0** |
 | UT seed 42 | checks=200000, **errors=0** |
-| FM（golden vs 手写 wrapper→核） | 647 passing / **20 failing**（已证伪为假阳性，见下） |
+| FM（golden vs 手写 wrapper→核） | **FAILED**：647 passing / **20 failing**（截断上限，已证伪为假阳性，见下）/ 1658 unverified 未验 |
 
 - **UT**：`verif/ut/LoadMisalignBuffer/`，golden 与手写核双例化，随机激励 3 路 enq、
   splitLoadResp（含 rep/异常/uncache/mmio/nc）、redirect、各 ready，**逐拍比对全部输出**
   （`!$isunknown(golden)` 跳 don't-care，errors 上限 60 早停打印）。三种子全 200000 拍 errors=0。
-- **FM 假阳性证伪**：FM 报告 647 passing / 20 failing / 0 aborted。20 个 failing **全部**落在
+- **FM 假阳性证伪**：末次 verify 结论 **Verification FAILED**——647 passing / 20 failing /
+  0 aborted / **1658 unverified**。**20 是 Formality 默认 `verification_failing_point_limit=20`
+  的截断上限**（verify 攒满 20 个失配即提前中止，1658 个 unverified 点未验），FM 为部分验证、
+  以 UT 为权威。已报告的 20 个 failing **全部**落在
   `req` 缓冲条目寄存器的两个字段：`req.alignedType`（3 bit）与 `req.dbg_enqRsTime`（17 bit，
   `req_uop_debugInfo_enqRsTime`）。根因——`req` 是**非复位**寄存器（与 golden 一致，仅
   `req_valid` 复位），条目空闲时这两个字段保持上一条的陈旧值/上电 X；Formality 对这两个

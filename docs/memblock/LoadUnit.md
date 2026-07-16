@@ -92,9 +92,13 @@ S3 按 `genDataSelectByOffset`（16-way offset 独热）选 64 位，再按 `gen
 
 - UT：golden `LoadUnit` 与可读核 `LoadUnit_xs` 双例化，随机激励逐拍比对全部 418 路输出。
   - **种子 1 / 7 / 42 各 200000 拍，checks=200000，errors=0，TEST PASSED**（S0~S3 全输出逐拍一致）。
-- FM：可读核 struct/数组 vs golden 扁平结构差异大，签名分析残留少量 prefetch 路寄存器
-  （`reg_ifetch_pf_vaddr_reg`/`pf_tr_valid_d` 等）失配，其余 compare point 全 passing；
-  与 REWRITE_STYLE 一致，以 UT 全输出逐拍 0 错为正确性权威。
+- FM：末次 verify 结论 **Verification FAILED**——**6426 passing / 20 failing / 1240
+  unverified**。已报告的 20 个 failing 全是 prefetch 路寄存器
+  （`io_ifetchPrefetch_bits_vaddr_r_reg`×18、`io_prefetch_train(_l1)_valid_last_REG_reg`×2）。
+  注意 **20 是 Formality 默认 `verification_failing_point_limit=20` 的截断上限**——verify
+  攒满 20 个失配即提前中止，1240 个 unverified 点未验（可读核 struct/数组 vs golden 扁平
+  结构差异大、签名分析配对不收敛）。故 FM 为**部分验证**（此前记"其余 compare point 全
+  passing"不确切，特此更正）；与 REWRITE_STYLE 一致，以 UT 全输出逐拍 0 错为正确性权威。
 
 ## 7. 文件清单
 

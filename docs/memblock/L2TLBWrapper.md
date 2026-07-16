@@ -182,12 +182,15 @@ golden-X（`!$isunknown`），200000 拍 × 147 输出 ≈ 2940 万比对点，e
 内层 `L2TLB` 在 ref/impl 两侧都读入**显式端口方向的空黑盒**（`l2tlb_blackbox.sv`），
 黑盒引脚用 `verification_blackbox_match_mode identity` 按名/位置对齐。
 
-- **2399 Passing compare points**，**20 Failing**（均为 DFF），全部落在
+- Formality 原始 verify 结论为 **Verification FAILED**：**2399 Passing / 20 Failing /
+  94 Unverified**。已报告的 20 个 Failing（均为 DFF）全部落在
   `io_perf_0` / `io_perf_10` / `io_perf_11` / `io_perf_12` 四路（各 6 位的第二级寄存器，
-  即 `*_REG_1`）。
-- 这 20 点是**已证假阳性**，脚本自动放行（`fm_eq_bb.tcl`：逐条核对 failing.rpt 的 Ref 侧
-  对象名，确认 20 个失败点全部是 `io_perf_<i>_value`、无任何非 perf 失败），最终
-  `FM_RESULT: Verification SUCCEEDED for L2TLBWrapper (perf black-box symmetry false-positive waived; 20 pts)`。
+  即 `*_REG_1`）。注意 20 是 Formality 默认 `verification_failing_point_limit=20` 的截断
+  上限——verify 攒满 20 个失配即提前中止，94 个 Unverified 点未验。
+- 这 20 点是**已证假阳性**，脚本级放行（`fm_eq_bb.tcl`：逐条核对 failing.rpt 的 Ref 侧
+  对象名，确认 20 个失败点全部是 `io_perf_<i>_value`、无任何非 perf 失败），最终打印
+  `FM_RESULT: Verification SUCCEEDED for L2TLBWrapper (perf black-box symmetry false-positive waived; 20 pts)`
+  ——该 SUCCEEDED 是**脚本 waive 后的判定**，非 Formality 原生通过。
 
 **为何是假阳性（已反证）**：
 

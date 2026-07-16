@@ -179,14 +179,17 @@ uncache、就绪向量、指针、exceptionAddr、perf）逐拍 bit-exact。
 
 ### 7.3 FM（Formality）
 设 5 个数据存储子模块为黑盒（两侧共用真实 golden 子模块定义），`make fm`。
-结果 **FAILED/INCONCLUSIVE**——与本工程其他大队列模块（Sbuffer 26473 unmatched、
+末次 verify 结论 **Verification FAILED**：**7211 passing / 20 failing / 3591 unverified**
+——与本工程其他大队列模块（Sbuffer 26473 unmatched、
 LsqWrapper）同基线：reference 与 implementation 均成功 elaborate、set top、进入比对
 （4457 by name + 6365 by topology matched），但可读核的**寄存器结构与 golden 完全不同**
 （struct 数组 `ent_reg[i][field]` / `uop_reg[i][field]` vs golden 展平标量
 `allocated_N`/`addrvalid_N`…），自动配对器（针对 `name_i_reg` 扁平命名）无法配对这
 ~35K 个 struct-array 寄存器，导致依赖它们的少量已配对点（addr/dataReadyPtr）也判 FAIL。
+注意 **20 是 Formality 默认 `verification_failing_point_limit=20` 的截断上限**——verify
+攒满 20 个失配即提前中止，3591 个 unverified 点未验，故 FM 为**部分验证**。
 
-**这些 failing 点是结构配对工件而非逻辑错误**：它们直接驱动的输出
+**已报告的 failing 点是结构配对工件而非逻辑错误**：它们直接驱动的输出
 （`stAddrReadySqPtr`/`stDataReadySqPtr` 等）已被 7.2 的三种子逐拍 UT 证明 bit-exact。
 按 `docs/REWRITE_STYLE.md`「可读代码 FM 靠签名分析，大状态机配不齐可接受 UT 充分 +
 FM 部分/不可判，不得为过 FM 退回照抄 golden 命名」，本模块以**充分 UT** 作为正确性

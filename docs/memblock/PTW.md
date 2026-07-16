@@ -96,10 +96,15 @@ UT：
 
 FM：
 
-- `make fm` 结果：`FM_RESULT: Verification FAILED or INCONCLUSIVE for PTW`
-- failing：20 个 matched DFF，全部为 `full_gvpn_reg_reg[0,1,10:27]`
-  vs `u_core/full_gvpn_r_reg[0,1,10:27]`。
+- `make fm` 末次 verify 结论：`Verification FAILED`——**147 passing / 20 failing /
+  2336 unverified**。
+- failing：已报告 20 个 matched DFF，全部为 `full_gvpn_reg_reg[0,1,10:27]`
+  vs `u_core/full_gvpn_r_reg[0,1,10:27]`。注意 **20 是 Formality 默认
+  `verification_failing_point_limit=20` 的截断上限**——verify 攒满 20 个失配即提前中止，
+  2336 个 unverified 点未验（struct 数组 vs golden 扁平标量配对不收敛），已验 passing
+  仅 147 点。
 - 已在 `verif/ut/PTW/tb.sv` 加内部层次探针：
   `u_g.full_gvpn_reg` vs `u_i.u_core.full_gvpn_r`。
   seed 1/7/42 各 200000 拍均 `probe_full_gvpn=0`。
-  因此当前 FM failing 判定为不可达输入/X 探索下的假阳性，而非 UT 可达行为差异。
+  因此已报告的 FM failing 判定为不可达输入/X 探索下的假阳性，而非 UT 可达行为差异；
+  FM 整体为**部分验证**，等价性以 UT（三种子逐拍全输出 0 错）为权威。

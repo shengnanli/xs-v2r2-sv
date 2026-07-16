@@ -197,17 +197,22 @@ seed **1 / 7 / 42** 各 **200000** 拍：`checks=200000 errors=0`，三种子全
 （`!$isunknown(golden)` 跳 don't-care；payload 类输出按对应 valid 守护比对；`+define+SYNTHESIS` 关随机化。）
 
 ### 6.3 FM（`make fm`，子模块黑盒）
-**结果：FAILED/INCONCLUSIVE（已证伪为假阳性）**。
+**末次 verify 结论：Verification FAILED（16833 passing / 20 failing / 2527 unverified，
+已报告 failing 证伪为假阳性）**。
 - 17994 by name + 1386 by signature 配对成功；**36 个 reference unmatched** 全是 golden 的单 beat 仲裁
   burst-locking 寄存器 `beatsLeft(_1)` / `state_0..17` / `state_1_0..15`——本核因 A/E 通道单 beat 而
   **故意不实现**（这些寄存器在 golden 中恒 0 / 恒跟随当拍 winner，功能上是死状态）。
-- 失败 compare point：`mqpr_alloc/merge/mshr_id`、`io_mem_acquire_bits_address`、entry 内部
+- 已报告的 20 个失败 compare point（**20 是 Formality 默认 `verification_failing_point_limit=20`
+  的截断上限**，verify 攒满即提前中止，2527 个 unverified 点未验）：`mqpr_alloc/merge/mshr_id`、
+  `io_mem_acquire_bits_address`、entry 内部
   `s_acquire`/`no_pending`。这些都在「被丢弃的 burst 锁定状态」的扇出锥里——FM 无法在不做可达性分析的
   前提下证明 `beatsLeft≡0`，于是在 **不可达的 burst-locked 输入空间** 里探到 entry 握手输入不同。
 - **证伪**：tb 内层次探针（`u_g.<sig>` vs `u_i.u_core.<sig>`）对上述失败信号
   （`mqpr_alloc/merge/mshr_id`、`io_mem_acquire_bits_address`、entry0 `s_acquire`/`no_pending`）
   在 seed **1/7/42** 各 200000 拍 **mismatch=0**。即在真实可达状态空间下逐位等价。
-- 结论：按工程既有先例（「UT 充分 + FM 因仲裁状态寄存器结构差异不可判」），判 FM 假阳性。
+- 结论：按工程既有先例（「UT 充分 + FM 因仲裁状态寄存器结构差异不可判」），已报告 failing
+  判为 FM 假阳性；FM 整体为**部分验证**（16833 passing；20 failing 已证伪；2527 unverified
+  未覆盖），以 UT（3 种子逐拍 0 错）为权威。
   不为过 FM 而退回照抄 golden 的 `beatsLeft/state` 死寄存器（那会损害可读性、违背重写准则）。
 
 ---

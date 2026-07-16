@@ -5,7 +5,7 @@
 | 手写 SV | `rtl/frontend/Tage_SC.sv`（`xs_Tage_SC_core`）+ `rtl/frontend/Tage_SC_wrapper.sv`（golden 同名 `Tage_SC`） |
 | Scala 来源 | `src/main/scala/xiangshan/frontend/Tage.scala` / `SC.scala` |
 | 子模块（黑盒） | `TageTable_*`（4 张带 tag 的几何历史 TAGE 表，历史长度 **8 / 13 / 32 / 119**，见 `rtl/frontend/Tage_SC.sv:10`）、`TageBTable`（双口基预测器 bimodal）、`SCTable_*`（4 张统计校正表）、`MaxPeriodFibonacciLFSR`（分配随机）等 |
-| 验证状态 | UT ✅（每种子 6 万拍随机，seed 1/7/42 全 0 错，`btu_err=0`）/ FM ✅（**SUCCEEDED**，20 个 `bt_upd_*` failing 已证假阳性，见 §5） |
+| 验证状态 | UT ✅（每种子 6 万拍随机，seed 1/7/42 全 0 错，`btu_err=0`）/ FM ❌ **FAILED**，部分验证：9249 passing、20 failing（截断上限，全为 `bt_upd_*`，已证假阳性，见 §5）、2852 unverified 未验，以 UT 为权威 |
 | 重写标准 | 符合 `docs/REWRITE_STYLE.md`（struct/数组/genvar/纯函数/中文注释，0 生成痕迹：`RANDOMIZE|SYNTHESIS|_GEN_|_T_[0-9]` grep 计数 = 0） |
 
 ---
@@ -214,8 +214,12 @@ m_sc_ctrs[b][t] <= s2_choose[b] ? s2_sc_resps[b][t][1] : s2_sc_resps[b][t][0];
 
 ## 5. FM 结果与 `bt_upd_*` 假阳性说明
 
-`make fm` 的 ref/impl 顶层等价比对中，唯一一组 **20 个 failing compare points 全部是
-`u_core/bt_upd_*` 寄存器**（`bt_upd_mask[1]`、`bt_upd_pc[*]`、`bt_upd_cnt[*]`），无任何其它失配。
+`make fm` 的 ref/impl 顶层等价比对**末次 verify 结论为 Verification FAILED**：
+**9249 passing / 20 failing / 2852 unverified**。已报告的 **20 个 failing compare points
+全部是 `u_core/bt_upd_*` 寄存器**（`bt_upd_mask[1]`、`bt_upd_pc[*]`、`bt_upd_cnt[*]`）。
+注意 **20 是 Formality 默认 `verification_failing_point_limit=20` 的截断上限**——verify
+攒满 20 个失配即提前中止，"全部是 bt_upd_*"只对已判的这 20 点成立，另有 2852 个
+unverified 点未验。
 
 这些是**已证假阳性**：FM 比的是「送进黑盒 `TageBTable` 更新口的寄存器位」，而 golden 把
 `pc/cnt` **无条件**寄存、本核在 `mask=0` 时不写这些位，于是寄存器值在 `mask=0` 的拍上不同——
@@ -223,7 +227,8 @@ m_sc_ctrs[b][t] <= s2_choose[b] ? s2_sc_resps[b][t][1] : s2_sc_resps[b][t][0];
 
 为佐证，tb 末尾加了 `btu_err` 自检（逐拍比两个 `bt` 实例的更新口）：
 **mask 恒比；任一 bank mask=1 时 pc 恒比；该 bank mask=1 时其 cnt/takens 恒比**。
-三种子运行 `btu_err=0`，证明真正进基预测器 SRAM 的更新行为完全等价。结论：FM 的 20 个
-`bt_upd_*` 为编码差异导致的假阳性，**不为其改逻辑**。
+三种子运行 `btu_err=0`，证明真正进基预测器 SRAM 的更新行为完全等价。结论：**UT（多种子
+逐拍 0 错 + `btu_err=0` 自检）为权威；FM 为部分验证**——9249 passing，已报告的 20 个
+`bt_upd_*` failing 为编码差异导致的假阳性（**不为其改逻辑**），2852 unverified 未覆盖。
 
 > 复现自检：`cd verif/ut/Tage_SC && make simv && ./simv +ntb_random_seed=7`，看输出 `btu_err=0`。

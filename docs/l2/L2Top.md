@@ -88,13 +88,16 @@ assign 仅 1 处**(`io_l2_hint_bits_sourceId` 取低 4 位)。故本层逻辑 = 
 | 7  | 120000 | 120000 | 0 | TEST PASSED(0/182) |
 | 42 | 120000 | 120000 | 0 | TEST PASSED(0/182) |
 
-**FM(best-effort,巨型 UT 权威)**:`make fm-L2Top` 未 SUCCEEDED。**全部 20 个 failing
-compare point 均在 `inner_l2cache/`(TL2CHICoupledL2)内部**(perf 寄存器、slices 的
-error_bits_address、txreq_arb 等),**L2Top 顶层 glue 0 failing**。根因同 XSCore:FM 把
+**FM(best-effort,巨型 UT 权威)**:`make fm-L2Top` 结果 **FAILED**——**38707 passing /
+20 failing / 7 unverified**。failing=20 恰为 Formality 默认
+`verification_failing_point_limit=20`,verify 触限提前中止,另有 7 个 compare point 未验证。
+**前 20 个 failing compare point 均在 `inner_l2cache/`(TL2CHICoupledL2)内部**(perf 寄存器、
+slices 的 error_bits_address、txreq_arb 等),**L2Top 顶层 glue 在前 20 中 0 failing**——
+「全在 inner_l2cache 内部」的论证只覆盖这前 20 个。根因同 XSCore:FM 把
 6469 行的 `TL2CHICoupledL2` 完整读入两侧(而非黑盒),其内部 undriven 输入的扇入无法配对
 (FM ATTENTION: "19 failing compare points have unmatched undriven signals in their reference
-fan-in")。这是巨型子模块做互联壳 FM 的固有现象,与本层 glue 等价性无关——以 120k×3 UT
-为权威等价证明。
+fan-in")。这是巨型子模块做互联壳 FM 的固有现象,与本层 glue 等价性无关——**结论口径:
+以 120k×3 UT 为权威等价证明;FM 为部分验证、未收敛**。
 
 ## -f 闭包 filelist 机制
 

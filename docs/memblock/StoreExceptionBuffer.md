@@ -141,11 +141,15 @@ seed 1 / 7 / 42 各 **199995 checks，errors = 0**（WARMUP=4 跳过复位瞬态
 后 probe_mm 恒 0——确认是启动瞬态而非功能差异。
 
 ### 6.3 FM
-golden 顶层（纯叶子）vs 可读同名 wrapper（→ 可读核）。结果：**1091 passing / 20 inconclusive**，
-inconclusive 全部为 `u_core/req_r_reg[fullva]`，根因与 Lq 完全相同：golden 用不规则命名的
+golden 顶层（纯叶子）vs 可读同名 wrapper（→ 可读核）。末次 verify 结论 **Verification
+FAILED**：**1091 passing / 20 failing / 122 unverified**（20 是 Formality 默认
+`verification_failing_point_limit=20` 的截断上限——verify 攒满 20 个失配即提前中止，
+122 个 unverified 点未验）。已报告的 20 个 failing 全部为 `u_core/req_r_reg[fullva]`，
+根因与 Lq 完全相同：golden 用不规则命名的
 逐入口 `RegNext(s1_valid)` 标量 + 逐字段 req 标量寄存器，可读核用向量 `s2_valid_q` + struct
 `req_r`，共享 `fm_eq.tcl` 的展平名自动配对规则无法跨越该结构差异，导致下游 `req_r[fullva]`
-判 inconclusive。**已用 tb 内部层次探针证伪**：三种子逐拍直接比对内部 req 寄存器，
-**probe_mm = 0**（数值恒等）；叠加 UT 5 个输出 0 错，功能等价确证。
+误判 failing。**已用 tb 内部层次探针证伪**：三种子逐拍直接比对内部 req 寄存器，
+**probe_mm = 0**（数值恒等）；叠加 UT 5 个输出 0 错，功能等价以 UT+探针为权威，
+FM 为部分验证。
 
 > 不为让 FM 好过而退回 golden 命名（违反重写准则）。

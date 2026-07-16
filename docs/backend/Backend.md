@@ -111,3 +111,11 @@ Backend 顶层逻辑量很小（golden 仅 80 个 `_GEN_/_T_`，两个 `always` 
   关随机化（`+vcs+initreg+0`）、`+define+SYNTHESIS`、`-assert disable`。
   - 结果：seed 1/7/42 各 **200000 拍 errors=0**，`distinct_diverging_ports=0/723`。
 - **FM（同层黑盒等价）**：`make fm`，impl=wrapper→可读核，ref=golden，两侧同层黑盒化 31 子模块。
+  - 结果（如实）：**FAILED**——**192416 passing / 20 failing / 1959 unverified**。failing=20 恰为
+    Formality 默认 `verification_failing_point_limit=20`，verify 在 98% 处触限提前中止，尚有 1959
+    个 compare point 未验证。前 20 个 failing 全在子模块内部（inner_ctrlBlock 的
+    delayedNotFlushedWriteBack `vls_isVlm/isWhole` 4 个 DFF + rename `lsrc`/rob `io_exception_valid`/
+    int·fpWbArbiter `io_in_*_ready` 16 个 BBPin），Backend 自身 glue 在前 20 中 0 failing——
+    「全在子模块内部」的论证只覆盖这前 20 个。根因是 FM 把更深叶子（Rob/Rename/wbArbiter）黑盒后
+    其输出 pin 在 ref 扇入悬空（undriven）无法跨侧配对。**结论口径：UT 200k×3 bit-exact 为权威；
+    FM 为部分验证、未收敛。**

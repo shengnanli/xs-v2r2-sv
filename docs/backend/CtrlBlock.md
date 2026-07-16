@@ -284,5 +284,13 @@ CtrlBlock 把重定向/提交信息回送前端 FTQ:
 - 探针:`+SRPROBE`(stallReason/snapshot/walk 链层次探针)、`+PROBE`(redirect/decode 链)、
   `+DUMP`/`+XDUMP`(exuOldest / snptValids X 早期态)——用「第一处分叉拍 + 上游逐级对照 golden」
   定位真 bug。
+- **FM(如实)**:`make fm` 结果 **FAILED**——**72701 passing / 20 failing / 14753 unverified**。
+  failing=20 恰为 Formality 默认 `verification_failing_point_limit=20`,verify 在 **83%** 处触限
+  提前中止,尚有 14753 个 compare point 未验证。前 20 个 failing 中 **17 个是本核 glue 寄存器**
+  (decodeBufValid×6 / ftqCommitValid×8(io_frontend_toFtq_rob_commits_*_valid_last,其中 6 个
+  impl 侧被 FM 判为 DFF0X 常量寄存器)/ mdpVldLast×2 / s1_robFlushValid)+ 3 个 decoders BBPin
+  (io_enq_ctrlFlow_foldpc)。这些 glue 寄存器在 UT 200k×3 中逐拍 0 错,但**未做 FM 逐点证伪**
+  (未像 Bku 那样用层次探针闭环),失配是否纯属 FM 初值/黑盒 X 建模差异未定论。
+  **结论口径:UT 为权威;FM 部分验证、未收敛。**
 - **结构闸门**:核 + 所有手写 svh + pkg 的 `_GEN_/_T_[0-9]` = 0;struct/enum/function/genvar
   充分;无套壳。X 铁律(数组变量索引、clear-then-overwrite struct 进算术比较一律改三元/直引端口)。

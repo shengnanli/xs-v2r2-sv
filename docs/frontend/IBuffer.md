@@ -166,6 +166,10 @@ cd verif/ut/IBuffer && make compile && make run
 make fm
 ```
 
-组合逻辑与大部分时序点等价（详见报告）。出队指针等少数寄存器在
-**不可达 don't-care 状态**下编码与 golden 不同（已尽量用 golden 的 signed-diff 回绕形式对齐）；
-功能正确性由上述充分 UT 保证。子模块无（golden 顶层全展平，无外部例化）。
+末次 verify 结论 **Verification FAILED**：**781 passing / 20 failing / 6427 unverified**。
+20 个 failing 全部是出队指针寄存器（`deqPtr_flag` / `deqBankPtrVec_*_value` 等），在
+**不可达 don't-care 状态**下编码与 golden 不同（已尽量用 golden 的 signed-diff 回绕形式对齐）。
+注意 **20 是 Formality 默认 `verification_failing_point_limit=20` 的截断上限**——verify 攒满
+20 个失配即提前中止，**6427 个比对点落在 Unverified 未验**（可读核 struct/数组 vs golden 展平
+标量导致大量点配对/验证不收敛）。故本模块 FM 为**部分验证**，功能正确性以上述充分 UT
+（多种子逐拍全输出 0 错）为权威。子模块无（golden 顶层全展平，无外部例化）。

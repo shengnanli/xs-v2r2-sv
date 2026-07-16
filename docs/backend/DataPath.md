@@ -212,11 +212,14 @@ og1 类型 / ctrl 字段集 / imm / pc-target / cancel 等）由 `BackendParams`
   比对全部 914 输出，子模块两侧共用 golden 黑盒，`+define+SYNTHESIS`。五条主数据流
   （Int/Vec/Mem 全数据通路、源数据、控制字段、写口、RegCache、flush、pc/target、og 响应）
   加上 s0_cancel / perf 均在比对范围内。
-- **FM**：golden vs 同名 wrapper（→ 可读核），子模块黑盒。实测 **82746 passing / 20 failing /
-  16334 unverified**；20 个 failing 点**全部**落在
+- **FM**：golden vs 同名 wrapper（→ 可读核），子模块黑盒。结果（如实）**FAILED**：**82746 passing /
+  20 failing / 16334 unverified**。failing=20 恰为 Formality 默认
+  `verification_failing_point_limit=20`，verify 在 **83%** 处触限提前中止，尚有 16334 个
+  compare point 未验证。前 20 个 failing 点**全部**落在
   `difftestArch{Int,Fp,Vec}RegState_delayer/REG_value_0_reg[*]`——即 difftest 归档寄存器探针
   （`DelayReg`/DPIC 打拍）的延迟寄存器，**difftest-only、不在功能数据通路上**（可读核未完整
-  建模该 difftest 探针，故此处配对失败），功能数据流部分等价通过。
+  建模该 difftest 探针，故此处配对失败）；但「全为 difftest 探针」只覆盖这前 20 个。
+  **结论口径：UT 200k×3（914 输出）为权威；FM 为部分验证、未收敛。**
 
 > 验证状态另见本目录 `BACKEND_OVERVIEW.md`。（注：`scripts/gen_datapath.py` 末 STATUS 注释
 > 早于 s0_cancel/perf 落地，仍写「接 0」，以本节与 RTL 为准。）

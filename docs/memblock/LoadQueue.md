@@ -113,18 +113,21 @@ valid 的与运算在连接表里就地给出（不含 `_io_` 不需要重命名
 
 - **UT**：与 golden `LoadQueue` 双例化逐拍比对全部 486 个输出。两侧共用同一批 35 个
   golden 子队列闭包文件。种子 1 / 7 / 42 各 200000 检查 **errors=0 TEST PASSED**。
-- **FM**：结论 **FAILED/INCONCLUSIVE（不可判，按 LsqWrapper 先例处理）**。两侧均读入
+- **FM**：末次 verify 结论 **Verification FAILED（不可判，按 LsqWrapper 先例处理）**：
+  **6555 passing / 20 failing / 3189 unverified**。两侧均读入
   真实 golden 子队列定义，但 impl 侧 6 个子队列例化在 `u_core/u_lq_rar`…等**重命名实例 +
   额外 `u_core` 层次**下，与 ref 侧 `loadQueueRAR`… 同名不同路径，FM 的 name/topology
   match 无法配对，出现 **49714 个 unmatched 寄存器**（全部是子队列内部寄存器 + perf 两级
   延迟寄存器 `io_perf_N_value_REG*` vs 手写 `g_perf[*].perf_stage*`）。
-  - **20 个 failing 点全部落在 `u_core/u_lq_replay` 内部**（如 `s2_oldestSel_2_*`、
+  - **已报告的 20 个 failing 点全部落在 `u_core/u_lq_replay` 内部**（如 `s2_oldestSel_2_*`、
     `s2_replayUop_2_debugInfo_issueTime_*` 等子队列私有寄存器），其 golden 源两侧逐位相同；
     它们 failing 是因输入锥里的 unmatched 寄存器被 FM 当作自由变量所致的级联假象，
-    **不是本层 glue 的逻辑差异**。
+    **不是本层 glue 的逻辑差异**。注意 **20 是 Formality 默认
+    `verification_failing_point_limit=20` 的截断上限**——verify 攒满 20 个失配即提前中止，
+    "全部落在 u_lq_replay"只对已判的这 20 点成立，另有 3189 个 unverified 点未验。
   - **本层 glue 写出的任何顶层输出（`io_perf_*` / `io_nuke_rollback` / `io_nack_rollback` /
     `io_lqDeqPtr` / `full_mask`）均不在 failing 集合中**（已 grep 证实为空）。
-  - 因子队列层次/命名差异导致比对点配对不收敛，FM 对本层不可判；等价性以 **UT 充分**
+  - 因子队列层次/命名差异导致比对点配对不收敛，FM 对本层为**部分验证**；等价性以 **UT 充分**
     为准（下方 486 个顶层输出逐拍比对、3 种子各 200k 拍 errors=0，即逐拍输出探针证伪）。
 
 ## 5. 结构门槛（可读性自检）

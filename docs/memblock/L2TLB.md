@@ -139,6 +139,10 @@ Arbiter/DelayN + PtwCache 的 SRAM 宏闭包）。
     X-init 不可判」同类先例），非顶层 glue 缺陷。
 
 ### 4.3 FM
-以 24 个子模块为两侧共享 golden 黑盒，对本层 glue 做签名等价（`make fm`）。受子模块层次/
-命名差异与 SRAM 黑盒影响，预期与 LsqWrapper 同类（部分/不可判，等价性以 UT 为准）；本版以
-UT 充分性为主要等价证据。
+以 24 个子模块为两侧共享 golden 黑盒，对本层 glue 做签名等价（`make fm`）。**如实记录：
+FM 实际未跑成、无任何比对点结果**——golden 侧存储宏 `ram_40x47.sv` 的越界索引 lint
+（`FMR_ELAB-147`，6-bit 地址索引 40 项数组）被 Formality 升级为 unsuppressed error，
+参考设计在 link 阶段即失败（`FM-156`→`FM-045: Reference design not set`），verify 从未
+执行（与 L2TlbMissQueue 同根因，属 golden 侧 SRAM 宏的 elaboration 行为，非本层实现缺陷）。
+故本模块**无 FM 证据**，等价性完全以 UT 充分性（145 路顶层输出、3 种子各 200k 拍逐拍
+bit-exact）为权威。

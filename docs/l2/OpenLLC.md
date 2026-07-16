@@ -90,14 +90,18 @@ topDown.addrMatch)、`io_debugTopDown_addrMatch_0`(topDown 输出直通)、`io_l
 | 7  | 100000 | 100000 | 0 | TEST PASSED(0/29) |
 | 42 | 100000 | 100000 | 0 | TEST PASSED(0/29) |
 
-**FM(best-effort,巨型 UT 权威)**:`make fm-OpenLLC` 未整体 SUCCEEDED。**106173 passing /
-20 failing / 0 aborted**。**全部 20 个 failing compare point 均在 `slices_N/rxrspUp/io_out_bits_dbID[*]`
+**FM(best-effort,巨型 UT 权威)**:`make fm-OpenLLC` 结果 **FAILED**——**106173 passing /
+20 failing / 0 aborted / 176 unverified**。failing=20 恰为 Formality 默认
+`verification_failing_point_limit=20`,verify 触限提前中止,另有 176 个 compare point 未验证。
+**前 20 个 failing compare point 均在 `slices_N/rxrspUp/io_out_bits_dbID[*]`
 内部**(4 slice × 5 bit;rxrspUp 是 Slice_4 内部 LCredit 转换器),**OpenLLC 顶层 glue 与全部
-互联端口 0 failing**(都在 106173 passing 里)。根因:FM 只给两侧读了 8 个子模块顶,其内部叶子
+互联端口在前 20 中 0 failing**(都在 106173 passing 里)——「全在 slices 内部」的论证只覆盖
+这前 20 个。根因:FM 只给两侧读了 8 个子模块顶,其内部叶子
 (Directory_4/DataStorage_4/MainPipe_5/RequestArb_4/…)被自动黑盒,黑盒边界处 `dbID` 的扇入含
 undriven 信号无法配对(FM ATTENTION: "20 failing compare points have unmatched undriven signals
 in their reference fan-in")。两侧用的是**同一份 golden `Slice_4.sv`**,故实际等价(UT 逐拍证明),
-仅 FM 结构分析在部分层次黑盒边界处保守判负。同 L2Top/XSCore 的固有现象——以 100k×3 UT 为权威。
+仅 FM 结构分析在部分层次黑盒边界处保守判负。同 L2Top/XSCore 的固有现象——**结论口径:
+以 100k×3 UT 为权威;FM 为部分验证、未收敛**。
 
 ## -f 闭包 filelist 机制
 
