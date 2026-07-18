@@ -1,5 +1,11 @@
 # XSCore —— 单核最高层总集成（capstone）
 
+> ⚠ **FM 分类 = PARTIAL_WAIVED（原生成功但范围受限）**。依据台账
+> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md)：本模块 impl 侧有 **31196 个
+> unmatched BBPin**（两侧配置不一致，Makefile 已诚实注明"基线漂移不参与判定"）→ 属
+> **scoped/partial proof，非全等价**。整核等价须叠加三大子系统各自证明。（下文"验证"节记录的
+> 另一版 FM 为 FAILED，20 failing 为截断上限、10379 unverified 未覆盖，口径同为部分验证。）
+
 > 设计源：`src/main/scala/xiangshan/XSCore.scala`（`class XSCoreImp`）
 > 可读核：`rtl/xscore/XSCore.sv`（`xs_XSCore_core`）+ `xscore_pkg.sv`
 > 3 个子模块实例（3 种类型：Frontend / Backend / MemBlock）全部作 golden 黑盒（UT/FM 两侧共用）。

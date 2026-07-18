@@ -1,5 +1,12 @@
 # LoadQueueUncache —— LoadQueue 的不可缓存/MMIO 请求管理单元
 
+> ✅ **FM 分类 = REPLACEMENT_EQ（可读核真驱动 + 冻结基线原生 SUCCEEDED）**。依据台账
+> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md) 与冻结基线日志
+> `verif/ut/LoadQueueUncache/fm_work/LoadQueueUncache/fm_full.log`：本模块在当前冻结 golden 基线上 FM **原生
+> `Verification SUCCEEDED`，10474 passing / 0 failing / 0 unverified**。下文验证节里任何
+> "FAILED / 20 failing 截断 / 部分验证 / 未收敛"的表述是**冻结前的旧叙事，已作废**——以本
+> banner 与台账为准。
+
 > 可读重写：`rtl/memblock/LoadQueueUncache.sv`（核 `xs_LoadQueueUncache_core`）+ `rtl/memblock/loadqueueuncache_pkg.sv`
 > 设计意图来源：`XiangShan/src/main/scala/xiangshan/mem/lsqueue/LoadQueueUncache.scala`
 > golden（firtool 生成，仅作 UT/FM 对照）：`golden/chisel-rtl/LoadQueueUncache.sv`

@@ -1,5 +1,11 @@
 # L2TlbMissQueue —— L2TLB Miss 队列（带 flush 的 FIFO）
 
+> ⚠ **FM 分类 = PARTIAL_WAIVED（范围受限）**。依据台账
+> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md)：本模块含厂商 RAM 越界读的
+> `FMR_ELAB-147`，被 `fm_eq_full.tcl` **全局降级为 warning**；严格签核应证明指针可达范围或用
+> 严格内存模型，不能全局忽略。故 FM 属受限证明——**scoped/partial proof 非全等价**，当前
+> 等价性以 UT 内部指针探针（3 种子×200k 拍 probe_errors=0）为权威。
+
 > 已落地：可读核 `rtl/memblock/L2TlbMissQueue.sv`、类型包 `rtl/memblock/l2tlbmissqueue_pkg.sv`、
 > golden 同名 wrapper、生成脚本 `scripts/gen_l2tlbmissqueue.py`、UT `verif/ut/L2TlbMissQueue/`。
 > 三种子 UT（含内部指针探针）全过；FM 因 golden `ram_40x47` 的 OOB-index lint 无法 link

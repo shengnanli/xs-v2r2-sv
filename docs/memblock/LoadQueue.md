@@ -1,5 +1,12 @@
 # LoadQueue —— Load 队列层顶层
 
+> ✅ **FM 分类 = REPLACEMENT_EQ（可读核真驱动 + 冻结基线原生 SUCCEEDED）**。依据台账
+> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md) 与冻结基线日志
+> `verif/ut/LoadQueue/fm_work/LoadQueue/fm_full.log`：本模块在当前冻结 golden 基线上 FM **原生
+> `Verification SUCCEEDED`，58691 passing / 0 failing / 0 unverified**。下文验证节里任何
+> "FAILED / 20 failing 截断 / 部分验证 / 未收敛"的表述是**冻结前的旧叙事，已作废**——以本
+> banner 与台账为准。
+
 > 香山 V2R2 乱序访存（LSU）里 **load 侧的队列层顶层**。
 > 设计意图来源：`src/main/scala/xiangshan/mem/lsqueue/LoadQueue.scala`（class LoadQueue）
 > 可读核：`rtl/memblock/LoadQueue.sv`（`xs_LoadQueue_core`）+ `rtl/memblock/loadqueue_pkg.sv`

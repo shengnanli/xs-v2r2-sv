@@ -1,5 +1,11 @@
 # Composer —— BPU 预测器组合器
 
+> ⚠ **FM 分类 = ASSEMBLY_EQ（装配层，仅证 glue）**。依据台账
+> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md)：本层把 5 个预测器子模块 + DelayN
+> 两侧同名黑盒，**只证明本层组合 glue（perf 对齐/meta 拼接/s1_ready）等价**，不等于整个 BPU
+> 预测功能等价（各预测器在其自身证明里）。下文 FM 结果为 **FAILED/部分验证（20 failing 为截断
+> 上限、已探针证伪，2171 unverified 未覆盖）**，本层等价性以 UT 为权威。
+
 > 可读核：`rtl/frontend/Composer.sv`（`xs_Composer_core`）
 > golden 同名 wrapper：`rtl/frontend/Composer_wrapper.sv`
 > 验证：`verif/ut/Composer/`（UT 双例化逐拍比对 + Formality 等价比对，FM 为部分验证，见 §6.2）

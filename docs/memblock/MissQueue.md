@@ -1,5 +1,12 @@
 # MissQueue —— DCache 未命中处理队列 / MSHR file（学习文档）
 
+> ✅ **FM 分类 = REPLACEMENT_EQ（可读核真驱动 + 冻结基线原生 SUCCEEDED）**。依据台账
+> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md) 与冻结基线日志
+> `verif/ut/MissQueue/fm_work/MissQueue/fm_full.log`：本模块在当前冻结 golden 基线上 FM **原生
+> `Verification SUCCEEDED`，19416 passing / 0 failing / 0 unverified**。下文验证节里任何
+> "FAILED / 20 failing 截断 / 部分验证 / 未收敛"的表述是**冻结前的旧叙事，已作废**——以本
+> banner 与台账为准。
+
 > 可读重写：`rtl/memblock/MissQueue.sv`（核 `xs_MissQueue_core`）+ `rtl/memblock/missqueue_pkg.sv`
 > + 内联片段 `missqueue_{ports,entry_inst,acq_arb,subinst,btot_occupy,forward}.svh`
 > 设计意图来源（人写 Chisel）：`src/main/scala/xiangshan/cache/dcache/mainpipe/MissQueue.scala`（`class MissQueue`）

@@ -1,5 +1,11 @@
 # DCacheWrapper —— L1 数据缓存顶层包装层（学习文档）
 
+> ⚠ **FM 分类 = ASSEMBLY_EQ（装配层，仅证 glue）**。依据台账
+> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md)：本模块 FM（`fmbb`）把内层 `DCache`
+> 两侧同名黑盒，**只证明本层包装 glue（perf 2 级流水 + 端口映射）等价**，不等于整个 DCache
+> 功能等价（内层 DCache 算法在其自身证明里）。下文 FM 的 `SUCCEEDED` 是脚本 waive
+> perf-0/10 假阳性后的判定（Formality 原生为 FAILED，20 failing/364 unverified），非原生通过。
+
 > 可读重写：`rtl/memblock/DCacheWrapper.sv`（核 `xs_DCacheWrapper_core`）
 > + 生成 include：`rtl/memblock/dcachewrapper_ports.svh`（端口表）
 > / `rtl/memblock/dcachewrapper_inner_conn.svh`（内层互联）

@@ -1,5 +1,11 @@
 # L2Top —— L2 顶层装配(CoupledL2 主体 + TileLink 互联壳)
 
+> ⚠ **FM 分类 = ASSEMBLY_EQ(装配层,仅证 glue)**。依据台账
+> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md):本层等价目标是把
+> `inner_l2cache`(TL2CHICoupledL2)子模块黑盒 + 死高位 `dont-verify`,**只证明本层互联/trace
+> 打拍 glue 等价**,不等于整个 L2 子系统功能等价(须叠加子模块各自证明)。下文 FM 结果为
+> **FAILED/部分验证未收敛**(见"验证"节),本层等价性以 UT 为权威。
+
 > 设计源:`src/main/scala/xiangshan/L2Top.scala`(`class L2TopImp`)
 > 可读核:`rtl/l2/L2Top.sv`(`xs_L2Top_core`)+ `rtl/l2/l2top_pkg.sv`
 > 19 个子模块实例(15 种类型)全部作 golden 黑盒(UT/FM 两侧共用)。

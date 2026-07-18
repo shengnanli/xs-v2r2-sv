@@ -1,5 +1,11 @@
 # OpenLLC —— 外挂 L3 缓存(CHI home node)装配层
 
+> ⚠ **FM 分类 = ASSEMBLY_EQ(装配层,仅证 glue)**。依据台账
+> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md):本层把 `Slice_4` 及
+> `RXRSP_4/RXDAT_4` 等子模块黑盒(`FM_INTERFACE_ONLY`),**只证明本层互联布线 + l3Miss 打拍
+> glue 等价**,不等于整个 L3 功能等价(须叠加子模块各自证明)。下文 FM 结果为
+> **FAILED/部分验证未收敛**(见"验证"节),本层等价性以 UT 为权威。
+
 > 设计源:`openLLC/src/main/scala/openLLC/OpenLLC.scala`(`class OpenLLC`)
 > 可读核:`rtl/l2/OpenLLC.sv`(`xs_OpenLLC_core`)+ `rtl/l2/openllc_pkg.sv`
 > 11 个子模块实例(8 种类型)全部作 golden 黑盒(UT/FM 两侧共用)。

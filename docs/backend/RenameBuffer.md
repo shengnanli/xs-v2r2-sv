@@ -1,5 +1,12 @@
 # RenameBuffer —— 重命名缓冲(Rename Buffer, Rab)
 
+> ✅ **FM 分类 = REPLACEMENT_EQ（可读核真驱动 + 冻结基线原生 SUCCEEDED）**。依据台账
+> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md) 与冻结基线日志
+> `verif/ut/RenameBuffer/fm_work/RenameBuffer/fm_full.log`：本模块在当前冻结 golden 基线上 FM **原生
+> `Verification SUCCEEDED`，10927 passing / 0 failing / 0 unverified**。下文验证节里任何
+> "FAILED / 20 failing 截断 / 部分验证 / 未收敛"的表述是**冻结前的旧叙事，已作废**——以本
+> banner 与台账为准。
+
 > 可读核：`rtl/backend/RenameBuffer.sv`（`xs_RenameBuffer_core`）+ `rtl/backend/renamebuffer_pkg.sv`
 > 包装层：`rtl/backend/RenameBuffer_wrapper.sv`（golden 同名 `RenameBuffer`，扁平端口 → 核）
 > 设计源：`src/main/scala/xiangshan/backend/rob/Rab.scala`（class RenameBuffer）

@@ -1,5 +1,12 @@
 # StoreQueue —— Store 顺序队列
 
+> ⚠ **FM 分类 = FAILED（未取得终态成功）**。依据台账
+> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md)：当前 FM **1487 failing**
+> （per-entry committed/completed 需改成 golden gather-mux 形式）。UT 三种子逐拍 errors=0
+> 通过，但 **FM 尚未等价**——不得称本模块"完成/等价/SUCCEEDED"。等价性目前仅由 UT 充分性
+> 佐证，FM 收敛为待办项。（下文 §7.3 记录的是较早一次 20 failing 截断的运行，与冻结基线台账
+> 的 1487 failing 口径不同，均属"FM 未通过"。）
+
 > 香山 V2R2（昆明湖）乱序访存的 **store 顺序核心**。
 > 设计意图来源：`src/main/scala/xiangshan/mem/lsqueue/StoreQueue.scala`（class StoreQueue）
 > 可读核：`rtl/memblock/StoreQueue.sv`（`xs_StoreQueue_core`）+ `rtl/memblock/storequeue_pkg.sv`

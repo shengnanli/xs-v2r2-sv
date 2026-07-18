@@ -1,5 +1,12 @@
 # L2TLB —— 共享 MMU 总集成（页表遍历器顶层）
 
+> ⚠ **FM 分类 = ASSEMBLY_EQ（装配层，仅证 glue）**。依据台账
+> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md)：本模块的等价目标是把
+> `PtwCache/PTW/LLPTW/HPTW/L2TlbMissQueue/L2TlbPrefetch` 等子模块两侧同名黑盒
+> （`FM_INTERFACE_ONLY`），**只证明本层仲裁/路由/访存数据通路 glue 等价**，不等于整个 L2TLB
+> 功能等价。此外，如 §4.3 所述本模块 FM 因 golden RAM 宏的 `FMR_ELAB-147` 实际未跑成、
+> **无 FM 比对点结果**，当前等价性以 UT 充分性为权威。
+
 > 香山 V2R2（昆明湖）里的**共享 MMU / L2TLB 顶层**。
 > 设计意图来源：`src/main/scala/xiangshan/cache/mmu/L2TLB.scala`（class L2TLBImp）
 > 可读核：`rtl/memblock/L2TLB.sv`（`xs_L2TLB_core`）+ 类型包 `rtl/memblock/l2tlb_pkg.sv`

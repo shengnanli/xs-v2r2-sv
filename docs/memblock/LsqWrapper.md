@@ -1,5 +1,10 @@
 # LsqWrapper —— Load/Store 队列包装器
 
+> ⚠ **FM 分类 = ASSEMBLY_EQ（装配层，仅证 glue）**。依据台账
+> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md)：本模块 FM 把 `LoadQueue / StoreQueue`
+> 两侧同名黑盒（`FM_INTERFACE_ONLY`），**只证明本层包装 glue（入队拆分/uncache FSM/异常地址
+> 选择/perf）相对队列边界引脚等价**，不等于整个 LSQ 功能等价（两队列在各自模块证明）。
+
 > 香山 V2R2 乱序访存（LSU）的**队列层顶层**。
 > 设计意图来源：`src/main/scala/xiangshan/mem/lsqueue/LSQWrapper.scala`
 > 可读核：`rtl/memblock/LsqWrapper.sv`（`xs_LsqWrapper_core`）+ `rtl/memblock/lsq_pkg.sv`
@@ -63,6 +68,9 @@ stateDiagram-v2
   （只 Load 有请求选 Load；两者都有则较老者优先）。
 - `req` 仅在 IDLE 拍放行；`resp` / `idResp` 按 `is2lq` 分发回对应队列。
 - `cmd`：load 带自身 cmd，store uncache 固定 `5'h1`。
+- **复位域**：`unc_state`（golden `pendingstate`）是本模块唯一用**异步复位**的寄存器
+  （golden `always @(posedge clock or posedge reset)`）；其余(exceptionAddr 选择打拍 /
+  perf 打拍)为同步或无复位。可读核照搬异步复位，否则 FM 判 async-DFF vs sync-DFF 不等价。
 
 `age_before` / `pick_load` 实现为 `lsq_pkg` 的纯函数。
 
@@ -97,15 +105,25 @@ LoadQueue 给出的 7 个异常地址字段间选择。
 - **UT**：与 golden `LsqWrapper` 双例化逐拍比对全部 682 个输出。
   种子 1 / 7 / 42 各 200000 检查 **errors=0 TEST PASSED**。
   两侧共用同一批 golden 子模块（LoadQueue/StoreQueue 及其 41 个闭包子件）。
-- **FM**：两侧均读入真实 golden 队列定义，比对的核心是包装级控制锥（enq 拆分 /
-  uncache 仲裁 FSM / exceptionAddr / perf）。末次 verify 结论 **Verification FAILED**：
-  **26520 passing / 20 failing / 4786 unverified**（fm.log 记录 verify 在 84% 完成度、
-  攒满 Formality 默认 `verification_failing_point_limit=20` 的 20 个失配后**截断中止**）。
-  已报告的 20 个 failing 全部落在子队列 `loadQueueReplay` 内部
-  （`s2_oldestSel_2_*` / `s2_replayCauses_2` / `s2_replayMSHRId_2` / `s2_replayUop_2_debugInfo_*`
-  寄存器，与 LoadQueue.md 记录的同源级联假象——两侧子队列 golden 源逐字相同，failing 来自
-  输入锥 unmatched 寄存器被当作自由变量），**不在本层包装 glue**；4786 个 unverified 点未验。
-  故 FM 为**部分验证**，等价性以 UT（682 个输出、3 种子各 200k 拍逐拍 errors=0）为权威。
+- **FM（ASSEMBLY_EQ：仅包装级 glue 等价）**：`make fm` 结论
+  **Verification SUCCEEDED —— 13929 passing / 0 failing / 0 unverified**（全貌 limit=5000）。
+  **该 SUCCEEDED 只覆盖本层 glue**（两队列 `FM_INTERFACE_ONLY` 黑盒），不代表整 LSQ 功能等价。
+  三处关键设置：
+  1. **`FM_INTERFACE_ONLY = LoadQueue StoreQueue`**：两队列两侧读同一份 golden，用 interface_only
+     在**边界处**黑盒(保留端口方向、不展开内部)。否则 FM 需在 `u_core/loadQueue` 与 golden
+     `loadQueue` 之间逐位配对 7 万+ 队列内部寄存器，层次名 + 展平差异令绝大多数无法配对、余下误
+     判失配(~4640)。队列各自有独立 UT/FM，本层只验包装 glue 相对**队列边界引脚**的等价。
+  2. **实例名与 golden 对齐**(`loadQueue`/`storeQueue`，原 `u_load_queue`/`u_store_queue`)，
+     使黑盒后边界 BBPin 两侧按 实例名+引脚名 配对。
+  3. **`fm_pins_pre.tcl`**：golden perf 用逐下标具名寄存器 `io_perf_<N>_value_REG[_1]`，impl 用
+     genvar 数组 `perf_stage1/2_reg[N]`；命名同构但 stem 不同，auto_match 对个别下标跨级误配，
+     故预钉全部 36 路两级 + uncache FSM 状态(`pendingstate`↔`unc_state`)。
+     `FM_MERGE_DUP` 采用默认 `true`：黑盒队列后不再需要关合并，反而需开启以让 golden 把
+     exceptionAddr 选择寄存器复制的 5 副本归一，配对 impl 合并后的单个 `exc_is_store_d`。
+  - **修复的真实 glue bug**：`unc_state` 原用同步复位，golden `pendingstate` 是异步复位，改为
+    `always_ff @(posedge clock or posedge reset)` 对齐(见 §2.3 复位域)。
+- 本层 glue 等价以 FM(ASSEMBLY_EQ SUCCEEDED，仅 glue) + UT(682 输出、3 种子各 200k 拍逐拍
+  errors=0)佐证；**整 LSQ 功能等价须叠加 LoadQueue/StoreQueue 各自证明**（见文首 banner）。
 
 ## 5. 结构门槛（可读性自检）
 

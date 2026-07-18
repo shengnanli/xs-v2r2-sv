@@ -1,5 +1,11 @@
 # TL2CHICoupledL2 —— L2 缓存主体(TileLink<->CHI 桥 + 多 bank L2 阵列)装配层
 
+> ⚠ **FM 分类 = ASSEMBLY_EQ(装配层,仅证 glue)**。依据台账
+> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md):本层把 `Slice`(RequestBuffer 等)
+> 及 `MMIOBridge` 等子/孙模块黑盒(`FM_INTERFACE_ONLY`),**只证明本层互联 + hint/D 仲裁 +
+> perf/CHI 路由/l2Miss glue 等价**,不等于整个 L2 主体功能等价(须叠加子模块各自证明)。下文
+> FM 结果为 **FAILED/部分验证未收敛**(见"验证"节),本层等价性以 UT 为权威。
+
 > 设计源:coupledL2 仓库 `TL2CHICoupledL2` / `CoupledL2Imp`
 > 可读核:`rtl/l2/TL2CHICoupledL2.sv`(`xs_TL2CHICoupledL2_core`)+ `rtl/l2/coupledl2_pkg.sv`
 > 29 个子模块实例(23 种类型)全部作 golden 黑盒(UT/FM 两侧共用)。

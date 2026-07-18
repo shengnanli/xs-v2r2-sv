@@ -1,5 +1,12 @@
 # StorePipe —— DCache store 探测流水（可读重写）
 
+> ⚠ **FM 分类 = VACUOUS（reference 为空壳，无比对点）**。依据台账
+> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md)：本配置下 golden `StorePipe` 被
+> firtool 消成空壳（0 输出/0 寄存器），reference 被读成 blackbox → `Verification NOT RUN`，
+> **0 比对点**。wrapper 与 golden 逐字一致，故这不是等价失败，但也 **不构成等价证明**——不得
+> 称本模块"FM 完成/等价"。学习载体是下面的完整三级流水可读核（未裁剪配置），其行为由
+> tb 参考模型 UT 自检佐证。
+
 > 设计意图来源：`src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala`
 > 可读核（完整三级流水）：`rtl/memblock/StorePipe.sv`（`xs_StorePipe_core`）+ 类型包
 > `rtl/memblock/storepipe_pkg.sv`

@@ -1,5 +1,11 @@
 # Backend —— 后端最高层总集成（capstone）
 
+> ⚠ **FM 分类 = ASSEMBLY_EQ（装配层，仅证 glue）**。依据台账
+> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md)：本模块 FM 把
+> `BypassNetwork / DataPath / CtrlBlock / WbDataPath` 等子模块两侧同名黑盒
+> （`FM_INTERFACE_ONLY`），**只证明本层互联/流水 glue 等价**，不等于整个 Backend 功能等价。
+> 整模块等价须叠加各子模块自身的 REPLACEMENT/PARTIAL 证明（见各自条目）。
+
 > 设计源：`src/main/scala/xiangshan/backend/Backend.scala`（`class BackendInlinedImp`）
 > 可读核：`rtl/backend/Backend.sv`（`xs_Backend_core`）+ `backend_pkg.sv`
 > 45 个子模块实例（31 种类型）全部作 golden 黑盒（UT/FM 两侧共用）。
@@ -110,12 +116,18 @@ Backend 顶层逻辑量很小（golden 仅 80 个 `_GEN_/_T_`，两个 `always` 
   子模块两侧共用 golden 真定义（`-y GOLDEN_RTL` 自动解析叶子，623 模块）。
   关随机化（`+vcs+initreg+0`）、`+define+SYNTHESIS`、`-assert disable`。
   - 结果：seed 1/7/42 各 **200000 拍 errors=0**，`distinct_diverging_ports=0/723`。
-- **FM（同层黑盒等价）**：`make fm`，impl=wrapper→可读核，ref=golden，两侧同层黑盒化 31 子模块。
-  - 结果（如实）：**FAILED**——**192416 passing / 20 failing / 1959 unverified**。failing=20 恰为
-    Formality 默认 `verification_failing_point_limit=20`，verify 在 98% 处触限提前中止，尚有 1959
-    个 compare point 未验证。前 20 个 failing 全在子模块内部（inner_ctrlBlock 的
-    delayedNotFlushedWriteBack `vls_isVlm/isWhole` 4 个 DFF + rename `lsrc`/rob `io_exception_valid`/
-    int·fpWbArbiter `io_in_*_ready` 16 个 BBPin），Backend 自身 glue 在前 20 中 0 failing——
-    「全在子模块内部」的论证只覆盖这前 20 个。根因是 FM 把更深叶子（Rob/Rename/wbArbiter）黑盒后
-    其输出 pin 在 ref 扇入悬空（undriven）无法跨侧配对。**结论口径：UT 200k×3 bit-exact 为权威；
-    FM 为部分验证、未收敛。**
+- **FM（ASSEMBLY_EQ：仅顶层 glue 等价）**：`make fm`，impl=wrapper→可读核，ref=golden。
+  - 结果：**Verification SUCCEEDED —— 109767 passing / 0 failing / 0 unverified**（全貌 limit=5000）。
+    **该 SUCCEEDED 只覆盖本层互联 glue**（子模块两侧黑盒），不代表整 Backend 功能等价——
+    须叠加子模块各自证明（见文首 banner 与 [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md)）。
+  - **关键设置 `FM_INTERFACE_ONLY = BypassNetwork DataPath CtrlBlock WbDataPath`**：这四个大共享子
+    模块两侧读同一份 golden，用 interface_only 在**边界处**黑盒(只保留端口方向、不展开内部)。
+    Backend 是顶层装配层，重写工作全在顶层 glue；这四个模块各自有独立 UT/FM，不在此重复验其内部。
+    否则 FM 下降进它们，把其中未解析叶子(`ImmExtractor`/`UIntExtractor_*` 组合抽取器、
+    `RegFile`/`Arbiter`/`RealWBCollideChecker` 黑盒)的悬空/未读引脚判为 ~1877 个假失配。黑盒后
+    FM 只比 Backend 自身顶层互联(驱动这些黑盒输入 / 消费其输出)，即真正的重写对象。
+  - **修复的真实 glue bug**：黑盒化后暴露 6 个 `inner_wbDataPath` 输入引脚失配——
+    `io_fromMemExu_5_0/6_0_bits_vls_{isMasked,isVlm,isWhole}` 在 impl 中**未连接**。根因是
+    `scripts/gen_backend.py` 的引脚正则 `_PINRE` 仅支持一层内嵌括号，而 golden 这些引脚 RHS 形如
+    `~(|(fuOpType[6:5])) & …` 有两层嵌套括号，被静默漏配、丢引脚。改为平衡括号扫描
+    (`iter_pins()`，任意嵌套深度)后 6 引脚按 golden 表达式补全，FM 归零。

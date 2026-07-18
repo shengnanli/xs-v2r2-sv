@@ -1,5 +1,12 @@
 # Bku —— 位操作 / 加密功能单元（学习文档）
 
+> ✅ **FM 分类 = REPLACEMENT_EQ（可读核真驱动 + 冻结基线原生 SUCCEEDED）**。依据台账
+> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md) 与冻结基线日志
+> `verif/ut/Bku/fm_work/Bku/fm_full.log`：本模块在当前冻结 golden 基线上 FM **原生
+> `Verification SUCCEEDED`，2055 passing / 0 failing / 0 unverified**。下文验证节里任何
+> "FAILED / 20 failing 截断 / 部分验证 / 未收敛"的表述是**冻结前的旧叙事，已作废**——以本
+> banner 与台账为准。
+
 > 可读重写：`rtl/backend/Bku.sv` + `rtl/backend/bku_pkg.sv`（文件名 `bku_pkg.sv`，包名为 `xs_bku_pkg`）
 > golden 对照：`golden/chisel-rtl/Bku.sv`（+ 6 个子模块）
 > 设计源：`src/main/scala/xiangshan/backend/fu/Bku.scala`、

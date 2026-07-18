@@ -1,5 +1,12 @@
 # PTW —— Page Table Walker（页表遍历器）
 
+> ✅ **FM 分类 = REPLACEMENT_EQ（可读核真驱动 + 冻结基线原生 SUCCEEDED）**。依据台账
+> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md) 与冻结基线日志
+> `verif/ut/PTW/fm_work/PTW/fm_full.log`：本模块在当前冻结 golden 基线上 FM **原生
+> `Verification SUCCEEDED`，2653 passing / 0 failing / 0 unverified**。下文验证节里任何
+> "FAILED / 20 failing 截断 / 部分验证 / 未收敛"的表述是**冻结前的旧叙事，已作废**——以本
+> banner 与台账为准。
+
 > 当前状态：已落地可读核 `rtl/memblock/PTW.sv`、类型包 `rtl/memblock/ptw_pkg.sv`、
 > golden 同名 wrapper `rtl/memblock/PTW_wrapper.sv`、生成脚本与 UT 框架。
 > 三种子随机 UT 已通过；FM 仍有 `full_gvpn_r` matched failing，但已用 UT 内部层次探针

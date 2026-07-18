@@ -1,5 +1,12 @@
 # LoadQueueReplay —— load 重放调度器
 
+> ✅ **FM 分类 = REPLACEMENT_EQ（可读核真驱动 + 冻结基线原生 SUCCEEDED）**。依据台账
+> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md) 与冻结基线日志
+> `verif/ut/LoadQueueReplay/fm_work/LoadQueueReplay/fm_full.log`：本模块在当前冻结 golden 基线上 FM **原生
+> `Verification SUCCEEDED`，33337 passing / 0 failing / 0 unverified**。下文验证节里任何
+> "FAILED / 20 failing 截断 / 部分验证 / 未收敛"的表述是**冻结前的旧叙事，已作废**——以本
+> banner 与台账为准。
+
 > 设计意图来源：`src/main/scala/xiangshan/mem/lsqueue/LoadQueueReplay.scala`（`class LoadQueueReplay`）
 > 可读重写核：`rtl/memblock/LoadQueueReplay.sv`（`xs_LoadQueueReplay_core`）+ `loadqueuereplay_pkg.sv` + 多个 `loadqueuereplay_*.svh` 分节
 > golden 同名 wrapper：`rtl/memblock/LoadQueueReplay_wrapper.sv`（端口扁平适配，FM/ST 用）

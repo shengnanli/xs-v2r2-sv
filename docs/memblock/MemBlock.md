@@ -1,5 +1,12 @@
 # MemBlock —— 访存子系统总集成（capstone）
 
+> ⚠ **FM 分类 = ASSEMBLY_EQ（装配层，仅证 glue）**。依据台账
+> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md)：本模块 FM（`fmbb`）把全部 49 类
+> 子模块两侧 `memblock_stub` 同名黑盒，**只证明本层互联 glue（路由/仲裁/CSR 分发/异常聚合/perf）
+> 等价**，不等于整个 MemBlock 功能等价。整模块等价须叠加各子模块自身证明。且下文 FM 的
+> `SUCCEEDED` 是脚本 waive perf 假阳性后的判定（Formality 原生为 FAILED，20 failing/4 unverified），
+> 非原生通过。
+
 > 香山 V2R2（昆明湖）整个**访存子系统的顶层互联**，是本重写工程的 capstone。
 > 设计意图来源：`src/main/scala/xiangshan/mem/MemBlock.scala`
 >   （`class MemBlockInlined` / `MemBlockInlinedImp`，外层 `MemBlock` / `MemBlockImp`）

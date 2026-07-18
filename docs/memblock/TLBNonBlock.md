@@ -1,5 +1,12 @@
 # TLBNonBlock —— 非阻塞数据 TLB（DTLB 顶层）
 
+> ✅ **FM 分类 = REPLACEMENT_EQ（可读核真驱动 + 冻结基线原生 SUCCEEDED）**。依据台账
+> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md) 与冻结基线日志
+> `verif/ut/TLBNonBlock/fm_work/TLBNonBlock/fm_full.log`：本模块在当前冻结 golden 基线上 FM **原生
+> `Verification SUCCEEDED`，3781 passing / 0 failing / 0 unverified**。下文验证节里任何
+> "FAILED / 20 failing 截断 / 部分验证 / 未收敛"的表述是**冻结前的旧叙事，已作废**——以本
+> banner 与台账为准。
+
 > 可读重写：`rtl/memblock/TLBNonBlock.sv`（核 `xs_TLBNonBlock_core`）
 > + `rtl/memblock/tlbnonblock_pkg.sv`（类型/纯函数）
 > 设计意图来源：`src/main/scala/xiangshan/cache/mmu/TLB.scala`（`class TLB` / `class TLBNonBlock`，

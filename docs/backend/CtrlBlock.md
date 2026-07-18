@@ -1,5 +1,11 @@
 # CtrlBlock —— 后端控制平面(重定向 / decode-rename-dispatch 流水 / ROB 控制)
 
+> ⚠ **FM 分类 = UNRUN(FM 被中止,无终态)**。依据台账
+> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md):在冻结基线上 FM 被 SIGTERM
+> **中止,无终态结果**;RTL 修复已在但**未确认**(且 UT 收尾结果为空,须重查)。故本模块当前
+> **未取得 FM 等价证明**——不得称"完成/等价/SUCCEEDED"。(下文"验证"节记录的是较早一次 20
+> failing 截断+未收敛的运行,同为"FM 未确认通过"。)
+
 > 设计源:`src/main/scala/xiangshan/backend/CtrlBlock.scala`(`class CtrlBlockImp`)
 > 可读核:`rtl/backend/CtrlBlock.sv`(`xs_CtrlBlock_core`)+ `ctrlblock_pkg.sv`
 > 22 个子模块(Rob / NewDispatch / DecodeStage / FusionDecoder / RenameTableWrapper /

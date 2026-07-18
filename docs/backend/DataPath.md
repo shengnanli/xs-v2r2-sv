@@ -1,5 +1,12 @@
 # DataPath —— 数据通路(读寄存器 + 操作数路由)
 
+> ⚠ **FM 分类 = PARTIAL_WAIVED（原生成功但范围受限）**。依据台账
+> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md)：本模块签核用 5 段
+> `set_dont_verify_points` **排除数千 difftest 架构寄存器观测点**（io_value/io_coreid 等 DPIC
+> 探针）。功能读口/数据通路等价，但 **scoped/partial proof 非全等价**——**不能称 difftest 可观测
+> 状态全等价**。（下文"验证"节记录的另一版未 waive 的 FM 为 FAILED，其 20 个 failing 恰落在
+> difftest 探针延迟寄存器，与本 waive 口径一致。）
+
 > 设计源:`src/main/scala/xiangshan/backend/datapath/DataPath.scala`（`class DataPathImp`）
 > 可读核：`rtl/backend/DataPath.sv`（`xs_DataPath_core`）+ `datapath_pkg.sv`
 > 子模块全部作 golden 黑盒（见下「子模块」节）。
