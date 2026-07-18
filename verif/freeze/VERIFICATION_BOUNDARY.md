@@ -23,19 +23,19 @@
 | **SimTop.sv** | **COMMON_FROZEN_HARNESS** | 不做 FM;但须**同源**、**同字节/规范化逻辑体 hash**、**两侧共用**(golden-sim 与 rewrite-sim 用同一个 SimTop) |
 | **XSTop 及以下** | **DUT_SIGNOFF_BOUNDARY** | 必须完成端到端可信 Formal + benchmark parity |
 
-## 为什么 SimTop 可作冻结 harness(实证)
+## git 派生内容的正确分类(二审修订:不止 SimTop!)
 
-G0 逐文件核查:**所有 volatile/非确定内容全部只落在 SimTop.sv 一个文件**:
-- git 头(commit c8bbd5c6a + status + submodule + `git diff` 注释,来自 build.sc gitStatus + Makefile `.__diff__`);
-- 唯一的时间戳 `Sun Jun 15 2025`(= **commit date**,确定,非 buildtime);
-- publishVersion(`untaggedSuffix` 含 user@host + `LocalDateTime.now()` buildtime,经 Top.scala 进设备树 model)。
+**⚠ 更正**:早前"所有 volatile 只落 SimTop、DUT 无需 git shim"是**错的**。git 元数据经三条路径进入不同产物,DUT 也受影响:
 
-**XSTop / XSTile / XSCore / Backend / Frontend / MemBlock 及全部非-SimTop 的 1853 个 .sv:volatile 痕迹 = 0**
-(逐一 grep 确认)。即 **DUT 是纯确定的 firtool-1.62.1 输出**,可复现、可 FM。
+| 来源 | 内容 | 落点 | 是否 DUT | B2 处理 |
+|------|------|------|----------|---------|
+| build.sc `gitStatus` → **CommitIDModule.scala** | SHA(rev-parse 前 40 位)+ dirty | **`NewCSR.sv:2765`**: `gitDirty=1'h1` / `gitCommitSHA=40'hC8BBD5C6AC` | **是(NewCSR 是 DUT + 305 FM 目标)** | **必须 git shim 冻结**(rev-parse→c8bbd5c6a, status→dirty) |
+| build.sc gitStatus + Makefile `.__diff__` | commit + `git log`/`git diff` 注释头 | SimTop.sv 文本头 + `.__diff__` 文件 | 否(harness/元数据) | shim 冻结(复现完整 SimTop/. __diff__) |
+| publishVersion(`untaggedSuffix` user@host + `LocalDateTime.now()` buildtime) | 版本串 | **外部 DTS 生成物**(经 Top.scala:63 `model`)—— **不是** SimTop RTL | DTS artifact | 若 ST/启动流程用 DTS,须一并冻结 |
 
-> ⚠ publishVersion 的 buildtime/user@host **确实**是非确定输入(build.sc:320),但它只经设备树进入
-> **SimTop 层**,不落入 DUT 任何 .sv → 不影响 DUT 的可复现性与 FM。这是 SimTop 必须作**冻结** harness
-> (而非每次重生)的根本原因:它天生含非确定内容。
+**关键更正**:`git rev-parse HEAD` 的 SHA 经 CommitIDModule 变成 **NewCSR 硬件常量**,而 NewCSR 在 DUT 内、是 FM 目标。所以 **B2 的 DUT 复现也需要 git shim**(冻结 SHA+dirty),不是只有 SimTop 需要。
+
+除 NewCSR 的 git 常量外,XSTop/XSTile/XSCore/Backend/Frontend/MemBlock 等其余 DUT 文件是纯确定 firtool 输出(0 volatile);NewCSR 靠 shim 冻结 git 输入后同样可字节复现。SimTop 仍作冻结 harness(含 git 注释头 + 经 DTS 的 buildtime,天生非确定)。
 
 ## 做功能/性能仿真需满足(全部,缺一不可)
 

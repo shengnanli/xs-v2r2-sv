@@ -1,27 +1,32 @@
 #!/usr/bin/env bash
-# 确定性 git shim(B2 用)—— 让 build.sc 的 git 调用返回 G0 生成时**捕获的**固定输出,
-# 使 SimTop.sv 的 volatile git 头逐字节复现(独立于坏掉的 .git 绝对路径)。
-# 仅拦截 build.sc 实际调用的子命令;其余透传真 git(若无则返回空+0)。
-# 捕获输入目录由 GIT_SHIM_DATA 指定(= G0-quarantine/.../git-shim-inputs)。
+# 确定性 git shim(B2 用, fail-closed 版)—— build.sc 的 gitStatus 把 git SHA/dirty 读进**DUT 硬件**
+# (CommitIDModule → NewCSR.sv: gitCommitSHA=40'hC8BBD5C6AC / gitDirty=1'h1),VcsVersion 与 Makefile
+# 也调 git。本 shim 返回 G0 生成时**捕获的固定输出**,使 DUT(NewCSR)与 SimTop/. __diff__ 逐字节复现,
+# 独立于坏掉的 .git 绝对路径。
+#
+# **fail-closed 铁律**:只应答捕获过的已知命令;任何未覆盖的 git 调用**立即非零退出并报错**——
+# 绝不回退到真实(损坏/可变)git、绝不静默返回成功(否则重新引入不确定性)。
 set -u
 D="${GIT_SHIM_DATA:?GIT_SHIM_DATA 未设(指向 git-shim-inputs)}"
+[ -d "$D" ] || { echo "git-shim: 数据目录不存在 $D" >&2; exit 97; }
 
-case "$1 ${2:-}" in
-  "rev-parse HEAD")        cat "$D/rev-parse-HEAD.txt"; exit 0 ;;
-  "status -uno")           cat "$D/status-uno-porcelain.txt"; exit 0 ;;  # git status -uno --porcelain
-  "submodule status")      cat "$D/submodule-status.txt"; exit 0 ;;
-  "describe "*|"describe")  cat "$D/describe.txt"; exit 0 ;;
-  "log -n")                cat "$D/log-n1.txt" 2>/dev/null; exit 0 ;;    # Makefile: git log -n 1 (→ .__diff__)
-  "diff "*|"diff")         cat "$D/diff.txt" 2>/dev/null; exit 0 ;;      # Makefile: git diff (→ .__diff__)
+args="$*"
+case "$args" in
+  "rev-parse HEAD")                    cat "$D/rev-parse-HEAD.txt" ;;
+  "rev-parse --show-toplevel")         cat "$D/show-toplevel.txt" ;;
+  "status -uno --porcelain")           cat "$D/status-uno-porcelain.txt" ;;
+  "status --porcelain")                cat "$D/status-porcelain.txt" ;;
+  "submodule status")                  cat "$D/submodule-status.txt" ;;
+  "describe --tags --always --dirty")  cat "$D/describe.txt" ;;
+  "describe --tags")                   cat "$D/describe-tags.txt" ;;
+  "rev-list HEAD --count")             cat "$D/rev-list-count.txt" ;;
+  "tag --points-at HEAD")              cat "$D/tag-points-at.txt" ;;
+  "log -n 1")                          cat "$D/log-n1.txt" ;;
+  "diff")                              cat "$D/diff.txt" ;;
+  "ls-files")                          cat "$D/difftest-ls-files.txt" ;;
+  "-C difftest ls-files")              cat "$D/difftest-ls-files.txt" ;;
+  *)
+    echo "git-shim FAIL-CLOSED: 未捕获的 git 调用 [git $args]" >&2
+    echo "  → 需在 git-shim-inputs 捕获其确定输出后加入本 shim, 不得回退真实 git。" >&2
+    exit 98 ;;
 esac
-# git -C difftest ls-files(build.sc 打包 difftest 源用)
-if [ "$1" = "-C" ] && [ "${3:-}" = "ls-files" ]; then
-  cat "$D/difftest-ls-files.txt" 2>/dev/null; exit 0
-fi
-if [ "$1" = "ls-files" ]; then
-  cat "$D/difftest-ls-files.txt" 2>/dev/null; exit 0
-fi
-# 其它 git 调用:交给真 git(PATH 里本 shim 之后的),失败则空+成功码(确定性)
-REALGIT=$(PATH="$(echo "$PATH" | sed "s#$(dirname "$0"):##g")" command -v git 2>/dev/null)
-if [ -n "$REALGIT" ]; then exec "$REALGIT" "$@"; fi
-exit 0
