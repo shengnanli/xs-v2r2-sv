@@ -1,11 +1,9 @@
 #!/usr/bin/env python3
-"""fm_verdict 负向测试(2026-07)。覆盖审查要求的全部陷阱——这些**必须**先绿才允许 sweep。
-每个用例都是一个能骗过旧 `grep SUCCEEDED` 的真实场景。"""
+"""fm_verdict 负向测试(2026-07, 二审全 P0 版)。每例针对一个能骗过旧 grep 的真实陷阱。"""
 import sys, os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from fm_verdict import verdict
 
-# 模拟 Formality 回显 Tcl 源码(含未执行分支的 puts)—— 这是假绿灯 bug 的根源
 TCL_ECHO = (
     '    if {[verify]} {\n'
     '        puts "FM_RESULT: Verification SUCCEEDED for $top"\n'
@@ -14,98 +12,85 @@ TCL_ECHO = (
     '    }\n'
 )
 
-def stats(failing=0, unver=0, unmatch=0, abort=0, unread=0):
-    # 复刻真实 FM report 表格式(末列 TOTAL);Unmatched 为 "N(N) Unmatched ... compare points"。
-    return (f"Passing (equivalent)      100  0 0 0 0 0 0  100\n"
-            f"Failing (not equivalent)   {failing} 0 0 0 0 0 0  {failing}\n"
-            + (f"Unverified  {unver} 0 0 0 0 0 0  {unver}\n" if unver else "")
-            + (f" {unmatch}({unmatch}) Unmatched reference(implementation) compare points\n" if unmatch else "")
-            + (f"Aborted  {abort} 0 0 0 0 0 0  {abort}\n" if abort else "")
-            + (f"Not Compared\n  Unread  {unread} 0 0 0 0 0 0  {unread}\n" if unread else ""))
+def table(passing=100, failing=0, unver=None, abort=None, unread_nc=None):
+    """复刻最后一个 Matched Compare Points 汇总表(末列 TOTAL)。"""
+    s = ("Matched Compare Points     BBPin  Loop  BBNet  Cut  Port  DFF  LAT  TOTAL\n"
+         "----\n"
+         f"Passing (equivalent)   {passing} 0 0 0 0 0 0  {passing}\n"
+         f"Failing (not equivalent)   {failing} 0 0 0 0 0 0  {failing}\n")
+    if unver is not None:     s += f"Unverified   {unver} 0 0 0 0 0 0  {unver}\n"
+    if abort is not None:     s += f"Aborted   {abort} 0 0 0 0 0 0  {abort}\n"
+    if unread_nc is not None: s += f"Not Compared\n  Unread   {unread_nc} 0 0 0 0 0 0  {unread_nc}\n"
+    s += "****************************************************************\n"
+    return s
+
+def mark(v="SUCCEEDED", top="X"):
+    return f"FM_RESULT: Verification {v} for {top}\n"
+
+def native(v):
+    return f"Verification {v}\n"
 
 CASES = []
-def case(name, text, rc, mode, want):
-    CASES.append((name, text, rc, mode, want))
+def C(name, text, want, rc=0, mode="signoff-strict", top=None, allowlist=0):
+    CASES.append((name, text, rc, mode, top, allowlist, want))
 
-# 1. 日志回显未执行的 SUCCEEDED, 实际 emit FAILED —— 旧 grep 会误判 SUCCEEDED
-case("echo_unexecuted_success",
-     TCL_ECHO + stats(failing=20) + "FM_RESULT: Verification FAILED or INCONCLUSIVE for Backend\n",
-     0, "signoff-strict", "FAILED")
-
-# 2. SUCCEEDED marker 但 failing>0 (自相矛盾) —— 打回 FAILED
-case("success_marker_but_failing",
-     stats(failing=20) + "FM_RESULT: Verification SUCCEEDED for X\n",
-     0, "signoff-strict", "FAILED")
-
-# 3. 真干净 SUCCEEDED (failing=0/unver=0/unmatch=0)
-case("clean_success",
-     TCL_ECHO + stats(failing=0) + "FM_RESULT: Verification SUCCEEDED for Bku\n",
-     0, "signoff-strict", "SUCCEEDED")
-
-# 4. WAIVED 绝不算 SUCCEEDED
-case("waived_not_success",
-     stats(failing=20) + "FM_RESULT: Verification WAIVED for MemBlock (perf false-positive; 20 pts)\n",
-     0, "signoff-strict", "WAIVED")
-
-# 5. make 非零返回码 → ERROR (即便日志看似成功)
-case("nonzero_make_rc",
-     stats(failing=0) + "FM_RESULT: Verification SUCCEEDED for X\n",
-     2, "signoff-strict", "ERROR")
-
-# 6. 多个终态 marker (拼接了历史/多variant日志) → ERROR
-case("multiple_markers",
-     "FM_RESULT: Verification SUCCEEDED for A\nFM_RESULT: Verification SUCCEEDED for B\n",
-     0, "signoff-strict", "ERROR")
-
-# 7. 缺失 marker (被 SIGTERM/超时杀掉) → ERROR
-case("missing_marker",
-     TCL_ECHO + "Status: Merging duplicated registers...\nProcess terminated by kill.\n",
-     0, "signoff-strict", "ERROR")
-
-# 8. NOT RUN (reference 黑盒, vacuous) → UNRUN
-case("notrun_blackbox",
-     "Error: The reference design 'r:/WORK/StorePipe' is a black box. (FM-081)\nVerification NOT RUN\n",
-     0, "signoff-strict", "UNRUN")
-
-# 9. SUCCEEDED 但有 unverified (strict 拒绝) → PARTIAL
-case("success_with_unverified_strict",
-     stats(failing=0, unver=100) + "FM_RESULT: Verification SUCCEEDED for XSCore\n",
-     0, "signoff-strict", "PARTIAL")
-
-# 10. SUCCEEDED 但有 unmatched (strict 拒绝) → PARTIAL
-case("success_with_unmatched_strict",
-     stats(failing=0, unmatch=31196) + "FM_RESULT: Verification SUCCEEDED for XSCore\n",
-     0, "signoff-strict", "PARTIAL")
-
-# 11. SUCCEEDED marker 但完全没有 report 统计行 → 无法确认 failing=0 → fail-closed ERROR
-case("success_no_stats",
-     TCL_ECHO + "FM_RESULT: Verification SUCCEEDED for X\n",
-     0, "signoff-strict", "ERROR")
-
-# 12. assembly 模式: 有 unmatched 但 failing=0 —— 本层放行(上层按 allowlist 复核), 不叫 strict SUCCEEDED
-case("assembly_unmatched_ok",
-     stats(failing=0, unmatch=5) + "FM_RESULT: Verification SUCCEEDED for Backend\n",
-     0, "assembly", "SUCCEEDED")
-
-# 13. P0: SUCCEEDED marker + failing=0 但有 unread 未验证点(fm_eq.tcl 禁验 unread)→ strict 拒 PARTIAL
-case("success_with_unread_strict",
-     stats(failing=0, unread=1) + "FM_RESULT: Verification SUCCEEDED for Bku\n",
-     0, "signoff-strict", "PARTIAL")
-
-# 14. 未配对 unread(Unmatched ... unread points)同样 strict 拒
-case("success_with_unmatched_unread",
-     stats(failing=0) + " 20(20) Unmatched reference(implementation) unread points\n"
-     + "FM_RESULT: Verification SUCCEEDED for Bku\n",
-     0, "signoff-strict", "PARTIAL")
+# 假绿灯根源:回显未执行 SUCCEEDED, 实际 FAILED
+C("echo_unexecuted_success", TCL_ECHO + native("FAILED") + table(failing=20) + mark("FAILED"), "FAILED")
+# SUCCEEDED marker 但 failing>0
+C("marker_success_failing>0", table(failing=20) + mark("SUCCEEDED"), "FAILED")
+# 干净 strict SUCCEEDED
+C("clean_success", table(failing=0) + native("SUCCEEDED") + mark("SUCCEEDED"), "SUCCEEDED")
+# WAIVED 绝不升级
+C("waived", table(failing=20) + mark("WAIVED"), "WAIVED")
+# make 非零 → ERROR
+C("nonzero_rc", table(failing=0) + mark("SUCCEEDED"), "ERROR", rc=2)
+# 多 marker → ERROR
+C("multi_marker", mark("SUCCEEDED", "A") + mark("SUCCEEDED", "B"), "ERROR")
+# 缺 marker → ERROR
+C("missing_marker", TCL_ECHO + "Process terminated by kill.\n", "ERROR")
+# NOT RUN → UNRUN
+C("notrun", "reference design 'r:/WORK/StorePipe' is a black box. (FM-081)\nVerification NOT RUN\n", "UNRUN")
+# strict: unverified→PARTIAL
+C("strict_unverified", table(failing=0, unver=100) + mark("SUCCEEDED"), "PARTIAL")
+# strict: unmatched→PARTIAL
+C("strict_unmatched", table(failing=0) + " 0(31196) Unmatched reference(implementation) compare points\n" + mark("SUCCEEDED"), "PARTIAL")
+# 无汇总表 → ERROR (P0-8)
+C("no_table", TCL_ECHO + mark("SUCCEEDED"), "ERROR")
+# assembly: unmatched 在配额内 → SUCCEEDED (P0-2)
+C("assembly_unmatched_ok", table(failing=0) + " 0(5) Unmatched reference(implementation) compare points\n" + mark("SUCCEEDED"), "SUCCEEDED", mode="assembly", allowlist=5)
+# assembly: unmatched 超配额 → PARTIAL (P0-2)
+C("assembly_unmatched_over", table(failing=0) + " 0(9) Unmatched reference(implementation) compare points\n" + mark("SUCCEEDED"), "PARTIAL", mode="assembly", allowlist=5)
+# strict: unread (Not-Compared) → PARTIAL
+C("strict_unread_nc", table(failing=0, unread_nc=1) + mark("SUCCEEDED"), "PARTIAL")
+# strict: unmatched-unread → PARTIAL
+C("strict_unread_um", table(failing=0) + " 20(20) Unmatched reference(implementation) unread points\n" + mark("SUCCEEDED"), "PARTIAL")
+# P0-1: 未知 mode → ERROR
+C("unknown_mode", table(failing=0) + mark("SUCCEEDED"), "ERROR", mode="signoff")
+# P0-1: diagnostic-full 永不 SUCCEEDED → DIAGNOSTIC
+C("diagnostic_never_success", table(failing=0) + mark("SUCCEEDED"), "DIAGNOSTIC", mode="diagnostic-full")
+# P0-1: shadow → SHADOW_CHECK
+C("shadow_only", table(failing=0) + mark("SUCCEEDED"), "SHADOW_CHECK", mode="shadow")
+# P0-4: 原生 FAILED 但 marker SUCCEEDED(矛盾)→ FAILED
+C("native_failed_marker_success", native("FAILED") + table(failing=0) + mark("SUCCEEDED"), "FAILED")
+# P0-5: WrongTop → ERROR
+C("wrong_top", table(failing=0) + native("SUCCEEDED") + mark("SUCCEEDED", "WrongMod"), "ERROR", top="Bku")
+# P0-5: 正确 top → SUCCEEDED
+C("right_top", table(failing=0) + native("SUCCEEDED") + mark("SUCCEEDED", "Bku"), "SUCCEEDED", top="Bku")
+# P0-6: strict 有 dont_verify → PARTIAL
+C("strict_dontverify", "set_dont_verify_points ...\n" + table(failing=0) + mark("SUCCEEDED"), "PARTIAL")
+# P0-6: strict 有 ELAB-147 → PARTIAL
+C("strict_elab147", "Warning: FMR_ELAB-147 ...\n" + table(failing=0) + mark("SUCCEEDED"), "PARTIAL")
+# P0-7: 较早短格式不得覆盖终态表(早期"5 Failing compare points"但最终表 failing=0)
+C("early_shortfmt_ignored", "5 Failing compare points\n" + table(failing=0) + native("SUCCEEDED") + mark("SUCCEEDED"), "SUCCEEDED")
 
 def main():
     npass = 0
-    for name, text, rc, mode, want in CASES:
-        got, q = verdict(text, rc, mode)
+    for name, text, rc, mode, top, allow, want in CASES:
+        got, q = verdict(text, rc, mode, top, allow)
         ok = got == want
         npass += ok
-        print(f"{'PASS' if ok else 'FAIL'}  {name:34s} want={want:10s} got={got:10s}"
-              + ("" if ok else f"  quals={q}"))
+        print(f"{'PASS' if ok else 'FAIL'}  {name:32s} want={want:12s} got={got:12s}"
+              + ("" if ok else f"  reason={q.get('reason')} quals={ {k:q[k] for k in ('failing','unverified','unmatched','unread')} }"))
     print(f"\n{npass}/{len(CASES)} passed")
     sys.exit(0 if npass == len(CASES) else 1)
 
