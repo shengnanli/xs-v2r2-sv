@@ -1,0 +1,11 @@
+submodule	class	gitlink_pinned	workdir_head	content_digest	reachable
+rocket-chip	DIRTY_SNAPSHOT_or_BROKEN_LINK+DIRTY	bcf2051a45fc	(读出=超级项目, git链接损坏)	3d4985080419d30e	N/A
+difftest	DIRTY_SNAPSHOT_or_BROKEN_LINK+DIRTY	75aae9579099	(读出=超级项目, git链接损坏)	662d7afc15254b67	N/A
+ready-to-run	DRIFTED_from_gitlink	eca506ac0752	ed8c30e1ec8a9c9aa6b1	7a7f4fdb02f2a111	origin/0605-nemu-1
+huancun	DRIFTED_from_gitlink	7c9d4cbb2a6d	90aaf5935206ff322e46	15cd9b55895f7da6	origin/HEAD->origin/master
+fudian	CLEAN_COMMIT	e1bd4695ca7b	e1bd4695ca7beb36a5ce	09ced70fba3242bb	origin/HEAD->origin/pipeline
+utility	DIRTY_SNAPSHOT_or_BROKEN_LINK+DIRTY	8ef84f12393a	(读出=超级项目, git链接损坏)	8a5b201ac6e96ebc	N/A
+yunsuan	CLEAN_COMMIT	cadd3c2f4309	cadd3c2f43096e253d61	9dcd683665a14ddd	origin/HEAD->origin/kunminghu-v3
+coupledL2	DIRTY_SNAPSHOT_or_BROKEN_LINK+DIRTY	9c1d363b1899	(读出=超级项目, git链接损坏)	8ddd89844a0979ab	N/A
+openLLC	DRIFTED_from_gitlink	e41f5393d30f	614ceb4c5d39d32e6ae7	c7a82c4319613907	origin/HEAD->origin/master
+ChiselAIA	DIRTY_SNAPSHOT_or_BROKEN_LINK+DIRTY	458f94be4c46	(读出=超级项目, git链接损坏)	e798e5080ad6aa1e	N/A
