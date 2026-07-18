@@ -83,7 +83,7 @@ diff <(grep -v '^SimTop\.sv' "$Q/G0-formal-rtl.manifest.tsv") \
 drc=$?
 set -e
 [ "$drc" -le 1 ] || fail "diff 比较出错 rc=$drc(非内容差异, 环境问题)"
-ndut=$(grep -c '^[<>]' /tmp/b2_dut.diff 2>/dev/null || echo 0)
+ndut=$(grep -c "^[<>]" /tmp/b2_dut.diff 2>/dev/null || true); ndut=${ndut:-0}
 simtop_g0=$(awk -F'\t' '$1=="SimTop.sv"{print $3}' "$Q/G0-formal-rtl.manifest.tsv")
 simtop_rb=$(awk -F'\t' '$1=="SimTop.sv"{print $3}' "$CAND")
 
