@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 # B2 fail-closed clean 重生 runner(2026-07, 二审修订)。从 G0 canonical 源码快照在**全新目录**
+# 本 runner 产出标记为 B2_REGEN_ATTEMPT: 即便 rc=0 也仅证 1854 .sv/.v 可复现,
+# 不自动晋升 G0 为 canonical(完整1860/工具闭包/DTS/A0元数据晋升门另行, 见 B2_REGEN_RULES.md)。
 # 重生 golden,用 fail-closed git shim 复现 DUT 的 git 派生常量(NewCSR gitCommitSHA/gitDirty)与
 # SimTop 头,再与 G0 逐字节比对。任何步骤失败/缺文件/多文件/hash 不同即**非零退出**并留档。
 set -euo pipefail
@@ -74,9 +76,14 @@ LC_ALL=C sort "$CAND" -o "$CAND"
 extra=$(comm -13 <(LC_ALL=C sort "$Q/G0-formal-rtl.list") <(find . -maxdepth 1 \( -name '*.sv' -o -name '*.v' \) | sed 's|^\./||' | LC_ALL=C sort) | wc -l)
 
 # 分类比对: DUT(1853 非 SimTop, 含 NewCSR git 常量, 权威 formal golden) vs SimTop(harness)
+# diff rc 严格区分: 0=相同 / 1=内容不同 / >1=diff 本身出错 → 直接 fail(不当成"无差异")。
+set +e
 diff <(grep -v '^SimTop\.sv' "$Q/G0-formal-rtl.manifest.tsv") \
-     <(grep -v '^SimTop\.sv' "$CAND") > /tmp/b2_dut.diff || true
-ndut=$(grep -c '^[<>]' /tmp/b2_dut.diff || true)
+     <(grep -v '^SimTop\.sv' "$CAND") > /tmp/b2_dut.diff
+drc=$?
+set -e
+[ "$drc" -le 1 ] || fail "diff 比较出错 rc=$drc(非内容差异, 环境问题)"
+ndut=$(grep -c '^[<>]' /tmp/b2_dut.diff 2>/dev/null || echo 0)
 simtop_g0=$(awk -F'\t' '$1=="SimTop.sv"{print $3}' "$Q/G0-formal-rtl.manifest.tsv")
 simtop_rb=$(awk -F'\t' '$1=="SimTop.sv"{print $3}' "$CAND")
 
