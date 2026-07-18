@@ -8,35 +8,42 @@
 //  输出零扩展到 6 位。计数语义见各注释。
 
   // ---- topdown：归约找 robHeadVaddr 命中的最老 entry ----
-  //  用 tree reduce：两两比较 (valid, uop)；都有效取 robIdx 较老者。
+  // ★golden = ParallelOperation(zip(lq_match_vec, uop_wrapper), combine)：**平衡二叉树**
+  //   归约(split-at-size/2 递归)，combine 取「都有效时 robIdx 较老者，否则有效的一方」。
+  //   最终 winner.uop.lqIdx.value 去 index cause 阵列(越界折叠视图)。
+  //   ★原实现用「顺序 fold + 按 lqIdx 比较 + 用 entry 下标读 cause」三处均与 golden 分叉：
+  //     (a) 比较键应为 robIdx 非 lqIdx；(b) cause 索引键应为 winner.lqIdx.value 非 entry 下标；
+  //     (c) 归约树形状应为 ParallelOperation 平衡树非左结合 fold(平局/相同 robIdx 时结果不同)。
+  //   FM analyze_points 实证：impl 的 robHead* 锥缺 uop_*_robIdx 输入(顺序 fold 按 lqIdx 比)。
+  //   此处逐叶构造 td_leaf，再按 ParallelOperation 树(size/2 递归)显式归约到 td_n[142]。★
   logic [LQ_REPLAY_SIZE-1:0] lqMatchVec;
   always_comb
     for (int i = 0; i < LQ_REPLAY_SIZE; i++)
       lqMatchVec[i] = ent[i].allocated & (debug_vaddr[i] == dtd_robHeadVaddr_bits);
 
-  // 顺序归约（功能等价于 ParallelOperation 树）：维护当前最老命中项的 valid+idx
-  logic                  redV;
-  logic [LQ_IDX_W-1:0]   redIdx;
+  td_node_t td_leaf [LQ_REPLAY_SIZE];
+  always_comb
+    for (int i = 0; i < LQ_REPLAY_SIZE; i++)
+      td_leaf[i] = '{v: lqMatchVec[i], robF: uop[i].robIdx.flag,
+                     robV: uop[i].robIdx.value, lqV: uop[i].lqIdx.value};
+
+  // ParallelOperation 平衡树(143 节点：72 叶 + 71 merge, 根=142), 由脚本按 size/2 递归展开
+  td_node_t td_n [143];
   always_comb begin
-    redV   = 1'b0;
-    redIdx = '0;
-    for (int i = 0; i < LQ_REPLAY_SIZE; i++) begin
-      if (lqMatchVec[i]) begin
-        if (~redV) begin redV = 1'b1; redIdx = i[LQ_IDX_W-1:0]; end
-        else if (lq_is_after(uop[redIdx].lqIdx, uop[i].lqIdx)) redIdx = i[LQ_IDX_W-1:0];
-      end
-    end
+`include "loadqueuereplay_td_tree.svh"
   end
 
-  wire lq_match = redV & dtd_robHeadVaddr_valid;
-  // 命中项的 cause（X 安全：未命中时 redIdx=0 取 cause[0]，但 lq_match=0 会屏蔽）
-  wire [N_CAUSES-1:0] matchCause = cause[redIdx];
+  wire lq_match = td_n[142].v & dtd_robHeadVaddr_valid;
+  // 命中项的 cause：golden 用 winner.lqIdx.value 去 index 越界折叠 cause 阵列(_GEN_11)。
+  wire [N_CAUSES-1:0] matchCause = causeR[td_n[142].lqV];
 
   wire rob_head_tlb_miss = lq_match & matchCause[C_TM];
   assign dtd_robHeadTlbReplay = rob_head_tlb_miss & ~dtd_robHeadMissInDTlb;
   assign dtd_robHeadTlbMiss   = rob_head_tlb_miss &  dtd_robHeadMissInDTlb;
   assign dtd_robHeadLoadVio   = (lq_match & matchCause[C_NK]) | (lq_match & matchCause[C_MA]);
-  assign dtd_robHeadLoadMSHR  = lq_match & matchCause[C_DM];
+  // ★golden robHeadLoadMSHR := rob_head_mshrfull_replay = cause(C_DR)（_GEN_1182[3]=C_DR），
+  //   **不是 C_DM**（名字误导）。原实现取 C_DM(bit4) 与 golden 分叉。★
+  assign dtd_robHeadLoadMSHR  = lq_match & matchCause[C_DR];
 
   // ---- perf 计数 ----
   //  按 enq.fire（=valid，enq.ready 恒 1）且非 isLoadReplay 统计各 cause 入队数；

@@ -81,8 +81,21 @@ FM_REF_DEPS_LsqWrapper = AgeDetector_38.sv DatamoduleResultBuffer.sv \
   StoreExceptionBuffer.sv StoreQueue.sv UncacheEntry.sv UncacheEntry_1.sv \
   UncacheEntry_2.sv UncacheEntry_3.sv VirtualLoadQueue.sv
 
-# 队列里大量 N 表项结构相同的寄存器，关掉“合并同值重复寄存器”pass。
-FM_MERGE_DUP = false
+# merge_duplicated_registers 保持默认(true)。原先关它是为逐位配对队列 N 表项寄存器,
+# 现队列已 interface_only 黑盒、内部寄存器不再参与比对,反而需要开启合并:golden 把
+# exceptionAddr 的选择寄存器复制成 5 份(vaddr/vaNeedExt/isHyper/gpaddr/isForVSnonLeafPTE
+# 各一份,同锁 io_exceptionAddr_isStore),impl 合并成单个 exc_is_store_d;开启合并后
+# golden 五副本归一,才能与 impl 单寄存器等价配对(否则 4 份无对应点 → 输出 mux 失配)。
+# FM_MERGE_DUP 不再显式设 false,采用 fm_eq 默认 true。
+
+# LoadQueue / StoreQueue 两侧读同一份 golden，用 interface_only 在边界处黑盒:只保留
+# 端口方向、不展开内部(否则 FM 需在 u_core/loadQueue 与 golden loadQueue 之间逐位配
+# 对 7 万+ 队列内部寄存器,层次名 + 展平差异令绝大多数无法配对、余下误判失配)。
+# LsqWrapper 是装配层,重写工作在包装级 glue(enq 拆分 / canAccept / uncache 仲裁 FSM /
+# exceptionAddr 选择 / perf 打拍);队列各自有独立 UT/FM。黑盒后 FM 只比包装级 glue 相对
+# 队列 边界引脚 的等价 —— 即真正的重写对象。实例名已与 golden 对齐(loadQueue/storeQueue)
+# 使边界 BBPin 两侧配对。
+FM_INTERFACE_ONLY = LoadQueue StoreQueue
 
 include ../../../scripts/ut_common.mk
 

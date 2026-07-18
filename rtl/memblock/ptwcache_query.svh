@@ -59,8 +59,10 @@
   // ===========================================================================
   logic [L3_SIZE-1:0] l3_hitVecT, l3_hitVec;
   for (gi = 0; gi < L3_SIZE; gi++) begin : g_l3_hit
+    // golden: l3_i_tag(11b)=refill vpn[37:27]；refill 侧已改为把 vpn[37:27] 存进
+    // tag[10:0]（高 9 位补 0 无读者），命中比低 11 位即 golden 语义。
     wire l3_tag_hit = (l3[gi].tag[L3_TAG_W-1:0] == vpn_search[VPN_W-1 -: L3_TAG_W]);
-    assign l3_hitVecT[gi] = nonleaf_hit(l3_tag_hit, l3[gi].asid, l3[gi].vmid,
+    assign l3_hitVecT[gi] = nonleaf_hit(l3_tag_hit, l3[gi].asid, l3[gi].vmid, l3g[gi],
                               csr_satp_asid[2], csr_vsatp_asid[2], csr_hgatp_vmid[2], h_search)
                             && l3v[gi] && (h_search == l3h[gi]);
   end
@@ -103,7 +105,7 @@
   logic [L2_SIZE-1:0] l2_hitVecT, l2_hitVec;
   for (gi = 0; gi < L2_SIZE; gi++) begin : g_l2_hit
     wire l2_tag_hit = (l2[gi].tag[L2_TAG_W-1:0] == vpn_search[VPN_W-1 -: L2_TAG_W]);
-    assign l2_hitVecT[gi] = nonleaf_hit(l2_tag_hit, l2[gi].asid, l2[gi].vmid,
+    assign l2_hitVecT[gi] = nonleaf_hit(l2_tag_hit, l2[gi].asid, l2[gi].vmid, l2g[gi],
                               csr_satp_asid[2], csr_vsatp_asid[2], csr_hgatp_vmid[2], h_search)
                             && l2v[gi] && (h_search == l2h[gi]);
   end
@@ -165,8 +167,9 @@
     for (int w = 0; w < L1_WAYS; w++) begin
       automatic logic tag_hit = (l1_data_use[w].tag == delay_vpn[VPN_W-1 -: L1_TAG_W]);
       automatic logic evs      = l1_data_use[w].vs[l1_sector_idx(delay_vpn)];
-      // L1 非叶：is_global 恒 0；asid/vmid 用 SRAM 行里存的完整字段比对（PtwEntries.hit）
-      l1_hitVec_delay[w] = sram_hit(tag_hit, l1_data_use[w].asid, l1_data_use[w].vmid, evs, 1'b0,
+      // L1 非叶：is_global = 本 way 的 g 位寄存器打拍值（golden gVec_delay[w] 旁路 asid 检查）；
+      //          asid/vmid 用 SRAM 行里存的完整字段比对（PtwEntries.hit）
+      l1_hitVec_delay[w] = sram_hit(tag_hit, l1_data_use[w].asid, l1_data_use[w].vmid, evs, l1gVec_delay[w],
                               csr_satp_asid[1], csr_vsatp_asid[1], csr_hgatp_vmid[1], delay_h)
                            && l1vVec_delay[w] && (delay_h == l1hVec_delay[w]);
     end

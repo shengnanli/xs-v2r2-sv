@@ -173,7 +173,11 @@ module xs_LsqWrapper_core
   assign io_uncache_req_bits_memBackTypeMM =
       select_load ? lq_unc_req_bits_memBackTypeMM : sq_unc_req_bits_memBackTypeMM;
 
-  always_ff @(posedge clock) begin
+  // 复位域与 golden 一致:pendingstate 是 LsqWrapper 里唯一用**异步复位**的寄存器
+  // (golden `always @(posedge clock or posedge reset)`)。其余(exceptionAddr 选择
+  // 打拍 / perf 打拍)均为同步或无复位。此处照搬异步复位,否则 FM 判 async-DFF vs
+  // sync-DFF 复位行为不等价。
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       unc_state <= UNC_IDLE;
     end else if (unc_idle) begin

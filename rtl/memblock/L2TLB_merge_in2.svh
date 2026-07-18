@@ -154,7 +154,7 @@
   assign u_merge_arb_0__in_2_bits_s1_pteidx_6 = mq_s1.pteidx[6];
   assign u_merge_arb_0__in_2_bits_s1_pteidx_7 = mq_s1.pteidx[7];
   assign u_merge_arb_0__in_2_bits_s1_not_super = mq_s1.not_super;
-  assign u_merge_arb_0__in_2_bits_s1_not_merge = (llptw_out_s2x != 2'h0);
+  assign u_merge_arb_0__in_2_bits_s1_not_merge = ~u_llptw_out_bits_first_s2xlate_fault & (llptw_out_s2x != 2'h0);
   assign u_merge_arb_1__in_2_bits_s1_entry_0_tag = mq_s1.entry[0].tag;
   assign u_merge_arb_1__in_2_bits_s1_entry_0_asid = mq_s1.entry[0].asid;
   assign u_merge_arb_1__in_2_bits_s1_entry_0_vmid = mq_s1.entry[0].vmid;
@@ -308,4 +308,4 @@
   assign u_merge_arb_1__in_2_bits_s1_pteidx_6 = mq_s1.pteidx[6];
   assign u_merge_arb_1__in_2_bits_s1_pteidx_7 = mq_s1.pteidx[7];
   assign u_merge_arb_1__in_2_bits_s1_not_super = mq_s1.not_super;
-  assign u_merge_arb_1__in_2_bits_s1_not_merge = (llptw_out_s2x != 2'h0);
+  assign u_merge_arb_1__in_2_bits_s1_not_merge = ~u_llptw_out_bits_first_s2xlate_fault & (llptw_out_s2x != 2'h0);

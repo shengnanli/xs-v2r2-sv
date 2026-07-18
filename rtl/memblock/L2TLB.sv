@@ -171,6 +171,9 @@ module xs_L2TLB_core
   assign u_hptw__csr_hgatp_ppn    = csr_dup[7].hgatp_ppn;
   assign u_hptw__csr_hgatp_changed= csr_dup[7].hgatp_changed;
   assign u_hptw__csr_mPBMTE       = csr_dup[7].mPBMTE;
+  // hptw.sfence.valid ← sfence_dup[8]（golden sfence_dup_8_valid）。原实现漏此驱动 →
+  // HPTW.sfence.valid 输入悬空、X 传染。
+  assign u_hptw__sfence_valid     = sfence_dup[8].valid;
 
   // ==========================================================================
   // 2. ITLB/DTLB 请求计数与节流（tlbCounter）
@@ -188,7 +191,7 @@ module xs_L2TLB_core
   wire tlb1_resp_fire = io_tlb_1_resp_valid;
   wire [1:0] n_req  = {1'b0, tlb0_req_fire}  + {1'b0, tlb1_req_fire};
   wire [1:0] n_resp = {1'b0, tlb0_resp_fire} + {1'b0, tlb1_resp_fire};
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset)      tlb_counter <= '0;
     else if (flush) tlb_counter <= '0;
     else            tlb_counter <= tlb_counter + {4'b0, n_req} - {4'b0, n_resp};
@@ -208,9 +211,11 @@ module xs_L2TLB_core
   wire        cr_stage1Hit = u_page_cache_resp_bits_toFsm_stage1Hit;
   wire [1:0]  cr_source    = u_page_cache_resp_bits_req_info_source;
   wire        cr_prefetch  = u_page_cache_resp_bits_prefetch;
-  // from_pre(source)：source 高位区间表示预取来源（PtwSourceWidth 中 prefetch 标志）。
-  // 本配置 source 仅 2bit（ITLB=0/DTLB=1），无 prefetch 来源 → from_pre 恒 0。
-  wire        from_pre     = 1'b0;
+  // from_pre(source==2)：golden 用 _mq_arb_io_in_0_valid_T_2 = (source==2'h2) 作「预取来源」
+  // 判据（同时门控 mq_arb.in_0.valid 与 prefetch.in.valid）。source 为 2bit，可取值 2(=10b)，
+  // 不能恒 0；否则 cache.resp.source==2 时 impl 仍放行 mq_arb/prefetch，与 golden 分叉
+  // （missQueue.in / prefetch.in BBPin 失配）。
+  wire        from_pre     = (cr_source == 2'h2);
   // toLLPTW（bitmap 关闭）恒 0。
   wire        toFsm_toLLPTW = 1'b0;
 
@@ -227,12 +232,15 @@ module xs_L2TLB_core
   // arb2.in(TLB)：source = {1'h0, arb1.chosen}
   assign u_arb_cache_in__in_3_valid = tlb0_req_fire | tlb1_req_fire; // arb1.out.fire
   assign u_arb_cache_in__in_3_bits_req_info_source = {1'b0, u_arb_tlb_chosen};
-  // arb2.in(HPTW).valid = hptw_req_arb.out.valid
-  assign u_arb_cache_in__in_2_valid = u_arb_hptw_req_out_valid;
 
-  // block_decoupled(missQueue.out → arb2.in(MQ))：valid 由 inst.svh 直接给（见下）
-  // missQueue.out.ready = arb2.in(MQ).ready && !block。block 信号在 inst.svh 内联。
+  // block_decoupled(missQueue.out → arb2.in(MQ)/in_2)：
+  //   golden io_in_2_valid = _missQueue_io_out_valid & ~_GEN_2
+  //          _GEN_2 = isLLptw ? ~llptw.in.ready : ~ptw.req.ready  (= mq_block)
+  //   missQueue.out.ready = arb2.in_2.ready && ~mq_block。
+  // 原实现误把 in_2.valid 接成 hptw_req_arb.out.valid（HPTW 已是 in_0），与 golden
+  // 分叉（cache/missQueue 输入锥、io_tlb resp 全线失配）。in_2 是 MissQueue 路。
   wire mq_block = u_miss_queue_out_bits_isLLptw ? ~u_llptw_in_ready : ~u_ptw_req_ready;
+  assign u_arb_cache_in__in_2_valid = u_miss_queue_out_valid & ~mq_block;
   assign u_miss_queue__out_ready = u_arb_cache_in_in_2_ready & ~mq_block;
 
   // arb2.out.ready = cache.req.ready
@@ -303,6 +311,10 @@ module xs_L2TLB_core
   // -- TileLink A：发读请求 --
   wire mem_a_fire = u_mem_arb_out_valid & ~flush & ~wfi_req;
   assign auto_out_a_valid        = mem_a_fire;
+  // 登记类寄存器(waiting_resp/req_addr_low/hptw_bypassed)用「握手」而非 valid：
+  // golden _GEN_4 = auto_out_a_ready & ~flush & ~wfi & mem_arb_out_valid（即 fire&ready）。
+  // 缺 a_ready 时 a_valid 拉高但对端未 ready 的拍会误登记，与 golden 分叉。
+  wire mem_a_hs = mem_a_fire & auto_out_a_ready;
   assign auto_out_a_bits_source  = u_mem_arb_out_bits_id;
   assign auto_out_a_bits_address = {u_mem_arb_out_bits_addr[47:6], 6'h0}; // 64B 对齐
 
@@ -324,7 +336,7 @@ module xs_L2TLB_core
   // （推进到末 beat），否则装载 beats1（多 beat 时下一拍进入末 beat）。原“随 beats1 累加”
   // 写法在多 beat 传输的末 beat（该拍 beats1 可能为 0）不减计数，导致 beat_cnt 与 golden
   // 计数错位，mem_resp_done/refill_valid 多发一拍，把 cache.io_req_ready 拉 0 与 golden 分叉。
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset)        beat_cnt <= 1'b0;
     else if (d_valid) beat_cnt <= beat_cnt ? (beat_cnt - 1'b1) : beats1;
   end
@@ -337,7 +349,7 @@ module xs_L2TLB_core
   // refill_data：2 个 256bit beat。当前拍把 d_bits_data 写入 beat_idx 选中半。
   logic [L1_BUS_DATA_W-1:0] refill_data [BEATS];
   for (genvar b = 0; b < BEATS; b++) begin : g_refill_data
-    always_ff @(posedge clock)
+    always_ff @(posedge clock or posedge reset)
       if (reset)                          refill_data[b] <= '0;
       else if (d_valid && (beat_idx == b[0])) refill_data[b] <= auto_out_d_bits_data;
   end
@@ -352,7 +364,7 @@ module xs_L2TLB_core
 
   // resp_pte：PTW(id6)/HPTW(id7) 各暂存一个 64bit PTE。复位清 0（与 golden RegEnable 0.U 一致）。
   logic [63:0] resp_pte_ptw, resp_pte_hptw;
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       resp_pte_ptw  <= '0;
       resp_pte_hptw <= '0;
@@ -366,23 +378,40 @@ module xs_L2TLB_core
 
   // resp_pte_sector：LLPTW 各 id 暂存 512bit 块（buffer_it 时旁路当拍 refill_data）。
   // 复位清 0（与 golden RegEnable 0.U 一致），否则未写时为 X 会污染 s1 合并路径。
-  logic [BLOCK_BITS-1:0] resp_pte_sector [LLPTW_SIZE];
+  // 阵列扩到 8 项：golden 的出口读表实打实含 id6(PTW)/id7(HPTW) 两项（在
+  //  ptw/hptw resp 时用**当拍旁路**的 refill_data_tmp 写入），3 位下标读不折叠。
+  logic [BLOCK_BITS-1:0] resp_pte_sector [MEM_REQ_WIDTH];
   wire [LLPTW_SIZE-1:0] llptw_buffer_it = {u_llptw_mem_buffer_it_5, u_llptw_mem_buffer_it_4,
       u_llptw_mem_buffer_it_3, u_llptw_mem_buffer_it_2, u_llptw_mem_buffer_it_1,
       u_llptw_mem_buffer_it_0};
   for (genvar i = 0; i < LLPTW_SIZE; i++) begin : g_resp_sector
-    always_ff @(posedge clock)
+    always_ff @(posedge clock or posedge reset)
       if (reset)                  resp_pte_sector[i] <= '0;
       else if (llptw_buffer_it[i]) resp_pte_sector[i] <= refill_data_flat;
   end
-  // LLPTW 出口选中的块：buffer_it 时取当拍 refill_data，否则取暂存。
-  wire [BLOCK_BITS-1:0] llptw_out_blk =
-      llptw_buffer_it[u_llptw_out_bits_id] ? refill_data_flat
-                                           : resp_pte_sector[u_llptw_out_bits_id];
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) begin
+      resp_pte_sector[PTW_MEM_ID]  <= '0;
+      resp_pte_sector[HPTW_MEM_ID] <= '0;
+    end else begin
+      if (mem_resp_done & mem_resp_from_ptw)  resp_pte_sector[PTW_MEM_ID]  <= refill_data_tmp;
+      if (mem_resp_done & mem_resp_from_hptw) resp_pte_sector[HPTW_MEM_ID] <= refill_data_tmp;
+    end
+  end
+  // LLPTW 出口选中的块：id 0..5 在 buffer_it 时取当拍 refill_data，否则取暂存；
+  // id 6/7 直接取暂存（golden 读表同构；id 越界位选会产生 X，须显式建表）。
+  logic [BLOCK_BITS-1:0] sector_rd_tbl [MEM_REQ_WIDTH];
+  always_comb begin
+    for (int i = 0; i < LLPTW_SIZE; i++)
+      sector_rd_tbl[i] = llptw_buffer_it[i] ? refill_data_flat : resp_pte_sector[i];
+    sector_rd_tbl[PTW_MEM_ID]  = resp_pte_sector[PTW_MEM_ID];
+    sector_rd_tbl[HPTW_MEM_ID] = resp_pte_sector[HPTW_MEM_ID];
+  end
+  wire [BLOCK_BITS-1:0] llptw_out_blk = sector_rd_tbl[u_llptw_out_bits_id];
 
   // -- mem_arb fire 时登记 req_addr_low / waiting_resp / hptw_bypassed --
   // llptw enq 时也登记 req_addr_low（来自 vpn）。
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     // 复位清 0：对齐 golden（hptw_bypassed <= 1'h0）。缺失复位会让 hptw_bypassed 上电为
     // X，当首个 HPTW resp（d_src==7）在任何 HPTW req 登记之前到达时，
     // refill_valid = … & ~(mem_resp_from_hptw & hptw_bypassed) 变 X，
@@ -390,34 +419,49 @@ module xs_L2TLB_core
     if (reset) begin
       hptw_bypassed <= 1'b0;
     end else begin
-      if (u_llptw_in_ready & u_llptw__in_valid)
-        req_addr_low[u_llptw_mem_enq_ptr] <= addr_low_from_vpn(u_page_cache_resp_bits_req_info_vpn);
-      if (mem_a_fire) begin
-        req_addr_low[u_mem_arb_out_bits_id] <= addr_low_from_paddr(u_mem_arb_out_bits_addr);
+      if (mem_a_hs)
         hptw_bypassed <= (u_mem_arb_out_bits_id == HPTW_MEM_ID[2:0]) & u_mem_arb_out_bits_hptw_bypassed;
-      end
     end
   end
+  // req_addr_low：golden 为无复位寄存器（clock-only 块），不能挂在 reset 门控分支下
+  // （否则复位期间的登记被吞掉，与 golden 分叉——SQ/LQR/Ftq 同型复位域问题）。
+  always_ff @(posedge clock) begin
+    if (u_llptw_in_ready & u_llptw__in_valid)
+      req_addr_low[u_llptw_mem_enq_ptr] <= addr_low_from_vpn(u_page_cache_resp_bits_req_info_vpn);
+    if (mem_a_hs)
+      req_addr_low[u_mem_arb_out_bits_id] <= addr_low_from_paddr(u_mem_arb_out_bits_addr);
+  end
   for (genvar i = 0; i < MEM_REQ_WIDTH; i++) begin : g_waiting
-    always_ff @(posedge clock) begin
+    // golden 语义: next = ~clear & (set | old)（清位优先, 与置位同拍时清位赢）。
+    //   waiting_resp_i <= ~_GEN_406_i & (_GEN_5_i        | waiting_resp_i)
+    //   flush_latch_i  <= ~_GEN_406_i & (flush&waiting_i | flush_latch_i)
+    // 其中 set = mem_arb fire & id==i, clear = mem_resp_done & d_src==i。
+    // 原 if-else 给「置位」优先 → 与 golden 分叉（waiting_resp/flush_latch 各 8 failing）。
+    wire wr_set   = mem_a_hs      && (u_mem_arb_out_bits_id == i[MEM_ID_W-1:0]);
+    wire wr_clear = mem_resp_done && (d_src               == i[MEM_ID_W-1:0]);
+    always_ff @(posedge clock or posedge reset) begin
       if (reset) begin
         waiting_resp[i] <= 1'b0;
         flush_latch[i]  <= 1'b0;
       end else begin
-        // 置位：本 id mem_arb fire；清位：本 id resp 完成
-        if (mem_a_fire && (u_mem_arb_out_bits_id == i[MEM_ID_W-1:0])) waiting_resp[i] <= 1'b1;
-        else if (mem_resp_done && (d_src == i[MEM_ID_W-1:0]))         waiting_resp[i] <= 1'b0;
-        // flush 期间在途 → flush_latch 置位；resp 完成清位
-        if (flush && waiting_resp[i])                                 flush_latch[i] <= 1'b1;
-        else if (mem_resp_done && (d_src == i[MEM_ID_W-1:0]))         flush_latch[i] <= 1'b0;
+        waiting_resp[i] <= ~wr_clear & (wr_set                    | waiting_resp[i]);
+        flush_latch[i]  <= ~wr_clear & ((flush & waiting_resp[i]) | flush_latch[i]);
       end
     end
   end
 
   // -- mem resp 分发到 llptw / ptw / hptw --
   assign u_llptw__mem_resp_valid     = mem_resp_done & mem_resp_from_llptw;
-  assign u_llptw__mem_resp_bits_id   = d_src;
-  assign u_llptw__mem_resp_bits_value= {refill_data_tmp[BLOCK_BITS-1:256], refill_data_tmp[255:0]};
+  // golden 对 llptw.mem.resp.id 用 holdUnless(d_valid) 寄存（llptw_io_mem_resp_bits_id_r）；
+  // 镜像该保持寄存器（resp_valid 时 d_valid 恒 1，行为等价），FM 可配平。
+  logic [MEM_ID_W-1:0] llptw_resp_id_r;
+  logic [BLOCK_BITS-1:0] llptw_resp_value_r;   // 同为 holdUnless(d_valid)、无复位
+  always_ff @(posedge clock) if (d_valid) begin
+    llptw_resp_id_r    <= auto_out_d_bits_source;
+    llptw_resp_value_r <= refill_data_tmp;
+  end
+  assign u_llptw__mem_resp_bits_id   = d_valid ? d_src : llptw_resp_id_r;
+  assign u_llptw__mem_resp_bits_value= d_valid ? refill_data_tmp : llptw_resp_value_r;
   assign u_ptw__mem_resp_valid       = mem_resp_done & mem_resp_from_ptw;
   assign u_ptw__mem_resp_bits        = resp_pte_ptw;
   assign u_ptw__mem_mask             = waiting_resp[PTW_MEM_ID];
@@ -443,9 +487,10 @@ module xs_L2TLB_core
   assign u_llptw__mem_flush_latch_4 = llptw_mem_flush_latch[4];
   assign u_llptw__mem_flush_latch_5 = llptw_mem_flush_latch[5];
 
-  // wfi：DelayN(wfiReq && !any waiting,1)
+  // wfi：DelayN(wfiReq && !any waiting,1)。
+  // io_wfi_wfiSafe 由 u_wfi_safe_delay 实例的 .io_out 直接驱动（inst.svh），此处不能再
+  // assign（否则 io_wfi_wfiSafe 多驱动、u_wfi_safe_delay_out 悬空）。
   assign u_wfi_safe_delay__in = wfi_req & ~(|waiting_resp);
-  assign io_wfi_wfiSafe       = u_wfi_safe_delay_out;
   assign auto_out_d_ready     = 1'b1;
 
   // ==========================================================================
@@ -455,10 +500,17 @@ module xs_L2TLB_core
   // 打一拍后给 cache.refill.valid。bits 在 refill_valid 时锁存（req_info/level/ptes/sel_pte）。
   // refill_level：llptw→0；ptw→RegEnable(ptw.refill.level)；hptw→RegEnable(hptw.refill.level)。
   // ==========================================================================
+  // golden refill_level_r/refill_level_r_1 有复位到 0（reg 在 reset 分支置 2'h0）；
+  // 照搬 bug-for-bug，否则 impl 无复位的 next-state 锥与 golden 不等价（FM failing）。
   logic [1:0] ptw_refill_level_r, hptw_refill_level_r;
-  always_ff @(posedge clock) begin
-    if (u_ptw_mem_req_valid & u_mem_arb_in_0_ready)  ptw_refill_level_r  <= u_ptw_refill_level;
-    if (u_hptw_mem_req_valid & u_mem_arb_in_2_ready) hptw_refill_level_r <= u_hptw_refill_level;
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) begin
+      ptw_refill_level_r  <= 2'h0;
+      hptw_refill_level_r <= 2'h0;
+    end else begin
+      if (u_ptw_mem_req_valid & u_mem_arb_in_0_ready)  ptw_refill_level_r  <= u_ptw_refill_level;
+      if (u_hptw_mem_req_valid & u_mem_arb_in_2_ready) hptw_refill_level_r <= u_hptw_refill_level;
+    end
   end
   wire [1:0] refill_level = mem_resp_from_llptw ? 2'h0
                           : mem_resp_from_ptw   ? ptw_refill_level_r : hptw_refill_level_r;
@@ -468,7 +520,7 @@ module xs_L2TLB_core
   // 复位清 0：对齐 golden cache_io_refill_valid_last_REG（复位 1'h0）。缺失复位会让
   // refill_valid_d 上电为 X，经 cache.io_refill_valid→stageReq_ready→io_req_ready 把
   // X 传到 tlb_*_req_0_ready / perf 计数，造成与 golden 的残留分叉。
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) refill_valid_d <= 1'b0;
     else       refill_valid_d <= refill_valid;
   end
@@ -487,37 +539,47 @@ module xs_L2TLB_core
       refill_req_info_sel = '{vpn: u_hptw_refill_req_info_vpn, s2xlate: 2'h2 /*onlyStage2*/,
                               source: u_hptw_refill_req_info_source};
   end
-  ptw_req_info_t refill_req_info_r;
-  logic [1:0]    refill_level_r;
-  logic [63:0]   refill_sel_pte_r;
+  // golden 为 cache.refill 各 dup 端口各保留一份锁存副本（req_info×3 / level×2 /
+  // sel_pte×2，同值同使能）。1:1 镜像以便 FM 配平；行为与单份完全一致。
+  ptw_req_info_t refill_req_info_r [3];
+  logic [1:0]    refill_level_r   [2];
+  logic [63:0]   refill_sel_pte_r [2];
   always_ff @(posedge clock) if (refill_valid) begin
-    refill_req_info_r <= refill_req_info_sel;
-    refill_level_r    <= refill_level;
-    refill_sel_pte_r  <= get_part(refill_data_tmp, req_addr_low[d_src]); // sel_data
+    for (int j = 0; j < 3; j++) refill_req_info_r[j] <= refill_req_info_sel;
+    for (int j = 0; j < 2; j++) begin
+      refill_level_r[j]   <= refill_level;
+      refill_sel_pte_r[j] <= get_part(refill_data_tmp, req_addr_low[d_src]); // sel_data
+    end
   end
-  // 三个 dup 副本同值
-  assign u_page_cache__refill_bits_req_info_dup_0_vpn     = refill_req_info_r.vpn;
-  assign u_page_cache__refill_bits_req_info_dup_0_s2xlate = refill_req_info_r.s2xlate;
-  assign u_page_cache__refill_bits_req_info_dup_0_source  = refill_req_info_r.source;
-  assign u_page_cache__refill_bits_req_info_dup_1_vpn     = refill_req_info_r.vpn;
-  assign u_page_cache__refill_bits_req_info_dup_1_s2xlate = refill_req_info_r.s2xlate;
-  assign u_page_cache__refill_bits_req_info_dup_1_source  = refill_req_info_r.source;
-  assign u_page_cache__refill_bits_req_info_dup_2_vpn     = refill_req_info_r.vpn;
-  assign u_page_cache__refill_bits_req_info_dup_2_s2xlate = refill_req_info_r.s2xlate;
-  assign u_page_cache__refill_bits_req_info_dup_2_source  = refill_req_info_r.source;
-  assign u_page_cache__refill_bits_level_dup_0 = refill_level_r;
-  assign u_page_cache__refill_bits_level_dup_2 = refill_level_r;
-  assign u_page_cache__refill_bits_sel_pte_dup_0 = refill_sel_pte_r;
-  assign u_page_cache__refill_bits_sel_pte_dup_2 = refill_sel_pte_r;
+  assign u_page_cache__refill_bits_req_info_dup_0_vpn     = refill_req_info_r[0].vpn;
+  assign u_page_cache__refill_bits_req_info_dup_0_s2xlate = refill_req_info_r[0].s2xlate;
+  assign u_page_cache__refill_bits_req_info_dup_0_source  = refill_req_info_r[0].source;
+  assign u_page_cache__refill_bits_req_info_dup_1_vpn     = refill_req_info_r[1].vpn;
+  assign u_page_cache__refill_bits_req_info_dup_1_s2xlate = refill_req_info_r[1].s2xlate;
+  assign u_page_cache__refill_bits_req_info_dup_1_source  = refill_req_info_r[1].source;
+  assign u_page_cache__refill_bits_req_info_dup_2_vpn     = refill_req_info_r[2].vpn;
+  assign u_page_cache__refill_bits_req_info_dup_2_s2xlate = refill_req_info_r[2].s2xlate;
+  assign u_page_cache__refill_bits_req_info_dup_2_source  = refill_req_info_r[2].source;
+  assign u_page_cache__refill_bits_level_dup_0 = refill_level_r[0];
+  assign u_page_cache__refill_bits_level_dup_2 = refill_level_r[1];
+  assign u_page_cache__refill_bits_sel_pte_dup_0 = refill_sel_pte_r[0];
+  assign u_page_cache__refill_bits_sel_pte_dup_2 = refill_sel_pte_r[1];
   // levelOH(level, refill_valid)：one-hot 打一拍。level 0..3 + sp（superpage 用 level==1?）
   // Chisel levelOH：sp = (level==3) 等价；这里按 golden 的 5 路独热（l0..l3 + sp）。
+  // golden 每拍无条件赋 (cond & refill_valid)（非 refill 拍归 0，非「保持」），且有复位到 0。
+  // 原用 `if (refill_valid)` 作写使能会在非 refill 拍保持旧值，与 golden 分叉（FM failing）。
   logic lvOH_sp_r, lvOH_l0_r, lvOH_l1_r, lvOH_l2_r, lvOH_l3_r;
-  always_ff @(posedge clock) if (refill_valid) begin
-    lvOH_l0_r <= (refill_level == 2'h0);
-    lvOH_l1_r <= (refill_level == 2'h1);
-    lvOH_l2_r <= (refill_level == 2'h2);
-    lvOH_l3_r <= (refill_level == 2'h3);
-    lvOH_sp_r <= (refill_level != 2'h0);
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) begin
+      lvOH_l0_r <= 1'b0; lvOH_l1_r <= 1'b0; lvOH_l2_r <= 1'b0;
+      lvOH_l3_r <= 1'b0; lvOH_sp_r <= 1'b0;
+    end else begin
+      lvOH_l0_r <= (refill_level == 2'h0) & refill_valid;
+      lvOH_l1_r <= (refill_level == 2'h1) & refill_valid;
+      lvOH_l2_r <= (refill_level == 2'h2) & refill_valid;
+      lvOH_l3_r <= (refill_level == 2'h3) & refill_valid;
+      lvOH_sp_r <= (refill_level != 2'h0) & refill_valid;
+    end
   end
   assign u_page_cache__refill_bits_levelOH_l0 = lvOH_l0_r;
   assign u_page_cache__refill_bits_levelOH_l1 = lvOH_l1_r;
@@ -554,9 +616,10 @@ module xs_L2TLB_core
   ptw_merge_resp_t cache_stage1;
   `include "L2TLB_cache_stage1.svh"  // 装配 cache_stage1（从 u_page_cache_resp_bits_stage1_*）
   for (genvar i = 0; i < LLPTW_SIZE; i++) begin : g_llptw_stage1
+    // golden 无复位（always @(posedge clock) 纯 enable 锁存）；照搬 bug-for-bug，
+    // 否则 impl 多出的 reset→0 next-state 锥与 golden 不等价（FM 5000 failing）。
     always_ff @(posedge clock)
-      if (reset) llptw_stage1[i] <= '0;
-      else if ((u_llptw_in_ready & u_llptw__in_valid) && (u_llptw_mem_enq_ptr == i[2:0]))
+      if ((u_llptw_in_ready & u_llptw__in_valid) && (u_llptw_mem_enq_ptr == i[2:0]))
         llptw_stage1[i] <= cache_stage1;
   end
 
@@ -572,12 +635,36 @@ module xs_L2TLB_core
   assign u_merge_arb_0__in_0_valid = cr_valid & cr_hit & (cr_source == 2'h0) & ~cr_isHptwReq;
   assign u_merge_arb_1__in_0_valid = cr_valid & cr_hit & (cr_source == 2'h1) & ~cr_isHptwReq;
 
+  // ptw.resp.ready：golden 按 resp.source 选对应 mergeArb 的 in_1.ready；
+  //   source==1 → mergeArb_1.in_1.ready；否则 (|source) | mergeArb_0.in_1.ready。
+  // （in_1 是 FSM/PTW 路。原实现漏驱动此输入 → PTW 内部 resp 握手悬空、X 传染顶层。）
+  assign u_ptw__resp_ready = (u_ptw_resp_bits_source == 2'h1)
+                           ? u_merge_arb_1_in_1_ready
+                           : ((|u_ptw_resp_bits_source) | u_merge_arb_0_in_1_ready);
+
   // -- in(MQ).bits.s1 = contiguous_pte_to_merge(...) 或 llptw_stage1（first_s2xlate_fault）--
   ptw_merge_resp_t mq_s1;
   wire [1:0] llptw_out_s2x = u_llptw_out_bits_req_info_s2xlate;
+  // llptw id 是 3bit(0..7) 但 llptw_stage1 只有 LLPTW_SIZE(=6) 项。golden 的选择数组
+  // _GEN_21[id]（8 项 concat）把 id>=6 回绕到 stage1[0]（id 6,7 两项均取 llptw_stage1_0），
+  // 0..5 直取 [id]。用「显式 8 路 mux」而非 llptw_stage1[id]：后者让 FM 对 6 项数组按 3bit
+  // 下标建 mux，无法证明 6/7 不可达 → fm_mux 对 6/7 推 X 传染 valididx（假分叉）。8 路显式
+  // 映射(6,7→[0])两侧全定义、与 golden _GEN_21 回绕完全一致。
+  ptw_merge_resp_t llptw_stage1_sel_s;
+  always_comb begin
+    unique case (u_llptw_out_bits_id)
+      3'd0:    llptw_stage1_sel_s = llptw_stage1[0];
+      3'd1:    llptw_stage1_sel_s = llptw_stage1[1];
+      3'd2:    llptw_stage1_sel_s = llptw_stage1[2];
+      3'd3:    llptw_stage1_sel_s = llptw_stage1[3];
+      3'd4:    llptw_stage1_sel_s = llptw_stage1[4];
+      3'd5:    llptw_stage1_sel_s = llptw_stage1[5];
+      default: llptw_stage1_sel_s = llptw_stage1[0]; // id 6,7 回绕到 stage1[0]（对齐 golden）
+    endcase
+  end
   always_comb begin
     if (u_llptw_out_bits_first_s2xlate_fault)
-      mq_s1 = llptw_stage1[u_llptw_out_bits_id];
+      mq_s1 = llptw_stage1_sel_s;
     else
       mq_s1 = contiguous_pte_to_merge(
         llptw_out_blk, u_llptw_out_bits_req_info_vpn, u_llptw_out_bits_af, llptw_out_s2x,
@@ -588,18 +675,22 @@ module xs_L2TLB_core
   `include "L2TLB_merge_in2.svh"
 
   // -- outArb.in(0).s1 = merge_to_sector(mergeArb.out.s1)（per tlb i）--
-  //    mergeArb.out.s1 是 ptw_merge_resp_t；not_merge = (s2xlate!=noS2)。
+  //    mergeArb.out.s1 是 ptw_merge_resp_t；not_merge 取 mergeArb 输出的 s1.not_merge
+  //    字段（= ~in0.valid & ~in1.valid & in2.not_merge，即仅 llptw 路胜出且 s2xlate!=0 时
+  //    才不合并；cache/ptw 路胜出恒合并）。原用 (out.s2xlate!=0) 作 not_merge 与 golden 分叉
+  //    （cache/ptw 路 s2xlate!=0 时误判 not_merge=1 → valididx 全线失配）。
   ptw_merge_resp_t marb0_out_s1, marb1_out_s1;
   `include "L2TLB_marb_out.svh"   // 从 u_merge_arb_N_out_bits_s1_* 装配 marbN_out_s1
   sector_resp_t sec0, sec1;
-  assign sec0 = merge_to_sector(marb0_out_s1, (u_merge_arb_0_out_bits_s2xlate != 2'h0));
-  assign sec1 = merge_to_sector(marb1_out_s1, (u_merge_arb_1_out_bits_s2xlate != 2'h0));
+  assign sec0 = merge_to_sector(marb0_out_s1, u_merge_arb_0_out_bits_s1_not_merge);
+  assign sec1 = merge_to_sector(marb1_out_s1, u_merge_arb_1_out_bits_s1_not_merge);
   `include "L2TLB_outarb_in.svh"  // 把 sec0/sec1 拆给 outArb 的 in_0 s1 字段
 
   // outArb.out.ready：outArb_0 直连 io_tlb_0_resp_ready；outArb_1 在 golden 里恒 1（inst.svh）。
-  // llptw.out.ready = mergeArb(source).in(MQ).ready
+  // llptw.out.ready = source==1 ? mergeArb_1.in_2.ready : (|source) | mergeArb_0.in_2.ready。
+  // else 分支的 (|source) 项不能省：source∈{2,3} 时 golden 恒 ready=1（与 ptw.resp.ready 同型）。
   assign u_llptw__out_ready = (llptw_out_src == 2'h1) ? u_merge_arb_1_in_2_ready
-                                                      : u_merge_arb_0_in_2_ready;
+                                                      : ((|llptw_out_src) | u_merge_arb_0_in_2_ready);
 
   // io.tlb resp valid（outArb.out.valid 直接驱动；inst.svh 已连 io_tlb_*_resp_valid）
 

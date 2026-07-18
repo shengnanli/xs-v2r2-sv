@@ -82,6 +82,11 @@ module xs_RenameBuffer_core
   rab_info_t  rename_buffer [RAB_SIZE];   // 256 项映射存储
 
   rab_ptr_t   enq_ptr;                     // 入队头(= enqPtrVec[0])
+  // golden 把 enqPtrVec[1..5] 也做成真寄存器(每拍 = enqPtrNext + k)，入队口按
+  // "前序占位数"直接查这组寄存器。这里 1:1 镜像(值域仅 value，flag 只在 [0] 有)，
+  // 供 allocate_ptr 查表使用，与 golden 状态编码一致(FM 可配平)。
+  logic [PTR_W-1:0] enqPtrVec_1_value, enqPtrVec_2_value, enqPtrVec_3_value,
+                    enqPtrVec_4_value, enqPtrVec_5_value;
   rab_ptr_t   deq_ptr;                     // 出队头(commit)
   logic [RAB_SIZE-1:0] deq_ptr_oh;         // deq_ptr 的 256 位 one-hot(与 golden 同名 reg 对齐)
   rab_ptr_t   walk_ptr;                    // 回滚回放指针
@@ -189,9 +194,23 @@ module xs_RenameBuffer_core
   // =====================================================================
   rab_info_t commit_candidates [COMMIT_WIDTH];  // 从 deq_ptr 起 6 项
   rab_info_t walk_candidates   [COMMIT_WIDTH];  // 从 walk_ptr 起 6 项
+
+  // commit 候选与 golden 一致：用【寄存的】deqPtrOH 及其循环左移 1..5 位版本做
+  // AND-OR one-hot 选择(golden: commitCandidates_i = OR_j deqPtrOH[j-i] & buffer[j])。
+  // 不用二进制 deq_ptr 索引——那与"寄存 one-hot 选择"仅在 one-hot 不变式下等价，
+  // FM 无法跨拍证明；镜像 golden 的读法保证 bug-for-bug 一致且可配平。
+  logic [RAB_SIZE-1:0] deq_oh_sel [COMMIT_WIDTH];
+  always_comb begin
+    deq_oh_sel[0] = deq_ptr_oh;
+    for (int i = 1; i < COMMIT_WIDTH; i++)
+      deq_oh_sel[i] = (deq_ptr_oh << i) | (deq_ptr_oh >> (RAB_SIZE - i));
+  end
+
   always_comb
     for (int i = 0; i < COMMIT_WIDTH; i++) begin
-      commit_candidates[i] = rename_buffer[PTR_W'(deq_ptr.value  + PTR_W'(i))];
+      commit_candidates[i] = '0;
+      for (int j = 0; j < RAB_SIZE; j++)
+        commit_candidates[i] |= deq_oh_sel[i][j] ? rename_buffer[j] : '0;
       walk_candidates[i]   = rename_buffer[PTR_W'(walk_ptr.value + PTR_W'(i))];
     end
 
@@ -316,13 +335,31 @@ module xs_RenameBuffer_core
   // 9. 入队写：每口写到 enqPtrVec[前序占位数] 指向的表项
   //    allocatePtr[i] = enqPtr.value + (前 i 口里 realNeedAlloc 的个数)
   // =====================================================================
+  // 与 golden 一致：按"前序占位数"查【寄存的】enqPtrVec 表(index 6/7 不可达，
+  // golden 表里回落到 enqPtrVec_0，照搬)。不用 enq_ptr+prior 加法——那依赖
+  // enqPtrVec_k == enqPtr+k 不变式，FM 无法跨拍证明。
+  logic [7:0][PTR_W-1:0] enq_vec_tbl;
+  always_comb begin
+    enq_vec_tbl[0] = enq_ptr.value;
+    enq_vec_tbl[1] = enqPtrVec_1_value;
+    enq_vec_tbl[2] = enqPtrVec_2_value;
+    enq_vec_tbl[3] = enqPtrVec_3_value;
+    // +4/+5 不改低位：vec_4[0]≡vec_0[0]、vec_5[1:0]≡vec_1[1:0](D 与复位值均相同)。
+    // golden 侧 FM 已把这几位寄存器合并；这里读同值的代表寄存器位，使本侧冗余位
+    // 无消费者被剪掉，两侧比对点集合一致。
+    enq_vec_tbl[4] = {enqPtrVec_4_value[PTR_W-1:1], enq_ptr.value[0]};
+    enq_vec_tbl[5] = {enqPtrVec_5_value[PTR_W-1:2], enqPtrVec_1_value[1:0]};
+    enq_vec_tbl[6] = enq_ptr.value;
+    enq_vec_tbl[7] = enq_ptr.value;
+  end
+
   logic [PTR_W-1:0] allocate_ptr [RENAME_WIDTH];
   always_comb
     for (int i = 0; i < RENAME_WIDTH; i++) begin
-      logic [3:0] prior;
+      logic [2:0] prior;
       prior = '0;
-      for (int j = 0; j < i; j++) prior += 4'(need_alloc_vec[j]);
-      allocate_ptr[i] = enq_ptr.value + PTR_W'(prior);
+      for (int j = 0; j < i; j++) prior += 3'(need_alloc_vec[j]);
+      allocate_ptr[i] = enq_vec_tbl[prior];
     end
 
   // =====================================================================
@@ -370,6 +407,11 @@ module xs_RenameBuffer_core
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       enq_ptr <= '{flag:1'b0, value:'0};
+      enqPtrVec_1_value <= PTR_W'(1);
+      enqPtrVec_2_value <= PTR_W'(2);
+      enqPtrVec_3_value <= PTR_W'(3);
+      enqPtrVec_4_value <= PTR_W'(4);
+      enqPtrVec_5_value <= PTR_W'(5);
       deq_ptr <= '{flag:1'b0, value:'0};
       deq_ptr_oh <= {{(RAB_SIZE-1){1'b0}}, 1'b1};
       diff_ptr <= '{flag:1'b0, value:'0};
@@ -382,6 +424,11 @@ module xs_RenameBuffer_core
       allow_enqueue_dispatch_reg <= 1'b1;
     end else begin
       enq_ptr    <= enq_ptr_next;
+      enqPtrVec_1_value <= PTR_W'(enq_ptr_next.value + PTR_W'(1));
+      enqPtrVec_2_value <= PTR_W'(enq_ptr_next.value + PTR_W'(2));
+      enqPtrVec_3_value <= PTR_W'(enq_ptr_next.value + PTR_W'(3));
+      enqPtrVec_4_value <= PTR_W'(enq_ptr_next.value + PTR_W'(4));
+      enqPtrVec_5_value <= PTR_W'(enq_ptr_next.value + PTR_W'(5));
       deq_ptr    <= deq_ptr_next;
       deq_ptr_oh <= deq_ptr_oh_next;
       diff_ptr   <= diff_ptr_next;

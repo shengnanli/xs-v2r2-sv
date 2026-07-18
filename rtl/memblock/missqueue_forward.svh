@@ -44,19 +44,23 @@ always_comb
     fwd_corr_n[k]  = e_fwd_corrupt[m];
   end
 
-// 打一拍寄存（reset 清 0，与 golden *_REG 一致）
+// 打一拍寄存。复位风格严格对齐 golden：
+//   forwardData_* / forward_mshr_* 在 golden 异步复位块内（reset 清 0）；
+//   io_forward_N_forward_result_valid_REG / corrupt_REG 在无复位 always @(posedge clock) 块。
 logic [LD_WIDTH-1:0] fwd_valid_q, fwd_mshr_q, fwd_corr_q;
 logic [127:0]        fwd_data_q [LD_WIDTH];
-always_ff @(posedge clock) begin
+always_ff @(posedge clock or posedge reset) begin
   if (reset) begin
-    fwd_valid_q <= '0; fwd_mshr_q <= '0; fwd_corr_q <= '0;
+    fwd_mshr_q <= '0;
     for (int k = 0; k < LD_WIDTH; k++) fwd_data_q[k] <= '0;
   end else begin
-    fwd_valid_q <= fwd_valid_n;
     fwd_mshr_q  <= fwd_mshr_n;
-    fwd_corr_q  <= fwd_corr_n;
     for (int k = 0; k < LD_WIDTH; k++) fwd_data_q[k] <= fwd_data_n[k];
   end
+end
+always_ff @(posedge clock) begin   // golden 无复位
+  fwd_valid_q <= fwd_valid_n;
+  fwd_corr_q  <= fwd_corr_n;
 end
 
 // 拆回扁平输出（forwardData 16 字节）

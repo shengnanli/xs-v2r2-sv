@@ -118,13 +118,21 @@ module xs_LLPTW_core
   // 这正是 firtool 对 ParallelPriorityEncoder(6) 生成的形态——其“无置位”默认值
   // 决定了 enq/mem 指针在不可达分支下的取值，必须复刻以使逐拍/FM 比对一致。
   // 写成 s0?0:s1?1:...:s4?4:5，避免 unique 在 0-hot 时报 FMR_ELAB-116。
+  // hptw_resp 整体写入时折叠 gpf 字段(替代"struct 写+字段覆盖"的部分写序列, 消 FM DC)。
+  function automatic hptw_resp_t hr_set_gpf(input hptw_resp_t h, input logic g);
+    hr_set_gpf = h;
+    hr_set_gpf.gpf = g;
+  endfunction
+
+  // 单一 return(嵌套三元): 多 return 早退会被 Formality 建成带 DC 缺省支路的优先
+  // mux(X 源), 见 llptw_pkg 同类改写。
   function automatic logic [ID_W-1:0] ppe6(input logic [LLPTW_SIZE-1:0] oh);
-    if (oh[0]) return 3'h0;
-    if (oh[1]) return 3'h1;
-    if (oh[2]) return 3'h2;
-    if (oh[3]) return 3'h3;
-    if (oh[4]) return 3'h4;
-    return 3'h5;
+    return oh[0] ? 3'h0
+         : oh[1] ? 3'h1
+         : oh[2] ? 3'h2
+         : oh[3] ? 3'h3
+         : oh[4] ? 3'h4
+         : 3'h5;
   endfunction
 
   // cache_ptr 在 golden 里是 ParallelMux(is_cache, idx)（各下标 OR），全 0 时为 0；
@@ -211,8 +219,10 @@ module xs_LLPTW_core
   always_comb begin
     resp_id_entry = entries[0];
     hptw_id_entry = entries[0];
-    resp_id_dup_wait = 1'b0;
-    resp_id_flush = 1'b0;
+    // golden 的 8 深数组 6/7 槽折回下标 0 的“值”（dup_vec_wait_0/flush_latch_0），
+    // 不是常量 0（_GEN/_GEN_0 的 {..,x0,x0,x5..x0} 填充）——默认必须取 [0] 项。
+    resp_id_dup_wait = dup_vec_wait[0];
+    resp_id_flush = mem_flush_latch[0];
     for (int i = 0; i < LLPTW_SIZE; i++) begin
       if (mem_resp_id  == ID_W'(i)) begin
         resp_id_entry    = entries[i];
@@ -668,8 +678,135 @@ module xs_LLPTW_core
   logic [2:0] perf3_s1;
 
   // ===========================================================================
-  // 主时序：严格按 Scala when 书写顺序，后写覆盖先写。
+  // 主时序：写者优先级与 Scala when 书写顺序一致（后写覆盖先写）。
+  //   FM 收敛关键改写：每个寄存器字（state[k]/entries[k]/mem_resp_hit[k]）的完整
+  //   次态在 always_comb 里按「先低优先级、后高优先级覆盖」一次算好（st_nxt/
+  //   ent_nxt/mrh_nxt），always_ff 只做单一无条件写。原先散写多 if 块会让
+  //   Formality 的 word-level 抽取对同字多写者建成假定 one-hot 的 WMUX，写者
+  //   条件可同拍重叠（如 mem_arb 拨 waiting 与 hptw 首响应同拍）时留 DC 缺省支
+  //   路（X 源），entries_1..5 大片误判不等价。语义与原散写完全相同（UT 逐拍等）。
   // ===========================================================================
+  // ---- 各写者命中条件（组合，逐条目）----
+  logic [LLPTW_SIZE-1:0] w_enq, w_pmp, w_memarb, w_harb1, w_harb2, w_hfirst, w_hlast;
+  for (gi = 0; gi < LLPTW_SIZE; gi++) begin : g_wr_cond
+    // 入队 io.in.fire 落到 enq_ptr
+    assign w_enq[gi] = in_fire && (enq_ptr == ID_W'(gi));
+    // PMP 同拍结果写回（addr_check → mem_req / mem_out）
+    assign w_pmp[gi] = pmp_req_valid && (pmp_ptr == ID_W'(gi));
+    // 发访存那拍：所有同 cacheline 的“在途”条目一起拨到 mem_waiting
+    assign w_memarb[gi] = mem_arb_out_fire &&
+        state[gi] != S_IDLE && state[gi] != S_MEM_OUT &&
+        state[gi] != S_LAST_HPTW_REQ && state[gi] != S_LAST_HPTW_RESP &&
+        entries[gi].req_info.s2xlate == mem_arb_out_s2xlate &&
+        vpn_dup(entries[gi].req_info.vpn, mem_arb_out_vpn);
+    // 首次 hptw 仲裁发出：被选中条目转 hptw_resp
+    assign w_harb1[gi] = harb1_out_valid && harb1_out_ready &&
+        state[gi] == S_HPTW_REQ && entries[gi].ppn == harb1_out_ppn &&
+        entries[gi].req_info.s2xlate == ALL_STAGE && (harb1_chosen == ID_W'(gi));
+    // 最后一次 hptw 仲裁发出：被选中条目转 last_hptw_resp
+    assign w_harb2[gi] = harb2_out_valid && harb2_out_ready &&
+        state[gi] == S_LAST_HPTW_REQ && entries[gi].ppn == harb2_out_ppn &&
+        entries[gi].req_info.s2xlate == ALL_STAGE && (harb2_chosen == ID_W'(gi));
+    // 首/末次 hptw 响应命中（id+44 位全宽 tag 比较：{6'h0,tag}==ppn，golden _GEN_219/225）
+    assign w_hfirst[gi] = hptw_resp_fire && state[gi] == S_HPTW_RESP &&
+        hptw_resp_id == entries[gi].wait_id && {6'h0, hptw_resp_h.tag} == entries[gi].ppn;
+    assign w_hlast[gi] = hptw_resp_fire && state[gi] == S_LAST_HPTW_RESP &&
+        hptw_resp_id == entries[gi].wait_id && {6'h0, hptw_resp_h.tag} == entries[gi].ppn;
+  end
+
+  // ---- 完整次态（组合；赋值顺序 = 原 Scala when 顺序，后覆盖先）----
+  llptw_state_e st_nxt  [LLPTW_SIZE-1:0];
+  llptw_entry_t ent_nxt [LLPTW_SIZE-1:0];
+  logic [LLPTW_SIZE-1:0] mrh_nxt;
+  for (gi = 0; gi < LLPTW_SIZE; gi++) begin : g_nxt
+    always_comb begin
+      st_nxt[gi]  = state[gi];
+      ent_nxt[gi] = entries[gi];
+      // mem_resp_hit 每拍默认清零（Scala: mem_resp_hit.map(when(a){a:=0})）；
+      // golden 次态 = ~old & (set...)：置位都要 && !mem_resp_hit[gi] 逐位对齐。
+      mrh_nxt[gi] = 1'b0;
+
+      // --- 入队 io.in.fire ---------------------------------------------------
+      if (w_enq[gi]) begin
+        st_nxt[gi] = enq_state;
+        ent_nxt[gi].req_info = in_req_info;
+        ent_nxt[gi].ppn = (to_last_hptw_req || last_hptw_excp) ? enq_last_ppn : in_ppn;
+        ent_nxt[gi].wait_id = to_wait ? wait_id : enq_ptr;
+        ent_nxt[gi].af = 1'b0;
+        // hptw_resp 继承：last_hptw_req 继承被响应条目；to_wait 继承所跟随条目；否则保持。
+        // 整 struct 一次性写入（gpf 折叠进数据，经 hr_set_gpf）。
+        ent_nxt[gi].hptw_resp = hr_set_gpf(
+            to_last_hptw_req ? resp_id_entry.hptw_resp
+          : to_wait          ? wait_id_hptw_resp
+          :                    entries[gi].hptw_resp,
+            last_hptw_excp ? enq_g_pf : 1'b0);
+        ent_nxt[gi].first_s2xlate_fault = 1'b0;
+        mrh_nxt[gi] = (to_mem_out || to_last_hptw_req) && !mem_resp_hit[gi];
+      end
+
+      // --- PMP 同拍结果写回 --------------------------------------------------
+      if (w_pmp[gi]) begin
+        ent_nxt[gi].af = access_fault;
+        st_nxt[gi] = access_fault ? S_MEM_OUT : S_MEM_REQ;
+      end
+
+      // --- 发访存那拍：同 cacheline 在途条目拨到 mem_waiting ------------------
+      if (w_memarb[gi]) begin
+        st_nxt[gi] = S_MEM_WAITING;
+        ent_nxt[gi].hptw_resp = chosen_hptw_resp;
+        ent_nxt[gi].wait_id = mem_arb_chosen;
+      end
+
+      // --- mem 响应：唤醒所有 waiting 且 id 匹配的条目 ------------------------
+      if (resp_match[gi]) begin
+        st_nxt[gi] = (entries[gi].req_info.s2xlate == ALL_STAGE && !(resp_vs_pf[gi] || resp_g_pf[gi]))
+                       ? S_LAST_HPTW_REQ : S_MEM_OUT;
+        mrh_nxt[gi] = !mem_resp_hit[gi];
+        ent_nxt[gi].ppn = resp_last_ppn[gi];
+        ent_nxt[gi].hptw_resp.gpf = (entries[gi].req_info.s2xlate == ALL_STAGE) ? resp_g_pf[gi] : 1'b0;
+      end
+
+      // --- 首/末次 hptw 仲裁发出 ---------------------------------------------
+      if (w_harb1[gi]) begin
+        st_nxt[gi] = S_HPTW_RESP;
+        ent_nxt[gi].wait_id = harb1_chosen;
+      end
+      if (w_harb2[gi]) begin
+        st_nxt[gi] = S_LAST_HPTW_RESP;
+        ent_nxt[gi].wait_id = harb2_chosen;
+      end
+
+      // --- 首次 hptw 响应 ----------------------------------------------------
+      if (w_hfirst[gi]) begin
+        // 整 struct 一次性写入（gpf 折叠：fault 时 gpf|=perm_fail；正常路 hr_perm_fail 恒 0）。
+        ent_nxt[gi].hptw_resp = hr_set_gpf(hptw_resp_h, hptw_resp_h.gpf || hr_perm_fail);
+        if (hr_perm_fail || hptw_resp_h.gaf || hptw_resp_h.gpf) begin
+          // G-stage fault：直接出错，转 mem_out
+          st_nxt[gi] = S_MEM_OUT;
+          ent_nxt[gi].first_s2xlate_fault = hptw_resp_h.gaf || hptw_resp_h.gpf || hr_perm_fail;
+        end else begin
+          // 正常：若有同 cacheline 的 waiting 条目则跟随它，否则进 addr_check。
+          // wait_id：golden 此路径整体屏蔽 harb/memarb/enq 的低优先级写——
+          // 无 need_to_waiting 时必须回写“寄存器旧值”（hold），不能留下低优先级写。
+          st_nxt[gi] = any_need_to_waiting ? S_MEM_WAITING : S_ADDR_CHECK;
+          ent_nxt[gi].wait_id = any_need_to_waiting ? waiting_index
+                                                    : entries[gi].wait_id;
+        end
+      end
+
+      // --- 最后一次 hptw 响应：填 hptw_resp 后转 mem_out ----------------------
+      if (w_hlast[gi]) begin
+        st_nxt[gi] = S_MEM_OUT;
+        ent_nxt[gi].hptw_resp = hptw_resp_h;
+      end
+
+      // --- 输出/去重/flush 释放（优先级最高，与原写序一致）--------------------
+      if (out_fire && (mem_ptr == ID_W'(gi)))     st_nxt[gi] = S_IDLE;
+      if (cache_fire && (cache_ptr == ID_W'(gi))) st_nxt[gi] = S_IDLE;
+      if (flush)                                  st_nxt[gi] = S_IDLE;
+    end
+  end
+
   integer k;
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
@@ -678,153 +815,38 @@ module xs_LLPTW_core
         entries[k] <= '0;
         mem_resp_hit[k] <= 1'b0;
       end
-      enq_ptr_reg <= '0;
+      // 复位域与 golden 对齐: golden 只复位 state/entries/mem_resp_hit/
+      // need_addr_check_last_REG(=need_addr_check); enq_ptr_reg/addr/
+      // hptw_resp_ptr_reg/hptw_need_addr_check_REG/mem_refill_id/io_perf_* 无复位
+      // (见下方独立无复位块)。
       need_addr_check <= 1'b0;
-      addr_reg <= '0;
-      hptw_resp_ptr_reg <= '0;
-      hptw_need_addr_check_q <= 1'b0;
-      mem_refill_id <= '0;
-      perf <= '0;
-      perf0_s1 <= 1'b0; perf1_s1 <= 1'b0; perf2_s1 <= 1'b0; perf3_s1 <= '0;
     end else begin
-      // --- 默认：mem_resp_hit 每拍清零（Scala: mem_resp_hit.map(when(a){a:=0}))。
-      //     入队/响应时再按需要置位，故先全清。
-      for (k = 0; k < LLPTW_SIZE; k++) mem_resp_hit[k] <= 1'b0;
-
-      // --- 入队 io.in.fire ---------------------------------------------------
-      //   用 per-entry index-compare 写（而非 entries[enq_ptr]），让 Formality
-      //   能静态确定写目标、不报越界（与 golden firtool 的逐条目寄存器一致）。
-      if (in_fire) begin
-        for (k = 0; k < LLPTW_SIZE; k++) if (enq_ptr == ID_W'(k)) begin
-          state[k] <= enq_state;
-          entries[k].req_info <= in_req_info;
-          entries[k].ppn <= (to_last_hptw_req || last_hptw_excp) ? enq_last_ppn : in_ppn;
-          entries[k].wait_id <= to_wait ? wait_id : enq_ptr;
-          entries[k].af <= 1'b0;
-          // hptw_resp 继承：last_hptw_req 继承被响应条目；to_wait 继承所跟随条目；否则保持。
-          if (to_last_hptw_req)
-            entries[k].hptw_resp <= resp_id_entry.hptw_resp;
-          else if (to_wait)
-            entries[k].hptw_resp <= wait_id_hptw_resp;
-          entries[k].hptw_resp.gpf <= last_hptw_excp ? enq_g_pf : 1'b0;
-          entries[k].first_s2xlate_fault <= 1'b0;
-          mem_resp_hit[k] <= to_mem_out || to_last_hptw_req;
-        end
+      for (k = 0; k < LLPTW_SIZE; k++) begin
+        state[k]        <= st_nxt[k];
+        entries[k]      <= ent_nxt[k];
+        mem_resp_hit[k] <= mrh_nxt[k];
       end
-
-      // --- addr_check 流水寄存（RegNext/RegEnable）---------------------------
-      enq_ptr_reg <= enq_ptr;
+      // --- addr_check 流水寄存（RegNext）-------------------------------------
       need_addr_check <= (enq_state == S_ADDR_CHECK) && in_fire && !flush;
-      if (in_fire) addr_reg <= make_addr(in_ppn[PPN_W-1:0], get_vpnn0(in_req_info.vpn));
-
-      hptw_resp_ptr_reg <= hptw_resp_id;
-      hptw_need_addr_check_q <= any_hptw_resp_state && hptw_resp_fire && !flush;
-
-      // --- PMP 同拍结果写回（addr_check → mem_req / mem_out）-----------------
-      if (pmp_req_valid) begin
-        for (k = 0; k < LLPTW_SIZE; k++) if (pmp_ptr == ID_W'(k)) begin
-          entries[k].af <= access_fault;
-          state[k] <= access_fault ? S_MEM_OUT : S_MEM_REQ;
-        end
-      end
-
-      // --- 发访存那拍：把所有同 cacheline 的“在途”条目一起拨到 mem_waiting ---
-      //     （“dup enq 设 mem_wait” → “发请求时把其余 dup 条目设 mem_wait”）
-      if (mem_arb_out_fire) begin
-        for (k = 0; k < LLPTW_SIZE; k++) begin
-          if (state[k] != S_IDLE && state[k] != S_MEM_OUT &&
-              state[k] != S_LAST_HPTW_REQ && state[k] != S_LAST_HPTW_RESP &&
-              entries[k].req_info.s2xlate == mem_arb_out_s2xlate &&
-              vpn_dup(entries[k].req_info.vpn, mem_arb_out_vpn)) begin
-            state[k] <= S_MEM_WAITING;
-            entries[k].hptw_resp <= chosen_hptw_resp;
-            entries[k].wait_id <= mem_arb_chosen;
-          end
-        end
-      end
-
-      // --- mem 响应：唤醒所有 waiting 且 id 匹配的条目 ----------------------
-      if (mem_resp_valid) begin
-        for (k = 0; k < LLPTW_SIZE; k++) begin
-          if (resp_match[k]) begin
-            state[k] <= (entries[k].req_info.s2xlate == ALL_STAGE && !(resp_vs_pf[k] || resp_g_pf[k]))
-                          ? S_LAST_HPTW_REQ : S_MEM_OUT;
-            mem_resp_hit[k] <= 1'b1;
-            entries[k].ppn <= resp_last_ppn[k];
-            entries[k].hptw_resp.gpf <= (entries[k].req_info.s2xlate == ALL_STAGE) ? resp_g_pf[k] : 1'b0;
-          end
-        end
-      end
-
-      // --- 首次 hptw 仲裁发出：被选中条目转 hptw_resp ------------------------
-      if (harb1_out_valid && harb1_out_ready) begin
-        for (k = 0; k < LLPTW_SIZE; k++) begin
-          if (state[k] == S_HPTW_REQ && entries[k].ppn == harb1_out_ppn &&
-              entries[k].req_info.s2xlate == ALL_STAGE && harb1_chosen == ID_W'(k)) begin
-            state[k] <= S_HPTW_RESP;
-            entries[k].wait_id <= harb1_chosen;
-          end
-        end
-      end
-
-      // --- 最后一次 hptw 仲裁发出：被选中条目转 last_hptw_resp ----------------
-      if (harb2_out_valid && harb2_out_ready) begin
-        for (k = 0; k < LLPTW_SIZE; k++) begin
-          if (state[k] == S_LAST_HPTW_REQ && entries[k].ppn == harb2_out_ppn &&
-              entries[k].req_info.s2xlate == ALL_STAGE && harb2_chosen == ID_W'(k)) begin
-            state[k] <= S_LAST_HPTW_RESP;
-            entries[k].wait_id <= harb2_chosen;
-          end
-        end
-      end
-
-      // --- hptw 响应处理 -----------------------------------------------------
-      if (hptw_resp_fire) begin
-        for (k = 0; k < LLPTW_SIZE; k++) begin
-          // 首次 hptw 响应
-          if (state[k] == S_HPTW_RESP && hptw_resp_id == entries[k].wait_id &&
-              hptw_resp_h.tag == entries[k].ppn[GVPN_W-1:0]) begin
-            if (hr_perm_fail || hptw_resp_h.gaf || hptw_resp_h.gpf) begin
-              // G-stage fault：直接出错，转 mem_out
-              state[k] <= S_MEM_OUT;
-              entries[k].hptw_resp <= hptw_resp_h;
-              entries[k].hptw_resp.gpf <= hptw_resp_h.gpf || hr_perm_fail;
-              entries[k].first_s2xlate_fault <= hptw_resp_h.gaf || hptw_resp_h.gpf || hr_perm_fail;
-            end else begin
-              // 正常：若有同 cacheline 的 waiting 条目则跟随它，否则进 addr_check
-              state[k] <= any_need_to_waiting ? S_MEM_WAITING : S_ADDR_CHECK;
-              entries[k].hptw_resp <= hptw_resp_h;
-              if (any_need_to_waiting) entries[k].wait_id <= waiting_index;
-            end
-          end
-          // 最后一次 hptw 响应：填 hptw_resp 后转 mem_out
-          if (state[k] == S_LAST_HPTW_RESP && hptw_resp_id == entries[k].wait_id &&
-              hptw_resp_h.tag == entries[k].ppn[GVPN_W-1:0]) begin
-            state[k] <= S_MEM_OUT;
-            entries[k].hptw_resp <= hptw_resp_h;
-          end
-        end
-      end
-
-      // --- 输出 fire：释放 mem_ptr 条目 -------------------------------------
-      if (out_fire) for (k = 0; k < LLPTW_SIZE; k++) if (mem_ptr == ID_W'(k)) state[k] <= S_IDLE;
-
-      // --- cache fire：释放 cache_ptr 条目 ----------------------------------
-      if (cache_fire) for (k = 0; k < LLPTW_SIZE; k++) if (cache_ptr == ID_W'(k)) state[k] <= S_IDLE;
-
-      // --- refill id：RegNext(mem.resp.id) ----------------------------------
-      mem_refill_id <= mem_resp_id;
-
-      // --- flush：全部清空 ---------------------------------------------------
-      if (flush) for (k = 0; k < LLPTW_SIZE; k++) state[k] <= S_IDLE;
-
-      // --- perf：事件打两拍（与 XSPerfAccumulate 的 FIRRTL 形态一致：REG→REG_1）-
-      //   0: in.fire   1: in.valid&&!ready   2: mem.req.fire   3: PopCount(is_waiting)
-      perf0_s1 <= perf_ev0; perf[0] <= {5'h0, perf0_s1};
-      perf1_s1 <= perf_ev1; perf[1] <= {5'h0, perf1_s1};
-      perf2_s1 <= perf_ev2; perf[2] <= {5'h0, perf2_s1};
-      perf3_s1 <= perf_ev3; perf[3] <= {3'h0, perf3_s1};
     end
+  end
+
+  // ===========================================================================
+  // 无复位寄存器(golden 3018 行 always @(posedge clock) 块): 流水打拍/perf。
+  // ===========================================================================
+  always_ff @(posedge clock) begin
+    enq_ptr_reg <= enq_ptr;
+    if (in_fire) addr_reg <= make_addr(in_ppn[PPN_W-1:0], get_vpnn0(in_req_info.vpn));
+    hptw_resp_ptr_reg <= hptw_resp_id;
+    hptw_need_addr_check_q <= any_hptw_resp_state && hptw_resp_fire && !flush;
+    // --- refill id：RegNext(mem.resp.id) ----------------------------------
+    mem_refill_id <= mem_resp_id;
+    // --- perf：事件打两拍（与 XSPerfAccumulate 的 FIRRTL 形态一致：REG→REG_1）-
+    //   0: in.fire   1: in.valid&&!ready   2: mem.req.fire   3: PopCount(is_waiting)
+    perf0_s1 <= perf_ev0; perf[0] <= {5'h0, perf0_s1};
+    perf1_s1 <= perf_ev1; perf[1] <= {5'h0, perf1_s1};
+    perf2_s1 <= perf_ev2; perf[2] <= {5'h0, perf2_s1};
+    perf3_s1 <= perf_ev3; perf[3] <= {3'h0, perf3_s1};
   end
 
   // block_hptw_req：发访存那拍被一起拨到 mem_waiting 的条目，本拍屏蔽其 hptw_req。

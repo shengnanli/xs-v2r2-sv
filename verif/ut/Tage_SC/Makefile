@@ -18,7 +18,9 @@ MACRO_SIM = $(GOLDEN_RTL)/sram_array_1p256x16m1s1h0l1b_bp_tage_us.sv \
 # 可读核（xs_Tage_SC_core）
 RTL_SRCS = $(RTL_DIR)/frontend/Tage_SC.sv
 # FM impl：核 + golden 同名 wrapper（所有子模块当黑盒）
-WRAPPER_SRCS = $(RTL_DIR)/frontend/Tage_SC_wrapper.sv
+# FM impl 侧带上 golden MbistPipeTage（白盒；否则其黑盒输出 BBPin FM 拒配 →
+# boreChildrenBd_bore_outdata 输出锥失配）。UT simv 不用 WRAPPER_SRCS，无重复定义。
+WRAPPER_SRCS = $(RTL_DIR)/frontend/Tage_SC_wrapper.sv $(GOLDEN_RTL)/MbistPipeTage.sv
 
 # UT：golden Tage_SC 顶层 + 全部子模块链（两侧共用同名子模块）
 GOLDEN_SRCS = $(GOLDEN_RTL)/Tage_SC.sv \
@@ -47,7 +49,7 @@ TB_SRCS = variants_xs.sv tb.sv
 
 # FM：ref = golden Tage_SC（所有子模块不列依赖 → hdlin_unresolved_modules=black_box）
 FM_VARIANTS = Tage_SC
-FM_REF_DEPS_Tage_SC =
+FM_REF_DEPS_Tage_SC = MbistPipeTage.sv
 
 include ../../../scripts/ut_common.mk
 

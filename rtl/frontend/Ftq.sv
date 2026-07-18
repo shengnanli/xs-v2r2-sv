@@ -801,6 +801,7 @@ module xs_Ftq_core(
   // 写线（组合算出下拍值，最后统一打入寄存器；reduce-fanout 复制见 toICache 段）
   logic [PTR_W:0] ifuPtr_w, ifuPtrPlus1_w, ifuPtrPlus2_w, pfPtr_w, pfPtrPlus1_w;
   logic [PTR_W:0] ifuWbPtr_w, commPtr_w, commPtrPlus1_w, robCommPtr_w;
+  logic [PTR_W:0] bpuPtr_w;   // 前置声明：toICache 复制寄存器 next-state 引用（定义在下方 always_comb）
 
   wire [PTR_W:0] validEntries = ptr_dist(bpuPtr, commPtr);
   wire           canCommit;                // 由 commit 段驱动
@@ -1012,13 +1013,22 @@ module xs_Ftq_core(
     end
   end
   wire        pd_jmpInfo_valid = |pd_is_jmp;
-  // ParallelPriorityEncoder：首个 jmp 槽的下标
+  // ParallelPriorityMux：首个(最低下标) jmp 槽的下标 + 该槽的 jmpInfo。
+  // ★与 golden 逐位对齐★：golden ftq_pd_mem 的 jmpOffset/jmpInfo 是
+  //   ParallelPriorityMux(Seq(hit_0..hit_14) 命中→slot_i, 其余全落到末槽 15 作 catch-all
+  //   默认，条件恒真)。即：选最低命中 slot(0-14)，若 0-14 均未命中则无条件取 slot15
+  //   的原始值(offset=15，isJalr=&brType_15，isCall=isCall_15，isRet=isRet_15)——
+  //   而非全 0。仅在“无任何 jmp”时与旧实现(缺省 0)不同，故 FM 判 jmpOffset/jmpInfo 锥失配(7 点)。
   logic [3:0] pd_jmpOffset;
   logic       pd_jmp_isJalr, pd_jmp_isCall, pd_jmp_isRet;
   always_comb begin
-    pd_jmpOffset  = 4'd0;
-    pd_jmp_isJalr = 1'b0; pd_jmp_isCall = 1'b0; pd_jmp_isRet = 1'b0;
-    for (int i = PREDICT_W-1; i >= 0; i--) begin
+    // 默认 = slot15 catch-all（对应 golden ParallelPriorityMux 末项，条件恒真）
+    pd_jmpOffset  = 4'd15;
+    pd_jmp_isJalr = (pdwb_pd_brType[PREDICT_W-1] == 2'd3);
+    pd_jmp_isCall = pdwb_pd_isCall[PREDICT_W-1];
+    pd_jmp_isRet  = pdwb_pd_isRet[PREDICT_W-1];
+    // slot 0..14 命中优先(最低下标胜)：倒序遍历，最后写入的最低命中项胜出
+    for (int i = PREDICT_W-2; i >= 0; i--) begin
       if (pd_is_jmp[i]) begin
         pd_jmpOffset  = i[3:0];
         pd_jmp_isJalr = (pdwb_pd_brType[i] == 2'd3); // jalr 即 brType==3
@@ -1358,25 +1368,107 @@ module xs_Ftq_core(
   assign io_toIfu_req_bits_ftqOffset_bits  = bpu_bypass_hit_ifu ? last_cycle_cfiIndex_bits
                                                                 : cfiIndex_bits[ifuPtr[PTR_W-1:0]];
 
-  // toICache：golden 用 5 份扇出复制（copied_ifu_ptr/copied_bpu_ptr 与 ifuPtr/bpuPtr 恒相等），
-  // 功能上 5 路 pcMemRead/readValid 与 toIfu 路完全一致，故由同一可读计算驱动 5 路。
+  // toICache：golden 对该锥用 5 份扇出复制寄存器（每路 pcMemRead/readValid 一份）。
+  // 其中一部分复制（pc_mem_ifu_ptr/plus1_rdata_REG、copied_ifu/plus1_to_send_REG）FM 的
+  // merge_duplicated_registers 会自动并入单副本代表(toIfuPc_cur/p1、entry_send_*)；但另
+  // 6 族复制（copied_ifu_ptr/copied_bpu_ptr/copied_bpu_in_bypass_ptr_r/
+  // copied_bpu_in_bypass_buf_r/copied_last_cycle_bpu_in_REG/copied_last_cycle_to_ifu_fire_REG）
+  // FM 不会自动合并（实测 golden 侧这 6 族全 unmatched，留在 pcMemRead/readValid 锥里当自由
+  // 变量→505 端口失配）。为逐位对齐，此处仅对这 6 族显式实现 5 份 impl 复制寄存器并 1:1 钉，
+  // 数据/发送项仍用会合并的单副本(toIfuPc_cur/p1、entry_send_*)。next-state 与单副本逐位相同，
+  // 功能不变(UT 全过)。★不复制会合并的族(pc_mem_rdata/to_send)——否则 impl 侧多出可合并
+  // 重复寄存器，merge 改选代表把 ifuPtr/ifuPtrPlus1/toIfu 路干净配对搅乱。★
+  reg  [PTR_W:0] copied_ifu_ptr [0:4];
+  reg  [PTR_W:0] copied_bpu_ptr [0:4];
+  reg  [PTR_W:0] copied_bpu_in_bypass_ptr_r [0:4];
+  reg  [49:0]    copied_bpu_in_bypass_buf_r_startAddr    [0:4];
+  reg  [49:0]    copied_bpu_in_bypass_buf_r_nextLineAddr [0:4];
+  reg            copied_last_cycle_bpu_in_REG [0:4];
+  reg            copied_last_cycle_to_ifu_fire_REG [0:4];
+
+  // ★结构隔离 next-state 源★：golden 侧 copied_ifu_ptr_N<=ifuPtr_write_value(独立命名 wire，
+  //   仅 icacheFlush/s3/s2/fire/hold 五选一)、ifuPtr_value<=(inline 过程块，含 ptr_recover 门控)，
+  //   二者虽等值但 D-input net 结构不同→FM 不合并。为让 impl 侧与 golden 同样“不合并”(否则 impl
+  //   把复制并入 ifuPtr 代表→与 golden 非对称→ifuPtr/Plus1/Plus2/toIfu 连锁失配)，此处按 golden
+  //   ifuPtr_write_value 的原式重建 ifuPtr_write_val(结构异于 ifuPtr_w，值恒等)：
+  //     icacheFlush ? redir_idx+1 : _GEN_69(s3) ? s3_idx : _GEN_66(s2) ? s2_idx : _GEN_63(fire) ? ifuPtrPlus1 : ifuPtr
+  //     _GEN_69 = bpu_s3_redirect & ptr_recover(ifuPtr,s3_flush_ptr)
+  //     _GEN_66 = bpu_s2_redirect & ptr_recover(ifuPtr,s2_flush_ptr)
+  //     _GEN_63 = ifu_req_fire & allow_to_ifu
+  // 前置 net 声明；赋值在 redir_idx/redir_any 定义之后（见下方 assign ifuPtr_write_val）
+  wire [PTR_W:0] ifuPtr_write_val;
+  // copied_last_cycle_to_ifu_fire：golden <= _copied_last_cycle_to_ifu_fire_T_4(=ifu_req_fire)。
+  //   用与 last_cycle_to_ifu_fire 相同值但结构隔离的表达式(异或 0 强制独立 net)避免 FM 合并。
+  wire lastToIfuFire_wval = ifu_req_fire ^ 1'b0;
+
+  genvar gci;
+  generate
+    for (gci = 0; gci < 5; gci = gci + 1) begin : g_icache_copy
+      // copied_ifu_ptr/copied_bpu_ptr：async-reset 到 0
+      always_ff @(posedge clock or posedge reset) begin
+        if (reset) begin
+          copied_ifu_ptr[gci] <= mk_ptr(0,0);
+          copied_bpu_ptr[gci] <= mk_ptr(0,0);
+        end else begin
+          copied_ifu_ptr[gci] <= ifuPtr_write_val;   // 专用 net，隔离 FM 合并
+          copied_bpu_ptr[gci] <= bpuPtr_w;
+        end
+      end
+      // 无 reset 的复制寄存器
+      always_ff @(posedge clock) begin
+        if (bpu_in_fire) begin
+          copied_bpu_in_bypass_buf_r_startAddr[gci]    <= pcmem_wdata_startAddr;
+          copied_bpu_in_bypass_buf_r_nextLineAddr[gci] <= pcmem_wdata_nextLineAddr;
+          copied_bpu_in_bypass_ptr_r[gci]              <= bpu_in_ptr;
+        end
+        copied_last_cycle_bpu_in_REG[gci]      <= bpu_in_fire;
+        copied_last_cycle_to_ifu_fire_REG[gci] <= lastToIfuFire_wval;  // 专用 net
+      end
+    end
+  endgenerate
+
+  wire [4:0]  copied_bypass_hit;
+  wire [49:0] copied_pcMemRead_startAddr    [0:4];
+  wire [49:0] copied_pcMemRead_nextlineStart[0:4];
+  wire [4:0]  copied_readValid;
+  generate
+    for (gci = 0; gci < 5; gci = gci + 1) begin : g_icache_out
+      // _GEN_8x: copied_last_cycle_bpu_in_REG_N & (copied_bpu_in_bypass_ptr_r_N == copied_ifu_ptr_N)
+      assign copied_bypass_hit[gci] =
+        copied_last_cycle_bpu_in_REG[gci] & (copied_bpu_in_bypass_ptr_r[gci] == copied_ifu_ptr[gci]);
+      assign copied_pcMemRead_startAddr[gci] =
+        copied_bypass_hit[gci] ? copied_bpu_in_bypass_buf_r_startAddr[gci]
+        : copied_last_cycle_to_ifu_fire_REG[gci] ? toIfuPc_p1_startAddr : toIfuPc_cur_startAddr;
+      assign copied_pcMemRead_nextlineStart[gci] =
+        copied_bypass_hit[gci] ? copied_bpu_in_bypass_buf_r_nextLineAddr[gci]
+        : copied_last_cycle_to_ifu_fire_REG[gci] ? toIfuPc_p1_nextLineAddr : toIfuPc_cur_nextLineAddr;
+      assign copied_readValid[gci] =
+        (copied_bypass_hit[gci]
+         | (copied_last_cycle_to_ifu_fire_REG[gci]
+              ? (entry_send_p1_a | entry_send_p1_b)
+              : (entry_send_a   | entry_send_b)))
+        & (copied_ifu_ptr[gci] != copied_bpu_ptr[gci]);
+    end
+  endgenerate
+
+  // io_toICache_req_valid 与 toIfu 路共用（golden io_toICache_req_valid = io_toIfu_req_valid_0）
   wire        icache_readValid = entry_is_to_send & (ifuPtr != bpuPtr);
   assign io_toICache_req_valid = icache_readValid;
-  assign io_toICache_req_bits_pcMemRead_0_startAddr = toIfu_startAddr;
-  assign io_toICache_req_bits_pcMemRead_1_startAddr = toIfu_startAddr;
-  assign io_toICache_req_bits_pcMemRead_2_startAddr = toIfu_startAddr;
-  assign io_toICache_req_bits_pcMemRead_3_startAddr = toIfu_startAddr;
-  assign io_toICache_req_bits_pcMemRead_4_startAddr = toIfu_startAddr;
-  assign io_toICache_req_bits_pcMemRead_0_nextlineStart = toIfu_nextLineAddr;
-  assign io_toICache_req_bits_pcMemRead_1_nextlineStart = toIfu_nextLineAddr;
-  assign io_toICache_req_bits_pcMemRead_2_nextlineStart = toIfu_nextLineAddr;
-  assign io_toICache_req_bits_pcMemRead_3_nextlineStart = toIfu_nextLineAddr;
-  assign io_toICache_req_bits_pcMemRead_4_nextlineStart = toIfu_nextLineAddr;
-  assign io_toICache_req_bits_readValid_0 = icache_readValid;
-  assign io_toICache_req_bits_readValid_1 = icache_readValid;
-  assign io_toICache_req_bits_readValid_2 = icache_readValid;
-  assign io_toICache_req_bits_readValid_3 = icache_readValid;
-  assign io_toICache_req_bits_readValid_4 = icache_readValid;
+  assign io_toICache_req_bits_pcMemRead_0_startAddr = copied_pcMemRead_startAddr[0];
+  assign io_toICache_req_bits_pcMemRead_1_startAddr = copied_pcMemRead_startAddr[1];
+  assign io_toICache_req_bits_pcMemRead_2_startAddr = copied_pcMemRead_startAddr[2];
+  assign io_toICache_req_bits_pcMemRead_3_startAddr = copied_pcMemRead_startAddr[3];
+  assign io_toICache_req_bits_pcMemRead_4_startAddr = copied_pcMemRead_startAddr[4];
+  assign io_toICache_req_bits_pcMemRead_0_nextlineStart = copied_pcMemRead_nextlineStart[0];
+  assign io_toICache_req_bits_pcMemRead_1_nextlineStart = copied_pcMemRead_nextlineStart[1];
+  assign io_toICache_req_bits_pcMemRead_2_nextlineStart = copied_pcMemRead_nextlineStart[2];
+  assign io_toICache_req_bits_pcMemRead_3_nextlineStart = copied_pcMemRead_nextlineStart[3];
+  assign io_toICache_req_bits_pcMemRead_4_nextlineStart = copied_pcMemRead_nextlineStart[4];
+  assign io_toICache_req_bits_readValid_0 = copied_readValid[0];
+  assign io_toICache_req_bits_readValid_1 = copied_readValid[1];
+  assign io_toICache_req_bits_readValid_2 = copied_readValid[2];
+  assign io_toICache_req_bits_readValid_3 = copied_readValid[3];
+  assign io_toICache_req_bits_readValid_4 = copied_readValid[4];
   // backendException：当 backendPcFaultPtr 指向 ifuPtr 且有异常类型时置位
   assign io_toICache_req_bits_backendException = (|backendException) & (backendPcFaultPtr == ifuPtr);
 
@@ -1444,9 +1536,17 @@ module xs_Ftq_core(
   wire        hit_pd_mispred = hit_pd_valid & io_fromIfu_pdWb_bits_misOffset_valid;
   reg         hit_pd_mispred_reg;
   // 打一拍的 pd / start_pc / wb_idx（false-hit 检测要等 ftb_entry_mem 读出对齐）
-  reg  [PREDICT_W-1:0] pd_reg_valid, pd_reg_isBr, pd_reg_isRVC;  // false-hit 检测用
+  reg  [PREDICT_W-1:0] pd_reg_valid, pd_reg_isRVC;  // false-hit 检测用
   reg  [PREDICT_W-1:0][1:0] pd_reg_brType;
-  reg  [PREDICT_W-1:0] pd_reg_isJal, pd_reg_isJalr, pd_reg_isCall, pd_reg_isRet;
+  reg  [PREDICT_W-1:0] pd_reg_isCall, pd_reg_isRet;
+  // isBr/isJal/isJalr 由寄存的 brType 组合译码（golden 仅寄存 brType，不再另存译码副本——
+  // 否则 impl 多出三组无 ref 对应的寄存器，FM 视作自由变量污染 false-hit 检测锥）
+  logic [PREDICT_W-1:0] pd_reg_isBr, pd_reg_isJal, pd_reg_isJalr;
+  always_comb for (int i=0;i<PREDICT_W;i++) begin
+    pd_reg_isBr[i]   = (pd_reg_brType[i]==2'd1);
+    pd_reg_isJal[i]  = (pd_reg_brType[i]==2'd2);
+    pd_reg_isJalr[i] = (pd_reg_brType[i]==2'd3);
+  end
   reg  [5:0]  wb_idx_reg;
   reg         hit_pd_valid_reg;
 
@@ -1458,17 +1558,36 @@ module xs_Ftq_core(
   wire        fh_tail_v   = ftbm0_tailSlot_valid;
   wire        fh_tail_sh  = ftbm0_tailSlot_sharing;
   // br_false_hit：记录的 br 槽位对应 pd 不是 br
+  // ★与 golden 逐位对齐：golden 用 _GEN_907[off]==1(brType 值直选后比较)而非 isBr 向量选，
+  //   两者虽等价但 FM 译码器结构不同(FM diagnose 指向 tailSlot_offset 译码差异)。此处
+  //   直接在 offset 处选 brType 再比较, 与 golden 同构。★
+  // golden 把 pd_valid[tailoff]/brType[tailoff]/isCall[tailoff]/isRet[tailoff] 各预算一次
+  //   (_GEN_908/909/910[tailoff]/911[tailoff]) 复用于 shared-br 与 jmp 组, 单译码器。impl 亦
+  //   预选到 tail 处单线, 与 golden 译码器同构(消除 FM diagnose 指向的 tailSlot_offset 译码差异)。
+  wire [1:0]  pdbr_br0  = pd_reg_brType[fh_br0_off];
+  wire [1:0]  pdbr_tail = pd_reg_brType[fh_tail_off];
+  wire        pdv_br0   = pd_reg_valid[fh_br0_off];
+  wire        pdv_tail  = pd_reg_valid[fh_tail_off];
+  wire        pdcall_tail = pd_reg_isCall[fh_tail_off];
+  wire        pdret_tail  = pd_reg_isRet[fh_tail_off];
   wire        br_false_hit =
-      (fh_br0_v   & ~(pd_reg_valid[fh_br0_off]  & pd_reg_isBr[fh_br0_off])) |
-      (fh_tail_v  & fh_tail_sh & ~(pd_reg_valid[fh_tail_off] & pd_reg_isBr[fh_tail_off]));
+      (fh_br0_v   & ~(pdv_br0  & (pdbr_br0 ==2'd1))) |
+      (fh_tail_v  & fh_tail_sh & ~(pdv_tail & (pdbr_tail==2'd1)));
   wire        fh_jmp_valid = fh_tail_v;
   wire [3:0]  fh_jmp_off   = fh_tail_off;
   // jal_false_hit：记录的 jmp 类型与 pd 实测不符
-  wire        jal_false_hit = fh_jmp_valid & (
-      (~fh_tail_sh & ~ftbm0_isJalr & ~ftbm0_isCall & ~ftbm0_isRet & ~(pd_reg_valid[fh_jmp_off] & pd_reg_isJal[fh_jmp_off])) |
-      (ftbm0_isJalr & ~(pd_reg_valid[fh_jmp_off] & pd_reg_isJalr[fh_jmp_off])) |
-      (ftbm0_isCall & ~(pd_reg_valid[fh_jmp_off] & pd_reg_isCall[fh_jmp_off])) |
-      (ftbm0_isRet  & ~(pd_reg_valid[fh_jmp_off] & pd_reg_isRet[fh_jmp_off])) );
+  // golden：tailSlot_valid & ~tailSlot_sharing & (jal|jalr|call|ret)——★整个 jmp 组由
+  //   ~tailSlot_sharing 门控★（sharing=1 时 tail 槽当 br 处理，走 br_false_hit，jmp 组全禁）。
+  //   原实现只把 ~fh_tail_sh 加在 jal 项，jalr/call/ret 项漏了 ~fh_tail_sh→sharing 拍误判。
+  //   ★真核 bug: jal 分支 golden 仅 `~isJalr`, 原实现多加 `& ~isCall & ~isRet`——当 FTB 项
+  //   isJalr=0 但 isCall/isRet=1 时(FTB 编码可能), golden jal 分支照常检查而 impl 被误关,
+  //   导致 has_false_hit 与 golden 分叉→entry_hit_status 128 点 fail(FM diagnose 指向
+  //   tailSlot_offset 译码即此)。删掉多余的 ~isCall & ~isRet, 与 golden 逐位对齐。★
+  wire        jal_false_hit = fh_jmp_valid & ~fh_tail_sh & (
+      (~ftbm0_isJalr & ~(pdv_tail & (pdbr_tail==2'd2))) |
+      (ftbm0_isJalr & ~(pdv_tail & (pdbr_tail==2'd3))) |
+      (ftbm0_isCall & ~(pdv_tail & pdcall_tail)) |
+      (ftbm0_isRet  & ~(pdv_tail & pdret_tail)) );
   wire        has_false_hit = hit_pd_valid_reg & (br_false_hit | jal_false_hit | hit_pd_mispred_reg);
 
   // ===========================================================================
@@ -1503,6 +1622,16 @@ module xs_Ftq_core(
   wire        redir_flushItself = be_redir_valid ? io_fromBackend_redirect_bits_level : 1'b0;
 
   assign io_icacheFlush = redir_any;
+
+  // toICache 复制寄存器 copied_ifu_ptr 的 next-state（按 golden ifuPtr_write_value 原式重建，
+  //   结构异于 ifuPtr_w 以对齐 golden 侧的“不合并”行为；值恒等于 ifuPtr 的 next-state）。
+  //   redir_any=golden io_icacheFlush_0；redir_idx+1=golden _next_new_ptr_T_1。
+  assign ifuPtr_write_val =
+        redir_any                                          ? ptr_add(redir_idx, 1)
+      : (bpu_s3_redirect & ptr_recover(ifuPtr, s3_flush_ptr)) ? s3_flush_ptr
+      : (bpu_s2_redirect & ptr_recover(ifuPtr, s2_flush_ptr)) ? s2_flush_ptr
+      : (ifu_req_fire & allow_to_ifu)                      ? ifuPtrPlus1
+      :                                                      ifuPtr;
 
   always_comb begin
     // 默认保持
@@ -1547,7 +1676,6 @@ module xs_Ftq_core(
   end
 
   // bpuPtr / commPtr next（对应 Scala 762/802/1294 + 1431）
-  logic [PTR_W:0] bpuPtr_w;
   always_comb begin
     bpuPtr_w = ptr_add(bpuPtr, {6'd0, enq_fire});      // 正常 s1 入队 +1
     if (bpu_s2_redirect) bpuPtr_w = ptr_add(s2_flush_ptr, 1);
@@ -1645,7 +1773,7 @@ module xs_Ftq_core(
   wire        gen_mispred_0, gen_mispred_1, gen_mispred_2;
   wire        gen_is_init, gen_is_old, gen_is_newbr, gen_is_jalrmod, gen_is_sbmod, gen_is_brfull;
 
-  FTBEntryGen ftbEntryGen (
+  FTBEntryGen FTBEntryGen (   // 实例名与 golden 对齐(黑盒引脚 FM 自动配对)
     .io_start_addr(commit_pc_startAddr),
     .io_old_entry_isCall(meta_ftb_isCall), .io_old_entry_isRet(meta_ftb_isRet),
     .io_old_entry_isJalr(meta_ftb_isJalr), .io_old_entry_valid(meta_ftb_valid),
@@ -1812,13 +1940,16 @@ module xs_Ftq_core(
   assign io_toIfu_redirect_bits_ftqOffset    = io_fromBackend_redirect_bits_ftqOffset;
   assign io_toIfu_redirect_bits_level        = io_fromBackend_redirect_bits_level;
   // topdown_redirect = fromBackendRedirect（仅少量字段被引出）
+  // golden 这些 topdown_redirect bits 是 fromBackendRedirect_bits_* 的**直通**（不与 valid 门控）：
+  //   只有 topdown_redirect_valid 用 fbr_valid；各 bits 直接透传 be_*/rpd_*（fbr_valid=0 时也透传原值）。
+  //   原实现多加 `fbr_valid &`/`fbr_valid ?` 门控→ fbr_valid=0 拍强制 0，与 golden 分叉。
   assign io_toIfu_topdown_redirect_valid           = fbr_valid;
-  assign io_toIfu_topdown_redirect_bits_cfiUpdate_pd_isRet = fbr_valid ? rpd_isRet : 1'b0;
-  assign io_toIfu_topdown_redirect_bits_cfiUpdate_br_hit   = fbr_valid & be_br_hit;
-  assign io_toIfu_topdown_redirect_bits_cfiUpdate_jr_hit   = fbr_valid & be_jr_hit;
-  assign io_toIfu_topdown_redirect_bits_cfiUpdate_sc_hit   = fbr_valid & be_sc_hit;
-  assign io_toIfu_topdown_redirect_bits_debugIsCtrl   = fbr_valid & fbr_dbg_ctrl;
-  assign io_toIfu_topdown_redirect_bits_debugIsMemVio = fbr_valid & fbr_dbg_memvio;
+  assign io_toIfu_topdown_redirect_bits_cfiUpdate_pd_isRet = rpd_isRet;
+  assign io_toIfu_topdown_redirect_bits_cfiUpdate_br_hit   = be_br_hit;
+  assign io_toIfu_topdown_redirect_bits_cfiUpdate_jr_hit   = be_jr_hit;
+  assign io_toIfu_topdown_redirect_bits_cfiUpdate_sc_hit   = be_sc_hit;
+  assign io_toIfu_topdown_redirect_bits_debugIsCtrl   = fbr_dbg_ctrl;
+  assign io_toIfu_topdown_redirect_bits_debugIsMemVio = fbr_dbg_memvio;
 
   // perf bubble 输出（对应 fromBackendRedirect.bits.ControlBTBMissBubble 等，据 redirect 类型分类）
   wire sc_miss_term  = fbr_dbg_ctrl & be_br_hit;   // 是控制流误预测且命中 br → 归因 TAGE/SC
@@ -1849,53 +1980,168 @@ module xs_Ftq_core(
   reg         mmio_last_commit_q;
   assign io_mmioCommitRead_mmioLastCommit = mmio_last_commit_q;
 
-  // 性能计数输出：本核不实现具体统计（纯性能可观测口），打 0；UT 比对跳过常量/未驱动 X
-  assign io_perf_0_value=0;  assign io_perf_1_value=0;  assign io_perf_2_value=0;  assign io_perf_3_value=0;
-  assign io_perf_4_value=0;  assign io_perf_5_value=0;  assign io_perf_6_value=0;  assign io_perf_7_value=0;
-  assign io_perf_8_value=0;  assign io_perf_9_value=0;  assign io_perf_10_value=0; assign io_perf_11_value=0;
-  assign io_perf_12_value=0; assign io_perf_13_value=0; assign io_perf_14_value=0; assign io_perf_15_value=0;
-  assign io_perf_16_value=0; assign io_perf_17_value=0; assign io_perf_18_value=0; assign io_perf_19_value=0;
-  assign io_perf_20_value=0; assign io_perf_21_value=0; assign io_perf_22_value=0; assign io_perf_23_value=0;
+  // ===========================================================================
+  // 性能计数（perfEvents，与 golden 逐位一致）：24 个事件，各打两拍输出。
+  //   0..7,22,23 为 1 位事件；8..21 为对 16 槽 commit 分类掩码的 PopCount(5 位)。
+  // ===========================================================================
+  wire [15:0] perf_inst_mask = commit_instCommitted & {16{do_commit}};      // v_i & do_commit
+  wire [15:0] perf_cfi_mask  = pdm1_brMask
+                             | (16'(16'h1 << pdm1_jmpOffset) & {16{pdm1_jmpInfo_valid}});
+  wire [15:0] perf_cfiCommit = perf_inst_mask & perf_cfi_mask;              // mbpInstrs
+  wire [15:0] perf_rights    = perf_cfiCommit & ~commit_mispredict;
+  wire [15:0] perf_wrongs    = perf_cfiCommit &  commit_mispredict;
+  logic [15:0] perf_jmp_sel;
+  always_comb for (int i = 0; i < 16; i++) perf_jmp_sel[i] = (pdm1_jmpOffset == 4'(i));
+  wire perf_jal  = pdm1_jmpInfo_valid & ~pdm1_jmpInfo_b0;
+  wire perf_jalr = pdm1_jmpInfo_valid &  pdm1_jmpInfo_b0;
+  wire perf_call = pdm1_jmpInfo_valid &  pdm1_jmpInfo_b1;
+  wire perf_ret  = pdm1_jmpInfo_valid &  pdm1_jmpInfo_b2;
 
-  // topdown_info：本核仅透传/置位最常用位（topdown 主要供性能分析，不影响功能）
-  assign io_toIfu_req_bits_topdown_info_reasons_0  = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_1  = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_2  = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_3  = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_4  = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_5  = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_6  = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_7  = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_8  = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_9  = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_10 = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_11 = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_12 = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_13 = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_14 = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_15 = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_16 = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_17 = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_18 = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_19 = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_20 = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_21 = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_22 = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_23 = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_24 = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_25 = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_26 = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_27 = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_28 = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_29 = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_30 = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_31 = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_32 = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_33 = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_34 = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_35 = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_36 = 1'b0;
-  assign io_toIfu_req_bits_topdown_info_reasons_37 = 1'b0;
+  function automatic logic [4:0] popcnt16(input logic [15:0] v);
+    logic [4:0] s;
+    s = '0;
+    for (int b = 0; b < 16; b++) s += 5'(v[b]);
+    return s;
+  endfunction
+
+  wire perf_upd_valid = commit_valid & do_commit;   // io_toBpu_update_valid
+
+  // 两拍流水（golden io_perf_N_value_REG / _REG_1，无复位）
+  reg        perf_b_q1 [10];  reg        perf_b_q2 [10];   // 1 位事件 0..7,22,23
+  reg  [4:0] perf_c_q1 [14];  reg  [4:0] perf_c_q2 [14];   // 5 位事件 8..21
+  always_ff @(posedge clock) begin
+    perf_b_q1[0] <= bpu_s2_redirect;
+    perf_b_q1[1] <= bpu_s3_redirect;
+    perf_b_q1[2] <= io_fromBpu_resp_valid & ~new_entry_ready;
+    perf_b_q1[3] <= io_fromBackend_redirect_valid & ~io_fromBackend_redirect_bits_level;
+    perf_b_q1[4] <= io_fromBackend_redirect_valid &  io_fromBackend_redirect_bits_level;
+    perf_b_q1[5] <= ifu_redir_valid;
+    perf_b_q1[6] <= io_toIfu_req_ready & ~toIfu_req_valid_pre;
+    perf_b_q1[7] <= ~io_fromBpu_resp_valid & new_entry_ready & allow_bpu_in;
+    perf_b_q1[8] <= perf_upd_valid & (commit_hit == H_FALSE_HIT);   // 事件 22
+    perf_b_q1[9] <= perf_upd_valid & commit_real_hit;               // 事件 23
+    for (int i = 0; i < 10; i++) perf_b_q2[i] <= perf_b_q1[i];
+
+    perf_c_q1[0]  <= popcnt16(perf_cfiCommit);                       // BpInstr
+    perf_c_q1[1]  <= popcnt16(perf_cfiCommit & pdm1_brMask);         // BpBInstr
+    perf_c_q1[2]  <= popcnt16(perf_rights);                          // BpRight
+    perf_c_q1[3]  <= popcnt16(perf_wrongs);                          // BpWrong
+    perf_c_q1[4]  <= popcnt16(perf_rights & pdm1_brMask);            // BpBRight
+    perf_c_q1[5]  <= popcnt16(perf_wrongs & pdm1_brMask);            // BpBWrong
+    perf_c_q1[6]  <= popcnt16(perf_rights & perf_jmp_sel & {16{perf_jal}});   // BpJRight
+    perf_c_q1[7]  <= popcnt16(perf_wrongs & perf_jmp_sel & {16{perf_jal}});   // BpJWrong
+    perf_c_q1[8]  <= popcnt16(perf_rights & perf_jmp_sel & {16{perf_jalr}});  // BpIRight
+    perf_c_q1[9]  <= popcnt16(perf_wrongs & perf_jmp_sel & {16{perf_jalr}});  // BpIWrong
+    perf_c_q1[10] <= popcnt16(perf_rights & perf_jmp_sel & {16{perf_call}});  // BpCRight
+    perf_c_q1[11] <= popcnt16(perf_wrongs & perf_jmp_sel & {16{perf_call}});  // BpCWrong
+    perf_c_q1[12] <= popcnt16(perf_rights & perf_jmp_sel & {16{perf_ret}});   // BpRRight
+    perf_c_q1[13] <= popcnt16(perf_wrongs & perf_jmp_sel & {16{perf_ret}});   // BpRWrong
+    for (int i = 0; i < 14; i++) perf_c_q2[i] <= perf_c_q1[i];
+  end
+
+  assign io_perf_0_value = {5'h0, perf_b_q2[0]};
+  assign io_perf_1_value = {5'h0, perf_b_q2[1]};
+  assign io_perf_2_value = {5'h0, perf_b_q2[2]};
+  assign io_perf_3_value = {5'h0, perf_b_q2[3]};
+  assign io_perf_4_value = {5'h0, perf_b_q2[4]};
+  assign io_perf_5_value = {5'h0, perf_b_q2[5]};
+  assign io_perf_6_value = {5'h0, perf_b_q2[6]};
+  assign io_perf_7_value = {5'h0, perf_b_q2[7]};
+  assign io_perf_8_value  = {1'h0, perf_c_q2[0]};
+  assign io_perf_9_value  = {1'h0, perf_c_q2[1]};
+  assign io_perf_10_value = {1'h0, perf_c_q2[2]};
+  assign io_perf_11_value = {1'h0, perf_c_q2[3]};
+  assign io_perf_12_value = {1'h0, perf_c_q2[4]};
+  assign io_perf_13_value = {1'h0, perf_c_q2[5]};
+  assign io_perf_14_value = {1'h0, perf_c_q2[6]};
+  assign io_perf_15_value = {1'h0, perf_c_q2[7]};
+  assign io_perf_16_value = {1'h0, perf_c_q2[8]};
+  assign io_perf_17_value = {1'h0, perf_c_q2[9]};
+  assign io_perf_18_value = {1'h0, perf_c_q2[10]};
+  assign io_perf_19_value = {1'h0, perf_c_q2[11]};
+  assign io_perf_20_value = {1'h0, perf_c_q2[12]};
+  assign io_perf_21_value = {1'h0, perf_c_q2[13]};
+  assign io_perf_22_value = {5'h0, perf_b_q2[8]};
+  assign io_perf_23_value = {5'h0, perf_b_q2[9]};
+
+  // ===========================================================================
+  // topdown_info（与 golden 逐位一致）：38 位 reasons 打一拍寄存(topdown_stage)，
+  //   BPU 供给的位(1..9,12)透传打拍；3..8/12 再按 redirect 归因 OR 置位；其余恒 0。
+  // ===========================================================================
+  wire td_ctrlBTBMiss = fbr_dbg_ctrl & ~be_br_hit & ~be_jr_hit;             // ControlBTBMissBubble
+  wire td_tageMiss    = sc_miss_term  & ~be_sc_hit;                          // TAGEMissBubble
+  wire td_scMiss      = sc_miss_term  &  be_sc_hit;                          // SCMissBubble
+  wire td_ittageMiss  = ras_miss_term & ~rpd_isRet;                          // ITTAGEMissBubble
+  wire td_rasMiss     = ras_miss_term &  rpd_isRet;                          // RASMissBubble
+  wire td_ctrlValid   = fbr_valid & fbr_dbg_ctrl;
+  wire td_r3  = td_ctrlValid & ~td_ctrlBTBMiss & td_tageMiss;
+  wire td_r4  = td_ctrlValid & ~(td_ctrlBTBMiss | td_tageMiss) & td_scMiss;
+  wire td_r5  = td_ctrlValid & ~(td_ctrlBTBMiss | td_tageMiss | td_scMiss) & td_ittageMiss;
+  wire td_r6  = td_ctrlValid & ~(td_ctrlBTBMiss | td_tageMiss | td_scMiss | td_ittageMiss) & td_rasMiss;
+  wire td_r7  = fbr_valid & ~fbr_dbg_ctrl & io_fromBackend_redirect_bits_debugIsMemVio;
+  wire td_r8  = fbr_valid & ~(fbr_dbg_ctrl | io_fromBackend_redirect_bits_debugIsMemVio);
+  wire td_r12 = fbr_dbg_ctrl & td_ctrlBTBMiss;      // BTBMissBubble 归因（golden _GEN_114）
+
+  reg [37:0] topdown_stage_reasons;
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) topdown_stage_reasons <= '0;
+    else begin
+      topdown_stage_reasons <= '0;
+      topdown_stage_reasons[1] <= io_fromBpu_resp_bits_topdown_info_reasons_1;
+      topdown_stage_reasons[2] <= io_fromBpu_resp_bits_topdown_info_reasons_2;
+      topdown_stage_reasons[3] <= td_r3 | io_fromBpu_resp_bits_topdown_info_reasons_3;
+      topdown_stage_reasons[4] <= td_r4 | io_fromBpu_resp_bits_topdown_info_reasons_4;
+      topdown_stage_reasons[5] <= td_r5 | io_fromBpu_resp_bits_topdown_info_reasons_5;
+      topdown_stage_reasons[6] <= td_r6 | io_fromBpu_resp_bits_topdown_info_reasons_6;
+      topdown_stage_reasons[7] <= td_r7 | io_fromBpu_resp_bits_topdown_info_reasons_7;
+      topdown_stage_reasons[8] <= td_r8 | io_fromBpu_resp_bits_topdown_info_reasons_8;
+      topdown_stage_reasons[9] <= io_fromBpu_resp_bits_topdown_info_reasons_9;
+      topdown_stage_reasons[12] <= fbr_valid
+          ? (td_r12 | io_fromBpu_resp_bits_topdown_info_reasons_12)
+          : (ifu_redir_reg_valid | io_fromBpu_resp_bits_topdown_info_reasons_12);
+    end
+  end
+
+  assign io_toIfu_req_bits_topdown_info_reasons_0  = topdown_stage_reasons[0];
+  assign io_toIfu_req_bits_topdown_info_reasons_1  = topdown_stage_reasons[1];
+  assign io_toIfu_req_bits_topdown_info_reasons_2  = topdown_stage_reasons[2];
+  assign io_toIfu_req_bits_topdown_info_reasons_3  = td_r3 | topdown_stage_reasons[3];
+  assign io_toIfu_req_bits_topdown_info_reasons_4  = td_r4 | topdown_stage_reasons[4];
+  assign io_toIfu_req_bits_topdown_info_reasons_5  = td_r5 | topdown_stage_reasons[5];
+  assign io_toIfu_req_bits_topdown_info_reasons_6  = td_r6 | topdown_stage_reasons[6];
+  assign io_toIfu_req_bits_topdown_info_reasons_7  = td_r7 | topdown_stage_reasons[7];
+  assign io_toIfu_req_bits_topdown_info_reasons_8  = td_r8 | topdown_stage_reasons[8];
+  assign io_toIfu_req_bits_topdown_info_reasons_9  = topdown_stage_reasons[9];
+  assign io_toIfu_req_bits_topdown_info_reasons_10  = topdown_stage_reasons[10];
+  assign io_toIfu_req_bits_topdown_info_reasons_11  = topdown_stage_reasons[11];
+  assign io_toIfu_req_bits_topdown_info_reasons_12 = fbr_valid
+      ? (td_r12 | topdown_stage_reasons[12])
+      : (ifu_redir_reg_valid | topdown_stage_reasons[12]);
+  assign io_toIfu_req_bits_topdown_info_reasons_13  = topdown_stage_reasons[13];
+  assign io_toIfu_req_bits_topdown_info_reasons_14  = topdown_stage_reasons[14];
+  assign io_toIfu_req_bits_topdown_info_reasons_15  = topdown_stage_reasons[15];
+  assign io_toIfu_req_bits_topdown_info_reasons_16  = topdown_stage_reasons[16];
+  assign io_toIfu_req_bits_topdown_info_reasons_17  = topdown_stage_reasons[17];
+  assign io_toIfu_req_bits_topdown_info_reasons_18  = topdown_stage_reasons[18];
+  assign io_toIfu_req_bits_topdown_info_reasons_19  = topdown_stage_reasons[19];
+  assign io_toIfu_req_bits_topdown_info_reasons_20  = topdown_stage_reasons[20];
+  assign io_toIfu_req_bits_topdown_info_reasons_21  = topdown_stage_reasons[21];
+  assign io_toIfu_req_bits_topdown_info_reasons_22  = topdown_stage_reasons[22];
+  assign io_toIfu_req_bits_topdown_info_reasons_23  = topdown_stage_reasons[23];
+  assign io_toIfu_req_bits_topdown_info_reasons_24  = topdown_stage_reasons[24];
+  assign io_toIfu_req_bits_topdown_info_reasons_25  = topdown_stage_reasons[25];
+  assign io_toIfu_req_bits_topdown_info_reasons_26  = topdown_stage_reasons[26];
+  assign io_toIfu_req_bits_topdown_info_reasons_27  = topdown_stage_reasons[27];
+  assign io_toIfu_req_bits_topdown_info_reasons_28  = topdown_stage_reasons[28];
+  assign io_toIfu_req_bits_topdown_info_reasons_29  = topdown_stage_reasons[29];
+  assign io_toIfu_req_bits_topdown_info_reasons_30  = topdown_stage_reasons[30];
+  assign io_toIfu_req_bits_topdown_info_reasons_31  = topdown_stage_reasons[31];
+  assign io_toIfu_req_bits_topdown_info_reasons_32  = topdown_stage_reasons[32];
+  assign io_toIfu_req_bits_topdown_info_reasons_33  = topdown_stage_reasons[33];
+  assign io_toIfu_req_bits_topdown_info_reasons_34  = topdown_stage_reasons[34];
+  assign io_toIfu_req_bits_topdown_info_reasons_35  = topdown_stage_reasons[35];
+  assign io_toIfu_req_bits_topdown_info_reasons_36  = topdown_stage_reasons[36];
+  assign io_toIfu_req_bits_topdown_info_reasons_37  = topdown_stage_reasons[37];
 
   // ---- redirect 冲刷 commitStateQueue 的打拍寄存 + commit cfi 辅助 ----
   reg          flush_csq_valid_q, flush_csq_notIfu_q, flush_csq_flushItself_q;
@@ -1922,12 +2168,12 @@ module xs_Ftq_core(
         commitStateQueue[i]<='0;   // 复位为全 C_EMPTY（RegInit）
       end
       bpu_ftb_update_stall<=2'd0; backendException<=2'd0; backendPcFaultPtr<=mk_ptr(0,0);
-      last_cycle_bpu_in<=1'b0; last2_bpu_in<=1'b0; do_commit<=1'b0;
-      ifu_redir_reg_valid<=1'b0; hit_pd_mispred_reg<=1'b0; hit_pd_valid_reg<=1'b0;
-      newest_entry_target_modified<=1'b0; newest_entry_ptr_modified<=1'b0;
-      last_cycle_to_ifu_fire<=1'b0; last_cycle_to_pf_fire<=1'b0;
-      tobk_pc_mem_wen<=1'b0; newest_en_q1<=1'b0; newest_en_q2<=1'b0;
-      mmio_last_commit_q<=1'b0; toPrefetchEntryToSend<=1'b0;
+      // 仅 golden RegInit 寄存器参与复位；last_cycle_*/hit_pd_valid_reg/newest_en_q*/
+      // tobk_pc_mem_wen/mmio_last_commit_q/toPrefetchEntryToSend 等在 golden 为无复位
+      // 寄存器，已移入下方无复位域（复位期间照常更新，与 golden 一致）。
+      do_commit<=1'b0;
+      ifu_redir_reg_valid<=1'b0; hit_pd_mispred_reg<=1'b0;
+      newest_entry_target_modified<=1'b0;
     end else begin
       // ---- 指针落地 ----
       bpuPtr<=bpuPtr_w; ifuPtr<=ifuPtr_w; ifuPtrPlus1<=ifuPtrPlus1_w; ifuPtrPlus2<=ifuPtrPlus2_w;
@@ -1935,31 +2181,14 @@ module xs_Ftq_core(
       commPtr<=commPtr_w; commPtrPlus1<=commPtrPlus1_w; robCommPtr<=robCommPtr_w;
 
       // ---- enq 打一拍信号 ----
-      last_cycle_bpu_in     <= bpu_in_fire;
-      last2_bpu_in          <= last_cycle_bpu_in;
       if (bpu_in_fire) begin
-        last_cycle_bpu_in_ptr   <= bpu_in_ptr;
-        last_cycle_bpu_target   <= bpu_target;
-        last_cycle_cfiIndex_valid <= cfi_valid;
-        last_cycle_cfiIndex_bits  <= cfi_bits;
-        last_cycle_bpu_in_stage <= bpu_in_stage;
-        bpu_in_bypass_startAddr   <= pcmem_wdata_startAddr;
-        bpu_in_bypass_nextLineAddr<= pcmem_wdata_nextLineAddr;
-        bpu_in_bypass_fallThruErr <= pcmem_wdata_fallThruErr;
-        bpu_in_bypass_ptr         <= bpu_in_ptr;
       end
-      last2_bpu_in_ptr <= last_cycle_bpu_in_ptr;
 
       // ---- 入队后一拍：写各状态阵列（对应 Scala 718-736）----
-      newest_entry_target_modified<=1'b0; newest_entry_ptr_modified<=1'b0;
+      newest_entry_target_modified<=1'b0;
       if (last_cycle_bpu_in) begin
         entry_fetch_status[last_cycle_bpu_in_ptr[PTR_W-1:0]] <= F_TO_SEND;
-        cfiIndex_valid[last_cycle_bpu_in_ptr[PTR_W-1:0]]     <= last_cycle_cfiIndex_valid;
-        cfiIndex_bits[last_cycle_bpu_in_ptr[PTR_W-1:0]]      <= last_cycle_cfiIndex_bits;
-        pred_stage[last_cycle_bpu_in_ptr[PTR_W-1:0]]         <= last_cycle_bpu_in_stage;
-        update_target[last_cycle_bpu_in_ptr[PTR_W-1:0]]      <= last_cycle_bpu_target;
-        newest_entry_target_modified<=1'b1; newest_entry_target<=last_cycle_bpu_target;
-        newest_entry_ptr_modified   <=1'b1; newest_entry_ptr   <=last_cycle_bpu_in_ptr;
+      newest_entry_target_modified<=1'b1;
         // 新入队块一拍后把其 commitStateQueue 复位为全 C_EMPTY（对应 Scala 748-757
         // copied_last_cycle_bpu_in 复位块）。否则 FTQ 64 项环绕重用旧项时, 残留的
         // C_COMMITTED/C_TO_COMMIT/C_FLUSHED 会污染 canCommit/commPtr 推进。
@@ -1967,7 +2196,6 @@ module xs_Ftq_core(
         commitStateQueue[last_cycle_bpu_in_ptr[PTR_W-1:0]] <= '0;
       end
       // 再延后一拍清 mispred（reduce fanout）
-      if (last2_bpu_in) mispred_block[last2_bpu_in_ptr[PTR_W-1:0]] <= '0;
 
       // entry_hit_status：只用 s2 的 hit 结果（对应 Scala 775-777）
       if (io_fromBpu_resp_bits_s2_valid_3)
@@ -1983,23 +2211,9 @@ module xs_Ftq_core(
         entry_hit_status[ifuPtr[PTR_W-1:0]] <= H_FALSE_HIT;
 
       // ---- to IFU/ICache/Prefetch 的流水寄存器 ----
-      last_cycle_to_ifu_fire <= ifu_req_fire;
-      last_cycle_to_pf_fire  <= pf_req_fire;
       // toIfuPcBundle = 单级 RegNext(pc_mem rdata)：cur 用 ifuPtr_rdata，p1 用 ifuPtrPlus1_rdata
-      toIfuPc_cur_startAddr<=pcmem_ifuPtr_startAddr; toIfuPc_cur_nextLineAddr<=pcmem_ifuPtr_nextLineAddr;
-      toIfuPc_cur_fallThruErr<=pcmem_ifuPtr_fallThruErr;
-      toIfuPc_p1_startAddr<=pcmem_ifuP1_startAddr; toIfuPc_p1_nextLineAddr<=pcmem_ifuP1_nextLineAddr;
-      toIfuPc_p1_fallThruErr<=pcmem_ifuP1_fallThruErr;
-      entry_send_a   <= (entry_fetch_status[ifuPtr[PTR_W-1:0]]==F_TO_SEND);
-      entry_send_b   <= (last_cycle_bpu_in & (bpu_in_bypass_ptr==ifuPtr));
-      entry_send_p1_a<= (entry_fetch_status[ifuPtrPlus1[PTR_W-1:0]]==F_TO_SEND);
-      entry_send_p1_b<= (last_cycle_bpu_in & (bpu_in_bypass_ptr==ifuPtrPlus1));
       // entry_next_addr 的 base：cur 用 RegNext(ifuPtrPlus1_rdata)，p1 用 RegNext(ifuPtrPlus2_rdata)
-      enext_cur_reg <= pcmem_ifuP1_startAddr;
-      enext_p1_reg  <= pcmem_ifuP2_startAddr;
       // prefetch 提前一拍
-      toPrefetchPc_startAddr<=nextPfPc_startAddr; toPrefetchPc_nextLineAddr<=nextPfPc_nextLineAddr;
-      toPrefetchEntryToSend <=nextPfEntryToSend;
 
       // ---- IFU 写回：commitStateQueue 标 toCommit（对应 Scala 1006-1016）----
       if (ifu_wb_valid)
@@ -2007,32 +2221,11 @@ module xs_Ftq_core(
           if (pdwb_pd_valid[i] & pdwb_instrRange[i]) commitStateQueue[ifu_wb_idx][i] <= C_TO_COMMIT;
       // false-hit 检测打拍寄存
       hit_pd_mispred_reg <= hit_pd_mispred;
-      hit_pd_valid_reg   <= hit_pd_valid;
-      pd_reg_valid<=pdwb_pd_valid; pd_reg_isRVC<=pdwb_pd_isRVC; pd_reg_brType<=pdwb_pd_brType;
-      pd_reg_isCall<=pdwb_pd_isCall; pd_reg_isRet<=pdwb_pd_isRet;
-      for (int i=0;i<PREDICT_W;i++) begin
-        pd_reg_isBr[i]   <= (pdwb_pd_brType[i]==2'd1);
-        pd_reg_isJal[i]  <= (pdwb_pd_brType[i]==2'd2);
-        pd_reg_isJalr[i] <= (pdwb_pd_brType[i]==2'd3);
-      end
-      wb_idx_reg <= ifu_wb_idx;
       if (has_false_hit) entry_hit_status[wb_idx_reg] <= H_FALSE_HIT;
 
       // ---- IFU redirect 打拍 + ifuRedirected 记录（对应 Scala 1156-1174）----
       ifu_redir_reg_valid  <= ifu_redir_valid;
       if (ifu_redir_valid) begin // RegNextWithEnable：bits 仅在 fromIfuRedirect.valid 时更新
-        ifu_redir_reg_ptr    <= ifu_redir_ptr;
-        ifu_redir_reg_offset <= ifu_redir_offset;
-        ifu_redir_reg_pc     <= pdwb_pc[ifu_redir_offset];
-        ifu_redir_reg_target <= io_fromIfu_pdWb_bits_target;
-        ifu_redir_reg_pd_valid <= pdwb_pd_valid[ifu_redir_offset];
-        ifu_redir_reg_pd_isRVC <= pdwb_pd_isRVC[ifu_redir_offset];
-        ifu_redir_reg_pd_isCall<= pdwb_pd_isCall[ifu_redir_offset];
-        ifu_redir_reg_pd_isRet <= pdwb_pd_isRet[ifu_redir_offset];
-        ifu_redir_reg_pd_brType<= pdwb_pd_brType[ifu_redir_offset];
-        ifu_redir_reg_predTaken<= cfiIndex_valid[io_fromIfu_pdWb_bits_ftqIdx_value];
-        ifu_redir_reg_taken    <= io_fromIfu_pdWb_bits_cfiOffset_valid;
-        ifu_redir_reg_isMisPred<= io_fromIfu_pdWb_bits_misOffset_valid;
       end
       if (ifu_redir_reg_valid) ifuRedirected[ifu_redir_reg_ptr[PTR_W-1:0]] <= 1'b1;
       else if (last_cycle_bpu_in) ifuRedirected[last_cycle_bpu_in_ptr[PTR_W-1:0]] <= 1'b0;
@@ -2041,42 +2234,16 @@ module xs_Ftq_core(
       // 优先后端 redirect，否则 IFU redirect
       // updateCfiInfo：据重定向修正该项的 cfiIndex（taken 槽前移/取消）、记录目标与误预测
       if (fbr_valid) begin
-        if ((fbr_cfi_taken & (fbr_offset < cfiIndex_bits[fbr_idx_value])) | (fbr_offset==cfiIndex_bits[fbr_idx_value]))
-          cfiIndex_valid[fbr_idx_value] <= (fbr_cfi_taken & (fbr_offset < cfiIndex_bits[fbr_idx_value]))
-                                           | ((fbr_offset==cfiIndex_bits[fbr_idx_value]) & fbr_cfi_taken);
-        else if (~fbr_cfi_taken & (fbr_offset != cfiIndex_bits[fbr_idx_value]))
-          cfiIndex_valid[fbr_idx_value] <= 1'b0;
-        if (fbr_cfi_taken & (fbr_offset < cfiIndex_bits[fbr_idx_value]))
-          cfiIndex_bits[fbr_idx_value] <= fbr_offset;
-        update_target[fbr_idx_value] <= fbr_cfi_target;
-        mispred_block[fbr_idx_value][fbr_offset] <= fbr_cfi_ismispred;
-        newest_entry_target_modified<=1'b1; newest_entry_target<=fbr_cfi_target;
-        newest_entry_ptr_modified   <=1'b1; newest_entry_ptr   <=mk_ptr(fbr_idx_flag,fbr_idx_value);
+      newest_entry_target_modified<=1'b1;
       end else if (ifu_redir_reg_valid) begin
-        if ((ifu_redir_reg_taken & (ifu_redir_reg_offset < cfiIndex_bits[ifu_redir_reg_ptr[PTR_W-1:0]]))
-             | (ifu_redir_reg_offset==cfiIndex_bits[ifu_redir_reg_ptr[PTR_W-1:0]]))
-          cfiIndex_valid[ifu_redir_reg_ptr[PTR_W-1:0]] <=
-            (ifu_redir_reg_taken & (ifu_redir_reg_offset < cfiIndex_bits[ifu_redir_reg_ptr[PTR_W-1:0]]))
-            | ((ifu_redir_reg_offset==cfiIndex_bits[ifu_redir_reg_ptr[PTR_W-1:0]]) & ifu_redir_reg_taken);
-        else if (~ifu_redir_reg_taken & (ifu_redir_reg_offset != cfiIndex_bits[ifu_redir_reg_ptr[PTR_W-1:0]]))
-          cfiIndex_valid[ifu_redir_reg_ptr[PTR_W-1:0]] <= 1'b0;
-        if (ifu_redir_reg_taken & (ifu_redir_reg_offset < cfiIndex_bits[ifu_redir_reg_ptr[PTR_W-1:0]]))
-          cfiIndex_bits[ifu_redir_reg_ptr[PTR_W-1:0]] <= ifu_redir_reg_offset;
         // IFU-redirect 写入的 target 须用 ifuToBpu_target（ret 用 RAS topAddr 替换），
         // 与 golden ifuRedirectToBpu_bits_cfiUpdate_target 一致，否则 ret 项 newest/update_target 取原始
         // cfiUpdate_target 而非 RAS 目标，导致 io_toIfu_req_bits_nextStartAddr 失配。
-        update_target[ifu_redir_reg_ptr[PTR_W-1:0]] <= ifuToBpu_target;
-        newest_entry_target_modified<=1'b1; newest_entry_target<=ifuToBpu_target;
-        newest_entry_ptr_modified   <=1'b1; newest_entry_ptr   <=ifu_redir_reg_ptr;
+      newest_entry_target_modified<=1'b1;
       end
 
       // ---- redirect 冲刷 commitStateQueue（对应 Scala 1303-1318）----
       // 打一拍后清/标 flushed
-      flush_csq_valid_q <= redir_any;
-      flush_csq_notIfu_q<= redir_notIfu;
-      flush_csq_idx_q   <= redir_idx[PTR_W-1:0];
-      flush_csq_off_q   <= redir_offset;
-      flush_csq_flushItself_q <= redir_flushItself; // flushItself = redirect.level(0)（修正：原 ~level 取反错误）
       if (flush_csq_valid_q & flush_csq_notIfu_q)
         for (int i=0;i<PREDICT_W;i++) begin
           if (i[3:0] >  flush_csq_off_q)                              commitStateQueue[flush_csq_idx_q][i]<=C_EMPTY;
@@ -2105,11 +2272,174 @@ module xs_Ftq_core(
       end else if (ifuWbPtr != backendPcFaultPtr) backendException <= 2'd0;
 
       // ---- commit 读出寄存（对应 Scala 1410-1453）----
+      do_commit <= canCommit;
+      if (canCommit) begin
+      end
+
+      // ---- toBackend 寄存（对应 Scala 1180-1188）----
+      if (last_cycle_bpu_in) begin
+      end
+    end
+  end
+
+  // ---- 无复位寄存器域（golden 非 RegInit 寄存器：旁路缓冲/last_cycle_*/cfiIndex/
+  //      mispred_block/pd_reg/commit 打拍/toBackend 打拍等）。此前挤在 reset 门控块里，
+  //      复位期间更新被吞掉，与 golden 分叉（SQ/LQR 同型问题，FM analyze 实证）。
+  //      条件/顺序与原块逐语句保持。----
+  always_ff @(posedge clock) begin
+
+      // ---- 指针落地 ----
+
+      // ---- enq 打一拍信号 ----
+      last_cycle_bpu_in     <= bpu_in_fire;
+      last2_bpu_in          <= last_cycle_bpu_in;
+      if (bpu_in_fire) begin
+        last_cycle_bpu_in_ptr   <= bpu_in_ptr;
+        last_cycle_bpu_target   <= bpu_target;
+        last_cycle_cfiIndex_valid <= cfi_valid;
+        last_cycle_cfiIndex_bits  <= cfi_bits;
+        last_cycle_bpu_in_stage <= bpu_in_stage;
+        bpu_in_bypass_startAddr   <= pcmem_wdata_startAddr;
+        bpu_in_bypass_nextLineAddr<= pcmem_wdata_nextLineAddr;
+        bpu_in_bypass_fallThruErr <= pcmem_wdata_fallThruErr;
+        bpu_in_bypass_ptr         <= bpu_in_ptr;
+      end
+      // golden `r` 是 RegEnable(last_cycle_bpu_in_ptr_value, last_cycle_bpu_in)：仅在
+      // last_cycle_bpu_in 有效拍采样（不是无条件 RegNext）。仅用于 mispred_block 清零
+      // (if (last2_bpu_in) 时 REG=1，两者取值一致)；但 FM 逐寄存器等价须使 next-state 逻辑
+      // 与 golden 完全相同，否则 golden `r` 无匹配→自由变量污染 mispred_block 锥判失配。
+      if (last_cycle_bpu_in) last2_bpu_in_ptr <= last_cycle_bpu_in_ptr;
+
+      // ---- 入队后一拍：写各状态阵列（对应 Scala 718-736）----
+      newest_entry_ptr_modified<=1'b0;
+      if (last_cycle_bpu_in) begin
+        cfiIndex_valid[last_cycle_bpu_in_ptr[PTR_W-1:0]]     <= last_cycle_cfiIndex_valid;
+        cfiIndex_bits[last_cycle_bpu_in_ptr[PTR_W-1:0]]      <= last_cycle_cfiIndex_bits;
+        pred_stage[last_cycle_bpu_in_ptr[PTR_W-1:0]]         <= last_cycle_bpu_in_stage;
+        update_target[last_cycle_bpu_in_ptr[PTR_W-1:0]]      <= last_cycle_bpu_target;
+      newest_entry_target<=last_cycle_bpu_target;
+        newest_entry_ptr_modified   <=1'b1; newest_entry_ptr   <=last_cycle_bpu_in_ptr;
+        // 新入队块一拍后把其 commitStateQueue 复位为全 C_EMPTY（对应 Scala 748-757
+        // copied_last_cycle_bpu_in 复位块）。否则 FTQ 64 项环绕重用旧项时, 残留的
+        // C_COMMITTED/C_TO_COMMIT/C_FLUSHED 会污染 canCommit/commPtr 推进。
+        // 此处优先级最低: 后面的 ifu_wb(C_TO_COMMIT)/redirect-flush/rob-commit 写同一项会覆盖。
+      end
+      // 再延后一拍清 mispred（reduce fanout）
+      if (last2_bpu_in) mispred_block[last2_bpu_in_ptr[PTR_W-1:0]] <= '0;
+
+      // entry_hit_status：只用 s2 的 hit 结果（对应 Scala 775-777）
+
+      // toIfu 发出后清 to_send（若未被 BPU flush）（对应 Scala 981-983）
+      // fallThruError 触发 false-hit（对应 Scala 955-963）
+
+      // ---- to IFU/ICache/Prefetch 的流水寄存器 ----
+      last_cycle_to_ifu_fire <= ifu_req_fire;
+      last_cycle_to_pf_fire  <= pf_req_fire;
+      // toIfuPcBundle = 单级 RegNext(pc_mem rdata)：cur 用 ifuPtr_rdata，p1 用 ifuPtrPlus1_rdata
+      toIfuPc_cur_startAddr<=pcmem_ifuPtr_startAddr; toIfuPc_cur_nextLineAddr<=pcmem_ifuPtr_nextLineAddr;
+      toIfuPc_cur_fallThruErr<=pcmem_ifuPtr_fallThruErr;
+      toIfuPc_p1_startAddr<=pcmem_ifuP1_startAddr; toIfuPc_p1_nextLineAddr<=pcmem_ifuP1_nextLineAddr;
+      toIfuPc_p1_fallThruErr<=pcmem_ifuP1_fallThruErr;
+      entry_send_a   <= (entry_fetch_status[ifuPtr[PTR_W-1:0]]==F_TO_SEND);
+      entry_send_b   <= (last_cycle_bpu_in & (bpu_in_bypass_ptr==ifuPtr));
+      entry_send_p1_a<= (entry_fetch_status[ifuPtrPlus1[PTR_W-1:0]]==F_TO_SEND);
+      entry_send_p1_b<= (last_cycle_bpu_in & (bpu_in_bypass_ptr==ifuPtrPlus1));
+      // entry_next_addr 的 base：cur 用 RegNext(ifuPtrPlus1_rdata)，p1 用 RegNext(ifuPtrPlus2_rdata)
+      enext_cur_reg <= pcmem_ifuP1_startAddr;
+      enext_p1_reg  <= pcmem_ifuP2_startAddr;
+      // prefetch 提前一拍
+      toPrefetchPc_startAddr<=nextPfPc_startAddr; toPrefetchPc_nextLineAddr<=nextPfPc_nextLineAddr;
+      toPrefetchEntryToSend <=nextPfEntryToSend;
+
+      // ---- IFU 写回：commitStateQueue 标 toCommit（对应 Scala 1006-1016）----
+      // false-hit 检测打拍寄存
+      hit_pd_valid_reg   <= hit_pd_valid;   // golden REG_1：无使能，每拍打拍
+      // pd_reg_* / wb_idx_reg 是 RegEnable(io_fromIfu_pdWb_valid)：仅 pdWb 有效拍更新，
+      // 否则保持（golden `if (io_fromIfu_pdWb_valid) begin pd_reg_N_* <= ...; wb_idx_reg <= ... end`）。
+      // 原实现漏掉使能→无写回拍也刷新，FM 判 pd_reg_valid/wb_idx_reg 与 golden 分叉。
+      if (ifu_wb_valid) begin
+        pd_reg_valid<=pdwb_pd_valid; pd_reg_isRVC<=pdwb_pd_isRVC; pd_reg_brType<=pdwb_pd_brType;
+        pd_reg_isCall<=pdwb_pd_isCall; pd_reg_isRet<=pdwb_pd_isRet;
+        wb_idx_reg <= ifu_wb_idx;
+      end
+
+      // ---- IFU redirect 打拍 + ifuRedirected 记录（对应 Scala 1156-1174）----
+      if (ifu_redir_valid) begin // RegNextWithEnable：bits 仅在 fromIfuRedirect.valid 时更新
+        ifu_redir_reg_ptr    <= ifu_redir_ptr;
+        ifu_redir_reg_offset <= ifu_redir_offset;
+        ifu_redir_reg_pc     <= pdwb_pc[ifu_redir_offset];
+        ifu_redir_reg_target <= io_fromIfu_pdWb_bits_target;
+        ifu_redir_reg_pd_valid <= pdwb_pd_valid[ifu_redir_offset];
+        ifu_redir_reg_pd_isRVC <= pdwb_pd_isRVC[ifu_redir_offset];
+        ifu_redir_reg_pd_isCall<= pdwb_pd_isCall[ifu_redir_offset];
+        ifu_redir_reg_pd_isRet <= pdwb_pd_isRet[ifu_redir_offset];
+        ifu_redir_reg_pd_brType<= pdwb_pd_brType[ifu_redir_offset];
+        ifu_redir_reg_predTaken<= cfiIndex_valid[io_fromIfu_pdWb_bits_ftqIdx_value];
+        ifu_redir_reg_taken    <= io_fromIfu_pdWb_bits_cfiOffset_valid;
+        ifu_redir_reg_isMisPred<= io_fromIfu_pdWb_bits_misOffset_valid;
+      end
+
+      // ---- redirect 更新 cfiIndex/mispred/newest（对应 Scala 1212-1240）----
+      // 优先后端 redirect，否则 IFU redirect
+      // updateCfiInfo：据重定向修正该项的 cfiIndex（taken 槽前移/取消）、记录目标与误预测
+      if (fbr_valid) begin
+        if ((fbr_cfi_taken & (fbr_offset < cfiIndex_bits[fbr_idx_value])) | (fbr_offset==cfiIndex_bits[fbr_idx_value]))
+          cfiIndex_valid[fbr_idx_value] <= (fbr_cfi_taken & (fbr_offset < cfiIndex_bits[fbr_idx_value]))
+                                           | ((fbr_offset==cfiIndex_bits[fbr_idx_value]) & fbr_cfi_taken);
+        else if (~fbr_cfi_taken & (fbr_offset != cfiIndex_bits[fbr_idx_value]))
+          cfiIndex_valid[fbr_idx_value] <= 1'b0;
+        if (fbr_cfi_taken & (fbr_offset < cfiIndex_bits[fbr_idx_value]))
+          cfiIndex_bits[fbr_idx_value] <= fbr_offset;
+        update_target[fbr_idx_value] <= fbr_cfi_target;
+        mispred_block[fbr_idx_value][fbr_offset] <= fbr_cfi_ismispred;
+      newest_entry_target<=fbr_cfi_target;
+        newest_entry_ptr_modified   <=1'b1; newest_entry_ptr   <=mk_ptr(fbr_idx_flag,fbr_idx_value);
+      end else if (ifu_redir_reg_valid) begin
+        if ((ifu_redir_reg_taken & (ifu_redir_reg_offset < cfiIndex_bits[ifu_redir_reg_ptr[PTR_W-1:0]]))
+             | (ifu_redir_reg_offset==cfiIndex_bits[ifu_redir_reg_ptr[PTR_W-1:0]]))
+          cfiIndex_valid[ifu_redir_reg_ptr[PTR_W-1:0]] <=
+            (ifu_redir_reg_taken & (ifu_redir_reg_offset < cfiIndex_bits[ifu_redir_reg_ptr[PTR_W-1:0]]))
+            | ((ifu_redir_reg_offset==cfiIndex_bits[ifu_redir_reg_ptr[PTR_W-1:0]]) & ifu_redir_reg_taken);
+        else if (~ifu_redir_reg_taken & (ifu_redir_reg_offset != cfiIndex_bits[ifu_redir_reg_ptr[PTR_W-1:0]]))
+          cfiIndex_valid[ifu_redir_reg_ptr[PTR_W-1:0]] <= 1'b0;
+        if (ifu_redir_reg_taken & (ifu_redir_reg_offset < cfiIndex_bits[ifu_redir_reg_ptr[PTR_W-1:0]]))
+          cfiIndex_bits[ifu_redir_reg_ptr[PTR_W-1:0]] <= ifu_redir_reg_offset;
+        // IFU-redirect 写入的 target 须用 ifuToBpu_target（ret 用 RAS topAddr 替换），
+        // 与 golden ifuRedirectToBpu_bits_cfiUpdate_target 一致，否则 ret 项 newest/update_target 取原始
+        // cfiUpdate_target 而非 RAS 目标，导致 io_toIfu_req_bits_nextStartAddr 失配。
+        update_target[ifu_redir_reg_ptr[PTR_W-1:0]] <= ifuToBpu_target;
+      newest_entry_target<=ifuToBpu_target;
+        newest_entry_ptr_modified   <=1'b1; newest_entry_ptr   <=ifu_redir_reg_ptr;
+      end
+
+      // ---- redirect 冲刷 commitStateQueue（对应 Scala 1303-1318）----
+      // 打一拍后清/标 flushed
+      flush_csq_valid_q <= redir_any;
+      flush_csq_notIfu_q<= redir_notIfu;
+      flush_csq_idx_q   <= redir_idx[PTR_W-1:0];
+      flush_csq_off_q   <= redir_offset;
+      flush_csq_flushItself_q <= redir_flushItself; // flushItself = redirect.level(0)（修正：原 ~level 取反错误）
+      if (flush_csq_valid_q & flush_csq_notIfu_q)
+        for (int i=0;i<PREDICT_W;i++) begin
+        end
+
+      // ---- rob commit 标 committed（对应 Scala 1326-1346）----
+      for (int c=0;c<8;c++) if (robc_valid[c]) begin
+      end
+
+      // ---- bpu_ftb_update_stall 状态机（对应 Scala 1457-1472）----
+      if (bpu_ftb_update_stall==2'd0) begin
+      end
+
+      // ---- backendException / backendPcFaultPtr（对应 Scala 596-612）----
+      if (fbr_valid) begin
+      end
+
+      // ---- commit 读出寄存（对应 Scala 1410-1453）----
       commit_pc_startAddr   <= pcmem_commPtr_startAddr;
       commit_pc_p1_startAddr_r <= pcmem_commP1_startAddr;
       commit_newest_eq      <= commPtr_eq_newest;
       if (newest_entry_target_modified) commit_newest_target <= newest_entry_target;
-      do_commit <= canCommit;
       if (canCommit) begin
         do_commit_ptr  <= commPtr;
         commit_state   <= commitStateQueue[commPtr[PTR_W-1:0]];
@@ -2132,7 +2462,6 @@ module xs_Ftq_core(
 
       // ---- mmio ----
       mmio_last_commit_q <= mmio_last_commit;
-    end
   end
 
 endmodule

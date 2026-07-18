@@ -1,7 +1,7 @@
 // =============================================================================
 //  missqueue_acq_arb.svh —— mem_acquire（A 通道）payload Mux1H（被 xs_MissQueue_core 内联）
 // -----------------------------------------------------------------------------
-//  A 通道单 beat，仲裁退化为 idle lowest 优先：选中源 = acq_winner（one-hot，至多 1 位）。
+//  选中源 = acq_mux = beatsLeft ? acq_state : acq_winner（golden muxState，突发锁定）。
 //    idx0 = CMOUnit（CBO 操作）：opcode/address 来自 cmo，source 固定 17，无 alias/vaddr/...
 //    idx1 = acquire_from_pipereg（pipereg 直发）：opcode/param/source/address/alias/vaddr/
 //           reqSource/needHint/isKeyword 由 C 节 get_acquire 推导出的 pr_acq_* 提供
@@ -22,13 +22,13 @@ always_comb begin
   io_mem_acquire_bits_echo_isKeyword = 1'b0;
 
   // idx0：CMOUnit（仅 opcode/address/source）
-  if (acq_winner[0]) begin
+  if (acq_mux[0]) begin
     io_mem_acquire_bits_opcode  |= cmo_acq_opcode;
     io_mem_acquire_bits_address |= cmo_acq_address;
     io_mem_acquire_bits_source  |= SRC_BITS'(ACQ_SRC_ID);   // 6'h11
   end
   // idx1：pipereg 直发
-  if (acq_winner[1]) begin
+  if (acq_mux[1]) begin
     io_mem_acquire_bits_opcode       |= pr_acq_opcode;
     io_mem_acquire_bits_param        |= pr_acq_param;
     io_mem_acquire_bits_source       |= pr_acq_source;
@@ -41,7 +41,7 @@ always_comb begin
   end
   // idx2+i：entry i
   for (int i = 0; i < N_ENTRY; i++) begin
-    if (acq_winner[2+i]) begin
+    if (acq_mux[2+i]) begin
       io_mem_acquire_bits_opcode       |= e_acq_opcode[i];
       io_mem_acquire_bits_param        |= e_acq_param[i];
       io_mem_acquire_bits_source       |= e_acq_source[i];
@@ -56,8 +56,8 @@ always_comb begin
 end
 
 // size：有任一 winner → 6（整行），否则 0
-wire acq_any = |acq_winner;
+wire acq_any = |acq_mux;
 assign io_mem_acquire_bits_size = acq_any ? 3'h6 : 3'h0;
 // mask：golden 仅 idx1..17 winner 时置全 1（cmo 项不贡献 mask）
-wire acq_mask_any = |acq_winner[N_ACQ_SRC-1:1];
+wire acq_mask_any = |acq_mux[N_ACQ_SRC-1:1];
 assign io_mem_acquire_bits_mask = {32{acq_mask_any}};

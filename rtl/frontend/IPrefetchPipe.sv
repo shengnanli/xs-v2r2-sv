@@ -569,7 +569,7 @@ module xs_IPrefetchPipe
   // -------- s1 状态机 --------
   always_comb begin
     next_state = state;
-    unique case (state)
+    case (state)
       S_IDLE: begin
         if (s1_valid) begin
           if (!itlb_finish)                  next_state = S_ITLB_RESEND;
@@ -592,7 +592,7 @@ module xs_IPrefetchPipe
       S_ENTER_S2: begin
         if (s2_ready)                        next_state = S_IDLE;
       end
-      default: next_state = S_IDLE;
+      default: ;   // 非法编码 5/6/7 保持（golden 的嵌套三元对其兜底为 state，勿归零）
     endcase
     if (s1_flush) next_state = S_IDLE;   // flush 优先
   end
@@ -724,7 +724,9 @@ module xs_IPrefetchPipe
   logic s2_miss      [PORT_NUM];
   for (genvar p = 0; p < PORT_NUM; p++) begin : g_hits
     assign s2_SRAM_hits[p] = |s2_waymasks[p];
-    assign s2_hits[p]      = s2_MSHR_hits[p] || s2_SRAM_hits[p];
+    // 当拍 refill 命中脉冲 s2_MSHR_match 需旁路进 hits（golden：hits_valid|match|waymask），
+    // 否则 refill 当拍会误判 miss 而多发一次预取。
+    assign s2_hits[p]      = s2_MSHR_hits[p] || s2_MSHR_match[p] || s2_SRAM_hits[p];
   end
   always_comb begin
     logic prefix_ok;    // 「本 port 之前的所有 port 都无例外且非 mmio」

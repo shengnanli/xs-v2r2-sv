@@ -53,7 +53,41 @@
   end
 
   // ---- entry 寄存器更新 ----
-  always_ff @(posedge clock) begin
+  // ---- uop/vecReplay：golden 为**无复位**寄存器（写在独立无复位 always 块），必须
+  //      与下面 reset 门控的块分开——否则复位期间的 enqueue 写会被吞掉，与 golden 分叉
+  //      （StoreQueue 同型问题，FM analyze_points 实证 reset 只出现在 impl 锥）。
+  //      选口逻辑与 (4) 完全一致：needEnqueue & enqIndex 命中，高口覆盖。
+  logic     entry_ne_v   [LQ_REPLAY_SIZE];
+  lqr_uop_t entry_ne_uop [LQ_REPLAY_SIZE];
+  lqr_vec_t entry_ne_vec [LQ_REPLAY_SIZE];
+  logic     entry_bsq_v  [LQ_REPLAY_SIZE];   // blockSqIdx 亦为无复位寄存器（C_MA/C_FF 门控）
+  sq_ptr_t  entry_bsq    [LQ_REPLAY_SIZE];
+  always_comb
+    for (int i = 0; i < LQ_REPLAY_SIZE; i++) begin
+      entry_ne_v[i] = 1'b0; entry_ne_uop[i] = '0; entry_ne_vec[i] = '0;
+      entry_bsq_v[i] = 1'b0; entry_bsq[i] = '0;
+      for (int w = 0; w < LD_PIPE_W; w++)
+        if (needEnqueue[w] & (enqIndex[w] == i[SCHED_IDX_W-1:0])) begin
+          entry_ne_v[i]   = 1'b1;
+          entry_ne_uop[i] = enq_uop[w];
+          entry_ne_vec[i] = enq_vec[w];
+          if (enq_cause[w][C_MA]) begin entry_bsq_v[i] = 1'b1; entry_bsq[i] = enq_addr_inv_sq_idx[w]; end
+          if (enq_cause[w][C_FF]) begin entry_bsq_v[i] = 1'b1; entry_bsq[i] = enq_data_inv_sq_idx[w]; end
+        end
+    end
+  // uop/vecReplay/blockSqIdx 为**无复位**寄存器(golden 无复位)：仅 @(posedge clock)。
+  // ★不能带 `or posedge reset` 却无 if(reset)首语句——FMR_VLOG-144 拒绝→impl 无法 elaborate
+  //   (FM 判 impl top set 失败, 整个 LQR FM 一直无效)。★
+  always_ff @(posedge clock)
+    for (int i = 0; i < LQ_REPLAY_SIZE; i++) begin
+      if (entry_ne_v[i]) begin
+        uop[i]       <= entry_ne_uop[i];
+        vecReplay[i] <= entry_ne_vec[i];
+      end
+      if (entry_bsq_v[i]) blockSqIdx[i] <= entry_bsq[i];
+    end
+
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       // 与 Scala 一致：allocated/scheduled/blocking/strict/cause + missMSHRId/tlbHintId/
       // dataInLastBeat 都是 RegInit(0)，复位清零（否则未写过的 entry 被重放时读出 X）。
@@ -67,6 +101,7 @@
         missMSHRId[i]    <= '0;
         tlbHintId[i]     <= '0;
         dataInLastBeat[i]<= 1'b0;
+        debug_vaddr[i]   <= '0;   // golden debug_vaddr_N <= 50'h0（原实现漏复位→全 72 项与 golden 分叉）
       end
     end else begin
       for (int i = 0; i < LQ_REPLAY_SIZE; i++) begin
@@ -140,8 +175,6 @@
         end
         // 注：allocated/scheduled 与 isLoadReplay 回流逐口交错，统一在下方 (4b) 处理。
         if (hasNE) begin
-          uop[i]            <= nUop;
-          vecReplay[i]      <= nVec;
           cause[i]          <= nCause;
           debug_vaddr[i]    <= nVaddr;
           dataInLastBeat[i] <= nDilb;
@@ -150,7 +183,7 @@
         end
         if (hasMSHR) missMSHRId[i] <= nMshr;   // 否则保持旧值
         if (hasTLB)  tlbHintId[i]  <= nTlb;
-        if (hasBSQ)  blockSqIdx[i] <= nBsq;
+        // blockSqIdx 移至上方无复位块（golden 无复位寄存器）
       end
 
       // (4b) allocated/scheduled 的逐口交错更新。

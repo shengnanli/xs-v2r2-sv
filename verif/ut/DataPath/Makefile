@@ -57,6 +57,12 @@ WRAPPER_SRCS = $(RTL_DIR)/backend/DataPath_wrapper.sv $(SUB_DEPS)
 FM_VARIANTS = DataPath
 FM_REF_DEPS_DataPath = DelayN_1.sv DelayReg_10.sv DelayReg_8.sv DummyDPICWrapper_10.sv DummyDPICWrapper_11.sv DummyDPICWrapper_9.sv FpRFReadArbiter.sv FpRFWBCollideChecker.sv FpRegFilePart0.sv FpRegFilePart1.sv FpRegFilePart2.sv FpRegFilePart3.sv IntRFReadArbiter.sv IntRFWBCollideChecker.sv IntRegFilePart0.sv IntRegFilePart1.sv IntRegFilePart2.sv IntRegFilePart3.sv RegCache.sv UIntExtractor_27_000000000000001010100000000.sv UIntExtractor_27_000011100000000000001010101.sv V0RFReadArbiter.sv V0RFWBCollideChecker.sv V0RegFilePart0.sv V0RegFilePart1.sv VfRFReadArbiter.sv VfRFWBCollideChecker.sv VfRegFilePart0.sv VfRegFilePart1.sv VfRegFilePart2.sv VfRegFilePart3.sv VlRFReadArbiter.sv VlRFWBCollideChecker.sv VlRegFile.sv
 
+# (FM 审计 2026-07)曾试 FM_MERGE_DUP=false(Bku 同法)修 difftest delayer 的
+# DFF vs DFF0X 类失配 —— 实测**不可行**:golden DataPath 顶层有约 26 份
+# s1_flush_next_* 使能变体扇出副本与 regfile 写口扇出副本,关合并后它们无法与
+# 手写核的单份寄存器配对(287 bit unmatched → vfRegFilePart1/3 全 mem 失配传染),
+# 比开合并更糟。保持默认合并;delayer 类失配另行定性(见 fm_work AUDIT_NOTES)。
+
 include ../../../scripts/ut_common.mk
 
 # golden 内含非综合断言/difftest;UT 关掉以免触发,并关随机化。

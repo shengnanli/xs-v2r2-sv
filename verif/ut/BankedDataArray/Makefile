@@ -23,6 +23,9 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/BankedDataArray.sv $(SRAM_SRCS) $(MBIST_SRCS)
 TB_SRCS = variants_xs.sv tb.sv
 
 FM_VARIANTS = BankedDataArray
+# FM 审计 2026-07：8 bank×way 同构 ECC/raw 打拍链，合并同值寄存器 pass 会跨 bank 误
+# 合并/误配（部分 ecc_data_delayed 位 unmatched + 大面积 failing），关掉合并。
+FM_MERGE_DUP = false
 FM_REF_DEPS_BankedDataArray =
 
 include ../../../scripts/ut_common.mk

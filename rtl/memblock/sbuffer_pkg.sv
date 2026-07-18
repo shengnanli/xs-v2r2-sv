@@ -147,6 +147,14 @@ package sbuffer_pkg;
     for (int i = SB_SIZE-1; i >= 0; i--) if (v[i]) prio_enc16 = i[SB_IDX_W-1:0];
   endfunction
 
+  // ---- golden ParallelPriorityMux 形态：低位优先，**全 0 时默认末项 15**
+  //   （golden evictionIdx 的 drain/cohTimeOut 编码尾项是 {3'h7, ~v[14]}：
+  //    v[14]→14，否则 15；只有 fire 门控外的消费者(shouldWaitWriteFinish)看得出差别）
+  function automatic logic [SB_IDX_W-1:0] prio_enc16_deflast(input logic [SB_SIZE-1:0] v);
+    prio_enc16_deflast = 4'hF;
+    for (int i = SB_SIZE-2; i >= 0; i--) if (v[i]) prio_enc16_deflast = i[SB_IDX_W-1:0];
+  endfunction
+
   // ---- getFirstOneOH：在一串 bit 里取「第一个 1」的 one-hot（Scala getFirstOneOH）
   function automatic logic [7:0] first_one_oh8(input logic [7:0] v);
     logic seen;           // 已遇到更低位的 1

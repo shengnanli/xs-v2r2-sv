@@ -2901,15 +2901,19 @@ module PtwCache import xs_ptwcache_pkg::*; (
     .toSRAM_7_selectedOH (childBd_11_selectedOH),
     .toSRAM_7_array      (childBd_11_array)
   );
+  // E 使能：core 输出 l0/l1_clock_en = stageReq_fire | (~flush_dup & levelOH)，
+  // 与 golden 的 _s2x_info_T_1 | ~flush_dup_N & levelOH 逐项一致，再 OR MBIST bd 请求。
+  // （修复：原先直接引用 golden 内部名 _s2x_info_T_1/flush_dup_N，wrapper 内未声明
+  //   → 隐式未驱动 wire → FM 侧 E 恒 X、EN 锁存器与门控时钟下全部 SRAM ram_reg 失配。）
   ClockGate ClockGate (
     .TE (te_cgen),
-    .E  (_s2x_info_T_1 | ~flush_dup_0 & io_refill_bits_levelOH_l0 | bd_1_req),
+    .E  (l0_clock_en | bd_1_req),
     .CK (clock),
     .Q  (_ClockGate_Q)
   );
   ClockGate ClockGate_1 (
     .TE (te_cgen),
-    .E  (_s2x_info_T_1 | ~flush_dup_1 & io_refill_bits_levelOH_l1 | bd_req),
+    .E  (l1_clock_en | bd_req),
     .CK (clock),
     .Q  (_ClockGate_1_Q)
   );

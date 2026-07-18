@@ -1577,6 +1577,11 @@ module Tage_SC(
     .io_update_valid(io_update_valid),
     .io_update_pc(io_update_bits_pc),
     .io_update_br_valid('{io_update_bits_ftb_entry_brSlots_0_valid, (io_update_bits_ftb_entry_tailSlot_valid & io_update_bits_ftb_entry_tailSlot_sharing)}),
+    .io_update_tailSlot_valid(io_update_bits_ftb_entry_tailSlot_valid),
+    .io_update_tailSlot_sharing(io_update_bits_ftb_entry_tailSlot_sharing),
+    .io_perf_0_value(io_perf_0_value),
+    .io_perf_1_value(io_perf_1_value),
+    .io_perf_2_value(io_perf_2_value),
     .io_update_strong_bias('{io_update_bits_ftb_entry_strong_bias_0, io_update_bits_ftb_entry_strong_bias_1}),
     .io_update_br_taken('{io_update_bits_br_taken_mask_0, io_update_bits_br_taken_mask_1}),
     .io_update_mispred('{io_update_bits_mispred_mask_0, io_update_bits_mispred_mask_1}),
@@ -1639,7 +1644,7 @@ module Tage_SC(
   assign io_out_last_stage_spec_info_sc_disagree_0 = core_sc_disagree_0;
   assign io_out_last_stage_spec_info_sc_disagree_1 = core_sc_disagree_1;
   assign io_s1_ready = core_s1_ready;
-  assign io_perf_0_value = 6'b0;
-  assign io_perf_1_value = 6'b0;
-  assign io_perf_2_value = 6'b0;
+  // mbist bore 上行输出（golden 7605-7606 行；漏接会使输出口悬空 X → FM 失配）
+  assign boreChildrenBd_bore_ack = bd_ack;
+  assign boreChildrenBd_bore_outdata = bd_outdata;
 endmodule

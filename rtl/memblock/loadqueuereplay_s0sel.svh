@@ -45,8 +45,11 @@
   end
 
   // free mask 打一拍（用于 AgeDetector 的 deq，即「上拍释放的槽」从年龄矩阵移除）
+  // ★golden s0_loadFreeSelMask_next_r 复位为 72'h0——原实现漏复位→72 点与 golden 分叉。★
   logic [LQ_REPLAY_SIZE-1:0] loadFreeSelMask_q;
-  always_ff @(posedge clock) loadFreeSelMask_q <= freeMaskVec;
+  always_ff @(posedge clock or posedge reset)
+    if (reset) loadFreeSelMask_q <= '0;
+    else       loadFreeSelMask_q <= freeMaskVec;
 
   // ---- 把 72 位总线按 rem 拆成 3×24（rem r 取 bit i*3+r）----
   //  age_enq[r][w] = 第 w 个 enq 口在 rem=r 组内的 24 位 fire 向量
@@ -97,7 +100,7 @@
         logic m0, mOlder;
         idx = k*LD_PIPE_W + r;
         // j==0 匹配
-        m0 = normalSelMask[idx] & (uop[idx].lqIdx == oldestPtrExt[0]);
+        m0 = normalSelMask[idx] & (uopR[idx].lqIdx == oldestPtrExt[0]);
         // j>=1 匹配（任一）
         mOlder = 1'b0;
         for (int j = 1; j < OLDEST_STRIDE; j++)

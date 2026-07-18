@@ -93,8 +93,8 @@ module xs_LqExceptionBuffer_core
         s2_req[w].isForVSnonLeafPTE <= req_isForVSnonLeafPTE[w];
       end
     end
-    if (reset) s2_valid_q <= '0;
-    else       s2_valid_q <= req_valid;
+    // 对齐 golden：s2_valid_REG* 为无复位 RegNext（golden 仅 req_valid 有异步复位）。
+    s2_valid_q <= req_valid;
     // redirect 延迟版（无需复位：仅在 valid 参与判断时使用）
     redirect_valid_q  <= redirect_valid;
     redirect_robIdx_q <= redirect_robIdx;

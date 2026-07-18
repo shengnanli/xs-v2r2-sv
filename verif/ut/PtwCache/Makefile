@@ -23,10 +23,13 @@ SRAM_DEPS = \
 GOLDEN_SRCS = $(GOLDEN_RTL)/PtwCache.sv $(SRAM_DEPS)
 
 export VCS_ARCH_OVERRIDE := linux
+# +define+SYNTHESIS 是编译期宏(关掉 golden 的 xs_assert_v2 断言与随机初始化),
+# 必须放 VCS 编译命令行; 旧写法放在 SIM_ARGS(运行期)不生效, 新基线 golden 含
+# xs_assert_v2 调用会编译报错。
 VCS = vcs -full64 -sverilog -timescale=1ns/1ps -kdb -lca -debug_access+all +lint=TFIPC-L \
-      +incdir+$(RTL_DIR)/memblock -l compile.log
+      +define+SYNTHESIS +incdir+$(RTL_DIR)/memblock -l compile.log
 SEED ?= 1
-SIM_ARGS ?= +define+SYNTHESIS
+SIM_ARGS ?=
 
 .PHONY: compile run verdi fm clean
 

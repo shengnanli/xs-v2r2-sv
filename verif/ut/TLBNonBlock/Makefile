@@ -13,9 +13,15 @@ BLACKBOX = $(GOLDEN_RTL)/DelayN_7.sv $(GOLDEN_RTL)/DelayN_9.sv \
 GOLDEN_SRCS = $(GOLDEN_RTL)/TLBNonBlock.sv $(BLACKBOX)
 TB_SRCS = variants_xs.sv tb.sv
 FM_VARIANTS = TLBNonBlock
-FM_REF_DEPS_TLBNonBlock = DelayN_7.sv DelayN_9.sv TlbStorageWrapper_1.sv TLBFA_1.sv TLBFA.sv
+# FM 审计 2026-07：deps 若只给 ref 侧会白盒展开（impl 侧 unresolved 黑盒），两侧层次
+# 不对称 → 数千 unmatched 传染。改为两侧同黑盒（hdlin_unresolved_modules=black_box
+# 自动配对同名实例），与 IMSIC/SNXbar 的黑盒 FM 法一致。UT 仍用 BLACKBOX 文件仿真。
+FM_REF_DEPS_TLBNonBlock =
 FM_MERGE_DUP = false
 include ../../../scripts/ut_common.mk
+
+# 新基线 golden(xs-clean) 的 TLBFA_1 含 xs_assert_v2 断言（`ifndef SYNTHESIS），UT 关掉。
+VCS += +define+SYNTHESIS
 
 # UT 编译：核 + _xs(variants) + 黑盒 + golden 顶 + tb（不编 golden 同名 wrapper，避免重名）
 simv: $(RTL_SRCS) $(TB_SRCS) $(GOLDEN_SRCS)

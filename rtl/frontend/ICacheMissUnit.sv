@@ -95,6 +95,8 @@ package xs_icache_miss_pkg;
     logic                   valid;
     logic                   issued;
     logic                   killed;
+    logic                   killed2;  // golden 每-MSHR flush/fencei 双寄存器的第二只(次态与 killed 相同);
+                                      // 读侧与 golden 一致读两只(~flush&~fencei ↔ ~killed&~killed2), FM 1:1 配对
     logic [BLK_PADDR_W-1:0] blkPaddr;
     logic [IDX_BITS-1:0]    vSetIdx;
     logic [WAY_BITS-1:0]    way;       // acquire 发射时锁存的 victim way
@@ -197,7 +199,7 @@ module xs_ICacheMissUnit
   //   killed 的 MSHR 不再命中（其 line 即将作废，应允许重新发起）
   // ===========================================================================
   function automatic bit mshr_lookup_hit(input mshr_t m, input miss_req_t q);
-    return m.valid && !m.killed &&
+    return m.valid && !m.killed && !m.killed2 &&
            (m.vSetIdx == q.vSetIdx) && (m.blkPaddr == q.blkPaddr);
   endfunction
 
@@ -281,8 +283,13 @@ module xs_ICacheMissUnit
   logic [N_MSHR_SLOTS-1:0] mshr_enq;
   always_comb begin
     mshr_enq = '0;
-    if (fetch_demux_fire)    mshr_enq[fetch_sel] = 1'b1;
-    if (prefetch_demux_fire) mshr_enq[int'(N_FETCH_MSHR) + prefetch_sel] = 1'b1;
+    // 逐位静态下标（原 mshr_enq[4+prefetch_sel] 变量下标可越出 16 位向量 → FM
+    // range-X 传染所有 MSHR 写使能；golden 本就是每-MSHR fire_k = out_k_valid&ready_k）
+    for (int i = 0; i < int'(N_FETCH_MSHR); i++)
+      mshr_enq[i] = fetch_demux_fire && (fetch_sel == ($clog2(N_FETCH_MSHR))'(i));
+    for (int j = 0; j < int'(N_PREFETCH_MSHR); j++)
+      mshr_enq[int'(N_FETCH_MSHR) + j] =
+        prefetch_demux_fire && (prefetch_sel == ($clog2(N_PREFETCH_MSHR))'(j));
   end
 
   // ===========================================================================
@@ -299,7 +306,14 @@ module xs_ICacheMissUnit
   wire pf_fifo_full  = (pf_enq_ptr == pf_deq_ptr) && (pf_enq_flag ^ pf_deq_flag);
   wire pf_fifo_empty = (pf_enq_ptr == pf_deq_ptr) && (pf_enq_flag == pf_deq_flag);
 
-  wire [PF_PTR_W-1:0] pf_deq_bits = pf_fifo[pf_deq_ptr];  // 队头：下一个该发的 prefetch 编号
+  // 队头：下一个该发的 prefetch 编号。golden FIFOReg 读 mux 16 深、10..15 槽折回
+  // regFiles_0——显式 0..9 折叠复刻（同时避免读 impl 多余的 10..15 槽）。
+  logic [PF_PTR_W-1:0] pf_deq_bits;
+  always_comb begin
+    pf_deq_bits = pf_fifo[0];
+    for (int i = 1; i < int'(N_PREFETCH_MSHR); i++)
+      if (pf_deq_ptr == PF_PTR_W'(i)) pf_deq_bits = pf_fifo[i];
+  end
 
   // ===========================================================================
   // 发射仲裁
@@ -318,13 +332,30 @@ module xs_ICacheMissUnit
     end
   end
 
-  // prefetchArb 输出：选中队头编号对应的那条 prefetch MSHR
-  //   绝对 MSHR 槽号 = N_FETCH_MSHR + 队头编号；用 SRC_W(4-bit) 截断运算，使索引天然落在
-  //   16 槽范围内（队头编号 0..9 → 槽号 4..13，永不溢出；4-bit 截断也消除 FM 越界告警）。
-  wire [SRC_W-1:0]       pf_arb_out_source   = SRC_W'(N_FETCH_MSHR) + pf_deq_bits;
+  // prefetchArb 输出：选中队头编号对应的那条 prefetch MSHR。
+  //   golden MuxBundle 是 sel==9..sel==1 的优先链、默认 in_0——sel∈{0,10..15} 一律
+  //   折回 prefetch MSHR 0（source=4'h4）。原“SRC_W 截断”在 sel=12 时会错选 fetch
+  //   MSHR 0、sel=10/11 时读未驱动的 mshr[14/15]（X 源），与 golden 不等价。
+  logic [PF_PTR_W-1:0] pf_sel_rel;   // 折叠后的相对编号 0..9
+  always_comb begin
+    pf_sel_rel = '0;
+    for (int j = 1; j < int'(N_PREFETCH_MSHR); j++)
+      if (pf_deq_bits == PF_PTR_W'(j)) pf_sel_rel = PF_PTR_W'(j);
+  end
+  wire [SRC_W-1:0]       pf_arb_out_source   = SRC_W'(int'(N_FETCH_MSHR)) + pf_sel_rel;
   wire                   pf_arb_out_valid    = mshr_acq_valid[pf_arb_out_source];
-  wire [BLK_PADDR_W-1:0] pf_arb_out_blkPaddr = mshr[pf_arb_out_source].blkPaddr;
-  wire [IDX_BITS-1:0]    pf_arb_out_vSetIdx  = mshr[pf_arb_out_source].vSetIdx;
+  logic [BLK_PADDR_W-1:0] pf_arb_out_blkPaddr;
+  logic [IDX_BITS-1:0]    pf_arb_out_vSetIdx;
+  always_comb begin
+    pf_arb_out_blkPaddr = mshr[int'(N_FETCH_MSHR)].blkPaddr;
+    pf_arb_out_vSetIdx  = mshr[int'(N_FETCH_MSHR)].vSetIdx;
+    for (int j = 1; j < int'(N_PREFETCH_MSHR); j++) begin
+      if (pf_sel_rel == PF_PTR_W'(j)) begin
+        pf_arb_out_blkPaddr = mshr[int'(N_FETCH_MSHR)+j].blkPaddr;
+        pf_arb_out_vSetIdx  = mshr[int'(N_FETCH_MSHR)+j].vSetIdx;
+      end
+    end
+  end
 
   // acquireArb：5 路 fixed-priority（in0..3 = fetch MSHR 0..3，in4 = prefetchArb 输出）
   // 选第一个 valid 的输入。
@@ -334,12 +365,15 @@ module xs_ICacheMissUnit
   logic [IDX_BITS-1:0]    acq_out_vSetIdx;   // 用于向 replacer 索要 victim
   logic [$clog2(N_FETCH_MSHR+1)-1:0] acq_chosen;  // 0..4
   always_comb begin
-    acq_out_valid    = 1'b0;
-    acq_out_source   = '0;
-    acq_out_blkPaddr = '0;
-    acq_out_vSetIdx  = '0;
-    acq_chosen       = '0;
-    // fetch MSHR 0..3 优先
+    // golden Arbiter5 出口 mux：in0v?in0:in1v?in1:...:in3v?in3:in4（末支路
+    // **不看 in4.valid**）——默认值必须是 prefetchArb 输出而非 0，否则
+    // 全 idle 时 source/address 输出与 golden 不同。
+    acq_out_valid    = pf_arb_out_valid;
+    acq_out_source   = pf_arb_out_source;
+    acq_out_blkPaddr = pf_arb_out_blkPaddr;
+    acq_out_vSetIdx  = pf_arb_out_vSetIdx;
+    acq_chosen       = ($clog2(N_FETCH_MSHR+1))'(N_FETCH_MSHR);
+    // fetch MSHR 0..3 优先（降序遍历，最低 index 最后覆盖 = 最高优先）
     for (int i = int'(N_FETCH_MSHR) - 1; i >= 0; i--) begin
       if (mshr_acq_valid[i]) begin
         acq_out_valid    = 1'b1;
@@ -349,17 +383,25 @@ module xs_ICacheMissUnit
         acq_chosen       = ($clog2(N_FETCH_MSHR+1))'(i);
       end
     end
-    // 最低优先级：prefetchArb 的输出
-    if (!acq_out_valid && pf_arb_out_valid) begin
-      acq_out_valid    = 1'b1;
-      acq_out_source   = pf_arb_out_source;
-      acq_out_blkPaddr = pf_arb_out_blkPaddr;
-      acq_out_vSetIdx  = pf_arb_out_vSetIdx;
-      acq_chosen       = ($clog2(N_FETCH_MSHR+1))'(N_FETCH_MSHR);
-    end
   end
 
   wire acq_fire = acq_out_valid && io_mem_acquire_ready;
+
+  // 每-MSHR 的 acquire 授予（issued/way 写使能）。
+  //   fetch i：Arbiter5 in_i.ready & 自身 valid = acq_fire 且被选中。
+  //   prefetch j：golden MuxBundle in_j.ready = (sel==j)&out_ready **严格相等、无折叠**
+  //   （sel∈{10..15} 时数据折回 in_0 但 ready 恒 0）——不能用折叠后的 source 比较，
+  //   否则 sel 越界时会错误授予 prefetch MSHR 0。
+  logic [N_MSHR_SLOTS-1:0] mshr_grant;
+  always_comb begin
+    mshr_grant = '0;
+    for (int i = 0; i < int'(N_FETCH_MSHR); i++)
+      mshr_grant[i] = acq_fire && (acq_out_source == SRC_W'(i)) && mshr_acq_valid[i];
+    for (int j = 0; j < int'(N_PREFETCH_MSHR); j++)
+      mshr_grant[int'(N_FETCH_MSHR)+j] =
+        io_mem_acquire_ready && !(|mshr_acq_valid[N_FETCH_MSHR-1:0]) &&
+        (pf_deq_bits == PF_PTR_W'(j)) && mshr_acq_valid[int'(N_FETCH_MSHR)+j];
+  end
 
   // 被选中发射的 MSHR 索引（用于 acquire.fire 时置 issued / 锁存 way）
   wire [SRC_W-1:0] acq_sel_idx = acq_out_source;
@@ -381,8 +423,16 @@ module xs_ICacheMissUnit
   // ===========================================================================
   // priorityFIFO 时序
   // ===========================================================================
-  wire pf_enq_fire = prefetch_demux_fire;   // 与 prefetch req 入 MSHR 同拍
-  wire pf_deq_fire = pf_arb_out_fire;        // 与 prefetch acquire 发射同拍
+  // golden FIFOReg：enq 推进/写 = enq_valid & ~full；deq 推进 = deq_ready & ~empty
+  //（deq_ready = acquireArb.in4.ready & prefetchArb.out_valid）。~full/~empty 门控
+  // 在常规状态下冗余，但 FM 视寄存器为自由变量，必须与 golden 次态函数逐位一致。
+  wire pf_enq_fire = prefetch_demux_fire && !pf_fifo_full;
+  wire pf_deq_fire = pf_arb_out_fire && !pf_fifo_empty;
+  // 指针 +1 / 回绕（golden：new=ptr+1(5b)，new>=10 → 值=new-10、flag 翻转）
+  wire [PF_PTR_W:0] pf_enq_new = {1'b0, pf_enq_ptr} + (PF_PTR_W+1)'(1);
+  wire [PF_PTR_W:0] pf_deq_new = {1'b0, pf_deq_ptr} + (PF_PTR_W+1)'(1);
+  wire pf_enq_rev = pf_enq_new >= (PF_PTR_W+1)'(N_PREFETCH_MSHR);
+  wire pf_deq_rev = pf_deq_new >= (PF_PTR_W+1)'(N_PREFETCH_MSHR);
   wire pf_fifo_flush = io_flush || io_fencei;
 
   always_ff @(posedge clock or posedge reset) begin
@@ -394,28 +444,21 @@ module xs_ICacheMissUnit
       // 入队：写队尾，指针 +1（到深度则绕回并翻 flag）
       if (pf_enq_fire) pf_fifo[pf_enq_ptr] <= PF_PTR_W'(prefetch_sel);
 
+      // 指针推进：golden 用 new=ptr+1、new>=10 判回绕（值=new-10、flag 翻转）；
+      // 对指针的“不可达”状态 10..15 也与 golden 次态一致（原 ==9 判法在这些状态下不同）。
+      // flag：~flush & ((advance&reverse) ^ flag)（flush 优先清零，回绕翻转）
+      pf_enq_flag <= !pf_fifo_flush && ((pf_enq_fire && pf_enq_rev) ^ pf_enq_flag);
+      pf_deq_flag <= !pf_fifo_flush && ((pf_deq_fire && pf_deq_rev) ^ pf_deq_flag);
       if (pf_fifo_flush) begin
-        pf_enq_ptr  <= '0;
-        pf_deq_ptr  <= '0;
-        pf_enq_flag <= 1'b0;
-        pf_deq_flag <= 1'b0;
+        pf_enq_ptr <= '0;
+        pf_deq_ptr <= '0;
       end else begin
-        if (pf_enq_fire) begin
-          if (pf_enq_ptr == PF_PTR_W'(N_PREFETCH_MSHR - 1)) begin
-            pf_enq_ptr  <= '0;
-            pf_enq_flag <= ~pf_enq_flag;
-          end else begin
-            pf_enq_ptr <= pf_enq_ptr + 1'b1;
-          end
-        end
-        if (pf_deq_fire) begin
-          if (pf_deq_ptr == PF_PTR_W'(N_PREFETCH_MSHR - 1)) begin
-            pf_deq_ptr  <= '0;
-            pf_deq_flag <= ~pf_deq_flag;
-          end else begin
-            pf_deq_ptr <= pf_deq_ptr + 1'b1;
-          end
-        end
+        if (pf_enq_fire)
+          pf_enq_ptr <= pf_enq_rev ? PF_PTR_W'(pf_enq_new - (PF_PTR_W+1)'(N_PREFETCH_MSHR))
+                                   : pf_enq_new[PF_PTR_W-1:0];
+        if (pf_deq_fire)
+          pf_deq_ptr <= pf_deq_rev ? PF_PTR_W'(pf_deq_new - (PF_PTR_W+1)'(N_PREFETCH_MSHR))
+                                   : pf_deq_new[PF_PTR_W-1:0];
       end
     end
   end
@@ -453,14 +496,10 @@ module xs_ICacheMissUnit
   // 收完最后 beat 的下一拍：把 source / last_fire 打一拍，用于回填与回收 MSHR
   logic            last_fire_r;
   logic [SRC_W-1:0] id_r;
-  always_ff @(posedge clock or posedge reset) begin
-    if (reset) begin
-      last_fire_r <= 1'b0;
-      id_r        <= '0;
-    end else begin
-      last_fire_r <= last_fire;
-      id_r        <= io_mem_grant_bits_source;
-    end
+  // golden 这两只在无复位 always 块（复位域对齐，否则 FM 判次态含 ~reset 不等价）
+  always_ff @(posedge clock) begin
+    last_fire_r <= last_fire;
+    id_r        <= io_mem_grant_bits_source;
   end
 
   // corrupt：任一 beat corrupt 则置位，回送 MainPipe 后（last_fire_r）清除
@@ -490,10 +529,19 @@ module xs_ICacheMissUnit
   logic [BLK_PADDR_W-1:0] grant_mshr_blkPaddr;
   logic [IDX_BITS-1:0]    grant_mshr_vSetIdx;
   logic [WAY_BITS-1:0]    grant_mshr_way;
+  // golden 的 16 深选择数组把 source=14/15 折回槽 0（fetchMSHRs_0）；显式折叠，
+  // 且避免读未驱动的 mshr[14/15]。
   always_comb begin
-    grant_mshr_blkPaddr = mshr[io_mem_grant_bits_source].blkPaddr;
-    grant_mshr_vSetIdx  = mshr[io_mem_grant_bits_source].vSetIdx;
-    grant_mshr_way      = mshr[io_mem_grant_bits_source].way;
+    grant_mshr_blkPaddr = mshr[0].blkPaddr;
+    grant_mshr_vSetIdx  = mshr[0].vSetIdx;
+    grant_mshr_way      = mshr[0].way;
+    for (int i = 1; i < int'(N_MSHR); i++) begin
+      if (io_mem_grant_bits_source == SRC_W'(i)) begin
+        grant_mshr_blkPaddr = mshr[i].blkPaddr;
+        grant_mshr_vSetIdx  = mshr[i].vSetIdx;
+        grant_mshr_way      = mshr[i].way;
+      end
+    end
   end
 
   logic [BLK_PADDR_W-1:0] resp_blkPaddr;
@@ -512,7 +560,14 @@ module xs_ICacheMissUnit
   end
 
   // id_r 对应 MSHR 当拍是否仍是有效的可响应项（resp.valid，不含被 kill/未占用）
-  wire resp_mshr_valid = mshr[id_r].valid && !mshr[id_r].killed;
+  // id_r=14/15 时 golden 折回槽 0；显式折叠（避免读未驱动 mshr[14/15]）。
+  logic resp_mshr_valid;
+  always_comb begin
+    resp_mshr_valid = mshr[0].valid && !mshr[0].killed && !mshr[0].killed2;
+    for (int i = 1; i < int'(N_MSHR); i++)
+      if (id_r == SRC_W'(i))
+        resp_mshr_valid = mshr[i].valid && !mshr[i].killed && !mshr[i].killed2;
+  end
 
   // ===========================================================================
   // MSHR 状态更新（每个 MSHR 独立）
@@ -534,6 +589,7 @@ module xs_ICacheMissUnit
           mshr[gi].valid    <= 1'b0;
           mshr[gi].issued   <= 1'b0;
           mshr[gi].killed   <= 1'b0;
+          mshr[gi].killed2  <= 1'b0;
           mshr[gi].blkPaddr <= '0;
           mshr[gi].vSetIdx  <= '0;
           mshr[gi].way      <= '0;
@@ -543,12 +599,14 @@ module xs_ICacheMissUnit
             mshr[gi].valid    <= 1'b1;
             mshr[gi].issued   <= 1'b0;
             mshr[gi].killed   <= 1'b0;
+            mshr[gi].killed2  <= 1'b0;
             mshr[gi].blkPaddr <= enq_blkPaddr;
             mshr[gi].vSetIdx  <= enq_vSetIdx;
           end else begin
             // ---- killed：被 flush/fencei 标记；未发射的立即失效 ----
             if (kill_now) begin
               mshr[gi].killed <= 1'b1;
+              mshr[gi].killed2 <= 1'b1;
               if (!mshr[gi].issued) mshr[gi].valid <= 1'b0;
             end
             // ---- grant 完成回收（与 enq 互斥；同 source 不会同拍 enq+invalidate）----
@@ -556,10 +614,14 @@ module xs_ICacheMissUnit
           end
 
           // ---- acquire 发射：置 issued、锁存 victim way（与 enq 不会同拍冲突）----
-          if (!mshr_enq[gi] && acq_fire && (acq_sel_idx == SRC_W'(gi))) begin
+          if (!mshr_enq[gi] && mshr_grant[gi]) begin
             mshr[gi].issued <= 1'b1;
             mshr[gi].way    <= io_victim_way;
           end
+
+          // ---- invalidate 最高优先（golden: valid <= ~io_invalid & (...)，
+          //      对 enq 也生效——FM 视 id_r 为自由变量时两者可同拍）----
+          if (mshr_invalidate[gi]) mshr[gi].valid <= 1'b0;
         end
       end
     end

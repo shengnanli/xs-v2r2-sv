@@ -15,6 +15,9 @@ TB_SRCS = variants_xs.sv tb.sv
 FM_VARIANTS = LoadUnit
 # golden 与可读核都例化 MemTrigger，FM 时作为两侧共享黑盒
 FM_REF_DEPS_LoadUnit = MemTrigger.sv
+# FM 审计 2026-07：LoadUnit 含常量 0 的 debug/perf 死寄存器与多份重复打拍链，合并
+# pass 在两侧做不对称传播导致比对点消失/误配（fm_eq.tcl 头注释明示此类模块关掉）。
+FM_MERGE_DUP = false
 
 include ../../../scripts/ut_common.mk
 

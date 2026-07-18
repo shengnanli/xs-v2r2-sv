@@ -44,7 +44,7 @@ package mainpipe_pkg;
   localparam int PF_SRC_BITS   = 3;    // L1PfSourceBits
   localparam int N_DUP_STATUS  = 24;   // nDupStatus：s1/s2/s3 状态信息的扇出复制份数
   localparam int LRSC_CYCLES   = 64;   // LRSCCycles：LR 保留锁的存活拍数
-  localparam int LRSC_BACKOFF  = 3;    // LRSCBackOff
+  localparam int LRSC_BACKOFF  = 8;    // LRSCBackOff（golden lrsc_valid = lrsc_count > 6'h8；之前误设 3）
   localparam int LRSC_CNT_BITS = 6;    // log2Ceil(LRSCCycles)
   localparam int BLOOM_ADDR_BITS = 12; // BloomQuery 地址宽
 
@@ -156,12 +156,12 @@ package mainpipe_pkg;
       {2'b01, COH_DIRTY}  : begin has_perm=1; next_coh=COH_DIRTY;  end // wi
       {2'b01, COH_TRUNK}  : begin has_perm=1; next_coh=COH_TRUNK;  end
       {2'b11, COH_DIRTY}  : begin has_perm=1; next_coh=COH_DIRTY;  end // wr
-      {2'b11, COH_TRUNK}  : begin has_perm=1; next_coh=COH_DIRTY;  end
+      {2'b11, COH_TRUNK}  : begin has_perm=1; next_coh=COH_DIRTY;  end // golden _GEN_29[14]=Dirty
       {2'b00, COH_NOTHING}: begin has_perm=0; grow=PERM_NtoB; end
-      {2'b01, COH_BRANCH} : begin has_perm=0; grow=PERM_BtoT; end
-      {2'b01, COH_NOTHING}: begin has_perm=0; grow=PERM_NtoT; end
-      {2'b11, COH_BRANCH} : begin has_perm=0; grow=PERM_BtoT; end
-      {2'b11, COH_NOTHING}: begin has_perm=0; grow=PERM_NtoT; end
+      {2'b01, COH_BRANCH} : begin has_perm=0; grow=PERM_BtoT; next_coh=COH_TRUNK;   end
+      {2'b01, COH_NOTHING}: begin has_perm=0; grow=PERM_NtoT; next_coh=COH_BRANCH;  end
+      {2'b11, COH_BRANCH} : begin has_perm=0; grow=PERM_BtoT; next_coh=COH_TRUNK;   end
+      {2'b11, COH_NOTHING}: begin has_perm=0; grow=PERM_NtoT; next_coh=COH_BRANCH;  end
       default             : ;
     endcase
     return {has_perm, grow, next_coh};

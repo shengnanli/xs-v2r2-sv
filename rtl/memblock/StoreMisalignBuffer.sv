@@ -462,15 +462,6 @@ module xs_StoreMisalignBuffer_core
         splitReq_size[i] <= '0; splitReq_vaddr[i] <= '0; splitReq_mask[i] <= '0;
       end
     end else begin
-      // ---- 入队锁存（普通 或 跨页抢占）----
-      //  req 数据字段的更新使能：跨页时取「候选更老」(candidateNewer)，否则取 canEnq。
-      //  （与 golden 的 req 更新使能 (cross4KB&~reqRedirect)? candidateNewer : canEnq 一致；
-      //   因 cross4KB 蕴含 req_valid，两者在可达空间等价，但写成此形式可让 FM 的
-      //   req 次态锥与 golden 同构。）
-      if ((cross4KB & ~reqRedirect) ? candidateNewer : canEnq) begin
-        req          <= sel_bits;
-        req.portIndex<= sel_port;
-      end
       if (canEnq) begin
         req_valid    <= 1'b1;
         if (cross4KBEnq) needFlushPipe <= 1'b1;
@@ -572,6 +563,19 @@ module xs_StoreMisalignBuffer_core
         globalNC            <= 1'b0;
         globalMemBackTypeMM <= 1'b0;
       end
+    end
+  end
+
+  // ---- 入队锁存（普通 或 跨页抢占）----
+  //  req 数据字段的更新使能：跨页时取「候选更老」(candidateNewer)，否则取 canEnq。
+  //  （与 golden 的 req 更新使能 _GEN_53 = (cross4KB&~reqRedirect)? candidateNewer : canEnq
+  //   一致。）golden 的 req 载荷寄存器在「无复位」always 块（reset=1 的时钟沿仍可写入），
+  //   故这里必须放独立的无复位块——若放进 async-reset 块的 else 分支，写使能会被 ~reset
+  //   门控，与 golden 不等价（FM 349 个 req_* 位 failing 的根因）。
+  always_ff @(posedge clock) begin
+    if ((cross4KB & ~reqRedirect) ? candidateNewer : canEnq) begin
+      req          <= sel_bits;
+      req.portIndex<= sel_port;
     end
   end
 
@@ -697,8 +701,10 @@ module xs_StoreMisalignBuffer_core
   //  StoreQueue 出队控制（跨页 store）
   // ===========================================================================
   //  crossPageWithHit：sqControl 查询的 sqPtr 命中本缓冲条目且跨页 → 该 sq 项需等本缓冲。
+  //  （比较完整指针 {flag,value}，与 golden 一致——flag 区分环形队列圈数。）
   assign io_sqControl_toStoreQueue_crossPageWithHit =
-      (io_sqControl_toStoreMisalignBuffer_sqPtr_value == req.sqIdx_value) & isCrossPage;
+      ({io_sqControl_toStoreMisalignBuffer_sqPtr_flag, io_sqControl_toStoreMisalignBuffer_sqPtr_value}
+        == {req.sqIdx_flag, req.sqIdx_value}) & isCrossPage;
   //  crossPageCanDeq：非跨页 或 已进 s_block → 可出队。
   assign io_sqControl_toStoreQueue_crossPageCanDeq = ~isCrossPage | (bufferState == S_BLOCK);
   //  高地址子 store 的 8B 对齐 paddr（出队时合并写两半用）。

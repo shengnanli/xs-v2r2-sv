@@ -2,7 +2,7 @@
 // 由 xs_LsqWrapper_core 通过 `include 引入：LoadQueue / StoreQueue 两实例的
 // 端口连接表。直通端口连顶层同名口；被包装级逻辑接管的端口连核内 readable 网。
 
-  LoadQueue u_load_queue (
+  LoadQueue loadQueue (
     .clock(clock),
     .reset(reset),
     .io_redirect_valid(io_brqRedirect_valid),
@@ -1116,7 +1116,7 @@
     .io_perf_27_value(lq_perf[27])
   );
 
-  StoreQueue u_store_queue (
+  StoreQueue storeQueue (
     .clock(clock),
     .reset(reset),
     .io_enq_canAccept(sq_can_accept),

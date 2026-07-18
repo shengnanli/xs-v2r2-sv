@@ -1,4 +1,12 @@
-// 自动生成:scripts/gen_datapath.py —— 勿手改(逻辑为从设计意图的可读重写)
+// 手工维护源 —— 直接编辑本文件,勿再跑 scripts/gen_datapath.py 覆盖。
+// scripts/gen_datapath.py 仅为初始脚手架,已被本文件 superseded(SUPERSEDED,2026-07-18):
+//   * 生成器 gen_cancel() 只发占位 `s0_cancel = 1'b0; // TODO 精确重写交集`,不发
+//     exuOHNoLoad_ext / UIntExtractor 散布 / og0_cancel_delay 交集这套真取消逻辑;
+//   * 生成器把 io_perf_* 与 memStall/uopsIssued/topDown 计数置 0(“本核不建模”),
+//     本文件已手工补全真实 perf/topDown 计数;
+//   * 复位域对齐等 FM 修复(s1_toExuValid 去 reset 等)只落在本文件。
+//   因此重跑生成器无法复现本文件(regen 会退回 TODO 占位并抹掉上述修复)。判定证据见
+//   docs/backend/DataPath.md / 本轮报告。改逻辑请改本 svh;生成器可留作端口/连线参考。
 
 // =====================================================================
 // 五条数据流的可读重写(从 DataPath.scala 设计意图重新实现)。
@@ -232,10 +240,8 @@
       datapath_pkg::rob_need_flush(io_fromIntIQ_0_0_bits_common_robIdx_flag, io_fromIntIQ_0_0_bits_common_robIdx_value, flush_q);
   assign s0_ldCancel_0_0 = (io_ldCancel_0_ld2Cancel & io_fromIntIQ_0_0_bits_common_loadDependency_0[1]) | (io_ldCancel_1_ld2Cancel & io_fromIntIQ_0_0_bits_common_loadDependency_1[1]) | (io_ldCancel_2_ld2Cancel & io_fromIntIQ_0_0_bits_common_loadDependency_2[1]);
   assign fromIQ_fire_0_0 = io_fromIntIQ_0_0_valid & io_fromIntIQ_0_0_ready;
-  always_ff @(posedge clock) begin
-    if (reset) s1_valid_0_0 <= 1'b0;
-    else s1_valid_0_0 <= fromIQ_fire_0_0 & ~s1_flush_0_0 & ~s0_ldCancel_0_0;
-  end
+  always_ff @(posedge clock)  // golden s1_toExuValid:无 reset(仅 _RANDOM 初值)
+    s1_valid_0_0 <= fromIQ_fire_0_0 & ~s1_flush_0_0 & ~s0_ldCancel_0_0;
 
   // EXU g0.1 (Int IQ0.1)
   assign notBlock_0_1 = ((~datapath_pkg::ds_read_reg(io_fromIntIQ_0_1_bits_common_dataSources_0_value) | (int_rdarb_rdy_0_1_0 & fp_rdarb_rdy_0_1_0 & vf_rdarb_rdy_0_1_0 & v0_rdarb_rdy_0_1_0 & vl_rdarb_rdy_0_1_0)) &
@@ -247,10 +253,8 @@
       datapath_pkg::rob_need_flush(io_fromIntIQ_0_1_bits_common_robIdx_flag, io_fromIntIQ_0_1_bits_common_robIdx_value, flush_q);
   assign s0_ldCancel_0_1 = (io_ldCancel_0_ld2Cancel & io_fromIntIQ_0_1_bits_common_loadDependency_0[1]) | (io_ldCancel_1_ld2Cancel & io_fromIntIQ_0_1_bits_common_loadDependency_1[1]) | (io_ldCancel_2_ld2Cancel & io_fromIntIQ_0_1_bits_common_loadDependency_2[1]);
   assign fromIQ_fire_0_1 = io_fromIntIQ_0_1_valid & io_fromIntIQ_0_1_ready;
-  always_ff @(posedge clock) begin
-    if (reset) s1_valid_0_1 <= 1'b0;
-    else s1_valid_0_1 <= fromIQ_fire_0_1 & ~s1_flush_0_1 & ~s0_ldCancel_0_1;
-  end
+  always_ff @(posedge clock)  // golden s1_toExuValid:无 reset(仅 _RANDOM 初值)
+    s1_valid_0_1 <= fromIQ_fire_0_1 & ~s1_flush_0_1 & ~s0_ldCancel_0_1;
 
   // EXU g1.0 (Int IQ1.0)
   assign notBlock_1_0 = ((~datapath_pkg::ds_read_reg(io_fromIntIQ_1_0_bits_common_dataSources_0_value) | (int_rdarb_rdy_1_0_0 & fp_rdarb_rdy_1_0_0 & vf_rdarb_rdy_1_0_0 & v0_rdarb_rdy_1_0_0 & vl_rdarb_rdy_1_0_0)) &
@@ -262,10 +266,8 @@
       datapath_pkg::rob_need_flush(io_fromIntIQ_1_0_bits_common_robIdx_flag, io_fromIntIQ_1_0_bits_common_robIdx_value, flush_q);
   assign s0_ldCancel_1_0 = (io_ldCancel_0_ld2Cancel & io_fromIntIQ_1_0_bits_common_loadDependency_0[1]) | (io_ldCancel_1_ld2Cancel & io_fromIntIQ_1_0_bits_common_loadDependency_1[1]) | (io_ldCancel_2_ld2Cancel & io_fromIntIQ_1_0_bits_common_loadDependency_2[1]);
   assign fromIQ_fire_1_0 = io_fromIntIQ_1_0_valid & io_fromIntIQ_1_0_ready;
-  always_ff @(posedge clock) begin
-    if (reset) s1_valid_1_0 <= 1'b0;
-    else s1_valid_1_0 <= fromIQ_fire_1_0 & ~s1_flush_1_0 & ~s0_ldCancel_1_0;
-  end
+  always_ff @(posedge clock)  // golden s1_toExuValid:无 reset(仅 _RANDOM 初值)
+    s1_valid_1_0 <= fromIQ_fire_1_0 & ~s1_flush_1_0 & ~s0_ldCancel_1_0;
 
   // EXU g1.1 (Int IQ1.1)
   assign notBlock_1_1 = ((~datapath_pkg::ds_read_reg(io_fromIntIQ_1_1_bits_common_dataSources_0_value) | (int_rdarb_rdy_1_1_0 & fp_rdarb_rdy_1_1_0 & vf_rdarb_rdy_1_1_0 & v0_rdarb_rdy_1_1_0 & vl_rdarb_rdy_1_1_0)) &
@@ -277,10 +279,8 @@
       datapath_pkg::rob_need_flush(io_fromIntIQ_1_1_bits_common_robIdx_flag, io_fromIntIQ_1_1_bits_common_robIdx_value, flush_q);
   assign s0_ldCancel_1_1 = (io_ldCancel_0_ld2Cancel & io_fromIntIQ_1_1_bits_common_loadDependency_0[1]) | (io_ldCancel_1_ld2Cancel & io_fromIntIQ_1_1_bits_common_loadDependency_1[1]) | (io_ldCancel_2_ld2Cancel & io_fromIntIQ_1_1_bits_common_loadDependency_2[1]);
   assign fromIQ_fire_1_1 = io_fromIntIQ_1_1_valid & io_fromIntIQ_1_1_ready;
-  always_ff @(posedge clock) begin
-    if (reset) s1_valid_1_1 <= 1'b0;
-    else s1_valid_1_1 <= fromIQ_fire_1_1 & ~s1_flush_1_1 & ~s0_ldCancel_1_1;
-  end
+  always_ff @(posedge clock)  // golden s1_toExuValid:无 reset(仅 _RANDOM 初值)
+    s1_valid_1_1 <= fromIQ_fire_1_1 & ~s1_flush_1_1 & ~s0_ldCancel_1_1;
 
   // EXU g2.0 (Int IQ2.0)
   assign notBlock_2_0 = ((~datapath_pkg::ds_read_reg(io_fromIntIQ_2_0_bits_common_dataSources_0_value) | (int_rdarb_rdy_2_0_0 & fp_rdarb_rdy_2_0_0 & vf_rdarb_rdy_2_0_0 & v0_rdarb_rdy_2_0_0 & vl_rdarb_rdy_2_0_0)) &
@@ -292,10 +292,8 @@
       datapath_pkg::rob_need_flush(io_fromIntIQ_2_0_bits_common_robIdx_flag, io_fromIntIQ_2_0_bits_common_robIdx_value, flush_q);
   assign s0_ldCancel_2_0 = (io_ldCancel_0_ld2Cancel & io_fromIntIQ_2_0_bits_common_loadDependency_0[1]) | (io_ldCancel_1_ld2Cancel & io_fromIntIQ_2_0_bits_common_loadDependency_1[1]) | (io_ldCancel_2_ld2Cancel & io_fromIntIQ_2_0_bits_common_loadDependency_2[1]);
   assign fromIQ_fire_2_0 = io_fromIntIQ_2_0_valid & io_fromIntIQ_2_0_ready;
-  always_ff @(posedge clock) begin
-    if (reset) s1_valid_2_0 <= 1'b0;
-    else s1_valid_2_0 <= fromIQ_fire_2_0 & ~s1_flush_2_0 & ~s0_ldCancel_2_0;
-  end
+  always_ff @(posedge clock)  // golden s1_toExuValid:无 reset(仅 _RANDOM 初值)
+    s1_valid_2_0 <= fromIQ_fire_2_0 & ~s1_flush_2_0 & ~s0_ldCancel_2_0;
 
   // EXU g2.1 (Int IQ2.1)
   assign notBlock_2_1 = ((~datapath_pkg::ds_read_reg(io_fromIntIQ_2_1_bits_common_dataSources_0_value) | (int_rdarb_rdy_2_1_0 & fp_rdarb_rdy_2_1_0 & vf_rdarb_rdy_2_1_0 & v0_rdarb_rdy_2_1_0 & vl_rdarb_rdy_2_1_0)) &
@@ -307,10 +305,8 @@
       datapath_pkg::rob_need_flush(io_fromIntIQ_2_1_bits_common_robIdx_flag, io_fromIntIQ_2_1_bits_common_robIdx_value, flush_q);
   assign s0_ldCancel_2_1 = (io_ldCancel_0_ld2Cancel & io_fromIntIQ_2_1_bits_common_loadDependency_0[1]) | (io_ldCancel_1_ld2Cancel & io_fromIntIQ_2_1_bits_common_loadDependency_1[1]) | (io_ldCancel_2_ld2Cancel & io_fromIntIQ_2_1_bits_common_loadDependency_2[1]);
   assign fromIQ_fire_2_1 = io_fromIntIQ_2_1_valid & io_fromIntIQ_2_1_ready;
-  always_ff @(posedge clock) begin
-    if (reset) s1_valid_2_1 <= 1'b0;
-    else s1_valid_2_1 <= fromIQ_fire_2_1 & ~s1_flush_2_1 & ~s0_ldCancel_2_1;
-  end
+  always_ff @(posedge clock)  // golden s1_toExuValid:无 reset(仅 _RANDOM 初值)
+    s1_valid_2_1 <= fromIQ_fire_2_1 & ~s1_flush_2_1 & ~s0_ldCancel_2_1;
 
   // EXU g3.0 (Int IQ3.0)
   assign notBlock_3_0 = ((~datapath_pkg::ds_read_reg(io_fromIntIQ_3_0_bits_common_dataSources_0_value) | (int_rdarb_rdy_3_0_0 & fp_rdarb_rdy_3_0_0 & vf_rdarb_rdy_3_0_0 & v0_rdarb_rdy_3_0_0 & vl_rdarb_rdy_3_0_0)) &
@@ -322,10 +318,8 @@
       datapath_pkg::rob_need_flush(io_fromIntIQ_3_0_bits_common_robIdx_flag, io_fromIntIQ_3_0_bits_common_robIdx_value, flush_q);
   assign s0_ldCancel_3_0 = (io_ldCancel_0_ld2Cancel & io_fromIntIQ_3_0_bits_common_loadDependency_0[1]) | (io_ldCancel_1_ld2Cancel & io_fromIntIQ_3_0_bits_common_loadDependency_1[1]) | (io_ldCancel_2_ld2Cancel & io_fromIntIQ_3_0_bits_common_loadDependency_2[1]);
   assign fromIQ_fire_3_0 = io_fromIntIQ_3_0_valid & io_fromIntIQ_3_0_ready;
-  always_ff @(posedge clock) begin
-    if (reset) s1_valid_3_0 <= 1'b0;
-    else s1_valid_3_0 <= fromIQ_fire_3_0 & ~s1_flush_3_0 & ~s0_ldCancel_3_0;
-  end
+  always_ff @(posedge clock)  // golden s1_toExuValid:无 reset(仅 _RANDOM 初值)
+    s1_valid_3_0 <= fromIQ_fire_3_0 & ~s1_flush_3_0 & ~s0_ldCancel_3_0;
 
   // EXU g3.1 (Int IQ3.1)
   assign notBlock_3_1 = ((~datapath_pkg::ds_read_reg(io_fromIntIQ_3_1_bits_common_dataSources_0_value) | (int_rdarb_rdy_3_1_0 & fp_rdarb_rdy_3_1_0 & vf_rdarb_rdy_3_1_0 & v0_rdarb_rdy_3_1_0 & vl_rdarb_rdy_3_1_0)) &
@@ -337,10 +331,8 @@
       datapath_pkg::rob_need_flush(io_fromIntIQ_3_1_bits_common_robIdx_flag, io_fromIntIQ_3_1_bits_common_robIdx_value, flush_q);
   assign s0_ldCancel_3_1 = (io_ldCancel_0_ld2Cancel & io_fromIntIQ_3_1_bits_common_loadDependency_0[1]) | (io_ldCancel_1_ld2Cancel & io_fromIntIQ_3_1_bits_common_loadDependency_1[1]) | (io_ldCancel_2_ld2Cancel & io_fromIntIQ_3_1_bits_common_loadDependency_2[1]);
   assign fromIQ_fire_3_1 = io_fromIntIQ_3_1_valid & io_fromIntIQ_3_1_ready;
-  always_ff @(posedge clock) begin
-    if (reset) s1_valid_3_1 <= 1'b0;
-    else s1_valid_3_1 <= fromIQ_fire_3_1 & ~s1_flush_3_1 & ~s0_ldCancel_3_1;
-  end
+  always_ff @(posedge clock)  // golden s1_toExuValid:无 reset(仅 _RANDOM 初值)
+    s1_valid_3_1 <= fromIQ_fire_3_1 & ~s1_flush_3_1 & ~s0_ldCancel_3_1;
 
   // EXU g4.0 (Fp IQ0.0)
   assign notBlock_4_0 = ((~datapath_pkg::ds_read_reg(io_fromFpIQ_0_0_bits_common_dataSources_0_value) | (int_rdarb_rdy_4_0_0 & fp_rdarb_rdy_4_0_0 & vf_rdarb_rdy_4_0_0 & v0_rdarb_rdy_4_0_0 & vl_rdarb_rdy_4_0_0)) &
@@ -353,10 +345,8 @@
       datapath_pkg::rob_need_flush(io_fromFpIQ_0_0_bits_common_robIdx_flag, io_fromFpIQ_0_0_bits_common_robIdx_value, flush_q);
   assign s0_ldCancel_4_0 = 1'b0;
   assign fromIQ_fire_4_0 = io_fromFpIQ_0_0_valid & io_fromFpIQ_0_0_ready;
-  always_ff @(posedge clock) begin
-    if (reset) s1_valid_4_0 <= 1'b0;
-    else s1_valid_4_0 <= fromIQ_fire_4_0 & ~s1_flush_4_0 & ~s0_ldCancel_4_0;
-  end
+  always_ff @(posedge clock)  // golden s1_toExuValid:无 reset(仅 _RANDOM 初值)
+    s1_valid_4_0 <= fromIQ_fire_4_0 & ~s1_flush_4_0 & ~s0_ldCancel_4_0;
 
   // EXU g4.1 (Fp IQ0.1)
   assign notBlock_4_1 = ((~datapath_pkg::ds_read_reg(io_fromFpIQ_0_1_bits_common_dataSources_0_value) | (int_rdarb_rdy_4_1_0 & fp_rdarb_rdy_4_1_0 & vf_rdarb_rdy_4_1_0 & v0_rdarb_rdy_4_1_0 & vl_rdarb_rdy_4_1_0)) &
@@ -368,10 +358,8 @@
       datapath_pkg::rob_need_flush(io_fromFpIQ_0_1_bits_common_robIdx_flag, io_fromFpIQ_0_1_bits_common_robIdx_value, flush_q);
   assign s0_ldCancel_4_1 = 1'b0;
   assign fromIQ_fire_4_1 = io_fromFpIQ_0_1_valid & io_fromFpIQ_0_1_ready;
-  always_ff @(posedge clock) begin
-    if (reset) s1_valid_4_1 <= 1'b0;
-    else s1_valid_4_1 <= fromIQ_fire_4_1 & ~s1_flush_4_1 & ~s0_ldCancel_4_1;
-  end
+  always_ff @(posedge clock)  // golden s1_toExuValid:无 reset(仅 _RANDOM 初值)
+    s1_valid_4_1 <= fromIQ_fire_4_1 & ~s1_flush_4_1 & ~s0_ldCancel_4_1;
 
   // EXU g5.0 (Fp IQ1.0)
   assign notBlock_5_0 = ((~datapath_pkg::ds_read_reg(io_fromFpIQ_1_0_bits_common_dataSources_0_value) | (int_rdarb_rdy_5_0_0 & fp_rdarb_rdy_5_0_0 & vf_rdarb_rdy_5_0_0 & v0_rdarb_rdy_5_0_0 & vl_rdarb_rdy_5_0_0)) &
@@ -384,10 +372,8 @@
       datapath_pkg::rob_need_flush(io_fromFpIQ_1_0_bits_common_robIdx_flag, io_fromFpIQ_1_0_bits_common_robIdx_value, flush_q);
   assign s0_ldCancel_5_0 = 1'b0;
   assign fromIQ_fire_5_0 = io_fromFpIQ_1_0_valid & io_fromFpIQ_1_0_ready;
-  always_ff @(posedge clock) begin
-    if (reset) s1_valid_5_0 <= 1'b0;
-    else s1_valid_5_0 <= fromIQ_fire_5_0 & ~s1_flush_5_0 & ~s0_ldCancel_5_0;
-  end
+  always_ff @(posedge clock)  // golden s1_toExuValid:无 reset(仅 _RANDOM 初值)
+    s1_valid_5_0 <= fromIQ_fire_5_0 & ~s1_flush_5_0 & ~s0_ldCancel_5_0;
 
   // EXU g5.1 (Fp IQ1.1)
   assign notBlock_5_1 = ((~datapath_pkg::ds_read_reg(io_fromFpIQ_1_1_bits_common_dataSources_0_value) | (int_rdarb_rdy_5_1_0 & fp_rdarb_rdy_5_1_0 & vf_rdarb_rdy_5_1_0 & v0_rdarb_rdy_5_1_0 & vl_rdarb_rdy_5_1_0)) &
@@ -399,10 +385,8 @@
       datapath_pkg::rob_need_flush(io_fromFpIQ_1_1_bits_common_robIdx_flag, io_fromFpIQ_1_1_bits_common_robIdx_value, flush_q);
   assign s0_ldCancel_5_1 = 1'b0;
   assign fromIQ_fire_5_1 = io_fromFpIQ_1_1_valid & io_fromFpIQ_1_1_ready;
-  always_ff @(posedge clock) begin
-    if (reset) s1_valid_5_1 <= 1'b0;
-    else s1_valid_5_1 <= fromIQ_fire_5_1 & ~s1_flush_5_1 & ~s0_ldCancel_5_1;
-  end
+  always_ff @(posedge clock)  // golden s1_toExuValid:无 reset(仅 _RANDOM 初值)
+    s1_valid_5_1 <= fromIQ_fire_5_1 & ~s1_flush_5_1 & ~s0_ldCancel_5_1;
 
   // EXU g6.0 (Fp IQ2.0)
   assign notBlock_6_0 = ((~datapath_pkg::ds_read_reg(io_fromFpIQ_2_0_bits_common_dataSources_0_value) | (int_rdarb_rdy_6_0_0 & fp_rdarb_rdy_6_0_0 & vf_rdarb_rdy_6_0_0 & v0_rdarb_rdy_6_0_0 & vl_rdarb_rdy_6_0_0)) &
@@ -415,10 +399,8 @@
       datapath_pkg::rob_need_flush(io_fromFpIQ_2_0_bits_common_robIdx_flag, io_fromFpIQ_2_0_bits_common_robIdx_value, flush_q);
   assign s0_ldCancel_6_0 = 1'b0;
   assign fromIQ_fire_6_0 = io_fromFpIQ_2_0_valid & io_fromFpIQ_2_0_ready;
-  always_ff @(posedge clock) begin
-    if (reset) s1_valid_6_0 <= 1'b0;
-    else s1_valid_6_0 <= fromIQ_fire_6_0 & ~s1_flush_6_0 & ~s0_ldCancel_6_0;
-  end
+  always_ff @(posedge clock)  // golden s1_toExuValid:无 reset(仅 _RANDOM 初值)
+    s1_valid_6_0 <= fromIQ_fire_6_0 & ~s1_flush_6_0 & ~s0_ldCancel_6_0;
 
   // EXU g7.0 (Vf IQ0.0)
   assign notBlock_7_0 = ((~datapath_pkg::ds_read_reg(io_fromVfIQ_0_0_bits_common_dataSources_0_value) | (int_rdarb_rdy_7_0_0 & fp_rdarb_rdy_7_0_0 & vf_rdarb_rdy_7_0_0 & v0_rdarb_rdy_7_0_0 & vl_rdarb_rdy_7_0_0)) &
@@ -433,10 +415,8 @@
       datapath_pkg::rob_need_flush(io_fromVfIQ_0_0_bits_common_robIdx_flag, io_fromVfIQ_0_0_bits_common_robIdx_value, flush_q);
   assign s0_ldCancel_7_0 = 1'b0;
   assign fromIQ_fire_7_0 = io_fromVfIQ_0_0_valid & io_fromVfIQ_0_0_ready;
-  always_ff @(posedge clock) begin
-    if (reset) s1_valid_7_0 <= 1'b0;
-    else s1_valid_7_0 <= fromIQ_fire_7_0 & ~s1_flush_7_0 & ~s0_ldCancel_7_0;
-  end
+  always_ff @(posedge clock)  // golden s1_toExuValid:无 reset(仅 _RANDOM 初值)
+    s1_valid_7_0 <= fromIQ_fire_7_0 & ~s1_flush_7_0 & ~s0_ldCancel_7_0;
 
   // EXU g7.1 (Vf IQ0.1)
   assign notBlock_7_1 = ((~datapath_pkg::ds_read_reg(io_fromVfIQ_0_1_bits_common_dataSources_0_value) | (int_rdarb_rdy_7_1_0 & fp_rdarb_rdy_7_1_0 & vf_rdarb_rdy_7_1_0 & v0_rdarb_rdy_7_1_0 & vl_rdarb_rdy_7_1_0)) &
@@ -451,10 +431,8 @@
       datapath_pkg::rob_need_flush(io_fromVfIQ_0_1_bits_common_robIdx_flag, io_fromVfIQ_0_1_bits_common_robIdx_value, flush_q);
   assign s0_ldCancel_7_1 = 1'b0;
   assign fromIQ_fire_7_1 = io_fromVfIQ_0_1_valid & io_fromVfIQ_0_1_ready;
-  always_ff @(posedge clock) begin
-    if (reset) s1_valid_7_1 <= 1'b0;
-    else s1_valid_7_1 <= fromIQ_fire_7_1 & ~s1_flush_7_1 & ~s0_ldCancel_7_1;
-  end
+  always_ff @(posedge clock)  // golden s1_toExuValid:无 reset(仅 _RANDOM 初值)
+    s1_valid_7_1 <= fromIQ_fire_7_1 & ~s1_flush_7_1 & ~s0_ldCancel_7_1;
 
   // EXU g8.0 (Vf IQ1.0)
   assign notBlock_8_0 = ((~datapath_pkg::ds_read_reg(io_fromVfIQ_1_0_bits_common_dataSources_0_value) | (int_rdarb_rdy_8_0_0 & fp_rdarb_rdy_8_0_0 & vf_rdarb_rdy_8_0_0 & v0_rdarb_rdy_8_0_0 & vl_rdarb_rdy_8_0_0)) &
@@ -469,10 +447,8 @@
       datapath_pkg::rob_need_flush(io_fromVfIQ_1_0_bits_common_robIdx_flag, io_fromVfIQ_1_0_bits_common_robIdx_value, flush_q);
   assign s0_ldCancel_8_0 = 1'b0;
   assign fromIQ_fire_8_0 = io_fromVfIQ_1_0_valid & io_fromVfIQ_1_0_ready;
-  always_ff @(posedge clock) begin
-    if (reset) s1_valid_8_0 <= 1'b0;
-    else s1_valid_8_0 <= fromIQ_fire_8_0 & ~s1_flush_8_0 & ~s0_ldCancel_8_0;
-  end
+  always_ff @(posedge clock)  // golden s1_toExuValid:无 reset(仅 _RANDOM 初值)
+    s1_valid_8_0 <= fromIQ_fire_8_0 & ~s1_flush_8_0 & ~s0_ldCancel_8_0;
 
   // EXU g8.1 (Vf IQ1.1)
   assign notBlock_8_1 = ((~datapath_pkg::ds_read_reg(io_fromVfIQ_1_1_bits_common_dataSources_0_value) | (int_rdarb_rdy_8_1_0 & fp_rdarb_rdy_8_1_0 & vf_rdarb_rdy_8_1_0 & v0_rdarb_rdy_8_1_0 & vl_rdarb_rdy_8_1_0)) &
@@ -487,10 +463,8 @@
       datapath_pkg::rob_need_flush(io_fromVfIQ_1_1_bits_common_robIdx_flag, io_fromVfIQ_1_1_bits_common_robIdx_value, flush_q);
   assign s0_ldCancel_8_1 = 1'b0;
   assign fromIQ_fire_8_1 = io_fromVfIQ_1_1_valid & io_fromVfIQ_1_1_ready;
-  always_ff @(posedge clock) begin
-    if (reset) s1_valid_8_1 <= 1'b0;
-    else s1_valid_8_1 <= fromIQ_fire_8_1 & ~s1_flush_8_1 & ~s0_ldCancel_8_1;
-  end
+  always_ff @(posedge clock)  // golden s1_toExuValid:无 reset(仅 _RANDOM 初值)
+    s1_valid_8_1 <= fromIQ_fire_8_1 & ~s1_flush_8_1 & ~s0_ldCancel_8_1;
 
   // EXU g9.0 (Vf IQ2.0)
   assign notBlock_9_0 = ((~datapath_pkg::ds_read_reg(io_fromVfIQ_2_0_bits_common_dataSources_0_value) | (int_rdarb_rdy_9_0_0 & fp_rdarb_rdy_9_0_0 & vf_rdarb_rdy_9_0_0 & v0_rdarb_rdy_9_0_0 & vl_rdarb_rdy_9_0_0)) &
@@ -505,10 +479,8 @@
       datapath_pkg::rob_need_flush(io_fromVfIQ_2_0_bits_common_robIdx_flag, io_fromVfIQ_2_0_bits_common_robIdx_value, flush_q);
   assign s0_ldCancel_9_0 = 1'b0;
   assign fromIQ_fire_9_0 = io_fromVfIQ_2_0_valid & io_fromVfIQ_2_0_ready;
-  always_ff @(posedge clock) begin
-    if (reset) s1_valid_9_0 <= 1'b0;
-    else s1_valid_9_0 <= fromIQ_fire_9_0 & ~s1_flush_9_0 & ~s0_ldCancel_9_0;
-  end
+  always_ff @(posedge clock)  // golden s1_toExuValid:无 reset(仅 _RANDOM 初值)
+    s1_valid_9_0 <= fromIQ_fire_9_0 & ~s1_flush_9_0 & ~s0_ldCancel_9_0;
 
   // EXU g10.0 (Mem IQ0.0)
   assign notBlock_10_0 = ((~datapath_pkg::ds_read_reg(io_fromMemIQ_0_0_bits_common_dataSources_0_value) | (int_rdarb_rdy_10_0_0 & fp_rdarb_rdy_10_0_0 & vf_rdarb_rdy_10_0_0 & v0_rdarb_rdy_10_0_0 & vl_rdarb_rdy_10_0_0))) &
@@ -519,10 +491,8 @@
       datapath_pkg::rob_need_flush(io_fromMemIQ_0_0_bits_common_robIdx_flag, io_fromMemIQ_0_0_bits_common_robIdx_value, flush_q);
   assign s0_ldCancel_10_0 = (io_ldCancel_0_ld2Cancel & io_fromMemIQ_0_0_bits_common_loadDependency_0[1]) | (io_ldCancel_1_ld2Cancel & io_fromMemIQ_0_0_bits_common_loadDependency_1[1]) | (io_ldCancel_2_ld2Cancel & io_fromMemIQ_0_0_bits_common_loadDependency_2[1]);
   assign fromIQ_fire_10_0 = io_fromMemIQ_0_0_valid & io_fromMemIQ_0_0_ready;
-  always_ff @(posedge clock) begin
-    if (reset) s1_valid_10_0 <= 1'b0;
-    else s1_valid_10_0 <= fromIQ_fire_10_0 & ~s1_flush_10_0 & ~s0_ldCancel_10_0;
-  end
+  always_ff @(posedge clock)  // golden s1_toExuValid:无 reset(仅 _RANDOM 初值)
+    s1_valid_10_0 <= fromIQ_fire_10_0 & ~s1_flush_10_0 & ~s0_ldCancel_10_0;
 
   // EXU g11.0 (Mem IQ1.0)
   assign notBlock_11_0 = ((~datapath_pkg::ds_read_reg(io_fromMemIQ_1_0_bits_common_dataSources_0_value) | (int_rdarb_rdy_11_0_0 & fp_rdarb_rdy_11_0_0 & vf_rdarb_rdy_11_0_0 & v0_rdarb_rdy_11_0_0 & vl_rdarb_rdy_11_0_0))) &
@@ -533,10 +503,8 @@
       datapath_pkg::rob_need_flush(io_fromMemIQ_1_0_bits_common_robIdx_flag, io_fromMemIQ_1_0_bits_common_robIdx_value, flush_q);
   assign s0_ldCancel_11_0 = (io_ldCancel_0_ld2Cancel & io_fromMemIQ_1_0_bits_common_loadDependency_0[1]) | (io_ldCancel_1_ld2Cancel & io_fromMemIQ_1_0_bits_common_loadDependency_1[1]) | (io_ldCancel_2_ld2Cancel & io_fromMemIQ_1_0_bits_common_loadDependency_2[1]);
   assign fromIQ_fire_11_0 = io_fromMemIQ_1_0_valid & io_fromMemIQ_1_0_ready;
-  always_ff @(posedge clock) begin
-    if (reset) s1_valid_11_0 <= 1'b0;
-    else s1_valid_11_0 <= fromIQ_fire_11_0 & ~s1_flush_11_0 & ~s0_ldCancel_11_0;
-  end
+  always_ff @(posedge clock)  // golden s1_toExuValid:无 reset(仅 _RANDOM 初值)
+    s1_valid_11_0 <= fromIQ_fire_11_0 & ~s1_flush_11_0 & ~s0_ldCancel_11_0;
 
   // EXU g12.0 (Mem IQ2.0)
   assign notBlock_12_0 = ((~datapath_pkg::ds_read_reg(io_fromMemIQ_2_0_bits_common_dataSources_0_value) | (int_rdarb_rdy_12_0_0 & fp_rdarb_rdy_12_0_0 & vf_rdarb_rdy_12_0_0 & v0_rdarb_rdy_12_0_0 & vl_rdarb_rdy_12_0_0))) &
@@ -547,10 +515,8 @@
       datapath_pkg::rob_need_flush(io_fromMemIQ_2_0_bits_common_robIdx_flag, io_fromMemIQ_2_0_bits_common_robIdx_value, flush_q);
   assign s0_ldCancel_12_0 = (io_ldCancel_0_ld2Cancel & io_fromMemIQ_2_0_bits_common_loadDependency_0[1]) | (io_ldCancel_1_ld2Cancel & io_fromMemIQ_2_0_bits_common_loadDependency_1[1]) | (io_ldCancel_2_ld2Cancel & io_fromMemIQ_2_0_bits_common_loadDependency_2[1]);
   assign fromIQ_fire_12_0 = io_fromMemIQ_2_0_valid & io_fromMemIQ_2_0_ready;
-  always_ff @(posedge clock) begin
-    if (reset) s1_valid_12_0 <= 1'b0;
-    else s1_valid_12_0 <= fromIQ_fire_12_0 & ~s1_flush_12_0 & ~s0_ldCancel_12_0;
-  end
+  always_ff @(posedge clock)  // golden s1_toExuValid:无 reset(仅 _RANDOM 初值)
+    s1_valid_12_0 <= fromIQ_fire_12_0 & ~s1_flush_12_0 & ~s0_ldCancel_12_0;
 
   // EXU g13.0 (Mem IQ3.0)
   assign notBlock_13_0 = ((~datapath_pkg::ds_read_reg(io_fromMemIQ_3_0_bits_common_dataSources_0_value) | (int_rdarb_rdy_13_0_0 & fp_rdarb_rdy_13_0_0 & vf_rdarb_rdy_13_0_0 & v0_rdarb_rdy_13_0_0 & vl_rdarb_rdy_13_0_0))) &
@@ -561,10 +527,8 @@
       datapath_pkg::rob_need_flush(io_fromMemIQ_3_0_bits_common_robIdx_flag, io_fromMemIQ_3_0_bits_common_robIdx_value, flush_q);
   assign s0_ldCancel_13_0 = (io_ldCancel_0_ld2Cancel & io_fromMemIQ_3_0_bits_common_loadDependency_0[1]) | (io_ldCancel_1_ld2Cancel & io_fromMemIQ_3_0_bits_common_loadDependency_1[1]) | (io_ldCancel_2_ld2Cancel & io_fromMemIQ_3_0_bits_common_loadDependency_2[1]);
   assign fromIQ_fire_13_0 = io_fromMemIQ_3_0_valid & io_fromMemIQ_3_0_ready;
-  always_ff @(posedge clock) begin
-    if (reset) s1_valid_13_0 <= 1'b0;
-    else s1_valid_13_0 <= fromIQ_fire_13_0 & ~s1_flush_13_0 & ~s0_ldCancel_13_0;
-  end
+  always_ff @(posedge clock)  // golden s1_toExuValid:无 reset(仅 _RANDOM 初值)
+    s1_valid_13_0 <= fromIQ_fire_13_0 & ~s1_flush_13_0 & ~s0_ldCancel_13_0;
 
   // EXU g14.0 (Mem IQ4.0)
   assign notBlock_14_0 = ((~datapath_pkg::ds_read_reg(io_fromMemIQ_4_0_bits_common_dataSources_0_value) | (int_rdarb_rdy_14_0_0 & fp_rdarb_rdy_14_0_0 & vf_rdarb_rdy_14_0_0 & v0_rdarb_rdy_14_0_0 & vl_rdarb_rdy_14_0_0))) &
@@ -575,10 +539,8 @@
       datapath_pkg::rob_need_flush(io_fromMemIQ_4_0_bits_common_robIdx_flag, io_fromMemIQ_4_0_bits_common_robIdx_value, flush_q);
   assign s0_ldCancel_14_0 = (io_ldCancel_0_ld2Cancel & io_fromMemIQ_4_0_bits_common_loadDependency_0[1]) | (io_ldCancel_1_ld2Cancel & io_fromMemIQ_4_0_bits_common_loadDependency_1[1]) | (io_ldCancel_2_ld2Cancel & io_fromMemIQ_4_0_bits_common_loadDependency_2[1]);
   assign fromIQ_fire_14_0 = io_fromMemIQ_4_0_valid & io_fromMemIQ_4_0_ready;
-  always_ff @(posedge clock) begin
-    if (reset) s1_valid_14_0 <= 1'b0;
-    else s1_valid_14_0 <= fromIQ_fire_14_0 & ~s1_flush_14_0 & ~s0_ldCancel_14_0;
-  end
+  always_ff @(posedge clock)  // golden s1_toExuValid:无 reset(仅 _RANDOM 初值)
+    s1_valid_14_0 <= fromIQ_fire_14_0 & ~s1_flush_14_0 & ~s0_ldCancel_14_0;
 
   // EXU g15.0 (Mem IQ5.0)
   assign notBlock_15_0 = ((~datapath_pkg::ds_read_reg(io_fromMemIQ_5_0_bits_common_dataSources_0_value) | (int_rdarb_rdy_15_0_0 & fp_rdarb_rdy_15_0_0 & vf_rdarb_rdy_15_0_0 & v0_rdarb_rdy_15_0_0 & vl_rdarb_rdy_15_0_0)) &
@@ -593,10 +555,8 @@
       datapath_pkg::rob_need_flush(io_fromMemIQ_5_0_bits_common_robIdx_flag, io_fromMemIQ_5_0_bits_common_robIdx_value, flush_q);
   assign s0_ldCancel_15_0 = 1'b0;
   assign fromIQ_fire_15_0 = io_fromMemIQ_5_0_valid & io_fromMemIQ_5_0_ready;
-  always_ff @(posedge clock) begin
-    if (reset) s1_valid_15_0 <= 1'b0;
-    else s1_valid_15_0 <= fromIQ_fire_15_0 & ~s1_flush_15_0 & ~s0_ldCancel_15_0;
-  end
+  always_ff @(posedge clock)  // golden s1_toExuValid:无 reset(仅 _RANDOM 初值)
+    s1_valid_15_0 <= fromIQ_fire_15_0 & ~s1_flush_15_0 & ~s0_ldCancel_15_0;
 
   // EXU g16.0 (Mem IQ6.0)
   assign notBlock_16_0 = ((~datapath_pkg::ds_read_reg(io_fromMemIQ_6_0_bits_common_dataSources_0_value) | (int_rdarb_rdy_16_0_0 & fp_rdarb_rdy_16_0_0 & vf_rdarb_rdy_16_0_0 & v0_rdarb_rdy_16_0_0 & vl_rdarb_rdy_16_0_0)) &
@@ -611,10 +571,8 @@
       datapath_pkg::rob_need_flush(io_fromMemIQ_6_0_bits_common_robIdx_flag, io_fromMemIQ_6_0_bits_common_robIdx_value, flush_q);
   assign s0_ldCancel_16_0 = 1'b0;
   assign fromIQ_fire_16_0 = io_fromMemIQ_6_0_valid & io_fromMemIQ_6_0_ready;
-  always_ff @(posedge clock) begin
-    if (reset) s1_valid_16_0 <= 1'b0;
-    else s1_valid_16_0 <= fromIQ_fire_16_0 & ~s1_flush_16_0 & ~s0_ldCancel_16_0;
-  end
+  always_ff @(posedge clock)  // golden s1_toExuValid:无 reset(仅 _RANDOM 初值)
+    s1_valid_16_0 <= fromIQ_fire_16_0 & ~s1_flush_16_0 & ~s0_ldCancel_16_0;
 
   // EXU g17.0 (Mem IQ7.0)
   assign notBlock_17_0 = ((~datapath_pkg::ds_read_reg(io_fromMemIQ_7_0_bits_common_dataSources_0_value) | (int_rdarb_rdy_17_0_0 & fp_rdarb_rdy_17_0_0 & vf_rdarb_rdy_17_0_0 & v0_rdarb_rdy_17_0_0 & vl_rdarb_rdy_17_0_0))) &
@@ -625,10 +583,8 @@
       datapath_pkg::rob_need_flush(io_fromMemIQ_7_0_bits_common_robIdx_flag, io_fromMemIQ_7_0_bits_common_robIdx_value, flush_q);
   assign s0_ldCancel_17_0 = (io_ldCancel_0_ld2Cancel & io_fromMemIQ_7_0_bits_common_loadDependency_0[1]) | (io_ldCancel_1_ld2Cancel & io_fromMemIQ_7_0_bits_common_loadDependency_1[1]) | (io_ldCancel_2_ld2Cancel & io_fromMemIQ_7_0_bits_common_loadDependency_2[1]);
   assign fromIQ_fire_17_0 = io_fromMemIQ_7_0_valid & io_fromMemIQ_7_0_ready;
-  always_ff @(posedge clock) begin
-    if (reset) s1_valid_17_0 <= 1'b0;
-    else s1_valid_17_0 <= fromIQ_fire_17_0 & ~s1_flush_17_0 & ~s0_ldCancel_17_0;
-  end
+  always_ff @(posedge clock)  // golden s1_toExuValid:无 reset(仅 _RANDOM 初值)
+    s1_valid_17_0 <= fromIQ_fire_17_0 & ~s1_flush_17_0 & ~s0_ldCancel_17_0;
 
   // EXU g18.0 (Mem IQ8.0)
   assign notBlock_18_0 = ((~datapath_pkg::ds_read_reg(io_fromMemIQ_8_0_bits_common_dataSources_0_value) | (int_rdarb_rdy_18_0_0 & fp_rdarb_rdy_18_0_0 & vf_rdarb_rdy_18_0_0 & v0_rdarb_rdy_18_0_0 & vl_rdarb_rdy_18_0_0))) &
@@ -639,10 +595,8 @@
       datapath_pkg::rob_need_flush(io_fromMemIQ_8_0_bits_common_robIdx_flag, io_fromMemIQ_8_0_bits_common_robIdx_value, flush_q);
   assign s0_ldCancel_18_0 = (io_ldCancel_0_ld2Cancel & io_fromMemIQ_8_0_bits_common_loadDependency_0[1]) | (io_ldCancel_1_ld2Cancel & io_fromMemIQ_8_0_bits_common_loadDependency_1[1]) | (io_ldCancel_2_ld2Cancel & io_fromMemIQ_8_0_bits_common_loadDependency_2[1]);
   assign fromIQ_fire_18_0 = io_fromMemIQ_8_0_valid & io_fromMemIQ_8_0_ready;
-  always_ff @(posedge clock) begin
-    if (reset) s1_valid_18_0 <= 1'b0;
-    else s1_valid_18_0 <= fromIQ_fire_18_0 & ~s1_flush_18_0 & ~s0_ldCancel_18_0;
-  end
+  always_ff @(posedge clock)  // golden s1_toExuValid:无 reset(仅 _RANDOM 初值)
+    s1_valid_18_0 <= fromIQ_fire_18_0 & ~s1_flush_18_0 & ~s0_ldCancel_18_0;
 
 // === 数据流 4:s1 操作数选择(读出 -> EXU src)===
 //   多数端口某源固定读一个域 -> 直连该域读数据;访存 STD 等某源可读 int|fp ->
@@ -1654,9 +1608,12 @@
   assign io_toMemIQ_0_0_og0resp_valid = og0Failed_10_0;
   assign io_toMemIQ_0_0_og1resp_valid = s1_valid_10_0;
   assign io_toMemIQ_0_0_og1resp_bits_resp = og1Failed_10_0 ? datapath_pkg::RESP_BLOCK : datapath_pkg::RESP_UNCERTAIN;
-  always_ff @(posedge clock) if (io_fromMemIQ_0_0_valid) begin  // 立即数打一拍透传
-    s1_imm_10_0     <= io_fromMemIQ_0_0_bits_common_imm[31:0];
-    s1_immType_10_0 <= io_fromMemIQ_0_0_bits_immType;
+  // 立即数打一拍透传:采用 golden s1_immInfo 的 mux-loop 形(<= valid ? val : self),
+  // 与 s1_ctrl(if-en 形)结构不同 ⇒ FM merge_dup 不会把 s1_imm 折叠进 s1_ctrl_imm[31:0]
+  // (否则 impl 少一份寄存器、golden 多一份 → 160 bit unmatched)。功能与 if-en 等价。
+  always_ff @(posedge clock) begin
+    s1_imm_10_0     <= io_fromMemIQ_0_0_valid ? io_fromMemIQ_0_0_bits_common_imm[31:0] : s1_imm_10_0;
+    s1_immType_10_0 <= io_fromMemIQ_0_0_valid ? io_fromMemIQ_0_0_bits_immType : s1_immType_10_0;
   end
   assign io_og1ImmInfo_18_imm     = s1_imm_10_0;
   assign io_og1ImmInfo_18_immType = s1_immType_10_0;
@@ -1667,9 +1624,9 @@
   assign io_toMemIQ_1_0_og0resp_valid = og0Failed_11_0;
   assign io_toMemIQ_1_0_og1resp_valid = s1_valid_11_0;
   assign io_toMemIQ_1_0_og1resp_bits_resp = og1Failed_11_0 ? datapath_pkg::RESP_BLOCK : datapath_pkg::RESP_UNCERTAIN;
-  always_ff @(posedge clock) if (io_fromMemIQ_1_0_valid) begin  // 立即数打一拍透传
-    s1_imm_11_0     <= io_fromMemIQ_1_0_bits_common_imm[31:0];
-    s1_immType_11_0 <= io_fromMemIQ_1_0_bits_immType;
+  always_ff @(posedge clock) begin  // 立即数打一拍透传(mux-loop 形,同 g10.0)
+    s1_imm_11_0     <= io_fromMemIQ_1_0_valid ? io_fromMemIQ_1_0_bits_common_imm[31:0] : s1_imm_11_0;
+    s1_immType_11_0 <= io_fromMemIQ_1_0_valid ? io_fromMemIQ_1_0_bits_immType : s1_immType_11_0;
   end
   assign io_og1ImmInfo_19_imm     = s1_imm_11_0;
   assign io_og1ImmInfo_19_immType = s1_immType_11_0;
@@ -1682,9 +1639,8 @@
   assign io_toMemIQ_2_0_og1resp_valid = s1_valid_12_0;
   assign io_toMemIQ_2_0_og1resp_bits_resp = og1Failed_12_0 ? datapath_pkg::RESP_BLOCK : datapath_pkg::RESP_UNCERTAIN;
   assign io_toMemIQ_2_0_og1resp_bits_fuType = s1_ctrl_12_0_fuType;
-  always_ff @(posedge clock) if (io_fromMemIQ_2_0_valid) begin  // 立即数打一拍透传
-    s1_imm_12_0     <= io_fromMemIQ_2_0_bits_common_imm[31:0];
-  end
+  always_ff @(posedge clock)  // 立即数打一拍透传(mux-loop 形,同 g10.0)
+    s1_imm_12_0     <= io_fromMemIQ_2_0_valid ? io_fromMemIQ_2_0_bits_common_imm[31:0] : s1_imm_12_0;
   assign io_og1ImmInfo_20_imm     = s1_imm_12_0;
 
   // EXU g13.0 (Mem IQ3.0) og 响应
@@ -1695,9 +1651,8 @@
   assign io_toMemIQ_3_0_og1resp_valid = s1_valid_13_0;
   assign io_toMemIQ_3_0_og1resp_bits_resp = og1Failed_13_0 ? datapath_pkg::RESP_BLOCK : datapath_pkg::RESP_UNCERTAIN;
   assign io_toMemIQ_3_0_og1resp_bits_fuType = s1_ctrl_13_0_fuType;
-  always_ff @(posedge clock) if (io_fromMemIQ_3_0_valid) begin  // 立即数打一拍透传
-    s1_imm_13_0     <= io_fromMemIQ_3_0_bits_common_imm[31:0];
-  end
+  always_ff @(posedge clock)  // 立即数打一拍透传(mux-loop 形,同 g10.0)
+    s1_imm_13_0     <= io_fromMemIQ_3_0_valid ? io_fromMemIQ_3_0_bits_common_imm[31:0] : s1_imm_13_0;
   assign io_og1ImmInfo_21_imm     = s1_imm_13_0;
 
   // EXU g14.0 (Mem IQ4.0) og 响应
@@ -1708,9 +1663,8 @@
   assign io_toMemIQ_4_0_og1resp_valid = s1_valid_14_0;
   assign io_toMemIQ_4_0_og1resp_bits_resp = og1Failed_14_0 ? datapath_pkg::RESP_BLOCK : datapath_pkg::RESP_UNCERTAIN;
   assign io_toMemIQ_4_0_og1resp_bits_fuType = s1_ctrl_14_0_fuType;
-  always_ff @(posedge clock) if (io_fromMemIQ_4_0_valid) begin  // 立即数打一拍透传
-    s1_imm_14_0     <= io_fromMemIQ_4_0_bits_common_imm[31:0];
-  end
+  always_ff @(posedge clock)  // 立即数打一拍透传(mux-loop 形,同 g10.0)
+    s1_imm_14_0     <= io_fromMemIQ_4_0_valid ? io_fromMemIQ_4_0_bits_common_imm[31:0] : s1_imm_14_0;
   assign io_og1ImmInfo_22_imm     = s1_imm_14_0;
 
   // EXU g15.0 (Mem IQ5.0) og 响应
@@ -2024,51 +1978,33 @@
   logic vecexcp_rd_selvec_0;  // RegEnable(~isV0, r.valid)
   always_ff @(posedge clock) if (io_fromVecExcpMod_r_0_valid)
     vecexcp_rd_selvec_0 <= ~io_fromVecExcpMod_r_0_bits_isV0;
-  always_ff @(posedge clock) begin
-    if (reset) io_toVecExcpMod_rdata_0_valid <= 1'b0;
-    else io_toVecExcpMod_rdata_0_valid <= io_fromVecExcpMod_r_0_valid;
-  end
+  // golden(io_toVecExcpMod_rdata_N_valid_REG):无 reset 的 posedge-clock 寄存器,
+  // 每拍无条件 <= io_fromVecExcpMod_r_N_valid(见 golden DataPath.sv:11194-11199)。
+  // 加 reset 会让 FM 判复位初值(0 vs 随机)不等价。照搬 golden 去 reset。
+  always_ff @(posedge clock)
+    io_toVecExcpMod_rdata_0_valid <= io_fromVecExcpMod_r_0_valid;
   assign io_toVecExcpMod_rdata_0_bits = vecexcp_rd_selvec_0 ? vf_rdata[6] : v0_rdata[2];
-  logic vecexcp_rd_selvec_1;  // RegEnable(~isV0, r.valid)
-  always_ff @(posedge clock) if (io_fromVecExcpMod_r_1_valid)
-    vecexcp_rd_selvec_1 <= 1'b1;
-  always_ff @(posedge clock) begin
-    if (reset) io_toVecExcpMod_rdata_1_valid <= 1'b0;
-    else io_toVecExcpMod_rdata_1_valid <= io_fromVecExcpMod_r_1_valid;
-  end
-  assign io_toVecExcpMod_rdata_1_bits = vecexcp_rd_selvec_1 ? vf_rdata[7] : 128'h0;
-  logic vecexcp_rd_selvec_2;  // RegEnable(~isV0, r.valid)
-  always_ff @(posedge clock) if (io_fromVecExcpMod_r_2_valid)
-    vecexcp_rd_selvec_2 <= 1'b1;
-  always_ff @(posedge clock) begin
-    if (reset) io_toVecExcpMod_rdata_2_valid <= 1'b0;
-    else io_toVecExcpMod_rdata_2_valid <= io_fromVecExcpMod_r_2_valid;
-  end
-  assign io_toVecExcpMod_rdata_2_bits = vecexcp_rd_selvec_2 ? vf_rdata[8] : 128'h0;
-  logic vecexcp_rd_selvec_3;  // RegEnable(~isV0, r.valid)
-  always_ff @(posedge clock) if (io_fromVecExcpMod_r_3_valid)
-    vecexcp_rd_selvec_3 <= 1'b1;
-  always_ff @(posedge clock) begin
-    if (reset) io_toVecExcpMod_rdata_3_valid <= 1'b0;
-    else io_toVecExcpMod_rdata_3_valid <= io_fromVecExcpMod_r_3_valid;
-  end
-  assign io_toVecExcpMod_rdata_3_bits = vecexcp_rd_selvec_3 ? vf_rdata[9] : 128'h0;
+  // 端口 1/2/3:r.bits.isV0 恒 0(这些读口不选 V0)⇒ golden 把选择寄存器折叠掉,
+  // io_toVecExcpMod_rdata_N_bits 直接接 vfRfRdata_X(见 golden DataPath.sv:17295-17299)。
+  // 对齐 golden:去掉恒 1 的 vecexcp_rd_selvec_{1,2,3} 寄存器(否则 FM 多 3 个 impl DFF 未配对)。
+  always_ff @(posedge clock)
+    io_toVecExcpMod_rdata_1_valid <= io_fromVecExcpMod_r_1_valid;
+  assign io_toVecExcpMod_rdata_1_bits = vf_rdata[7];
+  always_ff @(posedge clock)
+    io_toVecExcpMod_rdata_2_valid <= io_fromVecExcpMod_r_2_valid;
+  assign io_toVecExcpMod_rdata_2_bits = vf_rdata[8];
+  always_ff @(posedge clock)
+    io_toVecExcpMod_rdata_3_valid <= io_fromVecExcpMod_r_3_valid;
+  assign io_toVecExcpMod_rdata_3_bits = vf_rdata[9];
   logic vecexcp_rd_selvec_4;  // RegEnable(~isV0, r.valid)
   always_ff @(posedge clock) if (io_fromVecExcpMod_r_4_valid)
     vecexcp_rd_selvec_4 <= ~io_fromVecExcpMod_r_4_bits_isV0;
   assign io_toVecExcpMod_rdata_4_bits = vecexcp_rd_selvec_4 ? vf_rdata[10] : v0_rdata[3];
-  logic vecexcp_rd_selvec_5;  // RegEnable(~isV0, r.valid)
-  always_ff @(posedge clock) if (io_fromVecExcpMod_r_5_valid)
-    vecexcp_rd_selvec_5 <= 1'b1;
-  assign io_toVecExcpMod_rdata_5_bits = vecexcp_rd_selvec_5 ? vf_rdata[11] : 128'h0;
-  logic vecexcp_rd_selvec_6;  // RegEnable(~isV0, r.valid)
-  always_ff @(posedge clock) if (io_fromVecExcpMod_r_6_valid)
-    vecexcp_rd_selvec_6 <= 1'b1;
-  assign io_toVecExcpMod_rdata_6_bits = vecexcp_rd_selvec_6 ? vf_rdata[0] : 128'h0;
-  logic vecexcp_rd_selvec_7;  // RegEnable(~isV0, r.valid)
-  always_ff @(posedge clock) if (io_fromVecExcpMod_r_7_valid)
-    vecexcp_rd_selvec_7 <= 1'b1;
-  assign io_toVecExcpMod_rdata_7_bits = vecexcp_rd_selvec_7 ? vf_rdata[1] : 128'h0;
+  // 端口 5/6/7:同理 golden 折叠选择寄存器,rdata 直接接 vfRfRdata_X
+  // (golden DataPath.sv:17302-17304)。去掉恒 1 的 vecexcp_rd_selvec_{5,6,7}。
+  assign io_toVecExcpMod_rdata_5_bits = vf_rdata[11];
+  assign io_toVecExcpMod_rdata_6_bits = vf_rdata[0];
+  assign io_toVecExcpMod_rdata_7_bits = vf_rdata[1];
 
   assign io_topDownInfo_noUopsIssued = ~(fromIQ_fire_0_0 | fromIQ_fire_0_1 | fromIQ_fire_1_0 | fromIQ_fire_1_1 | fromIQ_fire_2_0 | fromIQ_fire_2_1 | fromIQ_fire_3_0 | fromIQ_fire_3_1 | fromIQ_fire_4_0 | fromIQ_fire_4_1 | fromIQ_fire_5_0 | fromIQ_fire_5_1 | fromIQ_fire_6_0 | fromIQ_fire_7_0 | fromIQ_fire_7_1 | fromIQ_fire_8_0 | fromIQ_fire_8_1 | fromIQ_fire_9_0 | fromIQ_fire_10_0 | fromIQ_fire_11_0 | fromIQ_fire_12_0 | fromIQ_fire_13_0 | fromIQ_fire_14_0 | fromIQ_fire_15_0 | fromIQ_fire_16_0 | fromIQ_fire_17_0 | fromIQ_fire_18_0);
   // === perf 计数(2 级打拍后输出,topDown 性能事件)===

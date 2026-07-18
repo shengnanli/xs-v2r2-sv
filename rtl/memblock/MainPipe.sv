@@ -543,7 +543,7 @@ module xs_MainPipe_core
   assign s1_idx = get_idx(s1_req.vaddr);
 
   // s1 valid 推进
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset)            s1_valid <= 1'b0;
     else if (s0_fire)     s1_valid <= 1'b1;
     else if (s1_valid && s1_can_go) s1_valid <= 1'b0;
@@ -555,10 +555,14 @@ module xs_MainPipe_core
   // ---- meta / encTag 在 s1 锁存（s0_fire 当拍取 SRAM 输出，之后保持）----
   //   GatedValidRegNext(s0_fire)：上一拍 s0_fire → 本拍直接采 SRAM 组合输出；
   //   否则保持上次锁存值（s1 多拍停留时数据不变）。
-  logic s1_meta_sel;       // = RegNext(s0_fire)：选 SRAM 直出 vs 锁存
+  logic s1_meta_sel;       // = RegNext(s0_fire)：选 SRAM 直出 vs 锁存（golden last_REG）
+  logic s1_enctag_sel;     // golden last_REG_1（同 D 重复副本，enctag 路径）
+  logic s1_replway_sel;    // golden s1_repl_way_en_last_REG（repl way 路径）
   logic [1:0]  meta_hold   [N_WAYS];
   logic [ENC_TAG_BITS-1:0] enctag_hold [N_WAYS];
-  always_ff @(posedge clock) if (reset) s1_meta_sel <= 1'b0; else s1_meta_sel <= s0_fire;
+  always_ff @(posedge clock or posedge reset)
+    if (reset) begin s1_meta_sel <= 1'b0; s1_enctag_sel <= 1'b0; s1_replway_sel <= 1'b0; end
+    else begin s1_meta_sel <= s0_fire; s1_enctag_sel <= s0_fire; s1_replway_sel <= s0_fire; end
 
   // pseudo error 注入：把 tag 低 36 位按 mask 翻转，模拟 tag ECC 错误。
   wire [TAG_BITS-1:0] pseudo_tag_toggle =
@@ -580,17 +584,15 @@ module xs_MainPipe_core
   // 保持寄存器：当本拍刚从 SRAM 取值（s1_meta_sel）且 s1 仍有效时，把 SRAM/注入后
   //   的值锁存下来；s1 多拍停留（s1_meta_sel=0）时一直用这份锁存值（与 golden
   //   r_0/r_1_0 的 RegEnable(s1_valid & last_REG) 语义一致）。
-  always_ff @(posedge clock) if (s1_valid && s1_meta_sel) begin
-    for (int w = 0; w < N_WAYS; w++) begin
-      meta_hold[w]   <= meta_resp_in[w];
-      enctag_hold[w] <= enctag_pseudo[w];
-    end
-  end
+  always_ff @(posedge clock) if (s1_valid && s1_meta_sel)
+    for (int w = 0; w < N_WAYS; w++) meta_hold[w]   <= meta_resp_in[w];
+  always_ff @(posedge clock) if (s1_valid && s1_enctag_sel)   // golden 用 last_REG_1 门控
+    for (int w = 0; w < N_WAYS; w++) enctag_hold[w] <= enctag_pseudo[w];
   logic [1:0]              meta_resp [N_WAYS];
   logic [ENC_TAG_BITS-1:0] enctag    [N_WAYS];
   always_comb for (int w = 0; w < N_WAYS; w++) begin
-    meta_resp[w] = s1_meta_sel ? meta_resp_in[w]  : meta_hold[w];
-    enctag[w]    = s1_meta_sel ? enctag_pseudo[w] : enctag_hold[w];
+    meta_resp[w] = s1_meta_sel   ? meta_resp_in[w]  : meta_hold[w];
+    enctag[w]    = s1_enctag_sel ? enctag_pseudo[w] : enctag_hold[w];
   end
 
   // ---- tag 命中判定（per way，含 ECC 检错）----
@@ -645,8 +647,8 @@ module xs_MainPipe_core
         (io_pseudo_error_valid && s1_has_real_tag_eq) ? s1_real_tag_match_oh :
         s1_req.miss_fail_cause_evict_btot             ? s1_req.occupy_way    :
                                                         (4'b1 << io_replace_way_way);
-  always_ff @(posedge clock) if (s1_valid && s1_meta_sel) s1_repl_way_en_r <= s1_repl_way_en_comb;
-  wire [N_WAYS-1:0] s1_repl_way_en = s1_meta_sel ? s1_repl_way_en_comb : s1_repl_way_en_r;
+  always_ff @(posedge clock) if (s1_valid && s1_replway_sel) s1_repl_way_en_r <= s1_repl_way_en_comb;
+  wire [N_WAYS-1:0] s1_repl_way_en = s1_replway_sel ? s1_repl_way_en_comb : s1_repl_way_en_r;
 
   // 替换 way 的 tag / coh / prefetch 标志 / 真 encTag（均按 s1_repl_way_en one-hot 选）
   logic [TAG_BITS-1:0]     s1_repl_tag;
@@ -714,7 +716,7 @@ module xs_MainPipe_core
   wire s2_fire_to_s3 = s2_valid && s2_can_go_to_s3;
   wire s2_fire       = s2_valid && s2_can_go;
 
-  always_ff @(posedge clock) if (reset) s2_has_pseudo_inj <= 1'b0;
+  always_ff @(posedge clock or posedge reset) if (reset) s2_has_pseudo_inj <= 1'b0;
                             else if (s1_fire) s2_has_pseudo_inj <= io_pseudo_error_valid;
   always_ff @(posedge clock) if (s1_fire) begin
     s2_req               <= s1_req;
@@ -735,24 +737,23 @@ module xs_MainPipe_core
     s2_need_data         <= s1_need_data;
     s2_need_tag          <= s1_need_tag;
     s2_way_en            <= s1_way_en;
-    s2_tag_r             <= s1_repl_tag; // 注：s2_tag = need_repl?repl:hit；hit tag = repl_tag(=命中way tag 经 repl 选择) — 见下
+    s2_tag_r             <= get_tag(s1_req.addr); // golden s2_tag_r <= s1_req_addr[47:12]（RegEnable(get_tag(s1_req.addr))）
     s2_coh_r             <= s1_hit_coh;
     s2_banked_store_wmask<= s1_banked_store_wmask;
     s2_flag_error        <= s1_flag_error;
     s2_isStore           <= s1_isStore;
     s2_can_go_to_mq      <= s1_pregen_can_go_to_mq;
   end
-  // 注：golden 的 s2_tag = Mux(need_repl, repl_tag, RegEnable(s1_tag)),
-  //     而 s1_tag = s1_hit_tag = get_tag(s1_req.addr)。这里直接用 s2_req.addr 的 tag 重算命中 tag。
-  wire [TAG_BITS-1:0] s2_hit_tag = get_tag(s2_req.addr);
-  wire [TAG_BITS-1:0] s2_tag = s2_need_replacement ? s2_repl_tag : s2_hit_tag;
+  // golden 的 s2_tag = Mux(need_repl, repl_tag, s2_tag_r)，s2_tag_r = RegEnable(get_tag(s1_req.addr))。
+  //   用寄存器 s2_tag_r（而非从 s2_req.addr 重算）以与 golden 逐寄存器配对（FM）。
+  wire [TAG_BITS-1:0] s2_tag = s2_need_replacement ? s2_repl_tag : s2_tag_r;
   coh_e s2_coh; assign s2_coh = s2_need_replacement ? s2_repl_coh : s2_coh_r;
 
   assign s2_idx = get_idx(s2_req.vaddr);
   wire s2_grow_perm = s2_grow_perm_r && s2_tag_match;
 
   // s2 valid 推进
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset)             s2_valid <= 1'b0;
     else if (s1_fire)      s2_valid <= 1'b1;
     else if (s2_fire)      s2_valid <= 1'b0;
@@ -788,7 +789,7 @@ module xs_MainPipe_core
   wire s2_req_miss_without_data = s2_valid && s2_req.miss && !io_refill_info_valid;
   // no-data replay 计数寄存器：miss 但 refill 数据未到，可阻 1 拍再 replay
   logic s2_can_go_to_mq_no_data_r;
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset)         s2_can_go_to_mq_no_data_r <= 1'b0;
     else if (s2_valid) s2_can_go_to_mq_no_data_r <= s2_req_miss_without_data && !s2_can_go_to_mq_no_data;
   end
@@ -821,7 +822,7 @@ module xs_MainPipe_core
 
   // data readline 流控
   logic s2_fire_to_s3_q;
-  always_ff @(posedge clock) if (reset) s2_fire_to_s3_q <= 1'b0; else s2_fire_to_s3_q <= s1_fire; // data_readline_can_go = RegNext(s1_fire)
+  always_ff @(posedge clock or posedge reset) if (reset) s2_fire_to_s3_q <= 1'b0; else s2_fire_to_s3_q <= s1_fire; // data_readline_can_go = RegNext(s1_fire)
   assign io_data_readline_can_go   = s2_fire_to_s3_q;
   assign io_data_readline_stall    = s2_valid;
   assign io_data_readline_can_resp = s2_fire_to_s3;
@@ -867,7 +868,7 @@ module xs_MainPipe_core
   end
 
   // s3 valid 推进
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset)              s3_valid <= 1'b0;
     else if (s2_fire_to_s3) s3_valid <= 1'b1;
     else if (s3_valid && s3_can_go) s3_valid <= 1'b0;
@@ -991,15 +992,16 @@ module xs_MainPipe_core
 
   // s3_s_amoalu：等 AMOALU 那一拍置 1，请求完成清 0
   logic s3_s_amoalu_r;
-  always_ff @(posedge clock) begin
-    if (reset)          s3_s_amoalu_r <= 1'b0;
-    else if (do_amoalu) s3_s_amoalu_r <= 1'b1;
-    else if (s3_fire)   s3_s_amoalu_r <= 1'b0;
+  // golden: s3_s_amoalu <= ~s3_fire & (do_amoalu | s3_s_amoalu)。
+  //   ⚠ do_amoalu & s3_fire 同拍时 golden 置 0（不是 1）——之前 if(do_amoalu)优先置 1 与之分叉。
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) s3_s_amoalu_r <= 1'b0;
+    else       s3_s_amoalu_r <= ~s3_fire & (do_amoalu | s3_s_amoalu_r);
   end
   assign s3_s_amoalu = s3_s_amoalu_r;
 
   // ---- LR/SC 保留锁维护 ----
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) lrsc_count <= '0;
     else if (s3_valid && (s3_lr || s3_sc)) begin
       if (s3_can_do_amo && s3_lr) lrsc_count <= LRSC_CYCLES - 1;
@@ -1011,7 +1013,7 @@ module xs_MainPipe_core
     if (s3_valid && (s3_lr || s3_sc) && s3_can_do_amo && s3_lr) lrsc_addr <= s3_block_addr;
 
   logic io_block_lr_q;
-  always_ff @(posedge clock) if (reset) io_block_lr_q <= 1'b0; else io_block_lr_q <= (lrsc_count > 0);
+  always_ff @(posedge clock or posedge reset) if (reset) io_block_lr_q <= 1'b0; else io_block_lr_q <= (lrsc_count > 0);
   assign io_lrsc_locked_block_valid = lrsc_valid;
   assign io_lrsc_locked_block_bits  = lrsc_addr;
   assign io_block_lr                = io_block_lr_q;
@@ -1032,27 +1034,31 @@ module xs_MainPipe_core
   logic s3_tag_error_beu, s3_tag_error_wb, s3_data_error_beu_r, s3_data_error_wb_r;
   logic s3_l2_error_wb, s3_flag_error_beu, s3_l2_error_beu;
   logic s3_error_beu_r, s3_error_wb_r; logic [PADDR_BITS-1:0] s3_error_paddr_beu_r;
-  always_ff @(posedge clock) begin
+  // 仅 s3_error_beu_r / s3_error_wb_r 两个汇总位 golden 异步复位；其余 beu/wb 明细位
+  //   （tag/data/l2/flag/paddr）golden 无复位——须放独立无复位块，否则 FM 判 reset 锥不对称失配。
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
-      // 仅这两个汇总错误位 golden 复位（其余 beu/wb 位无观测前不影响输出）。
       s3_error_beu_r <= 1'b0;
       s3_error_wb_r  <= 1'b0;
     end else begin
-      if (s2_fire) begin
-        s3_tag_error_beu    <= s2_tag_error;
-        s3_data_error_beu_r <= s2_may_report_data_error;
-        s3_l2_error_beu     <= s2_l2_error;
-        s3_flag_error_beu   <= s2_flag_error;
-        s3_error_beu_r      <= s2_error;
-        // 存块对齐地址（低 6 位清零），与 golden get_block_addr 后再打拍一致。
-        s3_error_paddr_beu_r<= {s2_tag, s2_req.vaddr[11:6], 6'b0};
-      end
-      if (s2_fire_to_s3) begin
-        s3_tag_error_wb     <= s2_tag_error;
-        s3_data_error_wb_r  <= s2_may_report_data_error;
-        s3_l2_error_wb      <= s2_l2_error;
-        s3_error_wb_r       <= s2_error;
-      end
+      if (s2_fire)        s3_error_beu_r <= s2_error;
+      if (s2_fire_to_s3)  s3_error_wb_r  <= s2_error;
+    end
+  end
+  // 无复位明细错误位（golden 无复位寄存器）。
+  always_ff @(posedge clock) begin
+    if (s2_fire) begin
+      s3_tag_error_beu    <= s2_tag_error;
+      s3_data_error_beu_r <= s2_may_report_data_error;
+      s3_l2_error_beu     <= s2_l2_error;
+      s3_flag_error_beu   <= s2_flag_error;
+      // golden: s3_error_paddr_beu_r <= {s2_tag, s2_req_vaddr[11:0]}（保留低 6 位；输出再清零）。
+      s3_error_paddr_beu_r<= {s2_tag, s2_req.vaddr[11:0]};
+    end
+    if (s2_fire_to_s3) begin
+      s3_tag_error_wb     <= s2_tag_error;
+      s3_data_error_wb_r  <= s2_may_report_data_error;
+      s3_l2_error_wb      <= s2_l2_error;
     end
   end
   wire s3_data_error_beu = io_readline_error && s3_data_error_beu_r;
@@ -1199,25 +1205,27 @@ module xs_MainPipe_core
 
   // ---- replace 算法访问更新（s3 命中/补块更新 plru）----
   logic replace_access_valid_q;
-  always_ff @(posedge clock) if (reset) replace_access_valid_q <= 1'b0; else replace_access_valid_q <= s2_fire_to_s3;
+  always_ff @(posedge clock or posedge reset) if (reset) replace_access_valid_q <= 1'b0; else replace_access_valid_q <= s2_fire_to_s3;
   assign io_replace_access_valid = replace_access_valid_q && !s3_req.probe
                                    && (s3_req.miss || ((req_is_amo(s3_req) || req_is_store(s3_req)) && s3_hit));
   assign io_replace_access_bits_set = s3_idx;
   assign io_replace_access_bits_way = oh_to_way(s3_way_en);
 
   logic replace_way_set_valid_q;
-  always_ff @(posedge clock) if (reset) replace_way_set_valid_q <= 1'b0; else replace_way_set_valid_q <= s0_fire;
+  always_ff @(posedge clock or posedge reset) if (reset) replace_way_set_valid_q <= 1'b0; else replace_way_set_valid_q <= s0_fire;
   assign io_replace_way_set_bits = s1_idx;
 
   // ---- SMS evict 提示（s2 miss → s3 时发，延一拍）----
   wire sms_agt_evict_valid = s2_valid && s2_req.miss && s2_fire_to_s3;
   logic sms_evict_valid_q; logic [VADDR_BITS-1:0] sms_evict_vaddr_q;
-  always_ff @(posedge clock) begin
+  // golden io_sms_agt_evict_req_valid_last_REG：异步复位。vaddr 副本无复位，独立块
+  //   （异步复位块内不能有复位 if/else 之外的语句，FMR_VLOG-143）。
+  always_ff @(posedge clock or posedge reset)
     if (reset) sms_evict_valid_q <= 1'b0;
     else       sms_evict_valid_q <= sms_agt_evict_valid;
+  always_ff @(posedge clock)
     if (sms_agt_evict_valid)
       sms_evict_vaddr_q <= {s2_repl_tag[TAG_BITS-1:2], s2_req.vaddr[13:12], {(VADDR_BITS-TAG_BITS){1'b0}}};
-  end
   assign io_sms_agt_evict_req_valid      = sms_evict_valid_q;
   assign io_sms_agt_evict_req_bits_vaddr = sms_evict_vaddr_q;
 
@@ -1246,41 +1254,51 @@ module xs_MainPipe_core
 
   // ---- ECC error 上报 BEU/CSR（s2_fire 后一拍）----
   logic error_valid_gate_q, report_beu_q;
-  always_ff @(posedge clock) begin
+  // golden io_error_valid_last_REG：异步复位。report_beu_q(report_to_beu_REG) 无复位，独立块。
+  always_ff @(posedge clock or posedge reset)
     if (reset) error_valid_gate_q <= 1'b0;
     else       error_valid_gate_q <= s2_fire && !s2_should_not_report_ecc_error;
-    report_beu_q       <= s2_fire; // golden io_error_bits_report_to_beu_REG 无复位
-  end
+  always_ff @(posedge clock)
+    report_beu_q <= s2_fire; // golden io_error_bits_report_to_beu_REG 无复位
   assign io_error_valid = s3_error_beu && error_valid_gate_q;
   assign io_error_bits_report_to_beu = (s3_tag_error_beu || s3_data_error_beu) && report_beu_q;
-  assign io_error_bits_paddr = s3_error_paddr_beu_r; // 已块对齐
+  assign io_error_bits_paddr = {s3_error_paddr_beu_r[47:6], 6'h0}; // golden 输出侧块对齐
 
   // ---- 流水状态扇出复制（24 份；s1 set 在 s0_fire 锁存，s2/s3 逐级打拍）----
-  logic [IDX_BITS-1:0] status_s1_set_q, status_s2_set_q, status_s3_set_q;
-  logic [N_WAYS-1:0]   status_s3_way_q;
-  logic                status_s2_notrepl_q, status_s3_notrepl_q;
+  // golden 每份 dup 都有独立寄存器副本（io_status_dup_N_{s1,s2,s3}_bits_set_r /
+  // s3_bits_way_en_r / s2,s3_valid_r=replace 正相打拍）×24——1:1 复刻成 [24] 数组
+  // （修法⑥；单副本扇出会让签名分析把 24 份 golden 副本错配到 s1_req.vaddr 等
+  // 同值寄存器上，status 端口与被抢寄存器全体失配）。
+  localparam int N_STATUS_DUP = 24;
+  logic [N_STATUS_DUP-1:0][IDX_BITS-1:0] status_s1_set_q, status_s2_set_q, status_s3_set_q;
+  logic [N_STATUS_DUP-1:0][N_WAYS-1:0]   status_s3_way_q;
+  logic [N_STATUS_DUP-1:0]               status_s2_repl_q, status_s3_repl_q;
   always_ff @(posedge clock) begin
-    if (s0_fire)        status_s1_set_q <= get_idx(s0_req.vaddr);
-    if (s1_fire)        status_s2_set_q <= get_idx(s1_req.vaddr);
-    if (s2_fire_to_s3) begin status_s3_set_q <= get_idx(s2_req.vaddr); status_s3_way_q <= s2_way_en; end
-    if (s1_fire)        status_s2_notrepl_q <= !s1_req.replace;
-    if (s2_fire_to_s3)  status_s3_notrepl_q <= !s2_req.replace;
+    for (int n = 0; n < N_STATUS_DUP; n++) begin
+      if (s0_fire)       status_s1_set_q[n] <= get_idx(s0_req.vaddr);
+      if (s1_fire) begin
+        status_s2_set_q[n]  <= get_idx(s1_req.vaddr);
+        status_s2_repl_q[n] <= s1_req.replace;   // golden 正相打拍，输出处取反
+      end
+      if (s2_fire_to_s3) begin
+        status_s3_set_q[n]  <= get_idx(s2_req.vaddr);
+        status_s3_way_q[n]  <= s2_way_en;
+        status_s3_repl_q[n] <= s2_req.replace;
+      end
+    end
   end
-  wire status_s1_valid = s1_valid;
-  wire status_s2_valid = s2_valid && status_s2_notrepl_q;
-  wire status_s3_valid = s3_valid && status_s3_notrepl_q;
 
-  // 24 份完全相同：用宏展开（机械复制，对齐 golden 扁平输出）
+  // 24 份输出：每份用各自的寄存器副本（valid 的共享组合项 s1_valid/s2_valid/s3_valid 同 golden）
   `define STAT_DUP(N) \
-    assign io_status_dup_``N``_s1_valid = status_s1_valid; \
-    assign io_status_dup_``N``_s1_bits_set = status_s1_set_q; \
+    assign io_status_dup_``N``_s1_valid = s1_valid; \
+    assign io_status_dup_``N``_s1_bits_set = status_s1_set_q[N]; \
     assign io_status_dup_``N``_s1_bits_way_en = s1_way_en; \
-    assign io_status_dup_``N``_s2_valid = status_s2_valid; \
-    assign io_status_dup_``N``_s2_bits_set = status_s2_set_q; \
+    assign io_status_dup_``N``_s2_valid = s2_valid && !status_s2_repl_q[N]; \
+    assign io_status_dup_``N``_s2_bits_set = status_s2_set_q[N]; \
     assign io_status_dup_``N``_s2_bits_way_en = s2_way_en; \
-    assign io_status_dup_``N``_s3_valid = status_s3_valid; \
-    assign io_status_dup_``N``_s3_bits_set = status_s3_set_q; \
-    assign io_status_dup_``N``_s3_bits_way_en = status_s3_way_q;
+    assign io_status_dup_``N``_s3_valid = s3_valid && !status_s3_repl_q[N]; \
+    assign io_status_dup_``N``_s3_bits_set = status_s3_set_q[N]; \
+    assign io_status_dup_``N``_s3_bits_way_en = status_s3_way_q[N];
   `STAT_DUP(0)  `STAT_DUP(1)  `STAT_DUP(2)  `STAT_DUP(3)  `STAT_DUP(4)  `STAT_DUP(5)
   `STAT_DUP(6)  `STAT_DUP(7)  `STAT_DUP(8)  `STAT_DUP(9)  `STAT_DUP(10) `STAT_DUP(11)
   `STAT_DUP(12) `STAT_DUP(13) `STAT_DUP(14) `STAT_DUP(15) `STAT_DUP(16) `STAT_DUP(17)

@@ -173,4 +173,30 @@ package loadqueuereplay_pkg;
     logic [15:0] mask;
   } lqr_vec_t;
 
+  // ---- topdown 归约 payload（robHead 最老命中项）-------------------------------
+  //  golden ParallelOperation(zip(lq_match_vec, uop_wrapper))：两两归约，
+  //   combine(a,b) = { v: a.v|b.v,
+  //                    uop: (a.v & b.v) ? (isAfter(a.rob,b.rob)? b : a)
+  //                                     : (a.v ? a : (b.v ? b : a)) }
+  //   最终取 winner.uop.lqIdx.value 去 index cause 阵列。
+  //  归约只需携带 winner 的 robIdx(比较用) 与 lqIdx.value(最终 index cause 用)。
+  typedef struct packed {
+    logic                 v;       // 该子树有命中
+    logic                 robF;    // winner robIdx.flag
+    logic [ROB_IDX_W-1:0] robV;    // winner robIdx.value
+    logic [LQ_IDX_W-1:0]  lqV;     // winner lqIdx.value（最终 index cause）
+  } td_node_t;
+
+  // combine：与 golden Mux 结构逐位一致
+  function automatic td_node_t td_merge(input td_node_t a, input td_node_t b);
+    logic isAfter;   // a 的 robIdx 是否比 b 更新（更 after）
+    isAfter = (a.robF ^ b.robF) ^ (a.robV > b.robV);
+    td_merge.v = a.v | b.v;
+    if (a.v & b.v) td_merge = isAfter ? '{v:1'b1, robF:b.robF, robV:b.robV, lqV:b.lqV}
+                                      : '{v:1'b1, robF:a.robF, robV:a.robV, lqV:a.lqV};
+    else if (a.v)  td_merge = '{v:1'b1, robF:a.robF, robV:a.robV, lqV:a.lqV};
+    else if (b.v)  td_merge = '{v:1'b1, robF:b.robF, robV:b.robV, lqV:b.lqV};
+    else           td_merge = '{v:1'b0, robF:a.robF, robV:a.robV, lqV:a.lqV};
+  endfunction
+
 endpackage

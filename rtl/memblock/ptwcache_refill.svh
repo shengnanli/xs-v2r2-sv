@@ -73,9 +73,10 @@
       automatic pte_t p = refill_ptes[i*64 +: 64];
       l1_w_req_data.pbmts[i] = p.pbmt;
       l1_w_req_data.ppns[i]  = pte_get_ppn(p);
-      // L1 非叶：vs = canRefill && !isLeaf  （onlypf 也算 vs，但 L1 onlyPf 恒 0）
+      // L1 非叶：vs = canRefill && !isLeaf；onlypf 按 golden 照算存行
+      // （golden l1Wdata_entries_ps_onlypf_i = onlyPf(level=1, dup1.s2xlate)，非常量 0）
       l1_w_req_data.vs[i]    = (pte_can_refill(p, 2'h1, refill_req_info_dup_1.s2xlate, pbmte, csr_hgatp_mode[1]) && ~pte_is_leaf(p));
-      l1_w_req_data.onlypf[i]= 1'b0;
+      l1_w_req_data.onlypf[i]= pte_only_pf(p, 2'h1, refill_req_info_dup_1.s2xlate, pbmte);
     end
   end
   assign l1_w_req_valid  = l1Refill;
@@ -171,7 +172,9 @@
   // l3/l2/sp entry & g & h & PLRU
   always_ff @(posedge clock) begin
     if (l3Refill) begin
-      l3[l3RefillIdx].tag  <= refill_req_info_dup_2.vpn[VPN_W-1 -: L2_TAG_W];   // 存满 20b，命中只比低 11b
+      // golden l3_N_tag 只有 11b = vpn[37:27]；tag 字段低 11 位存之（与 golden 位序
+      // 对齐，FM 按名配对 [10:0]），高 9 位补 0（无读者 → FM Unread 不比对）。
+      l3[l3RefillIdx].tag  <= {{(L2_TAG_W-L3_TAG_W){1'b0}}, refill_req_info_dup_2.vpn[VPN_W-1 -: L3_TAG_W]};
       l3[l3RefillIdx].asid <= l3l2Wasid;
       l3[l3RefillIdx].vmid <= csr_hgatp_vmid[2];
       l3[l3RefillIdx].pbmt <= memPte2.pbmt;
@@ -225,21 +228,26 @@
   end
 
   // ===========================================================================
-  // PLRU 状态更新：refill（access victim）或查询命中（access hitWay）
-  //   优先级与 golden 一致：refill 优先于查询命中。
+  // PLRU 状态更新（优先级/触点严格对齐 golden RTL——bug-for-bug）：
+  //   L3 state_reg：只在查询命中 touch（golden 无 l3Refill access——Scala 里 refill
+  //                 时 access 的是 ptwl2replace(l3RefillIdx)，见下 L2）。
+  //   L2 state_reg_1：l2Refill > l3Refill(用 l3RefillIdx) > 命中 touch。
+  //   SP state_reg_4：spRefill > 命中 touch。
+  //   L1/L0 per-set：refill 与命中 touch 的 set 相互独立——golden 每个 set 各自
+  //                 「if (refill&本set) else if (touch&本set)」；同拍 refill 到 set A、
+  //                 命中 touch 到 set B(≠A) 时两个 set 都要更新（全局 else-if 是错的）。
   // ===========================================================================
-  // L3（golden state_reg：复位到 0，见 golden reset 块 state_reg <= 15'h0）
+  // L3（golden state_reg：复位到 0；仅命中 touch）
   always_ff @(posedge clock or posedge reset) begin
     if (reset)               l3replace <= '0;
-    else if (l3Refill)       l3replace <= plru16_access(l3replace, l3RefillIdx);
     else if (l3_access_en)   l3replace <= plru16_access(l3replace, l3_hitWay_d);
   end
-  // L2（golden state_reg_1：复位到 0；注意 golden 中 l3Refill 也 access l2replace
+  // L2（golden state_reg_1：l2Refill > l3Refill > hit；l3Refill 也 access l2replace
   //     —— 见 Scala ptwl2replace.access(l3RefillIdx)）
   always_ff @(posedge clock or posedge reset) begin
     if (reset)               l2replace <= '0;
-    else if (l3Refill)       l2replace <= plru16_access(l2replace, l3RefillIdx);
     else if (l2Refill)       l2replace <= plru16_access(l2replace, l2RefillIdx);
+    else if (l3Refill)       l2replace <= plru16_access(l2replace, l3RefillIdx);
     else if (l2_access_en)   l2replace <= plru16_access(l2replace, l2_hitWay_d);
   end
   // SP
@@ -248,20 +256,31 @@
     else if (spRefill)       spreplace <= plru16_access(spreplace, spRefillIdx);
     else if (sp_access_en)   spreplace <= plru16_access(spreplace, sp_hitWay_d);
   end
-  // L1 per-set（命中 access 用 check_vpn 的 set；refill 用 refillIdx）
-  // golden state_vec_0..7：复位到 0（见 golden reset 块 state_vec_x <= 1'h0）
+  // L1 per-set（golden state_vec_N：每 set 独立 if(refill&set==N)/else if(touch&set==N)）
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       for (int st = 0; st < L1_SETS; st++) l1replace[st] <= 1'b0;
-    end else if (l1Refill)   l1replace[l1RefillIdx] <= plru2_access(l1VictimWay);
-    else if (l1_access_en)   l1replace[l1_set_idx(check_vpn)] <= plru2_access(l1_hitWay);
+    end else begin
+      for (int st = 0; st < L1_SETS; st++) begin
+        if (l1Refill && (l1RefillIdx == L1_SET_IDX_W'(st)))
+          l1replace[st] <= plru2_access(l1VictimWay);
+        else if (l1_access_en && (l1_set_idx(check_vpn) == L1_SET_IDX_W'(st)))
+          l1replace[st] <= plru2_access(l1_hitWay);
+      end
+    end
   end
-  // L0 per-set
+  // L0 per-set（同上；access 值取 refill/命中 set 的当前状态，与 golden 共享表达式一致）
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       for (int st = 0; st < L0_SETS; st++) l0replace[st] <= 3'b000;
-    end else if (l0Refill)  l0replace[l0RefillIdx] <= plru4_access(l0replace[l0RefillIdx], l0VictimWay);
-    else if (l0_access_en)   l0replace[l0_set_idx(check_vpn)] <= plru4_access(l0replace[l0_set_idx(check_vpn)], l0_hitWay);
+    end else begin
+      for (int st = 0; st < L0_SETS; st++) begin
+        if (l0Refill && (l0RefillIdx == L0_SET_IDX_W'(st)))
+          l0replace[st] <= plru4_access(l0replace[l0RefillIdx], l0VictimWay);
+        else if (l0_access_en && (l0_set_idx(check_vpn) == L0_SET_IDX_W'(st)))
+          l0replace[st] <= plru4_access(l0replace[l0_set_idx(check_vpn)], l0_hitWay);
+      end
+    end
   end
 
   // ===========================================================================

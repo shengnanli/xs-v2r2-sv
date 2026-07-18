@@ -216,7 +216,9 @@ module xs_Sbuffer_core
   // ===========================================================================
   //  entry 存储：meta / state / cohCount / replayCount，data/mask 单列
   // ===========================================================================
-  sbuf_meta_t  meta     [SB_SIZE];          // {ptag, vtag}
+  // golden 顶层是独立的 vtag_<l>/ptag_<l> 寄存器（无 struct）；命名对齐使 FM 自动配对
+  logic [PTAG_W-1:0] ptag [SB_SIZE];
+  logic [VTAG_W-1:0] vtag [SB_SIZE];
   sbuf_state_t stateVec [SB_SIZE];
   logic [SB_SIZE-1:0]        waitInflightMask [SB_SIZE]; // 该 entry 等待哪个在途 entry 写完
   logic [EVICT_CNT_W-1:0]    cohCount         [SB_SIZE];
@@ -337,7 +339,7 @@ module xs_Sbuffer_core
   always_comb
     for (int i = 0; i < SB_SIZE; i++)
       cohTimeOutMask[i] = cohCount[i][EVICT_CNT_W-1] & st_is_active(stateVec[i]);
-  wire [SB_IDX_W-1:0] cohTimeOutIdx = prio_enc16(cohTimeOutMask);
+  wire [SB_IDX_W-1:0] cohTimeOutIdx = prio_enc16_deflast(cohTimeOutMask);  // golden 默认末项 15
   wire                cohHasTimeOut = |cohTimeOutMask;
 
   logic [SB_SIZE-1:0] missqReplayTimeOutMask;
@@ -350,14 +352,16 @@ module xs_Sbuffer_core
   // missqReplayHasTimeOut = RegNext(gen) & !RegNext(out_s0_fire)；Idx = RegEnable(gen,gen)
   logic                missqReplayHasTimeOut_q, out_s0_fire_q;
   logic [SB_IDX_W-1:0] missqReplayTimeOutIdx;
-  always_ff @(posedge clock) begin
+  // golden 复位寄存器统一在异步复位块（posedge reset）——对齐
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) begin missqReplayHasTimeOut_q <= 1'b0; out_s0_fire_q <= 1'b0; end
     else begin
       missqReplayHasTimeOut_q <= missqReplayHasTimeOutGen;
       out_s0_fire_q           <= sbuffer_out_s0_fire;
     end
-    if (missqReplayHasTimeOutGen) missqReplayTimeOutIdx <= missqReplayTimeOutIdxGen;
   end
+  always_ff @(posedge clock)
+    if (missqReplayHasTimeOutGen) missqReplayTimeOutIdx <= missqReplayTimeOutIdxGen;
   wire missqReplayHasTimeOut = missqReplayHasTimeOut_q & ~out_s0_fire_q;
 
   // ===========================================================================
@@ -384,7 +388,7 @@ module xs_Sbuffer_core
   always_comb
     for (int i = 0; i < ENSB_W; i++) begin
       for (int j = 0; j < SB_SIZE; j++)
-        mergeMask[i][j] = (inptag[i] == meta[j].ptag) & activeMask[j];
+        mergeMask[i][j] = (inptag[i] == ptag[j]) & activeMask[j];
       mergeIdx[i] = prio_enc16(mergeMask[i]);
       canMerge[i] = |mergeMask[i];
     end
@@ -411,7 +415,7 @@ module xs_Sbuffer_core
 
   // enbufferSelReg：每个有效拍翻转，决定第一路用奇/偶组（轮流，均衡占用）
   logic enbufferSelReg;
-  always_ff @(posedge clock)
+  always_ff @(posedge clock or posedge reset)
     if (reset) enbufferSelReg <= 1'b0;
     else if (io_in_0_valid) enbufferSelReg <= ~enbufferSelReg;
 
@@ -430,7 +434,7 @@ module xs_Sbuffer_core
   // micro-arch drain：forward vtag 失配 / merge vtag 失配 → 抽干 sbuffer（重做）
   logic forward_need_uarch_drain, merge_need_uarch_drain;
   logic fwd_drain_q, merge_drain_q, merge_drain_q2;
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) begin fwd_drain_q<=0; merge_drain_q<=0; merge_drain_q2<=0; end
     else begin
       fwd_drain_q    <= forward_need_uarch_drain;
@@ -461,7 +465,7 @@ module xs_Sbuffer_core
   always_comb
     for (int i = 0; i < ENSB_W; i++)
       for (int j = 0; j < SB_SIZE; j++)
-        sameBlockInflight[i][j] = inflightMask[j] & (inptag[i] == meta[j].ptag);
+        sameBlockInflight[i][j] = inflightMask[j] & (inptag[i] == ptag[j]);
 
   // writeReq（给 data/mask 写入流水）：merge 用 mergeVec，alloc 用 insertVec
   logic [VLEN-1:0]        writeReq_data [ENSB_W];
@@ -481,9 +485,9 @@ module xs_Sbuffer_core
   // accessIdx（喂 PLRU touch）：0/1 路 = RegNext(merge?mergeIdx:insertIdx)
   logic                accessIdx0_valid_q, accessIdx1_valid_q;
   logic [SB_IDX_W-1:0] accessIdx0_idx_q,  accessIdx1_idx_q;
+  // golden accessIdx_N_valid_REG 无复位（在纯时钟块），对齐：不带 reset
   always_ff @(posedge clock) begin
-    if (reset) begin accessIdx0_valid_q<=0; accessIdx1_valid_q<=0; end
-    else begin accessIdx0_valid_q <= accessValid[0]; accessIdx1_valid_q <= accessValid[1]; end
+    accessIdx0_valid_q <= accessValid[0]; accessIdx1_valid_q <= accessValid[1];
     if (accessValid[0]) accessIdx0_idx_q <= canMerge[0] ? mergeIdx[0] : insertIdx[0];
     if (accessValid[1]) accessIdx1_idx_q <= canMerge[1] ? mergeIdx[1] : insertIdx[1];
   end
@@ -499,7 +503,7 @@ module xs_Sbuffer_core
   // forceThreshold = force_write ? (7-4=3) : 7  = {2'h0, ~force_write, 2'h3}
   wire [4:0] forceThreshold = {2'h0, ~io_force_write, 2'h3};
   logic do_eviction_q;
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) do_eviction_q <= 1'b0;
     else do_eviction_q <= (ActiveCount >= forceThreshold)
                         | (ActiveCount == 5'(SB_SIZE-1))
@@ -509,14 +513,14 @@ module xs_Sbuffer_core
 
   // io_sbempty / io_flush_empty 打一拍
   logic sbempty_q, flush_empty_q;
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) begin sbempty_q<=0; flush_empty_q<=0; end
     else begin sbempty_q <= empty; flush_empty_q <= empty & io_sqempty; end
   end
   assign io_sbempty    = sbempty_q;
   assign io_flush_empty = flush_empty_q;
 
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) sbuffer_state <= X_IDLE;
     else unique case (sbuffer_state)
       X_IDLE:          if (io_flush_valid)   sbuffer_state <= X_DRAIN_ALL;
@@ -535,7 +539,7 @@ module xs_Sbuffer_core
   // ===========================================================================
   //  Deq — out_s0：选 evictionIdx，valid 判定
   // ===========================================================================
-  wire [SB_IDX_W-1:0] drainIdx = prio_enc16(activeMask);
+  wire [SB_IDX_W-1:0] drainIdx = prio_enc16_deflast(activeMask);  // golden 默认末项 15
   wire need_replace = do_eviction | (sbuffer_state == X_REPLACE);
   always_comb begin
     // 优先级：missqReplayTimeOut > drain > cohTimeOut > replace(PLRU)
@@ -558,15 +562,11 @@ module xs_Sbuffer_core
 
   // 读/写冒险：被逐出 entry 这拍正被 writeReq 写 → 阻塞 DCache 写一拍
   logic shouldWaitWriteFinish_q;
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) shouldWaitWriteFinish_q <= 1'b0;
-    else begin
-      logic hz;
-      hz = 1'b0;
-      for (int i = 0; i < ENSB_W; i++)
-        if ((|(writeReq_wvec[i] & (16'h1 << sbuffer_out_s0_evictionIdx))) & writeReq_valid[i]) hz = 1'b1;
-      shouldWaitWriteFinish_q <= hz;
-    end
+    else shouldWaitWriteFinish_q <=
+      ((|(writeReq_wvec[1] & (16'h1 << sbuffer_out_s0_evictionIdx))) & writeReq_valid[1]) |
+      ((|(writeReq_wvec[0] & (16'h1 << sbuffer_out_s0_evictionIdx))) & writeReq_valid[0]);
   end
   wire blockDcacheWrite = shouldWaitWriteFinish_q;
 
@@ -575,18 +575,19 @@ module xs_Sbuffer_core
   assign sbuffer_out_s0_fire = sbuffer_out_s0_valid & sbuffer_out_s0_cango;
   wire sbuffer_out_s1_fire = io_dcache_req_valid & io_dcache_req_ready;
 
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) sbuffer_out_s1_valid <= 1'b0;
     else begin
       if (sbuffer_out_s1_fire) sbuffer_out_s1_valid <= 1'b0;
       if (sbuffer_out_s0_cango) sbuffer_out_s1_valid <= sbuffer_out_s0_valid;
     end
+  end
+  always_ff @(posedge clock)
     if (sbuffer_out_s0_fire) begin
       sbuffer_out_s1_evictionIdx  <= sbuffer_out_s0_evictionIdx;
-      sbuffer_out_s1_evictionPTag <= meta[sbuffer_out_s0_evictionIdx].ptag;
-      sbuffer_out_s1_evictionVTag <= meta[sbuffer_out_s0_evictionIdx].vtag;
+      sbuffer_out_s1_evictionPTag <= ptag[sbuffer_out_s0_evictionIdx];
+      sbuffer_out_s1_evictionVTag <= vtag[sbuffer_out_s0_evictionIdx];
     end
-  end
 
   // 整行 data/mask 拼接输出
   logic [CLINE_BITS-1:0] dcache_line_data;
@@ -620,11 +621,12 @@ module xs_Sbuffer_core
   // hit_resp 解除同 block w_sameblock_inflight：延迟一拍判定
   logic                hit_resp_fire_q;
   logic [SB_IDX_W-1:0] hit_resp_id_q;
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) hit_resp_fire_q <= 1'b0;
     else hit_resp_fire_q <= hit_resp_fire;
-    if (hit_resp_fire) hit_resp_id_q <= hit_resp_id;
   end
+  always_ff @(posedge clock)
+    if (hit_resp_fire) hit_resp_id_q <= hit_resp_id;
 
   // ===========================================================================
   //  entry 状态/计数统一时序更新（每 entry 一份，用 genvar 展开）
@@ -647,7 +649,19 @@ module xs_Sbuffer_core
       wire [SB_SIZE-1:0] sb0 = sameBlockInflight[0];
       wire [SB_SIZE-1:0] sb1 = sameBlockInflight[1];
 
+      // waitInflightMask / ptag / vtag：golden 无复位、更新不受 reset 门控（纯时钟块）
+      // golden 的 Chisel foreach 覆盖链是**port1 覆盖 port0**（后写胜）；sameTag 时
+      // 两口可同拍命中同 entry，ptag/掩码两口等值可证，但 vtag 两口不等值，
+      // 优先级必须与 golden 一致取 port1。
       always_ff @(posedge clock) begin
+        if (sel_ins1 & (|sb1)) waitInflightMask[ge] <= sb1;
+        else if (sel_ins0 & (|sb0)) waitInflightMask[ge] <= sb0;
+        if (sel_ins1) begin ptag[ge] <= inptag[1]; vtag[ge] <= invtag[1]; end
+        else if (sel_ins0) begin ptag[ge] <= inptag[0]; vtag[ge] <= invtag[0]; end
+      end
+
+      // stateVec / cohCount / missqReplayCount：golden 异步复位块
+      always_ff @(posedge clock or posedge reset) begin
         if (reset) begin
           stateVec[ge]         <= '0;
           cohCount[ge]         <= '0;   // golden RegInit(0)
@@ -655,12 +669,12 @@ module xs_Sbuffer_core
         end else begin
           // ---- (1) Enq alloc：占新 entry（merge 不动 state，只 reset cohCount，见下）----
           //   两路若同时命中本 entry，sameTag 时第二路与第一路同下标，写值一致。
-          if (sel_ins0) begin
-            stateVec[ge].state_valid          <= 1'b1;
-            stateVec[ge].w_sameblock_inflight <= |sb0;
-          end else if (sel_ins1) begin
+          if (sel_ins1) begin
             stateVec[ge].state_valid          <= 1'b1;
             stateVec[ge].w_sameblock_inflight <= |sb1;
+          end else if (sel_ins0) begin
+            stateVec[ge].state_valid          <= 1'b1;
+            stateVec[ge].w_sameblock_inflight <= |sb0;
           end
 
           // ---- (2) Deq fire：置 inflight、清 w_timeout ----
@@ -674,23 +688,16 @@ module xs_Sbuffer_core
             stateVec[ge].state_inflight <= 1'b0;
             stateVec[ge].state_valid    <= 1'b0;
           end
-          // 解除同 block 等待：被释放的 id 匹配 waitInflightMask
-          else if (stateVec[ge].w_sameblock_inflight & stateVec[ge].state_valid
-                   & hit_resp_fire_q
-                   & (waitInflightMask[ge] == (16'h1 << hit_resp_id_q))) begin
+          // 解除同 block 等待：golden 为每拍无条件 `~release & (插入mux)`，release
+          // **不与 sel_hit 互斥**、且覆盖同拍 alloc 的写值——放在 alloc 之后独立 if。
+          if (stateVec[ge].w_sameblock_inflight & stateVec[ge].state_valid
+              & hit_resp_fire_q
+              & (waitInflightMask[ge] == (16'h1 << hit_resp_id_q))) begin
             stateVec[ge].w_sameblock_inflight <= 1'b0;
           end
 
           // ---- (4) replay_resp：挂 w_timeout 等重发 ----
           if (sel_replay) stateVec[ge].w_timeout <= 1'b1;
-
-          // waitInflightMask：alloc 且同 block 在途时记录等待掩码
-          if (sel_ins0 & (|sb0)) waitInflightMask[ge] <= sb0;
-          else if (sel_ins1 & (|sb1)) waitInflightMask[ge] <= sb1;
-
-          // ptag/vtag：alloc 时写入（merge 不改 ptag；vtag 一致性在 merge 里检查）
-          if (sel_ins0) begin meta[ge].ptag <= inptag[0]; meta[ge].vtag <= invtag[0]; end
-          else if (sel_ins1) begin meta[ge].ptag <= inptag[1]; meta[ge].vtag <= invtag[1]; end
 
           // cohCount：注意优先级与 golden 一致——「active & 未超时 → +1」**优先于**
           //   「alloc/merge → 清 0」。即对一个已 active 的 entry，即便这拍正被 merge，
@@ -718,7 +725,7 @@ module xs_Sbuffer_core
     merge_need_uarch_drain = 1'b0;
     for (int i = 0; i < ENSB_W; i++)
       for (int j = 0; j < SB_SIZE; j++)
-        if (accessValid[i] & canMerge[i] & mergeMask[i][j] & (invtag[i] != meta[j].vtag))
+        if (accessValid[i] & canMerge[i] & mergeMask[i][j] & (invtag[i] != vtag[j]))
           merge_need_uarch_drain = 1'b1;
   end
 
@@ -742,29 +749,32 @@ module xs_Sbuffer_core
   generate
     for (gl = 0; gl < SB_SIZE; gl++) begin : g_dataline
       // mask 清除标志：本行被 hit_resp 选中（maskFlushReq.wvec = UIntToOH(resp.id)）
-      always_ff @(posedge clock)
+      always_ff @(posedge clock or posedge reset)
         if (reset) line_mask_clean_q[gl] <= 1'b0;
-        else       line_mask_clean_q[gl] <= hit_resp_fire & (hit_resp_id == gl[SB_IDX_W-1:0]);
+        // golden wvec = (64'h1 << 全 6 位 id)[15:0]：id>=16 时全 0，须比较全宽 id
+        else       line_mask_clean_q[gl] <= hit_resp_fire
+                     & (io_dcache_main_pipe_hit_resp_bits_id == 6'(gl));
 
       for (gp = 0; gp < ENSB_W; gp++) begin : g_dataport
         wire s1_wen = writeReq_valid[gp] & writeReq_wvec[gp][gl];
-        always_ff @(posedge clock) begin
+        always_ff @(posedge clock or posedge reset)
           if (reset) s2_line_wen[gp][gl] <= 1'b0;
           else       s2_line_wen[gp][gl] <= s1_wen;
+        always_ff @(posedge clock)
           if (s1_wen) begin
             s2_data[gp][gl]   <= writeReq_data[gp];
             s2_wline[gp][gl]  <= writeReq_wline[gp];
             s2_mask[gp][gl]   <= writeReq_mask[gp];
             s2_offset[gp][gl] <= writeReq_voff[gp];
           end
-        end
       end
 
       // 落 data/mask：先看 mask 清除（与写入不会同拍冲突，硬件保证），再看两端口写
       for (genvar w = 0; w < CLINE_VWORDS; w++) begin : g_word
         for (genvar b = 0; b < VDATA_BYTES; b++) begin : g_byte
-          always_ff @(posedge clock) begin
-            // mask 复位为 0（golden mask 是 RegInit(false)；data 是普通 Reg 不复位）
+          // mask：golden RegInit(false) 在**异步**复位块；data 普通 Reg 无复位、
+          // 写使能不被 reset 门控（golden data 在纯时钟块）——两个寄存器分块。
+          always_ff @(posedge clock or posedge reset) begin
             if (reset) begin
               cline_mask[gl][w][b] <= 1'b0;
             end else begin
@@ -772,12 +782,19 @@ module xs_Sbuffer_core
                 cline_mask[gl][w][b] <= 1'b0;
               end
               for (int p = 0; p < ENSB_W; p++) begin
-                // write_byte = s2_wen & (mask[b] & offset==w | wline)
                 if (s2_line_wen[p][gl] &
                     ((s2_mask[p][gl][b] & (s2_offset[p][gl] == w[VWORDS_W-1:0])) | s2_wline[p][gl])) begin
-                  cline_data[gl][w][b] <= s2_data[p][gl][b*8 +: 8];
                   cline_mask[gl][w][b] <= 1'b1;
                 end
+              end
+            end
+          end
+          always_ff @(posedge clock) begin
+            for (int p = 0; p < ENSB_W; p++) begin
+              // write_byte = s2_wen & (mask[b] & offset==w | wline)
+              if (s2_line_wen[p][gl] &
+                  ((s2_mask[p][gl][b] & (s2_offset[p][gl] == w[VWORDS_W-1:0])) | s2_wline[p][gl])) begin
+                cline_data[gl][w][b] <= s2_data[p][gl][b*8 +: 8];
               end
             end
           end
@@ -815,23 +832,43 @@ module xs_Sbuffer_core
       logic [SB_SIZE-1:0] vtag_match, ptag_match_q;
       always_comb
         for (int w = 0; w < SB_SIZE; w++)
-          vtag_match[w] = (meta[w].vtag == get_vtag(fwd_vaddr[gf]));
+          vtag_match[w] = (vtag[w] == get_vtag(fwd_vaddr[gf]));
 
       // ptag 匹配：RegEnable(ptag, fwd_valid) vs RegEnable(getPTag(paddr), fwd_valid)
+      //   寄存器边界与 golden 完全一致：
+      //   * ptag_q/fwd_ptag_q（↔ ptag_matches_r 对）：enable=fwd_valid，无复位；
+      //   * vtag_match_q（↔ tag_mismatch_last_REG_{2w+1}）：**无使能**逐拍采样，异步复位 0；
+      //   * act_or_infl_q（↔ tag_mismatch_last_REG_{2w+2} = activeMask|state_inflight）：
+      //     同样无使能、异步复位 0；
+      //   * fwd_valid_q（↔ tag_mismatch_last_REG）：无使能、异步复位 0；
+      //   * valid_tag_match_q/inflight_tag_match_q（↔ valid/inflight_tag_match_reg =
+      //     RegEnable(vtag_match & activeMask / & state_inflight, fwd_valid)）：golden 把
+      //     AND **后**的结果寄存（与 vtag_match_q 是不同寄存器组），不能只存分量。
       logic [PTAG_W-1:0] ptag_q [SB_SIZE];
       logic [PTAG_W-1:0] fwd_ptag_q;
       logic              fwd_valid_q;
-      logic [SB_SIZE-1:0] vtag_match_q, active_q, inflight_q;
-      logic [VWORDS_W-1:0] fwd_voff_q;
+      logic [SB_SIZE-1:0] vtag_match_q, act_or_infl_q;
+      logic [SB_SIZE-1:0] valid_tag_match_q, inflight_tag_match_q;
       always_ff @(posedge clock) begin
-        fwd_valid_q <= fwd_valid[gf];
         if (fwd_valid[gf]) begin
-          for (int w = 0; w < SB_SIZE; w++) ptag_q[w] <= meta[w].ptag;
+          for (int w = 0; w < SB_SIZE; w++) ptag_q[w] <= ptag[w];
           fwd_ptag_q   <= get_ptag(fwd_paddr[gf]);
+          for (int w = 0; w < SB_SIZE; w++) begin
+            valid_tag_match_q[w]    <= vtag_match[w] & activeMask[w];
+            inflight_tag_match_q[w] <= vtag_match[w] & stateVec[w].state_inflight;
+          end
+        end
+      end
+      always_ff @(posedge clock or posedge reset) begin
+        if (reset) begin
+          fwd_valid_q   <= 1'b0;
+          vtag_match_q  <= '0;
+          act_or_infl_q <= '0;
+        end else begin
+          fwd_valid_q  <= fwd_valid[gf];
           vtag_match_q <= vtag_match;
-          active_q     <= activeMask;
-          inflight_q   <= inflightMask;
-          fwd_voff_q   <= get_vword_off(fwd_paddr[gf]);
+          for (int w = 0; w < SB_SIZE; w++)
+            act_or_infl_q[w] <= activeMask[w] | stateVec[w].state_inflight;
         end
       end
       always_comb
@@ -842,7 +879,7 @@ module xs_Sbuffer_core
       always_comb begin
         mism = 1'b0;
         for (int w = 0; w < SB_SIZE; w++)
-          if (fwd_valid_q & (vtag_match_q[w] != ptag_match_q[w]) & (active_q[w] | inflight_q[w]))
+          if (fwd_valid_q & (vtag_match_q[w] != ptag_match_q[w]) & act_or_infl_q[w])
             mism = 1'b1;
       end
       assign fwd_mismatch[gf] = mism;
@@ -857,22 +894,15 @@ module xs_Sbuffer_core
             data_cand_q[w] <= cline_data[w][get_vword_off(fwd_paddr[gf])];
           end
 
-      // active/inflight 命中（打拍）
-      logic [SB_SIZE-1:0] valid_match_q, inflight_match_q;
-      always_comb
-        for (int w = 0; w < SB_SIZE; w++) begin
-          valid_match_q[w]    = vtag_match_q[w] & active_q[w];
-          inflight_match_q[w] = vtag_match_q[w] & inflight_q[w];
-        end
-
       // Mux1H：选中 entry 的 mask/data（OR 归约，命中唯一）
+      //   选择位就是 golden 的 valid/inflight_tag_match_reg（AND 后寄存的版本）
       logic [VDATA_BYTES-1:0]      selValidMask, selInflMask;
       logic [VDATA_BYTES-1:0][7:0] selValidData, selInflData;
       always_comb begin
         selValidMask='0; selInflMask='0; selValidData='0; selInflData='0;
         for (int w = 0; w < SB_SIZE; w++) begin
-          if (valid_match_q[w])    begin selValidMask |= mask_cand_q[w]; selValidData |= data_cand_q[w]; end
-          if (inflight_match_q[w]) begin selInflMask  |= mask_cand_q[w]; selInflData  |= data_cand_q[w]; end
+          if (valid_tag_match_q[w])    begin selValidMask |= mask_cand_q[w]; selValidData |= data_cand_q[w]; end
+          if (inflight_tag_match_q[w]) begin selInflMask  |= mask_cand_q[w]; selInflData  |= data_cand_q[w]; end
         end
       end
 
@@ -981,7 +1011,7 @@ module xs_Sbuffer_core
 
   // ValidPseudoLRU.access(Seq(touch0,touch1,touch2))：把所有 valid 的 touch 按 0→1→2
   //   顺序「依次」叠加到同一拍（不是三选一），后者基于前者结果的状态再更新。
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) plru_state <= '0;
     else if (accessIdx0_valid_q | accessIdx1_valid_q | accessIdx2_valid) begin
       logic [14:0] s;

@@ -1432,8 +1432,9 @@ module xs_LoadUnit_core(
   assign s0_ifetch_pf = s0_src_select[SRC_INT_ISS] & s0_sel_prf_i;
   logic       reg_ifetch_pf_valid;
   logic [VADDR_BITS-1:0] reg_ifetch_pf_vaddr;
-  always_ff @(posedge clock) begin
-    reg_ifetch_pf_valid <= s0_ifetch_pf;
+  always_ff @(posedge clock) reg_ifetch_pf_valid <= s0_ifetch_pf;
+  // golden 复位寄存器统一在 always @(posedge clock or posedge reset) 异步复位块——对齐
+  always_ff @(posedge clock or posedge reset) begin
     if (reset)             reg_ifetch_pf_vaddr <= {VADDR_BITS{1'b0}};  // golden 复位 vaddr_r=0
     else if (s0_ifetch_pf) reg_ifetch_pf_vaddr <= s0_out_vaddr;
   end
@@ -1642,15 +1643,21 @@ module xs_LoadUnit_core(
   logic s1_kill, s1_can_go, s1_fire;
   assign s1_ready  = ~s1_valid | s1_kill | s2_ready;
   assign s1_can_go = s2_ready;
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset)              s1_valid <= 1'b0;
     else if (s0_fire)       s1_valid <= 1'b1;
     else if (s1_fire | s1_kill) s1_valid <= 1'b0;
   end
+  // golden 有两份 vecActive：s1_vecActive(异步复位=1, 仅供 s1 异常重算 lpf/laf/hwe)
+  // 与 s1_in_r_vecActive(无复位, 流水 payload)。bug-for-bug 对齐：impl 同样拆两份。
+  logic s1_vecActive;
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset)        s1_vecActive <= 1'b1;
+    else if (s0_fire) s1_vecActive <= s0_sel_vecActive;
+  end
   always_ff @(posedge clock) begin
     s1_nc_with_data <= s0_nc_with_data;
-    if (reset) s1_in_vecActive <= 1'b1;  // 与 golden 一致：vecActive 复位为 1
-    else if (s0_fire) s1_in_vecActive <= s0_sel_vecActive;
+    if (s0_fire) s1_in_vecActive <= s0_sel_vecActive;  // payload 份：golden 无复位
     if (s0_fire) begin
       s1_in_vaddr        <= s0_out_vaddr;
       s1_in_fullva       <= s0_out_fullva;
@@ -1731,9 +1738,11 @@ module xs_LoadUnit_core(
   // ---- redirect 打一拍（s1_kill 需同时比较当拍 redirect 与上一拍 redirect）-----
   logic       s1_redir_v_d, s1_redir_level_d, s1_redir_flag_d;
   logic [7:0] s1_redir_value_d;
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) s1_redir_v_d <= 1'b0;
     else       s1_redir_v_d <= io_redirect_valid;
+  end
+  always_ff @(posedge clock) begin
     if (io_redirect_valid) begin
       s1_redir_level_d <= io_redirect_bits_level;
       s1_redir_flag_d  <= io_redirect_bits_robIdx_flag;
@@ -1755,14 +1764,14 @@ module xs_LoadUnit_core(
   logic s1_checkfullva_d;  // RegNext(io_tlb_req_bits_checkfullva)
   always_ff @(posedge clock) s1_checkfullva_d <= io_tlb_req_bits_checkfullva;
   logic s1_exc_lpf, s1_exc_lgpf, s1_exc_laf, s1_exc_lam, s1_exc_hwe;
-  assign s1_exc_lpf  = ~s1_dly_err & io_tlb_resp_bits_excp_0_pf_ld  & s1_in_vecActive & ~s1_tlb_miss & ~s1_in_tlbNoQuery;
+  assign s1_exc_lpf  = ~s1_dly_err & io_tlb_resp_bits_excp_0_pf_ld  & s1_vecActive & ~s1_tlb_miss & ~s1_in_tlbNoQuery;
   assign s1_exc_lgpf = ~s1_dly_err & io_tlb_resp_bits_excp_0_gpf_ld &                    ~s1_tlb_miss & ~s1_in_tlbNoQuery;
-  assign s1_exc_laf  = ~s1_dly_err & io_tlb_resp_bits_excp_0_af_ld  & s1_in_vecActive & ~s1_tlb_miss & ~s1_in_tlbNoQuery;
+  assign s1_exc_laf  = ~s1_dly_err & io_tlb_resp_bits_excp_0_af_ld  & s1_vecActive & ~s1_tlb_miss & ~s1_in_tlbNoQuery;
   // checkfullva 命中且产生 pf/gpf/af 时，清除 LAM（误对齐让位真异常）
   logic s1_lam_clear;
   assign s1_lam_clear = s1_checkfullva_d & (s1_exc_lpf | s1_exc_lgpf | s1_exc_laf);
   assign s1_exc_lam  = ~s1_dly_err & ~s1_lam_clear & s1_in_excVec[EXC_LAM];
-  assign s1_exc_hwe  = s1_dly_err ? (s1_dly_err & s1_in_vecActive) : s1_in_excVec[EXC_HWE];
+  assign s1_exc_hwe  = s1_dly_err ? (s1_dly_err & s1_vecActive) : s1_in_excVec[EXC_HWE];
 
   // s1 trigger：action==0 表示断点异常(breakpoint)，action==1 表示进入 debug mode
   // （与 golden s1_trigger_breakpoint/s1_trigger_debug_mode 一致）
@@ -1966,7 +1975,7 @@ module xs_LoadUnit_core(
   assign s2_can_go = s3_ready;
   assign s2_fire   = s2_valid & ~s2_kill & s3_ready;
 
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       s2_valid <= 1'b0; s2_vecActive <= 1'b1; s2_isvec <= 1'b0; s2_trigger_dmode <= 1'b0;
     end else begin
@@ -2284,7 +2293,7 @@ module xs_LoadUnit_core(
   logic [63:0] s1_tlD_use_hi;  // golden _GEN_81
   assign s1_tlD_use_hi = s1_paddr_dup_lsu[3] ? s1_tlD_lo : s1_tlD_hi;
 
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       s2_fwd_frm_d_chan <= 1'b0;
       for (int b = 0; b < MASK_BITS; b++) s2_fwd_data_frm_d_chan[b] <= 8'h0;
@@ -2307,9 +2316,13 @@ module xs_LoadUnit_core(
     s2_mem_amb_REG  <= io_lsq_forward_valid;
     s2_fwd_fail_REG <= io_lsq_forward_valid;
     s2_tlb_hit_REG  <= s1_tlb_hit;
-    s2_mis_align_REG<= io_csrCtrl_hd_misalign_ld_enable;
     s2_nc_with_data <= s1_nc_with_data;
     if (s1_fire) s2_pbmt <= s1_pbmt;
+  end
+  // golden s2_mis_align_last_REG 在异步复位块内(复位=0)——对齐
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) s2_mis_align_REG <= 1'b0;
+    else       s2_mis_align_REG <= io_csrCtrl_hd_misalign_ld_enable;
   end
 
   // ---- S2 prefetch train（valid 打一拍 + inputReg 锁存）----------------------
@@ -2322,9 +2335,11 @@ module xs_LoadUnit_core(
   logic                  pf_tr_isFirstIssue, pf_tr_miss; logic [2:0] pf_tr_meta;
   logic                  pf_tr1_robIdx_flag; logic [7:0] pf_tr1_robIdx_value;
   logic [VADDR_BITS-1:0] pf_tr1_vaddr;       logic pf_tr1_isFirstIssue, pf_tr1_miss; logic [2:0] pf_tr1_meta;
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) begin pf_tr_valid_d <= 1'b0; pf_tr_l1_valid_d <= 1'b0; end
     else begin pf_tr_valid_d <= s2_prefetch_train_valid; pf_tr_l1_valid_d <= s2_prefetch_train_l1_valid; end
+  end
+  always_ff @(posedge clock) begin
     if (s2_prefetch_train_valid) begin
       pf_tr_robIdx_flag <= s2_in_robIdx_flag; pf_tr_robIdx_value <= s2_in_robIdx_value;
       pf_tr_vaddr <= s2_in_vaddr; pf_tr_paddr <= s2_in_paddr; pf_tr_isFirstIssue <= s2_in_isFirstIssue;
@@ -2349,12 +2364,14 @@ module xs_LoadUnit_core(
   logic [7:0] s2_mmio_pdest_1, s2_mmio_robIdx_value_1; logic s2_mmio_robIdx_flag_1;
   logic [63:0] s2_mmio_enqRsTime_1, s2_mmio_selectTime_1, s2_mmio_issueTime_1;
   logic s2_mmio_replayInst_1, s2_mmio_isMMIO_1, s2_mmio_isNCIO_1, s2_mmio_isPerfCnt_1;
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) begin s2_mmio_req_valid_d <= 1'b0; s2_mmio_req_valid_d2 <= 1'b0; end
     else begin
       s2_mmio_req_valid_d   <= s0_mmio_fire & io_lsq_uncache_valid;
       s2_mmio_req_valid_d2 <= s2_mmio_req_valid_d;
     end
+  end
+  always_ff @(posedge clock) begin
     s2_mmio_v3  <= io_lsq_uncache_bits_uop_exceptionVec_3;  s2_mmio_v4 <= io_lsq_uncache_bits_uop_exceptionVec_4;
     s2_mmio_v5  <= io_lsq_uncache_bits_uop_exceptionVec_5;  s2_mmio_v13 <= io_lsq_uncache_bits_uop_exceptionVec_13;
     s2_mmio_v19 <= io_lsq_uncache_bits_uop_exceptionVec_19; s2_mmio_v21 <= io_lsq_uncache_bits_uop_exceptionVec_21;
@@ -2453,7 +2470,7 @@ module xs_LoadUnit_core(
   // S2->S3 寄存器加载
   logic [8:0] s2_data_select_oh;
   assign s2_data_select_oh = gen_rdata_oh(s2_in_fuOpType, s2_in_fpWen);
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       s3_vecActive <= 1'b1; s3_isvec <= 1'b0; s3_data_select <= 9'h0; s3_data_select_by_offset <= 16'h0;
     end else if (s2_fire) begin
@@ -2461,6 +2478,8 @@ module xs_LoadUnit_core(
       s3_data_select <= s2_data_select_oh;
       s3_data_select_by_offset <= gen_data_select_by_offset(s2_in_paddr[3:0]);
     end
+  end
+  always_ff @(posedge clock) begin
     if (s2_fire) begin
       s3_in_excVec[0]  <= ~s2_supress & s2_in_excVec[0];
       s3_in_excVec[1]  <= ~s2_supress & s2_in_excVec[1];
@@ -2567,6 +2586,8 @@ module xs_LoadUnit_core(
     s3_mwk_v13_2 <= s3_mwk_v13_1; s3_mwk_v19_2 <= s3_mwk_v19_1; s3_mwk_v21_2 <= s3_mwk_v21_1;
     s3_mwk_trig_2 <= s3_mwk_trig_1; s3_mwk_nc_2 <= s3_mwk_nc_1; s3_mwk_mmio_2 <= s3_mwk_mmio_1;
     s3_mwk_mm_2 <= s3_mwk_mm_1; s3_mwk_vecAct_2 <= s3_mwk_vecAct_1; s3_mwk_needWk_2 <= s3_mwk_needWk_1;
+  end
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       s3_valid_REG <= 1'b0; s3_troublem_REG <= 1'b0; s3_hw_err_REG <= 1'b0;
       s3_vp_match_fail_REG <= 1'b0; s3_ldld_rep_inst_REG <= 1'b0;
@@ -2666,8 +2687,9 @@ module xs_LoadUnit_core(
   logic [63:0] s3_picked_pipe;
   always_comb begin
     s3_picked_pipe = 64'h0;
+    // golden 是 Mux1H(并行 OR)非优先链：多热时各窗口按位 OR(bug-for-bug 对齐)
     for (int o = 0; o < MASK_BITS; o++)
-      if (s3_data_select_by_offset[o]) s3_picked_pipe = pick_data_window(s3_merged_data, 4'(o));
+      if (s3_data_select_by_offset[o]) s3_picked_pipe |= pick_data_window(s3_merged_data, 4'(o));
   end
   logic [63:0] s3_data_frm_pipe;
   assign s3_data_frm_pipe = new_rdata(s3_data_select, s3_picked_pipe);
@@ -3064,18 +3086,23 @@ module xs_LoadUnit_core(
   assign io_lsTopdownInfo_s2_paddr_bits = s2_in_paddr;
 
   // ---- perf 计数（每路事件打两拍再零扩展到 6 位）----
-  logic perf0_d, perf0_dd, perf2_d, perf2_dd, perf4_d, perf4_dd, perf5_d, perf5_dd, perf6_d, perf6_dd;
+  // golden 每路 perf 各自独立打拍链：perf1 为常量 0 链、perf3 为 s0_fire 的重复链，
+  // 与 perf0 各自独立（bug-for-bug 保留重复寄存器）。
+  logic perf0_d, perf0_dd, perf1_d, perf1_dd, perf2_d, perf2_dd, perf3_d, perf3_dd,
+        perf4_d, perf4_dd, perf5_d, perf5_dd, perf6_d, perf6_dd;
   always_ff @(posedge clock) begin
     perf0_d <= s0_fire;                            perf0_dd <= perf0_d;
+    perf1_d <= 1'b0;                               perf1_dd <= perf1_d;
     perf2_d <= s0_fire & ~io_dcache_req_ready;     perf2_dd <= perf2_d;
+    perf3_d <= s0_fire;                            perf3_dd <= perf3_d;
     perf4_d <= s1_fire & io_tlb_resp_bits_miss;    perf4_dd <= perf4_d;
     perf5_d <= s1_fire;                            perf5_dd <= perf5_d;
     perf6_d <= s2_fire & io_dcache_resp_bits_miss; perf6_dd <= perf6_d;
   end
   assign io_perf_0_value = {5'h0, perf0_dd};
-  assign io_perf_1_value = 6'h0;
+  assign io_perf_1_value = {5'h0, perf1_dd};
   assign io_perf_2_value = {5'h0, perf2_dd};
-  assign io_perf_3_value = {5'h0, perf0_dd};
+  assign io_perf_3_value = {5'h0, perf3_dd};
   assign io_perf_4_value = {5'h0, perf4_dd};
   assign io_perf_5_value = {5'h0, perf5_dd};
   assign io_perf_6_value = {5'h0, perf6_dd};

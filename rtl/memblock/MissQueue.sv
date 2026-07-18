@@ -204,7 +204,13 @@ module xs_MissQueue_core (
                             : {3'h1, (mqpr.source != SRC_AMO), 1'h0};
   // needHint：!l2_pf_store_only | store；isKeyword：仅 load 且 vaddr[5]
   wire pr_acq_needhint  = ~io_l2_pf_store_only | pr_is_store;
-  wire pr_acq_iskeyword = pr_is_load & mqpr.vaddr[5];
+  // isKeyword()（Scala MissReq.isKeyword，new_req=req 自身）：
+  //   Mux(merge_req(req), merge_isKeyword(req), alloc && load && vaddr[5])
+  //   self-merge 时 isAfter(lqIdx,lqIdx)=false → 仍取 req.vaddr[5]；
+  //   golden 展开 = (alloc&((load|store|pf)&load | (load|pf)&store) | alloc&load) & vaddr[5]。
+  wire pr_self_merge = mqpr_alloc & ((pr_is_load | pr_is_store | pr_is_pref) & pr_is_load
+                                   | (pr_is_load | pr_is_pref) & pr_is_store);
+  wire pr_acq_iskeyword = (pr_self_merge | (mqpr_alloc & pr_is_load)) & mqpr.vaddr[5];
 
   // ===========================================================================
   //  D. 4 路 queryMQ ready（与主请求同构的提前判定，给上游 timing）
@@ -274,8 +280,10 @@ module xs_MissQueue_core (
   wire mp_refill_hit = io_mainpipe_info_s3_valid & io_mainpipe_info_s3_refill_resp;
 
   // acquire_from_pipereg 是否真的发出（用于 entry 的 acquire_fired_by_pipe_reg）
-  // = io_mem_acquire_ready & allowed_pipereg & acquire_from_pipereg_valid（allowed_pipereg 见 F 节）
-  wire acquire_pipereg_allowed = ~cmo_acq_valid;   // 单 beat：idle 仲裁，pipereg 被允许 = CMO 不占
+  // = io_mem_acquire_ready & allowed_pipereg & acquire_from_pipereg_valid
+  // golden allowed_1 = beatsLeft ? state_1 : ~cmo_valid（TLArbiter 突发锁定，见 F 节 acq_grant）。
+  logic [N_ACQ_SRC-1:0] acq_grant;   // 前向声明（F 节赋值）：ready 分配掩码 = beatsLeft ? state : readys
+  wire acquire_pipereg_allowed = acq_grant[1];
   wire acquire_pipereg_fired   = io_mem_acquire_ready & acquire_pipereg_allowed & acquire_from_pipereg_valid;
 
   // 前向声明（被 entry genvar 例化引用，其驱动逻辑在 F/G/H 节）：A/E 通道仲裁 one-hot
@@ -284,6 +292,7 @@ module xs_MissQueue_core (
   logic [N_ACQ_SRC-1:0] acq_winner;        // mem_acquire：allowed & valid（给 payload mux）
   logic [N_FIN_SRC-1:0] fin_allowed;       // mem_finish 同上
   logic [N_FIN_SRC-1:0] fin_winner;
+  logic [N_FIN_SRC-1:0] fin_grant;         // mem_finish ready 分配掩码（G 节赋值，含突发锁定）
   logic                 grant_is_cbo;      // grant.opcode==CBOAck → 交 CMOUnit
   logic [N_ENTRY-1:0]   grant_hit_entry;   // grant.source==i
   // memset 检测寄存器：entry 例化用它做 memSetPattenDetected 输入；驱动在 K 节。
@@ -309,7 +318,34 @@ module xs_MissQueue_core (
   end
   assign acq_allowed = lowest_allowed_acq(acq_valids);
   assign acq_winner  = acq_allowed & acq_valids;
-  assign io_mem_acquire_valid = |acq_valids;
+
+  // ---- TLArbiter 突发锁定框架（bug-for-bug 复刻 golden beatsLeft / state_0..17）----
+  // FM 语义上 beatsLeft/state 是真实状态（golden 保留了寄存器，opcode 对 FM 是自由变量，
+  // 组合「idle lowest」不可证等价）。beats1 = ~opcode[2]（Put* 2 beat）；pipereg 的
+  // opcode 恒 {3'h3,x}（bit2=1）→ 不贡献（golden 表达式中亦无 winner_1 项）。
+  logic                 acq_beatsLeft;
+  logic [N_ACQ_SRC-1:0] acq_state;
+  logic                 acq_beats1_sel;
+  always_comb begin
+    acq_beats1_sel = acq_winner[0] & ~cmo_acq_opcode[2];
+    for (int i = 0; i < N_ENTRY; i++)
+      acq_beats1_sel |= acq_winner[2+i] & ~e_acq_opcode[i][2];
+  end
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) begin
+      acq_beatsLeft <= 1'b0;
+      acq_state     <= '0;
+    end else begin
+      if (~acq_beatsLeft & io_mem_acquire_ready) acq_beatsLeft <= acq_beats1_sel;
+      else acq_beatsLeft <= 1'(acq_beatsLeft - (io_mem_acquire_ready & io_mem_acquire_valid));
+      if (~acq_beatsLeft) acq_state <= acq_winner;   // idle 拍锁存 winner（不看 ready）
+    end
+  end
+  // payload 选择 muxState / ready 分配 allowed（golden muxState_k / allowed_k）
+  wire [N_ACQ_SRC-1:0] acq_mux = acq_beatsLeft ? acq_state : acq_winner;
+  assign acq_grant = acq_beatsLeft ? acq_state : acq_allowed;
+  // out.valid = beatsLeft ? |(state&valids) : |valids（golden io_mem_acquire_valid_0）
+  assign io_mem_acquire_valid = acq_beatsLeft ? |(acq_state & acq_valids) : |acq_valids;
 
 `include "missqueue_acq_arb.svh"
 
@@ -318,11 +354,27 @@ module xs_MissQueue_core (
   // ===========================================================================
   assign fin_allowed = lowest_allowed_fin(e_fin_valid);  // fin_allowed/winner 已前向声明
   assign fin_winner  = fin_allowed & e_fin_valid;
-  assign io_mem_finish_valid = |e_fin_valid;
+  // ---- TLArbiter 突发锁定（golden beatsLeft_1 / state_1_0..15；E 通道 beats1 恒 0）----
+  logic                 fin_beatsLeft;
+  logic [N_FIN_SRC-1:0] fin_state;
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) begin
+      fin_beatsLeft <= 1'b0;
+      fin_state     <= '0;
+    end else begin
+      // golden: beatsLeft_1 <= ~(~b & ready) & (b - fire)：idle&ready 拍装载 0，否则递减
+      if (~fin_beatsLeft & io_mem_finish_ready) fin_beatsLeft <= 1'b0;
+      else fin_beatsLeft <= 1'(fin_beatsLeft - (io_mem_finish_ready & io_mem_finish_valid));
+      if (~fin_beatsLeft) fin_state <= fin_winner;
+    end
+  end
+  wire [N_FIN_SRC-1:0] fin_mux = fin_beatsLeft ? fin_state : fin_winner;
+  assign fin_grant = fin_beatsLeft ? fin_state : fin_allowed;
+  assign io_mem_finish_valid = fin_beatsLeft ? |(fin_state & e_fin_valid) : |e_fin_valid;
   always_comb begin
     io_mem_finish_bits_sink = '0;
     for (int i = 0; i < N_FIN_SRC; i++)
-      if (fin_winner[i]) io_mem_finish_bits_sink |= e_fin_sink[i];
+      if (fin_mux[i]) io_mem_finish_bits_sink |= e_fin_sink[i];
   end
 
   // ===========================================================================
@@ -400,7 +452,7 @@ module xs_MissQueue_core (
   // memset 检测：连续 >=8 条非 load（store）请求被处理 且 lqEmpty → 判定为 memset，放宽 prefetch entry。
   //  （source_except_load_cnt / memset_detected_q 已在 entry 例化前前置声明。）
   wire        any_handled = (|e_req_handled) | req_pipeline_reg_handled;
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin   // golden 异步复位块
     if (reset) begin
       source_except_load_cnt <= '0;
       memset_detected_q      <= 1'b0;
@@ -470,7 +522,7 @@ module xs_MissQueue_core (
   // ===========================================================================
   //  C(续). miss_req_pipe_reg 时序更新（放最后，靠近其使用的判定信号定义）
   // ===========================================================================
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin   // golden 异步复位块（3062 行）
     if (reset) begin
       mqpr         <= '0;
       mqpr_merge   <= 1'b0;

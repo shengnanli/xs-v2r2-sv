@@ -93,11 +93,19 @@ module xs_Tage_SC_core #(
   output logic [META_W-1:0]   io_out_last_stage_meta,
   output logic                io_out_sc_disagree [NUM_BR],   // last_stage_spec_info.sc_disagree
   output logic                io_s1_ready,
+  // perf 计数（golden io_perf_{0,1,2}_value：事件打两拍，高 4 位补零）
+  output logic [5:0]          io_perf_0_value,
+  output logic [5:0]          io_perf_1_value,
+  output logic [5:0]          io_perf_2_value,
 
   // ---- 更新（commit）输入 ----
   input  logic                io_update_valid,
   input  logic [PC_W-1:0]     io_update_pc,
-  input  logic                io_update_br_valid  [NUM_BR],  // ftb_entry.brValids（bank0=brSlots_0_valid，bank1=tailSlot_valid）
+  input  logic                io_update_br_valid  [NUM_BR],  // ftb_entry.brValids（bank0=brSlots_0_valid，bank1=tailSlot_valid&sharing 当拍积）
+  // bank1 的两只原始位（golden 分别寄存 tailSlot_valid/sharing 再在下游相与；
+  // 若只寄存乘积则与 golden 寄存器 1:1 失配 → FM 锥输入毒化大片失配）
+  input  logic                io_update_tailSlot_valid,
+  input  logic                io_update_tailSlot_sharing,
   input  logic                io_update_strong_bias [NUM_BR],
   input  logic                io_update_br_taken    [NUM_BR],
   input  logic                io_update_mispred     [NUM_BR],
@@ -356,15 +364,15 @@ module xs_Tage_SC_core #(
 
   // s2 寄存：scSum、provider 居中 ctr、scResps（更新 meta 用）
   logic signed [8:0]  s2_sc_sum [NUM_BR][2];
-  logic signed [10:0] s2_pvdr_centered [NUM_BR];   // {ctr^4,1'b1,3'b0} 是 (3+1+3)=7? 需带符号扩展
+  logic [2:0]         s2_pvdr_ctr_r [NUM_BR];      // golden s2_tagePrvdCtrCentered_r：寄存**原始** 3 位 provider ctr
+                                                     //（居中值下游组合展开；寄存展开值会与 golden 寄存器失配）
   logic signed [SC_CTR_W-1:0] s2_sc_resps [NUM_BR][SC_NTBL][2];
   always_ff @(posedge clock) begin
     if (io_s1_fire[3]) begin
       for (int unsigned b = 0; b < NUM_BR; b++) begin
         for (int unsigned i = 0; i < 2; i++) s2_sc_sum[b][i] <= s1_sc_sum[b][i];
-        // getPvdrCentered(s1_providerResps.ctr)：{ctr ^ 4, 1'b1, 3'b0}
-        s2_pvdr_centered[b] <=
-          $signed({(s1_prov_ctr[b] ^ (TAGE_CTR_W'(1) << (TAGE_CTR_W-1))), 1'b1, 3'b000});
+        // 寄存原始 provider ctr（golden s2_tagePrvdCtrCentered_r）
+        s2_pvdr_ctr_r[b] <= s1_prov_ctr[b];
         for (int unsigned t = 0; t < SC_NTBL; t++)
           for (int unsigned i = 0; i < 2; i++)
             s2_sc_resps[b][t][i] <= sc_resp_ctrs[t][b][i];
@@ -377,7 +385,7 @@ module xs_Tage_SC_core #(
   //     signedThres = thr;  totalSum = scSum + tagePvdr;
   //     (scSum >  thr - tagePvdr) & totalSum>=0  ||
   //     (scSum < -thr - tagePvdr) & totalSum<0
-  logic signed [11:0] s2_total_sum [NUM_BR][2];
+  logic [9:0]         s2_total_sum [NUM_BR][2];   // golden s2_totalSums_N（10 位）
   logic               s2_above_thr [NUM_BR][2];
   logic               s2_sc_pred   [NUM_BR][2];
   logic               s2_pred      [NUM_BR];     // SC 校正后的最终方向（s3 前）
@@ -386,26 +394,27 @@ module xs_Tage_SC_core #(
 
   always_comb begin
     for (int unsigned b = 0; b < NUM_BR; b++) begin
-      logic signed [8:0] signed_thr;
+      logic [2:0] t3;
+      logic [9:0] pvdr10;
+      logic [8:0] thres9, pvdr9;
       logic sel_choose;
       logic sel_above_thr;
       logic sel_sc_pred;
-      signed_thr = $signed({4'b0, sc_thr_thres[b][4:0]});  // useThreshold = scThresholds.thres（值域 6..31，5bit 足够）
-      // 注：thres 声明 8bit，但值域 6..31；与 scSum 比较需带符号扩展
+      // 位宽逐一对齐 golden：pvdr 居中 10/9 位、thres 零扩 9 位、totalSum 10 位。
+      t3     = s2_pvdr_ctr_r[b] ^ 3'h4;
+      pvdr10 = {{3{t3[2]}}, t3, 4'h8};                 // golden _GEN_78
+      thres9 = {1'b0, sc_thr_thres[b]};                // golden _GEN_79
+      pvdr9  = {{2{t3[2]}}, t3, 4'h8};                 // golden _GEN_80
       for (int unsigned i = 0; i < 2; i++) begin
-        logic signed [11:0] tot;
-        logic signed [11:0] pvdr;
-        logic signed [11:0] sum;
-        logic signed [11:0] thr_ext;
-        pvdr = s2_pvdr_centered[b];
-        sum  = s2_sc_sum[b][i];
-        thr_ext = $signed({4'b0, sc_thr_thres[b]});
-        tot  = sum + pvdr;
+        logic signed [8:0] sum;
+        logic [9:0] tot;
+        sum = s2_sc_sum[b][i];
+        tot = 10'({sum[8], sum} + pvdr10);
         s2_total_sum[b][i] = tot;
         s2_above_thr[b][i] =
-          ((sum >  (thr_ext - pvdr)) & (tot >= 0)) |
-          ((sum < (-thr_ext - pvdr)) & (tot <  0));
-        s2_sc_pred[b][i]   = (tot >= 0);
+          (($signed(sum) > $signed(9'(thres9 - pvdr9))) & ~tot[9]) |
+          (($signed(sum) < $signed(9'(9'(9'h0 - thres9) - pvdr9))) & tot[9]);
+        s2_sc_pred[b][i]   = ($signed(tot) > -10'sh1);
       end
       // 选中桶 = s2_tageTaken(dup3)。注意：必须用三元 mux（cond ? bucket1 : bucket0）
       // 选桶，**不能**用 s2_above_thr[b][s2_choose[b]] 这种「变量下标取数组」——
@@ -533,6 +542,8 @@ module xs_Tage_SC_core #(
   // ---------------------------------------------------------------------------
   logic            u_valid;            // io_update_valid 打一拍
   logic            upd_br_valid [NUM_BR];
+  logic            upd_tailSlot_valid;    // golden update_r_ftb_entry_tailSlot_valid
+  logic            upd_tailSlot_sharing;  // golden update_r_ftb_entry_tailSlot_sharing
   logic            upd_strong_bias [NUM_BR];
   logic            upd_br_taken [NUM_BR];
   logic            upd_mispred  [NUM_BR];
@@ -566,8 +577,11 @@ module xs_Tage_SC_core #(
   always_ff @(posedge clock) begin
     // update.bits := RegEnable(io.update.bits, io.update.valid)
     if (io_update_valid) begin
+      // bank0 寄存原始位；bank1 改为分别寄存 tailSlot_valid/sharing（下游相与）
+      upd_br_valid[0]      <= io_update_br_valid[0];
+      upd_tailSlot_valid   <= io_update_tailSlot_valid;
+      upd_tailSlot_sharing <= io_update_tailSlot_sharing;
       for (int unsigned b = 0; b < NUM_BR; b++) begin
-        upd_br_valid[b]    <= io_update_br_valid[b];
         upd_strong_bias[b] <= io_update_strong_bias[b];
         upd_br_taken[b]    <= io_update_br_taken[b];
         upd_mispred[b]     <= io_update_mispred[b];
@@ -625,8 +639,15 @@ module xs_Tage_SC_core #(
   // bank0：~(prioEnc < 0) 恒真（prioEnc 不可能 <0）
   assign update_valids[0] = upd_br_valid[0] & u_valid & ~upd_strong_bias[0];
   // bank1：被屏蔽当 bank0 是首个 taken（prioEnc==0 即 br_taken_mask[0]==1）
-  assign update_valids[1] = upd_br_valid[1] & u_valid & ~upd_strong_bias[1]
+  assign update_valids[1] = (upd_tailSlot_valid & upd_tailSlot_sharing)
+                          & u_valid & ~upd_strong_bias[1]
                           & ~upd_br_taken[0];
+
+  // ---- perf 计数（golden io_perf_N_value_REG/REG_1，无复位两拍流水）----
+  logic [1:0] perf0_s1, perf0_s2, perf1_s1, perf1_s2, perf2_s1, perf2_s2;
+  assign io_perf_0_value = {4'h0, perf0_s2};
+  assign io_perf_1_value = {4'h0, perf1_s2};
+  assign io_perf_2_value = {4'h0, perf2_s2};
 
   // updateAltIdx：按 update_pc 索引 useAltOnNa（用 io_update_pc 当拍，pc 不打拍）
   wire [UAON_IDXW-1:0] upd_alt_idx = io_update_pc[INST_OFF +: UAON_IDXW];
@@ -794,52 +815,69 @@ module xs_Tage_SC_core #(
   //   写表：scPred != taken 或 ~sumAboveThreshold → scUpdateMask 全置；
   // ===========================================================================
   logic signed [8:0]  u_sc_tableSum [NUM_BR];
-  logic signed [10:0] u_sc_pvdrCent [NUM_BR];
-  logic signed [11:0] u_sc_totalSum [NUM_BR];
-  logic [11:0]        u_sc_totalAbs [NUM_BR];
+  logic [9:0]         u_sc_tot10    [NUM_BR];   // golden sumAboveThreshold_totalSum（10 位）
+  logic [9:0]         u_sc_totAbs10 [NUM_BR];   // golden _totalSumAbs_T_8（10 位）
   logic               u_sc_aboveThr [NUM_BR];
-  logic [7:0]         u_sc_updThres [NUM_BR];
   logic               u_sc_thr_cause [NUM_BR];     // scPred != taken（阈值 ctr 增减方向）
   logic               u_sc_do_thr_upd [NUM_BR];
   logic               u_sc_do_write   [NUM_BR];
 
+  // 位宽逐一对齐 golden（10/12/13 位；8 位 thres-4 减法带回绕）——
+  // 常规值域下与原 12 位写法等值，但 FM 视寄存器为自由变量，位宽/回绕必须逐位一致。
   always_comb begin
     for (int unsigned b = 0; b < NUM_BR; b++) begin
       logic signed [8:0]  ts;
-      logic signed [11:0] thr_ext, pvdr12, tot;
+      logic [2:0]         t3;
+      logic [9:0]         pvdr10;
+      logic [11:0]        thres12;
+      logic [12:0]        thres13, pvdr13, ts13;
       ts = '0;
       for (int unsigned t = 0; t < SC_NTBL; t++)
         ts += $signed({um_sc_ctrs[b][t], 1'b1});       // getCentered
       u_sc_tableSum[b] = ts;
-      u_sc_pvdrCent[b] =
-        $signed({(um_prov_ctr[b] ^ (TAGE_CTR_W'(1) << (TAGE_CTR_W-1))), 1'b1, 3'b000});
 
-      pvdr12  = u_sc_pvdrCent[b];
-      tot     = $signed(ts) + pvdr12;
-      u_sc_totalSum[b] = tot;
-      u_sc_totalAbs[b] = tot[11] ? (~tot + 12'b1) : tot;   // abs
+      t3      = um_prov_ctr[b] ^ 3'h4;                  // getPvdrCentered 的 ctr^4
+      pvdr10  = {{3{t3[2]}}, t3, 4'h8};                 // golden _GEN_85
+      u_sc_tot10[b]    = 10'({ts[8], ts} + pvdr10);     // golden totalSum（10 位）
+      u_sc_totAbs10[b] = u_sc_tot10[b][9] ? 10'(10'h0 - u_sc_tot10[b]) : u_sc_tot10[b];
 
-      u_sc_updThres[b] = (sc_thr_thres[b] << 3) + 8'd21;
-      thr_ext = $signed({4'b0, u_sc_updThres[b]});
+      thres12 = 12'({1'b0, sc_thr_thres[b], 3'h0} + 12'h15);  // useThreshold<<3 + 21
+      thres13 = {1'b0, thres12};                        // golden _GEN_86
+      pvdr13  = {{6{t3[2]}}, t3, 4'h8};                 // golden _GEN_87
+      ts13    = {{4{ts[8]}}, ts};                       // golden _GEN_88
       u_sc_aboveThr[b] =
-        (($signed(ts) >  (thr_ext - pvdr12)) & (tot >= 0)) |
-        (($signed(ts) < (-thr_ext - pvdr12)) & (tot <  0));
+        (($signed(ts13) > $signed(13'(thres13 - pvdr13))) & ~u_sc_tot10[b][9]) |
+        (($signed(ts13) < $signed(13'(13'(13'h0 - thres13) - pvdr13))) & u_sc_tot10[b][9]);
 
       // tagePred = updateMeta.takens(w) = altUsed ? basecnt[1] : providerResp.ctr 最高位
       u_sc_tagePred[b] = um_alt_used[b] ? um_basecnt[b][1] : um_prov_ctr[b][TAGE_CTR_W-1];
       u_sc_taken[b]    = upd_br_taken[b];
 
       u_sc_thr_cause[b] = (um_sc_preds[b] != upd_br_taken[b]);
-      // 阈值更新条件：scPred != tagePred 且 |totalSum| ∈ [useThres-4, useThres-2]
+      // 阈值更新条件：scPred != tagePred 且 |totalSum| ∈ [thres-4, thres-2]
+      //（golden：8 位减法带回绕后 {2'h0,...} 零扩到 10 位再比较）
       u_sc_do_thr_upd[b] = update_valids[b] & um_prov_valid[b]
                          & (um_sc_preds[b] != u_sc_tagePred[b])
-                         & (u_sc_totalAbs[b] >= ({4'b0, sc_thr_thres[b]} - 12'd4))
-                         & (u_sc_totalAbs[b] <= ({4'b0, sc_thr_thres[b]} - 12'd2));
+                         & (u_sc_totAbs10[b] >= {2'h0, 8'(sc_thr_thres[b] - 8'h4)})
+                         & (u_sc_totAbs10[b] <= {2'h0, 8'(sc_thr_thres[b] - 8'h2)});
       // 写表条件：scPred != taken 或 ~sumAboveThreshold
       u_sc_do_write[b] = update_valids[b] & um_prov_valid[b]
                        & ((um_sc_preds[b] != upd_br_taken[b]) | ~u_sc_aboveThr[b]);
       sc_upd_valid_b[b] = u_sc_do_write[b];
     end
+  end
+
+  // perf 事件两拍流水（golden io_perf_N_value_REG/REG_1 在无复位块）：
+  //   perf0 = 两 bank provider 命中数；perf1 = sc 更新且 scPred 错；perf2 = sc 更新且 scPred 对
+  always_ff @(posedge clock) begin
+    perf0_s1 <= 2'({1'b0, um_prov_valid[0]} + {1'b0, um_prov_valid[1]});
+    perf0_s2 <= perf0_s1;
+    perf1_s1 <= 2'({1'b0, u_sc_do_write[0] & u_sc_thr_cause[0]}
+                 + {1'b0, u_sc_do_write[1] & u_sc_thr_cause[1]});
+    perf1_s2 <= perf1_s1;
+    perf2_s1 <= 2'({1'b0, u_sc_do_write[0] & ~u_sc_thr_cause[0]}
+                 + {1'b0, u_sc_do_write[1] & ~u_sc_thr_cause[1]});
+    perf2_s2 <= perf2_s1;
   end
 
   // ===========================================================================

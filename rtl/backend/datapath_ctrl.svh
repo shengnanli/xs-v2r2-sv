@@ -1,4 +1,9 @@
-// 自动生成:scripts/gen_datapath.py —— 勿手改(逻辑为从设计意图的可读重写)
+// 手工维护源 —— 直接编辑本文件,勿再跑 scripts/gen_datapath.py 覆盖。
+// scripts/gen_datapath.py 仅为初始脚手架,已被 datapath_*.svh 手工维护 superseded
+// (SUPERSEDED,2026-07-18)。本文件的 flush 复位域 FM 修复(s1_flush valid 用异步复位
+// posedge clock or posedge reset;s1_flush bits 仅 io_flush_valid 时更新、无 reset)
+// 只落在本 svh;生成器发的是无门控/同步复位版本,会被 FM 判与 golden 异步复位寄存器不
+// 等价。重跑生成器会抹掉该修复,故勿覆盖。判定证据见本轮报告。
 
 // =====================================================================
 // s0->s1 控制流水寄存器(打拍部分)。ctrl 字段从 fromIQ.common 寄存(RegEnable
@@ -11,12 +16,20 @@
   assign flush_now = '{valid: io_flush_valid, level: io_flush_bits_level,
                        robIdx_flag: io_flush_bits_robIdx_flag,
                        robIdx_value: io_flush_bits_robIdx_value};
-  always_ff @(posedge clock) begin
+  // golden(s1_flush_next_valid_last_REG_*):valid 用【异步复位】(posedge clock or posedge
+  // reset)复位到 0,否则 <= io_flush_valid。同步复位会被 FM 判与 golden 异步复位寄存器不等价。
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) flush_q.valid <= 1'b0;
     else       flush_q.valid <= io_flush_valid;
-    flush_q.level        <= io_flush_bits_level;
-    flush_q.robIdx_flag  <= io_flush_bits_robIdx_flag;
-    flush_q.robIdx_value <= io_flush_bits_robIdx_value;
+  end
+  // golden(s1_flush_next_bits_r_*):bits 无 reset,仅在 io_flush_valid 时更新(否则保持上次
+  // 快照),由 valid_last(flush_q.valid)门控使用。无条件更新会让 FM 判 bits 寄存器不等价。
+  always_ff @(posedge clock) begin
+    if (io_flush_valid) begin
+      flush_q.level        <= io_flush_bits_level;
+      flush_q.robIdx_flag  <= io_flush_bits_robIdx_flag;
+      flush_q.robIdx_value <= io_flush_bits_robIdx_value;
+    end
   end
 
   // EXU g0.0 ctrl 流水寄存器

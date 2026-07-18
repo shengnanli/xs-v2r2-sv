@@ -18,9 +18,9 @@ for (genvar i = 0; i < N_ENTRY; i++) begin : g_entry
   // mem_grant 路由到 entry：source==i（不看 opcode；CBO 路由只影响 mem_grant.ready 的选择）
   wire grant_v = grant_hit_entry[i] & io_mem_grant_valid;
   // mem_acquire.ready（TLArbiter allowed 语义）：无更高优先级阻挡 且通道 ready（与本源 valid 无关）
-  wire acq_rdy = io_mem_acquire_ready & acq_allowed[2+i];
+  wire acq_rdy = io_mem_acquire_ready & acq_grant[2+i];   // golden in.ready = out.ready & (beatsLeft?state:readys)
   // mem_finish.ready（同上）
-  wire fin_rdy = io_mem_finish_ready & fin_allowed[i];
+  wire fin_rdy = io_mem_finish_ready & fin_grant[i];      // 同上（E 通道）
 
   MissEntry u_entry (
     .clock                                            (clock),

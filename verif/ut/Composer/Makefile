@@ -93,7 +93,13 @@ TB_SRCS = variants_xs.sv tb.sv
 # FM：ref = golden Composer（5 预测器 + DelayN 不列依赖 → hdlin_unresolved_modules=black_box
 #   两侧同名黑盒）；impl = 可读核 + golden 同名 wrapper（同样把预测器当黑盒）。
 FM_VARIANTS = Composer
-FM_REF_DEPS_Composer =
+# 5 预测器用**接口桩**(predictor_stubs.sv: 只有端口声明的空模块), 两侧同读——
+# unresolved blackbox 引脚方向未知, 会把预测器输出(io_out_last_stage_meta 等)
+# 当输入建 2186 个 Und 比对点+同数 failing(全部假阳性)。桩只给 FM 方向信息,
+# 逻辑仍为空(等价黑盒), 预测器内部在各自 UT/FM 单独验证。DelayN 小, 直接给真源。
+FM_REF_DEPS_Composer = ../../verif/ut/Composer/predictor_stubs.sv DelayN.sv
+# impl 侧同读桩与 DelayN(仅 FM 用; UT 编译不含 WRAPPER_SRCS, 不会与真源重定义)
+WRAPPER_SRCS += predictor_stubs.sv $(GOLDEN_RTL)/DelayN.sv
 
 include ../../../scripts/ut_common.mk
 

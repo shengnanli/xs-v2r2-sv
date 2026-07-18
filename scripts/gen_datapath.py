@@ -2,6 +2,21 @@
 """
 DataPath(数据通路:物理寄存器读 + 操作数路由 + 立即数透传 + og 响应)生成器。
 
+== !!! SUPERSEDED(2026-07-18):本脚本已被 rtl/backend/datapath_*.svh 手工维护取代 !!! ==
+本脚本仅为「初始脚手架」。datapath_logic.svh / datapath_ctrl.svh / datapath_decls.svh 现为
+**手工维护源**,已发散于本生成器,重跑 `python3 scripts/gen_datapath.py` **无法复现**它们,
+反而会用占位/未修复版覆盖掉真逻辑与 FM 修复,故**默认不要跑本脚本去覆盖那 3 个 svh**。
+不复现的原因(判定证据):
+  1. gen_cancel() 只发占位 `s0_cancel = 1'b0; // TODO 精确重写交集`,不发 exuOHNoLoad_ext /
+     UIntExtractor 散布 / og0_cancel_delay 交集这套真取消逻辑(svh 里手工补全了)。
+  2. gen_cancel()/gen_logic 把 io_perf_* 与 memStall/uopsIssued/topDown 计数置 0(“本核不
+     建模”),svh 里手工补全了真实 perf/topDown 计数。
+  3. 复位域对齐等 FM 修复(logic:s1_toExuValid 去 reset;ctrl:flush valid 异步复位 + bits 门
+     控;decls:RegFilePart debug_rports 显式位宽防隐式 1-bit 截断)只落在 svh。
+即便回指旧 golden(XiangShan/build/rtl)也一样不复现——两版 golden 都含 exuOHNoLoad_ext(239),
+差异纯粹是生成器不发这套逻辑,与 golden 基线无关。本脚本可留作端口/连线/黑盒例化的参考,
+若确需再生成端口/连线类产物,只重生 datapath_ports/cfg/connect,勿覆盖上述 3 个手工 svh。
+
 == 重写原则(杜绝 golden 套壳,2026-06-17 重写)==
 DataPath 是高度实例化的「集成 + 路由」模块:27 路异构 EXU、5 寄存器域,各 EXU 的源数 /
 每源读哪个域哪个读口 / og1 响应类型 / ctrl 字段集 / imm 透传 / pc-target 等,统统由
@@ -937,15 +952,23 @@ def gen_core():
 
 
 def main():
+    import sys
+    # rtl/backend/datapath_{logic,ctrl,decls}.svh 现为手工维护源(见文件头 SUPERSEDED 说明),
+    # 默认**不覆盖**;仅在显式 --overwrite-handmaintained 时才写(会抹掉手工逻辑与 FM 修复)。
+    overwrite_hand = "--overwrite-handmaintained" in sys.argv
     ps = top_ports()
-    gen_ports(ps)
-    gen_cfg_pkg()
-    gen_decls()
-    (BK / "datapath_logic.svh").write_text(gen_logic())
-    (BK / "datapath_ctrl.svh").write_text(gen_ctrl_pipeline())
-    gen_connect()
-    gen_core()
-    print("generated ports/cfg/decls/logic/ctrl/connect/core. submodules:",
+    gen_ports(ps)       # 脚手架产物,可再生
+    gen_cfg_pkg()       # 脚手架产物,可再生
+    if overwrite_hand:
+        gen_decls()
+        (BK / "datapath_logic.svh").write_text(gen_logic())
+        (BK / "datapath_ctrl.svh").write_text(gen_ctrl_pipeline())
+    else:
+        print("SKIP datapath_{logic,ctrl,decls}.svh —— 手工维护源,未覆盖"
+              "(如确需覆盖脚手架版,传 --overwrite-handmaintained,会抹掉手工逻辑/FM 修复)。")
+    gen_connect()       # 脚手架产物,可再生
+    gen_core()          # 脚手架产物,可再生
+    print("generated ports/cfg/connect/core. submodules:",
           len(submodule_types()))
 
 

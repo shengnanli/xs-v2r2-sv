@@ -24,6 +24,9 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/ICacheMissUnit.sv $(GOLDEN_SUBMODS)
 TB_SRCS = variants_xs.sv tb.sv
 
 FM_VARIANTS = ICacheMissUnit
+# 关闭重复寄存器合并：impl killed/killed2（对应 golden flush/fencei 双寄存器）是
+# 有意的 1:1 复刻对，合并会把 killed/killed2 折成一只、令 flush_reg 的钉点失配。
+FM_MERGE_DUP = false
 # FM ref（golden 顶层）依赖：golden 子模块
 FM_REF_DEPS_ICacheMissUnit = \
   DeMultiplexer.sv DeMultiplexer_1.sv MuxBundle.sv Arbiter5_MSHRAcquire.sv FIFOReg.sv \

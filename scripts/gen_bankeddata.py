@@ -101,6 +101,11 @@ def gen_wrapper(modname):
         L.append(f"  assign c_pe_bits_valid[{b}]=io_pseudo_error_bits_{b}_valid; assign c_pe_bits_mask[{b}]=io_pseudo_error_bits_{b}_mask;")
     L.append("")
     # ---- 核例化 ----
+    # mbistPl 的 per-通道 ack 输出 + 核心 readline 输出级 → 核新增端口
+    L.append("  // mbistPl 的 per-通道 ack 输出（golden _mbistPl_toSRAM_N_ack）→ 核心 pseudo 注错门控")
+    L.append("  wire mb_ack [8][4];")
+    L.append("  // 核心 readline 输出级 {ecc,raw} → mbistPl toSRAM_{4b..4b+3}_rdata（golden 接 r_8_b）")
+    L.append("  wire [71:0] mb_rl [8];")
     L.append("  xs_BankedDataArray_core u_core (")
     L.append("    .clock(clock), .reset(reset),")
     L.append("    .io_read_valid(c_read_valid), .io_read_way_en(c_read_way_en),")
@@ -121,15 +126,21 @@ def gen_wrapper(modname):
     L.append("    .io_pseudo_error_bits_mask(c_pe_bits_mask), .io_pseudo_error_ready(io_pseudo_error_ready),")
     L.append("    .sram_r_en(c_sram_r_en), .sram_r_addr(c_sram_r_addr), .sram_r_data(c_sram_r_data),")
     L.append("    .sram_w_en(c_sram_w_en), .sram_w_way_en(c_sram_w_way_en), .sram_w_addr(c_sram_w_addr), .sram_w_data(c_sram_w_data),")
-    L.append("    .mbist_ack(c_mbist_ack), .mbist_r_way(c_mbist_r_way), .mbist_r_div(c_mbist_r_div)")
+    L.append("    .mbist_ack(c_mbist_ack), .mbist_r_way(c_mbist_r_way), .mbist_r_div(c_mbist_r_div),")
+    L.append("    .mbist_chan_ack(mb_ack), .mbist_rl_rdata(mb_rl)")
     L.append("  );")
     L.append("")
     # ---- childBd / sig 链 (32 条) ----
     L.append("  // MBIST bore: 32 条 childBd (bank b 用 [4b..4b+3]), 32 sig 组")
+    # rdata 是 bank bore 的输出网(顶层悬空), ack 是 bank bore 的输入(由 mbistPl 驱动)——加注对齐注释
+    cb_cmt = {
+        "rdata": "   // bank bore rdata 输出：golden 顶层同为悬空网（childBd_N_rdata）",
+        "ack":   "            // bank bore ack **输入**：golden childBd_N_ack = mbistPl toSRAM_N_ack",
+    }
     for f, w in [("addr",9),("addr_rd",9),("wdata",72),("wmask",1),("re",1),("we",1),
                  ("rdata",72),("ack",1),("selectedOH",1)]:
         decl = f"[{w-1}:0] " if w > 1 else ""
-        L.append(f"  wire {decl}cb_{f} [32];")
+        L.append(f"  wire {decl}cb_{f} [32];{cb_cmt.get(f, '')}")
     # array 端口宽度逐索引不同(MBIST 地址树深度), 单独声明各 cb_array_k
     AW = {0:1,1:1,2:2,3:2,4:3,5:3,6:3,7:3,8:4,9:4,10:4,11:4,12:4,13:4,14:4,15:4}
     for k in range(32):
@@ -145,6 +156,12 @@ def gen_wrapper(modname):
     L.append("")
     # mbist_r_way = OHToUInt over per-way re (Cat(re3,re2,re1) OR across banks)
     L.append("  // mbist_r_way: 各 bank 的 {re3,re2,re1} 按位或后 OHToUInt(本配置 mbist 不激活时恒 0)")
+    # bank 的 bore_ack 是输入，须由 mbistPl 的 per-通道 ack 驱动（golden childBd_N_ack = _mbistPl_toSRAM_N_ack）
+    L.append("  // golden: childBd_N_ack = _mbistPl_toSRAM_N_ack（bank 的 bore_ack 是输入，须由 mbistPl 驱动）")
+    L.append("  for (genvar n = 0; n < 32; n++) begin : g_cback")
+    L.append("    assign cb_ack[n] = mb_ack[n/4][n%4];")
+    L.append("  end")
+    L.append("")
     L.append("  wire [2:0] mbist_way_oh = " + " | ".join(
         f"{{cb_re[{4*b+3}],cb_re[{4*b+2}],cb_re[{4*b+1}]}}" for b in range(N_BANKS)) + ";")
     L.append("  assign c_mbist_r_way = {mbist_way_oh[2]|mbist_way_oh[1], mbist_way_oh[2]|mbist_way_oh[0]};")
@@ -177,7 +194,8 @@ def gen_wrapper(modname):
     L.append("    .mbist_indata(boreChildrenBd_bore_indata), .mbist_readen(boreChildrenBd_bore_readen), .mbist_addr_rd(boreChildrenBd_bore_addr_rd), .mbist_outdata(boreChildrenBd_bore_outdata),")
     for k in range(32):
         comma = "," if k < 31 else ""
-        L.append(f"    .toSRAM_{k}_addr(cb_addr[{k}]), .toSRAM_{k}_addr_rd(cb_addr_rd[{k}]), .toSRAM_{k}_wdata(cb_wdata[{k}]), .toSRAM_{k}_wmask(cb_wmask[{k}]), .toSRAM_{k}_re(cb_re[{k}]), .toSRAM_{k}_we(cb_we[{k}]), .toSRAM_{k}_rdata(cb_rdata[{k}]), .toSRAM_{k}_ack(cb_ack[{k}]), .toSRAM_{k}_selectedOH(cb_selectedOH[{k}]), .toSRAM_{k}_array(cb_array_{k}){comma}")
+        # toSRAM_N_rdata 汇入 bank(N/4) 的 readline 输出网; toSRAM_N_ack 驱动 per-通道 mb_ack[bank][sub]
+        L.append(f"    .toSRAM_{k}_addr(cb_addr[{k}]), .toSRAM_{k}_addr_rd(cb_addr_rd[{k}]), .toSRAM_{k}_wdata(cb_wdata[{k}]), .toSRAM_{k}_wmask(cb_wmask[{k}]), .toSRAM_{k}_re(cb_re[{k}]), .toSRAM_{k}_we(cb_we[{k}]), .toSRAM_{k}_rdata(mb_rl[{k//4}]), .toSRAM_{k}_ack(mb_ack[{k//4}][{k%4}]), .toSRAM_{k}_selectedOH(cb_selectedOH[{k}]), .toSRAM_{k}_array(cb_array_{k}){comma}")
     L.append("  );")
     L.append("  assign c_mbist_ack = c_mbist_ack_pl; assign boreChildrenBd_bore_ack = c_mbist_ack_pl;")
     L.append("")

@@ -196,7 +196,7 @@ BODY = r"""
     .io_sfd_valid(sfd_valid), .io_sfd_flushPipe(sfd_flushPipe),
     .io_csrd_satp_mode(cd_satp_mode), .io_csrd_satp_asid(cd_satp_asid), .io_csrd_satp_changed(cd_satp_changed),
     .io_csrd_vsatp_mode(cd_vsatp_mode), .io_csrd_vsatp_asid(cd_vsatp_asid), .io_csrd_vsatp_changed(cd_vsatp_changed),
-    .io_csrd_hgatp_mode(cd_hgatp_mode), .io_csrd_hgatp_vmid(cd_hgatp_vmid), .io_csrd_hgatp_changed(cd_hgatp_changed),
+    .io_csrd_hgatp_mode(cd_hgatp_mode), .io_csrd_hgatp_vmid(cd_hgatp_vmid_16), .io_csrd_hgatp_changed(cd_hgatp_changed),
     .io_csrd_priv_mxr(cd_mxr), .io_csrd_priv_sum(cd_sum), .io_csrd_priv_vmxr(cd_vmxr), .io_csrd_priv_vsum(cd_vsum),
     .io_csrd_priv_virt(cd_virt), .io_csrd_priv_spvp(cd_spvp), .io_csrd_priv_imode(cd_imode), .io_csrd_priv_dmode(cd_dmode),
     .io_csrd_pmm_mseccfg(cd_mseccfg), .io_csrd_pmm_menvcfg(cd_menvcfg), .io_csrd_pmm_henvcfg(cd_henvcfg),
@@ -250,7 +250,7 @@ BODY = r"""
     .io_sfence_valid(sfd_valid), .io_sfence_bits_rs1(sfd_rs1), .io_sfence_bits_rs2(sfd_rs2),
     .io_sfence_bits_addr(sfd_addr), .io_sfence_bits_id(sfd_id), .io_sfence_bits_hv(sfd_hv), .io_sfence_bits_hg(sfd_hg),
     .io_csr_satp_asid(cd_satp_asid), .io_csr_vsatp_asid(cd_vsatp_asid),
-    .io_csr_hgatp_vmid(cd_hgatp_vmid), .io_csr_priv_virt(cd_virt),
+    .io_csr_hgatp_vmid(cd_hgatp_vmid_16), .io_csr_priv_virt(cd_virt),  // 全 16 位（截 14 位会让黑盒高 2 位悬空,FM 失配）
     .io_r_req_0_valid(e_rreq_valid[0]), .io_r_req_0_bits_vpn(e_rreq_vpn[0]), .io_r_req_0_bits_s2xlate(e_rreq_s2xlate[0]),
     .io_r_req_1_valid(e_rreq_valid[1]), .io_r_req_1_bits_vpn(e_rreq_vpn[1]), .io_r_req_1_bits_s2xlate(e_rreq_s2xlate[1]),
     .io_r_req_2_valid(e_rreq_valid[2]), .io_r_req_2_bits_vpn(e_rreq_vpn[2]), .io_r_req_2_bits_s2xlate(e_rreq_s2xlate[2]),

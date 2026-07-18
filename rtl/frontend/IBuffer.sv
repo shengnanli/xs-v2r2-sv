@@ -122,13 +122,15 @@ module xs_IBuffer_core #(
   localparam int ExcW         = 3;                             // IBufferExceptionType 宽
   // TopDown 计数器枚举里的几个 id（与 Chisel TopDownCounters 对齐）
   localparam int NUM_STALL_REASONS = 38;
-  localparam int ID_BTBMiss        = 4;
-  localparam int ID_TAGEMiss       = 5;
-  localparam int ID_SCMiss         = 6;
-  localparam int ID_ITTAGEMiss     = 7;
-  localparam int ID_RASMiss        = 8;
-  localparam int ID_MemVioRedirect = 9;
-  localparam int ID_OtherRedirect  = 10;
+  // 位号取自 golden 的 flush 置位表：reasons_12=BTBMiss，reasons_3..8=TAGE/SC/ITTAGE/
+  // RAS/MemVio/Other（TopDownCounters 枚举序，BTBMissBubble 在枚举后段）
+  localparam int ID_BTBMiss        = 12;
+  localparam int ID_TAGEMiss       = 3;
+  localparam int ID_SCMiss         = 4;
+  localparam int ID_ITTAGEMiss     = 5;
+  localparam int ID_RASMiss        = 6;
+  localparam int ID_MemVioRedirect = 7;
+  localparam int ID_OtherRedirect  = 8;
   localparam int ID_FetchFragBubble= 13;  // 对齐 golden 浪费槽原因值 6'hD
 
   genvar gi;
@@ -359,9 +361,10 @@ module xs_IBuffer_core #(
   // ===========================================================================
   generate
     for (gi = 0; gi < IBufSize; gi++) begin : g_enq
-      always_ff @(posedge clock) begin
-        ibuf_entry_t wdata;
-        logic        wen;
+      // 写选择组合前置（FM 异步复位块体只允许 if(reset)…else…）
+      ibuf_entry_t wdata;
+      logic        wen;
+      always_comb begin
         wdata = '0;
         wen   = 1'b0;
         for (int i = 0; i < PredictWidth; i++) begin
@@ -375,12 +378,18 @@ module xs_IBuffer_core #(
                     (enqPtrVec_value[bypIdx] == PtrW'(gi));
           else
             match = (enqPtrVec_value[off] == PtrW'(gi));
+          // golden 是 Mux1H(并行 OR)非优先链：多热时各 lane 数据按位 OR(bug-for-bug 对齐)
           if (in_valid_mask[i] && in_enqEnable[i] && match) begin
-            wdata = enqData[i];
-            wen   = 1'b1;
+            wdata |= enqData[i];
+            wen    = 1'b1;
           end
         end
-        if (wen && in_fire && !flush)
+      end
+      // golden ibuf_N_* 全部在异步复位块内 RegInit(0)——对齐
+      always_ff @(posedge clock or posedge reset) begin
+        if (reset)
+          ibuf[gi] <= '0;
+        else if (wen && in_fire && !flush)
           ibuf[gi] <= wdata;
       end
     end
@@ -436,11 +445,10 @@ module xs_IBuffer_core #(
   // - Decode 接收：bypass 时填旁路项，否则填正常读出项。
   // - Decode 不收但没满：在已有有效项之后拼接新读出项（保留前 valid 个不动）。
   // ===========================================================================
-  // 单一 always_ff：先在组合临时变量里算好整组下一态，再统一寄存。
-  // （避免 per-genvar 块对 packed-struct 数组逐元素 NBA 的仿真器调度歧义。）
-  always_ff @(posedge clock) begin
-    ibuf_entry_t            nextEntries [DecodeWidth];
-    logic [DecodeWidth-1:0] nextValid;
+  // 先在组合逻辑里算好整组下一态，再统一寄存（FM 异步复位块体只允许 if(reset)…else…）。
+  ibuf_entry_t            nextEntries [DecodeWidth];
+  logic [DecodeWidth-1:0] nextValid;
+  always_comb begin
     for (int i = 0; i < DecodeWidth; i++) begin
       nextEntries[i] = outputEntries[i];   // 默认保留旧 bits
       nextValid[i]   = outputEntriesValid[i];
@@ -460,6 +468,9 @@ module xs_IBuffer_core #(
       end
       if (flush) nextValid[i] = 1'b0;       // flush 只清 valid，bits 保留（同 golden）
     end
+  end
+  // golden 复位寄存器统一异步复位块——对齐
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       for (int i = 0; i < DecodeWidth; i++) begin
         outputEntriesValid[i] <= 1'b0;
@@ -479,15 +490,15 @@ module xs_IBuffer_core #(
   // 入队指针：fire 且非 flush 时整体 + numTryEnq；flush 时复位成 0,1,2,...
   generate
     for (gi = 0; gi < PredictWidth; gi++) begin : g_enqptr
-      always_ff @(posedge clock) begin
+      // 循环加 numTryEnq：value 越过 IBufSize 则翻转 flag（组合前置）
+      logic [PtrW+1:0] nv;
+      always_comb nv = {2'b0, enqPtrVec_value[gi]} + {{(PtrW+2-EnqW){1'b0}}, numTryEnq};
+      always_ff @(posedge clock or posedge reset) begin
         if (reset) begin
           {enqPtrVec_flag[gi], enqPtrVec_value[gi]} <= (PtrW+1)'(gi);
         end else if (flush) begin
           {enqPtrVec_flag[gi], enqPtrVec_value[gi]} <= (PtrW+1)'(gi);
         end else if (in_fire) begin
-          // 循环加 numTryEnq：value 越过 IBufSize 则翻转 flag
-          logic [PtrW+1:0] nv;
-          nv = {2'b0, enqPtrVec_value[gi]} + {{(PtrW+2-EnqW){1'b0}}, numTryEnq};
           if (nv >= IBufSize) begin
             enqPtrVec_value[gi] <= PtrW'(nv - IBufSize);
             enqPtrVec_flag[gi]  <= ~enqPtrVec_flag[gi];
@@ -504,12 +515,16 @@ module xs_IBuffer_core #(
   // 与 golden 逐位一致（含 value 取 6/7 等 don't-care 输入时的行为），利于 FM 签名分析。
   generate
     for (gi = 0; gi < DecodeWidth; gi++) begin : g_bankptr
-      always_ff @(posedge clock) begin
-        logic [BankPtrW:0]   bnewv;   // value + numDeq（4 位）
-        logic signed [BankPtrW+1:0] bdiff;
+      logic [BankPtrW:0]   bnewv;   // value + numDeq（4 位）
+      logic signed [BankPtrW+1:0] bdiff;
+      always_comb begin
         bnewv = {1'b0, deqBankPtrVec_value[gi]} + {{(BankPtrW+1-CntW){1'b0}}, numDeq};
         bdiff = $signed({1'b0, bnewv}) - $signed((BankPtrW+2)'(IBufNBank));
-        if (reset || flush)
+      end
+      always_ff @(posedge clock or posedge reset) begin
+        if (reset)
+          deqBankPtrVec_value[gi] <= BankPtrW'(gi % IBufNBank);
+        else if (flush)
           deqBankPtrVec_value[gi] <= BankPtrW'(gi % IBufNBank);
         else
           deqBankPtrVec_value[gi] <= (bdiff > -1) ? bdiff[BankPtrW-1:0] : bnewv[BankPtrW-1:0];
@@ -518,14 +533,19 @@ module xs_IBuffer_core #(
   endgenerate
 
   // 全局出队指针：每拍 + numDeq（循环）；flush 复位 0。同样用 signed-diff 回绕。
-  always_ff @(posedge clock) begin
-    logic [PtrW:0]          dnewv;   // value + numDeq（7 位）
-    logic signed [PtrW+1:0] ddiff;
-    logic                   dwrap;
+  logic [PtrW:0]          dnewv;   // value + numDeq（7 位）
+  logic signed [PtrW+1:0] ddiff;
+  logic                   dwrap;
+  always_comb begin
     dnewv = {1'b0, deqPtr_value} + {{(PtrW+1-CntW){1'b0}}, numDeq};
     ddiff = $signed({1'b0, dnewv}) - $signed((PtrW+2)'(IBufSize));
     dwrap = (ddiff > -1);
-    if (reset || flush) begin
+  end
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) begin
+      deqPtr_value <= '0;
+      deqPtr_flag  <= 1'b0;
+    end else if (flush) begin
       deqPtr_value <= '0;
       deqPtr_flag  <= 1'b0;
     end else begin
@@ -540,15 +560,20 @@ module xs_IBuffer_core #(
   assign deqBankPtr0_value = deqBankPtrVec_value[0];
   generate
     for (gi = 0; gi < IBufNBank; gi++) begin : g_inbankptr
-      always_ff @(posedge clock) begin
-        logic [BankPtrW-1:0] validIdx;
-        logic                advance;
+      logic [BankPtrW-1:0] validIdx;
+      logic                advance;
+      always_comb begin
         if (gi >= deqBankPtr0_value)
           validIdx = BankPtrW'(gi - deqBankPtr0_value);
         else
           validIdx = BankPtrW'((gi + IBufNBank) - deqBankPtr0_value);
         advance = (numOut > validIdx);
-        if (reset || flush) begin
+      end
+      always_ff @(posedge clock or posedge reset) begin
+        if (reset) begin
+          deqInBankPtr_value[gi] <= '0;
+          deqInBankPtr_flag[gi]  <= 1'b0;
+        end else if (flush) begin
           deqInBankPtr_value[gi] <= '0;
           deqInBankPtr_flag[gi]  <= 1'b0;
         end else if (advance) begin
@@ -566,7 +591,7 @@ module xs_IBuffer_core #(
   // (IBufSize-PredictWidth) >= numValidNext ⟺ numValidNext < IBufSize-PredictWidth+1。
   // flush 时直接置 1（与 golden `io_flush | (...)` 同义）。
   localparam logic [PtrW-1:0] ALMOST_FULL_THR = PtrW'(IBufSize - PredictWidth + 1); // = 33
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset)      allowEnq <= 1'b1;
     else            allowEnq <= flush | (numValidNext < ALMOST_FULL_THR);
   end
@@ -610,7 +635,7 @@ module xs_IBuffer_core #(
   // TopDown：把本拍 fetch 的 topdown 信息打一拍；flush 时按重定向类型置归因位
   // ===========================================================================
   logic [37:0] topdown_stage;
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset)
       topdown_stage <= '0;
     else begin
@@ -671,11 +696,11 @@ module xs_IBuffer_core #(
   // 性能事件计数（HasPerfEvents：9 个事件，本核仅输出本拍 value）
   // ===========================================================================
   logic afterInit, headBubble, instrHungry;
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset)            afterInit <= 1'b0;
     else if (in_fire)     afterInit <= 1'b1;
   end
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset)              headBubble <= 1'b0;
     else if (flush)         headBubble <= 1'b1;
     else if (numValid != 0) headBubble <= 1'b0;

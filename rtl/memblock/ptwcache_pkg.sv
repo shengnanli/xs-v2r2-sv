@@ -325,16 +325,19 @@ package xs_ptwcache_pkg;
     input logic                tag_hit,
     input logic [ASID_W-1:0]   easid,
     input logic [VMID_W-1:0]   evmid,
+    input logic                eg,         // 条目 global 位（golden: l3g/l2g 旁路 asid 检查）
     input logic [ASID_W-1:0]   satp_asid,
     input logic [ASID_W-1:0]   vsatp_asid,
-    input logic [VMID_W-1:0]   hgatp_vmid,
+    input logic [ASID_W-1:0]   hgatp_vmid, // golden 端口 16b；比较 {2'b0,vmid14}==vmid16
     input logic [1:0]          h           // change_h 后的 s2xlate
   );
     logic [ASID_W-1:0] asid_value;
     logic asid_hit, vmid_hit;
     asid_value = (h != NO_S2XLATE) ? vsatp_asid : satp_asid;
-    asid_hit   = (h == ONLY_STAGE2) ? 1'b1 : (easid == asid_value);
-    vmid_hit   = (h != NO_S2XLATE) ? (evmid == hgatp_vmid) : 1'b1;
+    // golden: (l3g[i] | onlyS2 | asid_eq)
+    asid_hit   = eg || (h == ONLY_STAGE2) || (easid == asid_value);
+    // golden: {2'h0, l3_i_vmid} == io_csr_dup_*_hgatp_vmid（16 位全宽比较）
+    vmid_hit   = (h != NO_S2XLATE) ? ({{(ASID_W-VMID_W){1'b0}}, evmid} == hgatp_vmid) : 1'b1;
     return asid_hit && vmid_hit && tag_hit;
   endfunction
 
@@ -348,14 +351,14 @@ package xs_ptwcache_pkg;
     input logic                is_global,
     input logic [ASID_W-1:0]   satp_asid,
     input logic [ASID_W-1:0]   vsatp_asid,
-    input logic [VMID_W-1:0]   hgatp_vmid,
+    input logic [ASID_W-1:0]   hgatp_vmid, // 16b 全宽（golden {2'h0,vmid14}==vmid16）
     input logic [1:0]          h
   );
     logic [ASID_W-1:0] asid_value;
     logic asid_hit, vmid_hit;
     asid_value = (h != NO_S2XLATE) ? vsatp_asid : satp_asid;
     asid_hit   = (h == ONLY_STAGE2) ? 1'b1 : ((easid == asid_value) || is_global);
-    vmid_hit   = (h != NO_S2XLATE) ? (evmid == hgatp_vmid) : 1'b1;
+    vmid_hit   = (h != NO_S2XLATE) ? ({{(ASID_W-VMID_W){1'b0}}, evmid} == hgatp_vmid) : 1'b1;
     return asid_hit && vmid_hit && tag_hit && evs;
   endfunction
 
@@ -417,7 +420,7 @@ package xs_ptwcache_pkg;
     input logic [VPN_W-1:0] vpn,
     input logic [ASID_W-1:0] satp_asid,
     input logic [ASID_W-1:0] vsatp_asid,
-    input logic [VMID_W-1:0] hgatp_vmid,
+    input logic [ASID_W-1:0] hgatp_vmid, // 16b 全宽（golden {2'h0,vmid14}==vmid16）
     input logic [1:0]     h
   );
     logic [ASID_W-1:0] asid_value;
@@ -427,7 +430,7 @@ package xs_ptwcache_pkg;
     is_global  = e.perm.g;
     asid_value = (h != NO_S2XLATE) ? vsatp_asid : satp_asid;
     asid_hit   = (h == ONLY_STAGE2) ? 1'b1 : ((e.asid == asid_value) || is_global);
-    vmid_hit   = (h != NO_S2XLATE) ? (e.vmid == hgatp_vmid) : 1'b1;
+    vmid_hit   = (h != NO_S2XLATE) ? ({{(ASID_W-VMID_W){1'b0}}, e.vmid} == hgatp_vmid) : 1'b1;
     // tag_match(0)：napot 时 tag[8:napotBits]==vpn[8:napotBits]，否则 tag[8:0]==vpn[8:0]
     if (e.n)
       tag_match[0] = (e.tag[VPNN_W-1:NAPOT_BITS] == vpn[VPNN_W-1:NAPOT_BITS]);
@@ -453,7 +456,7 @@ package xs_ptwcache_pkg;
     input sp_entry_t      e,
     input logic [VPN_W-1:0] vpn,
     input logic [ASID_W-1:0] asid_in,   // sfence id（asid 或 vmid 复用）
-    input logic [VMID_W-1:0] vmid_in,
+    input logic [ASID_W-1:0] vmid_in,   // 16b 全宽（golden {2'h0,vmid14}==id/vmid16）
     input logic [1:0]     sfence,
     input logic           ignoreID
   );
@@ -474,7 +477,7 @@ package xs_ptwcache_pkg;
     is_global  = e.perm.g;
     asid_value = not_virt ? asid_in : asid_in;  // sfence 路径 asid/vasid 同传 id
     asid_hit   = need_asid_check ? ((e.asid == asid_value) || is_global) : 1'b1;
-    vmid_hit   = need_vmid_check ? (e.vmid == vmid_in) : 1'b1;
+    vmid_hit   = need_vmid_check ? ({{(ASID_W-VMID_W){1'b0}}, e.vmid} == vmid_in) : 1'b1;
     if (e.n)
       tag_match[0] = (e.tag[VPNN_W-1:NAPOT_BITS] == vpn[VPNN_W-1:NAPOT_BITS]);
     else

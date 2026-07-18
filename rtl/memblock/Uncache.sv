@@ -229,7 +229,8 @@ module xs_Uncache_core
   logic empty;
   logic f1_needDrain;
   logic do_uarch_drain;
-  always_ff @(posedge clock) begin
+  // golden 为异步复位寄存器（posedge reset 入敏感表）；同步复位在 FM 建模不同会失配。
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) do_uarch_drain <= 1'b0;
     // next = ((f1_needDrain | flush) & ~empty)；写成单表达式以利形式化按签名配对
     else       do_uarch_drain <= (f1_needDrain || io_flush_valid) && !empty;
@@ -242,14 +243,15 @@ module xs_Uncache_core
   // 前向声明：q0 发 A、resp 回 LSQ 的 fire 在后文定义
   logic mem_acquire_fire;
   logic resp_fire;
-  always_ff @(posedge clock) begin
+  // 异步复位（对齐 golden）；非法编码 2'h3 保持不变（golden 对 3 无转移，勿归零）。
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) uState <= US_IDLE;
     else begin
-      unique case (uState)
+      case (uState)
         US_IDLE:        if (mem_acquire_fire) uState <= US_INFLIGHT;
         US_INFLIGHT:    if (mem_d_valid)      uState <= US_WAIT_RETURN; // mem_grant.ready 恒 1，fire==valid
         US_WAIT_RETURN: if (resp_fire)        uState <= US_IDLE;
-        default:        uState <= US_IDLE;
+        default: ;      // hold
       endcase
     end
   end
@@ -350,7 +352,9 @@ module xs_Uncache_core
       q0_canSentVec[i] = (io_enableOutstanding || (uState == US_IDLE)) && st_can2bus(states[i]);
 
   always_comb begin
-    q0_canSentIdx = '0; q0_canSent = 1'b0;
+    // 无命中默认值=UNC_SIZE-1：golden 的 PriorityMux 尾项（vec0?0:vec1?1:{1,~vec2}）
+    // 在全 0 时给 3；a 通道 bits 端口即便 valid=0 也参与 FM 比对，默认值必须一致。
+    q0_canSentIdx = IDX_W'(UNC_SIZE-1); q0_canSent = 1'b0;
     for (int i = UNC_SIZE-1; i >= 0; i--)
       if (q0_canSentVec[i]) begin q0_canSentIdx = i[IDX_W-1:0]; q0_canSent = 1'b1; end
   end
@@ -387,7 +391,8 @@ module xs_Uncache_core
   logic                r0_canSent;
   always_comb begin
     for (int i = 0; i < UNC_SIZE; i++) r0_canSentVec[i] = st_can2lsq(states[i]);
-    r0_canSentIdx = '0; r0_canSent = 1'b0;
+    // 无命中默认值=UNC_SIZE-1（同 q0：golden PriorityMux 全 0 时给 3，resp bits 端口需一致）。
+    r0_canSentIdx = IDX_W'(UNC_SIZE-1); r0_canSent = 1'b0;
     for (int i = UNC_SIZE-1; i >= 0; i--)
       if (r0_canSentVec[i]) begin r0_canSentIdx = i[IDX_W-1:0]; r0_canSent = 1'b1; end
   end
@@ -411,9 +416,14 @@ module xs_Uncache_core
   genvar ge;
   generate
     for (ge = 0; ge < UNC_SIZE; ge++) begin : g_entry
-      // 本 entry 是否被各动态下标选中
+      // 本 entry 是否被各动态下标选中。
+      //  sel_alloc 必须带「本拍无 merge」的全局互斥（~(e0_canMerge&req_valid)）：golden
+      //  的 alloc 分支在 if(_GEN merge) 的 else 里，merge 发生时（哪怕合并到别的 entry）
+      //  一律不 alloc；若只按本 entry 的 else-if 互斥，merge 到 entry j 的同拍会误分配
+      //  entry k（真差异，UT 随机激励未覆盖到 merge+可分配同拍的场景）。
       wire sel_merge = e0_canMerge   && req_valid && (e0_mergeIdx   == ge[IDX_W-1:0]);
-      wire sel_alloc = e0_canAlloc   && e0_fire   && (e0_allocIdx   == ge[IDX_W-1:0]);
+      wire sel_alloc = !(e0_canMerge && req_valid)
+                     && e0_canAlloc && e0_fire    && (e0_allocIdx   == ge[IDX_W-1:0]);
       wire sel_qfire = mem_acquire_fire           && (q0_canSentIdx == ge[IDX_W-1:0]);
       wire sel_dfire = mem_grant_fire             && (mem_d_src     == ge[IDX_W-1:0]);
       wire sel_rfire = resp_fire                  && (r0_canSentIdx == ge[IDX_W-1:0]);
@@ -423,21 +433,35 @@ module xs_Uncache_core
       wire [DATA_BYTES-1:0]   m_nm  = entries[ge].mask | io_lsq_req_bits_mask;
       wire [BLOCK_OFFSET-1:0] m_off = res_offset(m_nm);
 
+      // ---- entries payload：golden 在「无复位」always 块（reset=1 的时钟沿仍可写），
+      //      必须独立成无复位块；若放进带复位块的 else 分支会被 ~reset 门控而 FM 失配。
       always_ff @(posedge clock) begin
+        // (1) Enter：merge 优先于 alloc
+        if (sel_merge) begin
+          entries[ge].data <= m_nd;
+          entries[ge].mask <= m_nm;
+          if (res_flag(m_nm)) begin
+            entries[ge].addr  <= realign_p(entries[ge].addr,  m_off);
+            entries[ge].vaddr <= realign_v(entries[ge].vaddr, m_off);
+          end
+        end else if (sel_alloc) begin
+          entries[ge] <= e0_req_entry;
+        end
+        // (3) UncResp fire：写回 data/nderr（对 merge/alloc 有覆盖优先级，与 golden 一致）
+        if (sel_dfire) begin
+          if (entries[ge].cmd == M_XRD) entries[ge].data <= auto_client_out_d_bits_data;
+          entries[ge].resp_nderr <= auto_client_out_d_bits_denied | auto_client_out_d_bits_corrupt;
+        end
+      end
+
+      // ---- states/noPending：异步复位（对齐 golden）----
+      always_ff @(posedge clock or posedge reset) begin
         if (reset) begin
           states[ge]    <= '0;
           noPending[ge] <= 1'b1;
         end else begin
-          // ---- (1) Enter：merge 优先于 alloc ----
-          if (sel_merge) begin
-            entries[ge].data <= m_nd;
-            entries[ge].mask <= m_nm;
-            if (res_flag(m_nm)) begin
-              entries[ge].addr  <= realign_p(entries[ge].addr,  m_off);
-              entries[ge].vaddr <= realign_v(entries[ge].vaddr, m_off);
-            end
-          end else if (sel_alloc) begin
-            entries[ge]        <= e0_req_entry;
+          // ---- (1) Enter：alloc 置 valid/waitSame ----
+          if (sel_alloc) begin
             states[ge].valid   <= 1'b1;
             if (e0_allocWaitSame) states[ge].waitSame <= 1'b1;
           end
@@ -452,11 +476,9 @@ module xs_Uncache_core
             states[ge].waitSame <= 1'b1;
           end
 
-          // ---- (3) UncResp fire：被回应的 entry 写回 data/nderr 并 inflight→waitReturn；
+          // ---- (3) UncResp fire：inflight→waitReturn；
           //          其余同 block 的 waitSame 等待者解除 ----
           if (sel_dfire) begin
-            if (entries[ge].cmd == M_XRD) entries[ge].data <= auto_client_out_d_bits_data;
-            entries[ge].resp_nderr <= auto_client_out_d_bits_denied | auto_client_out_d_bits_corrupt;
             states[ge].inflight    <= 1'b0;
             states[ge].waitReturn  <= 1'b1;
             noPending[ge]          <= 1'b1;
@@ -480,9 +502,9 @@ module xs_Uncache_core
   logic [IDX_W-1:0]  idResp_sid_q;
   logic              idResp_is2lq_q;
   logic              idResp_nc_q;
+  // golden 的 idResp 寄存器（valid_REG/bits_*_r）全部无复位——照搬（勿加复位）。
   always_ff @(posedge clock) begin
-    if (reset) idResp_valid_q <= 1'b0;
-    else       idResp_valid_q <= e0_fire;
+    idResp_valid_q <= e0_fire;
     if (e0_fire) begin
       idResp_mid_q   <= io_lsq_req_bits_id;
       idResp_sid_q   <= e0_sid;
@@ -513,7 +535,7 @@ module xs_Uncache_core
 
   // WFI safe：所有 entry 无在途 且 收到 wfiReq → 打一拍输出
   logic wfi_safe_q;
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin // 异步复位（对齐 golden io_wfi_wfiSafe_last_REG）
     if (reset) wfi_safe_q <= 1'b0;
     else begin
       logic all_no_pending;

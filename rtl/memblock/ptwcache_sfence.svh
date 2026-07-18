@@ -82,11 +82,15 @@
   // 普通sfence: sfence=virt?isVSfence:isSfence; hfencev: isVSfence; hfenceg: isGSfence
   // sp_alltype_hit 不含 sfence 参数；此处对 va 指定用 sp_sfence_hit（pkg 新增），rs2=1 时 ignoreID。
   logic [SP_SIZE-1:0] sp_va_hit_s, sp_va_hit_g, sp_va_hit_s_ig, sp_va_hit_g_ig;
+  logic [SP_SIZE-1:0] sp_va_hit_v, sp_va_hit_v_ig;   // hfencev 专用：恒 isVSfence（Scala 1183/1186）
   always_comb begin
     for (int i=0; i<SP_SIZE; i++) begin
       automatic logic [1:0] sf_s = csr_priv_virt[0] ? IS_VSFENCE : IS_SFENCE;
       sp_va_hit_s[i]    = sp_sfence_hit(sp[i], sfence_vpn,  sfence_dup_0.id, csr_hgatp_vmid[0], sf_s,      1'b0);
       sp_va_hit_s_ig[i] = sp_sfence_hit(sp[i], sfence_vpn,  sfence_dup_0.id, csr_hgatp_vmid[0], sf_s,      1'b1);
+      // hfencev：sfence 恒 isVSfence（不看 priv.virt）——need_vmid_check=1，vmid 必查
+      sp_va_hit_v[i]    = sp_sfence_hit(sp[i], sfence_vpn,  sfence_dup_0.id, csr_hgatp_vmid[0], IS_VSFENCE, 1'b0);
+      sp_va_hit_v_ig[i] = sp_sfence_hit(sp[i], sfence_vpn,  sfence_dup_0.id, csr_hgatp_vmid[0], IS_VSFENCE, 1'b1);
       sp_va_hit_g[i]    = sp_sfence_hit(sp[i], hfenceg_gvpn, sfence_dup_0.id, sfence_dup_0.id,  IS_GSFENCE, 1'b0);
       sp_va_hit_g_ig[i] = sp_sfence_hit(sp[i], hfenceg_gvpn, sfence_dup_0.id, sfence_dup_0.id,  IS_GSFENCE, 1'b1);
     end
@@ -168,10 +172,10 @@
       end else begin
         if (rs2) begin
           l0v_sfence_clr = l0hhit & l0vmidhit_s & l0vpnhit_s & l0flushMask_s;
-          spv_sfence_clr = sphhit & sp_va_hit_s_ig;   // hfencev: isVSfence ignoreID
+          spv_sfence_clr = sphhit & sp_va_hit_v_ig;   // hfencev: 恒 isVSfence + ignoreID
         end else begin
           l0v_sfence_clr = l0hhit & l0vmidhit_s & ~l0g & l0asidhit & l0vpnhit_s & l0flushMask_s;
-          spv_sfence_clr = ~spg & sphhit & sp_va_hit_s;
+          spv_sfence_clr = ~spg & sphhit & sp_va_hit_v;  // hfencev: 恒 isVSfence
         end
       end
     end else if (hfenceg_valid) begin

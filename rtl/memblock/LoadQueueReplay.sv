@@ -75,6 +75,22 @@ module xs_LoadQueueReplay_core
   logic                     dataInLastBeat [LQ_SLOTS];
   logic [VADDR_BITS-1:0]    debug_vaddr [LQ_SLOTS];
 
+  // ---- 越界折叠读视图（FM 配平）：golden 对 Vec(72) 以 7 位下标做纯值读取时，
+  //      firtool 生成 128 项读表、高 56 项(72..127)复制条目 0（越界回绕 vec[0]）。
+  //      运行期下标的纯值读一律走 *R 视图；padding 条目因此只写不读，两侧同被剪除
+  //      （否则 padding 条目为无驱动网，FM 视作自由变量，读锥全部误判失配）。
+  lqr_uop_t                 uopR       [LQ_SLOTS];
+  lqr_vec_t                 vecReplayR [LQ_SLOTS];
+  logic [N_CAUSES-1:0]      causeR     [LQ_SLOTS];
+  logic [MSHR_ID_W-1:0]     missMSHRIdR[LQ_SLOTS];
+  always_comb
+    for (int k = 0; k < LQ_SLOTS; k++) begin
+      uopR[k]        = (k >= LQ_REPLAY_SIZE) ? uop[0]        : uop[k];
+      vecReplayR[k]  = (k >= LQ_REPLAY_SIZE) ? vecReplay[0]  : vecReplay[k];
+      causeR[k]      = (k >= LQ_REPLAY_SIZE) ? cause[0]      : cause[k];
+      missMSHRIdR[k] = (k >= LQ_REPLAY_SIZE) ? missMSHRId[0] : missMSHRId[k];
+    end
+
   // 派生位向量（组合）：把 struct 字段摊成 72 位总线，便于做 mask 运算
   logic [LQ_REPLAY_SIZE-1:0] allocated_v, scheduled_v, blocking_v;
   genvar gi;

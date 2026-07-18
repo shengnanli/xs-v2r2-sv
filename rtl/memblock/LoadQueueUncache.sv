@@ -102,6 +102,16 @@ module xs_LoadQueueUncache_core
   lqu_nc_out_t    nc_pipe_empty_bits, nc_pipe_even_bits, nc_pipe_odd_bits;
 
   lqu_redirect_t  redirect_d1, redirect_d2;
+  // golden 的 s2 冲刷检查消费的是**无使能** RegNext 副本（每 lane 一份：
+  // s2_valid_REG_1/3/5_{valid,bits}，每拍无条件采样 io_redirect），与带使能的
+  // lastCycleRedirect（redirect_d1，仅 io_redirect_valid 时锁存 bits）是两类寄存器。
+  // 行为上二者在 valid=1 时等值（bits 只在 valid=1 时被消费），但 FM 逐寄存器比对
+  // next-state 函数不同，且 FM 不接受多 golden 副本钉到同一 impl 寄存器（n-to-1）。
+  // 故按 golden 结构建 per-lane 副本数组，1:1 配对。
+  logic           redirect_s2_nc_valid [LOAD_PIPE_W];
+  logic           redirect_s2_nc_flag  [LOAD_PIPE_W];
+  logic [7:0]     redirect_s2_nc_value [LOAD_PIPE_W];
+  logic           redirect_s2_nc_level [LOAD_PIPE_W];
   logic           rollback_valid_d;
   lqu_redirect_t  rollback_bits_d;
 
@@ -156,6 +166,13 @@ module xs_LoadQueueUncache_core
     end
 
     redirect_d1.valid <= io_redirect_valid;
+    // per-lane 无使能副本（对齐 golden s2_valid_REG_1/3/5）：每拍无条件采样。
+    for (int i = 0; i < LOAD_PIPE_W; i++) begin
+      redirect_s2_nc_valid[i] <= io_redirect_valid;
+      redirect_s2_nc_flag[i]  <= io_redirect_bits_robIdx_flag;
+      redirect_s2_nc_value[i] <= io_redirect_bits_robIdx_value;
+      redirect_s2_nc_level[i] <= io_redirect_bits_level;
+    end
     if (io_redirect_valid) begin
       redirect_d1.robIdx.flag  <= io_redirect_bits_robIdx_flag;
       redirect_d1.robIdx.value <= io_redirect_bits_robIdx_value;
@@ -182,8 +199,8 @@ module xs_LoadQueueUncache_core
       s2_valid_q[i] =
         s1_valid[i]
         & ~rob_need_flush(s2_req[i].uop_robIdx_flag, s2_req[i].uop_robIdx_value,
-                          redirect_d1.valid, redirect_d1.robIdx.flag,
-                          redirect_d1.robIdx.value, redirect_d1.level)
+                          redirect_s2_nc_valid[i], redirect_s2_nc_flag[i],
+                          redirect_s2_nc_value[i], redirect_s2_nc_level[i])
         & ~rob_need_flush(s2_req[i].uop_robIdx_flag, s2_req[i].uop_robIdx_value,
                           io_redirect_valid, io_redirect_bits_robIdx_flag,
                           io_redirect_bits_robIdx_value, io_redirect_bits_level);
@@ -282,8 +299,10 @@ module xs_LoadQueueUncache_core
 
   always_comb begin
     mmio_wb_sel          = '0;
-    mmio_pipe_in_bits    = zero_mmio_out();
-    mmio_raw_sel         = '0;
+    // payload 缺省 = entry0（golden 的 foreach 覆盖链缺省暴露 entry0 载荷，而非 0；
+    // pipelineReg 黑盒输入是无 valid 门控的 FM 比对点，缺省值必须一致）
+    mmio_pipe_in_bits    = entry_mmio_out[0];
+    mmio_raw_sel         = entry_raw[0];
 
     for (int e = 0; e < ENTRY_NUM; e++) begin
       entry_mmio_ready[e] = entry_mmio_select[e] & mmio_pipe_in_ready;
@@ -330,9 +349,17 @@ module xs_LoadQueueUncache_core
     rem1_not_mmio = entry_nc_valid[1] ? ~entry_mmio_select[1] : ~entry_mmio_select[3];
 
     nc_pipe_even_valid = rem0_has_nc & rem0_not_mmio;
-    nc_pipe_even_bits  = entry_nc_valid[0] ? entry_nc_out[0] : entry_nc_out[2];
+    // payload mux 与 golden 的 foreach 覆盖链一致：被选中(且非 mmio)的 entry 覆盖，
+    // **缺省暴露 entry0** 载荷（黑盒输入无 valid 门控，缺省值参与 FM 比对）。
+    // even 口只有 entry0/2 可选：entry2 被选 = ~v0 & v2（组内优先编码）。
+    nc_pipe_even_bits  = (~entry_mmio_select[2] & ~entry_nc_valid[0] & entry_nc_valid[2])
+                       ? entry_nc_out[2] : entry_nc_out[0];
     nc_pipe_odd_valid  = rem1_has_nc & rem1_not_mmio;
-    nc_pipe_odd_bits   = entry_nc_valid[1] ? entry_nc_out[1] : entry_nc_out[3];
+    // odd 口只有 entry1/3 可选：entry3 被选 = ~v1 & v3；entry1 被选 = v1；缺省 entry0。
+    nc_pipe_odd_bits   = (~entry_mmio_select[3] & ~entry_nc_valid[1] & entry_nc_valid[3])
+                       ? entry_nc_out[3]
+                       : ((~entry_mmio_select[1] & entry_nc_valid[1])
+                          ? entry_nc_out[1] : entry_nc_out[0]);
 
     entry_nc_ready[0] = ~entry_mmio_select[0] & rem0_has_nc & (rem0_idx == 2'd0) & nc_pipe_even_ready;
     entry_nc_ready[1] = ~entry_mmio_select[1] & rem1_has_nc & (rem1_idx == 2'd1) & nc_pipe_odd_ready;

@@ -594,9 +594,10 @@ module xs_LoadMisalignBuffer_core
         splitResp_data[i] <= '0;
       end
     end else begin
-      // ---- 入队：锁存选中 req + genRdataOH ----
+      // ---- 入队：req_valid/data_select（async 复位域，与 golden 一致）----
+      //  req 载荷本体在下方独立「无复位」块锁存（golden req_* 在无复位 always 块，
+      //  reset=1 的时钟沿仍可写入；若放本块 else 分支会被 ~reset 门控，FM 不等价）。
       if (canEnqValid) begin
-        req         <= sel_bits;
         req_valid   <= 1'b1;
         data_select <= genRdataOH(sel_bits.fuOpType, sel_bits.fpWen);
       end
@@ -692,6 +693,11 @@ module xs_LoadMisalignBuffer_core
       // ---- flush 优先级最高，整体复位条目 ----
       if (flush) `CLEAR_ENTRY
     end
+  end
+
+  // ---- 入队锁存 req 载荷（无复位块，与 golden req_* 一致：仅入队时写）----
+  always_ff @(posedge clock) begin
+    if (canEnqValid) req <= sel_bits;
   end
 
   // ---- 逐字节合并 + 符号/零扩展（组合逻辑，s_comb 时锁存到 combinedData）----
@@ -865,19 +871,20 @@ module xs_LoadMisalignBuffer_core
   assign io_writeBack_bits_uop_debugInfo_issueTime  = req.dbg_issueTime;
   // 写回数据：newRdataHelper(data_select, combinedData)。data_select 必为 one-hot，
   //   各档对应不同扩展（zext8/16/32、原 64b、sext8/16/32、box H/S）。
+  //  与 golden 相同的「并行 OR-mux」（Mux1H）：各分支由 data_select 位选通后按位或。
+  //  不能写成优先级 if 链——data_select 是寄存器状态，FM 需在「多热」情形下也等价
+  //  （golden 多热=各分支按位或，优先级链=高位覆盖，不等价）。
   logic [63:0] wb_data;
-  always_comb begin
-    wb_data = 64'h0;
-    if (data_select[0]) wb_data = {56'h0, combinedData[7:0]};   // zext8
-    if (data_select[1]) wb_data = {48'h0, combinedData[15:0]};  // zext16
-    if (data_select[2]) wb_data = {32'h0, combinedData[31:0]};  // zext32
-    if (data_select[3]) wb_data = combinedData;                 // 64b
-    if (data_select[4]) wb_data = {{56{combinedData[7]}},  combinedData[7:0]};  // sext8
-    if (data_select[5]) wb_data = {{48{combinedData[15]}}, combinedData[15:0]}; // sext16
-    if (data_select[6]) wb_data = {{32{combinedData[31]}}, combinedData[31:0]}; // sext32
-    if (data_select[7]) wb_data = {48'hFFFFFFFFFFFF, combinedData[15:0]};       // box H
-    if (data_select[8]) wb_data = {32'hFFFFFFFF, combinedData[31:0]};           // box S
-  end
+  assign wb_data =
+      (data_select[0] ? {56'h0, combinedData[7:0]}                     : 64'h0)  // zext8
+    | (data_select[1] ? {48'h0, combinedData[15:0]}                    : 64'h0)  // zext16
+    | (data_select[2] ? {32'h0, combinedData[31:0]}                    : 64'h0)  // zext32
+    | (data_select[3] ? combinedData                                   : 64'h0)  // 64b
+    | (data_select[4] ? {{56{combinedData[7]}},  combinedData[7:0]}    : 64'h0)  // sext8
+    | (data_select[5] ? {{48{combinedData[15]}}, combinedData[15:0]}   : 64'h0)  // sext16
+    | (data_select[6] ? {{32{combinedData[31]}}, combinedData[31:0]}   : 64'h0)  // sext32
+    | (data_select[7] ? {48'hFFFFFFFFFFFF, combinedData[15:0]}         : 64'h0)  // box H
+    | (data_select[8] ? {32'hFFFFFFFF, combinedData[31:0]}             : 64'h0); // box S
   assign io_writeBack_bits_data = wb_data;
   assign io_writeBack_bits_debug_isMMIO = globalMMIO;
   assign io_writeBack_bits_debug_isNCIO = globalNC & ~globalMemBackTypeMM;

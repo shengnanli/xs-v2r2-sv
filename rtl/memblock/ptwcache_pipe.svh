@@ -59,10 +59,13 @@
     else if (refill_valid)            bypassed_reg_delay <= bypassed_reg_delay | bypass_delay_wire;
   end
   // out.bits.bypassed = in.bypassed | (bypass_wire | (bypassed_reg & !inFire))
+  // 注：stageReq.bits.bypassed 恒 0（golden io.req 无该字段，firtool 已把
+  //     stageDelay(0) 的 bypassed 载荷寄存器折叠消去），这里不读该常 0 寄存器字段
+  //     （保持它无读者→FM Unread 不比对；X 行为也与 golden 折叠后一致）。
   always_comb begin
     stageDelay_bits[1] = stageDelay_bits[0];
-    stageDelay_bits[1].bypassed = stageDelay_bits[0].bypassed
-        | (bypass_delay_wire | (bypassed_reg_delay & {4{~stageDelay_valid_1cycle}}));
+    stageDelay_bits[1].bypassed =
+        bypass_delay_wire | (bypassed_reg_delay & {4{~stageDelay_valid_1cycle}});
   end
 
   // ---- stageCheck[0]：PipelineConnect(stageDelay[1] -> stageCheck[0]) ----

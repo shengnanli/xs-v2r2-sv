@@ -46,7 +46,7 @@ module xs_TLBNonBlock_core
   input  logic [15:0]         io_csrd_vsatp_asid,
   input  logic                io_csrd_vsatp_changed,
   input  logic [3:0]          io_csrd_hgatp_mode,
-  input  logic [13:0]         io_csrd_hgatp_vmid,
+  input  logic [15:0]         io_csrd_hgatp_vmid,  // 16 位全宽（golden 比较含高 2 位）
   input  logic                io_csrd_hgatp_changed,
   input  logic                io_csrd_priv_mxr,
   input  logic                io_csrd_priv_sum,
@@ -292,10 +292,12 @@ module xs_TLBNonBlock_core
   logic                resp_s1_isFakePte;
 
   // —— lastCycleRedirect 寄存（RegNext(redirect)）——
-  logic                lcr_valid;
-  logic                lcr_robIdx_flag;
-  logic [ROB_W-1:0]    lcr_robIdx_value;
-  logic                lcr_level;
+  // golden 每 lane 各打一份副本（readResult_lastCycleRedirect_REG[_N]），FM 不接受
+  // n-to-1 钉点，按 golden 结构建 per-lane 数组。
+  logic [WIDTH-1:0]                lcr_valid;
+  logic [WIDTH-1:0]                lcr_robIdx_flag;
+  logic [WIDTH-1:0][ROB_W-1:0]     lcr_robIdx_value;
+  logic [WIDTH-1:0]                lcr_level;
 
   // —— readResult_p_*：PTW 回填后旁路 1 拍的翻译结果（per port）——
   logic [WIDTH-1:0]              p_hit;        // GatedValidRegNext(...)
@@ -382,6 +384,8 @@ module xs_TLBNonBlock_core
   logic [WIDTH-1:0] isHyperInst;
   logic [WIDTH-1:0][1:0] req_out_s2xlate;
   logic [WIDTH-1:0] REG_pre;           // RegNext(prepf|pregpf|preaf)
+  logic [WIDTH-1:0] REG_pre2;          // golden 每 lane 有两份相同 RegNext 副本（REG/REG_1 …），
+                                       // 分别喂 excp/vaNeedExt 与 isForVSnonLeafPTE/miss，1:1 对齐
   logic [WIDTH-1:0] excp_pf_ld_REG, excp_pf_st_REG, excp_gpf_ld_REG, excp_gpf_st_REG;
   logic [WIDTH-1:0] excp_af_ld_REG, excp_af_st_REG;
   // need_gpa 状态机的逐端口控制项(对应 golden readResult 的 redirect/enter 控制位)
@@ -398,9 +402,14 @@ module xs_TLBNonBlock_core
                                                : io_ptw_resp_s1_entry_level))
       : io_ptw_resp_s1_entry_level;
   wire [2:0] ptw_pteidx_or = io_ptw_resp_s1_pteidx[7:5] | io_ptw_resp_s1_pteidx[3:1];
-  // s1 napot ppn 低 3 位（ppn_low_*[0] 拼）
-  wire [2:0] ptw_napot_low =
-      {io_ptw_resp_s1_ppn_low[2][0], io_ptw_resp_s1_ppn_low[1][0], io_ptw_resp_s1_ppn_low[0][0]};
+  // s1 非 napot（n=0）时 ppn 低 3 位来自 ppn_low 子项表，按访问 vpn[2:0] 选一项
+  // （golden _GEN_87[vaddr[14:12]] / _GEN_87[need_gpa_vpn[2:0]]，逐口不同）。
+  // ⚠ 不用 function 捕获模块级数组（generate 内敏感表坑），打包成向量直接下标取。
+  wire [7:0][2:0] ptw_ppn_low_tbl = {
+      io_ptw_resp_s1_ppn_low[7], io_ptw_resp_s1_ppn_low[6],
+      io_ptw_resp_s1_ppn_low[5], io_ptw_resp_s1_ppn_low[4],
+      io_ptw_resp_s1_ppn_low[3], io_ptw_resp_s1_ppn_low[2],
+      io_ptw_resp_s1_ppn_low[1], io_ptw_resp_s1_ppn_low[0]};
 
   // PTW 回包 getVpn(need_gpa_vpn)：按 s2xlate/level 取被 napot/level 截断后的 vpn 段。
   //   对应 golden 的 s1/s2 tag 选择 + level 索引。组合算出（只读 need_gpa_vpn + ptw）。
@@ -458,11 +467,11 @@ module xs_TLBNonBlock_core
     wire need_gpa_vpn_hit = need_gpa_vpn == vaddr[VADDR_W-1:12];
     assign hit_read[gi] = io_entries_hit[gi] | p_hit[gi];
     // lastCycleRedirect 命中本端口（用上拍 redirect 寄存）
-    wire lcr_hit = lcr_valid
-        & ( (lcr_level & ({req_out_robIdx_flag[gi],req_out_robIdx_value[gi]}
-                            == {lcr_robIdx_flag, lcr_robIdx_value}))
-            | (req_out_robIdx_flag[gi]^lcr_robIdx_flag
-               ^ (req_out_robIdx_value[gi] > lcr_robIdx_value)) );
+    wire lcr_hit = lcr_valid[gi]
+        & ( (lcr_level[gi] & ({req_out_robIdx_flag[gi],req_out_robIdx_value[gi]}
+                            == {lcr_robIdx_flag[gi], lcr_robIdx_value[gi]}))
+            | (req_out_robIdx_flag[gi]^lcr_robIdx_flag[gi]
+               ^ (req_out_robIdx_value[gi] > lcr_robIdx_value[gi])) );
     assign miss_read[gi] = (~hit_read[gi] & porttr[gi])
         | (hasGpf[gi] & ~p_hit[gi] & ~(resp_gpa_refill & need_gpa_vpn_hit)
            & ~onlyS2 & ~req_out_isPrefetch[gi] & ~lcr_hit);
@@ -524,7 +533,7 @@ module xs_TLBNonBlock_core
     assign io_resp_excp_vaNeedExt[gi] = ~REG_pre[gi];
     assign io_resp_excp_isHyper[gi]   = isHyperInst[gi];
     // isForVSnonLeafPTE（gpf 时给 CSR 用，用 dup1 的 perm）
-    assign io_resp_isForVSnonLeafPTE[gi] = ~REG_pre[gi]
+    assign io_resp_isForVSnonLeafPTE[gi] = ~REG_pre2[gi]
         & ( (~(perm1.r|perm1.w|perm1.x) & perm1.v & ~perm1.pf & ~perm1.af)
           | (~perm1.v & ~perm1.pf & ~perm1.af & ~onlyS2) );
 
@@ -552,6 +561,7 @@ module xs_TLBNonBlock_core
                                   ? {16'h0, vaddr[47:0]} : req_out_fullva[gi];
     wire [1:0] vpn_idx = isFakePteSel_q & (io_csrd_vsatp_mode==4'h8) ? 2'h2
                        : isFakePteSel_q & (io_csrd_vsatp_mode==4'h9) ? 2'h3
+                       : isFakePteSel_q                              ? 2'h0   // golden: fake 且非 Sv39/48 → 0
                        : (levelSel - 2'h1);
     wire [8:0] vpnn = get_vpnn(crossPageVaddr[VADDR_W-1:12], vpn_idx);
     wire [11:0] gpaddr_off = isLeafSel ? crossPageVaddr[11:0] : {vpnn, 3'h0};
@@ -561,7 +571,7 @@ module xs_TLBNonBlock_core
                                     : {8'h0, gvpnSel, gpaddr_off});
 
     assign io_resp_fullva[gi] = resp_fullva_r[gi];
-    assign io_resp_miss[gi]   = ~REG_pre[gi] & miss_read[gi];
+    assign io_resp_miss[gi]   = ~(REG_pre2[gi] | REG_pre[gi]) & miss_read[gi];  // golden ~(REG_1|REG)
     assign io_resp_valid[gi]  = req_out_v[gi];
 
     // ===== PMP 检查请求 =====
@@ -740,7 +750,7 @@ module xs_TLBNonBlock_core
   wire [GVPN_W-1:0] resp_gpa_gvpn_next = (io_ptw_resp_s2xlate==ONLY_STAGE2)
       ? {6'h0, io_ptw_resp_s2_entry_tag}
       : gen_gvpn(io_ptw_resp_s1_entry_ppn, io_ptw_resp_s1_entry_n, io_ptw_resp_s1_entry_level,
-                 ptw_napot_low, io_ptw_resp_s2_entry_tag, ptw_gvpn_isNonLeaf, 1'b0, need_gpa_vpn);
+                 ptw_ppn_low_tbl[need_gpa_vpn[2:0]], io_ptw_resp_s2_entry_tag, ptw_gvpn_isNonLeaf, 1'b0, need_gpa_vpn);
 
   // ===========================================================================
   // s0 PTW 旁路命中 + 旁路结果（按 io_req_vaddr 的 s0 视角，组合，逐端口）
@@ -771,14 +781,14 @@ module xs_TLBNonBlock_core
 
     // s0 旁路 ppn：两阶段取 s2 合成，否则 s1 合成
     wire [GVPN_W-1:0] s1ppn = gen_s1_ppn44(io_ptw_resp_s1_entry_ppn, io_ptw_resp_s1_entry_n,
-                                     io_ptw_resp_s1_entry_level, ptw_napot_low, v[VADDR_W-1:12]);
+                                     io_ptw_resp_s1_entry_level, ptw_ppn_low_tbl[v[14:12]], v[VADDR_W-1:12]);
     // s0 gvpn27（用于 p_ppn 的 s2 合成，对应 golden readResult_gvpn）
     wire [26:0] gvpn27 = (s2x==ONLY_STAGE2) ? v[38:12] : s1ppn[26:0];
     wire [37:0] s2ppn = gen_s2_ppn38(io_ptw_resp_s2_entry_ppn, io_ptw_resp_s2_entry_n,
                                      io_ptw_resp_s2_entry_level, gvpn27);
     assign p_ppn_s0[gi]  = (s2x==ONLY_STAGE2 | (&s2x)) ? s2ppn[PPN_W-1:0] : s1ppn[PPN_W-1:0];
     assign p_gvpn_s0[gi] = gen_gvpn(io_ptw_resp_s1_entry_ppn, io_ptw_resp_s1_entry_n,
-                                    io_ptw_resp_s1_entry_level, ptw_napot_low,
+                                    io_ptw_resp_s1_entry_level, ptw_ppn_low_tbl[v[14:12]],
                                     io_ptw_resp_s2_entry_tag, ptw_gvpn_isNonLeaf,
                                     s2x==ONLY_STAGE2, v[VADDR_W-1:12]);
   end
@@ -803,6 +813,7 @@ module xs_TLBNonBlock_core
       end
       // 预检异常寄存 + noTranslate 寄存（每拍）
       REG_pre[i]         <= prepf[i] | pregpf[i] | preaf[i];
+      REG_pre2[i]        <= prepf[i] | pregpf[i] | preaf[i];
       excp_pf_ld_REG[i]  <= prepf[i];
       excp_pf_st_REG[i]  <= prepf[i];
       excp_gpf_ld_REG[i] <= pregpf[i];
@@ -811,16 +822,22 @@ module xs_TLBNonBlock_core
       excp_af_st_REG[i]  <= preaf[i];
       noTransReg[i]      <= io_req_no_translate[i];
     end
-    // redirect 寄存（lastCycleRedirect）
-    lcr_valid        <= io_redirect_valid;
-    lcr_robIdx_flag  <= io_redirect_robIdx_flag;
-    lcr_robIdx_value <= io_redirect_robIdx_value;
-    lcr_level        <= io_redirect_level;
+    // redirect 寄存（lastCycleRedirect，per-lane 副本对齐 golden）
+    for (int i = 0; i < WIDTH; i++) begin
+      lcr_valid[i]        <= io_redirect_valid;
+      lcr_robIdx_flag[i]  <= io_redirect_robIdx_flag;
+      lcr_robIdx_value[i] <= io_redirect_robIdx_value;
+      lcr_level[i]        <= io_redirect_level;
+    end
   end
 
   // ===========================================================================
   // 时序：req_out_v + need_gpa 状态机 + ptw 旁路寄存（带复位）
   // ===========================================================================
+  // resp_gpa 写使能（golden 嵌套优先级的折叠形式）：任一端口「未被 redirect/enter
+  // 抢占 且 ptwhit」→ 本拍写 PTW 回包（各端口回包相同，数据无差别）。
+  wire resp_gpa_wr_en = |( ~(rr_T_redirect | rr_T_enter) & rr_T_ptwhit );
+
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       req_out_v <= '0;
@@ -856,28 +873,7 @@ module xs_TLBNonBlock_core
                        | rr_T_redirect[0] )
                     & ( rr_T_enter[0] | need_gpa ) ) ) );
 
-      // need_gpa_vpn / robidx：端口 3>2>1>0，redirect 清 0、enter 写本端口 vpn
-      if (rr_T_redirect[3])      need_gpa_vpn <= '0;
-      else if (rr_T_enter[3])    need_gpa_vpn <= req_out_vaddr[3][VADDR_W-1:12];
-      else if (rr_T_redirect[2]) need_gpa_vpn <= '0;
-      else if (rr_T_enter[2])    need_gpa_vpn <= req_out_vaddr[2][VADDR_W-1:12];
-      else if (rr_T_redirect[1]) need_gpa_vpn <= '0;
-      else if (rr_T_enter[1])    need_gpa_vpn <= req_out_vaddr[1][VADDR_W-1:12];
-      else if (rr_T_redirect[0]) need_gpa_vpn <= '0;
-      else if (rr_T_enter[0])    need_gpa_vpn <= req_out_vaddr[0][VADDR_W-1:12];
-
-      if (rr_T_redirect[3] | ~rr_T_enter[3]) begin
-        if (rr_T_redirect[2] | ~rr_T_enter[2]) begin
-          if (rr_T_redirect[1] | ~rr_T_enter[1]) begin
-            if (rr_T_redirect[0] | ~rr_T_enter[0]) begin end
-            else begin need_gpa_robidx_flag <= req_out_robIdx_flag[0];
-                       need_gpa_robidx_value <= req_out_robIdx_value[0]; end
-          end else begin need_gpa_robidx_flag <= req_out_robIdx_flag[1];
-                         need_gpa_robidx_value <= req_out_robIdx_value[1]; end
-        end else begin need_gpa_robidx_flag <= req_out_robIdx_flag[2];
-                       need_gpa_robidx_value <= req_out_robIdx_value[2]; end
-      end else begin need_gpa_robidx_flag <= req_out_robIdx_flag[3];
-                     need_gpa_robidx_value <= req_out_robIdx_value[3]; end
+      // （need_gpa_vpn / need_gpa_robidx 为 golden 无复位寄存器，移到下方独立无复位块）
 
       // —— resp_gpa_refill：PTW 回来命中 need_gpa_vpn 则置（优先级链同上）——
       // 等价 golden 的 redirect/enter 优先级链；这里直接用 rr_ 信号复刻。
@@ -888,44 +884,80 @@ module xs_TLBNonBlock_core
             & ( rr_T_ptwhit[1] | ~(rr_T_redirect[0]|rr_T_enter[0])
               & ( rr_T_ptwhit[0] | resp_gpa_refill ) ) ) );
 
-      // resp_gpa_gvpn / resp_s1_level / isLeaf / isFakePte：PTW 命中 need_gpa_vpn 时更新。
-      // golden 用嵌套优先级取“最后被选中端口”的 PTW 回包；各端口回包相同（同一 io_ptw_resp），
-      // 故这里统一在“任一端口 ptwhit 或回包默认更新”时写 PTW 回包值（与 golden 等价）。
-      resp_gpa_gvpn     <= resp_gpa_gvpn_next;
-      resp_s1_level     <= io_ptw_resp_s1_entry_level;
-      resp_s1_isLeaf    <= ptw_isLeaf;
-      resp_s1_isFakePte <= ptw_isFakePte;
+      // resp_s1_level / isLeaf / isFakePte：golden 异步复位组，留在本块；
+      // 写使能与 resp_gpa_gvpn 相同（嵌套优先级折叠）。
+      if (resp_gpa_wr_en) begin
+        resp_s1_level     <= io_ptw_resp_s1_entry_level;
+        resp_s1_isLeaf    <= ptw_isLeaf;
+        resp_s1_isFakePte <= ptw_isFakePte;
+      end
 
-      // —— PTW 回填旁路寄存 + p_hit（GatedValidRegNext）——
-      //   旁路命中/ppn/gvpn 已在 g_s0_bypass 组合算好（p_hit_s0/p_ppn_s0/p_gvpn_s0）。
+      // —— p_hit（GatedValidRegNext，golden 异步复位）——
       for (int i = 0; i < WIDTH; i++) begin
         p_hit[i] <= p_hit_s0[i];
-        if (io_ptw_resp_valid) begin
-          p_ppn[i]   <= p_ppn_s0[i];
-          p_pbmt[i]  <= io_ptw_resp_s1_entry_pbmt;
-          p_perm[i]  <= ptw_perm;
-          p_gvpn[i]  <= p_gvpn_s0[i];
-          p_g_pbmt[i]<= io_ptw_resp_s2_entry_pbmt;
-          p_g_perm[i]<= ptw_gperm;
-          p_s2xlate[i]<= io_ptw_resp_s2xlate;
-          p_s1_level[i]<= io_ptw_resp_s1_entry_level;
-          p_s1_isLeaf[i]<= ptw_isLeaf;
-          p_s1_isFakePte[i]<= ptw_isFakePte;
-          // 整包寄存（ptw_already_back 用）
-          pr_s2xlate[i]   <= io_ptw_resp_s2xlate;
-          pr_s1_tag[i]    <= io_ptw_resp_s1_entry_tag;
-          pr_s1_asid[i]   <= io_ptw_resp_s1_entry_asid;
-          pr_s1_vmid[i]   <= io_ptw_resp_s1_entry_vmid;
-          pr_s1_n[i]      <= io_ptw_resp_s1_entry_n;
-          pr_s1_perm_g[i] <= io_ptw_resp_s1_entry_perm_g;
-          pr_s1_level[i]  <= io_ptw_resp_s1_entry_level;
-          pr_s1_addr_low[i]<= io_ptw_resp_s1_addr_low;
-          pr_s1_valididx[i]<= io_ptw_resp_s1_valididx;
-          pr_s2_tag[i]    <= io_ptw_resp_s2_entry_tag;
-          pr_s2_vmid[i]   <= io_ptw_resp_s2_entry_vmid;
-          pr_s2_n[i]      <= io_ptw_resp_s2_entry_n;
-          pr_s2_level[i]  <= io_ptw_resp_s2_entry_level;
-        end
+      end
+    end
+  end
+
+  // ===========================================================================
+  //  无复位寄存器组（golden 在无复位 always 块；若留在异步复位块 else 分支，FM 视
+  //  其使能含 ~reset，与 golden 判不等价）：need_gpa_vpn/robidx、resp_gpa_gvpn、
+  //  PTW 回填旁路 pr_*/p_* 载荷。
+  // ===========================================================================
+  always_ff @(posedge clock) begin
+    // need_gpa_vpn / robidx：端口 3>2>1>0，redirect 清 0、enter 写本端口 vpn
+    if (rr_T_redirect[3])      need_gpa_vpn <= '0;
+    else if (rr_T_enter[3])    need_gpa_vpn <= req_out_vaddr[3][VADDR_W-1:12];
+    else if (rr_T_redirect[2]) need_gpa_vpn <= '0;
+    else if (rr_T_enter[2])    need_gpa_vpn <= req_out_vaddr[2][VADDR_W-1:12];
+    else if (rr_T_redirect[1]) need_gpa_vpn <= '0;
+    else if (rr_T_enter[1])    need_gpa_vpn <= req_out_vaddr[1][VADDR_W-1:12];
+    else if (rr_T_redirect[0]) need_gpa_vpn <= '0;
+    else if (rr_T_enter[0])    need_gpa_vpn <= req_out_vaddr[0][VADDR_W-1:12];
+
+    if (rr_T_redirect[3] | ~rr_T_enter[3]) begin
+      if (rr_T_redirect[2] | ~rr_T_enter[2]) begin
+        if (rr_T_redirect[1] | ~rr_T_enter[1]) begin
+          if (rr_T_redirect[0] | ~rr_T_enter[0]) begin end
+          else begin need_gpa_robidx_flag <= req_out_robIdx_flag[0];
+                     need_gpa_robidx_value <= req_out_robIdx_value[0]; end
+        end else begin need_gpa_robidx_flag <= req_out_robIdx_flag[1];
+                       need_gpa_robidx_value <= req_out_robIdx_value[1]; end
+      end else begin need_gpa_robidx_flag <= req_out_robIdx_flag[2];
+                     need_gpa_robidx_value <= req_out_robIdx_value[2]; end
+    end else begin need_gpa_robidx_flag <= req_out_robIdx_flag[3];
+                   need_gpa_robidx_value <= req_out_robIdx_value[3]; end
+
+    // resp_gpa_gvpn：PTW 命中 need_gpa_vpn 时更新（各端口回包相同，统一写）。
+    if (resp_gpa_wr_en) resp_gpa_gvpn <= resp_gpa_gvpn_next;
+
+    // —— PTW 回填旁路寄存（无复位；使能 io_ptw_resp_valid）——
+    for (int i = 0; i < WIDTH; i++) begin
+      if (io_ptw_resp_valid) begin
+        p_ppn[i]   <= p_ppn_s0[i];
+        p_pbmt[i]  <= io_ptw_resp_s1_entry_pbmt;
+        p_perm[i]  <= ptw_perm;
+        p_gvpn[i]  <= p_gvpn_s0[i];
+        p_g_pbmt[i]<= io_ptw_resp_s2_entry_pbmt;
+        p_g_perm[i]<= ptw_gperm;
+        p_s2xlate[i]<= io_ptw_resp_s2xlate;
+        p_s1_level[i]<= io_ptw_resp_s1_entry_level;
+        p_s1_isLeaf[i]<= ptw_isLeaf;
+        p_s1_isFakePte[i]<= ptw_isFakePte;
+        // 整包寄存（ptw_already_back 用）
+        pr_s2xlate[i]   <= io_ptw_resp_s2xlate;
+        pr_s1_tag[i]    <= io_ptw_resp_s1_entry_tag;
+        pr_s1_asid[i]   <= io_ptw_resp_s1_entry_asid;
+        pr_s1_vmid[i]   <= io_ptw_resp_s1_entry_vmid;
+        pr_s1_n[i]      <= io_ptw_resp_s1_entry_n;
+        pr_s1_perm_g[i] <= io_ptw_resp_s1_entry_perm_g;
+        pr_s1_level[i]  <= io_ptw_resp_s1_entry_level;
+        pr_s1_addr_low[i]<= io_ptw_resp_s1_addr_low;
+        pr_s1_valididx[i]<= io_ptw_resp_s1_valididx;
+        pr_s2_tag[i]    <= io_ptw_resp_s2_entry_tag;
+        pr_s2_vmid[i]   <= io_ptw_resp_s2_entry_vmid;
+        pr_s2_n[i]      <= io_ptw_resp_s2_entry_n;
+        pr_s2_level[i]  <= io_ptw_resp_s2_entry_level;
       end
     end
   end

@@ -16,7 +16,7 @@ CMOUnit cmo_unit (
   .io_req_valid               (io_cmo_req_valid),
   .io_req_bits_opcode         (io_cmo_req_bits_opcode),
   .io_req_bits_address        (io_cmo_req_bits_address),
-  .io_req_chanA_ready         (io_mem_acquire_ready & acq_allowed[0]),
+  .io_req_chanA_ready         (io_mem_acquire_ready & acq_grant[0]),
   .io_req_chanA_valid         (cmo_acq_valid),
   .io_req_chanA_bits_opcode   (cmo_acq_opcode),
   .io_req_chanA_bits_address  (cmo_acq_address),

@@ -51,6 +51,14 @@ WRAPPER_SRCS = $(RTL_DIR)/backend/Backend_wrapper.sv $(SUB_DEPS)
 FM_VARIANTS = Backend
 FM_REF_DEPS_Backend = BypassNetwork.sv CtrlBlock.sv DataPath.sv DelayN_1.sv ExuBlock.sv ExuBlock_1.sv ExuBlock_2.sv HPerfMonitor_2.sv NewPipelineConnectPipe.sv NewPipelineConnectPipe_1.sv NewPipelineConnectPipe_10.sv NewPipelineConnectPipe_13.sv NewPipelineConnectPipe_14.sv NewPipelineConnectPipe_16.sv NewPipelineConnectPipe_18.sv NewPipelineConnectPipe_20.sv NewPipelineConnectPipe_23.sv NewPipelineConnectPipe_25.sv NewPipelineConnectPipe_5.sv NewPipelineConnectPipe_7.sv NewPipelineConnectPipe_8.sv NewPipelineConnectPipe_9.sv Og2ForVector.sv PFEvent.sv Scheduler.sv Scheduler_1.sv Scheduler_2.sv Scheduler_3.sv VecExcpDataMergeModule.sv WbDataPath.sv WbFuBusyTable.sv
 
+# 四个大共享子模块两侧都读同一份 golden(BypassNetwork/DataPath/CtrlBlock/WbDataPath),
+# 用 interface_only 把它们在边界处黑盒:只保留端口方向,不展开内部。Backend 是顶层
+# 装配层,重写工作全在顶层 glue;这四个模块各自有独立 UT/FM,此处不重复验其内部。
+# 否则 FM 会下降进这些模块,把其中未解析的叶子(ImmExtractor/UIntExtractor 等组合
+# 抽取器、RegFile/Arbiter 黑盒)的悬空/未读引脚判为成百上千假失配。黑盒后 FM 只比
+# Backend 自身的顶层互联(驱动这些黑盒输入 / 消费其输出),即真正的重写对象。
+FM_INTERFACE_ONLY = BypassNetwork DataPath CtrlBlock WbDataPath
+
 include ../../../scripts/ut_common.mk
 
 # golden 内含非综合断言/difftest;UT 关掉并关随机化,处理 flush-X。

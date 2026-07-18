@@ -287,6 +287,12 @@ def emit_module(modname, ps):
     # bank1 的 brValid = tailSlot_valid & tailSlot_sharing（tail 槽作为条件分支共享时才有效）
     cc.append(".io_update_br_valid('{io_update_bits_ftb_entry_brSlots_0_valid, "
               "(io_update_bits_ftb_entry_tailSlot_valid & io_update_bits_ftb_entry_tailSlot_sharing)})")
+    # 核直连 tailSlot 原始位 + perf 计数（golden 顶层直接连；漏接会使这几个端口悬空 → FM 失配）
+    cc.append(".io_update_tailSlot_valid(io_update_bits_ftb_entry_tailSlot_valid)")
+    cc.append(".io_update_tailSlot_sharing(io_update_bits_ftb_entry_tailSlot_sharing)")
+    cc.append(".io_perf_0_value(io_perf_0_value)")
+    cc.append(".io_perf_1_value(io_perf_1_value)")
+    cc.append(".io_perf_2_value(io_perf_2_value)")
     cc.append(".io_update_strong_bias('{io_update_bits_ftb_entry_strong_bias_0, io_update_bits_ftb_entry_strong_bias_1})")
     cc.append(".io_update_br_taken('{io_update_bits_br_taken_mask_0, io_update_bits_br_taken_mask_1})")
     cc.append(".io_update_mispred('{io_update_bits_mispred_mask_0, io_update_bits_mispred_mask_1})")
@@ -352,10 +358,11 @@ def emit_module(modname, ps):
     L.append("  assign io_out_last_stage_spec_info_sc_disagree_0 = core_sc_disagree_0;")
     L.append("  assign io_out_last_stage_spec_info_sc_disagree_1 = core_sc_disagree_1;")
     L.append("  assign io_s1_ready = core_s1_ready;")
-    # perf：golden = {4'h0, REG}（性能计数，与功能无关）；wrapper 给 0（UT tb 跳过 X，FM 注明）
-    L.append("  assign io_perf_0_value = 6'b0;")
-    L.append("  assign io_perf_1_value = 6'b0;")
-    L.append("  assign io_perf_2_value = 6'b0;")
+    # perf 现由核直连（io_perf_N_value 已接入 u_core），此处不再置 0。
+    # mbist bore 上行输出（golden 7605-7606 行；漏接会使输出口悬空 X → FM 失配）
+    L.append("  // mbist bore 上行输出（golden 7605-7606 行；漏接会使输出口悬空 X → FM 失配）")
+    L.append("  assign boreChildrenBd_bore_ack = bd_ack;")
+    L.append("  assign boreChildrenBd_bore_outdata = bd_outdata;")
     L.append("endmodule")
     return "\n".join(L)
 
@@ -427,10 +434,35 @@ module tb;
         T.append(f"    if (!$isunknown(g_{n}) && g_{n} !== i_{n}) begin errors++;")
         T.append(f"      if(errors<=40) $display(\"[%0t] {n} g=%h i=%h\", $time, g_{n}, i_{n}); end")
     T.append("  end")
-    T.append("""  initial begin
+    # TageBTable 更新口等价性自检（证明 FM 报的 ~20 个 bt_upd_* 失配是假阳性）
+    T.append("""  // ---------------------------------------------------------------------------
+  // TageBTable 更新口等价性自检（证明 FM 报的 ~20 个 bt_upd_* 失配是假阳性）：
+  //   FM 比的是寄存器位（golden 把 pc/cnt 无条件寄存，本核可能 mask=0 时不更新），
+  //   但真正进 TageBTable SRAM 的是 (mask, 且 mask=1 时的 pc/cnt/takens)。
+  //   这里逐拍比 golden bt 实例(u_g.bt) 与本核 bt 实例(u_i.bt) 的更新口：
+  //     mask 恒等；mask=1 时 pc/cnt/takens 恒等。btu_err 必须为 0。
+  // ---------------------------------------------------------------------------
+  int btu_err = 0;
+  always @(posedge clk) if(!rst) begin
+    // mask 恒比
+    if (u_g.bt.io_update_mask_0 !== u_i.bt.io_update_mask_0) btu_err++;
+    if (u_g.bt.io_update_mask_1 !== u_i.bt.io_update_mask_1) btu_err++;
+    // pc：任一 bank mask=1 时才进 SRAM
+    if ((u_g.bt.io_update_mask_0 | u_g.bt.io_update_mask_1) &&
+        (u_g.bt.io_update_pc !== u_i.bt.io_update_pc)) btu_err++;
+    // 每 bank：mask=1 时 cnt/takens 恒比
+    if (u_g.bt.io_update_mask_0 &&
+        ((u_g.bt.io_update_cnt_0    !== u_i.bt.io_update_cnt_0) ||
+         (u_g.bt.io_update_takens_0 !== u_i.bt.io_update_takens_0))) btu_err++;
+    if (u_g.bt.io_update_mask_1 &&
+        ((u_g.bt.io_update_cnt_1    !== u_i.bt.io_update_cnt_1) ||
+         (u_g.bt.io_update_takens_1 !== u_i.bt.io_update_takens_1))) btu_err++;
+  end
+
+  initial begin
     rst = 1; repeat (12) @(posedge clk); rst = 0;
     repeat (NCYCLES) @(posedge clk);
-    $display("checks=%0d errors=%0d", checks, errors);
+    $display("checks=%0d errors=%0d btu_err=%0d", checks, errors, btu_err);
     if (errors == 0 && checks > 1000) $display("TEST PASSED"); else $display("TEST FAILED");
     $finish;
   end

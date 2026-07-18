@@ -92,7 +92,11 @@ module xs_BankedDataArray_core import bankeddata_pkg::*; (
   // mbist ack（黑盒给出，影响 pseudo toggle 与 readline 选择）
   input  logic                   mbist_ack,
   input  logic [WAY_W-1:0]       mbist_r_way,
-  input  logic                   mbist_r_div   // SET_DIV=1，恒 0
+  input  logic                   mbist_r_div,  // SET_DIV=1，恒 0
+  // 每 SRAM 通道 (bank,way) 的 mbist ack（golden pseudo 注错门控用 toSRAM_{4b+w}_ack，
+  // 不是全局 mbist_ack）；readline 输出级 {ecc,raw} 回喂 mbistPl 的 toSRAM_N_rdata
+  input  logic                   mbist_chan_ack [N_BANKS][N_WAYS],
+  output logic [ENC_BITS-1:0]    mbist_rl_rdata [N_BANKS]
 );
 
   // ===========================================================================
@@ -339,8 +343,8 @@ module xs_BankedDataArray_core import bankeddata_pkg::*; (
       logic [ECC_BITS-1:0] ec;
       logic [ENC_BITS-1:0] encd;
       always_comb begin
-        // 注错只叠在 raw 上；mbist_ack 时不叠（MBIST 读原值）
-        raw  = sram_r_data[b][w][ROW_BITS-1:0] ^ (mbist_ack ? '0 : pseudo_toggle[b]);
+        // 注错只叠在 raw 上；本**通道** mbist ack 时不叠（golden 用 toSRAM_{4b+w}_ack 门控）
+        raw  = sram_r_data[b][w][ROW_BITS-1:0] ^ (mbist_chan_ack[b][w] ? '0 : pseudo_toggle[b]);
         ec   = sram_r_data[b][w][ENC_BITS-1:ROW_BITS];
         encd = {ec, raw};
         bank_result[b][w].ecc      = ec;
@@ -362,6 +366,10 @@ module xs_BankedDataArray_core import bankeddata_pkg::*; (
     logic                r_fire;            // RegNext(read.fire)
     logic [BANK_W-1:0]   r_bank [N_LINES];
     logic [WAY_W-1:0]    r_way;
+    // golden 的 rr 链有**自己的第一级副本** rr_bank_addr_r/rr_way_addr_r（与
+    // r_bank_addr/r_way_addr 同源同使能的重复寄存器，MERGE_DUP=false 下须 1:1 保留）
+    logic [BANK_W-1:0]   rr_bank_r [N_LINES];
+    logic [WAY_W-1:0]    rr_way_r;
     logic                rr_fire;           // 2 拍后
     logic [BANK_W-1:0]   rr_bank [N_LINES];
     logic [WAY_W-1:0]    rr_way;
@@ -371,22 +379,25 @@ module xs_BankedDataArray_core import bankeddata_pkg::*; (
       if (fire) begin
         for (int j = 0; j < N_LINES; j++) r_bank[j] <= bank_addrs[i][j];
         r_way <= oh_to_way(io_read_way_en[i]);
+        for (int j = 0; j < N_LINES; j++) rr_bank_r[j] <= bank_addrs[i][j];
+        rr_way_r <= oh_to_way(io_read_way_en[i]);
       end
       rr_fire <= r_fire;
       if (r_fire) begin
-        for (int j = 0; j < N_LINES; j++) rr_bank[j] <= r_bank[j];
-        rr_way <= r_way;
+        for (int j = 0; j < N_LINES; j++) rr_bank[j] <= rr_bank_r[j];
+        rr_way <= rr_way_r;
       end
     end
-    // io_read_error_delayed 的冲突门控用 RegNext(bank_conflict_slow)（与 golden 一致）
-    logic slow_reg;
-    always_ff @(posedge clock) slow_reg <= io_bank_conflict_slow[i];
+    // io_read_error_delayed 的冲突门控：golden 每 line 一份 RegNext(bank_conflict_slow)
+    logic slow_reg [N_LINES];
+    always_ff @(posedge clock)
+      for (int j = 0; j < N_LINES; j++) slow_reg[j] <= io_bank_conflict_slow[i];
     for (genvar j = 0; j < N_LINES; j++) begin : g_line
       always_comb begin
         // 用寄存的 bank/way 从 bank_result 选数据
         io_read_resp[i][j] = bank_result[r_bank[j]][r_way].raw_data;
         io_read_error_delayed[i][j] =
-          rr_fire & bank_result[rr_bank[j]][rr_way].error_delayed & ~slow_reg;
+          rr_fire & bank_result[rr_bank[j]][rr_way].error_delayed & ~slow_reg[j];
       end
     end
   end
@@ -452,6 +463,11 @@ module xs_BankedDataArray_core import bankeddata_pkg::*; (
     io_readline_error = |rl_error;
     io_readline_error_delayed = |rl_error_delayed;
   end
+  // golden 把 readline 输出级 {r_8_b_ecc, r_8_b_raw_data} 回喂 mbistPl 的
+  // toSRAM_{4b..4b+3}_rdata（bank 的 bore rdata 输出在 golden 顶层是悬空网）
+  for (genvar b = 0; b < N_BANKS; b++) begin : g_mbrl
+    assign mbist_rl_rdata[b] = {r8_ecc[b], r8_raw[b]};
+  end
 
   // ===========================================================================
   // 9) pseudo_error_ready：RegNext(readline_hit | readbank_hit)
@@ -476,9 +492,14 @@ module xs_BankedDataArray_core import bankeddata_pkg::*; (
   // 10) 写 bank SRAM：用寄存的 write_dup（晚 1 拍），各 bank 独立 wen/wayen/addr/data
   //     wen = wmask[b] & write_dup_valid[b] & div相等 & RegNext(write.valid)
   // ===========================================================================
+  // golden 的 io_w_en 用**每 bank 一份**的 RegNext(io_write_valid) 副本 wen_reg_REG_b
+  //（与 wr 冲突用的单份 write_valid_reg 是不同寄存器，MERGE_DUP=false 下须 1:1 保留）
+  logic wen_reg [N_BANKS];
+  always_ff @(posedge clock)
+    for (int b = 0; b < N_BANKS; b++) wen_reg[b] <= io_write_valid;
   for (genvar b = 0; b < N_BANKS; b++) begin : g_wr_bank
     always_comb begin
-      sram_w_en[b]     = write_wmask_reg[b] & write_dup_valid_reg[b] & write_valid_reg;
+      sram_w_en[b]     = write_wmask_reg[b] & write_dup_valid_reg[b] & wen_reg[b];
       sram_w_way_en[b] = write_dup_wayen_reg[b];
       sram_w_addr[b]   = write_dup_set_reg[b];
       sram_w_data[b]   = {write_ecc_reg[b], write_data_reg[b]};

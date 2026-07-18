@@ -107,8 +107,11 @@ module xs_PTW_core
   logic access_fault_r;
   logic update_full_gvpn_from_mem;
   logic [PTE_PPN_W-1:0] full_gvpn_r;
-  logic [6:0] perf_event_s1;
+  logic [6:0] perf_event_s1;   // bit5 由 perf_event_s1_5 提供(见下), 本向量 bit5 不驱动不读
   logic [6:0] perf_event_s2;
+  // perf[5] 的事件累积器(mem 在途): golden perfEvents_5_2 带复位, 单独拆出放复位块;
+  // 其余 perf 流水级 golden 无复位(XSPerfAccumulate 的 REG/REG_1), 放无复位块。
+  logic perf_event_s1_5;
 
   // 这个 enum 是代码阅读用的高层状态投影；实际控制仍保持 Scala 的 s/w
   // 位级协议，避免把并行 handshake 行为压扁成过度简化的单状态。
@@ -230,6 +233,9 @@ module xs_PTW_core
     resp_merge = '0;
     for (int i = 0; i < CONTIGUOUS; i++) begin
       resp_merge.entry[i] = return_stage1 ? stage1_r.entry[i] : generated_entry;
+      // golden 的 stage1 entry 输入没有 af 字段(常量0折叠), stage1_r.entry[i].af
+      // 寄存器无复位后上电为 X, 读出点强制回 golden 的常量 0。
+      resp_merge.entry[i].af = return_stage1 ? 1'b0 : generated_entry.af;
       resp_merge.pteidx[i] = return_stage1 ? stage1_r.pteidx[i] : (vpn[2:0] == 3'(i));
     end
     resp_merge.not_super = return_stage1 && stage1_r.not_super;
@@ -312,21 +318,20 @@ module xs_PTW_core
     return idx;
   endfunction
 
+  // ---------------------------------------------------------------------------
+  // 复位域拆分与 golden 精确对齐(FM 等价性):
+  //   golden 只复位控制寄存器(idle/level/af_level/gpf_level/s_*/w_*/mem_addr_update/
+  //   hptw_pageFault/hptw_accessFault/need_last_s2xlate/first_gvpn_check_fail/
+  //   pte_valid/accessFault/update_full_gvpn_mem_resp/perfEvents_5_2), 异步复位;
+  //   payload 寄存器(req_s2xlate/ppn/vpn/l2Hit/l3Hit/source/stage1Hit/stage1_entry/
+  //   hptw_resp_entry/hptw_resp_stage2/full_gvpn_reg/perf 打拍级)golden 无复位。
+  // ---------------------------------------------------------------------------
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       idle <= 1'b1;
-      req_s2xlate <= NO_S2XLATE;
       level <= 2'h3;
       af_level <= 2'h3;
       gpf_level <= 2'h3;
-      root_or_cache_ppn <= '0;
-      vpn <= '0;
-      l3_hit_r <= 1'b0;
-      l2_hit_r <= 1'b0;
-      source_r <= '0;
-      stage1_hit_r <= 1'b0;
-      stage1_r <= '0;
-      hptw_resp_r <= '0;
       sent_pmp_check <= 1'b1;
       sent_mem_req <= 1'b1;
       sent_llptw_req <= 1'b1;
@@ -339,25 +344,17 @@ module xs_PTW_core
       hptw_page_fault <= 1'b0;
       hptw_access_fault <= 1'b0;
       need_last_s2xlate <= 1'b0;
-      hptw_resp_stage2 <= 1'b0;
       first_gvpn_check_fail <= 1'b0;
       pte_valid <= 1'b0;
       access_fault_r <= 1'b0;
       update_full_gvpn_from_mem <= 1'b0;
-      full_gvpn_r <= '0;
       state_q <= PTW_IDLE;
-      perf_event_s1 <= '0;
-      perf_event_s2 <= '0;
-      perf <= '0;
+      perf_event_s1_5 <= 1'b0;
     end else begin
       state_q <= state_d;
 
       // 请求进入：按 PTW cache 命中情况决定从 level3/2/1 开始走。
       if (req_fire) begin
-        req_s2xlate <= req_info.s2xlate;
-        source_r <= req_info.source;
-        stage1_hit_r <= req_stage1_hit;
-        stage1_r <= req_stage1;
         hptw_page_fault <= 1'b0;
         hptw_access_fault <= 1'b0;
         idle <= 1'b0;
@@ -365,33 +362,27 @@ module xs_PTW_core
 
       if (req_fire && req_stage1_hit) begin
         need_last_s2xlate <= 1'b0;
-        hptw_resp_stage2 <= 1'b0;
         sent_last_hptw_req <= 1'b0;
-        wait_last_hptw_resp <= 1'b1;
-        full_gvpn_r <= merge_resp_gen_ppn(req_stage1);
+        // golden 不在 stage1Hit 入队时写 w_last_hptw_resp(靠不变式此时恒为1),
+        // 显式置1会造成 FM 次态函数不等价 —— 保持 hold。
       end
 
       if (req_fire && !req_stage1_hit) begin
-        vpn <= req_info.vpn;
-        l2_hit_r <= req_l2_hit;
-        l3_hit_r <= (satp_mode == 4'h9) && req_l3_hit;
         access_fault_r <= 1'b0;
         pte_valid <= 1'b0;
-        first_gvpn_check_fail <= 1'b0;
+        // first_gvpn_check_fail: golden 在新请求进入时是 chk|old(OR 保持), 不清零
+        // (上一走完 resp_fire/flush 已清), 此处不写 0 以对齐次态函数。
         if (satp_mode == 4'h9) begin
           level <= req_l2_hit ? 2'h1 : (req_l3_hit ? 2'h2 : 2'h3);
           af_level <= req_l2_hit ? 2'h1 : (req_l3_hit ? 2'h2 : 2'h3);
           gpf_level <= req_l2_hit ? 2'h2 : (req_l3_hit ? 2'h3 : 2'h0);
-          root_or_cache_ppn <= (req_l2_hit || req_l3_hit) ? req_ppn : satp_ppn;
         end else begin
           level <= req_l2_hit ? 2'h1 : 2'h2;
           af_level <= req_l2_hit ? 2'h1 : 2'h2;
           gpf_level <= req_l2_hit ? 2'h2 : 2'h0;
-          root_or_cache_ppn <= req_l2_hit ? req_ppn : satp_ppn;
         end
 
         if (req_info.s2xlate == ONLY_STAGE2) begin
-          full_gvpn_r <= {6'h0, req_info.vpn};
           need_last_s2xlate <= 1'b0;
           if (csr.hgatp_mode == 4'h8 && |req_info.vpn[37:29]) begin
             mem_addr_ready <= 1'b1;
@@ -400,7 +391,6 @@ module xs_PTW_core
             sent_last_hptw_req <= 1'b0;
           end
         end else if (req_info.s2xlate == ALL_STAGE) begin
-          full_gvpn_r <= '0;
           if ((csr.hgatp_mode == 4'h8 && |req_start_ppn[43:29]) ||
               (csr.hgatp_mode == 4'h9 && |req_start_ppn[43:38])) begin
             mem_addr_ready <= 1'b1;
@@ -410,7 +400,6 @@ module xs_PTW_core
             sent_hptw_req <= 1'b0;
           end
         end else begin
-          full_gvpn_r <= '0;
           need_last_s2xlate <= 1'b0;
           sent_pmp_check <= 1'b0;
         end
@@ -428,8 +417,6 @@ module xs_PTW_core
         wait_hptw_resp <= 1'b1;
         hptw_page_fault <= hptw_resp_in.gpf || hptw_perm_fail;
         hptw_access_fault <= hptw_resp_in.gaf;
-        hptw_resp_r <= hptw_resp_in;
-        hptw_resp_r.gpf <= hptw_resp_in.gpf || hptw_perm_fail;
         if (!(hptw_perm_fail || hptw_resp_in.gpf || hptw_resp_in.gaf))
           sent_pmp_check <= 1'b0;
         else begin
@@ -444,14 +431,11 @@ module xs_PTW_core
       end
       if (hptw_resp_valid && !wait_last_hptw_resp && stage1_hit_r) begin
         wait_last_hptw_resp <= 1'b1;
-        hptw_resp_stage2 <= 1'b1;
-        hptw_resp_r <= hptw_resp_in;
       end
       if (hptw_resp_valid && !wait_last_hptw_resp && !stage1_hit_r) begin
         wait_last_hptw_resp <= 1'b1;
         hptw_page_fault <= hptw_resp_in.gpf;
         hptw_access_fault <= hptw_resp_in.gaf;
-        hptw_resp_r <= hptw_resp_in;
         mem_addr_ready <= 1'b1;
       end
 
@@ -505,7 +489,6 @@ module xs_PTW_core
       end
       if (update_full_gvpn_from_mem) begin
         update_full_gvpn_from_mem <= 1'b0;
-        full_gvpn_r <= pte_full_ppn;
       end
 
       if (mem_addr_ready) begin
@@ -556,18 +539,68 @@ module xs_PTW_core
         wait_last_hptw_resp <= 1'b1;
       end
 
-      // perf 输出是事件打一拍、再输出打一拍，和 XSPerfAccumulate 的 FIRRTL 形态一致。
-      perf_event_s1[0] <= req_fire;
-      perf_event_s1[1] <= !idle;
-      perf_event_s1[2] <= idle;
-      perf_event_s1[3] <= resp_valid && !resp_ready;
-      perf_event_s1[4] <= mem_req_fire;
-      perf_event_s1[5] <= mem_req_fire || (perf_event_s1[5] && !mem_resp_valid);
-      perf_event_s1[6] <= mem_req_valid && !mem_req_ready;
-      perf_event_s2 <= perf_event_s1;
-      for (int i = 0; i < 7; i++) begin
-        perf[i] <= {5'h0, (i == 5) ? perf_event_s2[i] : perf_event_s1[i]};
-      end
+      // perf[5] 事件累积器(golden perfEvents_5_2, 带复位): mem 请求在途。
+      perf_event_s1_5 <= mem_req_fire || (perf_event_s1_5 && !mem_resp_valid);
+    end
+  end
+
+  // ---------------------------------------------------------------------------
+  // 无复位 payload 寄存器(golden 873-1089 行 always @(posedge clock) 块):
+  // 写使能条件与上面复位块中的控制流保持一致, 只是这些寄存器 golden 不复位。
+  // ---------------------------------------------------------------------------
+  always_ff @(posedge clock) begin
+    if (req_fire) begin
+      req_s2xlate <= req_info.s2xlate;
+      source_r <= req_info.source;
+      stage1_hit_r <= req_stage1_hit;
+      stage1_r <= req_stage1;
+    end
+
+    if (req_fire && req_stage1_hit) begin
+      hptw_resp_stage2 <= 1'b0;
+      full_gvpn_r <= merge_resp_gen_ppn(req_stage1);
+    end
+
+    if (req_fire && !req_stage1_hit) begin
+      vpn <= req_info.vpn;
+      l2_hit_r <= req_l2_hit;
+      l3_hit_r <= (satp_mode == 4'h9) && req_l3_hit;
+      if (satp_mode == 4'h9)
+        root_or_cache_ppn <= (req_l2_hit || req_l3_hit) ? req_ppn : satp_ppn;
+      else
+        root_or_cache_ppn <= req_l2_hit ? req_ppn : satp_ppn;
+      if (req_info.s2xlate == ONLY_STAGE2)
+        full_gvpn_r <= {6'h0, req_info.vpn};
+      else
+        full_gvpn_r <= '0;
+    end
+
+    if (hptw_resp_valid && !wait_hptw_resp) begin
+      hptw_resp_r <= hptw_resp_in;
+      hptw_resp_r.gpf <= hptw_resp_in.gpf || hptw_perm_fail;
+    end
+    if (hptw_resp_valid && !wait_last_hptw_resp && stage1_hit_r) begin
+      hptw_resp_stage2 <= 1'b1;
+      hptw_resp_r <= hptw_resp_in;
+    end
+    if (hptw_resp_valid && !wait_last_hptw_resp && !stage1_hit_r) begin
+      hptw_resp_r <= hptw_resp_in;
+    end
+
+    if (update_full_gvpn_from_mem) begin
+      full_gvpn_r <= pte_full_ppn;
+    end
+
+    // perf 输出是事件打一拍、再输出打一拍(XSPerfAccumulate 的 REG/REG_1, golden 无复位)。
+    perf_event_s1[0] <= req_fire;
+    perf_event_s1[1] <= !idle;
+    perf_event_s1[2] <= idle;
+    perf_event_s1[3] <= resp_valid && !resp_ready;
+    perf_event_s1[4] <= mem_req_fire;
+    perf_event_s1[6] <= mem_req_valid && !mem_req_ready;
+    perf_event_s2 <= {perf_event_s1[6], perf_event_s1_5, perf_event_s1[4:0]};
+    for (int i = 0; i < 7; i++) begin
+      perf[i] <= {5'h0, (i == 5) ? perf_event_s2[i] : perf_event_s1[i]};
     end
   end
 

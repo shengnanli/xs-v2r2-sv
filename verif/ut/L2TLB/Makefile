@@ -59,8 +59,21 @@ WRAPPER_SRCS = $(RTL_DIR)/memblock/L2TLB_wrapper.sv $(GOLDEN_SUBS)
 FM_VARIANTS = L2TLB
 FM_REF_DEPS_L2TLB = $(notdir $(GOLDEN_SUBS))
 
-# 子模块里大量结构相同的表项寄存器，关掉“合并同值重复寄存器”pass。
-FM_MERGE_DUP = false
+# PtwCache/PTW/LLPTW/HPTW/L2TlbMissQueue/L2TlbPrefetch 两侧读同一份 golden，用
+# interface_only 在边界处黑盒:只保留端口方向、不展开内部。否则 FM 会在
+# u_core/u_page_cache 等 6 个子模块与 golden 同名实例之间逐位比对 ~85600 个内部
+# 寄存器(u_page_cache 单个就 80882 个)——顶层实例名不同(golden cache/ptw/…
+# vs impl u_page_cache/u_ptw/…)+ 内部层次/展平差异令绝大多数无法配对,余下按输入
+# 锥比对时因顶层 glue 边界不同而大批误判失配(5000 failing 全在这 6 个子模块内)+
+# 剩下的拖成 unverified。L2TLB 是装配层,重写工作在顶层 glue(CSR/sfence 复制、仲裁
+# 装配、访存数据通路、PTE→sector 合并、perf);各子模块有独立 UT/FM。黑盒后 FM 只
+# 比顶层 glue 相对子模块 边界引脚 的等价 —— 即真正的重写对象。
+FM_INTERFACE_ONLY = PtwCache PTW LLPTW HPTW L2TlbMissQueue L2TlbPrefetch
+
+# 子模块 interface_only 黑盒后内部寄存器不再参与比对,反而需要开启「合并同值重复
+# 寄存器」:golden 顶层把 CSR/sfence/resp_pte 等 glue 寄存器复制成多副本,impl 合并
+# 成单寄存器,开启合并后 golden 多副本归一才能与 impl 单寄存器等价配对。
+FM_MERGE_DUP = true
 
 include ../../../scripts/ut_common.mk
 

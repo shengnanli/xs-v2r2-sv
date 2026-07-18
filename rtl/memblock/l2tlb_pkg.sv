@@ -167,6 +167,7 @@ package l2tlb_pkg;
     logic            is_pf, is_af;
     ptw_merge_entry_t e;
     logic [2:0]      sel;
+    logic [PTE_PPN_W-1:0] full_ppn;  // pte_ppn 结果暂存（FM 不接受对函数调用直接位选）
     has_s2 = (s2xlate != NO_S2XLATE);
     // pbmte：onlyStage1 或 allStage 用 hPBMTE，否则 mPBMTE
     pbmte  = (s2xlate == ONLY_STAGE1 || s2xlate == ALL_STAGE) ? hPBMTE : mPBMTE;
@@ -178,8 +179,9 @@ package l2tlb_pkg;
       is_af = pte_access_fault(pte_in)
               && (s2xlate == NO_S2XLATE || s2xlate == ONLY_STAGE1) && !is_pf;
       e = '0;
-      e.ppn     = pte_ppn(pte_in)[PTE_PPN_W-1:SECTOR_BITS]; // ppn(ptePPNLen-1, sectortlbwidth)
-      e.ppn_low = pte_ppn(pte_in)[SECTOR_BITS-1:0];
+      full_ppn  = pte_ppn(pte_in);
+      e.ppn     = full_ppn[PTE_PPN_W-1:SECTOR_BITS]; // ppn(ptePPNLen-1, sectortlbwidth)
+      e.ppn_low = full_ppn[SECTOR_BITS-1:0];
       e.level   = 2'h0;
       e.pbmt    = pte_in.pbmt;
       e.n       = pte_in.n;

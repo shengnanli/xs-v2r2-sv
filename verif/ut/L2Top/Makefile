@@ -23,6 +23,14 @@ WRAPPER_SRCS = $(RTL_DIR)/l2/L2Top_wrapper.sv $(SUB_DEPS)
 FM_VARIANTS = L2Top
 FM_REF_DEPS_L2Top = BusErrorUnit.sv BusPerfMonitor.sv DelayN_334.sv TL2CHICoupledL2.sv TLBuffer_13.sv TLBuffer_15.sv TLBuffer_20.sv TLBuffer_22.sv TLBuffer_6.sv TLBuffer_8.sv TLLogger.sv TLLogger_1.sv TLLogger_2.sv TLXbar_5.sv TLXbar_6.sv
 
+# perf 常量-0 寄存器(io_perf_{3,15,27,39}_value_REG <= 6'h0)在 merge-duplicated-
+# registers 开启时, 4 个同值常量-0 stage-1 寄存器互为重复被合并; ref(扁平 L2Top)与
+# impl(经 u_core 层次)选取的合并代表不同, 令 perf_15 的 stage-1 REG 在 impl 侧被并掉
+# → 其 stage-2 REG_1 失去常量-0 驱动(impl DFFX)而 ref 仍为 DFF0X → 误报 1 failing。
+# 关掉重复寄存器合并使 4 个常量-0 寄存器两侧一一对称保留(本层无扇出复制的多副本寄存器,
+# 关合并不引入新 unmatched)。
+FM_MERGE_DUP = false
+
 include ../../../scripts/ut_common.mk
 
 # golden 内含非综合断言/difftest;UT 关掉并关随机化,处理 flush-X。

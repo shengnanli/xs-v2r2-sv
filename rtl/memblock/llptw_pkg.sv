@@ -170,12 +170,14 @@ package xs_llptw_pkg;
         (level == 2'h1 && pte.ppn[VPNN_W-1:0]     == '0) ||
         (level == 2'h2 && pte.ppn[VPNN_W*2-1:0]   == '0) ||
         (level == 2'h3 && pte.ppn[VPNN_W*3-1:0]   == '0));
-    if (pte.reserved != '0) return 1'b1;
-    if (pte.pbmt == 2'h3 || (!pbmte && pte.pbmt != 2'h0)) return 1'b1;
-    if (pte_is_next(pte)) return pte.perm.u || pte.perm.a || pte.perm.d || pte.n || (pte.pbmt != 2'h0);
-    if (!pte.perm.v || (!pte.perm.r && pte.perm.w)) return 1'b1;
-    if (pte.n && (pte.ppn[3:0] != 4'h8 || level != 2'h0)) return 1'b1;
-    return unaligned;
+    // 单一 return(嵌套三元): 多 return 早退结构会被 Formality 建成带 DC 缺省支路的
+    // 优先级 mux, X 传染导致大片 failing —— 与 IMSIC 的 generate 内函数教训同族。
+    return (pte.reserved != '0)                                ? 1'b1
+         : (pte.pbmt == 2'h3 || (!pbmte && pte.pbmt != 2'h0))  ? 1'b1
+         : pte_is_next(pte) ? (pte.perm.u || pte.perm.a || pte.perm.d || pte.n || (pte.pbmt != 2'h0))
+         : (!pte.perm.v || (!pte.perm.r && pte.perm.w))        ? 1'b1
+         : (pte.n && (pte.ppn[3:0] != 4'h8 || level != 2'h0))  ? 1'b1
+         : unaligned;
   endfunction
 
   // PteBundle.isStage1Gpf：PPN 高位越过 G-stage 地址空间时的 gpf（v 有效才算）。
@@ -184,9 +186,10 @@ package xs_llptw_pkg;
     full_ppn = pte_get_ppn(pte);
     // GPAddrBitsSv39x4=41 → 高位段 = full_ppn >> (41-12)=29
     // GPAddrBitsSv48x4=50 → 高位段 = full_ppn >> (50-12)=38
-    if (hgatp_mode == 4'h8) return (|full_ppn[PTE_PPN_W-1:29]) && pte.perm.v;
-    if (hgatp_mode == 4'h9) return (|full_ppn[PTE_PPN_W-1:38]) && pte.perm.v;
-    return 1'b0;
+    // 单一 return: 消 FM 多 return DC 支路。
+    return (hgatp_mode == 4'h8) ? ((|full_ppn[PTE_PPN_W-1:29]) && pte.perm.v)
+         : (hgatp_mode == 4'h9) ? ((|full_ppn[PTE_PPN_W-1:38]) && pte.perm.v)
+         : 1'b0;
   endfunction
 
   // 最后一级 PPN：非 NAPOT 直接取 PTE.ppn；NAPOT 用 vpn 低 NAPOT_BITS 位拼接。
@@ -195,21 +198,21 @@ package xs_llptw_pkg;
   );
     logic [PTE_PPN_W-1:0] full_ppn;
     full_ppn = pte_get_ppn(pte);
-    if (!pte.n) return full_ppn;
-    return {full_ppn[PTE_PPN_W-1:NAPOT_BITS], vpn[NAPOT_BITS-1:0]};
+    // 单一 return: 消 FM 多 return DC 支路。
+    return (!pte.n) ? full_ppn
+                    : {full_ppn[PTE_PPN_W-1:NAPOT_BITS], vpn[NAPOT_BITS-1:0]};
   endfunction
 
   // HptwResp.genPPNS2：按 G-stage entry level 把 GPA 页内 VPN 补回，得到 host PPN。
   function automatic logic [GVPN_W-1:0] gen_ppn_s2(
     input hptw_resp_t resp, input logic [GVPN_W-1:0] gvpn
   );
-    priority case (resp.level)
-      2'h3:    return {resp.ppn[GVPN_W-1:VPNN_W*3], gvpn[VPNN_W*3-1:0]};
-      2'h2:    return {resp.ppn[GVPN_W-1:VPNN_W*2], gvpn[VPNN_W*2-1:0]};
-      2'h1:    return {resp.ppn[GVPN_W-1:VPNN_W],   gvpn[VPNN_W-1:0]};
-      default: return resp.n ? {resp.ppn[GVPN_W-1:NAPOT_BITS], gvpn[NAPOT_BITS-1:0]}
-                             : resp.ppn;
-    endcase
+    // 单一 return(嵌套三元, 替代 priority case+return): 消 FM DC 支路。
+    return (resp.level == 2'h3) ? {resp.ppn[GVPN_W-1:VPNN_W*3], gvpn[VPNN_W*3-1:0]}
+         : (resp.level == 2'h2) ? {resp.ppn[GVPN_W-1:VPNN_W*2], gvpn[VPNN_W*2-1:0]}
+         : (resp.level == 2'h1) ? {resp.ppn[GVPN_W-1:VPNN_W],   gvpn[VPNN_W-1:0]}
+         : (resp.n ? {resp.ppn[GVPN_W-1:NAPOT_BITS], gvpn[NAPOT_BITS-1:0]}
+                   : resp.ppn);
   endfunction
 
   // dup：两个 vpn 是否落在同一条 L0 cacheline（去掉 sector 位后相等）。

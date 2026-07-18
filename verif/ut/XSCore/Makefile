@@ -20,9 +20,15 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/XSCore.sv
 SUB_DEPS = $(GOLDEN_RTL)/Frontend.sv $(GOLDEN_RTL)/Backend.sv $(GOLDEN_RTL)/MemBlock.sv
 
 # FM:impl 侧(wrapper->可读核)与 ref 侧在相同层次黑盒化 3 子模块。
-WRAPPER_SRCS = $(RTL_DIR)/xscore/XSCore_wrapper.sv $(SUB_DEPS)
+# (FM 审计 2026-07)golden 已切干净基线(无 difftest 端口),而本核连线含 difftest-glue
+# 端口(frontend.io_hartId / cfVec pc·pd_* / debug_seqNum 等,历史于 difftest 基线验证)。
+# 若两侧给 Frontend/Backend/MemBlock 干净基线真定义,impl 侧 FE-LINK-7 挂 link
+# (impl 引脚在干净定义上不存在)→ FM-046。故两侧均不给 3 个子模块定义,统一走
+# hdlin_unresolved_modules=black_box:公共引脚按名配对验证 glue;difftest 增量引脚
+# 只在 impl 侧存在,成为 unmatched BBPin(基线漂移的诚实呈现,不参与判定)。
+WRAPPER_SRCS = $(RTL_DIR)/xscore/XSCore_wrapper.sv
 FM_VARIANTS = XSCore
-FM_REF_DEPS_XSCore = Frontend.sv Backend.sv MemBlock.sv
+FM_REF_DEPS_XSCore =
 
 include ../../../scripts/ut_common.mk
 

@@ -56,9 +56,10 @@ package xs_newifu_pkg;
   localparam logic [1:0] EXC_PF   = 2'h1;  // page fault
   localparam logic [1:0] EXC_GPF  = 2'h2;  // guest page fault
   localparam logic [1:0] EXC_AF   = 2'h3;  // access fault
-  // merge = 取「优先级更高」者；编码上恰为取较大值(none<pf<gpf<af)
+  // merge：golden 语义是「a 非零则取 a，否则取 b」（a 优先），不是取较大值——
+  //   (|a)?a:b 与 max 在 a=PF,b=AF 等组合下结果不同（golden 取 PF）。
   function automatic logic [1:0] exc_merge(input logic [1:0] a, input logic [1:0] b);
-    return (a >= b) ? a : b;
+    return (|a) ? a : b;
   endfunction
   function automatic logic exc_has(input logic [1:0] e);
     return |e;
@@ -675,8 +676,8 @@ module xs_NewIFU_core (
   wire f3_mmio_req_commit = f3_req_is_mmio && (mmio_state == M_COMMITED);
   wire f3_mmio_to_commit  = f3_req_is_mmio && (mmio_state == M_WAIT_COMMIT);
   logic f3_mmio_to_commit_next;
-  always_ff @(posedge clock or posedge reset)
-    if (reset) f3_mmio_to_commit_next <= 1'b0; else f3_mmio_to_commit_next <= f3_mmio_to_commit;
+  always_ff @(posedge clock)
+    f3_mmio_to_commit_next <= f3_mmio_to_commit;   // golden 无复位
   wire f3_mmio_can_go = f3_mmio_to_commit && !f3_mmio_to_commit_next;
 
   // 后端 redirect 寄存一拍(MMIO 判断要用上一拍的 redirect)
@@ -688,11 +689,18 @@ module xs_NewIFU_core (
     if (reset) fromFtqRedirectReg_valid <= 1'b0;
     else       fromFtqRedirectReg_valid <= ftq_redirect_valid;
   end
-  always_ff @(posedge clock) if (ftq_redirect_valid) begin
-    redirReg_ftqIdx_flag  <= ftq_redirect_ftqIdx_flag;
-    redirReg_ftqIdx_value <= ftq_redirect_ftqIdx_value;
-    redirReg_ftqOffset    <= ftq_redirect_ftqOffset;
-    redirReg_level        <= ftq_redirect_level;
+  always_ff @(posedge clock or posedge reset) begin   // golden 异步复位到 0，valid 门控更新
+    if (reset) begin
+      redirReg_ftqIdx_flag  <= 1'b0;
+      redirReg_ftqIdx_value <= '0;
+      redirReg_ftqOffset    <= '0;
+      redirReg_level        <= 1'b0;
+    end else if (ftq_redirect_valid) begin
+      redirReg_ftqIdx_flag  <= ftq_redirect_ftqIdx_flag;
+      redirReg_ftqIdx_value <= ftq_redirect_ftqIdx_value;
+      redirReg_ftqOffset    <= ftq_redirect_ftqOffset;
+      redirReg_level        <= ftq_redirect_level;
+    end
   end
 
   logic mmioF3Flush;
@@ -736,9 +744,14 @@ module xs_NewIFU_core (
 
   // f3_mmio_use_seq_pc：MMIO redirect 用顺序 PC(start+2/+4)
   logic f3_mmio_use_seq_pc;
-  logic f2_fire_no_flush_q; // RegNext(f2_fire && !f2_flush)
-  always_ff @(posedge clock or posedge reset)
-    if (reset) f2_fire_no_flush_q <= 1'b0; else f2_fire_no_flush_q <= (f2_fire && !f2_flush);
+  // golden 有两份重复副本（REG 喂 f3_mmio_use_seq_pc、wb_enable_REG 喂 wb 级），
+  // 且都在无复位块——1:1 复刻（修法⑥+②）。
+  logic f2_fire_no_flush_q;   // golden REG
+  logic wb_enable_q;          // golden wb_enable_REG
+  always_ff @(posedge clock) begin   // golden 无复位
+    f2_fire_no_flush_q <= (f2_fire && !f2_flush);
+    wb_enable_q        <= (f2_fire && !f2_flush);
+  end
   wire redirect_mmio_req = fromFtqRedirectReg_valid &&
         (redirReg_ftqIdx_flag==f3_ftq_req.ftqIdx_flag) && (redirReg_ftqIdx_value==f3_ftq_req.ftqIdx_value) &&
         (redirReg_ftqOffset==4'h0);
@@ -762,16 +775,30 @@ module xs_NewIFU_core (
   wire [1:0] mmio_pmp_exception = pmp_resp_instr ? {2{pmp_resp_instr}} :
                                   ((pmp_resp_mmio == f3_pmp_mmio) ? EXC_NONE : EXC_AF);
 
+  // f3_mmio_data（mmio_hw0/hw1）：golden 在「无复位」块里，flush 同步清 0，
+  // WAIT_RESP 拍装载 32b（或 RESEND 拍装低半字）。不能放进异步复位 FSM 块（复位锥多出 reset）。
+  always_ff @(posedge clock) begin
+    if (f3_ftq_flush_self || f3_ftq_flush_by_older) begin
+      mmio_hw0 <= '0;
+      mmio_hw1 <= '0;
+    end else if ((mmio_state == M_WAIT_RESP) && fromUncache_fire) begin
+      mmio_hw0 <= uncache_resp_data[15:0];
+      mmio_hw1 <= uncache_resp_data[31:16];
+    end else if ((mmio_state == M_WAIT_RESEND) && fromUncache_fire) begin
+      mmio_hw1 <= uncache_resp_data[15:0];
+    end
+  end
+
   // --- MMIO 状态机时序 ---
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       mmio_state <= M_IDLE;
       mmio_exception <= EXC_NONE; mmio_is_RVC <= 1'b0; mmio_has_resend <= 1'b0;
       mmio_resend_addr <= '0; mmio_resend_gpaddr <= '0; mmio_resend_isForVSnonLeafPTE <= 1'b0;
-      mmio_hw0 <= '0; mmio_hw1 <= '0;
       is_first_instr <= 1'b1;
     end else begin
-      unique case (mmio_state)
+      case (mmio_state)   // 不用 unique：FM 会把 unique 当 full_case，未列举编码→X；
+                          // golden 对不可达编码(11..15)是「保持」——default 空实现之。
         M_IDLE: if (f3_req_is_mmio)
                   mmio_state <= (f3_itlb_pbmt == PBMT_NC) ? M_SEND_REQ : M_WAIT_LAST_CMT;
         M_WAIT_LAST_CMT: mmio_state <= is_first_instr ? M_SEND_REQ :
@@ -782,8 +809,6 @@ module xs_NewIFU_core (
                        mmio_exception  <= {2{uncache_resp_corrupt}};
                        mmio_is_RVC     <= (uncache_resp_data[1:0] != 2'b11);
                        mmio_has_resend <= mmio_needResend;
-                       mmio_hw0        <= uncache_resp_data[15:0];
-                       mmio_hw1        <= uncache_resp_data[31:16];
                      end
         M_SEND_TLB: if (itlb_req_valid && itlb_req_ready) mmio_state <= M_TLB_RESP;
         M_TLB_RESP: if (itlb_resp_valid && itlb_resp_ready) begin
@@ -801,7 +826,6 @@ module xs_NewIFU_core (
         M_WAIT_RESEND: if (fromUncache_fire) begin
                          mmio_state     <= M_WAIT_COMMIT;
                          mmio_exception <= {2{uncache_resp_corrupt}};
-                         mmio_hw1       <= uncache_resp_data[15:0];
                        end
         M_WAIT_COMMIT: if (mmio_commit || (f3_itlb_pbmt == PBMT_NC)) mmio_state <= M_COMMITED;
         M_COMMITED: begin
@@ -809,7 +833,7 @@ module xs_NewIFU_core (
                       mmio_exception <= EXC_NONE; mmio_is_RVC <= 1'b0; mmio_has_resend <= 1'b0;
                       mmio_resend_addr <= '0; mmio_resend_gpaddr <= '0; mmio_resend_isForVSnonLeafPTE <= 1'b0;
                     end
-        default: mmio_state <= M_IDLE;
+        default: ;   // golden: 未列举状态保持（_GEN_54[11..15]=mmio_state）
       endcase
 
       // 后端 redirect 冲刷自身或被更早分支冲刷：MMIO 复位(优先级最高，覆盖上面)
@@ -817,7 +841,6 @@ module xs_NewIFU_core (
         mmio_state <= M_IDLE;
         mmio_exception <= EXC_NONE; mmio_is_RVC <= 1'b0; mmio_has_resend <= 1'b0;
         mmio_resend_addr <= '0; mmio_resend_gpaddr <= '0; mmio_resend_isForVSnonLeafPTE <= 1'b0;
-        mmio_hw0 <= '0; mmio_hw1 <= '0;
       end
 
       if (is_first_instr && f3_fire) is_first_instr <= 1'b0;
@@ -903,8 +926,6 @@ module xs_NewIFU_core (
   end
   wire f3_hasLastHalf    = has_last_half(f3_pd[PredictWidth-1].isRVC, chk_fixedRange[PredictWidth-1],
                              f3_instr_valid[PredictWidth-1], chk_fixedTaken[PredictWidth-1], f3_req_is_mmio);
-  wire f3_false_lastHalf = has_last_half(f3_pd[f3_last_validIdx].isRVC, chk_fixedRange[f3_last_validIdx],
-                             f3_instr_valid[f3_last_validIdx], chk_fixedTaken[f3_last_validIdx], f3_req_is_mmio);
   wire [VAddrBits-1:0] f3_false_snpc = f3_half_snpc[f3_last_validIdx];
 
   wire [PredictWidth-1:0] f3_lastHalf_mask = ~(PredictWidth'(1)); // 除 bit0 外全 1
@@ -922,8 +943,10 @@ module xs_NewIFU_core (
   always_ff @(posedge clock or posedge reset) begin
     if (reset)             f3_lastHalf_valid <= 1'b0;
     else if (f3_flush)     f3_lastHalf_valid <= 1'b0;
-    else if (f3_fire)      f3_lastHalf_valid <= f3_hasLastHalf && !f3_lastHalf_disable;
+    // golden: 清项(wb_valid&REG_3&missPred15&f3_fire)优先于 f3_fire 装载——
+    //   f3_lastHalf_valid <= ~(clear|flush) & (fire ? new : hold)
     else if (wb_clear_lastHalf_valid) f3_lastHalf_valid <= 1'b0;
+    else if (f3_fire)      f3_lastHalf_valid <= f3_hasLastHalf && !f3_lastHalf_disable;
   end
   always_ff @(posedge clock) if (f3_fire) f3_lastHalf_middlePC <= f3_ftq_req.nextStartAddr;
 
@@ -945,6 +968,10 @@ module xs_NewIFU_core (
   always_comb begin
     f3_instr_valid    = f3_lastHalf_valid ? f3_hasHalfValid : f3_pd_valid_vec;
     f3_instr_valid[1] = f3_lastHalf_valid | f3_pd[1].valid;
+    // bit0：golden 把 pd_wire_0_valid 折叠为常量 1（slot0 恒为指令起始），
+    // f3_instr_valid_0 = lastHalf ? hasHalfValid_0(=0) : 1 = ~f3_lastHalf_valid。
+    // 不读 pd_wire[0].valid 寄存器（golden 无此读者，寄存器自由值会造成分歧）。
+    f3_instr_valid[0] = ~f3_lastHalf_valid;
   end
 
   // ===========================================================================
@@ -1185,12 +1212,15 @@ module xs_NewIFU_core (
   // ===========================================================================
   // 写回(WriteBack)级：把预解码/检查结果写回 FTQ，预测错则 redirect
   // ===========================================================================
-  wire wb_enable = f2_fire_no_flush_q && !f3_req_is_mmio && !f3_flush;
+  wire wb_enable = wb_enable_q && !f3_req_is_mmio && !f3_flush;   // golden 用 wb_enable_REG 副本
   logic wb_valid;
   always_ff @(posedge clock or posedge reset)
     if (reset) wb_valid <= 1'b0; else wb_valid <= wb_enable;
 
-  ftq_req_t wb_ftq_req;
+  // golden wb 级只保留 ftqIdx 两个字段（无 startAddr 等其余载荷寄存器）——照裁，
+  // 避免 impl 多出的 startAddr 高位寄存器与 wb_pc_high 交叉错配。
+  logic       wb_ftqIdx_flag;
+  logic [5:0] wb_ftqIdx_value;
   logic [PredictWidth-1:0]            wb_chk_fixedRange, wb_chk_fixedTaken;
   logic [PredictWidth-1:0]            wb_instr_range, wb_instr_valid;
   logic [PredictWidth-1:0][PcCutPoint:0] wb_pc_lower_result;
@@ -1200,7 +1230,8 @@ module xs_NewIFU_core (
   logic                              wb_false_lastHalf_raw;
   logic [VAddrBits-1:0]              wb_false_target;
   always_ff @(posedge clock) if (wb_enable) begin
-    wb_ftq_req         <= f3_ftq_req;
+    wb_ftqIdx_flag     <= f3_ftq_req.ftqIdx_flag;
+    wb_ftqIdx_value    <= f3_ftq_req.ftqIdx_value;
     wb_chk_fixedRange  <= chk_fixedRange;
     wb_chk_fixedTaken  <= chk_fixedTaken;
     wb_instr_range     <= enqEnable_w;   // io.toIbuffer.bits.enqEnable
@@ -1210,7 +1241,11 @@ module xs_NewIFU_core (
     wb_pd              <= f3_pd;
     wb_instr_valid     <= f3_instr_valid;
     wb_lastIdx         <= f3_last_validIdx;
-    wb_false_lastHalf_raw <= f3_false_lastHalf;
+    // golden wb_false_lastHalf_r 的 D：~isRVC & fixedRange & instr_valid & ~fixedTaken & ~mmio
+    // （即 has_last_half 的 5 项语义，按 f3_last_validIdx 选位）
+    wb_false_lastHalf_raw <= !f3_pd[f3_last_validIdx].isRVC && chk_fixedRange[f3_last_validIdx]
+                             && f3_instr_valid[f3_last_validIdx]
+                             && !chk_fixedTaken[f3_last_validIdx] && !f3_req_is_mmio;
     wb_false_target    <= f3_false_snpc;
   end
 
@@ -1226,26 +1261,28 @@ module xs_NewIFU_core (
   wire [VAddrBits-1:0] wb_half_target = wb_false_target;
 
   // f3_wb_not_flush：wb 与 f3 同一 ftqIdx 且都 valid → 不冲刷 f3
-  assign f3_wb_not_flush = (wb_ftq_req.ftqIdx_flag == f3_ftq_req.ftqIdx_flag) &&
-                           (wb_ftq_req.ftqIdx_value == f3_ftq_req.ftqIdx_value) && f3_valid && wb_valid;
+  assign f3_wb_not_flush = (wb_ftqIdx_flag == f3_ftq_req.ftqIdx_flag) &&
+                           (wb_ftqIdx_value == f3_ftq_req.ftqIdx_value) && f3_valid && wb_valid;
 
   // wb 控制 f3_lastHalf 的两个反馈(见 lastHalf 节的时序)
-  logic f3_hasLastHalf_q;
+  logic f3_hasLastHalf_q;    // golden REG_1
+  logic f3_hasLastHalf_q2;   // golden REG_3（同 D 重复副本）
   always_ff @(posedge clock or posedge reset)
-    if (reset) f3_hasLastHalf_q <= 1'b0; else f3_hasLastHalf_q <= f3_hasLastHalf;
+    if (reset) begin f3_hasLastHalf_q <= 1'b0; f3_hasLastHalf_q2 <= 1'b0; end
+    else begin f3_hasLastHalf_q <= f3_hasLastHalf; f3_hasLastHalf_q2 <= f3_hasLastHalf; end
   logic f3_fire_q;
   always_ff @(posedge clock or posedge reset)
     if (reset) f3_fire_q <= 1'b0; else f3_fire_q <= f3_fire;
   assign wb_set_lastHalf_disable = wb_valid && f3_hasLastHalf_q &&
         wb_chk_fixedMissPred[PredictWidth-1] && !f3_fire && !f3_fire_q && !f3_flush;
-  assign wb_clear_lastHalf_valid = wb_valid && f3_hasLastHalf_q &&
+  assign wb_clear_lastHalf_valid = wb_valid && f3_hasLastHalf_q2 &&
         wb_chk_fixedMissPred[PredictWidth-1] && f3_fire;
 
   // --- checkFlushWb：预测检查写回 ---
   // jalTarget 用第一条 isJal 有效指令的目标
   logic [3:0] checkFlushWbjalTargetIdx;
   always_comb begin
-    checkFlushWbjalTargetIdx = '0;
+    checkFlushWbjalTargetIdx = 4'hF;   // golden ParallelPriorityEncoder：无命中兜底=15（非 0）
     for (int i = PredictWidth-1; i >= 0; i--)
       if (wb_instr_valid[i] && (wb_pd[i].brType == xs_predecode_pkg::BR_JAL))
         checkFlushWbjalTargetIdx = i[3:0];
@@ -1253,19 +1290,19 @@ module xs_NewIFU_core (
   // target 用第一条 missPred 的修正目标
   logic [3:0] checkFlushWbTargetIdx;
   always_comb begin
-    checkFlushWbTargetIdx = '0;
+    checkFlushWbTargetIdx = 4'hF;   // golden ParallelPriorityEncoder：无命中兜底=15（非 0）
     for (int i = PredictWidth-1; i >= 0; i--)
       if (wb_chk_fixedMissPred[i]) checkFlushWbTargetIdx = i[3:0];
   end
   logic [3:0] cfi_offset_idx;
   always_comb begin
-    cfi_offset_idx = '0;
+    cfi_offset_idx = 4'hF;   // golden ParallelPriorityEncoder：无命中兜底=15（非 0）
     for (int i = PredictWidth-1; i >= 0; i--)
       if (wb_chk_fixedTaken[i]) cfi_offset_idx = i[3:0];
   end
   logic [3:0] mis_offset_idx;
   always_comb begin
-    mis_offset_idx = '0;
+    mis_offset_idx = 4'hF;   // golden ParallelPriorityEncoder：无命中兜底=15（非 0）
     for (int i = PredictWidth-1; i >= 0; i--)
       if (wb_chk_fixedMissPred[i]) mis_offset_idx = i[3:0];
   end
@@ -1286,9 +1323,10 @@ module xs_NewIFU_core (
 
   // --- mmioFlushWb：MMIO 完成时写回 ---
   wire fromUncache_fire_q;
-  logic fromUncache_fire_r;
-  always_ff @(posedge clock or posedge reset)
-    if (reset) fromUncache_fire_r <= 1'b0; else fromUncache_fire_r <= fromUncache_fire;
+  logic fromUncache_fire_r;        // golden mmioFlushWb_valid_REG（无复位）
+  logic mmio_redirect_fire_r;      // golden mmio_redirect_REG（重复副本，无复位）
+  always_ff @(posedge clock)   // golden 无复位
+    begin fromUncache_fire_r <= fromUncache_fire; mmio_redirect_fire_r <= fromUncache_fire; end
   assign fromUncache_fire_q = fromUncache_fire_r;
 
   wire mmioFlushWb_valid = f3_req_is_mmio && (mmio_state == M_WAIT_COMMIT) && fromUncache_fire_q &&
@@ -1312,8 +1350,8 @@ module xs_NewIFU_core (
   assign pdWb_valid          = wb_valid ? checkFlushWb_valid : mmioFlushWb_valid;
   assign pdWb_pc             = wb_valid ? wb_pc : f3_pc;
   assign pdWb_pd             = wb_valid ? checkFlushWb_pd : mmioFlushWb_pd;
-  assign pdWb_ftqIdx_flag    = wb_valid ? wb_ftq_req.ftqIdx_flag  : f3_ftq_req.ftqIdx_flag;
-  assign pdWb_ftqIdx_value   = wb_valid ? wb_ftq_req.ftqIdx_value : f3_ftq_req.ftqIdx_value;
+  assign pdWb_ftqIdx_flag    = wb_valid ? wb_ftqIdx_flag  : f3_ftq_req.ftqIdx_flag;
+  assign pdWb_ftqIdx_value   = wb_valid ? wb_ftqIdx_value : f3_ftq_req.ftqIdx_value;
   assign pdWb_misOffset_valid= wb_valid ? checkFlushWb_misOffset_valid : f3_req_is_mmio;
   assign pdWb_misOffset_bits = wb_valid ? checkFlushWb_misOffset_bits  : 4'h0;
   assign pdWb_cfiOffset_valid= wb_valid ? checkFlushWb_cfiOffset_valid : 1'b0;
@@ -1322,7 +1360,7 @@ module xs_NewIFU_core (
   assign pdWb_instrRange     = wb_valid ? wb_instr_range : f3_mmio_range;
 
   assign wb_redirect   = checkFlushWb_misOffset_valid && wb_valid;
-  assign mmio_redirect = f3_req_is_mmio && (mmio_state == M_WAIT_COMMIT) && fromUncache_fire_q && f3_mmio_use_seq_pc;
+  assign mmio_redirect = f3_req_is_mmio && (mmio_state == M_WAIT_COMMIT) && mmio_redirect_fire_r && f3_mmio_use_seq_pc;   // golden mmio_redirect_REG 副本
 
   // ===========================================================================
   // perf 计数（13 个 6 位饱和计数；按 golden 的事件累加）
@@ -1359,14 +1397,16 @@ module xs_NewIFU_core (
     /* 1*/ ifu_fire,                                         // ifu_req
     /* 0*/ wb_redirect                                       // frontendFlush
   };
-  // 6 位饱和累加计数器
-  logic [12:0][5:0] perf_cnt;
-  always_ff @(posedge clock or posedge reset) begin
-    if (reset) for (int i = 0; i < 13; i++) perf_cnt[i] <= '0;
-    else for (int i = 0; i < 13; i++)
-      if (perf_ev[i] && (perf_cnt[i] != 6'h3F)) perf_cnt[i] <= perf_cnt[i] + 1'b1;
+  // golden 无计数器：每路事件打两拍（io_perf_N_value_REG / REG_1，无复位），
+  // 输出 = {5'h0, 第二拍}。（此前误写为 6 位饱和计数器——语义与 golden 分叉，FM 失配。）
+  logic [12:0] perf_s1, perf_s2;
+  always_ff @(posedge clock) begin   // golden 无复位
+    perf_s1 <= perf_ev;
+    perf_s2 <= perf_s1;
   end
-  assign perf_value = perf_cnt;
+  for (genvar pgi = 0; pgi < 13; pgi++) begin : g_perf_out
+    assign perf_value[pgi] = {5'h0, perf_s2[pgi]};
+  end
 
 endmodule
 
