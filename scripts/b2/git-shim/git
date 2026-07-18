@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+# 确定性 git shim(B2 用)—— 让 build.sc 的 git 调用返回 G0 生成时**捕获的**固定输出,
+# 使 SimTop.sv 的 volatile git 头逐字节复现(独立于坏掉的 .git 绝对路径)。
+# 仅拦截 build.sc 实际调用的子命令;其余透传真 git(若无则返回空+0)。
+# 捕获输入目录由 GIT_SHIM_DATA 指定(= G0-quarantine/.../git-shim-inputs)。
+set -u
+D="${GIT_SHIM_DATA:?GIT_SHIM_DATA 未设(指向 git-shim-inputs)}"
+
+case "$1 ${2:-}" in
+  "rev-parse HEAD")        cat "$D/rev-parse-HEAD.txt"; exit 0 ;;
+  "status -uno")           cat "$D/status-uno-porcelain.txt"; exit 0 ;;  # git status -uno --porcelain
+  "submodule status")      cat "$D/submodule-status.txt"; exit 0 ;;
+  "describe "*|"describe")  cat "$D/describe.txt"; exit 0 ;;
+esac
+# git -C difftest ls-files(build.sc 打包 difftest 源用)
+if [ "$1" = "-C" ] && [ "${3:-}" = "ls-files" ]; then
+  cat "$D/difftest-ls-files.txt" 2>/dev/null; exit 0
+fi
+if [ "$1" = "ls-files" ]; then
+  cat "$D/difftest-ls-files.txt" 2>/dev/null; exit 0
+fi
+# 其它 git 调用:交给真 git(PATH 里本 shim 之后的),失败则空+成功码(确定性)
+REALGIT=$(PATH="$(echo "$PATH" | sed "s#$(dirname "$0"):##g")" command -v git 2>/dev/null)
+if [ -n "$REALGIT" ]; then exec "$REALGIT" "$@"; fi
+exit 0

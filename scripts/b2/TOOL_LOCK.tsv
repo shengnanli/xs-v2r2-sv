@@ -1,0 +1,8 @@
+firtool_path	/home/eda/.cache/llvm-firtool/1.62.1/bin/firtool
+firtool_version	LLVM (http://llvm.org/):
+firtool_sha256	7f52d2a3782d09736895f66e7eb0e5cc4b3b1b18aa1ad0d04fca4cd6e42cd2ee
+mill_version	0.12.3
+mill_path	/home/eda/xs-env/xs-clean/mill
+mill_sha256	
+jdk	/home/eda/xs-env/toolchain/jdk-17.0.13+11
+jdk_java_sha256	3d664eb8f9a7ab7d0b9962a263b075a0da53af49bd2a142c0344ca66b55b0355
