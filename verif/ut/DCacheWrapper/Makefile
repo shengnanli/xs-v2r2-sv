@@ -15,7 +15,8 @@ TB_SRCS      = variants_xs.sv tb.sv
 # DCache 巨型且依赖上百子模块，无法整树编译；用桩隔离，只验证包装层互联 + perf 流水。
 GOLDEN_SRCS = $(GOLDEN_RTL)/DCacheWrapper.sv dcache_stub.sv
 
-FM_VARIANTS = DCacheWrapper
+FM_VARIANTS =
+FM_BB_TARGET = fmbb
 # FM 两侧都读入 dcache_blackbox.sv（显式端口方向的空 DCache），使内层黑盒边界对齐，
 # 消除 firtool 黑盒「unknown direction」对个别 perf 路造成的假阳性。
 # 两侧 DCache 均为同名同向黑盒，FM 只比对包装层互联 + perf 2 级流水的签名等价。

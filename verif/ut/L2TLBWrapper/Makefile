@@ -15,7 +15,8 @@ TB_SRCS      = variants_xs.sv tb.sv
 # L2TLB 巨型且依赖上百子模块，无法整树编译；用桩隔离，只验证包装层互联 + perf 流水。
 GOLDEN_SRCS = $(GOLDEN_RTL)/L2TLBWrapper.sv l2tlb_stub.sv
 
-FM_VARIANTS = L2TLBWrapper
+FM_VARIANTS =
+FM_BB_TARGET = fmbb
 FM_REF_DEPS_L2TLBWrapper =
 
 include ../../../scripts/ut_common.mk

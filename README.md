@@ -27,8 +27,11 @@ Scala 源码 ──阅读理解──► 手写可读 SV (rtl/)  +  模块文档
   双例化比对golden       (每个单态化变体)
 ```
 
-- **golden reference**：`golden/chisel-rtl/`（软链至 `XiangShan/build/rtl/`，Chisel+firtool
-  生成的分模块 SV）。Chisel 会把参数化模块单态化为多个变体（如 `WrBypass.sv`、
+- **golden reference**：`golden/chisel-rtl/`（软链至**非 difftest 冻结基线**，当前为
+  `xs-clean/build/rtl/`，Chisel+firtool 生成的分模块 SV）。生成来源（主仓 commit、子模块 SHA、
+  配置、difftest 开关、工具版本、复现步骤）与 1802 个文件的字节 hash 见
+  **`verif/freeze/GOLDEN_MANIFEST.md`** 与 **`verif/freeze/golden.sha256`**——FM/UT 结果只有在
+  golden 字节 hash 与该清单一致时才可复核。Chisel 会把参数化模块单态化为多个变体（如 `WrBypass.sv`、
   `WrBypass_32.sv`...）；手写 SV 写成**一个参数化模块**，每个变体用对应参数例化后分别做
   等价验证。
 - **端口命名约定**：手写模块的顶层端口名与 Chisel 生成 RTL 完全一致（`io_*` 风格），

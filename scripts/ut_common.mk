@@ -36,7 +36,13 @@ verdi:
 
 # 每个变体一次 FM 比对：ref = golden 变体及其依赖，impl = 手写核心 + 包装层
 fm: $(addprefix fm-,$(FM_VARIANTS))
+ifneq ($(strip $(FM_BB_TARGET)),)
+	@$(MAKE) --no-print-directory $(FM_BB_TARGET)
+else ifeq ($(strip $(FM_VARIANTS)),)
+	@echo "ERROR($(MODULE)): 'make fm' 既无 FM_VARIANTS 也无 FM_BB_TARGET —— 未证明任何东西(禁止空目标绿灯)"; false
+else
 	@echo "=== FM all variants passed ($(MODULE)) ==="
+endif
 
 fm-%:
 	@mkdir -p fm_work/$*
@@ -44,6 +50,8 @@ fm-%:
 	FM_TOP=$* \
 	FM_REF_SRCS="$(GOLDEN_RTL)/$*.sv $(addprefix $(GOLDEN_RTL)/,$(FM_REF_DEPS_$*))" \
 	FM_IMPL_SRCS="$(abspath $(RTL_SRCS) $(WRAPPER_SRCS))" \
+	$(if $(FM_MERGE_DUP),FM_MERGE_DUP=$(FM_MERGE_DUP),) \
+	$(if $(FM_INTERFACE_ONLY),FM_INTERFACE_ONLY="$(FM_INTERFACE_ONLY)",) \
 	$(if $(wildcard fm_map/$*.txt),FM_FIELD_MAP=$(abspath fm_map/$*.txt),) \
 	fm_shell -64 -work_path fm_work/$* -file $(XSSV_HOME)/scripts/fm_eq.tcl \
 	    > fm_work/$*/fm.log 2>&1; \

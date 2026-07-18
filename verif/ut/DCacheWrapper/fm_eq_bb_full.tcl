@@ -32,15 +32,26 @@ set_top i:/WORK/$top
 # 让黑盒引脚按「名字+位置」配对，而非按功能（32 路 perf 引脚同构，function 配对有歧义）。
 set_app_var verification_blackbox_match_mode identity
 
+set _fail_limit 5000
+if {[info exists env(FM_FAIL_LIMIT)]} { set _fail_limit $env(FM_FAIL_LIMIT) }
+set_app_var verification_failing_point_limit $_fail_limit
+
 match
 
-report_unmatched_points > fm_work/$top/unmatched.rpt
-report_matched_points   > fm_work/$top/matched.rpt
+
+# 模块本地钉点(FM 审计 2026-07): FM_PIN_TCL 存在则 source 后重新 match。
+if {[info exists env(FM_PIN_TCL)] && [file exists $env(FM_PIN_TCL)]} {
+    source $env(FM_PIN_TCL)
+    match
+}
+
+report_unmatched_points > fm_work/$top/unmatched_full.rpt
+report_matched_points   > fm_work/$top/matched_full.rpt
 
 if {[verify]} {
     puts "FM_RESULT: Verification SUCCEEDED for $top"
 } else {
-    redirect fm_work/$top/failing.rpt { report_failing_points }
+    redirect fm_work/$top/failing_full.rpt { report_failing_points }
     # 已知假阳性放行：DCacheWrapper 唯一自有逻辑是 32 路 perf 的 2 级流水，golden 与
     # 本核对全部 32 路用完全相同的结构。失败点恒为 io_perf_0 / io_perf_10 两路（共 20
     # 个 DFF 比对点），且不随结构改写（unpacked/packed 数组、identity 配对、逐引脚
@@ -52,7 +63,7 @@ if {[verify]} {
     # 从 failing.rpt 直接统计：所有失败点是否都落在 io_perf_0 / io_perf_10 上。
     # （compare point 的对象名可能取 impl 侧 perf_pipe_reg[...]，不含 io_perf 串，
     #   故以 ref 侧报告里的 io_perf_<i>_value 行来判定更稳。）
-    set _fh [open fm_work/$top/failing.rpt r]
+    set _fh [open fm_work/$top/failing_full.rpt r]
     set _txt [read $_fh]; close $_fh
     set _fp 0; set _only_perf 1
     foreach _ln [split $_txt "\n"] {

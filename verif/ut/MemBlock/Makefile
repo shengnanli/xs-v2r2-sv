@@ -155,6 +155,7 @@ $(GOLDEN_RTL)/AMOALU.sv $(GOLDEN_RTL)/ActiveGenerationTable.sv \
 # 子模块显式端口黑盒），避免厂商 RAM(ram_40x47 异步读)在 link 触发 FMR_ELAB-147，
 # 并把比对聚焦在本层互联 glue。共享 fm-% 规则会整树 link golden 子模块而失败，故不用。
 FM_VARIANTS =
+FM_BB_TARGET = fmbb
 
 # 子模块条目结构相同的重复寄存器很多，关掉“合并同值重复寄存器”pass。
 FM_MERGE_DUP = false

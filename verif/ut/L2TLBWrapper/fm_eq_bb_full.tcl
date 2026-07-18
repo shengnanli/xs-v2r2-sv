@@ -32,20 +32,31 @@ set_top i:/WORK/$top
 # 让黑盒引脚按「名字+位置」配对，而非按功能（19 路 perf 引脚同构，function 配对有歧义）。
 set_app_var verification_blackbox_match_mode identity
 
+set _fail_limit 5000
+if {[info exists env(FM_FAIL_LIMIT)]} { set _fail_limit $env(FM_FAIL_LIMIT) }
+set_app_var verification_failing_point_limit $_fail_limit
+
 match
 
-report_unmatched_points > fm_work/$top/unmatched.rpt
-report_matched_points   > fm_work/$top/matched.rpt
+
+# 模块本地钉点(FM 审计 2026-07): FM_PIN_TCL 存在则 source 后重新 match。
+if {[info exists env(FM_PIN_TCL)] && [file exists $env(FM_PIN_TCL)]} {
+    source $env(FM_PIN_TCL)
+    match
+}
+
+report_unmatched_points > fm_work/$top/unmatched_full.rpt
+report_matched_points   > fm_work/$top/matched_full.rpt
 
 if {[verify]} {
     puts "FM_RESULT: Verification SUCCEEDED for $top"
 } else {
-    redirect fm_work/$top/failing.rpt { report_failing_points }
+    redirect fm_work/$top/failing_full.rpt { report_failing_points }
     # 已知假阳性放行：L2TLBWrapper 唯一自有逻辑是 19 路 perf 的 2 级流水，golden 与
     # 本核对全部 19 路用完全相同的结构（单一 generate 统一生成）。若失败点全部落在
     # io_perf_<i>_value 上，则属 FM 对内层 L2TLB 黑盒「功能未知」输出引脚做符号推理时，
     # 对同构 cone 的对称性消解产生的工具假阳性，而非逻辑不等价（UT 多种子已逐拍证等价）。
-    set _fh [open fm_work/$top/failing.rpt r]
+    set _fh [open fm_work/$top/failing_full.rpt r]
     set _txt [read $_fh]; close $_fh
     # 每个失败 compare point 在 failing.rpt 中是一对行：
     #   "Ref  DFF  r:/WORK/L2TLBWrapper/io_perf_<i>_value_REG_1_reg[b]"
