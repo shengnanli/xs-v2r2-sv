@@ -42,11 +42,12 @@ _ROW = {
 # 未配对报告(在表外),R(I) 两侧任一非 0 即未完全配对。
 _UNMATCH_CP = re.compile(r'(\d+)\((\d+)\)\s+Unmatched \S+ compare points', re.M)
 _UNREAD_UM  = re.compile(r'(\d+)\((\d+)\)\s+Unmatched \S+ unread points', re.M)
+# black-box outputs 未配对(存在黑盒的精确信号,区别于 app_var 名回显)。
+_BBOUT      = re.compile(r'(\d+)\((\d+)\)\s+Unmatched \S+ (?:primary inputs, )?black-box outputs', re.M)
 
 # qualification 痕迹
 _DONTVERIFY = re.compile(r'set_dont_verify_points|Don\'t verify', re.M)
 _ELAB147    = re.compile(r'FMR_ELAB-147', re.M)
-_BLACKBOX   = re.compile(r'black[_ ]?box', re.I)
 
 
 def _last_table(text):
@@ -67,6 +68,14 @@ def _row_int(tbl, key):
     return m
 
 
+def _unmatch_pair(text, pat):
+    """取最后一次 R(I) 匹配的 (ref, impl) 元组;找不到返回 (None, None)。"""
+    r = i = None
+    for mt in pat.finditer(text):
+        r, i = int(mt.group(1)), int(mt.group(2))
+    return r, i
+
+
 def _unmatch_max(text, pat):
     val = None
     for mt in pat.finditer(text):
@@ -75,8 +84,8 @@ def _unmatch_max(text, pat):
 
 
 def verdict(log_text, make_rc=0, mode="signoff-strict", expected_top=None, allowlist=0):
-    q = {"failing": None, "unverified": None, "unmatched": None, "aborted": None,
-         "unread": None, "markers": 0, "make_rc": make_rc, "mode": mode,
+    q = {"passing": None, "failing": None, "unverified": None, "unmatched": None, "aborted": None,
+         "unread": None, "blackbox_out": None, "markers": 0, "make_rc": make_rc, "mode": mode,
          "native": None, "top": None, "dont_verify": bool(_DONTVERIFY.search(log_text)),
          "elab147": bool(_ELAB147.search(log_text)), "reason": None}
 
@@ -102,10 +111,15 @@ def verdict(log_text, make_rc=0, mode="signoff-strict", expected_top=None, allow
     final, top = marks[0]
     q["top"] = top or None
 
-    # P0-5: expected_top 校验(WrongTop)
-    if expected_top and top and top != expected_top:
-        q["reason"] = f"wrong_top:{top}!={expected_top}"
-        return "ERROR", q
+    # P0-5 + 对抗: expected_top 校验。给了 expected_top 但 marker 无 top(无法确认是本模块)
+    # 或不匹配 → ERROR(不得因 marker 缺 top 而跳过校验)。
+    if expected_top:
+        if not top:
+            q["reason"] = "expected_top_but_marker_has_no_top"
+            return "ERROR", q
+        if top != expected_top:
+            q["reason"] = f"wrong_top:{top}!={expected_top}"
+            return "ERROR", q
 
     # P0-4: 交叉检查 Formality 原生 verdict
     natives = _NATIVE.findall(log_text)
@@ -126,13 +140,18 @@ def verdict(log_text, make_rc=0, mode="signoff-strict", expected_top=None, allow
     if tbl is None:
         q["reason"] = "no_summary_table"
         return "ERROR", q
+    q["passing"]    = _row_int(tbl, "passing")
     q["failing"]    = _row_int(tbl, "failing")
     q["unverified"] = _row_int(tbl, "unverified")
     q["aborted"]    = _row_int(tbl, "aborted")
     _nc = _row_int(tbl, "unread_nc")
-    _um = _unmatch_max(log_text, _UNREAD_UM)
-    q["unread"]    = max([x for x in (_nc, _um) if x is not None], default=None)
-    q["unmatched"] = _unmatch_max(log_text, _UNMATCH_CP)
+    _umr, _umi = _unmatch_pair(log_text, _UNREAD_UM)
+    q["unread"]    = max([x for x in (_nc, _umr, _umi) if x is not None], default=None)
+    umr, umi = _unmatch_pair(log_text, _UNMATCH_CP)
+    q["unmatched_ref"], q["unmatched_impl"] = umr, umi
+    q["unmatched"] = max([x for x in (umr, umi) if x is not None], default=None)
+    bbr, bbi = _unmatch_pair(log_text, _BBOUT)
+    q["blackbox_out"] = max([x for x in (bbr, bbi) if x is not None], default=None)
 
     if q["failing"] is None:
         q["reason"] = "failing_row_missing"   # 表在但没 Failing 行 → 不确定, fail-closed
@@ -140,6 +159,10 @@ def verdict(log_text, make_rc=0, mode="signoff-strict", expected_top=None, allow
     if q["failing"] != 0:
         q["reason"] = "success_marker_but_failing>0"
         return "FAILED", q
+    # 对抗: 空证明(passing=0)不得判绿——没有任何等价点被证明。
+    if not q["passing"]:
+        q["reason"] = "empty_proof_passing=0"
+        return "ERROR", q
 
     # P0-1: 模式语义
     if mode == "diagnostic-full":
@@ -147,21 +170,27 @@ def verdict(log_text, make_rc=0, mode="signoff-strict", expected_top=None, allow
     if mode == "shadow":
         return "SHADOW_CHECK", q              # 可读核不驱动输出, 只伴随比对
     if mode == "assembly":
-        # P0-2: 只允许 allowlist 配额内的对称黑盒 unmatched;其余质保维须 0
-        um = q["unmatched"] or 0
-        if um > allowlist:
-            q["reason"] = f"assembly_unmatched>{allowlist}:{um}"
+        # P0-2 + 对抗: assembly 只允许**对称**黑盒(ref==impl)且总数在 allowlist 内。
+        # 非对称如 5(0) 说明一侧多出未配对点(缺依赖/端口不齐), 即便 ≤allowlist 也拒绝。
+        if (umr or 0) != (umi or 0):
+            q["reason"] = f"assembly_asymmetric_unmatched:{umr}({umi})"
+            return "PARTIAL", q
+        if (q["unmatched"] or 0) > allowlist:
+            q["reason"] = f"assembly_unmatched>{allowlist}:{q['unmatched']}"
             return "PARTIAL", q
         for k in ("unverified", "aborted", "unread"):
             if q.get(k) not in (0, None):
                 q["reason"] = f"assembly_{k}!=0"
                 return "PARTIAL", q
         return "SUCCEEDED", q
-    # signoff-strict: 全部质保维为 0(含 dont_verify/elab147 声明检查由上层 allowlist 复核)
+    # signoff-strict: 全部质保维为 0 + 无任何黑盒(strict-replacement 不允许子模块抽象)。
     for k in ("unverified", "unmatched", "aborted", "unread"):
         if q.get(k) not in (0, None):
             q["reason"] = f"strict_{k}!=0"
             return "PARTIAL", q
+    if q.get("blackbox_out"):
+        q["reason"] = "strict_has_blackbox"    # 未声明黑盒 → 非纯替换
+        return "PARTIAL", q
     if q["dont_verify"] or q["elab147"]:
         q["reason"] = "strict_has_dontverify_or_elab147"
         return "PARTIAL", q

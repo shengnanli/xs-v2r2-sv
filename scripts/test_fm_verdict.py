@@ -56,10 +56,10 @@ C("strict_unverified", table(failing=0, unver=100) + mark("SUCCEEDED"), "PARTIAL
 C("strict_unmatched", table(failing=0) + " 0(31196) Unmatched reference(implementation) compare points\n" + mark("SUCCEEDED"), "PARTIAL")
 # 无汇总表 → ERROR (P0-8)
 C("no_table", TCL_ECHO + mark("SUCCEEDED"), "ERROR")
-# assembly: unmatched 在配额内 → SUCCEEDED (P0-2)
-C("assembly_unmatched_ok", table(failing=0) + " 0(5) Unmatched reference(implementation) compare points\n" + mark("SUCCEEDED"), "SUCCEEDED", mode="assembly", allowlist=5)
-# assembly: unmatched 超配额 → PARTIAL (P0-2)
-C("assembly_unmatched_over", table(failing=0) + " 0(9) Unmatched reference(implementation) compare points\n" + mark("SUCCEEDED"), "PARTIAL", mode="assembly", allowlist=5)
+# assembly: 对称 unmatched 在配额内 → SUCCEEDED (P0-2)
+C("assembly_unmatched_ok", table(failing=0) + " 5(5) Unmatched reference(implementation) compare points\n" + mark("SUCCEEDED"), "SUCCEEDED", mode="assembly", allowlist=5)
+# assembly: 对称 unmatched 超配额 → PARTIAL (P0-2)
+C("assembly_unmatched_over", table(failing=0) + " 9(9) Unmatched reference(implementation) compare points\n" + mark("SUCCEEDED"), "PARTIAL", mode="assembly", allowlist=5)
 # strict: unread (Not-Compared) → PARTIAL
 C("strict_unread_nc", table(failing=0, unread_nc=1) + mark("SUCCEEDED"), "PARTIAL")
 # strict: unmatched-unread → PARTIAL
@@ -82,6 +82,22 @@ C("strict_dontverify", "set_dont_verify_points ...\n" + table(failing=0) + mark(
 C("strict_elab147", "Warning: FMR_ELAB-147 ...\n" + table(failing=0) + mark("SUCCEEDED"), "PARTIAL")
 # P0-7: 较早短格式不得覆盖终态表(早期"5 Failing compare points"但最终表 failing=0)
 C("early_shortfmt_ignored", "5 Failing compare points\n" + table(failing=0) + native("SUCCEEDED") + mark("SUCCEEDED"), "SUCCEEDED")
+# 对抗-1: 空证明 passing=0 failing=0 → ERROR(不得判绿)
+C("empty_proof_passing0", table(passing=0, failing=0) + native("SUCCEEDED") + mark("SUCCEEDED"), "ERROR")
+# 对抗-2: 给 expected top 但 marker 无 "for X" → ERROR
+C("expected_top_marker_no_top",
+  table(failing=0) + native("SUCCEEDED") + "FM_RESULT: Verification SUCCEEDED\n", "ERROR", top="Bku")
+# 对抗-3: strict 出现未声明 blackbox(black-box outputs 非0)→ PARTIAL
+C("strict_undeclared_blackbox",
+  table(failing=0) + " 3(3) Unmatched reference(implementation) black-box outputs\n" + mark("SUCCEEDED"), "PARTIAL")
+# 对抗-4: assembly 非对称 5(0) unmatched, 即便 allowlist=5 也 PARTIAL
+C("assembly_asymmetric_5_0",
+  table(failing=0) + " 5(0) Unmatched reference(implementation) compare points\n" + mark("SUCCEEDED"),
+  "PARTIAL", mode="assembly", allowlist=5)
+# 对抗-4b: assembly 对称 5(5) 在配额内 → SUCCEEDED
+C("assembly_symmetric_5_5",
+  table(failing=0) + " 5(5) Unmatched reference(implementation) compare points\n" + mark("SUCCEEDED"),
+  "SUCCEEDED", mode="assembly", allowlist=5)
 
 def main():
     npass = 0
