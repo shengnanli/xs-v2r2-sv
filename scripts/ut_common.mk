@@ -44,19 +44,28 @@ else
 	@echo "=== FM all variants passed ($(MODULE)) ==="
 endif
 
+# FM_MODE 默认: 有 FM_INTERFACE_ONLY(声明对称黑盒)⇒assembly, 否则 signoff-strict。
+# 模块 Makefile 可显式覆盖 FM_MODE / FM_ALLOWLIST。判定权威 = fm_verdict.py(fail-closed),
+# 非旧的裸 grep(那会被 Formality 回显的 Tcl 源码骗成假绿)。
+FM_MODE ?= $(if $(FM_INTERFACE_ONLY),assembly,signoff-strict)
+FM_ALLOWLIST ?= 0
+
 fm-%:
 	@mkdir -p fm_work/$*
-	@echo "=== FM: $* ==="
+	@echo "=== FM: $* (mode=$(FM_MODE)) ==="
 	FM_TOP=$* \
+	FM_MODE=$(FM_MODE) \
 	FM_REF_SRCS="$(GOLDEN_RTL)/$*.sv $(addprefix $(GOLDEN_RTL)/,$(FM_REF_DEPS_$*))" \
 	FM_IMPL_SRCS="$(abspath $(RTL_SRCS) $(WRAPPER_SRCS))" \
 	$(if $(FM_MERGE_DUP),FM_MERGE_DUP=$(FM_MERGE_DUP),) \
 	$(if $(FM_INTERFACE_ONLY),FM_INTERFACE_ONLY="$(FM_INTERFACE_ONLY)",) \
 	$(if $(wildcard fm_map/$*.txt),FM_FIELD_MAP=$(abspath fm_map/$*.txt),) \
+	$(if $(wildcard fm_pins_pre.tcl),FM_PIN_PRE_TCL=$(abspath fm_pins_pre.tcl),) \
+	$(if $(wildcard fm_pins.tcl),FM_PIN_TCL=$(abspath fm_pins.tcl),) \
 	fm_shell -64 -work_path fm_work/$* -file $(XSSV_HOME)/scripts/fm_eq.tcl \
 	    > fm_work/$*/fm.log 2>&1; \
-	grep -E "^FM_RESULT" fm_work/$*/fm.log; \
-	grep -q "^FM_RESULT: Verification SUCCEEDED" fm_work/$*/fm.log
+	rc=$$?; \
+	python3 $(XSSV_HOME)/scripts/fm_verdict.py fm_work/$*/fm.log --rc $$rc --mode $(FM_MODE) --top $* --allowlist $(FM_ALLOWLIST)
 
 clean:
 	rm -rf simv* csrc *.log ucli.key novas.* verdiLog fm_work *.fsdb *.daidir \
