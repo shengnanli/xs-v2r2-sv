@@ -50,9 +50,9 @@ verdict ∈ {SUCCEEDED, FAILED, WAIVED, PARTIAL, UNRUN, ERROR}。
 
 ## 五、负向测试(签核前必须先绿)
 
-`test_fm_verdict.py` 12 例,覆盖二审要求的全部陷阱:回显未执行 SUCCEEDED、SUCCEEDED但failing>0、
+`test_fm_verdict.py` 14 例,覆盖二审要求的全部陷阱:回显未执行 SUCCEEDED、SUCCEEDED但failing>0、
 WAIVED、非零 rc、多/缺 marker、fresh FAILED、unverified/unmatched strict 拒绝、NOT RUN、无统计表、
-assembly 放行。**当前 12/12 通过。** 真日志交叉验证:Backend→FAILED(旧脚本此处假绿)、
+assembly 放行。**当前 14/14 通过。** 真日志交叉验证:Backend→FAILED(旧脚本此处假绿)、
 XSCore→PARTIAL(抓到 impl 31196 unmatched)、Bku→SUCCEEDED。
 
 ## 六、待办(后续步骤,尚未闭环)

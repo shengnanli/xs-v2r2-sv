@@ -36,6 +36,11 @@ _UNVER_CP    = re.compile(r'(\d+)\s+Unverified compare points', re.M)
 _UNMATCH_CP  = re.compile(r'(\d+)\((\d+)\)\s+Unmatched \S+ compare points', re.M)
 _ABORT_TOT   = re.compile(r'^\s*Aborted\s+(?:\d+\s+)*(\d+)\s*$', re.M)
 _ABORT_CP    = re.compile(r'(\d+)\s+Aborted compare points', re.M)
+# Unread(P0):fm_eq.tcl 设 verification_verify_unread_compare_points=false → 跳过 unread 点的验证。
+# 两类都要计入 strict qualification:①"Not Compared / Unread" 表格行(配对了但没验),末列 TOTAL;
+# ②"R(I) Unmatched ... unread points"(未配对 unread)。
+_UNREAD_NC   = re.compile(r'^\s*Unread\s+(?:\d+\s+)*(\d+)\s*$', re.M)
+_UNREAD_UM   = re.compile(r'(\d+)\((\d+)\)\s+Unmatched \S+ unread points', re.M)
 _NOTRUN      = re.compile(r'Verification NOT RUN|reference design .* is a black box|FM-081', re.M)
 
 
@@ -51,7 +56,7 @@ def _last_int(pats, text):
 
 def verdict(log_text, make_rc=0, mode="signoff-strict"):
     q = {"failing": None, "unverified": None, "unmatched": None,
-         "aborted": None, "markers": 0, "make_rc": make_rc, "mode": mode}
+         "aborted": None, "unread": None, "markers": 0, "make_rc": make_rc, "mode": mode}
 
     markers = _MARKER.findall(log_text)
     marker_lines = _MARKER.findall(log_text)  # 值(SUCCEEDED/WAIVED/FAILED)
@@ -61,6 +66,10 @@ def verdict(log_text, make_rc=0, mode="signoff-strict"):
     q["unverified"] = _last_int([_UNVER_TOT, _UNVER_CP], log_text)
     q["unmatched"]  = _last_int([_UNMATCH_CP], log_text)
     q["aborted"]    = _last_int([_ABORT_TOT, _ABORT_CP], log_text)
+    # unread 取两类的最大(Not-Compared-Unread 与 Unmatched-unread 任一非 0 都是未验证点)
+    _nc = _last_int([_UNREAD_NC], log_text)
+    _um = _last_int([_UNREAD_UM], log_text)
+    q["unread"] = max([x for x in (_nc, _um) if x is not None], default=None)
 
     # --- fail-closed 判定链 ---
     # make 非零 → 一律 ERROR(即便日志看似成功)
@@ -86,10 +95,12 @@ def verdict(log_text, make_rc=0, mode="signoff-strict"):
         # 有 SUCCEEDED marker 但没有 report 统计行 → 无法确认 failing=0, fail-closed
         return "ERROR", q
     if mode == "signoff-strict":
-        for k in ("unverified", "unmatched", "aborted"):
-            if q[k] not in (0, None):
+        # strict replacement 要求全部质保维为 0:unverified/unmatched/aborted/unread。
+        # unread 尤其关键——fm_eq.tcl 禁验 unread 点,它们"配对了但没验证",strict 不能放过。
+        for k in ("unverified", "unmatched", "aborted", "unread"):
+            if q.get(k) not in (0, None):
                 q["strict_reject"] = k
-                return "PARTIAL", q     # 有未验/未配对 → 非 strict-clean
+                return "PARTIAL", q     # 有未验/未配对/未读 → 非 strict-clean
     return "SUCCEEDED", q
 
 

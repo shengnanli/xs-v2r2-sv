@@ -14,13 +14,14 @@ TCL_ECHO = (
     '    }\n'
 )
 
-def stats(failing=0, unver=0, unmatch=0, abort=0):
+def stats(failing=0, unver=0, unmatch=0, abort=0, unread=0):
     # 复刻真实 FM report 表格式(末列 TOTAL);Unmatched 为 "N(N) Unmatched ... compare points"。
     return (f"Passing (equivalent)      100  0 0 0 0 0 0  100\n"
             f"Failing (not equivalent)   {failing} 0 0 0 0 0 0  {failing}\n"
             + (f"Unverified  {unver} 0 0 0 0 0 0  {unver}\n" if unver else "")
             + (f" {unmatch}({unmatch}) Unmatched reference(implementation) compare points\n" if unmatch else "")
-            + (f"Aborted  {abort} 0 0 0 0 0 0  {abort}\n" if abort else ""))
+            + (f"Aborted  {abort} 0 0 0 0 0 0  {abort}\n" if abort else "")
+            + (f"Not Compared\n  Unread  {unread} 0 0 0 0 0 0  {unread}\n" if unread else ""))
 
 CASES = []
 def case(name, text, rc, mode, want):
@@ -85,6 +86,17 @@ case("success_no_stats",
 case("assembly_unmatched_ok",
      stats(failing=0, unmatch=5) + "FM_RESULT: Verification SUCCEEDED for Backend\n",
      0, "assembly", "SUCCEEDED")
+
+# 13. P0: SUCCEEDED marker + failing=0 但有 unread 未验证点(fm_eq.tcl 禁验 unread)→ strict 拒 PARTIAL
+case("success_with_unread_strict",
+     stats(failing=0, unread=1) + "FM_RESULT: Verification SUCCEEDED for Bku\n",
+     0, "signoff-strict", "PARTIAL")
+
+# 14. 未配对 unread(Unmatched ... unread points)同样 strict 拒
+case("success_with_unmatched_unread",
+     stats(failing=0) + " 20(20) Unmatched reference(implementation) unread points\n"
+     + "FM_RESULT: Verification SUCCEEDED for Bku\n",
+     0, "signoff-strict", "PARTIAL")
 
 def main():
     npass = 0
