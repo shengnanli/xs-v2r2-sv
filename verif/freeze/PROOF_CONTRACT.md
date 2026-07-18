@@ -52,8 +52,9 @@ verdict ∈ {SUCCEEDED, FAILED, WAIVED, PARTIAL, UNRUN, ERROR}。
 
 `test_fm_verdict.py` 14 例,覆盖二审要求的全部陷阱:回显未执行 SUCCEEDED、SUCCEEDED但failing>0、
 WAIVED、非零 rc、多/缺 marker、fresh FAILED、unverified/unmatched strict 拒绝、NOT RUN、无统计表、
-assembly 放行。**当前 14/14 通过。** 真日志交叉验证:Backend→FAILED(旧脚本此处假绿)、
-XSCore→PARTIAL(抓到 impl 31196 unmatched)、Bku→SUCCEEDED。
+assembly 放行、**unread 未验证点 strict 拒绝**(P0)。**当前 14/14 通过。** 真日志交叉验证:
+Backend→FAILED(旧脚本此处假绿)、XSCore→PARTIAL(抓到 impl 31196 unmatched)、
+**Bku→PARTIAL**(有 unread 未验证点;之前误当干净 SUCCEEDED)——真 strict SUCCEEDED 须零 qualification。
 
 ## 六、待办(后续步骤,尚未闭环)
 
