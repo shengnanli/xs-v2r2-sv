@@ -11,6 +11,8 @@ case "$1 ${2:-}" in
   "status -uno")           cat "$D/status-uno-porcelain.txt"; exit 0 ;;  # git status -uno --porcelain
   "submodule status")      cat "$D/submodule-status.txt"; exit 0 ;;
   "describe "*|"describe")  cat "$D/describe.txt"; exit 0 ;;
+  "log -n")                cat "$D/log-n1.txt" 2>/dev/null; exit 0 ;;    # Makefile: git log -n 1 (→ .__diff__)
+  "diff "*|"diff")         cat "$D/diff.txt" 2>/dev/null; exit 0 ;;      # Makefile: git diff (→ .__diff__)
 esac
 # git -C difftest ls-files(build.sc 打包 difftest 源用)
 if [ "$1" = "-C" ] && [ "${3:-}" = "ls-files" ]; then
