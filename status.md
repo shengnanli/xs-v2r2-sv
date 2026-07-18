@@ -1,8 +1,15 @@
 # 香山 V2R2 可读 SV 重写 —— 进度跟踪
 
 状态：⬜ 未开始 / 🔨 进行中 / ✅ 完成
-验证：每模块 = 结构闸门 grep + 多种子 UT(seed 1/7/42 双例化逐拍比对 golden 全输出 0 错)+ Formality 等价比对。**FM 口径如实说明**:叶子/中小模块多为 SUCCEEDED;若干大模块末次 verify 为 FAILED 且 failing=20 是 Formality 默认 `verification_failing_point_limit=20` 的**截断上限**(verify 提前中止,另有大量 unverified 点未验),这些模块为**FM 部分验证**、已报告 failing 逐点探针证伪、以 UT 为权威,详见各模块 doc 与下文各节。
-> **FM 口径说明**：叶子/中型模块 FM 多为 SUCCEEDED;大型聚合/装配层(Backend/CtrlBlock/DataPath/L2Top/OpenLLC/TL2CHICoupledL2/XSCore 等)FM 实际 **FAILED 且触 Formality 默认 `verification_failing_point_limit=20` 截断**(verify 提前中止,留有大量 Unverified compare points),属**部分验证**,以 UT 为权威;各模块 FM 实际数字以其文档「验证」节与 fm.log 为准。
+验证：每模块 = 结构闸门 grep + 多种子 UT(seed 1/7/42 双例化逐拍比对 golden 全输出 0 错)+ Formality 等价比对。
+> **⚠ FM 口径(2026-07 冻结/分类,权威见 [`verif/freeze/FM_STATUS.md`](verif/freeze/FM_STATUS.md) + [`GOLDEN_MANIFEST.md`](verif/freeze/GOLDEN_MANIFEST.md)):**
+> 本表"✅ 完成"指**重写 + 结构闸门 + 多种子 UT 通过**,**不等于**该模块已在冻结基线取得工程级 FM 等价签核。
+> FM 结果按证明强度**分类**,禁止一律叫"等价":**REPLACEMENT_EQ**(可读核真驱动输出+原生 SUCCEEDED)/
+> **ASSEMBLY_EQ**(装配层,子模块黑盒,仅证 glue,如 MemBlock/DCache/Backend/LsqWrapper/L2TLB/L2Top/OpenLLC/TL2CHICoupledL2)/
+> **SHADOW_CHECK**(可读核不驱动输出、仅伴随比对,**Frontend/Predictor**——FM PASS **不证明可替换**)/
+> **PARTIAL_WAIVED**(dont-verify 排除/unmatched/配置差异/ELAB 降级,如 **DataPath/XSCore**)/**FAILED-UNRUN-VACUOUS**(StoreQueue/CtrlBlock/StorePipe)。
+> 全仓 232 个 fm 目标,当前只有 **44 个变体**有冻结基线 full 日志,其余约 188 个为 **UNRUN_ON_FROZEN**(旧基线或无日志)。
+> **因此不能说"整仓除三个外都与 golden 等价"。** 之前的"failing=20 截断"叙事已被此分类取代。
 
 > **⚠ golden 双基线说明**：为打通 ST(difftest+NEMU),`XiangShan/build/rtl` 已用
 > `--enable-difftest` 真生效重生(`flow.sh gen-simtop`),给 Rob/LsqWrapper/MemBlock 等
@@ -16,10 +23,10 @@
 
 | 子系统 | 核心模块 | 文档 | 状态 |
 |--------|---------|------|------|
-| **Frontend 前端** | 34 | 33 | ✅ **100% 完成** |
-| **MemBlock 访存** | 46 | 47 | ✅ **100% 完成** |
-| **Backend 后端** | 60+ | 60+ | ✅ **基本完成**(执行/译码/重命名/写回/旁路/ROB/DataPath/Dispatch/CtrlBlock/14个发射队列变体/4个Scheduler/ExeUnit/NewCSR/Backend顶层 全部完成,均 UT 多种子验证;FM 叶子/中型模块多 SUCCEEDED,DataPath/CtrlBlock/Backend顶层/Bku 等 FM 实际 FAILED-截断为部分验证,RenameBuffer 的 FM 在建模阶段被中止**从未产生比对结果**(以 UT+全 256 条目内部探针为权威),UT 为权威,详见各文档) |
-| **XSCore 单核顶层** | 1 | 1 | ✅ **完成**(整合 Frontend+Backend+MemBlock 成单核;UT 三种子 120k errors=0) |
+| **Frontend 前端** | 34 | 33 | ✅ 重写+UT 完成(★FM:Frontend/Predictor 顶层为 **SHADOW_CHECK** 非可替换;叶子多 REPLACEMENT_EQ,见台账) |
+| **MemBlock 访存** | 46 | 47 | ✅ 重写+UT 完成(FM:多数叶子 REPLACEMENT_EQ;MemBlock/DCacheWrapper 顶层为 **ASSEMBLY_EQ**;DataPath 属后端) |
+| **Backend 后端** | 60+ | 60+ | ✅ 重写+UT 完成(均 UT 多种子验证)。**FM 分类(冻结基线)**:多数叶子/中层 REPLACEMENT_EQ(Bku/RenameBuffer 等已原生 SUCCEEDED);**DataPath=PARTIAL_WAIVED**(排除 difftest 观测点);**Backend 顶层=ASSEMBLY_EQ**(子模块黑盒);**CtrlBlock=UNRUN**(FM 被中止未确认);详见 [`FM_STATUS.md`](verif/freeze/FM_STATUS.md) |
+| **XSCore 单核顶层** | 1 | 1 | ✅ 重写+UT 完成(UT 三种子 120k errors=0)。**FM=PARTIAL_WAIVED**(31196 unmatched BBPin,配置漂移,scoped proof 非全等价) |
 | **XSTile / XSTop SoC 顶层** | 2 | 2 | ✅ **完成**(XSTile=XSCore+L2+中断缓冲;XSTop=tile+NoC/CHI 多 die+LLC+桥+中断+AXI4。XSTile UT 三种子 120k errors=0;XSTop 编译 0 错·UT 跑批,详见下节) |
 | **L2/L3 缓存** | 装配4 + 子块8 + CHI通道22 | - | 🔨 **进行中**(装配层 L2Top/TL2CHICoupledL2/OpenLLC/**Slice** 全齐;子块 MSHR/MSHRCtl/Directory/SinkA/SinkC/SourceB/SubDirectory×2/MSHRSelector/L2-MBIST×4/RequestArb/GrantBuffer/**MainPipe** 做透;**CHI 通道适配 22 个**(RXRSP/RXDAT/TXRSP/TXREQ/TXDAT + openLLC RXRSP_4/RXDAT_4/RXREQ/TXSNP/TXREQ_4/TXRSP_4/TXDAT_4 + 链路层 Decoupled2LCredit×4/LCredit2Decoupled×4 + CHILogger/TLLogger)做透,均 UT 三种子 200k/0 + FM,见 `docs/l2/CHIChannels.md`;余 RXSNP/AsyncQueue/NCB) |
 | **Uncore 外设/中断/总线** | 13 | - | 🔨 **进行中**(中断 CLINT/PLICFanIn/LevelGateway/IMSICGateWay/TLPLIC/IMSIC/DebugModule 全齐;总线 TLXbar_2/3/4/6/AXI4Xbar_1 做透,均 UT+FM;余 AXI4Xbar/更多 xbar/buffer 变体) |

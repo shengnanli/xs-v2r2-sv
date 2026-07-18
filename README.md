@@ -7,9 +7,15 @@
 
 | 子系统 | 状态 | 说明 |
 |--------|------|------|
-| **Frontend 前端** | ✅ 100% | 分支预测 / 取指 / ICache / Ftq / 顶层（34 模块） |
-| **MemBlock 访存** | ✅ 100% | LSU / 队列 / MMU（含 L2TLB·PtwCache） / DCache / 顶层（46 模块） |
-| **Backend 后端** | ✅ 基本完成 | FU / 译码 / 重命名 / 写回 / 旁路 / ROB / DataPath / Dispatch / CtrlBlock / 14 个发射队列变体 / 4 个 Scheduler / ExeUnit / NewCSR / Backend 顶层（60+ 模块，均 UT+FM 验证） |
+| **Frontend 前端** | ✅ 重写+UT | 分支预测 / 取指 / ICache / Ftq / 顶层（34 模块） |
+| **MemBlock 访存** | ✅ 重写+UT | LSU / 队列 / MMU（含 L2TLB·PtwCache） / DCache / 顶层（46 模块） |
+| **Backend 后端** | ✅ 重写+UT | FU / 译码 / 重命名 / 写回 / 旁路 / ROB / DataPath / Dispatch / CtrlBlock / 14 个发射队列变体 / 4 个 Scheduler / ExeUnit / NewCSR / Backend 顶层（60+ 模块） |
+
+> **"✅ 重写+UT" = 已重写 + 结构闸门 + 多种子 UT 通过,不等于已取得工程级 FM 等价签核。**
+> FM 结果按证明强度**分类**(REPLACEMENT_EQ / ASSEMBLY_EQ / SHADOW_CHECK / PARTIAL_WAIVED / FAILED-UNRUN),
+> 权威台账见 **`verif/freeze/FM_STATUS.md`**,golden 冻结见 **`verif/freeze/GOLDEN_MANIFEST.md`**。
+> 尤其:**Frontend/Predictor 顶层的 FM 是 SHADOW_CHECK(可读核未驱动输出,不证明可替换)**;
+> 全仓 232 个 fm 目标当前仅 44 个变体有冻结基线证明,其余为 UNRUN_ON_FROZEN。
 
 详细模块清单与验证状态见 `status.md`；各子系统导读见 `docs/{frontend,memblock,backend}/`（`MEMBLOCK_OVERVIEW.md` / `BACKEND_OVERVIEW.md`）。重写硬性标准见 `docs/REWRITE_STYLE.md`。
 
