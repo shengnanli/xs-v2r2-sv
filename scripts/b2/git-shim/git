@@ -20,7 +20,10 @@ case "$args" in
   "describe --tags --always --dirty")  cat "$D/describe.txt" ;;
   "describe --tags")                   cat "$D/describe-tags.txt" ;;
   "rev-list HEAD --count")             cat "$D/rev-list-count.txt" ;;
+  "rev-list "*" --count")              cat "$D/rev-list-count.txt" ;;  # VcsVersion 用解析后 SHA
+  "describe --tags "*)                 cat "$D/describe-tags.txt" ;;   # describe --tags <sha>
   "tag --points-at HEAD")              cat "$D/tag-points-at.txt" ;;
+  "tag --points-at "*)                 cat "$D/tag-points-at.txt" ;;
   "log -n 1")                          cat "$D/log-n1.txt" ;;
   "diff")                              cat "$D/diff.txt" ;;
   "ls-files")                          cat "$D/difftest-ls-files.txt" ;;

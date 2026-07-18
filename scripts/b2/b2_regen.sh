@@ -21,6 +21,12 @@ lock_val() { awk -F'\t' -v k="$1" '$1==k{print $2}' "$LOCK"; }
 echo "== B2: 前置校验(工具+源码 hash, fail-closed) =="
 [ -f "$Q/G0-source-canonical.tar.gz" ] || fail "缺 canonical 源码 tar"
 [ -d "$GIT_SHIM_DATA" ] || fail "缺 git-shim-inputs"
+# git-shim-inputs 目录整体 digest 校验(锁定, 防捕获输入被改)
+SHIMH_LOCK=$(lock_val git_shim_inputs_digest)
+SHIMH_NOW=$(LC_ALL=C find "$GIT_SHIM_DATA" -type f | LC_ALL=C sort | xargs sha256sum 2>/dev/null | sha256sum | awk '{print $1}')
+[ -n "$SHIMH_LOCK" ] || fail "TOOL_LOCK 无 git_shim_inputs_digest"
+[ "$SHIMH_NOW" = "$SHIMH_LOCK" ] || fail "git-shim-inputs digest 不匹配锁定值(捕获输入被改?)"
+echo "git-shim-inputs digest OK"
 # 三工具 hash 全校验
 for tk in firtool mill; do
   tp=$(lock_val "${tk}_path"); th=$(lock_val "${tk}_sha256")
