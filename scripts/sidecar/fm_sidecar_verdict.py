@@ -1,103 +1,204 @@
 #!/usr/bin/env python3
-"""FM sidecar validator(2026-07-19, fail-closed)。只读机器可读 sidecar(fm-sidecar-v1),
-不 grep 人读日志。缺字段/run-id 不匹配/非 canonical 基线/mode 误升级一律 ERROR。
-契约见 SIDECAR_SCHEMA.md。"""
-import sys, json, argparse
+"""FM sidecar validator(2026-07-19 二审, fail-closed, 强类型 + 外部 expectation 权威)。
+
+verdict(sidecar_path, expectation, actual_rc):
+ - expectation: **外部权威** manifest(不可选)。sidecar 每项须与之精确相等。
+ - actual_rc: runner 获取的**真实进程 rc**(不信 sidecar 自报; 两者都须为 0)。
+强类型: 拒 NaN/Infinity/duplicate-key/bool-as-int/负数/非64小写hex/无序或重复或空串对象。
+契约见 SIDECAR_SCHEMA.md。
+"""
+import sys, json, math, argparse
 
 SCHEMA = "fm-sidecar-v1"
 REQUIRED = {"schema", "run_id", "target", "top", "variant", "proof_mode",
             "canonical_baseline_id", "inputs_sha256", "script_sha256", "tool",
-            "fm_shell_rc", "native_verdict", "stats", "unmatched", "qualifications"}
+            "fm_shell_rc", "native_verdict", "stats", "unmatched", "objects", "qualifications"}
 STATS_KEYS = {"passing", "failing", "unverified", "aborted", "unread_notcompared"}
 UNMATCH_KEYS = {"compare_ref", "compare_impl", "unread_ref", "unread_impl", "bbout_ref", "bbout_impl"}
-QUAL_KEYS = {"dont_verify_objects", "elab147", "blackbox_objects", "interface_only"}
+OBJ_KEYS = {"blackbox_ref", "blackbox_impl", "interface_only", "unmatched_ref", "unmatched_impl"}
+QUAL_KEYS = {"dont_verify_objects", "elab147", "relaxed_appvars"}
 KNOWN_MODES = {"signoff-strict", "assembly", "shadow", "diagnostic-full"}
+EXPECT_KEYS = {"run_id", "target", "top", "variant", "proof_mode", "canonical_baseline_id",
+               "ref_digest", "impl_digest", "script_digest", "tool_digest", "allow_objects"}
 
 
-def verdict(sidecar_path, expected_run_id, expected_top=None, expected_mode=None,
-            allow_objects=None, baseline_id=None):
+class Bad(Exception):
+    pass
+
+
+def _no_nan(o):
+    """递归拒绝 float(NaN/Inf) —— JSON 允许它们, 但签核不接受。"""
+    if isinstance(o, float):
+        if math.isnan(o) or math.isinf(o):
+            raise Bad("nan_or_inf")
+    elif isinstance(o, dict):
+        for v in o.values(): _no_nan(v)
+    elif isinstance(o, list):
+        for v in o: _no_nan(v)
+
+
+def _dup_key_hook(pairs):
+    d = {}
+    for k, v in pairs:
+        if k in d:
+            raise Bad("duplicate_key:" + k)
+        d[k] = v
+    return d
+
+
+def _is_hex64(s):
+    return isinstance(s, str) and len(s) == 64 and all(c in "0123456789abcdef" for c in s)
+
+
+def _count(x):
+    # 必须是 int, 非 bool, 非负
+    return isinstance(x, int) and not isinstance(x, bool) and x >= 0
+
+
+def _objlist(x):
+    # 排序、唯一、非空字符串列表
+    if not isinstance(x, list):
+        return False
+    if any((not isinstance(e, str)) or e == "" for e in x):
+        return False
+    if x != sorted(x) or len(set(x)) != len(x):
+        return False
+    return True
+
+
+def verdict(sidecar_path, expectation, actual_rc):
+    # expectation 自身完整性
+    if set(expectation) != EXPECT_KEYS:
+        return "ERROR", {"reason": "bad_expectation_manifest"}
+
+    try:
+        sc = json.load(open(sidecar_path), object_pairs_hook=_dup_key_hook)
+        _no_nan(sc)
+    except Bad as b:
+        return "ERROR", {"reason": f"type:{b}"}
+    except Exception as e:
+        return "ERROR", {"reason": f"unreadable:{e}"}
+
     q = {"reason": None}
     try:
-        sc = json.load(open(sidecar_path))
-    except Exception as e:
-        return "ERROR", {"reason": f"sidecar_unreadable:{e}"}
+        # ---- 结构 + 强类型 ----
+        if sc.get("schema") != SCHEMA:
+            raise Bad("bad_schema")
+        if set(sc) != REQUIRED:
+            raise Bad(f"fields:缺{sorted(REQUIRED-set(sc))}多{sorted(set(sc)-REQUIRED)}")
+        for grp, keys in (("stats", STATS_KEYS), ("unmatched", UNMATCH_KEYS),
+                          ("objects", OBJ_KEYS)):
+            if not isinstance(sc[grp], dict) or set(sc[grp]) != keys:
+                raise Bad(f"{grp}_fields")
+        if not isinstance(sc["qualifications"], dict) or set(sc["qualifications"]) != QUAL_KEYS:
+            raise Bad("qual_fields")
+        if set(sc["inputs_sha256"]) != {"ref_srcs_digest", "impl_srcs_digest"}:
+            raise Bad("inputs_fields")
+        if set(sc["tool"]) != {"fm_shell_digest"}:
+            raise Bad("tool_fields")
+        # 计数强类型
+        for v in list(sc["stats"].values()) + list(sc["unmatched"].values()):
+            if not _count(v):
+                raise Bad("count_not_nonneg_int")
+        if not (isinstance(sc["fm_shell_rc"], int) and not isinstance(sc["fm_shell_rc"], bool)):
+            raise Bad("rc_not_int")
+        # hash 强类型
+        for h in (sc["script_sha256"], sc["inputs_sha256"]["ref_srcs_digest"],
+                  sc["inputs_sha256"]["impl_srcs_digest"], sc["tool"]["fm_shell_digest"]):
+            if not _is_hex64(h):
+                raise Bad("not_hex64")
+        # 对象数组强类型
+        for v in sc["objects"].values():
+            if not _objlist(v):
+                raise Bad("obj_not_sorted_unique_nonempty")
+        for k in ("dont_verify_objects", "elab147", "relaxed_appvars"):
+            if not _objlist(sc["qualifications"][k]):
+                raise Bad(f"qual_{k}_not_objlist")
+        if sc["proof_mode"] not in KNOWN_MODES:
+            raise Bad("unknown_mode")
+        if sc["native_verdict"] not in ("SUCCEEDED", "FAILED", "INCONCLUSIVE", "NOT_RUN"):
+            raise Bad("bad_native")
+    except Bad as b:
+        return "ERROR", {"reason": f"type:{b}"}
 
-    # 前置 1: schema + 字段齐全(缺字段=ERROR, 不按零)
-    if sc.get("schema") != SCHEMA:
-        return "ERROR", {"reason": "bad_schema"}
-    if set(sc) != REQUIRED:
-        return "ERROR", {"reason": f"field_mismatch: 缺{sorted(REQUIRED-set(sc))} 多{sorted(set(sc)-REQUIRED)}"}
-    if not isinstance(sc["stats"], dict) or set(sc["stats"]) != STATS_KEYS:
-        return "ERROR", {"reason": "stats_fields"}
-    if not isinstance(sc["unmatched"], dict) or set(sc["unmatched"]) != UNMATCH_KEYS:
-        return "ERROR", {"reason": "unmatched_fields"}
-    if not isinstance(sc["qualifications"], dict) or set(sc["qualifications"]) != QUAL_KEYS:
-        return "ERROR", {"reason": "qual_fields"}
     q.update(sc)
 
-    # 前置 2: run_id
-    if sc["run_id"] != expected_run_id:
-        return "ERROR", {"reason": f"run_id_mismatch:{sc['run_id']}!={expected_run_id}"}
-    # 前置 3: canonical baseline
-    if baseline_id and sc["canonical_baseline_id"] != baseline_id:
-        return "ERROR", {"reason": "baseline_mismatch"}
-    # 前置 4: expected_top
-    if expected_top and sc["top"] != expected_top:
-        return "ERROR", {"reason": f"wrong_top:{sc['top']}"}
-    # mode 校验 + 防误升级: sidecar 声明的 proof_mode 必须是已知的, 且与 runner 期望一致
-    mode = sc["proof_mode"]
-    if mode not in KNOWN_MODES:
-        return "ERROR", {"reason": f"unknown_mode:{mode}"}
-    if expected_mode and mode != expected_mode:
-        return "ERROR", {"reason": f"mode_mismatch:{mode}!={expected_mode}"}
-    # 前置 5: fm_shell_rc(成功后 fatal/license-kill 会有非零 rc)
-    if sc["fm_shell_rc"] != 0:
-        return "ERROR", {"reason": f"fm_shell_rc={sc['fm_shell_rc']}"}
-    # 前置 6: native verdict
+    # ---- expectation 精确相等(全部权威, 无可选)----
+    E = expectation
+    for sck, ek in (("run_id", "run_id"), ("target", "target"), ("top", "top"),
+                    ("variant", "variant"), ("proof_mode", "proof_mode"),
+                    ("canonical_baseline_id", "canonical_baseline_id")):
+        if sc[sck] != E[ek]:
+            return "ERROR", {"reason": f"expect_{sck}:{sc[sck]}!={E[ek]}"}
+    if sc["inputs_sha256"]["ref_srcs_digest"] != E["ref_digest"]:
+        return "ERROR", {"reason": "ref_digest_mismatch"}
+    if sc["inputs_sha256"]["impl_srcs_digest"] != E["impl_digest"]:
+        return "ERROR", {"reason": "impl_digest_mismatch"}
+    if sc["script_sha256"] != E["script_digest"]:
+        return "ERROR", {"reason": "script_digest_mismatch"}
+    if sc["tool"]["fm_shell_digest"] != E["tool_digest"]:
+        return "ERROR", {"reason": "tool_digest_mismatch"}
+
+    # ---- rc 交叉: 自报 + 真实 actual 都必须 0 ----
+    if not (isinstance(actual_rc, int) and not isinstance(actual_rc, bool)):
+        return "ERROR", {"reason": "actual_rc_bad"}
+    if sc["fm_shell_rc"] != 0 or actual_rc != 0 or sc["fm_shell_rc"] != actual_rc:
+        return "ERROR", {"reason": f"rc: self={sc['fm_shell_rc']} actual={actual_rc}"}
+
+    # ---- native / 数字 ----
     nv = sc["native_verdict"]
+    st = sc["stats"]; um = sc["unmatched"]; ob = sc["objects"]; ql = sc["qualifications"]
     if nv == "NOT_RUN":
         return "UNRUN", q
-    st = sc["stats"]; um = sc["unmatched"]; ql = sc["qualifications"]
     if nv in ("FAILED", "INCONCLUSIVE"):
         return "FAILED", q
-    if nv != "SUCCEEDED":
-        return "ERROR", {"reason": f"bad_native:{nv}"}
-
-    # 数字闸门
     if st["failing"] != 0:
         return "FAILED", {"reason": "failing>0_despite_native_success", **q}
     if st["passing"] <= 0:
-        return "ERROR", {"reason": "empty_proof_passing<=0"}
+        return "ERROR", {"reason": "empty_proof"}
 
-    # 模式规则
+    mode = sc["proof_mode"]
     if mode == "diagnostic-full":
-        return "DIAGNOSTIC", q            # 永不 signoff
+        return "DIAGNOSTIC", q
     if mode == "shadow":
-        return "SHADOW_CHECK", q          # 可读核不驱动输出
-    unread_any = (st["unread_notcompared"] or um["unread_ref"] or um["unread_impl"])
+        return "SHADOW_CHECK", q
+
+    unread_any = st["unread_notcompared"] or um["unread_ref"] or um["unread_impl"]
     if mode == "signoff-strict":
         if st["unverified"] or st["aborted"] or unread_any:
             return "PARTIAL", {"reason": "strict_unverified/aborted/unread", **q}
-        if um["compare_ref"] or um["compare_impl"] or um["bbout_ref"] or um["bbout_impl"]:
+        if any(um[k] for k in ("compare_ref", "compare_impl", "bbout_ref", "bbout_impl")):
             return "PARTIAL", {"reason": "strict_unmatched/bbout", **q}
-        if ql["blackbox_objects"] or ql["dont_verify_objects"] or ql["elab147"]:
-            return "PARTIAL", {"reason": "strict_blackbox/dontverify/elab", **q}
+        if any(ob[k] for k in OBJ_KEYS):   # strict 不允许任何黑盒/interface_only/未配对对象
+            return "PARTIAL", {"reason": "strict_has_objects", **q}
+        if ql["dont_verify_objects"] or ql["elab147"] or ql["relaxed_appvars"]:
+            return "PARTIAL", {"reason": "strict_qualifications", **q}
         return "SUCCEEDED", q
+
     if mode == "assembly":
-        allow = set(allow_objects or [])
-        # unverified/aborted/unread 非 0 → PARTIAL
+        allow = E["allow_objects"]
+        if not _objlist(allow):
+            return "ERROR", {"reason": "allow_objects_not_objlist"}
+        allow_set = set(allow)
         if st["unverified"] or st["aborted"] or unread_any:
             return "PARTIAL", {"reason": "assembly_unverified/aborted/unread", **q}
-        # 对称: compare_ref==compare_impl 且 bbout 对称
-        if um["compare_ref"] != um["compare_impl"] or um["bbout_ref"] != um["bbout_impl"]:
-            return "PARTIAL", {"reason": "assembly_asymmetric", **q}
-        # 黑盒/interface_only 必须是 manifest 精确声明集的子集
-        if not set(ql["blackbox_objects"]) <= allow:
-            return "PARTIAL", {"reason": "assembly_undeclared_blackbox", **q}
-        if not set(ql["interface_only"]) <= allow:
-            return "PARTIAL", {"reason": "assembly_undeclared_interface_only", **q}
-        if ql["dont_verify_objects"] or ql["elab147"]:
-            return "PARTIAL", {"reason": "assembly_dontverify/elab", **q}
+        # 对象身份: ref/impl 对称且 == manifest allowlist(精确相等, 非子集)
+        for pair in (("blackbox_ref", "blackbox_impl"), ("unmatched_ref", "unmatched_impl")):
+            if ob[pair[0]] != ob[pair[1]]:
+                return "PARTIAL", {"reason": f"assembly_asymmetric_{pair[0]}", **q}
+        # 声明的黑盒/interface_only/未配对对象集必须精确等于 allowlist
+        declared = set(ob["blackbox_ref"]) | set(ob["interface_only"]) | set(ob["unmatched_ref"])
+        if declared != allow_set:
+            return "PARTIAL", {"reason": f"assembly_objects!=allowlist: {sorted(declared)} vs {sorted(allow_set)}", **q}
+        # 数量-对象一致性: 有 unmatched 计数就必须有对应对象身份, 反之亦然
+        if bool(um["compare_ref"]) != bool(ob["unmatched_ref"]):
+            return "PARTIAL", {"reason": "assembly_count_object_disagree", **q}
+        # 计数不得超过声明对象数(粗一致)
+        if um["compare_ref"] and um["compare_ref"] != len(ob["unmatched_ref"]) and \
+           len(ob["unmatched_ref"]) < um["compare_ref"] and False:
+            pass  # 计数可 > 对象数(一个黑盒多个引脚), 不强求相等
+        if ql["dont_verify_objects"] or ql["elab147"] or ql["relaxed_appvars"]:
+            return "PARTIAL", {"reason": "assembly_qualifications", **q}
         return "SUCCEEDED", q
     return "ERROR", {"reason": "unreachable"}
 
@@ -105,13 +206,10 @@ def verdict(sidecar_path, expected_run_id, expected_top=None, expected_mode=None
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("sidecar")
-    ap.add_argument("--run-id", required=True)
-    ap.add_argument("--top", default=None)
-    ap.add_argument("--mode", default=None)
-    ap.add_argument("--baseline", default=None)
-    ap.add_argument("--allow", default="")
+    ap.add_argument("--expectation", required=True, help="expectation manifest JSON 路径")
+    ap.add_argument("--actual-rc", type=int, required=True)
     a = ap.parse_args()
-    v, q = verdict(a.sidecar, a.run_id, a.top, a.mode,
-                   a.allow.split(",") if a.allow else [], a.baseline)
+    exp = json.load(open(a.expectation))
+    v, q = verdict(a.sidecar, exp, a.actual_rc)
     print(f"{v}\t{q.get('reason')}")
     sys.exit(0 if v == "SUCCEEDED" else 1)

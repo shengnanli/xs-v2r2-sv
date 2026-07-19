@@ -57,3 +57,34 @@ verdict ∈ {SUCCEEDED, FAILED, WAIVED, PARTIAL, SHADOW_CHECK, DIAGNOSTIC, UNRUN
 
 只有 `verdict=SUCCEEDED ∧ proof_mode=signoff-strict ∧ qualifications 全空` = 无条件可替换等价。
 `assembly SUCCEEDED` = 仅本层 glue 等价(须叠加子模块各自 strict 证明)。
+
+## 二审修订(强类型 + 外部 expectation 权威 + rc 交叉 + 对象身份)
+
+validator 签名改为 `verdict(sidecar_path, expectation, actual_rc)`:
+- **expectation = 外部权威 manifest(不可选)**: run_id/target/top/variant/proof_mode/
+  canonical_baseline_id/ref_digest/impl_digest/script_digest/tool_digest/allow_objects。
+  sidecar 每项须与之**精确相等**(非子集、非可选)。
+- **actual_rc = runner 获取的真实进程 rc**(不信 sidecar 自报)。生命周期:
+  Tcl→native_facts.json → fm_shell 退出 → runner 取真实 rc → runner+expectation→verdict.sidecar.json。
+  validator 要求 `fm_shell_rc(自报)==0 ∧ actual_rc==0 ∧ 两者相等`。
+- **强类型**: JSON 拒 NaN/Infinity(递归)、duplicate-key(object_pairs_hook);计数须 `int 且非 bool 且≥0`;
+  hash 须完整**小写 64-hex**;对象数组须**排序·唯一·非空字符串**;stats/unmatched/objects/qualifications/
+  inputs_sha256/tool 嵌套字段集**精确**。
+- **对象身份**(assembly): sidecar 新增 `objects{blackbox_ref,blackbox_impl,interface_only,
+  unmatched_ref,unmatched_impl}`。assembly SUCCEEDED 要求 ref/impl 对象集对称 **且**
+  `declared(blackbox_ref∪interface_only∪unmatched_ref) == allow_objects`(精确相等, 非子集)。
+- **strict 补齐**: `objects` 任一非空、`qualifications.{dont_verify_objects,elab147,relaxed_appvars}`
+  任一非空 → PARTIAL。`elab147` 改为**对象列表**(哪些模块被 ELAB 降级), 非 bool。
+
+## hash 算法定义(审查点 6, 避免"字段存在但不可复现")
+
+- **ref/impl closure digest** (`inputs_sha256.*`) = `closure-v1`:
+  对该侧 FM 读入的**全部源文件**(golden ref 变体+依赖 / impl 核+wrapper+所有 `include 的 .svh),
+  按 **LC_ALL=C 相对路径排序**, 每文件输出 `relpath<TAB>size<TAB>sha256(content)<LF>`,
+  再对完整字节流 SHA-256。**并把编译期决定输出的要素纳入**: `+define` 宏集、`+incdir` 集、
+  FM_MERGE_DUP、FM_FIELD_MAP 内容、fm_pins*.tcl 内容、mode ——这些作为附加行
+  `KEY=<value 或 sha256>` 追加进同一字节流(固定顺序), 保证"相同 digest ⇒ 相同 FM 输入语义"。
+- **script closure digest** (`script_sha256`) = sha256(fm_eq.tcl) ⊕ 所有被 source 的 tcl
+  (fm_pins_pre/fm_pins/custom recipe 内联 tcl)按序串接。
+- **tool digest** (`tool.fm_shell_digest`) = sha256(fm_shell 可执行实际路径)。
+- 生成器 `fm_closure_digest.py`(步4实现)产出这些 digest, expectation 与 sidecar 两侧都用它, 天然可复现。
