@@ -175,6 +175,8 @@ def validate_expectation(E):
         if not isinstance(A, dict) or set(A) != ALLOW_KEYS:
             return "expect_allow_keys"
         gid = {}          # 跨类别: 同 id 必须同 pair
+        gref, gimpl = {}, {}   # 七审全局一致: ref→(impl,id) / impl→(ref,id) 必须唯一映射
+        # (同id同pair跨类别复用合法, 如 interface_only 实例与其 unmatched 点)
         for cat in ALLOW_KEYS:
             maps = A[cat]
             if not isinstance(maps, list):
@@ -192,6 +194,16 @@ def validate_expectation(E):
                 if m["id"] in gid and gid[m["id"]] != pair:
                     return f"expect_id_conflict:{m['id']}"
                 gid[m["id"]] = pair
+                # 七审全局一致: 同 ref 全局只能映射一个 (impl,id); 同 impl 同理。
+                # 拒: 同 ref 两 impl(跨类别)、同一 pair 两个 id; 允许: 同 id 同 pair 跨类别复用。
+                rk = (m["impl_path"], m["id"])
+                if m["ref_path"] in gref and gref[m["ref_path"]] != rk:
+                    return f"expect_global_ref_conflict:{m['ref_path']}"
+                gref[m["ref_path"]] = rk
+                ik = (m["ref_path"], m["id"])
+                if m["impl_path"] in gimpl and gimpl[m["impl_path"]] != ik:
+                    return f"expect_global_impl_conflict:{m['impl_path']}"
+                gimpl[m["impl_path"]] = ik
             # 六审双射: id/ref/impl 各自唯一
             if ids != sorted(ids) or len(set(ids)) != len(ids):
                 return f"expect_allow_{cat}_ids_not_unique_sorted"
@@ -373,17 +385,16 @@ def verdict(sidecar_path, expectation, actual_rc, native_facts_path):
     # matched pairs 是唯一的工具原生 pair: 与 policy 声明的 pair 精确相等
     want_pairs = sorted((m["ref_path"], m["impl_path"]) for m in A["blackbox"])
     got_pairs = sorted((m["ref_path"], m["impl_path"]) for m in ob["matched_blackbox_pairs"])
-    if got_pairs and got_pairs != want_pairs:
+    if got_pairs != want_pairs:      # 七审: 永远精确(空列表绕过堵死); 单位关系待 Step3A 实证后细化
         return "PARTIAL", {**q, "reason": "assembly_matched_pairs!=policy"}
-    # 计数覆盖: compare count ≥ unmatched 对象数(每对象至少1点); bool 一致
-    n_um = len(ob["unmatched_ref"])
-    if bool(um["compare_ref"]) != bool(n_um):
-        return "PARTIAL", {**q, "reason": "assembly_compare_count_object_disagree"}
-    if um["compare_ref"] < n_um:
-        return "PARTIAL", {**q, "reason": f"assembly_count_below_objects:{um['compare_ref']}<{n_um}"}
-    n_bb = len(ob["unresolved_blackbox_ref"]) + len(ob["matched_blackbox_pairs"])
-    if bool(um["bbout_ref"]) != bool(n_bb):
-        return "PARTIAL", {**q, "reason": "assembly_bbout_count_object_disagree"}
+    # 七审计数单位对齐: report_unmatched_points -list 返回 point names, compare_* 也是 point 数
+    # → 同单位, 列表声称完整则**精确相等**(compare=3 列表2项 拒)。
+    if um["compare_ref"] != len(ob["unmatched_ref"]):
+        return "PARTIAL", {**q, "reason": f"assembly_count_list_mismatch_ref:{um['compare_ref']}!={len(ob['unmatched_ref'])}"}
+    if um["compare_impl"] != len(ob["unmatched_impl"]):
+        return "PARTIAL", {**q, "reason": f"assembly_count_list_mismatch_impl:{um['compare_impl']}!={len(ob['unmatched_impl'])}"}
+    # bbout_* 是 unmatched black-box OUTPUT 的点数, 非 instance 数——不可与 instance 数做
+    # bool/大小比较(七审); 仅保留两侧对称(上方已查), 单位关系待 Step3A 实证。
     if quals_any:
         return "PARTIAL", {**q, "reason": "assembly_qualifications"}
     return "SUCCEEDED", q

@@ -148,6 +148,33 @@ C("top_itself_as_blackbox", "ERROR",
 # 6. native facts 是 FIFO(fail-fast, 不挂死)
 C("native_fifo_failfast", "ERROR", native_fifo=True)
 
+# ================= 七审新对抗 =================
+# 1a. 跨类别: 同 ref 对应两个 impl(blackbox r0→i0 + unmatched r0→i1)
+C("cross_cat_ref_two_impls", "ERROR", **AS_FACTS,
+  exp=expect(proof_mode="assembly",
+             allow={"blackbox": [M("B", R0, I0)],
+                    "unmatched": [M("U", R0, I1), M("B2", R1, I1)],
+                    "interface_only": [M("A", R1, I1)]}))
+# 1b. 跨类别: 同一 pair 两个 id
+C("cross_cat_same_pair_two_ids", "ERROR", **AS_FACTS,
+  exp=expect(proof_mode="assembly",
+             allow={"blackbox": [M("B", R0, I0)],
+                    "unmatched": [M("U", R0, I0), M("B2", R1, I1)],
+                    "interface_only": [M("A", R1, I1)]}))
+# 2. matched-blackbox 空列表绕过: allow.blackbox 非空+observed unresolved 匹配+matched=[]
+C("matched_empty_bypass", "PARTIAL",
+  fact_over={"unmatched.bbout_ref": 2, "unmatched.bbout_impl": 2,
+             "objects.unresolved_blackbox_ref": [R0], "objects.unresolved_blackbox_impl": [I0],
+             "objects.matched_blackbox_pairs": []},
+  env_over={"proof_mode": "assembly"},
+  exp=expect(proof_mode="assembly", allow={"blackbox": [M("A", R0, I0)]}))
+# 3. 计数/列表单位对齐: compare=3 列表2项(两方向)
+C("count_gt_list", "PARTIAL",
+  fact_over={"unmatched.compare_ref": 3, "unmatched.compare_impl": 3,
+             "objects.unmatched_ref": [R0, R1], "objects.unmatched_impl": [I0, I1],
+             "objects.interface_only_ref": [R0], "objects.interface_only_impl": [I0]},
+  env_over={"proof_mode": "assembly"}, exp=AEXP)
+
 # ================= v5 回归(适配 observed 模型) =================
 C("iface_wrong_impl_observed", "PARTIAL",
   fact_over={"unmatched.compare_ref": 2, "unmatched.compare_impl": 2,
