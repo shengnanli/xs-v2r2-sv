@@ -1,0 +1,134 @@
+**************************************************
+Report         : black_boxes
+
+Reference      : r:/WORK/NewIFU
+Implementation : i:/WORK/NewIFU
+Version        : V-2023.12-SP3
+Date           : Sun Jul 19 12:07:11 2026
+**************************************************
+Information: Reporting black boxes for current reference and implementation designs. (FM-184)
+
+ ___________________________________________________
+|                                                   |
+|  Legend:                                          |
+|           Black Box Attributes                    |
+|              s = Set with set_black_box command   |
+|              i = Module read with -interface_only |
+|              u = Unresolved design module         |
+|              e = Empty design module              |
+|              * = Unlinked design module           |
+|             ut = Unread tech cells pins           |
+|              L = Linked to non-black box design   |
+|             cp = Cutpoint blackbox                |
+|             ir = Internal rounded blackbox        |
+|              f = Formality Power Model            |
+|              m = Technology Macro cell (.db)      |
+|___________________________________________________|
+
+
+##################################################################
+####    DESIGN LIBRARY - i:/WORK
+##################################################################
+Type  Design Name
+----  ----------
+i      F3Predecoder
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/NewIFU/u_core/u_f3pd/u
+
+i      FrontendTrigger
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/NewIFU/u_core/u_fronttrig/u
+
+i      PreDecode
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/NewIFU/u_core/u_predecode/u
+
+i      PredChecker
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/NewIFU/u_core/u_predchecker/u
+
+i      RVCExpander
+
+       Instances : 17 of 17
+       ------------------------
+       i:/WORK/NewIFU/u_core/g_expand[15].u_exp/u
+       i:/WORK/NewIFU/u_core/g_expand[14].u_exp/u
+       i:/WORK/NewIFU/u_core/g_expand[13].u_exp/u
+       i:/WORK/NewIFU/u_core/g_expand[12].u_exp/u
+       i:/WORK/NewIFU/u_core/g_expand[11].u_exp/u
+       i:/WORK/NewIFU/u_core/g_expand[10].u_exp/u
+       i:/WORK/NewIFU/u_core/g_expand[9].u_exp/u
+       i:/WORK/NewIFU/u_core/g_expand[8].u_exp/u
+       i:/WORK/NewIFU/u_core/g_expand[7].u_exp/u
+       i:/WORK/NewIFU/u_core/g_expand[6].u_exp/u
+       i:/WORK/NewIFU/u_core/g_expand[5].u_exp/u
+       i:/WORK/NewIFU/u_core/g_expand[4].u_exp/u
+       i:/WORK/NewIFU/u_core/g_expand[3].u_exp/u
+       i:/WORK/NewIFU/u_core/g_expand[2].u_exp/u
+       i:/WORK/NewIFU/u_core/g_expand[1].u_exp/u
+       i:/WORK/NewIFU/u_core/g_expand[0].u_exp/u
+       i:/WORK/NewIFU/u_core/u_mmio_exp/u
+
+
+
+##################################################################
+####    DESIGN LIBRARY - r:/WORK
+##################################################################
+Type  Design Name
+----  ----------
+i      F3Predecoder
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/NewIFU/f3Predecoder
+
+i      FrontendTrigger
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/NewIFU/frontendTrigger
+
+i      PreDecode
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/NewIFU/preDecoder
+
+i      PredChecker
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/NewIFU/predChecker
+
+i      RVCExpander
+
+       Instances : 17 of 17
+       ------------------------
+       r:/WORK/NewIFU/expanders_0
+       r:/WORK/NewIFU/expanders_1
+       r:/WORK/NewIFU/expanders_2
+       r:/WORK/NewIFU/expanders_3
+       r:/WORK/NewIFU/expanders_4
+       r:/WORK/NewIFU/expanders_5
+       r:/WORK/NewIFU/expanders_6
+       r:/WORK/NewIFU/expanders_7
+       r:/WORK/NewIFU/expanders_8
+       r:/WORK/NewIFU/expanders_9
+       r:/WORK/NewIFU/expanders_10
+       r:/WORK/NewIFU/expanders_11
+       r:/WORK/NewIFU/expanders_12
+       r:/WORK/NewIFU/expanders_13
+       r:/WORK/NewIFU/expanders_14
+       r:/WORK/NewIFU/expanders_15
+       r:/WORK/NewIFU/mmioRVCExpander
+
+
+1

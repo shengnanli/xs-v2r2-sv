@@ -1,0 +1,96 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/Bku
+Implementation : i:/WORK/Bku
+Version        : V-2023.12-SP3
+Date           : Sun Jul 19 12:06:35 2026
+**************************************************
+
+20 Failing compare points (20 matched, 0 unmatched):
+
+  Ref  DFF        r:/WORK/Bku/io_out_bits_res_data_r_reg[0]
+  Impl DFF        i:/WORK/Bku/u_core/res_data_r_reg[0]
+
+  Ref  DFF        r:/WORK/Bku/io_out_bits_res_data_r_reg[10]
+  Impl DFF        i:/WORK/Bku/u_core/res_data_r_reg[10]
+
+  Ref  DFF        r:/WORK/Bku/io_out_bits_res_data_r_reg[11]
+  Impl DFF        i:/WORK/Bku/u_core/res_data_r_reg[11]
+
+  Ref  DFF        r:/WORK/Bku/io_out_bits_res_data_r_reg[12]
+  Impl DFF        i:/WORK/Bku/u_core/res_data_r_reg[12]
+
+  Ref  DFF        r:/WORK/Bku/io_out_bits_res_data_r_reg[14]
+  Impl DFF        i:/WORK/Bku/u_core/res_data_r_reg[14]
+
+  Ref  DFF        r:/WORK/Bku/io_out_bits_res_data_r_reg[17]
+  Impl DFF        i:/WORK/Bku/u_core/res_data_r_reg[17]
+
+  Ref  DFF        r:/WORK/Bku/io_out_bits_res_data_r_reg[18]
+  Impl DFF        i:/WORK/Bku/u_core/res_data_r_reg[18]
+
+  Ref  DFF        r:/WORK/Bku/io_out_bits_res_data_r_reg[19]
+  Impl DFF        i:/WORK/Bku/u_core/res_data_r_reg[19]
+
+  Ref  DFF        r:/WORK/Bku/io_out_bits_res_data_r_reg[1]
+  Impl DFF        i:/WORK/Bku/u_core/res_data_r_reg[1]
+
+  Ref  DFF        r:/WORK/Bku/io_out_bits_res_data_r_reg[20]
+  Impl DFF        i:/WORK/Bku/u_core/res_data_r_reg[20]
+
+  Ref  DFF        r:/WORK/Bku/io_out_bits_res_data_r_reg[22]
+  Impl DFF        i:/WORK/Bku/u_core/res_data_r_reg[22]
+
+  Ref  DFF        r:/WORK/Bku/io_out_bits_res_data_r_reg[24]
+  Impl DFF        i:/WORK/Bku/u_core/res_data_r_reg[24]
+
+  Ref  DFF        r:/WORK/Bku/io_out_bits_res_data_r_reg[27]
+  Impl DFF        i:/WORK/Bku/u_core/res_data_r_reg[27]
+
+  Ref  DFF        r:/WORK/Bku/io_out_bits_res_data_r_reg[28]
+  Impl DFF        i:/WORK/Bku/u_core/res_data_r_reg[28]
+
+  Ref  DFF        r:/WORK/Bku/io_out_bits_res_data_r_reg[29]
+  Impl DFF        i:/WORK/Bku/u_core/res_data_r_reg[29]
+
+  Ref  DFF        r:/WORK/Bku/io_out_bits_res_data_r_reg[2]
+  Impl DFF        i:/WORK/Bku/u_core/res_data_r_reg[2]
+
+  Ref  DFF        r:/WORK/Bku/io_out_bits_res_data_r_reg[33]
+  Impl DFF        i:/WORK/Bku/u_core/res_data_r_reg[33]
+
+  Ref  DFF        r:/WORK/Bku/io_out_bits_res_data_r_reg[34]
+  Impl DFF        i:/WORK/Bku/u_core/res_data_r_reg[34]
+
+  Ref  DFF        r:/WORK/Bku/io_out_bits_res_data_r_reg[36]
+  Impl DFF        i:/WORK/Bku/u_core/res_data_r_reg[36]
+
+  Ref  DFF        r:/WORK/Bku/io_out_bits_res_data_r_reg[37]
+  Impl DFF        i:/WORK/Bku/u_core/res_data_r_reg[37]
+
+ [BBNet: multiply-driven net
+  BBPin: black-box pin
+  Cut:   cut-point
+  DFF:   non-constant DFF register
+  DFF0:  constant 0 DFF register
+  DFF1:  constant 1 DFF register
+  DFFX:  constant X DFF register
+  DFF0X: constrained 0X DFF register
+  DFF1X: constrained 1X DFF register
+  LAT:   non-constant latch register
+  LAT0:  constant 0 latch register
+  LAT1:  constant 1 latch register
+  LATX:  constant X latch register
+  LAT0X: constrained 0X latch register
+  LAT1X: constrained 1X latch register
+  LATCG: clock-gating latch register
+  TLA:   transparent latch register
+  TLA0X: transparent constrained 0X latch register
+  TLA1X: transparent constrained 1X latch register
+  Loop:  cycle break point
+  Port:  primary (top-level) port
+  Und:   undriven signal cut-point
+  Unk:   unknown signal cut-point]
+
+1

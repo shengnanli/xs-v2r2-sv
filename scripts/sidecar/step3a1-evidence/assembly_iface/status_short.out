@@ -1,0 +1,26 @@
+**************************************************
+Report         : status
+                 -short 
+
+Reference      : r:/WORK/NewIFU
+Implementation : i:/WORK/NewIFU
+Version        : V-2023.12-SP3
+Date           : Sun Jul 19 12:07:11 2026
+**************************************************
+
+Reference Design:      r:/WORK/NewIFU
+Implementation Design: i:/WORK/NewIFU
+Verification
+   Status:             FAILED
+   Passing Points:     10843
+   Failing Points:     11
+   Aborted Points:     0
+   Unverified Points:  0
+Diagnosis
+   Status:             Not Run
+   Error Candidates:   0
+User Defined Setup
+   Equivalences:       0
+   Compare Points:     316
+   Constants:          0
+1

@@ -1,0 +1,26 @@
+**************************************************
+Report         : status
+                 -short 
+
+Reference      : r:/WORK/Bku
+Implementation : i:/WORK/Bku
+Version        : V-2023.12-SP3
+Date           : Sun Jul 19 12:06:01 2026
+**************************************************
+
+Reference Design:      r:/WORK/Bku
+Implementation Design: i:/WORK/Bku
+Verification
+   Status:             SUCCEEDED
+   Passing Points:     2023
+   Failing Points:     0
+   Aborted Points:     0
+   Unverified Points:  0
+Diagnosis
+   Status:             Not Run
+   Error Candidates:   0
+User Defined Setup
+   Equivalences:       0
+   Compare Points:     19
+   Constants:          0
+1

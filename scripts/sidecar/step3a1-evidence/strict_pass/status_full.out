@@ -1,0 +1,25 @@
+**************************************************
+Report         : status
+
+Reference      : r:/WORK/Bku
+Implementation : i:/WORK/Bku
+Version        : V-2023.12-SP3
+Date           : Sun Jul 19 12:06:01 2026
+**************************************************
+
+
+********************************* Verification Results *********************************
+Verification SUCCEEDED
+----------------------
+ Reference design: r:/WORK/Bku
+ Implementation design: i:/WORK/Bku
+ 2023 Passing compare points
+----------------------------------------------------------------------------------------
+Matched Compare Points     BBPin    Loop   BBNet     Cut    Port     DFF     LAT   TOTAL
+----------------------------------------------------------------------------------------
+Passing (equivalent)           0       0       0       0     275    1748       0    2023
+Failing (not equivalent)       0       0       0       0       0       0       0       0
+Not Compared
+  Unread                       0       0       0       0       0       3       0       3
+****************************************************************************************
+1

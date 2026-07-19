@@ -1,0 +1,30 @@
+**************************************************
+Report         : status
+
+Reference      : r:/WORK/Bku
+Implementation : i:/WORK/Bku
+Version        : V-2023.12-SP3
+Date           : Sun Jul 19 12:06:35 2026
+**************************************************
+
+
+********************************* Verification Results *********************************
+Verification FAILED
+-------------------
+ Reference design: r:/WORK/Bku
+ Implementation design: i:/WORK/Bku
+ 1864 Passing compare points
+ 20 Failing compare points (20 matched, 0 unmatched)
+ 0 Aborted compare points
+ 120 Unverified compare points
+----------------------------------------------------------------------------------------
+Matched Compare Points     BBPin    Loop   BBNet     Cut    Port     DFF     LAT   TOTAL
+----------------------------------------------------------------------------------------
+Passing (equivalent)           0       0       0       0     275    1589       0    1864
+Failing (not equivalent)       0       0       0       0       0      20       0      20
+Unverified                     0       0       0       0       0     120       0     120
+****************************************************************************************
+Info:  Try the analyze_points command to see if Formality can determine potential
+causes, or suggest next steps for a FAILED or INCONCLUSIVE verification.
+See the man page for analyze_points usage and options.
+1

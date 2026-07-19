@@ -1,0 +1,19 @@
+FM_RESULT: Verification FAILED or INCONCLUSIVE for NewIFU
+SMOKE	verification_status	rc=0	ret_len=6	out_len=7
+SMOKE	matched_bbox_list	rc=0	ret_len=1508	out_len=1509
+SMOKE	matched_all_list	rc=0	ret_len=1729232	out_len=1729233
+SMOKE	unmatched_ref_list	rc=0	ret_len=0	out_len=0
+SMOKE	unmatched_impl_list	rc=0	ret_len=53	out_len=54
+SMOKE	black_boxes_default	rc=0	ret_len=1	out_len=4167
+SMOKE	black_boxes_unresolved	rc=0	ret_len=1	out_len=501
+SMOKE	black_boxes_iface	rc=0	ret_len=1	out_len=4201
+SMOKE	status_short	rc=0	ret_len=1	out_len=678
+SMOKE	status_full	rc=0	ret_len=1	out_len=1454
+SMOKE	failing_list	rc=0	ret_len=921	out_len=922
+SMOKE	failing_default	rc=0	ret_len=1	out_len=2398
+SMOKE	unverified_list	rc=0	ret_len=0	out_len=0
+SMOKE	aborted_list	rc=0	ret_len=0	out_len=0
+SMOKE	passing_probe	rc=0	ret_len=1086896	out_len=1086897
+SMOKE	dont_verify	rc=0	ret_len=1	out_len=308
+SMOKE	unread_probe	rc=1	ret_len=31	out_len=51
+SMOKE31_DONE
