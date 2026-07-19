@@ -13,3 +13,5 @@ formality*
 fm_shell_command.log*
 *.fdc
 default.svf
+__pycache__/
+*.pyc
