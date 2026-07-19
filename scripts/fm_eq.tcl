@@ -84,6 +84,10 @@ proc match_packed_payload { top } {
     close $fh
     if {$n > 0} { puts "PACKED_MATCH: $n points pinned" }
 }
+# 模块本地「匹配前」钉点(FM_PIN_PRE_TCL, 可选): 首次 match 前需 set_user_match 的对象。
+if {[info exists env(FM_PIN_PRE_TCL)] && [file exists $env(FM_PIN_PRE_TCL)]} {
+    source $env(FM_PIN_PRE_TCL)
+}
 match_packed_payload $top
 
 match
@@ -158,6 +162,12 @@ proc auto_match_flattened_arrays { top } {
     if {$n > 0} { match }
 }
 auto_match_flattened_arrays $top
+
+# 模块本地「匹配后」钉点(FM_PIN_TCL, 可选): 层次/叶名差异的一一对应(只 set_user_match, 不约束 ref)。
+if {[info exists env(FM_PIN_TCL)] && [file exists $env(FM_PIN_TCL)]} {
+    source $env(FM_PIN_TCL)
+    match
+}
 
 report_unmatched_points > fm_work/$top/unmatched.rpt
 report_matched_points > fm_work/$top/matched.rpt
