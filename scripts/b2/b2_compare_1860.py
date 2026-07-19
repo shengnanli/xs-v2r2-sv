@@ -58,8 +58,9 @@ def main():
         res["result"] = label
         if A.out:
             os.makedirs(A.out, exist_ok=True)
-            json.dump(res, open(os.path.join(A.out, "b2_1860_result.json"), "w"),
-                      ensure_ascii=False, indent=1)
+            tmpf = os.path.join(A.out, ".b2_1860_result.json.tmp")
+            json.dump(res, open(tmpf, "w"), ensure_ascii=False, indent=1)
+            os.replace(tmpf, os.path.join(A.out, "b2_1860_result.json"))
         print(f"RESULT-1860: {label}")
         sys.exit(code)
 
@@ -85,7 +86,8 @@ def main():
             p = os.path.join(root, name)
             st_ = os.lstat(p)
             rel = os.path.relpath(p, A.candidate)
-            if stat.S_ISLNK(st_.st_mode) or stat.S_ISFIFO(st_.st_mode) or stat.S_ISSOCK(st_.st_mode):
+            if (stat.S_ISLNK(st_.st_mode) or stat.S_ISFIFO(st_.st_mode) or stat.S_ISSOCK(st_.st_mode)
+                    or stat.S_ISCHR(st_.st_mode) or stat.S_ISBLK(st_.st_mode)):
                 res["special_files"].append(rel)
             elif stat.S_ISREG(st_.st_mode):
                 cand_files.add(rel)
@@ -93,8 +95,18 @@ def main():
         print(f"candidate 含非常规文件类型 {len(res['special_files'])} 个: {res['special_files'][:3]}")
         finish(5, "ERROR_special_file_types")
     want = {r[0] for r in rows}
+    # 目录集: manifest 路径的所有父目录; candidate 中的其它目录(含空目录)= extra
+    want_dirs = set()
+    for w in want:
+        d = os.path.dirname(w)
+        while d:
+            want_dirs.add(d); d = os.path.dirname(d)
+    cand_dirs = set()
+    for root, dirs, _files in os.walk(A.candidate):
+        for dn in dirs:
+            cand_dirs.add(os.path.relpath(os.path.join(root, dn), A.candidate))
     res["missing"] = sorted(want - cand_files)
-    res["extra"] = sorted(cand_files - want)
+    res["extra"] = sorted(cand_files - want) + sorted("DIR:" + d for d in cand_dirs - want_dirs)
     if res["missing"] or res["extra"]:
         print(f"路径集不一致: 缺{len(res['missing'])} 多{len(res['extra'])}")
         finish(3, "MISMATCH_pathset")
@@ -137,9 +149,11 @@ def main():
     if A.out:
         os.makedirs(A.out, exist_ok=True)
         nm = os.path.join(A.out, "normalized.manifest.tsv")
-        with open(nm, "w") as o:
+        tmpn = nm + ".tmp"
+        with open(tmpn, "w") as o:
             for t in norm_rows:
                 o.write("\t".join(t) + "\n")
+        os.replace(tmpn, nm)
         res["normalized_tree_digest"] = sha256_file(nm)
 
     if A.content_only:
