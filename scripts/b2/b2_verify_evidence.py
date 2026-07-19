@@ -1,18 +1,23 @@
 #!/usr/bin/env python3
-"""B2 证据独立验证器(六审)。让证据**自证完整**:任何缺失/篡改/假成功都拒绝。
+"""B2 证据独立验证器(七审防伪版)。证据必须自证完整且**不可伪造**。
 
-证据契约(b2_evidence/ 必须同时满足):
- 1. COMPLETE 存在, 格式 "B2_ATTEMPT_COMPLETE <epoch> manifest_sha256=<64hex>",
-    其 sha 必须等于 evidence.manifest.tsv 的实际 sha256(COMPLETE 绑定 manifest)。
- 2. evidence.manifest.tsv 列出精确文件集(path/size/sha256);目录内实际常规文件集
-    (除 COMPLETE 与 manifest 自身)必须与之完全一致(缺/多都拒), 逐文件 hash 必须匹配。
- 3. b2_regen.log 必须含 "PHASE2-RC: 0" 且含 "PHASE2-DONE" 行(rc 与 marker 同时要求——
-    只有 marker 而 rc!=0 是注入攻击, 拒绝)。
- 4. b2_1860_result.json 的 result 必须 == "CANONICAL_ARTIFACT_REPRODUCED"。
- 5. provenance.txt 必须含 signoff_commit: <40hex>。
-用法: b2_verify_evidence.py <evidence-dir>   通过=rc0, 任何违反=rc1。
+七审修复:
+ - 固定 required pathset(精确等于, 不多不少); os.scandir+lstat 拒 symlink/子目录/特殊文件。
+ - --expected-commit 外部传入并精确匹配(40个零的假 provenance 不再通过)。
+ - 交叉核对 b2_1860_result.json 实质字段(对 TRUST_ANCHORS):
+     manifest_sha256 == 锚 g0_full_manifest; fir_replacements == 6,759,209;
+     content_mismatch/missing/extra/mode_bad/special_files 全空;
+     normalized_tree_digest == 锚 g0_full_manifest(normalized 复现冻结 manifest)。
+   —— 只有真跑过 1860 checker 的结果才有这些自洽值, 手编 JSON 无法凑齐。
+ - 供 runner 在 **rename 前**对 tmp 目录验证(失败不产出带 COMPLETE 的正式目录)。
+用法: b2_verify_evidence.py <evidence-dir> --expected-commit <40hex>
 """
-import sys, os, re, json, hashlib
+import sys, os, re, json, hashlib, stat, argparse
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+REQUIRED = {"b2_regen.log", "b2_1860_result.json", "normalized.manifest.tsv", "provenance.txt"}
+META = {"COMPLETE", "evidence.manifest.tsv"}
+EXPECT_FIR = 6_759_209
 
 def sha(p):
     h = hashlib.sha256()
@@ -26,35 +31,66 @@ def fail(msg):
     sys.exit(1)
 
 def main():
-    d = sys.argv[1]
-    comp = os.path.join(d, "COMPLETE")
+    ap = argparse.ArgumentParser()
+    ap.add_argument("evdir")
+    ap.add_argument("--expected-commit", required=True)
+    A = ap.parse_args()
+    d = A.evdir
+    if not re.fullmatch(r"[0-9a-f]{40}", A.expected_commit):
+        fail("expected-commit 非 40hex")
+    anc = dict(l.rstrip("\n").split("\t")[:2] for l in open(os.path.join(HERE, "TRUST_ANCHORS.tsv"))
+               if not l.startswith("#") and not l.startswith("key\t"))
+
+    # ① 目录全类型扫描: 只允许 REQUIRED+META 的常规文件, 拒 symlink/子目录/特殊/多余
+    entries = {}
+    for e in os.scandir(d):
+        st = os.lstat(e.path)
+        if not stat.S_ISREG(st.st_mode):
+            fail(f"非常规条目: {e.name}(symlink/目录/特殊文件)")
+        entries[e.name] = st
+    if set(entries) != REQUIRED | META:
+        fail(f"文件集不精确: 缺{sorted((REQUIRED|META)-set(entries))} 多{sorted(set(entries)-(REQUIRED|META))}")
+
+    # ② COMPLETE 绑定 manifest
     mf = os.path.join(d, "evidence.manifest.tsv")
-    if not os.path.isfile(comp): fail("缺 COMPLETE")
-    if not os.path.isfile(mf): fail("缺 evidence.manifest.tsv")
-    m = re.match(r"^B2_ATTEMPT_COMPLETE \d+ manifest_sha256=([0-9a-f]{64})\s*$",
-                 open(comp).read())
-    if not m: fail("COMPLETE 格式不符(须绑定 manifest_sha256)")
-    if m.group(1) != sha(mf): fail("COMPLETE 绑定的 manifest sha 不匹配(manifest 被改/证据不完整)")
+    m = re.fullmatch(r"B2_ATTEMPT_COMPLETE \d+ manifest_sha256=([0-9a-f]{64})\n?",
+                     open(os.path.join(d, "COMPLETE")).read())
+    if not m: fail("COMPLETE 格式不符")
+    if m.group(1) != sha(mf): fail("COMPLETE 绑定的 manifest sha 不匹配")
+
+    # ③ manifest 精确文件集 + 逐 hash
     rows = [l.rstrip("\n").split("\t") for l in open(mf) if l.strip() and not l.startswith("#")]
     want = {r[0]: (int(r[1]), r[2]) for r in rows}
-    have = {f for f in os.listdir(d)
-            if os.path.isfile(os.path.join(d, f)) and f not in ("COMPLETE", "evidence.manifest.tsv")}
-    if set(want) != have:
-        fail(f"文件集不一致: 缺{sorted(set(want)-have)} 多{sorted(have-set(want))}")
+    if set(want) != REQUIRED:
+        fail(f"manifest 文件集 != required: {sorted(set(want) ^ REQUIRED)}")
     for f, (sz, h) in want.items():
         p = os.path.join(d, f)
         if os.path.getsize(p) != sz or sha(p) != h:
             fail(f"hash/size 不匹配: {f}")
+
+    # ④ log: rc 门 + marker 门
     log = open(os.path.join(d, "b2_regen.log"), errors="ignore").read()
-    if not re.search(r"^PHASE2-RC: 0\s*$", log, re.M): fail("log 无 PHASE2-RC: 0(rc 门)")
-    if not re.search(r"^PHASE2-DONE\s*$", log, re.M): fail("log 无 PHASE2-DONE(marker 门)")
+    if not re.search(r"^PHASE2-RC: 0\s*$", log, re.M): fail("无 PHASE2-RC: 0")
+    if not re.search(r"^PHASE2-DONE\s*$", log, re.M): fail("无 PHASE2-DONE")
+
+    # ⑤ 1860 result 实质交叉核对(手编 JSON 无法凑齐的自洽值)
     res = json.load(open(os.path.join(d, "b2_1860_result.json")))
-    if res.get("result") != "CANONICAL_ARTIFACT_REPRODUCED":
-        fail(f"1860 result 非 canonical: {res.get('result')}")
+    if res.get("result") != "CANONICAL_ARTIFACT_REPRODUCED": fail(f"result: {res.get('result')}")
+    if res.get("manifest_sha256") != anc["g0_full_manifest"]: fail("result.manifest_sha256 ≠ 锚")
+    if res.get("fir_replacements") != EXPECT_FIR: fail(f"fir_replacements ≠ {EXPECT_FIR}")
+    for k in ("content_mismatch", "missing", "extra", "mode_bad", "special_files"):
+        if res.get(k):
+            fail(f"result.{k} 非空")
+    if res.get("normalized_tree_digest") != anc["g0_full_manifest"]:
+        fail("normalized_tree_digest ≠ 锚(normalized 必须复现冻结 manifest)")
+
+    # ⑥ provenance: 外部期望 commit 精确匹配
     prov = open(os.path.join(d, "provenance.txt")).read()
-    if not re.search(r"^signoff_commit: [0-9a-f]{40}\s*$", prov, re.M):
-        fail("provenance 无有效 signoff_commit")
-    print("EVIDENCE-OK: 契约全项通过")
+    mm = re.search(r"^signoff_commit: ([0-9a-f]{40})\s*$", prov, re.M)
+    if not mm: fail("provenance 无 signoff_commit")
+    if mm.group(1) != A.expected_commit: fail(f"commit 不匹配期望: {mm.group(1)[:12]}")
+
+    print("EVIDENCE-OK: 防伪契约全项通过")
     sys.exit(0)
 
 if __name__ == "__main__":

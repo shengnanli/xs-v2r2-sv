@@ -28,27 +28,29 @@ fail() { echo "B2-FAIL: $*" >&2; exit 1; }
 anchor() { awk -F'\t' -v k="$1" '$1==k{print $2}' "$ANCH"; }
 lockv()  { awk -F'\t' -v k="$1" '$1==k{print $2}' "$LOCK"; }
 
-verify_bundle() {  # 完整 bundle 树校验(1990 文件)
-  python3 - <<'PY'
+verify_bundle() {  # 完整 bundle 树校验(1990 文件, lstat + type/mode/size/hash 精确, 七审)
+  python3 - <<'PYVB'
 import os, hashlib, stat, sys
 B='/home/eda/xs-env/b2-toolchain-bundle/coursier-cache'
 MF='/home/eda/xs-env/xs-signoff/scripts/b2/bundle_tree.manifest.tsv'
 want={}
 for l in open(MF):
     if l.startswith('#') or l.startswith('path\t'): continue
-    p,ty,mo,sz,h=l.rstrip('\n').split('\t'); want[p]=(int(sz),h)
-have=set()
-bad=0
+    pp,ty,mo,sz,h=l.rstrip('\n').split('\t'); want[pp]=(ty,mo,int(sz),h)
+have=set(); bad=0
 for root,dirs,files in os.walk(B):
     for fn in files:
-        p=os.path.join(root,fn); rel=os.path.relpath(p,B); have.add(rel)
-        if rel not in want: bad+=1; continue
-        sz,h=want[rel]
-        if os.path.getsize(p)!=sz or hashlib.sha256(open(p,'rb').read()).hexdigest()!=h: bad+=1
+        pth=os.path.join(root,fn); st=os.lstat(pth)
+        rel=os.path.relpath(pth,B); have.add(rel)
+        if rel not in want: bad+=1; print("EXTRA",rel); continue
+        ty,mo,sz,h=want[rel]
+        if not stat.S_ISREG(st.st_mode): bad+=1; print("NONREG",rel); continue
+        if oct(stat.S_IMODE(st.st_mode))[2:]!=mo: bad+=1; print("MODE",rel,oct(stat.S_IMODE(st.st_mode))); continue
+        if st.st_size!=sz or hashlib.sha256(open(pth,'rb').read()).hexdigest()!=h: bad+=1; print("HASH",rel)
 miss=len(set(want)-have)
-print(f"bundle树: want={len(want)} have={len(have)} miss={miss} bad={bad}")
-sys.exit(0 if miss==0 and bad==0 and len(have)==len(want) else 1)
-PY
+print("bundle树: want=%d have=%d miss=%d bad=%d" % (len(want),len(have),miss,bad))
+sys.exit(0 if miss==0 and bad==0 else 1)
+PYVB
 }
 
 # ---------- 阶段 0: shim 前系统 git 捕获 commit + clean ----------
@@ -99,7 +101,11 @@ set +e
   export COURSIER_CACHE="$BUNDLE/coursier-cache/v1"    # 六审: 指到 v1 层
   export COURSIER_MODE=offline
   export CHISEL_FIRTOOL_PATH="$(dirname "$FT")"        # 强制锁定 firtool
-  unset JAVA_TOOL_OPTIONS _JAVA_OPTIONS JAVA_OPTS COURSIER_REPOSITORIES 2>/dev/null || true
+  # 七审: unshare -r 后 JVM user.home 仍是 /root(不随 shell HOME)→ Mill 找 /root/.mill 崩。
+  # 受控 .mill-jvm-opts 强制 -Duser.home + 清外部 JVM 注入渠道(审查已验证此修法离线可跑)。
+  printf -- "-Duser.home=%s\n" "$ISOHOME" > "$RB/.mill-jvm-opts"
+  export MILL_JVM_OPTS_PATH="$RB/.mill-jvm-opts"
+  unset MILL_OPTS_PATH JDK_JAVA_OPTIONS JAVA_TOOL_OPTIONS _JAVA_OPTIONS JAVA_OPTS COURSIER_REPOSITORIES 2>/dev/null || true
   export NOOP_HOME="$RB" NEMU_HOME="$RB"
   command -v mill | grep -qx "$BUNDLE/bin/mill" || { echo "mill非锁定dist"; exit 1; }
   # OS 级断网(unshare user+net ns, 环境继承)
@@ -122,16 +128,13 @@ find "$STAGE" -type f -exec chmod 0644 {} +
 CROOT=$(echo "$RB" | sed 's|^/||')
 python3 "$SIGNOFF/scripts/b2/b2_compare_1860.py" "$Q" "$STAGE" --cand-root "$CROOT" --out "$EV_TMP" \
   || fail "1860 canonical gate 未过"
-# harness gate: fresh dts/json 规范化(去 model 行)后与冻结 G0 版一致
-for hf in dts json; do
-  fz="$Q/harness-frozen/build_${hf}.G0"
-  fr="$RB/build/$hf"
-  [ -f "$fr" ] || fail "fresh build/$hf 缺失"
-  a=$(grep -v '"model"\|model = ' "$fz" | sha256sum | awk '{print $1}')
-  b=$(grep -v '"model"\|model = ' "$fr" | sha256sum | awk '{print $1}')
-  [ "$a" = "$b" ] || fail "harness $hf 规范化后不一致(非 model 行差异)"
-done
-echo "harness gate OK(dts/json 仅 model 行差异)"
+# harness gate(七审重写): ①冻结件原始SHA对锚 ②JSON解析删顶层model后canonical比较
+# ③DTS断言恰删一行model ④fresh difftest_profile对冻结锚
+[ "$(sha256sum "$Q/harness-frozen/build_dts.G0" | awk '{print $1}')" = "$(anchor harness_build_dts_G0)" ] || fail "冻结dts≠锚"
+[ "$(sha256sum "$Q/harness-frozen/build_json.G0" | awk '{print $1}')" = "$(anchor harness_build_json_G0)" ] || fail "冻结json≠锚"
+[ "$(sha256sum "$RB/build/generated-src/difftest_profile.json" | awk '{print $1}')" = "$(anchor harness_difftest_profile)" ] || fail "fresh difftest_profile≠冻结锚"
+python3 "$SIGNOFF/scripts/b2/harness_gate.py" "$Q/harness-frozen" "$RB/build" || fail "harness dts/json gate 未过"
+echo "harness gate OK"
 
 # ---------- 阶段 4: finalize(clean 复查 + 证据自证 + 原子提交) ----------
 [ "$(clean_check)" -eq 0 ] || fail "执行中 b2 脚本区变脏(finalize 拒绝)"
@@ -153,6 +156,8 @@ echo "harness gate OK(dts/json 仅 model 行差异)"
 MSHA=$(sha256sum "$EV_TMP/evidence.manifest.tsv" | awk '{print $1}')
 echo "B2_ATTEMPT_COMPLETE $(date +%s) manifest_sha256=$MSHA" > "$EV_TMP/COMPLETE"
 sync
+# 七审: 先在 tmp 目录验证(失败不产出带 COMPLETE 的正式目录), 过了才 rename
+python3 "$SIGNOFF/scripts/b2/b2_verify_evidence.py" "$EV_TMP" --expected-commit "$SIGNOFF_COMMIT" \
+  || fail "证据自证未过(tmp 未晋升, 无正式目录产出)"
 mv "$EV_TMP" "$RB/b2_evidence"
-python3 "$SIGNOFF/scripts/b2/b2_verify_evidence.py" "$RB/b2_evidence" || fail "证据自证未过"
-echo "RESULT: B2-ATTEMPT-ALL-GATES-PASSED(证据: $RB/b2_evidence, 独立验证器通过; canonical 晋升须人工评审)"
+echo "RESULT: B2-ATTEMPT-ALL-GATES-PASSED(证据: $RB/b2_evidence, 防伪验证器通过; canonical 晋升须人工评审)"
