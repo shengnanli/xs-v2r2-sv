@@ -16,9 +16,9 @@ JDK17)+ fail-closed git shim,在**全新目录** `/home/eda/xs-env/G0-rebuilt/` 
 
 B2 只证 **1854 .sv/.v RTL artifact 可复现**,尚未证完整 source closure:
 1. ~~未比完整 1860~~ **已比**: 1859 原始字节一致 + SimTop.fir 规范化(candidate-root→G0-root 单向替换, 断言 6,759,209 处)后一致 → **B2_CONTENT_REPRODUCED=true**。但 canonical 打包(chmod 0644 + 规范 manifest)未做 → **CANONICAL_PROMOTION=NO-GO**。
-2. mill 锁的是下载 wrapper,非实际 Mill distribution/Coursier 依赖闭包 hash。
-3. DTS/publishVersion artifact 尚未冻结(若 ST/启动流程用 DTS)。
-4. A0 descriptor 状态/旧字段待统一。
+2. ~~mill 只锁 wrapper~~ **已锁**: mill distribution(out/mill-launcher/0.12.3.jar sha256 33634609)+ Coursier 闭包(106 jars 逐项 size/sha256 manifest + full-64 digest 65192fd9...c5d25b, verify_closure.py fetch-then-verify)。**离线空 HOME/断网重放仍待做**。
+3. ~~DTS 未冻结~~ **已冻结+限定 scope**: publishVersion 类产物(out/xiangshan/publishVersion{,.json})hash 入 harness_artifacts.tsv。结论限定: **不影响 Formal artifact, 也不影响当前 bare-metal CoreMark ST profile**(实证: 时间戳异而 1860 全复现+difftest_profile.json 0 diff); **不主张对所有 ST 无影响**——未来 bootrom/DTB profile 必须纳入并冻结 user/host/time。
+4. ~~A0 待统一~~ **已统一**: descriptor a0_status=CLOSED + b2_content_reproduced=true + canonical_promotion/sweep_305=NO-GO + 工具闭包字段。
 
 → 这四门全闭环后才 `source_reproducible=true` 并晋升 canonical,再启动正式 305 sweep。
 

@@ -1,0 +1,6 @@
+# harness artifacts(当前 profile 明确排除, 未来 DTB/bootrom profile 必须纳入并冻结 user/host/time)
+artifact	side	sha256_16	note
+out/xiangshan/resources.dest/publishVersion	xs-clean	3ce92940987149a6	含LocalDateTime, 两侧仅时间戳异
+out/xiangshan/publishVersion.json	xs-clean	8b9bd4f3d0a20ad1	含LocalDateTime, 两侧仅时间戳异
+out/xiangshan/resources.dest/publishVersion	G0-rebuilt	5df08a8d71d15981	含LocalDateTime, 两侧仅时间戳异
+out/xiangshan/publishVersion.json	G0-rebuilt	f1dd2458511ff3f3	含LocalDateTime, 两侧仅时间戳异

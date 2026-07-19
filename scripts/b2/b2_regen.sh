@@ -39,6 +39,12 @@ JDK=$(lock_val jdk); JH=$(lock_val jdk_java_sha256)
 [ -x "$JDK/bin/java" ] || fail "JDK 无效: $JDK"
 [ "$(sha256sum "$JDK/bin/java" | awk '{print $1}')" = "$JH" ] || fail "JDK java hash 不匹配"
 echo "JDK hash OK ($JDK)"
+# mill distribution(非 wrapper)+ Coursier 闭包 fetch-then-verify(四审)
+MDJ=$(lock_val mill_dist_jar); MDH=$(lock_val mill_dist_sha256)
+[ -f "$MDJ" ] || fail "mill distribution 缺失: $MDJ"
+[ "$(sha256sum "$MDJ" | awk '{print $1}')" = "$MDH" ] || fail "mill distribution hash 不匹配"
+echo "mill distribution OK"
+python3 "$SIGNOFF/scripts/b2/verify_closure.py" || fail "Coursier 闭包校验失败"
 # canonical tar hash
 TARH=$(awk -F'\t' '$1=="source_canonical_tar_sha256"{print $2}' "$Q/G0_DESCRIPTOR.tsv")
 [ "$(sha256sum "$Q/G0-source-canonical.tar.gz" | awk '{print $1}')" = "$TARH" ] || fail "canonical tar hash 不匹配"
@@ -98,12 +104,30 @@ echo "DUT(1853, 含NewCSR) 差异行: $ndut ; candidate 多余 formal 文件: $e
 echo "SimTop.sv: G0=$simtop_g0 rebuilt=$simtop_rb $([ "$simtop_g0" = "$simtop_rb" ] && echo 一致 || echo 不同)"
 cp "$CAND" "$RB/b2_candidate.manifest.tsv"
 
-if [ "$ndut" -eq 0 ] && [ "$extra" -eq 0 ]; then
-  echo "RESULT: DUT-GOLDEN-REPRODUCED (1853 文件含 NewCSR git 常量 逐字节一致)"
-  [ "$simtop_g0" = "$simtop_rb" ] && echo "RESULT: SimTop-ALSO-REPRODUCED(harness 完整复现)" \
-    || { echo "RESULT: SimTop-DIFF(harness, 见 /tmp/b2_dut.diff 外单列)"; exit 2; }
-  exit 0
-else
+if [ "$ndut" -ne 0 ] || [ "$extra" -ne 0 ]; then
   echo "RESULT: DUT-MISMATCH (dut=$ndut extra=$extra) —— 两份都保留, 见 /tmp/b2_dut.diff"
   exit 3
 fi
+echo "RESULT: DUT-GOLDEN-REPRODUCED (1853 文件含 NewCSR git 常量 逐字节一致)"
+[ "$simtop_g0" = "$simtop_rb" ] || { echo "RESULT: SimTop-DIFF(harness)"; exit 2; }
+echo "RESULT: SimTop-ALSO-REPRODUCED"
+
+echo "== B2: 完整 1860 canonical gate(0644 staging + python checker, 四审) =="
+CROOT=$(echo "$RB" | sed 's|^/||')
+STAGE="$RB/canonical_staging"
+mkdir -p "$STAGE"
+cp -r "$RB/build/rtl/." "$STAGE/"
+find "$STAGE" -type f -exec chmod 0644 {} +
+EVID="$RB/b2_evidence"
+python3 "$SIGNOFF/scripts/b2/b2_compare_1860.py" "$Q" "$STAGE" --cand-root "$CROOT" --out "$EVID" \
+  || fail "1860 canonical gate 未过"
+echo "== B2: 自包含证据目录 =="
+{ sha256sum "$SIGNOFF/scripts/b2/b2_regen.sh" "$SIGNOFF/scripts/b2/git-shim/git" \
+    "$SIGNOFF/scripts/b2/b2_compare_1860.py" "$SIGNOFF/scripts/b2/TRUST_ANCHORS.tsv" \
+    "$SIGNOFF/scripts/b2/coursier_closure.manifest.tsv"
+  echo "signoff_commit: $(git -C "$SIGNOFF" rev-parse HEAD 2>/dev/null)"
+  echo "log: $LOG"
+} > "$EVID/provenance.txt"
+cp "$LOG" "$EVID/" 2>/dev/null || true
+echo "RESULT: CANONICAL_ARTIFACT_REPRODUCED(证据: $EVID)"
+exit 0

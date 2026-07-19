@@ -65,7 +65,7 @@ diff <(LC_ALL=C sort "$G0/G0-formal-rtl.manifest.tsv") \
 ## 前置门(未过不启动 B2)
 
 - [x] A0 CLOSED(4 缺口补齐,descriptor 完整)
-- [x] parser 全 P0 修订(24/24 负向测试)
+- [~] parser: 29/29 测试通过但**不宣称完成**(四审实测仍有对抗场景假绿; 终态 sidecar 方向已定, 旁路设计中)
 - [ ] 唯一权威 FM 入口(fm_eq.tcl 读 FM_INTERFACE_ONLY + mode 分流)—— B2 本身不需要(B2 只重生+比字节),但**在 305 sweep 前**必须。
 
 ## 完整 1860 比对规范化规则(状态: **B2_CONTENT_REPRODUCED=true / CANONICAL_PROMOTION=NO-GO**)
@@ -77,7 +77,7 @@ B2 candidate vs G0 完整 1860 输出比对,规范化后 **content mismatch=0 / 
   candidate→xs-clean 后 = G0 原值 73b0a832)。其余 1859 文件**原始字节**一致。
 - **② mode 规范化**: 文件权限是文件系统元数据非内容(G0 只读归档=444 / 新生成=664 / 源记录=644)。
   canonical 期望 mode=0644;偏差记 **advisory**,不算 content mismatch。
-- 机器检查: `scripts/b2/b2_compare_1860.sh <G0-full-output> <candidate-build-rtl>`(已实跑 REPRODUCED)。
+- 机器检查: `scripts/b2/b2_compare_1860.py <G0-quarantine> <candidate-build-rtl> [--content-only] [--cand-root R] [--out DIR]`(四审版: canonical 默认 rc=0 需内容+mode+manifest 全过; content-only 成功 rc=10; 信任锚=提交态 TRUST_ANCHORS.tsv 完整 64-hex; 拒 symlink/FIFO; literal 替换仅 @[root/... 断言 6,759,209)。
 
 → 1854 formal RTL(逐字节)+ 完整 1860 **内容**复现(CONTENT_REPRODUCED)。**非 CLOSED**: canonical 级还需
 ① chmod 0644 规范打包 + 含 mode 的规范 manifest 复验(CANONICAL_ARTIFACT_REPRODUCED)
