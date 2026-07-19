@@ -1,15 +1,22 @@
 #!/usr/bin/env python3
-"""FM sidecar validator(2026-07-19 五审 v5, fail-closed)。
+"""FM sidecar validator(2026-07-19 六审 v6, fail-closed)。
 
-五审修复:
- 1. **pair triples**: objects 三类各为 [{id, ref_path, impl_path}] 配对三元组(排序 by id、id 唯一),
-    validator 按**三元组精确相等**判定——交叉配对(r0→i1, r1→i0)不再假绿; id 真正参与判定。
- 2. interface_only 同样保存并核对 ref/impl 两侧(单列废除)。
- 3. **namespace 校验**: ref_path 必须 `r:/WORK/<top>` 前缀、impl_path 必须 `i:/WORK/<top>` 前缀
-    (对本次 top);拒 Unicode 控制/格式字符(Cc/Cf)。
- 4. **TOCTOU 消除**: native/envelope/expectation 全部单次 os.open(O_NOFOLLOW|O_CLOEXEC)+fstat+
-    一次读 bytes, 对**同一字节缓冲**同时算 SHA 与解析 JSON(不再两次独立打开)。
- 5. 测试累计恢复(v2/v3/v4 全部回归保留)。
+六审根本纠正: **native facts 只装 Formality 实际返回的观察事实**——
+ - report_matched_points 有真 ref/impl pair → `matched_blackbox_pairs`(唯一允许 pair 的字段);
+ - report_unmatched_points 只有两侧独立 point 列表 → `*_ref`/`*_impl` 独立集合;
+ - id/waiver-pair 是 expectation 的 policy, **不进 native facts**(emitter 回填=配置自报=自我验证)。
+
+native/envelope objects(七字段 observed 模型):
+  matched_blackbox_pairs: [{ref_path, impl_path}]   # 仅 FM 真返回的 pair
+  interface_only_ref / interface_only_impl          # 两侧独立观察集合
+  unresolved_blackbox_ref / unresolved_blackbox_impl
+  unmatched_ref / unmatched_impl                    # 两侧独立 point 集合
+
+六审同修:
+ - expectation 映射**双射**: 每类别 id/ref_path/impl_path 各自唯一; 跨类别同 id 必须映射同 pair。
+ - 计数覆盖: compare count ≥ unmatched 对象数(2 映射 count=1 拒)。
+ - **禁抽象 top**: 路径必须严格在 top 之下(r:/WORK/<top>/... 而非等于 r:/WORK/<top>)。
+ - FIFO fail-fast: O_NONBLOCK 打开(FIFO 不再阻塞挂死)+同 fd fstat 只对 regular 读+大小上限。
 """
 import sys, os, json, math, re, stat, hashlib, argparse, unicodedata
 
@@ -23,13 +30,18 @@ NAT_REQUIRED = {"schema", "run_id", "top", "native_verdict", "stats", "unmatched
                 "objects", "qualifications"}
 STATS_KEYS = {"passing", "failing", "unverified", "aborted", "unread_notcompared"}
 UNMATCH_KEYS = {"compare_ref", "compare_impl", "unread_ref", "unread_impl", "bbout_ref", "bbout_impl"}
-OBJ_KEYS = {"blackbox", "interface_only", "unmatched"}       # v5: 三类各为 pair-triple 列表
+OBJ_KEYS = {"matched_blackbox_pairs", "interface_only_ref", "interface_only_impl",
+            "unresolved_blackbox_ref", "unresolved_blackbox_impl",
+            "unmatched_ref", "unmatched_impl"}
 QUAL_KEYS = {"dont_verify_objects", "elab147", "relaxed_appvars"}
 KNOWN_MODES = {"signoff-strict", "assembly", "shadow", "diagnostic-full"}
 EXPECT_KEYS = {"run_id", "target", "top", "variant", "proof_mode", "canonical_baseline_id",
                "ref_digest", "impl_digest", "script_digest", "tool_digest", "allow"}
+ALLOW_KEYS = {"blackbox", "interface_only", "unmatched"}
 MAP_KEYS = {"id", "ref_path", "impl_path"}
+PAIR_KEYS = {"ref_path", "impl_path"}
 _TOKEN = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.\-]*")
+MAX_JSON_BYTES = 64 << 20
 
 
 class Bad(Exception):
@@ -56,8 +68,9 @@ def _dup_hook(pairs):
 
 
 def safe_read_bytes(path):
-    """五审: 单次打开(O_NOFOLLOW 拒 symlink)+同 fd fstat+一次读 bytes。消 TOCTOU。"""
-    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_CLOEXEC", 0)
+    """六审: O_NONBLOCK(FIFO 不阻塞挂死)+O_NOFOLLOW(symlink 拒)+同 fd fstat 只读 regular+大小上限。"""
+    flags = (os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_CLOEXEC", 0)
+             | getattr(os, "O_NONBLOCK", 0))
     try:
         fd = os.open(path, flags)
     except OSError as e:
@@ -66,6 +79,8 @@ def safe_read_bytes(path):
         st = os.fstat(fd)
         if not stat.S_ISREG(st.st_mode):
             raise Bad("not_regular_file")
+        if st.st_size > MAX_JSON_BYTES:
+            raise Bad("file_too_large")
         chunks = []
         while True:
             b = os.read(fd, 1 << 20)
@@ -96,7 +111,6 @@ def _count(x):
 
 
 def _no_ctrl(s):
-    # 拒 ASCII 控制 + 全部 Unicode 控制(Cc)/格式(Cf, 含零宽字符)
     return isinstance(s, str) and all(
         ord(c) >= 32 and ord(c) != 127 and unicodedata.category(c) not in ("Cc", "Cf")
         for c in s)
@@ -106,40 +120,42 @@ def _token(x):
     return isinstance(x, str) and _no_ctrl(x) and bool(_TOKEN.fullmatch(x)) and ".." not in x
 
 
-def _pathstr(x):
-    return isinstance(x, str) and x != "" and _no_ctrl(x)
+def _refpath(x, top):
+    # 六审: 必须**严格在 top 之下**(禁抽象 top 自身作对象)
+    return isinstance(x, str) and _no_ctrl(x) and x.startswith(f"r:/WORK/{top}/") and len(x) > len(f"r:/WORK/{top}/")
 
 
-def _objlist(x, elem=_token):
-    if not isinstance(x, list):
-        return False
-    if any(not elem(e) for e in x):
-        return False
-    return x == sorted(x) and len(set(x)) == len(x)
+def _implpath(x, top):
+    return isinstance(x, str) and _no_ctrl(x) and x.startswith(f"i:/WORK/{top}/") and len(x) > len(f"i:/WORK/{top}/")
 
 
-def _pair_triples(x, top):
-    """v5: [{id, ref_path, impl_path}] —— id token 排序唯一;
-    ref_path 前缀 r:/WORK/<top>、impl_path 前缀 i:/WORK/<top>(namespace 校验)。"""
+def _pathlist(x, top, side):
+    chk = _refpath if side == "ref" else _implpath
     if not isinstance(x, list):
         return "not_list"
-    ids = []
-    rpre = f"r:/WORK/{top}"
-    ipre = f"i:/WORK/{top}"
+    if any(not chk(e, top) for e in x):
+        return "bad_path"
+    if x != sorted(x) or len(set(x)) != len(x):
+        return "not_sorted_unique"
+    return None
+
+
+def _pairlist(x, top):
+    if not isinstance(x, list):
+        return "not_list"
+    seen = set()
     for m in x:
-        if not isinstance(m, dict) or set(m) != MAP_KEYS:
-            return "map_keys"
-        if not _token(m["id"]):
-            return "id_not_token"
-        if not _pathstr(m["ref_path"]) or not _pathstr(m["impl_path"]):
-            return "path_not_str"
-        if not (m["ref_path"] == rpre or m["ref_path"].startswith(rpre + "/")):
-            return f"ref_path_namespace:{m['ref_path']}"
-        if not (m["impl_path"] == ipre or m["impl_path"].startswith(ipre + "/")):
-            return f"impl_path_namespace:{m['impl_path']}"
-        ids.append(m["id"])
-    if ids != sorted(ids) or len(set(ids)) != len(ids):
-        return "ids_not_sorted_unique"
+        if not isinstance(m, dict) or set(m) != PAIR_KEYS:
+            return "pair_keys"
+        if not _refpath(m["ref_path"], top) or not _implpath(m["impl_path"], top):
+            return "pair_path"
+        t = (m["ref_path"], m["impl_path"])
+        if t in seen:
+            return "pair_dup"
+        seen.add(t)
+    keys = [(m["ref_path"], m["impl_path"]) for m in x]
+    if keys != sorted(keys):
+        return "pair_not_sorted"
     return None
 
 
@@ -156,13 +172,34 @@ def validate_expectation(E):
             if not _is_hex64(E[k]):
                 return f"expect_{k}_not_hex64"
         A = E["allow"]
-        if not isinstance(A, dict) or set(A) != OBJ_KEYS:
+        if not isinstance(A, dict) or set(A) != ALLOW_KEYS:
             return "expect_allow_keys"
-        for cat in OBJ_KEYS:
-            err = _pair_triples(A[cat], E["top"])
-            if err:
-                return f"expect_allow_{cat}:{err}"
-        if E["proof_mode"] != "assembly" and any(A[k] for k in OBJ_KEYS):
+        gid = {}          # 跨类别: 同 id 必须同 pair
+        for cat in ALLOW_KEYS:
+            maps = A[cat]
+            if not isinstance(maps, list):
+                return f"expect_allow_{cat}_not_list"
+            ids, refs, impls = [], [], []
+            for m in maps:
+                if not isinstance(m, dict) or set(m) != MAP_KEYS:
+                    return f"expect_allow_{cat}_map_keys"
+                if not _token(m["id"]):
+                    return f"expect_allow_{cat}_id"
+                if not _refpath(m["ref_path"], E["top"]) or not _implpath(m["impl_path"], E["top"]):
+                    return f"expect_allow_{cat}_path"
+                ids.append(m["id"]); refs.append(m["ref_path"]); impls.append(m["impl_path"])
+                pair = (m["ref_path"], m["impl_path"])
+                if m["id"] in gid and gid[m["id"]] != pair:
+                    return f"expect_id_conflict:{m['id']}"
+                gid[m["id"]] = pair
+            # 六审双射: id/ref/impl 各自唯一
+            if ids != sorted(ids) or len(set(ids)) != len(ids):
+                return f"expect_allow_{cat}_ids_not_unique_sorted"
+            if len(set(refs)) != len(refs):
+                return f"expect_allow_{cat}_refs_not_unique"
+            if len(set(impls)) != len(impls):
+                return f"expect_allow_{cat}_impls_not_unique"
+        if E["proof_mode"] != "assembly" and any(A[k] for k in ALLOW_KEYS):
             return "expect_allowlist_must_be_empty_for_" + E["proof_mode"]
         return None
     except Exception as e:
@@ -173,19 +210,29 @@ def _validate_facts_block(sc, where, top):
     for grp, keys in (("stats", STATS_KEYS), ("unmatched", UNMATCH_KEYS)):
         if not isinstance(sc[grp], dict) or set(sc[grp]) != keys:
             raise Bad(f"{where}_{grp}_fields")
-    if not isinstance(sc["objects"], dict) or set(sc["objects"]) != OBJ_KEYS:
+    ob = sc["objects"]
+    if not isinstance(ob, dict) or set(ob) != OBJ_KEYS:
         raise Bad(f"{where}_objects_fields")
+    err = _pairlist(ob["matched_blackbox_pairs"], top)
+    if err:
+        raise Bad(f"{where}_matched_pairs:{err}")
+    for k in ("interface_only_ref", "unresolved_blackbox_ref", "unmatched_ref"):
+        err = _pathlist(ob[k], top, "ref")
+        if err:
+            raise Bad(f"{where}_{k}:{err}")
+    for k in ("interface_only_impl", "unresolved_blackbox_impl", "unmatched_impl"):
+        err = _pathlist(ob[k], top, "impl")
+        if err:
+            raise Bad(f"{where}_{k}:{err}")
     if not isinstance(sc["qualifications"], dict) or set(sc["qualifications"]) != QUAL_KEYS:
         raise Bad(f"{where}_qual_fields")
     for v in list(sc["stats"].values()) + list(sc["unmatched"].values()):
         if not _count(v):
             raise Bad(f"{where}_count_not_nonneg_int")
-    for cat in OBJ_KEYS:
-        err = _pair_triples(sc["objects"][cat], top)
-        if err:
-            raise Bad(f"{where}_objects_{cat}:{err}")
     for k in QUAL_KEYS:
-        if not _objlist(sc["qualifications"][k], elem=_pathstr):
+        x = sc["qualifications"][k]
+        if not (isinstance(x, list) and all(isinstance(e, str) and e != "" and _no_ctrl(e) for e in x)
+                and x == sorted(x) and len(set(x)) == len(x)):
             raise Bad(f"{where}_qual_{k}_not_objlist")
     if sc["native_verdict"] not in ("SUCCEEDED", "FAILED", "INCONCLUSIVE", "NOT_RUN"):
         raise Bad(f"{where}_bad_native")
@@ -198,7 +245,6 @@ def verdict(sidecar_path, expectation, actual_rc, native_facts_path):
         return "ERROR", {"reason": err}
     E = expectation
 
-    # ---- envelope(单缓冲安全读取)----
     try:
         sc = strict_parse(safe_read_bytes(sidecar_path))
         if not isinstance(sc, dict):
@@ -232,7 +278,6 @@ def verdict(sidecar_path, expectation, actual_rc, native_facts_path):
 
     q.update(sc)
 
-    # ---- native facts: 同一字节缓冲算 SHA + 解析(五审 TOCTOU 消除)----
     try:
         nat_buf = safe_read_bytes(native_facts_path)
         if hashlib.sha256(nat_buf).hexdigest() != sc["native_facts_sha256"]:
@@ -257,7 +302,6 @@ def verdict(sidecar_path, expectation, actual_rc, native_facts_path):
         if nat[grp] != sc[grp]:
             return "ERROR", {**q, "reason": f"native_envelope_mismatch:{grp}"}
 
-    # ---- expectation 精确相等 ----
     for k in ("run_id", "target", "top", "variant", "proof_mode", "canonical_baseline_id"):
         if sc[k] != E[k]:
             return "ERROR", {**q, "reason": f"expect_{k}:{sc[k]}!={E[k]}"}
@@ -270,13 +314,11 @@ def verdict(sidecar_path, expectation, actual_rc, native_facts_path):
     if sc["tool"]["fm_shell_digest"] != E["tool_digest"]:
         return "ERROR", {**q, "reason": "tool_digest_mismatch"}
 
-    # ---- rc 交叉 ----
     if not (isinstance(actual_rc, int) and not isinstance(actual_rc, bool)):
         return "ERROR", {**q, "reason": "actual_rc_bad"}
     if sc["fm_shell_rc"] != 0 or actual_rc != 0 or sc["fm_shell_rc"] != actual_rc:
         return "ERROR", {**q, "reason": f"rc:self={sc['fm_shell_rc']} actual={actual_rc}"}
 
-    # ---- native / 数字 ----
     nv = sc["native_verdict"]
     st = sc["stats"]; um = sc["unmatched"]; ob = sc["objects"]; ql = sc["qualifications"]
     if nv == "NOT_RUN":
@@ -308,7 +350,7 @@ def verdict(sidecar_path, expectation, actual_rc, native_facts_path):
             return "PARTIAL", {**q, "reason": "strict_qualifications"}
         return "SUCCEEDED", q
 
-    # assembly(五审: pair-triple 精确相等, 交叉配对/错 impl_path 都拒)
+    # ---- assembly(六审: observed facts vs expectation policy 投影)----
     A = E["allow"]
     if st["unverified"] or st["aborted"] or unread_any:
         return "PARTIAL", {**q, "reason": "assembly_unverified/aborted/unread"}
@@ -316,13 +358,32 @@ def verdict(sidecar_path, expectation, actual_rc, native_facts_path):
         return "PARTIAL", {**q, "reason": f"assembly_count_asym_compare:{um['compare_ref']}({um['compare_impl']})"}
     if um["bbout_ref"] != um["bbout_impl"]:
         return "PARTIAL", {**q, "reason": f"assembly_count_asym_bbout:{um['bbout_ref']}({um['bbout_impl']})"}
-    if bool(um["compare_ref"]) != bool(ob["unmatched"]):
+    # 观察集合 == expectation 映射的投影(独立集合, 不含推测 pair)
+    def proj(cat, side):
+        return sorted(m[side] for m in A[cat])
+    if ob["unmatched_ref"] != proj("unmatched", "ref_path") or \
+       ob["unmatched_impl"] != proj("unmatched", "impl_path"):
+        return "PARTIAL", {**q, "reason": "assembly_unmatched_observed!=policy"}
+    if ob["interface_only_ref"] != proj("interface_only", "ref_path") or \
+       ob["interface_only_impl"] != proj("interface_only", "impl_path"):
+        return "PARTIAL", {**q, "reason": "assembly_interface_only_observed!=policy"}
+    if ob["unresolved_blackbox_ref"] != proj("blackbox", "ref_path") or \
+       ob["unresolved_blackbox_impl"] != proj("blackbox", "impl_path"):
+        return "PARTIAL", {**q, "reason": "assembly_unresolved_bb_observed!=policy"}
+    # matched pairs 是唯一的工具原生 pair: 与 policy 声明的 pair 精确相等
+    want_pairs = sorted((m["ref_path"], m["impl_path"]) for m in A["blackbox"])
+    got_pairs = sorted((m["ref_path"], m["impl_path"]) for m in ob["matched_blackbox_pairs"])
+    if got_pairs and got_pairs != want_pairs:
+        return "PARTIAL", {**q, "reason": "assembly_matched_pairs!=policy"}
+    # 计数覆盖: compare count ≥ unmatched 对象数(每对象至少1点); bool 一致
+    n_um = len(ob["unmatched_ref"])
+    if bool(um["compare_ref"]) != bool(n_um):
         return "PARTIAL", {**q, "reason": "assembly_compare_count_object_disagree"}
-    if bool(um["bbout_ref"]) != bool(ob["blackbox"]):
+    if um["compare_ref"] < n_um:
+        return "PARTIAL", {**q, "reason": f"assembly_count_below_objects:{um['compare_ref']}<{n_um}"}
+    n_bb = len(ob["unresolved_blackbox_ref"]) + len(ob["matched_blackbox_pairs"])
+    if bool(um["bbout_ref"]) != bool(n_bb):
         return "PARTIAL", {**q, "reason": "assembly_bbout_count_object_disagree"}
-    for cat in OBJ_KEYS:
-        if ob[cat] != A[cat]:     # 三元组逐项精确(含 id 与两侧路径的配对关系)
-            return "PARTIAL", {**q, "reason": f"assembly_{cat}_pairs!=allow"}
     if quals_any:
         return "PARTIAL", {**q, "reason": "assembly_qualifications"}
     return "SUCCEEDED", q

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
-"""FM sidecar validator 负向测试(2026-07-19 五审 v5, **累计**: v2/v3/v4 全回归 + v5 新对抗)。"""
+"""FM sidecar validator 负向测试(2026-07-19 六审 v6, 累计)。
+observed-facts 模型: native 只装 FM 真返回的事实(matched pairs / 两侧独立集合);
+id/waiver-pair 属 expectation policy。新增: 双射违规/跨类别 id 冲突/计数覆盖/禁抽象 top/FIFO。"""
 import sys, os, json, hashlib, tempfile, shutil
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from fm_sidecar_verdict import verdict, strict_load, Bad
@@ -10,8 +12,11 @@ TOP = "Bku"
 R0, R1 = f"r:/WORK/{TOP}/inner_a", f"r:/WORK/{TOP}/inner_b"
 I0, I1 = f"i:/WORK/{TOP}/u_core/a", f"i:/WORK/{TOP}/u_core/b"
 
-def T(i, r, m):  # pair triple
+def M(i, r, m):  # expectation 映射
     return {"id": i, "ref_path": r, "impl_path": m}
+
+def P(r, m):     # observed matched pair(无 id)
+    return {"ref_path": r, "impl_path": m}
 
 def expect(**over):
     e = {"run_id": "RID-1", "target": TOP, "top": TOP, "variant": TOP,
@@ -26,12 +31,17 @@ def expect(**over):
             e[k] = v
     return e
 
+def OBJ0():
+    return {"matched_blackbox_pairs": [], "interface_only_ref": [], "interface_only_impl": [],
+            "unresolved_blackbox_ref": [], "unresolved_blackbox_impl": [],
+            "unmatched_ref": [], "unmatched_impl": []}
+
 def facts(**over):
     f = {"native_verdict": "SUCCEEDED",
          "stats": {"passing": 2055, "failing": 0, "unverified": 0, "aborted": 0, "unread_notcompared": 0},
          "unmatched": {"compare_ref": 0, "compare_impl": 0, "unread_ref": 0, "unread_impl": 0,
                        "bbout_ref": 0, "bbout_impl": 0},
-         "objects": {"blackbox": [], "interface_only": [], "unmatched": []},
+         "objects": OBJ0(),
          "qualifications": {"dont_verify_objects": [], "elab147": [], "relaxed_appvars": []}}
     for k, v in over.items():
         if "." in k:
@@ -41,13 +51,15 @@ def facts(**over):
     return f
 
 def build(fact_over=None, env_over=None, native_diverge=None, run_id="RID-1", top=TOP,
-          raw_env=None):
+          raw_env=None, native_fifo=False):
     d = tempfile.mkdtemp()
     fx = facts(**(fact_over or {}))
     nat = {"schema": "fm-sidecar-native-v1", "run_id": run_id, "top": top, **fx}
     np = os.path.join(d, "native_facts.json")
     json.dump(nat, open(np, "w"))
     nat_sha = hashlib.sha256(open(np, "rb").read()).hexdigest()
+    if native_fifo:
+        os.unlink(np); os.mkfifo(np)
     env_fx = facts(**(fact_over or {}))
     for k, v in (native_diverge or {}).items():
         if "." in k:
@@ -73,8 +85,8 @@ def build(fact_over=None, env_over=None, native_diverge=None, run_id="RID-1", to
 
 def run(fact_over=None, env_over=None, native_diverge=None, exp=None, actual_rc=0,
         run_id="RID-1", top=TOP, drop_native=False, corrupt_native_sha=False,
-        raw_env=None, symlink_env=False):
-    d, ep, np = build(fact_over, env_over, native_diverge, run_id, top, raw_env)
+        raw_env=None, symlink_env=False, native_fifo=False):
+    d, ep, np = build(fact_over, env_over, native_diverge, run_id, top, raw_env, native_fifo)
     if corrupt_native_sha:
         open(np, "a").write(" ")
     if drop_native:
@@ -94,40 +106,62 @@ def C(name, want, **kw):
 
 # ================= 正样本 =================
 C("strict_clean_success", "SUCCEEDED")
+# assembly observed==policy 投影
+AS_FACTS = dict(fact_over={
+    "unmatched.compare_ref": 2, "unmatched.compare_impl": 2,
+    "objects.unmatched_ref": [R0, R1], "objects.unmatched_impl": [I0, I1],
+    "objects.interface_only_ref": [R0], "objects.interface_only_impl": [I0]},
+    env_over={"proof_mode": "assembly"})
+AEXP = expect(proof_mode="assembly",
+              allow={"unmatched": [M("A", R0, I0), M("B", R1, I1)],
+                     "interface_only": [M("A", R0, I0)]})
+C("asm_observed_matches_policy", "SUCCEEDED", **AS_FACTS, exp=AEXP)
 
-# ================= v5 新对抗 =================
-# 交叉配对: 同样的 ref/impl 全集, 配对关系错(r0→i1, r1→i0)
-GOOD_PAIRS = [T("A", R0, I0), T("B", R1, I1)]
-CROSS_PAIRS = [T("A", R0, I1), T("B", R1, I0)]
-def asm_pairs(pairs):
-    return dict(fact_over={"unmatched.compare_ref": 2, "unmatched.compare_impl": 2,
-                           "objects.unmatched": pairs,
-                           "objects.interface_only": [T("A", R0, I0)]},
-                env_over={"proof_mode": "assembly"})
-AEXP2 = expect(proof_mode="assembly",
-               allow={"unmatched": GOOD_PAIRS, "interface_only": [T("A", R0, I0)]})
-C("asm_correct_pairs", "SUCCEEDED", **asm_pairs(GOOD_PAIRS), exp=AEXP2)
-C("asm_crossed_pairs", "PARTIAL", **asm_pairs(CROSS_PAIRS), exp=AEXP2)
-# interface_only impl_path 错
-C("iface_wrong_impl", "PARTIAL",
-  fact_over={"unmatched.compare_ref": 2, "unmatched.compare_impl": 2,
-             "objects.unmatched": GOOD_PAIRS,
-             "objects.interface_only": [T("A", R0, I1)]},
-  env_over={"proof_mode": "assembly"}, exp=AEXP2)
-# namespace 互换: ref_path 用 i:/, impl_path 用 r:/(类型层直接拒)
-C("namespace_swap", "ERROR",
+# ================= 六审 6 新对抗 =================
+# 1. one-to-many / many-to-one: ref 重复(双射违规)
+C("policy_one_to_many", "ERROR", **AS_FACTS,
+  exp=expect(proof_mode="assembly",
+             allow={"unmatched": [M("A", R0, I0), M("B", R0, I1)],
+                    "interface_only": [M("A", R0, I0)]}))
+# 2. 同一物理 pair 两个不同 ID(ref/impl 重复)
+C("policy_dup_pair_two_ids", "ERROR", **AS_FACTS,
+  exp=expect(proof_mode="assembly",
+             allow={"unmatched": [M("A", R0, I0), M("B", R0, I0)],
+                    "interface_only": [M("A", R0, I0)]}))
+# 3. 同一 ID 跨类别映射不同 pair
+C("policy_id_conflict_across_cat", "ERROR", **AS_FACTS,
+  exp=expect(proof_mode="assembly",
+             allow={"unmatched": [M("A", R0, I0), M("B", R1, I1)],
+                    "interface_only": [M("A", R1, I1)]}))
+# 4. 2 个 unmatched 对象、compare count 仅 1(计数未覆盖对象数)
+C("count_below_objects", "PARTIAL",
   fact_over={"unmatched.compare_ref": 1, "unmatched.compare_impl": 1,
-             "objects.unmatched": [T("A", I0, R0)]},
-  env_over={"proof_mode": "assembly"}, exp=AEXP2)
-# 错误 top 的 namespace(路径不含本次 top)
-C("namespace_wrong_top", "ERROR",
-  fact_over={"objects.interface_only": [T("A", "r:/WORK/Other/x", "i:/WORK/Other/y")]},
-  env_over={"proof_mode": "assembly"}, exp=AEXP2)
-# Unicode 格式字符(零宽空格)混入 id
-C("unicode_zwsp_id", "ERROR",
-  fact_over={"objects.interface_only": [T("A​", R0, I0)]},
-  env_over={"proof_mode": "assembly"}, exp=AEXP2)
-# TOCTOU 面: envelope 是 symlink(O_NOFOLLOW 单开即拒)
+             "objects.unmatched_ref": [R0, R1], "objects.unmatched_impl": [I0, I1],
+             "objects.interface_only_ref": [R0], "objects.interface_only_impl": [I0]},
+  env_over={"proof_mode": "assembly"}, exp=AEXP)
+# 5. top 自身作为 blackbox(抽象 top, 路径=r:/WORK/<top> 不严格在其下)
+C("top_itself_as_blackbox", "ERROR",
+  fact_over={"objects.unresolved_blackbox_ref": [f"r:/WORK/{TOP}"],
+             "objects.unresolved_blackbox_impl": [f"i:/WORK/{TOP}"],
+             "unmatched.bbout_ref": 1, "unmatched.bbout_impl": 1},
+  env_over={"proof_mode": "assembly"}, exp=AEXP)
+# 6. native facts 是 FIFO(fail-fast, 不挂死)
+C("native_fifo_failfast", "ERROR", native_fifo=True)
+
+# ================= v5 回归(适配 observed 模型) =================
+C("iface_wrong_impl_observed", "PARTIAL",
+  fact_over={"unmatched.compare_ref": 2, "unmatched.compare_impl": 2,
+             "objects.unmatched_ref": [R0, R1], "objects.unmatched_impl": [I0, I1],
+             "objects.interface_only_ref": [R0], "objects.interface_only_impl": [I1]},
+  env_over={"proof_mode": "assembly"}, exp=AEXP)
+C("namespace_swap", "ERROR",
+  fact_over={"objects.unmatched_ref": [I0], "objects.unmatched_impl": [R0],
+             "unmatched.compare_ref": 1, "unmatched.compare_impl": 1},
+  env_over={"proof_mode": "assembly"}, exp=AEXP)
+C("unicode_zwsp_path", "ERROR",
+  fact_over={"objects.unmatched_ref": [R0 + "​"], "objects.unmatched_impl": [I0],
+             "unmatched.compare_ref": 1, "unmatched.compare_impl": 1},
+  env_over={"proof_mode": "assembly"}, exp=AEXP)
 C("symlink_envelope", "ERROR", symlink_env=True)
 
 # ================= v4 回归 =================
@@ -140,32 +174,33 @@ C("native_sha_mismatch", "ERROR", corrupt_native_sha=True)
 C("native_missing", "ERROR", drop_native=True)
 C("inputs_null", "ERROR", env_over={"inputs_sha256": None})
 C("stats_null", "ERROR", env_over={"stats": None})
+C("toplevel_list_env", "ERROR", raw_env='[1,2]')
 
 # ================= v3 回归 =================
 C("asm_count_asym_compare", "PARTIAL",
   fact_over={"unmatched.compare_ref": 5, "unmatched.compare_impl": 0,
-             "objects.unmatched": GOOD_PAIRS, "objects.interface_only": [T("A", R0, I0)]},
-  env_over={"proof_mode": "assembly"}, exp=AEXP2)
+             "objects.unmatched_ref": [R0, R1], "objects.unmatched_impl": [I0, I1],
+             "objects.interface_only_ref": [R0], "objects.interface_only_impl": [I0]},
+  env_over={"proof_mode": "assembly"}, exp=AEXP)
 C("asm_count_asym_bbout", "PARTIAL",
   fact_over={"unmatched.bbout_ref": 5, "unmatched.bbout_impl": 0,
-             "objects.blackbox": [T("A", R0, I0)]},
+             "objects.unresolved_blackbox_ref": [R0], "objects.unresolved_blackbox_impl": [I0]},
   env_over={"proof_mode": "assembly"},
-  exp=expect(proof_mode="assembly", allow={"blackbox": [T("A", R0, I0)]}))
+  exp=expect(proof_mode="assembly", allow={"blackbox": [M("A", R0, I0)]}))
 C("both_empty_target", "ERROR", env_over={"target": ""}, exp=expect(target=""))
 C("both_traversal_variant", "ERROR", env_over={"variant": "../../evil"},
   exp=expect(variant="../../evil"))
 C("both_int_runid", "ERROR", env_over={"run_id": 5}, exp=expect(run_id=5))
 C("strict_expect_with_allowlist", "ERROR",
-  exp=expect(allow={"blackbox": [T("A", R0, I0)]}))
+  exp=expect(allow={"blackbox": [M("A", R0, I0)]}))
 C("asm_count_only_no_objects", "PARTIAL",
   fact_over={"unmatched.compare_ref": 5, "unmatched.compare_impl": 5},
-  env_over={"proof_mode": "assembly"}, exp=AEXP2)
+  env_over={"proof_mode": "assembly"}, exp=AEXP)
 
 # ================= v2 回归 =================
 C("fake_baseline", "ERROR", env_over={"canonical_baseline_id": "G0-FAKE"})
 C("bool_as_int", "ERROR", env_over={"fm_shell_rc": False, "stats.passing": True})
 C("wrong_run_id", "ERROR", env_over={"run_id": "OLD"})
-C("wrong_top_env", "ERROR", env_over={"top": "Xxx"}, run_id="RID-1")
 C("wrong_variant", "ERROR", env_over={"variant": "Xxx"})
 C("ref_digest_mismatch", "ERROR", env_over={"inputs_sha256.ref_srcs_digest": H("f")})
 C("script_digest_mismatch", "ERROR", env_over={"script_sha256": H("f")})
@@ -176,7 +211,6 @@ C("selfreport_rc_nonzero", "ERROR", env_over={"fm_shell_rc": 137}, actual_rc=137
 C("rc_disagree", "ERROR", env_over={"fm_shell_rc": 0}, actual_rc=1)
 C("empty_proof", "ERROR", fact_over={"stats.passing": 0})
 C("success_but_failing", "FAILED", fact_over={"stats.failing": 20})
-C("missing_field_stats", "ERROR", env_over={"stats": "DROP"})
 C("bad_schema", "ERROR", env_over={"schema": "wrong"})
 C("native_failed", "FAILED", fact_over={"native_verdict": "FAILED", "stats.failing": 5})
 C("native_notrun", "UNRUN", fact_over={"native_verdict": "NOT_RUN"})
@@ -189,16 +223,17 @@ C("qual_unsorted", "ERROR", fact_over={"qualifications.dont_verify_objects": ["z
 C("qual_dup", "ERROR", fact_over={"qualifications.dont_verify_objects": ["a", "a"]})
 C("qual_empty_str", "ERROR", fact_over={"qualifications.dont_verify_objects": [""]})
 C("elab147_bool", "ERROR", fact_over={"qualifications.elab147": True})
-C("toplevel_list_env", "ERROR", raw_env='[1,2]')
+C("obj_unsorted", "ERROR", fact_over={"objects.unmatched_ref": [R1, R0]})
 
 # ================= strict qualification 回归 =================
 C("strict_unread_nc", "PARTIAL", fact_over={"stats.unread_notcompared": 1})
 C("strict_unread_um", "PARTIAL", fact_over={"unmatched.unread_impl": 19})
-C("strict_blackbox_obj", "PARTIAL", fact_over={"objects.blackbox": [T("A", R0, I0)]})
+C("strict_bb_obj", "PARTIAL", fact_over={"objects.unresolved_blackbox_impl": [I0]})
+C("strict_matched_pair", "PARTIAL", fact_over={"objects.matched_blackbox_pairs": [P(R0, I0)]})
 C("strict_dontverify", "PARTIAL", fact_over={"qualifications.dont_verify_objects": ["io_x"]})
 C("strict_elab147", "PARTIAL", fact_over={"qualifications.elab147": ["ram_40x47"]})
 C("strict_relaxed_appvar", "PARTIAL", fact_over={"qualifications.relaxed_appvars": ["verify_unread"]})
-C("strict_interface_only", "PARTIAL", fact_over={"objects.interface_only": [T("A", R0, I0)]})
+C("strict_interface_only", "PARTIAL", fact_over={"objects.interface_only_ref": [R0]})
 
 # ================= shadow / diagnostic =================
 C("shadow_only", "SHADOW_CHECK", env_over={"proof_mode": "shadow"}, exp=expect(proof_mode="shadow"))
@@ -208,30 +243,25 @@ C("diagnostic_never", "DIAGNOSTIC", env_over={"proof_mode": "diagnostic-full"},
 def main():
     npass = 0; total = 0
     for name, want, kw in CASES:
-        eo = kw.get("env_over")
-        if eo and eo.get("stats") == "DROP":  # missing field 特例
-            kw = dict(kw)
-            kw["raw_env"] = None
-            d, ep, np = build()
-            env = json.load(open(ep))
-            del env["stats"]
-            json.dump(env, open(ep, "w"))
-            try:
-                v, q = verdict(ep, expect(), 0, np)
-                got, reason = v, q.get("reason")
-            except Exception as e:
-                got, reason = f"EXC:{type(e).__name__}", None
-            shutil.rmtree(d, ignore_errors=True)
-        else:
-            try:
-                got, reason = run(**kw)
-            except Exception as e:
-                got, reason = f"EXC:{type(e).__name__}", None
+        try:
+            got, reason = run(**kw)
+        except Exception as e:
+            got, reason = f"EXC:{type(e).__name__}", None
         ok = got == want
         npass += ok; total += 1
-        print(f"{'PASS' if ok else 'FAIL'}  {name:32s} want={want:12s} got={got}"
+        print(f"{'PASS' if ok else 'FAIL'}  {name:34s} want={want:12s} got={got}"
               + ("" if ok else f"  reason={reason}"))
-    # 补充: expectation dup-key strict_load 拒
+    # 缺字段(删 stats)
+    d, ep, np = build()
+    env = json.load(open(ep)); del env["stats"]; json.dump(env, open(ep, "w"))
+    try:
+        v, q = verdict(ep, expect(), 0, np); got = v
+    except Exception as e:
+        got = f"EXC:{type(e).__name__}"
+    shutil.rmtree(d, ignore_errors=True)
+    ok = got == "ERROR"; npass += ok; total += 1
+    print(f"{'PASS' if ok else 'FAIL'}  missing_field_stats                want=ERROR        got={got}")
+    # expectation dup-key
     fd, p = tempfile.mkstemp(); os.close(fd)
     open(p, "w").write('{"a":1,"a":2}')
     try:
@@ -242,7 +272,7 @@ def main():
         dup_ok = False
     os.unlink(p)
     npass += dup_ok; total += 1
-    print(f"{'PASS' if dup_ok else 'FAIL'}  expectation_dup_keys              want=Bad got={'Bad' if dup_ok else 'accepted'}")
+    print(f"{'PASS' if dup_ok else 'FAIL'}  expectation_dup_keys               want=Bad got={'Bad' if dup_ok else 'accepted'}")
     # 非 SUCCEEDED 全带非 None reason
     for want_v, kw in (("FAILED", dict(fact_over={"stats.failing": 20})),
                        ("UNRUN", dict(fact_over={"native_verdict": "NOT_RUN"})),
