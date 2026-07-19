@@ -83,6 +83,13 @@ def main():
             fail(f"result.{k} 非空")
     if res.get("normalized_tree_digest") != anc["g0_full_manifest"]:
         fail("normalized_tree_digest ≠ 锚(normalized 必须复现冻结 manifest)")
+    # 八审最小补丁: 不信 JSON 声称值——重算 normalized.manifest.tsv **实际** SHA, 双重交叉:
+    # ①实际==声称 ②实际==G0 信任锚。完整 SHA 绑定 G0 manifest ⇒ 同时保证其 1860 行内容/schema/pathset。
+    nm_sha = sha(os.path.join(d, "normalized.manifest.tsv"))
+    if nm_sha != res.get("normalized_tree_digest"):
+        fail("normalized manifest 实际 SHA != result 声称值")
+    if nm_sha != anc["g0_full_manifest"]:
+        fail("normalized manifest 实际 SHA != G0 信任锚")
 
     # ⑥ provenance: 外部期望 commit 精确匹配
     prov = open(os.path.join(d, "provenance.txt")).read()
