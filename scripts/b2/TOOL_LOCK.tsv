@@ -7,3 +7,7 @@ mill_sha256	1654e14459ac8838603a9ed22220f1a25c85329f12be6da30bcee3e22f9be7f4
 jdk	/home/eda/xs-env/toolchain/jdk-17.0.13+11
 jdk_java_sha256	3d664eb8f9a7ab7d0b9962a263b075a0da53af49bd2a142c0344ca66b55b0355
 git_shim_inputs_digest	a8841b1abfe9ed6668c3eeeb0355366ff170a1275290510c2a743bf07161744c
+mill_dist_jar	/home/eda/xs-env/G0-rebuilt/out/mill-launcher/0.12.3.jar
+mill_dist_sha256	336346091edc69b248c306ca51aaccb73d888d8bf525ce45e02df89db449b41d
+coursier_closure_jars	106
+coursier_closure_digest	65192fd9442c01260cb92b356fedefe6

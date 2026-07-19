@@ -15,7 +15,7 @@ JDK17)+ fail-closed git shim,在**全新目录** `/home/eda/xs-env/G0-rebuilt/` 
 ## 为什么仍不晋升 canonical(二审晋升门)
 
 B2 只证 **1854 .sv/.v RTL artifact 可复现**,尚未证完整 source closure:
-1. 未比完整 1860 输出(SimTop.fir/.conf/filelist/metadata/.__diff__ 等 6 个非-HDL)。
+1. ~~未比完整 1860~~ **已比**: 1859 原始字节一致 + SimTop.fir 规范化(candidate-root→G0-root 单向替换, 断言 6,759,209 处)后一致 → **B2_CONTENT_REPRODUCED=true**。但 canonical 打包(chmod 0644 + 规范 manifest)未做 → **CANONICAL_PROMOTION=NO-GO**。
 2. mill 锁的是下载 wrapper,非实际 Mill distribution/Coursier 依赖闭包 hash。
 3. DTS/publishVersion artifact 尚未冻结(若 ST/启动流程用 DTS)。
 4. A0 descriptor 状态/旧字段待统一。

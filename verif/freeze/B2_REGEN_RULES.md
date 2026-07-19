@@ -68,7 +68,7 @@ diff <(LC_ALL=C sort "$G0/G0-formal-rtl.manifest.tsv") \
 - [x] parser 全 P0 修订(24/24 负向测试)
 - [ ] 唯一权威 FM 入口(fm_eq.tcl 读 FM_INTERFACE_ONLY + mode 分流)—— B2 本身不需要(B2 只重生+比字节),但**在 305 sweep 前**必须。
 
-## 完整 1860 比对规范化规则(canonical 晋升门项1, 已闭环)
+## 完整 1860 比对规范化规则(状态: **B2_CONTENT_REPRODUCED=true / CANONICAL_PROMOTION=NO-GO**)
 
 B2 candidate vs G0 完整 1860 输出比对,规范化后 **content mismatch=0 / missing=0 / extra=0**:
 - **① 路径规范化(仅 SimTop.fir)**: FIRRTL 中间产物嵌入构建根源码路径
@@ -79,5 +79,7 @@ B2 candidate vs G0 完整 1860 输出比对,规范化后 **content mismatch=0 / 
   canonical 期望 mode=0644;偏差记 **advisory**,不算 content mismatch。
 - 机器检查: `scripts/b2/b2_compare_1860.sh <G0-full-output> <candidate-build-rtl>`(已实跑 REPRODUCED)。
 
-→ 1854 formal RTL(逐字节)+ 完整 1860(路径/mode 规范化后)双双复现。canonical 晋升门项1 CLOSED。
+→ 1854 formal RTL(逐字节)+ 完整 1860 **内容**复现(CONTENT_REPRODUCED)。**非 CLOSED**: canonical 级还需
+① chmod 0644 规范打包 + 含 mode 的规范 manifest 复验(CANONICAL_ARTIFACT_REPRODUCED)
+② DTS/publishVersion 冻结 ③ Mill/Coursier 闭包 ④ A0 元数据统一 ⑤ 已提交 runner 全新重跑(单一 commit 证据)。
 剩余晋升门: DTS/publishVersion 冻结 + Mill/Coursier 闭包 hash + A0 元数据统一(项2)。
