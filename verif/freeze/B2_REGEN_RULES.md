@@ -67,3 +67,17 @@ diff <(LC_ALL=C sort "$G0/G0-formal-rtl.manifest.tsv") \
 - [x] A0 CLOSED(4 缺口补齐,descriptor 完整)
 - [x] parser 全 P0 修订(24/24 负向测试)
 - [ ] 唯一权威 FM 入口(fm_eq.tcl 读 FM_INTERFACE_ONLY + mode 分流)—— B2 本身不需要(B2 只重生+比字节),但**在 305 sweep 前**必须。
+
+## 完整 1860 比对规范化规则(canonical 晋升门项1, 已闭环)
+
+B2 candidate vs G0 完整 1860 输出比对,规范化后 **content mismatch=0 / missing=0 / extra=0**:
+- **① 路径规范化(仅 SimTop.fir)**: FIRRTL 中间产物嵌入构建根源码路径
+  `home/eda/xs-env/{xs-clean,G0-rebuilt}`(无前导斜杠,FIRRTL locationInfo),属构建位置依赖非逻辑。
+  比对前两侧构建根统一为 token `BUILDROOT`。规范化后 SimTop.fir 逐字节一致(BUILDROOT hash b17e54cb;
+  candidate→xs-clean 后 = G0 原值 73b0a832)。其余 1859 文件**原始字节**一致。
+- **② mode 规范化**: 文件权限是文件系统元数据非内容(G0 只读归档=444 / 新生成=664 / 源记录=644)。
+  canonical 期望 mode=0644;偏差记 **advisory**,不算 content mismatch。
+- 机器检查: `scripts/b2/b2_compare_1860.sh <G0-full-output> <candidate-build-rtl>`(已实跑 REPRODUCED)。
+
+→ 1854 formal RTL(逐字节)+ 完整 1860(路径/mode 规范化后)双双复现。canonical 晋升门项1 CLOSED。
+剩余晋升门: DTS/publishVersion 冻结 + Mill/Coursier 闭包 hash + A0 元数据统一(项2)。
