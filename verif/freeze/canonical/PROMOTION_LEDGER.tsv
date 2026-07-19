@@ -1,0 +1,16 @@
+# G0 canonical golden 晋升台账(2026-07-19)。不可变。审查裁定 CANONICAL_PROMOTION=GO。
+# 全部锚已独立复现一致(evidence_root 算法 path-size-sha256-v1)。
+key	value
+canonical_baseline_id	G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456
+promotion_runner_commit	bc0ab3315534dc35a95077a8e43a6dccf3aaff81
+formal_manifest_sha256	89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456
+full_normalized_manifest_sha256	d3c7ff10673ef5771a93a39e266aa460420ac27df604ba3653b92f0092bd549f
+evidence_manifest_sha256	9b81bd3323b5f3e6c2df23d72f441e0adcd37e7eb32c09f9f16d501441048f1e
+evidence_root_algorithm	path-size-sha256-v1
+evidence_root_sha256	f279106530081bf688687a5da938382298eff66fa7e8df7c68c6649bf48f5400
+canonical_golden_dir	/home/eda/xs-env/G0-canonical/golden-rtl
+source_reproducible	true
+release_signoff_eligible	true
+canonical_promotion	GO
+promoted_date	2026-07-19
+scope_note	G0已成可信可重建正式Golden; 不表示重写RTL已完成等价签核; 305 sweep仍待sidecar/统一入口/target manifest/代表性smoke
