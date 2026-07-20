@@ -43,6 +43,8 @@ WT_HEAD_PRE=$(git -C "$WT" rev-parse HEAD)
 WT_DIRTY_PRE=$(git -C "$WT" status --porcelain --untracked-files=no | wc -l)
 D="$WT/verif/ut/$TARGET"
 [ -n "${STIM_PRE:-}" ] && cp "$STIM_PRE" "$D/fm_pins_pre.tcl"
+# STIM_INNER: 嵌套 source 的内层文件, 预置进 UT 目录(外层刺激经受控 source alias 引用)
+[ -n "${STIM_INNER:-}" ] && cp "$STIM_INNER" "$D/fm_pins_inner.tcl"
 
 finalize() {  # $1 = 最终 rc
   local rc=$1
@@ -75,6 +77,8 @@ finalize() {  # $1 = 最终 rc
     echo "CLEAN_GATE_FAIL head=$WT_HEAD_PRE/$WT_HEAD_POST dirty=$WT_DIRTY_PRE/$WT_DIRTY_POST" >> "$STG/RESULT.txt"
     rc=2
   fi
+  # 四审: 结构化 runner 回执(archive checker 语义校验的锚)
+  echo "$rc" > "$STG/RUNNER_RC"
   cleanup_wt
   ( cd "$STG" && LC_ALL=C find . -mindepth 1 \( -type f -o -type d \) | LC_ALL=C sort | sed 's|^\./||' | \
     while read -r f; do
@@ -95,6 +99,7 @@ for v in FM_PIN_PRE_TCL FM_PIN_TCL; do
   p=$(echo "$CMD" | grep -o "$v=[^ ]*" | head -1 | cut -d= -f2)
   [ -n "$p" ] && [ -f "$p" ] && cp "$p" "$STG/stimulus_$(basename "$p")"
 done
+[ -n "${STIM_INNER:-}" ] && [ -f "$D/fm_pins_inner.tcl" ] && cp "$D/fm_pins_inner.tcl" "$STG/stimulus_fm_pins_inner.tcl"
 
 # --- 运行 ---
 ( cd "$D" && FM_SIDECAR_OUT="$STG" FM_RUN_ID="$RID" \

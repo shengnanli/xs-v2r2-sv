@@ -13,6 +13,7 @@ array set ::AVMAP {}
 proc set_app_var {name value} {
     lappend ::APPLIED [list $name $value]; set ::AVMAP($name) $value; return $value }
 proc get_app_var {name} { if {[info exists ::AVMAP($name)]} { return $::AVMAP($name) }; return "" }
+proc set_user_match {args} { lappend ::USERMATCH $args }
 proc match {} { return 1 }
 
 source $here/fm_native_emit.tcl
@@ -113,6 +114,60 @@ T history_mismatch_detected_at_readback {
     if {![catch {sidecar_capture_appvars}]} { error "history mismatch 未拦截" }
     if {![string match "*history_mismatch*" [lindex $::INTERCEPTED end]]} { error "类别不符" }
     set ::AVMAP(verification_propagate_const_reg_x) true
+}
+# ---- 四审: pin 进受限 child interp ----
+T pin_child_source_snapshot_and_exec {
+    set f [file join $::here .ti_pin1.tcl]
+    set fh [open $f w]; puts $fh {set_user_match r:/WORK/T/a i:/WORK/T/b}; close $fh
+    set ::USERMATCH {}
+    sidecar_pin_source $f
+    file delete $f
+    if {[llength $::USERMATCH] != 1} { error "set_user_match 未透传" }
+    set snaps [glob -nocomplain $::env(FM_SIDECAR_OUT)/sourced_*_.ti_pin1.tcl]
+    if {[llength $snaps] != 1} { error "pin 快照缺失" }
+}
+T pin_child_cannot_touch_parent_guard {
+    # 四审复现: 同解释器可 set ::SIDECAR_PHASE / trace remove 拆除 guard——child 里两者
+    # 只作用于 child 自身, 父层 guard 不受影响: 随后非法 set_app_var 仍被拦
+    set f [file join $::here .ti_pin2.tcl]
+    set fh [open $f w]
+    puts $fh {set ::SIDECAR_PHASE setup}
+    puts $fh {catch {trace remove execution set_app_var enter sidecar_appvar_trace}}
+    puts $fh {set_app_var verification_timeout_limit 100}
+    close $fh
+    set rc [catch {sidecar_pin_source $f} msg]
+    file delete $f
+    if {!$rc} { error "guard 被拆除" }
+    if {![string match "*not-in-registry*" [lindex $::INTERCEPTED end]]} { error "类别不符: $msg" }
+    if {[info exists ::AVMAP(verification_timeout_limit)]} { error "非法值生效" }
+}
+T pin_child_no_file_io {
+    # safe interp 无 open/file/exec → pin 不能写证据目录/覆盖快照
+    set f [file join $::here .ti_pin3.tcl]
+    set fh [open $f w]; puts $fh {open /tmp/evil w}; close $fh
+    set rc [catch {sidecar_pin_source $f} msg]
+    file delete $f
+    if {!$rc} { error "child 竟有 file I/O" }
+}
+T pin_child_nested_source_controlled {
+    # child 内 source 走受控入口: 快照+同缓冲执行
+    set inner [file join $::here .ti_pin_inner.tcl]
+    set outer [file join $::here .ti_pin_outer.tcl]
+    set fh [open $inner w]; puts $fh {set_user_match r:/WORK/T/x i:/WORK/T/y}; close $fh
+    set fh [open $outer w]; puts $fh "source $inner"; close $fh
+    set ::USERMATCH {}
+    sidecar_pin_source $outer
+    file delete $inner $outer
+    if {[llength $::USERMATCH] != 1} { error "嵌套未执行" }
+    if {[llength [glob -nocomplain $::env(FM_SIDECAR_OUT)/sourced_*_.ti_pin_inner.tcl]] != 1} { error "嵌套快照缺失" }
+}
+T snapshot_ledger_tamper_detected {
+    # 执行后篡改快照文件 → capture 前复核拒
+    set snaps [glob $::env(FM_SIDECAR_OUT)/sourced_*_.ti_pin1.tcl]
+    set fh [open [lindex $snaps 0] a]; puts $fh "tamper"; close $fh
+    set rc [catch {sidecar_verify_snapshot_ledger}]
+    if {!$rc} { error "篡改未检出" }
+    if {![string match "*snapshot_tampered*" [lindex $::INTERCEPTED end]]} { error "类别不符" }
 }
 # ---- phase: 首次 match 后 proof appvar 冻结("先放宽-match-恢复"堵死) ----
 T phase_frozen_after_match {

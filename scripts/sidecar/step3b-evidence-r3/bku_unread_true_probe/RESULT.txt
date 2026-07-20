@@ -1,3 +1,0 @@
-SESSION_RESULT bku_unread_true_probe: ERROR	expect_frozen_semantics:verification_verify_unread_compare_points (validator_rc=1 fm_shell_rc=0 make_rc=0 runner_rc=1)
-run_id: R3B-bku_unread_true_probe-1784551503
-impl_commit: f9019288540643cab6373404e838cc60814d577d

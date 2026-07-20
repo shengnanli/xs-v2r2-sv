@@ -127,8 +127,10 @@ proc match_packed_payload { top } {
     if {$n > 0} { puts "PACKED_MATCH: $n points pinned" }
 }
 # 模块本地「匹配前」钉点(FM_PIN_PRE_TCL, 可选): 首次 match 前需 set_user_match 的对象。
+# 四审: sidecar 下 pin 代码进受限 safe child interp(sidecar_pin_source: 一次读取→快照
+# →child 执行同一缓冲; 拿不到父层 guard/trace/证据目录; 嵌套 source 走同一受控入口)。
 if {[info exists env(FM_PIN_PRE_TCL)] && [file exists $env(FM_PIN_PRE_TCL)]} {
-    source $env(FM_PIN_PRE_TCL)
+    if {$SIDECAR_ON} { sidecar_pin_source $env(FM_PIN_PRE_TCL) } else { source $env(FM_PIN_PRE_TCL) }
 }
 match_packed_payload $top
 
@@ -207,7 +209,7 @@ auto_match_flattened_arrays $top
 
 # 模块本地「匹配后」钉点(FM_PIN_TCL, 可选): 层次/叶名差异的一一对应(只 set_user_match, 不约束 ref)。
 if {[info exists env(FM_PIN_TCL)] && [file exists $env(FM_PIN_TCL)]} {
-    source $env(FM_PIN_TCL)
+    if {$SIDECAR_ON} { sidecar_pin_source $env(FM_PIN_TCL) } else { source $env(FM_PIN_TCL) }
     match
 }
 
