@@ -18,12 +18,19 @@ def M(i, r, m):  # expectation 映射
 def P(r, m):     # observed matched pair(无 id)
     return {"ref_path": r, "impl_path": m}
 
+def AV0():  # 九审: 入口 appvars 完整有效值(统一冻结基线 + 按目标绑定项)
+    return {"verification_verify_unread_compare_points": "false",
+            "hdlin_unresolved_modules": "black_box",
+            "hdlin_interface_only": "",
+            "verification_merge_duplicated_registers": "true"}
+
 def expect(**over):
     e = {"run_id": "RID-1", "target": TOP, "top": TOP, "variant": TOP,
          "proof_mode": "signoff-strict", "canonical_baseline_id": BID,
          "ref_digest": H("a"), "impl_digest": H("b"), "script_digest": H("c"),
-         "tool_digest": H("d"),
-         "allow": {"unresolved_blackbox": [], "interface_only": [], "unmatched": []}}
+         "tool_digest": H("d"), "entry_appvars": AV0(),
+         "allow": {"unresolved_blackbox": [], "interface_only": [],
+                   "empty_blackbox": [], "unmatched": []}}
     for k, v in over.items():
         if k == "allow" and isinstance(v, dict):
             e["allow"] = {**e["allow"], **v}
@@ -32,16 +39,24 @@ def expect(**over):
     return e
 
 def OBJ0():
-    return {"matched_blackbox_pairs": [], "interface_only_ref": [], "interface_only_impl": [],
+    return {"matched_blackbox_pairs": [], "matched_unread_notcompared_pairs": [],
+            "matched_dont_verify_pairs": [],
+            "interface_only_ref": [], "interface_only_impl": [],
             "unresolved_blackbox_ref": [], "unresolved_blackbox_impl": [],
-            "unmatched_ref": [], "unmatched_impl": []}
+            "empty_blackbox_ref": [], "empty_blackbox_impl": [],
+            "unmatched_ref": [], "unmatched_impl": [],
+            "unmatched_unread_ref": [], "unmatched_unread_impl": [],
+            "unmatched_dont_verify_ref": [], "unmatched_dont_verify_impl": [],
+            "unmatched_bbox_output_ref": [], "unmatched_bbox_output_impl": [],
+            "unmatched_bbox_input_ref": [], "unmatched_bbox_input_impl": [],
+            "unmatched_primary_input_ref": [], "unmatched_primary_input_impl": []}
 
 def facts(**over):
     f = {"native_verdict": "SUCCEEDED",
          "stats": {"passing": 2055, "failing": 0, "unverified": 0, "aborted": 0, "unread_notcompared": 0},
          "unmatched": {"compare_ref": 0, "compare_impl": 0, "unread_ref": 0, "unread_impl": 0,
                        "bbout_ref": 0, "bbout_impl": 0},
-         "objects": OBJ0(),
+         "objects": OBJ0(), "entry_appvars": AV0(),
          "qualifications": {"dont_verify_objects": [], "elab147": [], "relaxed_appvars": []}}
     for k, v in over.items():
         if "." in k:
@@ -218,6 +233,73 @@ C("pair_wrong_policy_category", "PARTIAL",
              "objects.matched_blackbox_pairs": [P(R0, I0)]},
   env_over={"proof_mode": "assembly"},
   exp=expect(proof_mode="assembly", allow={"interface_only": [M("B", R0, I0)]}))
+
+# ================= v9(3A.2 审定四补丁) =================
+# 补丁1: BBIN/PI zero-only(不被 generic allow.unmatched 吸收; 对称也 PARTIAL)
+C("bbin_nonzero_zero_only", "PARTIAL",
+  fact_over={"objects.unmatched_bbox_input_ref": [R0], "objects.unmatched_bbox_input_impl": [I0]},
+  env_over={"proof_mode": "assembly"}, exp=expect(proof_mode="assembly"))
+C("pi_nonzero_zero_only", "PARTIAL",
+  fact_over={"objects.unmatched_primary_input_impl": [I0]},
+  env_over={"proof_mode": "assembly"}, exp=expect(proof_mode="assembly"))
+C("bbout_list_nonzero_zero_only", "PARTIAL",
+  fact_over={"unmatched.bbout_ref": 1, "unmatched.bbout_impl": 1,
+             "objects.unmatched_bbox_output_ref": [R0], "objects.unmatched_bbox_output_impl": [I0]},
+  env_over={"proof_mode": "assembly"}, exp=expect(proof_mode="assembly"))
+# 补丁1: empty 类与 iface/unresolved 同权分类
+C("empty_pairs_ok", "SUCCEEDED",
+  fact_over={"objects.empty_blackbox_ref": [R0], "objects.empty_blackbox_impl": [I0],
+             "objects.matched_blackbox_pairs": [P(R0, I0)]},
+  env_over={"proof_mode": "assembly"},
+  exp=expect(proof_mode="assembly", allow={"empty_blackbox": [M("E", R0, I0)]}))
+C("empty_pairs_missing_fake_green", "PARTIAL",
+  fact_over={"objects.empty_blackbox_ref": [R0], "objects.empty_blackbox_impl": [I0],
+             "objects.matched_blackbox_pairs": []},
+  env_over={"proof_mode": "assembly"},
+  exp=expect(proof_mode="assembly", allow={"empty_blackbox": [M("E", R0, I0)]}))
+C("empty_iface_category_overlap", "ERROR",
+  fact_over={"objects.empty_blackbox_ref": [R0], "objects.empty_blackbox_impl": [I0],
+             "objects.interface_only_ref": [R0], "objects.interface_only_impl": [I1],
+             "objects.matched_blackbox_pairs": [P(R0, I0)]},
+  env_over={"proof_mode": "assembly"}, exp=expect(proof_mode="assembly"))
+# 补丁2: 计数=列表 llength 派生, 三处单位绑定
+C("unread_count_list_mismatch", "PARTIAL",
+  fact_over={"unmatched.unread_ref": 1},
+  env_over={"proof_mode": "assembly"}, exp=expect(proof_mode="assembly"))
+C("notcompared_count_pairs_mismatch", "PARTIAL",
+  fact_over={"stats.unread_notcompared": 2,
+             "objects.matched_unread_notcompared_pairs": [P(R0, I0)]},
+  env_over={"proof_mode": "assembly"}, exp=expect(proof_mode="assembly"))
+# 补丁2: strict 契约不变——unread 非空仍 PARTIAL(Bku 仍非 clean strict success)
+C("strict_unread_lists_still_partial", "PARTIAL",
+  fact_over={"unmatched.unread_ref": 1, "unmatched.unread_impl": 1,
+             "objects.unmatched_unread_ref": [R0], "objects.unmatched_unread_impl": [I0]})
+# 补丁3: entry appvars 绑定
+C("appvar_missing_key", "ERROR",
+  fact_over={"entry_appvars": {"verification_verify_unread_compare_points": "false"}})
+C("appvar_unread_true_frozen", "ERROR",
+  fact_over={"entry_appvars": {**AV0(), "verification_verify_unread_compare_points": "true"}},
+  exp=expect(entry_appvars={**AV0(), "verification_verify_unread_compare_points": "true"}))
+C("appvar_strict_iface_nonempty", "ERROR",
+  fact_over={"entry_appvars": {**AV0(), "hdlin_interface_only": "DCache"}},
+  exp=expect(entry_appvars={**AV0(), "hdlin_interface_only": "DCache"}))
+C("appvar_env_expect_mismatch", "ERROR",
+  fact_over={"entry_appvars": {**AV0(), "verification_merge_duplicated_registers": "false"}})
+C("appvar_asm_iface_nonempty_ok", "SUCCEEDED",
+  fact_over={"entry_appvars": {**AV0(), "hdlin_interface_only": "RVCExpander"},
+             "objects.interface_only_ref": [R0], "objects.interface_only_impl": [I0],
+             "objects.matched_blackbox_pairs": [P(R0, I0)]},
+  env_over={"proof_mode": "assembly"},
+  exp=expect(proof_mode="assembly",
+             entry_appvars={**AV0(), "hdlin_interface_only": "RVCExpander"},
+             allow={"interface_only": [M("A", R0, I0)]}))
+# 补丁4: native FAILED 最高优先级——policy 全覆盖也不得升级(WAIVED 不进 sidecar)
+C("native_failed_waiver_cannot_upgrade", "FAILED",
+  fact_over={"native_verdict": "FAILED", "stats.failing": 20,
+             "objects.empty_blackbox_ref": [R0], "objects.empty_blackbox_impl": [I0],
+             "objects.matched_blackbox_pairs": [P(R0, I0)]},
+  env_over={"proof_mode": "assembly"},
+  exp=expect(proof_mode="assembly", allow={"empty_blackbox": [M("E", R0, I0)]}))
 
 # ================= v5 回归(适配 observed 模型) =================
 C("iface_wrong_impl_observed", "PARTIAL",

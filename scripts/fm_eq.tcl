@@ -46,8 +46,21 @@ set_app_var hdlin_unresolved_modules black_box
 # 合并由同一逻辑驱动的重复寄存器（如分 bank 的读地址扇出复制：每 bank 一份、
 # 输出级一份，值完全相同）。否则两侧各有 N 个同值寄存器，名字（展平 vs generate
 # 层次）和签名（值相同）都无法配对，导致大量 unmatched。FTQ/IFU 等扇出复制
-# 普遍存在，作为通用设置。
-set_app_var verification_merge_duplicated_registers true
+# 普遍存在，默认 true。
+# 九审(3A.2 审定补丁3): 该值由 FM_MERGE_DUP 入口变量真实绑定——此前 Makefile 声明
+# FM_MERGE_DUP=false 而这里硬编码 true, manifest 声称值与实际证明语义脱节(fail-closed:
+# 非法值退出, 不静默回落)。
+set _mergedup "true"
+if {[info exists env(FM_MERGE_DUP)] && [string trim $env(FM_MERGE_DUP)] ne ""} {
+    set _mergedup [string trim $env(FM_MERGE_DUP)]
+}
+switch -- $_mergedup {
+  "true" - "false" { set_app_var verification_merge_duplicated_registers $_mergedup }
+  default {
+    puts "FM_MODE_ERROR: FM_MERGE_DUP 非法值 $_mergedup"
+    exit 3
+  }
+}
 
 # Reference: Chisel 生成的 golden RTL（SYNTHESIS 关掉随机初始化 initial 块）
 read_sverilog -r -define {SYNTHESIS} $ref_srcs

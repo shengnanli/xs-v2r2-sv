@@ -1,22 +1,20 @@
 #!/usr/bin/env python3
-"""FM sidecar validator(2026-07-19 六审 v6, fail-closed)。
+"""FM sidecar validator(2026-07-20 九审 v9, fail-closed)。
 
-六审根本纠正: **native facts 只装 Formality 实际返回的观察事实**——
- - report_matched_points 有真 ref/impl pair → `matched_blackbox_pairs`(唯一允许 pair 的字段);
- - report_unmatched_points 只有两侧独立 point 列表 → `*_ref`/`*_impl` 独立集合;
- - id/waiver-pair 是 expectation 的 policy, **不进 native facts**(emitter 回填=配置自报=自我验证)。
+observed-facts 模型(六审): native facts 只装 Formality 实际返回的观察事实;
+report_matched_points 是唯一 pair 来源; id/waiver-pair 属 expectation policy。
 
-native/envelope objects(七字段 observed 模型):
-  matched_blackbox_pairs: [{ref_path, impl_path}]   # 仅 FM 真返回的 pair
-  interface_only_ref / interface_only_impl          # 两侧独立观察集合
-  unresolved_blackbox_ref / unresolved_blackbox_impl
-  unmatched_ref / unmatched_impl                    # 两侧独立 point 集合
-
-六审同修:
- - expectation 映射**双射**: 每类别 id/ref_path/impl_path 各自唯一; 跨类别同 id 必须映射同 pair。
- - 计数覆盖: compare count ≥ unmatched 对象数(2 映射 count=1 拒)。
- - **禁抽象 top**: 路径必须严格在 top 之下(r:/WORK/<top>/... 而非等于 r:/WORK/<top>)。
- - FIFO fail-fast: O_NONBLOCK 打开(FIFO 不再阻塞挂死)+同 fd fstat 只对 regular 读+大小上限。
+九审(3A.2 审定四补丁):
+ - objects 扩到 21 字段(3 pair 列表 + 9×2 独立 path 集合, 含 empty_blackbox/bbin/pi/
+   unread/dont_verify 原始集合); allow 增 empty_blackbox 类。
+ - 计数=列表 llength 派生, 4 组单位绑定(compare/unread/unread_notcompared/bbout), 模式无关。
+ - BBOUT/BBIN/PI zero-only(不被 allow.unmatched 吸收, 对称也 PARTIAL)。
+ - pair 三类分类(iface/unresolved/empty), 重叠/混类/未知/单端 → ERROR; 分类 pair 集与
+   policy 各自精确相等。
+ - entry_appvars 三方绑定 + 冻结执行语义(unread=false / unresolved=black_box /
+   strict 下 interface_only 必空)。
+ - native FAILED 最高优先级, 无 WAIVED 升级通道(管理豁免归独立 ledger, 不算通过)。
+详细契约见 SIDECAR_SCHEMA.md(v7)。
 """
 import sys, os, json, math, re, stat, hashlib, argparse, unicodedata
 
@@ -25,19 +23,38 @@ NAT_SCHEMA = "fm-sidecar-native-v1"
 ENV_REQUIRED = {"schema", "run_id", "target", "top", "variant", "proof_mode",
                 "canonical_baseline_id", "inputs_sha256", "script_sha256", "tool",
                 "fm_shell_rc", "native_verdict", "stats", "unmatched", "objects",
-                "qualifications", "native_facts_sha256"}
+                "qualifications", "entry_appvars", "native_facts_sha256"}
 NAT_REQUIRED = {"schema", "run_id", "top", "native_verdict", "stats", "unmatched",
-                "objects", "qualifications"}
+                "objects", "qualifications", "entry_appvars"}
 STATS_KEYS = {"passing", "failing", "unverified", "aborted", "unread_notcompared"}
 UNMATCH_KEYS = {"compare_ref", "compare_impl", "unread_ref", "unread_impl", "bbout_ref", "bbout_impl"}
-OBJ_KEYS = {"matched_blackbox_pairs", "interface_only_ref", "interface_only_impl",
-            "unresolved_blackbox_ref", "unresolved_blackbox_impl",
-            "unmatched_ref", "unmatched_impl"}
+# 九审(3A.2 审定补丁1): 观察对象扩到 21 字段——3 类原生 pair + 3 类黑盒实例两侧 +
+# 默认主集/unread/dont_verify/bbox_output/bbox_input/primary_input 两侧原始集合。
+PAIR_OBJ_KEYS = {"matched_blackbox_pairs", "matched_unread_notcompared_pairs",
+                 "matched_dont_verify_pairs"}
+REF_OBJ_KEYS = {"interface_only_ref", "unresolved_blackbox_ref", "empty_blackbox_ref",
+                "unmatched_ref", "unmatched_unread_ref", "unmatched_dont_verify_ref",
+                "unmatched_bbox_output_ref", "unmatched_bbox_input_ref",
+                "unmatched_primary_input_ref"}
+IMPL_OBJ_KEYS = {"interface_only_impl", "unresolved_blackbox_impl", "empty_blackbox_impl",
+                 "unmatched_impl", "unmatched_unread_impl", "unmatched_dont_verify_impl",
+                 "unmatched_bbox_output_impl", "unmatched_bbox_input_impl",
+                 "unmatched_primary_input_impl"}
+OBJ_KEYS = PAIR_OBJ_KEYS | REF_OBJ_KEYS | IMPL_OBJ_KEYS
+# 九审(补丁1): BBOUT/BBIN/PI 一律 zero-only, 不被 generic allow.unmatched 吸收
+ZERO_ONLY_KEYS = ("unmatched_bbox_output_ref", "unmatched_bbox_output_impl",
+                  "unmatched_bbox_input_ref", "unmatched_bbox_input_impl",
+                  "unmatched_primary_input_ref", "unmatched_primary_input_impl")
 QUAL_KEYS = {"dont_verify_objects", "elab147", "relaxed_appvars"}
 KNOWN_MODES = {"signoff-strict", "assembly", "shadow", "diagnostic-full"}
 EXPECT_KEYS = {"run_id", "target", "top", "variant", "proof_mode", "canonical_baseline_id",
-               "ref_digest", "impl_digest", "script_digest", "tool_digest", "allow"}
-ALLOW_KEYS = {"unresolved_blackbox", "interface_only", "unmatched"}
+               "ref_digest", "impl_digest", "script_digest", "tool_digest",
+               "entry_appvars", "allow"}
+ALLOW_KEYS = {"unresolved_blackbox", "interface_only", "empty_blackbox", "unmatched"}
+# 九审(补丁3): 入口 appvars 完整有效值明文绑定, native/envelope/expectation 三方一致。
+# unread=false 与 unresolved=black_box 是 305 统一冻结执行语义; merge/interface_only 按目标绑定。
+APPVAR_KEYS = {"verification_verify_unread_compare_points", "hdlin_unresolved_modules",
+               "hdlin_interface_only", "verification_merge_duplicated_registers"}
 MAP_KEYS = {"id", "ref_path", "impl_path"}
 PAIR_KEYS = {"ref_path", "impl_path"}
 _TOKEN = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.\-]*")
@@ -213,6 +230,12 @@ def validate_expectation(E):
                 return f"expect_allow_{cat}_impls_not_unique"
         if E["proof_mode"] != "assembly" and any(A[k] for k in ALLOW_KEYS):
             return "expect_allowlist_must_be_empty_for_" + E["proof_mode"]
+        av = E["entry_appvars"]
+        if not isinstance(av, dict) or set(av) != APPVAR_KEYS:
+            return "expect_entry_appvars_fields"
+        for v in av.values():
+            if not (isinstance(v, str) and len(v) < 4096 and _no_ctrl(v)):
+                return "expect_entry_appvars_value"
         return None
     except Exception as e:
         return f"expect_malformed:{type(e).__name__}"
@@ -225,17 +248,24 @@ def _validate_facts_block(sc, where, top):
     ob = sc["objects"]
     if not isinstance(ob, dict) or set(ob) != OBJ_KEYS:
         raise Bad(f"{where}_objects_fields")
-    err = _pairlist(ob["matched_blackbox_pairs"], top)
-    if err:
-        raise Bad(f"{where}_matched_pairs:{err}")
-    for k in ("interface_only_ref", "unresolved_blackbox_ref", "unmatched_ref"):
+    for k in sorted(PAIR_OBJ_KEYS):
+        err = _pairlist(ob[k], top)
+        if err:
+            raise Bad(f"{where}_{k}:{err}")
+    for k in sorted(REF_OBJ_KEYS):
         err = _pathlist(ob[k], top, "ref")
         if err:
             raise Bad(f"{where}_{k}:{err}")
-    for k in ("interface_only_impl", "unresolved_blackbox_impl", "unmatched_impl"):
+    for k in sorted(IMPL_OBJ_KEYS):
         err = _pathlist(ob[k], top, "impl")
         if err:
             raise Bad(f"{where}_{k}:{err}")
+    av = sc["entry_appvars"]
+    if not isinstance(av, dict) or set(av) != APPVAR_KEYS:
+        raise Bad(f"{where}_entry_appvars_fields")
+    for v in av.values():
+        if not (isinstance(v, str) and len(v) < 4096 and _no_ctrl(v)):
+            raise Bad(f"{where}_entry_appvars_value")
     if not isinstance(sc["qualifications"], dict) or set(sc["qualifications"]) != QUAL_KEYS:
         raise Bad(f"{where}_qual_fields")
     for v in list(sc["stats"].values()) + list(sc["unmatched"].values()):
@@ -310,13 +340,26 @@ def verdict(sidecar_path, expectation, actual_rc, native_facts_path):
         return "ERROR", {**q, "reason": f"native_malformed:{type(e).__name__}"}
     if nat["run_id"] != sc["run_id"] or nat["top"] != sc["top"]:
         return "ERROR", {**q, "reason": "native_envelope_identity_mismatch"}
-    for grp in ("native_verdict", "stats", "unmatched", "objects", "qualifications"):
+    for grp in ("native_verdict", "stats", "unmatched", "objects", "qualifications",
+                "entry_appvars"):
         if nat[grp] != sc[grp]:
             return "ERROR", {**q, "reason": f"native_envelope_mismatch:{grp}"}
 
     for k in ("run_id", "target", "top", "variant", "proof_mode", "canonical_baseline_id"):
         if sc[k] != E[k]:
             return "ERROR", {**q, "reason": f"expect_{k}:{sc[k]}!={E[k]}"}
+    # 九审(补丁3): entry appvars 三方一致(native==envelope 已在上组查过)+ 冻结执行语义
+    av = sc["entry_appvars"]
+    if av != E["entry_appvars"]:
+        return "ERROR", {**q, "reason": "entry_appvars!=expectation"}
+    if av["verification_verify_unread_compare_points"] != "false":
+        return "ERROR", {**q, "reason": "frozen_semantics:verify_unread_must_be_false"}
+    if av["hdlin_unresolved_modules"] != "black_box":
+        return "ERROR", {**q, "reason": "frozen_semantics:unresolved_must_be_black_box"}
+    if av["verification_merge_duplicated_registers"] not in ("true", "false"):
+        return "ERROR", {**q, "reason": "entry_appvars:merge_dup_not_bool"}
+    if sc["proof_mode"] in ("signoff-strict", "shadow") and av["hdlin_interface_only"] != "":
+        return "ERROR", {**q, "reason": "strict_interface_only_appvar_nonempty"}
     if sc["inputs_sha256"]["ref_srcs_digest"] != E["ref_digest"]:
         return "ERROR", {**q, "reason": "ref_digest_mismatch"}
     if sc["inputs_sha256"]["impl_srcs_digest"] != E["impl_digest"]:
@@ -348,8 +391,32 @@ def verdict(sidecar_path, expectation, actual_rc, native_facts_path):
     if mode == "shadow":
         return "SHADOW_CHECK", {**q, "reason": "shadow_core_not_driving_outputs"}
 
+    # ---- 九审(补丁2) 计数=列表 llength 派生值, 单位绑定(模式无关, 不一致即拒) ----
+    # 冻结查询: matched -not_compared -status unread / unmatched -r|-i -status unread。
+    # 仅 -status unread 不稳定: verify_unread=true 会话里它返回已验证通过的 20 对,
+    # 不能再称 Not-Compared(3A.2 实证)。
+    if um["compare_ref"] != len(ob["unmatched_ref"]) or \
+       um["compare_impl"] != len(ob["unmatched_impl"]):
+        return "PARTIAL", {**q, "reason": "count_list_mismatch:compare"}
+    if um["unread_ref"] != len(ob["unmatched_unread_ref"]) or \
+       um["unread_impl"] != len(ob["unmatched_unread_impl"]):
+        return "PARTIAL", {**q, "reason": "count_list_mismatch:unread"}
+    if st["unread_notcompared"] != len(ob["matched_unread_notcompared_pairs"]):
+        return "PARTIAL", {**q, "reason": "count_list_mismatch:unread_notcompared"}
+    if um["bbout_ref"] != len(ob["unmatched_bbox_output_ref"]) or \
+       um["bbout_impl"] != len(ob["unmatched_bbox_output_impl"]):
+        return "PARTIAL", {**q, "reason": "count_list_mismatch:bbout"}
+    # ---- 九审(补丁1) BBOUT/BBIN/PI zero-only(两模式一律; 决定3 推广) ----
+    # 非零一律 PARTIAL: Formality 不为这些点提供原生 pair, 不得人工配对/被 allow.unmatched 吸收。
+    for k in ZERO_ONLY_KEYS:
+        if ob[k]:
+            return "PARTIAL", {**q, "reason": f"zero_only:{k}"}
+
     unread_any = st["unread_notcompared"] or um["unread_ref"] or um["unread_impl"]
-    quals_any = ql["dont_verify_objects"] or ql["elab147"] or ql["relaxed_appvars"]
+    # 九审: dont_verify 观察对象(pair 与两侧点集)一律按 qualification 处理(v1 无 policy 通道)
+    quals_any = (ql["dont_verify_objects"] or ql["elab147"] or ql["relaxed_appvars"]
+                 or ob["matched_dont_verify_pairs"]
+                 or ob["unmatched_dont_verify_ref"] or ob["unmatched_dont_verify_impl"])
 
     if mode == "signoff-strict":
         if st["unverified"] or st["aborted"] or unread_any:
@@ -368,26 +435,25 @@ def verdict(sidecar_path, expectation, actual_rc, native_facts_path):
         return "PARTIAL", {**q, "reason": "assembly_unverified/aborted/unread"}
     if um["compare_ref"] != um["compare_impl"]:
         return "PARTIAL", {**q, "reason": f"assembly_count_asym_compare:{um['compare_ref']}({um['compare_impl']})"}
-    # 决定3(3A.1 审定): bbout zero-only——非零一律 PARTIAL, 即使两侧对称也不得人工配对
-    # 升级(Formality 不为 unmatched bbox-output 提供原生 pair)。
-    if um["bbout_ref"] != 0 or um["bbout_impl"] != 0:
-        return "PARTIAL", {**q, "reason": f"assembly_bbout_nonzero:{um['bbout_ref']}/{um['bbout_impl']}"}
-    # 决定2(3A.1 审定): matched pairs 保留为唯一原生观察事实, validator 按独立采集的
-    # black-box 实例集合分类。类别重叠/混类/未知类/仅一端命中 → ERROR(observed facts 不自洽,
-    # 先于 policy 比对)。实证锚: NewIFU 21 pair ↔ 21+21 interface-only 实例精确一致。
+    # 决定2(3A.1 审定)+九审补丁1: matched pairs 保留为唯一原生观察事实, validator 按独立
+    # 采集的 black-box 实例集合分三类(iface/unresolved/empty)。类别重叠/混类/未知类/仅一端
+    # 命中 → ERROR(observed facts 不自洽, 先于 policy 比对)。实证锚: NewIFU 21 pair↔21+21
+    # iface 实例、IMSIC 8 pair↔8+8 'u' 实例、DCacheWrapper 1 pair↔1+1 'e' 实例。
+    # 其余 flag(s/ut/cp/ir/f/m)在 emitter 解析层直接 ERROR, 不产 native facts(schema 契约)。
     ir, ii = set(ob["interface_only_ref"]), set(ob["interface_only_impl"])
     ur, ui = set(ob["unresolved_blackbox_ref"]), set(ob["unresolved_blackbox_impl"])
-    if (ir & ur) or (ii & ui):
+    er, ei = set(ob["empty_blackbox_ref"]), set(ob["empty_blackbox_impl"])
+    if (ir & ur) or (ir & er) or (ur & er) or (ii & ui) or (ii & ei) or (ui & ei):
         return "ERROR", {**q, "reason": "assembly_bb_instance_category_overlap"}
-    p_iface, p_unres = [], []
+    def _cls(x, a, b, c):
+        return "i" if x in a else "u" if x in b else "e" if x in c else None
+    p_iface, p_unres, p_empty = [], [], []
     for m in ob["matched_blackbox_pairs"]:
         r, i = m["ref_path"], m["impl_path"]
-        if r in ir and i in ii and r not in ur and i not in ui:
-            p_iface.append((r, i))
-        elif r in ur and i in ui and r not in ir and i not in ii:
-            p_unres.append((r, i))
-        else:
+        cr, ci = _cls(r, ir, ur, er), _cls(i, ii, ui, ei)
+        if cr is None or ci is None or cr != ci:
             return "ERROR", {**q, "reason": "assembly_pair_class_unknown_or_mixed"}
+        {"i": p_iface, "u": p_unres, "e": p_empty}[cr].append((r, i))
     # 观察集合 == expectation 映射的投影(独立集合, 不含推测 pair)
     def proj(cat, side):
         return sorted(m[side] for m in A[cat])
@@ -400,18 +466,15 @@ def verdict(sidecar_path, expectation, actual_rc, native_facts_path):
     if ob["unresolved_blackbox_ref"] != proj("unresolved_blackbox", "ref_path") or \
        ob["unresolved_blackbox_impl"] != proj("unresolved_blackbox", "impl_path"):
         return "PARTIAL", {**q, "reason": "assembly_unresolved_bb_observed!=policy"}
-    # 分类后的 pair 集分别与对应 policy 精确相等(堵"interface-only 实例正确但
-    # matched pair 为空仍 SUCCEEDED"假绿; 空列表绕过继续堵死)
-    if sorted(p_iface) != sorted((m["ref_path"], m["impl_path"]) for m in A["interface_only"]):
-        return "PARTIAL", {**q, "reason": "assembly_iface_pairs!=policy"}
-    if sorted(p_unres) != sorted((m["ref_path"], m["impl_path"]) for m in A["unresolved_blackbox"]):
-        return "PARTIAL", {**q, "reason": "assembly_unresolved_pairs!=policy"}
-    # 七审计数单位对齐: report_unmatched_points -list 返回 point names, compare_* 也是 point 数
-    # → 同单位, 列表声称完整则**精确相等**(compare=3 列表2项 拒)。
-    if um["compare_ref"] != len(ob["unmatched_ref"]):
-        return "PARTIAL", {**q, "reason": f"assembly_count_list_mismatch_ref:{um['compare_ref']}!={len(ob['unmatched_ref'])}"}
-    if um["compare_impl"] != len(ob["unmatched_impl"]):
-        return "PARTIAL", {**q, "reason": f"assembly_count_list_mismatch_impl:{um['compare_impl']}!={len(ob['unmatched_impl'])}"}
+    if ob["empty_blackbox_ref"] != proj("empty_blackbox", "ref_path") or \
+       ob["empty_blackbox_impl"] != proj("empty_blackbox", "impl_path"):
+        return "PARTIAL", {**q, "reason": "assembly_empty_bb_observed!=policy"}
+    # 分类后的 pair 集分别与对应 policy 精确相等(堵"实例正确但 matched pair 为空仍
+    # SUCCEEDED"假绿; 空列表绕过继续堵死; empty 类同权处理)
+    for got, cat in ((p_iface, "interface_only"), (p_unres, "unresolved_blackbox"),
+                     (p_empty, "empty_blackbox")):
+        if sorted(got) != sorted((m["ref_path"], m["impl_path"]) for m in A[cat]):
+            return "PARTIAL", {**q, "reason": f"assembly_{cat}_pairs!=policy"}
     if quals_any:
         return "PARTIAL", {**q, "reason": "assembly_qualifications"}
     return "SUCCEEDED", q
