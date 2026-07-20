@@ -1,0 +1,16 @@
+kind	path	sha256
+infra	/home/eda/xs-env/xs-signoff/scripts/sidecar/fm_sidecar_run.sh	ba8e0ce89f8fa7f03c8f7789327f78e1425c3e805bd943b34a16c6627e47764c
+infra	/home/eda/xs-env/xs-signoff/scripts/ut_common.mk	bd484c45cf9bb5bce5af9f5dc736a4686600c24732452c545c968cff9bb20a53
+infra	/home/eda/xs-env/xs-signoff/scripts/sidecar/fm_closure_digest.py	5ee7e694620c54600ce493b0c0af47d614a883e105073736d9ed1e228a6be906
+infra	/home/eda/xs-env/xs-signoff/scripts/sidecar/fm_sidecar_verdict.py	ebbef3f97f1e762b803f7d9935565cf804cc5e726d32f971c1b4cbf60ec71ead
+infra	/home/eda/xs-env/xs-signoff/scripts/sidecar/step3b_archive_check.sh	e7f178494afcefffa1be635bf32eb41c21603842afbd355d13ecd790cb0282db
+executed_snapshot	sourced_000_fm_eq.tcl	2b64f30763790e90a68b21f29d050df8b27a53ee78c4377b5f60a388b0be1162
+executed_snapshot	sourced_001_fm_native_emit.tcl	6446f29c964a664caeb9058395e76e3cc0a0c3a83b76f55aea9c0c9ab026dbdf
+executed_snapshot	sourced_002_fm_pins_pre.tcl	c30b5230a6248269a10e20e76a4bff53ffc7d77da95369ffb31d630c7ea6abdc
+impl_commit	b7ebd4b3741525b20b96784be54a6d0ac68b6a7a	-
+main_tracked_dirty	0	-
+worktree_head_pre	b7ebd4b3741525b20b96784be54a6d0ac68b6a7a	-
+worktree_head_post	b7ebd4b3741525b20b96784be54a6d0ac68b6a7a	-
+worktree_tracked_dirty_pre	0	-
+worktree_tracked_dirty_post	0	-
+worktree_untracked_files	1	-
