@@ -1,0 +1,13 @@
+kind	path	sha256
+infra	/home/eda/xs-env/xs-signoff/scripts/sidecar/fm_sidecar_run.sh	fbebcef4bc395eb5f098a3fd979733f304c0abb15d67202cfbc256bfbb47875d
+infra	/home/eda/xs-env/xs-signoff/scripts/ut_common.mk	bd484c45cf9bb5bce5af9f5dc736a4686600c24732452c545c968cff9bb20a53
+infra	/home/eda/xs-env/xs-signoff/scripts/sidecar/fm_closure_digest.py	5ee7e694620c54600ce493b0c0af47d614a883e105073736d9ed1e228a6be906
+infra	/home/eda/xs-env/xs-signoff/scripts/sidecar/fm_sidecar_verdict.py	ebbef3f97f1e762b803f7d9935565cf804cc5e726d32f971c1b4cbf60ec71ead
+infra	/home/eda/xs-env/xs-signoff/scripts/sidecar/step3b_archive_check.sh	e7f178494afcefffa1be635bf32eb41c21603842afbd355d13ecd790cb0282db
+impl_commit	0bfb2d0cdbdeffa4c3304b426d178cf5b2090309	-
+main_tracked_dirty	0	-
+worktree_head_pre	0bfb2d0cdbdeffa4c3304b426d178cf5b2090309	-
+worktree_head_post	0bfb2d0cdbdeffa4c3304b426d178cf5b2090309	-
+worktree_tracked_dirty_pre	0	-
+worktree_tracked_dirty_post	0	-
+worktree_untracked_files	1	-
