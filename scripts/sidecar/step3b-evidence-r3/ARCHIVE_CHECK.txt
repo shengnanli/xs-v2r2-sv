@@ -1,0 +1,15 @@
+# clean-archive 语义校验(四审强化checker: expected_impl_commit+类型化pathset+TOOLS语义+RUNNER_RC)
+evidence_commit: b1f915f4edcf614fdee99d88b49051862913f689
+implementation_commit(session HEAD): 6ff1fc843e37c8c21e44a609ee4ce21ec0cefbe8
+checker_commit: b834cebed85449eb8a16d340bdfbfe446677c76b
+  bku_strict: OK
+  bku_unread_true_probe: OK
+  imsic_strict: OK
+  intercept_direct: OK
+  intercept_dynamic: OK
+  intercept_nested: OK
+ARCHIVE_CHECK: bad=0
+--- 负测(空MANIFEST六目录/篡改TOOLS自洽清单) ---
+PASS  empty_manifest_six_dirs
+PASS  tampered_tools_selfconsistent_manifest
+2/2 passed
