@@ -23,7 +23,7 @@ def expect(**over):
          "proof_mode": "signoff-strict", "canonical_baseline_id": BID,
          "ref_digest": H("a"), "impl_digest": H("b"), "script_digest": H("c"),
          "tool_digest": H("d"),
-         "allow": {"blackbox": [], "interface_only": [], "unmatched": []}}
+         "allow": {"unresolved_blackbox": [], "interface_only": [], "unmatched": []}}
     for k, v in over.items():
         if k == "allow" and isinstance(v, dict):
             e["allow"] = {**e["allow"], **v}
@@ -110,7 +110,8 @@ C("strict_clean_success", "SUCCEEDED")
 AS_FACTS = dict(fact_over={
     "unmatched.compare_ref": 2, "unmatched.compare_impl": 2,
     "objects.unmatched_ref": [R0, R1], "objects.unmatched_impl": [I0, I1],
-    "objects.interface_only_ref": [R0], "objects.interface_only_impl": [I0]},
+    "objects.interface_only_ref": [R0], "objects.interface_only_impl": [I0],
+    "objects.matched_blackbox_pairs": [P(R0, I0)]},   # v8: iface 实例必产 matched pair
     env_over={"proof_mode": "assembly"})
 AEXP = expect(proof_mode="assembly",
               allow={"unmatched": [M("A", R0, I0), M("B", R1, I1)],
@@ -152,28 +153,71 @@ C("native_fifo_failfast", "ERROR", native_fifo=True)
 # 1a. 跨类别: 同 ref 对应两个 impl(blackbox r0→i0 + unmatched r0→i1)
 C("cross_cat_ref_two_impls", "ERROR", **AS_FACTS,
   exp=expect(proof_mode="assembly",
-             allow={"blackbox": [M("B", R0, I0)],
+             allow={"unresolved_blackbox": [M("B", R0, I0)],
                     "unmatched": [M("U", R0, I1), M("B2", R1, I1)],
                     "interface_only": [M("A", R1, I1)]}))
 # 1b. 跨类别: 同一 pair 两个 id
 C("cross_cat_same_pair_two_ids", "ERROR", **AS_FACTS,
   exp=expect(proof_mode="assembly",
-             allow={"blackbox": [M("B", R0, I0)],
+             allow={"unresolved_blackbox": [M("B", R0, I0)],
                     "unmatched": [M("U", R0, I0), M("B2", R1, I1)],
                     "interface_only": [M("A", R1, I1)]}))
-# 2. matched-blackbox 空列表绕过: allow.blackbox 非空+observed unresolved 匹配+matched=[]
+# 2. matched-blackbox 空列表绕过: allow.unresolved_blackbox 非空+observed unresolved 匹配+matched=[]
 C("matched_empty_bypass", "PARTIAL",
-  fact_over={"unmatched.bbout_ref": 2, "unmatched.bbout_impl": 2,
-             "objects.unresolved_blackbox_ref": [R0], "objects.unresolved_blackbox_impl": [I0],
+  fact_over={"objects.unresolved_blackbox_ref": [R0], "objects.unresolved_blackbox_impl": [I0],
              "objects.matched_blackbox_pairs": []},
   env_over={"proof_mode": "assembly"},
-  exp=expect(proof_mode="assembly", allow={"blackbox": [M("A", R0, I0)]}))
+  exp=expect(proof_mode="assembly", allow={"unresolved_blackbox": [M("A", R0, I0)]}))
 # 3. 计数/列表单位对齐: compare=3 列表2项(两方向)
 C("count_gt_list", "PARTIAL",
   fact_over={"unmatched.compare_ref": 3, "unmatched.compare_impl": 3,
              "objects.unmatched_ref": [R0, R1], "objects.unmatched_impl": [I0, I1],
              "objects.interface_only_ref": [R0], "objects.interface_only_impl": [I0]},
   env_over={"proof_mode": "assembly"}, exp=AEXP)
+
+# ================= v8(3A.1 审定: 决定2 pair 分类 + 决定3 bbout zero-only) =================
+# 审查点名假绿A: interface-only 实例正确但 matched pair 为空 → 不得 SUCCEEDED
+C("iface_pairs_empty_fake_green", "PARTIAL",
+  fact_over={"unmatched.compare_ref": 2, "unmatched.compare_impl": 2,
+             "objects.unmatched_ref": [R0, R1], "objects.unmatched_impl": [I0, I1],
+             "objects.interface_only_ref": [R0], "objects.interface_only_impl": [I0],
+             "objects.matched_blackbox_pairs": []},
+  env_over={"proof_mode": "assembly"}, exp=AEXP)
+# 审查点名假绿B(决定3): bbout 两侧对称非零 → 不得 SUCCEEDED(zero-only)
+C("bbout_symmetric_nonzero", "PARTIAL",
+  fact_over={"unmatched.bbout_ref": 3, "unmatched.bbout_impl": 3},
+  env_over={"proof_mode": "assembly"}, exp=expect(proof_mode="assembly"))
+# pair 端点不在任何实例集合(未知类) → ERROR
+C("pair_unknown_class", "ERROR",
+  fact_over={"objects.matched_blackbox_pairs": [P(R1, I1)]},
+  env_over={"proof_mode": "assembly"}, exp=expect(proof_mode="assembly"))
+# pair 混类(ref∈iface, impl∈unresolved) → ERROR(先于 policy 比对)
+C("pair_mixed_class", "ERROR",
+  fact_over={"objects.interface_only_ref": [R0], "objects.unresolved_blackbox_impl": [I0],
+             "objects.matched_blackbox_pairs": [P(R0, I0)]},
+  env_over={"proof_mode": "assembly"}, exp=expect(proof_mode="assembly"))
+# pair 仅一端命中(ref∈iface, impl 无归属) → ERROR
+C("pair_one_end_only", "ERROR",
+  fact_over={"objects.interface_only_ref": [R0], "objects.matched_blackbox_pairs": [P(R0, I0)]},
+  env_over={"proof_mode": "assembly"}, exp=expect(proof_mode="assembly"))
+# 实例集合类别重叠(同 ref 同时 iface+unresolved) → ERROR
+C("bb_category_overlap", "ERROR",
+  fact_over={"objects.interface_only_ref": [R0], "objects.interface_only_impl": [I0],
+             "objects.unresolved_blackbox_ref": [R0], "objects.unresolved_blackbox_impl": [I1],
+             "objects.matched_blackbox_pairs": [P(R0, I0)]},
+  env_over={"proof_mode": "assembly"}, exp=expect(proof_mode="assembly"))
+# 正样本: unresolved 实例+pair+policy 三方一致 → SUCCEEDED
+C("unresolved_pairs_ok", "SUCCEEDED",
+  fact_over={"objects.unresolved_blackbox_ref": [R0], "objects.unresolved_blackbox_impl": [I0],
+             "objects.matched_blackbox_pairs": [P(R0, I0)]},
+  env_over={"proof_mode": "assembly"},
+  exp=expect(proof_mode="assembly", allow={"unresolved_blackbox": [M("B", R0, I0)]}))
+# 负样本: pair 归 unresolved 类但 policy 写在 interface_only 类 → PARTIAL(类别不可互换)
+C("pair_wrong_policy_category", "PARTIAL",
+  fact_over={"objects.unresolved_blackbox_ref": [R0], "objects.unresolved_blackbox_impl": [I0],
+             "objects.matched_blackbox_pairs": [P(R0, I0)]},
+  env_over={"proof_mode": "assembly"},
+  exp=expect(proof_mode="assembly", allow={"interface_only": [M("B", R0, I0)]}))
 
 # ================= v5 回归(适配 observed 模型) =================
 C("iface_wrong_impl_observed", "PARTIAL",
@@ -213,13 +257,13 @@ C("asm_count_asym_bbout", "PARTIAL",
   fact_over={"unmatched.bbout_ref": 5, "unmatched.bbout_impl": 0,
              "objects.unresolved_blackbox_ref": [R0], "objects.unresolved_blackbox_impl": [I0]},
   env_over={"proof_mode": "assembly"},
-  exp=expect(proof_mode="assembly", allow={"blackbox": [M("A", R0, I0)]}))
+  exp=expect(proof_mode="assembly", allow={"unresolved_blackbox": [M("A", R0, I0)]}))
 C("both_empty_target", "ERROR", env_over={"target": ""}, exp=expect(target=""))
 C("both_traversal_variant", "ERROR", env_over={"variant": "../../evil"},
   exp=expect(variant="../../evil"))
 C("both_int_runid", "ERROR", env_over={"run_id": 5}, exp=expect(run_id=5))
 C("strict_expect_with_allowlist", "ERROR",
-  exp=expect(allow={"blackbox": [M("A", R0, I0)]}))
+  exp=expect(allow={"unresolved_blackbox": [M("A", R0, I0)]}))
 C("asm_count_only_no_objects", "PARTIAL",
   fact_over={"unmatched.compare_ref": 5, "unmatched.compare_impl": 5},
   env_over={"proof_mode": "assembly"}, exp=AEXP)

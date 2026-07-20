@@ -37,7 +37,7 @@ QUAL_KEYS = {"dont_verify_objects", "elab147", "relaxed_appvars"}
 KNOWN_MODES = {"signoff-strict", "assembly", "shadow", "diagnostic-full"}
 EXPECT_KEYS = {"run_id", "target", "top", "variant", "proof_mode", "canonical_baseline_id",
                "ref_digest", "impl_digest", "script_digest", "tool_digest", "allow"}
-ALLOW_KEYS = {"blackbox", "interface_only", "unmatched"}
+ALLOW_KEYS = {"unresolved_blackbox", "interface_only", "unmatched"}
 MAP_KEYS = {"id", "ref_path", "impl_path"}
 PAIR_KEYS = {"ref_path", "impl_path"}
 _TOKEN = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.\-]*")
@@ -368,8 +368,26 @@ def verdict(sidecar_path, expectation, actual_rc, native_facts_path):
         return "PARTIAL", {**q, "reason": "assembly_unverified/aborted/unread"}
     if um["compare_ref"] != um["compare_impl"]:
         return "PARTIAL", {**q, "reason": f"assembly_count_asym_compare:{um['compare_ref']}({um['compare_impl']})"}
-    if um["bbout_ref"] != um["bbout_impl"]:
-        return "PARTIAL", {**q, "reason": f"assembly_count_asym_bbout:{um['bbout_ref']}({um['bbout_impl']})"}
+    # 决定3(3A.1 审定): bbout zero-only——非零一律 PARTIAL, 即使两侧对称也不得人工配对
+    # 升级(Formality 不为 unmatched bbox-output 提供原生 pair)。
+    if um["bbout_ref"] != 0 or um["bbout_impl"] != 0:
+        return "PARTIAL", {**q, "reason": f"assembly_bbout_nonzero:{um['bbout_ref']}/{um['bbout_impl']}"}
+    # 决定2(3A.1 审定): matched pairs 保留为唯一原生观察事实, validator 按独立采集的
+    # black-box 实例集合分类。类别重叠/混类/未知类/仅一端命中 → ERROR(observed facts 不自洽,
+    # 先于 policy 比对)。实证锚: NewIFU 21 pair ↔ 21+21 interface-only 实例精确一致。
+    ir, ii = set(ob["interface_only_ref"]), set(ob["interface_only_impl"])
+    ur, ui = set(ob["unresolved_blackbox_ref"]), set(ob["unresolved_blackbox_impl"])
+    if (ir & ur) or (ii & ui):
+        return "ERROR", {**q, "reason": "assembly_bb_instance_category_overlap"}
+    p_iface, p_unres = [], []
+    for m in ob["matched_blackbox_pairs"]:
+        r, i = m["ref_path"], m["impl_path"]
+        if r in ir and i in ii and r not in ur and i not in ui:
+            p_iface.append((r, i))
+        elif r in ur and i in ui and r not in ir and i not in ii:
+            p_unres.append((r, i))
+        else:
+            return "ERROR", {**q, "reason": "assembly_pair_class_unknown_or_mixed"}
     # 观察集合 == expectation 映射的投影(独立集合, 不含推测 pair)
     def proj(cat, side):
         return sorted(m[side] for m in A[cat])
@@ -379,22 +397,21 @@ def verdict(sidecar_path, expectation, actual_rc, native_facts_path):
     if ob["interface_only_ref"] != proj("interface_only", "ref_path") or \
        ob["interface_only_impl"] != proj("interface_only", "impl_path"):
         return "PARTIAL", {**q, "reason": "assembly_interface_only_observed!=policy"}
-    if ob["unresolved_blackbox_ref"] != proj("blackbox", "ref_path") or \
-       ob["unresolved_blackbox_impl"] != proj("blackbox", "impl_path"):
+    if ob["unresolved_blackbox_ref"] != proj("unresolved_blackbox", "ref_path") or \
+       ob["unresolved_blackbox_impl"] != proj("unresolved_blackbox", "impl_path"):
         return "PARTIAL", {**q, "reason": "assembly_unresolved_bb_observed!=policy"}
-    # matched pairs 是唯一的工具原生 pair: 与 policy 声明的 pair 精确相等
-    want_pairs = sorted((m["ref_path"], m["impl_path"]) for m in A["blackbox"])
-    got_pairs = sorted((m["ref_path"], m["impl_path"]) for m in ob["matched_blackbox_pairs"])
-    if got_pairs != want_pairs:      # 七审: 永远精确(空列表绕过堵死); 单位关系待 Step3A 实证后细化
-        return "PARTIAL", {**q, "reason": "assembly_matched_pairs!=policy"}
+    # 分类后的 pair 集分别与对应 policy 精确相等(堵"interface-only 实例正确但
+    # matched pair 为空仍 SUCCEEDED"假绿; 空列表绕过继续堵死)
+    if sorted(p_iface) != sorted((m["ref_path"], m["impl_path"]) for m in A["interface_only"]):
+        return "PARTIAL", {**q, "reason": "assembly_iface_pairs!=policy"}
+    if sorted(p_unres) != sorted((m["ref_path"], m["impl_path"]) for m in A["unresolved_blackbox"]):
+        return "PARTIAL", {**q, "reason": "assembly_unresolved_pairs!=policy"}
     # 七审计数单位对齐: report_unmatched_points -list 返回 point names, compare_* 也是 point 数
     # → 同单位, 列表声称完整则**精确相等**(compare=3 列表2项 拒)。
     if um["compare_ref"] != len(ob["unmatched_ref"]):
         return "PARTIAL", {**q, "reason": f"assembly_count_list_mismatch_ref:{um['compare_ref']}!={len(ob['unmatched_ref'])}"}
     if um["compare_impl"] != len(ob["unmatched_impl"]):
         return "PARTIAL", {**q, "reason": f"assembly_count_list_mismatch_impl:{um['compare_impl']}!={len(ob['unmatched_impl'])}"}
-    # bbout_* 是 unmatched black-box OUTPUT 的点数, 非 instance 数——不可与 instance 数做
-    # bool/大小比较(七审); 仅保留两侧对称(上方已查), 单位关系待 Step3A 实证。
     if quals_any:
         return "PARTIAL", {**q, "reason": "assembly_qualifications"}
     return "SUCCEEDED", q

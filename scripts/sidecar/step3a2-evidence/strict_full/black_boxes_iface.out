@@ -1,0 +1,12 @@
+**************************************************
+Report         : black_boxes
+                 -interface_only 
+
+Reference      : r:/WORK/Bku
+Implementation : i:/WORK/Bku
+Version        : V-2023.12-SP3
+Date           : Mon Jul 20 01:43:01 2026
+**************************************************
+Information: Reporting black boxes for current reference and implementation designs. (FM-184)
+Information: No 'interface_only black boxes' matched current 'reference and implementation designs'. (FM-249)
+1

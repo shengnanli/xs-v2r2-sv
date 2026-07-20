@@ -1,0 +1,34 @@
+FM_RESULT: Verification WAIVED for DCacheWrapper (perf-0/10 black-box symmetry false-positive waived; 20 pts)
+SMOKE	verification_status	rc=0	ret_llen=1	out_len=7
+SMOKE	status_short	rc=0	ret_llen=1	out_len=705
+SMOKE	matched_bbox_list	rc=0	ret_llen=1	out_len=67
+SMOKE	matched_all_list	rc=0	ret_llen=12752	out_len=1596816
+SMOKE	unm_ref_default	rc=0	ret_llen=0	out_len=0
+SMOKE	unm_impl_default	rc=0	ret_llen=0	out_len=0
+SMOKE	unm_ref_none	rc=0	ret_llen=0	out_len=0
+SMOKE	unm_impl_none	rc=0	ret_llen=0	out_len=0
+SMOKE	unm_ref_unread	rc=0	ret_llen=0	out_len=0
+SMOKE	unm_impl_unread	rc=0	ret_llen=0	out_len=0
+SMOKE	unm_ref_dontv	rc=0	ret_llen=0	out_len=0
+SMOKE	unm_impl_dontv	rc=0	ret_llen=0	out_len=0
+SMOKE	unm_ref_const	rc=0	ret_llen=0	out_len=0
+SMOKE	unm_impl_const	rc=0	ret_llen=0	out_len=0
+SMOKE	unm_ref_bbout	rc=0	ret_llen=0	out_len=0
+SMOKE	unm_impl_bbout	rc=0	ret_llen=0	out_len=0
+SMOKE	unm_ref_bbin	rc=0	ret_llen=0	out_len=0
+SMOKE	unm_impl_bbin	rc=0	ret_llen=0	out_len=0
+SMOKE	unm_ref_pi_input	rc=0	ret_llen=0	out_len=0
+SMOKE	unm_impl_pi_input	rc=0	ret_llen=0	out_len=0
+SMOKE	unm_ref_pi_port	rc=0	ret_llen=0	out_len=0
+SMOKE	matched_unread_list	rc=0	ret_llen=0	out_len=0
+SMOKE	matched_dontv_list	rc=0	ret_llen=0	out_len=0
+SMOKE	matched_bbout_list	rc=0	ret_llen=2964	out_len=400820
+SMOKE	black_boxes_default	rc=0	ret_llen=1	out_len=1879
+SMOKE	black_boxes_unresolved	rc=0	ret_llen=1	out_len=515
+SMOKE	black_boxes_iface	rc=0	ret_llen=1	out_len=523
+SMOKE	failing_list	rc=0	ret_llen=20	out_len=2332
+SMOKE	unverified_list	rc=0	ret_llen=364	out_len=42740
+SMOKE	aborted_list	rc=0	ret_llen=0	out_len=0
+SMOKE	passing_list	rc=0	ret_llen=6184	out_len=778750
+SMOKE	dont_verify_rpt	rc=0	ret_llen=1	out_len=322
+SMOKE32_DONE

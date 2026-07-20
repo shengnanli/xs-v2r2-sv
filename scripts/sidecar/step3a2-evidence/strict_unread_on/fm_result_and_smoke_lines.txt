@@ -1,0 +1,34 @@
+FM_RESULT: Verification FAILED or INCONCLUSIVE for Bku
+SMOKE	verification_status	rc=0	ret_llen=1	out_len=7
+SMOKE	status_short	rc=0	ret_llen=1	out_len=663
+SMOKE	matched_bbox_list	rc=0	ret_llen=0	out_len=0
+SMOKE	matched_all_list	rc=0	ret_llen=2396	out_len=237627
+SMOKE	unm_ref_default	rc=0	ret_llen=1	out_len=42
+SMOKE	unm_impl_default	rc=0	ret_llen=456	out_len=20616
+SMOKE	unm_ref_none	rc=0	ret_llen=0	out_len=0
+SMOKE	unm_impl_none	rc=0	ret_llen=0	out_len=0
+SMOKE	unm_ref_unread	rc=0	ret_llen=0	out_len=0
+SMOKE	unm_impl_unread	rc=0	ret_llen=0	out_len=0
+SMOKE	unm_ref_dontv	rc=0	ret_llen=0	out_len=0
+SMOKE	unm_impl_dontv	rc=0	ret_llen=0	out_len=0
+SMOKE	unm_ref_const	rc=0	ret_llen=1	out_len=42
+SMOKE	unm_impl_const	rc=0	ret_llen=456	out_len=20616
+SMOKE	unm_ref_bbout	rc=0	ret_llen=0	out_len=0
+SMOKE	unm_impl_bbout	rc=0	ret_llen=0	out_len=0
+SMOKE	unm_ref_bbin	rc=0	ret_llen=0	out_len=0
+SMOKE	unm_impl_bbin	rc=0	ret_llen=0	out_len=0
+SMOKE	unm_ref_pi_input	rc=0	ret_llen=0	out_len=0
+SMOKE	unm_impl_pi_input	rc=0	ret_llen=0	out_len=0
+SMOKE	unm_ref_pi_port	rc=0	ret_llen=0	out_len=0
+SMOKE	matched_unread_list	rc=0	ret_llen=20	out_len=1656
+SMOKE	matched_dontv_list	rc=0	ret_llen=0	out_len=0
+SMOKE	matched_bbout_list	rc=0	ret_llen=0	out_len=0
+SMOKE	black_boxes_default	rc=0	ret_llen=1	out_len=454
+SMOKE	black_boxes_unresolved	rc=0	ret_llen=1	out_len=495
+SMOKE	black_boxes_iface	rc=0	ret_llen=1	out_len=503
+SMOKE	failing_list	rc=0	ret_llen=1	out_len=47
+SMOKE	unverified_list	rc=0	ret_llen=0	out_len=0
+SMOKE	aborted_list	rc=0	ret_llen=0	out_len=0
+SMOKE	passing_list	rc=0	ret_llen=2043	out_len=203491
+SMOKE	dont_verify_rpt	rc=0	ret_llen=1	out_len=302
+SMOKE32_DONE
