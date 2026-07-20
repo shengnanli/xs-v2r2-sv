@@ -1,0 +1,10 @@
+# clean-archive 自校验(step3b_archive_check.sh)
+evidence_commit: a630f4614a500355e8faec4ef04b7e633d874ba0
+implementation_commit: 194737e
+  bku_strict: manifest不符=0 缺失=0 COMPLETE=OK
+  bku_unread_true_probe: manifest不符=0 缺失=0 COMPLETE=OK
+  imsic_strict: manifest不符=0 缺失=0 COMPLETE=OK
+  intercept_direct: manifest不符=0 缺失=0 COMPLETE=OK
+  intercept_dynamic: manifest不符=0 缺失=0 COMPLETE=OK
+  intercept_nested: manifest不符=0 缺失=0 COMPLETE=OK
+ARCHIVE_CHECK(a630f4614a500355e8faec4ef04b7e633d874ba0): sessions=6 bad=0
