@@ -1,0 +1,9 @@
+# target	proof_mode	required_verdict	allow_ref	rationale
+# 设计边界声明(唯一权威); required_verdict 为诚实现状, 失败不配置成通过。
+# 代表性 smoke 集(6类): 其余目标默认 UNVERIFIED(未声明=不算签核绿灯)。
+Alu	signoff-strict	SUCCEEDED		ST替换已证strict可替换等价(passing275/unread0/无objects); sidecar实测SUCCEEDED
+Bku	signoff-strict	PARTIAL		firtool裁剪valids致19 unread compare点; 契约verify_unread=false下strict必PARTIAL, 不掩盖
+PtwCache	signoff-strict	PARTIAL		custom fm入口; strict unread!=0; 契约要求unread=0, 不切assembly掩盖
+DCacheWrapper	assembly	FAILED		fmbb; perf黑盒对称假阳性native FAILED; 不得assembly policy升级, 须修证明环境/RTL
+Predictor	shadow	SHADOW_CHECK		可读核不驱动输出(shadow), 只比探针; 非可替换证明
+NewIFU	assembly	PARTIAL		assembly无逐对象policy下诚实PARTIAL(有interface_only实例+unmatched); 得SUCCEEDED须声明设计边界allowlist(未做, 不反向从日志生成)
