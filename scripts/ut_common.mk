@@ -65,6 +65,7 @@ fm-%:
 	fm_shell -64 -work_path fm_work/$* -file $(XSSV_HOME)/scripts/fm_eq.tcl \
 	    > fm_work/$*/fm.log 2>&1; \
 	rc=$$?; \
+	if [ -n "$$FM_SIDECAR_OUT" ]; then echo $$rc > "$$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
 	python3 $(XSSV_HOME)/scripts/fm_verdict.py fm_work/$*/fm.log --rc $$rc --mode $(FM_MODE) --top $* --allowlist $(FM_ALLOWLIST)
 
 clean:

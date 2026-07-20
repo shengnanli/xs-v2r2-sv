@@ -9,6 +9,22 @@ set ref_srcs  $env(FM_REF_SRCS)
 set impl_srcs $env(FM_IMPL_SRCS)
 
 # ----------------------------------------------------------------------------
+# Step 3B sidecar emitter(FM_SIDECAR_OUT 非空时启用; 契约 = SIDECAR_SCHEMA.md v7 冻结版):
+# source 后立即对将被 source 的模块本地 Tcl 做**运行期 appvar 拦截**(set_app_var 名字
+# 不在注册表 → exit 3, 拒产 native facts)。
+# ----------------------------------------------------------------------------
+set SIDECAR_ON 0
+if {[info exists env(FM_SIDECAR_OUT)] && [string trim $env(FM_SIDECAR_OUT)] ne ""} {
+    source [file join [file dirname [file normalize [info script]]] sidecar fm_native_emit.tcl]
+    set SIDECAR_ON 1
+    set _scan {}
+    foreach _v {FM_PIN_PRE_TCL FM_PIN_TCL} {
+        if {[info exists env($_v)]} { lappend _scan $env($_v) }
+    }
+    sidecar_scan_tcl_appvars $_scan
+}
+
+# ----------------------------------------------------------------------------
 # FM_MODE 门控(2026-07 唯一权威入口, 二审): 证明模式决定允许哪些放宽手段。
 #   signoff-strict(默认): 禁 interface_only(assembly 专用手段); 严格判定交 fm_verdict.py。
 #   assembly: 允许**声明的对称黑盒** FM_INTERFACE_ONLY(仅证本层 glue)。
@@ -193,10 +209,15 @@ if {[info exists env(FM_PIN_TCL)] && [file exists $env(FM_PIN_TCL)]} {
 report_unmatched_points > fm_work/$top/unmatched.rpt
 report_matched_points > fm_work/$top/matched.rpt
 
+# sidecar: appvar 有效值读回——全部 pin/custom Tcl 之后、verify 之前(schema v7 契约)
+if {$SIDECAR_ON} { sidecar_capture_appvars }
+
 if {[verify]} {
     puts "FM_RESULT: Verification SUCCEEDED for $top"
 } else {
     report_failing_points > fm_work/$top/failing.rpt
     puts "FM_RESULT: Verification FAILED or INCONCLUSIVE for $top"
 }
+# sidecar: 全查询→内存解析→原子写 native_facts.json(任何错误删 tmp 并 exit 4)
+if {$SIDECAR_ON} { sidecar_emit $top }
 exit
