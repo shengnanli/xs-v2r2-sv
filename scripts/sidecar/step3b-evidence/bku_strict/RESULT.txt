@@ -1,0 +1,4 @@
+SESSION_RESULT bku_strict: PARTIAL	strict_unverified/aborted/unread (validator_rc=1 fm_shell_rc=0 make_rc=2 runner_rc=1)
+run_id: R3B-bku_strict-1784542179
+signoff_commit: bf238934132e56fe46686d2d3da164a77dd07eca
+tracked_dirty: 0

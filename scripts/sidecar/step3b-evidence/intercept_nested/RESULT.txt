@@ -1,0 +1,5 @@
+SESSION_RESULT intercept_nested: NO_NATIVE_FACTS rc=3 (emitter拒产=fail-closed, runner rc=5)
+      puts "FM_MODE_ERROR: $_fmmode 拒绝 FM_INTERFACE_ONLY(assembly 专用手段)"
+    puts "FM_MODE_ERROR: 未知 FM_MODE=$_fmmode"
+    puts "FM_MODE_ERROR: FM_MERGE_DUP 非法值 $_mergedup"
+SIDECAR_ERROR: runtime_appvar_intercept var=verification_timeout_limit (execution-time wrapper) not-in-registry
