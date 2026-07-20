@@ -1,5 +1,7 @@
 # Step 3A.2 补测实证结果(2026-07-20)
 
+> **SUPERSEDED(2026-07-20)**: 本文为 Step 3A 探索期发现记录, 其中 API/文法结论已被审定修正并冻结进 `SIDECAR_SCHEMA.md`(v7 权威)。冲突处一律以 SIDECAR_SCHEMA.md 为准(已知被修正点: 3A1 的"455 单位不符"是 off-by-one; FM-184/FM-249 非互斥)。
+
 > **九审四补丁追记(b366235 后)**: 补丁 3 的 FM_MERGE_DUP 断链修复后, 用新入口从 clean
 > entry 重跑 Bku strict(声明 false **首次真实生效**): native **SUCCEEDED, unmatched 0/0**
 > (硬编码 true 时是 1/456 const——merge 合并反而制造了 456 个无法配对的重复寄存器),

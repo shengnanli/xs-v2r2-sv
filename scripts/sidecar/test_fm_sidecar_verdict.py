@@ -18,13 +18,13 @@ def M(i, r, m):  # expectation 映射
 def P(r, m):     # observed matched pair(无 id)
     return {"ref_path": r, "impl_path": m}
 
-def AV0():  # 九审+十审: 必须键 = unread 六元组(三方同漏堵死)+ 结构三键
+def AV0():  # 九审+十审+十一审: 必须键 = unread 六元组 + 结构三键; 值 = 冻结执行语义
     return {"verification_verify_unread_compare_points": "false",
             "verification_verify_matched_unread_compare_points": "false",
             "verification_verify_unread_bbox_inputs": "false",
-            "verification_verify_matched_unread_bbox_inputs": "false",
-            "verification_verify_unread_tech_cell_pins": "false",
-            "verification_verify_unread_tech_cell_pg_pins": "false",
+            "verification_verify_matched_unread_bbox_inputs": "true",
+            "verification_verify_unread_tech_cell_pins": "true",
+            "verification_verify_unread_tech_cell_pg_pins": "true",
             "hdlin_unresolved_modules": "black_box",
             "hdlin_interface_only": "",
             "verification_merge_duplicated_registers": "true"}
@@ -323,8 +323,8 @@ C("appvar_diag_only_in_diag_ok", "DIAGNOSTIC",
   exp=expect(proof_mode="diagnostic-full",
              entry_appvars={**AV0(), "verification_failing_point_limit": "20"}))
 C("appvar_registry_optional_ok", "SUCCEEDED",
-  fact_over={"entry_appvars": {**AV0(), "verification_assume_reg_init": "low"}},
-  exp=expect(entry_appvars={**AV0(), "verification_assume_reg_init": "low"}))
+  fact_over={"entry_appvars": {**AV0(), "verification_assume_reg_init": "Auto"}},
+  exp=expect(entry_appvars={**AV0(), "verification_assume_reg_init": "Auto"}))
 C("appvar_missing_unread_sixtuple", "ERROR",
   fact_over={"entry_appvars": {k: v for k, v in AV0().items()
                                if k != "verification_verify_unread_bbox_inputs"}})
@@ -346,6 +346,52 @@ C("diag_zero_only_preserved", "DIAGNOSTIC",
 # 阻塞3: 损坏检查先于 native FAILED(FAILED+corrupt → ERROR 非 FAILED)
 C("corrupt_beats_native_failed", "ERROR",
   fact_over={"native_verdict": "FAILED", "stats.failing": 5, "unmatched.unread_ref": 2})
+
+# ================= v11(十一审: APPVAR_SPEC 值域闭环) =================
+# 审查独立复现的三个 banana(三方一致的任意串此前可 SUCCEEDED/DIAGNOSTIC)
+C("appvar_banana_matched_unread", "ERROR",
+  fact_over={"entry_appvars": {**AV0(),
+             "verification_verify_matched_unread_compare_points": "banana"}},
+  exp=expect(entry_appvars={**AV0(),
+             "verification_verify_matched_unread_compare_points": "banana"}))
+C("appvar_banana_assume_reg_init", "ERROR",
+  fact_over={"entry_appvars": {**AV0(), "verification_assume_reg_init": "banana"}},
+  exp=expect(entry_appvars={**AV0(), "verification_assume_reg_init": "banana"}))
+C("appvar_banana_failing_limit_diag", "ERROR",
+  fact_over={"entry_appvars": {**AV0(), "verification_failing_point_limit": "banana"}},
+  env_over={"proof_mode": "diagnostic-full"},
+  exp=expect(proof_mode="diagnostic-full",
+             entry_appvars={**AV0(), "verification_failing_point_limit": "banana"}))
+# 冻结六元组: 值域合法但违反冻结语义(matched_unread_bbox_inputs 冻结为 true)
+C("appvar_frozen_sixtuple_violation", "ERROR",
+  fact_over={"entry_appvars": {**AV0(),
+             "verification_verify_matched_unread_bbox_inputs": "false"}},
+  exp=expect(entry_appvars={**AV0(),
+             "verification_verify_matched_unread_bbox_inputs": "false"}))
+# 放宽值未声明进 relaxed_appvars → ERROR; 声明后 strict 判 PARTIAL(不能升级 clean)
+RELAX_AV = {**AV0(), "verification_propagate_const_reg_x": "true"}
+C("appvar_relax_undeclared", "ERROR",
+  fact_over={"entry_appvars": RELAX_AV}, exp=expect(entry_appvars=RELAX_AV))
+C("appvar_relax_declared_strict_partial", "PARTIAL",
+  fact_over={"entry_appvars": RELAX_AV,
+             "qualifications.relaxed_appvars": ["verification_propagate_const_reg_x"]},
+  exp=expect(entry_appvars=RELAX_AV))
+# 停用值(X/Z 自 S-2021.06 停用, 不入域)
+C("appvar_undriven_discontinued_Z", "ERROR",
+  fact_over={"entry_appvars": {**AV0(), "verification_set_undriven_signals": "Z"}},
+  exp=expect(entry_appvars={**AV0(), "verification_set_undriven_signals": "Z"}))
+# assembly 的 interface_only 必须规范化 Tcl module list(裸标识符单空格分隔)
+C("appvar_iface_not_normalized_asm", "ERROR",
+  fact_over={"entry_appvars": {**AV0(), "hdlin_interface_only": "{A} {B}"}},
+  env_over={"proof_mode": "assembly"},
+  exp=expect(proof_mode="assembly",
+             entry_appvars={**AV0(), "hdlin_interface_only": "{A} {B}"}))
+# failing limit 非规范化十进制(前导零)
+C("appvar_failing_limit_noncanonical", "ERROR",
+  fact_over={"entry_appvars": {**AV0(), "verification_failing_point_limit": "020"}},
+  env_over={"proof_mode": "diagnostic-full"},
+  exp=expect(proof_mode="diagnostic-full",
+             entry_appvars={**AV0(), "verification_failing_point_limit": "020"}))
 
 # ================= v5 回归(适配 observed 模型) =================
 C("iface_wrong_impl_observed", "PARTIAL",

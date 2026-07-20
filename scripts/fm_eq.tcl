@@ -36,8 +36,16 @@ switch -- $_fmmode {
   }
 }
 
-# 寄存器无观测路径（如被 firtool 裁剪的输出对应的 valids）时不作为比对点
+# 寄存器无观测路径（如被 firtool 裁剪的输出对应的 valids）时不作为比对点。
+# 十一审: unread 六元组**显式全量设置**(305 统一冻结执行语义, 不让工具默认代替声明;
+# emitter 于全部 pin/custom Tcl 执行后、verify 前逐项 get_app_var 读回有效值)。
+# 后三项 true 即工具默认(man cat3 逐页核对), 显式钉死防版本漂移。
 set_app_var verification_verify_unread_compare_points false
+set_app_var verification_verify_matched_unread_compare_points false
+set_app_var verification_verify_unread_bbox_inputs false
+set_app_var verification_verify_matched_unread_bbox_inputs true
+set_app_var verification_verify_unread_tech_cell_pins true
+set_app_var verification_verify_unread_tech_cell_pg_pins true
 
 # 未解析模块（厂商 SRAM 叶子 array_ext 等外部宏）自动当黑盒——两侧一致即可，
 # SRAM 内部存储不参与 wrapper 逻辑等价比对。

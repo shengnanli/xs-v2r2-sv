@@ -70,6 +70,81 @@ APPVAR_OPTIONAL = {"verification_assume_reg_init", "verification_set_undriven_si
 # 仅 diagnostic-full 允许出现
 APPVAR_DIAG_ONLY = {"verification_failing_point_limit"}
 APPVAR_ALL = APPVAR_REQUIRED | APPVAR_OPTIONAL | APPVAR_DIAG_ONLY
+
+# ----------------------------------------------------------------------------
+# 十一审: 唯一 APPVAR_SPEC——每键: 值域 / 冻结值(305 统一执行语义) / 放宽基线。
+# 三方一致只证"说法一致"; 值域闭环证"值合法且符合签核政策"。值域取自 V-2023.12-SP3
+# man cat3(枚举与默认逐页核对):
+#  - unread 六元组: bool; 冻结值 = false,false,false,true,true,true(后三者=工具默认;
+#    fm_eq.tcl 显式设置全部六个并由 emitter 读回, 不依赖工具默认)。
+#  - hdlin_unresolved_modules: 冻结 black_box。
+#  - merge_dup: bool, 按目标绑定, 非放宽(十审 GO)。
+#  - assume_reg_init: 枚举(大小写不敏感比对, man 拼写 None/Conservative/Liberal/Auto/
+#    AutoMatched), 默认 Auto; set_undriven_signals: 枚举(X/Z 自 S-2021.06 停用, 不入域),
+#    默认 BINARY:X; propagate_const_reg_x: bool 默认 false; blackbox_match_mode:
+#    any|identity 默认 any。**非默认值 = 放宽证明, 必须出现在 qualifications.
+#    relaxed_appvars**(缺声明 → ERROR; 声明后 strict/assembly 经 quals_any 判 PARTIAL,
+#    不能仅靠 expectation 绑定升级 clean success)。
+#  - failing_point_limit: 规范化十进制(0=不限), 仅 diagnostic(APPVAR_DIAG_ONLY)。
+# ----------------------------------------------------------------------------
+_BOOL = ("true", "false")
+APPVAR_SPEC = {
+    "verification_verify_unread_compare_points":         {"domain": _BOOL, "frozen": "false"},
+    "verification_verify_matched_unread_compare_points": {"domain": _BOOL, "frozen": "false"},
+    "verification_verify_unread_bbox_inputs":            {"domain": _BOOL, "frozen": "false"},
+    "verification_verify_matched_unread_bbox_inputs":    {"domain": _BOOL, "frozen": "true"},
+    "verification_verify_unread_tech_cell_pins":         {"domain": _BOOL, "frozen": "true"},
+    "verification_verify_unread_tech_cell_pg_pins":      {"domain": _BOOL, "frozen": "true"},
+    "hdlin_unresolved_modules":       {"domain": ("black_box",), "frozen": "black_box"},
+    "hdlin_interface_only":           {"iface_mode_domain": True},
+    "verification_merge_duplicated_registers": {"domain": _BOOL},
+    "verification_assume_reg_init":   {"enum_ci": ("none", "conservative", "liberal",
+                                                   "auto", "automatched"),
+                                       "default_ci": "auto"},
+    "verification_set_undriven_signals": {"domain": ("BINARY:X", "BINARY", "0", "1", "0:X"),
+                                          "default": "BINARY:X"},
+    "verification_propagate_const_reg_x": {"domain": _BOOL, "default": "false"},
+    "verification_blackbox_match_mode":   {"domain": ("any", "identity"), "default": "any"},
+    "verification_failing_point_limit":   {"decimal": True},
+}
+_IFACE_RE = re.compile(r"|[A-Za-z_][A-Za-z0-9_]*( [A-Za-z_][A-Za-z0-9_]*)*")
+_DEC_RE = re.compile(r"0|[1-9][0-9]{0,9}")
+
+
+def appvar_spec_err(av, mode, relaxed_declared):
+    """APPVAR_SPEC 值域闭环。relaxed_declared=None 时跳过放宽声明检查(expectation 无 quals)。"""
+    for k, v in av.items():
+        spec = APPVAR_SPEC.get(k)
+        if spec is None:
+            return f"appvar_unknown:{k}"
+        if "domain" in spec and v not in spec["domain"]:
+            return f"appvar_value_out_of_domain:{k}"
+        if "enum_ci" in spec and v.lower() not in spec["enum_ci"]:
+            return f"appvar_value_out_of_domain:{k}"
+        if spec.get("decimal") and not _DEC_RE.fullmatch(v):
+            return f"appvar_value_not_canonical_decimal:{k}"
+        if "frozen" in spec and v != spec["frozen"]:
+            return f"frozen_semantics:{k}"
+    vi = av["hdlin_interface_only"]
+    if mode in ("signoff-strict", "shadow"):
+        if vi != "":
+            return "strict_interface_only_appvar_nonempty"
+    elif not _IFACE_RE.fullmatch(vi):
+        return "appvar_interface_only_not_normalized"
+    if mode != "diagnostic-full" and (set(av) & APPVAR_DIAG_ONLY):
+        return "appvar_diag_only_outside_diagnostic"
+    if relaxed_declared is not None:
+        for k, v in av.items():
+            spec = APPVAR_SPEC[k]
+            if "default" in spec:
+                relaxed = v != spec["default"]
+            elif "default_ci" in spec:
+                relaxed = v.lower() != spec["default_ci"]
+            else:
+                relaxed = False
+            if relaxed and k not in relaxed_declared:
+                return f"relaxing_appvar_undeclared:{k}"
+    return None
 MAP_KEYS = {"id", "ref_path", "impl_path"}
 PAIR_KEYS = {"ref_path", "impl_path"}
 _TOKEN = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.\-]*")
@@ -255,8 +330,10 @@ def validate_expectation(E):
         for v in av.values():
             if not (isinstance(v, str) and len(v) < 4096 and _no_ctrl(v)):
                 return "expect_entry_appvars_value"
-        if E["proof_mode"] != "diagnostic-full" and (set(av) & APPVAR_DIAG_ONLY):
-            return "expect_appvar_diag_only_outside_diagnostic"
+        # 十一审: expectation 侧同样过 APPVAR_SPEC 值域(放宽声明检查在 verdict 对 sidecar 做)
+        err = appvar_spec_err(av, E["proof_mode"], None)
+        if err:
+            return f"expect_{err}"
         return None
     except Exception as e:
         return f"expect_malformed:{type(e).__name__}"
@@ -374,21 +451,15 @@ def verdict(sidecar_path, expectation, actual_rc, native_facts_path):
     for k in ("run_id", "target", "top", "variant", "proof_mode", "canonical_baseline_id"):
         if sc[k] != E[k]:
             return "ERROR", {**q, "reason": f"expect_{k}:{sc[k]}!={E[k]}"}
-    # 九审(补丁3): entry appvars 三方一致(native==envelope 已在上组查过)+ 冻结执行语义
+    # 九审(补丁3)+十一审: entry appvars 三方一致(native==envelope 已在上组查过)
+    # + APPVAR_SPEC 值域闭环(值域/冻结语义/模式域/放宽声明——放宽值必须已列入
+    # qualifications.relaxed_appvars, 缺声明即 ERROR; 声明后经 quals_any 判 PARTIAL)。
     av = sc["entry_appvars"]
     if av != E["entry_appvars"]:
         return "ERROR", {**q, "reason": "entry_appvars!=expectation"}
-    if av["verification_verify_unread_compare_points"] != "false":
-        return "ERROR", {**q, "reason": "frozen_semantics:verify_unread_must_be_false"}
-    if av["hdlin_unresolved_modules"] != "black_box":
-        return "ERROR", {**q, "reason": "frozen_semantics:unresolved_must_be_black_box"}
-    if av["verification_merge_duplicated_registers"] not in ("true", "false"):
-        return "ERROR", {**q, "reason": "entry_appvars:merge_dup_not_bool"}
-    if sc["proof_mode"] in ("signoff-strict", "shadow") and av["hdlin_interface_only"] != "":
-        return "ERROR", {**q, "reason": "strict_interface_only_appvar_nonempty"}
-    # 十审: diagnostic 专属 appvar 出现在非 diagnostic 模式 → ERROR
-    if sc["proof_mode"] != "diagnostic-full" and (set(av) & APPVAR_DIAG_ONLY):
-        return "ERROR", {**q, "reason": "appvar_diag_only_outside_diagnostic"}
+    err = appvar_spec_err(av, sc["proof_mode"], sc["qualifications"]["relaxed_appvars"])
+    if err:
+        return "ERROR", {**q, "reason": err}
     if sc["inputs_sha256"]["ref_srcs_digest"] != E["ref_digest"]:
         return "ERROR", {**q, "reason": "ref_digest_mismatch"}
     if sc["inputs_sha256"]["impl_srcs_digest"] != E["impl_digest"]:

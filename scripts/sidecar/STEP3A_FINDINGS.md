@@ -1,5 +1,7 @@
 # Step 3A: Formality 查询 smoke 实证结果(2026-07-19)
 
+> **SUPERSEDED(2026-07-20)**: 本文为 Step 3A 探索期发现记录, 其中 API/文法结论已被审定修正并冻结进 `SIDECAR_SCHEMA.md`(v7 权威)。冲突处一律以 SIDECAR_SCHEMA.md 为准(已知被修正点: 3A1 的"455 单位不符"是 off-by-one; FM-184/FM-249 非互斥)。
+
 > 审查批准 STEP3A=GO。在 **Bku(signoff-strict)** 与 **Ftq(assembly)** 的真实 FM 会话
 > (标准 fm_eq.tcl,verify 完成后)执行 16 个候选查询,dump 原始输出。
 > 工具: Formality V-2023.12-SP3。原始产物: /tmp/step3a_{Bku,Ftq}/(16+16 dump + 完整 fm.log)。

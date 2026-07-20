@@ -1,5 +1,7 @@
 # Step 3A.1 补测实证结果(2026-07-19)
 
+> **SUPERSEDED(2026-07-20)**: 本文为 Step 3A 探索期发现记录, 其中 API/文法结论已被审定修正并冻结进 `SIDECAR_SCHEMA.md`(v7 权威)。冲突处一律以 SIDECAR_SCHEMA.md 为准(已知被修正点: 3A1 的"455 单位不符"是 off-by-one; FM-184/FM-249 非互斥)。
+
 > 审查批准的小范围补测。三类会话全部从 **clean xs-signoff 入口**(committed ut_common.mk/fm_eq.tcl,
 > FM_MODE 门控)+ **canonical golden**(GOLDEN_RTL 覆盖,不动 worktree symlink)执行:
 > `strict_pass`(Bku+pins→**SUCCEEDED**)/ `native_failed`(Bku 去 pins→**FAILED**)/
