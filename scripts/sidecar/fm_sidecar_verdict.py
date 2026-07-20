@@ -51,10 +51,25 @@ EXPECT_KEYS = {"run_id", "target", "top", "variant", "proof_mode", "canonical_ba
                "ref_digest", "impl_digest", "script_digest", "tool_digest",
                "entry_appvars", "allow"}
 ALLOW_KEYS = {"unresolved_blackbox", "interface_only", "empty_blackbox", "unmatched"}
-# 九审(补丁3): 入口 appvars 完整有效值明文绑定, native/envelope/expectation 三方一致。
-# unread=false 与 unresolved=black_box 是 305 统一冻结执行语义; merge/interface_only 按目标绑定。
-APPVAR_KEYS = {"verification_verify_unread_compare_points", "hdlin_unresolved_modules",
-               "hdlin_interface_only", "verification_merge_duplicated_registers"}
+# 九审+十审(补丁2): 入口 appvars 完整有效值明文绑定, native/envelope/expectation 三方一致。
+# 必须键 = 完整 unread 六元组(仅绑 1 个会"三方同漏": pin Tcl 可改其余五个悄悄改变证明语义)
+# + 结构三键。有效值在所有 pin/custom Tcl 执行后、verify 前 get_app_var 读回。
+APPVAR_REQUIRED = {
+    "verification_verify_unread_compare_points",
+    "verification_verify_matched_unread_compare_points",
+    "verification_verify_unread_bbox_inputs",
+    "verification_verify_matched_unread_bbox_inputs",
+    "verification_verify_unread_tech_cell_pins",
+    "verification_verify_unread_tech_cell_pg_pins",
+    "hdlin_unresolved_modules", "hdlin_interface_only",
+    "verification_merge_duplicated_registers"}
+# 有限"允许 appvar 注册表": 当前 pin/custom Tcl 实际修改的 proof-affecting 变量,
+# 可出现(按目标绑定); 注册表之外的键 → ERROR(未知 proof-affecting set_app_var 不放行)。
+APPVAR_OPTIONAL = {"verification_assume_reg_init", "verification_set_undriven_signals",
+                   "verification_propagate_const_reg_x", "verification_blackbox_match_mode"}
+# 仅 diagnostic-full 允许出现
+APPVAR_DIAG_ONLY = {"verification_failing_point_limit"}
+APPVAR_ALL = APPVAR_REQUIRED | APPVAR_OPTIONAL | APPVAR_DIAG_ONLY
 MAP_KEYS = {"id", "ref_path", "impl_path"}
 PAIR_KEYS = {"ref_path", "impl_path"}
 _TOKEN = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.\-]*")
@@ -231,11 +246,17 @@ def validate_expectation(E):
         if E["proof_mode"] != "assembly" and any(A[k] for k in ALLOW_KEYS):
             return "expect_allowlist_must_be_empty_for_" + E["proof_mode"]
         av = E["entry_appvars"]
-        if not isinstance(av, dict) or set(av) != APPVAR_KEYS:
+        if not isinstance(av, dict):
             return "expect_entry_appvars_fields"
+        if not APPVAR_REQUIRED <= set(av):
+            return "expect_entry_appvars_missing_required"
+        if not set(av) <= APPVAR_ALL:
+            return "expect_entry_appvars_unknown_key"
         for v in av.values():
             if not (isinstance(v, str) and len(v) < 4096 and _no_ctrl(v)):
                 return "expect_entry_appvars_value"
+        if E["proof_mode"] != "diagnostic-full" and (set(av) & APPVAR_DIAG_ONLY):
+            return "expect_appvar_diag_only_outside_diagnostic"
         return None
     except Exception as e:
         return f"expect_malformed:{type(e).__name__}"
@@ -261,8 +282,13 @@ def _validate_facts_block(sc, where, top):
         if err:
             raise Bad(f"{where}_{k}:{err}")
     av = sc["entry_appvars"]
-    if not isinstance(av, dict) or set(av) != APPVAR_KEYS:
+    if not isinstance(av, dict):
         raise Bad(f"{where}_entry_appvars_fields")
+    # 十审: 必须键全在(unread 六元组三方同漏堵死); 注册表之外未知键一律拒
+    if not APPVAR_REQUIRED <= set(av):
+        raise Bad(f"{where}_entry_appvars_missing_required")
+    if not set(av) <= APPVAR_ALL:
+        raise Bad(f"{where}_entry_appvars_unknown_key")
     for v in av.values():
         if not (isinstance(v, str) and len(v) < 4096 and _no_ctrl(v)):
             raise Bad(f"{where}_entry_appvars_value")
@@ -360,6 +386,9 @@ def verdict(sidecar_path, expectation, actual_rc, native_facts_path):
         return "ERROR", {**q, "reason": "entry_appvars:merge_dup_not_bool"}
     if sc["proof_mode"] in ("signoff-strict", "shadow") and av["hdlin_interface_only"] != "":
         return "ERROR", {**q, "reason": "strict_interface_only_appvar_nonempty"}
+    # 十审: diagnostic 专属 appvar 出现在非 diagnostic 模式 → ERROR
+    if sc["proof_mode"] != "diagnostic-full" and (set(av) & APPVAR_DIAG_ONLY):
+        return "ERROR", {**q, "reason": "appvar_diag_only_outside_diagnostic"}
     if sc["inputs_sha256"]["ref_srcs_digest"] != E["ref_digest"]:
         return "ERROR", {**q, "reason": "ref_digest_mismatch"}
     if sc["inputs_sha256"]["impl_srcs_digest"] != E["impl_digest"]:
@@ -376,6 +405,25 @@ def verdict(sidecar_path, expectation, actual_rc, native_facts_path):
 
     nv = sc["native_verdict"]
     st = sc["stats"]; um = sc["unmatched"]; ob = sc["objects"]; ql = sc["qualifications"]
+
+    # ---- 十审(阻塞3): count/list 自相矛盾 = 损坏 sidecar, **所有模式**先判 ERROR ----
+    # (计数按契约是列表 llength 的派生值——不一致只能是 emitter/runner 损坏或篡改,
+    #  不是证明资格问题; 先于 NOT_RUN/FAILED/模式分流, shadow/diagnostic 也不豁免。)
+    # 冻结查询: matched -not_compared -status unread / unmatched -r|-i -status unread。
+    # 仅 -status unread 不稳定: verify_unread=true 会话里它返回已验证通过的 20 对,
+    # 不能再称 Not-Compared(3A.2 实证)。
+    if um["compare_ref"] != len(ob["unmatched_ref"]) or \
+       um["compare_impl"] != len(ob["unmatched_impl"]):
+        return "ERROR", {**q, "reason": "corrupt_sidecar:count_list_mismatch:compare"}
+    if um["unread_ref"] != len(ob["unmatched_unread_ref"]) or \
+       um["unread_impl"] != len(ob["unmatched_unread_impl"]):
+        return "ERROR", {**q, "reason": "corrupt_sidecar:count_list_mismatch:unread"}
+    if st["unread_notcompared"] != len(ob["matched_unread_notcompared_pairs"]):
+        return "ERROR", {**q, "reason": "corrupt_sidecar:count_list_mismatch:unread_notcompared"}
+    if um["bbout_ref"] != len(ob["unmatched_bbox_output_ref"]) or \
+       um["bbout_impl"] != len(ob["unmatched_bbox_output_impl"]):
+        return "ERROR", {**q, "reason": "corrupt_sidecar:count_list_mismatch:bbout"}
+
     if nv == "NOT_RUN":
         return "UNRUN", {**q, "reason": "native_not_run"}
     if nv in ("FAILED", "INCONCLUSIVE"):
@@ -391,23 +439,9 @@ def verdict(sidecar_path, expectation, actual_rc, native_facts_path):
     if mode == "shadow":
         return "SHADOW_CHECK", {**q, "reason": "shadow_core_not_driving_outputs"}
 
-    # ---- 九审(补丁2) 计数=列表 llength 派生值, 单位绑定(模式无关, 不一致即拒) ----
-    # 冻结查询: matched -not_compared -status unread / unmatched -r|-i -status unread。
-    # 仅 -status unread 不稳定: verify_unread=true 会话里它返回已验证通过的 20 对,
-    # 不能再称 Not-Compared(3A.2 实证)。
-    if um["compare_ref"] != len(ob["unmatched_ref"]) or \
-       um["compare_impl"] != len(ob["unmatched_impl"]):
-        return "PARTIAL", {**q, "reason": "count_list_mismatch:compare"}
-    if um["unread_ref"] != len(ob["unmatched_unread_ref"]) or \
-       um["unread_impl"] != len(ob["unmatched_unread_impl"]):
-        return "PARTIAL", {**q, "reason": "count_list_mismatch:unread"}
-    if st["unread_notcompared"] != len(ob["matched_unread_notcompared_pairs"]):
-        return "PARTIAL", {**q, "reason": "count_list_mismatch:unread_notcompared"}
-    if um["bbout_ref"] != len(ob["unmatched_bbox_output_ref"]) or \
-       um["bbout_impl"] != len(ob["unmatched_bbox_output_impl"]):
-        return "PARTIAL", {**q, "reason": "count_list_mismatch:bbout"}
-    # ---- 九审(补丁1) BBOUT/BBIN/PI zero-only(两模式一律; 决定3 推广) ----
-    # 非零一律 PARTIAL: Formality 不为这些点提供原生 pair, 不得人工配对/被 allow.unmatched 吸收。
+    # ---- 九审(补丁1)+十审: BBOUT/BBIN/PI zero-only 是**证明政策**(非结构校验) ----
+    # strict/assembly 非空 → PARTIAL; shadow/diagnostic 已在上方保持各自非签核分类,
+    # 观察事实完整保留在 sidecar 中。非零不得人工配对/被 allow.unmatched 吸收(FM 无原生 pair)。
     for k in ZERO_ONLY_KEYS:
         if ob[k]:
             return "PARTIAL", {**q, "reason": f"zero_only:{k}"}

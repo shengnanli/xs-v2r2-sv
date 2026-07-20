@@ -18,8 +18,13 @@ def M(i, r, m):  # expectation 映射
 def P(r, m):     # observed matched pair(无 id)
     return {"ref_path": r, "impl_path": m}
 
-def AV0():  # 九审: 入口 appvars 完整有效值(统一冻结基线 + 按目标绑定项)
+def AV0():  # 九审+十审: 必须键 = unread 六元组(三方同漏堵死)+ 结构三键
     return {"verification_verify_unread_compare_points": "false",
+            "verification_verify_matched_unread_compare_points": "false",
+            "verification_verify_unread_bbox_inputs": "false",
+            "verification_verify_matched_unread_bbox_inputs": "false",
+            "verification_verify_unread_tech_cell_pins": "false",
+            "verification_verify_unread_tech_cell_pg_pins": "false",
             "hdlin_unresolved_modules": "black_box",
             "hdlin_interface_only": "",
             "verification_merge_duplicated_registers": "true"}
@@ -150,7 +155,7 @@ C("policy_id_conflict_across_cat", "ERROR", **AS_FACTS,
              allow={"unmatched": [M("A", R0, I0), M("B", R1, I1)],
                     "interface_only": [M("A", R1, I1)]}))
 # 4. 2 个 unmatched 对象、compare count 仅 1(计数未覆盖对象数)
-C("count_below_objects", "PARTIAL",
+C("count_below_objects", "ERROR",
   fact_over={"unmatched.compare_ref": 1, "unmatched.compare_impl": 1,
              "objects.unmatched_ref": [R0, R1], "objects.unmatched_impl": [I0, I1],
              "objects.interface_only_ref": [R0], "objects.interface_only_impl": [I0]},
@@ -184,7 +189,7 @@ C("matched_empty_bypass", "PARTIAL",
   env_over={"proof_mode": "assembly"},
   exp=expect(proof_mode="assembly", allow={"unresolved_blackbox": [M("A", R0, I0)]}))
 # 3. 计数/列表单位对齐: compare=3 列表2项(两方向)
-C("count_gt_list", "PARTIAL",
+C("count_gt_list", "ERROR",
   fact_over={"unmatched.compare_ref": 3, "unmatched.compare_impl": 3,
              "objects.unmatched_ref": [R0, R1], "objects.unmatched_impl": [I0, I1],
              "objects.interface_only_ref": [R0], "objects.interface_only_impl": [I0]},
@@ -199,8 +204,11 @@ C("iface_pairs_empty_fake_green", "PARTIAL",
              "objects.matched_blackbox_pairs": []},
   env_over={"proof_mode": "assembly"}, exp=AEXP)
 # 审查点名假绿B(决定3): bbout 两侧对称非零 → 不得 SUCCEEDED(zero-only)
+# (十审适配: 计数=列表llength派生, fixture 改计数-列表一致的真实形态, 意图不变)
 C("bbout_symmetric_nonzero", "PARTIAL",
-  fact_over={"unmatched.bbout_ref": 3, "unmatched.bbout_impl": 3},
+  fact_over={"unmatched.bbout_ref": 2, "unmatched.bbout_impl": 2,
+             "objects.unmatched_bbox_output_ref": [R0, R1],
+             "objects.unmatched_bbox_output_impl": [I0, I1]},
   env_over={"proof_mode": "assembly"}, exp=expect(proof_mode="assembly"))
 # pair 端点不在任何实例集合(未知类) → ERROR
 C("pair_unknown_class", "ERROR",
@@ -263,10 +271,10 @@ C("empty_iface_category_overlap", "ERROR",
              "objects.matched_blackbox_pairs": [P(R0, I0)]},
   env_over={"proof_mode": "assembly"}, exp=expect(proof_mode="assembly"))
 # 补丁2: 计数=列表 llength 派生, 三处单位绑定
-C("unread_count_list_mismatch", "PARTIAL",
+C("unread_count_list_mismatch", "ERROR",
   fact_over={"unmatched.unread_ref": 1},
   env_over={"proof_mode": "assembly"}, exp=expect(proof_mode="assembly"))
-C("notcompared_count_pairs_mismatch", "PARTIAL",
+C("notcompared_count_pairs_mismatch", "ERROR",
   fact_over={"stats.unread_notcompared": 2,
              "objects.matched_unread_notcompared_pairs": [P(R0, I0)]},
   env_over={"proof_mode": "assembly"}, exp=expect(proof_mode="assembly"))
@@ -301,6 +309,44 @@ C("native_failed_waiver_cannot_upgrade", "FAILED",
   env_over={"proof_mode": "assembly"},
   exp=expect(proof_mode="assembly", allow={"empty_blackbox": [M("E", R0, I0)]}))
 
+# ================= v10(十审三阻塞) =================
+# 阻塞2: appvar 注册表
+C("appvar_unknown_key", "ERROR",
+  fact_over={"entry_appvars": {**AV0(), "verification_timeout_limit": "3600"}},
+  exp=expect(entry_appvars={**AV0(), "verification_timeout_limit": "3600"}))
+C("appvar_diag_only_in_strict", "ERROR",
+  fact_over={"entry_appvars": {**AV0(), "verification_failing_point_limit": "20"}},
+  exp=expect(entry_appvars={**AV0(), "verification_failing_point_limit": "20"}))
+C("appvar_diag_only_in_diag_ok", "DIAGNOSTIC",
+  fact_over={"entry_appvars": {**AV0(), "verification_failing_point_limit": "20"}},
+  env_over={"proof_mode": "diagnostic-full"},
+  exp=expect(proof_mode="diagnostic-full",
+             entry_appvars={**AV0(), "verification_failing_point_limit": "20"}))
+C("appvar_registry_optional_ok", "SUCCEEDED",
+  fact_over={"entry_appvars": {**AV0(), "verification_assume_reg_init": "low"}},
+  exp=expect(entry_appvars={**AV0(), "verification_assume_reg_init": "low"}))
+C("appvar_missing_unread_sixtuple", "ERROR",
+  fact_over={"entry_appvars": {k: v for k, v in AV0().items()
+                               if k != "verification_verify_unread_bbox_inputs"}})
+# 阻塞3: count/list 自相矛盾=损坏 sidecar, shadow/diagnostic 也 ERROR(不豁免)
+C("shadow_count_list_mismatch", "ERROR",
+  fact_over={"unmatched.compare_ref": 1},
+  env_over={"proof_mode": "shadow"}, exp=expect(proof_mode="shadow"))
+C("diag_count_list_mismatch", "ERROR",
+  fact_over={"stats.unread_notcompared": 3},
+  env_over={"proof_mode": "diagnostic-full"}, exp=expect(proof_mode="diagnostic-full"))
+# 阻塞3: zero-only 是证明政策——shadow/diagnostic 保持各自非签核分类, 观察事实完整保留
+C("shadow_zero_only_preserved", "SHADOW_CHECK",
+  fact_over={"unmatched.bbout_ref": 1, "unmatched.bbout_impl": 1,
+             "objects.unmatched_bbox_output_ref": [R0], "objects.unmatched_bbox_output_impl": [I0]},
+  env_over={"proof_mode": "shadow"}, exp=expect(proof_mode="shadow"))
+C("diag_zero_only_preserved", "DIAGNOSTIC",
+  fact_over={"objects.unmatched_bbox_input_impl": [I0]},
+  env_over={"proof_mode": "diagnostic-full"}, exp=expect(proof_mode="diagnostic-full"))
+# 阻塞3: 损坏检查先于 native FAILED(FAILED+corrupt → ERROR 非 FAILED)
+C("corrupt_beats_native_failed", "ERROR",
+  fact_over={"native_verdict": "FAILED", "stats.failing": 5, "unmatched.unread_ref": 2})
+
 # ================= v5 回归(适配 observed 模型) =================
 C("iface_wrong_impl_observed", "PARTIAL",
   fact_over={"unmatched.compare_ref": 2, "unmatched.compare_impl": 2,
@@ -330,12 +376,14 @@ C("stats_null", "ERROR", env_over={"stats": None})
 C("toplevel_list_env", "ERROR", raw_env='[1,2]')
 
 # ================= v3 回归 =================
+# (十审适配: 真实计数不对称 = 列表不对称, 计数与各自列表一致)
 C("asm_count_asym_compare", "PARTIAL",
-  fact_over={"unmatched.compare_ref": 5, "unmatched.compare_impl": 0,
-             "objects.unmatched_ref": [R0, R1], "objects.unmatched_impl": [I0, I1],
-             "objects.interface_only_ref": [R0], "objects.interface_only_impl": [I0]},
+  fact_over={"unmatched.compare_ref": 2, "unmatched.compare_impl": 0,
+             "objects.unmatched_ref": [R0, R1], "objects.unmatched_impl": [],
+             "objects.interface_only_ref": [R0], "objects.interface_only_impl": [I0],
+             "objects.matched_blackbox_pairs": [P(R0, I0)]},
   env_over={"proof_mode": "assembly"}, exp=AEXP)
-C("asm_count_asym_bbout", "PARTIAL",
+C("asm_count_asym_bbout", "ERROR",
   fact_over={"unmatched.bbout_ref": 5, "unmatched.bbout_impl": 0,
              "objects.unresolved_blackbox_ref": [R0], "objects.unresolved_blackbox_impl": [I0]},
   env_over={"proof_mode": "assembly"},
@@ -346,7 +394,7 @@ C("both_traversal_variant", "ERROR", env_over={"variant": "../../evil"},
 C("both_int_runid", "ERROR", env_over={"run_id": 5}, exp=expect(run_id=5))
 C("strict_expect_with_allowlist", "ERROR",
   exp=expect(allow={"unresolved_blackbox": [M("A", R0, I0)]}))
-C("asm_count_only_no_objects", "PARTIAL",
+C("asm_count_only_no_objects", "ERROR",
   fact_over={"unmatched.compare_ref": 5, "unmatched.compare_impl": 5},
   env_over={"proof_mode": "assembly"}, exp=AEXP)
 
@@ -379,8 +427,12 @@ C("elab147_bool", "ERROR", fact_over={"qualifications.elab147": True})
 C("obj_unsorted", "ERROR", fact_over={"objects.unmatched_ref": [R1, R0]})
 
 # ================= strict qualification 回归 =================
-C("strict_unread_nc", "PARTIAL", fact_over={"stats.unread_notcompared": 1})
-C("strict_unread_um", "PARTIAL", fact_over={"unmatched.unread_impl": 19})
+# (十审适配: 计数-列表一致形态)
+C("strict_unread_nc", "PARTIAL",
+  fact_over={"stats.unread_notcompared": 1,
+             "objects.matched_unread_notcompared_pairs": [P(R0, I0)]})
+C("strict_unread_um", "PARTIAL",
+  fact_over={"unmatched.unread_impl": 1, "objects.unmatched_unread_impl": [I0]})
 C("strict_bb_obj", "PARTIAL", fact_over={"objects.unresolved_blackbox_impl": [I0]})
 C("strict_matched_pair", "PARTIAL", fact_over={"objects.matched_blackbox_pairs": [P(R0, I0)]})
 C("strict_dontverify", "PARTIAL", fact_over={"qualifications.dont_verify_objects": ["io_x"]})
