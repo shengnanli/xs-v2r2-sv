@@ -1,5 +1,13 @@
 # Step 3A.2 补测实证结果(2026-07-20)
 
+> **九审四补丁追记(b366235 后)**: 补丁 3 的 FM_MERGE_DUP 断链修复后, 用新入口从 clean
+> entry 重跑 Bku strict(声明 false **首次真实生效**): native **SUCCEEDED, unmatched 0/0**
+> (硬编码 true 时是 1/456 const——merge 合并反而制造了 456 个无法配对的重复寄存器),
+> unread=19 → 判定 PARTIAL(strict_unread!=0), 与"Bku 仍非 clean strict success"审定一致。
+> Makefile 声明的 false 本就是更优语义, 只是三轮会话里从未生效过。证据:
+> step3a2-evidence/patch3_bku_mergedup/(fm.log+manifest)。其余声明 FM_MERGE_DUP 的
+> ~20 目标将在 305 sweep 中逐目标以真实生效值重验。
+
 > 3A.1 审定(PARTIAL_PASS)后的补空。5 会话全部 clean 入口 + canonical golden;
 > 证据链修复: session.tcl+smoke.tcl 本体入证据(hash 进 MANIFEST), 大文件规则
 > **先于** MANIFEST 生成(>100KB → `<f>.fullhash`(name/size/sha256)+`<f>.sample`, 原件删除,
