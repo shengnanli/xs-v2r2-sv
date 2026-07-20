@@ -55,6 +55,38 @@ echo '{"x":1}' > "$D4/intercept_direct/native_facts.json"; recompute "$D4/interc
 bash "$CK" --tree "$D4" "$REAL_IMPL" >/dev/null 2>&1; T reject_with_native_facts 1 $?
 rm -rf "$D4"
 
+# ===== 六审六洞负测 =====
+# 洞1: RESULT 声称 SUCCEEDED, native 真实 PARTIAL(仅改 RESULT 行, 其余不动)
+D5=$(mktemp -d); cp -r "$SRC"/* "$D5"/ 2>/dev/null; rm -f "$D5"/*.txt "$D5"/*.MANIFEST.tsv 2>/dev/null
+sed -i 's/^SESSION_RESULT bku_strict: PARTIAL.*/SESSION_RESULT bku_strict: SUCCEEDED\tclean/' "$D5/bku_strict/RESULT.txt"
+recompute "$D5/bku_strict"
+bash "$CK" --tree "$D5" "$REAL_IMPL" >/dev/null 2>&1; T hole1_result_claims_success 1 $?; rm -rf "$D5"
+
+# 洞2: reject fm_shell.rc 3→999
+D6=$(mktemp -d); cp -r "$SRC"/* "$D6"/ 2>/dev/null; rm -f "$D6"/*.txt "$D6"/*.MANIFEST.tsv 2>/dev/null
+echo 999 > "$D6/intercept_direct/fm_shell.rc"; recompute "$D6/intercept_direct"
+bash "$CK" --tree "$D6" "$REAL_IMPL" >/dev/null 2>&1; T hole2_reject_rc_forged 1 $?; rm -rf "$D6"
+
+# 洞3: 预期 ERROR 会话注入重复 JSON 键(native_facts)→ 应因 JSON_PARSE_FAIL 拒(非误过)
+D7=$(mktemp -d); cp -r "$SRC"/* "$D7"/ 2>/dev/null; rm -f "$D7"/*.txt "$D7"/*.MANIFEST.tsv 2>/dev/null
+printf '{"schema":"x","schema":"y"}' > "$D7/bku_unread_true_probe/native_facts.json"
+recompute "$D7/bku_unread_true_probe"
+bash "$CK" --tree "$D7" "$REAL_IMPL" >/dev/null 2>&1; T hole3_dup_json_keys 1 $?; rm -rf "$D7"
+
+# 洞4: 五条 infra 全重复同一合法文件
+D8=$(mktemp -d); cp -r "$SRC"/* "$D8"/ 2>/dev/null; rm -f "$D8"/*.txt "$D8"/*.MANIFEST.tsv 2>/dev/null
+onef=$(awk -F'\t' '$1=="infra"{print; exit}' "$D8/bku_strict/TOOLS.tsv")
+grep -v '^infra\t' "$D8/bku_strict/TOOLS.tsv" > "$D8/bku_strict/TOOLS.tmp"
+for i in 1 2 3 4 5; do echo "$onef" >> "$D8/bku_strict/TOOLS.tmp"; done
+mv "$D8/bku_strict/TOOLS.tmp" "$D8/bku_strict/TOOLS.tsv"; recompute "$D8/bku_strict"
+bash "$CK" --tree "$D8" "$REAL_IMPL" >/dev/null 2>&1; T hole4_infra_all_same 1 $?; rm -rf "$D8"
+
+# 洞6: 篡改 sourced_*(script closure 快照)→ 应 CLOSURE_SNAP_TAMPERED
+D9=$(mktemp -d); cp -r "$SRC"/* "$D9"/ 2>/dev/null; rm -f "$D9"/*.txt "$D9"/*.MANIFEST.tsv 2>/dev/null
+snapf=$(ls "$D9/bku_strict"/sourced_000_* | head -1); echo "# tamper" >> "$snapf"
+recompute "$D9/bku_strict"
+bash "$CK" --tree "$D9" "$REAL_IMPL" >/dev/null 2>&1; T hole6_snapshot_tampered 1 $?; rm -rf "$D9"
+
 # 正样本: 真实证据必须 PASS(rc=0)
 bash "$CK" --tree "$SRC" "$REAL_IMPL" >/dev/null 2>&1; T real_evidence_passes 0 $?
 

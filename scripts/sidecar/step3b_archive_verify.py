@@ -123,8 +123,10 @@ def parse_tools(d, errs, s):
         if not line or line.startswith("kind\t"):
             continue
         parts = line.split("\t")
-        if parts[0] == "infra" and len(parts) == 3:
-            infra.append((parts[1], parts[2]))
+        if parts[0] in ("infra", "executed_snapshot") and len(parts) == 3:
+            if parts[0] == "infra":
+                infra.append((parts[1], parts[2]))
+            # executed_snapshot 是多行族, 不入 kv/dup 检查
         elif len(parts) >= 2:
             if parts[0] in kv:
                 dup.add(parts[0])
@@ -233,12 +235,15 @@ def check_session(tree, s, kind, expected, repo, errs):
             rows.append(parts)  # (orig, snap, ledger_hash)
         cat = b""
         snaps_seen = set()
-        # executed_snapshot TOOLS 行须与 closure list 精确一致(snap+hash)
-        es = [(p, hh) for (kind0, p, hh) in
-              [(a, b, c) for a, b, c in
-               [ln.split("\t") for ln in open(os.path.join(d, "TOOLS.tsv"), encoding="utf-8")
-                if ln.startswith("executed_snapshot\t")]]]
-        es_map = dict(es)
+        # executed_snapshot TOOLS 行须与 closure list 精确一致(snap+hash); 逐行 strip 换行
+        es_map = {}
+        for ln in open(os.path.join(d, "TOOLS.tsv"), encoding="utf-8"):
+            ln = ln.rstrip("\n")
+            if not ln.startswith("executed_snapshot\t"):
+                continue
+            p = ln.split("\t")
+            if len(p) == 3:
+                es_map[p[1]] = p[2]
         for orig, snap, lhash in rows:
             if snap in snaps_seen:
                 errs.append(f"{s}: CLOSURE_SNAP_DUP {snap}"); return None
