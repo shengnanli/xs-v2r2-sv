@@ -19,9 +19,26 @@ SESSION_TARGET = {"bku_strict": "Bku", "bku_unread_true_probe": "Bku", "imsic_st
 # 七审: unread-true 探针底层 FM 运行须为真实 clean SUCCEEDED(ERROR 仅来自 frozen 政策,
 # 不得掩盖 native FAILED/failing 退化)
 NATIVE_FLOOR = {"bku_unread_true_probe": {"native_verdict": "SUCCEEDED", "failing": 0}}
-# 入口被 PROBE_SED 故意改写的会话: entry(row0) 快照 != expected commit 字节(正当),
-# 仍强制 frozen==snapshot + emitter==commit + envelope/expectation 双绑定 script_sha256。
+# 入口被 PROBE_SED 改写的会话: entry 快照 = 对 commit fm_eq.tcl 施加**恰一次确定变换**
+# (unread false→true)后的字节(八审: 不再放任任意变化, 防注入 golden 自比对)。
 ENTRY_ALTERED = {"bku_unread_true_probe"}
+PROBE_OLD = b"set_app_var verification_verify_unread_compare_points false"
+PROBE_NEW = b"set_app_var verification_verify_unread_compare_points true"
+# 八审: 每会话 closure 角色**固定**(role, orig 相对后缀); 按角色绑定, 不信 orig basename。
+_E, _M = "scripts/fm_eq.tcl", "scripts/sidecar/fm_native_emit.tcl"
+CLOSURE_ROLES = {
+    "bku_strict":            [("entry", "frozen/" + _E), ("emitter", "frozen/" + _M), ("pin", "verif/ut/Bku/fm_pins.tcl")],
+    "imsic_strict":          [("entry", "frozen/" + _E), ("emitter", "frozen/" + _M)],
+    "bku_unread_true_probe": [("entry_probe", "frozen/" + _E), ("emitter", "frozen/" + _M), ("pin", "verif/ut/Bku/fm_pins.tcl")],
+    "intercept_direct":      [("entry", "frozen/" + _E), ("emitter", "frozen/" + _M), ("pin_pre", "verif/ut/Bku/fm_pins_pre.tcl")],
+    "intercept_dynamic":     [("entry", "frozen/" + _E), ("emitter", "frozen/" + _M), ("pin_pre", "verif/ut/Bku/fm_pins_pre.tcl")],
+    "intercept_nested":      [("entry", "frozen/" + _E), ("emitter", "frozen/" + _M), ("pin_pre", "verif/ut/Bku/fm_pins_pre.tcl"), ("pin_inner", "verif/ut/Bku/fm_pins_inner.tcl")],
+}
+# 八审 P1a: native make_rc 确定值(同输入→同 fm_verdict→同 make 退出)
+MAKE_RC = {"bku_strict": 2, "bku_unread_true_probe": 0, "imsic_strict": 0}
+# 八审 P1: probe 完整 clean floor(native 底层 FM 全 clean, 非仅 verdict/failing)
+PROBE_FLOOR = {"native_verdict": "SUCCEEDED",
+               "stats": {"failing": 0, "unverified": 0, "aborted": 0, "unread_notcompared": 0}}
 EXPECT_RC = {"bku_strict": 1, "bku_unread_true_probe": 1, "imsic_strict": 1,
              "intercept_direct": 5, "intercept_dynamic": 5, "intercept_nested": 5}
 # native 会话 validator 期望 (verdict, reason)——六审: 不能只比大类(重复 JSON 键致
@@ -214,13 +231,16 @@ def check_session(tree, s, kind, expected, repo, errs):
             errs.append(f"{s}: UNTRACKED={kv.get('worktree_untracked_files')}!=injected({len(inj)})")
     # 六审洞4: infra 精确唯一 pathset —— 相对路径去重后必须恰等于 INFRA_REL,
     # 且每条 hash == git show <expected>:<rel>(不再"数够 5 条重复即可")
+    # 八审 P1b: infra 相对路径由**后缀匹配 INFRA_REL**得出(不依赖记录的绝对前缀 == 当前 repo,
+    # 否则独立 clone 会 false-red); 每条 hash == git show <expected>:<rel>。
     infra_rel_seen = []
     for path, h in infra:
         if len(h) != 64 or any(c not in "0123456789abcdef" for c in h):
             errs.append(f"{s}: INFRA_HASH_BAD {path}"); continue
-        rel = os.path.relpath(path, repo)
-        if rel.startswith(".."):
-            errs.append(f"{s}: INFRA_PATH_OUTSIDE {path}"); continue
+        norm = path.replace("\\", "/")
+        rel = next((r for r in INFRA_REL if norm == r or norm.endswith("/" + r)), None)
+        if rel is None:
+            errs.append(f"{s}: INFRA_PATH_UNKNOWN {path}"); continue
         infra_rel_seen.append(rel)
         want = git_show_sha(repo, expected, rel)
         if want is None:
@@ -239,36 +259,21 @@ def check_session(tree, s, kind, expected, repo, errs):
             line = line.rstrip("\n")
             if line and len(line.split("\t")) == 3:
                 clrows.append(line.split("\t"))
-    def snap_bytes_for_basename(base):
-        for orig, snap, _h in clrows:
-            if os.path.basename(orig) == base:
-                sp = os.path.join(d, snap)
-                if os.path.isfile(sp):
-                    return open(sp, "rb").read()
-        return None
     # frozen fm_verdict.py 绑 expected commit(非 source, 但须是提交态字节)
     fvp = os.path.join(d, "frozen/scripts/fm_verdict.py")
     if os.path.isfile(fvp):
         w = git_show_sha(repo, expected, "scripts/fm_verdict.py")
         if w is None or w != sha256_file(fvp):
             errs.append(f"{s}: FROZEN_VERDICT!=COMMIT")
-    tgt = SESSION_TARGET[s]
-    # stimulus_* 绑定实际执行 snapshot(注入或 tracked 的都必须 == 跑过的字节)
-    for f in os.listdir(d):
-        if not f.startswith("stimulus_"):
-            continue
-        base = f[len("stimulus_"):]
-        stim = open(os.path.join(d, f), "rb").read()
-        snb = snap_bytes_for_basename(base)
-        if snb is None:
-            errs.append(f"{s}: STIMULUS_NOT_EXECUTED {f}")
-        elif snb != stim:
-            errs.append(f"{s}: STIMULUS!=SNAPSHOT {f}")
-        # tracked 的 fm_pins.tcl 另绑 expected commit
-        if base == "fm_pins.tcl":
-            w = git_show_sha(repo, expected, f"verif/ut/{tgt}/fm_pins.tcl")
-            if w is None or w != hashlib.sha256(stim).hexdigest():
-                errs.append(f"{s}: STIMULUS_PIN!=COMMIT")
+    # 八审: stimulus_ 文件集合必须**恰等于**该会话注入角色(pin_pre/pin_inner)的集合;
+    # 字节绑定由 recompute_closure 的角色分支完成(按角色非 basename)。
+    want_stim = set()
+    for role, orig_suffix in CLOSURE_ROLES[s]:
+        if role in ("pin_pre", "pin_inner"):
+            want_stim.add("stimulus_" + os.path.basename(orig_suffix))
+    got_stim = set(f for f in os.listdir(d) if f.startswith("stimulus_"))
+    if got_stim != want_stim:
+        errs.append(f"{s}: STIMULUS_SET {sorted(got_stim)}!={sorted(want_stim)}")
 
     # 七审: 独立重算完整 script closure。snap 名白名单(禁 / 与 ..); 每 snap 物理在会话内;
     # executed_snapshot TOOLS 行与 closure list **精确同序、无多余项、无缺项**;
@@ -319,28 +324,53 @@ def check_session(tree, s, kind, expected, repo, errs):
         for f in os.listdir(d):
             if f.startswith("sourced_") and f not in snaps_seen:
                 errs.append(f"{s}: ORPHAN_SNAPSHOT {f}"); return None
-        # 入口/emitter 三方绑定(row0/row1): frozen==snapshot 恒绑; ==commit 除 entry-altered 会话
-        bind = [("scripts/fm_eq.tcl", "frozen/scripts/fm_eq.tcl", s in ENTRY_ALTERED),
-                ("scripts/sidecar/fm_native_emit.tcl", "frozen/scripts/sidecar/fm_native_emit.tcl", False)]
-        for idx, (relc, frel, altered) in enumerate(bind):
-            if idx >= len(rows):
-                errs.append(f"{s}: CLOSURE_TOO_SHORT"); return None
-            snap = rows[idx][1]
+        # 八审: 按**固定角色**绑定(role, orig 后缀), 不信 orig basename——防改名替换 pin。
+        roles = CLOSURE_ROLES[s]
+        if len(rows) != len(roles):
+            errs.append(f"{s}: CLOSURE_LEN={len(rows)}!={len(roles)}"); return None
+        for idx, (role, orig_suffix) in enumerate(roles):
+            orig, snap, _h = rows[idx]
+            # orig 相对后缀必须匹配角色(WT/frozen 前缀不定, 但尾部路径固定)
+            if not orig.replace("\\", "/").endswith(orig_suffix):
+                errs.append(f"{s}: ROLE@{idx}_ORIG {orig}!~{orig_suffix}"); return None
             snb = open(os.path.join(d, snap), "rb").read()
-            fp = os.path.join(d, frel)
-            if not os.path.isfile(fp) or open(fp, "rb").read() != snb:
-                errs.append(f"{s}: FROZEN!=SNAPSHOT {frel}")
-            if not altered:
-                wanth = git_show_sha(repo, expected, relc)
-                if wanth is None or wanth != hashlib.sha256(snb).hexdigest():
-                    errs.append(f"{s}: ENTRY_SNAPSHOT!=COMMIT {relc}")
-        # 七审: tracked 后置 pin(native 会话执行的 fm_pins.tcl)快照须 == expected commit 字节
-        for orig, snap, _h in rows:
-            if os.path.basename(orig) == "fm_pins.tcl":
-                snb = open(os.path.join(d, snap), "rb").read()
-                w = git_show_sha(repo, expected, f"verif/ut/{SESSION_TARGET[s]}/fm_pins.tcl")
+            if role in ("entry", "entry_probe", "emitter"):
+                frel = orig_suffix  # frozen/... 就是会话内相对路径
+                fp = os.path.join(d, frel)
+                if not os.path.isfile(fp) or open(fp, "rb").read() != snb:
+                    errs.append(f"{s}: FROZEN!=SNAPSHOT {frel}"); return None
+            if role == "entry":
+                w = git_show_sha(repo, expected, _E)
                 if w is None or w != hashlib.sha256(snb).hexdigest():
-                    errs.append(f"{s}: PIN_SNAPSHOT!=COMMIT fm_pins.tcl")
+                    errs.append(f"{s}: ENTRY!=COMMIT"); return None
+            elif role == "emitter":
+                w = git_show_sha(repo, expected, _M)
+                if w is None or w != hashlib.sha256(snb).hexdigest():
+                    errs.append(f"{s}: EMITTER!=COMMIT"); return None
+            elif role == "entry_probe":
+                # 八审洞1: 恰一次确定变换 unread false→true, 其余字节不变
+                cb = None
+                vd = tempfile.mkdtemp()
+                cp = os.path.join(vd, "e")
+                if git_extract(repo, expected, _E, cp):
+                    cb = open(cp, "rb").read()
+                shutil.rmtree(vd, ignore_errors=True)
+                if cb is None:
+                    errs.append(f"{s}: PROBE_ENTRY_NO_COMMIT"); return None
+                if cb.count(PROBE_OLD) != 1:
+                    errs.append(f"{s}: PROBE_OLD_COUNT!=1"); return None
+                if snb != cb.replace(PROBE_OLD, PROBE_NEW):
+                    errs.append(f"{s}: PROBE_TRANSFORM_MISMATCH"); return None
+            elif role == "pin":
+                w = git_show_sha(repo, expected, orig_suffix)  # verif/ut/<T>/fm_pins.tcl
+                if w is None or w != hashlib.sha256(snb).hexdigest():
+                    errs.append(f"{s}: PIN!=COMMIT {orig_suffix}"); return None
+            elif role in ("pin_pre", "pin_inner"):
+                # 注入的未跟踪刺激: 快照字节 == 对应 stimulus_ 文件(按角色, 非 basename)
+                stimname = "stimulus_" + os.path.basename(orig_suffix)
+                sp2 = os.path.join(d, stimname)
+                if not os.path.isfile(sp2) or open(sp2, "rb").read() != snb:
+                    errs.append(f"{s}: INJECTED_STIM!=SNAPSHOT {stimname}"); return None
         return hashlib.sha256(cat).hexdigest()
 
     if kind == "native":
@@ -361,14 +391,17 @@ def check_session(tree, s, kind, expected, repo, errs):
             errs.append(f"{s}: FM_SHELL_RC {env.get('fm_shell_rc')}/{rcfile}")
         if env.get("native_facts_sha256") != hashlib.sha256(natbuf).hexdigest():
             errs.append(f"{s}: NATIVE_SHA_UNBOUND")
-        # 七审(B): unread-true 探针底层 FM 须真实 clean SUCCEEDED(ERROR 仅来自 frozen 政策,
-        # 不得掩盖 native FAILED/failing 退化)
-        if s in NATIVE_FLOOR:
-            fl = NATIVE_FLOOR[s]
-            if nat.get("native_verdict") != fl["native_verdict"]:
-                errs.append(f"{s}: NATIVE_FLOOR_VERDICT={nat.get('native_verdict')}!={fl['native_verdict']}")
-            if nat.get("stats", {}).get("failing") != fl["failing"]:
-                errs.append(f"{s}: NATIVE_FLOOR_FAILING={nat.get('stats',{}).get('failing')}!={fl['failing']}")
+        # 八审(洞4): unread-true 探针底层 FM 须**完整 clean**(ERROR 仅来自 frozen 政策;
+        # frozen-semantics 提前返回会掩盖 passing=0/unverified>0/aborted>0/unread_notcompared>0)
+        if s == "bku_unread_true_probe":
+            st = nat.get("stats", {})
+            if nat.get("native_verdict") != PROBE_FLOOR["native_verdict"]:
+                errs.append(f"{s}: PROBE_FLOOR_VERDICT={nat.get('native_verdict')}")
+            if not (isinstance(st.get("passing"), int) and st.get("passing") > 0):
+                errs.append(f"{s}: PROBE_FLOOR_PASSING={st.get('passing')}")
+            for k, v in PROBE_FLOOR["stats"].items():
+                if st.get(k) != v:
+                    errs.append(f"{s}: PROBE_FLOOR_{k}={st.get(k)}!={v}")
         # 独立重算 closure 双绑定
         cl = recompute_closure()
         if cl is not None:
@@ -399,33 +432,45 @@ def check_session(tree, s, kind, expected, repo, errs):
             want_rc = 0 if want_v == "SUCCEEDED" else 1
             if r.returncode != want_rc:
                 errs.append(f"{s}: VALIDATOR_RC={r.returncode}!={want_rc}")
-            # 七审: RESULT 行精确解析(非子串)——verdict/reason + 三个 rc 字段全绑定
+            # 七/八审: RESULT 行精确解析(非子串)——verdict/reason + 四个 rc 字段全绑定
+            # (P1a: make_rc 亦绑定至确定值)
             m = re.match(
                 r"^SESSION_RESULT " + re.escape(s) +
-                r": (\S+)\t(\S+) \(validator_rc=(\d+) fm_shell_rc=(\d+) make_rc=-?\d+ runner_rc=(\d+)\)$",
+                r": (\S+)\t(\S+) \(validator_rc=(\d+) fm_shell_rc=(\d+) make_rc=(-?\d+) runner_rc=(\d+)\)$",
                 res_line)
             if not m:
                 errs.append(f"{s}: RESULT_LINE_MALFORMED [{res_line}]")
             else:
-                r_v, r_reason, r_vrc, r_fmrc, r_rrc = m.groups()
+                r_v, r_reason, r_vrc, r_fmrc, r_mrc, r_rrc = m.groups()
                 if r_v != want_v or r_reason != want_r:
                     errs.append(f"{s}: RESULT_VERDICT_FORGED {r_v}/{r_reason}")
                 if int(r_vrc) != want_rc or int(r_fmrc) != 0 or int(r_rrc) != EXPECT_RC[s]:
                     errs.append(f"{s}: RESULT_RC_FORGED vrc={r_vrc} fmrc={r_fmrc} rrc={r_rrc}")
+                if int(r_mrc) != MAKE_RC[s]:
+                    errs.append(f"{s}: RESULT_MAKE_RC={r_mrc}!={MAKE_RC[s]}")
         shutil.rmtree(vdir, ignore_errors=True)
     else:
         if os.path.exists(os.path.join(d, "native_facts.json")):
             errs.append(f"{s}: native_facts_MUST_BE_ABSENT")
-        if "NO_NATIVE_FACTS" not in result:
-            errs.append(f"{s}: REJECT_RESULT_MISMATCH")
-        # 六审洞2: reject 严格 fm_shell.rc==3 / RUNNER_RC==5
+        # 八审洞3: reject receipt 精确绑定——SESSION_RESULT 行精确正则(会话名+rc3+runner rc5),
+        # 且 SIDECAR_ERROR **恰一行**且为 execution-trace 拦截(无关失败不得冒充拦截成功)。
+        if not re.match(
+            r"^SESSION_RESULT " + re.escape(s) +
+            r": NO_NATIVE_FACTS rc=3 \(emitter拒产=fail-closed, runner rc=5\)$", res_line):
+            errs.append(f"{s}: REJECT_RESULT_MALFORMED [{res_line}]")
+        se_lines = [ln for ln in result.splitlines() if ln.startswith("SIDECAR_ERROR:")]
+        if len(se_lines) != 1:
+            errs.append(f"{s}: SIDECAR_ERROR_LINES={len(se_lines)}!=1")
+        elif not re.match(r"^SIDECAR_ERROR: runtime_appvar_intercept \S.* \(execution-trace\)$", se_lines[0]):
+            errs.append(f"{s}: SIDECAR_ERROR_NOT_INTERCEPT [{se_lines[0]}]")
+        # 六审洞2: reject 严格 fm_shell.rc==3
         try:
             rcfile = int(open(os.path.join(d, "fm_shell.rc")).read().strip())
         except Exception:
             rcfile = None
         if rcfile != 3:
             errs.append(f"{s}: REJECT_FM_SHELL_RC={rcfile}!=3")
-        # reject 也独立核 closure 快照未被篡改(拒产会话亦有入口/emitter/pin 快照)
+        # reject 也独立核 closure(角色/快照/顺序)
         recompute_closure()
 
 

@@ -134,6 +134,51 @@ open(d+'/script_closure.list','w').write('\n'.join(L)+'\n')
 "; recompute "$DF/intercept_direct"
 bash "$CK" --tree "$DF" "$REAL_IMPL" >/dev/null 2>&1; T seven_F_snap_escape 1 $?; rm -rf "$DF"
 
+# ===== 八审四洞+P1 负测 =====
+# 洞1: probe 的 frozen fm_eq 注入额外改动(非唯一 false→true 变换)
+E1=$(mktemp -d); cp -r "$SRC"/* "$E1"/ 2>/dev/null; rm -f "$E1"/*.txt "$E1"/*.MANIFEST.tsv 2>/dev/null
+d="$E1/bku_unread_true_probe"
+# 篡改 frozen entry + 对应 snapshot(使 frozen==snapshot 仍成立), 但引入额外行
+snap=$(awk -F'\t' 'NR==1{print $2}' "$d/script_closure.list")
+printf '\n# extra injected line\n' >> "$d/frozen/scripts/fm_eq.tcl"
+cp "$d/frozen/scripts/fm_eq.tcl" "$d/$snap"
+newh=$(sha256sum "$d/$snap"|cut -d' ' -f1)
+sed -i "1s|\t[0-9a-f]*$|\t$newh|" "$d/script_closure.list"
+sed -i "s|^executed_snapshot\t$snap\t.*|executed_snapshot\t$snap\t$newh|" "$d/TOOLS.tsv"
+recompute "$d"
+bash "$CK" --tree "$E1" "$REAL_IMPL" >/dev/null 2>&1; T eight_1_probe_extra_change 1 $?; rm -rf "$E1"
+
+# 洞2: reject pin_pre 快照与 stimulus 不符(改名绕过 basename 绑定)
+E2=$(mktemp -d); cp -r "$SRC"/* "$E2"/ 2>/dev/null; rm -f "$E2"/*.txt "$E2"/*.MANIFEST.tsv 2>/dev/null
+d="$E2/intercept_direct"
+echo "# swapped pin" > "$d/stimulus_fm_pins_pre.tcl"  # stimulus 与执行 snapshot 脱钩
+recompute "$d"
+bash "$CK" --tree "$E2" "$REAL_IMPL" >/dev/null 2>&1; T eight_2_stim_snapshot_desync 1 $?; rm -rf "$E2"
+
+# 洞3: reject RESULT 用无关失败冒充(改 SIDECAR_ERROR 为非 intercept)
+E3=$(mktemp -d); cp -r "$SRC"/* "$E3"/ 2>/dev/null; rm -f "$E3"/*.txt "$E3"/*.MANIFEST.tsv 2>/dev/null
+d="$E3/intercept_direct"
+sed -i 's|^SIDECAR_ERROR:.*|SIDECAR_ERROR: some_unrelated_failure (not-intercept)|' "$d/RESULT.txt"
+recompute "$d"
+bash "$CK" --tree "$E3" "$REAL_IMPL" >/dev/null 2>&1; T eight_3_reject_fake_receipt 1 $?; rm -rf "$E3"
+
+# 洞4: probe native passing=0(frozen-semantics 提前返回掩盖)
+E4=$(mktemp -d); cp -r "$SRC"/* "$E4"/ 2>/dev/null; rm -f "$E4"/*.txt "$E4"/*.MANIFEST.tsv 2>/dev/null
+python3 -c "
+import json,hashlib
+d='$E4/bku_unread_true_probe'
+n=json.load(open(d+'/native_facts.json')); n['stats']['passing']=0
+b=json.dumps(n).encode(); open(d+'/native_facts.json','wb').write(b)
+e=json.load(open(d+'/verdict.sidecar.json')); e['stats']['passing']=0
+e['native_facts_sha256']=hashlib.sha256(b).hexdigest(); json.dump(e,open(d+'/verdict.sidecar.json','w'))
+"; recompute "$E4/bku_unread_true_probe"
+bash "$CK" --tree "$E4" "$REAL_IMPL" >/dev/null 2>&1; T eight_4_probe_passing_zero 1 $?; rm -rf "$E4"
+
+# P1a: make_rc 篡改(bku_strict make_rc 2→0)
+E5=$(mktemp -d); cp -r "$SRC"/* "$E5"/ 2>/dev/null; rm -f "$E5"/*.txt "$E5"/*.MANIFEST.tsv 2>/dev/null
+sed -i 's/make_rc=2/make_rc=0/' "$E5/bku_strict/RESULT.txt"; recompute "$E5/bku_strict"
+bash "$CK" --tree "$E5" "$REAL_IMPL" >/dev/null 2>&1; T eight_P1a_make_rc_forged 1 $?; rm -rf "$E5"
+
 # 正样本: 真实证据必须 PASS(rc=0)
 bash "$CK" --tree "$SRC" "$REAL_IMPL" >/dev/null 2>&1; T real_evidence_passes 0 $?
 
