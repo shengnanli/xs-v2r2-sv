@@ -7,25 +7,38 @@
 #   - 运行正确 make target(fm-<v> / fmbb / fm)。
 #   - proof_mode/allow 来自 manifest(FM_MODE 注入 + 未来 allow 文件); required_verdict 断言。
 #   - timeout: fm_shell 超时(rc=124/无 native)→ 分类 TIMEOUT。
-# 用法: run_manifest_target.sh <manifest.json> <target> [timeout_sec]
+# 用法: run_manifest_target.sh <manifest.json> <target> [timeout_sec] [--smoke]
+#   默认(signoff): 断言 measured == required_verdict(派生 SUCCEEDED/SHADOW_CHECK)。
+#   --smoke: 断言 measured == smoke_expected.tsv 的 expected_observation(仅验 runner 机械)。
+# UNCONFIGURED 目标: 不运行、不计通过(退出码 4)。
 set -u
 SIGNOFF="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 GOLDEN=/home/eda/xs-env/G0-canonical/golden-rtl
 SC="$SIGNOFF/scripts/sidecar"
-MANIFEST=$1; TARGET=$2; TMO=${3:-1200}
+MANIFEST=$1; TARGET=$2; TMO=${3:-1200}; MMODE=${4:-signoff}
 
-# 取 manifest 条目
-read -r UTDIR MK MT ENTRY PMODE REQV <<<"$(python3 - "$MANIFEST" "$TARGET" <<'PY'
+# 取 manifest 条目(tab 分隔, 防空字段列错位)
+IFS=$'\t' read -r UTDIR MK MT ENTRY PMODE REQV CFG <<<"$(python3 - "$MANIFEST" "$TARGET" <<'PY'
 import json,sys
 m=json.load(open(sys.argv[1]))
 for e in m["entries"]:
     if e["target"]==sys.argv[2]:
-        print(e["ut_dir"],e["makefile"],e["make_target"],e["entry"],e["proof_mode"],e["required_verdict"]); break
+        print("\t".join([e["ut_dir"],e["makefile"] or "-",e["make_target"],e["entry"],
+                         e["proof_mode"],e["required_verdict"],e["config_status"]])); break
 else:
-    print("NOTFOUND");
+    print("NOTFOUND")
 PY
 )"
 [ "$UTDIR" = "NOTFOUND" ] && { echo "MANIFEST_MISS $TARGET"; exit 2; }
+if [ "$CFG" = "UNCONFIGURED" ]; then
+  echo "TARGET $TARGET: UNCONFIGURED(有UT无FM配置) —— 不运行、不计通过"; exit 4
+fi
+# smoke 模式: 取 expected_observation
+EXP="$REQV"
+if [ "$MMODE" = "--smoke" ]; then
+  EXP=$(awk -F'\t' -v t="$TARGET" '!/^#/ && $1==t{print $2}' "$SC/smoke_expected.tsv")
+  [ -z "$EXP" ] && { echo "SMOKE_NO_EXPECTED $TARGET"; exit 2; }
+fi
 BID=$(python3 -c "import json;print(json.load(open('$MANIFEST'))['canonical_baseline_id'])")
 D="$SIGNOFF/verif/ut/$UTDIR"
 OUT=$(mktemp -d); RID="M305-$TARGET-$$"
@@ -47,7 +60,7 @@ if [ ! -f "$OUT/native_facts.json" ]; then
   if [ "$MAKE_RC" = "124" ] || [ "$RC" = "124" ]; then CLS=TIMEOUT
   else CLS=NO_NATIVE_FACTS; fi
   ACT="$CLS"
-  echo "TARGET $TARGET: measured=$ACT required=$REQV make_rc=$MAKE_RC fm_shell_rc=$RC"
+  echo "TARGET $TARGET: measured=$ACT expected=$EXP (mode=$MMODE required_verdict=$REQV make_rc=$MAKE_RC fm_shell_rc=$RC)"
   grep -aE "SIDECAR_ERROR|FM_MODE_ERROR" "$D/fm_work/$TARGET/fm.log" 2>/dev/null | head -2
 else
   # envelope + expectation(mode/allow 来自 manifest; smoke: 输入/脚本 digest 占位)
@@ -71,11 +84,14 @@ PYEOF
   ACT=$(python3 "$SC/fm_sidecar_verdict.py" "$OUT/verdict.sidecar.json" \
       --native-facts "$OUT/native_facts.json" --expectation "$OUT/expectation.smoke.json" \
       --actual-rc "$RC" 2>&1 | head -1 | cut -f1)
-  echo "TARGET $TARGET: measured=$ACT required=$REQV (mode=$PMODE fm_shell_rc=$RC)"
+  echo "TARGET $TARGET: measured=$ACT expected=$EXP (mode=$MMODE required_verdict=$REQV proof=$PMODE fm_shell_rc=$RC)"
 fi
 
-# 断言: actual == required(UNVERIFIED=未声明, 不参与绿灯, 仅报告)
 rm -rf "$OUT"
-if [ "$REQV" = "UNVERIFIED" ]; then echo "  [UNVERIFIED: 未声明, 需测量后写 declarations]"; exit 3
-elif [ "$ACT" = "$REQV" ]; then echo "  [MATCH]"; exit 0
-else echo "  [MISMATCH: manifest 声称 $REQV, 实测 $ACT]"; exit 1; fi
+# 断言: measured == expected(signoff: expected=required_verdict; smoke: expected_observation)
+if [ "$ACT" = "$EXP" ]; then
+  echo "  [MATCH]"; exit 0
+else
+  # signoff 下 measured!=required 是**签核 gap**(诚实不绿), 非 runner 错
+  echo "  [MISMATCH: expected=$EXP measured=$ACT]"; exit 1
+fi
