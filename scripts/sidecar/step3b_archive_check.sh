@@ -59,11 +59,13 @@ check_session() {
   # ② 类型化必需 pathset(非空)
   local req="RESULT.txt TOOLS.tsv RUNNER_RC fm_shell.rc fm_log.txt make.out script_closure.list \
 frozen/scripts/fm_eq.tcl frozen/scripts/fm_verdict.py frozen/scripts/sidecar/fm_native_emit.tcl"
-  [ "$kind" = "native" ] && req="$req native_facts.json verdict.sidecar.json expectation.smoke.json probe_nc_unread.list"
+  [ "$kind" = "native" ] && req="$req native_facts.json verdict.sidecar.json expectation.smoke.json"
   [ "$kind" = "reject" ] && req="$req stimulus_fm_pins_pre.tcl"
   for f in $req; do
     if [ ! -s "$d/$f" ]; then echo "  $s: REQUIRED_MISSING_OR_EMPTY $f"; bad=1; fi
   done
+  # 存在即可(内容可合法为空: 如 true-probe 的 Not-Compared 列表)
+  [ "$kind" = "native" ] && { [ -f "$d/probe_nc_unread.list" ] || { echo "  $s: REQUIRED_MISSING probe_nc_unread.list"; bad=1; }; }
   local nsnap=$(ls "$d" 2>/dev/null | grep -c '^sourced_')
   [ "$nsnap" -ge 2 ] || { echo "  $s: SNAPSHOTS<2"; bad=1; }
   if [ "$kind" = "reject" ] && [ -f "$d/native_facts.json" ]; then
