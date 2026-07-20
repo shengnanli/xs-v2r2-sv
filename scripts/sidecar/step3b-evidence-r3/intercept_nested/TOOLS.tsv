@@ -1,0 +1,17 @@
+kind	path	sha256
+infra	/home/eda/xs-env/xs-signoff/scripts/sidecar/fm_sidecar_run.sh	c1c4d2840ed7152d49b87480da965427ec3d5a3fd2091c02eee0d4544fe3e484
+infra	/home/eda/xs-env/xs-signoff/scripts/ut_common.mk	bd484c45cf9bb5bce5af9f5dc736a4686600c24732452c545c968cff9bb20a53
+infra	/home/eda/xs-env/xs-signoff/scripts/sidecar/fm_closure_digest.py	5ee7e694620c54600ce493b0c0af47d614a883e105073736d9ed1e228a6be906
+infra	/home/eda/xs-env/xs-signoff/scripts/sidecar/fm_sidecar_verdict.py	ebbef3f97f1e762b803f7d9935565cf804cc5e726d32f971c1b4cbf60ec71ead
+infra	/home/eda/xs-env/xs-signoff/scripts/sidecar/step3b_archive_check.sh	5a1dbe8f722a741418d5b3a98d656176d56834b653d29ed282426e0a0460b081
+executed_snapshot	/home/eda/xs-env/xs-signoff/scripts/sidecar/step3b-evidence-r3/intercept_nested.staging/frozen/scripts/fm_eq.tcl -> sourced_000_fm_eq.tcl	340186e78fd25cc5d72c3115218a31521d1ec31a81cb92e6777013160bc084ec
+executed_snapshot	/home/eda/xs-env/xs-signoff/scripts/sidecar/step3b-evidence-r3/intercept_nested.staging/frozen/scripts/sidecar/fm_native_emit.tcl -> sourced_001_fm_native_emit.tcl	1338b95d76eafa9ec3231342cc3627eb1b09647e636ae8bec780b029ec0479a5
+executed_snapshot	/tmp/tmp.nmuuaI8jUj/wt/verif/ut/Bku/fm_pins_pre.tcl -> sourced_002_fm_pins_pre.tcl	66dce67b55c7bf9860123f72837ea760fdcfee3f95fb21c5639e68cf88fc4a30
+executed_snapshot	/tmp/.nested_stim.tcl -> sourced_003_.nested_stim.tcl	c30b5230a6248269a10e20e76a4bff53ffc7d77da95369ffb31d630c7ea6abdc
+impl_commit	f9019288540643cab6373404e838cc60814d577d	-
+main_tracked_dirty	0	-
+worktree_head_pre	f9019288540643cab6373404e838cc60814d577d	-
+worktree_head_post	f9019288540643cab6373404e838cc60814d577d	-
+worktree_tracked_dirty_pre	0	-
+worktree_tracked_dirty_post	0	-
+worktree_untracked_files	1	-

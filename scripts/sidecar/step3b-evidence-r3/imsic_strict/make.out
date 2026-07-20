@@ -1,0 +1,17 @@
+=== FM: IMSIC (mode=signoff-strict) ===
+FM_TOP=IMSIC \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/IMSIC.sv " \
+FM_IMPL_SRCS="/tmp/tmp.Jh7zXm7sEZ/wt/rtl/uncore/imsic_pkg.sv /tmp/tmp.Jh7zXm7sEZ/wt/rtl/uncore/IMSIC.sv /tmp/tmp.Jh7zXm7sEZ/wt/rtl/uncore/IMSIC_wrapper.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/IMSIC -file /home/eda/xs-env/xs-signoff/scripts/sidecar/step3b-evidence-r3/imsic_strict.staging/frozen/scripts/fm_eq.tcl \
+    > fm_work/IMSIC/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /home/eda/xs-env/xs-signoff/scripts/sidecar/step3b-evidence-r3/imsic_strict.staging/frozen/scripts/fm_verdict.py fm_work/IMSIC/fm.log --rc $rc --mode signoff-strict --top IMSIC --allowlist 0
+SUCCEEDED	{"passing": 1305, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "IMSIC", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}
+=== FM all variants passed (IMSIC) ===
