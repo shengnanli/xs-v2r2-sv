@@ -1,3 +1,0 @@
-SESSION_RESULT imsic_strict: PARTIAL	strict_has_objects (validator_rc=1 fm_shell_rc=0 make_rc=0 runner_rc=1)
-run_id: R3B-imsic_strict-1784557980
-impl_commit: 0bfb2d0cdbdeffa4c3304b426d178cf5b2090309

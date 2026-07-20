@@ -59,8 +59,11 @@ finalize() {  # $1 = 最终 rc
       echo -e "infra\t$f\t$(sha256sum "$f"|cut -d' ' -f1)"
     done
     if [ -f "$STG/script_closure.list" ]; then
-      while IFS=$'\t' read -r orig snap; do
-        [ -f "$STG/$snap" ] && echo -e "executed_snapshot\t$orig -> $snap\t$(sha256sum "$STG/$snap"|cut -d' ' -f1)"
+      # 六审: 三列读取(orig/snap/ledger_hash); executed_snapshot 记 snap 名 + 台账 hash,
+      # 供 verifier 独立重算 closure 并绑定。
+      while IFS=$'\t' read -r orig snap lhash; do
+        [ -z "$snap" ] && continue
+        [ -f "$STG/$snap" ] && echo -e "executed_snapshot\t$snap\t$lhash"
       done < "$STG/script_closure.list"
     fi
     echo -e "impl_commit\t$IMPL_COMMIT\t-"
