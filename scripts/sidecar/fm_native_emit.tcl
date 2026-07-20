@@ -35,23 +35,31 @@ array set SIDECAR_APPVAR_DEFAULT {
 }
 set SIDECAR_EXTRA_KEYS {}   ;# 拦截扫描中发现的注册表内可选键(会被读回并入 entry_appvars)
 
-# ---------------- ① 运行期 appvar 拦截 ----------------
-proc sidecar_scan_tcl_appvars {files} {
-    set allowed [concat $::SIDECAR_APPVAR_REQUIRED $::SIDECAR_APPVAR_OPTIONAL \
-                        $::SIDECAR_APPVAR_DIAG_ONLY]
-    foreach f $files {
-        if {$f eq "" || ![file exists $f]} continue
-        set fh [open $f r]; set txt [read $fh]; close $fh
-        foreach {full name} [regexp -all -inline {set_app_var\s+(\S+)} $txt] {
-            if {[lsearch -exact $allowed $name] < 0} {
-                puts "SIDECAR_ERROR: runtime_appvar_intercept file=$f var=$name 不在注册表"
-                exit 3
-            }
-            if {[lsearch -exact $::SIDECAR_APPVAR_REQUIRED $name] < 0 &&
-                [lsearch -exact $::SIDECAR_EXTRA_KEYS $name] < 0} {
-                lappend ::SIDECAR_EXTRA_KEYS $name
-            }
+# ---------------- ① 执行期 appvar 拦截(3B 验收一审重做) ----------------
+# 静态正则扫描被裁定不合格(动态命令名/eval/嵌套 source 可绕过, 注释/字符串误报)。
+# 改为 rename 原生 set_app_var + wrapper: **每一次真实执行**都经由唯一入口检查——
+# `set c set_app_var; $c foo 1`、`eval`、嵌套 source 全部落在同一调用点, 无法绕过。
+# 名字在调用时记入 SIDECAR_EXTRA_KEYS(注册表内可选键)→ readback 覆盖, 三方同漏堵死。
+proc sidecar_intercept_fail {name} {
+    puts "SIDECAR_ERROR: runtime_appvar_intercept var=$name (execution-time wrapper) not-in-registry"
+    exit 3
+}
+proc sidecar_install_appvar_guard {} {
+    if {[info commands __sidecar_real_set_app_var] ne ""} return
+    rename set_app_var __sidecar_real_set_app_var
+    proc set_app_var {args} {
+        set name [lindex $args 0]
+        set allowed [concat $::SIDECAR_APPVAR_REQUIRED $::SIDECAR_APPVAR_OPTIONAL \
+                            $::SIDECAR_APPVAR_DIAG_ONLY]
+        if {[lsearch -exact $allowed $name] < 0} {
+            sidecar_intercept_fail $name
+            return   ;# 仅当 fail 钩子被测试替换为不退出时到达
         }
+        if {[lsearch -exact $::SIDECAR_APPVAR_REQUIRED $name] < 0 &&
+            [lsearch -exact $::SIDECAR_EXTRA_KEYS $name] < 0} {
+            lappend ::SIDECAR_EXTRA_KEYS $name
+        }
+        uplevel 1 [linsert $args 0 __sidecar_real_set_app_var]
     }
 }
 
@@ -92,61 +100,86 @@ proc sidecar_jpairs {pairs} {
 # 返回 6 元素列表: iface_ref iface_impl unres_ref unres_impl empty_ref empty_impl
 # 错误以 error 抛出(调用方决定删 tmp/exit)。契约(v7): FM-184 必须存在; FM-249 可共存
 # =空集(不得有实例块); 非空不得有 FM-249; flag 只认 i/u/e; Instances N==M 且精确消费 N 条。
+# 严格 section/block 状态机(3B 验收一审重写, fail-closed 行分类):
+#  - 每个非空行必须命中已知类别之一, 否则 error(顶格游离路径/缩进游离内容/缩进 flag 行
+#    全部落此: 不再可能被"宽松扫描"静默跳过)。
+#  - block 必须位于 section 内(#### ... LIBRARY - <r|i>: 段头给出 namespace side),
+#    路径 side 必须与 section side 一致。
+#  - Instances : N of M 要求 N==M 且 **N>0**(0 of 0 的 block 是畸形, 空集=FM-249 形态)。
+#  - 精确消费 N 条缩进路径; 路径重复 → error(禁 lsort -unique 修复损坏输入)。
+#  - FM-184 必在; FM-249 与任何 block 互斥。
 proc sidecar_parse_black_boxes {txt} {
     if {![regexp {\(FM-184\)} $txt]} { error "bbox_report_missing_FM184" }
     set has249 [regexp {\(FM-249\)} $txt]
-    set iface_ref {}; set iface_impl {}; set unres_ref {}; set unres_impl {}
-    set empty_ref {}; set empty_impl {}
+    array set acc {ir {} ii {} ur {} ui {} er {} ei {}}
+    array set seen {}
     set lines [split $txt "\n"]
     set n [llength $lines]
-    set saw_instance_block 0
+    set saw_block 0
+    set cur_side ""      ;# 当前 section 的 namespace side(r|i), 由段头行设置
     set i 0
     while {$i < $n} {
-        set ln [lindex $lines $i]
-        # flag 行判据(实证报告格式): 顶格、恰两 token、首 token ≤2 字符。
-        # 表头 "Type  Design Name"(3 token)/分隔 "----  ----------"(token 长 4)/
-        # 报告头(3+ token)/图例("|"开头)/缩进路径与 Instances 行(前导空白)均不命中。
-        if {[string match {|*} $ln]} { incr i; continue }   ;# 图例框边线
-        if {![regexp {^(\S{1,2})\s+(\S+)\s*$} $ln -> flag dname]} { incr i; continue }
-        if {[string is integer -strict $flag]} { incr i; continue }
-        if {$flag ni {i u e}} { error "bbox_unsupported_flag:${flag}:${dname}" }
-        set saw_instance_block 1
-        # 紧随其后的 "Instances : N of M"
-        set found 0
-        for {set j [expr {$i+1}]} {$j < $n && $j <= $i+4} {incr j} {
-            if {[regexp {Instances\s*:\s*(\d+)\s+of\s+(\d+)} [lindex $lines $j] -> N M]} {
-                set found 1; break
+        set ln [string trimright [lindex $lines $i]]
+        # ---- 已知非 block 行类别(白名单; 其余非空行一律 error) ----
+        if {$ln eq ""} { incr i; continue }
+        if {[regexp {^\*+$} $ln]} { incr i; continue }
+        if {[regexp {^(Report|Reference|Implementation|Version|Date)\s} $ln]} { incr i; continue }
+        if {[regexp {^\s+-\S+$} $ln]} { incr i; continue }  ;# 报告头选项续行(如 " -unresolved")
+        if {[regexp {^Information:} $ln]} { incr i; continue }
+        if {[string match { _*} $ln] || [string match {|*} $ln]} { incr i; continue }  ;# 图例框
+        if {[regexp {^#+$} $ln]} { incr i; continue }
+        if {[regexp {^####\s+\S+\s+LIBRARY\s+-\s+([ri]):} $ln -> s]} { set cur_side $s; incr i; continue }
+        if {[regexp {^Type\s+Design Name$} $ln]} { incr i; continue }
+        if {[regexp {^----\s+-+$} $ln]} { incr i; continue }
+        if {[string is integer -strict [string trim $ln]]} { incr i; continue }  ;# redirect 返回值回显
+        # ---- block: 顶格 flag 行 ----
+        if {[regexp {^(\S{1,2})\s+(\S+)$} $ln -> flag dname]} {
+            if {$flag ni {i u e}} { error "bbox_unsupported_flag:${flag}:${dname}" }
+            if {$cur_side eq ""} { error "bbox_block_outside_section:${dname}" }
+            set saw_block 1
+            # 紧随的 Instances : N of M(容空行)
+            set j [expr {$i+1}]
+            while {$j < $n && [string trim [lindex $lines $j]] eq ""} { incr j }
+            if {$j >= $n || ![regexp {^\s+Instances\s*:\s*(\d+)\s+of\s+(\d+)$} \
+                              [string trimright [lindex $lines $j]] -> N M]} {
+                error "bbox_${dname}_missing_instances_line"
             }
-        }
-        if {!$found} { error "bbox_${dname}_missing_instances_line" }
-        if {$N != $M} { error "bbox_${dname}_instances_N_ne_M:${N}_of_${M}" }
-        # 跳过分隔行后精确消费 N 条路径
-        set k [expr {$j+1}]
-        while {$k < $n && [regexp {^\s*-+\s*$} [lindex $lines $k]]} { incr k }
-        set got 0
-        while {$k < $n && $got < $N} {
-            set pl [string trim [lindex $lines $k]]
-            if {$pl eq ""} { break }
-            if {![regexp {^([ri]):/} $pl -> side]} { error "bbox_${dname}_bad_path:$pl" }
-            switch -- "$flag$side" {
-                "ir" { lappend iface_ref $pl }  "ii" { lappend iface_impl $pl }
-                "ur" { lappend unres_ref $pl }  "ui" { lappend unres_impl $pl }
-                "er" { lappend empty_ref $pl }  "ei" { lappend empty_impl $pl }
+            if {$N != $M} { error "bbox_${dname}_instances_N_ne_M:${N}_of_${M}" }
+            if {$N == 0} { error "bbox_${dname}_instances_zero_block" }
+            # 分隔行
+            set k [expr {$j+1}]
+            while {$k < $n && [regexp {^\s*-+\s*$} [lindex $lines $k]]} { incr k }
+            # 精确 N 条缩进路径, side 必须==section side, 禁重复
+            set got 0
+            while {$k < $n && $got < $N} {
+                set raw [string trimright [lindex $lines $k]]
+                if {[string trim $raw] eq ""} { break }
+                if {![regexp {^\s+([ri]):(/\S+)$} $raw -> side rest]} {
+                    error "bbox_${dname}_bad_path:[string trim $raw]"
+                }
+                if {$side ne $cur_side} {
+                    error "bbox_${dname}_path_side_mismatch:${side}!=${cur_side}"
+                }
+                set pl "${side}:${rest}"
+                if {[info exists seen($flag$side,$pl)]} { error "bbox_${dname}_duplicate_path:$pl" }
+                set seen($flag$side,$pl) 1
+                lappend acc($flag$side) $pl
+                incr got; incr k
             }
-            incr got; incr k
+            if {$got != $N} { error "bbox_${dname}_path_count:${got}!=${N}" }
+            # 越界路径(缩进或顶格)均须报错: 缩进的落这里, 顶格的落白名单外 error
+            if {$k < $n && [regexp {^\s+[ri]:/} [lindex $lines $k]]} {
+                error "bbox_${dname}_extra_path_beyond_N"
+            }
+            set i $k
+            continue
         }
-        if {$got != $N} { error "bbox_${dname}_path_count:${got}!=${N}" }
-        if {$k < $n && [regexp {^\s+[ri]:/} [lindex $lines $k]]} {
-            error "bbox_${dname}_extra_path_beyond_N"
-        }
-        set i $k
+        error "bbox_unparsed_line:$ln"
     }
-    if {$has249 && $saw_instance_block} { error "bbox_FM249_with_instance_blocks" }
-    if {!$has249 && !$saw_instance_block} { error "bbox_nonempty_claim_but_no_blocks" }
-    return [list \
-        [lsort -unique $iface_ref] [lsort -unique $iface_impl] \
-        [lsort -unique $unres_ref] [lsort -unique $unres_impl] \
-        [lsort -unique $empty_ref] [lsort -unique $empty_impl]]
+    if {$has249 && $saw_block} { error "bbox_FM249_with_instance_blocks" }
+    if {!$has249 && !$saw_block} { error "bbox_nonempty_claim_but_no_blocks" }
+    return [list [lsort $acc(ir)] [lsort $acc(ii)] [lsort $acc(ur)] [lsort $acc(ui)] \
+                 [lsort $acc(er)] [lsort $acc(ei)]]
 }
 
 # ---------------- pair 列表规整 ----------------
@@ -211,6 +244,10 @@ proc sidecar_emit_inner {top} {
     # gate-3 探针证据(非契约文件): combined unread 查询原始返回
     set fh [open "$out/probe_nc_unread.list" w]
     puts -nonewline $fh $l_nc_unr; close $fh
+    # script closure 运行期记账落盘(实际执行的入口/emitter/pin, source 顺序)
+    set fh [open "$out/script_closure.list" w]
+    foreach f $::SIDECAR_SOURCED { puts $fh $f }
+    close $fh
 
     # black_boxes(FM-184 状态机)
     redirect -variable bb_txt {report_black_boxes}

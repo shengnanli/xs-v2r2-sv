@@ -1,2 +1,0 @@
-SESSION_RESULT intercept_demo: NO_NATIVE_FACTS rc=3 (emitter拒产=fail-closed)
-SIDECAR_ERROR: runtime_appvar_intercept file=/home/eda/xs-env/xs-signoff/verif/ut/Bku/fm_pins_pre.tcl var=verification_timeout_limit ?????
