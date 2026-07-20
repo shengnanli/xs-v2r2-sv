@@ -1,1 +1,0 @@
-set_app_var verification_timeout_limit 100

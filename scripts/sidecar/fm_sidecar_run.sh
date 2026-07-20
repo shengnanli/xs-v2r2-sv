@@ -98,10 +98,9 @@ finalize() {  # $1 = 最终 rc
 CMD=$(cd "$D" && make -n fm FM_MODE="$MODE" GOLDEN_RTL="$GOLDEN" XSSV_HOME="$STG/frozen" "${EXTRA[@]}" 2>/dev/null \
       | sed -e ':a' -e '/\\$/{N;s/\\\n//;ba}' | grep "fm_shell -64" | head -1)
 extract_var() { echo "$CMD" | grep -o "$1=\"[^\"]*\"" | head -1 | sed -e "s/^$1=\"//" -e 's/"$//'; }
-for v in FM_PIN_PRE_TCL FM_PIN_TCL; do
-  p=$(echo "$CMD" | grep -o "$v=[^ ]*" | head -1 | cut -d= -f2)
-  [ -n "$p" ] && [ -f "$p" ] && cp "$p" "$STG/stimulus_$(basename "$p")"
-done
+# 七审: stimulus_ 只记**注入的未跟踪测试输入**(STIM_PRE/STIM_INNER); tracked 的 fm_pins.tcl
+# 后置 pin 由 git+快照绑定, 不作 stimulus(reject 会话它从不执行, 记之=虚假 provenance)。
+[ -n "${STIM_PRE:-}" ]   && [ -f "$D/fm_pins_pre.tcl" ]   && cp "$D/fm_pins_pre.tcl"   "$STG/stimulus_fm_pins_pre.tcl"
 [ -n "${STIM_INNER:-}" ] && [ -f "$D/fm_pins_inner.tcl" ] && cp "$D/fm_pins_inner.tcl" "$STG/stimulus_fm_pins_inner.tcl"
 
 # --- 运行 ---
