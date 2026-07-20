@@ -87,6 +87,53 @@ snapf=$(ls "$D9/bku_strict"/sourced_000_* | head -1); echo "# tamper" >> "$snapf
 recompute "$D9/bku_strict"
 bash "$CK" --tree "$D9" "$REAL_IMPL" >/dev/null 2>&1; T hole6_snapshot_tampered 1 $?; rm -rf "$D9"
 
+# ===== 七审五点负测 =====
+# A: RESULT 追加伪造 SUCCEEDED 行(子串匹配曾可藏)
+DA=$(mktemp -d); cp -r "$SRC"/* "$DA"/ 2>/dev/null; rm -f "$DA"/*.txt "$DA"/*.MANIFEST.tsv 2>/dev/null
+echo "SESSION_RESULT bku_strict: SUCCEEDED (forged extra)" >> "$DA/bku_strict/RESULT.txt"; recompute "$DA/bku_strict"
+bash "$CK" --tree "$DA" "$REAL_IMPL" >/dev/null 2>&1; T seven_A_dup_result_success 1 $?; rm -rf "$DA"
+
+# B: probe native 退化为 FAILED(ERROR 掩盖)
+DB=$(mktemp -d); cp -r "$SRC"/* "$DB"/ 2>/dev/null; rm -f "$DB"/*.txt "$DB"/*.MANIFEST.tsv 2>/dev/null
+python3 -c "
+import json,hashlib,os
+d='$DB/bku_unread_true_probe'
+n=json.load(open(d+'/native_facts.json')); n['native_verdict']='FAILED'; n['stats']['failing']=9
+b=json.dumps(n).encode(); open(d+'/native_facts.json','wb').write(b)
+e=json.load(open(d+'/verdict.sidecar.json')); e['native_verdict']='FAILED'; e['stats']['failing']=9
+e['native_facts_sha256']=hashlib.sha256(b).hexdigest(); json.dump(e,open(d+'/verdict.sidecar.json','w'))
+"; recompute "$DB/bku_unread_true_probe"
+bash "$CK" --tree "$DB" "$REAL_IMPL" >/dev/null 2>&1; T seven_B_probe_native_degraded 1 $?; rm -rf "$DB"
+
+# C: closure 快照孤儿(新增未在 closure 的 sourced_ 文件)
+DC=$(mktemp -d); cp -r "$SRC"/* "$DC"/ 2>/dev/null; rm -f "$DC"/*.txt "$DC"/*.MANIFEST.tsv 2>/dev/null
+echo "orphan" > "$DC/bku_strict/sourced_099_orphan.tcl"; recompute "$DC/bku_strict"
+bash "$CK" --tree "$DC" "$REAL_IMPL" >/dev/null 2>&1; T seven_C_orphan_snapshot 1 $?; rm -rf "$DC"
+
+# D: executed_snapshot 乱序(交换前两行)
+DD=$(mktemp -d); cp -r "$SRC"/* "$DD"/ 2>/dev/null; rm -f "$DD"/*.txt "$DD"/*.MANIFEST.tsv 2>/dev/null
+python3 -c "
+d='$DD/bku_strict'; L=open(d+'/TOOLS.tsv').read().splitlines()
+es=[i for i,l in enumerate(L) if l.startswith('executed_snapshot\t')]
+L[es[0]],L[es[1]]=L[es[1]],L[es[0]]
+open(d+'/TOOLS.tsv','w').write('\n'.join(L)+'\n')
+"; recompute "$DD/bku_strict"
+bash "$CK" --tree "$DD" "$REAL_IMPL" >/dev/null 2>&1; T seven_D_executed_reorder 1 $?; rm -rf "$DD"
+
+# E: frozen fm_verdict.py 篡改(与 commit 不符)
+DE=$(mktemp -d); cp -r "$SRC"/* "$DE"/ 2>/dev/null; rm -f "$DE"/*.txt "$DE"/*.MANIFEST.tsv 2>/dev/null
+echo "# tamper" >> "$DE/bku_strict/frozen/scripts/fm_verdict.py"; recompute "$DE/bku_strict"
+bash "$CK" --tree "$DE" "$REAL_IMPL" >/dev/null 2>&1; T seven_E_frozen_verdict_tamper 1 $?; rm -rf "$DE"
+
+# F(补 C): closure snap 改指会话外(../ 逃逸)
+DF=$(mktemp -d); cp -r "$SRC"/* "$DF"/ 2>/dev/null; rm -f "$DF"/*.txt "$DF"/*.MANIFEST.tsv 2>/dev/null
+python3 -c "
+d='$DF/intercept_direct'; L=open(d+'/script_closure.list').read().splitlines()
+p=L[0].split('\t'); p[1]='../../../etc/hostname'; L[0]='\t'.join(p)
+open(d+'/script_closure.list','w').write('\n'.join(L)+'\n')
+"; recompute "$DF/intercept_direct"
+bash "$CK" --tree "$DF" "$REAL_IMPL" >/dev/null 2>&1; T seven_F_snap_escape 1 $?; rm -rf "$DF"
+
 # 正样本: 真实证据必须 PASS(rc=0)
 bash "$CK" --tree "$SRC" "$REAL_IMPL" >/dev/null 2>&1; T real_evidence_passes 0 $?
 

@@ -1,0 +1,22 @@
+# clean-archive 七审语义验证(五收口: RESULT精确解析/probe native floor/closure白名单+孤儿/executed同序/frozen+stimulus绑定)
+evidence_commit: 01543f0a116563225ace4718ab8465899ead5279
+implementation_commit: edbcd2ab3ee55e11bd043c07e61e1b966cad4485
+ARCHIVE_VERIFY: bad=0
+--- 负测16(前审10 + 七审A-F) ---
+PASS  empty_manifest_six_dirs
+PASS  tampered_tools_selfconsistent
+PASS  forged_native_json_and_rc
+PASS  reject_with_native_facts
+PASS  hole1_result_claims_success
+PASS  hole2_reject_rc_forged
+PASS  hole3_dup_json_keys
+PASS  hole4_infra_all_same
+PASS  hole6_snapshot_tampered
+PASS  seven_A_dup_result_success
+PASS  seven_B_probe_native_degraded
+PASS  seven_C_orphan_snapshot
+PASS  seven_D_executed_reorder
+PASS  seven_E_frozen_verdict_tamper
+PASS  seven_F_snap_escape
+PASS  real_evidence_passes
+16/16 passed
