@@ -31,7 +31,7 @@ def sha256_file(p):
 def git_show_sha(repo, commit, relpath):
     try:
         out = subprocess.run(["git", "-C", repo, "show", f"{commit}:{relpath}"],
-                             capture_output=True, check=True).stdout
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True).stdout
         return hashlib.sha256(out).hexdigest()
     except subprocess.CalledProcessError:
         return None
@@ -193,7 +193,7 @@ def check_session(tree, s, kind, expected, repo, errs):
                             "--native-facts", os.path.join(d, "native_facts.json"),
                             "--expectation", os.path.join(d, "expectation.smoke.json"),
                             "--actual-rc", str(rcfile if rcfile is not None else 999)],
-                           capture_output=True, text=True)
+                           stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
         verdict = r.stdout.split("\t")[0].strip() if r.stdout else ""
         if verdict != EXPECT_VERDICT[s]:
             errs.append(f"{s}: VALIDATOR_VERDICT={verdict}!={EXPECT_VERDICT[s]}")
@@ -220,7 +220,7 @@ def main():
                 errs.append(f"SYMLINK {os.path.relpath(p, tree)}")
     # expected commit 存在
     if subprocess.run(["git", "-C", repo, "cat-file", "-e", expected],
-                      capture_output=True).returncode != 0:
+                      stdout=subprocess.PIPE, stderr=subprocess.PIPE).returncode != 0:
         errs.append(f"EXPECTED_COMMIT_MISSING {expected}")
     for s in NATIVE:
         check_session(tree, s, "native", expected, repo, errs)
