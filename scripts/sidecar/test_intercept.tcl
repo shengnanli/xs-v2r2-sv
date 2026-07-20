@@ -185,6 +185,32 @@ T closure_list_AB_to_AA_tamper_detected {
     if {!$rc} { error "AA 篡改未检出" }
     if {![string match "*closure_row_mismatch*" [lindex $::INTERCEPTED end]]} { error "类别不符: [lindex $::INTERCEPTED end]" }
 }
+T history_mismatch_detected_at_readback {
+    # 纵深防御: readback 与写历史**不同值**(非仅大小写)→ capture 拒。
+    # 复位快照台账(前序测试留下的脏 closure 不影响本 appvar 检查)
+    set ::SIDECAR_LEDGER {}
+    set _o $::env(FM_SIDECAR_OUT); file delete -force $_o; file mkdir $_o
+    set _fh [open $_o/script_closure.list w]; close $_fh
+
+    # (大小写不敏感: 若仅大小写差异如 identity/Identity 不应误报——见 ci_normalization 用例)
+    set ::AVMAP(verification_propagate_const_reg_x) false   ;# 绕过桩直接篡改为不同值
+    if {![catch {sidecar_capture_appvars}]} { error "history mismatch 未拦截" }
+    if {![string match "*history_mismatch*" [lindex $::INTERCEPTED end]]} { error "类别不符" }
+    set ::AVMAP(verification_propagate_const_reg_x) true
+}
+T history_ci_normalization_not_false_positive {
+    # FM 规范化(identity→Identity)大小写差异不得误报为篡改
+    # 复位快照台账(前序测试留下的脏 closure 不影响本 appvar 检查)
+    set ::SIDECAR_LEDGER {}
+    set _o $::env(FM_SIDECAR_OUT); file delete -force $_o; file mkdir $_o
+    set _fh [open $_o/script_closure.list w]; close $_fh
+
+    set ::SIDECAR_AV_HISTORY(verification_blackbox_match_mode) identity
+    set ::AVMAP(verification_blackbox_match_mode) Identity
+    if {[catch {sidecar_capture_appvars} m]} { error "大小写差异误报: $m" }
+    unset ::SIDECAR_AV_HISTORY(verification_blackbox_match_mode)
+    catch {unset ::AVMAP(verification_blackbox_match_mode)}
+}
 # ---- phase: 首次 match 后 proof appvar 冻结("先放宽-match-恢复"堵死) ----
 T phase_frozen_after_match {
     match

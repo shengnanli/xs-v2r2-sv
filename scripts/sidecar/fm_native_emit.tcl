@@ -194,10 +194,15 @@ proc sidecar_capture_appvars {} {
     foreach k [concat $::SIDECAR_APPVAR_REQUIRED $::SIDECAR_EXTRA_KEYS] {
         set ::SIDECAR_AV($k) [get_app_var $k]
     }
-    # 十审: entry_appvars 记**有效值**(get_app_var readback); FM 会规范化(如
-    # blackbox_match_mode identity→Identity), 故不比对 set 参数字符串与 readback——
-    # 安全性由 validator 三方绑定(native==envelope==expectation)+ 值域/冻结/放宽声明保证;
-    # 篡改防护由执行 trace(每次 set 必记)+ phase 冻结 + rewrite-变值拒 承担。
+    # 纵深防御: 每个经 trace 记录的 set(history)其 readback 有效值须与所记一致——
+    # **大小写不敏感**比对(FM 规范化只改大小写, 如 blackbox_match_mode identity→Identity;
+    # 实测 fm_shell)。仍能捕获"trace 外被改成不同值"(如 true→false)。安全性另由 validator
+    # 三方绑定 + 执行 trace(每 set 必记)+ phase 冻结 + rewrite-变值拒 承担。
+    foreach k [array names ::SIDECAR_AV_HISTORY] {
+        if {[string tolower [get_app_var $k]] ne [string tolower $::SIDECAR_AV_HISTORY($k)]} {
+            sidecar_intercept_fail "appvar_history_mismatch:$k"
+        }
+    }
 }
 
 # ---------------- JSON 编码(手写, 转义 \ " 与控制字符) ----------------
