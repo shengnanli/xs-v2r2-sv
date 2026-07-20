@@ -1,0 +1,17 @@
+=== FM: Tage_SC (mode=signoff-strict) ===
+FM_TOP=Tage_SC \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/Tage_SC.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistPipeTage.sv" \
+FM_IMPL_SRCS="/tmp/tmp.ZidP41W17y/wt/rtl/frontend/Tage_SC.sv /tmp/tmp.ZidP41W17y/wt/rtl/frontend/Tage_SC_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistPipeTage.sv" \
+ \
+ \
+ \
+ \
+FM_PIN_TCL=/tmp/tmp.ZidP41W17y/wt/verif/ut/Tage_SC/fm_pins.tcl \
+fm_shell -64 -work_path fm_work/Tage_SC -file /tmp/tmp.ZidP41W17y/wt/scripts/fm_eq.tcl \
+    > fm_work/Tage_SC/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.ZidP41W17y/wt/scripts/fm_verdict.py fm_work/Tage_SC/fm.log --rc $rc --mode signoff-strict --top Tage_SC --allowlist 0
+PARTIAL	{"passing": 9954, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": 402, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "Tage_SC", "dont_verify": false, "elab147": false, "reason": "strict_unread!=0", "unmatched_ref": 0, "unmatched_impl": 0}
+make: *** [../../../scripts/ut_common.mk:56: fm-Tage_SC] Error 1

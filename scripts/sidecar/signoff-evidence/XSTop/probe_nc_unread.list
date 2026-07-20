@@ -1,0 +1,3 @@
+{{r:/WORK/XSTop/rxdatArb/pendingMask_reg[0]} {i:/WORK/XSTop/u_core/rxdatArb/pendingMask_reg[0]}}
+{{r:/WORK/XSTop/rxrspArb/pendingMask_reg[0]} {i:/WORK/XSTop/u_core/rxrspArb/pendingMask_reg[0]}}
+{{r:/WORK/XSTop/rxsnpArb/pendingMask_reg[0]} {i:/WORK/XSTop/u_core/rxsnpArb/pendingMask_reg[0]}}

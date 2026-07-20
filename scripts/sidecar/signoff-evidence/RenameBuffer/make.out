@@ -1,0 +1,16 @@
+=== FM: RenameBuffer (mode=signoff-strict) ===
+FM_TOP=RenameBuffer \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/RenameBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/SnapshotGenerator.sv" \
+FM_IMPL_SRCS="/tmp/tmp.lc6zpi3bDL/wt/rtl/backend/renamebuffer_pkg.sv /tmp/tmp.lc6zpi3bDL/wt/rtl/backend/RenameBuffer.sv /tmp/tmp.lc6zpi3bDL/wt/rtl/backend/RenameBuffer_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/SnapshotGenerator.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/RenameBuffer -file /tmp/tmp.lc6zpi3bDL/wt/scripts/fm_eq.tcl \
+    > fm_work/RenameBuffer/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.lc6zpi3bDL/wt/scripts/fm_verdict.py fm_work/RenameBuffer/fm.log --rc $rc --mode signoff-strict --top RenameBuffer --allowlist 0
+make: *** [../../../scripts/ut_common.mk:56: fm-RenameBuffer] Terminated

@@ -1,0 +1,17 @@
+=== FM: Bku (mode=signoff-strict) ===
+FM_TOP=Bku \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/Bku.sv /home/eda/xs-env/G0-canonical/golden-rtl/CountModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/ClmulModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/MiscModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/CryptoModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/HashModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/BlockCipherModule.sv" \
+FM_IMPL_SRCS="/tmp/tmp.2L0sGEfgv0/wt/rtl/backend/bku_pkg.sv /tmp/tmp.2L0sGEfgv0/wt/rtl/backend/Bku.sv /tmp/tmp.2L0sGEfgv0/wt/rtl/backend/Bku_wrapper.sv" \
+FM_MERGE_DUP=false \
+ \
+ \
+ \
+FM_PIN_TCL=/tmp/tmp.2L0sGEfgv0/wt/verif/ut/Bku/fm_pins.tcl \
+fm_shell -64 -work_path fm_work/Bku -file /tmp/tmp.2L0sGEfgv0/wt/scripts/fm_eq.tcl \
+    > fm_work/Bku/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.2L0sGEfgv0/wt/scripts/fm_verdict.py fm_work/Bku/fm.log --rc $rc --mode signoff-strict --top Bku --allowlist 0
+PARTIAL	{"passing": 2055, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": 19, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "Bku", "dont_verify": false, "elab147": false, "reason": "strict_unread!=0", "unmatched_ref": 0, "unmatched_impl": 0}
+make: *** [../../../scripts/ut_common.mk:56: fm-Bku] Error 1

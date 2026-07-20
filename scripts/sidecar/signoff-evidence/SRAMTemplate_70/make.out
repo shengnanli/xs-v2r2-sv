@@ -1,0 +1,17 @@
+=== FM: SRAMTemplate_70 (mode=signoff-strict) ===
+FM_TOP=SRAMTemplate_70 \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_70.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p128x76m1s1h0l1b_bp_ittage.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_6.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistClockGateCell.sv /home/eda/xs-env/G0-canonical/golden-rtl/ClockGate.sv" \
+FM_IMPL_SRCS="/tmp/tmp.vtaLFGx5sO/wt/rtl/common/SRAMTemplate_core.sv /tmp/tmp.vtaLFGx5sO/wt/rtl/common/SRAMTemplate_variants.sv /home/eda/xs-env/G0-canonical/golden-rtl/ClockGate.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistClockGateCell.sv /home/eda/xs-env/G0-canonical/golden-rtl/array.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_0.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_2.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_3.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_6.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p128x74m37s1h0l1b_icsh_tag.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p128x76m1s1h0l1b_bp_ittage.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p256x16m1s1h0l1b_bp_tage_us.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p256x66m66s1h0l1b_icsh_dat.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p512x24m12s1h0l1b_bp_tage.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p512x40m10s1h0l1b_bp_ftb.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/SRAMTemplate_70 -file /tmp/tmp.vtaLFGx5sO/wt/scripts/fm_eq.tcl \
+    > fm_work/SRAMTemplate_70/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.vtaLFGx5sO/wt/scripts/fm_verdict.py fm_work/SRAMTemplate_70/fm.log --rc $rc --mode signoff-strict --top SRAMTemplate_70 --allowlist 0
+ERROR	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 0, "make_rc": 4, "mode": "signoff-strict", "native": null, "top": null, "dont_verify": false, "elab147": false, "reason": "make_rc_nonzero"}
+make: *** [../../../scripts/ut_common.mk:56: fm-SRAMTemplate_70] Error 1

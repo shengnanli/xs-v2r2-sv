@@ -1,0 +1,17 @@
+=== FM: LoadQueueRAW (mode=signoff-strict) ===
+FM_TOP=LoadQueueRAW \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/LoadQueueRAW.sv /home/eda/xs-env/G0-canonical/golden-rtl/LqPAddrModule_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/LqMaskModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/FreeList_4.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayN_298.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayN_13.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_148.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_149.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_52.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_55.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_103.sv" \
+FM_IMPL_SRCS="/tmp/tmp.l13520Vg7v/wt/rtl/memblock/loadqueueraw_pkg.sv /tmp/tmp.l13520Vg7v/wt/rtl/memblock/LoadQueueRAW.sv /tmp/tmp.l13520Vg7v/wt/rtl/memblock/LoadQueueRAW_wrapper.sv" \
+FM_MERGE_DUP=false \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/LoadQueueRAW -file /tmp/tmp.l13520Vg7v/wt/scripts/fm_eq.tcl \
+    > fm_work/LoadQueueRAW/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.l13520Vg7v/wt/scripts/fm_verdict.py fm_work/LoadQueueRAW/fm.log --rc $rc --mode signoff-strict --top LoadQueueRAW --allowlist 0
+FAILED	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "FAILED", "top": "LoadQueueRAW", "dont_verify": false, "elab147": false, "reason": null}
+make: *** [../../../scripts/ut_common.mk:56: fm-LoadQueueRAW] Error 1

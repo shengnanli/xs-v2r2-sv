@@ -1,0 +1,17 @@
+=== FM: ExeUnit_8 (mode=signoff-strict) ===
+FM_TOP=ExeUnit_8 \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/ExeUnit_8.sv " \
+FM_IMPL_SRCS="/tmp/tmp.XT78azPQ35/wt/rtl/backend/exeunit_8_pkg.sv /tmp/tmp.XT78azPQ35/wt/rtl/backend/ExeUnit_8.sv /tmp/tmp.XT78azPQ35/wt/rtl/backend/ExeUnit_8_wrapper.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/ExeUnit_8 -file /tmp/tmp.XT78azPQ35/wt/scripts/fm_eq.tcl \
+    > fm_work/ExeUnit_8/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.XT78azPQ35/wt/scripts/fm_verdict.py fm_work/ExeUnit_8/fm.log --rc $rc --mode signoff-strict --top ExeUnit_8 --allowlist 0
+PARTIAL	{"passing": 3513, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": 10, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "ExeUnit_8", "dont_verify": false, "elab147": false, "reason": "strict_unread!=0", "unmatched_ref": 0, "unmatched_impl": 0}
+make: *** [../../../scripts/ut_common.mk:56: fm-ExeUnit_8] Error 1

@@ -1,0 +1,17 @@
+=== FM: NewIFU (mode=assembly) ===
+FM_TOP=NewIFU \
+FM_MODE=assembly \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/NewIFU.sv /home/eda/xs-env/G0-canonical/golden-rtl/PreDecode.sv /home/eda/xs-env/G0-canonical/golden-rtl/RVCExpander.sv /home/eda/xs-env/G0-canonical/golden-rtl/F3Predecoder.sv /home/eda/xs-env/G0-canonical/golden-rtl/PredChecker.sv /home/eda/xs-env/G0-canonical/golden-rtl/FrontendTrigger.sv" \
+FM_IMPL_SRCS="/tmp/tmp.U67A6BT0NI/wt/rtl/frontend/predecode_pkg.sv /tmp/tmp.U67A6BT0NI/wt/rtl/frontend/NewIFU.sv /tmp/tmp.U67A6BT0NI/wt/rtl/frontend/NewIFU_subs.sv /tmp/tmp.U67A6BT0NI/wt/rtl/frontend/NewIFU_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/PreDecode.sv /home/eda/xs-env/G0-canonical/golden-rtl/RVCExpander.sv /home/eda/xs-env/G0-canonical/golden-rtl/F3Predecoder.sv /home/eda/xs-env/G0-canonical/golden-rtl/PredChecker.sv /home/eda/xs-env/G0-canonical/golden-rtl/FrontendTrigger.sv" \
+FM_MERGE_DUP=false \
+FM_INTERFACE_ONLY="PreDecode RVCExpander F3Predecoder PredChecker FrontendTrigger" \
+ \
+FM_PIN_PRE_TCL=/tmp/tmp.U67A6BT0NI/wt/verif/ut/NewIFU/fm_pins_pre.tcl \
+ \
+fm_shell -64 -work_path fm_work/NewIFU -file /tmp/tmp.U67A6BT0NI/wt/scripts/fm_eq.tcl \
+    > fm_work/NewIFU/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.U67A6BT0NI/wt/scripts/fm_verdict.py fm_work/NewIFU/fm.log --rc $rc --mode assembly --top NewIFU --allowlist 0
+PARTIAL	{"passing": 11224, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": 408, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "assembly", "native": "SUCCEEDED", "top": "NewIFU", "dont_verify": false, "elab147": false, "reason": "assembly_unread!=0", "unmatched_ref": 0, "unmatched_impl": 0}
+make: *** [../../../scripts/ut_common.mk:56: fm-NewIFU] Error 1

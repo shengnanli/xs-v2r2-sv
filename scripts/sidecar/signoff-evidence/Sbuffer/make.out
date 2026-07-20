@@ -1,0 +1,17 @@
+=== FM: Sbuffer (mode=signoff-strict) ===
+FM_TOP=Sbuffer \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/Sbuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/SbufferData.sv" \
+FM_IMPL_SRCS="/tmp/tmp.WYEcShcqXO/wt/rtl/memblock/sbuffer_pkg.sv /tmp/tmp.WYEcShcqXO/wt/rtl/memblock/Sbuffer.sv /tmp/tmp.WYEcShcqXO/wt/rtl/memblock/Sbuffer_wrapper.sv" \
+FM_MERGE_DUP=true \
+ \
+ \
+ \
+FM_PIN_TCL=/tmp/tmp.WYEcShcqXO/wt/verif/ut/Sbuffer/fm_pins.tcl \
+fm_shell -64 -work_path fm_work/Sbuffer -file /tmp/tmp.WYEcShcqXO/wt/scripts/fm_eq.tcl \
+    > fm_work/Sbuffer/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.WYEcShcqXO/wt/scripts/fm_verdict.py fm_work/Sbuffer/fm.log --rc $rc --mode signoff-strict --top Sbuffer --allowlist 0
+ERROR	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 0, "make_rc": 1, "mode": "signoff-strict", "native": null, "top": null, "dont_verify": false, "elab147": false, "reason": "make_rc_nonzero"}
+make: *** [../../../scripts/ut_common.mk:56: fm-Sbuffer] Error 1

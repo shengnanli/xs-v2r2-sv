@@ -1,0 +1,17 @@
+=== FM: L2Top (mode=signoff-strict) ===
+FM_TOP=L2Top \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/L2Top.sv /home/eda/xs-env/G0-canonical/golden-rtl/BusErrorUnit.sv /home/eda/xs-env/G0-canonical/golden-rtl/BusPerfMonitor.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayN_334.sv /home/eda/xs-env/G0-canonical/golden-rtl/TL2CHICoupledL2.sv /home/eda/xs-env/G0-canonical/golden-rtl/TLBuffer_13.sv /home/eda/xs-env/G0-canonical/golden-rtl/TLBuffer_15.sv /home/eda/xs-env/G0-canonical/golden-rtl/TLBuffer_20.sv /home/eda/xs-env/G0-canonical/golden-rtl/TLBuffer_22.sv /home/eda/xs-env/G0-canonical/golden-rtl/TLBuffer_6.sv /home/eda/xs-env/G0-canonical/golden-rtl/TLBuffer_8.sv /home/eda/xs-env/G0-canonical/golden-rtl/TLLogger.sv /home/eda/xs-env/G0-canonical/golden-rtl/TLLogger_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/TLLogger_2.sv /home/eda/xs-env/G0-canonical/golden-rtl/TLXbar_5.sv /home/eda/xs-env/G0-canonical/golden-rtl/TLXbar_6.sv" \
+FM_IMPL_SRCS="/tmp/tmp.8D4CKrGRem/wt/rtl/l2/l2top_pkg.sv /tmp/tmp.8D4CKrGRem/wt/rtl/l2/L2Top.sv /tmp/tmp.8D4CKrGRem/wt/rtl/l2/L2Top_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/BusErrorUnit.sv /home/eda/xs-env/G0-canonical/golden-rtl/BusPerfMonitor.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayN_334.sv /home/eda/xs-env/G0-canonical/golden-rtl/TL2CHICoupledL2.sv /home/eda/xs-env/G0-canonical/golden-rtl/TLBuffer_13.sv /home/eda/xs-env/G0-canonical/golden-rtl/TLBuffer_15.sv /home/eda/xs-env/G0-canonical/golden-rtl/TLBuffer_20.sv /home/eda/xs-env/G0-canonical/golden-rtl/TLBuffer_22.sv /home/eda/xs-env/G0-canonical/golden-rtl/TLBuffer_6.sv /home/eda/xs-env/G0-canonical/golden-rtl/TLBuffer_8.sv /home/eda/xs-env/G0-canonical/golden-rtl/TLLogger.sv /home/eda/xs-env/G0-canonical/golden-rtl/TLLogger_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/TLLogger_2.sv /home/eda/xs-env/G0-canonical/golden-rtl/TLXbar_5.sv /home/eda/xs-env/G0-canonical/golden-rtl/TLXbar_6.sv" \
+FM_MERGE_DUP=false \
+ \
+ \
+ \
+FM_PIN_TCL=/tmp/tmp.8D4CKrGRem/wt/verif/ut/L2Top/fm_pins.tcl \
+fm_shell -64 -work_path fm_work/L2Top -file /tmp/tmp.8D4CKrGRem/wt/scripts/fm_eq.tcl \
+    > fm_work/L2Top/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.8D4CKrGRem/wt/scripts/fm_verdict.py fm_work/L2Top/fm.log --rc $rc --mode signoff-strict --top L2Top --allowlist 0
+FAILED	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "FAILED", "top": "L2Top", "dont_verify": false, "elab147": false, "reason": null}
+make: *** [../../../scripts/ut_common.mk:56: fm-L2Top] Error 1

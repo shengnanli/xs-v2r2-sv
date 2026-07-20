@@ -1,0 +1,17 @@
+=== FM: IntRegFilePart0 (mode=signoff-strict) ===
+FM_TOP=IntRegFilePart0 \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/IntRegFilePart0.sv " \
+FM_IMPL_SRCS="/tmp/tmp.9G5UpO40vd/wt/rtl/backend/regfile_pkg.sv /tmp/tmp.9G5UpO40vd/wt/rtl/backend/RegFilePart.sv /tmp/tmp.9G5UpO40vd/wt/rtl/backend/regfile_pkg.sv /tmp/tmp.9G5UpO40vd/wt/rtl/backend/RegFilePart.sv /tmp/tmp.9G5UpO40vd/wt/rtl/backend/IntRegFilePart0_wrapper.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/IntRegFilePart0 -file /tmp/tmp.9G5UpO40vd/wt/scripts/fm_eq.tcl \
+    > fm_work/IntRegFilePart0/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.9G5UpO40vd/wt/scripts/fm_verdict.py fm_work/IntRegFilePart0/fm.log --rc $rc --mode signoff-strict --top IntRegFilePart0 --allowlist 0
+ERROR	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 0, "make_rc": 4, "mode": "signoff-strict", "native": null, "top": null, "dont_verify": false, "elab147": false, "reason": "make_rc_nonzero"}
+make: *** [../../../scripts/ut_common.mk:56: fm-IntRegFilePart0] Error 1

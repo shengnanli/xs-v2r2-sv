@@ -1,0 +1,17 @@
+=== FM: XSCore (mode=signoff-strict) ===
+FM_TOP=XSCore \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/XSCore.sv " \
+FM_IMPL_SRCS="/tmp/tmp.GmcNrHin5j/wt/rtl/xscore/xscore_pkg.sv /tmp/tmp.GmcNrHin5j/wt/rtl/xscore/XSCore.sv /tmp/tmp.GmcNrHin5j/wt/rtl/xscore/XSCore_wrapper.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/XSCore -file /tmp/tmp.GmcNrHin5j/wt/scripts/fm_eq.tcl \
+    > fm_work/XSCore/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.GmcNrHin5j/wt/scripts/fm_verdict.py fm_work/XSCore/fm.log --rc $rc --mode signoff-strict --top XSCore --allowlist 0
+PARTIAL	{"passing": 30820, "failing": 0, "unverified": null, "unmatched": 31196, "aborted": null, "unread": null, "blackbox_out": 31196, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "XSCore", "dont_verify": false, "elab147": false, "reason": "strict_unmatched!=0", "unmatched_ref": 0, "unmatched_impl": 31196}
+make: *** [../../../scripts/ut_common.mk:56: fm-XSCore] Error 1

@@ -1,0 +1,17 @@
+=== FM: XSTile (mode=signoff-strict) ===
+FM_TOP=XSTile \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/XSTile.sv /home/eda/xs-env/G0-canonical/golden-rtl/IntBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/L2Top.sv /home/eda/xs-env/G0-canonical/golden-rtl/XSCore.sv" \
+FM_IMPL_SRCS="/tmp/tmp.H6rk4ZkJ5f/wt/rtl/xstile/xstile_pkg.sv /tmp/tmp.H6rk4ZkJ5f/wt/rtl/xstile/XSTile.sv /tmp/tmp.H6rk4ZkJ5f/wt/rtl/xstile/XSTile_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/IntBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/L2Top.sv /home/eda/xs-env/G0-canonical/golden-rtl/XSCore.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/XSTile -file /tmp/tmp.H6rk4ZkJ5f/wt/scripts/fm_eq.tcl \
+    > fm_work/XSTile/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.H6rk4ZkJ5f/wt/scripts/fm_verdict.py fm_work/XSTile/fm.log --rc $rc --mode signoff-strict --top XSTile --allowlist 0
+FAILED	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "FAILED", "top": "XSTile", "dont_verify": false, "elab147": false, "reason": null}
+make: *** [../../../scripts/ut_common.mk:56: fm-XSTile] Error 1

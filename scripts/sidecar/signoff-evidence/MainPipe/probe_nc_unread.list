@@ -1,0 +1,16 @@
+{r:/WORK/MainPipe/io_replace_way_set_valid_last_REG_reg i:/WORK/MainPipe/u_core/replace_way_set_valid_q_reg}
+{{r:/WORK/MainPipe/s2_repl_pf_reg[0]} {i:/WORK/MainPipe/u_core/s2_repl_pf_reg[0]}}
+{{r:/WORK/MainPipe/s3_error_paddr_beu_r_reg[0]} {i:/WORK/MainPipe/u_core/s3_error_paddr_beu_r_reg[0]}}
+{{r:/WORK/MainPipe/s3_error_paddr_beu_r_reg[1]} {i:/WORK/MainPipe/u_core/s3_error_paddr_beu_r_reg[1]}}
+{{r:/WORK/MainPipe/s3_error_paddr_beu_r_reg[2]} {i:/WORK/MainPipe/u_core/s3_error_paddr_beu_r_reg[2]}}
+{{r:/WORK/MainPipe/s3_error_paddr_beu_r_reg[3]} {i:/WORK/MainPipe/u_core/s3_error_paddr_beu_r_reg[3]}}
+{{r:/WORK/MainPipe/s3_error_paddr_beu_r_reg[4]} {i:/WORK/MainPipe/u_core/s3_error_paddr_beu_r_reg[4]}}
+{{r:/WORK/MainPipe/s3_error_paddr_beu_r_reg[5]} {i:/WORK/MainPipe/u_core/s3_error_paddr_beu_r_reg[5]}}
+{{r:/WORK/MainPipe/s3_req_addr_reg[0]} {i:/WORK/MainPipe/u_core/s3_req_reg\[addr][0]}}
+{{r:/WORK/MainPipe/s3_req_addr_reg[1]} {i:/WORK/MainPipe/u_core/s3_req_reg\[addr][1]}}
+{{r:/WORK/MainPipe/s3_req_addr_reg[2]} {i:/WORK/MainPipe/u_core/s3_req_reg\[addr][2]}}
+{{r:/WORK/MainPipe/s3_req_addr_reg[3]} {i:/WORK/MainPipe/u_core/s3_req_reg\[addr][3]}}
+{{r:/WORK/MainPipe/s3_req_addr_reg[4]} {i:/WORK/MainPipe/u_core/s3_req_reg\[addr][4]}}
+{{r:/WORK/MainPipe/s3_req_addr_reg[5]} {i:/WORK/MainPipe/u_core/s3_req_reg\[addr][5]}}
+{{r:/WORK/MainPipe/s3_req_vaddr_reg[48]} {i:/WORK/MainPipe/u_core/s3_req_reg\[vaddr][48]}}
+{{r:/WORK/MainPipe/s3_req_vaddr_reg[49]} {i:/WORK/MainPipe/u_core/s3_req_reg\[vaddr][49]}}

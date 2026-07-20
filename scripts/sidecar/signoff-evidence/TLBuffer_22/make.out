@@ -1,0 +1,16 @@
+=== FM: TLBuffer_22 (mode=signoff-strict) ===
+FM_TOP=TLBuffer_22 \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/TLBuffer_22.sv " \
+FM_IMPL_SRCS="/tmp/tmp.rzOKiFzzvM/wt/rtl/memblock/tlbuffer22_pkg.sv /tmp/tmp.rzOKiFzzvM/wt/rtl/memblock/TLBuffer_22.sv /tmp/tmp.rzOKiFzzvM/wt/rtl/memblock/TLBuffer_22_wrapper.sv /tmp/tmp.rzOKiFzzvM/wt/rtl/memblock/tlbuffer22_queue_blackbox.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/TLBuffer_22 -file /tmp/tmp.rzOKiFzzvM/wt/scripts/fm_eq.tcl \
+    > fm_work/TLBuffer_22/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.rzOKiFzzvM/wt/scripts/fm_verdict.py fm_work/TLBuffer_22/fm.log --rc $rc --mode signoff-strict --top TLBuffer_22 --allowlist 0
+SUCCEEDED	{"passing": 438, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "TLBuffer_22", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

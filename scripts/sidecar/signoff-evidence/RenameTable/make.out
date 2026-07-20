@@ -1,0 +1,16 @@
+=== FM: RenameTable (mode=signoff-strict) ===
+FM_TOP=RenameTable \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/RenameTable.sv /home/eda/xs-env/G0-canonical/golden-rtl/SnapshotGenerator_4.sv" \
+FM_IMPL_SRCS="/tmp/tmp.VlXoeZNeUG/wt/rtl/backend/renametable_pkg.sv /tmp/tmp.VlXoeZNeUG/wt/rtl/backend/RenameTable.sv /tmp/tmp.VlXoeZNeUG/wt/rtl/backend/RenameTable_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/SnapshotGenerator_4.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/RenameTable -file /tmp/tmp.VlXoeZNeUG/wt/scripts/fm_eq.tcl \
+    > fm_work/RenameTable/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.VlXoeZNeUG/wt/scripts/fm_verdict.py fm_work/RenameTable/fm.log --rc $rc --mode signoff-strict --top RenameTable --allowlist 0
+SUCCEEDED	{"passing": 2492, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "RenameTable", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

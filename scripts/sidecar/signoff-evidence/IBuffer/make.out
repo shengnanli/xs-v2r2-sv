@@ -1,0 +1,17 @@
+=== FM: IBuffer (mode=signoff-strict) ===
+FM_TOP=IBuffer \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/IBuffer.sv " \
+FM_IMPL_SRCS="/tmp/tmp.oLKjQWhURA/wt/rtl/frontend/IBuffer.sv /tmp/tmp.oLKjQWhURA/wt/rtl/frontend/IBuffer_wrapper.sv" \
+ \
+ \
+ \
+ \
+FM_PIN_TCL=/tmp/tmp.oLKjQWhURA/wt/verif/ut/IBuffer/fm_pins.tcl \
+fm_shell -64 -work_path fm_work/IBuffer -file /tmp/tmp.oLKjQWhURA/wt/scripts/fm_eq.tcl \
+    > fm_work/IBuffer/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.oLKjQWhURA/wt/scripts/fm_verdict.py fm_work/IBuffer/fm.log --rc $rc --mode signoff-strict --top IBuffer --allowlist 0
+PARTIAL	{"passing": 7278, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": 27, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "IBuffer", "dont_verify": false, "elab147": false, "reason": "strict_unread!=0", "unmatched_ref": 0, "unmatched_impl": 0}
+make: *** [../../../scripts/ut_common.mk:56: fm-IBuffer] Error 1

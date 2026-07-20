@@ -1,0 +1,5 @@
+{{r:/WORK/FAlu/falu/F32Adder/U_close_path/U_CS4_io_adder_op0_r_reg[23]} {i:/WORK/FAlu/u_core/falu/F32Adder/U_close_path/U_CS4_io_adder_op0_r_reg[23]}}
+{{r:/WORK/FAlu/falu/F32Adder/U_close_path/U_Lshift_io_src_r_reg[24]} {i:/WORK/FAlu/u_core/falu/F32Adder/U_close_path/U_Lshift_io_src_r_reg[24]}}
+{{r:/WORK/FAlu/falu/F32Adder/U_far_path/U_FS1/io_result_r_2_reg[0]} {i:/WORK/FAlu/u_core/falu/F32Adder/U_far_path/U_FS1/io_result_r_2_reg[0]}}
+{{r:/WORK/FAlu/falu/F64Adder/U_close_path/U_CS4_io_adder_op0_r_reg[52]} {i:/WORK/FAlu/u_core/falu/F64Adder/U_close_path/U_CS4_io_adder_op0_r_reg[52]}}
+{{r:/WORK/FAlu/falu/F64Adder/U_close_path/U_Lshift_io_src_r_reg[53]} {i:/WORK/FAlu/u_core/falu/F64Adder/U_close_path/U_Lshift_io_src_r_reg[53]}}

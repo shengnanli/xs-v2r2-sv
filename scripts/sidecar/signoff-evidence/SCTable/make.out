@@ -1,0 +1,17 @@
+=== FM: SCTable (mode=signoff-strict) ===
+FM_TOP=SCTable \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/SCTable.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_66.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_2p256x24m6s1h0l1b_bp_sc.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_5.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistClockGateCell.sv /home/eda/xs-env/G0-canonical/golden-rtl/ClockGate.sv /home/eda/xs-env/G0-canonical/golden-rtl/WrBypass_33.sv /home/eda/xs-env/G0-canonical/golden-rtl/IndexableCAMTemplate_33.sv /home/eda/xs-env/G0-canonical/golden-rtl/data_mem_16x12.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistPipeSc.sv" \
+FM_IMPL_SRCS="/tmp/tmp.ISd6mdLb7E/wt/rtl/frontend/SCTable.sv /tmp/tmp.ISd6mdLb7E/wt/rtl/frontend/SCTable_wrapper.sv /tmp/tmp.ISd6mdLb7E/wt/rtl/common/SRAMTemplate_2p_core.sv /tmp/tmp.ISd6mdLb7E/wt/rtl/common/SRAMTemplate_2p_variants.sv /tmp/tmp.ISd6mdLb7E/wt/rtl/common/IndexableCAM.sv /tmp/tmp.ISd6mdLb7E/wt/rtl/common/PlruReplacer.sv /tmp/tmp.ISd6mdLb7E/wt/rtl/frontend/WrBypass.sv /tmp/tmp.ISd6mdLb7E/wt/rtl/frontend/WrBypass_variants.sv /home/eda/xs-env/G0-canonical/golden-rtl/ClockGate.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistClockGateCell.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_5.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_2p256x24m6s1h0l1b_bp_sc.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/SCTable -file /tmp/tmp.ISd6mdLb7E/wt/scripts/fm_eq.tcl \
+    > fm_work/SCTable/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.ISd6mdLb7E/wt/scripts/fm_verdict.py fm_work/SCTable/fm.log --rc $rc --mode signoff-strict --top SCTable --allowlist 0
+ERROR	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 0, "make_rc": 4, "mode": "signoff-strict", "native": null, "top": null, "dont_verify": false, "elab147": false, "reason": "make_rc_nonzero"}
+make: *** [../../../scripts/ut_common.mk:56: fm-SCTable] Error 1

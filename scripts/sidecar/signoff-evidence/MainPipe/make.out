@@ -1,0 +1,17 @@
+=== FM: MainPipe (mode=signoff-strict) ===
+FM_TOP=MainPipe \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/MainPipe.sv /home/eda/xs-env/G0-canonical/golden-rtl/AMOALU.sv /home/eda/xs-env/G0-canonical/golden-rtl/Arbiter4_MainPipeReq.sv" \
+FM_IMPL_SRCS="/tmp/tmp.IEDwsWQpwr/wt/rtl/memblock/mainpipe_pkg.sv /tmp/tmp.IEDwsWQpwr/wt/rtl/memblock/MainPipe.sv /tmp/tmp.IEDwsWQpwr/wt/rtl/memblock/MainPipe_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/AMOALU.sv /home/eda/xs-env/G0-canonical/golden-rtl/Arbiter4_MainPipeReq.sv" \
+FM_MERGE_DUP=false \
+ \
+ \
+FM_PIN_PRE_TCL=/tmp/tmp.IEDwsWQpwr/wt/verif/ut/MainPipe/fm_pins_pre.tcl \
+ \
+fm_shell -64 -work_path fm_work/MainPipe -file /tmp/tmp.IEDwsWQpwr/wt/scripts/fm_eq.tcl \
+    > fm_work/MainPipe/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.IEDwsWQpwr/wt/scripts/fm_verdict.py fm_work/MainPipe/fm.log --rc $rc --mode signoff-strict --top MainPipe --allowlist 0
+PARTIAL	{"passing": 8932, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": 600, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "MainPipe", "dont_verify": false, "elab147": false, "reason": "strict_unread!=0", "unmatched_ref": 0, "unmatched_impl": 0}
+make: *** [../../../scripts/ut_common.mk:56: fm-MainPipe] Error 1

@@ -1,0 +1,19 @@
+Makefile:28: warning: overriding recipe for target 'simv'
+../../../scripts/ut_common.mk:27: warning: ignoring old recipe for target 'simv'
+=== FM: TLBNonBlock (mode=signoff-strict) ===
+FM_TOP=TLBNonBlock \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/TLBNonBlock.sv " \
+FM_IMPL_SRCS="/tmp/tmp.rzYKRzUwTX/wt/rtl/memblock/tlbnonblock_pkg.sv /tmp/tmp.rzYKRzUwTX/wt/rtl/memblock/tlbstoragewrapper_pkg.sv /tmp/tmp.rzYKRzUwTX/wt/rtl/memblock/tlbfa_pkg.sv /tmp/tmp.rzYKRzUwTX/wt/rtl/memblock/TLBNonBlock.sv /tmp/tmp.rzYKRzUwTX/wt/rtl/memblock/TLBNonBlock_wrapper.sv" \
+FM_MERGE_DUP=false \
+ \
+ \
+ \
+FM_PIN_TCL=/tmp/tmp.rzYKRzUwTX/wt/verif/ut/TLBNonBlock/fm_pins.tcl \
+fm_shell -64 -work_path fm_work/TLBNonBlock -file /tmp/tmp.rzYKRzUwTX/wt/scripts/fm_eq.tcl \
+    > fm_work/TLBNonBlock/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.rzYKRzUwTX/wt/scripts/fm_verdict.py fm_work/TLBNonBlock/fm.log --rc $rc --mode signoff-strict --top TLBNonBlock --allowlist 0
+PARTIAL	{"passing": 3781, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": 185, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "TLBNonBlock", "dont_verify": false, "elab147": false, "reason": "strict_unread!=0", "unmatched_ref": 0, "unmatched_impl": 0}
+make: *** [../../../scripts/ut_common.mk:56: fm-TLBNonBlock] Error 1

@@ -1,0 +1,3 @@
+TARGET TageTable_1: NO_NATIVE_FACTS (required=SUCCEEDED make_rc=2 fm_shell_rc=4) [SIGNOFF FAIL-CLOSED]
+      puts "FM_MODE_ERROR: $_fmmode 拒绝 FM_INTERFACE_ONLY(assembly 专用手段)"
+    puts "FM_MODE_ERROR: 未知 FM_MODE=$_fmmode"

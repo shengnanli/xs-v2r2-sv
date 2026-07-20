@@ -1,0 +1,11 @@
+=== FM(bb): MemBlock ===
+FM_TOP=MemBlock \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/MemBlock.sv /tmp/tmp.McjxxOBBnR/wt/rtl/memblock/memblock_stub.sv" \
+FM_IMPL_SRCS="/tmp/tmp.McjxxOBBnR/wt/rtl/memblock/memblock_pkg.sv /tmp/tmp.McjxxOBBnR/wt/rtl/memblock/MemBlock.sv /tmp/tmp.McjxxOBBnR/wt/rtl/memblock/MemBlock_wrapper.sv /tmp/tmp.McjxxOBBnR/wt/rtl/memblock/memblock_stub.sv" \
+FM_MERGE_DUP=false \
+XSSV_HOME=/tmp/tmp.McjxxOBBnR/wt FM_RUN_ID=$FM_RUN_ID \
+fm_shell -64 -work_path fm_work/MemBlock -file /tmp/tmp.McjxxOBBnR/wt/verif/ut/MemBlock/fm_eq_bb.tcl \
+    > fm_work/MemBlock/fm.log 2>&1; \
+rc=$?; echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; \
+grep -E "^FM_RESULT" fm_work/MemBlock/fm.log || true
+FM_RESULT: Verification WAIVED for MemBlock (perf black-box symmetry false-positive waived; 28 pts)

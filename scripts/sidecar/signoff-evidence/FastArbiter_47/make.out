@@ -1,0 +1,17 @@
+=== FM: FastArbiter_47 (mode=signoff-strict) ===
+FM_TOP=FastArbiter_47 \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/FastArbiter_47.sv " \
+FM_IMPL_SRCS="/tmp/tmp.oD4Bux0ekU/wt/rtl/uncore/fastarbiter_pkg.sv /tmp/tmp.oD4Bux0ekU/wt/rtl/uncore/FastArbiter_47.sv /tmp/tmp.oD4Bux0ekU/wt/rtl/uncore/FastArbiter_47_wrapper.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/FastArbiter_47 -file /tmp/tmp.oD4Bux0ekU/wt/scripts/fm_eq.tcl \
+    > fm_work/FastArbiter_47/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.oD4Bux0ekU/wt/scripts/fm_verdict.py fm_work/FastArbiter_47/fm.log --rc $rc --mode signoff-strict --top FastArbiter_47 --allowlist 0
+PARTIAL	{"passing": 114, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": 1, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "FastArbiter_47", "dont_verify": false, "elab147": false, "reason": "strict_unread!=0", "unmatched_ref": 0, "unmatched_impl": 0}
+make: *** [../../../scripts/ut_common.mk:56: fm-FastArbiter_47] Error 1

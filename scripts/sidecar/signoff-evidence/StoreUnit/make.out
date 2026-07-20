@@ -1,0 +1,17 @@
+=== FM: StoreUnit (mode=signoff-strict) ===
+FM_TOP=StoreUnit \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/StoreUnit.sv /home/eda/xs-env/G0-canonical/golden-rtl/MemTrigger_3.sv" \
+FM_IMPL_SRCS="/tmp/tmp.z6hUH7Eq6a/wt/rtl/memblock/storeunit_pkg.sv /tmp/tmp.z6hUH7Eq6a/wt/rtl/memblock/StoreUnit.sv /tmp/tmp.z6hUH7Eq6a/wt/rtl/memblock/StoreUnit_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/MemTrigger_3.sv" \
+FM_MERGE_DUP=false \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/StoreUnit -file /tmp/tmp.z6hUH7Eq6a/wt/scripts/fm_eq.tcl \
+    > fm_work/StoreUnit/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.z6hUH7Eq6a/wt/scripts/fm_verdict.py fm_work/StoreUnit/fm.log --rc $rc --mode signoff-strict --top StoreUnit --allowlist 0
+PARTIAL	{"passing": 3313, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": 94, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "StoreUnit", "dont_verify": false, "elab147": false, "reason": "strict_unread!=0", "unmatched_ref": 0, "unmatched_impl": 0}
+make: *** [../../../scripts/ut_common.mk:56: fm-StoreUnit] Error 1

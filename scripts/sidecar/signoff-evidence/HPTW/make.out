@@ -1,0 +1,18 @@
+Makefile:13: warning: overriding recipe for target 'simv'
+../../../scripts/ut_common.mk:27: warning: ignoring old recipe for target 'simv'
+=== FM: HPTW (mode=signoff-strict) ===
+FM_TOP=HPTW \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/HPTW.sv " \
+FM_IMPL_SRCS="/tmp/tmp.pFEMqYYxfQ/wt/rtl/memblock/hptw_pkg.sv /tmp/tmp.pFEMqYYxfQ/wt/rtl/memblock/HPTW.sv /tmp/tmp.pFEMqYYxfQ/wt/rtl/memblock/HPTW_wrapper.sv" \
+FM_MERGE_DUP=false \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/HPTW -file /tmp/tmp.pFEMqYYxfQ/wt/scripts/fm_eq.tcl \
+    > fm_work/HPTW/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.pFEMqYYxfQ/wt/scripts/fm_verdict.py fm_work/HPTW/fm.log --rc $rc --mode signoff-strict --top HPTW --allowlist 0
+SUCCEEDED	{"passing": 342, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "HPTW", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

@@ -1,0 +1,16 @@
+=== FM: StdFreeList (mode=signoff-strict) ===
+FM_TOP=StdFreeList \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/StdFreeList.sv /home/eda/xs-env/G0-canonical/golden-rtl/SnapshotGenerator.sv" \
+FM_IMPL_SRCS="/tmp/tmp.JKNunMCytb/wt/rtl/backend/stdfreelist_pkg.sv /tmp/tmp.JKNunMCytb/wt/rtl/backend/StdFreeList.sv /tmp/tmp.JKNunMCytb/wt/rtl/backend/StdFreeList_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/SnapshotGenerator.sv" \
+FM_MERGE_DUP=true \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/StdFreeList -file /tmp/tmp.JKNunMCytb/wt/scripts/fm_eq.tcl \
+    > fm_work/StdFreeList/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.JKNunMCytb/wt/scripts/fm_verdict.py fm_work/StdFreeList/fm.log --rc $rc --mode signoff-strict --top StdFreeList --allowlist 0
+SUCCEEDED	{"passing": 1593, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "StdFreeList", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

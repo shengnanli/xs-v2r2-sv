@@ -1,0 +1,17 @@
+=== FM: PMP (mode=signoff-strict) ===
+FM_TOP=PMP \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/PMP.sv " \
+FM_IMPL_SRCS="/tmp/tmp.iaS2S7ZeBt/wt/rtl/memblock/pmp_pkg.sv /tmp/tmp.iaS2S7ZeBt/wt/rtl/memblock/PMP.sv /tmp/tmp.iaS2S7ZeBt/wt/rtl/memblock/PMP_wrapper.sv" \
+FM_MERGE_DUP=false \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/PMP -file /tmp/tmp.iaS2S7ZeBt/wt/scripts/fm_eq.tcl \
+    > fm_work/PMP/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.iaS2S7ZeBt/wt/scripts/fm_verdict.py fm_work/PMP/fm.log --rc $rc --mode signoff-strict --top PMP --allowlist 0
+PARTIAL	{"passing": 6548, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": 3040, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "PMP", "dont_verify": false, "elab147": false, "reason": "strict_unread!=0", "unmatched_ref": 0, "unmatched_impl": 0}
+make: *** [../../../scripts/ut_common.mk:56: fm-PMP] Error 1

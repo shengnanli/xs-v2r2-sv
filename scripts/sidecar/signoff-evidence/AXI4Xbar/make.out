@@ -1,0 +1,16 @@
+=== FM: AXI4Xbar (mode=signoff-strict) ===
+FM_TOP=AXI4Xbar \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/AXI4Xbar.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_UInt2.sv /home/eda/xs-env/G0-canonical/golden-rtl/ram_2x2.sv" \
+FM_IMPL_SRCS="/tmp/tmp.8NLSVsXrcF/wt/rtl/uncore/axi4xbar_pkg.sv /tmp/tmp.8NLSVsXrcF/wt/rtl/uncore/AXI4Xbar.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_UInt2.sv /home/eda/xs-env/G0-canonical/golden-rtl/ram_2x2.sv /tmp/tmp.8NLSVsXrcF/wt/rtl/uncore/AXI4Xbar_wrapper.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/AXI4Xbar -file /tmp/tmp.8NLSVsXrcF/wt/scripts/fm_eq.tcl \
+    > fm_work/AXI4Xbar/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.8NLSVsXrcF/wt/scripts/fm_verdict.py fm_work/AXI4Xbar/fm.log --rc $rc --mode signoff-strict --top AXI4Xbar --allowlist 0
+SUCCEEDED	{"passing": 2280, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "AXI4Xbar", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

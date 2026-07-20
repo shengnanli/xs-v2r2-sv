@@ -1,0 +1,17 @@
+=== FM: L1FlagMetaArray (mode=signoff-strict) ===
+FM_TOP=L1FlagMetaArray \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/L1FlagMetaArray.sv " \
+FM_IMPL_SRCS="/tmp/tmp.YuzgDvPOuz/wt/rtl/memblock/l1metaarray_pkg.sv /tmp/tmp.YuzgDvPOuz/wt/rtl/memblock/L1FlagMetaArray.sv /tmp/tmp.YuzgDvPOuz/wt/rtl/memblock/L1FlagMetaArray_wrapper.sv /tmp/tmp.YuzgDvPOuz/wt/rtl/memblock/L1FlagMetaArray_1_wrapper.sv" \
+FM_MERGE_DUP=false \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/L1FlagMetaArray -file /tmp/tmp.YuzgDvPOuz/wt/scripts/fm_eq.tcl \
+    > fm_work/L1FlagMetaArray/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.YuzgDvPOuz/wt/scripts/fm_verdict.py fm_work/L1FlagMetaArray/fm.log --rc $rc --mode signoff-strict --top L1FlagMetaArray --allowlist 0
+ERROR	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 0, "make_rc": 4, "mode": "signoff-strict", "native": null, "top": null, "dont_verify": false, "elab147": false, "reason": "make_rc_nonzero"}
+make: *** [../../../scripts/ut_common.mk:56: fm-L1FlagMetaArray] Error 1

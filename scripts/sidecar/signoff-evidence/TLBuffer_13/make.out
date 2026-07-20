@@ -1,0 +1,16 @@
+=== FM: TLBuffer_13 (mode=signoff-strict) ===
+FM_TOP=TLBuffer_13 \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/TLBuffer_13.sv " \
+FM_IMPL_SRCS="/tmp/tmp.CcnHrOSNrk/wt/rtl/memblock/tlbuffer13_pkg.sv /tmp/tmp.CcnHrOSNrk/wt/rtl/memblock/xs_tlbuffer13_bank.sv /tmp/tmp.CcnHrOSNrk/wt/rtl/memblock/TLBuffer_13.sv /tmp/tmp.CcnHrOSNrk/wt/rtl/memblock/TLBuffer_13_wrapper.sv /tmp/tmp.CcnHrOSNrk/wt/rtl/memblock/tlbuffer13_queue_blackbox.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/TLBuffer_13 -file /tmp/tmp.CcnHrOSNrk/wt/scripts/fm_eq.tcl \
+    > fm_work/TLBuffer_13/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.CcnHrOSNrk/wt/scripts/fm_verdict.py fm_work/TLBuffer_13/fm.log --rc $rc --mode signoff-strict --top TLBuffer_13 --allowlist 0
+SUCCEEDED	{"passing": 9960, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "TLBuffer_13", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

@@ -1,0 +1,17 @@
+=== FM: WrBypass_32 (mode=signoff-strict) ===
+FM_TOP=WrBypass_32 \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/WrBypass_32.sv /home/eda/xs-env/G0-canonical/golden-rtl/IndexableCAMTemplate_32.sv /home/eda/xs-env/G0-canonical/golden-rtl/data_mem_8x4.sv" \
+FM_IMPL_SRCS="/tmp/tmp.4n0FxJ8Z38/wt/rtl/common/IndexableCAM.sv /tmp/tmp.4n0FxJ8Z38/wt/rtl/common/PlruReplacer.sv /tmp/tmp.4n0FxJ8Z38/wt/rtl/frontend/WrBypass.sv /tmp/tmp.4n0FxJ8Z38/wt/rtl/frontend/WrBypass_variants.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/WrBypass_32 -file /tmp/tmp.4n0FxJ8Z38/wt/scripts/fm_eq.tcl \
+    > fm_work/WrBypass_32/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.4n0FxJ8Z38/wt/scripts/fm_verdict.py fm_work/WrBypass_32/fm.log --rc $rc --mode signoff-strict --top WrBypass_32 --allowlist 0
+ERROR	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 0, "make_rc": 4, "mode": "signoff-strict", "native": null, "top": null, "dont_verify": false, "elab147": false, "reason": "make_rc_nonzero"}
+make: *** [../../../scripts/ut_common.mk:56: fm-WrBypass_32] Error 1

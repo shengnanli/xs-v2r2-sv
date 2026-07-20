@@ -1,0 +1,11 @@
+FM_TOP=PtwCache \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/PtwCache.sv /home/eda/xs-env/G0-canonical/golden-rtl/SplittedSRAM.sv /home/eda/xs-env/G0-canonical/golden-rtl/SplittedSRAM_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_122.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_126.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistPipePtwL1.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistPipePtwL0.sv /home/eda/xs-env/G0-canonical/golden-rtl/ClockGate.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p8x200m100s1h0l1b_ptw_l1.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p32x228m114s1h0l1b_ptw_l0.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_10.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_10_ext.v /home/eda/xs-env/G0-canonical/golden-rtl/array_11.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_11_ext.v" \
+FM_IMPL_SRCS="/tmp/tmp.mfBgwr0deH/wt/rtl/memblock/ptwcache_pkg.sv /tmp/tmp.mfBgwr0deH/wt/rtl/memblock/PtwCache.sv /tmp/tmp.mfBgwr0deH/wt/rtl/memblock/PtwCache_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/SplittedSRAM.sv /home/eda/xs-env/G0-canonical/golden-rtl/SplittedSRAM_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_122.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_126.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistPipePtwL1.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistPipePtwL0.sv /home/eda/xs-env/G0-canonical/golden-rtl/ClockGate.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p8x200m100s1h0l1b_ptw_l1.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p32x228m114s1h0l1b_ptw_l0.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_10.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_10_ext.v /home/eda/xs-env/G0-canonical/golden-rtl/array_11.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_11_ext.v" \
+FM_INCDIR="/tmp/tmp.mfBgwr0deH/wt/rtl/memblock" \
+FM_MERGE_DUP=false \
+XSSV_HOME=/tmp/tmp.mfBgwr0deH/wt FM_RUN_ID=$FM_RUN_ID \
+fm_shell -64 -work_path fm_work/PtwCache -file /tmp/tmp.mfBgwr0deH/wt/scripts/fm_eq.tcl \
+    > fm_work/PtwCache/fm.log 2>&1; \
+rc=$?; echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; \
+grep -E "^FM_RESULT" fm_work/PtwCache/fm.log || true
+FM_RESULT: Verification SUCCEEDED for PtwCache

@@ -1,0 +1,17 @@
+=== FM: GrantBuffer (mode=signoff-strict) ===
+FM_TOP=GrantBuffer \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/GrantBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue16_GrantQueueTask.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue16_GrantQueueData.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue10_GrantBuffer_Anon.sv" \
+FM_IMPL_SRCS="/tmp/tmp.sjfrV7I76K/wt/rtl/uncore/l2_task_pkg.sv /tmp/tmp.sjfrV7I76K/wt/rtl/uncore/GrantBuffer.sv /tmp/tmp.sjfrV7I76K/wt/rtl/uncore/GrantBuffer_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue16_GrantQueueTask.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue16_GrantQueueData.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue10_GrantBuffer_Anon.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/GrantBuffer -file /tmp/tmp.sjfrV7I76K/wt/scripts/fm_eq.tcl \
+    > fm_work/GrantBuffer/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.sjfrV7I76K/wt/scripts/fm_verdict.py fm_work/GrantBuffer/fm.log --rc $rc --mode signoff-strict --top GrantBuffer --allowlist 0
+PARTIAL	{"passing": 2680, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": 1040, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "GrantBuffer", "dont_verify": false, "elab147": false, "reason": "strict_unread!=0", "unmatched_ref": 0, "unmatched_impl": 0}
+make: *** [../../../scripts/ut_common.mk:56: fm-GrantBuffer] Error 1

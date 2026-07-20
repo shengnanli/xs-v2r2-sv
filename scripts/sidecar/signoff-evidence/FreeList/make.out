@@ -1,0 +1,16 @@
+=== FM: FreeList (mode=signoff-strict) ===
+FM_TOP=FreeList \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/FreeList.sv " \
+FM_IMPL_SRCS="/tmp/tmp.Uriy0Nr8M6/wt/rtl/memblock/freelist_pkg.sv /tmp/tmp.Uriy0Nr8M6/wt/rtl/memblock/FreeList.sv /tmp/tmp.Uriy0Nr8M6/wt/rtl/memblock/FreeList_wrapper.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/FreeList -file /tmp/tmp.Uriy0Nr8M6/wt/scripts/fm_eq.tcl \
+    > fm_work/FreeList/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.Uriy0Nr8M6/wt/scripts/fm_verdict.py fm_work/FreeList/fm.log --rc $rc --mode signoff-strict --top FreeList --allowlist 0
+SUCCEEDED	{"passing": 127, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "FreeList", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

@@ -1,0 +1,17 @@
+=== FM: EntriesFaluFmacFdiv (mode=signoff-strict) ===
+FM_TOP=EntriesFaluFmacFdiv \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/EntriesFaluFmacFdiv.sv /home/eda/xs-env/G0-canonical/golden-rtl/EnqEntry_10.sv /home/eda/xs-env/G0-canonical/golden-rtl/OthersEntry_104.sv /home/eda/xs-env/G0-canonical/golden-rtl/OthersEntry_106.sv /home/eda/xs-env/G0-canonical/golden-rtl/EnqPolicy_8.sv /home/eda/xs-env/G0-canonical/golden-rtl/UIntCompressor_27_000000000000001010100000000.sv" \
+FM_IMPL_SRCS="/tmp/tmp.7YNouVpVMD/wt/rtl/backend/iq_ffmacfdiv_pkg.sv /tmp/tmp.7YNouVpVMD/wt/rtl/backend/IqEntryFfmacFdiv.sv /tmp/tmp.7YNouVpVMD/wt/rtl/backend/EntriesFaluFmacFdiv.sv /tmp/tmp.7YNouVpVMD/wt/rtl/backend/EntriesFaluFmacFdiv_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/EnqPolicy_8.sv /home/eda/xs-env/G0-canonical/golden-rtl/UIntCompressor_27_000000000000001010100000000.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/EntriesFaluFmacFdiv -file /tmp/tmp.7YNouVpVMD/wt/scripts/fm_eq.tcl \
+    > fm_work/EntriesFaluFmacFdiv/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.7YNouVpVMD/wt/scripts/fm_verdict.py fm_work/EntriesFaluFmacFdiv/fm.log --rc $rc --mode signoff-strict --top EntriesFaluFmacFdiv --allowlist 0
+ERROR	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 0, "make_rc": 4, "mode": "signoff-strict", "native": null, "top": null, "dont_verify": false, "elab147": false, "reason": "make_rc_nonzero"}
+make: *** [../../../scripts/ut_common.mk:56: fm-EntriesFaluFmacFdiv] Error 1

@@ -1,0 +1,16 @@
+=== FM: RVCExpander (mode=signoff-strict) ===
+FM_TOP=RVCExpander \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/RVCExpander.sv " \
+FM_IMPL_SRCS="/tmp/tmp.z0JXBr9Dij/wt/rtl/frontend/rvc_expander_pkg.sv /tmp/tmp.z0JXBr9Dij/wt/rtl/frontend/RVCExpander.sv /tmp/tmp.z0JXBr9Dij/wt/rtl/frontend/RVCExpander_wrapper.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/RVCExpander -file /tmp/tmp.z0JXBr9Dij/wt/scripts/fm_eq.tcl \
+    > fm_work/RVCExpander/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.z0JXBr9Dij/wt/scripts/fm_verdict.py fm_work/RVCExpander/fm.log --rc $rc --mode signoff-strict --top RVCExpander --allowlist 0
+SUCCEEDED	{"passing": 33, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "RVCExpander", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

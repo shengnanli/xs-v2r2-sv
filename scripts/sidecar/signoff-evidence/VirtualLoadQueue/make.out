@@ -1,0 +1,17 @@
+=== FM: VirtualLoadQueue (mode=signoff-strict) ===
+FM_TOP=VirtualLoadQueue \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/VirtualLoadQueue.sv " \
+FM_IMPL_SRCS="/tmp/tmp.XfaBltsafy/wt/rtl/memblock/virtualloadqueue_pkg.sv /tmp/tmp.XfaBltsafy/wt/rtl/memblock/VirtualLoadQueue.sv /tmp/tmp.XfaBltsafy/wt/rtl/memblock/VirtualLoadQueue_wrapper.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/VirtualLoadQueue -file /tmp/tmp.XfaBltsafy/wt/scripts/fm_eq.tcl \
+    > fm_work/VirtualLoadQueue/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.XfaBltsafy/wt/scripts/fm_verdict.py fm_work/VirtualLoadQueue/fm.log --rc $rc --mode signoff-strict --top VirtualLoadQueue --allowlist 0
+FAILED	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "FAILED", "top": "VirtualLoadQueue", "dont_verify": false, "elab147": false, "reason": null}
+make: *** [../../../scripts/ut_common.mk:56: fm-VirtualLoadQueue] Error 1

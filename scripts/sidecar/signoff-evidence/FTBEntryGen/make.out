@@ -1,0 +1,17 @@
+=== FM: FTBEntryGen (mode=signoff-strict) ===
+FM_TOP=FTBEntryGen \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/FTBEntryGen.sv " \
+FM_IMPL_SRCS="/tmp/tmp.1ztZ5CrQCw/wt/rtl/frontend/ftb_pkg.sv /tmp/tmp.1ztZ5CrQCw/wt/rtl/frontend/FTBEntryGen.sv /tmp/tmp.1ztZ5CrQCw/wt/rtl/frontend/FTBEntryGen_wrapper.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/FTBEntryGen -file /tmp/tmp.1ztZ5CrQCw/wt/scripts/fm_eq.tcl \
+    > fm_work/FTBEntryGen/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.1ztZ5CrQCw/wt/scripts/fm_verdict.py fm_work/FTBEntryGen/fm.log --rc $rc --mode signoff-strict --top FTBEntryGen --allowlist 0
+PARTIAL	{"passing": 72, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": 9, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "FTBEntryGen", "dont_verify": false, "elab147": false, "reason": "strict_unread!=0", "unmatched_ref": 0, "unmatched_impl": 0}
+make: *** [../../../scripts/ut_common.mk:56: fm-FTBEntryGen] Error 1

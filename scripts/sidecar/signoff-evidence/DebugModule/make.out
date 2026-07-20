@@ -1,0 +1,16 @@
+=== FM: DebugModule (mode=signoff-strict) ===
+FM_TOP=DebugModule \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/DebugModule.sv " \
+FM_IMPL_SRCS="/tmp/tmp.V3fytWUKAf/wt/rtl/uncore/debug_pkg.sv /tmp/tmp.V3fytWUKAf/wt/rtl/uncore/DebugModule.sv /tmp/tmp.V3fytWUKAf/wt/rtl/uncore/DebugModule_wrapper.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/DebugModule -file /tmp/tmp.V3fytWUKAf/wt/scripts/fm_eq.tcl \
+    > fm_work/DebugModule/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.V3fytWUKAf/wt/scripts/fm_verdict.py fm_work/DebugModule/fm.log --rc $rc --mode signoff-strict --top DebugModule --allowlist 0
+SUCCEEDED	{"passing": 628, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "DebugModule", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

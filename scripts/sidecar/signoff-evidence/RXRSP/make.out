@@ -1,0 +1,16 @@
+=== FM: RXRSP (mode=signoff-strict) ===
+FM_TOP=RXRSP \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/RXRSP.sv " \
+FM_IMPL_SRCS="/tmp/tmp.roNf9M13wu/wt/rtl/uncore/RXRSP.sv /tmp/tmp.roNf9M13wu/wt/rtl/uncore/RXRSP_wrapper.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/RXRSP -file /tmp/tmp.roNf9M13wu/wt/scripts/fm_eq.tcl \
+    > fm_work/RXRSP/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.roNf9M13wu/wt/scripts/fm_verdict.py fm_work/RXRSP/fm.log --rc $rc --mode signoff-strict --top RXRSP --allowlist 0
+SUCCEEDED	{"passing": 49, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "RXRSP", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

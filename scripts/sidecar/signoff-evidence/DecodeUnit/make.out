@@ -1,0 +1,16 @@
+=== FM: DecodeUnit (mode=signoff-strict) ===
+FM_TOP=DecodeUnit \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/DecodeUnit.sv /home/eda/xs-env/G0-canonical/golden-rtl/FPDecoder.sv /home/eda/xs-env/G0-canonical/golden-rtl/UopInfoGen.sv /home/eda/xs-env/G0-canonical/golden-rtl/strdiedLSNumOfUopTable.sv /home/eda/xs-env/G0-canonical/golden-rtl/indexedLSNumOfUopTable.sv" \
+FM_IMPL_SRCS="/tmp/tmp.HaJnWdb5DC/wt/rtl/backend/decodeunit_pkg.sv /tmp/tmp.HaJnWdb5DC/wt/rtl/backend/DecodeUnit.sv /tmp/tmp.HaJnWdb5DC/wt/rtl/backend/DecodeUnit_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/FPDecoder.sv /home/eda/xs-env/G0-canonical/golden-rtl/UopInfoGen.sv /home/eda/xs-env/G0-canonical/golden-rtl/strdiedLSNumOfUopTable.sv /home/eda/xs-env/G0-canonical/golden-rtl/indexedLSNumOfUopTable.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/DecodeUnit -file /tmp/tmp.HaJnWdb5DC/wt/scripts/fm_eq.tcl \
+    > fm_work/DecodeUnit/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.HaJnWdb5DC/wt/scripts/fm_verdict.py fm_work/DecodeUnit/fm.log --rc $rc --mode signoff-strict --top DecodeUnit --allowlist 0
+SUCCEEDED	{"passing": 289, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "DecodeUnit", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

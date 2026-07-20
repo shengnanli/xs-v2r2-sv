@@ -1,0 +1,16 @@
+=== FM: FPDecoder (mode=signoff-strict) ===
+FM_TOP=FPDecoder \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/FPDecoder.sv " \
+FM_IMPL_SRCS="/tmp/tmp.f8kWCAbIAL/wt/rtl/backend/fpdecoder_pkg.sv /tmp/tmp.f8kWCAbIAL/wt/rtl/backend/FPDecoder.sv /tmp/tmp.f8kWCAbIAL/wt/rtl/backend/FPDecoder_wrapper.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/FPDecoder -file /tmp/tmp.f8kWCAbIAL/wt/scripts/fm_eq.tcl \
+    > fm_work/FPDecoder/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.f8kWCAbIAL/wt/scripts/fm_verdict.py fm_work/FPDecoder/fm.log --rc $rc --mode signoff-strict --top FPDecoder --allowlist 0
+SUCCEEDED	{"passing": 10, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "FPDecoder", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

@@ -1,0 +1,16 @@
+=== FM: VSetRvfWvf (mode=signoff-strict) ===
+FM_TOP=VSetRvfWvf \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/VSetRvfWvf.sv /home/eda/xs-env/G0-canonical/golden-rtl/VsetModule.sv" \
+FM_IMPL_SRCS="/tmp/tmp.NiSwXYmnim/wt/rtl/backend/vset_pkg.sv /tmp/tmp.NiSwXYmnim/wt/rtl/backend/VSetRvfWvf.sv /tmp/tmp.NiSwXYmnim/wt/rtl/backend/VSetRvfWvf_wrapper.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/VSetRvfWvf -file /tmp/tmp.NiSwXYmnim/wt/scripts/fm_eq.tcl \
+    > fm_work/VSetRvfWvf/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.NiSwXYmnim/wt/scripts/fm_verdict.py fm_work/VSetRvfWvf/fm.log --rc $rc --mode signoff-strict --top VSetRvfWvf --allowlist 0
+SUCCEEDED	{"passing": 287, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "VSetRvfWvf", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

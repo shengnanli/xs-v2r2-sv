@@ -1,0 +1,12 @@
+{{r:/WORK/Uncache/entries_0_vaddr_reg[0]} {i:/WORK/Uncache/u_core/entries_reg[0]\[vaddr][0]}}
+{{r:/WORK/Uncache/entries_0_vaddr_reg[1]} {i:/WORK/Uncache/u_core/entries_reg[0]\[vaddr][1]}}
+{{r:/WORK/Uncache/entries_0_vaddr_reg[2]} {i:/WORK/Uncache/u_core/entries_reg[0]\[vaddr][2]}}
+{{r:/WORK/Uncache/entries_1_vaddr_reg[0]} {i:/WORK/Uncache/u_core/entries_reg[1]\[vaddr][0]}}
+{{r:/WORK/Uncache/entries_1_vaddr_reg[1]} {i:/WORK/Uncache/u_core/entries_reg[1]\[vaddr][1]}}
+{{r:/WORK/Uncache/entries_1_vaddr_reg[2]} {i:/WORK/Uncache/u_core/entries_reg[1]\[vaddr][2]}}
+{{r:/WORK/Uncache/entries_2_vaddr_reg[0]} {i:/WORK/Uncache/u_core/entries_reg[2]\[vaddr][0]}}
+{{r:/WORK/Uncache/entries_2_vaddr_reg[1]} {i:/WORK/Uncache/u_core/entries_reg[2]\[vaddr][1]}}
+{{r:/WORK/Uncache/entries_2_vaddr_reg[2]} {i:/WORK/Uncache/u_core/entries_reg[2]\[vaddr][2]}}
+{{r:/WORK/Uncache/entries_3_vaddr_reg[0]} {i:/WORK/Uncache/u_core/entries_reg[3]\[vaddr][0]}}
+{{r:/WORK/Uncache/entries_3_vaddr_reg[1]} {i:/WORK/Uncache/u_core/entries_reg[3]\[vaddr][1]}}
+{{r:/WORK/Uncache/entries_3_vaddr_reg[2]} {i:/WORK/Uncache/u_core/entries_reg[3]\[vaddr][2]}}
