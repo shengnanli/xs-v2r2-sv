@@ -36,13 +36,15 @@ VCS += +define+SYNTHESIS
 BBOX = $(abspath $(RTL_DIR)/memblock/l2tlb_blackbox.sv)
 .PHONY: fmbb
 fmbb:
+	@[ -n "$$FM_SIDECAR_OUT" ] || { echo "ERROR($(MODULE)): fmbb 须经 sidecar runner"; exit 1; }
 	@mkdir -p fm_work/L2TLBWrapper
 	@echo "=== FM(bb): L2TLBWrapper ==="
 	FM_TOP=L2TLBWrapper \
 	FM_REF_SRCS="$(abspath $(GOLDEN_RTL)/L2TLBWrapper.sv) $(BBOX)" \
 	FM_IMPL_SRCS="$(abspath $(RTL_SRCS)) $(abspath $(RTL_DIR)/memblock/L2TLBWrapper_wrapper.sv) $(BBOX)" \
 	FM_MERGE_DUP=false \
+	XSSV_HOME=$(XSSV_HOME) FM_RUN_ID=$$FM_RUN_ID \
 	fm_shell -64 -work_path fm_work/L2TLBWrapper -file $(abspath fm_eq_bb.tcl) \
 	    > fm_work/L2TLBWrapper/fm.log 2>&1; \
-	grep -E "^FM_RESULT" fm_work/L2TLBWrapper/fm.log; \
-	grep -q "^FM_RESULT: Verification SUCCEEDED" fm_work/L2TLBWrapper/fm.log
+	rc=$$?; echo $$rc > "$$FM_SIDECAR_OUT/fm_shell.rc"; \
+	grep -E "^FM_RESULT" fm_work/L2TLBWrapper/fm.log || true

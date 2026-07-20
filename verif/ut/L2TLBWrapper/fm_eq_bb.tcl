@@ -16,7 +16,24 @@ set top       $env(FM_TOP)
 set ref_srcs  $env(FM_REF_SRCS)
 set impl_srcs $env(FM_IMPL_SRCS)
 
+# --- sidecar 接线(305 统一判定; 本入口无独立 grep/WAIVED 判绿, 判定归 fm_sidecar_verdict.py)---
+set SIDECAR_ON 0
+if {[info exists env(FM_SIDECAR_OUT)] && [string trim $env(FM_SIDECAR_OUT)] ne ""} {
+    set _xss $env(XSSV_HOME)
+    source $_xss/scripts/sidecar/fm_native_emit.tcl
+    set SIDECAR_ON 1
+    set ::SIDECAR_SOURCED {}
+    sidecar_register_script [file normalize [info script]]
+    sidecar_register_script $_xss/scripts/sidecar/fm_native_emit.tcl
+    sidecar_install_appvar_guard
+}
+
 set_app_var verification_verify_unread_compare_points false
+set_app_var verification_verify_matched_unread_compare_points false
+set_app_var verification_verify_unread_bbox_inputs false
+set_app_var verification_verify_matched_unread_bbox_inputs true
+set_app_var verification_verify_unread_tech_cell_pins true
+set_app_var verification_verify_unread_tech_cell_pg_pins true
 set_app_var hdlin_unresolved_modules black_box
 
 set _merge_dup true
@@ -37,6 +54,7 @@ match
 report_unmatched_points > fm_work/$top/unmatched.rpt
 report_matched_points   > fm_work/$top/matched.rpt
 
+if {$SIDECAR_ON} { sidecar_capture_appvars }
 if {[verify]} {
     puts "FM_RESULT: Verification SUCCEEDED for $top"
 } else {
@@ -69,4 +87,5 @@ if {[verify]} {
         puts "FM_RESULT: Verification FAILED or INCONCLUSIVE for $top"
     }
 }
+if {$SIDECAR_ON} { sidecar_emit $top }
 exit

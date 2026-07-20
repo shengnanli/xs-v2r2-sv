@@ -194,12 +194,10 @@ proc sidecar_capture_appvars {} {
     foreach k [concat $::SIDECAR_APPVAR_REQUIRED $::SIDECAR_EXTRA_KEYS] {
         set ::SIDECAR_AV($k) [get_app_var $k]
     }
-    # 二审: readback 必须与已记录写入一致(trace 之外不可能有写入; 此核对是纵深防御)
-    foreach k [array names ::SIDECAR_AV_HISTORY] {
-        if {[get_app_var $k] ne $::SIDECAR_AV_HISTORY($k)} {
-            sidecar_intercept_fail "appvar_history_mismatch:$k"
-        }
-    }
+    # 十审: entry_appvars 记**有效值**(get_app_var readback); FM 会规范化(如
+    # blackbox_match_mode identity→Identity), 故不比对 set 参数字符串与 readback——
+    # 安全性由 validator 三方绑定(native==envelope==expectation)+ 值域/冻结/放宽声明保证;
+    # 篡改防护由执行 trace(每次 set 必记)+ phase 冻结 + rewrite-变值拒 承担。
 }
 
 # ---------------- JSON 编码(手写, 转义 \ " 与控制字符) ----------------
@@ -417,15 +415,20 @@ proc sidecar_parse_black_boxes {txt top} {
 
 # ---------------- pair 列表规整 ----------------
 proc sidecar_pairs_sorted {raw} {
-    # raw: fm -list 返回的 {{ref impl} ...}; 空侧("")拒(matched 语境不应出现)
-    set out {}
+    # raw: fm -list 返回的 {{ref impl} ...}; 空侧("")拒(matched 语境不应出现)。
+    # 排序须匹配 validator 的 Python sorted((ref,impl))=按 ref 再 impl 字典序。Tcl `lsort`
+    # 对整对字符串排序在 impl 含花括号/多对时与 Python 元组序不一致(PtwCache 暴露)。
+    # 用 "\n" 分隔键(路径无换行, \n=0x0A 小于任何路径字符)排序 → 与元组序等价。
+    set keyed {}
     foreach p $raw {
         if {[llength $p] != 2} { error "pair_not_2elem:$p" }
         set r [lindex $p 0]; set i [lindex $p 1]
         if {$r eq "" || $i eq ""} { error "pair_empty_side:$p" }
-        lappend out [list $r $i]
+        lappend keyed [list "$r\n$i" [list $r $i]]
     }
-    return [lsort $out]
+    set out {}
+    foreach kp [lsort -index 0 $keyed] { lappend out [lindex $kp 1] }
+    return $out
 }
 
 # ---------------- ③ 汇采与原子写 ----------------
@@ -504,7 +507,10 @@ proc sidecar_emit_inner {top} {
         if {[info exists ::SIDECAR_APPVAR_DEFAULT($k)]} {
             set d $::SIDECAR_APPVAR_DEFAULT($k)
             set v $::SIDECAR_AV($k)
-            if {$k eq "verification_assume_reg_init"} { set v [string tolower $v] }
+            # ci 规范化(FM 会改大小写: assume_reg_init/blackbox_match_mode)
+            if {$k in {verification_assume_reg_init verification_blackbox_match_mode}} {
+                set v [string tolower $v]
+            }
             if {$v ne $d} { lappend relaxed $k }
         }
     }

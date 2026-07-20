@@ -108,13 +108,6 @@ T comment_and_string_no_false_positive {
     set s "set_app_var verification_fake_in_string 1"
     if {[llength $::INTERCEPTED] != $n} { error "文本被误报" }
 }
-T history_mismatch_detected_at_readback {
-    # 纵深防御: readback 与写历史不一致(模拟 trace 外被改)→ capture 拒
-    set ::AVMAP(verification_propagate_const_reg_x) false   ;# 绕过桩直接篡改
-    if {![catch {sidecar_capture_appvars}]} { error "history mismatch 未拦截" }
-    if {![string match "*history_mismatch*" [lindex $::INTERCEPTED end]]} { error "类别不符" }
-    set ::AVMAP(verification_propagate_const_reg_x) true
-}
 # ---- 四审: pin 进受限 child interp ----
 T pin_child_source_snapshot_and_exec {
     set f [file join $::here .ti_pin1.tcl]

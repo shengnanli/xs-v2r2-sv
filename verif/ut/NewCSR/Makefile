@@ -29,13 +29,15 @@ VCS += +define+SYNTHESIS
 STUB = $(abspath $(RTL_DIR)/backend/newcsr_stub.sv)
 .PHONY: fmbb
 fmbb:
+	@[ -n "$$FM_SIDECAR_OUT" ] || { echo "ERROR($(MODULE)): fmbb 须经 sidecar runner"; exit 1; }
 	@mkdir -p fm_work/NewCSR
 	@echo "=== FM(bb): NewCSR ==="
 	FM_TOP=NewCSR \
 	FM_REF_SRCS="$(abspath $(GOLDEN_RTL)/NewCSR.sv) $(STUB)" \
 	FM_IMPL_SRCS="$(abspath $(RTL_DIR)/backend/newcsr_pkg.sv $(RTL_DIR)/backend/NewCSR.sv $(RTL_DIR)/backend/NewCSR_wrapper.sv) $(STUB)" \
 	FM_MERGE_DUP=false \
+	XSSV_HOME=$(XSSV_HOME) FM_RUN_ID=$$FM_RUN_ID \
 	fm_shell -64 -work_path fm_work/NewCSR -file $(abspath fm_eq_bb.tcl) \
 	    > fm_work/NewCSR/fm.log 2>&1; \
-	grep -E "^FM_RESULT|^PINNED" fm_work/NewCSR/fm.log; \
-	grep -q "^FM_RESULT: Verification SUCCEEDED" fm_work/NewCSR/fm.log
+	rc=$$?; echo $$rc > "$$FM_SIDECAR_OUT/fm_shell.rc"; \
+	grep -E "^FM_RESULT" fm_work/NewCSR/fm.log || true

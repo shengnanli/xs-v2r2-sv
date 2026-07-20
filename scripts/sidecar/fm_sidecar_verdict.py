@@ -104,7 +104,8 @@ APPVAR_SPEC = {
     "verification_set_undriven_signals": {"domain": ("BINARY:X", "BINARY", "0", "1", "0:X"),
                                           "default": "BINARY:X"},
     "verification_propagate_const_reg_x": {"domain": _BOOL, "default": "false"},
-    "verification_blackbox_match_mode":   {"domain": ("any", "identity"), "default": "any"},
+    # FM 规范化大小写(identity→Identity/any→Any), 用 ci 枚举
+    "verification_blackbox_match_mode":   {"enum_ci": ("any", "identity"), "default_ci": "any"},
     "verification_failing_point_limit":   {"decimal": True},
 }
 _IFACE_RE = re.compile(r"|[A-Za-z_][A-Za-z0-9_]*( [A-Za-z_][A-Za-z0-9_]*)*")

@@ -48,15 +48,17 @@ verdi:
 # FM：ref = golden PtwCache + SRAM 黑盒；impl = 手写核 + wrapper + SRAM 黑盒。
 fm:
 	@mkdir -p fm_work/PtwCache
+	@[ -n "$$FM_SIDECAR_OUT" ] || { echo "ERROR($(MODULE)): fm 须经 sidecar runner"; exit 1; }
 	FM_TOP=PtwCache \
 	FM_REF_SRCS="$(abspath $(GOLDEN_SRCS))" \
 	FM_IMPL_SRCS="$(abspath $(RTL_SRCS) $(WRAPPER_SRCS) $(SRAM_DEPS))" \
 	FM_INCDIR="$(abspath $(RTL_DIR)/memblock)" \
 	FM_MERGE_DUP=false \
+	XSSV_HOME=$(XSSV_HOME) FM_RUN_ID=$$FM_RUN_ID \
 	fm_shell -64 -work_path fm_work/PtwCache -file $(XSSV_HOME)/scripts/fm_eq.tcl \
 	    > fm_work/PtwCache/fm.log 2>&1; \
-	grep -E "^FM_RESULT" fm_work/PtwCache/fm.log; \
-	grep -q "^FM_RESULT: Verification SUCCEEDED" fm_work/PtwCache/fm.log
+	rc=$$?; echo $$rc > "$$FM_SIDECAR_OUT/fm_shell.rc"; \
+	grep -E "^FM_RESULT" fm_work/PtwCache/fm.log || true
 
 clean:
 	rm -rf simv* csrc *.log ucli.key novas.* verdiLog fm_work *.fsdb *.daidir \
