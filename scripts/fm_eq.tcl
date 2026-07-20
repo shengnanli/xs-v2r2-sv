@@ -19,11 +19,13 @@ if {[info exists env(FM_SIDECAR_OUT)] && [string trim $env(FM_SIDECAR_OUT)] ne "
     set _emit  [file join [file dirname $_entry] sidecar fm_native_emit.tcl]
     source $_emit
     set SIDECAR_ON 1
-    # 3B验收二审: script closure 由 `trace add execution source` **运行期递归记账**
-    # (嵌套 source 亦触发), emit 落盘 script_closure.list; 入口自身与 emitter 非 source
-    # 载入, 在此显式登记。appvar 拦截 = execution trace 加在 set_app_var 命令本身
-    # (无暴露旁路别名)+ phase(match 后冻结)+ 写历史(变值重写拒/readback 核对)。
-    set ::SIDECAR_SOURCED [list $_entry $_emit]
+    # 3B验收三审: script closure = **执行时刻字节快照**(sidecar_register_script 把被
+    # 执行文件的字节即时拷入 FM_SIDECAR_OUT 并追加清单; source trace 对嵌套亦触发,
+    # 解析 -encoding 形式)。入口与 emitter 非 source 载入, 在此显式登记快照。
+    # appvar 拦截 = execution trace 加在命令本身 + phase(match 后冻结)+ 写历史。
+    set ::SIDECAR_SOURCED {}
+    sidecar_register_script $_entry
+    sidecar_register_script $_emit
     sidecar_install_appvar_guard
 }
 

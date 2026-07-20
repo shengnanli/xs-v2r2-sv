@@ -68,9 +68,27 @@ proc sidecar_appvar_trace {cmd op} {
     }
 }
 proc sidecar_match_trace {cmd op} { set ::SIDECAR_PHASE matched }
+# 三审: script closure 记账 = **执行时刻字节快照**(消除"执行A、事后哈希B"的 TOCTOU):
+# 每次 source 在 enter-trace 时把目标文件字节原样拷入 $FM_SIDECAR_OUT/sourced_NNN_<name>,
+# 并即时追加 script_closure.list 行(orig<TAB>snapshot)。runner 只对快照字节做 digest。
+# 拒产会话(拦截 exit)也已留下入口/emitter/pin 的快照。
+proc sidecar_register_script {path} {
+    if {![info exists ::env(FM_SIDECAR_OUT)] || $::env(FM_SIDECAR_OUT) eq ""} return
+    set out $::env(FM_SIDECAR_OUT)
+    set p [file normalize $path]
+    if {![info exists ::SIDECAR_SRC_SEQ]} { set ::SIDECAR_SRC_SEQ 0 }
+    set snap [format "sourced_%03d_%s" $::SIDECAR_SRC_SEQ [file tail $p]]
+    incr ::SIDECAR_SRC_SEQ
+    set in [open $p rb]; set bytes [read $in]; close $in
+    set fh [open "$out/$snap" wb]; puts -nonewline $fh $bytes; close $fh
+    set fh [open "$out/script_closure.list" a]
+    puts $fh "$p\t$snap"; close $fh
+    lappend ::SIDECAR_SOURCED $p
+}
 proc sidecar_source_trace {cmd op} {
-    # 运行期递归记账**所有** source(嵌套亦触发)→ script closure 完整
-    lappend ::SIDECAR_SOURCED [file normalize [lindex $cmd 1]]
+    # 三审: 解析两种合法形式 `source file` / `source -encoding enc file`(文件名=末参),
+    # 不再固定取参数1(那会把 -encoding 记成路径)。
+    sidecar_register_script [lindex $cmd end]
 }
 proc sidecar_install_appvar_guard {} {
     if {[info exists ::SIDECAR_GUARD_ON]} return
@@ -135,6 +153,11 @@ proc sidecar_jpairs {pairs} {
 #   SEC_TABLE    : 必须 ---- 分隔 → BLOCKS(缺分隔 → error)
 #   BLOCKS       : flag 块(Instances N==M>0, 精确 N 条路径, side==section, 禁重复);
 #                  banner/新 section 头/尾部整数回显。section 内 0 block → error。
+# 三审加锁: marker 锁**完整规范文本**(伪造 Information 行不再被认作 marker——
+# 落到 unknown_information_line 拒); section 锁 TECH↔/FM_BBOX、DESIGN↔/WORK 配对;
+# 整数回显进 TAIL 终态(其后任何内容拒); (side,path) **跨 i/u/e 类别全局拒重**。
+set SIDECAR_FM184_TEXT "Information: Reporting black boxes for current reference and implementation designs. (FM-184)"
+set SIDECAR_FM249_TEXT "Information: No 'black boxes' matched current 'reference and implementation designs'. (FM-249)"
 proc sidecar_parse_black_boxes {txt} {
     array set acc {ir {} ii {} ur {} ui {} er {} ei {}}
     array set seen {}
@@ -147,13 +170,13 @@ proc sidecar_parse_black_boxes {txt} {
     while {$i < $n} {
         set ln [string trimright [lindex $lines $i]]
         if {[string trim $ln] eq ""} { incr i; continue }
-        # ---- marker(全 phase 计数唯一, 只认 Information: 整行形态) ----
-        if {[regexp {^Information: .*\(FM-184\)$} $ln]} {
+        # ---- marker(完整规范文本精确匹配; 计数唯一) ----
+        if {$ln eq $::SIDECAR_FM184_TEXT} {
             if {$fm184} { error "bbox_duplicate_FM184" }
             if {$phase ne "PRE"} { error "bbox_FM184_wrong_phase:$phase" }
             set fm184 1; set phase MARKED; incr i; continue
         }
-        if {[regexp {^Information: .*\(FM-249\)$} $ln]} {
+        if {$ln eq $::SIDECAR_FM249_TEXT} {
             if {$fm249} { error "bbox_duplicate_FM249" }
             if {$phase ne "MARKED"} { error "bbox_FM249_wrong_phase:$phase" }
             set fm249 1; set phase EMPTY; incr i; continue
@@ -167,19 +190,30 @@ proc sidecar_parse_black_boxes {txt} {
                 error "bbox_PRE_unparsed:$ln"
             }
             EMPTY {
-                if {[string is integer -strict [string trim $ln]]} { incr i; continue }
+                if {[string is integer -strict [string trim $ln]]} { set phase TAIL; incr i; continue }
                 error "bbox_empty_report_with_content:$ln"
+            }
+            TAIL {
+                error "bbox_content_after_tail_echo:$ln"
             }
             MARKED - BLOCKS {
                 if {$phase eq "MARKED" && \
                     ([string match { _*} $ln] || [string match {|*} $ln])} { incr i; continue }
                 if {[regexp {^#+$} $ln]} { incr i; continue }
-                if {[regexp {^####\s+(TECH|DESIGN)\s+LIBRARY\s+-\s+([ri]):/\S+$} $ln -> _k s]} {
+                if {[regexp {^####\s+(TECH|DESIGN)\s+LIBRARY\s+-\s+([ri]):(/\S+)$} $ln -> kind s root]} {
+                    # 三审: LIBRARY 种类与路径根配对锁定(TECH↔/FM_BBOX, DESIGN↔/WORK)
+                    if {!(($kind eq "TECH" && $root eq "/FM_BBOX") || \
+                          ($kind eq "DESIGN" && $root eq "/WORK"))} {
+                        error "bbox_section_kind_root_mismatch:$kind$root"
+                    }
                     if {$phase eq "BLOCKS" && $sec_blocks == 0} { error "bbox_section_without_blocks" }
                     set cur_side $s; set sec_blocks 0; set phase SEC_HEAD; incr i; continue
                 }
                 if {[regexp {^####} $ln]} { error "bbox_bad_section_header:$ln" }
-                if {[string is integer -strict [string trim $ln]]} { incr i; continue }
+                if {[string is integer -strict [string trim $ln]]} {
+                    if {$phase eq "BLOCKS" && $sec_blocks == 0} { error "bbox_section_without_blocks" }
+                    set phase TAIL; incr i; continue
+                }
                 if {$phase ne "BLOCKS"} { error "bbox_${phase}_unparsed:$ln" }
                 # ---- BLOCKS: flag 块 ----
                 if {![regexp {^(\S{1,2})\s+(\S+)$} $ln -> flag dname]} {
@@ -209,8 +243,9 @@ proc sidecar_parse_black_boxes {txt} {
                         error "bbox_${dname}_path_side_mismatch:${side}!=${cur_side}"
                     }
                     set pl "${side}:${rest}"
-                    if {[info exists seen($flag$side,$pl)]} { error "bbox_${dname}_duplicate_path:$pl" }
-                    set seen($flag$side,$pl) 1
+                    # 三审: (side,path) 全局唯一——同一路径跨 i/u/e 类别重复亦拒
+                    if {[info exists seen($side,$pl)]} { error "bbox_${dname}_duplicate_path:$pl" }
+                    set seen($side,$pl) 1
                     lappend acc($flag$side) $pl
                     incr got; incr k
                 }
@@ -303,10 +338,8 @@ proc sidecar_emit_inner {top} {
     # gate-3 探针证据(非契约文件): combined unread 查询原始返回
     set fh [open "$out/probe_nc_unread.list" w]
     puts -nonewline $fh $l_nc_unr; close $fh
-    # script closure 运行期记账落盘(实际执行的入口/emitter/pin, source 顺序)
-    set fh [open "$out/script_closure.list" w]
-    foreach f $::SIDECAR_SOURCED { puts $fh $f }
-    close $fh
+    # (script_closure.list 已由 sidecar_register_script 在每次 source 时**即时**落盘,
+    #  连同执行时刻字节快照 sourced_NNN_*; 拒产会话同样留痕)
 
     # black_boxes(FM-184 状态机)
     redirect -variable bb_txt {report_black_boxes}

@@ -3,6 +3,9 @@
 # 现为 execution trace 加在命令本身(无旁路别名)+ phase(match 后冻结)+ 写历史
 # (变值重写拒/readback 核对)。
 set here [file dirname [file normalize [info script]]]
+set ::env(FM_SIDECAR_OUT) [file join $here .ti_snapdir]
+file delete -force $::env(FM_SIDECAR_OUT)
+file mkdir $::env(FM_SIDECAR_OUT)
 
 # 桩: 模拟 fm 原生命令
 set ::APPLIED {}
@@ -65,6 +68,27 @@ T illegal_via_nested_source {
     set rc [catch {source $outer}]
     file delete $inner $outer
     if {!$rc} { error "嵌套source未拦截" }
+}
+T source_encoding_form_records_file_not_flag {
+    # 三审复现: source -encoding utf-8 real.tcl 曾把 "-encoding" 记成路径
+    set f [file join $::here .ti_enc.tcl]
+    set fh [open $f w]; puts $fh {set __enc_ok 1}; close $fh
+    set ::SIDECAR_SOURCED {}
+    source -encoding utf-8 $f
+    file delete $f
+    if {[llength $::SIDECAR_SOURCED] != 1} { error "应记1条, 得 $::SIDECAR_SOURCED" }
+    if {[file tail [lindex $::SIDECAR_SOURCED 0]] ne ".ti_enc.tcl"} { error "记错: $::SIDECAR_SOURCED" }
+}
+T snapshot_bytes_at_execution {
+    # 快照字节 == 执行时字节(TOCTOU 消除的可测部分)
+    set f [file join $::here .ti_snap.tcl]
+    set fh [open $f w]; puts -nonewline $fh {set __snap_ok 1}; close $fh
+    source $f
+    set snaps [glob -nocomplain $::env(FM_SIDECAR_OUT)/sourced_*_.ti_snap.tcl]
+    file delete $f
+    if {[llength $snaps] != 1} { error "快照缺失" }
+    set fh [open [lindex $snaps 0] r]; set b [read $fh]; close $fh
+    if {$b ne {set __snap_ok 1}} { error "快照字节不符" }
 }
 T source_trace_records_nested {
     set inner [file join $::here .ti_src_inner.tcl]
