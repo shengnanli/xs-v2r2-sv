@@ -56,16 +56,16 @@ Type  Design Name
 T synth_unsupported_flag_s {
     expect_err "${BASE}s      Foo\n\n       Instances : 1 of 1\n       ----\n       i:/WORK/T/x\n" bbox_unsupported_flag
 }
-T synth_fm249_with_block {
-    set t "Information: xx (FM-184)\nInformation: none (FM-249)\n$BASE"
+T synth_fm249_with_content {
+    set t "Information: xx (FM-184)\nInformation: none (FM-249)\n"
     append t "e      Foo\n\n       Instances : 1 of 1\n       ----\n       i:/WORK/T/x\n"
-    expect_err $t bbox_FM249_with_instance_blocks
+    expect_err $t bbox_empty_report_with_content
 }
 T synth_N_ne_M {
     expect_err "${BASE}e      Foo\n\n       Instances : 1 of 2\n       ----\n       i:/WORK/T/x\n" instances_N_ne_M
 }
 T synth_missing_fm184 {
-    expect_err "Information: none (FM-249)\n" bbox_report_missing_FM184
+    expect_err "Information: none (FM-249)\n" bbox_FM249_wrong_phase
 }
 T synth_extra_path {
     expect_err "${BASE}e      Foo\n\n       Instances : 1 of 1\n       ----\n       i:/WORK/T/x\n       i:/WORK/T/y\n" extra_path_beyond_N
@@ -79,14 +79,14 @@ T rev1_fm249_indented_block {
     # FM-249 + 缩进的非空 block: 缩进 flag 行此前被静默跳过→误收为空集; 现 fail-closed 拒
     set t "Information: xx (FM-184)\nInformation: none (FM-249)\n"
     append t "  u      Foo\n\n       Instances : 1 of 1\n       ----\n       i:/WORK/T/x\n"
-    expect_err $t bbox_unparsed_line
+    expect_err $t bbox_empty_report_with_content
 }
 T rev2_zero_of_zero_no_249 {
     expect_err "${BASE}u      Foo\n\n       Instances : 0 of 0\n" instances_zero_block
 }
 T rev3_top_column_extra_path {
     # N=1 后追加顶格路径: 此前被静默忽略; 现落白名单外 error
-    expect_err "${BASE}e      Foo\n\n       Instances : 1 of 1\n       ----\n       i:/WORK/T/x\ni:/WORK/T/y\n" bbox_unparsed_line
+    expect_err "${BASE}e      Foo\n\n       Instances : 1 of 1\n       ----\n       i:/WORK/T/x\ni:/WORK/T/y\n" bbox_BLOCKS_unparsed
 }
 T rev4_duplicate_paths {
     # N=2 两条重复路径: 此前 lsort -unique 折叠成一条; 现 error
@@ -97,7 +97,40 @@ T rev5_path_side_mismatch {
     expect_err "${BASE}e      Foo\n\n       Instances : 1 of 1\n       ----\n       r:/WORK/T/x\n" path_side_mismatch
 }
 T rev6_block_outside_section {
-    expect_err "Information: xx (FM-184)\ne      Foo\n\n       Instances : 1 of 1\n       ----\n       i:/WORK/T/x\n" block_outside_section
+    expect_err "Information: xx (FM-184)\ne      Foo\n\n       Instances : 1 of 1\n       ----\n       i:/WORK/T/x\n" bbox_MARKED_unparsed
+}
+# ---- 验收二审负例(phase 文法) ----
+T v2_dup_fm184 {
+    expect_err "Information: a (FM-184)\nInformation: b (FM-184)\n" bbox_duplicate_FM184
+}
+T v2_dup_fm249 {
+    expect_err "Information: a (FM-184)\nInformation: b (FM-249)\nInformation: c (FM-249)\n" bbox_duplicate_FM249
+}
+T v2_banana_library {
+    expect_err "Information: a (FM-184)\n####    BANANA LIBRARY - i:/WORK\n" bbox_bad_section_header
+}
+T v2_side_garbage {
+    expect_err "Information: a (FM-184)\n####    TECH LIBRARY - i:garbage\n" bbox_bad_section_header
+}
+T v2_fm249_with_section {
+    expect_err "Information: a (FM-184)\nInformation: b (FM-249)\n####    DESIGN LIBRARY - i:/WORK\n" bbox_empty_report_with_content
+}
+T v2_missing_table_header {
+    expect_err "Information: a (FM-184)\n####    DESIGN LIBRARY - i:/WORK\nu      Foo\n" bbox_section_missing_table_header
+}
+T v2_missing_separator {
+    expect_err "Information: a (FM-184)\n####    DESIGN LIBRARY - i:/WORK\nType  Design Name\nu      Foo\n" bbox_section_missing_separator
+}
+T v2_section_without_blocks {
+    set t "Information: a (FM-184)\n####    DESIGN LIBRARY - i:/WORK\nType  Design Name\n----  ----------\n"
+    append t "####    DESIGN LIBRARY - r:/WORK\n"
+    expect_err $t bbox_section_without_blocks
+}
+T v2_dangling_section {
+    expect_err "Information: a (FM-184)\n####    DESIGN LIBRARY - i:/WORK\n" bbox_dangling_section
+}
+T v2_unknown_information_line {
+    expect_err "Information: a (FM-184)\nInformation: something else (FM-999)\n" bbox_unknown_information_line
 }
 puts "$pass/[expr {$pass+$fail}] passed"
 if {$fail} { exit 1 }

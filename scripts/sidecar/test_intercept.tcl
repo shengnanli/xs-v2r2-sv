@@ -1,18 +1,20 @@
-# 执行期 appvar 拦截对抗测试(acceptance gate 2, tclsh)。
-# 验收一审裁定: 静态正则扫描不合格(动态命令名/eval/嵌套 source 绕过)。本测试证明
-# rename+wrapper 在**真实执行点**拦截, 上述三种绕过路径全部落网; 合法调用透传并记账。
+# 执行期 appvar 拦截对抗测试(acceptance gate 2, tclsh; 验收二审语义)。
+# 二审裁定: 一审 rename+wrapper 暴露原生别名 __sidecar_real_set_app_var 可绕过。
+# 现为 execution trace 加在命令本身(无旁路别名)+ phase(match 后冻结)+ 写历史
+# (变值重写拒/readback 核对)。
 set here [file dirname [file normalize [info script]]]
 
-# 桩: 模拟原生 set_app_var(fm 环境外)
+# 桩: 模拟 fm 原生命令
 set ::APPLIED {}
-proc set_app_var {name value} { lappend ::APPLIED [list $name $value]; return $value }
+array set ::AVMAP {}
+proc set_app_var {name value} {
+    lappend ::APPLIED [list $name $value]; set ::AVMAP($name) $value; return $value }
+proc get_app_var {name} { if {[info exists ::AVMAP($name)]} { return $::AVMAP($name) }; return "" }
+proc match {} { return 1 }
 
 source $here/fm_native_emit.tcl
-
-# fail 钩子替换为记录+error(不 exit, 使测试可断言)
 set ::INTERCEPTED {}
-proc sidecar_intercept_fail {name} { lappend ::INTERCEPTED $name; error "intercepted:$name" }
-
+proc sidecar_intercept_fail {reason} { lappend ::INTERCEPTED $reason; error "intercepted:$reason" }
 sidecar_install_appvar_guard
 
 set pass 0; set fail 0
@@ -22,46 +24,77 @@ proc T {name script} {
     else { puts "PASS  $name"; incr pass }
 }
 
+# ---- 二审旁路复现: 不再存在暴露的原生别名 ----
+T no_exposed_native_alias {
+    if {[info commands __sidecar_real_set_app_var] ne ""} { error "旁路别名仍存在" }
+}
 T legal_direct_passthrough {
     set_app_var hdlin_unresolved_modules black_box
     if {[lindex $::APPLIED end] ne {hdlin_unresolved_modules black_box}} { error "未透传" }
 }
-T legal_optional_recorded {
+T legal_optional_recorded_and_history {
     set_app_var verification_propagate_const_reg_x true
     if {"verification_propagate_const_reg_x" ni $::SIDECAR_EXTRA_KEYS} { error "可选键未记账" }
+    if {$::SIDECAR_AV_HISTORY(verification_propagate_const_reg_x) ne "true"} { error "历史缺失" }
+}
+T idempotent_rewrite_same_value_ok {
+    set_app_var verification_propagate_const_reg_x true
+}
+T rewrite_changed_value_rejected {
+    if {![catch {set_app_var verification_propagate_const_reg_x false}]} { error "变值重写未拦截" }
+    if {![string match "*rewrite_changed_value*" [lindex $::INTERCEPTED end]]} { error "类别不符" }
+    if {$::AVMAP(verification_propagate_const_reg_x) ne "true"} { error "变值竟已生效" }
 }
 T illegal_direct {
-    if {![catch {set_app_var verification_timeout_limit 100} msg]} { error "未拦截" }
-    if {[lindex $::INTERCEPTED end] ne "verification_timeout_limit"} { error "记录缺失" }
+    if {![catch {set_app_var verification_timeout_limit 100}]} { error "未拦截" }
+    if {![string match "*not-in-registry*" [lindex $::INTERCEPTED end]]} { error "类别不符" }
+    if {[info exists ::AVMAP(verification_timeout_limit)]} { error "非法值竟已生效" }
 }
 T illegal_dynamic_command_name {
-    # 静态扫描的盲区1: 动态命令名
     set c set_app_var
-    if {![catch {$c verification_clock_gate_hold_mode any} msg]} { error "动态名未拦截" }
-    if {[lindex $::INTERCEPTED end] ne "verification_clock_gate_hold_mode"} { error "记录缺失" }
+    if {![catch {$c verification_clock_gate_hold_mode any}]} { error "动态名未拦截" }
 }
 T illegal_via_eval {
-    # 盲区2: eval 组装
     if {![catch {eval [list set_app_var verification_effort_level high]}]} { error "eval未拦截" }
-    if {[lindex $::INTERCEPTED end] ne "verification_effort_level"} { error "记录缺失" }
 }
 T illegal_via_nested_source {
-    # 盲区3: 嵌套 source(pin 文件 source 另一文件)
-    set inner [file join $::here .test_intercept_inner.tcl]
-    set outer [file join $::here .test_intercept_outer.tcl]
+    set inner [file join $::here .ti_inner.tcl]
+    set outer [file join $::here .ti_outer.tcl]
     set fh [open $inner w]; puts $fh {set_app_var hdlin_ignore_parallel_case true}; close $fh
     set fh [open $outer w]; puts $fh "source $inner"; close $fh
-    set rc [catch {source $outer} msg]
+    set rc [catch {source $outer}]
     file delete $inner $outer
     if {!$rc} { error "嵌套source未拦截" }
-    if {[lindex $::INTERCEPTED end] ne "hdlin_ignore_parallel_case"} { error "记录缺失" }
+}
+T source_trace_records_nested {
+    set inner [file join $::here .ti_src_inner.tcl]
+    set outer [file join $::here .ti_src_outer.tcl]
+    set fh [open $inner w]; puts $fh {set __benign 1}; close $fh
+    set fh [open $outer w]; puts $fh "source $inner"; close $fh
+    set ::SIDECAR_SOURCED {}
+    source $outer
+    file delete $inner $outer
+    # 递归记账: outer 与 inner 都必须入 closure 清单
+    if {[llength $::SIDECAR_SOURCED] != 2} { error "记账应2条, 得 $::SIDECAR_SOURCED" }
 }
 T comment_and_string_no_false_positive {
-    # 静态扫描的误报源: 注释/字符串中的 set_app_var 文本——执行期 wrapper 天然免疫
-    set n_before [llength $::INTERCEPTED]
+    set n [llength $::INTERCEPTED]
     # set_app_var verification_fake_in_comment 1
     set s "set_app_var verification_fake_in_string 1"
-    if {[llength $::INTERCEPTED] != $n_before} { error "文本被误报" }
+    if {[llength $::INTERCEPTED] != $n} { error "文本被误报" }
+}
+T history_mismatch_detected_at_readback {
+    # 纵深防御: readback 与写历史不一致(模拟 trace 外被改)→ capture 拒
+    set ::AVMAP(verification_propagate_const_reg_x) false   ;# 绕过桩直接篡改
+    if {![catch {sidecar_capture_appvars}]} { error "history mismatch 未拦截" }
+    if {![string match "*history_mismatch*" [lindex $::INTERCEPTED end]]} { error "类别不符" }
+    set ::AVMAP(verification_propagate_const_reg_x) true
+}
+# ---- phase: 首次 match 后 proof appvar 冻结("先放宽-match-恢复"堵死) ----
+T phase_frozen_after_match {
+    match
+    if {![catch {set_app_var verification_assume_reg_init Conservative}]} { error "match后未拦截" }
+    if {![string match "*phase_violation*" [lindex $::INTERCEPTED end]]} { error "类别不符" }
 }
 puts "$pass/[expr {$pass+$fail}] passed"
 if {$fail} { exit 1 }

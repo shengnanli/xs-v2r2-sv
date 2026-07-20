@@ -19,12 +19,11 @@ if {[info exists env(FM_SIDECAR_OUT)] && [string trim $env(FM_SIDECAR_OUT)] ne "
     set _emit  [file join [file dirname $_entry] sidecar fm_native_emit.tcl]
     source $_emit
     set SIDECAR_ON 1
-    # 3B验收一审: script closure 由**运行期记账**(实际执行的入口/emitter/被 source 的
-    # pin 文件, 按 source 顺序), emit 时落盘 script_closure.list —— runner 据此算 digest,
-    # 探针树等替换入口的 provenance 如实反映。
+    # 3B验收二审: script closure 由 `trace add execution source` **运行期递归记账**
+    # (嵌套 source 亦触发), emit 落盘 script_closure.list; 入口自身与 emitter 非 source
+    # 载入, 在此显式登记。appvar 拦截 = execution trace 加在 set_app_var 命令本身
+    # (无暴露旁路别名)+ phase(match 后冻结)+ 写历史(变值重写拒/readback 核对)。
     set ::SIDECAR_SOURCED [list $_entry $_emit]
-    # 执行期 appvar 拦截: rename+wrapper, 本脚本自身及一切后续 set_app_var 调用全部经由
-    # 唯一入口(动态命令名/eval/嵌套 source 无法绕过)。
     sidecar_install_appvar_guard
 }
 
@@ -127,7 +126,6 @@ proc match_packed_payload { top } {
 }
 # 模块本地「匹配前」钉点(FM_PIN_PRE_TCL, 可选): 首次 match 前需 set_user_match 的对象。
 if {[info exists env(FM_PIN_PRE_TCL)] && [file exists $env(FM_PIN_PRE_TCL)]} {
-    if {$SIDECAR_ON} { lappend ::SIDECAR_SOURCED [file normalize $env(FM_PIN_PRE_TCL)] }
     source $env(FM_PIN_PRE_TCL)
 }
 match_packed_payload $top
@@ -207,7 +205,6 @@ auto_match_flattened_arrays $top
 
 # 模块本地「匹配后」钉点(FM_PIN_TCL, 可选): 层次/叶名差异的一一对应(只 set_user_match, 不约束 ref)。
 if {[info exists env(FM_PIN_TCL)] && [file exists $env(FM_PIN_TCL)]} {
-    if {$SIDECAR_ON} { lappend ::SIDECAR_SOURCED [file normalize $env(FM_PIN_TCL)] }
     source $env(FM_PIN_TCL)
     match
 }

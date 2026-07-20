@@ -35,38 +35,63 @@ array set SIDECAR_APPVAR_DEFAULT {
 }
 set SIDECAR_EXTRA_KEYS {}   ;# 拦截扫描中发现的注册表内可选键(会被读回并入 entry_appvars)
 
-# ---------------- ① 执行期 appvar 拦截(3B 验收一审重做) ----------------
-# 静态正则扫描被裁定不合格(动态命令名/eval/嵌套 source 可绕过, 注释/字符串误报)。
-# 改为 rename 原生 set_app_var + wrapper: **每一次真实执行**都经由唯一入口检查——
-# `set c set_app_var; $c foo 1`、`eval`、嵌套 source 全部落在同一调用点, 无法绕过。
-# 名字在调用时记入 SIDECAR_EXTRA_KEYS(注册表内可选键)→ readback 覆盖, 三方同漏堵死。
-proc sidecar_intercept_fail {name} {
-    puts "SIDECAR_ERROR: runtime_appvar_intercept var=$name (execution-time wrapper) not-in-registry"
+# ---------------- ① 执行期 appvar 拦截(3B 验收二审重做) ----------------
+# 一审 rename+wrapper 被裁定可绕过(暴露的原生别名 __sidecar_real_set_app_var 可直呼,
+# 生效却不进 readback/history)。二审改为 **execution trace 加在命令本身**:
+#   trace add execution set_app_var enter —— 无论 wrapper/别名/动态名/eval/嵌套 source,
+#   任何真实执行都触发 trace(不再存在暴露的旁路命令)。
+# 并加 phase/写历史约束:
+#   - 首次 match 之后禁止再改 proof appvar(phase_violation)——堵"先放宽、match、再恢复"。
+#   - 同名变值重写 → 拒(rewrite_changed_value); 同值幂等重写放行。
+#   - readback(capture)时逐项核对 get_app_var == 写历史末值(history_mismatch 拒)。
+proc sidecar_intercept_fail {reason} {
+    puts "SIDECAR_ERROR: runtime_appvar_intercept $reason (execution-trace)"
     exit 3
 }
-proc sidecar_install_appvar_guard {} {
-    if {[info commands __sidecar_real_set_app_var] ne ""} return
-    rename set_app_var __sidecar_real_set_app_var
-    proc set_app_var {args} {
-        set name [lindex $args 0]
-        set allowed [concat $::SIDECAR_APPVAR_REQUIRED $::SIDECAR_APPVAR_OPTIONAL \
-                            $::SIDECAR_APPVAR_DIAG_ONLY]
-        if {[lsearch -exact $allowed $name] < 0} {
-            sidecar_intercept_fail $name
-            return   ;# 仅当 fail 钩子被测试替换为不退出时到达
-        }
-        if {[lsearch -exact $::SIDECAR_APPVAR_REQUIRED $name] < 0 &&
-            [lsearch -exact $::SIDECAR_EXTRA_KEYS $name] < 0} {
-            lappend ::SIDECAR_EXTRA_KEYS $name
-        }
-        uplevel 1 [linsert $args 0 __sidecar_real_set_app_var]
+proc sidecar_appvar_trace {cmd op} {
+    set name [lindex $cmd 1]; set val [lindex $cmd 2]
+    set allowed [concat $::SIDECAR_APPVAR_REQUIRED $::SIDECAR_APPVAR_OPTIONAL \
+                        $::SIDECAR_APPVAR_DIAG_ONLY]
+    if {[lsearch -exact $allowed $name] < 0} {
+        sidecar_intercept_fail "not-in-registry:$name"; return
+    }
+    if {$::SIDECAR_PHASE ne "setup"} {
+        sidecar_intercept_fail "phase_violation_after_match:$name"; return
+    }
+    if {[info exists ::SIDECAR_AV_HISTORY($name)] && $::SIDECAR_AV_HISTORY($name) ne $val} {
+        sidecar_intercept_fail "rewrite_changed_value:$name"; return
+    }
+    set ::SIDECAR_AV_HISTORY($name) $val
+    if {[lsearch -exact $::SIDECAR_APPVAR_REQUIRED $name] < 0 &&
+        [lsearch -exact $::SIDECAR_EXTRA_KEYS $name] < 0} {
+        lappend ::SIDECAR_EXTRA_KEYS $name
     }
 }
+proc sidecar_match_trace {cmd op} { set ::SIDECAR_PHASE matched }
+proc sidecar_source_trace {cmd op} {
+    # 运行期递归记账**所有** source(嵌套亦触发)→ script closure 完整
+    lappend ::SIDECAR_SOURCED [file normalize [lindex $cmd 1]]
+}
+proc sidecar_install_appvar_guard {} {
+    if {[info exists ::SIDECAR_GUARD_ON]} return
+    set ::SIDECAR_GUARD_ON 1
+    set ::SIDECAR_PHASE setup
+    array set ::SIDECAR_AV_HISTORY {}
+    trace add execution set_app_var enter sidecar_appvar_trace
+    trace add execution source enter sidecar_source_trace
+    if {[info commands match] ne ""} { trace add execution match enter sidecar_match_trace }
+}
 
-# ---------------- ② 有效值读回(verify 前) ----------------
+# ---------------- ② 有效值读回(verify 前)+ 写历史一致性核对 ----------------
 proc sidecar_capture_appvars {} {
     foreach k [concat $::SIDECAR_APPVAR_REQUIRED $::SIDECAR_EXTRA_KEYS] {
         set ::SIDECAR_AV($k) [get_app_var $k]
+    }
+    # 二审: readback 必须与已记录写入一致(trace 之外不可能有写入; 此核对是纵深防御)
+    foreach k [array names ::SIDECAR_AV_HISTORY] {
+        if {[get_app_var $k] ne $::SIDECAR_AV_HISTORY($k)} {
+            sidecar_intercept_fail "appvar_history_mismatch:$k"
+        }
     }
 }
 
@@ -100,84 +125,118 @@ proc sidecar_jpairs {pairs} {
 # 返回 6 元素列表: iface_ref iface_impl unres_ref unres_impl empty_ref empty_impl
 # 错误以 error 抛出(调用方决定删 tmp/exit)。契约(v7): FM-184 必须存在; FM-249 可共存
 # =空集(不得有实例块); 非空不得有 FM-249; flag 只认 i/u/e; Instances N==M 且精确消费 N 条。
-# 严格 section/block 状态机(3B 验收一审重写, fail-closed 行分类):
-#  - 每个非空行必须命中已知类别之一, 否则 error(顶格游离路径/缩进游离内容/缩进 flag 行
-#    全部落此: 不再可能被"宽松扫描"静默跳过)。
-#  - block 必须位于 section 内(#### ... LIBRARY - <r|i>: 段头给出 namespace side),
-#    路径 side 必须与 section side 一致。
-#  - Instances : N of M 要求 N==M 且 **N>0**(0 of 0 的 block 是畸形, 空集=FM-249 形态)。
-#  - 精确消费 N 条缩进路径; 路径重复 → error(禁 lsort -unique 修复损坏输入)。
-#  - FM-184 必在; FM-249 与任何 block 互斥。
+# 严格 phase 文法状态机(3B 验收二审重写)。不再做"全局 marker 搜索+行白名单":
+# 每行在**当前 phase** 内判合法性, marker 计数唯一, section 头限定 TECH|DESIGN 与
+# ([ri]):/路径, FM-249 空报告不得夹带任何 section。
+#   PRE          : 报告头(星线/字段/选项续行) → 唯一 FM-184 → MARKED
+#   MARKED       : 可选唯一 FM-249(→EMPTY 终态); 图例框; banner; section 头 → SEC_HEAD
+#   EMPTY        : 只允许尾部整数回显/空行(夹带 section/block → error)
+#   SEC_HEAD     : 必须 Type 表头 → SEC_TABLE(缺表头 → error)
+#   SEC_TABLE    : 必须 ---- 分隔 → BLOCKS(缺分隔 → error)
+#   BLOCKS       : flag 块(Instances N==M>0, 精确 N 条路径, side==section, 禁重复);
+#                  banner/新 section 头/尾部整数回显。section 内 0 block → error。
 proc sidecar_parse_black_boxes {txt} {
-    if {![regexp {\(FM-184\)} $txt]} { error "bbox_report_missing_FM184" }
-    set has249 [regexp {\(FM-249\)} $txt]
     array set acc {ir {} ii {} ur {} ui {} er {} ei {}}
     array set seen {}
+    set fm184 0; set fm249 0
+    set phase PRE
+    set cur_side ""; set sec_blocks 0; set total_blocks 0
     set lines [split $txt "\n"]
     set n [llength $lines]
-    set saw_block 0
-    set cur_side ""      ;# 当前 section 的 namespace side(r|i), 由段头行设置
     set i 0
     while {$i < $n} {
         set ln [string trimright [lindex $lines $i]]
-        # ---- 已知非 block 行类别(白名单; 其余非空行一律 error) ----
-        if {$ln eq ""} { incr i; continue }
-        if {[regexp {^\*+$} $ln]} { incr i; continue }
-        if {[regexp {^(Report|Reference|Implementation|Version|Date)\s} $ln]} { incr i; continue }
-        if {[regexp {^\s+-\S+$} $ln]} { incr i; continue }  ;# 报告头选项续行(如 " -unresolved")
-        if {[regexp {^Information:} $ln]} { incr i; continue }
-        if {[string match { _*} $ln] || [string match {|*} $ln]} { incr i; continue }  ;# 图例框
-        if {[regexp {^#+$} $ln]} { incr i; continue }
-        if {[regexp {^####\s+\S+\s+LIBRARY\s+-\s+([ri]):} $ln -> s]} { set cur_side $s; incr i; continue }
-        if {[regexp {^Type\s+Design Name$} $ln]} { incr i; continue }
-        if {[regexp {^----\s+-+$} $ln]} { incr i; continue }
-        if {[string is integer -strict [string trim $ln]]} { incr i; continue }  ;# redirect 返回值回显
-        # ---- block: 顶格 flag 行 ----
-        if {[regexp {^(\S{1,2})\s+(\S+)$} $ln -> flag dname]} {
-            if {$flag ni {i u e}} { error "bbox_unsupported_flag:${flag}:${dname}" }
-            if {$cur_side eq ""} { error "bbox_block_outside_section:${dname}" }
-            set saw_block 1
-            # 紧随的 Instances : N of M(容空行)
-            set j [expr {$i+1}]
-            while {$j < $n && [string trim [lindex $lines $j]] eq ""} { incr j }
-            if {$j >= $n || ![regexp {^\s+Instances\s*:\s*(\d+)\s+of\s+(\d+)$} \
-                              [string trimright [lindex $lines $j]] -> N M]} {
-                error "bbox_${dname}_missing_instances_line"
-            }
-            if {$N != $M} { error "bbox_${dname}_instances_N_ne_M:${N}_of_${M}" }
-            if {$N == 0} { error "bbox_${dname}_instances_zero_block" }
-            # 分隔行
-            set k [expr {$j+1}]
-            while {$k < $n && [regexp {^\s*-+\s*$} [lindex $lines $k]]} { incr k }
-            # 精确 N 条缩进路径, side 必须==section side, 禁重复
-            set got 0
-            while {$k < $n && $got < $N} {
-                set raw [string trimright [lindex $lines $k]]
-                if {[string trim $raw] eq ""} { break }
-                if {![regexp {^\s+([ri]):(/\S+)$} $raw -> side rest]} {
-                    error "bbox_${dname}_bad_path:[string trim $raw]"
-                }
-                if {$side ne $cur_side} {
-                    error "bbox_${dname}_path_side_mismatch:${side}!=${cur_side}"
-                }
-                set pl "${side}:${rest}"
-                if {[info exists seen($flag$side,$pl)]} { error "bbox_${dname}_duplicate_path:$pl" }
-                set seen($flag$side,$pl) 1
-                lappend acc($flag$side) $pl
-                incr got; incr k
-            }
-            if {$got != $N} { error "bbox_${dname}_path_count:${got}!=${N}" }
-            # 越界路径(缩进或顶格)均须报错: 缩进的落这里, 顶格的落白名单外 error
-            if {$k < $n && [regexp {^\s+[ri]:/} [lindex $lines $k]]} {
-                error "bbox_${dname}_extra_path_beyond_N"
-            }
-            set i $k
-            continue
+        if {[string trim $ln] eq ""} { incr i; continue }
+        # ---- marker(全 phase 计数唯一, 只认 Information: 整行形态) ----
+        if {[regexp {^Information: .*\(FM-184\)$} $ln]} {
+            if {$fm184} { error "bbox_duplicate_FM184" }
+            if {$phase ne "PRE"} { error "bbox_FM184_wrong_phase:$phase" }
+            set fm184 1; set phase MARKED; incr i; continue
         }
-        error "bbox_unparsed_line:$ln"
+        if {[regexp {^Information: .*\(FM-249\)$} $ln]} {
+            if {$fm249} { error "bbox_duplicate_FM249" }
+            if {$phase ne "MARKED"} { error "bbox_FM249_wrong_phase:$phase" }
+            set fm249 1; set phase EMPTY; incr i; continue
+        }
+        if {[regexp {^Information:} $ln]} { error "bbox_unknown_information_line:$ln" }
+        switch -- $phase {
+            PRE {
+                if {[regexp {^\*+$} $ln] || \
+                    [regexp {^(Report|Reference|Implementation|Version|Date)\s} $ln] || \
+                    [regexp {^\s+-\S+$} $ln]} { incr i; continue }
+                error "bbox_PRE_unparsed:$ln"
+            }
+            EMPTY {
+                if {[string is integer -strict [string trim $ln]]} { incr i; continue }
+                error "bbox_empty_report_with_content:$ln"
+            }
+            MARKED - BLOCKS {
+                if {$phase eq "MARKED" && \
+                    ([string match { _*} $ln] || [string match {|*} $ln])} { incr i; continue }
+                if {[regexp {^#+$} $ln]} { incr i; continue }
+                if {[regexp {^####\s+(TECH|DESIGN)\s+LIBRARY\s+-\s+([ri]):/\S+$} $ln -> _k s]} {
+                    if {$phase eq "BLOCKS" && $sec_blocks == 0} { error "bbox_section_without_blocks" }
+                    set cur_side $s; set sec_blocks 0; set phase SEC_HEAD; incr i; continue
+                }
+                if {[regexp {^####} $ln]} { error "bbox_bad_section_header:$ln" }
+                if {[string is integer -strict [string trim $ln]]} { incr i; continue }
+                if {$phase ne "BLOCKS"} { error "bbox_${phase}_unparsed:$ln" }
+                # ---- BLOCKS: flag 块 ----
+                if {![regexp {^(\S{1,2})\s+(\S+)$} $ln -> flag dname]} {
+                    error "bbox_BLOCKS_unparsed:$ln"
+                }
+                if {$flag ni {i u e}} { error "bbox_unsupported_flag:${flag}:${dname}" }
+                set j [expr {$i+1}]
+                while {$j < $n && [string trim [lindex $lines $j]] eq ""} { incr j }
+                if {$j >= $n || ![regexp {^\s+Instances\s*:\s*(\d+)\s+of\s+(\d+)$} \
+                                  [string trimright [lindex $lines $j]] -> N M]} {
+                    error "bbox_${dname}_missing_instances_line"
+                }
+                if {$N != $M} { error "bbox_${dname}_instances_N_ne_M:${N}_of_${M}" }
+                if {$N == 0} { error "bbox_${dname}_instances_zero_block" }
+                set k [expr {$j+1}]
+                set sep 0
+                while {$k < $n && [regexp {^\s*-+\s*$} [lindex $lines $k]]} { set sep 1; incr k }
+                if {!$sep} { error "bbox_${dname}_missing_separator" }
+                set got 0
+                while {$k < $n && $got < $N} {
+                    set raw [string trimright [lindex $lines $k]]
+                    if {[string trim $raw] eq ""} { break }
+                    if {![regexp {^\s+([ri]):(/\S+)$} $raw -> side rest]} {
+                        error "bbox_${dname}_bad_path:[string trim $raw]"
+                    }
+                    if {$side ne $cur_side} {
+                        error "bbox_${dname}_path_side_mismatch:${side}!=${cur_side}"
+                    }
+                    set pl "${side}:${rest}"
+                    if {[info exists seen($flag$side,$pl)]} { error "bbox_${dname}_duplicate_path:$pl" }
+                    set seen($flag$side,$pl) 1
+                    lappend acc($flag$side) $pl
+                    incr got; incr k
+                }
+                if {$got != $N} { error "bbox_${dname}_path_count:${got}!=${N}" }
+                if {$k < $n && [regexp {^\s+[ri]:/} [lindex $lines $k]]} {
+                    error "bbox_${dname}_extra_path_beyond_N"
+                }
+                incr sec_blocks; incr total_blocks
+                set i $k
+                continue
+            }
+            SEC_HEAD {
+                if {[regexp {^#+$} $ln]} { incr i; continue }   ;# banner 下沿
+                if {[regexp {^Type\s+Design Name$} $ln]} { set phase SEC_TABLE; incr i; continue }
+                error "bbox_section_missing_table_header:$ln"
+            }
+            SEC_TABLE {
+                if {[regexp {^----\s+-+$} $ln]} { set phase BLOCKS; incr i; continue }
+                error "bbox_section_missing_separator:$ln"
+            }
+        }
     }
-    if {$has249 && $saw_block} { error "bbox_FM249_with_instance_blocks" }
-    if {!$has249 && !$saw_block} { error "bbox_nonempty_claim_but_no_blocks" }
+    if {!$fm184} { error "bbox_report_missing_FM184" }
+    if {$phase in {SEC_HEAD SEC_TABLE}} { error "bbox_dangling_section:$phase" }
+    if {$phase eq "BLOCKS" && $sec_blocks == 0} { error "bbox_section_without_blocks" }
+    if {!$fm249 && $total_blocks == 0} { error "bbox_nonempty_claim_but_no_blocks" }
     return [list [lsort $acc(ir)] [lsort $acc(ii)] [lsort $acc(ur)] [lsort $acc(ui)] \
                  [lsort $acc(er)] [lsort $acc(ei)]]
 }

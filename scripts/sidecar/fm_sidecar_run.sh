@@ -46,12 +46,22 @@ finalize() {  # $1 = 最终 rc
   exit "$rc"
 }
 
+# --- 预跑提取命令与刺激绑定(二审: 拒产会话的刺激也必须入证据) ---
+CMD=$(cd "$D" && make -n fm FM_MODE="$MODE" GOLDEN_RTL="$GOLDEN" "${EXTRA[@]}" 2>/dev/null \
+      | sed -e ':a' -e '/\\$/{N;s/\\\n//;ba}' | grep "fm_shell -64" | head -1)
+extract_var() { echo "$CMD" | grep -o "$1=\"[^\"]*\"" | head -1 | sed -e "s/^$1=\"//" -e 's/"$//'; }
+for v in FM_PIN_PRE_TCL FM_PIN_TCL; do
+  p=$(echo "$CMD" | grep -o "$v=[^ ]*" | head -1 | cut -d= -f2)
+  [ -n "$p" ] && [ -f "$p" ] && cp "$p" "$STG/stimulus_$(basename "$p")"
+done
+
 # --- 运行(真实 rc 由 ut_common.mk 落 fm_shell.rc) ---
 ( cd "$D" && rm -f "fm_work/$TARGET/fm.log" && \
   FM_SIDECAR_OUT="$STG" FM_RUN_ID="$RID" \
   make fm FM_MODE="$MODE" GOLDEN_RTL="$GOLDEN" "${EXTRA[@]}" ) > "$STG/make.out" 2>&1
 MAKE_RC=$?
-cp "$D/fm_work/$TARGET/fm.log" "$STG/fm.log" 2>/dev/null
+# .gitignore 排除 *.log —— 证据内改名 fm_log.txt 保证提交态自包含(二审)
+cp "$D/fm_work/$TARGET/fm.log" "$STG/fm_log.txt" 2>/dev/null
 if [ ! -f "$STG/fm_shell.rc" ]; then
   echo "SESSION_RESULT $SESSION: INFRA_FAIL no_fm_shell_rc(make_rc=$MAKE_RC)" | tee "$STG/RESULT.txt"
   finalize 3
@@ -61,28 +71,32 @@ RC=$(cat "$STG/fm_shell.rc")
 if [ ! -f "$STG/native_facts.json" ]; then
   {
     echo "SESSION_RESULT $SESSION: NO_NATIVE_FACTS rc=$RC (emitter拒产=fail-closed, runner rc=5)"
-    grep -aE "SIDECAR_ERROR|FM_MODE_ERROR" "$STG/fm.log" 2>/dev/null
+    grep -aE "SIDECAR_ERROR|FM_MODE_ERROR" "$STG/fm_log.txt" 2>/dev/null
   } | tee "$STG/RESULT.txt"
   finalize 5
 fi
 
-# --- closure digests: script 侧取运行期记账的真实清单 ---
+# --- closure digests(schema v7 冻结算法; 语义行固定顺序 DEFINE/INCDIR/MERGE_DUP/
+#     FIELD_MAP_SHA/PINS_SHA/MODE, 二审对齐) ---
 if [ ! -f "$STG/script_closure.list" ]; then
   echo "SESSION_RESULT $SESSION: INFRA_FAIL no_script_closure_list" | tee "$STG/RESULT.txt"
   finalize 3
 fi
 mapfile -t SRCED < "$STG/script_closure.list"
 SCRIPT_DIG=$(python3 "$SC/fm_closure_digest.py" --mode concat "${SRCED[@]}")
-
-CMD=$(cd "$D" && make -n fm FM_MODE="$MODE" GOLDEN_RTL="$GOLDEN" "${EXTRA[@]}" 2>/dev/null \
-      | sed -e ':a' -e '/\\$/{N;s/\\\n//;ba}' | grep "fm_shell -64" | head -1)
-extract_var() { echo "$CMD" | grep -o "$1=\"[^\"]*\"" | head -1 | sed -e "s/^$1=\"//" -e 's/"$//'; }
+# PINS_SHA = 运行期实际 source 的 pin 闭包(去除首二项: 入口与 emitter), 含嵌套
+PIN_FILES=("${SRCED[@]:2}")
+if [ ${#PIN_FILES[@]} -gt 0 ]; then
+  PINS_SHA=$(python3 "$SC/fm_closure_digest.py" --mode concat "${PIN_FILES[@]}")
+else
+  PINS_SHA=""
+fi
 REF_SRCS=$(extract_var FM_REF_SRCS); IMPL_SRCS=$(extract_var FM_IMPL_SRCS)
 MERGE=$(echo "$CMD" | grep -o "FM_MERGE_DUP=[^ ]*" | head -1 | cut -d= -f2); MERGE=${MERGE:-true}
 FMAP=$(echo "$CMD" | grep -o "FM_FIELD_MAP=[^ ]*" | head -1 | cut -d= -f2)
-SEM=(--semantic "DEFINE=SYNTHESIS" --semantic "MERGE_DUP=$MERGE" --semantic "MODE=$MODE")
-[ -n "$FMAP" ] && SEM+=(--semantic "FIELD_MAP_SHA=$(sha256sum $FMAP | cut -d' ' -f1)")
-SEM+=(--semantic "SCRIPT_CLOSURE_SHA=$SCRIPT_DIG")
+FMAP_SHA=""; [ -n "$FMAP" ] && FMAP_SHA=$(sha256sum "$FMAP" | cut -d' ' -f1)
+SEM=(--semantic "DEFINE=SYNTHESIS" --semantic "INCDIR=" --semantic "MERGE_DUP=$MERGE" \
+     --semantic "FIELD_MAP_SHA=$FMAP_SHA" --semantic "PINS_SHA=$PINS_SHA" --semantic "MODE=$MODE")
 REF_DIG=$(cd "$D" && python3 "$SC/fm_closure_digest.py" --mode files --root "$GOLDEN" "${SEM[@]}" $REF_SRCS)
 IMPL_DIG=$(cd "$D" && python3 "$SC/fm_closure_digest.py" --mode files --root "$SIGNOFF" "${SEM[@]}" $IMPL_SRCS)
 TOOL_DIG=$(python3 "$SC/fm_closure_digest.py" --mode tool "$(command -v fm_shell)")
