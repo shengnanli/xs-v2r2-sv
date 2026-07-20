@@ -1,0 +1,12 @@
+# clean-archive 语义验证(五审: JSON解析+实跑validator+infra hash绑定commit+rc交叉)
+evidence_commit: 0fcd1fe812a79c5c26e1e83a5eb145aedd84b586
+implementation_commit: 0bfb2d0cdbdeffa4c3304b426d178cf5b2090309
+verifier_commit: 331b74e1f0e8d4111d586ff3d88247a20ce31e46(+后续修正)
+ARCHIVE_VERIFY: bad=0
+--- 负测(空MANIFEST/篡改TOOLS/伪造nativeJSON+rc999/reject塞facts/正样本) ---
+PASS  empty_manifest_six_dirs
+PASS  tampered_tools_selfconsistent
+PASS  forged_native_json_and_rc
+PASS  reject_with_native_facts
+PASS  real_evidence_passes
+5/5 passed

@@ -146,10 +146,22 @@ def check_session(tree, s, kind, expected, repo, errs):
     for k in ("worktree_head_pre", "worktree_head_post", "impl_commit"):
         if kv.get(k) != expected:
             errs.append(f"{s}: TOOLS_{k}={kv.get(k)}!={expected}")
-    for k in ("worktree_tracked_dirty_pre", "worktree_tracked_dirty_post",
-              "main_tracked_dirty", "worktree_untracked_files"):
+    # tracked cleanliness 是硬闸(所有会话); untracked 仅 native 须 0——reject 会话注入的
+    # 刺激文件(fm_pins_pre/inner.tcl)本就是未跟踪测试输入, 已入证据 stimulus_*(可追溯)。
+    for k in ("worktree_tracked_dirty_pre", "worktree_tracked_dirty_post", "main_tracked_dirty"):
         if kv.get(k) != "0":
             errs.append(f"{s}: TOOLS_{k}={kv.get(k)}!=0")
+    if kind == "native" and kv.get("worktree_untracked_files") != "0":
+        errs.append(f"{s}: TOOLS_worktree_untracked_files={kv.get('worktree_untracked_files')}!=0")
+    if kind == "reject":
+        # reject: 未跟踪数须 == 注入刺激数(fm_pins_pre.tcl 必有, fm_pins_inner.tcl 可选)。
+        # 注: stimulus_fm_pins.tcl 是 Bku 的 tracked 正常 pin, 不计入注入未跟踪数。
+        inj = [f for f in os.listdir(d)
+               if f in ("stimulus_fm_pins_pre.tcl", "stimulus_fm_pins_inner.tcl")]
+        if "stimulus_fm_pins_pre.tcl" not in inj:
+            errs.append(f"{s}: MISSING injected stimulus_fm_pins_pre.tcl")
+        if kv.get("worktree_untracked_files") != str(len(inj)):
+            errs.append(f"{s}: UNTRACKED={kv.get('worktree_untracked_files')}!=injected({len(inj)})")
     # infra hash 绑定 expected commit 真实字节(路径须在 repo 内)
     n_bound = 0
     for path, h in infra:
