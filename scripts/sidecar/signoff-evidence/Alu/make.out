@@ -1,0 +1,16 @@
+=== FM: Alu (mode=signoff-strict) ===
+FM_TOP=Alu \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/Alu.sv /home/eda/xs-env/G0-canonical/golden-rtl/AluDataModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/AddModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/SubModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/LeftShiftModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/RightShiftModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/LeftShiftWordModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/RightShiftWordModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/ShiftResultSelect.sv /home/eda/xs-env/G0-canonical/golden-rtl/MiscResultSelect.sv /home/eda/xs-env/G0-canonical/golden-rtl/ConditionalZeroModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/WordResultSelect.sv /home/eda/xs-env/G0-canonical/golden-rtl/AluResSel.sv" \
+FM_IMPL_SRCS="/tmp/tmp.ayzIjJRVy5/wt/rtl/backend/alu_pkg.sv /tmp/tmp.ayzIjJRVy5/wt/rtl/backend/Alu.sv /tmp/tmp.ayzIjJRVy5/wt/rtl/backend/Alu_wrapper.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/Alu -file /tmp/tmp.ayzIjJRVy5/wt/scripts/fm_eq.tcl \
+    > fm_work/Alu/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.ayzIjJRVy5/wt/scripts/fm_verdict.py fm_work/Alu/fm.log --rc $rc --mode signoff-strict --top Alu --allowlist 0
+SUCCEEDED	{"passing": 275, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "Alu", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}
