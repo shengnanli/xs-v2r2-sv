@@ -72,25 +72,44 @@ proc sidecar_match_trace {cmd op} { set ::SIDECAR_PHASE matched }
 # 每次 source 在 enter-trace 时把目标文件字节原样拷入 $FM_SIDECAR_OUT/sourced_NNN_<name>,
 # 并即时追加 script_closure.list 行(orig<TAB>snapshot)。runner 只对快照字节做 digest。
 # 拒产会话(拦截 exit)也已留下入口/emitter/pin 的快照。
-proc sidecar_snapshot_buffer {origpath buf} {
-    # 快照落盘 + 即时清单 + **父解释器内存台账**(child 不可达; capture 前复核)
+proc sidecar_sha256_hex {bytes} {
+    # 依赖 fm_shell 的 sha256 (Synopsys tcl 内置); tclsh 测试环境用 fallback。
+    if {[info commands ::sha2::sha256] ne ""} { return [::sha2::sha256 -hex $bytes] }
+    if {[info commands ::sha256] ne ""} { return [::sha256 $bytes] }
+    # fallback: 系统 sha256sum(父解释器; 临时文件路由到证据目录或 /tmp)
+    set dir "/tmp"
+    if {[info exists ::env(FM_SIDECAR_OUT)] && $::env(FM_SIDECAR_OUT) ne ""} { set dir $::env(FM_SIDECAR_OUT) }
+    set tmp [file join $dir .sha_[pid]_[incr ::SIDECAR_SHA_SEQ]]
+    set fh [open $tmp wb]; fconfigure $fh -translation binary; puts -nonewline $fh $bytes; close $fh
+    set rc [catch {exec sha256sum $tmp} out]
+    file delete $tmp
+    if {$rc} { error "sha256_unavailable" }
+    return [lindex $out 0]
+}
+proc sidecar_snapshot_buffer {origpath rawbytes} {
+    # 五审: 原样字节(open rb 读入的原始 bytes)落盘并入台账; runner 对**同一原始字节**
+    # 做 digest。台账记 {orig, snap, sha256(原始字节)} 全内容, 顺序+唯一(capture 前精确核对)。
     if {![info exists ::env(FM_SIDECAR_OUT)] || $::env(FM_SIDECAR_OUT) eq ""} return
     set out $::env(FM_SIDECAR_OUT)
     if {![info exists ::SIDECAR_SRC_SEQ]} { set ::SIDECAR_SRC_SEQ 0 }
     set snap [format "sourced_%03d_%s" $::SIDECAR_SRC_SEQ [file tail $origpath]]
     incr ::SIDECAR_SRC_SEQ
     set fh [open "$out/$snap" wb]
-    puts -nonewline $fh [encoding convertto utf-8 $buf]
+    fconfigure $fh -translation binary
+    puts -nonewline $fh $rawbytes
     close $fh
+    set hex [sidecar_sha256_hex $rawbytes]
     set fh [open "$out/script_closure.list" a]
-    puts $fh "$origpath\t$snap"; close $fh
-    lappend ::SIDECAR_LEDGER [list $snap $buf]
+    puts $fh "$origpath\t$snap\t$hex"; close $fh
+    lappend ::SIDECAR_LEDGER [list $origpath $snap $hex]
     lappend ::SIDECAR_SOURCED $origpath
 }
 proc sidecar_register_script {path} {
     set p [file normalize $path]
-    set in [open $p r]; set buf [read $in]; close $in
-    sidecar_snapshot_buffer $p $buf
+    # 五审: open rb 原样读取原始字节(不经 locale 文本编码); 执行时按 UTF-8 解码同一缓冲。
+    set in [open $p rb]; set rawbytes [read $in]; close $in
+    sidecar_snapshot_buffer $p $rawbytes
+    return $rawbytes
 }
 proc sidecar_source_trace {cmd op} {
     # 三审: 解析两种合法形式 `source file` / `source -encoding enc file`(文件名=末参),
@@ -121,27 +140,42 @@ proc sidecar_pin_source {path} {
         }
     }
     set p [file normalize $path]
-    set in [open $p r]; set buf [read $in]; close $in
-    sidecar_snapshot_buffer $p $buf
-    interp eval $::SIDECAR_PIN_INTERP $buf
+    # 五审: open rb 原样字节 → snapshot(digest 绑原始字节) → **同一缓冲**按 UTF-8 解码后执行
+    set in [open $p rb]; set rawbytes [read $in]; close $in
+    sidecar_snapshot_buffer $p $rawbytes
+    interp eval $::SIDECAR_PIN_INTERP [encoding convertfrom utf-8 $rawbytes]
 }
 proc sidecar_verify_snapshot_ledger {} {
-    # 四审: 执行完 pin 后复核——快照文件字节与父内存台账一致, 清单行数一致
+    # 五审: 精确核对 {orig, snap, hash} **全内容 + 顺序 + 唯一性**(不能只比行数——
+    # 把 A/B 两行都改指 A 曾能通过)。逐条: 台账 hash == sha256(快照实际字节) == 清单行 hash;
+    # snap 名唯一; 清单行序与台账序完全一致; 行数相等。
     if {![info exists ::env(FM_SIDECAR_OUT)] || $::env(FM_SIDECAR_OUT) eq ""} return
     set out $::env(FM_SIDECAR_OUT)
     if {![info exists ::SIDECAR_LEDGER]} { set ::SIDECAR_LEDGER {} }
-    foreach ent $::SIDECAR_LEDGER {
-        lassign $ent snap buf
-        if {![file exists "$out/$snap"]} { sidecar_intercept_fail "snapshot_missing:$snap" }
-        set in [open "$out/$snap" rb]; set got [read $in]; close $in
-        if {$got ne [encoding convertto utf-8 $buf]} {
-            sidecar_intercept_fail "snapshot_tampered:$snap"
-        }
-    }
     set in [open "$out/script_closure.list" r]; set lst [read $in]; close $in
-    set nl [llength [lsearch -all -regexp [split $lst "\n"] {\S}]]
-    if {$nl != [llength $::SIDECAR_LEDGER]} {
-        sidecar_intercept_fail "closure_list_tampered:${nl}!=[llength $::SIDECAR_LEDGER]"
+    set rows {}
+    foreach line [split $lst "\n"] {
+        if {[string trim $line] eq ""} continue
+        lappend rows [split $line "\t"]
+    }
+    if {[llength $rows] != [llength $::SIDECAR_LEDGER]} {
+        sidecar_intercept_fail "closure_list_rowcount:[llength $rows]!=[llength $::SIDECAR_LEDGER]"
+    }
+    array set seen_snap {}
+    for {set k 0} {$k < [llength $::SIDECAR_LEDGER]} {incr k} {
+        lassign [lindex $::SIDECAR_LEDGER $k] l_orig l_snap l_hash
+        lassign [lindex $rows $k] r_orig r_snap r_hash
+        # 清单行与台账逐字段一致(顺序敏感)
+        if {$l_orig ne $r_orig || $l_snap ne $r_snap || $l_hash ne $r_hash} {
+            sidecar_intercept_fail "closure_row_mismatch:$k"
+        }
+        if {[info exists seen_snap($l_snap)]} { sidecar_intercept_fail "snapshot_dup:$l_snap" }
+        set seen_snap($l_snap) 1
+        if {![file exists "$out/$l_snap"]} { sidecar_intercept_fail "snapshot_missing:$l_snap" }
+        set fh [open "$out/$l_snap" rb]; set got [read $fh]; close $fh
+        set gh [sidecar_sha256_hex $got]
+        # 快照实际字节 hash 必须 == 台账 hash(执行时刻记录) —— 篡改快照内容即露馅
+        if {$gh ne $l_hash} { sidecar_intercept_fail "snapshot_tampered:$l_snap" }
     }
 }
 proc sidecar_install_appvar_guard {} {
@@ -237,6 +271,7 @@ proc sidecar_parse_black_boxes {txt top} {
     array set seen {}
     set fm184 0; set fm249 0
     set saw_report 0; set saw_ref 0; set saw_impl 0
+    set ::SIDECAR_HDR_IDX 0; set ::SIDECAR_TAIL_SEEN 0
     set phase PRE
     set cur_side ""; set cur_kind ""; set sec_blocks 0; set total_blocks 0
     set lines [split $txt "\n"]
@@ -249,7 +284,8 @@ proc sidecar_parse_black_boxes {txt top} {
         if {$ln eq $::SIDECAR_FM184_TEXT} {
             if {$fm184} { error "bbox_duplicate_FM184" }
             if {$phase ne "PRE"} { error "bbox_FM184_wrong_phase:$phase" }
-            if {!($saw_report && $saw_ref && $saw_impl)} { error "bbox_header_incomplete_before_FM184" }
+            # 五审: FM-184 前 header 五字段必须全部按序出现(idx==5)
+            if {$::SIDECAR_HDR_IDX != 5} { error "bbox_header_incomplete_before_FM184:idx$::SIDECAR_HDR_IDX" }
             set fm184 1; set phase MARKED; incr i; continue
         }
         if {$ln eq $::SIDECAR_FM249_TEXT} {
@@ -260,31 +296,31 @@ proc sidecar_parse_black_boxes {txt top} {
         if {[regexp {^Information:} $ln]} { error "bbox_unknown_information_line:$ln" }
         switch -- $phase {
             PRE {
-                # 四审: header 绑定唯一且正确的报告名与 top
+                # 五审: 拒绝所有 option header(全量采集的 report_black_boxes 无 option 续行;
+                # -interface_only 等过滤报告会带 " -option" 续行 → 拒, 防丢失 unresolved/empty)。
+                if {[regexp {^\s+-\S} $ln]} { error "bbox_option_header_rejected:$ln" }
+                # 五审: header 五字段各恰一次、顺序固定(Report/Reference/Implementation/Version/Date)
                 if {[regexp {^\*+$} $ln]} { incr i; continue }
-                if {[regexp {^Report\s+:\s+(\S+)$} $ln -> rn]} {
-                    if {$rn ne "black_boxes"} { error "bbox_wrong_report_name:$rn" }
-                    set saw_report 1; incr i; continue
+                if {[regexp {^([A-Za-z]+)\s+:\s+(.+)$} $ln -> key val]} {
+                    set expect [lindex {Report Reference Implementation Version Date} $::SIDECAR_HDR_IDX]
+                    if {$key ne $expect} { error "bbox_header_order:$key!=$expect" }
+                    switch -- $key {
+                        Report { if {$val ne "black_boxes"} { error "bbox_wrong_report_name:$val" }; set saw_report 1 }
+                        Reference { if {$val ne "r:/WORK/$top"} { error "bbox_wrong_reference_top:$val" }; set saw_ref 1 }
+                        Implementation { if {$val ne "i:/WORK/$top"} { error "bbox_wrong_implementation_top:$val" }; set saw_impl 1 }
+                        Version { if {![regexp {^\S+$} $val]} { error "bbox_bad_version:$val" } }
+                        Date { }
+                    }
+                    incr ::SIDECAR_HDR_IDX; incr i; continue
                 }
-                if {[regexp {^Reference\s+:\s+(\S+)$} $ln -> rv]} {
-                    if {$rv ne "r:/WORK/$top"} { error "bbox_wrong_reference_top:$rv" }
-                    set saw_ref 1; incr i; continue
-                }
-                if {[regexp {^Implementation\s+:\s+(\S+)$} $ln -> iv]} {
-                    if {$iv ne "i:/WORK/$top"} { error "bbox_wrong_implementation_top:$iv" }
-                    set saw_impl 1; incr i; continue
-                }
-                if {[regexp {^Version\s+:\s+\S+$} $ln] || [regexp {^Date\s+:\s+.+$} $ln] || \
-                    [regexp {^\s+-\S+$} $ln]} { incr i; continue }
                 error "bbox_PRE_unparsed:$ln"
             }
             EMPTY {
-                if {[string is integer -strict [string trim $ln]]} { set phase TAIL; incr i; continue }
+                # 五审: TAIL 恰单行且严格 == "1"
+                if {$ln eq "1"} { set phase TAIL; set ::SIDECAR_TAIL_SEEN 1; incr i; continue }
                 error "bbox_empty_report_with_content:$ln"
             }
             TAIL {
-                # 终态: 只容许重复的整数回显
-                if {[string is integer -strict [string trim $ln]]} { incr i; continue }
                 error "bbox_content_after_tail_echo:$ln"
             }
             MARKED - BLOCKS {
@@ -304,9 +340,9 @@ proc sidecar_parse_black_boxes {txt top} {
                     set cur_side $s; set cur_kind $kind; set sec_blocks 0; set phase SEC_HEAD; incr i; continue
                 }
                 if {[regexp {^####} $ln]} { error "bbox_bad_section_header:$ln" }
-                if {[string is integer -strict [string trim $ln]]} {
+                if {$ln eq "1"} {
                     if {$phase eq "BLOCKS" && $sec_blocks == 0} { error "bbox_section_without_blocks" }
-                    set phase TAIL; incr i; continue
+                    set phase TAIL; set ::SIDECAR_TAIL_SEEN 1; incr i; continue
                 }
                 if {$phase ne "BLOCKS"} { error "bbox_${phase}_unparsed:$ln" }
                 # ---- BLOCKS: flag 块 ----
@@ -371,8 +407,9 @@ proc sidecar_parse_black_boxes {txt top} {
         }
     }
     if {!$fm184} { error "bbox_report_missing_FM184" }
-    # 四审: 成功终态必须**恰为 TAIL**(缺最终整数回显的"空报告"亦拒)
+    # 五审: 成功终态必须恰为 TAIL 且恰见一行 "1"(0/-7/多整数均拒)
     if {$phase ne "TAIL"} { error "bbox_end_phase_not_TAIL:$phase" }
+    if {$::SIDECAR_TAIL_SEEN != 1} { error "bbox_tail_not_single_one" }
     if {!$fm249 && $total_blocks == 0} { error "bbox_nonempty_claim_but_no_blocks" }
     return [list [lsort $acc(ir)] [lsort $acc(ii)] [lsort $acc(ur)] [lsort $acc(ui)] \
                  [lsort $acc(er)] [lsort $acc(ei)]]
@@ -443,8 +480,9 @@ proc sidecar_emit_inner {top} {
     # (script_closure.list 已由 sidecar_register_script 在每次 source 时**即时**落盘,
     #  连同执行时刻字节快照 sourced_NNN_*; 拒产会话同样留痕)
 
-    # black_boxes(FM-184 状态机; puts 返回值保证 TAIL 终态回显确定存在)
-    redirect -variable bb_txt {puts [report_black_boxes]}
+    # black_boxes(FM-184 状态机; report_black_boxes 自身 stdout 以单行 "1" 收尾=TAIL,
+    # 五审实证: 3A 纯 stdout 捕获即以 "1" 结束, 不需 puts 包裹——那会产生两个 "1")
+    redirect -variable bb_txt {report_black_boxes}
     lassign [sidecar_parse_black_boxes $bb_txt $top] if_r if_i un_r un_i em_r em_i
 
     # dont_verify 用户配置报告: 非空且无法解析 → fail-closed

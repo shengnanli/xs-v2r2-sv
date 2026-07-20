@@ -125,8 +125,18 @@ if [ ! -f "$STG/script_closure.list" ]; then
   echo "SESSION_RESULT $SESSION: INFRA_FAIL no_script_closure_list" | tee "$STG/RESULT.txt"
   finalize 3
 fi
-SNAPS=()
-while IFS=$'\t' read -r orig snap; do SNAPS+=("$STG/$snap"); done < "$STG/script_closure.list"
+SNAPS=(); CLOSURE_BAD=0
+while IFS=$'\t' read -r orig snap hash; do
+  [ -z "$snap" ] && continue
+  # 五审: runner 复算快照实际字节 sha256, 必须 == emitter 台账记录的 hash(执行时刻)
+  actual=$(sha256sum "$STG/$snap" 2>/dev/null | cut -d' ' -f1)
+  [ "$actual" = "$hash" ] || { echo "  CLOSURE_HASH_MISMATCH $snap: $actual != $hash"; CLOSURE_BAD=1; }
+  SNAPS+=("$STG/$snap")
+done < "$STG/script_closure.list"
+if [ "$CLOSURE_BAD" != "0" ]; then
+  echo "SESSION_RESULT $SESSION: INFRA_FAIL closure_hash_mismatch" | tee -a "$STG/RESULT.txt"
+  finalize 3
+fi
 SCRIPT_DIG=$(python3 "$SC/fm_closure_digest.py" --mode concat "${SNAPS[@]}")
 PIN_SNAPS=("${SNAPS[@]:2}")
 if [ ${#PIN_SNAPS[@]} -gt 0 ]; then

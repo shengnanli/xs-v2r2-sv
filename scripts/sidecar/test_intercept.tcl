@@ -162,12 +162,35 @@ T pin_child_nested_source_controlled {
     if {[llength [glob -nocomplain $::env(FM_SIDECAR_OUT)/sourced_*_.ti_pin_inner.tcl]] != 1} { error "嵌套快照缺失" }
 }
 T snapshot_ledger_tamper_detected {
-    # 执行后篡改快照文件 → capture 前复核拒
+    # 执行后篡改快照文件 → capture 前复核拒(hash 不符)
     set snaps [glob $::env(FM_SIDECAR_OUT)/sourced_*_.ti_pin1.tcl]
     set fh [open [lindex $snaps 0] a]; puts $fh "tamper"; close $fh
     set rc [catch {sidecar_verify_snapshot_ledger}]
     if {!$rc} { error "篡改未检出" }
     if {![string match "*snapshot_tampered*" [lindex $::INTERCEPTED end]]} { error "类别不符" }
+    # 复原快照(后续测试用)
+    set orig [lindex $::SIDECAR_LEDGER 0]
+    # 重写为原始状态: 用台账 hash 对应内容不可逆, 直接删重建场景交给独立台账不改
+}
+T closure_list_AB_to_AA_tamper_detected {
+    # 五审复现: 把执行过的 A/B 两行都改指 A(数量不变) → 只比行数曾能过; 现逐字段核对拒
+    set out $::env(FM_SIDECAR_OUT)
+    # 造两条干净台账 + 清单
+    set ::SIDECAR_LEDGER {}; set ::SIDECAR_SRC_SEQ 0
+    file delete -force $out; file mkdir $out
+    sidecar_snapshot_buffer /x/A.tcl "content-A"
+    sidecar_snapshot_buffer /x/B.tcl "content-B"
+    # 篡改清单: 把第二行(B)改成指向 A 的快照(行数仍=2)
+    set _fh [open $out/script_closure.list r]; set _c [read $_fh]; close $_fh
+    set rows [split [string trimright $_c] "\n"]
+    lassign [split [lindex $rows 0] "\t"] a_orig a_snap a_hash
+    set fh [open $out/script_closure.list w]
+    puts $fh [lindex $rows 0]
+    puts $fh "$a_orig\t$a_snap\t$a_hash"
+    close $fh
+    set rc [catch {sidecar_verify_snapshot_ledger}]
+    if {!$rc} { error "AA 篡改未检出" }
+    if {![string match "*closure_row_mismatch*" [lindex $::INTERCEPTED end]]} { error "类别不符: [lindex $::INTERCEPTED end]" }
 }
 # ---- phase: 首次 match 后 proof appvar 冻结("先放宽-match-恢复"堵死) ----
 T phase_frozen_after_match {

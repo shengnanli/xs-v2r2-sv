@@ -17,14 +17,17 @@ declare -A EXPECT_RC=([bku_strict]=1 [bku_unread_true_probe]=1 [imsic_strict]=1
 NATIVE_SESSIONS="bku_strict bku_unread_true_probe imsic_strict"
 REJECT_SESSIONS="intercept_direct intercept_dynamic intercept_nested"
 
+# 五审: 语义验证委托 step3b_archive_verify.py(解析 JSON/实跑 validator/绑定 commit 字节)。
+# 本 .sh 只负责从 commit 抽取 clean archive + git 环境准备; 结构+语义判定全在 py。
 if [ "$1" = "--tree" ]; then
   E=$2; EXPECT_IMPL=$3
+  exec python3 "$(dirname "${BASH_SOURCE[0]}")/step3b_archive_verify.py" "$E" "$EXPECT_IMPL" "$SIGNOFF"
 else
   COMMIT=$1; EXPECT_IMPL=$2
   TMP=$(mktemp -d); trap 'rm -rf "$TMP"' EXIT
   git -C "$SIGNOFF" archive "$COMMIT" "$ROOT" | tar -x -C "$TMP" || {
     echo "ARCHIVE_CHECK: FAIL(archive 失败)"; exit 2; }
-  E="$TMP/$ROOT"
+  exec python3 "$(dirname "${BASH_SOURCE[0]}")/step3b_archive_verify.py" "$TMP/$ROOT" "$EXPECT_IMPL" "$SIGNOFF"
 fi
 total_bad=0
 

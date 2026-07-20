@@ -49,10 +49,15 @@ T empty_flag_real_dcache {
         [slurp $here/step3a2-evidence/fmbb_empty/black_boxes_default.out] DCacheWrapper] a b c d e f
     if {[llength $e] != 1 || [llength $f] != 1} { error "e 实例应 1+1" }
 }
-T iface_real_newifu {
+T iface_real_newifu_default {
+    # 五审: 用**默认全量**报告(无 option 头)测 'i' flag 路径
     lassign [sidecar_parse_black_boxes \
-        [slurp $here/step3a1-evidence/assembly_iface/black_boxes_iface.out] NewIFU] a b c d e f
+        [slurp $here/step3a1-evidence/assembly_iface/black_boxes_default.out] NewIFU] a b c d e f
     if {[llength $a] != [llength $b] || [llength $a] == 0} { error "i 实例两侧应同数非零" }
+}
+T iface_filtered_report_rejected {
+    # 五审: -interface_only 过滤报告(带 option 头)必须拒——防丢失 unresolved/empty 类
+    expect_err [slurp $here/step3a1-evidence/assembly_iface/black_boxes_iface.out] NewIFU bbox_option_header_rejected
 }
 
 # ---- 一审负例 ----
@@ -171,6 +176,54 @@ T v4_positive_synth_with_tail {
     lassign [sidecar_parse_black_boxes \
         "${BASE}e      Foo\n\n       Instances : 1 of 1\n       ----\n       i:/WORK/T/x\n1\n" T] a b c d e f
     if {$f ne {i:/WORK/T/x}} { error "empty_impl 应恰为该路径" }
+}
+# ---- 五审负例 ----
+T v5_option_header_rejected {
+    set h "**************************************************
+Report         : black_boxes
+                 -interface_only
+Reference      : r:/WORK/T
+Implementation : i:/WORK/T
+Version        : X
+Date           : Mon
+**************************************************
+"
+    expect_err "$h$C184\n$C249\n1\n" T bbox_option_header_rejected
+}
+T v5_header_out_of_order {
+    set h "**************************************************
+Reference      : r:/WORK/T
+Report         : black_boxes
+Implementation : i:/WORK/T
+Version        : X
+Date           : Mon
+**************************************************
+"
+    expect_err "$h$C184\n$C249\n1\n" T bbox_header_order
+}
+T v5_header_duplicate {
+    set h "**************************************************
+Report         : black_boxes
+Report         : black_boxes
+Reference      : r:/WORK/T
+Implementation : i:/WORK/T
+Version        : X
+Date           : Mon
+**************************************************
+"
+    expect_err "$h$C184\n$C249\n1\n" T bbox_header_order
+}
+T v5_tail_zero {
+    expect_err "$HDR$C184\n$C249\n0\n" T bbox_empty_report_with_content
+}
+T v5_tail_negative {
+    expect_err "$HDR$C184\n$C249\n-7\n" T bbox_empty_report_with_content
+}
+T v5_tail_two_ones {
+    expect_err "$HDR$C184\n$C249\n1\n1\n" T bbox_content_after_tail_echo
+}
+T v5_empty_no_tail {
+    expect_err "$HDR$C184\n$C249\n" T bbox_end_phase_not_TAIL
 }
 puts "$pass/[expr {$pass+$fail}] passed"
 if {$fail} { exit 1 }
