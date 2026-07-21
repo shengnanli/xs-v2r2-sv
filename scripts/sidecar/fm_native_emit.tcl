@@ -126,9 +126,14 @@ proc sidecar_source_trace {cmd op} {
 proc sidecar_pin_source {path} {
     if {![info exists ::SIDECAR_PIN_INTERP]} {
         set ::SIDECAR_PIN_INTERP [interp create -safe]
-        # 白名单 alias: 只暴露证明相关的 fm 命令(safe interp 已隐藏 file/open/exec/socket)
+        # 白名单 alias: 只暴露**证明相关**的 fm 命令(safe interp 已隐藏 file/open/exec/socket;
+        # 未暴露 trace 管理/父层 ::SIDECAR_* globals/证据目录 → 隔离不变)。
+        # 命令集 = 全 repo pin 文件实测用到的 fm 动词(四审隔离曾漏 setup/set_dont_verify_points/
+        # set_compare_rule/match/verify → 9+ 目标 INFRA)。proof-relaxing 的 dont_verify 由
+        # emitter 的 report_dont_verify_points 采集入 qualifications, 不会静默放过。
         foreach c {set_user_match set_app_var get_app_var puts report_unmatched_points \
-                   report_matched_points set_constant remove_constant} {
+                   report_matched_points set_constant remove_constant \
+                   setup set_dont_verify_points set_compare_rule match verify} {
             if {[info commands $c] ne ""} {
                 interp alias $::SIDECAR_PIN_INTERP $c {} $c
             }
