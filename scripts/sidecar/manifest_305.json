@@ -713,11 +713,11 @@
    "makefile": "verif/ut/FoldedSRAMTemplate/Makefile",
    "make_target": "fm-FoldedSRAMTemplate",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/FoldedSRAMTemplate.json",
+   "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=SplittedSRAMTemplate_3); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -726,11 +726,11 @@
    "makefile": "verif/ut/FoldedSRAMTemplate_1/Makefile",
    "make_target": "fm-FoldedSRAMTemplate_1",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/FoldedSRAMTemplate_1.json",
+   "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=SplittedSRAMTemplate_4); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -739,11 +739,11 @@
    "makefile": "verif/ut/FoldedSRAMTemplate_20/Makefile",
    "make_target": "fm-FoldedSRAMTemplate_20",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/FoldedSRAMTemplate_20.json",
+   "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=SplittedSRAMTemplate_23); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -752,11 +752,11 @@
    "makefile": "verif/ut/FoldedSRAMTemplate_21/Makefile",
    "make_target": "fm-FoldedSRAMTemplate_21",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/FoldedSRAMTemplate_21.json",
+   "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=SplittedSRAMTemplate_24); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -765,11 +765,11 @@
    "makefile": "verif/ut/FoldedSRAMTemplate_23/Makefile",
    "make_target": "fm-FoldedSRAMTemplate_23",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/FoldedSRAMTemplate_23.json",
+   "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=SplittedSRAMTemplate_26); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -947,11 +947,11 @@
    "makefile": "verif/ut/ICacheMetaArray/Makefile",
    "make_target": "fm-ICacheMetaArray",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/ICacheMetaArray.json",
+   "rationale": "SRAM叶子assembly: 3个对称unresolved黑盒边界(审核类型=MbistPipeIcacheTag,SplittedSRAMTemplate,SplittedSRAMTemplate_1); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2559,11 +2559,11 @@
    "makefile": "verif/ut/SRAMTemplate/Makefile",
    "make_target": "fm-SRAMTemplate_16",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/SRAMTemplate_16.json",
+   "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=array_0_ext); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2572,11 +2572,11 @@
    "makefile": "verif/ut/SRAMTemplate/Makefile",
    "make_target": "fm-SRAMTemplate_2",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/SRAMTemplate_2.json",
+   "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=array_ext); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2585,11 +2585,11 @@
    "makefile": "verif/ut/SRAMTemplate/Makefile",
    "make_target": "fm-SRAMTemplate_32",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/SRAMTemplate_32.json",
+   "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=array_0_ext); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2611,11 +2611,11 @@
    "makefile": "verif/ut/SRAMTemplate/Makefile",
    "make_target": "fm-SRAMTemplate_4",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/SRAMTemplate_4.json",
+   "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=array_0_ext); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2624,11 +2624,11 @@
    "makefile": "verif/ut/SRAMTemplate/Makefile",
    "make_target": "fm-SRAMTemplate_44",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/SRAMTemplate_44.json",
+   "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=array_2_ext); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2637,11 +2637,11 @@
    "makefile": "verif/ut/SRAMTemplate/Makefile",
    "make_target": "fm-SRAMTemplate_45",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/SRAMTemplate_45.json",
+   "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=array_3_ext); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2650,11 +2650,11 @@
    "makefile": "verif/ut/SRAMTemplate/Makefile",
    "make_target": "fm-SRAMTemplate_70",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/SRAMTemplate_70.json",
+   "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=array_6_ext); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2663,11 +2663,11 @@
    "makefile": "verif/ut/SRAMTemplate/Makefile",
    "make_target": "fm-SRAMTemplate_72",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/SRAMTemplate_72.json",
+   "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=array_6_ext); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2676,11 +2676,11 @@
    "makefile": "verif/ut/SRAMTemplate/Makefile",
    "make_target": "fm-SRAMTemplate_8",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/SRAMTemplate_8.json",
+   "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=array_0_ext); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2689,11 +2689,11 @@
    "makefile": "verif/ut/SRAMTemplate_2p/Makefile",
    "make_target": "fm-SRAMTemplate_64",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/SRAMTemplate_64.json",
+   "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=array_4_ext); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2702,11 +2702,11 @@
    "makefile": "verif/ut/SRAMTemplate_2p/Makefile",
    "make_target": "fm-SRAMTemplate_66",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/SRAMTemplate_66.json",
+   "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=array_5_ext); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2832,11 +2832,11 @@
    "makefile": "verif/ut/SplittedSRAMTemplate/Makefile",
    "make_target": "fm-SplittedSRAMTemplate",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/SplittedSRAMTemplate.json",
+   "rationale": "SRAM叶子assembly: 2个对称unresolved黑盒边界(审核类型=SRAMTemplate); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2845,11 +2845,11 @@
    "makefile": "verif/ut/SplittedSRAMTemplate_1/Makefile",
    "make_target": "fm-SplittedSRAMTemplate_1",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/SplittedSRAMTemplate_1.json",
+   "rationale": "SRAM叶子assembly: 2个对称unresolved黑盒边界(审核类型=SRAMTemplate_2); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2858,11 +2858,11 @@
    "makefile": "verif/ut/SplittedSRAMTemplate_2/Makefile",
    "make_target": "fm-SplittedSRAMTemplate_2",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/SplittedSRAMTemplate_2.json",
+   "rationale": "SRAM叶子assembly: 8个对称unresolved黑盒边界(审核类型=SRAMTemplate_36); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2871,11 +2871,11 @@
    "makefile": "verif/ut/SplittedSRAMTemplate_23/Makefile",
    "make_target": "fm-SplittedSRAMTemplate_23",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/SplittedSRAMTemplate_23.json",
+   "rationale": "SRAM叶子assembly: 2个对称unresolved黑盒边界(审核类型=SRAMTemplate_64); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2884,11 +2884,11 @@
    "makefile": "verif/ut/SplittedSRAMTemplate_24/Makefile",
    "make_target": "fm-SplittedSRAMTemplate_24",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/SplittedSRAMTemplate_24.json",
+   "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=SRAMTemplate_70); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2897,11 +2897,11 @@
    "makefile": "verif/ut/SplittedSRAMTemplate_26/Makefile",
    "make_target": "fm-SplittedSRAMTemplate_26",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/SplittedSRAMTemplate_26.json",
+   "rationale": "SRAM叶子assembly: 2个对称unresolved黑盒边界(审核类型=SRAMTemplate_72); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2910,11 +2910,11 @@
    "makefile": "verif/ut/SplittedSRAMTemplate_3/Makefile",
    "make_target": "fm-SplittedSRAMTemplate_3",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/SplittedSRAMTemplate_3.json",
+   "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=SRAMTemplate_44); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2923,11 +2923,11 @@
    "makefile": "verif/ut/SplittedSRAMTemplate_4/Makefile",
    "make_target": "fm-SplittedSRAMTemplate_4",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/SplittedSRAMTemplate_4.json",
+   "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=SRAMTemplate_45); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
