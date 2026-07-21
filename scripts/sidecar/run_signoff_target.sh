@@ -27,6 +27,10 @@ else: print("NOTFOUND")
 PY
 )"
 [ "$UTDIR" = "NOTFOUND" ] && { echo "MANIFEST_MISS $TARGET"; exit 2; }
+# manifest 的 makefile 若非默认 Makefile(如 Makefile.iq/.sched), make 须 -f 指定,
+# 否则用默认 Makefile 的错误 RTL_SRCS(IssueQueue×6 impl top unknown 根因)。
+MKF=$(basename "$MK")
+MKARG=""; [ "$MKF" != "Makefile" ] && [ "$MKF" != "-" ] && MKARG="-f $MKF"
 if [ "$CFG" = "UNCONFIGURED" ]; then echo "TARGET $TARGET: UNCONFIGURED —— 不运行不计"; exit 4; fi
 
 BID=$(python3 -c "import json;print(json.load(open('$MANIFEST'))['canonical_baseline_id'])")
@@ -104,7 +108,7 @@ finalize() {  # rc
 # --- 运行(clean worktree; XSSV_HOME=WT 即提交态脚本; 落真实 fm_shell.rc)---
 ( cd "$D" && rm -f "fm_work/$TARGET/fm.log" && \
   FM_SIDECAR_OUT="$STG" FM_RUN_ID="$RID" \
-  timeout "$TMO" make "$MT" GOLDEN_RTL="$GOLDEN" XSSV_HOME="$WT" \
+  timeout "$TMO" make $MKARG "$MT" GOLDEN_RTL="$GOLDEN" XSSV_HOME="$WT" \
     $([ "${MT:0:3}" = "fm-" ] && echo "FM_MODE=$PMODE") ) > "$STG/make.out" 2>&1
 MAKE_RC=$?
 cp "$D/fm_work/$TARGET/fm.log" "$STG/fm_log.txt" 2>/dev/null
@@ -130,7 +134,7 @@ while IFS=$'\t' read -r o snap h; do
 done < "$STG/script_closure.list"
 [ "$CBAD" != 0 ] && { echo "TARGET $TARGET: INFRA_FAIL closure" | tee -a "$STG/RESULT.txt"; finalize 3; }
 SCRIPT_DIG=$(python3 "$SC/fm_closure_digest.py" --mode concat "${SNAPS[@]}")
-CMD=$(cd "$D" && make -n "$MT" GOLDEN_RTL="$GOLDEN" XSSV_HOME="$WT" \
+CMD=$(cd "$D" && make -n $MKARG "$MT" GOLDEN_RTL="$GOLDEN" XSSV_HOME="$WT" \
       $([ "${MT:0:3}" = "fm-" ] && echo "FM_MODE=$PMODE") 2>/dev/null \
       | sed -e ':a' -e '/\\$/{N;s/\\\n//;ba}' | grep "fm_shell -64" | head -1)
 gv(){ echo "$CMD" | grep -o "$1=\"[^\"]*\"" | head -1 | sed -e "s/^$1=\"//" -e 's/"$//'; }
