@@ -548,8 +548,9 @@ proc sidecar_emit_inner {top} {
         if {$dv_nonempty_hdr} continue   ;# 非空报告点行: 对象已由 -list 权威捕获
         error "dont_verify_report_unparsed_line:$t"
     }
-    # 交叉核验: 报告称非空 ⇔ -list 也应非空(捕获一致性, 防漏)
-    if {$dv_nonempty_hdr && [llength $dv_objs] == 0} { error "dont_verify_nonempty_report_but_empty_list" }
+    # 注: report_dont_verify_points 报**用户指令**(可非空), 而 -status dont_verify -list 报
+    # **结果比较点**; 用户对不存在/已优化/已匹配的点下指令时报告非空但结果点=0 合法(LoadQueueUncache
+    # 实证)。dv_objs 由 -list 权威派生, 不做"报告非空⇔list非空"假不变量核验。
 
     # entry appvars(verify 前已捕获)
     if {![info exists ::SIDECAR_AV]} { error "appvars_not_captured_before_verify" }

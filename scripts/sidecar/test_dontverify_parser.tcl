@@ -23,7 +23,6 @@ proc chk {name expect_err expect_hdr expect_nobj l_m_dv um_dv_r um_dv_i dv_txt} 
             if {$dv_nonempty_hdr} continue
             error "dont_verify_report_unparsed_line:$t"
         }
-        if {$dv_nonempty_hdr && [llength $dv_objs] == 0} { error "dont_verify_nonempty_report_but_empty_list" }
     } e]} { set err $e }
     # ---- 断言 ----
     set got_err [expr {$err ne ""}]
@@ -54,7 +53,7 @@ chk nonempty_grouped    0 1 2 {} {r:/WORK/X/p} {i:/WORK/X/q} \
     "Don't verify points:\nReference:\n  r:/WORK/X/p\nImplementation:\n  i:/WORK/X/q"
 # 头前出现未知垃圾行 → fail-closed(dv_nonempty_hdr 还是0)
 chk garbage_before_hdr  1 0 0 {} {} {} "unexpected junk line\nDon't verify points: None"
-# 报告称非空但 -list 空 → 捕获不一致, fail-closed
-chk nonempty_but_nolist 1 0 0 {} {} {} "Don't verify points:\n  'r:/WORK/Y/z'"
+# 报告称非空但 -list 空(用户指令对已优化点)→ 合法, 无错
+chk nonempty_but_nolist 0 1 0 {} {} {} "Don't verify points:\n  'r:/WORK/Y/z'"
 
 if {$::fail} { puts "\nDONTVERIFY: FAIL"; exit 1 } else { puts "\n6/6 passed"; exit 0 }
