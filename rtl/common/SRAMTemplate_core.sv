@@ -111,7 +111,10 @@ module xs_SRAMTemplate_core #(
       rdata_last_REG <= 1'b0;
     end else begin
       respReg        <= rckEn;
-      rdata_last_REG <= ren;
+      // holdRead 关闭时 rdata_last_REG 是死状态(rdata_hold 不更新), 让它与 respReg 同方程
+      // (rckEn), merge_duplicated_registers 合并掉→消 golden 无对应的 unread; holdRead 开
+      // 时保持 ren(该路 live, 不动其 MBIST 行为)。参数守卫, 非全局改。
+      rdata_last_REG <= ENABLE_HOLDREAD ? ren : rckEn;
     end
   end
 
