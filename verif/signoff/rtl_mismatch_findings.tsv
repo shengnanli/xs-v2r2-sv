@@ -1,3 +1,4 @@
 TLBuffer_13	B通道auto_in_0_b_bits_source/size/corrupt 20failing+16unver, inline暴露(黑盒曾隐藏), 待RTL诊断
 StorePfWrapper	UNREAD_REF_DEAD_STATE/PROOF_GAP	golden Serializer enqPtrExt_0_flag/value死寄存器(EnableStorePrefetchSPB=false, canEnqueue不出输出), impl正确省略; cone确认无扇出; 非RTL mismatch但当前any-unread契约下不转绿
 SRAMTemplate_36	DEAD_STATE_HOLDREAD_OFF/FIXED	holdRead关闭(ENABLE_HOLDREAD=0)时rdata_last_REG是共享core未裁的额外死状态(rdata_hold不更新), 非MBIST功能错误; 参数守卫修复core.sv:114 rdata_last_REG<=ENABLE_HOLDREAD?ren:rckEn 使死状态与respReg同方程被merge; 待重跑验证strict SUCCEEDED unread=0
+SRAMTemplate_197	READABLE_IMPL_PROVEN_UNREAD_REF_DEAD/PROOF_GAP	可读xs_Simple1PSRAM_core FM证等价(307512点/0fail/0黑盒/含全存储内容); 唯一unread=golden array_19_ext的SYNTHESIS死寄存器reg_RW0_ren(impl正确省略); 消unread需加死代码(违可读)或黑盒(丢存储证明), 均拒; 同StorePf UNREAD_REF_DEAD_STATE; 实现已证正确, 契约boundary需决策
