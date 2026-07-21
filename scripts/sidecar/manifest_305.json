@@ -882,11 +882,11 @@
    "makefile": "verif/ut/ICache/Makefile",
    "make_target": "fm-ICache",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/ICache.json",
+   "rationale": "assembly: 8个对称黑盒边界, 全为独立FM目标(层次装配, 子模块各自签核); 验证本层glue逻辑",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1038,11 +1038,11 @@
    "makefile": "verif/ut/ITTageTable/Makefile",
    "make_target": "fm-ITTageTable",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/ITTageTable.json",
+   "rationale": "assembly: 2个对称黑盒边界, 全为独立FM目标(层次装配, 子模块各自签核); 验证本层glue逻辑",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1051,11 +1051,11 @@
    "makefile": "verif/ut/ITTageTable/Makefile",
    "make_target": "fm-ITTageTable_1",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/ITTageTable_1.json",
+   "rationale": "assembly: 2个对称黑盒边界, 全为独立FM目标(层次装配, 子模块各自签核); 验证本层glue逻辑",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1064,11 +1064,11 @@
    "makefile": "verif/ut/ITTageTable/Makefile",
    "make_target": "fm-ITTageTable_2",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/ITTageTable_2.json",
+   "rationale": "assembly: 2个对称黑盒边界, 全为独立FM目标(层次装配, 子模块各自签核); 验证本层glue逻辑",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1077,11 +1077,11 @@
    "makefile": "verif/ut/ITTageTable/Makefile",
    "make_target": "fm-ITTageTable_3",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/ITTageTable_3.json",
+   "rationale": "assembly: 2个对称黑盒边界, 全为独立FM目标(层次装配, 子模块各自签核); 验证本层glue逻辑",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1090,11 +1090,11 @@
    "makefile": "verif/ut/ITTageTable/Makefile",
    "make_target": "fm-ITTageTable_4",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/ITTageTable_4.json",
+   "rationale": "assembly: 2个对称黑盒边界, 全为独立FM目标(层次装配, 子模块各自签核); 验证本层glue逻辑",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1782,8 +1782,8 @@
    "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/LsqWrapper.json",
+   "rationale": "assembly: 2个对称黑盒边界, 全为独立FM目标(层次装配, 子模块各自签核); 验证本层glue逻辑",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2533,11 +2533,11 @@
    "makefile": "verif/ut/SNXbar/Makefile",
    "make_target": "fm-SNXbar",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/SNXbar.json",
+   "rationale": "assembly: 2个对称黑盒边界, 全为独立FM目标(层次装配, 子模块各自签核); 验证本层glue逻辑",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {

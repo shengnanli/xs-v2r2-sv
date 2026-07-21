@@ -26,3 +26,11 @@ SplittedSRAMTemplate_24	assembly	verif/signoff/allow/SplittedSRAMTemplate_24.jso
 SplittedSRAMTemplate_26	assembly	verif/signoff/allow/SplittedSRAMTemplate_26.json	SRAM叶子assembly: 2个对称unresolved黑盒边界(审核类型=SRAMTemplate_72); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑
 SplittedSRAMTemplate_3	assembly	verif/signoff/allow/SplittedSRAMTemplate_3.json	SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=SRAMTemplate_44); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑
 SplittedSRAMTemplate_4	assembly	verif/signoff/allow/SplittedSRAMTemplate_4.json	SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=SRAMTemplate_45); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑
+ICache	assembly	verif/signoff/allow/ICache.json	assembly: 8个对称黑盒边界, 全为独立FM目标(层次装配, 子模块各自签核); 验证本层glue逻辑
+ITTageTable	assembly	verif/signoff/allow/ITTageTable.json	assembly: 2个对称黑盒边界, 全为独立FM目标(层次装配, 子模块各自签核); 验证本层glue逻辑
+ITTageTable_1	assembly	verif/signoff/allow/ITTageTable_1.json	assembly: 2个对称黑盒边界, 全为独立FM目标(层次装配, 子模块各自签核); 验证本层glue逻辑
+ITTageTable_2	assembly	verif/signoff/allow/ITTageTable_2.json	assembly: 2个对称黑盒边界, 全为独立FM目标(层次装配, 子模块各自签核); 验证本层glue逻辑
+ITTageTable_3	assembly	verif/signoff/allow/ITTageTable_3.json	assembly: 2个对称黑盒边界, 全为独立FM目标(层次装配, 子模块各自签核); 验证本层glue逻辑
+ITTageTable_4	assembly	verif/signoff/allow/ITTageTable_4.json	assembly: 2个对称黑盒边界, 全为独立FM目标(层次装配, 子模块各自签核); 验证本层glue逻辑
+LsqWrapper	assembly	verif/signoff/allow/LsqWrapper.json	assembly: 2个对称黑盒边界, 全为独立FM目标(层次装配, 子模块各自签核); 验证本层glue逻辑
+SNXbar	assembly	verif/signoff/allow/SNXbar.json	assembly: 2个对称黑盒边界, 全为独立FM目标(层次装配, 子模块各自签核); 验证本层glue逻辑
