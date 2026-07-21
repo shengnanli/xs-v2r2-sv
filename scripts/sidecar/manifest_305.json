@@ -2546,11 +2546,11 @@
    "makefile": "verif/ut/SRAMTemplate/Makefile",
    "make_target": "fm-SRAMTemplate",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/SRAMTemplate.json",
+   "rationale": "array_ext=厂商SRAM存储宏(array_ext.v: reg[73:0]ram[127:0]行为模型),SRAMTemplate FM源不含其体→两侧对称unresolved黑盒(ref/impl匹配对);本目标验证SRAM周边逻辑(地址/使能/bypass),存储阵列作声明边界,阵列本体由leaf/构造另验",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {

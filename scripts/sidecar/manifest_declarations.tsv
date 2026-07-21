@@ -1,4 +1,3 @@
-# 设计契约声明(唯一权威): target<TAB>proof_mode<TAB>allow_ref<TAB>rationale
-# **不声明 verdict**(required_verdict 由 proof_mode 机械派生: strict/assembly→SUCCEEDED,
-# shadow→SHADOW_CHECK)。allow_ref 为对象 allowlist 文件(设计边界), 空=无放行。
-# 缺省: 结构信号定 proof_mode。此处仅记非结构默认的边界声明。
+# 设计契约声明: target<TAB>proof_mode<TAB>allow_ref<TAB>rationale
+# assembly = 声明对称黑盒边界(须逐个审核为已知子模块/厂商宏, 非日志照抄); allow_ref 文件须提交、hash 入证据。
+SRAMTemplate	assembly	verif/signoff/allow/SRAMTemplate.json	array_ext=厂商SRAM存储宏(array_ext.v: reg[73:0]ram[127:0]行为模型),SRAMTemplate FM源不含其体→两侧对称unresolved黑盒(ref/impl匹配对);本目标验证SRAM周边逻辑(地址/使能/bypass),存储阵列作声明边界,阵列本体由leaf/构造另验
