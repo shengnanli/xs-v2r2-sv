@@ -241,8 +241,24 @@ def _implpath(x, top):
     return isinstance(x, str) and _no_ctrl(x) and x.startswith(f"i:/WORK/{top}/") and len(x) > len(f"i:/WORK/{top}/")
 
 
-def _pathlist(x, top, side):
-    chk = _refpath if side == "ref" else _implpath
+# 十三审(multi-design bbox): 黑盒实例路径 FM 按**子设计名**报告(如 r:/WORK/Directory/mbistPl
+# 是 Slice 顶层里子设计 Directory 的黑盒), 非 top 相对。黑盒集(unresolved/empty/interface_only/
+# unlinked + matched pair)用此校验: [ri]:/WORK/<valid-identifier>/<非空>, 禁 .. 与控制字符。
+# **compare 点仍严格在 top 下**(_refpath/_implpath 不变)。安全: 黑盒对 policy 精确匹配 +
+# strict 任意黑盒→PARTIAL, 路径放宽不造假绿。
+_BBPATH_RE = re.compile(r"[ri]:/WORK/[A-Za-z_][A-Za-z0-9_]*/\S.*")
+def _bbpath(x, prefix):
+    return (isinstance(x, str) and _no_ctrl(x) and ".." not in x
+            and x[0] == prefix and _BBPATH_RE.fullmatch(x) is not None)
+
+
+def _pathlist(x, top, side, bbox=False):
+    # bbox=True: 黑盒实例集(允许子设计路径); 否则 compare 点(严格 top 下)。
+    if bbox:
+        prefix = "r" if side == "ref" else "i"
+        chk = lambda e, _t: _bbpath(e, prefix)
+    else:
+        chk = _refpath if side == "ref" else _implpath
     if not isinstance(x, list):
         return "not_list"
     if any(not chk(e, top) for e in x):
@@ -259,7 +275,8 @@ def _pairlist(x, top):
     for m in x:
         if not isinstance(m, dict) or set(m) != PAIR_KEYS:
             return "pair_keys"
-        if not _refpath(m["ref_path"], top) or not _implpath(m["impl_path"], top):
+        # matched bbox pair 是黑盒实例对, 用黑盒路径校验(允许子设计路径)
+        if not _bbpath(m["ref_path"], "r") or not _bbpath(m["impl_path"], "i"):
             return "pair_path"
         t = (m["ref_path"], m["impl_path"])
         if t in seen:
@@ -299,7 +316,12 @@ def validate_expectation(E):
                     return f"expect_allow_{cat}_map_keys"
                 if not _token(m["id"]):
                     return f"expect_allow_{cat}_id"
-                if not _refpath(m["ref_path"], E["top"]) or not _implpath(m["impl_path"], E["top"]):
+                # 黑盒类 policy 路径同观察侧: 允许子设计路径; unmatched(compare点)严格 top 下
+                if cat == "unmatched":
+                    okp = _refpath(m["ref_path"], E["top"]) and _implpath(m["impl_path"], E["top"])
+                else:
+                    okp = _bbpath(m["ref_path"], "r") and _bbpath(m["impl_path"], "i")
+                if not okp:
                     return f"expect_allow_{cat}_path"
                 ids.append(m["id"]); refs.append(m["ref_path"]); impls.append(m["impl_path"])
                 pair = (m["ref_path"], m["impl_path"])
@@ -355,12 +377,16 @@ def _validate_facts_block(sc, where, top):
         err = _pairlist(ob[k], top)
         if err:
             raise Bad(f"{where}_{k}:{err}")
+    # 黑盒实例集用 bbox 路径校验(允许子设计路径); compare 点集严格在 top 下
+    _BBOX_SETS = {"interface_only_ref", "interface_only_impl", "unresolved_blackbox_ref",
+                  "unresolved_blackbox_impl", "empty_blackbox_ref", "empty_blackbox_impl",
+                  "unlinked_blackbox_ref", "unlinked_blackbox_impl"}
     for k in sorted(REF_OBJ_KEYS):
-        err = _pathlist(ob[k], top, "ref")
+        err = _pathlist(ob[k], top, "ref", bbox=(k in _BBOX_SETS))
         if err:
             raise Bad(f"{where}_{k}:{err}")
     for k in sorted(IMPL_OBJ_KEYS):
-        err = _pathlist(ob[k], top, "impl")
+        err = _pathlist(ob[k], top, "impl", bbox=(k in _BBOX_SETS))
         if err:
             raise Bad(f"{where}_{k}:{err}")
     av = sc["entry_appvars"]

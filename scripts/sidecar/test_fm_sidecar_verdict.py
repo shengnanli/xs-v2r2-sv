@@ -400,9 +400,16 @@ C("unlinked_strict_partial", "PARTIAL",
   fact_over={"objects.empty_blackbox_ref": [R0], "objects.empty_blackbox_impl": [I0],
              "objects.unlinked_blackbox_ref": [R0], "objects.unlinked_blackbox_impl": [I0],
              "objects.matched_blackbox_pairs": []})
-# unlinked 路径非法(不在 top 下)→ ERROR
-C("unlinked_bad_path", "ERROR",
-  fact_over={"objects.unlinked_blackbox_ref": ["r:/WORK/EVIL/x"]})
+# 十三审: 黑盒路径允许子设计名(r:/WORK/<design>/...); 但畸形路径仍拒(ERROR)
+C("bbox_subdesign_path_ok", "PARTIAL",   # 子设计路径合法 → 有 objects → strict PARTIAL(非ERROR)
+  fact_over={"objects.unlinked_blackbox_ref": ["r:/WORK/SubDesign/mbistPl"],
+             "objects.empty_blackbox_ref": ["r:/WORK/SubDesign/mbistPl"]})
+C("bbox_traversal_path_rejected", "ERROR",   # .. 遍历 → 拒
+  fact_over={"objects.unlinked_blackbox_ref": ["r:/WORK/Sub/../evil"]})
+C("bbox_wrong_root_rejected", "ERROR",       # 非 /WORK/ 根 → 拒
+  fact_over={"objects.unresolved_blackbox_ref": ["r:/EVIL/x/y"]})
+C("bbox_no_subpath_rejected", "ERROR",       # 缺子路径(仅 design 名)→ 拒
+  fact_over={"objects.empty_blackbox_ref": ["r:/WORK/Design"]})
 # assembly: e* 实例在 empty 类 + unlinked 记录, pair 分类正常 → SUCCEEDED
 C("unlinked_assembly_ok", "SUCCEEDED",
   fact_over={"objects.empty_blackbox_ref": [R0], "objects.empty_blackbox_impl": [I0],
