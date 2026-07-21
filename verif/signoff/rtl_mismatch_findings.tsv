@@ -1,1 +1,3 @@
 TLBuffer_13	B通道auto_in_0_b_bits_source/size/corrupt 20failing+16unver, inline暴露(黑盒曾隐藏), 待RTL诊断
+StorePfWrapper	UNREAD_REF_DEAD_STATE/PROOF_GAP	golden Serializer enqPtrExt_0_flag/value死寄存器(EnableStorePrefetchSPB=false, canEnqueue不出输出), impl正确省略; cone确认无扇出; 非RTL mismatch但当前any-unread契约下不转绿
+SRAMTemplate_36	MAPPING_STOP_STATE_EQ_MISMATCH/PROOF_GAP	rdata_last_REG↔respReg候选唯一但update条件不一致: golden respReg<=rckEn(mbist-aware=mbistBd_ack?mbistBd_re:ren) vs impl rdata_last_REG<=ren(非mbist); 候选可读修复=core.sv:114 ren→rckEn(用已定义mbist-aware信号对齐golden); 有输出扇出禁删; 待批准RTL改
