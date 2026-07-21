@@ -49,6 +49,7 @@ def OBJ0():
             "interface_only_ref": [], "interface_only_impl": [],
             "unresolved_blackbox_ref": [], "unresolved_blackbox_impl": [],
             "empty_blackbox_ref": [], "empty_blackbox_impl": [],
+            "unlinked_blackbox_ref": [], "unlinked_blackbox_impl": [],
             "unmatched_ref": [], "unmatched_impl": [],
             "unmatched_unread_ref": [], "unmatched_unread_impl": [],
             "unmatched_dont_verify_ref": [], "unmatched_dont_verify_impl": [],
@@ -392,6 +393,23 @@ C("appvar_failing_limit_noncanonical", "ERROR",
   env_over={"proof_mode": "diagnostic-full"},
   exp=expect(proof_mode="diagnostic-full",
              entry_appvars={**AV0(), "verification_failing_point_limit": "020"}))
+
+# ================= v12(combo-flag: unlinked 修饰符 observed fact) =================
+# unlinked 集非空 → strict PARTIAL(有 objects; 保留不丢)
+C("unlinked_strict_partial", "PARTIAL",
+  fact_over={"objects.empty_blackbox_ref": [R0], "objects.empty_blackbox_impl": [I0],
+             "objects.unlinked_blackbox_ref": [R0], "objects.unlinked_blackbox_impl": [I0],
+             "objects.matched_blackbox_pairs": []})
+# unlinked 路径非法(不在 top 下)→ ERROR
+C("unlinked_bad_path", "ERROR",
+  fact_over={"objects.unlinked_blackbox_ref": ["r:/WORK/EVIL/x"]})
+# assembly: e* 实例在 empty 类 + unlinked 记录, pair 分类正常 → SUCCEEDED
+C("unlinked_assembly_ok", "SUCCEEDED",
+  fact_over={"objects.empty_blackbox_ref": [R0], "objects.empty_blackbox_impl": [I0],
+             "objects.unlinked_blackbox_ref": [R0], "objects.unlinked_blackbox_impl": [I0],
+             "objects.matched_blackbox_pairs": [P(R0, I0)]},
+  env_over={"proof_mode": "assembly"},
+  exp=expect(proof_mode="assembly", allow={"empty_blackbox": [M("E", R0, I0)]}))
 
 # ================= v5 回归(适配 observed 模型) =================
 C("iface_wrong_impl_observed", "PARTIAL",

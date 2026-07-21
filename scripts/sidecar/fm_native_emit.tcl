@@ -270,7 +270,7 @@ set SIDECAR_LEGEND_LINES {
     {|___________________________________________________|}
 }
 proc sidecar_parse_black_boxes {txt top} {
-    array set acc {ir {} ii {} ur {} ui {} er {} ei {}}
+    array set acc {ir {} ii {} ur {} ui {} er {} ei {} sr {} si {}}
     array set seen {}
     set fm184 0; set fm249 0
     set saw_report 0; set saw_ref 0; set saw_impl 0
@@ -348,11 +348,27 @@ proc sidecar_parse_black_boxes {txt top} {
                     set phase TAIL; set ::SIDECAR_TAIL_SEEN 1; incr i; continue
                 }
                 if {$phase ne "BLOCKS"} { error "bbox_${phase}_unparsed:$ln" }
-                # ---- BLOCKS: flag 块 ----
-                if {![regexp {^(\S{1,2})\s+(\S+)$} $ln -> flag dname]} {
-                    error "bbox_BLOCKS_unparsed:$ln"
+                # ---- BLOCKS: flag 块(组合 flag 修复, 窄范围)----
+                # 行 = 前导 flag token(s) + 设计名(末 token)。flag token 必须是文档化的:
+                # 主类恰一个 ∈ {i,u,e}, 修饰符 ∈ {*}(= Unlinked design module, Formality legend)。
+                # **不泛化为"忽略未知 flag"**: 任何非 {i,u,e,*} 的 flag token 拒(fail-closed)。
+                # `*` 是修饰符(与主类共现), 保留到 observed facts 的 unlinked 集, 不静默丢弃。
+                set toks [regexp -all -inline {\S+} $ln]
+                if {[llength $toks] < 2} { error "bbox_BLOCKS_unparsed:$ln" }
+                set dname [lindex $toks end]
+                set primary ""; set unlinked 0
+                foreach _f [lrange $toks 0 end-1] {
+                    if {$_f in {i u e}} {
+                        if {$primary ne ""} { error "bbox_multiple_primary_flags:$ln" }
+                        set primary $_f
+                    } elseif {$_f eq "*"} {
+                        set unlinked 1
+                    } else {
+                        error "bbox_unsupported_flag:${_f}:${dname}"
+                    }
                 }
-                if {$flag ni {i u e}} { error "bbox_unsupported_flag:${flag}:${dname}" }
+                if {$primary eq ""} { error "bbox_no_primary_flag:$ln" }
+                set flag $primary
                 # 四审: flag 与 section 类别绑定——TECH(/FM_BBOX)只容 u(未解析);
                 # DESIGN(/WORK)只容 i/e(interface_only/empty 是已读入设计库的模块)
                 if {$cur_kind eq "TECH" && $flag ne "u"} {
@@ -363,12 +379,20 @@ proc sidecar_parse_black_boxes {txt top} {
                 }
                 set j [expr {$i+1}]
                 while {$j < $n && [string trim [lindex $lines $j]] eq ""} { incr j }
-                if {$j >= $n || ![regexp {^\s+Instances\s*:\s*(\d+)\s+of\s+(\d+)$} \
-                                  [string trimright [lindex $lines $j]] -> N M]} {
+                # Instances 行两种真实形态: `Instances : N of M`(N>0, 有实例)或
+                # `Instances : 0`(零实例块 —— 黑盒设计存在但本 section 未实例化, 合法)。
+                set _il [string trimright [lindex $lines $j]]
+                if {$j < $n && [regexp {^\s+Instances\s*:\s*0$} $_il]} {
+                    # 零实例块: 无分隔无路径, 记 0 路径(不静默丢——设计名 dname 已消费但无实例)。
+                    incr sec_blocks; incr total_blocks
+                    set i [expr {$j+1}]
+                    continue
+                }
+                if {$j >= $n || ![regexp {^\s+Instances\s*:\s*(\d+)\s+of\s+(\d+)$} $_il -> N M]} {
                     error "bbox_${dname}_missing_instances_line"
                 }
                 if {$N != $M} { error "bbox_${dname}_instances_N_ne_M:${N}_of_${M}" }
-                if {$N == 0} { error "bbox_${dname}_instances_zero_block" }
+                if {$N == 0} { error "bbox_${dname}_instances_zero_of_zero" }
                 set k [expr {$j+1}]
                 set sep 0
                 while {$k < $n && [regexp {^\s*-+\s*$} [lindex $lines $k]]} { set sep 1; incr k }
@@ -388,6 +412,7 @@ proc sidecar_parse_black_boxes {txt top} {
                     if {[info exists seen($side,$pl)]} { error "bbox_${dname}_duplicate_path:$pl" }
                     set seen($side,$pl) 1
                     lappend acc($flag$side) $pl
+                    if {$unlinked} { lappend acc(s$side) $pl }
                     incr got; incr k
                 }
                 if {$got != $N} { error "bbox_${dname}_path_count:${got}!=${N}" }
@@ -415,7 +440,7 @@ proc sidecar_parse_black_boxes {txt top} {
     if {$::SIDECAR_TAIL_SEEN != 1} { error "bbox_tail_not_single_one" }
     if {!$fm249 && $total_blocks == 0} { error "bbox_nonempty_claim_but_no_blocks" }
     return [list [lsort $acc(ir)] [lsort $acc(ii)] [lsort $acc(ur)] [lsort $acc(ui)] \
-                 [lsort $acc(er)] [lsort $acc(ei)]]
+                 [lsort $acc(er)] [lsort $acc(ei)] [lsort $acc(sr)] [lsort $acc(si)]]
 }
 
 # ---------------- pair 列表规整 ----------------
@@ -491,7 +516,7 @@ proc sidecar_emit_inner {top} {
     # black_boxes(FM-184 状态机; report_black_boxes 自身 stdout 以单行 "1" 收尾=TAIL,
     # 五审实证: 3A 纯 stdout 捕获即以 "1" 结束, 不需 puts 包裹——那会产生两个 "1")
     redirect -variable bb_txt {report_black_boxes}
-    lassign [sidecar_parse_black_boxes $bb_txt $top] if_r if_i un_r un_i em_r em_i
+    lassign [sidecar_parse_black_boxes $bb_txt $top] if_r if_i un_r un_i em_r em_i ul_r ul_i
 
     # dont_verify 用户配置报告: 非空且无法解析 → fail-closed
     redirect -variable dv_txt {report_dont_verify_points}
@@ -542,6 +567,7 @@ proc sidecar_emit_inner {top} {
     append J "\"interface_only_ref\":[sidecar_jlist $if_r],\"interface_only_impl\":[sidecar_jlist $if_i],"
     append J "\"unresolved_blackbox_ref\":[sidecar_jlist $un_r],\"unresolved_blackbox_impl\":[sidecar_jlist $un_i],"
     append J "\"empty_blackbox_ref\":[sidecar_jlist $em_r],\"empty_blackbox_impl\":[sidecar_jlist $em_i],"
+    append J "\"unlinked_blackbox_ref\":[sidecar_jlist $ul_r],\"unlinked_blackbox_impl\":[sidecar_jlist $ul_i],"
     append J "\"unmatched_ref\":[sidecar_jlist $um_ref],\"unmatched_impl\":[sidecar_jlist $um_impl],"
     append J "\"unmatched_unread_ref\":[sidecar_jlist $um_unr_r],\"unmatched_unread_impl\":[sidecar_jlist $um_unr_i],"
     append J "\"unmatched_dont_verify_ref\":[sidecar_jlist $um_dv_r],\"unmatched_dont_verify_impl\":[sidecar_jlist $um_dv_i],"

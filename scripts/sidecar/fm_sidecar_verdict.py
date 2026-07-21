@@ -32,11 +32,15 @@ UNMATCH_KEYS = {"compare_ref", "compare_impl", "unread_ref", "unread_impl", "bbo
 # 默认主集/unread/dont_verify/bbox_output/bbox_input/primary_input 两侧原始集合。
 PAIR_OBJ_KEYS = {"matched_blackbox_pairs", "matched_unread_notcompared_pairs",
                  "matched_dont_verify_pairs"}
+# 十二审(combo-flag): unlinked_blackbox_* = 带 `*`(Unlinked design module)修饰符的黑盒实例
+# 集合(与主类 empty/unresolved/interface_only 并存的属性记录, 保留 observed fact 不静默丢)。
 REF_OBJ_KEYS = {"interface_only_ref", "unresolved_blackbox_ref", "empty_blackbox_ref",
+                "unlinked_blackbox_ref",
                 "unmatched_ref", "unmatched_unread_ref", "unmatched_dont_verify_ref",
                 "unmatched_bbox_output_ref", "unmatched_bbox_input_ref",
                 "unmatched_primary_input_ref"}
 IMPL_OBJ_KEYS = {"interface_only_impl", "unresolved_blackbox_impl", "empty_blackbox_impl",
+                 "unlinked_blackbox_impl",
                  "unmatched_impl", "unmatched_unread_impl", "unmatched_dont_verify_impl",
                  "unmatched_bbox_output_impl", "unmatched_bbox_input_impl",
                  "unmatched_primary_input_impl"}

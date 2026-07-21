@@ -12,7 +12,8 @@ SIGNOFF="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 GOLDEN=/home/eda/xs-env/G0-canonical/golden-rtl
 SC="$SIGNOFF/scripts/sidecar"
 MANIFEST=$1; TARGET=$2; TMO=${3:-1200}
-EROOT="$SC/signoff-evidence"
+# 证据根可 override(delta 轮次写独立目录, 不覆盖冻结基线 signoff-evidence/)
+EROOT="${SIGNOFF_EVIDENCE_ROOT:-$SC/signoff-evidence}"
 
 # --- manifest 条目(tab 分隔) ---
 IFS=$'\t' read -r UTDIR MK MT ENTRY PMODE REQV ALLOWREF CFG <<<"$(python3 - "$MANIFEST" "$TARGET" <<'PY'

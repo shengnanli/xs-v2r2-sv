@@ -80,10 +80,10 @@ T rev1_fm249_indented_block {
     expect_err "$HDR$C184\n$C249\n  u      Foo\n1\n" T bbox_empty_report_with_content
 }
 T rev2_zero_of_zero_no_249 {
-    expect_err "${BASE}u      Foo\n\n       Instances : 0 of 0\n1\n" T bbox_flag_section_mismatch
+    expect_err "${BASET}u      Foo\n\n       Instances : 0 of 0\n1\n" T instances_zero_of_zero
 }
 T rev2b_zero_of_zero_design {
-    expect_err "${BASE}e      Foo\n\n       Instances : 0 of 0\n1\n" T instances_zero_block
+    expect_err "${BASE}e      Foo\n\n       Instances : 0 of 0\n1\n" T instances_zero_of_zero
 }
 T rev3_top_column_extra_path {
     expect_err "${BASE}e      Foo\n\n       Instances : 1 of 1\n       ----\n       i:/WORK/T/x\ni:/WORK/T/y\n1\n" T bbox_BLOCKS_unparsed
@@ -224,6 +224,45 @@ T v5_tail_two_ones {
 }
 T v5_empty_no_tail {
     expect_err "$HDR$C184\n$C249\n" T bbox_end_phase_not_TAIL
+}
+# ---- 十二审(combo-flag: `e *` unlinked 修饰符, 窄范围)----
+T v12_combo_e_star_positive {
+    # `e *` = empty+unlinked: 解析成功, primary=e 入 empty(er/ei), 且 unlinked 记入 sr/si
+    lassign [sidecar_parse_black_boxes \
+        "${BASE}e *    Foo\n\n       Instances : 1 of 1\n       ----\n       i:/WORK/T/x\n1\n" T] a b c d e f g h
+    if {$f ne {i:/WORK/T/x}} { error "empty_impl 应含该路径, 得 [list $f]" }
+    if {$h ne {i:/WORK/T/x}} { error "unlinked_impl 应含该路径(不丢弃), 得 [list $h]" }
+}
+T v12_combo_u_star_tech {
+    lassign [sidecar_parse_black_boxes \
+        "${BASET}u *    Foo\n\n       Instances : 1 of 1\n       ----\n       i:/WORK/T/x\n1\n" T] a b c d e f g h
+    if {$d ne {i:/WORK/T/x}} { error "unresolved_impl 应含该路径" }
+    if {$h ne {i:/WORK/T/x}} { error "unlinked_impl 应含该路径" }
+}
+T v12_two_primary_flags_rejected {
+    expect_err "${BASE}e u    Foo\n\n       Instances : 1 of 1\n       ----\n       i:/WORK/T/x\n1\n" T bbox_multiple_primary_flags
+}
+T v12_unknown_modifier_rejected {
+    # 非文档化 flag(@)拒——不泛化为"忽略未知 flag"
+    expect_err "${BASE}e @    Foo\n\n       Instances : 1 of 1\n       ----\n       i:/WORK/T/x\n1\n" T bbox_unsupported_flag
+}
+T v12_star_alone_no_primary_rejected {
+    expect_err "${BASE}*    Foo\n\n       Instances : 1 of 1\n       ----\n       i:/WORK/T/x\n1\n" T bbox_no_primary_flag
+}
+T v12_unsupported_s_flag_still_rejected {
+    # s(set_black_box)等主类外 flag 仍拒(保持 fail-closed)
+    expect_err "${BASE}s    Foo\n\n       Instances : 1 of 1\n       ----\n       i:/WORK/T/x\n1\n" T bbox_unsupported_flag
+}
+T v12_bare_instances_zero_accepted {
+    # 真实零实例块 `Instances : 0`(黑盒设计存在但未实例化): 解析成功, 记0路径, 非畸形
+    lassign [sidecar_parse_black_boxes \
+        "${BASE}e *    Foo\n\n       Instances : 0\n\n1\n" T] a b c d e f g h
+    if {[llength $e]||[llength $f]||[llength $g]||[llength $h]} { error "零实例应无路径" }
+}
+T v12_two_zero_blocks_then_tail {
+    lassign [sidecar_parse_black_boxes \
+        "${BASE}e *    Foo\n\n       Instances : 0\n\ne *    Bar\n\n       Instances : 0\n\n1\n" T] a b c d e f
+    if {[llength $e]||[llength $f]} { error "应无路径" }
 }
 puts "$pass/[expr {$pass+$fail}] passed"
 if {$fail} { exit 1 }
