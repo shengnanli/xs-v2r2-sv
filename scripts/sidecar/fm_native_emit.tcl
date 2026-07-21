@@ -55,7 +55,12 @@ proc sidecar_appvar_trace {cmd op} {
     if {[lsearch -exact $allowed $name] < 0} {
         sidecar_intercept_fail "not-in-registry:$name"; return
     }
-    if {$::SIDECAR_PHASE ne "setup"} {
+    # phase 冻结**只针对 frozen-semantics 必须键**(unread 六元组/unresolved/interface_only/
+    # merge_dup): match 后不得改, 防"先放宽-match-恢复默认"藏 unread。
+    # OPTIONAL relaxing appvar(assume_reg_init/set_undriven_signals/propagate_const_reg_x/
+    # blackbox_match_mode)允许 post-match(post-match pin 合法调整): 它们必进 relaxed_appvars
+    # → validator 判 PARTIAL, **永不藏成 SUCCEEDED**(安全性由记录+PARTIAL保证, 非靠冻结)。
+    if {$::SIDECAR_PHASE ne "setup" && [lsearch -exact $::SIDECAR_APPVAR_REQUIRED $name] >= 0} {
         sidecar_intercept_fail "phase_violation_after_match:$name"; return
     }
     if {[info exists ::SIDECAR_AV_HISTORY($name)] && $::SIDECAR_AV_HISTORY($name) ne $val} {

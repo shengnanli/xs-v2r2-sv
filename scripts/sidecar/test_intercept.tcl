@@ -211,11 +211,19 @@ T history_ci_normalization_not_false_positive {
     unset ::SIDECAR_AV_HISTORY(verification_blackbox_match_mode)
     catch {unset ::AVMAP(verification_blackbox_match_mode)}
 }
-# ---- phase: 首次 match 后 proof appvar 冻结("先放宽-match-恢复"堵死) ----
-T phase_frozen_after_match {
+# ---- phase: 首次 match 后 **frozen-semantics 必须键** 冻结("先放宽-match-恢复"堵死) ----
+T phase_frozen_required_after_match {
     match
-    if {![catch {set_app_var verification_assume_reg_init Conservative}]} { error "match后未拦截" }
+    # REQUIRED(frozen-semantics)appvar post-match → 拒(防藏 unread)
+    if {![catch {set_app_var verification_verify_unread_compare_points true}]} { error "match后REQUIRED未拦截" }
     if {![string match "*phase_violation*" [lindex $::INTERCEPTED end]]} { error "类别不符" }
+}
+T phase_optional_relaxing_allowed_after_match {
+    # OPTIONAL relaxing appvar post-match 允许(post-match pin 合法; 记relaxed→PARTIAL不藏SUCCEEDED)
+    set n [llength $::INTERCEPTED]
+    set_app_var verification_assume_reg_init Conservative
+    if {[llength $::INTERCEPTED] != $n} { error "OPTIONAL post-match 被误拦" }
+    if {"verification_assume_reg_init" ni $::SIDECAR_EXTRA_KEYS} { error "OPTIONAL未记账(应入relaxed)" }
 }
 puts "$pass/[expr {$pass+$fail}] passed"
 if {$fail} { exit 1 }
