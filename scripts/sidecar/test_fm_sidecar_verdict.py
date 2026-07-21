@@ -302,6 +302,21 @@ C("appvar_asm_iface_nonempty_ok", "SUCCEEDED",
   exp=expect(proof_mode="assembly",
              entry_appvars={**AV0(), "hdlin_interface_only": "RVCExpander"},
              allow={"interface_only": [M("A", R0, I0)]}))
+# 十三审: hdlin_interface_only 多空白分隔(pin 多行续行遗留)语义等同单空格 → 接受
+C("appvar_asm_iface_multispace_ok", "SUCCEEDED",
+  fact_over={"entry_appvars": {**AV0(), "hdlin_interface_only": "Foo   Bar   Baz"},
+             "objects.interface_only_ref": [R0, R1], "objects.interface_only_impl": [I0, I1],
+             "objects.matched_blackbox_pairs": [P(R0, I0), P(R1, I1)]},
+  env_over={"proof_mode": "assembly"},
+  exp=expect(proof_mode="assembly",
+             entry_appvars={**AV0(), "hdlin_interface_only": "Foo   Bar   Baz"},
+             allow={"interface_only": [M("A", R0, I0), M("B", R1, I1)]}))
+# 层次名/点/斜杠等非标识符仍拒(not_normalized)
+C("appvar_asm_iface_hier_name_rejected", "ERROR",
+  fact_over={"entry_appvars": {**AV0(), "hdlin_interface_only": "u_core.Foo"}},
+  env_over={"proof_mode": "assembly"},
+  exp=expect(proof_mode="assembly",
+             entry_appvars={**AV0(), "hdlin_interface_only": "u_core.Foo"}))
 # 补丁4: native FAILED 最高优先级——policy 全覆盖也不得升级(WAIVED 不进 sidecar)
 C("native_failed_waiver_cannot_upgrade", "FAILED",
   fact_over={"native_verdict": "FAILED", "stats.failing": 20,

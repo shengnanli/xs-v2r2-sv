@@ -112,7 +112,12 @@ APPVAR_SPEC = {
     "verification_blackbox_match_mode":   {"enum_ci": ("any", "identity"), "default_ci": "any"},
     "verification_failing_point_limit":   {"decimal": True},
 }
-_IFACE_RE = re.compile(r"|[A-Za-z_][A-Za-z0-9_]*( [A-Za-z_][A-Za-z0-9_]*)*")
+# 十三审: hdlin_interface_only 是**空白分隔**的模块名列表; pin 多行续行(\)会在
+# token 间留多空格/tab/换行, FM 按空白分词语义等同单空格。分隔符放宽为 \s+(每个
+# token 仍严格校验为标识符, 点/斜杠/连字符/数字头/注入全拒), 首尾空白容忍。非造假绿:
+# 实际生效的 interface_only 模块集另经 objects vs policy 交叉核(assembly 路径→PARTIAL)。
+_IDENT = r"[A-Za-z_][A-Za-z0-9_]*"
+_IFACE_RE = re.compile(r"\s*(?:" + _IDENT + r"(?:\s+" + _IDENT + r")*)?\s*")
 _DEC_RE = re.compile(r"0|[1-9][0-9]{0,9}")
 
 
