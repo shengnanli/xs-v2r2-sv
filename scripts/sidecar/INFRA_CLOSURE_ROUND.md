@@ -67,3 +67,16 @@ dont_verify 6 / Step-3B bad=0 全绿。
 单一 orchestrator;同目标不并发;主树在 FM 运行期冻结,修改经提交后新 worktree 生效;
 每轮独立 evidence root(delta5/6/7);重型 FM ≤2 并发,MemAvail 全程 >30G;canary 用 2400s
 + 未盲目无限延时。
+
+## 附:timeout 桶深诊断(只读,确认推进 vs 卡死 —— 均非"提时限"可解)
+
+| 目标 | 卡在哪阶段(fm_log 实证) | 结论 | 建议修法(非盲提限) |
+|---|---|---|---|
+| **LoadQueueRAR** | `Matching... 1421M/8005 (3% Matched) 1230MB/1817.97sec` | **matching 组合爆炸**:30min 仅 3%,外推 ~17h。日志注释:"层次和签名都无法配对…FTQ/IFU 扇出复制"→命名/签名歧义致匹配候选叉乘(1421M) | 加 matching hint:`fm_map/LoadQueueRAR.txt` 字段映射 或 pin 内 `set_user_match` 钉关键 ref↔impl 对应(扇出复制点),压掉候选空间。**提时限无效** |
+| **CtrlBlock** | 日志止于 `Building verification models...`(从未到 Matching) | **建模阶段超时**(非匹配、非验证):40min 全耗在构建验证模型 = 设计过大/扁平化过重 | 证明分区(按子层次分证 CtrlBlock 各子块)或诊断建模为何慢(潜在深层实例爆炸)。单纯提时限风险高、收益不明 |
+
+**DataPath**(本轮已修 #8):原非 timeout —— FM 1466s 内 Verification SUCCEEDED,是 emitter 解析
+非空 dont_verify 报告的盲区,已修复 → PARTIAL。
+
+→ timeout 桶三者:1 修复(DataPath)、2 需 proof-engineering(LoadQueueRAR matching hint /
+CtrlBlock 分区),**无一是"直接调大 2400s"能解**。请裁示是否授权做 matching hint / 分区。
