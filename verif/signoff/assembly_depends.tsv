@@ -1,0 +1,11 @@
+# 父assembly目标 -> 依赖的child FM目标(须同baseline+impl全SIGNOFF_PASS父级才计绿)
+# 条件挂起(assembly证明已SUCCEEDED但child未闭合, 保持PROOF_GAP直到child全绿)
+ICache	ICacheCtrlUnit,ICacheDataArray,ICacheMainPipe,ICacheMissUnit,IPrefetchPipe,ICacheReplacer
+ITTageTable	WrBypass_41
+ITTageTable_1	WrBypass_41
+ITTageTable_2	WrBypass_43
+ITTageTable_3	WrBypass_43
+ITTageTable_4	WrBypass_43
+LsqWrapper	LoadQueue,StoreQueue
+SNXbar	FastArbiter_46,FastArbiter_47
+SplittedSRAMTemplate_2	SRAMTemplate_36
