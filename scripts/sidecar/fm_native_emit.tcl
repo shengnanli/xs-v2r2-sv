@@ -528,17 +528,28 @@ proc sidecar_emit_inner {top} {
     redirect -variable bb_txt {report_black_boxes}
     lassign [sidecar_parse_black_boxes $bb_txt $top] if_r if_i un_r un_i em_r em_i ul_r ul_i
 
-    # dont_verify 用户配置报告: 非空且无法解析 → fail-closed
+    # dont_verify 对象**权威来源 = -status dont_verify -list**(l_m_dv 对 + um_dv_r/i, 格式无关);
+    # report_dont_verify_points 文本仅作 header 结构 sanity。非空报告(DataPath: 8216 点)以
+    # 头行 "Don't verify points:"(无 None)起 + 逐点列出, 逐行格式随 FM 版本/分组而异——不脆弱
+    # 逐行解析, 改由 -list 派生 dv_objs, 并交叉核验"报告非空 ⇔ -list 非空"(防捕获漏)。
     redirect -variable dv_txt {report_dont_verify_points}
     set dv_objs {}
+    foreach p $l_m_dv { foreach q $p { lappend dv_objs $q } }
+    foreach q $um_dv_r { lappend dv_objs $q }
+    foreach q $um_dv_i { lappend dv_objs $q }
+    set dv_nonempty_hdr 0
     foreach ln [split $dv_txt "\n"] {
         set t [string trim $ln]
-        if {$t eq "" || [regexp {^\*+$} $t] || [regexp {^(Report|Reference|Implementation|Version|Date)\s} $t]} continue
+        if {$t eq "" || [regexp {^\*+$} $t] || [regexp {^(Report|Reference|Implementation|Version|Date)[\s:]} $t]} continue
         if {[regexp {FM-\d+} $t]} continue
         if {[regexp {^Don't verify points:\s*None$} $t]} continue   ;# 空集标准行(3B 实证)
+        if {[regexp {^Don't verify points:} $t]} { set dv_nonempty_hdr 1; continue }   ;# 非空头(后随点列)
         if {[string is integer -strict $t]} continue   ;# redirect 含命令返回值回显(3A/3B 实证)
+        if {$dv_nonempty_hdr} continue   ;# 非空报告点行: 对象已由 -list 权威捕获
         error "dont_verify_report_unparsed_line:$t"
     }
+    # 交叉核验: 报告称非空 ⇔ -list 也应非空(捕获一致性, 防漏)
+    if {$dv_nonempty_hdr && [llength $dv_objs] == 0} { error "dont_verify_nonempty_report_but_empty_list" }
 
     # entry appvars(verify 前已捕获)
     if {![info exists ::SIDECAR_AV]} { error "appvars_not_captured_before_verify" }
