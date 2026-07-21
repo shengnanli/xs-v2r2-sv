@@ -20,9 +20,4 @@ foreach {rp lane} {s2_valid_REG_1 0 s2_valid_REG_3 1 s2_valid_REG_5 2} {
 catch {set_user_match "r:/WORK/$top/lastCycleRedirect_valid_REG_reg" \
                       "i:/WORK/$top/u_core/redirect_d1_reg\\\[valid\]"}
 
-# freeList 黑盒（未给 FM 模块定义 → 引脚方向未知）的 io_empty 输出脚：两侧均无消费
-# （golden 只把它接到悬空 _probe 线；重写核连到未读的 free_empty），但方向未知使 FM
-# 把它当可验证比对点且两侧"驱动"均为悬空 → 误报。功能上该脚无任何 fanout，安全跳过。
-catch {set_dont_verify_points "r:/WORK/$top/freeList/io_empty"}
-catch {set_dont_verify_points "i:/WORK/$top/u_core/u_freelist/io_empty"}
-puts "LQU_PINS: per-lane redirect copies pinned + io_empty dont-verify"
+puts "LQU_PINS: per-lane redirect copies pinned"
