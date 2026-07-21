@@ -8,6 +8,10 @@
 #   GOLDEN_SRCS     UT 双例化比对所需的 golden RTL 文件列表
 #   FM_VARIANTS     做 FM 等价的 golden 顶层名列表，如 "WrBypass WrBypass_32"
 #   FM_REF_DEPS_<名> 该变体在 golden 侧的依赖文件（相对 GOLDEN_RTL 的文件名）
+#   FM_REF_ABS_<名>  该变体 golden 侧依赖的**绝对路径**（不加 GOLDEN_RTL 前缀）；
+#                    用于 repo 内的 canonical 接口桩(如 Composer predictor_stubs.sv,
+#                    由 golden 头生成、两侧同读)——signoff 把 GOLDEN_RTL 外部化为 G0
+#                    后 repo 文件无法用 GOLDEN_RTL-相对路径寻址，故走绝对路径。默认空。
 
 XSSV_HOME ?= $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/..)
 GOLDEN_RTL ?= $(XSSV_HOME)/golden/chisel-rtl
@@ -55,7 +59,7 @@ fm-%:
 	@echo "=== FM: $* (mode=$(FM_MODE)) ==="
 	FM_TOP=$* \
 	FM_MODE=$(FM_MODE) \
-	FM_REF_SRCS="$(GOLDEN_RTL)/$*.sv $(addprefix $(GOLDEN_RTL)/,$(FM_REF_DEPS_$*))" \
+	FM_REF_SRCS="$(GOLDEN_RTL)/$*.sv $(addprefix $(GOLDEN_RTL)/,$(FM_REF_DEPS_$*)) $(FM_REF_ABS_$*)" \
 	FM_IMPL_SRCS="$(abspath $(RTL_SRCS) $(WRAPPER_SRCS))" \
 	$(if $(FM_MERGE_DUP),FM_MERGE_DUP=$(FM_MERGE_DUP),) \
 	$(if $(FM_INTERFACE_ONLY),FM_INTERFACE_ONLY="$(FM_INTERFACE_ONLY)",) \

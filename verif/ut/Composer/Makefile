@@ -97,7 +97,10 @@ FM_VARIANTS = Composer
 # unresolved blackbox 引脚方向未知, 会把预测器输出(io_out_last_stage_meta 等)
 # 当输入建 2186 个 Und 比对点+同数 failing(全部假阳性)。桩只给 FM 方向信息,
 # 逻辑仍为空(等价黑盒), 预测器内部在各自 UT/FM 单独验证。DelayN 小, 直接给真源。
-FM_REF_DEPS_Composer = ../../verif/ut/Composer/predictor_stubs.sv DelayN.sv
+# DelayN.sv 是 golden 文件(GOLDEN_RTL 相对); predictor_stubs.sv 是 repo 内 canonical 桩,
+# 走 FM_REF_ABS 绝对路径(signoff 外部化 GOLDEN_RTL 后 repo 文件无法 GOLDEN_RTL-相对寻址)。
+FM_REF_DEPS_Composer = DelayN.sv
+FM_REF_ABS_Composer = $(abspath predictor_stubs.sv)
 # impl 侧同读桩与 DelayN(仅 FM 用; UT 编译不含 WRAPPER_SRCS, 不会与真源重定义)
 WRAPPER_SRCS += predictor_stubs.sv $(GOLDEN_RTL)/DelayN.sv
 
