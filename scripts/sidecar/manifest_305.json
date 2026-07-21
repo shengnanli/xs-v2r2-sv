@@ -2598,11 +2598,11 @@
    "makefile": "verif/ut/SRAMTemplate/Makefile",
    "make_target": "fm-SRAMTemplate_36",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/SRAMTemplate_36.json",
+   "rationale": "SRAM叶: array_1_ext厂商SRAM硬宏边界(hold_read死状态已参数守卫修复消unread); 验证SRAM周边逻辑",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
