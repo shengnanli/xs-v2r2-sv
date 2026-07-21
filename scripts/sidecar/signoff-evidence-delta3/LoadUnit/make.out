@@ -1,0 +1,17 @@
+=== FM: LoadUnit (mode=signoff-strict) ===
+FM_TOP=LoadUnit \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/LoadUnit.sv /home/eda/xs-env/G0-canonical/golden-rtl/MemTrigger.sv" \
+FM_IMPL_SRCS="/tmp/tmp.W91UeOHgel/wt/rtl/memblock/loadunit_pkg.sv /tmp/tmp.W91UeOHgel/wt/rtl/memblock/LoadUnit.sv /tmp/tmp.W91UeOHgel/wt/rtl/memblock/LoadUnit_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/MemTrigger.sv" \
+FM_MERGE_DUP=false \
+ \
+ \
+ \
+FM_PIN_TCL=/tmp/tmp.W91UeOHgel/wt/verif/ut/LoadUnit/fm_pins.tcl \
+fm_shell -64 -work_path fm_work/LoadUnit -file /tmp/tmp.W91UeOHgel/wt/scripts/fm_eq.tcl \
+    > fm_work/LoadUnit/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.W91UeOHgel/wt/scripts/fm_verdict.py fm_work/LoadUnit/fm.log --rc $rc --mode signoff-strict --top LoadUnit --allowlist 0
+PARTIAL	{"passing": 7713, "failing": 0, "unverified": null, "unmatched": 1, "aborted": null, "unread": 149, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "LoadUnit", "dont_verify": false, "elab147": false, "reason": "strict_unmatched!=0", "unmatched_ref": 1, "unmatched_impl": 0}
+make: *** [../../../scripts/ut_common.mk:56: fm-LoadUnit] Error 1

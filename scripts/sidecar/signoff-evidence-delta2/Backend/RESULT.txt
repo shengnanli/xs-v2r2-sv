@@ -1,0 +1,4 @@
+SIGNOFF_RESULT Backend: measured=PARTIAL required=SUCCEEDED gate=GAP (proof=assembly fm_shell_rc=0 validator_rc=1)
+run_id: SGN-Backend-1784603317
+impl_commit: 7fd315f166b9294db24bde29e02068f380ad56e5
+manifest_sha256: 256902c1d5e6231aaca309d5ce237fd4f40dbd6fa56cb92be0c6f4918da0eb96
