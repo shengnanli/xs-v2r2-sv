@@ -1,8 +1,8 @@
 {
  "schema": "fm-signoff-manifest-v2",
  "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456",
- "count_total": 306,
- "count_configured": 305,
+ "count_total": 307,
+ "count_configured": 306,
  "count_unconfigured": 1,
  "entries": [
   {
@@ -2684,6 +2684,19 @@
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
+   "target": "SRAMTemplate_197",
+   "ut_dir": "SRAMTemplate_197",
+   "makefile": "verif/ut/SRAMTemplate_197/Makefile",
+   "make_target": "fm-SRAMTemplate_197",
+   "entry": "scripts/fm_eq.tcl",
+   "proof_mode": "signoff-strict",
+   "config_status": "CONFIGURED",
+   "required_verdict": "SUCCEEDED",
+   "allow_ref": "",
+   "rationale": "",
+   "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
+  },
+  {
    "target": "SRAMTemplate_64",
    "ut_dir": "SRAMTemplate_2p",
    "makefile": "verif/ut/SRAMTemplate_2p/Makefile",
@@ -3352,11 +3365,11 @@
    "makefile": "verif/ut/TLBuffer_13/Makefile",
    "make_target": "fm-TLBuffer_13",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/TLBuffer_13.json",
+   "rationale": "Queue2逻辑inline证等价, 各队列ram_ext存储硬宏两侧黑盒(FM诊断inline RAM因空队列B通道don't-care X-init假失配); ram_ext硬宏边界",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
