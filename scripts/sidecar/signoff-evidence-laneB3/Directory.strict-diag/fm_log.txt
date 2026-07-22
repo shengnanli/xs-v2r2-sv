@@ -21,11 +21,11 @@
 
 Build: 8868332
 Hostname: localhost.localdomain
-Current time: Wed Jul 22 09:09:31 2026
+Current time: Wed Jul 22 09:06:38 2026
 
 Loading db file '/home/eda/app/synopsys/fm/V-2023.12-SP3/libraries/syn/gtech.db'
 
-Script: /tmp/tmp.WHl9ukA3hx/wt/scripts/fm_eq.tcl
+Script: /tmp/tmp.TfL6bv6iSU/wt/scripts/fm_eq.tcl
 
 Information: Term was not able to be set up using xterm-256color . Using "xterm" by default instead. (CLE-10)
 # Formality 等价性检查通用脚本
@@ -38,7 +38,7 @@ Directory
 set ref_srcs  $env(FM_REF_SRCS)
 /home/eda/xs-env/G0-canonical/golden-rtl/Directory.sv /home/eda/xs-env/G0-canonical/golden-rtl/SplittedSRAM_2.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_137.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_139.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_141.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_142.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_143.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p512x76m19s1h0l1b_l2_tag.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p512x104m13s1h0l1b_l2_meta.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p512x16m16s1h0l1b_l2_repl.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p512x8m1s1h0l1b_l2_orgb.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_14.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_15.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_16.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_17.sv 
 set impl_srcs $env(FM_IMPL_SRCS)
-/tmp/tmp.WHl9ukA3hx/wt/rtl/uncore/directory_pkg.sv /tmp/tmp.WHl9ukA3hx/wt/rtl/uncore/Directory.sv /tmp/tmp.WHl9ukA3hx/wt/rtl/uncore/Directory_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/SplittedSRAM_2.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_137.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_139.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_141.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_142.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_143.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p512x76m19s1h0l1b_l2_tag.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p512x104m13s1h0l1b_l2_meta.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p512x16m16s1h0l1b_l2_repl.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p512x8m1s1h0l1b_l2_orgb.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_14.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_15.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_16.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_17.sv
+/tmp/tmp.TfL6bv6iSU/wt/rtl/uncore/directory_pkg.sv /tmp/tmp.TfL6bv6iSU/wt/rtl/uncore/Directory.sv /tmp/tmp.TfL6bv6iSU/wt/rtl/uncore/Directory_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/SplittedSRAM_2.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_137.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_139.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_141.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_142.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_143.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p512x76m19s1h0l1b_l2_tag.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p512x104m13s1h0l1b_l2_meta.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p512x16m16s1h0l1b_l2_repl.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p512x8m1s1h0l1b_l2_orgb.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_14.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_15.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_16.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_17.sv
 # ----------------------------------------------------------------------------
 # Step 3B sidecar emitter(FM_SIDECAR_OUT 非空时启用; 契约 = SIDECAR_SCHEMA.md v7 冻结版):
 # source 后立即对将被 source 的模块本地 Tcl 做**运行期 appvar 拦截**(set_app_var 名字
@@ -71,7 +71,7 @@ if {[info exists env(FM_SIDECAR_OUT)] && [string trim $env(FM_SIDECAR_OUT)] ne "
 set _fmmode "signoff-strict"
 signoff-strict
 if {[info exists env(FM_MODE)]} { set _fmmode $env(FM_MODE) }
-assembly
+signoff-strict
 switch -- $_fmmode {
   "assembly" {
     if {[info exists env(FM_INTERFACE_ONLY)] && [string trim $env(FM_INTERFACE_ONLY)] ne ""} {
@@ -106,10 +106,10 @@ if {[info exists env(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS)] &&
     set _verify_matched_unread_compare_points \
         [string trim $env(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS)]
 }
-true
+false
 switch -- $_verify_matched_unread_compare_points {
   "true" {
-    if {$top ni {LoadQueueUncache FastArbiter_46 FastArbiter_47 FastArbiter_27 FastArbiter_44 ICacheCtrlUnit ICacheDataArray IPrefetchPipe DivUnit FDivSqrt InstrMMIOEntry InstrUncache TXDAT_4 FAlu FCVT IssueQueueStdMoud MulUnit TXREQ TlbStorageWrapper TlbStorageWrapper_1 IssueQueueStaMou IssueQueueLdu TXDAT Scheduler_1 Scheduler Scheduler_3 MSHR TageBTable Directory}} {
+    if {$top ni {LoadQueueUncache FastArbiter_46 FastArbiter_47 FastArbiter_27 FastArbiter_44 ICacheCtrlUnit ICacheDataArray IPrefetchPipe DivUnit FDivSqrt InstrMMIOEntry InstrUncache TXDAT_4 FAlu FCVT IssueQueueStdMoud MulUnit TXREQ TlbStorageWrapper TlbStorageWrapper_1 IssueQueueStaMou IssueQueueLdu TXDAT Scheduler_1 Scheduler Scheduler_3 MSHR TageBTable}} {
       puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
       exit 3
     }
@@ -122,7 +122,7 @@ switch -- $_verify_matched_unread_compare_points {
 }
 set_app_var verification_verify_matched_unread_compare_points \
     $_verify_matched_unread_compare_points
-true
+false
 set_app_var verification_verify_unread_bbox_inputs false
 false
 set_app_var verification_verify_matched_unread_bbox_inputs true
@@ -217,9 +217,9 @@ Reference design set to 'r:/WORK/Directory'
 # Implementation: 手写 SV
 read_sverilog -i -define {SYNTHESIS} $impl_srcs
 No target library specified, default is WORK
-Loading verilog file '/tmp/tmp.WHl9ukA3hx/wt/rtl/uncore/directory_pkg.sv'
-Loading verilog file '/tmp/tmp.WHl9ukA3hx/wt/rtl/uncore/Directory.sv'
-Loading verilog file '/tmp/tmp.WHl9ukA3hx/wt/rtl/uncore/Directory_wrapper.sv'
+Loading verilog file '/tmp/tmp.TfL6bv6iSU/wt/rtl/uncore/directory_pkg.sv'
+Loading verilog file '/tmp/tmp.TfL6bv6iSU/wt/rtl/uncore/Directory.sv'
+Loading verilog file '/tmp/tmp.TfL6bv6iSU/wt/rtl/uncore/Directory_wrapper.sv'
 Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/SplittedSRAM_2.sv'
 Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_137.sv'
 Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_139.sv'
@@ -331,7 +331,7 @@ Status:  Merging duplicated registers in block i:/WORK/Directory/u_core (/WORK/x
 Status:  Matching...
     
 *********************************** Matching Results ***********************************    
- 2362 Compare points matched by name    
+ 2346 Compare points matched by name    
  24 Compare points matched by signature analysis    
  0 Compare points matched by topology    
  1621 Matched primary inputs, black-box outputs    
@@ -430,7 +430,7 @@ Reference design is 'r:/WORK/Directory'
 Implementation design is 'i:/WORK/Directory'
     
 *********************************** Matching Results ***********************************    
- 2362 Compare points matched by name    
+ 2346 Compare points matched by name    
  24 Compare points matched by signature analysis    
  0 Compare points matched by topology    
  1621 Matched primary inputs, black-box outputs    
@@ -446,12 +446,14 @@ Verification SUCCEEDED
 ----------------------
  Reference design: r:/WORK/Directory
  Implementation design: i:/WORK/Directory
- 2386 Passing compare points
+ 2370 Passing compare points
 ----------------------------------------------------------------------------------------
 Matched Compare Points     BBPin    Loop   BBNet     Cut    Port     DFF     LAT   TOTAL
 ----------------------------------------------------------------------------------------
-Passing (equivalent)        1122       0       0       0     243    1021       0    2386
+Passing (equivalent)        1122       0       0       0     243    1005       0    2370
 Failing (not equivalent)       0       0       0       0       0       0       0       0
+Not Compared
+  Unread                       0       0       0       0       0      16       0      16
 ****************************************************************************************
 FM_RESULT: Verification SUCCEEDED for Directory
 # sidecar: 全查询→内存解析→原子写 native_facts.json(任何错误删 tmp 并 exit 4)
@@ -460,8 +462,8 @@ SIDECAR_NATIVE_FACTS_WRITTEN
 exit
 
 Maximum memory usage for this session: 867 MB
-CPU usage for this session: 14.28 seconds ( 0.00 hours )
-Current time: Wed Jul 22 09:09:56 2026
-Elapsed time: 29 seconds ( 0.01 hours )
+CPU usage for this session: 14.31 seconds ( 0.00 hours )
+Current time: Wed Jul 22 09:07:02 2026
+Elapsed time: 30 seconds ( 0.01 hours )
 
 Thank you for using Formality (R)!

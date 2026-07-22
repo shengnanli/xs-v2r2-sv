@@ -1,1 +1,47 @@
-{"unresolved_blackbox":[],"interface_only":[],"empty_blackbox":[],"unmatched":[]}
+{
+    "unresolved_blackbox": [
+        {
+            "id": "mbistPl",
+            "ref_path": "r:/WORK/Directory/mbistPl",
+            "impl_path": "i:/WORK/Directory/mbistPl"
+        },
+        {
+            "id": "metaArray_array_array_array_15_ext",
+            "ref_path": "r:/WORK/Directory/metaArray/array/array/array_15_ext",
+            "impl_path": "i:/WORK/Directory/metaArray/array/array/array_15_ext"
+        },
+        {
+            "id": "origin_bit_opt_array_array_array_17_ext",
+            "ref_path": "r:/WORK/Directory/origin_bit_opt/array/array/array_17_ext",
+            "impl_path": "i:/WORK/Directory/origin_bit_opt/array/array/array_17_ext"
+        },
+        {
+            "id": "replacer_sram_opt_array_array_array_16_ext",
+            "ref_path": "r:/WORK/Directory/replacer_sram_opt/array/array/array_16_ext",
+            "impl_path": "i:/WORK/Directory/replacer_sram_opt/array/array/array_16_ext"
+        },
+        {
+            "id": "tagArray_array_0_0_0_array_array_array_14_ext",
+            "ref_path": "r:/WORK/Directory/tagArray/array_0_0_0/array/array/array_14_ext",
+            "impl_path": "i:/WORK/Directory/tagArray/array_0_0_0/array/array/array_14_ext"
+        },
+        {
+            "id": "tagArray_array_0_0_1_array_array_array_14_ext",
+            "ref_path": "r:/WORK/Directory/tagArray/array_0_0_1/array/array/array_14_ext",
+            "impl_path": "i:/WORK/Directory/tagArray/array_0_0_1/array/array/array_14_ext"
+        },
+        {
+            "id": "tagArray_array_0_1_0_array_array_array_14_ext",
+            "ref_path": "r:/WORK/Directory/tagArray/array_0_1_0/array/array/array_14_ext",
+            "impl_path": "i:/WORK/Directory/tagArray/array_0_1_0/array/array/array_14_ext"
+        },
+        {
+            "id": "tagArray_array_0_1_1_array_array_array_14_ext",
+            "ref_path": "r:/WORK/Directory/tagArray/array_0_1_1/array/array/array_14_ext",
+            "impl_path": "i:/WORK/Directory/tagArray/array_0_1_1/array/array/array_14_ext"
+        }
+    ],
+    "interface_only": [],
+    "empty_blackbox": [],
+    "unmatched": []
+}

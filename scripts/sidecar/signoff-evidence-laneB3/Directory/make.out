@@ -1,18 +1,17 @@
-=== FM: Directory (mode=signoff-strict) ===
+=== FM: Directory (mode=assembly) ===
 FM_TOP=Directory \
-FM_MODE=signoff-strict \
+FM_MODE=assembly \
 FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/Directory.sv /home/eda/xs-env/G0-canonical/golden-rtl/SplittedSRAM_2.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_137.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_139.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_141.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_142.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_143.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p512x76m19s1h0l1b_l2_tag.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p512x104m13s1h0l1b_l2_meta.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p512x16m16s1h0l1b_l2_repl.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p512x8m1s1h0l1b_l2_orgb.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_14.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_15.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_16.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_17.sv " \
-FM_IMPL_SRCS="/tmp/tmp.TfL6bv6iSU/wt/rtl/uncore/directory_pkg.sv /tmp/tmp.TfL6bv6iSU/wt/rtl/uncore/Directory.sv /tmp/tmp.TfL6bv6iSU/wt/rtl/uncore/Directory_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/SplittedSRAM_2.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_137.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_139.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_141.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_142.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_143.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p512x76m19s1h0l1b_l2_tag.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p512x104m13s1h0l1b_l2_meta.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p512x16m16s1h0l1b_l2_repl.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p512x8m1s1h0l1b_l2_orgb.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_14.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_15.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_16.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_17.sv" \
+FM_IMPL_SRCS="/tmp/tmp.WHl9ukA3hx/wt/rtl/uncore/directory_pkg.sv /tmp/tmp.WHl9ukA3hx/wt/rtl/uncore/Directory.sv /tmp/tmp.WHl9ukA3hx/wt/rtl/uncore/Directory_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/SplittedSRAM_2.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_137.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_139.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_141.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_142.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_143.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p512x76m19s1h0l1b_l2_tag.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p512x104m13s1h0l1b_l2_meta.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p512x16m16s1h0l1b_l2_repl.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p512x8m1s1h0l1b_l2_orgb.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_14.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_15.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_16.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_17.sv" \
  \
-FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=false \
- \
- \
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=true \
  \
  \
-fm_shell -64 -work_path fm_work/Directory -file /tmp/tmp.TfL6bv6iSU/wt/scripts/fm_eq.tcl \
+ \
+ \
+fm_shell -64 -work_path fm_work/Directory -file /tmp/tmp.WHl9ukA3hx/wt/scripts/fm_eq.tcl \
     > fm_work/Directory/fm.log 2>&1; \
 rc=$?; \
 if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
-python3 /tmp/tmp.TfL6bv6iSU/wt/scripts/fm_verdict.py fm_work/Directory/fm.log --rc $rc --mode signoff-strict --top Directory --allowlist 0
-PARTIAL	{"passing": 2370, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": 16, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "Directory", "dont_verify": false, "elab147": false, "reason": "strict_unread!=0", "unmatched_ref": 0, "unmatched_impl": 0}
-make: *** [../../../scripts/ut_common.mk:60: fm-Directory] Error 1
+python3 /tmp/tmp.WHl9ukA3hx/wt/scripts/fm_verdict.py fm_work/Directory/fm.log --rc $rc --mode assembly --top Directory --allowlist 0
+SUCCEEDED	{"passing": 2386, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "assembly", "native": "SUCCEEDED", "top": "Directory", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

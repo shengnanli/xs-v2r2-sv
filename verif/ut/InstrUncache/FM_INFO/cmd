@@ -1,0 +1,6 @@
+/home/eda/app/synopsys/fm/V-2023.12-SP3/linux64/fm/bin/fm_shell_exec -r /home/eda/app/synopsys/fm/V-2023.12-SP3 -file /tmp/dump_bb.tcl 
+
+Version    = V-2023.12-SP3
+Build      = V-2023.12-SP3-formality_v2023.12_sp3_rel-8868332
+Build date = Apr 13, 2024
+Run date   = Mon Jul 20 22:00:15 2026 EDT

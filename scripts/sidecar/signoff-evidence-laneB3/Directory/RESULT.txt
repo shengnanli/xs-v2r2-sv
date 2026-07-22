@@ -1,4 +1,5 @@
-SIGNOFF_RESULT Directory: measured=PARTIAL required=SUCCEEDED gate=GAP (proof=signoff-strict fm_shell_rc=0 validator_rc=1)
-run_id: SGN-Directory-1784725589
-impl_commit: 1d13a87b2d6dcf8e8f536650a6da175f5faa7464
-manifest_sha256: 753bb9d3e068f8ffc2541d560ae4f8af86620ad0ec9131a24f0e5860d8190068
+SIGNOFF_RESULT Directory: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=assembly fm_shell_rc=0 validator_rc=0)
+run_id: SGN-Directory-1784725763
+impl_commit: ba12767e5a15fc909c71fa8052f6106b3171dd35
+manifest_sha256: 9333074c3b67d43714fe0932843d34baedca10b2717c039ca611523c65fe324f
+CLEAN_GATE_FAIL

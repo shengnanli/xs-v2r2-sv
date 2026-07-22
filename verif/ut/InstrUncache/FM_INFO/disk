@@ -1,0 +1,10 @@
+Directory = /home/eda/xs-env/xs-signoff/verif/ut/InstrUncache
+Total     = 425 GB
+Available = 33 GB
+Used      = 392 GB (93%)
+
+Directory = /tmp
+Total     = 70 GB
+Available = 55 GB
+Used      = 15 GB (22%)
+
