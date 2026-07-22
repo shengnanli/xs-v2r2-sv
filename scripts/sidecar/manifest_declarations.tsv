@@ -39,3 +39,4 @@ SRAMTemplate_36	assembly	verif/signoff/allow/SRAMTemplate_36.json	SRAM叶: array
 TLBuffer_13	assembly	verif/signoff/allow/TLBuffer_13.json	Queue2逻辑inline证等价, ram_ext/ram_sink_ext存储硬宏两侧黑盒(FM诊断inline RAM因空队列B通道don't-care X-init假失配)
 SubDirectory	assembly	verif/signoff/allow/SubDirectory.json	父级glue assembly：tagArray=SRAMTemplate_197、metaArray=SRAMTemplate_198、lfsr_prng=MaxPeriodFibonacciLFSR_3，三者均为已独立证明child；本声明只接受审核过的对称unresolved边界
 LoadQueueUncache	signoff-strict		目标级 strengthening：将 matched unread compare points 纳入 verify，不删点、不 dont_verify、不放宽	true
+SubDirectory_1	assembly	verif/signoff/allow/SubDirectory_1.json	L2 SubDirectory_1: meta/tag/replacer SRAM(199/200/201)+lfsr 作已验证child边界(depends_on)

@@ -1,8 +1,8 @@
 {
  "schema": "fm-signoff-manifest-v2",
  "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456",
- "count_total": 306,
- "count_configured": 305,
+ "count_total": 309,
+ "count_configured": 308,
  "count_unconfigured": 1,
  "entries": [
   {
@@ -2890,6 +2890,48 @@
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
+   "target": "SRAMTemplate_199",
+   "ut_dir": "SRAMTemplate_199",
+   "makefile": "verif/ut/SRAMTemplate_199/Makefile",
+   "make_target": "fm-SRAMTemplate_199",
+   "entry": "scripts/fm_eq.tcl",
+   "proof_mode": "signoff-strict",
+   "config_status": "CONFIGURED",
+   "required_verdict": "SUCCEEDED",
+   "allow_ref": "",
+   "rationale": "",
+   "verify_matched_unread_compare_points": "false",
+   "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
+  },
+  {
+   "target": "SRAMTemplate_200",
+   "ut_dir": "SRAMTemplate_200",
+   "makefile": "verif/ut/SRAMTemplate_200/Makefile",
+   "make_target": "fm-SRAMTemplate_200",
+   "entry": "scripts/fm_eq.tcl",
+   "proof_mode": "signoff-strict",
+   "config_status": "CONFIGURED",
+   "required_verdict": "SUCCEEDED",
+   "allow_ref": "",
+   "rationale": "",
+   "verify_matched_unread_compare_points": "false",
+   "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
+  },
+  {
+   "target": "SRAMTemplate_201",
+   "ut_dir": "SRAMTemplate_201",
+   "makefile": "verif/ut/SRAMTemplate_201/Makefile",
+   "make_target": "fm-SRAMTemplate_201",
+   "entry": "scripts/fm_eq.tcl",
+   "proof_mode": "signoff-strict",
+   "config_status": "CONFIGURED",
+   "required_verdict": "SUCCEEDED",
+   "allow_ref": "",
+   "rationale": "",
+   "verify_matched_unread_compare_points": "false",
+   "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
+  },
+  {
    "target": "SRAMTemplate_64",
    "ut_dir": "SRAMTemplate_2p",
    "makefile": "verif/ut/SRAMTemplate_2p/Makefile",
@@ -3273,11 +3315,11 @@
    "makefile": "verif/ut/SubDirectory_1/Makefile",
    "make_target": "fm-SubDirectory_1",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/SubDirectory_1.json",
+   "rationale": "L2 SubDirectory_1: meta/tag/replacer SRAM(199/200/201)+lfsr 作已验证child边界(depends_on)",
    "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
