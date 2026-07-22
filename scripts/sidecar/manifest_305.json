@@ -1093,8 +1093,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "目标strengthening: s2预取流水寄存器 s2_req_paddr/vaddr(PORT_NUM口全宽地址) + s2_isSoftPrefetch, 被getter(get_idx/get_phy_tag/get_blk_addr)按地址子集消费, 未用位(offset低位等)两侧对称cone-dead(golden s2_req_paddr_0_reg / 可读核s2_req_paddr_reg[port]数组, auto_match签名配对). vmucp=true令FM实际比较这96个matched死位验证恒相等(同源s1->s2流水锁存); 非waiver/dont_verify/扩黑盒",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
