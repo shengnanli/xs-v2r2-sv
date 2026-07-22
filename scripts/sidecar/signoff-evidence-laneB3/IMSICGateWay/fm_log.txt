@@ -1,19 +1,51 @@
+
+                                 Formality (R)
+
+               Version V-2023.12-SP3 for linux64 - Apr 13, 2024 
+
+                    Copyright (c) 1988 - 2024 Synopsys, Inc.
+   This software and the associated documentation are proprietary to Synopsys,
+ Inc. This software may only be used in accordance with the terms and conditions
+ of a written license agreement with Synopsys, Inc. All other use, reproduction,
+   or distribution of this software is strictly prohibited.  Licensed Products
+     communicate with Synopsys servers for the purpose of providing software
+    updates, detecting software piracy and verifying that customers are using
+    Licensed Products in conformity with the applicable License Key for such
+  Licensed Products. Synopsys will use information gathered in connection with
+    this process to deliver software updates and pursue software pirates and
+                                   infringers.
+
+ Inclusivity & Diversity - Visit SolvNetPlus to read the "Synopsys Statement on
+            Inclusivity and Diversity" (Refer to article 000036315 at
+                        https://solvnetplus.synopsys.com)
+
+Build: 8868332
+Hostname: localhost.localdomain
+Current time: Wed Jul 22 05:58:22 2026
+
+Loading db file '/home/eda/app/synopsys/fm/V-2023.12-SP3/libraries/syn/gtech.db'
+
+Script: /tmp/tmp.ZBW0S34k6e/wt/scripts/fm_eq.tcl
+
+Information: Term was not able to be set up using xterm-256color . Using "xterm" by default instead. (CLE-10)
 # Formality 等价性检查通用脚本
 # 由 scripts/ut_common.mk 的 fm-% 目标调用，经环境变量传参：
 #   FM_TOP        顶层模块名（golden 变体名；impl 侧包装层与其同名同端口）
 #   FM_REF_SRCS   golden RTL 文件列表（变体 + 其子模块）
 #   FM_IMPL_SRCS  手写 SV 文件列表（参数化核心 + 包装层）
-
 set top       $env(FM_TOP)
+IMSICGateWay
 set ref_srcs  $env(FM_REF_SRCS)
+/home/eda/xs-env/G0-canonical/golden-rtl/IMSICGateWay.sv  
 set impl_srcs $env(FM_IMPL_SRCS)
-
+/tmp/tmp.ZBW0S34k6e/wt/rtl/uncore/imsic_pkg.sv /tmp/tmp.ZBW0S34k6e/wt/rtl/uncore/IMSICGateWay.sv /tmp/tmp.ZBW0S34k6e/wt/rtl/uncore/IMSICGateWay_wrapper.sv
 # ----------------------------------------------------------------------------
 # Step 3B sidecar emitter(FM_SIDECAR_OUT 非空时启用; 契约 = SIDECAR_SCHEMA.md v7 冻结版):
 # source 后立即对将被 source 的模块本地 Tcl 做**运行期 appvar 拦截**(set_app_var 名字
 # 不在注册表 → exit 3, 拒产 native facts)。
 # ----------------------------------------------------------------------------
 set SIDECAR_ON 0
+0
 if {[info exists env(FM_SIDECAR_OUT)] && [string trim $env(FM_SIDECAR_OUT)] ne ""} {
     set _entry [file normalize [info script]]
     set _emit  [file join [file dirname $_entry] sidecar fm_native_emit.tcl]
@@ -28,7 +60,6 @@ if {[info exists env(FM_SIDECAR_OUT)] && [string trim $env(FM_SIDECAR_OUT)] ne "
     sidecar_register_script $_emit
     sidecar_install_appvar_guard
 }
-
 # ----------------------------------------------------------------------------
 # FM_MODE 门控(2026-07 唯一权威入口, 二审): 证明模式决定允许哪些放宽手段。
 #   signoff-strict(默认): 禁 interface_only(assembly 专用手段); 严格判定交 fm_verdict.py。
@@ -38,7 +69,9 @@ if {[info exists env(FM_SIDECAR_OUT)] && [string trim $env(FM_SIDECAR_OUT)] ne "
 # 诊断能力永不进 signoff: strict 下 FM_INTERFACE_ONLY 非空即报错退出(fail-closed)。
 # ----------------------------------------------------------------------------
 set _fmmode "signoff-strict"
+signoff-strict
 if {[info exists env(FM_MODE)]} { set _fmmode $env(FM_MODE) }
+assembly
 switch -- $_fmmode {
   "assembly" {
     if {[info exists env(FM_INTERFACE_ONLY)] && [string trim $env(FM_INTERFACE_ONLY)] ne ""} {
@@ -56,25 +89,27 @@ switch -- $_fmmode {
     exit 3
   }
 }
-
 # 寄存器无观测路径（如被 firtool 裁剪的输出对应的 valids）时不作为比对点。
 # 十一审: unread 六元组**显式全量设置**(305 统一冻结执行语义, 不让工具默认代替声明;
 # emitter 于全部 pin/custom Tcl 执行后、verify 前逐项 get_app_var 读回有效值)。
 # 后三项 true 即工具默认(man cat3 逐页核对), 显式钉死防版本漂移。
 set_app_var verification_verify_unread_compare_points false
+false
 # LoadQueueUncache target-scoped strengthening: verify matched unread compare
 # points instead of accepting them as Not-Compared.  The signoff runner obtains
 # this value from the committed declaration/manifest and binds it into input
 # provenance.  It is deliberately not a waiver: true asks FM to prove *more*.
 set _verify_matched_unread_compare_points "false"
+false
 if {[info exists env(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS)] &&
     [string trim $env(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS)] ne ""} {
     set _verify_matched_unread_compare_points \
         [string trim $env(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS)]
 }
+false
 switch -- $_verify_matched_unread_compare_points {
   "true" {
-    if {$top ni {LoadQueueUncache FastArbiter_46 FastArbiter_47 FastArbiter_27 FastArbiter_44 ICacheCtrlUnit ICacheDataArray IPrefetchPipe DivUnit FDivSqrt InstrMMIOEntry InstrUncache TXDAT_4 FAlu FCVT IssueQueueStdMoud MulUnit TXREQ TlbStorageWrapper TlbStorageWrapper_1 IssueQueueStaMou IssueQueueLdu TXDAT Scheduler_1 Scheduler Scheduler_3 MSHR TageBTable}} {
+    if {$top ni {LoadQueueUncache FastArbiter_46 FastArbiter_47 FastArbiter_27 FastArbiter_44 ICacheCtrlUnit ICacheDataArray IPrefetchPipe DivUnit FDivSqrt InstrMMIOEntry InstrUncache TXDAT_4 FAlu FCVT IssueQueueStdMoud MulUnit TXREQ TlbStorageWrapper TlbStorageWrapper_1 IssueQueueStaMou IssueQueueLdu TXDAT Scheduler_1 Scheduler Scheduler_3}} {
       puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
       exit 3
     }
@@ -87,15 +122,19 @@ switch -- $_verify_matched_unread_compare_points {
 }
 set_app_var verification_verify_matched_unread_compare_points \
     $_verify_matched_unread_compare_points
+false
 set_app_var verification_verify_unread_bbox_inputs false
+false
 set_app_var verification_verify_matched_unread_bbox_inputs true
+true
 set_app_var verification_verify_unread_tech_cell_pins true
+true
 set_app_var verification_verify_unread_tech_cell_pg_pins true
-
+true
 # 未解析模块（厂商 SRAM 叶子 array_ext 等外部宏）自动当黑盒——两侧一致即可，
 # SRAM 内部存储不参与 wrapper 逻辑等价比对。
 set_app_var hdlin_unresolved_modules black_box
-
+black_box
 # 合并由同一逻辑驱动的重复寄存器（如分 bank 的读地址扇出复制：每 bank 一份、
 # 输出级一份，值完全相同）。否则两侧各有 N 个同值寄存器，名字（展平 vs generate
 # 层次）和签名（值相同）都无法配对，导致大量 unmatched。FTQ/IFU 等扇出复制
@@ -104,6 +143,7 @@ set_app_var hdlin_unresolved_modules black_box
 # FM_MERGE_DUP=false 而这里硬编码 true, manifest 声称值与实际证明语义脱节(fail-closed:
 # 非法值退出, 不静默回落)。
 set _mergedup "true"
+true
 if {[info exists env(FM_MERGE_DUP)] && [string trim $env(FM_MERGE_DUP)] ne ""} {
     set _mergedup [string trim $env(FM_MERGE_DUP)]
 }
@@ -114,15 +154,50 @@ switch -- $_mergedup {
     exit 3
   }
 }
-
+true
 # Reference: Chisel 生成的 golden RTL（SYNTHESIS 关掉随机初始化 initial 块）
 read_sverilog -r -define {SYNTHESIS} $ref_srcs
+No target library specified, default is WORK
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/IMSICGateWay.sv'
+Current container set to 'r'
+1
 set_top r:/WORK/$top
-
+Setting top design to 'r:/WORK/IMSICGateWay'
+Status:   Elaborating design IMSICGateWay   ...  
+Warning: Cannot link cell '/WORK/IMSICGateWay/msi_vld_req_cpu_chain' to its reference design 'AsyncResetSynchronizerShiftReg_w1_d3_i0'. (FE-LINK-2)
+Status:  Implementing inferred operators...
+Status:  Creating black-box designs...
+Created technology library 'FM_BBOX' in container 'r' for black-box designs
+Created black-box design 'AsyncResetSynchronizerShiftReg_w1_d3_i0' in library 'FM_BBOX'
+Warning: 1 blackbox designs were created for missing references. (FM-064)
+Status:  Attempting to resolve unlinked cells by using black-boxes...
+Warning: 4 black-box pins of unknown direction found; see formality.log for list (FM-230)
+Top design set to 'r:/WORK/IMSICGateWay' with warnings
+Reference design set to 'r:/WORK/IMSICGateWay'
+1
 # Implementation: 手写 SV
 read_sverilog -i -define {SYNTHESIS} $impl_srcs
+No target library specified, default is WORK
+Loading verilog file '/tmp/tmp.ZBW0S34k6e/wt/rtl/uncore/imsic_pkg.sv'
+Loading verilog file '/tmp/tmp.ZBW0S34k6e/wt/rtl/uncore/IMSICGateWay.sv'
+Loading verilog file '/tmp/tmp.ZBW0S34k6e/wt/rtl/uncore/IMSICGateWay_wrapper.sv'
+Current container set to 'i'
+1
 set_top i:/WORK/$top
-
+Setting top design to 'i:/WORK/IMSICGateWay'
+Status:   Elaborating design IMSICGateWay   ...  
+Status:   Elaborating design xs_IMSICGateWay_core   ...  
+Warning: Cannot link cell '/WORK/xs_IMSICGateWay_core/msi_vld_req_cpu_chain' to its reference design 'AsyncResetSynchronizerShiftReg_w1_d3_i0'. (FE-LINK-2)
+Status:  Implementing inferred operators...
+Status:  Creating black-box designs...
+Created technology library 'FM_BBOX' in container 'i' for black-box designs
+Created black-box design 'AsyncResetSynchronizerShiftReg_w1_d3_i0' in library 'FM_BBOX'
+Warning: 1 blackbox designs were created for missing references. (FM-064)
+Status:  Attempting to resolve unlinked cells by using black-boxes...
+Warning: 4 black-box pins of unknown direction found; see formality.log for list (FM-230)
+Top design set to 'i:/WORK/IMSICGateWay' with warnings
+Implementation design set to 'i:/WORK/IMSICGateWay'
+1
 # ----------------------------------------------------------------------------
 # 字段映射配对（在首次 match 之前全量钉死）：当手写核心把整个 payload 打包进一个
 # 扁平寄存器 data_reg，而 golden 用逐字段寄存器 data_<suffix> 时，等宽字段会令签名
@@ -157,9 +232,27 @@ if {[info exists env(FM_PIN_PRE_TCL)] && [file exists $env(FM_PIN_PRE_TCL)]} {
     if {$SIDECAR_ON} { sidecar_pin_source $env(FM_PIN_PRE_TCL) } else { source $env(FM_PIN_PRE_TCL) }
 }
 match_packed_payload $top
-
 match
+Reference design is 'r:/WORK/IMSICGateWay'
+Implementation design is 'i:/WORK/IMSICGateWay'
+Status:  Checking designs...
+    Warning: Design r:/FM_BBOX/AsyncResetSynchronizerShiftReg_w1_d3_i0 is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/AsyncResetSynchronizerShiftReg_w1_d3_i0 is a black box and there are cells referencing it (FM-160)
+    Warning: 1 (1) black-box references found in reference (implementation) design; see formality.log for list (FM-182)
+Status:  Building verification models...
+Status:  Matching...
+    
+*********************************** Matching Results ***********************************    
+ 31 Compare points matched by name    
+ 3 Compare points matched by signature analysis    
+ 0 Compare points matched by topology    
+ 15 Matched primary inputs, black-box outputs    
+ 0(0) Unmatched reference(implementation) compare points    
+ 0(0) Unmatched reference(implementation) primary inputs, black-box outputs    
+****************************************************************************************
 
+    Info:  Formality Guide Files (SVF) can improve matching performance and success by automating setup.
+1
 # ----------------------------------------------------------------------------
 # 自动配对 Chisel 展平命名与 SV 数组命名的寄存器：
 #   ref:  name_1_0_reg / array_0_reg[2]   （firtool 把 Vec 展平成带下标后缀的标量名）
@@ -230,25 +323,57 @@ proc auto_match_flattened_arrays { top } {
     if {$n > 0} { match }
 }
 auto_match_flattened_arrays $top
-
 # 模块本地「匹配后」钉点(FM_PIN_TCL, 可选): 层次/叶名差异的一一对应(只 set_user_match, 不约束 ref)。
 if {[info exists env(FM_PIN_TCL)] && [file exists $env(FM_PIN_TCL)]} {
     if {$SIDECAR_ON} { sidecar_pin_source $env(FM_PIN_TCL) } else { source $env(FM_PIN_TCL) }
     match
 }
-
 report_unmatched_points > fm_work/$top/unmatched.rpt
 report_matched_points > fm_work/$top/matched.rpt
-
 # sidecar: appvar 有效值读回——全部 pin/custom Tcl 之后、verify 之前(schema v7 契约)
 if {$SIDECAR_ON} { sidecar_capture_appvars }
-
 if {[verify]} {
     puts "FM_RESULT: Verification SUCCEEDED for $top"
 } else {
     report_failing_points > fm_work/$top/failing.rpt
     puts "FM_RESULT: Verification FAILED or INCONCLUSIVE for $top"
 }
+Reference design is 'r:/WORK/IMSICGateWay'
+Implementation design is 'i:/WORK/IMSICGateWay'
+    
+*********************************** Matching Results ***********************************    
+ 31 Compare points matched by name    
+ 3 Compare points matched by signature analysis    
+ 0 Compare points matched by topology    
+ 15 Matched primary inputs, black-box outputs    
+ 0(0) Unmatched reference(implementation) compare points    
+ 0(0) Unmatched reference(implementation) primary inputs, black-box outputs    
+****************************************************************************************
+
+Status:  Verifying...
+
+
+********************************* Verification Results *********************************
+Verification SUCCEEDED
+----------------------
+ Reference design: r:/WORK/IMSICGateWay
+ Implementation design: i:/WORK/IMSICGateWay
+ 34 Passing compare points
+----------------------------------------------------------------------------------------
+Matched Compare Points     BBPin    Loop   BBNet     Cut    Port     DFF     LAT   TOTAL
+----------------------------------------------------------------------------------------
+Passing (equivalent)           3       0       0       0      15      16       0      34
+Failing (not equivalent)       0       0       0       0       0       0       0       0
+****************************************************************************************
+FM_RESULT: Verification SUCCEEDED for IMSICGateWay
 # sidecar: 全查询→内存解析→原子写 native_facts.json(任何错误删 tmp 并 exit 4)
 if {$SIDECAR_ON} { sidecar_emit $top }
+SIDECAR_NATIVE_FACTS_WRITTEN
 exit
+
+Maximum memory usage for this session: 867 MB
+CPU usage for this session: 2.66 seconds ( 0.00 hours )
+Current time: Wed Jul 22 05:58:35 2026
+Elapsed time: 19 seconds ( 0.01 hours )
+
+Thank you for using Formality (R)!

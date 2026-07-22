@@ -1,0 +1,4 @@
+SIGNOFF_RESULT IMSICGateWay: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=assembly fm_shell_rc=0 validator_rc=0)
+run_id: SGN-IMSICGateWay-1784714292
+impl_commit: d63fe5dc7d62d501d727f54ef26f12b89f023f31
+manifest_sha256: 753bb9d3e068f8ffc2541d560ae4f8af86620ad0ec9131a24f0e5860d8190068
