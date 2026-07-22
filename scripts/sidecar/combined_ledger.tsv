@@ -42,9 +42,9 @@ DuplicatedTagArray	PARTIAL	PROOF_GAP
 EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	PARTIAL	PROOF_GAP
 EntriesAluCsrFenceDiv	PARTIAL	PROOF_GAP
 EntriesAluMulBkuBrhJmp	PARTIAL	PROOF_GAP
-EntriesFaluFcvtF2vFmacFdiv	PARTIAL	PROOF_GAP
-EntriesFaluFmac	PARTIAL	PROOF_GAP
-EntriesFaluFmacFdiv	PARTIAL	PROOF_GAP
+EntriesFaluFcvtF2vFmacFdiv	SUCCEEDED	SIGNOFF_PASS
+EntriesFaluFmac	SUCCEEDED	SIGNOFF_PASS
+EntriesFaluFmacFdiv	SUCCEEDED	SIGNOFF_PASS
 EntriesVfdivVidiv	SUCCEEDED	SIGNOFF_PASS
 EntriesVfmaVialuFixVfalu	SUCCEEDED	SIGNOFF_PASS
 EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	SUCCEEDED	SIGNOFF_PASS

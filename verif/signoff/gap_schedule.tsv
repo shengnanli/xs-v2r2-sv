@@ -12,9 +12,6 @@ DuplicatedTagArray	BB	nc0/ur0/ui0/bb5
 EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	IMPL_DEAD	nc0/ur12/ui1405/bb0
 EntriesAluCsrFenceDiv	IMPL_DEAD	nc0/ur12/ui1477/bb0
 EntriesAluMulBkuBrhJmp	IMPL_DEAD	nc0/ur12/ui1453/bb0
-EntriesFaluFcvtF2vFmacFdiv	IMPL_DEAD	nc0/ur0/ui541/bb0
-EntriesFaluFmac	IMPL_DEAD	nc0/ur0/ui595/bb0
-EntriesFaluFmacFdiv	IMPL_DEAD	nc0/ur0/ui577/bb0
 EntriesVlduVstu	IMPL_DEAD	nc0/ur0/ui3/bb0
 EntriesVlduVstuVseglduVsegstu	IMPL_DEAD	nc0/ur0/ui3/bb0
 ExeUnit	BB	nc0/ur0/ui0/bb6
