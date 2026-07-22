@@ -1,0 +1,4 @@
+SIGNOFF_RESULT SplittedSRAMTemplate_23: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=assembly fm_shell_rc=0 validator_rc=0)
+run_id: SGN-SplittedSRAMTemplate_23-1784617557
+impl_commit: da8971532210e10409bf8358f46dd8f6ab6e667f
+manifest_sha256: e02a9f38c80e5fdf5101cdc8bbcc67019d646c0eba58dc3ce43923bc04f31ce5

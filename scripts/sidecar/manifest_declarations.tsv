@@ -66,3 +66,6 @@ TXDAT	signoff-strict		目标strengthening: 内部子模块对称死寄存器(gol
 Scheduler_1	signoff-strict		目标strengthening: 内部子模块对称死寄存器(golden子模块复用/镜像, ref与impl仅差u_core包装层级, 去前缀后同位置同名, auto_match_flattened_arrays签名双射配对), 两侧同源锁存cone-dead. vmucp=true令FM实际比较验证恒相等; 非waiver/dont_verify/扩黑盒	true
 Scheduler	signoff-strict		目标strengthening: 内部子模块对称死寄存器(golden子模块复用/镜像, ref与impl仅差u_core包装层级, 去前缀后同位置同名, auto_match_flattened_arrays签名双射配对), 两侧同源锁存cone-dead. vmucp=true令FM实际比较验证恒相等; 非waiver/dont_verify/扩黑盒	true
 Scheduler_3	signoff-strict		目标strengthening: 内部子模块对称死寄存器(golden子模块复用/镜像, ref与impl仅差u_core包装层级, 去前缀后同位置同名, auto_match_flattened_arrays签名双射配对), 两侧同源锁存cone-dead. vmucp=true令FM实际比较验证恒相等; 非waiver/dont_verify/扩黑盒	true
+MSHR	signoff-strict		目标strengthening: 内部子模块对称死寄存器65位(u_core对称双射)vmucp验证; 残留4个golden-only REG死寄存器另归PASS_DEAD_REF	true
+IMSICGateWay	assembly	verif/signoff/allow/IMSICGateWay.json	assembly: 1个CDC同步器黑盒(AsyncResetSynchronizerShiftReg_w1_d3, 跨时钟域亚稳primitive, 两侧同golden cell对称黑盒边界); 验证本层msi路由glue	
+TageBTable	assembly	verif/signoff/allow/TageBTable.json	assembly: 2子模块黑盒bt(FoldedSRAMTemplate_20)/wrbypass(WrBypass_32)全为独立FM绿目标(depends_on); vmucp=true验证内部10个对称死位	true

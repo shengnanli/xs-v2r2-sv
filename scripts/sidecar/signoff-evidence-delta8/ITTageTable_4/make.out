@@ -1,0 +1,16 @@
+=== FM: ITTageTable_4 (mode=assembly) ===
+FM_TOP=ITTageTable_4 \
+FM_MODE=assembly \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/ITTageTable_4.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistPipeIttage_4.sv " \
+FM_IMPL_SRCS="/tmp/tmp.LJHCMUSOmd/wt/rtl/frontend/ITTageTable.sv /tmp/tmp.LJHCMUSOmd/wt/rtl/frontend/ITTageTable_wrapper.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/ITTageTable_4 -file /tmp/tmp.LJHCMUSOmd/wt/scripts/fm_eq.tcl \
+    > fm_work/ITTageTable_4/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.LJHCMUSOmd/wt/scripts/fm_verdict.py fm_work/ITTageTable_4/fm.log --rc $rc --mode assembly --top ITTageTable_4 --allowlist 0
+SUCCEEDED	{"passing": 791, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "assembly", "native": "SUCCEEDED", "top": "ITTageTable_4", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

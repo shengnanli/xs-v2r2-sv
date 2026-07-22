@@ -1,0 +1,17 @@
+=== FM: MulUnit (mode=signoff-strict) ===
+FM_TOP=MulUnit \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/MulUnit.sv /home/eda/xs-env/G0-canonical/golden-rtl/ArrayMulDataModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/C22.sv /home/eda/xs-env/G0-canonical/golden-rtl/C32.sv /home/eda/xs-env/G0-canonical/golden-rtl/C53.sv /home/eda/xs-env/G0-canonical/golden-rtl/CSA3_2.sv " \
+FM_IMPL_SRCS="/tmp/tmp.jynQBHWE0c/wt/rtl/backend/mulunit_pkg.sv /tmp/tmp.jynQBHWE0c/wt/rtl/backend/MulUnit.sv /tmp/tmp.jynQBHWE0c/wt/rtl/backend/MulUnit_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/ArrayMulDataModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/C22.sv /home/eda/xs-env/G0-canonical/golden-rtl/C32.sv /home/eda/xs-env/G0-canonical/golden-rtl/C53.sv /home/eda/xs-env/G0-canonical/golden-rtl/CSA3_2.sv" \
+FM_MERGE_DUP=false \
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=true \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/MulUnit -file /tmp/tmp.jynQBHWE0c/wt/scripts/fm_eq.tcl \
+    > fm_work/MulUnit/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.jynQBHWE0c/wt/scripts/fm_verdict.py fm_work/MulUnit/fm.log --rc $rc --mode signoff-strict --top MulUnit --allowlist 0
+SUCCEEDED	{"passing": 3196, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "MulUnit", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

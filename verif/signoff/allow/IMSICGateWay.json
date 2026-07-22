@@ -1,0 +1,12 @@
+{
+    "unresolved_blackbox": [
+        {
+            "id": "msi_vld_req_cpu_chain",
+            "ref_path": "r:/WORK/IMSICGateWay/msi_vld_req_cpu_chain",
+            "impl_path": "i:/WORK/IMSICGateWay/u_core/msi_vld_req_cpu_chain"
+        }
+    ],
+    "interface_only": [],
+    "empty_blackbox": [],
+    "unmatched": []
+}

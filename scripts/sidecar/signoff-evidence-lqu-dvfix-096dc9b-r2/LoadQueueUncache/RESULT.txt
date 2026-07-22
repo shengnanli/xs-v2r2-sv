@@ -1,0 +1,4 @@
+SIGNOFF_RESULT LoadQueueUncache: measured=PARTIAL required=SUCCEEDED gate=GAP (proof=signoff-strict fm_shell_rc=0 validator_rc=1)
+run_id: SGN-LoadQueueUncache-1784676687
+impl_commit: 096dc9bc815dd9077a5d335349e34d06326e9fef
+manifest_sha256: 5a60759064c3fd1e6c1016b5fd53dd93408bdb84e9453b941b241987524e6524

@@ -1,0 +1,4 @@
+SIGNOFF_RESULT StorePfWrapper: measured=PARTIAL required=SUCCEEDED gate=GAP (proof=signoff-strict fm_shell_rc=0 validator_rc=1)
+run_id: SGN-StorePfWrapper-1784643714
+impl_commit: ee85be8ed85ba1406fa761b79437a92998a5261b
+manifest_sha256: 102d71651168f426e8e5e330742f69c6069fb2c6ed1fbe480e83f4239b5cec0c

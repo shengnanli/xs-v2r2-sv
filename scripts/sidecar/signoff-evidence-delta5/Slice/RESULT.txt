@@ -1,0 +1,4 @@
+SIGNOFF_RESULT Slice: measured=PARTIAL required=SUCCEEDED gate=GAP (proof=signoff-strict fm_shell_rc=0 validator_rc=1)
+run_id: SGN-Slice-1784610618
+impl_commit: c797ccbe77f5b71b2031d498fe10c93dfc701012
+manifest_sha256: 256902c1d5e6231aaca309d5ce237fd4f40dbd6fa56cb92be0c6f4918da0eb96

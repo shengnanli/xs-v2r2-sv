@@ -1,0 +1,4 @@
+SIGNOFF_RESULT IPrefetchPipe: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=signoff-strict fm_shell_rc=0 validator_rc=0)
+run_id: SGN-IPrefetchPipe-1784709122
+impl_commit: d5aa5e437b88888bc25224e1b584959b4ec79f9e
+manifest_sha256: 85f892ca5eacc4f9a1aa72d51530aadb31be2c930cb4d079526646b76587b78f

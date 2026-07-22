@@ -1,0 +1,17 @@
+=== FM: WrBypass_41 (mode=signoff-strict) ===
+FM_TOP=WrBypass_41 \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/WrBypass_41.sv /home/eda/xs-env/G0-canonical/golden-rtl/IndexableCAMTemplate_41.sv /home/eda/xs-env/G0-canonical/golden-rtl/data_mem_0_4x2.sv " \
+FM_IMPL_SRCS="/tmp/tmp.5BfEkSZJwT/wt/rtl/common/IndexableCAM.sv /tmp/tmp.5BfEkSZJwT/wt/rtl/common/PlruReplacer.sv /tmp/tmp.5BfEkSZJwT/wt/rtl/frontend/WrBypass.sv /tmp/tmp.5BfEkSZJwT/wt/rtl/frontend/WrBypass_variants.sv" \
+ \
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=false \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/WrBypass_41 -file /tmp/tmp.5BfEkSZJwT/wt/scripts/fm_eq.tcl \
+    > fm_work/WrBypass_41/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.5BfEkSZJwT/wt/scripts/fm_verdict.py fm_work/WrBypass_41/fm.log --rc $rc --mode signoff-strict --top WrBypass_41 --allowlist 0
+SUCCEEDED	{"passing": 50, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "WrBypass_41", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

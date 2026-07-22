@@ -1,0 +1,18 @@
+=== FM: ICacheMainPipe (mode=signoff-strict) ===
+FM_TOP=ICacheMainPipe \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/ICacheMainPipe.sv /home/eda/xs-env/G0-canonical/golden-rtl/Arbiter2_ICacheMissReq.sv " \
+FM_IMPL_SRCS="/tmp/tmp.Yq4hPpzIQ5/wt/rtl/frontend/ICacheMainPipe.sv /tmp/tmp.Yq4hPpzIQ5/wt/rtl/frontend/ICacheMainPipe_wrapper.sv" \
+ \
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=false \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/ICacheMainPipe -file /tmp/tmp.Yq4hPpzIQ5/wt/scripts/fm_eq.tcl \
+    > fm_work/ICacheMainPipe/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.Yq4hPpzIQ5/wt/scripts/fm_verdict.py fm_work/ICacheMainPipe/fm.log --rc $rc --mode signoff-strict --top ICacheMainPipe --allowlist 0
+PARTIAL	{"passing": 2793, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": 32, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "ICacheMainPipe", "dont_verify": false, "elab147": false, "reason": "strict_unread!=0", "unmatched_ref": 0, "unmatched_impl": 0}
+make: *** [../../../scripts/ut_common.mk:60: fm-ICacheMainPipe] Error 1

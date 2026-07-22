@@ -1,0 +1,16 @@
+=== FM: SRAMTemplate_66 (mode=assembly) ===
+FM_TOP=SRAMTemplate_66 \
+FM_MODE=assembly \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_66.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_2p256x24m6s1h0l1b_bp_sc.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_5.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistClockGateCell.sv /home/eda/xs-env/G0-canonical/golden-rtl/ClockGate.sv " \
+FM_IMPL_SRCS="/tmp/tmp.kvVcOrBu7n/wt/rtl/common/SRAMTemplate_2p_core.sv /tmp/tmp.kvVcOrBu7n/wt/rtl/common/SRAMTemplate_2p_variants.sv /home/eda/xs-env/G0-canonical/golden-rtl/ClockGate.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistClockGateCell.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_5.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_4.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_2p256x24m6s1h0l1b_bp_sc.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_2p256x16m2s1h0l1b_bp_tage_bt.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/SRAMTemplate_66 -file /tmp/tmp.kvVcOrBu7n/wt/scripts/fm_eq.tcl \
+    > fm_work/SRAMTemplate_66/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.kvVcOrBu7n/wt/scripts/fm_verdict.py fm_work/SRAMTemplate_66/fm.log --rc $rc --mode assembly --top SRAMTemplate_66 --allowlist 0
+SUCCEEDED	{"passing": 203, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "assembly", "native": "SUCCEEDED", "top": "SRAMTemplate_66", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

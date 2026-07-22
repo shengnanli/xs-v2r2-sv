@@ -1075,11 +1075,11 @@
    "makefile": "verif/ut/IMSICGateWay/Makefile",
    "make_target": "fm-IMSICGateWay",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/IMSICGateWay.json",
+   "rationale": "assembly: 1个CDC同步器黑盒(AsyncResetSynchronizerShiftReg_w1_d3, 跨时钟域亚稳primitive, 两侧同golden cell对称黑盒边界); 验证本层msi路由glue",
    "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
@@ -1947,8 +1947,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "目标strengthening: 内部子模块对称死寄存器65位(u_core对称双射)vmucp验证; 残留4个golden-only REG死寄存器另归PASS_DEAD_REF",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3973,12 +3973,12 @@
    "makefile": "verif/ut/TageBTable/Makefile",
    "make_target": "fm-TageBTable",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "allow_ref": "verif/signoff/allow/TageBTable.json",
+   "rationale": "assembly: 2子模块黑盒bt(FoldedSRAMTemplate_20)/wrbypass(WrBypass_32)全为独立FM绿目标(depends_on); vmucp=true验证内部10个对称死位",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {

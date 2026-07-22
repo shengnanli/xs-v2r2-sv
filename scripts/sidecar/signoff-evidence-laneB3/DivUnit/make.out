@@ -1,0 +1,17 @@
+=== FM: DivUnit (mode=signoff-strict) ===
+FM_TOP=DivUnit \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/DivUnit.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRT16DividerDataModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/CSA3_2_3956.sv /home/eda/xs-env/G0-canonical/golden-rtl/CSA3_2_3960.sv /home/eda/xs-env/G0-canonical/golden-rtl/CSA3_2_3962.sv /home/eda/xs-env/G0-canonical/golden-rtl/RightShifter.sv " \
+FM_IMPL_SRCS="/tmp/tmp.677Vb6DXiF/wt/rtl/backend/divunit_pkg.sv /tmp/tmp.677Vb6DXiF/wt/rtl/backend/DivUnit.sv /tmp/tmp.677Vb6DXiF/wt/rtl/backend/DivUnit_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRT16DividerDataModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/CSA3_2_3956.sv /home/eda/xs-env/G0-canonical/golden-rtl/CSA3_2_3960.sv /home/eda/xs-env/G0-canonical/golden-rtl/CSA3_2_3962.sv /home/eda/xs-env/G0-canonical/golden-rtl/RightShifter.sv" \
+ \
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=true \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/DivUnit -file /tmp/tmp.677Vb6DXiF/wt/scripts/fm_eq.tcl \
+    > fm_work/DivUnit/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.677Vb6DXiF/wt/scripts/fm_verdict.py fm_work/DivUnit/fm.log --rc $rc --mode signoff-strict --top DivUnit --allowlist 0
+SUCCEEDED	{"passing": 1914, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "DivUnit", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

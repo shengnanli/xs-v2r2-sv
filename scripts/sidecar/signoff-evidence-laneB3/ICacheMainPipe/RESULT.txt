@@ -1,0 +1,4 @@
+SIGNOFF_RESULT ICacheMainPipe: measured=PARTIAL required=SUCCEEDED gate=GAP (proof=signoff-strict fm_shell_rc=0 validator_rc=1)
+run_id: SGN-ICacheMainPipe-1784701029
+impl_commit: 46c7026f05d6769d1cccb93cf3cb7efc943b7181
+manifest_sha256: a7ffff332117dc0fe78c11a79a53148634fea39cbb1f2be9c448fe32b6de71b1

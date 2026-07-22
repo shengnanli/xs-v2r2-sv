@@ -1,0 +1,1 @@
+{"unresolved_blackbox": [{"id": "array_0_0_0", "ref_path": "r:/WORK/SplittedSRAMTemplate/array_0_0_0", "impl_path": "i:/WORK/SplittedSRAMTemplate/array_0_0_0"}, {"id": "array_0_1_0", "ref_path": "r:/WORK/SplittedSRAMTemplate/array_0_1_0", "impl_path": "i:/WORK/SplittedSRAMTemplate/array_0_1_0"}], "interface_only": [], "empty_blackbox": [], "unmatched": []}

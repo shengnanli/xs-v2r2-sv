@@ -1,0 +1,4 @@
+SIGNOFF_RESULT ITTageTable_3: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=assembly fm_shell_rc=0 validator_rc=0)
+run_id: SGN-ITTageTable_3-1784617972
+impl_commit: bf980da617406be8c6a1f3e528713027aacc7cfa
+manifest_sha256: 6930d4b51ce52810a18ccb2dea3f528db377371a751bcc6f86f3e9fd64d4719a

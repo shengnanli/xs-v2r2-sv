@@ -1,0 +1,16 @@
+=== FM: FoldedSRAMTemplate (mode=assembly) ===
+FM_TOP=FoldedSRAMTemplate \
+FM_MODE=assembly \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/FoldedSRAMTemplate.sv  " \
+FM_IMPL_SRCS="/tmp/tmp.mGiaERehDr/wt/rtl/common/FoldedSRAMTemplate_variants.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/FoldedSRAMTemplate -file /tmp/tmp.mGiaERehDr/wt/scripts/fm_eq.tcl \
+    > fm_work/FoldedSRAMTemplate/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.mGiaERehDr/wt/scripts/fm_verdict.py fm_work/FoldedSRAMTemplate/fm.log --rc $rc --mode assembly --top FoldedSRAMTemplate --allowlist 0
+SUCCEEDED	{"passing": 146, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "assembly", "native": "SUCCEEDED", "top": "FoldedSRAMTemplate", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

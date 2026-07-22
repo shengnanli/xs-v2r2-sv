@@ -1,0 +1,1740 @@
+
+                                 Formality (R)
+
+               Version V-2023.12-SP3 for linux64 - Apr 13, 2024 
+
+                    Copyright (c) 1988 - 2024 Synopsys, Inc.
+   This software and the associated documentation are proprietary to Synopsys,
+ Inc. This software may only be used in accordance with the terms and conditions
+ of a written license agreement with Synopsys, Inc. All other use, reproduction,
+   or distribution of this software is strictly prohibited.  Licensed Products
+     communicate with Synopsys servers for the purpose of providing software
+    updates, detecting software piracy and verifying that customers are using
+    Licensed Products in conformity with the applicable License Key for such
+  Licensed Products. Synopsys will use information gathered in connection with
+    this process to deliver software updates and pursue software pirates and
+                                   infringers.
+
+ Inclusivity & Diversity - Visit SolvNetPlus to read the "Synopsys Statement on
+            Inclusivity and Diversity" (Refer to article 000036315 at
+                        https://solvnetplus.synopsys.com)
+
+Build: 8868332
+Hostname: localhost.localdomain
+Current time: Tue Jul 21 03:13:11 2026
+
+Loading db file '/home/eda/app/synopsys/fm/V-2023.12-SP3/libraries/syn/gtech.db'
+
+Script: /tmp/tmp.ODlrkKXZFO/wt/scripts/fm_eq.tcl
+
+Information: Term was not able to be set up using xterm-256color . Using "xterm" by default instead. (CLE-10)
+# Formality 等价性检查通用脚本
+# 由 scripts/ut_common.mk 的 fm-% 目标调用，经环境变量传参：
+#   FM_TOP        顶层模块名（golden 变体名；impl 侧包装层与其同名同端口）
+#   FM_REF_SRCS   golden RTL 文件列表（变体 + 其子模块）
+#   FM_IMPL_SRCS  手写 SV 文件列表（参数化核心 + 包装层）
+set top       $env(FM_TOP)
+LsqWrapper
+set ref_srcs  $env(FM_REF_SRCS)
+/home/eda/xs-env/G0-canonical/golden-rtl/LsqWrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/AgeDetector_38.sv /home/eda/xs-env/G0-canonical/golden-rtl/DatamoduleResultBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_103.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_148.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_149.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_152.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_155.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_4.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_52.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_55.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_7.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayN_13.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayN_226.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayN_298.sv /home/eda/xs-env/G0-canonical/golden-rtl/FreeList_3.sv /home/eda/xs-env/G0-canonical/golden-rtl/FreeList_4.sv /home/eda/xs-env/G0-canonical/golden-rtl/FreeList_5.sv /home/eda/xs-env/G0-canonical/golden-rtl/FreeList_6.sv /home/eda/xs-env/G0-canonical/golden-rtl/LoadQueue.sv /home/eda/xs-env/G0-canonical/golden-rtl/LoadQueueRAR.sv /home/eda/xs-env/G0-canonical/golden-rtl/LoadQueueRAW.sv /home/eda/xs-env/G0-canonical/golden-rtl/LoadQueueReplay.sv /home/eda/xs-env/G0-canonical/golden-rtl/LoadQueueUncache.sv /home/eda/xs-env/G0-canonical/golden-rtl/LqExceptionBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/LqMaskModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/LqPAddrModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/LqPAddrModule_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/LqVAddrModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/PipelineRegModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/PipelineRegModule_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/PipelineRegModule_2.sv /home/eda/xs-env/G0-canonical/golden-rtl/RRArbiterInit_9.sv /home/eda/xs-env/G0-canonical/golden-rtl/SQAddrModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/SQAddrModule_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/SQData8Module.sv /home/eda/xs-env/G0-canonical/golden-rtl/SQDataModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/StoreExceptionBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/StoreQueue.sv /home/eda/xs-env/G0-canonical/golden-rtl/UncacheEntry.sv /home/eda/xs-env/G0-canonical/golden-rtl/UncacheEntry_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/UncacheEntry_2.sv /home/eda/xs-env/G0-canonical/golden-rtl/UncacheEntry_3.sv /home/eda/xs-env/G0-canonical/golden-rtl/VirtualLoadQueue.sv 
+set impl_srcs $env(FM_IMPL_SRCS)
+/tmp/tmp.ODlrkKXZFO/wt/rtl/memblock/lsq_pkg.sv /tmp/tmp.ODlrkKXZFO/wt/rtl/memblock/LsqWrapper.sv /tmp/tmp.ODlrkKXZFO/wt/rtl/memblock/LsqWrapper_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/AgeDetector_38.sv /home/eda/xs-env/G0-canonical/golden-rtl/DatamoduleResultBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_103.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_148.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_149.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_152.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_155.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_4.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_52.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_55.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_7.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayN_13.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayN_226.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayN_298.sv /home/eda/xs-env/G0-canonical/golden-rtl/FreeList_3.sv /home/eda/xs-env/G0-canonical/golden-rtl/FreeList_4.sv /home/eda/xs-env/G0-canonical/golden-rtl/FreeList_5.sv /home/eda/xs-env/G0-canonical/golden-rtl/FreeList_6.sv /home/eda/xs-env/G0-canonical/golden-rtl/LoadQueue.sv /home/eda/xs-env/G0-canonical/golden-rtl/LoadQueueRAR.sv /home/eda/xs-env/G0-canonical/golden-rtl/LoadQueueRAW.sv /home/eda/xs-env/G0-canonical/golden-rtl/LoadQueueReplay.sv /home/eda/xs-env/G0-canonical/golden-rtl/LoadQueueUncache.sv /home/eda/xs-env/G0-canonical/golden-rtl/LqExceptionBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/LqMaskModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/LqPAddrModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/LqPAddrModule_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/LqVAddrModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/PipelineRegModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/PipelineRegModule_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/PipelineRegModule_2.sv /home/eda/xs-env/G0-canonical/golden-rtl/RRArbiterInit_9.sv /home/eda/xs-env/G0-canonical/golden-rtl/SQAddrModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/SQAddrModule_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/SQData8Module.sv /home/eda/xs-env/G0-canonical/golden-rtl/SQDataModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/StoreExceptionBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/StoreQueue.sv /home/eda/xs-env/G0-canonical/golden-rtl/UncacheEntry.sv /home/eda/xs-env/G0-canonical/golden-rtl/UncacheEntry_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/UncacheEntry_2.sv /home/eda/xs-env/G0-canonical/golden-rtl/UncacheEntry_3.sv /home/eda/xs-env/G0-canonical/golden-rtl/VirtualLoadQueue.sv
+# ----------------------------------------------------------------------------
+# Step 3B sidecar emitter(FM_SIDECAR_OUT 非空时启用; 契约 = SIDECAR_SCHEMA.md v7 冻结版):
+# source 后立即对将被 source 的模块本地 Tcl 做**运行期 appvar 拦截**(set_app_var 名字
+# 不在注册表 → exit 3, 拒产 native facts)。
+# ----------------------------------------------------------------------------
+set SIDECAR_ON 0
+0
+if {[info exists env(FM_SIDECAR_OUT)] && [string trim $env(FM_SIDECAR_OUT)] ne ""} {
+    set _entry [file normalize [info script]]
+    set _emit  [file join [file dirname $_entry] sidecar fm_native_emit.tcl]
+    source $_emit
+    set SIDECAR_ON 1
+    # 3B验收三审: script closure = **执行时刻字节快照**(sidecar_register_script 把被
+    # 执行文件的字节即时拷入 FM_SIDECAR_OUT 并追加清单; source trace 对嵌套亦触发,
+    # 解析 -encoding 形式)。入口与 emitter 非 source 载入, 在此显式登记快照。
+    # appvar 拦截 = execution trace 加在命令本身 + phase(match 后冻结)+ 写历史。
+    set ::SIDECAR_SOURCED {}
+    sidecar_register_script $_entry
+    sidecar_register_script $_emit
+    sidecar_install_appvar_guard
+}
+# ----------------------------------------------------------------------------
+# FM_MODE 门控(2026-07 唯一权威入口, 二审): 证明模式决定允许哪些放宽手段。
+#   signoff-strict(默认): 禁 interface_only(assembly 专用手段); 严格判定交 fm_verdict.py。
+#   assembly: 允许**声明的对称黑盒** FM_INTERFACE_ONLY(仅证本层 glue)。
+#   diagnostic-full: 由 fm_eq_full.tcl 承担(ELAB 降级/放宽上限), 永不签核。
+#   shadow: 同 strict(可读核不驱动输出, 判定归 SHADOW_CHECK)。
+# 诊断能力永不进 signoff: strict 下 FM_INTERFACE_ONLY 非空即报错退出(fail-closed)。
+# ----------------------------------------------------------------------------
+set _fmmode "signoff-strict"
+signoff-strict
+if {[info exists env(FM_MODE)]} { set _fmmode $env(FM_MODE) }
+assembly
+switch -- $_fmmode {
+  "assembly" {
+    if {[info exists env(FM_INTERFACE_ONLY)] && [string trim $env(FM_INTERFACE_ONLY)] ne ""} {
+      set_app_var hdlin_interface_only $env(FM_INTERFACE_ONLY)
+    }
+  }
+  "signoff-strict" - "shadow" {
+    if {[info exists env(FM_INTERFACE_ONLY)] && [string trim $env(FM_INTERFACE_ONLY)] ne ""} {
+      puts "FM_MODE_ERROR: $_fmmode 拒绝 FM_INTERFACE_ONLY(assembly 专用手段)"
+      exit 3
+    }
+  }
+  default {
+    puts "FM_MODE_ERROR: 未知 FM_MODE=$_fmmode"
+    exit 3
+  }
+}
+LoadQueue StoreQueue
+# 寄存器无观测路径（如被 firtool 裁剪的输出对应的 valids）时不作为比对点。
+# 十一审: unread 六元组**显式全量设置**(305 统一冻结执行语义, 不让工具默认代替声明;
+# emitter 于全部 pin/custom Tcl 执行后、verify 前逐项 get_app_var 读回有效值)。
+# 后三项 true 即工具默认(man cat3 逐页核对), 显式钉死防版本漂移。
+set_app_var verification_verify_unread_compare_points false
+false
+set_app_var verification_verify_matched_unread_compare_points false
+false
+set_app_var verification_verify_unread_bbox_inputs false
+false
+set_app_var verification_verify_matched_unread_bbox_inputs true
+true
+set_app_var verification_verify_unread_tech_cell_pins true
+true
+set_app_var verification_verify_unread_tech_cell_pg_pins true
+true
+# 未解析模块（厂商 SRAM 叶子 array_ext 等外部宏）自动当黑盒——两侧一致即可，
+# SRAM 内部存储不参与 wrapper 逻辑等价比对。
+set_app_var hdlin_unresolved_modules black_box
+black_box
+# 合并由同一逻辑驱动的重复寄存器（如分 bank 的读地址扇出复制：每 bank 一份、
+# 输出级一份，值完全相同）。否则两侧各有 N 个同值寄存器，名字（展平 vs generate
+# 层次）和签名（值相同）都无法配对，导致大量 unmatched。FTQ/IFU 等扇出复制
+# 普遍存在，默认 true。
+# 九审(3A.2 审定补丁3): 该值由 FM_MERGE_DUP 入口变量真实绑定——此前 Makefile 声明
+# FM_MERGE_DUP=false 而这里硬编码 true, manifest 声称值与实际证明语义脱节(fail-closed:
+# 非法值退出, 不静默回落)。
+set _mergedup "true"
+true
+if {[info exists env(FM_MERGE_DUP)] && [string trim $env(FM_MERGE_DUP)] ne ""} {
+    set _mergedup [string trim $env(FM_MERGE_DUP)]
+}
+switch -- $_mergedup {
+  "true" - "false" { set_app_var verification_merge_duplicated_registers $_mergedup }
+  default {
+    puts "FM_MODE_ERROR: FM_MERGE_DUP 非法值 $_mergedup"
+    exit 3
+  }
+}
+true
+# Reference: Chisel 生成的 golden RTL（SYNTHESIS 关掉随机初始化 initial 块）
+read_sverilog -r -define {SYNTHESIS} $ref_srcs
+No target library specified, default is WORK
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/LsqWrapper.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/AgeDetector_38.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DatamoduleResultBuffer.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_103.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_148.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_149.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_152.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_155.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_4.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_52.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_55.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_7.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayN_13.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayN_226.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayN_298.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/FreeList_3.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/FreeList_4.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/FreeList_5.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/FreeList_6.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/LoadQueue.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/LoadQueueRAR.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/LoadQueueRAW.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/LoadQueueReplay.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/LoadQueueUncache.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/LqExceptionBuffer.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/LqMaskModule.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/LqPAddrModule.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/LqPAddrModule_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/LqVAddrModule.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/PipelineRegModule.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/PipelineRegModule_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/PipelineRegModule_2.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/RRArbiterInit_9.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/SQAddrModule.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/SQAddrModule_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/SQData8Module.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/SQDataModule.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/StoreExceptionBuffer.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/StoreQueue.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/UncacheEntry.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/UncacheEntry_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/UncacheEntry_2.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/UncacheEntry_3.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/VirtualLoadQueue.sv'
+Current container set to 'r'
+1
+set_top r:/WORK/$top
+Setting top design to 'r:/WORK/LsqWrapper'
+Status:   Elaborating design LsqWrapper   ...  
+Status:   Elaborating design LoadQueue   ...  
+Status:   Elaborating design StoreQueue   ...  
+Status:  Implementing inferred operators...
+Top design successfully set to 'r:/WORK/LsqWrapper'
+Reference design set to 'r:/WORK/LsqWrapper'
+1
+# Implementation: 手写 SV
+read_sverilog -i -define {SYNTHESIS} $impl_srcs
+No target library specified, default is WORK
+Loading verilog file '/tmp/tmp.ODlrkKXZFO/wt/rtl/memblock/lsq_pkg.sv'
+Loading verilog file '/tmp/tmp.ODlrkKXZFO/wt/rtl/memblock/LsqWrapper.sv'
+Loading include file '/tmp/tmp.ODlrkKXZFO/wt/rtl/memblock/LsqWrapper_ports.svh'
+Loading include file '/tmp/tmp.ODlrkKXZFO/wt/rtl/memblock/LsqWrapper_perf_out.svh'
+Loading include file '/tmp/tmp.ODlrkKXZFO/wt/rtl/memblock/LsqWrapper_inst.svh'
+Loading verilog file '/tmp/tmp.ODlrkKXZFO/wt/rtl/memblock/LsqWrapper_wrapper.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/AgeDetector_38.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DatamoduleResultBuffer.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_103.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_148.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_149.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_152.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_155.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_4.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_52.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_55.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_7.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayN_13.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayN_226.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayN_298.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/FreeList_3.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/FreeList_4.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/FreeList_5.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/FreeList_6.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/LoadQueue.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/LoadQueueRAR.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/LoadQueueRAW.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/LoadQueueReplay.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/LoadQueueUncache.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/LqExceptionBuffer.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/LqMaskModule.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/LqPAddrModule.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/LqPAddrModule_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/LqVAddrModule.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/PipelineRegModule.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/PipelineRegModule_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/PipelineRegModule_2.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/RRArbiterInit_9.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/SQAddrModule.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/SQAddrModule_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/SQData8Module.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/SQDataModule.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/StoreExceptionBuffer.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/StoreQueue.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/UncacheEntry.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/UncacheEntry_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/UncacheEntry_2.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/UncacheEntry_3.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/VirtualLoadQueue.sv'
+Current container set to 'i'
+1
+set_top i:/WORK/$top
+Setting top design to 'i:/WORK/LsqWrapper'
+Status:   Elaborating design LsqWrapper   ...  
+Status:   Elaborating design xs_LsqWrapper_core   ...  
+Status:   Elaborating design LoadQueue   ...  
+Status:   Elaborating design StoreQueue   ...  
+Status:  Implementing inferred operators...
+Top design successfully set to 'i:/WORK/LsqWrapper'
+Implementation design set to 'i:/WORK/LsqWrapper'
+1
+# ----------------------------------------------------------------------------
+# 字段映射配对（在首次 match 之前全量钉死）：当手写核心把整个 payload 打包进一个
+# 扁平寄存器 data_reg，而 golden 用逐字段寄存器 data_<suffix> 时，等宽字段会令签名
+# 分析产生歧义、且会在重新 match 时互相搅乱。生成器输出「<suffix> <lo> <width>」
+# 映射（FM_FIELD_MAP），这里据此把 ref 的 data_<suffix>_reg[b] 逐位 set_user_match
+# 到 impl 的 u_core/data_reg[lo+b]，使后续 match 只需处理 valid 等非 payload 寄存器。
+# 供 PipelineConnect 及后续扁平 payload 模块复用。
+# ----------------------------------------------------------------------------
+proc match_packed_payload { top } {
+    if {![info exists ::env(FM_FIELD_MAP)] || ![file exists $::env(FM_FIELD_MAP)]} return
+    set fh [open $::env(FM_FIELD_MAP) r]
+    set n 0
+    foreach ln [split [read $fh] "\n"] {
+        if {![regexp {^(\S+)\s+(\d+)\s+(\d+)$} $ln -> suf lo w]} continue
+        for {set b 0} {$b < $w} {incr b} {
+            set ipath "i:/WORK/$top/u_core/data_reg\[[expr {$lo + $b}]\]"
+            # 多位字段 golden 名为 data_<suf>_reg[b]；1 位字段可能无下标
+            set cands [list "r:/WORK/$top/data_${suf}_reg\[$b\]"]
+            if {$w == 1} { lappend cands "r:/WORK/$top/data_${suf}_reg" }
+            foreach rpath $cands {
+                if {![catch {set_user_match $rpath $ipath}]} { incr n; break }
+            }
+        }
+    }
+    close $fh
+    if {$n > 0} { puts "PACKED_MATCH: $n points pinned" }
+}
+# 模块本地「匹配前」钉点(FM_PIN_PRE_TCL, 可选): 首次 match 前需 set_user_match 的对象。
+# 四审: sidecar 下 pin 代码进受限 safe child interp(sidecar_pin_source: 一次读取→快照
+# →child 执行同一缓冲; 拿不到父层 guard/trace/证据目录; 嵌套 source 走同一受控入口)。
+if {[info exists env(FM_PIN_PRE_TCL)] && [file exists $env(FM_PIN_PRE_TCL)]} {
+    if {$SIDECAR_ON} { sidecar_pin_source $env(FM_PIN_PRE_TCL) } else { source $env(FM_PIN_PRE_TCL) }
+}
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_0_value_REG_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[0][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_0_value_REG_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[0][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_0_value_REG_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[0][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_0_value_REG_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[0][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_0_value_REG_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[0][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_0_value_REG_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[0][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_0_value_REG_1_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[0][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_0_value_REG_1_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[0][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_0_value_REG_1_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[0][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_0_value_REG_1_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[0][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_0_value_REG_1_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[0][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_0_value_REG_1_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[0][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_1_value_REG_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[1][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_1_value_REG_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[1][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_1_value_REG_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[1][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_1_value_REG_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[1][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_1_value_REG_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[1][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_1_value_REG_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[1][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_1_value_REG_1_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[1][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_1_value_REG_1_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[1][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_1_value_REG_1_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[1][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_1_value_REG_1_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[1][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_1_value_REG_1_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[1][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_1_value_REG_1_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[1][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_2_value_REG_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[2][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_2_value_REG_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[2][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_2_value_REG_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[2][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_2_value_REG_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[2][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_2_value_REG_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[2][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_2_value_REG_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[2][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_2_value_REG_1_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[2][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_2_value_REG_1_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[2][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_2_value_REG_1_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[2][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_2_value_REG_1_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[2][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_2_value_REG_1_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[2][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_2_value_REG_1_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[2][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_3_value_REG_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[3][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_3_value_REG_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[3][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_3_value_REG_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[3][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_3_value_REG_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[3][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_3_value_REG_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[3][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_3_value_REG_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[3][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_3_value_REG_1_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[3][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_3_value_REG_1_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[3][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_3_value_REG_1_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[3][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_3_value_REG_1_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[3][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_3_value_REG_1_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[3][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_3_value_REG_1_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[3][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_4_value_REG_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[4][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_4_value_REG_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[4][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_4_value_REG_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[4][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_4_value_REG_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[4][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_4_value_REG_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[4][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_4_value_REG_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[4][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_4_value_REG_1_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[4][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_4_value_REG_1_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[4][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_4_value_REG_1_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[4][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_4_value_REG_1_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[4][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_4_value_REG_1_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[4][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_4_value_REG_1_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[4][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_5_value_REG_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[5][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_5_value_REG_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[5][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_5_value_REG_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[5][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_5_value_REG_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[5][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_5_value_REG_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[5][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_5_value_REG_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[5][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_5_value_REG_1_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[5][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_5_value_REG_1_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[5][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_5_value_REG_1_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[5][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_5_value_REG_1_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[5][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_5_value_REG_1_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[5][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_5_value_REG_1_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[5][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_6_value_REG_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[6][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_6_value_REG_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[6][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_6_value_REG_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[6][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_6_value_REG_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[6][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_6_value_REG_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[6][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_6_value_REG_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[6][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_6_value_REG_1_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[6][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_6_value_REG_1_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[6][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_6_value_REG_1_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[6][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_6_value_REG_1_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[6][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_6_value_REG_1_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[6][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_6_value_REG_1_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[6][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_7_value_REG_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[7][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_7_value_REG_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[7][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_7_value_REG_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[7][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_7_value_REG_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[7][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_7_value_REG_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[7][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_7_value_REG_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[7][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_7_value_REG_1_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[7][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_7_value_REG_1_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[7][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_7_value_REG_1_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[7][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_7_value_REG_1_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[7][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_7_value_REG_1_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[7][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_7_value_REG_1_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[7][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_8_value_REG_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[8][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_8_value_REG_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[8][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_8_value_REG_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[8][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_8_value_REG_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[8][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_8_value_REG_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[8][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_8_value_REG_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[8][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_8_value_REG_1_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[8][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_8_value_REG_1_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[8][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_8_value_REG_1_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[8][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_8_value_REG_1_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[8][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_8_value_REG_1_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[8][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_8_value_REG_1_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[8][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_9_value_REG_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[9][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_9_value_REG_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[9][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_9_value_REG_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[9][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_9_value_REG_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[9][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_9_value_REG_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[9][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_9_value_REG_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[9][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_9_value_REG_1_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[9][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_9_value_REG_1_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[9][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_9_value_REG_1_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[9][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_9_value_REG_1_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[9][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_9_value_REG_1_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[9][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_9_value_REG_1_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[9][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_10_value_REG_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[10][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_10_value_REG_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[10][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_10_value_REG_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[10][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_10_value_REG_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[10][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_10_value_REG_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[10][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_10_value_REG_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[10][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_10_value_REG_1_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[10][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_10_value_REG_1_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[10][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_10_value_REG_1_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[10][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_10_value_REG_1_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[10][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_10_value_REG_1_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[10][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_10_value_REG_1_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[10][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_11_value_REG_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[11][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_11_value_REG_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[11][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_11_value_REG_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[11][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_11_value_REG_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[11][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_11_value_REG_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[11][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_11_value_REG_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[11][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_11_value_REG_1_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[11][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_11_value_REG_1_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[11][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_11_value_REG_1_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[11][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_11_value_REG_1_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[11][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_11_value_REG_1_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[11][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_11_value_REG_1_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[11][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_12_value_REG_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[12][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_12_value_REG_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[12][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_12_value_REG_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[12][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_12_value_REG_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[12][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_12_value_REG_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[12][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_12_value_REG_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[12][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_12_value_REG_1_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[12][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_12_value_REG_1_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[12][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_12_value_REG_1_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[12][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_12_value_REG_1_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[12][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_12_value_REG_1_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[12][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_12_value_REG_1_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[12][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_13_value_REG_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[13][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_13_value_REG_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[13][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_13_value_REG_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[13][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_13_value_REG_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[13][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_13_value_REG_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[13][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_13_value_REG_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[13][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_13_value_REG_1_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[13][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_13_value_REG_1_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[13][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_13_value_REG_1_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[13][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_13_value_REG_1_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[13][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_13_value_REG_1_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[13][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_13_value_REG_1_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[13][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_14_value_REG_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[14][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_14_value_REG_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[14][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_14_value_REG_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[14][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_14_value_REG_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[14][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_14_value_REG_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[14][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_14_value_REG_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[14][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_14_value_REG_1_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[14][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_14_value_REG_1_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[14][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_14_value_REG_1_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[14][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_14_value_REG_1_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[14][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_14_value_REG_1_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[14][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_14_value_REG_1_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[14][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_15_value_REG_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[15][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_15_value_REG_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[15][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_15_value_REG_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[15][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_15_value_REG_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[15][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_15_value_REG_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[15][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_15_value_REG_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[15][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_15_value_REG_1_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[15][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_15_value_REG_1_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[15][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_15_value_REG_1_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[15][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_15_value_REG_1_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[15][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_15_value_REG_1_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[15][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_15_value_REG_1_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[15][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_16_value_REG_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[16][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_16_value_REG_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[16][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_16_value_REG_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[16][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_16_value_REG_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[16][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_16_value_REG_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[16][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_16_value_REG_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[16][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_16_value_REG_1_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[16][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_16_value_REG_1_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[16][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_16_value_REG_1_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[16][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_16_value_REG_1_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[16][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_16_value_REG_1_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[16][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_16_value_REG_1_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[16][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_17_value_REG_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[17][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_17_value_REG_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[17][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_17_value_REG_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[17][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_17_value_REG_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[17][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_17_value_REG_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[17][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_17_value_REG_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[17][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_17_value_REG_1_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[17][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_17_value_REG_1_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[17][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_17_value_REG_1_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[17][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_17_value_REG_1_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[17][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_17_value_REG_1_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[17][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_17_value_REG_1_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[17][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_18_value_REG_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[18][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_18_value_REG_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[18][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_18_value_REG_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[18][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_18_value_REG_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[18][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_18_value_REG_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[18][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_18_value_REG_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[18][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_18_value_REG_1_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[18][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_18_value_REG_1_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[18][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_18_value_REG_1_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[18][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_18_value_REG_1_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[18][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_18_value_REG_1_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[18][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_18_value_REG_1_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[18][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_19_value_REG_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[19][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_19_value_REG_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[19][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_19_value_REG_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[19][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_19_value_REG_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[19][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_19_value_REG_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[19][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_19_value_REG_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[19][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_19_value_REG_1_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[19][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_19_value_REG_1_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[19][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_19_value_REG_1_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[19][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_19_value_REG_1_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[19][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_19_value_REG_1_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[19][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_19_value_REG_1_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[19][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_20_value_REG_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[20][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_20_value_REG_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[20][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_20_value_REG_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[20][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_20_value_REG_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[20][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_20_value_REG_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[20][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_20_value_REG_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[20][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_20_value_REG_1_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[20][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_20_value_REG_1_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[20][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_20_value_REG_1_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[20][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_20_value_REG_1_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[20][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_20_value_REG_1_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[20][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_20_value_REG_1_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[20][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_21_value_REG_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[21][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_21_value_REG_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[21][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_21_value_REG_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[21][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_21_value_REG_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[21][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_21_value_REG_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[21][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_21_value_REG_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[21][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_21_value_REG_1_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[21][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_21_value_REG_1_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[21][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_21_value_REG_1_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[21][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_21_value_REG_1_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[21][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_21_value_REG_1_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[21][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_21_value_REG_1_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[21][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_22_value_REG_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[22][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_22_value_REG_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[22][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_22_value_REG_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[22][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_22_value_REG_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[22][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_22_value_REG_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[22][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_22_value_REG_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[22][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_22_value_REG_1_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[22][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_22_value_REG_1_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[22][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_22_value_REG_1_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[22][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_22_value_REG_1_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[22][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_22_value_REG_1_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[22][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_22_value_REG_1_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[22][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_23_value_REG_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[23][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_23_value_REG_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[23][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_23_value_REG_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[23][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_23_value_REG_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[23][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_23_value_REG_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[23][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_23_value_REG_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[23][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_23_value_REG_1_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[23][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_23_value_REG_1_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[23][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_23_value_REG_1_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[23][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_23_value_REG_1_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[23][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_23_value_REG_1_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[23][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_23_value_REG_1_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[23][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_24_value_REG_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[24][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_24_value_REG_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[24][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_24_value_REG_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[24][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_24_value_REG_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[24][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_24_value_REG_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[24][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_24_value_REG_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[24][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_24_value_REG_1_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[24][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_24_value_REG_1_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[24][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_24_value_REG_1_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[24][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_24_value_REG_1_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[24][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_24_value_REG_1_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[24][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_24_value_REG_1_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[24][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_25_value_REG_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[25][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_25_value_REG_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[25][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_25_value_REG_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[25][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_25_value_REG_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[25][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_25_value_REG_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[25][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_25_value_REG_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[25][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_25_value_REG_1_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[25][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_25_value_REG_1_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[25][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_25_value_REG_1_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[25][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_25_value_REG_1_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[25][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_25_value_REG_1_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[25][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_25_value_REG_1_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[25][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_26_value_REG_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[26][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_26_value_REG_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[26][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_26_value_REG_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[26][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_26_value_REG_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[26][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_26_value_REG_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[26][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_26_value_REG_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[26][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_26_value_REG_1_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[26][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_26_value_REG_1_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[26][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_26_value_REG_1_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[26][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_26_value_REG_1_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[26][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_26_value_REG_1_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[26][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_26_value_REG_1_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[26][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_27_value_REG_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[27][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_27_value_REG_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[27][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_27_value_REG_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[27][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_27_value_REG_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[27][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_27_value_REG_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[27][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_27_value_REG_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[27][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_27_value_REG_1_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[27][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_27_value_REG_1_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[27][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_27_value_REG_1_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[27][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_27_value_REG_1_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[27][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_27_value_REG_1_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[27][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_27_value_REG_1_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[27][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_28_value_REG_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[28][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_28_value_REG_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[28][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_28_value_REG_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[28][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_28_value_REG_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[28][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_28_value_REG_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[28][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_28_value_REG_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[28][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_28_value_REG_1_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[28][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_28_value_REG_1_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[28][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_28_value_REG_1_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[28][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_28_value_REG_1_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[28][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_28_value_REG_1_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[28][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_28_value_REG_1_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[28][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_29_value_REG_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[29][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_29_value_REG_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[29][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_29_value_REG_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[29][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_29_value_REG_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[29][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_29_value_REG_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[29][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_29_value_REG_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[29][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_29_value_REG_1_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[29][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_29_value_REG_1_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[29][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_29_value_REG_1_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[29][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_29_value_REG_1_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[29][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_29_value_REG_1_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[29][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_29_value_REG_1_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[29][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_30_value_REG_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[30][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_30_value_REG_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[30][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_30_value_REG_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[30][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_30_value_REG_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[30][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_30_value_REG_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[30][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_30_value_REG_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[30][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_30_value_REG_1_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[30][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_30_value_REG_1_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[30][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_30_value_REG_1_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[30][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_30_value_REG_1_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[30][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_30_value_REG_1_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[30][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_30_value_REG_1_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[30][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_31_value_REG_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[31][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_31_value_REG_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[31][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_31_value_REG_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[31][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_31_value_REG_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[31][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_31_value_REG_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[31][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_31_value_REG_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[31][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_31_value_REG_1_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[31][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_31_value_REG_1_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[31][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_31_value_REG_1_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[31][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_31_value_REG_1_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[31][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_31_value_REG_1_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[31][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_31_value_REG_1_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[31][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_32_value_REG_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[32][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_32_value_REG_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[32][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_32_value_REG_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[32][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_32_value_REG_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[32][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_32_value_REG_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[32][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_32_value_REG_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[32][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_32_value_REG_1_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[32][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_32_value_REG_1_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[32][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_32_value_REG_1_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[32][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_32_value_REG_1_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[32][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_32_value_REG_1_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[32][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_32_value_REG_1_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[32][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_33_value_REG_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[33][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_33_value_REG_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[33][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_33_value_REG_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[33][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_33_value_REG_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[33][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_33_value_REG_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[33][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_33_value_REG_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[33][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_33_value_REG_1_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[33][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_33_value_REG_1_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[33][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_33_value_REG_1_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[33][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_33_value_REG_1_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[33][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_33_value_REG_1_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[33][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_33_value_REG_1_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[33][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_34_value_REG_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[34][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_34_value_REG_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[34][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_34_value_REG_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[34][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_34_value_REG_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[34][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_34_value_REG_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[34][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_34_value_REG_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[34][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_34_value_REG_1_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[34][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_34_value_REG_1_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[34][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_34_value_REG_1_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[34][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_34_value_REG_1_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[34][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_34_value_REG_1_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[34][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_34_value_REG_1_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[34][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_35_value_REG_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[35][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_35_value_REG_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[35][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_35_value_REG_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[35][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_35_value_REG_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[35][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_35_value_REG_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[35][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_35_value_REG_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage1_reg[35][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_35_value_REG_1_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[35][0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_35_value_REG_1_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[35][1]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_35_value_REG_1_reg[2]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[35][2]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_35_value_REG_1_reg[3]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[35][3]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_35_value_REG_1_reg[4]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[35][4]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/io_perf_35_value_REG_1_reg[5]
+    (?) i:/WORK/LsqWrapper/u_core/perf_stage2_reg[35][5]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/pendingstate_reg[0]
+    (?) i:/WORK/LsqWrapper/u_core/unc_state_reg[0]
+Set a match between the following objects:
+	r:/WORK/LsqWrapper/pendingstate_reg[1]
+    (?) i:/WORK/LsqWrapper/u_core/unc_state_reg[1]
+match_packed_payload $top
+match
+Reference design is 'r:/WORK/LsqWrapper'
+Implementation design is 'i:/WORK/LsqWrapper'
+Status:  Checking designs...
+    Warning: Design r:/WORK/LoadQueue is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/WORK/StoreQueue is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/WORK/LoadQueue is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/WORK/StoreQueue is a black box and there are cells referencing it (FM-160)
+    Warning: 2 (2) black-box references found in reference (implementation) design; see formality.log for list (FM-182)
+Status:  Building verification models...
+Status:  Merging duplicated registers in block r:/WORK/LsqWrapper (<top>)...
+Status:  Matching...
+    
+*********************************** Matching Results ***********************************    
+ 434 Compare points matched by user    
+ 13494 Compare points matched by name    
+ 1 Compare points matched by signature analysis    
+ 0 Compare points matched by topology    
+ 13263 Matched primary inputs, black-box outputs    
+ 0(0) Unmatched reference(implementation) compare points    
+ 0(0) Unmatched reference(implementation) primary inputs, black-box outputs    
+****************************************************************************************
+
+    Info:  Formality Guide Files (SVF) can improve matching performance and success by automating setup.
+1
+# ----------------------------------------------------------------------------
+# 自动配对 Chisel 展平命名与 SV 数组命名的寄存器：
+#   ref:  name_1_0_reg / array_0_reg[2]   （firtool 把 Vec 展平成带下标后缀的标量名）
+#   impl: name_reg[1][0] / array_reg[0][2]（SV 数组寄存器）
+# 名字过滤匹配不了这种结构差异；条目间逻辑对称时签名分析也常失败，因此按
+# 命名规则显式 set_user_match。impl 路径会依次尝试：原层次、顶层下插入
+# u_core（变体包装层例化参数化核心的固定实例名）。
+# ----------------------------------------------------------------------------
+proc auto_match_flattened_arrays { top } {
+    redirect -variable um_txt {report_unmatched_points}
+
+    # 收集两侧未匹配 DFF；impl 侧建立「展平等价名 → 实际路径」查找表。
+    # 展平等价名 = 去掉 i:/WORK/<top> 前缀和 u_core 层次、数组下标改成 _i 后缀，
+    # 与 ref 侧的 firtool 展平叶子名同构，可直接字符串比对。
+    array set impl_lut {}
+    set refs {}
+    foreach line [split $um_txt "\n"] {
+        if {[regexp {Ref\s+DFF\S*\s+(r:\S+)} $line -> rpath]} {
+            lappend refs $rpath
+        } elseif {[regexp {Impl\s+DFF\S*\s+(i:\S+)} $line -> ipath]} {
+            set rel $ipath
+            regsub "^i:/WORK/${top}/" $rel "" rel
+            regsub "^u_core/" $rel "" rel
+            # name_reg[1][0] -> name_1_0_reg；保留最后一个位下标（多位寄存器）
+            set key $rel
+            regexp {^(.*?)((?:\[\d+\])*)$} $rel -> stem bits
+            set idxs ""
+            set blist [regexp -all -inline {\d+} $bits]
+            if {[regexp {^(.*)_reg$} $stem -> nm]} {
+                # 位下标个数与 ref 侧叶子的展平维度由名字比对自然对齐：
+                # 先全转成 name_i_j_reg 形式，再在比对时允许 ref 带一个 [bit] 尾巴
+                foreach b $blist { append idxs "_$b" }
+                set key "${nm}${idxs}_reg"
+            }
+            set impl_lut($key) $ipath
+        }
+    }
+
+    set n 0
+    foreach rpath $refs {
+        set leaf [file tail $rpath]
+        set dir  [file dirname $rpath]
+        regsub "^r:/WORK/${top}" $dir "" relhier
+        regsub {^/} $relhier "" relhier
+        # ref 叶子可能带位下标尾巴：array_0_reg[2]
+        regexp {^(.*?)((?:\[\d+\])*)$} $leaf -> base bit
+        set bitidx ""
+        foreach b [regexp -all -inline {\d+} $bit] { set bitidx "_$b" }
+        # 候选 key：把 ref 展平名（含可选位下标）规约成 name_i_j_reg
+        set cand ""
+        if {[regexp {^(.*)_reg$} $base -> nm]} {
+            set cand "${nm}${bitidx}_reg"
+        }
+        set hit ""
+        foreach key [list $cand $base] {
+            if {$key ne "" && [info exists impl_lut($key)]} { set hit $key; break }
+        }
+        if {$hit eq ""} { puts "AUTO_MATCH_FAIL: $rpath"; continue }
+        set ipath $impl_lut($hit)
+        if {[catch {set_user_match $rpath $ipath} msg]} {
+            puts "AUTO_MATCH_FAIL: $rpath <-> $ipath ($msg)"
+        } else {
+            puts "AUTO_MATCH: $rpath <-> $ipath"
+            unset impl_lut($hit)
+            incr n
+        }
+    }
+    if {$n > 0} { match }
+}
+auto_match_flattened_arrays $top
+# 模块本地「匹配后」钉点(FM_PIN_TCL, 可选): 层次/叶名差异的一一对应(只 set_user_match, 不约束 ref)。
+if {[info exists env(FM_PIN_TCL)] && [file exists $env(FM_PIN_TCL)]} {
+    if {$SIDECAR_ON} { sidecar_pin_source $env(FM_PIN_TCL) } else { source $env(FM_PIN_TCL) }
+    match
+}
+report_unmatched_points > fm_work/$top/unmatched.rpt
+report_matched_points > fm_work/$top/matched.rpt
+# sidecar: appvar 有效值读回——全部 pin/custom Tcl 之后、verify 之前(schema v7 契约)
+if {$SIDECAR_ON} { sidecar_capture_appvars }
+if {[verify]} {
+    puts "FM_RESULT: Verification SUCCEEDED for $top"
+} else {
+    report_failing_points > fm_work/$top/failing.rpt
+    puts "FM_RESULT: Verification FAILED or INCONCLUSIVE for $top"
+}
+Reference design is 'r:/WORK/LsqWrapper'
+Implementation design is 'i:/WORK/LsqWrapper'
+    
+*********************************** Matching Results ***********************************    
+ 434 Compare points matched by user    
+ 13494 Compare points matched by name    
+ 1 Compare points matched by signature analysis    
+ 0 Compare points matched by topology    
+ 13263 Matched primary inputs, black-box outputs    
+ 0(0) Unmatched reference(implementation) compare points    
+ 0(0) Unmatched reference(implementation) primary inputs, black-box outputs    
+****************************************************************************************
+
+Status:  Verifying...
+
+
+********************************* Verification Results *********************************
+Verification SUCCEEDED
+----------------------
+ Reference design: r:/WORK/LsqWrapper
+ Implementation design: i:/WORK/LsqWrapper
+ 13929 Passing compare points
+----------------------------------------------------------------------------------------
+Matched Compare Points     BBPin    Loop   BBNet     Cut    Port     DFF     LAT   TOTAL
+----------------------------------------------------------------------------------------
+Passing (equivalent)        8086       0       0       0    5408     435       0   13929
+Failing (not equivalent)       0       0       0       0       0       0       0       0
+****************************************************************************************
+FM_RESULT: Verification SUCCEEDED for LsqWrapper
+# sidecar: 全查询→内存解析→原子写 native_facts.json(任何错误删 tmp 并 exit 4)
+if {$SIDECAR_ON} { sidecar_emit $top }
+SIDECAR_NATIVE_FACTS_WRITTEN
+exit
+
+Maximum memory usage for this session: 913 MB
+CPU usage for this session: 13.12 seconds ( 0.00 hours )
+Current time: Tue Jul 21 03:13:36 2026
+Elapsed time: 27 seconds ( 0.01 hours )
+
+Thank you for using Formality (R)!

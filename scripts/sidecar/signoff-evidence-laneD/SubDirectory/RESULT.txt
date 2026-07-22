@@ -1,0 +1,4 @@
+SIGNOFF_RESULT SubDirectory: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=assembly fm_shell_rc=0 validator_rc=0)
+run_id: SGN-SubDirectory-1784691104
+impl_commit: a60cecbe4efef83392d2cbe3d0d15dde110d14b7
+manifest_sha256: 31ffd27bc33591f5a9250505df1ddba2676de2052ce28c0de5ac84b90d3a335b

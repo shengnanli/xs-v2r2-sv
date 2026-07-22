@@ -1,0 +1,17 @@
+=== FM: RNXbar (mode=assembly) ===
+FM_TOP=RNXbar \
+FM_MODE=assembly \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/RNXbar.sv  " \
+FM_IMPL_SRCS="/tmp/tmp.wh2xrMUrNs/wt/rtl/uncore/rnxbar_pkg.sv /tmp/tmp.wh2xrMUrNs/wt/rtl/uncore/RNXbar.sv /tmp/tmp.wh2xrMUrNs/wt/rtl/uncore/RNXbar_wrapper.sv" \
+ \
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=false \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/RNXbar -file /tmp/tmp.wh2xrMUrNs/wt/scripts/fm_eq.tcl \
+    > fm_work/RNXbar/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.wh2xrMUrNs/wt/scripts/fm_verdict.py fm_work/RNXbar/fm.log --rc $rc --mode assembly --top RNXbar --allowlist 0
+SUCCEEDED	{"passing": 7309, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "assembly", "native": "SUCCEEDED", "top": "RNXbar", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

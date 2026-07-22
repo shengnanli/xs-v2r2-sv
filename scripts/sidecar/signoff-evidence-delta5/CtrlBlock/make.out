@@ -1,0 +1,16 @@
+=== FM: CtrlBlock (mode=signoff-strict) ===
+FM_TOP=CtrlBlock \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/CtrlBlock.sv /home/eda/xs-env/G0-canonical/golden-rtl/DecodeStage.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayN_15.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayN_17.sv /home/eda/xs-env/G0-canonical/golden-rtl/FusionDecoder.sv /home/eda/xs-env/G0-canonical/golden-rtl/GPAMem.sv /home/eda/xs-env/G0-canonical/golden-rtl/MemCtrl.sv /home/eda/xs-env/G0-canonical/golden-rtl/NewDispatch.sv /home/eda/xs-env/G0-canonical/golden-rtl/PipeGroupConnect.sv /home/eda/xs-env/G0-canonical/golden-rtl/PipelineConnectPipe.sv /home/eda/xs-env/G0-canonical/golden-rtl/RedirectGenerator.sv /home/eda/xs-env/G0-canonical/golden-rtl/Rename.sv /home/eda/xs-env/G0-canonical/golden-rtl/RenameTableWrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/Rob.sv /home/eda/xs-env/G0-canonical/golden-rtl/SnapshotGenerator_14.sv /home/eda/xs-env/G0-canonical/golden-rtl/SyncDataModuleTemplate_BackendPC_64entry.sv /home/eda/xs-env/G0-canonical/golden-rtl/Trace.sv" \
+FM_IMPL_SRCS="/tmp/tmp.wurQzCx7z9/wt/rtl/backend/ctrlblock_pkg.sv /tmp/tmp.wurQzCx7z9/wt/rtl/backend/CtrlBlock.sv /tmp/tmp.wurQzCx7z9/wt/rtl/backend/CtrlBlock_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/DecodeStage.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayN_15.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayN_17.sv /home/eda/xs-env/G0-canonical/golden-rtl/FusionDecoder.sv /home/eda/xs-env/G0-canonical/golden-rtl/GPAMem.sv /home/eda/xs-env/G0-canonical/golden-rtl/MemCtrl.sv /home/eda/xs-env/G0-canonical/golden-rtl/NewDispatch.sv /home/eda/xs-env/G0-canonical/golden-rtl/PipeGroupConnect.sv /home/eda/xs-env/G0-canonical/golden-rtl/PipelineConnectPipe.sv /home/eda/xs-env/G0-canonical/golden-rtl/RedirectGenerator.sv /home/eda/xs-env/G0-canonical/golden-rtl/Rename.sv /home/eda/xs-env/G0-canonical/golden-rtl/RenameTableWrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/Rob.sv /home/eda/xs-env/G0-canonical/golden-rtl/SnapshotGenerator_14.sv /home/eda/xs-env/G0-canonical/golden-rtl/SyncDataModuleTemplate_BackendPC_64entry.sv /home/eda/xs-env/G0-canonical/golden-rtl/Trace.sv" \
+ \
+ \
+ \
+ \
+FM_PIN_TCL=/tmp/tmp.wurQzCx7z9/wt/verif/ut/CtrlBlock/fm_pins.tcl \
+fm_shell -64 -work_path fm_work/CtrlBlock -file /tmp/tmp.wurQzCx7z9/wt/scripts/fm_eq.tcl \
+    > fm_work/CtrlBlock/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.wurQzCx7z9/wt/scripts/fm_verdict.py fm_work/CtrlBlock/fm.log --rc $rc --mode signoff-strict --top CtrlBlock --allowlist 0
+make: *** [../../../scripts/ut_common.mk:56: fm-CtrlBlock] Terminated

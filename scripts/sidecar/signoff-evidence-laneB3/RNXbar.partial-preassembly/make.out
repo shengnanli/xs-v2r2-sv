@@ -1,0 +1,18 @@
+=== FM: RNXbar (mode=signoff-strict) ===
+FM_TOP=RNXbar \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/RNXbar.sv  " \
+FM_IMPL_SRCS="/tmp/tmp.dfVRCEIqrH/wt/rtl/uncore/rnxbar_pkg.sv /tmp/tmp.dfVRCEIqrH/wt/rtl/uncore/RNXbar.sv /tmp/tmp.dfVRCEIqrH/wt/rtl/uncore/RNXbar_wrapper.sv" \
+ \
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=false \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/RNXbar -file /tmp/tmp.dfVRCEIqrH/wt/scripts/fm_eq.tcl \
+    > fm_work/RNXbar/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.dfVRCEIqrH/wt/scripts/fm_verdict.py fm_work/RNXbar/fm.log --rc $rc --mode signoff-strict --top RNXbar --allowlist 0
+PARTIAL	{"passing": 7309, "failing": 0, "unverified": null, "unmatched": 764, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "RNXbar", "dont_verify": false, "elab147": false, "reason": "strict_unmatched!=0", "unmatched_ref": 0, "unmatched_impl": 764}
+make: *** [../../../scripts/ut_common.mk:60: fm-RNXbar] Error 1

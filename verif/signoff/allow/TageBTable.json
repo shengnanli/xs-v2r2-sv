@@ -1,0 +1,17 @@
+{
+    "unresolved_blackbox": [
+        {
+            "id": "bt",
+            "ref_path": "r:/WORK/TageBTable/bt",
+            "impl_path": "i:/WORK/TageBTable/bt"
+        },
+        {
+            "id": "wrbypass",
+            "ref_path": "r:/WORK/TageBTable/wrbypass",
+            "impl_path": "i:/WORK/TageBTable/wrbypass"
+        }
+    ],
+    "interface_only": [],
+    "empty_blackbox": [],
+    "unmatched": []
+}

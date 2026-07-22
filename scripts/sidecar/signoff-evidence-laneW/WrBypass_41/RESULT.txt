@@ -1,0 +1,4 @@
+SIGNOFF_RESULT WrBypass_41: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=signoff-strict fm_shell_rc=0 validator_rc=0)
+run_id: SGN-WrBypass_41-1784699151
+impl_commit: 4741a060d902e3784a33547bbd3e89a1c5d72394
+manifest_sha256: 31ffd27bc33591f5a9250505df1ddba2676de2052ce28c0de5ac84b90d3a335b

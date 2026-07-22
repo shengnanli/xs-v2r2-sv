@@ -1,0 +1,18 @@
+=== FM: ICacheDataArray (mode=signoff-strict) ===
+FM_TOP=ICacheDataArray \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/ICacheDataArray.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplateWithFixedWidth.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplateWithFixedWidth_4.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplateWithFixedWidth_12.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplateWithFixedWidth_28.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_4.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_8.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_16.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_32.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p256x66m66s1h0l1b_icsh_dat.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_0.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistPipeIcacheDataWay0.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistPipeIcacheDataWay1.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistPipeIcacheDataWay2.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistPipeIcacheDataWay3.sv " \
+FM_IMPL_SRCS="/tmp/tmp.4dmSIzldWW/wt/rtl/frontend/ICacheDataArray.sv /tmp/tmp.4dmSIzldWW/wt/rtl/frontend/ICacheDataArray_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplateWithFixedWidth.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplateWithFixedWidth_4.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplateWithFixedWidth_12.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplateWithFixedWidth_28.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_4.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_8.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_16.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_32.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p256x66m66s1h0l1b_icsh_dat.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_0.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistPipeIcacheDataWay0.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistPipeIcacheDataWay1.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistPipeIcacheDataWay2.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistPipeIcacheDataWay3.sv" \
+ \
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=false \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/ICacheDataArray -file /tmp/tmp.4dmSIzldWW/wt/scripts/fm_eq.tcl \
+    > fm_work/ICacheDataArray/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.4dmSIzldWW/wt/scripts/fm_verdict.py fm_work/ICacheDataArray/fm.log --rc $rc --mode signoff-strict --top ICacheDataArray --allowlist 0
+PARTIAL	{"passing": 8161, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": 76, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "ICacheDataArray", "dont_verify": false, "elab147": false, "reason": "strict_unread!=0", "unmatched_ref": 0, "unmatched_impl": 0}
+make: *** [../../../scripts/ut_common.mk:60: fm-ICacheDataArray] Error 1

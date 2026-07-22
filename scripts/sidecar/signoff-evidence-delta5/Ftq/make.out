@@ -1,0 +1,17 @@
+=== FM: Ftq (mode=assembly) ===
+FM_TOP=Ftq \
+FM_MODE=assembly \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/Ftq.sv /home/eda/xs-env/G0-canonical/golden-rtl/SyncDataModuleTemplate__64entry.sv /home/eda/xs-env/G0-canonical/golden-rtl/SyncDataModuleTemplate__64entry_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/SyncDataModuleTemplate__64entry_2.sv /home/eda/xs-env/G0-canonical/golden-rtl/FTBEntryGen.sv /home/eda/xs-env/G0-canonical/golden-rtl/FtqPcMemWrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/FtqNRSRAM.sv /home/eda/xs-env/G0-canonical/golden-rtl/SyncDataModuleTemplate_FtqPC_64entry.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistPipeFtq.sv" \
+FM_IMPL_SRCS="/tmp/tmp.iGp9E3cWaY/wt/rtl/frontend/Ftq.sv /tmp/tmp.iGp9E3cWaY/wt/rtl/frontend/Ftq_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/SyncDataModuleTemplate__64entry.sv /home/eda/xs-env/G0-canonical/golden-rtl/SyncDataModuleTemplate__64entry_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/SyncDataModuleTemplate__64entry_2.sv /home/eda/xs-env/G0-canonical/golden-rtl/FTBEntryGen.sv /home/eda/xs-env/G0-canonical/golden-rtl/FtqPcMemWrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/FtqNRSRAM.sv /home/eda/xs-env/G0-canonical/golden-rtl/SyncDataModuleTemplate_FtqPC_64entry.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistPipeFtq.sv" \
+ \
+FM_INTERFACE_ONLY="SyncDataModuleTemplate__64entry SyncDataModuleTemplate__64entry_1                     SyncDataModuleTemplate__64entry_2 FTBEntryGen FtqPcMemWrapper FtqNRSRAM                     SyncDataModuleTemplate_FtqPC_64entry MbistPipeFtq" \
+ \
+FM_PIN_PRE_TCL=/tmp/tmp.iGp9E3cWaY/wt/verif/ut/Ftq/fm_pins_pre.tcl \
+ \
+fm_shell -64 -work_path fm_work/Ftq -file /tmp/tmp.iGp9E3cWaY/wt/scripts/fm_eq.tcl \
+    > fm_work/Ftq/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.iGp9E3cWaY/wt/scripts/fm_verdict.py fm_work/Ftq/fm.log --rc $rc --mode assembly --top Ftq --allowlist 0
+PARTIAL	{"passing": 9952, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": 4282, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "assembly", "native": "SUCCEEDED", "top": "Ftq", "dont_verify": false, "elab147": false, "reason": "assembly_unread!=0", "unmatched_ref": 0, "unmatched_impl": 0}
+make: *** [../../../scripts/ut_common.mk:56: fm-Ftq] Error 1

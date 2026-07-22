@@ -1,0 +1,16 @@
+=== FM: TLBuffer (mode=signoff-strict) ===
+FM_TOP=TLBuffer \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/TLBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleA.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleD.sv /home/eda/xs-env/G0-canonical/golden-rtl/ram_2x153.sv /home/eda/xs-env/G0-canonical/golden-rtl/ram_2x90.sv " \
+FM_IMPL_SRCS="/tmp/tmp.hafI2C8p9J/wt/rtl/memblock/tlbuffer_pkg.sv /tmp/tmp.hafI2C8p9J/wt/rtl/memblock/TLBuffer.sv /tmp/tmp.hafI2C8p9J/wt/rtl/memblock/TLBuffer_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleA.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleD.sv /home/eda/xs-env/G0-canonical/golden-rtl/ram_2x153.sv /home/eda/xs-env/G0-canonical/golden-rtl/ram_2x90.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/TLBuffer -file /tmp/tmp.hafI2C8p9J/wt/scripts/fm_eq.tcl \
+    > fm_work/TLBuffer/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.hafI2C8p9J/wt/scripts/fm_verdict.py fm_work/TLBuffer/fm.log --rc $rc --mode signoff-strict --top TLBuffer --allowlist 0
+SUCCEEDED	{"passing": 739, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "TLBuffer", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

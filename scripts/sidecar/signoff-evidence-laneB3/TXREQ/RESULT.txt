@@ -1,0 +1,4 @@
+SIGNOFF_RESULT TXREQ: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=signoff-strict fm_shell_rc=0 validator_rc=0)
+run_id: SGN-TXREQ-1784712000
+impl_commit: 0ded22f42a1fc7905c57770badd255db10ecd140
+manifest_sha256: 96785d6e2b8343ec69eba55bdc3fe0976a80356fba646bc5a1de75168453f65e
