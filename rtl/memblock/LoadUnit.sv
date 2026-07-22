@@ -2931,7 +2931,15 @@ module xs_LoadUnit_core(
   assign io_prefetch_train_l1_bits_isFirstIssue = pf_tr1_isFirstIssue;
   assign io_prefetch_train_l1_bits_meta_prefetch = pf_tr1_meta;
   assign io_s2_prefetch_spec = s2_prefetch_train_valid;
-  assign io_s2_ptr_chasing = 1'b0;  // l2l 关闭：恒 0
+  // l2l 关闭：golden 仍保留 s2 输出寄存器 io_s2_ptr_chasing_r（其源 s1_try_ptr_chasing_last
+  // 在本配置恒 0）。为与 golden 逐拍结构一致（bug-for-bug，避免多一个 golden-only 比较点），
+  // 本核也保留同名常 0 异步复位寄存器，而非组合硬编码 0。
+  reg io_s2_ptr_chasing_r;
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) io_s2_ptr_chasing_r <= 1'b0;
+    else       io_s2_ptr_chasing_r <= 1'b0;
+  end
+  assign io_s2_ptr_chasing = io_s2_ptr_chasing_r;
 
   // ---- ldCancel（s3 不安全唤醒且非 vec）----
   assign io_ldCancel_ld2Cancel = s3_valid_REG & ~s3_safe_wakeup & ~s3_isvec;
