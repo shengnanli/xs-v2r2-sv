@@ -59,6 +59,37 @@ package iq_ffmac_pkg;
   localparam int FU_FALU  = 11; // 浮点 ALU
   localparam int FU_FMAC  = 12; // 浮点乘加
 
+  // FuType 紧凑存储:本变体只可能出现 {FU_FALU, FU_FMAC} 两位为 1,其余 33 位恒 0
+  // (golden 已按变体剪枝)。因此条目里只存这些"保留位",对外仍复原成 35 位 one-hot。
+  // FU_TYPE_KEEP_MASK 标出保留位;pack/unpack 在 35 位总线与紧凑存储间无损转换。
+  localparam logic [FU_NUM-1:0] FU_TYPE_KEEP_MASK =
+      (35'b1 << FU_FALU) | (35'b1 << FU_FMAC);
+  localparam int FU_TYPE_KEEP_W = 2; // = $countones(FU_TYPE_KEEP_MASK)
+
+  // 35 位 one-hot → 紧凑保留位(按 mask 位号升序装填到槽 0,1,…)
+  function automatic logic [FU_TYPE_KEEP_W-1:0] pack_fu_type(input logic [FU_NUM-1:0] full);
+    int unsigned slot;
+    pack_fu_type = '0;
+    slot = 0;
+    for (int b = 0; b < FU_NUM; b++)
+      if (FU_TYPE_KEEP_MASK[b]) begin
+        pack_fu_type[slot] = full[b];
+        slot++;
+      end
+  endfunction
+
+  // 紧凑保留位 → 35 位 one-hot(未保留位复原为 0),pack 的逆运算
+  function automatic logic [FU_NUM-1:0] unpack_fu_type(input logic [FU_TYPE_KEEP_W-1:0] kept);
+    int unsigned slot;
+    unpack_fu_type = '0;
+    slot = 0;
+    for (int b = 0; b < FU_NUM; b++)
+      if (FU_TYPE_KEEP_MASK[b]) begin
+        unpack_fu_type[b] = kept[slot];
+        slot++;
+      end
+  endfunction
+
   // og0Cancel / og1Cancel 是按全局 EXU 号(numExu)索引的取消向量。本变体仅 IQ 唤醒源 0
   // 是 0 周期延迟(is0Lat),其对应全局 EXU 号 = 8(命中位 og0Cancel[8])。
   localparam int NUM_EXU = 27; // backendParams.numExu
@@ -109,7 +140,7 @@ package iq_ffmac_pkg;
   typedef struct packed {
     logic                         rob_flag;   // RobPtr.flag(环形指针方向位)
     logic [ROB_PTR_W-1:0]         rob_value;  // RobPtr.value
-    logic [FU_NUM-1:0]            fu_type;    // FuType one-hot(仅 fuType_{11,12} 有效)
+    logic [FU_TYPE_KEEP_W-1:0]    fu_type;    // 紧凑存储保留位(见 FU_TYPE_KEEP_MASK / pack_fu_type)
     src_status_t [NUM_REGSRC-1:0] src;        // 各源状态
     logic                         issued;     // 已发射(等待响应)
     logic [1:0]                   issue_timer;// 发射计时(0→1→2→饱和3,/og 响应选择窗口)
