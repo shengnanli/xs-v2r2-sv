@@ -407,8 +407,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "目标strengthening: 内部子模块对称死寄存器(golden子模块复用/镜像, ref与impl仅差u_core包装层级, 去前缀后同位置同名, auto_match_flattened_arrays签名双射配对), 两侧同源锁存cone-dead. vmucp=true令FM实际比较验证恒相等; 非waiver/dont_verify/扩黑盒",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -519,8 +519,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "目标strengthening: 内部子模块对称死寄存器(golden子模块复用/镜像, ref与impl仅差u_core包装层级, 去前缀后同位置同名, auto_match_flattened_arrays签名双射配对), 两侧同源锁存cone-dead. vmucp=true令FM实际比较验证恒相等; 非waiver/dont_verify/扩黑盒",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -533,8 +533,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "目标strengthening: 内部子模块对称死寄存器(golden子模块复用/镜像, ref与impl仅差u_core包装层级, 去前缀后同位置同名, auto_match_flattened_arrays签名双射配对), 两侧同源锁存cone-dead. vmucp=true令FM实际比较验证恒相等; 非waiver/dont_verify/扩黑盒",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -547,8 +547,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "目标strengthening: 内部子模块对称死寄存器(golden子模块复用/镜像, ref与impl仅差u_core包装层级, 去前缀后同位置同名, auto_match_flattened_arrays签名双射配对), 两侧同源锁存cone-dead. vmucp=true令FM实际比较验证恒相等; 非waiver/dont_verify/扩黑盒",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1233,8 +1233,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "目标strengthening: 内部子模块对称死寄存器(golden子模块复用/镜像, ref与impl仅差u_core包装层级, 去前缀后同位置同名, auto_match_flattened_arrays签名双射配对), 两侧同源锁存cone-dead. vmucp=true令FM实际比较验证恒相等; 非waiver/dont_verify/扩黑盒",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1247,8 +1247,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "目标strengthening: 内部子模块对称死寄存器(golden子模块复用/镜像, ref与impl仅差u_core包装层级, 去前缀后同位置同名, auto_match_flattened_arrays签名双射配对), 两侧同源锁存cone-dead. vmucp=true令FM实际比较验证恒相等; 非waiver/dont_verify/扩黑盒",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1401,8 +1401,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "目标strengthening: 内部子模块对称死寄存器(golden子模块复用/镜像, ref与impl仅差u_core包装层级, 去前缀后同位置同名, auto_match_flattened_arrays签名双射配对), 两侧同源锁存cone-dead. vmucp=true令FM实际比较验证恒相等; 非waiver/dont_verify/扩黑盒",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1415,8 +1415,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "目标strengthening: 内部子模块对称死寄存器(golden子模块复用/镜像, ref与impl仅差u_core包装层级, 去前缀后同位置同名, auto_match_flattened_arrays签名双射配对), 两侧同源锁存cone-dead. vmucp=true令FM实际比较验证恒相等; 非waiver/dont_verify/扩黑盒",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1429,8 +1429,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "目标strengthening: 内部子模块对称死寄存器(golden子模块复用/镜像, ref与impl仅差u_core包装层级, 去前缀后同位置同名, auto_match_flattened_arrays签名双射配对), 两侧同源锁存cone-dead. vmucp=true令FM实际比较验证恒相等; 非waiver/dont_verify/扩黑盒",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2031,8 +2031,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "目标strengthening: 内部子模块对称死寄存器(golden子模块复用/镜像, ref与impl仅差u_core包装层级, 去前缀后同位置同名, auto_match_flattened_arrays签名双射配对), 两侧同源锁存cone-dead. vmucp=true令FM实际比较验证恒相等; 非waiver/dont_verify/扩黑盒",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2983,8 +2983,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "目标strengthening: 内部子模块对称死寄存器(golden子模块复用/镜像, ref与impl仅差u_core包装层级, 去前缀后同位置同名, auto_match_flattened_arrays签名双射配对), 两侧同源锁存cone-dead. vmucp=true令FM实际比较验证恒相等; 非waiver/dont_verify/扩黑盒",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2997,8 +2997,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "目标strengthening: 内部子模块对称死寄存器(golden子模块复用/镜像, ref与impl仅差u_core包装层级, 去前缀后同位置同名, auto_match_flattened_arrays签名双射配对), 两侧同源锁存cone-dead. vmucp=true令FM实际比较验证恒相等; 非waiver/dont_verify/扩黑盒",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3025,8 +3025,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "目标strengthening: 内部子模块对称死寄存器(golden子模块复用/镜像, ref与impl仅差u_core包装层级, 去前缀后同位置同名, auto_match_flattened_arrays签名双射配对), 两侧同源锁存cone-dead. vmucp=true令FM实际比较验证恒相等; 非waiver/dont_verify/扩黑盒",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3879,8 +3879,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "目标strengthening: 内部子模块对称死寄存器(golden子模块复用/镜像, ref与impl仅差u_core包装层级, 去前缀后同位置同名, auto_match_flattened_arrays签名双射配对), 两侧同源锁存cone-dead. vmucp=true令FM实际比较验证恒相等; 非waiver/dont_verify/扩黑盒",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3893,8 +3893,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "目标strengthening: 内部子模块对称死寄存器(golden子模块复用/镜像, ref与impl仅差u_core包装层级, 去前缀后同位置同名, auto_match_flattened_arrays签名双射配对), 两侧同源锁存cone-dead. vmucp=true令FM实际比较验证恒相等; 非waiver/dont_verify/扩黑盒",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3907,8 +3907,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "目标strengthening: 内部子模块对称死寄存器(golden子模块复用/镜像, ref与impl仅差u_core包装层级, 去前缀后同位置同名, auto_match_flattened_arrays签名双射配对), 两侧同源锁存cone-dead. vmucp=true令FM实际比较验证恒相等; 非waiver/dont_verify/扩黑盒",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -4061,8 +4061,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "目标strengthening: 内部子模块对称死寄存器(golden子模块复用/镜像, ref与impl仅差u_core包装层级, 去前缀后同位置同名, auto_match_flattened_arrays签名双射配对), 两侧同源锁存cone-dead. vmucp=true令FM实际比较验证恒相等; 非waiver/dont_verify/扩黑盒",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -4075,8 +4075,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "目标strengthening: 内部子模块对称死寄存器(golden子模块复用/镜像, ref与impl仅差u_core包装层级, 去前缀后同位置同名, auto_match_flattened_arrays签名双射配对), 两侧同源锁存cone-dead. vmucp=true令FM实际比较验证恒相等; 非waiver/dont_verify/扩黑盒",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
