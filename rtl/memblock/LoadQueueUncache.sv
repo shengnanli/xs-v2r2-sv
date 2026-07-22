@@ -29,6 +29,27 @@ module xs_LoadQueueUncache_core
     NC_REM_ODD  = 1'b1
   } lqu_nc_rem_e;
 
+  // Redirect history only participates in ROB flush checks.  Keep exactly the
+  // state consumed by those checks; the FTQ/isRVC payload belongs to rollback,
+  // not to the two-cycle redirect history.
+  typedef struct packed {
+    logic        valid;
+    lqu_robidx_t robIdx;
+    logic        level;
+  } lqu_flush_history_t;
+
+  // The rollback valid bit has its own resettable pipeline register.  The
+  // payload register therefore deliberately excludes a second, unused valid
+  // bit and holds only fields observable at the module outputs.
+  typedef struct packed {
+    logic                  isRVC;
+    lqu_robidx_t            robIdx;
+    logic                  ftq_flag;
+    logic [FTQ_IDX_W-1:0]  ftq_value;
+    logic [3:0]            ftqOffset;
+    logic                  level;
+  } lqu_rollback_payload_t;
+
   // ===========================================================================
   //  §0  端口聚合与子模块互联信号
   // ===========================================================================
@@ -101,7 +122,7 @@ module xs_LoadQueueUncache_core
   logic           nc_pipe_odd_ready,   nc_pipe_odd_valid;
   lqu_nc_out_t    nc_pipe_empty_bits, nc_pipe_even_bits, nc_pipe_odd_bits;
 
-  lqu_redirect_t  redirect_d1, redirect_d2;
+  lqu_flush_history_t redirect_d1, redirect_d2;
   // golden 的 s2 冲刷检查消费的是**无使能** RegNext 副本（每 lane 一份：
   // s2_valid_REG_1/3/5_{valid,bits}，每拍无条件采样 io_redirect），与带使能的
   // lastCycleRedirect（redirect_d1，仅 io_redirect_valid 时锁存 bits）是两类寄存器。
@@ -113,7 +134,7 @@ module xs_LoadQueueUncache_core
   logic [7:0]     redirect_s2_nc_value [LOAD_PIPE_W];
   logic           redirect_s2_nc_level [LOAD_PIPE_W];
   logic           rollback_valid_d;
-  lqu_redirect_t  rollback_bits_d;
+  lqu_rollback_payload_t rollback_bits_d;
 
 `include "loadqueueuncache_connect.svh"
 
@@ -177,20 +198,12 @@ module xs_LoadQueueUncache_core
       redirect_d1.robIdx.flag  <= io_redirect_bits_robIdx_flag;
       redirect_d1.robIdx.value <= io_redirect_bits_robIdx_value;
       redirect_d1.level        <= io_redirect_bits_level;
-      redirect_d1.isRVC        <= 1'b0;
-      redirect_d1.ftq_flag     <= 1'b0;
-      redirect_d1.ftq_value    <= '0;
-      redirect_d1.ftqOffset    <= '0;
     end
     redirect_d2.valid <= redirect_d1.valid;
     if (redirect_d1.valid) begin
       redirect_d2.robIdx.flag  <= redirect_d1.robIdx.flag;
       redirect_d2.robIdx.value <= redirect_d1.robIdx.value;
       redirect_d2.level        <= redirect_d1.level;
-      redirect_d2.isRVC        <= 1'b0;
-      redirect_d2.ftq_flag     <= 1'b0;
-      redirect_d2.ftq_value    <= '0;
-      redirect_d2.ftqOffset    <= '0;
     end
   end
 
@@ -467,8 +480,14 @@ module xs_LoadQueueUncache_core
   end
 
   always_ff @(posedge clock) begin
-    if (oldest_redirect.valid)
-      rollback_bits_d <= oldest_redirect;
+    if (oldest_redirect.valid) begin
+      rollback_bits_d.isRVC        <= oldest_redirect.isRVC;
+      rollback_bits_d.robIdx       <= oldest_redirect.robIdx;
+      rollback_bits_d.ftq_flag     <= oldest_redirect.ftq_flag;
+      rollback_bits_d.ftq_value    <= oldest_redirect.ftq_value;
+      rollback_bits_d.ftqOffset    <= oldest_redirect.ftqOffset;
+      rollback_bits_d.level        <= oldest_redirect.level;
+    end
   end
 
   assign io_rollback_valid = rollback_valid_d;
