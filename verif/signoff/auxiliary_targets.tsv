@@ -1,0 +1,5 @@
+# 独立 child proof 目标：仅用于 assembly_depends.tsv 依赖闭包，不扩大冻结 305 主分母。
+# target<TAB>rationale
+SRAMTemplate_197	SubDirectory tagArray 可读 leaf；PASS_DEAD_REF
+SRAMTemplate_198	SubDirectory metaArray 可读 leaf；PASS_DEAD_REF
+MaxPeriodFibonacciLFSR_3	SubDirectory replacement LFSR leaf；strict PASS

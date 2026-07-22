@@ -4,10 +4,6 @@ RTL_DIR = ../../../rtl
 GOLDEN_RTL = ../../../golden/chisel-rtl
 
 RTL_SRCS = $(RTL_DIR)/uncore/subdirectory_pkg.sv \
-           $(RTL_DIR)/common/xs_Simple1PSRAM_core.sv \
-           $(RTL_DIR)/uncore/SRAMTemplate_197.sv \
-           $(RTL_DIR)/uncore/SRAMTemplate_198.sv \
-           $(RTL_DIR)/uncore/MaxPeriodFibonacciLFSR_3.sv \
            $(RTL_DIR)/uncore/SubDirectory.sv
 
 WRAPPER_SRCS = $(RTL_DIR)/uncore/SubDirectory_wrapper.sv
@@ -24,12 +20,10 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/SubDirectory.sv \
 
 TB_SRCS = variants_xs.sv tb.sv
 
-# FM: 两侧都展开 SRAM/LFSR 真实 RTL，不以子模块黑盒隐藏差异。
+# FM: 父级只证 SubDirectory glue；SRAM/LFSR 作为已独立证明的
+# assembly child 边界，由 verif/signoff/assembly_depends.tsv 绑定依赖。
 FM_VARIANTS = SubDirectory
-FM_REF_DEPS_SubDirectory = SRAMTemplate_197.sv SRAMTemplate_198.sv \
-                           array_19.sv array_19_ext.v \
-                           array_20.sv array_20_ext.v \
-                           MaxPeriodFibonacciLFSR_3.sv
+FM_REF_DEPS_SubDirectory =
 
 include ../../../scripts/ut_common.mk
 

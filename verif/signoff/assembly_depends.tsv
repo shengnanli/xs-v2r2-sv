@@ -9,3 +9,4 @@ ITTageTable_4	WrBypass_43
 LsqWrapper	LoadQueue,StoreQueue
 SNXbar	FastArbiter_46,FastArbiter_47
 SplittedSRAMTemplate_2	SRAMTemplate_36
+SubDirectory	SRAMTemplate_197,SRAMTemplate_198,MaxPeriodFibonacciLFSR_3

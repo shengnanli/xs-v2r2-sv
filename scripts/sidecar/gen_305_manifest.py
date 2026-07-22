@@ -52,6 +52,33 @@ def load_declarations(path):
     return decl
 
 
+def load_auxiliary_targets(path):
+    """Read independently-proved leaf targets that are outside the frozen 305 denominator."""
+    targets = set()
+    if not path or not os.path.isfile(path):
+        return targets
+    for ln in open(path, encoding="utf-8"):
+        ln = ln.rstrip("\n")
+        if not ln or ln.startswith("#"):
+            continue
+        target = ln.split("\t", 1)[0]
+        if target in targets:
+            raise SystemExit(f"duplicate auxiliary target: {target}")
+        targets.add(target)
+    return targets
+
+
+def load_frozen_targets(path):
+    targets = set()
+    for ln in open(path, encoding="utf-8"):
+        ln = ln.rstrip("\n")
+        if not ln or ln.startswith("#"):
+            continue
+        target = ln.split("\t", 1)[0]
+        targets.add(target)
+    return targets
+
+
 def has_fm_assignment(makefile):
     txt = re.sub(r"\\\n", " ", open(makefile).read())
     return bool(re.search(r"^FM_VARIANTS\s*[:+]?=", txt, re.M))
@@ -91,13 +118,21 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--ut-root", default="verif/ut")
     ap.add_argument("--declarations", default="scripts/sidecar/manifest_declarations.tsv")
+    ap.add_argument("--auxiliary-targets", default="verif/signoff/auxiliary_targets.tsv")
+    ap.add_argument("--frozen-targets", default="verif/freeze/fm_targets.tsv")
     ap.add_argument("--out", default="scripts/sidecar/manifest_305.json")
     a = ap.parse_args()
     bid = canonical_bid()
     decl = load_declarations(a.declarations)
+    auxiliary_targets = load_auxiliary_targets(a.auxiliary_targets)
+    frozen_targets = load_frozen_targets(a.frozen_targets)
+    overlap = auxiliary_targets & frozen_targets
+    if overlap:
+        raise SystemExit(f"auxiliary target is in frozen main universe: {sorted(overlap)}")
     entries = []
     seen = set()
     fm_dirs = set()
+    auxiliary_seen = set()
 
     for mk in sorted(glob.glob(os.path.join(a.ut_root, "*", "Makefile")) +
                      glob.glob(os.path.join(a.ut_root, "*", "Makefile.*"))):
@@ -113,6 +148,13 @@ def main():
             entries.append(mk_entry(ut_dir, ut_dir, mk, mt, entry, pm, decl, bid))
             continue
         for v in variants_of(mk):
+            # Auxiliary child proofs qualify an assembly parent through
+            # assembly_depends.tsv, but never expand the frozen 305 denominator.
+            if v in auxiliary_targets:
+                if v in auxiliary_seen:
+                    raise SystemExit(f"auxiliary target has multiple mechanical entries: {v}")
+                auxiliary_seen.add(v)
+                continue
             key = (ut_dir, v, "fm-%s" % v)
             if key in seen:
                 continue
@@ -134,6 +176,10 @@ def main():
             continue  # 有 FM 但 variants 为空(另议), 不算 UNCONFIGURED
         unconfigured.append(ud)
         entries.append(mk_entry(ud, ud, "", "-", "-", "n/a", decl, bid, cfg="UNCONFIGURED"))
+
+    unknown_auxiliary = auxiliary_targets - auxiliary_seen
+    if unknown_auxiliary:
+        raise SystemExit(f"auxiliary target is not mechanically enumerable: {sorted(unknown_auxiliary)}")
 
     entries.sort(key=lambda e: (e["config_status"], e["ut_dir"], e["target"], e["make_target"]))
     manifest = {"schema": "fm-signoff-manifest-v2", "canonical_baseline_id": bid,
