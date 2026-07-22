@@ -11,3 +11,4 @@ SNXbar	FastArbiter_46,FastArbiter_47
 SplittedSRAMTemplate_2	SRAMTemplate_36
 SubDirectory	MaxPeriodFibonacciLFSR_3,SRAMTemplate_197,SRAMTemplate_198	AUX child(不入305分母): LFSR strict PASS + SRAM197/198 PASS_DEAD_REF(reg_RW0_ren死); 依赖闭合后SubDirectory assembly合法绿
 SubDirectory_1	SRAMTemplate_199,SRAMTemplate_200,SRAMTemplate_201,MaxPeriodFibonacciLFSR_3	AUX child全PASS(199/200宏边界/201 reset-sweep/LFSR); 依赖闭合
+RNXbar	FastArbiter_46,FastArbiter_27,FastArbiter_44,FastArbiter_31,FastArbiter_30,FastArbiter_36

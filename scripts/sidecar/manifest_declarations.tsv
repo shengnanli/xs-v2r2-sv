@@ -44,3 +44,4 @@ FastArbiter_46	signoff-strict		目标级strengthening: matched-unread(pendingMas
 FastArbiter_47	signoff-strict		目标级strengthening: matched-unread(pendingMask死位)纳入verify, 验更多点非waiver	true
 FastArbiter_27	signoff-strict		目标级strengthening: matched-unread(pendingMask死位)纳入verify, 验更多点非waiver	true
 FastArbiter_44	signoff-strict		目标级strengthening: matched-unread(pendingMask死位)纳入verify, 验更多点非waiver	true
+RNXbar	assembly	verif/signoff/allow/RNXbar.json	assembly: 15个CHI仲裁器黑盒边界(rx*/tx*Arbs), 6类全为独立FM绿目标FastArbiter_46/27/44/31/30/36; 验证本层1RN×4HN解复用+snoop快照glue	
