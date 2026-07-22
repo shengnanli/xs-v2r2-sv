@@ -1,0 +1,4 @@
+SIGNOFF_RESULT TageTable_3: measured=PARTIAL required=SUCCEEDED gate=GAP (proof=signoff-strict fm_shell_rc=0 validator_rc=1)
+run_id: SGN-TageTable_3-1784716579
+impl_commit: a667668358c04443f542f1a87c21e0b74aae870c
+manifest_sha256: 753bb9d3e068f8ffc2541d560ae4f8af86620ad0ec9131a24f0e5860d8190068
