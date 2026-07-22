@@ -991,12 +991,12 @@
    "makefile": "verif/ut/ICacheDataArray/Makefile",
    "make_target": "fm-ICacheDataArray",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "allow_ref": "verif/signoff/allow/ICacheDataArray.json",
+   "rationale": "assembly(reviewer裁定选项2): SRAMTemplateWithFixedWidth+SRAMTemplate+sram_array+array_0 SRAM链 与 MbistPipeIcacheDataWay0-3 全部两侧elaborate参与证明(fixed-width拆分/holdRead/地址/mask/DFT逻辑受验), 仅32个厂商存储宏array_0_ext作对称assembly黑盒边界. vmucp=true: 令FM实际比较76个两侧同golden模块的matched-identical死寄存器(SRAMTemplate rdata_hold[65] + MBIST addrReg/beReg, ref==impl路径全对称)验证恒相等",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
