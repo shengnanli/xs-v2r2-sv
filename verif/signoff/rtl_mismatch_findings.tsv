@@ -9,3 +9,4 @@ BypassNetwork	PASS_DEAD_REF	golden-only 64死位 bypassDataVec_r_8_reg[100:163](
 NewDispatch	PASS_DEAD_REF	golden-only 72死位 decodeReason_N_reg+decodeReason_REG_N_reg(golden解码原因寄存器cone-dead, impl省略), impl clean, native SUCCEEDED → PASS_DEAD_REF
 MSHR	vmucp+PASS_DEAD_REF	65个u_core对称内部死位vmucp验证相等; 残留4个golden-only REG_1/2/3/_reg(golden流水/时序死寄存器cone-dead, impl省略), impl clean → PASS_DEAD_REF
 TageTable(×4)	RTL化简+PASS_DEAD_REF	TageTable核s1_unhashed 12位→只寄unhashed[0](唯一被读位)消11 impl-only死位; 暴露golden自身48 golden-only死位s1_unhashed_idx_reg[1:48](golden存49位只读bit0冗余), impl现最小clean → PASS_DEAD_REF. 共享核一改翻4变体
+LoadUnit	真差异诊断/多机制待续	Lane3最底层高杠杆叶(→MemBlock→XSCore→XSTile→XSTop). 已修2根因: (1)io_s2_ptr_chasing_r-impl关闭l2l硬编码0而golden保留常0 s2寄存器→补回同名寄存器(结构对齐, passing+1); (2)s1_in_fullva[63:0]全死(写而零读,s2重算)→移除(unread_impl 149→85). 剩85 impl partial-dead(向量路径vecBaseVaddr/vecVaddrOffset被读但下游死+excVec/cause部分位golden per-field剪枝)+89 golden-dead, 需向量路径cone深析非单删. ★教训:诊断前须重跑刷新证据(delta3陈旧仅显1点,实238点)★
