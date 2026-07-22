@@ -338,8 +338,17 @@ module xs_EntriesFaluFcvtF2vFmacFdiv_core import iq_ffcfmacfdiv_pkg::*; (
   // ===========================================================================
   // 5. 例化 18 个单条目
   // ===========================================================================
+  // golden 只有 io_og0Cancel_8:唯一被引用的 og0Cancel EXU 槽是 OG0_EXU=8,其余 EXU 的
+  // og0Cancel 母线恒 0。故只把 EXU 8 那一位打 1 拍存储,再重构成核所需的 NUM_EXU 位母线
+  // (其余位恒 0),避免存 26 个恒 0 的死寄存器。语义(打拍/无复位/每拍更新)与原完全一致。
+  localparam int OG0_EXU = 8;
+  logic og0_d1_kept;
+  always_ff @(posedge clock) og0_d1_kept <= og0cancel[OG0_EXU];
   logic [NUM_EXU-1:0] og0_d1;
-  always_ff @(posedge clock) og0_d1 <= og0cancel;
+  always_comb begin
+    og0_d1 = '0;
+    og0_d1[OG0_EXU] = og0_d1_kept;
+  end
 
   genvar e;
   generate

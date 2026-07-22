@@ -184,13 +184,8 @@ module xs_iq_entry_ffcfmacfdiv import iq_ffcfmacfdiv_pkg::*; #(
   entry_t entry_update;
   always_comb begin
     entry_update = entry_reg;
-    // fuType 只保留本变体相关位(IQFuType.readFuType:F2v/Falu/Fmac/Fcvt/Fdiv 五位)
-    entry_update.status.fu_type = '0;
-    entry_update.status.fu_type[FU_F2V]  = current_status.fu_type[FU_F2V];
-    entry_update.status.fu_type[FU_FALU] = current_status.fu_type[FU_FALU];
-    entry_update.status.fu_type[FU_FMAC] = current_status.fu_type[FU_FMAC];
-    entry_update.status.fu_type[FU_FCVT] = current_status.fu_type[FU_FCVT];
-    entry_update.status.fu_type[FU_FDIV] = current_status.fu_type[FU_FDIV];
+    // fuType 紧凑存储只含保留位({F2V,FALU,FMAC,FCVT,FDIV}),enq 后不变,直接沿用
+    entry_update.status.fu_type = current_status.fu_type;
     entry_update.status.rob_flag  = current_status.rob_flag;
     entry_update.status.rob_value = current_status.rob_value;
 
@@ -350,12 +345,7 @@ module xs_iq_entry_ffcfmacfdiv import iq_ffcfmacfdiv_pkg::*; #(
 
   // fuType 输出(IQFuType.readFuType:F2v/Falu/Fmac/Fcvt/Fdiv 五位)
   always_comb begin
-    o_fu_type = '0;
-    o_fu_type[FU_F2V]  = current_status.fu_type[FU_F2V];
-    o_fu_type[FU_FALU] = current_status.fu_type[FU_FALU];
-    o_fu_type[FU_FMAC] = current_status.fu_type[FU_FMAC];
-    o_fu_type[FU_FCVT] = current_status.fu_type[FU_FCVT];
-    o_fu_type[FU_FDIV] = current_status.fu_type[FU_FDIV];
+    o_fu_type = unpack_fu_type(current_status.fu_type);
   end
 
   // dataSources / exuSources 输出
