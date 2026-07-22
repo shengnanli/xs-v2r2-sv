@@ -16,17 +16,22 @@ MANIFEST=$1; TARGET=$2; TMO=${3:-1200}
 EROOT="${SIGNOFF_EVIDENCE_ROOT:-$SC/signoff-evidence}"
 
 # --- manifest 条目(tab 分隔) ---
-IFS=$'\t' read -r UTDIR MK MT ENTRY PMODE REQV ALLOWREF CFG <<<"$(python3 - "$MANIFEST" "$TARGET" <<'PY'
+IFS=$'\t' read -r UTDIR MK MT ENTRY PMODE REQV ALLOWREF CFG VERIFY_MU <<<"$(python3 - "$MANIFEST" "$TARGET" <<'PY'
 import json,sys
 m=json.load(open(sys.argv[1]))
 for e in m["entries"]:
     if e["target"]==sys.argv[2]:
         print("\t".join([e["ut_dir"],e["makefile"] or "-",e["make_target"],e["entry"],
-            e["proof_mode"],e["required_verdict"],e.get("allow_ref","") or "-",e["config_status"]])); break
+            e["proof_mode"],e["required_verdict"],e.get("allow_ref","") or "-",e["config_status"],
+            e.get("verify_matched_unread_compare_points", "false")])); break
 else: print("NOTFOUND")
 PY
 )"
 [ "$UTDIR" = "NOTFOUND" ] && { echo "MANIFEST_MISS $TARGET"; exit 2; }
+[ "$VERIFY_MU" = "true" ] || [ "$VERIFY_MU" = "false" ] || {
+  echo "MANIFEST_BAD verify_matched_unread_compare_points=$VERIFY_MU"; exit 2; }
+[ "$VERIFY_MU" != "true" ] || [ "$TARGET" = "LoadQueueUncache" ] || {
+  echo "MANIFEST_BAD strengthening 仅允许 LoadQueueUncache"; exit 2; }
 # manifest 的 makefile 若非默认 Makefile(如 Makefile.iq/.sched), make 须 -f 指定,
 # 否则用默认 Makefile 的错误 RTL_SRCS(IssueQueue×6 impl top unknown 根因)。
 MKF=$(basename "$MK")
@@ -37,6 +42,45 @@ BID=$(python3 -c "import json;print(json.load(open('$MANIFEST'))['canonical_base
 MANIFEST_SHA=$(sha256sum "$MANIFEST" | cut -d' ' -f1)
 IMPL_COMMIT=$(git -C "$SIGNOFF" rev-parse HEAD)
 MAIN_DIRTY=$(git -C "$SIGNOFF" status --porcelain --untracked-files=no | wc -l)
+# Target-scoped proof semantics must come from committed policy, not a mutable
+# command-line manifest or native self-report.  Bind both generated manifest and
+# its source declaration bytes to IMPL_COMMIT, then cross-check the target value.
+MANIFEST_ABS=$(realpath "$MANIFEST")
+case "$MANIFEST_ABS" in
+  "$SIGNOFF"/*) MANIFEST_REL=${MANIFEST_ABS#"$SIGNOFF"/} ;;
+  *) echo "MANIFEST_NOT_IN_SIGNOFF_TREE $MANIFEST_ABS"; exit 2 ;;
+esac
+git -C "$SIGNOFF" cat-file -e "$IMPL_COMMIT:$MANIFEST_REL" 2>/dev/null || {
+  echo "MANIFEST_NOT_COMMITTED $MANIFEST_REL"; exit 2; }
+COMMITTED_MANIFEST_SHA=$(git -C "$SIGNOFF" show "$IMPL_COMMIT:$MANIFEST_REL" | sha256sum | cut -d' ' -f1)
+[ "$MANIFEST_SHA" = "$COMMITTED_MANIFEST_SHA" ] || {
+  echo "MANIFEST_WORKTREE_COMMIT_MISMATCH"; exit 2; }
+DECL_REL=scripts/sidecar/manifest_declarations.tsv
+DECL="$SIGNOFF/$DECL_REL"
+git -C "$SIGNOFF" cat-file -e "$IMPL_COMMIT:$DECL_REL" 2>/dev/null || {
+  echo "DECLARATIONS_NOT_COMMITTED"; exit 2; }
+DECL_SHA=$(sha256sum "$DECL" | cut -d' ' -f1)
+COMMITTED_DECL_SHA=$(git -C "$SIGNOFF" show "$IMPL_COMMIT:$DECL_REL" | sha256sum | cut -d' ' -f1)
+[ "$DECL_SHA" = "$COMMITTED_DECL_SHA" ] || {
+  echo "DECLARATIONS_WORKTREE_COMMIT_MISMATCH"; exit 2; }
+DECL_VERIFY_MU=$(python3 - "$DECL" "$TARGET" <<'PY'
+import sys
+path, target = sys.argv[1:]
+found = []
+for line in open(path, encoding="utf-8"):
+    line = line.rstrip("\n")
+    if not line or line.startswith("#"):
+        continue
+    p = line.split("\t")
+    if p[0] == target:
+        found.append(p[4] if len(p) > 4 and p[4] else "false")
+if len(found) > 1:
+    raise SystemExit("duplicate declaration")
+print(found[0] if found else "false")
+PY
+)
+[ "$VERIFY_MU" = "$DECL_VERIFY_MU" ] || {
+  echo "MANIFEST_DECLARATION_APPVAR_MISMATCH manifest=$VERIFY_MU declaration=$DECL_VERIFY_MU"; exit 2; }
 ED="$EROOT/$TARGET"; STG="$ED.staging"
 [ -e "$ED" ] && { echo "REFUSE: $ED 已存在(no-force)"; exit 2; }
 rm -rf "$STG"; mkdir -p "$STG"
@@ -77,6 +121,8 @@ finalize() {  # rc
     echo -e "proof_mode\t$PMODE\t-"
     echo -e "required_verdict\t$REQV\t-"
     echo -e "allow_ref\t$ALLOWREF\t$ALLOW_SHA"
+    echo -e "declarations_ref\t$DECL_REL\t$DECL_SHA"
+    echo -e "verify_matched_unread_compare_points\t$VERIFY_MU\t-"
     if [ -f "$STG/script_closure.list" ]; then
       while IFS=$'\t' read -r orig snap lhash; do
         [ -z "$snap" ] && continue
@@ -109,6 +155,7 @@ finalize() {  # rc
 ( cd "$D" && rm -f "fm_work/$TARGET/fm.log" && \
   FM_SIDECAR_OUT="$STG" FM_RUN_ID="$RID" \
   timeout "$TMO" make $MKARG "$MT" GOLDEN_RTL="$GOLDEN" XSSV_HOME="$WT" \
+    FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS="$VERIFY_MU" \
     $([ "${MT:0:3}" = "fm-" ] && echo "FM_MODE=$PMODE") ) > "$STG/make.out" 2>&1
 MAKE_RC=$?
 cp "$D/fm_work/$TARGET/fm.log" "$STG/fm_log.txt" 2>/dev/null
@@ -135,12 +182,15 @@ done < "$STG/script_closure.list"
 [ "$CBAD" != 0 ] && { echo "TARGET $TARGET: INFRA_FAIL closure" | tee -a "$STG/RESULT.txt"; finalize 3; }
 SCRIPT_DIG=$(python3 "$SC/fm_closure_digest.py" --mode concat "${SNAPS[@]}")
 CMD=$(cd "$D" && make -n $MKARG "$MT" GOLDEN_RTL="$GOLDEN" XSSV_HOME="$WT" \
+      FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS="$VERIFY_MU" \
       $([ "${MT:0:3}" = "fm-" ] && echo "FM_MODE=$PMODE") 2>/dev/null \
       | sed -e ':a' -e '/\\$/{N;s/\\\n//;ba}' | grep "fm_shell -64" | head -1)
 gv(){ echo "$CMD" | grep -o "$1=\"[^\"]*\"" | head -1 | sed -e "s/^$1=\"//" -e 's/"$//'; }
 REF_SRCS=$(gv FM_REF_SRCS); IMPL_SRCS=$(gv FM_IMPL_SRCS)
 MERGE=$(echo "$CMD"|grep -o "FM_MERGE_DUP=[^ ]*"|head -1|cut -d= -f2); MERGE=${MERGE:-true}
 SEM=(--semantic "DEFINE=SYNTHESIS" --semantic "MERGE_DUP=$MERGE" --semantic "MODE=$PMODE" \
+     --semantic "VERIFY_MATCHED_UNREAD_COMPARE_POINTS=$VERIFY_MU" \
+     --semantic "DECLARATIONS_SHA=$DECL_SHA" \
      --semantic "SCRIPT_CLOSURE_SHA=$SCRIPT_DIG" --semantic "MANIFEST_SHA=$MANIFEST_SHA" \
      --semantic "ALLOW_SHA=$ALLOW_SHA")
 REF_DIG=$(cd "$D" && python3 "$SC/fm_closure_digest.py" --mode files --root "$GOLDEN" "${SEM[@]}" $REF_SRCS 2>/dev/null)
@@ -148,9 +198,9 @@ IMPL_DIG=$(cd "$D" && python3 "$SC/fm_closure_digest.py" --mode files --root "$W
 TOOL_DIG=$(python3 "$SC/fm_closure_digest.py" --mode tool "$(command -v fm_shell)")
 
 # --- envelope + expectation(required_verdict + allowlist)+ validator ---
-python3 - "$STG" "$RID" "$TARGET" "$PMODE" "$BID" "$REF_DIG" "$IMPL_DIG" "$SCRIPT_DIG" "$TOOL_DIG" "$RC" "$ALLOW_JSON" <<'PYEOF'
+python3 - "$STG" "$RID" "$TARGET" "$PMODE" "$BID" "$REF_DIG" "$IMPL_DIG" "$SCRIPT_DIG" "$TOOL_DIG" "$RC" "$ALLOW_JSON" "$VERIFY_MU" <<'PYEOF'
 import json,hashlib,os,sys
-stg,rid,tgt,mode,bid,refd,impld,scrd,toold,rc,allowp=sys.argv[1:12]
+stg,rid,tgt,mode,bid,refd,impld,scrd,toold,rc,allowp,verify_mu=sys.argv[1:13]
 nb=open(stg+"/native_facts.json","rb").read(); nat=json.loads(nb)
 env={"schema":"fm-sidecar-envelope-v1","run_id":rid,"target":tgt,"top":nat["top"],
  "variant":tgt,"proof_mode":mode,"canonical_baseline_id":bid,
@@ -160,9 +210,11 @@ env={"schema":"fm-sidecar-envelope-v1","run_id":rid,"target":tgt,"top":nat["top"
  **{k:nat[k] for k in ("native_verdict","stats","unmatched","objects","qualifications","entry_appvars")}}
 json.dump(env,open(stg+"/verdict.sidecar.json","w"))
 allow=json.load(open(allowp))
+expected_av=dict(nat["entry_appvars"])
+expected_av["verification_verify_matched_unread_compare_points"]=verify_mu
 exp={"run_id":rid,"target":tgt,"top":nat["top"],"variant":tgt,"proof_mode":mode,
  "canonical_baseline_id":bid,"ref_digest":refd,"impl_digest":impld,"script_digest":scrd,
- "tool_digest":toold,"entry_appvars":nat["entry_appvars"],"allow":allow}
+ "tool_digest":toold,"entry_appvars":expected_av,"allow":allow}
 json.dump(exp,open(stg+"/expectation.json","w"))
 PYEOF
 ACT=$(python3 "$SC/fm_sidecar_verdict.py" "$STG/verdict.sidecar.json" \

@@ -62,6 +62,7 @@ fm-%:
 	FM_REF_SRCS="$(GOLDEN_RTL)/$*.sv $(addprefix $(GOLDEN_RTL)/,$(FM_REF_DEPS_$*)) $(FM_REF_ABS_$*)" \
 	FM_IMPL_SRCS="$(abspath $(RTL_SRCS) $(WRAPPER_SRCS))" \
 	$(if $(FM_MERGE_DUP),FM_MERGE_DUP=$(FM_MERGE_DUP),) \
+	$(if $(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS),FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=$(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS),) \
 	$(if $(FM_INTERFACE_ONLY),FM_INTERFACE_ONLY="$(FM_INTERFACE_ONLY)",) \
 	$(if $(wildcard fm_map/$*.txt),FM_FIELD_MAP=$(abspath fm_map/$*.txt),) \
 	$(if $(wildcard fm_pins_pre.tcl),FM_PIN_PRE_TCL=$(abspath fm_pins_pre.tcl),) \

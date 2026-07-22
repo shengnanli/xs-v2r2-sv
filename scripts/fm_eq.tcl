@@ -62,7 +62,31 @@ switch -- $_fmmode {
 # emitter 于全部 pin/custom Tcl 执行后、verify 前逐项 get_app_var 读回有效值)。
 # 后三项 true 即工具默认(man cat3 逐页核对), 显式钉死防版本漂移。
 set_app_var verification_verify_unread_compare_points false
-set_app_var verification_verify_matched_unread_compare_points false
+# LoadQueueUncache target-scoped strengthening: verify matched unread compare
+# points instead of accepting them as Not-Compared.  The signoff runner obtains
+# this value from the committed declaration/manifest and binds it into input
+# provenance.  It is deliberately not a waiver: true asks FM to prove *more*.
+set _verify_matched_unread_compare_points "false"
+if {[info exists env(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS)] &&
+    [string trim $env(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS)] ne ""} {
+    set _verify_matched_unread_compare_points \
+        [string trim $env(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS)]
+}
+switch -- $_verify_matched_unread_compare_points {
+  "true" {
+    if {$top ne "LoadQueueUncache"} {
+      puts "FM_MODE_ERROR: matched-unread strengthening 仅允许 LoadQueueUncache, 当前 $top"
+      exit 3
+    }
+  }
+  "false" { }
+  default {
+    puts "FM_MODE_ERROR: FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS 非法值 $_verify_matched_unread_compare_points"
+    exit 3
+  }
+}
+set_app_var verification_verify_matched_unread_compare_points \
+    $_verify_matched_unread_compare_points
 set_app_var verification_verify_unread_bbox_inputs false
 set_app_var verification_verify_matched_unread_bbox_inputs true
 set_app_var verification_verify_unread_tech_cell_pins true

@@ -12,7 +12,9 @@ report_matched_points 是唯一 pair 来源; id/waiver-pair 属 expectation poli
  - pair 三类分类(iface/unresolved/empty), 重叠/混类/未知/单端 → ERROR; 分类 pair 集与
    policy 各自精确相等。
  - entry_appvars 三方绑定 + 冻结执行语义(unread=false / unresolved=black_box /
-   strict 下 interface_only 必空)。
+   strict 下 interface_only 必空)。唯一 target-scoped strengthening 为
+   LoadQueueUncache.verify_matched_unread_compare_points=true；它要求 FM 验证更多点，
+   不是 waiver。
  - native FAILED 最高优先级, 无 WAIVED 升级通道(管理豁免归独立 ledger, 不算通过)。
 详细契约见 SIDECAR_SCHEMA.md(v7)。
 """
@@ -94,7 +96,8 @@ APPVAR_ALL = APPVAR_REQUIRED | APPVAR_OPTIONAL | APPVAR_DIAG_ONLY
 _BOOL = ("true", "false")
 APPVAR_SPEC = {
     "verification_verify_unread_compare_points":         {"domain": _BOOL, "frozen": "false"},
-    "verification_verify_matched_unread_compare_points": {"domain": _BOOL, "frozen": "false"},
+    # 冻结值由 target 级政策在 appvar_spec_err 中选择：LQU=true，其余=false。
+    "verification_verify_matched_unread_compare_points": {"domain": _BOOL},
     "verification_verify_unread_bbox_inputs":            {"domain": _BOOL, "frozen": "false"},
     "verification_verify_matched_unread_bbox_inputs":    {"domain": _BOOL, "frozen": "true"},
     "verification_verify_unread_tech_cell_pins":         {"domain": _BOOL, "frozen": "true"},
@@ -121,7 +124,7 @@ _IFACE_RE = re.compile(r"\s*(?:" + _IDENT + r"(?:\s+" + _IDENT + r")*)?\s*")
 _DEC_RE = re.compile(r"0|[1-9][0-9]{0,9}")
 
 
-def appvar_spec_err(av, mode, relaxed_declared):
+def appvar_spec_err(av, mode, relaxed_declared, target):
     """APPVAR_SPEC 值域闭环。relaxed_declared=None 时跳过放宽声明检查(expectation 无 quals)。"""
     for k, v in av.items():
         spec = APPVAR_SPEC.get(k)
@@ -135,6 +138,13 @@ def appvar_spec_err(av, mode, relaxed_declared):
             return f"appvar_value_not_canonical_decimal:{k}"
         if "frozen" in spec and v != spec["frozen"]:
             return f"frozen_semantics:{k}"
+    # Target-scoped strengthening, never a relaxation.  The target identity is
+    # independently bound by expectation/envelope; all other targets retain the
+    # frozen false default and cannot opt in by merely forging matching JSON.
+    muk = "verification_verify_matched_unread_compare_points"
+    expected_mu = "true" if target == "LoadQueueUncache" else "false"
+    if av[muk] != expected_mu:
+        return f"target_strengthening:{muk}:{target}={av[muk]}_expected_{expected_mu}"
     vi = av["hdlin_interface_only"]
     if mode in ("signoff-strict", "shadow"):
         if vi != "":
@@ -363,7 +373,7 @@ def validate_expectation(E):
             if not (isinstance(v, str) and len(v) < 4096 and _no_ctrl(v)):
                 return "expect_entry_appvars_value"
         # 十一审: expectation 侧同样过 APPVAR_SPEC 值域(放宽声明检查在 verdict 对 sidecar 做)
-        err = appvar_spec_err(av, E["proof_mode"], None)
+        err = appvar_spec_err(av, E["proof_mode"], None, E["target"])
         if err:
             return f"expect_{err}"
         return None
@@ -493,7 +503,8 @@ def verdict(sidecar_path, expectation, actual_rc, native_facts_path):
     av = sc["entry_appvars"]
     if av != E["entry_appvars"]:
         return "ERROR", {**q, "reason": "entry_appvars!=expectation"}
-    err = appvar_spec_err(av, sc["proof_mode"], sc["qualifications"]["relaxed_appvars"])
+    err = appvar_spec_err(av, sc["proof_mode"],
+                          sc["qualifications"]["relaxed_appvars"], sc["target"])
     if err:
         return "ERROR", {**q, "reason": err}
     if sc["inputs_sha256"]["ref_srcs_digest"] != E["ref_digest"]:

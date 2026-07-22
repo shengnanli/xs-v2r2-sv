@@ -72,7 +72,7 @@ def facts(**over):
     return f
 
 def build(fact_over=None, env_over=None, native_diverge=None, run_id="RID-1", top=TOP,
-          raw_env=None, native_fifo=False):
+          target=TOP, raw_env=None, native_fifo=False):
     d = tempfile.mkdtemp()
     fx = facts(**(fact_over or {}))
     nat = {"schema": "fm-sidecar-native-v1", "run_id": run_id, "top": top, **fx}
@@ -87,8 +87,8 @@ def build(fact_over=None, env_over=None, native_diverge=None, run_id="RID-1", to
             a, b = k.split("."); env_fx[a] = dict(env_fx[a]); env_fx[a][b] = v
         else:
             env_fx[k] = v
-    env = {"schema": "fm-sidecar-envelope-v1", "run_id": run_id, "target": TOP, "top": top,
-           "variant": TOP, "proof_mode": "signoff-strict", "canonical_baseline_id": BID,
+    env = {"schema": "fm-sidecar-envelope-v1", "run_id": run_id, "target": target, "top": top,
+           "variant": target, "proof_mode": "signoff-strict", "canonical_baseline_id": BID,
            "inputs_sha256": {"ref_srcs_digest": H("a"), "impl_srcs_digest": H("b")},
            "script_sha256": H("c"), "tool": {"fm_shell_digest": H("d")},
            "fm_shell_rc": 0, "native_facts_sha256": nat_sha, **env_fx}
@@ -105,9 +105,10 @@ def build(fact_over=None, env_over=None, native_diverge=None, run_id="RID-1", to
     return d, ep, np
 
 def run(fact_over=None, env_over=None, native_diverge=None, exp=None, actual_rc=0,
-        run_id="RID-1", top=TOP, drop_native=False, corrupt_native_sha=False,
+        run_id="RID-1", top=TOP, target=TOP, drop_native=False, corrupt_native_sha=False,
         raw_env=None, symlink_env=False, native_fifo=False):
-    d, ep, np = build(fact_over, env_over, native_diverge, run_id, top, raw_env, native_fifo)
+    d, ep, np = build(fact_over, env_over, native_diverge, run_id, top, target,
+                      raw_env, native_fifo)
     if corrupt_native_sha:
         open(np, "a").write(" ")
     if drop_native:
@@ -127,6 +128,23 @@ def C(name, want, **kw):
 
 # ================= 正样本 =================
 C("strict_clean_success", "SUCCEEDED")
+# Target-scoped proof strengthening: LoadQueueUncache may set true and remain a
+# clean strict proof; the default for every other target remains false.
+LQU = "LoadQueueUncache"
+LQU_AV = {**AV0(), "verification_verify_matched_unread_compare_points": "true"}
+LQU_EXP = expect(target=LQU, top=LQU, variant=LQU, entry_appvars=LQU_AV)
+C("target_strengthening_lqu_true", "SUCCEEDED",
+  fact_over={"entry_appvars": LQU_AV}, target=LQU, top=LQU, exp=LQU_EXP)
+C("target_strengthening_default_false", "SUCCEEDED")
+C("target_strengthening_decl_readback_mismatch", "ERROR",
+  target=LQU, top=LQU, exp=LQU_EXP)
+C("target_strengthening_other_target_true", "ERROR",
+  fact_over={"entry_appvars": LQU_AV}, exp=expect(entry_appvars=LQU_AV))
+LQU_I0 = "i:/WORK/LoadQueueUncache/u_core/leftover_reg"
+C("target_strengthening_unmatched_still_partial", "PARTIAL",
+  fact_over={"entry_appvars": LQU_AV, "unmatched.unread_impl": 1,
+             "objects.unmatched_unread_impl": [LQU_I0]},
+  target=LQU, top=LQU, exp=LQU_EXP)
 # assembly observed==policy 投影
 AS_FACTS = dict(fact_over={
     "unmatched.compare_ref": 2, "unmatched.compare_impl": 2,

@@ -2,7 +2,8 @@
 
 > 替代"人读日志 grep"。签核判定**只读**机器可读产物;fm.log 仅诊断。
 > 本文为唯一权威版本。v7 依据 Step3A.1/3A.2 实证审定: 默认 unmatched -list 为主集(GO)、
-> pair 按实例集合分类(GO)、BBOUT/BBIN/PI zero-only(GO)、unread=false 冻结执行语义(GO)。
+> pair 按实例集合分类(GO)、BBOUT/BBIN/PI zero-only(GO)、unread 执行语义冻结
+> (默认 false；LoadQueueUncache 唯一 target-scoped strengthening)(GO)。
 
 ## 生命周期(双 schema,职责分离)
 
@@ -97,10 +98,16 @@ JSON 层拒:NaN/Infinity(递归)、duplicate key(object_pairs_hook)。
   session 内全部 sourced Tcl 扫描 `set_app_var`, 名字不在注册表 → 拒产 native facts)。
 - **有效值读回时点**: 所有 pin/custom Tcl 执行后、`verify` 前, 逐项 `get_app_var` 读回
   **有效值**(非声明值)写入 native facts。
-- **305 统一冻结执行语义**(validator 硬编码): `verification_verify_unread_compare_points=false`
+- **305 冻结执行语义**(validator fail-closed):
+  `verification_verify_unread_compare_points=false`
   (端口可观察功能等价; 3A.2 实证 true 会把 unmatched const 与空串配对判 FAILED, 结构上不可能过。
   **这不是 waiver**: strict 契约不变, 任一 unread 非空仍 PARTIAL——Bku 因此仍非 clean strict
-  success); `hdlin_unresolved_modules=black_box`。
+  success);
+  `verification_verify_matched_unread_compare_points=false` 为其余目标默认，
+  **仅 `LoadQueueUncache=true`**。该 true 将 matched unread 点纳入 verify，是加强而非
+  waiver；值由提交态 declarations→manifest绑定、runner 传入、emitter 读回，
+  expectation/native/envelope 不一致或其他 target 偷开均 ERROR。
+  `hdlin_unresolved_modules=black_box`。
 - **按目标绑定**(不得声称全部相同): `verification_merge_duplicated_registers`(fm_eq.tcl 真实
   读取 FM_MERGE_DUP, 声明值=实际语义——此前 Makefile 声明 false 而 Tcl 硬编码 true 的断链已修)、
   `hdlin_interface_only`(strict/shadow 下必须为空串, 非空 → ERROR)。
@@ -112,7 +119,7 @@ JSON 层拒:NaN/Infinity(递归)、duplicate key(object_pairs_hook)。
 
 | 键 | 值域 | 冻结值/默认 | 签核效果 |
 |---|---|---|---|
-| unread 六元组 | `true`\|`false` | 冻结 `false,false,false,true,true,true`(fm_eq.tcl 显式全量设置, 后三者=工具默认钉死防版本漂移) | 统一执行语义, 非 waiver |
+| unread 六元组 | `true`\|`false` | 默认 `false,false,false,true,true,true`；`LoadQueueUncache` 第二项为 `true`(target-scoped strengthening) | 冻结执行语义, 非 waiver |
 | `hdlin_unresolved_modules` | `black_box` | 冻结 `black_box` | 统一执行语义 |
 | `hdlin_interface_only` | strict/shadow: 空串; assembly: 规范化 module list(裸标识符单空格分隔, 无花括号) | — | assembly 专用, policy 绑定 |
 | `verification_merge_duplicated_registers` | `true`\|`false` | 按目标绑定 | 非放宽(十审 GO) |

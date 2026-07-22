@@ -21,7 +21,8 @@ manifest schema `fm-signoff-manifest-v2`:
   **PARTIAL / FAILED / TIMEOUT / UNVERIFIED 永不作为 required_verdict**。
   派生结果: 303 SUCCEEDED(strict 291 + assembly 12)+ 2 SHADOW_CHECK。
 - **config_status**: CONFIGURED(305)/ UNCONFIGURED(1=Rob); UNCONFIGURED 不运行不计。
-- `manifest_declarations.tsv` 只声明**设计契约**(proof_mode 边界 + allow_ref 对象 allowlist),
+- `manifest_declarations.tsv` 只声明**设计契约**(proof_mode 边界 + allow_ref 对象 allowlist
+  + target-scoped proof strengthening),
   **不声明 verdict**。
 - 当前观测(Bku=PARTIAL / NewIFU=PARTIAL / DCacheWrapper=FAILED / PtwCache=PARTIAL)移入
   **`smoke_expected.tsv` 的 expected_observation**(仅验 runner 机械), **明确标注为 gap**

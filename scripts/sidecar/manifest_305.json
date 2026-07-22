@@ -16,6 +16,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -29,6 +30,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -42,6 +44,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -55,6 +58,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -68,6 +72,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -81,6 +86,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -94,6 +100,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -107,6 +114,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -120,6 +128,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -133,6 +142,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -146,6 +156,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -159,6 +170,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -172,6 +184,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -185,6 +198,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -198,6 +212,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -211,6 +226,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -224,6 +240,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -237,6 +254,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -250,6 +268,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -263,6 +282,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -276,6 +296,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -289,6 +310,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -302,6 +324,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -315,6 +338,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -328,6 +352,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -341,6 +366,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -354,6 +380,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -367,6 +394,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -380,6 +408,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -393,6 +422,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -406,6 +436,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -419,6 +450,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -432,6 +464,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -445,6 +478,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -458,6 +492,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -471,6 +506,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -484,6 +520,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -497,6 +534,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -510,6 +548,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -523,6 +562,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -536,6 +576,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -549,6 +590,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -562,6 +604,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -575,6 +618,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -588,6 +632,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -601,6 +646,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -614,6 +660,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -627,6 +674,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -640,6 +688,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -653,6 +702,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -666,6 +716,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -679,6 +730,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -692,6 +744,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -705,6 +758,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -718,6 +772,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/FoldedSRAMTemplate.json",
    "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=SplittedSRAMTemplate_3); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -731,6 +786,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/FoldedSRAMTemplate_1.json",
    "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=SplittedSRAMTemplate_4); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -744,6 +800,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/FoldedSRAMTemplate_20.json",
    "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=SplittedSRAMTemplate_23); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -757,6 +814,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/FoldedSRAMTemplate_21.json",
    "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=SplittedSRAMTemplate_24); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -770,6 +828,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/FoldedSRAMTemplate_23.json",
    "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=SplittedSRAMTemplate_26); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -783,6 +842,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -796,6 +856,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -809,6 +870,7 @@
    "required_verdict": "SHADOW_CHECK",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -822,6 +884,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -835,6 +898,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -848,6 +912,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -861,6 +926,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -874,6 +940,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -887,6 +954,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/ICache.json",
    "rationale": "assembly: 8个对称黑盒边界, 全为独立FM目标(层次装配, 子模块各自签核); 验证本层glue逻辑",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -900,6 +968,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -913,6 +982,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -926,6 +996,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -939,6 +1010,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -952,6 +1024,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/ICacheMetaArray.json",
    "rationale": "SRAM叶子assembly: 3个对称unresolved黑盒边界(审核类型=MbistPipeIcacheTag,SplittedSRAMTemplate,SplittedSRAMTemplate_1); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -965,6 +1038,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -978,6 +1052,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -991,6 +1066,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1004,6 +1080,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1017,6 +1094,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1030,6 +1108,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1043,6 +1122,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/ITTageTable.json",
    "rationale": "assembly: 2个对称黑盒边界, 全为独立FM目标(层次装配, 子模块各自签核); 验证本层glue逻辑",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1056,6 +1136,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/ITTageTable_1.json",
    "rationale": "assembly: 2个对称黑盒边界, 全为独立FM目标(层次装配, 子模块各自签核); 验证本层glue逻辑",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1069,6 +1150,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/ITTageTable_2.json",
    "rationale": "assembly: 2个对称黑盒边界, 全为独立FM目标(层次装配, 子模块各自签核); 验证本层glue逻辑",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1082,6 +1164,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/ITTageTable_3.json",
    "rationale": "assembly: 2个对称黑盒边界, 全为独立FM目标(层次装配, 子模块各自签核); 验证本层glue逻辑",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1095,6 +1178,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/ITTageTable_4.json",
    "rationale": "assembly: 2个对称黑盒边界, 全为独立FM目标(层次装配, 子模块各自签核); 验证本层glue逻辑",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1108,6 +1192,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1121,6 +1206,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1134,6 +1220,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1147,6 +1234,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1160,6 +1248,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1173,6 +1262,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1186,6 +1276,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1199,6 +1290,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1212,6 +1304,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1225,6 +1318,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1238,6 +1332,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1251,6 +1346,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1264,6 +1360,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1277,6 +1374,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1290,6 +1388,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1303,6 +1402,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1316,6 +1416,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1329,6 +1430,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1342,6 +1444,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1355,6 +1458,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1368,6 +1472,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1381,6 +1486,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1394,6 +1500,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1407,6 +1514,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1420,6 +1528,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1433,6 +1542,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1446,6 +1556,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1459,6 +1570,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1472,6 +1584,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1485,6 +1598,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1498,6 +1612,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1511,6 +1626,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1524,6 +1640,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1537,6 +1654,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1550,6 +1668,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1563,6 +1682,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1576,6 +1696,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1589,6 +1710,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1602,6 +1724,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1615,6 +1738,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1628,6 +1752,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1641,6 +1766,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1654,6 +1780,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1667,6 +1794,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1680,6 +1808,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1693,6 +1822,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1706,6 +1836,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1719,6 +1850,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1732,6 +1864,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1744,7 +1877,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
+   "rationale": "目标级 strengthening：将 matched unread compare points 纳入 verify，不删点、不 dont_verify、不放宽",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1758,6 +1892,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1771,6 +1906,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1784,6 +1920,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/LsqWrapper.json",
    "rationale": "assembly: 2个对称黑盒边界, 全为独立FM目标(层次装配, 子模块各自签核); 验证本层glue逻辑",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1797,6 +1934,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1810,6 +1948,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1823,6 +1962,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1836,6 +1976,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1849,6 +1990,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1862,6 +2004,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1875,6 +2018,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1888,6 +2032,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1901,6 +2046,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1914,6 +2060,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1927,6 +2074,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1940,6 +2088,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1953,6 +2102,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1966,6 +2116,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1979,6 +2130,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1992,6 +2144,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2005,6 +2158,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2018,6 +2172,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2031,6 +2186,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2044,6 +2200,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2057,6 +2214,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2070,6 +2228,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2083,6 +2242,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2096,6 +2256,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2109,6 +2270,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2122,6 +2284,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2135,6 +2298,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2148,6 +2312,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2161,6 +2326,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2174,6 +2340,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2187,6 +2354,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2200,6 +2368,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2213,6 +2382,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2226,6 +2396,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2239,6 +2410,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2252,6 +2424,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2265,6 +2438,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2278,6 +2452,7 @@
    "required_verdict": "SHADOW_CHECK",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2291,6 +2466,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2304,6 +2480,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2317,6 +2494,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2330,6 +2508,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2343,6 +2522,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2356,6 +2536,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2369,6 +2550,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2382,6 +2564,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2395,6 +2578,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2408,6 +2592,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2421,6 +2606,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2434,6 +2620,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2447,6 +2634,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2460,6 +2648,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2473,6 +2662,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2486,6 +2676,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2499,6 +2690,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2512,6 +2704,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2525,6 +2718,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2538,6 +2732,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/SNXbar.json",
    "rationale": "assembly: 2个对称黑盒边界, 全为独立FM目标(层次装配, 子模块各自签核); 验证本层glue逻辑",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2551,6 +2746,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/SRAMTemplate.json",
    "rationale": "array_ext=厂商SRAM存储宏(array_ext.v: reg[73:0]ram[127:0]行为模型),SRAMTemplate FM源不含其体→两侧对称unresolved黑盒(ref/impl匹配对);本目标验证SRAM周边逻辑(地址/使能/bypass),存储阵列作声明边界,阵列本体由leaf/构造另验",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2564,6 +2760,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/SRAMTemplate_16.json",
    "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=array_0_ext); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2577,6 +2774,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/SRAMTemplate_2.json",
    "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=array_ext); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2590,6 +2788,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/SRAMTemplate_32.json",
    "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=array_0_ext); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2603,6 +2802,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/SRAMTemplate_36.json",
    "rationale": "SRAM叶: array_1_ext厂商SRAM硬宏边界(hold_read死状态已参数守卫修复消unread); 验证SRAM周边逻辑",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2616,6 +2816,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/SRAMTemplate_4.json",
    "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=array_0_ext); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2629,6 +2830,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/SRAMTemplate_44.json",
    "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=array_2_ext); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2642,6 +2844,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/SRAMTemplate_45.json",
    "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=array_3_ext); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2655,6 +2858,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/SRAMTemplate_70.json",
    "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=array_6_ext); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2668,6 +2872,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/SRAMTemplate_72.json",
    "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=array_6_ext); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2681,6 +2886,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/SRAMTemplate_8.json",
    "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=array_0_ext); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2694,6 +2900,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/SRAMTemplate_64.json",
    "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=array_4_ext); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2707,6 +2914,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/SRAMTemplate_66.json",
    "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=array_5_ext); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2720,6 +2928,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2733,6 +2942,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2746,6 +2956,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2759,6 +2970,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2772,6 +2984,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2785,6 +2998,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2798,6 +3012,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2811,6 +3026,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2824,6 +3040,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2837,6 +3054,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/SplittedSRAMTemplate.json",
    "rationale": "SRAM叶子assembly: 2个对称unresolved黑盒边界(审核类型=SRAMTemplate); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2850,6 +3068,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/SplittedSRAMTemplate_1.json",
    "rationale": "SRAM叶子assembly: 2个对称unresolved黑盒边界(审核类型=SRAMTemplate_2); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2863,6 +3082,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/SplittedSRAMTemplate_2.json",
    "rationale": "SRAM叶子assembly: 8个对称unresolved黑盒边界(审核类型=SRAMTemplate_36); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2876,6 +3096,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/SplittedSRAMTemplate_23.json",
    "rationale": "SRAM叶子assembly: 2个对称unresolved黑盒边界(审核类型=SRAMTemplate_64); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2889,6 +3110,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/SplittedSRAMTemplate_24.json",
    "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=SRAMTemplate_70); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2902,6 +3124,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/SplittedSRAMTemplate_26.json",
    "rationale": "SRAM叶子assembly: 2个对称unresolved黑盒边界(审核类型=SRAMTemplate_72); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2915,6 +3138,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/SplittedSRAMTemplate_3.json",
    "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=SRAMTemplate_44); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2928,6 +3152,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/SplittedSRAMTemplate_4.json",
    "rationale": "SRAM叶子assembly: 1个对称unresolved黑盒边界(审核类型=SRAMTemplate_45); 均厂商SRAM宏或独立FM目标, 验证SRAM周边逻辑",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2941,6 +3166,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2954,6 +3180,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2967,6 +3194,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2980,6 +3208,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2993,6 +3222,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3006,6 +3236,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3019,6 +3250,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3032,6 +3264,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/SubDirectory.json",
    "rationale": "父级glue assembly：tagArray=SRAMTemplate_197、metaArray=SRAMTemplate_198、lfsr_prng=MaxPeriodFibonacciLFSR_3，三者均为已独立证明child；本声明只接受审核过的对称unresolved边界",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3045,6 +3278,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3058,6 +3292,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3071,6 +3306,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3084,6 +3320,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3097,6 +3334,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3110,6 +3348,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3123,6 +3362,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3136,6 +3376,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3149,6 +3390,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3162,6 +3404,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3175,6 +3418,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3188,6 +3432,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3201,6 +3446,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3214,6 +3460,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3227,6 +3474,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3240,6 +3488,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3253,6 +3502,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3266,6 +3516,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3279,6 +3530,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3292,6 +3544,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3305,6 +3558,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3318,6 +3572,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3331,6 +3586,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3344,6 +3600,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3357,6 +3614,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/TLBuffer_13.json",
    "rationale": "Queue2逻辑inline证等价, ram_ext/ram_sink_ext存储硬宏两侧黑盒(FM诊断inline RAM因空队列B通道don't-care X-init假失配)",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3370,6 +3628,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3383,6 +3642,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3396,6 +3656,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3409,6 +3670,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3422,6 +3684,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3435,6 +3698,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3448,6 +3712,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3461,6 +3726,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3474,6 +3740,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3487,6 +3754,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3500,6 +3768,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3513,6 +3782,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3526,6 +3796,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3539,6 +3810,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3552,6 +3824,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3565,6 +3838,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3578,6 +3852,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3591,6 +3866,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3604,6 +3880,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3617,6 +3894,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3630,6 +3908,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3643,6 +3922,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3656,6 +3936,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3669,6 +3950,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3682,6 +3964,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3695,6 +3978,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3708,6 +3992,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3721,6 +4006,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3734,6 +4020,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3747,6 +4034,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3760,6 +4048,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3773,6 +4062,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3786,6 +4076,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3799,6 +4090,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3812,6 +4104,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3825,6 +4118,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3838,6 +4132,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3851,6 +4146,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3864,6 +4160,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3877,6 +4174,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3890,6 +4188,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3903,6 +4202,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3916,6 +4216,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3929,6 +4230,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3942,6 +4244,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3955,6 +4258,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3968,6 +4272,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3981,6 +4286,7 @@
    "required_verdict": "N/A",
    "allow_ref": "",
    "rationale": "",
+   "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   }
  ]

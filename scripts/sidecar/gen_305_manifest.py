@@ -8,7 +8,8 @@
    PARTIAL / FAILED / TIMEOUT / UNVERIFIED **永不**作为正式 required_verdict。
  - **config_status**: CONFIGURED(有 FM 配置)| UNCONFIGURED(有 UT 无 FM, 如 Rob)——
    UNCONFIGURED **不运行、不计通过**, 但显式记录(覆盖完整性)。
- - declarations.tsv 只声明**设计契约**: proof_mode(边界)+ allow_ref(对象 allowlist);
+ - declarations.tsv 只声明**设计契约**: proof_mode(边界)+ allow_ref(对象 allowlist)
+   + target-scoped proof strengthening;
    **不声明 verdict**。测量到的新对象只能形成候选变更, 人工确认后改声明+重跑, 不反向放行。
  - 目标全集须与冻结清单 verif/freeze/fm_targets.tsv 对账(机器 diff, 见 reconcile_universe.py)。
 
@@ -35,7 +36,16 @@ def canonical_bid():
 
 
 def load_declarations(path):
-    """target<TAB>proof_mode<TAB>allow_ref<TAB>rationale —— 只设计契约, 不含 verdict。"""
+    """Read design contracts, never measured verdicts.
+
+    Columns:
+      target, proof_mode, allow_ref, rationale,
+      verify_matched_unread_compare_points
+
+    The final column is a strengthening (it asks Formality to prove otherwise
+    unread matched points); it is not a waiver.  Missing means the frozen 305
+    default, false.
+    """
     decl = {}
     if not path or not os.path.isfile(path):
         return decl
@@ -46,9 +56,17 @@ def load_declarations(path):
         p = ln.split("\t")
         if len(p) < 2:
             continue
+        if p[0] in decl:
+            raise SystemExit(f"duplicate declaration target: {p[0]}")
+        vmucp = p[4] if len(p) > 4 and p[4] else "false"
+        if vmucp not in ("true", "false"):
+            raise SystemExit(f"bad verify_matched_unread_compare_points for {p[0]}: {vmucp}")
+        if vmucp == "true" and p[0] != "LoadQueueUncache":
+            raise SystemExit(f"target-scoped strengthening forbidden for {p[0]}")
         decl[p[0]] = {"proof_mode": p[1] or None,
                       "allow_ref": p[2] if len(p) > 2 else "",
-                      "rationale": p[3] if len(p) > 3 else ""}
+                      "rationale": p[3] if len(p) > 3 else "",
+                      "verify_matched_unread_compare_points": vmucp}
     return decl
 
 
@@ -111,6 +129,8 @@ def mk_entry(target, ut_dir, makefile, make_target, entry, pmode, decl, bid, cfg
             "config_status": cfg,
             "required_verdict": REQUIRED_BY_MODE.get(pm, "SUCCEEDED") if cfg == "CONFIGURED" else "N/A",
             "allow_ref": d.get("allow_ref", ""), "rationale": d.get("rationale", ""),
+            "verify_matched_unread_compare_points":
+                d.get("verify_matched_unread_compare_points", "false"),
             "canonical_baseline_id": bid}
 
 
