@@ -111,7 +111,8 @@ module WrBypass_41(
   output [1:0]  io_hit_data_0_bits
 );
   xs_WrBypass #(
-    .NUM_ENTRIES(4), .IDX_WIDTH(8), .NUM_WAYS(1), .TAG_WIDTH(0), .DATA_WIDTH(2)
+    .NUM_ENTRIES(4), .IDX_WIDTH(8), .NUM_WAYS(1), .TAG_WIDTH(0), .DATA_WIDTH(2),
+    .TRACK_HIT_VALID(1'b0)  // golden 裁剪了 io_hit_data_valid → 不建 valids 死寄存器
   ) u_core (
     .clock(clock), .reset(reset),
     .io_wen(io_wen),
@@ -135,7 +136,8 @@ module WrBypass_43(
   output [1:0]  io_hit_data_0_bits
 );
   xs_WrBypass #(
-    .NUM_ENTRIES(4), .IDX_WIDTH(9), .NUM_WAYS(1), .TAG_WIDTH(0), .DATA_WIDTH(2)
+    .NUM_ENTRIES(4), .IDX_WIDTH(9), .NUM_WAYS(1), .TAG_WIDTH(0), .DATA_WIDTH(2),
+    .TRACK_HIT_VALID(1'b0)  // golden 裁剪了 io_hit_data_valid → 不建 valids 死寄存器
   ) u_core (
     .clock(clock), .reset(reset),
     .io_wen(io_wen),

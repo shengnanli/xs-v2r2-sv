@@ -27,6 +27,9 @@ module xs_WrBypass #(
   parameter int unsigned NUM_WAYS    = 1,   // 每条目路数
   parameter int unsigned TAG_WIDTH   = 0,   // tag 位宽，0 表示无 tag
   parameter int unsigned DATA_WIDTH  = 3,   // 每路数据位宽
+  // 上层是否消费 io_hit_data_valid。0 时(如 WrBypass_41/43: golden firtool 已裁剪该输出)
+  // 不建逐路 valids 寄存器(否则悬空成死寄存器), io_hit_data_valid 直接 '0。
+  parameter bit          TRACK_HIT_VALID = 1'b1,
   localparam int unsigned ENTRY_IDX_W = (NUM_ENTRIES > 1) ? $clog2(NUM_ENTRIES) : 1,
   localparam int unsigned TAG_W_SAFE  = (TAG_WIDTH > 0) ? TAG_WIDTH : 1
 )(
@@ -76,7 +79,7 @@ module xs_WrBypass #(
   // 命中检测：CAM 命中且条目写过
   // ---------------------------------------------------------------------------
   logic [NUM_ENTRIES-1:0]              ever_written;
-  logic [NUM_ENTRIES-1:0][NUM_WAYS-1:0] valids;
+  // 逐路 valids 仅在 TRACK_HIT_VALID 时建(见下 generate); 否则不建, 避免悬空死寄存器。
 
   logic [NUM_ENTRIES-1:0] hits_oh;
   logic [ENTRY_IDX_W-1:0] hit_idx;
@@ -125,23 +128,10 @@ module xs_WrBypass #(
   // ---------------------------------------------------------------------------
   // valids / ever_written 维护
   // ---------------------------------------------------------------------------
+  // ever_written 恒需维护(io_hit 用它屏蔽上电假命中)。
   always_ff @(posedge clock or posedge reset) begin
-    if (reset) begin
-      valids       <= '0;
-      ever_written <= '0;
-    end else if (io_wen) begin
-      if (hit) begin
-        // 命中：仅置位本次写入的路
-        for (int unsigned w = 0; w < NUM_WAYS; w++)
-          if (io_write_way_mask[w])
-            valids[hit_idx][w] <= 1'b1;
-      end else begin
-        // 新占用：整条目按掩码重置（掩码外的路标记无效）
-        for (int unsigned w = 0; w < NUM_WAYS; w++)
-          valids[enq_idx][w] <= io_write_way_mask[w];
-        ever_written[enq_idx] <= 1'b1;
-      end
-    end
+    if (reset)                         ever_written <= '0;
+    else if (io_wen && !hit)           ever_written[enq_idx] <= 1'b1;
   end
 
   // ---------------------------------------------------------------------------
@@ -150,13 +140,35 @@ module xs_WrBypass #(
   assign io_hit = hit;
 
   always_comb begin
-    for (int unsigned w = 0; w < NUM_WAYS; w++) begin
-      io_hit_data_valid[w] = 1'b0;
-      for (int unsigned i = 0; i < NUM_ENTRIES; i++)
-        if (hits_oh[i] && valids[i][w])
-          io_hit_data_valid[w] = 1'b1;
+    for (int unsigned w = 0; w < NUM_WAYS; w++)
       io_hit_data_bits[w] = data_mem[hit_idx][w];
+  end
+
+  // 逐路有效位: 仅上层消费时(TRACK_HIT_VALID)才建 valids 寄存器并驱动 io_hit_data_valid;
+  // 否则(如 WrBypass_41/43 golden 裁剪了该输出)不建寄存器, 输出直接 '0(悬空/不比较)。
+  if (TRACK_HIT_VALID) begin : g_hit_valid
+    logic [NUM_ENTRIES-1:0][NUM_WAYS-1:0] valids;
+    always_ff @(posedge clock or posedge reset) begin
+      if (reset) valids <= '0;
+      else if (io_wen) begin
+        if (hit) begin
+          for (int unsigned w = 0; w < NUM_WAYS; w++)
+            if (io_write_way_mask[w]) valids[hit_idx][w] <= 1'b1;   // 命中: 仅置本次写入的路
+        end else begin
+          for (int unsigned w = 0; w < NUM_WAYS; w++)
+            valids[enq_idx][w] <= io_write_way_mask[w];             // 新占用: 按掩码重置整条目
+        end
+      end
     end
+    always_comb begin
+      for (int unsigned w = 0; w < NUM_WAYS; w++) begin
+        io_hit_data_valid[w] = 1'b0;
+        for (int unsigned i = 0; i < NUM_ENTRIES; i++)
+          if (hits_oh[i] && valids[i][w]) io_hit_data_valid[w] = 1'b1;
+      end
+    end
+  end else begin : g_no_hit_valid
+    assign io_hit_data_valid = '0;
   end
 
 endmodule
