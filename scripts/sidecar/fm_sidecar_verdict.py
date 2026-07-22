@@ -142,7 +142,10 @@ def appvar_spec_err(av, mode, relaxed_declared, target):
     # independently bound by expectation/envelope; all other targets retain the
     # frozen false default and cannot opt in by merely forging matching JSON.
     muk = "verification_verify_matched_unread_compare_points"
-    expected_mu = "true" if target == "LoadQueueUncache" else "false"
+    # 精确白名单(无通配符); 均为证明加强(验证更多 matched-unread 状态), 非 waiver。
+    _MU_STRENGTHEN = {"LoadQueueUncache",
+                      "FastArbiter_46", "FastArbiter_47", "FastArbiter_27", "FastArbiter_44"}
+    expected_mu = "true" if target in _MU_STRENGTHEN else "false"
     if av[muk] != expected_mu:
         return f"target_strengthening:{muk}:{target}={av[muk]}_expected_{expected_mu}"
     vi = av["hdlin_interface_only"]

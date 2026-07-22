@@ -30,8 +30,9 @@ PY
 [ "$UTDIR" = "NOTFOUND" ] && { echo "MANIFEST_MISS $TARGET"; exit 2; }
 [ "$VERIFY_MU" = "true" ] || [ "$VERIFY_MU" = "false" ] || {
   echo "MANIFEST_BAD verify_matched_unread_compare_points=$VERIFY_MU"; exit 2; }
-[ "$VERIFY_MU" != "true" ] || [ "$TARGET" = "LoadQueueUncache" ] || {
-  echo "MANIFEST_BAD strengthening 仅允许 LoadQueueUncache"; exit 2; }
+case "$TARGET" in LoadQueueUncache|FastArbiter_46|FastArbiter_47|FastArbiter_27|FastArbiter_44) ;;
+  *) [ "$VERIFY_MU" != "true" ] || { echo "MANIFEST_BAD matched-unread strengthening 仅允许精确白名单"; exit 2; } ;;
+esac
 # manifest 的 makefile 若非默认 Makefile(如 Makefile.iq/.sched), make 须 -f 指定,
 # 否则用默认 Makefile 的错误 RTL_SRCS(IssueQueue×6 impl top unknown 根因)。
 MKF=$(basename "$MK")

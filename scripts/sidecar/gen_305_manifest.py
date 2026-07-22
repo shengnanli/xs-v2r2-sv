@@ -61,7 +61,8 @@ def load_declarations(path):
         vmucp = p[4] if len(p) > 4 and p[4] else "false"
         if vmucp not in ("true", "false"):
             raise SystemExit(f"bad verify_matched_unread_compare_points for {p[0]}: {vmucp}")
-        if vmucp == "true" and p[0] != "LoadQueueUncache":
+        if vmucp == "true" and p[0] not in {"LoadQueueUncache",
+                "FastArbiter_46", "FastArbiter_47", "FastArbiter_27", "FastArbiter_44"}:
             raise SystemExit(f"target-scoped strengthening forbidden for {p[0]}")
         decl[p[0]] = {"proof_mode": p[1] or None,
                       "allow_ref": p[2] if len(p) > 2 else "",
