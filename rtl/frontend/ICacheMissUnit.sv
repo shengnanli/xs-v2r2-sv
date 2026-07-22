@@ -299,7 +299,10 @@ module xs_ICacheMissUnit
   //   prefetchArb 按队头编号选择要发射的 prefetch MSHR → 实现「先进先发」
   // ===========================================================================
   localparam int unsigned PF_PTR_W = 4;  // 编号/指针宽（depth 10，4-bit 足够）
-  logic [PF_PTR_W-1:0] pf_fifo [N_MSHR_SLOTS];  // 16 槽（>=深度 10），按 2 的幂避免越界
+  // 深度恰为 N_PREFETCH_MSHR（10），与 golden 一致。入队/出队指针都在 10 处回绕
+  // （见下方 pf_enq_ptr/pf_deq_ptr 推进逻辑），故索引可达状态恒为 0..9，无需超配到
+  // 2 的幂——超配 [10..15] 会引入 6×PF_PTR_W 个永不写读的死寄存器（impl-only）。
+  logic [PF_PTR_W-1:0] pf_fifo [N_PREFETCH_MSHR];
   logic                pf_enq_flag, pf_deq_flag;
   logic [PF_PTR_W-1:0] pf_enq_ptr,  pf_deq_ptr;
 
