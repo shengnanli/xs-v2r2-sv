@@ -45,3 +45,4 @@ FastArbiter_47	signoff-strict		目标级strengthening: matched-unread(pendingMas
 FastArbiter_27	signoff-strict		目标级strengthening: matched-unread(pendingMask死位)纳入verify, 验更多点非waiver	true
 FastArbiter_44	signoff-strict		目标级strengthening: matched-unread(pendingMask死位)纳入verify, 验更多点非waiver	true
 RNXbar	assembly	verif/signoff/allow/RNXbar.json	assembly: 15个CHI仲裁器黑盒边界(rx*/tx*Arbs), 6类全为独立FM绿目标FastArbiter_46/27/44/31/30/36; 验证本层1RN×4HN解复用+snoop快照glue	
+ICacheCtrlUnit	signoff-strict		目标strengthening: out_back_q(RegMapper)通用data[63:48]两侧对称cone-dead位, 精确16↔16 hash绑定set_user_match(fm_pins.tcl)后令FM实际比较这些mapped点(而非matched-unread不比较), 证双射两端每拍同源io_enq_bits_data锁存恒相等; 非waiver非dont_verify非扩黑盒	true

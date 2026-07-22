@@ -967,8 +967,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "目标strengthening: out_back_q(RegMapper)通用data[63:48]两侧对称cone-dead位, 精确16↔16 hash绑定set_user_match(fm_pins.tcl)后令FM实际比较这些mapped点(而非matched-unread不比较), 证双射两端每拍同源io_enq_bits_data锁存恒相等; 非waiver非dont_verify非扩黑盒",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {

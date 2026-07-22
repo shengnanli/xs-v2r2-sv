@@ -74,7 +74,7 @@ if {[info exists env(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS)] &&
 }
 switch -- $_verify_matched_unread_compare_points {
   "true" {
-    if {$top ni {LoadQueueUncache FastArbiter_46 FastArbiter_47 FastArbiter_27 FastArbiter_44}} {
+    if {$top ni {LoadQueueUncache FastArbiter_46 FastArbiter_47 FastArbiter_27 FastArbiter_44 ICacheCtrlUnit}} {
       puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
       exit 3
     }
