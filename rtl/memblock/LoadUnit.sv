@@ -1561,7 +1561,6 @@ module xs_LoadUnit_core(
   // 等价于 Scala 的 `s1_in := RegEnable(s0_out, s0_fire)`。
   logic                  s1_valid;
   logic [VADDR_BITS-1:0] s1_in_vaddr;
-  logic [63:0]           s1_in_fullva;
   logic [PADDR_BITS-1:0] s1_in_paddr;
   logic [MASK_BITS-1:0]  s1_in_mask;
   logic [8:0]            s1_in_fuOpType;
@@ -1660,7 +1659,6 @@ module xs_LoadUnit_core(
     if (s0_fire) s1_in_vecActive <= s0_sel_vecActive;  // payload 份：golden 无复位
     if (s0_fire) begin
       s1_in_vaddr        <= s0_out_vaddr;
-      s1_in_fullva       <= s0_out_fullva;
       s1_in_paddr        <= s0_out_paddr;
       s1_in_mask         <= s0_sel_mask;
       s1_in_fuOpType     <= s0_sel_fuOpType;
