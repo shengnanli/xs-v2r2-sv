@@ -9,4 +9,4 @@ ITTageTable_4	WrBypass_43
 LsqWrapper	LoadQueue,StoreQueue
 SNXbar	FastArbiter_46,FastArbiter_47
 SplittedSRAMTemplate_2	SRAMTemplate_36
-SubDirectory	SRAMTemplate_197,SRAMTemplate_198,MaxPeriodFibonacciLFSR_3
+SubDirectory	MaxPeriodFibonacciLFSR_3,SRAMTemplate_197,SRAMTemplate_198	AUX child(不入305分母): LFSR strict PASS + SRAM197/198 PASS_DEAD_REF(reg_RW0_ren死); 依赖闭合后SubDirectory assembly合法绿

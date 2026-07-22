@@ -1,0 +1,4 @@
+# AUXILIARY_PROOF_TARGETS(不改305分母, 供父目标depends_on): target	verdict	证据
+MaxPeriodFibonacciLFSR_3	PASS	strict SUCCEEDED 32点/0fail/0unread(可读Fibonacci LFSR)
+SRAMTemplate_197	PASS_DEAD_REF	strict 307512点/0fail; 仅golden array_19_ext死reg_RW0_ren(可读xs_Simple1PSRAM_core)
+SRAMTemplate_198	PASS_DEAD_REF	strict 10262点/0fail; 仅golden array_20_ext死reg_RW0_ren(可读xs_Simple1PSRAM_core WIDTH=1)
