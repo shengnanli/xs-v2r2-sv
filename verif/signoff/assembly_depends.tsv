@@ -19,3 +19,4 @@ ITTage	ITTageTable,ITTageTable_1,ITTageTable_2,ITTageTable_3,ITTageTable_4	5×IT
 FTB	FTBBank	FTBBank SIGNOFF_PASS(依赖闭包); DelayNWithValid/_1+DelayN_1双侧elaborate非黑盒(纯逻辑延迟线,不入依赖); 父级assembly+vmucp
 Composer	FTB,ITTage,Tage_SC,FauFTB	4绿child预测器全SIGNOFF_PASS(黑盒实例 ftb/ittage/tage/uftb 对应 305 target FTB/ITTage/Tage_SC/FauFTB, 依赖闭包); RAS/RASStack两侧elaborate非黑盒(纯逻辑,不入依赖); DelayN两侧elaborate; 父级assembly+vmucp+dead-ref
 ExeUnit	Alu,MulUnit,Bku	3独立FU目标(Alu/MulUnit/Bku)全SIGNOFF_PASS则依赖闭合; ExeUnit assembly合法绿; ClockGate/Dispatcher双侧elaborate非黑盒(不入依赖)
+ExeUnit_4	Alu	独立FU目标Alu SIGNOFF_PASS则依赖闭合; ExeUnit_4 assembly合法绿; Dispatcher_4(in1ToN)双侧elaborate非黑盒(不入依赖); 本变体无ClockGate无Mul无Bku
