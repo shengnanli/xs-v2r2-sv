@@ -243,9 +243,13 @@
   logic            oldestExuRedirectValid;          // -> redirectGen.io_oldestExuRedirect_valid
   exu_redir_cand_t oldestExuRedirectBits;           // -> redirectGen.io_oldestExuRedirect_bits_*
   logic            oldestExuRedirectIsCSR;          // -> redirectGen.io_oldestExuRedirectIsCSR
-  always_ff @(posedge clock) begin
+  // golden redirectGen_io_oldestExuRedirect_valid_last_REG 在异步复位块;
+  // bits 与 IsCSR_r 无复位 RegEnable。拆两块对齐 golden 复位域。
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) oldestExuRedirectValid <= 1'b0;
     else       oldestExuRedirectValid <= exuOldestValid;
+  end
+  always_ff @(posedge clock) begin
     if (exuOldestValid) begin
       oldestExuRedirectBits <= exuOldestCand;
       // ★ round8:debugIsCtrl = golden「OR 四个 onehot 项」= exuOldestValid(此 if 下恒 1)。
@@ -270,7 +274,8 @@
   assign mdpVld[0] = _decodePipeRenameModule_io_in_ready   & _decode_io_out_0_valid;
   assign mdpVld[1] = _decodePipeRenameModule_1_io_in_ready & _decode_io_out_1_valid;
   reg  mdpVldLast [0:1];
-  always_ff @(posedge clock) begin
+  // golden mdpFlodPcVecVld_<i>_last_REG 在异步复位块;对齐 FM 用异步复位。
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       mdpVldLast[0] <= 1'b0;
       mdpVldLast[1] <= 1'b0;
@@ -290,13 +295,13 @@
   // ==========================================================================
   // (3) decode 输入 foldpc 选择(decode-buffer FSM 的 bits 分量,仅 foldpc 一项)
   // --------------------------------------------------------------------------
-  //   decodeInFoldpc[k] = decodeBufValid[k] ? decodeBufFoldpc[k] : cfVec[k].bits.foldpc
-  // decodeBufFoldpc 为 decode buffer 内缓存的 foldpc(随 buffer 移位,见块2 注释:
-  // buffer bits 搬移本轮只跟 foldpc 这一分量;完整 StaticInst 搬移仍待后续轮)。
-  // 这里给出 foldpc 的搬移寄存器(与块2 decodeBufValid 同源 FSM,移位逻辑一致)。
+  //   decodeInFoldpc[k] = decodeBufValid[k] ? decodeBufBits[k].foldpc : cfVec[k].bits.foldpc
+  // ★ FM 修复:golden 只有一份 foldpc 寄存器 decodeBufBits_<k>_foldpc,同时供 decode
+  //   io_in_bits_foldpc 与 mdp foldpc 两条路径。原来这里另开一份 decodeBufFoldpc 寄存器
+  //   (与 decodeBufBits[k].foldpc 同值但移位分支的 acceptNum 保持守卫略有差异),在 FM
+  //   里成为无 golden 对应的孤儿 DFF(60 点 unmatched -> failing)。改为直接复用块 2b 的
+  //   decodeBufBits[k].foldpc(该 struct 字段与 golden 逐位等价、已 passing),删除冗余寄存器。
   // ==========================================================================
-  // decode buffer foldpc 寄存器(6 路);移位规则同 decodeBufValid。
-  reg  [9:0] decodeBufFoldpc [0:ctrlblock_pkg::DecodeWidth-1];
   // cfVec foldpc 聚合别名
   wire [9:0] cfVecFoldpc [0:ctrlblock_pkg::DecodeWidth-1];
   assign cfVecFoldpc[0] = io_frontend_cfVec_0_bits_foldpc;
@@ -306,48 +311,8 @@
   assign cfVecFoldpc[4] = io_frontend_cfVec_4_bits_foldpc;
   assign cfVecFoldpc[5] = io_frontend_cfVec_5_bits_foldpc;
 
-  // 移位源选择(同 buf_shift_src,但作用在 foldpc 数据上)。
-  // 纯函数:foldpc 源数组作显式入参(不读非局部 -> 避免 FMR_VLOG-091)。
-  // 用显式 case 选源(非变量 unpacked-array 索引)避免 FMR_ELAB-147。
-  function automatic logic [9:0] buf_shift_foldpc(
-      input logic [2:0] i, input logic [2:0] num,
-      input logic [9:0] src[0:ctrlblock_pkg::DecodeWidth-1]);
-    logic [2:0] idx;
-    idx = i + num;
-    unique case (idx)
-      3'd0:    buf_shift_foldpc = src[0];
-      3'd1:    buf_shift_foldpc = src[1];
-      3'd2:    buf_shift_foldpc = src[2];
-      3'd3:    buf_shift_foldpc = src[3];
-      3'd4:    buf_shift_foldpc = src[4];
-      3'd5:    buf_shift_foldpc = src[5];
-      default: buf_shift_foldpc = 10'h0;   // idx>=6 越界:取 0(同原三元)
-    endcase
-  endfunction
-
-  integer dfi;
-  always_ff @(posedge clock) begin
-    if (reset) begin
-      for (dfi = 0; dfi < ctrlblock_pkg::DecodeWidth; dfi = dfi + 1)
-        decodeBufFoldpc[dfi] <= 10'h0;
-    end else begin
-      for (dfi = 0; dfi < ctrlblock_pkg::DecodeWidth; dfi = dfi + 1) begin
-        // 与 decodeBufValid 的移位分支一致(清零分支保留旧 foldpc 无害,因 valid=0)
-        if (decodeBufValid[dfi] && bufNotAcceptDropOr[dfi]) begin
-          decodeBufFoldpc[dfi] <=
-            (decodeBufAcceptNum > (ctrlblock_pkg::DecodeWidth[2:0] - 3'd1 - dfi[2:0])) ? decodeBufFoldpc[dfi]
-              : buf_shift_foldpc(dfi[2:0], decodeBufAcceptNum, decodeBufFoldpc);
-        end else if (!decodeBufValid[0] && feNotAcceptDropOr[dfi]) begin
-          decodeBufFoldpc[dfi] <=
-            (decodeFromFrontendAcceptNum > (ctrlblock_pkg::DecodeWidth[2:0] - 3'd1 - dfi[2:0])) ? decodeBufFoldpc[dfi]
-              : buf_shift_foldpc(dfi[2:0], decodeFromFrontendAcceptNum, cfVecFoldpc);
-        end
-      end
-    end
-  end
-
   generate
     for (gj = 0; gj < ctrlblock_pkg::DecodeWidth; gj++) begin : g_decinfoldpc
-      assign decodeInFoldpc[gj] = decodeBufValid[gj] ? decodeBufFoldpc[gj] : cfVecFoldpc[gj];
+      assign decodeInFoldpc[gj] = decodeBufValid[gj] ? decodeBufBits[gj].foldpc : cfVecFoldpc[gj];
     end
   endgenerate

@@ -168,9 +168,12 @@ package storequeue_pkg;
   endfunction
 
   // isAfter(a, b)：a 是否比 b 更「新」（robIdx/sqPtr 环形比较）。
-  //   同 flag → value 大者新；异 flag → value 小者新（已绕到下一圈）。
+  //   golden 展开为 `fa ^ fb ^ (va > vb)`（与 flag 异或折叠），逐位对齐：
+  //     同 flag → (va > vb)；异 flag → ~(va > vb) = (va <= vb)。
+  //   ⚠ 之前实现异 flag 用 (va < vb)，在「异 flag 且 va==vb」的边角与 golden 分叉
+  //     （addr/dataReadyPtr redirect 回退项两侧失配根因；FM 穷举下 va==vb 可达）。
   function automatic logic ptr_is_after(input sqptr_t a, input sqptr_t b);
-    return (a.flag == b.flag) ? (a.value > b.value) : (a.value < b.value);
+    return a.flag ^ b.flag ^ (a.value > b.value);
   endfunction
 
   // UIntToMask(ptr, n)：低 ptr 位为 1 的掩码（环形 forward 范围用）。

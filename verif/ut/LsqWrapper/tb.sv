@@ -4,10 +4,6 @@ module tb;
   int unsigned NCYCLES = 200000;
   bit clk = 0, rst;
   int errors = 0, checks = 0;
-  int probe_mm = 0, probe_chk = 0;
-  `define GPRB u_g.loadQueue.loadQueueReplay
-  `define IPRB u_i.u_core.u_load_queue.loadQueueReplay
-  `define PRBCMP(sig) if (!$isunknown(`GPRB.sig)) begin probe_chk++; if (`GPRB.sig !== `IPRB.sig) begin probe_mm++; if(probe_mm<=40) $display("[%0t] PROBE %s g=%h i=%h", $time, "sig", `GPRB.sig, `IPRB.sig); end end
   always #5 clk = ~clk;
 
   logic io_brqRedirect_valid;
@@ -4640,17 +4636,11 @@ module tb;
       if(errors<=80) $display("[%0t] io_perf_34_value g=%h i=%h", $time, g_io_perf_34_value, i_io_perf_34_value); end
     if (!$isunknown(g_io_perf_35_value) && g_io_perf_35_value !== i_io_perf_35_value) begin errors++;
       if(errors<=80) $display("[%0t] io_perf_35_value g=%h i=%h", $time, g_io_perf_35_value, i_io_perf_35_value); end
-    `PRBCMP(s2_oldestSel_2_bits_r)
-    `PRBCMP(s2_oldestSel_2_valid_r)
-    `PRBCMP(s2_replayCauses_2)
-    `PRBCMP(s2_replayMSHRId_2)
-    `PRBCMP(s2_replayUop_2_debugInfo_enqRsTime)
   end
   initial begin
     rst = 1; repeat (16) @(posedge clk); rst = 0;
     repeat (NCYCLES) @(posedge clk);
     $display("checks=%0d errors=%0d", checks, errors);
-    $display("PROBE_RESULT: loadQueueReplay internal regs mismatch=%0d / checked=%0d", probe_mm, probe_chk);
     if (errors == 0 && checks > 1000) $display("TEST PASSED"); else $display("TEST FAILED");
     $finish;
   end

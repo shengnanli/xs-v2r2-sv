@@ -172,20 +172,40 @@
       logic [SQ_SIZE-1:0] di1_q, di2_q, ai1_q, ai2_q;
       logic [SQ_SIZE-1:0] paFwd_q, vaFwd_q, needFwd_q, addrRealValid_q;
       logic               fwdValid_q, diffFlag_q, loadWaitStrict_q, loadWaitStrictRaw_q;
+      logic               hasInvalidAddr_q;   // golden io_forward_X_addrInvalid_REG：s1 计算打一拍
       sqptr_t             enqPtr_q, deqPtr_q, fwdSqIdx_q, fwdSqIdxM1_q;
+      // golden 为 data / addr 两条 InvalidSqIdx 路径各保留一份独立的 RegEnable(sqIdx)：
+      //   dataInvalidSqIdx_r（value/flag）与 addrInvalidSqIdx_r_1（value/flag），源相同、值恒等，
+      //   但 merge_dup=false 下 FM 视为两个寄存器。impl 单份 fwdSqIdx_q 只能配一份 → 另一份
+      //   golden 侧未匹配自由变量，令 io_forward_*_dataInvalidSqIdx / addrInvalidSqIdx 输出失配。
+      //   这里 1:1 复制：fwdSqIdx_q 配 addrInvalidSqIdx_r_1，fwdSqIdxData_q 配 dataInvalidSqIdx_r。
+      //   loadWaitStrict 同理复制 loadWaitStrictData_q（golden r_5_0/r_9_0/r_13_0 的 addrInvalid_r 对偶）。
+      sqptr_t             fwdSqIdxData_q;
+      logic               loadWaitStrictData_q;
       always_ff @(posedge clock) begin
         di1_q <= dataInvalidMask1; di2_q <= dataInvalidMask2;
         ai1_q <= addrInvalidMask1; ai2_q <= addrInvalidMask2;
-        paFwd_q <= paddrFwdMmask[gi]; vaFwd_q <= vaddrFwdMmask[gi];
-        needFwd_q <= needForward; addrRealValid_q <= addrRealValidVec;
+        needFwd_q <= needForward;   // golden vpmaskNotEqual_REG：无条件打拍
+        hasInvalidAddr_q <= |(~addrValidVec & needForward);
         fwdValid_q <= fwd_valid[gi]; diffFlag_q <= differentFlag;
         enqPtr_q <= enqPtrExt[0]; deqPtr_q <= deqPtrExt[0];
         fwd_dataInvalid_q[gi] <= dataInvalidFast;
         if (fwd_valid[gi]) begin
-          loadWaitStrict_q <= fwd_loadWaitStrict[gi];
-          fwdSqIdx_q   <= '{flag:fwd_sqIdxF[gi], value:fwd_sqIdxV[gi]};
+          // golden vpmaskNotEqual_r/_r_1：RegEnable(forwardMmask, io_forward_X_valid)——
+          //   仅在 forward 请求有效时更新（之前无条件打拍，空拍会覆盖成新掩码与 golden 分叉）。
+          paFwd_q <= paddrFwdMmask[gi]; vaFwd_q <= vaddrFwdMmask[gi];
+          loadWaitStrict_q     <= fwd_loadWaitStrict[gi];
+          loadWaitStrictData_q <= fwd_loadWaitStrict[gi];
+          fwdSqIdx_q     <= '{flag:fwd_sqIdxF[gi], value:fwd_sqIdxV[gi]};
+          fwdSqIdxData_q <= '{flag:fwd_sqIdxF[gi], value:fwd_sqIdxV[gi]};
           fwdSqIdxM1_q <= sqptr_sub('{flag:fwd_sqIdxF[gi], value:fwd_sqIdxV[gi]}, 7'd1);
         end
+      end
+      // golden vpmaskNotEqual_next_r：异步复位到 0，其余拍无条件 <= addrRealValidVec
+      //   （holdUnless 语义等价于直存）。独立异步复位块。
+      always_ff @(posedge clock or posedge reset) begin
+        if (reset) addrRealValid_q <= '0;
+        else       addrRealValid_q <= addrRealValidVec;
       end
 
       // matchInvalid：vaddr/paddr CAM 命中不一致（需 replay）
@@ -196,13 +216,17 @@
       // addrInvalid 结果
       wire [SQ_SIZE-1:0] aiReg = ai1_q | ai2_q;
       wire addrInvalidFlag = |aiReg;
-      wire hasInvalidAddr  = |(~addrValidVec & needForward);
+      // hasInvalidAddr 用 s1 打拍值（golden io_forward_X_addrInvalid_REG 为寄存器，
+      // 若在 s2 用 live addrValidVec/needForward 组合计算，掩码跨拍变化时与 golden 不符）
+      wire hasInvalidAddr  = hasInvalidAddr_q;
       wire [SQ_IDX_W-1:0] addrInvalidSqIdx1 = rev_prio_idx(ai1_q);
       wire [SQ_IDX_W-1:0] addrInvalidSqIdx2 = rev_prio_idx(ai2_q);
       wire [SQ_IDX_W-1:0] addrInvalidSqIdx  = (|ai2_q) ? addrInvalidSqIdx2 : addrInvalidSqIdx1;
       // addrInvalidSqIdx 的 flag：同圈或 idx>=deqPtr → deq.flag 否则 enq.flag
+      // golden addrInvalidSqIdx mux 的 select 用 r_5_0（=loadWaitStrict 的 data 副本
+      //   loadWaitStrictData_q），第三分支用 addrInvalidSqIdx_r_1（=fwdSqIdx_q）。逐位对齐 golden。
       always_comb begin
-        if (loadWaitStrict_q) begin
+        if (loadWaitStrictData_q) begin
           fwd_addrInvalidSqIdx_o[gi] = fwdSqIdxM1_q;
         end else if (addrInvalidFlag) begin
           fwd_addrInvalidSqIdx_o[gi].flag  = (~diffFlag_q | (addrInvalidSqIdx >= deqPtr_q.value)) ? deqPtr_q.flag : enqPtr_q.flag;
@@ -224,7 +248,7 @@
           fwd_dataInvalidSqIdx_o[gi].flag  = (~diffFlag_q | (dataInvalidSqIdx >= deqPtr_q.value)) ? deqPtr_q.flag : enqPtr_q.flag;
           fwd_dataInvalidSqIdx_o[gi].value = dataInvalidSqIdx;
         end else begin
-          fwd_dataInvalidSqIdx_o[gi] = fwdSqIdx_q;
+          fwd_dataInvalidSqIdx_o[gi] = fwdSqIdxData_q;  // golden dataInvalidSqIdx_r（独立副本）
         end
       end
     end
@@ -244,7 +268,7 @@
   logic                uncUop_excHwErr;   // exceptionVec(hardwareError=19) 唯一可能置位的
   logic [SQ_IDX_W-1:0] uncUop_sqIdxV;
   logic [8:0]          uncUop_fuOpType;   // s_idle 捕获的 fuOpType（CMO opcode 源，与 golden 一致：
-                                          //   io_cmoOpReq_bits_opcode 取此**锁存**值而非 live uop[deqPtr]，
+                                          //   io_cmoOpReq_bits_opcode 取此**锁存**值而非 live uopR[deqPtr]，
                                           //   保证 valid=0 时 bits 保持上次锁存值，逐拍等于 golden）。
   logic                cboFlushedSb;
   logic [PADDR_BITS-1:0] cboMmioPAddr;
@@ -260,14 +284,17 @@
   function automatic logic lsu_is_cbo_zero(input logic [8:0] op);
     return op == 9'h7;
   endfunction
-  wire deqCbo_now = lsu_is_cbo(uop[deqPtr].fuOpType) & ent[deqPtr].allocated
-                    & ent[deqPtr].addrvalid & ~ent[deqPtr].hasException;
+  wire deqCbo_now = lsu_is_cbo(uopR[deqPtr].fuOpType) & entR[deqPtr].allocated
+                    & entR[deqPtr].addrvalid & ~entR[deqPtr].hasException;
   logic deqCanDoCbo;        // = GatedRegNext(deqCbo_now)
-  always_ff @(posedge clock) deqCanDoCbo <= deqCbo_now;
+  // golden deqCanDoCbo_next_r 异步复位到 0（reg block 行 50857）——补复位，消 FM 锥不对称。
+  always_ff @(posedge clock or posedge reset)
+    if (reset) deqCanDoCbo <= 1'b0;
+    else       deqCanDoCbo <= deqCbo_now;
 
   // CMO opcode：取 s_idle **锁存**的 uncUop_fuOpType 低 2 位（与 golden
   //   io_cmoOpReq_bits_opcode = uncacheUop_fuOpType[1:0] 一致）。不能用 live
-  //   uop[deqPtr].fuOpType——否则 valid=0 时 bits 随 deqPtr 漂移，与 golden 锁存值不符。
+  //   uopR[deqPtr].fuOpType——否则 valid=0 时 bits 随 deqPtr 漂移，与 golden 锁存值不符。
   wire [1:0] cmoOpCode = uncUop_fuOpType[1:0];
   // get_block_addr：cacheline 对齐（低 6 位清零）
   wire [63:0] cboMmioAddr = {{16{1'b0}}, cboMmioPAddr[PADDR_BITS-1:6], 6'b0};
@@ -276,72 +303,100 @@
   logic mmioIdleGo_q;
   always_ff @(posedge clock) begin
     mmioIdleGo_q <= io_rob_pendingst
-                    & (uop[deqPtr].robIdx_flag == io_rob_pendingPtr_flag)
-                    & (uop[deqPtr].robIdx_value == io_rob_pendingPtr_value)
-                    & ent[deqPtr].pending & ent[deqPtr].allocated
-                    & ent[deqPtr].datavalid & ent[deqPtr].addrvalid & ~ent[deqPtr].hasException;
+                    & (uopR[deqPtr].robIdx_flag == io_rob_pendingPtr_flag)
+                    & (uopR[deqPtr].robIdx_value == io_rob_pendingPtr_value)
+                    & entR[deqPtr].pending & entR[deqPtr].allocated
+                    & entR[deqPtr].datavalid & entR[deqPtr].addrvalid & ~entR[deqPtr].hasException;
   end
 
   // uncache resp fire（resp.ready 恒 1）
   wire uncache_resp_fire = io_uncache_resp_valid;
   wire cmoResp_fire = io_cmoOpResp_valid & io_cmoOpResp_ready;
 
-  always_ff @(posedge clock) begin
+  // ---- FSM 状态 + 复位寄存器（golden 有 reset）----
+  //   mmioState / cboFlushedSb / noPending 是 golden 的复位寄存器；uncUop_excHwErr 与
+  //   payload 锁存（uncUop_robF.. / cboMmioPAddr）在 golden 里是**无复位**寄存器，
+  //   必须拆到独立的 always_ff @(posedge clock)（见下）—— 否则 async-reset 会进这些
+  //   寄存器的 FM 锥而 golden 侧没有（analyze_points 实证：reset 出现在 impl 锥、ref
+  //   锥没有，272+ 点失配根因）。
+  // golden mmioState FSM（行 56838-56886）：deqCanDoCbo_next_r 时 CBO 转移抢占常规状态转移，
+  //   优先级 _GEN_610(RESP&cmoResp→WB) > _GEN_609(cmoReq.fire→RESP) > 常规状态机；
+  //   noPending 亦按 golden 各分支表达式更新（_GEN_1345=REQ 保持/mmioDoReq 清；_GEN_1346=RESP&resp 置）。
+  //   之前 impl 把 CBO 转移塞进各状态 case，priority 与 golden 不同 → mmioState 深序失配。1:1 复刻。
+  wire mmio_cboReqFire  = io_cmoOpReq_valid & io_cmoOpReq_ready;           // _GEN_609
+  wire mmio_cboRespGo   = (mmioState == MMIO_RESP) & cmoResp_fire;         // _GEN_610
+  wire mmio_respGo      = uncache_resp_fire & ~io_uncache_resp_bits_nc;    // _GEN_389 (with _GEN_388)
+  mmio_state_e mmio_wbGoNext;
+  assign mmio_wbGoNext  = uncUop_excHwErr ? MMIO_IDLE : MMIO_WAIT;         // _GEN_1348 语义
+  wire mmio_noPend1345  = ~mmioDoReq & noPending;                         // REQ 分支 noPending
+  wire mmio_noPend1346  = (mmio_respGo & (mmioState == MMIO_RESP)) | noPending; // RESP/WB/WAIT 分支
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       mmioState   <= MMIO_IDLE;
       cboFlushedSb<= 1'b0;
       noPending   <= 1'b1;
-      uncUop_excHwErr <= 1'b0;
     end else begin
-      unique case (mmioState)
-        MMIO_IDLE: begin
-          if (mmioIdleGo_q) begin
-            mmioState     <= MMIO_REQ;
-            uncUop_robF   <= uop[deqPtr].robIdx_flag;
-            uncUop_robV   <= uop[deqPtr].robIdx_value;
-            uncUop_dbgEnq <= uop[deqPtr].dbg_enqRsTime;
-            uncUop_dbgSel <= uop[deqPtr].dbg_selectTime;
-            uncUop_dbgIss <= uop[deqPtr].dbg_issueTime;
-            uncUop_sqIdxV <= uop[deqPtr].sqIdx_value;
-            uncUop_fuOpType <= uop[deqPtr].fuOpType;
-            uncUop_excHwErr <= 1'b0;
-            cboFlushedSb  <= 1'b0;
-            cboMmioPAddr  <= pa_rdata[0];
-          end
-        end
-        MMIO_REQ: begin
-          // CMO：cmoOpReq.fire 时也进 s_resp（见下 deqCanDoCbo 分支）
-          if (mmioDoReq) begin noPending <= 1'b0; mmioState <= MMIO_RESP; end
-          else if (deqCanDoCbo & (io_cmoOpReq_valid & io_cmoOpReq_ready)) begin
-            noPending <= 1'b0; mmioState <= MMIO_RESP;
-          end
-        end
-        MMIO_RESP: begin
-          if (uncache_resp_fire & ~io_uncache_resp_bits_nc) begin
-            noPending <= 1'b1; mmioState <= MMIO_WB;
-            if (io_uncache_resp_bits_nderr | io_cmoOpResp_bits_nderr) uncUop_excHwErr <= 1'b1;
-          end else if (deqCanDoCbo & cmoResp_fire) begin
-            noPending <= 1'b1; mmioState <= MMIO_WB;
-          end
-        end
-        MMIO_WB: begin
-          if (mmioStout_fire | vecmmioStout_fire) begin
-            mmioState <= uncUop_excHwErr ? MMIO_IDLE : MMIO_WAIT;
-          end
-        end
-        MMIO_WAIT: begin
-          if (scommit > 0) mmioState <= MMIO_IDLE;
-        end
-        default: mmioState <= MMIO_IDLE;
-      endcase
-      // CMO 排空 Sbuffer 后置 cboFlushedSb
+      if (deqCanDoCbo) begin
+        // noPending <= _GEN_610 | ~_GEN_609 & (IDLE?noPending : REQ?_GEN_1345 : _GEN_1346)
+        noPending <= mmio_cboRespGo
+                     | (~mmio_cboReqFire
+                        & ((mmioState == MMIO_IDLE) ? noPending
+                           : (mmioState == MMIO_REQ) ? mmio_noPend1345
+                           : mmio_noPend1346));
+        if (mmio_cboRespGo)                              mmioState <= MMIO_WB;
+        else if (mmio_cboReqFire)                        mmioState <= MMIO_RESP;
+        else if (mmioState == MMIO_IDLE) begin if (mmioIdleGo_q) mmioState <= MMIO_REQ; end
+        else if (mmioState == MMIO_REQ)  begin if (mmioDoReq)    mmioState <= MMIO_RESP; end
+        else if (mmioState == MMIO_RESP) begin if (mmio_respGo)  mmioState <= MMIO_WB; end
+        else if (mmioState == MMIO_WB)   begin if (mmioStout_fire | vecmmioStout_fire) mmioState <= mmio_wbGoNext; end
+        else if (mmioState == MMIO_WAIT) begin if (scommit > 0)  mmioState <= MMIO_IDLE; end
+      end
+      else if (mmioState == MMIO_IDLE) begin
+        if (mmioIdleGo_q) mmioState <= MMIO_REQ;
+      end
+      else if (mmioState == MMIO_REQ) begin
+        noPending <= mmio_noPend1345;
+        if (mmioDoReq) mmioState <= MMIO_RESP;
+      end
+      else begin  // RESP / WB / WAIT
+        noPending <= mmio_noPend1346;
+        if (mmioState == MMIO_RESP) begin if (mmio_respGo) mmioState <= MMIO_WB; end
+        else if (mmioState == MMIO_WB) begin if (mmioStout_fire | vecmmioStout_fire) mmioState <= mmio_wbGoNext; end
+        else if (mmioState == MMIO_WAIT) begin if (scommit > 0) mmioState <= MMIO_IDLE; end
+      end
+      // cboFlushedSb：进 REQ 清 0（golden 在 IDLE→REQ 时清）；CMO 排空 Sbuffer 后置 1
+      if ((mmioState == MMIO_IDLE) & mmioIdleGo_q) cboFlushedSb <= 1'b0;
       if (deqCanDoCbo & ~cboFlushedSb & (mmioState == MMIO_REQ) & io_flushSbuffer_empty)
         cboFlushedSb <= 1'b1;
     end
   end
 
+  // ---- uncacheUop payload 锁存 + cboMmioPAddr + uncUop_excHwErr：**无复位**（golden
+  //      always @(posedge clock)，行 17777 块）。写条件与上面 FSM 完全一致，仅去掉 reset。
+  //      uncUop_excHwErr：进 REQ 时清 0（golden ~REG_4 hold 项），nderr 置 1（golden set 项），
+  //      与 golden 的 exceptionVec_19 无复位自holding 语义位级一致。----
+  always_ff @(posedge clock) begin
+    if (mmioState == MMIO_IDLE) begin
+      if (mmioIdleGo_q) begin
+        uncUop_robF   <= uopR[deqPtr].robIdx_flag;
+        uncUop_robV   <= uopR[deqPtr].robIdx_value;
+        uncUop_dbgEnq <= uopR[deqPtr].dbg_enqRsTime;
+        uncUop_dbgSel <= uopR[deqPtr].dbg_selectTime;
+        uncUop_dbgIss <= uopR[deqPtr].dbg_issueTime;
+        uncUop_sqIdxV <= uopR[deqPtr].sqIdx_value;
+        uncUop_fuOpType <= uopR[deqPtr].fuOpType;
+        uncUop_excHwErr <= 1'b0;
+        cboMmioPAddr  <= pa_rdata[0];
+      end
+    end else if (mmioState == MMIO_RESP) begin
+      if (uncache_resp_fire & ~io_uncache_resp_bits_nc
+          & (io_uncache_resp_bits_nderr | io_cmoOpResp_bits_nderr))
+        uncUop_excHwErr <= 1'b1;
+    end
+  end
+
   // mmioReq：仅在 MMIO_REQ 且非 CBO 且非 wfi 时发；地址/数据/掩码对齐到低字节
-  wire mmioReq_valid = (mmioState == MMIO_REQ) & ~lsu_is_cbo(uop[deqPtr].fuOpType) & ~io_wfi_wfiReq;
+  wire mmioReq_valid = (mmioState == MMIO_REQ) & ~lsu_is_cbo(uopR[deqPtr].fuOpType) & ~io_wfi_wfiReq;
 
   // ===========================================================================
   //  §10  nc（non-cacheable）store 状态机（4 态）
@@ -350,9 +405,9 @@
   logic [UNC_ID_W-1:0] ncWaitRespPtrReg;
   wire [SQ_IDX_W-1:0] rptr0 = rdataPtrExt[0].value;
   // nc 入口条件：rdataPtr(0) 是已提交未完成的 nc store（非向量、无异常、非 mmio）
-  wire ncIdleGo = ent[rptr0].nc & ent[rptr0].allocated & ~ent[rptr0].completed
-                  & ent[rptr0].committed & (ent[rptr0].addrvalid & ent[rptr0].datavalid)
-                  & ~ent[rptr0].isVec & ~ent[rptr0].hasException & ~ent[rptr0].mmio;
+  wire ncIdleGo = entR[rptr0].nc & entR[rptr0].allocated & ~entR[rptr0].completed
+                  & entR[rptr0].committed & (entR[rptr0].addrvalid & entR[rptr0].datavalid)
+                  & ~entR[rptr0].isVec & ~entR[rptr0].hasException & ~entR[rptr0].mmio;
   // nc 各触发
   wire ncDoReq   = uncache_req_fire & io_uncache_req_bits_nc;
   wire ncResp_fire = uncache_resp_fire & io_uncache_resp_bits_nc;
@@ -362,7 +417,7 @@
   wire ncDeqTrig      = io_uncacheOutstanding ? ncSlaveAck : ncResp_fire;
   wire [UNC_ID_W-1:0] ncPtr = io_uncacheOutstanding ? ncSlaveAckMid : ncWaitRespPtrReg;
 
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       ncState <= NC_IDLE; ncWaitRespPtrReg <= '0;
     end else begin
@@ -389,17 +444,29 @@
   wire [63:0] unc_data = pa_rdata[0][3] ? sd_rdata_data[0][127:64] : sd_rdata_data[0][63:0];
   wire [7:0]  unc_mask = pa_rdata[0][3] ? sd_rdata_mask[0][15:8]   : sd_rdata_mask[0][7:0];
   // robIdx/memBackTypeMM 取 GatedRegNext(rdataPtrExtNext(0)) 那一拍的 entry
-  logic [SQ_IDX_W-1:0] rdNextPtr0_q;
-  always_ff @(posedge clock) rdNextPtr0_q <= rdataPtrExtNext[0].value;
+  // golden 为 mmio/nc × robIdx/memBackTypeMM 各保留一份 rdataPtrNext 副本寄存器
+  // (mmioReq_bits_robIdx_next_r 等 4 份, holdUnless≡直存)。1:1 镜像以便 FM 配平;
+  // 4 份值恒相同, 行为与单份一致。0:mmio-robIdx 1:mmio-memBackTypeMM 2:nc-robIdx 3:nc-memBackTypeMM
+  sqptr_t rdNextPtrDup_q [4];
+  // golden mmioReq/ncReq_bits_*_next_r：异步复位到 0（holdUnless≡直存）。补复位块。
+  always_ff @(posedge clock or posedge reset)
+    if (reset)
+      for (int j = 0; j < 4; j++) rdNextPtrDup_q[j] <= '0;
+    else
+      for (int j = 0; j < 4; j++) rdNextPtrDup_q[j] <= rdataPtrExtNext[0];
   assign io_uncache_req_bits_addr   = unc_addr;
   assign io_uncache_req_bits_vaddr  = unc_vaddr;
   assign io_uncache_req_bits_data   = unc_data;
   assign io_uncache_req_bits_mask   = unc_mask;
   assign io_uncache_req_bits_id     = mmioReq_valid ? {1'b0, rdataPtrExt[0].value} : {1'b0, rptr0};
   assign io_uncache_req_bits_nc     = ~mmioReq_valid;   // mmio 时 nc=0，否则 nc=1
-  assign io_uncache_req_bits_robIdx_flag  = uop[rdNextPtr0_q].robIdx_flag;
-  assign io_uncache_req_bits_robIdx_value = uop[rdNextPtr0_q].robIdx_value;
-  assign io_uncache_req_bits_memBackTypeMM= ent[rdNextPtr0_q].memBackTypeMM;
+  // 与 golden 一致：mmio/nc 各用自己那份 next_r 副本作读下标（值相同，行为不变）
+  assign io_uncache_req_bits_robIdx_flag  = mmioReq_valid ? uopR[rdNextPtrDup_q[0].value].robIdx_flag
+                                                          : uopR[rdNextPtrDup_q[2].value].robIdx_flag;
+  assign io_uncache_req_bits_robIdx_value = mmioReq_valid ? uopR[rdNextPtrDup_q[0].value].robIdx_value
+                                                          : uopR[rdNextPtrDup_q[2].value].robIdx_value;
+  assign io_uncache_req_bits_memBackTypeMM= mmioReq_valid ? entR[rdNextPtrDup_q[1].value].memBackTypeMM
+                                                          : entR[rdNextPtrDup_q[3].value].memBackTypeMM;
   // uncache_req_fire = req.valid & req.ready
   assign uncache_req_fire = io_uncache_req_valid & io_uncache_req_ready;
 
@@ -410,8 +477,11 @@
   assign io_cmoOpResp_ready      = deqCanDoCbo & (mmioState == MMIO_RESP);
 
   // wfiSafe：noPending & wfiReq 打一拍
+  //   golden io_wfi_wfiSafe_last_REG 异步复位到 0（reg block 行 50861）——补复位。
   logic wfiSafe_q;
-  always_ff @(posedge clock) wfiSafe_q <= (noPending & io_wfi_wfiReq);
+  always_ff @(posedge clock or posedge reset)
+    if (reset) wfiSafe_q <= 1'b0;
+    else       wfiSafe_q <= (noPending & io_wfi_wfiReq);
   assign io_wfi_wfiSafe = wfiSafe_q;
 
   // flushSbuffer：CMO 需先排空 Sbuffer；cboZero 写 Sbuffer 后也触发
@@ -423,7 +493,7 @@
   // mmioStout 写回 ROB
   assign mmioStout_fire    = io_mmioStout_valid & io_mmioStout_ready;
   assign vecmmioStout_fire = 1'b0;  // 本配置 vecmmioStout.valid 恒 0（golden DontCare）
-  assign io_mmioStout_valid = (mmioState == MMIO_WB) & ~ent[deqPtr].isVec;
+  assign io_mmioStout_valid = (mmioState == MMIO_WB) & ~entR[deqPtr].isVec;
   assign io_mmioStout_bits_uop_exceptionVec_19 = uncUop_excHwErr;
   assign io_mmioStout_bits_uop_flushPipe       = deqCanDoCbo;
   assign io_mmioStout_bits_uop_robIdx_flag     = uncUop_robF;
@@ -441,47 +511,66 @@
   // needCancel 按 64 位声明（2^SQ_IDX_W），高 8 位(56..63)恒 0：使 commit 用 6 位指针
   // 下标 needCancel[ptr] 时下标恒在界内（FMR_ELAB-147）。popcount 只数低 SQ_SIZE 位。
   logic [(1<<SQ_IDX_W)-1:0] needCancel;   // §15 赋值（仅 [SQ_SIZE-1:0] 有效）
-  logic [ROB_IDX_W-1:0] pendingPtrV_q; logic pendingPtrF_q;
-  always_ff @(posedge clock) begin
-    pendingPtrF_q <= io_rob_pendingPtr_flag;
-    pendingPtrV_q <= io_rob_pendingPtr_value;
-  end
-  // isNotAfter(uop(ptr).robIdx, RegNext(pendingPtr))：不晚于
+  // golden 每个提交口各留一份 RegNext(pendingPtr) 副本（next_r/next_r_1..7,
+  // holdUnless≡直存）。1:1 镜像以便 FM 配平; 各份值恒同, 行为不变。
+  logic [ROB_IDX_W:0] pendingPtrDup_q [COMMIT_W];   // {flag, value}
+  // golden next_r/next_r_1..7：异步复位到 0（holdUnless 更新语义等价于直存）。
+  //   之前无复位块——FM 判 reset 锥不对称而失配。
+  always_ff @(posedge clock or posedge reset)
+    if (reset)
+      for (int j = 0; j < COMMIT_W; j++) pendingPtrDup_q[j] <= '0;
+    else
+      for (int j = 0; j < COMMIT_W; j++)
+        pendingPtrDup_q[j] <= {io_rob_pendingPtr_flag, io_rob_pendingPtr_value};
+  // isNotAfter(uop(ptr).robIdx, RegNext(pendingPtr))：不晚于。
+  //   golden firtool 展开为 `fa ^ fb ^ (av <= bv)`（与 flag 异或折叠），逐位对齐：
+  //     同 flag → (av <= bv)；异 flag → (av > bv)。⚠ 之前实现异 flag 用 (av >= bv)，
+  //     在 av==bv&异flag 的边角与 golden 分叉（committed/completed FM 失配根因）。
   function automatic logic robidx_not_after(input logic af, input logic [ROB_IDX_W-1:0] av,
                                              input logic bf, input logic [ROB_IDX_W-1:0] bv);
-    logic isafter;
-    isafter = (af == bf) ? (av > bv) : (av < bv);
-    return ~isafter;
+    return af ^ bf ^ (av <= bv);
   endfunction
   logic [COMMIT_W-1:0] commitEntPtr_committed; // 该路本拍是否把 committed 置 1
   logic [SQ_IDX_W-1:0] commitPtrIdx [COMMIT_W];
+  // commitBaseVec[k] = 口 k 的 base&vecGate（golden _GEN_408&_GEN_409 类，**不含** commit 链）；
+  // committedT[k]     = golden _committed_T_{k-1} 的值（口 0=isCommit；口 k>0=commitVec_{k-1}|committed[cmtPtr_k]）。
+  //   committed_N 的 per-entry 优先级 mux 直接复刻 golden（见 §UNI-PRE），需要这两组中间量。
+  logic [COMMIT_W-1:0] commitBaseVec;
+  logic [COMMIT_W-1:0] committedT;
   always_comb begin
     commitVec = '0;
     for (int i = 0; i < COMMIT_W; i++) begin
       logic [SQ_IDX_W-1:0] ptr;
-      logic isCommit, base;
+      logic isCommit, base, vecGate, baseVec;
       ptr = cmtPtrExt[i].value;
       commitPtrIdx[i] = ptr;
       isCommit = 1'b0;
-      base = ent[ptr].allocated
-             & robidx_not_after(uop[ptr].robIdx_flag, uop[ptr].robIdx_value, pendingPtrF_q, pendingPtrV_q)
+      base = entR[ptr].allocated
+             & robidx_not_after(uopR[ptr].robIdx_flag, uopR[ptr].robIdx_value,
+                                pendingPtrDup_q[i][ROB_IDX_W], pendingPtrDup_q[i][ROB_IDX_W-1:0])
              & ~needCancel[ptr]
-             & (~ent[ptr].waitStoreS2 | ent[ptr].isVec);
+             & (~entR[ptr].waitStoreS2 | entR[ptr].isVec);
+      vecGate = (entR[ptr].isVec & entR[ptr].vecMbCommit) | ~entR[ptr].isVec;
+      baseVec = base & vecGate;
+      commitBaseVec[i] = baseVec;
       if (base) begin
         if (i == 0) begin
           if ((mmioState == MMIO_IDLE) | ((mmioState == MMIO_WAIT) & (scommit > 0))) begin
-            if ((ent[ptr].isVec & ent[ptr].vecMbCommit) | ~ent[ptr].isVec) begin
+            if (vecGate) begin
               isCommit = 1'b1; commitVec[0] = 1'b1;
             end
           end
         end else begin
-          if ((ent[ptr].isVec & ent[ptr].vecMbCommit) | ~ent[ptr].isVec) begin
-            isCommit = commitVec[i-1] | ent[ptr].committed;
+          if (vecGate) begin
+            isCommit = commitVec[i-1] | entR[ptr].committed;
             commitVec[i] = commitVec[i-1];
           end
         end
       end
       commitEntPtr_committed[i] = isCommit;
+      // golden _committed_T_{k-1}: 口 0=isCommit(=commitVec[0]); 口 k>0=commitVec_{k-1}|committed[cmtPtr_k]
+      if (i == 0) committedT[0] = isCommit;
+      else        committedT[i] = commitVec[i-1] | entR[ptr].committed;
     end
   end
   wire [3:0] commitCount = popcnt_commit(commitVec);
@@ -504,7 +593,7 @@
   // needCancel(i)：allocated & !committed & (被 redirect flush)
   //   有 vecExceptionFlag 时：只取消比 redirect.robIdx 更新的；否则按 needFlush。
   always_comb begin
-    needCancel = '0;   // 高 8 位(56..63)恒 0
+    needCancel = '0;
     for (int i = 0; i < SQ_SIZE; i++) begin
       logic flushIt, afterRedir;
       // isAfter = differentFlag ^ (value>redirect.value)，与 golden 一致
@@ -515,6 +604,12 @@
                                        : `ROB_NEED_FLUSH(uop[i].robIdx_flag, uop[i].robIdx_value);
       needCancel[i] = ent[i].allocated & ~ent[i].committed & flushIt;
     end
+    // 高 8 位(56..63)别名到 entry 0——golden 的 _GEN_401 打包表把越界下标 56..63 回绕到
+    // needCancel_0（与 entR/_GEN_2 等所有 per-entry 表一致）。此前 impl 把高位钉死 0，
+    // 当 cmtPtr.value 被 FM 探到 56..63（可达状态里恒 <56，但形式验证穷举）时 base 里
+    // ~needCancel[ptr] 两侧分叉：impl 读 0（不阻塞）、golden 读 needCancel_0（可能阻塞）
+    // → isCommit/commitCount/cmtPtr/committed 一整簇失配根因。别名以位级对齐 golden。
+    for (int i = SQ_SIZE; i < (1<<SQ_IDX_W); i++) needCancel[i] = needCancel[0];
   end
 
   // enqPtr 回滚计数（2 拍后）
@@ -527,13 +622,18 @@
     end
   end
   // enqNumber：本拍真正入队数（valid & !redirect 上拍）
-  logic redirValid_q;
-  always_ff @(posedge clock) redirValid_q <= io_brqRedirect_valid;
+  //   golden 的 _enqNumber_T_8 每个 enq 口各读一份 RegNext(redirect)=validVStoreFlow_REG_j
+  //   （firtool 把 Reg 复制成 6 份，值恒相同）。merge_dup=false 下 FM 不合并——impl 单份
+  //   redirValid_q 只配上 golden 的第 0 份，其余 5 份成 golden 侧未匹配自由变量，令 enqNumber
+  //   /enqPtr 一整簇失配。这里 1:1 复制 6 份并逐份钉 pin（fm_pins_pre.tcl）以位级配平 golden。
+  logic redirValid_q [ENQ_W];
+  always_ff @(posedge clock)
+    for (int j = 0; j < ENQ_W; j++) redirValid_q[j] <= io_brqRedirect_valid;
   logic [7:0] enqNumber;
   always_comb begin
     enqNumber = '0;
     for (int j = 0; j < ENQ_W; j++)
-      enqNumber += (~redirValid_q & canEnqueue[j]) ? {3'b0, vStoreFlow[j]} : 8'd0;
+      enqNumber += (~redirValid_q[j] & canEnqueue[j]) ? {3'b0, vStoreFlow[j]} : 8'd0;
   end
   // lastEnqCancel（redirect 时锁存 enq 取消流数之和）；needCancel 向量在 redirect 时锁存
   //   （与 golden 一致：锁存整个 needCancel 向量，到 lastCycleRedirect 拍再 popcount，
@@ -544,6 +644,10 @@
   logic [7:0] redirectCancelCount_q;
   wire [7:0] enqCancelSum = enqCancelNum[0]+enqCancelNum[1]+enqCancelNum[2]
                           + enqCancelNum[3]+enqCancelNum[4]+enqCancelNum[5];
+  // lastEnqCancel / needCancel / lastCycleRedirect / lastlastCycleRedirect：golden 无复位
+  //   （always @(posedge clock) 无 reset 分支）。必须独立于下面 redirectCancelCount 的
+  //   异步复位块——把无复位寄存器和异步复位寄存器混在同一 always_ff(posedge clk or reset)
+  //   里且 if 结构不以 if(reset) 领头，FM 判非法（FMR_VLOG-143/206）无法 elaborate。
   always_ff @(posedge clock) begin
     if (io_brqRedirect_valid) begin
       lastEnqCancel_q <= enqCancelSum;
@@ -551,13 +655,92 @@
     end
     lastCycleRedirect_q     <= io_brqRedirect_valid;
     lastlastCycleRedirect_q <= lastCycleRedirect_q;
+  end
+  // redirectCancelCount：golden 异步复位到 0，else if(lastCycleRedirect) 更新。
+  always_ff @(posedge clock or posedge reset) begin
     if (reset)                    redirectCancelCount_q <= '0;
     else if (lastCycleRedirect_q) redirectCancelCount_q <= {1'b0, popcnt_sq(needCancel_q)} + lastEnqCancel_q;
   end
   assign io_sqCancelCnt = redirectCancelCount_q[SQ_IDX_W:0];
 
   // ===========================================================================
-  //  §UNI  统一寄存器更新：ent[] / uop[] / 多根指针。
+  //  §UNI-PRE  committed / completed 的 per-entry 组合次态（golden 位精确对齐）
+  //   golden 把每个 entry 的 committed_N/completed_N 算成「对全部 8 个 commit 口
+  //   + deq/mmio/nc/sbuffer 完成口 + enq/deq/cancel」的 per-entry 优先级 mux
+  //   （committed_N <= (∃k: 口k 提交且指向 N) | ~entryCanEnq_N & committed_N；
+  //    completed_N <= ~needCancel_N & (SET[N] | ~entryCanEnq_N & ~deqClearN & completed_N)）。
+  //   impl 原先用「散写」ent[computed_idx].x<=1（计算下标写 WMUX），FM 穷举下无法与
+  //   golden 的固定下标 per-entry mux 位级配平。这里改写成显式 next 数组：对每个 entry
+  //   遍历所有写口按「== N」固定比较选择，再在 §UNI 里单一无条件写。逻辑与散写等价
+  //   （UT 三种子已过），但消除 FM 的 computed-index 写多路，位级匹配 golden。
+  //
+  //   ⚠ 优先级与 golden 一致：needCancel（仅 completed，committed 不受）> SET > hold；
+  //     enq（entryCanEnq）只清 hold 不清 SET；deq 清除折进 completed 的 hold 项。
+  // ===========================================================================
+  logic [(1<<SQ_IDX_W)-1:0] committed_next, completed_next;
+  always_comb begin
+    // -- committed[N]：任一提交口指向 N 则置 1；否则未入队时保持 --
+    // -- completed[N]：SET 条件（commit-nc-exc / mmio / nc / sbuffer 出队）| hold  --
+    for (int n = 0; n < SQ_SIZE; n++) begin
+      logic committedMux;    // committed_N 的 per-entry 优先级 mux 结果（golden 复刻）
+      logic committedHit;    // 是否有 commit 口命中 entry n（否则走 port0|hold 兜底）
+      logic setCompleted;    // 有完成口把该 entry 置 completed（SET[N]）
+      logic deqClearN;       // 本拍 deq 把该 entry 出队（清 completed 的 hold）
+      setCompleted = 1'b0;
+      // ---- committed_N：golden per-entry 优先级 mux（高口优先，口 0 与 hold 兜底）----
+      //   golden: if(口7 base&vec & cmtPtr7==N) committedT[7]
+      //           else if ... else if(口1 base&vec & cmtPtr1==N) committedT[1]
+      //           else (isCommit & cmtPtr0==N) | (~entryEnq[N] & committed_N)
+      //   committedT[k]=commitVec_{k-1}|committed[cmtPtr_k]（口0=isCommit）。位级复刻 golden 优先级 mux。
+      committedMux = 1'b0;
+      committedHit = 1'b0;
+      for (int k = COMMIT_W-1; k >= 1; k--) begin  // 口 7..1，高口优先（后写覆盖=高优先，倒序遍历使 k 小的最后写→但需高优先，故用 committedHit 门控）
+        if (~committedHit & commitBaseVec[k] & (commitPtrIdx[k] == n[SQ_IDX_W-1:0])) begin
+          committedMux = committedT[k];
+          committedHit = 1'b1;
+        end
+      end
+      if (~committedHit)  // 兜底：口 0 命中 → isCommit；否则 hold
+        committedMux = (commitEntPtr_committed[0] & (commitPtrIdx[0] == n[SQ_IDX_W-1:0]))
+                       | (~entryEnq[n] & entR[n].committed);
+      // ---- 8 个 commit 口的 nc&hasException 提前完成（golden _GEN_6[ptr]&_GEN_384[ptr]）----
+      for (int k = 0; k < COMMIT_W; k++) begin
+        if (commitEntPtr_committed[k] & (commitPtrIdx[k] == n[SQ_IDX_W-1:0])) begin
+          if (entR[commitPtrIdx[k]].nc & entR[commitPtrIdx[k]].hasException)
+            setCompleted = 1'b1;
+        end
+      end
+      // ---- mmio / vecmmio 写回：completed(deqPtr) ----
+      if ((mmioStout_fire | vecmmioStout_fire) & (deqPtr == n[SQ_IDX_W-1:0]))
+        setCompleted = 1'b1;
+      // ---- nc 完成：completed(ncPtr) ----
+      if (ncDeqTrig & (ncPtr[SQ_IDX_W-1:0] == n[SQ_IDX_W-1:0]))
+        setCompleted = 1'b1;
+      // ---- sbuffer0 / sbuffer1 出队且需 deq：completed(sqPtr) ----
+      if (sbuffer0_fire & db_deq_0_bits_sqNeedDeq & (db_deq_0_bits_sqPtr_value == n[SQ_IDX_W-1:0]))
+        setCompleted = 1'b1;
+      if (sbuffer1_fire & db_deq_1_bits_sqNeedDeq & (db_deq_1_bits_sqPtr_value == n[SQ_IDX_W-1:0]))
+        setCompleted = 1'b1;
+      // ---- deq 出队清除（golden 把 deq 折进 completed hold 项）----
+      //   port0 出队命中 n，或 port0&port1 都出队时 port1 命中 n。
+      deqClearN = (readyDeqVec[0] & (deqPtrExt[0].value == n[SQ_IDX_W-1:0]))
+                | (readyDeqVec[0] & readyDeqVec[1] & (deqPtrExt[1].value == n[SQ_IDX_W-1:0]));
+
+      // committed：golden 优先级 mux 结果（committedMux 已含口 0 与 hold 兜底）。
+      committed_next[n] = committedMux;
+      // completed：needCancel 支配清 0；否则 SET | (~enq & ~deqClear & hold)。
+      completed_next[n] = ~needCancel[n]
+                          & (setCompleted | (~entryEnq[n] & ~deqClearN & entR[n].completed));
+    end
+    // idx 56..63 不可达：置 0（两侧同被剪除）
+    for (int n = SQ_SIZE; n < (1<<SQ_IDX_W); n++) begin
+      committed_next[n] = 1'b0;
+      completed_next[n] = 1'b0;
+    end
+  end
+
+  // ===========================================================================
+  //  §UNI  统一寄存器更新：entR[] / uopR[] / 多根指针。
   //   优先级（与 Scala 同源 when 顺序一致，后者覆盖前者）：
   //     enq → addr 写回(s1) → addr 写回(s2) → data 写回(s1) → mask → commit
   //     → deq 清除 → mmio/nc completed → 向量 vecMbCommit → needCancel 取消。
@@ -577,7 +760,7 @@
   //   golden 固化阈值：valid_cnt > 0x33(51) 置位；> 0x2E(46) 维持。
   wire [SQ_IDX_W-1:0] valid_cnt = popcnt_sq(allocated_v);
   logic force_write_q;
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) force_write_q <= 1'b0;
     else force_write_q <= (valid_cnt > 6'h33) | ((valid_cnt > 6'h2E) & force_write_q);
   end

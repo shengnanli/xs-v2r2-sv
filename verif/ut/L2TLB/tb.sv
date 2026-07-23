@@ -862,27 +862,21 @@ module tb;
       if(errors<=80) $display("[%0t] io_perf_2_value g=%h i=%h", $time, g_io_perf_2_value, i_io_perf_2_value); end
     if (!$isunknown(g_io_perf_3_value) && g_io_perf_3_value !== i_io_perf_3_value) begin errors++;
       if(errors<=80) $display("[%0t] io_perf_3_value g=%h i=%h", $time, g_io_perf_3_value, i_io_perf_3_value); end
-    // perf_4..perf_11 = PtwCache 的 8 路命中/访问性能计数（io_perf_*_value_REG，源自
-    // u_page_cache_perf_0..7）。golden PtwCache 这些 perf 寄存器上电无确定值（无复位，采样
-    // spHit/l0Hit 等组合命中信号），两侧各自例化私有 PtwCache，xs 侧在复位后约前 140 拍
-    // 可能为 X，而 golden 侧因输入早一拍稳定而已定值。三种子实测：这 8 路只出现「xs 为 X」
-    // 的上电瞬态，从无 value-vs-value 差异（功能正确性由其余 ~139 路逐拍 bit-exact 保证）。
-    // 故对这一组用 !$isunknown(i) 额外门控，仅在两侧都为确定值时比较，绝不掩盖任何定值分歧。
-    if (!$isunknown(g_io_perf_4_value) && !$isunknown(i_io_perf_4_value) && g_io_perf_4_value !== i_io_perf_4_value) begin errors++;
+    if (!$isunknown(g_io_perf_4_value) && g_io_perf_4_value !== i_io_perf_4_value) begin errors++;
       if(errors<=80) $display("[%0t] io_perf_4_value g=%h i=%h", $time, g_io_perf_4_value, i_io_perf_4_value); end
     if (!$isunknown(g_io_perf_5_value) && !$isunknown(i_io_perf_5_value) && g_io_perf_5_value !== i_io_perf_5_value) begin errors++;
       if(errors<=80) $display("[%0t] io_perf_5_value g=%h i=%h", $time, g_io_perf_5_value, i_io_perf_5_value); end
     if (!$isunknown(g_io_perf_6_value) && !$isunknown(i_io_perf_6_value) && g_io_perf_6_value !== i_io_perf_6_value) begin errors++;
       if(errors<=80) $display("[%0t] io_perf_6_value g=%h i=%h", $time, g_io_perf_6_value, i_io_perf_6_value); end
-    if (!$isunknown(g_io_perf_7_value) && !$isunknown(i_io_perf_7_value) && g_io_perf_7_value !== i_io_perf_7_value) begin errors++;
+    if (!$isunknown(g_io_perf_7_value) && g_io_perf_7_value !== i_io_perf_7_value) begin errors++;
       if(errors<=80) $display("[%0t] io_perf_7_value g=%h i=%h", $time, g_io_perf_7_value, i_io_perf_7_value); end
-    if (!$isunknown(g_io_perf_8_value) && !$isunknown(i_io_perf_8_value) && g_io_perf_8_value !== i_io_perf_8_value) begin errors++;
+    if (!$isunknown(g_io_perf_8_value) && g_io_perf_8_value !== i_io_perf_8_value) begin errors++;
       if(errors<=80) $display("[%0t] io_perf_8_value g=%h i=%h", $time, g_io_perf_8_value, i_io_perf_8_value); end
-    if (!$isunknown(g_io_perf_9_value) && !$isunknown(i_io_perf_9_value) && g_io_perf_9_value !== i_io_perf_9_value) begin errors++;
+    if (!$isunknown(g_io_perf_9_value) && g_io_perf_9_value !== i_io_perf_9_value) begin errors++;
       if(errors<=80) $display("[%0t] io_perf_9_value g=%h i=%h", $time, g_io_perf_9_value, i_io_perf_9_value); end
-    if (!$isunknown(g_io_perf_10_value) && !$isunknown(i_io_perf_10_value) && g_io_perf_10_value !== i_io_perf_10_value) begin errors++;
+    if (!$isunknown(g_io_perf_10_value) && g_io_perf_10_value !== i_io_perf_10_value) begin errors++;
       if(errors<=80) $display("[%0t] io_perf_10_value g=%h i=%h", $time, g_io_perf_10_value, i_io_perf_10_value); end
-    if (!$isunknown(g_io_perf_11_value) && !$isunknown(i_io_perf_11_value) && g_io_perf_11_value !== i_io_perf_11_value) begin errors++;
+    if (!$isunknown(g_io_perf_11_value) && g_io_perf_11_value !== i_io_perf_11_value) begin errors++;
       if(errors<=80) $display("[%0t] io_perf_11_value g=%h i=%h", $time, g_io_perf_11_value, i_io_perf_11_value); end
     if (!$isunknown(g_io_perf_12_value) && g_io_perf_12_value !== i_io_perf_12_value) begin errors++;
       if(errors<=80) $display("[%0t] io_perf_12_value g=%h i=%h", $time, g_io_perf_12_value, i_io_perf_12_value); end
@@ -907,55 +901,8 @@ module tb;
     if (!$isunknown(g_boreChildrenBd_bore_1_outdata) && g_boreChildrenBd_bore_1_outdata !== i_boreChildrenBd_bore_1_outdata) begin errors++;
       if(errors<=80) $display("[%0t] boreChildrenBd_bore_1_outdata g=%h i=%h", $time, g_boreChildrenBd_bore_1_outdata, i_boreChildrenBd_bore_1_outdata); end
   end
-  // ---------------------------------------------------------------------------
-  // SRAM 上电态对齐：golden L2TLB 的 PtwCache 内部 SplittedSRAM(l1)/SplittedSRAM_1(l0)
-  // 叶子存储数组(array_10_ext.ram / array_11_ext.ram)及其读地址/读使能寄存器在不带
-  // RANDOMIZE_MEM_INIT 时默认为 X。u_g 与 u_i 各自例化一份 golden PtwCache，私有 SRAM
-  // 初值独立为 X，复位后读出分叉，经 cache.req.ready→arb→tlb_counter 把状态偏移，
-  // 导致 io_perf_5/6_value、io_tlb_*_req_0_ready 等少量定值差。
-  // 这里在复位窗口内把两侧全部叶子 SRAM 清 0（含 reg_RW0_addr/reg_RW0_ren），使两侧
-  // 上电态完全一致，从根上消除 X 与残留分叉，且不触碰任何 glue/设计逻辑。
-  task automatic zero_l1_array(ref reg [199:0] ram [7:0], ref reg [2:0] raddr, ref reg ren);
-    int k;
-    for (k = 0; k < 8; k++) ram[k] = '0;
-    raddr = '0; ren = 1'b0;
-  endtask
-  task automatic zero_l0_array(ref reg [227:0] ram [31:0], ref reg [4:0] raddr, ref reg ren);
-    int k;
-    for (k = 0; k < 32; k++) ram[k] = '0;
-    raddr = '0; ren = 1'b0;
-  endtask
-  task automatic zero_all_srams;
-    // golden side u_g.cache
-    zero_l1_array(u_g.cache.l1.array_0_0_0.array.array.array_10_ext.ram, u_g.cache.l1.array_0_0_0.array.array.array_10_ext.reg_RW0_addr, u_g.cache.l1.array_0_0_0.array.array.array_10_ext.reg_RW0_ren);
-    zero_l1_array(u_g.cache.l1.array_0_0_1.array.array.array_10_ext.ram, u_g.cache.l1.array_0_0_1.array.array.array_10_ext.reg_RW0_addr, u_g.cache.l1.array_0_0_1.array.array.array_10_ext.reg_RW0_ren);
-    zero_l1_array(u_g.cache.l1.array_0_0_2.array.array.array_10_ext.ram, u_g.cache.l1.array_0_0_2.array.array.array_10_ext.reg_RW0_addr, u_g.cache.l1.array_0_0_2.array.array.array_10_ext.reg_RW0_ren);
-    zero_l1_array(u_g.cache.l1.array_0_0_3.array.array.array_10_ext.ram, u_g.cache.l1.array_0_0_3.array.array.array_10_ext.reg_RW0_addr, u_g.cache.l1.array_0_0_3.array.array.array_10_ext.reg_RW0_ren);
-    zero_l0_array(u_g.cache.l0.array_0_0_0.array.array.array_11_ext.ram, u_g.cache.l0.array_0_0_0.array.array.array_11_ext.reg_RW0_addr, u_g.cache.l0.array_0_0_0.array.array.array_11_ext.reg_RW0_ren);
-    zero_l0_array(u_g.cache.l0.array_0_0_1.array.array.array_11_ext.ram, u_g.cache.l0.array_0_0_1.array.array.array_11_ext.reg_RW0_addr, u_g.cache.l0.array_0_0_1.array.array.array_11_ext.reg_RW0_ren);
-    zero_l0_array(u_g.cache.l0.array_0_0_2.array.array.array_11_ext.ram, u_g.cache.l0.array_0_0_2.array.array.array_11_ext.reg_RW0_addr, u_g.cache.l0.array_0_0_2.array.array.array_11_ext.reg_RW0_ren);
-    zero_l0_array(u_g.cache.l0.array_0_0_3.array.array.array_11_ext.ram, u_g.cache.l0.array_0_0_3.array.array.array_11_ext.reg_RW0_addr, u_g.cache.l0.array_0_0_3.array.array.array_11_ext.reg_RW0_ren);
-    zero_l0_array(u_g.cache.l0.array_0_1_0.array.array.array_11_ext.ram, u_g.cache.l0.array_0_1_0.array.array.array_11_ext.reg_RW0_addr, u_g.cache.l0.array_0_1_0.array.array.array_11_ext.reg_RW0_ren);
-    zero_l0_array(u_g.cache.l0.array_0_1_1.array.array.array_11_ext.ram, u_g.cache.l0.array_0_1_1.array.array.array_11_ext.reg_RW0_addr, u_g.cache.l0.array_0_1_1.array.array.array_11_ext.reg_RW0_ren);
-    zero_l0_array(u_g.cache.l0.array_0_1_2.array.array.array_11_ext.ram, u_g.cache.l0.array_0_1_2.array.array.array_11_ext.reg_RW0_addr, u_g.cache.l0.array_0_1_2.array.array.array_11_ext.reg_RW0_ren);
-    zero_l0_array(u_g.cache.l0.array_0_1_3.array.array.array_11_ext.ram, u_g.cache.l0.array_0_1_3.array.array.array_11_ext.reg_RW0_addr, u_g.cache.l0.array_0_1_3.array.array.array_11_ext.reg_RW0_ren);
-    // xs side u_i.u_core.u_page_cache
-    zero_l1_array(u_i.u_core.u_page_cache.l1.array_0_0_0.array.array.array_10_ext.ram, u_i.u_core.u_page_cache.l1.array_0_0_0.array.array.array_10_ext.reg_RW0_addr, u_i.u_core.u_page_cache.l1.array_0_0_0.array.array.array_10_ext.reg_RW0_ren);
-    zero_l1_array(u_i.u_core.u_page_cache.l1.array_0_0_1.array.array.array_10_ext.ram, u_i.u_core.u_page_cache.l1.array_0_0_1.array.array.array_10_ext.reg_RW0_addr, u_i.u_core.u_page_cache.l1.array_0_0_1.array.array.array_10_ext.reg_RW0_ren);
-    zero_l1_array(u_i.u_core.u_page_cache.l1.array_0_0_2.array.array.array_10_ext.ram, u_i.u_core.u_page_cache.l1.array_0_0_2.array.array.array_10_ext.reg_RW0_addr, u_i.u_core.u_page_cache.l1.array_0_0_2.array.array.array_10_ext.reg_RW0_ren);
-    zero_l1_array(u_i.u_core.u_page_cache.l1.array_0_0_3.array.array.array_10_ext.ram, u_i.u_core.u_page_cache.l1.array_0_0_3.array.array.array_10_ext.reg_RW0_addr, u_i.u_core.u_page_cache.l1.array_0_0_3.array.array.array_10_ext.reg_RW0_ren);
-    zero_l0_array(u_i.u_core.u_page_cache.l0.array_0_0_0.array.array.array_11_ext.ram, u_i.u_core.u_page_cache.l0.array_0_0_0.array.array.array_11_ext.reg_RW0_addr, u_i.u_core.u_page_cache.l0.array_0_0_0.array.array.array_11_ext.reg_RW0_ren);
-    zero_l0_array(u_i.u_core.u_page_cache.l0.array_0_0_1.array.array.array_11_ext.ram, u_i.u_core.u_page_cache.l0.array_0_0_1.array.array.array_11_ext.reg_RW0_addr, u_i.u_core.u_page_cache.l0.array_0_0_1.array.array.array_11_ext.reg_RW0_ren);
-    zero_l0_array(u_i.u_core.u_page_cache.l0.array_0_0_2.array.array.array_11_ext.ram, u_i.u_core.u_page_cache.l0.array_0_0_2.array.array.array_11_ext.reg_RW0_addr, u_i.u_core.u_page_cache.l0.array_0_0_2.array.array.array_11_ext.reg_RW0_ren);
-    zero_l0_array(u_i.u_core.u_page_cache.l0.array_0_0_3.array.array.array_11_ext.ram, u_i.u_core.u_page_cache.l0.array_0_0_3.array.array.array_11_ext.reg_RW0_addr, u_i.u_core.u_page_cache.l0.array_0_0_3.array.array.array_11_ext.reg_RW0_ren);
-    zero_l0_array(u_i.u_core.u_page_cache.l0.array_0_1_0.array.array.array_11_ext.ram, u_i.u_core.u_page_cache.l0.array_0_1_0.array.array.array_11_ext.reg_RW0_addr, u_i.u_core.u_page_cache.l0.array_0_1_0.array.array.array_11_ext.reg_RW0_ren);
-    zero_l0_array(u_i.u_core.u_page_cache.l0.array_0_1_1.array.array.array_11_ext.ram, u_i.u_core.u_page_cache.l0.array_0_1_1.array.array.array_11_ext.reg_RW0_addr, u_i.u_core.u_page_cache.l0.array_0_1_1.array.array.array_11_ext.reg_RW0_ren);
-    zero_l0_array(u_i.u_core.u_page_cache.l0.array_0_1_2.array.array.array_11_ext.ram, u_i.u_core.u_page_cache.l0.array_0_1_2.array.array.array_11_ext.reg_RW0_addr, u_i.u_core.u_page_cache.l0.array_0_1_2.array.array.array_11_ext.reg_RW0_ren);
-    zero_l0_array(u_i.u_core.u_page_cache.l0.array_0_1_3.array.array.array_11_ext.ram, u_i.u_core.u_page_cache.l0.array_0_1_3.array.array.array_11_ext.reg_RW0_addr, u_i.u_core.u_page_cache.l0.array_0_1_3.array.array.array_11_ext.reg_RW0_ren);
-  endtask
-
   initial begin
-    rst = 1; repeat (20) @(posedge clk); zero_all_srams(); rst = 0;
+    rst = 1; repeat (20) @(posedge clk); rst = 0;
     repeat (NCYCLES) @(posedge clk);
     $display("checks=%0d errors=%0d", checks, errors);
     if (errors == 0 && checks > 1000) $display("TEST PASSED"); else $display("TEST FAILED");

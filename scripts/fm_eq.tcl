@@ -18,8 +18,14 @@ set_app_var hdlin_unresolved_modules black_box
 # 合并由同一逻辑驱动的重复寄存器（如分 bank 的读地址扇出复制：每 bank 一份、
 # 输出级一份，值完全相同）。否则两侧各有 N 个同值寄存器，名字（展平 vs generate
 # 层次）和签名（值相同）都无法配对，导致大量 unmatched。FTQ/IFU 等扇出复制
-# 普遍存在，作为通用设置。
-set_app_var verification_merge_duplicated_registers true
+# 普遍存在，作为通用默认。
+#   注意：少数模块（如 LoadUnit）含大量"常量 0"的 debug/perf 死寄存器，合并 pass 会
+#   在 wrapper/u_core 层次边界两侧做不对称的常量传播（golden 顶层标量 vs impl 在
+#   u_core 内），把同值常量寄存器误判为 DFF0X vs DFFX 而 fail。这类模块在自己的
+#   Makefile 里设 FM_MERGE_DUP=false 关掉合并即可干净比对（不影响无扇出复制的模块）。
+set _merge_dup true
+if {[info exists env(FM_MERGE_DUP)]} { set _merge_dup $env(FM_MERGE_DUP) }
+set_app_var verification_merge_duplicated_registers $_merge_dup
 
 # Reference: Chisel 生成的 golden RTL（SYNTHESIS 关掉随机初始化 initial 块）
 read_sverilog -r -define {SYNTHESIS} $ref_srcs
@@ -55,6 +61,11 @@ proc match_packed_payload { top } {
     }
     close $fh
     if {$n > 0} { puts "PACKED_MATCH: $n points pinned" }
+}
+# 模块本地「匹配前」钉点(FM_PIN_PRE_TCL = verif/ut/<M>/fm_pins_pre.tcl,可选):
+# 需在首次 match 前 set_user_match 的对象(否则被签名自动配错后再钉会失败)。
+if {[info exists env(FM_PIN_PRE_TCL)] && [file exists $env(FM_PIN_PRE_TCL)]} {
+    source $env(FM_PIN_PRE_TCL)
 }
 match_packed_payload $top
 
@@ -130,6 +141,13 @@ proc auto_match_flattened_arrays { top } {
     if {$n > 0} { match }
 }
 auto_match_flattened_arrays $top
+
+# 模块本地「匹配后」钉点(FM_PIN_TCL = verif/ut/<M>/fm_pins.tcl,可选):处理层次/叶名
+# 差异的一一对应 unmatched(只做 set_user_match,不约束 ref)。统一入口:make fm 亦 source。
+if {[info exists env(FM_PIN_TCL)] && [file exists $env(FM_PIN_TCL)]} {
+    source $env(FM_PIN_TCL)
+    match
+}
 
 report_unmatched_points > fm_work/$top/unmatched.rpt
 report_matched_points > fm_work/$top/matched.rpt

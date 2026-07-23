@@ -163,9 +163,11 @@ def emit_inst(modname, instname, head_re, who):
 # 生成可读核 include 文件（两个子模块实例 + 内部网声明）
 # ----------------------------------------------------------------------------
 def gen_inst_svh():
-    lq = emit_inst("LoadQueue", "u_load_queue",
+    # 实例名与 golden 一致（loadQueue / storeQueue），使 FM 在 interface_only 黑盒
+    # 化两队列后，边界 BBPin(队列输入/输出引脚)能按 实例名+引脚名 两侧对齐配对。
+    lq = emit_inst("LoadQueue", "loadQueue",
                    r"^  LoadQueue loadQueue \(", "lq")
-    sq = emit_inst("StoreQueue", "u_store_queue",
+    sq = emit_inst("StoreQueue", "storeQueue",
                    r"^  StoreQueue storeQueue \(", "sq")
     hdr = ("// 自动生成：scripts/gen_lsqwrapper.py —— 勿手改\n"
            "// 由 xs_LsqWrapper_core 通过 `include 引入：LoadQueue / StoreQueue 两实例的\n"

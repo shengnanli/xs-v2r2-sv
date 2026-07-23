@@ -19,7 +19,9 @@
   reg decodeCsrSinglestepR;  // -> decode.io.csrCtrl.singlestep
   reg decodeCsrFusionEnR;    // -> decode.io.csrCtrl.fusion_enable
   reg decodeCsrWfiEnR;       // -> decode.io.csrCtrl.wfi_enable
-  always_ff @(posedge clock) begin
+  // golden rename_io_singleStep_last_REG / dispatch_io_singleStep_last_REG 在异步复位块;
+  // decode 侧 csrCtrl 三个打拍寄存器无复位(每拍无条件写)。拆两块对齐 golden 复位域。
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       renameSingleStepR   <= 1'b0;
       dispatchSingleStepR <= 1'b0;
@@ -27,6 +29,8 @@
       renameSingleStepR   <= io_csrCtrl_singlestep;
       dispatchSingleStepR <= io_csrCtrl_singlestep;
     end
+  end
+  always_ff @(posedge clock) begin
     decodeCsrSinglestepR <= io_csrCtrl_singlestep;
     decodeCsrFusionEnR   <= io_csrCtrl_fusion_enable;
     decodeCsrWfiEnR      <= io_csrCtrl_wfi_enable;
@@ -45,9 +49,12 @@
   reg        loadReplayLevel;
   // loadRedirectPcFtqOffset:违例 pc 在 ftq 内的字节偏移(ftqOffset*2 再按 RVC/常规补偏移)。
   reg [5:0]  loadRedirectPcFtqOffset;
-  always_ff @(posedge clock) begin
+  // golden loadReplay_valid_last_REG 在异步复位块;bits 无复位 RegEnable。
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) loadReplayValidR <= 1'b0;
     else       loadReplayValidR <= io_fromMem_violation_valid;
+  end
+  always_ff @(posedge clock) begin
     if (io_fromMem_violation_valid) begin
       loadReplayRobFlag   <= io_fromMem_violation_bits_robIdx_flag;
       loadReplayRobValue  <= io_fromMem_violation_bits_robIdx_value;
@@ -222,7 +229,10 @@
   //      ftqOffset 分量(锁存 io.fromMem.violation.bits.stFtqOffset)。
   //      redirectGen 端 data = pcMem.rdata[1].startAddr + {memPredPcOffsetR, 1'b0}。
   // --------------------------------------------------------------------------
+  // golden redirectGen_io_memPredPcRead_data_r 是 RegEnable(enable=violation_valid,无复位),
+  // 不是无条件 RegNext。加使能对齐 golden。
   reg [3:0] memPredPcOffsetR;
   always_ff @(posedge clock) begin
-    memPredPcOffsetR <= io_fromMem_violation_bits_stFtqOffset;
+    if (io_fromMem_violation_valid)
+      memPredPcOffsetR <= io_fromMem_violation_bits_stFtqOffset;
   end

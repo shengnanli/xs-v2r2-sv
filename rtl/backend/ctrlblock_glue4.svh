@@ -302,3 +302,69 @@
   assign _snpt_io_snapshots_3_robIdx_value[4] = _snpt_io_snapshots_3_robIdx_4_value;
   assign _snpt_io_snapshots_3_robIdx_flag[5]  = _snpt_io_snapshots_3_robIdx_5_flag;
   assign _snpt_io_snapshots_3_robIdx_value[5] = _snpt_io_snapshots_3_robIdx_5_value;
+
+  // ==========================================================================
+  // (D) Rob commits 输出聚合(★ 关键修复:同 (0)/(C) 的「声明未驱动」型 X/悬空 bug)
+  //     Rob 例化(inst.svh)把 commits 输出连到「标量」网:
+  //       _rob_io_commits_commitValid_M (M=0..7)
+  //       _rob_io_commits_robIdx_M_{flag,value}
+  //       _rob_io_commits_info_M_{commitType,ftqIdx_flag,ftqIdx_value,ftqOffset}
+  //     但 logic.svh(块4 snpt deq)/ outglue.svh(块⑤ commits->FTQ)消费的是
+  //     「向量/数组/别名」命名(decls.svh 声明却从未被驱动):
+  //       _rob_io_commits_commitValid[5:0]  _rob_io_commits_robIdx_flag[5:0]
+  //       _rob_io_commits_robIdx_value_N     _rob_io_commits_info_*_ ...[0:5]
+  //     不接通则这些网悬空 = X/0,使 s1_isCommit / snpt deq / ftqCommit 全错
+  //     (FM 表现:io_frontend_toFtq_rob_commits_* bits/valid + snpt/* 全 failing)。
+  //     位序/下标:bit/idx N 对应 commit 槽 N(LSB=槽0),与 decls 注释一致。
+  // --------------------------------------------------------------------------
+  assign _rob_io_commits_commitValid = { _rob_io_commits_commitValid_5,
+                                         _rob_io_commits_commitValid_4,
+                                         _rob_io_commits_commitValid_3,
+                                         _rob_io_commits_commitValid_2,
+                                         _rob_io_commits_commitValid_1,
+                                         _rob_io_commits_commitValid_0 };
+  assign _rob_io_commits_robIdx_flag = { _rob_io_commits_robIdx_5_flag,
+                                         _rob_io_commits_robIdx_4_flag,
+                                         _rob_io_commits_robIdx_3_flag,
+                                         _rob_io_commits_robIdx_2_flag,
+                                         _rob_io_commits_robIdx_1_flag,
+                                         _rob_io_commits_robIdx_0_flag };
+  assign _rob_io_commits_robIdx_value_0 = _rob_io_commits_robIdx_0_value;
+  assign _rob_io_commits_robIdx_value_1 = _rob_io_commits_robIdx_1_value;
+  assign _rob_io_commits_robIdx_value_2 = _rob_io_commits_robIdx_2_value;
+  assign _rob_io_commits_robIdx_value_3 = _rob_io_commits_robIdx_3_value;
+  assign _rob_io_commits_robIdx_value_4 = _rob_io_commits_robIdx_4_value;
+  assign _rob_io_commits_robIdx_value_5 = _rob_io_commits_robIdx_5_value;
+  assign _rob_io_commits_info_flag_commitType[0] = _rob_io_commits_info_0_commitType;
+  assign _rob_io_commits_info_flag_commitType[1] = _rob_io_commits_info_1_commitType;
+  assign _rob_io_commits_info_flag_commitType[2] = _rob_io_commits_info_2_commitType;
+  assign _rob_io_commits_info_flag_commitType[3] = _rob_io_commits_info_3_commitType;
+  assign _rob_io_commits_info_flag_commitType[4] = _rob_io_commits_info_4_commitType;
+  assign _rob_io_commits_info_flag_commitType[5] = _rob_io_commits_info_5_commitType;
+  assign _rob_io_commits_info_ftqIdx_flag[0] = _rob_io_commits_info_0_ftqIdx_flag;
+  assign _rob_io_commits_info_ftqIdx_flag[1] = _rob_io_commits_info_1_ftqIdx_flag;
+  assign _rob_io_commits_info_ftqIdx_flag[2] = _rob_io_commits_info_2_ftqIdx_flag;
+  assign _rob_io_commits_info_ftqIdx_flag[3] = _rob_io_commits_info_3_ftqIdx_flag;
+  assign _rob_io_commits_info_ftqIdx_flag[4] = _rob_io_commits_info_4_ftqIdx_flag;
+  assign _rob_io_commits_info_ftqIdx_flag[5] = _rob_io_commits_info_5_ftqIdx_flag;
+  assign _rob_io_commits_info_ftqIdx_value[0] = _rob_io_commits_info_0_ftqIdx_value;
+  assign _rob_io_commits_info_ftqIdx_value[1] = _rob_io_commits_info_1_ftqIdx_value;
+  assign _rob_io_commits_info_ftqIdx_value[2] = _rob_io_commits_info_2_ftqIdx_value;
+  assign _rob_io_commits_info_ftqIdx_value[3] = _rob_io_commits_info_3_ftqIdx_value;
+  assign _rob_io_commits_info_ftqIdx_value[4] = _rob_io_commits_info_4_ftqIdx_value;
+  assign _rob_io_commits_info_ftqIdx_value[5] = _rob_io_commits_info_5_ftqIdx_value;
+  assign _rob_io_commits_info_ftqOffset[0] = _rob_io_commits_info_0_ftqOffset;
+  assign _rob_io_commits_info_ftqOffset[1] = _rob_io_commits_info_1_ftqOffset;
+  assign _rob_io_commits_info_ftqOffset[2] = _rob_io_commits_info_2_ftqOffset;
+  assign _rob_io_commits_info_ftqOffset[3] = _rob_io_commits_info_3_ftqOffset;
+  assign _rob_io_commits_info_ftqOffset[4] = _rob_io_commits_info_4_ftqOffset;
+  assign _rob_io_commits_info_ftqOffset[5] = _rob_io_commits_info_5_ftqOffset;
+
+  // commit lane 6/7 别名驱动(供 logic.svh 块4 snpt deq 的 commitMatchHead;golden
+  // _snpt_io_deq_T_35 的 head 匹配遍历全 8 lane)。scalar 由 inst.svh(在本文件之前)声明连接。
+  assign commitLane6Valid = _rob_io_commits_commitValid_6;
+  assign commitLane7Valid = _rob_io_commits_commitValid_7;
+  assign commitLane6Flag  = _rob_io_commits_robIdx_6_flag;
+  assign commitLane7Flag  = _rob_io_commits_robIdx_7_flag;
+  assign commitLane6Value = _rob_io_commits_robIdx_6_value;
+  assign commitLane7Value = _rob_io_commits_robIdx_7_value;

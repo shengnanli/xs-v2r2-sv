@@ -190,9 +190,14 @@
   wire [63:0] s2s4_in_fullTgt  =
       s1_robFlushValid ? 64'h0 : _redirectGen_io_stage2Redirect_bits_fullTarget;
 
-  always_ff @(posedge clock) begin
+  // ★ FM 修复:golden s2_s4_redirect_next_valid_last_REG(= 本端口 flush valid 源)在异步复位块,
+  //   原来这里用同步复位 → DFF 复位域不同,io_to{DataPath,ExuBlock,IssueBlock}_flush_valid 3 端口
+  //   FM not-equivalent。拆两块:valid 异步复位对齐 golden,bits 保持无复位 RegEnable。
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) s2s4RedirectValid <= 1'b0;
     else       s2s4RedirectValid <= s1_s3_redirect_valid;
+  end
+  always_ff @(posedge clock) begin
     if (s1_s3_redirect_valid) begin
       s2s4RedirectBits.robIdxFlag     <= s1_s3_redirect_robFlag;
       s2s4RedirectBits.robIdxValue    <= s1_s3_redirect_robValue;
@@ -295,9 +300,13 @@
   logic [3:0]  ftqCommitFtqOffset  [0:ctrlblock_pkg::CommitWidth-1];
   generate
     for (gk = 0; gk < ctrlblock_pkg::CommitWidth; gk++) begin : g_ftqcommit
-      always_ff @(posedge clock) begin
+      // golden io_frontend_toFtq_rob_commits_<k>_valid_last_REG 在异步复位块;
+      // bits(commitType/ftqIdx/ftqOffset)无复位 RegEnable。拆两块对齐 golden 复位域。
+      always_ff @(posedge clock or posedge reset) begin
         if (reset) ftqCommitValid[gk] <= 1'b0;
         else       ftqCommitValid[gk] <= s1_isCommit[gk];
+      end
+      always_ff @(posedge clock) begin
         if (s1_isCommit[gk]) begin
           ftqCommitCommitType[gk] <= _rob_io_commits_info_flag_commitType[gk];
           ftqCommitFtqFlag[gk]    <= _rob_io_commits_info_ftqIdx_flag[gk];
@@ -386,11 +395,11 @@
   //      exuOldestValid / exuOldestCand.ftqIdx_value)。有效需排除 rob-flush 抢占。
   //    ftqIdxSelOH.bits = Cat(s6, stage2oldestOH & Fill(!s6))(核块5 frontend_toFtq_ftqIdxSelOH_bits)。
   // --------------------------------------------------------------------------
-  reg       ftqAheadValidR;       // RegNext(exuOldestValid)
+  reg       ftqAheadValidR;       // RegNext(exuOldestValid) = golden io_frontend_toFtq_ftqIdxAhead_0_valid_REG(无复位)
   reg [5:0] ftqAheadValueR;       // RegEnable(exuOldestCand.ftqIdx_value, exuOldestValid)
+  // golden io_frontend_toFtq_ftqIdxAhead_0_valid_REG 无复位(普通块每拍无条件写);对齐去掉 reset。
   always_ff @(posedge clock) begin
-    if (reset) ftqAheadValidR <= 1'b0;
-    else       ftqAheadValidR <= exuOldestValid;
+    ftqAheadValidR <= exuOldestValid;
     if (exuOldestValid) ftqAheadValueR <= exuOldestCand.ftqIdx_value;
   end
   // valid:打拍有效 & 未被 rob flush 抢占(s1_robFlush 当拍 / DelayN 链上有 flush)。

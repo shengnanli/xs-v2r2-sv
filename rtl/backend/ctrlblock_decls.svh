@@ -27,6 +27,12 @@
   logic [7:0]  _rob_io_commits_robIdx_value_3;
   logic [7:0]  _rob_io_commits_robIdx_value_4;
   logic [7:0]  _rob_io_commits_robIdx_value_5;
+  // commit lane 6/7 别名(供 snpt deq 的 commitMatchHead 用):这些 rob 输出标量在 inst.svh
+  // 声明/连接(在 logic.svh 之后),故在此 decls 提前声明「模块作用域别名」,由 glue4.svh
+  // (inst.svh 之后)驱动 = 对应标量;logic.svh 只读别名,避免 Formality FMR_VLOG-606 前向引用。
+  logic        commitLane6Valid, commitLane7Valid;
+  logic        commitLane6Flag,  commitLane7Flag;
+  logic [7:0]  commitLane6Value, commitLane7Value;
 
   // -- RedirectGenerator --
   logic        _redirectGen_io_stage2Redirect_valid;

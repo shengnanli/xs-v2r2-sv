@@ -50,7 +50,9 @@
   generate
     for (gj = 0; gj < ctrlblock_pkg::WbNum; gj++) begin : g_wbpipe
       // valid:GatedValidRegNext(复位清 0)
-      always_ff @(posedge clock) begin
+      // golden 把这两条 valid 流水放在异步复位块(always @(posedge clock or posedge reset)),
+      // 与 FM 对齐须用异步复位而非同步复位,否则 DFF 类型不同 -> not equivalent。
+      always_ff @(posedge clock or posedge reset) begin
         if (reset) begin
           wbDelayedValid[gj]    <= 1'b0;
           wbDelayedValidRaw[gj] <= 1'b0;
@@ -245,9 +247,11 @@
   rob_enq_uop_t    enqRobBits  [0:ctrlblock_pkg::RenameWidth-1];  // -> rob.io.enq.req[i].bits
   generate
     for (gj = 0; gj < ctrlblock_pkg::RenameWidth; gj++) begin : g_enqpipe
+      // golden enqRob_req_<i>_valid_REG 无复位(在 always @(posedge clock) 普通块,
+      // 每拍无条件写 dispatch.req.valid & ~redirect)。impl 若加同步复位则 DFF 不等价,
+      // 故这里去掉 reset,保持无复位以对齐 golden(初值由 +vcs+initreg+0 提供)。
       always_ff @(posedge clock) begin
-        if (reset) enqRobValid[gj] <= 1'b0;
-        else       enqRobValid[gj] <= enqInValid[gj] & ~s1_s3_redirect_valid;
+        enqRobValid[gj] <= enqInValid[gj] & ~s1_s3_redirect_valid;
         if (enqInValid[gj]) enqRobBits[gj] <= enqInBits[gj];
       end
     end
@@ -276,9 +280,13 @@
   logic        pcMemWen;                 // -> pcMem.io.wen_0
   logic [5:0]  pcMemWaddr;               // -> pcMem.io.waddr_0
   logic [49:0] pcMemWdataStartAddr;      // -> pcMem.io.wdata_0_startAddr
-  always_ff @(posedge clock) begin
+  // golden pcMem_io_wen_0_last_REG 在异步复位块;waddr/wdata 是无复位 RegEnable。
+  // 拆两块以对齐 golden 复位域(wen 异步复位,waddr/wdata 无复位)。
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) pcMemWen <= 1'b0;
     else       pcMemWen <= io_frontend_fromFtq_pc_mem_wen;
+  end
+  always_ff @(posedge clock) begin
     if (io_frontend_fromFtq_pc_mem_wen) begin
       pcMemWaddr          <= io_frontend_fromFtq_pc_mem_waddr;
       pcMemWdataStartAddr <= io_frontend_fromFtq_pc_mem_wdata_startAddr;

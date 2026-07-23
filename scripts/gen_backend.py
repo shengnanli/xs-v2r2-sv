@@ -41,7 +41,28 @@ LINES = GSV.splitlines()
 HDR = "// 自动生成:scripts/gen_backend.py —— 勿手改(逻辑部分为从 Scala 意图的可读重写)\n"
 
 _WORD = re.compile(r"[A-Za-z_]\w*")
-_PINRE = re.compile(r"\.(\w+)\s*\(((?:[^()]|\([^()]*\))*)\)")
+# 引脚名 .<name> 的定位;RHS 用平衡括号手工扫描(见 iter_pins),
+# 因为 golden 中形如 io_fromMemExu_5_0_bits_vls_isMasked 的 RHS 含多层嵌套括号
+# (~(|(...)))，纯正则(仅支持一层内嵌括号)会漏匹配、静默丢引脚。
+_PINHEAD = re.compile(r"\.(\w+)\s*\(")
+
+
+def iter_pins(text):
+    """遍历实例体，产出 (pin_name, rhs) —— RHS 用括号计数扫到配平，任意嵌套深度。"""
+    for m in _PINHEAD.finditer(text):
+        pin = m.group(1)
+        i = m.end()        # 位于开括号之后
+        depth = 1
+        start = i
+        while i < len(text) and depth:
+            c = text[i]
+            if c == "(":
+                depth += 1
+            elif c == ")":
+                depth -= 1
+            i += 1
+        rhs = text[start:i - 1]
+        yield pin, rhs
 
 
 # ----------------------------------------------------------------------------
@@ -236,8 +257,8 @@ def gen_decls(blocks, widths):
     """收集所有引脚 RHS 引用的互联网(_inner_ 前缀),声明之。"""
     used = set()
     for head, lines in blocks:
-        for m in _PINRE.finditer("\n".join(lines)):
-            rhs = re.sub(r"\s+", " ", m.group(2).strip())
+        for pin, raw in iter_pins("\n".join(lines)):
+            rhs = re.sub(r"\s+", " ", raw.strip())
             for idt in re.findall(r"\b_inner_[A-Za-z0-9_]+\b", rhs):
                 used.add(idt)
     # 还有引脚 RHS 是「输出端口直连子模块输出」——这些 _inner_ 网必须声明;
@@ -270,9 +291,8 @@ def gen_inst(blocks):
         typ, inst = head.strip().split()[0], head.strip().split()[1]
         L.append(f"  {typ} {inst} (")
         pins = []
-        for m in _PINRE.finditer("\n".join(lines)):
-            pin = m.group(1)
-            rhs = re.sub(r"\s+", " ", m.group(2).strip())
+        for pin, raw in iter_pins("\n".join(lines)):
+            rhs = re.sub(r"\s+", " ", raw.strip())
             nr = rewrite_rhs(rhs)
             bad = leftover_golden(nr)
             if bad:
@@ -495,6 +515,14 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/Backend.sv $(SUB_DEPS)
 WRAPPER_SRCS = $(RTL_DIR)/backend/Backend_wrapper.sv $(SUB_DEPS)
 FM_VARIANTS = Backend
 FM_REF_DEPS_Backend = {ref_deps}
+
+# 四个大共享子模块两侧都读同一份 golden(BypassNetwork/DataPath/CtrlBlock/WbDataPath),
+# 用 interface_only 把它们在边界处黑盒:只保留端口方向,不展开内部。Backend 是顶层
+# 装配层,重写工作全在顶层 glue;这四个模块各自有独立 UT/FM,此处不重复验其内部。
+# 否则 FM 会下降进这些模块,把其中未解析的叶子(ImmExtractor/UIntExtractor 等组合
+# 抽取器、RegFile/Arbiter 黑盒)的悬空/未读引脚判为成百上千假失配。黑盒后 FM 只比
+# Backend 自身的顶层互联(驱动这些黑盒输入 / 消费其输出),即真正的重写对象。
+FM_INTERFACE_ONLY = BypassNetwork DataPath CtrlBlock WbDataPath
 
 include ../../../scripts/ut_common.mk
 
