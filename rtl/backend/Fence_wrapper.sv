@@ -53,7 +53,7 @@ module Fence
   assign in_uop.robIdx_value = io_in_bits_ctrl_robIdx_value;
   assign in_uop.pdest        = io_in_bits_ctrl_pdest;
   assign in_uop.flushPipe    = io_in_bits_ctrl_flushPipe;
-  assign in_uop.imm          = io_in_bits_data_imm;
+  assign in_uop.imm          = io_in_bits_data_imm[IMM_USED_W-1:0]; // 仅低 10 位被 sfence 判定读取
 
   fence_uop_t out_uop;
 
