@@ -1,8 +1,8 @@
 {
  "schema": "fm-signoff-manifest-v2",
  "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456",
- "count_total": 309,
- "count_configured": 308,
+ "count_total": 310,
+ "count_configured": 309,
  "count_unconfigured": 1,
  "entries": [
   {
@@ -1779,8 +1779,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "strict+vmucp: impl-clean(unread_impl=0/unread_ref=0); 192对称matched-unread双射(3×64位perf计数retryAckCnt/pCrdGrantCnt/noAllowRetryCnt, 两侧只写不读无输出口, 架构活事件监控不可删), vmucp实开比较全passing",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1830,6 +1830,20 @@
    "ut_dir": "LoadQueueRAR",
    "makefile": "verif/ut/LoadQueueRAR/Makefile",
    "make_target": "fm-LoadQueueRAR",
+   "entry": "scripts/fm_eq.tcl",
+   "proof_mode": "signoff-strict",
+   "config_status": "CONFIGURED",
+   "required_verdict": "SUCCEEDED",
+   "allow_ref": "",
+   "rationale": "",
+   "verify_matched_unread_compare_points": "false",
+   "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
+  },
+  {
+   "target": "LqPAddrModule",
+   "ut_dir": "LoadQueueRAR_EntryUpdate",
+   "makefile": "verif/ut/LoadQueueRAR_EntryUpdate/Makefile",
+   "make_target": "fm-LqPAddrModule",
    "entry": "scripts/fm_eq.tcl",
    "proof_mode": "signoff-strict",
    "config_status": "CONFIGURED",
@@ -2479,8 +2493,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "strict+vmucp: impl-clean(unread_impl=0); 67对称matched-unread双射(SRAM/MBIST array_*_ext死reg+L2/L3 prefetch entry+prefetch流水链, ref==impl逐位), vmucp实开比较全passing; 无dont_verify无allow无加宽黑盒",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -4271,8 +4285,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "strict+vmucp: impl-clean; 36对称matched-unread双射(WritebackEntry子模块 req_dirty断言专用+remain_dup[1]死位, 双侧同名elaborate), vmucp实开比较全passing; entries_N扁平命名对齐golden使FM双射",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
