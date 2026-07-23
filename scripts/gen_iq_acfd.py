@@ -2,6 +2,18 @@
 """
 IssueQueueAluCsrFenceDiv / EntriesAluCsrFenceDiv 生成器。
 
+⚠ STALE 警告(2026-07 FM signoff 后):Entries wrapper/variant_xs 已手工做过
+  「impl-only 死寄存器消除」改造, 本生成器尚未同步以下映射, 直接重生会回退:
+    * status_t.fu_type 紧凑存储(pack_fu_type/unpack_fu_type), enq 用 pack、
+      deqEntry 输出先 unpack 到中间线网再按位取(FM 前端不支持对函数返回值下标);
+    * payload.srcLoadDependency 已移出 entry_t, 改由 Entries 顶层 enq_src_load_dep
+      单独走线喂 enqDelayIn1(golden 在扁平顶层消除了 entryReg.payload.srcLoadDep 死链);
+    * status.blocked / status.first_issue 已删除(impl-only 死位, wrapper 不暴露 isFirstIssue);
+    * fu_type 死位映射 (map_entry_field 的 status_fuType / payload_srcLoadDependency 分支
+      需改成 pack/unpack, 不再直接 .status.fu_type[N] / .payload.src_load_dep[..])。
+  再生前须同步这些改造, 或改回手工维护 rtl/backend/EntriesAluCsrFenceDiv_wrapper.sv。
+
+
 可读核手写在 rtl/backend/{EntriesAluCsrFenceDiv,IssueQueueAluCsrFenceDiv}.sv,
 通过 iq_acfd_pkg 的 struct/enum 表达条目阵列、转移策略、年龄选择。本脚本只生成
 「flat golden 端口 ↔ 可读核 struct 端口」的 wrapper 与双例化 tb:
