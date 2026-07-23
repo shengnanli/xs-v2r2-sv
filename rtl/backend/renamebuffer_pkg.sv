@@ -33,6 +33,10 @@ package renamebuffer_pkg;
   localparam int COMMIT_WIDTH  = 6;    // 每拍 commit/walk 口数 RabCommitWidth
   localparam int LDEST_W       = 6;    // 逻辑寄存器号位宽 LogicRegsWidth
   localparam int PDEST_W       = 8;    // 物理寄存器号位宽 PhyRegIdxWidth
+  // toVecExcpMod.preg 输出口位宽 = 7(golden 输出端口 [6:0])。golden 内部存 8 位寄存器
+  // 但输出只取低 7 位，最高位 [7] 是 golden-only cone-dead；可读 impl 直接按 7 位存，
+  // 不产生 impl-only 死位。
+  localparam int VEC_PREG_W    = 7;
   localparam int SNAP_SEL_W    = 2;    // 快照选择位宽 = log2(RenameSnapshotNum=4)
   localparam int SNAPSHOT_NUM  = 4;    // 快照个数 RenameSnapshotNum
   // diff 输出口数 = difftest 用，等于本 golden 例化暴露的索引数(0..254)。
