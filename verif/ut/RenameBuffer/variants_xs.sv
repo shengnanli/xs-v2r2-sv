@@ -2207,7 +2207,7 @@ module RenameBuffer_xs
   logic       sWalkEnd, sCommitEnd;
   logic       veValid [COMMIT_WIDTH];
   logic [LDEST_W-1:0] veLreg [COMMIT_WIDTH];
-  logic [PDEST_W-1:0] vePreg [COMMIT_WIDTH];
+  logic [VEC_PREG_W-1:0] vePreg [COMMIT_WIDTH];
   logic       dValid [NUM_DIFF];
   rab_info_t  dInfo  [NUM_DIFF];
 
