@@ -119,34 +119,89 @@ module xs_LoadQueue_core
   //     27     ：nack_rollback（uncache 回滚）
   // 全部各打两拍对齐后输出，降低长扇出对时序的影响（与 Scala 的两级寄存器一致）。
   // ==========================================================================
-  logic [PERF_W-1:0] perf_src   [PERF_NUM];
-  logic [PERF_W-1:0] perf_stage1[PERF_NUM];
-  logic [PERF_W-1:0] perf_stage2[PERF_NUM];
+  // -- perf 源：前 18 路（0..17）由各子队列 io_perf_* 输出驱动（连接表接到 perf_src[*]），
+  //    为 6-bit 计数；后 10 路（18..27）是本层的 1-bit 组合条件（full_mask 译码 / rollback）。--
+  //    子队列端口连 perf_src 数组，故保留数组作为“源汇聚”；两级流水寄存器则**逐路展平为与
+  //    golden 同名同宽的标量寄存器**（io_perf_<i>_value_REG / _REG_1），使 FM 按名逐位自动
+  //    配对——0..17 为 6-bit、18..27 为 1-bit，与 golden firtool 展开完全一致（bug-for-bug）。
+  logic [PERF_W-1:0] perf_src[PERF_SUBQ_NUM];  // 0..17 子队列 6-bit 计数（inst.svh 连此）
 
-  // 后 10 路组合条件（前 18 路 perf_src[0..17] 由连接表里的子队列输出驱动）。
-  // 18..25 是 full_mask 落在 8 种拥塞状态各一路；26 是 nuke 回滚、27 是 nack 回滚。
-  // full_is / perf_bit 为纯函数，避免裸常数比较与位拼接魔数。
-  always_comb begin
-    perf_src[18] = perf_bit(full_is(full_mask, FULL_NONE));
-    perf_src[19] = perf_bit(full_is(full_mask, FULL_P));
-    perf_src[20] = perf_bit(full_is(full_mask, FULL_W));
-    perf_src[21] = perf_bit(full_is(full_mask, FULL_WP));
-    perf_src[22] = perf_bit(full_is(full_mask, FULL_R));
-    perf_src[23] = perf_bit(full_is(full_mask, FULL_RP));
-    perf_src[24] = perf_bit(full_is(full_mask, FULL_RW));
-    perf_src[25] = perf_bit(full_is(full_mask, FULL_RWP));
-    perf_src[26] = perf_bit(raw_rollback_valid[0] | raw_rollback_valid[1]);
-    perf_src[27] = perf_bit(unc_rollback_valid);
+  // 18..25：full_mask 落在 8 种拥塞状态各一路；26：nuke 回滚；27：nack 回滚。
+  logic perf_cond_18, perf_cond_19, perf_cond_20, perf_cond_21, perf_cond_22,
+        perf_cond_23, perf_cond_24, perf_cond_25, perf_cond_26, perf_cond_27;
+  assign perf_cond_18 = full_is(full_mask, FULL_NONE);
+  assign perf_cond_19 = full_is(full_mask, FULL_P);
+  assign perf_cond_20 = full_is(full_mask, FULL_W);
+  assign perf_cond_21 = full_is(full_mask, FULL_WP);
+  assign perf_cond_22 = full_is(full_mask, FULL_R);
+  assign perf_cond_23 = full_is(full_mask, FULL_RP);
+  assign perf_cond_24 = full_is(full_mask, FULL_RW);
+  assign perf_cond_25 = full_is(full_mask, FULL_RWP);  // == &full_mask
+  assign perf_cond_26 = raw_rollback_valid[0] | raw_rollback_valid[1];
+  assign perf_cond_27 = unc_rollback_valid;
+
+  // 两级流水寄存器：0..17 为 6-bit、18..27 为 1-bit，命名镜像 golden（io_perf_<i>_value_REG*）。
+  logic [PERF_W-1:0] io_perf_0_value_REG,  io_perf_0_value_REG_1;
+  logic [PERF_W-1:0] io_perf_1_value_REG,  io_perf_1_value_REG_1;
+  logic [PERF_W-1:0] io_perf_2_value_REG,  io_perf_2_value_REG_1;
+  logic [PERF_W-1:0] io_perf_3_value_REG,  io_perf_3_value_REG_1;
+  logic [PERF_W-1:0] io_perf_4_value_REG,  io_perf_4_value_REG_1;
+  logic [PERF_W-1:0] io_perf_5_value_REG,  io_perf_5_value_REG_1;
+  logic [PERF_W-1:0] io_perf_6_value_REG,  io_perf_6_value_REG_1;
+  logic [PERF_W-1:0] io_perf_7_value_REG,  io_perf_7_value_REG_1;
+  logic [PERF_W-1:0] io_perf_8_value_REG,  io_perf_8_value_REG_1;
+  logic [PERF_W-1:0] io_perf_9_value_REG,  io_perf_9_value_REG_1;
+  logic [PERF_W-1:0] io_perf_10_value_REG, io_perf_10_value_REG_1;
+  logic [PERF_W-1:0] io_perf_11_value_REG, io_perf_11_value_REG_1;
+  logic [PERF_W-1:0] io_perf_12_value_REG, io_perf_12_value_REG_1;
+  logic [PERF_W-1:0] io_perf_13_value_REG, io_perf_13_value_REG_1;
+  logic [PERF_W-1:0] io_perf_14_value_REG, io_perf_14_value_REG_1;
+  logic [PERF_W-1:0] io_perf_15_value_REG, io_perf_15_value_REG_1;
+  logic [PERF_W-1:0] io_perf_16_value_REG, io_perf_16_value_REG_1;
+  logic [PERF_W-1:0] io_perf_17_value_REG, io_perf_17_value_REG_1;
+  logic io_perf_18_value_REG, io_perf_18_value_REG_1;
+  logic io_perf_19_value_REG, io_perf_19_value_REG_1;
+  logic io_perf_20_value_REG, io_perf_20_value_REG_1;
+  logic io_perf_21_value_REG, io_perf_21_value_REG_1;
+  logic io_perf_22_value_REG, io_perf_22_value_REG_1;
+  logic io_perf_23_value_REG, io_perf_23_value_REG_1;
+  logic io_perf_24_value_REG, io_perf_24_value_REG_1;
+  logic io_perf_25_value_REG, io_perf_25_value_REG_1;
+  logic io_perf_26_value_REG, io_perf_26_value_REG_1;
+  logic io_perf_27_value_REG, io_perf_27_value_REG_1;
+
+  always_ff @(posedge clock) begin
+    io_perf_0_value_REG  <= perf_src[0];   io_perf_0_value_REG_1  <= io_perf_0_value_REG;
+    io_perf_1_value_REG  <= perf_src[1];   io_perf_1_value_REG_1  <= io_perf_1_value_REG;
+    io_perf_2_value_REG  <= perf_src[2];   io_perf_2_value_REG_1  <= io_perf_2_value_REG;
+    io_perf_3_value_REG  <= perf_src[3];   io_perf_3_value_REG_1  <= io_perf_3_value_REG;
+    io_perf_4_value_REG  <= perf_src[4];   io_perf_4_value_REG_1  <= io_perf_4_value_REG;
+    io_perf_5_value_REG  <= perf_src[5];   io_perf_5_value_REG_1  <= io_perf_5_value_REG;
+    io_perf_6_value_REG  <= perf_src[6];   io_perf_6_value_REG_1  <= io_perf_6_value_REG;
+    io_perf_7_value_REG  <= perf_src[7];   io_perf_7_value_REG_1  <= io_perf_7_value_REG;
+    io_perf_8_value_REG  <= perf_src[8];   io_perf_8_value_REG_1  <= io_perf_8_value_REG;
+    io_perf_9_value_REG  <= perf_src[9];   io_perf_9_value_REG_1  <= io_perf_9_value_REG;
+    io_perf_10_value_REG <= perf_src[10];  io_perf_10_value_REG_1 <= io_perf_10_value_REG;
+    io_perf_11_value_REG <= perf_src[11];  io_perf_11_value_REG_1 <= io_perf_11_value_REG;
+    io_perf_12_value_REG <= perf_src[12];  io_perf_12_value_REG_1 <= io_perf_12_value_REG;
+    io_perf_13_value_REG <= perf_src[13];  io_perf_13_value_REG_1 <= io_perf_13_value_REG;
+    io_perf_14_value_REG <= perf_src[14];  io_perf_14_value_REG_1 <= io_perf_14_value_REG;
+    io_perf_15_value_REG <= perf_src[15];  io_perf_15_value_REG_1 <= io_perf_15_value_REG;
+    io_perf_16_value_REG <= perf_src[16];  io_perf_16_value_REG_1 <= io_perf_16_value_REG;
+    io_perf_17_value_REG <= perf_src[17];  io_perf_17_value_REG_1 <= io_perf_17_value_REG;
+    io_perf_18_value_REG <= perf_cond_18;  io_perf_18_value_REG_1 <= io_perf_18_value_REG;
+    io_perf_19_value_REG <= perf_cond_19;  io_perf_19_value_REG_1 <= io_perf_19_value_REG;
+    io_perf_20_value_REG <= perf_cond_20;  io_perf_20_value_REG_1 <= io_perf_20_value_REG;
+    io_perf_21_value_REG <= perf_cond_21;  io_perf_21_value_REG_1 <= io_perf_21_value_REG;
+    io_perf_22_value_REG <= perf_cond_22;  io_perf_22_value_REG_1 <= io_perf_22_value_REG;
+    io_perf_23_value_REG <= perf_cond_23;  io_perf_23_value_REG_1 <= io_perf_23_value_REG;
+    io_perf_24_value_REG <= perf_cond_24;  io_perf_24_value_REG_1 <= io_perf_24_value_REG;
+    io_perf_25_value_REG <= perf_cond_25;  io_perf_25_value_REG_1 <= io_perf_25_value_REG;
+    io_perf_26_value_REG <= perf_cond_26;  io_perf_26_value_REG_1 <= io_perf_26_value_REG;
+    io_perf_27_value_REG <= perf_cond_27;  io_perf_27_value_REG_1 <= io_perf_27_value_REG;
   end
 
-  for (genvar i = 0; i < PERF_NUM; i++) begin : g_perf
-    always_ff @(posedge clock) begin
-      perf_stage1[i] <= perf_src[i];
-      perf_stage2[i] <= perf_stage1[i];
-    end
-  end
-
-  `include "LoadQueue_perf_out.svh"  // assign io_perf_<i>_value = perf_stage2[i]（后 10 路零扩展）
+  `include "LoadQueue_perf_out.svh"  // assign io_perf_<i>_value = io_perf_<i>_value_REG_1（后 10 路 1-bit 零扩展）
 
   // ==========================================================================
   // 5. 六个子队列实例（与 golden 完全一致；黑盒）

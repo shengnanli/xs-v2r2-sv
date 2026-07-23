@@ -94,3 +94,6 @@ PtwCache	signoff-strict		strict+vmucp: impl-clean(unread_impl=0); 67对称matche
 WritebackQueue	signoff-strict		strict+vmucp: impl-clean; 36对称matched-unread双射(WritebackEntry子模块 req_dirty断言专用+remain_dup[1]死位, 双侧同名elaborate), vmucp实开比较全passing; entries_N扁平命名对齐golden使FM双射	true
 LinkMonitor	signoff-strict		strict+vmucp: impl-clean(unread_impl=0/unread_ref=0); 192对称matched-unread双射(3×64位perf计数retryAckCnt/pCrdGrantCnt/noAllowRetryCnt, 两侧只写不读无输出口, 架构活事件监控不可删), vmucp实开比较全passing	true
 Ftq	signoff-strict		strict+vmucp+dead-ref: impl-clean(unread_impl=0); 3330对称matched-unread双射(队列entry调试/预测meta复制寄存器两侧同名)vmucp实开比较; 残留4282 golden-only cone-dead(perf计数/探针无输出扇出)=dead-ref	true
+IMSIC	assembly	verif/signoff/allow/IMSIC.json	assembly: intFile×7两侧elaborate白盒受验+唯一黑盒IMSICGateWay(绿305子,assembly-depends,内含vendor msi_vld_req_cpu_chain宏); native SUCCEEDED passing4678全0	
+LoadQueue	signoff-strict		strict+vmucp: impl-clean(unread_impl0/compare0); 235对称matched-unread双射(共享golden子队列loadQueueReplay177/RAW48/RAR6/uncache3/exc1两侧同elaborate逐位同), vmucp实开比较全passing	true
+LoadPipe	signoff-strict		strict+vmucp+dead-ref: impl-clean(unread_impl0); 59对称matched-unread双射(golden存宽读窄vaddr/bank_oh各位两侧同)vmucp compared; 残留unread_ref3=REG_1/2/4断言RegNext golden-only cone-dead	true

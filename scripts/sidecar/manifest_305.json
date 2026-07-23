@@ -1061,11 +1061,11 @@
    "makefile": "verif/ut/IMSIC/Makefile",
    "make_target": "fm-IMSIC",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/IMSIC.json",
+   "rationale": "assembly: intFile×7两侧elaborate白盒受验+唯一黑盒IMSICGateWay(绿305子,assembly-depends,内含vendor msi_vld_req_cpu_chain宏); native SUCCEEDED passing4678全0",
    "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
@@ -1807,8 +1807,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "strict+vmucp+dead-ref: impl-clean(unread_impl0); 59对称matched-unread双射(golden存宽读窄vaddr/bank_oh各位两侧同)vmucp compared; 残留unread_ref3=REG_1/2/4断言RegNext golden-only cone-dead",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1821,8 +1821,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "strict+vmucp: impl-clean(unread_impl0/compare0); 235对称matched-unread双射(共享golden子队列loadQueueReplay177/RAW48/RAR6/uncache3/exc1两侧同elaborate逐位同), vmucp实开比较全passing",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {

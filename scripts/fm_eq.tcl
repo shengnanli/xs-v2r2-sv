@@ -74,7 +74,7 @@ if {[info exists env(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS)] &&
 }
 switch -- $_verify_matched_unread_compare_points {
   "true" {
-    if {$top ni {LoadQueueUncache FastArbiter_46 FastArbiter_47 FastArbiter_27 FastArbiter_44 ICacheCtrlUnit ICacheDataArray IPrefetchPipe DivUnit FDivSqrt InstrMMIOEntry InstrUncache TXDAT_4 FAlu FCVT IssueQueueStdMoud MulUnit TXREQ TlbStorageWrapper TlbStorageWrapper_1 IssueQueueStaMou IssueQueueLdu TXDAT Scheduler_1 Scheduler Scheduler_3 MSHR TageBTable Directory SCTable SCTable_1 SCTable_2 SCTable_3 Tage_SC ITTage FauFTB FTBBank FTB Composer EntriesAluCsrFenceDiv Bku SourceB Predictor EntriesAluMulBkuBrhJmp DuplicatedTagArray PtwCache WritebackQueue LinkMonitor Ftq}} {
+    if {$top ni {LoadQueueUncache FastArbiter_46 FastArbiter_47 FastArbiter_27 FastArbiter_44 ICacheCtrlUnit ICacheDataArray IPrefetchPipe DivUnit FDivSqrt InstrMMIOEntry InstrUncache TXDAT_4 FAlu FCVT IssueQueueStdMoud MulUnit TXREQ TlbStorageWrapper TlbStorageWrapper_1 IssueQueueStaMou IssueQueueLdu TXDAT Scheduler_1 Scheduler Scheduler_3 MSHR TageBTable Directory SCTable SCTable_1 SCTable_2 SCTable_3 Tage_SC ITTage FauFTB FTBBank FTB Composer EntriesAluCsrFenceDiv Bku SourceB Predictor EntriesAluMulBkuBrhJmp DuplicatedTagArray PtwCache WritebackQueue LinkMonitor Ftq LoadQueue LoadPipe}} {
       puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
       exit 3
     }

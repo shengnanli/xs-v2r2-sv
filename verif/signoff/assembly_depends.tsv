@@ -22,3 +22,4 @@ ExeUnit	Alu,MulUnit,Bku	3独立FU目标(Alu/MulUnit/Bku)全SIGNOFF_PASS则依赖
 ExeUnit_4	Alu	独立FU目标Alu SIGNOFF_PASS则依赖闭合; ExeUnit_4 assembly合法绿; Dispatcher_4(in1ToN)双侧elaborate非黑盒(不入依赖); 本变体无ClockGate无Mul无Bku
 Predictor	Composer
 Sbuffer	StorePfWrapper	StorePfWrapper SIGNOFF_PASS(依赖闭包); prefetcher实例=StorePfWrapper黑盒(store预取链Serializer/StorePrefetchBursts/Arbiter, 两侧不给源码→unresolved black_box同名配对); 父级assembly, 仅证Sbuffer本层glue
+IMSIC	IMSICGateWay
