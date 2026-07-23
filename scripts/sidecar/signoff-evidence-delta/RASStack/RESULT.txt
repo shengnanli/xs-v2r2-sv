@@ -1,0 +1,4 @@
+SIGNOFF_RESULT RASStack: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=signoff-strict fm_shell_rc=0 validator_rc=0)
+run_id: SGN-RASStack-1784804274
+impl_commit: 0f84300d90be52374a7c3736cd251525bab03ee2
+manifest_sha256: 357b404c2a93fd1a9cb206fb9f1cf388a081206521910a84c976ec71cc6d3b0a
