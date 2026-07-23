@@ -11,7 +11,13 @@ MACRO_SIM = $(GOLDEN_RTL)/sram_array_1p512x40m10s1h0l1b_bp_ftb.sv \
 # 可读核：ftb 类型包 + xs_FTBBank 核
 RTL_SRCS     = $(RTL_DIR)/frontend/ftb_pkg.sv $(RTL_DIR)/frontend/FTBBank.sv
 # FM 用包装层（golden 同名 FTBBank，内部例化 xs_FTBBank + golden SRAM）
-WRAPPER_SRCS = $(RTL_DIR)/frontend/FTBBank_wrapper.sv
+# assembly option-2: SRAM 模板链 + MBIST 两侧 elaborate，仅最底 vendor 宏 array_1_ext 黑盒
+FM_SRAM_ELAB = $(GOLDEN_RTL)/MbistPipeFtb.sv $(GOLDEN_RTL)/SplittedSRAMTemplate_2.sv \
+               $(GOLDEN_RTL)/SRAMTemplate_36.sv \
+               $(GOLDEN_RTL)/sram_array_1p512x40m10s1h0l1b_bp_ftb.sv \
+               $(GOLDEN_RTL)/array_1.sv \
+               $(GOLDEN_RTL)/MbistClockGateCell.sv $(GOLDEN_RTL)/ClockGate.sv
+WRAPPER_SRCS = $(RTL_DIR)/frontend/FTBBank_wrapper.sv $(FM_SRAM_ELAB)
 # UT golden 侧依赖：golden FTBBank + 其内 MbistPipe/SRAM 链
 GOLDEN_SRCS  = $(GOLDEN_RTL)/FTBBank.sv $(GOLDEN_RTL)/MbistPipeFtb.sv \
                $(GOLDEN_RTL)/SplittedSRAMTemplate_2.sv $(GOLDEN_RTL)/SRAMTemplate_36.sv \
@@ -20,10 +26,10 @@ GOLDEN_SRCS  = $(GOLDEN_RTL)/FTBBank.sv $(GOLDEN_RTL)/MbistPipeFtb.sv \
 TB_SRCS = variants_xs.sv tb.sv
 
 FM_VARIANTS = FTBBank
-# FM 参考侧只给 golden FTBBank 本体；内层 SplittedSRAMTemplate_2 与 MbistPipeFtb 两侧
-# 均不提供源码 → fm_eq.tcl 的 hdlin_unresolved_modules=black_box 把它们当黑盒。
-# 这样 SRAM 巨大的存储阵列与 MBIST 寄存器不进比对，只比 FTBBank 的 tag/命中/替换逻辑。
-FM_REF_DEPS_FTBBank =
+# option-2: 两侧 elaborate SRAM 模板链+MBIST，仅 vendor 宏 array_1_ext 黑盒(不提供源)。
+FM_REF_DEPS_FTBBank = MbistPipeFtb.sv SplittedSRAMTemplate_2.sv SRAMTemplate_36.sv \
+                      sram_array_1p512x40m10s1h0l1b_bp_ftb.sv array_1.sv \
+                      MbistClockGateCell.sv ClockGate.sv
 
 include ../../../scripts/ut_common.mk
 
