@@ -1,0 +1,4 @@
+SIGNOFF_RESULT SourceB: measured=PARTIAL required=SUCCEEDED gate=GAP (proof=signoff-strict fm_shell_rc=0 validator_rc=1)
+run_id: SGN-SourceB-1784807838
+impl_commit: 8f8d2ee1c6ac308b541439f2e9ce66101e29ae51
+manifest_sha256: 9d06719bd9c52753adf0cc864cbb6e77b4c3b724146c893aaabf0200f9bfd616
