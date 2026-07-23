@@ -1,0 +1,4 @@
+SIGNOFF_RESULT Composer: measured=PARTIAL required=SUCCEEDED gate=GAP (proof=assembly fm_shell_rc=0 validator_rc=1)
+run_id: SGN-Composer-1784801339
+impl_commit: 6b52d0abd06a3e581014584e00fe2b726d532745
+manifest_sha256: 904052b2a13cb75b43ac036611e2a2a1dfd8fbcf94fe71e4e79bdec4e6f88b1b

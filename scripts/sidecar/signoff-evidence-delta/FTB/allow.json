@@ -1,0 +1,8 @@
+{
+    "unresolved_blackbox": [
+        {"id": "ftbBank", "ref_path": "r:/WORK/FTB/ftbBank", "impl_path": "i:/WORK/FTB/ftbBank"}
+    ],
+    "interface_only": [],
+    "empty_blackbox": [],
+    "unmatched": []
+}

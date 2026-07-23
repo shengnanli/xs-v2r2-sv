@@ -1,0 +1,11 @@
+{
+    "unresolved_blackbox": [],
+    "interface_only": [],
+    "empty_blackbox": [
+        {"id": "ftb", "ref_path": "r:/WORK/Composer/ftb", "impl_path": "i:/WORK/Composer/ftb"},
+        {"id": "ittage", "ref_path": "r:/WORK/Composer/ittage", "impl_path": "i:/WORK/Composer/ittage"},
+        {"id": "tage", "ref_path": "r:/WORK/Composer/tage", "impl_path": "i:/WORK/Composer/tage"},
+        {"id": "uftb", "ref_path": "r:/WORK/Composer/uftb", "impl_path": "i:/WORK/Composer/uftb"}
+    ],
+    "unmatched": []
+}
