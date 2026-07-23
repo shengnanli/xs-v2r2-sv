@@ -4043,12 +4043,12 @@
    "makefile": "verif/ut/Tage_SC/Makefile",
    "make_target": "fm-Tage_SC",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "allow_ref": "verif/signoff/allow/Tage_SC.json",
+   "rationale": "assembly+vmucp+dead-ref: 11黑盒=2 allocLFSR(MaxPeriodFibonacciLFSR双侧elaborate,确定性LFSR非vendor,白盒比对)+9绿children(bt/scTables_0-3/tables_0-3 全SIGNOFF_PASS,depends_on); vmucp验证193个s1_pc_dup对称死位(golden s1_pc_dup_K_reg[N]↔impl s1_pc_dup_reg[K][N]双射, bug-for-bug); RTL消impl死位(um_prov_u写而不读死寄存器移除 + cur/newctr/satpos/satneg/tick临时量转function+always_comb); 残留golden-only 402位s2/s3_pc_dup分段复制PC(FM判unread=无compare-point扇出=cone-dead, dead-ref)",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {

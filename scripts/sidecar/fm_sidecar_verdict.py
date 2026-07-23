@@ -146,7 +146,7 @@ def appvar_spec_err(av, mode, relaxed_declared, target):
     _MU_STRENGTHEN = {"LoadQueueUncache",
                       "FastArbiter_46", "FastArbiter_47", "FastArbiter_27", "FastArbiter_44",
                       "ICacheCtrlUnit", "ICacheDataArray", "IPrefetchPipe",
-                      "DivUnit", "FDivSqrt", "InstrMMIOEntry", "InstrUncache", "TXDAT_4", "FAlu", "FCVT", "IssueQueueStdMoud", "MulUnit", "TXREQ", "TlbStorageWrapper", "TlbStorageWrapper_1", "IssueQueueStaMou", "IssueQueueLdu", "TXDAT", "Scheduler_1", "Scheduler", "Scheduler_3", "MSHR", "TageBTable", "Directory", "SCTable", "SCTable_1", "SCTable_2", "SCTable_3"}
+                      "DivUnit", "FDivSqrt", "InstrMMIOEntry", "InstrUncache", "TXDAT_4", "FAlu", "FCVT", "IssueQueueStdMoud", "MulUnit", "TXREQ", "TlbStorageWrapper", "TlbStorageWrapper_1", "IssueQueueStaMou", "IssueQueueLdu", "TXDAT", "Scheduler_1", "Scheduler", "Scheduler_3", "MSHR", "TageBTable", "Directory", "SCTable", "SCTable_1", "SCTable_2", "SCTable_3", "Tage_SC"}
     expected_mu = "true" if target in _MU_STRENGTHEN else "false"
     if av[muk] != expected_mu:
         return f"target_strengthening:{muk}:{target}={av[muk]}_expected_{expected_mu}"

@@ -552,7 +552,7 @@ module xs_Tage_SC_core #(
   logic            um_prov_valid [NUM_BR];
   logic [TIDX_W-1:0] um_prov_bits [NUM_BR];
   logic [TAGE_CTR_W-1:0] um_prov_ctr [NUM_BR];
-  logic            um_prov_u     [NUM_BR];
+  // um_prov_u 原为锁存 provider.u, 但本核从不读取(golden 亦无输出扇出)——去除死寄存器
   logic            um_alt_used   [NUM_BR];
   logic [1:0]      um_basecnt    [NUM_BR];
   logic [NUM_TBL-1:0] um_allocates [NUM_BR];
@@ -602,12 +602,10 @@ module xs_Tage_SC_core #(
     if (iu_prov_valid[0] & u_valids_for_cge[0]) begin
       um_prov_bits[0] <= io_update_meta[139:138];
       um_prov_ctr[0]  <= io_update_meta[133:131];
-      um_prov_u[0]    <= io_update_meta[130];
     end
     if (iu_prov_valid[1] & u_valids_for_cge[1]) begin
       um_prov_bits[1] <= io_update_meta[142:141];
       um_prov_ctr[1]  <= io_update_meta[137:135];
-      um_prov_u[1]    <= io_update_meta[134];
     end
     // basecnts(i) := RegEnable(u_meta.basecnts(i), io.s2_fire) —— 在 resp_meta 侧；
     //   但 updateMeta 的 basecnt 走的是 RegEnable(u_meta, io.update.valid)（整体）。
@@ -880,6 +878,29 @@ module xs_Tage_SC_core #(
     perf2_s2 <= perf2_s1;
   end
 
+  // ---------------------------------------------------------------------------
+  // 饱和加减 1(satUpdate): up=1 朝上饱和(+1 封顶), 否则朝下(-1 封底)
+  // 用 function 表达组合语义, 替代 always_ff 内临时变量(避免 Formality 推断死寄存器)
+  // ---------------------------------------------------------------------------
+  function automatic logic [UAON_W-1:0] sat_uaon(input logic [UAON_W-1:0] c, input logic up);
+    sat_uaon = up ? ((c == '1) ? c : c + 1'b1) : ((c == '0) ? c : c - 1'b1);
+  endfunction
+  function automatic logic [SC_THR_W-1:0] sat_scthr(input logic [SC_THR_W-1:0] c, input logic up);
+    sat_scthr = up ? ((c == '1) ? c : c + 1'b1) : ((c == '0) ? c : c - 1'b1);
+  endfunction
+
+  // 组合次态(移出 always_ff): sc 阈值候选 + tick 触顶/触底判定
+  logic [SC_THR_W-1:0] sc_nxtctr [NUM_BR];
+  logic                tick_pos  [NUM_BR];
+  logic                tick_neg  [NUM_BR];
+  always_comb begin
+    for (int unsigned b = 0; b < NUM_BR; b++) begin
+      sc_nxtctr[b] = sat_scthr(sc_thr_ctr[b], u_sc_thr_cause[b]);
+      tick_pos[b]  = (u_tickIncVal[b] >= bank_tick_dist[b]) & u_tickInc[b];
+      tick_neg[b]  = (u_tickDecVal[b] >= bank_tick_ctr[b])  & u_tickDec[b];
+    end
+  end
+
   // ===========================================================================
   // 寄存器更新：useAltOnNa / scThresholds / tick / 基预测器更新值
   // ===========================================================================
@@ -896,38 +917,21 @@ module xs_Tage_SC_core #(
     end else begin
       for (int unsigned b = 0; b < NUM_BR; b++) begin
         // useAltOnNa：provider 弱置信 且 altDiffers → 按 altCorrect 饱和增减
-        if (u_has_update[b] & um_prov_valid[b] & u_prov_weak[b] & u_alt_differs[b]) begin
-          logic [UAON_W-1:0] cur, nxt;
-          cur = use_alt_on_na[b][upd_alt_idx];
-          // satUpdate(ctr, W, up)：up 时 +1 封顶，down 时 -1 封底
-          if (u_alt_correct[b]) nxt = (cur == '1) ? cur : (cur + 1'b1);
-          else                  nxt = (cur == '0) ? cur : (cur - 1'b1);
-          use_alt_on_na[b][upd_alt_idx] <= nxt;
-        end
+        if (u_has_update[b] & um_prov_valid[b] & u_prov_weak[b] & u_alt_differs[b])
+          use_alt_on_na[b][upd_alt_idx] <= sat_uaon(use_alt_on_na[b][upd_alt_idx], u_alt_correct[b]);
 
-        // SC 阈值自适应
+        // SC 阈值自适应(sc_nxtctr[b] 为组合次态；饱和触界则阈值 ±2 并把 ctr 拉回中点)
         if (u_sc_do_thr_upd[b]) begin
-          logic [SC_THR_W-1:0] newctr;
-          logic                satpos, satneg;
-          // satUpdate(ctr, W, cause)：cause=scPred!=taken
-          if (u_sc_thr_cause[b]) newctr = (sc_thr_ctr[b] == '1) ? sc_thr_ctr[b] : (sc_thr_ctr[b] + 1'b1);
-          else                   newctr = (sc_thr_ctr[b] == '0) ? sc_thr_ctr[b] : (sc_thr_ctr[b] - 1'b1);
-          satpos = (newctr == '1);
-          satneg = (newctr == '0);
-          // newThres
-          if (satpos & (sc_thr_thres[b] <= 8'd31)) sc_thr_thres[b] <= sc_thr_thres[b] + 8'd2;
-          else if (satneg & (sc_thr_thres[b] >= 8'd6)) sc_thr_thres[b] <= sc_thr_thres[b] - 8'd2;
-          // newCtr：饱和则回中点，否则 newctr
-          sc_thr_ctr[b] <= (satpos | satneg) ? SC_THR_W'(1 << (SC_THR_W-1)) : newctr;
+          if      ((sc_nxtctr[b] == '1) & (sc_thr_thres[b] <= 8'd31)) sc_thr_thres[b] <= sc_thr_thres[b] + 8'd2;
+          else if ((sc_nxtctr[b] == '0) & (sc_thr_thres[b] >= 8'd6))  sc_thr_thres[b] <= sc_thr_thres[b] - 8'd2;
+          sc_thr_ctr[b] <= ((sc_nxtctr[b] == '1) | (sc_nxtctr[b] == '0))
+                             ? SC_THR_W'(1 << (SC_THR_W-1)) : sc_nxtctr[b];
         end
 
-        // tick 计数器（needToAllocate 时调节）
+        // tick 计数器（needToAllocate 时调节；tick_pos/tick_neg 为组合触界判定）
         if (u_needToAlloc[b]) begin
-          logic tickToPosSat, tickToNegSat;
-          tickToPosSat = (u_tickIncVal[b] >= bank_tick_dist[b]) & u_tickInc[b];
-          tickToNegSat = (u_tickDecVal[b] >= bank_tick_ctr[b])  & u_tickDec[b];
           if (u_tickInc[b]) begin
-            if (tickToPosSat) begin
+            if (tick_pos[b]) begin
               bank_tick_ctr[b]  <= TICK_MAX;
               bank_tick_dist[b] <= '0;
             end else begin
@@ -935,7 +939,7 @@ module xs_Tage_SC_core #(
               bank_tick_dist[b] <= bank_tick_dist[b] - u_tickIncVal[b];
             end
           end else if (u_tickDec[b]) begin
-            if (tickToNegSat) begin
+            if (tick_neg[b]) begin
               bank_tick_ctr[b]  <= '0;
               bank_tick_dist[b] <= TICK_MAX;
             end else begin

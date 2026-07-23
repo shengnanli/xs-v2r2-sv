@@ -1,0 +1,52 @@
+{
+    "unresolved_blackbox": [
+        {
+            "id": "bt",
+            "ref_path": "r:/WORK/Tage_SC/bt",
+            "impl_path": "i:/WORK/Tage_SC/bt"
+        },
+        {
+            "id": "scTables_0",
+            "ref_path": "r:/WORK/Tage_SC/scTables_0",
+            "impl_path": "i:/WORK/Tage_SC/scTables_0"
+        },
+        {
+            "id": "scTables_1",
+            "ref_path": "r:/WORK/Tage_SC/scTables_1",
+            "impl_path": "i:/WORK/Tage_SC/scTables_1"
+        },
+        {
+            "id": "scTables_2",
+            "ref_path": "r:/WORK/Tage_SC/scTables_2",
+            "impl_path": "i:/WORK/Tage_SC/scTables_2"
+        },
+        {
+            "id": "scTables_3",
+            "ref_path": "r:/WORK/Tage_SC/scTables_3",
+            "impl_path": "i:/WORK/Tage_SC/scTables_3"
+        },
+        {
+            "id": "tables_0",
+            "ref_path": "r:/WORK/Tage_SC/tables_0",
+            "impl_path": "i:/WORK/Tage_SC/tables_0"
+        },
+        {
+            "id": "tables_1",
+            "ref_path": "r:/WORK/Tage_SC/tables_1",
+            "impl_path": "i:/WORK/Tage_SC/tables_1"
+        },
+        {
+            "id": "tables_2",
+            "ref_path": "r:/WORK/Tage_SC/tables_2",
+            "impl_path": "i:/WORK/Tage_SC/tables_2"
+        },
+        {
+            "id": "tables_3",
+            "ref_path": "r:/WORK/Tage_SC/tables_3",
+            "impl_path": "i:/WORK/Tage_SC/tables_3"
+        }
+    ],
+    "interface_only": [],
+    "empty_blackbox": [],
+    "unmatched": []
+}
