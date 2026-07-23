@@ -12,7 +12,9 @@ provenance = G0,不借用 implementation RTL(满足 FM_REF_DEPS 只引 canonical
 """
 import sys, os, re
 
-MODS = ["FTB", "FauFTB", "Tage_SC", "RAS", "ITTage"]
+# RAS 不做接口桩：RAS/RASStack 是非 vendor 纯逻辑, 按 reviewer 裁定两侧 elaborate
+# 白盒受验(RAS 不是 305 target, 不能 depends_on 黑盒)。只对 4 个绿 child 预测器建桩。
+MODS = ["FTB", "FauFTB", "Tage_SC", "ITTage"]
 
 
 def extract_header(src_path, mod):

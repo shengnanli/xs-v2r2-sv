@@ -99,10 +99,13 @@ FM_VARIANTS = Composer
 # 逻辑仍为空(等价黑盒), 预测器内部在各自 UT/FM 单独验证。DelayN 小, 直接给真源。
 # DelayN.sv 是 golden 文件(GOLDEN_RTL 相对); predictor_stubs.sv 是 repo 内 canonical 桩,
 # 走 FM_REF_ABS 绝对路径(signoff 外部化 GOLDEN_RTL 后 repo 文件无法 GOLDEN_RTL-相对寻址)。
-FM_REF_DEPS_Composer = DelayN.sv
+# RAS/RASStack: 非 vendor 纯逻辑, 两侧 elaborate 白盒受验(reviewer 裁定; RAS 非 305
+#   target 不能 depends_on 黑盒)。加入 FM ref deps 与 impl WRAPPER_SRCS → 不再黑盒。
+FM_REF_DEPS_Composer = DelayN.sv RAS.sv RASStack.sv
 FM_REF_ABS_Composer = $(abspath predictor_stubs.sv)
-# impl 侧同读桩与 DelayN(仅 FM 用; UT 编译不含 WRAPPER_SRCS, 不会与真源重定义)
-WRAPPER_SRCS += predictor_stubs.sv $(GOLDEN_RTL)/DelayN.sv
+# impl 侧同读桩与 DelayN + RAS/RASStack(仅 FM 用; UT 编译不含 WRAPPER_SRCS, 不重定义)
+WRAPPER_SRCS += predictor_stubs.sv $(GOLDEN_RTL)/DelayN.sv \
+                $(GOLDEN_RTL)/RAS.sv $(GOLDEN_RTL)/RASStack.sv
 
 include ../../../scripts/ut_common.mk
 
