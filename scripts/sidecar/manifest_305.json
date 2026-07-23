@@ -3081,8 +3081,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "vmucp: FastArbiter_6双侧elaborate后1个对称matched-unread死位(仲裁器golden两侧同源双射); 残留4 golden-only waitG[4] dead-ref",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
