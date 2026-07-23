@@ -132,6 +132,11 @@ module xs_FTBEntryGen
   // =========================================================================
   ftb_entry_t mod_newbr;
   always_comb begin
+    // 组合临时量提到顶层并默认赋值,避免 always_comb 内条件赋值被推断为闩锁
+    logic [OFFSET_W-1:0] new_pft_off;
+    logic [OFFSET_W:0]   sum;
+    new_pft_off = '0;
+    sum         = '0;
     mod_newbr = oe;
     // slot0 (brSlot)
     if (ins0) begin
@@ -165,8 +170,6 @@ module xs_FTBEntryGen
     end
     // 两 slot 都满还要插新 br → 必须牺牲 jmp，fall-through 改到新边界
     if (is_new_br & may_have_to_replace) begin
-      logic [OFFSET_W-1:0] new_pft_off;
-      logic [OFFSET_W:0]   sum;
       new_pft_off = (insert_onehot == 2'b0) ? new_br_off : oe.tailSlot.offset;
       sum         = {1'b0, start_lower} + {1'b0, new_pft_off};
       mod_newbr.pftAddr              = sum[OFFSET_W-1:0];
