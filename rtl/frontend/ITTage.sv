@@ -261,13 +261,27 @@ module xs_ITTage_core #(
   //   低 20 位 = 表给的 offset。
   //   region_pc 取 s2_pc[49:20]（与 golden 的 s2_pc_seg 拼法一致）。
   // ===========================================================================
-  // s2_pc：s1_pc 寄一拍（仅用 dup0 重建 region_pc；golden 各 dup 重建结果相同）
-  logic [PC_W-1:0] s2_pc_dup0;
+  // s2_pc：s1_pc 寄一拍。按 golden 的分段布局存储(seg_0=PC[49:24]/seg_1=PC[23:12]/
+  // seg_2=PC[11:0]),使 FM 与 golden 的 s2_pc_dup_s2_pc_seg_* 寄存器逐段双射匹配。
+  // 功能只读 region = {seg_0, seg_1[11:8]} = PC[49:20];seg_1[7:0]/seg_2 是 golden
+  // 调试流水复制位(本核存而不读, 与 golden 同值 → vmucp 双射验证)。dup0 足够:
+  // golden 各 dup 重建 region 结果相同, 其余 dup 为 golden-only 调试复制(dead-ref)。
+  localparam int unsigned SEG0_W = PC_W - 24;      // 26 = PC[49:24]
+  logic [SEG0_W-1:0] s2_pc_seg_0;
+  logic [11:0]       s2_pc_seg_1;
+  logic [11:0]       s2_pc_seg_2;
   always_ff @(posedge clock or posedge reset) begin
-    if (reset) s2_pc_dup0 <= '0;
-    else if (io_s1_fire[0]) s2_pc_dup0 <= s1_pc_dup[0];
+    if (reset) begin
+      s2_pc_seg_0 <= '0;
+      s2_pc_seg_1 <= '0;
+      s2_pc_seg_2 <= '0;
+    end else if (io_s1_fire[0]) begin
+      s2_pc_seg_0 <= s1_pc_dup[0][PC_W-1:24];
+      s2_pc_seg_1 <= s1_pc_dup[0][23:12];
+      s2_pc_seg_2 <= s1_pc_dup[0][11:0];
+    end
   end
-  wire [REGION_W-1:0] region_pc = s2_pc_dup0[PC_W-1 : OFF_W];
+  wire [REGION_W-1:0] region_pc = {s2_pc_seg_0, s2_pc_seg_1[11:8]};
 
   // 每张表重建的目标
   logic [PC_W-1:0] region_target [NUM_TBL];

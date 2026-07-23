@@ -1103,12 +1103,12 @@
    "makefile": "verif/ut/ITTage/Makefile",
    "make_target": "fm-ITTage",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "allow_ref": "verif/signoff/allow/ITTage.json",
+   "rationale": "assembly+vmucp+dead-ref: 7黑盒中 5×ITTageTable(tables_0-4 全SIGNOFF_PASS,depends_on) + RegionWays/MaxPeriodFibonacciLFSR 双侧elaborate(非vendor逻辑,白盒); s2_pc按golden分段(seg_0/1/2)存储使FM逐段双射; vmucp验s1_pc_dup对称死位+s2_pc seg_1[7:0]/seg_2调试复制位; golden-only dup1-3/s3调试PC流水为cone-dead(无功能输出,只喂_debug_s3_pc_addr, dead-ref)",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
