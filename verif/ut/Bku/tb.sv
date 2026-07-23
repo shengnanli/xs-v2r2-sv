@@ -49,8 +49,14 @@ module tb;
   wire [7:0]  i_robIdx_value, i_pdest;
   wire [63:0] i_res_data, i_enq, i_sel, i_iss;
 
+  // golden Bku 有 io_out_ready 输入端口(impl 侧 out.ready 恒 tie-high, 不引出)。
+  // tb 不驱动它则悬空为 X → golden 内 rdyVec_1=~validVecThisFu_2|io_out_ready 在
+  // validVecThisFu_2=1 时变 X, 令 golden 输出/perf 寄存器间歇冻结, 与 impl(恒 ready)
+  // 产生大量伪失配。按真实设计(Bku.out.ready 恒 1)把 golden io_out_ready 钉为 1。
+  // (io_in_ready 是 golden 输出, impl 未引出, 悬空即可, 不参与比对。)
   Bku g_dut (
     .clock(clock), .reset(reset),
+    .io_out_ready(1'b1),
     .io_in_valid(io_in_valid),
     .io_in_bits_ctrl_fuOpType(io_in_bits_ctrl_fuOpType),
     .io_in_bits_ctrlPipe_2_robIdx_flag(io_in_bits_ctrlPipe_2_robIdx_flag),

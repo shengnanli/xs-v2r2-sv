@@ -127,8 +127,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "目标strengthening: 5份 funcReg(顶层Bku + count/clmul/crypto/blockCipher子单元)各9位, 两侧都锁存同一 fuOpType 副本; 各模块 result-mux 只读该寄存器的子集位, 未读位两侧 bug-for-bug 对称 cone-dead(top死0/1/4/6/7/8, count死3-8, crypto死非[4], clmul/cipher全宽只整字比较). 层次名(cryptoModule vs u_core/u_crypto)+叶名(funcReg vs func_reg)差异使 auto_match 失败, fm_pins.tcl 对5模块×9位逐位 set_user_match 双射配对. vmucp=true令FM实际比较这45个 matched-unread 点验证恒相等(同源同拍锁存); 非waiver/dont_verify/扩黑盒",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
