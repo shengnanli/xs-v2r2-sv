@@ -1296,10 +1296,11 @@ module xs_Ftq_core(
   reg  [1:0]                entry_hit_status  [FTQ_SIZE]; // H_NOT_HIT / H_FALSE_HIT / H_HIT
   reg  [1:0]                pred_stage        [FTQ_SIZE]; // 该块由 BPU 哪一级产生
   reg  [49:0]              update_target     [FTQ_SIZE]; // 该块最新目标
-  reg                       ifuRedirected     [FTQ_SIZE]; // 该块是否被 IFU 预解码重定向过
+  // 注: golden 无 ifuRedirected 阵列（Chisel 写而不读→firtool 消死）。原 impl 保留成
+  //     write-only 死寄存器（64 项 unread_impl），删除以对齐 golden 读宽。
 
   reg  [49:0]              newest_entry_target;       reg newest_entry_target_modified;
-  reg  [PTR_W:0]           newest_entry_ptr;          reg newest_entry_ptr_modified;
+  reg  [PTR_W:0]           newest_entry_ptr;          // newest_entry_ptr_modified 已删（write-only 死寄存器）
   reg  [1:0]               bpu_ftb_update_stall;      // FTB 更新 2 拍 stall 状态机
   reg  [1:0]               backendException;          // ExceptionType (none/pf/gpf/af)
   reg  [PTR_W:0]           backendPcFaultPtr;
@@ -1312,7 +1313,7 @@ module xs_Ftq_core(
   reg  [3:0]     last_cycle_cfiIndex_bits;
   reg  [1:0]     last_cycle_bpu_in_stage;
   reg            last2_bpu_in;            // RegNext(last_cycle_bpu_in)，用于延后清 mispred
-  reg  [PTR_W:0] last2_bpu_in_ptr;
+  reg  [PTR_W-1:0] last2_bpu_in_ptr;  // 只用 value 位索引 mispred_block；golden r 亦 6 位无 flag
 
   // ===========================================================================
   // ② to IFU / ICache / Prefetch（对应 Scala 823-983）
@@ -1321,7 +1322,7 @@ module xs_Ftq_core(
   reg  [49:0] bpu_in_bypass_startAddr, bpu_in_bypass_nextLineAddr;
   reg         bpu_in_bypass_fallThruErr;
   reg  [PTR_W:0] bpu_in_bypass_ptr;
-  reg         last_cycle_to_ifu_fire, last_cycle_to_pf_fire;
+  reg         last_cycle_to_ifu_fire;  // last_cycle_to_pf_fire 已删（golden 为 wire 非 reg，impl 写而不读）
 
   wire        ifu_req_fire = io_toIfu_req_valid & io_toIfu_req_ready;
   wire        pf_req_fire  = io_toPrefetch_req_valid & io_toPrefetch_req_ready;
@@ -1536,7 +1537,9 @@ module xs_Ftq_core(
   wire        hit_pd_mispred = hit_pd_valid & io_fromIfu_pdWb_bits_misOffset_valid;
   reg         hit_pd_mispred_reg;
   // 打一拍的 pd / start_pc / wb_idx（false-hit 检测要等 ftb_entry_mem 读出对齐）
-  reg  [PREDICT_W-1:0] pd_reg_valid, pd_reg_isRVC;  // false-hit 检测用
+  reg  [PREDICT_W-1:0] pd_reg_valid;                // false-hit 检测用
+  // 注: pd_reg_isRVC 已删——golden pd_reg 只存 valid/brType/isCall/isRet（无 isRVC），
+  //     impl false-hit 逻辑亦不读 isRVC，原保留成 16 项 write-only 死寄存器。
   reg  [PREDICT_W-1:0][1:0] pd_reg_brType;
   reg  [PREDICT_W-1:0] pd_reg_isCall, pd_reg_isRet;
   // isBr/isJal/isJalr 由寄存的 brType 组合译码（golden 仅寄存 brType，不再另存译码副本——
@@ -1602,8 +1605,8 @@ module xs_Ftq_core(
   reg  [3:0]  ifu_redir_reg_offset;
   reg  [49:0] ifu_redir_reg_pc, ifu_redir_reg_target;
   reg         ifu_redir_reg_pd_valid, ifu_redir_reg_pd_isRVC, ifu_redir_reg_pd_isCall, ifu_redir_reg_pd_isRet;
-  reg  [1:0]  ifu_redir_reg_pd_brType;
-  reg         ifu_redir_reg_predTaken, ifu_redir_reg_taken, ifu_redir_reg_isMisPred;
+  // ifu_redir_reg_pd_brType / _predTaken / _isMisPred 已删（write-only 死寄存器）。
+  reg         ifu_redir_reg_taken;
   assign ifu_flush = ifu_redir_valid | ifu_redir_reg_valid;
 
   // ===========================================================================
@@ -1738,11 +1741,11 @@ module xs_Ftq_core(
 
   // commit 读出（打一拍，对应 Scala 1410-1453）
   reg  [49:0] commit_pc_startAddr;
-  reg  [PTR_W:0] do_commit_ptr; reg do_commit;
+  reg do_commit;  // do_commit_ptr 已删（write-only 死寄存器，golden 同域亦 cone-dead）
   reg  [PREDICT_W-1:0][1:0] commit_state;
   reg         commit_cfi_valid; reg [3:0] commit_cfi_bits;
   reg  [PREDICT_W-1:0] commit_mispred_raw;       // RegEnable(mispred_block[commPtr])
-  reg  [1:0]  commit_hit; reg [1:0] commit_stage;
+  reg  [1:0]  commit_hit;  // commit_stage 已删（write-only 死寄存器，golden 无对应）
   reg  [49:0] commit_target_r;
   reg         commit_newest_eq;                  // RegNext(commPtr==newest_entry_ptr)
   reg  [49:0] commit_newest_target;
@@ -1965,7 +1968,7 @@ module xs_Ftq_core(
   // ===========================================================================
   reg         tobk_pc_mem_wen; reg [5:0] tobk_pc_mem_waddr; reg [49:0] tobk_pc_mem_wdata_start;
   reg         newest_en_q1, newest_en_q2;     // RegNext × 2
-  reg  [PTR_W:0] tobk_newest_ptr; reg [49:0] tobk_newest_target;
+  reg  [PTR_W-1:0] tobk_newest_ptr; reg [49:0] tobk_newest_target;  // 仅 value 位喂 io_toBackend_newest_entry_ptr_value；golden 亦 6 位无 flag
   assign io_toBackend_pc_mem_wen   = tobk_pc_mem_wen;
   assign io_toBackend_pc_mem_waddr = tobk_pc_mem_waddr;
   assign io_toBackend_pc_mem_wdata_startAddr = tobk_pc_mem_wdata_start;
@@ -2164,7 +2167,7 @@ module xs_Ftq_core(
       ifuPtrPlus1<=mk_ptr(0,1); ifuPtrPlus2<=mk_ptr(0,2);
       pfPtrPlus1<=mk_ptr(0,1); commPtrPlus1<=mk_ptr(0,1);
       for (int i=0;i<FTQ_SIZE;i++) begin
-        entry_fetch_status[i]<=F_SENT; entry_hit_status[i]<=H_NOT_HIT; ifuRedirected[i]<=1'b0;
+        entry_fetch_status[i]<=F_SENT; entry_hit_status[i]<=H_NOT_HIT;
         commitStateQueue[i]<='0;   // 复位为全 C_EMPTY（RegInit）
       end
       bpu_ftb_update_stall<=2'd0; backendException<=2'd0; backendPcFaultPtr<=mk_ptr(0,0);
@@ -2223,12 +2226,11 @@ module xs_Ftq_core(
       hit_pd_mispred_reg <= hit_pd_mispred;
       if (has_false_hit) entry_hit_status[wb_idx_reg] <= H_FALSE_HIT;
 
-      // ---- IFU redirect 打拍 + ifuRedirected 记录（对应 Scala 1156-1174）----
+      // ---- IFU redirect 打拍（对应 Scala 1156-1174）----
+      // ifuRedirected 记录已删（golden write-only 死寄存器，firtool 消死）。
       ifu_redir_reg_valid  <= ifu_redir_valid;
       if (ifu_redir_valid) begin // RegNextWithEnable：bits 仅在 fromIfuRedirect.valid 时更新
       end
-      if (ifu_redir_reg_valid) ifuRedirected[ifu_redir_reg_ptr[PTR_W-1:0]] <= 1'b1;
-      else if (last_cycle_bpu_in) ifuRedirected[last_cycle_bpu_in_ptr[PTR_W-1:0]] <= 1'b0;
 
       // ---- redirect 更新 cfiIndex/mispred/newest（对应 Scala 1212-1240）----
       // 优先后端 redirect，否则 IFU redirect
@@ -2308,17 +2310,16 @@ module xs_Ftq_core(
       // last_cycle_bpu_in 有效拍采样（不是无条件 RegNext）。仅用于 mispred_block 清零
       // (if (last2_bpu_in) 时 REG=1，两者取值一致)；但 FM 逐寄存器等价须使 next-state 逻辑
       // 与 golden 完全相同，否则 golden `r` 无匹配→自由变量污染 mispred_block 锥判失配。
-      if (last_cycle_bpu_in) last2_bpu_in_ptr <= last_cycle_bpu_in_ptr;
+      if (last_cycle_bpu_in) last2_bpu_in_ptr <= last_cycle_bpu_in_ptr[PTR_W-1:0];
 
       // ---- 入队后一拍：写各状态阵列（对应 Scala 718-736）----
-      newest_entry_ptr_modified<=1'b0;
       if (last_cycle_bpu_in) begin
         cfiIndex_valid[last_cycle_bpu_in_ptr[PTR_W-1:0]]     <= last_cycle_cfiIndex_valid;
         cfiIndex_bits[last_cycle_bpu_in_ptr[PTR_W-1:0]]      <= last_cycle_cfiIndex_bits;
         pred_stage[last_cycle_bpu_in_ptr[PTR_W-1:0]]         <= last_cycle_bpu_in_stage;
         update_target[last_cycle_bpu_in_ptr[PTR_W-1:0]]      <= last_cycle_bpu_target;
       newest_entry_target<=last_cycle_bpu_target;
-        newest_entry_ptr_modified   <=1'b1; newest_entry_ptr   <=last_cycle_bpu_in_ptr;
+        newest_entry_ptr   <=last_cycle_bpu_in_ptr;
         // 新入队块一拍后把其 commitStateQueue 复位为全 C_EMPTY（对应 Scala 748-757
         // copied_last_cycle_bpu_in 复位块）。否则 FTQ 64 项环绕重用旧项时, 残留的
         // C_COMMITTED/C_TO_COMMIT/C_FLUSHED 会污染 canCommit/commPtr 推进。
@@ -2334,7 +2335,6 @@ module xs_Ftq_core(
 
       // ---- to IFU/ICache/Prefetch 的流水寄存器 ----
       last_cycle_to_ifu_fire <= ifu_req_fire;
-      last_cycle_to_pf_fire  <= pf_req_fire;
       // toIfuPcBundle = 单级 RegNext(pc_mem rdata)：cur 用 ifuPtr_rdata，p1 用 ifuPtrPlus1_rdata
       toIfuPc_cur_startAddr<=pcmem_ifuPtr_startAddr; toIfuPc_cur_nextLineAddr<=pcmem_ifuPtr_nextLineAddr;
       toIfuPc_cur_fallThruErr<=pcmem_ifuPtr_fallThruErr;
@@ -2358,12 +2358,12 @@ module xs_Ftq_core(
       // 否则保持（golden `if (io_fromIfu_pdWb_valid) begin pd_reg_N_* <= ...; wb_idx_reg <= ... end`）。
       // 原实现漏掉使能→无写回拍也刷新，FM 判 pd_reg_valid/wb_idx_reg 与 golden 分叉。
       if (ifu_wb_valid) begin
-        pd_reg_valid<=pdwb_pd_valid; pd_reg_isRVC<=pdwb_pd_isRVC; pd_reg_brType<=pdwb_pd_brType;
+        pd_reg_valid<=pdwb_pd_valid; pd_reg_brType<=pdwb_pd_brType;
         pd_reg_isCall<=pdwb_pd_isCall; pd_reg_isRet<=pdwb_pd_isRet;
         wb_idx_reg <= ifu_wb_idx;
       end
 
-      // ---- IFU redirect 打拍 + ifuRedirected 记录（对应 Scala 1156-1174）----
+      // ---- IFU redirect 打拍（对应 Scala 1156-1174）----
       if (ifu_redir_valid) begin // RegNextWithEnable：bits 仅在 fromIfuRedirect.valid 时更新
         ifu_redir_reg_ptr    <= ifu_redir_ptr;
         ifu_redir_reg_offset <= ifu_redir_offset;
@@ -2373,10 +2373,8 @@ module xs_Ftq_core(
         ifu_redir_reg_pd_isRVC <= pdwb_pd_isRVC[ifu_redir_offset];
         ifu_redir_reg_pd_isCall<= pdwb_pd_isCall[ifu_redir_offset];
         ifu_redir_reg_pd_isRet <= pdwb_pd_isRet[ifu_redir_offset];
-        ifu_redir_reg_pd_brType<= pdwb_pd_brType[ifu_redir_offset];
-        ifu_redir_reg_predTaken<= cfiIndex_valid[io_fromIfu_pdWb_bits_ftqIdx_value];
+        // pd_brType/predTaken/isMisPred 已删（write-only 死寄存器，无输出扇出）。
         ifu_redir_reg_taken    <= io_fromIfu_pdWb_bits_cfiOffset_valid;
-        ifu_redir_reg_isMisPred<= io_fromIfu_pdWb_bits_misOffset_valid;
       end
 
       // ---- redirect 更新 cfiIndex/mispred/newest（对应 Scala 1212-1240）----
@@ -2393,7 +2391,7 @@ module xs_Ftq_core(
         update_target[fbr_idx_value] <= fbr_cfi_target;
         mispred_block[fbr_idx_value][fbr_offset] <= fbr_cfi_ismispred;
       newest_entry_target<=fbr_cfi_target;
-        newest_entry_ptr_modified   <=1'b1; newest_entry_ptr   <=mk_ptr(fbr_idx_flag,fbr_idx_value);
+        newest_entry_ptr   <=mk_ptr(fbr_idx_flag,fbr_idx_value);
       end else if (ifu_redir_reg_valid) begin
         if ((ifu_redir_reg_taken & (ifu_redir_reg_offset < cfiIndex_bits[ifu_redir_reg_ptr[PTR_W-1:0]]))
              | (ifu_redir_reg_offset==cfiIndex_bits[ifu_redir_reg_ptr[PTR_W-1:0]]))
@@ -2409,7 +2407,7 @@ module xs_Ftq_core(
         // cfiUpdate_target 而非 RAS 目标，导致 io_toIfu_req_bits_nextStartAddr 失配。
         update_target[ifu_redir_reg_ptr[PTR_W-1:0]] <= ifuToBpu_target;
       newest_entry_target<=ifuToBpu_target;
-        newest_entry_ptr_modified   <=1'b1; newest_entry_ptr   <=ifu_redir_reg_ptr;
+        newest_entry_ptr   <=ifu_redir_reg_ptr;
       end
 
       // ---- redirect 冲刷 commitStateQueue（对应 Scala 1303-1318）----
@@ -2441,13 +2439,13 @@ module xs_Ftq_core(
       commit_newest_eq      <= commPtr_eq_newest;
       if (newest_entry_target_modified) commit_newest_target <= newest_entry_target;
       if (canCommit) begin
-        do_commit_ptr  <= commPtr;
+        // do_commit_ptr/commit_stage 已删——两者 write-only（golden do_commit_ptr_value
+        // 亦 cone-dead，commit_stage golden 无对应），保留会成 impl-only 死寄存器。
         commit_state   <= commitStateQueue[commPtr[PTR_W-1:0]];
         commit_cfi_valid <= cfiIndex_valid[commPtr[PTR_W-1:0]];
         commit_cfi_bits  <= cfiIndex_bits[commPtr[PTR_W-1:0]];
         commit_mispred_raw <= mispred_block[commPtr[PTR_W-1:0]];
         commit_hit     <= entry_hit_status[commPtr[PTR_W-1:0]];
-        commit_stage   <= pred_stage[commPtr[PTR_W-1:0]];
       end
 
       // ---- toBackend 寄存（对应 Scala 1180-1188）----
@@ -2458,7 +2456,7 @@ module xs_Ftq_core(
       end
       newest_en_q1 <= last_cycle_bpu_in | be_redir_valid | ifu_redir_reg_valid;
       newest_en_q2 <= newest_en_q1;
-      if (newest_en_q1) begin tobk_newest_ptr<=newest_entry_ptr; tobk_newest_target<=newest_entry_target; end
+      if (newest_en_q1) begin tobk_newest_ptr<=newest_entry_ptr[PTR_W-1:0]; tobk_newest_target<=newest_entry_target; end
 
       // ---- mmio ----
       mmio_last_commit_q <= mmio_last_commit;

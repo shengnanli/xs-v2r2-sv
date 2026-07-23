@@ -1,7 +1,11 @@
 # Ftq FM 匹配前钉点（FM 审计 2026-07）
 # golden 逐 entry/逐槽展平命名 ↔ impl 数组寄存器命名的一一映射；签名分析在这些
 # 对称阵列上常错配，match 前显式 set_user_match 钉死。全部 catch 保护（点不存在则跳过）。
-setup
+# 注: 官方 runner 在 safe child interp 里执行本 pin 文件，其命令白名单仅在 [info commands
+#   setup] 非空时才为 setup 建立 alias（依 FM 当前模式而定）。pin 前 set_top 已把 FM 置于
+#   setup 模式，此处 `setup` 只是幂等再入；用 catch 包裹使其在 alias 缺失时静默跳过而非
+#   `invalid command name "setup"` 崩溃（此前 NO_NATIVE_FACTS 的直接根因）。
+catch {setup}
 
 set _n 0
 proc pin {r i} {
@@ -104,7 +108,7 @@ for {set j 0} {$j < 16} {incr j} {
 # pd 打拍（false-hit 检测）
 for {set j 0} {$j < 16} {incr j} {
   pin "pd_reg_${j}_valid_reg"  "pd_reg_valid_reg\[$j\]"
-  pin "pd_reg_${j}_isRVC_reg"  "pd_reg_isRVC_reg\[$j\]"
+  # pd_reg_isRVC 已删（golden pd_reg 无 isRVC，impl false-hit 逻辑亦不读）——不再钉
   pin "pd_reg_${j}_isCall_reg" "pd_reg_isCall_reg\[$j\]"
   pin "pd_reg_${j}_isRet_reg"  "pd_reg_isRet_reg\[$j\]"
   for {set b 0} {$b < 2} {incr b} {
