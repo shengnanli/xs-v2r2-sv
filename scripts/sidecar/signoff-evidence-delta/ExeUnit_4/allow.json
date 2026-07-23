@@ -1,0 +1,12 @@
+{
+    "unresolved_blackbox": [
+        {
+            "id": "Alu",
+            "ref_path": "r:/WORK/ExeUnit_4/Alu",
+            "impl_path": "i:/WORK/ExeUnit_4/u_core/Alu"
+        }
+    ],
+    "interface_only": [],
+    "empty_blackbox": [],
+    "unmatched": []
+}
