@@ -34,18 +34,29 @@ package xs_ftb_pkg;
   localparam logic [1:0] TAR_UDF = 2'd2;  // 高位 -1（目标在更低块）
 
   // ---- slot：一个 CFI 的位置与（压缩的）目标 ----
-  // lower 用最大宽度 JMP_OFF_LEN 存放；br slot 只用低 BR_OFF_LEN 位（高位 0）。
+  // tailSlot 用最大宽度 JMP_OFF_LEN 存放 lower；brSlot 只需 BR_OFF_LEN(12) 位。
+  // golden(firtool) 扁平化条目, brSlot.lower 存储恰为 12 位 → 分开定义两种 slot,
+  // 避免 brSlot 存 8 位常量 pad 产生死寄存器(与 golden 存储布局一致)。
   typedef struct packed {
     logic [OFFSET_W-1:0]    offset;   // CFI 在块内的指令 offset
     logic                   sharing;  // tailSlot 是否被「共享」作条件分支
     logic                   valid;
-    logic [JMP_OFF_LEN-1:0] lower;    // 目标低位（br 仅低 12 位有效）
+    logic [JMP_OFF_LEN-1:0] lower;    // 目标低位（tail 全宽 JMP_OFF_LEN）
     logic [1:0]             tarStat;  // 目标高位状态
   } ftb_slot_t;
 
+  // brSlot：lower 仅 BR_OFF_LEN 位（其余字段同 ftb_slot_t）
+  typedef struct packed {
+    logic [OFFSET_W-1:0]    offset;
+    logic                   sharing;
+    logic                   valid;
+    logic [BR_OFF_LEN-1:0]  lower;
+    logic [1:0]             tarStat;
+  } ftb_br_slot_t;
+
   typedef struct packed {
     logic                   valid;
-    ftb_slot_t              brSlot;   // numBrSlot=1：第 1 个条件分支
+    ftb_br_slot_t           brSlot;   // numBrSlot=1：第 1 个条件分支（lower 12 位）
     ftb_slot_t              tailSlot; // 块尾跳转 / 可共享的第 2 分支
     logic [OFFSET_W-1:0]    pftAddr;  // fall-through 地址低位
     logic                   carry;    // fall-through 进位

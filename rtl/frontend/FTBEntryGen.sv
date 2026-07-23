@@ -84,7 +84,7 @@ module xs_FTBEntryGen
       init_entry.brSlot.offset  = io_cfiIndex_bits;
       init_entry.brSlot.sharing = 1'b0;
       init_entry.brSlot.tarStat = calc_tarstat(io_start_addr, io_target, BR_OFF_LEN);
-      init_entry.brSlot.lower   = calc_lower(io_target, BR_OFF_LEN);
+      init_entry.brSlot.lower   = calc_lower(io_target, BR_OFF_LEN)[BR_OFF_LEN-1:0];  // brSlot.lower 12 位
       init_entry.strong_bias[0] = 1'b1;     // 新建即置强偏置
     end
 
@@ -144,7 +144,7 @@ module xs_FTBEntryGen
       mod_newbr.brSlot.offset  = new_br_off;
       mod_newbr.brSlot.sharing = 1'b0;
       mod_newbr.brSlot.tarStat = calc_tarstat(io_start_addr, io_target, BR_OFF_LEN);
-      mod_newbr.brSlot.lower   = calc_lower(io_target, BR_OFF_LEN);
+      mod_newbr.brSlot.lower   = calc_lower(io_target, BR_OFF_LEN)[BR_OFF_LEN-1:0];  // brSlot.lower 12 位
       mod_newbr.strong_bias[0] = 1'b1;
     end else if (new_br_off > oe.brSlot.offset) begin
       mod_newbr.strong_bias[0] = 1'b0;          // 越过旧 br0 → 清强偏置

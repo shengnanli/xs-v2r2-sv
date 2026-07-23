@@ -441,7 +441,7 @@ module xs_FauFTB_core
         way_entry[gw].brSlot.offset    = r_brOff;
         way_entry[gw].brSlot.sharing   = r_brShar;
         way_entry[gw].brSlot.valid     = r_brVal;
-        way_entry[gw].brSlot.lower     = {{(JMP_OFF_LEN-BR_OFF_LEN){1'b0}}, r_brLow};
+        way_entry[gw].brSlot.lower     = r_brLow;   // brSlot.lower 现为 12 位
         way_entry[gw].brSlot.tarStat   = r_brTar;
         way_entry[gw].tailSlot.offset  = r_tailOff;
         way_entry[gw].tailSlot.sharing = r_tailShar;
@@ -577,8 +577,7 @@ module xs_FauFTB_core
       u_bits_entry.brSlot.offset    <= io_update_bits_ftb_entry_brSlots_0_offset;
       u_bits_entry.brSlot.sharing   <= io_update_bits_ftb_entry_brSlots_0_sharing;
       u_bits_entry.brSlot.valid     <= io_update_bits_ftb_entry_brSlots_0_valid;
-      u_bits_entry.brSlot.lower     <= {{(JMP_OFF_LEN-BR_OFF_LEN){1'b0}},
-                                        io_update_bits_ftb_entry_brSlots_0_lower};
+      u_bits_entry.brSlot.lower     <= io_update_bits_ftb_entry_brSlots_0_lower;   // 12 位
       u_bits_entry.brSlot.tarStat   <= io_update_bits_ftb_entry_brSlots_0_tarStat;
       u_bits_entry.tailSlot.offset  <= io_update_bits_ftb_entry_tailSlot_offset;
       u_bits_entry.tailSlot.sharing <= io_update_bits_ftb_entry_tailSlot_sharing;
