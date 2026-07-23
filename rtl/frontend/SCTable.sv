@@ -421,7 +421,7 @@ module xs_MbistPipeSc_core #(
   logic [6:0]  array_q;
   logic        req_q, all_q, wen_q, ren_q;
   logic [3:0]  be_q;
-  logic [8:0]  addr_q, addr_rd_q;
+  logic [7:0]  addr_q, addr_rd_q;  // MBIST 地址仅 8 位有效(SC SRAM<=256行); bit8 无扇出不存
   logic [23:0] data_in_q;
 
   // 本表是否被选中（array 命中本表 ID）/ 是否要把请求扩散到 SRAM
@@ -437,10 +437,10 @@ module xs_MbistPipeSc_core #(
       all_q     <= 1'b0;
       wen_q     <= 1'b0;
       be_q      <= 4'h0;
-      addr_q    <= 9'h0;
+      addr_q    <= 8'h0;
       data_in_q <= 24'h0;
       ren_q     <= 1'b0;
-      addr_rd_q <= 9'h0;
+      addr_rd_q <= 8'h0;
     end else begin
       if (activated) begin
         array_q <= mbist_array;
@@ -451,17 +451,17 @@ module xs_MbistPipeSc_core #(
       req_q <= mbist_req;
       if (activated & (mbist_readen | mbist_writeen)) begin
         be_q      <= mbist_be;
-        addr_q    <= mbist_addr;
+        addr_q    <= mbist_addr[7:0];
         data_in_q <= mbist_indata;
-        addr_rd_q <= mbist_addr_rd;
+        addr_rd_q <= mbist_addr_rd[7:0];
       end
     end
   end
 
   assign mbist_ack           = req_q;
   assign mbist_outdata       = selected ? toSRAM_0_rdata : 24'h0;
-  assign toSRAM_0_addr       = do_spread ? addr_q    : 9'h0;
-  assign toSRAM_0_addr_rd    = do_spread ? addr_rd_q : 9'h0;
+  assign toSRAM_0_addr       = do_spread ? {1'b0, addr_q}    : 9'h0;
+  assign toSRAM_0_addr_rd    = do_spread ? {1'b0, addr_rd_q} : 9'h0;
   assign toSRAM_0_wdata      = data_in_q;
   assign toSRAM_0_wmask      = be_q;
   assign toSRAM_0_re         = do_spread & ren_q;
