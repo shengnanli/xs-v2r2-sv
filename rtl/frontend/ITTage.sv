@@ -263,22 +263,20 @@ module xs_ITTage_core #(
   // ===========================================================================
   // s2_pc：s1_pc 寄一拍。按 golden 的分段布局存储(seg_0=PC[49:24]/seg_1=PC[23:12]/
   // seg_2=PC[11:0]),使 FM 与 golden 的 s2_pc_dup_s2_pc_seg_* 寄存器逐段双射匹配。
-  // 功能只读 region = {seg_0, seg_1[11:8]} = PC[49:20];seg_1[7:0]/seg_2 是 golden
-  // 调试流水复制位(本核存而不读, 与 golden 同值 → vmucp 双射验证)。dup0 足够:
-  // golden 各 dup 重建 region 结果相同, 其余 dup 为 golden-only 调试复制(dead-ref)。
+  // 功能只读 region = {seg_0, seg_1[11:8]} = PC[49:20]。seg_1 存满 12 位:高 4 位
+  // 用于 region, 低 8 位是 golden 调试流水复制位(本核存而不读, 与 golden s2_pc_seg_1
+  // 同值 → fm_pins set_user_match 双射 + vmucp 验证)。seg_2(PC[11:0])纯调试, golden
+  // 侧亦 unread → 本核不存(golden-only cone-dead dead-ref)。dup0 足够: 各 dup region 同。
   localparam int unsigned SEG0_W = PC_W - 24;      // 26 = PC[49:24]
   logic [SEG0_W-1:0] s2_pc_seg_0;
   logic [11:0]       s2_pc_seg_1;
-  logic [11:0]       s2_pc_seg_2;
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       s2_pc_seg_0 <= '0;
       s2_pc_seg_1 <= '0;
-      s2_pc_seg_2 <= '0;
     end else if (io_s1_fire[0]) begin
       s2_pc_seg_0 <= s1_pc_dup[0][PC_W-1:24];
       s2_pc_seg_1 <= s1_pc_dup[0][23:12];
-      s2_pc_seg_2 <= s1_pc_dup[0][11:0];
     end
   end
   wire [REGION_W-1:0] region_pc = {s2_pc_seg_0, s2_pc_seg_1[11:8]};
@@ -437,7 +435,7 @@ module xs_ITTage_core #(
   // 更新（commit）路径——第 1 拍：寄存 update 请求 + 解包 meta
   // ===========================================================================
   // update 请求寄存（io_update_valid 当拍打入）
-  logic [PC_W-1:0]   upd_pc;
+  logic [REGION_W-1:0] upd_pc_region;   // upd PC 仅区域高位参与比对(低 OFF_W 位死, 不存;golden update_r_pc 低位亦 unread=dead-ref)
   logic              upd_ftb_isRet, upd_ftb_isJalr;
   logic [PTR_W-1:0]  upd_ftb_tailSlot_offset;
   logic              upd_ftb_tailSlot_sharing, upd_ftb_tailSlot_valid;
@@ -465,7 +463,7 @@ module xs_ITTage_core #(
 
   always_ff @(posedge clock) begin
     if (io_update_valid) begin
-      upd_pc                   <= io_update_pc;
+      upd_pc_region            <= io_update_pc[PC_W-1:OFF_W];
       upd_ftb_isRet            <= io_update_ftb_isRet;
       upd_ftb_isJalr           <= io_update_ftb_isJalr;
       upd_ftb_tailSlot_offset  <= io_update_ftb_tailSlot_offset;
@@ -522,7 +520,7 @@ module xs_ITTage_core #(
   // provider 预测目标是否猜对（与真实目标比）
   wire update_provider_correct = (um_provider_target == upd_full_target);
   // 真实目标是否落在当前 PC 区（usePCRegion）
-  wire update_real_use_pc_region = (upd_full_target[PC_W-1:OFF_W] == upd_pc[PC_W-1:OFF_W]);
+  wire update_real_use_pc_region = (upd_full_target[PC_W-1:OFF_W] == upd_pc_region);
 
   // ===========================================================================
   // 分配决策（commit 侧）
