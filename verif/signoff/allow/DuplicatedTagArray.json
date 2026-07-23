@@ -1,0 +1,47 @@
+{
+    "unresolved_blackbox": [
+        {
+            "id": "array_0_tag_arrays_0",
+            "ref_path": "r:/WORK/DuplicatedTagArray/array_0/tag_arrays_0/tag_array/array/array/array_9_ext",
+            "impl_path": "i:/WORK/DuplicatedTagArray/g_tarr[0].array_k/tag_arrays_0/tag_array/array/array/array_9_ext"
+        },
+        {
+            "id": "array_0_tag_arrays_1",
+            "ref_path": "r:/WORK/DuplicatedTagArray/array_0/tag_arrays_1/tag_array/array/array/array_9_ext",
+            "impl_path": "i:/WORK/DuplicatedTagArray/g_tarr[0].array_k/tag_arrays_1/tag_array/array/array/array_9_ext"
+        },
+        {
+            "id": "array_1_tag_arrays_0",
+            "ref_path": "r:/WORK/DuplicatedTagArray/array_1/tag_arrays_0/tag_array/array/array/array_9_ext",
+            "impl_path": "i:/WORK/DuplicatedTagArray/g_tarr[1].array_k/tag_arrays_0/tag_array/array/array/array_9_ext"
+        },
+        {
+            "id": "array_1_tag_arrays_1",
+            "ref_path": "r:/WORK/DuplicatedTagArray/array_1/tag_arrays_1/tag_array/array/array/array_9_ext",
+            "impl_path": "i:/WORK/DuplicatedTagArray/g_tarr[1].array_k/tag_arrays_1/tag_array/array/array/array_9_ext"
+        },
+        {
+            "id": "array_2_tag_arrays_0",
+            "ref_path": "r:/WORK/DuplicatedTagArray/array_2/tag_arrays_0/tag_array/array/array/array_9_ext",
+            "impl_path": "i:/WORK/DuplicatedTagArray/g_tarr[2].array_k/tag_arrays_0/tag_array/array/array/array_9_ext"
+        },
+        {
+            "id": "array_2_tag_arrays_1",
+            "ref_path": "r:/WORK/DuplicatedTagArray/array_2/tag_arrays_1/tag_array/array/array/array_9_ext",
+            "impl_path": "i:/WORK/DuplicatedTagArray/g_tarr[2].array_k/tag_arrays_1/tag_array/array/array/array_9_ext"
+        },
+        {
+            "id": "array_3_tag_arrays_0",
+            "ref_path": "r:/WORK/DuplicatedTagArray/array_3/tag_arrays_0/tag_array/array/array/array_9_ext",
+            "impl_path": "i:/WORK/DuplicatedTagArray/g_tarr[3].array_k/tag_arrays_0/tag_array/array/array/array_9_ext"
+        },
+        {
+            "id": "array_3_tag_arrays_1",
+            "ref_path": "r:/WORK/DuplicatedTagArray/array_3/tag_arrays_1/tag_array/array/array/array_9_ext",
+            "impl_path": "i:/WORK/DuplicatedTagArray/g_tarr[3].array_k/tag_arrays_1/tag_array/array/array/array_9_ext"
+        }
+    ],
+    "interface_only": [],
+    "empty_blackbox": [],
+    "unmatched": []
+}

@@ -417,12 +417,12 @@
    "makefile": "verif/ut/DuplicatedTagArray/Makefile",
    "make_target": "fm-DuplicatedTagArray",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "allow_ref": "verif/signoff/allow/DuplicatedTagArray.json",
+   "rationale": "assembly(reviewer裁定选项2, 同ICacheDataArray): DCache 4副本 tag 阵列。TagArray/TagSRAMBank(rst_cnt逐组清零)/SRAMTemplate_114(holdRead/地址/mask/DFT连线)/sram_array/array_9 SRAM链 与 MbistPipeDcacheTag(纯逻辑MBIST流水) 全部两侧elaborate参与证明; 仅8个(4副本×2 TagSRAMBank)厂商存储宏 array_9_ext 作对称assembly黑盒边界(behavioral RAM ram[255:0], HARD_MACRO_BOUNDARY). native SUCCEEDED passing2450 failing/unverified/aborted/unread_ref/unread_impl/compare全0. vmucp=true: 令FM实际比较10个两侧同golden MbistPipeDcacheTag 的 matched-identical 死寄存器(mbistPl/addrReg_reg[8:0] 9bit写地址 + addrRdReg_reg[8] 读地址顶位; MBIST流水为9bit/512深共享模板但本SRAM仅256深/8bit addr, 顶位在SRAM边界截断→喂黑盒cone-dead; ref==impl路径全对称)验证恒相等. 非waiver/dont_verify/扩黑盒",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
