@@ -56,6 +56,8 @@ module xs_Rename_core
   input  logic                  io_redirect_bits_robIdx_flag,
   input  logic [ROB_PTR_W-1:0]  io_redirect_bits_robIdx_value,
   input  logic                  io_redirect_bits_level,         // flushItself: 1=冲刷自身
+  input  logic                  io_redirect_bits_debugIsCtrl,   // stallReason: 控制相关重定向
+  input  logic                  io_redirect_bits_debugIsMemVio, // stallReason: 访存违例重定向
 
   // -------- RAB 提交/回滚 --------
   input  logic                  io_rabCommits_isCommit,
@@ -131,6 +133,14 @@ module xs_Rename_core
   output logic [6:0]              io_out_numWB [RENAME_WIDTH],
   output logic                    io_out_wfflags_o [RENAME_WIDTH],
   output logic [4:0]              io_out_numLsElem [RENAME_WIDTH],
+  // 压缩 ROB-slot 折叠字段(非纯直通)：ftqPtr/ftqOffset 继承压缩组头, firstUop 门控,
+  //   waitForward/blockBackward 对合法计数器 CSR 读清零。
+  output logic                    io_out_ftqPtr_flag_o [RENAME_WIDTH],
+  output logic [5:0]              io_out_ftqPtr_value_o [RENAME_WIDTH],
+  output logic [3:0]              io_out_ftqOffset_o [RENAME_WIDTH],
+  output logic                    io_out_firstUop_o [RENAME_WIDTH],
+  output logic                    io_out_waitForward_o [RENAME_WIDTH],
+  output logic                    io_out_blockBackward_o [RENAME_WIDTH],
 
   // -------- 快照端口 --------
   input  logic                  io_snpt_snptDeq,
@@ -284,18 +294,26 @@ module xs_Rename_core
     for (int i = 0; i < COMMIT_WIDTH; i++) intFreePhyReg_REG[i] <= io_int_old_pdest[i];
 
   // ---- fp/vec/v0/vl FreeList 的 freeReq 要打一拍(golden: GatedValidRegNext) ----
+  // commitVec[i]=本口有效提交(组合网, 不放 always_ff 内声明——否则 FM 前端把 always_ff
+  //  内的 blocking 临时量每迭代推成死寄存器 cv_reg=unread_impl 伪影)。
+  logic [COMMIT_WIDTH-1:0] commitVec;
+  always_comb
+    for (int i = 0; i < COMMIT_WIDTH; i++)
+      commitVec[i] = io_rabCommits_isCommit & io_rabCommits_commitValid[i];
   logic [COMMIT_WIDTH-1:0] fpFreeReq_REG, vecFreeReq_REG, v0FreeReq_REG, vlFreeReq_REG;
   always_ff @(posedge clock or posedge reset)
     if (reset) begin
       fpFreeReq_REG <= '0; vecFreeReq_REG <= '0; v0FreeReq_REG <= '0; vlFreeReq_REG <= '0;
     end else
       for (int i = 0; i < COMMIT_WIDTH; i++) begin
-        logic cv; cv = io_rabCommits_isCommit & io_rabCommits_commitValid[i];
-        fpFreeReq_REG [i] <= cv & io_rabCommits_info_fpWen[i];
-        vecFreeReq_REG[i] <= cv & io_rabCommits_info_vecWen[i];
-        v0FreeReq_REG [i] <= cv & io_rabCommits_info_v0Wen[i];
-        vlFreeReq_REG [i] <= cv & io_rabCommits_info_vlWen[i];
+        fpFreeReq_REG [i] <= commitVec[i] & io_rabCommits_info_fpWen[i];
+        vecFreeReq_REG[i] <= commitVec[i] & io_rabCommits_info_vecWen[i];
+        v0FreeReq_REG [i] <= commitVec[i] & io_rabCommits_info_v0Wen[i];
+        vlFreeReq_REG [i] <= commitVec[i] & io_rabCommits_info_vlWen[i];
       end
+
+  // FreeList perf 输出先接命名中间线, 之后经 golden 的两级寄存器流水线映射到 io_perf_value。
+  logic [5:0] intFlPerf [4], fpFlPerf [4], vecFlPerf [4], v0FlPerf [4], vlFlPerf [4];
 
   // ---- 整数 FreeList(MEFreeList)：move elimination 版本 ----
   MEFreeList intFreeList (
@@ -331,12 +349,12 @@ module xs_Rename_core
     .io_snpt_useSnpt(io_snpt_useSnpt), .io_snpt_snptSelect(io_snpt_snptSelect),
     .io_snpt_flushVec_0(io_snpt_flushVec[0]), .io_snpt_flushVec_1(io_snpt_flushVec[1]),
     .io_snpt_flushVec_2(io_snpt_flushVec[2]), .io_snpt_flushVec_3(io_snpt_flushVec[3]),
-    .io_perf_0_value(io_perf_value[6]),  .io_perf_1_value(io_perf_value[7]),
-    .io_perf_2_value(io_perf_value[8]),  .io_perf_3_value(io_perf_value[9])
+    .io_perf_0_value(intFlPerf[0]), .io_perf_1_value(intFlPerf[1]),
+    .io_perf_2_value(intFlPerf[2]), .io_perf_3_value(intFlPerf[3])
   );
 
   // ---- fp/vec/v0/vl FreeList(StdFreeList 变体)，公共绑定用宏减少机械重复 ----
-  `define STD_FL(MOD, INST, REQ, WREQ, ALLOC, CAN, DOALLOC, FREEREQ, FREEPD, WENNAME, PB) \
+  `define STD_FL(MOD, INST, REQ, WREQ, ALLOC, CAN, DOALLOC, FREEREQ, FREEPD, WENNAME, PERF) \
     MOD INST ( \
       .clock(clock), .reset(reset), .io_redirect(io_redirect_valid), .io_walk(isWalk), \
       .io_allocateReq_0(REQ[0]), .io_allocateReq_1(REQ[1]), .io_allocateReq_2(REQ[2]), \
@@ -364,13 +382,13 @@ module xs_Rename_core
       .io_snpt_useSnpt(io_snpt_useSnpt), .io_snpt_snptSelect(io_snpt_snptSelect), \
       .io_snpt_flushVec_0(io_snpt_flushVec[0]), .io_snpt_flushVec_1(io_snpt_flushVec[1]), \
       .io_snpt_flushVec_2(io_snpt_flushVec[2]), .io_snpt_flushVec_3(io_snpt_flushVec[3]), \
-      .io_perf_0_value(io_perf_value[PB]),   .io_perf_1_value(io_perf_value[PB+1]), \
-      .io_perf_2_value(io_perf_value[PB+2]), .io_perf_3_value(io_perf_value[PB+3]) )
+      .io_perf_0_value(PERF[0]), .io_perf_1_value(PERF[1]), \
+      .io_perf_2_value(PERF[2]), .io_perf_3_value(PERF[3]) )
 
-  `STD_FL(StdFreeList,   fpFreeList,  fpAllocReq,  fpWalkReq,  fpAlloc,  fpCanAlloc,  fpDoAlloc,  fpFreeReq_REG,  io_fp_old_pdest,  fpWen,  10);
-  `STD_FL(StdFreeList_1, vecFreeList, vecAllocReq, vecWalkReq, vecAlloc, vecCanAlloc, vecDoAlloc, vecFreeReq_REG, io_vec_old_pdest, vecWen, 14);
-  `STD_FL(StdFreeList_2, v0FreeList,  v0AllocReq,  v0WalkReq,  v0Alloc,  v0CanAlloc,  v0DoAlloc,  v0FreeReq_REG,  io_v0_old_pdest,  v0Wen,  18);
-  `STD_FL(StdFreeList_3, vlFreeList,  vlAllocReq,  vlWalkReq,  vlAlloc,  vlCanAlloc,  vlDoAlloc,  vlFreeReq_REG,  io_vl_old_pdest,  vlWen,  22);
+  `STD_FL(StdFreeList,   fpFreeList,  fpAllocReq,  fpWalkReq,  fpAlloc,  fpCanAlloc,  fpDoAlloc,  fpFreeReq_REG,  io_fp_old_pdest,  fpWen,  fpFlPerf);
+  `STD_FL(StdFreeList_1, vecFreeList, vecAllocReq, vecWalkReq, vecAlloc, vecCanAlloc, vecDoAlloc, vecFreeReq_REG, io_vec_old_pdest, vecWen, vecFlPerf);
+  `STD_FL(StdFreeList_2, v0FreeList,  v0AllocReq,  v0WalkReq,  v0Alloc,  v0CanAlloc,  v0DoAlloc,  v0FreeReq_REG,  io_v0_old_pdest,  v0Wen,  v0FlPerf);
+  `STD_FL(StdFreeList_3, vlFreeList,  vlAllocReq,  vlWalkReq,  vlAlloc,  vlCanAlloc,  vlDoAlloc,  vlFreeReq_REG,  io_vl_old_pdest,  vlWen,  vlFlPerf);
   `undef STD_FL
 
   // ===================================================================
@@ -729,14 +747,79 @@ module xs_Rename_core
         io_out_imm[i] = {10'h0, io_in_bits[i].imm};
     end
 
-  // renameTime：自由计数器(每个 uop 一个，复位 0、每拍 +1)；难以与 golden 同步，
-  // UT 跳过(don't-care)。这里给一个全局计数器复制到各口。
-  logic [63:0] gtimer;
-  always_ff @(posedge clock or posedge reset) if (reset) gtimer <= '0; else gtimer <= gtimer + 64'h1;
-  always_comb for (int i = 0; i < RENAME_WIDTH; i++) io_out_debugInfo_renameTime[i] = gtimer;
+  // renameTime：debug 观测计数器。golden 每口一个独立 64bit 计数器
+  //   uops_i_debugInfo_renameTime_c，均复位 0、每拍无条件 +1(golden 无条件 load，
+  //   6 个计数器行为完全一致)。逐口独立复刻以与 golden 结构 1:1 对应
+  //   (单一全局 gtimer 会因 FM verification_merge_duplicated_registers 折叠导致某口
+  //    无法配对而 failing——bug-for-bug 结构对齐后各口 DFF 逐一匹配)。
+  logic [63:0] renameTime_c [RENAME_WIDTH];
+  always_ff @(posedge clock or posedge reset)
+    if (reset)
+      for (int i = 0; i < RENAME_WIDTH; i++) renameTime_c[i] <= 64'h0;
+    else
+      for (int i = 0; i < RENAME_WIDTH; i++) renameTime_c[i] <= renameTime_c[i] + 64'h1;
+  always_comb for (int i = 0; i < RENAME_WIDTH; i++) io_out_debugInfo_renameTime[i] = renameTime_c[i];
 
   // 85 直通字段：直接把输入 struct 透传(wrapper 只取 DynInst 里存在的字段)
   always_comb for (int i = 0; i < RENAME_WIDTH; i++) io_out_passthru[i] = io_in_bits[i];
+
+  // ---- 压缩 ROB-slot 折叠字段(严格复刻 golden uops_i_*)----
+  // ftqPtr/ftqOffset：口 i 若前序口(i-1)不独占 ROB 槽(~needRobFlags[i-1]),则继承已折叠
+  //   的 uops_{i-1} 值(压缩组内共享组头 ftq);否则取本口 in。口 0 直通。递归 fold。
+  // firstUop：口 0 直通;口 i>0 = needRobFlags[i-1] & in_i.firstUop。
+  logic       fldFtqFlag  [RENAME_WIDTH];
+  logic [5:0] fldFtqValue [RENAME_WIDTH];
+  logic [3:0] fldFtqOff   [RENAME_WIDTH];
+  always_comb begin
+    fldFtqFlag [0] = io_in_bits[0].ftqPtr_flag;
+    fldFtqValue[0] = io_in_bits[0].ftqPtr_value;
+    fldFtqOff  [0] = io_in_bits[0].ftqOffset;
+    for (int i = 1; i < RENAME_WIDTH; i++) begin
+      fldFtqFlag [i] = needRobFlags[i-1] ? io_in_bits[i].ftqPtr_flag  : fldFtqFlag [i-1];
+      fldFtqValue[i] = needRobFlags[i-1] ? io_in_bits[i].ftqPtr_value : fldFtqValue[i-1];
+      fldFtqOff  [i] = needRobFlags[i-1] ? io_in_bits[i].ftqOffset    : fldFtqOff  [i-1];
+    end
+  end
+  always_comb
+    for (int i = 0; i < RENAME_WIDTH; i++) begin
+      io_out_ftqPtr_flag_o [i] = fldFtqFlag [i];
+      io_out_ftqPtr_value_o[i] = fldFtqValue[i];
+      io_out_ftqOffset_o   [i] = fldFtqOff  [i];
+      io_out_firstUop_o    [i] = (i == 0) ? io_in_bits[0].firstUop
+                                          : (needRobFlags[i-1] & io_in_bits[i].firstUop);
+    end
+
+  // ---- waitForward/blockBackward：合法只读 CSR 读免屏障清零 ----
+  //   isCsrr = SYSTEM(opcode[6:2]=0x1C) & funct3 有效(|instr[13:12]) & instr[13]
+  //            & rs1(instr[19:15])==0 —— 即 csrr rd,csr,x0 形式的 CSR 读。
+  //   注意 golden 两字段用【不同白名单】(waitForward 更宽含 frm/fflags/counter 等 21 个,
+  //   blockBackward 仅 9 个)。out.X = in.X & ~(isCsrr & ~csrOKfor_X)。
+  logic [RENAME_WIDTH-1:0] isCsrr, csrWaitOK, csrBlockOK;
+  always_comb
+    for (int i = 0; i < RENAME_WIDTH; i++) begin
+      logic [11:0] csr;
+      csr = io_in_bits[i].instr[31:20];
+      isCsrr[i] = (io_in_bits[i].instr[6:2] == 5'h1C) & (|io_in_bits[i].instr[13:12])
+                & io_in_bits[i].instr[13] & (io_in_bits[i].instr[19:15] == 5'h0);
+      // waitForward 白名单(21): 计数器 + frm/fflags/fcsr/vxsat/vxrm/vcsr/vstart 等只读读
+      csrWaitOK[i] =
+          (csr == 12'h25C) | (csr == 12'h15C) | (csr == 12'h35C) | (csr == 12'hEB0)
+        | (csr == 12'hDB0) | (csr == 12'hFB0) | (csr == 12'h251) | (csr == 12'h151)
+        | (csr == 12'h351) | (csr == 12'hC21) | (csr == 12'h7B0) | (csr == 12'h744)
+        | (csr == 12'h600) | (csr == 12'h300) | (csr == 12'h200) | (csr == 12'h100)
+        | (csr == 12'h8)   | (csr == 12'hF)   | (csr == 12'h9)   | (csr == 12'h3)
+        | (csr == 12'h1);
+      // blockBackward 白名单(9): 仅 counter 组(mcycle/minstret/hpm 影子等)
+      csrBlockOK[i] =
+          (csr == 12'h151) | (csr == 12'h15C) | (csr == 12'h251) | (csr == 12'h25C)
+        | (csr == 12'h351) | (csr == 12'h35C) | (csr == 12'hDB0) | (csr == 12'hEB0)
+        | (csr == 12'hFB0);
+    end
+  always_comb
+    for (int i = 0; i < RENAME_WIDTH; i++) begin
+      io_out_waitForward_o  [i] = io_in_bits[i].waitForward   & ~(isCsrr[i] & ~csrWaitOK[i]);
+      io_out_blockBackward_o[i] = io_in_bits[i].blockBackward & ~(isCsrr[i] & ~csrBlockOK[i]);
+    end
 
   // ===================================================================
   // B批：译码级组合机器(依赖 CompressUnit 的 masks/instrSizes/needRobFlags/canCompressVec)
@@ -1027,16 +1110,140 @@ module xs_Rename_core
     end
 
   // ===================================================================
-  // 9. stallReason / perf 尾部(简化：reason 直通、backReason 透传、perf 由 FreeList 填)
+  // 9. stallReason(topdown 反压归因)：严格复刻 golden。
+  //   backReason_valid = out.backReason.valid | ~in0.ready
+  //   backReason_bits  = 优先级级联(golden priority chain):
+  //     out.backReason.valid                     → 0x25 (backend 反压)
+  //     ctrlRecStall                             → 0x21
+  //     mvioRecStall                             → 0x22
+  //     otherRecStall                            → 0x23
+  //     multiFlStall 且仅 int/fp/vec/v0/vl 之一无法分配 → 0x12/13/14/15/16
+  //     multiFlStall 且 (≥2 个 FreeList 不足)     → 0x17
+  //     否则                                     → 0x25
+  //   out.reason[i] = backReason_valid ? backReason_bits : in.reason[i]
+  //   debugRedirect_debugIsCtrl/MemVio: 打一拍锁存 redirect 的 debug 标志(walk 期回放用)。
   // ===================================================================
+  // golden: 仅在 io_redirect_valid 拍锁存(带使能, 无 reset), walk 期用上次 redirect 值。
+  logic debugRedirect_debugIsCtrl, debugRedirect_debugIsMemVio;
+  always_ff @(posedge clock)
+    if (io_redirect_valid) begin
+      debugRedirect_debugIsCtrl   <= io_redirect_bits_debugIsCtrl;
+      debugRedirect_debugIsMemVio <= io_redirect_bits_debugIsMemVio;
+    end
+
+  wire recStall     = io_redirect_valid | isWalk;
+  wire ctrlRecStall = io_redirect_valid ? io_redirect_bits_debugIsCtrl
+                                        : (isWalk & debugRedirect_debugIsCtrl);
+  wire mvioRecStall = io_redirect_valid ? io_redirect_bits_debugIsMemVio
+                                        : (isWalk & debugRedirect_debugIsMemVio);
+  wire otherRecStall = recStall & ~(ctrlRecStall | mvioRecStall);
+  // multiFlStall: out0 未有效 & 非重定向/walk 反压 & in0 有效
+  wire multiFlStall = ~io_out_valid[0] & ~recStall & io_in_valid[0];
+  // 不足的 FreeList 个数(0..5)
+  logic [2:0] flShortCnt;
+  always_comb
+    flShortCnt = 3'({1'b0, ~intCanAlloc}) + 3'({1'b0, ~fpCanAlloc})
+               + 3'({1'b0, ~vecCanAlloc}) + 3'({1'b0, ~v0CanAlloc})
+               + 3'({1'b0, ~vlCanAlloc});
+
+  logic [5:0] backReasonBits;
+  always_comb begin
+    if (io_stallReason_out_backReason_valid)                                  backReasonBits = 6'h25;
+    else if (ctrlRecStall)                                                    backReasonBits = 6'h21;
+    else if (mvioRecStall)                                                    backReasonBits = 6'h22;
+    else if (otherRecStall)                                                   backReasonBits = 6'h23;
+    else if (multiFlStall & fpCanAlloc & vecCanAlloc & v0CanAlloc & vlCanAlloc & ~intCanAlloc)  backReasonBits = 6'h12;
+    else if (multiFlStall & intCanAlloc & vecCanAlloc & v0CanAlloc & vlCanAlloc & ~fpCanAlloc)  backReasonBits = 6'h13;
+    else if (multiFlStall & intCanAlloc & fpCanAlloc & v0CanAlloc & vlCanAlloc & ~vecCanAlloc)  backReasonBits = 6'h14;
+    else if (multiFlStall & intCanAlloc & fpCanAlloc & vecCanAlloc & vlCanAlloc & ~v0CanAlloc)  backReasonBits = 6'h15;
+    else if (multiFlStall & intCanAlloc & fpCanAlloc & vecCanAlloc & v0CanAlloc & ~vlCanAlloc)  backReasonBits = 6'h16;
+    else if (multiFlStall & (|flShortCnt[2:1]))                               backReasonBits = 6'h17;
+    else                                                                      backReasonBits = 6'h25;
+  end
+
   always_comb begin
     io_stallReason_in_backReason_valid = io_stallReason_out_backReason_valid | ~io_in_ready[0];
-    io_stallReason_in_backReason_bits  = '0; // 完整 topdown 计数属性能统计，非 A 批功能口
+    io_stallReason_in_backReason_bits  = backReasonBits;
     for (int i = 0; i < RENAME_WIDTH; i++)
-      io_stallReason_out_reason[i] = io_stallReason_in_reason[i];
+      io_stallReason_out_reason[i] = io_stallReason_in_backReason_valid
+                                   ? backReasonBits : io_stallReason_in_reason[i];
   end
-  // perf[0..5] 为 rename 自身性能事件(非功能)，置 0；perf[6..25] 由 FreeList 填。
-  always_comb for (int i = 0; i < 6; i++) io_perf_value[i] = '0;
-  always_comb for (int i = 26; i < 30; i++) io_perf_value[i] = '0;
+  // ===================================================================
+  // perf 事件流水线(严格复刻 golden)：30 个 io_perf.value，每个都经两级寄存器
+  //   (io_perf_N_value_REG → io_perf_N_value_REG_1)后输出。src 映射：
+  //     0  = Σ(in_i.valid & in_ready[0])            —— 本拍派发条数
+  //     1  = Σ(in_i.valid & ~in_ready[i])           —— 本拍阻塞条数
+  //     2  = inHeadStall_probe                       (in0.valid & ~in_ready[0])
+  //     3  = stallForWalk_probe                      (in0.valid & isWalk)
+  //     4  = in0.valid & ~isWalk & ~out0.ready
+  //     5..9 = 仅某一 FreeList 无法分配(其余四个可)时的阻塞事件(int/fp/vec/v0/vl)
+  //     10..13 = intFreeList.perf0..3   14..17 = fpFreeList
+  //     18..21 = vecFreeList            22..25 = v0FreeList   26..29 = vlFreeList
+  // ---------------------------------------------------------------------
+  // 组合 src(stage-0 输入)
+  wire inHeadStall_probe  = io_in_valid[0] & ~io_in_ready[0];
+  wire stallForWalk_probe = io_in_valid[0] & isWalk;
+  logic [2:0] perfDispCnt, perfStallCnt;
+  always_comb begin
+    perfDispCnt  = '0;
+    perfStallCnt = '0;
+    for (int i = 0; i < RENAME_WIDTH; i++) begin
+      perfDispCnt  += 3'({io_in_valid[i] & io_in_ready[0]});
+      perfStallCnt += 3'({io_in_valid[i] & ~io_in_ready[i]});
+    end
+  end
+  // 仅某一 FreeList 阻塞:五者互斥模式(base cond & ~该 canAlloc & 其余全 canAlloc)
+  wire perfBase = io_in_valid[0] & ~isWalk & io_out_ready[0];
+  wire perfOnlyInt = perfBase & fpCanAlloc  & vecCanAlloc & v0CanAlloc & vlCanAlloc & ~intCanAlloc;
+  wire perfOnlyFp  = perfBase & intCanAlloc & vecCanAlloc & v0CanAlloc & vlCanAlloc & ~fpCanAlloc;
+  wire perfOnlyVec = perfBase & intCanAlloc & fpCanAlloc  & v0CanAlloc & vlCanAlloc & ~vecCanAlloc;
+  wire perfOnlyV0  = perfBase & intCanAlloc & fpCanAlloc  & vecCanAlloc & vlCanAlloc & ~v0CanAlloc;
+  wire perfOnlyVl  = perfBase & intCanAlloc & fpCanAlloc  & vecCanAlloc & v0CanAlloc & ~vlCanAlloc;
+
+  // 两级寄存器流水线(golden: _REG → _REG_1), 复位不清(golden 无 reset 分支)。
+  // ★寄存器宽度严格按 golden 分组(否则超配的高位恒 0 → impl-only 死寄存器)：
+  //   perf 0,1  = 3bit(派发/阻塞计数, 0..6)，输出 {3'h0, REG_1}
+  //   perf 2..9 = 1bit(各类阻塞事件)，       输出 {5'h0, REG_1}
+  //   perf 10..29 = 6bit(FreeList 直传)，     输出 REG_1
+  logic [2:0] perf01_REG   [2],  perf01_REG_1   [2];   // idx 0,1
+  logic       perf2t9_REG  [8],  perf2t9_REG_1  [8];   // idx 2..9
+  // FreeList perf 输出恒为 {5'h0, 1bit}(见 StdFreeList/MEFreeList: io_perf=`{5'h0,REG}`),
+  //   故只寄存有效低位。impl 因此无死上位(golden 存 6bit 其上位恒 0=golden-only 冗余)。
+  logic       perfFl_REG   [20], perfFl_REG_1   [20];  // idx 10..29 (仅 bit0 有效)
+
+  logic       perf2t9_src [8];
+  always_comb begin
+    perf2t9_src[0] = inHeadStall_probe;                               // 2
+    perf2t9_src[1] = stallForWalk_probe;                              // 3
+    perf2t9_src[2] = io_in_valid[0] & ~isWalk & ~io_out_ready[0];     // 4
+    perf2t9_src[3] = perfOnlyInt;                                     // 5
+    perf2t9_src[4] = perfOnlyFp;                                      // 6
+    perf2t9_src[5] = perfOnlyVec;                                     // 7
+    perf2t9_src[6] = perfOnlyV0;                                      // 8
+    perf2t9_src[7] = perfOnlyVl;                                      // 9
+  end
+  logic perfFl_src [20];
+  always_comb
+    for (int k = 0; k < 4; k++) begin
+      perfFl_src[0+k]  = intFlPerf[k][0];   // 10..13
+      perfFl_src[4+k]  = fpFlPerf [k][0];   // 14..17
+      perfFl_src[8+k]  = vecFlPerf[k][0];   // 18..21
+      perfFl_src[12+k] = v0FlPerf [k][0];   // 22..25
+      perfFl_src[16+k] = vlFlPerf [k][0];   // 26..29
+    end
+
+  always_ff @(posedge clock) begin
+    perf01_REG[0] <= perfDispCnt;  perf01_REG_1[0] <= perf01_REG[0];
+    perf01_REG[1] <= perfStallCnt; perf01_REG_1[1] <= perf01_REG[1];
+    for (int i = 0; i < 8;  i++) begin perf2t9_REG[i] <= perf2t9_src[i]; perf2t9_REG_1[i] <= perf2t9_REG[i]; end
+    for (int i = 0; i < 20; i++) begin perfFl_REG [i] <= perfFl_src [i]; perfFl_REG_1 [i] <= perfFl_REG [i]; end
+  end
+
+  always_comb begin
+    io_perf_value[0] = {3'h0, perf01_REG_1[0]};
+    io_perf_value[1] = {3'h0, perf01_REG_1[1]};
+    for (int i = 0; i < 8;  i++) io_perf_value[2+i]  = {5'h0, perf2t9_REG_1[i]};
+    for (int i = 0; i < 20; i++) io_perf_value[10+i] = {5'h0, perfFl_REG_1[i]};
+  end
 
 endmodule

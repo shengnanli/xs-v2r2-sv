@@ -1603,6 +1603,10 @@ module Rename
   logic        o_lastUop [RENAME_WIDTH], o_wfflags [RENAME_WIDTH];
   logic [6:0]  o_numWB [RENAME_WIDTH];
   logic [4:0]  o_numLsElem [RENAME_WIDTH];
+  logic        o_ftqFlag [RENAME_WIDTH], o_firstUop [RENAME_WIDTH];
+  logic        o_waitFwd [RENAME_WIDTH], o_blockBwd [RENAME_WIDTH];
+  logic [5:0]  o_ftqValue [RENAME_WIDTH];
+  logic [3:0]  o_ftqOff [RENAME_WIDTH];
   rat_wport_t  intRP [COMMIT_WIDTH], fpRP [COMMIT_WIDTH], vecRP [COMMIT_WIDTH];
   logic        v0RP_wen [COMMIT_WIDTH], vlRP_wen [COMMIT_WIDTH];
   logic [7:0]  v0RP_data [COMMIT_WIDTH], vlRP_data [COMMIT_WIDTH];
@@ -2250,9 +2254,9 @@ module Rename
   assign io_out_0_bits_preDecodeInfo_isRVC = out_pt[0].preDecodeInfo_isRVC;
   assign io_out_0_bits_pred_taken = out_pt[0].pred_taken;
   assign io_out_0_bits_crossPageIPFFix = out_pt[0].crossPageIPFFix;
-  assign io_out_0_bits_ftqPtr_flag = out_pt[0].ftqPtr_flag;
-  assign io_out_0_bits_ftqPtr_value = out_pt[0].ftqPtr_value;
-  assign io_out_0_bits_ftqOffset = out_pt[0].ftqOffset;
+  assign io_out_0_bits_ftqPtr_flag = o_ftqFlag[0];
+  assign io_out_0_bits_ftqPtr_value = o_ftqValue[0];
+  assign io_out_0_bits_ftqOffset = o_ftqOff[0];
   assign io_out_0_bits_srcType_1 = out_pt[0].srcType[1];
   assign io_out_0_bits_srcType_2 = out_pt[0].srcType[2];
   assign io_out_0_bits_srcType_3 = out_pt[0].srcType[3];
@@ -2266,8 +2270,8 @@ module Rename
   assign io_out_0_bits_v0Wen = out_pt[0].v0Wen;
   assign io_out_0_bits_vlWen = out_pt[0].vlWen;
   assign io_out_0_bits_isXSTrap = out_pt[0].isXSTrap;
-  assign io_out_0_bits_waitForward = out_pt[0].waitForward;
-  assign io_out_0_bits_blockBackward = out_pt[0].blockBackward;
+  assign io_out_0_bits_waitForward = o_waitFwd[0];
+  assign io_out_0_bits_blockBackward = o_blockBwd[0];
   assign io_out_0_bits_flushPipe = out_pt[0].flushPipe;
   assign io_out_0_bits_selImm = out_pt[0].selImm;
   assign io_out_0_bits_fpu_typeTagOut = out_pt[0].fpu_typeTagOut;
@@ -2304,7 +2308,7 @@ module Rename
   assign io_out_0_bits_isMove = out_pt[0].isMove;
   assign io_out_0_bits_uopIdx = out_pt[0].uopIdx;
   assign io_out_0_bits_isVset = out_pt[0].isVset;
-  assign io_out_0_bits_firstUop = out_pt[0].firstUop;
+  assign io_out_0_bits_firstUop = o_firstUop[0];
   assign io_out_0_bits_commitType = out_pt[0].commitType;
   assign io_out_0_bits_psrc_0 = o_psrc[0][0];
   assign io_out_0_bits_psrc_1 = o_psrc[0][1];
@@ -2361,9 +2365,9 @@ module Rename
   assign io_out_1_bits_preDecodeInfo_isRVC = out_pt[1].preDecodeInfo_isRVC;
   assign io_out_1_bits_pred_taken = out_pt[1].pred_taken;
   assign io_out_1_bits_crossPageIPFFix = out_pt[1].crossPageIPFFix;
-  assign io_out_1_bits_ftqPtr_flag = out_pt[1].ftqPtr_flag;
-  assign io_out_1_bits_ftqPtr_value = out_pt[1].ftqPtr_value;
-  assign io_out_1_bits_ftqOffset = out_pt[1].ftqOffset;
+  assign io_out_1_bits_ftqPtr_flag = o_ftqFlag[1];
+  assign io_out_1_bits_ftqPtr_value = o_ftqValue[1];
+  assign io_out_1_bits_ftqOffset = o_ftqOff[1];
   assign io_out_1_bits_srcType_1 = out_pt[1].srcType[1];
   assign io_out_1_bits_srcType_2 = out_pt[1].srcType[2];
   assign io_out_1_bits_srcType_3 = out_pt[1].srcType[3];
@@ -2377,8 +2381,8 @@ module Rename
   assign io_out_1_bits_v0Wen = out_pt[1].v0Wen;
   assign io_out_1_bits_vlWen = out_pt[1].vlWen;
   assign io_out_1_bits_isXSTrap = out_pt[1].isXSTrap;
-  assign io_out_1_bits_waitForward = out_pt[1].waitForward;
-  assign io_out_1_bits_blockBackward = out_pt[1].blockBackward;
+  assign io_out_1_bits_waitForward = o_waitFwd[1];
+  assign io_out_1_bits_blockBackward = o_blockBwd[1];
   assign io_out_1_bits_flushPipe = out_pt[1].flushPipe;
   assign io_out_1_bits_selImm = out_pt[1].selImm;
   assign io_out_1_bits_fpu_typeTagOut = out_pt[1].fpu_typeTagOut;
@@ -2415,7 +2419,7 @@ module Rename
   assign io_out_1_bits_isMove = out_pt[1].isMove;
   assign io_out_1_bits_uopIdx = out_pt[1].uopIdx;
   assign io_out_1_bits_isVset = out_pt[1].isVset;
-  assign io_out_1_bits_firstUop = out_pt[1].firstUop;
+  assign io_out_1_bits_firstUop = o_firstUop[1];
   assign io_out_1_bits_commitType = out_pt[1].commitType;
   assign io_out_1_bits_psrc_0 = o_psrc[1][0];
   assign io_out_1_bits_psrc_1 = o_psrc[1][1];
@@ -2472,9 +2476,9 @@ module Rename
   assign io_out_2_bits_preDecodeInfo_isRVC = out_pt[2].preDecodeInfo_isRVC;
   assign io_out_2_bits_pred_taken = out_pt[2].pred_taken;
   assign io_out_2_bits_crossPageIPFFix = out_pt[2].crossPageIPFFix;
-  assign io_out_2_bits_ftqPtr_flag = out_pt[2].ftqPtr_flag;
-  assign io_out_2_bits_ftqPtr_value = out_pt[2].ftqPtr_value;
-  assign io_out_2_bits_ftqOffset = out_pt[2].ftqOffset;
+  assign io_out_2_bits_ftqPtr_flag = o_ftqFlag[2];
+  assign io_out_2_bits_ftqPtr_value = o_ftqValue[2];
+  assign io_out_2_bits_ftqOffset = o_ftqOff[2];
   assign io_out_2_bits_srcType_1 = out_pt[2].srcType[1];
   assign io_out_2_bits_srcType_2 = out_pt[2].srcType[2];
   assign io_out_2_bits_srcType_3 = out_pt[2].srcType[3];
@@ -2488,8 +2492,8 @@ module Rename
   assign io_out_2_bits_v0Wen = out_pt[2].v0Wen;
   assign io_out_2_bits_vlWen = out_pt[2].vlWen;
   assign io_out_2_bits_isXSTrap = out_pt[2].isXSTrap;
-  assign io_out_2_bits_waitForward = out_pt[2].waitForward;
-  assign io_out_2_bits_blockBackward = out_pt[2].blockBackward;
+  assign io_out_2_bits_waitForward = o_waitFwd[2];
+  assign io_out_2_bits_blockBackward = o_blockBwd[2];
   assign io_out_2_bits_flushPipe = out_pt[2].flushPipe;
   assign io_out_2_bits_selImm = out_pt[2].selImm;
   assign io_out_2_bits_fpu_typeTagOut = out_pt[2].fpu_typeTagOut;
@@ -2526,7 +2530,7 @@ module Rename
   assign io_out_2_bits_isMove = out_pt[2].isMove;
   assign io_out_2_bits_uopIdx = out_pt[2].uopIdx;
   assign io_out_2_bits_isVset = out_pt[2].isVset;
-  assign io_out_2_bits_firstUop = out_pt[2].firstUop;
+  assign io_out_2_bits_firstUop = o_firstUop[2];
   assign io_out_2_bits_commitType = out_pt[2].commitType;
   assign io_out_2_bits_psrc_0 = o_psrc[2][0];
   assign io_out_2_bits_psrc_1 = o_psrc[2][1];
@@ -2583,9 +2587,9 @@ module Rename
   assign io_out_3_bits_preDecodeInfo_isRVC = out_pt[3].preDecodeInfo_isRVC;
   assign io_out_3_bits_pred_taken = out_pt[3].pred_taken;
   assign io_out_3_bits_crossPageIPFFix = out_pt[3].crossPageIPFFix;
-  assign io_out_3_bits_ftqPtr_flag = out_pt[3].ftqPtr_flag;
-  assign io_out_3_bits_ftqPtr_value = out_pt[3].ftqPtr_value;
-  assign io_out_3_bits_ftqOffset = out_pt[3].ftqOffset;
+  assign io_out_3_bits_ftqPtr_flag = o_ftqFlag[3];
+  assign io_out_3_bits_ftqPtr_value = o_ftqValue[3];
+  assign io_out_3_bits_ftqOffset = o_ftqOff[3];
   assign io_out_3_bits_srcType_1 = out_pt[3].srcType[1];
   assign io_out_3_bits_srcType_2 = out_pt[3].srcType[2];
   assign io_out_3_bits_srcType_3 = out_pt[3].srcType[3];
@@ -2599,8 +2603,8 @@ module Rename
   assign io_out_3_bits_v0Wen = out_pt[3].v0Wen;
   assign io_out_3_bits_vlWen = out_pt[3].vlWen;
   assign io_out_3_bits_isXSTrap = out_pt[3].isXSTrap;
-  assign io_out_3_bits_waitForward = out_pt[3].waitForward;
-  assign io_out_3_bits_blockBackward = out_pt[3].blockBackward;
+  assign io_out_3_bits_waitForward = o_waitFwd[3];
+  assign io_out_3_bits_blockBackward = o_blockBwd[3];
   assign io_out_3_bits_flushPipe = out_pt[3].flushPipe;
   assign io_out_3_bits_selImm = out_pt[3].selImm;
   assign io_out_3_bits_fpu_typeTagOut = out_pt[3].fpu_typeTagOut;
@@ -2637,7 +2641,7 @@ module Rename
   assign io_out_3_bits_isMove = out_pt[3].isMove;
   assign io_out_3_bits_uopIdx = out_pt[3].uopIdx;
   assign io_out_3_bits_isVset = out_pt[3].isVset;
-  assign io_out_3_bits_firstUop = out_pt[3].firstUop;
+  assign io_out_3_bits_firstUop = o_firstUop[3];
   assign io_out_3_bits_commitType = out_pt[3].commitType;
   assign io_out_3_bits_psrc_0 = o_psrc[3][0];
   assign io_out_3_bits_psrc_1 = o_psrc[3][1];
@@ -2694,9 +2698,9 @@ module Rename
   assign io_out_4_bits_preDecodeInfo_isRVC = out_pt[4].preDecodeInfo_isRVC;
   assign io_out_4_bits_pred_taken = out_pt[4].pred_taken;
   assign io_out_4_bits_crossPageIPFFix = out_pt[4].crossPageIPFFix;
-  assign io_out_4_bits_ftqPtr_flag = out_pt[4].ftqPtr_flag;
-  assign io_out_4_bits_ftqPtr_value = out_pt[4].ftqPtr_value;
-  assign io_out_4_bits_ftqOffset = out_pt[4].ftqOffset;
+  assign io_out_4_bits_ftqPtr_flag = o_ftqFlag[4];
+  assign io_out_4_bits_ftqPtr_value = o_ftqValue[4];
+  assign io_out_4_bits_ftqOffset = o_ftqOff[4];
   assign io_out_4_bits_srcType_1 = out_pt[4].srcType[1];
   assign io_out_4_bits_srcType_2 = out_pt[4].srcType[2];
   assign io_out_4_bits_srcType_3 = out_pt[4].srcType[3];
@@ -2710,8 +2714,8 @@ module Rename
   assign io_out_4_bits_v0Wen = out_pt[4].v0Wen;
   assign io_out_4_bits_vlWen = out_pt[4].vlWen;
   assign io_out_4_bits_isXSTrap = out_pt[4].isXSTrap;
-  assign io_out_4_bits_waitForward = out_pt[4].waitForward;
-  assign io_out_4_bits_blockBackward = out_pt[4].blockBackward;
+  assign io_out_4_bits_waitForward = o_waitFwd[4];
+  assign io_out_4_bits_blockBackward = o_blockBwd[4];
   assign io_out_4_bits_flushPipe = out_pt[4].flushPipe;
   assign io_out_4_bits_selImm = out_pt[4].selImm;
   assign io_out_4_bits_fpu_typeTagOut = out_pt[4].fpu_typeTagOut;
@@ -2748,7 +2752,7 @@ module Rename
   assign io_out_4_bits_isMove = out_pt[4].isMove;
   assign io_out_4_bits_uopIdx = out_pt[4].uopIdx;
   assign io_out_4_bits_isVset = out_pt[4].isVset;
-  assign io_out_4_bits_firstUop = out_pt[4].firstUop;
+  assign io_out_4_bits_firstUop = o_firstUop[4];
   assign io_out_4_bits_commitType = out_pt[4].commitType;
   assign io_out_4_bits_psrc_0 = o_psrc[4][0];
   assign io_out_4_bits_psrc_1 = o_psrc[4][1];
@@ -2805,9 +2809,9 @@ module Rename
   assign io_out_5_bits_preDecodeInfo_isRVC = out_pt[5].preDecodeInfo_isRVC;
   assign io_out_5_bits_pred_taken = out_pt[5].pred_taken;
   assign io_out_5_bits_crossPageIPFFix = out_pt[5].crossPageIPFFix;
-  assign io_out_5_bits_ftqPtr_flag = out_pt[5].ftqPtr_flag;
-  assign io_out_5_bits_ftqPtr_value = out_pt[5].ftqPtr_value;
-  assign io_out_5_bits_ftqOffset = out_pt[5].ftqOffset;
+  assign io_out_5_bits_ftqPtr_flag = o_ftqFlag[5];
+  assign io_out_5_bits_ftqPtr_value = o_ftqValue[5];
+  assign io_out_5_bits_ftqOffset = o_ftqOff[5];
   assign io_out_5_bits_srcType_1 = out_pt[5].srcType[1];
   assign io_out_5_bits_srcType_2 = out_pt[5].srcType[2];
   assign io_out_5_bits_srcType_3 = out_pt[5].srcType[3];
@@ -2821,8 +2825,8 @@ module Rename
   assign io_out_5_bits_v0Wen = out_pt[5].v0Wen;
   assign io_out_5_bits_vlWen = out_pt[5].vlWen;
   assign io_out_5_bits_isXSTrap = out_pt[5].isXSTrap;
-  assign io_out_5_bits_waitForward = out_pt[5].waitForward;
-  assign io_out_5_bits_blockBackward = out_pt[5].blockBackward;
+  assign io_out_5_bits_waitForward = o_waitFwd[5];
+  assign io_out_5_bits_blockBackward = o_blockBwd[5];
   assign io_out_5_bits_flushPipe = out_pt[5].flushPipe;
   assign io_out_5_bits_selImm = out_pt[5].selImm;
   assign io_out_5_bits_fpu_typeTagOut = out_pt[5].fpu_typeTagOut;
@@ -2859,7 +2863,7 @@ module Rename
   assign io_out_5_bits_isMove = out_pt[5].isMove;
   assign io_out_5_bits_uopIdx = out_pt[5].uopIdx;
   assign io_out_5_bits_isVset = out_pt[5].isVset;
-  assign io_out_5_bits_firstUop = out_pt[5].firstUop;
+  assign io_out_5_bits_firstUop = o_firstUop[5];
   assign io_out_5_bits_commitType = out_pt[5].commitType;
   assign io_out_5_bits_psrc_0 = o_psrc[5][0];
   assign io_out_5_bits_psrc_1 = o_psrc[5][1];
@@ -2954,6 +2958,8 @@ module Rename
     .io_redirect_bits_robIdx_flag(io_redirect_bits_robIdx_flag),
     .io_redirect_bits_robIdx_value(io_redirect_bits_robIdx_value),
     .io_redirect_bits_level(io_redirect_bits_level),
+    .io_redirect_bits_debugIsCtrl(io_redirect_bits_debugIsCtrl),
+    .io_redirect_bits_debugIsMemVio(io_redirect_bits_debugIsMemVio),
     .io_rabCommits_isCommit(io_rabCommits_isCommit), .io_rabCommits_isWalk(io_rabCommits_isWalk),
     .io_rabCommits_commitValid(rab_cv), .io_rabCommits_walkValid(rab_wv),
     .io_rabCommits_info_rfWen(rab_rf), .io_rabCommits_info_fpWen(rab_fp),
@@ -2979,6 +2985,9 @@ module Rename
     .io_out_itype(o_itype), .io_out_iretire(o_iretire), .io_out_ilastsize(o_ilastsize),
     .io_out_lastUop_o(o_lastUop), .io_out_numWB(o_numWB), .io_out_wfflags_o(o_wfflags),
     .io_out_numLsElem(o_numLsElem),
+    .io_out_ftqPtr_flag_o(o_ftqFlag), .io_out_ftqPtr_value_o(o_ftqValue),
+    .io_out_ftqOffset_o(o_ftqOff), .io_out_firstUop_o(o_firstUop),
+    .io_out_waitForward_o(o_waitFwd), .io_out_blockBackward_o(o_blockBwd),
     .io_snpt_snptDeq(io_snpt_snptDeq), .io_snpt_useSnpt(io_snpt_useSnpt),
     .io_snpt_snptSelect(io_snpt_snptSelect), .io_snpt_flushVec(flushv),
     .io_snptLastEnq_valid(io_snptLastEnq_valid), .io_snptLastEnq_bits_flag(io_snptLastEnq_bits_flag),
