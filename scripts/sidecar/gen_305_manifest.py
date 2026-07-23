@@ -21,7 +21,7 @@ BID_LEDGER = "/home/eda/xs-env/G0-canonical/PROMOTION_LEDGER.tsv"
 ASSEMBLY_DIRS = {"Backend", "Ftq", "L2TLB", "LsqWrapper", "NewIFU", "OpenLLC", "TL2CHICoupledL2"}
 FMBB = {"DCache": "fmbb", "DCacheWrapper": "fmbb", "L2TLBWrapper": "fmbb",
         "MemBlock": "fmbb", "NewCSR": "fmbb", "PtwCache": "fm"}
-SHADOW_DIRS = {"Predictor", "Frontend"}
+SHADOW_DIRS = {"Frontend"}
 # required_verdict 机械派生表(唯一合法签核要求)
 REQUIRED_BY_MODE = {"signoff-strict": "SUCCEEDED", "assembly": "SUCCEEDED",
                     "shadow": "SHADOW_CHECK"}
@@ -64,7 +64,7 @@ def load_declarations(path):
         if vmucp == "true" and p[0] not in {"LoadQueueUncache",
                 "FastArbiter_46", "FastArbiter_47", "FastArbiter_27", "FastArbiter_44",
                 "ICacheCtrlUnit", "ICacheDataArray", "IPrefetchPipe",
-                "DivUnit", "FDivSqrt", "InstrMMIOEntry", "InstrUncache", "TXDAT_4", "FAlu", "FCVT", "IssueQueueStdMoud", "MulUnit", "TXREQ", "TlbStorageWrapper", "TlbStorageWrapper_1", "IssueQueueStaMou", "IssueQueueLdu", "TXDAT", "Scheduler_1", "Scheduler", "Scheduler_3", "MSHR", "TageBTable", "Directory", "SCTable", "SCTable_1", "SCTable_2", "SCTable_3", "Tage_SC", "ITTage", "FauFTB", "FTBBank", "FTB", "Composer", "EntriesAluCsrFenceDiv", "Bku", "SourceB"}:
+                "DivUnit", "FDivSqrt", "InstrMMIOEntry", "InstrUncache", "TXDAT_4", "FAlu", "FCVT", "IssueQueueStdMoud", "MulUnit", "TXREQ", "TlbStorageWrapper", "TlbStorageWrapper_1", "IssueQueueStaMou", "IssueQueueLdu", "TXDAT", "Scheduler_1", "Scheduler", "Scheduler_3", "MSHR", "TageBTable", "Directory", "SCTable", "SCTable_1", "SCTable_2", "SCTable_3", "Tage_SC", "ITTage", "FauFTB", "FTBBank", "FTB", "Composer", "EntriesAluCsrFenceDiv", "Bku", "SourceB", "Predictor"}:
             raise SystemExit(f"target-scoped strengthening forbidden for {p[0]}")
         decl[p[0]] = {"proof_mode": p[1] or None,
                       "allow_ref": p[2] if len(p) > 2 else "",

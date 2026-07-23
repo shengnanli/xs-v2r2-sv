@@ -2447,12 +2447,12 @@
    "makefile": "verif/ut/Predictor/Makefile",
    "make_target": "fm-Predictor",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "shadow",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
-   "required_verdict": "SHADOW_CHECK",
-   "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "required_verdict": "SUCCEEDED",
+   "allow_ref": "verif/signoff/allow/Predictor.json",
+   "rationale": "shadow→REAL: 核splice真驱动FSM valid+topdown输出(33 impl-dead→0, 547扇出); 黑盒仅Composer绿child depends_on; DelayN+PriorityMux双侧elaborate; 1163对称双射matched-unread(perf/folded_gh)vmucp实证",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
