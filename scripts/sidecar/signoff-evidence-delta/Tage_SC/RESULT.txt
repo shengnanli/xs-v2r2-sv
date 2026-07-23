@@ -1,0 +1,4 @@
+SIGNOFF_RESULT Tage_SC: measured=PARTIAL required=SUCCEEDED gate=GAP (proof=assembly fm_shell_rc=0 validator_rc=1)
+run_id: SGN-Tage_SC-1784779576
+impl_commit: a5cacc881083f0817b8e60a5bf23f98f1d5861e7
+manifest_sha256: 7c4c66de97b89c0f9e1b09f09ec9f05ca874e05578f6869f0413b99e5e7e8b1f
