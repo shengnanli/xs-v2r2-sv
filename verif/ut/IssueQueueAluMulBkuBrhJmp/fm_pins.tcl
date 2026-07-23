@@ -1,0 +1,56 @@
+# EntriesAluMulBkuBrhJmp FM 钉点 (FM 审计 2026-07)
+# --------------------------------------------------------------------------
+# enqDelayIn1 srcLoadDependency 寄存器的 bit[0] 对称死位 (双射 12↔12)。
+# 与 sibling EntriesAluCsrFenceDiv 同型 (同一 Entries 家族 enqDelayIn1 机制)。
+#
+# golden 与手写核都在 Entries 顶层用 RegEnable(enq.payload.srcLoadDependency,
+# enq.valid) 锁存入队原始 load 依赖 (喂 EnqEntry 的 enqDelayIn1)。loadDependency
+# 是 LoadDependencyWidth=2 的移位寄存器: 唤醒时左移 (`{dep[0],1'b0}`), loadCancel
+# 只看 dep[p][1]。因此每个 srcLoadDependency[s][p] 的 **bit[0] (LSB) 在两侧都从不
+# 被读出** —— golden(r_*)与手写核(enqd1_src_ld)是 bug-for-bug 一致的对称内部死位。
+#
+# 命名:
+#   golden : 顶层扁平寄存器 r_{...}  (r_S_P = enq0; r_1_S_P = enq1)
+#            r_0_0=(enq0,src0,pipe0) r_0_1=(enq0,src0,pipe1) r_0_2=(enq0,src0,pipe2)
+#            r_1_0=(enq0,src1,pipe0) r_1_1=(enq0,src1,pipe1) r_1_2=(enq0,src1,pipe2)
+#            r_1_0_0=(enq1,src0,pipe0) ... r_1_1_2=(enq1,src1,pipe2)
+#   手写核 : u_core/enqd1_src_ld_reg[enq][src][pipe][bit]  (bit=0 即死位)
+#
+# 词干不同 (r_* vs enqd1_src_ld) 令 auto_match_flattened_arrays 无法自动配对
+# → 12(ref) + 12(impl) unmatched-unread。二者严格 12↔12 双射: 同为 enqDelayIn1
+# srcLoadDependency[s][p] 的 bit0, 同源 io_enq_Q_bits_payload_srcLoadDependency_S_P
+# 锁存。按语义逐位 set_user_match。仅消名差, 不约束 ref, 不 dont_verify, 不扩黑盒。
+# 配合 declarations 第5列 verify_matched_unread_compare_points=true, FM 实际开启
+# 比较这些 mapped 死位并 SUCCEEDED = 对称内部死状态的双射匹配证明 (非 waiver)。
+# --------------------------------------------------------------------------
+
+# golden 顶层名 -> 手写核 enqd1_src_ld[enq][src][pipe][0]
+set _pairs {
+  r_0_0     {0 0 0}
+  r_0_1     {0 0 1}
+  r_0_2     {0 0 2}
+  r_1_0     {0 1 0}
+  r_1_1     {0 1 1}
+  r_1_2     {0 1 2}
+  r_1_0_0   {1 0 0}
+  r_1_0_1   {1 0 1}
+  r_1_0_2   {1 0 2}
+  r_1_1_0   {1 1 0}
+  r_1_1_1   {1 1 1}
+  r_1_1_2   {1 1 2}
+}
+
+set _n 0
+foreach {gname idx} $_pairs {
+  set q [lindex $idx 0]
+  set s [lindex $idx 1]
+  set p [lindex $idx 2]
+  set rpath "r:/WORK/$top/${gname}_reg\[0\]"
+  set ipath "i:/WORK/$top/u_core/enqd1_src_ld_reg\[$q\]\[$s\]\[$p\]\[0\]"
+  if {![catch {set_user_match $rpath $ipath} msg]} {
+    incr _n
+  } else {
+    puts "ENTRIESAMBBJ_PIN_MISS: $rpath <-> $ipath : $msg"
+  }
+}
+puts "ENTRIESAMBBJ_PINS: enqDelayIn1 srcLoadDependency dead bit0 $_n / 12 points pinned"

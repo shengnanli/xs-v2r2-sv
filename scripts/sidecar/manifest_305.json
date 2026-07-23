@@ -1331,8 +1331,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "目标级strengthening: enqDelayIn1 srcLoadDependency 寄存器 bit0 对称死位(12双射), golden r_* <-> impl enqd1_src_ld_reg[q][s][p][0], loadDependency 移位后 LSB 两侧都不被读=bug-for-bug 对称内部死位; fm_pins.tcl set_user_match 逐位配对, vmucp 实开比较 SUCCEEDED=证明加强非waiver; RTL 已消除全部 impl-only 死位(fu_type紧凑保留{0,1,6,7,10}=brh/jmp/alu/mul/bku/去payload.srcLoadDep死链/去delay2/去blocked+first_issue/去ld1_cancel)",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {

@@ -38,17 +38,17 @@ module xs_iq_entry_ambb import iq_ambb_pkg::*; #(
   input  wk_wb_t [NUM_WK_WB-1:0]       wk_wb,
   input  wk_iq_t [NUM_WK_IQ-1:0]       wk_iq,
 
-  // ---- 入队延迟唤醒(仅 IS_ENQ 用):同一总线打 1 拍 / 2 拍 ----
+  // ---- 入队延迟唤醒(仅 IS_ENQ 用):同一总线打 1 拍 ----
   input  wk_wb_t [NUM_WK_WB-1:0]       wk_wb_d1,
   input  wk_iq_t [NUM_WK_IQ-1:0]       wk_iq_d1,
-  input  logic [NUM_REGSRC-1:0][LDPW-1:0][LDW-1:0] enqd1_src_ld,
-  input  logic [NUM_EXU-1:0]           enqd1_og0cancel,
-  input  ld_cancel_t [LDPW-1:0]        enqd1_ldcancel,
-  input  wk_wb_t [NUM_WK_WB-1:0]       wk_wb_d2,
-  input  wk_iq_t [NUM_WK_IQ-1:0]       wk_iq_d2,
-  input  logic [NUM_REGSRC-1:0][LDPW-1:0][LDW-1:0] enqd2_src_ld,
-  input  logic [NUM_EXU-1:0]           enqd2_og0cancel,
-  input  ld_cancel_t [LDPW-1:0]        enqd2_ldcancel,
+  input  logic [NUM_REGSRC-1:0][LDPW-1:0][LDW-1:0] enqd1_src_ld,   // RegEnable 后的入队源 load 依赖
+  // RegNext(og0Cancel):仅 4 个 is0Lat 源 {全局EXU 0,2,4,6} 被读,按序打包成 [3:0]
+  //   (golden delay1 只寄存这 4 位 REG_0/2/4/6,其余 og0Cancel 位在本层不被读)。
+  input  logic [3:0]                   enqd1_og0cancel,
+  input  logic [LDPW-1:0]              enqd1_ldcancel,             // RegNext(ldCancel.ld2)(仅 ld2Cancel)
+  // 注:本变体 golden EnqEntry 仅有 enqDelayIn1(单级延迟唤醒),无 enqDelayIn2。
+  //   整数路 dataSources 只取 bypass,delay1 已覆盖 srcState/loadDep/regcache,
+  //   故不实现 delay2,亦不引 delay2 输入(移除后消除 Entries 顶层死流水寄存器)。
 
   // ---- 取消 ----
   input  logic [NUM_EXU-1:0]           og0cancel,
@@ -109,6 +109,15 @@ module xs_iq_entry_ambb import iq_ambb_pkg::*; #(
     logic c;
     c = 1'b0;
     for (int p = 0; p < LDPW; p++) c |= ldc[p].ld2_cancel & dep[p][1];
+    return c;
+  endfunction
+  // 仅取 ld2Cancel 位向量的重载(入队延迟路:golden 的 delay1 ldCancel 只寄存 ld2Cancel,
+  //   ld1Cancel 全局未接 → 不寄存,避免 impl-only 死寄存器)。
+  function automatic logic load_should_cancel_ld2(input logic [LDPW-1:0][LDW-1:0] dep,
+                                                  input logic [LDPW-1:0] ld2c);
+    logic c;
+    c = 1'b0;
+    for (int p = 0; p < LDPW; p++) c |= ld2c[p] & dep[p][1];
     return c;
   endfunction
 
@@ -284,13 +293,8 @@ module xs_iq_entry_ambb import iq_ambb_pkg::*; #(
   entry_t entry_update;
   always_comb begin
     entry_update = entry_reg;
-    // fuType 只保留本变体相关位(IQFuType.readFuType:brh/jmp/alu/mul/bku)
-    entry_update.status.fu_type = '0;
-    entry_update.status.fu_type[FU_BRH] = current_status.fu_type[FU_BRH];
-    entry_update.status.fu_type[FU_JMP] = current_status.fu_type[FU_JMP];
-    entry_update.status.fu_type[FU_ALU] = current_status.fu_type[FU_ALU];
-    entry_update.status.fu_type[FU_MUL] = current_status.fu_type[FU_MUL];
-    entry_update.status.fu_type[FU_BKU] = current_status.fu_type[FU_BKU];
+    // fuType 紧凑存储:直接透传保留位(IQFuType.readFuType 的剪枝已在 pack 时完成)
+    entry_update.status.fu_type = current_status.fu_type;
     entry_update.status.rob_flag  = current_status.rob_flag;
     entry_update.status.rob_value = current_status.rob_value;
 
@@ -318,11 +322,9 @@ module xs_iq_entry_ambb import iq_ambb_pkg::*; #(
         wakeup_rc[s] ? wakeup_rc_idx[s] : current_status.src[s].rc_idx;
     end
 
-    entry_update.status.blocked = 1'b0;
     entry_update.status.issued =
       (deq_sel & ~(|cancel_bypass_vec))
       | (~((|src_ld_cancel) | resp_fail) & current_status.issued);
-    entry_update.status.first_issue = deq_sel | current_status.first_issue;
     if (deq_sel)
       entry_update.status.issue_timer = 2'h0;
     else if (current_status.issued)
@@ -352,8 +354,6 @@ module xs_iq_entry_ambb import iq_ambb_pkg::*; #(
       enq_load.status.issued      = 1'b0;
       enq_load.status.deq_port    = 1'b0;
       enq_load.status.issue_timer = 2'h3;
-      enq_load.status.first_issue = 1'b0;
-      enq_load.status.blocked     = 1'b0;
     end
   end
 
@@ -383,11 +383,12 @@ module xs_iq_entry_ambb import iq_ambb_pkg::*; #(
     logic [NUM_REGSRC-1:0] d1_replace_rc;
     logic [NUM_REGSRC-1:0][RC_IDX_W-1:0] d1_rc_idx;
     always_comb begin
+      // enqd1_og0cancel[0..3] = 打包后的 og0Cancel 全局EXU 位 {0,2,4,6}
       d1_cancel = '0;
       d1_cancel[0] = enqd1_og0cancel[0] & wk_iq_d1[0].is0lat;
-      d1_cancel[1] = enqd1_og0cancel[2] & wk_iq_d1[1].is0lat;
-      d1_cancel[2] = enqd1_og0cancel[4];
-      d1_cancel[3] = enqd1_og0cancel[6];
+      d1_cancel[1] = enqd1_og0cancel[1] & wk_iq_d1[1].is0lat;
+      d1_cancel[2] = enqd1_og0cancel[2];
+      d1_cancel[3] = enqd1_og0cancel[3];
       for (int s = 0; s < NUM_REGSRC; s++) begin
         logic wbhit, ldtc, rep;
         logic [RC_IDX_W-1:0] idx;
@@ -400,7 +401,7 @@ module xs_iq_entry_ambb import iq_ambb_pkg::*; #(
         for (int i = 0; i < NUM_WK_IQ; i++) begin
           d1_iqvec[s][i] = match_iq(wk_iq_d1[i], entry_reg.status.src[s]);
           d1_iqnc[s][i]  = d1_iqvec[s][i] & ~d1_cancel[i];
-          if (i < 4) ldtc |= d1_iqnc[s][i] & load_should_cancel(wk_iq_d1[i].ld_dep, enqd1_ldcancel);
+          if (i < 4) ldtc |= d1_iqnc[s][i] & load_should_cancel_ld2(wk_iq_d1[i].ld_dep, enqd1_ldcancel);
           rep |= wk_iq_d1[i].rf_wen & (wk_iq_d1[i].rc_dest == entry_reg.status.src[s].rc_idx);
         end
         for (int i = 0; i < 4; i++)       if (d1_iqnc[s][i]) idx |= wk_iq_d1[i].rc_dest;
@@ -408,7 +409,7 @@ module xs_iq_entry_ambb import iq_ambb_pkg::*; #(
         d1_replace_rc[s] = rep;
         d1_iq2[s] = (|d1_iqnc[s][3:0]) | d1_iqvec[s][4] | d1_iqvec[s][5] | d1_iqvec[s][6];
         d1_iq[s]  = d1_iq2[s] & ~ldtc;
-        d1_ldcancel[s] = load_should_cancel(enqd1_src_ld[s], enqd1_ldcancel);
+        d1_ldcancel[s] = load_should_cancel_ld2(enqd1_src_ld[s], enqd1_ldcancel);
         for (int p = 0; p < LDPW; p++) begin
           logic [LDW-1:0] acc; acc = '0;
           for (int i = 0; i < 4; i++) if (d1_iqnc[s][i]) acc |= shift_dep(wk_iq_d1[i].ld_dep[p]);
@@ -490,15 +491,8 @@ module xs_iq_entry_ambb import iq_ambb_pkg::*; #(
   end
   assign o_can_issue = (IS_COMP ? (can_issue_base | can_issue_bypass) : can_issue_base) & ~flushed;
 
-  // fuType 输出(IQFuType.readFuType:仅保留 brh/jmp/alu/mul/bku)
-  always_comb begin
-    o_fu_type = '0;
-    o_fu_type[FU_BRH] = current_status.fu_type[FU_BRH];
-    o_fu_type[FU_JMP] = current_status.fu_type[FU_JMP];
-    o_fu_type[FU_ALU] = current_status.fu_type[FU_ALU];
-    o_fu_type[FU_MUL] = current_status.fu_type[FU_MUL];
-    o_fu_type[FU_BKU] = current_status.fu_type[FU_BKU];
-  end
+  // fuType 输出:紧凑保留位复原成 35 位 one-hot(unpack_fu_type)
+  always_comb o_fu_type = unpack_fu_type(current_status.fu_type);
 
   // dataSources / exuSources 输出
   always_comb begin
