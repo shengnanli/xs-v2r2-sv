@@ -217,11 +217,16 @@ module xs_IBuffer_core #(
   logic                  deqPtr_flag;
   logic [BankPtrW-1:0]   deqBankPtrVec_value [DecodeWidth];
   logic [InBankPtrW-1:0] deqInBankPtr_value  [IBufNBank];
-  logic                  deqInBankPtr_flag   [IBufNBank];
+  // 注：bank 内偏移指针只用 value 做寻址（readStage1 索引），其 CircularQueuePtr.flag
+  // 从不被读取——golden 也只把 deqInBankPtr_N_flag 喂回自身的 +1 计算（死锥）。
+  // 本核不实例化该 flag 寄存器（省 6 个 impl-only 死寄存器），绕回直接由 value 归零表达。
 
   // 入队指针向量：enqPtrVec[k] = enqPtr + k（共 PredictWidth 个，便于一拍写多条）
   logic [PtrW-1:0]       enqPtrVec_value [PredictWidth];
-  logic                  enqPtrVec_flag  [PredictWidth];
+  // 只有 enqPtrVec[0] 的 flag 位被读取（numValid / useBypass 的绕回判定）；其余
+  // enqPtrVec[1..PredictWidth-1] 的 flag 从不被消费——golden 已 DCE，本核也只保留
+  // 单个 enqPtrVec_flag0 寄存器，避免 15 个死 flag 寄存器（impl-only over-storage）。
+  logic                  enqPtrVec_flag0;
 
   logic                  allowEnq;
 
@@ -235,7 +240,7 @@ module xs_IBuffer_core #(
   // 取 6 位与 golden numValid_probe 完全一致（含 don't-care 高位编码），利于 FM 签名分析。
   logic [PtrW-1:0] numValid;
   always_comb begin
-    if (enqPtrVec_flag[0] == deqPtr_flag)
+    if (enqPtrVec_flag0 == deqPtr_flag)
       numValid = enqPtrVec_value[0] - deqPtr_value;
     else
       numValid = (enqPtrVec_value[0] - PtrW'(1 << PtrW) + IBufSize) - deqPtr_value;
@@ -252,7 +257,7 @@ module xs_IBuffer_core #(
 
   // 空缓冲且 Decode 可收 → 走 bypass 直通
   logic useBypass;
-  assign useBypass = ({deqPtr_flag, deqPtr_value} == {enqPtrVec_flag[0], enqPtrVec_value[0]})
+  assign useBypass = ({deqPtr_flag, deqPtr_value} == {enqPtrVec_flag0, enqPtrVec_value[0]})
                      && decodeCanAccept;
 
   // 输出寄存器中已有的有效项数（高位优先编码：找最高有效槽 +1）。
@@ -272,15 +277,17 @@ module xs_IBuffer_core #(
   // - Decode 接收：尽量出 DecodeWidth 条（受 numValid 限制）
   // - Decode 不收但输出寄存器没满：补齐到 DecodeWidth（受 numValid 限制）
   // - 否则不出
+  // room = 输出寄存器还能补几条（DecodeWidth - 已有有效数）。提到 always_comb 外并用连续
+  // 赋值，避免在条件分支内声明组合临时量被 FM 前端每次迭代各推成一个死寄存器(room_reg)。
+  logic [CntW:0] room;
+  assign room = (CntW+1)'(DecodeWidth) - {1'b0, outputEntriesValidNum};
   logic [CntW-1:0] numOut, numDeq;
   always_comb begin
     if (decodeCanAccept)
       numOut = (numValid >= DecodeWidth) ? CntW'(DecodeWidth) : numValid[CntW-1:0];
-    else if (outputEntriesIsNotFull) begin
-      logic [CntW:0] room;
-      room = (CntW+1)'(DecodeWidth) - {1'b0, outputEntriesValidNum};
+    else if (outputEntriesIsNotFull)
       numOut = (numValid >= room) ? room[CntW-1:0] : numValid[CntW-1:0];
-    end else
+    else
       numOut = '0;
   end
   assign numDeq = numOut;
@@ -488,6 +495,8 @@ module xs_IBuffer_core #(
   // 指针维护（always_ff）
   // ===========================================================================
   // 入队指针：fire 且非 flush 时整体 + numTryEnq；flush 时复位成 0,1,2,...
+  // value 全 PredictWidth 个都要（入队写选择用 enqPtrVec_value[off]）；
+  // flag 只保留 enqPtrVec_flag0（唯一被读取的绕回位），见上方声明说明。
   generate
     for (gi = 0; gi < PredictWidth; gi++) begin : g_enqptr
       // 循环加 numTryEnq：value 越过 IBufSize 则翻转 flag（组合前置）
@@ -495,20 +504,27 @@ module xs_IBuffer_core #(
       always_comb nv = {2'b0, enqPtrVec_value[gi]} + {{(PtrW+2-EnqW){1'b0}}, numTryEnq};
       always_ff @(posedge clock or posedge reset) begin
         if (reset) begin
-          {enqPtrVec_flag[gi], enqPtrVec_value[gi]} <= (PtrW+1)'(gi);
+          enqPtrVec_value[gi] <= PtrW'(gi);
         end else if (flush) begin
-          {enqPtrVec_flag[gi], enqPtrVec_value[gi]} <= (PtrW+1)'(gi);
+          enqPtrVec_value[gi] <= PtrW'(gi);
         end else if (in_fire) begin
-          if (nv >= IBufSize) begin
+          if (nv >= IBufSize)
             enqPtrVec_value[gi] <= PtrW'(nv - IBufSize);
-            enqPtrVec_flag[gi]  <= ~enqPtrVec_flag[gi];
-          end else begin
+          else
             enqPtrVec_value[gi] <= PtrW'(nv);
-          end
         end
       end
     end
   endgenerate
+  // 唯一被消费的 flag：enqPtrVec[0].flag（绕回判定），与 golden enqPtrVec_0_flag 对齐
+  logic [PtrW+1:0] enq0_nv;
+  always_comb enq0_nv = {2'b0, enqPtrVec_value[0]} + {{(PtrW+2-EnqW){1'b0}}, numTryEnq};
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset)          enqPtrVec_flag0 <= 1'b0;   // 项 0 的 flag 初值 0
+    else if (flush)     enqPtrVec_flag0 <= 1'b0;
+    else if (in_fire && (enq0_nv >= IBufSize))
+      enqPtrVec_flag0 <= ~enqPtrVec_flag0;
+  end
 
   // bank 指针向量：每拍整体 + numDeq（mod IBufNBank）；flush 复位成 0,1,2,...
   // 回绕用 golden 的 signed-diff 形式 (newv - NBank >= 0 ? newv-NBank : newv)，
@@ -570,17 +586,14 @@ module xs_IBuffer_core #(
         advance = (numOut > validIdx);
       end
       always_ff @(posedge clock or posedge reset) begin
-        if (reset) begin
+        if (reset)
           deqInBankPtr_value[gi] <= '0;
-          deqInBankPtr_flag[gi]  <= 1'b0;
-        end else if (flush) begin
+        else if (flush)
           deqInBankPtr_value[gi] <= '0;
-          deqInBankPtr_flag[gi]  <= 1'b0;
-        end else if (advance) begin
-          if (deqInBankPtr_value[gi] + 1 >= BankSize) begin
-            deqInBankPtr_value[gi] <= '0;
-            deqInBankPtr_flag[gi]  <= ~deqInBankPtr_flag[gi];
-          end else
+        else if (advance) begin
+          if (deqInBankPtr_value[gi] + 1 >= BankSize)
+            deqInBankPtr_value[gi] <= '0;      // 到 bank 尾归零（flag 无功能，不实例化）
+          else
             deqInBankPtr_value[gi] <= InBankPtrW'(deqInBankPtr_value[gi] + 1);
         end
       end
@@ -712,36 +725,39 @@ module xs_IBuffer_core #(
   logic fetchLatency;
   assign fetchLatency = decodeCanAccept && !headBubble && (numOut == 0);
 
-  // 本拍的 9 个事件原始值
+  // 本拍事件原始值。9 个事件里事件 7(FrontBubble) 是 3-bit(perf7_raw)，
+  // 其余 8 个(索引 0..6,8) 是 1-bit。用 8-bit 打包向量 perf1_raw 承载这 8 个 1-bit 事件，
+  // 位序 [6:0]=事件0..6，位 [7]=事件8——刻意不给事件 7 留 1-bit 槽（它是多位事件），
+  // 避免一个恒 0 的死寄存器（golden 亦无单-bit perf_7_REG，直接用 3-bit reg）。
   localparam int Q = IBufSize / 4;
-  logic [8:0] perf_raw;
-  logic [2:0] perf7_raw;
+  logic [7:0] perf1_raw;     // [6:0]=事件0..6, [7]=事件8
+  logic [2:0] perf7_raw;     // 事件7 (FrontBubble)
   // numValid 比较只取低 PtrW 位（与 golden 6-bit distanceBetween 对齐）
   logic [PtrW-1:0] nv6;
   assign nv6 = numValid[PtrW-1:0];
   always_comb begin
-    perf_raw[0] = flush;
-    perf_raw[1] = instrHungry;
-    perf_raw[2] = (nv6 > 0)        && (nv6 < 1*Q);
-    perf_raw[3] = (nv6 >= 1*Q)     && (nv6 < 2*Q);
-    perf_raw[4] = (nv6 >= 2*Q)     && (nv6 < 3*Q);
-    perf_raw[5] = (nv6 >= 3*Q)     && (nv6 < 4*Q);
-    perf_raw[6] = &nv6;
-    perf_raw[7] = 1'b0;        // perf_7 用 perf7_raw（多位），此位不用
-    perf_raw[8] = fetchLatency;
-    perf7_raw   = frontBubble;
+    perf1_raw[0] = flush;
+    perf1_raw[1] = instrHungry;
+    perf1_raw[2] = (nv6 > 0)        && (nv6 < 1*Q);
+    perf1_raw[3] = (nv6 >= 1*Q)     && (nv6 < 2*Q);
+    perf1_raw[4] = (nv6 >= 2*Q)     && (nv6 < 3*Q);
+    perf1_raw[5] = (nv6 >= 3*Q)     && (nv6 < 4*Q);
+    perf1_raw[6] = &nv6;
+    perf1_raw[7] = fetchLatency;   // 事件 8
+    perf7_raw    = frontBubble;    // 事件 7
   end
 
   // HasPerfEvents 把事件值寄存两拍后输出（与 golden _REG/_REG_1 一致）。
-  logic [8:0] perf_s1, perf_s2;
+  logic [7:0] perf1_s1, perf1_s2;
   logic [2:0] perf7_s1, perf7_s2;
   always_ff @(posedge clock) begin
-    perf_s1  <= perf_raw;   perf_s2  <= perf_s1;
-    perf7_s1 <= perf7_raw;  perf7_s2 <= perf7_s1;
+    perf1_s1 <= perf1_raw;   perf1_s2 <= perf1_s1;
+    perf7_s1 <= perf7_raw;   perf7_s2 <= perf7_s1;
   end
   always_comb begin
-    for (int i = 0; i < 9; i++) perf_value[i] = {5'd0, perf_s2[i]};
-    perf_value[7] = {3'd0, perf7_s2};
+    for (int i = 0; i < 7; i++) perf_value[i] = {5'd0, perf1_s2[i]};   // 事件0..6
+    perf_value[7] = {3'd0, perf7_s2};                                  // 事件7(3-bit)
+    perf_value[8] = {5'd0, perf1_s2[7]};                               // 事件8
   end
 
 endmodule
