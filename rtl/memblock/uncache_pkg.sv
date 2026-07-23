@@ -51,6 +51,7 @@ package uncache_pkg;
   localparam int M_SZ        = 5;                  // mem cmd 宽度
   localparam int MID_W       = 7;                  // LSQ 侧请求 id（mid）宽度
   localparam int BLOCK_OFFSET = 3;                 // log2Up(XLEN/8)，merge/同 8B 字对齐用低位
+  localparam int VADDR_BLK_BITS = VADDR_BITS - BLOCK_OFFSET; // entry 内 vaddr 只存 block 位数
   localparam int CACHE_BLK_OFF = 6;                // blockOffBits=log2(64B cache line)，busError 上报用
 
   // ---- mem cmd 编码（rocket Consts）-----------------------------------------
@@ -71,7 +72,10 @@ package uncache_pkg;
   typedef struct packed {
     logic [M_SZ-1:0]        cmd;            // M_XRD(load)/M_XWR(store)
     logic [PADDR_BITS-1:0]  addr;           // 物理地址（block 对齐后或合并后对齐到首个有效字节）
-    logic [VADDR_BITS-1:0]  vaddr;          // 虚地址（forward 用 vaddr CAM）
+    // vaddr 只存 block 地址位 [VADDR_BITS-1:BLOCK_OFFSET]：forward 的 vaddr CAM 只比较
+    //   [49:3]（addr_match_v = >>BLOCK_OFFSET），merge 重对齐也只保留 [49:3]。低 3 位字节
+    //   偏移从不被读——golden 的 entries_N_vaddr 存满 50 位但同样只读 [49:3]（低 3 位冗余死位）。
+    logic [VADDR_BITS-1:BLOCK_OFFSET] vaddr; // 虚地址 block 位（forward 用 vaddr CAM）
     logic [XLEN-1:0]        data;           // store 写数据 / load 返回数据
     logic [DATA_BYTES-1:0]  mask;           // 字节有效掩码
     logic                   nc;             // non-cacheable（区别于强序 MMIO）
@@ -117,6 +121,15 @@ package uncache_pkg;
   function automatic logic addr_match_v(input logic [VADDR_BITS-1:0] x,
                                         input logic [VADDR_BITS-1:0] y);
     return get_block_addr_v(x) == get_block_addr_v(y);
+  endfunction
+  // 取 vaddr 的 block 位（entry 内只存这些位）。
+  function automatic logic [VADDR_BLK_BITS-1:0] vaddr_blk(input logic [VADDR_BITS-1:0] a);
+    return a[VADDR_BITS-1:BLOCK_OFFSET];
+  endfunction
+  // full vaddr 与已存 block-vaddr 的同 block 判定（一侧是 io 请求全宽，一侧是 entry block 位）。
+  function automatic logic addr_match_v_blk(input logic [VADDR_BITS-1:0]     full,
+                                            input logic [VADDR_BLK_BITS-1:0]  blk);
+    return full[VADDR_BITS-1:BLOCK_OFFSET] == blk;
   endfunction
 
   function automatic logic is_store(input logic [M_SZ-1:0] cmd);

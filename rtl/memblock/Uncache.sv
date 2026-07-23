@@ -273,7 +273,7 @@ module xs_Uncache_core
   always_comb begin
     e0_req_entry.cmd           = io_lsq_req_bits_cmd;
     e0_req_entry.addr          = io_lsq_req_bits_addr;
-    e0_req_entry.vaddr         = io_lsq_req_bits_vaddr;
+    e0_req_entry.vaddr         = vaddr_blk(io_lsq_req_bits_vaddr); // 只存 block 位 [49:3]
     e0_req_entry.data          = io_lsq_req_bits_data;
     e0_req_entry.mask          = io_lsq_req_bits_mask;
     e0_req_entry.nc            = io_lsq_req_bits_nc;
@@ -291,7 +291,7 @@ module xs_Uncache_core
       d_fire_eid = mem_d_valid & (mem_d_src == i[1:0]);
       v   = req_valid & st_is_valid(states[i]);
       am  = addr_match_p(io_lsq_req_bits_addr, entries[i].addr);
-      cm1 = addr_match_v(io_lsq_req_bits_vaddr, entries[i].vaddr) &&
+      cm1 = addr_match_v_blk(io_lsq_req_bits_vaddr, entries[i].vaddr) &&
             (io_lsq_req_bits_cmd == entries[i].cmd) &&
             io_lsq_req_bits_nc && entries[i].nc &&
             (io_lsq_req_bits_memBackTypeMM == entries[i].memBackTypeMM) &&
@@ -338,10 +338,7 @@ module xs_Uncache_core
                                                       input logic [BLOCK_OFFSET-1:0] off);
     return {a[PADDR_BITS-1:BLOCK_OFFSET], off};
   endfunction
-  function automatic logic [VADDR_BITS-1:0] realign_v(input logic [VADDR_BITS-1:0] a,
-                                                      input logic [BLOCK_OFFSET-1:0] off);
-    return {a[VADDR_BITS-1:BLOCK_OFFSET], off};
-  endfunction
+  // 注：vaddr 只存 block 位（低 BLOCK_OFFSET 位不存），merge 时 block 位不变，无需 realign_v。
 
   // ===========================================================================
   //  Uncache Req — q0：选一个可上总线的 entry，组 TileLink A 请求
@@ -440,10 +437,11 @@ module xs_Uncache_core
         if (sel_merge) begin
           entries[ge].data <= m_nd;
           entries[ge].mask <= m_nm;
-          if (res_flag(m_nm)) begin
+          // addr 仍存满宽，realign 把低 BLOCK_OFFSET 位换成合并后首字节偏移。
+          //   vaddr 只存 block 位 [49:3]，golden 的 {vaddr[49:3], resOffset} 里 [49:3] 恒
+          //   不变——低 3 位（resOffset）本核不存，故 vaddr block 位在 merge 时保持不变（无需写）。
+          if (res_flag(m_nm))
             entries[ge].addr  <= realign_p(entries[ge].addr,  m_off);
-            entries[ge].vaddr <= realign_v(entries[ge].vaddr, m_off);
-          end
         end else if (sel_alloc) begin
           entries[ge] <= e0_req_entry;
         end
@@ -533,16 +531,20 @@ module xs_Uncache_core
   assign io_busError_ecc_error_bits  =
     {entries[mem_d_src].addr[PADDR_BITS-1:CACHE_BLK_OFF], {CACHE_BLK_OFF{1'b0}}};
 
-  // WFI safe：所有 entry 无在途 且 收到 wfiReq → 打一拍输出
+  // WFI safe：所有 entry 无在途 且 收到 wfiReq → 打一拍输出。
+  //   ★all_no_pending 必须是纯组合信号（always_comb / assign），不能是 always_ff 内
+  //     声明的 blocking 临时量——FM 前端会把「块内声明+阻塞赋值」的临时量各推成一个
+  //     死寄存器 all_no_pending_reg（与 golden 直接内联 & 求值不对称）。golden 把
+  //     (&{noPending_3..0}) & io_wfi_wfiReq 直接作为 io_wfi_wfiSafe_last_REG 的 next。
+  logic all_no_pending;
+  always_comb begin
+    all_no_pending = 1'b1;
+    for (int i = 0; i < UNC_SIZE; i++) if (!noPending[i]) all_no_pending = 1'b0;
+  end
   logic wfi_safe_q;
   always_ff @(posedge clock or posedge reset) begin // 异步复位（对齐 golden io_wfi_wfiSafe_last_REG）
     if (reset) wfi_safe_q <= 1'b0;
-    else begin
-      logic all_no_pending;
-      all_no_pending = 1'b1;
-      for (int i = 0; i < UNC_SIZE; i++) if (!noPending[i]) all_no_pending = 1'b0;
-      wfi_safe_q <= all_no_pending & io_wfi_wfiReq;
-    end
+    else        wfi_safe_q <= all_no_pending & io_wfi_wfiReq;
   end
   assign io_wfi_wfiSafe = wfi_safe_q;
 
@@ -573,8 +575,12 @@ module xs_Uncache_core
         f1_dataCand[i] <= entries[i].data;
       end
 
-  // entry.addr 打一拍（f0 fwdValid 时），f1 复核 paddr 用
-  logic [PADDR_BITS-1:0] f1_addrCand [LD_WIDTH][UNC_SIZE];
+  // entry.addr 打一拍（f0 fwdValid 时），f1 复核 paddr 用。
+  //   ★只存 block 地址位 [PADDR_BITS-1:BLOCK_OFFSET]：低 BLOCK_OFFSET 位（字节偏移）
+  //     从不被读——paddr 复核只用 addr_match_p（>>BLOCK_OFFSET）。golden 的
+  //     f1_ptagMatches_r* 存满 48 位但同样只读 [47:3]，低 3 位在 golden 里是冗余死位。
+  //     可读核只保留会被读的 block 位，令那些冗余位成为 golden-only cone-dead。
+  logic [PADDR_BITS-1:BLOCK_OFFSET] f1_addrCand [LD_WIDTH][UNC_SIZE];
 
   logic [LD_WIDTH-1:0] f1_tagMismatch;
   assign f1_needDrain = (|f1_tagMismatch) & ~empty;
@@ -588,7 +594,7 @@ module xs_Uncache_core
       assign f0_fwdValid = fwd_valid[gi];
       always_comb
         for (int w = 0; w < UNC_SIZE; w++) begin
-          f0_vtagMatch[w] = addr_match_v(entries[w].vaddr, fwd_vaddr[gi]);
+          f0_vtagMatch[w] = addr_match_v_blk(fwd_vaddr[gi], entries[w].vaddr);
           f0_flyMatch[w]  = f0_vtagMatch[w] & f0_validMask[w] & f0_fwdValid & st_is_fwd_old(states[w]);
           f0_idleMatch[w] = f0_vtagMatch[w] & f0_validMask[w] & f0_fwdValid & st_is_fwd_new(states[w]);
         end
@@ -596,7 +602,9 @@ module xs_Uncache_core
       // ---- f0→f1 打拍 ----
       logic                f1_fwdValid;
       logic [UNC_SIZE-1:0] f1_flyMatch, f1_idleMatch, f1_vtagMatch_q, f1_validMask_q;
-      logic [PADDR_BITS-1:0] f1_fwdPAddr;
+      // f1_fwdPAddr 只存 block 地址位 [PADDR_BITS-1:BLOCK_OFFSET]。读到的只有 bit[3]
+      // （半区选择）与 [47:3]（addr_match_p 的 block 比较）；低 [2:0] 是 golden 冗余死位。
+      logic [PADDR_BITS-1:BLOCK_OFFSET] f1_fwdPAddr;
       always_ff @(posedge clock) begin
         f1_fwdValid <= f0_fwdValid;
         if (f0_fwdValid) begin
@@ -604,8 +612,9 @@ module xs_Uncache_core
           f1_idleMatch   <= f0_idleMatch;
           f1_vtagMatch_q <= f0_vtagMatch;
           f1_validMask_q <= f0_validMask;
-          f1_fwdPAddr    <= fwd_paddr[gi];
-          for (int w = 0; w < UNC_SIZE; w++) f1_addrCand[gi][w] <= entries[w].addr;
+          f1_fwdPAddr    <= fwd_paddr[gi][PADDR_BITS-1:BLOCK_OFFSET];
+          for (int w = 0; w < UNC_SIZE; w++)
+            f1_addrCand[gi][w] <= entries[w].addr[PADDR_BITS-1:BLOCK_OFFSET];
         end
       end
 
@@ -632,11 +641,13 @@ module xs_Uncache_core
                           << (f1_fwdPAddr[3] ? DATA_BYTES : 0);
       assign f1_fwdData = {{(XLEN){1'b0}}, f1_mergeData} << (f1_fwdPAddr[3] ? XLEN : 0);
 
-      // paddr 复核：vaddr 命中 ^ paddr 命中 且该项是有效 store → 失配
+      // paddr 复核：vaddr 命中 ^ paddr 命中 且该项是有效 store → 失配。
+      //   f1_addrCand / f1_fwdPAddr 已是 block 地址（低 BLOCK_OFFSET 位不存），直接等值比较
+      //   等价于 golden 的 f1_ptagMatches_r[47:3] == f1_fwdPAddr[47:3]。
       logic [UNC_SIZE-1:0] f1_ptagMatch;
       always_comb
         for (int w = 0; w < UNC_SIZE; w++)
-          f1_ptagMatch[w] = addr_match_p(f1_addrCand[gi][w], f1_fwdPAddr);
+          f1_ptagMatch[w] = (f1_addrCand[gi][w] == f1_fwdPAddr);
       always_comb begin
         f1_tagMismatch[gi] = 1'b0;
         for (int w = 0; w < UNC_SIZE; w++)
