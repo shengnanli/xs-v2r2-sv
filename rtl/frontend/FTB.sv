@@ -221,16 +221,12 @@ module xs_FTB_core
 
   // 两条 FTB 条目「内容相等」（uFTB 一致性判定用）：逐有意义字段比较，
   // brSlot.lower 只比有效低 12 位（高 8 位无意义/不驱动），与 golden 比较项一致。
-  // 条目一致性比较。顶层 .valid 与 brSlot.sharing 不从 a/b(数组元素已剪除该两位=0)取,
-  //   而由调用方传入 dup0 标量(a_valid/b_valid, a_brsh/b_brsh)单独比较。
-  function automatic logic entry_eq(input ftb_entry_t a, input ftb_entry_t b,
-      input logic a_valid, input logic b_valid,
-      input logic a_brsh,  input logic b_brsh);
-    return  (a_valid     == b_valid)
+  function automatic logic entry_eq(input ftb_entry_t a, input ftb_entry_t b);
+    return  (a.valid     == b.valid)
           & (a.brSlot.offset  == b.brSlot.offset)
           & (a.brSlot.lower[BR_OFF_LEN-1:0] == b.brSlot.lower[BR_OFF_LEN-1:0])
           & (a.brSlot.tarStat == b.brSlot.tarStat)
-          & (a_brsh    == b_brsh)
+          & (a.brSlot.sharing == b.brSlot.sharing)
           & (a.brSlot.valid   == b.brSlot.valid)
           & (a.tailSlot.offset  == b.tailSlot.offset)
           & (a.tailSlot.lower   == b.tailSlot.lower)
@@ -279,51 +275,92 @@ module xs_FTB_core
   // ===========================================================================
   // s2 寄存：uFTB 条目 / FTBBank 条目 / hit；s2 选用条目 = close ? uFTB : FTBBank
   // ===========================================================================
-  ftb_entry_t s2_fauftb_entry [NDUP];
+  // ---- 死字段剪除（与 golden firtool 存储布局一致，消 impl-only 死寄存器）----
+  //   条目顶层 .valid 与 brSlot.sharing 的唯一读者都在 dup0：
+  //     · entry_eq 一致性比对读 s2_fauftb_entry[0]/s2_ftbBank[0] 的这两位；
+  //     · s3_entry[0] 经 io_out_last_stage_ftb_entry 输出这两位。
+  //   dup1..3 无任何读者(见 s2/s3 输出块只读 brSlot.valid/tailSlot.*, 不读顶层
+  //   .valid 或 brSlot.sharing)。golden 只为 dup0 保留、对 dup1..3 剪除这两位。
+  //   实测：仅把数组元素这两位常量 tie-0, Formality 仍保留 packed-struct-array 的
+  //   flop 位并报 impl-only 死寄存器。故这里用 FTB-local 的「窄存储」结构:
+  //   数组只存除这两位外的字段, dup0 的真值另存独立标量, 读取时组合还原成 ftb_entry_t
+  //   (dup0 用标量真值, dup1..3 补 0)。不改共享 ftb_pkg 的结构宽度(FTB-local)。
+  //
+  //   narrowed brSlot(去 sharing) 与 narrowed entry(去顶层 valid + brSlot 换 narrowed)。
+  typedef struct packed {
+    logic [OFFSET_W-1:0]    offset;
+    logic                   valid;
+    logic [BR_OFF_LEN-1:0]  lower;
+    logic [1:0]             tarStat;
+  } ftb_br_slot_nsh_t;                 // 去 sharing 的 brSlot
+  typedef struct packed {
+    ftb_br_slot_nsh_t       brSlot;    // 去 sharing
+    ftb_slot_t              tailSlot;
+    logic [OFFSET_W-1:0]    pftAddr;
+    logic                   carry;
+    logic                   isCall;
+    logic                   isRet;
+    logic                   isJalr;
+    logic                   last_may_be_rvi_call;
+    logic [1:0]             strong_bias;
+  } ftb_entry_stored_t;                // 去顶层 valid + 去 brSlot.sharing 的窄条目
+
+  // 全条目 → 窄条目（丢弃 .valid 与 .brSlot.sharing）
+  function automatic ftb_entry_stored_t narrow(input ftb_entry_t e);
+    narrow.brSlot.offset  = e.brSlot.offset;
+    narrow.brSlot.valid   = e.brSlot.valid;
+    narrow.brSlot.lower   = e.brSlot.lower;
+    narrow.brSlot.tarStat = e.brSlot.tarStat;
+    narrow.tailSlot       = e.tailSlot;
+    narrow.pftAddr        = e.pftAddr;
+    narrow.carry          = e.carry;
+    narrow.isCall         = e.isCall;
+    narrow.isRet          = e.isRet;
+    narrow.isJalr         = e.isJalr;
+    narrow.last_may_be_rvi_call = e.last_may_be_rvi_call;
+    narrow.strong_bias    = e.strong_bias;
+  endfunction
+  // 窄条目 (+ dup0 的 valid/sharing 标量, dup1..3 传 0) → 全条目
+  function automatic ftb_entry_t widen(input ftb_entry_stored_t s,
+      input logic v, input logic brsh);
+    widen.valid          = v;
+    widen.brSlot.offset  = s.brSlot.offset;
+    widen.brSlot.sharing = brsh;
+    widen.brSlot.valid   = s.brSlot.valid;
+    widen.brSlot.lower   = s.brSlot.lower;
+    widen.brSlot.tarStat = s.brSlot.tarStat;
+    widen.tailSlot       = s.tailSlot;
+    widen.pftAddr        = s.pftAddr;
+    widen.carry          = s.carry;
+    widen.isCall         = s.isCall;
+    widen.isRet          = s.isRet;
+    widen.isJalr         = s.isJalr;
+    widen.last_may_be_rvi_call = s.last_may_be_rvi_call;
+    widen.strong_bias    = s.strong_bias;
+  endfunction
+
+  // 窄存储数组 + dup0 死字段真值标量
+  ftb_entry_stored_t s2_fauftb_entry [NDUP];
   logic       s2_fauftb_hit   [NDUP];
-  ftb_entry_t s2_ftbBank      [NDUP];
+  ftb_entry_stored_t s2_ftbBank   [NDUP];
   logic       s2_ftb_hit      [NDUP];
+  logic s2_fauftb_v0, s2_fauftb_sh0;    // uFTB 条目 dup0 的 valid / brSlot.sharing
+  logic s2_ftbBank_v0, s2_ftbBank_sh0;  // FTBBank 条目 dup0 的 valid / brSlot.sharing
 
-  // ---- 死字段剪除：条目顶层 .valid 与 brSlot.sharing 只有 dup0 有读者 ----
-  //   读者 = entry_eq 一致性比对(s2_*[0]) + s3→last_stage 输出(s3[0])，全在 dup0。
-  //   golden(firtool) 仅为 dup0 保留这两字段, dup1..3 剪除(无扇出)。
-  //   为消除 impl-only 死寄存器且避免 Formality 对「部分数组元素被读」的数组保留
-  //   伪影(会残留 dup1..3 的 sharing 位), 这里把「整个数组」的这两位对所有 dup 恒置
-  //   0(结构常量→FM 统一 tie-off), 而 dup0 的真值改存独立标量寄存器 *_v0/*_sh0,
-  //   供 entry_eq 与 last_stage 输出读取。功能与 golden 一致, FTB-local(不改 ftb_pkg)。
-  ftb_entry_t s2_fauftb_entry_in [NDUP];
-  ftb_entry_t s2_ftbBank_in      [NDUP];
-  generate
-    for (genvar gd = 0; gd < NDUP; gd++) begin : g_s2_wr_mask
-      always_comb begin
-        s2_fauftb_entry_in[gd] = io_fauftb_entry_in;
-        s2_ftbBank_in[gd]      = ftbBank_read_resp;
-        // 所有 dup 数组元素的死字段恒 0(dup0 真值另存标量)
-        s2_fauftb_entry_in[gd].valid          = 1'b0;
-        s2_fauftb_entry_in[gd].brSlot.sharing = 1'b0;
-        s2_ftbBank_in[gd].valid               = 1'b0;
-        s2_ftbBank_in[gd].brSlot.sharing      = 1'b0;
-      end
-    end
-  endgenerate
-
-  // dup0 专用标量：条目顶层 valid + brSlot.sharing 的真值(entry_eq / last_stage 读)
-  logic s2_fauftb_v0, s2_fauftb_sh0;   // s2 uFTB 条目 dup0
-  logic s2_ftbBank_v0, s2_ftbBank_sh0; // s2 FTBBank 条目 dup0
-  logic s3_entry_v0,   s3_entry_sh0;   // s3 条目 dup0(经 last_stage 输出)
-
-  // s2 实际使用条目 / hit（按 close 二选一）
+  // s2 实际使用条目 / hit（按 close 二选一）；死字段真值也按 close 选
   ftb_entry_t s2_entry [NDUP];
   logic       s2_hit   [NDUP];
+  wire        s2_entry_v0  = s2_close ? s2_fauftb_v0  : s2_ftbBank_v0;
+  wire        s2_entry_sh0 = s2_close ? s2_fauftb_sh0 : s2_ftbBank_sh0;
   always_comb begin
     for (int d = 0; d < NDUP; d++) begin
-      s2_entry[d] = s2_close ? s2_fauftb_entry[d] : s2_ftbBank[d];
+      // 窄存储还原：仅 dup0 补回真 valid/sharing, dup1..3 恒 0(无读者)
+      s2_entry[d] = s2_close
+        ? widen(s2_fauftb_entry[d], (d==0) ? s2_fauftb_v0  : 1'b0, (d==0) ? s2_fauftb_sh0 : 1'b0)
+        : widen(s2_ftbBank[d],      (d==0) ? s2_ftbBank_v0 : 1'b0, (d==0) ? s2_ftbBank_sh0 : 1'b0);
       s2_hit[d]   = s2_close ? s2_fauftb_hit[d]   : s2_ftb_hit[d];
     end
   end
-  // dup0 死字段真值(供 s3 死字段标量与一致性无关的输出路径; 与数组同 close 选择)
-  wire s2_entry_v0  = s2_close ? s2_fauftb_v0  : s2_ftbBank_v0;
-  wire s2_entry_sh0 = s2_close ? s2_fauftb_sh0 : s2_ftbBank_sh0;
 
   // ===========================================================================
   // s2 PC 三段分割：seg0=pc[49:24](26b), seg1=pc[23:12](12b), seg2=pc[11:0](12b)
@@ -452,25 +489,23 @@ module xs_FTB_core
   // s3 寄存：条目(multi-hit 时替换为 multi 条目) / hit / multiHit / fallThroughErr
   //          + s3 last_stage_pc 预算段 + meta
   // ===========================================================================
-  ftb_entry_t s3_entry [NDUP];
+  // s3 也用窄存储 + dup0 死字段标量(仅 dup0 经 last_stage 输出这两位)。
+  ftb_entry_stored_t s3_entry [NDUP];
   logic       s3_hit   [NDUP];
   logic       s3_multi_hit [NDUP];
   logic       s3_ft_err [NDUP];
+  logic       s3_entry_v0, s3_entry_sh0;   // s3 条目 dup0 的 valid / brSlot.sharing
 
-  // s3 写入前把「整个数组」的 .valid / .brSlot.sharing 对所有 dup 恒 0(仅 dup0 经
-  //   last_stage 输出被读, 真值另存标量 s3_entry_v0/s3_entry_sh0)。统一 tie-off 消死位。
-  ftb_entry_t s3_entry_in [NDUP];
+  // s3 写数据(窄) = multi-hit ? multi条目 : s2_entry；dup0 死字段真值单独取 D。
+  ftb_entry_stored_t s3_entry_in [NDUP];
   generate
     for (genvar gd = 0; gd < NDUP; gd++) begin : g_s3_wr_mask
       always_comb begin
-        s3_entry_in[gd] = s2_multi_hit_en ? ftbBank_read_multi_entry : s2_entry[gd];
-        s3_entry_in[gd].valid          = 1'b0;
-        s3_entry_in[gd].brSlot.sharing = 1'b0;
+        s3_entry_in[gd] = narrow(s2_multi_hit_en ? ftbBank_read_multi_entry : s2_entry[gd]);
       end
     end
   endgenerate
-
-  // s3 dup0 死字段真值的 D 输入(与 s3_entry[0] 同源同门控)
+  // dup0 死字段的 D 输入(与 s3_entry[0] 同源同门控)
   wire s3_entry_v0_in  = s2_multi_hit_en ? ftbBank_read_multi_entry.valid          : s2_entry_v0;
   wire s3_entry_sh0_in = s2_multi_hit_en ? ftbBank_read_multi_entry.brSlot.sharing : s2_entry_sh0;
 
@@ -502,9 +537,10 @@ module xs_FTB_core
   endgenerate
 
   // ---- s3 输出组合：逐 dup（结构同 s2，fallThrough 直接用 s3_entry.carry） ----
+  //   输出块不读 e.valid / e.brSlot.sharing → 窄存储还原时补 0 安全。
   generate
     for (genvar gd = 0; gd < NDUP; gd++) begin : g_s3_out
-      ftb_entry_t e; assign e = s3_entry[gd];
+      ftb_entry_t e; assign e = widen(s3_entry[gd], 1'b0, 1'b0);
       assign io_out_s3_br_taken_mask[gd][0] = io_in_s3_br_taken_mask[gd][0] | (s3_hit[gd] & e.strong_bias[0]);
       assign io_out_s3_br_taken_mask[gd][1] = io_in_s3_br_taken_mask[gd][1] | (s3_hit[gd] & e.strong_bias[1]);
       assign io_out_s3_slot_valids[gd][0]   = e.brSlot.valid;
@@ -576,19 +612,19 @@ module xs_FTB_core
   // ===========================================================================
   // ---- 同步更新段（s1_pc/REG 链/s2/s3 寄存/update 寄存）----
   always_ff @(posedge clock) begin
-    // dup0 死字段真值(与 s2_*[0] 数组同门控同源)
+    // dup0 死字段真值(与 s2_*[0] 窄数组同门控同源)
     if (io_s1_fire[0]) begin
       s2_fauftb_v0  <= io_fauftb_entry_in.valid;
       s2_fauftb_sh0 <= io_fauftb_entry_in.brSlot.sharing;
       s2_ftbBank_v0 <= ftbBank_read_resp.valid;
       s2_ftbBank_sh0<= ftbBank_read_resp.brSlot.sharing;
     end
-    // s2 寄存（每 dup 在各自 s1_fire 时更新）
+    // s2 寄存（每 dup 在各自 s1_fire 时更新；窄存储丢弃 valid/brSlot.sharing）
     for (int d = 0; d < NDUP; d++) begin
       if (io_s1_fire[d]) begin
-        s2_fauftb_entry[d] <= s2_fauftb_entry_in[d];
+        s2_fauftb_entry[d] <= narrow(io_fauftb_entry_in);
         s2_fauftb_hit[d]   <= io_fauftb_entry_hit_in;
-        s2_ftbBank[d]      <= s2_ftbBank_in[d];
+        s2_ftbBank[d]      <= narrow(ftbBank_read_resp);
         s2_pc_higher[d]    <= s1_pc[d][49:21];
         s2_pc_middle[d]    <= s1_pc[d][20:13];
         s2_pc_higher_p1[d] <= 29'(s1_pc[d][49:21] + 29'h1);
@@ -602,7 +638,7 @@ module xs_FTB_core
     if (io_s1_fire[0])
       s2_meta <= {s1_close ? 2'h0 : ftbBank_io_read_hits_bits, s1_hit, s2_meta_cnt};
 
-    // s3 dup0 死字段真值(与 s3_entry[0] 同门控同源, 经 last_stage 输出)
+    // s3 dup0 死字段真值(与 s3_entry[0] 同源同门控, 经 last_stage 输出)
     if (io_s2_fire[0]) begin
       s3_entry_v0  <= s3_entry_v0_in;
       s3_entry_sh0 <= s3_entry_sh0_in;
@@ -706,9 +742,9 @@ module xs_FTB_core
       if (needReopen)
         consistent_cnt <= 9'h0;
       else if (io_s2_fire[0] & s2_fauftb_hit[0] & s2_ftb_hit[0])
-        consistent_cnt <= entry_eq(s2_fauftb_entry[0], s2_ftbBank[0],
-                                   s2_fauftb_v0, s2_ftbBank_v0,
-                                   s2_fauftb_sh0, s2_ftbBank_sh0)
+        // 窄数组 dup0 补回 valid/sharing 标量后做完整条目一致性比对
+        consistent_cnt <= entry_eq(widen(s2_fauftb_entry[0], s2_fauftb_v0, s2_fauftb_sh0),
+                                   widen(s2_ftbBank[0],      s2_ftbBank_v0, s2_ftbBank_sh0))
                             ? 9'(consistent_cnt + 9'h1) : 9'h0;
       else if (io_s2_fire[0] & ~s2_fauftb_hit[0] & s2_ftb_hit[0])
         consistent_cnt <= 9'h0;
@@ -753,15 +789,8 @@ module xs_FTB_core
 
   assign io_out_last_stage_meta      = {449'h0, s3_meta};
   assign io_out_last_stage_sc_disagree = io_in_last_stage_sc_disagree;
-  // last_stage 条目 = s3_entry[0], 但顶层 .valid / brSlot.sharing 从 dup0 标量补回
-  //   (数组该两位已剪除=0)。
-  ftb_entry_t last_stage_entry_o;
-  always_comb begin
-    last_stage_entry_o                = s3_entry[0];
-    last_stage_entry_o.valid          = s3_entry_v0;
-    last_stage_entry_o.brSlot.sharing = s3_entry_sh0;
-  end
-  assign io_out_last_stage_ftb_entry = last_stage_entry_o;
+  // last_stage 条目 = s3 窄数组 dup0 + dup0 死字段真值标量还原
+  assign io_out_last_stage_ftb_entry = widen(s3_entry[0], s3_entry_v0, s3_entry_sh0);
 
   assign io_s1_ready    = ftbBank_io_req_pc_ready & ~update_need_read & ~io_s1_ready_REG;
   assign io_perf_0_value = {5'h0, perf0_REG_1};
