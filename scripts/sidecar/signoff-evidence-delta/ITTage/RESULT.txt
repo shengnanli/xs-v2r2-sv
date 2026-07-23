@@ -1,0 +1,4 @@
+SIGNOFF_RESULT ITTage: measured=PARTIAL required=SUCCEEDED gate=GAP (proof=assembly fm_shell_rc=0 validator_rc=1)
+run_id: SGN-ITTage-1784786238
+impl_commit: 455ae007d421bcceb3928d65f3750c15bcecc5ca
+manifest_sha256: d8a21f66e6120527ffa225828dd1e278ae9188539ec60ecd214ac6581e9f40e9
