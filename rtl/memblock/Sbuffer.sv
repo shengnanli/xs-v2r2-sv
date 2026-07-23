@@ -1011,16 +1011,22 @@ module xs_Sbuffer_core
 
   // ValidPseudoLRU.access(Seq(touch0,touch1,touch2))：把所有 valid 的 touch 按 0→1→2
   //   顺序「依次」叠加到同一拍（不是三选一），后者基于前者结果的状态再更新。
+  //   下一态是当前 plru_state 的**纯组合**函数（三个 touch 依次叠加），因此在
+  //   always_comb 里算好放到 plru_next；always_ff 只寄存真状态 plru_state。
+  //   （若把中间累积量声明在 always_ff 内用阻塞赋值，FM 前端会把它推成一组死寄存器。）
+  logic [14:0] plru_next;
+  always_comb begin
+    logic [14:0] s;
+    s = plru_state;
+    if (accessIdx0_valid_q) s = plru_touch(s, accessIdx0_idx_q);
+    if (accessIdx1_valid_q) s = plru_touch(s, accessIdx1_idx_q);
+    if (accessIdx2_valid)   s = plru_touch(s, replaceAlgoIdx);
+    plru_next = s;
+  end
   always_ff @(posedge clock or posedge reset) begin
     if (reset) plru_state <= '0;
-    else if (accessIdx0_valid_q | accessIdx1_valid_q | accessIdx2_valid) begin
-      logic [14:0] s;
-      s = plru_state;
-      if (accessIdx0_valid_q) s = plru_touch(s, accessIdx0_idx_q);
-      if (accessIdx1_valid_q) s = plru_touch(s, accessIdx1_idx_q);
-      if (accessIdx2_valid)   s = plru_touch(s, replaceAlgoIdx);
-      plru_state <= s;
-    end
+    else if (accessIdx0_valid_q | accessIdx1_valid_q | accessIdx2_valid)
+      plru_state <= plru_next;
   end
 
   // ===========================================================================

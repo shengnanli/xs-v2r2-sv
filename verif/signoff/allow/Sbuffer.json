@@ -1,0 +1,8 @@
+{
+    "unresolved_blackbox": [
+        {"id": "prefetcher", "ref_path": "r:/WORK/Sbuffer/prefetcher", "impl_path": "i:/WORK/Sbuffer/prefetcher"}
+    ],
+    "interface_only": [],
+    "empty_blackbox": [],
+    "unmatched": []
+}
