@@ -218,10 +218,29 @@ module xs_StoreMisalignBuffer_core
     logic [15:0] mask;
     logic        isvec;
     logic [7:0]  elemIdx;
-    logic [2:0]  alignedType;
+    logic [1:0]  alignedType;  // 只需 [1:0]（size）；golden 存 [2:0]，其 [2] 为 golden-only 死位
     logic [3:0]  mbIndex;
     logic        portIndex;  // 来自哪个 enq 口（0/1），决定向量写回走哪个口
   } entry_t;
+
+  // s_split 快照：只含 splitStoreReq 输出实际会读的 uop 子字段（与 golden
+  //   splitStoreReqs_N_uop_* 同形；fuOpType 在输出侧由 req.fuOpType + cur_size 重建，
+  //   故此处不存 fuOpType，避免 impl-only 死位）。
+  typedef struct packed {
+    logic        exc0, exc1, exc2, exc4, exc5, exc8, exc9, exc10, exc11, exc12;
+    logic        exc13, exc14, exc16, exc17, exc18, exc19, exc20, exc21, exc22;
+    logic [3:0]  trigger;
+    logic [5:0]  ftqPtr_value;
+    logic [3:0]  ftqOffset;
+    logic [7:0]  vpu_vstart;
+    logic [1:0]  vpu_veew;
+    logic [6:0]  uopIdx;
+    logic        robIdx_flag;
+    logic [7:0]  robIdx_value;
+    logic [63:0] dbg_enqRsTime, dbg_selectTime, dbg_issueTime;
+    logic        sqIdx_flag;
+    logic [5:0]  sqIdx_value;
+  } split_uop_t;
 
   // 2 个 enq 口聚成数组。
   localparam int ENQ = 2;
@@ -254,7 +273,7 @@ module xs_StoreMisalignBuffer_core
       sqIdx_flag: io_enq_``P``_req_bits_uop_sqIdx_flag, sqIdx_value: io_enq_``P``_req_bits_uop_sqIdx_value, \
       vaddr: io_enq_``P``_req_bits_vaddr, mask: io_enq_``P``_req_bits_mask, \
       isvec: io_enq_``P``_req_bits_isvec, elemIdx: io_enq_``P``_req_bits_elemIdx, \
-      alignedType: io_enq_``P``_req_bits_alignedType, mbIndex: io_enq_``P``_req_bits_mbIndex, \
+      alignedType: io_enq_``P``_req_bits_alignedType[1:0], mbIndex: io_enq_``P``_req_bits_mbIndex, \
       portIndex: 1'(IDX) }
   `PACK_ENQ(0, 0);
   `PACK_ENQ(1, 1);
@@ -296,18 +315,33 @@ module xs_StoreMisalignBuffer_core
   logic       s2_canEnq_r;     // 入队后第二拍：上拍是否 canEnq（用于 revoke）
   logic       s2_reqSelPort_r; // 入队后第二拍：上拍选中的口号
 
+  // ---- 与 golden 同形的 req 常量状态位（store 恒不置位；驱动 vecWriteBack 的
+  //   gpaddr/vaNeedExt/isForVSnonLeafPTE 输出）。golden 保留这些 payload 寄存器，
+  //   故 impl 亦保留以便 FM 逐寄存器匹配（两侧皆可证恒 0）。
+  //   req_gpaddr：入队时恒写 0；vaNeedExt/isForVSnonLeafPTE：无置位路径、更新沿自清。 ----
+  logic        req_vaNeedExt;
+  logic [63:0] req_gpaddr;
+  logic        req_isForVSnonLeafPTE;
+  // 每拆分子 store 的 is128bit（store 恒 0，无置位路径、更新沿自清；驱动 splitStoreReq）。
+  //   用 golden 同名标量（splitStoreReqs_0/1_is128bit）便于 FM 逐寄存器匹配。
+  logic        splitStoreReqs_0_is128bit, splitStoreReqs_1_is128bit;
+
   // 子 store 请求寄存（fuOpType[1:0]/vaddr/mask 改写；其余 uop 取 s_split 快照）。
   logic [1:0]  splitReq_size  [MAX_SPLIT];
   logic [49:0] splitReq_vaddr [MAX_SPLIT];
   logic [15:0] splitReq_mask  [MAX_SPLIT];
-  entry_t      split_uop;                  // s_split 锁存的 uop/元数据快照
-  // 合并/掩码只在 store 数据通路用，本缓冲不产数据，仅保留 result 宽度形态以贴近 Scala：
-  //   (lowResultWidth/highResultWidth 在 store 侧仅用于 wmask 生成，已 DCE，故省略。)
-  logic [2:0]  lowResultWidth, highResultWidth;
+  split_uop_t  split_uop;                    // s_split 锁存的 uop 子字段快照
+  // s_split 锁存的 uop 快照：只存 splitStoreReq 输出实际读取的 uop 子字段
+  //   （与 golden splitStoreReqs_N_uop_* 同形——不含 vaddr/mask/isvec/mbIndex/elemIdx/
+  //    alignedType/portIndex/fuOpType，那些走 req 或独立的 splitReq_* 数组/重建）。
+  //   result 宽度(lowResultWidth/highResultWidth)在 store 侧仅用于 wmask 生成、已 DCE，
+  //   golden 无此寄存器，故不保留（否则成 impl-only 死寄存器）。
 
   logic [MAX_SPLIT-1:0] unSentStores;
   logic                 curPtr;
-  logic [47:0]          splitResp1_paddr;   // 高地址子 store 的 paddr（供 sqControl）
+  // 高地址子 store paddr（供 sqControl）：输出恒 8B 对齐（低 3 位置 0），故只存 [47:3]。
+  //   golden 存全 48 位但输出同样 {[47:3],3'h0}，其 [2:0] 为 golden-only 死位。
+  logic [47:3]          splitResp1_paddr;
   logic                 raw_delay_reg;      // RAW 延迟级（REG）：s_resp 完成后延 1 拍
 
   // 全局异常/uncache 标志 + 累积异常向量（store 关心位 3/6/7/15/19/23）。
@@ -333,7 +367,7 @@ module xs_StoreMisalignBuffer_core
 
   // ---- size + 跨 16B / 跨 4KB 判定 ----
   logic [1:0] alignedType;
-  assign alignedType = req.isvec ? req.alignedType[1:0] : req.fuOpType[1:0];
+  assign alignedType = req.isvec ? req.alignedType : req.fuOpType[1:0];
   logic [4:0] sizeLastByte;
   always_comb case (size_e'(alignedType))
     SZ_B: sizeLastByte = 5'd0;
@@ -354,33 +388,34 @@ module xs_StoreMisalignBuffer_core
   assign robMatch = req_valid & io_rob_pendingst &
       (io_rob_pendingPtr_flag == req.robIdx_flag) & (io_rob_pendingPtr_value == req.robIdx_value);
 
-  // ---- 拆分表（与 LoadMisalignBuffer 同构，但 store 无 resultShift）----
+  // ---- 拆分表（与 LoadMisalignBuffer 同构，但 store 无 resultShift/resultWidth）----
+  //   store 侧只需 low/high 子 store 的 size 与 vaddr（golden 无 resultWidth 寄存器）。
   typedef struct packed {
-    logic [1:0] lowSz;  logic [49:0] lowVa;  logic [2:0] lowW;
-    logic [1:0] highSz; logic [49:0] highVa; logic [2:0] highW;
+    logic [1:0] lowSz;  logic [49:0] lowVa;
+    logic [1:0] highSz; logic [49:0] highVa;
   } split_plan_t;
 
   function automatic split_plan_t planSplit(input logic [1:0] sz, input logic [49:0] va);
     split_plan_t p; p = '0;
     case (size_e'(sz))
       SZ_H: begin
-        p.lowSz=SZ_B;  p.lowVa=va;        p.lowW=3'd1;
-        p.highSz=SZ_B; p.highVa=va+50'd1; p.highW=3'd1;
+        p.lowSz=SZ_B;  p.lowVa=va;
+        p.highSz=SZ_B; p.highVa=va+50'd1;
       end
       SZ_W: case (va[1:0])
-        2'b01: begin p.lowSz=SZ_W; p.lowVa=va-50'd1; p.lowW=3'd3; p.highSz=SZ_B; p.highVa=va+50'd3; p.highW=3'd1; end
-        2'b10: begin p.lowSz=SZ_H; p.lowVa=va;       p.lowW=3'd2; p.highSz=SZ_H; p.highVa=va+50'd2; p.highW=3'd2; end
-        2'b11: begin p.lowSz=SZ_B; p.lowVa=va;       p.lowW=3'd1; p.highSz=SZ_W; p.highVa=va+50'd1; p.highW=3'd3; end
+        2'b01: begin p.lowSz=SZ_W; p.lowVa=va-50'd1; p.highSz=SZ_B; p.highVa=va+50'd3; end
+        2'b10: begin p.lowSz=SZ_H; p.lowVa=va;       p.highSz=SZ_H; p.highVa=va+50'd2; end
+        2'b11: begin p.lowSz=SZ_B; p.lowVa=va;       p.highSz=SZ_W; p.highVa=va+50'd1; end
         default: ;
       endcase
       SZ_D: case (va[2:0])
-        3'b001: begin p.lowSz=SZ_D; p.lowVa=va-50'd1; p.lowW=3'd7; p.highSz=SZ_B; p.highVa=va+50'd7; p.highW=3'd1; end
-        3'b010: begin p.lowSz=SZ_D; p.lowVa=va-50'd2; p.lowW=3'd6; p.highSz=SZ_H; p.highVa=va+50'd6; p.highW=3'd2; end
-        3'b011: begin p.lowSz=SZ_D; p.lowVa=va-50'd3; p.lowW=3'd5; p.highSz=SZ_W; p.highVa=va+50'd5; p.highW=3'd3; end
-        3'b100: begin p.lowSz=SZ_W; p.lowVa=va;       p.lowW=3'd4; p.highSz=SZ_W; p.highVa=va+50'd4; p.highW=3'd4; end
-        3'b101: begin p.lowSz=SZ_D; p.lowVa=va-50'd5; p.lowW=3'd3; p.highSz=SZ_D; p.highVa=va+50'd3; p.highW=3'd5; end
-        3'b110: begin p.lowSz=SZ_D; p.lowVa=va-50'd6; p.lowW=3'd2; p.highSz=SZ_D; p.highVa=va+50'd2; p.highW=3'd6; end
-        3'b111: begin p.lowSz=SZ_D; p.lowVa=va-50'd7; p.lowW=3'd1; p.highSz=SZ_D; p.highVa=va+50'd1; p.highW=3'd7; end
+        3'b001: begin p.lowSz=SZ_D; p.lowVa=va-50'd1; p.highSz=SZ_B; p.highVa=va+50'd7; end
+        3'b010: begin p.lowSz=SZ_D; p.lowVa=va-50'd2; p.highSz=SZ_H; p.highVa=va+50'd6; end
+        3'b011: begin p.lowSz=SZ_D; p.lowVa=va-50'd3; p.highSz=SZ_W; p.highVa=va+50'd5; end
+        3'b100: begin p.lowSz=SZ_W; p.lowVa=va;       p.highSz=SZ_W; p.highVa=va+50'd4; end
+        3'b101: begin p.lowSz=SZ_D; p.lowVa=va-50'd5; p.highSz=SZ_D; p.highVa=va+50'd3; end
+        3'b110: begin p.lowSz=SZ_D; p.lowVa=va-50'd6; p.highSz=SZ_D; p.highVa=va+50'd2; end
+        3'b111: begin p.lowSz=SZ_D; p.lowVa=va-50'd7; p.highSz=SZ_D; p.highVa=va+50'd1; end
         default: ;
       endcase
       default: ;
@@ -454,13 +489,13 @@ module xs_StoreMisalignBuffer_core
       s2_canEnq_r <= 1'b0; s2_reqSelPort_r <= 1'b0;
       split_uop <= '0; unSentStores <= '0; curPtr <= 1'b0;
       splitResp1_paddr <= '0;
-      lowResultWidth <= '0; highResultWidth <= '0;
       globalException <= 1'b0; globalUncache <= 1'b0;
       globalMMIO <= 1'b0; globalNC <= 1'b0; globalMemBackTypeMM <= 1'b0;
       {exc3_r,exc6_r,exc7_r,exc15_r,exc19_r,exc23_r} <= '0;
       for (int i = 0; i < MAX_SPLIT; i++) begin
         splitReq_size[i] <= '0; splitReq_vaddr[i] <= '0; splitReq_mask[i] <= '0;
       end
+      splitStoreReqs_0_is128bit <= 1'b0; splitStoreReqs_1_is128bit <= 1'b0;
     end else begin
       if (canEnq) begin
         req_valid    <= 1'b1;
@@ -471,18 +506,45 @@ module xs_StoreMisalignBuffer_core
       s2_reqSelPort_r <= sel_port;
 
       // ---- s_split：拆分寄存器写入（仅 cross16）----
+      //   is128bit 两半各自紧随其 split-write 块自清（照 golden 布局，勿把两半合成同一
+      //   表达式——否则 merge_duplicated_registers 合并两恒 0 寄存器、孤儿化 golden 对侧）。
       if (bufferState == S_SPLIT && cross16) begin
         unSentStores <= 2'b11;
         curPtr       <= 1'b0;
-        split_uop    <= req;
+        // 只锁存输出实际读取的 uop 子字段（与 golden splitStoreReqs_N_uop_* 同形）。
+        split_uop.exc0 <= req.exc0; split_uop.exc1 <= req.exc1; split_uop.exc2 <= req.exc2;
+        split_uop.exc4 <= req.exc4; split_uop.exc5 <= req.exc5; split_uop.exc8 <= req.exc8;
+        split_uop.exc9 <= req.exc9; split_uop.exc10 <= req.exc10; split_uop.exc11 <= req.exc11;
+        split_uop.exc12 <= req.exc12; split_uop.exc13 <= req.exc13; split_uop.exc14 <= req.exc14;
+        split_uop.exc16 <= req.exc16; split_uop.exc17 <= req.exc17; split_uop.exc18 <= req.exc18;
+        split_uop.exc19 <= req.exc19; split_uop.exc20 <= req.exc20; split_uop.exc21 <= req.exc21;
+        split_uop.exc22 <= req.exc22;
+        split_uop.trigger      <= req.trigger;
+        split_uop.ftqPtr_value <= req.ftqPtr_value;
+        split_uop.ftqOffset    <= req.ftqOffset;
+        split_uop.vpu_vstart   <= req.vpu_vstart;
+        split_uop.vpu_veew     <= req.vpu_veew;
+        split_uop.uopIdx       <= req.uopIdx;
+        split_uop.robIdx_flag  <= req.robIdx_flag;
+        split_uop.robIdx_value <= req.robIdx_value;
+        split_uop.dbg_enqRsTime  <= req.dbg_enqRsTime;
+        split_uop.dbg_selectTime <= req.dbg_selectTime;
+        split_uop.dbg_issueTime  <= req.dbg_issueTime;
+        split_uop.sqIdx_flag   <= req.sqIdx_flag;
+        split_uop.sqIdx_value  <= req.sqIdx_value;
         if (|alignedType) begin
           splitReq_size[0] <= plan.lowSz;  splitReq_vaddr[0] <= plan.lowVa;
           splitReq_size[1] <= plan.highSz; splitReq_vaddr[1] <= plan.highVa;
           splitReq_mask[0] <= genMask(plan.lowSz,  plan.lowVa);
           splitReq_mask[1] <= genMask(plan.highSz, plan.highVa);
-          lowResultWidth   <= plan.lowW;   highResultWidth   <= plan.highW;
         end
       end
+      // is128bit 两半自清（写成 if/else 两路、勿折叠同一 AND 表达式，避免两恒 0 寄存器
+      //   被 merge_duplicated_registers 合并孤儿化 golden 对侧——参 vaNeedExt 同法）。
+      if (bufferState == S_SPLIT && cross16) splitStoreReqs_0_is128bit <= 1'b0;
+      else                                   splitStoreReqs_0_is128bit <= splitStoreReqs_0_is128bit;
+      if (bufferState == S_SPLIT && cross16) splitStoreReqs_1_is128bit <= 1'b0;
+      else                                   splitStoreReqs_1_is128bit <= splitStoreReqs_1_is128bit;
 
       // ---- 次态转移（优先级链；与 Scala switch 等价）----
       if (bufferState == S_IDLE) begin
@@ -519,7 +581,7 @@ module xs_StoreMisalignBuffer_core
       // ---- s_resp 收回应：维护 unSentStores/curPtr/异常向量/paddr/全局标志 ----
       //  （与状态转移解耦，对应 Scala 的 when(io.splitStoreResp.valid) 与 global* 赋值。）
       if (io_splitStoreResp_valid) begin
-        if (curPtr) splitResp1_paddr <= io_splitStoreResp_bits_paddr;
+        if (curPtr) splitResp1_paddr <= io_splitStoreResp_bits_paddr[47:3];
         if (respIsUncache) begin
           unSentStores <= '0;
           // 交软件：清异常向量、置 storeAddrMisaligned(bit6)。
@@ -572,10 +634,24 @@ module xs_StoreMisalignBuffer_core
   //   一致。）golden 的 req 载荷寄存器在「无复位」always 块（reset=1 的时钟沿仍可写入），
   //   故这里必须放独立的无复位块——若放进 async-reset 块的 else 分支，写使能会被 ~reset
   //   门控，与 golden 不等价（FM 349 个 req_* 位 failing 的根因）。
+  logic reqUpdEn;
+  assign reqUpdEn = (cross4KB & ~reqRedirect) ? candidateNewer : canEnq;
   always_ff @(posedge clock) begin
-    if ((cross4KB & ~reqRedirect) ? candidateNewer : canEnq) begin
+    if (reqUpdEn) begin
       req          <= sel_bits;
       req.portIndex<= sel_port;
+      req_gpaddr   <= 64'h0;   // 入队时恒写 0（与 golden 一致：无 gpaddr 输入源）
+    end
+    // vaNeedExt/isForVSnonLeafPTE：无置位路径、更新沿自清。
+    //   照 golden 逐字保留 `if(_GEN)/else` 两路（_GEN=cross4KB&~reqRedirect，
+    //   _GEN_0=candidateNewer）——不折叠成单一 ~reqUpdEn，以免两寄存器结构完全相同
+    //   被 merge_duplicated_registers 合并、导致 golden 对侧孤儿 compare point。
+    if (cross4KB & ~reqRedirect) begin
+      req_vaNeedExt         <= ~candidateNewer & req_vaNeedExt;
+      req_isForVSnonLeafPTE <= ~candidateNewer & req_isForVSnonLeafPTE;
+    end else begin
+      req_vaNeedExt         <= ~canEnq & req_vaNeedExt;
+      req_isForVSnonLeafPTE <= ~canEnq & req_isForVSnonLeafPTE;
     end
   end
 
@@ -639,7 +715,8 @@ module xs_StoreMisalignBuffer_core
   assign io_splitStoreReq_bits_vaddr  = cur_vaddr;
   assign io_splitStoreReq_bits_mask   = cur_mask;
   assign io_splitStoreReq_bits_isvec  = req.isvec;
-  assign io_splitStoreReq_bits_is128bit = 1'b0;       // 拆分恒 0（WireInit 默认）
+  // is128bit：按 curPtr 选当前拆分（两者恒 0，与 golden 逐寄存器匹配）。
+  assign io_splitStoreReq_bits_is128bit = curPtr ? splitStoreReqs_1_is128bit : splitStoreReqs_0_is128bit;
   assign io_splitStoreReq_bits_isFinalSplit = curPtr; // 高地址那次为最后一拆
 
   // ===========================================================================
@@ -688,9 +765,9 @@ module xs_StoreMisalignBuffer_core
     assign io_vecWriteBack_``P``_bits_exceptionVec_23   = exc23_r; \
     assign io_vecWriteBack_``P``_bits_hasException      = globalException; \
     assign io_vecWriteBack_``P``_bits_vaddr             = {{(64-VADDR){1'b0}}, req.vaddr}; \
-    assign io_vecWriteBack_``P``_bits_vaNeedExt         = 1'b0; \
-    assign io_vecWriteBack_``P``_bits_gpaddr            = 64'h0; \
-    assign io_vecWriteBack_``P``_bits_isForVSnonLeafPTE = 1'b0; \
+    assign io_vecWriteBack_``P``_bits_vaNeedExt         = req_vaNeedExt; \
+    assign io_vecWriteBack_``P``_bits_gpaddr            = req_gpaddr; \
+    assign io_vecWriteBack_``P``_bits_isForVSnonLeafPTE = req_isForVSnonLeafPTE; \
     assign io_vecWriteBack_``P``_bits_vstart            = req.vpu_vstart; \
     assign io_vecWriteBack_``P``_bits_elemIdx           = req.elemIdx; \
     assign io_vecWriteBack_``P``_bits_mask              = req.mask
@@ -708,7 +785,7 @@ module xs_StoreMisalignBuffer_core
   //  crossPageCanDeq：非跨页 或 已进 s_block → 可出队。
   assign io_sqControl_toStoreQueue_crossPageCanDeq = ~isCrossPage | (bufferState == S_BLOCK);
   //  高地址子 store 的 8B 对齐 paddr（出队时合并写两半用）。
-  assign io_sqControl_toStoreQueue_paddr = {splitResp1_paddr[47:3], 3'h0};
+  assign io_sqControl_toStoreQueue_paddr = {splitResp1_paddr, 3'h0};
   //  withSameUop：sqControl 回送的 uop 与本条目同 uop 且跨页且已到 ROB 头。
   assign io_sqControl_toStoreQueue_withSameUop =
       (io_sqControl_toStoreMisalignBuffer_uop_robIdx_flag  == req.robIdx_flag) &

@@ -380,22 +380,79 @@ module xs_LoadMisalignBuffer_core
   logic [1:0]   splitReq_size  [MAX_SPLIT]; // 该次子 load 的对齐 size 编码
   logic [49:0]  splitReq_vaddr [MAX_SPLIT];
   logic [15:0]  splitReq_mask  [MAX_SPLIT];
-  enq_payload_t split_uop;                  // s_split 锁存的 uop/元数据快照
+
+  // splitLoadReqs_N 里一批「本配置恒 0」的 LsPipelineBundle 元数据（nc/mmio/
+  //   memBackTypeMM/is128bit/vecActive/mshrid/schedIndex 与被拆分清零的
+  //   uop.exceptionVec_4=loadAddrMisaligned）。golden 逐 bank 存成复位 0、
+  //   `_GEN_68 & self` 自持的寄存器，在 splitLoadReq 输出上按 curPtr 读出——恒 0。
+  //   strict 下 golden 这些寄存器若无同名 impl 对应会成 unmatched compare point→PARTIAL。
+  //   故此处用与 golden 完全同名的标量寄存器（splitLoadReqs_0_*/splitLoadReqs_1_*），
+  //   同样复位 0、自持，令 FM 按名配对；用标量而非数组避免被 merge_duplicated 合并折叠。
+  logic        splitLoadReqs_0_nc, splitLoadReqs_1_nc;
+  logic        splitLoadReqs_0_mmio, splitLoadReqs_1_mmio;
+  logic        splitLoadReqs_0_memBackTypeMM, splitLoadReqs_1_memBackTypeMM;
+  logic        splitLoadReqs_0_is128bit, splitLoadReqs_1_is128bit;
+  logic        splitLoadReqs_0_vecActive, splitLoadReqs_1_vecActive;
+  logic [3:0]  splitLoadReqs_0_mshrid, splitLoadReqs_1_mshrid;
+  logic [6:0]  splitLoadReqs_0_schedIndex, splitLoadReqs_1_schedIndex;
+  logic        splitLoadReqs_0_uop_exceptionVec_4, splitLoadReqs_1_uop_exceptionVec_4;
+
+  // s_split 锁存的 uop 快照：只保留「splitLoadReq 输出实际透传」的 uop 字段。
+  //   golden 的 splitLoadReqs_N 会 DCE 掉本层不输出的字段（vaddr/mask/fuOpType 由
+  //   splitReq_{vaddr,mask,size} 现场覆盖；gpaddr/vecTriggerMask/elemIdx/isvec/
+  //   alignedType/vaNeedExt/mbIndex/elemIdxInsideVd 在 splitLoadReq 上无对应端口）。
+  //   若沿用整条 enq_payload_t 会多存这些从不读取的域=impl-only 死寄存器，故收窄到
+  //   与 golden 读出形状一致的专用快照类型。
+  typedef struct packed {
+    logic        exc0, exc1, exc2, exc3, exc5, exc6, exc7, exc8, exc9, exc10;
+    logic        exc11, exc12, exc13, exc14, exc15, exc16, exc17, exc18;
+    logic        exc19, exc20, exc21, exc22, exc23;
+    logic [3:0]  trigger;
+    logic        preDecodeInfo_isRVC;
+    logic        ftqPtr_flag;
+    logic [5:0]  ftqPtr_value;
+    logic [3:0]  ftqOffset;
+    logic        rfWen, fpWen;
+    logic [7:0]  vpu_vstart;
+    logic [1:0]  vpu_veew;
+    logic [6:0]  uopIdx;
+    logic [7:0]  pdest;
+    logic        robIdx_flag;
+    logic [7:0]  robIdx_value;
+    logic [63:0] dbg_enqRsTime, dbg_selectTime, dbg_issueTime;
+    logic        storeSetHit;
+    logic        waitForRobIdx_flag;
+    logic [7:0]  waitForRobIdx_value;
+    logic        loadWaitBit, loadWaitStrict;
+    logic        lqIdx_flag;
+    logic [6:0]  lqIdx_value;
+    logic        sqIdx_flag;
+    logic [5:0]  sqIdx_value;
+    logic [63:0] fullva;
+  } split_snap_t;
+  split_snap_t split_uop;                   // s_split 锁存的 uop 快照（收窄）
   // 合并所需：各侧「右移字节数 / 截取字节数」。
-  // 注：拆分表里 high 子 load 的「右移字节数」恒为 0（高地址段总是从其对齐字的
-  //   字节 0 开始取），故不设 highResultShift 寄存器、合并时直接用常量 0；这与
-  //   golden 把 high data 高字节判为 unread 而 DCE 的结构一致。
-  logic [2:0]  lowResultShift, lowResultWidth, highResultWidth;
+  // 注：拆分表里 high 子 load 的「右移字节数」在所有合法拆分分支恒为 0（高地址段总是
+  //   从其对齐字的字节 0 开始取）。golden 仍保留 highResultShift 寄存器并用它索引 high
+  //   data 的字节移位（_GEN_38[alignedType] 在各分支均写 0）。为与 golden 逐位等价——
+  //   让 splitLoadResp_1_data[56:63] 与 golden 一样成为被读取的比较点（而非 impl 侧
+  //   多出的死位）——这里同样保留 highResultShift 寄存器并在 high 抽取里使用它。
+  logic [2:0]  lowResultShift, lowResultWidth, highResultShift, highResultWidth;
 
   // 两次子 load 的回应数据（只需 data；其余 resp 字段本配置未被使用，已 DCE）。
-  logic [128:0] splitResp_data [MAX_SPLIT];
+  //   合并逻辑只读低 64 位（对齐子 load 的 8B 对齐字），故只存 [63:0]。golden 沿用
+  //   129 位 splitLoadResp_N_data 但同样只读 [63:0]，其 [64:128] 是 golden-only 死位。
+  logic [63:0]  splitResp_data [MAX_SPLIT];
 
   logic [MAX_SPLIT-1:0] unSentLoads;  // 尚未发出的子 load（one-hot per ptr）
   logic                 curPtr;       // 当前处理的子 load 序号（0/1）
   logic [63:0]          combinedData; // 合并后的 64b 数据（扩展前）
   logic [63:0]          merged_data;  // s_comb 组合合并结果（锁存到 combinedData）
   logic [8:0]           data_select;  // genRdataOH：写回时的符号/零扩展 one-hot
-  logic                 needWakeUpWB; // 写回时标记「来自 LoadUnit 唤醒」
+  // 注：golden 无「needWakeUpWB」寄存器——写回是否唤醒直接由
+  //   io_splitLoadResp_valid & io_splitLoadResp_bits_misalignNeedWakeUp 判定（见
+  //   io_writeBack_valid），不锁存。原实现里存过一个 needWakeUpWB 但从不读取
+  //   （纯 write-never-read 死寄存器），与 golden 对齐后删除。
 
   // 全局异常/uncache 标志（任一子 load 命中即置位，收尾走软件）。
   logic globalException, globalUncache, globalMMIO, globalNC, globalMemBackTypeMM;
@@ -515,6 +572,53 @@ module xs_LoadMisalignBuffer_core
   split_plan_t plan;
   assign plan = planSplit(alignedType, req.vaddr);
 
+  // 恒 0 元数据 bank 的自持保持掩码，镜像 golden `_GEN_68 = ~_GEN | ~cross16`
+  //   （_GEN = bufferState==S_SPLIT）：在 S_SPLIT&cross16 装 0，否则自持。
+  logic metaHold;
+  assign metaHold = ~((bufferState == S_SPLIT) & cross16);
+
+  // 拆分周期（metaHold=0）的元数据「装 0」次态：按活跃 alignedType 索引，
+  //   可达 SZ_H/W/D(1/2/3) 装 0，不可达 SZ_B(0) 默认保留 self——值恒 0 但结构含自引用，
+  //   令 FM 不将寄存器常量折叠删除（与 highResultShift/_GEN_38 同构）。
+  function automatic logic metaZero1(input logic [1:0] at, input logic self);
+    case (at)
+      2'd1, 2'd2, 2'd3: metaZero1 = 1'b0;
+      default:          metaZero1 = self;   // SZ_B 不可达，仅保结构
+    endcase
+  endfunction
+  function automatic logic [3:0] metaZero4(input logic [1:0] at, input logic [3:0] self);
+    case (at)
+      2'd1, 2'd2, 2'd3: metaZero4 = 4'h0;
+      default:          metaZero4 = self;
+    endcase
+  endfunction
+  function automatic logic [6:0] metaZero7(input logic [1:0] at, input logic [6:0] self);
+    case (at)
+      2'd1, 2'd2, 2'd3: metaZero7 = 7'h0;
+      default:          metaZero7 = self;
+    endcase
+  endfunction
+
+  // ---- highResultShift 次态：镜像 golden _GEN_38[alignedType] 的「按 vaddr 低位索引、
+  //   index0=自持(highResultShift)」结构。功能恒 0（cross16 下 vaddr 低位非零 → 自持
+  //   分支不可达），但保留自引用令 FM 不将其常量折叠为 0，从而 splitResp_data[1] 高字节
+  //   经移位网络成为被读点。逐字节对照 golden：
+  //     _GEN_36[va[2:0]] = (va[2:0]==0 ? highResultShift : 0)   （alignedType==3/SZ_D）
+  //     _GEN_37[va[1:0]] = (va[1:0]==0 ? highResultShift : 0)   （alignedType==2/SZ_W）
+  //     _GEN_38[alignedType] : {SZ_D:_GEN_36, SZ_W:_GEN_37, SZ_H:0, SZ_B:highResultShift}
+  logic [2:0] highShiftNext;
+  always_comb begin
+    logic [2:0] g36, g37;
+    g36 = (req.vaddr[2:0] == 3'd0) ? highResultShift : 3'd0; // SZ_D 索引
+    g37 = (req.vaddr[1:0] == 2'd0) ? highResultShift : 3'd0; // SZ_W 索引
+    case (alignedType)
+      2'd3:    highShiftNext = g36;            // SZ_D
+      2'd2:    highShiftNext = g37;            // SZ_W
+      2'd1:    highShiftNext = 3'd0;           // SZ_H
+      default: highShiftNext = highResultShift;// SZ_B（自持，不可达）
+    endcase
+  end
+
   // ---- needWakeUpReqsWire：在 s_comb 且标量时，需再发一次 wakeup load ----
   logic needWakeUpReqsWire;
   assign needWakeUpReqsWire = (bufferState == S_COMB_WAKEUP_REP) & ~req.isvec;
@@ -561,7 +665,6 @@ module xs_LoadMisalignBuffer_core
       unSentLoads         <= '0; \
       globalException     <= 1'b0; \
       globalUncache       <= 1'b0; \
-      needWakeUpWB        <= 1'b0; \
       globalMMIO          <= 1'b0; \
       globalNC            <= 1'b0; \
       globalMemBackTypeMM <= 1'b0; \
@@ -576,7 +679,6 @@ module xs_LoadMisalignBuffer_core
       curPtr              <= 1'b0;
       combinedData        <= '0;
       data_select         <= '0;
-      needWakeUpWB        <= 1'b0;
       globalException     <= 1'b0;
       globalUncache       <= 1'b0;
       globalMMIO          <= 1'b0;
@@ -584,6 +686,7 @@ module xs_LoadMisalignBuffer_core
       globalMemBackTypeMM <= 1'b0;
       lowResultShift      <= '0;
       lowResultWidth      <= '0;
+      highResultShift     <= '0;
       highResultWidth     <= '0;
       split_uop           <= '0;
       {exc3_r,exc4_r,exc5_r,exc13_r,exc19_r,exc21_r} <= '0;
@@ -593,6 +696,15 @@ module xs_LoadMisalignBuffer_core
         splitReq_mask[i]  <= '0;
         splitResp_data[i] <= '0;
       end
+      // 恒 0 元数据 bank：复位 0（golden splitLoadReqs_N_* <= 0）。
+      splitLoadReqs_0_nc <= 1'b0; splitLoadReqs_1_nc <= 1'b0;
+      splitLoadReqs_0_mmio <= 1'b0; splitLoadReqs_1_mmio <= 1'b0;
+      splitLoadReqs_0_memBackTypeMM <= 1'b0; splitLoadReqs_1_memBackTypeMM <= 1'b0;
+      splitLoadReqs_0_is128bit <= 1'b0; splitLoadReqs_1_is128bit <= 1'b0;
+      splitLoadReqs_0_vecActive <= 1'b0; splitLoadReqs_1_vecActive <= 1'b0;
+      splitLoadReqs_0_mshrid <= 4'h0; splitLoadReqs_1_mshrid <= 4'h0;
+      splitLoadReqs_0_schedIndex <= 7'h0; splitLoadReqs_1_schedIndex <= 7'h0;
+      splitLoadReqs_0_uop_exceptionVec_4 <= 1'b0; splitLoadReqs_1_uop_exceptionVec_4 <= 1'b0;
     end else begin
       // ---- 入队：req_valid/data_select（async 复位域，与 golden 一致）----
       //  req 载荷本体在下方独立「无复位」块锁存（golden req_* 在无复位 always 块，
@@ -610,18 +722,71 @@ module xs_LoadMisalignBuffer_core
         if (cross16) begin
           unSentLoads <= 2'b11;
           curPtr      <= 1'b0;
-          split_uop   <= req;   // 快照 uop（loadAddrMisaligned 在输出端清零）
+          // 快照 uop（loadAddrMisaligned 在输出端清零）；仅取输出会读的字段。
+          split_uop <= '{
+            exc0: req.exc0, exc1: req.exc1, exc2: req.exc2, exc3: req.exc3,
+            exc5: req.exc5, exc6: req.exc6, exc7: req.exc7, exc8: req.exc8,
+            exc9: req.exc9, exc10: req.exc10, exc11: req.exc11, exc12: req.exc12,
+            exc13: req.exc13, exc14: req.exc14, exc15: req.exc15, exc16: req.exc16,
+            exc17: req.exc17, exc18: req.exc18, exc19: req.exc19, exc20: req.exc20,
+            exc21: req.exc21, exc22: req.exc22, exc23: req.exc23,
+            trigger: req.trigger, preDecodeInfo_isRVC: req.preDecodeInfo_isRVC,
+            ftqPtr_flag: req.ftqPtr_flag, ftqPtr_value: req.ftqPtr_value,
+            ftqOffset: req.ftqOffset, rfWen: req.rfWen, fpWen: req.fpWen,
+            vpu_vstart: req.vpu_vstart, vpu_veew: req.vpu_veew,
+            uopIdx: req.uopIdx, pdest: req.pdest,
+            robIdx_flag: req.robIdx_flag, robIdx_value: req.robIdx_value,
+            dbg_enqRsTime: req.dbg_enqRsTime, dbg_selectTime: req.dbg_selectTime,
+            dbg_issueTime: req.dbg_issueTime, storeSetHit: req.storeSetHit,
+            waitForRobIdx_flag: req.waitForRobIdx_flag,
+            waitForRobIdx_value: req.waitForRobIdx_value,
+            loadWaitBit: req.loadWaitBit, loadWaitStrict: req.loadWaitStrict,
+            lqIdx_flag: req.lqIdx_flag, lqIdx_value: req.lqIdx_value,
+            sqIdx_flag: req.sqIdx_flag, sqIdx_value: req.sqIdx_value,
+            fullva: req.fullva };
           if (|alignedType) begin
             splitReq_size[0]  <= plan.lowSz;   splitReq_vaddr[0] <= plan.lowVa;
             splitReq_size[1]  <= plan.highSz;  splitReq_vaddr[1] <= plan.highVa;
             splitReq_mask[0]  <= genMask(plan.lowSz,  plan.lowVa);
             splitReq_mask[1]  <= genMask(plan.highSz, plan.highVa);
             lowResultShift    <= plan.lowShift;  lowResultWidth  <= plan.lowWidth;
-            highResultWidth   <= plan.highWidth; // plan.highShift 恒 0，省略
+            // highResultShift 次态：逐字节镜像 golden _GEN_38[alignedType]。功能上恒 0
+            //   （cross16 保证 vaddr 低位非零，自持分支不可达），但保留 golden 的
+            //   「按 vaddr 低位索引、index0=自持」结构——令 highResultShift 不被常量传播
+            //   折叠为 0，从而 splitResp_data[1] 高字节经移位网络成为被读比较点（与
+            //   golden splitLoadResp_1_data[56:63] 逐位对应），消除 impl 侧死位。
+            highResultShift   <= highShiftNext;
+            highResultWidth   <= plan.highWidth;
           end
         end
         {exc3_r,exc4_r,exc5_r,exc13_r,exc19_r,exc21_r} <= '0;
       end
+
+      // ---- 恒 0 元数据 bank 的自持更新 ----
+      //   功能等价于 golden `splitLoadReqs_N_X <= (~(bufferState==S_SPLIT)|~cross16)&self`
+      //   （S_SPLIT&cross16 装 0，否则自持；self 初值 0 → 恒 0）。但纯 `metaHold & self`
+      //   会被 SV 前端识别为「provably 0」而在建模阶段常量折叠删除（FM-036: 寄存器不
+      //   存在），导致 golden 逐 bank 比较点无 impl 对应。改用「按活跃信号 alignedType
+      //   索引、SZ_B 默认分支=self」的 mux 次态（与本核 highResultShift/golden _GEN_38
+      //   同构，已验证该结构令 FM 保留寄存器）：装 0 分支覆盖所有可达 alignedType(1/2/3)，
+      //   不可达的 SZ_B(0) 分支保留自引用——值仍恒 0，但寄存器不被折叠，从而按名配对
+      //   golden splitLoadReqs_N_*。metaHold 门控「非拆分周期保持」。
+      splitLoadReqs_0_nc            <= metaHold ? splitLoadReqs_0_nc : metaZero1(alignedType, splitLoadReqs_0_nc);
+      splitLoadReqs_1_nc            <= metaHold ? splitLoadReqs_1_nc : metaZero1(alignedType, splitLoadReqs_1_nc);
+      splitLoadReqs_0_mmio          <= metaHold ? splitLoadReqs_0_mmio : metaZero1(alignedType, splitLoadReqs_0_mmio);
+      splitLoadReqs_1_mmio          <= metaHold ? splitLoadReqs_1_mmio : metaZero1(alignedType, splitLoadReqs_1_mmio);
+      splitLoadReqs_0_memBackTypeMM <= metaHold ? splitLoadReqs_0_memBackTypeMM : metaZero1(alignedType, splitLoadReqs_0_memBackTypeMM);
+      splitLoadReqs_1_memBackTypeMM <= metaHold ? splitLoadReqs_1_memBackTypeMM : metaZero1(alignedType, splitLoadReqs_1_memBackTypeMM);
+      splitLoadReqs_0_is128bit      <= metaHold ? splitLoadReqs_0_is128bit : metaZero1(alignedType, splitLoadReqs_0_is128bit);
+      splitLoadReqs_1_is128bit      <= metaHold ? splitLoadReqs_1_is128bit : metaZero1(alignedType, splitLoadReqs_1_is128bit);
+      splitLoadReqs_0_vecActive     <= metaHold ? splitLoadReqs_0_vecActive : metaZero1(alignedType, splitLoadReqs_0_vecActive);
+      splitLoadReqs_1_vecActive     <= metaHold ? splitLoadReqs_1_vecActive : metaZero1(alignedType, splitLoadReqs_1_vecActive);
+      splitLoadReqs_0_mshrid        <= metaHold ? splitLoadReqs_0_mshrid : metaZero4(alignedType, splitLoadReqs_0_mshrid);
+      splitLoadReqs_1_mshrid        <= metaHold ? splitLoadReqs_1_mshrid : metaZero4(alignedType, splitLoadReqs_1_mshrid);
+      splitLoadReqs_0_schedIndex    <= metaHold ? splitLoadReqs_0_schedIndex : metaZero7(alignedType, splitLoadReqs_0_schedIndex);
+      splitLoadReqs_1_schedIndex    <= metaHold ? splitLoadReqs_1_schedIndex : metaZero7(alignedType, splitLoadReqs_1_schedIndex);
+      splitLoadReqs_0_uop_exceptionVec_4 <= metaHold ? splitLoadReqs_0_uop_exceptionVec_4 : metaZero1(alignedType, splitLoadReqs_0_uop_exceptionVec_4);
+      splitLoadReqs_1_uop_exceptionVec_4 <= metaHold ? splitLoadReqs_1_uop_exceptionVec_4 : metaZero1(alignedType, splitLoadReqs_1_uop_exceptionVec_4);
 
       // 次态转移（优先级链；S_RESP 的全局异常/uncache 标志一并锁存）。
       if (bufferState == S_IDLE) begin
@@ -643,7 +808,6 @@ module xs_LoadMisalignBuffer_core
             bufferState <= S_REQ; // 重放或还有未发子 load
           end else begin
             bufferState  <= S_COMB_WAKEUP_REP;
-            needWakeUpWB <= ~req.isvec;
           end
         end
       end else if (bufferState == S_COMB_WAKEUP_REP) begin
@@ -663,7 +827,7 @@ module xs_LoadMisalignBuffer_core
 
       // ---- s_resp 收下回应数据 + 维护 unSentLoads/curPtr/异常向量 ----
       if (io_splitLoadResp_valid) begin
-        splitResp_data[curPtr] <= io_splitLoadResp_bits_data;
+        splitResp_data[curPtr] <= io_splitLoadResp_bits_data[63:0];
         if (respIsUncache) begin
           unSentLoads <= '0;
           // 交软件处理：清异常向量、置 loadAddrMisaligned(bit4)。
@@ -710,7 +874,9 @@ module xs_LoadMisalignBuffer_core
     logic [63:0] catv;
     logic [2:0]  j;
     lowSeg  = shiftAndTruncate(lowResultShift,  lowResultWidth,  splitResp_data[0][63:0]);
-    highSeg = shiftAndTruncate(3'd0, highResultWidth, splitResp_data[1][63:0]);
+    // 用 highResultShift（恒 0，但作为变量移位量令 splitResp_data[1] 全 64 位进入移位
+    //   网络）——与 golden 的 highResultShift mux 逐位等价，避免 [56:63] 成 impl 死位。
+    highSeg = shiftAndTruncate(highResultShift, highResultWidth, splitResp_data[1][63:0]);
     // 拆成字节数组，索引一律用 3 位量（与 golden 的 3'(i-lowWidth) 同构，避免
     //   part-select 越界被工具判 X）。highByte[7] 恒 0（high 段最多 7 字节）。
     for (int b = 0; b < 8; b++) begin
@@ -775,7 +941,9 @@ module xs_LoadMisalignBuffer_core
   assign io_splitLoadReq_bits_uop_exceptionVec_1  = split_uop.exc1;
   assign io_splitLoadReq_bits_uop_exceptionVec_2  = split_uop.exc2;
   assign io_splitLoadReq_bits_uop_exceptionVec_3  = split_uop.exc3;
-  assign io_splitLoadReq_bits_uop_exceptionVec_4  = 1'b0; // loadAddrMisaligned 清零
+  // loadAddrMisaligned(bit4) 拆分清零：golden 逐 bank 存恒 0 寄存器，按 curPtr 读出。
+  assign io_splitLoadReq_bits_uop_exceptionVec_4  =
+      curPtr ? splitLoadReqs_1_uop_exceptionVec_4 : splitLoadReqs_0_uop_exceptionVec_4;
   assign io_splitLoadReq_bits_uop_exceptionVec_5  = split_uop.exc5;
   assign io_splitLoadReq_bits_uop_exceptionVec_6  = split_uop.exc6;
   assign io_splitLoadReq_bits_uop_exceptionVec_7  = split_uop.exc7;
@@ -832,14 +1000,16 @@ module xs_LoadMisalignBuffer_core
   assign io_splitLoadReq_bits_fullva = split_uop.fullva;
   assign io_splitLoadReq_bits_mask   = cur_mask;
   // 这些 LsPipelineBundle 字段在拆分时恒为 0（WireInit(0) 默认且从不被赋值）。
-  assign io_splitLoadReq_bits_nc            = 1'b0;
-  assign io_splitLoadReq_bits_mmio          = 1'b0;
-  assign io_splitLoadReq_bits_memBackTypeMM = 1'b0;
+  //   golden 逐 bank 存恒 0 寄存器（splitLoadReqs_N_*），按 curPtr 读出；此处照搬其
+  //   逐 bank 读出结构以匹配 golden 比较点（功能仍恒 0）。
+  assign io_splitLoadReq_bits_nc            = curPtr ? splitLoadReqs_1_nc            : splitLoadReqs_0_nc;
+  assign io_splitLoadReq_bits_mmio          = curPtr ? splitLoadReqs_1_mmio          : splitLoadReqs_0_mmio;
+  assign io_splitLoadReq_bits_memBackTypeMM = curPtr ? splitLoadReqs_1_memBackTypeMM : splitLoadReqs_0_memBackTypeMM;
   assign io_splitLoadReq_bits_isvec         = req.isvec;
-  assign io_splitLoadReq_bits_is128bit      = 1'b0;
-  assign io_splitLoadReq_bits_vecActive     = 1'b0;
-  assign io_splitLoadReq_bits_mshrid        = 4'h0;
-  assign io_splitLoadReq_bits_schedIndex    = 7'h0;
+  assign io_splitLoadReq_bits_is128bit      = curPtr ? splitLoadReqs_1_is128bit      : splitLoadReqs_0_is128bit;
+  assign io_splitLoadReq_bits_vecActive     = curPtr ? splitLoadReqs_1_vecActive     : splitLoadReqs_0_vecActive;
+  assign io_splitLoadReq_bits_mshrid        = curPtr ? splitLoadReqs_1_mshrid        : splitLoadReqs_0_mshrid;
+  assign io_splitLoadReq_bits_schedIndex    = curPtr ? splitLoadReqs_1_schedIndex    : splitLoadReqs_0_schedIndex;
   // isFinalSplit：最后一次子 load（curPtr=1）且非 wakeup 时置位。
   assign io_splitLoadReq_bits_isFinalSplit       = curPtr & ~needWakeUpReqsWire;
   assign io_splitLoadReq_bits_misalignNeedWakeUp = needWakeUpReqsWire;

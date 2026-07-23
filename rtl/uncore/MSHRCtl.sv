@@ -4469,6 +4469,65 @@ module xs_MSHRCtl_core(
   assign io_perf_1_value = {5'h0, perf01_s2};  // l2_cache_rd_refill
   assign io_perf_3_value = {2'h0, perf3_s2};   // l2_cache_long_miss
 
+  // ===== golden 死观测锥(BoringUtils probe 观测线, 综合下无扇出)镜像 =====
+  // 目的: 让 MSHR 黑盒的 acquire_period_*/release_period_* 输出被消费,
+  //       否则 impl 侧这些黑盒输出悬空 → FM 判为黑盒输入方向 → 与 golden(输出)失配。
+  // 与 golden MSHRCtl.sv 逐字对齐: 消费黑盒周期输出汇入死 probe 线;
+  //       另镜像 golden 的 64 位 timers_* 死寄存器 + REG 断言寄存器。
+  // 均为 golden-only cone-dead 的对称复刻(bug-for-bug), 无功能扇出。
+  wire [63:0] acquire_period_probe =
+      (m_acquire_period_valid[0]  ? m_acquire_period_bits[0]  : 64'h0)
+    | (m_acquire_period_valid[1]  ? m_acquire_period_bits[1]  : 64'h0)
+    | (m_acquire_period_valid[2]  ? m_acquire_period_bits[2]  : 64'h0)
+    | (m_acquire_period_valid[3]  ? m_acquire_period_bits[3]  : 64'h0)
+    | (m_acquire_period_valid[4]  ? m_acquire_period_bits[4]  : 64'h0)
+    | (m_acquire_period_valid[5]  ? m_acquire_period_bits[5]  : 64'h0)
+    | (m_acquire_period_valid[6]  ? m_acquire_period_bits[6]  : 64'h0)
+    | (m_acquire_period_valid[7]  ? m_acquire_period_bits[7]  : 64'h0)
+    | (m_acquire_period_valid[8]  ? m_acquire_period_bits[8]  : 64'h0)
+    | (m_acquire_period_valid[9]  ? m_acquire_period_bits[9]  : 64'h0)
+    | (m_acquire_period_valid[10] ? m_acquire_period_bits[10] : 64'h0)
+    | (m_acquire_period_valid[11] ? m_acquire_period_bits[11] : 64'h0)
+    | (m_acquire_period_valid[12] ? m_acquire_period_bits[12] : 64'h0)
+    | (m_acquire_period_valid[13] ? m_acquire_period_bits[13] : 64'h0)
+    | (m_acquire_period_valid[14] ? m_acquire_period_bits[14] : 64'h0)
+    | (m_acquire_period_valid[15] ? m_acquire_period_bits[15] : 64'h0);
+  wire [63:0] release_period_probe =
+      (m_release_period_valid[0]  ? m_release_period_bits[0]  : 64'h0)
+    | (m_release_period_valid[1]  ? m_release_period_bits[1]  : 64'h0)
+    | (m_release_period_valid[2]  ? m_release_period_bits[2]  : 64'h0)
+    | (m_release_period_valid[3]  ? m_release_period_bits[3]  : 64'h0)
+    | (m_release_period_valid[4]  ? m_release_period_bits[4]  : 64'h0)
+    | (m_release_period_valid[5]  ? m_release_period_bits[5]  : 64'h0)
+    | (m_release_period_valid[6]  ? m_release_period_bits[6]  : 64'h0)
+    | (m_release_period_valid[7]  ? m_release_period_bits[7]  : 64'h0)
+    | (m_release_period_valid[8]  ? m_release_period_bits[8]  : 64'h0)
+    | (m_release_period_valid[9]  ? m_release_period_bits[9]  : 64'h0)
+    | (m_release_period_valid[10] ? m_release_period_bits[10] : 64'h0)
+    | (m_release_period_valid[11] ? m_release_period_bits[11] : 64'h0)
+    | (m_release_period_valid[12] ? m_release_period_bits[12] : 64'h0)
+    | (m_release_period_valid[13] ? m_release_period_bits[13] : 64'h0)
+    | (m_release_period_valid[14] ? m_release_period_bits[14] : 64'h0)
+    | (m_release_period_valid[15] ? m_release_period_bits[15] : 64'h0);
+  wire acquire_period_en_probe =
+      m_acquire_period_valid[0]  | m_acquire_period_valid[1]
+    | m_acquire_period_valid[2]  | m_acquire_period_valid[3]
+    | m_acquire_period_valid[4]  | m_acquire_period_valid[5]
+    | m_acquire_period_valid[6]  | m_acquire_period_valid[7]
+    | m_acquire_period_valid[8]  | m_acquire_period_valid[9]
+    | m_acquire_period_valid[10] | m_acquire_period_valid[11]
+    | m_acquire_period_valid[12] | m_acquire_period_valid[13]
+    | m_acquire_period_valid[14] | m_acquire_period_valid[15];
+  wire release_period_en_probe =
+      m_release_period_valid[0]  | m_release_period_valid[1]
+    | m_release_period_valid[2]  | m_release_period_valid[3]
+    | m_release_period_valid[4]  | m_release_period_valid[5]
+    | m_release_period_valid[6]  | m_release_period_valid[7]
+    | m_release_period_valid[8]  | m_release_period_valid[9]
+    | m_release_period_valid[10] | m_release_period_valid[11]
+    | m_release_period_valid[12] | m_release_period_valid[13]
+    | m_release_period_valid[14] | m_release_period_valid[15];
+
   // ===== 输出展平: 内部数组 → golden 扁平端口 =====
   assign io_msStatus_0_bits_is_miss = m_io_status_bits_is_miss[0];
   assign io_msStatus_1_bits_is_miss = m_io_status_bits_is_miss[1];

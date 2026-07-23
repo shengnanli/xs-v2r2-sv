@@ -38,10 +38,12 @@ for {set n 0} {$n < 24} {incr n} {
   _pin "r:/WORK/$top/io_status_dup_${n}_s3_valid_r_reg" "i:/WORK/$top/u_core/status_s3_repl_q_reg\[$n\]"
 }
 
-# 4) RegNext(s0_fire) 四份副本 1:1（meta/encTag/repl-way 的选择寄存器 + replace_way_set_valid）
+# 4) RegNext(s0_fire) 三份副本 1:1（meta/encTag/repl-way 的选择寄存器）
+#    注：golden 的 io_replace_way_set_valid_last_REG 是冗余死寄存器（其唯一去向 _GEN_2
+#        在本 firtool 配置下无扇出），impl 已正确省略——它在 golden 侧成 cone-dead
+#        (PASS_DEAD_REF)，无需/无法钉点。
 _pin "r:/WORK/$top/last_REG_reg"                          "i:/WORK/$top/u_core/s1_meta_sel_reg"
 _pin "r:/WORK/$top/last_REG_1_reg"                        "i:/WORK/$top/u_core/s1_enctag_sel_reg"
 _pin "r:/WORK/$top/s1_repl_way_en_last_REG_reg"           "i:/WORK/$top/u_core/s1_replway_sel_reg"
-_pin "r:/WORK/$top/io_replace_way_set_valid_last_REG_reg" "i:/WORK/$top/u_core/replace_way_set_valid_q_reg"
 
 puts "MAINPIPE_PRE_PINS: $_n pinned, $_f failed"

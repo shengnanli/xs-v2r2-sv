@@ -446,13 +446,16 @@ module xs_NewIFU_core (
   // --- f2 PC 流水寄存(只存低位+高位，CatPC 重建省功耗) ---
   logic [PredictWidth-1:0][PcCutPoint:0]  f2_pc_lower_result;
   logic [VAddrBits-1:PcCutPoint]          f2_pc_high, f2_pc_high_plus1;
-  logic [PredictWidth:0][6:0]             f2_cut_ptr;
+  // f2_cut_ptr 只用低 6 位选半字(f2_cut_data[i]=hwords[f2_cut_ptr[i][5:0]])。
+  // bit[6] 在 impl/golden 均从不读且 D 恒 0(块内偏移 0..47 装不满第 7 位); 只寄存 [5:0],
+  // golden [6] 转 dead-ref, 消 impl-only/matched dead。
+  logic [PredictWidth:0][5:0]             f2_cut_ptr;
   logic [VAddrBits-1:0]                   f2_resend_vaddr; // MMIO 跨字重发 vaddr = start+2
   always_ff @(posedge clock) if (f1_fire) begin
     f2_pc_lower_result <= f1_pc_lower_result;
     f2_pc_high         <= f1_pc_high;
     f2_pc_high_plus1   <= f1_pc_high_plus1;
-    f2_cut_ptr         <= f1_cut_ptr;
+    for (int ci = 0; ci <= PredictWidth; ci++) f2_cut_ptr[ci] <= f1_cut_ptr[ci][5:0];
     f2_resend_vaddr    <= f1_ftq_req.startAddr + 2;
   end
 
@@ -534,6 +537,13 @@ module xs_NewIFU_core (
     .out_hasHalfValid(f2_hasHalfValid)
   );
 
+  // f2_pd 的 valid/isRVC 分量(f3 只寄存这两项, 见 f3_pd_wire 拆分寄存器)
+  logic [PredictWidth-1:0] f2_pd_valid_vec, f2_pd_isRVC_vec;
+  always_comb for (int i = 0; i < PredictWidth; i++) begin
+    f2_pd_valid_vec[i] = f2_pd[i].valid;
+    f2_pd_isRVC_vec[i] = f2_pd[i].isRVC;
+  end
+
   // ===========================================================================
   // f3：RVC 展开 / 预测检查 / MMIO / 送 IBuffer
   // ===========================================================================
@@ -542,13 +552,28 @@ module xs_NewIFU_core (
   logic     f3_doubleLine;
   wire      f3_fire = ibuffer_valid && ibuffer_ready;
 
-  logic [PredictWidth:0][15:0]   f3_cut_data;
   logic [1:0]                    f3_exception_0, f3_exception_1;
   logic                          f3_pmp_mmio;
   logic [1:0]                    f3_itlb_pbmt;
   logic                          f3_backendException;
   logic [PredictWidth-1:0][31:0] f3_instr;
-  pd_info_t [PredictWidth-1:0]   f3_pd_wire;      // 来自 PreDecode 的原始 pd
+  // f3_pd_wire 在 f3 级只读 valid/isRVC(brType/isCall/isRet 由 F3Predecoder 黑盒重算,
+  // 见 f3_pd 组合块; golden 同名 brType/isCall/isRet 仅喂 predecode 一致性断言,
+  // SYNTHESIS 下 cone-dead)。只寄存 valid/isRVC 两个向量, brType/isCall/isRet 组合钉 0
+  // (不生成寄存器), 消除对称 matched-unread(golden 侧转 dead-ref)。
+  // valid[0] 在 f3 从不读(f3_instr_valid[0] 被 ~f3_lastHalf_valid 显式改写, golden 亦无
+  // f3_pd_wire_0_valid 寄存器)。valid 只寄存 [15:1], [0] 钉 0 消 impl-only unread。
+  logic [PredictWidth-1:1]       f3_pd_wire_valid_hi;
+  wire  [PredictWidth-1:0]       f3_pd_wire_valid = {f3_pd_wire_valid_hi, 1'b0};
+  logic [PredictWidth-1:0]       f3_pd_wire_isRVC;
+  pd_info_t [PredictWidth-1:0]   f3_pd_wire;
+  always_comb for (int pwi = 0; pwi < PredictWidth; pwi++) begin
+    f3_pd_wire[pwi].valid  = f3_pd_wire_valid[pwi];
+    f3_pd_wire[pwi].isRVC  = f3_pd_wire_isRVC[pwi];
+    f3_pd_wire[pwi].brType = 2'b00;
+    f3_pd_wire[pwi].isCall = 1'b0;
+    f3_pd_wire[pwi].isRet  = 1'b0;
+  end
   logic [PredictWidth-1:0][63:0] f3_jump_offset;
   logic [PredictWidth-1:0][1:0]  f3_exception_vec;
   logic [PredictWidth-1:0][1:0]  f3_crossPage_exception_vec;
@@ -557,23 +582,54 @@ module xs_NewIFU_core (
   logic [PcCutPoint:0]           f3_pc_last_lower_plus2, f3_pc_last_lower_plus4;
   logic [PredictWidth-1:0]       f3_instr_range;
   logic [PredictWidth-1:0][MemPredPCWidth-1:0] f3_foldpc;
-  logic [PredictWidth-1:0]       f3_hasHalfValid;
+  // hasHalfValid[0]/[1] 在 f3 级从不读(mux 结果 f3_instr_valid[0]/[1] 显式改写,
+  // 见下方 always_comb)。golden 只寄存 hasHalfValid_2..15。只寄存 [15:2],
+  // [1:0] 钉常量 0 消 impl-only unread。
+  logic [PredictWidth-1:2]       f3_hasHalfValid_hi;
+  wire  [PredictWidth-1:0]       f3_hasHalfValid = {f3_hasHalfValid_hi, 2'b00};
   logic [PAddrBits-1:0]          f3_paddr_0;
   logic [PAddrBitsMax-1:0]       f3_gpaddr;
   logic                          f3_isForVSnonLeafPTE;
   logic [VAddrBits-1:0]          f3_resend_vaddr;
 
-  always_ff @(posedge clock) if (f2_fire) f3_ftq_req    <= f2_ftq_req;
+  // f3_ftq_req.nextlineStart 在 f3 级从不被读(golden 只保留 f1/f2_ftq_req_nextlineStart,
+  // f3 无 nextlineStart 寄存器)。用单独寄存器寄存被读的各字段, nextlineStart 组合钉常量 0
+  // (不生成寄存器, 与 golden 形状一致, 消 impl-only unread)。
+  logic [VAddrBits-1:0] f3_ftq_startAddr, f3_ftq_nextStartAddr;
+  logic                 f3_ftq_ftqIdx_flag, f3_ftq_ftqOffset_valid;
+  logic [5:0]           f3_ftq_ftqIdx_value;
+  logic [3:0]           f3_ftq_ftqOffset_bits;
+  always_comb begin
+    f3_ftq_req.startAddr       = f3_ftq_startAddr;
+    f3_ftq_req.nextlineStart   = '0;
+    f3_ftq_req.nextStartAddr   = f3_ftq_nextStartAddr;
+    f3_ftq_req.ftqIdx_flag     = f3_ftq_ftqIdx_flag;
+    f3_ftq_req.ftqIdx_value    = f3_ftq_ftqIdx_value;
+    f3_ftq_req.ftqOffset_valid = f3_ftq_ftqOffset_valid;
+    f3_ftq_req.ftqOffset_bits  = f3_ftq_ftqOffset_bits;
+  end
+  always_ff @(posedge clock) if (f2_fire) begin
+    f3_ftq_startAddr       <= f2_ftq_req.startAddr;
+    f3_ftq_nextStartAddr   <= f2_ftq_req.nextStartAddr;
+    f3_ftq_ftqIdx_flag     <= f2_ftq_req.ftqIdx_flag;
+    f3_ftq_ftqIdx_value    <= f2_ftq_req.ftqIdx_value;
+    f3_ftq_ftqOffset_valid <= f2_ftq_req.ftqOffset_valid;
+    f3_ftq_ftqOffset_bits  <= f2_ftq_req.ftqOffset_bits;
+  end
   always_ff @(posedge clock) if (f2_fire) f3_doubleLine <= f2_doubleLine;
   always_ff @(posedge clock) if (f2_fire) begin
-    f3_cut_data                <= f2_cut_data;
     f3_exception_0             <= f2_exception_0;
     f3_exception_1             <= f2_exception_1;
     f3_pmp_mmio                <= f2_pmp_mmio;
     f3_itlb_pbmt               <= f2_itlb_pbmt;
     f3_backendException        <= f2_backendException;
     f3_instr                   <= f2_instr;
-    f3_pd_wire                 <= f2_pd;
+    // f3_pd_wire 只有 valid/isRVC 在 f3 被读(brType/isCall/isRet 由 F3Predecoder 黑盒
+    // 在 f3 重算覆盖, 见 f3_pd 组合块)。golden 同名寄存器的 brType/isCall/isRet 仅喂
+    // predecode 一致性断言(SYNTHESIS 下编译掉 ⇒ cone-dead)。这里 brType/isCall/isRet
+    // 钉常量 0, 不生成寄存器, 消除对称 matched-unread(golden 侧转 dead-ref)。
+    f3_pd_wire_valid_hi        <= f2_pd_valid_vec[PredictWidth-1:1];
+    f3_pd_wire_isRVC           <= f2_pd_isRVC_vec;
     f3_jump_offset             <= f2_jump_offset;
     f3_exception_vec           <= f2_exception_vec;
     f3_crossPage_exception_vec <= f2_crossPage_exception_vec;
@@ -584,7 +640,7 @@ module xs_NewIFU_core (
     f3_pc_last_lower_plus4     <= f2_pc_lower_result[PredictWidth-1] + 4;
     f3_instr_range             <= f2_instr_range;
     f3_foldpc                  <= f2_foldpc;
-    f3_hasHalfValid            <= f2_hasHalfValid;
+    f3_hasHalfValid_hi         <= f2_hasHalfValid[PredictWidth-1:2];
     f3_paddr_0                 <= f2_paddr_0;
     f3_gpaddr                  <= f2_gpaddr;
     f3_isForVSnonLeafPTE       <= f2_isForVSnonLeafPTE;
@@ -866,7 +922,6 @@ module xs_NewIFU_core (
   // last half（跨包半条 RVI）处理
   // ===========================================================================
   logic        f3_lastHalf_valid;
-  logic [VAddrBits-1:0] f3_lastHalf_middlePC;
   logic        f3_lastHalf_disable;
   logic [PredictWidth-1:0] f3_instr_valid;
 
@@ -948,7 +1003,6 @@ module xs_NewIFU_core (
     else if (wb_clear_lastHalf_valid) f3_lastHalf_valid <= 1'b0;
     else if (f3_fire)      f3_lastHalf_valid <= f3_hasLastHalf && !f3_lastHalf_disable;
   end
-  always_ff @(posedge clock) if (f3_fire) f3_lastHalf_middlePC <= f3_ftq_req.nextStartAddr;
 
   // pd.valid 向量
   logic [PredictWidth-1:0] f3_pd_valid_vec;
@@ -1221,24 +1275,40 @@ module xs_NewIFU_core (
   // 避免 impl 多出的 startAddr 高位寄存器与 wb_pc_high 交叉错配。
   logic       wb_ftqIdx_flag;
   logic [5:0] wb_ftqIdx_value;
-  logic [PredictWidth-1:0]            wb_chk_fixedRange, wb_chk_fixedTaken;
+  logic [PredictWidth-1:0]            wb_chk_fixedTaken;
   logic [PredictWidth-1:0]            wb_instr_range, wb_instr_valid;
   logic [PredictWidth-1:0][PcCutPoint:0] wb_pc_lower_result;
   logic [VAddrBits-1:PcCutPoint]     wb_pc_high, wb_pc_high_plus1;
+  // wb_pd.valid 在 wb 级被 checkFlushWb_pd[i].valid=wb_instr_valid[i] 覆写后才读,
+  // 寄存的 valid 位从不读(golden wb_pd_N 只寄存 isRVC/brType/isCall/isRet, 无 valid)。
+  // 拆分寄存: isRVC/brType/isCall/isRet 各存, valid 组合钉常量 0(不生成寄存器)。
+  logic [PredictWidth-1:0]       wb_pd_isRVC, wb_pd_isCall, wb_pd_isRet;
+  logic [PredictWidth-1:0][1:0]  wb_pd_brType;
   pd_info_t [PredictWidth-1:0]       wb_pd;
+  always_comb for (int pwi = 0; pwi < PredictWidth; pwi++) begin
+    wb_pd[pwi].valid  = 1'b0;
+    wb_pd[pwi].isRVC  = wb_pd_isRVC[pwi];
+    wb_pd[pwi].brType = wb_pd_brType[pwi];
+    wb_pd[pwi].isCall = wb_pd_isCall[pwi];
+    wb_pd[pwi].isRet  = wb_pd_isRet[pwi];
+  end
   logic [3:0]                        wb_lastIdx;
   logic                              wb_false_lastHalf_raw;
   logic [VAddrBits-1:0]              wb_false_target;
   always_ff @(posedge clock) if (wb_enable) begin
     wb_ftqIdx_flag     <= f3_ftq_req.ftqIdx_flag;
     wb_ftqIdx_value    <= f3_ftq_req.ftqIdx_value;
-    wb_chk_fixedRange  <= chk_fixedRange;
     wb_chk_fixedTaken  <= chk_fixedTaken;
     wb_instr_range     <= enqEnable_w;   // io.toIbuffer.bits.enqEnable
     wb_pc_lower_result <= f3_pc_lower_result;
     wb_pc_high         <= f3_pc_high;
     wb_pc_high_plus1   <= f3_pc_high_plus1;
-    wb_pd              <= f3_pd;
+    for (int pwi = 0; pwi < PredictWidth; pwi++) begin
+      wb_pd_isRVC[pwi]  <= f3_pd[pwi].isRVC;
+      wb_pd_brType[pwi] <= f3_pd[pwi].brType;
+      wb_pd_isCall[pwi] <= f3_pd[pwi].isCall;
+      wb_pd_isRet[pwi]  <= f3_pd[pwi].isRet;
+    end
     wb_instr_valid     <= f3_instr_valid;
     wb_lastIdx         <= f3_last_validIdx;
     // golden wb_false_lastHalf_r 的 D：~isRVC & fixedRange & instr_valid & ~fixedTaken & ~mmio
@@ -1365,11 +1435,12 @@ module xs_NewIFU_core (
   // ===========================================================================
   // perf 计数（13 个 6 位饱和计数；按 golden 的事件累加）
   // ===========================================================================
-  logic                         f3_perf_bank_hit_0, f3_perf_bank_hit_1, f3_perf_hit;
+  // f3_perf_bank_hit_0 在 impl 从不读(perf 事件只用 hit_1)。golden 同名寄存器
+  // f3_perf_info_bank_hit_0 仅喂探针线 f3_hit_0_probe(cone-dead), 留在 golden 侧作 dead-ref。
+  logic                         f3_perf_bank_hit_1, f3_perf_hit;
   logic perf_only_0_hit_q, perf_only_0_miss_q, perf_hit_0_hit_1_q, perf_hit_0_miss_1_q;
   logic perf_miss_0_hit_1_q, perf_miss_0_miss_1_q;
   always_ff @(posedge clock) if (f2_fire) begin
-    f3_perf_bank_hit_0  <= perf_bank_hit_0;
     f3_perf_bank_hit_1  <= perf_bank_hit_1;
     f3_perf_hit         <= perf_hit;
     perf_only_0_hit_q   <= perf_only_0_hit;
