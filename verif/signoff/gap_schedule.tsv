@@ -86,8 +86,6 @@ TLBFA	IMPL_DEAD	nc22/ur11/ui347/bb0/NONSYM
 TLBFA_1	IMPL_DEAD	nc33/ur11/ui155/bb0/NONSYM
 TLBNonBlock	IMPL_DEAD	nc0/ur12/ui186/bb3
 TLPLIC	IMPL_DEAD	nc0/ur0/ui4/bb0
-TLXbar_1	IMPL_DEAD	nc0/ur0/ui5/bb0
-TLXbar_6	IMPL_DEAD	nc0/ur0/ui5/bb0
 TageTable	IMPL_DEAD	nc0/ur48/ui11/bb13
 TageTable_1	IMPL_DEAD	nc0/ur48/ui11/bb13
 TageTable_2	IMPL_DEAD	nc0/ur48/ui11/bb13
