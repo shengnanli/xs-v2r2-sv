@@ -1,0 +1,4 @@
+SIGNOFF_RESULT Fence: measured=PARTIAL required=SUCCEEDED gate=GAP (proof=signoff-strict fm_shell_rc=0 validator_rc=1)
+run_id: SGN-Fence-1784804981
+impl_commit: e6a0d749cb8f880537ba5bdb536bb9940d0a0921
+manifest_sha256: ac33a270fea6e2452236850c37df703135fa29fb7f7a9287e948e319b7264eb0
