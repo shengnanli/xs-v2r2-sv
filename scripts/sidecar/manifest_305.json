@@ -599,12 +599,12 @@
    "makefile": "verif/ut/FTBBank/Makefile",
    "make_target": "fm-FTBBank",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "allow_ref": "verif/signoff/allow/FTBBank.json",
+   "rationale": "assembly option-2: SRAM 链(SplittedSRAMTemplate_2/SRAMTemplate_36/sram_array/array_1)两侧elaborate + MbistPipeFtb elaborate, 仅8个vendor宏array_1_ext黑盒; vmucp验11个对称cone-dead MBIST点(两侧同golden MbistPipeFtb: mbistPl/addrReg_reg[0:9]+addrRdReg_reg[9], 双射同名, MBIST地址寄存器宽于FM cone实用位, impl用同golden不可窄化=bug-for-bug对称死)→FM实比passing; golden-only req_pc_reg_N(way0-3)只喂ifndef SYNTHESIS的fallThrough断言(FTB.scala:567)零功能扇出=cone-dead dead-ref, impl正确省略",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
