@@ -1,0 +1,4 @@
+SIGNOFF_RESULT MSHR: measured=PARTIAL required=SUCCEEDED gate=GAP (proof=signoff-strict fm_shell_rc=0 validator_rc=1)
+run_id: SGN-MSHR-1784714463
+impl_commit: 32bbebc5dc41f5aad8645b936c37d00705261d93
+manifest_sha256: 753bb9d3e068f8ffc2541d560ae4f8af86620ad0ec9131a24f0e5860d8190068

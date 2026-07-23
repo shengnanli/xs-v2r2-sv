@@ -285,7 +285,9 @@ module TLBFA_1 import xs_tlbfa_pkg::*; (
     wdata.s2_gaf = io_w_bits_data_s2_gaf;
     wdata.s2xlate = io_w_bits_data_s2xlate;
   end
-  xs_TLBFA_core #(.PORTS(4), .NDUPS(2), .NWAYS(48), .WAY_W(6)) u_core (
+  // TLBFA_1 = DTLB(load/store)变体：需要 perm.d 与 g_perm 写侧位(d/r/w)，KEEP_*=1(默认)全存。
+  xs_TLBFA_core #(.PORTS(4), .NDUPS(2), .NWAYS(48), .WAY_W(6),
+                  .KEEP_PERM_D(1'b1), .KEEP_GPERM_DRW(1'b1)) u_core (
     .clock(clock), .reset(reset),
     .io_sfence_valid(io_sfence_valid), .io_sfence_bits_rs1(io_sfence_bits_rs1),
     .io_sfence_bits_rs2(io_sfence_bits_rs2), .io_sfence_bits_addr(io_sfence_bits_addr),

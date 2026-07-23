@@ -1,0 +1,4 @@
+SIGNOFF_RESULT Directory: measured=PARTIAL required=SUCCEEDED gate=GAP (proof=signoff-strict fm_shell_rc=0 validator_rc=1)
+run_id: SGN-Directory-1784725589
+impl_commit: 1d13a87b2d6dcf8e8f536650a6da175f5faa7464
+manifest_sha256: 753bb9d3e068f8ffc2541d560ae4f8af86620ad0ec9131a24f0e5860d8190068

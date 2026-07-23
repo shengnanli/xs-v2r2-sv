@@ -1,0 +1,47 @@
+{
+    "unresolved_blackbox": [
+        {
+            "id": "ctrlUnitOpt",
+            "ref_path": "r:/WORK/ICache/ctrlUnitOpt",
+            "impl_path": "i:/WORK/ICache/u_core/ctrlUnitOpt"
+        },
+        {
+            "id": "dataArray",
+            "ref_path": "r:/WORK/ICache/dataArray",
+            "impl_path": "i:/WORK/ICache/u_core/dataArray"
+        },
+        {
+            "id": "mainPipe",
+            "ref_path": "r:/WORK/ICache/mainPipe",
+            "impl_path": "i:/WORK/ICache/u_core/mainPipe"
+        },
+        {
+            "id": "metaArray",
+            "ref_path": "r:/WORK/ICache/metaArray",
+            "impl_path": "i:/WORK/ICache/u_core/metaArray"
+        },
+        {
+            "id": "missUnit",
+            "ref_path": "r:/WORK/ICache/missUnit",
+            "impl_path": "i:/WORK/ICache/u_core/missUnit"
+        },
+        {
+            "id": "prefetcher",
+            "ref_path": "r:/WORK/ICache/prefetcher",
+            "impl_path": "i:/WORK/ICache/u_core/prefetcher"
+        },
+        {
+            "id": "replacer",
+            "ref_path": "r:/WORK/ICache/replacer",
+            "impl_path": "i:/WORK/ICache/u_core/replacer"
+        },
+        {
+            "id": "wayLookup",
+            "ref_path": "r:/WORK/ICache/wayLookup",
+            "impl_path": "i:/WORK/ICache/u_core/wayLookup"
+        }
+    ],
+    "interface_only": [],
+    "empty_blackbox": [],
+    "unmatched": []
+}

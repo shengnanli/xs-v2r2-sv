@@ -1,0 +1,16 @@
+=== FM: DataModule_BackendPC_16entry (mode=signoff-strict) ===
+FM_TOP=DataModule_BackendPC_16entry \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/DataModule_BackendPC_16entry.sv " \
+FM_IMPL_SRCS="/tmp/tmp.QLBrfu7cxQ/wt/rtl/common/DataModule.sv /tmp/tmp.QLBrfu7cxQ/wt/rtl/common/SyncDataModule.sv /tmp/tmp.QLBrfu7cxQ/wt/rtl/common/DataModule_variants.sv /tmp/tmp.QLBrfu7cxQ/wt/rtl/common/SyncDataModule_variants.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/DataModule_BackendPC_16entry -file /tmp/tmp.QLBrfu7cxQ/wt/scripts/fm_eq.tcl \
+    > fm_work/DataModule_BackendPC_16entry/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.QLBrfu7cxQ/wt/scripts/fm_verdict.py fm_work/DataModule_BackendPC_16entry/fm.log --rc $rc --mode signoff-strict --top DataModule_BackendPC_16entry --allowlist 0
+SUCCEEDED	{"passing": 1550, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "DataModule_BackendPC_16entry", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

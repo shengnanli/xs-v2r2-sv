@@ -1,0 +1,17 @@
+=== FM: WritebackQueue (mode=signoff-strict) ===
+FM_TOP=WritebackQueue \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/WritebackQueue.sv /home/eda/xs-env/G0-canonical/golden-rtl/WritebackEntry.sv /home/eda/xs-env/G0-canonical/golden-rtl/WritebackEntry_15.sv" \
+FM_IMPL_SRCS="/tmp/tmp.39fTPMgD2E/wt/rtl/memblock/writebackqueue_pkg.sv /tmp/tmp.39fTPMgD2E/wt/rtl/memblock/WritebackQueue.sv /home/eda/xs-env/G0-canonical/golden-rtl/WritebackEntry.sv /home/eda/xs-env/G0-canonical/golden-rtl/WritebackEntry_15.sv /tmp/tmp.39fTPMgD2E/wt/rtl/memblock/WritebackQueue_wrapper.sv" \
+FM_MERGE_DUP=false \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/WritebackQueue -file /tmp/tmp.39fTPMgD2E/wt/scripts/fm_eq.tcl \
+    > fm_work/WritebackQueue/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.39fTPMgD2E/wt/scripts/fm_verdict.py fm_work/WritebackQueue/fm.log --rc $rc --mode signoff-strict --top WritebackQueue --allowlist 0
+PARTIAL	{"passing": 13017, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": 36, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "WritebackQueue", "dont_verify": false, "elab147": false, "reason": "strict_unread!=0", "unmatched_ref": 0, "unmatched_impl": 0}
+make: *** [../../../scripts/ut_common.mk:56: fm-WritebackQueue] Error 1

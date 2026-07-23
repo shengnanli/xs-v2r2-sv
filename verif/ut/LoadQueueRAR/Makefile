@@ -3,11 +3,20 @@ MODULE = LoadQueueRAR
 RTL_DIR = ../../../rtl
 GOLDEN_RTL = ../../../golden/chisel-rtl
 
-# 手写可读核 + 其类型包（核内联实现 freelist / paddr CAM，无子模块）
-RTL_SRCS = $(RTL_DIR)/memblock/loadqueuerar_pkg.sv \
-           $(RTL_DIR)/memblock/LoadQueueRAR.sv
+# 合成层次：核（xs_LoadQueueRAR_core）例化两个已证子模块 FreeList_3 + LqPAddrModule。
+# ── UT 与 FM 的源列表分离（因 impl 子模块与 golden 同名，UT 双例化会撞名）──────────
+#   · RTL_SRCS       = 仅类型包（UT/FM 共读，无模块撞名）。
+#   · WRAPPER_SRCS   = FM-only（不进 UT）：wrapper(module LoadQueueRAR) + 核 + 两子模块
+#                      （plain 名，与 golden 同名 → FM 层次配对，两侧 elaborate 比对）。
+#   · TB_SRCS        = UT-only：_xs 重命名子树（核_ut + FreeList_3_xs + LqPAddrModule_xs）
+#                      避免与 golden 顶层内的同名子模块在 simv 里撞名。
+RTL_SRCS = $(RTL_DIR)/memblock/loadqueuerar_pkg.sv
 
-TB_SRCS = variants_xs.sv tb.sv
+TB_SRCS = FreeList_3_xs.sv \
+          LqPAddrModule_xs.sv \
+          LoadQueueRAR_core_ut.sv \
+          variants_xs.sv \
+          tb.sv
 
 # UT 双例化：golden 顶层 LoadQueueRAR（含其真实子模块 LqPAddrModule / FreeList_3）
 # vs 手写 _xs 镜像（→ 可读核）。只比对顶层输出。
@@ -18,9 +27,14 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/LoadQueueRAR.sv \
               $(GOLDEN_RTL)/DelayNWithValid_4.sv \
               $(GOLDEN_RTL)/DelayNWithValid_7.sv
 
-# FM：golden 顶层（含两子模块）vs 手写同名 wrapper（→ 可读核，核内联了 freelist/CAM）。
-# golden 侧两子模块逻辑在 impl 无对应边界，按签名/输出比对；不可判点用 tb 探针证伪。
-WRAPPER_SRCS = $(RTL_DIR)/memblock/LoadQueueRAR_wrapper.sv
+# FM（both-sides elaborate）：golden 顶层 LoadQueueRAR（含子模块 FreeList_3 + LqPAddrModule）
+#   vs 手写同名 wrapper（module LoadQueueRAR → 核 xs_LoadQueueRAR_core，核例化同名两子模块）。
+#   两侧子模块同名 → FM 层次配对逐点比对（非黑盒）。子模块本就是已证 canary
+#   （FreeList_3 passing 707、LqPAddrModule passing 1440，native SUCCEEDED）。
+WRAPPER_SRCS = $(RTL_DIR)/memblock/LoadQueueRAR_wrapper.sv \
+               $(RTL_DIR)/memblock/LoadQueueRAR.sv \
+               $(RTL_DIR)/memblock/FreeList_3.sv \
+               $(RTL_DIR)/memblock/LqPAddrModule.sv
 FM_VARIANTS = LoadQueueRAR
 FM_REF_DEPS_LoadQueueRAR = LqPAddrModule.sv FreeList_3.sv DelayN_226.sv DelayNWithValid_4.sv DelayNWithValid_7.sv
 

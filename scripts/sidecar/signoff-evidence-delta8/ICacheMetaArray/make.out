@@ -1,0 +1,16 @@
+=== FM: ICacheMetaArray (mode=assembly) ===
+FM_TOP=ICacheMetaArray \
+FM_MODE=assembly \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/ICacheMetaArray.sv  " \
+FM_IMPL_SRCS="/tmp/tmp.9Vj0LvTTx2/wt/rtl/frontend/ICacheMetaArray.sv /tmp/tmp.9Vj0LvTTx2/wt/rtl/frontend/ICacheMetaArray_wrapper.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/ICacheMetaArray -file /tmp/tmp.9Vj0LvTTx2/wt/scripts/fm_eq.tcl \
+    > fm_work/ICacheMetaArray/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.9Vj0LvTTx2/wt/scripts/fm_verdict.py fm_work/ICacheMetaArray/fm.log --rc $rc --mode assembly --top ICacheMetaArray --allowlist 0
+SUCCEEDED	{"passing": 3262, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "assembly", "native": "SUCCEEDED", "top": "ICacheMetaArray", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

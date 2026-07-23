@@ -1,0 +1,17 @@
+=== FM: InstrMMIOEntry (mode=signoff-strict) ===
+FM_TOP=InstrMMIOEntry \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/InstrMMIOEntry.sv  " \
+FM_IMPL_SRCS="/tmp/tmp.uZsKte08gU/wt/rtl/frontend/InstrMMIOEntry.sv /tmp/tmp.uZsKte08gU/wt/rtl/frontend/InstrUncache_variants.sv" \
+ \
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=true \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/InstrMMIOEntry -file /tmp/tmp.uZsKte08gU/wt/scripts/fm_eq.tcl \
+    > fm_work/InstrMMIOEntry/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.uZsKte08gU/wt/scripts/fm_verdict.py fm_work/InstrMMIOEntry/fm.log --rc $rc --mode signoff-strict --top InstrMMIOEntry --allowlist 0
+SUCCEEDED	{"passing": 200, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "InstrMMIOEntry", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

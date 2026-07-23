@@ -1,0 +1,17 @@
+=== FM: XSTop (mode=signoff-strict) ===
+FM_TOP=XSTop \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/XSTop.sv /home/eda/xs-env/G0-canonical/golden-rtl/CHILogger.sv /home/eda/xs-env/G0-canonical/golden-rtl/FastArbiter_77.sv /home/eda/xs-env/G0-canonical/golden-rtl/FastArbiter_78.sv /home/eda/xs-env/G0-canonical/golden-rtl/FastArbiter_79.sv /home/eda/xs-env/G0-canonical/golden-rtl/IntBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/MemMisc.sv /home/eda/xs-env/G0-canonical/golden-rtl/OpenLLC.sv /home/eda/xs-env/G0-canonical/golden-rtl/OpenNCB.sv /home/eda/xs-env/G0-canonical/golden-rtl/OpenNCB_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/ReceiverLinkMonitor.sv /home/eda/xs-env/G0-canonical/golden-rtl/ResetGen.sv /home/eda/xs-env/G0-canonical/golden-rtl/TransmitterLinkMonitor.sv /home/eda/xs-env/G0-canonical/golden-rtl/XSTile.sv" \
+FM_IMPL_SRCS="/tmp/tmp.CzdJGRRtoh/wt/rtl/xstop/xstop_pkg.sv /tmp/tmp.CzdJGRRtoh/wt/rtl/xstop/XSTop.sv /tmp/tmp.CzdJGRRtoh/wt/rtl/xstop/XSTop_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/CHILogger.sv /home/eda/xs-env/G0-canonical/golden-rtl/FastArbiter_77.sv /home/eda/xs-env/G0-canonical/golden-rtl/FastArbiter_78.sv /home/eda/xs-env/G0-canonical/golden-rtl/FastArbiter_79.sv /home/eda/xs-env/G0-canonical/golden-rtl/IntBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/MemMisc.sv /home/eda/xs-env/G0-canonical/golden-rtl/OpenLLC.sv /home/eda/xs-env/G0-canonical/golden-rtl/OpenNCB.sv /home/eda/xs-env/G0-canonical/golden-rtl/OpenNCB_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/ReceiverLinkMonitor.sv /home/eda/xs-env/G0-canonical/golden-rtl/ResetGen.sv /home/eda/xs-env/G0-canonical/golden-rtl/TransmitterLinkMonitor.sv /home/eda/xs-env/G0-canonical/golden-rtl/XSTile.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/XSTop -file /tmp/tmp.CzdJGRRtoh/wt/scripts/fm_eq.tcl \
+    > fm_work/XSTop/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.CzdJGRRtoh/wt/scripts/fm_verdict.py fm_work/XSTop/fm.log --rc $rc --mode signoff-strict --top XSTop --allowlist 0
+FAILED	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "FAILED", "top": "XSTop", "dont_verify": false, "elab147": false, "reason": null}
+make: *** [../../../scripts/ut_common.mk:56: fm-XSTop] Error 1

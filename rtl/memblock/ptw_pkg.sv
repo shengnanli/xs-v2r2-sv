@@ -116,6 +116,70 @@ package xs_ptw_pkg;
     logic                        not_super;
   } ptw_merge_resp_t;
 
+  // ---- merge resp「不含 entry.af」的存储型 ----
+  //   L2TLB 的 llptw_stage1 用它作寄存类型：golden 里 stage1 的 entry.af 被门控为 0、
+  //   无对应寄存器，故本核存储侧也不保留 af（读出时钉 0）。其余字段与 entry 完全一致。
+  typedef struct packed {
+    logic [SECTOR_VPN_W-1:0]     tag;
+    logic [ASID_W-1:0]           asid;
+    logic [VMID_W-1:0]           vmid;
+    logic                        n;
+    logic [1:0]                  pbmt;
+    ptw_perm_t                   perm;
+    logic [1:0]                  level;
+    logic                        v;
+    logic [SECTOR_PTE_PPN_W-1:0] ppn;
+    logic [SECTOR_BITS-1:0]      ppn_low;
+    logic                        pf;         // 无 af
+  } ptw_merge_entry_noaf_t;
+  typedef struct packed {
+    ptw_merge_entry_noaf_t [CONTIGUOUS-1:0] entry;
+    logic [CONTIGUOUS-1:0]       pteidx;
+    logic                        not_super;
+  } ptw_merge_resp_noaf_t;
+
+  // 完整 merge resp → 去 af 存储型（丢弃 entry.af）。
+  function automatic ptw_merge_resp_noaf_t mrg_to_noaf(input ptw_merge_resp_t m);
+    ptw_merge_resp_noaf_t r;
+    r.pteidx    = m.pteidx;
+    r.not_super = m.not_super;
+    for (int k = 0; k < CONTIGUOUS; k++) begin
+      r.entry[k].tag     = m.entry[k].tag;
+      r.entry[k].asid    = m.entry[k].asid;
+      r.entry[k].vmid    = m.entry[k].vmid;
+      r.entry[k].n       = m.entry[k].n;
+      r.entry[k].pbmt    = m.entry[k].pbmt;
+      r.entry[k].perm    = m.entry[k].perm;
+      r.entry[k].level   = m.entry[k].level;
+      r.entry[k].v       = m.entry[k].v;
+      r.entry[k].ppn     = m.entry[k].ppn;
+      r.entry[k].ppn_low = m.entry[k].ppn_low;
+      r.entry[k].pf      = m.entry[k].pf;
+    end
+    return r;
+  endfunction
+  // 去 af 存储型 → 完整 merge resp（entry.af 钉 0，与 golden 门控一致）。
+  function automatic ptw_merge_resp_t mrg_from_noaf(input ptw_merge_resp_noaf_t r);
+    ptw_merge_resp_t m;
+    m.pteidx    = r.pteidx;
+    m.not_super = r.not_super;
+    for (int k = 0; k < CONTIGUOUS; k++) begin
+      m.entry[k].tag     = r.entry[k].tag;
+      m.entry[k].asid    = r.entry[k].asid;
+      m.entry[k].vmid    = r.entry[k].vmid;
+      m.entry[k].n       = r.entry[k].n;
+      m.entry[k].pbmt    = r.entry[k].pbmt;
+      m.entry[k].perm    = r.entry[k].perm;
+      m.entry[k].level   = r.entry[k].level;
+      m.entry[k].v       = r.entry[k].v;
+      m.entry[k].ppn     = r.entry[k].ppn;
+      m.entry[k].ppn_low = r.entry[k].ppn_low;
+      m.entry[k].af      = 1'b0;              // golden 门控：stage1 回放 af 恒 0
+      m.entry[k].pf      = r.entry[k].pf;
+    end
+    return m;
+  endfunction
+
   typedef struct packed {
     logic [H_ENTRY_PPN_W-1:0] tag;
     logic [VMID_W-1:0]        vmid;

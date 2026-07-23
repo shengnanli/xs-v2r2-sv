@@ -57,8 +57,19 @@ module xs_LqExceptionBuffer_core
 );
 
   // ===========================================================================
-  //  S2 流水寄存器：每个入口一条 entry（struct 数组）
+  //  S2 流水寄存器
   //  仅当对应 io.req.valid 时锁存（RegEnable），其余拍保持旧值。
+  //
+  //  统一 struct（组合 view）供选择树按 s2_entry_t 读取；但**存储必须逐入口匹配
+  //  golden 的精确寄存器集**——golden firtool 对被 wrapper 折成常量的字段 per-entry
+  //  做了 DCE（见 LqExceptionBuffer_wrapper.sv）：
+  //      · vaNeedExt         入口 5     恒 1  → golden 无 s2_req_5_vaNeedExt 寄存器
+  //      · isHyper           入口 3,4   恒 0  → golden 无 s2_req_3/4_isHyper 寄存器
+  //      · isForVSnonLeafPTE 入口 3,4   恒 0  → golden 无 s2_req_3/4_isForVSnonLeafPTE 寄存器
+  //  若本核对所有入口统一存全字段，这些恒定字段会成 impl-only 死 compare point
+  //  → FM 判 3 个 unmatched compare point（同 StoreExceptionBuffer 修法）。
+  //  故此处**按 golden 形状逐入口裁剪存储**：折叠字段不进 S2 寄存器，改由组合
+  //  view（s2_req）把常量补回，供后续选择树读取（与 golden 逐字段选择等价）。
   // ===========================================================================
   typedef struct packed {
     rob_ptr_t            robIdx;
@@ -71,7 +82,18 @@ module xs_LqExceptionBuffer_core
     logic                isForVSnonLeafPTE;
   } s2_entry_t;
 
-  s2_entry_t [ENQ_NUM-1:0] s2_req;
+  // 仅存 golden 为该入口生成的寄存器字段：
+  //   robIdx/uopIdx/excVec/fullva/gpaddr：全 6 入口有
+  //   vaNeedExt：入口 0..4（入口 5 折常量 1）
+  //   isHyper / isForVSnonLeafPTE：入口 0,1,2,5（入口 3,4 折常量 0）
+  rob_ptr_t            s2_robIdx    [ENQ_NUM];   // 全入口
+  logic [UOPIDX_W-1:0] s2_uopIdx    [ENQ_NUM];   // 全入口
+  logic [5:0]          s2_excVec    [ENQ_NUM];   // 全入口（has_exc 门控需要）
+  logic [63:0]         s2_fullva    [ENQ_NUM];   // 全入口
+  logic [63:0]         s2_gpaddr    [ENQ_NUM];   // 全入口
+  logic                s2_vaNeedExt [0:4];       // 入口 0..4（5 折常量 1）
+  logic                s2_isHyper_0, s2_isHyper_1, s2_isHyper_2, s2_isHyper_5;   // 入口 0,1,2,5
+  logic                s2_isForVS_0, s2_isForVS_1, s2_isForVS_2, s2_isForVS_5;   // 入口 0,1,2,5
   logic      [ENQ_NUM-1:0] s2_valid_q;     // RegNext(io.req.valid)
 
   // redirect 打 1 拍：S2 既要排除“上一拍 redirect”（与 s2_req 同拍捕获的 redirect），
@@ -83,22 +105,47 @@ module xs_LqExceptionBuffer_core
   always_ff @(posedge clock) begin
     for (int w = 0; w < ENQ_NUM; w++) begin
       if (req_valid[w]) begin
-        s2_req[w].robIdx            <= req_robIdx[w];
-        s2_req[w].uopIdx            <= req_uopIdx[w];
-        s2_req[w].excVec            <= req_excVec[w];
-        s2_req[w].fullva            <= req_fullva[w];
-        s2_req[w].vaNeedExt         <= req_vaNeedExt[w];
-        s2_req[w].gpaddr            <= req_gpaddr[w];
-        s2_req[w].isHyper           <= req_isHyper[w];
-        s2_req[w].isForVSnonLeafPTE <= req_isForVSnonLeafPTE[w];
+        s2_robIdx[w] <= req_robIdx[w];
+        s2_uopIdx[w] <= req_uopIdx[w];
+        s2_excVec[w] <= req_excVec[w];
+        s2_fullva[w] <= req_fullva[w];
+        s2_gpaddr[w] <= req_gpaddr[w];
       end
     end
+    for (int w = 0; w <= 4; w++) begin
+      if (req_valid[w]) s2_vaNeedExt[w] <= req_vaNeedExt[w];
+    end
+    // isHyper / isForVSnonLeafPTE 仅入口 0,1,2,5 存寄存器（3,4 折常量 0）
+    if (req_valid[0]) begin s2_isHyper_0 <= req_isHyper[0]; s2_isForVS_0 <= req_isForVSnonLeafPTE[0]; end
+    if (req_valid[1]) begin s2_isHyper_1 <= req_isHyper[1]; s2_isForVS_1 <= req_isForVSnonLeafPTE[1]; end
+    if (req_valid[2]) begin s2_isHyper_2 <= req_isHyper[2]; s2_isForVS_2 <= req_isForVSnonLeafPTE[2]; end
+    if (req_valid[5]) begin s2_isHyper_5 <= req_isHyper[5]; s2_isForVS_5 <= req_isForVSnonLeafPTE[5]; end
     // 对齐 golden：s2_valid_REG* 为无复位 RegNext（golden 仅 req_valid 有异步复位）。
     s2_valid_q <= req_valid;
     // redirect 延迟版（无需复位：仅在 valid 参与判断时使用）
     redirect_valid_q  <= redirect_valid;
     redirect_robIdx_q <= redirect_robIdx;
     redirect_level_q  <= redirect_level;
+  end
+
+  // 组合 view：把 golden DCE 折掉的恒定字段补回常量，供选择树按统一 struct 读取。
+  s2_entry_t [ENQ_NUM-1:0] s2_req;
+  always_comb begin
+    for (int w = 0; w < ENQ_NUM; w++) begin
+      s2_req[w].robIdx    = s2_robIdx[w];
+      s2_req[w].uopIdx    = s2_uopIdx[w];
+      s2_req[w].excVec    = s2_excVec[w];
+      s2_req[w].fullva    = s2_fullva[w];
+      s2_req[w].gpaddr    = s2_gpaddr[w];
+      s2_req[w].vaNeedExt = (w <= 4) ? s2_vaNeedExt[w] : 1'b1;  // 入口5折常量1
+    end
+    // isHyper / isForVSnonLeafPTE：入口 3,4 折常量 0，其余取寄存器
+    s2_req[0].isHyper = s2_isHyper_0;  s2_req[0].isForVSnonLeafPTE = s2_isForVS_0;
+    s2_req[1].isHyper = s2_isHyper_1;  s2_req[1].isForVSnonLeafPTE = s2_isForVS_1;
+    s2_req[2].isHyper = s2_isHyper_2;  s2_req[2].isForVSnonLeafPTE = s2_isForVS_2;
+    s2_req[3].isHyper = 1'b0;          s2_req[3].isForVSnonLeafPTE = 1'b0;
+    s2_req[4].isHyper = 1'b0;          s2_req[4].isForVSnonLeafPTE = 1'b0;
+    s2_req[5].isHyper = s2_isHyper_5;  s2_req[5].isForVSnonLeafPTE = s2_isForVS_5;
   end
 
   // ===========================================================================
@@ -152,11 +199,38 @@ module xs_LqExceptionBuffer_core
 
   // ===========================================================================
   //  锁存最老异常（单条 req 寄存器）
+  //  golden 的最终 req 寄存器**不含 excVec**（excVec 只在 S2 阶段用于 has_exc 门控，
+  //  一旦选出最老条目后其异常向量不再被读）。若本核把 sel_e（含 excVec）整体存进
+  //  req_r，excVec[5:0] 会成 impl-only 死寄存器（req_r_reg[excVec][0..5]）→ FM 判 6 个
+  //  unmatched unread compare point。故最终锁存寄存器用**不含 excVec 的 req_entry_t**，
+  //  逐字段从 sel_e 拷贝（与 golden req_* 寄存器集精确一致）。
   // ===========================================================================
-  logic      req_valid_r;
-  s2_entry_t req_r;
-  logic      any_enqueue;
+  typedef struct packed {
+    rob_ptr_t            robIdx;
+    logic [UOPIDX_W-1:0] uopIdx;
+    logic [63:0]         fullva;
+    logic                vaNeedExt;
+    logic [63:0]         gpaddr;
+    logic                isHyper;
+    logic                isForVSnonLeafPTE;
+  } req_entry_t;
+
+  logic       req_valid_r;
+  req_entry_t req_r;
+  logic       any_enqueue;
   assign any_enqueue = |s2_enqueue;
+
+  // 把选中条目（含 excVec 的 s2_entry_t）投影成不含 excVec 的存储型 req_entry_t
+  req_entry_t sel_store;
+  always_comb begin
+    sel_store.robIdx            = sel_e.robIdx;
+    sel_store.uopIdx            = sel_e.uopIdx;
+    sel_store.fullva            = sel_e.fullva;
+    sel_store.vaNeedExt         = sel_e.vaNeedExt;
+    sel_store.gpaddr            = sel_e.gpaddr;
+    sel_store.isHyper           = sel_e.isHyper;
+    sel_store.isForVSnonLeafPTE = sel_e.isForVSnonLeafPTE;
+  end
 
   // req_valid：已锁存且被 redirect 冲刷 → 看本拍是否有新入队续命；否则有新入队即置 1。
   logic req_flush;
@@ -179,9 +253,9 @@ module xs_LqExceptionBuffer_core
                           & sel_v;   // 仅当 sel 有效才可能替换
   always_ff @(posedge clock) begin
     if (req_valid_r) begin
-      if (replace_by_sel) req_r <= sel_e;
+      if (replace_by_sel) req_r <= sel_store;
     end else if (any_enqueue) begin
-      req_r <= sel_e;
+      req_r <= sel_store;
     end
   end
 

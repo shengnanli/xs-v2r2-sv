@@ -1,0 +1,889 @@
+
+                                 Formality (R)
+
+               Version V-2023.12-SP3 for linux64 - Apr 13, 2024 
+
+                    Copyright (c) 1988 - 2024 Synopsys, Inc.
+   This software and the associated documentation are proprietary to Synopsys,
+ Inc. This software may only be used in accordance with the terms and conditions
+ of a written license agreement with Synopsys, Inc. All other use, reproduction,
+   or distribution of this software is strictly prohibited.  Licensed Products
+     communicate with Synopsys servers for the purpose of providing software
+    updates, detecting software piracy and verifying that customers are using
+    Licensed Products in conformity with the applicable License Key for such
+  Licensed Products. Synopsys will use information gathered in connection with
+    this process to deliver software updates and pursue software pirates and
+                                   infringers.
+
+ Inclusivity & Diversity - Visit SolvNetPlus to read the "Synopsys Statement on
+            Inclusivity and Diversity" (Refer to article 000036315 at
+                        https://solvnetplus.synopsys.com)
+
+Build: 8868332
+Hostname: localhost.localdomain
+Current time: Mon Jul 20 23:36:04 2026
+
+Loading db file '/home/eda/app/synopsys/fm/V-2023.12-SP3/libraries/syn/gtech.db'
+
+Script: /tmp/tmp.AIKPtHwFvF/wt/scripts/fm_eq.tcl
+
+Information: Term was not able to be set up using xterm-256color . Using "xterm" by default instead. (CLE-10)
+# Formality 等价性检查通用脚本
+# 由 scripts/ut_common.mk 的 fm-% 目标调用，经环境变量传参：
+#   FM_TOP        顶层模块名（golden 变体名；impl 侧包装层与其同名同端口）
+#   FM_REF_SRCS   golden RTL 文件列表（变体 + 其子模块）
+#   FM_IMPL_SRCS  手写 SV 文件列表（参数化核心 + 包装层）
+set top       $env(FM_TOP)
+DataPath
+set ref_srcs  $env(FM_REF_SRCS)
+/home/eda/xs-env/G0-canonical/golden-rtl/DataPath.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayN_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayReg_10.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayReg_8.sv /home/eda/xs-env/G0-canonical/golden-rtl/DummyDPICWrapper_10.sv /home/eda/xs-env/G0-canonical/golden-rtl/DummyDPICWrapper_11.sv /home/eda/xs-env/G0-canonical/golden-rtl/DummyDPICWrapper_9.sv /home/eda/xs-env/G0-canonical/golden-rtl/FpRFReadArbiter.sv /home/eda/xs-env/G0-canonical/golden-rtl/FpRFWBCollideChecker.sv /home/eda/xs-env/G0-canonical/golden-rtl/FpRegFilePart0.sv /home/eda/xs-env/G0-canonical/golden-rtl/FpRegFilePart1.sv /home/eda/xs-env/G0-canonical/golden-rtl/FpRegFilePart2.sv /home/eda/xs-env/G0-canonical/golden-rtl/FpRegFilePart3.sv /home/eda/xs-env/G0-canonical/golden-rtl/IntRFReadArbiter.sv /home/eda/xs-env/G0-canonical/golden-rtl/IntRFWBCollideChecker.sv /home/eda/xs-env/G0-canonical/golden-rtl/IntRegFilePart0.sv /home/eda/xs-env/G0-canonical/golden-rtl/IntRegFilePart1.sv /home/eda/xs-env/G0-canonical/golden-rtl/IntRegFilePart2.sv /home/eda/xs-env/G0-canonical/golden-rtl/IntRegFilePart3.sv /home/eda/xs-env/G0-canonical/golden-rtl/RegCache.sv /home/eda/xs-env/G0-canonical/golden-rtl/UIntExtractor_27_000000000000001010100000000.sv /home/eda/xs-env/G0-canonical/golden-rtl/UIntExtractor_27_000011100000000000001010101.sv /home/eda/xs-env/G0-canonical/golden-rtl/V0RFReadArbiter.sv /home/eda/xs-env/G0-canonical/golden-rtl/V0RFWBCollideChecker.sv /home/eda/xs-env/G0-canonical/golden-rtl/V0RegFilePart0.sv /home/eda/xs-env/G0-canonical/golden-rtl/V0RegFilePart1.sv /home/eda/xs-env/G0-canonical/golden-rtl/VfRFReadArbiter.sv /home/eda/xs-env/G0-canonical/golden-rtl/VfRFWBCollideChecker.sv /home/eda/xs-env/G0-canonical/golden-rtl/VfRegFilePart0.sv /home/eda/xs-env/G0-canonical/golden-rtl/VfRegFilePart1.sv /home/eda/xs-env/G0-canonical/golden-rtl/VfRegFilePart2.sv /home/eda/xs-env/G0-canonical/golden-rtl/VfRegFilePart3.sv /home/eda/xs-env/G0-canonical/golden-rtl/VlRFReadArbiter.sv /home/eda/xs-env/G0-canonical/golden-rtl/VlRFWBCollideChecker.sv /home/eda/xs-env/G0-canonical/golden-rtl/VlRegFile.sv
+set impl_srcs $env(FM_IMPL_SRCS)
+/tmp/tmp.AIKPtHwFvF/wt/rtl/backend/datapath_pkg.sv /tmp/tmp.AIKPtHwFvF/wt/rtl/backend/datapath_cfg_pkg.sv /tmp/tmp.AIKPtHwFvF/wt/rtl/backend/DataPath.sv /tmp/tmp.AIKPtHwFvF/wt/rtl/backend/DataPath_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayN_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayReg_10.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayReg_8.sv /home/eda/xs-env/G0-canonical/golden-rtl/DummyDPICWrapper_10.sv /home/eda/xs-env/G0-canonical/golden-rtl/DummyDPICWrapper_11.sv /home/eda/xs-env/G0-canonical/golden-rtl/DummyDPICWrapper_9.sv /home/eda/xs-env/G0-canonical/golden-rtl/FpRFReadArbiter.sv /home/eda/xs-env/G0-canonical/golden-rtl/FpRFWBCollideChecker.sv /home/eda/xs-env/G0-canonical/golden-rtl/FpRegFilePart0.sv /home/eda/xs-env/G0-canonical/golden-rtl/FpRegFilePart1.sv /home/eda/xs-env/G0-canonical/golden-rtl/FpRegFilePart2.sv /home/eda/xs-env/G0-canonical/golden-rtl/FpRegFilePart3.sv /home/eda/xs-env/G0-canonical/golden-rtl/IntRFReadArbiter.sv /home/eda/xs-env/G0-canonical/golden-rtl/IntRFWBCollideChecker.sv /home/eda/xs-env/G0-canonical/golden-rtl/IntRegFilePart0.sv /home/eda/xs-env/G0-canonical/golden-rtl/IntRegFilePart1.sv /home/eda/xs-env/G0-canonical/golden-rtl/IntRegFilePart2.sv /home/eda/xs-env/G0-canonical/golden-rtl/IntRegFilePart3.sv /home/eda/xs-env/G0-canonical/golden-rtl/RegCache.sv /home/eda/xs-env/G0-canonical/golden-rtl/UIntExtractor_27_000000000000001010100000000.sv /home/eda/xs-env/G0-canonical/golden-rtl/UIntExtractor_27_000011100000000000001010101.sv /home/eda/xs-env/G0-canonical/golden-rtl/V0RFReadArbiter.sv /home/eda/xs-env/G0-canonical/golden-rtl/V0RFWBCollideChecker.sv /home/eda/xs-env/G0-canonical/golden-rtl/V0RegFilePart0.sv /home/eda/xs-env/G0-canonical/golden-rtl/V0RegFilePart1.sv /home/eda/xs-env/G0-canonical/golden-rtl/VfRFReadArbiter.sv /home/eda/xs-env/G0-canonical/golden-rtl/VfRFWBCollideChecker.sv /home/eda/xs-env/G0-canonical/golden-rtl/VfRegFilePart0.sv /home/eda/xs-env/G0-canonical/golden-rtl/VfRegFilePart1.sv /home/eda/xs-env/G0-canonical/golden-rtl/VfRegFilePart2.sv /home/eda/xs-env/G0-canonical/golden-rtl/VfRegFilePart3.sv /home/eda/xs-env/G0-canonical/golden-rtl/VlRFReadArbiter.sv /home/eda/xs-env/G0-canonical/golden-rtl/VlRFWBCollideChecker.sv /home/eda/xs-env/G0-canonical/golden-rtl/VlRegFile.sv
+# ----------------------------------------------------------------------------
+# Step 3B sidecar emitter(FM_SIDECAR_OUT 非空时启用; 契约 = SIDECAR_SCHEMA.md v7 冻结版):
+# source 后立即对将被 source 的模块本地 Tcl 做**运行期 appvar 拦截**(set_app_var 名字
+# 不在注册表 → exit 3, 拒产 native facts)。
+# ----------------------------------------------------------------------------
+set SIDECAR_ON 0
+0
+if {[info exists env(FM_SIDECAR_OUT)] && [string trim $env(FM_SIDECAR_OUT)] ne ""} {
+    set _entry [file normalize [info script]]
+    set _emit  [file join [file dirname $_entry] sidecar fm_native_emit.tcl]
+    source $_emit
+    set SIDECAR_ON 1
+    # 3B验收三审: script closure = **执行时刻字节快照**(sidecar_register_script 把被
+    # 执行文件的字节即时拷入 FM_SIDECAR_OUT 并追加清单; source trace 对嵌套亦触发,
+    # 解析 -encoding 形式)。入口与 emitter 非 source 载入, 在此显式登记快照。
+    # appvar 拦截 = execution trace 加在命令本身 + phase(match 后冻结)+ 写历史。
+    set ::SIDECAR_SOURCED {}
+    sidecar_register_script $_entry
+    sidecar_register_script $_emit
+    sidecar_install_appvar_guard
+}
+# ----------------------------------------------------------------------------
+# FM_MODE 门控(2026-07 唯一权威入口, 二审): 证明模式决定允许哪些放宽手段。
+#   signoff-strict(默认): 禁 interface_only(assembly 专用手段); 严格判定交 fm_verdict.py。
+#   assembly: 允许**声明的对称黑盒** FM_INTERFACE_ONLY(仅证本层 glue)。
+#   diagnostic-full: 由 fm_eq_full.tcl 承担(ELAB 降级/放宽上限), 永不签核。
+#   shadow: 同 strict(可读核不驱动输出, 判定归 SHADOW_CHECK)。
+# 诊断能力永不进 signoff: strict 下 FM_INTERFACE_ONLY 非空即报错退出(fail-closed)。
+# ----------------------------------------------------------------------------
+set _fmmode "signoff-strict"
+signoff-strict
+if {[info exists env(FM_MODE)]} { set _fmmode $env(FM_MODE) }
+signoff-strict
+switch -- $_fmmode {
+  "assembly" {
+    if {[info exists env(FM_INTERFACE_ONLY)] && [string trim $env(FM_INTERFACE_ONLY)] ne ""} {
+      set_app_var hdlin_interface_only $env(FM_INTERFACE_ONLY)
+    }
+  }
+  "signoff-strict" - "shadow" {
+    if {[info exists env(FM_INTERFACE_ONLY)] && [string trim $env(FM_INTERFACE_ONLY)] ne ""} {
+      puts "FM_MODE_ERROR: $_fmmode 拒绝 FM_INTERFACE_ONLY(assembly 专用手段)"
+      exit 3
+    }
+  }
+  default {
+    puts "FM_MODE_ERROR: 未知 FM_MODE=$_fmmode"
+    exit 3
+  }
+}
+# 寄存器无观测路径（如被 firtool 裁剪的输出对应的 valids）时不作为比对点。
+# 十一审: unread 六元组**显式全量设置**(305 统一冻结执行语义, 不让工具默认代替声明;
+# emitter 于全部 pin/custom Tcl 执行后、verify 前逐项 get_app_var 读回有效值)。
+# 后三项 true 即工具默认(man cat3 逐页核对), 显式钉死防版本漂移。
+set_app_var verification_verify_unread_compare_points false
+false
+set_app_var verification_verify_matched_unread_compare_points false
+false
+set_app_var verification_verify_unread_bbox_inputs false
+false
+set_app_var verification_verify_matched_unread_bbox_inputs true
+true
+set_app_var verification_verify_unread_tech_cell_pins true
+true
+set_app_var verification_verify_unread_tech_cell_pg_pins true
+true
+# 未解析模块（厂商 SRAM 叶子 array_ext 等外部宏）自动当黑盒——两侧一致即可，
+# SRAM 内部存储不参与 wrapper 逻辑等价比对。
+set_app_var hdlin_unresolved_modules black_box
+black_box
+# 合并由同一逻辑驱动的重复寄存器（如分 bank 的读地址扇出复制：每 bank 一份、
+# 输出级一份，值完全相同）。否则两侧各有 N 个同值寄存器，名字（展平 vs generate
+# 层次）和签名（值相同）都无法配对，导致大量 unmatched。FTQ/IFU 等扇出复制
+# 普遍存在，默认 true。
+# 九审(3A.2 审定补丁3): 该值由 FM_MERGE_DUP 入口变量真实绑定——此前 Makefile 声明
+# FM_MERGE_DUP=false 而这里硬编码 true, manifest 声称值与实际证明语义脱节(fail-closed:
+# 非法值退出, 不静默回落)。
+set _mergedup "true"
+true
+if {[info exists env(FM_MERGE_DUP)] && [string trim $env(FM_MERGE_DUP)] ne ""} {
+    set _mergedup [string trim $env(FM_MERGE_DUP)]
+}
+switch -- $_mergedup {
+  "true" - "false" { set_app_var verification_merge_duplicated_registers $_mergedup }
+  default {
+    puts "FM_MODE_ERROR: FM_MERGE_DUP 非法值 $_mergedup"
+    exit 3
+  }
+}
+true
+# Reference: Chisel 生成的 golden RTL（SYNTHESIS 关掉随机初始化 initial 块）
+read_sverilog -r -define {SYNTHESIS} $ref_srcs
+No target library specified, default is WORK
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DataPath.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayN_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayReg_10.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayReg_8.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DummyDPICWrapper_10.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DummyDPICWrapper_11.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DummyDPICWrapper_9.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/FpRFReadArbiter.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/FpRFWBCollideChecker.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/FpRegFilePart0.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/FpRegFilePart1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/FpRegFilePart2.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/FpRegFilePart3.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/IntRFReadArbiter.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/IntRFWBCollideChecker.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/IntRegFilePart0.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/IntRegFilePart1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/IntRegFilePart2.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/IntRegFilePart3.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/RegCache.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/UIntExtractor_27_000000000000001010100000000.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/UIntExtractor_27_000011100000000000001010101.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/V0RFReadArbiter.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/V0RFWBCollideChecker.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/V0RegFilePart0.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/V0RegFilePart1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/VfRFReadArbiter.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/VfRFWBCollideChecker.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/VfRegFilePart0.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/VfRegFilePart1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/VfRegFilePart2.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/VfRegFilePart3.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/VlRFReadArbiter.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/VlRFWBCollideChecker.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/VlRegFile.sv'
+Current container set to 'r'
+1
+set_top r:/WORK/$top
+Setting top design to 'r:/WORK/DataPath'
+Status:   Elaborating design DataPath   ...  
+Status:   Elaborating design IntRFWBCollideChecker   ...  
+Warning: Cannot link cell '/WORK/IntRFWBCollideChecker/arbiters_0' to its reference design 'WBArbiter'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/IntRFWBCollideChecker/arbiters_1' to its reference design 'WBArbiter_1'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/IntRFWBCollideChecker/arbiters_2' to its reference design 'WBArbiter_2'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/IntRFWBCollideChecker/arbiters_3' to its reference design 'WBArbiter_3'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/IntRFWBCollideChecker/arbiters_4' to its reference design 'WBArbiter_2'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/IntRFWBCollideChecker/arbiters_5' to its reference design 'WBArbiter_3'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/IntRFWBCollideChecker/arbiters_6' to its reference design 'WBArbiter_3'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/IntRFWBCollideChecker/arbiters_7' to its reference design 'WBArbiter_3'. (FE-LINK-2)
+Status:   Elaborating design FpRFWBCollideChecker   ...  
+Warning: Cannot link cell '/WORK/FpRFWBCollideChecker/arbiters_0' to its reference design 'WBArbiter_2'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/FpRFWBCollideChecker/arbiters_1' to its reference design 'WBArbiter_2'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/FpRFWBCollideChecker/arbiters_2' to its reference design 'WBArbiter_2'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/FpRFWBCollideChecker/arbiters_3' to its reference design 'WBArbiter_2'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/FpRFWBCollideChecker/arbiters_4' to its reference design 'WBArbiter_2'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/FpRFWBCollideChecker/arbiters_5' to its reference design 'WBArbiter_3'. (FE-LINK-2)
+Status:   Elaborating design VfRFWBCollideChecker   ...  
+Warning: Cannot link cell '/WORK/VfRFWBCollideChecker/arbiters_0' to its reference design 'WBArbiter_2'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VfRFWBCollideChecker/arbiters_1' to its reference design 'WBArbiter_3'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VfRFWBCollideChecker/arbiters_2' to its reference design 'WBArbiter_2'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VfRFWBCollideChecker/arbiters_3' to its reference design 'WBArbiter_2'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VfRFWBCollideChecker/arbiters_4' to its reference design 'WBArbiter_3'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VfRFWBCollideChecker/arbiters_5' to its reference design 'WBArbiter_3'. (FE-LINK-2)
+Status:   Elaborating design V0RFWBCollideChecker   ...  
+Warning: Cannot link cell '/WORK/V0RFWBCollideChecker/arbiters_0' to its reference design 'WBArbiter_2'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/V0RFWBCollideChecker/arbiters_1' to its reference design 'WBArbiter_3'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/V0RFWBCollideChecker/arbiters_2' to its reference design 'WBArbiter_2'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/V0RFWBCollideChecker/arbiters_3' to its reference design 'WBArbiter_2'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/V0RFWBCollideChecker/arbiters_4' to its reference design 'WBArbiter_3'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/V0RFWBCollideChecker/arbiters_5' to its reference design 'WBArbiter_3'. (FE-LINK-2)
+Status:   Elaborating design VlRFWBCollideChecker   ...  
+Warning: Cannot link cell '/WORK/VlRFWBCollideChecker/arbiters_0' to its reference design 'WBArbiter_3'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VlRFWBCollideChecker/arbiters_1' to its reference design 'WBArbiter_3'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VlRFWBCollideChecker/arbiters_2' to its reference design 'WBArbiter_3'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VlRFWBCollideChecker/arbiters_3' to its reference design 'WBArbiter_3'. (FE-LINK-2)
+Status:   Elaborating design IntRFReadArbiter   ...  
+Warning: Cannot link cell '/WORK/IntRFReadArbiter/arbiters_0' to its reference design 'WBArbiter_30'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/IntRFReadArbiter/arbiters_1' to its reference design 'WBArbiter_30'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/IntRFReadArbiter/arbiters_2' to its reference design 'WBArbiter_30'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/IntRFReadArbiter/arbiters_3' to its reference design 'WBArbiter_33'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/IntRFReadArbiter/arbiters_4' to its reference design 'WBArbiter_30'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/IntRFReadArbiter/arbiters_5' to its reference design 'WBArbiter_33'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/IntRFReadArbiter/arbiters_6' to its reference design 'WBArbiter_33'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/IntRFReadArbiter/arbiters_7' to its reference design 'WBArbiter_33'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/IntRFReadArbiter/arbiters_8' to its reference design 'WBArbiter_38'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/IntRFReadArbiter/arbiters_9' to its reference design 'WBArbiter_38'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/IntRFReadArbiter/arbiters_10' to its reference design 'WBArbiter_38'. (FE-LINK-2)
+Status:   Elaborating design FpRFReadArbiter   ...  
+Warning: Cannot link cell '/WORK/FpRFReadArbiter/arbiters_0' to its reference design 'WBArbiter_38'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/FpRFReadArbiter/arbiters_1' to its reference design 'WBArbiter_38'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/FpRFReadArbiter/arbiters_2' to its reference design 'WBArbiter_30'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/FpRFReadArbiter/arbiters_3' to its reference design 'WBArbiter_38'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/FpRFReadArbiter/arbiters_4' to its reference design 'WBArbiter_38'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/FpRFReadArbiter/arbiters_5' to its reference design 'WBArbiter_30'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/FpRFReadArbiter/arbiters_6' to its reference design 'WBArbiter_38'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/FpRFReadArbiter/arbiters_7' to its reference design 'WBArbiter_38'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/FpRFReadArbiter/arbiters_8' to its reference design 'WBArbiter_30'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/FpRFReadArbiter/arbiters_9' to its reference design 'WBArbiter_30'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/FpRFReadArbiter/arbiters_10' to its reference design 'WBArbiter_38'. (FE-LINK-2)
+Status:   Elaborating design VfRFReadArbiter   ...  
+Warning: Cannot link cell '/WORK/VfRFReadArbiter/arbiters_0' to its reference design 'WBArbiter_52'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VfRFReadArbiter/arbiters_1' to its reference design 'WBArbiter_52'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VfRFReadArbiter/arbiters_2' to its reference design 'WBArbiter_52'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VfRFReadArbiter/arbiters_3' to its reference design 'WBArbiter_55'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VfRFReadArbiter/arbiters_4' to its reference design 'WBArbiter_55'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VfRFReadArbiter/arbiters_5' to its reference design 'WBArbiter_55'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VfRFReadArbiter/arbiters_6' to its reference design 'WBArbiter_58'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VfRFReadArbiter/arbiters_7' to its reference design 'WBArbiter_58'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VfRFReadArbiter/arbiters_8' to its reference design 'WBArbiter_58'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VfRFReadArbiter/arbiters_9' to its reference design 'WBArbiter_58'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VfRFReadArbiter/arbiters_10' to its reference design 'WBArbiter_58'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VfRFReadArbiter/arbiters_11' to its reference design 'WBArbiter_58'. (FE-LINK-2)
+Status:   Elaborating design V0RFReadArbiter   ...  
+Warning: Cannot link cell '/WORK/V0RFReadArbiter/arbiters_0' to its reference design 'WBArbiter_64'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/V0RFReadArbiter/arbiters_1' to its reference design 'WBArbiter_65'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/V0RFReadArbiter/arbiters_2' to its reference design 'WBArbiter_66'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/V0RFReadArbiter/arbiters_3' to its reference design 'WBArbiter_66'. (FE-LINK-2)
+Status:   Elaborating design VlRFReadArbiter   ...  
+Warning: Cannot link cell '/WORK/VlRFReadArbiter/arbiters_0' to its reference design 'WBArbiter_64'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VlRFReadArbiter/arbiters_1' to its reference design 'WBArbiter_65'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VlRFReadArbiter/arbiters_2' to its reference design 'WBArbiter_66'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VlRFReadArbiter/arbiters_3' to its reference design 'WBArbiter_66'. (FE-LINK-2)
+Status:   Elaborating design IntRegFilePart0   ...  
+Status:   Elaborating design IntRegFilePart1   ...  
+Status:   Elaborating design IntRegFilePart2   ...  
+Status:   Elaborating design IntRegFilePart3   ...  
+Status:   Elaborating design FpRegFilePart0   ...  
+Status:   Elaborating design FpRegFilePart1   ...  
+Status:   Elaborating design FpRegFilePart2   ...  
+Status:   Elaborating design FpRegFilePart3   ...  
+Status:   Elaborating design VfRegFilePart0   ...  
+Status:   Elaborating design VfRegFilePart1   ...  
+Status:   Elaborating design VfRegFilePart2   ...  
+Status:   Elaborating design VfRegFilePart3   ...  
+Status:   Elaborating design V0RegFilePart0   ...  
+Status:   Elaborating design V0RegFilePart1   ...  
+Status:   Elaborating design VlRegFile   ...  
+Status:   Elaborating design RegCache   ...  
+Warning: Cannot link cell '/WORK/RegCache/IntRegCache' to its reference design 'RegCacheDataModule'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/RegCache/MemRegCache' to its reference design 'RegCacheDataModule_1'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/RegCache/IntRegCacheAgeTimer' to its reference design 'RegCacheAgeTimer'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/RegCache/MemRegCacheAgeTimer' to its reference design 'RegCacheAgeTimer_1'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/RegCache/IntRegCacheRepRCIdx_age' to its reference design 'RegCacheAgeDetector'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/RegCache/MemRegCacheRepRCIdx_age' to its reference design 'RegCacheAgeDetector_1'. (FE-LINK-2)
+Status:   Elaborating design UIntExtractor_27_000011100000000000001010101   ...  
+Status:   Elaborating design UIntExtractor_27_000000000000001010100000000   ...  
+Status:   Elaborating design DelayReg_8   ...  
+Status:   Elaborating design DummyDPICWrapper_9   ...  
+Warning: Cannot link cell '/WORK/DummyDPICWrapper_9/dpic' to its reference design 'DiffExtArchIntRegState'. (FE-LINK-2)
+Status:   Elaborating design DummyDPICWrapper_10   ...  
+Warning: Cannot link cell '/WORK/DummyDPICWrapper_10/dpic' to its reference design 'DiffExtArchFpRegState'. (FE-LINK-2)
+Status:   Elaborating design DelayReg_10   ...  
+Status:   Elaborating design DummyDPICWrapper_11   ...  
+Warning: Cannot link cell '/WORK/DummyDPICWrapper_11/dpic' to its reference design 'DiffExtArchVecRegState'. (FE-LINK-2)
+Status:   Elaborating design DelayN_1   ...  
+Status:  Implementing inferred operators...
+Status:  Creating black-box designs...
+Created technology library 'FM_BBOX' in container 'r' for black-box designs
+Created black-box design 'WBArbiter' in library 'FM_BBOX'
+Created black-box design 'WBArbiter_1' in library 'FM_BBOX'
+Created black-box design 'WBArbiter_2' in library 'FM_BBOX'
+Created black-box design 'WBArbiter_3' in library 'FM_BBOX'
+Created black-box design 'WBArbiter_30' in library 'FM_BBOX'
+Created black-box design 'WBArbiter_33' in library 'FM_BBOX'
+Created black-box design 'WBArbiter_38' in library 'FM_BBOX'
+Created black-box design 'WBArbiter_52' in library 'FM_BBOX'
+Created black-box design 'WBArbiter_55' in library 'FM_BBOX'
+Created black-box design 'WBArbiter_58' in library 'FM_BBOX'
+Created black-box design 'WBArbiter_64' in library 'FM_BBOX'
+Created black-box design 'WBArbiter_65' in library 'FM_BBOX'
+Created black-box design 'WBArbiter_66' in library 'FM_BBOX'
+Created black-box design 'RegCacheDataModule' in library 'FM_BBOX'
+Created black-box design 'RegCacheDataModule_1' in library 'FM_BBOX'
+Created black-box design 'RegCacheAgeTimer' in library 'FM_BBOX'
+Created black-box design 'RegCacheAgeTimer_1' in library 'FM_BBOX'
+Created black-box design 'RegCacheAgeDetector' in library 'FM_BBOX'
+Created black-box design 'RegCacheAgeDetector_1' in library 'FM_BBOX'
+Created black-box design 'DiffExtArchIntRegState' in library 'FM_BBOX'
+Created black-box design 'DiffExtArchFpRegState' in library 'FM_BBOX'
+Created black-box design 'DiffExtArchVecRegState' in library 'FM_BBOX'
+Warning: 22 blackbox designs were created for missing references. (FM-064)
+Status:  Attempting to resolve unlinked cells by using black-boxes...
+Warning: 13891 black-box pins of unknown direction found; see formality.log for list (FM-230)
+Top design set to 'r:/WORK/DataPath' with warnings
+Reference design set to 'r:/WORK/DataPath'
+1
+# Implementation: 手写 SV
+read_sverilog -i -define {SYNTHESIS} $impl_srcs
+No target library specified, default is WORK
+Loading verilog file '/tmp/tmp.AIKPtHwFvF/wt/rtl/backend/datapath_pkg.sv'
+Loading verilog file '/tmp/tmp.AIKPtHwFvF/wt/rtl/backend/datapath_cfg_pkg.sv'
+Loading verilog file '/tmp/tmp.AIKPtHwFvF/wt/rtl/backend/DataPath.sv'
+Loading include file '/tmp/tmp.AIKPtHwFvF/wt/rtl/backend/datapath_ports.svh'
+Loading include file '/tmp/tmp.AIKPtHwFvF/wt/rtl/backend/datapath_decls.svh'
+Loading include file '/tmp/tmp.AIKPtHwFvF/wt/rtl/backend/datapath_ctrl.svh'
+Loading include file '/tmp/tmp.AIKPtHwFvF/wt/rtl/backend/datapath_logic.svh'
+Loading include file '/tmp/tmp.AIKPtHwFvF/wt/rtl/backend/datapath_connect.svh'
+Loading verilog file '/tmp/tmp.AIKPtHwFvF/wt/rtl/backend/DataPath_wrapper.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayN_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayReg_10.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayReg_8.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DummyDPICWrapper_10.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DummyDPICWrapper_11.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DummyDPICWrapper_9.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/FpRFReadArbiter.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/FpRFWBCollideChecker.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/FpRegFilePart0.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/FpRegFilePart1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/FpRegFilePart2.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/FpRegFilePart3.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/IntRFReadArbiter.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/IntRFWBCollideChecker.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/IntRegFilePart0.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/IntRegFilePart1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/IntRegFilePart2.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/IntRegFilePart3.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/RegCache.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/UIntExtractor_27_000000000000001010100000000.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/UIntExtractor_27_000011100000000000001010101.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/V0RFReadArbiter.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/V0RFWBCollideChecker.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/V0RegFilePart0.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/V0RegFilePart1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/VfRFReadArbiter.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/VfRFWBCollideChecker.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/VfRegFilePart0.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/VfRegFilePart1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/VfRegFilePart2.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/VfRegFilePart3.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/VlRFReadArbiter.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/VlRFWBCollideChecker.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/VlRegFile.sv'
+Current container set to 'i'
+1
+set_top i:/WORK/$top
+Setting top design to 'i:/WORK/DataPath'
+Status:   Elaborating design DataPath   ...  
+Status:   Elaborating design xs_DataPath_core   ...  
+Status:   Elaborating design IntRFWBCollideChecker   ...  
+Warning: Cannot link cell '/WORK/IntRFWBCollideChecker/arbiters_0' to its reference design 'WBArbiter'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/IntRFWBCollideChecker/arbiters_1' to its reference design 'WBArbiter_1'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/IntRFWBCollideChecker/arbiters_2' to its reference design 'WBArbiter_2'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/IntRFWBCollideChecker/arbiters_3' to its reference design 'WBArbiter_3'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/IntRFWBCollideChecker/arbiters_4' to its reference design 'WBArbiter_2'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/IntRFWBCollideChecker/arbiters_5' to its reference design 'WBArbiter_3'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/IntRFWBCollideChecker/arbiters_6' to its reference design 'WBArbiter_3'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/IntRFWBCollideChecker/arbiters_7' to its reference design 'WBArbiter_3'. (FE-LINK-2)
+Status:   Elaborating design FpRFWBCollideChecker   ...  
+Warning: Cannot link cell '/WORK/FpRFWBCollideChecker/arbiters_0' to its reference design 'WBArbiter_2'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/FpRFWBCollideChecker/arbiters_1' to its reference design 'WBArbiter_2'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/FpRFWBCollideChecker/arbiters_2' to its reference design 'WBArbiter_2'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/FpRFWBCollideChecker/arbiters_3' to its reference design 'WBArbiter_2'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/FpRFWBCollideChecker/arbiters_4' to its reference design 'WBArbiter_2'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/FpRFWBCollideChecker/arbiters_5' to its reference design 'WBArbiter_3'. (FE-LINK-2)
+Status:   Elaborating design VfRFWBCollideChecker   ...  
+Warning: Cannot link cell '/WORK/VfRFWBCollideChecker/arbiters_0' to its reference design 'WBArbiter_2'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VfRFWBCollideChecker/arbiters_1' to its reference design 'WBArbiter_3'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VfRFWBCollideChecker/arbiters_2' to its reference design 'WBArbiter_2'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VfRFWBCollideChecker/arbiters_3' to its reference design 'WBArbiter_2'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VfRFWBCollideChecker/arbiters_4' to its reference design 'WBArbiter_3'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VfRFWBCollideChecker/arbiters_5' to its reference design 'WBArbiter_3'. (FE-LINK-2)
+Status:   Elaborating design V0RFWBCollideChecker   ...  
+Warning: Cannot link cell '/WORK/V0RFWBCollideChecker/arbiters_0' to its reference design 'WBArbiter_2'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/V0RFWBCollideChecker/arbiters_1' to its reference design 'WBArbiter_3'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/V0RFWBCollideChecker/arbiters_2' to its reference design 'WBArbiter_2'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/V0RFWBCollideChecker/arbiters_3' to its reference design 'WBArbiter_2'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/V0RFWBCollideChecker/arbiters_4' to its reference design 'WBArbiter_3'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/V0RFWBCollideChecker/arbiters_5' to its reference design 'WBArbiter_3'. (FE-LINK-2)
+Status:   Elaborating design VlRFWBCollideChecker   ...  
+Warning: Cannot link cell '/WORK/VlRFWBCollideChecker/arbiters_0' to its reference design 'WBArbiter_3'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VlRFWBCollideChecker/arbiters_1' to its reference design 'WBArbiter_3'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VlRFWBCollideChecker/arbiters_2' to its reference design 'WBArbiter_3'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VlRFWBCollideChecker/arbiters_3' to its reference design 'WBArbiter_3'. (FE-LINK-2)
+Status:   Elaborating design IntRFReadArbiter   ...  
+Warning: Cannot link cell '/WORK/IntRFReadArbiter/arbiters_0' to its reference design 'WBArbiter_30'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/IntRFReadArbiter/arbiters_1' to its reference design 'WBArbiter_30'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/IntRFReadArbiter/arbiters_2' to its reference design 'WBArbiter_30'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/IntRFReadArbiter/arbiters_3' to its reference design 'WBArbiter_33'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/IntRFReadArbiter/arbiters_4' to its reference design 'WBArbiter_30'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/IntRFReadArbiter/arbiters_5' to its reference design 'WBArbiter_33'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/IntRFReadArbiter/arbiters_6' to its reference design 'WBArbiter_33'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/IntRFReadArbiter/arbiters_7' to its reference design 'WBArbiter_33'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/IntRFReadArbiter/arbiters_8' to its reference design 'WBArbiter_38'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/IntRFReadArbiter/arbiters_9' to its reference design 'WBArbiter_38'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/IntRFReadArbiter/arbiters_10' to its reference design 'WBArbiter_38'. (FE-LINK-2)
+Status:   Elaborating design FpRFReadArbiter   ...  
+Warning: Cannot link cell '/WORK/FpRFReadArbiter/arbiters_0' to its reference design 'WBArbiter_38'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/FpRFReadArbiter/arbiters_1' to its reference design 'WBArbiter_38'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/FpRFReadArbiter/arbiters_2' to its reference design 'WBArbiter_30'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/FpRFReadArbiter/arbiters_3' to its reference design 'WBArbiter_38'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/FpRFReadArbiter/arbiters_4' to its reference design 'WBArbiter_38'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/FpRFReadArbiter/arbiters_5' to its reference design 'WBArbiter_30'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/FpRFReadArbiter/arbiters_6' to its reference design 'WBArbiter_38'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/FpRFReadArbiter/arbiters_7' to its reference design 'WBArbiter_38'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/FpRFReadArbiter/arbiters_8' to its reference design 'WBArbiter_30'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/FpRFReadArbiter/arbiters_9' to its reference design 'WBArbiter_30'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/FpRFReadArbiter/arbiters_10' to its reference design 'WBArbiter_38'. (FE-LINK-2)
+Status:   Elaborating design VfRFReadArbiter   ...  
+Warning: Cannot link cell '/WORK/VfRFReadArbiter/arbiters_0' to its reference design 'WBArbiter_52'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VfRFReadArbiter/arbiters_1' to its reference design 'WBArbiter_52'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VfRFReadArbiter/arbiters_2' to its reference design 'WBArbiter_52'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VfRFReadArbiter/arbiters_3' to its reference design 'WBArbiter_55'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VfRFReadArbiter/arbiters_4' to its reference design 'WBArbiter_55'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VfRFReadArbiter/arbiters_5' to its reference design 'WBArbiter_55'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VfRFReadArbiter/arbiters_6' to its reference design 'WBArbiter_58'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VfRFReadArbiter/arbiters_7' to its reference design 'WBArbiter_58'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VfRFReadArbiter/arbiters_8' to its reference design 'WBArbiter_58'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VfRFReadArbiter/arbiters_9' to its reference design 'WBArbiter_58'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VfRFReadArbiter/arbiters_10' to its reference design 'WBArbiter_58'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VfRFReadArbiter/arbiters_11' to its reference design 'WBArbiter_58'. (FE-LINK-2)
+Status:   Elaborating design V0RFReadArbiter   ...  
+Warning: Cannot link cell '/WORK/V0RFReadArbiter/arbiters_0' to its reference design 'WBArbiter_64'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/V0RFReadArbiter/arbiters_1' to its reference design 'WBArbiter_65'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/V0RFReadArbiter/arbiters_2' to its reference design 'WBArbiter_66'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/V0RFReadArbiter/arbiters_3' to its reference design 'WBArbiter_66'. (FE-LINK-2)
+Status:   Elaborating design VlRFReadArbiter   ...  
+Warning: Cannot link cell '/WORK/VlRFReadArbiter/arbiters_0' to its reference design 'WBArbiter_64'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VlRFReadArbiter/arbiters_1' to its reference design 'WBArbiter_65'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VlRFReadArbiter/arbiters_2' to its reference design 'WBArbiter_66'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/VlRFReadArbiter/arbiters_3' to its reference design 'WBArbiter_66'. (FE-LINK-2)
+Status:   Elaborating design IntRegFilePart0   ...  
+Status:   Elaborating design IntRegFilePart1   ...  
+Status:   Elaborating design IntRegFilePart2   ...  
+Status:   Elaborating design IntRegFilePart3   ...  
+Status:   Elaborating design FpRegFilePart0   ...  
+Status:   Elaborating design FpRegFilePart1   ...  
+Status:   Elaborating design FpRegFilePart2   ...  
+Status:   Elaborating design FpRegFilePart3   ...  
+Status:   Elaborating design VfRegFilePart0   ...  
+Status:   Elaborating design VfRegFilePart1   ...  
+Status:   Elaborating design VfRegFilePart2   ...  
+Status:   Elaborating design VfRegFilePart3   ...  
+Status:   Elaborating design V0RegFilePart0   ...  
+Status:   Elaborating design V0RegFilePart1   ...  
+Status:   Elaborating design VlRegFile   ...  
+Status:   Elaborating design RegCache   ...  
+Warning: Cannot link cell '/WORK/RegCache/IntRegCache' to its reference design 'RegCacheDataModule'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/RegCache/MemRegCache' to its reference design 'RegCacheDataModule_1'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/RegCache/IntRegCacheAgeTimer' to its reference design 'RegCacheAgeTimer'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/RegCache/MemRegCacheAgeTimer' to its reference design 'RegCacheAgeTimer_1'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/RegCache/IntRegCacheRepRCIdx_age' to its reference design 'RegCacheAgeDetector'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/RegCache/MemRegCacheRepRCIdx_age' to its reference design 'RegCacheAgeDetector_1'. (FE-LINK-2)
+Status:   Elaborating design UIntExtractor_27_000011100000000000001010101   ...  
+Status:   Elaborating design UIntExtractor_27_000000000000001010100000000   ...  
+Status:   Elaborating design DelayReg_8   ...  
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_0'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_1'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_2'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_3'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_4'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_5'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_6'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_7'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_8'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_9'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_10'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_11'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_12'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_13'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_14'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_15'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_16'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_17'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_18'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_19'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_20'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_21'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_22'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_23'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_24'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_25'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_26'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_27'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_28'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_29'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_30'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_31'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_coreid'. (FE-LINK-21)
+Status:   Elaborating design DummyDPICWrapper_9   ...  
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_module' of design '/WORK/DummyDPICWrapper_9' for port 'io_bits_value_0'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_module' of design '/WORK/DummyDPICWrapper_9' for port 'io_bits_value_1'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_module' of design '/WORK/DummyDPICWrapper_9' for port 'io_bits_value_2'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_module' of design '/WORK/DummyDPICWrapper_9' for port 'io_bits_value_3'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_module' of design '/WORK/DummyDPICWrapper_9' for port 'io_bits_value_4'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_module' of design '/WORK/DummyDPICWrapper_9' for port 'io_bits_value_5'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_module' of design '/WORK/DummyDPICWrapper_9' for port 'io_bits_value_6'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_module' of design '/WORK/DummyDPICWrapper_9' for port 'io_bits_value_7'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_module' of design '/WORK/DummyDPICWrapper_9' for port 'io_bits_value_8'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_module' of design '/WORK/DummyDPICWrapper_9' for port 'io_bits_value_9'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_module' of design '/WORK/DummyDPICWrapper_9' for port 'io_bits_value_10'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_module' of design '/WORK/DummyDPICWrapper_9' for port 'io_bits_value_11'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_module' of design '/WORK/DummyDPICWrapper_9' for port 'io_bits_value_12'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_module' of design '/WORK/DummyDPICWrapper_9' for port 'io_bits_value_13'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_module' of design '/WORK/DummyDPICWrapper_9' for port 'io_bits_value_14'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_module' of design '/WORK/DummyDPICWrapper_9' for port 'io_bits_value_15'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_module' of design '/WORK/DummyDPICWrapper_9' for port 'io_bits_value_16'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_module' of design '/WORK/DummyDPICWrapper_9' for port 'io_bits_value_17'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_module' of design '/WORK/DummyDPICWrapper_9' for port 'io_bits_value_18'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_module' of design '/WORK/DummyDPICWrapper_9' for port 'io_bits_value_19'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_module' of design '/WORK/DummyDPICWrapper_9' for port 'io_bits_value_20'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_module' of design '/WORK/DummyDPICWrapper_9' for port 'io_bits_value_21'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_module' of design '/WORK/DummyDPICWrapper_9' for port 'io_bits_value_22'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_module' of design '/WORK/DummyDPICWrapper_9' for port 'io_bits_value_23'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_module' of design '/WORK/DummyDPICWrapper_9' for port 'io_bits_value_24'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_module' of design '/WORK/DummyDPICWrapper_9' for port 'io_bits_value_25'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_module' of design '/WORK/DummyDPICWrapper_9' for port 'io_bits_value_26'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_module' of design '/WORK/DummyDPICWrapper_9' for port 'io_bits_value_27'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_module' of design '/WORK/DummyDPICWrapper_9' for port 'io_bits_value_28'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_module' of design '/WORK/DummyDPICWrapper_9' for port 'io_bits_value_29'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_module' of design '/WORK/DummyDPICWrapper_9' for port 'io_bits_value_30'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_module' of design '/WORK/DummyDPICWrapper_9' for port 'io_bits_value_31'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchIntRegState_module' of design '/WORK/DummyDPICWrapper_9' for port 'io_bits_coreid'. (FE-LINK-21)
+Warning: Cannot link cell '/WORK/DummyDPICWrapper_9/dpic' to its reference design 'DiffExtArchIntRegState'. (FE-LINK-2)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_0'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_1'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_2'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_3'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_4'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_5'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_6'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_7'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_8'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_9'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_10'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_11'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_12'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_13'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_14'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_15'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_16'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_17'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_18'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_19'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_20'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_21'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_22'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_23'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_24'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_25'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_26'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_27'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_28'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_29'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_30'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_value_31'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_delayer' of design '/WORK/DelayReg_8' for port 'o_coreid'. (FE-LINK-21)
+Status:   Elaborating design DummyDPICWrapper_10   ...  
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_module' of design '/WORK/DummyDPICWrapper_10' for port 'io_bits_value_0'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_module' of design '/WORK/DummyDPICWrapper_10' for port 'io_bits_value_1'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_module' of design '/WORK/DummyDPICWrapper_10' for port 'io_bits_value_2'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_module' of design '/WORK/DummyDPICWrapper_10' for port 'io_bits_value_3'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_module' of design '/WORK/DummyDPICWrapper_10' for port 'io_bits_value_4'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_module' of design '/WORK/DummyDPICWrapper_10' for port 'io_bits_value_5'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_module' of design '/WORK/DummyDPICWrapper_10' for port 'io_bits_value_6'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_module' of design '/WORK/DummyDPICWrapper_10' for port 'io_bits_value_7'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_module' of design '/WORK/DummyDPICWrapper_10' for port 'io_bits_value_8'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_module' of design '/WORK/DummyDPICWrapper_10' for port 'io_bits_value_9'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_module' of design '/WORK/DummyDPICWrapper_10' for port 'io_bits_value_10'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_module' of design '/WORK/DummyDPICWrapper_10' for port 'io_bits_value_11'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_module' of design '/WORK/DummyDPICWrapper_10' for port 'io_bits_value_12'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_module' of design '/WORK/DummyDPICWrapper_10' for port 'io_bits_value_13'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_module' of design '/WORK/DummyDPICWrapper_10' for port 'io_bits_value_14'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_module' of design '/WORK/DummyDPICWrapper_10' for port 'io_bits_value_15'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_module' of design '/WORK/DummyDPICWrapper_10' for port 'io_bits_value_16'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_module' of design '/WORK/DummyDPICWrapper_10' for port 'io_bits_value_17'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_module' of design '/WORK/DummyDPICWrapper_10' for port 'io_bits_value_18'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_module' of design '/WORK/DummyDPICWrapper_10' for port 'io_bits_value_19'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_module' of design '/WORK/DummyDPICWrapper_10' for port 'io_bits_value_20'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_module' of design '/WORK/DummyDPICWrapper_10' for port 'io_bits_value_21'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_module' of design '/WORK/DummyDPICWrapper_10' for port 'io_bits_value_22'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_module' of design '/WORK/DummyDPICWrapper_10' for port 'io_bits_value_23'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_module' of design '/WORK/DummyDPICWrapper_10' for port 'io_bits_value_24'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_module' of design '/WORK/DummyDPICWrapper_10' for port 'io_bits_value_25'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_module' of design '/WORK/DummyDPICWrapper_10' for port 'io_bits_value_26'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_module' of design '/WORK/DummyDPICWrapper_10' for port 'io_bits_value_27'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_module' of design '/WORK/DummyDPICWrapper_10' for port 'io_bits_value_28'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_module' of design '/WORK/DummyDPICWrapper_10' for port 'io_bits_value_29'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_module' of design '/WORK/DummyDPICWrapper_10' for port 'io_bits_value_30'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_module' of design '/WORK/DummyDPICWrapper_10' for port 'io_bits_value_31'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchFpRegState_module' of design '/WORK/DummyDPICWrapper_10' for port 'io_bits_coreid'. (FE-LINK-21)
+Warning: Cannot link cell '/WORK/DummyDPICWrapper_10/dpic' to its reference design 'DiffExtArchFpRegState'. (FE-LINK-2)
+Status:   Elaborating design DelayReg_10   ...  
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_0'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_1'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_2'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_3'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_4'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_5'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_6'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_7'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_8'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_9'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_10'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_11'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_12'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_13'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_14'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_15'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_16'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_17'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_18'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_19'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_20'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_21'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_22'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_23'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_24'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_25'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_26'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_27'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_28'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_29'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_30'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_31'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_32'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_33'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_34'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_35'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_36'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_37'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_38'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_39'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_40'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_41'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_42'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_43'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_44'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_45'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_46'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_47'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_48'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_49'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_50'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_51'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_52'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_53'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_54'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_55'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_56'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_57'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_58'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_59'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_60'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_61'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_62'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_value_63'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_delayer' of design '/WORK/DelayReg_10' for port 'o_coreid'. (FE-LINK-21)
+Status:   Elaborating design DummyDPICWrapper_11   ...  
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_0'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_1'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_2'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_3'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_4'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_5'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_6'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_7'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_8'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_9'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_10'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_11'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_12'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_13'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_14'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_15'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_16'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_17'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_18'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_19'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_20'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_21'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_22'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_23'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_24'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_25'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_26'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_27'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_28'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_29'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_30'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_31'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_32'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_33'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_34'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_35'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_36'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_37'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_38'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_39'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_40'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_41'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_42'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_43'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_44'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_45'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_46'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_47'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_48'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_49'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_50'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_51'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_52'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_53'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_54'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_55'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_56'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_57'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_58'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_59'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_60'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_61'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_62'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_value_63'. (FE-LINK-21)
+Warning: Width mismatch on instance '/WORK/xs_DataPath_core/difftestArchVecRegState_module' of design '/WORK/DummyDPICWrapper_11' for port 'io_bits_coreid'. (FE-LINK-21)
+Warning: Cannot link cell '/WORK/DummyDPICWrapper_11/dpic' to its reference design 'DiffExtArchVecRegState'. (FE-LINK-2)
+Status:   Elaborating design DelayN_1   ...  
+Status:  Implementing inferred operators...
+Status:  Creating black-box designs...
+Created technology library 'FM_BBOX' in container 'i' for black-box designs
+Created black-box design 'WBArbiter' in library 'FM_BBOX'
+Created black-box design 'WBArbiter_1' in library 'FM_BBOX'
+Created black-box design 'WBArbiter_2' in library 'FM_BBOX'
+Created black-box design 'WBArbiter_3' in library 'FM_BBOX'
+Created black-box design 'WBArbiter_30' in library 'FM_BBOX'
+Created black-box design 'WBArbiter_33' in library 'FM_BBOX'
+Created black-box design 'WBArbiter_38' in library 'FM_BBOX'
+Created black-box design 'WBArbiter_52' in library 'FM_BBOX'
+Created black-box design 'WBArbiter_55' in library 'FM_BBOX'
+Created black-box design 'WBArbiter_58' in library 'FM_BBOX'
+Created black-box design 'WBArbiter_64' in library 'FM_BBOX'
+Created black-box design 'WBArbiter_65' in library 'FM_BBOX'
+Created black-box design 'WBArbiter_66' in library 'FM_BBOX'
+Created black-box design 'RegCacheDataModule' in library 'FM_BBOX'
+Created black-box design 'RegCacheDataModule_1' in library 'FM_BBOX'
+Created black-box design 'RegCacheAgeTimer' in library 'FM_BBOX'
+Created black-box design 'RegCacheAgeTimer_1' in library 'FM_BBOX'
+Created black-box design 'RegCacheAgeDetector' in library 'FM_BBOX'
+Created black-box design 'RegCacheAgeDetector_1' in library 'FM_BBOX'
+Created black-box design 'DiffExtArchIntRegState' in library 'FM_BBOX'
+Created black-box design 'DiffExtArchFpRegState' in library 'FM_BBOX'
+Created black-box design 'DiffExtArchVecRegState' in library 'FM_BBOX'
+Warning: 22 blackbox designs were created for missing references. (FM-064)
+Status:  Attempting to resolve unlinked cells by using black-boxes...
+Warning: 13891 black-box pins of unknown direction found; see formality.log for list (FM-230)
+Top design set to 'i:/WORK/DataPath' with warnings
+Implementation design set to 'i:/WORK/DataPath'
+1
+# ----------------------------------------------------------------------------
+# 字段映射配对（在首次 match 之前全量钉死）：当手写核心把整个 payload 打包进一个
+# 扁平寄存器 data_reg，而 golden 用逐字段寄存器 data_<suffix> 时，等宽字段会令签名
+# 分析产生歧义、且会在重新 match 时互相搅乱。生成器输出「<suffix> <lo> <width>」
+# 映射（FM_FIELD_MAP），这里据此把 ref 的 data_<suffix>_reg[b] 逐位 set_user_match
+# 到 impl 的 u_core/data_reg[lo+b]，使后续 match 只需处理 valid 等非 payload 寄存器。
+# 供 PipelineConnect 及后续扁平 payload 模块复用。
+# ----------------------------------------------------------------------------
+proc match_packed_payload { top } {
+    if {![info exists ::env(FM_FIELD_MAP)] || ![file exists $::env(FM_FIELD_MAP)]} return
+    set fh [open $::env(FM_FIELD_MAP) r]
+    set n 0
+    foreach ln [split [read $fh] "\n"] {
+        if {![regexp {^(\S+)\s+(\d+)\s+(\d+)$} $ln -> suf lo w]} continue
+        for {set b 0} {$b < $w} {incr b} {
+            set ipath "i:/WORK/$top/u_core/data_reg\[[expr {$lo + $b}]\]"
+            # 多位字段 golden 名为 data_<suf>_reg[b]；1 位字段可能无下标
+            set cands [list "r:/WORK/$top/data_${suf}_reg\[$b\]"]
+            if {$w == 1} { lappend cands "r:/WORK/$top/data_${suf}_reg" }
+            foreach rpath $cands {
+                if {![catch {set_user_match $rpath $ipath}]} { incr n; break }
+            }
+        }
+    }
+    close $fh
+    if {$n > 0} { puts "PACKED_MATCH: $n points pinned" }
+}
+# 模块本地「匹配前」钉点(FM_PIN_PRE_TCL, 可选): 首次 match 前需 set_user_match 的对象。
+# 四审: sidecar 下 pin 代码进受限 safe child interp(sidecar_pin_source: 一次读取→快照
+# →child 执行同一缓冲; 拿不到父层 guard/trace/证据目录; 嵌套 source 走同一受控入口)。
+if {[info exists env(FM_PIN_PRE_TCL)] && [file exists $env(FM_PIN_PRE_TCL)]} {
+    if {$SIDECAR_ON} { sidecar_pin_source $env(FM_PIN_PRE_TCL) } else { source $env(FM_PIN_PRE_TCL) }
+}
+match_packed_payload $top
+match
+Reference design is 'r:/WORK/DataPath'
+Implementation design is 'i:/WORK/DataPath'
+Status:  Checking designs...
+    Warning: Design r:/FM_BBOX/WBArbiter is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/WBArbiter_1 is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/WBArbiter_2 is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/WBArbiter_3 is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/WBArbiter_30 is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/WBArbiter_33 is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/WBArbiter_38 is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/WBArbiter_52 is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/WBArbiter_55 is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/WBArbiter_58 is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/WBArbiter_64 is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/WBArbiter_65 is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/WBArbiter_66 is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/RegCacheDataModule is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/RegCacheDataModule_1 is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/RegCacheAgeTimer is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/RegCacheAgeTimer_1 is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/RegCacheAgeDetector is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/RegCacheAgeDetector_1 is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/WBArbiter is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/WBArbiter_1 is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/WBArbiter_2 is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/WBArbiter_3 is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/WBArbiter_30 is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/WBArbiter_33 is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/WBArbiter_38 is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/WBArbiter_52 is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/WBArbiter_55 is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/WBArbiter_58 is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/WBArbiter_64 is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/WBArbiter_65 is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/WBArbiter_66 is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/RegCacheDataModule is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/RegCacheDataModule_1 is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/RegCacheAgeTimer is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/RegCacheAgeTimer_1 is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/RegCacheAgeDetector is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/RegCacheAgeDetector_1 is a black box and there are cells referencing it (FM-160)
+    Warning: 0 (8085) undriven nets found in reference (implementation) design; see formality.log for list (FM-399)
+    Info:  214 (214) multiply-driven nets found in reference (implementation) design; see formality.log for list.
+    Warning: 81 (81) black-box references found in reference (implementation) design; see formality.log for list (FM-182)
+Status:  Building verification models...
+    Info:  Constant registers have been identified that were initialized by some objects that were assumed to toggle.
+           For more info use commands: report_potentially_constant_registers  and report_init_toggle_objects
+Status:  Merging duplicated registers in block r:/WORK/DataPath (<top>)...
+Status:  Merging duplicated registers in block r:/WORK/DataPath/regCache (/WORK/RegCache)...
+Status:  Merging duplicated registers in block i:/WORK/DataPath/u_core/regCache (/WORK/RegCache)...
+Status:  Merging duplicated registers in block i:/WORK/DataPath/u_core (/WORK/xs_DataPath_core)...
+    Info:  Constant registers have been identified that were initialized by some objects that were assumed to toggle.
+           For more info use commands: report_potentially_constant_registers  and report_init_toggle_objects
+Status:  Merging duplicated registers in block r:/WORK/DataPath (<top>)...
+Status:  Merging duplicated registers in block r:/WORK/DataPath/regCache (/WORK/RegCache_2)...
+Status:  Merging duplicated registers in block i:/WORK/DataPath/u_core/regCache (/WORK/RegCache_2)...
+    Info:  Constant registers have been identified that were initialized by some objects that were assumed to toggle.
+           For more info use commands: report_potentially_constant_registers  and report_init_toggle_objects
+Status:  Merging duplicated registers in block r:/WORK/DataPath/regCache (/WORK/RegCache_2_2)...
+Status:  Merging duplicated registers in block i:/WORK/DataPath/u_core/regCache (/WORK/RegCache_2)...
+    
+-------- SIGTERM INFO --------
+    Signal Number   = '15'
+    Signal Code     = '0'
+    Signal ErrNo    = '0'
+    Sender PID      = '3244291'
+    Real Sender UID = '1000'
+    -------- ------------ --------
+    timeout
+    -------- ------------ --------
+
+
+Process terminated by kill.
+

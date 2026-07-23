@@ -7,8 +7,16 @@ GOLDEN_RTL = ../../../golden/chisel-rtl
 # 可读核：xs_Predictor_core（BPU 流水 FSM + topdown 气泡原因）
 # ---------------------------------------------------------------------------
 RTL_SRCS = $(RTL_DIR)/frontend/Predictor.sv
-# FM impl：可读核 + golden 同名 wrapper（Composer/DelayN/PriorityMuxModule 当黑盒）
-WRAPPER_SRCS = $(RTL_DIR)/frontend/Predictor_wrapper.sv
+# FM impl：可读核 + golden 同名 wrapper。
+#   Composer 走 assembly 黑盒（305 绿 child，depends_on）；
+#   DelayN + 6 种 PriorityMuxModule 是非 vendor 纯逻辑叶子（PMM 全组合、DelayN 确定性
+#   移位延迟），两侧 elaborate 白盒受验（reviewer 裁定：纯逻辑子模块不黑盒）。
+PRED_LOGIC_LEAVES = \
+    $(GOLDEN_RTL)/DelayN.sv \
+    $(GOLDEN_RTL)/PriorityMuxModule.sv $(GOLDEN_RTL)/PriorityMuxModule_4.sv \
+    $(GOLDEN_RTL)/PriorityMuxModule_8.sv $(GOLDEN_RTL)/PriorityMuxModule_12.sv \
+    $(GOLDEN_RTL)/PriorityMuxModule_16.sv $(GOLDEN_RTL)/PriorityMuxModule_20.sv
+WRAPPER_SRCS = $(RTL_DIR)/frontend/Predictor_wrapper.sv $(PRED_LOGIC_LEAVES)
 
 # ---------------------------------------------------------------------------
 # UT 双例化所需 golden RTL：Predictor 顶层依赖 Composer（含 5 预测器完整子模块链）+
@@ -94,10 +102,19 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/Predictor.sv \
 
 TB_SRCS = variants_xs.sv tb.sv
 
-# FM：ref = golden Predictor（Composer/DelayN/PriorityMuxModule 不列依赖 → 两侧同名黑盒）；
-#   impl = 可读核 xs_Predictor_core + golden 同名 wrapper（wrapper body 照搬 golden）。
+# FM：ref = golden Predictor + DelayN/PriorityMuxModule 纯逻辑叶子依赖（两侧 elaborate 白盒）；
+#   Composer 不列依赖 → 两侧同名黑盒（assembly，305 绿 child depends_on）。
+#   impl = 可读核 xs_Predictor_core（真驱动 FSM + topdown 输出）+ golden 同名 wrapper body。
+# assembly：唯一黑盒=Composer(实例 predictors, allow/Predictor.json)。
+# 残留 627 对称 matched-unread(predCycle_c/previous_s2/powerOnReset 死寄存器, ref==impl
+#   双射, golden 与 wrapper body 同源)= vmucp-ready。要转 SUCCEEDED 由集成方(Main)按
+#   standing rule 把 Predictor 加入 4 处 vmucp 白名单 + declarations vmucp=true(本 worker
+#   不改共享 verdict/manifest 基础设施)。
 FM_VARIANTS = Predictor
-FM_REF_DEPS_Predictor =
+FM_REF_DEPS_Predictor = DelayN.sv \
+    PriorityMuxModule.sv PriorityMuxModule_4.sv PriorityMuxModule_8.sv \
+    PriorityMuxModule_12.sv PriorityMuxModule_16.sv PriorityMuxModule_20.sv
+FM_MODE = assembly
 
 include ../../../scripts/ut_common.mk
 

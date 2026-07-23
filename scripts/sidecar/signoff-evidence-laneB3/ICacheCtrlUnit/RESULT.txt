@@ -1,0 +1,4 @@
+SIGNOFF_RESULT ICacheCtrlUnit: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=signoff-strict fm_shell_rc=0 validator_rc=0)
+run_id: SGN-ICacheCtrlUnit-1784707707
+impl_commit: df41bd398c4d8351018c1e4bb6ce78af354c5928
+manifest_sha256: 4c00dfa44ae87f4fbfa81b1b3c823c0f2c3aab74de2b22c6a6d71c62456e69c6

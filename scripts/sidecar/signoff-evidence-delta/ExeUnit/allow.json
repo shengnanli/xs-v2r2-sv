@@ -1,0 +1,22 @@
+{
+    "unresolved_blackbox": [
+        {
+            "id": "Alu",
+            "ref_path": "r:/WORK/ExeUnit/Alu",
+            "impl_path": "i:/WORK/ExeUnit/u_core/Alu"
+        },
+        {
+            "id": "Bku",
+            "ref_path": "r:/WORK/ExeUnit/Bku",
+            "impl_path": "i:/WORK/ExeUnit/u_core/Bku"
+        },
+        {
+            "id": "Mul",
+            "ref_path": "r:/WORK/ExeUnit/Mul",
+            "impl_path": "i:/WORK/ExeUnit/u_core/Mul"
+        }
+    ],
+    "interface_only": [],
+    "empty_blackbox": [],
+    "unmatched": []
+}

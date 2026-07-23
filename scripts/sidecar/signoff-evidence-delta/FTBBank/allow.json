@@ -1,0 +1,15 @@
+{
+    "unresolved_blackbox": [
+        {"id": "array_0_0_0", "ref_path": "r:/WORK/FTBBank/ftb/array_0_0_0/array/array/array_1_ext", "impl_path": "i:/WORK/FTBBank/ftb/array_0_0_0/array/array/array_1_ext"},
+        {"id": "array_0_0_1", "ref_path": "r:/WORK/FTBBank/ftb/array_0_0_1/array/array/array_1_ext", "impl_path": "i:/WORK/FTBBank/ftb/array_0_0_1/array/array/array_1_ext"},
+        {"id": "array_0_0_2", "ref_path": "r:/WORK/FTBBank/ftb/array_0_0_2/array/array/array_1_ext", "impl_path": "i:/WORK/FTBBank/ftb/array_0_0_2/array/array/array_1_ext"},
+        {"id": "array_0_0_3", "ref_path": "r:/WORK/FTBBank/ftb/array_0_0_3/array/array/array_1_ext", "impl_path": "i:/WORK/FTBBank/ftb/array_0_0_3/array/array/array_1_ext"},
+        {"id": "array_0_0_4", "ref_path": "r:/WORK/FTBBank/ftb/array_0_0_4/array/array/array_1_ext", "impl_path": "i:/WORK/FTBBank/ftb/array_0_0_4/array/array/array_1_ext"},
+        {"id": "array_0_0_5", "ref_path": "r:/WORK/FTBBank/ftb/array_0_0_5/array/array/array_1_ext", "impl_path": "i:/WORK/FTBBank/ftb/array_0_0_5/array/array/array_1_ext"},
+        {"id": "array_0_0_6", "ref_path": "r:/WORK/FTBBank/ftb/array_0_0_6/array/array/array_1_ext", "impl_path": "i:/WORK/FTBBank/ftb/array_0_0_6/array/array/array_1_ext"},
+        {"id": "array_0_0_7", "ref_path": "r:/WORK/FTBBank/ftb/array_0_0_7/array/array/array_1_ext", "impl_path": "i:/WORK/FTBBank/ftb/array_0_0_7/array/array/array_1_ext"}
+    ],
+    "interface_only": [],
+    "empty_blackbox": [],
+    "unmatched": []
+}

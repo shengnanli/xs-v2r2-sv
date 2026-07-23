@@ -469,6 +469,16 @@ module xs_TLXbar_1_core
   wire [NUM_OUT-1:0] a_ds_ready = {auto_out_2_a_ready, auto_out_1_a_ready, auto_out_0_a_ready};
   wire [NUM_IN-1:0]  d_ds_ready = {auto_in_1_d_ready, auto_in_0_d_ready};
 
+  // "本拍开始新一轮传输"标志 (idle 且下游 ready): 纯组合量。必须在 always_comb 里算,
+  // 若像原来那样写成 always_ff 内的 automatic 临时变量, 综合/Formality 会把每个循环
+  // 迭代的该量各推断成一个无跨拍扇出的死锁存器 (a 侧 NUM_OUT 个 + d 侧 NUM_IN 个)。
+  logic [NUM_OUT-1:0] a_load;
+  logic [NUM_IN-1:0]  d_load;
+  always_comb begin
+    for (int j = 0; j < NUM_OUT; j = j + 1) a_load[j] = a_idle[j] & a_ds_ready[j];
+    for (int j = 0; j < NUM_IN;  j = j + 1) d_load[j] = d_idle[j] & d_ds_ready[j];
+  end
+
   integer k;
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
@@ -485,24 +495,22 @@ module xs_TLXbar_1_core
     end else begin
       // ---- A 仲裁器 (每从口) ----
       for (k = 0; k < NUM_OUT; k = k + 1) begin
-        automatic logic latch = a_idle[k] & a_ds_ready[k];
-        if (latch)
+        if (a_load[k])
           a_beats[k] <= a_latch_beats[k];
         else
           a_beats[k] <= a_beats[k] - {2'h0, a_ds_ready[k] & a_out_valid[k]};
-        if (latch & (|a_valid_vec[k]))
+        if (a_load[k] & (|a_valid_vec[k]))
           a_mask[k] <= left_or(MAXN'(a_winner[k]), NUM_IN);
         if (a_idle[k])
           a_state[k] <= a_winner[k];
       end
       // ---- D 仲裁器 (每主口) ----
       for (k = 0; k < NUM_IN; k = k + 1) begin
-        automatic logic latch = d_idle[k] & d_ds_ready[k];
-        if (latch)
+        if (d_load[k])
           d_beats[k] <= d_latch_beats[k];
         else
           d_beats[k] <= d_beats[k] - {2'h0, d_ds_ready[k] & d_in_valid[k]};
-        if (latch & (|d_valid_vec[k]))
+        if (d_load[k] & (|d_valid_vec[k]))
           d_mask[k] <= left_or(MAXN'(d_winner[k]), NUM_OUT);
         if (d_idle[k])
           d_state[k] <= d_winner[k];

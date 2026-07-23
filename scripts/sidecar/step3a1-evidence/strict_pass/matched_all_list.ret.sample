@@ -1,0 +1,36 @@
+# TRUNCATED: full sha256=3b245f00c893d229ddaaf8f67289d8cf2722ba3bef60fac007b3667807df9b9c bytes=235970 (完整原件太大, 样本如下)
+{{r:/WORK/Bku/clmulModule/funcReg_reg[0]} {i:/WORK/Bku/u_core/u_clmul/func_reg_reg[0]}}
+{{r:/WORK/Bku/clmulModule/funcReg_reg[1]} {i:/WORK/Bku/u_core/u_clmul/func_reg_reg[1]}}
+{{r:/WORK/Bku/clmulModule/funcReg_reg[2]} {i:/WORK/Bku/u_core/u_clmul/func_reg_reg[2]}}
+{{r:/WORK/Bku/clmulModule/funcReg_reg[3]} {i:/WORK/Bku/u_core/u_clmul/func_reg_reg[3]}}
+{{r:/WORK/Bku/clmulModule/funcReg_reg[4]} {i:/WORK/Bku/u_core/u_clmul/func_reg_reg[4]}}
+{{r:/WORK/Bku/clmulModule/funcReg_reg[5]} {i:/WORK/Bku/u_core/u_clmul/func_reg_reg[5]}}
+{{r:/WORK/Bku/clmulModule/funcReg_reg[6]} {i:/WORK/Bku/u_core/u_clmul/func_reg_reg[6]}}
+{{r:/WORK/Bku/clmulModule/funcReg_reg[7]} {i:/WORK/Bku/u_core/u_clmul/func_reg_reg[7]}}
+{{r:/WORK/Bku/clmulModule/funcReg_reg[8]} {i:/WORK/Bku/u_core/u_clmul/func_reg_reg[8]}}
+{{r:/WORK/Bku/clmulModule/mul3_0_reg[0]} {i:/WORK/Bku/u_core/u_clmul/mul3_reg[0][0]}}
+{{r:/WORK/Bku/clmulModule/mul3_0_reg[10]} {i:/WORK/Bku/u_core/u_clmul/mul3_reg[0][10]}}
+{{r:/WORK/Bku/clmulModule/mul3_0_reg[11]} {i:/WORK/Bku/u_core/u_clmul/mul3_reg[0][11]}}
+{{r:/WORK/Bku/clmulModule/mul3_0_reg[12]} {i:/WORK/Bku/u_core/u_clmul/mul3_reg[0][12]}}
+{{r:/WORK/Bku/clmulModule/mul3_0_reg[13]} {i:/WORK/Bku/u_core/u_clmul/mul3_reg[0][13]}}
+{{r:/WORK/Bku/clmulModule/mul3_0_reg[14]} {i:/WORK/Bku/u_core/u_clmul/mul3_reg[0][14]}}
+{{r:/WORK/Bku/clmulModule/mul3_0_reg[15]} {i:/WORK/Bku/u_core/u_clmul/mul3_reg[0][15]}}
+{{r:/WORK/Bku/clmulModule/mul3_0_reg[16]} {i:/WORK/Bku/u_core/u_clmul/mul3_reg[0][16]}}
+{{r:/WORK/Bku/clmulModule/mul3_0_reg[17]} {i:/WORK/Bku/u_core/u_clmul/mul3_reg[0][17]}}
+{{r:/WORK/Bku/clmulModule/mul3_0_reg[18]} {i:/WORK/Bku/u_core/u_clmul/mul3_reg[0][18]}}
+{{r:/WORK/Bku/clmulModule/mul3_0_reg[19]} {i:/WORK/Bku/u_core/u_clmul/mul3_reg[0][19]}}
+{{r:/WORK/Bku/clmulModule/mul3_0_reg[1]} {i:/WORK/Bku/u_core/u_clmul/mul3_reg[0][1]}}
+{{r:/WORK/Bku/clmulModule/mul3_0_reg[20]} {i:/WORK/Bku/u_core/u_clmul/mul3_reg[0][20]}}
+{{r:/WORK/Bku/clmulModule/mul3_0_reg[21]} {i:/WORK/Bku/u_core/u_clmul/mul3_reg[0][21]}}
+{{r:/WORK/Bku/clmulModule/mul3_0_reg[22]} {i:/WORK/Bku/u_core/u_clmul/mul3_reg[0][22]}}
+{{r:/WORK/Bku/clmulModule/mul3_0_reg[23]} {i:/WORK/Bku/u_core/u_clmul/mul3_reg[0][23]}}
+{{r:/WORK/Bku/clmulModule/mul3_0_reg[24]} {i:/WORK/Bku/u_core/u_clmul/mul3_reg[0][24]}}
+{{r:/WORK/Bku/clmulModule/mul3_0_reg[25]} {i:/WORK/Bku/u_core/u_clmul/mul3_reg[0][25]}}
+{{r:/WORK/Bku/clmulModule/mul3_0_reg[26]} {i:/WORK/Bku/u_core/u_clmul/mul3_reg[0][26]}}
+{{r:/WORK/Bku/clmulModule/mul3_0_reg[27]} {i:/WORK/Bku/u_core/u_clmul/mul3_reg[0][27]}}
+{{r:/WORK/Bku/clmulModule/mul3_0_reg[28]} {i:/WORK/Bku/u_core/u_clmul/mul3_reg[0][28]}}
+{{r:/WORK/Bku/clmulModule/mul3_0_reg[29]} {i:/WORK/Bku/u_core/u_clmul/mul3_reg[0][29]}}
+{{r:/WORK/Bku/clmulModule/mul3_0_reg[2]} {i:/WORK/Bku/u_core/u_clmul/mul3_reg[0][2]}}
+{{r:/WORK/Bku/clmulModule/mul3_0_reg[30]} {i:/WORK/Bku/u_core/u_clmul/mul3_reg[0][30]}}
+{{r:/WORK/Bku/clmulModule/mul3_0_reg[31]} {i:/WORK/Bku/u_core/u_clmul/mul3_reg[0][31]}}
+{{r:/WORK/Bku/

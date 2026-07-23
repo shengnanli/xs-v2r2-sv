@@ -1,0 +1,10 @@
+# 代表性 smoke 的 **expected_observation**(仅验证 runner 机械正确, **非** signoff 要求)。
+# target<TAB>expected_observation<TAB>note
+# 正式 signoff 要求见 manifest 的 required_verdict(strict/assembly=SUCCEEDED, shadow=SHADOW_CHECK)。
+# 以下 PARTIAL/FAILED 是当前诚实观测, 表示这些目标**尚未达到** signoff 要求(是 gap, 非绿)。
+Alu	SUCCEEDED	strict 正样本: 达到 signoff 要求(required=SUCCEEDED)
+Bku	PARTIAL	strict: unread19, **未达** signoff 要求(required=SUCCEEDED); gap
+NewIFU	PARTIAL	assembly 无 policy: **未达** required=SUCCEEDED; 须声明对象 allowlist
+DCacheWrapper	FAILED	fmbb: native FAILED, **未达** required=SUCCEEDED; 须修证明环境/RTL
+PtwCache	PARTIAL	custom strict: unread, **未达** required=SUCCEEDED; gap
+Predictor	SHADOW_CHECK	shadow: 达到 required=SHADOW_CHECK(单独统计, 不算等价通过)

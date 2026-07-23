@@ -1,0 +1,4 @@
+SIGNOFF_RESULT DuplicatedTagArray: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=assembly fm_shell_rc=0 validator_rc=0)
+run_id: SGN-DuplicatedTagArray-1784809239
+impl_commit: 36c3ca03a241a2f64419d46c8156c15f0c6b0117
+manifest_sha256: 84829339d6cf4b4d328a2176f5ed90f8a3b50d7669f1632a598b324caa3d8453

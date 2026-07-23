@@ -1561,7 +1561,6 @@ module xs_LoadUnit_core(
   // 等价于 Scala 的 `s1_in := RegEnable(s0_out, s0_fire)`。
   logic                  s1_valid;
   logic [VADDR_BITS-1:0] s1_in_vaddr;
-  logic [63:0]           s1_in_fullva;
   logic [PADDR_BITS-1:0] s1_in_paddr;
   logic [MASK_BITS-1:0]  s1_in_mask;
   logic [8:0]            s1_in_fuOpType;
@@ -1580,7 +1579,11 @@ module xs_LoadUnit_core(
   logic [2:0]            s1_in_alignedType;
   logic [7:0]            s1_in_elemIdx, s1_in_elemIdxInsideVd;
   logic [3:0]            s1_in_mbIndex, s1_in_reg_offset;
-  logic [VADDR_BITS-1:0] s1_in_vecBaseVaddr;
+  // vecBaseVaddr/vecVaddrOffset 只经 (offset = ... - baseVaddr) >> veew 后取低 8 位作 vstart，
+  // borrow/移位只向高位传播，故仅低 VECOFF_BITS=11 位(8 位 vstart + 最大 veew=3 移位)有效；
+  // golden 保留全 50 位(高 39 位 cone-dead)，impl 收窄至有效宽度 → 高位死寄存器归 golden-only。
+  localparam int VECOFF_BITS = 11;
+  logic [VECOFF_BITS-1:0] s1_in_vecBaseVaddr;
   logic [7:0]            s1_in_vstart;
   logic [1:0]            s1_in_veew;
   logic                  s1_in_storeSetHit, s1_in_loadWaitBit, s1_in_loadWaitStrict;
@@ -1588,7 +1591,26 @@ module xs_LoadUnit_core(
   logic                  s1_in_preDecode_isRVC, s1_in_ftqPtr_flag; logic [5:0] s1_in_ftqPtr_value;
   logic [3:0]            s1_in_ftqOffset;
   logic [63:0]           s1_in_enqRsTime, s1_in_selectTime, s1_in_issueTime;
-  logic [23:0]           s1_in_excVec;  // 透传的 exceptionVec（位 0..23）
+  // exceptionVec 位 {3(BP),5(LAF),13(LPF),21(LGPF)} 在 s0_out_excVec 恒 0、且在 s1->s2 的
+  // s1_excVec_s2in 里被 s1 重算值无条件覆写 → 这些位不作寄存器(对齐 golden 无
+  // s1_in_r_uop_exceptionVec_{3,5,13,21})。仅寄存有意义的 20 位, 4 个剪枝位在视图里接常量 0。
+  logic [19:0]           s1_in_excVec_r;  // 打包顺序: {23,22,20,19,18,17,16,15,14,12,11,10,9,8,7,6,4,2,1,0}
+  logic [23:0]           s1_in_excVec;    // 24 位视图（剪枝位 3/5/13/21 = 0）
+  assign s1_in_excVec = {
+      s1_in_excVec_r[19], s1_in_excVec_r[18],           // 23,22
+      1'b0,                                             // 21 (LGPF)
+      s1_in_excVec_r[17], s1_in_excVec_r[16], s1_in_excVec_r[15], // 20,19,18
+      s1_in_excVec_r[14], s1_in_excVec_r[13], s1_in_excVec_r[12], // 17,16,15
+      s1_in_excVec_r[11],                               // 14
+      1'b0,                                             // 13 (LPF)
+      s1_in_excVec_r[10], s1_in_excVec_r[9],            // 12,11
+      s1_in_excVec_r[8], s1_in_excVec_r[7], s1_in_excVec_r[6], // 10,9,8
+      s1_in_excVec_r[5], s1_in_excVec_r[4],             // 7,6
+      1'b0,                                             // 5 (LAF)
+      s1_in_excVec_r[3],                                // 4 (LAM)
+      1'b0,                                             // 3 (BP)
+      s1_in_excVec_r[2], s1_in_excVec_r[1], s1_in_excVec_r[0]  // 2,1,0
+  };
   logic                  s1_nc_with_data;
   logic [128:0]          s1_in_data;    // fast_rep / nc 来源携带的数据（s2 NC 路径用）
   logic [6:0]            s1_in_uopIdx;
@@ -1660,7 +1682,6 @@ module xs_LoadUnit_core(
     if (s0_fire) s1_in_vecActive <= s0_sel_vecActive;  // payload 份：golden 无复位
     if (s0_fire) begin
       s1_in_vaddr        <= s0_out_vaddr;
-      s1_in_fullva       <= s0_out_fullva;
       s1_in_paddr        <= s0_out_paddr;
       s1_in_mask         <= s0_sel_mask;
       s1_in_fuOpType     <= s0_sel_fuOpType;
@@ -1682,7 +1703,7 @@ module xs_LoadUnit_core(
       s1_in_alignedType  <= s0_alignedType;
       s1_in_elemIdx      <= s0_sel_elemIdx;      s1_in_elemIdxInsideVd <= s0_sel_elemIdxInsideVd;
       s1_in_mbIndex      <= s0_sel_mbIndex;      s1_in_reg_offset <= s0_sel_reg_offset;
-      s1_in_vecBaseVaddr <= s0_sel_vecBaseVaddr;
+      s1_in_vecBaseVaddr <= s0_sel_vecBaseVaddr[VECOFF_BITS-1:0];
       s1_in_vstart       <= s0_uop_vstart;       s1_in_veew <= s0_uop_veew;
       s1_in_storeSetHit  <= s0_uop_storeSetHit;
       s1_in_loadWaitBit  <= s0_uop_loadWaitBit;  s1_in_loadWaitStrict <= s0_uop_loadWaitStrict;
@@ -1691,7 +1712,14 @@ module xs_LoadUnit_core(
       s1_in_ftqPtr_flag  <= s0_uop_ftqPtr_flag;  s1_in_ftqPtr_value <= s0_uop_ftqPtr_value;
       s1_in_ftqOffset    <= s0_uop_ftqOffset;
       s1_in_enqRsTime    <= s0_uop_enqRsTime;    s1_in_selectTime <= s0_uop_selectTime; s1_in_issueTime <= s0_uop_issueTime;
-      s1_in_excVec       <= s0_out_excVec;
+      // 仅锁存有意义的 20 位（剪枝 3/5/13/21，见 s1_in_excVec 视图）。
+      s1_in_excVec_r     <= {
+          s0_out_excVec[23], s0_out_excVec[22], s0_out_excVec[20],
+          s0_out_excVec[19], s0_out_excVec[18], s0_out_excVec[17], s0_out_excVec[16],
+          s0_out_excVec[15], s0_out_excVec[14], s0_out_excVec[12], s0_out_excVec[11],
+          s0_out_excVec[10], s0_out_excVec[9], s0_out_excVec[8], s0_out_excVec[7],
+          s0_out_excVec[6], s0_out_excVec[4], s0_out_excVec[2], s0_out_excVec[1],
+          s0_out_excVec[0] };
       s1_in_data         <= s0_out_data;         s1_in_uopIdx <= s0_uop_uopIdx;
     end
   end
@@ -1951,10 +1979,12 @@ module xs_LoadUnit_core(
   logic [2:0]            s2_in_alignedType;
   logic [3:0]            s2_in_mbIndex, s2_in_reg_offset;
   logic [7:0]            s2_in_elemIdxInsideVd;
-  logic [VADDR_BITS-1:0] s2_in_vecVaddrOffset;
+  logic [VECOFF_BITS-1:0] s2_in_vecVaddrOffset;  // 收窄：仅低 11 位喂 vstart 移位
   logic [MASK_BITS-1:0]  s2_in_vecTriggerMask;
   logic                  s2_in_vecActive, s2_in_isLoadReplay, s2_in_isFastReplay, s2_in_isFirstIssue;
-  logic                  s2_in_hasROBEntry, s2_in_forward_tlD, s2_in_delayedLoadError;
+  logic                  s2_in_hasROBEntry, s2_in_delayedLoadError;
+  // 注: golden s2_in_r_forward_tlDchannel 仅喂 perf-probe(_GEN_63), 综合锥内零读;
+  // impl 无该 probe → 不寄存该 s2 副本(避免 impl-only 死寄存器), 归 golden-only dead-ref。
   logic [6:0]            s2_in_schedIndex;
   logic                  s2_in_frm_mabuf, s2_in_isMisalign, s2_in_isFinalSplit;
   logic                  s2_in_misalignWith16Byte, s2_in_misalignNeedWakeUp;
@@ -1996,10 +2026,11 @@ module xs_LoadUnit_core(
     for (int b = 0; b < MASK_BITS; b++)
       if (s1_in_mask[b]) begin s1_mask_lsb_off = 4'(b); break; end
   end
-  logic [VADDR_BITS-1:0] s1_vecVaddrOffset;
+  // 仅需低 VECOFF_BITS 位（减法借位只向高位传播，高位差值不影响 vstart）。
+  logic [VECOFF_BITS-1:0] s1_vecVaddrOffset;
   assign s1_vecVaddrOffset = s1_vecTrig
-      ? VADDR_BITS'(s1_trigger_vaddr - s1_in_vecBaseVaddr)
-      : VADDR_BITS'((s1_in_vaddr + {{(VADDR_BITS-4){1'b0}}, s1_mask_lsb_off}) - s1_in_vecBaseVaddr);
+      ? VECOFF_BITS'(s1_trigger_vaddr[VECOFF_BITS-1:0] - s1_in_vecBaseVaddr)
+      : VECOFF_BITS'((s1_in_vaddr[VECOFF_BITS-1:0] + {{(VECOFF_BITS-4){1'b0}}, s1_mask_lsb_off}) - s1_in_vecBaseVaddr);
   // 进 s2 的 24 位 exceptionVec：位 3/4/5/13/19/21 在 s1->s2 边界用 s1 重算的异常覆盖，
   // 其余位从 s1_in_excVec 透传（与 golden s2_in_r_uop_exceptionVec_* 加载一致）。
   logic [23:0] s1_excVec_s2in;
@@ -2054,7 +2085,7 @@ module xs_LoadUnit_core(
     s2_in_vecActive    <= s1_in_vecActive;
     s2_in_isLoadReplay <= s1_in_isLoadReplay; s2_in_isFastReplay <= s1_in_isFastReplay;
     s2_in_isFirstIssue <= s1_in_first_issue;  s2_in_hasROBEntry <= s1_in_has_rob;
-    s2_in_forward_tlD  <= s1_in_forward_tlD;  s2_in_delayedLoadError <= s1_dly_err;
+    s2_in_delayedLoadError <= s1_dly_err;
     s2_in_schedIndex   <= s1_in_schedIndex;
     s2_in_frm_mabuf    <= s1_in_frm_mabuf;
     s2_in_isMisalign   <= ~s1_dly_err & ~s1_lam_clear & s1_in_isMisalign;
@@ -2264,7 +2295,7 @@ module xs_LoadUnit_core(
       s2_merged_byte[1], s2_merged_byte[0]};
 
   // ---- S2 vstart 输出（vec 非 replay 路径用 vecVaddrOffset>>veew）------------
-  logic [VADDR_BITS-1:0] s2_vstart_shift;
+  logic [VECOFF_BITS-1:0] s2_vstart_shift;
   assign s2_vstart_shift = s2_in_vecVaddrOffset >> s2_in_veew;
   logic [7:0] s2_out_vstart;
   assign s2_out_vstart = (s2_in_isLoadReplay | s2_in_isFastReplay) ? s2_in_vstart : s2_vstart_shift[7:0];
@@ -2434,6 +2465,9 @@ module xs_LoadUnit_core(
   logic                  s3_in_rep_info_addr_inv_sq_idx_flag; logic [5:0] s3_in_rep_info_addr_inv_sq_idx_value;
   logic                  s3_in_rep_info_last_beat;
   logic                  s3_in_cause [CAUSE_NUM];
+  // C_WF/C_MF 在 s3 恒 0 且零读：连续赋值常量（非寄存器），其余槽为 s2_fire 流水寄存器。
+  assign s3_in_cause[C_WF] = 1'b0;
+  assign s3_in_cause[C_MF] = 1'b0;
   logic [3:0]            s3_in_rep_info_tlb_id; logic s3_in_rep_info_tlb_full;
   logic                  s3_nc_with_data;
   logic [127:0]          s3_merged_data;
@@ -2537,7 +2571,8 @@ module xs_LoadUnit_core(
       s3_in_cause[C_MA] <= s2_cause[C_MA]; s3_in_cause[C_TM] <= s2_cause[C_TM]; s3_in_cause[C_FF] <= s2_cause[C_FF];
       s3_in_cause[C_DR] <= s2_cause[C_DR]; s3_in_cause[C_DM] <= s2_cause[C_DM]; s3_in_cause[C_BC] <= s2_cause[C_BC];
       s3_in_cause[C_RAR] <= s2_cause[C_RAR]; s3_in_cause[C_RAW] <= s2_cause[C_RAW]; s3_in_cause[C_NK] <= s2_cause[C_NK];
-      s3_in_cause[C_WF] <= 1'b0; s3_in_cause[C_MF] <= 1'b0;
+      // C_WF(5)/C_MF(10) 常 0 且 s3 级零读（重放选择器不查这两位）→ 见下方常量 assign，
+      // 与 golden 无 s3_in_rep_info_cause_{5,10} 寄存器对齐（不作为死寄存器存储）。
       s3_in_rep_info_tlb_id <= io_tlb_hint_id; s3_in_rep_info_tlb_full <= io_tlb_hint_full;
       s3_vec_alignedType <= s2_in_alignedType; s3_vec_mBIndex <= s2_in_mbIndex;
       s3_safe_wakeup <= s2_safe_wakeup;
@@ -2931,7 +2966,15 @@ module xs_LoadUnit_core(
   assign io_prefetch_train_l1_bits_isFirstIssue = pf_tr1_isFirstIssue;
   assign io_prefetch_train_l1_bits_meta_prefetch = pf_tr1_meta;
   assign io_s2_prefetch_spec = s2_prefetch_train_valid;
-  assign io_s2_ptr_chasing = 1'b0;  // l2l 关闭：恒 0
+  // l2l 关闭：golden 仍保留 s2 输出寄存器 io_s2_ptr_chasing_r（其源 s1_try_ptr_chasing_last
+  // 在本配置恒 0）。为与 golden 逐拍结构一致（bug-for-bug，避免多一个 golden-only 比较点），
+  // 本核也保留同名常 0 异步复位寄存器，而非组合硬编码 0。
+  reg io_s2_ptr_chasing_r;
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) io_s2_ptr_chasing_r <= 1'b0;
+    else       io_s2_ptr_chasing_r <= 1'b0;
+  end
+  assign io_s2_ptr_chasing = io_s2_ptr_chasing_r;
 
   // ---- ldCancel（s3 不安全唤醒且非 vec）----
   assign io_ldCancel_ld2Cancel = s3_valid_REG & ~s3_safe_wakeup & ~s3_isvec;

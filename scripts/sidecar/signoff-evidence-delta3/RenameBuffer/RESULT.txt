@@ -1,0 +1,4 @@
+SIGNOFF_RESULT RenameBuffer: measured=PARTIAL required=SUCCEEDED gate=GAP (proof=signoff-strict fm_shell_rc=0 validator_rc=1)
+run_id: SGN-RenameBuffer-1784605038
+impl_commit: 1b2b93adeb220e9ba98af7370ee75f4f035d2346
+manifest_sha256: 256902c1d5e6231aaca309d5ce237fd4f40dbd6fa56cb92be0c6f4918da0eb96

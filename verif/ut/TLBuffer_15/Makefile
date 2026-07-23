@@ -16,8 +16,13 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/TLBuffer_15.sv \
               $(GOLDEN_RTL)/ram_2x131.sv \
               $(GOLDEN_RTL)/ram_2x76.sv
 
+# INLINE(裁定option2): 消Queue2黑盒桩, 两侧链真实golden Queue2+全部ram, strict整体证
 WRAPPER_SRCS = $(RTL_DIR)/memblock/TLBuffer_15_wrapper.sv \
-               $(RTL_DIR)/memblock/tlbuffer15_queue_blackbox.sv
+               $(GOLDEN_RTL)/Queue2_TLBundleA_12.sv \
+               $(GOLDEN_RTL)/Queue2_TLBundleD_13.sv \
+               $(GOLDEN_RTL)/ram_2x131.sv \
+               $(GOLDEN_RTL)/ram_2x76.sv
+FM_REF_DEPS_TLBuffer_15 = Queue2_TLBundleA_12.sv Queue2_TLBundleD_13.sv ram_2x131.sv ram_2x76.sv
 FM_VARIANTS = TLBuffer_15
 # FM: ref = golden TLBuffer_15.sv (Queue 自动黑盒); impl = pkg + 可读核 + wrapper + 黑盒声明。
 

@@ -1,0 +1,167 @@
+{
+    "unresolved_blackbox": [
+        {
+            "id": "dataArrays_0_0",
+            "ref_path": "r:/WORK/ICacheDataArray/dataArrays_0_0/srams_0/array/array/array_0_ext",
+            "impl_path": "i:/WORK/ICacheDataArray/dataArrays_0_0/srams_0/array/array/array_0_ext"
+        },
+        {
+            "id": "dataArrays_0_1",
+            "ref_path": "r:/WORK/ICacheDataArray/dataArrays_0_1/srams_0/array/array/array_0_ext",
+            "impl_path": "i:/WORK/ICacheDataArray/dataArrays_0_1/srams_0/array/array/array_0_ext"
+        },
+        {
+            "id": "dataArrays_0_2",
+            "ref_path": "r:/WORK/ICacheDataArray/dataArrays_0_2/srams_0/array/array/array_0_ext",
+            "impl_path": "i:/WORK/ICacheDataArray/dataArrays_0_2/srams_0/array/array/array_0_ext"
+        },
+        {
+            "id": "dataArrays_0_3",
+            "ref_path": "r:/WORK/ICacheDataArray/dataArrays_0_3/srams_0/array/array/array_0_ext",
+            "impl_path": "i:/WORK/ICacheDataArray/dataArrays_0_3/srams_0/array/array/array_0_ext"
+        },
+        {
+            "id": "dataArrays_0_4",
+            "ref_path": "r:/WORK/ICacheDataArray/dataArrays_0_4/srams_0/array/array/array_0_ext",
+            "impl_path": "i:/WORK/ICacheDataArray/dataArrays_0_4/srams_0/array/array/array_0_ext"
+        },
+        {
+            "id": "dataArrays_0_5",
+            "ref_path": "r:/WORK/ICacheDataArray/dataArrays_0_5/srams_0/array/array/array_0_ext",
+            "impl_path": "i:/WORK/ICacheDataArray/dataArrays_0_5/srams_0/array/array/array_0_ext"
+        },
+        {
+            "id": "dataArrays_0_6",
+            "ref_path": "r:/WORK/ICacheDataArray/dataArrays_0_6/srams_0/array/array/array_0_ext",
+            "impl_path": "i:/WORK/ICacheDataArray/dataArrays_0_6/srams_0/array/array/array_0_ext"
+        },
+        {
+            "id": "dataArrays_0_7",
+            "ref_path": "r:/WORK/ICacheDataArray/dataArrays_0_7/srams_0/array/array/array_0_ext",
+            "impl_path": "i:/WORK/ICacheDataArray/dataArrays_0_7/srams_0/array/array/array_0_ext"
+        },
+        {
+            "id": "dataArrays_1_0",
+            "ref_path": "r:/WORK/ICacheDataArray/dataArrays_1_0/srams_0/array/array/array_0_ext",
+            "impl_path": "i:/WORK/ICacheDataArray/dataArrays_1_0/srams_0/array/array/array_0_ext"
+        },
+        {
+            "id": "dataArrays_1_1",
+            "ref_path": "r:/WORK/ICacheDataArray/dataArrays_1_1/srams_0/array/array/array_0_ext",
+            "impl_path": "i:/WORK/ICacheDataArray/dataArrays_1_1/srams_0/array/array/array_0_ext"
+        },
+        {
+            "id": "dataArrays_1_2",
+            "ref_path": "r:/WORK/ICacheDataArray/dataArrays_1_2/srams_0/array/array/array_0_ext",
+            "impl_path": "i:/WORK/ICacheDataArray/dataArrays_1_2/srams_0/array/array/array_0_ext"
+        },
+        {
+            "id": "dataArrays_1_3",
+            "ref_path": "r:/WORK/ICacheDataArray/dataArrays_1_3/srams_0/array/array/array_0_ext",
+            "impl_path": "i:/WORK/ICacheDataArray/dataArrays_1_3/srams_0/array/array/array_0_ext"
+        },
+        {
+            "id": "dataArrays_1_4",
+            "ref_path": "r:/WORK/ICacheDataArray/dataArrays_1_4/srams_0/array/array/array_0_ext",
+            "impl_path": "i:/WORK/ICacheDataArray/dataArrays_1_4/srams_0/array/array/array_0_ext"
+        },
+        {
+            "id": "dataArrays_1_5",
+            "ref_path": "r:/WORK/ICacheDataArray/dataArrays_1_5/srams_0/array/array/array_0_ext",
+            "impl_path": "i:/WORK/ICacheDataArray/dataArrays_1_5/srams_0/array/array/array_0_ext"
+        },
+        {
+            "id": "dataArrays_1_6",
+            "ref_path": "r:/WORK/ICacheDataArray/dataArrays_1_6/srams_0/array/array/array_0_ext",
+            "impl_path": "i:/WORK/ICacheDataArray/dataArrays_1_6/srams_0/array/array/array_0_ext"
+        },
+        {
+            "id": "dataArrays_1_7",
+            "ref_path": "r:/WORK/ICacheDataArray/dataArrays_1_7/srams_0/array/array/array_0_ext",
+            "impl_path": "i:/WORK/ICacheDataArray/dataArrays_1_7/srams_0/array/array/array_0_ext"
+        },
+        {
+            "id": "dataArrays_2_0",
+            "ref_path": "r:/WORK/ICacheDataArray/dataArrays_2_0/srams_0/array/array/array_0_ext",
+            "impl_path": "i:/WORK/ICacheDataArray/dataArrays_2_0/srams_0/array/array/array_0_ext"
+        },
+        {
+            "id": "dataArrays_2_1",
+            "ref_path": "r:/WORK/ICacheDataArray/dataArrays_2_1/srams_0/array/array/array_0_ext",
+            "impl_path": "i:/WORK/ICacheDataArray/dataArrays_2_1/srams_0/array/array/array_0_ext"
+        },
+        {
+            "id": "dataArrays_2_2",
+            "ref_path": "r:/WORK/ICacheDataArray/dataArrays_2_2/srams_0/array/array/array_0_ext",
+            "impl_path": "i:/WORK/ICacheDataArray/dataArrays_2_2/srams_0/array/array/array_0_ext"
+        },
+        {
+            "id": "dataArrays_2_3",
+            "ref_path": "r:/WORK/ICacheDataArray/dataArrays_2_3/srams_0/array/array/array_0_ext",
+            "impl_path": "i:/WORK/ICacheDataArray/dataArrays_2_3/srams_0/array/array/array_0_ext"
+        },
+        {
+            "id": "dataArrays_2_4",
+            "ref_path": "r:/WORK/ICacheDataArray/dataArrays_2_4/srams_0/array/array/array_0_ext",
+            "impl_path": "i:/WORK/ICacheDataArray/dataArrays_2_4/srams_0/array/array/array_0_ext"
+        },
+        {
+            "id": "dataArrays_2_5",
+            "ref_path": "r:/WORK/ICacheDataArray/dataArrays_2_5/srams_0/array/array/array_0_ext",
+            "impl_path": "i:/WORK/ICacheDataArray/dataArrays_2_5/srams_0/array/array/array_0_ext"
+        },
+        {
+            "id": "dataArrays_2_6",
+            "ref_path": "r:/WORK/ICacheDataArray/dataArrays_2_6/srams_0/array/array/array_0_ext",
+            "impl_path": "i:/WORK/ICacheDataArray/dataArrays_2_6/srams_0/array/array/array_0_ext"
+        },
+        {
+            "id": "dataArrays_2_7",
+            "ref_path": "r:/WORK/ICacheDataArray/dataArrays_2_7/srams_0/array/array/array_0_ext",
+            "impl_path": "i:/WORK/ICacheDataArray/dataArrays_2_7/srams_0/array/array/array_0_ext"
+        },
+        {
+            "id": "dataArrays_3_0",
+            "ref_path": "r:/WORK/ICacheDataArray/dataArrays_3_0/srams_0/array/array/array_0_ext",
+            "impl_path": "i:/WORK/ICacheDataArray/dataArrays_3_0/srams_0/array/array/array_0_ext"
+        },
+        {
+            "id": "dataArrays_3_1",
+            "ref_path": "r:/WORK/ICacheDataArray/dataArrays_3_1/srams_0/array/array/array_0_ext",
+            "impl_path": "i:/WORK/ICacheDataArray/dataArrays_3_1/srams_0/array/array/array_0_ext"
+        },
+        {
+            "id": "dataArrays_3_2",
+            "ref_path": "r:/WORK/ICacheDataArray/dataArrays_3_2/srams_0/array/array/array_0_ext",
+            "impl_path": "i:/WORK/ICacheDataArray/dataArrays_3_2/srams_0/array/array/array_0_ext"
+        },
+        {
+            "id": "dataArrays_3_3",
+            "ref_path": "r:/WORK/ICacheDataArray/dataArrays_3_3/srams_0/array/array/array_0_ext",
+            "impl_path": "i:/WORK/ICacheDataArray/dataArrays_3_3/srams_0/array/array/array_0_ext"
+        },
+        {
+            "id": "dataArrays_3_4",
+            "ref_path": "r:/WORK/ICacheDataArray/dataArrays_3_4/srams_0/array/array/array_0_ext",
+            "impl_path": "i:/WORK/ICacheDataArray/dataArrays_3_4/srams_0/array/array/array_0_ext"
+        },
+        {
+            "id": "dataArrays_3_5",
+            "ref_path": "r:/WORK/ICacheDataArray/dataArrays_3_5/srams_0/array/array/array_0_ext",
+            "impl_path": "i:/WORK/ICacheDataArray/dataArrays_3_5/srams_0/array/array/array_0_ext"
+        },
+        {
+            "id": "dataArrays_3_6",
+            "ref_path": "r:/WORK/ICacheDataArray/dataArrays_3_6/srams_0/array/array/array_0_ext",
+            "impl_path": "i:/WORK/ICacheDataArray/dataArrays_3_6/srams_0/array/array/array_0_ext"
+        },
+        {
+            "id": "dataArrays_3_7",
+            "ref_path": "r:/WORK/ICacheDataArray/dataArrays_3_7/srams_0/array/array/array_0_ext",
+            "impl_path": "i:/WORK/ICacheDataArray/dataArrays_3_7/srams_0/array/array/array_0_ext"
+        }
+    ],
+    "interface_only": [],
+    "empty_blackbox": [],
+    "unmatched": []
+}

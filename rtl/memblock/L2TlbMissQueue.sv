@@ -33,8 +33,26 @@ module xs_L2TlbMissQueue_core
   output l2tlb_mq_bundle_t  deq_bits
 );
 
-  // 队列存储（组合读、时序写，等价 golden 的 ram_40x47）。
-  l2tlb_mq_bundle_t mem [QUEUE_SIZE-1:0];
+  // 队列存储：实例化与 golden 完全相同的 ram_40x47 厂商 RAM 叶子（40 深 × 47 位，
+  // 组合读端口 R0 + 时序写端口 W0）。
+  //
+  // 为什么用 ram_40x47 而不是 inline `mem [39:0]`：
+  //   golden 的 ram_40x47 用 6 位地址寻址 40 深数组（0..39 环回，指针可证不越界），
+  //   但 Formality 静态 elaboration 无法证明 6 位地址 ≤ 39，会对 golden 的组合读
+  //   `Memory[R0_addr]` 抛 FMR_ELAB-147（“Index may take values outside array bound”），
+  //   在 link 阶段升级为 unsuppressed error → golden set_top 失败 → 整个 SEC 中止。
+  //   inline `mem [39:0]` 的组合读 `mem[deq_ptr]` 同样会触发 ELAB-147（本核旧版
+  //   L2TlbMissQueue.sv:53 实证）。
+  //   把存储折叠成与 golden 同名的 ram_40x47 厂商 RAM 叶子后，双侧都不提供其 body，
+  //   经 hdlin_unresolved_modules=black_box 成为**对称匹配黑盒**（同 array_ext 厂商叶子
+  //   方法学）：RAM 阵列不 elaborate → 无 ELAB-147；两侧同名同端口 → matched blackbox；
+  //   环形指针/满空/flush 控制逻辑仍为可读 RTL、照常参与等价比对。
+  //
+  // W0_data / R0_data 位布局与 golden 逐位一致（见 Queue40_L2TlbMQBundle.sv ram_ext）：
+  //   [46:44]=hptwId(=0) [43]=isLLptw [42]=isHptwReq(=0) [41:40]=source
+  //   [39:38]=s2xlate    [37:0]=vpn
+  localparam int RAM_W = VPN_W + 2 /*s2xlate*/ + SOURCE_W + 1 /*isHptwReq*/
+                       + 1 /*isLLptw*/ + HPTWID_W;  // = 47
 
   logic [PTR_W-1:0] enq_ptr;
   logic [PTR_W-1:0] deq_ptr;
@@ -50,18 +68,39 @@ module xs_L2TlbMissQueue_core
 
   assign enq_ready = !full;
   assign deq_valid = !empty;
-  assign deq_bits  = mem[deq_ptr];
+
+  // 入队 payload 打包成 golden ram_40x47 的 47 位布局。
+  wire [RAM_W-1:0] ram_w0_data = { enq_bits.hptw_id,      // [46:44]
+                                   enq_bits.is_llptw,     // [43]
+                                   enq_bits.is_hptw_req,  // [42]
+                                   enq_bits.source,       // [41:40]
+                                   enq_bits.s2xlate,      // [39:38]
+                                   enq_bits.vpn };        // [37:0]
+  wire [RAM_W-1:0] ram_r0_data;
+
+  ram_40x47 mem_ext (
+    .R0_addr (deq_ptr),
+    .R0_en   (1'b1),
+    .R0_clk  (clock),
+    .R0_data (ram_r0_data),
+    .W0_addr (enq_ptr),
+    .W0_en   (do_enq),
+    .W0_clk  (clock),
+    .W0_data (ram_w0_data)
+  );
+
+  // 出队 payload 从 47 位布局解包回结构。
+  assign deq_bits.hptw_id     = ram_r0_data[46:44];
+  assign deq_bits.is_llptw    = ram_r0_data[43];
+  assign deq_bits.is_hptw_req = ram_r0_data[42];
+  assign deq_bits.source      = ram_r0_data[41:40];
+  assign deq_bits.s2xlate     = ram_r0_data[39:38];
+  assign deq_bits.vpn         = ram_r0_data[37:0];
 
   // 指针环回辅助：到队尾（QUEUE_SIZE-1）则回 0，否则 +1。
   function automatic logic [PTR_W-1:0] ptr_next(input logic [PTR_W-1:0] p);
     return (p == PTR_W'(QUEUE_SIZE-1)) ? '0 : p + 1'b1;
   endfunction
-
-  // 写入：do_enq 时把 enq_bits 写到 enq_ptr（同步）。
-  always_ff @(posedge clock) begin
-    if (do_enq)
-      mem[enq_ptr] <= enq_bits;
-  end
 
   // 指针与 maybe_full：flush 优先清零。
   always_ff @(posedge clock or posedge reset) begin

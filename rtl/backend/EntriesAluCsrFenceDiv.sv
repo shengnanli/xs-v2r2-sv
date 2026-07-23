@@ -35,6 +35,8 @@ module xs_EntriesAluCsrFenceDiv_core import iq_acfd_pkg::*; (
   input  logic                 flush_level,
   input  logic [NUM_ENQ-1:0]   enq_valid,
   input  entry_t [NUM_ENQ-1:0] enq_bits,
+  // 入队原始 load 依赖:仅喂 enqDelayIn1 流水(非条目状态,不入 entry_t,避免死存储)
+  input  enq_src_ld_t [NUM_ENQ-1:0] enq_src_load_dep,
 
   // ---- 唤醒(当拍 + 入队延迟 1/2)----
   input  wk_wb_t [NUM_WK_WB-1:0] wk_wb,
@@ -375,31 +377,27 @@ module xs_EntriesAluCsrFenceDiv_core import iq_acfd_pkg::*; (
   // ===========================================================================
   // 5. 例化 24 个单条目
   // ===========================================================================
-  // enq 延迟唤醒辅助寄存器(EnqEntry 的 enqDelayIn1/In2),逐 enq 端口生成
-  // (各端口的 srcLoadDependency 依赖各自 enq.bits.payload,需 RegEnable/DelayN)
+  // enq 延迟唤醒辅助寄存器(EnqEntry 的 enqDelayIn1),逐 enq 端口生成。
+  // 本变体 golden 只有单级 enqDelayIn1(无 In2),故只打 1 拍;delay2 流水整条移除
+  // (原 d2 寄存器在条目核内零消费 = impl-only 死寄存器,golden 扁平顶层亦无)。
   logic [NUM_REGSRC-1:0][LDPW-1:0][LDW-1:0] enqd1_src_ld [NUM_ENQ];
-  logic [NUM_REGSRC-1:0][LDPW-1:0][LDW-1:0] enqd2_src_ld [NUM_ENQ];
-  logic [NUM_EXU-1:0]    og0_d1, og0_d2a, og0_d2;
-  ld_cancel_t [LDPW-1:0] ld_d1, ld_d2a, ld_d2;
-  wk_wb_t [NUM_WK_WB-1:0] wkwb_d2a, wkwb_d2;
-  wk_iq_t [NUM_WK_IQ-1:0] wkiq_d2a, wkiq_d2;
+  // og0Cancel delay1:只寄存被读的 4 个 is0Lat 源 {全局EXU 0,2,4,6}(打包成 [3:0]),
+  //   对齐 golden REG_0/2/4/6;其余 og0Cancel 位在本层不被读,不寄存(消 impl-only 死位)。
+  logic [3:0]            og0_d1;
+  logic [LDPW-1:0]       ld_d1;  // 仅 ld2Cancel(ld1Cancel 全局未接,不寄存以对齐 golden delay1)
 
   always_ff @(posedge clock) begin
-    // og0Cancel / ldCancel:d1=RegNext, d2=DelayN(...,2)
-    og0_d1  <= og0cancel;  og0_d2a <= og0cancel;  og0_d2 <= og0_d2a;
-    ld_d1   <= ldcancel;   ld_d2a  <= ldcancel;   ld_d2  <= ld_d2a;
-    // wakeUpFromWB/IQ delayed-2 (d1 路用外部 wk_*_d 已经是 delayed-1)
-    wkwb_d2a <= wk_wb; wkwb_d2 <= wkwb_d2a;
-    wkiq_d2a <= wk_iq; wkiq_d2 <= wkiq_d2a;
+    // og0Cancel / ldCancel:d1=RegNext(仅 enqDelayIn1 用;og0 只取 {0,2,4,6},ldCancel 只取 ld2)
+    og0_d1[0] <= og0cancel[0];
+    og0_d1[1] <= og0cancel[2];
+    og0_d1[2] <= og0cancel[4];
+    og0_d1[3] <= og0cancel[6];
+    for (int p = 0; p < LDPW; p++) ld_d1[p] <= ldcancel[p].ld2_cancel;
   end
-  // srcLoadDependency:d1 = RegEnable(enq payload srcLoadDep, enq.valid);d2 = DelayN(...,2)(无 enable)
-  logic [NUM_REGSRC-1:0][LDPW-1:0][LDW-1:0] sld_d2a [NUM_ENQ];
+  // srcLoadDependency:d1 = RegEnable(enq srcLoadDep, enq.valid)(= golden 顶层 r_* 寄存器)
   always_ff @(posedge clock) begin
-    for (int q = 0; q < NUM_ENQ; q++) begin
-      if (enq_valid[q]) enqd1_src_ld[q] <= enq_bits[q].payload.src_load_dep;
-      sld_d2a[q]      <= enq_bits[q].payload.src_load_dep;
-      enqd2_src_ld[q] <= sld_d2a[q];
-    end
+    for (int q = 0; q < NUM_ENQ; q++)
+      if (enq_valid[q]) enqd1_src_ld[q] <= enq_src_load_dep[q];
   end
 
   genvar e;
@@ -429,11 +427,6 @@ module xs_EntriesAluCsrFenceDiv_core import iq_acfd_pkg::*; (
         .enqd1_src_ld   (enqd1_src_ld[Q]),
         .enqd1_og0cancel(og0_d1),
         .enqd1_ldcancel (ld_d1),
-        .wk_wb_d2       (wkwb_d2),
-        .wk_iq_d2       (wkiq_d2),
-        .enqd2_src_ld   (enqd2_src_ld[Q]),
-        .enqd2_og0cancel(og0_d2),
-        .enqd2_ldcancel (ld_d2),
         .og0cancel      (og0cancel),
         .og1cancel      (og1cancel),
         .ldcancel       (ldcancel),

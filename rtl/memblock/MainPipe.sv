@@ -525,19 +525,48 @@ module xs_MainPipe_core
   // ===========================================================================
   //  S1：命中判定 + 替换 way 选择 + 发 Data 读
   // ===========================================================================
-  mainpipe_req_t        s1_req;
+  // golden 的 s1_req 不携带 miss_param / miss_dirty（refill 新状态在 s3 直接从
+  //   io_refill_info 取，见 s3_miss_param；这两字段在 s0 也无源、恒 0 且从不读）。
+  //   同 s2/s3：拆成寄存的 live 子集 s1_req_r + 组合别名 s1_req（死字段接常量）。
+  mainpipe_req_t        s1_req_r;   // 仅 live 字段被驱动
+  mainpipe_req_t        s1_req;     // 组合别名：live 字段透传 s1_req_r，死字段接常量
+  always_comb begin
+    s1_req              = s1_req_r;
+    s1_req.miss_param   = '0;
+    s1_req.miss_dirty   = 1'b0;
+  end
   logic [N_BANKS-1:0]   s1_banked_rmask, s1_banked_store_wmask;
   logic                 s1_need_data, s1_need_tag;
-  logic [WAY_BITS-1:0]  s1_dmway;
 
   always_ff @(posedge clock) begin
     if (s0_fire) begin
-      s1_req                <= s0_req;
+      // 仅寄存 live 字段（golden s1 丢弃的 miss_param/miss_dirty 不进寄存器）：
+      s1_req_r.miss        <= s0_req.miss;
+      s1_req_r.miss_id     <= s0_req.miss_id;
+      s1_req_r.occupy_way  <= s0_req.occupy_way;
+      s1_req_r.miss_fail_cause_evict_btot <= s0_req.miss_fail_cause_evict_btot;
+      s1_req_r.probe       <= s0_req.probe;
+      s1_req_r.probe_param <= s0_req.probe_param;
+      s1_req_r.probe_need_data <= s0_req.probe_need_data;
+      s1_req_r.source      <= s0_req.source;
+      s1_req_r.cmd         <= s0_req.cmd;
+      s1_req_r.vaddr       <= s0_req.vaddr;
+      s1_req_r.addr        <= s0_req.addr;
+      s1_req_r.store_data  <= s0_req.store_data;
+      s1_req_r.store_mask  <= s0_req.store_mask;
+      s1_req_r.word_idx    <= s0_req.word_idx;
+      s1_req_r.amo_data    <= s0_req.amo_data;
+      s1_req_r.amo_mask    <= s0_req.amo_mask;
+      s1_req_r.amo_cmp     <= s0_req.amo_cmp;
+      s1_req_r.error       <= s0_req.error;
+      s1_req_r.replace     <= s0_req.replace;
+      s1_req_r.pf_source   <= s0_req.pf_source;
+      s1_req_r.access      <= s0_req.access;
+      s1_req_r.id          <= s0_req.id;
       s1_need_data          <= banked_need_data;
       s1_banked_rmask       <= s0_banked_rmask;
       s1_banked_store_wmask <= banked_store_wmask;
       s1_need_tag           <= s0_need_tag;
-      s1_dmway              <= direct_map_way(s0_req.vaddr);
     end
   end
   assign s1_idx = get_idx(s1_req.vaddr);
@@ -699,14 +728,29 @@ module xs_MainPipe_core
   // ===========================================================================
   //  S2：选数据 + 分流（命中→s3 / miss→MissQueue / evict 冲突→replay）
   // ===========================================================================
-  mainpipe_req_t s2_req;
+  // golden 的 s2_req 不携带 occupy_way / miss_fail_cause_evict_btot / miss_param /
+  //   miss_dirty（仅在 s1 replace-way 选择处被消费，s2 起从不读）。同 s3：拆成寄存的
+  //   live 子集 s2_req_r + 组合别名 s2_req（死字段接常量），使死字段被裁而非在 impl 侧多存。
+  mainpipe_req_t s2_req_r;   // 仅 live 字段被驱动
+  mainpipe_req_t s2_req;     // 组合别名：live 字段透传 s2_req_r，死字段接常量
+  always_comb begin
+    s2_req                            = s2_req_r;
+    s2_req.occupy_way                 = '0;
+    s2_req.miss_fail_cause_evict_btot = 1'b0;
+    s2_req.miss_param                 = '0;
+    s2_req.miss_dirty                 = 1'b0;
+  end
   logic [N_WAYS-1:0] s2_tag_errors, s2_tag_ecc_match_way, s2_way_en;
   logic s2_tag_match, s2_has_real_tag_eq, s2_has_permission, s2_grow_perm_r;
   logic s2_need_replacement, s2_need_eviction, s2_need_data, s2_need_tag;
   logic s2_isStore, s2_has_pseudo_inj, s2_flag_error;
   coh_e s2_hit_coh, s2_new_hit_coh, s2_repl_coh, s2_coh_r;
   logic [TAG_BITS-1:0] s2_repl_tag, s2_tag_r;
+  // s2_repl_pf 只有 [2:1] 被读（is_from_l1_prefetch = |s[2:1]），bit0 从不读——仅寄存
+  //   [2:1]，bit0 恒 0。golden 存全宽但同样只读 [2:1]→golden 侧 bit0 cone-dead。
+  logic [PF_SRC_BITS-1:1] s2_repl_pf_r;
   logic [PF_SRC_BITS-1:0] s2_repl_pf;
+  always_comb begin s2_repl_pf = '0; s2_repl_pf[PF_SRC_BITS-1:1] = s2_repl_pf_r; end
   logic [ENC_TAG_BITS-1:0] s2_real_enctag;
   logic [N_BANKS-1:0] s2_banked_store_wmask;
   logic s2_can_go_to_mq; // = RegEnable(s1_pregen_can_go_to_mq, s1_fire)
@@ -719,7 +763,27 @@ module xs_MainPipe_core
   always_ff @(posedge clock or posedge reset) if (reset) s2_has_pseudo_inj <= 1'b0;
                             else if (s1_fire) s2_has_pseudo_inj <= io_pseudo_error_valid;
   always_ff @(posedge clock) if (s1_fire) begin
-    s2_req               <= s1_req;
+    // 仅寄存 live 字段（golden s2 丢弃的 4 个字段不进寄存器）：
+    s2_req_r.miss        <= s1_req.miss;
+    s2_req_r.miss_id     <= s1_req.miss_id;
+    s2_req_r.probe       <= s1_req.probe;
+    s2_req_r.probe_param <= s1_req.probe_param;
+    s2_req_r.probe_need_data <= s1_req.probe_need_data;
+    s2_req_r.source      <= s1_req.source;
+    s2_req_r.cmd         <= s1_req.cmd;
+    s2_req_r.vaddr       <= s1_req.vaddr;
+    s2_req_r.addr        <= s1_req.addr;
+    s2_req_r.store_data  <= s1_req.store_data;
+    s2_req_r.store_mask  <= s1_req.store_mask;
+    s2_req_r.word_idx    <= s1_req.word_idx;
+    s2_req_r.amo_data    <= s1_req.amo_data;
+    s2_req_r.amo_mask    <= s1_req.amo_mask;
+    s2_req_r.amo_cmp     <= s1_req.amo_cmp;
+    s2_req_r.error       <= s1_req.error;
+    s2_req_r.replace     <= s1_req.replace;
+    s2_req_r.pf_source   <= s1_req.pf_source;
+    s2_req_r.access      <= s1_req.access;
+    s2_req_r.id          <= s1_req.id;
     s2_tag_errors        <= s1_tag_errors;
     s2_tag_match         <= s1_tag_match;
     s2_has_real_tag_eq   <= s1_has_real_tag_eq;
@@ -730,7 +794,7 @@ module xs_MainPipe_core
     s2_grow_perm_r       <= s1_grow_perm;
     s2_repl_tag          <= s1_repl_tag;
     s2_repl_coh          <= s1_repl_coh;
-    s2_repl_pf           <= s1_repl_pf;
+    s2_repl_pf_r         <= s1_repl_pf[PF_SRC_BITS-1:1]; // bit0 不寄存（s2 只读 [2:1]）
     s2_real_enctag       <= s1_real_enctag;
     s2_need_replacement  <= s1_need_replacement;
     s2_need_eviction     <= s1_need_eviction;
@@ -833,7 +897,32 @@ module xs_MainPipe_core
   // ===========================================================================
   //  S3：合并 cache 旧数据 / AMOALU 结果，落盘 Data/Meta/Tag，写回，维护 LR/SC
   // ===========================================================================
-  mainpipe_req_t s3_req;
+  // s3 流水 payload：golden 的 s3_req 只寄存被 s3 读取的字段，其余字段（store_data /
+  //   store_mask / occupy_way / miss_fail_cause_evict_btot / miss_param / miss_dirty /
+  //   error）在 s2→s3 边界即被丢弃（不进 s3 寄存器）：
+  //     * store_data/store_mask 已合并进 s3_store_data_merged_nc；
+  //     * miss_param/miss_dirty 由 io_refill_info 直接取（s3_miss_param）；
+  //     * error 上报走独立 s3_error_beu_r/s3_error_wb_r；
+  //     * occupy_way/miss_fail_cause_evict_btot 只在 s1 用。
+  //   因此把 s3_req 拆成「寄存的 live 子集 s3_req_r」+「组合别名 s3_req（死字段接常量）」，
+  //   使死字段成为常量网被裁掉——与 golden 逐寄存器一致，不在 impl 侧多存死位。
+  mainpipe_req_t s3_req_r;   // 仅 live 字段被驱动
+  mainpipe_req_t s3_req;     // 组合别名：live 字段透传 s3_req_r，死字段接常量
+  always_comb begin
+    s3_req                          = s3_req_r;
+    s3_req.store_data               = '0;
+    s3_req.store_mask               = '0;
+    s3_req.occupy_way               = '0;
+    s3_req.miss_fail_cause_evict_btot = 1'b0;
+    s3_req.miss_param               = '0;
+    s3_req.miss_dirty               = 1'b0;
+    s3_req.error                    = 1'b0;
+    // s3 只用 addr[47:6]（block 对齐）与 vaddr[47:0]；addr[5:0] 与 vaddr[49:48] 从不读——
+    //   不寄存这些位（仅存 live 切片），死位接常量。golden 存全宽但同样不读→对应位在
+    //   golden 侧成 cone-dead（PASS_DEAD_REF），impl 侧保持 clean。
+    s3_req.addr[5:0]                = '0;
+    s3_req.vaddr[49:48]             = '0;
+  end
   logic [1:0] s3_miss_param;
   // miss_dirty 在本配置无端口（refill_info 不带），恒 false：refill 新状态只取决于
   // cmd 类别 + grant param（见 miss_coh_gen 的 dirty=0 路径）。
@@ -847,7 +936,24 @@ module xs_MainPipe_core
   logic [ROW_BYTES-1:0] s3_merge_mask_inv [N_BANKS]; // = ~s2_merge_mask（合 cache 旧数据用）
 
   always_ff @(posedge clock) if (s2_fire_to_s3) begin
-    s3_req           <= s2_req;
+    // 仅寄存 live 字段（死字段不进寄存器）：
+    s3_req_r.miss        <= s2_req.miss;
+    s3_req_r.miss_id     <= s2_req.miss_id;
+    s3_req_r.probe       <= s2_req.probe;
+    s3_req_r.probe_param <= s2_req.probe_param;
+    s3_req_r.probe_need_data <= s2_req.probe_need_data;
+    s3_req_r.source      <= s2_req.source;
+    s3_req_r.cmd         <= s2_req.cmd;
+    s3_req_r.vaddr[47:0] <= s2_req.vaddr[47:0]; // vaddr[49:48] 不寄存（s3 从不读）
+    s3_req_r.addr[47:6]  <= s2_req.addr[47:6];  // addr[5:0] 不寄存（s3 只用 block 对齐）
+    s3_req_r.word_idx    <= s2_req.word_idx;
+    s3_req_r.amo_data    <= s2_req.amo_data;
+    s3_req_r.amo_mask    <= s2_req.amo_mask;
+    s3_req_r.amo_cmp     <= s2_req.amo_cmp;
+    s3_req_r.replace     <= s2_req.replace;
+    s3_req_r.pf_source   <= s2_req.pf_source;
+    s3_req_r.access      <= s2_req.access;
+    s3_req_r.id          <= s2_req.id;
     s3_miss_param    <= io_refill_info_bits_miss_param;
     s3_tag           <= s2_tag;
     s3_tag_match     <= s2_tag_match;
@@ -1032,8 +1138,11 @@ module xs_MainPipe_core
 
   // ---- s3 error 上报寄存器（beu / wb 两条路径）----
   logic s3_tag_error_beu, s3_tag_error_wb, s3_data_error_beu_r, s3_data_error_wb_r;
-  logic s3_l2_error_wb, s3_flag_error_beu, s3_l2_error_beu;
-  logic s3_error_beu_r, s3_error_wb_r; logic [PADDR_BITS-1:0] s3_error_paddr_beu_r;
+  logic s3_l2_error_wb;
+  logic s3_error_beu_r, s3_error_wb_r;
+  // s3_error_paddr_beu_r 只有 [47:6] 被读（io_error_bits_paddr 块对齐输出把 [5:0] 清零）——
+  //   仅寄存 [47:6]，[5:0] 恒 0。golden 存全宽但同样只读 [47:6]→golden 侧 [5:0] cone-dead。
+  logic [PADDR_BITS-1:6] s3_error_paddr_beu_r;
   // 仅 s3_error_beu_r / s3_error_wb_r 两个汇总位 golden 异步复位；其余 beu/wb 明细位
   //   （tag/data/l2/flag/paddr）golden 无复位——须放独立无复位块，否则 FM 判 reset 锥不对称失配。
   always_ff @(posedge clock or posedge reset) begin
@@ -1050,10 +1159,11 @@ module xs_MainPipe_core
     if (s2_fire) begin
       s3_tag_error_beu    <= s2_tag_error;
       s3_data_error_beu_r <= s2_may_report_data_error;
-      s3_l2_error_beu     <= s2_l2_error;
-      s3_flag_error_beu   <= s2_flag_error;
-      // golden: s3_error_paddr_beu_r <= {s2_tag, s2_req_vaddr[11:0]}（保留低 6 位；输出再清零）。
-      s3_error_paddr_beu_r<= {s2_tag, s2_req.vaddr[11:0]};
+      // 注：golden beu 路径只用 tag/data 两个 error 位（见 io_error 输出装配），
+      //   不在 s3 保留 l2/flag error beu 副本——故此处不寄存 s3_l2_error_beu/s3_flag_error_beu。
+      // golden: s3_error_paddr_beu_r <= {s2_tag, s2_req_vaddr[11:0]}；仅 [47:6] 有用，
+      //   [5:0](=vaddr[5:0]) 输出侧被清零→不寄存，只存 [47:6]={s2_tag, s2_req.vaddr[11:6]}。
+      s3_error_paddr_beu_r<= {s2_tag, s2_req.vaddr[11:6]};
     end
     if (s2_fire_to_s3) begin
       s3_tag_error_wb     <= s2_tag_error;
@@ -1211,8 +1321,9 @@ module xs_MainPipe_core
   assign io_replace_access_bits_set = s3_idx;
   assign io_replace_access_bits_way = oh_to_way(s3_way_en);
 
-  logic replace_way_set_valid_q;
-  always_ff @(posedge clock or posedge reset) if (reset) replace_way_set_valid_q <= 1'b0; else replace_way_set_valid_q <= s0_fire;
+  // 注：golden 有 io_replace_way_set_valid_last_REG = RegNext(s0_fire)，但本 firtool 配置
+  //   下其唯一去向 _GEN_2 无扇出（io_replace_way_set_valid 端口被裁）——是 golden 侧冗余
+  //   死寄存器；impl 正确省略（该 set_valid 副本对功能无影响）。
   assign io_replace_way_set_bits = s1_idx;
 
   // ---- SMS evict 提示（s2 miss → s3 时发，延一拍）----
@@ -1262,7 +1373,7 @@ module xs_MainPipe_core
     report_beu_q <= s2_fire; // golden io_error_bits_report_to_beu_REG 无复位
   assign io_error_valid = s3_error_beu && error_valid_gate_q;
   assign io_error_bits_report_to_beu = (s3_tag_error_beu || s3_data_error_beu) && report_beu_q;
-  assign io_error_bits_paddr = {s3_error_paddr_beu_r[47:6], 6'h0}; // golden 输出侧块对齐
+  assign io_error_bits_paddr = {s3_error_paddr_beu_r[47:6], 6'h0}; // golden 输出侧块对齐（低 6 位清零）
 
   // ---- 流水状态扇出复制（24 份；s1 set 在 s0_fire 锁存，s2/s3 逐级打拍）----
   // golden 每份 dup 都有独立寄存器副本（io_status_dup_N_{s1,s2,s3}_bits_set_r /

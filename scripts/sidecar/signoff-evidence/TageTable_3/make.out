@@ -1,0 +1,17 @@
+=== FM: TageTable_3 (mode=signoff-strict) ===
+FM_TOP=TageTable_3 \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/TageTable_3.sv " \
+FM_IMPL_SRCS="/tmp/tmp.odqdHldI4X/wt/rtl/frontend/TageTable.sv /tmp/tmp.odqdHldI4X/wt/rtl/frontend/TageTable_wrapper.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/TageTable_3 -file /tmp/tmp.odqdHldI4X/wt/scripts/fm_eq.tcl \
+    > fm_work/TageTable_3/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.odqdHldI4X/wt/scripts/fm_verdict.py fm_work/TageTable_3/fm.log --rc $rc --mode signoff-strict --top TageTable_3 --allowlist 0
+ERROR	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 0, "make_rc": 4, "mode": "signoff-strict", "native": null, "top": null, "dont_verify": false, "elab147": false, "reason": "make_rc_nonzero"}
+make: *** [../../../scripts/ut_common.mk:56: fm-TageTable_3] Error 1

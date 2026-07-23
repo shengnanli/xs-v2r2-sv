@@ -1,0 +1,16 @@
+=== FM: LCredit2Decoupled (mode=signoff-strict) ===
+FM_TOP=LCredit2Decoupled \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/LCredit2Decoupled.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue4_CHISNP.sv /home/eda/xs-env/G0-canonical/golden-rtl/ram_4x115.sv" \
+FM_IMPL_SRCS="/tmp/tmp.z5IBIWKjNp/wt/rtl/uncore/LCredit2Decoupled.sv /tmp/tmp.z5IBIWKjNp/wt/rtl/uncore/LCredit2Decoupled_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue4_CHISNP.sv /home/eda/xs-env/G0-canonical/golden-rtl/ram_4x115.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/LCredit2Decoupled -file /tmp/tmp.z5IBIWKjNp/wt/scripts/fm_eq.tcl \
+    > fm_work/LCredit2Decoupled/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.z5IBIWKjNp/wt/scripts/fm_verdict.py fm_work/LCredit2Decoupled/fm.log --rc $rc --mode signoff-strict --top LCredit2Decoupled --allowlist 0
+SUCCEEDED	{"passing": 590, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "LCredit2Decoupled", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

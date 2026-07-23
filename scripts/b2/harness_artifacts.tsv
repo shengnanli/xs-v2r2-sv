@@ -1,0 +1,12 @@
+# harness/DTS artifacts 冻结(v2, 完整64-hex)。canonical 选择 = G0(xs-clean, Jul 16)侧字节, 已存 G0-quarantine/harness-frozen/。
+# 结论(限定 scope): 当前 bare-metal CoreMark ST profile(difftest+NEMU, verif/st, +ram_size=8589934592)不消费 build/dts|json;
+# publishVersion 不影响 Formal artifact 与当前该 ST profile。未来 bootrom/DTB profile 必须纳入下列并冻结 user/host/time。
+artifact	side	sha256_full	diff_nature
+build/dts	xs-clean	5c7caf17710fb70183682e1ced4b942866481ce3306821de4d3ca545d00afa62	仅model串LocalDateTime
+build/dts	G0-rebuilt	c75620af92e24174b938a64903779c64fedd8582bef78c240e3d6c2a36a89b2f	仅model串LocalDateTime
+build/json	xs-clean	e422c748e01f28e2017e68bb5c0552bb6d32ef391fbc12479038f7a230172668	仅model串LocalDateTime
+build/json	G0-rebuilt	4c4c50cad4e60344eb8cdcd2b9c56f0641cb7b2bf3a20ed19f23b23fca295f47	仅model串LocalDateTime
+build/generated-src/difftest_profile.json	xs-clean	374c7d03dd717fa7f202bb4959f181d0409c5a06b156d8ff8dba00b390f9150a	两侧一致
+build/generated-src/difftest_profile.json	G0-rebuilt	374c7d03dd717fa7f202bb4959f181d0409c5a06b156d8ff8dba00b390f9150a	两侧一致
+out/xiangshan/resources.dest/publishVersion	xs-clean	3ce92940987149a645692f995924bdf90bac5a0bc95cd25dfc72b325400bad16	仅model串LocalDateTime
+out/xiangshan/resources.dest/publishVersion	G0-rebuilt	5df08a8d71d159812ee27bc03d46f3ae731f5d1b58df4c4c7b8f1e0996aa10af	仅model串LocalDateTime

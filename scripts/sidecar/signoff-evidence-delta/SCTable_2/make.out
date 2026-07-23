@@ -1,0 +1,17 @@
+=== FM: SCTable_2 (mode=signoff-strict) ===
+FM_TOP=SCTable_2 \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/SCTable_2.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_66.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_2p256x24m6s1h0l1b_bp_sc.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_5.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistClockGateCell.sv /home/eda/xs-env/G0-canonical/golden-rtl/ClockGate.sv /home/eda/xs-env/G0-canonical/golden-rtl/WrBypass_33.sv /home/eda/xs-env/G0-canonical/golden-rtl/IndexableCAMTemplate_33.sv /home/eda/xs-env/G0-canonical/golden-rtl/data_mem_16x12.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistPipeSc_2.sv" \
+FM_IMPL_SRCS="/tmp/tmp.jIGPukTpWH/wt/rtl/frontend/SCTable.sv /tmp/tmp.jIGPukTpWH/wt/rtl/frontend/SCTable_wrapper.sv /tmp/tmp.jIGPukTpWH/wt/rtl/common/SRAMTemplate_2p_core.sv /tmp/tmp.jIGPukTpWH/wt/rtl/common/SRAMTemplate_2p_variants.sv /tmp/tmp.jIGPukTpWH/wt/rtl/common/IndexableCAM.sv /tmp/tmp.jIGPukTpWH/wt/rtl/common/PlruReplacer.sv /tmp/tmp.jIGPukTpWH/wt/rtl/frontend/WrBypass.sv /tmp/tmp.jIGPukTpWH/wt/rtl/frontend/WrBypass_variants.sv /home/eda/xs-env/G0-canonical/golden-rtl/ClockGate.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistClockGateCell.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_5.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_2p256x24m6s1h0l1b_bp_sc.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/SCTable_2 -file /tmp/tmp.jIGPukTpWH/wt/scripts/fm_eq.tcl \
+    > fm_work/SCTable_2/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.jIGPukTpWH/wt/scripts/fm_verdict.py fm_work/SCTable_2/fm.log --rc $rc --mode signoff-strict --top SCTable_2 --allowlist 0
+PARTIAL	{"passing": 1014, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": 49, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "SCTable_2", "dont_verify": false, "elab147": false, "reason": "strict_unread!=0", "unmatched_ref": 0, "unmatched_impl": 0}
+make: *** [../../../scripts/ut_common.mk:56: fm-SCTable_2] Error 1

@@ -1,0 +1,16 @@
+=== FM: DecodeStage (mode=signoff-strict) ===
+FM_TOP=DecodeStage \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/DecodeStage.sv /home/eda/xs-env/G0-canonical/golden-rtl/DecodeUnit.sv /home/eda/xs-env/G0-canonical/golden-rtl/DecodeUnitComp.sv /home/eda/xs-env/G0-canonical/golden-rtl/VTypeGen.sv /home/eda/xs-env/G0-canonical/golden-rtl/FPDecoder.sv /home/eda/xs-env/G0-canonical/golden-rtl/UopInfoGen.sv /home/eda/xs-env/G0-canonical/golden-rtl/strdiedLSNumOfUopTable.sv /home/eda/xs-env/G0-canonical/golden-rtl/indexedLSNumOfUopTable.sv /home/eda/xs-env/G0-canonical/golden-rtl/VecExceptionGen.sv /home/eda/xs-env/G0-canonical/golden-rtl/VsetModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/indexedLSUopTable_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/indexedLSUopTable_2.sv /home/eda/xs-env/G0-canonical/golden-rtl/indexedLSUopTable_3.sv /home/eda/xs-env/G0-canonical/golden-rtl/indexedLSUopTable_4.sv /home/eda/xs-env/G0-canonical/golden-rtl/indexedLSUopTable_5.sv /home/eda/xs-env/G0-canonical/golden-rtl/indexedLSUopTable_6.sv /home/eda/xs-env/G0-canonical/golden-rtl/indexedLSUopTable_7.sv" \
+FM_IMPL_SRCS="/tmp/tmp.GUWY3l3pZh/wt/rtl/backend/decodestage_pkg.sv /tmp/tmp.GUWY3l3pZh/wt/rtl/backend/DecodeStage.sv /tmp/tmp.GUWY3l3pZh/wt/rtl/backend/DecodeStage_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/DecodeUnit.sv /home/eda/xs-env/G0-canonical/golden-rtl/DecodeUnitComp.sv /home/eda/xs-env/G0-canonical/golden-rtl/VTypeGen.sv /home/eda/xs-env/G0-canonical/golden-rtl/FPDecoder.sv /home/eda/xs-env/G0-canonical/golden-rtl/UopInfoGen.sv /home/eda/xs-env/G0-canonical/golden-rtl/strdiedLSNumOfUopTable.sv /home/eda/xs-env/G0-canonical/golden-rtl/indexedLSNumOfUopTable.sv /home/eda/xs-env/G0-canonical/golden-rtl/VecExceptionGen.sv /home/eda/xs-env/G0-canonical/golden-rtl/VsetModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/indexedLSUopTable_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/indexedLSUopTable_2.sv /home/eda/xs-env/G0-canonical/golden-rtl/indexedLSUopTable_3.sv /home/eda/xs-env/G0-canonical/golden-rtl/indexedLSUopTable_4.sv /home/eda/xs-env/G0-canonical/golden-rtl/indexedLSUopTable_5.sv /home/eda/xs-env/G0-canonical/golden-rtl/indexedLSUopTable_6.sv /home/eda/xs-env/G0-canonical/golden-rtl/indexedLSUopTable_7.sv" \
+FM_MERGE_DUP=false \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/DecodeStage -file /tmp/tmp.GUWY3l3pZh/wt/scripts/fm_eq.tcl \
+    > fm_work/DecodeStage/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.GUWY3l3pZh/wt/scripts/fm_verdict.py fm_work/DecodeStage/fm.log --rc $rc --mode signoff-strict --top DecodeStage --allowlist 0
+SUCCEEDED	{"passing": 4103, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "DecodeStage", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

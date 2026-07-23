@@ -30,13 +30,15 @@ VCS += +define+SYNTHESIS
 STUB = $(abspath $(RTL_DIR)/memblock/dcache_stub.sv)
 .PHONY: fmbb
 fmbb:
+	@[ -n "$$FM_SIDECAR_OUT" ] || { echo "ERROR($(MODULE)): fmbb 须经 sidecar runner"; exit 1; }
 	@mkdir -p fm_work/DCache
 	@echo "=== FM(bb): DCache ==="
 	FM_TOP=DCache \
 	FM_REF_SRCS="$(abspath $(GOLDEN_RTL)/DCache.sv) $(STUB)" \
 	FM_IMPL_SRCS="$(abspath $(RTL_DIR)/memblock/dcache_pkg.sv $(RTL_DIR)/memblock/DCache.sv $(RTL_DIR)/memblock/DCache_wrapper.sv) $(STUB)" \
 	FM_MERGE_DUP=false \
+	XSSV_HOME=$(XSSV_HOME) FM_RUN_ID=$$FM_RUN_ID \
 	fm_shell -64 -work_path fm_work/DCache -file $(abspath fm_eq_bb.tcl) \
 	    > fm_work/DCache/fm.log 2>&1; \
-	grep -E "^FM_RESULT|^PINNED" fm_work/DCache/fm.log; \
-	grep -q "^FM_RESULT: Verification SUCCEEDED" fm_work/DCache/fm.log
+	rc=$$?; echo $$rc > "$$FM_SIDECAR_OUT/fm_shell.rc"; \
+	grep -E "^FM_RESULT" fm_work/DCache/fm.log || true

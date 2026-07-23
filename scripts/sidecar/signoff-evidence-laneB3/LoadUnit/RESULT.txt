@@ -1,0 +1,4 @@
+SIGNOFF_RESULT LoadUnit: measured=PARTIAL required=SUCCEEDED gate=GAP (proof=signoff-strict fm_shell_rc=0 validator_rc=1)
+run_id: SGN-LoadUnit-1784723207
+impl_commit: 9366da5c621874278cf1be38d61669dc9387c123
+manifest_sha256: 753bb9d3e068f8ffc2541d560ae4f8af86620ad0ec9131a24f0e5860d8190068

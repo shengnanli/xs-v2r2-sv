@@ -1,0 +1,4 @@
+SIGNOFF_RESULT EntriesAluCsrFenceDiv: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=signoff-strict fm_shell_rc=0 validator_rc=0)
+run_id: SGN-EntriesAluCsrFenceDiv-1784802460
+impl_commit: 50dcd03b29f029d081827d284c1894497385eb2e
+manifest_sha256: f701e5b656d00d5caaa4ce98371270e7fac370e8e1125aea57044efb4894ec82

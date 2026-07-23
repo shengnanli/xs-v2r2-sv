@@ -239,8 +239,10 @@ module TLBNonBlock import xs_tlbnb_pkg::*; (
 );
 
   // ---- DelayN 黑盒：sfence / csr 延迟 fenceDelay=2 ----
-  wire        sfd_valid, sfd_rs1, sfd_rs2, sfd_hv, sfd_hg, sfd_flushPipe;
+  wire        sfd_valid, sfd_rs1, sfd_rs2, sfd_hv, sfd_hg;
   wire [49:0] sfd_addr; wire [15:0] sfd_id;
+  // sfence_delay.io_out_bits_flushPipe 在 golden 里标 /* unused */（下游 TLB 不用 flushPipe），
+  //   故此处悬空不连（镜像 golden，消该黑盒输出的 impl-only 死点）。
   DelayN_9 sfence_delay (.clock(clock),
     .io_in_valid(io_sfence_valid), .io_in_bits_rs1(io_sfence_bits_rs1),
     .io_in_bits_rs2(io_sfence_bits_rs2), .io_in_bits_addr(io_sfence_bits_addr),
@@ -248,7 +250,7 @@ module TLBNonBlock import xs_tlbnb_pkg::*; (
     .io_in_bits_hv(io_sfence_bits_hv), .io_in_bits_hg(io_sfence_bits_hg),
     .io_out_valid(sfd_valid), .io_out_bits_rs1(sfd_rs1), .io_out_bits_rs2(sfd_rs2),
     .io_out_bits_addr(sfd_addr), .io_out_bits_id(sfd_id),
-    .io_out_bits_flushPipe(sfd_flushPipe), .io_out_bits_hv(sfd_hv), .io_out_bits_hg(sfd_hg));
+    .io_out_bits_flushPipe(/* unused, 镜像 golden */), .io_out_bits_hv(sfd_hv), .io_out_bits_hg(sfd_hg));
 
   wire [3:0]  cd_satp_mode, cd_vsatp_mode, cd_hgatp_mode;
   wire [15:0] cd_satp_asid, cd_vsatp_asid, cd_hgatp_vmid_16;
@@ -376,7 +378,7 @@ module TLBNonBlock import xs_tlbnb_pkg::*; (
 
   xs_TLBNonBlock_core u_core (
     .clock(clock), .reset(reset),
-    .io_sfd_valid(sfd_valid), .io_sfd_flushPipe(sfd_flushPipe),
+    .io_sfd_valid(sfd_valid), .io_sfd_flushPipe(1'b0),  // flushPipe 下游不用（golden unused）
     .io_csrd_satp_mode(cd_satp_mode), .io_csrd_satp_asid(cd_satp_asid), .io_csrd_satp_changed(cd_satp_changed),
     .io_csrd_vsatp_mode(cd_vsatp_mode), .io_csrd_vsatp_asid(cd_vsatp_asid), .io_csrd_vsatp_changed(cd_vsatp_changed),
     .io_csrd_hgatp_mode(cd_hgatp_mode), .io_csrd_hgatp_vmid(cd_hgatp_vmid_16), .io_csrd_hgatp_changed(cd_hgatp_changed),

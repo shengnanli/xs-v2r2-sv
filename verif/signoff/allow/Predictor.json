@@ -1,0 +1,12 @@
+{
+    "unresolved_blackbox": [
+        {
+            "id": "predictors",
+            "ref_path": "r:/WORK/Predictor/predictors",
+            "impl_path": "i:/WORK/Predictor/predictors"
+        }
+    ],
+    "interface_only": [],
+    "empty_blackbox": [],
+    "unmatched": []
+}

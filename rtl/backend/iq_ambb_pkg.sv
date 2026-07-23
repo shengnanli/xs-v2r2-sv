@@ -63,6 +63,43 @@ package iq_ambb_pkg;
   localparam int FU_MUL = 7;  // 乘法(端口0,多周期,需 fuBusyTable)
   localparam int FU_BKU = 10; // 位操作(端口0)
 
+  // ---------------------------------------------------------------------------
+  // FuType 紧凑存储(与 iq_acfd_pkg 同型方法学,见其 pack/unpack 注释)
+  //   本变体只可能出现 {FU_BRH, FU_JMP, FU_ALU, FU_MUL, FU_BKU} 五位为 1,其余 30 位恒 0
+  //   (golden firtool 已按变体剪枝)。若条目寄存器存全 35 位则多出 30 位死位/条目,
+  //   × 24 条目 = 720 个 impl-only 死位(FM 判 unread_impl → strict PARTIAL)。
+  //   故条目里只存这些"保留位"(FU_TYPE_KEEP_W 宽),对外仍复原成 35 位 one-hot。
+  //   pack/unpack 在 35 位总线与紧凑存储间无损转换,外部接口不变。
+  // ---------------------------------------------------------------------------
+  localparam logic [FU_NUM-1:0] FU_TYPE_KEEP_MASK =
+      (35'b1 << FU_BRH) | (35'b1 << FU_JMP) | (35'b1 << FU_ALU)
+    | (35'b1 << FU_MUL) | (35'b1 << FU_BKU);
+  localparam int FU_TYPE_KEEP_W = 5; // = $countones(FU_TYPE_KEEP_MASK) = {0,1,6,7,10}
+
+  // 35 位 one-hot → 紧凑保留位(按 mask 位号升序装填到槽 0,1,…)
+  function automatic logic [FU_TYPE_KEEP_W-1:0] pack_fu_type(input logic [FU_NUM-1:0] full);
+    int unsigned slot;
+    pack_fu_type = '0;
+    slot = 0;
+    for (int b = 0; b < FU_NUM; b++)
+      if (FU_TYPE_KEEP_MASK[b]) begin
+        pack_fu_type[slot] = full[b];
+        slot++;
+      end
+  endfunction
+
+  // 紧凑保留位 → 35 位 one-hot(未保留位复原为 0),pack 的逆运算
+  function automatic logic [FU_NUM-1:0] unpack_fu_type(input logic [FU_TYPE_KEEP_W-1:0] kept);
+    int unsigned slot;
+    unpack_fu_type = '0;
+    slot = 0;
+    for (int b = 0; b < FU_NUM; b++)
+      if (FU_TYPE_KEEP_MASK[b]) begin
+        unpack_fu_type[b] = kept[slot];
+        slot++;
+      end
+  endfunction
+
   // og0Cancel / og1Cancel 按全局 EXU 号索引。本变体唤醒源 0..6 的取消拓扑与 ACFD 一致:
   // golden 只引用 og0Cancel 的 {0,2,4,6} 位 → 这 4 个是可被 og0 取消的源。
   localparam int NUM_EXU = 27; // backendParams.numExu
@@ -115,14 +152,15 @@ package iq_ambb_pkg;
   typedef struct packed {
     logic                         rob_flag;
     logic [ROB_PTR_W-1:0]         rob_value;
-    logic [FU_NUM-1:0]            fu_type;    // FuType one-hot(仅本变体相关位有效)
+    logic [FU_TYPE_KEEP_W-1:0]    fu_type;    // 紧凑存储保留位(见 FU_TYPE_KEEP_MASK / pack_fu_type)
     src_status_t [NUM_REGSRC-1:0] src;
-    logic                         blocked;    // 阻塞(本变体恒 0)
     logic                         issued;
-    logic                         first_issue;
     logic [1:0]                   issue_timer;
     logic                         deq_port;
   } status_t;
+  // 注:blocked(本变体恒 0,vecMem 才用)与 first_issue(仅驱动 golden 未在本 wrapper
+  //   暴露的 isFirstIssue 输出,自反馈死环)在本变体是 impl-only 死寄存器,golden firtool
+  //   在扁平 Entries 顶层已消除;为对齐 golden(bug-for-bug 无多存)不进 status_t。
 
   // uop 负载 payload。本变体携带分支预测字段(preDecodeInfo.isRVC / pred_taken),
   // 不携带 flushPipe(无 Fence)。其余与 ACFD 一致。
@@ -135,9 +173,15 @@ package iq_ambb_pkg;
     logic                         pre_decode_isrvc; // preDecodeInfo.isRVC(端口1 BrhJmp)
     logic                         pred_taken;       // pred.predTaken(端口1)
     logic [SEL_IMM_W-1:0]         sel_imm;
-    logic [NUM_REGSRC-1:0][LDPW-1:0][LDW-1:0] src_load_dep;
     logic [PREG_W-1:0]            pdest;
   } payload_t;
+  // 注:payload.srcLoadDependency(入队原始 load 依赖)只在入队拍喂 enqDelayIn1 流水,
+  //   不是持久条目状态;golden 把 entryReg.payload.srcLoadDependency 链在扁平 Entries
+  //   顶层整条消除(转移链无终端消费者)。故不入 payload_t,改由 Entries 顶层单独的
+  //   enq_src_load_dep 输入直接喂 enqDelayIn1(见 EntriesAluMulBkuBrhJmp.sv 顶层)。
+
+  // 入队原始 load 依赖(仅喂 enqDelayIn1 流水,非条目状态,单独走线不进 entry_t)
+  typedef logic [NUM_REGSRC-1:0][LDPW-1:0][LDW-1:0] enq_src_ld_t;
 
   // 完整条目 EntryBundle = 状态 + 立即数 + 负载
   typedef struct packed {

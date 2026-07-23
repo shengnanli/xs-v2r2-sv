@@ -1,0 +1,4 @@
+SIGNOFF_RESULT FauFTB: measured=PARTIAL required=SUCCEEDED gate=GAP (proof=signoff-strict fm_shell_rc=0 validator_rc=1)
+run_id: SGN-FauFTB-1784795045
+impl_commit: 50b1b4c56cbeb8a596d945c3a66d001739d61c7d
+manifest_sha256: 1ccda32880708648b23b218337f0e3a3fac61de895bdd383fa81455540484a73

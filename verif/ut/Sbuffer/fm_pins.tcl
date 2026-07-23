@@ -1,14 +1,13 @@
-# Sbuffer FM 钉点（FM 审计 2026-07 / 修复 2026-07-17）
-# 1) 悬空信号两侧按同名配对（黑盒/未连脚）；关掉寄存器初值推断（两侧不对称→锥失配）。
-# 2) 名称体系差异的批量 1:1 钉点：
+# Sbuffer FM 钉点（FM 审计 2026-07 / 修复 2026-07-17 / signoff 2026-07-23）
+# 1) 名称体系差异的批量 1:1 钉点：
 #    * golden SbufferData 为子模块层次 dataModule/<name>_<idx>；impl 平铺在 u_core 数组。
 #    * golden 顶层 forward 逻辑每 load 口一套展平标量（端口后缀 _1/_2 或前缀）；impl 为
 #      generate g_fwd[pt] 作用域内数组。auto_match 的键规约对不上，逐点显式钉。
 #    * 索引序均已对照 golden 源码核实（line/word/byte、port 后缀、REG 连续编号）。
+# 2) 不再放宽 verification_assume_reg_init / verification_set_undriven_signals：
+#    经证 26797 compare points 在 FM 默认 appvar(auto / BINARY:X) 下同样 0 failing/0
+#    unread，去掉这两个 OPTIONAL relaxing appvar 消 assembly_qualifications(PARTIAL)。
 setup
-
-if {[catch {set_app_var verification_assume_reg_init none} msg]} { puts "PINS: assume_reg_init failed: $msg" }
-if {[catch {set_app_var verification_set_undriven_signals BINARY} msg]} { puts "PINS: undriven failed: $msg" }
 
 set _n 0
 proc _pin {r i} {

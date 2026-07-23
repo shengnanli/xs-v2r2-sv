@@ -1,0 +1,605 @@
+
+                                 Formality (R)
+
+               Version V-2023.12-SP3 for linux64 - Apr 13, 2024 
+
+                    Copyright (c) 1988 - 2024 Synopsys, Inc.
+   This software and the associated documentation are proprietary to Synopsys,
+ Inc. This software may only be used in accordance with the terms and conditions
+ of a written license agreement with Synopsys, Inc. All other use, reproduction,
+   or distribution of this software is strictly prohibited.  Licensed Products
+     communicate with Synopsys servers for the purpose of providing software
+    updates, detecting software piracy and verifying that customers are using
+    Licensed Products in conformity with the applicable License Key for such
+  Licensed Products. Synopsys will use information gathered in connection with
+    this process to deliver software updates and pursue software pirates and
+                                   infringers.
+
+ Inclusivity & Diversity - Visit SolvNetPlus to read the "Synopsys Statement on
+            Inclusivity and Diversity" (Refer to article 000036315 at
+                        https://solvnetplus.synopsys.com)
+
+Build: 8868332
+Hostname: localhost.localdomain
+Current time: Tue Jul 21 01:11:01 2026
+
+Loading db file '/home/eda/app/synopsys/fm/V-2023.12-SP3/libraries/syn/gtech.db'
+
+Script: /tmp/tmp.wurQzCx7z9/wt/scripts/fm_eq.tcl
+
+Information: Term was not able to be set up using xterm-256color . Using "xterm" by default instead. (CLE-10)
+# Formality 等价性检查通用脚本
+# 由 scripts/ut_common.mk 的 fm-% 目标调用，经环境变量传参：
+#   FM_TOP        顶层模块名（golden 变体名；impl 侧包装层与其同名同端口）
+#   FM_REF_SRCS   golden RTL 文件列表（变体 + 其子模块）
+#   FM_IMPL_SRCS  手写 SV 文件列表（参数化核心 + 包装层）
+set top       $env(FM_TOP)
+CtrlBlock
+set ref_srcs  $env(FM_REF_SRCS)
+/home/eda/xs-env/G0-canonical/golden-rtl/CtrlBlock.sv /home/eda/xs-env/G0-canonical/golden-rtl/DecodeStage.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayN_15.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayN_17.sv /home/eda/xs-env/G0-canonical/golden-rtl/FusionDecoder.sv /home/eda/xs-env/G0-canonical/golden-rtl/GPAMem.sv /home/eda/xs-env/G0-canonical/golden-rtl/MemCtrl.sv /home/eda/xs-env/G0-canonical/golden-rtl/NewDispatch.sv /home/eda/xs-env/G0-canonical/golden-rtl/PipeGroupConnect.sv /home/eda/xs-env/G0-canonical/golden-rtl/PipelineConnectPipe.sv /home/eda/xs-env/G0-canonical/golden-rtl/RedirectGenerator.sv /home/eda/xs-env/G0-canonical/golden-rtl/Rename.sv /home/eda/xs-env/G0-canonical/golden-rtl/RenameTableWrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/Rob.sv /home/eda/xs-env/G0-canonical/golden-rtl/SnapshotGenerator_14.sv /home/eda/xs-env/G0-canonical/golden-rtl/SyncDataModuleTemplate_BackendPC_64entry.sv /home/eda/xs-env/G0-canonical/golden-rtl/Trace.sv
+set impl_srcs $env(FM_IMPL_SRCS)
+/tmp/tmp.wurQzCx7z9/wt/rtl/backend/ctrlblock_pkg.sv /tmp/tmp.wurQzCx7z9/wt/rtl/backend/CtrlBlock.sv /tmp/tmp.wurQzCx7z9/wt/rtl/backend/CtrlBlock_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/DecodeStage.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayN_15.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayN_17.sv /home/eda/xs-env/G0-canonical/golden-rtl/FusionDecoder.sv /home/eda/xs-env/G0-canonical/golden-rtl/GPAMem.sv /home/eda/xs-env/G0-canonical/golden-rtl/MemCtrl.sv /home/eda/xs-env/G0-canonical/golden-rtl/NewDispatch.sv /home/eda/xs-env/G0-canonical/golden-rtl/PipeGroupConnect.sv /home/eda/xs-env/G0-canonical/golden-rtl/PipelineConnectPipe.sv /home/eda/xs-env/G0-canonical/golden-rtl/RedirectGenerator.sv /home/eda/xs-env/G0-canonical/golden-rtl/Rename.sv /home/eda/xs-env/G0-canonical/golden-rtl/RenameTableWrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/Rob.sv /home/eda/xs-env/G0-canonical/golden-rtl/SnapshotGenerator_14.sv /home/eda/xs-env/G0-canonical/golden-rtl/SyncDataModuleTemplate_BackendPC_64entry.sv /home/eda/xs-env/G0-canonical/golden-rtl/Trace.sv
+# ----------------------------------------------------------------------------
+# Step 3B sidecar emitter(FM_SIDECAR_OUT 非空时启用; 契约 = SIDECAR_SCHEMA.md v7 冻结版):
+# source 后立即对将被 source 的模块本地 Tcl 做**运行期 appvar 拦截**(set_app_var 名字
+# 不在注册表 → exit 3, 拒产 native facts)。
+# ----------------------------------------------------------------------------
+set SIDECAR_ON 0
+0
+if {[info exists env(FM_SIDECAR_OUT)] && [string trim $env(FM_SIDECAR_OUT)] ne ""} {
+    set _entry [file normalize [info script]]
+    set _emit  [file join [file dirname $_entry] sidecar fm_native_emit.tcl]
+    source $_emit
+    set SIDECAR_ON 1
+    # 3B验收三审: script closure = **执行时刻字节快照**(sidecar_register_script 把被
+    # 执行文件的字节即时拷入 FM_SIDECAR_OUT 并追加清单; source trace 对嵌套亦触发,
+    # 解析 -encoding 形式)。入口与 emitter 非 source 载入, 在此显式登记快照。
+    # appvar 拦截 = execution trace 加在命令本身 + phase(match 后冻结)+ 写历史。
+    set ::SIDECAR_SOURCED {}
+    sidecar_register_script $_entry
+    sidecar_register_script $_emit
+    sidecar_install_appvar_guard
+}
+# ----------------------------------------------------------------------------
+# FM_MODE 门控(2026-07 唯一权威入口, 二审): 证明模式决定允许哪些放宽手段。
+#   signoff-strict(默认): 禁 interface_only(assembly 专用手段); 严格判定交 fm_verdict.py。
+#   assembly: 允许**声明的对称黑盒** FM_INTERFACE_ONLY(仅证本层 glue)。
+#   diagnostic-full: 由 fm_eq_full.tcl 承担(ELAB 降级/放宽上限), 永不签核。
+#   shadow: 同 strict(可读核不驱动输出, 判定归 SHADOW_CHECK)。
+# 诊断能力永不进 signoff: strict 下 FM_INTERFACE_ONLY 非空即报错退出(fail-closed)。
+# ----------------------------------------------------------------------------
+set _fmmode "signoff-strict"
+signoff-strict
+if {[info exists env(FM_MODE)]} { set _fmmode $env(FM_MODE) }
+signoff-strict
+switch -- $_fmmode {
+  "assembly" {
+    if {[info exists env(FM_INTERFACE_ONLY)] && [string trim $env(FM_INTERFACE_ONLY)] ne ""} {
+      set_app_var hdlin_interface_only $env(FM_INTERFACE_ONLY)
+    }
+  }
+  "signoff-strict" - "shadow" {
+    if {[info exists env(FM_INTERFACE_ONLY)] && [string trim $env(FM_INTERFACE_ONLY)] ne ""} {
+      puts "FM_MODE_ERROR: $_fmmode 拒绝 FM_INTERFACE_ONLY(assembly 专用手段)"
+      exit 3
+    }
+  }
+  default {
+    puts "FM_MODE_ERROR: 未知 FM_MODE=$_fmmode"
+    exit 3
+  }
+}
+# 寄存器无观测路径（如被 firtool 裁剪的输出对应的 valids）时不作为比对点。
+# 十一审: unread 六元组**显式全量设置**(305 统一冻结执行语义, 不让工具默认代替声明;
+# emitter 于全部 pin/custom Tcl 执行后、verify 前逐项 get_app_var 读回有效值)。
+# 后三项 true 即工具默认(man cat3 逐页核对), 显式钉死防版本漂移。
+set_app_var verification_verify_unread_compare_points false
+false
+set_app_var verification_verify_matched_unread_compare_points false
+false
+set_app_var verification_verify_unread_bbox_inputs false
+false
+set_app_var verification_verify_matched_unread_bbox_inputs true
+true
+set_app_var verification_verify_unread_tech_cell_pins true
+true
+set_app_var verification_verify_unread_tech_cell_pg_pins true
+true
+# 未解析模块（厂商 SRAM 叶子 array_ext 等外部宏）自动当黑盒——两侧一致即可，
+# SRAM 内部存储不参与 wrapper 逻辑等价比对。
+set_app_var hdlin_unresolved_modules black_box
+black_box
+# 合并由同一逻辑驱动的重复寄存器（如分 bank 的读地址扇出复制：每 bank 一份、
+# 输出级一份，值完全相同）。否则两侧各有 N 个同值寄存器，名字（展平 vs generate
+# 层次）和签名（值相同）都无法配对，导致大量 unmatched。FTQ/IFU 等扇出复制
+# 普遍存在，默认 true。
+# 九审(3A.2 审定补丁3): 该值由 FM_MERGE_DUP 入口变量真实绑定——此前 Makefile 声明
+# FM_MERGE_DUP=false 而这里硬编码 true, manifest 声称值与实际证明语义脱节(fail-closed:
+# 非法值退出, 不静默回落)。
+set _mergedup "true"
+true
+if {[info exists env(FM_MERGE_DUP)] && [string trim $env(FM_MERGE_DUP)] ne ""} {
+    set _mergedup [string trim $env(FM_MERGE_DUP)]
+}
+switch -- $_mergedup {
+  "true" - "false" { set_app_var verification_merge_duplicated_registers $_mergedup }
+  default {
+    puts "FM_MODE_ERROR: FM_MERGE_DUP 非法值 $_mergedup"
+    exit 3
+  }
+}
+true
+# Reference: Chisel 生成的 golden RTL（SYNTHESIS 关掉随机初始化 initial 块）
+read_sverilog -r -define {SYNTHESIS} $ref_srcs
+No target library specified, default is WORK
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/CtrlBlock.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DecodeStage.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayN_15.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayN_17.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/FusionDecoder.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/GPAMem.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/MemCtrl.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/NewDispatch.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/PipeGroupConnect.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/PipelineConnectPipe.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/RedirectGenerator.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/Rename.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/RenameTableWrapper.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/Rob.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/SnapshotGenerator_14.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/SyncDataModuleTemplate_BackendPC_64entry.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/Trace.sv'
+Current container set to 'r'
+1
+set_top r:/WORK/$top
+Setting top design to 'r:/WORK/CtrlBlock'
+Status:   Elaborating design CtrlBlock   ...  
+Status:   Elaborating design Rob   ...  
+Warning: Cannot link cell '/WORK/Rob/rab' to its reference design 'RenameBuffer'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/vtypeBuffer' to its reference design 'VTypeBuffer'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/snapshots_snapshotGen' to its reference design 'SnapshotGenerator_3'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/exceptionGen' to its reference design 'ExceptionGen'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/deqPtrGenModule' to its reference design 'NewRobDeqPtrWrapper'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/enqPtrGenModule' to its reference design 'RobEnqPtrWrapper'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/dt_eliminatedMove_ext' to its reference design 'dt_160x1'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/dt_isRVC_ext' to its reference design 'dt_160x1'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/difftest_delayer' to its reference design 'DelayReg'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/difftest_module' to its reference design 'DummyDPICWrapper'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/difftest_delayer_1' to its reference design 'DelayReg'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/difftest_module_1' to its reference design 'DummyDPICWrapper'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/difftest_delayer_2' to its reference design 'DelayReg'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/difftest_module_2' to its reference design 'DummyDPICWrapper'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/difftest_delayer_3' to its reference design 'DelayReg'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/difftest_module_3' to its reference design 'DummyDPICWrapper'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/difftest_delayer_4' to its reference design 'DelayReg'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/difftest_module_4' to its reference design 'DummyDPICWrapper'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/difftest_delayer_5' to its reference design 'DelayReg'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/difftest_module_5' to its reference design 'DummyDPICWrapper'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/difftest_delayer_6' to its reference design 'DelayReg'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/difftest_module_6' to its reference design 'DummyDPICWrapper'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/difftest_delayer_7' to its reference design 'DelayReg'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/difftest_module_7' to its reference design 'DummyDPICWrapper'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/dt_isXSTrap_ext' to its reference design 'dt_160x1'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/difftest_module_8' to its reference design 'DummyDPICWrapper_8'. (FE-LINK-2)
+Status:   Elaborating design GPAMem   ...  
+Warning: Cannot link cell '/WORK/GPAMem/mem' to its reference design 'SyncDataModuleTemplate__64entry_4'. (FE-LINK-2)
+Status:   Elaborating design NewDispatch   ...  
+Warning: Cannot link cell '/WORK/NewDispatch/rcTagTable' to its reference design 'RegCacheTagTable'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/NewDispatch/intBusyTable' to its reference design 'BusyTable'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/NewDispatch/fpBusyTable' to its reference design 'BusyTable_1'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/NewDispatch/vecBusyTable' to its reference design 'BusyTable_2'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/NewDispatch/v0BusyTable' to its reference design 'BusyTable_3'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/NewDispatch/vlBusyTable' to its reference design 'VlBusyTable'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/NewDispatch/lsqEnqCtrl' to its reference design 'LsqEnqCtrl'. (FE-LINK-2)
+Status:   Elaborating design DecodeStage   ...  
+Warning: Cannot link cell '/WORK/DecodeStage/decoderComp' to its reference design 'DecodeUnitComp'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/DecodeStage/decoders_0' to its reference design 'DecodeUnit'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/DecodeStage/decoders_1' to its reference design 'DecodeUnit'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/DecodeStage/decoders_2' to its reference design 'DecodeUnit'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/DecodeStage/decoders_3' to its reference design 'DecodeUnit'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/DecodeStage/decoders_4' to its reference design 'DecodeUnit'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/DecodeStage/decoders_5' to its reference design 'DecodeUnit'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/DecodeStage/vtypeGen' to its reference design 'VTypeGen'. (FE-LINK-2)
+Status:   Elaborating design FusionDecoder   ...  
+Status:   Elaborating design RenameTableWrapper   ...  
+Warning: Cannot link cell '/WORK/RenameTableWrapper/intRat' to its reference design 'RenameTable'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/RenameTableWrapper/fpRat' to its reference design 'RenameTable_1'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/RenameTableWrapper/vecRat' to its reference design 'RenameTable_2'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/RenameTableWrapper/v0Rat' to its reference design 'RenameTable_3'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/RenameTableWrapper/vlRat' to its reference design 'RenameTable_3'. (FE-LINK-2)
+Status:   Elaborating design Rename   ...  
+Warning: Cannot link cell '/WORK/Rename/compressUnit' to its reference design 'CompressUnit'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rename/intFreeList' to its reference design 'MEFreeList'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rename/fpFreeList' to its reference design 'StdFreeList'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rename/vecFreeList' to its reference design 'StdFreeList_1'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rename/v0FreeList' to its reference design 'StdFreeList_2'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rename/vlFreeList' to its reference design 'StdFreeList_3'. (FE-LINK-2)
+Status:   Elaborating design RedirectGenerator   ...  
+Status:   Elaborating design SyncDataModuleTemplate_BackendPC_64entry   ...  
+Warning: Cannot link cell '/WORK/SyncDataModuleTemplate_BackendPC_64entry/dataBanks_0' to its reference design 'DataModule_BackendPC_16entry'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/SyncDataModuleTemplate_BackendPC_64entry/dataBanks_1' to its reference design 'DataModule_BackendPC_16entry'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/SyncDataModuleTemplate_BackendPC_64entry/dataBanks_2' to its reference design 'DataModule_BackendPC_16entry'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/SyncDataModuleTemplate_BackendPC_64entry/dataBanks_3' to its reference design 'DataModule_BackendPC_16entry'. (FE-LINK-2)
+Status:   Elaborating design MemCtrl   ...  
+Warning: Cannot link cell '/WORK/MemCtrl/ssit' to its reference design 'SSIT'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/MemCtrl/waittable' to its reference design 'WaitTable'. (FE-LINK-2)
+Status:   Elaborating design Trace   ...  
+Warning: Cannot link cell '/WORK/Trace/traceBuffer' to its reference design 'TraceBuffer'. (FE-LINK-2)
+Status:   Elaborating design DelayN_15   ...  
+Status:   Elaborating design SnapshotGenerator_14   ...  
+Status:   Elaborating design PipelineConnectPipe   ...  
+Status:   Elaborating design PipeGroupConnect   ...  
+Status:   Elaborating design DelayN_17   ...  
+Status:  Implementing inferred operators...
+Status:  Creating black-box designs...
+Created technology library 'FM_BBOX' in container 'r' for black-box designs
+Created black-box design 'RenameBuffer' in library 'FM_BBOX'
+Created black-box design 'VTypeBuffer' in library 'FM_BBOX'
+Created black-box design 'SnapshotGenerator_3' in library 'FM_BBOX'
+Created black-box design 'ExceptionGen' in library 'FM_BBOX'
+Created black-box design 'NewRobDeqPtrWrapper' in library 'FM_BBOX'
+Created black-box design 'RobEnqPtrWrapper' in library 'FM_BBOX'
+Created black-box design 'dt_160x1' in library 'FM_BBOX'
+Created black-box design 'DelayReg' in library 'FM_BBOX'
+Created black-box design 'DummyDPICWrapper' in library 'FM_BBOX'
+Created black-box design 'DummyDPICWrapper_8' in library 'FM_BBOX'
+Created black-box design 'SyncDataModuleTemplate__64entry_4' in library 'FM_BBOX'
+Created black-box design 'RegCacheTagTable' in library 'FM_BBOX'
+Created black-box design 'BusyTable' in library 'FM_BBOX'
+Created black-box design 'BusyTable_1' in library 'FM_BBOX'
+Created black-box design 'BusyTable_2' in library 'FM_BBOX'
+Created black-box design 'BusyTable_3' in library 'FM_BBOX'
+Created black-box design 'VlBusyTable' in library 'FM_BBOX'
+Created black-box design 'LsqEnqCtrl' in library 'FM_BBOX'
+Created black-box design 'DecodeUnitComp' in library 'FM_BBOX'
+Created black-box design 'DecodeUnit' in library 'FM_BBOX'
+Created black-box design 'VTypeGen' in library 'FM_BBOX'
+Created black-box design 'RenameTable' in library 'FM_BBOX'
+Created black-box design 'RenameTable_1' in library 'FM_BBOX'
+Created black-box design 'RenameTable_2' in library 'FM_BBOX'
+Created black-box design 'RenameTable_3' in library 'FM_BBOX'
+Created black-box design 'CompressUnit' in library 'FM_BBOX'
+Created black-box design 'MEFreeList' in library 'FM_BBOX'
+Created black-box design 'StdFreeList' in library 'FM_BBOX'
+Created black-box design 'StdFreeList_1' in library 'FM_BBOX'
+Created black-box design 'StdFreeList_2' in library 'FM_BBOX'
+Created black-box design 'StdFreeList_3' in library 'FM_BBOX'
+Created black-box design 'DataModule_BackendPC_16entry' in library 'FM_BBOX'
+Created black-box design 'SSIT' in library 'FM_BBOX'
+Created black-box design 'WaitTable' in library 'FM_BBOX'
+Created black-box design 'TraceBuffer' in library 'FM_BBOX'
+Warning: 35 blackbox designs were created for missing references. (FM-064)
+Status:  Attempting to resolve unlinked cells by using black-boxes...
+Warning: 42578 black-box pins of unknown direction found; see formality.log for list (FM-230)
+Top design set to 'r:/WORK/CtrlBlock' with warnings
+Reference design set to 'r:/WORK/CtrlBlock'
+1
+# Implementation: 手写 SV
+read_sverilog -i -define {SYNTHESIS} $impl_srcs
+No target library specified, default is WORK
+Loading verilog file '/tmp/tmp.wurQzCx7z9/wt/rtl/backend/ctrlblock_pkg.sv'
+Loading verilog file '/tmp/tmp.wurQzCx7z9/wt/rtl/backend/CtrlBlock.sv'
+Loading include file '/tmp/tmp.wurQzCx7z9/wt/rtl/backend/ctrlblock_ports.svh'
+Loading include file '/tmp/tmp.wurQzCx7z9/wt/rtl/backend/ctrlblock_wb_robidx.svh'
+Loading include file '/tmp/tmp.wurQzCx7z9/wt/rtl/backend/ctrlblock_decls.svh'
+Loading include file '/tmp/tmp.wurQzCx7z9/wt/rtl/backend/ctrlblock_logic.svh'
+Loading include file '/tmp/tmp.wurQzCx7z9/wt/rtl/backend/ctrlblock_datapath.svh'
+Loading include file '/tmp/tmp.wurQzCx7z9/wt/rtl/backend/ctrlblock_wbpack.svh'
+Loading include file '/tmp/tmp.wurQzCx7z9/wt/rtl/backend/ctrlblock_enqpack.svh'
+Loading include file '/tmp/tmp.wurQzCx7z9/wt/rtl/backend/ctrlblock_glue2.svh'
+Loading include file '/tmp/tmp.wurQzCx7z9/wt/rtl/backend/ctrlblock_outglue.svh'
+Loading include file '/tmp/tmp.wurQzCx7z9/wt/rtl/backend/ctrlblock_glue3.svh'
+Loading include file '/tmp/tmp.wurQzCx7z9/wt/rtl/backend/ctrlblock_inst.svh'
+Loading include file '/tmp/tmp.wurQzCx7z9/wt/rtl/backend/ctrlblock_glue4.svh'
+Loading include file '/tmp/tmp.wurQzCx7z9/wt/rtl/backend/ctrlblock_outglue2.svh'
+Loading verilog file '/tmp/tmp.wurQzCx7z9/wt/rtl/backend/CtrlBlock_wrapper.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DecodeStage.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayN_15.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayN_17.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/FusionDecoder.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/GPAMem.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/MemCtrl.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/NewDispatch.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/PipeGroupConnect.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/PipelineConnectPipe.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/RedirectGenerator.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/Rename.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/RenameTableWrapper.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/Rob.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/SnapshotGenerator_14.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/SyncDataModuleTemplate_BackendPC_64entry.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/Trace.sv'
+Current container set to 'i'
+1
+set_top i:/WORK/$top
+Setting top design to 'i:/WORK/CtrlBlock'
+Status:   Elaborating design CtrlBlock   ...  
+Status:   Elaborating design xs_CtrlBlock_core   ...  
+Status:   Elaborating design Rob   ...  
+Warning: Cannot link cell '/WORK/Rob/rab' to its reference design 'RenameBuffer'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/vtypeBuffer' to its reference design 'VTypeBuffer'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/snapshots_snapshotGen' to its reference design 'SnapshotGenerator_3'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/exceptionGen' to its reference design 'ExceptionGen'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/deqPtrGenModule' to its reference design 'NewRobDeqPtrWrapper'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/enqPtrGenModule' to its reference design 'RobEnqPtrWrapper'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/dt_eliminatedMove_ext' to its reference design 'dt_160x1'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/dt_isRVC_ext' to its reference design 'dt_160x1'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/difftest_delayer' to its reference design 'DelayReg'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/difftest_module' to its reference design 'DummyDPICWrapper'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/difftest_delayer_1' to its reference design 'DelayReg'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/difftest_module_1' to its reference design 'DummyDPICWrapper'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/difftest_delayer_2' to its reference design 'DelayReg'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/difftest_module_2' to its reference design 'DummyDPICWrapper'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/difftest_delayer_3' to its reference design 'DelayReg'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/difftest_module_3' to its reference design 'DummyDPICWrapper'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/difftest_delayer_4' to its reference design 'DelayReg'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/difftest_module_4' to its reference design 'DummyDPICWrapper'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/difftest_delayer_5' to its reference design 'DelayReg'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/difftest_module_5' to its reference design 'DummyDPICWrapper'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/difftest_delayer_6' to its reference design 'DelayReg'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/difftest_module_6' to its reference design 'DummyDPICWrapper'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/difftest_delayer_7' to its reference design 'DelayReg'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/difftest_module_7' to its reference design 'DummyDPICWrapper'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/dt_isXSTrap_ext' to its reference design 'dt_160x1'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rob/difftest_module_8' to its reference design 'DummyDPICWrapper_8'. (FE-LINK-2)
+Status:   Elaborating design GPAMem   ...  
+Warning: Cannot link cell '/WORK/GPAMem/mem' to its reference design 'SyncDataModuleTemplate__64entry_4'. (FE-LINK-2)
+Status:   Elaborating design NewDispatch   ...  
+Warning: Cannot link cell '/WORK/NewDispatch/rcTagTable' to its reference design 'RegCacheTagTable'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/NewDispatch/intBusyTable' to its reference design 'BusyTable'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/NewDispatch/fpBusyTable' to its reference design 'BusyTable_1'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/NewDispatch/vecBusyTable' to its reference design 'BusyTable_2'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/NewDispatch/v0BusyTable' to its reference design 'BusyTable_3'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/NewDispatch/vlBusyTable' to its reference design 'VlBusyTable'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/NewDispatch/lsqEnqCtrl' to its reference design 'LsqEnqCtrl'. (FE-LINK-2)
+Status:   Elaborating design DecodeStage   ...  
+Warning: Cannot link cell '/WORK/DecodeStage/decoderComp' to its reference design 'DecodeUnitComp'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/DecodeStage/decoders_0' to its reference design 'DecodeUnit'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/DecodeStage/decoders_1' to its reference design 'DecodeUnit'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/DecodeStage/decoders_2' to its reference design 'DecodeUnit'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/DecodeStage/decoders_3' to its reference design 'DecodeUnit'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/DecodeStage/decoders_4' to its reference design 'DecodeUnit'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/DecodeStage/decoders_5' to its reference design 'DecodeUnit'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/DecodeStage/vtypeGen' to its reference design 'VTypeGen'. (FE-LINK-2)
+Status:   Elaborating design FusionDecoder   ...  
+Status:   Elaborating design RenameTableWrapper   ...  
+Warning: Cannot link cell '/WORK/RenameTableWrapper/intRat' to its reference design 'RenameTable'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/RenameTableWrapper/fpRat' to its reference design 'RenameTable_1'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/RenameTableWrapper/vecRat' to its reference design 'RenameTable_2'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/RenameTableWrapper/v0Rat' to its reference design 'RenameTable_3'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/RenameTableWrapper/vlRat' to its reference design 'RenameTable_3'. (FE-LINK-2)
+Status:   Elaborating design Rename   ...  
+Warning: Cannot link cell '/WORK/Rename/compressUnit' to its reference design 'CompressUnit'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rename/intFreeList' to its reference design 'MEFreeList'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rename/fpFreeList' to its reference design 'StdFreeList'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rename/vecFreeList' to its reference design 'StdFreeList_1'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rename/v0FreeList' to its reference design 'StdFreeList_2'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/Rename/vlFreeList' to its reference design 'StdFreeList_3'. (FE-LINK-2)
+Status:   Elaborating design RedirectGenerator   ...  
+Status:   Elaborating design SyncDataModuleTemplate_BackendPC_64entry   ...  
+Warning: Cannot link cell '/WORK/SyncDataModuleTemplate_BackendPC_64entry/dataBanks_0' to its reference design 'DataModule_BackendPC_16entry'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/SyncDataModuleTemplate_BackendPC_64entry/dataBanks_1' to its reference design 'DataModule_BackendPC_16entry'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/SyncDataModuleTemplate_BackendPC_64entry/dataBanks_2' to its reference design 'DataModule_BackendPC_16entry'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/SyncDataModuleTemplate_BackendPC_64entry/dataBanks_3' to its reference design 'DataModule_BackendPC_16entry'. (FE-LINK-2)
+Status:   Elaborating design MemCtrl   ...  
+Warning: Cannot link cell '/WORK/MemCtrl/ssit' to its reference design 'SSIT'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/MemCtrl/waittable' to its reference design 'WaitTable'. (FE-LINK-2)
+Status:   Elaborating design Trace   ...  
+Warning: Cannot link cell '/WORK/Trace/traceBuffer' to its reference design 'TraceBuffer'. (FE-LINK-2)
+Status:   Elaborating design DelayN_15   ...  
+Status:   Elaborating design SnapshotGenerator_14   ...  
+Status:   Elaborating design PipelineConnectPipe   ...  
+Status:   Elaborating design PipeGroupConnect   ...  
+Status:   Elaborating design DelayN_17   ...  
+Status:  Implementing inferred operators...
+Status:  Creating black-box designs...
+Created technology library 'FM_BBOX' in container 'i' for black-box designs
+Created black-box design 'RenameBuffer' in library 'FM_BBOX'
+Created black-box design 'VTypeBuffer' in library 'FM_BBOX'
+Created black-box design 'SnapshotGenerator_3' in library 'FM_BBOX'
+Created black-box design 'ExceptionGen' in library 'FM_BBOX'
+Created black-box design 'NewRobDeqPtrWrapper' in library 'FM_BBOX'
+Created black-box design 'RobEnqPtrWrapper' in library 'FM_BBOX'
+Created black-box design 'dt_160x1' in library 'FM_BBOX'
+Created black-box design 'DelayReg' in library 'FM_BBOX'
+Created black-box design 'DummyDPICWrapper' in library 'FM_BBOX'
+Created black-box design 'DummyDPICWrapper_8' in library 'FM_BBOX'
+Created black-box design 'SyncDataModuleTemplate__64entry_4' in library 'FM_BBOX'
+Created black-box design 'RegCacheTagTable' in library 'FM_BBOX'
+Created black-box design 'BusyTable' in library 'FM_BBOX'
+Created black-box design 'BusyTable_1' in library 'FM_BBOX'
+Created black-box design 'BusyTable_2' in library 'FM_BBOX'
+Created black-box design 'BusyTable_3' in library 'FM_BBOX'
+Created black-box design 'VlBusyTable' in library 'FM_BBOX'
+Created black-box design 'LsqEnqCtrl' in library 'FM_BBOX'
+Created black-box design 'DecodeUnitComp' in library 'FM_BBOX'
+Created black-box design 'DecodeUnit' in library 'FM_BBOX'
+Created black-box design 'VTypeGen' in library 'FM_BBOX'
+Created black-box design 'RenameTable' in library 'FM_BBOX'
+Created black-box design 'RenameTable_1' in library 'FM_BBOX'
+Created black-box design 'RenameTable_2' in library 'FM_BBOX'
+Created black-box design 'RenameTable_3' in library 'FM_BBOX'
+Created black-box design 'CompressUnit' in library 'FM_BBOX'
+Created black-box design 'MEFreeList' in library 'FM_BBOX'
+Created black-box design 'StdFreeList' in library 'FM_BBOX'
+Created black-box design 'StdFreeList_1' in library 'FM_BBOX'
+Created black-box design 'StdFreeList_2' in library 'FM_BBOX'
+Created black-box design 'StdFreeList_3' in library 'FM_BBOX'
+Created black-box design 'DataModule_BackendPC_16entry' in library 'FM_BBOX'
+Created black-box design 'SSIT' in library 'FM_BBOX'
+Created black-box design 'WaitTable' in library 'FM_BBOX'
+Created black-box design 'TraceBuffer' in library 'FM_BBOX'
+Warning: 35 blackbox designs were created for missing references. (FM-064)
+Status:  Attempting to resolve unlinked cells by using black-boxes...
+Warning: 42578 black-box pins of unknown direction found; see formality.log for list (FM-230)
+Top design set to 'i:/WORK/CtrlBlock' with warnings
+Implementation design set to 'i:/WORK/CtrlBlock'
+1
+# ----------------------------------------------------------------------------
+# 字段映射配对（在首次 match 之前全量钉死）：当手写核心把整个 payload 打包进一个
+# 扁平寄存器 data_reg，而 golden 用逐字段寄存器 data_<suffix> 时，等宽字段会令签名
+# 分析产生歧义、且会在重新 match 时互相搅乱。生成器输出「<suffix> <lo> <width>」
+# 映射（FM_FIELD_MAP），这里据此把 ref 的 data_<suffix>_reg[b] 逐位 set_user_match
+# 到 impl 的 u_core/data_reg[lo+b]，使后续 match 只需处理 valid 等非 payload 寄存器。
+# 供 PipelineConnect 及后续扁平 payload 模块复用。
+# ----------------------------------------------------------------------------
+proc match_packed_payload { top } {
+    if {![info exists ::env(FM_FIELD_MAP)] || ![file exists $::env(FM_FIELD_MAP)]} return
+    set fh [open $::env(FM_FIELD_MAP) r]
+    set n 0
+    foreach ln [split [read $fh] "\n"] {
+        if {![regexp {^(\S+)\s+(\d+)\s+(\d+)$} $ln -> suf lo w]} continue
+        for {set b 0} {$b < $w} {incr b} {
+            set ipath "i:/WORK/$top/u_core/data_reg\[[expr {$lo + $b}]\]"
+            # 多位字段 golden 名为 data_<suf>_reg[b]；1 位字段可能无下标
+            set cands [list "r:/WORK/$top/data_${suf}_reg\[$b\]"]
+            if {$w == 1} { lappend cands "r:/WORK/$top/data_${suf}_reg" }
+            foreach rpath $cands {
+                if {![catch {set_user_match $rpath $ipath}]} { incr n; break }
+            }
+        }
+    }
+    close $fh
+    if {$n > 0} { puts "PACKED_MATCH: $n points pinned" }
+}
+# 模块本地「匹配前」钉点(FM_PIN_PRE_TCL, 可选): 首次 match 前需 set_user_match 的对象。
+# 四审: sidecar 下 pin 代码进受限 safe child interp(sidecar_pin_source: 一次读取→快照
+# →child 执行同一缓冲; 拿不到父层 guard/trace/证据目录; 嵌套 source 走同一受控入口)。
+if {[info exists env(FM_PIN_PRE_TCL)] && [file exists $env(FM_PIN_PRE_TCL)]} {
+    if {$SIDECAR_ON} { sidecar_pin_source $env(FM_PIN_PRE_TCL) } else { source $env(FM_PIN_PRE_TCL) }
+}
+match_packed_payload $top
+match
+Reference design is 'r:/WORK/CtrlBlock'
+Implementation design is 'i:/WORK/CtrlBlock'
+Status:  Checking designs...
+    Warning: Design r:/FM_BBOX/RenameBuffer is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/VTypeBuffer is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/SnapshotGenerator_3 is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/ExceptionGen is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/NewRobDeqPtrWrapper is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/RobEnqPtrWrapper is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/dt_160x1 is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/DelayReg is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/DummyDPICWrapper is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/SyncDataModuleTemplate__64entry_4 is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/RegCacheTagTable is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/BusyTable is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/BusyTable_1 is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/BusyTable_2 is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/BusyTable_3 is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/VlBusyTable is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/LsqEnqCtrl is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/DecodeUnitComp is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/DecodeUnit is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/VTypeGen is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/RenameTable is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/RenameTable_1 is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/RenameTable_2 is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/RenameTable_3 is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/CompressUnit is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/MEFreeList is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/StdFreeList is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/StdFreeList_1 is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/StdFreeList_2 is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/StdFreeList_3 is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/DataModule_BackendPC_16entry is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/TraceBuffer is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/RenameBuffer is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/VTypeBuffer is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/SnapshotGenerator_3 is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/ExceptionGen is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/NewRobDeqPtrWrapper is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/RobEnqPtrWrapper is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/dt_160x1 is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/DelayReg is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/DummyDPICWrapper is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/SyncDataModuleTemplate__64entry_4 is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/RegCacheTagTable is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/BusyTable is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/BusyTable_1 is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/BusyTable_2 is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/BusyTable_3 is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/VlBusyTable is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/LsqEnqCtrl is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/DecodeUnitComp is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/DecodeUnit is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/VTypeGen is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/RenameTable is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/RenameTable_1 is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/RenameTable_2 is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/RenameTable_3 is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/CompressUnit is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/MEFreeList is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/StdFreeList is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/StdFreeList_1 is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/StdFreeList_2 is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/StdFreeList_3 is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/DataModule_BackendPC_16entry is a black box and there are cells referencing it (FM-160)
+    Warning: Design i:/FM_BBOX/TraceBuffer is a black box and there are cells referencing it (FM-160)
+    Warning: 0 (144) undriven nets found in reference (implementation) design; see formality.log for list (FM-399)
+    Info:  993 (993) multiply-driven nets found in reference (implementation) design; see formality.log for list.
+    Warning: 60 (60) black-box references found in reference (implementation) design; see formality.log for list (FM-182)
+Status:  Building verification models...
+    Info:  Constant registers have been identified that were initialized by some objects that were assumed to toggle.
+           For more info use commands: report_potentially_constant_registers  and report_init_toggle_objects
+Status:  Merging duplicated registers in block r:/WORK/CtrlBlock (<top>)...
+Status:  Merging duplicated registers in block r:/WORK/CtrlBlock/decodePipeRenameModule (/WORK/PipelineConnectPipe)...
+Status:  Merging duplicated registers in block r:/WORK/CtrlBlock/decodePipeRenameModule_1 (/WORK/PipelineConnectPipe)...
+Status:  Merging duplicated registers in block r:/WORK/CtrlBlock/decodePipeRenameModule_2 (/WORK/PipelineConnectPipe)...
+Status:  Merging duplicated registers in block r:/WORK/CtrlBlock/decodePipeRenameModule_3 (/WORK/PipelineConnectPipe)...
+Status:  Merging duplicated registers in block r:/WORK/CtrlBlock/decodePipeRenameModule_4 (/WORK/PipelineConnectPipe)...
+Status:  Merging duplicated registers in block r:/WORK/CtrlBlock/decodePipeRenameModule_5 (/WORK/PipelineConnectPipe)...
+Status:  Merging duplicated registers in block r:/WORK/CtrlBlock/dispatch (/WORK/NewDispatch)...
+Status:  Merging duplicated registers in block r:/WORK/CtrlBlock/fusionDecoder (/WORK/FusionDecoder)...
+Status:  Merging duplicated registers in block r:/WORK/CtrlBlock/memCtrl (/WORK/MemCtrl)...
+Status:  Merging duplicated registers in block r:/WORK/CtrlBlock/pcMem (/WORK/SyncDataModuleTemplate_BackendPC_64entry)...
+Status:  Merging duplicated registers in block r:/WORK/CtrlBlock/redirectGen (/WORK/RedirectGenerator)...
+Status:  Merging duplicated registers in block r:/WORK/CtrlBlock/rob (/WORK/Rob)...
+Status:  Merging duplicated registers in block i:/WORK/CtrlBlock/u_core/decodePipeRenameModule (/WORK/PipelineConnectPipe)...
+Status:  Merging duplicated registers in block i:/WORK/CtrlBlock/u_core/decodePipeRenameModule_1 (/WORK/PipelineConnectPipe)...
+Status:  Merging duplicated registers in block i:/WORK/CtrlBlock/u_core/decodePipeRenameModule_2 (/WORK/PipelineConnectPipe)...
+Status:  Merging duplicated registers in block i:/WORK/CtrlBlock/u_core/decodePipeRenameModule_3 (/WORK/PipelineConnectPipe)...
+Status:  Merging duplicated registers in block i:/WORK/CtrlBlock/u_core/decodePipeRenameModule_4 (/WORK/PipelineConnectPipe)...
+Status:  Merging duplicated registers in block i:/WORK/CtrlBlock/u_core/decodePipeRenameModule_5 (/WORK/PipelineConnectPipe)...
+Status:  Merging duplicated registers in block i:/WORK/CtrlBlock/u_core/dispatch (/WORK/NewDispatch)...
+Status:  Merging duplicated registers in block i:/WORK/CtrlBlock/u_core/fusionDecoder (/WORK/FusionDecoder)...
+Status:  Merging duplicated registers in block i:/WORK/CtrlBlock/u_core/memCtrl (/WORK/MemCtrl)...
+Status:  Merging duplicated registers in block i:/WORK/CtrlBlock/u_core/pcMem (/WORK/SyncDataModuleTemplate_BackendPC_64entry)...
+Status:  Merging duplicated registers in block i:/WORK/CtrlBlock/u_core/redirectGen (/WORK/RedirectGenerator)...
+Status:  Merging duplicated registers in block i:/WORK/CtrlBlock/u_core/rob (/WORK/Rob)...
+Status:  Merging duplicated registers in block i:/WORK/CtrlBlock/u_core (/WORK/xs_CtrlBlock_core)...
+    Info:  Constant registers have been identified that were initialized by some objects that were assumed to toggle.
+           For more info use commands: report_potentially_constant_registers  and report_init_toggle_objects
+Status:  Merging duplicated registers in block r:/WORK/CtrlBlock (<top>)...
+Status:  Merging duplicated registers in block r:/WORK/CtrlBlock/dispatch (/WORK/NewDispatch_2)...
+Status:  Merging duplicated registers in block r:/WORK/CtrlBlock/memCtrl (/WORK/MemCtrl_2)...
+Status:  Merging duplicated registers in block r:/WORK/CtrlBlock/renamePipeDispatch (/WORK/PipeGroupConnect)...
+Status:  Merging duplicated registers in block r:/WORK/CtrlBlock/rob (/WORK/Rob_2)...
+Status:  Merging duplicated registers in block i:/WORK/CtrlBlock/u_core/dispatch (/WORK/NewDispatch_2)...
+Status:  Merging duplicated registers in block i:/WORK/CtrlBlock/u_core/memCtrl (/WORK/MemCtrl_2)...
+Status:  Merging duplicated registers in block i:/WORK/CtrlBlock/u_core/renamePipeDispatch (/WORK/PipeGroupConnect)...
+Status:  Merging duplicated registers in block i:/WORK/CtrlBlock/u_core/rob (/WORK/Rob_2)...
+Status:  Merging duplicated registers in block i:/WORK/CtrlBlock/u_core (/WORK/xs_CtrlBlock_core)...
+    Info:  Constant registers have been identified that were initialized by some objects that were assumed to toggle.
+           For more info use commands: report_potentially_constant_registers  and report_init_toggle_objects
+Status:  Merging duplicated registers in block r:/WORK/CtrlBlock (<top>)...
+Status:  Merging duplicated registers in block i:/WORK/CtrlBlock/u_core (/WORK/xs_CtrlBlock_core)...
+    Info:  Constant registers have been identified that were initialized by some objects that were assumed to toggle.
+           For more info use commands: report_potentially_constant_registers  and report_init_toggle_objects
+Status:  Merging duplicated registers in block r:/WORK/CtrlBlock (<top>)...
+Status:  Merging duplicated registers in block i:/WORK/CtrlBlock/u_core (/WORK/xs_CtrlBlock_core)...
+    
+-------- SIGTERM INFO --------
+    Signal Number   = '15'
+    Signal Code     = '0'
+    Signal ErrNo    = '0'
+    Sender PID      = '3265188'
+    Real Sender UID = '1000'
+    -------- ------------ --------
+    timeout
+    -------- ------------ --------
+
+
+Process terminated by kill.
+

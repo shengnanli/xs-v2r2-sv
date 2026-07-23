@@ -1,0 +1,17 @@
+=== FM: Frontend (mode=shadow) ===
+FM_TOP=Frontend \
+FM_MODE=shadow \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/Frontend.sv " \
+FM_IMPL_SRCS="/tmp/tmp.I9aiztfVAt/wt/rtl/frontend/Frontend.sv /tmp/tmp.I9aiztfVAt/wt/rtl/frontend/Frontend_wrapper.sv" \
+ \
+ \
+ \
+ \
+FM_PIN_TCL=/tmp/tmp.I9aiztfVAt/wt/verif/ut/Frontend/fm_pins.tcl \
+fm_shell -64 -work_path fm_work/Frontend -file /tmp/tmp.I9aiztfVAt/wt/scripts/fm_eq.tcl \
+    > fm_work/Frontend/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.I9aiztfVAt/wt/scripts/fm_verdict.py fm_work/Frontend/fm.log --rc $rc --mode shadow --top Frontend --allowlist 0
+FAILED	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 1, "make_rc": 0, "mode": "shadow", "native": "FAILED", "top": "Frontend", "dont_verify": false, "elab147": false, "reason": null}
+make: *** [../../../scripts/ut_common.mk:56: fm-Frontend] Error 1

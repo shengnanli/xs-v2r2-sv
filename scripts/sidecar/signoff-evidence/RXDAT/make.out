@@ -1,0 +1,16 @@
+=== FM: RXDAT (mode=signoff-strict) ===
+FM_TOP=RXDAT \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/RXDAT.sv " \
+FM_IMPL_SRCS="/tmp/tmp.qcJ1GomTOA/wt/rtl/uncore/RXDAT.sv /tmp/tmp.qcJ1GomTOA/wt/rtl/uncore/RXDAT_wrapper.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/RXDAT -file /tmp/tmp.qcJ1GomTOA/wt/scripts/fm_eq.tcl \
+    > fm_work/RXDAT/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.qcJ1GomTOA/wt/scripts/fm_verdict.py fm_work/RXDAT/fm.log --rc $rc --mode signoff-strict --top RXDAT --allowlist 0
+SUCCEEDED	{"passing": 571, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "RXDAT", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

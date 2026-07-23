@@ -1,0 +1,41 @@
+**************************************************
+Report         : black_boxes
+
+Reference      : r:/WORK/Bku
+Implementation : i:/WORK/Bku
+Version        : V-2023.12-SP3
+Date           : Mon Jul 20 01:44:26 2026
+**************************************************
+Information: Reporting black boxes for current reference and implementation designs. (FM-184)
+
+ ___________________________________________________
+|                                                   |
+|  Legend:                                          |
+|           Black Box Attributes                    |
+|              s = Set with set_black_box command   |
+|              i = Module read with -interface_only |
+|              u = Unresolved design module         |
+|              e = Empty design module              |
+|              * = Unlinked design module           |
+|             ut = Unread tech cells pins           |
+|              L = Linked to non-black box design   |
+|             cp = Cutpoint blackbox                |
+|             ir = Internal rounded blackbox        |
+|              f = Formality Power Model            |
+|              m = Technology Macro cell (.db)      |
+|___________________________________________________|
+
+
+##################################################################
+####    DESIGN LIBRARY - i:/WORK
+##################################################################
+Type  Design Name
+----  ----------
+s      xs_bku_clmul
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/Bku/u_core/u_clmul
+
+
+1

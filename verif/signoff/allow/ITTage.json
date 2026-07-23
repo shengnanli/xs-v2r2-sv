@@ -1,0 +1,32 @@
+{
+    "unresolved_blackbox": [
+        {
+            "id": "tables_0",
+            "ref_path": "r:/WORK/ITTage/tables_0",
+            "impl_path": "i:/WORK/ITTage/tables_0"
+        },
+        {
+            "id": "tables_1",
+            "ref_path": "r:/WORK/ITTage/tables_1",
+            "impl_path": "i:/WORK/ITTage/tables_1"
+        },
+        {
+            "id": "tables_2",
+            "ref_path": "r:/WORK/ITTage/tables_2",
+            "impl_path": "i:/WORK/ITTage/tables_2"
+        },
+        {
+            "id": "tables_3",
+            "ref_path": "r:/WORK/ITTage/tables_3",
+            "impl_path": "i:/WORK/ITTage/tables_3"
+        },
+        {
+            "id": "tables_4",
+            "ref_path": "r:/WORK/ITTage/tables_4",
+            "impl_path": "i:/WORK/ITTage/tables_4"
+        }
+    ],
+    "interface_only": [],
+    "empty_blackbox": [],
+    "unmatched": []
+}

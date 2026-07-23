@@ -119,20 +119,24 @@ module xs_PtwCache_core
   //   stageReq → stageDelay[0]/[1] → stageCheck[0]/[1] → stageResp
   // 每个 stage 携带 PtwCacheReq（req_info/isFirst/isHptwReq/hptwId/bypassed[4]）。
   // ===========================================================================
+  // 注：bypassed（EnableSv48 4 位 l0/l1/l2/l3）不放进流水 payload 结构——
+  // 入口恒 0、stageDelay[0] 载荷寄存器 golden 已折叠消去（写而不读的常 0 死寄存器）。
+  // bypassed 只在需要处单独维护：stageCheck0/stageResp 各一个真寄存器 + delay1/check1 组合。
   typedef struct packed {
     req_info_t  req_info;
     logic       isFirst;
     logic       isHptwReq;
     logic [2:0] hptwId;
-    logic [3:0] bypassed;   // EnableSv48：4 位（l0/l1/l2/l3）
   } stage_payload_t;
+
+  logic [3:0] stageCheck0_bypassed, stageResp_bypassed;   // 唯二 bypassed 流水寄存器
+  logic [3:0] stageDelay1_bypassed, stageCheck1_bypassed;  // 组合累积
 
   stage_payload_t stageReq_bits;
   assign stageReq_bits.req_info  = req_info;
   assign stageReq_bits.isFirst   = req_isFirst;
   assign stageReq_bits.isHptwReq = req_isHptwReq;
   assign stageReq_bits.hptwId    = req_hptwId;
-  assign stageReq_bits.bypassed  = '0;   // 入口 bypassed 恒 0（golden io.req 无该字段）
 
   logic stageReq_valid, stageReq_ready;
   assign stageReq_valid = req_valid;
@@ -150,7 +154,6 @@ module xs_PtwCache_core
   // 单拍 fire 脉冲：用于锁存 SRAM 读出 / PLRU access / ecc-flush 时机
   logic stageDelay_valid_1cycle;       // = OneCycleValid(stageReq.fire)
   logic stageCheck_valid_1cycle;       // = OneCycleValid(stageDelay[1].fire)
-  logic [1:0] stageResp_valid_1cycle_dup;
 
   wire stageDelay0_fire = stageDelay_valid[0] && stageDelay_ready[0];
   wire stageDelay1_fire = stageDelay_valid[1] && stageDelay_ready[1];
@@ -168,8 +171,8 @@ module xs_PtwCache_core
   // ===========================================================================
   // 五个缓存阵列的存储寄存器（L1/L0 的 data 在 SRAM 黑盒里，这里只存 v/g/h/asid/vmid/vpn）
   // ===========================================================================
-  // L3：16 项全相联
-  nonleaf_entry_t l3 [L3_SIZE];
+  // L3：16 项全相联（窄结构 l3_entry_t：11b tag，无 pbmt/v 死字段）
+  l3_entry_t l3 [L3_SIZE];
   logic [L3_SIZE-1:0] l3v, l3g;
   logic [1:0] l3h [L3_SIZE];
   // L2：16 项全相联

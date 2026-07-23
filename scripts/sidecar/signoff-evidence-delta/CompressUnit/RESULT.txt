@@ -1,0 +1,4 @@
+SIGNOFF_RESULT CompressUnit: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=signoff-strict fm_shell_rc=0 validator_rc=0)
+run_id: SGN-CompressUnit-1784804085
+impl_commit: c94d82c752b460a9faa009cbbb7f3f0f80d19519
+manifest_sha256: 357b404c2a93fd1a9cb206fb9f1cf388a081206521910a84c976ec71cc6d3b0a

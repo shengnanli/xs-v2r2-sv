@@ -1,0 +1,4 @@
+SIGNOFF_RESULT ICacheDataArray: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=assembly fm_shell_rc=0 validator_rc=0)
+run_id: SGN-ICacheDataArray-1784708714
+impl_commit: 7f5fd42fba957ef518a36a382e9035cbe9956c76
+manifest_sha256: fedec09af24bbd8fca49ccdd9016e4541216a0a67252e16181e9cb0e94112af5

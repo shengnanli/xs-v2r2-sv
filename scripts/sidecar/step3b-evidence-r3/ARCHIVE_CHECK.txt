@@ -1,0 +1,27 @@
+# clean-archive 八审语义验证(四洞+P1收口: probe唯一变换/closure角色绑定/reject精确receipt/probe完整floor/make_rc绑定/infra后缀match)
+evidence_commit: 01543f0a116563225ace4718ab8465899ead5279
+implementation_commit: edbcd2ab3ee55e11bd043c07e61e1b966cad4485
+ARCHIVE_VERIFY: bad=0
+--- 负测21(前审16 + 八审1-4/P1a) ---
+PASS  empty_manifest_six_dirs
+PASS  tampered_tools_selfconsistent
+PASS  forged_native_json_and_rc
+PASS  reject_with_native_facts
+PASS  hole1_result_claims_success
+PASS  hole2_reject_rc_forged
+PASS  hole3_dup_json_keys
+PASS  hole4_infra_all_same
+PASS  hole6_snapshot_tampered
+PASS  seven_A_dup_result_success
+PASS  seven_B_probe_native_degraded
+PASS  seven_C_orphan_snapshot
+PASS  seven_D_executed_reorder
+PASS  seven_E_frozen_verdict_tamper
+PASS  seven_F_snap_escape
+PASS  eight_1_probe_extra_change
+PASS  eight_2_stim_snapshot_desync
+PASS  eight_3_reject_fake_receipt
+PASS  eight_4_probe_passing_zero
+PASS  eight_P1a_make_rc_forged
+PASS  real_evidence_passes
+21/21 passed

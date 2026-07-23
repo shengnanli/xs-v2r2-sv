@@ -1,0 +1,4 @@
+SIGNOFF_RESULT ICacheDataArray: measured=ERROR required=SUCCEEDED gate=GAP (proof=signoff-strict fm_shell_rc=0 validator_rc=1)
+run_id: SGN-ICacheDataArray-1784708567
+impl_commit: bdf8b785cee18027ca8f120c9d70e31a306ddb1f
+manifest_sha256: 4c00dfa44ae87f4fbfa81b1b3c823c0f2c3aab74de2b22c6a6d71c62456e69c6

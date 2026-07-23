@@ -110,40 +110,125 @@ def strip_firtool_macros(body):
     return body
 
 
+# 状态元素：由可读核 u_core 驱动（不再由 golden-copied body 驱动）。
+# s{1,2,3}_valid_dup_3 = FSM valid（547 扇出，喂 resp.valid/s2_valid/s3_valid 输出+全部
+# 预测门控）；topdown_stages_2_reasons_* = 3 级气泡原因流水的末级寄存器。
+SPLICE_VALID_REGS = ["s1_valid_dup_3", "s2_valid_dup_3", "s3_valid_dup_3"]
+SPLICE_TD2_REGS = [f"topdown_stages_2_reasons_{i}" for i in (1,2,3,4,5,6,7,8,9,12)]
+# 整个 topdown reasons 3 级流水都搬进 u_core：stage_0/stage_1 若只喂 stage_2 会在 splice 后
+# 变 impl-only 死寄存器，故 stage_0/stage_1 也一并删除（输出级仍保留 golden 同拍 _GEN_10x
+# 注入，见 io_bpu_to_ftq_resp_bits_topdown_info_reasons_* 保持不动）。
+SPLICE_TD01_REGS = [f"topdown_stages_{s}_reasons_{i}"
+                    for s in (0, 1) for i in (1,2,3,4,5,6,7,8,9,12)]
+SPLICE_ALL_STATE = SPLICE_VALID_REGS + SPLICE_TD2_REGS + SPLICE_TD01_REGS
+
+
+def splice_body(body):
+    """把 golden-copied body 中被可读核接管的 13 个状态元素（3 valid + 10 topdown_stages_2）
+    的 golden 驱动（reg 声明→wire、reset、next-state、_RANDOM/reset-init）删除，
+    并额外删除仅喂 stage_2 的 topdown stage_0/stage_1 整条流水（避免变 impl-only 死位）。
+    reg 声明改为 wire（由 u_core 连接驱动，见 emit_wrapper 的 core 连接）。
+    结果与手写 splice 逐字一致（reproducible: 重生成后 git diff 须空）。"""
+    lines = body.split("\n")
+    out = []
+    # 需删除的名字集合（stage_0/1 全删；stage_2/valid: reg->wire + 删 next/reset/init）
+    dead = set(SPLICE_ALL_STATE)
+    wire_conv = set(SPLICE_VALID_REGS + SPLICE_TD2_REGS)  # reg->wire, 由 u_core 驱动
+    del_names = set(SPLICE_TD01_REGS)                     # 整体删除
+
+    # 逐行处理：多行 next-state（以 "<name> <=" 起、可能续行到 ";")需跨行删除。
+    i = 0
+    def is_decl(line, name):
+        return re.match(rf"^\s*reg\s+{re.escape(name)};\s*$", line) is not None
+    while i < len(lines):
+        ln = lines[i]
+        stripped = ln.strip()
+        # 1) reg 声明
+        m = re.match(r"^\s*reg\s+(\w+);\s*$", ln)
+        if m and m.group(1) in dead:
+            nm = m.group(1)
+            if nm in wire_conv:
+                out.append(re.sub(r"^(\s*)reg(\s+)", r"\1wire\2", ln))
+            # del_names: 跳过（删声明）
+            i += 1
+            continue
+        # 2) reset ( <name> <= 1'h0; ) 单行
+        m = re.match(r"^\s*(\w+)\s*<=\s*1'h0;\s*$", ln)
+        if m and m.group(1) in dead:
+            i += 1
+            continue
+        # 3) reset-init / _RANDOM ( <name> = ...; ) 单行(blocking, 在 ifndef SYNTHESIS)
+        m = re.match(r"^\s*(\w+)\s*=\s*.*;\s*$", ln)
+        if m and m.group(1) in dead:
+            i += 1
+            continue
+        # 4) next-state ( <name> <= ... ) 可能跨多行到 ';'
+        m = re.match(r"^\s*(\w+)\s*<=", ln)
+        if m and m.group(1) in dead:
+            # 吞掉直到本语句以 ';' 结束
+            while i < len(lines) and not lines[i].rstrip().endswith(";"):
+                i += 1
+            i += 1  # 吞掉带 ';' 的末行
+            continue
+        out.append(ln)
+        i += 1
+    spliced = "\n".join(out)
+    # 5) _GEN_112 = s3_valid_dup_3 | ... 仅被已删的 s3 next-state 使用 → 删该 wire 定义
+    spliced = re.sub(r"^\s*wire\s+_GEN_112\s*=[^;]*;\s*\n", "", spliced, flags=re.M)
+    return spliced
+
+
+# 可读核输出 → wrapper 内被驱动的 net 映射（REAL splice：核真驱动 FSM+topdown 输出）。
+# 未列出的核输出（resp_valid/s0_fire/s1_fire）由 body 组合式从 core-driven valid wire 再
+# 生成（与核内部推导恒等），故悬空不双驱。
+CORE_DRIVE = {
+    "s1_valid": "s1_valid_dup_3",
+    "s2_valid": "s2_valid_dup_3",
+    "s3_valid": "s3_valid_dup_3",
+    **{f"topdown2_reason_{i}": f"topdown_stages_2_reasons_{i}" for i in (1,2,3,4,5,6,7,8,9,12)},
+}
+
+
 def emit_wrapper(modname, with_dbg_ports):
     L = []
     L.append("// 自动生成：scripts/gen_predictor.py —— 勿手改")
-    L.append("// BPU 顶层 wrapper：逐字照搬 golden body（Composer/DelayN/PriorityMuxModule 黑盒 +")
-    L.append("// 256 位 ghv / 折叠历史扇出 + s2/s3 redirect 判定），额外例化可读核 xs_Predictor_core")
-    L.append("// 作为 FSM+topdown 的等价校验伴随（影子输出经 xs_dbg_* 引出，仅供 UT 探针比对）。")
+    L.append("// BPU 顶层 wrapper：照搬 golden body 的历史扇出/接线（Composer 黑盒 + 256 位 ghv /")
+    L.append("// 折叠历史扇出 + s2/s3 redirect 判定），但 FSM valid + topdown reasons 流水的 golden")
+    L.append("// 驱动被删除，改由例化的可读核 xs_Predictor_core **真驱动**（REAL，非影子）：")
+    L.append("//   s{1,2,3}_valid_dup_3 + topdown_stages_2_reasons_* ← u_core（reg 转 wire）。")
+    L.append("// resp.valid / s0_fire / s1_fire 由 body 组合式从 core-driven valid 再生成；")
+    L.append("// topdown 输出级保留 golden 同拍 _GEN_10x 注入。UT 影子探针经 xs_dbg_* 引出。")
     L.append(f"module {modname}(")
     decls = [f"  {d:6s} {width_str(w)}{n}" for d, w, n in PORTS]
     if with_dbg_ports:
         decls += [f"  output {width_str(w)}{n}" for n, w in CORE_DBG_PORTS]
     L.append(",\n".join(decls))
     L.append(");")
-    L.append(strip_firtool_macros(BODY).rstrip())
+    L.append(splice_body(strip_firtool_macros(BODY)).rstrip())
     L.append("")
-    L.append("  // ===== 可读核（FSM + topdown 影子；纯增量，不影响对外功能）=====")
+    L.append("  // ===== 可读核 xs_Predictor_core：真驱动 FSM valid + topdown reasons（REAL）=====")
+    conn = [".clock(clock)", ".reset(reset)"]
+    for cn, src in CORE_IN:
+        conn.append(f".{cn}({src})")
+    for n, w in CORE_OUT:
+        if n in CORE_DRIVE:
+            # 核真驱动的功能 net（同时引到 dbg 口时用中间 net? 直接驱动 body net）
+            tgt = CORE_DRIVE[n]
+            if with_dbg_ports:
+                conn.append(f".{n}(xs_dbg_{n})")   # _xs: 引 dbg 口, 且下面另 assign 驱动 body net
+            else:
+                conn.append(f".{n}({tgt})")
+        else:
+            # 组合再生成的核输出（resp_valid/s0_fire/s1_fire）：body 自算, 核输出悬空/仅 dbg
+            conn.append(f".{n}(xs_dbg_{n})" if with_dbg_ports else f".{n}(/* body re-derives */)")
+    L.append("  xs_Predictor_core u_core (")
+    L.append("    " + ",\n    ".join(conn))
+    L.append("  );")
     if with_dbg_ports:
-        conn = [".clock(clock)", ".reset(reset)"]
-        for cn, src in CORE_IN:
-            conn.append(f".{cn}({src})")
-        for n, w in CORE_OUT:
-            conn.append(f".{n}(xs_dbg_{n})")
-        L.append("  xs_Predictor_core u_core (")
-        L.append("    " + ",\n    ".join(conn))
-        L.append("  );")
-    else:
-        # golden 同名 wrapper：核输出悬空（不引脚），仅保证可读核被例化、综合可达
-        conn = [".clock(clock)", ".reset(reset)"]
-        for cn, src in CORE_IN:
-            conn.append(f".{cn}({src})")
-        for n, w in CORE_OUT:
-            conn.append(f".{n}(/* unused dbg */)")
-        L.append("  xs_Predictor_core u_core (")
-        L.append("    " + ",\n    ".join(conn))
-        L.append("  );")
+        # _xs 变体：核输出既引 dbg 口(供 tb 探针)又驱动 body net(真驱动) → 用 xs_dbg_* 连回
+        L.append("  // _xs：核驱动的功能 net 由 dbg 输出回连（tb 探针 + 真驱动同一份值）")
+        for n in CORE_DRIVE:
+            L.append(f"  assign {CORE_DRIVE[n]} = xs_dbg_{n};")
     L.append("endmodule")
     return "\n".join(L) + "\n"
 

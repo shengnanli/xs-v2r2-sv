@@ -1,0 +1,16 @@
+=== FM: BranchUnit (mode=signoff-strict) ===
+FM_TOP=BranchUnit \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/BranchUnit.sv /home/eda/xs-env/G0-canonical/golden-rtl/BranchModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/AddrAddModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/SubModule.sv" \
+FM_IMPL_SRCS="/tmp/tmp.AF3V1Sciy3/wt/rtl/backend/branchunit_pkg.sv /tmp/tmp.AF3V1Sciy3/wt/rtl/backend/BranchUnit.sv /tmp/tmp.AF3V1Sciy3/wt/rtl/backend/BranchUnit_wrapper.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/BranchUnit -file /tmp/tmp.AF3V1Sciy3/wt/scripts/fm_eq.tcl \
+    > fm_work/BranchUnit/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.AF3V1Sciy3/wt/scripts/fm_verdict.py fm_work/BranchUnit/fm.log --rc $rc --mode signoff-strict --top BranchUnit --allowlist 0
+SUCCEEDED	{"passing": 840, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "BranchUnit", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

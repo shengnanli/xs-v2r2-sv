@@ -85,7 +85,12 @@ module xs_PTW_core
   logic l2_hit_r;
   logic [SOURCE_W-1:0] source_r;
   logic stage1_hit_r;
+  // stage1 回放的 merge resp 用「不含 af」的存储型(ptw_merge_resp_noaf_t):
+  //   golden 的 stage1 entry 输入无 af 字段(常量 0 折叠), 存储侧不保留 af 触发器,
+  //   读出时用 mrg_from_noaf() 拼回完整类型并把 entry.af 钉 0。与 L2TLB llptw_stage1 同法。
+  ptw_merge_resp_noaf_t stage1_r_q;
   ptw_merge_resp_t stage1_r;
+  assign stage1_r = mrg_from_noaf(stage1_r_q);
   hptw_resp_t hptw_resp_r;
 
   // Scala 中的握手状态位。1 表示“空闲/已完成”，0 表示“需要发送或等待”。
@@ -107,15 +112,20 @@ module xs_PTW_core
   logic access_fault_r;
   logic update_full_gvpn_from_mem;
   logic [PTE_PPN_W-1:0] full_gvpn_r;
-  logic [6:0] perf_event_s1;   // bit5 由 perf_event_s1_5 提供(见下), 本向量 bit5 不驱动不读
+  // perf 输出两级流水(golden 每路 io_perf_N_value_REG/REG_1, 均无复位):
+  //   stage1 = perf_event_s1(golden REG), stage2 = perf_event_s2(golden REG_1)。
+  //   index5 的 stage1 采样累积器 perf_event_s1_5(golden perfEvents_5_2), 其余采样事件。
+  //   输出仅低 1 位有效, 高 5 位为常量 0(与 golden {5'h0, REG_1} 一致, 不设寄存器)。
+  logic [6:0] perf_event_s1;
   logic [6:0] perf_event_s2;
   // perf[5] 的事件累积器(mem 在途): golden perfEvents_5_2 带复位, 单独拆出放复位块;
   // 其余 perf 流水级 golden 无复位(XSPerfAccumulate 的 REG/REG_1), 放无复位块。
   logic perf_event_s1_5;
 
-  // 这个 enum 是代码阅读用的高层状态投影；实际控制仍保持 Scala 的 s/w
-  // 位级协议，避免把并行 handshake 行为压扁成过度简化的单状态。
-  ptw_state_e state_q, state_d;
+  // 说明: golden 无高层状态机寄存器, 控制完全由上面的 s_*/w_* 位级 handshake 协议
+  // 表达。此前用于波形阅读的 ptw_state_e 投影寄存器(state_q/state_d)对功能无扇出,
+  // golden 侧无对应, 保留会成 impl-only 死寄存器, 故移除。ptw_state_e 枚举仍在
+  // xs_ptw_pkg 声明(未使用), 不影响等价性。
 
   wire flush = sfence_valid || csr.satp_changed || csr.vsatp_changed || csr.hgatp_changed;
   wire req_fire = idle && req_valid;
@@ -233,8 +243,8 @@ module xs_PTW_core
     resp_merge = '0;
     for (int i = 0; i < CONTIGUOUS; i++) begin
       resp_merge.entry[i] = return_stage1 ? stage1_r.entry[i] : generated_entry;
-      // golden 的 stage1 entry 输入没有 af 字段(常量0折叠), stage1_r.entry[i].af
-      // 寄存器无复位后上电为 X, 读出点强制回 golden 的常量 0。
+      // golden 的 stage1 entry 输入没有 af 字段(常量0折叠); stage1_r 来自不含 af 的
+      // noaf 存储型, mrg_from_noaf 已把 entry.af 钉 0, 此处对非 stage1 分支取生成值。
       resp_merge.entry[i].af = return_stage1 ? 1'b0 : generated_entry.af;
       resp_merge.pteidx[i] = return_stage1 ? stage1_r.pteidx[i] : (vpn[2:0] == 3'(i));
     end
@@ -271,22 +281,6 @@ module xs_PTW_core
   assign req_ready = idle;
   assign refill_req_info = '{vpn: vpn, s2xlate: req_s2xlate, source: source_r};
   assign refill_level = level;
-
-  // 高层状态投影，供波形阅读和文档对应。
-  always_comb begin
-    state_d = state_q;
-    if (idle) state_d = PTW_IDLE;
-    else if (!sent_hptw_req) state_d = PTW_HPTW_REQ;
-    else if (!wait_hptw_resp) state_d = PTW_HPTW_WAIT;
-    else if (!sent_pmp_check) state_d = PTW_PMP_CHECK;
-    else if (!sent_mem_req) state_d = PTW_MEM_REQ;
-    else if (!wait_mem_resp) state_d = PTW_MEM_WAIT;
-    else if (!sent_last_hptw_req) state_d = PTW_LAST_HPTW_REQ;
-    else if (!wait_last_hptw_resp) state_d = PTW_LAST_HPTW_WAIT;
-    else if (llptw_valid) state_d = PTW_LLPTW_REQ;
-    else if (resp_valid) state_d = PTW_RESP_WAIT;
-    else state_d = PTW_EVAL_PTE;
-  end
 
   // ---------------------------------------------------------------------------
   // 主控制时序：按 Scala when 顺序写，后面的事件覆盖前面的更新。
@@ -348,11 +342,8 @@ module xs_PTW_core
       pte_valid <= 1'b0;
       access_fault_r <= 1'b0;
       update_full_gvpn_from_mem <= 1'b0;
-      state_q <= PTW_IDLE;
       perf_event_s1_5 <= 1'b0;
     end else begin
-      state_q <= state_d;
-
       // 请求进入：按 PTW cache 命中情况决定从 level3/2/1 开始走。
       if (req_fire) begin
         hptw_page_fault <= 1'b0;
@@ -553,7 +544,7 @@ module xs_PTW_core
       req_s2xlate <= req_info.s2xlate;
       source_r <= req_info.source;
       stage1_hit_r <= req_stage1_hit;
-      stage1_r <= req_stage1;
+      stage1_r_q <= mrg_to_noaf(req_stage1);
     end
 
     if (req_fire && req_stage1_hit) begin
@@ -592,16 +583,22 @@ module xs_PTW_core
     end
 
     // perf 输出是事件打一拍、再输出打一拍(XSPerfAccumulate 的 REG/REG_1, golden 无复位)。
+    // stage1(golden io_perf_N_value_REG): index5 采累积器, 其余采即时事件。
     perf_event_s1[0] <= req_fire;
     perf_event_s1[1] <= !idle;
     perf_event_s1[2] <= idle;
     perf_event_s1[3] <= resp_valid && !resp_ready;
     perf_event_s1[4] <= mem_req_fire;
+    perf_event_s1[5] <= perf_event_s1_5;
     perf_event_s1[6] <= mem_req_valid && !mem_req_ready;
-    perf_event_s2 <= {perf_event_s1[6], perf_event_s1_5, perf_event_s1[4:0]};
-    for (int i = 0; i < 7; i++) begin
-      perf[i] <= {5'h0, (i == 5) ? perf_event_s2[i] : perf_event_s1[i]};
-    end
+    // stage2(golden io_perf_N_value_REG_1): 逐路再打一拍。
+    perf_event_s2 <= perf_event_s1;
+  end
+
+  // perf 输出: 高 5 位常量 0(golden {5'h0, REG_1}), 低位取 stage2 寄存器(组合拼接,
+  // 不为高位设置寄存器 —— 避免 impl-only 常量死寄存器)。
+  for (gi = 0; gi < 7; gi++) begin : g_perf_out
+    assign perf[gi] = {5'h0, perf_event_s2[gi]};
   end
 
 endmodule

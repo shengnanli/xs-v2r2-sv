@@ -107,32 +107,49 @@
     end
   end
 
+  // ---- 命中/虚拟化向量（模块级组合信号，非 always_comb 内的 automatic 临时量）----
+  // 与 golden 一致：这些是纯组合 wire（golden 的 _l*hhit_T_* / _l*virt_T_*），不是寄存器。
+  // 早期实现把它们声明为 always_comb 内 automatic 变量，FM 前端按各分支各推一份死寄存器
+  // （l0hhit_reg/_reg2/_reg3 等 800 位 impl-only unread）。移到模块级 always_comb 后为组合网络，
+  // 被读则参与比对、未读则自动剪枝——两种情况都不产生 impl-only unread。
+  // 各 fence 类别下的 h 命中（sfence 用 hhit_sfence；hfencev==onlyStage1；hfenceg==onlyStage2）
+  logic [L0_SETS*L0_WAYS-1:0] l0hhit_sf, l0hhit_hv, l0hhit_hg, l0virt;
+  logic [L1_SETS*L1_WAYS-1:0] l1hhit_sf, l1hhit_hv, l1hhit_hg, l1virt;
+  logic [L2_SIZE-1:0]         l2hhit_sf, l2hhit_hv, l2hhit_hg, l2virt, l2vmidhit_g;
+  logic [SP_SIZE-1:0]         sphhit_sf, sphhit_hv, sphhit_hg, spvirt;
+  always_comb begin
+    for (int st=0; st<L0_SETS; st++) for (int w=0; w<L0_WAYS; w++) begin
+      l0hhit_sf[st*L0_WAYS+w] = hhit_sfence(l0h[st][w], csr_priv_virt[0]);
+      l0hhit_hv[st*L0_WAYS+w] = (l0h[st][w] == ONLY_STAGE1);
+      l0hhit_hg[st*L0_WAYS+w] = (l0h[st][w] == ONLY_STAGE2);
+      l0virt[st*L0_WAYS+w]    = l0hhit_sf[st*L0_WAYS+w] & ((csr_priv_virt[0] & l0vmidhit_s[st*L0_WAYS+w]) | ~csr_priv_virt[0]);
+    end
+    for (int st=0; st<L1_SETS; st++) for (int w=0; w<L1_WAYS; w++) begin
+      l1hhit_sf[st*L1_WAYS+w] = hhit_sfence(l1h[st][w], csr_priv_virt[1]);
+      l1hhit_hv[st*L1_WAYS+w] = (l1h[st][w] == ONLY_STAGE1);
+      l1hhit_hg[st*L1_WAYS+w] = (l1h[st][w] == ONLY_STAGE2);
+      l1virt[st*L1_WAYS+w]    = l1hhit_sf[st*L1_WAYS+w] & ((csr_priv_virt[1] & l1vmidhit_s[st*L1_WAYS+w]) | ~csr_priv_virt[1]);
+    end
+    for (int i=0; i<L2_SIZE; i++) begin
+      l2hhit_sf[i]   = hhit_sfence(l2h[i], csr_priv_virt[2]);
+      l2hhit_hv[i]   = (l2h[i] == ONLY_STAGE1);
+      l2hhit_hg[i]   = (l2h[i] == ONLY_STAGE2);
+      l2virt[i]      = l2hhit_sf[i] & ((csr_priv_virt[2] & l2vmidhit[i]) | ~csr_priv_virt[2]);
+      l2vmidhit_g[i] = (l2[i].vmid == sfence_dup_2_id);
+    end
+    for (int i=0; i<SP_SIZE; i++) begin
+      sphhit_sf[i] = hhit_sfence(sph[i], csr_priv_virt[0]);
+      sphhit_hv[i] = (sph[i] == ONLY_STAGE1);
+      sphhit_hg[i] = (sph[i] == ONLY_STAGE2);
+      spvirt[i]    = sphhit_sf[i] & ((csr_priv_virt[0] & spvmidhit_s[i]) | ~csr_priv_virt[0]);
+    end
+  end
+
   always_comb begin
     l2v_sfence_clr = '0; l1v_sfence_clr = '0;
     l0v_sfence_clr = '0; spv_sfence_clr = '0;
 
     if (sfence_valid) begin
-      // h 命中向量
-      automatic logic [L0_SETS*L0_WAYS-1:0] l0hhit; automatic logic [L1_SETS*L1_WAYS-1:0] l1hhit;
-      automatic logic [L2_SIZE-1:0] l2hhit; automatic logic [SP_SIZE-1:0] sphhit;
-      automatic logic [L0_SETS*L0_WAYS-1:0] l0virt; automatic logic [L1_SETS*L1_WAYS-1:0] l1virt;
-      automatic logic [L2_SIZE-1:0] l2virt; automatic logic [SP_SIZE-1:0] spvirt;
-      for (int st=0; st<L0_SETS; st++) for (int w=0; w<L0_WAYS; w++) begin
-        l0hhit[st*L0_WAYS+w] = hhit_sfence(l0h[st][w], csr_priv_virt[0]);
-        l0virt[st*L0_WAYS+w] = l0hhit[st*L0_WAYS+w] & ((csr_priv_virt[0] & l0vmidhit_s[st*L0_WAYS+w]) | ~csr_priv_virt[0]);
-      end
-      for (int st=0; st<L1_SETS; st++) for (int w=0; w<L1_WAYS; w++) begin
-        l1hhit[st*L1_WAYS+w] = hhit_sfence(l1h[st][w], csr_priv_virt[1]);
-        l1virt[st*L1_WAYS+w] = l1hhit[st*L1_WAYS+w] & ((csr_priv_virt[1] & l1vmidhit_s[st*L1_WAYS+w]) | ~csr_priv_virt[1]);
-      end
-      for (int i=0; i<L2_SIZE; i++) begin
-        l2hhit[i] = hhit_sfence(l2h[i], csr_priv_virt[2]);
-        l2virt[i] = l2hhit[i] & ((csr_priv_virt[2] & l2vmidhit[i]) | ~csr_priv_virt[2]);
-      end
-      for (int i=0; i<SP_SIZE; i++) begin
-        sphhit[i] = hhit_sfence(sph[i], csr_priv_virt[0]);
-        spvirt[i] = sphhit[i] & ((csr_priv_virt[0] & spvmidhit_s[i]) | ~csr_priv_virt[0]);
-      end
       if (rs1) begin
         if (rs2) begin // all va && all asid
           l0v_sfence_clr = l0virt; l1v_sfence_clr = l1virt; l2v_sfence_clr = l2virt; spv_sfence_clr = spvirt;
@@ -145,62 +162,49 @@
       end else begin
         if (rs2) begin // specific leaf of addr && all asid
           l0v_sfence_clr = l0virt & l0vpnhit_s & l0flushMask_s;
-          spv_sfence_clr = sphhit & sp_va_hit_s_ig;
+          spv_sfence_clr = sphhit_sf & sp_va_hit_s_ig;
         end else begin // specific leaf of addr && specific asid
           l0v_sfence_clr = l0virt & ~l0g & l0asidhit & l0vpnhit_s & l0flushMask_s;
-          spv_sfence_clr = ~spg & sphhit & sp_va_hit_s;
+          spv_sfence_clr = ~spg & sphhit_sf & sp_va_hit_s;
         end
       end
     end else if (hfencev_valid) begin
       // 只清 onlyStage1 项，比 vmid + asid/va
-      automatic logic [L0_SETS*L0_WAYS-1:0] l0hhit; automatic logic [L1_SETS*L1_WAYS-1:0] l1hhit;
-      automatic logic [L2_SIZE-1:0] l2hhit; automatic logic [SP_SIZE-1:0] sphhit;
-      for (int st=0; st<L0_SETS; st++) for (int w=0; w<L0_WAYS; w++) l0hhit[st*L0_WAYS+w] = (l0h[st][w] == ONLY_STAGE1);
-      for (int st=0; st<L1_SETS; st++) for (int w=0; w<L1_WAYS; w++) l1hhit[st*L1_WAYS+w] = (l1h[st][w] == ONLY_STAGE1);
-      for (int i=0; i<L2_SIZE; i++) l2hhit[i] = (l2h[i] == ONLY_STAGE1);
-      for (int i=0; i<SP_SIZE; i++) sphhit[i] = (sph[i] == ONLY_STAGE1);
       if (rs1) begin
         if (rs2) begin
-          l0v_sfence_clr = l0hhit & l0vmidhit_s; l1v_sfence_clr = l1hhit & l1vmidhit_s;
-          l2v_sfence_clr = l2hhit & l2vmidhit;   spv_sfence_clr = sphhit & spvmidhit_s;
+          l0v_sfence_clr = l0hhit_hv & l0vmidhit_s; l1v_sfence_clr = l1hhit_hv & l1vmidhit_s;
+          l2v_sfence_clr = l2hhit_hv & l2vmidhit;   spv_sfence_clr = sphhit_hv & spvmidhit_s;
         end else begin
-          l0v_sfence_clr = l0hhit & l0vmidhit_s & ~l0g & l0asidhit;
-          l1v_sfence_clr = l1hhit & l1vmidhit_s & ~l1g & l1asidhit;
-          l2v_sfence_clr = l2hhit & l2vmidhit   & ~l2g & l2asidhit;
-          spv_sfence_clr = sphhit & spvmidhit_s & ~spg & spasidhit;
+          l0v_sfence_clr = l0hhit_hv & l0vmidhit_s & ~l0g & l0asidhit;
+          l1v_sfence_clr = l1hhit_hv & l1vmidhit_s & ~l1g & l1asidhit;
+          l2v_sfence_clr = l2hhit_hv & l2vmidhit   & ~l2g & l2asidhit;
+          spv_sfence_clr = sphhit_hv & spvmidhit_s & ~spg & spasidhit;
         end
       end else begin
         if (rs2) begin
-          l0v_sfence_clr = l0hhit & l0vmidhit_s & l0vpnhit_s & l0flushMask_s;
-          spv_sfence_clr = sphhit & sp_va_hit_v_ig;   // hfencev: 恒 isVSfence + ignoreID
+          l0v_sfence_clr = l0hhit_hv & l0vmidhit_s & l0vpnhit_s & l0flushMask_s;
+          spv_sfence_clr = sphhit_hv & sp_va_hit_v_ig;   // hfencev: 恒 isVSfence + ignoreID
         end else begin
-          l0v_sfence_clr = l0hhit & l0vmidhit_s & ~l0g & l0asidhit & l0vpnhit_s & l0flushMask_s;
-          spv_sfence_clr = ~spg & sphhit & sp_va_hit_v;  // hfencev: 恒 isVSfence
+          l0v_sfence_clr = l0hhit_hv & l0vmidhit_s & ~l0g & l0asidhit & l0vpnhit_s & l0flushMask_s;
+          spv_sfence_clr = ~spg & sphhit_hv & sp_va_hit_v;  // hfencev: 恒 isVSfence
         end
       end
     end else if (hfenceg_valid) begin
       // 只清 onlyStage2 项，比 vmid/va，gvpn = addr<<2
-      automatic logic [L0_SETS*L0_WAYS-1:0] l0hhit; automatic logic [L1_SETS*L1_WAYS-1:0] l1hhit;
-      automatic logic [L2_SIZE-1:0] l2hhit; automatic logic [SP_SIZE-1:0] sphhit;
-      automatic logic [L2_SIZE-1:0] l2vmidhit_g;
-      for (int st=0; st<L0_SETS; st++) for (int w=0; w<L0_WAYS; w++) l0hhit[st*L0_WAYS+w] = (l0h[st][w] == ONLY_STAGE2);
-      for (int st=0; st<L1_SETS; st++) for (int w=0; w<L1_WAYS; w++) l1hhit[st*L1_WAYS+w] = (l1h[st][w] == ONLY_STAGE2);
-      for (int i=0; i<L2_SIZE; i++) begin l2hhit[i] = (l2h[i] == ONLY_STAGE2); l2vmidhit_g[i] = (l2[i].vmid == sfence_dup_2_id); end
-      for (int i=0; i<SP_SIZE; i++) sphhit[i] = (sph[i] == ONLY_STAGE2);
       if (rs1) begin
         if (rs2) begin
-          l0v_sfence_clr = l0hhit; l1v_sfence_clr = l1hhit; l2v_sfence_clr = l2hhit; spv_sfence_clr = sphhit;
+          l0v_sfence_clr = l0hhit_hg; l1v_sfence_clr = l1hhit_hg; l2v_sfence_clr = l2hhit_hg; spv_sfence_clr = sphhit_hg;
         end else begin
-          l0v_sfence_clr = l0hhit & l0vmidhit_g; l1v_sfence_clr = l1hhit & l1vmidhit_g;
-          l2v_sfence_clr = l2hhit & l2vmidhit_g; spv_sfence_clr = sphhit & spvmidhit_g;
+          l0v_sfence_clr = l0hhit_hg & l0vmidhit_g; l1v_sfence_clr = l1hhit_hg & l1vmidhit_g;
+          l2v_sfence_clr = l2hhit_hg & l2vmidhit_g; spv_sfence_clr = sphhit_hg & spvmidhit_g;
         end
       end else begin
         if (rs2) begin
-          l0v_sfence_clr = l0hhit & l0vpnhit_g & l0flushMask_g;
-          spv_sfence_clr = sphhit & sp_va_hit_g_ig;
+          l0v_sfence_clr = l0hhit_hg & l0vpnhit_g & l0flushMask_g;
+          spv_sfence_clr = sphhit_hg & sp_va_hit_g_ig;
         end else begin
-          l0v_sfence_clr = l0hhit & l0vmidhit_g & l0vpnhit_g & l0flushMask_g;
-          spv_sfence_clr = sphhit & sp_va_hit_g;
+          l0v_sfence_clr = l0hhit_hg & l0vmidhit_g & l0vpnhit_g & l0flushMask_g;
+          spv_sfence_clr = sphhit_hg & sp_va_hit_g;
         end
       end
     end
@@ -213,34 +217,33 @@
   // hfenceg 用 sfence_dup_2_id（=l3vmidhit_g）。asid 统一用 sfence_dup_2_id（=l3asidhit）。
   // 对应 Scala 1238~1278。
   // ===========================================================================
+  // l3 命中/虚拟化向量（模块级组合信号，同上不推死寄存器）
+  logic [L3_SIZE-1:0] l3hhit_sf, l3hhit_hv, l3hhit_hg, l3virt, l3vmidhit_g;
+  always_comb begin
+    for (int i=0; i<L3_SIZE; i++) begin
+      l3hhit_sf[i]   = hhit_sfence(l3h[i], csr_priv_virt[2]);
+      l3hhit_hv[i]   = (l3h[i] == ONLY_STAGE1);
+      l3hhit_hg[i]   = (l3h[i] == ONLY_STAGE2);
+      l3virt[i]      = l3hhit_sf[i] & ((csr_priv_virt[2] & l3vmidhit[i]) | ~csr_priv_virt[2]);
+      l3vmidhit_g[i] = (l3[i].vmid == sfence_dup_2_id);
+    end
+  end
   always_comb begin
     l3v_sfence_clr = '0;
     if (sfence_valid) begin
-      automatic logic [L3_SIZE-1:0] l3hhit; automatic logic [L3_SIZE-1:0] l3virt;
-      for (int i=0; i<L3_SIZE; i++) begin
-        l3hhit[i] = hhit_sfence(l3h[i], csr_priv_virt[2]);
-        l3virt[i] = l3hhit[i] & ((csr_priv_virt[2] & l3vmidhit[i]) | ~csr_priv_virt[2]);
-      end
       if (rs1_l3) begin
         if (rs2_l3) l3v_sfence_clr = l3virt;
         else        l3v_sfence_clr = l3virt & ~l3g & l3asidhit;
       end
     end else if (hfencev_valid) begin
-      automatic logic [L3_SIZE-1:0] l3hhit;
-      for (int i=0; i<L3_SIZE; i++) l3hhit[i] = (l3h[i] == ONLY_STAGE1);
       if (rs1_l3) begin
-        if (rs2_l3) l3v_sfence_clr = l3hhit & l3vmidhit;
-        else        l3v_sfence_clr = ~l3g & l3hhit & l3asidhit & l3vmidhit;
+        if (rs2_l3) l3v_sfence_clr = l3hhit_hv & l3vmidhit;
+        else        l3v_sfence_clr = ~l3g & l3hhit_hv & l3asidhit & l3vmidhit;
       end
     end else if (hfenceg_valid) begin
-      automatic logic [L3_SIZE-1:0] l3hhit; automatic logic [L3_SIZE-1:0] l3vmidhit_g;
-      for (int i=0; i<L3_SIZE; i++) begin
-        l3hhit[i] = (l3h[i] == ONLY_STAGE2);
-        l3vmidhit_g[i] = (l3[i].vmid == sfence_dup_2_id);
-      end
       if (rs1_l3) begin
-        if (rs2_l3) l3v_sfence_clr = l3hhit;
-        else        l3v_sfence_clr = l3hhit & l3vmidhit_g;
+        if (rs2_l3) l3v_sfence_clr = l3hhit_hg;
+        else        l3v_sfence_clr = l3hhit_hg & l3vmidhit_g;
       end
     end
   end

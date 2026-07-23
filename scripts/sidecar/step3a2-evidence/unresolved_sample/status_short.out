@@ -1,0 +1,26 @@
+**************************************************
+Report         : status
+                 -short 
+
+Reference      : r:/WORK/IMSIC
+Implementation : i:/WORK/IMSIC
+Version        : V-2023.12-SP3
+Date           : Mon Jul 20 01:43:52 2026
+**************************************************
+
+Reference Design:      r:/WORK/IMSIC
+Implementation Design: i:/WORK/IMSIC
+Verification
+   Status:             SUCCEEDED
+   Passing Points:     1305
+   Failing Points:     0
+   Aborted Points:     0
+   Unverified Points:  0
+Diagnosis
+   Status:             Not Run
+   Error Candidates:   0
+User Defined Setup
+   Equivalences:       0
+   Compare Points:     0
+   Constants:          0
+1

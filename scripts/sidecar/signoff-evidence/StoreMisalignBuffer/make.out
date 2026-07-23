@@ -1,0 +1,17 @@
+=== FM: StoreMisalignBuffer (mode=signoff-strict) ===
+FM_TOP=StoreMisalignBuffer \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/StoreMisalignBuffer.sv " \
+FM_IMPL_SRCS="/tmp/tmp.z9est3iqt5/wt/rtl/memblock/storemisalignbuffer_pkg.sv /tmp/tmp.z9est3iqt5/wt/rtl/memblock/StoreMisalignBuffer.sv /tmp/tmp.z9est3iqt5/wt/rtl/memblock/StoreMisalignBuffer_wrapper.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/StoreMisalignBuffer -file /tmp/tmp.z9est3iqt5/wt/scripts/fm_eq.tcl \
+    > fm_work/StoreMisalignBuffer/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.z9est3iqt5/wt/scripts/fm_verdict.py fm_work/StoreMisalignBuffer/fm.log --rc $rc --mode signoff-strict --top StoreMisalignBuffer --allowlist 0
+PARTIAL	{"passing": 1775, "failing": 0, "unverified": null, "unmatched": 68, "aborted": null, "unread": 101, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "StoreMisalignBuffer", "dont_verify": false, "elab147": false, "reason": "strict_unmatched!=0", "unmatched_ref": 68, "unmatched_impl": 0}
+make: *** [../../../scripts/ut_common.mk:56: fm-StoreMisalignBuffer] Error 1

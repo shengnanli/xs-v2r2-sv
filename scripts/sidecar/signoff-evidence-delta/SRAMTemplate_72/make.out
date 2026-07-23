@@ -1,0 +1,16 @@
+=== FM: SRAMTemplate_72 (mode=signoff-strict) ===
+FM_TOP=SRAMTemplate_72 \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_72.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p128x76m1s1h0l1b_bp_ittage.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_6.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistClockGateCell.sv /home/eda/xs-env/G0-canonical/golden-rtl/ClockGate.sv" \
+FM_IMPL_SRCS="/tmp/tmp.1Jqi4ArcSH/wt/rtl/common/SRAMTemplate_core.sv /tmp/tmp.1Jqi4ArcSH/wt/rtl/common/SRAMTemplate_variants.sv /home/eda/xs-env/G0-canonical/golden-rtl/ClockGate.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistClockGateCell.sv /home/eda/xs-env/G0-canonical/golden-rtl/array.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_0.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_2.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_3.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_6.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p128x74m37s1h0l1b_icsh_tag.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p128x76m1s1h0l1b_bp_ittage.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p256x16m1s1h0l1b_bp_tage_us.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p256x66m66s1h0l1b_icsh_dat.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p512x24m12s1h0l1b_bp_tage.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p512x40m10s1h0l1b_bp_ftb.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/SRAMTemplate_72 -file /tmp/tmp.1Jqi4ArcSH/wt/scripts/fm_eq.tcl \
+    > fm_work/SRAMTemplate_72/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.1Jqi4ArcSH/wt/scripts/fm_verdict.py fm_work/SRAMTemplate_72/fm.log --rc $rc --mode signoff-strict --top SRAMTemplate_72 --allowlist 0
+SUCCEEDED	{"passing": 478, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "SRAMTemplate_72", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

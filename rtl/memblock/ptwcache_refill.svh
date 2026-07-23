@@ -172,26 +172,24 @@
   // l3/l2/sp entry & g & h & PLRU
   always_ff @(posedge clock) begin
     if (l3Refill) begin
-      // golden l3_N_tag 只有 11b = vpn[37:27]；tag 字段低 11 位存之（与 golden 位序
-      // 对齐，FM 按名配对 [10:0]），高 9 位补 0（无读者 → FM Unread 不比对）。
-      l3[l3RefillIdx].tag  <= {{(L2_TAG_W-L3_TAG_W){1'b0}}, refill_req_info_dup_2.vpn[VPN_W-1 -: L3_TAG_W]};
+      // l3_entry_t.tag 现窄至 11b（=vpn[37:27]），与 golden l3_N_tag 位宽一致。
+      // l3 无 pbmt/v 字段（golden 无对应寄存器，已从结构剪除）。
+      l3[l3RefillIdx].tag  <= refill_req_info_dup_2.vpn[VPN_W-1 -: L3_TAG_W];
       l3[l3RefillIdx].asid <= l3l2Wasid;
       l3[l3RefillIdx].vmid <= csr_hgatp_vmid[2];
-      l3[l3RefillIdx].pbmt <= memPte2.pbmt;
       l3[l3RefillIdx].ppn  <= pte_get_ppn(memPte2);
       l3[l3RefillIdx].prefetch <= refill_pre2;
-      l3[l3RefillIdx].v    <= 1'b1;
       l3g <= (l3g & ~l3RfOH) | ((memPte2.g && refill_req_info_dup_2.s2xlate != ONLY_STAGE2) ? l3RfOH : 16'h0);
       l3h[l3RefillIdx] <= refill_h2_w;
     end
     if (l2Refill) begin
+      // l2 无 v 字段（有效性走 l2v 向量；golden 无 l2_N_v 寄存器）。
       l2[l2RefillIdx].tag  <= refill_req_info_dup_2.vpn[VPN_W-1 -: L2_TAG_W];
       l2[l2RefillIdx].asid <= l3l2Wasid;
       l2[l2RefillIdx].vmid <= csr_hgatp_vmid[2];
       l2[l2RefillIdx].pbmt <= memPte2.pbmt;
       l2[l2RefillIdx].ppn  <= pte_get_ppn(memPte2);
       l2[l2RefillIdx].prefetch <= refill_pre2;
-      l2[l2RefillIdx].v    <= 1'b1;
       l2g <= (l2g & ~l2RfOH) | ((memPte2.g && refill_req_info_dup_2.s2xlate != ONLY_STAGE2) ? l2RfOH : 16'h0);
       l2h[l2RefillIdx] <= refill_h2_w;
     end

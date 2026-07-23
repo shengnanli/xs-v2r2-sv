@@ -1,0 +1,4 @@
+SIGNOFF_RESULT ICacheCtrlUnit: measured=PARTIAL required=SUCCEEDED gate=GAP (proof=signoff-strict fm_shell_rc=0 validator_rc=1)
+run_id: SGN-ICacheCtrlUnit-1784704888
+impl_commit: 9f021591d8f38db4ad794f4f66556877f149c08f
+manifest_sha256: cc5bca6055dc7d027d69a66767c23d169356bd270e37120dc33bfcdd272bc6ec

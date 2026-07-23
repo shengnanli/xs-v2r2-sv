@@ -1,0 +1,17 @@
+=== FM: Slice (mode=signoff-strict) ===
+FM_TOP=Slice \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/Slice.sv /home/eda/xs-env/G0-canonical/golden-rtl/DataStorage.sv /home/eda/xs-env/G0-canonical/golden-rtl/Directory.sv /home/eda/xs-env/G0-canonical/golden-rtl/GrantBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/L2Slice.sv /home/eda/xs-env/G0-canonical/golden-rtl/MSHRBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/MSHRBuffer_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/MSHRCtl.sv /home/eda/xs-env/G0-canonical/golden-rtl/MainPipe_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/RXDAT.sv /home/eda/xs-env/G0-canonical/golden-rtl/RXRSP.sv /home/eda/xs-env/G0-canonical/golden-rtl/RXSNP.sv /home/eda/xs-env/G0-canonical/golden-rtl/RequestArb.sv /home/eda/xs-env/G0-canonical/golden-rtl/RequestBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/SinkA.sv /home/eda/xs-env/G0-canonical/golden-rtl/SinkC.sv /home/eda/xs-env/G0-canonical/golden-rtl/TXDAT.sv /home/eda/xs-env/G0-canonical/golden-rtl/TXREQ.sv /home/eda/xs-env/G0-canonical/golden-rtl/TXRSP.sv" \
+FM_IMPL_SRCS="/tmp/tmp.flKQfbiKYF/wt/rtl/l2/slice_pkg.sv /tmp/tmp.flKQfbiKYF/wt/rtl/l2/Slice.sv /tmp/tmp.flKQfbiKYF/wt/rtl/l2/Slice_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/DataStorage.sv /home/eda/xs-env/G0-canonical/golden-rtl/Directory.sv /home/eda/xs-env/G0-canonical/golden-rtl/GrantBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/L2Slice.sv /home/eda/xs-env/G0-canonical/golden-rtl/MSHRBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/MSHRBuffer_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/MSHRCtl.sv /home/eda/xs-env/G0-canonical/golden-rtl/MainPipe_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/RXDAT.sv /home/eda/xs-env/G0-canonical/golden-rtl/RXRSP.sv /home/eda/xs-env/G0-canonical/golden-rtl/RXSNP.sv /home/eda/xs-env/G0-canonical/golden-rtl/RequestArb.sv /home/eda/xs-env/G0-canonical/golden-rtl/RequestBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/SinkA.sv /home/eda/xs-env/G0-canonical/golden-rtl/SinkC.sv /home/eda/xs-env/G0-canonical/golden-rtl/TXDAT.sv /home/eda/xs-env/G0-canonical/golden-rtl/TXREQ.sv /home/eda/xs-env/G0-canonical/golden-rtl/TXRSP.sv" \
+ \
+ \
+ \
+ \
+FM_PIN_TCL=/tmp/tmp.flKQfbiKYF/wt/verif/ut/Slice/fm_pins.tcl \
+fm_shell -64 -work_path fm_work/Slice -file /tmp/tmp.flKQfbiKYF/wt/scripts/fm_eq.tcl \
+    > fm_work/Slice/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.flKQfbiKYF/wt/scripts/fm_verdict.py fm_work/Slice/fm.log --rc $rc --mode signoff-strict --top Slice --allowlist 0
+ERROR	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 0, "make_rc": 3, "mode": "signoff-strict", "native": null, "top": null, "dont_verify": false, "elab147": false, "reason": "make_rc_nonzero"}
+make: *** [../../../scripts/ut_common.mk:56: fm-Slice] Error 1

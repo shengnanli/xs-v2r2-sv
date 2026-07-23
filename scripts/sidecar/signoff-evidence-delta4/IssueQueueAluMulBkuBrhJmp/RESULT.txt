@@ -1,0 +1,4 @@
+SIGNOFF_RESULT IssueQueueAluMulBkuBrhJmp: measured=PARTIAL required=SUCCEEDED gate=GAP (proof=signoff-strict fm_shell_rc=0 validator_rc=1)
+run_id: SGN-IssueQueueAluMulBkuBrhJmp-1784608210
+impl_commit: 6a810b43e9d6315b108f442b1d328f23c7c17b2e
+manifest_sha256: 256902c1d5e6231aaca309d5ce237fd4f40dbd6fa56cb92be0c6f4918da0eb96

@@ -1,0 +1,4 @@
+SIGNOFF_RESULT DataPath: measured=PARTIAL required=SUCCEEDED gate=GAP (proof=signoff-strict fm_shell_rc=0 validator_rc=1)
+run_id: SGN-DataPath-1784614208
+impl_commit: 251701acf52862777af3dd74fb1c8b39903302d7
+manifest_sha256: 256902c1d5e6231aaca309d5ce237fd4f40dbd6fa56cb92be0c6f4918da0eb96

@@ -1,0 +1,16 @@
+=== FM: FoldedSRAMTemplate_21 (mode=signoff-strict) ===
+FM_TOP=FoldedSRAMTemplate_21 \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/FoldedSRAMTemplate_21.sv " \
+FM_IMPL_SRCS="/tmp/tmp.zXnPIFpMG9/wt/rtl/common/FoldedSRAMTemplate_variants.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/FoldedSRAMTemplate_21 -file /tmp/tmp.zXnPIFpMG9/wt/scripts/fm_eq.tcl \
+    > fm_work/FoldedSRAMTemplate_21/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.zXnPIFpMG9/wt/scripts/fm_verdict.py fm_work/FoldedSRAMTemplate_21/fm.log --rc $rc --mode signoff-strict --top FoldedSRAMTemplate_21 --allowlist 0
+SUCCEEDED	{"passing": 436, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "FoldedSRAMTemplate_21", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

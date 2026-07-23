@@ -1,0 +1,11 @@
+=== FM(bb): DCache ===
+FM_TOP=DCache \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/DCache.sv /tmp/tmp.Gvu2VLqfq4/wt/rtl/memblock/dcache_stub.sv" \
+FM_IMPL_SRCS="/tmp/tmp.Gvu2VLqfq4/wt/rtl/memblock/dcache_pkg.sv /tmp/tmp.Gvu2VLqfq4/wt/rtl/memblock/DCache.sv /tmp/tmp.Gvu2VLqfq4/wt/rtl/memblock/DCache_wrapper.sv /tmp/tmp.Gvu2VLqfq4/wt/rtl/memblock/dcache_stub.sv" \
+FM_MERGE_DUP=false \
+XSSV_HOME=/tmp/tmp.Gvu2VLqfq4/wt FM_RUN_ID=$FM_RUN_ID \
+fm_shell -64 -work_path fm_work/DCache -file /tmp/tmp.Gvu2VLqfq4/wt/verif/ut/DCache/fm_eq_bb.tcl \
+    > fm_work/DCache/fm.log 2>&1; \
+rc=$?; echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; \
+grep -E "^FM_RESULT" fm_work/DCache/fm.log || true
+FM_RESULT: Verification SUCCEEDED for DCache

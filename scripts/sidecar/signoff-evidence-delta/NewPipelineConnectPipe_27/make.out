@@ -1,0 +1,16 @@
+=== FM: NewPipelineConnectPipe_27 (mode=signoff-strict) ===
+FM_TOP=NewPipelineConnectPipe_27 \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/NewPipelineConnectPipe_27.sv " \
+FM_IMPL_SRCS="/tmp/tmp.ExRBzlLv1z/wt/rtl/common/PipelineConnect.sv /tmp/tmp.ExRBzlLv1z/wt/rtl/common/PipelineConnect_variants.sv" \
+ \
+ \
+FM_FIELD_MAP=/tmp/tmp.ExRBzlLv1z/wt/verif/ut/PipelineConnect/fm_map/NewPipelineConnectPipe_27.txt \
+ \
+ \
+fm_shell -64 -work_path fm_work/NewPipelineConnectPipe_27 -file /tmp/tmp.ExRBzlLv1z/wt/scripts/fm_eq.tcl \
+    > fm_work/NewPipelineConnectPipe_27/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.ExRBzlLv1z/wt/scripts/fm_verdict.py fm_work/NewPipelineConnectPipe_27/fm.log --rc $rc --mode signoff-strict --top NewPipelineConnectPipe_27 --allowlist 0
+SUCCEEDED	{"passing": 1073, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "NewPipelineConnectPipe_27", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

@@ -1,0 +1,4 @@
+SIGNOFF_RESULT RNXbar: measured=PARTIAL required=SUCCEEDED gate=GAP (proof=assembly fm_shell_rc=0 validator_rc=1)
+run_id: SGN-RNXbar-1784703896
+impl_commit: 625679445fc98c80319935df76bcf0c88773e636
+manifest_sha256: cc5bca6055dc7d027d69a66767c23d169356bd270e37120dc33bfcdd272bc6ec

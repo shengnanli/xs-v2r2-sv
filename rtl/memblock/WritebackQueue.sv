@@ -282,67 +282,513 @@ module xs_WritebackQueue_core (
   //  entry 阵列例化（WritebackEntry 黑盒）。前 15 个用 5 位 id 版（WritebackEntry），
   //  后 3 个（下标 15/16/17，id 32/33/34 超出 5 位）用 6 位 id 版 WritebackEntry_15。
   //  entry id = i + releaseIdBase；mem_grant 按 source==id 路由到对应 entry。
+  //  实例名 entries_<i> 与 golden 逐一对齐（扁平命名），使 FM 结构匹配直接配对每个
+  //  entry 子模块内部寄存器（含 golden 自身的对称死位 req_dirty/remain_dup_0[1]）。
   // ===========================================================================
-  for (genvar i = 0; i < NR_ENTRY; i++) begin : g_entry
-    localparam int unsigned ENTRY_ID = i + RELEASE_IDBASE;
-    assign entry_mem_grant_valid[i] =
-        (io_mem_grant_bits_source == SRC_BITS'(ENTRY_ID)) && io_mem_grant_valid;
-
-    if (i < 15) begin : g_e5
-      WritebackEntry u_entry (
-        .clock                       (clock),
-        .reset                       (reset),
-        .io_id                       (5'(ENTRY_ID)),
-        .io_req_valid                (entry_req_valid),
-        .io_req_bits_param           (io_req_bits_param),
-        .io_req_bits_voluntary       (io_req_bits_voluntary),
-        .io_req_bits_hasData         (io_req_bits_hasData),
-        .io_req_bits_corrupt         (io_req_bits_corrupt),
-        .io_req_bits_dirty           (io_req_bits_dirty),
-        .io_req_bits_addr            (io_req_bits_addr),
-        .io_req_data_data            (req_data_data),
-        .io_mem_release_ready        (entry_mem_release_ready[i]),
-        .io_mem_release_valid        (entry_rel_valid[i]),
-        .io_mem_release_bits_opcode  (entry_rel_opcode[i]),
-        .io_mem_release_bits_param   (entry_rel_param[i]),
-        .io_mem_release_bits_source  (entry_rel_source[i]),
-        .io_mem_release_bits_address (entry_rel_address[i]),
-        .io_mem_release_bits_data    (entry_rel_data[i]),
-        .io_mem_release_bits_corrupt (entry_rel_corrupt[i]),
-        .io_mem_grant_valid          (entry_mem_grant_valid[i]),
-        .io_primary_valid            (entry_primary_valid[i]),
-        .io_primary_ready            (entry_primary_ready[i]),
-        .io_block_addr_valid         (entry_block_valid[i]),
-        .io_block_addr_bits          (entry_block_addr[i])
-      );
-    end else begin : g_e6
-      WritebackEntry_15 u_entry (
-        .clock                       (clock),
-        .reset                       (reset),
-        .io_id                       (6'(ENTRY_ID)),
-        .io_req_valid                (entry_req_valid),
-        .io_req_bits_param           (io_req_bits_param),
-        .io_req_bits_voluntary       (io_req_bits_voluntary),
-        .io_req_bits_hasData         (io_req_bits_hasData),
-        .io_req_bits_corrupt         (io_req_bits_corrupt),
-        .io_req_bits_dirty           (io_req_bits_dirty),
-        .io_req_bits_addr            (io_req_bits_addr),
-        .io_req_data_data            (req_data_data),
-        .io_mem_release_ready        (entry_mem_release_ready[i]),
-        .io_mem_release_valid        (entry_rel_valid[i]),
-        .io_mem_release_bits_opcode  (entry_rel_opcode[i]),
-        .io_mem_release_bits_param   (entry_rel_param[i]),
-        .io_mem_release_bits_source  (entry_rel_source[i]),
-        .io_mem_release_bits_address (entry_rel_address[i]),
-        .io_mem_release_bits_data    (entry_rel_data[i]),
-        .io_mem_release_bits_corrupt (entry_rel_corrupt[i]),
-        .io_mem_grant_valid          (entry_mem_grant_valid[i]),
-        .io_primary_valid            (entry_primary_valid[i]),
-        .io_primary_ready            (entry_primary_ready[i]),
-        .io_block_addr_valid         (entry_block_valid[i]),
-        .io_block_addr_bits          (entry_block_addr[i])
-      );
-    end
-  end
+  assign entry_mem_grant_valid[0] =
+      (io_mem_grant_bits_source == SRC_BITS'(17)) && io_mem_grant_valid;
+  WritebackEntry entries_0 (
+    .clock                       (clock),
+    .reset                       (reset),
+    .io_id                       (5'(17)),
+    .io_req_valid                (entry_req_valid),
+    .io_req_bits_param           (io_req_bits_param),
+    .io_req_bits_voluntary       (io_req_bits_voluntary),
+    .io_req_bits_hasData         (io_req_bits_hasData),
+    .io_req_bits_corrupt         (io_req_bits_corrupt),
+    .io_req_bits_dirty           (io_req_bits_dirty),
+    .io_req_bits_addr            (io_req_bits_addr),
+    .io_req_data_data            (req_data_data),
+    .io_mem_release_ready        (entry_mem_release_ready[0]),
+    .io_mem_release_valid        (entry_rel_valid[0]),
+    .io_mem_release_bits_opcode  (entry_rel_opcode[0]),
+    .io_mem_release_bits_param   (entry_rel_param[0]),
+    .io_mem_release_bits_source  (entry_rel_source[0]),
+    .io_mem_release_bits_address (entry_rel_address[0]),
+    .io_mem_release_bits_data    (entry_rel_data[0]),
+    .io_mem_release_bits_corrupt (entry_rel_corrupt[0]),
+    .io_mem_grant_valid          (entry_mem_grant_valid[0]),
+    .io_primary_valid            (entry_primary_valid[0]),
+    .io_primary_ready            (entry_primary_ready[0]),
+    .io_block_addr_valid         (entry_block_valid[0]),
+    .io_block_addr_bits          (entry_block_addr[0])
+  );
+  assign entry_mem_grant_valid[1] =
+      (io_mem_grant_bits_source == SRC_BITS'(18)) && io_mem_grant_valid;
+  WritebackEntry entries_1 (
+    .clock                       (clock),
+    .reset                       (reset),
+    .io_id                       (5'(18)),
+    .io_req_valid                (entry_req_valid),
+    .io_req_bits_param           (io_req_bits_param),
+    .io_req_bits_voluntary       (io_req_bits_voluntary),
+    .io_req_bits_hasData         (io_req_bits_hasData),
+    .io_req_bits_corrupt         (io_req_bits_corrupt),
+    .io_req_bits_dirty           (io_req_bits_dirty),
+    .io_req_bits_addr            (io_req_bits_addr),
+    .io_req_data_data            (req_data_data),
+    .io_mem_release_ready        (entry_mem_release_ready[1]),
+    .io_mem_release_valid        (entry_rel_valid[1]),
+    .io_mem_release_bits_opcode  (entry_rel_opcode[1]),
+    .io_mem_release_bits_param   (entry_rel_param[1]),
+    .io_mem_release_bits_source  (entry_rel_source[1]),
+    .io_mem_release_bits_address (entry_rel_address[1]),
+    .io_mem_release_bits_data    (entry_rel_data[1]),
+    .io_mem_release_bits_corrupt (entry_rel_corrupt[1]),
+    .io_mem_grant_valid          (entry_mem_grant_valid[1]),
+    .io_primary_valid            (entry_primary_valid[1]),
+    .io_primary_ready            (entry_primary_ready[1]),
+    .io_block_addr_valid         (entry_block_valid[1]),
+    .io_block_addr_bits          (entry_block_addr[1])
+  );
+  assign entry_mem_grant_valid[2] =
+      (io_mem_grant_bits_source == SRC_BITS'(19)) && io_mem_grant_valid;
+  WritebackEntry entries_2 (
+    .clock                       (clock),
+    .reset                       (reset),
+    .io_id                       (5'(19)),
+    .io_req_valid                (entry_req_valid),
+    .io_req_bits_param           (io_req_bits_param),
+    .io_req_bits_voluntary       (io_req_bits_voluntary),
+    .io_req_bits_hasData         (io_req_bits_hasData),
+    .io_req_bits_corrupt         (io_req_bits_corrupt),
+    .io_req_bits_dirty           (io_req_bits_dirty),
+    .io_req_bits_addr            (io_req_bits_addr),
+    .io_req_data_data            (req_data_data),
+    .io_mem_release_ready        (entry_mem_release_ready[2]),
+    .io_mem_release_valid        (entry_rel_valid[2]),
+    .io_mem_release_bits_opcode  (entry_rel_opcode[2]),
+    .io_mem_release_bits_param   (entry_rel_param[2]),
+    .io_mem_release_bits_source  (entry_rel_source[2]),
+    .io_mem_release_bits_address (entry_rel_address[2]),
+    .io_mem_release_bits_data    (entry_rel_data[2]),
+    .io_mem_release_bits_corrupt (entry_rel_corrupt[2]),
+    .io_mem_grant_valid          (entry_mem_grant_valid[2]),
+    .io_primary_valid            (entry_primary_valid[2]),
+    .io_primary_ready            (entry_primary_ready[2]),
+    .io_block_addr_valid         (entry_block_valid[2]),
+    .io_block_addr_bits          (entry_block_addr[2])
+  );
+  assign entry_mem_grant_valid[3] =
+      (io_mem_grant_bits_source == SRC_BITS'(20)) && io_mem_grant_valid;
+  WritebackEntry entries_3 (
+    .clock                       (clock),
+    .reset                       (reset),
+    .io_id                       (5'(20)),
+    .io_req_valid                (entry_req_valid),
+    .io_req_bits_param           (io_req_bits_param),
+    .io_req_bits_voluntary       (io_req_bits_voluntary),
+    .io_req_bits_hasData         (io_req_bits_hasData),
+    .io_req_bits_corrupt         (io_req_bits_corrupt),
+    .io_req_bits_dirty           (io_req_bits_dirty),
+    .io_req_bits_addr            (io_req_bits_addr),
+    .io_req_data_data            (req_data_data),
+    .io_mem_release_ready        (entry_mem_release_ready[3]),
+    .io_mem_release_valid        (entry_rel_valid[3]),
+    .io_mem_release_bits_opcode  (entry_rel_opcode[3]),
+    .io_mem_release_bits_param   (entry_rel_param[3]),
+    .io_mem_release_bits_source  (entry_rel_source[3]),
+    .io_mem_release_bits_address (entry_rel_address[3]),
+    .io_mem_release_bits_data    (entry_rel_data[3]),
+    .io_mem_release_bits_corrupt (entry_rel_corrupt[3]),
+    .io_mem_grant_valid          (entry_mem_grant_valid[3]),
+    .io_primary_valid            (entry_primary_valid[3]),
+    .io_primary_ready            (entry_primary_ready[3]),
+    .io_block_addr_valid         (entry_block_valid[3]),
+    .io_block_addr_bits          (entry_block_addr[3])
+  );
+  assign entry_mem_grant_valid[4] =
+      (io_mem_grant_bits_source == SRC_BITS'(21)) && io_mem_grant_valid;
+  WritebackEntry entries_4 (
+    .clock                       (clock),
+    .reset                       (reset),
+    .io_id                       (5'(21)),
+    .io_req_valid                (entry_req_valid),
+    .io_req_bits_param           (io_req_bits_param),
+    .io_req_bits_voluntary       (io_req_bits_voluntary),
+    .io_req_bits_hasData         (io_req_bits_hasData),
+    .io_req_bits_corrupt         (io_req_bits_corrupt),
+    .io_req_bits_dirty           (io_req_bits_dirty),
+    .io_req_bits_addr            (io_req_bits_addr),
+    .io_req_data_data            (req_data_data),
+    .io_mem_release_ready        (entry_mem_release_ready[4]),
+    .io_mem_release_valid        (entry_rel_valid[4]),
+    .io_mem_release_bits_opcode  (entry_rel_opcode[4]),
+    .io_mem_release_bits_param   (entry_rel_param[4]),
+    .io_mem_release_bits_source  (entry_rel_source[4]),
+    .io_mem_release_bits_address (entry_rel_address[4]),
+    .io_mem_release_bits_data    (entry_rel_data[4]),
+    .io_mem_release_bits_corrupt (entry_rel_corrupt[4]),
+    .io_mem_grant_valid          (entry_mem_grant_valid[4]),
+    .io_primary_valid            (entry_primary_valid[4]),
+    .io_primary_ready            (entry_primary_ready[4]),
+    .io_block_addr_valid         (entry_block_valid[4]),
+    .io_block_addr_bits          (entry_block_addr[4])
+  );
+  assign entry_mem_grant_valid[5] =
+      (io_mem_grant_bits_source == SRC_BITS'(22)) && io_mem_grant_valid;
+  WritebackEntry entries_5 (
+    .clock                       (clock),
+    .reset                       (reset),
+    .io_id                       (5'(22)),
+    .io_req_valid                (entry_req_valid),
+    .io_req_bits_param           (io_req_bits_param),
+    .io_req_bits_voluntary       (io_req_bits_voluntary),
+    .io_req_bits_hasData         (io_req_bits_hasData),
+    .io_req_bits_corrupt         (io_req_bits_corrupt),
+    .io_req_bits_dirty           (io_req_bits_dirty),
+    .io_req_bits_addr            (io_req_bits_addr),
+    .io_req_data_data            (req_data_data),
+    .io_mem_release_ready        (entry_mem_release_ready[5]),
+    .io_mem_release_valid        (entry_rel_valid[5]),
+    .io_mem_release_bits_opcode  (entry_rel_opcode[5]),
+    .io_mem_release_bits_param   (entry_rel_param[5]),
+    .io_mem_release_bits_source  (entry_rel_source[5]),
+    .io_mem_release_bits_address (entry_rel_address[5]),
+    .io_mem_release_bits_data    (entry_rel_data[5]),
+    .io_mem_release_bits_corrupt (entry_rel_corrupt[5]),
+    .io_mem_grant_valid          (entry_mem_grant_valid[5]),
+    .io_primary_valid            (entry_primary_valid[5]),
+    .io_primary_ready            (entry_primary_ready[5]),
+    .io_block_addr_valid         (entry_block_valid[5]),
+    .io_block_addr_bits          (entry_block_addr[5])
+  );
+  assign entry_mem_grant_valid[6] =
+      (io_mem_grant_bits_source == SRC_BITS'(23)) && io_mem_grant_valid;
+  WritebackEntry entries_6 (
+    .clock                       (clock),
+    .reset                       (reset),
+    .io_id                       (5'(23)),
+    .io_req_valid                (entry_req_valid),
+    .io_req_bits_param           (io_req_bits_param),
+    .io_req_bits_voluntary       (io_req_bits_voluntary),
+    .io_req_bits_hasData         (io_req_bits_hasData),
+    .io_req_bits_corrupt         (io_req_bits_corrupt),
+    .io_req_bits_dirty           (io_req_bits_dirty),
+    .io_req_bits_addr            (io_req_bits_addr),
+    .io_req_data_data            (req_data_data),
+    .io_mem_release_ready        (entry_mem_release_ready[6]),
+    .io_mem_release_valid        (entry_rel_valid[6]),
+    .io_mem_release_bits_opcode  (entry_rel_opcode[6]),
+    .io_mem_release_bits_param   (entry_rel_param[6]),
+    .io_mem_release_bits_source  (entry_rel_source[6]),
+    .io_mem_release_bits_address (entry_rel_address[6]),
+    .io_mem_release_bits_data    (entry_rel_data[6]),
+    .io_mem_release_bits_corrupt (entry_rel_corrupt[6]),
+    .io_mem_grant_valid          (entry_mem_grant_valid[6]),
+    .io_primary_valid            (entry_primary_valid[6]),
+    .io_primary_ready            (entry_primary_ready[6]),
+    .io_block_addr_valid         (entry_block_valid[6]),
+    .io_block_addr_bits          (entry_block_addr[6])
+  );
+  assign entry_mem_grant_valid[7] =
+      (io_mem_grant_bits_source == SRC_BITS'(24)) && io_mem_grant_valid;
+  WritebackEntry entries_7 (
+    .clock                       (clock),
+    .reset                       (reset),
+    .io_id                       (5'(24)),
+    .io_req_valid                (entry_req_valid),
+    .io_req_bits_param           (io_req_bits_param),
+    .io_req_bits_voluntary       (io_req_bits_voluntary),
+    .io_req_bits_hasData         (io_req_bits_hasData),
+    .io_req_bits_corrupt         (io_req_bits_corrupt),
+    .io_req_bits_dirty           (io_req_bits_dirty),
+    .io_req_bits_addr            (io_req_bits_addr),
+    .io_req_data_data            (req_data_data),
+    .io_mem_release_ready        (entry_mem_release_ready[7]),
+    .io_mem_release_valid        (entry_rel_valid[7]),
+    .io_mem_release_bits_opcode  (entry_rel_opcode[7]),
+    .io_mem_release_bits_param   (entry_rel_param[7]),
+    .io_mem_release_bits_source  (entry_rel_source[7]),
+    .io_mem_release_bits_address (entry_rel_address[7]),
+    .io_mem_release_bits_data    (entry_rel_data[7]),
+    .io_mem_release_bits_corrupt (entry_rel_corrupt[7]),
+    .io_mem_grant_valid          (entry_mem_grant_valid[7]),
+    .io_primary_valid            (entry_primary_valid[7]),
+    .io_primary_ready            (entry_primary_ready[7]),
+    .io_block_addr_valid         (entry_block_valid[7]),
+    .io_block_addr_bits          (entry_block_addr[7])
+  );
+  assign entry_mem_grant_valid[8] =
+      (io_mem_grant_bits_source == SRC_BITS'(25)) && io_mem_grant_valid;
+  WritebackEntry entries_8 (
+    .clock                       (clock),
+    .reset                       (reset),
+    .io_id                       (5'(25)),
+    .io_req_valid                (entry_req_valid),
+    .io_req_bits_param           (io_req_bits_param),
+    .io_req_bits_voluntary       (io_req_bits_voluntary),
+    .io_req_bits_hasData         (io_req_bits_hasData),
+    .io_req_bits_corrupt         (io_req_bits_corrupt),
+    .io_req_bits_dirty           (io_req_bits_dirty),
+    .io_req_bits_addr            (io_req_bits_addr),
+    .io_req_data_data            (req_data_data),
+    .io_mem_release_ready        (entry_mem_release_ready[8]),
+    .io_mem_release_valid        (entry_rel_valid[8]),
+    .io_mem_release_bits_opcode  (entry_rel_opcode[8]),
+    .io_mem_release_bits_param   (entry_rel_param[8]),
+    .io_mem_release_bits_source  (entry_rel_source[8]),
+    .io_mem_release_bits_address (entry_rel_address[8]),
+    .io_mem_release_bits_data    (entry_rel_data[8]),
+    .io_mem_release_bits_corrupt (entry_rel_corrupt[8]),
+    .io_mem_grant_valid          (entry_mem_grant_valid[8]),
+    .io_primary_valid            (entry_primary_valid[8]),
+    .io_primary_ready            (entry_primary_ready[8]),
+    .io_block_addr_valid         (entry_block_valid[8]),
+    .io_block_addr_bits          (entry_block_addr[8])
+  );
+  assign entry_mem_grant_valid[9] =
+      (io_mem_grant_bits_source == SRC_BITS'(26)) && io_mem_grant_valid;
+  WritebackEntry entries_9 (
+    .clock                       (clock),
+    .reset                       (reset),
+    .io_id                       (5'(26)),
+    .io_req_valid                (entry_req_valid),
+    .io_req_bits_param           (io_req_bits_param),
+    .io_req_bits_voluntary       (io_req_bits_voluntary),
+    .io_req_bits_hasData         (io_req_bits_hasData),
+    .io_req_bits_corrupt         (io_req_bits_corrupt),
+    .io_req_bits_dirty           (io_req_bits_dirty),
+    .io_req_bits_addr            (io_req_bits_addr),
+    .io_req_data_data            (req_data_data),
+    .io_mem_release_ready        (entry_mem_release_ready[9]),
+    .io_mem_release_valid        (entry_rel_valid[9]),
+    .io_mem_release_bits_opcode  (entry_rel_opcode[9]),
+    .io_mem_release_bits_param   (entry_rel_param[9]),
+    .io_mem_release_bits_source  (entry_rel_source[9]),
+    .io_mem_release_bits_address (entry_rel_address[9]),
+    .io_mem_release_bits_data    (entry_rel_data[9]),
+    .io_mem_release_bits_corrupt (entry_rel_corrupt[9]),
+    .io_mem_grant_valid          (entry_mem_grant_valid[9]),
+    .io_primary_valid            (entry_primary_valid[9]),
+    .io_primary_ready            (entry_primary_ready[9]),
+    .io_block_addr_valid         (entry_block_valid[9]),
+    .io_block_addr_bits          (entry_block_addr[9])
+  );
+  assign entry_mem_grant_valid[10] =
+      (io_mem_grant_bits_source == SRC_BITS'(27)) && io_mem_grant_valid;
+  WritebackEntry entries_10 (
+    .clock                       (clock),
+    .reset                       (reset),
+    .io_id                       (5'(27)),
+    .io_req_valid                (entry_req_valid),
+    .io_req_bits_param           (io_req_bits_param),
+    .io_req_bits_voluntary       (io_req_bits_voluntary),
+    .io_req_bits_hasData         (io_req_bits_hasData),
+    .io_req_bits_corrupt         (io_req_bits_corrupt),
+    .io_req_bits_dirty           (io_req_bits_dirty),
+    .io_req_bits_addr            (io_req_bits_addr),
+    .io_req_data_data            (req_data_data),
+    .io_mem_release_ready        (entry_mem_release_ready[10]),
+    .io_mem_release_valid        (entry_rel_valid[10]),
+    .io_mem_release_bits_opcode  (entry_rel_opcode[10]),
+    .io_mem_release_bits_param   (entry_rel_param[10]),
+    .io_mem_release_bits_source  (entry_rel_source[10]),
+    .io_mem_release_bits_address (entry_rel_address[10]),
+    .io_mem_release_bits_data    (entry_rel_data[10]),
+    .io_mem_release_bits_corrupt (entry_rel_corrupt[10]),
+    .io_mem_grant_valid          (entry_mem_grant_valid[10]),
+    .io_primary_valid            (entry_primary_valid[10]),
+    .io_primary_ready            (entry_primary_ready[10]),
+    .io_block_addr_valid         (entry_block_valid[10]),
+    .io_block_addr_bits          (entry_block_addr[10])
+  );
+  assign entry_mem_grant_valid[11] =
+      (io_mem_grant_bits_source == SRC_BITS'(28)) && io_mem_grant_valid;
+  WritebackEntry entries_11 (
+    .clock                       (clock),
+    .reset                       (reset),
+    .io_id                       (5'(28)),
+    .io_req_valid                (entry_req_valid),
+    .io_req_bits_param           (io_req_bits_param),
+    .io_req_bits_voluntary       (io_req_bits_voluntary),
+    .io_req_bits_hasData         (io_req_bits_hasData),
+    .io_req_bits_corrupt         (io_req_bits_corrupt),
+    .io_req_bits_dirty           (io_req_bits_dirty),
+    .io_req_bits_addr            (io_req_bits_addr),
+    .io_req_data_data            (req_data_data),
+    .io_mem_release_ready        (entry_mem_release_ready[11]),
+    .io_mem_release_valid        (entry_rel_valid[11]),
+    .io_mem_release_bits_opcode  (entry_rel_opcode[11]),
+    .io_mem_release_bits_param   (entry_rel_param[11]),
+    .io_mem_release_bits_source  (entry_rel_source[11]),
+    .io_mem_release_bits_address (entry_rel_address[11]),
+    .io_mem_release_bits_data    (entry_rel_data[11]),
+    .io_mem_release_bits_corrupt (entry_rel_corrupt[11]),
+    .io_mem_grant_valid          (entry_mem_grant_valid[11]),
+    .io_primary_valid            (entry_primary_valid[11]),
+    .io_primary_ready            (entry_primary_ready[11]),
+    .io_block_addr_valid         (entry_block_valid[11]),
+    .io_block_addr_bits          (entry_block_addr[11])
+  );
+  assign entry_mem_grant_valid[12] =
+      (io_mem_grant_bits_source == SRC_BITS'(29)) && io_mem_grant_valid;
+  WritebackEntry entries_12 (
+    .clock                       (clock),
+    .reset                       (reset),
+    .io_id                       (5'(29)),
+    .io_req_valid                (entry_req_valid),
+    .io_req_bits_param           (io_req_bits_param),
+    .io_req_bits_voluntary       (io_req_bits_voluntary),
+    .io_req_bits_hasData         (io_req_bits_hasData),
+    .io_req_bits_corrupt         (io_req_bits_corrupt),
+    .io_req_bits_dirty           (io_req_bits_dirty),
+    .io_req_bits_addr            (io_req_bits_addr),
+    .io_req_data_data            (req_data_data),
+    .io_mem_release_ready        (entry_mem_release_ready[12]),
+    .io_mem_release_valid        (entry_rel_valid[12]),
+    .io_mem_release_bits_opcode  (entry_rel_opcode[12]),
+    .io_mem_release_bits_param   (entry_rel_param[12]),
+    .io_mem_release_bits_source  (entry_rel_source[12]),
+    .io_mem_release_bits_address (entry_rel_address[12]),
+    .io_mem_release_bits_data    (entry_rel_data[12]),
+    .io_mem_release_bits_corrupt (entry_rel_corrupt[12]),
+    .io_mem_grant_valid          (entry_mem_grant_valid[12]),
+    .io_primary_valid            (entry_primary_valid[12]),
+    .io_primary_ready            (entry_primary_ready[12]),
+    .io_block_addr_valid         (entry_block_valid[12]),
+    .io_block_addr_bits          (entry_block_addr[12])
+  );
+  assign entry_mem_grant_valid[13] =
+      (io_mem_grant_bits_source == SRC_BITS'(30)) && io_mem_grant_valid;
+  WritebackEntry entries_13 (
+    .clock                       (clock),
+    .reset                       (reset),
+    .io_id                       (5'(30)),
+    .io_req_valid                (entry_req_valid),
+    .io_req_bits_param           (io_req_bits_param),
+    .io_req_bits_voluntary       (io_req_bits_voluntary),
+    .io_req_bits_hasData         (io_req_bits_hasData),
+    .io_req_bits_corrupt         (io_req_bits_corrupt),
+    .io_req_bits_dirty           (io_req_bits_dirty),
+    .io_req_bits_addr            (io_req_bits_addr),
+    .io_req_data_data            (req_data_data),
+    .io_mem_release_ready        (entry_mem_release_ready[13]),
+    .io_mem_release_valid        (entry_rel_valid[13]),
+    .io_mem_release_bits_opcode  (entry_rel_opcode[13]),
+    .io_mem_release_bits_param   (entry_rel_param[13]),
+    .io_mem_release_bits_source  (entry_rel_source[13]),
+    .io_mem_release_bits_address (entry_rel_address[13]),
+    .io_mem_release_bits_data    (entry_rel_data[13]),
+    .io_mem_release_bits_corrupt (entry_rel_corrupt[13]),
+    .io_mem_grant_valid          (entry_mem_grant_valid[13]),
+    .io_primary_valid            (entry_primary_valid[13]),
+    .io_primary_ready            (entry_primary_ready[13]),
+    .io_block_addr_valid         (entry_block_valid[13]),
+    .io_block_addr_bits          (entry_block_addr[13])
+  );
+  assign entry_mem_grant_valid[14] =
+      (io_mem_grant_bits_source == SRC_BITS'(31)) && io_mem_grant_valid;
+  WritebackEntry entries_14 (
+    .clock                       (clock),
+    .reset                       (reset),
+    .io_id                       (5'(31)),
+    .io_req_valid                (entry_req_valid),
+    .io_req_bits_param           (io_req_bits_param),
+    .io_req_bits_voluntary       (io_req_bits_voluntary),
+    .io_req_bits_hasData         (io_req_bits_hasData),
+    .io_req_bits_corrupt         (io_req_bits_corrupt),
+    .io_req_bits_dirty           (io_req_bits_dirty),
+    .io_req_bits_addr            (io_req_bits_addr),
+    .io_req_data_data            (req_data_data),
+    .io_mem_release_ready        (entry_mem_release_ready[14]),
+    .io_mem_release_valid        (entry_rel_valid[14]),
+    .io_mem_release_bits_opcode  (entry_rel_opcode[14]),
+    .io_mem_release_bits_param   (entry_rel_param[14]),
+    .io_mem_release_bits_source  (entry_rel_source[14]),
+    .io_mem_release_bits_address (entry_rel_address[14]),
+    .io_mem_release_bits_data    (entry_rel_data[14]),
+    .io_mem_release_bits_corrupt (entry_rel_corrupt[14]),
+    .io_mem_grant_valid          (entry_mem_grant_valid[14]),
+    .io_primary_valid            (entry_primary_valid[14]),
+    .io_primary_ready            (entry_primary_ready[14]),
+    .io_block_addr_valid         (entry_block_valid[14]),
+    .io_block_addr_bits          (entry_block_addr[14])
+  );
+  assign entry_mem_grant_valid[15] =
+      (io_mem_grant_bits_source == SRC_BITS'(32)) && io_mem_grant_valid;
+  WritebackEntry_15 entries_15 (
+    .clock                       (clock),
+    .reset                       (reset),
+    .io_id                       (6'(32)),
+    .io_req_valid                (entry_req_valid),
+    .io_req_bits_param           (io_req_bits_param),
+    .io_req_bits_voluntary       (io_req_bits_voluntary),
+    .io_req_bits_hasData         (io_req_bits_hasData),
+    .io_req_bits_corrupt         (io_req_bits_corrupt),
+    .io_req_bits_dirty           (io_req_bits_dirty),
+    .io_req_bits_addr            (io_req_bits_addr),
+    .io_req_data_data            (req_data_data),
+    .io_mem_release_ready        (entry_mem_release_ready[15]),
+    .io_mem_release_valid        (entry_rel_valid[15]),
+    .io_mem_release_bits_opcode  (entry_rel_opcode[15]),
+    .io_mem_release_bits_param   (entry_rel_param[15]),
+    .io_mem_release_bits_source  (entry_rel_source[15]),
+    .io_mem_release_bits_address (entry_rel_address[15]),
+    .io_mem_release_bits_data    (entry_rel_data[15]),
+    .io_mem_release_bits_corrupt (entry_rel_corrupt[15]),
+    .io_mem_grant_valid          (entry_mem_grant_valid[15]),
+    .io_primary_valid            (entry_primary_valid[15]),
+    .io_primary_ready            (entry_primary_ready[15]),
+    .io_block_addr_valid         (entry_block_valid[15]),
+    .io_block_addr_bits          (entry_block_addr[15])
+  );
+  assign entry_mem_grant_valid[16] =
+      (io_mem_grant_bits_source == SRC_BITS'(33)) && io_mem_grant_valid;
+  WritebackEntry_15 entries_16 (
+    .clock                       (clock),
+    .reset                       (reset),
+    .io_id                       (6'(33)),
+    .io_req_valid                (entry_req_valid),
+    .io_req_bits_param           (io_req_bits_param),
+    .io_req_bits_voluntary       (io_req_bits_voluntary),
+    .io_req_bits_hasData         (io_req_bits_hasData),
+    .io_req_bits_corrupt         (io_req_bits_corrupt),
+    .io_req_bits_dirty           (io_req_bits_dirty),
+    .io_req_bits_addr            (io_req_bits_addr),
+    .io_req_data_data            (req_data_data),
+    .io_mem_release_ready        (entry_mem_release_ready[16]),
+    .io_mem_release_valid        (entry_rel_valid[16]),
+    .io_mem_release_bits_opcode  (entry_rel_opcode[16]),
+    .io_mem_release_bits_param   (entry_rel_param[16]),
+    .io_mem_release_bits_source  (entry_rel_source[16]),
+    .io_mem_release_bits_address (entry_rel_address[16]),
+    .io_mem_release_bits_data    (entry_rel_data[16]),
+    .io_mem_release_bits_corrupt (entry_rel_corrupt[16]),
+    .io_mem_grant_valid          (entry_mem_grant_valid[16]),
+    .io_primary_valid            (entry_primary_valid[16]),
+    .io_primary_ready            (entry_primary_ready[16]),
+    .io_block_addr_valid         (entry_block_valid[16]),
+    .io_block_addr_bits          (entry_block_addr[16])
+  );
+  assign entry_mem_grant_valid[17] =
+      (io_mem_grant_bits_source == SRC_BITS'(34)) && io_mem_grant_valid;
+  WritebackEntry_15 entries_17 (
+    .clock                       (clock),
+    .reset                       (reset),
+    .io_id                       (6'(34)),
+    .io_req_valid                (entry_req_valid),
+    .io_req_bits_param           (io_req_bits_param),
+    .io_req_bits_voluntary       (io_req_bits_voluntary),
+    .io_req_bits_hasData         (io_req_bits_hasData),
+    .io_req_bits_corrupt         (io_req_bits_corrupt),
+    .io_req_bits_dirty           (io_req_bits_dirty),
+    .io_req_bits_addr            (io_req_bits_addr),
+    .io_req_data_data            (req_data_data),
+    .io_mem_release_ready        (entry_mem_release_ready[17]),
+    .io_mem_release_valid        (entry_rel_valid[17]),
+    .io_mem_release_bits_opcode  (entry_rel_opcode[17]),
+    .io_mem_release_bits_param   (entry_rel_param[17]),
+    .io_mem_release_bits_source  (entry_rel_source[17]),
+    .io_mem_release_bits_address (entry_rel_address[17]),
+    .io_mem_release_bits_data    (entry_rel_data[17]),
+    .io_mem_release_bits_corrupt (entry_rel_corrupt[17]),
+    .io_mem_grant_valid          (entry_mem_grant_valid[17]),
+    .io_primary_valid            (entry_primary_valid[17]),
+    .io_primary_ready            (entry_primary_ready[17]),
+    .io_block_addr_valid         (entry_block_valid[17]),
+    .io_block_addr_bits          (entry_block_addr[17])
+  );
 
 endmodule
+

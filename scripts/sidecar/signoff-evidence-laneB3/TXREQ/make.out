@@ -1,0 +1,17 @@
+=== FM: TXREQ (mode=signoff-strict) ===
+FM_TOP=TXREQ \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/TXREQ.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue16_CHIREQ.sv /home/eda/xs-env/G0-canonical/golden-rtl/ram_16x137.sv " \
+FM_IMPL_SRCS="/tmp/tmp.jpOc5s3AlY/wt/rtl/uncore/TXREQ.sv /tmp/tmp.jpOc5s3AlY/wt/rtl/uncore/TXREQ_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue16_CHIREQ.sv /home/eda/xs-env/G0-canonical/golden-rtl/ram_16x137.sv" \
+ \
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=true \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/TXREQ -file /tmp/tmp.jpOc5s3AlY/wt/scripts/fm_eq.tcl \
+    > fm_work/TXREQ/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.jpOc5s3AlY/wt/scripts/fm_verdict.py fm_work/TXREQ/fm.log --rc $rc --mode signoff-strict --top TXREQ --allowlist 0
+SUCCEEDED	{"passing": 1492, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "TXREQ", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

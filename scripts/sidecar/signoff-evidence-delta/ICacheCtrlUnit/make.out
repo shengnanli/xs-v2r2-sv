@@ -1,0 +1,17 @@
+=== FM: ICacheCtrlUnit (mode=signoff-strict) ===
+FM_TOP=ICacheCtrlUnit \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/ICacheCtrlUnit.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue1_RegMapperInput_3.sv" \
+FM_IMPL_SRCS="/tmp/tmp.qm0GxnvXHj/wt/rtl/frontend/ICacheCtrlUnit.sv /tmp/tmp.qm0GxnvXHj/wt/rtl/frontend/ICacheCtrlUnit_wrapper.sv /tmp/tmp.qm0GxnvXHj/wt/rtl/frontend/Queue1_RegMapperInput_3_wrapper.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/ICacheCtrlUnit -file /tmp/tmp.qm0GxnvXHj/wt/scripts/fm_eq.tcl \
+    > fm_work/ICacheCtrlUnit/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.qm0GxnvXHj/wt/scripts/fm_verdict.py fm_work/ICacheCtrlUnit/fm.log --rc $rc --mode signoff-strict --top ICacheCtrlUnit --allowlist 0
+PARTIAL	{"passing": 287, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": 16, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "ICacheCtrlUnit", "dont_verify": false, "elab147": false, "reason": "strict_unread!=0", "unmatched_ref": 0, "unmatched_impl": 0}
+make: *** [../../../scripts/ut_common.mk:56: fm-ICacheCtrlUnit] Error 1

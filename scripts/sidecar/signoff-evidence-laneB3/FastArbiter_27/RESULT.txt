@@ -1,0 +1,4 @@
+SIGNOFF_RESULT FastArbiter_27: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=signoff-strict fm_shell_rc=0 validator_rc=0)
+run_id: SGN-FastArbiter_27-1784703355
+impl_commit: 75060e2f27509a43f5d2d9352c1e09a91877e735
+manifest_sha256: 5ab27b6437d2d44d3286665f5490a158921f32bdb7ace3ccf0bce6e6b8ebd190

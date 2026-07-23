@@ -1,0 +1,16 @@
+=== FM: SinkC (mode=signoff-strict) ===
+FM_TOP=SinkC \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/SinkC.sv " \
+FM_IMPL_SRCS="/tmp/tmp.lpOU2L5hjf/wt/rtl/uncore/sinkc_pkg.sv /tmp/tmp.lpOU2L5hjf/wt/rtl/uncore/SinkC.sv /tmp/tmp.lpOU2L5hjf/wt/rtl/uncore/SinkC_wrapper.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/SinkC -file /tmp/tmp.lpOU2L5hjf/wt/scripts/fm_eq.tcl \
+    > fm_work/SinkC/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.lpOU2L5hjf/wt/scripts/fm_verdict.py fm_work/SinkC/fm.log --rc $rc --mode signoff-strict --top SinkC --allowlist 0
+SUCCEEDED	{"passing": 7176, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "SinkC", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

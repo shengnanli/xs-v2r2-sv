@@ -8648,7 +8648,7 @@ module tb;
       if (g_u.deqPtrOH !== i_u.u_core.deq_ptr_oh) begin errors++; if(errors<=80) $display("[%0t] deqOH mismatch",$time); end
       if (g_u.walkPtr_value !== i_u.u_core.walk_ptr.value) begin errors++; if(errors<=80) $display("[%0t] walkPtr g=%h i=%h",$time,g_u.walkPtr_value,i_u.u_core.walk_ptr.value); end
       if (g_u.walkPtr_flag !== i_u.u_core.walk_ptr.flag) begin errors++; if(errors<=80) $display("[%0t] walkFlag g=%h i=%h",$time,g_u.walkPtr_flag,i_u.u_core.walk_ptr.flag); end
-      if (g_u.diffPtr_value !== i_u.u_core.diff_ptr.value) begin errors++; if(errors<=80) $display("[%0t] diffPtr g=%h i=%h",$time,g_u.diffPtr_value,i_u.u_core.diff_ptr.value); end
+      if (g_u.diffPtr_value !== i_u.u_core.diff_ptr_value) begin errors++; if(errors<=80) $display("[%0t] diffPtr g=%h i=%h",$time,g_u.diffPtr_value,i_u.u_core.diff_ptr_value); end
       if (g_u.commitSize !== i_u.u_core.commit_size) begin errors++; if(errors<=80) $display("[%0t] commitSize g=%h i=%h",$time,g_u.commitSize,i_u.u_core.commit_size); end
       if (g_u.walkSize !== i_u.u_core.walk_size) begin errors++; if(errors<=80) $display("[%0t] walkSize g=%h i=%h",$time,g_u.walkSize,i_u.u_core.walk_size); end
       if (g_u.specialWalkSize !== i_u.u_core.special_walk_size) begin errors++; if(errors<=80) $display("[%0t] specialWalkSize g=%h i=%h",$time,g_u.specialWalkSize,i_u.u_core.special_walk_size); end

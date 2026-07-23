@@ -90,31 +90,39 @@ package virtualloadqueue_pkg;
   // ===========================================================================
   //  指针 +v：value+v，若 >= 72 则减 72 并翻转 flag。本模块单次增量最大为 enqNumber
   //  （<= 6*flow，但实际 <= Size）或 DEQ_STRIDE 偏移，单步增量远小于 72，故只需判一次回绕。
+  //  与 golden 完全一致的单次回绕：new_value(9 位) = value + v；diff = new_value - 72；
+  //  reverse = $signed(diff) >= 0（即 new_value >= 72）→ value = reverse ? diff[6:0] :
+  //  new_value[6:0]，flag = reverse ^ p.flag。v 取 9 位以容纳 enqNumber(<=186) 不截断，
+  //  但仅单次减 72（golden 亦如此，增量语义上 < 72 双圈内，大值行为照搬 golden）。
   function automatic lq_ptr_t lq_ptr_add(input lq_ptr_t p, input int unsigned v);
     lq_ptr_t r;
-    logic [PTR_VW:0] sum;               // 多一位防溢出
-    sum = {1'b0, p.value} + (PTR_VW+1)'(v);
-    if (sum >= (PTR_VW+1)'(VLQ_SIZE)) begin
-      r.value = sum - (PTR_VW+1)'(VLQ_SIZE);
-      r.flag  = ~p.flag;
-    end else begin
-      r.value = sum[PTR_VW-1:0];
-      r.flag  = p.flag;
-    end
+    logic [8:0] new_value;              // golden new_value 为 9 位
+    logic [9:0] diff;                   // golden diff = 10'(new_value - 72)
+    logic       reverse;
+    new_value = {2'b0, p.value} + 9'(v);
+    diff      = {1'b0, new_value} - 10'(VLQ_SIZE);
+    reverse   = ~diff[9];              // $signed(diff) >= 0 ⇔ 符号位为 0
+    r.value   = reverse ? diff[PTR_VW-1:0] : new_value[PTR_VW-1:0];
+    r.flag    = reverse ^ p.flag;
     return r;
   endfunction
 
-  //  指针 -v：CircularQueuePtr 实现为 +(entries - v) 再翻 flag。这里直接给出等价结果：
-  //  若 value >= v：value-v，flag 不变；否则 value+72-v，flag 翻转。
+  //  指针 -v：CircularQueuePtr 实现为 +(entries - v) 再翻 flag。照搬 golden 逐位算法：
+  //  flipped = value + (72 - v)(8 位)；new_value = value + flipped_offset(9 位)；
+  //  diff = new_value - 72(10 位)；reverse = $signed(diff) >= 0；
+  //  value = reverse ? diff[6:0] : new_value[6:0]；flag = reverse ^ ~p.flag（基指针 flag 取反）。
   function automatic lq_ptr_t lq_ptr_sub(input lq_ptr_t p, input int unsigned v);
     lq_ptr_t r;
-    if ({1'b0, p.value} >= (PTR_VW+1)'(v)) begin
-      r.value = p.value - PTR_VW'(v);
-      r.flag  = p.flag;
-    end else begin
-      r.value = (PTR_VW)'(({1'b0, p.value} + (PTR_VW+1)'(VLQ_SIZE)) - (PTR_VW+1)'(v));
-      r.flag  = ~p.flag;
-    end
+    logic [7:0] offset;                 // golden 8'(72 - v)
+    logic [8:0] new_value;
+    logic [9:0] diff;
+    logic       reverse;
+    offset    = 8'(VLQ_SIZE) - 8'(v);
+    new_value = {2'b0, p.value} + {1'b0, offset};
+    diff      = {1'b0, new_value} - 10'(VLQ_SIZE);
+    reverse   = ~diff[9];
+    r.value   = reverse ? diff[PTR_VW-1:0] : new_value[PTR_VW-1:0];
+    r.flag    = reverse ^ ~p.flag;
     return r;
   endfunction
 

@@ -1,0 +1,17 @@
+=== FM: EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v (mode=signoff-strict) ===
+FM_TOP=EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v.sv /home/eda/xs-env/G0-canonical/golden-rtl/EnqEntry_4.sv /home/eda/xs-env/G0-canonical/golden-rtl/OthersEntry_44.sv /home/eda/xs-env/G0-canonical/golden-rtl/OthersEntry_50.sv /home/eda/xs-env/G0-canonical/golden-rtl/EnqPolicy.sv /home/eda/xs-env/G0-canonical/golden-rtl/UIntCompressor_27_000011100000000000001010101.sv" \
+FM_IMPL_SRCS="/tmp/tmp.CSlr2f8xXv/wt/rtl/backend/iq_abjivvi_pkg.sv /tmp/tmp.CSlr2f8xXv/wt/rtl/backend/IqEntryAbjivvi.sv /tmp/tmp.CSlr2f8xXv/wt/rtl/backend/EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v.sv /tmp/tmp.CSlr2f8xXv/wt/rtl/backend/EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/EnqPolicy.sv /home/eda/xs-env/G0-canonical/golden-rtl/UIntCompressor_27_000011100000000000001010101.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v -file /tmp/tmp.CSlr2f8xXv/wt/scripts/fm_eq.tcl \
+    > fm_work/EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.CSlr2f8xXv/wt/scripts/fm_verdict.py fm_work/EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v/fm.log --rc $rc --mode signoff-strict --top EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v --allowlist 0
+ERROR	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 0, "make_rc": 4, "mode": "signoff-strict", "native": null, "top": null, "dont_verify": false, "elab147": false, "reason": "make_rc_nonzero"}
+make: *** [../../../scripts/ut_common.mk:56: fm-EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v] Error 1

@@ -1,0 +1,19 @@
+Makefile:13: warning: overriding recipe for target 'simv'
+../../../scripts/ut_common.mk:27: warning: ignoring old recipe for target 'simv'
+=== FM: PTW (mode=signoff-strict) ===
+FM_TOP=PTW \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/PTW.sv " \
+FM_IMPL_SRCS="/tmp/tmp.OhgubY1GVv/wt/rtl/memblock/ptw_pkg.sv /tmp/tmp.OhgubY1GVv/wt/rtl/memblock/PTW.sv /tmp/tmp.OhgubY1GVv/wt/rtl/memblock/PTW_wrapper.sv" \
+FM_MERGE_DUP=false \
+ \
+ \
+ \
+FM_PIN_TCL=/tmp/tmp.OhgubY1GVv/wt/verif/ut/PTW/fm_pins.tcl \
+fm_shell -64 -work_path fm_work/PTW -file /tmp/tmp.OhgubY1GVv/wt/scripts/fm_eq.tcl \
+    > fm_work/PTW/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.OhgubY1GVv/wt/scripts/fm_verdict.py fm_work/PTW/fm.log --rc $rc --mode signoff-strict --top PTW --allowlist 0
+PARTIAL	{"passing": 2653, "failing": 0, "unverified": null, "unmatched": 35, "aborted": null, "unread": 18, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "PTW", "dont_verify": false, "elab147": false, "reason": "strict_unmatched!=0", "unmatched_ref": 0, "unmatched_impl": 35}
+make: *** [../../../scripts/ut_common.mk:56: fm-PTW] Error 1

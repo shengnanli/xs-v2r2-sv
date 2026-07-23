@@ -84,7 +84,7 @@ module xs_FTBEntryGen
       init_entry.brSlot.offset  = io_cfiIndex_bits;
       init_entry.brSlot.sharing = 1'b0;
       init_entry.brSlot.tarStat = calc_tarstat(io_start_addr, io_target, BR_OFF_LEN);
-      init_entry.brSlot.lower   = calc_lower(io_target, BR_OFF_LEN);
+      init_entry.brSlot.lower   = calc_lower(io_target, BR_OFF_LEN);  // 截断到 brSlot.lower 12 位(calc_lower 已按 eff=12 掩码, 值本在低 12 位)
       init_entry.strong_bias[0] = 1'b1;     // 新建即置强偏置
     end
 
@@ -132,6 +132,11 @@ module xs_FTBEntryGen
   // =========================================================================
   ftb_entry_t mod_newbr;
   always_comb begin
+    // 组合临时量提到顶层并默认赋值,避免 always_comb 内条件赋值被推断为闩锁
+    logic [OFFSET_W-1:0] new_pft_off;
+    logic [OFFSET_W:0]   sum;
+    new_pft_off = '0;
+    sum         = '0;
     mod_newbr = oe;
     // slot0 (brSlot)
     if (ins0) begin
@@ -139,7 +144,7 @@ module xs_FTBEntryGen
       mod_newbr.brSlot.offset  = new_br_off;
       mod_newbr.brSlot.sharing = 1'b0;
       mod_newbr.brSlot.tarStat = calc_tarstat(io_start_addr, io_target, BR_OFF_LEN);
-      mod_newbr.brSlot.lower   = calc_lower(io_target, BR_OFF_LEN);
+      mod_newbr.brSlot.lower   = calc_lower(io_target, BR_OFF_LEN);  // 截断到 12 位(calc_lower 已掩码)
       mod_newbr.strong_bias[0] = 1'b1;
     end else if (new_br_off > oe.brSlot.offset) begin
       mod_newbr.strong_bias[0] = 1'b0;          // 越过旧 br0 → 清强偏置
@@ -165,8 +170,6 @@ module xs_FTBEntryGen
     end
     // 两 slot 都满还要插新 br → 必须牺牲 jmp，fall-through 改到新边界
     if (is_new_br & may_have_to_replace) begin
-      logic [OFFSET_W-1:0] new_pft_off;
-      logic [OFFSET_W:0]   sum;
       new_pft_off = (insert_onehot == 2'b0) ? new_br_off : oe.tailSlot.offset;
       sum         = {1'b0, start_lower} + {1'b0, new_pft_off};
       mod_newbr.pftAddr              = sum[OFFSET_W-1:0];

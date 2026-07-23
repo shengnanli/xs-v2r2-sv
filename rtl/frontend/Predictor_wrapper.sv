@@ -1,7 +1,10 @@
 // 自动生成：scripts/gen_predictor.py —— 勿手改
-// BPU 顶层 wrapper：逐字照搬 golden body（Composer/DelayN/PriorityMuxModule 黑盒 +
-// 256 位 ghv / 折叠历史扇出 + s2/s3 redirect 判定），额外例化可读核 xs_Predictor_core
-// 作为 FSM+topdown 的等价校验伴随（影子输出经 xs_dbg_* 引出，仅供 UT 探针比对）。
+// BPU 顶层 wrapper：照搬 golden body 的历史扇出/接线（Composer 黑盒 + 256 位 ghv /
+// 折叠历史扇出 + s2/s3 redirect 判定），但 FSM valid + topdown reasons 流水的 golden
+// 驱动被删除，改由例化的可读核 xs_Predictor_core **真驱动**（REAL，非影子）：
+//   s{1,2,3}_valid_dup_3 + topdown_stages_2_reasons_* ← u_core（reg 转 wire）。
+// resp.valid / s0_fire / s1_fire 由 body 组合式从 core-driven valid 再生成；
+// topdown 输出级保留 golden 同拍 _GEN_10x 注入。UT 影子探针经 xs_dbg_* 引出。
 module Predictor(
   input  clock,
   input  reset,
@@ -1219,39 +1222,19 @@ module Predictor(
   wire
     predictors_io_update_bits_pc_debug_modified_debug_predictors_io_update_pc_modified_2 =
     1'h1;
-  reg              topdown_stages_0_reasons_1;
-  reg              topdown_stages_0_reasons_2;
-  reg              topdown_stages_0_reasons_3;
-  reg              topdown_stages_0_reasons_4;
-  reg              topdown_stages_0_reasons_5;
-  reg              topdown_stages_0_reasons_6;
-  reg              topdown_stages_0_reasons_7;
-  reg              topdown_stages_0_reasons_8;
-  reg              topdown_stages_0_reasons_9;
-  reg              topdown_stages_0_reasons_12;
-  reg              topdown_stages_1_reasons_1;
-  reg              topdown_stages_1_reasons_2;
-  reg              topdown_stages_1_reasons_3;
-  reg              topdown_stages_1_reasons_4;
-  reg              topdown_stages_1_reasons_5;
-  reg              topdown_stages_1_reasons_6;
-  reg              topdown_stages_1_reasons_7;
-  reg              topdown_stages_1_reasons_8;
-  reg              topdown_stages_1_reasons_9;
-  reg              topdown_stages_1_reasons_12;
-  reg              topdown_stages_2_reasons_1;
-  reg              topdown_stages_2_reasons_2;
-  reg              topdown_stages_2_reasons_3;
-  reg              topdown_stages_2_reasons_4;
-  reg              topdown_stages_2_reasons_5;
-  reg              topdown_stages_2_reasons_6;
-  reg              topdown_stages_2_reasons_7;
-  reg              topdown_stages_2_reasons_8;
-  reg              topdown_stages_2_reasons_9;
-  reg              topdown_stages_2_reasons_12;
-  reg              s1_valid_dup_3;
-  reg              s2_valid_dup_3;
-  reg              s3_valid_dup_3;
+  wire              topdown_stages_2_reasons_1;
+  wire              topdown_stages_2_reasons_2;
+  wire              topdown_stages_2_reasons_3;
+  wire              topdown_stages_2_reasons_4;
+  wire              topdown_stages_2_reasons_5;
+  wire              topdown_stages_2_reasons_6;
+  wire              topdown_stages_2_reasons_7;
+  wire              topdown_stages_2_reasons_8;
+  wire              topdown_stages_2_reasons_9;
+  wire              topdown_stages_2_reasons_12;
+  wire              s1_valid_dup_3;
+  wire              s2_valid_dup_3;
+  wire              s3_valid_dup_3;
   reg  [49:0]      s0_pc_reg_dup_0;
   reg  [49:0]      s0_pc_reg_dup_1;
   reg  [49:0]      s0_pc_reg_dup_2;
@@ -23136,33 +23119,33 @@ module Predictor(
     always @(posedge clock) begin
       if (full_pred_diff_probe & ~reset) begin
         if (`ASSERT_VERBOSE_COND_)
-          $error("Assertion failed\n    at LogUtils.scala:126 assert(false.B) //assert at current module for better error location\n");
+          $fwrite(32'h80000002, "Assertion failed\n    at LogUtils.scala:126 assert(false.B) //assert at current module for better error location\n");
         if (`STOP_COND_)
-          $fatal;
+          xs_assert_v2(`__FILE__, `__LINE__);
       end
       if (_GEN_5 & ~reset) begin
         if (`ASSERT_VERBOSE_COND_)
-          $error("Assertion failed\n    at LogUtils.scala:126 assert(false.B) //assert at current module for better error location\n");
+          $fwrite(32'h80000002, "Assertion failed\n    at LogUtils.scala:126 assert(false.B) //assert at current module for better error location\n");
         if (`STOP_COND_)
-          $fatal;
+          xs_assert_v2(`__FILE__, `__LINE__);
       end
       if (_GEN_108 & ~reset) begin
         if (`ASSERT_VERBOSE_COND_)
-          $error("Assertion failed\n    at LogUtils.scala:126 assert(false.B) //assert at current module for better error location\n");
+          $fwrite(32'h80000002, "Assertion failed\n    at LogUtils.scala:126 assert(false.B) //assert at current module for better error location\n");
         if (`STOP_COND_)
-          $fatal;
+          xs_assert_v2(`__FILE__, `__LINE__);
       end
       if (_GEN_109 & ~reset) begin
         if (`ASSERT_VERBOSE_COND_)
-          $error("Assertion failed\n    at LogUtils.scala:126 assert(false.B) //assert at current module for better error location\n");
+          $fwrite(32'h80000002, "Assertion failed\n    at LogUtils.scala:126 assert(false.B) //assert at current module for better error location\n");
         if (`STOP_COND_)
-          $fatal;
+          xs_assert_v2(`__FILE__, `__LINE__);
       end
       if (_GEN_110 & ~reset) begin
         if (`ASSERT_VERBOSE_COND_)
-          $error("Assertion failed\n    at LogUtils.scala:126 assert(false.B) //assert at current module for better error location\n");
+          $fwrite(32'h80000002, "Assertion failed\n    at LogUtils.scala:126 assert(false.B) //assert at current module for better error location\n");
         if (`STOP_COND_)
-          $fatal;
+          xs_assert_v2(`__FILE__, `__LINE__);
       end
     end // always @(posedge)
   `endif // not def SYNTHESIS
@@ -23190,44 +23173,10 @@ module Predictor(
   wire             s1_flush_dup_1 = s2_flush_dup_1 | s2_redirect_dup_1;
   wire             s1_flush_dup_2 = s2_flush_dup_2 | s2_redirect_dup_2;
   wire             s1_flush_dup_3 = s2_flush_dup_3 | s2_redirect_dup_3;
-  wire             _GEN_112 = s3_valid_dup_3 | io_ftq_to_bpu_redirect_valid;
   wire             _previous_s2_pred_full_pred_3_fallThroughAddr_T =
     s2_valid_dup_3 & _predictors_io_out_s2_full_pred_0_hit;
   always @(posedge clock or posedge reset) begin
     if (reset) begin
-      topdown_stages_0_reasons_1 <= 1'h0;
-      topdown_stages_0_reasons_2 <= 1'h0;
-      topdown_stages_0_reasons_3 <= 1'h0;
-      topdown_stages_0_reasons_4 <= 1'h0;
-      topdown_stages_0_reasons_5 <= 1'h0;
-      topdown_stages_0_reasons_6 <= 1'h0;
-      topdown_stages_0_reasons_7 <= 1'h0;
-      topdown_stages_0_reasons_8 <= 1'h0;
-      topdown_stages_0_reasons_9 <= 1'h0;
-      topdown_stages_0_reasons_12 <= 1'h0;
-      topdown_stages_1_reasons_1 <= 1'h0;
-      topdown_stages_1_reasons_2 <= 1'h0;
-      topdown_stages_1_reasons_3 <= 1'h0;
-      topdown_stages_1_reasons_4 <= 1'h0;
-      topdown_stages_1_reasons_5 <= 1'h0;
-      topdown_stages_1_reasons_6 <= 1'h0;
-      topdown_stages_1_reasons_7 <= 1'h0;
-      topdown_stages_1_reasons_8 <= 1'h0;
-      topdown_stages_1_reasons_9 <= 1'h0;
-      topdown_stages_1_reasons_12 <= 1'h0;
-      topdown_stages_2_reasons_1 <= 1'h0;
-      topdown_stages_2_reasons_2 <= 1'h0;
-      topdown_stages_2_reasons_3 <= 1'h0;
-      topdown_stages_2_reasons_4 <= 1'h0;
-      topdown_stages_2_reasons_5 <= 1'h0;
-      topdown_stages_2_reasons_6 <= 1'h0;
-      topdown_stages_2_reasons_7 <= 1'h0;
-      topdown_stages_2_reasons_8 <= 1'h0;
-      topdown_stages_2_reasons_9 <= 1'h0;
-      topdown_stages_2_reasons_12 <= 1'h0;
-      s1_valid_dup_3 <= 1'h0;
-      s2_valid_dup_3 <= 1'h0;
-      s3_valid_dup_3 <= 1'h0;
       s0_folded_gh_reg_dup_1_hist_17_folded_hist <= 11'h0;
       s0_folded_gh_reg_dup_1_hist_16_folded_hist <= 11'h0;
       s0_folded_gh_reg_dup_1_hist_15_folded_hist <= 7'h0;
@@ -23941,70 +23890,6 @@ module Predictor(
       predictors_io_update_bits_pc_predictors_io_update_pc_seg_2_value <= 12'h0;
     end
     else begin
-      topdown_stages_0_reasons_1 <= s3_redirect_dup_0_probe | s2_redirect_dup_0_probe;
-      topdown_stages_0_reasons_2 <= ~_predictors_io_s1_ready;
-      topdown_stages_0_reasons_3 <= _GEN_103;
-      topdown_stages_0_reasons_4 <= _GEN_104;
-      topdown_stages_0_reasons_5 <= _GEN_105;
-      topdown_stages_0_reasons_6 <= _GEN_106;
-      topdown_stages_0_reasons_7 <= memVioRedirectBubble;
-      topdown_stages_0_reasons_8 <= otherRedirectBubble;
-      topdown_stages_0_reasons_9 <= ~io_bpu_to_ftq_resp_ready;
-      topdown_stages_0_reasons_12 <=
-        btbMissBubble | controlRedirectBubble & ControlBTBMissBubble;
-      topdown_stages_1_reasons_1 <= s3_redirect_dup_0_probe | topdown_stages_0_reasons_1;
-      topdown_stages_1_reasons_2 <= topdown_stages_0_reasons_2;
-      topdown_stages_1_reasons_3 <= _GEN_103 | topdown_stages_0_reasons_3;
-      topdown_stages_1_reasons_4 <= _GEN_104 | topdown_stages_0_reasons_4;
-      topdown_stages_1_reasons_5 <= _GEN_105 | topdown_stages_0_reasons_5;
-      topdown_stages_1_reasons_6 <= _GEN_106 | topdown_stages_0_reasons_6;
-      topdown_stages_1_reasons_7 <= memVioRedirectBubble | topdown_stages_0_reasons_7;
-      topdown_stages_1_reasons_8 <= otherRedirectBubble | topdown_stages_0_reasons_8;
-      topdown_stages_1_reasons_9 <= topdown_stages_0_reasons_9;
-      topdown_stages_1_reasons_12 <= _GEN_107 | topdown_stages_0_reasons_12;
-      topdown_stages_2_reasons_1 <= topdown_stages_1_reasons_1;
-      topdown_stages_2_reasons_2 <= topdown_stages_1_reasons_2;
-      topdown_stages_2_reasons_3 <= _GEN_103 | topdown_stages_1_reasons_3;
-      topdown_stages_2_reasons_4 <= _GEN_104 | topdown_stages_1_reasons_4;
-      topdown_stages_2_reasons_5 <= _GEN_105 | topdown_stages_1_reasons_5;
-      topdown_stages_2_reasons_6 <= _GEN_106 | topdown_stages_1_reasons_6;
-      topdown_stages_2_reasons_7 <= memVioRedirectBubble | topdown_stages_1_reasons_7;
-      topdown_stages_2_reasons_8 <= otherRedirectBubble | topdown_stages_1_reasons_8;
-      topdown_stages_2_reasons_9 <= topdown_stages_1_reasons_9;
-      topdown_stages_2_reasons_12 <= _GEN_107 | topdown_stages_1_reasons_12;
-      s1_valid_dup_3 <=
-        ~io_ftq_to_bpu_redirect_valid
-        & (s0_fire_dup_3
-           | ~(s1_flush_dup_3 | s1_fire_dup_3 | io_ftq_to_bpu_redirect_valid)
-           & (s0_fire_dup_2
-              | ~(s1_flush_dup_2 | s1_fire_dup_2 | io_ftq_to_bpu_redirect_valid)
-              & (s0_fire_dup_1
-                 | ~(s1_flush_dup_1 | s1_fire_dup_1 | io_ftq_to_bpu_redirect_valid)
-                 & (s0_fire_dup_0 | ~(s1_flush_dup_0 | s1_fire_dup_0)
-                    & s1_valid_dup_3))));
-      s2_valid_dup_3 <=
-        ~s2_flush_dup_3
-        & (s1_fire_dup_3
-             ? ~s1_flush_dup_3
-             : ~(s2_valid_dup_3 | s2_flush_dup_2)
-               & (s1_fire_dup_2
-                    ? ~s1_flush_dup_2
-                    : ~(s2_valid_dup_3 | s2_flush_dup_1)
-                      & (s1_fire_dup_1
-                           ? ~s1_flush_dup_1
-                           : ~(s2_valid_dup_3 | s2_flush_dup_0) & s1_fire_dup_0
-                             & ~s1_flush_dup_0)));
-      s3_valid_dup_3 <=
-        ~io_ftq_to_bpu_redirect_valid
-        & (s2_valid_dup_3
-             ? ~s2_flush_dup_3
-             : ~_GEN_112
-               & (s2_valid_dup_3
-                    ? ~s2_flush_dup_2
-                    : ~_GEN_112
-                      & (s2_valid_dup_3
-                           ? ~s2_flush_dup_1
-                           : ~_GEN_112 & s2_valid_dup_3 & ~s2_flush_dup_0)));
       if (_s0_stall_dup_1_T_2) begin
         s0_folded_gh_reg_dup_1_hist_17_folded_hist <=
           _s0_folded_gh_dup_1_ppm_out_res_hist_17_folded_hist;
@@ -25534,39 +25419,6 @@ module Predictor(
         for (logic [7:0] i = 8'h0; i < 8'hEF; i += 8'h1) begin
           _RANDOM[i] = `RANDOM;
         end
-        topdown_stages_0_reasons_1 = _RANDOM[8'h0][1];
-        topdown_stages_0_reasons_2 = _RANDOM[8'h0][2];
-        topdown_stages_0_reasons_3 = _RANDOM[8'h0][3];
-        topdown_stages_0_reasons_4 = _RANDOM[8'h0][4];
-        topdown_stages_0_reasons_5 = _RANDOM[8'h0][5];
-        topdown_stages_0_reasons_6 = _RANDOM[8'h0][6];
-        topdown_stages_0_reasons_7 = _RANDOM[8'h0][7];
-        topdown_stages_0_reasons_8 = _RANDOM[8'h0][8];
-        topdown_stages_0_reasons_9 = _RANDOM[8'h0][9];
-        topdown_stages_0_reasons_12 = _RANDOM[8'h0][12];
-        topdown_stages_1_reasons_1 = _RANDOM[8'h1][11];
-        topdown_stages_1_reasons_2 = _RANDOM[8'h1][12];
-        topdown_stages_1_reasons_3 = _RANDOM[8'h1][13];
-        topdown_stages_1_reasons_4 = _RANDOM[8'h1][14];
-        topdown_stages_1_reasons_5 = _RANDOM[8'h1][15];
-        topdown_stages_1_reasons_6 = _RANDOM[8'h1][16];
-        topdown_stages_1_reasons_7 = _RANDOM[8'h1][17];
-        topdown_stages_1_reasons_8 = _RANDOM[8'h1][18];
-        topdown_stages_1_reasons_9 = _RANDOM[8'h1][19];
-        topdown_stages_1_reasons_12 = _RANDOM[8'h1][22];
-        topdown_stages_2_reasons_1 = _RANDOM[8'h2][21];
-        topdown_stages_2_reasons_2 = _RANDOM[8'h2][22];
-        topdown_stages_2_reasons_3 = _RANDOM[8'h2][23];
-        topdown_stages_2_reasons_4 = _RANDOM[8'h2][24];
-        topdown_stages_2_reasons_5 = _RANDOM[8'h2][25];
-        topdown_stages_2_reasons_6 = _RANDOM[8'h2][26];
-        topdown_stages_2_reasons_7 = _RANDOM[8'h2][27];
-        topdown_stages_2_reasons_8 = _RANDOM[8'h2][28];
-        topdown_stages_2_reasons_9 = _RANDOM[8'h2][29];
-        topdown_stages_2_reasons_12 = _RANDOM[8'h3][0];
-        s1_valid_dup_3 = _RANDOM[8'h3][30];
-        s2_valid_dup_3 = _RANDOM[8'h3][31];
-        s3_valid_dup_3 = _RANDOM[8'h4][0];
         s0_pc_reg_dup_0 = {_RANDOM[8'h4][31:1], _RANDOM[8'h5][18:0]};
         s0_pc_reg_dup_1 = {_RANDOM[8'h5][31:19], _RANDOM[8'h6], _RANDOM[8'h7][4:0]};
         s0_pc_reg_dup_2 = {_RANDOM[8'h7][31:5], _RANDOM[8'h8][22:0]};
@@ -26392,39 +26244,6 @@ module Predictor(
         io_perf_6_value_REG_1 = _RANDOM[8'hEE][14:9];
       `endif // RANDOMIZE_REG_INIT
       if (reset) begin
-        topdown_stages_0_reasons_1 = 1'h0;
-        topdown_stages_0_reasons_2 = 1'h0;
-        topdown_stages_0_reasons_3 = 1'h0;
-        topdown_stages_0_reasons_4 = 1'h0;
-        topdown_stages_0_reasons_5 = 1'h0;
-        topdown_stages_0_reasons_6 = 1'h0;
-        topdown_stages_0_reasons_7 = 1'h0;
-        topdown_stages_0_reasons_8 = 1'h0;
-        topdown_stages_0_reasons_9 = 1'h0;
-        topdown_stages_0_reasons_12 = 1'h0;
-        topdown_stages_1_reasons_1 = 1'h0;
-        topdown_stages_1_reasons_2 = 1'h0;
-        topdown_stages_1_reasons_3 = 1'h0;
-        topdown_stages_1_reasons_4 = 1'h0;
-        topdown_stages_1_reasons_5 = 1'h0;
-        topdown_stages_1_reasons_6 = 1'h0;
-        topdown_stages_1_reasons_7 = 1'h0;
-        topdown_stages_1_reasons_8 = 1'h0;
-        topdown_stages_1_reasons_9 = 1'h0;
-        topdown_stages_1_reasons_12 = 1'h0;
-        topdown_stages_2_reasons_1 = 1'h0;
-        topdown_stages_2_reasons_2 = 1'h0;
-        topdown_stages_2_reasons_3 = 1'h0;
-        topdown_stages_2_reasons_4 = 1'h0;
-        topdown_stages_2_reasons_5 = 1'h0;
-        topdown_stages_2_reasons_6 = 1'h0;
-        topdown_stages_2_reasons_7 = 1'h0;
-        topdown_stages_2_reasons_8 = 1'h0;
-        topdown_stages_2_reasons_9 = 1'h0;
-        topdown_stages_2_reasons_12 = 1'h0;
-        s1_valid_dup_3 = 1'h0;
-        s2_valid_dup_3 = 1'h0;
-        s3_valid_dup_3 = 1'h0;
         s0_folded_gh_reg_dup_1_hist_17_folded_hist = 11'h0;
         s0_folded_gh_reg_dup_1_hist_16_folded_hist = 11'h0;
         s0_folded_gh_reg_dup_1_hist_15_folded_hist = 7'h0;
@@ -44734,7 +44553,7 @@ module Predictor(
   assign io_perf_5_value = io_perf_5_value_REG_1;
   assign io_perf_6_value = io_perf_6_value_REG_1;
 
-  // ===== 可读核（FSM + topdown 影子；纯增量，不影响对外功能）=====
+  // ===== 可读核 xs_Predictor_core：真驱动 FSM valid + topdown reasons（REAL）=====
   xs_Predictor_core u_core (
     .clock(clock),
     .reset(reset),
@@ -44759,27 +44578,27 @@ module Predictor(
     .mem_vio_bubble(memVioRedirectBubble),
     .other_bubble(otherRedirectBubble),
     .btb_miss_bubble(btbMissBubble),
-    .s1_valid(/* unused dbg */),
-    .s2_valid(/* unused dbg */),
-    .s3_valid(/* unused dbg */),
-    .resp_valid(/* unused dbg */),
-    .s0_fire_0(/* unused dbg */),
-    .s0_fire_1(/* unused dbg */),
-    .s0_fire_2(/* unused dbg */),
-    .s0_fire_3(/* unused dbg */),
-    .s1_fire_0(/* unused dbg */),
-    .s1_fire_1(/* unused dbg */),
-    .s1_fire_2(/* unused dbg */),
-    .s1_fire_3(/* unused dbg */),
-    .topdown2_reason_1(/* unused dbg */),
-    .topdown2_reason_2(/* unused dbg */),
-    .topdown2_reason_3(/* unused dbg */),
-    .topdown2_reason_4(/* unused dbg */),
-    .topdown2_reason_5(/* unused dbg */),
-    .topdown2_reason_6(/* unused dbg */),
-    .topdown2_reason_7(/* unused dbg */),
-    .topdown2_reason_8(/* unused dbg */),
-    .topdown2_reason_9(/* unused dbg */),
-    .topdown2_reason_12(/* unused dbg */)
+    .s1_valid(s1_valid_dup_3),
+    .s2_valid(s2_valid_dup_3),
+    .s3_valid(s3_valid_dup_3),
+    .resp_valid(/* body re-derives */),
+    .s0_fire_0(/* body re-derives */),
+    .s0_fire_1(/* body re-derives */),
+    .s0_fire_2(/* body re-derives */),
+    .s0_fire_3(/* body re-derives */),
+    .s1_fire_0(/* body re-derives */),
+    .s1_fire_1(/* body re-derives */),
+    .s1_fire_2(/* body re-derives */),
+    .s1_fire_3(/* body re-derives */),
+    .topdown2_reason_1(topdown_stages_2_reasons_1),
+    .topdown2_reason_2(topdown_stages_2_reasons_2),
+    .topdown2_reason_3(topdown_stages_2_reasons_3),
+    .topdown2_reason_4(topdown_stages_2_reasons_4),
+    .topdown2_reason_5(topdown_stages_2_reasons_5),
+    .topdown2_reason_6(topdown_stages_2_reasons_6),
+    .topdown2_reason_7(topdown_stages_2_reasons_7),
+    .topdown2_reason_8(topdown_stages_2_reasons_8),
+    .topdown2_reason_9(topdown_stages_2_reasons_9),
+    .topdown2_reason_12(topdown_stages_2_reasons_12)
   );
 endmodule

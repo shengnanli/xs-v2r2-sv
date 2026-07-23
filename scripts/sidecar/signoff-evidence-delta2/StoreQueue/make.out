@@ -1,0 +1,17 @@
+=== FM: StoreQueue (mode=signoff-strict) ===
+FM_TOP=StoreQueue \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/StoreQueue.sv /home/eda/xs-env/G0-canonical/golden-rtl/SQDataModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/SQData8Module.sv /home/eda/xs-env/G0-canonical/golden-rtl/SQAddrModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/SQAddrModule_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/DatamoduleResultBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/StoreExceptionBuffer.sv" \
+FM_IMPL_SRCS="/tmp/tmp.xPZSR09oR4/wt/rtl/memblock/storequeue_pkg.sv /tmp/tmp.xPZSR09oR4/wt/rtl/memblock/StoreQueue.sv /tmp/tmp.xPZSR09oR4/wt/rtl/memblock/StoreQueue_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/SQDataModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/SQData8Module.sv /home/eda/xs-env/G0-canonical/golden-rtl/SQAddrModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/SQAddrModule_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/DatamoduleResultBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/StoreExceptionBuffer.sv" \
+FM_MERGE_DUP=false \
+ \
+ \
+FM_PIN_PRE_TCL=/tmp/tmp.xPZSR09oR4/wt/verif/ut/StoreQueue/fm_pins_pre.tcl \
+ \
+fm_shell -64 -work_path fm_work/StoreQueue -file /tmp/tmp.xPZSR09oR4/wt/scripts/fm_eq.tcl \
+    > fm_work/StoreQueue/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.xPZSR09oR4/wt/scripts/fm_verdict.py fm_work/StoreQueue/fm.log --rc $rc --mode signoff-strict --top StoreQueue --allowlist 0
+FAILED	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "FAILED", "top": "StoreQueue", "dont_verify": false, "elab147": false, "reason": null}
+make: *** [../../../scripts/ut_common.mk:56: fm-StoreQueue] Error 1

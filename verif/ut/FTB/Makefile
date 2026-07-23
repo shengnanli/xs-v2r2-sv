@@ -11,7 +11,11 @@ MACRO_SIM = $(GOLDEN_RTL)/sram_array_1p512x40m10s1h0l1b_bp_ftb.sv \
 # 可读核：ftb 类型包 + xs_FTB_core 核
 RTL_SRCS = $(RTL_DIR)/frontend/ftb_pkg.sv $(RTL_DIR)/frontend/FTB.sv
 # FM 用包装层（golden 同名 FTB，内部例化 xs_FTB_core + golden 子模块）
-WRAPPER_SRCS = $(RTL_DIR)/frontend/FTB_wrapper.sv
+# DelayNWithValid/_1 + DelayN_1（纯逻辑延迟线, 非vendor）两侧 elaborate；
+# FTBBank 是独立绿目标(depends_on)→黑盒。
+FM_LOGIC_ELAB = $(GOLDEN_RTL)/DelayNWithValid.sv $(GOLDEN_RTL)/DelayNWithValid_1.sv \
+                $(GOLDEN_RTL)/DelayN_1.sv
+WRAPPER_SRCS = $(RTL_DIR)/frontend/FTB_wrapper.sv $(FM_LOGIC_ELAB)
 # UT 双例化：FTB_xs（可读核 + golden 子模块）vs golden FTB
 # golden 侧依赖：golden FTB + 其子模块（FTBBank 链 / DelayN*）+ SRAM/Mbist
 GOLDEN_SRCS = $(GOLDEN_RTL)/FTB.sv \
@@ -23,10 +27,8 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/FTB.sv \
 TB_SRCS = variants_xs.sv tb.sv
 
 FM_VARIANTS = FTB
-# FM 参考侧只给 golden FTB 本体；子模块（FTBBank / DelayNWithValid* / DelayN_1）两侧
-# 均不提供源码 → fm_eq.tcl 的 hdlin_unresolved_modules=black_box 把它们当黑盒。
-# 这样只比 FTB 顶层的流水/close/目标解码/update 控制逻辑，子模块作为等价黑盒。
-FM_REF_DEPS_FTB =
+# DelayN* 纯逻辑两侧 elaborate；FTBBank 独立绿目标 depends_on → 黑盒。
+FM_REF_DEPS_FTB = DelayNWithValid.sv DelayNWithValid_1.sv DelayN_1.sv
 
 include ../../../scripts/ut_common.mk
 

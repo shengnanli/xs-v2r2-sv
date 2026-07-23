@@ -1,0 +1,4 @@
+SIGNOFF_RESULT Predictor: measured=SHADOW_CHECK required=SHADOW_CHECK gate=PASS (proof=shadow fm_shell_rc=0 validator_rc=1)
+run_id: SGN-Predictor-1784567745
+impl_commit: 53e06fb0608d4058fcbac9100ead7a8f86707a48
+manifest_sha256: 256902c1d5e6231aaca309d5ce237fd4f40dbd6fa56cb92be0c6f4918da0eb96

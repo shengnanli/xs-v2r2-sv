@@ -224,7 +224,10 @@ module TLBFA import xs_tlbfa_pkg::*; (
     wdata.s2_gaf = io_w_bits_data_s2_gaf;
     wdata.s2xlate = io_w_bits_data_s2xlate;
   end
-  xs_TLBFA_core #(.PORTS(3), .NDUPS(1), .NWAYS(48), .WAY_W(6)) u_core (
+  // TLBFA = ITLB(取指)变体：golden 不物化 perm.d 与 g_perm 写侧位(d/r/w)（这些位在取指
+  //   翻译里零扇出）。KEEP_*=0 使核不生成这些条目寄存器位，与 golden 逐位一致。
+  xs_TLBFA_core #(.PORTS(3), .NDUPS(1), .NWAYS(48), .WAY_W(6),
+                  .KEEP_PERM_D(1'b0), .KEEP_GPERM_DRW(1'b0)) u_core (
     .clock(clock), .reset(reset),
     .io_sfence_valid(io_sfence_valid), .io_sfence_bits_rs1(io_sfence_bits_rs1),
     .io_sfence_bits_rs2(io_sfence_bits_rs2), .io_sfence_bits_addr(io_sfence_bits_addr),

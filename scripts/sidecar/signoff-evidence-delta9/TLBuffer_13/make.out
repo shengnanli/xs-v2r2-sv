@@ -1,0 +1,16 @@
+=== FM: TLBuffer_13 (mode=assembly) ===
+FM_TOP=TLBuffer_13 \
+FM_MODE=assembly \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/TLBuffer_13.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleA_19.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleB_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleC_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleD_20.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleE_1.sv " \
+FM_IMPL_SRCS="/tmp/tmp.rXgGjl8Vdp/wt/rtl/memblock/tlbuffer13_pkg.sv /tmp/tmp.rXgGjl8Vdp/wt/rtl/memblock/xs_tlbuffer13_bank.sv /tmp/tmp.rXgGjl8Vdp/wt/rtl/memblock/TLBuffer_13.sv /tmp/tmp.rXgGjl8Vdp/wt/rtl/memblock/TLBuffer_13_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleA_19.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleB_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleC_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleD_20.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleE_1.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/TLBuffer_13 -file /tmp/tmp.rXgGjl8Vdp/wt/scripts/fm_eq.tcl \
+    > fm_work/TLBuffer_13/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.rXgGjl8Vdp/wt/scripts/fm_verdict.py fm_work/TLBuffer_13/fm.log --rc $rc --mode assembly --top TLBuffer_13 --allowlist 0
+SUCCEEDED	{"passing": 8884, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "assembly", "native": "SUCCEEDED", "top": "TLBuffer_13", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

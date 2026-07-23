@@ -55,12 +55,46 @@ module xs_PMP_core import xs_pmp_pkg::*; (
 
   // 寄存器组：两个 bank（[0]=PMP，[1]=PMA），各 2 个 cfgMerged + 16 addr + 16 mask
   // 用数组承载，输出时再拆成 io 结构。
-  logic [63:0]                pmp_cfg_merged [2];   // PMP 条目 0-7 / 8-15 的 cfg
+  //
+  // PMP cfg 的 c/atomic(每字节 bit6/5) 在 PMP 中为架构保留位、零扇出(见 xs_write_cfg
+  // 注释)。为让 impl 侧真 clean(不留死寄存器位)，PMP cfg 只把每字节 6 个活位
+  //   {l, a[1:0], x, w, r}  存进 48 位寄存器 pmp_cfg_live，
+  // 再组合重建 64 位视图 pmp_cfg_merged(bit6/5 恒 0) 供写函数/匹配/输出复用。
+  // golden 把这两位当普通位寄存(pmpMapping_cfgMerged bit6/5)但从不读 → golden-only
+  // cone-dead；impl 无对应寄存器位 → PASS_DEAD_REF。PMA 保留 c/atomic(活位)照存 64 位。
+  logic [47:0]                pmp_cfg_live   [2];   // 每字节 6 活位 × 8 = 48
+  logic [63:0]                pmp_cfg_merged [2];   // 组合重建的 64 位视图(bit6/5=0)
   logic [PMP_ADDR_REG_W-1:0]  pmpMapping_addr  [NUM_PMP];
   logic [PMP_ADDR_BITS-1:0]   pmpMapping_mask  [NUM_PMP];
   logic [63:0]                pma_cfg_merged [2];
   logic [PMP_ADDR_REG_W-1:0]  pmaMapping_addr  [NUM_PMA];
   logic [PMP_ADDR_BITS-1:0]   pmaMapping_mask  [NUM_PMA];
+
+  // ---- PMP cfg 活位 <-> 64 位视图 打包/解包 ----
+  // 活位字节布局(6 位): {l, a1, a0, x, w, r}。视图字节: [7]=l [6]=0 [5]=0 [4:3]=a [2]=x [1]=w [0]=r
+  function automatic logic [47:0] xs_pmp_pack(input logic [63:0] view);
+    logic [47:0] p;
+    for (int i = 0; i < CFG_PER_CSR; i++) begin
+      automatic int b = i*8;
+      p[i*6 +: 6] = {view[b+7], view[b+4 -: 2], view[b+2], view[b+1], view[b+0]};
+    end
+    return p;
+  endfunction
+  function automatic logic [63:0] xs_pmp_unpack(input logic [47:0] p);
+    logic [63:0] view;
+    for (int i = 0; i < CFG_PER_CSR; i++) begin
+      automatic int b = i*8;
+      automatic logic [5:0] c6 = p[i*6 +: 6];
+      view[b+7]      = c6[5];        // l
+      view[b+6]      = 1'b0;         // c      (PMP res → 0)
+      view[b+5]      = 1'b0;         // atomic (PMP res → 0)
+      view[b+4 -: 2] = c6[4:3];      // a
+      view[b+2]      = c6[2];        // x
+      view[b+1]      = c6[1];        // w
+      view[b+0]      = c6[0];        // r
+    end
+    return view;
+  endfunction
 
   // 写流水寄存：wdata 与各 CSR 的写使能（打一拍）
   logic [63:0] wdata_reg;
@@ -85,9 +119,17 @@ module xs_PMP_core import xs_pmp_pkg::*; (
   // =========================================================================
   // cfg 写函数：给定旧的 64 位 cfgMerged 与待写 wdata，返回新 64 位 cfgMerged。
   // 逐字节：旧 locked 则保持；否则取 wdata，w&=r，a 规整（CoarserGrain 去 NA4）。
-  // c/atomic(保留位 6/5) 直接随 wdata 写入（PMP 中无意义但照样存）。
+  //
+  // c/atomic(保留位 6/5) 语义按 bank 分：
+  //   - PMA(keep_ca=1)：c=cacheable、atomic=支持原子，被 io_pma_*_cfg_c/atomic 读出 → 存。
+  //   - PMP(keep_ca=0)：在 PMP 中为架构保留位(res)，无任何读者(PMPChecker 只看 l/a/x/w/r)。
+  //     golden 照样把 wdata 的这两位存进 pmpMapping_cfgMerged(但零扇出=cone-dead 死位)；
+  //     本 impl 忠实省略这份冗余死状态，恒置 0——功能等价(输出不含 PMP c/atomic)，
+  //     且让 impl 侧 clean(无死位)、golden 侧成 golden-only cone-dead → PASS_DEAD_REF。
+  //   注意 locked 分支保持旧值：PMP 旧值恒 0，故锁定也保持 0，无副作用。
   // =========================================================================
-  function automatic logic [63:0] xs_write_cfg(input logic [63:0] oldv, input logic [63:0] wd);
+  function automatic logic [63:0] xs_write_cfg(input logic [63:0] oldv, input logic [63:0] wd,
+                                               input logic keep_ca);
     logic [63:0] nv;
     for (int i = 0; i < CFG_PER_CSR; i++) begin
       automatic int b = i*8;
@@ -97,8 +139,8 @@ module xs_PMP_core import xs_pmp_pkg::*; (
         nv[b +: 8] = oldv[b +: 8];                 // 锁定，保持旧值
       end else begin
         nv[b+7]      = wd[b+7];                     // l
-        nv[b+6]      = wd[b+6];                     // c
-        nv[b+5]      = wd[b+5];                     // atomic
+        nv[b+6]      = keep_ca & wd[b+6];           // c      (PMP: res→0)
+        nv[b+5]      = keep_ca & wd[b+5];           // atomic (PMP: res→0)
         nv[b+4 -: 2] = new_a;                       // a (规整)
         nv[b+2]      = wd[b+2];                     // x
         nv[b+1]      = wd[b+1] & wd[b+0];           // w := w & r
@@ -177,10 +219,16 @@ module xs_PMP_core import xs_pmp_pkg::*; (
   // =========================================================================
   // 时序块：写流水 + 条目寄存器更新
   // =========================================================================
+  // PMP cfg 64 位视图 = 活位寄存器组合展开(bit6/5 恒 0)
+  always_comb begin
+    pmp_cfg_merged[0] = xs_pmp_unpack(pmp_cfg_live[0]);
+    pmp_cfg_merged[1] = xs_pmp_unpack(pmp_cfg_live[1]);
+  end
+
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
-      pmp_cfg_merged[0] <= 64'h0;
-      pmp_cfg_merged[1] <= 64'h0;
+      pmp_cfg_live[0] <= 48'h0;
+      pmp_cfg_live[1] <= 48'h0;
       pma_cfg_merged[0] <= PMA_CFG0_INIT;
       pma_cfg_merged[1] <= PMA_CFG1_INIT;
       for (int i = 0; i < 2; i++)       begin wen_pmpcfg[i]  <= 1'b0; wen_pmacfg[i]  <= 1'b0; end
@@ -198,10 +246,11 @@ module xs_PMP_core import xs_pmp_pkg::*; (
         wen_pmaaddr[i] <= wval & (waddr == (PMAADDR0 + i[11:0]));
 
       // ---- cfg 寄存器更新 ----
-      if (wen_pmpcfg[0]) pmp_cfg_merged[0] <= xs_write_cfg(pmp_cfg_merged[0], wdata_reg);
-      if (wen_pmpcfg[1]) pmp_cfg_merged[1] <= xs_write_cfg(pmp_cfg_merged[1], wdata_reg);
-      if (wen_pmacfg[0]) pma_cfg_merged[0] <= xs_write_cfg(pma_cfg_merged[0], wdata_reg);
-      if (wen_pmacfg[1]) pma_cfg_merged[1] <= xs_write_cfg(pma_cfg_merged[1], wdata_reg);
+      // PMP：写函数产出 64 位(bit6/5 已被 keep_ca=0 置 0)，再打包回 48 位活位存储。
+      if (wen_pmpcfg[0]) pmp_cfg_live[0] <= xs_pmp_pack(xs_write_cfg(pmp_cfg_merged[0], wdata_reg, 1'b0));
+      if (wen_pmpcfg[1]) pmp_cfg_live[1] <= xs_pmp_pack(xs_write_cfg(pmp_cfg_merged[1], wdata_reg, 1'b0));
+      if (wen_pmacfg[0]) pma_cfg_merged[0] <= xs_write_cfg(pma_cfg_merged[0], wdata_reg, 1'b1);
+      if (wen_pmacfg[1]) pma_cfg_merged[1] <= xs_write_cfg(pma_cfg_merged[1], wdata_reg, 1'b1);
 
     end
   end
@@ -210,7 +259,15 @@ module xs_PMP_core import xs_pmp_pkg::*; (
   // addr / mask 寄存器：每条目一个 always_ff（genvar 展开，所有位选都是常量索引，
   // 避免变量位选/数组变量下标导致的综合/FM 歧义）。每条目调纯函数 xs_next_entry。
   //   下一条目 cfg 字节：用 localparam 算好每条目的“下一条 byte 偏移”，末条传 0。
+  //
+  // FM 死寄存器伪影修法(class 2)：xs_next_entry 的 94 位返回值原先用 always_ff 内
+  //   automatic 局部变量 nx 承接——FM 前端把每个 generate 迭代各推成一个 94 位死寄存器
+  //   (nx_reg[N])。改为在 always_comb 内先算入组合数组 pmp_nx/pma_nx，always_ff 只寄存
+  //   真状态(addr/mask)，消除 32×94 死位伪影。功能与时序不变(组合信号在同拍算，下拍寄存)。
   // =========================================================================
+  logic [ADDR_MASK_W-1:0] pmp_nx [NUM_PMP];
+  logic [ADDR_MASK_W-1:0] pma_nx [NUM_PMA];
+
   genvar gi;
   generate
     for (gi = 0; gi < NUM_PMP; gi++) begin : g_pmp_entry
@@ -218,19 +275,23 @@ module xs_PMP_core import xs_pmp_pkg::*; (
       localparam int SUB  = gi % CFG_PER_CSR;       // 本条在 CSR 内字节序号
       localparam int NCSR = (gi == NUM_PMP-1) ? 0 : (gi+1) / CFG_PER_CSR;
       localparam int NSUB = (gi == NUM_PMP-1) ? 0 : (gi+1) % CFG_PER_CSR;
+      // 组合：算下一拍 {addr, mask}（纯函数，无状态）
+      always_comb begin
+        pmp_nx[gi] = xs_next_entry(
+          pmp_cfg_merged[CSR][SUB*8 +: 8],
+          (gi == NUM_PMP-1) ? 8'h0 : pmp_cfg_merged[NCSR][NSUB*8 +: 8],
+          wdata_reg[SUB*8 +: 8], wdata_reg[PMP_ADDR_REG_W-1:0],
+          pmpMapping_addr[gi], pmpMapping_mask[gi],
+          wen_pmpcfg[CSR], wen_pmpaddr[gi], PMP_CFG_FIRST[gi]);
+      end
+      // 时序：只寄存真状态
       always_ff @(posedge clock or posedge reset) begin
         if (reset) begin
           pmpMapping_addr[gi] <= '0;
           pmpMapping_mask[gi] <= '0;
         end else begin
-          automatic logic [ADDR_MASK_W-1:0] nx = xs_next_entry(
-            pmp_cfg_merged[CSR][SUB*8 +: 8],
-            (gi == NUM_PMP-1) ? 8'h0 : pmp_cfg_merged[NCSR][NSUB*8 +: 8],
-            wdata_reg[SUB*8 +: 8], wdata_reg[PMP_ADDR_REG_W-1:0],
-            pmpMapping_addr[gi], pmpMapping_mask[gi],
-            wen_pmpcfg[CSR], wen_pmpaddr[gi], PMP_CFG_FIRST[gi]);
-          pmpMapping_addr[gi] <= nx[PMP_ADDR_BITS +: PMP_ADDR_REG_W];
-          pmpMapping_mask[gi] <= nx[0 +: PMP_ADDR_BITS];
+          pmpMapping_addr[gi] <= pmp_nx[gi][PMP_ADDR_BITS +: PMP_ADDR_REG_W];
+          pmpMapping_mask[gi] <= pmp_nx[gi][0 +: PMP_ADDR_BITS];
         end
       end
     end
@@ -239,19 +300,21 @@ module xs_PMP_core import xs_pmp_pkg::*; (
       localparam int SUB  = gi % CFG_PER_CSR;
       localparam int NCSR = (gi == NUM_PMA-1) ? 0 : (gi+1) / CFG_PER_CSR;
       localparam int NSUB = (gi == NUM_PMA-1) ? 0 : (gi+1) % CFG_PER_CSR;
+      always_comb begin
+        pma_nx[gi] = xs_next_entry(
+          pma_cfg_merged[CSR][SUB*8 +: 8],
+          (gi == NUM_PMA-1) ? 8'h0 : pma_cfg_merged[NCSR][NSUB*8 +: 8],
+          wdata_reg[SUB*8 +: 8], wdata_reg[PMP_ADDR_REG_W-1:0],
+          pmaMapping_addr[gi], pmaMapping_mask[gi],
+          wen_pmacfg[CSR], wen_pmaaddr[gi], PMA_CFG_FIRST[gi]);
+      end
       always_ff @(posedge clock or posedge reset) begin
         if (reset) begin
           pmaMapping_addr[gi] <= PMA_ADDR_INIT[gi];
           pmaMapping_mask[gi] <= PMA_MASK_INIT[gi];
         end else begin
-          automatic logic [ADDR_MASK_W-1:0] nx = xs_next_entry(
-            pma_cfg_merged[CSR][SUB*8 +: 8],
-            (gi == NUM_PMA-1) ? 8'h0 : pma_cfg_merged[NCSR][NSUB*8 +: 8],
-            wdata_reg[SUB*8 +: 8], wdata_reg[PMP_ADDR_REG_W-1:0],
-            pmaMapping_addr[gi], pmaMapping_mask[gi],
-            wen_pmacfg[CSR], wen_pmaaddr[gi], PMA_CFG_FIRST[gi]);
-          pmaMapping_addr[gi] <= nx[PMP_ADDR_BITS +: PMP_ADDR_REG_W];
-          pmaMapping_mask[gi] <= nx[0 +: PMP_ADDR_BITS];
+          pmaMapping_addr[gi] <= pma_nx[gi][PMP_ADDR_BITS +: PMP_ADDR_REG_W];
+          pmaMapping_mask[gi] <= pma_nx[gi][0 +: PMP_ADDR_BITS];
         end
       end
     end

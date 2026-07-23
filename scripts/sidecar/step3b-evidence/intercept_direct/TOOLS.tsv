@@ -1,0 +1,7 @@
+kind	path	sha256
+infra	/home/eda/xs-env/xs-signoff/scripts/sidecar/fm_sidecar_run.sh	0fdcf51b7e132ae7d488b4d4030c4e424818d620c30ca1ec1e8e3664fdb06dca
+infra	/home/eda/xs-env/xs-signoff/scripts/ut_common.mk	bd484c45cf9bb5bce5af9f5dc736a4686600c24732452c545c968cff9bb20a53
+infra	/home/eda/xs-env/xs-signoff/scripts/sidecar/fm_closure_digest.py	5ee7e694620c54600ce493b0c0af47d614a883e105073736d9ed1e228a6be906
+infra	/home/eda/xs-env/xs-signoff/scripts/sidecar/fm_sidecar_verdict.py	ebbef3f97f1e762b803f7d9935565cf804cc5e726d32f971c1b4cbf60ec71ead
+commit	194737efb3ae3af017de22fb596ff317e19fb890	-
+tracked_dirty_files	43	-

@@ -1,0 +1,17 @@
+=== FM: StoreExceptionBuffer (mode=signoff-strict) ===
+FM_TOP=StoreExceptionBuffer \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/StoreExceptionBuffer.sv " \
+FM_IMPL_SRCS="/tmp/tmp.vqIITtHSyY/wt/rtl/memblock/exceptionbuffer_pkg.sv /tmp/tmp.vqIITtHSyY/wt/rtl/memblock/StoreExceptionBuffer.sv /tmp/tmp.vqIITtHSyY/wt/rtl/memblock/StoreExceptionBuffer_wrapper.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/StoreExceptionBuffer -file /tmp/tmp.vqIITtHSyY/wt/scripts/fm_eq.tcl \
+    > fm_work/StoreExceptionBuffer/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.vqIITtHSyY/wt/scripts/fm_verdict.py fm_work/StoreExceptionBuffer/fm.log --rc $rc --mode signoff-strict --top StoreExceptionBuffer --allowlist 0
+PARTIAL	{"passing": 1246, "failing": 0, "unverified": null, "unmatched": 4, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "StoreExceptionBuffer", "dont_verify": false, "elab147": false, "reason": "strict_unmatched!=0", "unmatched_ref": 0, "unmatched_impl": 4}
+make: *** [../../../scripts/ut_common.mk:56: fm-StoreExceptionBuffer] Error 1

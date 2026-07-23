@@ -19,14 +19,19 @@ SUB_DEPS = $(GOLDEN_RTL)/Alu.sv \
 
 GOLDEN_SRCS = $(GOLDEN_RTL)/ExeUnit.sv $(SUB_DEPS)
 
-# FM:FU/Dispatcher/ClockGate 在 ref 与 impl 两侧都**不提供 RTL**,
-# 让 FM 按 hdlin_unresolved_modules=black_box 当作同名同端口的未解析黑盒。
-# 这样只比对 ExeUnit 的 glue(流水/门控/仲裁);否则 FM 会读进 ClockGate 内部
-# 的使能锁存器(EN_reg),因 impl 多一层 u_core 层次而被不对称常量传播,
-# 把同源 ClockGate 锁存器误判为 LAT vs LAT1X 而 fail(同 MulUnit 阵列黑盒思路)。
-WRAPPER_SRCS = $(RTL_DIR)/backend/ExeUnit_wrapper.sv
+# FM 黑盒边界策略(assembly signoff):
+#   FU(Alu/Mul/Bku)是独立 FM 目标(305 集, 各自 SIGNOFF_PASS), 在 ExeUnit 里作声明黑盒边界
+#   (assembly depends_on 绿 child) —— ref/impl 两侧都不提供 RTL, hdlin_unresolved=black_box。
+#   ClockGate / Dispatcher(in1ToN)不是 305 目标, 是小规模非厂商逻辑(时钟门控 latch cell /
+#   纯组合路由), 故 **两侧 elaborate** 让 FM 真正比对(白盒), 而非黑盒吸收:
+#     - ref 侧: 经 FM_REF_DEPS_ExeUnit 提供 ClockGate.sv + Dispatcher.sv;
+#     - impl 侧: 经 WRAPPER_SRCS 提供同一份 golden ClockGate.sv + Dispatcher.sv。
+#   两侧同为一字节相同的 golden 定义, u_core 层次差异不再触发不对称常量传播。
+WRAPPER_SRCS = $(RTL_DIR)/backend/ExeUnit_wrapper.sv \
+               $(GOLDEN_RTL)/ClockGate.sv \
+               $(GOLDEN_RTL)/Dispatcher.sv
 FM_VARIANTS = ExeUnit
-FM_REF_DEPS_ExeUnit =
+FM_REF_DEPS_ExeUnit = ClockGate.sv Dispatcher.sv
 
 include ../../../scripts/ut_common.mk
 

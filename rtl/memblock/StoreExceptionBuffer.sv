@@ -70,6 +70,18 @@ module xs_StoreExceptionBuffer_core
   // ===========================================================================
   //  S2 流水寄存器（delay 1 cycle）：仅当 s1_valid[w] 时锁存该入口 payload。
   //  s2_valid_q = RegNext(s1_valid)。
+  //
+  //  ── golden 逐入口寄存器裁剪（firtool DCE）────────────────────────────────
+  //    wrapper 已把缺失端口折成常量喂进本核（见 StoreExceptionBuffer_wrapper.sv）：
+  //        · isHyper           入口 4,5,6 恒 0
+  //        · vaNeedExt         入口 6     恒 1
+  //        · gpaddr            入口 6     恒 0
+  //        · isForVSnonLeafPTE 入口 6     恒 0
+  //    golden 对这些恒定字段**不生成 S2 寄存器**（s2_req_4/5 无 isHyper 寄存器；
+  //    s2_req_6 只有 uopIdx/robIdx/fullva 寄存器）。若本核对所有入口统一存全字段，
+  //    这些恒定字段会成为 impl-only 死寄存器 → FM 判 4 个 unmatched compare point。
+  //    故此处**按 golden 形状逐入口裁剪存储**：折叠字段不进 s2_req 寄存器，改由组合
+  //    view（s2_view）把常量补回，供后续选择树读取（与 golden 逐字段选择等价）。
   // ===========================================================================
   typedef struct packed {
     rob_ptr_t            robIdx;
@@ -81,23 +93,53 @@ module xs_StoreExceptionBuffer_core
     logic                isForVSnonLeafPTE;
   } s2_entry_t;
 
-  s2_entry_t [ENQ_NUM-1:0] s2_req;
-  logic      [ENQ_NUM-1:0] s2_valid_q;
+  // 仅存 golden 为该入口生成的寄存器字段：
+  //   入口 0..3：全字段     入口 4,5：除 isHyper 外全字段     入口 6：仅 uopIdx/robIdx/fullva
+  rob_ptr_t            s2_robIdx      [ENQ_NUM];   // 全入口有
+  logic [UOPIDX_W-1:0] s2_uopIdx      [ENQ_NUM];   // 全入口有
+  logic [63:0]         s2_fullva      [ENQ_NUM];   // 全入口有
+  logic                s2_vaNeedExt   [0:5];       // 入口 0..5（6 折常量 1）
+  logic [63:0]         s2_gpaddr      [0:5];       // 入口 0..5（6 折常量 0）
+  logic                s2_isHyper     [0:3];       // 入口 0..3（4,5,6 折常量 0）
+  logic                s2_isForVS     [0:5];       // 入口 0..5（6 折常量 0）
+  logic [ENQ_NUM-1:0]  s2_valid_q;
 
   always_ff @(posedge clock) begin
     for (int w = 0; w < ENQ_NUM; w++) begin
       if (s1_valid[w]) begin
-        s2_req[w].robIdx            <= req_robIdx[w];
-        s2_req[w].uopIdx            <= req_uopIdx[w];
-        s2_req[w].fullva            <= req_fullva[w];
-        s2_req[w].vaNeedExt         <= req_vaNeedExt[w];
-        s2_req[w].gpaddr            <= req_gpaddr[w];
-        s2_req[w].isHyper           <= req_isHyper[w];
-        s2_req[w].isForVSnonLeafPTE <= req_isForVSnonLeafPTE[w];
+        s2_robIdx[w] <= req_robIdx[w];
+        s2_uopIdx[w] <= req_uopIdx[w];
+        s2_fullva[w] <= req_fullva[w];
+      end
+    end
+    for (int w = 0; w <= 5; w++) begin
+      if (s1_valid[w]) begin
+        s2_vaNeedExt[w] <= req_vaNeedExt[w];
+        s2_gpaddr[w]    <= req_gpaddr[w];
+        s2_isForVS[w]   <= req_isForVSnonLeafPTE[w];
+      end
+    end
+    for (int w = 0; w <= 3; w++) begin
+      if (s1_valid[w]) begin
+        s2_isHyper[w] <= req_isHyper[w];
       end
     end
     // 对齐 golden：s2_valid_REG* 为无复位 RegNext（golden 仅 req_valid 有异步复位）。
     s2_valid_q <= s1_valid;
+  end
+
+  // 组合 view：把 golden DCE 折掉的恒定字段补回常量，供选择树按统一 struct 读取。
+  s2_entry_t [ENQ_NUM-1:0] s2_req;
+  always_comb begin
+    for (int w = 0; w < ENQ_NUM; w++) begin
+      s2_req[w].robIdx            = s2_robIdx[w];
+      s2_req[w].uopIdx            = s2_uopIdx[w];
+      s2_req[w].fullva            = s2_fullva[w];
+      s2_req[w].vaNeedExt         = (w <= 5) ? s2_vaNeedExt[w] : 1'b1;  // 入口6折常量1
+      s2_req[w].gpaddr            = (w <= 5) ? s2_gpaddr[w]    : 64'h0; // 入口6折常量0
+      s2_req[w].isHyper           = (w <= 3) ? s2_isHyper[w]   : 1'b0;  // 入口4,5,6折常量0
+      s2_req[w].isForVSnonLeafPTE = (w <= 5) ? s2_isForVS[w]   : 1'b0;  // 入口6折常量0
+    end
   end
 
   // ===========================================================================

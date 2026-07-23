@@ -1,0 +1,16 @@
+=== FM: LoadQueueRAR (mode=signoff-strict) ===
+FM_TOP=LoadQueueRAR \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/LoadQueueRAR.sv /home/eda/xs-env/G0-canonical/golden-rtl/LqPAddrModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/FreeList_3.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayN_226.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_4.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_7.sv" \
+FM_IMPL_SRCS="/tmp/tmp.zjGlhJdATg/wt/rtl/memblock/loadqueuerar_pkg.sv /tmp/tmp.zjGlhJdATg/wt/rtl/memblock/LoadQueueRAR.sv /tmp/tmp.zjGlhJdATg/wt/rtl/memblock/LoadQueueRAR_wrapper.sv" \
+FM_MERGE_DUP=false \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/LoadQueueRAR -file /tmp/tmp.zjGlhJdATg/wt/scripts/fm_eq.tcl \
+    > fm_work/LoadQueueRAR/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.zjGlhJdATg/wt/scripts/fm_verdict.py fm_work/LoadQueueRAR/fm.log --rc $rc --mode signoff-strict --top LoadQueueRAR --allowlist 0
+make: *** [../../../scripts/ut_common.mk:56: fm-LoadQueueRAR] Terminated

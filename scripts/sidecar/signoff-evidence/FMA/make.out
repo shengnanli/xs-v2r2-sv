@@ -1,0 +1,16 @@
+=== FM: FMA (mode=signoff-strict) ===
+FM_TOP=FMA \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/FMA.sv /home/eda/xs-env/G0-canonical/golden-rtl/FloatFMA.sv /home/eda/xs-env/G0-canonical/golden-rtl/BoothEncoderF64F32F16.sv /home/eda/xs-env/G0-canonical/golden-rtl/CSA3to2.sv /home/eda/xs-env/G0-canonical/golden-rtl/CSA4to2.sv /home/eda/xs-env/G0-canonical/golden-rtl/CSA_Nto2With3to2MainPipeline.sv" \
+FM_IMPL_SRCS="/tmp/tmp.dpNzXRJGgo/wt/rtl/backend/fma_pkg.sv /tmp/tmp.dpNzXRJGgo/wt/rtl/backend/FMA.sv /tmp/tmp.dpNzXRJGgo/wt/rtl/backend/FMA_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/FloatFMA.sv /home/eda/xs-env/G0-canonical/golden-rtl/BoothEncoderF64F32F16.sv /home/eda/xs-env/G0-canonical/golden-rtl/CSA3to2.sv /home/eda/xs-env/G0-canonical/golden-rtl/CSA4to2.sv /home/eda/xs-env/G0-canonical/golden-rtl/CSA_Nto2With3to2MainPipeline.sv" \
+FM_MERGE_DUP=false \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/FMA -file /tmp/tmp.dpNzXRJGgo/wt/scripts/fm_eq.tcl \
+    > fm_work/FMA/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.dpNzXRJGgo/wt/scripts/fm_verdict.py fm_work/FMA/fm.log --rc $rc --mode signoff-strict --top FMA --allowlist 0
+SUCCEEDED	{"passing": 2391, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "FMA", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

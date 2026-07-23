@@ -1,0 +1,16 @@
+=== FM: ExuBlock (mode=signoff-strict) ===
+FM_TOP=ExuBlock \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/ExuBlock.sv /home/eda/xs-env/G0-canonical/golden-rtl/ExeUnit.sv /home/eda/xs-env/G0-canonical/golden-rtl/ExeUnit_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/ExeUnit_4.sv /home/eda/xs-env/G0-canonical/golden-rtl/ExeUnit_5.sv /home/eda/xs-env/G0-canonical/golden-rtl/ExeUnit_7.sv" \
+FM_IMPL_SRCS="/tmp/tmp.izsdCAFhPE/wt/rtl/backend/exublock_pkg.sv /tmp/tmp.izsdCAFhPE/wt/rtl/backend/ExuBlock.sv /tmp/tmp.izsdCAFhPE/wt/rtl/backend/ExuBlock_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/ExeUnit.sv /home/eda/xs-env/G0-canonical/golden-rtl/ExeUnit_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/ExeUnit_4.sv /home/eda/xs-env/G0-canonical/golden-rtl/ExeUnit_5.sv /home/eda/xs-env/G0-canonical/golden-rtl/ExeUnit_7.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/ExuBlock -file /tmp/tmp.izsdCAFhPE/wt/scripts/fm_eq.tcl \
+    > fm_work/ExuBlock/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.izsdCAFhPE/wt/scripts/fm_verdict.py fm_work/ExuBlock/fm.log --rc $rc --mode signoff-strict --top ExuBlock --allowlist 0
+SUCCEEDED	{"passing": 22665, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "ExuBlock", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

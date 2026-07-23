@@ -865,7 +865,8 @@ module tb;
     `IP(inflightGrant_15_bits_tag, inflightGrant_tag[15])
     `IP(grantBufValid,           grantBufValid)
     `IP(grantBuf_task_opcode,    grantBuf_task_opcode)
-    `IP(grantBuf_task_param,     grantBuf_task_param)
+    // golden grantBuf_task_param 为 3 位但仅 [1:0] 被读出(bit[2] 死); 本核收窄到 2 位, 只比读出位。
+    `IP(grantBuf_task_param[1:0], grantBuf_task_param)
     `IP(grantBuf_task_sourceId,  grantBuf_task_sourceId)
     `IP(grantBuf_task_isKeyword, grantBuf_task_isKeyword)
     `IP(grantBuf_task_denied,    grantBuf_task_denied)

@@ -1,0 +1,4 @@
+SIGNOFF_RESULT Bku: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=signoff-strict fm_shell_rc=0 validator_rc=0)
+run_id: SGN-Bku-1784804629
+impl_commit: 7c4ca09fcf3f1e620f8fdc8b0e2d784ae52935ee
+manifest_sha256: ac33a270fea6e2452236850c37df703135fa29fb7f7a9287e948e319b7264eb0

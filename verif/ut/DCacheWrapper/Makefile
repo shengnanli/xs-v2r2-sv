@@ -42,13 +42,15 @@ BBOX = $(abspath $(RTL_DIR)/memblock/dcache_blackbox.sv)
 # 本地黑盒；且无假阳性放行）。本层 FM 用 `make fmbb`。
 .PHONY: fmbb
 fmbb:
+	@[ -n "$$FM_SIDECAR_OUT" ] || { echo "ERROR($(MODULE)): fmbb 须经 sidecar runner"; exit 1; }
 	@mkdir -p fm_work/DCacheWrapper
 	@echo "=== FM(bb): DCacheWrapper ==="
 	FM_TOP=DCacheWrapper \
 	FM_REF_SRCS="$(abspath $(GOLDEN_RTL)/DCacheWrapper.sv) $(BBOX)" \
 	FM_IMPL_SRCS="$(abspath $(RTL_SRCS)) $(abspath $(RTL_DIR)/memblock/DCacheWrapper_wrapper.sv) $(BBOX)" \
 	FM_MERGE_DUP=false \
+	XSSV_HOME=$(XSSV_HOME) FM_RUN_ID=$$FM_RUN_ID \
 	fm_shell -64 -work_path fm_work/DCacheWrapper -file $(abspath fm_eq_bb.tcl) \
 	    > fm_work/DCacheWrapper/fm.log 2>&1; \
-	grep -E "^FM_RESULT" fm_work/DCacheWrapper/fm.log; \
-	grep -q "^FM_RESULT: Verification SUCCEEDED" fm_work/DCacheWrapper/fm.log
+	rc=$$?; echo $$rc > "$$FM_SIDECAR_OUT/fm_shell.rc"; \
+	grep -E "^FM_RESULT" fm_work/DCacheWrapper/fm.log || true

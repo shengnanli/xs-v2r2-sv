@@ -121,17 +121,31 @@ package xs_ptwcache_pkg;
   } sfence_bits_t;
 
   // ---------------------------------------------------------------------------
-  // 全相联级（L3/L2）单条目：PtwEntry(hasPerm=false, hasLevel=false)
+  // 全相联级 L2 单条目：PtwEntry(hasPerm=false, hasLevel=false)。
+  // 注：不含 .v 位——有效性由独立的 l2v 向量维护，条目内 .v 若存则 write-only 死寄存器
+  // （golden firtool 已剪除），故不声明。
   // ---------------------------------------------------------------------------
   typedef struct packed {
-    logic [L2_TAG_W-1:0] tag;   // L3 只用低 11 位
+    logic [L2_TAG_W-1:0] tag;
     logic [ASID_W-1:0]   asid;
     logic [VMID_W-1:0]   vmid;
     logic [PBMT_W-1:0]   pbmt;
     logic [GVPN_W-1:0]   ppn;
     logic                prefetch;
-    logic                v;
-  } nonleaf_entry_t;            // L2 用全部，L3 复用结构但 tag 截 11 位
+  } nonleaf_entry_t;
+
+  // ---------------------------------------------------------------------------
+  // 全相联级 L3 单条目：tag 只 11 位（vpn[37:27]），且不用 pbmt（stage1 pbmt mux 落到
+  // l2 前 l3 分支不参与）、不用 .v（有效性走 l3v 向量）。二者若存则 impl-only 死寄存器
+  // （golden 无 l3 pbmt / l3_N_v 寄存器），故 L3 用独立窄结构。
+  // ---------------------------------------------------------------------------
+  typedef struct packed {
+    logic [L3_TAG_W-1:0] tag;
+    logic [ASID_W-1:0]   asid;
+    logic [VMID_W-1:0]   vmid;
+    logic [GVPN_W-1:0]   ppn;
+    logic                prefetch;
+  } l3_entry_t;
 
   // ---------------------------------------------------------------------------
   // 超级页 SP 条目：PtwEntry(hasPerm,hasLevel,hasNapot)，存 1G/2M/512G 叶子
@@ -178,39 +192,95 @@ package xs_ptwcache_pkg;
     logic                                prefetch;
   } l0_sram_entry_t;
 
+  // L1 stageDelay 保留载荷（DataHoldBypass 只留 delay 级会读字段——与 golden l1 data_resp
+  // 一致：tag/asid/vmid/vs 供命中匹配、pbmts/ppns/prefetch 前递给 check；l1 非叶 onlypf 不读，不存）。
+  typedef struct packed {
+    logic [L1_TAG_W-1:0]                 tag;
+    logic [ASID_W-1:0]                   asid;
+    logic [VMID_W-1:0]                   vmid;
+    logic [CONTIGUOUS-1:0][PBMT_W-1:0]   pbmts;
+    logic [CONTIGUOUS-1:0][GVPN_W-1:0]   ppns;
+    logic [CONTIGUOUS-1:0]               vs;
+    logic                                prefetch;
+  } l1_delay_entry_t;
+
+  // stageCheck 保留载荷（RegEnable 到 check 级只保留会被读的字段——与 golden firtool
+  // 剪枝形态一致：tag/asid/vmid/vs 在 delay 级算完命中后 check 级不再读，若整行寄存则
+  // 成 impl-only unread 死寄存器）。l1 非叶：ppns/pbmts/prefetch；l0 叶：+perm/onlypf。
+  typedef struct packed {
+    logic [CONTIGUOUS-1:0][PBMT_W-1:0]   pbmts;
+    logic [CONTIGUOUS-1:0][GVPN_W-1:0]   ppns;
+    logic                                prefetch;
+  } l1_check_entry_t;
+
+  typedef struct packed {
+    logic [CONTIGUOUS-1:0][PBMT_W-1:0]   pbmts;
+    logic [CONTIGUOUS-1:0][GVPN_W-1:0]   ppns;
+    logic [CONTIGUOUS-1:0]               onlypf;
+    logic [CONTIGUOUS-1:0]               perm_d, perm_a, perm_g, perm_u, perm_x, perm_w, perm_r;
+    logic                                prefetch;
+  } l0_check_entry_t;
+
   // ---------------------------------------------------------------------------
   // 命中结果中间 bundle（PageCachePerPespBundle / PageCacheMergePespBundle 等价）
   // 各级命中后汇总到这里，再寄存成 resp_res 在 stageResp 用。
+  // 注：resp_res 是 stageCheck1 级寄存器，字段集**逐字对齐 golden resp_res_* 寄存器**
+  // （见 PtwCache.sv golden），未在 golden 出现的字段若存则 impl-only unread 死寄存器。
+  //   golden 实测: l3={hit,ppn,pre}; l1/l2={hit,ppn,pbmt,pre}; sp=全套(无 ecc);
+  //                l0={hit,pre,ppn[8],pbmt[8],perm[8],v[8]}(无 ecc/level/n)。
   // ---------------------------------------------------------------------------
-  // 单级命中（L3/L2/L1/SP）：广播一个 ppn
+  // SP：完整单级命中（含 perm/n/level/v/pre；无 ecc）
   typedef struct packed {
     logic               hit;
     logic               pre;       // prefetch
     logic [GVPN_W-1:0]  ppn;
     logic [PBMT_W-1:0]  pbmt;
-    ptw_perm_t          perm;      // 仅 SP 有意义
-    logic               n;         // 仅 SP（napot）
-    logic               ecc;       // 本配置恒 0
-    logic [LEVEL_W-1:0] level;     // 仅 SP
+    ptw_perm_t          perm;
+    logic               n;         // napot
+    logic [LEVEL_W-1:0] level;
     logic               v;
   } pc_per_t;
 
-  // L0 行命中：8 个 sector 各有 ppn/pbmt/perm/v
+  // L1/L2 非叶级命中：{hit, ppn, pbmt, pre}（无 perm/n/level/ecc/v）
+  typedef struct packed {
+    logic               hit;
+    logic               pre;
+    logic [GVPN_W-1:0]  ppn;
+    logic [PBMT_W-1:0]  pbmt;
+  } pc_nl_t;
+
+  // L3 非叶级命中：{hit, ppn, pre}（pbmt 在 stage1 mux 不参与；无 pbmt/v）
+  typedef struct packed {
+    logic               hit;
+    logic               pre;
+    logic [GVPN_W-1:0]  ppn;
+  } pc_l3_t;
+
+  // L0 行命中：8 个 sector 各有 ppn/pbmt/perm/v（ecc/level/n 不读，不存）
   typedef struct packed {
     logic                              hit;
     logic                              pre;
     logic [CONTIGUOUS-1:0][GVPN_W-1:0] ppn;
     logic [CONTIGUOUS-1:0][PBMT_W-1:0] pbmt;
     ptw_perm_t [CONTIGUOUS-1:0]        perm;
-    logic                              ecc;
-    logic [LEVEL_W-1:0]                level;
     logic [CONTIGUOUS-1:0]             v;
   } pc_merge_t;
 
+  // SP stageCheck 保留载荷（RegEnable 到 check 只留会读字段——逐字对齐 golden spHitData_*：
+  // ppn/pbmt/perm/n/level。tag/asid/vmid/prefetch/v 在 check 级不经 spHitData 读——
+  // spPre/spValid 取自 delay 级 sp_hitData_d.prefetch/.v，非 spHitData——若整条目寄存则死）。
   typedef struct packed {
-    pc_per_t   l3;
-    pc_per_t   l2;
-    pc_per_t   l1;
+    logic [GVPN_W-1:0]   ppn;
+    logic [PBMT_W-1:0]   pbmt;
+    ptw_perm_t           perm;
+    logic                n;
+    logic [LEVEL_W-1:0]  level;
+  } sp_check_entry_t;
+
+  typedef struct packed {
+    pc_l3_t    l3;
+    pc_nl_t    l2;
+    pc_nl_t    l1;
     pc_merge_t l0;
     pc_per_t   sp;
   } pagecache_resp_t;

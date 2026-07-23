@@ -67,16 +67,18 @@ module xs_Fence_core
   logic in_fire;
   assign in_fire = in_ready & in_valid;
 
-  // 在 fire 拍锁存“当前处理的这条 fence”及 sfence 地址/id
-  fence_uop_t  uop;
-  logic [63:0] sfence_addr_r;
-  logic [63:0] sfence_id_r;
+  // 在 fire 拍锁存“当前处理的这条 fence”及 sfence 地址/id。
+  // 地址/id 只锁存实际会被读的低位（addr 低 50 位、id 低 16 位；高位 Fence 从不读，
+  // 存了就是 cone-dead 死寄存器），故存储宽度按读取范围收窄，输入在锁存处即切片。
+  fence_uop_t                    uop;
+  logic [SFENCE_ADDR_W-1:0]      sfence_addr_r;
+  logic [SFENCE_ID_W-1:0]        sfence_id_r;
 
   always_ff @(posedge clock) begin
     if (in_fire) begin
       uop           <= in_uop;
-      sfence_addr_r <= in_src0;
-      sfence_id_r   <= in_src1;
+      sfence_addr_r <= in_src0[SFENCE_ADDR_W-1:0];
+      sfence_id_r   <= in_src1[SFENCE_ID_W-1:0];
     end
   end
 
@@ -137,8 +139,8 @@ module xs_Fence_core
   assign sfence_valid    = (state == S_TLB) & is_tlb_op(func);
   assign sfence_rs1      = (uop.imm[4:0] == 5'h0);   // rs1==x0 → 刷整个地址空间
   assign sfence_rs2      = (uop.imm[9:5] == 5'h0);   // rs2==x0 → 不限定 asid/vmid
-  assign sfence_addr     = sfence_addr_r[49:0];
-  assign sfence_id       = sfence_id_r[15:0];
+  assign sfence_addr     = sfence_addr_r;            // 已是 50 位（低虚地址页）
+  assign sfence_id       = sfence_id_r;              // 已是 16 位（asid/vmid）
   assign sfence_flushPipe= uop.flushPipe;
   assign sfence_hv       = (func == OP_HFENCE_V);
   assign sfence_hg       = (func == OP_HFENCE_G);

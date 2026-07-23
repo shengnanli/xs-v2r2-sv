@@ -20,7 +20,8 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/SubDirectory.sv \
 
 TB_SRCS = variants_xs.sv tb.sv
 
-# FM: ref 仅给 golden SubDirectory 本体, SRAM/LFSR 两侧均黑盒
+# FM: 父级只证 SubDirectory glue；SRAM/LFSR 作为已独立证明的
+# assembly child 边界，由 verif/signoff/assembly_depends.tsv 绑定依赖。
 FM_VARIANTS = SubDirectory
 FM_REF_DEPS_SubDirectory =
 

@@ -1,0 +1,17 @@
+=== FM: LoadMisalignBuffer (mode=signoff-strict) ===
+FM_TOP=LoadMisalignBuffer \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/LoadMisalignBuffer.sv " \
+FM_IMPL_SRCS="/tmp/tmp.XxFISJ7unC/wt/rtl/memblock/loadmisalignbuffer_pkg.sv /tmp/tmp.XxFISJ7unC/wt/rtl/memblock/LoadMisalignBuffer.sv /tmp/tmp.XxFISJ7unC/wt/rtl/memblock/LoadMisalignBuffer_wrapper.sv" \
+ \
+ \
+ \
+ \
+FM_PIN_TCL=/tmp/tmp.XxFISJ7unC/wt/verif/ut/LoadMisalignBuffer/fm_pins.tcl \
+fm_shell -64 -work_path fm_work/LoadMisalignBuffer -file /tmp/tmp.XxFISJ7unC/wt/scripts/fm_eq.tcl \
+    > fm_work/LoadMisalignBuffer/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.XxFISJ7unC/wt/scripts/fm_verdict.py fm_work/LoadMisalignBuffer/fm.log --rc $rc --mode signoff-strict --top LoadMisalignBuffer --allowlist 0
+ERROR	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 0, "make_rc": 3, "mode": "signoff-strict", "native": null, "top": null, "dont_verify": false, "elab147": false, "reason": "make_rc_nonzero"}
+make: *** [../../../scripts/ut_common.mk:56: fm-LoadMisalignBuffer] Error 1

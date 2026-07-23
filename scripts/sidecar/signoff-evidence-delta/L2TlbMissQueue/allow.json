@@ -1,0 +1,8 @@
+{
+  "unresolved_blackbox": [
+    {"id": "ram_40x47", "ref_path": "r:/WORK/L2TlbMissQueue/io_out_q/ram_ext", "impl_path": "i:/WORK/L2TlbMissQueue/u_core/mem_ext"}
+  ],
+  "interface_only": [],
+  "empty_blackbox": [],
+  "unmatched": []
+}

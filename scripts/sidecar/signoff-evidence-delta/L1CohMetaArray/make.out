@@ -1,0 +1,16 @@
+=== FM: L1CohMetaArray (mode=signoff-strict) ===
+FM_TOP=L1CohMetaArray \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/L1CohMetaArray.sv " \
+FM_IMPL_SRCS="/tmp/tmp.2kTzO7JBbY/wt/rtl/memblock/l1metaarray_pkg.sv /tmp/tmp.2kTzO7JBbY/wt/rtl/memblock/L1CohMetaArray.sv /tmp/tmp.2kTzO7JBbY/wt/rtl/memblock/L1CohMetaArray_wrapper.sv" \
+FM_MERGE_DUP=false \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/L1CohMetaArray -file /tmp/tmp.2kTzO7JBbY/wt/scripts/fm_eq.tcl \
+    > fm_work/L1CohMetaArray/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.2kTzO7JBbY/wt/scripts/fm_verdict.py fm_work/L1CohMetaArray/fm.log --rc $rc --mode signoff-strict --top L1CohMetaArray --allowlist 0
+SUCCEEDED	{"passing": 2204, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "L1CohMetaArray", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

@@ -674,8 +674,14 @@ module xs_LLPTW_core
   wire [2:0] perf_ev3 = 3'(is_waiting[0]) + 3'(is_waiting[1]) + 3'(is_waiting[2])
                       + 3'(is_waiting[3]) + 3'(is_waiting[4]) + 3'(is_waiting[5]); // PopCount(is_waiting)
   // 两级流水寄存（golden：REG → REG_1，输出取 REG_1）。
+  //   仅寄存「有效位」(perf0/1/2=1 位, perf3=3 位), 输出端的高位常数 0 走组合
+  //   拼接(assign perf[k] = {5'h0, ...}) 而非进 always_ff, 以精确镜像 golden
+  //   `assign io_perf_k_value = {5'h0, io_perf_k_value_REG_1}` 的寄存边界——
+  //   否则整 6 位 perf[k] 进 always_ff 会把高位常数 0 也推成寄存器(impl-only 死位)。
   logic perf0_s1, perf1_s1, perf2_s1;
   logic [2:0] perf3_s1;
+  logic perf0_s2, perf1_s2, perf2_s2;
+  logic [2:0] perf3_s2;
 
   // ===========================================================================
   // 主时序：写者优先级与 Scala when 书写顺序一致（后写覆盖先写）。
@@ -843,11 +849,19 @@ module xs_LLPTW_core
     mem_refill_id <= mem_resp_id;
     // --- perf：事件打两拍（与 XSPerfAccumulate 的 FIRRTL 形态一致：REG→REG_1）-
     //   0: in.fire   1: in.valid&&!ready   2: mem.req.fire   3: PopCount(is_waiting)
-    perf0_s1 <= perf_ev0; perf[0] <= {5'h0, perf0_s1};
-    perf1_s1 <= perf_ev1; perf[1] <= {5'h0, perf1_s1};
-    perf2_s1 <= perf_ev2; perf[2] <= {5'h0, perf2_s1};
-    perf3_s1 <= perf_ev3; perf[3] <= {3'h0, perf3_s1};
+    //   两级都只寄有效位; 高位常数 0 由下方组合 assign 拼接(镜像 golden)。
+    perf0_s1 <= perf_ev0; perf0_s2 <= perf0_s1;
+    perf1_s1 <= perf_ev1; perf1_s2 <= perf1_s1;
+    perf2_s1 <= perf_ev2; perf2_s2 <= perf2_s1;
+    perf3_s1 <= perf_ev3; perf3_s2 <= perf3_s1;
   end
+
+  // perf 输出：stage-2 有效位 + 常数 0 高位组合拼接(镜像 golden 的
+  //   `assign io_perf_k_value = {5'h0, io_perf_k_value_REG_1}`)。
+  assign perf[0] = {5'h0, perf0_s2};
+  assign perf[1] = {5'h0, perf1_s2};
+  assign perf[2] = {5'h0, perf2_s2};
+  assign perf[3] = {3'h0, perf3_s2};
 
   // block_hptw_req：发访存那拍被一起拨到 mem_waiting 的条目，本拍屏蔽其 hptw_req。
   always_comb begin

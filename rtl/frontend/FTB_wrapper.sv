@@ -352,7 +352,7 @@ module FTB
     e = '0;
     e.valid = valid; e.isCall = isCall; e.isRet = isRet; e.isJalr = isJalr;
     e.brSlot.offset = br_off; e.brSlot.sharing = br_sh; e.brSlot.valid = br_v;
-    e.brSlot.lower = {{(JMP_OFF_LEN-BR_OFF_LEN){1'b0}}, br_lo}; e.brSlot.tarStat = br_ts;
+    e.brSlot.lower = br_lo; e.brSlot.tarStat = br_ts;   // brSlot.lower 现为 12 位
     e.tailSlot.offset = tl_off; e.tailSlot.sharing = tl_sh; e.tailSlot.valid = tl_v;
     e.tailSlot.lower = tl_lo; e.tailSlot.tarStat = tl_ts;
     e.pftAddr = pft; e.carry = carry; e.last_may_be_rvi_call = lastrvi;
@@ -728,9 +728,6 @@ module FTB
     .io_out_bits_strong_bias_0(d_e_out.strong_bias[0]),
     .io_out_bits_strong_bias_1(d_e_out.strong_bias[1])
   );
-
-  // d_e_out 的 brSlot.lower 高位补 0（核侧用低 12 位）
-  assign d_e_out.brSlot.lower[19:12] = 8'h0;
 
   // write_valid 延 2 拍（DelayN_1）
   DelayN_1 write_valid_delay (

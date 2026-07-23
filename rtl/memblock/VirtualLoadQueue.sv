@@ -9,11 +9,20 @@
 //   等状态与 robIdx/uopIdx，用 enqPtr/deqPtr 维护顺序，提交时顺序前移 deqPtr，
 //   redirect 时按 robIdx 取消并回退 enqPtr。
 //
+//  ── 寄存器结构与 golden 一一对应（FM signoff 要求 bug-for-bug）──
+//   golden（firtool）把每条 entry 的字段展平成 72 个独立标量寄存器：
+//     allocated_i / robIdx_i_flag / robIdx_i_value / uopIdx_i / isvec_i / committed_i
+//   本核对应地用 72 深 SV 数组（robIdx_flag[i] 等），并用 fm_pins.tcl 把 golden 的
+//   中缀下标名（robIdx_i_value）双射到本核数组名（robIdx_value[i]）。
+//   指针只保留 enqPtrExt_0（golden 只寄存 enqPtrExt(0)，其余 (1..5) 组合派生）。
+//   取消统计保留 72 个 lastNeedCancel_r（RegNext(needCancel)），popcount 组合算出，
+//   与 golden 完全同构（不合并成计数寄存器）。
+//
 //  ── 本核分节（与 Scala 一一对应）──
 //    A. 端口聚合（扁平 golden 端口 ↔ 数组）
-//    B. 队列状态寄存器（allocated / entry / debug）+ 指针寄存器
-//    C. redirect 取消统计（needCancel / enqCancel / redirectCancelCount）
-//    D. enqPtr 更新（正常推进 / redirect 回退）
+//    B. 队列状态寄存器（allocated / 每字段数组）+ 指针寄存器（仅 enqPtrExt_0/deqPtr）
+//    C. redirect 取消统计（needCancel / lastNeedCancel_r / enqCancel / redirectCancelCount）
+//    D. enqPtr 更新（正常推进 / redirect 回退）——仅寄存 enqPtrExt_0，其余组合派生
 //    E. deqPtr 更新（commitCount：连续 committed 计数；两拍打拍）
 //    F. enqueue 写 entry（按 lqIdx 命中区间分配）
 //    G. commit 清 allocated（deqPtr..+stride）
@@ -202,16 +211,25 @@ module xs_VirtualLoadQueue_core
 
   // ===========================================================================
   //  B. 队列状态寄存器 + 指针寄存器
+  //     每字段独立 72 深数组，与 golden 展平寄存器（robIdx_i_value 等）一一对应。
   // ===========================================================================
-  logic      allocated [VLQ_SIZE];     // entry 已分配（生命周期主标志，需显式复位 0）
-  lq_entry_t entry     [VLQ_SIZE];     // robIdx/uopIdx/isvec/committed
-  // debug 影子（golden 留有 debug_mmio/debug_paddr 寄存器，无对外端口；保留以对齐结构）
-  logic      debug_mmio  [VLQ_SIZE];
-  logic [PADDR_BITS-1:0] debug_paddr [VLQ_SIZE];
+  //  golden 复位行为（照搬各自）：allocated / isvec 是 RegInit（async reset 清 0）；
+  //  robIdx_flag / robIdx_value / uopIdx / committed 是 Reg（无 reset）。
+  logic              allocated  [VLQ_SIZE];  // entry 已分配（RegInit 0，async reset 清 0）
+  logic              isvec        [VLQ_SIZE]; // 向量 load flow（RegInit 0，async reset 清 0）
+  logic              robIdx_flag  [VLQ_SIZE]; // robIdx.flag（无 reset：golden Reg，非 RegInit）
+  logic [ROB_W-1:0]  robIdx_value [VLQ_SIZE]; // robIdx.value（无 reset）
+  logic [UOP_W-1:0]  uopIdx       [VLQ_SIZE]; // uop flow 下标（无 reset）
+  logic              committed    [VLQ_SIZE]; // 已可提交（无 reset）
 
-  // 指针：enqPtrExt 是 ENQ_W=6 个连续指针（enqPtrExt(0)=入队基指针）；deqPtr 出队指针。
+  // 指针：golden 只寄存 enqPtrExt(0)；enqPtrExt(1..5) 组合派生 = enqPtrExt_0 + j。
+  lq_ptr_t enqPtrExt_0;
+  lq_ptr_t deqPtr;               // golden deqPtr_r
+  // 派生的 6 个入队指针（组合，非寄存器）
   lq_ptr_t enqPtrExt [ENQ_W];
-  lq_ptr_t deqPtr;
+  always_comb
+    for (int j = 0; j < ENQ_W; j++) enqPtrExt[j] = lq_ptr_add(enqPtrExt_0, j);
+
   // redirect 打拍寄存器（lastCycleRedirect / lastLastCycleRedirect）
   logic              lastCycleRedirect_valid;
   logic              lastLastCycleRedirect_valid;
@@ -221,7 +239,7 @@ module xs_VirtualLoadQueue_core
   // ===========================================================================
   //  validCount：当前在队条数 = distanceBetween(enqPtrExt0, deqPtr)
   logic [CNT_W-1:0] validCount;
-  assign validCount = lq_distance(enqPtrExt[0], deqPtr);
+  assign validCount = lq_distance(enqPtrExt_0, deqPtr);
   //  allowEnqueue：余量 >= LSQLdEnqWidth（validCount <= Size - LSQLdEnqWidth = 66）
   logic allowEnqueue;
   assign allowEnqueue = validCount <= CNT_W'(VLQ_SIZE - LSQ_LD_ENQ_W);
@@ -231,9 +249,12 @@ module xs_VirtualLoadQueue_core
   always_comb
     for (int i = 0; i < VLQ_SIZE; i++)
       needCancel[i] = rob_need_flush(io_redirect_valid, io_redirect_bits_level,
-                          entry[i].robFlag, entry[i].robIdx,
+                          robIdx_flag[i], robIdx_value[i],
                           io_redirect_bits_robIdx_flag, io_redirect_bits_robIdx_value)
                       && allocated[i];
+
+  //  lastNeedCancel_r：RegNext(needCancel)（golden 保留 72 个独立位，本核对齐）
+  logic lastNeedCancel_r [VLQ_SIZE];
 
   //  入队请求侧的取消：该请求 valid 且其 robIdx 被本拍 redirect 冲刷
   logic               canEnqueue [ENQ_W];
@@ -250,57 +271,54 @@ module xs_VirtualLoadQueue_core
       enqCancelNum[j] = enqCancel[j] ? vLoadFlow[j] : '0;
     end
 
-  //  redirect 取消计数：上一拍 needCancel 的条数 + 上一拍 enqCancelNum 总和，
+  //  redirect 取消计数：上一拍 PopCount(lastNeedCancel_r) + 上一拍 enqCancelNum 总和（lastEnqCancel），
   //  在 lastCycleRedirect.valid 时锁存（RegEnable），作为 lqCancelCnt 输出。
-  logic [CNT_W-1:0] lastCycleCancelCount;   // PopCount(RegNext(needCancel))
-  logic [CNT_W-1:0] lastEnqCancel;          // RegNext(sum(enqCancelNum))
-  logic [CNT_W-1:0] redirectCancelCount;    // RegEnable(...)
-  // needCancel/enqCancelNum 的本拍值（用于下一拍寄存）
-  logic [CNT_W-1:0] needCancelCount_c;
-  logic [CNT_W-1:0] enqCancelNumSum_c;
+  //  golden redirectCancelCount 是 8 位。
+  logic [7:0]       lastEnqCancel_next_r;    // RegNext(sum(enqCancelNum))
+  logic [7:0]       redirectCancelCount;     // RegEnable(...)（8 位）
+  //  lastNeedCancel_r 的 popcount（组合）
+  logic [7:0]       lastNeedCancelCount_c;
   always_comb begin
-    needCancelCount_c = '0;
-    for (int i = 0; i < VLQ_SIZE; i++) needCancelCount_c += CNT_W'(needCancel[i]);
+    lastNeedCancelCount_c = '0;
+    for (int i = 0; i < VLQ_SIZE; i++) lastNeedCancelCount_c += 8'(lastNeedCancel_r[i]);
+  end
+  //  enqCancelNum 本拍总和（用于下一拍寄存到 lastEnqCancel_next_r）
+  logic [7:0]       enqCancelNumSum_c;
+  always_comb begin
     enqCancelNumSum_c = '0;
-    for (int j = 0; j < ENQ_W; j++) enqCancelNumSum_c += CNT_W'(enqCancelNum[j]);
+    for (int j = 0; j < ENQ_W; j++) enqCancelNumSum_c += 8'(enqCancelNum[j]);
   end
 
   // ===========================================================================
-  //  D. enqPtr 更新
+  //  D. enqPtr 更新（仅寄存 enqPtrExt_0）
   // ===========================================================================
   //  实际入队 flow 数：仅统计 valid 请求的 flow（与 canEnqueue 对齐）
   logic [ELEM_W-1:0] validVLoadFlow [ENQ_W];
-  //  needAlloc 侧的 flow（用于给每个请求口算 lqIdx 偏移；needAlloc 只有 5 位 → 第 6 口恒 0）
-  logic [ELEM_W-1:0] validVLoadOffset [ENQ_W];
   always_comb
-    for (int j = 0; j < ENQ_W; j++) begin
-      validVLoadFlow[j]   = canEnqueue[j] ? vLoadFlow[j] : '0;
-      validVLoadOffset[j] = (j < NEED_W && enq_needAlloc[j]) ? vLoadFlow[j] : '0;
-    end
-  //  enqNumber：本拍入队总 flow 数（enqPtr 正常推进量）
-  logic [CNT_W-1:0] enqNumber;
+    for (int j = 0; j < ENQ_W; j++)
+      validVLoadFlow[j] = canEnqueue[j] ? vLoadFlow[j] : '0;
+  //  enqNumber：本拍入队总 flow 数（enqPtr 正常推进量）。golden 为 8 位（_enqNumber_T_8），
+  //  6×5bit flow 之和最大 186 > 7 位，须 8 位避免截断（FM 会探索 UT 到不了的大值）。
+  logic [7:0] enqNumber;
   always_comb begin
     enqNumber = '0;
-    for (int j = 0; j < ENQ_W; j++) enqNumber += CNT_W'(validVLoadFlow[j]);
+    for (int j = 0; j < ENQ_W; j++) enqNumber += 8'(validVLoadFlow[j]);
   end
 
-  //  enqPtrExtNextVec：正常时全体 +enqNumber；redirect 恢复时全体 -redirectCancelCount。
-  //  enqPtrExtNext：若 enqPtrExtNextVec(0) 仍在 deqPtrNext 之后则采用之，否则收缩到
-  //                 deqPtrNext + j（保证 enq 不越过 deq）。
-  lq_ptr_t enqPtrExtNextVec [ENQ_W];
-  lq_ptr_t enqPtrExtNext    [ENQ_W];
+  //  enqPtrExt_0 的 next：正常 +enqNumber；redirect 恢复 -redirectCancelCount。
+  //  若 next(0) 仍在 deqPtrNext 之后则采用之，否则收缩到 deqPtrNext（j=0）。
+  lq_ptr_t enqPtrExtNextVec0;
+  lq_ptr_t enqPtrExtNext0;
   lq_ptr_t deqPtrNext;                   // 见 E 节
   always_comb begin
-    for (int j = 0; j < ENQ_W; j++) begin
-      if (lastLastCycleRedirect_valid)
-        enqPtrExtNextVec[j] = lq_ptr_sub(enqPtrExt[j], redirectCancelCount);
-      else
-        enqPtrExtNextVec[j] = lq_ptr_add(enqPtrExt[j], enqNumber);
-    end
-    if (lq_ptr_after(enqPtrExtNextVec[0], deqPtrNext))
-      for (int j = 0; j < ENQ_W; j++) enqPtrExtNext[j] = enqPtrExtNextVec[j];
+    if (lastLastCycleRedirect_valid)
+      enqPtrExtNextVec0 = lq_ptr_sub(enqPtrExt_0, redirectCancelCount);
     else
-      for (int j = 0; j < ENQ_W; j++) enqPtrExtNext[j] = lq_ptr_add(deqPtrNext, j);
+      enqPtrExtNextVec0 = lq_ptr_add(enqPtrExt_0, enqNumber);
+    if (lq_ptr_after(enqPtrExtNextVec0, deqPtrNext))
+      enqPtrExtNext0 = enqPtrExtNextVec0;
+    else
+      enqPtrExtNext0 = deqPtrNext;       // = lq_ptr_add(deqPtrNext, 0)
   end
 
   // ===========================================================================
@@ -310,7 +328,7 @@ module xs_VirtualLoadQueue_core
   //  deqLookup(i)    = allocated[ptr] && committed[ptr] && ptr != enqPtrExt(0)
   //  deqInSameRedir(i) = needCancel[ptr]
   //  deqCountMask    = deqLookup & ~deqInSameRedir
-  //  commitCount     = 从最低位起连续为 1 的个数（PopCount(PriorityEncoderOH(~mask)-1)）
+  //  commitCount     = 从最低位起连续为 1 的个数
   lq_ptr_t deqLookupVec   [DEQ_STRIDE];
   logic    deqCountMask   [DEQ_STRIDE];
   always_comb
@@ -326,16 +344,16 @@ module xs_VirtualLoadQueue_core
       for (int e = 0; e < VLQ_SIZE; e++)
         if (p.value == PTR_VW'(e)) begin
           p_alloc  = allocated[e];
-          p_commit = entry[e].committed;
+          p_commit = committed[e];
           p_cancel = needCancel[e];
         end
       lk = p_alloc && p_commit
-           && !((p.flag == enqPtrExt[0].flag) && (p.value == enqPtrExt[0].value));
+           && !((p.flag == enqPtrExt_0.flag) && (p.value == enqPtrExt_0.value));
       same = p_cancel;
       deqLookupVec[i]  = p;
       deqCountMask[i]  = lk && !same;
     end
-  //  连续可提交计数：找最低的 0，其下方全 1 → 计数。线性扫描表达（避免 PriorityEncoder 链）。
+  //  连续可提交计数：从最低槽起连续 deqCountMask=1 的个数（遇首个 0 停止）。
   logic [DEQ_CNT_W-1:0] commitCount;
   always_comb begin
     commitCount = '0;
@@ -343,9 +361,21 @@ module xs_VirtualLoadQueue_core
       if (deqCountMask[i] && commitCount == DEQ_CNT_W'(i)) commitCount = DEQ_CNT_W'(i + 1);
   end
 
-  //  deqPtr 两拍打拍：cycle1 算 commitCount→寄存为 lastCommitCount；cycle2 推进 deqPtr。
-  logic [DEQ_CNT_W-1:0] lastCommitCount;   // GatedRegNext(commitCount)
-  assign deqPtrNext = lq_ptr_add(deqPtr, lastCommitCount);
+  //  deqPtr 两拍打拍：cycle1 算 commitCount→寄存为 lastCommitCount_next_r；cycle2 推进 deqPtr。
+  //  deqPtrNext = deqPtr + lastCommitCount_next_r，照搬 golden 逐位算法（8 位 new_value +
+  //  9 位 diff，$signed(diff) >= 0 判回绕），避免通用 lq_ptr_add 的位宽差异被 FM 判不等价。
+  logic [DEQ_CNT_W-1:0] lastCommitCount_next_r;   // GatedRegNext(commitCount)
+  logic [7:0] deqPtrNext_new_value;
+  logic [8:0] deqPtrNext_diff;
+  logic       deqPtrNext_reverse;
+  always_comb begin
+    deqPtrNext_new_value = {1'b0, deqPtr.value} + {4'b0, lastCommitCount_next_r};
+    deqPtrNext_diff      = {1'b0, deqPtrNext_new_value} - 9'(VLQ_SIZE);
+    deqPtrNext_reverse   = ~deqPtrNext_diff[8];   // $signed(diff) >= 0 ⇔ 符号位 0
+    deqPtrNext.value     = deqPtrNext_reverse ? deqPtrNext_diff[PTR_VW-1:0]
+                                              : deqPtrNext_new_value[PTR_VW-1:0];
+    deqPtrNext.flag      = deqPtrNext_reverse ^ deqPtr.flag;
+  end
 
   // ===========================================================================
   //  F. enqueue 写 entry（按 lqIdx 命中区间分配）
@@ -429,15 +459,12 @@ module xs_VirtualLoadQueue_core
       m = 1'b0;
       for (int v = 0; v < VEC_W; v++)
         m |= allocated[i] && vec_valid[v]
-             && (entry[i].robFlag == vec_robFlag[v]) && (entry[i].robIdx == vec_robIdx[v])
-             && (entry[i].uopIdx  == vec_uopIdx[v]);
-      vec_set_committed[i] = m && entry[i].isvec;     // 仅向量 entry 由此路置位
+             && (robIdx_flag[i] == vec_robFlag[v]) && (robIdx_value[i] == vec_robIdx[v])
+             && (uopIdx[i]      == vec_uopIdx[v]);
+      vec_set_committed[i] = m && isvec[i];     // 仅向量 entry 由此路置位
     end
 
   //  load 写回（标量）：!need_rep && updateAddrValid && !isvec → 该 lqIdx 的 entry committed。
-  //  need_rep = |rep_info.cause（任一 replay cause 置位即需重放，不算完成）。
-  //  多口可能写同一 lqIdx，这里对每个 entry 求「是否被任一口标记」。
-  //  每个写回口是否“有效完成”（可置 committed）：valid && !need_rep && updAddr && !isvec。
   //  need_rep = |rep_info.cause（任一 replay cause 置位即需重放，不算完成）。
   logic ldwb_fire [LD_W];
   always_comb
@@ -447,9 +474,7 @@ module xs_VirtualLoadQueue_core
   //  按 entry 索引正向比较（避免变量写下标越界告警）：entry i 被任一“有效完成”且
   //  lqIdx==i 的写回口置 committed。
   logic ldwb_set_committed [VLQ_SIZE];
-  logic [PADDR_BITS-1:0] dummy_paddr;  // golden debug_paddr 由 paddr 端口给，已被裁剪 → 写 0
-  always_comb begin
-    dummy_paddr = '0;
+  always_comb
     for (int i = 0; i < VLQ_SIZE; i++) begin
       logic s;
       s = 1'b0;
@@ -457,7 +482,6 @@ module xs_VirtualLoadQueue_core
         if (ldwb_fire[w] && (ldin_lqValue[w] == PTR_VW'(i))) s = 1'b1;
       ldwb_set_committed[i] = s;
     end
-  end
 
   // ===========================================================================
   //  J. 全局输出
@@ -465,101 +489,97 @@ module xs_VirtualLoadQueue_core
   assign io_enq_canAccept = allowEnqueue;
   assign io_ldWbPtr_flag  = deqPtr.flag;
   assign io_ldWbPtr_value = deqPtr.value;
-  assign io_lqCancelCnt   = redirectCancelCount;
+  assign io_lqCancelCnt   = redirectCancelCount[CNT_W-1:0];
 
   //  lqEmpty / lqDeq 为打拍输出（见时序）
-  logic             lqEmpty_r;
-  logic [DEQ_CNT_W-1:0] lqDeq_r;
+  logic             lqEmpty_r;             // golden io_lqEmpty_REG
+  logic [DEQ_CNT_W-1:0] lqDeq_r;           // golden io_lqDeq_next_r
   assign io_lqEmpty = lqEmpty_r;
   assign io_lqDeq   = lqDeq_r;
 
   //  perf: mem_stall_anyload = RegNext(noUopsIssued && RegNext(validCount)>=1)，
-  //  再经 perf 计数 2 拍寄存（golden io_perf_0_value 是 6 位累加观测）。
+  //  再经 perf 计数 2 拍寄存（golden io_perf_0_value_REG/REG_1 各 1 位，输出补零到 6 位）。
   logic [CNT_W-1:0] validCountReg;
   logic             memStallAnyLoad;       // RegNext(stallLoad)
-  logic [5:0]       perf0_d, perf0_dd;
-  assign io_perf_0_value = perf0_dd;
+  logic             perf0_reg, perf0_reg_1;
+  assign io_perf_0_value = {5'h0, perf0_reg_1};
 
   // ===========================================================================
   //  时序逻辑
+  //  ── 块1（async reset）：allocated / lastNeedCancel_r / 指针 / 取消计数 / 打拍位
+  //  ── 块2（no reset）    ：entry 数据字段（robIdx/uopIdx/isvec/committed）+ 观测打拍
+  //     与 golden 两个 always 块（8129 reset / 10214 no-reset）一一对应。
   // ===========================================================================
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       for (int i = 0; i < VLQ_SIZE; i++) begin
-        allocated[i]   <= 1'b0;
-        entry[i]       <= '0;
-        debug_mmio[i]  <= 1'b0;
-        debug_paddr[i] <= '0;
+        allocated[i]        <= 1'b0;
+        isvec[i]            <= 1'b0;
+        lastNeedCancel_r[i] <= 1'b0;
       end
-      // enqPtrExt 复位为 {flag:0, value:j}（0..5）
-      for (int j = 0; j < ENQ_W; j++) enqPtrExt[j] <= '{flag:1'b0, value:PTR_VW'(j)};
+      enqPtrExt_0 <= '{flag:1'b0, value:'0};
       deqPtr <= '{flag:1'b0, value:'0};
-      lastCycleRedirect_valid     <= 1'b0;
-      lastLastCycleRedirect_valid <= 1'b0;
-      lastCycleCancelCount <= '0;
-      lastEnqCancel        <= '0;
+      lastEnqCancel_next_r <= '0;
       redirectCancelCount  <= '0;
-      lastCommitCount      <= '0;
-      lqEmpty_r            <= 1'b1;
+      lastCommitCount_next_r <= '0;
       lqDeq_r              <= '0;
-      validCountReg        <= '0;
-      memStallAnyLoad      <= 1'b0;
-      perf0_d  <= '0;
-      perf0_dd <= '0;
     end else begin
-      // ---- redirect 打拍 ----
-      lastCycleRedirect_valid     <= io_redirect_valid;
-      lastLastCycleRedirect_valid <= lastCycleRedirect_valid;
+      // ---- lastNeedCancel_r = RegNext(needCancel)（逐 entry）----
+      for (int i = 0; i < VLQ_SIZE; i++) lastNeedCancel_r[i] <= needCancel[i];
 
       // ---- redirect 取消统计 ----
-      lastCycleCancelCount <= needCancelCount_c;     // RegNext(PopCount(needCancel))
-      lastEnqCancel        <= enqCancelNumSum_c;      // RegNext(sum(enqCancelNum))
+      lastEnqCancel_next_r <= enqCancelNumSum_c;   // RegNext(sum(enqCancelNum))
       if (lastCycleRedirect_valid)
-        redirectCancelCount <= lastCycleCancelCount + lastEnqCancel;
+        redirectCancelCount <= lastNeedCancelCount_c + lastEnqCancel_next_r;
 
       // ---- 指针更新 ----
-      for (int j = 0; j < ENQ_W; j++) enqPtrExt[j] <= enqPtrExtNext[j];
-      lastCommitCount <= commitCount;                // cycle1→cycle2
-      if (lastCommitCount != '0) deqPtr <= deqPtrNext;
+      enqPtrExt_0 <= enqPtrExtNext0;
+      lastCommitCount_next_r <= commitCount;       // cycle1→cycle2
+      // deqPtr：照搬 golden 门控——flag = (|lastCommitCount) & reverse ^ flag；
+      // value 仅在 |lastCommitCount 时更新，否则 HOLD（不能用 deqPtr+0 重算，因 FM 会探索
+      // value>=72 的不可达状态：+0 会误回绕而 golden 保持原值 → 判不等价）。
+      deqPtr.flag <= (deqPtrNext_reverse & (|lastCommitCount_next_r)) ^ deqPtr.flag;
+      if (|lastCommitCount_next_r)
+        deqPtr.value <= deqPtrNext.value;
 
-      // ---- entry 状态更新（每条 entry 独立计算 next，体现 Chisel 多 when 的优先级）----
-      //  committed 的 next 是一个合并 OR：入队会“放弃”旧 committed（仅当未被入队覆盖才保留），
-      //  但向量 commit / load 写回的置位 OR 在最上层，优先于入队的清零：
-      //    committed_next = ldwb_set | vec_set | (~entryCanEnq & committed)
-      //  allocated 的 next：入队置 1 / 保留，再被 commit_clear、needCancel 强制清 0：
-      //    allocated_next = ~needCancel & ~commit_clear & (entryCanEnq | allocated)
-      for (int i = 0; i < VLQ_SIZE; i++) begin
-        // committed
-        entry[i].committed <= ldwb_set_committed[i] | vec_set_committed[i]
-                              | (~entry_enq_hit[i] & entry[i].committed);
-        // allocated
+      // ---- allocated：入队置 1 / 保留，再被 commit_clear、needCancel 强制清 0 ----
+      for (int i = 0; i < VLQ_SIZE; i++)
         allocated[i] <= ~needCancel[i] & ~commit_clear[i]
                         & (entry_enq_hit[i] | allocated[i]);
-        // 入队同拍写入 robIdx/uopIdx/isvec（入队命中时覆盖）
-        if (entry_enq_hit[i]) begin
-          entry[i].robFlag <= entry_enq_robFlag[i];
-          entry[i].robIdx  <= entry_enq_robIdx[i];
-          entry[i].uopIdx  <= entry_enq_uopIdx[i];
-          entry[i].isvec   <= entry_enq_isvec[i];
-          debug_mmio[i]    <= 1'b0;
-          debug_paddr[i]   <= '0;
-        end else if (ldwb_set_committed[i]) begin
-          // 标量写回也更新 debug 影子（golden 端口已裁剪 → 取 0）
-          debug_mmio[i]  <= 1'b0;
-          debug_paddr[i] <= dummy_paddr;
-        end
+
+      // ---- isvec：入队命中时写入（RegInit，与 allocated 同属 reset 块）----
+      for (int i = 0; i < VLQ_SIZE; i++)
+        if (entry_enq_hit[i]) isvec[i] <= entry_enq_isvec[i];
+
+      // ---- lqDeq 打拍 ----
+      lqDeq_r <= lastCommitCount_next_r;            // io.lqDeq = GatedRegNext(lastCommitCount)
+    end
+  end
+
+  //  块2（no reset）：entry 数据字段 + 观测打拍。golden 这些 Reg 无 reset。
+  always_ff @(posedge clock) begin
+    // ---- committed：置位（写回/向量）优先于入队清零 ----
+    for (int i = 0; i < VLQ_SIZE; i++)
+      committed[i] <= ldwb_set_committed[i] | vec_set_committed[i]
+                      | (~entry_enq_hit[i] & committed[i]);
+    // ---- 入队同拍写入 robIdx/uopIdx（入队命中时覆盖）；isvec 在 reset 块内更新 ----
+    for (int i = 0; i < VLQ_SIZE; i++)
+      if (entry_enq_hit[i]) begin
+        robIdx_flag[i]  <= entry_enq_robFlag[i];
+        robIdx_value[i] <= entry_enq_robIdx[i];
+        uopIdx[i]       <= entry_enq_uopIdx[i];
       end
 
-      // ---- 全局输出打拍 ----
-      lqEmpty_r <= (validCount == '0);
-      lqDeq_r   <= lastCommitCount;       // io.lqDeq = GatedRegNext(lastCommitCount)
+    // ---- redirect 打拍（golden 无 reset：Reg，非 RegInit）----
+    lastCycleRedirect_valid     <= io_redirect_valid;
+    lastLastCycleRedirect_valid <= lastCycleRedirect_valid;
 
-      // ---- perf ----
-      validCountReg <= validCount;
-      memStallAnyLoad <= io_noUopsIssued && (validCountReg >= CNT_W'(1));
-      perf0_d  <= 6'(memStallAnyLoad);
-      perf0_dd <= perf0_d;
-    end
+    // ---- 全局输出/观测打拍（golden 无 reset）----
+    lqEmpty_r       <= (validCount == '0);
+    validCountReg   <= validCount;
+    memStallAnyLoad <= io_noUopsIssued && (|validCountReg);
+    perf0_reg       <= memStallAnyLoad;
+    perf0_reg_1     <= perf0_reg;
   end
 
 endmodule

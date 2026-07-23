@@ -1,0 +1,17 @@
+=== FM: FDivSqrt (mode=signoff-strict) ===
+FM_TOP=FDivSqrt \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/FDivSqrt.sv /home/eda/xs-env/G0-canonical/golden-rtl/FloatDivider.sv /home/eda/xs-env/G0-canonical/golden-rtl/FloatDividerR64.sv /home/eda/xs-env/G0-canonical/golden-rtl/ShiftLeftPriorityWithLZDResult.sv /home/eda/xs-env/G0-canonical/golden-rtl/fpdiv_r64_block.sv /home/eda/xs-env/G0-canonical/golden-rtl/fpsqrt_r16.sv /home/eda/xs-env/G0-canonical/golden-rtl/fpsqrt_r16_block.sv /home/eda/xs-env/G0-canonical/golden-rtl/lzc.sv /home/eda/xs-env/G0-canonical/golden-rtl/r4_qds.sv /home/eda/xs-env/G0-canonical/golden-rtl/r4_qds_cg.sv /home/eda/xs-env/G0-canonical/golden-rtl/r4_qds_spec.sv /home/eda/xs-env/G0-canonical/golden-rtl/r4_qds_v2.sv /home/eda/xs-env/G0-canonical/golden-rtl/r4_qds_v2_spec.sv /home/eda/xs-env/G0-canonical/golden-rtl/CSA3to2_20.sv /home/eda/xs-env/G0-canonical/golden-rtl/CSA3to2_24.sv" \
+FM_IMPL_SRCS="/tmp/tmp.vK8aBmlz2U/wt/rtl/backend/fdivsqrt_pkg.sv /tmp/tmp.vK8aBmlz2U/wt/rtl/backend/FDivSqrt.sv /tmp/tmp.vK8aBmlz2U/wt/rtl/backend/FDivSqrt_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/FloatDivider.sv /home/eda/xs-env/G0-canonical/golden-rtl/FloatDividerR64.sv /home/eda/xs-env/G0-canonical/golden-rtl/ShiftLeftPriorityWithLZDResult.sv /home/eda/xs-env/G0-canonical/golden-rtl/fpdiv_r64_block.sv /home/eda/xs-env/G0-canonical/golden-rtl/fpsqrt_r16.sv /home/eda/xs-env/G0-canonical/golden-rtl/fpsqrt_r16_block.sv /home/eda/xs-env/G0-canonical/golden-rtl/lzc.sv /home/eda/xs-env/G0-canonical/golden-rtl/r4_qds.sv /home/eda/xs-env/G0-canonical/golden-rtl/r4_qds_cg.sv /home/eda/xs-env/G0-canonical/golden-rtl/r4_qds_spec.sv /home/eda/xs-env/G0-canonical/golden-rtl/r4_qds_v2.sv /home/eda/xs-env/G0-canonical/golden-rtl/r4_qds_v2_spec.sv /home/eda/xs-env/G0-canonical/golden-rtl/CSA3to2_20.sv /home/eda/xs-env/G0-canonical/golden-rtl/CSA3to2_24.sv" \
+FM_MERGE_DUP=true \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/FDivSqrt -file /tmp/tmp.vK8aBmlz2U/wt/scripts/fm_eq.tcl \
+    > fm_work/FDivSqrt/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.vK8aBmlz2U/wt/scripts/fm_verdict.py fm_work/FDivSqrt/fm.log --rc $rc --mode signoff-strict --top FDivSqrt --allowlist 0
+PARTIAL	{"passing": 1141, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": 1, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "FDivSqrt", "dont_verify": false, "elab147": false, "reason": "strict_unread!=0", "unmatched_ref": 0, "unmatched_impl": 0}
+make: *** [../../../scripts/ut_common.mk:56: fm-FDivSqrt] Error 1

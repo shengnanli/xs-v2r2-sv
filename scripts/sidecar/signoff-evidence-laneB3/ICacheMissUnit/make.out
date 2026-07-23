@@ -1,0 +1,18 @@
+=== FM: ICacheMissUnit (mode=signoff-strict) ===
+FM_TOP=ICacheMissUnit \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/ICacheMissUnit.sv /home/eda/xs-env/G0-canonical/golden-rtl/DeMultiplexer.sv /home/eda/xs-env/G0-canonical/golden-rtl/DeMultiplexer_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/MuxBundle.sv /home/eda/xs-env/G0-canonical/golden-rtl/Arbiter5_MSHRAcquire.sv /home/eda/xs-env/G0-canonical/golden-rtl/FIFOReg.sv /home/eda/xs-env/G0-canonical/golden-rtl/ICacheMSHR.sv /home/eda/xs-env/G0-canonical/golden-rtl/ICacheMSHR_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/ICacheMSHR_2.sv /home/eda/xs-env/G0-canonical/golden-rtl/ICacheMSHR_3.sv /home/eda/xs-env/G0-canonical/golden-rtl/ICacheMSHR_4.sv /home/eda/xs-env/G0-canonical/golden-rtl/ICacheMSHR_5.sv /home/eda/xs-env/G0-canonical/golden-rtl/ICacheMSHR_6.sv /home/eda/xs-env/G0-canonical/golden-rtl/ICacheMSHR_7.sv /home/eda/xs-env/G0-canonical/golden-rtl/ICacheMSHR_8.sv /home/eda/xs-env/G0-canonical/golden-rtl/ICacheMSHR_9.sv /home/eda/xs-env/G0-canonical/golden-rtl/ICacheMSHR_10.sv /home/eda/xs-env/G0-canonical/golden-rtl/ICacheMSHR_11.sv /home/eda/xs-env/G0-canonical/golden-rtl/ICacheMSHR_12.sv /home/eda/xs-env/G0-canonical/golden-rtl/ICacheMSHR_13.sv " \
+FM_IMPL_SRCS="/tmp/tmp.P3kHs7ZYR7/wt/rtl/frontend/ICacheMissUnit.sv /tmp/tmp.P3kHs7ZYR7/wt/rtl/frontend/ICacheMissUnit_wrapper.sv" \
+FM_MERGE_DUP=false \
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=false \
+ \
+ \
+ \
+FM_PIN_TCL=/tmp/tmp.P3kHs7ZYR7/wt/verif/ut/ICacheMissUnit/fm_pins.tcl \
+fm_shell -64 -work_path fm_work/ICacheMissUnit -file /tmp/tmp.P3kHs7ZYR7/wt/scripts/fm_eq.tcl \
+    > fm_work/ICacheMissUnit/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.P3kHs7ZYR7/wt/scripts/fm_verdict.py fm_work/ICacheMissUnit/fm.log --rc $rc --mode signoff-strict --top ICacheMissUnit --allowlist 0
+PARTIAL	{"passing": 2613, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": 1, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "ICacheMissUnit", "dont_verify": false, "elab147": false, "reason": "strict_unread!=0", "unmatched_ref": 0, "unmatched_impl": 0}
+make: *** [../../../scripts/ut_common.mk:60: fm-ICacheMissUnit] Error 1

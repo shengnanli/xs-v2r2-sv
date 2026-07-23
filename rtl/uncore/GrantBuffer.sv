@@ -371,7 +371,9 @@ module xs_GrantBuffer_core
   logic         grantBufValid;
   logic         grantBuf_task_isKeyword;
   logic [3:0]   grantBuf_task_opcode;
-  logic [2:0]   grantBuf_task_param;
+  // golden 存 3 位 param 但只读 [1:0](TL param 仅 2 位有效); bit[2] 在 golden 侧死。
+  // 本核收窄到 golden 实际读出的 2 位, golden 的 grantBuf_task_param[2] 落 golden-only dead-ref。
+  logic [1:0]   grantBuf_task_param;
   logic [6:0]   grantBuf_task_sourceId;
   logic         grantBuf_task_denied;
   logic         grantBuf_task_corrupt;
@@ -395,6 +397,16 @@ module xs_GrantBuffer_core
        (io_d_task_bits_task_opcode == 4'h4 | io_d_task_bits_task_opcode == 4'h5 |
         io_d_task_bits_task_mergeA);
 
+  // per-slot 分配/释放选择(组合, 移出 always_ff 避免 FM 每迭代推成死寄存器)
+  logic alloc_k [16];
+  logic free_k  [16];
+  always_comb begin
+    for (int k = 0; k < 16; k++) begin
+      alloc_k[k] = inflight_alloc & (insert_idx == k[3:0]);
+      free_k[k]  = io_e_valid & (io_e_bits_sink[3:0] == k[3:0]);
+    end
+  end
+
   // ===== 时序: inflightGrant + grantBuf =====
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
@@ -406,7 +418,7 @@ module xs_GrantBuffer_core
       grantBufValid           <= 1'b0;
       grantBuf_task_isKeyword <= 1'b0;
       grantBuf_task_opcode    <= 4'h0;
-      grantBuf_task_param     <= 3'h0;
+      grantBuf_task_param     <= 2'h0;
       grantBuf_task_sourceId  <= 7'h0;
       grantBuf_task_denied    <= 1'b0;
       grantBuf_task_corrupt   <= 1'b0;
@@ -414,11 +426,9 @@ module xs_GrantBuffer_core
       grantBuf_grantid        <= 8'h0;
     end else begin
       for (int k = 0; k < 16; k++) begin
-        automatic logic alloc_k = inflight_alloc & (insert_idx == k[3:0]);
-        automatic logic free_k  = io_e_valid & (io_e_bits_sink[3:0] == k[3:0]);
         // 收到 GrantAck(free) 清 valid; 否则分配置位; 否则保持
-        inflightGrant_valid[k] <= ~free_k & (alloc_k | inflightGrant_valid[k]);
-        if (alloc_k) begin
+        inflightGrant_valid[k] <= ~free_k[k] & (alloc_k[k] | inflightGrant_valid[k]);
+        if (alloc_k[k]) begin
           inflightGrant_set[k] <= io_d_task_bits_task_set;
           inflightGrant_tag[k] <= io_d_task_bits_task_tag;
         end
@@ -428,7 +438,7 @@ module xs_GrantBuffer_core
       if (load_grantBuf) begin
         grantBuf_task_isKeyword <= gq_deq_isKeyword;
         grantBuf_task_opcode    <= gq_deq_opcode;
-        grantBuf_task_param     <= gq_deq_param;
+        grantBuf_task_param     <= gq_deq_param[1:0];
         grantBuf_task_sourceId  <= gq_deq_sourceId;
         grantBuf_task_denied    <= gq_deq_denied;
         grantBuf_task_corrupt   <= gq_deq_corrupt;
@@ -442,7 +452,7 @@ module xs_GrantBuffer_core
   // ===== 组 TLBundleD 发往 L1: grantBuf 占用时发第二拍, 否则发出队首拍 =====
   assign io_d_valid              = grantBufValid | gq_deq_valid;
   assign io_d_bits_opcode        = grantBufValid ? grantBuf_task_opcode      : gq_deq_opcode;
-  assign io_d_bits_param         = grantBufValid ? grantBuf_task_param[1:0]  : gq_deq_param[1:0];
+  assign io_d_bits_param         = grantBufValid ? grantBuf_task_param       : gq_deq_param[1:0];
   assign io_d_bits_source        = grantBufValid ? grantBuf_task_sourceId    : gq_deq_sourceId;
   assign io_d_bits_sink          = grantBufValid ? grantBuf_grantid          : gq_deq_grantid;
   assign io_d_bits_denied        = grantBufValid ? grantBuf_task_denied      : gq_deq_denied;

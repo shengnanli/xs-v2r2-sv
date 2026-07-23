@@ -372,6 +372,12 @@ module xs_StoreUnit_core
   localparam logic s2_ready = 1'b1;
   localparam logic s3_ready = 1'b1;
 
+  // vecBaseVaddr / vecVaddrOffset 仅经 (offset = va|trigVa - baseVaddr) >> veew 后取
+  // 低 8 位作 vstart；减法借位与右移只向高位传播，故只有低 VECOFF_BITS 位（8 位 vstart
+  // + 最大 veew=3 的移位余量）对下游有效。golden 保留全 50 位（高 39 位 cone-dead），
+  // impl 收窄到有效宽度 → golden 高位成 golden-only dead-ref（PASS_DEAD_REF）。
+  localparam int VECOFF_BITS = 11;
+
   // redirect 指针打包
   rob_ptr_t redir_robidx;
   assign redir_robidx = '{flag: io_redirect_bits_robIdx_flag,
@@ -559,9 +565,11 @@ module xs_StoreUnit_core
     logic [7:0]  elemIdx;
     logic [2:0]  alignedType;
     logic [3:0]  mbIndex;
-    logic [VADDR_BITS-1:0] vecBaseVaddr;
+    // vecBaseVaddr 收窄至 VECOFF_BITS：仅低位喂 vecVaddrOffset 减法后取 vstart，高位 cone-dead。
+    logic [VECOFF_BITS-1:0] vecBaseVaddr;
     logic        vecActive;
-    logic        isFirstIssue;
+    // isFirstIssue 从 payload 移除：golden s1_in_isFirstIssue 仅喂 perf/assert 探针
+    // (_GEN_10/_GEN_12 无综合扇出)，impl 无该探针 → 该 s1 副本零读，写而不读的死寄存器。
     logic        isFrmMisAlignBuf;
     logic        isMisalign;
     logic        isFinalSplit;
@@ -812,7 +820,10 @@ module xs_StoreUnit_core
   //  stage 2 —— PMP/PMA + 异常合并 + uncache(mmio/nc) + lsq_replenish + misalign_stout
   // ===========================================================================
   typedef struct packed {
-    logic [8:0]  fuOpType;
+    // fuOpType 仅经 is_cbo_nozero 消费（读原始位 [3:2] 与 [6:4]）→ 只有位 2..6 有效。
+    // 仅存这 5 个 live 位 fuOpTypeCbo=[6:2]（位下标 k 对应原始位 k+2）；golden 存全 9 位，
+    // 位 0/1/7/8 cone-dead → golden-only dead-ref（避免 impl 侧留死位 [0]/[1]）。
+    logic [4:0]  fuOpTypeCbo;
     logic [1:0]  vpu_veew;
     logic [6:0]  uopIdx;
     rob_ptr_t    robIdx;
@@ -820,6 +831,7 @@ module xs_StoreUnit_core
     logic [XLEN-1:0]       fullva;
     logic        vaNeedExt;
     logic [PADDR_BITS-1:0] paddr;
+    // s2.gpaddr 保持全 64 位：直接驱动输出 io_lsq_replenish_gpaddr（高位 live）。
     logic [63:0] gpaddr;
     logic [MASK_BITS-1:0]  mask;
     logic        nc;
@@ -829,7 +841,8 @@ module xs_StoreUnit_core
     logic        isvec;
     logic [7:0]  elemIdx;
     logic [3:0]  mbIndex;
-    logic [VADDR_BITS-1:0] vecVaddrOffset;
+    // vecVaddrOffset 收窄至 VECOFF_BITS（见 s1 处说明）；高位 golden-only dead-ref。
+    logic [VECOFF_BITS-1:0] vecVaddrOffset;
     logic        vecActive;
     logic        isFrmMisAlignBuf;
     logic        isMisalign;
@@ -869,7 +882,10 @@ module xs_StoreUnit_core
 
   // —— uncache / mmio / 异常合并 ——
   logic s2_isCbo_nozero;
-  assign s2_isCbo_nozero = is_cbo_nozero(s2.fuOpType);
+  // s2.fuOpTypeCbo 仅存原始 fuOpType[6:2]（下标 k↔原始位 k+2）。
+  // is_cbo_nozero = (&fuOpType[3:2]) & (fuOpType[6:4]==0)
+  //              = (&fuOpTypeCbo[1:0]) & (fuOpTypeCbo[4:2]==0)
+  assign s2_isCbo_nozero = (&s2.fuOpTypeCbo[1:0]) & (s2.fuOpTypeCbo[4:2] == 3'h0);
 
   logic s2_pbmt_pma; // pbmt==NONE → 走 PMA，再看 PMP.mmio
   assign s2_pbmt_pma = (s2_pbmt == PBMT_NONE);
@@ -923,8 +939,8 @@ module xs_StoreUnit_core
   assign s2_mis_align = s2_valid & s2_mis_align_r & ~s2_exception;
   assign s2_maBufNack = ~s2_exception & s2_maBufNack_r;
 
-  // vstart = vecVaddrOffset >> veew
-  logic [VADDR_BITS-1:0] s2_vstart_shift;
+  // vstart = vecVaddrOffset >> veew（vecVaddrOffset 收窄为 VECOFF_BITS，右移后取 [7:0]）
+  logic [VECOFF_BITS-1:0] s2_vstart_shift;
   assign s2_vstart_shift = s2.vecVaddrOffset >> s2.vpu_veew;
 
   // —— misalign_stout（misalign 来源在 s2 直接写回 misalignBuffer）——
@@ -993,14 +1009,17 @@ module xs_StoreUnit_core
     logic [63:0] dbg_enqRsTime, dbg_selectTime, dbg_issueTime;
     logic [XLEN-1:0] fullva;
     logic        vaNeedExt;
-    logic [63:0] gpaddr;
+    // s3.gpaddr 收窄至 VADDR_BITS：仅 sx.gpaddr <= s3.gpaddr[49:0] 读取，高 14 位 cone-dead；
+    // golden s3_in_gpaddr 存全 64 位，高位 [63:50] 是 golden-only dead-ref。
+    logic [VADDR_BITS-1:0] gpaddr;
     logic [MASK_BITS-1:0] mask;
     logic        nc, mmio, memBackTypeMM;
     logic        isForVSnonLeafPTE;
     logic        isvec;
     logic [7:0]  elemIdx;
     logic [3:0]  mbIndex;
-    logic        vecActive;
+    // s3.vecActive 从 payload 移除：写而零读（golden s3_in_vecActive 仅喂 assert 块 _GEN_2
+    // 无综合扇出）→ 死寄存器，归 golden-only dead-ref。
     logic        exc3, exc6, exc7, exc15, exc19, exc23;
   } s3_payload_t;
 
@@ -1222,9 +1241,9 @@ module xs_StoreUnit_core
       s1.elemIdx <= s0_use_vec ? io_vecstin_bits_elemIdx : 8'h0;
       s1.alignedType <= s0_alignedType3;
       s1.mbIndex <= s0_use_vec ? io_vecstin_bits_mBIndex : 4'h0;
-      s1.vecBaseVaddr <= s0_use_vec ? io_vecstin_bits_basevaddr : 50'h0;
+      s1.vecBaseVaddr <= s0_use_vec ? io_vecstin_bits_basevaddr[VECOFF_BITS-1:0] : {VECOFF_BITS{1'b0}};
       s1.vecActive <= s0_vecActive;
-      s1.isFirstIssue <= s0_isFirstIssue;
+      // isFirstIssue 不再打入 s1 payload（见结构体处说明，死寄存器）。
       s1.isFrmMisAlignBuf <= s0_use_ma;
       s1.isMisalign <= s0_isMisalign;
       s1.isFinalSplit <= s0_use_ma & io_misalign_stin_bits_isFinalSplit;
@@ -1235,11 +1254,14 @@ module xs_StoreUnit_core
 
   // —— s2 payload 锁存（s1_fire 时）——
   // vecVaddrOffset：trigger 命中(debug/bp)时用 trigger vaddr - base；否则 va + 首字节偏移 - base。
-  logic [VADDR_BITS-1:0] s1_vecVaddrOffset;
+  // 仅低 VECOFF_BITS 位有效（减法借位只向高位传播，右移后取 vstart[7:0]）；高位 cone-dead，
+  // 与 golden 全 50 位对应的高 39 位是 golden-only dead-ref。
+  logic [VECOFF_BITS-1:0] s1_vecVaddrOffset;
   assign s1_vecVaddrOffset =
       (s1_trig_dmode | s1_trig_bp)
-        ? VADDR_BITS'(s1_trigger_vaddr - s1.vecBaseVaddr)
-        : VADDR_BITS'(VADDR_BITS'(s1.vaddr + {{(VADDR_BITS-4){1'b0}}, first_unmask(s1.mask)})
+        ? VECOFF_BITS'(s1_trigger_vaddr[VECOFF_BITS-1:0] - s1.vecBaseVaddr)
+        : VECOFF_BITS'(VECOFF_BITS'(s1.vaddr[VECOFF_BITS-1:0]
+                        + {{(VECOFF_BITS-4){1'b0}}, first_unmask(s1.mask)})
                       - s1.vecBaseVaddr);
 
   always_ff @(posedge clock) begin
@@ -1250,7 +1272,7 @@ module xs_StoreUnit_core
       s2.exc19 <= s1.exc19;
       s2.exc23 <= s1_exc23;
       s2_in_uop_trigger <= s1_trigger_action;
-      s2.fuOpType <= s1.fuOpType;
+      s2.fuOpTypeCbo <= s1.fuOpType[6:2];  // 仅存 live 位 2..6（is_cbo_nozero 唯一消费）
       s2.vpu_veew <= s1.vpu_veew;
       s2.uopIdx <= s1.uopIdx;
       s2.robIdx <= s1.robIdx;
@@ -1299,7 +1321,7 @@ module xs_StoreUnit_core
       s3.dbg_issueTime <= s2.dbg_issueTime;
       s3.fullva <= s2.fullva;
       s3.vaNeedExt <= s2.vaNeedExt;
-      s3.gpaddr <= s2.gpaddr;
+      s3.gpaddr <= s2.gpaddr[VADDR_BITS-1:0];
       s3.mask <= s2.mask;
       s3.nc <= s2.nc;
       s3.mmio <= s2_out_mmio;
@@ -1308,7 +1330,7 @@ module xs_StoreUnit_core
       s3.isvec <= s2.isvec;
       s3.elemIdx <= s2.elemIdx;
       s3.mbIndex <= s2.mbIndex;
-      s3.vecActive <= s2.vecActive;
+      // s3.vecActive 不再打拍（见结构体说明，死寄存器）。
       s3_vecFeedback <= s2_vecFeedback;
       s3_exception <= s2_exception;
     end

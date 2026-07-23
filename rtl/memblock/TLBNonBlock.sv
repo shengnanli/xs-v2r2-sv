@@ -200,7 +200,6 @@ module xs_TLBNonBlock_core
   // ===========================================================================
   logic [WIDTH-1:0]               req_out_v;
   logic [WIDTH-1:0][VADDR_W-1:0]  req_out_vaddr;
-  logic [WIDTH-1:0][63:0]         req_out_fullva;     // = EffectiveVa（端口 3 无此寄存，仅占位）
   logic [WIDTH-1:0][2:0]          req_out_cmd;
   logic [WIDTH-1:0]               req_out_hyperinst;
   logic [WIDTH-1:0]               req_out_hlvx;
@@ -210,7 +209,24 @@ module xs_TLBNonBlock_core
   logic [WIDTH-1:0]               virt_out;           // RegEnable(csr.priv.virt, req.fire)
   logic [WIDTH-1:0]               porttr_r;           // RegEnable(~no_translate, req.valid)
   logic [WIDTH-1:0]               noTransReg;         // RegNext(no_translate)
-  logic [WIDTH-1:0][63:0]         resp_fullva_r;      // RegEnable(EffectiveVa, req.valid)
+
+  // golden 的 requestor 端口 3 是 ITLB 型端口：无 gpaddr/fullva/gvpn 响应输出（这些 io_resp_*[3]
+  //   在 wrapper 侧悬空），故 golden 不寄存端口 3 的 fullva/gpaddr/gvpn 及相关 p_* 旁路项。
+  //   为逐位对齐，本核把这些字段的【寄存器只覆盖端口 0..2】(NGPA_N 个)，端口 3 用组合常量 0——
+  //   端口 3 的这些位从此不是触发器（对齐 golden 该端口无寄存器）。其余端口 0..2 正常寄存。
+  localparam int NOGPA_PORT = WIDTH - 1;   // 端口 3
+  localparam int NGPA_N     = WIDTH - 1;   // 有 gpaddr/fullva 响应的端口数（0..2）
+  logic [NGPA_N-1:0][63:0]        req_out_fullva_q;   // 只存端口 0..2
+  logic [NGPA_N-1:0][63:0]        resp_fullva_r_q;
+  // 组合全宽视图：[0..2]=寄存值，[3]=0（零扇出）。
+  logic [WIDTH-1:0][63:0]         req_out_fullva;
+  logic [WIDTH-1:0][63:0]         resp_fullva_r;
+  always_comb begin
+    for (int i = 0; i < WIDTH; i++) begin
+      req_out_fullva[i] = (i < NGPA_N) ? req_out_fullva_q[i] : '0;
+      resp_fullva_r[i]  = (i < NGPA_N) ? resp_fullva_r_q[i]  : '0;
+    end
+  end
 
   // ===========================================================================
   // s0：EffectiveVa 与预检异常（prepf/pregpf/preaf）
@@ -304,13 +320,29 @@ module xs_TLBNonBlock_core
   logic [WIDTH-1:0][PPN_W-1:0]  p_ppn;
   logic [WIDTH-1:0][1:0]        p_pbmt;
   tlb_perm_t [WIDTH-1:0]        p_perm;
-  logic [WIDTH-1:0][GVPN_W-1:0] p_gvpn;
   logic [WIDTH-1:0][1:0]        p_g_pbmt;
   tlb_gperm_t [WIDTH-1:0]       p_g_perm;
+  // 端口 3 无 gvpn/level-select 响应：这些旁路项只寄存端口 0..2，端口 3 用组合常量 0
+  //   （与 golden 逐位一致；p_ppn/p_pbmt/p_perm/p_g_* 端口 3 仍有 paddr/pbmt/perm 响应，保留全宽）。
+  logic [NGPA_N-1:0][GVPN_W-1:0] p_gvpn_q;
+  logic [NGPA_N-1:0][1:0]        p_s2xlate_q;
+  logic [NGPA_N-1:0][1:0]        p_s1_level_q;
+  logic [NGPA_N-1:0]             p_s1_isLeaf_q;
+  logic [NGPA_N-1:0]             p_s1_isFakePte_q;
+  logic [WIDTH-1:0][GVPN_W-1:0] p_gvpn;
   logic [WIDTH-1:0][1:0]        p_s2xlate;
   logic [WIDTH-1:0][1:0]        p_s1_level;
   logic [WIDTH-1:0]             p_s1_isLeaf;
   logic [WIDTH-1:0]             p_s1_isFakePte;
+  always_comb begin
+    for (int i = 0; i < WIDTH; i++) begin
+      p_gvpn[i]         = (i < NGPA_N) ? p_gvpn_q[i]         : '0;
+      p_s2xlate[i]      = (i < NGPA_N) ? p_s2xlate_q[i]      : '0;
+      p_s1_level[i]     = (i < NGPA_N) ? p_s1_level_q[i]     : '0;
+      p_s1_isLeaf[i]    = (i < NGPA_N) ? p_s1_isLeaf_q[i]    : 1'b0;
+      p_s1_isFakePte[i] = (i < NGPA_N) ? p_s1_isFakePte_q[i] : 1'b0;
+    end
+  end
 
   // —— ptw_resp 整包寄存（ptw_already_back 用）——
   logic [WIDTH-1:0][1:0]        pr_s2xlate;
@@ -327,7 +359,13 @@ module xs_TLBNonBlock_core
   logic [WIDTH-1:0]             pr_s2_n;
   logic [WIDTH-1:0][1:0]        pr_s2_level;
   logic [WIDTH-1:0]             ptw_already_back_last;  // RegNext(ptw_resp_valid)
-  logic [WIDTH-1:0]             req_last;               // RegNext(req_valid)（kill 用）
+  // req_last 只用于 kill_replay = kill2[gi] & req_last[gi]；端口 3 的 kill2 恒 0（无 s1kill），
+  //   故 req_last[3] 零扇出。只寄存端口 0..2（NGPA_N），端口 3 用组合常量 0（对齐 golden）。
+  logic [NGPA_N-1:0]           req_last_q;             // RegNext(req_valid)，端口 0..2
+  logic [WIDTH-1:0]            req_last;                // 组合视图（[3]=0）
+  always_comb
+    for (int i = 0; i < WIDTH; i++)
+      req_last[i] = (i < NGPA_N) ? req_last_q[i] : 1'b0;
 
   // ===========================================================================
   // 纯函数：PTW 回填项的 hit() 匹配（多级 tag/level/napot 匹配）
@@ -386,8 +424,19 @@ module xs_TLBNonBlock_core
   logic [WIDTH-1:0] REG_pre;           // RegNext(prepf|pregpf|preaf)
   logic [WIDTH-1:0] REG_pre2;          // golden 每 lane 有两份相同 RegNext 副本（REG/REG_1 …），
                                        // 分别喂 excp/vaNeedExt 与 isForVSnonLeafPTE/miss，1:1 对齐
-  logic [WIDTH-1:0] excp_pf_ld_REG, excp_pf_st_REG, excp_gpf_ld_REG, excp_gpf_st_REG;
-  logic [WIDTH-1:0] excp_af_ld_REG, excp_af_st_REG;
+  logic [WIDTH-1:0] excp_pf_ld_REG, excp_gpf_ld_REG, excp_gpf_st_REG;
+  logic [WIDTH-1:0] excp_af_ld_REG;
+  // 存储侧(store)的 pf/af 预检异常输出（io_resp_excp_pf_st / af_st）在 golden 里【只有端口 0】
+  //   （ld 与 gpf 各端口都有，st 仅端口 0——DTLB load 端口）。故 pf_st/af_st 预检寄存器只覆盖
+  //   端口 0，端口 1..3 用组合常量 0（零扇出，与 golden 一致）。
+  logic             excp_pf_st_REG_q0, excp_af_st_REG_q0;   // 只存端口 0
+  logic [WIDTH-1:0] excp_pf_st_REG, excp_af_st_REG;          // 组合视图（[0]=寄存，其余 0）
+  always_comb begin
+    for (int i = 0; i < WIDTH; i++) begin
+      excp_pf_st_REG[i] = (i == 0) ? excp_pf_st_REG_q0 : 1'b0;
+      excp_af_st_REG[i] = (i == 0) ? excp_af_st_REG_q0 : 1'b0;
+    end
+  end
   // need_gpa 状态机的逐端口控制项(对应 golden readResult 的 redirect/enter 控制位)
   logic [WIDTH-1:0] rr_T_redirect;     // golden readResult redirect 命中位：本拍 redirect 命中（非 itlb）
   logic [WIDTH-1:0] rr_T_enter;        // golden readResult enter 位：本端口要进入 need_gpa
@@ -796,11 +845,12 @@ module xs_TLBNonBlock_core
   // ===========================================================================
   // 时序：req_out 寄存（无复位，req.valid 使能）+ 异常预检寄存 + redirect 寄存
   // ===========================================================================
+  // req_out 寄存：端口 3 的 fullva 只存在 req_out_fullva_q[0..2]（端口 3 无 fullva 响应，
+  //   见声明处说明），故 fullva 写用 i<NGPA_N 门控，其它字段照常全端口寄存。
   always_ff @(posedge clock) begin
     for (int i = 0; i < WIDTH; i++) begin
       if (io_req_valid[i]) begin
         req_out_vaddr[i]        <= io_req_vaddr[i];
-        req_out_fullva[i]       <= EffectiveVa[i];
         req_out_cmd[i]          <= io_req_cmd[i];
         req_out_hyperinst[i]    <= io_req_hyperinst[i];
         req_out_hlvx[i]         <= io_req_hlvx[i];
@@ -809,19 +859,23 @@ module xs_TLBNonBlock_core
         req_out_robIdx_value[i] <= io_req_robIdx_value[i];
         virt_out[i]             <= io_csrd_priv_virt;
         porttr_r[i]             <= ~io_req_no_translate[i];
-        resp_fullva_r[i]        <= EffectiveVa[i];
+        if (i < NGPA_N) begin
+          req_out_fullva_q[i] <= EffectiveVa[i];
+          resp_fullva_r_q[i]  <= EffectiveVa[i];
+        end
       end
       // 预检异常寄存 + noTranslate 寄存（每拍）
       REG_pre[i]         <= prepf[i] | pregpf[i] | preaf[i];
       REG_pre2[i]        <= prepf[i] | pregpf[i] | preaf[i];
       excp_pf_ld_REG[i]  <= prepf[i];
-      excp_pf_st_REG[i]  <= prepf[i];
       excp_gpf_ld_REG[i] <= pregpf[i];
       excp_gpf_st_REG[i] <= pregpf[i];
       excp_af_ld_REG[i]  <= preaf[i];
-      excp_af_st_REG[i]  <= preaf[i];
       noTransReg[i]      <= io_req_no_translate[i];
     end
+    // store 侧 pf/af 预检只寄存端口 0（其余端口无 io_resp_excp_pf_st/af_st 输出）。
+    excp_pf_st_REG_q0 <= prepf[0];
+    excp_af_st_REG_q0 <= preaf[0];
     // redirect 寄存（lastCycleRedirect，per-lane 副本对齐 golden）
     for (int i = 0; i < WIDTH; i++) begin
       lcr_valid[i]        <= io_redirect_valid;
@@ -848,11 +902,11 @@ module xs_TLBNonBlock_core
       resp_s1_isFakePte <= 1'b0;
       p_hit <= '0;
       ptw_already_back_last <= '0;
-      req_last <= '0;
+      req_last_q <= '0;
     end else begin
       for (int i = 0; i < WIDTH; i++) begin
         req_out_v[i] <= io_req_valid[i] & ~io_req_kill[i];
-        req_last[i]  <= io_req_valid[i];
+        if (i < NGPA_N) req_last_q[i] <= io_req_valid[i];  // 端口 3 不寄存（kill2[3]=0）
         ptw_already_back_last[i] <= io_ptw_resp_valid;
       end
 
@@ -937,13 +991,16 @@ module xs_TLBNonBlock_core
         p_ppn[i]   <= p_ppn_s0[i];
         p_pbmt[i]  <= io_ptw_resp_s1_entry_pbmt;
         p_perm[i]  <= ptw_perm;
-        p_gvpn[i]  <= p_gvpn_s0[i];
         p_g_pbmt[i]<= io_ptw_resp_s2_entry_pbmt;
         p_g_perm[i]<= ptw_gperm;
-        p_s2xlate[i]<= io_ptw_resp_s2xlate;
-        p_s1_level[i]<= io_ptw_resp_s1_entry_level;
-        p_s1_isLeaf[i]<= ptw_isLeaf;
-        p_s1_isFakePte[i]<= ptw_isFakePte;
+        // 端口 3 无 gvpn/level-select 响应：这些旁路项只寄存端口 0..2（i<NGPA_N）。
+        if (i < NGPA_N) begin
+          p_gvpn_q[i]         <= p_gvpn_s0[i];
+          p_s2xlate_q[i]      <= io_ptw_resp_s2xlate;
+          p_s1_level_q[i]     <= io_ptw_resp_s1_entry_level;
+          p_s1_isLeaf_q[i]    <= ptw_isLeaf;
+          p_s1_isFakePte_q[i] <= ptw_isFakePte;
+        end
         // 整包寄存（ptw_already_back 用）
         pr_s2xlate[i]   <= io_ptw_resp_s2xlate;
         pr_s1_tag[i]    <= io_ptw_resp_s1_entry_tag;

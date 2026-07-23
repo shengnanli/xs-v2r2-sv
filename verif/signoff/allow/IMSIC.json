@@ -1,0 +1,12 @@
+{
+    "unresolved_blackbox": [
+        {
+            "id": "imsicGateWay",
+            "ref_path": "r:/WORK/IMSIC/imsicGateWay",
+            "impl_path": "i:/WORK/IMSIC/u_core/imsicGateWay"
+        }
+    ],
+    "interface_only": [],
+    "empty_blackbox": [],
+    "unmatched": []
+}

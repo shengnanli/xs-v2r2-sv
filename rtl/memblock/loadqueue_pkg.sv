@@ -38,7 +38,7 @@ package loadqueue_pkg;
   //    27     ← uncache(nack) rollback
   //   （后 10 路为 1-bit 组合条件，零扩展到 6 bit；与 LoadQueue.sv:116-137 一致）
   localparam int PERF_NUM      = 28;
-  localparam int PERF_SUBQ_NUM = 18;  // 前 18 路来自子队列
+  localparam int PERF_SUBQ_NUM = 18;  // 前 18 路来自子队列（6-bit 计数）
   localparam int PERF_W        = 6;   // 每个计数器位宽
 
   // ---- 环形队列指针：{flag, value}（对应 Scala 的 CircularQueuePtr / LqPtr）----
@@ -68,15 +68,6 @@ package loadqueue_pkg;
     FULL_RW   = 3'd6,  // RAR + RAW 满
     FULL_RWP  = 3'd7   // 三者同时满
   } full_state_e;
-
-  // ----------------------------------------------------------------------
-  // perf_bit：把一个 1-bit 性能条件零扩展为 PERF_W 位计数值。
-  //   本层后 10 路 perf 都是“某事件这一拍是否发生”的布尔量，统一用此函数
-  //   扩成与子队列计数同宽，避免散落的位拼接魔数。
-  // ----------------------------------------------------------------------
-  function automatic logic [PERF_W-1:0] perf_bit(input logic cond);
-    return {{(PERF_W-1){1'b0}}, cond};
-  endfunction
 
   // ----------------------------------------------------------------------
   // full_is：判断当前 full_mask 是否等于某个拥塞状态。

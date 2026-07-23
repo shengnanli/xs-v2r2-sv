@@ -1,0 +1,17 @@
+=== FM: TLBuffer_13 (mode=signoff-strict) ===
+FM_TOP=TLBuffer_13 \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/TLBuffer_13.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleA_19.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleB_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleC_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleD_20.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleE_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/ram_2x119.sv /home/eda/xs-env/G0-canonical/golden-rtl/ram_2x352.sv /home/eda/xs-env/G0-canonical/golden-rtl/ram_2x321.sv /home/eda/xs-env/G0-canonical/golden-rtl/ram_2x283.sv /home/eda/xs-env/G0-canonical/golden-rtl/ram_sink_2x8.sv " \
+FM_IMPL_SRCS="/tmp/tmp.qAvOga6o9b/wt/rtl/memblock/tlbuffer13_pkg.sv /tmp/tmp.qAvOga6o9b/wt/rtl/memblock/xs_tlbuffer13_bank.sv /tmp/tmp.qAvOga6o9b/wt/rtl/memblock/TLBuffer_13.sv /tmp/tmp.qAvOga6o9b/wt/rtl/memblock/TLBuffer_13_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleA_19.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleB_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleC_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleD_20.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleE_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/ram_2x119.sv /home/eda/xs-env/G0-canonical/golden-rtl/ram_2x352.sv /home/eda/xs-env/G0-canonical/golden-rtl/ram_2x321.sv /home/eda/xs-env/G0-canonical/golden-rtl/ram_2x283.sv /home/eda/xs-env/G0-canonical/golden-rtl/ram_sink_2x8.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/TLBuffer_13 -file /tmp/tmp.qAvOga6o9b/wt/scripts/fm_eq.tcl \
+    > fm_work/TLBuffer_13/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.qAvOga6o9b/wt/scripts/fm_verdict.py fm_work/TLBuffer_13/fm.log --rc $rc --mode signoff-strict --top TLBuffer_13 --allowlist 0
+FAILED	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "FAILED", "top": "TLBuffer_13", "dont_verify": false, "elab147": false, "reason": null}
+make: *** [../../../scripts/ut_common.mk:60: fm-TLBuffer_13] Error 1

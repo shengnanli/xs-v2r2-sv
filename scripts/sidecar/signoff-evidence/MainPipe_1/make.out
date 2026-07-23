@@ -1,0 +1,16 @@
+=== FM: MainPipe_1 (mode=signoff-strict) ===
+FM_TOP=MainPipe_1 \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/MainPipe_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/Arbiter3_TaskWithData.sv /home/eda/xs-env/G0-canonical/golden-rtl/Arbiter3_CHIREQ.sv /home/eda/xs-env/G0-canonical/golden-rtl/Arbiter3_TaskBundle.sv" \
+FM_IMPL_SRCS="/tmp/tmp.93BGxTxEsL/wt/rtl/uncore/l2_task_pkg.sv /tmp/tmp.93BGxTxEsL/wt/rtl/uncore/MainPipe_1.sv /tmp/tmp.93BGxTxEsL/wt/rtl/uncore/MainPipe_1_wrapper.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/MainPipe_1 -file /tmp/tmp.93BGxTxEsL/wt/scripts/fm_eq.tcl \
+    > fm_work/MainPipe_1/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.93BGxTxEsL/wt/scripts/fm_verdict.py fm_work/MainPipe_1/fm.log --rc $rc --mode signoff-strict --top MainPipe_1 --allowlist 0
+SUCCEEDED	{"passing": 6427, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "MainPipe_1", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

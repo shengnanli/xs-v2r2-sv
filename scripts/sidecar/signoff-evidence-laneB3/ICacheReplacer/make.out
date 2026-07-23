@@ -1,0 +1,17 @@
+=== FM: ICacheReplacer (mode=signoff-strict) ===
+FM_TOP=ICacheReplacer \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/ICacheReplacer.sv  " \
+FM_IMPL_SRCS="/tmp/tmp.H9hfsucc9b/wt/rtl/frontend/ICacheReplacer.sv /tmp/tmp.H9hfsucc9b/wt/rtl/frontend/ICacheReplacer_wrapper.sv" \
+ \
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=false \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/ICacheReplacer -file /tmp/tmp.H9hfsucc9b/wt/scripts/fm_eq.tcl \
+    > fm_work/ICacheReplacer/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.H9hfsucc9b/wt/scripts/fm_verdict.py fm_work/ICacheReplacer/fm.log --rc $rc --mode signoff-strict --top ICacheReplacer --allowlist 0
+SUCCEEDED	{"passing": 781, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "ICacheReplacer", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

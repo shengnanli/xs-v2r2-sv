@@ -1,0 +1,17 @@
+=== FM: L1FlagMetaArray_1 (mode=signoff-strict) ===
+FM_TOP=L1FlagMetaArray_1 \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/L1FlagMetaArray_1.sv " \
+FM_IMPL_SRCS="/tmp/tmp.piVsO9WYLe/wt/rtl/memblock/l1metaarray_pkg.sv /tmp/tmp.piVsO9WYLe/wt/rtl/memblock/L1FlagMetaArray.sv /tmp/tmp.piVsO9WYLe/wt/rtl/memblock/L1FlagMetaArray_wrapper.sv /tmp/tmp.piVsO9WYLe/wt/rtl/memblock/L1FlagMetaArray_1_wrapper.sv" \
+FM_MERGE_DUP=false \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/L1FlagMetaArray_1 -file /tmp/tmp.piVsO9WYLe/wt/scripts/fm_eq.tcl \
+    > fm_work/L1FlagMetaArray_1/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.piVsO9WYLe/wt/scripts/fm_verdict.py fm_work/L1FlagMetaArray_1/fm.log --rc $rc --mode signoff-strict --top L1FlagMetaArray_1 --allowlist 0
+PARTIAL	{"passing": 1392, "failing": 0, "unverified": null, "unmatched": 12, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "L1FlagMetaArray_1", "dont_verify": false, "elab147": false, "reason": "strict_unmatched!=0", "unmatched_ref": 0, "unmatched_impl": 12}
+make: *** [../../../scripts/ut_common.mk:56: fm-L1FlagMetaArray_1] Error 1

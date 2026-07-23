@@ -1,0 +1,33 @@
+key	value
+baseline_id	G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456
+source_reproducible	false
+release_signoff_eligible	false
+a0_status	CLOSED
+formal_rtl_files	1854
+formal_rtl_bytes	155100650
+formal_rtl_manifest	G0-formal-rtl.manifest.tsv
+formal_rtl_tree_digest	89fe69e83a4f2ea8
+full_output_files	1860
+full_output_manifest	G0-full-output.manifest.tsv
+full_output_tree_digest	d3c7ff10673ef577
+source_canonical_tar	G0-source-canonical.tar.gz
+source_canonical_files	1639
+source_canonical_manifest	G0-source-canonical.manifest.tsv
+source_canonical_manifest_digest	654b85abd219fac3
+source_raw_evidence_tar	G0-source-snapshot.tar.gz
+source_raw_evidence_tar_sha256	71edfcdba48a208eeca03b23ca1ef09f50698a48c6f7eaf8b98ffc791ad01f98
+source_raw_evidence_note	含11719个out/构建缓存+hs_err(证据保存用);B2禁复用,用canonical
+firtool	CIRCT firtool-1.62.1
+firrtl_dialect	FIRRTL 3.3.0
+jdk	Temurin 17.0.13+11
+config	KunminghuV2Config non-difftest
+sort_locale	LC_ALL=C
+source_canonical_tar_sha256	636bdd67e340363ef130aa4812c625b82c59c877b421214fc794e51a70da8910
+b2_content_reproduced	true
+b2_content_evidence	B2-attempt-evidence/(1854逐字节+1860规范化后content=0 miss=0 extra=0)
+canonical_promotion	NO-GO(待: 0644规范打包复验+已提交runner全新重跑+离线闭包)
+sweep_305	NO-GO(待parser sidecar+唯一入口+canonical manifest)
+fir_buildroot_pathcount	6759209
+mill_dist_sha256	336346091edc69b248c306ca51aaccb73d888d8bf525ce45e02df89db449b41d
+coursier_closure	106 jars, digest 65192fd9442c0126, list=xs-signoff scripts/b2/coursier_closure.list
+publishversion_freeze	实证无影响: 时间戳Jul16 vs Jul18不同而1860全复现; difftest_profile.json两侧0 diff; 不进任何RTL; ST不消费; 若未来flow引入DTB生成须冻结user/host/time

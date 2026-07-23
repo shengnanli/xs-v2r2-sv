@@ -104,13 +104,18 @@ module xs_regcache_core
   endgenerate
 
   // 3 拍延迟链(RegNextN, 无复位):to_wakeup_idx -> ... -> 写口地址。
-  logic [N_WRITE-1:0][IDX_W-1:0] rcidx_delay [RCIDX_DELAY];
+  //   写地址只取 [ADDR_W-1:0](低 4 位);半区最高位 bit[IDX_W-1] 恒为常数
+  //   (Int 口 0 / Mem 口 1)且从不被写口读用 —— 只存 4 位条目下标,不把这个
+  //   write-never-read 的常数半区位打进流水寄存器(否则成死位,golden 侧保留全宽
+  //   5 位 delayToWakeupQueueRCIdx 使其 bit[4] 成 golden-only cone-dead)。
+  logic [N_WRITE-1:0][ADDR_W-1:0] rcidx_delay [RCIDX_DELAY];
   generate
     for (p = 0; p < N_WRITE; p++) begin : g_rcidx_delay
       genvar s;
       for (s = 0; s < RCIDX_DELAY; s++) begin : g_stage
         always_ff @(posedge clock) begin
-          rcidx_delay[s][p] <= (s == 0) ? to_wakeup_idx[p] : rcidx_delay[s-1][p];
+          rcidx_delay[s][p] <= (s == 0) ? to_wakeup_idx[p][ADDR_W-1:0]
+                                        : rcidx_delay[s-1][p];
         end
       end
     end
@@ -131,12 +136,12 @@ module xs_regcache_core
     for (p = 0; p < INT_WR; p++) begin : g_wr_int
       assign IntRegCache_wr_wen [p] = wr_wen[p];
       assign IntRegCache_wr_data[p] = wr_data[p];
-      assign IntRegCache_wr_addr[p] = rcidx_delay[RCIDX_DELAY-1][p][ADDR_W-1:0];
+      assign IntRegCache_wr_addr[p] = rcidx_delay[RCIDX_DELAY-1][p];
     end
     for (p = 0; p < MEM_WR; p++) begin : g_wr_mem
       assign MemRegCache_wr_wen [p] = wr_wen[INT_WR+p];
       assign MemRegCache_wr_data[p] = wr_data[INT_WR+p];
-      assign MemRegCache_wr_addr[p] = rcidx_delay[RCIDX_DELAY-1][INT_WR+p][ADDR_W-1:0];
+      assign MemRegCache_wr_addr[p] = rcidx_delay[RCIDX_DELAY-1][INT_WR+p];
     end
   endgenerate
 

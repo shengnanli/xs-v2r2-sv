@@ -1,0 +1,82 @@
+{
+    "unresolved_blackbox": [
+        {
+            "id": "rxdatArbs_0",
+            "ref_path": "r:/WORK/RNXbar/rxdatArbs_0",
+            "impl_path": "i:/WORK/RNXbar/u_core/rxdatArbs_0"
+        },
+        {
+            "id": "rxrspArbs_0",
+            "ref_path": "r:/WORK/RNXbar/rxrspArbs_0",
+            "impl_path": "i:/WORK/RNXbar/u_core/rxrspArbs_0"
+        },
+        {
+            "id": "rxsnpArbs_0",
+            "ref_path": "r:/WORK/RNXbar/rxsnpArbs_0",
+            "impl_path": "i:/WORK/RNXbar/u_core/rxsnpArbs_0"
+        },
+        {
+            "id": "txdatArbs_0",
+            "ref_path": "r:/WORK/RNXbar/txdatArbs_0",
+            "impl_path": "i:/WORK/RNXbar/u_core/g_txdat[0].txdatArbs"
+        },
+        {
+            "id": "txdatArbs_1",
+            "ref_path": "r:/WORK/RNXbar/txdatArbs_1",
+            "impl_path": "i:/WORK/RNXbar/u_core/g_txdat[1].txdatArbs"
+        },
+        {
+            "id": "txdatArbs_2",
+            "ref_path": "r:/WORK/RNXbar/txdatArbs_2",
+            "impl_path": "i:/WORK/RNXbar/u_core/g_txdat[2].txdatArbs"
+        },
+        {
+            "id": "txdatArbs_3",
+            "ref_path": "r:/WORK/RNXbar/txdatArbs_3",
+            "impl_path": "i:/WORK/RNXbar/u_core/g_txdat[3].txdatArbs"
+        },
+        {
+            "id": "txreqArbs_0",
+            "ref_path": "r:/WORK/RNXbar/txreqArbs_0",
+            "impl_path": "i:/WORK/RNXbar/u_core/g_txreq[0].txreqArbs"
+        },
+        {
+            "id": "txreqArbs_1",
+            "ref_path": "r:/WORK/RNXbar/txreqArbs_1",
+            "impl_path": "i:/WORK/RNXbar/u_core/g_txreq[1].txreqArbs"
+        },
+        {
+            "id": "txreqArbs_2",
+            "ref_path": "r:/WORK/RNXbar/txreqArbs_2",
+            "impl_path": "i:/WORK/RNXbar/u_core/g_txreq[2].txreqArbs"
+        },
+        {
+            "id": "txreqArbs_3",
+            "ref_path": "r:/WORK/RNXbar/txreqArbs_3",
+            "impl_path": "i:/WORK/RNXbar/u_core/g_txreq[3].txreqArbs"
+        },
+        {
+            "id": "txrspArbs_0",
+            "ref_path": "r:/WORK/RNXbar/txrspArbs_0",
+            "impl_path": "i:/WORK/RNXbar/u_core/g_txrsp[0].txrspArbs"
+        },
+        {
+            "id": "txrspArbs_1",
+            "ref_path": "r:/WORK/RNXbar/txrspArbs_1",
+            "impl_path": "i:/WORK/RNXbar/u_core/g_txrsp[1].txrspArbs"
+        },
+        {
+            "id": "txrspArbs_2",
+            "ref_path": "r:/WORK/RNXbar/txrspArbs_2",
+            "impl_path": "i:/WORK/RNXbar/u_core/g_txrsp[2].txrspArbs"
+        },
+        {
+            "id": "txrspArbs_3",
+            "ref_path": "r:/WORK/RNXbar/txrspArbs_3",
+            "impl_path": "i:/WORK/RNXbar/u_core/g_txrsp[3].txrspArbs"
+        }
+    ],
+    "interface_only": [],
+    "empty_blackbox": [],
+    "unmatched": []
+}

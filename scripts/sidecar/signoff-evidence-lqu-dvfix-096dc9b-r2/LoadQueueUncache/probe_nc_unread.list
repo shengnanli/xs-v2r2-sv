@@ -1,0 +1,3 @@
+{{r:/WORK/LoadQueueUncache/freeList/freeSlotCnt_reg[0]} {i:/WORK/LoadQueueUncache/u_core/u_freelist/freeSlotCnt_reg[0]}}
+{{r:/WORK/LoadQueueUncache/freeList/freeSlotCnt_reg[1]} {i:/WORK/LoadQueueUncache/u_core/u_freelist/freeSlotCnt_reg[1]}}
+{{r:/WORK/LoadQueueUncache/freeList/freeSlotCnt_reg[2]} {i:/WORK/LoadQueueUncache/u_core/u_freelist/freeSlotCnt_reg[2]}}

@@ -1,0 +1,16 @@
+=== FM: AXI4IdIndexer_1 (mode=signoff-strict) ===
+FM_TOP=AXI4IdIndexer_1 \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/AXI4IdIndexer_1.sv " \
+FM_IMPL_SRCS="/tmp/tmp.diHFavTd4J/wt/rtl/uncore/AXI4IdIndexer.sv /tmp/tmp.diHFavTd4J/wt/rtl/uncore/AXI4IdIndexer_1_wrapper.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/AXI4IdIndexer_1 -file /tmp/tmp.diHFavTd4J/wt/scripts/fm_eq.tcl \
+    > fm_work/AXI4IdIndexer_1/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.diHFavTd4J/wt/scripts/fm_verdict.py fm_work/AXI4IdIndexer_1/fm.log --rc $rc --mode signoff-strict --top AXI4IdIndexer_1 --allowlist 0
+SUCCEEDED	{"passing": 292, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "AXI4IdIndexer_1", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

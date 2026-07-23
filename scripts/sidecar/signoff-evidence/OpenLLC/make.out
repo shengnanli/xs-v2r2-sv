@@ -1,0 +1,16 @@
+=== FM: OpenLLC (mode=assembly) ===
+FM_TOP=OpenLLC \
+FM_MODE=assembly \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/OpenLLC.sv /home/eda/xs-env/G0-canonical/golden-rtl/MMIODiverger.sv /home/eda/xs-env/G0-canonical/golden-rtl/MMIOMerger.sv /home/eda/xs-env/G0-canonical/golden-rtl/RNLinkMonitor.sv /home/eda/xs-env/G0-canonical/golden-rtl/RNXbar.sv /home/eda/xs-env/G0-canonical/golden-rtl/SNLinkMonitor.sv /home/eda/xs-env/G0-canonical/golden-rtl/SNXbar.sv /home/eda/xs-env/G0-canonical/golden-rtl/Slice_4.sv /home/eda/xs-env/G0-canonical/golden-rtl/TopDownMonitor_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/RXRSP_4.sv /home/eda/xs-env/G0-canonical/golden-rtl/RXDAT_4.sv" \
+FM_IMPL_SRCS="/tmp/tmp.edvCqNGMIG/wt/rtl/l2/openllc_pkg.sv /tmp/tmp.edvCqNGMIG/wt/rtl/l2/OpenLLC.sv /tmp/tmp.edvCqNGMIG/wt/rtl/l2/OpenLLC_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/MMIODiverger.sv /home/eda/xs-env/G0-canonical/golden-rtl/MMIOMerger.sv /home/eda/xs-env/G0-canonical/golden-rtl/RNLinkMonitor.sv /home/eda/xs-env/G0-canonical/golden-rtl/RNXbar.sv /home/eda/xs-env/G0-canonical/golden-rtl/SNLinkMonitor.sv /home/eda/xs-env/G0-canonical/golden-rtl/SNXbar.sv /home/eda/xs-env/G0-canonical/golden-rtl/Slice_4.sv /home/eda/xs-env/G0-canonical/golden-rtl/TopDownMonitor_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/RXRSP_4.sv /home/eda/xs-env/G0-canonical/golden-rtl/RXDAT_4.sv" \
+ \
+FM_INTERFACE_ONLY="RXRSP_4 RXDAT_4" \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/OpenLLC -file /tmp/tmp.edvCqNGMIG/wt/scripts/fm_eq.tcl \
+    > fm_work/OpenLLC/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.edvCqNGMIG/wt/scripts/fm_verdict.py fm_work/OpenLLC/fm.log --rc $rc --mode assembly --top OpenLLC --allowlist 0
+SUCCEEDED	{"passing": 103589, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "assembly", "native": "SUCCEEDED", "top": "OpenLLC", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

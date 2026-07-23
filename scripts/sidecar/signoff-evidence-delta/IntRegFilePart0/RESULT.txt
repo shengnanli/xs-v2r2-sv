@@ -1,0 +1,4 @@
+SIGNOFF_RESULT IntRegFilePart0: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=signoff-strict fm_shell_rc=0 validator_rc=0)
+run_id: SGN-IntRegFilePart0-1784802196
+impl_commit: 71d398ca08964201570ff751ce1792e84cfc9c0a
+manifest_sha256: 904052b2a13cb75b43ac036611e2a2a1dfd8fbcf94fe71e4e79bdec4e6f88b1b

@@ -1,0 +1,16 @@
+=== FM: Arbiter1_InsUncacheResp (mode=signoff-strict) ===
+FM_TOP=Arbiter1_InsUncacheResp \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/Arbiter1_InsUncacheResp.sv " \
+FM_IMPL_SRCS="/tmp/tmp.cJ1I2G9zd3/wt/rtl/frontend/InstrMMIOEntry.sv /tmp/tmp.cJ1I2G9zd3/wt/rtl/frontend/InstrUncache_variants.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/Arbiter1_InsUncacheResp -file /tmp/tmp.cJ1I2G9zd3/wt/scripts/fm_eq.tcl \
+    > fm_work/Arbiter1_InsUncacheResp/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.cJ1I2G9zd3/wt/scripts/fm_verdict.py fm_work/Arbiter1_InsUncacheResp/fm.log --rc $rc --mode signoff-strict --top Arbiter1_InsUncacheResp --allowlist 0
+SUCCEEDED	{"passing": 34, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "Arbiter1_InsUncacheResp", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

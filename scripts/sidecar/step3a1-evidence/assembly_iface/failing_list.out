@@ -1,0 +1,11 @@
+{{r:/WORK/NewIFU/f3_foldpc_0_reg[0]} {i:/WORK/NewIFU/u_core/f3_foldpc_reg[0][0]}}
+{{r:/WORK/NewIFU/f3_foldpc_0_reg[1]} {i:/WORK/NewIFU/u_core/f3_foldpc_reg[0][1]}}
+{{r:/WORK/NewIFU/f3_foldpc_0_reg[2]} {i:/WORK/NewIFU/u_core/f3_foldpc_reg[0][2]}}
+{{r:/WORK/NewIFU/f3_foldpc_0_reg[3]} {i:/WORK/NewIFU/u_core/f3_foldpc_reg[0][3]}}
+{{r:/WORK/NewIFU/f3_foldpc_0_reg[4]} {i:/WORK/NewIFU/u_core/f3_foldpc_reg[0][4]}}
+{{r:/WORK/NewIFU/f3_foldpc_0_reg[5]} {i:/WORK/NewIFU/u_core/f3_foldpc_reg[0][5]}}
+{{r:/WORK/NewIFU/f3_foldpc_0_reg[6]} {i:/WORK/NewIFU/u_core/f3_foldpc_reg[0][6]}}
+{{r:/WORK/NewIFU/f3_foldpc_0_reg[7]} {i:/WORK/NewIFU/u_core/f3_foldpc_reg[0][7]}}
+{{r:/WORK/NewIFU/f3_foldpc_0_reg[8]} {i:/WORK/NewIFU/u_core/f3_foldpc_reg[0][8]}}
+{{r:/WORK/NewIFU/f3_foldpc_0_reg[9]} {i:/WORK/NewIFU/u_core/f3_foldpc_reg[0][9]}}
+{{r:/WORK/NewIFU/f3_pc_lower_result_0_reg[11]} {i:/WORK/NewIFU/u_core/f3_pc_lower_result_reg[0][11]}}

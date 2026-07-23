@@ -1,0 +1,4 @@
+SIGNOFF_RESULT IBuffer: measured=PARTIAL required=SUCCEEDED gate=GAP (proof=signoff-strict fm_shell_rc=0 validator_rc=1)
+run_id: SGN-IBuffer-1784806632
+impl_commit: 1d9e656039453b04873dad549dbd95cf3ab658d0
+manifest_sha256: 507e63588103fcc1d99b312871c8a04c3a195340bd1a303e6e7ab171cddb437f

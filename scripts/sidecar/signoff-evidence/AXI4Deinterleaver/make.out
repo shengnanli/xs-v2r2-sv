@@ -1,0 +1,16 @@
+=== FM: AXI4Deinterleaver (mode=signoff-strict) ===
+FM_TOP=AXI4Deinterleaver \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/AXI4Deinterleaver.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_AXI4BundleR_3.sv /home/eda/xs-env/G0-canonical/golden-rtl/ram_2x264.sv" \
+FM_IMPL_SRCS="/tmp/tmp.wrmNFvvV3L/wt/rtl/uncore/axi4deint_pkg.sv /tmp/tmp.wrmNFvvV3L/wt/rtl/uncore/AXI4Deinterleaver.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_AXI4BundleR_3.sv /home/eda/xs-env/G0-canonical/golden-rtl/ram_2x264.sv /tmp/tmp.wrmNFvvV3L/wt/rtl/uncore/AXI4Deinterleaver_wrapper.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/AXI4Deinterleaver -file /tmp/tmp.wrmNFvvV3L/wt/scripts/fm_eq.tcl \
+    > fm_work/AXI4Deinterleaver/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.wrmNFvvV3L/wt/scripts/fm_verdict.py fm_work/AXI4Deinterleaver/fm.log --rc $rc --mode signoff-strict --top AXI4Deinterleaver --allowlist 0
+SUCCEEDED	{"passing": 51904, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "AXI4Deinterleaver", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

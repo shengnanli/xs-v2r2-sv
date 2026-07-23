@@ -628,3 +628,45 @@ module tb;
     $finish;
   end
 endmodule
+
+// -----------------------------------------------------------------------------
+//  golden Uncache 内含两个 difftest 观测探针实例（DelayReg_21 / DummyDPICWrapper_71），
+//  它们只是把在途 store 的 commit 打拍/上报给 difftest 框架，是纯输出观测，不回灌
+//  DUT 逻辑，也不在等价比对端口集里。UT 环境不带 difftest 库，这里给最小空壳桩，
+//  令 golden 能 elaborate；桩的输出恒 0（不参与 tb 的 g/i 逐拍比对）。
+// -----------------------------------------------------------------------------
+module DelayReg_21 (
+  input        clock,
+  input        reset,
+  input        i_valid,
+  input [63:0] i_addr,
+  input [7:0]  i_data_0, i_data_1, i_data_2, i_data_3,
+  input [7:0]  i_data_4, i_data_5, i_data_6, i_data_7,
+  input [7:0]  i_mask,
+  input [7:0]  i_coreid,
+  output       o_valid,
+  output [63:0] o_addr,
+  output [7:0] o_data_0, o_data_1, o_data_2, o_data_3,
+  output [7:0] o_data_4, o_data_5, o_data_6, o_data_7,
+  output [7:0] o_mask,
+  output [7:0] o_coreid
+);
+  assign o_valid  = 1'b0;
+  assign o_addr   = 64'h0;
+  assign o_data_0 = 8'h0; assign o_data_1 = 8'h0; assign o_data_2 = 8'h0; assign o_data_3 = 8'h0;
+  assign o_data_4 = 8'h0; assign o_data_5 = 8'h0; assign o_data_6 = 8'h0; assign o_data_7 = 8'h0;
+  assign o_mask   = 8'h0;
+  assign o_coreid = 8'h0;
+endmodule
+
+module DummyDPICWrapper_71 (
+  input        clock,
+  input        io_valid,
+  input        io_bits_valid,
+  input [63:0] io_bits_addr,
+  input [7:0]  io_bits_data_0, io_bits_data_1, io_bits_data_2, io_bits_data_3,
+  input [7:0]  io_bits_data_4, io_bits_data_5, io_bits_data_6, io_bits_data_7,
+  input [7:0]  io_bits_mask,
+  input [7:0]  io_bits_coreid
+);
+endmodule

@@ -1,0 +1,16 @@
+=== FM: FauFTBWay (mode=signoff-strict) ===
+FM_TOP=FauFTBWay \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/FauFTBWay.sv " \
+FM_IMPL_SRCS="/tmp/tmp.4empbUltjE/wt/rtl/frontend/FauFTBWay.sv /tmp/tmp.4empbUltjE/wt/rtl/frontend/FauFTBWay_wrapper.sv" \
+ \
+ \
+FM_FIELD_MAP=/tmp/tmp.4empbUltjE/wt/verif/ut/FauFTBWay/fm_map/FauFTBWay.txt \
+ \
+ \
+fm_shell -64 -work_path fm_work/FauFTBWay -file /tmp/tmp.4empbUltjE/wt/scripts/fm_eq.tcl \
+    > fm_work/FauFTBWay/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.4empbUltjE/wt/scripts/fm_verdict.py fm_work/FauFTBWay/fm.log --rc $rc --mode signoff-strict --top FauFTBWay --allowlist 0
+SUCCEEDED	{"passing": 139, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "FauFTBWay", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

@@ -334,14 +334,14 @@ module xs_TageTable_core #(
   // S1 流水寄存：随 req_fire 推进 idx/tag/bank 选择/unhashed；
   //   s1_bank_has_write：本拍读的 bank 若同时正被写，则读出数据失效(resp_invalid)。
   // ===========================================================================
-  logic [IDX_W:0]      s1_unhashed;   // 只用到 [0] 做 way 反映射，但保留低位足够
+  logic                s1_swap_reg;   // 只需 unhashed[0]（way 反映射）；高位无扇出故只寄这一位
   logic [TAG_LEN-1:0]  s1_tag;
   logic [NBANKS-1:0]   s1_bank_1h;
   logic [NBANKS-1:0]   s1_bank_has_write;
 
   always_ff @(posedge clock) begin
     if (req_fire) begin
-      s1_unhashed <= io_req_bits_pc[IDX_W+INST_OFF_BITS:INST_OFF_BITS]; // 含 bit0 即 unhashed[0]
+      s1_swap_reg <= io_req_bits_pc[INST_OFF_BITS]; // = unhashed[0]（唯一被读的位）
       s1_tag      <= s0_tag;
       s1_bank_1h  <= s0_bank_1h;
     end
@@ -350,7 +350,7 @@ module xs_TageTable_core #(
         s1_bank_has_write[b] <= bank_wen[b];
   end
 
-  wire s1_swap = s1_unhashed[0];   // s1 物理 way → 逻辑分支反映射
+  wire s1_swap = s1_swap_reg;   // s1 物理 way → 逻辑分支反映射
 
   // ===========================================================================
   // SRAM 例化：us(useful 位, 每 way 1 bit) + 4 个 table_banks(条目)

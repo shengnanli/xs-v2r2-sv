@@ -1,0 +1,17 @@
+=== FM: EntriesVlduVstuVseglduVsegstu (mode=signoff-strict) ===
+FM_TOP=EntriesVlduVstuVseglduVsegstu \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/EntriesVlduVstuVseglduVsegstu.sv /home/eda/xs-env/G0-canonical/golden-rtl/EnqEntryVecMem.sv /home/eda/xs-env/G0-canonical/golden-rtl/OthersEntryVecMem.sv /home/eda/xs-env/G0-canonical/golden-rtl/OthersEntryVecMem_2.sv /home/eda/xs-env/G0-canonical/golden-rtl/EnqPolicy_14.sv" \
+FM_IMPL_SRCS="/tmp/tmp.x6gzyfkvTW/wt/rtl/backend/iq_vlduvstuseg_pkg.sv /tmp/tmp.x6gzyfkvTW/wt/rtl/backend/IqEntryVlduVstuSeg.sv /tmp/tmp.x6gzyfkvTW/wt/rtl/backend/EntriesVlduVstuSeg.sv /tmp/tmp.x6gzyfkvTW/wt/rtl/backend/EntriesVlduVstuVseglduVsegstu_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/EnqPolicy_14.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/EntriesVlduVstuVseglduVsegstu -file /tmp/tmp.x6gzyfkvTW/wt/scripts/fm_eq.tcl \
+    > fm_work/EntriesVlduVstuVseglduVsegstu/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.x6gzyfkvTW/wt/scripts/fm_verdict.py fm_work/EntriesVlduVstuVseglduVsegstu/fm.log --rc $rc --mode signoff-strict --top EntriesVlduVstuVseglduVsegstu --allowlist 0
+ERROR	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 0, "make_rc": 4, "mode": "signoff-strict", "native": null, "top": null, "dont_verify": false, "elab147": false, "reason": "make_rc_nonzero"}
+make: *** [../../../scripts/ut_common.mk:56: fm-EntriesVlduVstuVseglduVsegstu] Error 1

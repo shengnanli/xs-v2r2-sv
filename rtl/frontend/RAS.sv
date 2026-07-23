@@ -264,7 +264,10 @@ module xs_RASStack
   // realPush 写入用的 entry / 地址 / NOS：
   //   use_snapshot_push 时用 s2 打拍快照（realWriteEntry_next 等），否则用 s3 补 push 现算值。
   ras_entry_t realWriteEntry_next;
-  ras_ptr_t   realWriteAddr_next;  // 写到哪个 spec 槽（= 当时的 TOSW）
+  // 写到哪个 spec 槽（= 当时的 TOSW 的 value 域）。只需 5 位 value 作 32 深索引，
+  // TOSW 的 flag（绕回位）对「写哪个槽」无影响 → 与 golden 一致只存 value，不存 flag，
+  // 避免 flag 位成为 impl-only cone-dead 寄存器。
+  logic [SPTR_W-1:0] realWriteAddr_next;
   ras_ptr_t   realNos_next;
 
   wire use_snapshot_push = redirect_isCall | ~s3_missed_push;  // golden _GEN_11
@@ -278,7 +281,8 @@ module xs_RASStack
   end
 
   wire ras_entry_t realWriteEntry = use_snapshot_push ? realWriteEntry_next : s3_missPushEntry;
-  wire ras_ptr_t   realWriteAddr  = use_snapshot_push ? realWriteAddr_next  : s3_meta_TOSW;
+  // realWriteAddr 只取 value（写槽索引）；s3 补 push 路径用 s3_meta_TOSW.value。
+  wire [SPTR_W-1:0] realWriteAddr = use_snapshot_push ? realWriteAddr_next : s3_meta_TOSW.value;
   wire ras_ptr_t   realNos        = use_snapshot_push ? realNos_next        : s3_meta_TOSR;
 
   // ===========================================================================
@@ -288,7 +292,7 @@ module xs_RASStack
   genvar gs;
   generate
     for (gs = 0; gs < RAS_SPEC_SIZE; gs++) begin : g_spec
-      wire hit = realPush & (realWriteAddr.value == SPTR_W'(gs));
+      wire hit = realPush & (realWriteAddr == SPTR_W'(gs));
       always_ff @(posedge clock or posedge reset) begin
         if (reset) begin
           spec_queue[gs] <= '0;
@@ -542,7 +546,7 @@ module xs_RASStack
       realWriteEntry_next <= writeEntry;
     end
     if (s2_fire | redir_call) begin
-      realWriteAddr_next  <= redir_call ? redirect_meta_TOSW : TOSW;
+      realWriteAddr_next  <= redir_call ? redirect_meta_TOSW.value : TOSW.value;
       realNos_next        <= redir_call ? redirect_meta_TOSR : TOSR;
     end
     if (s2_fire) realPush_specPush_q <= spec_push_valid;
@@ -600,31 +604,33 @@ module xs_RASStack
     end
   end
 
-  ras_entry_t timingTop;
+  // timingTop 只输出 retAddr（= spec_pop_addr），下一拍栈顶的 ctr 从不被读 →
+  // 与 golden 一致只存 retAddr，不存 ctr，避免 ctr[2:0] 成为 impl-only cone-dead 寄存器。
+  logic [VADDR_W-1:0] timingTop_retAddr;
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
-      timingTop <= '0;
+      timingTop_retAddr <= '0;
     end else if (writeBypassValidWire) begin
-      timingTop <= (redir_call | spec_push_valid) ? writeEntry : writeBypassEntry;
+      timingTop_retAddr <= (redir_call | spec_push_valid) ? writeEntry.retAddr : writeBypassEntry.retAddr;
     end else if (redirect_valid & redirect_isRet) begin
-      timingTop <= tt_redir_ret;
+      timingTop_retAddr <= tt_redir_ret.retAddr;
     end else if (redirect_valid) begin
-      timingTop <= tt_redir;
+      timingTop_retAddr <= tt_redir.retAddr;
     end else if (spec_pop_valid) begin
-      timingTop <= tt_pop;
+      timingTop_retAddr <= tt_pop.retAddr;
     end else if (realPush) begin
-      timingTop <= realWriteEntry;
+      timingTop_retAddr <= realWriteEntry.retAddr;
     end else if (s3_cancel) begin
-      timingTop <= s3_cancel_top;
+      timingTop_retAddr <= s3_cancel_top.retAddr;
     end else begin
-      timingTop <= tt_cur;
+      timingTop_retAddr <= tt_cur.retAddr;
     end
   end
 
   // ===========================================================================
   // 输出
   // ===========================================================================
-  assign spec_pop_addr        = timingTop.retAddr;
+  assign spec_pop_addr        = timingTop_retAddr;
   assign ssp_o                = ssp;
   assign sctr_o               = sctr;
   assign TOSR_o               = TOSR;

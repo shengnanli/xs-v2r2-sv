@@ -1,0 +1,4 @@
+SIGNOFF_RESULT TLBuffer: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=signoff-strict fm_shell_rc=0 validator_rc=0)
+run_id: SGN-TLBuffer-1784621360
+impl_commit: 58db13a48f8b74eba732e2a69629b45b9f80d832
+manifest_sha256: 6930d4b51ce52810a18ccb2dea3f528db377371a751bcc6f86f3e9fd64d4719a

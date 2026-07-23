@@ -1,0 +1,1 @@
+{"unresolved_blackbox": [{"id": "table_0", "ref_path": "r:/WORK/ITTageTable_4/table_0", "impl_path": "i:/WORK/ITTageTable_4/table_0"}, {"id": "wrbypass", "ref_path": "r:/WORK/ITTageTable_4/wrbypass", "impl_path": "i:/WORK/ITTageTable_4/wrbypass"}], "interface_only": [], "empty_blackbox": [], "unmatched": []}

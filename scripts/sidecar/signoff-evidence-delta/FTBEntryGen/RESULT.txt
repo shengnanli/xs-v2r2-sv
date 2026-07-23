@@ -1,0 +1,4 @@
+SIGNOFF_RESULT FTBEntryGen: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=signoff-strict fm_shell_rc=0 validator_rc=0)
+run_id: SGN-FTBEntryGen-1784787241
+impl_commit: f916f359b552fef1649ac7769881827079014575
+manifest_sha256: d8a21f66e6120527ffa225828dd1e278ae9188539ec60ecd214ac6581e9f40e9

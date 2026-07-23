@@ -1,0 +1,17 @@
+=== FM: WrBypass_43 (mode=signoff-strict) ===
+FM_TOP=WrBypass_43 \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/WrBypass_43.sv /home/eda/xs-env/G0-canonical/golden-rtl/IndexableCAMTemplate_43.sv /home/eda/xs-env/G0-canonical/golden-rtl/data_mem_0_4x2.sv" \
+FM_IMPL_SRCS="/tmp/tmp.Qg8rneWbwL/wt/rtl/common/IndexableCAM.sv /tmp/tmp.Qg8rneWbwL/wt/rtl/common/PlruReplacer.sv /tmp/tmp.Qg8rneWbwL/wt/rtl/frontend/WrBypass.sv /tmp/tmp.Qg8rneWbwL/wt/rtl/frontend/WrBypass_variants.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/WrBypass_43 -file /tmp/tmp.Qg8rneWbwL/wt/scripts/fm_eq.tcl \
+    > fm_work/WrBypass_43/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.Qg8rneWbwL/wt/scripts/fm_verdict.py fm_work/WrBypass_43/fm.log --rc $rc --mode signoff-strict --top WrBypass_43 --allowlist 0
+PARTIAL	{"passing": 54, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": 4, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "WrBypass_43", "dont_verify": false, "elab147": false, "reason": "strict_unread!=0", "unmatched_ref": 0, "unmatched_impl": 0}
+make: *** [../../../scripts/ut_common.mk:56: fm-WrBypass_43] Error 1

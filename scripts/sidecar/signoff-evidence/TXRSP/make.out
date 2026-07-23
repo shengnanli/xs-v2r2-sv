@@ -1,0 +1,16 @@
+=== FM: TXRSP (mode=signoff-strict) ===
+FM_TOP=TXRSP \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/TXRSP.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue16_CHIRSP.sv /home/eda/xs-env/G0-canonical/golden-rtl/ram_16x62.sv" \
+FM_IMPL_SRCS="/tmp/tmp.2fKpUwaJtp/wt/rtl/uncore/TXRSP.sv /tmp/tmp.2fKpUwaJtp/wt/rtl/uncore/TXRSP_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue16_CHIRSP.sv /home/eda/xs-env/G0-canonical/golden-rtl/ram_16x62.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/TXRSP -file /tmp/tmp.2fKpUwaJtp/wt/scripts/fm_eq.tcl \
+    > fm_work/TXRSP/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.2fKpUwaJtp/wt/scripts/fm_verdict.py fm_work/TXRSP/fm.log --rc $rc --mode signoff-strict --top TXRSP --allowlist 0
+SUCCEEDED	{"passing": 922, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "TXRSP", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

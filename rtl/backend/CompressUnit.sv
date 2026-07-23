@@ -86,34 +86,52 @@ module xs_CompressUnit_core (
     return n;
   endfunction
 
+  // 单条 lane 的组大小:可压缩则=游程长度(cntL+cntR-1),不可压缩则=1。
+  // (对 lane i,padded 下标 p=i+1;key[p]==0 即不可压缩。)
+  function automatic logic [SIZE_W-1:0] lane_size(input logic [RENAME_WIDTH+1:0] k,
+                                                  input int i);
+    int p, cl, cr;
+    p  = i + 1;
+    if (!k[p]) return SIZE_W'(1);
+    cl = cnt_left (k, p);
+    cr = cnt_right(k, p);
+    return SIZE_W'(cl + cr - 1);
+  endfunction
+
+  // 单条 lane 的 mask:不可压缩则仅自身位;可压缩则游程区间 [i-cl+1 .. i+cr-1] 全 1。
+  // 固定上界遍历所有 lane,落在区间内置 1(便于 Formality 静态展开)。
+  function automatic logic [MASK_W-1:0] lane_mask(input logic [RENAME_WIDTH+1:0] k,
+                                                  input int i);
+    int p, cl, cr, lo, hi;
+    logic [MASK_W-1:0] m;
+    p = i + 1;
+    m = '0;
+    if (!k[p]) begin
+      m[i] = 1'b1;                 // 不可压缩:仅自身。
+    end else begin
+      cl = cnt_left (k, p);
+      cr = cnt_right(k, p);
+      lo = i - (cl - 1);           // 游程最左 lane(0-based)
+      hi = i + (cr - 1);           // 游程最右 lane(0-based)
+      for (int b = 0; b < RENAME_WIDTH; b++)
+        if (b >= lo && b <= hi) m[b] = 1'b1;
+    end
+    return m;
+  endfunction
+
   // ---------------------------------------------------------------------------
   // 4. 逐 lane 产出 needRob / size / mask。
+  //    所有中间量都在纯函数里(automatic 局部,不被综合成状态),always_comb 只做
+  //    无条件赋值,避免 Formality 对条件分支临时量推断死寄存器。
   // ---------------------------------------------------------------------------
   always_comb begin
     for (int i = 0; i < RENAME_WIDTH; i++) begin
-      automatic int p  = i + 1;            // padded 下标
-      automatic int cl = cnt_left (key, p);
-      automatic int cr = cnt_right(key, p);
+      automatic int p = i + 1;             // padded 下标
 
       // needRob:右邻也是 1 → 并入右边(0);否则本条需独占 ROB(1)。
       need_rob_flags[i] = ~(key[p] & key[p+1]);
-
-      if (!key[p]) begin
-        // 不可压缩:独占 1 个表项,mask 仅自身。
-        instr_sizes[i] = SIZE_W'(1);
-        masks[i]       = MASK_W'(1) << i;
-      end else begin
-        // 可压缩:组大小 = 所在游程长度;mask = 游程覆盖的全部 lane。
-        automatic int run_len = cl + cr - 1;          // 含自身只算一次
-        automatic int lo      = i - (cl - 1);         // 游程最左 lane(0-based)
-        automatic int hi      = i + (cr - 1);         // 游程最右 lane(0-based)
-        automatic logic [MASK_W-1:0] m = '0;
-        instr_sizes[i] = SIZE_W'(run_len);
-        // 固定上界遍历所有 lane,落在 [lo,hi] 区间的置 1(便于 Formality 静态展开)。
-        for (int b = 0; b < RENAME_WIDTH; b++)
-          if (b >= lo && b <= hi) m[b] = 1'b1;
-        masks[i] = m;
-      end
+      instr_sizes[i]    = lane_size(key, i);
+      masks[i]          = lane_mask(key, i);
     end
   end
 

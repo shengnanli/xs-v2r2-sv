@@ -1,0 +1,5 @@
+SIGNOFF_RESULT Directory: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=assembly fm_shell_rc=0 validator_rc=0)
+run_id: SGN-Directory-1784725763
+impl_commit: ba12767e5a15fc909c71fa8052f6106b3171dd35
+manifest_sha256: 9333074c3b67d43714fe0932843d34baedca10b2717c039ca611523c65fe324f
+CLEAN_GATE_FAIL

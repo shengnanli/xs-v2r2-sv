@@ -146,22 +146,30 @@ module xs_ICacheReplacer_core #(
   generate
     for (gb = 0; gb < NUM_BANKS; gb++) begin : g_bank
       for (gs = 0; gs < BANK_SETS; gs++) begin : g_set
+        // 组合折叠：本组本拍的两次 touch 依次叠加得到次态与写使能。
+        // 这些量必须放在 always_comb（而非 always_ff 内的 blocking 临时变量），
+        // 否则综合/FM 前端会把每个 gb×gs 迭代的 hit_en/rfl_en/s_cur 各推断成一个
+        // 无跨拍扇出的死寄存器（256+256+256×STATE_W=1280 个）——纯寄存器推断伪影，
+        // 与 golden 的嵌套三元组合逻辑不对称。显式组合化后只保留 plru_state 一个真状态。
+        logic               hit_en;  // 本组本拍命中 touch 有效
+        logic               rfl_en;  // 本组本拍 refill touch 有效
+        logic [STATE_W-1:0] s_next;  // 折叠后的次态
+        always_comb begin
+          logic [STATE_W-1:0] s_cur; // 折叠中的中间状态（纯组合临时量）
+          hit_en = bank_touch_valid[gb]  && (bank_touch_set[gb] == BSET_W'(gs));
+          rfl_en = bank_refill_valid[gb] && (bank_refill_set    == BSET_W'(gs));
+          s_cur  = plru_state[gb][gs];
+          // 1) 命中 touch 先折叠
+          if (hit_en) s_cur = plru_touch(s_cur, bank_touch_way[gb]);
+          // 2) refill touch 后折叠（叠加在命中结果之上）
+          if (rfl_en) s_cur = plru_touch(s_cur, victim_way_reg);
+          s_next = s_cur;
+        end
         always_ff @(posedge clock or posedge reset) begin
-          if (reset) begin
+          if (reset)
             plru_state[gb][gs] <= '0;
-          end else begin
-            logic [STATE_W-1:0] s_cur;   // 折叠中的中间状态
-            logic               hit_en;  // 本组本拍命中 touch 有效
-            logic               rfl_en;  // 本组本拍 refill touch 有效
-            s_cur  = plru_state[gb][gs];
-            hit_en = bank_touch_valid[gb]  && (bank_touch_set[gb] == BSET_W'(gs));
-            rfl_en = bank_refill_valid[gb] && (bank_refill_set    == BSET_W'(gs));
-            // 1) 命中 touch 先折叠
-            if (hit_en) s_cur = plru_touch(s_cur, bank_touch_way[gb]);
-            // 2) refill touch 后折叠（叠加在命中结果之上）
-            if (rfl_en) s_cur = plru_touch(s_cur, victim_way_reg);
-            if (hit_en || rfl_en) plru_state[gb][gs] <= s_cur;
-          end
+          else if (hit_en || rfl_en)
+            plru_state[gb][gs] <= s_next;
         end
       end
     end

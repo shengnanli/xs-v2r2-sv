@@ -1,0 +1,17 @@
+=== FM: ICacheReplacer (mode=signoff-strict) ===
+FM_TOP=ICacheReplacer \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/ICacheReplacer.sv " \
+FM_IMPL_SRCS="/tmp/tmp.OR8eSjgTlQ/wt/rtl/frontend/ICacheReplacer.sv /tmp/tmp.OR8eSjgTlQ/wt/rtl/frontend/ICacheReplacer_wrapper.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/ICacheReplacer -file /tmp/tmp.OR8eSjgTlQ/wt/scripts/fm_eq.tcl \
+    > fm_work/ICacheReplacer/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.OR8eSjgTlQ/wt/scripts/fm_verdict.py fm_work/ICacheReplacer/fm.log --rc $rc --mode signoff-strict --top ICacheReplacer --allowlist 0
+ERROR	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 0, "make_rc": 4, "mode": "signoff-strict", "native": null, "top": null, "dont_verify": false, "elab147": false, "reason": "make_rc_nonzero"}
+make: *** [../../../scripts/ut_common.mk:56: fm-ICacheReplacer] Error 1

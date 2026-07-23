@@ -1,0 +1,1 @@
+{"unresolved_blackbox": [], "interface_only": [{"id": "loadQueue", "ref_path": "r:/WORK/LsqWrapper/loadQueue", "impl_path": "i:/WORK/LsqWrapper/u_core/loadQueue"}, {"id": "storeQueue", "ref_path": "r:/WORK/LsqWrapper/storeQueue", "impl_path": "i:/WORK/LsqWrapper/u_core/storeQueue"}], "empty_blackbox": [], "unmatched": []}

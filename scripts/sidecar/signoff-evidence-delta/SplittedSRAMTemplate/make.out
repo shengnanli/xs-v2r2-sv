@@ -1,0 +1,16 @@
+=== FM: SplittedSRAMTemplate (mode=signoff-strict) ===
+FM_TOP=SplittedSRAMTemplate \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/SplittedSRAMTemplate.sv " \
+FM_IMPL_SRCS="/tmp/tmp.RwjWF2qw6K/wt/rtl/common/SplittedSRAMTemplate_variants.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/SplittedSRAMTemplate -file /tmp/tmp.RwjWF2qw6K/wt/scripts/fm_eq.tcl \
+    > fm_work/SplittedSRAMTemplate/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.RwjWF2qw6K/wt/scripts/fm_verdict.py fm_work/SplittedSRAMTemplate/fm.log --rc $rc --mode signoff-strict --top SplittedSRAMTemplate --allowlist 0
+SUCCEEDED	{"passing": 821, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "SplittedSRAMTemplate", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

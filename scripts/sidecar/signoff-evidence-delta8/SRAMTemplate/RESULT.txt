@@ -1,0 +1,4 @@
+SIGNOFF_RESULT SRAMTemplate: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=assembly fm_shell_rc=0 validator_rc=0)
+run_id: SGN-SRAMTemplate-1784617084
+impl_commit: f0065aeaf2b5bcfb4675a46eca1aea04e58d00f0
+manifest_sha256: 61a5fad1c99df3f4df900ac4ab2c86471e08f9a918474b058d32292e1fffd37e

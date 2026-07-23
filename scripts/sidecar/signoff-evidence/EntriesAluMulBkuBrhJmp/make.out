@@ -1,0 +1,17 @@
+=== FM: EntriesAluMulBkuBrhJmp (mode=signoff-strict) ===
+FM_TOP=EntriesAluMulBkuBrhJmp \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/EntriesAluMulBkuBrhJmp.sv /home/eda/xs-env/G0-canonical/golden-rtl/EnqEntry.sv /home/eda/xs-env/G0-canonical/golden-rtl/OthersEntry.sv /home/eda/xs-env/G0-canonical/golden-rtl/OthersEntry_6.sv /home/eda/xs-env/G0-canonical/golden-rtl/EnqPolicy.sv /home/eda/xs-env/G0-canonical/golden-rtl/UIntCompressor_27_000011100000000000001010101.sv" \
+FM_IMPL_SRCS="/tmp/tmp.d0ei9MxFEW/wt/rtl/backend/iq_ambb_pkg.sv /tmp/tmp.d0ei9MxFEW/wt/rtl/backend/IqEntryAmbb.sv /tmp/tmp.d0ei9MxFEW/wt/rtl/backend/EntriesAluMulBkuBrhJmp.sv /tmp/tmp.d0ei9MxFEW/wt/rtl/backend/EntriesAluMulBkuBrhJmp_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/EnqPolicy.sv /home/eda/xs-env/G0-canonical/golden-rtl/UIntCompressor_27_000011100000000000001010101.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/EntriesAluMulBkuBrhJmp -file /tmp/tmp.d0ei9MxFEW/wt/scripts/fm_eq.tcl \
+    > fm_work/EntriesAluMulBkuBrhJmp/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.d0ei9MxFEW/wt/scripts/fm_verdict.py fm_work/EntriesAluMulBkuBrhJmp/fm.log --rc $rc --mode signoff-strict --top EntriesAluMulBkuBrhJmp --allowlist 0
+ERROR	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 0, "make_rc": 4, "mode": "signoff-strict", "native": null, "top": null, "dont_verify": false, "elab147": false, "reason": "make_rc_nonzero"}
+make: *** [../../../scripts/ut_common.mk:56: fm-EntriesAluMulBkuBrhJmp] Error 1

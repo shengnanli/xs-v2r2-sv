@@ -1,0 +1,17 @@
+=== FM: FCVT (mode=signoff-strict) ===
+FM_TOP=FCVT \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/FCVT.sv /home/eda/xs-env/G0-canonical/golden-rtl/FPCVT.sv /home/eda/xs-env/G0-canonical/golden-rtl/CVT64.sv /home/eda/xs-env/G0-canonical/golden-rtl/FP_INCVT.sv /home/eda/xs-env/G0-canonical/golden-rtl/CLZ_6.sv /home/eda/xs-env/G0-canonical/golden-rtl/RoundingUnit_3.sv /home/eda/xs-env/G0-canonical/golden-rtl/RoundingUnit_4.sv /home/eda/xs-env/G0-canonical/golden-rtl/ShiftRightJam.sv " \
+FM_IMPL_SRCS="/tmp/tmp.uSGhcCojk9/wt/rtl/backend/fcvt_pkg.sv /tmp/tmp.uSGhcCojk9/wt/rtl/backend/FCVT.sv /tmp/tmp.uSGhcCojk9/wt/rtl/backend/FCVT_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/FPCVT.sv /home/eda/xs-env/G0-canonical/golden-rtl/CVT64.sv /home/eda/xs-env/G0-canonical/golden-rtl/FP_INCVT.sv /home/eda/xs-env/G0-canonical/golden-rtl/CLZ_6.sv /home/eda/xs-env/G0-canonical/golden-rtl/RoundingUnit_3.sv /home/eda/xs-env/G0-canonical/golden-rtl/RoundingUnit_4.sv /home/eda/xs-env/G0-canonical/golden-rtl/ShiftRightJam.sv" \
+FM_MERGE_DUP=false \
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=true \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/FCVT -file /tmp/tmp.uSGhcCojk9/wt/scripts/fm_eq.tcl \
+    > fm_work/FCVT/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.uSGhcCojk9/wt/scripts/fm_verdict.py fm_work/FCVT/fm.log --rc $rc --mode signoff-strict --top FCVT --allowlist 0
+SUCCEEDED	{"passing": 1277, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "FCVT", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

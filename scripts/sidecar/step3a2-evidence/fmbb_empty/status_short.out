@@ -1,0 +1,26 @@
+**************************************************
+Report         : status
+                 -short 
+
+Reference      : r:/WORK/DCacheWrapper
+Implementation : i:/WORK/DCacheWrapper
+Version        : V-2023.12-SP3
+Date           : Mon Jul 20 01:44:44 2026
+**************************************************
+
+Reference Design:      r:/WORK/DCacheWrapper
+Implementation Design: i:/WORK/DCacheWrapper
+Verification
+   Status:             FAILED
+   Passing Points:     6184
+   Failing Points:     20
+   Aborted Points:     0
+   Unverified Points:  364
+Diagnosis
+   Status:             Not Run
+   Error Candidates:   0
+User Defined Setup
+   Equivalences:       0
+   Compare Points:     0
+   Constants:          0
+1

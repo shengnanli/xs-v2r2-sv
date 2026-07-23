@@ -1,21 +1,33 @@
 // =============================================================================
-//  xs_LoadQueueRAR_core —— Load-Load (RAR) 违例检测队列（可读重写）
+//  xs_LoadQueueRAR_core —— Load-Load (RAR) 违例检测队列（可读重写，合成层次）
 // -----------------------------------------------------------------------------
 //  设计意图来源（人写 Chisel，非 firtool golden）：
 //      src/main/scala/xiangshan/mem/lsqueue/LoadQueueRAR.scala
-//      src/main/scala/xiangshan/mem/lsqueue/FreeList.scala（freelist 内联实现）
+//      src/main/scala/xiangshan/mem/lsqueue/FreeList.scala
 //      src/main/scala/xiangshan/mem/lsqueue/LoadQueueData.scala（LqPAddrModule CAM）
 //
-//  本核把 golden 里独立例化的 FreeList_3 / LqPAddrModule 两个子模块**内联**用
-//  struct 数组 + genvar 重写，使整条「入队分配 → CAM 匹配 → 违例判定 → release
-//  失效 → 出队回收」的数据流在一个可读文件里读懂。微架构讲解见 docs/memblock/LoadQueueRAR.md。
+//  ── 本核的层次（与 golden 顶层镜像，供 FM 合成证明）──────────────────────────────
+//  golden 顶层 LoadQueueRAR 恰好只例化两个子模块 + 一小段顶层 glue：
+//      FreeList_3   freeList     —— 空闲槽循环队列（分配 headPtr / 回收 tailPtr）
+//      LqPAddrModule paddrModule —— 每条目 16-bit 哈希 paddr 的 CAM 存储 + 相等匹配
+//  加上顶层 glue：72 个 entry 的 {allocated, robIdx, lqIdx, released} 平寄存器、
+//  release 两拍流水、matchMask 打拍、freeMaskVec 计算、revoke、perf。
+//
+//  本核**例化同名的两个已证子模块**（rtl/memblock/FreeList_3.sv +
+//  rtl/memblock/LqPAddrModule.sv，均 native SUCCEEDED），使 impl 层次与 golden 一致：
+//    · freelist 全部状态（freeList/headPtr/tailPtr/freeSlotCnt/freeMask/回收流水）
+//      移入 FreeList_3 实例；
+//    · 每条目 ppaddr 存储 + camHit/releaseHit 相等比较移入 LqPAddrModule 实例；
+//    · 顶层 entry[] 只剩 {allocated, robIdx, lqIdx, released} 控制位。
+//  这样 packed-vs-展平的爆炸源（顶层 entry[128] 打包 ppaddr/freelist）被消除，
+//  monolithic FM 得以收敛；两子模块两侧 elaborate（可读非 vendor 逻辑）逐点比对。
+//  见 verif/signoff/loadqueuerar_partition_plan.md 与两块证明文档。
 //
 //  ── 顶层时序总览（3 个 load 流水口并行，编号 w=0/1/2）─────────────────────────
 //     拍 T   (query.req)：判 needEnqueue → freelist 分配 entry → 写 paddr 哈希/uop/released；
-//                         同拍对 query.req 做 CAM（releaseViolationMmask）算 matchMaskReg。
+//                         同拍对 query.req 做 CAM（paddrModule）算 matchMaskReg。
 //     拍 T+1 (query.resp)：resp.valid = RegNext(req.valid)；rep_frm_fetch = |matchMask（打 1 拍）。
-//     release：release1Cycle = 当拍 io.release；release2Cycle = 延 1 拍（让入队追上 paddr 写）。
-//              release1Cycle 命中已有条目 → 延 1 拍把其 released 置 1。
+//     release：release1Cycle = 当拍 io.release；release2Cycle = 延（1~2）拍。
 //     出队：条目的 lqIdx 已“不晚于 ldWbPtr”（已写回）或被 redirect 冲刷 → 释放 entry。
 //     revoke：若某 load 在 query 后一拍需要 replay，撤销它上一拍占的 entry。
 // =============================================================================
@@ -57,159 +69,493 @@ module xs_LoadQueueRAR_core
 );
 
   // ===========================================================================
-  //  0. 条目存储：72 个 entry 的 struct 数组
+  //  0. 条目控制存储：72 个 entry 的 {allocated, robIdx, lqIdx, released}
+  //     （ppaddr 存储已移入 paddrModule 实例；freelist 状态已移入 freeList 实例）
   // ===========================================================================
-  //  物理深度取 2^IDX_W（128）而非 RAR_SIZE（72）：entry index 是 IDX_W 位，
-  //  功能上恒 < 72，但按 2 幂铺开可让所有以 7-bit 索引的访问静态在界（与 golden
-  //  firtool 把 allocated 阵列 0 填充到 128 同理）；高 56 个槽永不被 allocated。
-  rar_entry_t [(1<<IDX_W)-1:0] entry;
+  logic     [RAR_SIZE-1:0] entry_allocated;
+  logic     [RAR_SIZE-1:0] entry_released;
+  rob_ptr_t                entry_robIdx [RAR_SIZE];
+  lq_ptr_t                 entry_lqIdx  [RAR_SIZE];
 
   // ===========================================================================
   //  1. release 的两拍版本
   //     paddr 写进 paddrModule 需 1 拍才可见，故 release 要保留一份延迟版
   //     release2Cycle，让“本拍刚入队、还看不到自己 paddr”的条目也能在下一拍补判失效。
-  //       release1Cycle.bits  = 当拍 io.release.bits（组合直通）
-  //       release2Cycle.valid = RegNext(io.release.valid)
-  //       release2Cycle.bits  = RegEnable(io.release.bits, io.release.valid)
+  //     （golden 实测：release2_valid 是两级 RegNext；bits 是单级 RegEnable。）
   // ===========================================================================
-  //  注意（golden 实测）：release2Cycle.valid 在生成 RTL 里是 **两级 RegNext**
-  //  （release2_valid_q1 <= release_valid; release2_valid <= release2_valid_q1），
-  //  即 io.release.valid 延 2 拍；而 bits 是单级 RegEnable（按 release_valid 使能锁存）。
-  //  paddr 写入 paddrModule 也需 1 拍可见，两者配合让“刚入队的条目”能在恰当拍补判失效。
   logic                  release2_valid_q1, release2_valid;
-  logic [PADDR_BITS-1:0] release2_paddr;
+  //  release2_paddr 只需 **cacheline 对齐位 [47:6]**（enq_released 只比较 [47:6]，
+  //  golden 也只读 release2Cycle_bits_paddr[47:6]）。故只存 [47:6]，不存死位 [5:0]——
+  //  impl clean；golden 存满 48 位、[5:0] 恒不读 = golden-only cone-dead 冗余。
+  //  bit 下标保留 47..6（与 golden 同位）便于 FM 签名配对。
+  logic [PADDR_BITS-1:DCACHE_LINE_OFF] release2_paddr;
+  //  注意：golden release2Cycle_valid/_REG/bits **无 reset**（posedge clock 无 if(reset)），
+  //  照搬无 reset（reset 后为 X/自由，与 golden 一致；FM 才判等价）。
   always_ff @(posedge clock) begin
-    if (reset) begin
-      release2_valid_q1 <= 1'b0;
-      release2_valid    <= 1'b0;
-    end else begin
-      release2_valid_q1 <= release_valid;          // 第 1 级 RegNext
-      release2_valid    <= release2_valid_q1;       // 第 2 级 RegNext
-    end
-    if (release_valid) release2_paddr <= release_paddr;  // RegEnable(bits, valid)
+    release2_valid_q1 <= release_valid;            // 第 1 级 RegNext（无 reset）
+    release2_valid    <= release2_valid_q1;         // 第 2 级 RegNext（无 reset）
+    if (release_valid) release2_paddr <= release_paddr[PADDR_BITS-1:DCACHE_LINE_OFF];
   end
 
   // ===========================================================================
-  //  2. freelist（内联 FreeList.scala）
-  //     存“空闲 entry 编号”的循环队列：headPtr 出队分配、tailPtr 入队回收。
-  //     初始 {0,1,...,71} 全空闲（headPtr=（flag0,0），tailPtr=（flag1,0），距离=72）。
+  //  2. needEnqueue：该 load 是否真的要入队 ----
+  //     req.valid 且 该 load 比 ldWbPtr 更年轻（尚未写回）且 未被 redirect 冲刷。
   // ===========================================================================
-  logic [IDX_W-1:0] freeList [(1<<IDX_W)];  // 空闲编号循环缓冲（深度取 2^IDX_W，使 7-bit 索引在界）
-  free_ptr_t        headPtr, tailPtr;      // 分配头 / 回收尾
-  logic [CNT_W:0]   freeSlotCnt;           // 当前空闲槽数（0..72），距离寄存器
-
-  // ---- 分配侧：每个 load 口请求一个空闲槽（allocateReq 恒 1）----
-  //   offset(w) = 在本口之前有多少口 needEnqueue（连续分配的相对偏移）。
-  logic [IDX_W-1:0] alloc_offset   [LD_WIDTH];
-  free_ptr_t        alloc_deqPtr   [LD_WIDTH];
-  logic [IDX_W-1:0] alloc_slot     [LD_WIDTH];  // 该口将拿到的 entry 编号
-  logic             alloc_can      [LD_WIDTH];  // 该口是否有空闲槽可分
-
-  // ---- needEnqueue：该 load 是否真的要入队 ----
-  //   req.valid 且 该 load 比 ldWbPtr 更年轻（尚未写回）且 未被 redirect 冲刷。
   logic [LD_WIDTH-1:0] needEnqueue;
-  logic [LD_WIDTH-1:0] acceptedVec;   // 实际接收并分配的口（needEnqueue & ready）
   always_comb begin
     for (int w = 0; w < LD_WIDTH; w++) begin
       logic not_writebacked, cancel;
-      // hasNotWritebackedLoad = isAfter(lqIdx, ldWbPtr)：该 load 比写回指针更年轻 → 仍“未完成”。
       not_writebacked = lqAfter(q_req_lqIdx[w], ldWbPtr);
       cancel          = rob_need_flush(redirect_valid, redirect_level, q_req_robIdx[w], redirect_robIdx);
       needEnqueue[w]  = q_req_valid[w] & not_writebacked & ~cancel;
     end
   end
 
-  // 分配偏移 / 槽位 / 是否可分（FreeList.allocate，enablePreAlloc=false）
+  // ===========================================================================
+  //  3. freelist 子模块（FreeList_3 实例）
+  //     子模块对第 w 个分配口**固定**呈现 headPtr+w（w=0/1/2）处的空闲槽 / 可分标志；
+  //     顶层把 needEnqueue 按 PopCount 映射到连续偏移，从这 3 个固定口里选。
+  //       offset(0) = 0
+  //       offset(1) = PopCount(needEnqueue.take(1)) = needEnqueue[0]
+  //       offset(2) = PopCount(needEnqueue.take(2)) = needEnqueue[0]+needEnqueue[1]
+  //     （与 golden 顶层的 PopCount 索引 + 固定口查表逻辑一致。）
+  // ===========================================================================
+  logic [IDX_W-1:0] fl_allocateSlot [LD_WIDTH];  // 固定 offset 0/1/2 的空闲槽
+  logic             fl_canAllocate  [LD_WIDTH];  // 固定 offset 0/1/2 的可分标志
+  logic [CNT_W-1:0] fl_validCount;
+  logic             fl_empty;
+
+  // 顶层回收掩码（喂 freelist.io_free）：见第 6 节 freeMaskVec
+  logic [RAR_SIZE-1:0] freeMaskVec;
+
+  // 本拍实际接收并分配的口（needEnqueue & ready）
+  logic [LD_WIDTH-1:0] acceptedVec;
+
+  FreeList_3 freeList (
+    .clock             (clock),
+    .reset             (reset),
+    .io_allocateSlot_0 (fl_allocateSlot[0]),
+    .io_allocateSlot_1 (fl_allocateSlot[1]),
+    .io_allocateSlot_2 (fl_allocateSlot[2]),
+    .io_canAllocate_0  (fl_canAllocate[0]),
+    .io_canAllocate_1  (fl_canAllocate[1]),
+    .io_canAllocate_2  (fl_canAllocate[2]),
+    .io_doAllocate_0   (acceptedVec[0]),
+    .io_doAllocate_1   (acceptedVec[1]),
+    .io_doAllocate_2   (acceptedVec[2]),
+    .io_free           (freeMaskVec),
+    .io_validCount     (fl_validCount),
+    .io_empty          (fl_empty)
+  );
+
+  // ---- PopCount 偏移映射（顶层块外逻辑，从 3 个固定口里选每口的 slot/ready）----
+  //   镜像 golden 顶层：4 项查表 {slot0, slot2, slot1, slot0}（index 0/1/2/3），按 2-bit
+  //   偏移取。用 4 元表使索引静态在界（2-bit index → 4-deep），消 FMR_ELAB-147；
+  //   第 3 项（index 3）复用 slot0，因 max PopCount(take(w)) ≤ w ≤ 2 从不取到。
+  logic [IDX_W-1:0] slotLut [4];   // {slot0, slot1, slot2, slot0}（index 3 = slot0，从不取）
+  logic             canLut  [4];   // {can0,  can1,  can2,  can0 }
+  always_comb begin
+    slotLut[0] = fl_allocateSlot[0]; slotLut[1] = fl_allocateSlot[1];
+    slotLut[2] = fl_allocateSlot[2]; slotLut[3] = fl_allocateSlot[0];
+    canLut[0]  = fl_canAllocate[0];  canLut[1]  = fl_canAllocate[1];
+    canLut[2]  = fl_canAllocate[2];  canLut[3]  = fl_canAllocate[0];
+  end
+
+  logic [1:0]       alloc_off  [LD_WIDTH];   // 每口 PopCount 偏移
+  logic [IDX_W-1:0] alloc_slot [LD_WIDTH];   // 每口拿到的 entry 编号
+  logic             alloc_can  [LD_WIDTH];   // 每口是否有空闲槽可分
   always_comb begin
     for (int w = 0; w < LD_WIDTH; w++) begin
-      logic [IDX_W-1:0] cnt;
-      cnt = '0;
+      logic [1:0] off;
+      off = '0;
       for (int k = 0; k < LD_WIDTH; k++)
-        if (k < w) cnt += {6'b0, needEnqueue[k]};      // PopCount(needEnqueue.take(w))
-      alloc_offset[w] = cnt;
-      alloc_deqPtr[w] = ptr_add(headPtr, alloc_offset[w]);
-      alloc_can[w]    = free_is_before(alloc_deqPtr[w], tailPtr);
-      alloc_slot[w]   = freeList[alloc_deqPtr[w].value];
-      // enq.ready：要入队时看能否分到，不入队恒 ready（透传）
-      q_req_ready[w]  = needEnqueue[w] ? alloc_can[w] : 1'b1;
-      acceptedVec[w]  = needEnqueue[w] & q_req_ready[w];
+        if (k < w) off += {1'b0, needEnqueue[k]};   // PopCount(needEnqueue.take(w))
+      alloc_off[w]  = off;
+      alloc_slot[w] = slotLut[off];   // 2-bit index，静态在界
+      alloc_can[w]  = canLut[off];
+      q_req_ready[w] = needEnqueue[w] ? alloc_can[w] : 1'b1;
+      acceptedVec[w] = needEnqueue[w] & q_req_ready[w];
     end
   end
 
   // ===========================================================================
-  //  3. CAM 匹配（内联 LqPAddrModule）
-  //     条目存 16-bit 哈希 ppaddr；query.req 的 paddr 现折哈希后与每条目比较。
-  //     releaseViolationMmask(w)(i) = (hash(q_req_paddr[w]) == entry[i].ppaddr)
+  //  4. CAM 子模块（LqPAddrModule 实例）
+  //     每条目存 16-bit 哈希 ppaddr（写入拍 = 入队拍，waddr = alloc_slot、
+  //     wdata = 查询 paddr 哈希、wen = acceptedVec）；对 4 个读口做纯相等 CAM 比较。
+  //       io_releaseViolationMmask_w_i = (hash(q_req_paddr[w]) == data[i])   —— camHit
+  //       io_releaseMmask_2_i          = (hash(release_paddr)  == data[i])   —— releaseHit 基础
   // ===========================================================================
-  logic [LD_WIDTH-1:0][PP_BITS-1:0] q_ppaddr;        // 查询口 paddr 哈希
-  logic [LD_WIDTH-1:0][RAR_SIZE-1:0] camHit;          // CAM 命中（仅哈希相等）
+  logic [LD_WIDTH-1:0][PP_BITS-1:0] q_ppaddr;         // 查询口 paddr 哈希（喂读口 mdata）
+  logic [PP_BITS-1:0]               release1_ppaddr;   // release paddr 哈希（喂 releaseMdata_2）
+  logic [PP_BITS-1:0]               wr_ppaddr [LD_WIDTH]; // 各写口写入的哈希 = 该口 paddr 哈希
   always_comb begin
     for (int w = 0; w < LD_WIDTH; w++) begin
-      q_ppaddr[w] = gen_partial_paddr(q_req_paddr[w]);
-      for (int i = 0; i < RAR_SIZE; i++)
-        camHit[w][i] = (q_ppaddr[w] == entry[i].ppaddr);
+      q_ppaddr[w]  = gen_partial_paddr(q_req_paddr[w]);
+      wr_ppaddr[w] = q_ppaddr[w];   // golden：io_wdata_w = io_releaseViolationMdata_w（同哈希）
     end
+    release1_ppaddr = gen_partial_paddr(release_paddr);
   end
 
-  // ---- 违例匹配掩码（组合算，下一拍寄存）----
-  //   matchMaskReg(i) = allocated(i) & camHit(i) & robIdxMask(i) & released(i)
-  //   robIdxMask(i)   = isAfter(entry[i].robIdx, q.robIdx)：条目比当前 load 更年轻。
+  // 子模块读口输出（camHit：每口 × 72；releaseHit 基础：72）
+  logic [LD_WIDTH-1:0][RAR_SIZE-1:0] camHit;
+  logic [RAR_SIZE-1:0]               relCamHit;
+
+  LqPAddrModule paddrModule (
+    .clock                        (clock),
+    .reset                        (reset),
+    .io_wen_0                     (acceptedVec[0]),
+    .io_wen_1                     (acceptedVec[1]),
+    .io_wen_2                     (acceptedVec[2]),
+    .io_waddr_0                   (alloc_slot[0]),
+    .io_waddr_1                   (alloc_slot[1]),
+    .io_waddr_2                   (alloc_slot[2]),
+    .io_wdata_0                   (wr_ppaddr[0]),
+    .io_wdata_1                   (wr_ppaddr[1]),
+    .io_wdata_2                   (wr_ppaddr[2]),
+    // ---- release1Cycle CAM 口：mdata = release paddr 哈希 → relCamHit ----
+    .io_releaseMdata_2            (release1_ppaddr),
+    .io_releaseMmask_2_0           (relCamHit[0]),
+    .io_releaseMmask_2_1           (relCamHit[1]),
+    .io_releaseMmask_2_2           (relCamHit[2]),
+    .io_releaseMmask_2_3           (relCamHit[3]),
+    .io_releaseMmask_2_4           (relCamHit[4]),
+    .io_releaseMmask_2_5           (relCamHit[5]),
+    .io_releaseMmask_2_6           (relCamHit[6]),
+    .io_releaseMmask_2_7           (relCamHit[7]),
+    .io_releaseMmask_2_8           (relCamHit[8]),
+    .io_releaseMmask_2_9           (relCamHit[9]),
+    .io_releaseMmask_2_10          (relCamHit[10]),
+    .io_releaseMmask_2_11          (relCamHit[11]),
+    .io_releaseMmask_2_12          (relCamHit[12]),
+    .io_releaseMmask_2_13          (relCamHit[13]),
+    .io_releaseMmask_2_14          (relCamHit[14]),
+    .io_releaseMmask_2_15          (relCamHit[15]),
+    .io_releaseMmask_2_16          (relCamHit[16]),
+    .io_releaseMmask_2_17          (relCamHit[17]),
+    .io_releaseMmask_2_18          (relCamHit[18]),
+    .io_releaseMmask_2_19          (relCamHit[19]),
+    .io_releaseMmask_2_20          (relCamHit[20]),
+    .io_releaseMmask_2_21          (relCamHit[21]),
+    .io_releaseMmask_2_22          (relCamHit[22]),
+    .io_releaseMmask_2_23          (relCamHit[23]),
+    .io_releaseMmask_2_24          (relCamHit[24]),
+    .io_releaseMmask_2_25          (relCamHit[25]),
+    .io_releaseMmask_2_26          (relCamHit[26]),
+    .io_releaseMmask_2_27          (relCamHit[27]),
+    .io_releaseMmask_2_28          (relCamHit[28]),
+    .io_releaseMmask_2_29          (relCamHit[29]),
+    .io_releaseMmask_2_30          (relCamHit[30]),
+    .io_releaseMmask_2_31          (relCamHit[31]),
+    .io_releaseMmask_2_32          (relCamHit[32]),
+    .io_releaseMmask_2_33          (relCamHit[33]),
+    .io_releaseMmask_2_34          (relCamHit[34]),
+    .io_releaseMmask_2_35          (relCamHit[35]),
+    .io_releaseMmask_2_36          (relCamHit[36]),
+    .io_releaseMmask_2_37          (relCamHit[37]),
+    .io_releaseMmask_2_38          (relCamHit[38]),
+    .io_releaseMmask_2_39          (relCamHit[39]),
+    .io_releaseMmask_2_40          (relCamHit[40]),
+    .io_releaseMmask_2_41          (relCamHit[41]),
+    .io_releaseMmask_2_42          (relCamHit[42]),
+    .io_releaseMmask_2_43          (relCamHit[43]),
+    .io_releaseMmask_2_44          (relCamHit[44]),
+    .io_releaseMmask_2_45          (relCamHit[45]),
+    .io_releaseMmask_2_46          (relCamHit[46]),
+    .io_releaseMmask_2_47          (relCamHit[47]),
+    .io_releaseMmask_2_48          (relCamHit[48]),
+    .io_releaseMmask_2_49          (relCamHit[49]),
+    .io_releaseMmask_2_50          (relCamHit[50]),
+    .io_releaseMmask_2_51          (relCamHit[51]),
+    .io_releaseMmask_2_52          (relCamHit[52]),
+    .io_releaseMmask_2_53          (relCamHit[53]),
+    .io_releaseMmask_2_54          (relCamHit[54]),
+    .io_releaseMmask_2_55          (relCamHit[55]),
+    .io_releaseMmask_2_56          (relCamHit[56]),
+    .io_releaseMmask_2_57          (relCamHit[57]),
+    .io_releaseMmask_2_58          (relCamHit[58]),
+    .io_releaseMmask_2_59          (relCamHit[59]),
+    .io_releaseMmask_2_60          (relCamHit[60]),
+    .io_releaseMmask_2_61          (relCamHit[61]),
+    .io_releaseMmask_2_62          (relCamHit[62]),
+    .io_releaseMmask_2_63          (relCamHit[63]),
+    .io_releaseMmask_2_64          (relCamHit[64]),
+    .io_releaseMmask_2_65          (relCamHit[65]),
+    .io_releaseMmask_2_66          (relCamHit[66]),
+    .io_releaseMmask_2_67          (relCamHit[67]),
+    .io_releaseMmask_2_68          (relCamHit[68]),
+    .io_releaseMmask_2_69          (relCamHit[69]),
+    .io_releaseMmask_2_70          (relCamHit[70]),
+    .io_releaseMmask_2_71          (relCamHit[71]),
+    // ---- 3 个 load 查询口：mdata = 查询 paddr 哈希 → camHit[w] ----
+    .io_releaseViolationMdata_0   (q_ppaddr[0]),
+    .io_releaseViolationMdata_1   (q_ppaddr[1]),
+    .io_releaseViolationMdata_2   (q_ppaddr[2]),
+    .io_releaseViolationMmask_0_0  (camHit[0][0]),
+    .io_releaseViolationMmask_0_1  (camHit[0][1]),
+    .io_releaseViolationMmask_0_2  (camHit[0][2]),
+    .io_releaseViolationMmask_0_3  (camHit[0][3]),
+    .io_releaseViolationMmask_0_4  (camHit[0][4]),
+    .io_releaseViolationMmask_0_5  (camHit[0][5]),
+    .io_releaseViolationMmask_0_6  (camHit[0][6]),
+    .io_releaseViolationMmask_0_7  (camHit[0][7]),
+    .io_releaseViolationMmask_0_8  (camHit[0][8]),
+    .io_releaseViolationMmask_0_9  (camHit[0][9]),
+    .io_releaseViolationMmask_0_10 (camHit[0][10]),
+    .io_releaseViolationMmask_0_11 (camHit[0][11]),
+    .io_releaseViolationMmask_0_12 (camHit[0][12]),
+    .io_releaseViolationMmask_0_13 (camHit[0][13]),
+    .io_releaseViolationMmask_0_14 (camHit[0][14]),
+    .io_releaseViolationMmask_0_15 (camHit[0][15]),
+    .io_releaseViolationMmask_0_16 (camHit[0][16]),
+    .io_releaseViolationMmask_0_17 (camHit[0][17]),
+    .io_releaseViolationMmask_0_18 (camHit[0][18]),
+    .io_releaseViolationMmask_0_19 (camHit[0][19]),
+    .io_releaseViolationMmask_0_20 (camHit[0][20]),
+    .io_releaseViolationMmask_0_21 (camHit[0][21]),
+    .io_releaseViolationMmask_0_22 (camHit[0][22]),
+    .io_releaseViolationMmask_0_23 (camHit[0][23]),
+    .io_releaseViolationMmask_0_24 (camHit[0][24]),
+    .io_releaseViolationMmask_0_25 (camHit[0][25]),
+    .io_releaseViolationMmask_0_26 (camHit[0][26]),
+    .io_releaseViolationMmask_0_27 (camHit[0][27]),
+    .io_releaseViolationMmask_0_28 (camHit[0][28]),
+    .io_releaseViolationMmask_0_29 (camHit[0][29]),
+    .io_releaseViolationMmask_0_30 (camHit[0][30]),
+    .io_releaseViolationMmask_0_31 (camHit[0][31]),
+    .io_releaseViolationMmask_0_32 (camHit[0][32]),
+    .io_releaseViolationMmask_0_33 (camHit[0][33]),
+    .io_releaseViolationMmask_0_34 (camHit[0][34]),
+    .io_releaseViolationMmask_0_35 (camHit[0][35]),
+    .io_releaseViolationMmask_0_36 (camHit[0][36]),
+    .io_releaseViolationMmask_0_37 (camHit[0][37]),
+    .io_releaseViolationMmask_0_38 (camHit[0][38]),
+    .io_releaseViolationMmask_0_39 (camHit[0][39]),
+    .io_releaseViolationMmask_0_40 (camHit[0][40]),
+    .io_releaseViolationMmask_0_41 (camHit[0][41]),
+    .io_releaseViolationMmask_0_42 (camHit[0][42]),
+    .io_releaseViolationMmask_0_43 (camHit[0][43]),
+    .io_releaseViolationMmask_0_44 (camHit[0][44]),
+    .io_releaseViolationMmask_0_45 (camHit[0][45]),
+    .io_releaseViolationMmask_0_46 (camHit[0][46]),
+    .io_releaseViolationMmask_0_47 (camHit[0][47]),
+    .io_releaseViolationMmask_0_48 (camHit[0][48]),
+    .io_releaseViolationMmask_0_49 (camHit[0][49]),
+    .io_releaseViolationMmask_0_50 (camHit[0][50]),
+    .io_releaseViolationMmask_0_51 (camHit[0][51]),
+    .io_releaseViolationMmask_0_52 (camHit[0][52]),
+    .io_releaseViolationMmask_0_53 (camHit[0][53]),
+    .io_releaseViolationMmask_0_54 (camHit[0][54]),
+    .io_releaseViolationMmask_0_55 (camHit[0][55]),
+    .io_releaseViolationMmask_0_56 (camHit[0][56]),
+    .io_releaseViolationMmask_0_57 (camHit[0][57]),
+    .io_releaseViolationMmask_0_58 (camHit[0][58]),
+    .io_releaseViolationMmask_0_59 (camHit[0][59]),
+    .io_releaseViolationMmask_0_60 (camHit[0][60]),
+    .io_releaseViolationMmask_0_61 (camHit[0][61]),
+    .io_releaseViolationMmask_0_62 (camHit[0][62]),
+    .io_releaseViolationMmask_0_63 (camHit[0][63]),
+    .io_releaseViolationMmask_0_64 (camHit[0][64]),
+    .io_releaseViolationMmask_0_65 (camHit[0][65]),
+    .io_releaseViolationMmask_0_66 (camHit[0][66]),
+    .io_releaseViolationMmask_0_67 (camHit[0][67]),
+    .io_releaseViolationMmask_0_68 (camHit[0][68]),
+    .io_releaseViolationMmask_0_69 (camHit[0][69]),
+    .io_releaseViolationMmask_0_70 (camHit[0][70]),
+    .io_releaseViolationMmask_0_71 (camHit[0][71]),
+    .io_releaseViolationMmask_1_0  (camHit[1][0]),
+    .io_releaseViolationMmask_1_1  (camHit[1][1]),
+    .io_releaseViolationMmask_1_2  (camHit[1][2]),
+    .io_releaseViolationMmask_1_3  (camHit[1][3]),
+    .io_releaseViolationMmask_1_4  (camHit[1][4]),
+    .io_releaseViolationMmask_1_5  (camHit[1][5]),
+    .io_releaseViolationMmask_1_6  (camHit[1][6]),
+    .io_releaseViolationMmask_1_7  (camHit[1][7]),
+    .io_releaseViolationMmask_1_8  (camHit[1][8]),
+    .io_releaseViolationMmask_1_9  (camHit[1][9]),
+    .io_releaseViolationMmask_1_10 (camHit[1][10]),
+    .io_releaseViolationMmask_1_11 (camHit[1][11]),
+    .io_releaseViolationMmask_1_12 (camHit[1][12]),
+    .io_releaseViolationMmask_1_13 (camHit[1][13]),
+    .io_releaseViolationMmask_1_14 (camHit[1][14]),
+    .io_releaseViolationMmask_1_15 (camHit[1][15]),
+    .io_releaseViolationMmask_1_16 (camHit[1][16]),
+    .io_releaseViolationMmask_1_17 (camHit[1][17]),
+    .io_releaseViolationMmask_1_18 (camHit[1][18]),
+    .io_releaseViolationMmask_1_19 (camHit[1][19]),
+    .io_releaseViolationMmask_1_20 (camHit[1][20]),
+    .io_releaseViolationMmask_1_21 (camHit[1][21]),
+    .io_releaseViolationMmask_1_22 (camHit[1][22]),
+    .io_releaseViolationMmask_1_23 (camHit[1][23]),
+    .io_releaseViolationMmask_1_24 (camHit[1][24]),
+    .io_releaseViolationMmask_1_25 (camHit[1][25]),
+    .io_releaseViolationMmask_1_26 (camHit[1][26]),
+    .io_releaseViolationMmask_1_27 (camHit[1][27]),
+    .io_releaseViolationMmask_1_28 (camHit[1][28]),
+    .io_releaseViolationMmask_1_29 (camHit[1][29]),
+    .io_releaseViolationMmask_1_30 (camHit[1][30]),
+    .io_releaseViolationMmask_1_31 (camHit[1][31]),
+    .io_releaseViolationMmask_1_32 (camHit[1][32]),
+    .io_releaseViolationMmask_1_33 (camHit[1][33]),
+    .io_releaseViolationMmask_1_34 (camHit[1][34]),
+    .io_releaseViolationMmask_1_35 (camHit[1][35]),
+    .io_releaseViolationMmask_1_36 (camHit[1][36]),
+    .io_releaseViolationMmask_1_37 (camHit[1][37]),
+    .io_releaseViolationMmask_1_38 (camHit[1][38]),
+    .io_releaseViolationMmask_1_39 (camHit[1][39]),
+    .io_releaseViolationMmask_1_40 (camHit[1][40]),
+    .io_releaseViolationMmask_1_41 (camHit[1][41]),
+    .io_releaseViolationMmask_1_42 (camHit[1][42]),
+    .io_releaseViolationMmask_1_43 (camHit[1][43]),
+    .io_releaseViolationMmask_1_44 (camHit[1][44]),
+    .io_releaseViolationMmask_1_45 (camHit[1][45]),
+    .io_releaseViolationMmask_1_46 (camHit[1][46]),
+    .io_releaseViolationMmask_1_47 (camHit[1][47]),
+    .io_releaseViolationMmask_1_48 (camHit[1][48]),
+    .io_releaseViolationMmask_1_49 (camHit[1][49]),
+    .io_releaseViolationMmask_1_50 (camHit[1][50]),
+    .io_releaseViolationMmask_1_51 (camHit[1][51]),
+    .io_releaseViolationMmask_1_52 (camHit[1][52]),
+    .io_releaseViolationMmask_1_53 (camHit[1][53]),
+    .io_releaseViolationMmask_1_54 (camHit[1][54]),
+    .io_releaseViolationMmask_1_55 (camHit[1][55]),
+    .io_releaseViolationMmask_1_56 (camHit[1][56]),
+    .io_releaseViolationMmask_1_57 (camHit[1][57]),
+    .io_releaseViolationMmask_1_58 (camHit[1][58]),
+    .io_releaseViolationMmask_1_59 (camHit[1][59]),
+    .io_releaseViolationMmask_1_60 (camHit[1][60]),
+    .io_releaseViolationMmask_1_61 (camHit[1][61]),
+    .io_releaseViolationMmask_1_62 (camHit[1][62]),
+    .io_releaseViolationMmask_1_63 (camHit[1][63]),
+    .io_releaseViolationMmask_1_64 (camHit[1][64]),
+    .io_releaseViolationMmask_1_65 (camHit[1][65]),
+    .io_releaseViolationMmask_1_66 (camHit[1][66]),
+    .io_releaseViolationMmask_1_67 (camHit[1][67]),
+    .io_releaseViolationMmask_1_68 (camHit[1][68]),
+    .io_releaseViolationMmask_1_69 (camHit[1][69]),
+    .io_releaseViolationMmask_1_70 (camHit[1][70]),
+    .io_releaseViolationMmask_1_71 (camHit[1][71]),
+    .io_releaseViolationMmask_2_0  (camHit[2][0]),
+    .io_releaseViolationMmask_2_1  (camHit[2][1]),
+    .io_releaseViolationMmask_2_2  (camHit[2][2]),
+    .io_releaseViolationMmask_2_3  (camHit[2][3]),
+    .io_releaseViolationMmask_2_4  (camHit[2][4]),
+    .io_releaseViolationMmask_2_5  (camHit[2][5]),
+    .io_releaseViolationMmask_2_6  (camHit[2][6]),
+    .io_releaseViolationMmask_2_7  (camHit[2][7]),
+    .io_releaseViolationMmask_2_8  (camHit[2][8]),
+    .io_releaseViolationMmask_2_9  (camHit[2][9]),
+    .io_releaseViolationMmask_2_10 (camHit[2][10]),
+    .io_releaseViolationMmask_2_11 (camHit[2][11]),
+    .io_releaseViolationMmask_2_12 (camHit[2][12]),
+    .io_releaseViolationMmask_2_13 (camHit[2][13]),
+    .io_releaseViolationMmask_2_14 (camHit[2][14]),
+    .io_releaseViolationMmask_2_15 (camHit[2][15]),
+    .io_releaseViolationMmask_2_16 (camHit[2][16]),
+    .io_releaseViolationMmask_2_17 (camHit[2][17]),
+    .io_releaseViolationMmask_2_18 (camHit[2][18]),
+    .io_releaseViolationMmask_2_19 (camHit[2][19]),
+    .io_releaseViolationMmask_2_20 (camHit[2][20]),
+    .io_releaseViolationMmask_2_21 (camHit[2][21]),
+    .io_releaseViolationMmask_2_22 (camHit[2][22]),
+    .io_releaseViolationMmask_2_23 (camHit[2][23]),
+    .io_releaseViolationMmask_2_24 (camHit[2][24]),
+    .io_releaseViolationMmask_2_25 (camHit[2][25]),
+    .io_releaseViolationMmask_2_26 (camHit[2][26]),
+    .io_releaseViolationMmask_2_27 (camHit[2][27]),
+    .io_releaseViolationMmask_2_28 (camHit[2][28]),
+    .io_releaseViolationMmask_2_29 (camHit[2][29]),
+    .io_releaseViolationMmask_2_30 (camHit[2][30]),
+    .io_releaseViolationMmask_2_31 (camHit[2][31]),
+    .io_releaseViolationMmask_2_32 (camHit[2][32]),
+    .io_releaseViolationMmask_2_33 (camHit[2][33]),
+    .io_releaseViolationMmask_2_34 (camHit[2][34]),
+    .io_releaseViolationMmask_2_35 (camHit[2][35]),
+    .io_releaseViolationMmask_2_36 (camHit[2][36]),
+    .io_releaseViolationMmask_2_37 (camHit[2][37]),
+    .io_releaseViolationMmask_2_38 (camHit[2][38]),
+    .io_releaseViolationMmask_2_39 (camHit[2][39]),
+    .io_releaseViolationMmask_2_40 (camHit[2][40]),
+    .io_releaseViolationMmask_2_41 (camHit[2][41]),
+    .io_releaseViolationMmask_2_42 (camHit[2][42]),
+    .io_releaseViolationMmask_2_43 (camHit[2][43]),
+    .io_releaseViolationMmask_2_44 (camHit[2][44]),
+    .io_releaseViolationMmask_2_45 (camHit[2][45]),
+    .io_releaseViolationMmask_2_46 (camHit[2][46]),
+    .io_releaseViolationMmask_2_47 (camHit[2][47]),
+    .io_releaseViolationMmask_2_48 (camHit[2][48]),
+    .io_releaseViolationMmask_2_49 (camHit[2][49]),
+    .io_releaseViolationMmask_2_50 (camHit[2][50]),
+    .io_releaseViolationMmask_2_51 (camHit[2][51]),
+    .io_releaseViolationMmask_2_52 (camHit[2][52]),
+    .io_releaseViolationMmask_2_53 (camHit[2][53]),
+    .io_releaseViolationMmask_2_54 (camHit[2][54]),
+    .io_releaseViolationMmask_2_55 (camHit[2][55]),
+    .io_releaseViolationMmask_2_56 (camHit[2][56]),
+    .io_releaseViolationMmask_2_57 (camHit[2][57]),
+    .io_releaseViolationMmask_2_58 (camHit[2][58]),
+    .io_releaseViolationMmask_2_59 (camHit[2][59]),
+    .io_releaseViolationMmask_2_60 (camHit[2][60]),
+    .io_releaseViolationMmask_2_61 (camHit[2][61]),
+    .io_releaseViolationMmask_2_62 (camHit[2][62]),
+    .io_releaseViolationMmask_2_63 (camHit[2][63]),
+    .io_releaseViolationMmask_2_64 (camHit[2][64]),
+    .io_releaseViolationMmask_2_65 (camHit[2][65]),
+    .io_releaseViolationMmask_2_66 (camHit[2][66]),
+    .io_releaseViolationMmask_2_67 (camHit[2][67]),
+    .io_releaseViolationMmask_2_68 (camHit[2][68]),
+    .io_releaseViolationMmask_2_69 (camHit[2][69]),
+    .io_releaseViolationMmask_2_70 (camHit[2][70]),
+    .io_releaseViolationMmask_2_71 (camHit[2][71])
+  );
+
+  // ===========================================================================
+  //  5. 违例匹配掩码（组合算，下一拍寄存）
+  //     matchMaskReg(i) = allocated(i) & camHit(i) & robIdxMask(i) & released(i)
+  // ===========================================================================
   logic [LD_WIDTH-1:0][RAR_SIZE-1:0] matchMaskReg;
   logic [LD_WIDTH-1:0][RAR_SIZE-1:0] matchMask;       // 打 1 拍
   always_comb begin
     for (int w = 0; w < LD_WIDTH; w++)
       for (int i = 0; i < RAR_SIZE; i++)
-        matchMaskReg[w][i] = entry[i].allocated
+        matchMaskReg[w][i] = entry_allocated[i]
                            & camHit[w][i]
-                           & ptr_is_after_rob(entry[i].robIdx, q_req_robIdx[w])
-                           & entry[i].released;
+                           & ptr_is_after_rob(entry_robIdx[i], q_req_robIdx[w])
+                           & entry_released[i];
   end
 
+  // matchMask 用**异步 reset**（镜像 golden matchMask_r 的 posedge clock or posedge reset）
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) matchMask <= '0;
+    else       matchMask <= matchMaskReg;      // GatedValidRegNext
+  end
+  // q_resp_valid **无 reset**（镜像 golden io_query_*_resp_valid_REG：posedge clock 无 if(reset)）
   always_ff @(posedge clock) begin
-    if (reset) begin
-      matchMask    <= '0;
-      q_resp_valid <= '0;
-    end else begin
-      matchMask    <= matchMaskReg;            // GatedValidRegNext
-      q_resp_valid <= q_req_valid;             // RegNext(req.valid)
-    end
+    q_resp_valid <= q_req_valid;               // RegNext(req.valid)，无 reset
   end
 
   for (genvar w = 0; w < LD_WIDTH; w++)
     assign q_resp_rep_frm_fetch[w] = |matchMask[w];   // ParallelORR
 
   // ===========================================================================
-  //  4. release 失效更新口
-  //     release1Cycle 那拍用“整 cacheline 物理地址”比较已有条目（占用且匹配），
-  //     延 1 拍把其 released 置 1。注意：用最后一个 CAM 口的 release 比较口，且这里
-  //     比的是 **完整 [47:6] 物理地址**（cacheline 对齐），不是 16-bit 哈希。
-  //     （golden 里这是 paddrModule.releaseMmask，但其 mdata 喂的就是 release 的哈希；
-  //      为与 golden 输出逐位等价，这里复用哈希相等 + 真实条目占用判定。）
+  //  6. release 失效更新口 + 出队 / 回收 freeMaskVec
   // ===========================================================================
-  logic [RAR_SIZE-1:0] releaseHit;       // release1Cycle 命中（哈希相等 & 占用 & valid）
-  logic [PP_BITS-1:0]  release1_ppaddr;
+  //  release1Cycle 那拍：占用且哈希命中（relCamHit）的条目，延 1 拍把 released 置 1。
+  logic [RAR_SIZE-1:0] releaseHit;
   always_comb begin
-    release1_ppaddr = gen_partial_paddr(release_paddr);
     for (int i = 0; i < RAR_SIZE; i++)
-      releaseHit[i] = (release1_ppaddr == entry[i].ppaddr) & entry[i].allocated & release_valid;
+      releaseHit[i] = relCamHit[i] & entry_allocated[i] & release_valid;
   end
   logic [RAR_SIZE-1:0] releaseHit_d;     // 延 1 拍写回 released
+  //  golden REG/REG_N **无 reset**（posedge clock 无 if(reset)）——照搬无 reset。
   always_ff @(posedge clock) begin
-    if (reset) releaseHit_d <= '0;
-    else       releaseHit_d <= releaseHit;
+    releaseHit_d <= releaseHit;
   end
 
-  // ===========================================================================
-  //  5. 出队 / 回收 freeMask
-  //     条目可释放：lqIdx 已“不晚于 ldWbPtr”（已写回出队）或 被 redirect 冲刷。
-  //     另：revoke——某 load 在 query 后一拍要 replay，撤销其上一拍占的 entry。
-  // ===========================================================================
-  logic [RAR_SIZE-1:0] freeMaskVec;       // 本拍要回收的 entry（喂 freelist.free）
-
   // revoke：上一拍的 acceptedVec / alloc_slot 打拍保留
+  //   用**异步 reset**（镜像 golden lastCanAccept_*/lastAllocIndex_* 的 posedge clock or posedge reset）
   logic [LD_WIDTH-1:0]            lastCanAccept;
   logic [LD_WIDTH-1:0][IDX_W-1:0] lastAllocIndex;
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       lastCanAccept  <= '0;
       lastAllocIndex <= '0;
@@ -219,26 +565,28 @@ module xs_LoadQueueRAR_core
     end
   end
 
+  // 出队释放：lqIdx 已“不晚于 ldWbPtr”（已写回出队）或 被 redirect 冲刷；加 revoke。
+  //   revoke 用 **逐条目比较** `lastAllocIndex[w]==i`（镜像 golden per-index 结构），
+  //   避免用 7-bit 动态下标写 72-深数组（消 FMR_ELAB-147）。命中且该槽仍占用 → 置回收。
   always_comb begin
     for (int i = 0; i < RAR_SIZE; i++) begin
-      logic deqNotBlock, needFlush;
-      // deqNotBlock = !isBefore(ldWbPtr, entry[i].lqIdx)：ldWbPtr 已追上/越过该条目 lqIdx
-      deqNotBlock = ~ptr_is_before_lq(ldWbPtr, entry[i].lqIdx);
-      needFlush   = rob_need_flush(redirect_valid, redirect_level, entry[i].robIdx, redirect_robIdx);
-      freeMaskVec[i] = entry[i].allocated & (deqNotBlock | needFlush);
+      logic deqNotBlock, needFlush, revokeHit;
+      deqNotBlock = ~ptr_is_before_lq(ldWbPtr, entry_lqIdx[i]);
+      needFlush   = rob_need_flush(redirect_valid, redirect_level, entry_robIdx[i], redirect_robIdx);
+      revokeHit   = 1'b0;
+      for (int w = 0; w < LD_WIDTH; w++)
+        if (q_revoke[w] & lastCanAccept[w] & (lastAllocIndex[w] == IDX_W'(i)))
+          revokeHit = 1'b1;
+      freeMaskVec[i] = entry_allocated[i] & (deqNotBlock | needFlush | revokeHit);
     end
-    // revoke：撤销上一拍刚占的 entry（若仍占用）
-    for (int w = 0; w < LD_WIDTH; w++)
-      if (q_revoke[w] & lastCanAccept[w] & entry[lastAllocIndex[w]].allocated)
-        freeMaskVec[lastAllocIndex[w]] = 1'b1;
   end
 
   // ===========================================================================
-  //  6. 条目寄存器更新（逐 entry，genvar 铺开）
-  //     每个 entry 的 allocated/uop/ppaddr/released 都由 3 个 load 口可能写入
+  //  7. 条目控制寄存器更新（逐 entry，genvar 铺开）
+  //     每个 entry 的 allocated/robIdx/lqIdx/released 由 3 个 load 口可能写入
   //     （freelist 保证三口分到的 index 互不相同），以及 release 失效、出队释放。
+  //     ppaddr 由 paddrModule 存储（按同一 acceptedVec/alloc_slot 门控），不在此。
   // ===========================================================================
-  // 预算每个 entry 由哪个口写入（acceptedVec[w] 且 alloc_slot[w]==i）
   logic [RAR_SIZE-1:0][LD_WIDTH-1:0] entryWrBy;  // entryWrBy[i][w]：口 w 写 entry i
   always_comb begin
     for (int i = 0; i < RAR_SIZE; i++)
@@ -247,8 +595,6 @@ module xs_LoadQueueRAR_core
   end
 
   for (genvar i = 0; i < RAR_SIZE; i++) begin : g_entry
-    // 选出写本 entry 的口（优先级：口2 > 口1 > 口0，与 Chisel last-connect 一致；
-    // freelist 保证不会有两口同时写同一 entry，故优先级只是形式上的 mux）。
     logic                  wr_en;
     rob_ptr_t              wr_robIdx;
     lq_ptr_t               wr_lqIdx;
@@ -272,17 +618,16 @@ module xs_LoadQueueRAR_core
       end
     end
 
-    // 入队 released 初值：按 released_cause_e 分类（见 pkg）——NC 恒失效；否则 data 有效
-    // 且本条 cacheline 已被 release1/2Cycle 命中（用**整 cacheline 地址 [47:6]** 比较）也立刻失效。
+    // 入队 released 初值：NC 恒失效；否则 data 有效且本 cacheline 已被 release1/2Cycle 命中
+    // （用**整 cacheline 地址 [47:6]** 比较）也立刻失效。优先级：NC > cycle1 > cycle2 > none。
     released_cause_e enq_rel_cause;
     logic            enq_released;
     always_comb begin
       logic hit2, hit1;
       hit2 = release2_valid & (wr_paddr[PADDR_BITS-1:DCACHE_LINE_OFF]
-                               == release2_paddr[PADDR_BITS-1:DCACHE_LINE_OFF]);
+                               == release2_paddr);   // release2_paddr 已只含 [47:6]
       hit1 = release_valid  & (wr_paddr[PADDR_BITS-1:DCACHE_LINE_OFF]
                                == release_paddr[PADDR_BITS-1:DCACHE_LINE_OFF]);
-      // 优先级：NC > cycle1 > cycle2 > none
       if      (wr_is_nc)                  enq_rel_cause = REL_NC;
       else if (wr_data_valid & hit1)      enq_rel_cause = REL_HIT_CYCLE1;
       else if (wr_data_valid & hit2)      enq_rel_cause = REL_HIT_CYCLE2;
@@ -290,142 +635,37 @@ module xs_LoadQueueRAR_core
       enq_released = (enq_rel_cause != REL_NONE);
     end
 
-    always_ff @(posedge clock) begin
+    // allocated / released 用**异步 reset**（镜像 golden allocated_N/released_N 的
+    // posedge clock or posedge reset）。uop(robIdx/lqIdx) golden 无 reset(enable-only,
+    // posedge clock)，单独一个同步块。async/sync 混一块非法，故拆两块。
+    always_ff @(posedge clock or posedge reset) begin
       if (reset) begin
-        entry[i].allocated <= 1'b0;
-        entry[i].released  <= 1'b0;
+        entry_allocated[i] <= 1'b0;
+        entry_released[i]  <= 1'b0;
       end else begin
-        // allocated：入队置 1；出队/冲刷/revoke 命中则清 0。
-        if (freeMaskVec[i])      entry[i].allocated <= 1'b0;
-        else if (wr_en)          entry[i].allocated <= 1'b1;
-        // released：入队写 enq_released；release1Cycle 命中延 1 拍后置 1（只置不清，
-        //           与 golden 的 “REG | (enq ? T : released)” 结构一致——出队不清 released，
-        //           靠 allocated=0 使其不再参与匹配）。
-        if (wr_en) entry[i].released <= enq_released | releaseHit_d[i];
-        else       entry[i].released <= entry[i].released | releaseHit_d[i];
+        if (freeMaskVec[i])      entry_allocated[i] <= 1'b0;
+        else if (wr_en)          entry_allocated[i] <= 1'b1;
+        if (wr_en) entry_released[i] <= enq_released | releaseHit_d[i];
+        else       entry_released[i] <= entry_released[i] | releaseHit_d[i];
       end
-      // uop / ppaddr：仅入队那拍写（无需复位，靠 allocated 门控读出）
+    end
+    // uop：仅入队那拍写（无 reset，靠 allocated 门控读出）——镜像 golden uop_* 同步无 reset
+    always_ff @(posedge clock) begin
       if (wr_en) begin
-        entry[i].robIdx <= wr_robIdx;
-        entry[i].lqIdx  <= wr_lqIdx;
-        entry[i].ppaddr <= gen_partial_paddr(wr_paddr);
+        entry_robIdx[i] <= wr_robIdx;
+        entry_lqIdx[i]  <= wr_lqIdx;
       end
     end
   end
 
   // ===========================================================================
-  //  7. freelist 指针 / 空闲计数更新（内联 FreeList）
+  //  8. 全局输出（validCount / lqFull 由 freelist 子模块给出）
   // ===========================================================================
-  // ---- 分配侧：headPtr += 本拍实际分配数 ----
-  logic [IDX_W-1:0] numAllocate;
-  logic             doAllocate;
-  always_comb begin
-    numAllocate = '0;
-    for (int w = 0; w < LD_WIDTH; w++) numAllocate += {6'b0, acceptedVec[w]};
-    doAllocate  = |acceptedVec;
-  end
-
-  // ---- 回收侧（精确复刻 FreeList 的两拍流水）----------------------------------
-  //   freeWidth=4：entry 编号按 mod 4 分 4 个 rem-bank，每 bank PriorityEncoder 选一个回收。
-  //   关键时序（极易写错）：
-  //     · freeSelMask 来自 **上一拍选中并寄存的** freeReq_d/freeSelOH_d（即本拍正在写回
-  //       freeList 的那批槽），而非本拍组合选择结果——否则会形成组合环且与 golden 不符。
-  //     · 选择候选池 = freeMask & ~freeSelMask，**只看寄存器 freeMask**，不含本拍 io.free；
-  //       本拍新来的 io.free 仅进入 freeMask 寄存器，下一拍才参与选择。
-  //     · freeMask_next = (io.free | freeMask) & ~freeSelMask。
-  logic [RAR_SIZE-1:0] freeMask;        // 待回收累积掩码（寄存器）
-  logic [RAR_SIZE-1:0] freeSelMask;     // 本拍正在写回 freeList 的槽（来自寄存的上拍选择）
-  logic [FREE_WIDTH-1:0]               freeReq_c;     // 本拍组合：各 rem-bank 有无可回收
-  logic [FREE_WIDTH-1:0][RAR_SIZE-1:0] freeSelOH_c;   // 本拍组合：各 rem-bank 选中 one-hot
-  logic [FREE_WIDTH-1:0]               freeReq_d;     // 上拍选择寄存（本拍写回）
-  logic [FREE_WIDTH-1:0][RAR_SIZE-1:0] freeSelOH_d;
-
-  // freeSelMask = OR over banks of (freeReq_d ? freeSelOH_d : 0)
-  always_comb begin
-    freeSelMask = '0;
-    for (int r = 0; r < FREE_WIDTH; r++)
-      if (freeReq_d[r]) freeSelMask |= freeSelOH_d[r];
-  end
-
-  // 本拍组合选择：候选 = freeMask & ~freeSelMask（仅寄存器，不含本拍 io.free）
-  always_comb begin
-    logic [RAR_SIZE-1:0] avail;
-    avail = freeMask & ~freeSelMask;
-    for (int r = 0; r < FREE_WIDTH; r++) begin
-      logic [RAR_SIZE/FREE_WIDTH-1:0] remBits;
-      logic found;
-      freeSelOH_c[r] = '0;
-      remBits = '0;
-      for (int j = 0; j < RAR_SIZE/FREE_WIDTH; j++)
-        remBits[j] = avail[j*FREE_WIDTH + r];
-      // PriorityEncoderOH：取最低有效位
-      found = 1'b0;
-      for (int j = 0; j < RAR_SIZE/FREE_WIDTH; j++)
-        if (!found && remBits[j]) begin
-          freeSelOH_c[r][j*FREE_WIDTH + r] = 1'b1;
-          found = 1'b1;
-        end
-      freeReq_c[r] = |remBits;
-    end
-  end
-
-  // freeMask 累积寄存 + 选择结果打 1 拍（GatedRegNext）
-  always_ff @(posedge clock) begin
-    if (reset) begin
-      freeMask    <= '0;
-      freeReq_d   <= '0;
-      freeSelOH_d <= '0;
-    end else begin
-      freeMask    <= (freeMaskVec | freeMask) & ~freeSelMask;
-      freeReq_d   <= freeReq_c;
-      freeSelOH_d <= freeSelOH_c;
-    end
-  end
-
-  // tailPtr += 本拍回收数；回收槽写入 freeList[tailPtr+offset]
-  logic [IDX_W-1:0] numFree;
-  logic             doFree;
-  always_comb begin
-    numFree = '0;
-    for (int r = 0; r < FREE_WIDTH; r++) numFree += {6'b0, freeReq_d[r]};
-    doFree  = |freeReq_d;
-  end
-
-  free_ptr_t headPtrNext, tailPtrNext;
-  always_comb begin
-    headPtrNext = ptr_add(headPtr, numAllocate);
-    tailPtrNext = ptr_add(tailPtr, numFree);
-  end
-
-  always_ff @(posedge clock) begin
-    if (reset) begin
-      // 初值：headPtr=(0,0)，tailPtr=(1,0)，freeList={0,1,...,71}，freeSlotCnt=72
-      headPtr     <= '{flag:1'b0, value:'0};
-      tailPtr     <= '{flag:1'b1, value:'0};
-      freeSlotCnt <= CNT_W'(RAR_SIZE);
-      for (int n = 0; n < RAR_SIZE; n++) freeList[n] <= IDX_W'(n);
-    end else begin
-      if (doAllocate) headPtr <= headPtrNext;
-      if (doFree)     tailPtr <= tailPtrNext;
-      // 回收写 freeList：rem-bank r 选中的编号写到 tailPtr+offset(r)
-      for (int r = 0; r < FREE_WIDTH; r++) begin
-        logic [IDX_W-1:0] foff;
-        free_ptr_t        enqp;
-        foff = '0;
-        for (int k = 0; k < FREE_WIDTH; k++) if (k < r) foff += {6'b0, freeReq_d[k]};
-        enqp = ptr_add(tailPtr, foff);
-        if (freeReq_d[r]) freeList[enqp.value] <= oh_to_idx(freeSelOH_d[r]);
-      end
-      // 空闲计数 = distance(tailPtrNext, headPtrNext)
-      freeSlotCnt <= free_distance(tailPtrNext, headPtrNext);
-    end
-  end
-
-  assign lqFull     = (freeSlotCnt == '0);
-  assign validCount = CNT_W'(RAR_SIZE) - freeSlotCnt[CNT_W-1:0];
+  assign lqFull     = fl_empty;
+  assign validCount = fl_validCount;
 
   // ===========================================================================
-  //  8. perf events（2 路：本拍入队数 / 本拍违例数；各打 2 拍对齐）
+  //  9. perf events（2 路：本拍入队数 / 本拍违例数；各打 2 拍对齐）
   // ===========================================================================
   logic [1:0] enq_cnt, viol_cnt;
   always_comb begin
@@ -437,51 +677,18 @@ module xs_LoadQueueRAR_core
     end
   end
   logic [1:0] perf_enq_d, perf_viol_d;
+  //  golden io_perf_*_value_REG/_REG_1 **无 reset**（posedge clock 无 if(reset)）——照搬无 reset。
   always_ff @(posedge clock) begin
-    if (reset) begin
-      perf_enq_d <= '0; perf_viol_d <= '0; perf_enq <= '0; perf_ldld_violation <= '0;
-    end else begin
-      perf_enq_d <= enq_cnt;    perf_enq <= perf_enq_d;
-      perf_viol_d <= viol_cnt;  perf_ldld_violation <= perf_viol_d;
-    end
+    perf_enq_d <= enq_cnt;    perf_enq <= perf_enq_d;             // 两级，无 reset
+    perf_viol_d <= viol_cnt;  perf_ldld_violation <= perf_viol_d;  // 两级，无 reset
   end
 
   // ===========================================================================
   //  局部纯函数 / 辅助（放近使用处）
   // ===========================================================================
-  // 注：freelist 的 io.free（当拍回收掩码）即上文 freeMaskVec，直接引用，不另设函数。
-
   // lqIdx isAfter：a 比 b 更年轻（needEnqueue 用）
   function automatic logic lqAfter(input lq_ptr_t a, input lq_ptr_t b);
     return a.flag ^ b.flag ^ (a.value > b.value);
-  endfunction
-
-  // freelist 指针 +offset（环形）：value 跨 size 时翻 flag
-  function automatic free_ptr_t ptr_add(input free_ptr_t p, input logic [IDX_W-1:0] off);
-    free_ptr_t r;
-    logic [IDX_W:0] sum;
-    sum = {1'b0, p.value} + {1'b0, off};
-    if (sum >= RAR_SIZE) begin
-      r.value = sum[IDX_W-1:0] - IDX_W'(RAR_SIZE);
-      r.flag  = ~p.flag;
-    end else begin
-      r.value = sum[IDX_W-1:0];
-      r.flag  = p.flag;
-    end
-    return r;
-  endfunction
-
-  // freelist isBefore：a 比 b 靠前（还有空闲可分）
-  function automatic logic free_is_before(input free_ptr_t a, input free_ptr_t b);
-    return a.flag ^ b.flag ^ (a.value < b.value);
-  endfunction
-
-  // one-hot → index
-  function automatic logic [IDX_W-1:0] oh_to_idx(input logic [RAR_SIZE-1:0] oh);
-    logic [IDX_W-1:0] r;
-    r = '0;
-    for (int i = 0; i < RAR_SIZE; i++) if (oh[i]) r |= IDX_W'(i);
-    return r;
   endfunction
 
 endmodule

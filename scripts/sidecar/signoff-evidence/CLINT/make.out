@@ -1,0 +1,16 @@
+=== FM: CLINT (mode=signoff-strict) ===
+FM_TOP=CLINT \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/CLINT.sv " \
+FM_IMPL_SRCS="/tmp/tmp.mfRc4kZ6Fn/wt/rtl/uncore/clint_pkg.sv /tmp/tmp.mfRc4kZ6Fn/wt/rtl/uncore/CLINT.sv /tmp/tmp.mfRc4kZ6Fn/wt/rtl/uncore/CLINT_wrapper.sv" \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/CLINT -file /tmp/tmp.mfRc4kZ6Fn/wt/scripts/fm_eq.tcl \
+    > fm_work/CLINT/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.mfRc4kZ6Fn/wt/scripts/fm_verdict.py fm_work/CLINT/fm.log --rc $rc --mode signoff-strict --top CLINT --allowlist 0
+SUCCEEDED	{"passing": 284, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "CLINT", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

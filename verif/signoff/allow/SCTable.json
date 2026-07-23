@@ -1,0 +1,12 @@
+{
+    "unresolved_blackbox": [
+        {
+            "id": "table_0_array_array_array_5_ext",
+            "ref_path": "r:/WORK/SCTable/table_0/array/array/array_5_ext",
+            "impl_path": "i:/WORK/SCTable/u_core/table_0/array/array/array_5_ext"
+        }
+    ],
+    "interface_only": [],
+    "empty_blackbox": [],
+    "unmatched": []
+}

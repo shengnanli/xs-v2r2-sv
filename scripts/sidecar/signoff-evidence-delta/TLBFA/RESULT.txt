@@ -1,0 +1,4 @@
+SIGNOFF_RESULT TLBFA: measured=PARTIAL required=SUCCEEDED gate=GAP (proof=signoff-strict fm_shell_rc=0 validator_rc=1)
+run_id: SGN-TLBFA-1784810060
+impl_commit: 12694e6abe237fdaaf0de5c2d844e591fd042541
+manifest_sha256: 84829339d6cf4b4d328a2176f5ed90f8a3b50d7669f1632a598b324caa3d8453

@@ -1,0 +1,79 @@
+**************************************************
+Report         : black_boxes
+                 -unresolved 
+
+Reference      : r:/WORK/IMSIC
+Implementation : i:/WORK/IMSIC
+Version        : V-2023.12-SP3
+Date           : Mon Jul 20 01:43:52 2026
+**************************************************
+Information: Reporting black boxes for current reference and implementation designs. (FM-184)
+
+ ___________________________________________________
+|                                                   |
+|  Legend:                                          |
+|           Black Box Attributes                    |
+|              s = Set with set_black_box command   |
+|              i = Module read with -interface_only |
+|              u = Unresolved design module         |
+|              e = Empty design module              |
+|              * = Unlinked design module           |
+|             ut = Unread tech cells pins           |
+|              L = Linked to non-black box design   |
+|             cp = Cutpoint blackbox                |
+|             ir = Internal rounded blackbox        |
+|              f = Formality Power Model            |
+|              m = Technology Macro cell (.db)      |
+|___________________________________________________|
+
+
+##################################################################
+####    TECH LIBRARY - i:/FM_BBOX
+##################################################################
+Type  Design Name
+----  ----------
+u      IMSICGateWay
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/IMSIC/u_core/imsicGateWay
+
+u      IntFile
+
+       Instances : 7 of 7
+       ------------------------
+       i:/WORK/IMSIC/u_core/g_intfile[6].u_intFile
+       i:/WORK/IMSIC/u_core/g_intfile[5].u_intFile
+       i:/WORK/IMSIC/u_core/g_intfile[4].u_intFile
+       i:/WORK/IMSIC/u_core/g_intfile[3].u_intFile
+       i:/WORK/IMSIC/u_core/g_intfile[2].u_intFile
+       i:/WORK/IMSIC/u_core/g_intfile[1].u_intFile
+       i:/WORK/IMSIC/u_core/g_intfile[0].u_intFile
+
+
+
+##################################################################
+####    TECH LIBRARY - r:/FM_BBOX
+##################################################################
+Type  Design Name
+----  ----------
+u      IMSICGateWay
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/IMSIC/imsicGateWay
+
+u      IntFile
+
+       Instances : 7 of 7
+       ------------------------
+       r:/WORK/IMSIC/intFile
+       r:/WORK/IMSIC/intFile_1
+       r:/WORK/IMSIC/intFile_2
+       r:/WORK/IMSIC/intFile_3
+       r:/WORK/IMSIC/intFile_4
+       r:/WORK/IMSIC/intFile_5
+       r:/WORK/IMSIC/intFile_6
+
+
+1

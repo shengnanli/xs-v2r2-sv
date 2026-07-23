@@ -1,0 +1,17 @@
+=== FM: BankedDataArray (mode=signoff-strict) ===
+FM_TOP=BankedDataArray \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/BankedDataArray.sv " \
+FM_IMPL_SRCS="/tmp/tmp.QKfTi4lktK/wt/rtl/memblock/bankeddata_pkg.sv /tmp/tmp.QKfTi4lktK/wt/rtl/memblock/BankedDataArray.sv /tmp/tmp.QKfTi4lktK/wt/rtl/memblock/BankedDataArray_wrapper.sv" \
+FM_MERGE_DUP=false \
+ \
+ \
+ \
+FM_PIN_TCL=/tmp/tmp.QKfTi4lktK/wt/verif/ut/BankedDataArray/fm_pins.tcl \
+fm_shell -64 -work_path fm_work/BankedDataArray -file /tmp/tmp.QKfTi4lktK/wt/scripts/fm_eq.tcl \
+    > fm_work/BankedDataArray/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.QKfTi4lktK/wt/scripts/fm_verdict.py fm_work/BankedDataArray/fm.log --rc $rc --mode signoff-strict --top BankedDataArray --allowlist 0
+ERROR	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 0, "make_rc": 1, "mode": "signoff-strict", "native": null, "top": null, "dont_verify": false, "elab147": false, "reason": "make_rc_nonzero"}
+make: *** [../../../scripts/ut_common.mk:56: fm-BankedDataArray] Error 1

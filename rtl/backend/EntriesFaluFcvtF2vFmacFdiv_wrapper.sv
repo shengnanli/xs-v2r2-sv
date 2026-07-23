@@ -344,11 +344,13 @@ module EntriesFaluFcvtF2vFmacFdiv import iq_ffcfmacfdiv_pkg::*; (
     c_enq_valid[0] = io_enq_0_valid;
     c_enq_bits[0].status.rob_flag = io_enq_0_bits_status_robIdx_flag;
     c_enq_bits[0].status.rob_value = io_enq_0_bits_status_robIdx_value;
-    c_enq_bits[0].status.fu_type[4] = io_enq_0_bits_status_fuType_4;
-    c_enq_bits[0].status.fu_type[11] = io_enq_0_bits_status_fuType_11;
-    c_enq_bits[0].status.fu_type[12] = io_enq_0_bits_status_fuType_12;
-    c_enq_bits[0].status.fu_type[13] = io_enq_0_bits_status_fuType_13;
-    c_enq_bits[0].status.fu_type[14] = io_enq_0_bits_status_fuType_14;
+    // 外部只送 fuType_{4,11,12,13,14} 五位,打包进紧凑存储(见 pack_fu_type)
+    c_enq_bits[0].status.fu_type = pack_fu_type(
+        (35'(io_enq_0_bits_status_fuType_4)  << FU_F2V)  |
+        (35'(io_enq_0_bits_status_fuType_11) << FU_FALU) |
+        (35'(io_enq_0_bits_status_fuType_12) << FU_FMAC) |
+        (35'(io_enq_0_bits_status_fuType_13) << FU_FCVT) |
+        (35'(io_enq_0_bits_status_fuType_14) << FU_FDIV));
     c_enq_bits[0].status.src[0].psrc = io_enq_0_bits_status_srcStatus_0_psrc;
     c_enq_bits[0].status.src[0].src_type = io_enq_0_bits_status_srcStatus_0_srcType;
     c_enq_bits[0].status.src[0].src_state = io_enq_0_bits_status_srcStatus_0_srcState;
@@ -373,11 +375,12 @@ module EntriesFaluFcvtF2vFmacFdiv import iq_ffcfmacfdiv_pkg::*; (
     c_enq_valid[1] = io_enq_1_valid;
     c_enq_bits[1].status.rob_flag = io_enq_1_bits_status_robIdx_flag;
     c_enq_bits[1].status.rob_value = io_enq_1_bits_status_robIdx_value;
-    c_enq_bits[1].status.fu_type[4] = io_enq_1_bits_status_fuType_4;
-    c_enq_bits[1].status.fu_type[11] = io_enq_1_bits_status_fuType_11;
-    c_enq_bits[1].status.fu_type[12] = io_enq_1_bits_status_fuType_12;
-    c_enq_bits[1].status.fu_type[13] = io_enq_1_bits_status_fuType_13;
-    c_enq_bits[1].status.fu_type[14] = io_enq_1_bits_status_fuType_14;
+    c_enq_bits[1].status.fu_type = pack_fu_type(
+        (35'(io_enq_1_bits_status_fuType_4)  << FU_F2V)  |
+        (35'(io_enq_1_bits_status_fuType_11) << FU_FALU) |
+        (35'(io_enq_1_bits_status_fuType_12) << FU_FMAC) |
+        (35'(io_enq_1_bits_status_fuType_13) << FU_FCVT) |
+        (35'(io_enq_1_bits_status_fuType_14) << FU_FDIV));
     c_enq_bits[1].status.src[0].psrc = io_enq_1_bits_status_srcStatus_0_psrc;
     c_enq_bits[1].status.src[0].src_type = io_enq_1_bits_status_srcStatus_0_srcType;
     c_enq_bits[1].status.src[0].src_state = io_enq_1_bits_status_srcStatus_0_srcState;
@@ -603,11 +606,13 @@ module EntriesFaluFcvtF2vFmacFdiv import iq_ffcfmacfdiv_pkg::*; (
   assign io_exuSources_17_2_value = c_exu_sources[17][2];
   assign io_deqEntry_0_bits_status_robIdx_flag = c_deq_entry[0].status.rob_flag;
   assign io_deqEntry_0_bits_status_robIdx_value = c_deq_entry[0].status.rob_value;
-  assign io_deqEntry_0_bits_status_fuType_4 = c_deq_entry[0].status.fu_type[4];
-  assign io_deqEntry_0_bits_status_fuType_11 = c_deq_entry[0].status.fu_type[11];
-  assign io_deqEntry_0_bits_status_fuType_12 = c_deq_entry[0].status.fu_type[12];
-  assign io_deqEntry_0_bits_status_fuType_13 = c_deq_entry[0].status.fu_type[13];
-  assign io_deqEntry_0_bits_status_fuType_14 = c_deq_entry[0].status.fu_type[14];
+  // deqEntry 的 fuType 从紧凑存储复原成 35 位 one-hot 后按位取出
+  wire [FU_NUM-1:0] c_deq_futype_full_0 = unpack_fu_type(c_deq_entry[0].status.fu_type);
+  assign io_deqEntry_0_bits_status_fuType_4  = c_deq_futype_full_0[FU_F2V];
+  assign io_deqEntry_0_bits_status_fuType_11 = c_deq_futype_full_0[FU_FALU];
+  assign io_deqEntry_0_bits_status_fuType_12 = c_deq_futype_full_0[FU_FMAC];
+  assign io_deqEntry_0_bits_status_fuType_13 = c_deq_futype_full_0[FU_FCVT];
+  assign io_deqEntry_0_bits_status_fuType_14 = c_deq_futype_full_0[FU_FDIV];
   assign io_deqEntry_0_bits_status_srcStatus_0_psrc = c_deq_entry[0].status.src[0].psrc;
   assign io_deqEntry_0_bits_status_srcStatus_0_srcType = c_deq_entry[0].status.src[0].src_type;
   assign io_deqEntry_0_bits_status_srcStatus_1_psrc = c_deq_entry[0].status.src[1].psrc;
@@ -625,11 +630,12 @@ module EntriesFaluFcvtF2vFmacFdiv import iq_ffcfmacfdiv_pkg::*; (
   assign io_deqEntry_0_bits_payload_pdest = c_deq_entry[0].payload.pdest;
   assign io_deqEntry_1_bits_status_robIdx_flag = c_deq_entry[1].status.rob_flag;
   assign io_deqEntry_1_bits_status_robIdx_value = c_deq_entry[1].status.rob_value;
-  assign io_deqEntry_1_bits_status_fuType_4 = c_deq_entry[1].status.fu_type[4];
-  assign io_deqEntry_1_bits_status_fuType_11 = c_deq_entry[1].status.fu_type[11];
-  assign io_deqEntry_1_bits_status_fuType_12 = c_deq_entry[1].status.fu_type[12];
-  assign io_deqEntry_1_bits_status_fuType_13 = c_deq_entry[1].status.fu_type[13];
-  assign io_deqEntry_1_bits_status_fuType_14 = c_deq_entry[1].status.fu_type[14];
+  wire [FU_NUM-1:0] c_deq_futype_full_1 = unpack_fu_type(c_deq_entry[1].status.fu_type);
+  assign io_deqEntry_1_bits_status_fuType_4  = c_deq_futype_full_1[FU_F2V];
+  assign io_deqEntry_1_bits_status_fuType_11 = c_deq_futype_full_1[FU_FALU];
+  assign io_deqEntry_1_bits_status_fuType_12 = c_deq_futype_full_1[FU_FMAC];
+  assign io_deqEntry_1_bits_status_fuType_13 = c_deq_futype_full_1[FU_FCVT];
+  assign io_deqEntry_1_bits_status_fuType_14 = c_deq_futype_full_1[FU_FDIV];
   assign io_deqEntry_1_bits_status_srcStatus_0_psrc = c_deq_entry[1].status.src[0].psrc;
   assign io_deqEntry_1_bits_status_srcStatus_0_srcType = c_deq_entry[1].status.src[0].src_type;
   assign io_deqEntry_1_bits_status_srcStatus_1_psrc = c_deq_entry[1].status.src[1].psrc;

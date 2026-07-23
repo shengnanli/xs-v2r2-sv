@@ -1,0 +1,12 @@
+SRAMTemplate
+SRAMTemplate_2
+SRAMTemplate_4
+SRAMTemplate_8
+SRAMTemplate_16
+SRAMTemplate_32
+SRAMTemplate_36
+SRAMTemplate_44
+SRAMTemplate_45
+SRAMTemplate_70
+SRAMTemplate_72
+SplittedSRAMTemplate_2

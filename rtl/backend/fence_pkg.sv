@@ -59,13 +59,24 @@ package fence_pkg;
   // （golden 把这些字段散成一堆 uop_ctrl_* / uop_data_imm 标量寄存器，这里聚合成
   //  一个 struct，语义更清晰：它就是“当前正在处理的这条 fence 指令”。）
   // ---------------------------------------------------------------------------
+  // 立即数只有低 10 位在本单元被读：imm[4:0] 判 sfence.rs1(=x0)、imm[9:5] 判 sfence.rs2(=x0)。
+  // 高 54 位在 Fence 内从不被读（golden 也只读低 10 位），故锁存宽度收窄到实际读取范围，
+  // 避免存 54 位从不使用的死寄存器（cone-dead 推断伪影）。
+  localparam int unsigned IMM_USED_W = 10;
+
   typedef struct packed {
-    logic [FUOPTYPE_W-1:0] fuOpType;     // 决定走哪条 flush 分支
-    logic                  robIdx_flag;  // ROB 指针（写回定位）
-    logic [7:0]            robIdx_value;
-    logic [7:0]            pdest;        // 物理目的寄存器（fence 无结果，仍透传）
-    logic                  flushPipe;    // 是否需要 flush 流水（透传到 sfence/out）
-    logic [63:0]           imm;          // 立即数：低 10 位用于 sfence rs1/rs2 判定
+    logic [FUOPTYPE_W-1:0]  fuOpType;     // 决定走哪条 flush 分支
+    logic                   robIdx_flag;  // ROB 指针（写回定位）
+    logic [7:0]             robIdx_value;
+    logic [7:0]             pdest;        // 物理目的寄存器（fence 无结果，仍透传）
+    logic                   flushPipe;    // 是否需要 flush 流水（透传到 sfence/out）
+    logic [IMM_USED_W-1:0]  imm;          // 立即数低 10 位：sfence rs1/rs2 判定（高位从不读，不存）
   } fence_uop_t;
+
+  // sfence 目标：地址页只需低 50 位（虚地址页 io_fenceio_sfence_bits_addr[49:0]），
+  // asid/vmid 只需低 16 位（io_fenceio_sfence_bits_id[15:0]）。src 输入是 64 位，
+  // 但本单元只读这些低位，故锁存宽度按读取范围收窄。
+  localparam int unsigned SFENCE_ADDR_W = 50;
+  localparam int unsigned SFENCE_ID_W   = 16;
 
 endpackage
