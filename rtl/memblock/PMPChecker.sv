@@ -102,7 +102,11 @@ module xs_PMPChecker_core import xs_pmp_pkg::*; #(
   logic [NUM_PMP-1:0] res_pmp_r, s_pmp_x, s_pmp_w, s_pmp_r;
   logic [NUM_PMA-1:0] res_pma_r, s_pma_x, s_pma_w, s_pma_r, s_pma_c, s_pma_atomic;
   logic [2:0]         s_cmd;
-  logic [1:0]         s_mode;
+  // 只保留 M 模式默认位 mode[1]（PMP 全不命中时的放行默认）。mode[0](S/U 区分)
+  // 在本 checker 无任何读者——golden 也只把 io_check_env_mode[1] 寄进默认 cfg 向量
+  // (res_pmp_r_17_16_cfg_x/w/r <= mode[1])，从不寄存 mode[0]。故只寄 1 位，避免
+  // impl 侧 s_mode[0] 成死寄存器位。
+  logic               s_mode_m;
 
   generate
     if (REGISTERED) begin : g_reg
@@ -130,7 +134,7 @@ module xs_PMPChecker_core import xs_pmp_pkg::*; #(
           s_pma_c      <= pma_cfg_c;
           s_pma_atomic <= pma_cfg_atomic;
           s_cmd        <= io_req_bits_cmd;
-          s_mode       <= io_check_env_mode;
+          s_mode_m     <= io_check_env_mode[1];
         end
       end
     end else begin : g_comb
@@ -145,7 +149,7 @@ module xs_PMPChecker_core import xs_pmp_pkg::*; #(
       assign s_pma_c      = pma_cfg_c;
       assign s_pma_atomic = pma_cfg_atomic;
       assign s_cmd        = io_req_bits_cmd;
-      assign s_mode       = io_check_env_mode;
+      assign s_mode_m     = io_check_env_mode[1];
     end
   endgenerate
 
@@ -160,9 +164,9 @@ module xs_PMPChecker_core import xs_pmp_pkg::*; #(
   endfunction
 
   // PMP 选出的 r/w/x：命中则取该条目调整后权限；全不命中取默认 = M 模式放行(mode[1])
-  wire sel_pmp_r = prio_sel(res_pmp_r, s_pmp_r, s_mode[1]);
-  wire sel_pmp_w = prio_sel(res_pmp_r, s_pmp_w, s_mode[1]);
-  wire sel_pmp_x = prio_sel(res_pmp_r, s_pmp_x, s_mode[1]);
+  wire sel_pmp_r = prio_sel(res_pmp_r, s_pmp_r, s_mode_m);
+  wire sel_pmp_w = prio_sel(res_pmp_r, s_pmp_w, s_mode_m);
+  wire sel_pmp_x = prio_sel(res_pmp_r, s_pmp_x, s_mode_m);
   // PMA 选出的属性：全不命中取默认 = 全 0（pmaDefault）
   wire sel_pma_r      = prio_sel(res_pma_r, s_pma_r,      1'b0);
   wire sel_pma_w      = prio_sel(res_pma_r, s_pma_w,      1'b0);
