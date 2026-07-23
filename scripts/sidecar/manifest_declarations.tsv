@@ -93,3 +93,4 @@ DuplicatedTagArray	assembly	verif/signoff/allow/DuplicatedTagArray.json	assembly
 PtwCache	signoff-strict		strict+vmucp: impl-clean(unread_impl=0); 67对称matched-unread双射(SRAM/MBIST array_*_ext死reg+L2/L3 prefetch entry+prefetch流水链, ref==impl逐位), vmucp实开比较全passing; 无dont_verify无allow无加宽黑盒	true
 WritebackQueue	signoff-strict		strict+vmucp: impl-clean; 36对称matched-unread双射(WritebackEntry子模块 req_dirty断言专用+remain_dup[1]死位, 双侧同名elaborate), vmucp实开比较全passing; entries_N扁平命名对齐golden使FM双射	true
 LinkMonitor	signoff-strict		strict+vmucp: impl-clean(unread_impl=0/unread_ref=0); 192对称matched-unread双射(3×64位perf计数retryAckCnt/pCrdGrantCnt/noAllowRetryCnt, 两侧只写不读无输出口, 架构活事件监控不可删), vmucp实开比较全passing	true
+Ftq	signoff-strict		strict+vmucp+dead-ref: impl-clean(unread_impl=0); 3330对称matched-unread双射(队列entry调试/预测meta复制寄存器两侧同名)vmucp实开比较; 残留4282 golden-only cone-dead(perf计数/探针无输出扇出)=dead-ref	true

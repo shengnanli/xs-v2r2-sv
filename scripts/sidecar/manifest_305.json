@@ -879,12 +879,12 @@
    "makefile": "verif/ut/Ftq/Makefile",
    "make_target": "fm-Ftq",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "assembly",
+   "proof_mode": "signoff-strict",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "strict+vmucp+dead-ref: impl-clean(unread_impl=0); 3330对称matched-unread双射(队列entry调试/预测meta复制寄存器两侧同名)vmucp实开比较; 残留4282 golden-only cone-dead(perf计数/探针无输出扇出)=dead-ref",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
