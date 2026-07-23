@@ -51,9 +51,12 @@ module xs_RegFilePart_core #(
 
   // ---------------------------------------------------------------------------
   // 寄存器本体(物理寄存器阵列)
-  //   - HAS_ZERO 时,索引 0 不实例化真寄存器(写被丢弃,读恒 0),节省一格触发器。
-  //   - 其余索引为可写寄存器。
-  // 这里统一声明 mem[],对索引 0 的处理在写/读逻辑里按 HAS_ZERO 分流。
+  //   - HAS_ZERO 时(Int:x0 恒 0),索引 0 **不存在寄存器**:写被丢弃,读恒 0。
+  //     golden(firtool)对 Int 只声明 mem_1..mem_223(无 mem_0),因此本核也
+  //     完全跳过 row 0——既不声明也不驱动 mem[0],避免产生「写 0 却永不被读」
+  //     的 impl-only cone-dead 寄存器(FM signoff-strict 会判 unread_impl→PARTIAL)。
+  //   - HAS_ZERO=0 时(Fp/Vf/V0):索引 0 是普通可写寄存器,golden 有 mem_0,保留。
+  // mem_for_read[0] 在读视图里对 HAS_ZERO 直接接常数 '0,故省略 mem[0] 无功能影响。
   // ---------------------------------------------------------------------------
   logic [NUM_PREGS-1:0][DATA_WIDTH-1:0] mem;
 
@@ -63,26 +66,25 @@ module xs_RegFilePart_core #(
   //         故 one-hot 至多一位为 1,这里用按位或/带优先的 mux 都等价。
   // ---------------------------------------------------------------------------
   for (genvar row = 0; row < NUM_PREGS; row++) begin : g_write
-    // 本行被哪些写口命中
-    logic [NUM_WRITE-1:0] hit;
-    logic [DATA_WIDTH-1:0] wdata;
-
-    always_comb begin
-      hit   = '0;
-      wdata = '0;
-      for (int unsigned w = 0; w < NUM_WRITE; w++) begin
-        hit[w] = write_wen[w] && (write_addr[w] == ADDR_WIDTH'(row));
-        // Mux1H:命中口的数据按位或进来(非命中口贡献 0)
-        wdata |= hit[w] ? write_data[w] : '0;
-      end
-    end
-
     if (HAS_ZERO && row == 0) begin : g_zero_reg
-      // x0:恒为 0,写入丢弃。
-      always_ff @(posedge clock) begin
-        mem[0] <= '0;
-      end
+      // x0:此处**不生成任何寄存器**(与 golden 一致:Int 无 mem_0)。
+      // 写入 addr==0 天然被丢弃(下面 g_norm_reg 的命中比较从 row=1 起),
+      // 读 mem_for_read[0] 直接接 '0。故 row 0 无状态、无命中逻辑。
     end else begin : g_norm_reg
+      // 本行被哪些写口命中
+      logic [NUM_WRITE-1:0] hit;
+      logic [DATA_WIDTH-1:0] wdata;
+
+      always_comb begin
+        hit   = '0;
+        wdata = '0;
+        for (int unsigned w = 0; w < NUM_WRITE; w++) begin
+          hit[w] = write_wen[w] && (write_addr[w] == ADDR_WIDTH'(row));
+          // Mux1H:命中口的数据按位或进来(非命中口贡献 0)
+          wdata |= hit[w] ? write_data[w] : '0;
+        end
+      end
+
       // 普通物理寄存器:有命中才更新(写使能合并自所有口的 one-hot)。
       always_ff @(posedge clock) begin
         if (|hit) begin
