@@ -611,16 +611,24 @@ module xs_L2TLB_core
   // ==========================================================================
   // -- llptw_stage1：llptw.in.fire 时按 enq_ptr 锁存 cache.resp.stage1（merge resp）--
   //    用于 first_s2xlate_fault 时回放 stage1。本配置仅记录顶层需要的字段。
-  ptw_merge_resp_t llptw_stage1 [LLPTW_SIZE];
+  //   golden 的 s1.entry.*.af 恒被门控为 0（_GEN_281 = ~first_s2xlate_fault & ...），stage1
+  //   回放路径根本不取 af，故 golden 的 llptw_stage1 里没有 af 寄存器。为逐位对齐，本核
+  //   把 llptw_stage1 的存储类型换成【不含 af 的 merge resp】(ptw_merge_resp_noaf_t)，读出时
+  //   用 mrg_from_noaf() 拼回完整类型并把 entry.af 钉 0——af 不成为触发器（无 impl-only 寄存器）。
+  ptw_merge_resp_noaf_t llptw_stage1_q [LLPTW_SIZE];
   // cache.resp.stage1 打包为 ptw_merge_resp_t
   ptw_merge_resp_t cache_stage1;
   `include "L2TLB_cache_stage1.svh"  // 装配 cache_stage1（从 u_page_cache_resp_bits_stage1_*）
+  // 完整读出视图（entry.af 恒 0，与 golden 门控一致）。
+  ptw_merge_resp_t llptw_stage1 [LLPTW_SIZE];
+  for (genvar i = 0; i < LLPTW_SIZE; i++) begin : g_stage1_rd
+    assign llptw_stage1[i] = mrg_from_noaf(llptw_stage1_q[i]);
+  end
   for (genvar i = 0; i < LLPTW_SIZE; i++) begin : g_llptw_stage1
-    // golden 无复位（always @(posedge clock) 纯 enable 锁存）；照搬 bug-for-bug，
-    // 否则 impl 多出的 reset→0 next-state 锥与 golden 不等价（FM 5000 failing）。
+    // golden 无复位（always @(posedge clock) 纯 enable 锁存）；照搬 bug-for-bug。
     always_ff @(posedge clock)
       if ((u_llptw_in_ready & u_llptw__in_valid) && (u_llptw_mem_enq_ptr == i[2:0]))
-        llptw_stage1[i] <= cache_stage1;
+        llptw_stage1_q[i] <= mrg_to_noaf(cache_stage1);
   end
 
   // -- mergeArb 各路 valid（per tlb i）--
@@ -671,6 +679,8 @@ module xs_L2TLB_core
         csr_dup[0].mPBMTE, csr_dup[0].hPBMTE,
         csr_dup[0].satp_asid, csr_dup[0].vsatp_asid, csr_dup[0].hgatp_vmid);
   end
+  // 注：llptw_stage1 的 entry.af 由 mrg_from_noaf 恒钉 0（存储侧不含 af），与 golden 的
+  //   _GEN_281 门控（stage1 回放 af 恒 0）一致，故 mq_s1 在 fault 路径的 af 自然为 0。
   // 把 mq_s1 拆给两条 mergeArb 的 in_2 s1 字段（per-entry）。
   `include "L2TLB_merge_in2.svh"
 

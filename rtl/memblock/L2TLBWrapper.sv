@@ -52,46 +52,23 @@ module xs_L2TLBWrapper_core(
   localparam int NUM_PERF_EVENTS = 19; // 与 L2TLBIO 的 perf 向量长度一致
   localparam int PERF_W          = 6;  // 单个 perf value 位宽
 
-  // 流水级编号：内层吐出的原值 -> 第 1 拍 -> 第 2 拍输出。
-  // 用 enum 表达「2 级打拍」的级序，使下标有意义而非裸 0/1。
-  typedef enum int {
-    PERF_STAGE_1 = 0, // 第一级寄存器（对应 golden 的 *_REG）
-    PERF_STAGE_2 = 1, // 第二级寄存器（golden 的第二级打拍，即对外输出）
-    PERF_NSTAGE  = 2
-  } perf_stage_e;
-
-  // 一个 perf 事件的 2 级流水寄存器组。把同一事件的两级聚合成 struct，
-  // 而非散落独立标量 reg，便于按事件成组推进/复位。
-  typedef struct packed {
-    // 打包 2 级寄存器：stage[0]=第1拍, stage[1]=第2拍(输出)。
-    // 用 packed 向量数组（非 unpacked），以满足 struct packed 约束。
-    logic [PERF_NSTAGE-1:0][PERF_W-1:0] stage;
-  } perf_pipe_t;
-
-  // 纯函数：推进一个事件的 2 级流水（移位寄存器语义）。
-  //   新原值进 stage1；stage1 旧值进 stage2（输出）。
-  // 用函数表达「流水推进」这一意图，避免在 always 里逐事件手写两条赋值。
-  function automatic perf_pipe_t perf_advance(perf_pipe_t cur, logic [PERF_W-1:0] raw);
-    perf_pipe_t nxt;
-    nxt.stage[PERF_STAGE_2] = cur.stage[PERF_STAGE_1]; // 第1拍旧值 -> 第2拍
-    nxt.stage[PERF_STAGE_1] = raw;                     // 内层原值 -> 第1拍
-    return nxt;
-  endfunction
-
   // 内层 L2TLB 吐出的 19 路 perf 原始计数（黑盒输出，未打拍）。
-  // 用 packed 2D（[事件][位]）而非 unpacked 数组：unpacked 数组元素到黑盒引脚的
-  // 绑定在某些 EDA 工具的位级展平下会与下标产生歧义，packed 向量则逐位确定。
   logic [NUM_PERF_EVENTS-1:0][PERF_W-1:0] perf_raw;
-  // 19 路事件各自的 2 级流水寄存器。
-  perf_pipe_t        perf_pipe [NUM_PERF_EVENTS];
-  // 各事件第二级寄存器值（对外 perf 输出）。
-  logic [NUM_PERF_EVENTS-1:0][PERF_W-1:0] perf_out;
+
+  // 2 级打拍寄存器组（每事件两级）：
+  //   stage1 = golden 的 io_perf_<i>_value_REG   (取内层原值)
+  //   stage2 = golden 的 io_perf_<i>_value_REG_1 (取 stage1，对外输出)
+  //   用两个扁平数组而非 2 级 packed struct：后者展平成 perf_pipe_reg[i]\[stage][s][b]，
+  //   与 golden 的 io_perf_<i>_value_REG[_1]_reg[b] 名字/签名对不上→ FM 留 114 个未匹配
+  //   比较点→假 FAILED。扁平的“每事件每级一个 6bit 寄存器”与 golden 一一对应，
+  //   auto_match_flattened_arrays 按签名即可配对。
+  logic [NUM_PERF_EVENTS-1:0][PERF_W-1:0] perf_stage1;  // 第 1 拍
+  logic [NUM_PERF_EVENTS-1:0][PERF_W-1:0] perf_stage2;  // 第 2 拍（输出）
 
   // ---------------------------------------------------------------------------
   // 内层 L2TLB 黑盒例化
   // ---------------------------------------------------------------------------
-  // 除 perf 外的全部端口在此机械直连（见 include）。perf 端口在下方 generate 中
-  // 单独连到 perf_raw 数组，再经流水寄存器输出。
+  // 除 perf 外的全部端口在此机械直连（见 include）。perf 端口单独连到 perf_raw 数组。
   L2TLB ptw (
 `include "l2tlbwrapper_inner_conn.svh"
     // ---- 19 路 perf event 计数值：内层原始输出接入 perf_raw[] ----
@@ -110,32 +87,28 @@ module xs_L2TLBWrapper_core(
   // ---------------------------------------------------------------------------
   // perf event 2 级流水 + 输出
   // ---------------------------------------------------------------------------
-  // 19 路事件结构完全一致，用 generate/for 统一推进，不手工展开 19*2 条赋值。
-  // 复位时清零（与 golden 的随机初始化语义一致：SYNTHESIS 下视为 0）。
+  // 与 golden 逐字一致：无复位的纯时钟打拍（golden 是 `always @(posedge clock)`，
+  //   仅靠 _RANDOM 初始化，综合视为 0；这里也【不加 reset】以对齐寄存器锥）。
   genvar gi;
   generate
     for (gi = 0; gi < NUM_PERF_EVENTS; gi++) begin : g_perf
       always_ff @(posedge clock) begin
-        if (reset)
-          perf_pipe[gi] <= '0;
-        else
-          perf_pipe[gi] <= perf_advance(perf_pipe[gi], perf_raw[gi]);
+        perf_stage1[gi] <= perf_raw[gi];     // 内层原值 -> 第 1 拍
+        perf_stage2[gi] <= perf_stage1[gi];  // 第 1 拍   -> 第 2 拍（输出）
       end
-      // 第二级寄存器即对外 perf 输出（golden 中 perf 输出取第二级打拍值）。
-      assign perf_out[gi] = perf_pipe[gi].stage[PERF_STAGE_2];
     end
   endgenerate
 
-  // perf_out 数组 -> 扁平的 io_perf_<i>_value 输出端口（端口表里是 19 个标量）。
-  assign io_perf_0_value  = perf_out[0];   assign io_perf_1_value  = perf_out[1];
-  assign io_perf_2_value  = perf_out[2];   assign io_perf_3_value  = perf_out[3];
-  assign io_perf_4_value  = perf_out[4];   assign io_perf_5_value  = perf_out[5];
-  assign io_perf_6_value  = perf_out[6];   assign io_perf_7_value  = perf_out[7];
-  assign io_perf_8_value  = perf_out[8];   assign io_perf_9_value  = perf_out[9];
-  assign io_perf_10_value = perf_out[10];  assign io_perf_11_value = perf_out[11];
-  assign io_perf_12_value = perf_out[12];  assign io_perf_13_value = perf_out[13];
-  assign io_perf_14_value = perf_out[14];  assign io_perf_15_value = perf_out[15];
-  assign io_perf_16_value = perf_out[16];  assign io_perf_17_value = perf_out[17];
-  assign io_perf_18_value = perf_out[18];
+  // perf 第二级寄存器 -> 扁平的 io_perf_<i>_value 输出端口。
+  assign io_perf_0_value  = perf_stage2[0];   assign io_perf_1_value  = perf_stage2[1];
+  assign io_perf_2_value  = perf_stage2[2];   assign io_perf_3_value  = perf_stage2[3];
+  assign io_perf_4_value  = perf_stage2[4];   assign io_perf_5_value  = perf_stage2[5];
+  assign io_perf_6_value  = perf_stage2[6];   assign io_perf_7_value  = perf_stage2[7];
+  assign io_perf_8_value  = perf_stage2[8];   assign io_perf_9_value  = perf_stage2[9];
+  assign io_perf_10_value = perf_stage2[10];  assign io_perf_11_value = perf_stage2[11];
+  assign io_perf_12_value = perf_stage2[12];  assign io_perf_13_value = perf_stage2[13];
+  assign io_perf_14_value = perf_stage2[14];  assign io_perf_15_value = perf_stage2[15];
+  assign io_perf_16_value = perf_stage2[16];  assign io_perf_17_value = perf_stage2[17];
+  assign io_perf_18_value = perf_stage2[18];
 
 endmodule

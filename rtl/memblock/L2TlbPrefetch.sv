@@ -47,7 +47,11 @@ module xs_L2TlbPrefetch_core
   // ---------------------------------------------------------------------------
   // 最近预取记录窗口（去重）
   // ---------------------------------------------------------------------------
-  logic [OLD_REC_N-1:0][VPN_W-1:0] old_reqs;
+  // old_reqs 只用于去重（same_line 仅比较去 sector 位后的“行 VPN” [37:3]），
+  //   而写入值 next_req 的低 sector 位恒 0（get_next_line 补 0）。故 old_reqs[i][2:0]
+  //   在两侧都零扇出（golden 存 38 位、低 3 位是 golden-only dead-ref）。这里只存被比较的
+  //   行 VPN（35 位），impl 侧不留任何死寄存器位。
+  logic [OLD_REC_N-1:0][LINE_VPN_W-1:0] old_reqs;   // 只存行 VPN [37:3]
   logic [OLD_REC_N-1:0]            old_v;
   logic [OLD_IDX_W-1:0]            old_index;
   logic [VPN_W-1:0]                next_req;  // RegEnable(next_line, in_valid)
@@ -58,12 +62,13 @@ module xs_L2TlbPrefetch_core
   // 当拍计算的“下一行” VPN。
   wire [VPN_W-1:0] next_line = get_next_line(in_vpn);
 
-  // 去重：next_line 是否已在记录窗口中（有效且同行）。
+  // 去重：next_line 是否已在记录窗口中（有效且同行）。old_reqs 已是行 VPN，直接与
+  //   next_line 的行段 [37:3] 比较。
   logic already_have;
   always_comb begin
     already_have = 1'b0;
     for (int i = 0; i < OLD_REC_N; i++)
-      already_have |= old_v[i] && same_line(old_reqs[i], next_line);
+      already_have |= old_v[i] && (old_reqs[i] == next_line[VPN_W-1:SECTOR_BITS]);
   end
 
   // 本拍是否产生一个新的预取（未被 flush、未重复）。
@@ -107,7 +112,7 @@ module xs_L2TlbPrefetch_core
       wire slot_we = out_fire && (old_index == gi[OLD_IDX_W-1:0]);
       always_ff @(posedge clock) begin
         if (slot_we)
-          old_reqs[gi] <= next_req;
+          old_reqs[gi] <= next_req[VPN_W-1:SECTOR_BITS];  // 只存行 VPN（低 3 位恒 0，不存）
       end
       always_ff @(posedge clock or posedge reset) begin
         if (reset)

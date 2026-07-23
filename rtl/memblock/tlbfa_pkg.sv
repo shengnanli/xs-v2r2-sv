@@ -57,10 +57,17 @@ package xs_tlbfa_pkg;
     logic d; logic a; logic g; logic u; logic x; logic w; logic r;
   } tlb_perm_t;
 
-  // stage2(G-stage) 权限：与 stage1 同为完整 TlbPermBundle（pf/af/v/d/a/g/u/x/w/r）。
-  //   不同 TLBFA 变体下游只用其中一部分，firtool 因此对 golden 各端口做了不同裁剪；
-  //   可读核统一算全字段，wrapper 只驱动 golden 实际暴露的端口。
-  typedef tlb_perm_t tlb_gperm_t;
+  // stage2(G-stage) 权限（applyS2）。与 stage1 不同，golden 在 refill 时把 v 恒置 0，
+  //   且 G-stage 页表项在本 sector-TLB 中不承载 g(global)/u(user) 语义——两阶段翻译里
+  //   guest-physical 的全局/用户属性由 stage1 决定，G-stage 只做物理保护（r/w/x/d/a + pf/af）。
+  //   经 golden 逐字段核对（TLBFA / TLBFA_1 两变体的 g_perm 存储与所有读点）：
+  //     g_perm.{v,g,u} 在两个变体里都【零扇出】(FM unread + golden 端根本无此寄存器)。
+  //   故 stage2 权限用不含 v/g/u 的独立 7 位 bundle（与 golden TLBFA_1 的 g_perm 存储一一对应），
+  //   这不是删除“架构活性 guest 状态”，而是与参考设计一致地不物化 G-stage 从不使用的三位。
+  typedef struct packed {
+    logic pf; logic af;
+    logic d; logic a; logic x; logic w; logic r;
+  } tlb_gperm_t;
 
   // ---------------- 一条全相联 TLB 条目（= TlbSectorEntry）----------------
   // valid 单独放在条目数组外（v 寄存器，复位清 0、sfence 可清），其余字段不复位。
@@ -228,11 +235,11 @@ package xs_tlbfa_pkg;
                 d:d.s1_entry_perm.d, a:d.s1_entry_perm.a, g:d.s1_entry_perm.g,
                 u:d.s1_entry_perm.u, x:d.s1_entry_perm.x, w:d.s1_entry_perm.w,
                 r:d.s1_entry_perm.r };
-    // stage2 perm(applyS2)：pf/af 来自 gpf/gaf，v 无意义置 0，其余取 s2.entry.perm
-    e.g_perm = '{ pf:d.s2_gpf, af:d.s2_gaf, v:1'b0,
-                  d:d.s2_entry_perm.d, a:d.s2_entry_perm.a, g:d.s2_entry_perm.g,
-                  u:d.s2_entry_perm.u, x:d.s2_entry_perm.x, w:d.s2_entry_perm.w,
-                  r:d.s2_entry_perm.r };
+    // stage2 perm(applyS2)：pf/af 来自 gpf/gaf；G-stage 不承载 v/g/u（见 tlb_gperm_t 说明），
+    //   其余物理保护位（d/a/x/w/r）取 s2.entry.perm。
+    e.g_perm = '{ pf:d.s2_gpf, af:d.s2_gaf,
+                  d:d.s2_entry_perm.d, a:d.s2_entry_perm.a, x:d.s2_entry_perm.x,
+                  w:d.s2_entry_perm.w, r:d.s2_entry_perm.r };
 
     // ---- ppn / ppn_low ----
     // s2ppn(sector,33位)：按 s2 level 把 s2.ppn 高位与 s2.tag 的“sector 对齐”低位拼接，

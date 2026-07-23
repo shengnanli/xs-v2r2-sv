@@ -27,7 +27,15 @@ module xs_TLBFA_core import xs_tlbfa_pkg::*; #(
   parameter int PORTS  = 3,
   parameter int NDUPS  = 1,
   parameter int NWAYS  = 48,
-  parameter int WAY_W  = 6            // log2Up(NWAYS)
+  parameter int WAY_W  = 6,           // log2Up(NWAYS)
+  // ---- 变体相关的“存储位裁剪”参数（与 golden 逐变体 DCE 对齐）----------------
+  //   golden 对不同 TLBFA 实例的条目权限做了不同裁剪：ITLB(取指) 只需 x/a，故不存
+  //   perm.d 与 g_perm 的写侧位(d/r/w)；DTLB(load/store) 需要 d/r/w，故全存。
+  //   下列参数控制“是否在条目寄存器里物化这些位”——为 0 时把对应存储位钉成常量 0，
+  //   使其被前端常量传播+死码消除掉（等价于 golden 里根本没有该寄存器）。
+  //   注意：这些位在“被保留的那个变体里”是架构活状态，绝不能对两个变体一律删除。
+  parameter bit KEEP_PERM_D    = 1'b1, // perm.d  : TLBFA=0(死) TLBFA_1=1(活)
+  parameter bit KEEP_GPERM_DRW = 1'b1  // g_perm.{d,r,w}: TLBFA=0(死) TLBFA_1=1(活)
 )(
   input  logic                          clock,
   input  logic                          reset,
@@ -72,8 +80,25 @@ module xs_TLBFA_core import xs_tlbfa_pkg::*; #(
   // =========================================================================
   // 架构状态：valid 位向量 + 条目数组（条目本体不复位，valid 复位清 0）
   // =========================================================================
-  logic       v       [NWAYS];
-  tlb_entry_t entries [NWAYS];
+  //   entries_q 是【寄存的】主体条目。entries 是【组合】读出视图。
+  //   golden 对 ITLB(TLBFA) 不物化 perm.d / g_perm.{d,r,w}（零扇出），DTLB(TLBFA_1) 才有。
+  //   为逐位对齐：KEEP=1 时 entries==entries_q（这 4 位是真寄存器，匹配 golden entries_N_*）；
+  //   KEEP=0 时 entries 覆盖这 4 位为组合常量 0，且写入侧【根本不给这 4 位赋值】(见 g_entry_reg
+  //   的 generate 分支)——从而它们不是触发器、无扇出，前端不生成任何寄存器（与 golden 一致）。
+  logic       v        [NWAYS];
+  tlb_entry_t entries_q [NWAYS];   // 寄存主体
+  tlb_entry_t entries  [NWAYS];    // 组合读出视图（KEEP=0 时把可选 4 位钉 0）
+  for (genvar w = 0; w < NWAYS; w++) begin : g_rdview
+    always_comb begin
+      entries[w] = entries_q[w];
+      if (!KEEP_PERM_D)    entries[w].perm.d   = 1'b0;
+      if (!KEEP_GPERM_DRW) begin
+        entries[w].g_perm.d = 1'b0;
+        entries[w].g_perm.r = 1'b0;
+        entries[w].g_perm.w = 1'b0;
+      end
+    end
+  end
 
   // refill 命中向量（one-hot of wayIdx），用于查询时屏蔽“本拍正在被写”的条目
   logic [NWAYS-1:0] refill_mask;
@@ -89,7 +114,11 @@ module xs_TLBFA_core import xs_tlbfa_pkg::*; #(
   logic [NWAYS-1:0] hitVec      [PORTS];
   // 寄存后的匹配向量与 vpn（T1）
   logic [NWAYS-1:0] hitVecReg   [PORTS];
-  logic [VPN_LEN-1:0] reqVpn    [PORTS];
+  // reqVpn 只被 genPPN 用于拼大页/sector 低位，最高读到 bit26（&level 的 Sv48 段 vpn[26:18]）；
+  //   bit[37:27] 在 Sv39 下【零扇出】(golden 端也是死位——unread_ref)。故只寄存被读到的低 27 位，
+  //   impl 侧不物化任何死寄存器位（golden 仍保留 38 位的高段冗余=golden-only dead-ref）。
+  localparam int RVPN_W = 27;            // genPPN 实际读到的 vpn 位宽 [26:0]
+  logic [RVPN_W-1:0]  reqVpn    [PORTS];
   logic               respValid [PORTS];
 
   // 每端口的 asid / 模式派生
@@ -124,7 +153,7 @@ module xs_TLBFA_core import xs_tlbfa_pkg::*; #(
     end else begin
       for (int p = 0; p < PORTS; p++) begin
         respValid[p] <= io_r_req_valid[p];
-        if (io_r_req_valid[p]) reqVpn[p] <= io_r_req[p].vpn;
+        if (io_r_req_valid[p]) reqVpn[p] <= io_r_req[p].vpn[RVPN_W-1:0];
       end
     end
   end
@@ -146,7 +175,8 @@ module xs_TLBFA_core import xs_tlbfa_pkg::*; #(
       perm_sel = '0; gperm_sel = '0; s2x_sel = '0;
       for (int w = 0; w < NWAYS; w++) begin
         if (hitVecReg[p][w]) begin
-          ppn_sel   |= xs_tlb_genppn(entries[w], reqVpn[p]);
+          // reqVpn 只存低 27 位；genPPN 形参是全 38 位，高位补 0（那些位 genPPN 从不读）。
+          ppn_sel   |= xs_tlb_genppn(entries[w], {{(VPN_LEN-RVPN_W){1'b0}}, reqVpn[p]});
           pbmt_sel  |= entries[w].pbmt;
           gpbmt_sel |= entries[w].g_pbmt;
           perm_sel  |= entries[w].perm;
@@ -296,8 +326,50 @@ module xs_TLBFA_core import xs_tlbfa_pkg::*; #(
         v[w] <= refill_hit ? 1'b1 : v[w];  // 无 sfence：refill 命中置位
       end
     end
+    // 条目本体（寄存）：refill 命中时写入解包后的新条目字段。为了在 KEEP=0 时让
+    //   perm.d / g_perm.{d,r,w} 这 4 位【根本不成为触发器】，逐字段写 entries_q，并把这
+    //   4 位放进 generate-if(KEEP)——KEEP=0 时它们从不被赋值→非触发器、无寄存器（对齐
+    //   golden 该变体无此寄存器）；KEEP=1 时正常随 refill 寄存（DTLB 活状态，匹配 golden）。
     always_ff @(posedge clock) begin
-      if (refill_hit) entries[w] <= refill_entry;
+      if (refill_hit) begin
+        entries_q[w].tag      <= refill_entry.tag;
+        entries_q[w].asid     <= refill_entry.asid;
+        entries_q[w].level    <= refill_entry.level;
+        entries_q[w].ppn      <= refill_entry.ppn;
+        entries_q[w].n        <= refill_entry.n;
+        entries_q[w].pbmt     <= refill_entry.pbmt;
+        entries_q[w].g_pbmt   <= refill_entry.g_pbmt;
+        entries_q[w].valididx <= refill_entry.valididx;
+        entries_q[w].pteidx   <= refill_entry.pteidx;
+        entries_q[w].ppn_low  <= refill_entry.ppn_low;
+        entries_q[w].vmid     <= refill_entry.vmid;
+        entries_q[w].s2xlate  <= refill_entry.s2xlate;
+        // perm：除 d 外的位总寄存；d 位仅 KEEP_PERM_D 时寄存（见下 generate）。
+        entries_q[w].perm.pf  <= refill_entry.perm.pf;
+        entries_q[w].perm.af  <= refill_entry.perm.af;
+        entries_q[w].perm.v   <= refill_entry.perm.v;
+        entries_q[w].perm.a   <= refill_entry.perm.a;
+        entries_q[w].perm.g   <= refill_entry.perm.g;
+        entries_q[w].perm.u   <= refill_entry.perm.u;
+        entries_q[w].perm.x   <= refill_entry.perm.x;
+        entries_q[w].perm.w   <= refill_entry.perm.w;
+        entries_q[w].perm.r   <= refill_entry.perm.r;
+        // g_perm：pf/af/a/x 总寄存；d/r/w 仅 KEEP_GPERM_DRW 时寄存（见下 generate）。
+        entries_q[w].g_perm.pf <= refill_entry.g_perm.pf;
+        entries_q[w].g_perm.af <= refill_entry.g_perm.af;
+        entries_q[w].g_perm.a  <= refill_entry.g_perm.a;
+        entries_q[w].g_perm.x  <= refill_entry.g_perm.x;
+      end
+    end
+    if (KEEP_PERM_D) begin : g_keep_perm_d
+      always_ff @(posedge clock) if (refill_hit) entries_q[w].perm.d <= refill_entry.perm.d;
+    end
+    if (KEEP_GPERM_DRW) begin : g_keep_gperm_drw
+      always_ff @(posedge clock) if (refill_hit) begin
+        entries_q[w].g_perm.d <= refill_entry.g_perm.d;
+        entries_q[w].g_perm.r <= refill_entry.g_perm.r;
+        entries_q[w].g_perm.w <= refill_entry.g_perm.w;
+      end
     end
   end
 
