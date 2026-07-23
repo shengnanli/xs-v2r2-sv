@@ -8,13 +8,11 @@
 #      旧 pin 误配到 stageDelay_bits_reg[0][bypassed][N] 常0载荷寄存器, 已纠正)
 # 两侧部分位已被签名分析交叉配对(如 hitVec_0_1 与 l2_hitVec[11] 各自配错),
 # 先整族 undo 再钉死。
-# 0) FM 寄存器初值推断(Auto)把 impl 侧 ClockGate EN 约束成 LAT1X(ref 侧 LAT,
-#    不对称)→gated-clock 的 l0/l1 SRAM ram_reg 全部失配; 关掉初值假设
-#    (BankedDataArray/MainPipe 同法)。
+# 注: 早期版本曾用 `set_app_var verification_assume_reg_init none` 修 gated-clock l0/l1 SRAM
+#     ram_reg 失配, 但实测(当前 RTL/wrapper)在默认 assume_reg_init=auto 下 SRAM ram_reg 已
+#     0 失配(0 unmatched compare); 该 appvar 会进 relaxed_appvars → sidecar 判 strict_qualifications
+#     PARTIAL, 故移除(与 ICacheDataArray 同: 无 assume_reg_init, relaxed_appvars=[])。
 setup
-if {[catch {set_app_var verification_assume_reg_init none} msg]} {
-  puts "PTWCACHE_PINS: assume_reg_init failed: $msg"
-}
 for {set b 0} {$b < 15} {incr b} {
   catch {undo_match "r:/WORK/$top/state_reg_reg\[$b\]"}
   catch {undo_match "r:/WORK/$top/state_reg_1_reg\[$b\]"}
@@ -38,7 +36,6 @@ for {set n 0} {$n < 4} {incr n} {
   catch {undo_match "i:/WORK/$top/u_core/stageCheck1_fire_1cycle_reg\[$n\]"}
   catch {undo_match "i:/WORK/$top/u_core/bypassed_hold_reg\[$n\]"}
   catch {undo_match "i:/WORK/$top/u_core/hptw_bypassed_hold_reg\[$n\]"}
-  catch {undo_match "i:/WORK/$top/u_core/stageDelay_bits_reg\[0\]\\\[bypassed]\[$n\]"}
 }
 set _n 0; set _f 0
 proc _pin {r i} {
@@ -65,5 +62,25 @@ for {set b 0} {$b < 2} {incr b} {
   catch {undo_match "r:/WORK/$top/gVec_delay_reg\[$b\]"}
   catch {undo_match "i:/WORK/$top/u_core/l1gVec_delay_reg\[$b\]"}
   _pin "r:/WORK/$top/gVec_delay_reg\[$b\]" "i:/WORK/$top/u_core/l1gVec_delay_reg\[$b\]"
+}
+
+# L2/L3 prefetch 流水链(对称死状态双射: golden 与 impl 结构同构, 仅命名不同; verify_matched_unread=true
+# 下逐位比对相等——见 fm-strict-unread-methodology 修法④). golden 命名:
+#   hitPre_r      = L3 DataHoldBypass 延迟保持  ↔ impl u_core/l3_hitPre_h_reg
+#   hitPre_r_1    = L2 DataHoldBypass 延迟保持  ↔ impl u_core/l2_hitPre_h_reg
+#   l3Pre_r       = L3 stageCheck 保持           ↔ impl u_core/l3Pre_reg
+#   (l2Pre 同名自动配对, 无需 pin)
+catch {undo_match "r:/WORK/$top/hitPre_r_reg"};   catch {undo_match "i:/WORK/$top/u_core/l3_hitPre_h_reg"}
+catch {undo_match "r:/WORK/$top/hitPre_r_1_reg"}; catch {undo_match "i:/WORK/$top/u_core/l2_hitPre_h_reg"}
+catch {undo_match "r:/WORK/$top/l3Pre_r_reg"};    catch {undo_match "i:/WORK/$top/u_core/l3Pre_reg"}
+_pin "r:/WORK/$top/hitPre_r_reg"   "i:/WORK/$top/u_core/l3_hitPre_h_reg"
+_pin "r:/WORK/$top/hitPre_r_1_reg" "i:/WORK/$top/u_core/l2_hitPre_h_reg"
+_pin "r:/WORK/$top/l3Pre_r_reg"    "i:/WORK/$top/u_core/l3Pre_reg"
+
+# L1 data_resp prefetch(delay 保持, 对称死): golden data_resp_r_{0,1}_entries_prefetch ↔ impl l1_data_resp_reg[{0,1}][prefetch]
+for {set w 0} {$w < 2} {incr w} {
+  catch {undo_match "r:/WORK/$top/data_resp_r_${w}_entries_prefetch_reg"}
+  catch {undo_match "i:/WORK/$top/u_core/l1_data_resp_reg\[$w\]\\\[prefetch]"}
+  _pin "r:/WORK/$top/data_resp_r_${w}_entries_prefetch_reg" "i:/WORK/$top/u_core/l1_data_resp_reg\[$w\]\\\[prefetch]"
 }
 puts "PTWCACHE_PINS: $_n pinned, $_f failed"

@@ -41,8 +41,8 @@
       else       hptw_bypassed_hold[gi] <= ~clr_hptw & (rbv_resp[gi] | hptw_bypassed_hold[gi]);
     end
   end
-  wire [3:0] bypassed      = stageResp_bits.bypassed | rbv_resp | bypassed_hold;
-  wire [3:0] hptw_bypassed = stageResp_bits.bypassed | rbv_resp | hptw_bypassed_hold;
+  wire [3:0] bypassed      = stageResp_bypassed | rbv_resp | bypassed_hold;
+  wire [3:0] hptw_bypassed = stageResp_bypassed | rbv_resp | hptw_bypassed_hold;
 
   // toFsm.ppn / toHptw.ppn 选择（l1>l2>l3）
   wire [GVPN_W-1:0] nonleaf_ppn = resp_res.l1.hit ? resp_res.l1.ppn :

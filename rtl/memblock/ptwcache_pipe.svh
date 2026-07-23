@@ -39,7 +39,7 @@
       stageDelay_bits[0].isFirst   <= stageReq_bits.isFirst;
       stageDelay_bits[0].isHptwReq <= stageReq_bits.isHptwReq;
       stageDelay_bits[0].hptwId    <= stageReq_bits.hptwId;
-      stageDelay_bits[0].bypassed  <= stageReq_bits.bypassed;
+      // bypassed 入口恒 0 且 stageDelay[0] 载荷寄存器 golden 已折叠——不寄存（见结构声明注释）。
     end
   end
 
@@ -58,15 +58,13 @@
     if (stageDelay_valid_1cycle)      bypassed_reg_delay <= bypass_delay_wire;
     else if (refill_valid)            bypassed_reg_delay <= bypassed_reg_delay | bypass_delay_wire;
   end
-  // out.bits.bypassed = in.bypassed | (bypass_wire | (bypassed_reg & !inFire))
-  // 注：stageReq.bits.bypassed 恒 0（golden io.req 无该字段，firtool 已把
-  //     stageDelay(0) 的 bypassed 载荷寄存器折叠消去），这里不读该常 0 寄存器字段
-  //     （保持它无读者→FM Unread 不比对；X 行为也与 golden 折叠后一致）。
+  // out.bits.bypassed = in.bypassed(恒0) | (bypass_wire | (bypassed_reg & !inFire))
+  // stageReq.bits.bypassed 恒 0（golden io.req 无该字段），故 stageDelay1 累积不含 in 项。
   always_comb begin
     stageDelay_bits[1] = stageDelay_bits[0];
-    stageDelay_bits[1].bypassed =
-        bypass_delay_wire | (bypassed_reg_delay & {4{~stageDelay_valid_1cycle}});
   end
+  assign stageDelay1_bypassed =
+      bypass_delay_wire | (bypassed_reg_delay & {4{~stageDelay_valid_1cycle}});
 
   // ---- stageCheck[0]：PipelineConnect(stageDelay[1] -> stageCheck[0]) ----
   wire leftFire_c = stageDelay_valid[1] & stageCheck_ready[0];
@@ -80,9 +78,9 @@
       stageCheck_bits[0].isFirst   <= stageDelay_bits[1].isFirst;
       stageCheck_bits[0].isHptwReq <= stageDelay_bits[1].isHptwReq;
       stageCheck_bits[0].hptwId    <= stageDelay_bits[1].hptwId;
-      stageCheck_bits[0].bypassed  <= stageDelay_bits[1].bypassed;
     end
   end
+  always_ff @(posedge clock) if (leftFire_c) stageCheck0_bypassed <= stageDelay1_bypassed;
 
   // ---- InsideStageConnect(stageCheck[0] -> stageCheck[1]) ----
   assign stageResp_ready_int = ~stageResp_valid_r | resp_ready;
@@ -99,9 +97,9 @@
   end
   always_comb begin
     stageCheck_bits[1] = stageCheck_bits[0];
-    stageCheck_bits[1].bypassed = stageCheck_bits[0].bypassed
-        | (bypass_check_wire | (bypassed_reg_check & {4{~stageCheck_valid_1cycle}}));
   end
+  assign stageCheck1_bypassed = stageCheck0_bypassed
+      | (bypass_check_wire | (bypassed_reg_check & {4{~stageCheck_valid_1cycle}}));
 
   // ---- stageResp：PipelineConnect(stageCheck[1] -> stageResp) ----
   wire leftFire_r = stageCheck_valid[1] & stageResp_ready_int;
@@ -116,9 +114,9 @@
       stageResp_bits.isFirst   <= stageCheck_bits[1].isFirst;
       stageResp_bits.isHptwReq <= stageCheck_bits[1].isHptwReq;
       stageResp_bits.hptwId    <= stageCheck_bits[1].hptwId;
-      stageResp_bits.bypassed  <= stageCheck_bits[1].bypassed;
     end
   end
+  always_ff @(posedge clock) if (leftFire_r) stageResp_bypassed <= stageCheck1_bypassed;
 
   // ---- 单拍 fire 脉冲（OneCycleValid：fire 寄存一拍，flush 清零）----
   always_ff @(posedge clock or posedge reset) begin
@@ -129,10 +127,5 @@
     if (reset) stageCheck_valid_1cycle <= 1'b0;
     else       stageCheck_valid_1cycle <= ~flush & stageDelay1_fire;
   end
-  always_ff @(posedge clock or posedge reset) begin
-    if (reset) stageResp_valid_1cycle_dup <= 2'b0;
-    else begin
-      stageResp_valid_1cycle_dup[0] <= ~flush & stageCheck1_fire;
-      stageResp_valid_1cycle_dup[1] <= ~flush & stageCheck1_fire;
-    end
-  end
+  // 注：stageResp 的 OneCycleValid 副本由 resp.svh 的 stageCheck1_fire_1cycle 提供，
+  // 原 stageResp_valid_1cycle_dup 写而不读（死寄存器），已删除。

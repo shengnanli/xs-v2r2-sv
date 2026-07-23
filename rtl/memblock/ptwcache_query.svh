@@ -59,9 +59,8 @@
   // ===========================================================================
   logic [L3_SIZE-1:0] l3_hitVecT, l3_hitVec;
   for (gi = 0; gi < L3_SIZE; gi++) begin : g_l3_hit
-    // golden: l3_i_tag(11b)=refill vpn[37:27]；refill 侧已改为把 vpn[37:27] 存进
-    // tag[10:0]（高 9 位补 0 无读者），命中比低 11 位即 golden 语义。
-    wire l3_tag_hit = (l3[gi].tag[L3_TAG_W-1:0] == vpn_search[VPN_W-1 -: L3_TAG_W]);
+    // golden: l3_i_tag(11b)=refill vpn[37:27]；l3_entry_t.tag 现窄至 11b，全宽比对即 golden 语义。
+    wire l3_tag_hit = (l3[gi].tag == vpn_search[VPN_W-1 -: L3_TAG_W]);
     assign l3_hitVecT[gi] = nonleaf_hit(l3_tag_hit, l3[gi].asid, l3[gi].vmid, l3g[gi],
                               csr_satp_asid[2], csr_vsatp_asid[2], csr_hgatp_vmid[2], h_search)
                             && l3v[gi] && (h_search == l3h[gi]);
@@ -70,30 +69,29 @@
 
   // stageDelay：ParallelPriorityMux + DataHoldBypass
   //   DataHoldBypass(x, en)：en 拍组合直通 x，否则保持上一次 en 拍锁存值。
-  //   故 l3_hit_d 等在 stageDelay_valid_1cycle 拍即为新值（与 golden 同相），供 stageDelay1_fire 锁存。
-  logic [GVPN_W-1:0] l3_hitPPN_h;  logic [PBMT_W-1:0] l3_hitPbmt_h;
+  //   L3 无 pbmt（stage1 pbmt mux 中 l3 分支不参与，落到 l2.pbmt；golden 无 l3 pbmt 寄存器）。
+  logic [GVPN_W-1:0] l3_hitPPN_h;
   logic l3_hitPre_h, l3_hit_h;     // held 寄存器
-  logic [GVPN_W-1:0] l3_hitPPN_d;  logic [PBMT_W-1:0] l3_hitPbmt_d;
+  logic [GVPN_W-1:0] l3_hitPPN_d;
   logic l3_hitPre_d, l3_hit_d;     // DataHoldBypass 输出（组合）
-  logic [GVPN_W-1:0] l3_ppn_mux;   logic [PBMT_W-1:0] l3_pbmt_mux;  logic l3_pre_mux;
+  logic [GVPN_W-1:0] l3_ppn_mux;   logic l3_pre_mux;
   always_comb begin
     // ParallelPriorityMux：最低命中下标优先；全 0 时默认取最后一项（golden firtool 形态）。
-    l3_ppn_mux = l3[L3_SIZE-1].ppn; l3_pbmt_mux = l3[L3_SIZE-1].pbmt; l3_pre_mux = l3[L3_SIZE-1].prefetch;
+    l3_ppn_mux = l3[L3_SIZE-1].ppn; l3_pre_mux = l3[L3_SIZE-1].prefetch;
     for (int i = L3_SIZE-1; i >= 0; i--) if (l3_hitVec[i]) begin
-      l3_ppn_mux = l3[i].ppn; l3_pbmt_mux = l3[i].pbmt; l3_pre_mux = l3[i].prefetch;
+      l3_ppn_mux = l3[i].ppn; l3_pre_mux = l3[i].prefetch;
     end
   end
   always_ff @(posedge clock) if (stageDelay_valid_1cycle) begin
-    l3_hitPPN_h <= l3_ppn_mux; l3_hitPbmt_h <= l3_pbmt_mux; l3_hitPre_h <= l3_pre_mux; l3_hit_h <= |l3_hitVec;
+    l3_hitPPN_h <= l3_ppn_mux; l3_hitPre_h <= l3_pre_mux; l3_hit_h <= |l3_hitVec;
   end
   assign l3_hit_d     = stageDelay_valid_1cycle ? (|l3_hitVec) : l3_hit_h;
   assign l3_hitPPN_d  = stageDelay_valid_1cycle ? l3_ppn_mux   : l3_hitPPN_h;
-  assign l3_hitPbmt_d = stageDelay_valid_1cycle ? l3_pbmt_mux  : l3_hitPbmt_h;
   assign l3_hitPre_d  = stageDelay_valid_1cycle ? l3_pre_mux   : l3_hitPre_h;
   // stageCheck 对齐
-  logic l3Hit; logic [GVPN_W-1:0] l3HitPPN; logic [PBMT_W-1:0] l3HitPbmt; logic l3Pre;
+  logic l3Hit; logic [GVPN_W-1:0] l3HitPPN; logic l3Pre;
   always_ff @(posedge clock) if (stageDelay1_fire) begin
-    l3Hit <= l3_hit_d; l3HitPPN <= l3_hitPPN_d; l3HitPbmt <= l3_hitPbmt_d; l3Pre <= l3_hitPre_d;
+    l3Hit <= l3_hit_d; l3HitPPN <= l3_hitPPN_d; l3Pre <= l3_hitPre_d;
   end
   // PLRU access：命中且 stageDelay_valid_1cycle
   wire l3_access_en = l3_hit_d && stageDelay_valid_1cycle;
@@ -154,12 +152,33 @@
     for (int w = 0; w < L1_WAYS; w++) l1hVec_delay[w] <= l1hVec_req[w];
   end
   // SRAM 读出锁存（DataHoldBypass）
-  l1_sram_entry_t l1_data_resp [L1_WAYS];
-  logic l1_dhb_en;
-  always_ff @(posedge clock) if (stageDelay_valid_1cycle) for (int w=0; w<L1_WAYS; w++) l1_data_resp[w] <= l1_r_resp_data[w];
+  // l1_data_resp 只保留 delay 会读字段（l1_delay_entry_t；不含 onlypf——l1 非叶 onlypf 不读，
+  // 整行寄存则成 impl-only 死寄存器，golden l1 data_resp 亦无 onlypf）。
+  l1_delay_entry_t l1_data_resp [L1_WAYS];
+  always_ff @(posedge clock) if (stageDelay_valid_1cycle) for (int w=0; w<L1_WAYS; w++) begin
+    l1_data_resp[w].tag      <= l1_r_resp_data[w].tag;
+    l1_data_resp[w].asid     <= l1_r_resp_data[w].asid;
+    l1_data_resp[w].vmid     <= l1_r_resp_data[w].vmid;
+    l1_data_resp[w].pbmts    <= l1_r_resp_data[w].pbmts;
+    l1_data_resp[w].ppns     <= l1_r_resp_data[w].ppns;
+    l1_data_resp[w].vs       <= l1_r_resp_data[w].vs;
+    l1_data_resp[w].prefetch <= l1_r_resp_data[w].prefetch;
+  end
   // 注：DataHoldBypass = stageDelay_valid_1cycle 拍直通 io 读出，否则用上一拍锁存。
-  l1_sram_entry_t l1_data_use [L1_WAYS];
-  always_comb for (int w=0; w<L1_WAYS; w++) l1_data_use[w] = stageDelay_valid_1cycle ? l1_r_resp_data[w] : l1_data_resp[w];
+  l1_delay_entry_t l1_data_use [L1_WAYS];
+  always_comb for (int w=0; w<L1_WAYS; w++) begin
+    if (stageDelay_valid_1cycle) begin
+      l1_data_use[w].tag      = l1_r_resp_data[w].tag;
+      l1_data_use[w].asid     = l1_r_resp_data[w].asid;
+      l1_data_use[w].vmid     = l1_r_resp_data[w].vmid;
+      l1_data_use[w].pbmts    = l1_r_resp_data[w].pbmts;
+      l1_data_use[w].ppns     = l1_r_resp_data[w].ppns;
+      l1_data_use[w].vs       = l1_r_resp_data[w].vs;
+      l1_data_use[w].prefetch = l1_r_resp_data[w].prefetch;
+    end else begin
+      l1_data_use[w] = l1_data_resp[w];
+    end
+  end
 
   // stageDelay：hitVec_delay
   logic [L1_WAYS-1:0] l1_hitVec_delay;
@@ -175,13 +194,18 @@
     end
   end
   // stageCheck：RegEnable(hitVec_delay), ramDatas, vVec
+  // 只寄存 check 级会读的字段（l1_check_entry_t）；tag/asid/vmid/vs/onlypf 不读 → 不寄存。
   logic [L1_WAYS-1:0] l1_hitVec;
-  l1_sram_entry_t l1_ramDatas [L1_WAYS];
+  l1_check_entry_t l1_ramDatas [L1_WAYS];
   always_ff @(posedge clock) if (stageDelay1_fire) begin
     l1_hitVec <= l1_hitVec_delay;
-    for (int w=0; w<L1_WAYS; w++) l1_ramDatas[w] <= l1_data_use[w];
+    for (int w=0; w<L1_WAYS; w++) begin
+      l1_ramDatas[w].ppns     <= l1_data_use[w].ppns;
+      l1_ramDatas[w].pbmts    <= l1_data_use[w].pbmts;
+      l1_ramDatas[w].prefetch <= l1_data_use[w].prefetch;
+    end
   end
-  l1_sram_entry_t l1_hitWayData;
+  l1_check_entry_t l1_hitWayData;
   always_comb begin
     l1_hitWayData = l1_ramDatas[L1_WAYS-1];   // 默认最后一 way
     for (int w=L1_WAYS-1; w>=0; w--) if (l1_hitVec[w]) l1_hitWayData = l1_ramDatas[w];
@@ -230,12 +254,25 @@
     end
   end
   logic [L0_WAYS-1:0] l0_hitVec;
-  l0_sram_entry_t l0_ramDatas [L0_WAYS];
+  // 只寄存 check 级会读的字段（l0_check_entry_t）；tag/asid/vmid/vs 不读 → 不寄存。
+  l0_check_entry_t l0_ramDatas [L0_WAYS];
   always_ff @(posedge clock) if (stageDelay1_fire) begin
     l0_hitVec <= l0_hitVec_delay;
-    for (int w=0; w<L0_WAYS; w++) l0_ramDatas[w] <= l0_data_use[w];
+    for (int w=0; w<L0_WAYS; w++) begin
+      l0_ramDatas[w].ppns     <= l0_data_use[w].ppns;
+      l0_ramDatas[w].pbmts    <= l0_data_use[w].pbmts;
+      l0_ramDatas[w].onlypf   <= l0_data_use[w].onlypf;
+      l0_ramDatas[w].perm_d   <= l0_data_use[w].perm_d;
+      l0_ramDatas[w].perm_a   <= l0_data_use[w].perm_a;
+      l0_ramDatas[w].perm_g   <= l0_data_use[w].perm_g;
+      l0_ramDatas[w].perm_u   <= l0_data_use[w].perm_u;
+      l0_ramDatas[w].perm_x   <= l0_data_use[w].perm_x;
+      l0_ramDatas[w].perm_w   <= l0_data_use[w].perm_w;
+      l0_ramDatas[w].perm_r   <= l0_data_use[w].perm_r;
+      l0_ramDatas[w].prefetch <= l0_data_use[w].prefetch;
+    end
   end
-  l0_sram_entry_t l0_hitWayData;
+  l0_check_entry_t l0_hitWayData;
   always_comb begin
     l0_hitWayData = l0_ramDatas[L0_WAYS-1];   // 默认最后一 way
     for (int w=L0_WAYS-1; w>=0; w--) if (l0_hitVec[w]) l0_hitWayData = l0_ramDatas[w];
@@ -266,10 +303,16 @@
     for (int i=SP_SIZE-1; i>=0; i--) if (sp_hitVec[i]) sp_hitData_d = sp[i];
   end
   wire sp_hit_d = |sp_hitVec;
-  // stageCheck 对齐
-  logic spHit; sp_entry_t spHitData; logic spPre, spValid;
+  // stageCheck 对齐（spHitData 只寄存 check 会读字段 sp_check_entry_t，与 golden spHitData_* 一致）
+  logic spHit; sp_check_entry_t spHitData; logic spPre, spValid;
   always_ff @(posedge clock) if (stageDelay1_fire) begin
-    spHit <= sp_hit_d; spHitData <= sp_hitData_d; spPre <= sp_hitData_d.prefetch; spValid <= sp_hitData_d.v;
+    spHit <= sp_hit_d;
+    spHitData.ppn   <= sp_hitData_d.ppn;
+    spHitData.pbmt  <= sp_hitData_d.pbmt;
+    spHitData.perm  <= sp_hitData_d.perm;
+    spHitData.n     <= sp_hitData_d.n;
+    spHitData.level <= sp_hitData_d.level;
+    spPre <= sp_hitData_d.prefetch; spValid <= sp_hitData_d.v;
   end
   wire sp_access_en = sp_hit_d && stageDelay_valid_1cycle;
   wire [3:0] sp_hitWay_d = oh16_to_idx(sp_hitVec);
@@ -279,18 +322,14 @@
   // ===========================================================================
   always_comb begin
     check_res = '0;
-    // l3
-    check_res.l3.hit = l3Hit; check_res.l3.pre = l3Pre; check_res.l3.ppn = l3HitPPN; check_res.l3.pbmt = l3HitPbmt;
-    check_res.l3.v = 1'b1;
-    // l2
-    check_res.l2.hit = l2Hit; check_res.l2.pre = l2Pre; check_res.l2.ppn = l2HitPPN; check_res.l2.pbmt = l2HitPbmt;
-    check_res.l2.v = 1'b1;
-    // l1
-    check_res.l1.hit = l1Hit; check_res.l1.pre = l1Pre; check_res.l1.ppn = l1HitPPN; check_res.l1.pbmt = l1HitPbmt;
-    check_res.l1.ecc = 1'b0; check_res.l1.v = 1'b1;
-    // l0（整行 8 sector）
+    // l3（hit/ppn/pre；pbmt/v 不被 resp 读且 golden 无，已从结构剪除）
+    check_res.l3.hit = l3Hit; check_res.l3.ppn = l3HitPPN; check_res.l3.pre = l3Pre;
+    // l2（hit/ppn/pbmt/pre）
+    check_res.l2.hit = l2Hit; check_res.l2.ppn = l2HitPPN; check_res.l2.pbmt = l2HitPbmt; check_res.l2.pre = l2Pre;
+    // l1（hit/ppn/pbmt/pre）
+    check_res.l1.hit = l1Hit; check_res.l1.ppn = l1HitPPN; check_res.l1.pbmt = l1HitPbmt; check_res.l1.pre = l1Pre;
+    // l0（整行 8 sector；ecc/level 不读，已从结构剪除）
     check_res.l0.hit = l0Hit; check_res.l0.pre = l0Pre;
-    check_res.l0.ecc = 1'b0; check_res.l0.level = 2'h0;
     for (int s=0; s<CONTIGUOUS; s++) begin
       check_res.l0.ppn[s]  = l0_hitWayData.ppns[s];
       check_res.l0.pbmt[s] = l0_hitWayData.pbmts[s];
@@ -303,10 +342,10 @@
       check_res.l0.perm[s].r = l0_hitWayData.perm_r[s];
       check_res.l0.v[s]    = ~l0_hitWayData.onlypf[s];   // valid = !onlypf
     end
-    // sp
+    // sp（完整；ecc 不读，已从结构剪除）
     check_res.sp.hit = spHit; check_res.sp.pre = spPre; check_res.sp.ppn = spHitData.ppn; check_res.sp.pbmt = spHitData.pbmt;
     check_res.sp.n = spHitData.n; check_res.sp.perm = spHitData.perm; check_res.sp.level = spHitData.level;
-    check_res.sp.ecc = 1'b0; check_res.sp.v = spValid;
+    check_res.sp.v = spValid;
   end
 
   // resp_res：stageCheck[1].fire 锁存

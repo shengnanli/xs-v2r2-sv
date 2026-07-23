@@ -54,6 +54,8 @@ fm:
 	FM_IMPL_SRCS="$(abspath $(RTL_SRCS) $(WRAPPER_SRCS) $(SRAM_DEPS))" \
 	FM_INCDIR="$(abspath $(RTL_DIR)/memblock)" \
 	FM_MERGE_DUP=false \
+	$(if $(wildcard fm_pins_pre.tcl),FM_PIN_PRE_TCL=$(abspath fm_pins_pre.tcl),) \
+	$(if $(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS),FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=$(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS),) \
 	XSSV_HOME=$(XSSV_HOME) FM_RUN_ID=$$FM_RUN_ID \
 	fm_shell -64 -work_path fm_work/PtwCache -file $(XSSV_HOME)/scripts/fm_eq.tcl \
 	    > fm_work/PtwCache/fm.log 2>&1; \
