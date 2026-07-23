@@ -79,7 +79,7 @@ module LoadQueueRAR_xs(
   assign io_perf_0_value = {4'h0, perf0};
   assign io_perf_1_value = {4'h0, perf1};
 
-  xs_LoadQueueRAR_core u_core (
+  xs_LoadQueueRAR_core_ut u_core (
     .clock  (clock),
     .reset  (reset),
     .redirect_valid (io_redirect_valid),

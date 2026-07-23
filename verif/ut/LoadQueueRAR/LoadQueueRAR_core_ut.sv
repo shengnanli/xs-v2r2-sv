@@ -9,7 +9,7 @@
 //  ── 本核的层次（与 golden 顶层镜像，供 FM 合成证明）──────────────────────────────
 //  golden 顶层 LoadQueueRAR 恰好只例化两个子模块 + 一小段顶层 glue：
 //      FreeList_3   freeList     —— 空闲槽循环队列（分配 headPtr / 回收 tailPtr）
-//      LqPAddrModule paddrModule —— 每条目 16-bit 哈希 paddr 的 CAM 存储 + 相等匹配
+//      LqPAddrModule_xs paddrModule —— 每条目 16-bit 哈希 paddr 的 CAM 存储 + 相等匹配
 //  加上顶层 glue：72 个 entry 的 {allocated, robIdx, lqIdx, released} 平寄存器、
 //  release 两拍流水、matchMask 打拍、freeMaskVec 计算、revoke、perf。
 //
@@ -31,7 +31,7 @@
 //     出队：条目的 lqIdx 已“不晚于 ldWbPtr”（已写回）或被 redirect 冲刷 → 释放 entry。
 //     revoke：若某 load 在 query 后一拍需要 replay，撤销它上一拍占的 entry。
 // =============================================================================
-module xs_LoadQueueRAR_core
+module xs_LoadQueueRAR_core_ut
   import loadqueuerar_pkg::*;
 (
   input  logic                          clock,
@@ -131,7 +131,7 @@ module xs_LoadQueueRAR_core
   // 本拍实际接收并分配的口（needEnqueue & ready）
   logic [LD_WIDTH-1:0] acceptedVec;
 
-  FreeList_3 freeList (
+  FreeList_3_xs freeList (
     .clock             (clock),
     .reset             (reset),
     .io_allocateSlot_0 (fl_allocateSlot[0]),
@@ -200,7 +200,7 @@ module xs_LoadQueueRAR_core
   logic [LD_WIDTH-1:0][RAR_SIZE-1:0] camHit;
   logic [RAR_SIZE-1:0]               relCamHit;
 
-  LqPAddrModule paddrModule (
+  LqPAddrModule_xs paddrModule (
     .clock                        (clock),
     .reset                        (reset),
     .io_wen_0                     (acceptedVec[0]),
