@@ -1,0 +1,5 @@
+SIGNOFF_RESULT FTBBank: measured=PARTIAL required=SUCCEEDED gate=GAP (proof=assembly fm_shell_rc=0 validator_rc=1)
+run_id: SGN-FTBBank-1784797432
+impl_commit: 1269f7b027211b0ad37d46c4d834dd51f320a275
+manifest_sha256: f58880771babf8e808d3c3460dbc99f36acd77be58279a68caa0a70f740c5e5a
+CLEAN_GATE_FAIL
