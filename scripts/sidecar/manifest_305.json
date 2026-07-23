@@ -729,8 +729,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "strict+vmucp+dead-ref: 0黑盒(自包含micro-FTB); vmucp验 u_bits_meta 515 对称死位(双射同名); brSlot.lower per-slot struct 窄化(ftb_br_slot_t 12位)消 impl-unread; golden-only 435 s2/s3_pc_dup 流水复制PC = cone-dead dead-ref",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
