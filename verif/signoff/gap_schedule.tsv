@@ -67,10 +67,6 @@ RASStack	IMPL_DEAD	nc0/ur0/ui4/bb0
 RegCache	IMPL_DEAD	nc0/ur6/ui6/bb0
 Rename	NATIVE_FAIL	nc2/ur0/ui1/bb0
 RenameBuffer	IMPL_DEAD	nc0/ur7/ui8/bb0
-SCTable	IMPL_DEAD	nc49/ur2/ui2/bb1
-SCTable_1	IMPL_DEAD	nc49/ur2/ui2/bb1
-SCTable_2	IMPL_DEAD	nc49/ur2/ui2/bb1
-SCTable_3	IMPL_DEAD	nc49/ur2/ui2/bb1
 Sbuffer	IMPL_DEAD	nc0/ur0/ui15/bb1
 Scheduler_2	UNMATCH_COMPARE	nc647/ur0/ui0/bb0
 SinkC	BB	nc0/ur0/ui0/bb1
