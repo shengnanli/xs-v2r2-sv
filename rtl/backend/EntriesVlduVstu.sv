@@ -131,6 +131,19 @@ module xs_EntriesVlduVstu_core import iq_vlduvstu_pkg::*; (
       & ({r.lq_flag, r.lq_value} == {e.payload.lq_flag, e.payload.lq_value});
   endfunction
 
+  // 三路 mem 响应对每条目的命中(纯组合,按 {sqIdx,lqIdx} 匹配)。
+  // ★ 无条件赋值 ★:必须在所有路径上驱动,否则 FM 前端把它当条件锁存推成
+  //   impl-only 死寄存器(h0_reg/h1_reg/h2_reg,写而不被读的比较点 → strict PARTIAL)。
+  //   逐拍全条目重算,仅在 timer 饱和窗口被 issueResp 消费。
+  logic [NUM_ENTRIES-1:0] ety_mem_hit0, ety_mem_hit1, ety_mem_hit2;
+  always_comb begin
+    for (int e = 0; e < NUM_ENTRIES; e++) begin
+      ety_mem_hit0[e] = mem_hit(vecld_resp,        ety_entry[e]);
+      ety_mem_hit1[e] = mem_hit(frommem_slow_resp, ety_entry[e]);
+      ety_mem_hit2[e] = mem_hit(vecld_final_resp,  ety_entry[e]);
+    end
+  end
+
   always_comb begin
     for (int e = 0; e < NUM_ENTRIES; e++) begin
       logic [1:0] tmr;
@@ -138,6 +151,9 @@ module xs_EntriesVlduVstu_core import iq_vlduvstu_pkg::*; (
       logic [1:0] r;
       logic       h0, h1, h2;
       tmr = ety_issue_timer[e];
+      h0  = ety_mem_hit0[e];
+      h1  = ety_mem_hit1[e];
+      h2  = ety_mem_hit2[e];
       v = 1'b0; r = 2'h0;
       if (tmr == 2'h0) begin
         v = og0resp_valid;       r = RESP_BLOCK;
@@ -147,13 +163,10 @@ module xs_EntriesVlduVstu_core import iq_vlduvstu_pkg::*; (
         v = og2resp_valid;       r = og2resp_resp;
       end else begin
         // timer 饱和窗口:三路 mem 响应按索引匹配。
-        h0 = mem_hit(vecld_resp,       ety_entry[e]);
-        h1 = mem_hit(frommem_slow_resp, ety_entry[e]);
-        h2 = mem_hit(vecld_final_resp, ety_entry[e]);
         v  = h0 | h1 | h2;
-        r  = (h0 ? vecld_resp.resp       : 2'h0)
+        r  = (h0 ? vecld_resp.resp        : 2'h0)
            | (h1 ? frommem_slow_resp.resp : 2'h0)
-           | (h2 ? vecld_final_resp.resp : 2'h0);
+           | (h2 ? vecld_final_resp.resp  : 2'h0);
       end
       ety_issue_resp[e].valid = v;
       ety_issue_resp[e].resp  = resp_type_e'(r);
