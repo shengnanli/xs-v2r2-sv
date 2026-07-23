@@ -16,3 +16,4 @@ TageBTable	FoldedSRAMTemplate_20,WrBypass_32
 Directory	L2Directory
 Tage_SC	TageBTable,SCTable,SCTable_1,SCTable_2,SCTable_3,TageTable,TageTable_1,TageTable_2,TageTable_3	9绿children全SIGNOFF_PASS(依赖闭包); allocLFSR_prng/_1双侧elaborate非黑盒(不入依赖); 父级assembly+dead-ref合法绿
 ITTage	ITTageTable,ITTageTable_1,ITTageTable_2,ITTageTable_3,ITTageTable_4	5×ITTageTable全SIGNOFF_PASS(依赖闭包); RegionWays/LFSR双侧elaborate非黑盒(不入依赖)
+FTB	FTBBank	FTBBank SIGNOFF_PASS(依赖闭包); DelayNWithValid/_1+DelayN_1双侧elaborate非黑盒(纯逻辑延迟线,不入依赖); 父级assembly+vmucp

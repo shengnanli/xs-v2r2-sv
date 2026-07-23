@@ -585,12 +585,12 @@
    "makefile": "verif/ut/FTB/Makefile",
    "make_target": "fm-FTB",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "allow_ref": "verif/signoff/allow/FTB.json",
+   "rationale": "assembly+vmucp: 1黑盒=ftbBank(SIGNOFF_PASS绿child,depends_on); DelayNWithValid/_1+DelayN_1双侧elaborate(纯逻辑延迟线非vendor,白盒); vmucp验514个对称matched-unread死寄存器(REG_2_reg perf占位+update_meta_r_reg[513位]meta寄存器只消费[64]/[66:65],其余位两侧bug-for-bug同golden死, ref==impl双射自动配对); RTL消18个impl-only死位(s2_fauftb_entry/s2_ftbBank/s3_entry的dup1..3 .valid+.brSlot.sharing恒0镜像golden剪除)",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {

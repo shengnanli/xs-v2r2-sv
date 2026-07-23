@@ -530,6 +530,16 @@ module xs_FTB_core
         s2_fauftb_entry[d] <= io_fauftb_entry_in;
         s2_fauftb_hit[d]   <= io_fauftb_entry_hit_in;
         s2_ftbBank[d]      <= ftbBank_read_resp;
+        // 条目顶层 .valid 与 brSlot.sharing 仅 dup0 有读者
+        //   (dup0: entry_eq 一致性比对 + s2_entry mux + s3→last_stage 输出)。
+        //   golden(firtool) 已对 dup1..3 剪除这两个字段(无扇出)。为与 golden 存储
+        //   布局一致、消除 impl-only 死寄存器, 对 dup1..3 恒置 0(常量传播即剪除)。
+        if (d != 0) begin
+          s2_fauftb_entry[d].valid          <= 1'b0;
+          s2_fauftb_entry[d].brSlot.sharing <= 1'b0;
+          s2_ftbBank[d].valid               <= 1'b0;
+          s2_ftbBank[d].brSlot.sharing      <= 1'b0;
+        end
         s2_pc_higher[d]    <= s1_pc[d][49:21];
         s2_pc_middle[d]    <= s1_pc[d][20:13];
         s2_pc_higher_p1[d] <= 29'(s1_pc[d][49:21] + 29'h1);
@@ -547,6 +557,12 @@ module xs_FTB_core
     for (int d = 0; d < NDUP; d++) begin
       if (io_s2_fire[d]) begin
         s3_entry[d]     <= s2_multi_hit_en ? ftbBank_read_multi_entry : s2_entry[d];
+        // 同 s2：s3_entry 的 .valid / brSlot.sharing 仅 dup0 经 last_stage 输出被读，
+        //   dup1..3 无扇出(golden 已剪除)→ 恒 0 消除 impl-only 死寄存器。
+        if (d != 0) begin
+          s3_entry[d].valid          <= 1'b0;
+          s3_entry[d].brSlot.sharing <= 1'b0;
+        end
         s3_multi_hit[d] <= s2_multi_hit_en;
         s3_pc_higher[d]    <= {s2_seg0[d], s2_seg1[d][11:9]};
         s3_pc_middle[d]    <= s2_seg1[d][8:1];
