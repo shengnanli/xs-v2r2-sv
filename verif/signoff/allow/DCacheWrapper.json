@@ -1,0 +1,12 @@
+{
+  "unresolved_blackbox": [],
+  "interface_only": [],
+  "empty_blackbox": [
+    {
+      "id": "dcache",
+      "ref_path": "r:/WORK/DCacheWrapper/dcache",
+      "impl_path": "i:/WORK/DCacheWrapper/u_core/dcache"
+    }
+  ],
+  "unmatched": []
+}

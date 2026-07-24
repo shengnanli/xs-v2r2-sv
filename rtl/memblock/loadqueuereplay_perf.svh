@@ -95,10 +95,13 @@
   logic [1:0] perfReg0 [13], perfReg1 [13];
   logic       perfFull0, perfFull1;
   always_ff @(posedge clock) begin
-    for (int k = 0; k < 13; k++) begin
-      perfReg0[k] <= perfNext[k];
-      perfReg1[k] <= perfReg0[k];
-    end
+    // index 3 是「replay_full」，用单独的 1 位 perfFull0/1 流水（golden io_perf_3_value_REG
+    //  只有 1 位）；不寄 perfReg0/1[3]（否则 2 位数组的 [3] 全死→unread_impl）。
+    for (int k = 0; k < 13; k++)
+      if (k != 3) begin
+        perfReg0[k] <= perfNext[k];
+        perfReg1[k] <= perfReg0[k];
+      end
     perfFull0 <= perfFullNext;
     perfFull1 <= perfFull0;
   end

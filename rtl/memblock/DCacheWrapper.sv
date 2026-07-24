@@ -116,15 +116,17 @@ module xs_DCacheWrapper_core(
   // perf event 2 级流水 + 输出
   // ---------------------------------------------------------------------------
   // 32 路事件结构完全一致，用 generate/for 统一推进，不手工展开 32*2 条赋值。
-  // 复位时清零（与 golden 的随机初始化语义一致：SYNTHESIS 下视为 0）。
+  // ★无复位★：golden 的 perf 2 级流水寄存器是纯 `always @(posedge clock)`（见
+  //   golden DCacheWrapper.sv line 789，无 `if (reset)`），逐拍无条件移位，复位不清零
+  //   （随机初值仅在 !SYNTHESIS 的 ENABLE_INITIAL_REG_ 里，与本核 SYNTHESIS 语义无关）。
+  //   早前版本误加了同步复位清零，使 impl perf 寄存器 cone 多出 reset 输入而 golden 没有，
+  //   FM analyze_points 报「reset exists in impl cone but not ref cone」→ 32 路 perf DFF
+  //   全部 failing/unverified（真不等价，非黑盒对称假阳性）。此处对齐 golden：去掉复位。
   genvar gi;
   generate
     for (gi = 0; gi < NUM_PERF_EVENTS; gi++) begin : g_perf
       always_ff @(posedge clock) begin
-        if (reset)
-          perf_pipe[gi] <= '0;
-        else
-          perf_pipe[gi] <= perf_advance(perf_pipe[gi], perf_raw[gi]);
+        perf_pipe[gi] <= perf_advance(perf_pipe[gi], perf_raw[gi]);
       end
       // 第二级寄存器即对外 perf 输出（golden 中 perf 输出取第二级打拍值）。
       assign perf_out[gi] = perf_pipe[gi].stage[PERF_STAGE_2];

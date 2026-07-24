@@ -1,0 +1,22 @@
+{
+ "unresolved_blackbox": [],
+ "interface_only": [],
+ "empty_blackbox": [
+  {
+   "id": "difftestArchIntRegState_module",
+   "ref_path": "r:/WORK/DataPath/difftestArchIntRegState_module",
+   "impl_path": "i:/WORK/DataPath/u_core/difftestArchIntRegState_module"
+  },
+  {
+   "id": "difftestArchFpRegState_module",
+   "ref_path": "r:/WORK/DataPath/difftestArchFpRegState_module",
+   "impl_path": "i:/WORK/DataPath/u_core/difftestArchFpRegState_module"
+  },
+  {
+   "id": "difftestArchVecRegState_module",
+   "ref_path": "r:/WORK/DataPath/difftestArchVecRegState_module",
+   "impl_path": "i:/WORK/DataPath/u_core/difftestArchVecRegState_module"
+  }
+ ],
+ "unmatched": []
+}

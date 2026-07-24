@@ -63,17 +63,23 @@ module xs_LoadQueueReplay_core
     logic strict;       // C_MA 严格序
   } entry_ctrl_t;
 
-  // entry 阵列按 LQ_SLOTS=128 声明（仅 0..71 有效，其余为 padding，永不分配且复位清 0）。
-  //  这样所有「7 位下标读阵列」静态在界，对 Formality 友好（消除 FMR_ELAB-147）。
-  entry_ctrl_t              ent [LQ_SLOTS];
-  logic [N_CAUSES-1:0]      cause [LQ_SLOTS];           // 11 位 cause 向量
-  lqr_uop_t                 uop   [LQ_SLOTS];
-  lqr_vec_t                 vecReplay [LQ_SLOTS];
-  sq_ptr_t                  blockSqIdx [LQ_SLOTS];
-  logic [MSHR_ID_W-1:0]     missMSHRId [LQ_SLOTS];
-  logic [TLB_ID_W-1:0]      tlbHintId  [LQ_SLOTS];
-  logic                     dataInLastBeat [LQ_SLOTS];
-  logic [VADDR_BITS-1:0]    debug_vaddr [LQ_SLOTS];
+  // entry 状态/数据阵列按真实深度 LQ_REPLAY_SIZE=72 声明（与 golden allocated_0..71 逐条对齐）。
+  //  ★不声明 padding 槽 72..127★：golden 只有 72 条 entry 寄存器，若 impl 声明 128 条则
+  //   多出的 56 条(每条含 allocated/scheduled/blocking/strict/cause[11]/missMSHRId/tlbHintId/
+  //   dataInLastBeat/debug_vaddr) 全部只在 reset 清 0、运行期永不写读 → FM 判 impl-only
+  //   cone-dead 死寄存器(约 4144 点 unread_impl)。收窄到 72 与 golden 形状一致即消除。
+  //  运行期 7 位下标的「纯值读」不直接索引这些寄存器阵列，而走下面的越界折叠视图 *R
+  //   （128 深，k>=72 回绕读 [0]，复刻 golden firtool 的 128 项读表）；所有直接 arr[i] 读
+  //   均由 i<LQ_REPLAY_SIZE 的循环变量索引，静态在界，无 FMR_ELAB-147 风险。
+  entry_ctrl_t              ent [LQ_REPLAY_SIZE];
+  logic [N_CAUSES-1:0]      cause [LQ_REPLAY_SIZE];     // 11 位 cause 向量
+  lqr_uop_t                 uop   [LQ_REPLAY_SIZE];
+  lqr_vec_t                 vecReplay [LQ_REPLAY_SIZE];
+  sq_ptr_t                  blockSqIdx [LQ_REPLAY_SIZE];
+  logic [MSHR_ST_W-1:0]     missMSHRId [LQ_REPLAY_SIZE];  // 5 位存储（bit[4] 恒 0，golden 同）
+  logic [TLB_ST_W-1:0]      tlbHintId  [LQ_REPLAY_SIZE];  // 5 位存储（bit[4] 恒 0，golden 同）
+  logic                     dataInLastBeat [LQ_REPLAY_SIZE];
+  logic [VADDR_BITS-1:0]    debug_vaddr [LQ_REPLAY_SIZE];
 
   // ---- 越界折叠读视图（FM 配平）：golden 对 Vec(72) 以 7 位下标做纯值读取时，
   //      firtool 生成 128 项读表、高 56 项(72..127)复制条目 0（越界回绕 vec[0]）。
@@ -82,7 +88,7 @@ module xs_LoadQueueReplay_core
   lqr_uop_t                 uopR       [LQ_SLOTS];
   lqr_vec_t                 vecReplayR [LQ_SLOTS];
   logic [N_CAUSES-1:0]      causeR     [LQ_SLOTS];
-  logic [MSHR_ID_W-1:0]     missMSHRIdR[LQ_SLOTS];
+  logic [MSHR_ST_W-1:0]     missMSHRIdR[LQ_SLOTS];       // 5 位（跟随 missMSHRId 存储宽度）
   always_comb
     for (int k = 0; k < LQ_SLOTS; k++) begin
       uopR[k]        = (k >= LQ_REPLAY_SIZE) ? uop[0]        : uop[k];
