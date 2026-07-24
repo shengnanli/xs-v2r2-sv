@@ -11,12 +11,14 @@ package exeunit_8_pkg;
   // §1 inPipe 控制位:随 uop 一同打拍、在 FU 出结果那拍交给该 FU 的控制信息。
   //   字段集合来自单态化后实际被下游 FU 消费的控制位(robIdx/pdest/写使能等)。
   // ------------------------------------------------------------------------
+  // 注意:fuOpType / rfWen 只在浅级被下游 FU 消费(fuOpType 到 Fcvt=第1级、
+  //   rfWen 到 Falu=第0级与 Fcvt=第1级),到最深级(Fmac=第2级)已无消费者,
+  //   故不进本通用结构(否则最深级会多存这两字段=死位,偏离 golden)。它们由
+  //   logic.svh 里各自 2 级专用链承载(镜像 golden inPipe_1_1/1_2 存、1_3 不存)。
   typedef struct packed {
-    logic [8:0] fuOpType;
     logic       robIdx_flag;
     logic [7:0] robIdx_value;
     logic [7:0] pdest;
-    logic       rfWen;
     logic       fpWen;
     logic       fpu_wflags;
   } ctrl_t;

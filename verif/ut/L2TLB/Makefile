@@ -68,7 +68,7 @@ FM_REF_DEPS_L2TLB = $(notdir $(GOLDEN_SUBS))
 # 剩下的拖成 unverified。L2TLB 是装配层,重写工作在顶层 glue(CSR/sfence 复制、仲裁
 # 装配、访存数据通路、PTE→sector 合并、perf);各子模块有独立 UT/FM。黑盒后 FM 只
 # 比顶层 glue 相对子模块 边界引脚 的等价 —— 即真正的重写对象。
-FM_INTERFACE_ONLY = PtwCache PTW LLPTW HPTW L2TlbMissQueue L2TlbPrefetch
+FM_INTERFACE_ONLY = PtwCache PTW LLPTW HPTW L2TlbMissQueue L2TlbPrefetch PMP
 
 # 子模块 interface_only 黑盒后内部寄存器不再参与比对,反而需要开启「合并同值重复
 # 寄存器」:golden 顶层把 CSR/sfence/resp_pte 等 glue 寄存器复制成多副本,impl 合并

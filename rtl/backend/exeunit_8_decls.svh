@@ -90,6 +90,13 @@
   ctrl_t ctrl_pipe [LAT_MAX];
   logic  valid_pipe[LAT_MAX];
 
+  // ---- fuOpType / rfWen 专用浅链(只到各自最深消费级)----
+  //   fuOpType 最深消费者 = Fcvt(第1级)⇒ 存 [0],[1];镜像 golden inPipe_1_1/1_2_fuOpType。
+  //   rfWen    最深消费者 = Fcvt(第1级)⇒ 存 [0],[1];镜像 golden inPipe_1_1/1_2_rfWen。
+  //   最深级(Fmac=第2级)不存这两字段(golden inPipe_1_3 亦无)⇒ 无死位。
+  logic [8:0] op_pipe [2];
+  logic       rf_pipe [2];
+
   // ---- §2 时钟门控使能链:每个有延迟 FU 一条有效移位链 + 一拍延迟寄存 ----
   logic [1:0] fuvld_Falu;   // [0]=入口有效, [1..1]=在飞各级
   logic           fuvld_q_Falu;  // clk_en 的一拍寄存

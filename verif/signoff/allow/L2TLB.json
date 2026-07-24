@@ -1,0 +1,42 @@
+{
+    "unresolved_blackbox": [],
+    "interface_only": [
+        {
+            "id": "cache",
+            "ref_path": "r:/WORK/L2TLB/cache",
+            "impl_path": "i:/WORK/L2TLB/u_core/u_page_cache"
+        },
+        {
+            "id": "hptw",
+            "ref_path": "r:/WORK/L2TLB/hptw",
+            "impl_path": "i:/WORK/L2TLB/u_core/u_hptw"
+        },
+        {
+            "id": "llptw",
+            "ref_path": "r:/WORK/L2TLB/llptw",
+            "impl_path": "i:/WORK/L2TLB/u_core/u_llptw"
+        },
+        {
+            "id": "missQueue",
+            "ref_path": "r:/WORK/L2TLB/missQueue",
+            "impl_path": "i:/WORK/L2TLB/u_core/u_miss_queue"
+        },
+        {
+            "id": "pmp",
+            "ref_path": "r:/WORK/L2TLB/pmp",
+            "impl_path": "i:/WORK/L2TLB/u_core/u_pmp"
+        },
+        {
+            "id": "prefetch",
+            "ref_path": "r:/WORK/L2TLB/prefetch",
+            "impl_path": "i:/WORK/L2TLB/u_core/u_prefetch"
+        },
+        {
+            "id": "ptw",
+            "ref_path": "r:/WORK/L2TLB/ptw",
+            "impl_path": "i:/WORK/L2TLB/u_core/u_ptw"
+        }
+    ],
+    "empty_blackbox": [],
+    "unmatched": []
+}
