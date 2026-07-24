@@ -263,12 +263,12 @@
    "makefile": "verif/ut/DataPath/Makefile",
    "make_target": "fm-DataPath",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "allow_ref": "verif/signoff/allow/DataPath.json",
+   "rationale": "assembly+vmucp+dead-ref: 3 difftestArch{Int,Fp,Vec}RegState DPI探针零fanout空黑盒+16191对称matched-unread(DelayReg delayer/og0_cancel_delay/srcType)vmucp+390 golden-only int_regcache_tag shadow dead-ref",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
