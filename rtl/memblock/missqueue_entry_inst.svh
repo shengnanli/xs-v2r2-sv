@@ -35,7 +35,7 @@ for (genvar i = 0; i < N_ENTRY; i++) begin : g_entry
     .io_miss_req_pipe_reg_req_source                  (mqpr.source),
     .io_miss_req_pipe_reg_req_pf_source               (mqpr.pf_source),
     .io_miss_req_pipe_reg_req_cmd                     (mqpr.cmd),
-    .io_miss_req_pipe_reg_req_addr                    (mqpr.addr),
+    .io_miss_req_pipe_reg_req_addr                    ({mqpr.addr, 6'h0}),  // 低 6 位钉 0(golden MissEntry 内部亦掩 0)
     .io_miss_req_pipe_reg_req_vaddr                   (mqpr.vaddr),
     .io_miss_req_pipe_reg_req_full_overwrite          (mqpr.full_overwrite),
     .io_miss_req_pipe_reg_req_word_idx                (mqpr.word_idx),

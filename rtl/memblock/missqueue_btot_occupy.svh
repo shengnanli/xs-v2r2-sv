@@ -18,6 +18,10 @@ function automatic logic [2:0] pcnt4(input logic [3:0] v);
 endfunction
 
 // 对 4 个查询 set（evict + occupy0/1/2）各算占用 way 位图（entry + pipereg OR 合并）。
+// pipereg 的 set（vaddr[13:6]）无条件求值（不放进 if 分支——否则 FM 前端把只在分支内赋值的
+// 局部量 ps 推成一个只写不读的组合临时寄存器 ps_reg[7:0]，成为 impl-only 死位）。
+wire [7:0]  pr_set = mqpr.vaddr[13:6];
+wire        pr_occ_en = mqpr_reg_valid & mqpr.isBtoT;
 logic [3:0] occ_ways_evict, occ_ways_0, occ_ways_1, occ_ways_2;
 always_comb begin
   occ_ways_evict = '0; occ_ways_0 = '0; occ_ways_1 = '0; occ_ways_2 = '0;
@@ -30,13 +34,10 @@ always_comb begin
     if (en & (s == io_occupy_set_2)) occ_ways_2     |= e_occupy_way[i];
   end
   // pipereg 贡献：evict_set_match = reg_valid & isBtoT & set==qset
-  if (mqpr_reg_valid & mqpr.isBtoT) begin
-    automatic logic [7:0] ps = mqpr.vaddr[13:6];
-    if (ps == io_evict_set)    occ_ways_evict |= mqpr.occupy_way;
-    if (ps == io_occupy_set_0) occ_ways_0     |= mqpr.occupy_way;
-    if (ps == io_occupy_set_1) occ_ways_1     |= mqpr.occupy_way;
-    if (ps == io_occupy_set_2) occ_ways_2     |= mqpr.occupy_way;
-  end
+  if (pr_occ_en & (pr_set == io_evict_set))    occ_ways_evict |= mqpr.occupy_way;
+  if (pr_occ_en & (pr_set == io_occupy_set_0)) occ_ways_0     |= mqpr.occupy_way;
+  if (pr_occ_en & (pr_set == io_occupy_set_1)) occ_ways_1     |= mqpr.occupy_way;
+  if (pr_occ_en & (pr_set == io_occupy_set_2)) occ_ways_2     |= mqpr.occupy_way;
 end
 
 assign io_btot_ways_for_set = occ_ways_evict;

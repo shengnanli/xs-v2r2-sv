@@ -534,7 +534,8 @@ module xs_MissQueue_core (
         mqpr.source         <= io_req_bits_source;
         mqpr.pf_source      <= io_req_bits_pf_source;
         mqpr.cmd            <= io_req_bits_cmd;
-        mqpr.addr           <= io_req_bits_addr;
+        // addr 只存 block 粒度(bit[47:6])——低 6 位全程不读, 见 pkg struct 注释。
+        mqpr.addr           <= io_req_bits_addr[PADDR_BITS-1:6];
         mqpr.vaddr          <= io_req_bits_vaddr;
         mqpr.full_overwrite <= io_req_bits_full_overwrite;
         mqpr.word_idx       <= io_req_bits_word_idx;

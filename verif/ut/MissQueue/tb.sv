@@ -704,3 +704,28 @@ module tb;
     $finish;
   end
 endmodule
+
+// -----------------------------------------------------------------------------
+//  DummyDPICWrapper 空壳 —— golden MissQueue.sv 内含 difftest RefillEvent 探针
+//  (DummyDPICWrapper difftest_module)，其输出不参与 golden↔impl 输出比对（tb 只比对
+//  功能端口）。UT 侧只需一个端口匹配的空模块让 VCS 完成绑定（FM 侧则由 hdlin_unresolved
+//  =black_box 自动黑盒，见 fm.log FM-158）。端口表照抄 golden 例化 + verif/bt/MemBlock/
+//  difftest_stub.sv 的 RefillEvent 定义。
+// -----------------------------------------------------------------------------
+module DummyDPICWrapper(
+  input        clock,
+  input        io_valid,
+  input        io_bits_valid,
+  input [63:0] io_bits_addr,
+  input [63:0] io_bits_data_0,
+  input [63:0] io_bits_data_1,
+  input [63:0] io_bits_data_2,
+  input [63:0] io_bits_data_3,
+  input [63:0] io_bits_data_4,
+  input [63:0] io_bits_data_5,
+  input [63:0] io_bits_data_6,
+  input [63:0] io_bits_data_7,
+  input [7:0]  io_bits_coreid,
+  input [7:0]  io_bits_index
+);
+endmodule

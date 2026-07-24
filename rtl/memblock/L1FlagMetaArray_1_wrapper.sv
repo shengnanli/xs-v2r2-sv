@@ -82,7 +82,12 @@ module L1FlagMetaArray_1 import xs_l1metaarray_pkg::*; (
     wen[3]    = io_write_3_bits_way_en;
     wdata[3] = io_write_3_bits_flag;
   end
-  xs_L1FlagMetaArray_core #(.READ_PORTS(5), .WRITE_PORTS(4)) u_core (
+  // 写口 0/1/2 的 flag 被父模块 tie-off 为常量 1（见上 wdata[0..2]=1'b1），写口 3 为真实 flag。
+  // 与 golden 一致：常量口不生成 s1_way_wdata 寄存器。
+  xs_L1FlagMetaArray_core #(
+    .READ_PORTS(5), .WRITE_PORTS(4),
+    .WDATA_CONST_MASK(4'b0111), .WDATA_CONST_VAL(4'b0111)
+  ) u_core (
     .clock(clock), .reset(reset),
     .io_read_valid(rvalid), .io_read_idx(ridx), .io_resp(resp),
     .io_write_valid(wvalid), .io_write_idx(widx),

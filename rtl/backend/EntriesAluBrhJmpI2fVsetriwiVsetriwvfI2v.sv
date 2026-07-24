@@ -26,6 +26,8 @@ module xs_EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v_core import iq_abjivvi_pkg::*;
   input  logic                 flush_level,
   input  logic [NUM_ENQ-1:0]   enq_valid,
   input  entry_t [NUM_ENQ-1:0] enq_bits,
+  // 入队原始 srcLoadDependency(payload 里不再持久化,单独喂 enqDelayIn1 流水;见 pkg 注释)
+  input  enq_src_ld_t [NUM_ENQ-1:0] enq_src_load_dep,
 
   // ---- 唤醒(当拍 + 入队延迟 1/2)----
   input  wk_wb_t [NUM_WK_WB-1:0] wk_wb,
@@ -329,26 +331,32 @@ module xs_EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v_core import iq_abjivvi_pkg::*;
   // ===========================================================================
   // 5. 例化 24 个单条目
   // ===========================================================================
-  logic [NUM_REGSRC-1:0][LDPW-1:0][LDW-1:0] enqd1_src_ld [NUM_ENQ];
-  logic [NUM_REGSRC-1:0][LDPW-1:0][LDW-1:0] enqd2_src_ld [NUM_ENQ];
-  logic [NUM_EXU-1:0]    og0_d1, og0_d2a, og0_d2;
-  ld_cancel_t [LDPW-1:0] ld_d1, ld_d2a, ld_d2;
-  wk_wb_t [NUM_WK_WB-1:0] wkwb_d2a, wkwb_d2;
-  wk_iq_t [NUM_WK_IQ-1:0] wkiq_d2a, wkiq_d2;
+  // 本变体 golden EnqEntry_4 仅有 enqDelayIn1(单级延迟唤醒),无 enqDelayIn2。故只保留
+  // delay1 辅助寄存器(与 AMBB 一致),不实现 delay2(移除后消除 Entries 顶层死流水寄存器)。
+  // srcLoadDependency delay1:只寄存被读的 bit[1](loadCancel 只看 dep[p][1],bit[0] LSB
+  //   在唤醒左移 `{dep[0],1'b0}` 后从不被读)。golden 顶层 r_* 存全 2 位、只读 bit[1] →
+  //   bit[0] 是 golden-only cone-dead(unread_ref);impl 只存被读位以保持 clean(0 死位)。
+  logic [NUM_REGSRC-1:0][LDPW-1:0] enqd1_src_ld [NUM_ENQ];
+  // og0Cancel delay1:只寄存被读的 4 个 is0Lat 源 {全局EXU 0,2,4,6}(打包成 [3:0]),
+  //   对齐 golden REG_0/2/4/6;其余 og0Cancel 位在本层不被读,不寄存(消 impl-only 死位)。
+  logic [3:0]            og0_d1;
+  logic [LDPW-1:0]       ld_d1;  // 仅 ld2Cancel(ld1Cancel 全局未接,不寄存以对齐 golden delay1)
 
   always_ff @(posedge clock) begin
-    og0_d1  <= og0cancel;  og0_d2a <= og0cancel;  og0_d2 <= og0_d2a;
-    ld_d1   <= ldcancel;   ld_d2a  <= ldcancel;   ld_d2  <= ld_d2a;
-    wkwb_d2a <= wk_wb; wkwb_d2 <= wkwb_d2a;
-    wkiq_d2a <= wk_iq; wkiq_d2 <= wkiq_d2a;
+    // og0Cancel / ldCancel:d1=RegNext(仅 enqDelayIn1 用;og0 只取 {0,2,4,6},ldCancel 只取 ld2)
+    og0_d1[0] <= og0cancel[0];
+    og0_d1[1] <= og0cancel[2];
+    og0_d1[2] <= og0cancel[4];
+    og0_d1[3] <= og0cancel[6];
+    for (int p = 0; p < LDPW; p++) ld_d1[p] <= ldcancel[p].ld2_cancel;
   end
-  logic [NUM_REGSRC-1:0][LDPW-1:0][LDW-1:0] sld_d2a [NUM_ENQ];
+  // srcLoadDependency:d1 = RegEnable(enq srcLoadDep bit[1], enq.valid)(= golden r_* 的被读位)
   always_ff @(posedge clock) begin
-    for (int q = 0; q < NUM_ENQ; q++) begin
-      if (enq_valid[q]) enqd1_src_ld[q] <= enq_bits[q].payload.src_load_dep;
-      sld_d2a[q]      <= enq_bits[q].payload.src_load_dep;
-      enqd2_src_ld[q] <= sld_d2a[q];
-    end
+    for (int q = 0; q < NUM_ENQ; q++)
+      if (enq_valid[q])
+        for (int s = 0; s < NUM_REGSRC; s++)
+          for (int p = 0; p < LDPW; p++)
+            enqd1_src_ld[q][s][p] <= enq_src_load_dep[q][s][p][1];
   end
 
   genvar e;
@@ -374,11 +382,6 @@ module xs_EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v_core import iq_abjivvi_pkg::*;
         .enqd1_src_ld   (enqd1_src_ld[Q]),
         .enqd1_og0cancel(og0_d1),
         .enqd1_ldcancel (ld_d1),
-        .wk_wb_d2       (wkwb_d2),
-        .wk_iq_d2       (wkiq_d2),
-        .enqd2_src_ld   (enqd2_src_ld[Q]),
-        .enqd2_og0cancel(og0_d2),
-        .enqd2_ldcancel (ld_d2),
         .og0cancel      (og0cancel),
         .og1cancel      (og1cancel),
         .ldcancel       (ldcancel),

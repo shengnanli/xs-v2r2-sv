@@ -305,15 +305,20 @@ module xs_TLPLIC_core
       rdata[0] = pending_q[63];
       rdata[1] = pending_q[64];
     end else if (oindex == 9'h80 || oindex == 9'h90) begin
-      // enable hart h 字 0: bit 0 保留, bit (d+1) = enable[h][d], d=0..62
-      automatic int h = (oindex == 9'h80) ? 0 : 1;
+      // enable hart h 字 0: bit 0 保留, bit (d+1) = enable[h][d], d=0..62。
+      // 用常量下标遍历 hart, oindex 命中该 hart 字 0 时输出其使能位。避免用
+      // ternary 赋值的 automatic 局部量 (FM 前端会为其推断死寄存器 h_reg)。
       rdata[0] = 1'b0;
-      for (int d = 0; d < 63; d++) rdata[d+1] = enable_q[h][d];
+      for (int h = 0; h < NHART; h++)
+        if (oindex == 9'(9'h80 + h*9'h10))
+          for (int d = 0; d < 63; d++) rdata[d+1] = enable_q[h][d];
     end else if (oindex == 9'h81 || oindex == 9'h91) begin
       // enable hart h 字 1: bit 0 = enable[h][63], bit 1 = enable[h][64]
-      automatic int h = (oindex == 9'h81) ? 0 : 1;
-      rdata[0] = enable_q[h][63];
-      rdata[1] = enable_q[h][64];
+      for (int h = 0; h < NHART; h++)
+        if (oindex == 9'(9'h81 + h*9'h10)) begin
+          rdata[0] = enable_q[h][63];
+          rdata[1] = enable_q[h][64];
+        end
     end else if (hartSel != '0) begin
       // hart 字: 低 32b = threshold, 高 32b = maxDevs (claim 读返回值)
       for (int h = 0; h < NHART; h++) begin

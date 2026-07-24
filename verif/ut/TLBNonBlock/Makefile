@@ -1,6 +1,9 @@
 MODULE = TLBNonBlock
 RTL_DIR = ../../../rtl
-GOLDEN_RTL = ../../../golden/chisel-rtl
+# UT/FM 用与官方 signoff runner 相同的冻结 canonical golden（G0）。仓库内 golden/chisel-rtl
+#   是新一版（243 端口、含 DummyDPICWrapper_9 difftest 探针），与本 tb 的 236 端口连接及
+#   canonical golden 不一致；tb.u_g 只驱 236 端口子集，故 UT 必须编 canonical golden 才能一致。
+GOLDEN_RTL = /home/eda/xs-env/G0-canonical/golden-rtl
 # 可读核 + pkg；内层存储/PLRU 用 golden 黑盒（UT 与 golden 共用同一份）
 RTL_SRCS = $(RTL_DIR)/memblock/tlbnonblock_pkg.sv \
            $(RTL_DIR)/memblock/tlbstoragewrapper_pkg.sv \
