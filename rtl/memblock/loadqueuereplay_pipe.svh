@@ -19,9 +19,10 @@
     return r;
   endfunction
 
-  // 注：entry 数组按 LQ_SLOTS=128 声明（见 §0），7 位下标恒在界，直接 arr[idx] 读取
-  //  即可（最可读，且不触发 Formality out-of-bound elab 误报）。不封装成函数——函数读
-  //  模块级数组属「非局部引用」会触发 FMR_VLOG-091；故在使用处直接 arr[idx]。
+  // 注：entry 寄存器阵列按真实深度 72 声明（见 §0）；运行期 7 位下标的纯值读一律走
+  //  128 深越界折叠视图 *R（uopR/vecReplayR/causeR/missMSHRIdR，k>=72 回绕读 [0]，复刻
+  //  golden firtool 128 项读表），静态在界。直接 arr[i] 读取仅由 i<72 循环变量索引。不封装
+  //  成函数——函数读模块级数组属「非局部引用」会触发 FMR_VLOG-091；故在使用处直接 arr[i]。
 
   // s1/s2 寄存器
   logic [LD_PIPE_W-1:0]              s1_oldestSel_valid_q, s2_oldestSel_valid_q;
@@ -34,7 +35,7 @@
   // s2 锁存的 replay payload（按 s1_can_go 使能寄存，读 s1 下标处的数组）
   lqr_uop_t              s2_uop_q  [LD_PIPE_W];
   lqr_vec_t              s2_vec_q  [LD_PIPE_W];
-  logic [MSHR_ID_W-1:0]  s2_mshr_q [LD_PIPE_W];
+  logic [MSHR_ST_W-1:0]  s2_mshr_q [LD_PIPE_W];   // 5 位（跟随 missMSHRIdR；输出取 [3:0]，bit[4] 恒 0 双射 golden s2_replayMSHRId[4]）
   logic [N_CAUSES-1:0]   s2_cause_q [LD_PIPE_W];
 
   // 组合：s0_can_go / s1 项是否被 redirect 取消
@@ -118,12 +119,11 @@
     if (reset) begin
       s2_oldestSel_valid_q <= '0;
     end else begin
-      for (int i = 0; i < LD_PIPE_W; i++) begin
-        logic s1v;
-        s1v = s1_oldestSel_valid_q[i] & ~s1_cancel[i];
+      // ★不在 always_ff 体内声明 blocking 赋值的组合临时量(s1v)——FM 前端会把每路迭代推成
+      //   死寄存器(s1v_reg)。直接内联 s1_oldestSel_valid_q[i]&~s1_cancel[i]。★
+      for (int i = 0; i < LD_PIPE_W; i++)
         if (s1_can_go[i] | replay_fire[i])
-          s2_oldestSel_valid_q[i] <= s1_can_go[i] ? s1v : 1'b0;
-      end
+          s2_oldestSel_valid_q[i] <= s1_can_go[i] ? (s1_oldestSel_valid_q[i] & ~s1_cancel[i]) : 1'b0;
     end
   end
   // s2 payload：无复位 RegEnable(en=s1_can_go)，与 golden 同(复位期间照常按使能更新)
@@ -131,12 +131,56 @@
   //   **不带 valid 门控**(bounds-folded *R 视图处理越界)。原实现用 `valid ? *R[bits] : entry0`
   //   在 ~valid 拍取 entry0 与 golden 取 [bits] 分叉→s2_replayUop/s2_vecReplay 数百点 fail。
   //   去掉 valid 门控, 一律走 *R[bits] 与 golden 逐位对齐。★
+  //  s2_replayUop/s2_vecReplay 亦只寄 golden 存的位/字段（同 per-entry：exc 19 位 + 无
+  //  loadWaitStrict；vec 9 字段），其余位/字段悬空(FM 剪除)，与 golden s2_replayUop 形状一致。
+  //  ★s2 读源 uopR[bits]/vecReplayR[bits] 在 always_comb 里算好（s2_uop_in/s2_vec_in 数组），
+  //   always_ff 直接下标读——绝不在 always_ff 体内声明 struct 临时量(automatic su/sv)，否则 FM
+  //   前端每路迭代各推成死寄存器(su_reg/sv_reg…)。★
+  lqr_uop_t s2_uop_in [LD_PIPE_W];
+  lqr_vec_t s2_vec_in [LD_PIPE_W];
+  always_comb
+    for (int i = 0; i < LD_PIPE_W; i++) begin
+      s2_uop_in[i] = uopR[s1_oldestSel_bits_q[i]];
+      s2_vec_in[i] = vecReplayR[s1_oldestSel_bits_q[i]];
+    end
   always_ff @(posedge clock) begin
     for (int i = 0; i < LD_PIPE_W; i++) begin
       if (s1_can_go[i]) begin
         s2_oldestSel_bits_q[i] <= s1_oldestSel_bits_q[i];
-        s2_uop_q[i]   <= uopR[s1_oldestSel_bits_q[i]];
-        s2_vec_q[i]   <= vecReplayR[s1_oldestSel_bits_q[i]];
+        for (int b = 0; b < 24; b++)
+          if (EXC_KEEP[b]) s2_uop_q[i].exceptionVec[b] <= s2_uop_in[i].exceptionVec[b];
+        s2_uop_q[i].preDecodeInfo_isRVC <= s2_uop_in[i].preDecodeInfo_isRVC;
+        s2_uop_q[i].ftqPtr_flag         <= s2_uop_in[i].ftqPtr_flag;
+        s2_uop_q[i].ftqPtr_value        <= s2_uop_in[i].ftqPtr_value;
+        s2_uop_q[i].ftqOffset           <= s2_uop_in[i].ftqOffset;
+        s2_uop_q[i].fuOpType            <= s2_uop_in[i].fuOpType;
+        s2_uop_q[i].rfWen               <= s2_uop_in[i].rfWen;
+        s2_uop_q[i].fpWen               <= s2_uop_in[i].fpWen;
+        s2_uop_q[i].vpu_vstart          <= s2_uop_in[i].vpu_vstart;
+        s2_uop_q[i].vpu_veew            <= s2_uop_in[i].vpu_veew;
+        s2_uop_q[i].uopIdx              <= s2_uop_in[i].uopIdx;
+        s2_uop_q[i].pdest               <= s2_uop_in[i].pdest;
+        s2_uop_q[i].robIdx              <= s2_uop_in[i].robIdx;
+        s2_uop_q[i].dbg_enqRsTime       <= s2_uop_in[i].dbg_enqRsTime;
+        s2_uop_q[i].dbg_selectTime      <= s2_uop_in[i].dbg_selectTime;
+        s2_uop_q[i].dbg_issueTime       <= s2_uop_in[i].dbg_issueTime;
+        s2_uop_q[i].storeSetHit         <= s2_uop_in[i].storeSetHit;
+        s2_uop_q[i].waitForRobIdx_flag  <= s2_uop_in[i].waitForRobIdx_flag;
+        s2_uop_q[i].waitForRobIdx_value <= s2_uop_in[i].waitForRobIdx_value;
+        s2_uop_q[i].loadWaitBit         <= s2_uop_in[i].loadWaitBit;
+        // s2_uop_q[i].loadWaitStrict 不驱动
+        s2_uop_q[i].lqIdx               <= s2_uop_in[i].lqIdx;
+        s2_uop_q[i].sqIdx               <= s2_uop_in[i].sqIdx;
+        s2_vec_q[i].isvec           <= s2_vec_in[i].isvec;
+        s2_vec_q[i].is128bit        <= s2_vec_in[i].is128bit;
+        s2_vec_q[i].elemIdx         <= s2_vec_in[i].elemIdx;
+        s2_vec_q[i].alignedType     <= s2_vec_in[i].alignedType;
+        s2_vec_q[i].mbIndex         <= s2_vec_in[i].mbIndex;
+        s2_vec_q[i].elemIdxInsideVd <= s2_vec_in[i].elemIdxInsideVd;
+        s2_vec_q[i].reg_offset      <= s2_vec_in[i].reg_offset;
+        s2_vec_q[i].vecActive       <= s2_vec_in[i].vecActive;
+        s2_vec_q[i].mask            <= s2_vec_in[i].mask;
+        // s2_vec_q[i].{isLastElem,is_first_ele,uop_unit_stride_fof,usSecondInv} 不驱动
         s2_mshr_q[i]  <= missMSHRIdR[s1_oldestSel_bits_q[i]];
         s2_cause_q[i] <= causeR[s1_oldestSel_bits_q[i]];
       end
@@ -161,7 +205,7 @@
       replay_uop[i]                = u;
       replay_vec[i]                = s2_vec_q[i];
       replay_vaddr[i]              = va_rdata[i];
-      replay_mshrid[i]             = s2_mshr_q[i];
+      replay_mshrid[i]             = s2_mshr_q[i][MSHR_ID_W-1:0];  // 输出 4 位（bit[4] 恒 0，golden 同）
       replay_forward_tlDchannel[i] = s2_cause_q[i][C_DM];
       replay_schedIndex[i]         = s2_oldestSel_bits_q[i];
     end

@@ -53,7 +53,7 @@
   always_comb
     for (int i = 0; i < LQ_REPLAY_SIZE; i++)
       loadHintWakeMask[i] = ent[i].allocated & ~ent[i].scheduled & cause[i][C_DM]
-                          & ent[i].blocking & (missMSHRId[i] == l2_hint_sourceId) & l2_hint_valid;
+                          & ent[i].blocking & (missMSHRId[i] == {1'b0, l2_hint_sourceId}) & l2_hint_valid;
 
   // 下一拍 blocking 值（priority 高→低；最外层 ~hintWake 无条件清）。
   //  各 cause 的「解除条件」（满足则下拍 blocking=0）就地展开为局部变量 clr_*：
@@ -71,12 +71,12 @@
       clr_RAW = ~rawFull | ~sq_is_after(uop[i].sqIdx, stAddrReadySqPtr);
       // C_RAR：RAR 队列不满 或 不晚于 ldWbPtr
       clr_RAR = ~rarFull | ~lq_is_after(uop[i].lqIdx, ldWbPtr);
-      // C_DM：D-channel refill 命中本 entry 的 mshr id
-      clr_DM  = tl_d_valid & (tl_d_mshrid == missMSHRId[i]);
+      // C_DM：D-channel refill 命中本 entry 的 mshr id（5 位存储对 4 位端口零扩展比较，同 golden）
+      clr_DM  = tl_d_valid & ({1'b0, tl_d_mshrid} == missMSHRId[i]);
       // C_FF：store data 已就绪
       clr_FF  = ent[i].allocated & storeDataValid[i];
-      // C_TM：tlb hint 回填（全量重放 或 命中本 entry 的 tlb id）
-      clr_TM  = tlb_hint_valid & (tlb_hint_replay_all | (tlb_hint_id == tlbHintId[i]));
+      // C_TM：tlb hint 回填（全量重放 或 命中本 entry 的 tlb id；5 位存储零扩展比较，同 golden）
+      clr_TM  = tlb_hint_valid & (tlb_hint_replay_all | ({1'b0, tlb_hint_id} == tlbHintId[i]));
       // C_MA：store 地址已就绪
       clr_MA  = cause[i][C_MA] & ent[i].allocated & storeAddrValid[i];
 

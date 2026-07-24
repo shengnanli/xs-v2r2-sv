@@ -1877,8 +1877,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "strict+vmucp: impl-clean(unread全0/failing0); 177对称matched-unread双射(cause[5:6]/s2_replayCauses死位/mshrId[4]两侧同存不读, 177/177完美双射, RTL entry128→72+exceptionVec 19位窄化)",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {

@@ -31,9 +31,21 @@ package loadqueuereplay_pkg;
   localparam int SQ_IDX_W       = 6;           // SqPtr value 宽度
   localparam int ROB_IDX_W      = 8;           // RobPtr value 宽度
   localparam int VADDR_BITS     = 50;          // 虚地址宽度
-  localparam int MSHR_ID_W      = 4;           // log2Up(nMissEntries+1)
-  localparam int TLB_ID_W       = 4;           // log2Up(loadfiltersize+1)
+  localparam int MSHR_ID_W      = 4;           // I/O 端口宽度：io_*_mshr_id / tl_d_mshrid / l2_hint_sourceId 均 [3:0]
+  localparam int TLB_ID_W       = 4;           // I/O 端口宽度：io_*_tlb_id / tlb_hint_id 均 [3:0]
+  // ★per-entry 存储寄存器宽度 = 5（golden missMSHRId_N/tlbHintId_N 声明 [4:0]）：Chisel 按
+  //   log2Up(nMissEntries+1)=log2Up(16+1)=5 / log2Up(loadfiltersize+1)=5 分配寄存器位宽，而
+  //   驱动源(4 位端口)零扩展到 5 位。bit[4] 恒 0 但 golden 在 `==` 比较里读它(compare point)。
+  //   impl 若只存 4 位→golden bit[4] 变 unmatched compare_ref(×144)。故 impl 存储也用 5 位、
+  //   零扩展、5 位比较，与 golden 逐位双射(bit[4] 恒 0==0 passing)。
+  localparam int MSHR_ST_W      = 5;           // missMSHRId 存储寄存器宽度
+  localparam int TLB_ST_W       = 5;           // tlbHintId 存储寄存器宽度
   localparam int UOP_IDX_W      = 7;           // uopIdx 宽度
+
+  // golden 逐 entry / s2 存的 exceptionVec bit 集合（1=存），丢弃 {3,4,5,13,21}（load 异常位
+  //  在入队 hasExceptions 判定即消化, replay 输出也无这 5 位）。impl 只寄这些位, 其余悬空(FM 剪除)。
+  //  bit 23..0：keep {0,1,2,6,7,8,9,10,11,12,14,15,16,17,18,19,20,22,23}, drop {3,4,5,13,21}。
+  localparam logic [23:0] EXC_KEEP = 24'b1101_1111_1101_1111_1100_0111;
 
   // 每个 AgeDetector 处理的 entry 数 = LQ_REPLAY_SIZE / LD_PIPE_W = 24
   localparam int REM_SIZE       = LQ_REPLAY_SIZE / LD_PIPE_W;   // 24

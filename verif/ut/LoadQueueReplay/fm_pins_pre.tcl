@@ -51,10 +51,11 @@ for {set i 0} {$i < 3} {incr i} {
                           "i:/WORK/$top/u_core/s1_oldestSel_bits_q_reg\[$i\]\[$b\]"}
   }
 }
-# ---- missMSHRId / tlbHintId（golden 5 位 [4:0]=零扩展，impl 4 位数组 [3:0]）----
-# golden bit[4] 恒 0（{1'h0, mshr_id}），只钉 [3:0] 对应 impl 数组位；golden[4] 留常量。
+# ---- missMSHRId / tlbHintId（golden 5 位 [4:0]=零扩展；impl 现同为 5 位数组 [4:0]）----
+# golden 与 impl 均把 4 位端口零扩展到 5 位存储，bit[4] 恒 0 且在 `==` 比较中被读（compare
+# point，双方 0==0 passing）。逐位 1:1 双射 [4:0] 全部钉点（含 bit[4]），消 compare_ref 失配。
 for {set n 0} {$n < 72} {incr n} {
-  for {set b 0} {$b < 4} {incr b} {
+  for {set b 0} {$b < 5} {incr b} {
     catch {set_user_match "r:/WORK/$top/missMSHRId_${n}_reg\[$b\]" \
                           "i:/WORK/$top/u_core/missMSHRId_reg\[$n\]\[$b\]"}
     catch {set_user_match "r:/WORK/$top/tlbHintId_${n}_reg\[$b\]" \
@@ -73,6 +74,23 @@ foreach pfx {s0_can_go_REG s0_can_go_REG_1 s0_can_go_REG_2 s1_cancel_REG s1_canc
   for {set b 0} {$b < 8} {incr b} {
     catch {set_user_match "r:/WORK/$top/${pfx}_bits_robIdx_value_reg\[$b\]" \
                           "i:/WORK/$top/u_core/redirect_robIdx_q_reg\[$b\]"}
+  }
+}
+
+# ---- s2 流水 payload 的对称 cone-dead 寄存器双射钉点（3 路）----
+#  golden s2_replayCauses(port0 无后缀)/_1/_2 各 11 位，只 s2_replayCauses_N[4]被读(forward_tlDchannel)
+#  → 其余 10 位两侧都存都不读=对称 matched-unread；impl s2_cause_q_reg[N][b] 同型。逐位钉双射，
+#  让 FM 把两侧未读位配成 matched-unread（verify_matched_unread=true 下实开比较 0..10 全 passing）。
+#  s2_replayMSHRId(port0 无后缀)/_1/_2 各 5 位，输出取[3:0]，bit[4]两侧都存不读=对称死→同法钉。
+for {set i 0} {$i < 3} {incr i} {
+  set gsuf [expr {$i == 0 ? "" : "_$i"}]
+  for {set b 0} {$b < 11} {incr b} {
+    catch {set_user_match "r:/WORK/$top/s2_replayCauses${gsuf}_reg\[$b\]" \
+                          "i:/WORK/$top/u_core/s2_cause_q_reg\[$i\]\[$b\]"}
+  }
+  for {set b 0} {$b < 5} {incr b} {
+    catch {set_user_match "r:/WORK/$top/s2_replayMSHRId${gsuf}_reg\[$b\]" \
+                          "i:/WORK/$top/u_core/s2_mshr_q_reg\[$i\]\[$b\]"}
   }
 }
 
