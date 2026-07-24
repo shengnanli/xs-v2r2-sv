@@ -1,13 +1,8 @@
-# Slice FM 钉点(FM 审计 2026-07)
-# 0) 死网 BBPin(2026-07 复盘): 10 个 failing 全是 golden 子模块(两侧共享文件)内
-#    未解析黑盒(queue/array)的死网引脚——两侧都悬空(如 _array_io_r_resp_data_0_data
-#    [551:548] 无读者)。FM 默认 verification_set_undriven_signals=BINARY:X:
-#    ref 悬空=自由割点、impl 悬空=X → 锥必失配(日志 Unmatched Cut REF=10/IMPL=0)。
-#    设 BINARY 让两侧悬空信号按同名配对为同一自由变量(BankedDataArray 同法)。
-setup
-if {[catch {set_app_var verification_set_undriven_signals BINARY} msg]} {
-  puts "SLICE_PINS: undriven failed: $msg"
-}
+# Slice FM 钉点(FM 审计 2026-07, codex_0036 修正后):
+# 边界现为 3+2 非 305 逻辑子(DataStorage/RequestBuffer/RXSNP/MSHRBuffer[_1])两侧
+# elaborate + 13 绿 305 子 assembly 黑盒 + 厂商 array_18_ext 黑盒。故不再需要 legacy
+# 的 verification_set_undriven_signals=BINARY(那是全黑盒轮次为死网 BBPin 加的放宽
+# appvar, 会被 sidecar 判 relaxed→PARTIAL, 永达不到 SUCCEEDED)。已移除。
 # perf 2 级打拍:golden io_perf_<n>_value_REG(第1拍)/REG_1(第2拍) ↔
 # 手写核 perf_<n>_value_s1(第1拍)/s2(第2拍)。
 # 2026-07 全貌重跑实证:签名配对把「拍」配反(REG_1↔s1, REG↔s2),12 路 perf 的

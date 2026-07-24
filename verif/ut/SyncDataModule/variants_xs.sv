@@ -960,14 +960,7 @@ module SyncDataModuleTemplate__1024entry_1_xs(
   assign io_rdata_0_ssid = rdata_bus[0][4:0];
   assign io_rdata_0_strict = rdata_bus[0][5:5];
   assign io_rdata_1_ssid = rdata_bus[1][4:0];
-  xs_SyncDataModule #(
-    .NUM_ENTRIES(1024),
-    .NUM_READ(2),
-    .NUM_WRITE(2),
-    .DATA_WIDTH(6),
-    .HAS_REN(1),
-    .BYPASS_EN(2'b11)
-  ) u_core (
+  xs_SyncDataModule_1024e1 u_core (
     .clock(clock),
     .reset(reset),
     .io_ren({io_ren_1, io_ren_0}),
@@ -975,7 +968,9 @@ module SyncDataModuleTemplate__1024entry_1_xs(
     .io_rdata(rdata_bus),
     .io_wen({io_wen_1, io_wen_0}),
     .io_waddr({io_waddr_1, io_waddr_0}),
-    .io_wdata({{1'h0, io_wdata_1_ssid}, {io_wdata_0_strict, io_wdata_0_ssid}})
+    .io_wdata_0_ssid(io_wdata_0_ssid),
+    .io_wdata_0_strict(io_wdata_0_strict),
+    .io_wdata_1_ssid(io_wdata_1_ssid)
   );
 endmodule
 

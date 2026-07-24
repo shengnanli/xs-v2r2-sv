@@ -487,11 +487,11 @@
    "makefile": "verif/ut/ExuBlock_1/Makefile",
    "make_target": "fm-ExuBlock_1",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/ExuBlock_1.json",
+   "rationale": "assembly: 24黑盒=FP FU叶(FAlu/FCVT/FMA/FDivSqrt绿305)+ClockGate vendor+f2v/in1ToN小组合(ExeUnit_8先例); ExeUnit_8/9/10两侧elaborate; passing9698全0",
    "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
@@ -1289,8 +1289,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "strict+vmucp: impl-clean; 156对称matched-unread(共享golden entries子树srcType[3:1]/srcLoadDep)+2双射validCntDeqVec[5] set_user_match; POC clean SUCCEEDED",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1638,8 +1638,8 @@
    "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/L2TLBWrapper.json",
+   "rationale": "assembly: 唯一黑盒ptw=L2TLB绿305子(其子PtwCache/PTW/LLPTW/HPTW/L2TlbMissQueue/L2TlbPrefetch/PMP全绿); 19×2级perf流水FM验passing2627",
    "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
@@ -3077,12 +3077,12 @@
    "makefile": "verif/ut/Slice/Makefile",
    "make_target": "fm-Slice",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "allow_ref": "verif/signoff/allow/Slice.json",
+   "rationale": "assembly+vmucp: 13绿305子黑盒+DataStorage/RequestBuffer/RXSNP/MSHRBuffer×2两侧elaborate(codex_0036非305逻辑子必elaborate)+仅vendor array_18_ext; 759对称死vmucp; FM_MERGE_DUP=false",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {

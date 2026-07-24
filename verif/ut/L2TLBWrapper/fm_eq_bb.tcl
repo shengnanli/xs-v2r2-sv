@@ -1,14 +1,29 @@
 # L2TLBWrapper 专用 FM 脚本（本 UT 目录私有，不改任何共享脚本）。
 #
-# 为什么需要专用脚本：
+# 为什么需要专用脚本（本地黑盒注入，非放宽证明）：
 #   L2TLBWrapper 把内层 L2TLB 黑盒的 19 路 perf 输出 io_perf_<i>_value 各打 2 级寄存器。
-#   这 19 条流水在结构上完全同构（仅源黑盒引脚下标不同）。共享 fm_eq.tcl 走默认
-#   黑盒引脚「按功能配对」(Func match)，对一堆同构、且功能未知的黑盒输出引脚会产生
-#   歧义：个别引脚在 ref/impl 两侧被配到彼此的孪生，导致这两条流水的寄存器 fail
-#   （其余流水恰好配对正确而 pass）。
+#   共享 fm-% 规则的 ref 侧固定只取 $(GOLDEN_RTL)/$*.sv，无法在 ref/impl 两侧同时注入
+#   带【显式端口方向】的 L2TLB 黑盒声明（l2tlb_blackbox.sv）。若不注入，firtool 生成的
+#   黑盒会是「unknown direction」，两侧对内层 L2TLB 巨型黑盒的端口拓扑推断可能不一致。
+#   故本脚本直接从 Makefile fmbb 目标接收两侧 srcs（各自带上同一份 l2tlb_blackbox.sv），
+#   在 ref/impl 两侧读入【完全相同】的黑盒边界。除此之外，本脚本与共享 fm_eq.tcl 的
+#   appvar 政策逐字一致（六元 unread 政策 + hdlin_unresolved_modules=black_box），
+#   【不放宽任何 proof-affecting appvar】：黑盒引脚按 FM 默认 match 模式配对。
 #
-# 修法：用 verification_blackbox_match_mode identity，让黑盒引脚按「名字+位置」配对，
-#   消除功能配对歧义。其余流程与共享 fm_eq.tcl 等价。
+#   历史注记：早期版本曾用 verification_blackbox_match_mode identity「消歧」+ 失败点
+#   grep-WAIVED 兜底。经 FM 审计（2026-07）证实二者均非必要且违背签核铁律：
+#     (a) 两侧注入显式端口的 l2tlb_blackbox.sv 后，19 路同名 perf 引脚在【默认】match
+#         模式下即按名字精确配对（1141 by name + 1486 by signature），无需 identity
+#         （非默认 blackbox_match_mode = 放宽证明，会进 qualifications.relaxed_appvars →
+#          assembly 判 PARTIAL，是硬墙）；
+#     (b) grep-WAIVED 是「本入口独立判绿」，与 305 统一判定（fm_sidecar_verdict.py）
+#         冲突且被禁。判定一律归 sidecar；native SUCCEEDED + empty_bb 政策匹配才算绿。
+#   实测：去掉 identity 与 WAIVED 后，native = SUCCEEDED（2627 passing / 0 failing /
+#         0 unmatched / 0 unread），relaxed_appvars 为空。
+#
+# 内层 L2TLB = 305 绿 target（SIGNOFF_PASS），本层 assembly 闭包将其作 empty_blackbox
+#   端口桩（allow: verif/signoff/allow/L2TLBWrapper.json 的 empty_blackbox=ptw；
+#   assembly_depends: L2TLBWrapper -> L2TLB）。
 #
 # 经环境变量传参：FM_TOP / FM_REF_SRCS / FM_IMPL_SRCS / FM_MERGE_DUP
 
@@ -46,9 +61,6 @@ set_top r:/WORK/$top
 read_sverilog -i -define {SYNTHESIS} $impl_srcs
 set_top i:/WORK/$top
 
-# 让黑盒引脚按「名字+位置」配对，而非按功能（19 路 perf 引脚同构，function 配对有歧义）。
-set_app_var verification_blackbox_match_mode identity
-
 match
 
 report_unmatched_points > fm_work/$top/unmatched.rpt
@@ -59,33 +71,7 @@ if {[verify]} {
     puts "FM_RESULT: Verification SUCCEEDED for $top"
 } else {
     redirect fm_work/$top/failing.rpt { report_failing_points }
-    # 已知假阳性放行：L2TLBWrapper 唯一自有逻辑是 19 路 perf 的 2 级流水，golden 与
-    # 本核对全部 19 路用完全相同的结构（单一 generate 统一生成）。若失败点全部落在
-    # io_perf_<i>_value 上，则属 FM 对内层 L2TLB 黑盒「功能未知」输出引脚做符号推理时，
-    # 对同构 cone 的对称性消解产生的工具假阳性，而非逻辑不等价（UT 多种子已逐拍证等价）。
-    set _fh [open fm_work/$top/failing.rpt r]
-    set _txt [read $_fh]; close $_fh
-    # 每个失败 compare point 在 failing.rpt 中是一对行：
-    #   "Ref  DFF  r:/WORK/L2TLBWrapper/io_perf_<i>_value_REG_1_reg[b]"
-    #   "Impl DFF  i:/WORK/L2TLBWrapper/u_core/perf_pipe_reg[<i>]\[stage][1][b]"
-    # 只检查 Ref 行的对象名：每个失败的 Ref 对象都必须是 io_perf_<i>_value，
-    # 否则（出现任何非 perf 的失败对象）一律不放行。
-    set _fp 0; set _other 0
-    foreach _ln [split $_txt "\n"] {
-        # 仅匹配带层次路径的失败对象行（r:/ 或 i:/ 开头的 Ref/Impl 行）。
-        if {[regexp {^\s*Ref\s+} $_ln]} {
-            if {[regexp {io_perf_(\d+)_value} $_ln]} {
-                incr _fp
-            } else {
-                incr _other
-            }
-        }
-    }
-    if {$_fp > 0 && $_other == 0} {
-        puts "FM_RESULT: Verification WAIVED for $top (perf black-box symmetry false-positive waived; $_fp pts)"
-    } else {
-        puts "FM_RESULT: Verification FAILED or INCONCLUSIVE for $top"
-    }
+    puts "FM_RESULT: Verification FAILED or INCONCLUSIVE for $top"
 }
 if {$SIDECAR_ON} { sidecar_emit $top }
 exit

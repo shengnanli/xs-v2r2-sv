@@ -106,3 +106,7 @@ IssueQueueAluCsrFenceDiv	signoff-strict		strict+vmucp: impl-clean; 156对称matc
 Scheduler_2	signoff-strict		strict+vmucp+FM_MERGE_DUP=false(Makefile): 647对称matched-unread(golden IQ子树双射identical-path)+18 vf向量IQ dataSources恒零位靠merge_dup=false对称保留; POC全passing	true
 DebugModule	signoff-strict		strict+vmucp: TLDebugModule/DTM两侧elaborate白盒(消2黑盒,codex_0034裁定)+FM_MERGE_DUP=false; 138对称死双射(SBA队列payload/CDC未读域); POC passing1749	true
 WbDataPath	assembly	verif/signoff/allow/WbDataPath.json	assembly+vmucp+dead-ref(G0-canonical 1020端口): 26 DummyDPICWrapper difftest探针零fanout空黑盒对称+224 VldMergeUnit vmask对称matched-unread vmucp+64 golden-only intArbiterInputsWire_14_data_1[127:64] dead-ref	true
+IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v	signoff-strict		strict+vmucp: impl-clean; 156对称matched-unread(共享golden entries子树srcType[3:1]/srcLoadDep)+2双射validCntDeqVec[5] set_user_match; POC clean SUCCEEDED	true
+Slice	assembly	verif/signoff/allow/Slice.json	assembly+vmucp: 13绿305子黑盒+DataStorage/RequestBuffer/RXSNP/MSHRBuffer×2两侧elaborate(codex_0036非305逻辑子必elaborate)+仅vendor array_18_ext; 759对称死vmucp; FM_MERGE_DUP=false	true
+L2TLBWrapper	assembly	verif/signoff/allow/L2TLBWrapper.json	assembly: 唯一黑盒ptw=L2TLB绿305子(其子PtwCache/PTW/LLPTW/HPTW/L2TlbMissQueue/L2TlbPrefetch/PMP全绿); 19×2级perf流水FM验passing2627	
+ExuBlock_1	assembly	verif/signoff/allow/ExuBlock_1.json	assembly: 24黑盒=FP FU叶(FAlu/FCVT/FMA/FDivSqrt绿305)+ClockGate vendor+f2v/in1ToN小组合(ExeUnit_8先例); ExeUnit_8/9/10两侧elaborate; passing9698全0	

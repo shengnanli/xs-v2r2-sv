@@ -1,0 +1,112 @@
+{
+    "unresolved_blackbox": [
+        {
+            "id": "array_18_ext_0",
+            "ref_path": "r:/WORK/Slice/dataStorage/array/array_0_0_0/array/array/array_18_ext",
+            "impl_path": "i:/WORK/Slice/u_core/dataStorage/array/array_0_0_0/array/array/array_18_ext"
+        },
+        {
+            "id": "array_18_ext_1",
+            "ref_path": "r:/WORK/Slice/dataStorage/array/array_0_0_1/array/array/array_18_ext",
+            "impl_path": "i:/WORK/Slice/u_core/dataStorage/array/array_0_0_1/array/array/array_18_ext"
+        },
+        {
+            "id": "array_18_ext_2",
+            "ref_path": "r:/WORK/Slice/dataStorage/array/array_0_0_2/array/array/array_18_ext",
+            "impl_path": "i:/WORK/Slice/u_core/dataStorage/array/array_0_0_2/array/array/array_18_ext"
+        },
+        {
+            "id": "array_18_ext_3",
+            "ref_path": "r:/WORK/Slice/dataStorage/array/array_0_0_3/array/array/array_18_ext",
+            "impl_path": "i:/WORK/Slice/u_core/dataStorage/array/array_0_0_3/array/array/array_18_ext"
+        },
+        {
+            "id": "array_18_ext_4",
+            "ref_path": "r:/WORK/Slice/dataStorage/array/array_0_0_4/array/array/array_18_ext",
+            "impl_path": "i:/WORK/Slice/u_core/dataStorage/array/array_0_0_4/array/array/array_18_ext"
+        },
+        {
+            "id": "array_18_ext_5",
+            "ref_path": "r:/WORK/Slice/dataStorage/array/array_0_0_5/array/array/array_18_ext",
+            "impl_path": "i:/WORK/Slice/u_core/dataStorage/array/array_0_0_5/array/array/array_18_ext"
+        },
+        {
+            "id": "array_18_ext_6",
+            "ref_path": "r:/WORK/Slice/dataStorage/array/array_0_0_6/array/array/array_18_ext",
+            "impl_path": "i:/WORK/Slice/u_core/dataStorage/array/array_0_0_6/array/array/array_18_ext"
+        },
+        {
+            "id": "array_18_ext_7",
+            "ref_path": "r:/WORK/Slice/dataStorage/array/array_0_0_7/array/array/array_18_ext",
+            "impl_path": "i:/WORK/Slice/u_core/dataStorage/array/array_0_0_7/array/array/array_18_ext"
+        },
+        {
+            "id": "directory",
+            "ref_path": "r:/WORK/Slice/directory",
+            "impl_path": "i:/WORK/Slice/u_core/directory"
+        },
+        {
+            "id": "grantBuf",
+            "ref_path": "r:/WORK/Slice/grantBuf",
+            "impl_path": "i:/WORK/Slice/u_core/grantBuf"
+        },
+        {
+            "id": "mainPipe",
+            "ref_path": "r:/WORK/Slice/mainPipe",
+            "impl_path": "i:/WORK/Slice/u_core/mainPipe"
+        },
+        {
+            "id": "mbistPl",
+            "ref_path": "r:/WORK/Slice/mbistPl",
+            "impl_path": "i:/WORK/Slice/u_core/mbistPl"
+        },
+        {
+            "id": "mshrCtl",
+            "ref_path": "r:/WORK/Slice/mshrCtl",
+            "impl_path": "i:/WORK/Slice/u_core/mshrCtl"
+        },
+        {
+            "id": "reqArb",
+            "ref_path": "r:/WORK/Slice/reqArb",
+            "impl_path": "i:/WORK/Slice/u_core/reqArb"
+        },
+        {
+            "id": "rxdat",
+            "ref_path": "r:/WORK/Slice/rxdat",
+            "impl_path": "i:/WORK/Slice/u_core/rxdat"
+        },
+        {
+            "id": "rxrsp",
+            "ref_path": "r:/WORK/Slice/rxrsp",
+            "impl_path": "i:/WORK/Slice/u_core/rxrsp"
+        },
+        {
+            "id": "sinkA",
+            "ref_path": "r:/WORK/Slice/sinkA",
+            "impl_path": "i:/WORK/Slice/u_core/sinkA"
+        },
+        {
+            "id": "sinkC",
+            "ref_path": "r:/WORK/Slice/sinkC",
+            "impl_path": "i:/WORK/Slice/u_core/sinkC"
+        },
+        {
+            "id": "txdat",
+            "ref_path": "r:/WORK/Slice/txdat",
+            "impl_path": "i:/WORK/Slice/u_core/txdat"
+        },
+        {
+            "id": "txreq",
+            "ref_path": "r:/WORK/Slice/txreq",
+            "impl_path": "i:/WORK/Slice/u_core/txreq"
+        },
+        {
+            "id": "txrsp",
+            "ref_path": "r:/WORK/Slice/txrsp",
+            "impl_path": "i:/WORK/Slice/u_core/txrsp"
+        }
+    ],
+    "interface_only": [],
+    "empty_blackbox": [],
+    "unmatched": []
+}

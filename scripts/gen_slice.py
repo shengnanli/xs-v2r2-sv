@@ -63,6 +63,24 @@ GSV = (GOLDEN / "Slice.sv").read_text()
 LINES = GSV.splitlines()
 HDR = "// 自动生成:scripts/gen_slice.py —— 勿手改(顶层 glue 为从 Scala 意图的可读重写)\n"
 
+# ----------------------------------------------------------------------------
+# FM 子模块边界(codex_0036 裁定):
+#   BLACKBOX_GREEN = Slice 直接例化的 13 个已证 305 SIGNOFF_PASS 子(assembly
+#     depends_on):两侧都不给 golden 源 → hdlin_unresolved_modules=black_box 同名
+#     配对为对称黑盒(只证本层 glue,子模块各自已 signoff)。allow/Slice.json 声明。
+#   ELAB_SUBS = 3 个非 305 逻辑子(DataStorage/RequestBuffer/RXSNP)+ 另 2 个同类非
+#     305 逻辑叶(MSHRBuffer/MSHRBuffer_1)。**禁黑盒**:golden RTL 及其递归子链两侧
+#     全 elaborate 受验,仅最底层厂商 SRAM 宏 array_18_ext 黑盒(与 ICacheDataArray 同法)。
+# ----------------------------------------------------------------------------
+BLACKBOX_GREEN = [
+    "Directory", "GrantBuffer", "L2Slice", "MSHRCtl", "MainPipe_1",
+    "RXDAT", "RXRSP", "RequestArb", "SinkA", "SinkC",
+    "TXDAT", "TXREQ", "TXRSP",
+]
+ELAB_SUBS = ["DataStorage", "RequestBuffer", "RXSNP", "MSHRBuffer", "MSHRBuffer_1"]
+# 厂商存储宏(vendor SRAM leaf):两侧都不给 → 对称黑盒边界(唯一 elaborate 例外)。
+VENDOR_BB = ["array_18_ext"]
+
 _WORD = re.compile(r"[A-Za-z_]\w*")
 # 引脚:.name (rhs) —— rhs 允许内含一层括号。
 _PINRE = re.compile(r"\.(\w+)\s*\(((?:[^()]|\([^()]*\))*)\)")
@@ -370,6 +388,34 @@ def golden_closure(tops):
     return sorted(files), sorted(missing), len(seen - missing)
 
 
+def elab_closure():
+    """FM 两侧 elaborate 的 golden 文件名列表 = ELAB_SUBS 的传递闭包,
+    去掉厂商 _ext 宏(VENDOR_BB, 两侧黑盒)。递归到黑盒 green child 即停(它们作
+    assembly 黑盒,不进 elaborate 闭包)。返回 (elab_names, bb_ext_names)。"""
+    modfile = _golden_modfile_map()
+    stop = set(BLACKBOX_GREEN)              # 遇 green child 停止递归(黑盒)
+    seen, elab, bb, stack = set(), set(), set(), list(ELAB_SUBS)
+    while stack:
+        mod = stack.pop()
+        if mod in seen:
+            continue
+        seen.add(mod)
+        if mod in stop:                     # green 305 child: 黑盒, 不 elaborate
+            continue
+        f = modfile.get(mod)
+        if not f:
+            continue
+        if f.name.endswith("_ext.v") or mod in VENDOR_BB:
+            bb.add(f.name)                  # 厂商宏: 黑盒边界(不 elaborate)
+            continue
+        elab.add(f.name)
+        for m in _INSTREF.finditer(f.read_text(errors="ignore")):
+            t = m.group(1)
+            if t not in _KW and t not in seen and t in modfile:
+                stack.append(t)
+    return sorted(elab), sorted(bb)
+
+
 def gen_filelist(tops):
     rel = "../../../golden/chisel-rtl"
     files, missing, nmod = golden_closure(tops)
@@ -481,8 +527,14 @@ def gen_ut(ports, types):
     (UT / "tb.sv").write_text("\n".join(T) + "\n")
 
     # Makefile —— 用 golden 叶子传递闭包文件列表(-f),规避 -y 自包含 pkg 冲突。
-    sub_deps = " ".join(f"$(GOLDEN_RTL)/{t}.sv" for t in sorted(types))
-    fm_ref = " ".join(f"{t}.sv" for t in sorted(types))
+    # FM 边界(codex_0036):
+    #   ELAB = 3 非 305 逻辑子(DataStorage/RequestBuffer/RXSNP)+ 同类 MSHRBuffer[_1]
+    #          的 golden 递归子链(两侧 elaborate 受验,厂商 array_18_ext 除外)。
+    #   BLACKBOX_GREEN = 13 已证 305 SIGNOFF_PASS 子:两侧都不给源 →
+    #          hdlin_unresolved_modules=black_box 对称黑盒(assembly depends_on)。
+    elab_files, bb_ext = elab_closure()
+    fm_ref = " ".join(elab_files)           # 两侧 elaborate 的 golden 文件(相对名)
+    elab_srcs = " ".join(f"$(GOLDEN_RTL)/{f}" for f in elab_files)
     txt = f"""# 自动生成:scripts/gen_slice.py —— 勿手改
 MODULE = Slice
 
@@ -500,13 +552,29 @@ TB_SRCS = variants_xs.sv tb.sv
 # 不用 -y:golden 叶子多为自包含 pkg+module,-y 会重复解析触发 Package previously declared。
 GOLDEN_SRCS = $(GOLDEN_RTL)/Slice.sv
 
-# 子模块顶(FM ref 依赖列表用)。
-SUB_DEPS = {sub_deps}
+# ----------------------------------------------------------------------------
+# FM 子模块边界(codex_0036 修正裁定):
+#   ELAB_SRCS = 3 非 305 逻辑子(DataStorage/RequestBuffer/RXSNP)+ 同类
+#     MSHRBuffer/MSHRBuffer_1 的 golden 递归闭包({len(elab_files)} 文件)。两侧
+#     (ref + impl WRAPPER_SRCS)同源 elaborate,SRAM 模板/MBIST/仲裁/队列逻辑全受验;
+#     唯一黑盒边界 = 厂商 SRAM 宏 {" ".join(bb_ext) if bb_ext else "(无)"}(两侧都不给源)。
+#   13 已证 305 SIGNOFF_PASS 子(SinkA/SinkC/GrantBuffer/TX*/RXDAT/RXRSP/Directory/
+#     RequestArb/MainPipe_1/MSHRCtl/L2Slice)**不列**在此 → 两侧 unresolved →
+#     hdlin_unresolved_modules=black_box 同名对称黑盒(assembly depends_on;
+#     allow/Slice.json 声明; assembly_depends.tsv 记依赖闭包)。
+# ----------------------------------------------------------------------------
+ELAB_SRCS = {elab_srcs}
 
-# FM:impl 侧(wrapper->可读核)与 ref 侧在相同层次黑盒化子模块。
-WRAPPER_SRCS = $(RTL_DIR)/l2/Slice_wrapper.sv $(SUB_DEPS)
+# FM:impl 侧(wrapper->可读核)与 ref 侧在相同层次 elaborate 上述非 305 逻辑子链。
+WRAPPER_SRCS = $(RTL_DIR)/l2/Slice_wrapper.sv $(ELAB_SRCS)
 FM_VARIANTS = Slice
 FM_REF_DEPS_Slice = {fm_ref}
+
+# merge_duplicated_registers=false(非放宽——比较点增多 45290→45366): elaborate 的
+# chosenQ(Queue1_ChosenQBundle)无 reset ram 中 task_channel[2] 恒 0 位, merge=true 下
+# ref/impl 常数折叠深度不对称(ref 折掉 ram_reg[4]、impl 留 DFF0X)→ reqArb 黑盒输入
+# io_sinkA_bits_channel[2] 假失配。关 merge 令各寄存器按名对称保留→逐位比对→消失配。
+FM_MERGE_DUP = false
 
 include ../../../scripts/ut_common.mk
 

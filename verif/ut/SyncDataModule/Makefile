@@ -2,7 +2,8 @@ MODULE = SyncDataModule
 
 RTL_DIR = ../../../rtl
 RTL_SRCS = $(RTL_DIR)/common/DataModule.sv \
-           $(RTL_DIR)/common/SyncDataModule.sv
+           $(RTL_DIR)/common/SyncDataModule.sv \
+           $(RTL_DIR)/common/SyncDataModuleTemplate__1024entry_1.sv
 WRAPPER_SRCS = $(RTL_DIR)/common/DataModule_variants.sv \
                $(RTL_DIR)/common/SyncDataModule_variants.sv
 TB_SRCS = variants_xs.sv tb.sv
