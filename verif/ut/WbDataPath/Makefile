@@ -31,8 +31,11 @@ WRAPPER_SRCS = $(RTL_DIR)/backend/WbDataPath_wrapper.sv \
                $(addprefix $(GOLDEN_RTL)/,$(WB_DEPS)) \
                $(RTL_DIR)/backend/WbDataPath_dpic_stub.sv
 FM_VARIANTS = WbDataPath
-# REF 侧读同一批真子模块; DummyDPICWrapper(纯 sink, 仅输入)在 ref 侧自动黑盒无害。
+# REF 侧读同一批真子模块; DummyDPICWrapper(纯 sink, 仅输入)两侧共读本地空 stub, 使
+# 黑盒分类对称(ref/impl 同为 empty_blackbox)——否则 ref 侧未解析=unresolved 而 impl=empty,
+# assembly 判定 pair 混类 ERROR。stub 为空实现(仅输入端口, 无输出), FM 两侧同为纯 sink 黑盒。
 FM_REF_DEPS_WbDataPath = $(WB_DEPS)
+FM_REF_ABS_WbDataPath = $(abspath $(RTL_DIR)/backend/WbDataPath_dpic_stub.sv)
 
 include ../../../scripts/ut_common.mk
 

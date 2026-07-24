@@ -4183,12 +4183,12 @@
    "makefile": "verif/ut/WbDataPath/Makefile",
    "make_target": "fm-WbDataPath",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "allow_ref": "verif/signoff/allow/WbDataPath.json",
+   "rationale": "assembly+vmucp+dead-ref(G0-canonical 1020端口): 26 DummyDPICWrapper difftest探针零fanout空黑盒对称+224 VldMergeUnit vmask对称matched-unread vmucp+64 golden-only intArbiterInputsWire_14_data_1[127:64] dead-ref",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {

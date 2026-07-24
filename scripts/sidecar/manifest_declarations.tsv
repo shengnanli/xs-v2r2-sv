@@ -105,3 +105,4 @@ Rename	signoff-strict		strict+vmucp: cr10已修(golden-faithful const-0 perf reg
 IssueQueueAluCsrFenceDiv	signoff-strict		strict+vmucp: impl-clean; 156对称matched-unread(entries srcType[3:1]/enqDelay srcLoadDep)+1双射validCntDeqVec[5] set_user_match; worker POC全passing	true
 Scheduler_2	signoff-strict		strict+vmucp+FM_MERGE_DUP=false(Makefile): 647对称matched-unread(golden IQ子树双射identical-path)+18 vf向量IQ dataSources恒零位靠merge_dup=false对称保留; POC全passing	true
 DebugModule	signoff-strict		strict+vmucp: TLDebugModule/DTM两侧elaborate白盒(消2黑盒,codex_0034裁定)+FM_MERGE_DUP=false; 138对称死双射(SBA队列payload/CDC未读域); POC passing1749	true
+WbDataPath	assembly	verif/signoff/allow/WbDataPath.json	assembly+vmucp+dead-ref(G0-canonical 1020端口): 26 DummyDPICWrapper difftest探针零fanout空黑盒对称+224 VldMergeUnit vmask对称matched-unread vmucp+64 golden-only intArbiterInputsWire_14_data_1[127:64] dead-ref	true
