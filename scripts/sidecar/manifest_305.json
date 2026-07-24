@@ -281,8 +281,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "strict+vmucp: TLDebugModule/DTM两侧elaborate白盒(消2黑盒,codex_0034裁定)+FM_MERGE_DUP=false; 138对称死双射(SBA队列payload/CDC未读域); POC passing1749",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1317,8 +1317,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "strict+vmucp: impl-clean; 156对称matched-unread(entries srcType[3:1]/enqDelay srcLoadDep)+1双射validCntDeqVec[5] set_user_match; worker POC全passing",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2633,8 +2633,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "strict+vmucp: cr10已修(golden-faithful const-0 perf reg); nc=2 vecFreeList freeRegCntReg[1:0]共享绿子StdFreeList对称死双射",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3025,8 +3025,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "strict+vmucp+FM_MERGE_DUP=false(Makefile): 647对称matched-unread(golden IQ子树双射identical-path)+18 vf向量IQ dataSources恒零位靠merge_dup=false对称保留; POC全passing",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -4187,8 +4187,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "strict+vmucp+dead-ref: gen_wbdatapath.py重写补1467功能端口→native SUCCEEDED failing0 unmatched0; 3205对称matched-unread(镜像dead+VldMergeUnit)vmucp; 残留64 golden-only intArbiterInputsWire_14_data_1[127:64]+26 DPIC探针对称黑盒",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {

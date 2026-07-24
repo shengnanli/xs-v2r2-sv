@@ -2,28 +2,42 @@
 """
 WbDataPath 生成器(写回数据通路)。
 
-WbDataPath 顶层是一张巨大的"执行结果 → 物理寄存器写回端口"互联网(1110 端口), 内部例化:
-  · VldMergeUnit ×2          向量 load 结果按 vl 合并(黑盒)
-  · RealWBCollideChecker ×5  五个写回域(int/fp/vec/v0/vl)各一写回仲裁器(黑盒)
-  · DummyDPICWrapper ×26      difftest 探针(纯 sink, 不驱动任何输出端口, 黑盒)
+WbDataPath 顶层是一张巨大的"执行结果 → 物理寄存器写回口 + ROB/CtrlBlock 透传"互联网
+(golden 2489 端口/21k 行, 其中 toCtrlBlock 的 writeback data/redirect/predecodeInfo/
+debugInfo 等 ~1500 端口是纯透传), 内部例化:
+  · VldMergeUnit ×2          向量 load 结果按 vl 合并(真逻辑, 两侧共享 golden 文件)
+  · RealWBCollideChecker ×5  五个写回域(int/fp/vec/v0/vl)各一写回仲裁器(真逻辑, 共享)
+  · DummyDPICWrapper ×26      difftest 探针(纯 sink, 只有输入 0 扇出, FM 两侧对称黑盒)
 
-真正的微架构逻辑(accept-cond 写使能分流、VfExe→Int 打拍、fire/ready、写口/ROB 输出格式化)
-抽到可读核 xs_WbDataPath_core(rtl/backend/WbDataPath.sv, 手写)。黑盒的例化与机械接线、
-accept-cond 喂仲裁器输入引脚、toCtrlBlock 透传、difftest 接线, 保持与 golden 一致, 由本
-脚本从 golden 变换生成到 wrapper(WbDataPath_wrapper.sv)。
+真正的微架构逻辑(VfExe→Int 打拍活跃锥、写回口格式化)在可读核 xs_WbDataPath_core
+(rtl/backend/WbDataPath.sv, 手写; 端口契约被 verif/it/Writeback 与 verif/bt/Backend
+复用, 冻结不改)。黑盒例化/accept-cond 喂仲裁器/toCtrlBlock 透传/difftest 接线等机械
+互联由本脚本从 golden 变换生成到 wrapper(WbDataPath_wrapper.sv)。
 
-变换策略(从 golden 文本生成 wrapper, 保证 FM 黑盒引脚对齐 + 可读核承载真逻辑):
+变换策略(从 golden 文本生成 wrapper, 保证接口完整 + 黑盒引脚对齐 + 可读核承载真逻辑):
   1) 去掉 firtool 随机化/SYNTHESIS 宏样板与 assert always 块(仅调试, 不影响输出);
-  2) 把 intWrite_REG + intArbiterInputsWire_14 的 RegEnable always 块及其 reg 声明
-     替换为可读核的 vfe2int_reg_* 输出(核里用 always_ff 实现同一打拍);
-  3) 把 toPreg 输出格式化 assign 块替换为"核 preg_* 输出 → 顶层 toPreg 端口"接线
+  2) golden 的 VfExe(VfExu_0_1)→Int 打拍是 Scala `RegEnable(整个 writeback bundle)`:
+     29 个寄存器(intWrite_REG + intArbiterInputsWire_14_bits_r_*)。本配置只消费其中
+     {valid, intWen, pdest, data_1[63:0]} —— 这个**活跃锥**由可读核 vfe2int_* 承载
+     (always_ff 同一打拍); 其余字段(data_0/2..5, robIdx, 各域 wen, fflags, debugInfo,
+     seqNum 等)在 golden 中 cone-dead 但真实存在于芯片状态, 由本脚本按 golden **同名**
+     生成可读镜像打拍块(gen_vfe2int_mirror), 使 FM 按名配对成对称 matched-unread 点
+     (vmucp 加强可直接证明恒等)。唯一例外 data_1[127:64]: golden 单个 128b 寄存器的
+     高 64 位 dead、低 64 位活(由核 64b vfe2int_reg_data 承载), 镜像会与核寄存器争夺
+     配对, 故留作 documented golden-only cone-dead(PASS_DEAD_REF, 64 bit);
+  3) toPreg 输出格式化 assign 替换为"核 preg_* 输出 → 顶层 toPreg 端口"接线
      (格式化逻辑 wen=valid&wen 等在核里 genvar 展开);
   4) 例化可读核, 把五个仲裁器的 io_out_* 网接到核输入;
-  5) 其余(黑盒例化、accept-cond wire、fromExu_ready、toCtrlBlock、difftest)逐字保留。
+  5) 其余(黑盒例化、accept-cond wire、fromExu_ready、toCtrlBlock 透传、difftest)逐字
+     保留 —— golden 接口 2489 端口全部原样出现在 wrapper 头。
+
+DummyDPICWrapper stub(WbDataPath_dpic_stub.sv)由 golden 各变体模块头自动生成(空体),
+仅供 UT 双例化链接; FM 两侧都不读 stub → hdlin_unresolved_modules=black_box 对称黑盒。
 
 _xs 镜像(verif/ut/WbDataPath/variants_xs.sv)= wrapper 改名 WbDataPath_xs; tb 双例化逐拍比对。
 """
 import re
+import sys
 from pathlib import Path
 
 XSSV = Path(__file__).resolve().parent.parent
@@ -39,6 +53,12 @@ ARB = {"int": "intWbArbiter", "fp": "fpWbArbiter", "vf": "vfWbArbiter",
 ARB_WEN = {"int": "rfWen", "fp": "fpWen", "vf": "vecWen", "v0": "v0Wen", "vl": "vlWen"}
 # 可读核 preg 端口/顶层 toPreg 端口里的写使能字段名(int 用 intWen)
 CORE_WEN = {"int": "intWen", "fp": "fpWen", "vf": "vecWen", "v0": "v0Wen", "vl": "vlWen"}
+
+# VfExe→Int 打拍 bundle 的**活跃锥**字段(可读核 vfe2int_* 承载, 镜像块须排除):
+#   valid(intWrite_REG) / intWen / pdest / data_1[63:0](核 64b vfe2int_reg_data)。
+VFE2INT_LIVE = {"pdest": "vfe2int_reg_pdest", "intWen": "vfe2int_reg_intWen"}
+VFE2INT_DATA = "data_1"          # 128b 寄存器, 低 64 活(核), 高 64 documented dead
+VFE2INT_SRC = "io_fromVfExu_0_1"  # 打拍源 EXU(本配置唯一 VfExe 写 Int 特例)
 
 
 def load_golden():
@@ -64,7 +84,7 @@ def body_after_ports(text):
 
 
 def remove_assert_block(body):
-    """删 `ifndef SYNTHESIS ... always(assert) ... `endif"""
+    """删 `ifndef SYNTHESIS ... always(assert) ... `endif(仅调试, 不影响输出)。"""
     return re.sub(r"  `ifndef SYNTHESIS\n    always @\(posedge clock\) begin.*?  `endif // not def SYNTHESIS\n",
                   "", body, flags=re.S)
 
@@ -74,17 +94,78 @@ def remove_randomize_block(body):
                   "", body, flags=re.S)
 
 
+# ---------------------------------------------------------------------------
+# VfExe→Int 打拍 bundle: 解析 / 摘除 / 镜像
+# ---------------------------------------------------------------------------
+_RE_V14_REG = re.compile(
+    r"  reg +(?:\[(\d+):0\] *)? *intArbiterInputsWire_14_bits_r_(\w+);\n")
+_RE_V14_WIRE = re.compile(
+    r"  wire +(?:\[(\d+):0\] *)? *intArbiterInputsWire_14_bits_(\w+) =\s*\n?\s*"
+    r"intArbiterInputsWire_14_bits_r_\2;\n")
+
+
+def parse_vfe2int_fields(body):
+    """从 reg 声明解析打拍 bundle 全字段: [(field, width)] 按出现顺序。"""
+    return [(m.group(2), int(m.group(1)) + 1 if m.group(1) else 1)
+            for m in _RE_V14_REG.finditer(body)]
+
+
 def remove_regenable_block(body):
-    """删 intWrite_REG 的 RegEnable always 块 + 三个 reg 声明 + intWrite_REG reg 声明。
-       (这部分逻辑改由可读核 vfe2int_reg_* 承载。)"""
+    """摘除 golden 的 VfExe→Int RegEnable 打拍(活跃锥移入可读核, 其余字段由镜像块重建):
+       1) always 块(以 intWrite_REG <= 开头的唯一功能性 always);
+       2) intWrite_REG + 全部 intArbiterInputsWire_14_bits_r_* 寄存器声明;
+       3) 中间 wire 定义: 活跃字段改接核输出, dead 字段删除(镜像寄存器无下游读者),
+          data_1 删除 wire 定义并把唯一消费点(仲裁器 in_11 data 引脚)改接核输出。"""
+    n_always = len(re.findall(r"  always @\(posedge clock\) begin\n    intWrite_REG <=", body))
+    assert n_always == 1, f"RegEnable always 块应唯一, 实得 {n_always}"
     body = re.sub(r"  always @\(posedge clock\) begin\n    intWrite_REG <=.*?  end // always @\(posedge\)\n",
                   "", body, flags=re.S)
-    for d in (r"  reg          intWrite_REG;\n",
-              r"  reg  \[127:0\] intArbiterInputsWire_14_bits_r_data_1;\n",
-              r"  reg  \[7:0\]   intArbiterInputsWire_14_bits_r_pdest;\n",
-              r"  reg          intArbiterInputsWire_14_bits_r_intWen;\n"):
-        body = re.sub(d, "", body)
+    body = re.sub(r"  reg +intWrite_REG;\n", "", body)
+    body = _RE_V14_REG.sub("", body)
+
+    live_seen = set()
+
+    def wire_sub(m):
+        width, field = m.group(1), m.group(2)
+        if field in VFE2INT_LIVE:
+            live_seen.add(field)
+            ws = f"[{width}:0] " if width else ""
+            return f"  wire {ws}intArbiterInputsWire_14_bits_{field} = {VFE2INT_LIVE[field]};\n"
+        return ""  # dead 字段(含 data_1, 其消费点单独改写): 删 wire 定义
+
+    body = _RE_V14_WIRE.sub(wire_sub, body)
+    assert live_seen == set(VFE2INT_LIVE), f"活跃字段 wire 未齐: {live_seen}"
+
+    # data_1 唯一消费点: intWbArbiter .io_in_11_bits_data(...[63:0]) → 核 64b 输出
+    tgt = f"intArbiterInputsWire_14_bits_{VFE2INT_DATA}[63:0]"
+    assert body.count(tgt) == 1, f"data_1 消费点应唯一, 实得 {body.count(tgt)}"
+    body = body.replace(tgt, "vfe2int_reg_data")
+    # intWrite_REG 唯一消费点: wire intArbiterInputsWire_14_valid = intWrite_REG;
+    assert body.count("intWrite_REG") == 1, "intWrite_REG 消费点应唯一"
+    body = body.replace("intWrite_REG", "vfe2int_reg_write")
     return body
+
+
+def gen_vfe2int_mirror(fields):
+    """golden RegEnable 打拍整个 writeback bundle; 活跃锥外的字段本配置 cone-dead 但
+       真实存在于芯片状态。按 golden 同名重建打拍寄存器(使 FM 按名配对为对称
+       matched-unread 点; 无任何下游读者)。data_1 除外(见文件头注释)。"""
+    dead = [(f, w) for f, w in fields if f not in VFE2INT_LIVE and f != VFE2INT_DATA]
+    L = ["  // ---- VfExe(VfExu_0_1)→Int 打拍 bundle 的非活跃字段镜像 ----",
+         "  // Scala: RegEnable(整个 writeback bundle, fromVfExu(0)(1).valid)。活跃锥",
+         "  // {valid,intWen,pdest,data_1[63:0]} 在可读核 vfe2int_*; 其余字段照 golden",
+         "  // 同名寄存(本配置无下游读者, FM 对称 matched-unread; data_1[127:64] 为",
+         "  // documented golden-only dead, 见 gen_wbdatapath.py 文件头)。"]
+    for f, w in dead:
+        ws = f"[{w-1}:0] " if w > 1 else ""
+        L.append(f"  reg  {ws}intArbiterInputsWire_14_bits_r_{f};")
+    L.append("  always @(posedge clock) begin")
+    L.append(f"    if ({VFE2INT_SRC}_valid) begin")
+    for f, _ in dead:
+        L.append(f"      intArbiterInputsWire_14_bits_r_{f} <= {VFE2INT_SRC}_bits_{f};")
+    L.append("    end")
+    L.append("  end")
+    return "\n".join(L)
 
 
 def remove_topreg_assigns(body):
@@ -99,7 +180,7 @@ DAT_W = {"int": 64, "fp": 64, "vf": 128, "v0": 128}
 
 
 def core_decls():
-    """可读核所需的内部网声明(必须在 body 之前, 否则被推断为隐式 1-bit 网)。"""
+    """可读核 I/O 网声明(必须在 body 之前, 否则被推断为隐式 1-bit 网)。"""
     L = ["  // ---- 可读核 I/O 网声明(vfe2int 打拍输出 + 各域 preg 格式化输出)----"]
     L.append("  wire vfe2int_reg_write, vfe2int_reg_intWen;")
     L.append("  wire [7:0] vfe2int_reg_pdest;")
@@ -116,15 +197,14 @@ def core_decls():
 def core_inst():
     """生成可读核例化 + 仲裁出口接核入 + 核 preg 出口接顶层 toPreg。"""
     L = []
-    # 核例化
     L.append(f"  {CORE} u_core (")
     conns = ["    .clock(clock)"]
-    # vfe2int 输入(VfExu_0_1, data_1[63:0])
+    # vfe2int 活跃锥输入(VfExu_0_1; data = bits_data_1 低 64 位)
     conns += [
-        "    .vfe2int_in_valid (io_fromVfExu_0_1_valid)",
-        "    .vfe2int_in_intWen(io_fromVfExu_0_1_bits_intWen)",
-        "    .vfe2int_in_pdest (io_fromVfExu_0_1_bits_pdest)",
-        "    .vfe2int_in_data  (io_fromVfExu_0_1_bits_data_1[63:0])",
+        f"    .vfe2int_in_valid ({VFE2INT_SRC}_valid)",
+        f"    .vfe2int_in_intWen({VFE2INT_SRC}_bits_intWen)",
+        f"    .vfe2int_in_pdest ({VFE2INT_SRC}_bits_pdest)",
+        f"    .vfe2int_in_data  ({VFE2INT_SRC}_bits_{VFE2INT_DATA}[63:0])",
         "    .vfe2int_reg_write (vfe2int_reg_write)",
         "    .vfe2int_reg_intWen(vfe2int_reg_intWen)",
         "    .vfe2int_reg_pdest (vfe2int_reg_pdest)",
@@ -145,7 +225,6 @@ def core_inst():
             d = "{" + ", ".join(f"_{a}_io_out_{k}_bits_data" for k in range(n - 1, -1, -1)) + "}"
             conns.append(f"    .{dom}_arb_pdest({p})")
             conns.append(f"    .{dom}_arb_data({d})")
-        # 核 preg 输出
         conns.append(f"    .{dom}_preg_wen({dom}_preg_wen)")
         conns.append(f"    .{dom}_preg_{cwen}({dom}_preg_xwen)")
         if dom != "vl":
@@ -154,7 +233,6 @@ def core_inst():
     L.append(",\n".join(conns))
     L.append("  );")
 
-    # 核 preg 输出 → 顶层 toPreg 端口
     L.append("  // ---- 核格式化输出 → 物理寄存器写口 ----")
     tp = {"int": "toIntPreg", "fp": "toFpPreg", "vf": "toVfPreg", "v0": "toV0Preg", "vl": "toVlPreg"}
     for dom in ("int", "fp", "vf", "v0", "vl"):
@@ -166,26 +244,70 @@ def core_inst():
             if dom != "vl":
                 L.append(f"  assign {pre}_addr = {dom}_preg_addr[{k}];")
                 L.append(f"  assign {pre}_data = {dom}_preg_data[{k}];")
-            # vl 的 addr/data 在 golden 中悬空, 此处同样不接(保持高阻/X, UT 跳过)
+            # vl 的 addr/data 在 golden 中悬空(无驱动), 此处同样不接(UT 按 X 跳过)
     return "\n".join(L)
+
+
+def sanity_check_wrapper(text, fields):
+    """生成后自检(fail-closed): 打拍 bundle 变换完备 + 无 golden 侧残留引用。"""
+    assert "intWrite_REG" not in text, "intWrite_REG 残留"
+    for f, _ in fields:
+        n_r = len(re.findall(rf"intArbiterInputsWire_14_bits_r_{f}\b", text))
+        n_w = len(re.findall(rf"intArbiterInputsWire_14_bits_{f}\b", text))
+        if f in VFE2INT_LIVE:
+            # wire 定义 1 处 + 下游消费 ≥1 处(intWen 有 in_11_valid 与 in_11_bits_rfWen 两个)
+            assert n_r == 0 and n_w >= 2, f"活跃字段 {f}: r={n_r} w={n_w}(期望 0/≥2)"
+        elif f == VFE2INT_DATA:
+            assert n_r == 0 and n_w == 0, f"data_1 应全改接核输出: r={n_r} w={n_w}"
+        else:
+            # 镜像块: reg 声明 + 打拍赋值 = 2 处 _r_; 无 wire/下游读者
+            assert n_r == 2 and n_w == 0, f"dead 字段 {f}: r={n_r} w={n_w}(期望 2/0)"
+    assert "intArbiterInputsWire_14_valid = vfe2int_reg_write" in text.replace("\n    ", " "), \
+        "in_14 valid 未接核 vfe2int_reg_write"
 
 
 def make_wrapper(modname):
     text = strip_firtool_macros(load_golden())
     hdr_full, _ = parse_header(text)
     body = body_after_ports(text)
+    fields = parse_vfe2int_fields(body)
+    assert len(fields) == 28, f"打拍 bundle 字段数漂移: {len(fields)}(期望 28), 需复核活跃锥"
     body = remove_assert_block(body)
     body = remove_randomize_block(body)
     body = remove_regenable_block(body)
     body = remove_topreg_assigns(body)
-    # intWbArbiter io_in_11 用到 intArbiterInputsWire_14_bits_r_* / intWrite_REG —— 改名到核输出
-    body = body.replace("intWrite_REG", "vfe2int_reg_write")
-    body = body.replace("intArbiterInputsWire_14_bits_r_intWen", "vfe2int_reg_intWen")
-    body = body.replace("intArbiterInputsWire_14_bits_r_pdest", "vfe2int_reg_pdest")
-    body = body.replace("intArbiterInputsWire_14_bits_r_data_1[63:0]", "vfe2int_reg_data")
 
     hdr = hdr_full.replace(f"module {MODULE}(", f"module {modname}(", 1)
-    return hdr + "\n\n" + core_decls() + "\n\n" + body + "\n" + core_inst() + "\nendmodule\n"
+    out = (hdr + "\n\n" + core_decls() + "\n\n" + body + "\n"
+           + gen_vfe2int_mirror(fields) + "\n" + core_inst() + "\nendmodule\n")
+    sanity_check_wrapper(out, fields)
+    return out
+
+
+# ---------------------------------------------------------------------------
+# DummyDPICWrapper stub: 从 golden 各变体模块头自动生成空体(仅 UT 链接用)
+# ---------------------------------------------------------------------------
+def gen_dpic_stub():
+    body = body_after_ports(strip_firtool_macros(load_golden()))
+    kinds = sorted(set(re.findall(r"^  (DummyDPICWrapper_\d+) ", body, re.M)),
+                   key=lambda s: int(s.split("_")[1]))
+    assert kinds, "golden 未见 DummyDPICWrapper 例化"
+    L = ["""// =============================================================================
+// DummyDPICWrapper_* —— difftest 探针空体 stub(由 gen_wbdatapath.py 从 golden 模块头生成)
+// -----------------------------------------------------------------------------
+// WbDataPath 在 EnableDifftest 时为每个写回出口例化一个 DummyDPICWrapper(内含 DPI-C
+// 的 DiffXxxWriteback), 把仲裁器胜出的写回结果送给 difftest 框架做指令级比对。
+// 这些实例是**纯 sink**: 只有输入端口, 不驱动 WbDataPath 的任何输出, 对功能行为无影响。
+//
+// 仅供 UT 双例化链接(golden DUT 与可读 DUT 共用)。FM 两侧都不读本文件 →
+// hdlin_unresolved_modules=black_box 使 26 个实例在 ref/impl 对称黑盒、引脚按名配对。
+// ============================================================================="""]
+    for k in kinds:
+        src = (GOLDEN / f"{k}.sv").read_text()
+        m = re.search(rf"^module {k}\(.*?\n\);", src, re.S | re.M)
+        assert m, f"golden {k}.sv 模块头解析失败"
+        L.append("\n" + m.group(0) + "\nendmodule")
+    return "\n".join(L) + "\n"
 
 
 def parse_io():
@@ -240,7 +362,7 @@ module tb;
         if n == "io_flush_valid":
             return "($urandom_range(0,7)==0)"
         if "robIdx_value" in n:
-            return "8'($urandom_range(0,15))"
+            return f"{w}'($urandom_range(0,15))"
         if w == 1:
             return "$urandom_range(0,1)"
         if w <= 32:
@@ -287,11 +409,14 @@ endmodule
 def main():
     note = "// 自动生成：scripts/gen_wbdatapath.py —— 勿手改\n"
     (XSSV / f"rtl/backend/{MODULE}_wrapper.sv").write_text(note + make_wrapper(MODULE))
+    (XSSV / f"rtl/backend/{MODULE}_dpic_stub.sv").write_text(gen_dpic_stub())
     ut = XSSV / f"verif/ut/{MODULE}"
     ut.mkdir(parents=True, exist_ok=True)
     (ut / "variants_xs.sv").write_text(note + make_wrapper(f"{MODULE}_xs"))
     (ut / "tb.sv").write_text(emit_tb())
-    print(f"{MODULE}: wrapper + variants + tb generated")
+    ins, outs = parse_io()
+    print(f"{MODULE}: wrapper + dpic_stub + variants + tb generated "
+          f"({len(ins)} in / {len(outs)} out ports)")
 
 
 if __name__ == "__main__":
