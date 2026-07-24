@@ -92,7 +92,7 @@ module LoadQueueRAW_xs(
   output [5:0] io_perf_0_value,
   output [5:0] io_perf_1_value
 );
-  xs_LoadQueueRAW_core u_core (
+  xs_LoadQueueRAW_core_ut u_core (
     .clock(clock),
     .reset(reset),
     .io_redirect_valid(io_redirect_valid),
