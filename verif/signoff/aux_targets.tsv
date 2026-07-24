@@ -6,3 +6,4 @@ SRAMTemplate_199	PASS	strict SUCCEEDED 929点/0fail/0unread(可读控制逻辑+a
 SRAMTemplate_200	PASS	strict SUCCEEDED 97点/0fail/0unread(可读控制逻辑+array_22宏边界)
 SRAMTemplate_201	PASS	strict SUCCEEDED 58点/0fail/0unread(可读reset-sweep+array_0_0宏边界)
 MaxPeriodFibonacciLFSR_3	PASS	(重复, phase1)
+Hpmcounter3Module	PASS	strict SUCCEEDED 128点/0fail/0unread/0unmatched/dont_verify=false(可读primitive xs_hpmcounter #(.IDX=0)); NewCSR CSR-field家族pilot, 同primitive证Hpmcounter31Module(IDX=28)亦SUCCEEDED; UT seed1/7/42 checks59992 errors0
