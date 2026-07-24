@@ -6,9 +6,18 @@
   // §1 inPipe:控制位 + 有效位各打 LAT_MAX 拍,供有延迟 FU 在出结果拍取用。
   //   控制位链每拍纯移位;有效位链每拍移位并做 flush-kill(被冲刷则清 0)。
   // ==========================================================================
-  // 进入流水的当拍控制位(取自 io_in)。
+  // 进入流水的当拍控制位(取自 io_in)。fuOpType/rfWen 走各自专用浅链(见下)。
   ctrl_t ctrl_in;
-  assign ctrl_in = '{fuOpType: io_in_bits_fuOpType, robIdx_flag: io_in_bits_robIdx_flag, robIdx_value: io_in_bits_robIdx_value, pdest: io_in_bits_pdest, rfWen: io_in_bits_rfWen, fpWen: io_in_bits_fpWen, fpu_wflags: io_in_bits_fpu_wflags};
+  assign ctrl_in = '{robIdx_flag: io_in_bits_robIdx_flag, robIdx_value: io_in_bits_robIdx_value, pdest: io_in_bits_pdest, fpWen: io_in_bits_fpWen, fpu_wflags: io_in_bits_fpu_wflags};
+
+  // fuOpType / rfWen 专用 2 级浅链:纯移位打拍(无 flush-kill,随控制位链同步)。
+  //   op_pipe[0]/rf_pipe[0] = 入流水后第 1 拍,op_pipe[1]/rf_pipe[1] = 第 2 拍。
+  always_ff @(posedge clock) begin
+    op_pipe[0] <= io_in_bits_fuOpType;
+    op_pipe[1] <= op_pipe[0];
+    rf_pipe[0] <= io_in_bits_rfWen;
+    rf_pipe[1] <= rf_pipe[0];
+  end
 
   // 一级有效推进:上级有效 v、本级 robIdx,以及 flush 信号(全部显式入参,
   //   纯函数不捕获外部信号,避免 FM 的 sim/synth 不一致告警)。被冲刷则清 0。

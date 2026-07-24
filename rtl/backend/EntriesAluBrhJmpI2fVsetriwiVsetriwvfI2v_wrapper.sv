@@ -491,6 +491,7 @@ module EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v import iq_abjivvi_pkg::*; (
   logic [7:0]           c_flush_rob_value;
   logic [1:0]           c_enq_valid;
   entry_t [1:0]         c_enq_bits;
+  enq_src_ld_t [1:0]    c_enq_src_load_dep; // 入队 srcLoadDependency(不入 payload,单独喂 enqDelayIn1)
   wk_wb_t [3:0]         c_wk_wb, c_wk_wb_d;
   wk_iq_t [6:0]         c_wk_iq, c_wk_iq_d;
   logic [26:0]          c_og0cancel, c_og1cancel;
@@ -517,6 +518,7 @@ module EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v import iq_abjivvi_pkg::*; (
     c_og1cancel = '0; // Entries 顶层未引 og1Cancel,置 0
     c_og0cancel = '0;
     c_enq_bits = '0;
+    c_enq_src_load_dep = '0;
     c_wk_iq = '0; c_wk_iq_d = '0; c_wk_wb = '0; c_wk_wb_d = '0; c_ldcancel = '0;
     c_flush_valid = io_flush_valid;
     c_flush_rob_flag = io_flush_bits_robIdx_flag;
@@ -525,13 +527,14 @@ module EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v import iq_abjivvi_pkg::*; (
     c_enq_valid[0] = io_enq_0_valid;
     c_enq_bits[0].status.rob_flag = io_enq_0_bits_status_robIdx_flag;
     c_enq_bits[0].status.rob_value = io_enq_0_bits_status_robIdx_value;
+    // fuType 紧凑存储:按 FU_TYPE_KEEP_MASK 升序装填保留位 {0,1,2,3,6,28,29}→槽{0..6}
     c_enq_bits[0].status.fu_type[0] = io_enq_0_bits_status_fuType_0;
     c_enq_bits[0].status.fu_type[1] = io_enq_0_bits_status_fuType_1;
     c_enq_bits[0].status.fu_type[2] = io_enq_0_bits_status_fuType_2;
     c_enq_bits[0].status.fu_type[3] = io_enq_0_bits_status_fuType_3;
-    c_enq_bits[0].status.fu_type[6] = io_enq_0_bits_status_fuType_6;
-    c_enq_bits[0].status.fu_type[28] = io_enq_0_bits_status_fuType_28;
-    c_enq_bits[0].status.fu_type[29] = io_enq_0_bits_status_fuType_29;
+    c_enq_bits[0].status.fu_type[4] = io_enq_0_bits_status_fuType_6;
+    c_enq_bits[0].status.fu_type[5] = io_enq_0_bits_status_fuType_28;
+    c_enq_bits[0].status.fu_type[6] = io_enq_0_bits_status_fuType_29;
     c_enq_bits[0].status.src[0].psrc = io_enq_0_bits_status_srcStatus_0_psrc;
     c_enq_bits[0].status.src[0].src_type = io_enq_0_bits_status_srcStatus_0_srcType;
     c_enq_bits[0].status.src[0].src_state = io_enq_0_bits_status_srcStatus_0_srcState;
@@ -567,23 +570,24 @@ module EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v import iq_abjivvi_pkg::*; (
     c_enq_bits[0].payload.fpu_wflags = io_enq_0_bits_payload_fpu_wflags;
     c_enq_bits[0].payload.fpu_typ = io_enq_0_bits_payload_fpu_typ;
     c_enq_bits[0].payload.fpu_rm = io_enq_0_bits_payload_fpu_rm;
-    c_enq_bits[0].payload.src_load_dep[0][0] = io_enq_0_bits_payload_srcLoadDependency_0_0;
-    c_enq_bits[0].payload.src_load_dep[0][1] = io_enq_0_bits_payload_srcLoadDependency_0_1;
-    c_enq_bits[0].payload.src_load_dep[0][2] = io_enq_0_bits_payload_srcLoadDependency_0_2;
-    c_enq_bits[0].payload.src_load_dep[1][0] = io_enq_0_bits_payload_srcLoadDependency_1_0;
-    c_enq_bits[0].payload.src_load_dep[1][1] = io_enq_0_bits_payload_srcLoadDependency_1_1;
-    c_enq_bits[0].payload.src_load_dep[1][2] = io_enq_0_bits_payload_srcLoadDependency_1_2;
+    c_enq_src_load_dep[0][0][0] = io_enq_0_bits_payload_srcLoadDependency_0_0;
+    c_enq_src_load_dep[0][0][1] = io_enq_0_bits_payload_srcLoadDependency_0_1;
+    c_enq_src_load_dep[0][0][2] = io_enq_0_bits_payload_srcLoadDependency_0_2;
+    c_enq_src_load_dep[0][1][0] = io_enq_0_bits_payload_srcLoadDependency_1_0;
+    c_enq_src_load_dep[0][1][1] = io_enq_0_bits_payload_srcLoadDependency_1_1;
+    c_enq_src_load_dep[0][1][2] = io_enq_0_bits_payload_srcLoadDependency_1_2;
     c_enq_bits[0].payload.pdest = io_enq_0_bits_payload_pdest;
     c_enq_valid[1] = io_enq_1_valid;
     c_enq_bits[1].status.rob_flag = io_enq_1_bits_status_robIdx_flag;
     c_enq_bits[1].status.rob_value = io_enq_1_bits_status_robIdx_value;
+    // fuType 紧凑存储:按 FU_TYPE_KEEP_MASK 升序装填保留位 {0,1,2,3,6,28,29}→槽{0..6}
     c_enq_bits[1].status.fu_type[0] = io_enq_1_bits_status_fuType_0;
     c_enq_bits[1].status.fu_type[1] = io_enq_1_bits_status_fuType_1;
     c_enq_bits[1].status.fu_type[2] = io_enq_1_bits_status_fuType_2;
     c_enq_bits[1].status.fu_type[3] = io_enq_1_bits_status_fuType_3;
-    c_enq_bits[1].status.fu_type[6] = io_enq_1_bits_status_fuType_6;
-    c_enq_bits[1].status.fu_type[28] = io_enq_1_bits_status_fuType_28;
-    c_enq_bits[1].status.fu_type[29] = io_enq_1_bits_status_fuType_29;
+    c_enq_bits[1].status.fu_type[4] = io_enq_1_bits_status_fuType_6;
+    c_enq_bits[1].status.fu_type[5] = io_enq_1_bits_status_fuType_28;
+    c_enq_bits[1].status.fu_type[6] = io_enq_1_bits_status_fuType_29;
     c_enq_bits[1].status.src[0].psrc = io_enq_1_bits_status_srcStatus_0_psrc;
     c_enq_bits[1].status.src[0].src_type = io_enq_1_bits_status_srcStatus_0_srcType;
     c_enq_bits[1].status.src[0].src_state = io_enq_1_bits_status_srcStatus_0_srcState;
@@ -619,12 +623,12 @@ module EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v import iq_abjivvi_pkg::*; (
     c_enq_bits[1].payload.fpu_wflags = io_enq_1_bits_payload_fpu_wflags;
     c_enq_bits[1].payload.fpu_typ = io_enq_1_bits_payload_fpu_typ;
     c_enq_bits[1].payload.fpu_rm = io_enq_1_bits_payload_fpu_rm;
-    c_enq_bits[1].payload.src_load_dep[0][0] = io_enq_1_bits_payload_srcLoadDependency_0_0;
-    c_enq_bits[1].payload.src_load_dep[0][1] = io_enq_1_bits_payload_srcLoadDependency_0_1;
-    c_enq_bits[1].payload.src_load_dep[0][2] = io_enq_1_bits_payload_srcLoadDependency_0_2;
-    c_enq_bits[1].payload.src_load_dep[1][0] = io_enq_1_bits_payload_srcLoadDependency_1_0;
-    c_enq_bits[1].payload.src_load_dep[1][1] = io_enq_1_bits_payload_srcLoadDependency_1_1;
-    c_enq_bits[1].payload.src_load_dep[1][2] = io_enq_1_bits_payload_srcLoadDependency_1_2;
+    c_enq_src_load_dep[1][0][0] = io_enq_1_bits_payload_srcLoadDependency_0_0;
+    c_enq_src_load_dep[1][0][1] = io_enq_1_bits_payload_srcLoadDependency_0_1;
+    c_enq_src_load_dep[1][0][2] = io_enq_1_bits_payload_srcLoadDependency_0_2;
+    c_enq_src_load_dep[1][1][0] = io_enq_1_bits_payload_srcLoadDependency_1_0;
+    c_enq_src_load_dep[1][1][1] = io_enq_1_bits_payload_srcLoadDependency_1_1;
+    c_enq_src_load_dep[1][1][2] = io_enq_1_bits_payload_srcLoadDependency_1_2;
     c_enq_bits[1].payload.pdest = io_enq_1_bits_payload_pdest;
     c_og0resp_valid[0] = io_og0Resp_0_valid;
     c_og0resp_valid[1] = io_og0Resp_1_valid;
@@ -945,13 +949,14 @@ module EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v import iq_abjivvi_pkg::*; (
   assign io_exuSources_23_1_value = c_exu_sources[23][1];
   assign io_deqEntry_0_bits_status_robIdx_flag = c_deq_entry[0].status.rob_flag;
   assign io_deqEntry_0_bits_status_robIdx_value = c_deq_entry[0].status.rob_value;
+  // fuType 紧凑存储解包:保留位 {0,1,2,3,6,28,29} 存于槽 {0,1,2,3,4,5,6}
   assign io_deqEntry_0_bits_status_fuType_0 = c_deq_entry[0].status.fu_type[0];
   assign io_deqEntry_0_bits_status_fuType_1 = c_deq_entry[0].status.fu_type[1];
   assign io_deqEntry_0_bits_status_fuType_2 = c_deq_entry[0].status.fu_type[2];
   assign io_deqEntry_0_bits_status_fuType_3 = c_deq_entry[0].status.fu_type[3];
-  assign io_deqEntry_0_bits_status_fuType_6 = c_deq_entry[0].status.fu_type[6];
-  assign io_deqEntry_0_bits_status_fuType_28 = c_deq_entry[0].status.fu_type[28];
-  assign io_deqEntry_0_bits_status_fuType_29 = c_deq_entry[0].status.fu_type[29];
+  assign io_deqEntry_0_bits_status_fuType_6 = c_deq_entry[0].status.fu_type[4];
+  assign io_deqEntry_0_bits_status_fuType_28 = c_deq_entry[0].status.fu_type[5];
+  assign io_deqEntry_0_bits_status_fuType_29 = c_deq_entry[0].status.fu_type[6];
   assign io_deqEntry_0_bits_status_srcStatus_0_psrc = c_deq_entry[0].status.src[0].psrc;
   assign io_deqEntry_0_bits_status_srcStatus_0_srcType = c_deq_entry[0].status.src[0].src_type;
   assign io_deqEntry_0_bits_status_srcStatus_0_regCacheIdx = c_deq_entry[0].status.src[0].rc_idx;
@@ -969,9 +974,9 @@ module EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v import iq_abjivvi_pkg::*; (
   assign io_deqEntry_1_bits_status_fuType_1 = c_deq_entry[1].status.fu_type[1];
   assign io_deqEntry_1_bits_status_fuType_2 = c_deq_entry[1].status.fu_type[2];
   assign io_deqEntry_1_bits_status_fuType_3 = c_deq_entry[1].status.fu_type[3];
-  assign io_deqEntry_1_bits_status_fuType_6 = c_deq_entry[1].status.fu_type[6];
-  assign io_deqEntry_1_bits_status_fuType_28 = c_deq_entry[1].status.fu_type[28];
-  assign io_deqEntry_1_bits_status_fuType_29 = c_deq_entry[1].status.fu_type[29];
+  assign io_deqEntry_1_bits_status_fuType_6 = c_deq_entry[1].status.fu_type[4];
+  assign io_deqEntry_1_bits_status_fuType_28 = c_deq_entry[1].status.fu_type[5];
+  assign io_deqEntry_1_bits_status_fuType_29 = c_deq_entry[1].status.fu_type[6];
   assign io_deqEntry_1_bits_status_srcStatus_0_psrc = c_deq_entry[1].status.src[0].psrc;
   assign io_deqEntry_1_bits_status_srcStatus_0_srcType = c_deq_entry[1].status.src[0].src_type;
   assign io_deqEntry_1_bits_status_srcStatus_0_regCacheIdx = c_deq_entry[1].status.src[0].rc_idx;
@@ -1006,7 +1011,7 @@ module EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v import iq_abjivvi_pkg::*; (
     .clock(clock), .reset(reset),
     .flush_valid(c_flush_valid), .flush_rob_flag(c_flush_rob_flag),
     .flush_rob_value(c_flush_rob_value), .flush_level(c_flush_level),
-    .enq_valid(c_enq_valid), .enq_bits(c_enq_bits),
+    .enq_valid(c_enq_valid), .enq_bits(c_enq_bits), .enq_src_load_dep(c_enq_src_load_dep),
     .wk_wb(c_wk_wb), .wk_iq(c_wk_iq), .wk_wb_d(c_wk_wb_d), .wk_iq_d(c_wk_iq_d),
     .og0cancel(c_og0cancel), .og1cancel(c_og1cancel), .ldcancel(c_ldcancel),
     .og0resp_valid(c_og0resp_valid), .og1resp_valid(c_og1resp_valid),

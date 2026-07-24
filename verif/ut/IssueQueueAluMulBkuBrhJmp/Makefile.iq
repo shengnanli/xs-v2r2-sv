@@ -16,10 +16,19 @@ BB_DEPS = EntriesAluMulBkuBrhJmp.sv EnqEntry.sv OthersEntry.sv OthersEntry_6.sv 
           MultiWakeupQueue.sv PipeWithFlush.sv PipeWithFlush_1.sv \
           NewAgeDetector.sv AgeDetector.sv AgeDetector_1.sv
 
+# golden-u_g-only 退化桩(FuBusyTableWrite_2/_3): golden IQ 顶层内部例化 port1 整数写回忙
+# 表(intWbBusyTableWrite_1)以及 fp/vf/v0/vl 写回忙表, 但这些子模块是**退化常量 0 桩**
+# (无输入, io_out_fuBusyTable 恒 0), 对应的顶层输出 io_wbBusyTableWrite_1_intWbBusyTable
+# 等恒为 0=「从不忙」。可读核正确省略这些恒 0 输出端口(bug-for-bug: 上层对忙表做 OR,
+# 常量 0 无影响)。u_g 例化 golden 顶层须能 elaborate 这些桩, 故只加进 GOLDEN_SRCS(u_g 侧);
+# **不进 FM ref/impl**——FM 里这些桩不解析→自动黑盒, 其恒 0 输出非比较点(与可读核缺端口
+# 一致), 若强行加进 FM ref 反会把恒 0 输出变成 unmatched 比较点。UT tb 也仅比较 port0。
+GOLDEN_ONLY_STUBS = FuBusyTableWrite_2.sv FuBusyTableWrite_3.sv
+
 # UT: u_g=golden IQ 顶层, u_i=可读核顶层(重命名 _xs)。
 TB_SRCS = iq_variant_xs.sv iq_tb.sv
 GOLDEN_SRCS = $(GOLDEN_RTL)/IssueQueueAluMulBkuBrhJmp.sv \
-              $(addprefix $(GOLDEN_RTL)/,$(BB_DEPS))
+              $(addprefix $(GOLDEN_RTL)/,$(BB_DEPS) $(GOLDEN_ONLY_STUBS))
 
 # FM: ref = golden IQ 顶层 + 全部依赖; impl = 可读核(顶层 wrapper)+ 同一批 golden 黑盒。
 WRAPPER_SRCS = $(addprefix $(GOLDEN_RTL)/,$(BB_DEPS))

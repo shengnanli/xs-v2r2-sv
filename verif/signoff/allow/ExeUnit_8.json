@@ -1,0 +1,47 @@
+{
+    "unresolved_blackbox": [
+        {
+            "id": "ClockGate",
+            "ref_path": "r:/WORK/ExeUnit_8/ClockGate",
+            "impl_path": "i:/WORK/ExeUnit_8/u_core/ClockGate"
+        },
+        {
+            "id": "ClockGate_1",
+            "ref_path": "r:/WORK/ExeUnit_8/ClockGate_1",
+            "impl_path": "i:/WORK/ExeUnit_8/u_core/ClockGate_1"
+        },
+        {
+            "id": "ClockGate_2",
+            "ref_path": "r:/WORK/ExeUnit_8/ClockGate_2",
+            "impl_path": "i:/WORK/ExeUnit_8/u_core/ClockGate_2"
+        },
+        {
+            "id": "Falu",
+            "ref_path": "r:/WORK/ExeUnit_8/Falu",
+            "impl_path": "i:/WORK/ExeUnit_8/u_core/Falu"
+        },
+        {
+            "id": "Fcvt",
+            "ref_path": "r:/WORK/ExeUnit_8/Fcvt",
+            "impl_path": "i:/WORK/ExeUnit_8/u_core/Fcvt"
+        },
+        {
+            "id": "Fmac",
+            "ref_path": "r:/WORK/ExeUnit_8/Fmac",
+            "impl_path": "i:/WORK/ExeUnit_8/u_core/Fmac"
+        },
+        {
+            "id": "f2v",
+            "ref_path": "r:/WORK/ExeUnit_8/f2v",
+            "impl_path": "i:/WORK/ExeUnit_8/u_core/f2v"
+        },
+        {
+            "id": "in1ToN",
+            "ref_path": "r:/WORK/ExeUnit_8/in1ToN",
+            "impl_path": "i:/WORK/ExeUnit_8/u_core/in1ToN"
+        }
+    ],
+    "interface_only": [],
+    "empty_blackbox": [],
+    "unmatched": []
+}

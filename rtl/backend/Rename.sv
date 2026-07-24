@@ -1208,8 +1208,21 @@ module xs_Rename_core
   logic [2:0] perf01_REG   [2],  perf01_REG_1   [2];   // idx 0,1
   logic       perf2t9_REG  [8],  perf2t9_REG_1  [8];   // idx 2..9
   // FreeList perf 输出恒为 {5'h0, 1bit}(见 StdFreeList/MEFreeList: io_perf=`{5'h0,REG}`),
-  //   故只寄存有效低位。impl 因此无死上位(golden 存 6bit 其上位恒 0=golden-only 冗余)。
-  logic       perfFl_REG   [20], perfFl_REG_1   [20];  // idx 10..29 (仅 bit0 有效)
+  //   故 bit0 数据位走 perfFl_REG 流水。
+  logic       perfFl_REG   [20], perfFl_REG_1   [20];  // idx 10..29 (bit0 数据位)
+  // ★golden-faithful 高位补齐(消 compare_ref=10): golden 以 6bit 存全部 20 个 FreeList
+  //   perf 寄存器, 其 [5:1] 由 FreeList 输出 {5'h0,1bit} 驱动恒 0。FM 按每个 FreeList
+  //   实例内部的常量网, 把该组 4 个寄存器的 [5:1] 死常位 merge 进组首 bit[1] 代表点,
+  //   golden 侧留下 10 个活比较点 io_perf_{10,14,18,22,26}_value_REG[_1]_reg[1]
+  //   (每组 REG/REG_1 两级各 1)。impl 若只寄 bit0 → 这 10 点 golden-only 孤儿。
+  //   这里按 golden 同名补每组组首的 [5:1] 寄存器对, 源=对应 FreeList 实例输出的恒 0
+  //   高位(独立源网, 各组不同实例 → FM 不跨组折叠, 与 golden 行为对称), 输出高位改走
+  //   寄存器(值恒 0 不变), 使其被读→成为活比较点与 golden 同名配对比较。
+  logic [5:1] io_perf_10_value_REG, io_perf_10_value_REG_1;   // int 组首
+  logic [5:1] io_perf_14_value_REG, io_perf_14_value_REG_1;   // fp  组首
+  logic [5:1] io_perf_18_value_REG, io_perf_18_value_REG_1;   // vec 组首
+  logic [5:1] io_perf_22_value_REG, io_perf_22_value_REG_1;   // v0  组首
+  logic [5:1] io_perf_26_value_REG, io_perf_26_value_REG_1;   // vl  组首
 
   logic       perf2t9_src [8];
   always_comb begin
@@ -1237,6 +1250,12 @@ module xs_Rename_core
     perf01_REG[1] <= perfStallCnt; perf01_REG_1[1] <= perf01_REG[1];
     for (int i = 0; i < 8;  i++) begin perf2t9_REG[i] <= perf2t9_src[i]; perf2t9_REG_1[i] <= perf2t9_REG[i]; end
     for (int i = 0; i < 20; i++) begin perfFl_REG [i] <= perfFl_src [i]; perfFl_REG_1 [i] <= perfFl_REG [i]; end
+    // 组首 [5:1] 补位寄存器(恒 0, 与 golden io_perf_N_value_REG/_REG_1 同名同宽同源)
+    io_perf_10_value_REG <= intFlPerf[0][5:1]; io_perf_10_value_REG_1 <= io_perf_10_value_REG;
+    io_perf_14_value_REG <= fpFlPerf [0][5:1]; io_perf_14_value_REG_1 <= io_perf_14_value_REG;
+    io_perf_18_value_REG <= vecFlPerf[0][5:1]; io_perf_18_value_REG_1 <= io_perf_18_value_REG;
+    io_perf_22_value_REG <= v0FlPerf [0][5:1]; io_perf_22_value_REG_1 <= io_perf_22_value_REG;
+    io_perf_26_value_REG <= vlFlPerf [0][5:1]; io_perf_26_value_REG_1 <= io_perf_26_value_REG;
   end
 
   always_comb begin
@@ -1244,6 +1263,12 @@ module xs_Rename_core
     io_perf_value[1] = {3'h0, perf01_REG_1[1]};
     for (int i = 0; i < 8;  i++) io_perf_value[2+i]  = {5'h0, perf2t9_REG_1[i]};
     for (int i = 0; i < 20; i++) io_perf_value[10+i] = {5'h0, perfFl_REG_1[i]};
+    // 组首高位改走补位寄存器(恒 0, 输出值不变; 使补位寄存器有真扇出=活比较点)
+    io_perf_value[10][5:1] = io_perf_10_value_REG_1;
+    io_perf_value[14][5:1] = io_perf_14_value_REG_1;
+    io_perf_value[18][5:1] = io_perf_18_value_REG_1;
+    io_perf_value[22][5:1] = io_perf_22_value_REG_1;
+    io_perf_value[26][5:1] = io_perf_26_value_REG_1;
   end
 
 endmodule

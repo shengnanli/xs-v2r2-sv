@@ -21,7 +21,13 @@
 // =============================================================================
 module xs_L1FlagMetaArray_core import xs_l1metaarray_pkg::*; #(
   parameter int READ_PORTS  = 4,
-  parameter int WRITE_PORTS = 1
+  parameter int WRITE_PORTS = 1,
+  // WDATA_CONST_MASK[wp]=1 表示写口 wp 的 flag 是编译期常量（父模块 tie-off），
+  //   其常量值为 WDATA_CONST_VAL[wp]。与 golden(firtool 常量传播)一致：对这些写口
+  //   **不生成 s1_way_wdata 寄存器**，直接用常量参与 meta_array 合并与旁路，避免出现
+  //   golden 侧不存在的 impl-only 常量寄存器。默认全 0 = 全部为真实数据（sibling 变体）。
+  parameter logic [WRITE_PORTS-1:0] WDATA_CONST_MASK = '0,
+  parameter logic [WRITE_PORTS-1:0] WDATA_CONST_VAL  = '0
 )(
   input  logic                      clock,
   input  logic                      reset,
@@ -51,7 +57,8 @@ module xs_L1FlagMetaArray_core import xs_l1metaarray_pkg::*; #(
   logic                s0_way_wdata [N_WAYS][WRITE_PORTS];
   logic                s1_way_wen   [N_WAYS][WRITE_PORTS];
   logic [IDX_BITS-1:0] s1_way_waddr [N_WAYS][WRITE_PORTS];
-  logic                s1_way_wdata [N_WAYS][WRITE_PORTS];
+  // s1_way_wdata_eff: S1 在途写数据。真实数据口=打一拍寄存值；常量口=常量（无寄存器）。
+  logic                s1_way_wdata_eff [N_WAYS][WRITE_PORTS];
 
   always_comb begin
     for (int wp = 0; wp < WRITE_PORTS; wp++) begin
@@ -63,18 +70,40 @@ module xs_L1FlagMetaArray_core import xs_l1metaarray_pkg::*; #(
     end
   end
 
-  // S1 在途写寄存（无复位，与 golden 一致：上电 X）
+  // S1 wen/waddr 恒打一拍（所有写口，含常量口——golden 对常量口保留 wen/waddr 寄存器）。
+  // wdata 仅对真实数据口生成寄存器；常量口直接取常量（golden firtool 常量传播后无 wdata 寄存器）。
   always_ff @(posedge clock) begin
     for (int wp = 0; wp < WRITE_PORTS; wp++) begin
       for (int w = 0; w < N_WAYS; w++) begin
         s1_way_wen[w][wp] <= s0_way_wen[w][wp];
-        if (s0_way_wen[w][wp]) begin
+        if (s0_way_wen[w][wp])
           s1_way_waddr[w][wp] <= s0_way_waddr[w][wp];
-          s1_way_wdata[w][wp] <= s0_way_wdata[w][wp];
-        end
       end
     end
   end
+
+  genvar gwp, gwy;
+  generate
+    for (gwp = 0; gwp < WRITE_PORTS; gwp++) begin : g_wport
+      if (WDATA_CONST_MASK[gwp]) begin : g_const_wdata
+        // 常量写口：无 s1 wdata 寄存器，直接常量（与 golden 一致）
+        for (gwy = 0; gwy < N_WAYS; gwy++) begin : g_const_way
+          assign s1_way_wdata_eff[gwy][gwp] = WDATA_CONST_VAL[gwp];
+        end
+      end else begin : g_real_wdata
+        // 真实数据写口：保留 s1 wdata 寄存器（sibling / 写口3）
+        logic s1_wdata_r [N_WAYS];
+        always_ff @(posedge clock) begin
+          for (int w = 0; w < N_WAYS; w++)
+            if (s0_way_wen[w][gwp])
+              s1_wdata_r[w] <= s0_way_wdata[w][gwp];
+        end
+        for (gwy = 0; gwy < N_WAYS; gwy++) begin : g_real_way
+          assign s1_way_wdata_eff[gwy][gwp] = s1_wdata_r[gwy];
+        end
+      end
+    end
+  endgenerate
 
   // 寄存器堆落盘：异步复位清 0，与 golden 的 async-reset 一致（FM 比对 DFF 复位引脚）
   always_ff @(posedge clock or posedge reset) begin
@@ -86,7 +115,7 @@ module xs_L1FlagMetaArray_core import xs_l1metaarray_pkg::*; #(
       for (int wp = 0; wp < WRITE_PORTS; wp++)
         for (int w = 0; w < N_WAYS; w++)
           if (s1_way_wen[w][wp])
-            meta_array[s1_way_waddr[w][wp]][w] <= s1_way_wdata[w][wp];
+            meta_array[s1_way_waddr[w][wp]][w] <= s1_way_wdata_eff[w][wp];
     end
   end
 
@@ -118,7 +147,7 @@ module xs_L1FlagMetaArray_core import xs_l1metaarray_pkg::*; #(
           for (int wp = 0; wp < WRITE_PORTS; wp++) begin
             m_s1[wp] = s1_way_wen[gw][wp] & (s1_way_waddr[gw][wp] == io_read_idx[gp]);
             m_s0[wp] = s0_way_wen[gw][wp] & (s0_way_waddr[gw][wp] == io_read_idx[gp]);
-            if (m_s1[wp]) rd_bypass_data = s1_way_wdata[gw][wp];
+            if (m_s1[wp]) rd_bypass_data = s1_way_wdata_eff[gw][wp];
             if (m_s0[wp]) rd_bypass_data = s0_way_wdata[gw][wp];
           end
           rd_bypass_sel = bypass_hit(m_s0, m_s1);

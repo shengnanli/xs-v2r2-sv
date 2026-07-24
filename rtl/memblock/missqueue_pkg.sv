@@ -72,7 +72,11 @@ package missqueue_pkg;
     logic [3:0]                source;
     logic [2:0]                pf_source;
     logic [4:0]                cmd;
-    logic [PADDR_BITS-1:0]     addr;
+    // addr 只存 block 粒度(bit[47:6])——低 6 位(cacheline 内 byte-offset)全程不读:
+    //   queue 级读都是 addr[47:6]; 喂 MissEntry 黑盒也只被其内部按 [47:6] 用(golden
+    //   MissEntry req_addr <= {addr[47:6],6'h0})。故只保留高位, 收窄掉 impl-only 的
+    //   addr[5:0] 死寄存器。索引区间保持 [47:6] 以便 mqpr.addr 直接切片。
+    logic [PADDR_BITS-1:6]     addr;
     logic [VADDR_BITS-1:0]     vaddr;
     logic                      full_overwrite;
     logic [2:0]                word_idx;

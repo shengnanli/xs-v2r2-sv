@@ -24,33 +24,70 @@
 # 比较这些 mapped 死位并 SUCCEEDED = 对称内部死状态的双射匹配证明 (非 waiver)。
 # --------------------------------------------------------------------------
 
-# golden 顶层名 -> 手写核 enqd1_src_ld[enq][src][pipe][0]
-set _pairs {
-  r_0_0     {0 0 0}
-  r_0_1     {0 0 1}
-  r_0_2     {0 0 2}
-  r_1_0     {0 1 0}
-  r_1_1     {0 1 1}
-  r_1_2     {0 1 2}
-  r_1_0_0   {1 0 0}
-  r_1_0_1   {1 0 1}
-  r_1_0_2   {1 0 2}
-  r_1_1_0   {1 1 0}
-  r_1_1_1   {1 1 1}
-  r_1_1_2   {1 1 2}
+# 本 fm_pins.tcl 由 EntriesAluMulBkuBrhJmp(Makefile)与 IssueQueueAluMulBkuBrhJmp
+# (Makefile.iq)两个 target 共享(同目录 fm_pins.tcl 自动作 FM_PIN_TCL)。按 $top 分支:
+#   - Entries 顶层: r_* 与 enqd1_src_ld 都在 Entries 模块顶层 → 词干不同须逐位 pin。
+#   - IQ 顶层: 上述 enqDelayIn1 死位在 IQ 里位于共享 golden 子模块 entries/r_* 内,
+#     ref/impl 同名(entries 两侧例化同一 golden RTL)→ auto_match 自动配对, 无需 pin;
+#     IQ 仅剩 validCntDeqVec 寄存器 bit[5] 名差(io_validCntDeqVec_N_REG vs
+#     validCntDeqVecN_reg)须 pin(见下)。
+
+if {$top eq "EntriesAluMulBkuBrhJmp"} {
+  # golden 顶层名 -> 手写核 enqd1_src_ld[enq][src][pipe][0]
+  set _pairs {
+    r_0_0     {0 0 0}
+    r_0_1     {0 0 1}
+    r_0_2     {0 0 2}
+    r_1_0     {0 1 0}
+    r_1_1     {0 1 1}
+    r_1_2     {0 1 2}
+    r_1_0_0   {1 0 0}
+    r_1_0_1   {1 0 1}
+    r_1_0_2   {1 0 2}
+    r_1_1_0   {1 1 0}
+    r_1_1_1   {1 1 1}
+    r_1_1_2   {1 1 2}
+  }
+
+  set _n 0
+  foreach {gname idx} $_pairs {
+    set q [lindex $idx 0]
+    set s [lindex $idx 1]
+    set p [lindex $idx 2]
+    set rpath "r:/WORK/$top/${gname}_reg\[0\]"
+    set ipath "i:/WORK/$top/u_core/enqd1_src_ld_reg\[$q\]\[$s\]\[$p\]\[0\]"
+    if {![catch {set_user_match $rpath $ipath} msg]} {
+      incr _n
+    } else {
+      puts "ENTRIESAMBBJ_PIN_MISS: $rpath <-> $ipath : $msg"
+    }
+  }
+  puts "ENTRIESAMBBJ_PINS: enqDelayIn1 srcLoadDependency dead bit0 $_n / 12 points pinned"
 }
 
-set _n 0
-foreach {gname idx} $_pairs {
-  set q [lindex $idx 0]
-  set s [lindex $idx 1]
-  set p [lindex $idx 2]
-  set rpath "r:/WORK/$top/${gname}_reg\[0\]"
-  set ipath "i:/WORK/$top/u_core/enqd1_src_ld_reg\[$q\]\[$s\]\[$p\]\[0\]"
-  if {![catch {set_user_match $rpath $ipath} msg]} {
-    incr _n
-  } else {
-    puts "ENTRIESAMBBJ_PIN_MISS: $rpath <-> $ipath : $msg"
+# --------------------------------------------------------------------------
+# IssueQueueAluMulBkuBrhJmp target: validCntDeqVec 寄存器 bit[5] 对称死位 (双射 2↔2)。
+# --------------------------------------------------------------------------
+# io_validCntDeqVec_{0,1} = 「在队且本端口可接」的 uop popcount 减去本拍出队消耗。
+# 最大在队条目 24, 减法结果域 [0..24] < 32, 故 bit[5] (MSB) 在两侧都恒不置位、
+# 也从不被读出 (输出只取 [4:0]) —— golden 与手写核 bug-for-bug 一致的对称内部死位。
+#   golden : io_validCntDeqVec_{0,1}_REG_reg[5]   (reg [5:0]，输出 [4:0])
+#   手写核 : u_core/validCntDeqVec{0,1}_reg_reg[5] (reg [5:0]，输出 [4:0])
+# 词干不同 (io_validCntDeqVec_N_REG vs validCntDeqVecN_reg) 令 auto_match 无法配对
+# → 2(ref)+2(impl) unmatched-unread。严格 2↔2 双射: 同为 validCntDeqVec_N 的 bit5,
+# 同源 popcount-减法。按语义逐位 set_user_match。仅消名差, 不约束 ref, 不 dont_verify,
+# 不扩黑盒。配合 verify_matched_unread_compare_points=true, FM 实际开启比较这些 mapped
+# 死位并 SUCCEEDED = 对称内部死状态的双射匹配证明 (非 waiver)。
+if {$top eq "IssueQueueAluMulBkuBrhJmp"} {
+  set _m 0
+  foreach k {0 1} {
+    set rpath "r:/WORK/$top/io_validCntDeqVec_${k}_REG_reg\[5\]"
+    set ipath "i:/WORK/$top/u_core/validCntDeqVec${k}_reg_reg\[5\]"
+    if {![catch {set_user_match $rpath $ipath} msg]} {
+      incr _m
+    } else {
+      puts "IQAMBBJ_PIN_MISS: $rpath <-> $ipath : $msg"
+    }
   }
+  puts "IQAMBBJ_PINS: validCntDeqVec dead bit5 $_m / 2 points pinned"
 }
-puts "ENTRIESAMBBJ_PINS: enqDelayIn1 srcLoadDependency dead bit0 $_n / 12 points pinned"

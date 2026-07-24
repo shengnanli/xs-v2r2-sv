@@ -61,19 +61,15 @@ module xs_mbist_pipe_ctrl
       arrayReg  <= '0;
       reqReg    <= 1'b0;
       allReg    <= 1'b0;
-      wenReg    <= 1'b0;
-      renReg    <= 1'b0;
       beReg     <= '0;
       addrReg   <= '0;
       dataInReg <= '0;
       addrRdReg <= '0;
     end else begin
-      // activated 才更新目标 array / 广播 / 读写使能
+      // activated 才更新目标 array / 广播
       if (activated) begin
         arrayReg <= mbist_array;
         allReg   <= mbist_all;
-        wenReg   <= mbist_writeen;
-        renReg   <= mbist_readen;
       end
       // req 每拍都寄存 (RegNext)
       reqReg <= mbist_req;
@@ -86,6 +82,27 @@ module xs_mbist_pipe_ctrl
       end
     end
   end
+
+  // ---- wenReg/renReg：仅非 extraHold 变体存这两个寄存器 ----
+  //  extraHold(HAS_HOLD=1)下读/写使能改用 wenStretched/renStretched，golden 单
+  //  态化时未生成 wenReg/renReg → 这里同样按 HAS_HOLD gate 掉，避免 impl-only 死位。
+  generate
+    if (HAS_HOLD) begin : g_no_wenren
+      assign wenReg = 1'b0;
+      assign renReg = 1'b0;
+    end else begin : g_wenren
+      always_ff @(posedge clock or posedge reset) begin
+        if (reset) begin
+          wenReg <= 1'b0;
+          renReg <= 1'b0;
+        end else if (activated) begin
+          // activated 才更新读/写使能
+          wenReg <= mbist_writeen;
+          renReg <= mbist_readen;
+        end
+      end
+    end
+  endgenerate
 
   // ---- extraHold：读/写使能展宽寄存器 (维持 MBIST_HOLD_W 拍) ----
   generate
