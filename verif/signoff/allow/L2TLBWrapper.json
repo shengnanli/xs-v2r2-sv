@@ -1,0 +1,12 @@
+{
+    "unresolved_blackbox": [],
+    "interface_only": [],
+    "empty_blackbox": [
+        {
+            "id": "ptw",
+            "ref_path": "r:/WORK/L2TLBWrapper/ptw",
+            "impl_path": "i:/WORK/L2TLBWrapper/u_core/ptw"
+        }
+    ],
+    "unmatched": []
+}

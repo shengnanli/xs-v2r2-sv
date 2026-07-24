@@ -1,0 +1,127 @@
+{
+    "unresolved_blackbox": [
+        {
+            "id": "exus_1_ClockGate",
+            "ref_path": "r:/WORK/ExuBlock_1/exus_1/ClockGate",
+            "impl_path": "i:/WORK/ExuBlock_1/u_core/exus_1/ClockGate"
+        },
+        {
+            "id": "exus_1_Fdiv",
+            "ref_path": "r:/WORK/ExuBlock_1/exus_1/Fdiv",
+            "impl_path": "i:/WORK/ExuBlock_1/u_core/exus_1/Fdiv"
+        },
+        {
+            "id": "exus_1_in1ToN",
+            "ref_path": "r:/WORK/ExuBlock_1/exus_1/in1ToN",
+            "impl_path": "i:/WORK/ExuBlock_1/u_core/exus_1/in1ToN"
+        },
+        {
+            "id": "exus_2_ClockGate",
+            "ref_path": "r:/WORK/ExuBlock_1/exus_2/ClockGate",
+            "impl_path": "i:/WORK/ExuBlock_1/u_core/exus_2/ClockGate"
+        },
+        {
+            "id": "exus_2_ClockGate_1",
+            "ref_path": "r:/WORK/ExuBlock_1/exus_2/ClockGate_1",
+            "impl_path": "i:/WORK/ExuBlock_1/u_core/exus_2/ClockGate_1"
+        },
+        {
+            "id": "exus_2_Falu",
+            "ref_path": "r:/WORK/ExuBlock_1/exus_2/Falu",
+            "impl_path": "i:/WORK/ExuBlock_1/u_core/exus_2/Falu"
+        },
+        {
+            "id": "exus_2_Fmac",
+            "ref_path": "r:/WORK/ExuBlock_1/exus_2/Fmac",
+            "impl_path": "i:/WORK/ExuBlock_1/u_core/exus_2/Fmac"
+        },
+        {
+            "id": "exus_2_in1ToN",
+            "ref_path": "r:/WORK/ExuBlock_1/exus_2/in1ToN",
+            "impl_path": "i:/WORK/ExuBlock_1/u_core/exus_2/in1ToN"
+        },
+        {
+            "id": "exus_3_ClockGate",
+            "ref_path": "r:/WORK/ExuBlock_1/exus_3/ClockGate",
+            "impl_path": "i:/WORK/ExuBlock_1/u_core/exus_3/ClockGate"
+        },
+        {
+            "id": "exus_3_Fdiv",
+            "ref_path": "r:/WORK/ExuBlock_1/exus_3/Fdiv",
+            "impl_path": "i:/WORK/ExuBlock_1/u_core/exus_3/Fdiv"
+        },
+        {
+            "id": "exus_3_in1ToN",
+            "ref_path": "r:/WORK/ExuBlock_1/exus_3/in1ToN",
+            "impl_path": "i:/WORK/ExuBlock_1/u_core/exus_3/in1ToN"
+        },
+        {
+            "id": "exus_4_ClockGate",
+            "ref_path": "r:/WORK/ExuBlock_1/exus_4/ClockGate",
+            "impl_path": "i:/WORK/ExuBlock_1/u_core/exus_4/ClockGate"
+        },
+        {
+            "id": "exus_4_ClockGate_1",
+            "ref_path": "r:/WORK/ExuBlock_1/exus_4/ClockGate_1",
+            "impl_path": "i:/WORK/ExuBlock_1/u_core/exus_4/ClockGate_1"
+        },
+        {
+            "id": "exus_4_Falu",
+            "ref_path": "r:/WORK/ExuBlock_1/exus_4/Falu",
+            "impl_path": "i:/WORK/ExuBlock_1/u_core/exus_4/Falu"
+        },
+        {
+            "id": "exus_4_Fmac",
+            "ref_path": "r:/WORK/ExuBlock_1/exus_4/Fmac",
+            "impl_path": "i:/WORK/ExuBlock_1/u_core/exus_4/Fmac"
+        },
+        {
+            "id": "exus_4_in1ToN",
+            "ref_path": "r:/WORK/ExuBlock_1/exus_4/in1ToN",
+            "impl_path": "i:/WORK/ExuBlock_1/u_core/exus_4/in1ToN"
+        },
+        {
+            "id": "exus_ClockGate",
+            "ref_path": "r:/WORK/ExuBlock_1/exus/ClockGate",
+            "impl_path": "i:/WORK/ExuBlock_1/u_core/exus/ClockGate"
+        },
+        {
+            "id": "exus_ClockGate_1",
+            "ref_path": "r:/WORK/ExuBlock_1/exus/ClockGate_1",
+            "impl_path": "i:/WORK/ExuBlock_1/u_core/exus/ClockGate_1"
+        },
+        {
+            "id": "exus_ClockGate_2",
+            "ref_path": "r:/WORK/ExuBlock_1/exus/ClockGate_2",
+            "impl_path": "i:/WORK/ExuBlock_1/u_core/exus/ClockGate_2"
+        },
+        {
+            "id": "exus_Falu",
+            "ref_path": "r:/WORK/ExuBlock_1/exus/Falu",
+            "impl_path": "i:/WORK/ExuBlock_1/u_core/exus/Falu"
+        },
+        {
+            "id": "exus_Fcvt",
+            "ref_path": "r:/WORK/ExuBlock_1/exus/Fcvt",
+            "impl_path": "i:/WORK/ExuBlock_1/u_core/exus/Fcvt"
+        },
+        {
+            "id": "exus_Fmac",
+            "ref_path": "r:/WORK/ExuBlock_1/exus/Fmac",
+            "impl_path": "i:/WORK/ExuBlock_1/u_core/exus/Fmac"
+        },
+        {
+            "id": "exus_f2v",
+            "ref_path": "r:/WORK/ExuBlock_1/exus/f2v",
+            "impl_path": "i:/WORK/ExuBlock_1/u_core/exus/f2v"
+        },
+        {
+            "id": "exus_in1ToN",
+            "ref_path": "r:/WORK/ExuBlock_1/exus/in1ToN",
+            "impl_path": "i:/WORK/ExuBlock_1/u_core/exus/in1ToN"
+        }
+    ],
+    "interface_only": [],
+    "empty_blackbox": [],
+    "unmatched": []
+}
