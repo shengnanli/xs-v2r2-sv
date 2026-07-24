@@ -28,3 +28,4 @@ L2TLB	PtwCache,PTW,LLPTW,HPTW,L2TlbMissQueue,L2TlbPrefetch,PMP
 Slice	SinkA,SinkC,GrantBuffer,TXREQ,TXDAT,TXRSP,RXDAT,RXRSP,Directory,RequestArb,MainPipe_1,MSHRCtl,L2Slice
 L2TLBWrapper	L2TLB
 ExuBlock_1	FAlu,FCVT,FMA,FDivSqrt,ExeUnit_8
+DCache	BankedDataArray,L1CohMetaArray,L1FlagMetaArray,L1FlagMetaArray_1,DuplicatedTagArray,LoadPipe,MainPipe,MissQueue,ProbeQueue,WritebackQueue

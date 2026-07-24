@@ -36,6 +36,7 @@ fmbb:
 	FM_REF_SRCS="$(abspath $(GOLDEN_RTL)/NewCSR.sv) $(STUB)" \
 	FM_IMPL_SRCS="$(abspath $(RTL_DIR)/backend/newcsr_pkg.sv $(RTL_DIR)/backend/NewCSR.sv $(RTL_DIR)/backend/NewCSR_wrapper.sv) $(STUB)" \
 	FM_MERGE_DUP=false \
+	$(if $(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS),FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=$(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS),) \
 	XSSV_HOME=$(XSSV_HOME) FM_RUN_ID=$$FM_RUN_ID \
 	fm_shell -64 -work_path fm_work/NewCSR -file $(abspath fm_eq_bb.tcl) \
 	    > fm_work/NewCSR/fm.log 2>&1; \

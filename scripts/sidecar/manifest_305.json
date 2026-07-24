@@ -238,9 +238,9 @@
    "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "allow_ref": "verif/signoff/allow/DCache.json",
+   "rationale": "assembly+vmucp(live-logic): 10绿305子黑盒depends+非305 glue(CtrlUnit/arbiters/StorePipe)两侧elaborate(StorePipe e=Empty非blackbox非vacuous)+vendor array_*_ext; REG对称死vmucp",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2059,8 +2059,8 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "rationale": "assembly+vmucp: 341黑盒(两侧同stub,0 unmatched); vmucp验 diffArchEvent_{exception,interrupt}_r[62:32] 62对称死位(63位寄存器只[31:0]喂DelayReg,高位无扇出,trapNO两侧逐字同)→+62 passing非waiver; identity mode已去",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {

@@ -26,7 +26,14 @@ if {[info exists env(FM_SIDECAR_OUT)] && [string trim $env(FM_SIDECAR_OUT)] ne "
 }
 
 set_app_var verification_verify_unread_compare_points false
-set_app_var verification_verify_matched_unread_compare_points false
+# vmucp: 对称 matched-unread 死寄存器(golden REG=RegNext(assert cond), SYNTHESIS 下消费者
+# 编译掉→两侧同名同驱动死位)由 runner 经 FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS 控制,
+# =true 时 FM 实际比较双射 matched-unread 点(真等价证明), 缺省 false。
+set _vmucp false
+if {[info exists env(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS)]} {
+    set _vmucp $env(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS)
+}
+set_app_var verification_verify_matched_unread_compare_points $_vmucp
 set_app_var verification_verify_unread_bbox_inputs false
 set_app_var verification_verify_matched_unread_bbox_inputs true
 set_app_var verification_verify_unread_tech_cell_pins true
@@ -43,8 +50,8 @@ set_top r:/WORK/$top
 read_sverilog -i -define {SYNTHESIS} $impl_srcs
 set_top i:/WORK/$top
 
-# 黑盒引脚按「名字+位置」对齐（30+ 同构子模块，function 配对会有歧义）。
-set_app_var verification_blackbox_match_mode identity
+# 黑盒引脚配对: 默认 name-based(any); 仅 10 个 305 子的黑盒边界, 命名结构一致可自动配对。
+# (identity 是放宽 appvar→relaxed_appvars→quals_any PARTIAL; 精简黑盒后不再需要, 保 any 默认。)
 
 # --------------------------------------------------------------------------
 # 替换器状态寄存器配对：ref 把 256 组 PLRU 状态展平成标量 state_vec_<S>（每个 3 bit），

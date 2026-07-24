@@ -1,0 +1,77 @@
+{
+  "unresolved_blackbox": [],
+  "interface_only": [],
+  "empty_blackbox": [
+    {
+      "id": "accessArray",
+      "ref_path": "r:/WORK/DCache/accessArray",
+      "impl_path": "i:/WORK/DCache/u_core/accessArray"
+    },
+    {
+      "id": "bankedDataArray",
+      "ref_path": "r:/WORK/DCache/bankedDataArray",
+      "impl_path": "i:/WORK/DCache/u_core/bankedDataArray"
+    },
+    {
+      "id": "errorArray",
+      "ref_path": "r:/WORK/DCache/errorArray",
+      "impl_path": "i:/WORK/DCache/u_core/errorArray"
+    },
+    {
+      "id": "ldu_0",
+      "ref_path": "r:/WORK/DCache/ldu_0",
+      "impl_path": "i:/WORK/DCache/u_core/ldu_0"
+    },
+    {
+      "id": "ldu_1",
+      "ref_path": "r:/WORK/DCache/ldu_1",
+      "impl_path": "i:/WORK/DCache/u_core/ldu_1"
+    },
+    {
+      "id": "ldu_2",
+      "ref_path": "r:/WORK/DCache/ldu_2",
+      "impl_path": "i:/WORK/DCache/u_core/ldu_2"
+    },
+    {
+      "id": "mainPipe",
+      "ref_path": "r:/WORK/DCache/mainPipe",
+      "impl_path": "i:/WORK/DCache/u_core/mainPipe"
+    },
+    {
+      "id": "metaArray",
+      "ref_path": "r:/WORK/DCache/metaArray",
+      "impl_path": "i:/WORK/DCache/u_core/metaArray"
+    },
+    {
+      "id": "missQueue",
+      "ref_path": "r:/WORK/DCache/missQueue",
+      "impl_path": "i:/WORK/DCache/u_core/missQueue"
+    },
+    {
+      "id": "probeQueue",
+      "ref_path": "r:/WORK/DCache/probeQueue",
+      "impl_path": "i:/WORK/DCache/u_core/probeQueue"
+    },
+    {
+      "id": "stu_0",
+      "ref_path": "r:/WORK/DCache/stu_0",
+      "impl_path": "i:/WORK/DCache/u_core/stu_0"
+    },
+    {
+      "id": "stu_1",
+      "ref_path": "r:/WORK/DCache/stu_1",
+      "impl_path": "i:/WORK/DCache/u_core/stu_1"
+    },
+    {
+      "id": "tagArray",
+      "ref_path": "r:/WORK/DCache/tagArray",
+      "impl_path": "i:/WORK/DCache/u_core/tagArray"
+    },
+    {
+      "id": "wb",
+      "ref_path": "r:/WORK/DCache/wb",
+      "impl_path": "i:/WORK/DCache/u_core/wb"
+    }
+  ],
+  "unmatched": []
+}
