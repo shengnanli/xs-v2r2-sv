@@ -1,0 +1,42 @@
+{
+    "unresolved_blackbox": [],
+    "interface_only": [
+        {
+            "id": "FTBEntryGen",
+            "ref_path": "r:/WORK/Ftq/FTBEntryGen",
+            "impl_path": "i:/WORK/Ftq/u_core/FTBEntryGen"
+        },
+        {
+            "id": "ftb_entry_mem",
+            "ref_path": "r:/WORK/Ftq/ftb_entry_mem",
+            "impl_path": "i:/WORK/Ftq/u_core/ftb_entry_mem"
+        },
+        {
+            "id": "ftq_meta_1r_sram",
+            "ref_path": "r:/WORK/Ftq/ftq_meta_1r_sram",
+            "impl_path": "i:/WORK/Ftq/u_core/ftq_meta_1r_sram"
+        },
+        {
+            "id": "ftq_pc_mem",
+            "ref_path": "r:/WORK/Ftq/ftq_pc_mem",
+            "impl_path": "i:/WORK/Ftq/u_core/ftq_pc_mem"
+        },
+        {
+            "id": "ftq_pd_mem",
+            "ref_path": "r:/WORK/Ftq/ftq_pd_mem",
+            "impl_path": "i:/WORK/Ftq/u_core/ftq_pd_mem"
+        },
+        {
+            "id": "ftq_redirect_mem",
+            "ref_path": "r:/WORK/Ftq/ftq_redirect_mem",
+            "impl_path": "i:/WORK/Ftq/u_core/ftq_redirect_mem"
+        },
+        {
+            "id": "mbistPl",
+            "ref_path": "r:/WORK/Ftq/mbistPl",
+            "impl_path": "i:/WORK/Ftq/u_core/mbistPl"
+        }
+    ],
+    "empty_blackbox": [],
+    "unmatched": []
+}
