@@ -252,8 +252,8 @@
    "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
+   "allow_ref": "verif/signoff/allow/DCacheWrapper.json",
+   "rationale": "assembly live-logic: DCache绿305子empty_blackbox depends; perf 2级流水寄存器去误加sync-reset对齐golden(无reset); identity mode去; passing6568全0",
    "verify_matched_unread_compare_points": "false",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
