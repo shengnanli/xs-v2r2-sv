@@ -1,0 +1,137 @@
+{
+ "unresolved_blackbox": [],
+ "interface_only": [],
+ "empty_blackbox": [
+  {
+   "id": "difftest_module",
+   "ref_path": "r:/WORK/WbDataPath/difftest_module",
+   "impl_path": "i:/WORK/WbDataPath/difftest_module"
+  },
+  {
+   "id": "difftest_module_1",
+   "ref_path": "r:/WORK/WbDataPath/difftest_module_1",
+   "impl_path": "i:/WORK/WbDataPath/difftest_module_1"
+  },
+  {
+   "id": "difftest_module_10",
+   "ref_path": "r:/WORK/WbDataPath/difftest_module_10",
+   "impl_path": "i:/WORK/WbDataPath/difftest_module_10"
+  },
+  {
+   "id": "difftest_module_11",
+   "ref_path": "r:/WORK/WbDataPath/difftest_module_11",
+   "impl_path": "i:/WORK/WbDataPath/difftest_module_11"
+  },
+  {
+   "id": "difftest_module_12",
+   "ref_path": "r:/WORK/WbDataPath/difftest_module_12",
+   "impl_path": "i:/WORK/WbDataPath/difftest_module_12"
+  },
+  {
+   "id": "difftest_module_13",
+   "ref_path": "r:/WORK/WbDataPath/difftest_module_13",
+   "impl_path": "i:/WORK/WbDataPath/difftest_module_13"
+  },
+  {
+   "id": "difftest_module_14",
+   "ref_path": "r:/WORK/WbDataPath/difftest_module_14",
+   "impl_path": "i:/WORK/WbDataPath/difftest_module_14"
+  },
+  {
+   "id": "difftest_module_15",
+   "ref_path": "r:/WORK/WbDataPath/difftest_module_15",
+   "impl_path": "i:/WORK/WbDataPath/difftest_module_15"
+  },
+  {
+   "id": "difftest_module_16",
+   "ref_path": "r:/WORK/WbDataPath/difftest_module_16",
+   "impl_path": "i:/WORK/WbDataPath/difftest_module_16"
+  },
+  {
+   "id": "difftest_module_17",
+   "ref_path": "r:/WORK/WbDataPath/difftest_module_17",
+   "impl_path": "i:/WORK/WbDataPath/difftest_module_17"
+  },
+  {
+   "id": "difftest_module_18",
+   "ref_path": "r:/WORK/WbDataPath/difftest_module_18",
+   "impl_path": "i:/WORK/WbDataPath/difftest_module_18"
+  },
+  {
+   "id": "difftest_module_19",
+   "ref_path": "r:/WORK/WbDataPath/difftest_module_19",
+   "impl_path": "i:/WORK/WbDataPath/difftest_module_19"
+  },
+  {
+   "id": "difftest_module_2",
+   "ref_path": "r:/WORK/WbDataPath/difftest_module_2",
+   "impl_path": "i:/WORK/WbDataPath/difftest_module_2"
+  },
+  {
+   "id": "difftest_module_20",
+   "ref_path": "r:/WORK/WbDataPath/difftest_module_20",
+   "impl_path": "i:/WORK/WbDataPath/difftest_module_20"
+  },
+  {
+   "id": "difftest_module_21",
+   "ref_path": "r:/WORK/WbDataPath/difftest_module_21",
+   "impl_path": "i:/WORK/WbDataPath/difftest_module_21"
+  },
+  {
+   "id": "difftest_module_22",
+   "ref_path": "r:/WORK/WbDataPath/difftest_module_22",
+   "impl_path": "i:/WORK/WbDataPath/difftest_module_22"
+  },
+  {
+   "id": "difftest_module_23",
+   "ref_path": "r:/WORK/WbDataPath/difftest_module_23",
+   "impl_path": "i:/WORK/WbDataPath/difftest_module_23"
+  },
+  {
+   "id": "difftest_module_24",
+   "ref_path": "r:/WORK/WbDataPath/difftest_module_24",
+   "impl_path": "i:/WORK/WbDataPath/difftest_module_24"
+  },
+  {
+   "id": "difftest_module_25",
+   "ref_path": "r:/WORK/WbDataPath/difftest_module_25",
+   "impl_path": "i:/WORK/WbDataPath/difftest_module_25"
+  },
+  {
+   "id": "difftest_module_3",
+   "ref_path": "r:/WORK/WbDataPath/difftest_module_3",
+   "impl_path": "i:/WORK/WbDataPath/difftest_module_3"
+  },
+  {
+   "id": "difftest_module_4",
+   "ref_path": "r:/WORK/WbDataPath/difftest_module_4",
+   "impl_path": "i:/WORK/WbDataPath/difftest_module_4"
+  },
+  {
+   "id": "difftest_module_5",
+   "ref_path": "r:/WORK/WbDataPath/difftest_module_5",
+   "impl_path": "i:/WORK/WbDataPath/difftest_module_5"
+  },
+  {
+   "id": "difftest_module_6",
+   "ref_path": "r:/WORK/WbDataPath/difftest_module_6",
+   "impl_path": "i:/WORK/WbDataPath/difftest_module_6"
+  },
+  {
+   "id": "difftest_module_7",
+   "ref_path": "r:/WORK/WbDataPath/difftest_module_7",
+   "impl_path": "i:/WORK/WbDataPath/difftest_module_7"
+  },
+  {
+   "id": "difftest_module_8",
+   "ref_path": "r:/WORK/WbDataPath/difftest_module_8",
+   "impl_path": "i:/WORK/WbDataPath/difftest_module_8"
+  },
+  {
+   "id": "difftest_module_9",
+   "ref_path": "r:/WORK/WbDataPath/difftest_module_9",
+   "impl_path": "i:/WORK/WbDataPath/difftest_module_9"
+  }
+ ],
+ "unmatched": []
+}
