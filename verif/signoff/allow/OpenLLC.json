@@ -1,0 +1,493 @@
+{
+  "unresolved_blackbox": [
+    {
+      "id": "mmioDiverger_mmioDatArb",
+      "ref_path": "r:/WORK/OpenLLC/mmioDiverger/mmioDatArb",
+      "impl_path": "i:/WORK/OpenLLC/u_core/mmioDiverger/mmioDatArb"
+    },
+    {
+      "id": "mmioDiverger_mmioReqArb",
+      "ref_path": "r:/WORK/OpenLLC/mmioDiverger/mmioReqArb",
+      "impl_path": "i:/WORK/OpenLLC/u_core/mmioDiverger/mmioReqArb"
+    },
+    {
+      "id": "rnLinkMonitor_Decoupled2LCredit_txdat",
+      "ref_path": "r:/WORK/OpenLLC/rnLinkMonitor/Decoupled2LCredit_txdat",
+      "impl_path": "i:/WORK/OpenLLC/u_core/rnLinkMonitor/Decoupled2LCredit_txdat"
+    },
+    {
+      "id": "rnLinkMonitor_Decoupled2LCredit_txrsp",
+      "ref_path": "r:/WORK/OpenLLC/rnLinkMonitor/Decoupled2LCredit_txrsp",
+      "impl_path": "i:/WORK/OpenLLC/u_core/rnLinkMonitor/Decoupled2LCredit_txrsp"
+    },
+    {
+      "id": "rnLinkMonitor_Decoupled2LCredit_txsnp",
+      "ref_path": "r:/WORK/OpenLLC/rnLinkMonitor/Decoupled2LCredit_txsnp",
+      "impl_path": "i:/WORK/OpenLLC/u_core/rnLinkMonitor/Decoupled2LCredit_txsnp"
+    },
+    {
+      "id": "rnXbar_rxdatArbs_0",
+      "ref_path": "r:/WORK/OpenLLC/rnXbar/rxdatArbs_0",
+      "impl_path": "i:/WORK/OpenLLC/u_core/rnXbar/rxdatArbs_0"
+    },
+    {
+      "id": "rnXbar_rxrspArbs_0",
+      "ref_path": "r:/WORK/OpenLLC/rnXbar/rxrspArbs_0",
+      "impl_path": "i:/WORK/OpenLLC/u_core/rnXbar/rxrspArbs_0"
+    },
+    {
+      "id": "rnXbar_rxsnpArbs_0",
+      "ref_path": "r:/WORK/OpenLLC/rnXbar/rxsnpArbs_0",
+      "impl_path": "i:/WORK/OpenLLC/u_core/rnXbar/rxsnpArbs_0"
+    },
+    {
+      "id": "rnXbar_txdatArbs_0",
+      "ref_path": "r:/WORK/OpenLLC/rnXbar/txdatArbs_0",
+      "impl_path": "i:/WORK/OpenLLC/u_core/rnXbar/txdatArbs_0"
+    },
+    {
+      "id": "rnXbar_txdatArbs_1",
+      "ref_path": "r:/WORK/OpenLLC/rnXbar/txdatArbs_1",
+      "impl_path": "i:/WORK/OpenLLC/u_core/rnXbar/txdatArbs_1"
+    },
+    {
+      "id": "rnXbar_txdatArbs_2",
+      "ref_path": "r:/WORK/OpenLLC/rnXbar/txdatArbs_2",
+      "impl_path": "i:/WORK/OpenLLC/u_core/rnXbar/txdatArbs_2"
+    },
+    {
+      "id": "rnXbar_txdatArbs_3",
+      "ref_path": "r:/WORK/OpenLLC/rnXbar/txdatArbs_3",
+      "impl_path": "i:/WORK/OpenLLC/u_core/rnXbar/txdatArbs_3"
+    },
+    {
+      "id": "rnXbar_txreqArbs_0",
+      "ref_path": "r:/WORK/OpenLLC/rnXbar/txreqArbs_0",
+      "impl_path": "i:/WORK/OpenLLC/u_core/rnXbar/txreqArbs_0"
+    },
+    {
+      "id": "rnXbar_txreqArbs_1",
+      "ref_path": "r:/WORK/OpenLLC/rnXbar/txreqArbs_1",
+      "impl_path": "i:/WORK/OpenLLC/u_core/rnXbar/txreqArbs_1"
+    },
+    {
+      "id": "rnXbar_txreqArbs_2",
+      "ref_path": "r:/WORK/OpenLLC/rnXbar/txreqArbs_2",
+      "impl_path": "i:/WORK/OpenLLC/u_core/rnXbar/txreqArbs_2"
+    },
+    {
+      "id": "rnXbar_txreqArbs_3",
+      "ref_path": "r:/WORK/OpenLLC/rnXbar/txreqArbs_3",
+      "impl_path": "i:/WORK/OpenLLC/u_core/rnXbar/txreqArbs_3"
+    },
+    {
+      "id": "rnXbar_txrspArbs_0",
+      "ref_path": "r:/WORK/OpenLLC/rnXbar/txrspArbs_0",
+      "impl_path": "i:/WORK/OpenLLC/u_core/rnXbar/txrspArbs_0"
+    },
+    {
+      "id": "rnXbar_txrspArbs_1",
+      "ref_path": "r:/WORK/OpenLLC/rnXbar/txrspArbs_1",
+      "impl_path": "i:/WORK/OpenLLC/u_core/rnXbar/txrspArbs_1"
+    },
+    {
+      "id": "rnXbar_txrspArbs_2",
+      "ref_path": "r:/WORK/OpenLLC/rnXbar/txrspArbs_2",
+      "impl_path": "i:/WORK/OpenLLC/u_core/rnXbar/txrspArbs_2"
+    },
+    {
+      "id": "rnXbar_txrspArbs_3",
+      "ref_path": "r:/WORK/OpenLLC/rnXbar/txrspArbs_3",
+      "impl_path": "i:/WORK/OpenLLC/u_core/rnXbar/txrspArbs_3"
+    },
+    {
+      "id": "slices_0_dataStorage_array_array_0_array_0_1_ext",
+      "ref_path": "r:/WORK/OpenLLC/slices_0/dataStorage/array/array_0/array_0_1_ext",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_0/dataStorage/array/array_0/array_0_1_ext"
+    },
+    {
+      "id": "slices_0_memUnit",
+      "ref_path": "r:/WORK/OpenLLC/slices_0/memUnit",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_0/memUnit"
+    },
+    {
+      "id": "slices_0_refillUnit",
+      "ref_path": "r:/WORK/OpenLLC/slices_0/refillUnit",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_0/refillUnit"
+    },
+    {
+      "id": "slices_0_responseUnit",
+      "ref_path": "r:/WORK/OpenLLC/slices_0/responseUnit",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_0/responseUnit"
+    },
+    {
+      "id": "slices_0_rxreqUp",
+      "ref_path": "r:/WORK/OpenLLC/slices_0/rxreqUp",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_0/rxreqUp"
+    },
+    {
+      "id": "slices_0_snpUnit",
+      "ref_path": "r:/WORK/OpenLLC/slices_0/snpUnit",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_0/snpUnit"
+    },
+    {
+      "id": "slices_0_txdatDown",
+      "ref_path": "r:/WORK/OpenLLC/slices_0/txdatDown",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_0/txdatDown"
+    },
+    {
+      "id": "slices_0_txdatUp",
+      "ref_path": "r:/WORK/OpenLLC/slices_0/txdatUp",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_0/txdatUp"
+    },
+    {
+      "id": "slices_0_txreqDown",
+      "ref_path": "r:/WORK/OpenLLC/slices_0/txreqDown",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_0/txreqDown"
+    },
+    {
+      "id": "slices_0_txrspUp",
+      "ref_path": "r:/WORK/OpenLLC/slices_0/txrspUp",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_0/txrspUp"
+    },
+    {
+      "id": "slices_0_txsnpUp",
+      "ref_path": "r:/WORK/OpenLLC/slices_0/txsnpUp",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_0/txsnpUp"
+    },
+    {
+      "id": "slices_1_dataStorage_array_array_0_array_0_1_ext",
+      "ref_path": "r:/WORK/OpenLLC/slices_1/dataStorage/array/array_0/array_0_1_ext",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_1/dataStorage/array/array_0/array_0_1_ext"
+    },
+    {
+      "id": "slices_1_memUnit",
+      "ref_path": "r:/WORK/OpenLLC/slices_1/memUnit",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_1/memUnit"
+    },
+    {
+      "id": "slices_1_refillUnit",
+      "ref_path": "r:/WORK/OpenLLC/slices_1/refillUnit",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_1/refillUnit"
+    },
+    {
+      "id": "slices_1_responseUnit",
+      "ref_path": "r:/WORK/OpenLLC/slices_1/responseUnit",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_1/responseUnit"
+    },
+    {
+      "id": "slices_1_rxreqUp",
+      "ref_path": "r:/WORK/OpenLLC/slices_1/rxreqUp",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_1/rxreqUp"
+    },
+    {
+      "id": "slices_1_snpUnit",
+      "ref_path": "r:/WORK/OpenLLC/slices_1/snpUnit",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_1/snpUnit"
+    },
+    {
+      "id": "slices_1_txdatDown",
+      "ref_path": "r:/WORK/OpenLLC/slices_1/txdatDown",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_1/txdatDown"
+    },
+    {
+      "id": "slices_1_txdatUp",
+      "ref_path": "r:/WORK/OpenLLC/slices_1/txdatUp",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_1/txdatUp"
+    },
+    {
+      "id": "slices_1_txreqDown",
+      "ref_path": "r:/WORK/OpenLLC/slices_1/txreqDown",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_1/txreqDown"
+    },
+    {
+      "id": "slices_1_txrspUp",
+      "ref_path": "r:/WORK/OpenLLC/slices_1/txrspUp",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_1/txrspUp"
+    },
+    {
+      "id": "slices_1_txsnpUp",
+      "ref_path": "r:/WORK/OpenLLC/slices_1/txsnpUp",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_1/txsnpUp"
+    },
+    {
+      "id": "slices_2_dataStorage_array_array_0_array_0_1_ext",
+      "ref_path": "r:/WORK/OpenLLC/slices_2/dataStorage/array/array_0/array_0_1_ext",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_2/dataStorage/array/array_0/array_0_1_ext"
+    },
+    {
+      "id": "slices_2_memUnit",
+      "ref_path": "r:/WORK/OpenLLC/slices_2/memUnit",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_2/memUnit"
+    },
+    {
+      "id": "slices_2_refillUnit",
+      "ref_path": "r:/WORK/OpenLLC/slices_2/refillUnit",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_2/refillUnit"
+    },
+    {
+      "id": "slices_2_responseUnit",
+      "ref_path": "r:/WORK/OpenLLC/slices_2/responseUnit",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_2/responseUnit"
+    },
+    {
+      "id": "slices_2_rxreqUp",
+      "ref_path": "r:/WORK/OpenLLC/slices_2/rxreqUp",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_2/rxreqUp"
+    },
+    {
+      "id": "slices_2_snpUnit",
+      "ref_path": "r:/WORK/OpenLLC/slices_2/snpUnit",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_2/snpUnit"
+    },
+    {
+      "id": "slices_2_txdatDown",
+      "ref_path": "r:/WORK/OpenLLC/slices_2/txdatDown",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_2/txdatDown"
+    },
+    {
+      "id": "slices_2_txdatUp",
+      "ref_path": "r:/WORK/OpenLLC/slices_2/txdatUp",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_2/txdatUp"
+    },
+    {
+      "id": "slices_2_txreqDown",
+      "ref_path": "r:/WORK/OpenLLC/slices_2/txreqDown",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_2/txreqDown"
+    },
+    {
+      "id": "slices_2_txrspUp",
+      "ref_path": "r:/WORK/OpenLLC/slices_2/txrspUp",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_2/txrspUp"
+    },
+    {
+      "id": "slices_2_txsnpUp",
+      "ref_path": "r:/WORK/OpenLLC/slices_2/txsnpUp",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_2/txsnpUp"
+    },
+    {
+      "id": "slices_3_dataStorage_array_array_0_array_0_1_ext",
+      "ref_path": "r:/WORK/OpenLLC/slices_3/dataStorage/array/array_0/array_0_1_ext",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_3/dataStorage/array/array_0/array_0_1_ext"
+    },
+    {
+      "id": "slices_3_memUnit",
+      "ref_path": "r:/WORK/OpenLLC/slices_3/memUnit",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_3/memUnit"
+    },
+    {
+      "id": "slices_3_refillUnit",
+      "ref_path": "r:/WORK/OpenLLC/slices_3/refillUnit",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_3/refillUnit"
+    },
+    {
+      "id": "slices_3_responseUnit",
+      "ref_path": "r:/WORK/OpenLLC/slices_3/responseUnit",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_3/responseUnit"
+    },
+    {
+      "id": "slices_3_rxreqUp",
+      "ref_path": "r:/WORK/OpenLLC/slices_3/rxreqUp",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_3/rxreqUp"
+    },
+    {
+      "id": "slices_3_snpUnit",
+      "ref_path": "r:/WORK/OpenLLC/slices_3/snpUnit",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_3/snpUnit"
+    },
+    {
+      "id": "slices_3_txdatDown",
+      "ref_path": "r:/WORK/OpenLLC/slices_3/txdatDown",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_3/txdatDown"
+    },
+    {
+      "id": "slices_3_txdatUp",
+      "ref_path": "r:/WORK/OpenLLC/slices_3/txdatUp",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_3/txdatUp"
+    },
+    {
+      "id": "slices_3_txreqDown",
+      "ref_path": "r:/WORK/OpenLLC/slices_3/txreqDown",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_3/txreqDown"
+    },
+    {
+      "id": "slices_3_txrspUp",
+      "ref_path": "r:/WORK/OpenLLC/slices_3/txrspUp",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_3/txrspUp"
+    },
+    {
+      "id": "slices_3_txsnpUp",
+      "ref_path": "r:/WORK/OpenLLC/slices_3/txsnpUp",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_3/txsnpUp"
+    },
+    {
+      "id": "snLinkMonitor_Decoupled2LCredit_txdat",
+      "ref_path": "r:/WORK/OpenLLC/snLinkMonitor/Decoupled2LCredit_txdat",
+      "impl_path": "i:/WORK/OpenLLC/u_core/snLinkMonitor/Decoupled2LCredit_txdat"
+    },
+    {
+      "id": "snLinkMonitor_Decoupled2LCredit_txreq",
+      "ref_path": "r:/WORK/OpenLLC/snLinkMonitor/Decoupled2LCredit_txreq",
+      "impl_path": "i:/WORK/OpenLLC/u_core/snLinkMonitor/Decoupled2LCredit_txreq"
+    },
+    {
+      "id": "snXbar_txdatArb",
+      "ref_path": "r:/WORK/OpenLLC/snXbar/txdatArb",
+      "impl_path": "i:/WORK/OpenLLC/u_core/snXbar/txdatArb"
+    },
+    {
+      "id": "snXbar_txreqArb",
+      "ref_path": "r:/WORK/OpenLLC/snXbar/txreqArb",
+      "impl_path": "i:/WORK/OpenLLC/u_core/snXbar/txreqArb"
+    }
+  ],
+  "interface_only": [
+    {
+      "id": "rnLinkMonitor_LCredit2Decoupled_rxdat_queue",
+      "ref_path": "r:/WORK/OpenLLC/rnLinkMonitor/LCredit2Decoupled_rxdat/queue",
+      "impl_path": "i:/WORK/OpenLLC/u_core/rnLinkMonitor/LCredit2Decoupled_rxdat/queue"
+    },
+    {
+      "id": "rnLinkMonitor_LCredit2Decoupled_rxreq_queue",
+      "ref_path": "r:/WORK/OpenLLC/rnLinkMonitor/LCredit2Decoupled_rxreq/queue",
+      "impl_path": "i:/WORK/OpenLLC/u_core/rnLinkMonitor/LCredit2Decoupled_rxreq/queue"
+    },
+    {
+      "id": "rnLinkMonitor_LCredit2Decoupled_rxrsp_queue",
+      "ref_path": "r:/WORK/OpenLLC/rnLinkMonitor/LCredit2Decoupled_rxrsp/queue",
+      "impl_path": "i:/WORK/OpenLLC/u_core/rnLinkMonitor/LCredit2Decoupled_rxrsp/queue"
+    },
+    {
+      "id": "slices_0_directory_clientDir",
+      "ref_path": "r:/WORK/OpenLLC/slices_0/directory/clientDir",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_0/directory/clientDir"
+    },
+    {
+      "id": "slices_0_directory_selfDir",
+      "ref_path": "r:/WORK/OpenLLC/slices_0/directory/selfDir",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_0/directory/selfDir"
+    },
+    {
+      "id": "slices_0_rxdatDown",
+      "ref_path": "r:/WORK/OpenLLC/slices_0/rxdatDown",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_0/rxdatDown"
+    },
+    {
+      "id": "slices_0_rxdatUp",
+      "ref_path": "r:/WORK/OpenLLC/slices_0/rxdatUp",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_0/rxdatUp"
+    },
+    {
+      "id": "slices_0_rxrspDown",
+      "ref_path": "r:/WORK/OpenLLC/slices_0/rxrspDown",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_0/rxrspDown"
+    },
+    {
+      "id": "slices_0_rxrspUp",
+      "ref_path": "r:/WORK/OpenLLC/slices_0/rxrspUp",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_0/rxrspUp"
+    },
+    {
+      "id": "slices_1_directory_clientDir",
+      "ref_path": "r:/WORK/OpenLLC/slices_1/directory/clientDir",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_1/directory/clientDir"
+    },
+    {
+      "id": "slices_1_directory_selfDir",
+      "ref_path": "r:/WORK/OpenLLC/slices_1/directory/selfDir",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_1/directory/selfDir"
+    },
+    {
+      "id": "slices_1_rxdatDown",
+      "ref_path": "r:/WORK/OpenLLC/slices_1/rxdatDown",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_1/rxdatDown"
+    },
+    {
+      "id": "slices_1_rxdatUp",
+      "ref_path": "r:/WORK/OpenLLC/slices_1/rxdatUp",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_1/rxdatUp"
+    },
+    {
+      "id": "slices_1_rxrspDown",
+      "ref_path": "r:/WORK/OpenLLC/slices_1/rxrspDown",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_1/rxrspDown"
+    },
+    {
+      "id": "slices_1_rxrspUp",
+      "ref_path": "r:/WORK/OpenLLC/slices_1/rxrspUp",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_1/rxrspUp"
+    },
+    {
+      "id": "slices_2_directory_clientDir",
+      "ref_path": "r:/WORK/OpenLLC/slices_2/directory/clientDir",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_2/directory/clientDir"
+    },
+    {
+      "id": "slices_2_directory_selfDir",
+      "ref_path": "r:/WORK/OpenLLC/slices_2/directory/selfDir",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_2/directory/selfDir"
+    },
+    {
+      "id": "slices_2_rxdatDown",
+      "ref_path": "r:/WORK/OpenLLC/slices_2/rxdatDown",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_2/rxdatDown"
+    },
+    {
+      "id": "slices_2_rxdatUp",
+      "ref_path": "r:/WORK/OpenLLC/slices_2/rxdatUp",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_2/rxdatUp"
+    },
+    {
+      "id": "slices_2_rxrspDown",
+      "ref_path": "r:/WORK/OpenLLC/slices_2/rxrspDown",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_2/rxrspDown"
+    },
+    {
+      "id": "slices_2_rxrspUp",
+      "ref_path": "r:/WORK/OpenLLC/slices_2/rxrspUp",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_2/rxrspUp"
+    },
+    {
+      "id": "slices_3_directory_clientDir",
+      "ref_path": "r:/WORK/OpenLLC/slices_3/directory/clientDir",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_3/directory/clientDir"
+    },
+    {
+      "id": "slices_3_directory_selfDir",
+      "ref_path": "r:/WORK/OpenLLC/slices_3/directory/selfDir",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_3/directory/selfDir"
+    },
+    {
+      "id": "slices_3_rxdatDown",
+      "ref_path": "r:/WORK/OpenLLC/slices_3/rxdatDown",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_3/rxdatDown"
+    },
+    {
+      "id": "slices_3_rxdatUp",
+      "ref_path": "r:/WORK/OpenLLC/slices_3/rxdatUp",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_3/rxdatUp"
+    },
+    {
+      "id": "slices_3_rxrspDown",
+      "ref_path": "r:/WORK/OpenLLC/slices_3/rxrspDown",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_3/rxrspDown"
+    },
+    {
+      "id": "slices_3_rxrspUp",
+      "ref_path": "r:/WORK/OpenLLC/slices_3/rxrspUp",
+      "impl_path": "i:/WORK/OpenLLC/u_core/slices_3/rxrspUp"
+    },
+    {
+      "id": "snLinkMonitor_LCredit2Decoupled_rxdat_queue",
+      "ref_path": "r:/WORK/OpenLLC/snLinkMonitor/LCredit2Decoupled_rxdat/queue",
+      "impl_path": "i:/WORK/OpenLLC/u_core/snLinkMonitor/LCredit2Decoupled_rxdat/queue"
+    },
+    {
+      "id": "snLinkMonitor_LCredit2Decoupled_rxrsp_queue",
+      "ref_path": "r:/WORK/OpenLLC/snLinkMonitor/LCredit2Decoupled_rxrsp/queue",
+      "impl_path": "i:/WORK/OpenLLC/u_core/snLinkMonitor/LCredit2Decoupled_rxrsp/queue"
+    }
+  ],
+  "empty_blackbox": [],
+  "unmatched": []
+}

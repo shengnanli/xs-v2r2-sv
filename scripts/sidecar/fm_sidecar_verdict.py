@@ -146,7 +146,7 @@ def appvar_spec_err(av, mode, relaxed_declared, target):
     _MU_STRENGTHEN = {"LoadQueueUncache",
                       "FastArbiter_46", "FastArbiter_47", "FastArbiter_27", "FastArbiter_44",
                       "ICacheCtrlUnit", "ICacheDataArray", "IPrefetchPipe",
-                      "DivUnit", "FDivSqrt", "InstrMMIOEntry", "InstrUncache", "TXDAT_4", "FAlu", "FCVT", "IssueQueueStdMoud", "MulUnit", "TXREQ", "TlbStorageWrapper", "TlbStorageWrapper_1", "IssueQueueStaMou", "IssueQueueLdu", "TXDAT", "Scheduler_1", "Scheduler", "Scheduler_3", "MSHR", "TageBTable", "Directory", "SCTable", "SCTable_1", "SCTable_2", "SCTable_3", "Tage_SC", "ITTage", "FauFTB", "FTBBank", "FTB", "Composer", "EntriesAluCsrFenceDiv", "Bku", "SourceB", "Predictor", "EntriesAluMulBkuBrhJmp", "DuplicatedTagArray", "PtwCache", "WritebackQueue", "LinkMonitor", "Ftq", "LoadQueue", "LoadPipe", "MissQueue", "IssueQueueAluMulBkuBrhJmp", "L2TLB", "Rename", "IssueQueueAluCsrFenceDiv", "Scheduler_2", "DebugModule", "WbDataPath", "IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v", "Slice", "LoadQueueReplay", "NewCSR", "DCache", "DataPath"}
+                      "DivUnit", "FDivSqrt", "InstrMMIOEntry", "InstrUncache", "TXDAT_4", "FAlu", "FCVT", "IssueQueueStdMoud", "MulUnit", "TXREQ", "TlbStorageWrapper", "TlbStorageWrapper_1", "IssueQueueStaMou", "IssueQueueLdu", "TXDAT", "Scheduler_1", "Scheduler", "Scheduler_3", "MSHR", "TageBTable", "Directory", "SCTable", "SCTable_1", "SCTable_2", "SCTable_3", "Tage_SC", "ITTage", "FauFTB", "FTBBank", "FTB", "Composer", "EntriesAluCsrFenceDiv", "Bku", "SourceB", "Predictor", "EntriesAluMulBkuBrhJmp", "DuplicatedTagArray", "PtwCache", "WritebackQueue", "LinkMonitor", "Ftq", "LoadQueue", "LoadPipe", "MissQueue", "IssueQueueAluMulBkuBrhJmp", "L2TLB", "Rename", "IssueQueueAluCsrFenceDiv", "Scheduler_2", "DebugModule", "WbDataPath", "IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v", "Slice", "LoadQueueReplay", "NewCSR", "DCache", "DataPath", "OpenLLC"}
     expected_mu = "true" if target in _MU_STRENGTHEN else "false"
     if av[muk] != expected_mu:
         return f"target_strengthening:{muk}:{target}={av[muk]}_expected_{expected_mu}"
@@ -174,6 +174,62 @@ MAP_KEYS = {"id", "ref_path", "impl_path"}
 PAIR_KEYS = {"ref_path", "impl_path"}
 _TOKEN = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.\-]*")
 MAX_JSON_BYTES = 64 << 20
+
+# ----------------------------------------------------------------------------
+# 十四审(dead-ref policy, fail-closed): PASS_DEAD_REF——native SUCCEEDED 且 impl 侧
+# 100% clean, 唯一残留是**已声明的** golden-only 死点(冗余寄存器在 golden 保留、
+# impl 正确省略, cone-dead 无 impl 对应物)。声明机制 = per-target 可审 JSON
+# (verif/signoff/dead_ref/<Target>.json), 非通配符:验证器要求 native 观察到的
+# golden-only 残留集(unmatched_ref ∪ unmatched_unread_ref)是**声明集的子集**;
+# 任何未声明的残留 golden-only 点 → 仍 PARTIAL(fail-closed)。impl 侧任何死点
+# (unmatched_impl / unread_impl)或 both-side 死(unread_notcompared)一律不吸收。
+# 声明文件 schema(严格): 顶层 {schema, target, rationale, entries};
+# entries = [{ref_path, rationale}, ...], ref_path 严格在 top 下且唯一有序。
+DEADREF_SCHEMA = "fm-sidecar-dead-ref-v1"
+DEADREF_KEYS = {"schema", "target", "rationale", "entries"}
+DEADREF_ENTRY_KEYS = {"ref_path", "rationale"}
+
+
+def validate_dead_ref(D, top, target):
+    """校验 dead-ref 声明结构。返回 (declared_ref_set, None) 或 (None, err)。"""
+    if not isinstance(D, dict) or set(D) != DEADREF_KEYS:
+        return None, "dead_ref_keys"
+    if D["schema"] != DEADREF_SCHEMA:
+        return None, "dead_ref_bad_schema"
+    if not _token(D["target"]) or D["target"] != target:
+        return None, "dead_ref_target_mismatch"
+    if not (isinstance(D["rationale"], str) and D["rationale"] != ""
+            and len(D["rationale"]) < 8192 and _no_ctrl(D["rationale"])):
+        return None, "dead_ref_rationale"
+    ents = D["entries"]
+    if not isinstance(ents, list) or not ents:
+        return None, "dead_ref_entries_empty_or_not_list"
+    refs = []
+    for e in ents:
+        if not isinstance(e, dict) or set(e) != DEADREF_ENTRY_KEYS:
+            return None, "dead_ref_entry_keys"
+        # golden-only 死点 = 严格在 top 下的 ref 比较点/寄存器(与 compare 点同域,
+        # 禁子设计路径:死 ref 是本 target 顶层内 golden 冗余寄存器,不是黑盒实例)。
+        if not _refpath(e["ref_path"], top):
+            return None, "dead_ref_entry_path"
+        r = e["rationale"]
+        if not (isinstance(r, str) and r != "" and len(r) < 8192 and _no_ctrl(r)):
+            return None, "dead_ref_entry_rationale"
+        refs.append(e["ref_path"])
+    if refs != sorted(refs) or len(set(refs)) != len(refs):
+        return None, "dead_ref_entries_not_sorted_unique"
+    return set(refs), None
+
+
+def load_dead_ref(path, top, target):
+    """读取并校验 dead-ref 声明。返回 (declared_set, None) 或 (None, err_reason)。"""
+    try:
+        D = strict_parse(safe_read_bytes(path))
+    except Bad as b:
+        return None, f"dead_ref_load:{b}"
+    except Exception as e:
+        return None, f"dead_ref_malformed:{type(e).__name__}"
+    return validate_dead_ref(D, top, target)
 
 
 class Bad(Exception):
@@ -434,7 +490,36 @@ def _validate_facts_block(sc, where, top):
         raise Bad(f"{where}_bad_native")
 
 
-def verdict(sidecar_path, expectation, actual_rc, native_facts_path):
+def _dead_ref_gate(st, um, ob, declared):
+    """十四审 PASS_DEAD_REF 资格闸(fail-closed)。仅当 declared(声明的 golden-only
+    死点集)非 None 且六条全满足时返回 True,否则 False(维持 PARTIAL)。
+      1. failing/aborted/unverified == 0(调用点保证 native SUCCEEDED)
+      2. impl 侧 100% clean:unmatched_impl == 0 且 unread_impl == 0
+      3. unread_notcompared == 0(无 both-side 死 uncompared)
+      4. 唯一残留 = golden-only:残留集 = unmatched_ref ∪ unmatched_unread_ref,
+         且非空(否则不是 dead-ref 场景, 不该走此闸)
+      5. 残留集 ⊆ declared(每个残留 golden-only 点都被逐一声明);
+         多声明(declared 超集)允许, 未声明的残留 → 不通过。
+    黑盒/appvar/count-list/mode 等已在调用前各分支处理;本闸只裁"golden-only 残留"。"""
+    if declared is None:
+        return False
+    if st["failing"] or st["aborted"] or st["unverified"]:
+        return False
+    if um["compare_impl"] or um["unread_impl"]:
+        return False
+    if um["bbout_impl"]:
+        return False
+    if st["unread_notcompared"]:
+        return False
+    residual = set(ob["unmatched_ref"]) | set(ob["unmatched_unread_ref"])
+    if not residual:
+        return False
+    if not residual <= declared:
+        return False
+    return True
+
+
+def verdict(sidecar_path, expectation, actual_rc, native_facts_path, dead_ref_path=None):
     q = {}
     err = validate_expectation(expectation)
     if err:
@@ -562,6 +647,15 @@ def verdict(sidecar_path, expectation, actual_rc, native_facts_path):
     if mode == "shadow":
         return "SHADOW_CHECK", {**q, "reason": "shadow_core_not_driving_outputs"}
 
+    # ---- 十四审: dead-ref 声明加载(仅 strict/assembly 签核模式;top/target 已受信) ----
+    # 声明缺省(dead_ref_path=None)= 保持既有 verdict 政策完全不变(无绝对回归)。
+    # 声明存在但畸形/target 不匹配 → ERROR(fail-closed, 不静默降级为无声明)。
+    declared = None
+    if dead_ref_path is not None:
+        declared, dr_err = load_dead_ref(dead_ref_path, sc["top"], sc["target"])
+        if dr_err:
+            return "ERROR", {**q, "reason": dr_err}
+
     # ---- 九审(补丁1)+十审: BBOUT/BBIN/PI zero-only 是**证明政策**(非结构校验) ----
     # strict/assembly 非空 → PARTIAL; shadow/diagnostic 已在上方保持各自非签核分类,
     # 观察事实完整保留在 sidecar 中。非零不得人工配对/被 allow.unmatched 吸收(FM 无原生 pair)。
@@ -569,26 +663,45 @@ def verdict(sidecar_path, expectation, actual_rc, native_facts_path):
         if ob[k]:
             return "PARTIAL", {**q, "reason": f"zero_only:{k}"}
 
-    unread_any = st["unread_notcompared"] or um["unread_ref"] or um["unread_impl"]
+    # 十四审: 早期 unread_any 拆分为显式检查——unread_notcompared(both-side)与
+    # unread_impl(impl 侧)绝不吸收; golden-only unread_ref 延后至各模式尾部的
+    # dead-ref 闸逐点校验声明子集(见下方 strict/assembly 分支)。
     # 九审: dont_verify 观察对象(pair 与两侧点集)一律按 qualification 处理(v1 无 policy 通道)
     quals_any = (ql["dont_verify_objects"] or ql["elab147"] or ql["relaxed_appvars"]
                  or ob["matched_dont_verify_pairs"]
                  or ob["unmatched_dont_verify_ref"] or ob["unmatched_dont_verify_impl"])
 
+    # 十四审: golden-only 残留对象键(unmatched_ref = golden-only compare 点,
+    # unmatched_unread_ref = golden-only 死/unread 寄存器)。这两类是**唯一**可被
+    # 已声明 dead-ref 吸收的残留;其余对象(impl 侧/both-side/黑盒/dont_verify)绝不吸收。
+    _DEADREF_OBJ_KEYS = {"unmatched_ref", "unmatched_unread_ref"}
+
     if mode == "signoff-strict":
-        if st["unverified"] or st["aborted"] or unread_any:
+        # both-side 死(unread_notcompared)与 impl 侧死(unread_impl)绝不吸收;
+        # 仅 golden-only unread_ref 走 dead-ref 闸(gate 内再逐点校验声明子集)。
+        if st["unverified"] or st["aborted"] or st["unread_notcompared"] or um["unread_impl"]:
             return "PARTIAL", {**q, "reason": "strict_unverified/aborted/unread"}
-        if any(um[k] for k in ("compare_ref", "compare_impl", "bbout_ref", "bbout_impl")):
+        # impl 侧 compare 点 / 两侧 bbout 绝不吸收(um["compare_ref"] = golden-only, 走闸)。
+        if any(um[k] for k in ("compare_impl", "bbout_ref", "bbout_impl")):
             return "PARTIAL", {**q, "reason": "strict_unmatched/bbout"}
-        if any(ob[k] for k in OBJ_KEYS):
+        # 非-dead-ref 对象(黑盒/impl 侧/both-side/dont_verify 等)非空 → 立即 PARTIAL。
+        if any(ob[k] for k in (OBJ_KEYS - _DEADREF_OBJ_KEYS)):
             return "PARTIAL", {**q, "reason": "strict_has_objects"}
         if quals_any:
             return "PARTIAL", {**q, "reason": "strict_qualifications"}
-        return "SUCCEEDED", q
+        # 到此:唯一可能残留 = golden-only unmatched_ref / unmatched_unread_ref。
+        if not (ob["unmatched_ref"] or ob["unmatched_unread_ref"]):
+            return "SUCCEEDED", q          # 完全 clean strict(无 dead-ref 残留), 不变。
+        # 有 golden-only 残留:仅当已声明且全为子集 → PASS_DEAD_REF, 否则 fail-closed。
+        if _dead_ref_gate(st, um, ob, declared):
+            return "PASS_DEAD_REF", {**q, "reason": "strict_dead_ref_declared_golden_only"}
+        return "PARTIAL", {**q, "reason": "strict_undeclared_golden_only_dead_ref"}
 
     # ---- assembly(六审: observed facts vs expectation policy 投影)----
     A = E["allow"]
-    if st["unverified"] or st["aborted"] or unread_any:
+    # 十四审: both-side 死(unread_notcompared)与 impl 侧死(unread_impl)绝不吸收;
+    # golden-only unread_ref 延后至 dead-ref 闸(下方 policy 全部通过后逐点校验声明)。
+    if st["unverified"] or st["aborted"] or st["unread_notcompared"] or um["unread_impl"]:
         return "PARTIAL", {**q, "reason": "assembly_unverified/aborted/unread"}
     if um["compare_ref"] != um["compare_impl"]:
         return "PARTIAL", {**q, "reason": f"assembly_count_asym_compare:{um['compare_ref']}({um['compare_impl']})"}
@@ -634,7 +747,14 @@ def verdict(sidecar_path, expectation, actual_rc, native_facts_path):
             return "PARTIAL", {**q, "reason": f"assembly_{cat}_pairs!=policy"}
     if quals_any:
         return "PARTIAL", {**q, "reason": "assembly_qualifications"}
-    return "SUCCEEDED", q
+    # 到此:黑盒/unmatched/policy 全部通过。唯一可能残留 = golden-only unread_ref
+    # (assembly 下 unmatched_ref 已受 allow.unmatched policy 精确投影裁定, 不走 dead-ref)。
+    if not um["unread_ref"]:
+        return "SUCCEEDED", q               # 无 golden-only 死 ref 残留, 既有行为不变。
+    # 有 golden-only unread_ref 残留:仅当已声明且全为子集 → PASS_DEAD_REF, 否则 fail-closed。
+    if _dead_ref_gate(st, um, ob, declared):
+        return "PASS_DEAD_REF", {**q, "reason": "assembly_dead_ref_declared_golden_only"}
+    return "PARTIAL", {**q, "reason": "assembly_undeclared_golden_only_dead_ref"}
 
 
 if __name__ == "__main__":
@@ -643,12 +763,16 @@ if __name__ == "__main__":
     ap.add_argument("--native-facts", required=True)
     ap.add_argument("--expectation", required=True)
     ap.add_argument("--actual-rc", type=int, required=True)
+    # 十四审: 可选 per-target dead-ref 声明(缺省=不吸收任何 golden-only 死点,
+    # 既有 verdict 政策完全不变)。声明须已提交并 hash 入证据(runner 负责绑定)。
+    ap.add_argument("--dead-ref", default=None)
     a = ap.parse_args()
     try:
         exp = strict_load(a.expectation)
     except Exception as e:
         print(f"ERROR\texpectation_load:{e}")
         sys.exit(1)
-    v, q = verdict(a.sidecar, exp, a.actual_rc, a.native_facts)
+    v, q = verdict(a.sidecar, exp, a.actual_rc, a.native_facts, a.dead_ref)
     print(f"{v}\t{q.get('reason')}")
-    sys.exit(0 if v == "SUCCEEDED" else 1)
+    # SUCCEEDED 与 PASS_DEAD_REF 均为签核通过(exit 0);其余非通过(exit 1)。
+    sys.exit(0 if v in ("SUCCEEDED", "PASS_DEAD_REF") else 1)

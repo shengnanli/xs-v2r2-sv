@@ -16,21 +16,22 @@ MANIFEST=$1; TARGET=$2; TMO=${3:-1200}
 EROOT="${SIGNOFF_EVIDENCE_ROOT:-$SC/signoff-evidence}"
 
 # --- manifest 条目(tab 分隔) ---
-IFS=$'\t' read -r UTDIR MK MT ENTRY PMODE REQV ALLOWREF CFG VERIFY_MU <<<"$(python3 - "$MANIFEST" "$TARGET" <<'PY'
+IFS=$'\t' read -r UTDIR MK MT ENTRY PMODE REQV ALLOWREF CFG VERIFY_MU DEADREF <<<"$(python3 - "$MANIFEST" "$TARGET" <<'PY'
 import json,sys
 m=json.load(open(sys.argv[1]))
 for e in m["entries"]:
     if e["target"]==sys.argv[2]:
         print("\t".join([e["ut_dir"],e["makefile"] or "-",e["make_target"],e["entry"],
             e["proof_mode"],e["required_verdict"],e.get("allow_ref","") or "-",e["config_status"],
-            e.get("verify_matched_unread_compare_points", "false")])); break
+            e.get("verify_matched_unread_compare_points", "false"),
+            e.get("dead_ref","") or "-"])); break
 else: print("NOTFOUND")
 PY
 )"
 [ "$UTDIR" = "NOTFOUND" ] && { echo "MANIFEST_MISS $TARGET"; exit 2; }
 [ "$VERIFY_MU" = "true" ] || [ "$VERIFY_MU" = "false" ] || {
   echo "MANIFEST_BAD verify_matched_unread_compare_points=$VERIFY_MU"; exit 2; }
-case "$TARGET" in LoadQueueUncache|FastArbiter_46|FastArbiter_47|FastArbiter_27|FastArbiter_44|ICacheCtrlUnit|ICacheDataArray|IPrefetchPipe|DivUnit|FDivSqrt|InstrMMIOEntry|InstrUncache|TXDAT_4|FAlu|FCVT|IssueQueueStdMoud|MulUnit|TXREQ|TlbStorageWrapper|TlbStorageWrapper_1|IssueQueueStaMou|IssueQueueLdu|TXDAT|Scheduler_1|Scheduler|Scheduler_3|MSHR|TageBTable|Directory|SCTable|SCTable_1|SCTable_2|SCTable_3|Tage_SC|ITTage|FauFTB|FTBBank|FTB|Composer|EntriesAluCsrFenceDiv|Bku|SourceB|Predictor|EntriesAluMulBkuBrhJmp|DuplicatedTagArray|PtwCache|WritebackQueue|LinkMonitor|Ftq|LoadQueue|LoadPipe|MissQueue|IssueQueueAluMulBkuBrhJmp|L2TLB|Rename|IssueQueueAluCsrFenceDiv|Scheduler_2|DebugModule|WbDataPath|IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v|Slice|LoadQueueReplay|NewCSR|DCache|DataPath|SnoopUnit|MemUnit|RefillUnit|ResponseUnit) ;;
+case "$TARGET" in LoadQueueUncache|FastArbiter_46|FastArbiter_47|FastArbiter_27|FastArbiter_44|ICacheCtrlUnit|ICacheDataArray|IPrefetchPipe|DivUnit|FDivSqrt|InstrMMIOEntry|InstrUncache|TXDAT_4|FAlu|FCVT|IssueQueueStdMoud|MulUnit|TXREQ|TlbStorageWrapper|TlbStorageWrapper_1|IssueQueueStaMou|IssueQueueLdu|TXDAT|Scheduler_1|Scheduler|Scheduler_3|MSHR|TageBTable|Directory|SCTable|SCTable_1|SCTable_2|SCTable_3|Tage_SC|ITTage|FauFTB|FTBBank|FTB|Composer|EntriesAluCsrFenceDiv|Bku|SourceB|Predictor|EntriesAluMulBkuBrhJmp|DuplicatedTagArray|PtwCache|WritebackQueue|LinkMonitor|Ftq|LoadQueue|LoadPipe|MissQueue|IssueQueueAluMulBkuBrhJmp|L2TLB|Rename|IssueQueueAluCsrFenceDiv|Scheduler_2|DebugModule|WbDataPath|IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v|Slice|LoadQueueReplay|NewCSR|DCache|DataPath|SnoopUnit|MemUnit|RefillUnit|ResponseUnit|OpenLLC) ;;
   *) [ "$VERIFY_MU" != "true" ] || { echo "MANIFEST_BAD matched-unread strengthening 仅允许精确白名单"; exit 2; } ;;
 esac
 # manifest 的 makefile 若非默认 Makefile(如 Makefile.iq/.sched), make 须 -f 指定,
@@ -97,6 +98,17 @@ if [ "$ALLOWREF" != "-" ] && [ -n "$ALLOWREF" ]; then
   ALLOW_SHA=$(sha256sum "$ALLOW_JSON" | cut -d' ' -f1)
 fi
 
+# --- 十四审: dead-ref 声明(可选): 运行前绑定, 须已提交, hash 入证据 ---
+# 声明存在时验证器以 --dead-ref 收 golden-only 死点(逐点子集校验); 缺省=不吸收。
+DEADREF_SHA="-"; DEADREF_JSON=""
+if [ "$DEADREF" != "-" ] && [ -n "$DEADREF" ]; then
+  if ! git -C "$SIGNOFF" cat-file -e "$IMPL_COMMIT:$DEADREF" 2>/dev/null; then
+    echo "TARGET $TARGET: DEAD_REF_NOT_COMMITTED $DEADREF"; rm -rf "$STG"; exit 2; fi
+  DEADREF_JSON="$STG/dead_ref.json"
+  git -C "$SIGNOFF" show "$IMPL_COMMIT:$DEADREF" > "$DEADREF_JSON"
+  DEADREF_SHA=$(sha256sum "$DEADREF_JSON" | cut -d' ' -f1)
+fi
+
 # --- detached clean worktree @ IMPL_COMMIT(提交态字节即冻结入口) ---
 WTROOT=$(mktemp -d); WT="$WTROOT/wt"
 git -C "$SIGNOFF" worktree add --detach --quiet "$WT" "$IMPL_COMMIT" || { echo "worktree失败"; rm -rf "$STG" "$WTROOT"; exit 2; }
@@ -122,6 +134,7 @@ finalize() {  # rc
     echo -e "proof_mode\t$PMODE\t-"
     echo -e "required_verdict\t$REQV\t-"
     echo -e "allow_ref\t$ALLOWREF\t$ALLOW_SHA"
+    echo -e "dead_ref\t$DEADREF\t$DEADREF_SHA"
     echo -e "declarations_ref\t$DECL_REL\t$DECL_SHA"
     echo -e "verify_matched_unread_compare_points\t$VERIFY_MU\t-"
     if [ -f "$STG/script_closure.list" ]; then
@@ -193,7 +206,7 @@ SEM=(--semantic "DEFINE=SYNTHESIS" --semantic "MERGE_DUP=$MERGE" --semantic "MOD
      --semantic "VERIFY_MATCHED_UNREAD_COMPARE_POINTS=$VERIFY_MU" \
      --semantic "DECLARATIONS_SHA=$DECL_SHA" \
      --semantic "SCRIPT_CLOSURE_SHA=$SCRIPT_DIG" --semantic "MANIFEST_SHA=$MANIFEST_SHA" \
-     --semantic "ALLOW_SHA=$ALLOW_SHA")
+     --semantic "ALLOW_SHA=$ALLOW_SHA" --semantic "DEAD_REF_SHA=$DEADREF_SHA")
 REF_DIG=$(cd "$D" && python3 "$SC/fm_closure_digest.py" --mode files --root "$GOLDEN" "${SEM[@]}" $REF_SRCS 2>/dev/null)
 IMPL_DIG=$(cd "$D" && python3 "$SC/fm_closure_digest.py" --mode files --root "$WT" "${SEM[@]}" $IMPL_SRCS 2>/dev/null)
 TOOL_DIG=$(python3 "$SC/fm_closure_digest.py" --mode tool "$(command -v fm_shell)")
@@ -218,9 +231,10 @@ exp={"run_id":rid,"target":tgt,"top":nat["top"],"variant":tgt,"proof_mode":mode,
  "tool_digest":toold,"entry_appvars":expected_av,"allow":allow}
 json.dump(exp,open(stg+"/expectation.json","w"))
 PYEOF
+DEADREF_ARG=(); [ -n "$DEADREF_JSON" ] && DEADREF_ARG=(--dead-ref "$DEADREF_JSON")
 ACT=$(python3 "$SC/fm_sidecar_verdict.py" "$STG/verdict.sidecar.json" \
     --native-facts "$STG/native_facts.json" --expectation "$STG/expectation.json" \
-    --actual-rc "$RC" 2>&1); VRC=$?; ACT=$(echo "$ACT"|head -1|cut -f1)
+    --actual-rc "$RC" "${DEADREF_ARG[@]}" 2>&1); VRC=$?; ACT=$(echo "$ACT"|head -1|cut -f1)
 
 # signoff 判定: 只认 actual==required==SUCCEEDED(shadow: SHADOW_CHECK 单独统计)
 if [ "$ACT" = "$REQV" ]; then GATE=PASS; else GATE=GAP; fi

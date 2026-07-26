@@ -64,12 +64,16 @@ def load_declarations(path):
         if vmucp == "true" and p[0] not in {"LoadQueueUncache",
                 "FastArbiter_46", "FastArbiter_47", "FastArbiter_27", "FastArbiter_44",
                 "ICacheCtrlUnit", "ICacheDataArray", "IPrefetchPipe",
-                "DivUnit", "FDivSqrt", "InstrMMIOEntry", "InstrUncache", "TXDAT_4", "FAlu", "FCVT", "IssueQueueStdMoud", "MulUnit", "TXREQ", "TlbStorageWrapper", "TlbStorageWrapper_1", "IssueQueueStaMou", "IssueQueueLdu", "TXDAT", "Scheduler_1", "Scheduler", "Scheduler_3", "MSHR", "TageBTable", "Directory", "SCTable", "SCTable_1", "SCTable_2", "SCTable_3", "Tage_SC", "ITTage", "FauFTB", "FTBBank", "FTB", "Composer", "EntriesAluCsrFenceDiv", "Bku", "SourceB", "Predictor", "EntriesAluMulBkuBrhJmp", "DuplicatedTagArray", "PtwCache", "WritebackQueue", "LinkMonitor", "Ftq", "LoadQueue", "LoadPipe", "MissQueue", "IssueQueueAluMulBkuBrhJmp", "L2TLB", "Rename", "IssueQueueAluCsrFenceDiv", "Scheduler_2", "DebugModule", "WbDataPath", "IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v", "Slice", "LoadQueueReplay", "NewCSR", "DCache", "DataPath"}:
+                "DivUnit", "FDivSqrt", "InstrMMIOEntry", "InstrUncache", "TXDAT_4", "FAlu", "FCVT", "IssueQueueStdMoud", "MulUnit", "TXREQ", "TlbStorageWrapper", "TlbStorageWrapper_1", "IssueQueueStaMou", "IssueQueueLdu", "TXDAT", "Scheduler_1", "Scheduler", "Scheduler_3", "MSHR", "TageBTable", "Directory", "SCTable", "SCTable_1", "SCTable_2", "SCTable_3", "Tage_SC", "ITTage", "FauFTB", "FTBBank", "FTB", "Composer", "EntriesAluCsrFenceDiv", "Bku", "SourceB", "Predictor", "EntriesAluMulBkuBrhJmp", "DuplicatedTagArray", "PtwCache", "WritebackQueue", "LinkMonitor", "Ftq", "LoadQueue", "LoadPipe", "MissQueue", "IssueQueueAluMulBkuBrhJmp", "L2TLB", "Rename", "IssueQueueAluCsrFenceDiv", "Scheduler_2", "DebugModule", "WbDataPath", "IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v", "Slice", "LoadQueueReplay", "NewCSR", "DCache", "DataPath", "OpenLLC"}:
             raise SystemExit(f"target-scoped strengthening forbidden for {p[0]}")
+        # 十四审: 第 6 列(可选)= per-target dead-ref 声明文件路径。声明存在 ⇒ 该 target
+        # 的 required_verdict 变为 PASS_DEAD_REF(golden-only 死点已逐点声明+审核)。
+        dead_ref = p[5] if len(p) > 5 and p[5] and p[5] != "-" else ""
         decl[p[0]] = {"proof_mode": p[1] or None,
                       "allow_ref": p[2] if len(p) > 2 else "",
                       "rationale": p[3] if len(p) > 3 else "",
-                      "verify_matched_unread_compare_points": vmucp}
+                      "verify_matched_unread_compare_points": vmucp,
+                      "dead_ref": dead_ref}
     return decl
 
 
@@ -127,13 +131,22 @@ def variants_of(makefile):
 def mk_entry(target, ut_dir, makefile, make_target, entry, pmode, decl, bid, cfg="CONFIGURED"):
     d = decl.get(target, {})
     pm = d.get("proof_mode") or pmode
+    dead_ref = d.get("dead_ref", "")
+    # 十四审: 声明了 dead-ref ⇒ required_verdict = PASS_DEAD_REF(否则按 mode 默认)。
+    if cfg != "CONFIGURED":
+        reqv = "N/A"
+    elif dead_ref:
+        reqv = "PASS_DEAD_REF"
+    else:
+        reqv = REQUIRED_BY_MODE.get(pm, "SUCCEEDED")
     return {"target": target, "ut_dir": ut_dir, "makefile": os.path.relpath(makefile) if makefile else "",
             "make_target": make_target, "entry": entry, "proof_mode": pm,
             "config_status": cfg,
-            "required_verdict": REQUIRED_BY_MODE.get(pm, "SUCCEEDED") if cfg == "CONFIGURED" else "N/A",
+            "required_verdict": reqv,
             "allow_ref": d.get("allow_ref", ""), "rationale": d.get("rationale", ""),
             "verify_matched_unread_compare_points":
                 d.get("verify_matched_unread_compare_points", "false"),
+            "dead_ref": dead_ref,
             "canonical_baseline_id": bid}
 
 

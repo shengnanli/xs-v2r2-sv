@@ -1,0 +1,23 @@
+{
+  "schema": "fm-sidecar-dead-ref-v1",
+  "target": "InterruptFilter",
+  "rationale": "signoff-strict, native SUCCEEDED, 0 failing, 0 blackbox, 0 unmatched_impl (per docs/backend/InterruptFilter.md). Under -define SYNTHESIS: 4 golden-only unmatched_ref = bit[6] of the 4 intrVec delay stages REG/REG_1/REG_2/REG_3 inside DelayN_210 instance delayedIntrVec_delay. intrVecReg[7:6] are spec-hardwired 0 (RISC-V interrupt IDs never set bits 6/7), so these delay-stage bits are constant-0 cone-dead registers. Golden keeps them as constrained DFF0X; the structurally-cleaner impl constant-folds them (DFF0) with no impl counterpart. UNVERIFIED-BY-RUN: no native_facts exists for InterruptFilter yet; paths inferred from RTL+doc, exact FM path strings must be confirmed by a fresh strict run before ledger promotion.",
+  "entries": [
+    {
+      "ref_path": "r:/WORK/InterruptFilter/delayedIntrVec_delay/REG_1_reg[6]",
+      "rationale": "bit[6] of intrVec delay stage (REG_1_reg[6]) in delayedIntrVec_delay; intrVecReg[7:6] spec-hardwired 0, so this bit is constant-0 cone-dead. Golden-only DFF0X; impl constant-folds it."
+    },
+    {
+      "ref_path": "r:/WORK/InterruptFilter/delayedIntrVec_delay/REG_2_reg[6]",
+      "rationale": "bit[6] of intrVec delay stage (REG_2_reg[6]) in delayedIntrVec_delay; intrVecReg[7:6] spec-hardwired 0, so this bit is constant-0 cone-dead. Golden-only DFF0X; impl constant-folds it."
+    },
+    {
+      "ref_path": "r:/WORK/InterruptFilter/delayedIntrVec_delay/REG_3_reg[6]",
+      "rationale": "bit[6] of intrVec delay stage (REG_3_reg[6]) in delayedIntrVec_delay; intrVecReg[7:6] spec-hardwired 0, so this bit is constant-0 cone-dead. Golden-only DFF0X; impl constant-folds it."
+    },
+    {
+      "ref_path": "r:/WORK/InterruptFilter/delayedIntrVec_delay/REG_reg[6]",
+      "rationale": "bit[6] of intrVec delay stage (REG_reg[6]) in delayedIntrVec_delay; intrVecReg[7:6] spec-hardwired 0, so this bit is constant-0 cone-dead. Golden-only DFF0X; impl constant-folds it."
+    }
+  ]
+}

@@ -7,4 +7,7 @@ Hpmcounter3Module	NewCSR Hpmcounter CSR-field leaf；可读primitive xs_hpmcount
 Mhpmcounter3Module	NewCSR Mhpmcounter CSR-field leaf；可读primitive xs_mhpmcounter；代表×29家族；strict PASS
 Pmpaddr0Module	NewCSR Pmpaddr CSR-field leaf；可读primitive xs_pmpaddr；代表×16家族；strict PASS
 Pmpcfg0Module	NewCSR Pmpcfg 读slicer leaf；可读primitive xs_pmpcfg；代表Pmpcfg0/Pmpcfg2；strict PASS
-SnoopUnit	OpenLLC AUX real-body(可读xs_SnoopUnit_core, 非空stub非vacuous golden-vs-golden); class-4对称matched-unread加强(bufferTimer/REG泄漏计时器两侧cone-dead双射); 须main加matched-unread白名单
+SnoopUnit	OpenLLC AUX real-body(可读xs_SnoopUnit_core, 非空stub非vacuous golden-vs-golden); class-4对称matched-unread加强(bufferTimer/REG泄漏计时器两侧cone-dead双射); native FM SUCCEEDED 加强后0(0)unread
+MemUnit	OpenLLC AUX real-body(可读xs_MemUnit_core 16条目mem-buffer+txreq/txdat双仲裁+5态子状态机); class-4对称matched-unread加强(272 bufferTimer/REG泄漏计时器双射); native FM SUCCEEDED 加强后0(0)unread
+RefillUnit	OpenLLC AUX real-body(可读xs_RefillUnit_core 16条目refill buffer+3更新源+FastArbiter_50出队); class-4对称matched-unread加强(305 bufferTimer/REG/dirResult泄漏计时器双射); native FM SUCCEEDED 加强后0(0)unread
+ResponseUnit	OpenLLC AUX real-body(可读xs_ResponseUnit_core 16条目response buffer+8响应更新通道+状态机); class-4对称matched-unread加强(1042 bufferTimer/REG泄漏计时器双射); native FM SUCCEEDED 加强后0(0)unread
