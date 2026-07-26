@@ -1,0 +1,72 @@
+{
+    "unresolved_blackbox": [
+        {
+            "id": "commidIdMod",
+            "ref_path": "r:/WORK/NewCSR/commidIdMod",
+            "impl_path": "i:/WORK/NewCSR/u_core/commidIdMod"
+        },
+        {
+            "id": "diffArchEvent_module",
+            "ref_path": "r:/WORK/NewCSR/diffArchEvent_module",
+            "impl_path": "i:/WORK/NewCSR/u_core/diffArchEvent_module"
+        },
+        {
+            "id": "diffCSRState_module",
+            "ref_path": "r:/WORK/NewCSR/diffCSRState_module",
+            "impl_path": "i:/WORK/NewCSR/u_core/diffCSRState_module"
+        },
+        {
+            "id": "diffCriticalErrorEvent_module",
+            "ref_path": "r:/WORK/NewCSR/diffCriticalErrorEvent_module",
+            "impl_path": "i:/WORK/NewCSR/u_core/diffCriticalErrorEvent_module"
+        },
+        {
+            "id": "diffCustomMflushpwr_module",
+            "ref_path": "r:/WORK/NewCSR/diffCustomMflushpwr_module",
+            "impl_path": "i:/WORK/NewCSR/u_core/diffCustomMflushpwr_module"
+        },
+        {
+            "id": "diffDebugMode_module",
+            "ref_path": "r:/WORK/NewCSR/diffDebugMode_module",
+            "impl_path": "i:/WORK/NewCSR/u_core/diffDebugMode_module"
+        },
+        {
+            "id": "diffFpCSRState_module",
+            "ref_path": "r:/WORK/NewCSR/diffFpCSRState_module",
+            "impl_path": "i:/WORK/NewCSR/u_core/diffFpCSRState_module"
+        },
+        {
+            "id": "diffHCSRState_module",
+            "ref_path": "r:/WORK/NewCSR/diffHCSRState_module",
+            "impl_path": "i:/WORK/NewCSR/u_core/diffHCSRState_module"
+        },
+        {
+            "id": "diffMhpmeventOverflowEvent_module",
+            "ref_path": "r:/WORK/NewCSR/diffMhpmeventOverflowEvent_module",
+            "impl_path": "i:/WORK/NewCSR/u_core/diffMhpmeventOverflowEvent_module"
+        },
+        {
+            "id": "diffNonRegInterruptPendingEvent_module",
+            "ref_path": "r:/WORK/NewCSR/diffNonRegInterruptPendingEvent_module",
+            "impl_path": "i:/WORK/NewCSR/u_core/diffNonRegInterruptPendingEvent_module"
+        },
+        {
+            "id": "diffSyncAIAEvent_module",
+            "ref_path": "r:/WORK/NewCSR/diffSyncAIAEvent_module",
+            "impl_path": "i:/WORK/NewCSR/u_core/diffSyncAIAEvent_module"
+        },
+        {
+            "id": "diffTriggerCSRState_module",
+            "ref_path": "r:/WORK/NewCSR/diffTriggerCSRState_module",
+            "impl_path": "i:/WORK/NewCSR/u_core/diffTriggerCSRState_module"
+        },
+        {
+            "id": "diffVecCSRState_module",
+            "ref_path": "r:/WORK/NewCSR/diffVecCSRState_module",
+            "impl_path": "i:/WORK/NewCSR/u_core/diffVecCSRState_module"
+        }
+    ],
+    "interface_only": [],
+    "empty_blackbox": [],
+    "unmatched": []
+}
