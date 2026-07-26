@@ -34,6 +34,7 @@ MemBlock (31138 行, 1346 端口)
 ├─ TLBNonBlock ×3  (4516)  数据侧 DTLB:load / store / prefetch（→ TlbStorageWrapper）
 ├─ PMP (2269) + PMPChecker ×8 (861)  物理内存保护(权限/PMA 检查)
 ├─ Uncache         (1740)  非缓存/MMIO 访问(TileLink)
+├─ AtomicsUnit             AMO/LR-SC 原子指令执行单元(独占接管访存口,经 DCache MainPipe 的 atomic 源执行)
 └─ TLBuffer/TLXbar/Pipeline/PFEvent/DelayN  TileLink 缓冲/交叉开关/性能
 
 注:LoadUnit(5435)/StoreUnit(1640) 是 load/store 执行流水单元,在 golden `MemBlock` 内**直接
@@ -83,7 +84,7 @@ flowchart TD
   subgraph DCg["DCache (DCacheWrapper)"]
     direction TB
     LP["LoadPipe ×N"]
-    SP["StorePipe"]
+    SP["StorePipe<br/>(STA 探测/写预取,本配置输出被裁剪)"]
     MP["MainPipe (MESI)"]
     MQ["MissQueue"]
     WBQ["WritebackQueue"]
@@ -138,7 +139,7 @@ flowchart TD
   LQ -. forward 数据 .-> LU
   SQ -. forward 数据 .-> LU
   SQ -->|提交后| SBUF
-  SBUF -->|写合并| SP
+  SBUF -->|"整行写(MainPipe store 源)"| MP
   SQ <-->|MMIO| UNC
   LQ <-->|uncache load| UNC
 

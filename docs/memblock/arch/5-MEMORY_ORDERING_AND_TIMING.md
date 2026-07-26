@@ -240,9 +240,9 @@ L2 交互——
 
 | 场景 | 通道 / 事务 | 含义 |
 |------|-------------|------|
-| miss 补块 | A 发 `Acquire` → D 收 `Grant`/`GrantData` | 向 L2 取回一条 cacheline 并获得权限 |
-| 别核请求 | B 收 `Probe` → C 发 `ProbeAck`/`ProbeAckData` | L2 要求本核降级/交出某行(MESI 降级) |
-| 逐出脏行 | C 发 `Release`/`ReleaseData` → E/D 收 `GrantAck` 类 | 主动写回或降级本核缓存行 |
+| miss 补块 | A 发 `Acquire` → D 收 `Grant`/`GrantData` → E 回 `GrantAck` | 向 L2 取回一条 cacheline 并获得权限 |
+| 别核请求 | B 收 `Probe` → C 发 `ProbeAck`/`ProbeAckData` | L2 要求本核降级/交出某行(MESI 降级),无需等 ack |
+| 逐出脏行 | C 发 `Release`/`ReleaseData` → D 收 `ReleaseAck` | 主动写回/降级本核缓存行,须等 ack 才释放写回 entry |
 
 其中 **Probe/Release 正是 §2.2 RAR 检测的触发源**:L2 使某行失效时向 LoadQueueRAR 送 release hint,
 置对应 load 的 `released`。**写回是否带数据(Release vs ReleaseData)由该行是否脏 + probe 是否需要数据

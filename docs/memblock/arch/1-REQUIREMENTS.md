@@ -57,13 +57,13 @@
 
 ### ② DCache 组相联 + MSHR 非阻塞
 
-L1 数据缓存 [`DCache`](../DCache.md) 采用 **256 组 × 4 路组相联**、64B cacheline、Tree-PLRU 替换（`setplru`）。命中路径由 3 条 LoadPipe、2 条 StorePipe、1 条 MainPipe 组成（合计 6 条命中流水）。
+L1 数据缓存 [`DCache`](../DCache.md) 采用 **256 组 × 4 路组相联**、64B cacheline、Tree-PLRU 替换（`setplru`）。命中**读**路径是 3 条 LoadPipe；所有**写侧**动作（Sbuffer 整行 store、probe、refill、atomic）汇入唯一的 MainPipe 串行化。另有 2 条 StorePipe 只做 STA 命中探测/写预取、不搬 store 数据（本配置该输出通路被裁剪，见 [StorePipe](../StorePipe.md)）。
 
 隐藏 miss 延迟靠 **[`MissQueue`](../MissQueue.md)（MSHR file，非阻塞缓存，Kroft 1981）**：持有 **16 条 MSHR**（`nMissEntries=16`），每条对应一条在途 cacheline 缺失。一条 load miss 后登记进 MSHR 便让出流水，后续命中的访存继续走——**miss 不停机**。在途 refill 数据还能被 3 路 load 直接 forward。一致性由 MainPipe（MESI）配合 [`ProbeQueue`](../ProbeQueue.md)/[`WritebackQueue`](../WritebackQueue.md) 维护。
 
 ### ③ TLB + 两级 PTW / L2TLB
 
-地址翻译走两级。第一级是数据侧 **DTLB**（[`TLBNonBlock`](../TLBNonBlock.md) ×3，load/store/prefetch 各一，存储在 [`TlbStorageWrapper`](../TlbStorageWrapper.md) / [`TLBFA`](../TLBFA.md)），命中一两拍出物理地址。miss 时不阻塞后续翻译，而是把请求甩给第二级——共享 **L2TLB/MMU**（[`L2TLBWrapper`](../L2TLBWrapper.md)）：先查 page cache（[`PtwCache`](../PtwCache.md)，L0/L1/L2/SP 多级页表缓存），仍 miss 才交给遍历器 [`PTW`](../PTW.md)（串行走高层页表项）、[`LLPTW`](../LLPTW.md)（末级并发遍历，多请求共享一个访存口）、[`HPTW`](../HPTW.md)（H 扩展 G-stage）向 L2 读 PTE。翻译结果回填 DTLB。物理地址还要过 [`PMP`](../PMP.md)/[`PMPChecker`](../PMPChecker.md) 做权限/PMA 检查。**前端 ITLB 也回这里走页表**，故 MMU 是取指与访存共享的。
+地址翻译走两级。第一级是数据侧 **DTLB**（[`TLBNonBlock`](../TLBNonBlock.md) ×3，load/store/prefetch 各一，存储在 [`TlbStorageWrapper`](../TlbStorageWrapper.md) / [`TLBFA`](../TLBFA.md)），命中一两拍出物理地址。miss 时不阻塞后续翻译，而是把请求甩给第二级——共享 **L2TLB/MMU**（[`L2TLBWrapper`](../L2TLBWrapper.md)）：先查 page cache（[`PtwCache`](../PtwCache.md)，L3/L2/L1/L0/SP 五级页表缓存），仍 miss 才交给遍历器 [`PTW`](../PTW.md)（串行走高层页表项）、[`LLPTW`](../LLPTW.md)（末级并发遍历，多请求共享一个访存口）、[`HPTW`](../HPTW.md)（H 扩展 G-stage）向 L2 读 PTE。翻译结果回填 DTLB。物理地址还要过 [`PMP`](../PMP.md)/[`PMPChecker`](../PMPChecker.md) 做权限/PMA 检查。**前端 ITLB 也回这里走页表**，故 MMU 是取指与访存共享的。
 
 ### ④ Sbuffer 合并写
 

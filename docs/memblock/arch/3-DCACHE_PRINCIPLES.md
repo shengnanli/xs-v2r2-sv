@@ -272,7 +272,7 @@ SC 才成功。DCache 在 MainPipe s3 维护这个保留锁：
 
 - **保留计数 `lrsc_count`**（6 位）：LR 命中且可做原子时置 `LRSC_CYCLES-1`（=63），存下块地址；每拍自减；
   外部 `invalid_resv_set`（别的核抢锁 / probe 命中）清 0。
-- **backoff 窗口**：保留**只在 `lrsc_count > LRSC_BACKOFF`（=3）时才有效**——尾部 3 拍刻意判失效。这是
+- **backoff 窗口**：保留**只在 `lrsc_count > LRSC_BACKOFF`（=8）时才有效**——尾部 8 拍刻意判失效。这是
   **活锁避免**：两核互相打断对方保留时，尾窗让 SC 必然失败一次，打破对称重试的死循环。
 - **SC 成败**：SC 要求保留仍有效、地址匹配且命中，否则失败（不写、回失败码）。
 
