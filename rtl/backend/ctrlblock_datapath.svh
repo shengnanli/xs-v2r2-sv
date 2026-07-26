@@ -49,8 +49,11 @@
   wb_exu_output_t  wbDelayedBits  [0:ctrlblock_pkg::WbNum-1];
   generate
     for (gj = 0; gj < ctrlblock_pkg::WbNum; gj++) begin : g_wbpipe
-      // valid:GatedValidRegNext(复位清 0)
-      always_ff @(posedge clock) begin
+      // valid:GatedValidRegNext(复位清 0)。
+      // cluster F: golden delayedNotFlushedWriteBack_delayed_valid_last_REG_* /
+      //   delayedWriteBack_*_valid_last_REG 在**异步复位块**(golden line 10429),
+      //   故 valid 用异步复位对齐;bits 无复位(下方 enable 块)。
+      always_ff @(posedge clock or posedge reset) begin
         if (reset) begin
           wbDelayedValid[gj]    <= 1'b0;
           wbDelayedValidRaw[gj] <= 1'b0;
@@ -220,7 +223,9 @@
   logic [63:0] wbWritebackTimeCnt [0:WbRobNum-1];
   generate
     for (gj = 0; gj < WbRobNum; gj++) begin : g_wbtime
-      always_ff @(posedge clock) begin
+      // cluster F: golden delayedNotFlushedWriteBack_delayed_bits_debugInfo_writebackTime_c*
+      //   在**异步复位块**(golden line 10429/10436)→ 异步复位对齐(同步复位会 failing)。
+      always_ff @(posedge clock or posedge reset) begin
         if (reset) wbWritebackTimeCnt[gj] <= 64'h0;
         else       wbWritebackTimeCnt[gj] <= wbWritebackTimeCnt[gj] + 64'h1;
       end
@@ -245,9 +250,12 @@
   rob_enq_uop_t    enqRobBits  [0:ctrlblock_pkg::RenameWidth-1];  // -> rob.io.enq.req[i].bits
   generate
     for (gj = 0; gj < ctrlblock_pkg::RenameWidth; gj++) begin : g_enqpipe
+      // cluster F: golden enqRob_req_*_valid_REG 在**无复位块**(golden line 14400/16897,
+      //   `<= _dispatch_io_enqRob_req_*_valid & ~io_redirect_valid_0`,无 reset),故 valid
+      //   **无复位**对齐 golden(原实现同步复位 → 复位域不等价,cluster F 前被 redirect 簇
+      //   掩盖,修 redirect 后暴露)。bits 无复位(enable)不变。
       always_ff @(posedge clock) begin
-        if (reset) enqRobValid[gj] <= 1'b0;
-        else       enqRobValid[gj] <= enqInValid[gj] & ~s1_s3_redirect_valid;
+        enqRobValid[gj] <= enqInValid[gj] & ~s1_s3_redirect_valid;
         if (enqInValid[gj]) enqRobBits[gj] <= enqInBits[gj];
       end
     end
@@ -276,9 +284,13 @@
   logic        pcMemWen;                 // -> pcMem.io.wen_0
   logic [5:0]  pcMemWaddr;               // -> pcMem.io.waddr_0
   logic [49:0] pcMemWdataStartAddr;      // -> pcMem.io.wdata_0_startAddr
-  always_ff @(posedge clock) begin
+  // cluster F: golden pcMem_io_wen_0_last_REG 在**异步复位块**(golden line 10429/10526)
+  //   → wen 异步复位对齐(同步复位会 failing);waddr/wdata 无复位(enable)不变。
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) pcMemWen <= 1'b0;
     else       pcMemWen <= io_frontend_fromFtq_pc_mem_wen;
+  end
+  always_ff @(posedge clock) begin
     if (io_frontend_fromFtq_pc_mem_wen) begin
       pcMemWaddr          <= io_frontend_fromFtq_pc_mem_waddr;
       pcMemWdataStartAddr <= io_frontend_fromFtq_pc_mem_wdata_startAddr;

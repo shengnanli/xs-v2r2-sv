@@ -19,7 +19,10 @@
   reg decodeCsrSinglestepR;  // -> decode.io.csrCtrl.singlestep
   reg decodeCsrFusionEnR;    // -> decode.io.csrCtrl.fusion_enable
   reg decodeCsrWfiEnR;       // -> decode.io.csrCtrl.wfi_enable
-  always_ff @(posedge clock) begin
+  // cluster F: golden rename_io_singleStep_last_REG / dispatch_io_singleStep_last_REG 在
+  //   **异步复位块**(golden line 10429/10524-10525)→ 异步复位对齐;而 decode_io_csrCtrl_REG_*
+  //   在**无复位块**(golden line 14400)→ 无复位(原实现已无复位)不变。
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       renameSingleStepR   <= 1'b0;
       dispatchSingleStepR <= 1'b0;
@@ -27,6 +30,8 @@
       renameSingleStepR   <= io_csrCtrl_singlestep;
       dispatchSingleStepR <= io_csrCtrl_singlestep;
     end
+  end
+  always_ff @(posedge clock) begin
     decodeCsrSinglestepR <= io_csrCtrl_singlestep;
     decodeCsrFusionEnR   <= io_csrCtrl_fusion_enable;
     decodeCsrWfiEnR      <= io_csrCtrl_wfi_enable;
@@ -45,9 +50,13 @@
   reg        loadReplayLevel;
   // loadRedirectPcFtqOffset:违例 pc 在 ftq 内的字节偏移(ftqOffset*2 再按 RVC/常规补偏移)。
   reg [5:0]  loadRedirectPcFtqOffset;
-  always_ff @(posedge clock) begin
+  // cluster F: golden loadReplay_valid_last_REG 在**异步复位块**(golden line 10429/10501)
+  //   → valid 异步复位对齐(同步复位会 failing);bits 无复位(enable)不变。
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) loadReplayValidR <= 1'b0;
     else       loadReplayValidR <= io_fromMem_violation_valid;
+  end
+  always_ff @(posedge clock) begin
     if (io_fromMem_violation_valid) begin
       loadReplayRobFlag   <= io_fromMem_violation_bits_robIdx_flag;
       loadReplayRobValue  <= io_fromMem_violation_bits_robIdx_value;
@@ -223,6 +232,12 @@
   //      redirectGen 端 data = pcMem.rdata[1].startAddr + {memPredPcOffsetR, 1'b0}。
   // --------------------------------------------------------------------------
   reg [3:0] memPredPcOffsetR;
+  // ★真 bug 修复:golden redirectGen_io_memPredPcRead_data_r 是 **RegEnable**
+  //   (golden line 16190/16197:`if(io_fromMem_violation_valid) ... <= stFtqOffset`),
+  //   即仅在 violation 有效拍锁存,否则保持。原实现漏 enable=无条件 RegNext,
+  //   无 violation 拍会用当拍(无效)stFtqOffset 覆盖 → redirectGen memPredPc 读地址失配。
+  //   补 enable 对齐 golden(与同块 loadReplay_bits_r_* 共用 violation-valid 门控)。
   always_ff @(posedge clock) begin
-    memPredPcOffsetR <= io_fromMem_violation_bits_stFtqOffset;
+    if (io_fromMem_violation_valid)
+      memPredPcOffsetR <= io_fromMem_violation_bits_stFtqOffset;
   end

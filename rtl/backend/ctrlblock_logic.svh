@@ -38,9 +38,20 @@
   reg                   s1_robFlushFtqFlag;
   reg  [5:0]            s1_robFlushFtqValue;
   reg  [3:0]            s1_robFlushFtqOff;
-  always_ff @(posedge clock) begin
+  // ── cluster F(FM glue-partition 收口:redirect/flush **valid** 寄存器复位域对齐)──
+  //   golden 里所有 redirect/flush 的 *_valid_last_REG(s1_robFlushRedirect / s2_s4 /
+  //   s3_s5 / oldestExuRedirect)都在**异步复位块** `always @(posedge clock or posedge reset)`
+  //   (golden line 10429),而其 bits 在**无复位块**(14400)。原实现把 valid(同步复位)与
+  //   bits(无复位 enable)塞进同一 `always_ff @(posedge clock)`,valid 复位域与 golden 不等价。
+  //   这些 valid 直接/间接决定 exuRedirects_i_valid 的 kill 项(s1_s3/s2_s4 redirect)与
+  //   oldestExuRedirect 打拍 enable(_T_636),复位域失配 → exuOldestValid≠_T_636 →
+  //   ftqIdxAhead_0_valid_REG + cfiUpdate 簇 + frontendFlush 报 failing(与 round C/D 对
+  //   decodeBufValid/flushVecNext 同类)。修法:valid 单独放异步复位块对齐 golden,bits 留无复位。
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) s1_robFlushValid <= 1'b0;
     else       s1_robFlushValid <= s0_robFlushValid;
+  end
+  always_ff @(posedge clock) begin
     if (s0_robFlushValid) begin
       s1_robFlushRobFlag  <= _rob_io_flushOut_bits_robIdx_flag;
       s1_robFlushRobValue <= _rob_io_flushOut_bits_robIdx_value;
@@ -75,15 +86,21 @@
   // -- s2_s4 pending:s1_s3 有效置 1;io.frontend.toFtq.redirect 打一拍有效清 0 --
   reg                   s2_s4_pendingRedirectValid;
   reg                   frontendRedirectValidReg; // GatedValidRegNext(io.frontend.toFtq.redirect.valid)
-  always_ff @(posedge clock) begin
-    if (reset) frontendRedirectValidReg <= 1'b0;
-    else       frontendRedirectValidReg <= frontend_toFtq_redirect_valid;
-    if (reset)
+  // cluster F: golden last_REG(=frontendRedirectValidReg, next io_frontend_toFtq_redirect_valid_0)
+  //   与 s2_s4_pendingRedirectValid 均在**异步复位块**(golden line 10429/10532)→ 异步复位对齐。
+  //   注:Formality 异步复位块须 `if(reset) begin ... end else begin ... end` 单一结构
+  //   (FMR_VLOG-143:async 块内不支持并列多语句),故两 reg 合并进同一 reset/else 分支。
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) begin
+      frontendRedirectValidReg   <= 1'b0;
       s2_s4_pendingRedirectValid <= 1'b0;
-    else if (s1_s3_redirect_valid)
-      s2_s4_pendingRedirectValid <= 1'b1;
-    else if (frontendRedirectValidReg)
-      s2_s4_pendingRedirectValid <= 1'b0;
+    end else begin
+      frontendRedirectValidReg <= frontend_toFtq_redirect_valid;
+      if (s1_s3_redirect_valid)
+        s2_s4_pendingRedirectValid <= 1'b1;
+      else if (frontendRedirectValidReg)
+        s2_s4_pendingRedirectValid <= 1'b0;
+    end
   end
 
   // -- s2_s4_redirect = RegNextWithEnable(s1_s3_redirect):valid 复位 0,bits 在 valid 时打拍 --
@@ -91,9 +108,12 @@
   reg                   s2_s4_redirect_robFlag;
   reg  [7:0]            s2_s4_redirect_robValue;
   reg                   s2_s4_redirect_level;
-  always_ff @(posedge clock) begin
+  // cluster F: s2_s4 valid 异步复位对齐 golden s2_s4_redirect_next_valid_last_REG(block 10429)。
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) s2_s4_redirect_valid <= 1'b0;
     else       s2_s4_redirect_valid <= s1_s3_redirect_valid;
+  end
+  always_ff @(posedge clock) begin
     if (s1_s3_redirect_valid) begin
       s2_s4_redirect_robFlag  <= s1_s3_redirect_robFlag;
       s2_s4_redirect_robValue <= s1_s3_redirect_robValue;
@@ -106,9 +126,12 @@
   reg                   s3_s5_redirect_robFlag;
   reg  [7:0]            s3_s5_redirect_robValue;
   reg                   s3_s5_redirect_level;
-  always_ff @(posedge clock) begin
+  // cluster F: s3_s5 valid 异步复位对齐 golden s3_s5_redirect_next_valid_last_REG(block 10429)。
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) s3_s5_redirect_valid <= 1'b0;
     else       s3_s5_redirect_valid <= s2_s4_redirect_valid;
+  end
+  always_ff @(posedge clock) begin
     if (s2_s4_redirect_valid) begin
       s3_s5_redirect_robFlag  <= s2_s4_redirect_robFlag;
       s3_s5_redirect_robValue <= s2_s4_redirect_robValue;
@@ -291,9 +314,13 @@
       _snpt_io_snapshots_3_robIdx_flag[5], _snpt_io_snapshots_3_robIdx_value[5], _snpt_io_snapshots_3_isCFI[5],
       s1_s3_redirect_robFlag, s1_s3_redirect_robValue);
   end
-  // flushVecNext = GatedValidRegNext(flushVec & valids)
+  // flushVecNext = RegNext(flushVec & valids)。
+  // ── cluster C(FM glue-partition 收口):golden flushVecNext_last_REG[_1/2/3] 在
+  //   **异步复位块** `always @(posedge clock or posedge reset)`(golden line 10429,复位 0)。
+  //   原实现用同步复位 → 4 个 DFF 复位域与 golden 不等价(FM 报 flushVecNext_reg[0..3])。
+  //   改异步复位对齐 golden(同 round10 s2s4RedirectValid 同步→异步的复位对齐手法)。
   reg [ctrlblock_pkg::RenameSnapshotNum-1:0] flushVecNext;
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) flushVecNext <= '0;
     else       flushVecNext <= flushVec & snptValids;
   end
@@ -318,13 +345,19 @@
       default: snptDeqValidSel = snptValids[3];
     endcase
   end
+  // ★ snpt-deq head 匹配须遍历 commit **全 8 lane**(golden _snpt_io_deq_T_35, line 9461-9486)。
+  //   原实现只到 lane5 → 快照 head robIdx 命中 commit lane6/7 时 golden deq 而核漏 deq,且
+  //   rob io_commits_robIdx_6/7 引脚在 impl 侧无读者→FM 报 36 个 robIdx_6/7 边界 BBPin unmatched。
+  //   补 lane6/7(commitLane6/7 别名,decls 声明 + glue4 驱动):既修功能又使引脚被读、两侧配对。
   wire                  commitMatchHead =
       (_rob_io_commits_commitValid[0] && (_rob_io_commits_robIdx_value_0 == snptHeadDeqValue) && (_rob_io_commits_robIdx_flag[0] == snptHeadDeqFlag)) ||
       (_rob_io_commits_commitValid[1] && (_rob_io_commits_robIdx_value_1 == snptHeadDeqValue) && (_rob_io_commits_robIdx_flag[1] == snptHeadDeqFlag)) ||
       (_rob_io_commits_commitValid[2] && (_rob_io_commits_robIdx_value_2 == snptHeadDeqValue) && (_rob_io_commits_robIdx_flag[2] == snptHeadDeqFlag)) ||
       (_rob_io_commits_commitValid[3] && (_rob_io_commits_robIdx_value_3 == snptHeadDeqValue) && (_rob_io_commits_robIdx_flag[3] == snptHeadDeqFlag)) ||
       (_rob_io_commits_commitValid[4] && (_rob_io_commits_robIdx_value_4 == snptHeadDeqValue) && (_rob_io_commits_robIdx_flag[4] == snptHeadDeqFlag)) ||
-      (_rob_io_commits_commitValid[5] && (_rob_io_commits_robIdx_value_5 == snptHeadDeqValue) && (_rob_io_commits_robIdx_flag[5] == snptHeadDeqFlag));
+      (_rob_io_commits_commitValid[5] && (_rob_io_commits_robIdx_value_5 == snptHeadDeqValue) && (_rob_io_commits_robIdx_flag[5] == snptHeadDeqFlag)) ||
+      (commitLane6Valid && (commitLane6Value == snptHeadDeqValue) && (commitLane6Flag == snptHeadDeqFlag)) ||
+      (commitLane7Valid && (commitLane7Value == snptHeadDeqValue) && (commitLane7Flag == snptHeadDeqFlag));
   wire                  snptDeq = snptDeqValidSel && _rob_io_commits_isCommit && commitMatchHead;
 
   // ==========================================================================
@@ -339,7 +372,8 @@
   // ==========================================================================
   wire                  s5_flushFromRobValidAhead = _s5_flushFromRobValidAhead_delay_io_out;
   reg                   s6_flushFromRobValid;
-  always_ff @(posedge clock) begin
+  // cluster F: golden s6_flushFromRobValid_last_REG 在**异步复位块**(golden line 10429/10503)。
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) s6_flushFromRobValid <= 1'b0;
     else       s6_flushFromRobValid <= s5_flushFromRobValidAhead;
   end
@@ -444,7 +478,11 @@
   endfunction
 
   integer di;
-  always_ff @(posedge clock) begin
+  // ── cluster D(FM glue-partition 收口):golden decodeBufValid_0..5 在**异步复位块**
+  //   `always @(posedge clock or posedge reset)`(golden line 10429,复位 0)。原实现用同步复位
+  //   → decodeBufValid_reg[5] 复位域与 golden 不等价(FM 报 lane5;lane0..4 merge 后未单列)。
+  //   改异步复位对齐 golden。lane 逻辑本身已 bug-for-bug 一致(见块 2b/round7 修复)。
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       decodeBufValid <= '0;
     end else begin

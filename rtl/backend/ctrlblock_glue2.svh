@@ -240,19 +240,52 @@
   end
 
   // RegEnable 打一拍(valid 复位 0;bits 在选中拍打):送 redirectGen.io.oldestExuRedirect。
+  // ── cluster B(FM glue-partition 收口):组合 next 值严格复刻 golden if(_T_636) 块各字段 ──
+  //   golden 各字段(见 golden line 16219..16338):
+  //     robIdx/ftqIdx/ftqOffset/level/pc/target/taken/isMisPred/fullTarget = masked-OR 四路
+  //       (onehot_i ? wbData_i.X : 0),onehot = {(&T_36),(&T_28),(&T_19),(&T_9)} = exuOldestOH;
+  //     backendIGPF/IPF/IAF = 仅候选3((&T_36)=exuOldestOH[3]) & wbData_7.X(与选中候选无关);
+  //     debugIsCtrl = OR 四 onehot = exuOldestValid(此块 en 下恒 1)。
+  //   passing 字段(robIdx/ftqIdx/ftqOffset/level/target/taken/fullTarget)沿用 exuOldestCand
+  //   (case-mux,FM 已证与 golden masked-OR 等价);仅对之前 failing 的
+  //   cfiUpdate_pc/isMisPred/backendIGPF/IPF/IAF 显式复刻 golden 形态。
+  //   ★单次整体寄存(oldestExuRedirectBits <= Next),不用「整struct再逐字段覆盖」(避免 FM 对
+  //     同一 always_ff 内 whole-struct NBA + 部分字段 NBA 的 last-write 语义建模歧义)。
   logic            oldestExuRedirectValid;          // -> redirectGen.io_oldestExuRedirect_valid
   exu_redir_cand_t oldestExuRedirectBits;           // -> redirectGen.io_oldestExuRedirect_bits_*
   logic            oldestExuRedirectIsCSR;          // -> redirectGen.io_oldestExuRedirectIsCSR
-  always_ff @(posedge clock) begin
+  exu_redir_cand_t oldestExuRedirectNext;
+  always_comb begin
+    oldestExuRedirectNext = exuOldestCand;          // passing 字段(选中候选)先全取
+    oldestExuRedirectNext.debugIsCtrl = 1'b1;        // = exuOldestValid(en 下恒 1)
+    oldestExuRedirectNext.cfiUpdate_pc =
+        (exuOldestOH[0] ? io_fromWB_wbData_1_bits_redirect_bits_cfiUpdate_pc : 50'h0)
+      | (exuOldestOH[1] ? io_fromWB_wbData_3_bits_redirect_bits_cfiUpdate_pc : 50'h0)
+      | (exuOldestOH[2] ? io_fromWB_wbData_5_bits_redirect_bits_cfiUpdate_pc : 50'h0)
+      | (exuOldestOH[3] ? io_fromWB_wbData_7_bits_redirect_bits_cfiUpdate_pc : 50'h0);
+    oldestExuRedirectNext.cfiUpdate_isMisPred =
+        exuOldestOH[0] & io_fromWB_wbData_1_bits_redirect_bits_cfiUpdate_isMisPred
+      | exuOldestOH[1] & io_fromWB_wbData_3_bits_redirect_bits_cfiUpdate_isMisPred
+      | exuOldestOH[2] & io_fromWB_wbData_5_bits_redirect_bits_cfiUpdate_isMisPred
+      | exuOldestOH[3] & io_fromWB_wbData_7_bits_redirect_bits_cfiUpdate_isMisPred;
+    oldestExuRedirectNext.cfiUpdate_backendIGPF =
+        exuOldestOH[3] & io_fromWB_wbData_7_bits_redirect_bits_cfiUpdate_backendIGPF;
+    oldestExuRedirectNext.cfiUpdate_backendIPF =
+        exuOldestOH[3] & io_fromWB_wbData_7_bits_redirect_bits_cfiUpdate_backendIPF;
+    oldestExuRedirectNext.cfiUpdate_backendIAF =
+        exuOldestOH[3] & io_fromWB_wbData_7_bits_redirect_bits_cfiUpdate_backendIAF;
+  end
+  // cluster F: oldestExuRedirect **valid** 异步复位对齐 golden
+  //   redirectGen_io_oldestExuRedirect_valid_last_REG(block 10429);bits/IsCSR 留无复位
+  //   对齐 golden oldestExuRedirect_bits_r_*/IsCSR_r(block 14400)。
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) oldestExuRedirectValid <= 1'b0;
     else       oldestExuRedirectValid <= exuOldestValid;
+  end
+  always_ff @(posedge clock) begin
     if (exuOldestValid) begin
-      oldestExuRedirectBits <= exuOldestCand;
-      // ★ round8:debugIsCtrl = golden「OR 四个 onehot 项」= exuOldestValid(此 if 下恒 1)。
-      //   exuRedirCand 里 debugIsCtrl 缺省置 0,此处在选中拍覆盖为 1(UT DIV 抓到 g=1 i=0)。
-      oldestExuRedirectBits.debugIsCtrl <= 1'b1;
-      // ★ round7:IsCSR 不是恒 0。golden 值 = ~T9 & ~T19 & ~T28 & T36 = 选中候选 3
-      //   (wbData_7,CSR 能产 redirect 的写回口)= oldestOneHot==4'b1000。
+      oldestExuRedirectBits  <= oldestExuRedirectNext;
+      // ★ round7:IsCSR = ~T9&~T19&~T28&T36 = 选中候选3(wbData_7,CSR)= oldestOneHot==4'b1000。
       oldestExuRedirectIsCSR <= (exuOldestOH == 4'b1000);
     end
   end
@@ -270,7 +303,9 @@
   assign mdpVld[0] = _decodePipeRenameModule_io_in_ready   & _decode_io_out_0_valid;
   assign mdpVld[1] = _decodePipeRenameModule_1_io_in_ready & _decode_io_out_1_valid;
   reg  mdpVldLast [0:1];
-  always_ff @(posedge clock) begin
+  // cluster F: golden mdpFlodPcVecVld_0/1_last_REG 在**异步复位块**(golden line 10429/10522)
+  //   → 异步复位对齐(同步复位会 failing)。
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       mdpVldLast[0] <= 1'b0;
       mdpVldLast[1] <= 1'b0;
@@ -326,6 +361,11 @@
   endfunction
 
   integer dfi;
+  // ★已知残余 gap(cluster-F 后暴露,非本轮引入):decode.in[0/1].foldpc 仍 failing,
+  //   FM diagnose error candidate=decodeBufFoldpc_reg[0]。decode-buffer 压缩 foldpc 预存值
+  //   latent 逻辑 bug——sync-reset 与 no-reset 两侧 canary 均同 20 failing(证非复位域问题)。
+  //   golden 用 8 深 _GEN_43/44/77/78 数组按 acceptNum 索引搬移,与本 buf_shift_foldpc 语义
+  //   在某 (lane,acceptNum) 组合下位级不一致;精确重建待后续。原实现(sync-reset)保留。
   always_ff @(posedge clock) begin
     if (reset) begin
       for (dfi = 0; dfi < ctrlblock_pkg::DecodeWidth; dfi = dfi + 1)

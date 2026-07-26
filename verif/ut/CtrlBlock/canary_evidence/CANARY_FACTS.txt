@@ -1,0 +1,52 @@
+CtrlBlock GLUE-PARTITION CANARY — native facts (fm_shell V-2023.12-SP3)
+=======================================================================
+top: CtrlBlock   mode: partition (16 submodules symmetric black box)
+ref:  golden/chisel-rtl/CtrlBlock.sv (glue only; 41426 lines)
+impl: rtl/backend/{ctrlblock_pkg.sv,CtrlBlock.sv,CtrlBlock_wrapper.sv} (readable core glue)
+pins: verif/ut/CtrlBlock/fm_pins.tcl (committed signoff pin map, applied AFTER first match)
+
+MODEL BUILD: COMPLETED. Elapsed 490s wall / 472s CPU / 1176 MB peak.
+  (contrast: monolithic run STALLED >14 min in 'Elaborating design Rob',
+   ref-side model construction, never reached matching.)
+
+VERIFY RESULT: FAILED (real glue diffs surfaced), NOT stalled/aborted.
+  Passing compare points : 68212  (49475 BBPin + 10617 Port + 8120 DFF)
+  Failing compare points : 20     (20 matched DFF, 0 unmatched)
+  Aborted                : 0
+  Unverified             : 6093   (3131 BBPin + 427 BBNet + 2535 DFF; black-box boundary)
+  Not-Compared const reg : 1964
+  Unmatched ref/impl cmp : 30/276
+  Unmatched BBout pins   : 162/0  (Rob io_commits_* boundary — see plan)
+
+FAILING = 20 merged compare points, all glue DFFs in 4 clusters
+(matches memory rounds 5/9/10 "not done / rolled back" — NEVER surfaced by the
+monolithic run because it stalled before matching):
+
+  CLUSTER A  io_frontend_toFtq_ftqIdxAhead_0  (7 pts)
+     bits_r_value[0..5] <-> u_core/ftqAheadValueR_reg[0..5]
+     valid_REG          <-> u_core/ftqAheadValidR_reg
+     (round5/round9: "io_frontend_toFtq_redirect / ftqIdxAhead NOT done;
+      deep coupled to s6_flushFromRob delay chain + redirectGen _r regs")
+
+  CLUSTER B  redirectGen_io_oldestExuRedirect_bits_r_cfiUpdate_*  (cfi backend + pc)
+     backendIAF / backendIGPF / backendIPF / isMisPred / pc[...]
+       <-> u_core/oldestExuRedirectBits_reg[cfiUpdate_*]
+     (round10: "cfiUpdate_backend强制0 已回滚(有害)" — left NOT equivalent)
+
+  CLUSTER C  flushVecNext_last_REG[,_1,_2,_3]  (snapshot flushVec output staging)
+       <-> u_core/flushVecNext_reg[0..3]
+
+  CLUSTER D  decodeBufValid_5  (decode-buffer FSM lane 5)
+       <-> u_core/decodeBufValid_reg[5]
+
+NOTE the FM "20" is its merged tally; raw failing.rpt lists the multi-bit
+cfiUpdate_pc / value bits individually (see failing.rpt). ALL are glue-local;
+ZERO are Rob/NewDispatch internals. The monolithic run's 640x rob uopNum
+"failures" (memory round10) are a MODELING ARTIFACT of elaborating identical Rob
+on both sides — the partition removes them entirely by black-boxing Rob.
+
+HONESTY: this canary is FAILING, not a green signoff. It is a partitioned
+DIAGNOSTIC that (a) makes the model build tractable and (b) isolates the 20 real
+glue equivalence gaps. It is NOT a signoff-strict pass and MUST NOT be promoted
+as one. The glue partition proof closes only when these 20 -> 0 AND the
+composition obligation (each black box proven separately) is discharged.

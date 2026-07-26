@@ -1,0 +1,3 @@
+MONOLITHIC STALL SNAPSHOT Thu Jul 23 06:52:42 EDT 2026
+fm_shell running 14:16 at 97% CPU, still in 'Elaborating design Rob' (ref-side model construction), never reached matching.
+golden subdep files loaded: 36
