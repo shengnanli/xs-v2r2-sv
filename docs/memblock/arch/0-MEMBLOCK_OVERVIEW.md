@@ -23,32 +23,44 @@
 4. **顺序与一致性**:LoadQueue/StoreQueue(LsqWrapper)维护访存顺序、检测 load-store 违例、重放。
 5. **缓存**:DCache(DCacheWrapper)+ SBuffer(写合并)+ Uncache(MMIO/非缓存)。
 
-## 2. 顶层结构(golden MemBlock 直接例化)
+## 2. 顶层结构与代码规模
 
 ```
-MemBlock (golden 31138 行, 1346 端口)
-├─ LsqWrapper      (5735)  load/store 队列:LoadQueue + StoreQueue + 违例检测/重放
-├─ Sbuffer         (21725) store 写合并缓冲(提交后的 store 攒够再写 DCache)
-├─ DCacheWrapper   (1579+) L1 数据缓存(MainPipe/MissQueue/WBQueue/Meta/Data/Replacer…)
-├─ L2TLBWrapper    (850)   共享 MMU:页表遍历器 PTW + page cache（前端 ITLB 也回这里走页表）
-├─ TLBNonBlock ×3  (4516)  数据侧 DTLB:load / store / prefetch（→ TlbStorageWrapper）
-├─ PMP (2269) + PMPChecker ×8 (861)  物理内存保护(权限/PMA 检查)
-├─ Uncache         (1740)  非缓存/MMIO 访问(TileLink)
-├─ AtomicsUnit             AMO/LR-SC 原子指令执行单元(独占接管访存口,经 DCache MainPipe 的 atomic 源执行)
+MemBlock (1346 端口)
+├─ LsqWrapper      load/store 队列:LoadQueue + StoreQueue + 违例检测/重放
+├─ Sbuffer         store 写合并缓冲(提交后的 store 攒够再写 DCache)
+├─ DCacheWrapper   L1 数据缓存(MainPipe/MissQueue/WBQueue/Meta/Data/Replacer…)
+├─ L2TLBWrapper    共享 MMU:页表遍历器 PTW + page cache（前端 ITLB 也回这里走页表）
+├─ TLBNonBlock ×3  数据侧 DTLB:load / store / prefetch（→ TlbStorageWrapper）
+├─ PMP + PMPChecker ×8  物理内存保护(权限/PMA 检查)
+├─ Uncache         非缓存/MMIO 访问(TileLink)
+├─ AtomicsUnit     AMO/LR-SC 原子指令执行单元(独占接管访存口,经 DCache MainPipe 的 atomic 源执行)
 └─ TLBuffer/TLXbar/Pipeline/PFEvent/DelayN  TileLink 缓冲/交叉开关/性能
 
-注:LoadUnit(5435)/StoreUnit(1640) 是 load/store 执行流水单元,在 golden `MemBlock` 内**直接
-    例化**(`inner_LoadUnit_0/1/2`、`inner_StoreUnit_0/1`),是访存执行的心脏,一并纳入访存重写范围。
-
-注:以上行数均为 golden 生成 RTL 的规模。重写后(把 include 的 svh + pkg + wrapper 都算上)分三类形态:
-    ① 纯逻辑模块显著压缩——Sbuffer 21725→1589 / TLBNonBlock 4516→1716 / PMP 2269→989 / Uncache
-       1740→1285(golden 的膨胀主要是 firtool 展平的 _GEN_/_T_ 中间量,用 struct/genvar/函数收敛);
-    ② 流水核约持平——LoadUnit 5435→5462 / StoreUnit 1640→2250,逻辑本身密集,重写收益在命名/结构/
-       注释的可读性,不在行数;
-    ③ 互联装配型反而略大——MemBlock 31138→41777 / LsqWrapper 5735→7058 / DCacheWrapper 1579→2542,
-       因为 *_ports/*_inst/*_stub svh 是对 golden 机械互联与黑盒端口声明的忠实重建,真逻辑 glue 只占
-       小部分。重写的目标是可读性与可验证性,不是行数。
+注:LoadUnit/StoreUnit 是 load/store 执行流水单元,在 golden `MemBlock` 内直接例化
+    (`inner_LoadUnit_0/1/2`、`inner_StoreUnit_0/1`),是访存执行的心脏,一并纳入访存重写范围。
 ```
+
+**代码规模对比**(单位:行。golden = firtool 生成的展平 RTL;重写合计 = 主文件 + include 的 svh + pkg + wrapper):
+
+| 模块 | golden | 重写合计 | 比例 |
+|---|---|---|---|
+| Sbuffer | 21725 | 1589 | 压缩 13.7× |
+| TLBNonBlock | 4516 | 1716 | 压缩 2.6× |
+| PMP | 2269 | 989 | 压缩 2.3× |
+| Uncache | 1740 | 1285 | 压缩 1.4× |
+| PMPChecker | 861 | 1283 | 略增(wrapper 适配 8 变体) |
+| StoreUnit | 1640 | 2250 | 略增 |
+| LoadUnit | 5435 | 5462 | 持平 |
+| DCacheWrapper | 1579 | 2542 | 增 |
+| L2TLBWrapper | 850 | 1271 | 增 |
+| LsqWrapper | 5735 | 7058 | 增 |
+| MemBlock | 31138 | 41777 | 增 1.3× |
+
+> 三类形态:**纯逻辑模块**显著压缩——golden 的膨胀主要是 firtool 展平的 `_GEN_`/`_T_` 中间量,用
+> struct/genvar/函数收敛;**流水核**约持平——逻辑本身密集,重写收益在命名/结构/注释的可读性,不在行数;
+> **互联装配型**反而略大——`*_ports`/`*_inst`/`*_stub` svh 是对 golden 机械互联与黑盒端口声明的忠实
+> 重建,真逻辑 glue 只占小部分。重写的目标是**可读性与可验证性,不是行数**。
 
 ### 2.1 子系统级互联大图(模块到模块)
 
