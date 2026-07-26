@@ -1,0 +1,19 @@
+{
+  "schema": "fm-sidecar-dead-ref-v1",
+  "target": "BankedDataArray",
+  "rationale": "assembly (9 symmetric SRAM-macro blackboxes in allow): impl side 100% clean (unmatched_impl=0, unread_impl=0, unread_notcompared=0). Only residual is 3 golden-only unread_ref = REG_8/9/10 RegNext assertion registers, cone-dead (no functional output fan-out). Impl omits the redundant golden-only registers. Enumerated exactly from committed native_facts (signoff-evidence-delta3/BankedDataArray). NOTE: qualifies ONLY when run in assembly mode with the 9 blackboxes declared in allow; the currently committed manifest_305 entry is signoff-strict which cannot handle the blackboxes.",
+  "entries": [
+    {
+      "ref_path": "r:/WORK/BankedDataArray/REG_10_reg",
+      "rationale": "Golden-only RegNext assertion register (REG_10_reg), cone-dead with no functional output fan-out; impl constant-folds/omits it."
+    },
+    {
+      "ref_path": "r:/WORK/BankedDataArray/REG_8_reg",
+      "rationale": "Golden-only RegNext assertion register (REG_8_reg), cone-dead with no functional output fan-out; impl constant-folds/omits it."
+    },
+    {
+      "ref_path": "r:/WORK/BankedDataArray/REG_9_reg",
+      "rationale": "Golden-only RegNext assertion register (REG_9_reg), cone-dead with no functional output fan-out; impl constant-folds/omits it."
+    }
+  ]
+}

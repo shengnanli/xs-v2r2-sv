@@ -1,0 +1,263 @@
+{
+  "schema": "fm-sidecar-dead-ref-v1",
+  "target": "WbDataPath",
+  "rationale": "assembly+vmucp: golden-only unread_ref = intArbiterInputsWire_14_bits_r_data_1_reg[64:127], the UPPER 64 bits of a 128-bit VfExu->Int RegEnable pipeline register. The integer writeback arbiter consumes only data_1[63:0]; bits [127:64] have no functional output fan-out (cone-dead). Impl correctly stores only DATA_W=64. Enumerated exactly from committed native_facts (signoff-evidence/WbDataPath). NOTE: qualifies ONLY under the manifest_305 assembly+vmucp config where the 224 VldMergeUnit matched-unread points are actually compared (unread_notcompared->0) and the 26 DummyDPICWrapper probes are declared empty blackboxes in allow; the committed strict/vmucp=false native_facts here still show unread_notcompared=224 and therefore do NOT yet meet condition-4 -- a fresh assembly+vmucp run is required to promote.",
+  "entries": [
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[100]",
+      "rationale": "Upper bit [100] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[101]",
+      "rationale": "Upper bit [101] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[102]",
+      "rationale": "Upper bit [102] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[103]",
+      "rationale": "Upper bit [103] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[104]",
+      "rationale": "Upper bit [104] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[105]",
+      "rationale": "Upper bit [105] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[106]",
+      "rationale": "Upper bit [106] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[107]",
+      "rationale": "Upper bit [107] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[108]",
+      "rationale": "Upper bit [108] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[109]",
+      "rationale": "Upper bit [109] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[110]",
+      "rationale": "Upper bit [110] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[111]",
+      "rationale": "Upper bit [111] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[112]",
+      "rationale": "Upper bit [112] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[113]",
+      "rationale": "Upper bit [113] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[114]",
+      "rationale": "Upper bit [114] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[115]",
+      "rationale": "Upper bit [115] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[116]",
+      "rationale": "Upper bit [116] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[117]",
+      "rationale": "Upper bit [117] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[118]",
+      "rationale": "Upper bit [118] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[119]",
+      "rationale": "Upper bit [119] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[120]",
+      "rationale": "Upper bit [120] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[121]",
+      "rationale": "Upper bit [121] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[122]",
+      "rationale": "Upper bit [122] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[123]",
+      "rationale": "Upper bit [123] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[124]",
+      "rationale": "Upper bit [124] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[125]",
+      "rationale": "Upper bit [125] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[126]",
+      "rationale": "Upper bit [126] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[127]",
+      "rationale": "Upper bit [127] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[64]",
+      "rationale": "Upper bit [64] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[65]",
+      "rationale": "Upper bit [65] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[66]",
+      "rationale": "Upper bit [66] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[67]",
+      "rationale": "Upper bit [67] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[68]",
+      "rationale": "Upper bit [68] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[69]",
+      "rationale": "Upper bit [69] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[70]",
+      "rationale": "Upper bit [70] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[71]",
+      "rationale": "Upper bit [71] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[72]",
+      "rationale": "Upper bit [72] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[73]",
+      "rationale": "Upper bit [73] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[74]",
+      "rationale": "Upper bit [74] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[75]",
+      "rationale": "Upper bit [75] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[76]",
+      "rationale": "Upper bit [76] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[77]",
+      "rationale": "Upper bit [77] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[78]",
+      "rationale": "Upper bit [78] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[79]",
+      "rationale": "Upper bit [79] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[80]",
+      "rationale": "Upper bit [80] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[81]",
+      "rationale": "Upper bit [81] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[82]",
+      "rationale": "Upper bit [82] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[83]",
+      "rationale": "Upper bit [83] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[84]",
+      "rationale": "Upper bit [84] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[85]",
+      "rationale": "Upper bit [85] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[86]",
+      "rationale": "Upper bit [86] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[87]",
+      "rationale": "Upper bit [87] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[88]",
+      "rationale": "Upper bit [88] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[89]",
+      "rationale": "Upper bit [89] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[90]",
+      "rationale": "Upper bit [90] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[91]",
+      "rationale": "Upper bit [91] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[92]",
+      "rationale": "Upper bit [92] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[93]",
+      "rationale": "Upper bit [93] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[94]",
+      "rationale": "Upper bit [94] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[95]",
+      "rationale": "Upper bit [95] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[96]",
+      "rationale": "Upper bit [96] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[97]",
+      "rationale": "Upper bit [97] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[98]",
+      "rationale": "Upper bit [98] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    },
+    {
+      "ref_path": "r:/WORK/WbDataPath/intArbiterInputsWire_14_bits_r_data_1_reg[99]",
+      "rationale": "Upper bit [99] of 128-bit int-arbiter input RegEnable; arbiter reads only [63:0], so this bit is cone-dead with no output fan-out. Golden-only; impl stores DATA_W=64."
+    }
+  ]
+}
