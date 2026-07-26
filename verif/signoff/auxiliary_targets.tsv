@@ -4,3 +4,6 @@ SRAMTemplate_197	SubDirectory tagArray 可读 leaf；PASS_DEAD_REF
 SRAMTemplate_198	SubDirectory metaArray 可读 leaf；PASS_DEAD_REF
 MaxPeriodFibonacciLFSR_3	SubDirectory replacement LFSR leaf；strict PASS
 Hpmcounter3Module	NewCSR Hpmcounter CSR-field leaf；可读primitive xs_hpmcounter；strict PASS(pilot for 328-stub rollout)
+Mhpmcounter3Module	NewCSR Mhpmcounter CSR-field leaf；可读primitive xs_mhpmcounter；代表×29家族；strict PASS
+Pmpaddr0Module	NewCSR Pmpaddr CSR-field leaf；可读primitive xs_pmpaddr；代表×16家族；strict PASS
+Pmpcfg0Module	NewCSR Pmpcfg 读slicer leaf；可读primitive xs_pmpcfg；代表Pmpcfg0/Pmpcfg2；strict PASS

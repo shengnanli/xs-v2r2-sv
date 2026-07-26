@@ -27,7 +27,7 @@
 //    G. store fire / ftq 的 3 拍延迟
 //    H. rollback 输出 / lqFull / perf
 // =============================================================================
-module xs_LoadQueueRAW_core
+module xs_LoadQueueRAW_core_ut
   import loadqueueraw_pkg::*;
 (
   input  logic clock,
@@ -284,7 +284,7 @@ module xs_LoadQueueRAW_core
   // 释放掩码（喂 freelist io_free；见 E 节）
   logic [RAW_SIZE-1:0] free_bits;
 
-  FreeList_4 freeList (
+  FreeList_4_xs freeList (
     .clock             (clock),
     .reset             (reset),
     .io_allocateSlot_0 (fl_allocateSlot[0]),
@@ -361,7 +361,7 @@ module xs_LoadQueueRAW_core
   logic [RAW_SIZE-1:0] paddr_mmask [ST_W];
   logic [RAW_SIZE-1:0] mask_mmask  [ST_W];
 
-  LqPAddrModule_1 paddrModule (
+  LqPAddrModule_1_xs paddrModule (
     .clock                   (clock),
     .reset                   (reset),
     .io_wen_0                (cam_wen[0]),
@@ -411,7 +411,7 @@ module xs_LoadQueueRAW_core
     .io_violationMmask_1_30(paddr_mmask[1][30]), .io_violationMmask_1_31(paddr_mmask[1][31])
   );
 
-  LqMaskModule maskModule (
+  LqMaskModule_xs maskModule (
     .clock                   (clock),
     .reset                   (reset),
     .io_wen_0                (cam_wen[0]),
@@ -640,24 +640,24 @@ module xs_LoadQueueRAW_core
   logic             st_fire_in [ST_W];
   always_comb for (int i = 0; i < ST_W; i++) st_fire_in[i] = st_valid[i] && !st_miss[i];
 
-  DelayN_298 rollbackLqWb_0_valid_delay (
+  DelayN_298_xs rollbackLqWb_0_valid_delay (
     .clock (clock), .io_in (st_fire_in[0]), .io_out (st_fire_dly_out[0]));
-  DelayNWithValid_148 stFtqIdx_0_pipMod (
+  DelayNWithValid_148_xs stFtqIdx_0_pipMod (
     .clock (clock), .reset (reset),
     .io_in_bits_value (st_ftqPtr_val[0]), .io_in_valid (st_valid[0]),
     .io_out_bits_value (st_ftqp_dly_out[0]));
-  DelayNWithValid_149 stFtqOffset_0_pipMod (
+  DelayNWithValid_149_xs stFtqOffset_0_pipMod (
     .clock (clock), .reset (reset),
     .io_in_bits (st_ftqOffset[0]), .io_in_valid (st_valid[0]),
     .io_out_bits (st_ftqo_dly_out[0]));
 
-  DelayN_298 rollbackLqWb_1_valid_delay (
+  DelayN_298_xs rollbackLqWb_1_valid_delay (
     .clock (clock), .io_in (st_fire_in[1]), .io_out (st_fire_dly_out[1]));
-  DelayNWithValid_148 stFtqIdx_1_pipMod (
+  DelayNWithValid_148_xs stFtqIdx_1_pipMod (
     .clock (clock), .reset (reset),
     .io_in_bits_value (st_ftqPtr_val[1]), .io_in_valid (st_valid[1]),
     .io_out_bits_value (st_ftqp_dly_out[1]));
-  DelayNWithValid_149 stFtqOffset_1_pipMod (
+  DelayNWithValid_149_xs stFtqOffset_1_pipMod (
     .clock (clock), .reset (reset),
     .io_in_bits (st_ftqOffset[1]), .io_in_valid (st_valid[1]),
     .io_out_bits (st_ftqo_dly_out[1]));
