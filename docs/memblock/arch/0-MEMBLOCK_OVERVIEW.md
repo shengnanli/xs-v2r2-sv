@@ -26,7 +26,7 @@
 ## 2. 顶层结构(golden MemBlock 直接例化)
 
 ```
-MemBlock (31138 行, 1346 端口)
+MemBlock (golden 31138 行, 1346 端口)
 ├─ LsqWrapper      (5735)  load/store 队列:LoadQueue + StoreQueue + 违例检测/重放
 ├─ Sbuffer         (21725) store 写合并缓冲(提交后的 store 攒够再写 DCache)
 ├─ DCacheWrapper   (1579+) L1 数据缓存(MainPipe/MissQueue/WBQueue/Meta/Data/Replacer…)
@@ -39,6 +39,15 @@ MemBlock (31138 行, 1346 端口)
 
 注:LoadUnit(5435)/StoreUnit(1640) 是 load/store 执行流水单元,在 golden `MemBlock` 内**直接
     例化**(`inner_LoadUnit_0/1/2`、`inner_StoreUnit_0/1`),是访存执行的心脏,一并纳入访存重写范围。
+
+注:以上行数均为 golden 生成 RTL 的规模。重写后(把 include 的 svh + pkg + wrapper 都算上)分三类形态:
+    ① 纯逻辑模块显著压缩——Sbuffer 21725→1589 / TLBNonBlock 4516→1716 / PMP 2269→989 / Uncache
+       1740→1285(golden 的膨胀主要是 firtool 展平的 _GEN_/_T_ 中间量,用 struct/genvar/函数收敛);
+    ② 流水核约持平——LoadUnit 5435→5462 / StoreUnit 1640→2250,逻辑本身密集,重写收益在命名/结构/
+       注释的可读性,不在行数;
+    ③ 互联装配型反而略大——MemBlock 31138→41777 / LsqWrapper 5735→7058 / DCacheWrapper 1579→2542,
+       因为 *_ports/*_inst/*_stub svh 是对 golden 机械互联与黑盒端口声明的忠实重建,真逻辑 glue 只占
+       小部分。重写的目标是可读性与可验证性,不是行数。
 ```
 
 ### 2.1 子系统级互联大图(模块到模块)
