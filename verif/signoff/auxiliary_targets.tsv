@@ -7,3 +7,4 @@ Hpmcounter3Module	NewCSR Hpmcounter CSR-field leaf；可读primitive xs_hpmcount
 Mhpmcounter3Module	NewCSR Mhpmcounter CSR-field leaf；可读primitive xs_mhpmcounter；代表×29家族；strict PASS
 Pmpaddr0Module	NewCSR Pmpaddr CSR-field leaf；可读primitive xs_pmpaddr；代表×16家族；strict PASS
 Pmpcfg0Module	NewCSR Pmpcfg 读slicer leaf；可读primitive xs_pmpcfg；代表Pmpcfg0/Pmpcfg2；strict PASS
+SnoopUnit	OpenLLC AUX real-body(可读xs_SnoopUnit_core, 非空stub非vacuous golden-vs-golden); class-4对称matched-unread加强(bufferTimer/REG泄漏计时器两侧cone-dead双射); 须main加matched-unread白名单
