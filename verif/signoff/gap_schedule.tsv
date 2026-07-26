@@ -94,3 +94,6 @@ WritebackQueue	IMPL_DEAD	nc0/ur36/ui36/bb0
 XSCore	UNMATCH_COMPARE	nc0/ur0/ui0/bb3
 XSTile	NATIVE_FAIL	nc0/ur0/ui0/bb22
 XSTop	NATIVE_FAIL	nc3/ur0/ui0/bb68
+Slice_1	VMUCP+BB	nc9/ur0/ui0/bb47
+Slice_2	VMUCP+BB	nc9/ur0/ui0/bb47
+Slice_3	VMUCP+BB	nc9/ur0/ui0/bb47

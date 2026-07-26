@@ -1,0 +1,22 @@
+{
+    "unresolved_blackbox": [
+        {
+            "id": "txreqArb",
+            "ref_path": "r:/WORK/MMIOBridge/txreqArb",
+            "impl_path": "i:/WORK/MMIOBridge/u_core/txreqArb"
+        },
+        {
+            "id": "mmio_txdat_arb",
+            "ref_path": "r:/WORK/MMIOBridge/mmio_txdat_arb",
+            "impl_path": "i:/WORK/MMIOBridge/u_core/mmio_txdat_arb"
+        },
+        {
+            "id": "mmio_channel_D_arb",
+            "ref_path": "r:/WORK/MMIOBridge/mmio_channel_D_arb",
+            "impl_path": "i:/WORK/MMIOBridge/u_core/mmio_channel_D_arb"
+        }
+    ],
+    "interface_only": [],
+    "empty_blackbox": [],
+    "unmatched": []
+}

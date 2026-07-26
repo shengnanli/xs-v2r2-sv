@@ -11,3 +11,15 @@ SnoopUnit	OpenLLC AUX real-body(可读xs_SnoopUnit_core, 非空stub非vacuous go
 MemUnit	OpenLLC AUX real-body(可读xs_MemUnit_core 16条目mem-buffer+txreq/txdat双仲裁+5态子状态机); class-4对称matched-unread加强(272 bufferTimer/REG泄漏计时器双射); native FM SUCCEEDED 加强后0(0)unread
 RefillUnit	OpenLLC AUX real-body(可读xs_RefillUnit_core 16条目refill buffer+3更新源+FastArbiter_50出队); class-4对称matched-unread加强(305 bufferTimer/REG/dirResult泄漏计时器双射); native FM SUCCEEDED 加强后0(0)unread
 ResponseUnit	OpenLLC AUX real-body(可读xs_ResponseUnit_core 16条目response buffer+8响应更新通道+状态机); class-4对称matched-unread加强(1042 bufferTimer/REG泄漏计时器双射); native FM SUCCEEDED 加强后0(0)unread
+FastArbiter_1	TL2CHICoupledL2 直接子(CHI/link 仲裁器) AUX; 可读 xs_FastArbiter_1_core 4路 round-robin; native FM SUCCEEDED, matched-unread 加强后 0unread PASS_PENDING_WHITELIST
+FastArbiter_2	TL2CHICoupledL2 直接子 AUX; 可读 xs_FastArbiter_2_core 4路 round-robin; native FM SUCCEEDED, 加强后 0unread PASS_PENDING_WHITELIST
+FastArbiter_28	TL2CHICoupledL2 直接子 AUX; 可读 xs_FastArbiter_28_core 5路 round-robin(input-4专属字段); native FM SUCCEEDED, 加强后 0unread PASS_PENDING_WHITELIST
+FastArbiter_29	TL2CHICoupledL2 直接子 AUX; 可读 xs_FastArbiter_29_core 72路纯grant round-robin(无io_out_ready); native FM SUCCEEDED, 加强后 0unread PASS_PENDING_WHITELIST
+RRArbiterInit_18	TL2CHICoupledL2 直接子 AUX; 可读 xs_RRArbiterInit_18_core 5路 RRArbiter(lastGrant轮转, input-4专属size/tgtID); strict SUCCEEDED 0unread clean PASS
+Slice_1	L2 cache slice 变体(TL2 direct-child shard 2); 复用绿基线核 xs_Slice_1_core; assembly+vmucp native SUCCEEDED 46127/0fail/0(0)unmatched, 759 对称死 DFF 双射(同绿基线 Slice); 须 main 加 matched-unread 白名单+assembly_depends; 黑盒 Directory_1(green-AUX)/L2Slice_1(绿)
+Slice_2	L2 cache slice 变体(TL2 direct-child shard 2); 复用绿基线核 xs_Slice_2_core; assembly+vmucp native SUCCEEDED 46131/0fail/0(0)unmatched, 759 对称死 DFF 双射(同绿基线 Slice); 须 main 加 matched-unread 白名单+assembly_depends; 黑盒 Directory_2(green-AUX)/L2Slice_2(绿)
+Slice_3	L2 cache slice 变体(TL2 direct-child shard 2); 复用绿基线核 xs_Slice_3_core; assembly+vmucp native SUCCEEDED 46131/0fail/0(0)unmatched, 759 对称死 DFF 双射(同绿基线 Slice); 须 main 加 matched-unread 白名单+assembly_depends; 黑盒 Directory_3(green-AUX)/L2Slice_3(绿)
+L2Directory_1	L2Directory(绿305子)MBIST分发变体; 可读参数化核xs_L2Directory_var_core #(ARRAY_W=5,BASE=5'h11); 清洁strict PASS 914点/0fail/0unread/0黑盒无dead-ref
+L2Directory_2	同L2Directory_1家族 #(ARRAY_W=6,BASE=6'h20); 清洁strict PASS 922点/0fail/0unread/0黑盒
+L2Directory_3	同L2Directory_1家族 #(ARRAY_W=6,BASE=6'h2F); 清洁strict PASS 922点/0fail/0unread/0黑盒
+RXSNP	CHI RX-Snoop AUX real-body(可读xs_RXSNP_core: 2深Queue2_CHISNP白盒缓冲+地址拆task+16路MSHR阻塞/嵌套掩码组合匹配+snpHitRelease*选中+stall路由); class-4对称matched-unread加强(68双射=64 stallCnt死锁计数器[SYNTHESIS断言裁剪]+4 Queue RAM addr[4:3]死位); native FM SUCCEEDED 加强后 407passing/0(0)unread; UT seed1/7/42 errors0

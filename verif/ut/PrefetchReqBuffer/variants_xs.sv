@@ -1,0 +1,66 @@
+// PrefetchReqBuffer_xs —— UT 用变体(与 PrefetchReqBuffer_wrapper 同, 仅模块名改为
+// PrefetchReqBuffer_xs, 供与 golden PrefetchReqBuffer 双例化逐拍比对)。
+// 两侧共用同一 golden RRArbiterInit_12/_13 定义(单定义两实例, 无撞名)。
+module PrefetchReqBuffer_xs (
+  input         clock,
+  input         reset,
+  input         io_in_req_valid,
+  input  [49:0] io_in_req_bits_full_vaddr,
+  input  [43:0] io_in_req_bits_base_vaddr,
+  input         io_in_req_bits_needT,
+  input  [6:0]  io_in_req_bits_source,
+  output        io_tlb_req_req_valid,
+  output [49:0] io_tlb_req_req_bits_vaddr,
+  output [2:0]  io_tlb_req_req_bits_cmd,
+  output        io_tlb_req_req_bits_kill,
+  output        io_tlb_req_req_bits_no_translate,
+  input         io_tlb_req_resp_valid,
+  input  [47:0] io_tlb_req_resp_bits_paddr_0,
+  input  [1:0]  io_tlb_req_resp_bits_pbmt,
+  input         io_tlb_req_resp_bits_miss,
+  input         io_tlb_req_resp_bits_excp_0_gpf_ld,
+  input         io_tlb_req_resp_bits_excp_0_pf_ld,
+  input         io_tlb_req_resp_bits_excp_0_af_ld,
+  input         io_tlb_req_pmp_resp_ld,
+  input         io_tlb_req_pmp_resp_mmio,
+  input         io_out_req_ready,
+  output        io_out_req_valid,
+  output [32:0] io_out_req_bits_tag,
+  output [8:0]  io_out_req_bits_set,
+  output [43:0] io_out_req_bits_vaddr,
+  output        io_out_req_bits_needT,
+  output [6:0]  io_out_req_bits_source
+);
+
+  xs_PrefetchReqBuffer_core u_core (
+    .clock                              (clock),
+    .reset                              (reset),
+    .io_in_req_valid                    (io_in_req_valid),
+    .io_in_req_bits_full_vaddr          (io_in_req_bits_full_vaddr),
+    .io_in_req_bits_base_vaddr          (io_in_req_bits_base_vaddr),
+    .io_in_req_bits_needT               (io_in_req_bits_needT),
+    .io_in_req_bits_source              (io_in_req_bits_source),
+    .io_tlb_req_req_valid               (io_tlb_req_req_valid),
+    .io_tlb_req_req_bits_vaddr          (io_tlb_req_req_bits_vaddr),
+    .io_tlb_req_req_bits_cmd            (io_tlb_req_req_bits_cmd),
+    .io_tlb_req_req_bits_kill           (io_tlb_req_req_bits_kill),
+    .io_tlb_req_req_bits_no_translate   (io_tlb_req_req_bits_no_translate),
+    .io_tlb_req_resp_valid              (io_tlb_req_resp_valid),
+    .io_tlb_req_resp_bits_paddr_0       (io_tlb_req_resp_bits_paddr_0),
+    .io_tlb_req_resp_bits_pbmt          (io_tlb_req_resp_bits_pbmt),
+    .io_tlb_req_resp_bits_miss          (io_tlb_req_resp_bits_miss),
+    .io_tlb_req_resp_bits_excp_0_gpf_ld (io_tlb_req_resp_bits_excp_0_gpf_ld),
+    .io_tlb_req_resp_bits_excp_0_pf_ld  (io_tlb_req_resp_bits_excp_0_pf_ld),
+    .io_tlb_req_resp_bits_excp_0_af_ld  (io_tlb_req_resp_bits_excp_0_af_ld),
+    .io_tlb_req_pmp_resp_ld             (io_tlb_req_pmp_resp_ld),
+    .io_tlb_req_pmp_resp_mmio           (io_tlb_req_pmp_resp_mmio),
+    .io_out_req_ready                   (io_out_req_ready),
+    .io_out_req_valid                   (io_out_req_valid),
+    .io_out_req_bits_tag                (io_out_req_bits_tag),
+    .io_out_req_bits_set                (io_out_req_bits_set),
+    .io_out_req_bits_vaddr              (io_out_req_bits_vaddr),
+    .io_out_req_bits_needT              (io_out_req_bits_needT),
+    .io_out_req_bits_source             (io_out_req_bits_source)
+  );
+
+endmodule
