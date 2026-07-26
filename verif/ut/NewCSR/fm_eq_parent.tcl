@@ -76,6 +76,25 @@ set_top i:/WORK/$top
 # 不产生 relaxed_appvars 资格 → 不因 blackbox_match_mode 判 PARTIAL）。
 match
 
+# ----------------------------------------------------------------------------
+# 匹配后钉点(bijection): 92 个对称 bug-for-bug 死寄存器(iprio 未读优先级 lane
+# reg_Prio*/r* + HPerfMonitor event_op 死高位), 两侧都存在、都 faithful 复刻,
+# 名字/层次差异令 auto_match 配不上。fm_pins.tcl 逐位显式 set_user_match(只钉双射,
+# 不 dont_verify/不约束 ref/不 relaxed)。配合 vmucp=true, 再 match 后 FM 实际比较这些
+# matched-unread 点并证恒相等 → 92 死位从 unread 转入 passing。四审经 sidecar_pin_source
+# 受限 child interp 执行(拿不到父层 guard/证据目录)。
+if {[file exists [file join [file dirname [info script]] fm_pins.tcl]]} {
+    set _pinf [file join [file dirname [info script]] fm_pins.tcl]
+    if {$SIDECAR_ON} {
+        # sidecar_pin_source 自身快照 + 台账登记该文件字节(受限 child interp 执行),
+        # 不另调 sidecar_register_script(会重复快照 → 台账 snapshot_dup 失败)。
+        sidecar_pin_source $_pinf
+    } else {
+        source $_pinf
+    }
+    match
+}
+
 report_unmatched_points > fm_work/$top/unmatched.rpt
 report_matched_points   > fm_work/$top/matched.rpt
 
