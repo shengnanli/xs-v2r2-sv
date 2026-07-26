@@ -679,8 +679,14 @@
     if (reset) counter <= 32'h0;
     else       counter <= vecExceptionFlag_valid ? (counter + 32'h1) : 32'h0;
   end
+  // golden REG <= _isCboZeroToSbVec_T (行 4398/44243)，其中
+  //   _isCboZeroToSbVec_T = io_sbuffer_0_ready & _dataBuffer_io_deq_0_valid
+  //                       = io_sbuffer_0_ready & io_sbuffer_0_valid = io.sbuffer(0).fire
+  // 断言 assert(!RegNext(RegNext(io.sbuffer(0).fire) && io.mmioStout.fire)) 的第一拍锁存。
+  //   注意 golden 此处用 io.sbuffer(0).fire（=sbuffer0_fire），不是 cboZeroToSb
+  //   （=isCboZeroToSbVec_0|_1 的 cbo-zero 冲刷条件，另一条线）——二者不等价。
   always_ff @(posedge clock) begin
-    REG   <= cboZeroToSb;                    // golden _isCboZeroToSbVec_T
+    REG   <= sbuffer0_fire;                   // golden _isCboZeroToSbVec_T = io.sbuffer(0).fire
     REG_1 <= REG & perfEvents_2_2_probe;
   end
 
