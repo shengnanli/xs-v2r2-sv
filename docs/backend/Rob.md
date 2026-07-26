@@ -292,3 +292,41 @@ debugTopDown/perf、`io_csr_*`/`io_vxsat`/`io_fflags` 累计输出、`isHls`（F
 
 **结果**：`xs_Rob_core` 控制核 tap 子集双例化 **seed 1/7/42 各 200000 拍 errors=0**
 （含全部内部状态探针）。自检不变量 UT（`tb.sv`）同步保持 errors=0。
+
+---
+
+## FM 签核目标 (Rob, 第 306 个 target) —— assembly 装配证明
+
+### 现状(agent/rob-w 诚实结论)
+- `rtl/backend/Rob.sv`(`xs_Rob_core`, 1055 行, 0 `_GEN_`/`_T_`)是**真实可读控制核**,
+  非 skeleton/stub。golden co-sim(`tb_tap.sv`)逐拍比对 40 控制/状态量, seed7 20k
+  **errors=0**(历史 seed 1/7/42 200k errors=0), 控制锥与 golden cycle-exact。
+- 但它**不是 golden 端口面的整体替换**: 它把 6 个 golden 逻辑叶子(RobEnqPtrWrapper/
+  NewRobDeqPtrWrapper/ExceptionGen/SnapshotGenerator_3/RenameBuffer/VTypeBuffer)的输出
+  当**输入**, 且只产出 golden 2343 输出口里的**控制子集**; golden 数据通路(9446 reg:
+  exception payload/commit-info 全 payload/GPA/difftest 通路/trace/perf)驱动的 ~200 输出口
+  被可读核**有意省略**。
+
+### 正确的 FM 配置 = assembly(仿 IMSIC)
+- proof_mode = **assembly**(strict 会因省略数据通路口产生大量 unmatched)。
+- 装配壳 `rtl/backend/Rob_wrapper.sv`(module `Rob`, golden 同名 3234 pin, VCS elaborate OK):
+  例化 `xs_Rob_core` + 6 逻辑叶子 + difftest DelayReg/DummyDPICWrapper*/dt_160x1,
+  **叶子两侧 elaborate**(白盒受验); 叶子控制输入**由 u_core 输出驱动**(非空耦合点:
+  核逻辑分叉→叶子输出→golden 输出口分叉→FM fail, 核真在证明回路里)。
+- 唯一合法黑盒 = `DiffExtInstrCommit`/`DiffExtTrapEvent`(外部 DPI-C sink, 无可综合体),
+  `verif/signoff/allow/Rob.json` 精确声明 9 个 unresolved_blackbox 对。
+- 每个叶子输入驱动均已核实 ∈ {flat golden 口, u_core 输出, flat 口 trivial 译码}
+  (证据 `/tmp/rob-w-evidence`, `Rob_fm_assembly_manifest.txt`)。
+
+### 残留(main / 下一 worker 补齐, 之后 `FM_VARIANTS=Rob` 启用)
+`Rob_wrapper.sv` 现为**接口锚 + 装配契约 SCAFFOLD, body 待补齐**(诚实: 不产假绿)。
+需补: (a) 浅层 `r_3_*=RegNext(exceptionGen.io_state_*)` 等; (b) 从两侧 elaborate 的 rab
+叶子直取 ~2102 payload 口(免证); (c) 深层 commit-info payload/GPA/trace/perf 需复刻或
+main 级 matched-unread 双射声明。详见 `Rob_wrapper.sv` RESIDUAL 段。
+
+### main-owned 改动(worker 无权改)
+1. `scripts/sidecar/manifest_declarations.tsv` 加行:
+   `Rob<TAB>assembly<TAB>verif/signoff/allow/Rob.json<TAB><rationale><TAB>false`
+2. `verif/signoff/assembly_depends.tsv`: Rob → difftest DPI sink(DiffExt*)边界。
+3. `scripts/sidecar/gen_305_manifest.py` 重生 306-target manifest(纳入 Rob)。
+4. `combined_ledger`: Rob 由 UNCONFIGURED → 配置后按 official gate=PASS 入账(worker 不自 promote)。

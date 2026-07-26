@@ -13,6 +13,36 @@ TB_SRCS = tb.sv
 
 GOLDEN_SRCS =
 
+# ---------------------------------------------------------------------
+# FM assembly 目标配置 (Rob, 第 306 个 target) —— 见 docs/backend/Rob.md §FM
+#   proof_mode = assembly (可读核只覆盖控制锥, 无法在 golden 端口面 port-for-port
+#     驱动被省略的数据通路口 ⇒ strict 会产生大量 unmatched; 故走 assembly, 6 逻辑叶子
+#     两侧 elaborate 白盒受验, 唯一黑盒 = difftest DPI sink)。
+# 装配壳 = rtl/backend/Rob_wrapper.sv (module Rob, golden 同名 3234 pin);
+#   两侧 elaborate 的 golden 叶子进 WRAPPER_SRCS(impl 侧) 与 FM_REF_DEPS_Rob(ref 侧)。
+# DiffExtInstrCommit/DiffExtTrapEvent(外部 DPI, 无体) ⇒ hdlin_unresolved=black_box,
+#   allow/Rob.json 精确声明 (9 个 unresolved_blackbox 对)。
+#
+# 注: 本 target 当前 Rob_wrapper.sv 是**接口锚+装配契约 SCAFFOLD, body 未补齐**,
+#   故 FM_VARIANTS 暂留空(禁止空目标绿灯 = 诚实, 不产假 native_facts)。补齐 body 后:
+#     FM_VARIANTS = Rob
+#   即启用。补齐清单见 Rob_wrapper.sv 的 RESIDUAL 段 + ASSESSMENT.md §4。
+FM_VARIANTS =
+WRAPPER_SRCS = $(RTL_DIR)/backend/Rob_wrapper.sv \
+               $(GOLDEN_RTL)/RenameBuffer.sv $(GOLDEN_RTL)/VTypeBuffer.sv \
+               $(GOLDEN_RTL)/SnapshotGenerator_3.sv $(GOLDEN_RTL)/ExceptionGen.sv \
+               $(GOLDEN_RTL)/NewRobDeqPtrWrapper.sv $(GOLDEN_RTL)/RobEnqPtrWrapper.sv \
+               $(GOLDEN_RTL)/DelayReg.sv $(GOLDEN_RTL)/DummyDPICWrapper.sv \
+               $(GOLDEN_RTL)/DummyDPICWrapper_8.sv $(GOLDEN_RTL)/dt_160x1.sv \
+               $(RTL_DIR)/backend/Rob_difftest_stubs.sv
+# ref 侧 golden 叶子依赖(与 impl WRAPPER_SRCS 对称提供, 两侧同 elaborate 受验白盒):
+FM_REF_DEPS_Rob = RenameBuffer.sv VTypeBuffer.sv SnapshotGenerator_3.sv ExceptionGen.sv \
+                  NewRobDeqPtrWrapper.sv RobEnqPtrWrapper.sv DelayReg.sv \
+                  DummyDPICWrapper.sv DummyDPICWrapper_8.sv dt_160x1.sv \
+                  DataModule__16entry_12.sv SyncDataModuleTemplate__64entry_3.sv
+FM_MODE = assembly
+FM_ALLOWLIST = ../../signoff/allow/Rob.json
+
 include ../../../scripts/ut_common.mk
 
 # 关断 golden XSError 风格断言(本 UT 无 golden, 保留以备后续接 cycle-exact)

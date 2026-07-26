@@ -1,0 +1,53 @@
+{
+    "_comment": "Rob assembly proof allowlist. The ONLY legitimate black boxes are the external difftest DPI-C sink modules DiffExtInstrCommit / DiffExtTrapEvent, instantiated (as 'dpic') inside the both-side-elaborated DummyDPICWrapper / DummyDPICWrapper_8. They have NO synthesizable body (pure DPI-C sinks that forward the commit/trap stream to the reference model, no reverse RTL effect), so hdlin_unresolved_modules=black_box gives a symmetric unresolved edge on both FM sides. All 6 ROB logic leaves (RenameBuffer, VTypeBuffer, SnapshotGenerator_3, ExceptionGen, NewRobDeqPtrWrapper, RobEnqPtrWrapper) and the DelayReg/DummyDPICWrapper*/dt_160x1 datapath cells are elaborated BOTH SIDES (white-box, NOT black-boxed).",
+    "unresolved_blackbox": [
+        {
+            "id": "DiffExtInstrCommit",
+            "ref_path": "r:/WORK/Rob/difftest_module/dpic",
+            "impl_path": "i:/WORK/Rob/difftest_module/dpic"
+        },
+        {
+            "id": "DiffExtInstrCommit_1",
+            "ref_path": "r:/WORK/Rob/difftest_module_1/dpic",
+            "impl_path": "i:/WORK/Rob/difftest_module_1/dpic"
+        },
+        {
+            "id": "DiffExtInstrCommit_2",
+            "ref_path": "r:/WORK/Rob/difftest_module_2/dpic",
+            "impl_path": "i:/WORK/Rob/difftest_module_2/dpic"
+        },
+        {
+            "id": "DiffExtInstrCommit_3",
+            "ref_path": "r:/WORK/Rob/difftest_module_3/dpic",
+            "impl_path": "i:/WORK/Rob/difftest_module_3/dpic"
+        },
+        {
+            "id": "DiffExtInstrCommit_4",
+            "ref_path": "r:/WORK/Rob/difftest_module_4/dpic",
+            "impl_path": "i:/WORK/Rob/difftest_module_4/dpic"
+        },
+        {
+            "id": "DiffExtInstrCommit_5",
+            "ref_path": "r:/WORK/Rob/difftest_module_5/dpic",
+            "impl_path": "i:/WORK/Rob/difftest_module_5/dpic"
+        },
+        {
+            "id": "DiffExtInstrCommit_6",
+            "ref_path": "r:/WORK/Rob/difftest_module_6/dpic",
+            "impl_path": "i:/WORK/Rob/difftest_module_6/dpic"
+        },
+        {
+            "id": "DiffExtInstrCommit_7",
+            "ref_path": "r:/WORK/Rob/difftest_module_7/dpic",
+            "impl_path": "i:/WORK/Rob/difftest_module_7/dpic"
+        },
+        {
+            "id": "DiffExtTrapEvent",
+            "ref_path": "r:/WORK/Rob/difftest_module_8/dpic",
+            "impl_path": "i:/WORK/Rob/difftest_module_8/dpic"
+        }
+    ],
+    "interface_only": [],
+    "empty_blackbox": [],
+    "unmatched": []
+}
