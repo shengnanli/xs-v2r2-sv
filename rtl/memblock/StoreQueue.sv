@@ -56,7 +56,8 @@ module xs_StoreQueue_core
     logic nc;            // non-cacheable
     logic mmio;          // mmio
     logic memBackTypeMM; // 访存后端类型（difftest 用，决定是否记 ncStore）
-    logic prefetch;      // 提交到 Sbuffer 时触发预取
+    // 注：golden 本配置 EnableAtCommitMissTrigger=false，不存 prefetch 位 → 已删除该字段，
+    //     否则 impl 侧多出 56 个只写不读寄存器（FM unread_impl）。
     logic isVec;         // 向量 store
     logic vecLastFlow;   // 向量 store 的最后一条流
     logic vecMbCommit;   // 向量 store 已从 merge buffer 提交到 ROB
@@ -64,31 +65,51 @@ module xs_StoreQueue_core
     logic waitStoreS2;   // 等 store_s2 的 mmio/exception 结果
   } sq_entry_t;
 
-  // entry 数组按 2^SQ_IDX_W=64 声明（实际只用 0..SQ_SIZE-1=55）：使任意 6 位下标都在
-  // 界内，避免 Formality 的「下标可能越界」(FMR_ELAB-147) 把可读核误判为不可解释。
-  sq_entry_t ent [1<<SQ_IDX_W];       // 64 槽（有效 56）
+  // entry 数组按 SQ_SIZE=56 声明（与 golden Vec(56) 同尺寸）：所有运行期下标（指针 .value
+  //   为 mod-56 环形算术，恒 <56；genvar/loop 均 <SQ_SIZE），故写译码只建 56 路，不再多出
+  //   56..63 的 impl-only 死寄存器。越界纯值读一律走下面的 entR/uopR 折叠视图（[64]），
+  //   规避 Formality 的「下标可能越界」(FMR_ELAB-147)。
+  sq_entry_t ent [SQ_SIZE];           // 56 槽（与 golden 同）
   // allvalid = addrvalid & datavalid（组合派生）
   logic [SQ_SIZE-1:0] allocated_v, addrvalid_v, datavalid_v, committed_v,
                       allvalid_v, mmio_v, nc_v, unaligned_v, isvec_v,
-                      vecmbcommit_v, hasexc_v, prefetch_v;
+                      vecmbcommit_v, hasexc_v;
   // uop 元数据：每 entry 只保留控制需要的字段（robIdx/uopIdx/sqIdx/fuType/fuOpType
   // /storeSet 等），其余 difftest/debug 字段 golden 已裁剪。
   typedef struct packed {
     logic                robIdx_flag;
     logic [ROB_IDX_W-1:0]robIdx_value;
     logic [UOP_IDX_W-1:0]uopIdx;
-    logic                lastUop;
-    logic [34:0]         fuType;
+    // 注：golden 入队时丢弃 lastUop/fuType/sqIdx（本队列后续不读它们），故不存这些字段。
+    //     enq 时的 en_lastUop/en_fuType/en_sqF/en_sqV 仍用于组合派生（isVec/vecLastFlow/
+    //     enq 指针 bound），只是不写进 uop 存储 → 消除 impl-only unread 寄存器。
     logic [8:0]          fuOpType;
-    logic                sqIdx_flag;
-    logic [SQ_IDX_W-1:0] sqIdx_value;
     logic                flushPipe;
     logic [3:0]          trigger;
+    logic [23:0]         exceptionVec;   // 异常向量（enq/storeAddrIn 写入；cbo.zero 出队时随 uop 上报）
     logic [63:0]         dbg_enqRsTime;
     logic [63:0]         dbg_selectTime;
     logic [63:0]         dbg_issueTime;
   } sq_uop_t;
-  sq_uop_t uop [1<<SQ_IDX_W];         // 同 ent：按 64 槽声明，下标恒在界内
+  sq_uop_t uop [SQ_SIZE];             // 同 ent：56 槽（与 golden 同尺寸）
+
+  // ---- 越界折叠读视图（FM 配平）：golden 对 Vec(56) 以 6 位下标做**纯值读取**时，
+  //      firtool 生成 64 项读表、高 8 项(56..63)复制条目 0（越界回绕 vec[0]）。
+  //      运行期下标的"纯值读"（喂输出/其它状态，不带 idx==j 写译码卫）一律走
+  //      uopR/entR 视图，与 golden 位级一致；idx≥56 实际不可达，不改真实行为。
+  //      per-entry 写译码/RMW（形如 ent[idx].x <= f(ent[idx])）不折叠——golden 同为
+  //      per-entry 译码，等价性由 idx==j 卫自然保证。条目 56..63 因此变为只写不读，
+  //      FM 两侧同被剪除。
+  sq_uop_t   uopR [1<<SQ_IDX_W];
+  sq_entry_t entR [1<<SQ_IDX_W];
+  always_comb
+    for (int k = 0; k < (1<<SQ_IDX_W); k++) begin
+      // k>=SQ_SIZE 时用 kk=0 索引（ent/uop 现为 [SQ_SIZE]，避免越界引用 ent[k]），
+      // 与 golden 越界回绕 vec[0] 位级一致。
+      automatic int kk = (k >= SQ_SIZE) ? 0 : k;
+      uopR[k] = uop[kk];
+      entR[k] = ent[kk];
+    end
 
   genvar gi;
   generate
@@ -104,7 +125,6 @@ module xs_StoreQueue_core
       assign isvec_v[gi]       = ent[gi].isVec;
       assign vecmbcommit_v[gi] = ent[gi].vecMbCommit;
       assign hasexc_v[gi]      = ent[gi].hasException;
-      assign prefetch_v[gi]    = ent[gi].prefetch;
     end
   endgenerate
 
@@ -167,7 +187,9 @@ module xs_StoreQueue_core
   //  §1  环形队列指针（enq/rdata/deq/cmt + addr/dataReadyPtr）
   //      初值：enqPtr/cmtPtr 各 0..N（多根并行指针，下标 i 即第 i 路）；rdata/deq 0/1。
   // ===========================================================================
-  sqptr_t enqPtrExt [ENQ_W];     // 入队（6 根，第 0 根是主指针）
+  // enqPtr：golden 只存 enqPtrExt_0（其余入队路的槽位由 enq 请求自带的 sqIdx 组合给出），
+  //   本核也只读 enqPtrExt[0]，故只保留 1 根（原先 6 根中 [1..5] 是 impl-only 死寄存器）。
+  sqptr_t enqPtrExt [1];         // 入队主指针（仅 1 根）
   sqptr_t rdataPtrExt [ENSB_W];  // 读数据（2 根）
   sqptr_t deqPtrExt [ENSB_W];    // 出队（2 根）
   sqptr_t cmtPtrExt [COMMIT_W];  // 提交（8 根）
@@ -187,9 +209,11 @@ module xs_StoreQueue_core
   wire [SQ_SIZE-1:0] deqMask = uint_to_mask(deqPtr);
   wire [SQ_SIZE-1:0] enqMask = uint_to_mask(enqPtr);
 
-  // scommit 打一拍（ROB 标量提交数）
+  // scommit 打一拍（ROB 标量提交数）。golden scommit_next_r 异步复位到 0（holdUnless≡直存）。
   logic [3:0] scommit;
-  always_ff @(posedge clock) scommit <= io_rob_scommit;
+  always_ff @(posedge clock or posedge reset)
+    if (reset) scommit <= 4'h0;
+    else       scommit <= io_rob_scommit;
 
   // ===========================================================================
   //  §2  读数据指针 rdataPtr 推进
@@ -209,13 +233,13 @@ module xs_StoreQueue_core
   always_comb begin
     // 第 0 路：出队需 deq 的 dataBuffer 项 / nc 完成 / mmio 写回
     readyReadGoVec[0] = (db_enq0_fire & db_enq_0_bits_sqNeedDeq)
-                      | (ent[rdataPtrExt[0].value].allocated & ent[rdataPtrExt[0].value].completed
-                         & ent[rdataPtrExt[0].value].nc)
+                      | (entR[rdataPtrExt[0].value].allocated & entR[rdataPtrExt[0].value].completed
+                         & entR[rdataPtrExt[0].value].nc)
                       | mmioStout_fire | vecmmioStout_fire;
     // 第 1 路（无 mmio）
     readyReadGoVec[1] = (db_enq1_fire & db_enq_1_bits_sqNeedDeq)
-                      | (ent[rdataPtrExt[1].value].allocated & ent[rdataPtrExt[1].value].completed
-                         & ent[rdataPtrExt[1].value].nc);
+                      | (entR[rdataPtrExt[1].value].allocated & entR[rdataPtrExt[1].value].completed
+                         & entR[rdataPtrExt[1].value].nc);
   end
   always_comb begin
     sqReadCnt = '0;
@@ -239,7 +263,7 @@ module xs_StoreQueue_core
   logic [ENSB_W-1:0] readyDeqVec;
   always_comb begin
     for (int i = 0; i < ENSB_W; i++)
-      readyDeqVec[i] = ent[deqPtrExt[i].value].allocated & ent[deqPtrExt[i].value].completed;
+      readyDeqVec[i] = entR[deqPtrExt[i].value].allocated & entR[deqPtrExt[i].value].completed;
     sqDeqCnt = '0;
     if (readyDeqVec[0])                  sqDeqCnt = 2'd1;
     if (readyDeqVec[0] & readyDeqVec[1]) sqDeqCnt = 2'd2;
@@ -310,6 +334,7 @@ module xs_StoreQueue_core
   logic [UOP_IDX_W-1:0]en_uopIdx[ENQ_SLOTS];
   logic                en_flushP[ENQ_SLOTS];
   logic [3:0]          en_trig  [ENQ_SLOTS];
+  logic [23:0]         en_excVec[ENQ_SLOTS];
   logic [63:0]         en_dbgEnq[ENQ_SLOTS], en_dbgSel[ENQ_SLOTS], en_dbgIss[ENQ_SLOTS];
 
   // 扁平 → 数组（按 j 展开；这些 io_enq_req_j_* 是 golden 端口名）
@@ -326,12 +351,39 @@ module xs_StoreQueue_core
     assign en_uopIdx[J]= io_enq_req_``J``_bits_uopIdx; \
     assign en_flushP[J]= io_enq_req_``J``_bits_flushPipe; \
     assign en_trig[J]  = io_enq_req_``J``_bits_trigger; \
+    assign en_excVec[J]= {io_enq_req_``J``_bits_exceptionVec_23, io_enq_req_``J``_bits_exceptionVec_22, \
+                          io_enq_req_``J``_bits_exceptionVec_21, io_enq_req_``J``_bits_exceptionVec_20, \
+                          io_enq_req_``J``_bits_exceptionVec_19, io_enq_req_``J``_bits_exceptionVec_18, \
+                          io_enq_req_``J``_bits_exceptionVec_17, io_enq_req_``J``_bits_exceptionVec_16, \
+                          io_enq_req_``J``_bits_exceptionVec_15, io_enq_req_``J``_bits_exceptionVec_14, \
+                          io_enq_req_``J``_bits_exceptionVec_13, io_enq_req_``J``_bits_exceptionVec_12, \
+                          io_enq_req_``J``_bits_exceptionVec_11, io_enq_req_``J``_bits_exceptionVec_10, \
+                          io_enq_req_``J``_bits_exceptionVec_9,  io_enq_req_``J``_bits_exceptionVec_8, \
+                          io_enq_req_``J``_bits_exceptionVec_7,  io_enq_req_``J``_bits_exceptionVec_6, \
+                          io_enq_req_``J``_bits_exceptionVec_5,  io_enq_req_``J``_bits_exceptionVec_4, \
+                          io_enq_req_``J``_bits_exceptionVec_3,  io_enq_req_``J``_bits_exceptionVec_2, \
+                          io_enq_req_``J``_bits_exceptionVec_1,  io_enq_req_``J``_bits_exceptionVec_0}; \
     assign en_dbgEnq[J]= io_enq_req_``J``_bits_debugInfo_enqRsTime; \
     assign en_dbgSel[J]= io_enq_req_``J``_bits_debugInfo_selectTime; \
     assign en_dbgIss[J]= io_enq_req_``J``_bits_debugInfo_issueTime;
   `SQ_ENQ_BIND(0) `SQ_ENQ_BIND(1) `SQ_ENQ_BIND(2)
   `SQ_ENQ_BIND(3) `SQ_ENQ_BIND(4) `SQ_ENQ_BIND(5)
   `undef SQ_ENQ_BIND
+
+  // 槽 6/7 不可达（selj 只会落在 0..5），显式驱 0：FM 把无驱动网当自由输入
+  // 会污染整个 enq 选择锥（uop/ent 写入全部误判失配），UT 下也消除 X 源。
+  generate
+    for (gi = 6; gi < ENQ_SLOTS; gi++) begin : g_enqpad
+      assign en_robF[gi] = '0;  assign en_robV[gi] = '0;
+      assign en_sqF[gi]  = '0;  assign en_sqV[gi]  = '0;
+      assign en_fuType[gi] = '0; assign en_lastUop[gi] = '0;
+      assign en_fuOp[gi] = '0;  assign en_uopIdx[gi] = '0;
+      assign en_flushP[gi] = '0; assign en_trig[gi] = '0;
+      assign en_excVec[gi] = '0;
+      assign en_dbgEnq[gi] = '0; assign en_dbgSel[gi] = '0; assign en_dbgIss[gi] = '0;
+      assign enqUpBound[gi] = '0;
+    end
+  endgenerate
 
   generate
     for (gi = 0; gi < ENQ_W; gi++) begin : g_enqb
@@ -374,14 +426,12 @@ module xs_StoreQueue_core
       entryEnqUop[i] = '0;
       entryEnqUop[i].robIdx_flag   = en_robF[selj];
       entryEnqUop[i].robIdx_value  = en_robV[selj];
-      entryEnqUop[i].sqIdx_flag    = en_sqF[selj];
-      entryEnqUop[i].sqIdx_value   = en_sqV[selj];
-      entryEnqUop[i].lastUop       = en_lastUop[selj];
-      entryEnqUop[i].fuType        = en_fuType[selj];
+      // sqIdx/lastUop/fuType 不写进 uop 存储（golden 不存；仅上面组合派生用 en_*）。
       entryEnqUop[i].fuOpType      = en_fuOp[selj];
       entryEnqUop[i].uopIdx        = en_uopIdx[selj];
       entryEnqUop[i].flushPipe     = en_flushP[selj];
       entryEnqUop[i].trigger       = en_trig[selj];
+      entryEnqUop[i].exceptionVec  = en_excVec[selj];
       entryEnqUop[i].dbg_enqRsTime = en_dbgEnq[selj];
       entryEnqUop[i].dbg_selectTime= en_dbgSel[selj];
       entryEnqUop[i].dbg_issueTime = en_dbgIss[selj];
@@ -405,11 +455,11 @@ module xs_StoreQueue_core
       logic   a_rdy, d_rdy;
       pa_ptr = sqptr_add(addrReadyPtrExt, k[SQ_IDX_W:0]);
       pd_ptr = sqptr_add(dataReadyPtrExt, k[SQ_IDX_W:0]);
-      a_rdy = ent[pa_ptr.value].allocated
-              & (ent[pa_ptr.value].mmio | ent[pa_ptr.value].addrvalid | ent[pa_ptr.value].vecMbCommit)
+      a_rdy = entR[pa_ptr.value].allocated
+              & (entR[pa_ptr.value].mmio | entR[pa_ptr.value].addrvalid | entR[pa_ptr.value].vecMbCommit)
               & (pa_ptr.value != enqPtrExt[0].value | pa_ptr.flag != enqPtrExt[0].flag);
-      d_rdy = ent[pd_ptr.value].allocated
-              & (ent[pd_ptr.value].mmio | ent[pd_ptr.value].datavalid | ent[pd_ptr.value].vecMbCommit)
+      d_rdy = entR[pd_ptr.value].allocated
+              & (entR[pd_ptr.value].mmio | entR[pd_ptr.value].datavalid | entR[pd_ptr.value].vecMbCommit)
               & (pd_ptr.value != enqPtrExt[0].value | pd_ptr.flag != enqPtrExt[0].flag);
       addrReadyLookup[k] = ~a_rdy;
       dataReadyLookup[k] = ~d_rdy;
@@ -428,7 +478,7 @@ module xs_StoreQueue_core
   end
   // 输出 stAddrReadyVec_i / stDataReadyVec_i（打一拍）
   logic [SQ_SIZE-1:0] stAddrReadyVec_q, stDataReadyVec_q;
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) begin stAddrReadyVec_q <= '0; stDataReadyVec_q <= '0; end
     else begin stAddrReadyVec_q <= stAddrReadyVecReg; stDataReadyVec_q <= stDataReadyVecReg; end
   end
@@ -447,7 +497,7 @@ module xs_StoreQueue_core
   // 就绪指针寄存器更新
   wire [SQ_IDX_W:0] addrStep = prio_first_one(addrReadyLookup);
   wire [SQ_IDX_W:0] dataStep = prio_first_one(dataReadyLookup);
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       addrReadyPtrExt <= '0; dataReadyPtrExt <= '0;
     end else if (io_brqRedirect_valid) begin

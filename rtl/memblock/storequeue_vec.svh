@@ -26,47 +26,58 @@
   end
 
   // vecCommitHasException：出队时某向量 entry 有异常且 dataBuffer fire（两口）
-  wire vecExcV0 = ent[dp0].isVec & ent[dp0].hasException & db_enq0_fire;
-  wire vecExcV1 = ent[dp1].isVec & ent[dp1].hasException & db_enq1_fire;
+  wire vecExcV0 = entR[dp0].isVec & entR[dp0].hasException & db_enq0_fire;
+  wire vecExcV1 = entR[dp1].isVec & entR[dp1].hasException & db_enq1_fire;
   wire vecCommitHasExceptionValidOR = vecExcV0 | vecExcV1;
   // 选最后一个有异常的 uop（ParallelPosteriorityMux：优先高 index）
   wire selExc1 = vecExcV1;
-  wire [ROB_IDX_W-1:0] vecExcSelRobV = selExc1 ? uop[dp1].robIdx_value : uop[dp0].robIdx_value;
-  wire                 vecExcSelRobF = selExc1 ? uop[dp1].robIdx_flag  : uop[dp0].robIdx_flag;
+  wire [ROB_IDX_W-1:0] vecExcSelRobV = selExc1 ? uopR[dp1].robIdx_value : uopR[dp0].robIdx_value;
+  wire                 vecExcSelRobF = selExc1 ? uopR[dp1].robIdx_flag  : uopR[dp0].robIdx_flag;
 
   // lastFlow 判定（robidx 相等/不等/仅口 0 提交三种情形）
   wire robidxEQ = db_enq0_fire & db_enq1_fire
-                  & (uop[dp0].robIdx_flag == uop[dp1].robIdx_flag)
-                  & (uop[dp0].robIdx_value == uop[dp1].robIdx_value);
+                  & (uopR[dp0].robIdx_flag == uopR[dp1].robIdx_flag)
+                  & (uopR[dp0].robIdx_value == uopR[dp1].robIdx_value);
   wire robidxNE = db_enq0_fire & db_enq1_fire
-                  & ((uop[dp0].robIdx_flag != uop[dp1].robIdx_flag)
-                     | (uop[dp0].robIdx_value != uop[dp1].robIdx_value));
+                  & ((uopR[dp0].robIdx_flag != uopR[dp1].robIdx_flag)
+                     | (uopR[dp0].robIdx_value != uopR[dp1].robIdx_value));
   wire onlyCommit0 = db_enq0_fire & ~db_enq1_fire;
-  wire vecLastFlow0 = ent[dp0].vecLastFlow;
-  wire vecLastFlow1 = ent[dp1].vecLastFlow;
+  wire vecLastFlow0 = entR[dp0].vecLastFlow;
+  wire vecLastFlow1 = entR[dp1].vecLastFlow;
   wire vecCommitLastFlow =
         (robidxEQ & vecLastFlow1 & ~firstSplit)
       | (robidxNE & ((vecExcV1 & vecLastFlow1) | ~vecExcV1))
       | (onlyCommit0 & vecLastFlow0);
 
   // vecExceptionFlagCancel：lastFlow 提交且 robidx 命中当前 flag → 清标志
-  wire vecExcCancel0 = vecLastFlow0 & (uop[dp0].robIdx_flag == vecExceptionFlag_robIdx_flag)
-                       & (uop[dp0].robIdx_value == vecExceptionFlag_robIdx_value)
+  wire vecExcCancel0 = vecLastFlow0 & (uopR[dp0].robIdx_flag == vecExceptionFlag_robIdx_flag)
+                       & (uopR[dp0].robIdx_value == vecExceptionFlag_robIdx_value)
                        & db_enq0_fire & ~firstSplit;
-  wire vecExcCancel1 = vecLastFlow1 & (uop[dp1].robIdx_flag == vecExceptionFlag_robIdx_flag)
-                       & (uop[dp1].robIdx_value == vecExceptionFlag_robIdx_value)
+  wire vecExcCancel1 = vecLastFlow1 & (uopR[dp1].robIdx_flag == vecExceptionFlag_robIdx_flag)
+                       & (uopR[dp1].robIdx_value == vecExceptionFlag_robIdx_value)
                        & db_enq1_fire & ~firstSplit;
   wire vecExceptionFlagCancel = vecExcCancel0 | vecExcCancel1;
 
-  always_ff @(posedge clock) begin
+  // golden：valid / robIdx_flag / robIdx_value **均异步复位到 0**（reg block 行 50704-50706），
+  //   更新 = set(_GEN_2428) ? sel : (cancel 清 0 / 否则 hold)。此前 impl 漏了 robIdx 的复位
+  //   与 cancel 清 0（golden else 支：flag<=~cancel&flag，value<=cancel?0:value），使 golden
+  //   的 robIdx 锥含 reset 而 impl 锥没有（"ref 锥有、impl 锥没有" 失配根因）。1:1 复刻。
+  wire vecExcSet    = ~vecExceptionFlag_valid & vecCommitHasExceptionValidOR & ~vecCommitLastFlow;
+  wire vecExcCancel = vecExceptionFlag_valid & vecExceptionFlagCancel;
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
-      vecExceptionFlag_valid <= 1'b0;
-    end else if (~vecExceptionFlag_valid & vecCommitHasExceptionValidOR & ~vecCommitLastFlow) begin
-      vecExceptionFlag_valid        <= 1'b1;
-      vecExceptionFlag_robIdx_flag  <= vecExcSelRobF;
-      vecExceptionFlag_robIdx_value <= vecExcSelRobV;
-    end else if (vecExceptionFlag_valid & vecExceptionFlagCancel) begin
-      vecExceptionFlag_valid <= 1'b0;
+      vecExceptionFlag_valid        <= 1'b0;
+      vecExceptionFlag_robIdx_flag  <= 1'b0;
+      vecExceptionFlag_robIdx_value <= '0;
+    end else begin
+      vecExceptionFlag_valid <= vecExcSet | (~vecExcCancel & vecExceptionFlag_valid);
+      if (vecExcSet) begin
+        vecExceptionFlag_robIdx_flag  <= vecExcSelRobF;
+        vecExceptionFlag_robIdx_value <= vecExcSelRobV;
+      end else begin
+        vecExceptionFlag_robIdx_flag  <= ~vecExcCancel & vecExceptionFlag_robIdx_flag;
+        if (vecExcCancel) vecExceptionFlag_robIdx_value <= '0;
+      end
     end
   end
 
@@ -87,7 +98,7 @@
 
   // uncacheUop uopIdx（port 6 用）
   logic [UOP_IDX_W-1:0] uncUop_uopIdx;
-  always_ff @(posedge clock) if (mmioIdleGo_q & (mmioState == MMIO_IDLE)) uncUop_uopIdx <= uop[deqPtr].uopIdx;
+  always_ff @(posedge clock) if (mmioIdleGo_q & (mmioState == MMIO_IDLE)) uncUop_uopIdx <= uopR[deqPtr].uopIdx;
 
   // ---- port 0 ----
   assign eb_in_0_valid = io_storeAddrIn_0_valid & ~io_storeAddrIn_0_bits_miss & ~io_storeAddrIn_0_bits_isvec;

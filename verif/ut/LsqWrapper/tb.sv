@@ -6,7 +6,7 @@ module tb;
   int errors = 0, checks = 0;
   int probe_mm = 0, probe_chk = 0;
   `define GPRB u_g.loadQueue.loadQueueReplay
-  `define IPRB u_i.u_core.u_load_queue.loadQueueReplay
+  `define IPRB u_i.u_core.loadQueue.loadQueueReplay
   `define PRBCMP(sig) if (!$isunknown(`GPRB.sig)) begin probe_chk++; if (`GPRB.sig !== `IPRB.sig) begin probe_mm++; if(probe_mm<=40) $display("[%0t] PROBE %s g=%h i=%h", $time, "sig", `GPRB.sig, `IPRB.sig); end end
   always #5 clk = ~clk;
 

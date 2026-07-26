@@ -4134,7 +4134,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {

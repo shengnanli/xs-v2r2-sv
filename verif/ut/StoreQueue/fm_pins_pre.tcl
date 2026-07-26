@@ -6,9 +6,9 @@
 #    generate 块 g_fwd[k] 内的 *_q 寄存器。
 setup
 
-# FM 的寄存器初值推断（Auto）会把一侧部分寄存器约束成常量（两侧不对称 → 锥失配），关掉。
-if {[catch {set_app_var verification_assume_reg_init none} msg]} { puts "PINS: assume_reg_init failed: $msg" }
-if {[catch {set_app_var verification_set_undriven_signals BINARY} msg]} { puts "PINS: undriven failed: $msg" }
+# 注：原先设 verification_assume_reg_init=none / set_undriven_signals=BINARY 放宽 appvar，
+#   会被 strict validator 判 relaxed_appvars → PARTIAL。清理死寄存器后不再需要（所有
+#   reg-init 已与 golden 对齐，无未驱动可读网），移除以保持 strict 严格语义。
 foreach {f t} {
   {^u_core/u_data/}    {dataModule/}
   {^u_core/u_paddr/}   {paddrModule/}
@@ -30,7 +30,7 @@ proc pin {r i} {
 
 # ---- per-entry 状态位（sq_entry_t ↔ golden 散列 Vec(Bool)）----
 foreach f {allocated completed addrvalid datavalid committed unaligned cross16Byte
-           pending nc mmio memBackTypeMM prefetch isVec vecLastFlow vecMbCommit
+           pending nc mmio memBackTypeMM isVec vecLastFlow vecMbCommit
            hasException waitStoreS2} {
   for {set n 0} {$n < 56} {incr n} {
     pin "${f}_${n}_reg" "ent_reg\[$n\]\\\[$f\]"
@@ -42,8 +42,6 @@ foreach {gf if w} {
   robIdx_value          robIdx_value   8
   uopIdx                uopIdx         7
   fuOpType              fuOpType       9
-  fuType                fuType         35
-  sqIdx_value           sqIdx_value    6
   trigger               trigger        4
   debugInfo_enqRsTime   dbg_enqRsTime  64
   debugInfo_selectTime  dbg_selectTime 64
@@ -55,8 +53,8 @@ foreach {gf if w} {
     }
   }
 }
-# ---- uop 1 位字段 ----
-foreach {gf if} {robIdx_flag robIdx_flag sqIdx_flag sqIdx_flag lastUop lastUop flushPipe flushPipe} {
+# ---- uop 1 位字段 ---- (sqIdx_flag/lastUop 已从 impl 删除：golden 不存这些字段)
+foreach {gf if} {robIdx_flag robIdx_flag flushPipe flushPipe} {
   for {set n 0} {$n < 56} {incr n} {
     pin "uop_${n}_${gf}_reg" "uop_reg\[$n\]\\\[$if\]"
   }
@@ -70,6 +68,13 @@ for {set n 0} {$n < 56} {incr n} {
 # ---- cboZeroUop.exceptionVec 锁存 ----
 for {set k 0} {$k < 24} {incr k} {
   pin "cboZeroUop_exceptionVec_${k}_reg" "cbz_excVec_reg\[$k\]"
+}
+
+# ---- uncacheUop.fuOpType 锁存（golden uncacheUop_fuOpType ↔ impl uncUop_fuOpType）----
+#   两侧只读 [1:0]（CMO opcode），[2:8] 两侧同为 cone-dead；命名不同（uncacheUop vs uncUop）
+#   auto-match 不配 → 显式钉成对称 matched-unread（消 7 个 unread_ref + 7 个 unread_impl）。
+for {set b 0} {$b < 9} {incr b} {
+  pin "uncacheUop_fuOpType_reg\[$b\]" "uncUop_fuOpType_reg\[$b\]"
 }
 
 # ---- forward 三路 s2 流水寄存器（g_fwd[k]）----
@@ -98,13 +103,15 @@ foreach {k s} {0 0 1 1 2 2} {
   pin "io_forward_${s}_addrInvalid_REG_reg" "g_fwd\[$k\].hasInvalidAddr_q_reg"
   # dataInvalidSqIdx_r 与 addrInvalidSqIdx_r_1 在 golden 是两个独立寄存器（值恒同）：
   #   data 路配 fwdSqIdxData_q，addr_1 路配 fwdSqIdx_q（各一份，消 merge_dup=false 下的自由变量）。
-  pin "io_forward_${s}_dataInvalidSqIdx_r_flag_reg" "g_fwd\[$k\].fwdSqIdxData_q_reg\[6\]"
-  pin "io_forward_${s}_addrInvalidSqIdx_r_1_flag_reg" "g_fwd\[$k\].fwdSqIdx_q_reg\[6\]"
-  pin "io_forward_${s}_addrInvalidSqIdx_r_flag_reg" "g_fwd\[$k\].fwdSqIdxM1_q_reg\[6\]"
+  # fwdSqIdx*_q 是 sqptr_t 打包结构体（{flag, value[5:0]}）：FM 按字段名寻址，须用
+  #   [flag] / [value][b]，不能用扁平 [6]/[b]（后者报 FM-036 Unknown name）。
+  pin "io_forward_${s}_dataInvalidSqIdx_r_flag_reg" "g_fwd\[$k\].fwdSqIdxData_q_reg\\\[flag\]"
+  pin "io_forward_${s}_addrInvalidSqIdx_r_1_flag_reg" "g_fwd\[$k\].fwdSqIdx_q_reg\\\[flag\]"
+  pin "io_forward_${s}_addrInvalidSqIdx_r_flag_reg" "g_fwd\[$k\].fwdSqIdxM1_q_reg\\\[flag\]"
   for {set b 0} {$b < 6} {incr b} {
-    pin "io_forward_${s}_dataInvalidSqIdx_r_value_reg\[$b\]" "g_fwd\[$k\].fwdSqIdxData_q_reg\[$b\]"
-    pin "io_forward_${s}_addrInvalidSqIdx_r_1_value_reg\[$b\]" "g_fwd\[$k\].fwdSqIdx_q_reg\[$b\]"
-    pin "io_forward_${s}_addrInvalidSqIdx_r_value_reg\[$b\]" "g_fwd\[$k\].fwdSqIdxM1_q_reg\[$b\]"
+    pin "io_forward_${s}_dataInvalidSqIdx_r_value_reg\[$b\]" "g_fwd\[$k\].fwdSqIdxData_q_reg\\\[value\]\[$b\]"
+    pin "io_forward_${s}_addrInvalidSqIdx_r_1_value_reg\[$b\]" "g_fwd\[$k\].fwdSqIdx_q_reg\\\[value\]\[$b\]"
+    pin "io_forward_${s}_addrInvalidSqIdx_r_value_reg\[$b\]" "g_fwd\[$k\].fwdSqIdxM1_q_reg\\\[value\]\[$b\]"
   }
 }
 # loadWaitStrict 第二份副本（golden r_5_0/r_9_0/r_13_0 = RegNext(loadWaitStrict)，data 路对偶）：
@@ -149,5 +156,10 @@ foreach {k g} {0 mmioReq_bits_robIdx 1 mmioReq_bits_memBackTypeMM 2 ncReq_bits_r
 foreach {k s} {0 {} 1 _1 2 _2 3 _3 4 _4 5 _5} {
   pin "validVStoreFlow_REG${s}_reg" "redirValid_q_reg\[$k\]"
 }
+
+# ---- golden-parity 死寄存器（counter / REG / REG_1）：同名同结构，钉成对称 matched-unread ----
+for {set b 0} {$b < 32} {incr b} { pin "counter_reg\[$b\]" "counter_reg\[$b\]" }
+pin "REG_reg"   "REG_reg"
+pin "REG_1_reg" "REG_1_reg"
 
 puts "SQ_PINS: $_n points pinned"

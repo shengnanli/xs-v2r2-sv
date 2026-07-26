@@ -31,6 +31,8 @@ FM_REF_DEPS_StoreQueue = SQDataModule.sv SQData8Module.sv SQAddrModule.sv \
   SQAddrModule_1.sv DatamoduleResultBuffer.sv StoreExceptionBuffer.sv
 
 # 56 表项结构相同的状态寄存器，关掉“合并同值重复寄存器”pass，避免折叠成两侧不对称。
+# 关合并：golden 的 next_r 副本带 holdUnless 自反馈不会被合并，而 impl 侧为配平复制的
+# pendingPtrDup/rdNextPtrDup 等纯同值副本反而会被合并 pass 折叠掉（钉点失效）。
 FM_MERGE_DUP = false
 
 include ../../../scripts/ut_common.mk
