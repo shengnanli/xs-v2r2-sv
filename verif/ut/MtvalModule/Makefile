@@ -11,7 +11,7 @@ GOLDEN_SRCS  = $(GOLDEN_RTL)/MtvalModule.sv
 TB_SRCS      = variants_xs.sv tb.sv
 
 # strict FM: 逐 golden 顶层 vs impl(primitive + wrappers)。无黑盒/无 dont_verify/无 allow。
-FM_VARIANTS = MtvalModule StvalModule Mtval2Module MtinstModule
+FM_VARIANTS = MtvalModule StvalModule Mtval2Module MtinstModule HtvalModule HtinstModule VStvalModule
 
 include ../../../scripts/ut_common.mk
 

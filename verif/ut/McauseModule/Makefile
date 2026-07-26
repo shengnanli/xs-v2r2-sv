@@ -11,7 +11,7 @@ GOLDEN_SRCS  = $(GOLDEN_RTL)/McauseModule.sv
 TB_SRCS      = variants_xs.sv tb.sv
 
 # strict FM: 逐 golden 顶层 vs impl(primitive + wrappers)。无黑盒/无 dont_verify/无 allow。
-FM_VARIANTS = McauseModule ScauseModule
+FM_VARIANTS = McauseModule ScauseModule VScauseModule MncauseModule
 
 include ../../../scripts/ut_common.mk
 
