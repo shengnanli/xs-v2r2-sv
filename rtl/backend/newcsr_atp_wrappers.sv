@@ -46,8 +46,10 @@ endmodule
 
 // ---- vsatp (virtual-supervisor atp) ----------------------------------------
 // PPN is additionally masked by the active hgatp MODE (guest-physical width).
-// The odd MODE write-enable term (_GEN_0 | _GEN_1 & w_wen & (|_GEN)) is preserved
-// verbatim from golden; _GEN_1 is the "illegal-MODE while non-virtualized" path.
+// modeLegal[2:0] one-hots the three legal MODE encodings (Sv48/Sv39/Bare);
+// writeLegal is a normal write of a legal MODE; writeIllegalNonVirt is the
+// odd golden path where a non-virtualized write of an *illegal* MODE still
+// updates ASID/PPN (but not MODE). Both preserved verbatim from golden.
 module VSatpModule(
   input         clock,
   input         reset,
@@ -63,10 +65,10 @@ module VSatpModule(
   reg  [3:0]  reg_MODE;
   reg  [15:0] reg_ASID;
   reg  [43:0] reg_PPN;
-  wire [2:0]  _GEN =
+  wire [2:0]  modeLegal =
     {w_wdata[63:60] == 4'h9, w_wdata[63:60] == 4'h8, w_wdata[63:60] == 4'h0};
-  wire        _GEN_0 = w_wen & (|_GEN);
-  wire        _GEN_1 = w_wen & ~v & _GEN == 3'h0;
+  wire        writeLegal          = w_wen & (|modeLegal);
+  wire        writeIllegalNonVirt = w_wen & ~v & modeLegal == 3'h0;
   always @(posedge clock or posedge reset) begin
     if (reset) begin
       reg_MODE <= 4'h0;
@@ -74,11 +76,11 @@ module VSatpModule(
       reg_PPN  <= 44'h0;
     end
     else begin
-      if (_GEN_0 | _GEN_1 & w_wen & (|_GEN))
+      if (writeLegal | writeIllegalNonVirt & w_wen & (|modeLegal))
         reg_MODE <= w_wdata[63:60];
-      if (_GEN_0 | _GEN_1)
+      if (writeLegal | writeIllegalNonVirt)
         reg_ASID <= w_wdata[59:44];
-      if (_GEN_0 | _GEN_1)
+      if (writeLegal | writeIllegalNonVirt)
         reg_PPN <=
           w_wdata[43:0]
           & ((hgatp_MODE == 4'h0 ? 44'hFFFFFFFFF : 44'h0)
