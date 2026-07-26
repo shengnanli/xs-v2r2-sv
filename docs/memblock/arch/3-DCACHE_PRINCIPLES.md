@@ -120,7 +120,7 @@ flowchart LR
     MP["MainPipe<br/>probe / refill / store / atomic"]
   end
   LP -. miss .-> MQ["MissQueue"]
-  SP -. miss .-> MQ
+  SP -. "miss→写预取 M_PFW(本配置裁剪,边不存在)" .-> MQ
   MP -. miss .-> MQ
   MP -. 脏行/降级 .-> WBQ["WritebackQueue"]
 ```
@@ -312,7 +312,7 @@ flowchart TB
   ARR["Tag / Data / Meta 阵列（+ECC）"]
   PIPES <--> ARR
   LP -->|miss| MQ["MissQueue (16 MSHR)"]
-  SP -->|"写预取"| MQ
+  SP -. "写预取(本配置裁剪)" .-> MQ
   MP -->|"miss / refill"| MQ
   MP -->|"脏行 / probe 降级"| WBQ["WritebackQueue (18)"]
   PQ["ProbeQueue (8)"] -->|"probe → 降级"| MP
