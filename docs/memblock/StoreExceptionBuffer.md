@@ -3,9 +3,7 @@
 > ✅ **FM 分类 = REPLACEMENT_EQ（可读核真驱动 + 冻结基线原生 SUCCEEDED）**。依据台账
 > [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md) 与冻结基线日志
 > `verif/ut/StoreExceptionBuffer/fm_work/StoreExceptionBuffer/fm_full.log`：本模块在当前冻结 golden 基线上 FM **原生
-> `Verification SUCCEEDED`，1246 passing / 0 failing / 0 unverified**。下文验证节里任何
-> "FAILED / 20 failing 截断 / 部分验证 / 未收敛"的表述是**冻结前的旧叙事，已作废**——以本
-> banner 与台账为准。
+> `Verification SUCCEEDED`，1246 passing / 0 failing / 0 unverified**。
 
 > 可读重写学习文档。设计意图源：
 > `src/main/scala/xiangshan/mem/lsqueue/StoreQueue.scala`（class StoreExceptionBuffer）。
@@ -50,9 +48,7 @@ Store 把 **异常判定 + 一次 redirect 冲刷** 提前折进 **S1**：
 ```mermaid
 flowchart TD
   subgraph S1[S1 拍 T]
-    A["s1_valid[w] = io.storeAddrIn[w].valid
-       & !robIdx.needFlush(io.redirect)   ← 当拍 redirect
-       & |excVec[w]                       ← S1 即判异常"]
+    A["s1_valid[w] = io.storeAddrIn[w].valid<br/>& !robIdx.needFlush(io.redirect)  ← 当拍 redirect<br/>& |excVec[w]  ← S1 即判异常"]
   end
   subgraph S2[S2 拍 T+1]
     C["s2_req[w] = RegEnable(io.storeAddrIn[w], s1_valid[w])"]
@@ -148,15 +144,9 @@ seed 1 / 7 / 42 各 **199995 checks，errors = 0**（WARMUP=4 跳过复位瞬态
 后 probe_mm 恒 0——确认是启动瞬态而非功能差异。
 
 ### 6.3 FM
-golden 顶层（纯叶子）vs 可读同名 wrapper（→ 可读核）。末次 verify 结论 **Verification
-FAILED**：**1091 passing / 20 failing / 122 unverified**（20 是 Formality 默认
-`verification_failing_point_limit=20` 的截断上限——verify 攒满 20 个失配即提前中止，
-122 个 unverified 点未验）。已报告的 20 个 failing 全部为 `u_core/req_r_reg[fullva]`，
-根因与 Lq 完全相同：golden 用不规则命名的
-逐入口 `RegNext(s1_valid)` 标量 + 逐字段 req 标量寄存器，可读核用向量 `s2_valid_q` + struct
-`req_r`，共享 `fm_eq.tcl` 的展平名自动配对规则无法跨越该结构差异，导致下游 `req_r[fullva]`
-误判 failing。**已用 tb 内部层次探针证伪**：三种子逐拍直接比对内部 req 寄存器，
-**probe_mm = 0**（数值恒等）；叠加 UT 5 个输出 0 错，功能等价以 UT+探针为权威，
-FM 为部分验证。
+golden 顶层（纯叶子）vs 可读同名 wrapper（→ 可读核）。冻结基线全貌重跑（`fm_full.log`）
+**原生 `Verification SUCCEEDED`：1246 passing / 0 failing / 0 unverified**。
 
-> 不为让 FM 好过而退回 golden 命名（违反重写准则）。
+历史注脚：冻结前的部分验证曾因与 LqExceptionBuffer 完全同型的命名/结构配对差异
+（golden 不规则标量 ↔ 可读核向量/struct）误判 `req_r[fullva]` 失配，当时用 tb 层次探针
+（三种子 probe_mm=0）证伪；冻结基线重跑后配对收敛、FM 原生通过，可读核未退回 golden 命名。

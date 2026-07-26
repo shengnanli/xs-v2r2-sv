@@ -3,9 +3,7 @@
 > ✅ **FM 分类 = REPLACEMENT_EQ（可读核真驱动 + 冻结基线原生 SUCCEEDED）**。依据台账
 > [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md) 与冻结基线日志
 > `verif/ut/MissQueue/fm_work/MissQueue/fm_full.log`：本模块在当前冻结 golden 基线上 FM **原生
-> `Verification SUCCEEDED`，19416 passing / 0 failing / 0 unverified**。下文验证节里任何
-> "FAILED / 20 failing 截断 / 部分验证 / 未收敛"的表述是**冻结前的旧叙事，已作废**——以本
-> banner 与台账为准。
+> `Verification SUCCEEDED`，19416 passing / 0 failing / 0 unverified**。
 
 > 可读重写：`rtl/memblock/MissQueue.sv`（核 `xs_MissQueue_core`）+ `rtl/memblock/missqueue_pkg.sv`
 > + 内联片段 `missqueue_{ports,entry_inst,acq_arb,subinst,btot_occupy,forward}.svh`
@@ -147,7 +145,9 @@ flowchart LR
 ### 4.3 TileLink 通道仲裁（§F/G）
 - **mem_acquire**（A）：lowest 优先 `cmo(0) > pipereg(1) > entry0..15(2..17)`，共 18 源。A 通道单 beat
   （AcquireBlock/Perm `numBeats1=0`），故 golden 的 `beatsLeft`/`state` 突发锁定寄存器恒不动，仲裁退化为
-  纯组合 lowest 选择 + Mux1H 拼 payload。**本核不实现这些恒定的状态寄存器**（见 §6 FM 说明）。
+  纯组合 lowest 选择 + Mux1H 拼 payload。本核 **bug-for-bug 复刻**了这套 TLArbiter 突发锁定框架
+  （`acq_beatsLeft`/`state` 寄存器，见 `MissQueue.sv` F 节注释）——它们在本配置功能上恒定
+  （beatsLeft 恒 0、state 恒跟随当拍 winner），但对 FM 是真实状态点（opcode 对 FM 是自由变量）。
 - **mem_finish**（E）：lowest 优先 entry0..15，共 16 源，同样单 beat。
 
 ### 4.4 refill_info / probe / replace / btot / occupy（§I）
@@ -204,23 +204,14 @@ seed **1 / 7 / 42** 各 **200000** 拍：`checks=200000 errors=0`，三种子全
 （`!$isunknown(golden)` 跳 don't-care；payload 类输出按对应 valid 守护比对；`+define+SYNTHESIS` 关随机化。）
 
 ### 6.3 FM（`make fm`，子模块黑盒）
-**末次 verify 结论：Verification FAILED（16833 passing / 20 failing / 2527 unverified，
-已报告 failing 证伪为假阳性）**。
-- 17994 by name + 1386 by signature 配对成功；**36 个 reference unmatched** 全是 golden 的单 beat 仲裁
-  burst-locking 寄存器 `beatsLeft(_1)` / `state_0..17` / `state_1_0..15`——本核因 A/E 通道单 beat 而
-  **故意不实现**（这些寄存器在 golden 中恒 0 / 恒跟随当拍 winner，功能上是死状态）。
-- 已报告的 20 个失败 compare point（**20 是 Formality 默认 `verification_failing_point_limit=20`
-  的截断上限**，verify 攒满即提前中止，2527 个 unverified 点未验）：`mqpr_alloc/merge/mshr_id`、
-  `io_mem_acquire_bits_address`、entry 内部
-  `s_acquire`/`no_pending`。这些都在「被丢弃的 burst 锁定状态」的扇出锥里——FM 无法在不做可达性分析的
-  前提下证明 `beatsLeft≡0`，于是在 **不可达的 burst-locked 输入空间** 里探到 entry 握手输入不同。
-- **证伪**：tb 内层次探针（`u_g.<sig>` vs `u_i.u_core.<sig>`）对上述失败信号
-  （`mqpr_alloc/merge/mshr_id`、`io_mem_acquire_bits_address`、entry0 `s_acquire`/`no_pending`）
-  在 seed **1/7/42** 各 200000 拍 **mismatch=0**。即在真实可达状态空间下逐位等价。
-- 结论：按工程既有先例（「UT 充分 + FM 因仲裁状态寄存器结构差异不可判」），已报告 failing
-  判为 FM 假阳性；FM 整体为**部分验证**（16833 passing；20 failing 已证伪；2527 unverified
-  未覆盖），以 UT（3 种子逐拍 0 错）为权威。
-  不为过 FM 而退回照抄 golden 的 `beatsLeft/state` 死寄存器（那会损害可读性、违背重写准则）。
+冻结基线全貌重跑（`fm_full.log`）**原生 `Verification SUCCEEDED`：19416 passing / 0 failing /
+0 unverified**（0 unmatched compare points）。
+
+历史注脚：冻结前版本曾**故意不实现** golden 的单 beat 仲裁 burst-locking 寄存器
+（`beatsLeft`/`state_*`，功能上恒定），导致这批寄存器 unmatched、其扇出锥（`mqpr_*`、
+entry 握手等）在不可达的 burst-locked 输入空间里被 FM 判为失配（当时曾以 tb 层次探针证伪为
+部分验证）。最终解法是在核内 **bug-for-bug 复刻**该突发锁定框架（见 §4.3）——保留可读注释
+说明其恒定性，同时让 FM 的状态点一一对应，冻结基线上原生收敛。
 
 ---
 

@@ -1,11 +1,11 @@
 # MemBlock —— 访存子系统总集成（capstone）
 
 > ⚠ **FM 分类 = ASSEMBLY_EQ（装配层，仅证 glue）**。依据台账
-> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md)：本模块 FM（`fmbb`）把全部 49 类
-> 子模块两侧 `memblock_stub` 同名黑盒，**只证明本层互联 glue（路由/仲裁/CSR 分发/异常聚合/perf）
-> 等价**，不等于整个 MemBlock 功能等价。整模块等价须叠加各子模块自身证明。且下文 FM 的
-> `SUCCEEDED` 是脚本 waive perf 假阳性后的判定（Formality 原生为 FAILED，20 failing/4 unverified），
-> 非原生通过。
+> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md) 与冻结基线日志
+> `verif/ut/MemBlock/fm_work/MemBlock/fm_full.log`：本模块 FM（`fmbb`）把全部 49 类子模块
+> 两侧 `memblock_stub` 同名黑盒，在冻结基线上**原生 `Verification SUCCEEDED`，96358 passing /
+> 0 failing / 0 unverified**。但装配层证明**只覆盖本层互联 glue（路由/仲裁/CSR 分发/异常
+> 聚合/perf）**，不等于整个 MemBlock 功能等价——整模块等价须叠加各子模块自身证明。
 
 > 香山 V2R2（昆明湖）整个**访存子系统的顶层互联**，是本重写工程的 capstone。
 > 设计意图来源：`src/main/scala/xiangshan/mem/MemBlock.scala`
@@ -201,21 +201,14 @@ L2TLB/PTW + 所有队列 + 厂商 SRAM 宏 `array_*_ext.v` + ClockGate），由�
 > 且整树 link 开销巨大。黑盒桩绕开该 RAM 报错，并把比对聚焦本层逻辑——这正是本层
 > 该验证的对象（子模块算法在各自模块的 FM 里已验）。
 
-- **实测结果**：Formality 原始 verify 结论为 **Verification FAILED**——**96328 Passing /
-  20 Failing / 4 Unverified**；`fm_eq_bb.tcl` 核对失败点全为 perf 后 waive，打印
-  `FM_RESULT: Verification SUCCEEDED for MemBlock (perf black-box symmetry
-  false-positive waived)`（该 SUCCEEDED 是**脚本 waive 后的判定**，非 Formality 原生通过；
-  20 为默认 `verification_failing_point_limit=20` 截断上限，但本例仅余 4 点 Unverified，
-  覆盖接近完整）。
-- 绝大多数互联 glue 比对点匹配通过；已报告失败点是 **8 路 perf 流水中的第 1、2 路**共 20 个
-  DFF 比对点（`inner_io_perf_{1,2}_value_REG_1` vs `perf_stage1[{1,2}]`）。这是 FM 对
-  PFEvent/HPerfMonitor 黑盒「功能未知」输出引脚做符号推理时，对 8 条**同构** perf cone
-  的对称性消解产生的**工具假阳性**（个别 cone 的 stage1/stage2 寄存器被跨级错配），
-  **非逻辑不等价**——其余 6 路 perf 与全部 perf 输出级（`perf_stage2`）正常匹配
-  （matched 报告含 1860 个 perf 比对点 PASS），且 UT 三种子逐拍含全部 perf 输出 0 错。
-  与 `DCacheWrapper` / `L2TLBWrapper` 的同类 perf 假阳性同源、同放行先例（见各自 doc）。
-  `fm_eq_bb.tcl` 据「失败点是否全落在 `io_perf_*`」自动判定并放行，打印
-  `SUCCEEDED (perf black-box symmetry false-positive waived; N pts)`。
+- **冻结基线最终结果**（`fm_full.log`）：**原生 `Verification SUCCEEDED`——96358 Passing /
+  0 Failing / 0 Unverified**（含 96 点 `set_user_match` 钉对；Not Compared 仅 10 个常量
+  寄存器 + 6 个 unread 点；waive 分支未触发）。
+- 历史注脚：冻结前曾在 8 路 perf 流水的第 1、2 路 stage1 寄存器上出现失配——FM 对
+  PFEvent/HPerfMonitor 黑盒「功能未知」输出引脚做符号推理时，对 8 条同构 perf cone 的
+  对称性消解产生的工具假阳性（个别 cone 的 stage1/stage2 被跨级错配），当时经
+  `fm_eq_bb.tcl` 核对「失败点全落在 `io_perf_*`」后脚本放行（与 DCacheWrapper /
+  L2TLBWrapper 同源先例）；冻结基线重跑后 FM 已原生收敛，waive 不再需要。
 
 ### 4.3 复跑
 ```bash

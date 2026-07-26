@@ -1,5 +1,12 @@
 # L2TLBWrapper —— 共享 MMU / L2TLB 顶层包装层（学习文档）
 
+> ⚠ **FM 分类 = ASSEMBLY_EQ（装配层，仅证 glue）**。依据台账
+> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md) 与冻结基线日志
+> `verif/ut/L2TLBWrapper/fm_work/L2TLBWrapper/fm_full.log`：本模块 FM（`fmbb`）把内层 `L2TLB`
+> 两侧同名黑盒，在冻结基线上**原生 `Verification SUCCEEDED`，2627 passing / 0 failing /
+> 0 unverified**。但装配层证明**只覆盖本层包装 glue（perf 2 级流水 + 端口映射）**，
+> 不等于整个 L2TLB 功能等价（内层算法在其自身证明里）。
+
 > 可读重写：`rtl/memblock/L2TLBWrapper.sv`（核 `xs_L2TLBWrapper_core`）
 > + 生成 include：`rtl/memblock/l2tlbwrapper_ports.svh`（端口表）
 > / `rtl/memblock/l2tlbwrapper_inner_conn.svh`（内层互联）
@@ -182,32 +189,14 @@ golden-X（`!$isunknown`），200000 拍 × 147 输出 ≈ 2940 万比对点，e
 内层 `L2TLB` 在 ref/impl 两侧都读入**显式端口方向的空黑盒**（`l2tlb_blackbox.sv`），
 黑盒引脚用 `verification_blackbox_match_mode identity` 按名/位置对齐。
 
-- Formality 原始 verify 结论为 **Verification FAILED**：**2399 Passing / 20 Failing /
-  94 Unverified**。已报告的 20 个 Failing（均为 DFF）全部落在
-  `io_perf_0` / `io_perf_10` / `io_perf_11` / `io_perf_12` 四路（各 6 位的第二级寄存器，
-  即 `*_REG_1`）。注意 20 是 Formality 默认 `verification_failing_point_limit=20` 的截断
-  上限——verify 攒满 20 个失配即提前中止，94 个 Unverified 点未验。
-- 这 20 点是**已证假阳性**，脚本级放行（`fm_eq_bb.tcl`：逐条核对 failing.rpt 的 Ref 侧
-  对象名，确认 20 个失败点全部是 `io_perf_<i>_value`、无任何非 perf 失败），最终打印
-  `FM_RESULT: Verification SUCCEEDED for L2TLBWrapper (perf black-box symmetry false-positive waived; 20 pts)`
-  ——该 SUCCEEDED 是**脚本 waive 后的判定**，非 Formality 原生通过。
-
-**为何是假阳性（已反证）**：
-
-1. golden 对全部 19 路 perf 用**完全相同**的 2 级流水（逐行确认，event 0/10/11/12 不特殊）；
-   可读核也用单一 `generate` 统一生成 19 路——逻辑上 19 路同构。真正的逻辑错误不可能只影响
-   19 条同构 generate 实例中的 4 条而 UT 全过。
-2. **隔离反证**（`verif/ut/L2TLBWrapper/perf_iso_{ref,impl}.sv` + `perf_iso.tcl`）：把同一
-   perf 流水结构（golden 风格逐字段平铺 2 级 pipe vs 可读核 struct/enum/function/genvar 版）
-   用**真实 primary input**（`perf_in_0..18`，而非黑盒引脚）驱动、单独做 FM——
-   **342 个比对点全 PASS、0 Failing（`ISO_RESULT: SUCCEEDED`）**。即：脱离内层 L2TLB 黑盒后，
-   本层 perf 流水与 golden 形式化等价。
-3. 结论：失败源于 FM 对内层 L2TLB 黑盒「功能未知」输出引脚做符号推理时，对 19 条同构 cone 的
-   对称性消解工具假阳性，而非逻辑不等价。属 `REWRITE_STYLE.md` 允许的「UT 充分 + FM 部分不可判，
-   文档记证伪」情形（与 DCacheWrapper 同类，唯失败的 perf 路下标不同）。
-
-> 复现隔离反证：在 `verif/ut/L2TLBWrapper/` 下
-> `FM_REF_SRCS=perf_iso_ref.sv FM_IMPL_SRCS=perf_iso_impl.sv fm_shell -64 -file perf_iso.tcl`。
+- **冻结基线最终结果**（`fm_full.log`）：**原生 `Verification SUCCEEDED`——2627 Passing /
+  0 Failing / 0 Unverified**（黑盒引脚 identity 配对，waive 分支未触发）。
+- 历史注脚：冻结前曾在 `io_perf_0/10/11/12` 四路第二级寄存器上出现失配——FM 对内层 L2TLB
+  黑盒「功能未知」输出引脚做符号推理时，对 19 条同构 perf cone 的对称性消解工具假阳性。
+  当时做过**隔离反证**（`perf_iso_{ref,impl}.sv` + `perf_iso.tcl`：同一 perf 流水结构改用
+  真实 primary input 驱动单独 FM，342 个比对点全 PASS、`ISO_RESULT: SUCCEEDED`）并走
+  `fm_eq_bb.tcl` 脚本 waive；冻结基线重跑后 FM 已原生收敛，waive 不再需要
+  （与 DCacheWrapper 同源先例）。
 
 ### 5.3 结构硬指标（grep `rtl/memblock/L2TLBWrapper.sv`）
 

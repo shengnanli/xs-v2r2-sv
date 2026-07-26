@@ -3,9 +3,8 @@
 > ✅ **FM 分类 = REPLACEMENT_EQ（可读核真驱动 + 冻结基线原生 SUCCEEDED）**。依据台账
 > [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md) 与冻结基线日志
 > `verif/ut/LoadQueueUncache/fm_work/LoadQueueUncache/fm_full.log`：本模块在当前冻结 golden 基线上 FM **原生
-> `Verification SUCCEEDED`，10474 passing / 0 failing / 0 unverified**。下文验证节里任何
-> "FAILED / 20 failing 截断 / 部分验证 / 未收敛"的表述是**冻结前的旧叙事，已作废**——以本
-> banner 与台账为准。
+> `Verification SUCCEEDED`，10474 passing / 0 failing / 0 unverified**（台账脚注：2 个 probe
+> 边界观测网 dont-verify，非功能输出；其余全等价）。
 
 > 可读重写：`rtl/memblock/LoadQueueUncache.sv`（核 `xs_LoadQueueUncache_core`）+ `rtl/memblock/loadqueueuncache_pkg.sv`
 > 设计意图来源：`XiangShan/src/main/scala/xiangshan/mem/lsqueue/LoadQueueUncache.scala`
@@ -198,24 +197,11 @@ tb 内最小合法模型生成：只对已经 fire 的请求返回 idResp/resp�
 
 ### 8.2 FM
 
-`make fm` 进入 compare 后末次 verify 结论 **Verification FAILED**：**5027 passing /
-20 failing / 5395 unverified**。按模块 Makefile 本地设置，FM 中
-`UncacheEntry*`、`FreeList_6`、`RRArbiterInit_9`、`PipelineRegModule*` 均作为黑盒。
+`UncacheEntry*`、`FreeList_6`、`RRArbiterInit_9`、`PipelineRegModule*` 作黑盒（模块 Makefile
+本地设置）。冻结基线全貌重跑（`fm_full.log`）**原生 `Verification SUCCEEDED`：10474 passing /
+0 failing / 0 unverified**；仅 probe 边界观测网 dont-verify（台账脚注，非功能输出）。
 
-已报告的 failing 点共 20 个（**20 是 Formality 默认 `verification_failing_point_limit=20`
-的截断上限**——verify 攒满 20 个失配即提前中止，5395 个 unverified 点未验），
-当前全部落在 rollback 输出寄存器：
-
-- `rollback_valid_d` 1 个 bit。
-- `rollback_bits_d` 对应的 `isRVC`、`robIdx.value[1:7]`、`ftqIdx.flag/value`、
-  `ftqOffset` 共 19 个 bit。
-
-这些点均已作为 tb 内部层次探针接入 `compare_fm_probes()`：
-
-- `u_g.io_rollback_valid_last_REG` vs `u_i.u_core.rollback_valid_d`
-- `u_g.io_rollback_bits_r_*` vs `u_i.u_core.rollback_bits_d.*`
-
-同一轮 seed 1/7/42 各 200000 拍逐拍比较全部顶层输出和上述 FM failing 点，errors 均为 0。
-因此已报告的 FM failing 按项目方法判为黑盒/X/结构配对导致的 false positive，不为迁就 FM
-改写成 firtool 风格命名。FM 整体为**部分验证**（5027 passing；20 failing 已证伪；5395
-unverified 未覆盖），等价性以 UT（多种子逐拍全输出 0 错）为权威。
+历史注脚：冻结前的部分验证曾在 rollback 输出寄存器（`rollback_valid_d` / `rollback_bits_d`）
+上报出失配，当时已把这些点接入 tb 层次探针（`compare_fm_probes()`，seed 1/7/42 各 200000 拍
+errors=0）证伪为黑盒/X/结构配对导致的假阳性；冻结基线重跑后 FM 已原生收敛，可读核未改写成
+firtool 风格命名。

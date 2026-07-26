@@ -3,9 +3,7 @@
 > ✅ **FM 分类 = REPLACEMENT_EQ（可读核真驱动 + 冻结基线原生 SUCCEEDED）**。依据台账
 > [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md) 与冻结基线日志
 > `verif/ut/LqExceptionBuffer/fm_work/LqExceptionBuffer/fm_full.log`：本模块在当前冻结 golden 基线上 FM **原生
-> `Verification SUCCEEDED`，1209 passing / 0 failing / 0 unverified**。下文验证节里任何
-> "FAILED / 20 failing 截断 / 部分验证 / 未收敛"的表述是**冻结前的旧叙事，已作废**——以本
-> banner 与台账为准。
+> `Verification SUCCEEDED`，1209 passing / 0 failing / 0 unverified**。
 
 > 可读重写学习文档。设计意图源：
 > `src/main/scala/xiangshan/mem/lsqueue/LoadExceptionBuffer.scala`（class LqExceptionBuffer）。
@@ -170,23 +168,10 @@ seed 1 / 7 / 42 各 **199995 checks，errors = 0**（WARMUP=4 跳过复位瞬态
 使“多入口同拍带异常 + 年龄并列”频繁发生，充分覆盖选最老树与替换逻辑；redirect ~6% 概率。
 
 ### 6.3 FM
-golden 顶层（纯叶子）vs 可读同名 wrapper（→ 可读核）。末次 verify 结论 **Verification
-FAILED**：**1055 passing / 20 failing / 113 unverified**（20 是 Formality 默认
-`verification_failing_point_limit=20` 的截断上限——verify 攒满 20 个失配即提前中止，
-113 个 unverified 点未验）。已报告的 20 个 failing 全部为 `u_core/req_r_reg[fullva]`，
-根因是寄存器边界命名差异：
-- golden 把 6 个入口的 `RegNext(io.req.valid)` 写成不规则命名的 6 个标量
-  （`s2_valid_REG`、`s2_valid_REG_2`、`…_10`），把每入口的 `RegNext(redirect)` 复制成 6 份；
-  可读核用一个向量 `s2_valid_q[6]` + 一份 `redirect_*_q`。
-- golden 的 req 寄存器是逐字段标量（`req_uop_robIdx_value`/`req_uop_uopIdx`/`req_fullva`…），
-  可读核是一个 `s2_entry_t` struct（`req_r[robIdx][value]`/`req_r[uopIdx]`/`req_r[fullva]`）。
+golden 顶层（纯叶子）vs 可读同名 wrapper（→ 可读核）。冻结基线全貌重跑（`fm_full.log`）
+**原生 `Verification SUCCEEDED`：1209 passing / 0 failing / 0 unverified**。
 
-共享 `fm_eq.tcl` 的展平名自动配对规则无法跨越这两类结构差异（golden 不规则标量名 ↔ 向量
-下标名；struct 字段名 ↔ golden 逐字段标量名），导致这些寄存器 unmatched，其下游
-`req_r[fullva]` 比对点误判 failing。**已用 tb 内部层次探针证伪**：在 200000 拍内逐拍
-直接比对 `u_g.req_fullva/req_gpaddr/req_uop_robIdx_value/req_uop_uopIdx` 与可读核
-`u_core.req_r.*`，三种子 **probe_mm = 0**（数值恒等）。结论口径：UT（5 个输出逐拍 0 错 +
-探针 0 分歧）为权威；FM 为部分验证——1055 passing，20 failing（截断）已证伪，113
-unverified 未覆盖。
-
-> 不为了让 FM 好过而把可读核改回 golden 的展平标量命名（违反重写准则）。
+历史注脚：冻结前的部分验证曾因寄存器边界命名差异（golden 不规则标量名 `s2_valid_REG_*` /
+逐字段 req 标量 ↔ 可读核向量 `s2_valid_q[6]` / struct `req_r`）配对不齐、下游 `req_r[fullva]`
+被误判失配，当时用 tb 层次探针（三种子 probe_mm=0）证伪；冻结基线重跑后配对收敛、FM 原生通过，
+可读核未退回 golden 的展平标量命名。

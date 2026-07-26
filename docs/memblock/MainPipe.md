@@ -3,9 +3,7 @@
 > ✅ **FM 分类 = REPLACEMENT_EQ（可读核真驱动 + 冻结基线原生 SUCCEEDED）**。依据台账
 > [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md) 与冻结基线日志
 > `verif/ut/MainPipe/fm_work/MainPipe/fm_full.log`：本模块在当前冻结 golden 基线上 FM **原生
-> `Verification SUCCEEDED`，8932 passing / 0 failing / 0 unverified**。下文验证节里任何
-> "FAILED / 20 failing 截断 / 部分验证 / 未收敛"的表述是**冻结前的旧叙事，已作废**——以本
-> banner 与台账为准。
+> `Verification SUCCEEDED`，8932 passing / 0 failing / 0 unverified**。
 
 > 设计意图来源：`src/main/scala/xiangshan/cache/dcache/mainpipe/MainPipe.scala`
 > 一致性协议：rocket-chip `tilelink/Metadata.scala`、`tilelink/Bundles.scala`、`rocket/Consts.scala`
@@ -24,11 +22,11 @@ MainPipe 把五类请求经 `Arbiter4_MainPipeReq` 按**固定优先级**合并�
 
 ```mermaid
 flowchart LR
-  P["probe(L2 snoop)\n优先级最高"] --> ARB
-  R["refill(MissQueue 回灌)\n含 replace"] --> ARB
+  P["probe(L2 snoop)<br/>优先级最高"] --> ARB
+  R["refill(MissQueue 回灌)<br/>含 replace"] --> ARB
   S["store(sbuffer 整行)"] --> ARB
-  A["atomic(AMO/LR/SC)\n优先级最低"] --> ARB
-  ARB["Arbiter4\n(黑盒)"] --> S0
+  A["atomic(AMO/LR/SC)<br/>优先级最低"] --> ARB
+  ARB["Arbiter4<br/>(黑盒)"] --> S0
   S0["s0 仲裁+读阵列"] --> S1["s1 命中判定"] --> S2["s2 选数据+分流"] --> S3["s3 落盘+写回"]
   S2 -. miss .-> MQ["MissQueue"]
   S2 -. evict 冲突 .-> RP["replay"]
@@ -185,25 +183,17 @@ stateDiagram-v2
 | UT seed 7  | checks=200000, **errors=0** |
 | UT seed 42 | checks=200000, **errors=0** |
 | 额外 seed 2/3/99/12345 | 均 **TEST PASSED** |
-| FM（golden MainPipe vs 手写 wrapper→核） | **FAILED**：3187 passing / **20 failing(截断上限，均为 valid/fire 控制锥相关寄存器)** / 4943 unverified 未验 / 0 unmatched |
+| FM（golden MainPipe vs 手写 wrapper→核，冻结基线） | **原生 `Verification SUCCEEDED`：8932 passing / 0 failing / 0 unverified** |
 
 - **UT**：`verif/ut/MainPipe/`，golden 与手写核双例化、共用同一份 golden `AMOALU`/`Arbiter4_MainPipeReq`
   黑盒；四源 valid 独立随机覆盖仲裁优先级，下游 ready 偶发 backpressure 练 stall，
   cmd 限合法访存编码，地址压窄高位提高跨级 set/tag 命中，逐拍比对全部 359 个输出（跳过 golden 为 X 的不可达态）。
-- **FM**：子模块作黑盒。末次 verify 结论 **Verification FAILED**：3187 passing / 20
-  failing / 4943 unverified。已报告的 20 个 failing 均为 **valid/fire 控制锥**寄存器
-  （`s1_valid`/`s2_valid`/`s2_fire_to_s3_q`/`meta_hold`/`replace_access_valid_q`/`error_*`/`s3_data_error_*` 等），
-  且 **0 unmatched**（按名全配上）。这些寄存器的次态函数与 golden **逐式等价**
-  （`s1_valid <= s0_fire | ~s1_fire & s1_valid` 等已逐条核对），其控制锥
-  `req_ready→s1_ready→s1_can_go→s2_ready→s2_can_go→s3_ready` 也与 golden 同构；
-  FM 在**完全自由的输入**下探到这些深层互锁控制信号的不可达组合（如 `meta_read.ready=0`
-  违反 golden `assert(RegNext(io.meta_read.ready))`、`probe_param` 非法值、`way_en` 全 1 等
-  被 golden 行为断言排除的状态）才报不等价。**600k 拍（3+4 种子）密集随机激励 0 失配**佐证：
-  差异点在可达状态集合上等价，属「UT 充分 + FM 在不可达控制锥上不可判」先例
-  （同 LoadUnit/StoreUnit 处理）。注意 **20 是 Formality 默认
-  `verification_failing_point_limit=20` 的截断上限**——verify 攒满 20 个失配即提前中止，
-  4943 个 unverified 点未验；已判的组合输出比对点（命中/数据合并/一致性/写回/响应）全部
-  passing。故 FM 为**部分验证**，以 UT 为权威。
+- **FM**：子模块作黑盒。冻结基线全貌重跑（`fm_full.log`）**原生 `Verification SUCCEEDED`：
+  8932 passing / 0 failing / 0 unverified**。历史注脚：冻结前的部分验证曾在 valid/fire
+  控制锥寄存器（`s1_valid`/`s2_valid`/`meta_hold` 等，次态函数与 golden 逐式等价）上报出
+  失配——FM 在完全自由输入下探索被 golden 行为断言排除的不可达互锁状态（如
+  `meta_read.ready=0`、`probe_param` 非法值、`way_en` 全 1）所致，当时以 600k 拍（3+4 种子）
+  密集随机激励 0 失配佐证其在可达状态集合上等价；冻结基线重跑后 FM 已原生收敛。
 
 ## 8. 结构闸门自查
 

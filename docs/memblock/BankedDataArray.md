@@ -3,9 +3,7 @@
 > ✅ **FM 分类 = REPLACEMENT_EQ（可读核真驱动 + 冻结基线原生 SUCCEEDED）**。依据台账
 > [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md) 与冻结基线日志
 > `verif/ut/BankedDataArray/fm_work/BankedDataArray/fm_full.log`：本模块在当前冻结 golden 基线上 FM **原生
-> `Verification SUCCEEDED`，17367 passing / 0 failing / 0 unverified**。下文验证节里任何
-> "FAILED / 20 failing 截断 / 部分验证 / 未收敛"的表述是**冻结前的旧叙事，已作废**——以本
-> banner 与台账为准。
+> `Verification SUCCEEDED`，17367 passing / 0 failing / 0 unverified**。
 
 ## 1. 架构定位
 
@@ -136,11 +134,6 @@ read_resp / readline_resp 只引出 `raw_data`（ecc 端口被裁，但 ecc 内�
   3. **`read_error_delayed` 冲突门控**应用 `RegNext(bank_conflict_slow)` 而非现值。
   4. **wrapper 非压缩数组维度方向**——核声明 `[LOAD_PIPES]`（升序 `[0:2]`），生成器初版用降序
      `[2:0]`，跨模块连线按位序反接导致 3 个读端口数据互换（port0↔port2），读地址错乱。
-- **FM**：末次 verify 结论 **Verification FAILED**——**9063 passing / 20 failing / 8009
-  unverified**。已报告的 **20 个 failing 全在 `ecc_data_delayed`（bank0/way0 的 ECC 延迟寄存器）**，
-  经全程 UT 层次探针证伪：`tb.g_u.ecc_data_delayed` vs `tb.i_u.u_core.ecc_dly[0][0]` 在 199950 拍
-  内（golden 非 X 时）**mismatch=0**。该寄存器仅喂 `error_delayed` 输出，而 `read_error_delayed`
-  在 UT 三种子逐拍 0 错。failing 源于签名分析在该寄存器“未读使能前的 X-init 自由变量”区域不可判
-  （与 Sbuffer/LoadUnit/IBuffer 等大模块的 FM 流水寄存器假阳性同类）。注意 **20 是 Formality
-  默认 `verification_failing_point_limit=20` 的截断上限**——verify 攒满 20 个失配即提前中止，
-  8009 个 unverified 点未验。故 FM 为**部分验证**，按方法学以充分 UT（多种子逐拍 0 错）作权威背书。
+- **FM**：冻结基线全貌重跑（`fm_full.log`）**原生 `Verification SUCCEEDED`：17367 passing /
+  0 failing / 0 unverified**。历史注脚：冻结前的部分验证曾在 ECC 延迟寄存器 `ecc_data_delayed`
+  的「未读使能前 X-init 自由变量」区域报出失配，当时用 UT 层次探针证伪；冻结基线重跑后已原生收敛。

@@ -3,9 +3,8 @@
 > ✅ **FM 分类 = REPLACEMENT_EQ（可读核真驱动 + 冻结基线原生 SUCCEEDED）**。依据台账
 > [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md) 与冻结基线日志
 > `verif/ut/Sbuffer/fm_work/Sbuffer/fm_full.log`：本模块在当前冻结 golden 基线上 FM **原生
-> `Verification SUCCEEDED`，26797 passing / 0 failing / 0 unverified**。下文验证节里任何
-> "FAILED / 20 failing 截断 / 部分验证 / 未收敛"的表述是**冻结前的旧叙事，已作废**——以本
-> banner 与台账为准。
+> `Verification SUCCEEDED`，26797 passing / 0 failing / 0 unverified**（台账脚注：预取子模块
+> `StorePfWrapper` 两侧同名黑盒，主体逻辑为真替换）。
 
 > 可读重写：`rtl/memblock/Sbuffer.sv`（核 `xs_Sbuffer_core`）+ `rtl/memblock/sbuffer_pkg.sv`
 > 设计意图来源（人写 Chisel）：`src/main/scala/xiangshan/mem/sbuffer/Sbuffer.scala`
@@ -231,39 +230,22 @@ flowchart LR
   **真正在途**的 entry 回 resp（否则内部断言违例、两侧分叉）。
 - payload 类输出（`dcache_req_bits_*`、`forward_*`）仅在对应 valid（取 golden 侧）有效时比对。
 
-### 6.2 FM（Formality 签名等价）
+### 6.2 FM（Formality 等价）
 
-`make fm`。本模块是 16-entry 大状态机，可读核结构（struct 数组 + generate + PLRU 函数）与 golden
-firtool 展平 RTL 差异极大：golden 把每个 entry / cohCount / vtag 全展开成独立标量寄存器
-（`cohCount_0..15`、`vtag_0..15`），可读核是 `cohCount_reg[16][21]` / `meta[16].vtag` 二维数组。
-**签名分析对这类「N 份同构寄存器阵列」无法逐一配对**（名字与拓扑都不同），故大量 entry 寄存器落在
-`Unmatched / Unverified`。已能匹配的组合逻辑与控制寄存器（约 350 点）等价通过。
+冻结基线全貌重跑（`fm_full.log`）**原生 `Verification SUCCEEDED`：26797 passing /
+0 failing / 0 unverified**（`StorePfWrapper` 两侧同名黑盒；23257 点 `set_user_match` 钉对 +
+3533 by name——用户钉点只做「struct 数组 ↔ golden 逐条目标量」的一一对应配对，不约束 ref）。
 
-FM 结果（`make fm`，fm.log 末次 verify）：**Verification FAILED——353 Passing / 20 Failing /
-1946 Unverified**。已报告的 20 个 Failing **全部是
-entry 0 的 `cohCount_0` 的 21 个 bit**（其余 15 个 entry 的 cohCount 因 N 路同构阵列无法配对而落在
-Unverified）。注意 **20 是 Formality 默认 `verification_failing_point_limit=20` 的截断上限**——
-verify 攒满 20 个失配即提前中止，1946 个 Unverified 点未验。
+历史注脚：冻结前的部分验证曾因「16-entry 同构寄存器阵列（`cohCount_reg[16][21]` /
+`meta[16].vtag` 二维数组 vs golden 展平标量 `cohCount_0..15` / `vtag_0..15`）签名/拓扑
+均无法逐一配对」而大量 unmatched，且 `cohCount_0` 在「黑盒预取器自由输出 + `cohCount[20]`
+超时位反馈」组合出的不可达状态（该位需 2^20 拍才可能置位）上被误判失配；当时用源级逐行
+比对 + 逐拍探针（全部 16 个 entry 的 cohCount，mism=0）证伪；冻结基线重跑（配合
+set_user_match 阵列钉对）后 FM 已原生收敛。
 
-**这 20 个 Failing 经证伪为假阳性**，证据：
-1. **源级逐行比对** cohCount 的 next-state 与 golden 完全一致——增量条件 `active & ~cohTimeOut`、
-   复位条件 `accessValid0·(merge0?…:ins0) | accessValid1·(merge1?…:ins1)`、以及「+1 优先于清 0」
-   的 if-else 优先级，三者均与 golden 的 `cohCount_0 <=` 块一字不差（见 §3.3）。
-2. **逐拍仿真证伪**：用探针在 180,000 拍内**逐拍比对全部 16 个 entry 的 cohCount 值**（golden vs
-   可读核），`mism=0`——动态行为完全一致。
-3. FM `diagnose` 报告 **"No correctable drivers found"**（无法定位任何可修正驱动），且 impl 侧有
-   100 个未配对的黑盒（`StorePfWrapper`）输出被当作自由变量。这是 FM 对「黑盒预取器自由输出 +
-   `cohCount[20]` 超时位反馈」组合出的**不可达状态**做无界探索导致的结构性假阳性
-   （`cohCount[20]` 需 2^20 拍才可能置位，实际复位可达状态里恒为 0）。
-
-按 `REWRITE_STYLE.md` 的 FM 策略，这属于「**大状态机签名分析配不齐 → 接受 UT 充分 + FM 假阳性
-已证伪并记录**」的情形。FM 整体为**部分验证**（353 passing；20 failing 已证伪；1946
-unverified 未覆盖）。功能正确性以 **7 个种子 UT errors=0**（逐拍比对 DCache 写口 / forward /
-各计数器）+ 上述 cohCount 逐拍证伪为权威。
-
-> 注：FM 调试期间还据 cohCount_0 的 failing 点定位并修正了两个**真实**实现差异——① cohCount/
-> missqReplayCount 缺 `RegInit(0)`；② 「+1 优先于清 0」的计数器优先级（见 §3.3）。修正后 UT 仍全绿、
-> cohCount 逐拍 0 失配；剩余的 20 个 Failing 即上述已证伪的假阳性。
+> 注：早期 FM 调试期间据 cohCount_0 的失配点定位并修正了两个**真实**实现差异——① cohCount/
+> missqReplayCount 缺 `RegInit(0)`；② 「+1 优先于清 0」的计数器优先级（见 §3.3）。这是
+> 「FM 部分验证也能抓真 bug」的实例，修复早于冻结。
 
 ---
 

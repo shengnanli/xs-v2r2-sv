@@ -3,15 +3,12 @@
 > ✅ **FM 分类 = REPLACEMENT_EQ（可读核真驱动 + 冻结基线原生 SUCCEEDED）**。依据台账
 > [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md) 与冻结基线日志
 > `verif/ut/PtwCache/fm_work/PtwCache/fm_full.log`：本模块在当前冻结 golden 基线上 FM **原生
-> `Verification SUCCEEDED`，82590 passing / 0 failing / 0 unverified**。下文验证节里任何
-> "FAILED / 20 failing 截断 / 部分验证 / 未收敛"的表述是**冻结前的旧叙事，已作废**——以本
-> banner 与台账为准。
+> `Verification SUCCEEDED`，82590 passing / 0 failing / 0 unverified**。
 
-> 当前状态：**进行中**。已落地类型包 `rtl/memblock/ptwcache_pkg.sv`（参数 / 各级条目
-> struct / 索引与命中纯函数）与本学习文档。可读核 `rtl/memblock/PtwCache.sv`
-> （`xs_PtwCache_core`，按节拆到 `ptwcache_*.svh`）、golden 同名 wrapper、生成脚本
-> `scripts/gen_ptwcache.py`、UT/FM 框架 `verif/ut/PtwCache/` 正在按本文档描述的结构搭建。
-> 本文档同时是后续实现与复核的权威规格。
+> 产物（已完成）：类型包 `rtl/memblock/ptwcache_pkg.sv`（参数 / 各级条目 struct / 索引与
+> 命中纯函数）、可读核 `rtl/memblock/PtwCache.sv`（`xs_PtwCache_core`，按节拆到
+> `ptwcache_*.svh`）、golden 同名 wrapper、生成脚本 `scripts/gen_ptwcache.py`、
+> UT/FM 框架 `verif/ut/PtwCache/`。本文档同时是实现与复核的权威规格。
 
 ## 架构定位
 
@@ -228,14 +225,17 @@ PLRU、sfence/hfence 无效化向量计算。存储宏 + bore 时钟门控旁带
   - don't-care：`!$isunknown(golden) && !$isunknown(impl)`（SRAM 上电 X 态经「valid 但未写单元」
     传播为 don't-care，方法学先例）。
   - DFT 旁带 `boreChildrenBd_*`（MBIST scan-out）不比对：纯 DFT 路径，且是独立 SRAM 内容的扫描读出。
-  - **现状**：功能数据通路（流水相位、L3/L2/L1/L0/SP 五级命中、refill victim/tree-PLRU、sfence
-    无效化、resp 汇总 hit/toFsm/toHptw/stage1、perf）逐位与 golden 一致（定值比对 0 错）；
-    **残留**：`io_resp_bits_bypassed` / `io_resp_bits_toHptw_bypassed` 两路 `ValidHoldBypass`
-    的 set/hold 相位有一处未对齐（约 0.45% 拍，seed1 910 / seed7 1855 / seed42 2557 错，
-    全部集中在这两个 bypass 输出 + seed42 个别 perf X）。这是 `refill_bypass` 命中后保持寄存器
-    的置/清相位 corner，需进一步逐拍探针定位（见报告）。
-- **FM**：`make fm`（SRAM 黑盒）。预计因「per-level packed struct 数组 vs golden 扁平标量寄存器」
-  base-match 不收敛，按「UT 充分 + FM 不可判」先例（同 LoadQueueRAR/Sbuffer）处理。
+  - **最终结果**：seed 1/7/42 各 **checks=199936，errors=0，TEST PASSED**。功能数据通路
+    （流水相位、L3/L2/L1/L0/SP 五级命中、refill victim/tree-PLRU、sfence 无效化、resp 汇总
+    hit/toFsm/toHptw/stage1、perf）逐位与 golden 一致。开发中曾有 `bypassed` 两路
+    `ValidHoldBypass` 的 set/hold 相位错位，按「坑」#5 的 clr-优先规则修正后归零。
+- **FM**：`make fm`（SRAM 黑盒）。冻结基线全貌重跑（`fm_full.log`）**原生
+  `Verification SUCCEEDED`：82590 passing / 0 failing / 0 unverified**。
+  历史注脚：冻结前的部分验证曾在 PLRU 寄存器本体（l1/l2/l0replace 等）上报出失配——FM 跨
+  SRAM 黑盒边界把物理相关的 v 向量与 PLRU 状态视作自由变量、探索不可达组合所致，当时用
+  tb 层次探针（l1g/l1vmids/各级 replace 逐拍 vs golden，3 种子 mismatch 全 0）+ 逐条逻辑
+  同构核对证伪；冻结基线重跑后 FM 已原生收敛。（PLRU 复位缺失曾是**真 bug**，见下方
+  「实测修正记录」#6，修复早于冻结。）
 
 ## 关键微架构坑（实测修正记录）
 
@@ -257,26 +257,8 @@ PLRU、sfence/hfence 无效化向量计算。存储宏 + bore 时钟门控旁带
    修复：给 l1/l2/l3replace 加 `posedge reset` 清 0（refill.svh）。修后探针
    `l1repl/l0repl/l2repl/l3repl_mm` seed1/7/42 全 0。
 
-## L1 元数据/PLRU FM 残留（探针证伪的假阳性）
+## FM 最终结果（冻结基线）
 
-`make fm` 末次 verify 结论 **Verification FAILED**：**10609 passing / 20 failing /
-71912 unverified**。已报告的 20 个 failing **全部是 PLRU 寄存器本体**
-（`state_reg_1`=l2replace 5 位、`state_vec_*`=l1replace、`state_vec_1_*`=l0replace），
-非 l1g/l1vmids/L1-SRAM（后者修 l1replace reset 后已从失败表消失——它们原本是
-l1replace X 经 L1 victim-way 选择级联污染 set5 的写 waymask 所致）。
-注意 **20 是 Formality 默认 `verification_failing_point_limit=20` 的截断上限**——verify
-攒满 20 个失配即提前中止，**71912 个 unverified 点未验**（per-level packed struct 数组 vs
-golden 扁平标量配对不收敛所致的大体量未判），FM 为部分验证。
-
-判定为 **FM 假阳性**，依据：
-- tb 内层探针对 l1g(16b)、l1vmids(8set×2way)、l1replace(8)、l0replace(32)、l2/l3replace
-  逐拍 vs golden 扁平 reg 比对，seed1/7/42 各 200000 拍 **mismatch 全 0**。
-- 逐条核对 golden 与 SV 的 PLRU 更新/victim 选择逻辑（`plru16/4/2_access`、
-  `replace16/4/2` 先空位后 PLRU 的 ParallelPriorityEncoder、命中 access 的 set 选择
-  `vpn[14:12]`/`vpn[7:3]` 与 hitWay 优先级）结构逐位同构。
-- FM `diagnose` 报「single localized error」，反例落在 L1/L0 SRAM 黑盒输出、v 向量、
-  PLRU 状态三者**物理相关但 FM 跨黑盒边界视作自由**的不可达组合（v 与 replace 在硬件
-  里从 reset 共同演化，FM 无法推断该相关性）。属本工程 wrapper/u_core 边界已知 FM 配对
-  局限（fm.log 头注亦载）。结论：UT 充分（25 万拍×3 seed 探针 0 错）为权威 + FM 部分验证
-  （10609 passing；20 failing 已证伪；71912 unverified 未覆盖），按
-  LoadQueueRAR/Sbuffer 先例处理；不为过 FM 改动已与 golden 同构的可读逻辑。
+`fm_full.log`：**原生 `Verification SUCCEEDED`，82590 passing / 0 failing / 0 unverified**
+（见文首 banner 与台账）。冻结前 PLRU 寄存器上的假阳性历史及其探针证伪已并入上方
+「验证策略」FM 条目的历史注脚。
