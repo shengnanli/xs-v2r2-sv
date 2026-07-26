@@ -266,9 +266,10 @@
    "entry": "scripts/fm_eq.tcl",
    "proof_mode": "assembly",
    "config_status": "CONFIGURED",
-   "required_verdict": "SUCCEEDED",
+   "required_verdict": "PASS_DEAD_REF",
+   "dead_ref": "verif/signoff/dead_ref/DataPath.json",
    "allow_ref": "verif/signoff/allow/DataPath.json",
-   "rationale": "assembly+vmucp+dead-ref: 3 difftestArch{Int,Fp,Vec}RegState DPI探针零fanout空黑盒+16191对称matched-unread(DelayReg delayer/og0_cancel_delay/srcType)vmucp+390 golden-only int_regcache_tag shadow dead-ref",
+   "rationale": "assembly+vmucp+dead-ref: 3 difftestArch{Int,Fp,Vec}RegState DPI探针零fanout空黑盒+16191对称matched-unread(DelayReg delayer/og0_cancel_delay/srcType)vmucp+390 golden-only int_regcache_tag/enqPtr shadow dead-ref(feed only _GEN_57..64 popcount零消费者cone-dead, impl clean unread_impl=0)=PASS_DEAD_REF",
    "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
