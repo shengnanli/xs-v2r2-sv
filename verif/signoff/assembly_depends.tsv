@@ -24,12 +24,13 @@ ExeUnit_4	Alu	独立FU目标Alu SIGNOFF_PASS则依赖闭合; ExeUnit_4 assembly�
 Predictor	Composer
 Sbuffer	StorePfWrapper	StorePfWrapper SIGNOFF_PASS(依赖闭包); prefetcher实例=StorePfWrapper黑盒(store预取链Serializer/StorePrefetchBursts/Arbiter, 两侧不给源码→unresolved black_box同名配对); 父级assembly, 仅证Sbuffer本层glue
 IMSIC	IMSICGateWay
+CSR	NewCSR,IMSICGateWay	CSR(413端口 assembly parent, ExuBlock非305 child exus_7/csr)。2绿305 child对称unresolved黑盒: NewCSR(csrMod)+IMSICGateWay(imsic/imsicGateWay, 含vendor宏)。TrapInstMod/TrapTvalMod(CSR直属叶)+IMSIC.sv+IntFile.sv(IMSIC逻辑子)两侧elaborate白盒非依赖。assembly native SUCCEEDED 7957点/0(0)全零/0unread(vmucp)。须NewCSR+IMSICGateWay均SIGNOFF_PASS父级才计绿(二者已绿)
 ExeUnit_8	FAlu,FCVT,FMA
 L2TLB	PtwCache,PTW,LLPTW,HPTW,L2TlbMissQueue,L2TlbPrefetch,PMP
 Slice	SinkA,SinkC,GrantBuffer,TXREQ,TXDAT,TXRSP,RXDAT,RXRSP,Directory,RequestArb,MainPipe_1,MSHRCtl,L2Slice
 L2TLBWrapper	L2TLB
 ExuBlock_1	FAlu,FCVT,FMA,FDivSqrt,ExeUnit_8
-ExuBlock	Alu,Bku,MulUnit,BranchUnit,JumpUnit,DivUnit,Fence,VSetRiWi	8绿305 FU child对称unresolved黑盒(depends_on, 各SIGNOFF_PASS). glue叶(ClockGate/Dispatcher×5/DelayN_216·217/IntFPToVec+Fli{H,S,D}Table/VSetRiWvf+VsetModule)两侧elaborate白盒非依赖. ★UNMET GAP: CSR+IntToFP_3两非305 child无独立305 target→父级assembly native SUCCEEDED但依赖未闭合, 保持PROOF_GAP直到CSR/IntToFP_3各自signoff(conditional suspend)
+ExuBlock	Alu,Bku,MulUnit,BranchUnit,JumpUnit,DivUnit,Fence,VSetRiWi,CSR,IntToFP_3	8绿305 FU child对称unresolved黑盒(depends_on, 各SIGNOFF_PASS)+2 AUX child CSR/IntToFP_3(exus_7/csr, exus_5/i2f)现各自signoff SUCCEEDED(aux_targets PASS). glue叶(ClockGate/Dispatcher×5/DelayN_216·217/IntFPToVec+Fli{H,S,D}Table/VSetRiWvf+VsetModule)两侧elaborate白盒非依赖. ★GAP CLOSED: CSR(assembly SUCCEEDED 7957点)+IntToFP_3(strict SUCCEEDED 808点)两非305 child均已signoff→ExuBlock的39黑盒全闭合(17绿305 FU + CSR + IntToFP_3 + 18 glue叶白盒)。ExuBlock assembly native SUCCEEDED 13779 passing/全零, 依赖闭包满足→可gate转绿(条件: main须(1)CSR入vmucp白名单3处(2)CSR+IntToFP_3入aux_targets已append(3)本行depends加CSR/IntToFP_3)
 DCache	BankedDataArray,L1CohMetaArray,L1FlagMetaArray,L1FlagMetaArray_1,DuplicatedTagArray,LoadPipe,MainPipe,MissQueue,ProbeQueue,WritebackQueue
 DCacheWrapper	DCache
 OpenLLC	SubDirectory,SubDirectory_1,SnoopUnit,MemUnit,RefillUnit,ResponseUnit	SubDirectory/_1=绿305子(clientDir/selfDir实例, interface_only黑盒边界); SnoopUnit/MemUnit/RefillUnit/ResponseUnit=独立AUX real-body证(可读xs_*_core非空stub非vacuous, 各native FM SUCCEEDED, class-4对称matched-unread双射加强verify_matched_unread=true后0(0)unread), reviewer规则golden复用-as-blackbox须独立证明-本4子皆已证; inline 9非305逻辑子(Directory_4/DataStorage_4/MainPipe_5/RequestArb_4/RequestBuffer_4/FastArbiter_49/Queue1_CHIRSP/LCredit2Decoupled_3-5/SRAMTemplate_202/array_0_1)两侧elaborate白盒不入依赖; 仅vendor SRAM宏array_0_1_ext+CHI队列Queue15_*作黑盒边界; 父级assembly+vmucp, 6依赖全SIGNOFF_PASS则闭合合法绿

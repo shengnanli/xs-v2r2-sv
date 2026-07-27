@@ -1,6 +1,7 @@
 Backend	VMUCP+BB	nc264/ur0/ui0/bb76
 BankedDataArray	BB+GOLD	nc0/ur3/ui0/bb9
 Bku	IMPL_DEAD	nc1/ur19/ui19/bb0/NONSYM
+CSR	VMUCP+BB	nc48/ur0/ui0/bb2
 Composer	VMUCP+BB+GOLD	nc15/ur602/ui0/bb5
 CompressUnit	IMPL_DEAD	nc0/ur0/ui129/bb0
 DCache	VMUCP+BB	nc1/ur0/ui0/bb32
@@ -71,6 +72,9 @@ Sbuffer	IMPL_DEAD	nc0/ur0/ui15/bb1
 Scheduler_2	UNMATCH_COMPARE	nc647/ur0/ui0/bb0
 SinkC	BB	nc0/ur0/ui0/bb1
 Slice	VMUCP+BB	nc2751/ur0/ui0/bb47
+Slice_1	VMUCP+BB	nc9/ur0/ui0/bb47
+Slice_2	VMUCP+BB	nc9/ur0/ui0/bb47
+Slice_3	VMUCP+BB	nc9/ur0/ui0/bb47
 SourceB	IMPL_DEAD	nc0/ur4/ui5/bb1
 StoreExceptionBuffer	UNMATCH_COMPARE	nc0/ur0/ui0/bb0
 StoreMisalignBuffer	UNMATCH_COMPARE	nc1/ur11/ui101/bb0/NONSYM
@@ -94,6 +98,3 @@ WritebackQueue	IMPL_DEAD	nc0/ur36/ui36/bb0
 XSCore	UNMATCH_COMPARE	nc0/ur0/ui0/bb3
 XSTile	NATIVE_FAIL	nc0/ur0/ui0/bb22
 XSTop	NATIVE_FAIL	nc3/ur0/ui0/bb68
-Slice_1	VMUCP+BB	nc9/ur0/ui0/bb47
-Slice_2	VMUCP+BB	nc9/ur0/ui0/bb47
-Slice_3	VMUCP+BB	nc9/ur0/ui0/bb47
