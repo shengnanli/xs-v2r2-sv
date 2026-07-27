@@ -1,21 +1,6 @@
 {
     "unresolved_blackbox": [
         {
-            "id": "exus_Alu",
-            "ref_path": "r:/WORK/ExuBlock/exus/Alu",
-            "impl_path": "i:/WORK/ExuBlock/u_core/exus/Alu"
-        },
-        {
-            "id": "exus_Bku",
-            "ref_path": "r:/WORK/ExuBlock/exus/Bku",
-            "impl_path": "i:/WORK/ExuBlock/u_core/exus/Bku"
-        },
-        {
-            "id": "exus_Mul",
-            "ref_path": "r:/WORK/ExuBlock/exus/Mul",
-            "impl_path": "i:/WORK/ExuBlock/u_core/exus/Mul"
-        },
-        {
             "id": "exus_1_brh",
             "ref_path": "r:/WORK/ExuBlock/exus_1/brh",
             "impl_path": "i:/WORK/ExuBlock/u_core/exus_1/brh"
@@ -94,6 +79,21 @@
             "id": "exus_7_csr",
             "ref_path": "r:/WORK/ExuBlock/exus_7/csr",
             "impl_path": "i:/WORK/ExuBlock/u_core/exus_7/csr"
+        },
+        {
+            "id": "exus_Alu",
+            "ref_path": "r:/WORK/ExuBlock/exus/Alu",
+            "impl_path": "i:/WORK/ExuBlock/u_core/exus/Alu"
+        },
+        {
+            "id": "exus_Bku",
+            "ref_path": "r:/WORK/ExuBlock/exus/Bku",
+            "impl_path": "i:/WORK/ExuBlock/u_core/exus/Bku"
+        },
+        {
+            "id": "exus_Mul",
+            "ref_path": "r:/WORK/ExuBlock/exus/Mul",
+            "impl_path": "i:/WORK/ExuBlock/u_core/exus/Mul"
         }
     ],
     "interface_only": [],
