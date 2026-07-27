@@ -23,3 +23,9 @@ L2Directory_1	L2Directory(绿305子)MBIST分发变体; 可读参数化核xs_L2Di
 L2Directory_2	同L2Directory_1家族 #(ARRAY_W=6,BASE=6'h20); 清洁strict PASS 922点/0fail/0unread/0黑盒
 L2Directory_3	同L2Directory_1家族 #(ARRAY_W=6,BASE=6'h2F); 清洁strict PASS 922点/0fail/0unread/0黑盒
 RXSNP	CHI RX-Snoop AUX real-body(可读xs_RXSNP_core: 2深Queue2_CHISNP白盒缓冲+地址拆task+16路MSHR阻塞/嵌套掩码组合匹配+snpHitRelease*选中+stall路由); class-4对称matched-unread加强(68双射=64 stallCnt死锁计数器[SYNTHESIS断言裁剪]+4 Queue RAM addr[4:3]死位); native FM SUCCEEDED 加强后 407passing/0(0)unread; UT seed1/7/42 errors0
+Directory_1	Directory变体(TL2 shard B); 复用绿xs_Directory_core; native SUCCEEDED 2371/0fail/0(0)unmatched, 16 wayMask matched-unread双射同基线; 须main加matched-unread白名单+L2Directory_1独立签
+Directory_2	Directory变体(TL2 shard B); 复用绿xs_Directory_core; native SUCCEEDED 2372/0fail/0(0)unmatched, 16 wayMask双射; 须白名单+L2Directory_2签
+Directory_3	Directory变体(TL2 shard B); 复用绿xs_Directory_core; native SUCCEEDED 2372/0fail/0(0)unmatched, 16 wayMask双射; 须白名单+L2Directory_3签
+L2Slice_1	L2 slice MBIST 流水分发节点单态化变体(BASE=0x11)；复用绿核 xs_L2SliceN_core；strict PASS 0unread/0blackbox
+L2Slice_2	L2 slice MBIST 流水分发节点单态化变体(BASE=0x20, 6位array)；复用绿核 xs_L2SliceN_core；strict PASS
+L2Slice_3	L2 slice MBIST 流水分发节点单态化变体(BASE=0x2F, 6位array)；复用绿核 xs_L2SliceN_core；strict PASS
