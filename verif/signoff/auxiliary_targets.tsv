@@ -29,3 +29,7 @@ Directory_3	Directory变体(TL2 shard B); 复用绿xs_Directory_core; native SUC
 L2Slice_1	L2 slice MBIST 流水分发节点单态化变体(BASE=0x11)；复用绿核 xs_L2SliceN_core；strict PASS 0unread/0blackbox
 L2Slice_2	L2 slice MBIST 流水分发节点单态化变体(BASE=0x20, 6位array)；复用绿核 xs_L2SliceN_core；strict PASS
 L2Slice_3	L2 slice MBIST 流水分发节点单态化变体(BASE=0x2F, 6位array)；复用绿核 xs_L2SliceN_core；strict PASS
+MMIOBridgeEntry	MMIO 桥单条目事务 FSM(io_id 1位); MMIOBridge 的 residual 子; 参数化可读 xs_MMIOBridgeEntry_core #(.ID_W(1)); strict native SUCCEEDED 958passing/0unread/0blackbox/dont_verify=false; codex_0073 phase1
+MMIOBridgeEntry_2	MMIO 桥条目变体(io_id 2位, txnID={10'h0,io_id}); 共享参数化核 #(.ID_W(2)); strict SUCCEEDED 958passing/0unread; codex_0073 phase1
+MMIOBridgeEntry_4	MMIO 桥条目变体(io_id 3位, txnID={9'h0,io_id}); 共享参数化核 #(.ID_W(3)); strict SUCCEEDED 958passing/0unread; codex_0073 phase1
+PrefetchQueue	L2 预取请求 32深环形FIFO(空旁路); Prefetcher 的 residual 子; 可读 xs_PrefetchQueue_core; native SUCCEEDED 3310passing/0(0)unread, 31 valids matched-unread双射 vmucp加强; 须main加matched-unread白名单(已加); codex_0073 phase1
