@@ -1,0 +1,32 @@
+{
+    "unresolved_blackbox": [],
+    "interface_only": [
+        {
+            "id": "intRat",
+            "ref_path": "r:/WORK/RenameTableWrapper/intRat",
+            "impl_path": "i:/WORK/RenameTableWrapper/u_core/intRat"
+        },
+        {
+            "id": "fpRat",
+            "ref_path": "r:/WORK/RenameTableWrapper/fpRat",
+            "impl_path": "i:/WORK/RenameTableWrapper/u_core/fpRat"
+        },
+        {
+            "id": "vecRat",
+            "ref_path": "r:/WORK/RenameTableWrapper/vecRat",
+            "impl_path": "i:/WORK/RenameTableWrapper/u_core/vecRat"
+        },
+        {
+            "id": "v0Rat",
+            "ref_path": "r:/WORK/RenameTableWrapper/v0Rat",
+            "impl_path": "i:/WORK/RenameTableWrapper/u_core/v0Rat"
+        },
+        {
+            "id": "vlRat",
+            "ref_path": "r:/WORK/RenameTableWrapper/vlRat",
+            "impl_path": "i:/WORK/RenameTableWrapper/u_core/vlRat"
+        }
+    ],
+    "empty_blackbox": [],
+    "unmatched": []
+}
