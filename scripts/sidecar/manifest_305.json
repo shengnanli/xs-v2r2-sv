@@ -1707,12 +1707,12 @@
    "makefile": "verif/ut/L2Top/Makefile",
    "make_target": "fm-L2Top",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "allow_ref": "verif/signoff/allow/L2Top.json",
+   "rationale": "assembly+vmucp: L2顶层壳, TL2CHICoupledL2全子叶深elaborate令死输出位对称unread(消26 impl-undriven BBPin+20 failing)+vmucp; unmatched0/failing0/unread0 无dont_verify(替换前worker 26 set_dont_verify_points)",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -4440,9 +4440,9 @@
    "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "allow_ref": "verif/signoff/allow/TL2CHICoupledL2.json",
+   "rationale": "assembly+vmucp: L2主体装配壳, 23子golden两侧同源elaborate+RequestBuffer interface_only+269对称matched-unread vmucp+grantBeat 4双射pre-match; unmatched0/failing0/unread0 无dont_verify",
+   "verify_matched_unread_compare_points": "true",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {

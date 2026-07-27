@@ -20,3 +20,5 @@ for {set k 1} {$k <= 48} {incr k} {
   }
 }
 puts "TL2CHI_PINS: perf $_n points pinned"
+# 注: GrantData beat 跟踪寄存器(grant_data_fire_first_r_counter ↔ grantBeatRest)
+# 的 4 对双射在 fm_pins_pre.tcl(匹配前)配对, 见该文件说明。
