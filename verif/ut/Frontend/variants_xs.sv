@@ -489,6 +489,32 @@ module Frontend_xs
   output xs_dbg_error_to_beu_q,
   output xs_dbg_pc_vio
 );
+  // ===== REAL REPLACEMENT: 核驱动的消费者 net（golden body 同名寄存器已删）=====
+  wire inner_needFlush;
+  wire inner_FlushControlRedirect;
+  wire inner_FlushMemVioRedirect;
+  wire inner_sfence_valid;
+  wire inner_sfence_bits_rs1;
+  wire inner_sfence_bits_rs2;
+  wire [49:0] inner_sfence_bits_addr;
+  wire [15:0] inner_sfence_bits_id;
+  wire inner_sfence_bits_flushPipe;
+  wire inner_sfence_bits_hv;
+  wire inner_sfence_bits_hg;
+  wire inner_icache_io_csr_pf_enable_REG;
+  wire inner_icache_io_fencei_REG;
+  wire inner_io_error_REG_1_valid;
+  wire [47:0] inner_io_error_REG_1_bits_paddr;
+  wire inner_io_error_REG_1_bits_report_to_beu;
+  wire [5:0] inner_io_perf_0_value_REG_1;
+  wire [5:0] inner_io_perf_1_value_REG_1;
+  wire [5:0] inner_io_perf_2_value_REG_1;
+  wire [5:0] inner_io_perf_3_value_REG_1;
+  wire [5:0] inner_io_perf_4_value_REG_1;
+  wire [5:0] inner_io_perf_5_value_REG_1;
+  wire [5:0] inner_io_perf_6_value_REG_1;
+  wire [5:0] inner_io_perf_7_value_REG_1;
+  wire [5:0] xs_core_perf_q [8];
 
   wire [143:0]      inner_childBd_16_outdata;
   wire              inner_childBd_16_ack;
@@ -1798,789 +1824,6 @@ module Frontend_xs
   wire [9:0]        inner_bd_addr = 10'h0;
   wire [9:0]        inner_bd_addr_rd = 10'h0;
   wire [143:0]      inner_bd_indata = 144'h0;
-  reg               inner_needFlush;
-  wire              inner__probe_0 = inner_needFlush;
-  reg               inner_FlushControlRedirect;
-  reg               inner_FlushMemVioRedirect;
-  reg               inner_sfence_REG_valid;
-  reg               inner_sfence_REG_bits_rs1;
-  reg               inner_sfence_REG_bits_rs2;
-  reg  [49:0]       inner_sfence_REG_bits_addr;
-  reg  [15:0]       inner_sfence_REG_bits_id;
-  reg               inner_sfence_REG_bits_flushPipe;
-  reg               inner_sfence_REG_bits_hv;
-  reg               inner_sfence_REG_bits_hg;
-  reg               inner_sfence_valid;
-  reg               inner_sfence_bits_rs1;
-  reg               inner_sfence_bits_rs2;
-  reg  [49:0]       inner_sfence_bits_addr;
-  reg  [15:0]       inner_sfence_bits_id;
-  reg               inner_sfence_bits_flushPipe;
-  reg               inner_sfence_bits_hv;
-  reg               inner_sfence_bits_hg;
-  reg               inner_icache_io_csr_pf_enable_REG;
-  reg               inner_icache_io_fencei_REG;
-  reg  [49:0]       inner_checkPcMem_0_startAddr;
-  reg  [49:0]       inner_checkPcMem_1_startAddr;
-  reg  [49:0]       inner_checkPcMem_2_startAddr;
-  reg  [49:0]       inner_checkPcMem_3_startAddr;
-  reg  [49:0]       inner_checkPcMem_4_startAddr;
-  reg  [49:0]       inner_checkPcMem_5_startAddr;
-  reg  [49:0]       inner_checkPcMem_6_startAddr;
-  reg  [49:0]       inner_checkPcMem_7_startAddr;
-  reg  [49:0]       inner_checkPcMem_8_startAddr;
-  reg  [49:0]       inner_checkPcMem_9_startAddr;
-  reg  [49:0]       inner_checkPcMem_10_startAddr;
-  reg  [49:0]       inner_checkPcMem_11_startAddr;
-  reg  [49:0]       inner_checkPcMem_12_startAddr;
-  reg  [49:0]       inner_checkPcMem_13_startAddr;
-  reg  [49:0]       inner_checkPcMem_14_startAddr;
-  reg  [49:0]       inner_checkPcMem_15_startAddr;
-  reg  [49:0]       inner_checkPcMem_16_startAddr;
-  reg  [49:0]       inner_checkPcMem_17_startAddr;
-  reg  [49:0]       inner_checkPcMem_18_startAddr;
-  reg  [49:0]       inner_checkPcMem_19_startAddr;
-  reg  [49:0]       inner_checkPcMem_20_startAddr;
-  reg  [49:0]       inner_checkPcMem_21_startAddr;
-  reg  [49:0]       inner_checkPcMem_22_startAddr;
-  reg  [49:0]       inner_checkPcMem_23_startAddr;
-  reg  [49:0]       inner_checkPcMem_24_startAddr;
-  reg  [49:0]       inner_checkPcMem_25_startAddr;
-  reg  [49:0]       inner_checkPcMem_26_startAddr;
-  reg  [49:0]       inner_checkPcMem_27_startAddr;
-  reg  [49:0]       inner_checkPcMem_28_startAddr;
-  reg  [49:0]       inner_checkPcMem_29_startAddr;
-  reg  [49:0]       inner_checkPcMem_30_startAddr;
-  reg  [49:0]       inner_checkPcMem_31_startAddr;
-  reg  [49:0]       inner_checkPcMem_32_startAddr;
-  reg  [49:0]       inner_checkPcMem_33_startAddr;
-  reg  [49:0]       inner_checkPcMem_34_startAddr;
-  reg  [49:0]       inner_checkPcMem_35_startAddr;
-  reg  [49:0]       inner_checkPcMem_36_startAddr;
-  reg  [49:0]       inner_checkPcMem_37_startAddr;
-  reg  [49:0]       inner_checkPcMem_38_startAddr;
-  reg  [49:0]       inner_checkPcMem_39_startAddr;
-  reg  [49:0]       inner_checkPcMem_40_startAddr;
-  reg  [49:0]       inner_checkPcMem_41_startAddr;
-  reg  [49:0]       inner_checkPcMem_42_startAddr;
-  reg  [49:0]       inner_checkPcMem_43_startAddr;
-  reg  [49:0]       inner_checkPcMem_44_startAddr;
-  reg  [49:0]       inner_checkPcMem_45_startAddr;
-  reg  [49:0]       inner_checkPcMem_46_startAddr;
-  reg  [49:0]       inner_checkPcMem_47_startAddr;
-  reg  [49:0]       inner_checkPcMem_48_startAddr;
-  reg  [49:0]       inner_checkPcMem_49_startAddr;
-  reg  [49:0]       inner_checkPcMem_50_startAddr;
-  reg  [49:0]       inner_checkPcMem_51_startAddr;
-  reg  [49:0]       inner_checkPcMem_52_startAddr;
-  reg  [49:0]       inner_checkPcMem_53_startAddr;
-  reg  [49:0]       inner_checkPcMem_54_startAddr;
-  reg  [49:0]       inner_checkPcMem_55_startAddr;
-  reg  [49:0]       inner_checkPcMem_56_startAddr;
-  reg  [49:0]       inner_checkPcMem_57_startAddr;
-  reg  [49:0]       inner_checkPcMem_58_startAddr;
-  reg  [49:0]       inner_checkPcMem_59_startAddr;
-  reg  [49:0]       inner_checkPcMem_60_startAddr;
-  reg  [49:0]       inner_checkPcMem_61_startAddr;
-  reg  [49:0]       inner_checkPcMem_62_startAddr;
-  reg  [49:0]       inner_checkPcMem_63_startAddr;
-  wire [63:0][49:0] _GEN =
-    {{inner_checkPcMem_63_startAddr},
-     {inner_checkPcMem_62_startAddr},
-     {inner_checkPcMem_61_startAddr},
-     {inner_checkPcMem_60_startAddr},
-     {inner_checkPcMem_59_startAddr},
-     {inner_checkPcMem_58_startAddr},
-     {inner_checkPcMem_57_startAddr},
-     {inner_checkPcMem_56_startAddr},
-     {inner_checkPcMem_55_startAddr},
-     {inner_checkPcMem_54_startAddr},
-     {inner_checkPcMem_53_startAddr},
-     {inner_checkPcMem_52_startAddr},
-     {inner_checkPcMem_51_startAddr},
-     {inner_checkPcMem_50_startAddr},
-     {inner_checkPcMem_49_startAddr},
-     {inner_checkPcMem_48_startAddr},
-     {inner_checkPcMem_47_startAddr},
-     {inner_checkPcMem_46_startAddr},
-     {inner_checkPcMem_45_startAddr},
-     {inner_checkPcMem_44_startAddr},
-     {inner_checkPcMem_43_startAddr},
-     {inner_checkPcMem_42_startAddr},
-     {inner_checkPcMem_41_startAddr},
-     {inner_checkPcMem_40_startAddr},
-     {inner_checkPcMem_39_startAddr},
-     {inner_checkPcMem_38_startAddr},
-     {inner_checkPcMem_37_startAddr},
-     {inner_checkPcMem_36_startAddr},
-     {inner_checkPcMem_35_startAddr},
-     {inner_checkPcMem_34_startAddr},
-     {inner_checkPcMem_33_startAddr},
-     {inner_checkPcMem_32_startAddr},
-     {inner_checkPcMem_31_startAddr},
-     {inner_checkPcMem_30_startAddr},
-     {inner_checkPcMem_29_startAddr},
-     {inner_checkPcMem_28_startAddr},
-     {inner_checkPcMem_27_startAddr},
-     {inner_checkPcMem_26_startAddr},
-     {inner_checkPcMem_25_startAddr},
-     {inner_checkPcMem_24_startAddr},
-     {inner_checkPcMem_23_startAddr},
-     {inner_checkPcMem_22_startAddr},
-     {inner_checkPcMem_21_startAddr},
-     {inner_checkPcMem_20_startAddr},
-     {inner_checkPcMem_19_startAddr},
-     {inner_checkPcMem_18_startAddr},
-     {inner_checkPcMem_17_startAddr},
-     {inner_checkPcMem_16_startAddr},
-     {inner_checkPcMem_15_startAddr},
-     {inner_checkPcMem_14_startAddr},
-     {inner_checkPcMem_13_startAddr},
-     {inner_checkPcMem_12_startAddr},
-     {inner_checkPcMem_11_startAddr},
-     {inner_checkPcMem_10_startAddr},
-     {inner_checkPcMem_9_startAddr},
-     {inner_checkPcMem_8_startAddr},
-     {inner_checkPcMem_7_startAddr},
-     {inner_checkPcMem_6_startAddr},
-     {inner_checkPcMem_5_startAddr},
-     {inner_checkPcMem_4_startAddr},
-     {inner_checkPcMem_3_startAddr},
-     {inner_checkPcMem_2_startAddr},
-     {inner_checkPcMem_1_startAddr},
-     {inner_checkPcMem_0_startAddr}};
-  reg               inner_prevTakenValid;
-  reg               inner_prevTakenFtqPtr_flag;
-  reg  [5:0]        inner_prevTakenFtqPtr_value;
-  wire              inner_ = io_backend_cfVec_0_ready & _inner_ibuffer_io_out_0_valid;
-  wire              inner__0 = inner_ & _inner_ibuffer_io_out_0_bits_pd_brType == 2'h1;
-  wire              inner__1 = inner__0 & _inner_ibuffer_io_out_0_bits_pred_taken;
-  wire              inner__2 = io_backend_cfVec_1_ready & _inner_ibuffer_io_out_1_valid;
-  wire              inner__probe_1 =
-    inner__1 & inner__2
-    & 6'(_inner_ibuffer_io_out_0_bits_ftqPtr_value
-         + 6'h1) != _inner_ibuffer_io_out_1_bits_ftqPtr_value;
-  wire              inner__3 = inner__2 & _inner_ibuffer_io_out_1_bits_pd_brType == 2'h1;
-  wire              inner__4 = inner__3 & _inner_ibuffer_io_out_1_bits_pred_taken;
-  wire              inner__5 = io_backend_cfVec_2_ready & _inner_ibuffer_io_out_2_valid;
-  wire              inner__probe_2 =
-    inner__4 & inner__5
-    & 6'(_inner_ibuffer_io_out_1_bits_ftqPtr_value
-         + 6'h1) != _inner_ibuffer_io_out_2_bits_ftqPtr_value;
-  wire              inner__6 = inner__5 & _inner_ibuffer_io_out_2_bits_pd_brType == 2'h1;
-  wire              inner__7 = inner__6 & _inner_ibuffer_io_out_2_bits_pred_taken;
-  wire              inner__8 = io_backend_cfVec_3_ready & _inner_ibuffer_io_out_3_valid;
-  wire              inner__probe_3 =
-    inner__7 & inner__8
-    & 6'(_inner_ibuffer_io_out_2_bits_ftqPtr_value
-         + 6'h1) != _inner_ibuffer_io_out_3_bits_ftqPtr_value;
-  wire              inner__9 = inner__8 & _inner_ibuffer_io_out_3_bits_pd_brType == 2'h1;
-  wire              inner__10 = inner__9 & _inner_ibuffer_io_out_3_bits_pred_taken;
-  wire              inner__11 = io_backend_cfVec_4_ready & _inner_ibuffer_io_out_4_valid;
-  wire              inner__probe_4 =
-    inner__10 & inner__11
-    & 6'(_inner_ibuffer_io_out_3_bits_ftqPtr_value
-         + 6'h1) != _inner_ibuffer_io_out_4_bits_ftqPtr_value;
-  wire              inner__12 =
-    inner__11 & _inner_ibuffer_io_out_4_bits_pd_brType == 2'h1;
-  wire              inner__13 = inner__12 & _inner_ibuffer_io_out_4_bits_pred_taken;
-  wire              inner__14 = io_backend_cfVec_5_ready & _inner_ibuffer_io_out_5_valid;
-  wire              inner__probe_5 =
-    inner__13 & inner__14
-    & 6'(_inner_ibuffer_io_out_4_bits_ftqPtr_value
-         + 6'h1) != _inner_ibuffer_io_out_5_bits_ftqPtr_value;
-  wire              inner__15 =
-    inner__14 & _inner_ibuffer_io_out_5_bits_pd_brType == 2'h1;
-  wire              inner__16 = inner__15 & _inner_ibuffer_io_out_5_bits_pred_taken;
-  wire              inner__17 = inner_prevTakenValid & inner_;
-  wire              inner__probe_6 =
-    inner__17
-    & 6'(inner_prevTakenFtqPtr_value + 6'h1) != _inner_ibuffer_io_out_0_bits_ftqPtr_value;
-  reg               inner_prevTakenFtqPtr_1_flag;
-  reg  [5:0]        inner_prevTakenFtqPtr_1_value;
-  reg               inner_prevTakenValid_1;
-  wire              inner__18 =
-    inner_ & (|_inner_ibuffer_io_out_0_bits_pd_brType)
-    & _inner_ibuffer_io_out_0_bits_pred_taken;
-  wire              inner__probe_7 =
-    inner__18 & inner__2
-    & (_inner_ftq_io_toBackend_newest_entry_ptr_value == _inner_ibuffer_io_out_0_bits_ftqPtr_value
-         ? _inner_ftq_io_toBackend_newest_entry_target
-         : _GEN[6'(_inner_ibuffer_io_out_0_bits_ftqPtr_value
-                   + 6'h1)]) != _inner_ibuffer_io_out_1_bits_pc;
-  wire              inner__19 =
-    inner__2 & (|_inner_ibuffer_io_out_1_bits_pd_brType)
-    & _inner_ibuffer_io_out_1_bits_pred_taken;
-  wire              inner__probe_8 =
-    inner__19 & inner__5
-    & (_inner_ftq_io_toBackend_newest_entry_ptr_value == _inner_ibuffer_io_out_1_bits_ftqPtr_value
-         ? _inner_ftq_io_toBackend_newest_entry_target
-         : _GEN[6'(_inner_ibuffer_io_out_1_bits_ftqPtr_value
-                   + 6'h1)]) != _inner_ibuffer_io_out_2_bits_pc;
-  wire              inner__20 =
-    inner__5 & (|_inner_ibuffer_io_out_2_bits_pd_brType)
-    & _inner_ibuffer_io_out_2_bits_pred_taken;
-  wire              inner__probe_9 =
-    inner__20 & inner__8
-    & (_inner_ftq_io_toBackend_newest_entry_ptr_value == _inner_ibuffer_io_out_2_bits_ftqPtr_value
-         ? _inner_ftq_io_toBackend_newest_entry_target
-         : _GEN[6'(_inner_ibuffer_io_out_2_bits_ftqPtr_value
-                   + 6'h1)]) != _inner_ibuffer_io_out_3_bits_pc;
-  wire              inner__21 =
-    inner__8 & (|_inner_ibuffer_io_out_3_bits_pd_brType)
-    & _inner_ibuffer_io_out_3_bits_pred_taken;
-  wire              inner__probe_10 =
-    inner__21 & inner__11
-    & (_inner_ftq_io_toBackend_newest_entry_ptr_value == _inner_ibuffer_io_out_3_bits_ftqPtr_value
-         ? _inner_ftq_io_toBackend_newest_entry_target
-         : _GEN[6'(_inner_ibuffer_io_out_3_bits_ftqPtr_value
-                   + 6'h1)]) != _inner_ibuffer_io_out_4_bits_pc;
-  wire              inner__22 =
-    inner__11 & (|_inner_ibuffer_io_out_4_bits_pd_brType)
-    & _inner_ibuffer_io_out_4_bits_pred_taken;
-  wire              inner__probe_11 =
-    inner__22 & inner__14
-    & (_inner_ftq_io_toBackend_newest_entry_ptr_value == _inner_ibuffer_io_out_4_bits_ftqPtr_value
-         ? _inner_ftq_io_toBackend_newest_entry_target
-         : _GEN[6'(_inner_ibuffer_io_out_4_bits_ftqPtr_value
-                   + 6'h1)]) != _inner_ibuffer_io_out_5_bits_pc;
-  wire              inner__23 =
-    inner__14 & (|_inner_ibuffer_io_out_5_bits_pd_brType)
-    & _inner_ibuffer_io_out_5_bits_pred_taken;
-  wire              inner__24 = inner_prevTakenValid_1 & inner_;
-  wire              inner__probe_12 =
-    inner__24
-    & _GEN[6'(inner_prevTakenFtqPtr_1_value + 6'h1)] != _inner_ibuffer_io_out_0_bits_pc;
-  reg  [49:0]       inner_prevNotTakenPC;
-  reg               inner_prevIsRVC;
-  reg               inner_prevNotTakenValid;
-  wire              inner__25 = inner__0 & ~_inner_ibuffer_io_out_0_bits_pred_taken;
-  wire              inner__probe_13 =
-    inner__25 & inner__2
-    & 50'(_inner_ibuffer_io_out_0_bits_pc
-          + {47'h0,
-             _inner_ibuffer_io_out_0_bits_pd_isRVC
-               ? 3'h2
-               : 3'h4}) != _inner_ibuffer_io_out_1_bits_pc;
-  wire              inner__26 = inner__3 & ~_inner_ibuffer_io_out_1_bits_pred_taken;
-  wire              inner__probe_14 =
-    inner__26 & inner__5
-    & 50'(_inner_ibuffer_io_out_1_bits_pc
-          + {47'h0,
-             _inner_ibuffer_io_out_1_bits_pd_isRVC
-               ? 3'h2
-               : 3'h4}) != _inner_ibuffer_io_out_2_bits_pc;
-  wire              inner__27 = inner__6 & ~_inner_ibuffer_io_out_2_bits_pred_taken;
-  wire              inner__probe_15 =
-    inner__27 & inner__8
-    & 50'(_inner_ibuffer_io_out_2_bits_pc
-          + {47'h0,
-             _inner_ibuffer_io_out_2_bits_pd_isRVC
-               ? 3'h2
-               : 3'h4}) != _inner_ibuffer_io_out_3_bits_pc;
-  wire              inner__28 = inner__9 & ~_inner_ibuffer_io_out_3_bits_pred_taken;
-  wire              inner__probe_16 =
-    inner__28 & inner__11
-    & 50'(_inner_ibuffer_io_out_3_bits_pc
-          + {47'h0,
-             _inner_ibuffer_io_out_3_bits_pd_isRVC
-               ? 3'h2
-               : 3'h4}) != _inner_ibuffer_io_out_4_bits_pc;
-  wire              inner__29 = inner__12 & ~_inner_ibuffer_io_out_4_bits_pred_taken;
-  wire              inner__probe_17 =
-    inner__29 & inner__14
-    & 50'(_inner_ibuffer_io_out_4_bits_pc
-          + {47'h0,
-             _inner_ibuffer_io_out_4_bits_pd_isRVC
-               ? 3'h2
-               : 3'h4}) != _inner_ibuffer_io_out_5_bits_pc;
-  wire              inner__30 = inner__15 & ~_inner_ibuffer_io_out_5_bits_pred_taken;
-  wire              inner__31 = inner_prevNotTakenValid & inner_;
-  wire              inner__probe_18 =
-    inner__31
-    & 50'(inner_prevNotTakenPC
-          + {47'h0, inner_prevIsRVC ? 3'h2 : 3'h4}) != _inner_ibuffer_io_out_0_bits_pc;
-  `ifndef SYNTHESIS
-    always @(posedge clock) begin
-      if (inner__probe_1 & ~reset) begin
-        if (`ASSERT_VERBOSE_COND_)
-          $error("Assertion failed\n    at LogUtils.scala:126 assert(false.B) //assert at current module for better error location\n");
-        if (`STOP_COND_)
-          $fatal;
-      end
-      if (inner__probe_2 & ~reset) begin
-        if (`ASSERT_VERBOSE_COND_)
-          $error("Assertion failed\n    at LogUtils.scala:126 assert(false.B) //assert at current module for better error location\n");
-        if (`STOP_COND_)
-          $fatal;
-      end
-      if (inner__probe_3 & ~reset) begin
-        if (`ASSERT_VERBOSE_COND_)
-          $error("Assertion failed\n    at LogUtils.scala:126 assert(false.B) //assert at current module for better error location\n");
-        if (`STOP_COND_)
-          $fatal;
-      end
-      if (inner__probe_4 & ~reset) begin
-        if (`ASSERT_VERBOSE_COND_)
-          $error("Assertion failed\n    at LogUtils.scala:126 assert(false.B) //assert at current module for better error location\n");
-        if (`STOP_COND_)
-          $fatal;
-      end
-      if (inner__probe_5 & ~reset) begin
-        if (`ASSERT_VERBOSE_COND_)
-          $error("Assertion failed\n    at LogUtils.scala:126 assert(false.B) //assert at current module for better error location\n");
-        if (`STOP_COND_)
-          $fatal;
-      end
-      if (inner__probe_6 & ~reset) begin
-        if (`ASSERT_VERBOSE_COND_)
-          $error("Assertion failed\n    at LogUtils.scala:126 assert(false.B) //assert at current module for better error location\n");
-        if (`STOP_COND_)
-          $fatal;
-      end
-      if (inner__probe_7 & ~reset) begin
-        if (`ASSERT_VERBOSE_COND_)
-          $error("Assertion failed\n    at LogUtils.scala:126 assert(false.B) //assert at current module for better error location\n");
-        if (`STOP_COND_)
-          $fatal;
-      end
-      if (inner__probe_8 & ~reset) begin
-        if (`ASSERT_VERBOSE_COND_)
-          $error("Assertion failed\n    at LogUtils.scala:126 assert(false.B) //assert at current module for better error location\n");
-        if (`STOP_COND_)
-          $fatal;
-      end
-      if (inner__probe_9 & ~reset) begin
-        if (`ASSERT_VERBOSE_COND_)
-          $error("Assertion failed\n    at LogUtils.scala:126 assert(false.B) //assert at current module for better error location\n");
-        if (`STOP_COND_)
-          $fatal;
-      end
-      if (inner__probe_10 & ~reset) begin
-        if (`ASSERT_VERBOSE_COND_)
-          $error("Assertion failed\n    at LogUtils.scala:126 assert(false.B) //assert at current module for better error location\n");
-        if (`STOP_COND_)
-          $fatal;
-      end
-      if (inner__probe_11 & ~reset) begin
-        if (`ASSERT_VERBOSE_COND_)
-          $error("Assertion failed\n    at LogUtils.scala:126 assert(false.B) //assert at current module for better error location\n");
-        if (`STOP_COND_)
-          $fatal;
-      end
-      if (inner__probe_12 & ~reset) begin
-        if (`ASSERT_VERBOSE_COND_)
-          $error("Assertion failed\n    at LogUtils.scala:126 assert(false.B) //assert at current module for better error location\n");
-        if (`STOP_COND_)
-          $fatal;
-      end
-      if (inner__probe_13 & ~reset) begin
-        if (`ASSERT_VERBOSE_COND_)
-          $error("Assertion failed\n    at LogUtils.scala:126 assert(false.B) //assert at current module for better error location\n");
-        if (`STOP_COND_)
-          $fatal;
-      end
-      if (inner__probe_14 & ~reset) begin
-        if (`ASSERT_VERBOSE_COND_)
-          $error("Assertion failed\n    at LogUtils.scala:126 assert(false.B) //assert at current module for better error location\n");
-        if (`STOP_COND_)
-          $fatal;
-      end
-      if (inner__probe_15 & ~reset) begin
-        if (`ASSERT_VERBOSE_COND_)
-          $error("Assertion failed\n    at LogUtils.scala:126 assert(false.B) //assert at current module for better error location\n");
-        if (`STOP_COND_)
-          $fatal;
-      end
-      if (inner__probe_16 & ~reset) begin
-        if (`ASSERT_VERBOSE_COND_)
-          $error("Assertion failed\n    at LogUtils.scala:126 assert(false.B) //assert at current module for better error location\n");
-        if (`STOP_COND_)
-          $fatal;
-      end
-      if (inner__probe_17 & ~reset) begin
-        if (`ASSERT_VERBOSE_COND_)
-          $error("Assertion failed\n    at LogUtils.scala:126 assert(false.B) //assert at current module for better error location\n");
-        if (`STOP_COND_)
-          $fatal;
-      end
-      if (inner__probe_18 & ~reset) begin
-        if (`ASSERT_VERBOSE_COND_)
-          $error("Assertion failed\n    at LogUtils.scala:126 assert(false.B) //assert at current module for better error location\n");
-        if (`STOP_COND_)
-          $fatal;
-      end
-    end // always @(posedge)
-  `endif // not def SYNTHESIS
-  reg               inner_io_error_REG_valid;
-  reg  [47:0]       inner_io_error_REG_bits_paddr;
-  reg               inner_io_error_REG_bits_report_to_beu;
-  reg               inner_io_error_REG_1_valid;
-  reg  [47:0]       inner_io_error_REG_1_bits_paddr;
-  reg               inner_io_error_REG_1_bits_report_to_beu;
-  reg  [5:0]        inner_io_perf_0_value_REG;
-  reg  [5:0]        inner_io_perf_0_value_REG_1;
-  reg  [5:0]        inner_io_perf_1_value_REG;
-  reg  [5:0]        inner_io_perf_1_value_REG_1;
-  reg  [5:0]        inner_io_perf_2_value_REG;
-  reg  [5:0]        inner_io_perf_2_value_REG_1;
-  reg  [5:0]        inner_io_perf_3_value_REG;
-  reg  [5:0]        inner_io_perf_3_value_REG_1;
-  reg  [5:0]        inner_io_perf_4_value_REG;
-  reg  [5:0]        inner_io_perf_4_value_REG_1;
-  reg  [5:0]        inner_io_perf_5_value_REG;
-  reg  [5:0]        inner_io_perf_5_value_REG_1;
-  reg  [5:0]        inner_io_perf_6_value_REG;
-  reg  [5:0]        inner_io_perf_6_value_REG_1;
-  reg  [5:0]        inner_io_perf_7_value_REG;
-  reg  [5:0]        inner_io_perf_7_value_REG_1;
-  always @(posedge clock) begin
-    inner_needFlush <= io_backend_toFtq_redirect_valid;
-    inner_FlushControlRedirect <= io_backend_toFtq_redirect_bits_debugIsCtrl;
-    inner_FlushMemVioRedirect <= io_backend_toFtq_redirect_bits_debugIsMemVio;
-    inner_sfence_REG_valid <= io_sfence_valid;
-    inner_sfence_REG_bits_rs1 <= io_sfence_bits_rs1;
-    inner_sfence_REG_bits_rs2 <= io_sfence_bits_rs2;
-    inner_sfence_REG_bits_addr <= io_sfence_bits_addr;
-    inner_sfence_REG_bits_id <= io_sfence_bits_id;
-    inner_sfence_REG_bits_flushPipe <= io_sfence_bits_flushPipe;
-    inner_sfence_REG_bits_hv <= io_sfence_bits_hv;
-    inner_sfence_REG_bits_hg <= io_sfence_bits_hg;
-    inner_sfence_valid <= inner_sfence_REG_valid;
-    inner_sfence_bits_rs1 <= inner_sfence_REG_bits_rs1;
-    inner_sfence_bits_rs2 <= inner_sfence_REG_bits_rs2;
-    inner_sfence_bits_addr <= inner_sfence_REG_bits_addr;
-    inner_sfence_bits_id <= inner_sfence_REG_bits_id;
-    inner_sfence_bits_flushPipe <= inner_sfence_REG_bits_flushPipe;
-    inner_sfence_bits_hv <= inner_sfence_REG_bits_hv;
-    inner_sfence_bits_hg <= inner_sfence_REG_bits_hg;
-    inner_icache_io_csr_pf_enable_REG <=
-      _inner_csrCtrl_delay_io_out_pf_ctrl_l1I_pf_enable;
-    inner_icache_io_fencei_REG <= io_fencei;
-    if (_inner_ftq_io_toBackend_pc_mem_wen & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h0)
-      inner_checkPcMem_0_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h1)
-      inner_checkPcMem_1_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h2)
-      inner_checkPcMem_2_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h3)
-      inner_checkPcMem_3_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h4)
-      inner_checkPcMem_4_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h5)
-      inner_checkPcMem_5_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h6)
-      inner_checkPcMem_6_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h7)
-      inner_checkPcMem_7_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h8)
-      inner_checkPcMem_8_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h9)
-      inner_checkPcMem_9_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen & _inner_ftq_io_toBackend_pc_mem_waddr == 6'hA)
-      inner_checkPcMem_10_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen & _inner_ftq_io_toBackend_pc_mem_waddr == 6'hB)
-      inner_checkPcMem_11_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen & _inner_ftq_io_toBackend_pc_mem_waddr == 6'hC)
-      inner_checkPcMem_12_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen & _inner_ftq_io_toBackend_pc_mem_waddr == 6'hD)
-      inner_checkPcMem_13_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen & _inner_ftq_io_toBackend_pc_mem_waddr == 6'hE)
-      inner_checkPcMem_14_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen & _inner_ftq_io_toBackend_pc_mem_waddr == 6'hF)
-      inner_checkPcMem_15_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h10)
-      inner_checkPcMem_16_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h11)
-      inner_checkPcMem_17_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h12)
-      inner_checkPcMem_18_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h13)
-      inner_checkPcMem_19_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h14)
-      inner_checkPcMem_20_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h15)
-      inner_checkPcMem_21_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h16)
-      inner_checkPcMem_22_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h17)
-      inner_checkPcMem_23_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h18)
-      inner_checkPcMem_24_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h19)
-      inner_checkPcMem_25_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h1A)
-      inner_checkPcMem_26_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h1B)
-      inner_checkPcMem_27_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h1C)
-      inner_checkPcMem_28_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h1D)
-      inner_checkPcMem_29_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h1E)
-      inner_checkPcMem_30_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h1F)
-      inner_checkPcMem_31_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h20)
-      inner_checkPcMem_32_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h21)
-      inner_checkPcMem_33_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h22)
-      inner_checkPcMem_34_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h23)
-      inner_checkPcMem_35_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h24)
-      inner_checkPcMem_36_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h25)
-      inner_checkPcMem_37_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h26)
-      inner_checkPcMem_38_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h27)
-      inner_checkPcMem_39_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h28)
-      inner_checkPcMem_40_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h29)
-      inner_checkPcMem_41_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h2A)
-      inner_checkPcMem_42_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h2B)
-      inner_checkPcMem_43_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h2C)
-      inner_checkPcMem_44_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h2D)
-      inner_checkPcMem_45_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h2E)
-      inner_checkPcMem_46_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h2F)
-      inner_checkPcMem_47_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h30)
-      inner_checkPcMem_48_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h31)
-      inner_checkPcMem_49_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h32)
-      inner_checkPcMem_50_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h33)
-      inner_checkPcMem_51_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h34)
-      inner_checkPcMem_52_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h35)
-      inner_checkPcMem_53_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h36)
-      inner_checkPcMem_54_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h37)
-      inner_checkPcMem_55_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h38)
-      inner_checkPcMem_56_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h39)
-      inner_checkPcMem_57_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h3A)
-      inner_checkPcMem_58_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h3B)
-      inner_checkPcMem_59_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h3C)
-      inner_checkPcMem_60_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h3D)
-      inner_checkPcMem_61_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen
-        & _inner_ftq_io_toBackend_pc_mem_waddr == 6'h3E)
-      inner_checkPcMem_62_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (_inner_ftq_io_toBackend_pc_mem_wen & (&_inner_ftq_io_toBackend_pc_mem_waddr))
-      inner_checkPcMem_63_startAddr <= _inner_ftq_io_toBackend_pc_mem_wdata_startAddr;
-    if (inner__16) begin
-      inner_prevTakenFtqPtr_flag <= _inner_ibuffer_io_out_5_bits_ftqPtr_flag;
-      inner_prevTakenFtqPtr_value <= _inner_ibuffer_io_out_5_bits_ftqPtr_value;
-    end
-    else if (~inner__13 | inner__14) begin
-      if (~inner__10 | inner__11) begin
-        if (~inner__7 | inner__8) begin
-          if (~inner__4 | inner__5) begin
-            if (~inner__1 | inner__2) begin
-            end
-            else begin
-              inner_prevTakenFtqPtr_flag <= _inner_ibuffer_io_out_0_bits_ftqPtr_flag;
-              inner_prevTakenFtqPtr_value <= _inner_ibuffer_io_out_0_bits_ftqPtr_value;
-            end
-          end
-          else begin
-            inner_prevTakenFtqPtr_flag <= _inner_ibuffer_io_out_1_bits_ftqPtr_flag;
-            inner_prevTakenFtqPtr_value <= _inner_ibuffer_io_out_1_bits_ftqPtr_value;
-          end
-        end
-        else begin
-          inner_prevTakenFtqPtr_flag <= _inner_ibuffer_io_out_2_bits_ftqPtr_flag;
-          inner_prevTakenFtqPtr_value <= _inner_ibuffer_io_out_2_bits_ftqPtr_value;
-        end
-      end
-      else begin
-        inner_prevTakenFtqPtr_flag <= _inner_ibuffer_io_out_3_bits_ftqPtr_flag;
-        inner_prevTakenFtqPtr_value <= _inner_ibuffer_io_out_3_bits_ftqPtr_value;
-      end
-    end
-    else begin
-      inner_prevTakenFtqPtr_flag <= _inner_ibuffer_io_out_4_bits_ftqPtr_flag;
-      inner_prevTakenFtqPtr_value <= _inner_ibuffer_io_out_4_bits_ftqPtr_value;
-    end
-    if (inner__23) begin
-      inner_prevTakenFtqPtr_1_flag <= _inner_ibuffer_io_out_5_bits_ftqPtr_flag;
-      inner_prevTakenFtqPtr_1_value <= _inner_ibuffer_io_out_5_bits_ftqPtr_value;
-    end
-    else if (~inner__22 | inner__14) begin
-      if (~inner__21 | inner__11) begin
-        if (~inner__20 | inner__8) begin
-          if (~inner__19 | inner__5) begin
-            if (~inner__18 | inner__2) begin
-            end
-            else begin
-              inner_prevTakenFtqPtr_1_flag <= _inner_ibuffer_io_out_0_bits_ftqPtr_flag;
-              inner_prevTakenFtqPtr_1_value <= _inner_ibuffer_io_out_0_bits_ftqPtr_value;
-            end
-          end
-          else begin
-            inner_prevTakenFtqPtr_1_flag <= _inner_ibuffer_io_out_1_bits_ftqPtr_flag;
-            inner_prevTakenFtqPtr_1_value <= _inner_ibuffer_io_out_1_bits_ftqPtr_value;
-          end
-        end
-        else begin
-          inner_prevTakenFtqPtr_1_flag <= _inner_ibuffer_io_out_2_bits_ftqPtr_flag;
-          inner_prevTakenFtqPtr_1_value <= _inner_ibuffer_io_out_2_bits_ftqPtr_value;
-        end
-      end
-      else begin
-        inner_prevTakenFtqPtr_1_flag <= _inner_ibuffer_io_out_3_bits_ftqPtr_flag;
-        inner_prevTakenFtqPtr_1_value <= _inner_ibuffer_io_out_3_bits_ftqPtr_value;
-      end
-    end
-    else begin
-      inner_prevTakenFtqPtr_1_flag <= _inner_ibuffer_io_out_4_bits_ftqPtr_flag;
-      inner_prevTakenFtqPtr_1_value <= _inner_ibuffer_io_out_4_bits_ftqPtr_value;
-    end
-    if (inner__30) begin
-      inner_prevNotTakenPC <= _inner_ibuffer_io_out_5_bits_pc;
-      inner_prevIsRVC <= _inner_ibuffer_io_out_5_bits_pd_isRVC;
-    end
-    else if (~inner__29 | inner__14) begin
-      if (~inner__28 | inner__11) begin
-        if (~inner__27 | inner__8) begin
-          if (~inner__26 | inner__5) begin
-            if (~inner__25 | inner__2) begin
-            end
-            else begin
-              inner_prevNotTakenPC <= _inner_ibuffer_io_out_0_bits_pc;
-              inner_prevIsRVC <= _inner_ibuffer_io_out_0_bits_pd_isRVC;
-            end
-          end
-          else begin
-            inner_prevNotTakenPC <= _inner_ibuffer_io_out_1_bits_pc;
-            inner_prevIsRVC <= _inner_ibuffer_io_out_1_bits_pd_isRVC;
-          end
-        end
-        else begin
-          inner_prevNotTakenPC <= _inner_ibuffer_io_out_2_bits_pc;
-          inner_prevIsRVC <= _inner_ibuffer_io_out_2_bits_pd_isRVC;
-        end
-      end
-      else begin
-        inner_prevNotTakenPC <= _inner_ibuffer_io_out_3_bits_pc;
-        inner_prevIsRVC <= _inner_ibuffer_io_out_3_bits_pd_isRVC;
-      end
-    end
-    else begin
-      inner_prevNotTakenPC <= _inner_ibuffer_io_out_4_bits_pc;
-      inner_prevIsRVC <= _inner_ibuffer_io_out_4_bits_pd_isRVC;
-    end
-    inner_io_error_REG_valid <= _inner_icache_io_error_valid;
-    inner_io_error_REG_bits_paddr <= _inner_icache_io_error_bits_paddr;
-    inner_io_error_REG_bits_report_to_beu <= _inner_icache_io_error_bits_report_to_beu;
-    inner_io_error_REG_1_valid <= inner_io_error_REG_valid;
-    inner_io_error_REG_1_bits_paddr <= inner_io_error_REG_bits_paddr;
-    inner_io_error_REG_1_bits_report_to_beu <= inner_io_error_REG_bits_report_to_beu;
-    inner_io_perf_0_value_REG <= _inner_perfEvents_hpm_io_perf_0_value;
-    inner_io_perf_0_value_REG_1 <= inner_io_perf_0_value_REG;
-    inner_io_perf_1_value_REG <= _inner_perfEvents_hpm_io_perf_1_value;
-    inner_io_perf_1_value_REG_1 <= inner_io_perf_1_value_REG;
-    inner_io_perf_2_value_REG <= _inner_perfEvents_hpm_io_perf_2_value;
-    inner_io_perf_2_value_REG_1 <= inner_io_perf_2_value_REG;
-    inner_io_perf_3_value_REG <= _inner_perfEvents_hpm_io_perf_3_value;
-    inner_io_perf_3_value_REG_1 <= inner_io_perf_3_value_REG;
-    inner_io_perf_4_value_REG <= _inner_perfEvents_hpm_io_perf_4_value;
-    inner_io_perf_4_value_REG_1 <= inner_io_perf_4_value_REG;
-    inner_io_perf_5_value_REG <= _inner_perfEvents_hpm_io_perf_5_value;
-    inner_io_perf_5_value_REG_1 <= inner_io_perf_5_value_REG;
-    inner_io_perf_6_value_REG <= _inner_perfEvents_hpm_io_perf_6_value;
-    inner_io_perf_6_value_REG_1 <= inner_io_perf_6_value_REG;
-    inner_io_perf_7_value_REG <= _inner_perfEvents_hpm_io_perf_7_value;
-    inner_io_perf_7_value_REG_1 <= inner_io_perf_7_value_REG;
-  end // always @(posedge)
-  always @(posedge clock or posedge reset) begin
-    if (reset) begin
-      inner_prevTakenValid <= 1'h0;
-      inner_prevTakenValid_1 <= 1'h0;
-      inner_prevNotTakenValid <= 1'h0;
-    end
-    else begin
-      inner_prevTakenValid <=
-        ~(inner_needFlush | inner__17)
-        & (inner__16 | inner__13 & ~inner__14 | inner__10 & ~inner__11 | inner__7
-           & ~inner__8 | inner__4 & ~inner__5 | inner__1 & ~inner__2
-           | inner_prevTakenValid);
-      inner_prevTakenValid_1 <=
-        ~(inner_needFlush | inner__24)
-        & (inner__23 | inner__22 & ~inner__14 | inner__21 & ~inner__11 | inner__20
-           & ~inner__8 | inner__19 & ~inner__5 | inner__18 & ~inner__2
-           | inner_prevTakenValid_1);
-      inner_prevNotTakenValid <=
-        ~(inner_needFlush | inner__31)
-        & (inner__30 | inner__29 & ~inner__14 | inner__28 & ~inner__11 | inner__27
-           & ~inner__8 | inner__26 & ~inner__5 | inner__25 & ~inner__2
-           | inner_prevNotTakenValid);
-    end
-  end // always @(posedge, posedge)
   InstrUncache inner_instrUncache (
     .clock                          (clock),
     .reset                          (reset),
@@ -9592,7 +8835,7 @@ module Frontend_xs
   assign io_perf_6_value = inner_io_perf_6_value_REG_1;
   assign io_perf_7_value = inner_io_perf_7_value_REG_1;
 
-  // ===== 可读核 xs_Frontend_core（校验伴随；纯增量，不影响对外功能）=====
+  // ===== 可读核 xs_Frontend_core（REAL REPLACEMENT：驱动本层全部 glue 输出）=====
   ib_lane_t xs_ib_lane [6];
   assign xs_ib_lane = '{
     '{fire:(io_backend_cfVec_0_ready & _inner_ibuffer_io_out_0_valid), pc:_inner_ibuffer_io_out_0_bits_pc, ftq_flag:_inner_ibuffer_io_out_0_bits_ftqPtr_flag, ftq_value:_inner_ibuffer_io_out_0_bits_ftqPtr_value, br_type:_inner_ibuffer_io_out_0_bits_pd_brType, pred_taken:_inner_ibuffer_io_out_0_bits_pred_taken, is_rvc:_inner_ibuffer_io_out_0_bits_pd_isRVC},
@@ -9602,6 +8845,14 @@ module Frontend_xs
     '{fire:(io_backend_cfVec_4_ready & _inner_ibuffer_io_out_4_valid), pc:_inner_ibuffer_io_out_4_bits_pc, ftq_flag:_inner_ibuffer_io_out_4_bits_ftqPtr_flag, ftq_value:_inner_ibuffer_io_out_4_bits_ftqPtr_value, br_type:_inner_ibuffer_io_out_4_bits_pd_brType, pred_taken:_inner_ibuffer_io_out_4_bits_pred_taken, is_rvc:_inner_ibuffer_io_out_4_bits_pd_isRVC},
     '{fire:(io_backend_cfVec_5_ready & _inner_ibuffer_io_out_5_valid), pc:_inner_ibuffer_io_out_5_bits_pc, ftq_flag:_inner_ibuffer_io_out_5_bits_ftqPtr_flag, ftq_value:_inner_ibuffer_io_out_5_bits_ftqPtr_value, br_type:_inner_ibuffer_io_out_5_bits_pd_brType, pred_taken:_inner_ibuffer_io_out_5_bits_pred_taken, is_rvc:_inner_ibuffer_io_out_5_bits_pd_isRVC}
   };
+  assign inner_io_perf_0_value_REG_1 = xs_core_perf_q[0];
+  assign inner_io_perf_1_value_REG_1 = xs_core_perf_q[1];
+  assign inner_io_perf_2_value_REG_1 = xs_core_perf_q[2];
+  assign inner_io_perf_3_value_REG_1 = xs_core_perf_q[3];
+  assign inner_io_perf_4_value_REG_1 = xs_core_perf_q[4];
+  assign inner_io_perf_5_value_REG_1 = xs_core_perf_q[5];
+  assign inner_io_perf_6_value_REG_1 = xs_core_perf_q[6];
+  assign inner_io_perf_7_value_REG_1 = xs_core_perf_q[7];
   xs_Frontend_core u_core (
     .clock(clock),
     .reset(reset),
@@ -9622,23 +8873,23 @@ module Frontend_xs
     .icache_err_paddr(_inner_icache_io_error_bits_paddr),
     .icache_err_to_beu(_inner_icache_io_error_bits_report_to_beu),
     .perf_in('{_inner_perfEvents_hpm_io_perf_0_value, _inner_perfEvents_hpm_io_perf_1_value, _inner_perfEvents_hpm_io_perf_2_value, _inner_perfEvents_hpm_io_perf_3_value, _inner_perfEvents_hpm_io_perf_4_value, _inner_perfEvents_hpm_io_perf_5_value, _inner_perfEvents_hpm_io_perf_6_value, _inner_perfEvents_hpm_io_perf_7_value}),
-    .flush(xs_dbg_flush),
-    .flush_ctrl_redirect(xs_dbg_flush_ctrl),
-    .flush_memvio_redirect(xs_dbg_flush_memvio),
-    .sfence_q_valid(xs_dbg_sfence_q_valid),
-    .sfence_q_rs1(xs_dbg_sfence_q_rs1),
-    .sfence_q_rs2(xs_dbg_sfence_q_rs2),
-    .sfence_q_addr(xs_dbg_sfence_q_addr),
-    .sfence_q_id(xs_dbg_sfence_q_id),
-    .sfence_q_flushPipe(xs_dbg_sfence_q_flushPipe),
-    .sfence_q_hv(xs_dbg_sfence_q_hv),
-    .sfence_q_hg(xs_dbg_sfence_q_hg),
-    .icache_fencei_q(xs_dbg_icache_fencei_q),
-    .icache_pf_enable_q(xs_dbg_icache_pf_enable_q),
-    .error_valid_q(xs_dbg_error_valid_q),
-    .error_paddr_q(xs_dbg_error_paddr_q),
-    .error_to_beu_q(xs_dbg_error_to_beu_q),
-    .perf_q(xs_dbg_perf_q),
+    .flush(inner_needFlush),
+    .flush_ctrl_redirect(inner_FlushControlRedirect),
+    .flush_memvio_redirect(inner_FlushMemVioRedirect),
+    .sfence_q_valid(inner_sfence_valid),
+    .sfence_q_rs1(inner_sfence_bits_rs1),
+    .sfence_q_rs2(inner_sfence_bits_rs2),
+    .sfence_q_addr(inner_sfence_bits_addr),
+    .sfence_q_id(inner_sfence_bits_id),
+    .sfence_q_flushPipe(inner_sfence_bits_flushPipe),
+    .sfence_q_hv(inner_sfence_bits_hv),
+    .sfence_q_hg(inner_sfence_bits_hg),
+    .icache_fencei_q(inner_icache_io_fencei_REG),
+    .icache_pf_enable_q(inner_icache_io_csr_pf_enable_REG),
+    .error_valid_q(inner_io_error_REG_1_valid),
+    .error_paddr_q(inner_io_error_REG_1_bits_paddr),
+    .error_to_beu_q(inner_io_error_REG_1_bits_report_to_beu),
+    .perf_q(xs_core_perf_q),
     .ib_lane(xs_ib_lane),
     .ftq_pcmem_wen(_inner_ftq_io_toBackend_pc_mem_wen),
     .ftq_pcmem_waddr(_inner_ftq_io_toBackend_pc_mem_waddr),
@@ -9647,4 +8898,29 @@ module Frontend_xs
     .ftq_newest_target(_inner_ftq_io_toBackend_newest_entry_target),
     .pc_continuity_violation(xs_dbg_pc_vio)
   );
+  // ---- _xs 变体：核驱动值 tap 到调试端口（tb 对 golden 逐拍比对）----
+  assign xs_dbg_flush = inner_needFlush;
+  assign xs_dbg_flush_ctrl = inner_FlushControlRedirect;
+  assign xs_dbg_flush_memvio = inner_FlushMemVioRedirect;
+  assign xs_dbg_sfence_q_valid = inner_sfence_valid;
+  assign xs_dbg_sfence_q_rs1 = inner_sfence_bits_rs1;
+  assign xs_dbg_sfence_q_rs2 = inner_sfence_bits_rs2;
+  assign xs_dbg_sfence_q_addr = inner_sfence_bits_addr;
+  assign xs_dbg_sfence_q_id = inner_sfence_bits_id;
+  assign xs_dbg_sfence_q_flushPipe = inner_sfence_bits_flushPipe;
+  assign xs_dbg_sfence_q_hv = inner_sfence_bits_hv;
+  assign xs_dbg_sfence_q_hg = inner_sfence_bits_hg;
+  assign xs_dbg_icache_fencei_q = inner_icache_io_fencei_REG;
+  assign xs_dbg_icache_pf_enable_q = inner_icache_io_csr_pf_enable_REG;
+  assign xs_dbg_error_valid_q = inner_io_error_REG_1_valid;
+  assign xs_dbg_error_paddr_q = inner_io_error_REG_1_bits_paddr;
+  assign xs_dbg_error_to_beu_q = inner_io_error_REG_1_bits_report_to_beu;
+  assign xs_dbg_perf_q[0] = inner_io_perf_0_value_REG_1;
+  assign xs_dbg_perf_q[1] = inner_io_perf_1_value_REG_1;
+  assign xs_dbg_perf_q[2] = inner_io_perf_2_value_REG_1;
+  assign xs_dbg_perf_q[3] = inner_io_perf_3_value_REG_1;
+  assign xs_dbg_perf_q[4] = inner_io_perf_4_value_REG_1;
+  assign xs_dbg_perf_q[5] = inner_io_perf_5_value_REG_1;
+  assign xs_dbg_perf_q[6] = inner_io_perf_6_value_REG_1;
+  assign xs_dbg_perf_q[7] = inner_io_perf_7_value_REG_1;
 endmodule

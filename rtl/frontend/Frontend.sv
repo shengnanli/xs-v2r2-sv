@@ -291,48 +291,71 @@ module xs_Frontend_core
     end
   end
 
-  // 块尾"taken 跳走"的判定沿 lane 自高位向低位取第一个 taken（块在此截断，后面 lane 无效）。
-  // 这等价于 golden 里 prevTaken 写使能那串嵌套优先级 if。下面用纯组合扫描算出：
-  //   blockEndsTaken : 本拍有某 lane 是块尾 taken 分支（块在该 lane 跳走）
-  //   endTakenIdx    : 该 lane 下标（用于取其 ftqPtr / PC）
-  // 注意：lane5 是最高优先（最后一条），与 golden 的 if(inner__16) 在最外层一致。
-  //   endTaken_*     : 直接选出该 lane 的 ftqPtr 字段（mux 覆盖，避免动态索引越界）
-  logic                  blockEndsTaken;
-  logic                  endTaken_flag;
-  logic [FTQ_PTR_W-1:0]  endTaken_value;
+  // ---- 块尾（block-end）选择：与 golden 逐位一致的写使能 + 无条件优先级 latch ----
+  //
+  // 【golden 语义（Chisel RegEnable 展平）】对每个跨块 latch，golden 用一段
+  //   "sel[5] | sel[4]&~fire[5] | sel[3]&~fire[4] | … | sel[0]&~fire[1]"
+  // 作**写使能**（= 存在某 lane i 是块尾谓词 sel 且块在此截断：i==5 或下一 lane 不 fire），
+  // 并用一段**无条件**的 if/else-if 嵌套优先级选中该 lane 的 payload 存入寄存器（无写使能时
+  // 也写——选中 else 兜底 lane，但因 valid 不置位而不被读，仅为 bit 级忠实）。
+  // 三个跨块 latch 用的 sel 各不同：
+  //   · prevTakenValid/prevTakenFtqPtr(份0)   : sel = takenBr（条件分支 taken，供 ftqPtr+1 检查）
+  //   · prevTakenValid_1/prevTakenFtqPtr_1(份1): sel = anyTaken（任意跳转 taken，供目标 PC 检查）
+  //   · prevNotTakenValid/prevNotTakenPC       : sel = ntCondBr（条件分支 not-taken，供顺序 PC 检查）
+  // 写使能与优先级选择必须用**同一 sel** 且与 golden 逐字对应，否则 verify_matched_unread
+  // 会判定寄存器 next-state 不等价（本核早期用统一 takenBr 驱动份1，被 FM 抓出 20 点不等价）。
+
+  logic [DECODE_WIDTH-1:0] fire_v;                 // fire[i]
+  always_comb for (int i = 0; i < DECODE_WIDTH; i++) fire_v[i] = ib_lane[i].fire;
+
+  // 块尾写使能：sel[i] 且 (i==最高 lane 或下一 lane 不 fire)。
+  function automatic logic blk_end_en(input logic [DECODE_WIDTH-1:0] sel,
+                                      input logic [DECODE_WIDTH-1:0] fire);
+    logic e; e = sel[DECODE_WIDTH-1];
+    for (int i = 0; i < DECODE_WIDTH-1; i++) e |= sel[i] & ~fire[i+1];
+    return e;
+  endfunction
+
+  // 块尾选中 lane 的 payload（golden 嵌套 if/else 的展平优先级 mux）：从最高 lane 向下扫，
+  // 命中 (sel[i] 且块在此截断 = i==5 或下一 lane 不 fire) 即锁定该 lane 的字段。用**固定下标
+  // 的显式优先级覆盖**（非变量数组索引），避免 FM 判 out-of-bound（FMR_ELAB-147）。
+  // 每个 sel 各选一份 payload（ftq_flag/value 或 pc/is_rvc）。
+  logic                 selTaken_flag,   selAnyTaken_flag;
+  logic [FTQ_PTR_W-1:0] selTaken_value,  selAnyTaken_value;
+  logic [VADDR_W-1:0]   selNt_pc;
+  logic                 selNt_rvc;
   always_comb begin
-    blockEndsTaken = 1'b0;
-    endTaken_flag  = 1'b0;
-    endTaken_value = '0;
-    for (int i = DECODE_WIDTH-1; i >= 0; i--) begin
-      if (takenBr[i]) begin
-        blockEndsTaken = 1'b1;
-        endTaken_flag  = ib_lane[i].ftq_flag;
-        endTaken_value = ib_lane[i].ftq_value;
+    // 份0（takenBr 选中）
+    selTaken_flag = '0; selTaken_value = '0;
+    for (int i = 0; i < DECODE_WIDTH; i++)
+      if (takenBr[i] & (i == DECODE_WIDTH-1 ? 1'b1 : ~fire_v[(i+1) % DECODE_WIDTH])) begin
+        selTaken_flag  = ib_lane[i].ftq_flag;
+        selTaken_value = ib_lane[i].ftq_value;
       end
-    end
+    // 份1（anyTaken 选中）
+    selAnyTaken_flag = '0; selAnyTaken_value = '0;
+    for (int i = 0; i < DECODE_WIDTH; i++)
+      if (anyTaken[i] & (i == DECODE_WIDTH-1 ? 1'b1 : ~fire_v[(i+1) % DECODE_WIDTH])) begin
+        selAnyTaken_flag  = ib_lane[i].ftq_flag;
+        selAnyTaken_value = ib_lane[i].ftq_value;
+      end
+    // not-taken（ntCondBr 选中）
+    selNt_pc = '0; selNt_rvc = 1'b0;
+    for (int i = 0; i < DECODE_WIDTH; i++)
+      if (ntCondBr[i] & (i == DECODE_WIDTH-1 ? 1'b1 : ~fire_v[(i+1) % DECODE_WIDTH])) begin
+        selNt_pc  = ib_lane[i].pc;
+        selNt_rvc = ib_lane[i].is_rvc;
+      end
   end
 
-  // 同理：块尾"not-taken"（顺序结束这一拍）信息（PC + 是否 RVC，直接选出）
-  logic                  blockEndsNotTaken;
-  logic [VADDR_W-1:0]    endNt_pc;
-  logic                  endNt_rvc;
+  logic blockEndsTaken, blockEndsAnyTaken, blockEndsNotTaken;
   always_comb begin
-    blockEndsNotTaken = 1'b0;
-    endNt_pc          = '0;
-    endNt_rvc         = 1'b0;
-    for (int i = DECODE_WIDTH-1; i >= 0; i--) begin
-      if (ntCondBr[i]) begin
-        blockEndsNotTaken = 1'b1;
-        endNt_pc          = ib_lane[i].pc;
-        endNt_rvc         = ib_lane[i].is_rvc;
-      end
-    end
+    blockEndsTaken    = blk_end_en(takenBr,  fire_v);
+    blockEndsAnyTaken = blk_end_en(anyTaken, fire_v);
+    blockEndsNotTaken = blk_end_en(ntCondBr, fire_v);
   end
 
-  // 跨块 latch 更新：把本拍块尾信息留到下一拍。
-  // valid 的存活条件 = ~(本拍冲刷 | 本拍 lane0 已消费掉上一拍的 latch)。
-  // lane0 消费 = (prevValid & lane0.fire)：上一拍留了块尾，本拍 lane0 出来即完成比对并清。
+  // 跨块 valid latch：置位=本拍块尾谓命中；保持到被 lane0 消费；flush 清。
   logic lane0_fire;
   assign lane0_fire = ib_lane[0].fire;
 
@@ -342,26 +365,29 @@ module xs_Frontend_core
       prevTakenValid_1  <= 1'b0;
       prevNotTakenValid <= 1'b0;
     end else begin
-      // taken（份 0）：本拍若块尾 taken 则置位；否则保持到被 lane0 消费。
       prevTakenValid <= ~(flush | (prevTakenValid & lane0_fire))
                         & (blockEndsTaken | prevTakenValid);
       prevTakenValid_1 <= ~(flush | (prevTakenValid_1 & lane0_fire))
-                        & (blockEndsTaken | prevTakenValid_1);
+                        & (blockEndsAnyTaken | prevTakenValid_1);
       prevNotTakenValid <= ~(flush | (prevNotTakenValid & lane0_fire))
                         & (blockEndsNotTaken | prevNotTakenValid);
     end
   end
 
+  // 跨块 payload latch：与 golden 一致——写使能 = 块尾谓命中（否则保持）。
+  // 份0 用 takenBr 选中、份1 用 anyTaken 选中、notTaken 用 ntCondBr 选中。
   always_ff @(posedge clock) begin
     if (blockEndsTaken) begin
-      prevTakenFtqPtr_flag    <= endTaken_flag;
-      prevTakenFtqPtr_value   <= endTaken_value;
-      prevTakenFtqPtr_1_flag  <= endTaken_flag;
-      prevTakenFtqPtr_1_value <= endTaken_value;
+      prevTakenFtqPtr_flag    <= selTaken_flag;
+      prevTakenFtqPtr_value   <= selTaken_value;
+    end
+    if (blockEndsAnyTaken) begin
+      prevTakenFtqPtr_1_flag  <= selAnyTaken_flag;
+      prevTakenFtqPtr_1_value <= selAnyTaken_value;
     end
     if (blockEndsNotTaken) begin
-      prevNotTakenPC <= endNt_pc;
-      prevIsRVC      <= endNt_rvc;
+      prevNotTakenPC          <= selNt_pc;
+      prevIsRVC               <= selNt_rvc;
     end
   end
 
@@ -376,6 +402,18 @@ module xs_Frontend_core
   logic [DECODE_WIDTH-1:0] vio_intra_ftqptr; // (a) 块内 ftqPtr 不连续
   logic [DECODE_WIDTH-1:0] vio_intra_target; // (b) 块内 taken 目标错
   logic [DECODE_WIDTH-1:0] vio_intra_seq;    // (c) 块内顺序 PC 错
+  // 每 lane 的"应有目标 PC"（block start 旁路），提到模块级 net 并**无条件**驱动，
+  // 避免 tgt 在 if 分支内声明+条件赋值被综合工具推成 latch（tgt_reg 伪影）。
+  logic [VADDR_W-1:0] intra_tgt [DECODE_WIDTH];
+  always_comb begin
+    for (int i = 0; i < DECODE_WIDTH; i++) begin
+      // 无条件计算：本 lane 若是最新项走 newest_target 旁路，否则读 block start(ftqPtr+1)。
+      intra_tgt[i] = (ftq_newest_ptr_value == ib_lane[i].ftq_value)
+                     ? ftq_newest_target
+                     : read_block_start(FTQ_PTR_W'(ib_lane[i].ftq_value + 1'b1),
+                                        ftq_newest_ptr_value, ftq_newest_target, checkPcMem);
+    end
+  end
   always_comb begin
     vio_intra_ftqptr = '0;
     vio_intra_target = '0;
@@ -386,15 +424,8 @@ module xs_Frontend_core
         vio_intra_ftqptr[i] =
           (FTQ_PTR_W'(ib_lane[i].ftq_value + 1'b1) != ib_lane[i+1].ftq_value);
       // (b) 本 lane 任意 taken 跳转 且 下一 lane fire：目标 PC 须 = 下一 lane PC
-      if (anyTaken[i] & ib_lane[i+1].fire) begin
-        logic [VADDR_W-1:0] tgt;
-        tgt = read_block_start(FTQ_PTR_W'(ib_lane[i].ftq_value + 1'b1),
-                               ftq_newest_ptr_value, ftq_newest_target, checkPcMem);
-        // 最新项旁路：若本 lane 自己就是最新项，则目标直接用 newest_target
-        if (ftq_newest_ptr_value == ib_lane[i].ftq_value)
-          tgt = ftq_newest_target;
-        vio_intra_target[i] = (tgt != ib_lane[i+1].pc);
-      end
+      if (anyTaken[i] & ib_lane[i+1].fire)
+        vio_intra_target[i] = (intra_tgt[i] != ib_lane[i+1].pc);
       // (c) 本 lane not-taken 条件分支 且 下一 lane fire：PC 须 = 本 PC + 步进
       if (ntCondBr[i] & ib_lane[i+1].fire)
         vio_intra_seq[i] =

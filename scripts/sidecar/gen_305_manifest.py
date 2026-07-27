@@ -21,7 +21,7 @@ BID_LEDGER = "/home/eda/xs-env/G0-canonical/PROMOTION_LEDGER.tsv"
 ASSEMBLY_DIRS = {"Backend", "Ftq", "L2TLB", "LsqWrapper", "NewIFU", "OpenLLC", "TL2CHICoupledL2"}
 FMBB = {"DCache": "fmbb", "DCacheWrapper": "fmbb", "L2TLBWrapper": "fmbb",
         "MemBlock": "fmbb", "NewCSR": "fmbb", "PtwCache": "fm"}
-SHADOW_DIRS = {"Frontend"}
+SHADOW_DIRS = set()
 # required_verdict 机械派生表(唯一合法签核要求)
 REQUIRED_BY_MODE = {"signoff-strict": "SUCCEEDED", "assembly": "SUCCEEDED",
                     "shadow": "SHADOW_CHECK"}
