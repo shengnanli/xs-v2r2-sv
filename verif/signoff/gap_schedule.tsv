@@ -39,7 +39,7 @@ L2DataStorage	IMPL_DEAD	nc0/ur0/ui2/bb0
 L2TLB	UNMATCH_COMPARE	nc537/ur0/ui0/bb6/NONSYM
 L2TLBWrapper	NATIVE_FAIL	nc0/ur0/ui0/bb1
 L2TlbPrefetch	IMPL_DEAD	nc0/ur12/ui12/bb0
-L2Top	NATIVE_FAIL	nc68/ur0/ui0/bb67
+L2Top	VMUCP+BB	nc0/ur0/ui0/bb131/CHILD_GAP: native SUCCEEDED 158621p/0f/0(0)unmatched/0unread(vmucp+allow 4 iface+127 unresolved对称golden), gate PASS; 依赖闭包缺TL2CHICoupledL2子树14孙子(已在agent/tl2-final签绿待main集成)故ledger保持PROOF_GAP
 LLPTW	UNMATCH_COMPARE	nc0/ur1/ui0/bb0
 LinkMonitor	VMUCP+BB	nc192/ur0/ui0/bb6
 LoadMisalignBuffer	UNMATCH_COMPARE	nc0/ur138/ui319/bb0
@@ -77,7 +77,7 @@ StoreMisalignBuffer	UNMATCH_COMPARE	nc1/ur11/ui101/bb0/NONSYM
 StoreQueue	NATIVE_FAIL	nc119/ur41/ui2603/bb0/NONSYM
 StoreUnit	IMPL_DEAD	nc94/ur4/ui4/bb0/NONSYM
 SyncDataModuleTemplate__1024entry_1	UNMATCH_COMPARE	nc0/ur0/ui0/bb0
-TL2CHICoupledL2	IMPL_DEAD	nc269/ur4/ui4/bb99
+TL2CHICoupledL2	VMUCP+BB	nc0/ur0/ui0/bb93/CHILD_GAP: native SUCCEEDED 150499p/0f/0(0)unmatched/0unread(vmucp+allow 89 unresolved+4 iface对称golden+grantBeat 4双射), gate PASS; 依赖闭包缺14孙子(Directory_1/2/3,L2Slice_1/2/3,RRArbiterInit_11,Arbiter8_CHIDAT/TLBundleD,PBestOffsetPrefetch,VBestOffsetPrefetch,PrefetchReceiver,MbistPipeL2Prefetcher,Pipeline_1;已在agent/tl2-final签绿待main集成)故ledger保持PROOF_GAP
 TLBFA	IMPL_DEAD	nc22/ur11/ui347/bb0/NONSYM
 TLBFA_1	IMPL_DEAD	nc33/ur11/ui155/bb0/NONSYM
 TLBNonBlock	IMPL_DEAD	nc0/ur12/ui186/bb3
