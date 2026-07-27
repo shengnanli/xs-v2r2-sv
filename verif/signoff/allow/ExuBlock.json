@@ -1,0 +1,102 @@
+{
+    "unresolved_blackbox": [
+        {
+            "id": "exus_Alu",
+            "ref_path": "r:/WORK/ExuBlock/exus/Alu",
+            "impl_path": "i:/WORK/ExuBlock/u_core/exus/Alu"
+        },
+        {
+            "id": "exus_Bku",
+            "ref_path": "r:/WORK/ExuBlock/exus/Bku",
+            "impl_path": "i:/WORK/ExuBlock/u_core/exus/Bku"
+        },
+        {
+            "id": "exus_Mul",
+            "ref_path": "r:/WORK/ExuBlock/exus/Mul",
+            "impl_path": "i:/WORK/ExuBlock/u_core/exus/Mul"
+        },
+        {
+            "id": "exus_1_brh",
+            "ref_path": "r:/WORK/ExuBlock/exus_1/brh",
+            "impl_path": "i:/WORK/ExuBlock/u_core/exus_1/brh"
+        },
+        {
+            "id": "exus_1_jmp",
+            "ref_path": "r:/WORK/ExuBlock/exus_1/jmp",
+            "impl_path": "i:/WORK/ExuBlock/u_core/exus_1/jmp"
+        },
+        {
+            "id": "exus_2_Alu",
+            "ref_path": "r:/WORK/ExuBlock/exus_2/Alu",
+            "impl_path": "i:/WORK/ExuBlock/u_core/exus_2/Alu"
+        },
+        {
+            "id": "exus_2_Bku",
+            "ref_path": "r:/WORK/ExuBlock/exus_2/Bku",
+            "impl_path": "i:/WORK/ExuBlock/u_core/exus_2/Bku"
+        },
+        {
+            "id": "exus_2_Mul",
+            "ref_path": "r:/WORK/ExuBlock/exus_2/Mul",
+            "impl_path": "i:/WORK/ExuBlock/u_core/exus_2/Mul"
+        },
+        {
+            "id": "exus_3_brh",
+            "ref_path": "r:/WORK/ExuBlock/exus_3/brh",
+            "impl_path": "i:/WORK/ExuBlock/u_core/exus_3/brh"
+        },
+        {
+            "id": "exus_3_jmp",
+            "ref_path": "r:/WORK/ExuBlock/exus_3/jmp",
+            "impl_path": "i:/WORK/ExuBlock/u_core/exus_3/jmp"
+        },
+        {
+            "id": "exus_4_Alu",
+            "ref_path": "r:/WORK/ExuBlock/exus_4/Alu",
+            "impl_path": "i:/WORK/ExuBlock/u_core/exus_4/Alu"
+        },
+        {
+            "id": "exus_5_VSetRiWi",
+            "ref_path": "r:/WORK/ExuBlock/exus_5/VSetRiWi",
+            "impl_path": "i:/WORK/ExuBlock/u_core/exus_5/VSetRiWi"
+        },
+        {
+            "id": "exus_5_brh",
+            "ref_path": "r:/WORK/ExuBlock/exus_5/brh",
+            "impl_path": "i:/WORK/ExuBlock/u_core/exus_5/brh"
+        },
+        {
+            "id": "exus_5_i2f",
+            "ref_path": "r:/WORK/ExuBlock/exus_5/i2f",
+            "impl_path": "i:/WORK/ExuBlock/u_core/exus_5/i2f"
+        },
+        {
+            "id": "exus_5_jmp",
+            "ref_path": "r:/WORK/ExuBlock/exus_5/jmp",
+            "impl_path": "i:/WORK/ExuBlock/u_core/exus_5/jmp"
+        },
+        {
+            "id": "exus_6_Alu",
+            "ref_path": "r:/WORK/ExuBlock/exus_6/Alu",
+            "impl_path": "i:/WORK/ExuBlock/u_core/exus_6/Alu"
+        },
+        {
+            "id": "exus_7_Div",
+            "ref_path": "r:/WORK/ExuBlock/exus_7/Div",
+            "impl_path": "i:/WORK/ExuBlock/u_core/exus_7/Div"
+        },
+        {
+            "id": "exus_7_Fence",
+            "ref_path": "r:/WORK/ExuBlock/exus_7/Fence",
+            "impl_path": "i:/WORK/ExuBlock/u_core/exus_7/Fence"
+        },
+        {
+            "id": "exus_7_csr",
+            "ref_path": "r:/WORK/ExuBlock/exus_7/csr",
+            "impl_path": "i:/WORK/ExuBlock/u_core/exus_7/csr"
+        }
+    ],
+    "interface_only": [],
+    "empty_blackbox": [],
+    "unmatched": []
+}

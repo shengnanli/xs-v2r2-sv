@@ -29,6 +29,7 @@ L2TLB	PtwCache,PTW,LLPTW,HPTW,L2TlbMissQueue,L2TlbPrefetch,PMP
 Slice	SinkA,SinkC,GrantBuffer,TXREQ,TXDAT,TXRSP,RXDAT,RXRSP,Directory,RequestArb,MainPipe_1,MSHRCtl,L2Slice
 L2TLBWrapper	L2TLB
 ExuBlock_1	FAlu,FCVT,FMA,FDivSqrt,ExeUnit_8
+ExuBlock	Alu,Bku,MulUnit,BranchUnit,JumpUnit,DivUnit,Fence,VSetRiWi	8绿305 FU child对称unresolved黑盒(depends_on, 各SIGNOFF_PASS). glue叶(ClockGate/Dispatcher×5/DelayN_216·217/IntFPToVec+Fli{H,S,D}Table/VSetRiWvf+VsetModule)两侧elaborate白盒非依赖. ★UNMET GAP: CSR+IntToFP_3两非305 child无独立305 target→父级assembly native SUCCEEDED但依赖未闭合, 保持PROOF_GAP直到CSR/IntToFP_3各自signoff(conditional suspend)
 DCache	BankedDataArray,L1CohMetaArray,L1FlagMetaArray,L1FlagMetaArray_1,DuplicatedTagArray,LoadPipe,MainPipe,MissQueue,ProbeQueue,WritebackQueue
 DCacheWrapper	DCache
 OpenLLC	SubDirectory,SubDirectory_1,SnoopUnit,MemUnit,RefillUnit,ResponseUnit	SubDirectory/_1=绿305子(clientDir/selfDir实例, interface_only黑盒边界); SnoopUnit/MemUnit/RefillUnit/ResponseUnit=独立AUX real-body证(可读xs_*_core非空stub非vacuous, 各native FM SUCCEEDED, class-4对称matched-unread双射加强verify_matched_unread=true后0(0)unread), reviewer规则golden复用-as-blackbox须独立证明-本4子皆已证; inline 9非305逻辑子(Directory_4/DataStorage_4/MainPipe_5/RequestArb_4/RequestBuffer_4/FastArbiter_49/Queue1_CHIRSP/LCredit2Decoupled_3-5/SRAMTemplate_202/array_0_1)两侧elaborate白盒不入依赖; 仅vendor SRAM宏array_0_1_ext+CHI队列Queue15_*作黑盒边界; 父级assembly+vmucp, 6依赖全SIGNOFF_PASS则闭合合法绿
