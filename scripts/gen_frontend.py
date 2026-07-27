@@ -96,10 +96,61 @@ def dep_closure():
 
 # ---------------------------------------------------------------------------
 # 3. golden body 提取（端口列表 ");" 之后 ~ "endmodule" 之前；去随机化样板）
-#    保留：声明、assign、always、子模块例化、`ifndef SYNTHESIS 断言块。
-#    去除：`ifdef ENABLE_INITIAL_REG_ ... `endif（仅仿真随机初始化）。
+#
+#    【REPLACEMENT（非 shadow）】本层真正的功能逻辑只有一段连续的 glue+checker 区（golden
+#    body 里从 `reg inner_needFlush;` 到最后一条 checker always 的 `end // always @(posedge,
+#    posedge)`），它包含：
+#      · A 类跨级打拍流水寄存（redirect→flush / sfence→ITLB / fencei·pf→ICache /
+#        icache-error→io_error / perf→io_perf）——**驱动真实对外/对内信号**；
+#      · B 类跨块 PC 连续性检查器（checkPcMem 64 项镜像 + prevTaken/prevNotTaken latch +
+#        inner__probe_N，纯断言，SYNTHESIS 下整段死）。
+#    这段被**整体删除**，改由手写可读核 xs_Frontend_core 重新实现并**真正驱动**下游 net
+#    （消费者 net 名与 golden 第二级寄存器同名：inner_needFlush / inner_sfence_valid /
+#     inner_icache_io_fencei_REG / inner_io_error_REG_1_* / inner_io_perf_N_value_REG_1 …），
+#    这样 25 个子模块例化与顶层 io_error/io_perf 输出 assign 无需改动即被核驱动。
+#    → FM 真正比较"可读核 vs golden 的 glue+checker"，非 golden==golden 空证。
+#
+#    保留：其余声明、子模块互联 assign、子模块例化、`ifndef SYNTHESIS 断言块(SYNTHESIS 关)。
+#    去除：`ifdef ENABLE_INITIAL_REG_ ... `endif（仅仿真随机初始化）; glue+checker 整区。
 # ---------------------------------------------------------------------------
-def golden_body():
+
+# glue+checker 区的起止标记（golden body 内唯一出现，行内容精确匹配）
+_GLUE_START = "  reg               inner_needFlush;"
+_GLUE_END   = "  end // always @(posedge, posedge)"
+
+# 核驱动的消费者 net（= golden 第二级寄存器名 + io_error/io_perf 末级），删区后需声明为 wire。
+CONSUMER_WIRES = [
+    (1,  "inner_needFlush"),
+    (1,  "inner_FlushControlRedirect"),
+    (1,  "inner_FlushMemVioRedirect"),
+    (1,  "inner_sfence_valid"),
+    (1,  "inner_sfence_bits_rs1"),
+    (1,  "inner_sfence_bits_rs2"),
+    (50, "inner_sfence_bits_addr"),
+    (16, "inner_sfence_bits_id"),
+    (1,  "inner_sfence_bits_flushPipe"),
+    (1,  "inner_sfence_bits_hv"),
+    (1,  "inner_sfence_bits_hg"),
+    (1,  "inner_icache_io_csr_pf_enable_REG"),
+    (1,  "inner_icache_io_fencei_REG"),
+    (1,  "inner_io_error_REG_1_valid"),
+    (48, "inner_io_error_REG_1_bits_paddr"),
+    (1,  "inner_io_error_REG_1_bits_report_to_beu"),
+]
+CONSUMER_WIRES += [(6, f"inner_io_perf_{p}_value_REG_1") for p in range(8)]
+
+def _strip_glue_checker(body_lines):
+    """删除 glue+checker 连续区 [_GLUE_START, _GLUE_END]（含端点）。返回删后行列表。
+    该区在 golden body 内唯一出现且不含任何子模块例化/互联 assign（已验证）。"""
+    try:
+        s = next(i for i, l in enumerate(body_lines) if l.rstrip() == _GLUE_START.rstrip())
+        e = next(i for i, l in enumerate(body_lines)
+                 if i > s and l.rstrip() == _GLUE_END.rstrip())
+    except StopIteration:
+        raise RuntimeError("glue+checker 区标记未找到——golden 结构变化，需复核 gen 脚本")
+    return body_lines[:s] + body_lines[e + 1:]
+
+def golden_body(replace=True):
     lines = SRC.splitlines()
     # 端口结束行 ");"（第一个顶格 ");"）
     pend = next(i for i, l in enumerate(lines) if l.rstrip() == ");")
@@ -117,9 +168,11 @@ def golden_body():
         if skip:
             continue
         out.append(l)
+    if replace:
+        out = _strip_glue_checker(out)
     return "\n".join(out)
 
-GBODY = golden_body()
+GBODY = golden_body(replace=True)
 
 # 头部宏（module 之前，行 1..86）—— RANDOM/SYNTHESIS/ASSERT 宏样板，UT 定义 SYNTHESIS 关掉
 def golden_header():
@@ -159,23 +212,51 @@ def ib_lane_concat():
 def perf_in_concat():
     return ", ".join(f"_inner_perfEvents_hpm_io_perf_{p}_value" for p in range(8))
 
-# 可读核例化（影子输出按 expose 决定连到 net 还是悬空）
+# A 类输出端口 → 消费者 net 的绑定表（core port, consumer net, 位宽）。
+# 核**真正驱动**这些 net（删掉了 golden body 的同名寄存器），下游子模块/输出 assign 消费。
+A_OUT_BIND = [
+    ("flush",                 "inner_needFlush",                          1),
+    ("flush_ctrl_redirect",   "inner_FlushControlRedirect",               1),
+    ("flush_memvio_redirect", "inner_FlushMemVioRedirect",                1),
+    ("sfence_q_valid",        "inner_sfence_valid",                       1),
+    ("sfence_q_rs1",          "inner_sfence_bits_rs1",                    1),
+    ("sfence_q_rs2",          "inner_sfence_bits_rs2",                    1),
+    ("sfence_q_addr",         "inner_sfence_bits_addr",                  50),
+    ("sfence_q_id",           "inner_sfence_bits_id",                    16),
+    ("sfence_q_flushPipe",    "inner_sfence_bits_flushPipe",              1),
+    ("sfence_q_hv",           "inner_sfence_bits_hv",                     1),
+    ("sfence_q_hg",           "inner_sfence_bits_hg",                     1),
+    ("icache_fencei_q",       "inner_icache_io_fencei_REG",               1),
+    ("icache_pf_enable_q",    "inner_icache_io_csr_pf_enable_REG",        1),
+    ("error_valid_q",         "inner_io_error_REG_1_valid",               1),
+    ("error_paddr_q",         "inner_io_error_REG_1_bits_paddr",         48),
+    ("error_to_beu_q",        "inner_io_error_REG_1_bits_report_to_beu",  1),
+]
+
+# 可读核例化。REPLACEMENT: 核真正驱动消费者 net（golden body 同名寄存器已删）。
+#   expose=False（golden 同名 wrapper Frontend）：核驱动 inner_* net → 子模块/输出 assign 消费。
+#   expose=True（_xs UT 变体）：同上，另把驱动值 tap 到 xs_dbg_* 输出供 tb 逐拍对 golden。
+# 消费者 net 声明（wire）——必须在 GBODY 之前发射，因 GBODY 里的 io_error/io_perf
+# 输出 assign 会先引用这些 net（顶格顺序声明先于使用）。
+def consumer_wire_decls():
+    L = ["  // ===== REAL REPLACEMENT: 核驱动的消费者 net（golden body 同名寄存器已删）====="]
+    for w, n in CONSUMER_WIRES:
+        ws = f"[{w-1}:0] " if w > 1 else ""
+        L.append(f"  wire {ws}{n};")
+    L.append("  wire [5:0] xs_core_perf_q [8];")
+    return "\n".join(L)
+
 def core_inst(expose):
-    def o(port):
-        # A 类影子输出：expose=True → 连 xs_dbg_<port>；否则悬空
-        return f"xs_dbg_{port}" if expose else "/* dbg */"
-    # perf_q 是 unpacked 数组输出：expose 时连模块的 xs_dbg_perf_q 数组端口，否则连本地数组
-    perf_q_conn = "xs_dbg_perf_q" if expose else "xs_dbg_perf_q_open"
     perf_in = "'{" + perf_in_concat() + "}"
     L = []
-    L.append("  // ===== 可读核 xs_Frontend_core（校验伴随；纯增量，不影响对外功能）=====")
+    L.append("  // ===== 可读核 xs_Frontend_core（REAL REPLACEMENT：驱动本层全部 glue 输出）=====")
     L.append("  ib_lane_t xs_ib_lane [6];")
     L.append("  assign xs_ib_lane = '{")
     L.append(ib_lane_concat())
     L.append("  };")
-    if not expose:
-        # 非 expose（golden 同名 wrapper）：perf_q 接本地悬空数组，避免无驱动端口
-        L.append("  wire [5:0] xs_dbg_perf_q_open [8];")
+    # perf_q 是核的 unpacked 数组输出；接本地数组，再逐路 assign 到 8 个 inner_io_perf_N net。
+    for p in range(8):
+        L.append(f"  assign inner_io_perf_{p}_value_REG_1 = xs_core_perf_q[{p}];")
     L.append("  xs_Frontend_core u_core (")
     conns = [
         ".clock(clock)", ".reset(reset)",
@@ -197,36 +278,47 @@ def core_inst(expose):
         ".icache_err_paddr(_inner_icache_io_error_bits_paddr)",
         ".icache_err_to_beu(_inner_icache_io_error_bits_report_to_beu)",
         f".perf_in({perf_in})",
-        # A 类输出（影子）
-        f".flush({o('flush')})",
-        f".flush_ctrl_redirect({o('flush_ctrl')})",
-        f".flush_memvio_redirect({o('flush_memvio')})",
-        f".sfence_q_valid({o('sfence_q_valid')})",
-        f".sfence_q_rs1({o('sfence_q_rs1')})",
-        f".sfence_q_rs2({o('sfence_q_rs2')})",
-        f".sfence_q_addr({o('sfence_q_addr')})",
-        f".sfence_q_id({o('sfence_q_id')})",
-        f".sfence_q_flushPipe({o('sfence_q_flushPipe')})",
-        f".sfence_q_hv({o('sfence_q_hv')})",
-        f".sfence_q_hg({o('sfence_q_hg')})",
-        f".icache_fencei_q({o('icache_fencei_q')})",
-        f".icache_pf_enable_q({o('icache_pf_enable_q')})",
-        f".error_valid_q({o('error_valid_q')})",
-        f".error_paddr_q({o('error_paddr_q')})",
-        f".error_to_beu_q({o('error_to_beu_q')})",
-        f".perf_q({perf_q_conn})",
-        # B 类输入
+    ]
+    # A 类输出：绑到消费者 net（真驱动）
+    for cport, cnet, _w in A_OUT_BIND:
+        conns.append(f".{cport}({cnet})")
+    conns.append(".perf_q(xs_core_perf_q)")
+    conns += [
+        # B 类输入（PC 连续性检查器；SYNTHESIS 下 golden 侧对应寄存器也是死区，
+        #          此处核内寄存器与 golden inner_checkPcMem_*/prev* 双射匹配，
+        #          verify_matched_unread=true 时 FM 逐点验证其 next-state 等价）。
         ".ib_lane(xs_ib_lane)",
         ".ftq_pcmem_wen(_inner_ftq_io_toBackend_pc_mem_wen)",
         ".ftq_pcmem_waddr(_inner_ftq_io_toBackend_pc_mem_waddr)",
         ".ftq_pcmem_wdata(_inner_ftq_io_toBackend_pc_mem_wdata_startAddr)",
         ".ftq_newest_ptr_value(_inner_ftq_io_toBackend_newest_entry_ptr_value)",
         ".ftq_newest_target(_inner_ftq_io_toBackend_newest_entry_target)",
-        # B 类输出（影子）
-        f".pc_continuity_violation({o('pc_vio')})",
+        # B 类输出：检查器影子（纯断言等价，不驱动对外端口；expose 时引出比对）
+        f".pc_continuity_violation({'xs_dbg_pc_vio' if expose else '/* checker (assertion-only) */'})",
     ]
     L.append(",\n".join("    " + c for c in conns))
     L.append("  );")
+    # _xs 变体：把核驱动的 net tap 到 xs_dbg_* 输出，供 tb 直接对 golden 的对应 net/输出。
+    if expose:
+        L.append("  // ---- _xs 变体：核驱动值 tap 到调试端口（tb 对 golden 逐拍比对）----")
+        tap = {
+            "flush": "inner_needFlush", "flush_ctrl": "inner_FlushControlRedirect",
+            "flush_memvio": "inner_FlushMemVioRedirect",
+            "sfence_q_valid": "inner_sfence_valid", "sfence_q_rs1": "inner_sfence_bits_rs1",
+            "sfence_q_rs2": "inner_sfence_bits_rs2", "sfence_q_addr": "inner_sfence_bits_addr",
+            "sfence_q_id": "inner_sfence_bits_id",
+            "sfence_q_flushPipe": "inner_sfence_bits_flushPipe",
+            "sfence_q_hv": "inner_sfence_bits_hv", "sfence_q_hg": "inner_sfence_bits_hg",
+            "icache_fencei_q": "inner_icache_io_fencei_REG",
+            "icache_pf_enable_q": "inner_icache_io_csr_pf_enable_REG",
+            "error_valid_q": "inner_io_error_REG_1_valid",
+            "error_paddr_q": "inner_io_error_REG_1_bits_paddr",
+            "error_to_beu_q": "inner_io_error_REG_1_bits_report_to_beu",
+        }
+        for dbg, net in tap.items():
+            L.append(f"  assign xs_dbg_{dbg} = {net};")
+        for p in range(8):
+            L.append(f"  assign xs_dbg_perf_q[{p}] = inner_io_perf_{p}_value_REG_1;")
     return "\n".join(L)
 
 # 影子调试端口（_xs 变体额外输出）
@@ -258,6 +350,7 @@ def dbg_port_decls():
 def gen_wrapper():
     L = [GHEADER, "module Frontend\n  import xs_frontend_pkg::*;\n(",
          port_block(PORTS), ");"]
+    L.append(consumer_wire_decls())
     L.append(GBODY)
     L.append("")
     L.append(core_inst(expose=False))
@@ -271,6 +364,7 @@ def gen_xs():
     L = [GHEADER, "module Frontend_xs\n  import xs_frontend_pkg::*;\n(",
          port_block(PORTS) + ",",
          dbg_port_decls(), ");"]
+    L.append(consumer_wire_decls())
     L.append(GBODY)
     L.append("")
     L.append(core_inst(expose=True))
