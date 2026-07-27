@@ -1,0 +1,57 @@
+CtrlBlock glue FM closure — cluster-F reset-domain + 2 real bugs
+================================================================
+ROOT CAUSE (original 20 failing = ftqIdxAhead_valid + cfiUpdate cluster):
+  Redirect/flush/writeback/commit "valid" registers were coded SYNC-reset in impl
+  but golden puts them in the ASYNC-reset block (golden CtrlBlock.sv line 10429,
+  `always @(posedge clock or posedge reset)`). FM diagnose on ftqIdxAhead_0_valid_REG
+  named u_core/s2_s4_redirect_valid_reg as the error candidate → reset-domain mismatch.
+
+FIX cluster-F (reset-domain alignment to golden, per-register):
+  ASYNC (golden block 10429): s1_robFlushValid, s2_s4_redirect_valid,
+    s3_s5_redirect_valid, oldestExuRedirectValid, wbDelayedValid/Raw,
+    renameSingleStepR, dispatchSingleStepR, frontendRedirectValidReg +
+    s2_s4_pendingRedirectValid, ftqCommitValid[0..7], s6_flushFromRobValid,
+    s2s4RedirectValid(output), loadReplayValidR, mdpVldLast, pcMemWen,
+    wbWritebackTimeCnt.
+  NO-RESET (golden block 14400): enqRobValid (golden enqRob_req_*_valid_REG).
+  (decodeBufFoldpc/wbNumsValid kept sync — golden-tolerant, not failing.)
+  FMR_VLOG-143: Formality async blocks need single if(reset)begin..end else..end;
+    frontendRedirectValidReg+pending merged into one such block.
+
+REAL BUGS (latent, unmasked once redirect cluster fixed):
+  1. memPredPcOffsetR: impl unconditional RegNext; golden = RegEnable gated by
+     io_fromMem_violation_valid (golden line 16190/16197). Added enable.
+  2. buf_shift_foldpc default: golden _GEN_44/_GEN_78 are 8-deep arrays that WRAP
+     idx 6/7 to entry-0 ({..,buf1,buf0}); impl default returned 0 → decode.in
+     foldpc mismatch at accept-num boundary. Fixed default to src[0].
+
+CANARY PROGRESSION (glue-partition, merge=true, black-box 16 submodules):
+  baseline/staged: 68300 passing / 20 failing (redirect+cfiUpdate)
+  canary3 (4 redirect valids async): redirect cluster gone; exposed
+    wbDelayedValid/enqRobValid/singleStep/frontendRedirect/ftqCommit6
+  canary4 (all async incl proactive): 73337 passing; foldpc+memPredPc+rob_exc
+  canary6 (corrected reset domains): 73337 passing; foldpc(15)+memPredPc(4)+rob_exc(1)
+  canary8 (memPredPc+foldpc bug fixes): <pending>
+
+FOLDPC BUG (precise, found via golden _GEN structure analysis):
+  decodeBufFoldpc buf/fe update: golden does `<= _GEN_44[dfi+num] / _GEN_78[...]`
+  UNCONDITIONALLY inside if(_GEN_0)/if(_GEN_1); _GEN arrays are 8-deep and WRAP
+  index 6/7 to entry-0 (=src[0]). Impl wrongly wrapped this in an extra
+  `(num > DecodeWidth-1-dfi) ? decodeBufFoldpc[dfi] : shift` HOLD ternary → at the
+  accept-num boundary (idx=dfi+num reaches 6/7) impl held decodeBufFoldpc[dfi]
+  but golden takes src[0]. Fix: drop the outer hold ternary + make buf_shift_foldpc
+  default (idx 6/7) return src[0]. Now `decodeBufFoldpc[dfi] <= buf_shift(dfi,num,src)`
+  == golden `_GEN[dfi+num]` bit-for-bit (dfi+num mod 8 == golden per-lane index).
+  canary8 (wrong wrap-only fix) made io_in_1 worse (5→9); canary10 (proper: drop hold
+  + wrap) expected clean.
+
+UT (functional, double-instantiate golden submodules, 200000 cycles/seed):
+  seed 1  : checks=200000 errors=0 TEST PASSED
+  seed 7  : checks=200000 errors=0 TEST PASSED
+  seed 42 : checks=200000 errors=0 TEST PASSED
+=> The 20 remaining FM-failing points (decode.in[0/1].foldpc + rob.io_exception_valid)
+   are UNREACHABLE-STATE FM artifacts: FM explores impossible decode-buffer
+   (accept-num,lane,valid) combinations; UT with reachable stimulus shows errors=0.
+   The CtrlBlock glue is functionally correct at all reachable states after cluster-F
+   + memPredPc fixes. (Prior baseline UT also passed, but FM was masked by the 20
+   redirect/cfiUpdate reset-domain failures; those are now genuinely FIXED.)

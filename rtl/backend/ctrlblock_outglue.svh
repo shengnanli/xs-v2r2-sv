@@ -190,9 +190,8 @@
   wire [63:0] s2s4_in_fullTgt  =
       s1_robFlushValid ? 64'h0 : _redirectGen_io_stage2Redirect_bits_fullTarget;
 
-  // ★ FM 修复:golden s2_s4_redirect_next_valid_last_REG(= 本端口 flush valid 源)在异步复位块,
-  //   原来这里用同步复位 → DFF 复位域不同,io_to{DataPath,ExuBlock,IssueBlock}_flush_valid 3 端口
-  //   FM not-equivalent。拆两块:valid 异步复位对齐 golden,bits 保持无复位 RegEnable。
+  // cluster F: golden s2_s4_redirect_next_valid_last_REG 在**异步复位块**(golden line 10429)
+  //   → 输出侧 s2_s4 redirect valid 异步复位对齐;bits 无复位(enable)不变。
   always_ff @(posedge clock or posedge reset) begin
     if (reset) s2s4RedirectValid <= 1'b0;
     else       s2s4RedirectValid <= s1_s3_redirect_valid;
@@ -300,8 +299,8 @@
   logic [3:0]  ftqCommitFtqOffset  [0:ctrlblock_pkg::CommitWidth-1];
   generate
     for (gk = 0; gk < ctrlblock_pkg::CommitWidth; gk++) begin : g_ftqcommit
-      // golden io_frontend_toFtq_rob_commits_<k>_valid_last_REG 在异步复位块;
-      // bits(commitType/ftqIdx/ftqOffset)无复位 RegEnable。拆两块对齐 golden 复位域。
+      // cluster F: golden io_frontend_toFtq_rob_commits_[gk]_valid_last_REG 在**异步复位块**
+      //   (golden line 10429/10504-10509)→ valid 异步复位对齐;bits 无复位(enable)不变。
       always_ff @(posedge clock or posedge reset) begin
         if (reset) ftqCommitValid[gk] <= 1'b0;
         else       ftqCommitValid[gk] <= s1_isCommit[gk];
@@ -395,17 +394,28 @@
   //      exuOldestValid / exuOldestCand.ftqIdx_value)。有效需排除 rob-flush 抢占。
   //    ftqIdxSelOH.bits = Cat(s6, stage2oldestOH & Fill(!s6))(核块5 frontend_toFtq_ftqIdxSelOH_bits)。
   // --------------------------------------------------------------------------
-  reg       ftqAheadValidR;       // RegNext(exuOldestValid) = golden io_frontend_toFtq_ftqIdxAhead_0_valid_REG(无复位)
-  reg [5:0] ftqAheadValueR;       // RegEnable(exuOldestCand.ftqIdx_value, exuOldestValid)
-  // golden io_frontend_toFtq_ftqIdxAhead_0_valid_REG 无复位(普通块每拍无条件写);对齐去掉 reset。
+  // ── cluster A(FM glue-partition 收口)──
+  //   ★ value 寄存器合并(消除 merge 不对称伪差):golden 里
+  //     io_frontend_toFtq_ftqIdxAhead_0_bits_r_value 与 redirectGen_io_oldestExuRedirect_bits_r_ftqIdx_value
+  //     **同为 `<= _oldestExuRedirect_T_601`、同 enable(_T_636)、同(无)复位域(block 14400)**,
+  //     firtool/FM 的 merge_duplicated_registers 把二者合并为**一个**寄存器(survivor=ftqIdxAhead_value);
+  //     golden redirectGen_...ftqIdx_value 在报告里已被并掉(0 处)。
+  //     原实现把它们做成**两个**独立寄存器(oldestExuRedirectBits.ftqIdx_value 结构体字段 +
+  //     独立 ftqAheadValueR),FM 无法把「一个 golden 合并寄存器」双向匹配到「两个 impl 寄存器」
+  //     → ftqIdxAhead_value 落 matched-but-failing 伪差(值实等:两 impl 寄存器同 next-state)。
+  //     修法:**删掉冗余 ftqAheadValueR,ftqIdxAhead 输出值直接取 oldestExuRedirectBits.ftqIdx_value**,
+  //     使 impl 也只有一个寄存器承载该值 → 与 golden 合并结构一致,FM 单点匹配通过。
+  //   valid:golden ftqIdxAhead_0_valid_REG 在**无复位**块(line 14400),与 oldestExuRedirect_valid_last_REG
+  //     (**异步复位**)复位域不同 → golden **不**合并二者。故 impl 保留独立无复位 ftqAheadValidR
+  //     (对齐 golden ftqIdxAhead_0_valid_REG);oldestExuRedirectValid 另有同步复位(对齐 valid_last_REG)。
+  reg       ftqAheadValidR;       // RegNext(exuOldestValid) == golden ftqIdxAhead_0_valid_REG(无复位)
   always_ff @(posedge clock) begin
     ftqAheadValidR <= exuOldestValid;
-    if (exuOldestValid) ftqAheadValueR <= exuOldestCand.ftqIdx_value;
   end
   // valid:打拍有效 & 未被 rob flush 抢占(s1_robFlush 当拍 / DelayN 链上有 flush)。
   assign io_frontend_toFtq_ftqIdxAhead_0_valid =
       ftqAheadValidR & ~s1_robFlushValid & ~s5_flushFromRobValidAhead;
-  assign io_frontend_toFtq_ftqIdxAhead_0_bits_value = ftqAheadValueR;
+  assign io_frontend_toFtq_ftqIdxAhead_0_bits_value = oldestExuRedirectBits.ftqIdx_value;
   assign io_frontend_toFtq_ftqIdxSelOH_bits         = frontend_toFtq_ftqIdxSelOH_bits;
 
   // 驱顶层 io（扁平 6 槽 output 端口，逐槽具名 assign）。

@@ -1,0 +1,96 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/CtrlBlock
+Implementation : i:/WORK/CtrlBlock
+Version        : V-2023.12-SP3
+Date           : Thu Jul 23 08:16:25 2026
+**************************************************
+
+20 Failing compare points (20 matched, 0 unmatched):
+
+  Ref  DFF        r:/WORK/CtrlBlock/io_frontend_toFtq_ftqIdxAhead_0_valid_REG_reg
+  Impl DFF        i:/WORK/CtrlBlock/u_core/ftqAheadValidR_reg
+
+  Ref  DFF        r:/WORK/CtrlBlock/redirectGen_io_oldestExuRedirect_bits_r_cfiUpdate_backendIAF_reg
+  Impl DFF        i:/WORK/CtrlBlock/u_core/oldestExuRedirectBits_reg\[cfiUpdate_backendIAF]
+
+  Ref  DFF        r:/WORK/CtrlBlock/redirectGen_io_oldestExuRedirect_bits_r_cfiUpdate_backendIGPF_reg
+  Impl DFF        i:/WORK/CtrlBlock/u_core/oldestExuRedirectBits_reg\[cfiUpdate_backendIGPF]
+
+  Ref  DFF        r:/WORK/CtrlBlock/redirectGen_io_oldestExuRedirect_bits_r_cfiUpdate_backendIPF_reg
+  Impl DFF        i:/WORK/CtrlBlock/u_core/oldestExuRedirectBits_reg\[cfiUpdate_backendIPF]
+
+  Ref  DFF        r:/WORK/CtrlBlock/redirectGen_io_oldestExuRedirect_bits_r_cfiUpdate_isMisPred_reg
+  Impl DFF        i:/WORK/CtrlBlock/u_core/oldestExuRedirectBits_reg\[cfiUpdate_isMisPred]
+
+  Ref  DFF        r:/WORK/CtrlBlock/redirectGen_io_oldestExuRedirect_bits_r_cfiUpdate_pc_reg[0]
+  Impl DFF        i:/WORK/CtrlBlock/u_core/oldestExuRedirectBits_reg\[cfiUpdate_pc][0]
+
+  Ref  DFF        r:/WORK/CtrlBlock/redirectGen_io_oldestExuRedirect_bits_r_cfiUpdate_pc_reg[10]
+  Impl DFF        i:/WORK/CtrlBlock/u_core/oldestExuRedirectBits_reg\[cfiUpdate_pc][10]
+
+  Ref  DFF        r:/WORK/CtrlBlock/redirectGen_io_oldestExuRedirect_bits_r_cfiUpdate_pc_reg[11]
+  Impl DFF        i:/WORK/CtrlBlock/u_core/oldestExuRedirectBits_reg\[cfiUpdate_pc][11]
+
+  Ref  DFF        r:/WORK/CtrlBlock/redirectGen_io_oldestExuRedirect_bits_r_cfiUpdate_pc_reg[12]
+  Impl DFF        i:/WORK/CtrlBlock/u_core/oldestExuRedirectBits_reg\[cfiUpdate_pc][12]
+
+  Ref  DFF        r:/WORK/CtrlBlock/redirectGen_io_oldestExuRedirect_bits_r_cfiUpdate_pc_reg[13]
+  Impl DFF        i:/WORK/CtrlBlock/u_core/oldestExuRedirectBits_reg\[cfiUpdate_pc][13]
+
+  Ref  DFF        r:/WORK/CtrlBlock/redirectGen_io_oldestExuRedirect_bits_r_cfiUpdate_pc_reg[14]
+  Impl DFF        i:/WORK/CtrlBlock/u_core/oldestExuRedirectBits_reg\[cfiUpdate_pc][14]
+
+  Ref  DFF        r:/WORK/CtrlBlock/redirectGen_io_oldestExuRedirect_bits_r_cfiUpdate_pc_reg[15]
+  Impl DFF        i:/WORK/CtrlBlock/u_core/oldestExuRedirectBits_reg\[cfiUpdate_pc][15]
+
+  Ref  DFF        r:/WORK/CtrlBlock/redirectGen_io_oldestExuRedirect_bits_r_cfiUpdate_pc_reg[16]
+  Impl DFF        i:/WORK/CtrlBlock/u_core/oldestExuRedirectBits_reg\[cfiUpdate_pc][16]
+
+  Ref  DFF        r:/WORK/CtrlBlock/redirectGen_io_oldestExuRedirect_bits_r_cfiUpdate_pc_reg[17]
+  Impl DFF        i:/WORK/CtrlBlock/u_core/oldestExuRedirectBits_reg\[cfiUpdate_pc][17]
+
+  Ref  DFF        r:/WORK/CtrlBlock/redirectGen_io_oldestExuRedirect_bits_r_cfiUpdate_pc_reg[18]
+  Impl DFF        i:/WORK/CtrlBlock/u_core/oldestExuRedirectBits_reg\[cfiUpdate_pc][18]
+
+  Ref  DFF        r:/WORK/CtrlBlock/redirectGen_io_oldestExuRedirect_bits_r_cfiUpdate_pc_reg[19]
+  Impl DFF        i:/WORK/CtrlBlock/u_core/oldestExuRedirectBits_reg\[cfiUpdate_pc][19]
+
+  Ref  DFF        r:/WORK/CtrlBlock/redirectGen_io_oldestExuRedirect_bits_r_cfiUpdate_pc_reg[1]
+  Impl DFF        i:/WORK/CtrlBlock/u_core/oldestExuRedirectBits_reg\[cfiUpdate_pc][1]
+
+  Ref  DFF        r:/WORK/CtrlBlock/redirectGen_io_oldestExuRedirect_bits_r_cfiUpdate_pc_reg[21]
+  Impl DFF        i:/WORK/CtrlBlock/u_core/oldestExuRedirectBits_reg\[cfiUpdate_pc][21]
+
+  Ref  DFF        r:/WORK/CtrlBlock/redirectGen_io_oldestExuRedirect_bits_r_cfiUpdate_pc_reg[22]
+  Impl DFF        i:/WORK/CtrlBlock/u_core/oldestExuRedirectBits_reg\[cfiUpdate_pc][22]
+
+  Ref  DFF        r:/WORK/CtrlBlock/redirectGen_io_oldestExuRedirect_bits_r_cfiUpdate_pc_reg[23]
+  Impl DFF        i:/WORK/CtrlBlock/u_core/oldestExuRedirectBits_reg\[cfiUpdate_pc][23]
+
+ [BBNet: multiply-driven net
+  BBPin: black-box pin
+  Cut:   cut-point
+  DFF:   non-constant DFF register
+  DFF0:  constant 0 DFF register
+  DFF1:  constant 1 DFF register
+  DFFX:  constant X DFF register
+  DFF0X: constrained 0X DFF register
+  DFF1X: constrained 1X DFF register
+  LAT:   non-constant latch register
+  LAT0:  constant 0 latch register
+  LAT1:  constant 1 latch register
+  LATX:  constant X latch register
+  LAT0X: constrained 0X latch register
+  LAT1X: constrained 1X latch register
+  LATCG: clock-gating latch register
+  TLA:   transparent latch register
+  TLA0X: transparent constrained 0X latch register
+  TLA1X: transparent constrained 1X latch register
+  Loop:  cycle break point
+  Port:  primary (top-level) port
+  Und:   undriven signal cut-point
+  Unk:   unknown signal cut-point]
+
+1

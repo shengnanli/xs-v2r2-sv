@@ -1,0 +1,37 @@
+**************************************************
+Report         : error_candidates
+
+Reference      : r:/WORK/CtrlBlock
+Implementation : i:/WORK/CtrlBlock
+Version        : V-2023.12-SP3
+Date           : Sun Jul 26 01:56:20 2026
+**************************************************
+
+Single error detected in implementation.
+
+Recommended error candidate:
+
+    Prim    u_core/C12085
+
+Alternate error candidates:
+ 1. Prim    u_core/C12103
+
+ 2. Prim    u_core/C12119
+
+ 3. Prim    u_core/s2_s4_redirect_valid_reg
+
+ 4. Prim    u_core/C12121
+
+ 5. Prim    u_core/C11312
+
+ 6. Prim    u_core/C11320
+
+ 7. Prim    u_core/C11315
+
+ 8. Prim    u_core/C11323
+
+ 9. Prim    u_core/C11330
+
+10. Prim    u_core/C12273
+
+1

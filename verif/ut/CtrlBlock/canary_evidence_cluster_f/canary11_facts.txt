@@ -1,0 +1,3 @@
+ 73341 Passing compare points
+ 20 Failing compare points (20 matched, 0 unmatched)
+ 964 Unverified compare points

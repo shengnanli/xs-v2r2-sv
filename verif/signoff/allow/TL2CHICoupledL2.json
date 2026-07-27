@@ -1,0 +1,473 @@
+{
+ "unresolved_blackbox": [
+  {
+   "id": "TL2CHICoupledL2__hintPipe1__stages_0",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/hintPipe1/stages_0",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/hintPipe1/stages_0"
+  },
+  {
+   "id": "TL2CHICoupledL2__hintPipe2__stages_0",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/hintPipe2/stages_0",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/hintPipe2/stages_0"
+  },
+  {
+   "id": "TL2CHICoupledL2__hintPipe2__stages_1",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/hintPipe2/stages_1",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/hintPipe2/stages_1"
+  },
+  {
+   "id": "TL2CHICoupledL2__mmioBridge__mmio_channel_D_arb",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/mmioBridge/mmio_channel_D_arb",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/mmioBridge/mmio_channel_D_arb"
+  },
+  {
+   "id": "TL2CHICoupledL2__mmioBridge__mmio_txdat_arb",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/mmioBridge/mmio_txdat_arb",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/mmioBridge/mmio_txdat_arb"
+  },
+  {
+   "id": "TL2CHICoupledL2__mmioBridge__txreqArb",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/mmioBridge/txreqArb",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/mmioBridge/txreqArb"
+  },
+  {
+   "id": "TL2CHICoupledL2__pCrdQueue__ram_ext",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/pCrdQueue/ram_ext",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/pCrdQueue/ram_ext"
+  },
+  {
+   "id": "TL2CHICoupledL2__prefetcher__mbistPl",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/prefetcher/mbistPl",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/prefetcher/mbistPl"
+  },
+  {
+   "id": "TL2CHICoupledL2__prefetcher__pbop",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/prefetcher/pbop",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/prefetcher/pbop"
+  },
+  {
+   "id": "TL2CHICoupledL2__prefetcher__pfRcv",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/prefetcher/pfRcv",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/prefetcher/pfRcv"
+  },
+  {
+   "id": "TL2CHICoupledL2__prefetcher__pftQueue",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/prefetcher/pftQueue",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/prefetcher/pftQueue"
+  },
+  {
+   "id": "TL2CHICoupledL2__prefetcher__pipe",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/prefetcher/pipe",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/prefetcher/pipe"
+  },
+  {
+   "id": "TL2CHICoupledL2__prefetcher__vbop",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/prefetcher/vbop",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/prefetcher/vbop"
+  },
+  {
+   "id": "TL2CHICoupledL2__resp_pipeline_1__stages_0",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/resp_pipeline_1/stages_0",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/resp_pipeline_1/stages_0"
+  },
+  {
+   "id": "TL2CHICoupledL2__resp_pipeline_2__stages_0",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/resp_pipeline_2/stages_0",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/resp_pipeline_2/stages_0"
+  },
+  {
+   "id": "TL2CHICoupledL2__resp_pipeline_3__stages_0",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/resp_pipeline_3/stages_0",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/resp_pipeline_3/stages_0"
+  },
+  {
+   "id": "TL2CHICoupledL2__resp_pipeline__stages_0",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/resp_pipeline/stages_0",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/resp_pipeline/stages_0"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_0__dataStorage",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_0/dataStorage",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_0/dataStorage"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_0__directory",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_0/directory",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_0/directory"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_0__grantBuf",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_0/grantBuf",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_0/grantBuf"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_0__mainPipe",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_0/mainPipe",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_0/mainPipe"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_0__mbistPl",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_0/mbistPl",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_0/mbistPl"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_0__mshrCtl",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_0/mshrCtl",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_0/mshrCtl"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_0__refillBuf",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_0/refillBuf",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_0/refillBuf"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_0__releaseBuf",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_0/releaseBuf",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_0/releaseBuf"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_0__reqArb",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_0/reqArb",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_0/reqArb"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_0__rxdat",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_0/rxdat",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_0/rxdat"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_0__rxrsp",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_0/rxrsp",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_0/rxrsp"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_0__rxsnp",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_0/rxsnp",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_0/rxsnp"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_0__sinkA",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_0/sinkA",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_0/sinkA"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_0__sinkC",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_0/sinkC",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_0/sinkC"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_0__txdat",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_0/txdat",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_0/txdat"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_0__txreq",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_0/txreq",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_0/txreq"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_0__txrsp",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_0/txrsp",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_0/txrsp"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_1__dataStorage",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_1/dataStorage",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_1/dataStorage"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_1__directory",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_1/directory",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_1/directory"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_1__grantBuf",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_1/grantBuf",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_1/grantBuf"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_1__mainPipe",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_1/mainPipe",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_1/mainPipe"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_1__mbistPl",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_1/mbistPl",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_1/mbistPl"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_1__mshrCtl",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_1/mshrCtl",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_1/mshrCtl"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_1__refillBuf",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_1/refillBuf",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_1/refillBuf"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_1__releaseBuf",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_1/releaseBuf",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_1/releaseBuf"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_1__reqArb",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_1/reqArb",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_1/reqArb"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_1__rxdat",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_1/rxdat",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_1/rxdat"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_1__rxrsp",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_1/rxrsp",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_1/rxrsp"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_1__rxsnp",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_1/rxsnp",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_1/rxsnp"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_1__sinkA",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_1/sinkA",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_1/sinkA"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_1__sinkC",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_1/sinkC",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_1/sinkC"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_1__txdat",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_1/txdat",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_1/txdat"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_1__txreq",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_1/txreq",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_1/txreq"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_1__txrsp",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_1/txrsp",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_1/txrsp"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_2__dataStorage",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_2/dataStorage",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_2/dataStorage"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_2__directory",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_2/directory",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_2/directory"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_2__grantBuf",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_2/grantBuf",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_2/grantBuf"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_2__mainPipe",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_2/mainPipe",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_2/mainPipe"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_2__mbistPl",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_2/mbistPl",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_2/mbistPl"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_2__mshrCtl",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_2/mshrCtl",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_2/mshrCtl"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_2__refillBuf",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_2/refillBuf",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_2/refillBuf"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_2__releaseBuf",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_2/releaseBuf",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_2/releaseBuf"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_2__reqArb",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_2/reqArb",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_2/reqArb"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_2__rxdat",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_2/rxdat",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_2/rxdat"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_2__rxrsp",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_2/rxrsp",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_2/rxrsp"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_2__rxsnp",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_2/rxsnp",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_2/rxsnp"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_2__sinkA",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_2/sinkA",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_2/sinkA"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_2__sinkC",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_2/sinkC",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_2/sinkC"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_2__txdat",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_2/txdat",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_2/txdat"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_2__txreq",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_2/txreq",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_2/txreq"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_2__txrsp",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_2/txrsp",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_2/txrsp"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_3__dataStorage",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_3/dataStorage",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_3/dataStorage"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_3__directory",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_3/directory",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_3/directory"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_3__grantBuf",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_3/grantBuf",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_3/grantBuf"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_3__mainPipe",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_3/mainPipe",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_3/mainPipe"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_3__mbistPl",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_3/mbistPl",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_3/mbistPl"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_3__mshrCtl",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_3/mshrCtl",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_3/mshrCtl"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_3__refillBuf",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_3/refillBuf",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_3/refillBuf"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_3__releaseBuf",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_3/releaseBuf",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_3/releaseBuf"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_3__reqArb",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_3/reqArb",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_3/reqArb"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_3__rxdat",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_3/rxdat",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_3/rxdat"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_3__rxrsp",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_3/rxrsp",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_3/rxrsp"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_3__rxsnp",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_3/rxsnp",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_3/rxsnp"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_3__sinkA",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_3/sinkA",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_3/sinkA"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_3__sinkC",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_3/sinkC",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_3/sinkC"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_3__txdat",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_3/txdat",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_3/txdat"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_3__txreq",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_3/txreq",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_3/txreq"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_3__txrsp",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_3/txrsp",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_3/txrsp"
+  },
+  {
+   "id": "TL2CHICoupledL2__train_pipeline_1__stages_0",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/train_pipeline_1/stages_0",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/train_pipeline_1/stages_0"
+  },
+  {
+   "id": "TL2CHICoupledL2__train_pipeline_2__stages_0",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/train_pipeline_2/stages_0",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/train_pipeline_2/stages_0"
+  },
+  {
+   "id": "TL2CHICoupledL2__train_pipeline_3__stages_0",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/train_pipeline_3/stages_0",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/train_pipeline_3/stages_0"
+  },
+  {
+   "id": "TL2CHICoupledL2__train_pipeline__stages_0",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/train_pipeline/stages_0",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/train_pipeline/stages_0"
+  }
+ ],
+ "interface_only": [
+  {
+   "id": "TL2CHICoupledL2__slices_0__reqBuf",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_0/reqBuf",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_0/reqBuf"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_1__reqBuf",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_1/reqBuf",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_1/reqBuf"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_2__reqBuf",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_2/reqBuf",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_2/reqBuf"
+  },
+  {
+   "id": "TL2CHICoupledL2__slices_3__reqBuf",
+   "ref_path": "r:/WORK/TL2CHICoupledL2/slices_3/reqBuf",
+   "impl_path": "i:/WORK/TL2CHICoupledL2/u_core/slices_3/reqBuf"
+  }
+ ],
+ "empty_blackbox": [],
+ "unmatched": []
+}

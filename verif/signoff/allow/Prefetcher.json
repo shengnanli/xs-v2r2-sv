@@ -1,0 +1,32 @@
+{
+    "unresolved_blackbox": [
+        {
+            "id": "pbop",
+            "ref_path": "r:/WORK/Prefetcher/pbop",
+            "impl_path": "i:/WORK/Prefetcher/u_core/pbop"
+        },
+        {
+            "id": "vbop",
+            "ref_path": "r:/WORK/Prefetcher/vbop",
+            "impl_path": "i:/WORK/Prefetcher/u_core/vbop"
+        },
+        {
+            "id": "pfRcv",
+            "ref_path": "r:/WORK/Prefetcher/pfRcv",
+            "impl_path": "i:/WORK/Prefetcher/u_core/pfRcv"
+        },
+        {
+            "id": "mbistPl",
+            "ref_path": "r:/WORK/Prefetcher/mbistPl",
+            "impl_path": "i:/WORK/Prefetcher/u_core/mbistPl"
+        },
+        {
+            "id": "pipe",
+            "ref_path": "r:/WORK/Prefetcher/pipe",
+            "impl_path": "i:/WORK/Prefetcher/u_core/pipe"
+        }
+    ],
+    "interface_only": [],
+    "empty_blackbox": [],
+    "unmatched": []
+}

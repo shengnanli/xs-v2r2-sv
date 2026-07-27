@@ -27,12 +27,16 @@
   logic [7:0]  _rob_io_commits_robIdx_value_3;
   logic [7:0]  _rob_io_commits_robIdx_value_4;
   logic [7:0]  _rob_io_commits_robIdx_value_5;
-  // commit lane 6/7 别名(供 snpt deq 的 commitMatchHead 用):这些 rob 输出标量在 inst.svh
-  // 声明/连接(在 logic.svh 之后),故在此 decls 提前声明「模块作用域别名」,由 glue4.svh
-  // (inst.svh 之后)驱动 = 对应标量;logic.svh 只读别名,避免 Formality FMR_VLOG-606 前向引用。
-  logic        commitLane6Valid, commitLane7Valid;
-  logic        commitLane6Flag,  commitLane7Flag;
-  logic [7:0]  commitLane6Value, commitLane7Value;
+  // snpt-deq head 匹配需遍历 commit 全 8 lane(golden _snpt_io_deq_T_35 用 lane 0..7)。
+  // lane 6/7 的标量 rob 引脚(commitValid_6/7、robIdx_6/7)在 inst.svh 声明(logic.svh 之后),
+  // 而 commitMatchHead 在 logic.svh(inst 之前)读 → FMR_VLOG-606 前向引用。
+  // 解:此处(decls,先于 inst)声明 lane6/7 别名,glue4(inst 之后)驱动=标量,logic 只读别名。
+  logic        commitLane6Valid;
+  logic        commitLane6Flag;
+  logic [7:0]  commitLane6Value;
+  logic        commitLane7Valid;
+  logic        commitLane7Flag;
+  logic [7:0]  commitLane7Value;
 
   // -- RedirectGenerator --
   logic        _redirectGen_io_stage2Redirect_valid;

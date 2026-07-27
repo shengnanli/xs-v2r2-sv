@@ -1,0 +1,23 @@
+**************************************************
+Report         : error_candidates
+
+Reference      : r:/WORK/CtrlBlock
+Implementation : i:/WORK/CtrlBlock
+Version        : V-2023.12-SP3
+Date           : Sun Jul 26 03:22:26 2026
+**************************************************
+
+Single error detected in implementation.
+
+Recommended error candidate:
+
+    Prim    u_core/decodeBufFoldpc_reg[0][0]
+
+Alternate error candidates:
+ 1. Prim    u_core/fm_m19245/C2
+
+ 2. Prim    u_core/fm_m19245/C3
+
+ 3. Prim    u_core/fm_m19245/C40
+
+1

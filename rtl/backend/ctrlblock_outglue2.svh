@@ -60,9 +60,13 @@
   reg        ftqCommit6FtqFlag, ftqCommit7FtqFlag;
   reg [5:0]  ftqCommit6FtqValue,ftqCommit7FtqValue;
   reg [3:0]  ftqCommit6FtqOff,  ftqCommit7FtqOff;
-  always_ff @(posedge clock) begin
+  // cluster F: golden io_frontend_toFtq_rob_commits_6/7_valid_last_REG 在**异步复位块**
+  //   (golden line 10429/10510)→ valid 异步复位对齐;bits 无复位(enable)不变。
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) begin ftqCommit6Valid <= 1'b0; ftqCommit7Valid <= 1'b0; end
     else       begin ftqCommit6Valid <= s1_isCommit_6; ftqCommit7Valid <= s1_isCommit_7; end
+  end
+  always_ff @(posedge clock) begin
     if (s1_isCommit_6) begin
       ftqCommit6Type     <= _rob_io_commits_info_6_commitType;
       ftqCommit6FtqFlag  <= _rob_io_commits_info_6_ftqIdx_flag;

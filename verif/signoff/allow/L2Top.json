@@ -1,0 +1,663 @@
+{
+ "unresolved_blackbox": [
+  {
+   "id": "L2Top__inner_buffer_1__nodeIn_d_q",
+   "ref_path": "r:/WORK/L2Top/inner_buffer_1/nodeIn_d_q",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_buffer_1/nodeIn_d_q"
+  },
+  {
+   "id": "L2Top__inner_buffer_1__nodeOut_a_q",
+   "ref_path": "r:/WORK/L2Top/inner_buffer_1/nodeOut_a_q",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_buffer_1/nodeOut_a_q"
+  },
+  {
+   "id": "L2Top__inner_buffer__nodeIn_b_q",
+   "ref_path": "r:/WORK/L2Top/inner_buffer/nodeIn_b_q",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_buffer/nodeIn_b_q"
+  },
+  {
+   "id": "L2Top__inner_buffer__nodeIn_b_q_1",
+   "ref_path": "r:/WORK/L2Top/inner_buffer/nodeIn_b_q_1",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_buffer/nodeIn_b_q_1"
+  },
+  {
+   "id": "L2Top__inner_buffer__nodeIn_b_q_2",
+   "ref_path": "r:/WORK/L2Top/inner_buffer/nodeIn_b_q_2",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_buffer/nodeIn_b_q_2"
+  },
+  {
+   "id": "L2Top__inner_buffer__nodeIn_b_q_3",
+   "ref_path": "r:/WORK/L2Top/inner_buffer/nodeIn_b_q_3",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_buffer/nodeIn_b_q_3"
+  },
+  {
+   "id": "L2Top__inner_buffer__nodeIn_d_q",
+   "ref_path": "r:/WORK/L2Top/inner_buffer/nodeIn_d_q",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_buffer/nodeIn_d_q"
+  },
+  {
+   "id": "L2Top__inner_buffer__nodeIn_d_q_1",
+   "ref_path": "r:/WORK/L2Top/inner_buffer/nodeIn_d_q_1",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_buffer/nodeIn_d_q_1"
+  },
+  {
+   "id": "L2Top__inner_buffer__nodeIn_d_q_2",
+   "ref_path": "r:/WORK/L2Top/inner_buffer/nodeIn_d_q_2",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_buffer/nodeIn_d_q_2"
+  },
+  {
+   "id": "L2Top__inner_buffer__nodeIn_d_q_3",
+   "ref_path": "r:/WORK/L2Top/inner_buffer/nodeIn_d_q_3",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_buffer/nodeIn_d_q_3"
+  },
+  {
+   "id": "L2Top__inner_buffer__nodeOut_a_q",
+   "ref_path": "r:/WORK/L2Top/inner_buffer/nodeOut_a_q",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_buffer/nodeOut_a_q"
+  },
+  {
+   "id": "L2Top__inner_buffer__nodeOut_a_q_1",
+   "ref_path": "r:/WORK/L2Top/inner_buffer/nodeOut_a_q_1",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_buffer/nodeOut_a_q_1"
+  },
+  {
+   "id": "L2Top__inner_buffer__nodeOut_a_q_2",
+   "ref_path": "r:/WORK/L2Top/inner_buffer/nodeOut_a_q_2",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_buffer/nodeOut_a_q_2"
+  },
+  {
+   "id": "L2Top__inner_buffer__nodeOut_a_q_3",
+   "ref_path": "r:/WORK/L2Top/inner_buffer/nodeOut_a_q_3",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_buffer/nodeOut_a_q_3"
+  },
+  {
+   "id": "L2Top__inner_buffer__nodeOut_c_q",
+   "ref_path": "r:/WORK/L2Top/inner_buffer/nodeOut_c_q",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_buffer/nodeOut_c_q"
+  },
+  {
+   "id": "L2Top__inner_buffer__nodeOut_c_q_1",
+   "ref_path": "r:/WORK/L2Top/inner_buffer/nodeOut_c_q_1",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_buffer/nodeOut_c_q_1"
+  },
+  {
+   "id": "L2Top__inner_buffer__nodeOut_c_q_2",
+   "ref_path": "r:/WORK/L2Top/inner_buffer/nodeOut_c_q_2",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_buffer/nodeOut_c_q_2"
+  },
+  {
+   "id": "L2Top__inner_buffer__nodeOut_c_q_3",
+   "ref_path": "r:/WORK/L2Top/inner_buffer/nodeOut_c_q_3",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_buffer/nodeOut_c_q_3"
+  },
+  {
+   "id": "L2Top__inner_buffer__nodeOut_e_q",
+   "ref_path": "r:/WORK/L2Top/inner_buffer/nodeOut_e_q",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_buffer/nodeOut_e_q"
+  },
+  {
+   "id": "L2Top__inner_buffer__nodeOut_e_q_1",
+   "ref_path": "r:/WORK/L2Top/inner_buffer/nodeOut_e_q_1",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_buffer/nodeOut_e_q_1"
+  },
+  {
+   "id": "L2Top__inner_buffer__nodeOut_e_q_2",
+   "ref_path": "r:/WORK/L2Top/inner_buffer/nodeOut_e_q_2",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_buffer/nodeOut_e_q_2"
+  },
+  {
+   "id": "L2Top__inner_buffer__nodeOut_e_q_3",
+   "ref_path": "r:/WORK/L2Top/inner_buffer/nodeOut_e_q_3",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_buffer/nodeOut_e_q_3"
+  },
+  {
+   "id": "L2Top__inner_buffers_1__nodeIn_d_q",
+   "ref_path": "r:/WORK/L2Top/inner_buffers_1/nodeIn_d_q",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_buffers_1/nodeIn_d_q"
+  },
+  {
+   "id": "L2Top__inner_buffers_1__nodeOut_a_q",
+   "ref_path": "r:/WORK/L2Top/inner_buffers_1/nodeOut_a_q",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_buffers_1/nodeOut_a_q"
+  },
+  {
+   "id": "L2Top__inner_buffers_2__nodeIn_d_q",
+   "ref_path": "r:/WORK/L2Top/inner_buffers_2/nodeIn_d_q",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_buffers_2/nodeIn_d_q"
+  },
+  {
+   "id": "L2Top__inner_buffers_2__nodeOut_a_q",
+   "ref_path": "r:/WORK/L2Top/inner_buffers_2/nodeOut_a_q",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_buffers_2/nodeOut_a_q"
+  },
+  {
+   "id": "L2Top__inner_buffers_3__nodeIn_d_q",
+   "ref_path": "r:/WORK/L2Top/inner_buffers_3/nodeIn_d_q",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_buffers_3/nodeIn_d_q"
+  },
+  {
+   "id": "L2Top__inner_buffers_3__nodeOut_a_q",
+   "ref_path": "r:/WORK/L2Top/inner_buffers_3/nodeOut_a_q",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_buffers_3/nodeOut_a_q"
+  },
+  {
+   "id": "L2Top__inner_buffers_4__nodeIn_d_q",
+   "ref_path": "r:/WORK/L2Top/inner_buffers_4/nodeIn_d_q",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_buffers_4/nodeIn_d_q"
+  },
+  {
+   "id": "L2Top__inner_buffers_4__nodeOut_a_q",
+   "ref_path": "r:/WORK/L2Top/inner_buffers_4/nodeOut_a_q",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_buffers_4/nodeOut_a_q"
+  },
+  {
+   "id": "L2Top__inner_buffers_5__nodeIn_d_q",
+   "ref_path": "r:/WORK/L2Top/inner_buffers_5/nodeIn_d_q",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_buffers_5/nodeIn_d_q"
+  },
+  {
+   "id": "L2Top__inner_buffers_5__nodeOut_a_q",
+   "ref_path": "r:/WORK/L2Top/inner_buffers_5/nodeOut_a_q",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_buffers_5/nodeOut_a_q"
+  },
+  {
+   "id": "L2Top__inner_buffers__nodeIn_d_q",
+   "ref_path": "r:/WORK/L2Top/inner_buffers/nodeIn_d_q",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_buffers/nodeIn_d_q"
+  },
+  {
+   "id": "L2Top__inner_buffers__nodeOut_a_q",
+   "ref_path": "r:/WORK/L2Top/inner_buffers/nodeOut_a_q",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_buffers/nodeOut_a_q"
+  },
+  {
+   "id": "L2Top__inner_i_mmio_buffer__nodeIn_d_q",
+   "ref_path": "r:/WORK/L2Top/inner_i_mmio_buffer/nodeIn_d_q",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_i_mmio_buffer/nodeIn_d_q"
+  },
+  {
+   "id": "L2Top__inner_i_mmio_buffer__nodeOut_a_q",
+   "ref_path": "r:/WORK/L2Top/inner_i_mmio_buffer/nodeOut_a_q",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_i_mmio_buffer/nodeOut_a_q"
+  },
+  {
+   "id": "L2Top__inner_l2cache__hintPipe1__stages_0",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/hintPipe1/stages_0",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/hintPipe1/stages_0"
+  },
+  {
+   "id": "L2Top__inner_l2cache__hintPipe2__stages_0",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/hintPipe2/stages_0",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/hintPipe2/stages_0"
+  },
+  {
+   "id": "L2Top__inner_l2cache__hintPipe2__stages_1",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/hintPipe2/stages_1",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/hintPipe2/stages_1"
+  },
+  {
+   "id": "L2Top__inner_l2cache__mmioBridge__mmio_channel_D_arb",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/mmioBridge/mmio_channel_D_arb",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/mmioBridge/mmio_channel_D_arb"
+  },
+  {
+   "id": "L2Top__inner_l2cache__mmioBridge__mmio_txdat_arb",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/mmioBridge/mmio_txdat_arb",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/mmioBridge/mmio_txdat_arb"
+  },
+  {
+   "id": "L2Top__inner_l2cache__mmioBridge__txreqArb",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/mmioBridge/txreqArb",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/mmioBridge/txreqArb"
+  },
+  {
+   "id": "L2Top__inner_l2cache__pCrdQueue__ram_ext",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/pCrdQueue/ram_ext",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/pCrdQueue/ram_ext"
+  },
+  {
+   "id": "L2Top__inner_l2cache__prefetcher__mbistPl",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/prefetcher/mbistPl",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/prefetcher/mbistPl"
+  },
+  {
+   "id": "L2Top__inner_l2cache__prefetcher__pbop",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/prefetcher/pbop",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/prefetcher/pbop"
+  },
+  {
+   "id": "L2Top__inner_l2cache__prefetcher__pfRcv",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/prefetcher/pfRcv",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/prefetcher/pfRcv"
+  },
+  {
+   "id": "L2Top__inner_l2cache__prefetcher__pftQueue",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/prefetcher/pftQueue",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/prefetcher/pftQueue"
+  },
+  {
+   "id": "L2Top__inner_l2cache__prefetcher__pipe",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/prefetcher/pipe",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/prefetcher/pipe"
+  },
+  {
+   "id": "L2Top__inner_l2cache__prefetcher__vbop",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/prefetcher/vbop",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/prefetcher/vbop"
+  },
+  {
+   "id": "L2Top__inner_l2cache__resp_pipeline_1__stages_0",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/resp_pipeline_1/stages_0",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/resp_pipeline_1/stages_0"
+  },
+  {
+   "id": "L2Top__inner_l2cache__resp_pipeline_2__stages_0",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/resp_pipeline_2/stages_0",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/resp_pipeline_2/stages_0"
+  },
+  {
+   "id": "L2Top__inner_l2cache__resp_pipeline_3__stages_0",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/resp_pipeline_3/stages_0",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/resp_pipeline_3/stages_0"
+  },
+  {
+   "id": "L2Top__inner_l2cache__resp_pipeline__stages_0",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/resp_pipeline/stages_0",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/resp_pipeline/stages_0"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_0__dataStorage",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_0/dataStorage",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_0/dataStorage"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_0__directory",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_0/directory",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_0/directory"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_0__grantBuf",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_0/grantBuf",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_0/grantBuf"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_0__mainPipe",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_0/mainPipe",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_0/mainPipe"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_0__mbistPl",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_0/mbistPl",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_0/mbistPl"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_0__mshrCtl",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_0/mshrCtl",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_0/mshrCtl"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_0__refillBuf",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_0/refillBuf",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_0/refillBuf"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_0__releaseBuf",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_0/releaseBuf",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_0/releaseBuf"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_0__reqArb",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_0/reqArb",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_0/reqArb"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_0__rxdat",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_0/rxdat",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_0/rxdat"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_0__rxrsp",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_0/rxrsp",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_0/rxrsp"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_0__rxsnp",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_0/rxsnp",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_0/rxsnp"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_0__sinkA",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_0/sinkA",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_0/sinkA"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_0__sinkC",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_0/sinkC",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_0/sinkC"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_0__txdat",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_0/txdat",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_0/txdat"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_0__txreq",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_0/txreq",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_0/txreq"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_0__txrsp",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_0/txrsp",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_0/txrsp"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_1__dataStorage",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_1/dataStorage",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_1/dataStorage"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_1__directory",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_1/directory",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_1/directory"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_1__grantBuf",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_1/grantBuf",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_1/grantBuf"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_1__mainPipe",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_1/mainPipe",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_1/mainPipe"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_1__mbistPl",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_1/mbistPl",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_1/mbistPl"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_1__mshrCtl",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_1/mshrCtl",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_1/mshrCtl"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_1__refillBuf",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_1/refillBuf",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_1/refillBuf"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_1__releaseBuf",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_1/releaseBuf",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_1/releaseBuf"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_1__reqArb",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_1/reqArb",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_1/reqArb"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_1__rxdat",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_1/rxdat",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_1/rxdat"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_1__rxrsp",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_1/rxrsp",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_1/rxrsp"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_1__rxsnp",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_1/rxsnp",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_1/rxsnp"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_1__sinkA",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_1/sinkA",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_1/sinkA"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_1__sinkC",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_1/sinkC",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_1/sinkC"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_1__txdat",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_1/txdat",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_1/txdat"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_1__txreq",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_1/txreq",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_1/txreq"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_1__txrsp",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_1/txrsp",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_1/txrsp"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_2__dataStorage",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_2/dataStorage",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_2/dataStorage"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_2__directory",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_2/directory",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_2/directory"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_2__grantBuf",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_2/grantBuf",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_2/grantBuf"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_2__mainPipe",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_2/mainPipe",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_2/mainPipe"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_2__mbistPl",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_2/mbistPl",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_2/mbistPl"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_2__mshrCtl",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_2/mshrCtl",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_2/mshrCtl"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_2__refillBuf",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_2/refillBuf",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_2/refillBuf"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_2__releaseBuf",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_2/releaseBuf",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_2/releaseBuf"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_2__reqArb",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_2/reqArb",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_2/reqArb"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_2__rxdat",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_2/rxdat",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_2/rxdat"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_2__rxrsp",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_2/rxrsp",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_2/rxrsp"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_2__rxsnp",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_2/rxsnp",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_2/rxsnp"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_2__sinkA",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_2/sinkA",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_2/sinkA"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_2__sinkC",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_2/sinkC",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_2/sinkC"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_2__txdat",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_2/txdat",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_2/txdat"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_2__txreq",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_2/txreq",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_2/txreq"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_2__txrsp",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_2/txrsp",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_2/txrsp"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_3__dataStorage",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_3/dataStorage",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_3/dataStorage"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_3__directory",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_3/directory",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_3/directory"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_3__grantBuf",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_3/grantBuf",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_3/grantBuf"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_3__mainPipe",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_3/mainPipe",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_3/mainPipe"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_3__mbistPl",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_3/mbistPl",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_3/mbistPl"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_3__mshrCtl",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_3/mshrCtl",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_3/mshrCtl"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_3__refillBuf",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_3/refillBuf",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_3/refillBuf"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_3__releaseBuf",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_3/releaseBuf",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_3/releaseBuf"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_3__reqArb",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_3/reqArb",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_3/reqArb"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_3__rxdat",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_3/rxdat",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_3/rxdat"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_3__rxrsp",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_3/rxrsp",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_3/rxrsp"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_3__rxsnp",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_3/rxsnp",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_3/rxsnp"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_3__sinkA",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_3/sinkA",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_3/sinkA"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_3__sinkC",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_3/sinkC",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_3/sinkC"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_3__txdat",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_3/txdat",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_3/txdat"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_3__txreq",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_3/txreq",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_3/txreq"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_3__txrsp",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_3/txrsp",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_3/txrsp"
+  },
+  {
+   "id": "L2Top__inner_l2cache__train_pipeline_1__stages_0",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/train_pipeline_1/stages_0",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/train_pipeline_1/stages_0"
+  },
+  {
+   "id": "L2Top__inner_l2cache__train_pipeline_2__stages_0",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/train_pipeline_2/stages_0",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/train_pipeline_2/stages_0"
+  },
+  {
+   "id": "L2Top__inner_l2cache__train_pipeline_3__stages_0",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/train_pipeline_3/stages_0",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/train_pipeline_3/stages_0"
+  },
+  {
+   "id": "L2Top__inner_l2cache__train_pipeline__stages_0",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/train_pipeline/stages_0",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/train_pipeline/stages_0"
+  },
+  {
+   "id": "L2Top__inner_ptw_to_l2_buffer__nodeIn_d_q",
+   "ref_path": "r:/WORK/L2Top/inner_ptw_to_l2_buffer/nodeIn_d_q",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_ptw_to_l2_buffer/nodeIn_d_q"
+  },
+  {
+   "id": "L2Top__inner_ptw_to_l2_buffer__nodeOut_a_q",
+   "ref_path": "r:/WORK/L2Top/inner_ptw_to_l2_buffer/nodeOut_a_q",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_ptw_to_l2_buffer/nodeOut_a_q"
+  }
+ ],
+ "interface_only": [
+  {
+   "id": "L2Top__inner_l2cache__slices_0__reqBuf",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_0/reqBuf",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_0/reqBuf"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_1__reqBuf",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_1/reqBuf",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_1/reqBuf"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_2__reqBuf",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_2/reqBuf",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_2/reqBuf"
+  },
+  {
+   "id": "L2Top__inner_l2cache__slices_3__reqBuf",
+   "ref_path": "r:/WORK/L2Top/inner_l2cache/slices_3/reqBuf",
+   "impl_path": "i:/WORK/L2Top/u_core/inner_l2cache/slices_3/reqBuf"
+  }
+ ],
+ "empty_blackbox": [],
+ "unmatched": []
+}

@@ -30,9 +30,23 @@ SUB_DEPS = $(GOLDEN_RTL)/Arbiter4_L2CacheErrorInfo.sv $(GOLDEN_RTL)/Arbiter4_L2T
 FM_GRANDCHILD_DEPS = MMIOBridgeEntry.sv MMIOBridgeEntry_2.sv MMIOBridgeEntry_4.sv RequestBuffer.sv
 FM_INTERFACE_ONLY = RequestBuffer
 
-WRAPPER_SRCS = $(RTL_DIR)/l2/TL2CHICoupledL2_wrapper.sv $(SUB_DEPS) $(addprefix $(GOLDEN_RTL)/,$(FM_GRANDCHILD_DEPS))
+# 对称内部死状态的双射匹配证明(class-4, 非 waiver): TL2CHICoupledL2 的 269 个
+# matched-unread DFF 位于两侧同源 golden 子(LinkMonitor/TopDownMonitor/MbistIntfL2
+# 等)+ 本层 perf/pCrdGrant 打拍寄存器, 名字一一配对且值恒等。vmucp=true 令 FM
+# 实际比较这些 unread 寄存器(证明 MORE), 全部 passing -> unread 归零。
+# 实证: unread 269 -> 0, DFF 5029 -> 5298, passing 150370 -> 150639, failing 0。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
+# LinkMonitor CHI flit 转换孙子叶(FM-only, 两侧同源): 不提供时 Decoupled2LCredit/
+# LCredit2Decoupled 被 FM 黑盒化, 且在 LinkMonitor 模块作用域与 linkMonitor 实例作用域
+# 各报一次 unresolved(6 双重表示)→ 观察 unresolved 集含实例外副本, 与 matched pair
+# 集(仅实例作用域)不一致, sidecar allow 无法自洽. 提供后两侧同源 elaborate 消重复,
+# 同 LinkMonitor standalone 配方(其 GOLDEN_SRCS 含此闭包)。
+FM_FLIT_DEPS = Decoupled2LCredit.sv Decoupled2LCredit_1.sv Decoupled2LCredit_2.sv LCredit2Decoupled.sv LCredit2Decoupled_1.sv LCredit2Decoupled_2.sv Queue4_CHISNP.sv ram_4x115.sv
+
+WRAPPER_SRCS = $(RTL_DIR)/l2/TL2CHICoupledL2_wrapper.sv $(SUB_DEPS) $(addprefix $(GOLDEN_RTL)/,$(FM_GRANDCHILD_DEPS) $(FM_FLIT_DEPS))
 FM_VARIANTS = TL2CHICoupledL2
-FM_REF_DEPS_TL2CHICoupledL2 = Arbiter4_L2CacheErrorInfo.sv Arbiter4_L2ToL1Hint.sv FastArbiter_1.sv FastArbiter_2.sv FastArbiter_27.sv FastArbiter_28.sv FastArbiter_29.sv L2Cache.sv LinkMonitor.sv MMIOBridge.sv MbistIntfL2.sv Pipeline_10.sv Pipeline_11.sv Pipeline_2.sv Pipeline_3.sv Prefetcher.sv Queue72_CoupledL2Imp_Anon.sv RRArbiterInit_18.sv Slice.sv Slice_1.sv Slice_2.sv Slice_3.sv TopDownMonitor.sv $(FM_GRANDCHILD_DEPS)
+FM_REF_DEPS_TL2CHICoupledL2 = Arbiter4_L2CacheErrorInfo.sv Arbiter4_L2ToL1Hint.sv FastArbiter_1.sv FastArbiter_2.sv FastArbiter_27.sv FastArbiter_28.sv FastArbiter_29.sv L2Cache.sv LinkMonitor.sv MMIOBridge.sv MbistIntfL2.sv Pipeline_10.sv Pipeline_11.sv Pipeline_2.sv Pipeline_3.sv Prefetcher.sv Queue72_CoupledL2Imp_Anon.sv RRArbiterInit_18.sv Slice.sv Slice_1.sv Slice_2.sv Slice_3.sv TopDownMonitor.sv $(FM_GRANDCHILD_DEPS) $(FM_FLIT_DEPS)
 
 include ../../../scripts/ut_common.mk
 
