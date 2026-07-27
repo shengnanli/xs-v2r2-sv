@@ -1,0 +1,122 @@
+{
+  "unresolved_blackbox": [
+    {
+      "id": "inner_PMPChecker",
+      "ref_path": "r:/WORK/Frontend/inner_PMPChecker",
+      "impl_path": "i:/WORK/Frontend/inner_PMPChecker"
+    },
+    {
+      "id": "inner_PMPChecker_1",
+      "ref_path": "r:/WORK/Frontend/inner_PMPChecker_1",
+      "impl_path": "i:/WORK/Frontend/inner_PMPChecker_1"
+    },
+    {
+      "id": "inner_PMPChecker_2",
+      "ref_path": "r:/WORK/Frontend/inner_PMPChecker_2",
+      "impl_path": "i:/WORK/Frontend/inner_PMPChecker_2"
+    },
+    {
+      "id": "inner_PMPChecker_3",
+      "ref_path": "r:/WORK/Frontend/inner_PMPChecker_3",
+      "impl_path": "i:/WORK/Frontend/inner_PMPChecker_3"
+    },
+    {
+      "id": "inner_PMPChecker_4",
+      "ref_path": "r:/WORK/Frontend/inner_PMPChecker_4",
+      "impl_path": "i:/WORK/Frontend/inner_PMPChecker_4"
+    },
+    {
+      "id": "inner_bpu_predictors",
+      "ref_path": "r:/WORK/Frontend/inner_bpu/predictors",
+      "impl_path": "i:/WORK/Frontend/inner_bpu/predictors"
+    },
+    {
+      "id": "inner_csrCtrl_delay",
+      "ref_path": "r:/WORK/Frontend/inner_csrCtrl_delay",
+      "impl_path": "i:/WORK/Frontend/inner_csrCtrl_delay"
+    },
+    {
+      "id": "inner_ftq",
+      "ref_path": "r:/WORK/Frontend/inner_ftq",
+      "impl_path": "i:/WORK/Frontend/inner_ftq"
+    },
+    {
+      "id": "inner_ibuffer",
+      "ref_path": "r:/WORK/Frontend/inner_ibuffer",
+      "impl_path": "i:/WORK/Frontend/inner_ibuffer"
+    },
+    {
+      "id": "inner_icache",
+      "ref_path": "r:/WORK/Frontend/inner_icache",
+      "impl_path": "i:/WORK/Frontend/inner_icache"
+    },
+    {
+      "id": "inner_ifu",
+      "ref_path": "r:/WORK/Frontend/inner_ifu",
+      "impl_path": "i:/WORK/Frontend/inner_ifu"
+    },
+    {
+      "id": "inner_instrUncache",
+      "ref_path": "r:/WORK/Frontend/inner_instrUncache",
+      "impl_path": "i:/WORK/Frontend/inner_instrUncache"
+    },
+    {
+      "id": "inner_io_backend_wfi_wfiSafe_delay",
+      "ref_path": "r:/WORK/Frontend/inner_io_backend_wfi_wfiSafe_delay",
+      "impl_path": "i:/WORK/Frontend/inner_io_backend_wfi_wfiSafe_delay"
+    },
+    {
+      "id": "inner_itlb",
+      "ref_path": "r:/WORK/Frontend/inner_itlb",
+      "impl_path": "i:/WORK/Frontend/inner_itlb"
+    },
+    {
+      "id": "inner_itlbRepeater1",
+      "ref_path": "r:/WORK/Frontend/inner_itlbRepeater1",
+      "impl_path": "i:/WORK/Frontend/inner_itlbRepeater1"
+    },
+    {
+      "id": "inner_itlbRepeater2",
+      "ref_path": "r:/WORK/Frontend/inner_itlbRepeater2",
+      "impl_path": "i:/WORK/Frontend/inner_itlbRepeater2"
+    },
+    {
+      "id": "inner_mbistIntf",
+      "ref_path": "r:/WORK/Frontend/inner_mbistIntf",
+      "impl_path": "i:/WORK/Frontend/inner_mbistIntf"
+    },
+    {
+      "id": "inner_mbistPl",
+      "ref_path": "r:/WORK/Frontend/inner_mbistPl",
+      "impl_path": "i:/WORK/Frontend/inner_mbistPl"
+    },
+    {
+      "id": "inner_perfEvents_hpm",
+      "ref_path": "r:/WORK/Frontend/inner_perfEvents_hpm",
+      "impl_path": "i:/WORK/Frontend/inner_perfEvents_hpm"
+    },
+    {
+      "id": "inner_pfevent",
+      "ref_path": "r:/WORK/Frontend/inner_pfevent",
+      "impl_path": "i:/WORK/Frontend/inner_pfevent"
+    },
+    {
+      "id": "inner_pmp",
+      "ref_path": "r:/WORK/Frontend/inner_pmp",
+      "impl_path": "i:/WORK/Frontend/inner_pmp"
+    },
+    {
+      "id": "inner_tlbCsr_delay",
+      "ref_path": "r:/WORK/Frontend/inner_tlbCsr_delay",
+      "impl_path": "i:/WORK/Frontend/inner_tlbCsr_delay"
+    },
+    {
+      "id": "inner_wfiReq_delay",
+      "ref_path": "r:/WORK/Frontend/inner_wfiReq_delay",
+      "impl_path": "i:/WORK/Frontend/inner_wfiReq_delay"
+    }
+  ],
+  "interface_only": [],
+  "empty_blackbox": [],
+  "unmatched": []
+}

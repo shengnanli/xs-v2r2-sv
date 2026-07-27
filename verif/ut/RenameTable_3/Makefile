@@ -1,0 +1,26 @@
+MODULE = RenameTable_3
+
+RTL_DIR = ../../../rtl
+GOLDEN_RTL = ../../../golden/chisel-rtl
+
+# 参数化可读核 + 类型包; 核内不例化 SG, wrapper 侧例化 SnapshotGenerator_7 黑盒。
+# UT 不编 RenameTable_3_wrapper.sv(模块名与 golden 顶层冲突), 手写侧用 variants_xs.sv 里的 RenameTable_3_xs。
+RTL_SRCS = $(RTL_DIR)/backend/renametable_pkg.sv \
+           $(RTL_DIR)/backend/renametable_var_core.sv
+
+TB_SRCS = variants_xs.sv tb.sv
+
+# golden 顶层 RenameTable_3 + 子模块 SnapshotGenerator_7(黑盒, UT 两侧共用)
+GOLDEN_SRCS = $(GOLDEN_RTL)/RenameTable_3.sv \
+              $(GOLDEN_RTL)/SnapshotGenerator_7.sv
+
+# FM: golden RenameTable_3 vs 手写同名 wrapper(→参数核)。SnapshotGenerator_7 两侧同一黑盒。
+WRAPPER_SRCS = $(RTL_DIR)/backend/RenameTable_3_wrapper.sv \
+               $(GOLDEN_RTL)/SnapshotGenerator_7.sv
+FM_VARIANTS = RenameTable_3
+FM_REF_DEPS_RenameTable_3 = SnapshotGenerator_7.sv
+
+include ../../../scripts/ut_common.mk
+
+# golden 含 XSError 断言; UT 关掉以免随机激励触发 $fatal
+VCS += +define+SYNTHESIS

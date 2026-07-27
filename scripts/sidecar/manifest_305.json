@@ -873,6 +873,11 @@
    "allow_ref": "",
    "rationale": "",
    "verify_matched_unread_compare_points": "false",
+   "required_verdict": "SUCCEEDED",
+   "allow_ref": "verif/signoff/allow/Frontend.json",
+   "rationale": "REAL REPLACEMENT (xs_Frontend_core drives io_error/io_perf, bit-exact); closure lane A removed inner__probe set_dont_verify_points (no waiver/relaxed/tie-off/blackbox-expand). Structural fix (codex_0072): golden Predictor.sv two-sided real elaboration (FM_REF_DEPS_Frontend + WRAPPER_SRCS; golden==golden symmetric, not re-proving Predictor internals -- Predictor is itself a 305 SIGNOFF_PASS target). This makes io_bpu_to_ftq_resp_bits_s3_valid_0 a driven internal net so inner__probe is no longer a ref-only undriven cut-point (Cut=0) -> the previously failing matched BBPin is eliminated. Predictor's own grandchildren (Composer/PriorityMuxModule x6/DelayN) remain symmetric unresolved black boxes on both sides. native SUCCEEDED passing=58117 failing=0 unmatched=0, no dont_verify, no dead-ref needed.",
+   "verify_matched_unread_compare_points": "true",
+   "dead_ref": "",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {

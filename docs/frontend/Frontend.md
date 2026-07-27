@@ -6,6 +6,16 @@
 > `inner_*` 驱动），可读核仅作校验伴随/探针。FM PASS **不证明可读核可替换 golden Frontend**，
 > 也不能据此主张"可读性替换"。要升级为 REPLACEMENT，需可读核真正接管对外输出后重跑。
 > 下文任何"FM SUCCEEDED/等价/可替换"表述均以本 banner 为准如实理解。
+> ✅ **FM 分类 = REPLACEMENT（可读核真正驱动本层输出）**。可读核 `xs_Frontend_core`
+> **实际驱动**顶层 `io_error_*`/`io_perf_*` 输出端口，以及本层全部 glue 消费者 net
+> （IBuffer 冲刷 / ITLB sfence / ICache fencei·预取）。wrapper 里 golden body 的同名
+> glue+checker 寄存器已**整体删除**，改由 `u_core` 重新实现并驱动 → FM 真正比较"可读核 vs
+> golden 的 glue+checker"（非 golden==golden 空证）。native FM `SUCCEEDED`（48971 passing,
+> 0 failing）；UT golden-vs-replacement seeds 1/7/42 `errors=0 core_errors=0`。
+> **更新（codex_0072 结构收口, 官方 gate=PASS）**: golden `Predictor.sv` + 其纯逻辑叶子（DelayN / PriorityMuxModule×6）在 ref/impl 两侧真实 elaborate（golden==golden 对称, 非重证 Predictor 内部, Predictor 自身已 305 SIGNOFF_PASS）, 令 `io_bpu_to_ftq_resp_bits_s3_valid_0` 成 driven internal net → 死探针 `inner__probe` 不再是 ref-only undriven cut-point（`Cut=0`）, 此前毒化 matched BBPin 的 failing 消除。**不再需要 dont_verify / dead-ref**。官方 assembly gate（vmucp=true）`measured=SUCCEEDED required=SUCCEEDED gate=PASS`, native `SUCCEEDED` **52910 passing / 0 failing / 0 unmatched / 0 unread**, qualifications 全空。Predictor 层唯一 对称黑盒 = Composer（`inner_bpu/predictors`, 绿 305 child）; 顶层 23 对称 unresolved 黑盒（ICache/NewIFU/IBuffer/Ftq + Composer + TLB/PTW*/PMP*/DelayN_7·8·13/HPerf/PFEvent/Mbist*）。
+> **剩余边界**（见本文末 §签核）：B 类 PC 连续性检查器 SYNTHESIS 下两侧皆 cone-dead，
+> 作为 matched-unread 双射保留（需 main 级 `verify_matched_unread=true` 白名单转 passing）；
+> 25 子模块黑盒（5 已证子目标 assembly-depend + vendor SRAM）需 assembly 模式 + allow.json。
 
 > 学习导向文档。先读 `docs/FRONTEND_OVERVIEW.md` 建立前端全局认知，再读本文了解前端
 > **总顶层 Frontend** 如何把五大子系统组装成完整取指前端、如何完成取指地址翻译、如何路由

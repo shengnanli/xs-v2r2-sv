@@ -5,7 +5,26 @@ GOLDEN_RTL = ../../../golden/chisel-rtl
 
 # 可读核（含 package xs_frontend_pkg + xs_Frontend_core）
 RTL_SRCS     = $(RTL_DIR)/frontend/Frontend.sv
-WRAPPER_SRCS = $(RTL_DIR)/frontend/Frontend_wrapper.sv
+# ----------------------------------------------------------------------------
+# Predictor 两侧真实 elaborate（codex_0072 裁定）：
+#   golden Frontend.sv 里 `Predictor inner_bpu` 的 io_bpu_to_ftq_resp_bits_s3_valid_0
+#   连到 wire inner__probe（零功能扇出的调试探针）。若 Predictor 被黑盒，则该输出引脚
+#   在 ref 侧是 undriven cut-point(Und)，毒化 matched BBPin -> native FAILED(failing=1)。
+#   把 golden Predictor.sv 加进 ref(FM_REF_DEPS_Frontend) 与 impl(WRAPPER_SRCS) 两侧
+#   同源 elaborate（golden==golden，非重证 Predictor 内部；Predictor 自身已 305
+#   SIGNOFF_PASS），令 s3_valid_0 由 Predictor 内部 s3_valid_dup_3 & ~redirect 驱动 ->
+#   inner__probe 成 driven-but-unread 内部 net，cut-point 消失(fm.log Cut=0)。
+#   Predictor 内的纯逻辑叶子(DelayN + 6 种 PriorityMuxModule, 全组合/确定性移位)照 Predictor
+#   自身 305 配方两侧 elaborate 白盒（reviewer 裁定纯逻辑子不黑盒），故 Predictor 层唯一
+#   对称黑盒 = Composer(实例 inner_bpu/predictors, 绿 305 child)。注意这些叶子变体
+#   (DelayN 纯 vs Frontend 顶层 DelayN_7/8/13)不同名, 不影响顶层现有黑盒边界。
+PRED_LOGIC_LEAVES = \
+    $(GOLDEN_RTL)/DelayN.sv \
+    $(GOLDEN_RTL)/PriorityMuxModule.sv $(GOLDEN_RTL)/PriorityMuxModule_4.sv \
+    $(GOLDEN_RTL)/PriorityMuxModule_8.sv $(GOLDEN_RTL)/PriorityMuxModule_12.sv \
+    $(GOLDEN_RTL)/PriorityMuxModule_16.sv $(GOLDEN_RTL)/PriorityMuxModule_20.sv
+WRAPPER_SRCS = $(RTL_DIR)/frontend/Frontend_wrapper.sv \
+               $(GOLDEN_RTL)/Predictor.sv $(PRED_LOGIC_LEAVES)
 TB_SRCS      = variants_xs.sv tb.sv
 
 # ----------------------------------------------------------------------------
@@ -214,10 +233,15 @@ SUBMODS = \
 
 GOLDEN_SRCS = $(GOLDEN_RTL)/Frontend.sv $(SUBMODS)
 
-# FM ref 侧依赖留空：所有子模块两侧均不读源 → hdlin_unresolved_modules=black_box 统一黑盒，
-# 顶层 glue + 子模块互联按签名比对等价（wrapper = golden body 忠实复制 + 悬空校验伴随）。
+# FM ref 侧依赖：Predictor.sv + 其纯逻辑叶子(DelayN/PriorityMuxModule×6)两侧真实
+# elaborate（消除 inner__probe cut-point，见上）。其余子模块两侧均不读源 →
+# hdlin_unresolved_modules=black_box 统一对称黑盒，顶层 glue + 子模块互联按签名比对等价
+# （wrapper = golden body 忠实复制 + 悬空校验伴随）。
 FM_VARIANTS = Frontend
-FM_REF_DEPS_Frontend =
+FM_REF_DEPS_Frontend = Predictor.sv \
+    DelayN.sv \
+    PriorityMuxModule.sv PriorityMuxModule_4.sv PriorityMuxModule_8.sv \
+    PriorityMuxModule_12.sv PriorityMuxModule_16.sv PriorityMuxModule_20.sv
 
 include ../../../scripts/ut_common.mk
 

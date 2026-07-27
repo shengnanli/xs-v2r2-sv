@@ -45,6 +45,16 @@ FM_MODE = assembly
 FM_REF_DEPS_Prefetcher = PrefetchQueue.sv
 FM_INTERFACE_ONLY = 1
 
+# pftQueue(PrefetchQueue)两侧 elaborate 后, 其 31 个 valids_0..30_reg 是对称
+# matched-unread(deq 路径终于黑盒 pipe=Pipeline_1→cone-dead; ref/impl 两侧同名
+# pftQueue/valids_<N>_reg, byte-identical golden, FM 按名双射匹配). valids_31_reg
+# 有读者(matched compare point 已 passing). verify_matched_unread_compare_points=true
+# 让 FM **实际逐位比较**这 31 点(证双射且相等)→从 Not-Compared 提升为 Passing。
+# 加强证明非 waiver; Prefetcher 已在 fm_eq.tcl+run_signoff_target.sh vmucp 白名单。
+# codex_0073 phase1 收口: vbop=VBestOffsetPrefetch 已独立 PASS(全子树绿), 此为
+# Prefetcher 自身最后残余→转 assembly SUCCEEDED。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 include ../../../scripts/ut_common.mk
 
 # golden 含 `ifndef SYNTHESIS 随机初值/断言; 定义 SYNTHESIS 关掉使两侧复位到 0 同构。
