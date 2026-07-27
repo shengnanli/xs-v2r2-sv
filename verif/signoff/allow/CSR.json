@@ -1,0 +1,17 @@
+{
+    "unresolved_blackbox": [
+        {
+            "id": "csrMod",
+            "ref_path": "r:/WORK/CSR/csrMod",
+            "impl_path": "i:/WORK/CSR/u_core/csrMod"
+        },
+        {
+            "id": "imsic_imsicGateWay",
+            "ref_path": "r:/WORK/CSR/imsic/imsicGateWay",
+            "impl_path": "i:/WORK/CSR/u_core/imsic/imsicGateWay"
+        }
+    ],
+    "interface_only": [],
+    "empty_blackbox": [],
+    "unmatched": []
+}
