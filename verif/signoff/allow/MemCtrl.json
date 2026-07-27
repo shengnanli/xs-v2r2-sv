@@ -1,17 +1,6 @@
 {
     "unresolved_blackbox": [],
-    "interface_only": [
-        {
-            "id": "ssit",
-            "ref_path": "r:/WORK/MemCtrl/ssit",
-            "impl_path": "i:/WORK/MemCtrl/ssit"
-        },
-        {
-            "id": "waittable",
-            "ref_path": "r:/WORK/MemCtrl/waittable",
-            "impl_path": "i:/WORK/MemCtrl/waittable"
-        }
-    ],
+    "interface_only": [],
     "empty_blackbox": [],
     "unmatched": []
 }

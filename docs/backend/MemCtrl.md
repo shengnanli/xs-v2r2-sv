@@ -12,25 +12,36 @@ MemCtrl 是 SSIT（Store Set ID Table）与 WaitTable 的持有者兼「更新�
 
 ## 文件
 - 可读核：`rtl/backend/MemCtrl_core.sv`（`xs_MemCtrl`，7 更新流水寄存器）
-- 包装层：`rtl/backend/MemCtrl_wrapper.sv`（例化 u_core + SSIT/WaitTable）
-- allow：`verif/signoff/allow/MemCtrl.json`（SSIT/WaitTable interface_only）
+- 包装层：`rtl/backend/MemCtrl_wrapper.sv`（例化 u_core + SSIT/WaitTable，读同一份 golden 源）
+- allow：`verif/signoff/allow/MemCtrl.json`（空——strict 全等价，无黑盒）
 - UT：`verif/ut/MemCtrl/`（层次引用比对 7 个流水寄存器）
 
-## FM 签核
-**assembly SUCCEEDED**：passing 104（含 36 DFF = 7 个更新流水寄存器逐位）/ failing 0 /
-unmatched 0 / unread 0。SSIT + WaitTable 声明为对称 `interface_only` 黑盒（`FM_INTERFACE_ONLY`），
-其输入成为等价边界——可读核 7 个流水寄存器驱动这些黑盒输入，FM 逐位证明 == golden。
+## FM 签核（strict SUCCEEDED，SSIT/WaitTable 两侧真 elaborate，codex_0072 收口）
+**native strict SUCCEEDED**：passing **16634**（全 DFF）/ failing 0 / unmatched 0(0) /
+unread 0 / 无 dont_verify / 无 interface_only 黑盒。fm.log `FM_RESULT: Verification SUCCEEDED`，
+native `Verification SUCCEEDED`，最终汇总表仅 Passing/Failing 行 = 16634/0。
 
-### 为什么不能做 strict 全等价（诚实定级）
-若把 SSIT/WaitTable 两侧 elaborate（golden==golden），FM 报 **9252 unread**（strict PARTIAL）：
-SSIT（~3087 reg）/ WaitTable（~1026 reg）/ SyncDataModuleTemplate 的全部内部寄存器在
-MemCtrl 这个 config 下**无观测输出**（SSIT 的 read 输出被 firtool 裁剪成写入 `s2_*` 寄存器
-后即终止，不出 SSIT 边界）→ 整个下游是 cone-dead 子树。这与 StorePipe 的 DCE-collapsed
-情形同类：golden 自身携带大量 cone-dead 寄存器。
+### SSIT/WaitTable 两侧真 elaborate（非黑盒）
+SSIT 与 WaitTable 均为**纯寄存器逻辑**（无厂商 SRAM 宏）。FM 两侧读**同一份 golden 源**：
+`SSIT → SyncDataModuleTemplate__1024entry{,_1} → DataModule__64entry{,_16}`，`WaitTable` 为叶子。
+FM 日志可见 `Elaborating design SSIT` / `Elaborating design WaitTable` 各出现 2 次（ref + impl），
+证明两侧真 elaborate 为设计而非黑盒。这是完整对称子树。
 
-∴ MemCtrl 只能在 assembly 模式证明本层 glue（7 流水寄存器）。SSIT/WaitTable 非 305 target，
-且在此 config 下本身也无法做有意义的独立等价签核（同样全 cone-dead）。**assembly 条件挂起**
-（assembly_depends.tsv），除非 main 接受 SSIT/WaitTable 为文档化 cone-dead 边界。
+### cone-dead 寄存器 = 对称 matched-unread → vmucp 实比证等价（非 waive）
+在 MemCtrl 这个 config 下，SSIT 的 read 输出被 firtool 裁剪（读结果不出 MemCtrl 边界）→ 下游
+是 cone-dead 子树，大量「写不读」的内部寄存器。因两侧读同一份 golden 源，这些死寄存器构成
+**完美对称双射**：`r:/WORK/MemCtrl/ssit/REG_reg[N]` ↔ `i:/WORK/MemCtrl/ssit/REG_reg[N]`
+（`waittable` 同理）。设 `FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=true`（vmucp）令 FM
+**实际比较**这些对称死寄存器证等价——**不是 waiver，true 是要求 FM 证明更多**——最终 0 unread。
+7 个更新流水寄存器 glue：`r:ssit_io_*_REG` ↔ `i:u_core/ssit_*_REG`。
+
+### 白名单（main-owned，本 worktree 已改，须 main 同步）
+vmucp 精确白名单须含 MemCtrl，已在 worktree 加两处：
+- `scripts/fm_eq.tcl`（vmucp 白名单集）
+- `scripts/sidecar/run_signoff_target.sh`（case 白名单）
+
+MemCtrl 是 aux_target（非 305 分母），权威 gate = `make -C verif/ut/MemCtrl fm`。
+不再走 assembly / interface_only（已从 assembly_depends.tsv 移除 MemCtrl 行）。
 
 ## UT
 seed 1/7/42 各 199992 checks，errors 0（层次引用比对 golden vs 可读核的 7 个流水寄存器）。
