@@ -166,6 +166,7 @@ def main():
     seen = set()
     fm_dirs = set()
     auxiliary_seen = set()
+    emptyvar_dirs = set()  # 非 FMBB 且 FM_VARIANTS 真空(如 Rob)——显式 UNCONFIGURED
 
     for mk in sorted(glob.glob(os.path.join(a.ut_root, "*", "Makefile")) +
                      glob.glob(os.path.join(a.ut_root, "*", "Makefile.*"))):
@@ -180,7 +181,11 @@ def main():
             seen.add(key); fm_dirs.add(ut_dir)
             entries.append(mk_entry(ut_dir, ut_dir, mk, mt, entry, pm, decl, bid))
             continue
-        for v in variants_of(mk):
+        vs = variants_of(mk)
+        if not vs and has_fm_assignment(mk):
+            # 有 FM_VARIANTS 赋值但真空(非 FMBB): 已知目标但无可跑证明 -> UNCONFIGURED
+            emptyvar_dirs.add(ut_dir)
+        for v in vs:
             # Auxiliary child proofs qualify an assembly parent through
             # assembly_depends.tsv, but never expand the frozen 305 denominator.
             if v in auxiliary_targets:
@@ -205,8 +210,8 @@ def main():
             continue
         # 该目录是否有任何 Makefile 含 FM 配置?
         mks = glob.glob(os.path.join(dd, "Makefile")) + glob.glob(os.path.join(dd, "Makefile.*"))
-        if any(has_fm_assignment(m) for m in mks):
-            continue  # 有 FM 但 variants 为空(另议), 不算 UNCONFIGURED
+        if any(has_fm_assignment(m) for m in mks) and ud not in emptyvar_dirs:
+            continue  # 有 FM 且 variants 经 aux 过滤后为空(如 CSR 位域族全入 AUX), 不算 UNCONFIGURED
         unconfigured.append(ud)
         entries.append(mk_entry(ud, ud, "", "-", "-", "n/a", decl, bid, cfg="UNCONFIGURED"))
 
