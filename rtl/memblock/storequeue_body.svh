@@ -173,7 +173,10 @@
       logic [SQ_SIZE-1:0] paFwd_q, vaFwd_q, needFwd_q, addrRealValid_q;
       logic               fwdValid_q, diffFlag_q, loadWaitStrict_q, loadWaitStrictRaw_q;
       logic               hasInvalidAddr_q;   // golden io_forward_X_addrInvalid_REG：s1 计算打一拍
-      sqptr_t             enqPtr_q, deqPtr_q, fwdSqIdx_q, fwdSqIdxM1_q;
+      // enqPtr_q 只用到 .flag（forward sqIdx flag 选择）——只存 flag 位，避免 value[5:0]
+      //   成 impl-only 死寄存器（golden 同样只在 forward 用 enqPtr 的 flag）。
+      logic               enqPtr_q_flag;
+      sqptr_t             deqPtr_q, fwdSqIdx_q, fwdSqIdxM1_q;
       // golden 为 data / addr 两条 InvalidSqIdx 路径各保留一份独立的 RegEnable(sqIdx)：
       //   dataInvalidSqIdx_r（value/flag）与 addrInvalidSqIdx_r_1（value/flag），源相同、值恒等，
       //   但 merge_dup=false 下 FM 视为两个寄存器。impl 单份 fwdSqIdx_q 只能配一份 → 另一份
@@ -188,7 +191,7 @@
         needFwd_q <= needForward;   // golden vpmaskNotEqual_REG：无条件打拍
         hasInvalidAddr_q <= |(~addrValidVec & needForward);
         fwdValid_q <= fwd_valid[gi]; diffFlag_q <= differentFlag;
-        enqPtr_q <= enqPtrExt[0]; deqPtr_q <= deqPtrExt[0];
+        enqPtr_q_flag <= enqPtrExt[0].flag; deqPtr_q <= deqPtrExt[0];
         fwd_dataInvalid_q[gi] <= dataInvalidFast;
         if (fwd_valid[gi]) begin
           // golden vpmaskNotEqual_r/_r_1：RegEnable(forwardMmask, io_forward_X_valid)——
@@ -229,7 +232,7 @@
         if (loadWaitStrictData_q) begin
           fwd_addrInvalidSqIdx_o[gi] = fwdSqIdxM1_q;
         end else if (addrInvalidFlag) begin
-          fwd_addrInvalidSqIdx_o[gi].flag  = (~diffFlag_q | (addrInvalidSqIdx >= deqPtr_q.value)) ? deqPtr_q.flag : enqPtr_q.flag;
+          fwd_addrInvalidSqIdx_o[gi].flag  = (~diffFlag_q | (addrInvalidSqIdx >= deqPtr_q.value)) ? deqPtr_q.flag : enqPtr_q_flag;
           fwd_addrInvalidSqIdx_o[gi].value = addrInvalidSqIdx;
         end else begin
           fwd_addrInvalidSqIdx_o[gi] = fwdSqIdx_q;
@@ -245,7 +248,7 @@
       wire [SQ_IDX_W-1:0] dataInvalidSqIdx  = (|di2_q) ? dataInvalidSqIdx2 : dataInvalidSqIdx1;
       always_comb begin
         if (dataInvalidFlag) begin
-          fwd_dataInvalidSqIdx_o[gi].flag  = (~diffFlag_q | (dataInvalidSqIdx >= deqPtr_q.value)) ? deqPtr_q.flag : enqPtr_q.flag;
+          fwd_dataInvalidSqIdx_o[gi].flag  = (~diffFlag_q | (dataInvalidSqIdx >= deqPtr_q.value)) ? deqPtr_q.flag : enqPtr_q_flag;
           fwd_dataInvalidSqIdx_o[gi].value = dataInvalidSqIdx;
         end else begin
           fwd_dataInvalidSqIdx_o[gi] = fwdSqIdxData_q;  // golden dataInvalidSqIdx_r（独立副本）
@@ -266,7 +269,6 @@
   logic [ROB_IDX_W-1:0]uncUop_robV;
   logic [63:0]         uncUop_dbgEnq, uncUop_dbgSel, uncUop_dbgIss;
   logic                uncUop_excHwErr;   // exceptionVec(hardwareError=19) 唯一可能置位的
-  logic [SQ_IDX_W-1:0] uncUop_sqIdxV;
   logic [8:0]          uncUop_fuOpType;   // s_idle 捕获的 fuOpType（CMO opcode 源，与 golden 一致：
                                           //   io_cmoOpReq_bits_opcode 取此**锁存**值而非 live uopR[deqPtr]，
                                           //   保证 valid=0 时 bits 保持上次锁存值，逐拍等于 golden）。
@@ -383,7 +385,6 @@
         uncUop_dbgEnq <= uopR[deqPtr].dbg_enqRsTime;
         uncUop_dbgSel <= uopR[deqPtr].dbg_selectTime;
         uncUop_dbgIss <= uopR[deqPtr].dbg_issueTime;
-        uncUop_sqIdxV <= uopR[deqPtr].sqIdx_value;
         uncUop_fuOpType <= uopR[deqPtr].fuOpType;
         uncUop_excHwErr <= 1'b0;
         cboMmioPAddr  <= pa_rdata[0];
@@ -662,6 +663,32 @@
     else if (lastCycleRedirect_q) redirectCancelCount_q <= {1'b0, popcnt_sq(needCancel_q)} + lastEnqCancel_q;
   end
   assign io_sqCancelCnt = redirectCancelCount_q[SQ_IDX_W:0];
+
+  // ---------------------------------------------------------------------------
+  // golden-parity 死寄存器（bug-for-bug 匹配 golden 寄存器集，本身在本配置无功能扇出）：
+  //   · counter：golden 的 vecExceptionFlag 超时断言计数器（golden 行 12514/57354）。
+  //     断言在 +define+SYNTHESIS 下编译掉 → cone-dead；此处复刻以与 golden 寄存器逐一对应，
+  //     成对称 matched-unread（FM 双射，vmucp 下可比较为等价）。
+  //   · REG/REG_1：golden 的 perfEvents 流水两拍（golden 行 44243-44244），perf 输出在
+  //     本配置无端口 → cone-dead。复刻成对称 matched-unread。
+  //   这些寄存器不驱动任何 io_* 输出，UT 逐拍输出比对不受影响（errors=0 已验证）。
+  logic [31:0] counter;
+  logic        REG, REG_1;
+  wire perfEvents_2_2_probe = io_mmioStout_ready & io_mmioStout_valid;  // golden 行 4368
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) counter <= 32'h0;
+    else       counter <= vecExceptionFlag_valid ? (counter + 32'h1) : 32'h0;
+  end
+  // golden REG <= _isCboZeroToSbVec_T (行 4398/44243)，其中
+  //   _isCboZeroToSbVec_T = io_sbuffer_0_ready & _dataBuffer_io_deq_0_valid
+  //                       = io_sbuffer_0_ready & io_sbuffer_0_valid = io.sbuffer(0).fire
+  // 断言 assert(!RegNext(RegNext(io.sbuffer(0).fire) && io.mmioStout.fire)) 的第一拍锁存。
+  //   注意 golden 此处用 io.sbuffer(0).fire（=sbuffer0_fire），不是 cboZeroToSb
+  //   （=isCboZeroToSbVec_0|_1 的 cbo-zero 冲刷条件，另一条线）——二者不等价。
+  always_ff @(posedge clock) begin
+    REG   <= sbuffer0_fire;                   // golden _isCboZeroToSbVec_T = io.sbuffer(0).fire
+    REG_1 <= REG & perfEvents_2_2_probe;
+  end
 
   // ===========================================================================
   //  §UNI-PRE  committed / completed 的 per-entry 组合次态（golden 位精确对齐）

@@ -82,7 +82,16 @@
   wire vecHasExcFlag1 = vecExceptionFlag_valid & vec1
                         & (vecExceptionFlag_robIdx_flag == uopR[dp1].robIdx_flag)
                         & (vecExceptionFlag_robIdx_value == uopR[dp1].robIdx_value);
-  wire toSbufferVecValid1 = (~vec1 | (vecMb1 & allv1 & vecNotAllMask1)) & ~exc1 & ~vecHasExcFlag1;
+  // 跨口异常屏蔽（golden 端口 1 独有）：口 0 的 entry 有异常且与口 1 同 robIdx（同一条
+  //   拆分成两 flow 的向量 store）时，口 1 的 vecValid 也须清 0。golden:
+  //   io_enq_1_bits_vecValid = ... & ~(_GEN_448 | _GEN_398 & _T_7 == _T)
+  //   = ~(hasException[dp1] | hasException[dp0] & robIdx[dp1]==robIdx[dp0])。
+  //   之前 impl 只有 ~exc1，漏掉 exc0 交叉项 → FM data_0/1_vecValid_reg 失配。
+  wire exc0SameRob1 = exc0
+                      & (uopR[dp1].robIdx_flag  == uopR[dp0].robIdx_flag)
+                      & (uopR[dp1].robIdx_value == uopR[dp0].robIdx_value);
+  wire toSbufferVecValid1 = (~vec1 | (vecMb1 & allv1 & vecNotAllMask1))
+                            & ~(exc1 | exc0SameRob1) & ~vecHasExcFlag1;
 
   wire [3:0] addrLow4_0 = va_rdata[0][3:0];
   wire [3:0] addrLow4_1 = va_rdata[1][3:0];

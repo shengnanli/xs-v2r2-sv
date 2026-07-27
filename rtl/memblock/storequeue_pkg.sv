@@ -161,6 +161,39 @@ package storequeue_pkg;
     return r;
   endfunction
 
+  // enqPtr +enqNumber（golden 逐位环形推进）：nv=value+n; diff=nv-56; rev=~diff[9];
+  //   value = rev?diff[5:0]:nv[5:0]; flag = rev ^ oldflag。函数内 automatic 变量不成寄存器
+  //   （原先写在 always_ff 内的 nv/diff/rev block-local logic 被 VCS 建成 impl-only 死寄存器）。
+  function automatic sqptr_t sqptr_enq_advance(input sqptr_t p, input logic [8:0] n);
+    logic [8:0] nv; logic [9:0] diff; logic rev; sqptr_t r;
+    nv    = {3'b0, p.value} + n;
+    diff  = {1'b0, nv} - 10'h38;
+    rev   = ~diff[9];
+    r.value = rev ? diff[SQ_IDX_W-1:0] : nv[SQ_IDX_W-1:0];
+    r.flag  = rev ^ p.flag;
+    return r;
+  endfunction
+
+  // enqPtr 回滚 redirectCancelCount（golden：delta=56-cancel; 其余同 advance；flag 额外取反）。
+  function automatic sqptr_t sqptr_enq_rollback(input sqptr_t p, input logic [7:0] cancelCount);
+    logic [7:0] delta; logic [8:0] nv; logic [9:0] diff; logic rev; sqptr_t r;
+    delta = 8'h38 - cancelCount;
+    nv    = {3'b0, p.value} + {1'b0, delta};
+    diff  = {1'b0, nv} - 10'h38;
+    rev   = ~diff[9];
+    r.value = rev ? diff[SQ_IDX_W-1:0] : nv[SQ_IDX_W-1:0];
+    r.flag  = rev ^ ~p.flag;
+    return r;
+  endfunction
+
+  // sqptr_add 的 value 分量（FM 的 read_sverilog 不支持对函数返回值做 .value 域选，
+  //   故单独提供仅返回 value 的版本，供指针副本[1..]只更新 value 时用）。
+  function automatic logic [SQ_IDX_W-1:0] sqptr_add_value(input sqptr_t p, input logic [SQ_IDX_W:0] n);
+    logic [SQ_IDX_W+1:0] sum;
+    sum = {1'b0, p.value} + n;
+    return (sum >= SQ_SIZE) ? (sum - SQ_SIZE) : sum[SQ_IDX_W-1:0];
+  endfunction
+
   // distanceBetween(enq, deq)：环形队列已用表项数 = (enq - deq) 取环长。
   function automatic logic [SQ_IDX_W:0] sq_distance(input sqptr_t enq, input sqptr_t deq);
     if (enq.flag == deq.flag) return enq.value - deq.value;

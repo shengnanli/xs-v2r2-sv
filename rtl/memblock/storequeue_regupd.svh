@@ -34,7 +34,6 @@
           ent[i].unaligned   <= 1'b0;
           ent[i].cross16Byte <= 1'b0;
           ent[i].pending     <= 1'b0;
-          ent[i].prefetch    <= 1'b0;
           ent[i].nc          <= 1'b0;
           ent[i].mmio        <= 1'b0;
           ent[i].isVec       <= entryEnqIsVec[i];
@@ -191,46 +190,43 @@
   //   故 cancelCount 可大于 56 也能正确 mod；这是随机 UT 对齐 golden 的关键）。
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
-      for (int j = 0; j < ENQ_W; j++) enqPtrExt[j] <= '{flag:1'b0, value:j[SQ_IDX_W-1:0]};
+      enqPtrExt[0] <= '{flag:1'b0, value:'0};
     end else if (lastlastCycleRedirect_q) begin
-      // 回滚：delta = 56 - redirectCancelCount（8 位回卷）；flag = rev ^ ~oldflag
-      for (int j = 0; j < ENQ_W; j++) begin
-        logic [7:0] delta; logic [8:0] nv; logic [9:0] diff; logic rev;
-        delta = 8'h38 - redirectCancelCount_q;
-        nv    = {3'b0, enqPtrExt[j].value} + {1'b0, delta};
-        diff  = {1'b0, nv} - 10'h38;
-        rev   = ~diff[9];
-        enqPtrExt[j].value <= rev ? diff[5:0] : nv[5:0];
-        enqPtrExt[j].flag  <= rev ^ ~enqPtrExt[j].flag;
-      end
+      // 回滚：sqptr_enq_rollback（函数内 automatic 变量，不成寄存器）
+      enqPtrExt[0] <= sqptr_enq_rollback(enqPtrExt[0], redirectCancelCount_q);
     end else begin
-      // 正常 +enqNumber：flag = rev ^ oldflag
-      for (int j = 0; j < ENQ_W; j++) begin
-        logic [8:0] nv; logic [9:0] diff; logic rev;
-        nv    = {3'b0, enqPtrExt[j].value} + {1'b0, enqNumber};
-        diff  = {1'b0, nv} - 10'h38;
-        rev   = ~diff[9];
-        enqPtrExt[j].value <= rev ? diff[5:0] : nv[5:0];
-        enqPtrExt[j].flag  <= rev ^ enqPtrExt[j].flag;
-      end
+      // 正常 +enqNumber
+      enqPtrExt[0] <= sqptr_enq_advance(enqPtrExt[0], {1'b0, enqNumber});
     end
   end
   // rdataPtr / deqPtr
+  // rdata/deq：只 [0] 存全 flag+value；[1] 只存 value（golden 亦只有 rdataPtrExt_1_value /
+  //   deqPtrExt_1_value，[1].flag 从不被读——不时钟它即不成寄存器，消 impl-only 死 flag）。
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
-      for (int j = 0; j < ENSB_W; j++) begin
-        rdataPtrExt[j] <= '{flag:1'b0, value:j[SQ_IDX_W-1:0]};
-        deqPtrExt[j]   <= '{flag:1'b0, value:j[SQ_IDX_W-1:0]};
+      rdataPtrExt[0] <= '{flag:1'b0, value:'0};
+      deqPtrExt[0]   <= '{flag:1'b0, value:'0};
+      for (int j = 1; j < ENSB_W; j++) begin
+        rdataPtrExt[j].value <= j[SQ_IDX_W-1:0];
+        deqPtrExt[j].value   <= j[SQ_IDX_W-1:0];
       end
     end else begin
-      for (int j = 0; j < ENSB_W; j++) begin
-        rdataPtrExt[j] <= rdataPtrExtNext[j];
-        deqPtrExt[j]   <= deqPtrExtNext[j];
+      rdataPtrExt[0] <= rdataPtrExtNext[0];
+      deqPtrExt[0]   <= deqPtrExtNext[0];
+      for (int j = 1; j < ENSB_W; j++) begin
+        rdataPtrExt[j].value <= rdataPtrExtNext[j].value;
+        deqPtrExt[j].value   <= deqPtrExtNext[j].value;
       end
     end
   end
-  // cmtPtr：+commitCount
+  // cmtPtr：+commitCount。同理只 [0] 存 flag，[1..7] 只存 value（golden 仅 cmtPtrExt_0_flag）。
   always_ff @(posedge clock or posedge reset) begin
-    if (reset) for (int j = 0; j < COMMIT_W; j++) cmtPtrExt[j] <= '{flag:1'b0, value:j[SQ_IDX_W-1:0]};
-    else       for (int j = 0; j < COMMIT_W; j++) cmtPtrExt[j] <= sqptr_add(cmtPtrExt[j], {3'b0, commitCount});
+    if (reset) begin
+      cmtPtrExt[0] <= '{flag:1'b0, value:'0};
+      for (int j = 1; j < COMMIT_W; j++) cmtPtrExt[j].value <= j[SQ_IDX_W-1:0];
+    end else begin
+      cmtPtrExt[0] <= sqptr_add(cmtPtrExt[0], {3'b0, commitCount});
+      for (int j = 1; j < COMMIT_W; j++)
+        cmtPtrExt[j].value <= sqptr_add_value(cmtPtrExt[j], {3'b0, commitCount});
+    end
   end

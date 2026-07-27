@@ -56,7 +56,8 @@ module xs_StoreQueue_core
     logic nc;            // non-cacheable
     logic mmio;          // mmio
     logic memBackTypeMM; // 访存后端类型（difftest 用，决定是否记 ncStore）
-    logic prefetch;      // 提交到 Sbuffer 时触发预取
+    // 注：golden 本配置 EnableAtCommitMissTrigger=false，不存 prefetch 位 → 已删除该字段，
+    //     否则 impl 侧多出 56 个只写不读寄存器（FM unread_impl）。
     logic isVec;         // 向量 store
     logic vecLastFlow;   // 向量 store 的最后一条流
     logic vecMbCommit;   // 向量 store 已从 merge buffer 提交到 ROB
@@ -64,24 +65,25 @@ module xs_StoreQueue_core
     logic waitStoreS2;   // 等 store_s2 的 mmio/exception 结果
   } sq_entry_t;
 
-  // entry 数组按 2^SQ_IDX_W=64 声明（实际只用 0..SQ_SIZE-1=55）：使任意 6 位下标都在
-  // 界内，避免 Formality 的「下标可能越界」(FMR_ELAB-147) 把可读核误判为不可解释。
-  sq_entry_t ent [1<<SQ_IDX_W];       // 64 槽（有效 56）
+  // entry 数组按 SQ_SIZE=56 声明（与 golden Vec(56) 同尺寸）：所有运行期下标（指针 .value
+  //   为 mod-56 环形算术，恒 <56；genvar/loop 均 <SQ_SIZE），故写译码只建 56 路，不再多出
+  //   56..63 的 impl-only 死寄存器。越界纯值读一律走下面的 entR/uopR 折叠视图（[64]），
+  //   规避 Formality 的「下标可能越界」(FMR_ELAB-147)。
+  sq_entry_t ent [SQ_SIZE];           // 56 槽（与 golden 同）
   // allvalid = addrvalid & datavalid（组合派生）
   logic [SQ_SIZE-1:0] allocated_v, addrvalid_v, datavalid_v, committed_v,
                       allvalid_v, mmio_v, nc_v, unaligned_v, isvec_v,
-                      vecmbcommit_v, hasexc_v, prefetch_v;
+                      vecmbcommit_v, hasexc_v;
   // uop 元数据：每 entry 只保留控制需要的字段（robIdx/uopIdx/sqIdx/fuType/fuOpType
   // /storeSet 等），其余 difftest/debug 字段 golden 已裁剪。
   typedef struct packed {
     logic                robIdx_flag;
     logic [ROB_IDX_W-1:0]robIdx_value;
     logic [UOP_IDX_W-1:0]uopIdx;
-    logic                lastUop;
-    logic [34:0]         fuType;
+    // 注：golden 入队时丢弃 lastUop/fuType/sqIdx（本队列后续不读它们），故不存这些字段。
+    //     enq 时的 en_lastUop/en_fuType/en_sqF/en_sqV 仍用于组合派生（isVec/vecLastFlow/
+    //     enq 指针 bound），只是不写进 uop 存储 → 消除 impl-only unread 寄存器。
     logic [8:0]          fuOpType;
-    logic                sqIdx_flag;
-    logic [SQ_IDX_W-1:0] sqIdx_value;
     logic                flushPipe;
     logic [3:0]          trigger;
     logic [23:0]         exceptionVec;   // 异常向量（enq/storeAddrIn 写入；cbo.zero 出队时随 uop 上报）
@@ -89,7 +91,25 @@ module xs_StoreQueue_core
     logic [63:0]         dbg_selectTime;
     logic [63:0]         dbg_issueTime;
   } sq_uop_t;
-  sq_uop_t uop [1<<SQ_IDX_W];         // 同 ent：按 64 槽声明，下标恒在界内
+  sq_uop_t uop [SQ_SIZE];             // 同 ent：56 槽（与 golden 同尺寸）
+
+  // ---- 越界折叠读视图（FM 配平）：golden 对 Vec(56) 以 6 位下标做**纯值读取**时，
+  //      firtool 生成 64 项读表、高 8 项(56..63)复制条目 0（越界回绕 vec[0]）。
+  //      运行期下标的"纯值读"（喂输出/其它状态，不带 idx==j 写译码卫）一律走
+  //      uopR/entR 视图，与 golden 位级一致；idx≥56 实际不可达，不改真实行为。
+  //      per-entry 写译码/RMW（形如 ent[idx].x <= f(ent[idx])）不折叠——golden 同为
+  //      per-entry 译码，等价性由 idx==j 卫自然保证。条目 56..63 因此变为只写不读，
+  //      FM 两侧同被剪除。
+  sq_uop_t   uopR [1<<SQ_IDX_W];
+  sq_entry_t entR [1<<SQ_IDX_W];
+  always_comb
+    for (int k = 0; k < (1<<SQ_IDX_W); k++) begin
+      // k>=SQ_SIZE 时用 kk=0 索引（ent/uop 现为 [SQ_SIZE]，避免越界引用 ent[k]），
+      // 与 golden 越界回绕 vec[0] 位级一致。
+      automatic int kk = (k >= SQ_SIZE) ? 0 : k;
+      uopR[k] = uop[kk];
+      entR[k] = ent[kk];
+    end
 
   // ---- 越界折叠读视图（FM 配平）：golden 对 Vec(56) 以 6 位下标做**纯值读取**时，
   //      firtool 生成 64 项读表、高 8 项(56..63)复制条目 0（越界回绕 vec[0]）。
@@ -120,7 +140,6 @@ module xs_StoreQueue_core
       assign isvec_v[gi]       = ent[gi].isVec;
       assign vecmbcommit_v[gi] = ent[gi].vecMbCommit;
       assign hasexc_v[gi]      = ent[gi].hasException;
-      assign prefetch_v[gi]    = ent[gi].prefetch;
     end
   endgenerate
 
@@ -183,7 +202,9 @@ module xs_StoreQueue_core
   //  §1  环形队列指针（enq/rdata/deq/cmt + addr/dataReadyPtr）
   //      初值：enqPtr/cmtPtr 各 0..N（多根并行指针，下标 i 即第 i 路）；rdata/deq 0/1。
   // ===========================================================================
-  sqptr_t enqPtrExt [ENQ_W];     // 入队（6 根，第 0 根是主指针）
+  // enqPtr：golden 只存 enqPtrExt_0（其余入队路的槽位由 enq 请求自带的 sqIdx 组合给出），
+  //   本核也只读 enqPtrExt[0]，故只保留 1 根（原先 6 根中 [1..5] 是 impl-only 死寄存器）。
+  sqptr_t enqPtrExt [1];         // 入队主指针（仅 1 根）
   sqptr_t rdataPtrExt [ENSB_W];  // 读数据（2 根）
   sqptr_t deqPtrExt [ENSB_W];    // 出队（2 根）
   sqptr_t cmtPtrExt [COMMIT_W];  // 提交（8 根）
@@ -420,10 +441,7 @@ module xs_StoreQueue_core
       entryEnqUop[i] = '0;
       entryEnqUop[i].robIdx_flag   = en_robF[selj];
       entryEnqUop[i].robIdx_value  = en_robV[selj];
-      entryEnqUop[i].sqIdx_flag    = en_sqF[selj];
-      entryEnqUop[i].sqIdx_value   = en_sqV[selj];
-      entryEnqUop[i].lastUop       = en_lastUop[selj];
-      entryEnqUop[i].fuType        = en_fuType[selj];
+      // sqIdx/lastUop/fuType 不写进 uop 存储（golden 不存；仅上面组合派生用 en_*）。
       entryEnqUop[i].fuOpType      = en_fuOp[selj];
       entryEnqUop[i].uopIdx        = en_uopIdx[selj];
       entryEnqUop[i].flushPipe     = en_flushP[selj];
