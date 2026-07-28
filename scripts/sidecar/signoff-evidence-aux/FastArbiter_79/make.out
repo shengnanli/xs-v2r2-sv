@@ -1,0 +1,17 @@
+=== FM: FastArbiter_79 (mode=signoff-strict) ===
+FM_TOP=FastArbiter_79 \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/FastArbiter_79.sv  " \
+FM_IMPL_SRCS="/tmp/tmp.YwsTFNCgns/wt/rtl/uncore/FastArbiter_79.sv /tmp/tmp.YwsTFNCgns/wt/rtl/uncore/FastArbiter_79_wrapper.sv" \
+ \
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=true \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/FastArbiter_79 -file /tmp/tmp.YwsTFNCgns/wt/scripts/fm_eq.tcl \
+    > fm_work/FastArbiter_79/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.YwsTFNCgns/wt/scripts/fm_verdict.py fm_work/FastArbiter_79/fm.log --rc $rc --mode signoff-strict --top FastArbiter_79 --allowlist 0
+SUCCEEDED	{"passing": 427, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "FastArbiter_79", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

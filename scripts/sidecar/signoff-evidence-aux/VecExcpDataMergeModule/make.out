@@ -1,0 +1,17 @@
+=== FM: VecExcpDataMergeModule (mode=signoff-strict) ===
+FM_TOP=VecExcpDataMergeModule \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/VecExcpDataMergeModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/NfMappedElemIdx.sv /home/eda/xs-env/G0-canonical/golden-rtl/GetE8OffsetInVreg.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayN_13.sv " \
+FM_IMPL_SRCS="/tmp/tmp.ncadFbIPAa/wt/rtl/backend/VecExcpDataMergeModule.sv /tmp/tmp.ncadFbIPAa/wt/rtl/backend/DelayN.sv /home/eda/xs-env/G0-canonical/golden-rtl/NfMappedElemIdx.sv /home/eda/xs-env/G0-canonical/golden-rtl/GetE8OffsetInVreg.sv" \
+ \
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=false \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/VecExcpDataMergeModule -file /tmp/tmp.ncadFbIPAa/wt/scripts/fm_eq.tcl \
+    > fm_work/VecExcpDataMergeModule/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.ncadFbIPAa/wt/scripts/fm_verdict.py fm_work/VecExcpDataMergeModule/fm.log --rc $rc --mode signoff-strict --top VecExcpDataMergeModule --allowlist 0
+SUCCEEDED	{"passing": 1363, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "VecExcpDataMergeModule", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

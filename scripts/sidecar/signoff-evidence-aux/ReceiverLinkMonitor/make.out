@@ -1,0 +1,17 @@
+=== FM: ReceiverLinkMonitor (mode=signoff-strict) ===
+FM_TOP=ReceiverLinkMonitor \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/ReceiverLinkMonitor.sv /home/eda/xs-env/G0-canonical/golden-rtl/LCredit2Decoupled_8.sv /home/eda/xs-env/G0-canonical/golden-rtl/LCredit2Decoupled_9.sv /home/eda/xs-env/G0-canonical/golden-rtl/LCredit2Decoupled_10.sv /home/eda/xs-env/G0-canonical/golden-rtl/Decoupled2LCredit_5.sv /home/eda/xs-env/G0-canonical/golden-rtl/Decoupled2LCredit_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/Decoupled2LCredit_2.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue4_CHIREQ.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue4_CHIRSP.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue4_CHIDAT.sv /home/eda/xs-env/G0-canonical/golden-rtl/ram_4x151.sv /home/eda/xs-env/G0-canonical/golden-rtl/ram_4x73.sv /home/eda/xs-env/G0-canonical/golden-rtl/ram_4x422.sv " \
+FM_IMPL_SRCS="/tmp/tmp.lUwtaL4eqX/wt/rtl/uncore/linkmonitor_pkg.sv /tmp/tmp.lUwtaL4eqX/wt/rtl/uncore/ReceiverLinkMonitor.sv /tmp/tmp.lUwtaL4eqX/wt/rtl/uncore/ReceiverLinkMonitor_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/LCredit2Decoupled_8.sv /home/eda/xs-env/G0-canonical/golden-rtl/LCredit2Decoupled_9.sv /home/eda/xs-env/G0-canonical/golden-rtl/LCredit2Decoupled_10.sv /home/eda/xs-env/G0-canonical/golden-rtl/Decoupled2LCredit_5.sv /home/eda/xs-env/G0-canonical/golden-rtl/Decoupled2LCredit_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/Decoupled2LCredit_2.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue4_CHIREQ.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue4_CHIRSP.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue4_CHIDAT.sv /home/eda/xs-env/G0-canonical/golden-rtl/ram_4x151.sv /home/eda/xs-env/G0-canonical/golden-rtl/ram_4x73.sv /home/eda/xs-env/G0-canonical/golden-rtl/ram_4x422.sv" \
+ \
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=false \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/ReceiverLinkMonitor -file /tmp/tmp.lUwtaL4eqX/wt/scripts/fm_eq.tcl \
+    > fm_work/ReceiverLinkMonitor/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.lUwtaL4eqX/wt/scripts/fm_verdict.py fm_work/ReceiverLinkMonitor/fm.log --rc $rc --mode signoff-strict --top ReceiverLinkMonitor --allowlist 0
+SUCCEEDED	{"passing": 4529, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "ReceiverLinkMonitor", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

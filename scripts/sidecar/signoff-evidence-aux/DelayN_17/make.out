@@ -1,0 +1,17 @@
+=== FM: DelayN_17 (mode=signoff-strict) ===
+FM_TOP=DelayN_17 \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/DelayN_17.sv  " \
+FM_IMPL_SRCS="/tmp/tmp.9Fe6r4g4b8/wt/rtl/backend/DelayN.sv" \
+ \
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=false \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/DelayN_17 -file /tmp/tmp.9Fe6r4g4b8/wt/scripts/fm_eq.tcl \
+    > fm_work/DelayN_17/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.9Fe6r4g4b8/wt/scripts/fm_verdict.py fm_work/DelayN_17/fm.log --rc $rc --mode signoff-strict --top DelayN_17 --allowlist 0
+SUCCEEDED	{"passing": 6, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "DelayN_17", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}
