@@ -280,3 +280,9 @@ SMSPrefetcher	MemBlock SMS预取器child, vmucp AUX(1090对称matched-unread+1�
 TLBNonBlock_1	MemBlock store TLB child(Width=2非平凡变体), PASS_DEAD_REF(6 golden-only死ref), 移出305
 TLBNonBlock_2	MemBlock prefetch/walker TLB child(Width=2非对称), PASS_DEAD_REF(4 golden-only死ref), 移出305
 VSegmentUnit	MemBlock向量段访存child(段×field状态机遍历), vmucp AUX(22对称matched-unread exceptionGpaddr宽存窄读), 移出305
+DelayN_1	Backend打拍延迟链child(2级1-bit, 复用xs_delayn_core), strict clean leaf, 移出305
+PFEvent	Backend/MemBlock性能事件child(24 perfEventsModule mhpmevent CSR), strict clean, 移出305
+Og2ForVector	Backend向量操作数收集stage-2流水child, strict clean(逐字节=golden), 移出305
+ExuBlock_2	Backend向量exu容器child(5 ExeUnit_13-17), strict clean(ExeUnit边界黑盒), 移出305
+VecExcpDataMergeModule	Backend向量异常数据合并child(5态FSM), strict clean(逐位rename), 移出305
+HPerfMonitor_2	Backend HPM事件路由child(8 HPerfCounter_13), vmucp AUX(64对称matched-unread counter死高位), 移出305

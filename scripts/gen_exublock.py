@@ -469,6 +469,7 @@ def build(mod, base):
 def main():
     build("ExuBlock", "exublock")
     build("ExuBlock_1", "exublock_1")
+    build("ExuBlock_2", "exublock_2")
 
 
 if __name__ == "__main__":
