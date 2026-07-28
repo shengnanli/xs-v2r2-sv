@@ -21,11 +21,11 @@
 
 Build: 8868332
 Hostname: localhost.localdomain
-Current time: Tue Jul 28 18:44:56 2026
+Current time: Tue Jul 28 19:00:20 2026
 
 Loading db file '/home/eda/app/synopsys/fm/V-2023.12-SP3/libraries/syn/gtech.db'
 
-Script: /tmp/tmp.r7qVtIADR3/wt/scripts/fm_eq.tcl
+Script: /tmp/tmp.a0odWEVl1n/wt/scripts/fm_eq.tcl
 
 Information: Term was not able to be set up using xterm-256color . Using "xterm" by default instead. (CLE-10)
 # Formality 等价性检查通用脚本
@@ -34,11 +34,11 @@ Information: Term was not able to be set up using xterm-256color . Using "xterm"
 #   FM_REF_SRCS   golden RTL 文件列表（变体 + 其子模块）
 #   FM_IMPL_SRCS  手写 SV 文件列表（参数化核心 + 包装层）
 set top       $env(FM_TOP)
-NewDispatch
+NCB200_1
 set ref_srcs  $env(FM_REF_SRCS)
-/home/eda/xs-env/G0-canonical/golden-rtl/NewDispatch.sv /home/eda/xs-env/G0-canonical/golden-rtl/RegCacheTagTable.sv /home/eda/xs-env/G0-canonical/golden-rtl/BusyTable.sv /home/eda/xs-env/G0-canonical/golden-rtl/BusyTable_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/BusyTable_2.sv /home/eda/xs-env/G0-canonical/golden-rtl/BusyTable_3.sv /home/eda/xs-env/G0-canonical/golden-rtl/VlBusyTable.sv /home/eda/xs-env/G0-canonical/golden-rtl/LsqEnqCtrl.sv /home/eda/xs-env/G0-canonical/golden-rtl/RegCacheTagModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/RegCacheTagModule_1.sv 
+/home/eda/xs-env/G0-canonical/golden-rtl/NCB200_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/CHILinkActiveManagerRX.sv /home/eda/xs-env/G0-canonical/golden-rtl/CHILinkActiveManagerTX.sv /home/eda/xs-env/G0-canonical/golden-rtl/NCBOrderAddressCAM_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/NCBTransactionFreeList_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/NCBTransactionAgeMatrix_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/NCBTransactionQueue_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/NCBTransactionPayload_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/NCBUpstreamRXREQ_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/NCBUpstreamRXDAT_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/NCBUpstreamTXRSP_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/NCBUpstreamTXDAT_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/NCBDownstreamAW_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/NCBDownstreamW_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/NCBDownstreamB_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/NCBDownstreamAR_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/NCBDownstreamR_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/CHILinkCreditManagerRX.sv /home/eda/xs-env/G0-canonical/golden-rtl/CHILinkCreditManagerRX_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/CHILinkCreditManagerTX.sv /home/eda/xs-env/G0-canonical/golden-rtl/Decoder.sv /home/eda/xs-env/G0-canonical/golden-rtl/Decoder_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/NCBTransactionIndexFIFO_3.sv /home/eda/xs-env/G0-canonical/golden-rtl/ProvideBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/SpillRegister_2.sv /home/eda/xs-env/G0-canonical/golden-rtl/SpillRegister_6.sv /home/eda/xs-env/G0-canonical/golden-rtl/SpillRegister_7.sv 
 set impl_srcs $env(FM_IMPL_SRCS)
-/tmp/tmp.r7qVtIADR3/wt/rtl/backend/newdispatch_pkg.sv /tmp/tmp.r7qVtIADR3/wt/rtl/backend/NewDispatch.sv /tmp/tmp.r7qVtIADR3/wt/rtl/backend/NewDispatch_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/RegCacheTagTable.sv /home/eda/xs-env/G0-canonical/golden-rtl/BusyTable.sv /home/eda/xs-env/G0-canonical/golden-rtl/BusyTable_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/BusyTable_2.sv /home/eda/xs-env/G0-canonical/golden-rtl/BusyTable_3.sv /home/eda/xs-env/G0-canonical/golden-rtl/VlBusyTable.sv /home/eda/xs-env/G0-canonical/golden-rtl/LsqEnqCtrl.sv /home/eda/xs-env/G0-canonical/golden-rtl/RegCacheTagModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/RegCacheTagModule_1.sv
+/tmp/tmp.a0odWEVl1n/wt/rtl/uncore/NCB200_1.sv /tmp/tmp.a0odWEVl1n/wt/rtl/uncore/NCB200_1_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/CHILinkActiveManagerRX.sv /home/eda/xs-env/G0-canonical/golden-rtl/CHILinkActiveManagerTX.sv /home/eda/xs-env/G0-canonical/golden-rtl/NCBOrderAddressCAM_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/NCBTransactionFreeList_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/NCBTransactionAgeMatrix_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/NCBTransactionQueue_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/NCBTransactionPayload_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/NCBUpstreamRXREQ_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/NCBUpstreamRXDAT_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/NCBUpstreamTXRSP_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/NCBUpstreamTXDAT_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/NCBDownstreamAW_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/NCBDownstreamW_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/NCBDownstreamB_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/NCBDownstreamAR_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/NCBDownstreamR_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/CHILinkCreditManagerRX.sv /home/eda/xs-env/G0-canonical/golden-rtl/CHILinkCreditManagerRX_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/CHILinkCreditManagerTX.sv /home/eda/xs-env/G0-canonical/golden-rtl/Decoder.sv /home/eda/xs-env/G0-canonical/golden-rtl/Decoder_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/NCBTransactionIndexFIFO_3.sv /home/eda/xs-env/G0-canonical/golden-rtl/ProvideBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/SpillRegister_2.sv /home/eda/xs-env/G0-canonical/golden-rtl/SpillRegister_6.sv /home/eda/xs-env/G0-canonical/golden-rtl/SpillRegister_7.sv
 # ----------------------------------------------------------------------------
 # Step 3B sidecar emitter(FM_SIDECAR_OUT 非空时启用; 契约 = SIDECAR_SCHEMA.md v7 冻结版):
 # source 后立即对将被 source 的模块本地 Tcl 做**运行期 appvar 拦截**(set_app_var 名字
@@ -71,7 +71,7 @@ if {[info exists env(FM_SIDECAR_OUT)] && [string trim $env(FM_SIDECAR_OUT)] ne "
 set _fmmode "signoff-strict"
 signoff-strict
 if {[info exists env(FM_MODE)]} { set _fmmode $env(FM_MODE) }
-signoff-strict
+assembly
 switch -- $_fmmode {
   "assembly" {
     if {[info exists env(FM_INTERFACE_ONLY)] && [string trim $env(FM_INTERFACE_ONLY)] ne ""} {
@@ -106,10 +106,10 @@ if {[info exists env(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS)] &&
     set _verify_matched_unread_compare_points \
         [string trim $env(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS)]
 }
-false
+true
 switch -- $_verify_matched_unread_compare_points {
   "true" {
-    if {$top ni {LoadQueueUncache FastArbiter_46 FastArbiter_47 FastArbiter_27 FastArbiter_44 ICacheCtrlUnit ICacheDataArray IPrefetchPipe DivUnit FDivSqrt InstrMMIOEntry InstrUncache TXDAT_4 FAlu FCVT IssueQueueStdMoud MulUnit TXREQ TlbStorageWrapper TlbStorageWrapper_1 IssueQueueStaMou IssueQueueLdu TXDAT Scheduler_1 Scheduler Scheduler_3 MSHR TageBTable Directory SCTable SCTable_1 SCTable_2 SCTable_3 Tage_SC ITTage FauFTB FTBBank FTB Composer EntriesAluCsrFenceDiv Bku SourceB Predictor EntriesAluMulBkuBrhJmp DuplicatedTagArray PtwCache WritebackQueue LinkMonitor Ftq LoadQueue LoadPipe MissQueue IssueQueueAluMulBkuBrhJmp L2TLB Rename IssueQueueAluCsrFenceDiv Scheduler_2 DebugModule WbDataPath IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v Slice LoadQueueReplay NewCSR DCache DataPath SnoopUnit MemUnit RefillUnit ResponseUnit OpenLLC StoreQueue FastArbiter_1 FastArbiter_2 FastArbiter_28 FastArbiter_29 Slice_1 Slice_2 Slice_3 Directory_1 Directory_2 Directory_3 PrefetchReqBuffer RXSNP Prefetcher Pipeline_2 Pipeline_3 FusionDecoder TL2CHICoupledL2 L2Top PrefetchQueue VBestOffsetPrefetch MemCtrl Frontend CSR VLSplitImp VSSplitImp AtomicsUnit VSMergeBufferImp VLMergeBufferImp PTWNewFilter L1Prefetcher SMSPrefetcher VSegmentUnit MemBlock HPerfMonitor_2 FastArbiter_77 FastArbiter_78 FastArbiter_79 TLBNonBlock_1 TLBNonBlock_2 ExuBlock_2}} {
+    if {$top ni {LoadQueueUncache FastArbiter_46 FastArbiter_47 FastArbiter_27 FastArbiter_44 ICacheCtrlUnit ICacheDataArray IPrefetchPipe DivUnit FDivSqrt InstrMMIOEntry InstrUncache TXDAT_4 FAlu FCVT IssueQueueStdMoud MulUnit TXREQ TlbStorageWrapper TlbStorageWrapper_1 IssueQueueStaMou IssueQueueLdu TXDAT Scheduler_1 Scheduler Scheduler_3 MSHR TageBTable Directory SCTable SCTable_1 SCTable_2 SCTable_3 Tage_SC ITTage FauFTB FTBBank FTB Composer EntriesAluCsrFenceDiv Bku SourceB Predictor EntriesAluMulBkuBrhJmp DuplicatedTagArray PtwCache WritebackQueue LinkMonitor Ftq LoadQueue LoadPipe MissQueue IssueQueueAluMulBkuBrhJmp L2TLB Rename IssueQueueAluCsrFenceDiv Scheduler_2 DebugModule WbDataPath IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v Slice LoadQueueReplay NewCSR DCache DataPath SnoopUnit MemUnit RefillUnit ResponseUnit OpenLLC StoreQueue FastArbiter_1 FastArbiter_2 FastArbiter_28 FastArbiter_29 Slice_1 Slice_2 Slice_3 Directory_1 Directory_2 Directory_3 PrefetchReqBuffer RXSNP Prefetcher Pipeline_2 Pipeline_3 FusionDecoder TL2CHICoupledL2 L2Top PrefetchQueue VBestOffsetPrefetch MemCtrl Frontend CSR VLSplitImp VSSplitImp AtomicsUnit VSMergeBufferImp VLMergeBufferImp PTWNewFilter L1Prefetcher SMSPrefetcher VSegmentUnit MemBlock HPerfMonitor_2 FastArbiter_77 FastArbiter_78 FastArbiter_79 TLBNonBlock_1 TLBNonBlock_2 ExuBlock_2 NCB200 NCB200_1}} {
       puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
       exit 3
     }
@@ -122,7 +122,7 @@ switch -- $_verify_matched_unread_compare_points {
 }
 set_app_var verification_verify_matched_unread_compare_points \
     $_verify_matched_unread_compare_points
-false
+true
 set_app_var verification_verify_unread_bbox_inputs false
 false
 set_app_var verification_verify_matched_unread_bbox_inputs true
@@ -147,6 +147,7 @@ true
 if {[info exists env(FM_MERGE_DUP)] && [string trim $env(FM_MERGE_DUP)] ne ""} {
     set _mergedup [string trim $env(FM_MERGE_DUP)]
 }
+false
 switch -- $_mergedup {
   "true" - "false" { set_app_var verification_merge_duplicated_registers $_mergedup }
   default {
@@ -154,74 +155,138 @@ switch -- $_mergedup {
     exit 3
   }
 }
-true
+false
 # Reference: Chisel 生成的 golden RTL（SYNTHESIS 关掉随机初始化 initial 块）
 read_sverilog -r -define {SYNTHESIS} $ref_srcs
 No target library specified, default is WORK
-Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/NewDispatch.sv'
-Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/RegCacheTagTable.sv'
-Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/BusyTable.sv'
-Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/BusyTable_1.sv'
-Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/BusyTable_2.sv'
-Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/BusyTable_3.sv'
-Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/VlBusyTable.sv'
-Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/LsqEnqCtrl.sv'
-Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/RegCacheTagModule.sv'
-Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/RegCacheTagModule_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/NCB200_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/CHILinkActiveManagerRX.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/CHILinkActiveManagerTX.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/NCBOrderAddressCAM_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/NCBTransactionFreeList_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/NCBTransactionAgeMatrix_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/NCBTransactionQueue_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/NCBTransactionPayload_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/NCBUpstreamRXREQ_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/NCBUpstreamRXDAT_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/NCBUpstreamTXRSP_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/NCBUpstreamTXDAT_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/NCBDownstreamAW_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/NCBDownstreamW_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/NCBDownstreamB_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/NCBDownstreamAR_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/NCBDownstreamR_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/CHILinkCreditManagerRX.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/CHILinkCreditManagerRX_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/CHILinkCreditManagerTX.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/Decoder.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/Decoder_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/NCBTransactionIndexFIFO_3.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/ProvideBuffer.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/SpillRegister_2.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/SpillRegister_6.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/SpillRegister_7.sv'
 Current container set to 'r'
 1
 set_top r:/WORK/$top
-Setting top design to 'r:/WORK/NewDispatch'
-Status:   Elaborating design NewDispatch   ...  
-Status:   Elaborating design RegCacheTagTable   ...  
-Status:   Elaborating design RegCacheTagModule   ...  
-Status:   Elaborating design RegCacheTagModule_1   ...  
-Status:   Elaborating design BusyTable   ...  
-Status:   Elaborating design BusyTable_1   ...  
-Status:   Elaborating design BusyTable_2   ...  
-Status:   Elaborating design BusyTable_3   ...  
-Status:   Elaborating design VlBusyTable   ...  
-Status:   Elaborating design LsqEnqCtrl   ...  
+Setting top design to 'r:/WORK/NCB200_1'
+Status:   Elaborating design NCB200_1   ...  
+Status:   Elaborating design CHILinkActiveManagerRX   ...  
+Status:   Elaborating design CHILinkActiveManagerTX   ...  
+Status:   Elaborating design NCBOrderAddressCAM_1   ...  
+Status:   Elaborating design NCBTransactionFreeList_1   ...  
+Status:   Elaborating design NCBTransactionAgeMatrix_1   ...  
+Status:   Elaborating design NCBTransactionQueue_1   ...  
+Status:   Elaborating design NCBTransactionPayload_1   ...  
+Status:   Elaborating design NCBUpstreamRXREQ_1   ...  
+Status:   Elaborating design CHILinkCreditManagerRX   ...  
+Status:   Elaborating design Decoder   ...  
+Status:   Elaborating design NCBUpstreamRXDAT_1   ...  
+Status:   Elaborating design CHILinkCreditManagerRX_1   ...  
+Status:   Elaborating design ProvideBuffer   ...  
+Status:   Elaborating design Decoder_1   ...  
+Status:   Elaborating design NCBUpstreamTXRSP_1   ...  
+Status:   Elaborating design CHILinkCreditManagerTX   ...  
+Status:   Elaborating design NCBUpstreamTXDAT_1   ...  
+Status:   Elaborating design NCBDownstreamAW_1   ...  
+Status:   Elaborating design NCBTransactionIndexFIFO_3   ...  
+Status:   Elaborating design SpillRegister_6   ...  
+Status:   Elaborating design NCBDownstreamW_1   ...  
+Status:   Elaborating design SpillRegister_2   ...  
+Status:   Elaborating design NCBDownstreamB_1   ...  
+Status:   Elaborating design NCBDownstreamAR_1   ...  
+Status:   Elaborating design SpillRegister_7   ...  
+Status:   Elaborating design NCBDownstreamR_1   ...  
 Status:  Implementing inferred operators...
-Top design successfully set to 'r:/WORK/NewDispatch'
-Reference design set to 'r:/WORK/NewDispatch'
+Top design successfully set to 'r:/WORK/NCB200_1'
+Reference design set to 'r:/WORK/NCB200_1'
 1
 # Implementation: 手写 SV
 read_sverilog -i -define {SYNTHESIS} $impl_srcs
 No target library specified, default is WORK
-Loading verilog file '/tmp/tmp.r7qVtIADR3/wt/rtl/backend/newdispatch_pkg.sv'
-Loading verilog file '/tmp/tmp.r7qVtIADR3/wt/rtl/backend/NewDispatch.sv'
-Loading include file '/tmp/tmp.r7qVtIADR3/wt/rtl/backend/newdispatch_ports.svh'
-Loading include file '/tmp/tmp.r7qVtIADR3/wt/rtl/backend/newdispatch_logic.svh'
-Loading include file '/tmp/tmp.r7qVtIADR3/wt/rtl/backend/newdispatch_connect.svh'
-Loading verilog file '/tmp/tmp.r7qVtIADR3/wt/rtl/backend/NewDispatch_wrapper.sv'
-Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/RegCacheTagTable.sv'
-Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/BusyTable.sv'
-Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/BusyTable_1.sv'
-Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/BusyTable_2.sv'
-Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/BusyTable_3.sv'
-Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/VlBusyTable.sv'
-Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/LsqEnqCtrl.sv'
-Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/RegCacheTagModule.sv'
-Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/RegCacheTagModule_1.sv'
+Loading verilog file '/tmp/tmp.a0odWEVl1n/wt/rtl/uncore/NCB200_1.sv'
+Loading verilog file '/tmp/tmp.a0odWEVl1n/wt/rtl/uncore/NCB200_1_wrapper.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/CHILinkActiveManagerRX.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/CHILinkActiveManagerTX.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/NCBOrderAddressCAM_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/NCBTransactionFreeList_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/NCBTransactionAgeMatrix_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/NCBTransactionQueue_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/NCBTransactionPayload_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/NCBUpstreamRXREQ_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/NCBUpstreamRXDAT_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/NCBUpstreamTXRSP_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/NCBUpstreamTXDAT_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/NCBDownstreamAW_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/NCBDownstreamW_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/NCBDownstreamB_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/NCBDownstreamAR_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/NCBDownstreamR_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/CHILinkCreditManagerRX.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/CHILinkCreditManagerRX_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/CHILinkCreditManagerTX.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/Decoder.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/Decoder_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/NCBTransactionIndexFIFO_3.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/ProvideBuffer.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/SpillRegister_2.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/SpillRegister_6.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/SpillRegister_7.sv'
 Current container set to 'i'
 1
 set_top i:/WORK/$top
-Setting top design to 'i:/WORK/NewDispatch'
-Status:   Elaborating design NewDispatch   ...  
-Status:   Elaborating design xs_NewDispatch_core   ...  
-Status:   Elaborating design RegCacheTagTable   ...  
-Status:   Elaborating design RegCacheTagModule   ...  
-Status:   Elaborating design RegCacheTagModule_1   ...  
-Status:   Elaborating design BusyTable   ...  
-Status:   Elaborating design BusyTable_1   ...  
-Status:   Elaborating design BusyTable_2   ...  
-Status:   Elaborating design BusyTable_3   ...  
-Status:   Elaborating design VlBusyTable   ...  
-Status:   Elaborating design LsqEnqCtrl   ...  
+Setting top design to 'i:/WORK/NCB200_1'
+Status:   Elaborating design NCB200_1   ...  
+Status:   Elaborating design xs_NCB200_1_core   ...  
+Status:   Elaborating design CHILinkActiveManagerRX   ...  
+Status:   Elaborating design CHILinkActiveManagerTX   ...  
+Status:   Elaborating design NCBOrderAddressCAM_1   ...  
+Status:   Elaborating design NCBTransactionFreeList_1   ...  
+Status:   Elaborating design NCBTransactionAgeMatrix_1   ...  
+Status:   Elaborating design NCBTransactionQueue_1   ...  
+Status:   Elaborating design NCBTransactionPayload_1   ...  
+Status:   Elaborating design NCBUpstreamRXREQ_1   ...  
+Status:   Elaborating design CHILinkCreditManagerRX   ...  
+Status:   Elaborating design Decoder   ...  
+Status:   Elaborating design NCBUpstreamRXDAT_1   ...  
+Status:   Elaborating design CHILinkCreditManagerRX_1   ...  
+Status:   Elaborating design ProvideBuffer   ...  
+Status:   Elaborating design Decoder_1   ...  
+Status:   Elaborating design NCBUpstreamTXRSP_1   ...  
+Status:   Elaborating design CHILinkCreditManagerTX   ...  
+Status:   Elaborating design NCBUpstreamTXDAT_1   ...  
+Status:   Elaborating design NCBDownstreamAW_1   ...  
+Status:   Elaborating design NCBTransactionIndexFIFO_3   ...  
+Status:   Elaborating design SpillRegister_6   ...  
+Status:   Elaborating design NCBDownstreamW_1   ...  
+Status:   Elaborating design SpillRegister_2   ...  
+Status:   Elaborating design NCBDownstreamB_1   ...  
+Status:   Elaborating design NCBDownstreamAR_1   ...  
+Status:   Elaborating design SpillRegister_7   ...  
+Status:   Elaborating design NCBDownstreamR_1   ...  
 Status:  Implementing inferred operators...
-Top design successfully set to 'i:/WORK/NewDispatch'
-Implementation design set to 'i:/WORK/NewDispatch'
+Top design successfully set to 'i:/WORK/NCB200_1'
+Implementation design set to 'i:/WORK/NCB200_1'
 1
 # ----------------------------------------------------------------------------
 # 字段映射配对（在首次 match 之前全量钉死）：当手写核心把整个 payload 打包进一个
@@ -258,38 +323,22 @@ if {[info exists env(FM_PIN_PRE_TCL)] && [file exists $env(FM_PIN_PRE_TCL)]} {
 }
 match_packed_payload $top
 match
-Reference design is 'r:/WORK/NewDispatch'
-Implementation design is 'i:/WORK/NewDispatch'
+Reference design is 'r:/WORK/NCB200_1'
+Implementation design is 'i:/WORK/NCB200_1'
 Status:  Checking designs...
+    Warning: 1 (1) black-box references found in reference (implementation) design; see formality.log for list (FM-182)
 Status:  Building verification models...
-    Info:  Constant registers have been identified that were initialized by some objects that were assumed to toggle.
-           For more info use commands: report_potentially_constant_registers  and report_init_toggle_objects
-Status:  Merging duplicated registers in block r:/WORK/NewDispatch (<top>)...
-Status:  Merging duplicated registers in block i:/WORK/NewDispatch/u_core (/WORK/xs_NewDispatch_core)...
-    Info:  Constant registers have been identified that were initialized by some objects that were assumed to toggle.
-           For more info use commands: report_potentially_constant_registers  and report_init_toggle_objects
-Status:  Merging duplicated registers in block r:/WORK/NewDispatch (<top>)...
-Status:  Merging duplicated registers in block i:/WORK/NewDispatch/u_core (/WORK/xs_NewDispatch_core)...
-    Info:  Constant registers have been identified that were initialized by some objects that were assumed to toggle.
-           For more info use commands: report_potentially_constant_registers  and report_init_toggle_objects
-Status:  Merging duplicated registers in block r:/WORK/NewDispatch/rcTagTable/IntRCTagTable (/WORK/RegCacheTagModule)...
-Status:  Merging duplicated registers in block i:/WORK/NewDispatch/u_core/rcTagTable/IntRCTagTable (/WORK/RegCacheTagModule)...
-Status:  Merging duplicated registers in block i:/WORK/NewDispatch/u_core (/WORK/xs_NewDispatch_core)...
-    Info:  Constant registers have been identified that were initialized by some objects that were assumed to toggle.
-           For more info use commands: report_potentially_constant_registers  and report_init_toggle_objects
-Status:  Merging duplicated registers in block i:/WORK/NewDispatch/u_core (/WORK/xs_NewDispatch_core)...
     Info:  Constant registers have been identified that were initialized by some objects that were assumed to toggle.
            For more info use commands: report_potentially_constant_registers  and report_init_toggle_objects
 Status:  Matching...
     
 *********************************** Matching Results ***********************************    
- 13634 Compare points matched by name    
- 80 Compare points matched by signature analysis    
+ 30147 Compare points matched by name    
+ 2 Compare points matched by signature analysis    
  0 Compare points matched by topology    
- 4035 Matched primary inputs, black-box outputs    
+ 696 Matched primary inputs, black-box outputs    
  0(0) Unmatched reference(implementation) compare points    
  0(0) Unmatched reference(implementation) primary inputs, black-box outputs    
- 72(0) Unmatched reference(implementation) unread points    
 ****************************************************************************************
 
     Info:  Formality Guide Files (SVF) can improve matching performance and success by automating setup.
@@ -379,47 +428,45 @@ if {[verify]} {
     report_failing_points > fm_work/$top/failing.rpt
     puts "FM_RESULT: Verification FAILED or INCONCLUSIVE for $top"
 }
-Reference design is 'r:/WORK/NewDispatch'
-Implementation design is 'i:/WORK/NewDispatch'
+Reference design is 'r:/WORK/NCB200_1'
+Implementation design is 'i:/WORK/NCB200_1'
     
 *********************************** Matching Results ***********************************    
- 13634 Compare points matched by name    
- 80 Compare points matched by signature analysis    
+ 30147 Compare points matched by name    
+ 2 Compare points matched by signature analysis    
  0 Compare points matched by topology    
- 4035 Matched primary inputs, black-box outputs    
+ 696 Matched primary inputs, black-box outputs    
  0(0) Unmatched reference(implementation) compare points    
  0(0) Unmatched reference(implementation) primary inputs, black-box outputs    
- 72(0) Unmatched reference(implementation) unread points    
 ****************************************************************************************
 
 Status:  Verifying...
-.... 0F/0A/13714P/0U (100% Verification completed) 07/28/26 18:57 1475MB/ 713sec (35.9 hrs until timeout)
-
+.
 
 
 ********************************* Verification Results *********************************
 Verification SUCCEEDED
 ----------------------
- Reference design: r:/WORK/NewDispatch
- Implementation design: i:/WORK/NewDispatch
- 13714 Passing compare points
+ Reference design: r:/WORK/NCB200_1
+ Implementation design: i:/WORK/NCB200_1
+ 30149 Passing compare points
 ----------------------------------------------------------------------------------------
 Matched Compare Points     BBPin    Loop   BBNet     Cut    Port     DFF     LAT   TOTAL
 ----------------------------------------------------------------------------------------
-Passing (equivalent)           0       0       0       0    9235    4479       0   13714
+Passing (equivalent)           2       0       0       0    1478   28669       0   30149
 Failing (not equivalent)       0       0       0       0       0       0       0       0
 Not Compared
-  Constant reg                                                        18       0      18
+  Constant reg                                                        20       0      20
 ****************************************************************************************
-FM_RESULT: Verification SUCCEEDED for NewDispatch
+FM_RESULT: Verification SUCCEEDED for NCB200_1
 # sidecar: 全查询→内存解析→原子写 native_facts.json(任何错误删 tmp 并 exit 4)
 if {$SIDECAR_ON} { sidecar_emit $top }
 SIDECAR_NATIVE_FACTS_WRITTEN
 exit
 
-Maximum memory usage for this session: 1475 MB
-CPU usage for this session: 731.57 seconds ( 0.20 hours )
-Current time: Tue Jul 28 18:57:23 2026
-Elapsed time: 751 seconds ( 0.21 hours )
+Maximum memory usage for this session: 1157 MB
+CPU usage for this session: 179.46 seconds ( 0.05 hours )
+Current time: Tue Jul 28 19:03:28 2026
+Elapsed time: 192 seconds ( 0.05 hours )
 
 Thank you for using Formality (R)!

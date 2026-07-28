@@ -1,0 +1,8 @@
+{
+  "unresolved_blackbox": [],
+  "interface_only": [],
+  "empty_blackbox": [
+    {"id": "NCBOrderAddressCAM_1", "ref_path": "r:/WORK/NCB200_1/uOrderAddressCAM", "impl_path": "i:/WORK/NCB200_1/u_core/uOrderAddressCAM"}
+  ],
+  "unmatched": []
+}

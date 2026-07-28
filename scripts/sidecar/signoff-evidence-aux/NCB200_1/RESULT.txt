@@ -1,0 +1,4 @@
+SIGNOFF_RESULT NCB200_1: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=assembly fm_shell_rc=0 validator_rc=0)
+run_id: SGN-NCB200_1-1785279613
+impl_commit: 81e7c84f7e03757491abbf6511e61be8529db2e2
+manifest_sha256: 6b3d8dab81d0b858188ddd3d232227d73a19682413f19bdc8a2345b8f66572b6
