@@ -1,0 +1,345 @@
+#!/usr/bin/env python3
+"""
+TLBNonBlock_2 (预取/walker DTLB, Width=2/nRespDups=1, 端口不对称)：
+  生成 golden 同名 wrapper(FM)+_xs(UT)+tb。
+
+wrapper 例化 golden 黑盒 DelayN_9/DelayN_7/TlbStorageWrapper_3(+TLBFA_3)，与可读核
+  xs_TLBNonBlock_2_core 互连。port0 完整/port1 裸端口分别连核的 io_req0_*/io_req1_*。
+可读核本体见 rtl/memblock/TLBNonBlock_2.sv。
+"""
+import re
+from pathlib import Path
+
+XSSV = Path(__file__).resolve().parent.parent
+GOLDEN = Path("/home/eda/xs-env/G0-canonical/golden-rtl")
+TOP = "TLBNonBlock_2"
+
+
+def golden_ports(name):
+    text = (GOLDEN / f"{name}.sv").read_text()
+    m = re.search(rf"^module {re.escape(name)}\((.*?)\n\);", text, re.S | re.M)
+    res = []
+    for line in m.group(1).splitlines():
+        pm = re.match(r"\s*(input|output)\s+(?:\[(\d+):0\])?\s*(\w+),?\s*$", line)
+        if pm:
+            res.append((pm.group(1), int(pm.group(2)) + 1 if pm.group(2) else 1, pm.group(3)))
+    return res
+
+
+BODY = r"""
+  // ---- DelayN 黑盒 ----
+  wire        sfd_valid, sfd_rs1, sfd_rs2, sfd_hv, sfd_hg;
+  wire [49:0] sfd_addr; wire [15:0] sfd_id;
+  DelayN_9 sfence_delay (.clock(clock),
+    .io_in_valid(io_sfence_valid), .io_in_bits_rs1(io_sfence_bits_rs1),
+    .io_in_bits_rs2(io_sfence_bits_rs2), .io_in_bits_addr(io_sfence_bits_addr),
+    .io_in_bits_id(io_sfence_bits_id), .io_in_bits_flushPipe(io_sfence_bits_flushPipe),
+    .io_in_bits_hv(io_sfence_bits_hv), .io_in_bits_hg(io_sfence_bits_hg),
+    .io_out_valid(sfd_valid), .io_out_bits_rs1(sfd_rs1), .io_out_bits_rs2(sfd_rs2),
+    .io_out_bits_addr(sfd_addr), .io_out_bits_id(sfd_id),
+    .io_out_bits_flushPipe(/* unused */), .io_out_bits_hv(sfd_hv), .io_out_bits_hg(sfd_hg));
+
+  wire [3:0]  cd_satp_mode, cd_vsatp_mode, cd_hgatp_mode;
+  wire [15:0] cd_satp_asid, cd_vsatp_asid, cd_hgatp_vmid_16;
+  wire        cd_satp_changed, cd_vsatp_changed, cd_hgatp_changed;
+  wire        cd_mxr, cd_sum, cd_vmxr, cd_vsum, cd_virt, cd_spvp;
+  wire [1:0]  cd_imode, cd_dmode, cd_mseccfg, cd_menvcfg, cd_henvcfg, cd_hstatus, cd_senvcfg;
+  DelayN_7 csr_delay (.clock(clock),
+    .io_in_satp_mode(io_csr_satp_mode), .io_in_satp_asid(io_csr_satp_asid),
+    .io_in_satp_changed(io_csr_satp_changed), .io_in_vsatp_mode(io_csr_vsatp_mode),
+    .io_in_vsatp_asid(io_csr_vsatp_asid), .io_in_vsatp_changed(io_csr_vsatp_changed),
+    .io_in_hgatp_mode(io_csr_hgatp_mode), .io_in_hgatp_vmid(io_csr_hgatp_vmid),
+    .io_in_hgatp_changed(io_csr_hgatp_changed), .io_in_priv_mxr(io_csr_priv_mxr),
+    .io_in_priv_sum(io_csr_priv_sum), .io_in_priv_vmxr(io_csr_priv_vmxr),
+    .io_in_priv_vsum(io_csr_priv_vsum), .io_in_priv_virt(io_csr_priv_virt),
+    .io_in_priv_spvp(io_csr_priv_spvp), .io_in_priv_imode(io_csr_priv_imode),
+    .io_in_priv_dmode(io_csr_priv_dmode), .io_in_pmm_mseccfg(io_csr_pmm_mseccfg),
+    .io_in_pmm_menvcfg(io_csr_pmm_menvcfg), .io_in_pmm_henvcfg(io_csr_pmm_henvcfg),
+    .io_in_pmm_hstatus(io_csr_pmm_hstatus), .io_in_pmm_senvcfg(io_csr_pmm_senvcfg),
+    .io_out_satp_mode(cd_satp_mode), .io_out_satp_asid(cd_satp_asid),
+    .io_out_satp_changed(cd_satp_changed), .io_out_vsatp_mode(cd_vsatp_mode),
+    .io_out_vsatp_asid(cd_vsatp_asid), .io_out_vsatp_changed(cd_vsatp_changed),
+    .io_out_hgatp_mode(cd_hgatp_mode), .io_out_hgatp_vmid(cd_hgatp_vmid_16),
+    .io_out_hgatp_changed(cd_hgatp_changed), .io_out_priv_mxr(cd_mxr),
+    .io_out_priv_sum(cd_sum), .io_out_priv_vmxr(cd_vmxr), .io_out_priv_vsum(cd_vsum),
+    .io_out_priv_virt(cd_virt), .io_out_priv_spvp(cd_spvp), .io_out_priv_imode(cd_imode),
+    .io_out_priv_dmode(cd_dmode), .io_out_pmm_mseccfg(cd_mseccfg),
+    .io_out_pmm_menvcfg(cd_menvcfg), .io_out_pmm_henvcfg(cd_henvcfg),
+    .io_out_pmm_hstatus(cd_hstatus), .io_out_pmm_senvcfg(cd_senvcfg));
+
+  // ---- s0 读口 + 存储读响应(NDUP=1) ----
+  wire [1:0]        e_rreq_valid; wire [1:0][37:0] e_rreq_vpn; wire [1:0][1:0] e_rreq_s2xlate;
+  wire [1:0]        e_hit; wire [1:0][35:0] e_ppn0;
+  wire [1:0][1:0]   e_pbmt, e_gpbmt;
+  tlb_perm_t [1:0]  e_perm0; tlb_gperm_t [1:0] e_gperm0;
+  wire e0_hit; wire [35:0] e0_ppn0; wire [1:0] e0_pbmt,e0_gpbmt;
+  wire e0_p0_pf,e0_p0_af,e0_p0_v,e0_p0_d,e0_p0_a,e0_p0_u,e0_p0_x,e0_p0_w,e0_p0_r;
+  wire e0_g_pf,e0_g_af,e0_g_d,e0_g_a,e0_g_x,e0_g_w,e0_g_r;
+  wire e1_hit; wire [35:0] e1_ppn0; wire [1:0] e1_pbmt,e1_gpbmt;
+  wire e1_p0_pf,e1_p0_af,e1_p0_v,e1_p0_d,e1_p0_a,e1_p0_u,e1_p0_x,e1_p0_w,e1_p0_r;
+  wire e1_g_pf,e1_g_af,e1_g_d,e1_g_a,e1_g_x,e1_g_w,e1_g_r;
+  assign e_hit    = {e1_hit, e0_hit};
+  assign e_ppn0   = {e1_ppn0, e0_ppn0};
+  assign e_pbmt   = {e1_pbmt, e0_pbmt};
+  assign e_gpbmt  = {e1_gpbmt, e0_gpbmt};
+  assign e_perm0[0] = '{pf:e0_p0_pf,af:e0_p0_af,v:e0_p0_v,d:e0_p0_d,a:e0_p0_a,u:e0_p0_u,x:e0_p0_x,w:e0_p0_w,r:e0_p0_r};
+  assign e_perm0[1] = '{pf:e1_p0_pf,af:e1_p0_af,v:e1_p0_v,d:e1_p0_d,a:e1_p0_a,u:e1_p0_u,x:e1_p0_x,w:e1_p0_w,r:e1_p0_r};
+  assign e_gperm0[0] = '{pf:e0_g_pf,af:e0_g_af,d:e0_g_d,a:e0_g_a,x:e0_g_x,w:e0_g_w,r:e0_g_r};
+  assign e_gperm0[1] = '{pf:e1_g_pf,af:e1_g_af,d:e1_g_d,a:e1_g_a,x:e1_g_x,w:e1_g_w,r:e1_g_r};
+
+  wire [2:0] ppn_low_arr [0:7];
+  assign ppn_low_arr[0]=io_ptw_resp_bits_s1_ppn_low_0; assign ppn_low_arr[1]=io_ptw_resp_bits_s1_ppn_low_1;
+  assign ppn_low_arr[2]=io_ptw_resp_bits_s1_ppn_low_2; assign ppn_low_arr[3]=io_ptw_resp_bits_s1_ppn_low_3;
+  assign ppn_low_arr[4]=io_ptw_resp_bits_s1_ppn_low_4; assign ppn_low_arr[5]=io_ptw_resp_bits_s1_ppn_low_5;
+  assign ppn_low_arr[6]=io_ptw_resp_bits_s1_ppn_low_6; assign ppn_low_arr[7]=io_ptw_resp_bits_s1_ppn_low_7;
+  wire [7:0] valididx_v = {io_ptw_resp_bits_s1_valididx_7,io_ptw_resp_bits_s1_valididx_6,io_ptw_resp_bits_s1_valididx_5,io_ptw_resp_bits_s1_valididx_4,io_ptw_resp_bits_s1_valididx_3,io_ptw_resp_bits_s1_valididx_2,io_ptw_resp_bits_s1_valididx_1,io_ptw_resp_bits_s1_valididx_0};
+  wire [7:0] pteidx_v   = {io_ptw_resp_bits_s1_pteidx_7,io_ptw_resp_bits_s1_pteidx_6,io_ptw_resp_bits_s1_pteidx_5,io_ptw_resp_bits_s1_pteidx_4,io_ptw_resp_bits_s1_pteidx_3,io_ptw_resp_bits_s1_pteidx_2,io_ptw_resp_bits_s1_pteidx_1,io_ptw_resp_bits_s1_pteidx_0};
+
+  wire [1:0]        o_valid, o_miss, o_gpf_ld, o_pf_ld, o_af_ld;
+  wire [1:0][47:0]  o_paddr0; wire [1:0][1:0] o_pbmt0;
+  wire [1:0]        o_pmp_valid; wire [1:0][47:0] o_pmp_addr; wire [1:0][2:0] o_pmp_cmd;
+  wire [1:0]        o_ptw_valid, o_ptw_getGpa, o_replay;
+  wire [1:0][37:0]  o_ptw_vpn; wire [1:0][1:0] o_ptw_s2x;
+  wire              o_refill;
+
+  xs_TLBNonBlock_2_core u_core (
+    .clock(clock), .reset(reset), .io_sfd_valid(sfd_valid),
+    .io_csrd_satp_mode(cd_satp_mode), .io_csrd_satp_asid(cd_satp_asid), .io_csrd_satp_changed(cd_satp_changed),
+    .io_csrd_vsatp_mode(cd_vsatp_mode), .io_csrd_vsatp_asid(cd_vsatp_asid), .io_csrd_vsatp_changed(cd_vsatp_changed),
+    .io_csrd_hgatp_mode(cd_hgatp_mode), .io_csrd_hgatp_vmid(cd_hgatp_vmid_16), .io_csrd_hgatp_changed(cd_hgatp_changed),
+    .io_csrd_priv_mxr(cd_mxr), .io_csrd_priv_sum(cd_sum), .io_csrd_priv_vmxr(cd_vmxr), .io_csrd_priv_vsum(cd_vsum),
+    .io_csrd_priv_virt(cd_virt), .io_csrd_priv_spvp(cd_spvp), .io_csrd_priv_imode(cd_imode), .io_csrd_priv_dmode(cd_dmode),
+    .io_csrd_pmm_mseccfg(cd_mseccfg), .io_csrd_pmm_menvcfg(cd_menvcfg), .io_csrd_pmm_henvcfg(cd_henvcfg),
+    .io_csrd_pmm_hstatus(cd_hstatus), .io_csrd_pmm_senvcfg(cd_senvcfg),
+    // port0 完整
+    .io_req0_valid(io_requestor_0_req_valid), .io_req0_vaddr(io_requestor_0_req_bits_vaddr),
+    .io_req0_fullva(io_requestor_0_req_bits_fullva), .io_req0_checkfullva(io_requestor_0_req_bits_checkfullva),
+    .io_req0_cmd(io_requestor_0_req_bits_cmd), .io_req0_hyperinst(io_requestor_0_req_bits_hyperinst),
+    .io_req0_hlvx(io_requestor_0_req_bits_hlvx), .io_req0_kill(io_requestor_0_req_bits_kill),
+    .io_req0_isPrefetch(io_requestor_0_req_bits_isPrefetch), .io_req0_no_translate(io_requestor_0_req_bits_no_translate),
+    .io_req0_pmp_addr(io_requestor_0_req_bits_pmp_addr),
+    .io_req0_robIdx_flag(io_requestor_0_req_bits_debug_robIdx_flag), .io_req0_robIdx_value(io_requestor_0_req_bits_debug_robIdx_value),
+    // port1 裸
+    .io_req1_valid(io_requestor_1_req_valid), .io_req1_vaddr(io_requestor_1_req_bits_vaddr),
+    .io_req1_cmd(io_requestor_1_req_bits_cmd), .io_req1_kill(io_requestor_1_req_bits_kill),
+    .io_req1_no_translate(io_requestor_1_req_bits_no_translate),
+    .io_redirect_valid(io_redirect_valid), .io_redirect_robIdx_flag(io_redirect_bits_robIdx_flag),
+    .io_redirect_robIdx_value(io_redirect_bits_robIdx_value), .io_redirect_level(io_redirect_bits_level),
+    .io_entries_hit(e_hit), .io_entries_ppn_0(e_ppn0),
+    .io_entries_pbmt(e_pbmt), .io_entries_g_pbmt(e_gpbmt),
+    .io_entries_perm0(e_perm0), .io_entries_gperm0(e_gperm0),
+    .io_entries_rreq_valid(e_rreq_valid), .io_entries_rreq_vpn(e_rreq_vpn), .io_entries_rreq_s2xlate(e_rreq_s2xlate),
+    .io_ptw_resp_valid(io_ptw_resp_valid), .io_ptw_resp_s2xlate(io_ptw_resp_bits_s2xlate),
+    .io_ptw_resp_s1_entry_tag(io_ptw_resp_bits_s1_entry_tag), .io_ptw_resp_s1_entry_asid(io_ptw_resp_bits_s1_entry_asid),
+    .io_ptw_resp_s1_entry_vmid(io_ptw_resp_bits_s1_entry_vmid), .io_ptw_resp_s1_entry_n(io_ptw_resp_bits_s1_entry_n),
+    .io_ptw_resp_s1_entry_pbmt(io_ptw_resp_bits_s1_entry_pbmt), .io_ptw_resp_s1_entry_perm_d(io_ptw_resp_bits_s1_entry_perm_d),
+    .io_ptw_resp_s1_entry_perm_a(io_ptw_resp_bits_s1_entry_perm_a), .io_ptw_resp_s1_entry_perm_g(io_ptw_resp_bits_s1_entry_perm_g),
+    .io_ptw_resp_s1_entry_perm_u(io_ptw_resp_bits_s1_entry_perm_u), .io_ptw_resp_s1_entry_perm_x(io_ptw_resp_bits_s1_entry_perm_x),
+    .io_ptw_resp_s1_entry_perm_w(io_ptw_resp_bits_s1_entry_perm_w), .io_ptw_resp_s1_entry_perm_r(io_ptw_resp_bits_s1_entry_perm_r),
+    .io_ptw_resp_s1_entry_level(io_ptw_resp_bits_s1_entry_level), .io_ptw_resp_s1_entry_v(io_ptw_resp_bits_s1_entry_v),
+    .io_ptw_resp_s1_entry_ppn(io_ptw_resp_bits_s1_entry_ppn), .io_ptw_resp_s1_addr_low(io_ptw_resp_bits_s1_addr_low),
+    .io_ptw_resp_s1_ppn_low(ppn_low_arr), .io_ptw_resp_s1_valididx(valididx_v), .io_ptw_resp_s1_pteidx(pteidx_v),
+    .io_ptw_resp_s1_pf(io_ptw_resp_bits_s1_pf), .io_ptw_resp_s1_af(io_ptw_resp_bits_s1_af),
+    .io_ptw_resp_s2_entry_tag(io_ptw_resp_bits_s2_entry_tag), .io_ptw_resp_s2_entry_vmid(io_ptw_resp_bits_s2_entry_vmid),
+    .io_ptw_resp_s2_entry_n(io_ptw_resp_bits_s2_entry_n), .io_ptw_resp_s2_entry_pbmt(io_ptw_resp_bits_s2_entry_pbmt),
+    .io_ptw_resp_s2_entry_ppn(io_ptw_resp_bits_s2_entry_ppn), .io_ptw_resp_s2_entry_perm_d(io_ptw_resp_bits_s2_entry_perm_d),
+    .io_ptw_resp_s2_entry_perm_a(io_ptw_resp_bits_s2_entry_perm_a), .io_ptw_resp_s2_entry_perm_g(io_ptw_resp_bits_s2_entry_perm_g),
+    .io_ptw_resp_s2_entry_perm_u(io_ptw_resp_bits_s2_entry_perm_u), .io_ptw_resp_s2_entry_perm_x(io_ptw_resp_bits_s2_entry_perm_x),
+    .io_ptw_resp_s2_entry_perm_w(io_ptw_resp_bits_s2_entry_perm_w), .io_ptw_resp_s2_entry_perm_r(io_ptw_resp_bits_s2_entry_perm_r),
+    .io_ptw_resp_s2_entry_level(io_ptw_resp_bits_s2_entry_level), .io_ptw_resp_s2_gpf(io_ptw_resp_bits_s2_gpf),
+    .io_ptw_resp_s2_gaf(io_ptw_resp_bits_s2_gaf), .io_ptw_resp_getGpa(io_ptw_resp_bits_getGpa),
+    .io_refill_valid(o_refill),
+    .io_resp_valid(o_valid), .io_resp_paddr0(o_paddr0), .io_resp_pbmt0(o_pbmt0), .io_resp_miss(o_miss),
+    .io_resp_excp_gpf_ld(o_gpf_ld), .io_resp_excp_pf_ld(o_pf_ld), .io_resp_excp_af_ld(o_af_ld),
+    .io_pmp_valid(o_pmp_valid), .io_pmp_addr(o_pmp_addr), .io_pmp_cmd(o_pmp_cmd),
+    .io_ptw_req_valid(o_ptw_valid), .io_ptw_req_vpn(o_ptw_vpn), .io_ptw_req_s2xlate(o_ptw_s2x),
+    .io_ptw_req_getGpa(o_ptw_getGpa), .io_tlbreplay(o_replay)
+  );
+
+  // ---- golden 黑盒 TlbStorageWrapper_3(NDUP=1)----
+  TlbStorageWrapper_3 entries (
+    .clock(clock), .reset(reset),
+    .io_sfence_valid(sfd_valid), .io_sfence_bits_rs1(sfd_rs1), .io_sfence_bits_rs2(sfd_rs2),
+    .io_sfence_bits_addr(sfd_addr), .io_sfence_bits_id(sfd_id), .io_sfence_bits_hv(sfd_hv), .io_sfence_bits_hg(sfd_hg),
+    .io_csr_satp_asid(cd_satp_asid), .io_csr_vsatp_asid(cd_vsatp_asid),
+    .io_csr_hgatp_vmid(cd_hgatp_vmid_16), .io_csr_priv_virt(cd_virt),
+    .io_r_req_0_valid(e_rreq_valid[0]), .io_r_req_0_bits_vpn(e_rreq_vpn[0]), .io_r_req_0_bits_s2xlate(e_rreq_s2xlate[0]),
+    .io_r_req_1_valid(e_rreq_valid[1]), .io_r_req_1_bits_vpn(e_rreq_vpn[1]), .io_r_req_1_bits_s2xlate(e_rreq_s2xlate[1]),
+    .io_r_resp_0_bits_hit(e0_hit), .io_r_resp_0_bits_ppn_0(e0_ppn0),
+    .io_r_resp_0_bits_pbmt_0(e0_pbmt), .io_r_resp_0_bits_g_pbmt_0(e0_gpbmt),
+    .io_r_resp_0_bits_perm_0_pf(e0_p0_pf), .io_r_resp_0_bits_perm_0_af(e0_p0_af), .io_r_resp_0_bits_perm_0_v(e0_p0_v),
+    .io_r_resp_0_bits_perm_0_d(e0_p0_d), .io_r_resp_0_bits_perm_0_a(e0_p0_a), .io_r_resp_0_bits_perm_0_u(e0_p0_u),
+    .io_r_resp_0_bits_perm_0_x(e0_p0_x), .io_r_resp_0_bits_perm_0_w(e0_p0_w), .io_r_resp_0_bits_perm_0_r(e0_p0_r),
+    .io_r_resp_0_bits_g_perm_0_pf(e0_g_pf), .io_r_resp_0_bits_g_perm_0_af(e0_g_af), .io_r_resp_0_bits_g_perm_0_d(e0_g_d),
+    .io_r_resp_0_bits_g_perm_0_a(e0_g_a), .io_r_resp_0_bits_g_perm_0_x(e0_g_x), .io_r_resp_0_bits_g_perm_0_w(e0_g_w),
+    .io_r_resp_0_bits_g_perm_0_r(e0_g_r),
+    .io_r_resp_1_bits_hit(e1_hit), .io_r_resp_1_bits_ppn_0(e1_ppn0),
+    .io_r_resp_1_bits_pbmt_0(e1_pbmt), .io_r_resp_1_bits_g_pbmt_0(e1_gpbmt),
+    .io_r_resp_1_bits_perm_0_pf(e1_p0_pf), .io_r_resp_1_bits_perm_0_af(e1_p0_af), .io_r_resp_1_bits_perm_0_v(e1_p0_v),
+    .io_r_resp_1_bits_perm_0_d(e1_p0_d), .io_r_resp_1_bits_perm_0_a(e1_p0_a), .io_r_resp_1_bits_perm_0_u(e1_p0_u),
+    .io_r_resp_1_bits_perm_0_x(e1_p0_x), .io_r_resp_1_bits_perm_0_w(e1_p0_w), .io_r_resp_1_bits_perm_0_r(e1_p0_r),
+    .io_r_resp_1_bits_g_perm_0_pf(e1_g_pf), .io_r_resp_1_bits_g_perm_0_af(e1_g_af), .io_r_resp_1_bits_g_perm_0_d(e1_g_d),
+    .io_r_resp_1_bits_g_perm_0_a(e1_g_a), .io_r_resp_1_bits_g_perm_0_x(e1_g_x), .io_r_resp_1_bits_g_perm_0_w(e1_g_w),
+    .io_r_resp_1_bits_g_perm_0_r(e1_g_r),
+    .io_w_valid(o_refill),
+    .io_w_bits_data_s2xlate(io_ptw_resp_bits_s2xlate),
+    .io_w_bits_data_s1_entry_tag(io_ptw_resp_bits_s1_entry_tag), .io_w_bits_data_s1_entry_asid(io_ptw_resp_bits_s1_entry_asid),
+    .io_w_bits_data_s1_entry_vmid(io_ptw_resp_bits_s1_entry_vmid), .io_w_bits_data_s1_entry_n(io_ptw_resp_bits_s1_entry_n),
+    .io_w_bits_data_s1_entry_pbmt(io_ptw_resp_bits_s1_entry_pbmt), .io_w_bits_data_s1_entry_perm_d(io_ptw_resp_bits_s1_entry_perm_d),
+    .io_w_bits_data_s1_entry_perm_a(io_ptw_resp_bits_s1_entry_perm_a), .io_w_bits_data_s1_entry_perm_g(io_ptw_resp_bits_s1_entry_perm_g),
+    .io_w_bits_data_s1_entry_perm_u(io_ptw_resp_bits_s1_entry_perm_u), .io_w_bits_data_s1_entry_perm_x(io_ptw_resp_bits_s1_entry_perm_x),
+    .io_w_bits_data_s1_entry_perm_w(io_ptw_resp_bits_s1_entry_perm_w), .io_w_bits_data_s1_entry_perm_r(io_ptw_resp_bits_s1_entry_perm_r),
+    .io_w_bits_data_s1_entry_level(io_ptw_resp_bits_s1_entry_level), .io_w_bits_data_s1_entry_v(io_ptw_resp_bits_s1_entry_v),
+    .io_w_bits_data_s1_entry_ppn(io_ptw_resp_bits_s1_entry_ppn),
+    .io_w_bits_data_s1_ppn_low_0(io_ptw_resp_bits_s1_ppn_low_0), .io_w_bits_data_s1_ppn_low_1(io_ptw_resp_bits_s1_ppn_low_1),
+    .io_w_bits_data_s1_ppn_low_2(io_ptw_resp_bits_s1_ppn_low_2), .io_w_bits_data_s1_ppn_low_3(io_ptw_resp_bits_s1_ppn_low_3),
+    .io_w_bits_data_s1_ppn_low_4(io_ptw_resp_bits_s1_ppn_low_4), .io_w_bits_data_s1_ppn_low_5(io_ptw_resp_bits_s1_ppn_low_5),
+    .io_w_bits_data_s1_ppn_low_6(io_ptw_resp_bits_s1_ppn_low_6), .io_w_bits_data_s1_ppn_low_7(io_ptw_resp_bits_s1_ppn_low_7),
+    .io_w_bits_data_s1_valididx_0(io_ptw_resp_bits_s1_valididx_0), .io_w_bits_data_s1_valididx_1(io_ptw_resp_bits_s1_valididx_1),
+    .io_w_bits_data_s1_valididx_2(io_ptw_resp_bits_s1_valididx_2), .io_w_bits_data_s1_valididx_3(io_ptw_resp_bits_s1_valididx_3),
+    .io_w_bits_data_s1_valididx_4(io_ptw_resp_bits_s1_valididx_4), .io_w_bits_data_s1_valididx_5(io_ptw_resp_bits_s1_valididx_5),
+    .io_w_bits_data_s1_valididx_6(io_ptw_resp_bits_s1_valididx_6), .io_w_bits_data_s1_valididx_7(io_ptw_resp_bits_s1_valididx_7),
+    .io_w_bits_data_s1_pteidx_0(io_ptw_resp_bits_s1_pteidx_0), .io_w_bits_data_s1_pteidx_1(io_ptw_resp_bits_s1_pteidx_1),
+    .io_w_bits_data_s1_pteidx_2(io_ptw_resp_bits_s1_pteidx_2), .io_w_bits_data_s1_pteidx_3(io_ptw_resp_bits_s1_pteidx_3),
+    .io_w_bits_data_s1_pteidx_4(io_ptw_resp_bits_s1_pteidx_4), .io_w_bits_data_s1_pteidx_5(io_ptw_resp_bits_s1_pteidx_5),
+    .io_w_bits_data_s1_pteidx_6(io_ptw_resp_bits_s1_pteidx_6), .io_w_bits_data_s1_pteidx_7(io_ptw_resp_bits_s1_pteidx_7),
+    .io_w_bits_data_s1_pf(io_ptw_resp_bits_s1_pf), .io_w_bits_data_s1_af(io_ptw_resp_bits_s1_af),
+    .io_w_bits_data_s2_entry_tag(io_ptw_resp_bits_s2_entry_tag), .io_w_bits_data_s2_entry_vmid(io_ptw_resp_bits_s2_entry_vmid),
+    .io_w_bits_data_s2_entry_n(io_ptw_resp_bits_s2_entry_n), .io_w_bits_data_s2_entry_pbmt(io_ptw_resp_bits_s2_entry_pbmt),
+    .io_w_bits_data_s2_entry_ppn(io_ptw_resp_bits_s2_entry_ppn), .io_w_bits_data_s2_entry_perm_d(io_ptw_resp_bits_s2_entry_perm_d),
+    .io_w_bits_data_s2_entry_perm_a(io_ptw_resp_bits_s2_entry_perm_a), .io_w_bits_data_s2_entry_perm_g(io_ptw_resp_bits_s2_entry_perm_g),
+    .io_w_bits_data_s2_entry_perm_u(io_ptw_resp_bits_s2_entry_perm_u), .io_w_bits_data_s2_entry_perm_x(io_ptw_resp_bits_s2_entry_perm_x),
+    .io_w_bits_data_s2_entry_perm_w(io_ptw_resp_bits_s2_entry_perm_w), .io_w_bits_data_s2_entry_perm_r(io_ptw_resp_bits_s2_entry_perm_r),
+    .io_w_bits_data_s2_entry_level(io_ptw_resp_bits_s2_entry_level),
+    .io_w_bits_data_s2_gpf(io_ptw_resp_bits_s2_gpf), .io_w_bits_data_s2_gaf(io_ptw_resp_bits_s2_gaf)
+  );
+
+  // ---- 拆回 golden 扁平输出(2 端口, 精简)----
+  assign io_requestor_0_resp_valid = o_valid[0];
+  assign io_requestor_0_resp_bits_paddr_0 = o_paddr0[0];
+  assign io_requestor_0_resp_bits_pbmt_0 = o_pbmt0[0];
+  assign io_requestor_0_resp_bits_miss = o_miss[0];
+  assign io_requestor_0_resp_bits_excp_0_gpf_ld = o_gpf_ld[0];
+  assign io_requestor_0_resp_bits_excp_0_pf_ld = o_pf_ld[0];
+  assign io_requestor_0_resp_bits_excp_0_af_ld = o_af_ld[0];
+  assign io_requestor_1_resp_valid = o_valid[1];
+  assign io_requestor_1_resp_bits_paddr_0 = o_paddr0[1];
+  assign io_requestor_1_resp_bits_pbmt_0 = o_pbmt0[1];
+  assign io_requestor_1_resp_bits_miss = o_miss[1];
+  assign io_requestor_1_resp_bits_excp_0_gpf_ld = o_gpf_ld[1];
+  assign io_requestor_1_resp_bits_excp_0_pf_ld = o_pf_ld[1];
+  assign io_requestor_1_resp_bits_excp_0_af_ld = o_af_ld[1];
+  assign io_ptw_req_0_valid = o_ptw_valid[0]; assign io_ptw_req_0_bits_vpn = o_ptw_vpn[0];
+  assign io_ptw_req_0_bits_s2xlate = o_ptw_s2x[0]; assign io_ptw_req_0_bits_getGpa = o_ptw_getGpa[0];
+  assign io_ptw_req_1_valid = o_ptw_valid[1]; assign io_ptw_req_1_bits_vpn = o_ptw_vpn[1];
+  assign io_ptw_req_1_bits_s2xlate = o_ptw_s2x[1]; assign io_ptw_req_1_bits_getGpa = o_ptw_getGpa[1];
+  assign io_pmp_0_valid = o_pmp_valid[0]; assign io_pmp_0_bits_addr = o_pmp_addr[0]; assign io_pmp_0_bits_cmd = o_pmp_cmd[0];
+  assign io_pmp_1_valid = o_pmp_valid[1]; assign io_pmp_1_bits_addr = o_pmp_addr[1]; assign io_pmp_1_bits_cmd = o_pmp_cmd[1];
+"""
+
+
+def build_wrapper(modname):
+    ps = golden_ports(TOP)
+    decls = []
+    for d, w, n in ps:
+        ws = f"[{w-1}:0] " if w > 1 else ""
+        decls.append(f"  {d:6s} {ws}{n}")
+    L = []
+    L.append("// 自动生成：scripts/gen_tlbnonblock2.py —— 勿手改")
+    L.append(f"module {modname} import xs_tlbnb2_pkg::*; (")
+    L.append(",\n".join(decls))
+    L.append(");")
+    L.append(BODY)
+    L.append("endmodule")
+    return "\n".join(L) + "\n"
+
+
+def build_tb(ps):
+    ins = [(w, n) for d, w, n in ps if d == "input" and n not in ("clock", "reset")]
+    outs = [(w, n) for d, w, n in ps if d == "output"]
+    T = ["// 自动生成：scripts/gen_tlbnonblock2.py —— 勿手改",
+         "`timescale 1ns/1ps", "module tb;",
+         "  int unsigned NCYCLES = 200000;",
+         "  bit clk=0, rst; int errors=0, checks=0;",
+         "  always #5 clk = ~clk;"]
+    for w, n in ins:
+        T.append(f"  logic {('['+str(w-1)+':0] ') if w>1 else ''}{n};")
+    for w, n in outs:
+        ws = ('['+str(w-1)+':0] ') if w > 1 else ''
+        T.append(f"  wire {ws}g_{n};")
+        T.append(f"  wire {ws}i_{n};")
+    gc = [".clock(clk)", ".reset(rst)"] + [f".{n}({n})" for _, n in ins]
+    gg = gc + [f".{n}(g_{n})" for _, n in outs]
+    ig = gc + [f".{n}(i_{n})" for _, n in outs]
+    T.append(f"  {TOP}    u_g ({', '.join(gg)});")
+    T.append(f"  {TOP}_xs u_i ({', '.join(ig)});")
+    valid_rate = {
+        "io_ptw_resp_valid": "($urandom_range(0,3)==0)",
+        "io_redirect_valid": "($urandom_range(0,15)==0)",
+        "io_sfence_valid":   "($urandom_range(0,63)==0)",
+        "io_csr_satp_changed":"($urandom_range(0,63)==0)",
+        "io_csr_vsatp_changed":"($urandom_range(0,63)==0)",
+        "io_csr_hgatp_changed":"($urandom_range(0,63)==0)",
+    }
+    for i in range(2):
+        valid_rate[f"io_requestor_{i}_req_valid"] = "($urandom_range(0,1))"
+        valid_rate[f"io_requestor_{i}_req_bits_kill"] = "($urandom_range(0,7)==0)"
+
+    def rnd(w, n):
+        if n in valid_rate:
+            return valid_rate[n]
+        if n.endswith("satp_mode") or n.endswith("hgatp_mode"):
+            return "(4'($urandom_range(0,2))*4'h8 + (($urandom_range(0,2)==2)?4'h1:4'h0))"
+        if "vaddr" in n or "fullva" in n:
+            return f"{{{w-12}'($urandom_range(0,7)), 12'($urandom)}}"
+        if w == 1:
+            return "$urandom_range(0,1)"
+        if w <= 32:
+            return f"{w}'($urandom)"
+        rep = (w + 31) // 32
+        return f"{w}'({{{', '.join(['$urandom()']*rep)}}})"
+
+    in_names = {n for _, n in ins}
+    reset_valids = [n for n in valid_rate if n in in_names]
+    T.append("  always @(negedge clk) begin")
+    T.append("    if (rst) begin")
+    for n in reset_valids:
+        T.append(f"      {n} <= 1'b0;")
+    T.append("    end else begin")
+    for w, n in ins:
+        T.append(f"      {n} <= {rnd(w, n)};")
+    for m in ("io_csr_satp_mode","io_csr_vsatp_mode","io_csr_hgatp_mode"):
+        if m in in_names:
+            T.append(f"      begin int s; s=$urandom_range(0,2); {m} <= (s==0)?4'h0:(s==1)?4'h8:4'h9; end")
+    T.append("    end")
+    T.append("  end")
+    T.append("  always @(negedge clk) if (!rst) begin")
+    T.append("    #4; checks++;")
+    for w, n in outs:
+        T.append(f"    if (!$isunknown(g_{n}) && g_{n} !== i_{n}) begin errors++;")
+        T.append(f"      if(errors<=80) $display(\"[%0t] {n} g=%h i=%h\", $time, g_{n}, i_{n}); end")
+    T.append("  end")
+    T.append("""  initial begin
+    rst = 1; repeat (8) @(posedge clk); rst = 0;
+    repeat (NCYCLES) @(posedge clk);
+    $display("checks=%0d errors=%0d", checks, errors);
+    if (errors == 0 && checks > 1000) $display("TEST PASSED"); else $display("TEST FAILED");
+    $finish;
+  end
+endmodule
+""")
+    return "\n".join(T)
+
+
+def main():
+    ps = golden_ports(TOP)
+    (XSSV / f"rtl/memblock/{TOP}_wrapper.sv").write_text(build_wrapper(TOP))
+    ut = XSSV / f"verif/ut/{TOP}"
+    ut.mkdir(parents=True, exist_ok=True)
+    (ut / "variants_xs.sv").write_text(build_wrapper(f"{TOP}_xs"))
+    (ut / "tb.sv").write_text(build_tb(ps))
+    print(f"{TOP}: {len(ps)} golden ports")
+
+
+if __name__ == "__main__":
+    main()
