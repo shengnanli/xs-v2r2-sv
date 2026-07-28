@@ -1,0 +1,4 @@
+SIGNOFF_RESULT ExuBlock_2: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=signoff-strict fm_shell_rc=0 validator_rc=0)
+run_id: SGN-ExuBlock_2-1785263815
+impl_commit: 1c5ad5b3c1457dd8e555e05384f6c0ac46261600
+manifest_sha256: ec19b1206ef2494e6f79cd86e935e753cf2436443009550c6496504f11ce9e02

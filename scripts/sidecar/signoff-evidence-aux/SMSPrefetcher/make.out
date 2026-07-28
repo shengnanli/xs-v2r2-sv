@@ -1,19 +1,23 @@
-Makefile:38: warning: overriding recipe for target 'simv'
+Makefile:54: warning: overriding recipe for target 'simv'
 ../../../scripts/ut_common.mk:31: warning: ignoring old recipe for target 'simv'
-=== FM: SMSPrefetcher (mode=signoff-strict) ===
+=== FM: SMSPrefetcher (mode=assembly) ===
 FM_TOP=SMSPrefetcher \
-FM_MODE=signoff-strict \
+FM_MODE=assembly \
 FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/SMSPrefetcher.sv /home/eda/xs-env/G0-canonical/golden-rtl/SMSTrainFilter.sv /home/eda/xs-env/G0-canonical/golden-rtl/ActiveGenerationTable.sv /home/eda/xs-env/G0-canonical/golden-rtl/StridePF.sv /home/eda/xs-env/G0-canonical/golden-rtl/PatternHistoryTable.sv /home/eda/xs-env/G0-canonical/golden-rtl/PrefetchFilter.sv /home/eda/xs-env/G0-canonical/golden-rtl/Arbiter3_PfGenReq.sv /home/eda/xs-env/G0-canonical/golden-rtl/OverrideableQueue.sv /home/eda/xs-env/G0-canonical/golden-rtl/OverrideableQueue_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_134.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistClockGateCell.sv /home/eda/xs-env/G0-canonical/golden-rtl/ClockGate.sv /home/eda/xs-env/G0-canonical/golden-rtl/RRArbiterInit_3.sv /home/eda/xs-env/G0-canonical/golden-rtl/RRArbiterInit_4.sv " \
-FM_IMPL_SRCS="/tmp/tmp.CQCasuyVUU/wt/rtl/memblock/SMSPrefetcher.sv /home/eda/xs-env/G0-canonical/golden-rtl/SMSTrainFilter.sv /home/eda/xs-env/G0-canonical/golden-rtl/ActiveGenerationTable.sv /home/eda/xs-env/G0-canonical/golden-rtl/StridePF.sv /home/eda/xs-env/G0-canonical/golden-rtl/PatternHistoryTable.sv /home/eda/xs-env/G0-canonical/golden-rtl/PrefetchFilter.sv /home/eda/xs-env/G0-canonical/golden-rtl/Arbiter3_PfGenReq.sv /home/eda/xs-env/G0-canonical/golden-rtl/OverrideableQueue.sv /home/eda/xs-env/G0-canonical/golden-rtl/OverrideableQueue_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_134.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistClockGateCell.sv /home/eda/xs-env/G0-canonical/golden-rtl/ClockGate.sv /home/eda/xs-env/G0-canonical/golden-rtl/RRArbiterInit_3.sv /home/eda/xs-env/G0-canonical/golden-rtl/RRArbiterInit_4.sv /tmp/tmp.CQCasuyVUU/wt/rtl/memblock/SMSPrefetcher_wrapper.sv" \
- \
+FM_IMPL_SRCS="/tmp/tmp.cw8tEJBe5V/wt/rtl/memblock/SMSPrefetcher.sv /home/eda/xs-env/G0-canonical/golden-rtl/SMSTrainFilter.sv /home/eda/xs-env/G0-canonical/golden-rtl/ActiveGenerationTable.sv /home/eda/xs-env/G0-canonical/golden-rtl/StridePF.sv /home/eda/xs-env/G0-canonical/golden-rtl/PatternHistoryTable.sv /home/eda/xs-env/G0-canonical/golden-rtl/PrefetchFilter.sv /home/eda/xs-env/G0-canonical/golden-rtl/Arbiter3_PfGenReq.sv /home/eda/xs-env/G0-canonical/golden-rtl/OverrideableQueue.sv /home/eda/xs-env/G0-canonical/golden-rtl/OverrideableQueue_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_134.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistClockGateCell.sv /home/eda/xs-env/G0-canonical/golden-rtl/ClockGate.sv /home/eda/xs-env/G0-canonical/golden-rtl/RRArbiterInit_3.sv /home/eda/xs-env/G0-canonical/golden-rtl/RRArbiterInit_4.sv /tmp/tmp.cw8tEJBe5V/wt/rtl/memblock/SMSPrefetcher_wrapper.sv" \
+FM_MERGE_DUP=false \
 FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=true \
  \
  \
  \
  \
-fm_shell -64 -work_path fm_work/SMSPrefetcher -file /tmp/tmp.CQCasuyVUU/wt/scripts/fm_eq.tcl \
+fm_shell -64 -work_path fm_work/SMSPrefetcher -file /tmp/tmp.cw8tEJBe5V/wt/scripts/fm_eq.tcl \
     > fm_work/SMSPrefetcher/fm.log 2>&1; \
 rc=$?; \
 if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
-python3 /tmp/tmp.CQCasuyVUU/wt/scripts/fm_verdict.py fm_work/SMSPrefetcher/fm.log --rc $rc --mode signoff-strict --top SMSPrefetcher --allowlist 0
-SUCCEEDED	{"passing": 8514, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "SMSPrefetcher", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}
+python3 /tmp/tmp.cw8tEJBe5V/wt/scripts/fm_verdict.py fm_work/SMSPrefetcher/fm.log --rc $rc --mode assembly --top SMSPrefetcher --allowlist ../../signoff/allow/SMSPrefetcher.json
+usage: fm_verdict.py [-h] [--rc RC] [--mode MODE] [--top TOP]
+                     [--allowlist ALLOWLIST]
+                     log
+fm_verdict.py: error: argument --allowlist: invalid int value: '../../signoff/allow/SMSPrefetcher.json'
+make: *** [../../../scripts/ut_common.mk:60: fm-SMSPrefetcher] Error 2
