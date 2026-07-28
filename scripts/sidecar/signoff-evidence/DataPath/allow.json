@@ -1,1 +1,22 @@
-{"unresolved_blackbox":[],"interface_only":[],"empty_blackbox":[],"unmatched":[]}
+{
+ "unresolved_blackbox": [
+  {
+   "id": "difftestArchFpRegState_dpic",
+   "ref_path": "r:/WORK/DataPath/difftestArchFpRegState_module/dpic",
+   "impl_path": "i:/WORK/DataPath/u_core/difftestArchFpRegState_module/dpic"
+  },
+  {
+   "id": "difftestArchIntRegState_dpic",
+   "ref_path": "r:/WORK/DataPath/difftestArchIntRegState_module/dpic",
+   "impl_path": "i:/WORK/DataPath/u_core/difftestArchIntRegState_module/dpic"
+  },
+  {
+   "id": "difftestArchVecRegState_dpic",
+   "ref_path": "r:/WORK/DataPath/difftestArchVecRegState_module/dpic",
+   "impl_path": "i:/WORK/DataPath/u_core/difftestArchVecRegState_module/dpic"
+  }
+ ],
+ "interface_only": [],
+ "empty_blackbox": [],
+ "unmatched": []
+}

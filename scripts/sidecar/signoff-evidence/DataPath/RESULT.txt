@@ -1,3 +1,4 @@
-TARGET DataPath: TIMEOUT (required=SUCCEEDED make_rc=124 fm_shell_rc=NA) [SIGNOFF FAIL-CLOSED]
-      puts "FM_MODE_ERROR: $_fmmode 拒绝 FM_INTERFACE_ONLY(assembly 专用手段)"
-    puts "FM_MODE_ERROR: 未知 FM_MODE=$_fmmode"
+SIGNOFF_RESULT DataPath: measured=PASS_DEAD_REF required=PASS_DEAD_REF gate=PASS (proof=assembly fm_shell_rc=0 validator_rc=0)
+run_id: SGN-DataPath-1785263865
+impl_commit: 1c5ad5b3c1457dd8e555e05384f6c0ac46261600
+manifest_sha256: 74603e0eff8dab466b91270bf418bc6ed2005ebd33feed59d0ad2d40567327f3
