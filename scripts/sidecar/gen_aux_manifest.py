@@ -91,7 +91,17 @@ def main():
                 "count_aux": len(entries), "entries": entries}
     with open(a.out, "w") as f:
         json.dump(manifest, f, indent=1, ensure_ascii=False)
-    print(f"aux manifest: {len(entries)} entries -> {a.out}")
+    # 同步产 aux declarations(runner 的 DECL cross-check 源, 经 SIGNOFF_DECL_FILE 指向):
+    # target<TAB>proof_mode<TAB>allow_ref<TAB>rationale<TAB>vmucp<TAB>dead_ref。机械自 manifest 派生
+    # (aux manifest 本身就是 AUX 的设计契约), 保持与 305 declarations 分离。
+    decl_out = os.path.join(os.path.dirname(a.out), "manifest_declarations_aux.tsv")
+    with open(decl_out, "w") as f:
+        f.write("# AUX declarations(gen_aux_manifest 自动生成, 与 305 manifest_declarations 分离)\n")
+        f.write("# target\tproof_mode\tallow_ref\trationale\tverify_matched_unread\tdead_ref\n")
+        for e in entries:
+            f.write("\t".join([e["target"], e["proof_mode"], e["allow_ref"], "",
+                               e["verify_matched_unread_compare_points"], e["dead_ref"]]) + "\n")
+    print(f"aux manifest: {len(entries)} entries -> {a.out}; aux declarations -> {decl_out}")
 
 
 if __name__ == "__main__":

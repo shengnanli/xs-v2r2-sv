@@ -1,0 +1,8 @@
+{
+    "unresolved_blackbox": [],
+    "interface_only": [],
+    "empty_blackbox": [
+        {"id": "DiffExtLrScEvent", "ref_path": "r:/WORK/AtomicsUnit/difftest_module/dpic", "impl_path": "i:/WORK/AtomicsUnit/u_core/difftest_module/dpic"}
+    ],
+    "unmatched": []
+}

@@ -1,0 +1,4 @@
+SIGNOFF_RESULT SMSPrefetcher: measured=PARTIAL required=SUCCEEDED gate=GAP (proof=signoff-strict fm_shell_rc=0 validator_rc=1)
+run_id: SGN-SMSPrefetcher-1785260285
+impl_commit: a93a27c30f8fcee0f1b616eb0281abae928d861d
+manifest_sha256: 70cdaf3fd27f91a65510ef5a945d875a4987a3327d83352b10940546b1c7581f

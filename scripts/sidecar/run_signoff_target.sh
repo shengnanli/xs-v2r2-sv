@@ -57,7 +57,9 @@ git -C "$SIGNOFF" cat-file -e "$IMPL_COMMIT:$MANIFEST_REL" 2>/dev/null || {
 COMMITTED_MANIFEST_SHA=$(git -C "$SIGNOFF" show "$IMPL_COMMIT:$MANIFEST_REL" | sha256sum | cut -d' ' -f1)
 [ "$MANIFEST_SHA" = "$COMMITTED_MANIFEST_SHA" ] || {
   echo "MANIFEST_WORKTREE_COMMIT_MISMATCH"; exit 2; }
-DECL_REL=scripts/sidecar/manifest_declarations.tsv
+# DECL 源可经 SIGNOFF_DECL_FILE override(AUX manifest 用独立 aux declarations, 与 305 分离);
+# 默认 305 declarations。override 文件同样须 committed + SHA 冻结(下方检查不变)。
+DECL_REL="${SIGNOFF_DECL_FILE:-scripts/sidecar/manifest_declarations.tsv}"
 DECL="$SIGNOFF/$DECL_REL"
 git -C "$SIGNOFF" cat-file -e "$IMPL_COMMIT:$DECL_REL" 2>/dev/null || {
   echo "DECLARATIONS_NOT_COMMITTED"; exit 2; }

@@ -1,0 +1,19 @@
+Makefile:26: warning: overriding recipe for target 'simv'
+../../../scripts/ut_common.mk:31: warning: ignoring old recipe for target 'simv'
+=== FM: PTWRepeaterNB (mode=signoff-strict) ===
+FM_TOP=PTWRepeaterNB \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/PTWRepeaterNB.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayN_1.sv " \
+FM_IMPL_SRCS="/tmp/tmp.b36BZoZUyi/wt/rtl/memblock/ptwrepeaternb_pkg.sv /tmp/tmp.b36BZoZUyi/wt/rtl/memblock/PTWRepeaterNB.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayN_1.sv /tmp/tmp.b36BZoZUyi/wt/rtl/memblock/PTWRepeaterNB_wrapper.sv" \
+ \
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=false \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/PTWRepeaterNB -file /tmp/tmp.b36BZoZUyi/wt/scripts/fm_eq.tcl \
+    > fm_work/PTWRepeaterNB/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.b36BZoZUyi/wt/scripts/fm_verdict.py fm_work/PTWRepeaterNB/fm.log --rc $rc --mode signoff-strict --top PTWRepeaterNB --allowlist 0
+SUCCEEDED	{"passing": 628, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "PTWRepeaterNB", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

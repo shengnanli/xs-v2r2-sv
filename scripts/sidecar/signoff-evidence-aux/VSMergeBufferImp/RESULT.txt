@@ -1,0 +1,4 @@
+SIGNOFF_RESULT VSMergeBufferImp: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=signoff-strict fm_shell_rc=0 validator_rc=0)
+run_id: SGN-VSMergeBufferImp-1785259635
+impl_commit: c6bbc92f893e70c21519eb16be553aa47895f583
+manifest_sha256: 83d7b4889eaadd67aeaeb2ff62874cd8f92c988a537a55c97dfbf28ea10b7c2b

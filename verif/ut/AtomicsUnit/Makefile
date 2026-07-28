@@ -44,3 +44,5 @@ include ../../../scripts/ut_common.mk
 # checkOneHot / unexpected std / atomic re-receive data / 对齐 / 访问异常等）；UT 随机激励
 # 会触发, 故定义 SYNTHESIS 关掉（同时关随机初值注入, 两侧寄存器复位到 0 后同构可比）。
 VCS += +define+SYNTHESIS
+FM_ALLOWLIST = ../../signoff/allow/AtomicsUnit.json
+FM_MODE = assembly
