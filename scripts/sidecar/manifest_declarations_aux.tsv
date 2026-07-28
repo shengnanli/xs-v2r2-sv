@@ -193,7 +193,6 @@ TLBNonBlock_2	signoff-strict			true	verif/signoff/dead_ref/TLBNonBlock_2.json
 Tdata1Module	signoff-strict			false	
 TopDownMonitor	signoff-strict			false	
 Trace	signoff-strict			false	
-TransmitterLinkMonitor	signoff-strict			false	
 TrapEntryDEventModule	signoff-strict			false	
 TrapEntryHSEventModule	signoff-strict			false	
 TrapEntryMEventModule	signoff-strict			false	

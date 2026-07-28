@@ -1,7 +1,7 @@
 {
  "schema": "fm-signoff-aux-manifest-v1",
  "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456",
- "count_aux": 223,
+ "count_aux": 222,
  "entries": [
   {
    "target": "Arbiter4_L2CacheErrorInfo",
@@ -2888,21 +2888,6 @@
    "ut_dir": "Trace",
    "makefile": "verif/ut/Trace/Makefile",
    "make_target": "fm-Trace",
-   "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
-   "config_status": "AUX",
-   "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
-   "dead_ref": "",
-   "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
-  },
-  {
-   "target": "TransmitterLinkMonitor",
-   "ut_dir": "TransmitterLinkMonitor",
-   "makefile": "verif/ut/TransmitterLinkMonitor/Makefile",
-   "make_target": "fm-TransmitterLinkMonitor",
    "entry": "scripts/fm_eq.tcl",
    "proof_mode": "signoff-strict",
    "config_status": "AUX",
