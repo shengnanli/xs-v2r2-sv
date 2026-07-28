@@ -1,0 +1,22 @@
+{
+  "unresolved_blackbox": [],
+  "interface_only": [
+    {
+      "id": "LCredit2Decoupled_rxsnp_queue",
+      "ref_path": "r:/WORK/TransmitterLinkMonitor/LCredit2Decoupled_rxsnp/queue",
+      "impl_path": "i:/WORK/TransmitterLinkMonitor/u_core/LCredit2Decoupled_rxsnp/queue"
+    },
+    {
+      "id": "LCredit2Decoupled_rxrsp_queue",
+      "ref_path": "r:/WORK/TransmitterLinkMonitor/LCredit2Decoupled_rxrsp/queue",
+      "impl_path": "i:/WORK/TransmitterLinkMonitor/u_core/LCredit2Decoupled_rxrsp/queue"
+    },
+    {
+      "id": "LCredit2Decoupled_rxdat_queue",
+      "ref_path": "r:/WORK/TransmitterLinkMonitor/LCredit2Decoupled_rxdat/queue",
+      "impl_path": "i:/WORK/TransmitterLinkMonitor/u_core/LCredit2Decoupled_rxdat/queue"
+    }
+  ],
+  "empty_blackbox": [],
+  "unmatched": []
+}

@@ -227,3 +227,10 @@ Og2ForVector	PASS	集成态AUX gate native strict SUCCEEDED 13970passing/最终0
 ExuBlock_2	PASS	集成态AUX gate native strict SUCCEEDED 7622passing/最终0unread(5 ExeUnit_13-17向量exu容器, ExeUnit边界黑盒); UT errors=0; owner agent/backend-glue
 VecExcpDataMergeModule	PASS	集成态AUX gate native strict SUCCEEDED 1363passing/最终0unread(5态向量异常数据合并FSM, 逐位rename de-obfuscate, NfMappedElemIdx/GetE8OffsetInVreg两侧elaborate); UT errors=0; owner agent/backend-glue
 HPerfMonitor_2	PASS	集成态AUX gate(vmucp)native SUCCEEDED 688passing/最终0unread(8 HPerfCounter_13 HPM事件路由, 64对称matched-unread counter死高位双射, 90 event端口CIRCT DCE去0/41); UT errors=0; owner agent/backend-glue
+FastArbiter_77	PASS	集成态AUX gate(vmucp)native SUCCEEDED 120passing/最终0unread(XSTop CHI 2输入round-robin仲裁器RXSNP, pendingMask死位同FastArbiter_1/2/28/29双射, 1 benign Constant reg); UT 3seed errors=0; owner agent/topnoc
+FastArbiter_78	PASS	集成态AUX gate(vmucp)native SUCCEEDED 78passing/最终0unread(CHI仲裁器RXRSP); UT errors=0; owner agent/topnoc
+FastArbiter_79	PASS	集成态AUX gate(vmucp)native SUCCEEDED 427passing/最终0unread(CHI仲裁器RXDAT); UT errors=0; owner agent/topnoc
+ResetGen	PASS	集成态AUX gate native strict SUCCEEDED 4passing/最终0unread(3级复位同步器async set); UT 3seed errors=0; owner agent/topnoc
+IntBuffer	PASS	集成态AUX gate native strict SUCCEEDED 2passing/最终0unread(中断线延迟flop async reset); UT 3seed errors=0; owner agent/topnoc
+ReceiverLinkMonitor	PASS	集成态AUX gate native strict SUCCEEDED 4529passing/最终0unread/0blackbox(CHI链路监视器OpenNCB侧, LINKACTIVE 4态FSM同绿LinkMonitor, 6 flit转换器两侧elaborate); UT 3seed errors=0(17M checks); owner agent/topnoc
+TransmitterLinkMonitor	PASS	集成态AUX gate assembly native SUCCEEDED 2621passing/最终0unread(CHI链路监视器发送向, 3 Queue15_CHI{SNP,RSP,DAT} interface_only对称黑盒=golden FMR_ELAB-147 OOB边界, LinkMonitor FSM/handshake glue全受验); UT 3seed errors=0(14.2M); owner agent/topnoc
