@@ -27,3 +27,4 @@ include ../../../scripts/ut_common.mk
 
 # golden 子模块含 `ifndef SYNTHESIS 断言/随机初值; 定义 SYNTHESIS 关掉(两侧复位同构)。
 VCS += +define+SYNTHESIS
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true

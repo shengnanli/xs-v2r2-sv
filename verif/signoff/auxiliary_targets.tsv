@@ -266,3 +266,6 @@ TrapEntryVSEventModule	CSR 位域/中断寄存器 leaf(NewCSR 子) [codex_0073 u
 TrapHandleModule	CSR 位域/中断寄存器 leaf(NewCSR 子) [codex_0073 universe: 移出 305 主分母]
 VBestOffsetPrefetch	L2 预取器 child(assembly_depends) [codex_0073 universe: 移出 305 主分母]
 VSstatusModule	CSR 位域/中断寄存器 leaf(NewCSR 子) [codex_0073 universe: 移出 305 主分母]
+VfofBuffer	MemBlock向量fof buffer child(vleff), strict SIGNOFF_PASS leaf, 移出305主分母
+VLSplitImp	MemBlock向量load split装配壳 child, vmucp AUX, 移出305主分母
+VSSplitImp	MemBlock向量store split装配壳 child, vmucp AUX, 移出305主分母
