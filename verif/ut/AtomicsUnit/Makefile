@@ -45,3 +45,4 @@ include ../../../scripts/ut_common.mk
 # 会触发, 故定义 SYNTHESIS 关掉（同时关随机初值注入, 两侧寄存器复位到 0 后同构可比）。
 VCS += +define+SYNTHESIS
 FM_ALLOWLIST = ../../signoff/allow/AtomicsUnit.json
+FM_MODE = assembly

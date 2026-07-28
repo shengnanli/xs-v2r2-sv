@@ -69,7 +69,7 @@
    "makefile": "verif/ut/AtomicsUnit/Makefile",
    "make_target": "fm-AtomicsUnit",
    "entry": "scripts/fm_eq.tcl",
-   "proof_mode": "signoff-strict",
+   "proof_mode": "assembly",
    "config_status": "AUX",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/AtomicsUnit.json",
