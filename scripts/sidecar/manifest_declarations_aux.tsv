@@ -159,7 +159,7 @@ RenameTable_2	signoff-strict			false
 RenameTable_3	signoff-strict			false	
 ResetGen	signoff-strict			false	
 ResponseUnit	signoff-strict			true	
-SMSPrefetcher	signoff-strict			true	
+SMSPrefetcher	assembly	verif/signoff/allow/SMSPrefetcher.json		true	
 SRAMTemplate_197	signoff-strict			false	
 SRAMTemplate_198	signoff-strict			false	
 SRAMTemplate_199	signoff-strict			false	
