@@ -1,0 +1,4 @@
+SIGNOFF_RESULT PipeGroupConnect: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=signoff-strict fm_shell_rc=0 validator_rc=0)
+run_id: SGN-PipeGroupConnect-1785276759
+impl_commit: bdc73c7327b70c587be5fbac0166259124721637
+manifest_sha256: 913105ea6d5651393a85835f95d9c4c13b17250f3b61d447e7e973827d59220d

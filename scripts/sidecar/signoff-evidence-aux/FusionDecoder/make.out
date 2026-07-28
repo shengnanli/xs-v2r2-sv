@@ -1,0 +1,18 @@
+=== FM: FusionDecoder (mode=signoff-strict) ===
+FM_TOP=FusionDecoder \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/FusionDecoder.sv  " \
+FM_IMPL_SRCS="/tmp/tmp.EUXUhMLtOb/wt/rtl/backend/FusionDecoder_core.sv /tmp/tmp.EUXUhMLtOb/wt/rtl/backend/FusionDecoder_wrapper.sv" \
+ \
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=true \
+ \
+ \
+FM_PIN_PRE_TCL=/tmp/tmp.EUXUhMLtOb/wt/verif/ut/FusionDecoder/fm_pins_pre.tcl \
+ \
+fm_shell -64 -work_path fm_work/FusionDecoder -file /tmp/tmp.EUXUhMLtOb/wt/scripts/fm_eq.tcl \
+    > fm_work/FusionDecoder/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.EUXUhMLtOb/wt/scripts/fm_verdict.py fm_work/FusionDecoder/fm.log --rc $rc --mode signoff-strict --top FusionDecoder --allowlist 0
+ERROR	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 0, "make_rc": 1, "mode": "signoff-strict", "native": null, "top": null, "dont_verify": false, "elab147": false, "reason": "make_rc_nonzero"}
+make: *** [../../../scripts/ut_common.mk:60: fm-FusionDecoder] Error 1

@@ -1,0 +1,17 @@
+=== FM: PipelineConnectPipe (mode=signoff-strict) ===
+FM_TOP=PipelineConnectPipe \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/PipelineConnectPipe.sv  " \
+FM_IMPL_SRCS="/tmp/tmp.aoVicsWYQn/wt/rtl/backend/PipelineConnectPipe_core.sv /tmp/tmp.aoVicsWYQn/wt/rtl/backend/PipelineConnectPipe_wrapper.sv" \
+ \
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=false \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/PipelineConnectPipe -file /tmp/tmp.aoVicsWYQn/wt/scripts/fm_eq.tcl \
+    > fm_work/PipelineConnectPipe/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.aoVicsWYQn/wt/scripts/fm_verdict.py fm_work/PipelineConnectPipe/fm.log --rc $rc --mode signoff-strict --top PipelineConnectPipe --allowlist 0
+SUCCEEDED	{"passing": 723, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "PipelineConnectPipe", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}
