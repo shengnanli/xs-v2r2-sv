@@ -1,4 +1,5 @@
-SIGNOFF_RESULT MemBlock: measured=FAILED required=SUCCEEDED gate=GAP (proof=assembly fm_shell_rc=0 validator_rc=1)
-run_id: SGN-MemBlock-1784570042
-impl_commit: 566a8513bd816f3c12f18297b33fdcaf083f651c
-manifest_sha256: 256902c1d5e6231aaca309d5ce237fd4f40dbd6fa56cb92be0c6f4918da0eb96
+SIGNOFF_RESULT MemBlock: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=assembly fm_shell_rc=0 validator_rc=0)
+run_id: SGN-MemBlock-1785251796
+impl_commit: 30d5049b9c456534a7d238b257d19218bc836bb3
+manifest_sha256: 74603e0eff8dab466b91270bf418bc6ed2005ebd33feed59d0ad2d40567327f3
+CLEAN_GATE_FAIL
