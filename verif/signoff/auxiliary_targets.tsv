@@ -279,3 +279,4 @@ L1Prefetcher	MemBlock L1预取器child, vmucp AUX(889对称matched-unread golden
 SMSPrefetcher	MemBlock SMS预取器child, vmucp AUX(1090对称matched-unread+1厂商SRAM宏黑盒), 移出305
 TLBNonBlock_1	MemBlock store TLB child(Width=2非平凡变体), PASS_DEAD_REF(6 golden-only死ref), 移出305
 TLBNonBlock_2	MemBlock prefetch/walker TLB child(Width=2非对称), PASS_DEAD_REF(4 golden-only死ref), 移出305
+VSegmentUnit	MemBlock向量段访存child(段×field状态机遍历), vmucp AUX(22对称matched-unread exceptionGpaddr宽存窄读), 移出305
