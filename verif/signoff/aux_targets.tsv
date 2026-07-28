@@ -221,3 +221,9 @@ SMSPrefetcher	PASS	集成态AUX gate(vmucp)native SUCCEEDED 8719passing/最终0(
 TLBNonBlock_1	PASS_DEAD_REF	集成态AUX gate native SUCCEEDED 2374passing/0fail/0unmatched, 最终6(0)unread=全ref-only(golden-only cone-dead perf/debug reg, 0 impl-only), 同绿基线TLBNonBlock(IMPL_DEAD)类; store TLB(Width=2非平凡变体, FM暴露真bug已修); UT checks200000 errors0; owner agent/mb-groupC
 TLBNonBlock_2	PASS_DEAD_REF	集成态AUX gate native SUCCEEDED 1690passing/0fail/0unmatched, 最终4(0)unread=全ref-only(golden-only死reg, 0 impl-only); prefetch/walker TLB(Width=2非对称变体, FM暴露port1死reg/死输入已修); UT checks200000 errors0; owner agent/mb-groupC
 VSegmentUnit	PASS	集成态AUX gate(vmucp)native SUCCEEDED 6962passing(1237Port+5725DFF)/最终0(0)unread(向量段访存段×field状态机, 22对称matched-unread=exceptionGpaddr[63:50]宽存窄读双射, VSegmentTrigger/NewPipelineConnectPipe_31两侧elaborate); FM抓真bug(非对齐load饱和barrel shift); UT checks199997 errors0; owner agent/vsegment
+DelayN_1	PASS	集成态AUX gate native strict SUCCEEDED 3passing/最终0unread(2级1-bit延迟链, 复用xs_delayn_core N=2); UT 3seed errors=0; owner agent/backend-glue
+PFEvent	PASS	集成态AUX gate native strict SUCCEEDED 3000passing/最终0unread(24 perfEventsModule mhpmevent CSR装配, 子两侧elaborate); Backend+MemBlock共用; UT 3seed errors=0; owner agent/backend-glue
+Og2ForVector	PASS	集成态AUX gate native strict SUCCEEDED 13970passing/最终0unread(向量操作数收集stage-2流水寄存器组, 271输出+273 latch逐字节=golden); UT errors=0; owner agent/backend-glue
+ExuBlock_2	PASS	集成态AUX gate native strict SUCCEEDED 7622passing/最终0unread(5 ExeUnit_13-17向量exu容器, ExeUnit边界黑盒); UT errors=0; owner agent/backend-glue
+VecExcpDataMergeModule	PASS	集成态AUX gate native strict SUCCEEDED 1363passing/最终0unread(5态向量异常数据合并FSM, 逐位rename de-obfuscate, NfMappedElemIdx/GetE8OffsetInVreg两侧elaborate); UT errors=0; owner agent/backend-glue
+HPerfMonitor_2	PASS	集成态AUX gate(vmucp)native SUCCEEDED 688passing/最终0unread(8 HPerfCounter_13 HPM事件路由, 64对称matched-unread counter死高位双射, 90 event端口CIRCT DCE去0/41); UT errors=0; owner agent/backend-glue
