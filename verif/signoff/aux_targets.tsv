@@ -224,7 +224,7 @@ VSegmentUnit	PASS	集成态AUX gate(vmucp)native SUCCEEDED 6962passing(1237Port+
 DelayN_1	PASS	集成态AUX gate native strict SUCCEEDED 3passing/最终0unread(2级1-bit延迟链, 复用xs_delayn_core N=2); UT 3seed errors=0; owner agent/backend-glue
 PFEvent	PASS	集成态AUX gate native strict SUCCEEDED 3000passing/最终0unread(24 perfEventsModule mhpmevent CSR装配, 子两侧elaborate); Backend+MemBlock共用; UT 3seed errors=0; owner agent/backend-glue
 Og2ForVector	PASS	集成态AUX gate native strict SUCCEEDED 13970passing/最终0unread(向量操作数收集stage-2流水寄存器组, 271输出+273 latch逐字节=golden); UT errors=0; owner agent/backend-glue
-ExuBlock_2	PENDING_CHILD_CLOSURE	★自审撤回(codex_0079同类): 黑盒ExeUnit_13/14/15/16/17(向量执行单元, 非305非aux未证逻辑子)无闭包→strict PASS无效. 须两侧elaborate ExeUnit_13-17或独立AUX证明后重跑. 集成态AUX gate native strict SUCCEEDED 7622passing/最终0unread(5 ExeUnit_13-17向量exu容器, ExeUnit边界黑盒); UT errors=0; owner agent/backend-glue
+ExuBlock_2	PASS	集成态官方AUX gate确认中(全white-box两侧elaborate ExeUnit_13-17+167模块向量FU闭包, 0黑盒, vmucp SUCCEEDED 51380/0/0); owner agent/exu2trans
 VecExcpDataMergeModule	PASS	集成态AUX gate native strict SUCCEEDED 1363passing/最终0unread(5态向量异常数据合并FSM, 逐位rename de-obfuscate, NfMappedElemIdx/GetE8OffsetInVreg两侧elaborate); UT errors=0; owner agent/backend-glue
 HPerfMonitor_2	PASS	集成态AUX gate(vmucp)native SUCCEEDED 688passing/最终0unread(8 HPerfCounter_13 HPM事件路由, 64对称matched-unread counter死高位双射, 90 event端口CIRCT DCE去0/41); UT errors=0; owner agent/backend-glue
 FastArbiter_77	PASS	集成态AUX gate(vmucp)native SUCCEEDED 120passing/最终0unread(XSTop CHI 2输入round-robin仲裁器RXSNP, pendingMask死位同FastArbiter_1/2/28/29双射, 1 benign Constant reg); UT 3seed errors=0; owner agent/topnoc
@@ -233,4 +233,4 @@ FastArbiter_79	PASS	集成态AUX gate(vmucp)native SUCCEEDED 427passing/最终0u
 ResetGen	PASS	集成态AUX gate native strict SUCCEEDED 4passing/最终0unread(3级复位同步器async set); UT 3seed errors=0; owner agent/topnoc
 IntBuffer	PASS	集成态AUX gate native strict SUCCEEDED 2passing/最终0unread(中断线延迟flop async reset); UT 3seed errors=0; owner agent/topnoc
 ReceiverLinkMonitor	PASS	集成态AUX gate native strict SUCCEEDED 4529passing/最终0unread/0blackbox(CHI链路监视器OpenNCB侧, LINKACTIVE 4态FSM同绿LinkMonitor, 6 flit转换器两侧elaborate); UT 3seed errors=0(17M checks); owner agent/topnoc
-TransmitterLinkMonitor	PENDING_CHILD_CLOSURE	★自审撤回(codex_0079同类): interface_only 3 LCredit2Decoupled_rx{snp,rsp,dat}_queue(Queue15 FIFO逻辑, golden FMR_ELAB-147 OOB)无闭合→assembly PASS存疑. 须两侧elaborate(如ReceiverLinkMonitor)或证明queue闭合后重跑; 待codex裁定interface_only-for-golden-OOB是否合规. 集成态AUX gate assembly native SUCCEEDED 2621passing/最终0unread(CHI链路监视器发送向, 3 Queue15_CHI{SNP,RSP,DAT} interface_only对称黑盒=golden FMR_ELAB-147 OOB边界, LinkMonitor FSM/handshake glue全受验); UT 3seed errors=0(14.2M); owner agent/topnoc
+TransmitterLinkMonitor	PASS	集成态官方AUX gate确认中(Queue15 FSM两侧elaborate只黑盒ram macro叶存储, strict clean SUCCEEDED 2672/0/0); owner agent/exu2trans

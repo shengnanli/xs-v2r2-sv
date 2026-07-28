@@ -21,6 +21,7 @@ DpcModule	signoff-strict			false
 DretEventModule	signoff-strict			false	
 Dscratch0Module	signoff-strict			false	
 Dscratch1Module	signoff-strict			false	
+ExuBlock_2	signoff-strict			true	
 FastArbiter_1	signoff-strict			true	
 FastArbiter_2	signoff-strict			true	
 FastArbiter_28	signoff-strict			true	
@@ -192,6 +193,7 @@ TLBNonBlock_2	signoff-strict			true	verif/signoff/dead_ref/TLBNonBlock_2.json
 Tdata1Module	signoff-strict			false	
 TopDownMonitor	signoff-strict			false	
 Trace	signoff-strict			false	
+TransmitterLinkMonitor	signoff-strict			false	
 TrapEntryDEventModule	signoff-strict			false	
 TrapEntryHSEventModule	signoff-strict			false	
 TrapEntryMEventModule	signoff-strict			false	
