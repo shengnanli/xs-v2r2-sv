@@ -29,6 +29,16 @@ module xs_delayn_core #(
   assign io_out = stages[N-1];
 endmodule
 
+// golden 同名 wrapper: DelayN_1 = 2 级 1-bit (REG, REG_1; io_out=REG_1)。
+module DelayN_1(
+  input  clock,
+  input  io_in,
+  output io_out
+);
+  xs_delayn_core #(.WIDTH(1), .N(2)) u_core (
+    .clock(clock), .io_in(io_in), .io_out(io_out));
+endmodule
+
 // golden 同名 wrapper: DelayN_15 = 4 级 1-bit。
 module DelayN_15(
   input  clock,
