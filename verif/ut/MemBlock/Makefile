@@ -168,18 +168,43 @@ VCS += +define+SYNTHESIS
 VCS += +incdir+$(RTL_DIR)/memblock
 
 # ----------------------------------------------------------------------------
-# 黑盒 FM 目标：ref = golden MemBlock + 全子模块黑盒桩；impl = wrapper(→核+pkg) + 同一桩。
-# 两侧子模块实化为同一份空黑盒，FM 对顶层互联 glue 做签名等价（不改任何共享脚本）。
+# assembly FM 目标（codex_0074 owner#6）：
+#   ref  = golden MemBlock + 34 类黑盒桩(memblock_bb_stub) + 26 glue golden closure
+#   impl = wrapper(→核+pkg) + 同一 34 类黑盒桩 + 同一 26 glue golden closure
+#
+#   黑盒(34 类, memblock_bb_stub.sv)= 20 green-305 SIGNOFF_PASS + 14 aux-PASS child：
+#     两侧显式端口方向黑盒(identity 配对)——依赖闭合，合法对称 unresolved 黑盒。
+#   两侧 elaborate(26 glue golden)= HPerfMonitor_3(→HPerfCounter_21)/PFEvent(→perfEventsModule)/
+#     FrontendBridge(→ICacheBuffer/ICacheCtrlBuffer/InstrUncacheBuffer→Queue2×6)/
+#     MbistIntfMemBlk/MbistPipeMemBlk/MbistPipeSms/DelayN_332/DelayN_8/DelayNWithValid_{2,200,202,203,3}/
+#     PipelineRegModule/PipelineRegModule_6：本层 glue 真实功能(perf 汇聚/MBIST 分发/打拍)必须两侧
+#     真实 elaborate 非黑盒——尤其 HPerfMonitor_3 驱动 io_perf_*，黑盒会致 perf pipeline 假失配。
+#   厂商 SRAM 宏不在此层(glue 无 SRAM)；黑盒 34 类的内部 SRAM 随其黑盒消隐。
 # ----------------------------------------------------------------------------
-STUB = $(abspath $(RTL_DIR)/memblock/memblock_stub.sv)
+BB_STUB = $(abspath $(RTL_DIR)/memblock/memblock_bb_stub.sv)
+# glue elaborate 闭包(两侧共读)
+GLUE_GOLDEN = $(GOLDEN_RTL)/HPerfMonitor_3.sv $(GOLDEN_RTL)/HPerfCounter_21.sv \
+  $(GOLDEN_RTL)/PFEvent.sv $(GOLDEN_RTL)/perfEventsModule.sv \
+  $(GOLDEN_RTL)/FrontendBridge.sv $(GOLDEN_RTL)/ICacheBuffer.sv \
+  $(GOLDEN_RTL)/ICacheCtrlBuffer.sv $(GOLDEN_RTL)/InstrUncacheBuffer.sv \
+  $(GOLDEN_RTL)/Queue2_TLBundleA_8.sv $(GOLDEN_RTL)/Queue2_TLBundleD_9.sv \
+  $(GOLDEN_RTL)/Queue2_TLBundleA_10.sv $(GOLDEN_RTL)/Queue2_TLBundleD_11.sv \
+  $(GOLDEN_RTL)/Queue2_TLBundleA_12.sv $(GOLDEN_RTL)/Queue2_TLBundleD_13.sv \
+  $(GOLDEN_RTL)/MbistIntfMemBlk.sv $(GOLDEN_RTL)/MbistPipeMemBlk.sv \
+  $(GOLDEN_RTL)/MbistPipeSms.sv \
+  $(GOLDEN_RTL)/DelayN_332.sv $(GOLDEN_RTL)/DelayN_8.sv \
+  $(GOLDEN_RTL)/DelayNWithValid_2.sv $(GOLDEN_RTL)/DelayNWithValid_200.sv \
+  $(GOLDEN_RTL)/DelayNWithValid_202.sv $(GOLDEN_RTL)/DelayNWithValid_203.sv \
+  $(GOLDEN_RTL)/DelayNWithValid_3.sv \
+  $(GOLDEN_RTL)/PipelineRegModule.sv $(GOLDEN_RTL)/PipelineRegModule_6.sv
 .PHONY: fmbb
 fmbb:
 	@[ -n "$$FM_SIDECAR_OUT" ] || { echo "ERROR($(MODULE)): fmbb 须经 sidecar runner"; exit 1; }
 	@mkdir -p fm_work/MemBlock
 	@echo "=== FM(bb): MemBlock ==="
 	FM_TOP=MemBlock \
-	FM_REF_SRCS="$(abspath $(GOLDEN_RTL)/MemBlock.sv) $(STUB)" \
-	FM_IMPL_SRCS="$(abspath $(RTL_SRCS)) $(abspath $(RTL_DIR)/memblock/MemBlock_wrapper.sv) $(STUB)" \
+	FM_REF_SRCS="$(abspath $(GOLDEN_RTL)/MemBlock.sv) $(BB_STUB) $(abspath $(GLUE_GOLDEN))" \
+	FM_IMPL_SRCS="$(abspath $(RTL_SRCS)) $(abspath $(RTL_DIR)/memblock/MemBlock_wrapper.sv) $(BB_STUB) $(abspath $(GLUE_GOLDEN))" \
 	FM_MERGE_DUP=false \
 	XSSV_HOME=$(XSSV_HOME) FM_RUN_ID=$$FM_RUN_ID \
 	fm_shell -64 -work_path fm_work/MemBlock -file $(abspath fm_eq_bb.tcl) \

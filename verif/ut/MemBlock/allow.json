@@ -1,0 +1,338 @@
+{
+  "unresolved_blackbox": [
+    {
+      "id": "icache/nodeIn_d_q/ram_ext",
+      "ref_path": "r:/WORK/MemBlock/inner_frontendBridge/icache/nodeIn_d_q/ram_ext",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_frontendBridge/icache/nodeIn_d_q/ram_ext"
+    },
+    {
+      "id": "icache/nodeIn_d_q_1/ram_ext",
+      "ref_path": "r:/WORK/MemBlock/inner_frontendBridge/icache/nodeIn_d_q_1/ram_ext",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_frontendBridge/icache/nodeIn_d_q_1/ram_ext"
+    },
+    {
+      "id": "icache/nodeOut_a_q/ram_ext",
+      "ref_path": "r:/WORK/MemBlock/inner_frontendBridge/icache/nodeOut_a_q/ram_ext",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_frontendBridge/icache/nodeOut_a_q/ram_ext"
+    },
+    {
+      "id": "icache/nodeOut_a_q_1/ram_ext",
+      "ref_path": "r:/WORK/MemBlock/inner_frontendBridge/icache/nodeOut_a_q_1/ram_ext",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_frontendBridge/icache/nodeOut_a_q_1/ram_ext"
+    },
+    {
+      "id": "icachectrl/nodeIn_d_q/ram_ext",
+      "ref_path": "r:/WORK/MemBlock/inner_frontendBridge/icachectrl/nodeIn_d_q/ram_ext",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_frontendBridge/icachectrl/nodeIn_d_q/ram_ext"
+    },
+    {
+      "id": "icachectrl/nodeIn_d_q_1/ram_ext",
+      "ref_path": "r:/WORK/MemBlock/inner_frontendBridge/icachectrl/nodeIn_d_q_1/ram_ext",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_frontendBridge/icachectrl/nodeIn_d_q_1/ram_ext"
+    },
+    {
+      "id": "icachectrl/nodeOut_a_q/ram_ext",
+      "ref_path": "r:/WORK/MemBlock/inner_frontendBridge/icachectrl/nodeOut_a_q/ram_ext",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_frontendBridge/icachectrl/nodeOut_a_q/ram_ext"
+    },
+    {
+      "id": "icachectrl/nodeOut_a_q_1/ram_ext",
+      "ref_path": "r:/WORK/MemBlock/inner_frontendBridge/icachectrl/nodeOut_a_q_1/ram_ext",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_frontendBridge/icachectrl/nodeOut_a_q_1/ram_ext"
+    },
+    {
+      "id": "instr_uncache/nodeIn_d_q/ram_ext",
+      "ref_path": "r:/WORK/MemBlock/inner_frontendBridge/instr_uncache/nodeIn_d_q/ram_ext",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_frontendBridge/instr_uncache/nodeIn_d_q/ram_ext"
+    },
+    {
+      "id": "instr_uncache/nodeIn_d_q_1/ram_ext",
+      "ref_path": "r:/WORK/MemBlock/inner_frontendBridge/instr_uncache/nodeIn_d_q_1/ram_ext",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_frontendBridge/instr_uncache/nodeIn_d_q_1/ram_ext"
+    },
+    {
+      "id": "instr_uncache/nodeOut_a_q/ram_ext",
+      "ref_path": "r:/WORK/MemBlock/inner_frontendBridge/instr_uncache/nodeOut_a_q/ram_ext",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_frontendBridge/instr_uncache/nodeOut_a_q/ram_ext"
+    },
+    {
+      "id": "instr_uncache/nodeOut_a_q_1/ram_ext",
+      "ref_path": "r:/WORK/MemBlock/inner_frontendBridge/instr_uncache/nodeOut_a_q_1/ram_ext",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_frontendBridge/instr_uncache/nodeOut_a_q_1/ram_ext"
+    }
+  ],
+  "interface_only": [],
+  "empty_blackbox": [
+    {
+      "id": "inner_LoadUnit_0",
+      "ref_path": "r:/WORK/MemBlock/inner_LoadUnit_0",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_LoadUnit_0"
+    },
+    {
+      "id": "inner_LoadUnit_1",
+      "ref_path": "r:/WORK/MemBlock/inner_LoadUnit_1",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_LoadUnit_1"
+    },
+    {
+      "id": "inner_LoadUnit_2",
+      "ref_path": "r:/WORK/MemBlock/inner_LoadUnit_2",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_LoadUnit_2"
+    },
+    {
+      "id": "inner_StoreUnit_0",
+      "ref_path": "r:/WORK/MemBlock/inner_StoreUnit_0",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_StoreUnit_0"
+    },
+    {
+      "id": "inner_StoreUnit_1",
+      "ref_path": "r:/WORK/MemBlock/inner_StoreUnit_1",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_StoreUnit_1"
+    },
+    {
+      "id": "inner_VlSplitConnectLdu",
+      "ref_path": "r:/WORK/MemBlock/inner_VlSplitConnectLdu",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_VlSplitConnectLdu"
+    },
+    {
+      "id": "inner_VlSplitConnectLdu_1",
+      "ref_path": "r:/WORK/MemBlock/inner_VlSplitConnectLdu_1",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_VlSplitConnectLdu_1"
+    },
+    {
+      "id": "inner_VsSplitConnectStu",
+      "ref_path": "r:/WORK/MemBlock/inner_VsSplitConnectStu",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_VsSplitConnectStu"
+    },
+    {
+      "id": "inner_VsSplitConnectStu_1",
+      "ref_path": "r:/WORK/MemBlock/inner_VsSplitConnectStu_1",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_VsSplitConnectStu_1"
+    },
+    {
+      "id": "inner_atomicsUnit",
+      "ref_path": "r:/WORK/MemBlock/inner_atomicsUnit",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_atomicsUnit"
+    },
+    {
+      "id": "inner_buffer",
+      "ref_path": "r:/WORK/MemBlock/inner_buffer",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_buffer"
+    },
+    {
+      "id": "inner_buffers",
+      "ref_path": "r:/WORK/MemBlock/inner_buffers",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_buffers"
+    },
+    {
+      "id": "inner_buffers_1",
+      "ref_path": "r:/WORK/MemBlock/inner_buffers_1",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_buffers_1"
+    },
+    {
+      "id": "inner_buffers_2",
+      "ref_path": "r:/WORK/MemBlock/inner_buffers_2",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_buffers_2"
+    },
+    {
+      "id": "inner_buffers_3",
+      "ref_path": "r:/WORK/MemBlock/inner_buffers_3",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_buffers_3"
+    },
+    {
+      "id": "inner_dcache",
+      "ref_path": "r:/WORK/MemBlock/inner_dcache",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_dcache"
+    },
+    {
+      "id": "inner_dtlbRepeater",
+      "ref_path": "r:/WORK/MemBlock/inner_dtlbRepeater",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_dtlbRepeater"
+    },
+    {
+      "id": "inner_dtlb_ld_tlb_ld",
+      "ref_path": "r:/WORK/MemBlock/inner_dtlb_ld_tlb_ld",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_dtlb_ld_tlb_ld"
+    },
+    {
+      "id": "inner_dtlb_prefetch_tlb_prefetch",
+      "ref_path": "r:/WORK/MemBlock/inner_dtlb_prefetch_tlb_prefetch",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_dtlb_prefetch_tlb_prefetch"
+    },
+    {
+      "id": "inner_dtlb_st_tlb_st",
+      "ref_path": "r:/WORK/MemBlock/inner_dtlb_st_tlb_st",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_dtlb_st_tlb_st"
+    },
+    {
+      "id": "inner_itlbRepeater3",
+      "ref_path": "r:/WORK/MemBlock/inner_itlbRepeater3",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_itlbRepeater3"
+    },
+    {
+      "id": "inner_l1PrefetcherOpt",
+      "ref_path": "r:/WORK/MemBlock/inner_l1PrefetcherOpt",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_l1PrefetcherOpt"
+    },
+    {
+      "id": "inner_l1_pf_req_pf_queue_to_ldu_reg",
+      "ref_path": "r:/WORK/MemBlock/inner_l1_pf_req_pf_queue_to_ldu_reg",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_l1_pf_req_pf_queue_to_ldu_reg"
+    },
+    {
+      "id": "inner_l1d_to_l2_buffer",
+      "ref_path": "r:/WORK/MemBlock/inner_l1d_to_l2_buffer",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_l1d_to_l2_buffer"
+    },
+    {
+      "id": "inner_loadMisalignBuffer",
+      "ref_path": "r:/WORK/MemBlock/inner_loadMisalignBuffer",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_loadMisalignBuffer"
+    },
+    {
+      "id": "inner_lsq",
+      "ref_path": "r:/WORK/MemBlock/inner_lsq",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_lsq"
+    },
+    {
+      "id": "inner_otherStoutConnect",
+      "ref_path": "r:/WORK/MemBlock/inner_otherStoutConnect",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_otherStoutConnect"
+    },
+    {
+      "id": "inner_pmp",
+      "ref_path": "r:/WORK/MemBlock/inner_pmp",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_pmp"
+    },
+    {
+      "id": "inner_pmp_checkers_0",
+      "ref_path": "r:/WORK/MemBlock/inner_pmp_checkers_0",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_pmp_checkers_0"
+    },
+    {
+      "id": "inner_pmp_checkers_1",
+      "ref_path": "r:/WORK/MemBlock/inner_pmp_checkers_1",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_pmp_checkers_1"
+    },
+    {
+      "id": "inner_pmp_checkers_2",
+      "ref_path": "r:/WORK/MemBlock/inner_pmp_checkers_2",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_pmp_checkers_2"
+    },
+    {
+      "id": "inner_pmp_checkers_3",
+      "ref_path": "r:/WORK/MemBlock/inner_pmp_checkers_3",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_pmp_checkers_3"
+    },
+    {
+      "id": "inner_pmp_checkers_4",
+      "ref_path": "r:/WORK/MemBlock/inner_pmp_checkers_4",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_pmp_checkers_4"
+    },
+    {
+      "id": "inner_pmp_checkers_5",
+      "ref_path": "r:/WORK/MemBlock/inner_pmp_checkers_5",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_pmp_checkers_5"
+    },
+    {
+      "id": "inner_pmp_checkers_6",
+      "ref_path": "r:/WORK/MemBlock/inner_pmp_checkers_6",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_pmp_checkers_6"
+    },
+    {
+      "id": "inner_pmp_checkers_7",
+      "ref_path": "r:/WORK/MemBlock/inner_pmp_checkers_7",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_pmp_checkers_7"
+    },
+    {
+      "id": "inner_prefetcherOpt",
+      "ref_path": "r:/WORK/MemBlock/inner_prefetcherOpt",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_prefetcherOpt"
+    },
+    {
+      "id": "inner_ptw",
+      "ref_path": "r:/WORK/MemBlock/inner_ptw",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_ptw"
+    },
+    {
+      "id": "inner_ptw_to_l2_buffer",
+      "ref_path": "r:/WORK/MemBlock/inner_ptw_to_l2_buffer",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_ptw_to_l2_buffer"
+    },
+    {
+      "id": "inner_sbuffer",
+      "ref_path": "r:/WORK/MemBlock/inner_sbuffer",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_sbuffer"
+    },
+    {
+      "id": "inner_stdExeUnits_0",
+      "ref_path": "r:/WORK/MemBlock/inner_stdExeUnits_0",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_stdExeUnits_0"
+    },
+    {
+      "id": "inner_stdExeUnits_1",
+      "ref_path": "r:/WORK/MemBlock/inner_stdExeUnits_1",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_stdExeUnits_1"
+    },
+    {
+      "id": "inner_storeMisalignBuffer",
+      "ref_path": "r:/WORK/MemBlock/inner_storeMisalignBuffer",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_storeMisalignBuffer"
+    },
+    {
+      "id": "inner_uncache",
+      "ref_path": "r:/WORK/MemBlock/inner_uncache",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_uncache"
+    },
+    {
+      "id": "inner_vSegmentUnit",
+      "ref_path": "r:/WORK/MemBlock/inner_vSegmentUnit",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_vSegmentUnit"
+    },
+    {
+      "id": "inner_vfofBuffer",
+      "ref_path": "r:/WORK/MemBlock/inner_vfofBuffer",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_vfofBuffer"
+    },
+    {
+      "id": "inner_vlMergeBuffer",
+      "ref_path": "r:/WORK/MemBlock/inner_vlMergeBuffer",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_vlMergeBuffer"
+    },
+    {
+      "id": "inner_vlSplit_0",
+      "ref_path": "r:/WORK/MemBlock/inner_vlSplit_0",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_vlSplit_0"
+    },
+    {
+      "id": "inner_vlSplit_1",
+      "ref_path": "r:/WORK/MemBlock/inner_vlSplit_1",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_vlSplit_1"
+    },
+    {
+      "id": "inner_vsMergeBuffer_0",
+      "ref_path": "r:/WORK/MemBlock/inner_vsMergeBuffer_0",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_vsMergeBuffer_0"
+    },
+    {
+      "id": "inner_vsMergeBuffer_1",
+      "ref_path": "r:/WORK/MemBlock/inner_vsMergeBuffer_1",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_vsMergeBuffer_1"
+    },
+    {
+      "id": "inner_vsSplit_0",
+      "ref_path": "r:/WORK/MemBlock/inner_vsSplit_0",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_vsSplit_0"
+    },
+    {
+      "id": "inner_vsSplit_1",
+      "ref_path": "r:/WORK/MemBlock/inner_vsSplit_1",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_vsSplit_1"
+    },
+    {
+      "id": "inner_xbar",
+      "ref_path": "r:/WORK/MemBlock/inner_xbar",
+      "impl_path": "i:/WORK/MemBlock/u_core/inner_xbar"
+    }
+  ],
+  "unmatched": []
+}
