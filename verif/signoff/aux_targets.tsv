@@ -233,4 +233,4 @@ FastArbiter_79	PASS	集成态AUX gate(vmucp)native SUCCEEDED 427passing/最终0u
 ResetGen	PASS	集成态AUX gate native strict SUCCEEDED 4passing/最终0unread(3级复位同步器async set); UT 3seed errors=0; owner agent/topnoc
 IntBuffer	PASS	集成态AUX gate native strict SUCCEEDED 2passing/最终0unread(中断线延迟flop async reset); UT 3seed errors=0; owner agent/topnoc
 ReceiverLinkMonitor	PASS	集成态AUX gate native strict SUCCEEDED 4529passing/最终0unread/0blackbox(CHI链路监视器OpenNCB侧, LINKACTIVE 4态FSM同绿LinkMonitor, 6 flit转换器两侧elaborate); UT 3seed errors=0(17M checks); owner agent/topnoc
-TransmitterLinkMonitor	PASS	集成态官方AUX gate确认中(Queue15 FSM两侧elaborate只黑盒ram macro叶存储, strict clean SUCCEEDED 2672/0/0); owner agent/exu2trans
+TransmitterLinkMonitor	PENDING_CHILD_CLOSURE	★诚实撤回(无官方archive): owner证make fm- SUCCEEDED但走官方runner需assembly+FM_MERGE_DUP=false+allow声明3 ram_15x宏(同SMSPrefetcher配方); flip前未跑成官方gate. 待补official archive后转PASS. 集成态官方AUX gate确认中(Queue15 FSM两侧elaborate只黑盒ram macro叶存储, strict clean SUCCEEDED 2672/0/0); owner agent/exu2trans
