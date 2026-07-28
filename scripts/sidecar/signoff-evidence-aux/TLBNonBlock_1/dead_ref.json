@@ -1,0 +1,31 @@
+{
+  "schema": "fm-sidecar-dead-ref-v1",
+  "target": "TLBNonBlock_1",
+  "rationale": "signoff-strict + vmucp (two-sided elaborate of golden children DelayN_7/DelayN_9/TlbStorageWrapper_2/TLBFA_2; NO logic blackbox, NO vendor macro): impl side 100% clean (unmatched_impl=0, unread_impl=0, unread_notcompared=0 once the 48 symmetric matched-unread points internal to the golden children are actually compared under verify_matched_unread_compare_points=true and pass byte-identically). The only residual is 6 golden-only unread_ref = the store-TLB perf/debug probe registers r/r_1/r_2/r_3 (RegNext of io_requestor_*_req_bits_debug_isFirstIssue) and result_ok_last_REG/result_ok_last_REG_1 (RegNext of io_requestor_*_req_valid). In golden TLBNonBlock_1.sv these feed only the terminal DCE'd wires _GEN_22/_GEN_24/_GEN_28 (result_ok_last_REG & _portTranslateEnable_T & r & miss_read...), i.e. XSPerfAccumulate probe expressions whose print statements are compiled out under SYNTHESIS leaving the storage register + dead combinational fanout with no functional output fan-out (cone-dead). The readable impl core (rtl/memblock/TLBNonBlock_1.sv, grep result_ok_last/isFirstIssue = 0 hits) correctly omits these redundant golden-only debug registers. Enumerated exactly from native_facts (evidence /tmp/tlbclose-evidence/TLBNonBlock_1_aux). NOTE: qualifies ONLY under signoff-strict with verify_matched_unread_compare_points=true (requires TLBNonBlock_1 in the fm_eq.tcl vmucp whitelist + run_signoff_target.sh case + manifest_declarations column-5=true); the committed vmucp=false native_facts show unread_notcompared=48 and therefore do NOT yet meet the strict dead-ref gate (which rejects unread_notcompared>0) -- a fresh vmucp run is required to promote.",
+  "entries": [
+    {
+      "ref_path": "r:/WORK/TLBNonBlock_1/r_1_reg",
+      "rationale": "Golden-only perf/debug probe register (RegNext of io_requestor_0_req_bits_debug_isFirstIssue); feeds only DCE'd XSPerfAccumulate wire _GEN_24, cone-dead with no functional output fan-out. Impl core omits it."
+    },
+    {
+      "ref_path": "r:/WORK/TLBNonBlock_1/r_2_reg",
+      "rationale": "Golden-only perf/debug probe register (RegNext of io_requestor_1_req_bits_debug_isFirstIssue); feeds only DCE'd XSPerfAccumulate wire _GEN_26, cone-dead with no functional output fan-out. Impl core omits it."
+    },
+    {
+      "ref_path": "r:/WORK/TLBNonBlock_1/r_3_reg",
+      "rationale": "Golden-only perf/debug probe register (RegNext of io_requestor_1_req_bits_debug_isFirstIssue); feeds only DCE'd XSPerfAccumulate wire _GEN_28, cone-dead with no functional output fan-out. Impl core omits it."
+    },
+    {
+      "ref_path": "r:/WORK/TLBNonBlock_1/r_reg",
+      "rationale": "Golden-only perf/debug probe register (RegNext of io_requestor_0_req_bits_debug_isFirstIssue); feeds only DCE'd XSPerfAccumulate wire _GEN_22, cone-dead with no functional output fan-out. Impl core omits it."
+    },
+    {
+      "ref_path": "r:/WORK/TLBNonBlock_1/result_ok_last_REG_1_reg",
+      "rationale": "Golden-only perf/debug probe register (RegNext of io_requestor_1_req_valid); feeds only DCE'd XSPerfAccumulate wire _GEN_25/_GEN_26/_GEN_27, cone-dead with no functional output fan-out. Impl core omits it."
+    },
+    {
+      "ref_path": "r:/WORK/TLBNonBlock_1/result_ok_last_REG_reg",
+      "rationale": "Golden-only perf/debug probe register (RegNext of io_requestor_0_req_valid); feeds only DCE'd XSPerfAccumulate wire _GEN_21/_GEN_22/_GEN_23, cone-dead with no functional output fan-out. Impl core omits it."
+    }
+  ]
+}

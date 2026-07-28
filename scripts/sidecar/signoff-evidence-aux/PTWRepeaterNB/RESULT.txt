@@ -1,0 +1,4 @@
+SIGNOFF_RESULT PTWRepeaterNB: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=signoff-strict fm_shell_rc=0 validator_rc=0)
+run_id: SGN-PTWRepeaterNB-1785258017
+impl_commit: a8d5d91c0d72f35a9cc7f89f3caa71e8401aa067
+manifest_sha256: b35956b46a9e24f21cbda42505faab2053021cf927aebcf036b621f7fc9edbae

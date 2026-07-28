@@ -1,0 +1,4 @@
+SIGNOFF_RESULT VSegmentUnit: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=signoff-strict fm_shell_rc=0 validator_rc=0)
+run_id: SGN-VSegmentUnit-1785259713
+impl_commit: 6a459742364523a0b7cb2399b110a3ecb2d14502
+manifest_sha256: 70cdaf3fd27f91a65510ef5a945d875a4987a3327d83352b10940546b1c7581f

@@ -1,0 +1,17 @@
+=== FM: VLMergeBufferImp (mode=signoff-strict) ===
+FM_TOP=VLMergeBufferImp \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/VLMergeBufferImp.sv /home/eda/xs-env/G0-canonical/golden-rtl/FreeList.sv /home/eda/xs-env/G0-canonical/golden-rtl/NewPipelineConnectPipe_27.sv " \
+FM_IMPL_SRCS="/tmp/tmp.JpN0Q0RQA1/wt/rtl/memblock/vlmergebuffer_pkg.sv /tmp/tmp.JpN0Q0RQA1/wt/rtl/memblock/VLMergeBufferImp.sv /tmp/tmp.JpN0Q0RQA1/wt/rtl/memblock/VLMergeBufferImp_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/FreeList.sv /home/eda/xs-env/G0-canonical/golden-rtl/NewPipelineConnectPipe_27.sv" \
+FM_MERGE_DUP=false \
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=true \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/VLMergeBufferImp -file /tmp/tmp.JpN0Q0RQA1/wt/scripts/fm_eq.tcl \
+    > fm_work/VLMergeBufferImp/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.JpN0Q0RQA1/wt/scripts/fm_verdict.py fm_work/VLMergeBufferImp/fm.log --rc $rc --mode signoff-strict --top VLMergeBufferImp --allowlist 0
+SUCCEEDED	{"passing": 13407, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "VLMergeBufferImp", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}

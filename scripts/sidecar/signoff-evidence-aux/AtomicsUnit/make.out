@@ -1,0 +1,21 @@
+=== FM: AtomicsUnit (mode=assembly) ===
+FM_TOP=AtomicsUnit \
+FM_MODE=assembly \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/AtomicsUnit.sv /home/eda/xs-env/G0-canonical/golden-rtl/DummyDPICWrapper_50.sv /home/eda/xs-env/G0-canonical/golden-rtl/DiffExtLrScEvent.v " \
+FM_IMPL_SRCS="/tmp/tmp.93jxVwYENH/wt/rtl/memblock/AtomicsUnit.sv /tmp/tmp.93jxVwYENH/wt/rtl/memblock/AtomicsUnit_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/DummyDPICWrapper_50.sv /home/eda/xs-env/G0-canonical/golden-rtl/DiffExtLrScEvent.v" \
+FM_MERGE_DUP=false \
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=true \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/AtomicsUnit -file /tmp/tmp.93jxVwYENH/wt/scripts/fm_eq.tcl \
+    > fm_work/AtomicsUnit/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.93jxVwYENH/wt/scripts/fm_verdict.py fm_work/AtomicsUnit/fm.log --rc $rc --mode assembly --top AtomicsUnit --allowlist ../../signoff/allow/AtomicsUnit.json
+usage: fm_verdict.py [-h] [--rc RC] [--mode MODE] [--top TOP]
+                     [--allowlist ALLOWLIST]
+                     log
+fm_verdict.py: error: argument --allowlist: invalid int value: '../../signoff/allow/AtomicsUnit.json'
+make: *** [../../../scripts/ut_common.mk:60: fm-AtomicsUnit] Error 2
