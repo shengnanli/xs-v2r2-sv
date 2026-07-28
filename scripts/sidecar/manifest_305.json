@@ -2144,9 +2144,9 @@
    "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
+   "allow_ref": "verif/signoff/allow/MemBlock.json",
+   "rationale": "fmbb assembly装配: 34 child类型对称empty_blackbox(20绿305 SIGNOFF_PASS+14 aux-PASS依赖闭合)+15 glue两侧真实elaborate(HPerfMonitor_3/PFEvent/FrontendBridge/Mbist×3/DelayN×2/DelayNWithValid×5/PipelineRegModule×2)+12 ram_ext厂商FIFO对称unresolved. native SUCCEEDED passing97294/failing0/unread0/unmatched0/no dont_verify/no relaxed_appvars; 1391+32对称bijective matched-unread(cone-dead perf/mbist/delay reg, ref==impl)由vmucp逐位比较→passing(非vacuous); 673 benign Constant reg. fm_pins补HPerfCounter_21死bit[3][4]双射.",
+   "verify_matched_unread_compare_points": "true",
    "dead_ref": "",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
