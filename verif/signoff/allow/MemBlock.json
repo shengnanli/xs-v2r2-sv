@@ -1,62 +1,62 @@
 {
   "unresolved_blackbox": [
     {
-      "id": "icache/nodeIn_d_q/ram_ext",
+      "id": "inner_frontendBridge.icache.nodeIn_d_q.ram_ext",
       "ref_path": "r:/WORK/MemBlock/inner_frontendBridge/icache/nodeIn_d_q/ram_ext",
       "impl_path": "i:/WORK/MemBlock/u_core/inner_frontendBridge/icache/nodeIn_d_q/ram_ext"
     },
     {
-      "id": "icache/nodeIn_d_q_1/ram_ext",
+      "id": "inner_frontendBridge.icache.nodeIn_d_q_1.ram_ext",
       "ref_path": "r:/WORK/MemBlock/inner_frontendBridge/icache/nodeIn_d_q_1/ram_ext",
       "impl_path": "i:/WORK/MemBlock/u_core/inner_frontendBridge/icache/nodeIn_d_q_1/ram_ext"
     },
     {
-      "id": "icache/nodeOut_a_q/ram_ext",
+      "id": "inner_frontendBridge.icache.nodeOut_a_q.ram_ext",
       "ref_path": "r:/WORK/MemBlock/inner_frontendBridge/icache/nodeOut_a_q/ram_ext",
       "impl_path": "i:/WORK/MemBlock/u_core/inner_frontendBridge/icache/nodeOut_a_q/ram_ext"
     },
     {
-      "id": "icache/nodeOut_a_q_1/ram_ext",
+      "id": "inner_frontendBridge.icache.nodeOut_a_q_1.ram_ext",
       "ref_path": "r:/WORK/MemBlock/inner_frontendBridge/icache/nodeOut_a_q_1/ram_ext",
       "impl_path": "i:/WORK/MemBlock/u_core/inner_frontendBridge/icache/nodeOut_a_q_1/ram_ext"
     },
     {
-      "id": "icachectrl/nodeIn_d_q/ram_ext",
+      "id": "inner_frontendBridge.icachectrl.nodeIn_d_q.ram_ext",
       "ref_path": "r:/WORK/MemBlock/inner_frontendBridge/icachectrl/nodeIn_d_q/ram_ext",
       "impl_path": "i:/WORK/MemBlock/u_core/inner_frontendBridge/icachectrl/nodeIn_d_q/ram_ext"
     },
     {
-      "id": "icachectrl/nodeIn_d_q_1/ram_ext",
+      "id": "inner_frontendBridge.icachectrl.nodeIn_d_q_1.ram_ext",
       "ref_path": "r:/WORK/MemBlock/inner_frontendBridge/icachectrl/nodeIn_d_q_1/ram_ext",
       "impl_path": "i:/WORK/MemBlock/u_core/inner_frontendBridge/icachectrl/nodeIn_d_q_1/ram_ext"
     },
     {
-      "id": "icachectrl/nodeOut_a_q/ram_ext",
+      "id": "inner_frontendBridge.icachectrl.nodeOut_a_q.ram_ext",
       "ref_path": "r:/WORK/MemBlock/inner_frontendBridge/icachectrl/nodeOut_a_q/ram_ext",
       "impl_path": "i:/WORK/MemBlock/u_core/inner_frontendBridge/icachectrl/nodeOut_a_q/ram_ext"
     },
     {
-      "id": "icachectrl/nodeOut_a_q_1/ram_ext",
+      "id": "inner_frontendBridge.icachectrl.nodeOut_a_q_1.ram_ext",
       "ref_path": "r:/WORK/MemBlock/inner_frontendBridge/icachectrl/nodeOut_a_q_1/ram_ext",
       "impl_path": "i:/WORK/MemBlock/u_core/inner_frontendBridge/icachectrl/nodeOut_a_q_1/ram_ext"
     },
     {
-      "id": "instr_uncache/nodeIn_d_q/ram_ext",
+      "id": "inner_frontendBridge.instr_uncache.nodeIn_d_q.ram_ext",
       "ref_path": "r:/WORK/MemBlock/inner_frontendBridge/instr_uncache/nodeIn_d_q/ram_ext",
       "impl_path": "i:/WORK/MemBlock/u_core/inner_frontendBridge/instr_uncache/nodeIn_d_q/ram_ext"
     },
     {
-      "id": "instr_uncache/nodeIn_d_q_1/ram_ext",
+      "id": "inner_frontendBridge.instr_uncache.nodeIn_d_q_1.ram_ext",
       "ref_path": "r:/WORK/MemBlock/inner_frontendBridge/instr_uncache/nodeIn_d_q_1/ram_ext",
       "impl_path": "i:/WORK/MemBlock/u_core/inner_frontendBridge/instr_uncache/nodeIn_d_q_1/ram_ext"
     },
     {
-      "id": "instr_uncache/nodeOut_a_q/ram_ext",
+      "id": "inner_frontendBridge.instr_uncache.nodeOut_a_q.ram_ext",
       "ref_path": "r:/WORK/MemBlock/inner_frontendBridge/instr_uncache/nodeOut_a_q/ram_ext",
       "impl_path": "i:/WORK/MemBlock/u_core/inner_frontendBridge/instr_uncache/nodeOut_a_q/ram_ext"
     },
     {
-      "id": "instr_uncache/nodeOut_a_q_1/ram_ext",
+      "id": "inner_frontendBridge.instr_uncache.nodeOut_a_q_1.ram_ext",
       "ref_path": "r:/WORK/MemBlock/inner_frontendBridge/instr_uncache/nodeOut_a_q_1/ram_ext",
       "impl_path": "i:/WORK/MemBlock/u_core/inner_frontendBridge/instr_uncache/nodeOut_a_q_1/ram_ext"
     }

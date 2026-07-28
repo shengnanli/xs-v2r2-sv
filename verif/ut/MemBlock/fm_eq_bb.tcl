@@ -60,9 +60,10 @@ set_top r:/WORK/$top
 read_sverilog -i -define {SYNTHESIS} $impl_srcs
 set_top i:/WORK/$top
 
-# 黑盒引脚按「名字+位置」配对（identity）：34 类黑盒的边界命名结构一致可自动配对，
-# 避免对同构 perf 引脚的功能配对歧义。
-set_app_var verification_blackbox_match_mode identity
+# 黑盒引脚配对：用 FM 默认 name-based(any)。66 类黑盒(54 child + 12 ram_ext)两侧命名
+# 结构完全一致(同名同路径, 仅差 u_core/ 前缀)可自动配对；同构 perf/hpc 死位另经下方
+# fm_pins.tcl 显式 set_user_match 钉死, 无需 identity(identity 是非默认 appvar→
+# relaxed_appvars 资格→assembly quals_any PARTIAL, 同 DCache 精简后保 any 默认)。
 
 # ---------------------------------------------------------------------------
 # perf 2 级流水钉点：golden 把 8 路 perf 展平成 inner_io_perf_<n>_value_REG/_REG_1，
