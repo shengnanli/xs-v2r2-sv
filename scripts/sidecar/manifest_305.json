@@ -2203,11 +2203,11 @@
    "entry": "scripts/fm_eq.tcl",
    "proof_mode": "signoff-strict",
    "config_status": "CONFIGURED",
-   "required_verdict": "SUCCEEDED",
+   "required_verdict": "PASS_DEAD_REF",
    "allow_ref": "",
-   "rationale": "",
+   "rationale": "strict+dead-ref: 72 golden-only cone-dead(12 reg×6bit decodeReason_0..5_reg/decodeReason_REG_0..5_reg debug-perf stall-reason流水, 只喂XSPerfAccumulate _GEN_109..122零消费者SYNTHESIS下DCE=cone-dead; impl核rtl/backend/NewDispatch.sv grep decodeReason/stallReason=0, unread_impl=0 clean) → PASS_DEAD_REF",
    "verify_matched_unread_compare_points": "false",
-   "dead_ref": "",
+   "dead_ref": "verif/signoff/dead_ref/NewDispatch.json",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
