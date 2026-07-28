@@ -1,6 +1,8 @@
 {
-    "_comment": "AtomicsUnit AUX allow: 唯一黑盒=difftest LrSc DPI-C sink(DummyDPICWrapper_50内DiffExtLrScEvent, SYNTHESIS下空体→FM采集为empty_blackbox), 对称matched(ref==impl). 其余全两侧elaborate白盒.",
+    "unresolved_blackbox": [],
+    "interface_only": [],
     "empty_blackbox": [
         {"id": "DiffExtLrScEvent", "ref_path": "r:/WORK/AtomicsUnit/difftest_module/dpic", "impl_path": "i:/WORK/AtomicsUnit/u_core/difftest_module/dpic"}
-    ]
+    ],
+    "unmatched": []
 }
