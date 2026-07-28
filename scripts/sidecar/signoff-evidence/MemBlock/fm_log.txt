@@ -21,11 +21,11 @@
 
 Build: 8868332
 Hostname: localhost.localdomain
-Current time: Tue Jul 28 11:16:43 2026
+Current time: Tue Jul 28 14:40:31 2026
 
 Loading db file '/home/eda/app/synopsys/fm/V-2023.12-SP3/libraries/syn/gtech.db'
 
-Script: /tmp/tmp.EQ3DvNji6o/wt/verif/ut/MemBlock/fm_eq_bb.tcl
+Script: /tmp/tmp.vxAETsrE0K/wt/verif/ut/MemBlock/fm_eq_bb.tcl
 
 Information: Term was not able to be set up using xterm-256color . Using "xterm" by default instead. (CLE-10)
 # MemBlock assembly FM 脚本（codex_0074 owner#6，本 UT 目录私有，不改任何共享脚本）。
@@ -51,9 +51,9 @@ Information: Term was not able to be set up using xterm-256color . Using "xterm"
 set top       $env(FM_TOP)
 MemBlock
 set ref_srcs  $env(FM_REF_SRCS)
-/home/eda/xs-env/G0-canonical/golden-rtl/MemBlock.sv /tmp/tmp.EQ3DvNji6o/wt/rtl/memblock/memblock_bb_stub.sv /home/eda/xs-env/G0-canonical/golden-rtl/HPerfMonitor_3.sv /home/eda/xs-env/G0-canonical/golden-rtl/HPerfCounter_21.sv /home/eda/xs-env/G0-canonical/golden-rtl/PFEvent.sv /home/eda/xs-env/G0-canonical/golden-rtl/perfEventsModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/FrontendBridge.sv /home/eda/xs-env/G0-canonical/golden-rtl/ICacheBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/ICacheCtrlBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/InstrUncacheBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleA_8.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleD_9.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleA_10.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleD_11.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleA_12.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleD_13.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistIntfMemBlk.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistPipeMemBlk.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistPipeSms.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayN_332.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayN_8.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_2.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_200.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_202.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_203.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_3.sv /home/eda/xs-env/G0-canonical/golden-rtl/PipelineRegModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/PipelineRegModule_6.sv
+/home/eda/xs-env/G0-canonical/golden-rtl/MemBlock.sv /tmp/tmp.vxAETsrE0K/wt/rtl/memblock/memblock_bb_stub.sv /home/eda/xs-env/G0-canonical/golden-rtl/HPerfMonitor_3.sv /home/eda/xs-env/G0-canonical/golden-rtl/HPerfCounter_21.sv /home/eda/xs-env/G0-canonical/golden-rtl/PFEvent.sv /home/eda/xs-env/G0-canonical/golden-rtl/perfEventsModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/FrontendBridge.sv /home/eda/xs-env/G0-canonical/golden-rtl/ICacheBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/ICacheCtrlBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/InstrUncacheBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleA_8.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleD_9.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleA_10.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleD_11.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleA_12.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleD_13.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistIntfMemBlk.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistPipeMemBlk.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistPipeSms.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayN_332.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayN_8.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_2.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_200.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_202.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_203.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_3.sv /home/eda/xs-env/G0-canonical/golden-rtl/PipelineRegModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/PipelineRegModule_6.sv
 set impl_srcs $env(FM_IMPL_SRCS)
-/tmp/tmp.EQ3DvNji6o/wt/rtl/memblock/memblock_pkg.sv /tmp/tmp.EQ3DvNji6o/wt/rtl/memblock/MemBlock.sv /tmp/tmp.EQ3DvNji6o/wt/rtl/memblock/MemBlock_wrapper.sv /tmp/tmp.EQ3DvNji6o/wt/rtl/memblock/memblock_bb_stub.sv /home/eda/xs-env/G0-canonical/golden-rtl/HPerfMonitor_3.sv /home/eda/xs-env/G0-canonical/golden-rtl/HPerfCounter_21.sv /home/eda/xs-env/G0-canonical/golden-rtl/PFEvent.sv /home/eda/xs-env/G0-canonical/golden-rtl/perfEventsModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/FrontendBridge.sv /home/eda/xs-env/G0-canonical/golden-rtl/ICacheBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/ICacheCtrlBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/InstrUncacheBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleA_8.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleD_9.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleA_10.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleD_11.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleA_12.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleD_13.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistIntfMemBlk.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistPipeMemBlk.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistPipeSms.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayN_332.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayN_8.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_2.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_200.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_202.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_203.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_3.sv /home/eda/xs-env/G0-canonical/golden-rtl/PipelineRegModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/PipelineRegModule_6.sv
+/tmp/tmp.vxAETsrE0K/wt/rtl/memblock/memblock_pkg.sv /tmp/tmp.vxAETsrE0K/wt/rtl/memblock/MemBlock.sv /tmp/tmp.vxAETsrE0K/wt/rtl/memblock/MemBlock_wrapper.sv /tmp/tmp.vxAETsrE0K/wt/rtl/memblock/memblock_bb_stub.sv /home/eda/xs-env/G0-canonical/golden-rtl/HPerfMonitor_3.sv /home/eda/xs-env/G0-canonical/golden-rtl/HPerfCounter_21.sv /home/eda/xs-env/G0-canonical/golden-rtl/PFEvent.sv /home/eda/xs-env/G0-canonical/golden-rtl/perfEventsModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/FrontendBridge.sv /home/eda/xs-env/G0-canonical/golden-rtl/ICacheBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/ICacheCtrlBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/InstrUncacheBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleA_8.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleD_9.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleA_10.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleD_11.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleA_12.sv /home/eda/xs-env/G0-canonical/golden-rtl/Queue2_TLBundleD_13.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistIntfMemBlk.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistPipeMemBlk.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistPipeSms.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayN_332.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayN_8.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_2.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_200.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_202.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_203.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayNWithValid_3.sv /home/eda/xs-env/G0-canonical/golden-rtl/PipelineRegModule.sv /home/eda/xs-env/G0-canonical/golden-rtl/PipelineRegModule_6.sv
 # --- sidecar 接线(305 统一判定; 本入口无独立 grep/WAIVED 判绿, 判定归 fm_sidecar_verdict.py)---
 set SIDECAR_ON 0
 0
@@ -98,7 +98,7 @@ false
 read_sverilog -r -define {SYNTHESIS} $ref_srcs
 No target library specified, default is WORK
 Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/MemBlock.sv'
-Loading verilog file '/tmp/tmp.EQ3DvNji6o/wt/rtl/memblock/memblock_bb_stub.sv'
+Loading verilog file '/tmp/tmp.vxAETsrE0K/wt/rtl/memblock/memblock_bb_stub.sv'
 Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/HPerfMonitor_3.sv'
 Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/HPerfCounter_21.sv'
 Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/PFEvent.sv'
@@ -219,16 +219,16 @@ Reference design set to 'r:/WORK/MemBlock'
 1
 read_sverilog -i -define {SYNTHESIS} $impl_srcs
 No target library specified, default is WORK
-Loading verilog file '/tmp/tmp.EQ3DvNji6o/wt/rtl/memblock/memblock_pkg.sv'
-Loading verilog file '/tmp/tmp.EQ3DvNji6o/wt/rtl/memblock/MemBlock.sv'
-Loading include file '/tmp/tmp.EQ3DvNji6o/wt/rtl/memblock/memblock_ports.svh'
-Loading include file '/tmp/tmp.EQ3DvNji6o/wt/rtl/memblock/memblock_nets.svh'
-Loading include file '/tmp/tmp.EQ3DvNji6o/wt/rtl/memblock/memblock_logic.svh'
-Loading include file '/tmp/tmp.EQ3DvNji6o/wt/rtl/memblock/memblock_perf_src.svh'
-Loading include file '/tmp/tmp.EQ3DvNji6o/wt/rtl/memblock/memblock_perf_out.svh'
-Loading include file '/tmp/tmp.EQ3DvNji6o/wt/rtl/memblock/memblock_inst.svh'
-Loading verilog file '/tmp/tmp.EQ3DvNji6o/wt/rtl/memblock/MemBlock_wrapper.sv'
-Loading verilog file '/tmp/tmp.EQ3DvNji6o/wt/rtl/memblock/memblock_bb_stub.sv'
+Loading verilog file '/tmp/tmp.vxAETsrE0K/wt/rtl/memblock/memblock_pkg.sv'
+Loading verilog file '/tmp/tmp.vxAETsrE0K/wt/rtl/memblock/MemBlock.sv'
+Loading include file '/tmp/tmp.vxAETsrE0K/wt/rtl/memblock/memblock_ports.svh'
+Loading include file '/tmp/tmp.vxAETsrE0K/wt/rtl/memblock/memblock_nets.svh'
+Loading include file '/tmp/tmp.vxAETsrE0K/wt/rtl/memblock/memblock_logic.svh'
+Loading include file '/tmp/tmp.vxAETsrE0K/wt/rtl/memblock/memblock_perf_src.svh'
+Loading include file '/tmp/tmp.vxAETsrE0K/wt/rtl/memblock/memblock_perf_out.svh'
+Loading include file '/tmp/tmp.vxAETsrE0K/wt/rtl/memblock/memblock_inst.svh'
+Loading verilog file '/tmp/tmp.vxAETsrE0K/wt/rtl/memblock/MemBlock_wrapper.sv'
+Loading verilog file '/tmp/tmp.vxAETsrE0K/wt/rtl/memblock/memblock_bb_stub.sv'
 Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/HPerfMonitor_3.sv'
 Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/HPerfCounter_21.sv'
 Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/PFEvent.sv'
@@ -894,8 +894,8 @@ SIDECAR_NATIVE_FACTS_WRITTEN
 exit
 
 Maximum memory usage for this session: 1117 MB
-CPU usage for this session: 355.57 seconds ( 0.10 hours )
-Current time: Tue Jul 28 11:22:52 2026
-Elapsed time: 372 seconds ( 0.10 hours )
+CPU usage for this session: 347.44 seconds ( 0.10 hours )
+Current time: Tue Jul 28 14:46:32 2026
+Elapsed time: 364 seconds ( 0.10 hours )
 
 Thank you for using Formality (R)!
