@@ -61,7 +61,7 @@ def load_declarations(path):
         vmucp = p[4] if len(p) > 4 and p[4] else "false"
         if vmucp not in ("true", "false"):
             raise SystemExit(f"bad verify_matched_unread_compare_points for {p[0]}: {vmucp}")
-        if vmucp == "true" and p[0] not in {"$top","ni","LoadQueueUncache","FastArbiter_46","FastArbiter_47","FastArbiter_27","FastArbiter_44","ICacheCtrlUnit","ICacheDataArray","IPrefetchPipe","DivUnit","FDivSqrt","InstrMMIOEntry","InstrUncache","TXDAT_4","FAlu","FCVT","IssueQueueStdMoud","MulUnit","TXREQ","TlbStorageWrapper","TlbStorageWrapper_1","IssueQueueStaMou","IssueQueueLdu","TXDAT","Scheduler_1","Scheduler","Scheduler_3","MSHR","TageBTable","Directory","SCTable","SCTable_1","SCTable_2","SCTable_3","Tage_SC","ITTage","FauFTB","FTBBank","FTB","Composer","EntriesAluCsrFenceDiv","Bku","SourceB","Predictor","EntriesAluMulBkuBrhJmp","DuplicatedTagArray","PtwCache","WritebackQueue","LinkMonitor","Ftq","LoadQueue","LoadPipe","MissQueue","IssueQueueAluMulBkuBrhJmp","L2TLB","Rename","IssueQueueAluCsrFenceDiv","Scheduler_2","DebugModule","WbDataPath","IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v","Slice","LoadQueueReplay","NewCSR","DCache","DataPath","SnoopUnit","MemUnit","RefillUnit","ResponseUnit","OpenLLC","StoreQueue","FastArbiter_1","FastArbiter_2","FastArbiter_28","FastArbiter_29","Slice_1","Slice_2","Slice_3","Directory_1","Directory_2","Directory_3","PrefetchReqBuffer","RXSNP","Prefetcher","Pipeline_2","Pipeline_3","FusionDecoder","TL2CHICoupledL2","L2Top","PrefetchQueue","VBestOffsetPrefetch","MemCtrl", "Frontend", "CSR"}:
+        if vmucp == "true" and p[0] not in {"$top","ni","LoadQueueUncache","FastArbiter_46","FastArbiter_47","FastArbiter_27","FastArbiter_44","ICacheCtrlUnit","ICacheDataArray","IPrefetchPipe","DivUnit","FDivSqrt","InstrMMIOEntry","InstrUncache","TXDAT_4","FAlu","FCVT","IssueQueueStdMoud","MulUnit","TXREQ","TlbStorageWrapper","TlbStorageWrapper_1","IssueQueueStaMou","IssueQueueLdu","TXDAT","Scheduler_1","Scheduler","Scheduler_3","MSHR","TageBTable","Directory","SCTable","SCTable_1","SCTable_2","SCTable_3","Tage_SC","ITTage","FauFTB","FTBBank","FTB","Composer","EntriesAluCsrFenceDiv","Bku","SourceB","Predictor","EntriesAluMulBkuBrhJmp","DuplicatedTagArray","PtwCache","WritebackQueue","LinkMonitor","Ftq","LoadQueue","LoadPipe","MissQueue","IssueQueueAluMulBkuBrhJmp","L2TLB","Rename","IssueQueueAluCsrFenceDiv","Scheduler_2","DebugModule","WbDataPath","IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v","Slice","LoadQueueReplay","NewCSR","DCache","DataPath","SnoopUnit","MemUnit","RefillUnit","ResponseUnit","OpenLLC","StoreQueue","FastArbiter_1","FastArbiter_2","FastArbiter_28","FastArbiter_29","Slice_1","Slice_2","Slice_3","Directory_1","Directory_2","Directory_3","PrefetchReqBuffer","RXSNP","Prefetcher","Pipeline_2","Pipeline_3","FusionDecoder","TL2CHICoupledL2","L2Top","PrefetchQueue","VBestOffsetPrefetch","MemCtrl", "Frontend", "CSR", "VLSplitImp", "VSSplitImp", "AtomicsUnit"}:
             raise SystemExit(f"target-scoped strengthening forbidden for {p[0]}")
         # 十四审: 第 6 列(可选)= per-target dead-ref 声明文件路径。声明存在 ⇒ 该 target
         # 的 required_verdict 变为 PASS_DEAD_REF(golden-only 死点已逐点声明+审核)。
@@ -125,6 +125,36 @@ def variants_of(makefile):
     return vals
 
 
+def fmbb_tcl_entry(makefile, ut_dir, mt):
+    """从 Makefile 的 mt 规则解析实际执行的 `fm_shell ... -file <tcl>`，派生 entry
+    路径(相对 xs-signoff 根)。避免硬编码 fm_eq_bb.tcl 与实际 closure 不符(codex_0075:
+    NewCSR 实走 fm_eq_parent.tcl)。$(abspath X)->verif/ut/<dir>/X; $(XSSV_HOME)/scripts/X
+    ->scripts/X。解析失败回退 None(调用方保留旧默认)。"""
+    if not makefile or not os.path.isfile(makefile):
+        return None
+    lines = open(makefile).read().splitlines()
+    inrule = False; body = []
+    for ln in lines:
+        if re.match(rf"^{re.escape(mt)}\s*:", ln):
+            inrule = True; continue
+        if inrule:
+            seg = ln.split("#")[0]
+            if ln and not ln[0].isspace() and ":" in seg and not seg.lstrip().startswith("@"):
+                break
+            body.append(ln)
+    blob = "\n".join(body)
+    m = re.search(r"-file\s+\$\(abspath\s+([^\s)]+\.tcl)\)", blob)
+    if m:
+        return "verif/ut/%s/%s" % (ut_dir, os.path.basename(m.group(1)))
+    m = re.search(r"-file\s+\$\(XSSV_HOME\)/(\S+\.tcl)", blob)
+    if m:
+        return m.group(1)
+    m = re.search(r"-file\s+(\S+\.tcl)", blob)
+    if m:
+        return m.group(1)
+    return None
+
+
 def mk_entry(target, ut_dir, makefile, make_target, entry, pmode, decl, bid, cfg="CONFIGURED"):
     d = decl.get(target, {})
     pm = d.get("proof_mode") or pmode
@@ -173,7 +203,10 @@ def main():
         ut_dir = os.path.basename(os.path.dirname(mk))
         if ut_dir in FMBB and mk.endswith("Makefile"):
             mt = FMBB[ut_dir]
-            entry = ("verif/ut/%s/fm_eq_bb.tcl" % ut_dir) if mt == "fmbb" else "scripts/fm_eq.tcl"
+            # entry 从 Makefile mt 规则实际 `-file <tcl>` 派生(codex_0075: provenance 须
+            # 与真实执行的 Tcl closure 一致); 派生失败才回退硬编码默认。
+            entry = fmbb_tcl_entry(mk, ut_dir, mt) or \
+                (("verif/ut/%s/fm_eq_bb.tcl" % ut_dir) if mt == "fmbb" else "scripts/fm_eq.tcl")
             pm = "assembly" if mt == "fmbb" else "signoff-strict"
             key = (ut_dir, ut_dir, mt)
             if key in seen:

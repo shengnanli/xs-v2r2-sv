@@ -1,6 +1,6 @@
 # 父assembly目标 -> 依赖的child FM目标(须同baseline+impl全SIGNOFF_PASS父级才计绿)
 # 条件挂起(assembly证明已SUCCEEDED但child未闭合, 保持PROOF_GAP直到child全绿)
-Frontend	ICache,NewIFU,IBuffer,Ftq,Composer,InstrUncache	Predictor 两侧真实 elaborate(白盒, 非依赖); 6 绿 305 child 对称 unresolved 黑盒(ICache/NewIFU=inner_ifu/IBuffer/Ftq + Composer=inner_bpu/predictors + InstrUncache); 其余非 305 glue 子(TLB/PTWFilter=inner_itlbRepeater1/PTWRepeaterNB=inner_itlbRepeater2/PMP/PMPChecker×5/DelayN_7·8·13/HPerfMonitor/PFEvent/MbistIntfFrontend/MbistPipeFrontend)golden 源对称黑盒无独立 305 target; 父级 assembly native SUCCEEDED 52910 passing/0(0)全零
+Frontend	ICache,NewIFU,IBuffer,Ftq,Composer,InstrUncache,PMP,PMPChecker	Predictor 两侧真实 elaborate(白盒, 非依赖); 8 绿 305 child 对称 unresolved 黑盒(ICache/NewIFU=inner_ifu/IBuffer/Ftq + Composer=inner_bpu/predictors + InstrUncache + PMP=inner_pmp + PMPChecker=inner_PMPChecker×5, 均305 SIGNOFF_PASS depends_on绿child); 其余非 305 glue 子(TLB/PTWFilter=inner_itlbRepeater1/PTWRepeaterNB=inner_itlbRepeater2/DelayN_7·8·13/HPerfMonitor/PFEvent/MbistIntfFrontend/MbistPipeFrontend)golden 源对称黑盒无独立 305 target; 父级 assembly native SUCCEEDED 52910 passing/0(0)全零
 ICache	ICacheCtrlUnit,ICacheDataArray,ICacheMainPipe,ICacheMissUnit,IPrefetchPipe,ICacheReplacer
 ITTageTable	WrBypass_41
 ITTageTable_1	WrBypass_41

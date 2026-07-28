@@ -510,7 +510,7 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/ExuBlock.json",
-   "rationale": "assembly: ExuBlock容器glue(frm打拍/error聚合/exu阵列接线)全证明(native SUCCEEDED passing13779, failing/unread/nc/compare/unmatched全0). 39原始黑盒→19: (a)18小型glue叶两侧elaborate白盒实比(ClockGate×8门控latch+Dispatcher×8纯组合in1ToN+DelayN_216/217打拍链, 均0子非305非vendor, 入FM_REF_DEPS+WRAPPER_SRCS)(b)IntFPToVec/VSetRiWvf及其纯组合ROM叶(FliH/S/DTable/VsetModule)亦两侧elaborate白盒. 余19黑盒: 17=绿305 FU目标(Alu×4/Bku×2/MulUnit×2/BranchUnit×3/JumpUnit×3/DivUnit/Fence/VSetRiWi各SIGNOFF_PASS, depends_on绿child). ★2非305 GAP: exus_7/csr=CSR(413端口, 封装NewCSR/IMSIC绿+TrapInstMod/TrapTvalMod) + exus_5/i2f=IntToFP_3(FP转换datapath, 递归IntToFP prenorm/postnorm)——二者无独立305 signoff, 对称黑盒声明边界但child未闭合→ExuBlock保持PROOF_GAP(conditional suspend)直到CSR/IntToFP_3各自signoff. 无dont_verify/无vacuous/无扩黑盒over非法",
+   "rationale": "assembly: ExuBlock容器glue(frm打拍/error聚合/exu阵列接线)全证明(native SUCCEEDED passing13779, failing/unread/nc/compare/unmatched全0). 39原始黑盒→19: (a)18小型glue叶两侧elaborate白盒实比(ClockGate×8门控latch+Dispatcher×8纯组合in1ToN+DelayN_216/217打拍链, 均0子非305非vendor, 入FM_REF_DEPS+WRAPPER_SRCS)(b)IntFPToVec/VSetRiWvf及其纯组合ROM叶(FliH/S/DTable/VsetModule)亦两侧elaborate白盒. 余19黑盒: 17=绿305 FU目标(Alu×4/Bku×2/MulUnit×2/BranchUnit×3/JumpUnit×3/DivUnit/Fence/VSetRiWi各SIGNOFF_PASS, depends_on绿child). ★2非305 AUX child已闭合: exus_7/csr=CSR(413端口, 封装NewCSR/IMSIC绿+TrapInstMod/TrapTvalMod, aux assembly SUCCEEDED) + exus_5/i2f=IntToFP_3(FP转换datapath, aux strict SUCCEEDED 808点)——二者aux_targets PASS(assembly_depends闭合), ExuBlock 39黑盒全闭合→SIGNOFF_PASS. 无dont_verify/无vacuous/无扩黑盒over非法",
    "verify_matched_unread_compare_points": "false",
    "dead_ref": "",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
@@ -930,7 +930,7 @@
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
    "allow_ref": "verif/signoff/allow/Frontend.json",
-   "rationale": "REAL REPLACEMENT: xs_Frontend_core真驱动io_error_*/io_perf_*+PC连续性检查器(非影子, bit-exact). Predictor两侧真实elaborate(golden Predictor.sv进FM_REF_DEPS ref侧 + WRAPPER_SRCS impl侧, golden==golden对称非重证Predictor内部, Predictor自身已305 SIGNOFF_PASS)令io_bpu_to_ftq_resp_bits_s3_valid_0成driven internal net, inner__probe不再是ref-only cut-point→消除BB输出cut污染的matched BBPin failing(Cut=0). 其余绿305子(ICache/NewIFU/IBuffer/Ftq)+Predictor孙子(Composer/PriorityMuxModule×6/DelayN)+非305 glue子对称unresolved黑盒边界. vmucp=true比较对称matched-unread双射(checkPcMem镜像+检查器寄存器)全passing. 删除inner__probe的set_dont_verify_points保持删除(无waiver/relaxed/tie-off/扩黑盒/强配). native SUCCEEDED passing58117/failing0/unmatched0.",
+   "rationale": "REAL REPLACEMENT: xs_Frontend_core真驱动io_error_*/io_perf_*+PC连续性检查器(非影子, bit-exact). Predictor两侧真实elaborate(golden Predictor.sv进FM_REF_DEPS ref侧 + WRAPPER_SRCS impl侧, golden==golden对称非重证Predictor内部, Predictor自身已305 SIGNOFF_PASS)令io_bpu_to_ftq_resp_bits_s3_valid_0成driven internal net, inner__probe不再是ref-only cut-point→消除BB输出cut污染的matched BBPin failing(Cut=0). 其余绿305子(ICache/NewIFU/IBuffer/Ftq + PMP/PMPChecker均305 SIGNOFF_PASS, depends_on绿child)+Predictor孙子(Composer/PriorityMuxModule×6/DelayN)+非305 glue子对称unresolved黑盒边界. vmucp=true比较对称matched-unread双射(checkPcMem镜像+检查器寄存器)全passing. 删除inner__probe的set_dont_verify_points保持删除(无waiver/relaxed/tie-off/扩黑盒/强配). native SUCCEEDED passing52910/failing0/unmatched0.",
    "verify_matched_unread_compare_points": "true",
    "dead_ref": "",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
@@ -2185,7 +2185,7 @@
    "ut_dir": "NewCSR",
    "makefile": "verif/ut/NewCSR/Makefile",
    "make_target": "fmbb",
-   "entry": "verif/ut/NewCSR/fm_eq_bb.tcl",
+   "entry": "verif/ut/NewCSR/fm_eq_parent.tcl",
    "proof_mode": "assembly",
    "config_status": "CONFIGURED",
    "required_verdict": "SUCCEEDED",
