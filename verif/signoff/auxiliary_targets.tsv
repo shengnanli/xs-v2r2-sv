@@ -271,3 +271,5 @@ VLSplitImp	MemBlock向量load split装配壳 child, vmucp AUX, 移出305主分�
 VSSplitImp	MemBlock向量store split装配壳 child, vmucp AUX, 移出305主分母
 MemExeUnit	MemBlock访存执行单元child(Std store-data FU passthrough), strict SIGNOFF_PASS leaf, 移出305
 AtomicsUnit	MemBlock原子指令单元child(9态LR/SC/AMO FSM), vmucp AUX, 移出305
+VSMergeBufferImp	MemBlock向量store合并缓冲child(16条目), vmucp AUX, 移出305
+VLMergeBufferImp	MemBlock向量load合并缓冲child(16条目, 字节级合并+冲突矩阵), vmucp AUX, 移出305
