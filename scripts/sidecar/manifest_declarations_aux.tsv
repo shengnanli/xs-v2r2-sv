@@ -4,7 +4,7 @@ Arbiter4_L2CacheErrorInfo	signoff-strict			false
 Arbiter4_L2ToL1Hint	signoff-strict			false	
 Arbiter8_CHIDAT	signoff-strict			false	
 Arbiter8_TLBundleD	signoff-strict			false	
-AtomicsUnit	signoff-strict			true	
+AtomicsUnit	signoff-strict	verif/signoff/allow/AtomicsUnit.json		true	
 CSR	assembly			false	
 CSRPermitModule	signoff-strict			false	
 DcsrModule	signoff-strict			false	

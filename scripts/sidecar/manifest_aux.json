@@ -72,7 +72,7 @@
    "proof_mode": "signoff-strict",
    "config_status": "AUX",
    "required_verdict": "SUCCEEDED",
-   "allow_ref": "",
+   "allow_ref": "verif/signoff/allow/AtomicsUnit.json",
    "rationale": "",
    "verify_matched_unread_compare_points": "true",
    "dead_ref": "",
