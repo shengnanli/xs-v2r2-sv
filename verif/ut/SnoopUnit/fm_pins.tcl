@@ -273,3 +273,25 @@ set_user_match r:/WORK/SnoopUnit/REG_12_reg i:/WORK/SnoopUnit/u_core/REG_valid_d
 set_user_match r:/WORK/SnoopUnit/REG_13_reg i:/WORK/SnoopUnit/u_core/REG_valid_d_reg\[13\]
 set_user_match r:/WORK/SnoopUnit/REG_14_reg i:/WORK/SnoopUnit/u_core/REG_valid_d_reg\[14\]
 set_user_match r:/WORK/SnoopUnit/REG_15_reg i:/WORK/SnoopUnit/u_core/REG_valid_d_reg\[15\]
+# 第三族: buffer_N_task_replSnp (16 条目, 每条目 1 位) 两侧对称 cone-dead。
+# replSnp 入队写入后仅喂 FastArbiter_50 的 io_in_N_bits_replSnp; 而仲裁器输出
+# io_out_bits_replSnp 是 /* unused */(无 reader), 故该寄存器写而从不被读 → cone-dead。
+# golden 逐字段展平名 buffer_N_task_replSnp_reg ↔ impl 打包 struct 数组域
+# buffer_task_reg[N][replSnp], 逐条目 1:1 双射(同源: 两侧均存 io_in_task.replSnp)。
+# 配合 verify_matched_unread_compare_points=true 让 FM 实际比较证等价(class-4 加强, 非 waiver)。
+set_user_match r:/WORK/SnoopUnit/buffer_0_task_replSnp_reg i:/WORK/SnoopUnit/u_core/buffer_task_reg\[0\]\[replSnp\]
+set_user_match r:/WORK/SnoopUnit/buffer_1_task_replSnp_reg i:/WORK/SnoopUnit/u_core/buffer_task_reg\[1\]\[replSnp\]
+set_user_match r:/WORK/SnoopUnit/buffer_2_task_replSnp_reg i:/WORK/SnoopUnit/u_core/buffer_task_reg\[2\]\[replSnp\]
+set_user_match r:/WORK/SnoopUnit/buffer_3_task_replSnp_reg i:/WORK/SnoopUnit/u_core/buffer_task_reg\[3\]\[replSnp\]
+set_user_match r:/WORK/SnoopUnit/buffer_4_task_replSnp_reg i:/WORK/SnoopUnit/u_core/buffer_task_reg\[4\]\[replSnp\]
+set_user_match r:/WORK/SnoopUnit/buffer_5_task_replSnp_reg i:/WORK/SnoopUnit/u_core/buffer_task_reg\[5\]\[replSnp\]
+set_user_match r:/WORK/SnoopUnit/buffer_6_task_replSnp_reg i:/WORK/SnoopUnit/u_core/buffer_task_reg\[6\]\[replSnp\]
+set_user_match r:/WORK/SnoopUnit/buffer_7_task_replSnp_reg i:/WORK/SnoopUnit/u_core/buffer_task_reg\[7\]\[replSnp\]
+set_user_match r:/WORK/SnoopUnit/buffer_8_task_replSnp_reg i:/WORK/SnoopUnit/u_core/buffer_task_reg\[8\]\[replSnp\]
+set_user_match r:/WORK/SnoopUnit/buffer_9_task_replSnp_reg i:/WORK/SnoopUnit/u_core/buffer_task_reg\[9\]\[replSnp\]
+set_user_match r:/WORK/SnoopUnit/buffer_10_task_replSnp_reg i:/WORK/SnoopUnit/u_core/buffer_task_reg\[10\]\[replSnp\]
+set_user_match r:/WORK/SnoopUnit/buffer_11_task_replSnp_reg i:/WORK/SnoopUnit/u_core/buffer_task_reg\[11\]\[replSnp\]
+set_user_match r:/WORK/SnoopUnit/buffer_12_task_replSnp_reg i:/WORK/SnoopUnit/u_core/buffer_task_reg\[12\]\[replSnp\]
+set_user_match r:/WORK/SnoopUnit/buffer_13_task_replSnp_reg i:/WORK/SnoopUnit/u_core/buffer_task_reg\[13\]\[replSnp\]
+set_user_match r:/WORK/SnoopUnit/buffer_14_task_replSnp_reg i:/WORK/SnoopUnit/u_core/buffer_task_reg\[14\]\[replSnp\]
+set_user_match r:/WORK/SnoopUnit/buffer_15_task_replSnp_reg i:/WORK/SnoopUnit/u_core/buffer_task_reg\[15\]\[replSnp\]
