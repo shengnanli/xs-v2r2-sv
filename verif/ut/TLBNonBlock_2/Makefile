@@ -34,3 +34,4 @@ VCS += +define+SYNTHESIS
 # UT 编译: 核 + _xs(variants) + golden 子模块 + golden 顶 + tb(不编 golden 同名 wrapper)。
 simv: $(RTL_SRCS) $(TB_SRCS) $(GOLDEN_SRCS)
 	$(VCS) $(RTL_SRCS) $(GOLDEN_SUBS) $(GOLDEN_RTL)/TLBNonBlock_2.sv $(TB_SRCS) -top tb -o simv
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
