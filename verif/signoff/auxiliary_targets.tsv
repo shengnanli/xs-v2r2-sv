@@ -293,3 +293,5 @@ ResetGen	XSTop 3级复位同步器child, strict clean leaf, 移出305
 IntBuffer	XSTile 中断线延迟flop child, strict clean leaf, 移出305
 ReceiverLinkMonitor	XSTop CHI链路监视器(OpenNCB侧, LINKACTIVE 4态FSM同绿LinkMonitor), strict clean, 6 flit转换器两侧elaborate, 移出305
 TransmitterLinkMonitor	XSTop CHI链路监视器(发送向, 3 Queue15 interface_only因golden FMR_ELAB-147 OOB), assembly AUX, 移出305
+NCB200	OpenNCB CHI<->AXI bridge主体(纯结构装配壳0reg); PASS assembly+vmucp
+NCB200_1	OpenNCB_1 CHI<->AXI bridge 32entry变体(纯结构装配壳); PASS assembly+vmucp
