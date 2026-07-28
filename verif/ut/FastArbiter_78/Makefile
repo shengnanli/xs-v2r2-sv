@@ -19,3 +19,4 @@ include ../../../scripts/ut_common.mk
 
 VCS += +define+SYNTHESIS +vcs+initreg+random
 SIM_ARGS += +vcs+initreg+0
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true

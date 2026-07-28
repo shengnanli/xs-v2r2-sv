@@ -286,3 +286,10 @@ Og2ForVector	Backend向量操作数收集stage-2流水child, strict clean(逐字
 ExuBlock_2	Backend向量exu容器child(5 ExeUnit_13-17), strict clean(ExeUnit边界黑盒), 移出305
 VecExcpDataMergeModule	Backend向量异常数据合并child(5态FSM), strict clean(逐位rename), 移出305
 HPerfMonitor_2	Backend HPM事件路由child(8 HPerfCounter_13), vmucp AUX(64对称matched-unread counter死高位), 移出305
+FastArbiter_77	XSTop CHI 2输入round-robin仲裁器(RXSNP), vmucp AUX(pendingMask死位同FastArbiter_1/2/28/29), 移出305
+FastArbiter_78	XSTop CHI 2输入仲裁器(RXRSP), vmucp AUX, 移出305
+FastArbiter_79	XSTop CHI 2输入仲裁器(RXDAT), vmucp AUX, 移出305
+ResetGen	XSTop 3级复位同步器child, strict clean leaf, 移出305
+IntBuffer	XSTile 中断线延迟flop child, strict clean leaf, 移出305
+ReceiverLinkMonitor	XSTop CHI链路监视器(OpenNCB侧, LINKACTIVE 4态FSM同绿LinkMonitor), strict clean, 6 flit转换器两侧elaborate, 移出305
+TransmitterLinkMonitor	XSTop CHI链路监视器(发送向, 3 Queue15 interface_only因golden FMR_ELAB-147 OOB), assembly AUX, 移出305
