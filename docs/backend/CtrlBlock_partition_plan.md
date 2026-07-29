@@ -150,3 +150,50 @@ work that the monolithic run's Rob stall hid.**
 Until then: **the monolithic signoff-strict CtrlBlock target is NOT ready and
 must not be promoted.** UT (200k×3 seeds errors=0) is functional evidence but is
 NOT FM equivalence.
+
+---
+
+## 2026-07-28 update — glue GAP closed to 0 failing (codex_0086 Lane C)
+
+Rounds since the list above closed clusters A/B/C/D (reset-domain) and the foldpc
+gap (commit 2c91405). A fresh canary at that point still showed **20 failing**, but
+they were a DIFFERENT, misleading set (`rename/io_in_1/2_bits_lsrc_*`,
+`rob/io_exception_valid`) whose glue wiring is BYTE-IDENTICAL to golden.
+
+### Root cause of those 20: black-box pin DIRECTION unknown → inout
+`fm_canary_glue.tcl` black-boxes the 16 submodules by **not feeding their bodies**.
+With no module definition FM cannot infer port directions and sets every black-box
+pin to **inout** (`formality.log`: 76778 "Direction ... is unknown; setting to
+inout"). An inout pin is both driver and receiver → FM's driven/undriven analysis
+becomes asymmetric across ref/impl, so driven black-box outputs feeding downstream
+black-box inputs surface as spurious failing compare points. Experiments proved it
+is NOT a bbox-input-compare artifact (verify_matched_unread_bbox_inputs=false: still
+20) nor a register-merge artifact (merge_duplicated_registers=false: still 20).
+
+### Fix 1 — feed submodule interfaces (`FM_INTERFACE_ONLY`)
+Read the 16 submodule .sv with `hdlin_interface_only` (ports+directions known,
+bodies NOT elaborated → no Rob-elaboration stall). formality.log inout warnings:
+**76778 → 0**. This is the mechanism the official assembly-mode `fm_eq.tcl` already
+exposes via `FM_INTERFACE_ONLY`; added to `verif/ut/CtrlBlock/Makefile`. Result:
+20 → **19 failing**, and the 19 are now the CLEAN, informative real-bug set.
+
+### Fix 2 — real glue bug: `io_writebackNums_N_bits` per-lane zero-extension
+The 19 = `rob/io_writebackNums_{0,2,4,6,7,9..12}_bits[4]` +
+`rob/io_writebackNums_{13..17}_bits[3],[4]`. Golden feeds these from **narrow
+per-lane registers** zero-extended to 5 bits: group A `{1'h0, reg[3:0]}`, group C
+`{2'h0, reg[2:0]}`, group D `{4'h0, reg}`, group E `{3'h0, reg[1:0]}`, group B
+`reg[4:0]` (full). The impl stored a **uniform 5-bit** count fed directly → FM
+cannot prove the always-0 upper bits are constant (golden hardwires them 0).
+`ctrlblock_datapath.svh`: register `logic [GW-1:0] wbNumsCnt` per lane at the golden
+group width (A=4/B=5/C=3/D=1/E=2) and drive the 5-bit rob port as a pure
+zero-extension wire `{(5-GW){1'b0}}, wbNumsCnt}` — bit-for-bit + structurally
+identical to golden. Result: **20 → 0 failing** (canary interface-only:
+Verification SUCCEEDED). No dont_verify / no compare-point deletion / no relaxed
+appvar / no forced match. FMR_VLOG-481 (FM can't bit-select a function return)
+worked around with a full-width `always_comb wbNumsCntFull` temp.
+
+### Status
+CtrlBlock **glue** is now FM-equivalent to golden (0 failing) under the assembly
+interface-only partition. Composition obligation unchanged: each of the 16 black-box
+submodules (Rob/Rename/... ) is its own signoff target and must SIGNOFF_PASS before
+the CtrlBlock parent is composed-equivalent. Glue owner does not bank the parent.

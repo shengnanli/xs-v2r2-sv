@@ -186,28 +186,73 @@
   // 每口 self -> 组的归属(从设计提取):
   //   组 A:0,2,4,6,7,9,10,11,12   组 B:5,8   组 C:13,14,15,16,17
   //   组 D:1,3,18,19,20,21,22      组 E:23,24
+  // ★ bug-for-bug 对齐 golden 位宽:golden 每口 delayedNotFlushedWriteBackNums_delayed_bits_r*
+  //   的寄存器**按组大小取窄位宽**,送 rob.io_writebackNums_N_bits 时零扩到 5 位
+  //   (io_writebackNums_0_bits = {1'h0, r[3:0]} 等)。故 golden 高位是**常数 0**:
+  //     组 A(11 路 popcount≤11): reg[3:0]     -> bit[4]=0        (mask 5'h0F)
+  //     组 B(16 路 popcount≤16): reg[4:0]     -> 全 5 位          (mask 5'h1F)
+  //     组 C(7  路 popcount≤7 ): reg[2:0]     -> bit[4:3]=0      (mask 5'h07)
+  //     组 D(1  路           ): reg           -> bit[4:1]=0      (count_group_D 已 {4'd0,x})
+  //     组 E(2  路 popcount≤2 ): reg[1:0]     -> bit[4:2]=0      (mask 5'h03)
+  //   本核原先用统一 5 位 wbNumsBits 直接送 rob,虽可达状态下高位恒 0,但 FM 无法从
+  //   变宽 popcount 的返回位宽证明「bit[4]/[3] 恒 0」(golden 是硬连常数 0)→ 19 个
+  //   io_writebackNums_N_bits[3]/[4] failing。此处按 golden 组位宽 mask 高位为常数 0,
+  //   使高位结构性恒 0,与 golden {K'h0, r} 位级一致。
   function automatic logic [4:0] wb_compress_count(
       input logic [4:0] self,
       input logic gf[0:WbRobNum-1], input logic [7:0] gv[0:WbRobNum-1],
       input logic gV[0:WbRobNum-1], input logic gK[0:WbRobNum-1]);
     case (self)
-      5'd0,5'd2,5'd4,5'd6,5'd7,5'd9,5'd10,5'd11,5'd12: wb_compress_count = count_group_A(self, gf, gv, gV, gK);
-      5'd5,5'd8:                                        wb_compress_count = count_group_B(self, gf, gv, gV, gK);
-      5'd13,5'd14,5'd15,5'd16,5'd17:                    wb_compress_count = count_group_C(self, gf, gv, gV, gK);
-      5'd23,5'd24:                                      wb_compress_count = count_group_E(self, gf, gv, gV, gK);
+      5'd0,5'd2,5'd4,5'd6,5'd7,5'd9,5'd10,5'd11,5'd12: wb_compress_count = count_group_A(self, gf, gv, gV, gK) & 5'h0F;
+      5'd5,5'd8:                                        wb_compress_count = count_group_B(self, gf, gv, gV, gK) & 5'h1F;
+      5'd13,5'd14,5'd15,5'd16,5'd17:                    wb_compress_count = count_group_C(self, gf, gv, gV, gK) & 5'h07;
+      5'd23,5'd24:                                      wb_compress_count = count_group_E(self, gf, gv, gV, gK) & 5'h03;
       default:                                          wb_compress_count = count_group_D(self, gV, gK);
     endcase
   endfunction
 
   // 计数寄存器:RegEnable(PopCount, wbData[self].valid);valid 同样打一拍(杀三级)。
-  logic [4:0]  wbNumsBits  [0:WbRobNum-1];
+  // ★ bug-for-bug 对齐 golden 寄存器**位宽**:golden 按组把 delayedNotFlushedWriteBackNums
+  //   _delayed_bits_r* 声明为窄寄存器(组 A reg[3:0]/组 C reg[2:0]/组 D reg/组 E reg[1:0]/
+  //   组 B reg[4:0]),送 rob 时零扩到 5 位。若本核统一用 5 位寄存器存计数,即使高位经
+  //   & mask 恒 0,FM 仍把这些恒 0 高位当作**impl-only 常数 0 寄存器**(golden 无对应
+  //   寄存器)→ 53 个 unmatched_impl 常数寄存器(sidecar fail-closed 对任何 impl 侧死点
+  //   →PARTIAL)。故此处**只寄存 golden 位宽的低位**(per-lane 窄寄存器),送 rob 的
+  //   wbNumsBits[N] 用组合**零扩 wire**补齐到 5 位——高位是字面常数 0(wire, 非寄存器),
+  //   与 golden {K'h0, r} 位级、结构双一致,消除全部 53 个 impl-only 常数寄存器。
+  //   组位宽表(= golden 寄存器宽): A=4  B=5  C=3  D=1  E=2。
+  function automatic int wbnums_width(input logic [4:0] self);
+    case (self)
+      5'd0,5'd2,5'd4,5'd6,5'd7,5'd9,5'd10,5'd11,5'd12: wbnums_width = 4; // 组 A
+      5'd5,5'd8:                                        wbnums_width = 5; // 组 B
+      5'd13,5'd14,5'd15,5'd16,5'd17:                    wbnums_width = 3; // 组 C
+      5'd23,5'd24:                                      wbnums_width = 2; // 组 E
+      default:                                          wbnums_width = 1; // 组 D
+    endcase
+  endfunction
+
+  logic [4:0]  wbNumsBits  [0:WbRobNum-1];  // 送 rob 的零扩 wire(高位字面常数 0, 非寄存器)
   logic        wbNumsValid [0:WbRobNum-1];
   generate
     for (gj = 0; gj < WbRobNum; gj++) begin : g_wbnums
+      localparam int GW = wbnums_width(gj[4:0]);          // 本 lane golden 位宽(编译期常数)
+      // ★ per-lane 精确位宽寄存器:每 lane 只声明 GW 位寄存器(= golden 对应位宽), 无多余
+      //   高位寄存器。送 rob 的 wbNumsBits 由此 wire 零扩到 5 位(高位字面常数 0)。
+      logic [GW-1:0] wbNumsCnt;                            // 本 lane 计数寄存器, 恰 golden 位宽
+      // FM read_sverilog 不支持对函数返回值直接位选(FMR_VLOG-481);先存全宽临时量再切片。
+      logic [4:0]    wbNumsCntFull;
+      always_comb wbNumsCntFull = wb_compress_count(gj[4:0], wbRobFlag, wbRobValue, wbV, wbK3);
       always_ff @(posedge clock) begin
         if (reset) wbNumsValid[gj] <= 1'b0;
         else       wbNumsValid[gj] <= wbInValid[gj] & ~wbKilledByOlder3[gj];
-        if (wbInValid[gj]) wbNumsBits[gj] <= wb_compress_count(gj[4:0], wbRobFlag, wbRobValue, wbV, wbK3);
+        if (wbInValid[gj])
+          wbNumsCnt <= wbNumsCntFull[GW-1:0];
+      end
+      // wbNumsBits[N] = {字面常数 0, wbNumsCnt} 零扩到 5 位 = golden {K'h0, r}(位级+结构一致)。
+      if (GW == 5) begin : g_w5
+        assign wbNumsBits[gj] = wbNumsCnt;
+      end else begin : g_ze
+        assign wbNumsBits[gj] = {{(5-GW){1'b0}}, wbNumsCnt};
       end
     end
   endgenerate

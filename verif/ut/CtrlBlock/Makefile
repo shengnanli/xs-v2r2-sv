@@ -37,6 +37,22 @@ WRAPPER_SRCS = $(RTL_DIR)/backend/CtrlBlock_wrapper.sv $(SUB_DEPS)
 FM_VARIANTS = CtrlBlock
 FM_REF_DEPS_CtrlBlock = DecodeStage.sv DelayN_15.sv DelayN_17.sv FusionDecoder.sv GPAMem.sv MemCtrl.sv NewDispatch.sv PipeGroupConnect.sv PipelineConnectPipe.sv RedirectGenerator.sv Rename.sv RenameTableWrapper.sv Rob.sv SnapshotGenerator_14.sv SyncDataModuleTemplate_BackendPC_64entry.sv Trace.sv
 
+# ★ FM assembly glue-partition: 把 16 个子模块以 interface-only 读入(仅端口/方向, 不
+#   elaborate 巨大子模块体, 免 Rob 220K 行卡死), 两侧对称黑盒. 关键: 若不给方向,
+#   FM 把全部黑盒 pin 设为 inout(canary formality.log 76778 条 "direction unknown ->
+#   inout"), 导致 driven 黑盒输出被误判 undriven → rename lsrc / rob exception 等 20 个
+#   glue-partition 伪 failing. 给 interface(方向已知)后这些伪 failing 消失(见
+#   docs/backend/CtrlBlock_partition_plan.md). assembly 边界由 allow/CtrlBlock.json 声明.
+FM_INTERFACE_ONLY = DecodeStage DelayN_15 DelayN_17 FusionDecoder GPAMem MemCtrl \
+                    NewDispatch PipeGroupConnect PipelineConnectPipe RedirectGenerator \
+                    Rename RenameTableWrapper Rob SnapshotGenerator_14 \
+                    SyncDataModuleTemplate_BackendPC_64entry Trace
+# 本地 make fm 的 fm_verdict.py --allowlist 取**整数**(允许的不对称 unmatched 数);
+# 本 glue 证明清零(0 failing / 0(0) unmatched compare) → 0 即可通过本地判定。
+# 官方 assembly 边界(16 对称黑盒)由 verif/signoff/allow/CtrlBlock.json 声明, 经
+# manifest/fm_sidecar_verdict.py(JSON 路径)在签核 runner 中生效, 与本地整数判定分离。
+FM_ALLOWLIST = 0
+
 include ../../../scripts/ut_common.mk
 
 # golden 内含非综合断言/difftest；UT 关掉并关随机化，处理 flush-X。
