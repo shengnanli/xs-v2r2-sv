@@ -1,8 +1,8 @@
 kind	path	sha256
-infra	/home/eda/xs-env/xs-signoff/scripts/sidecar/run_signoff_target.sh	84066491f073fc9c11af5bf99036ea81c5f635718411566f1d36c60f5152d887
-infra	/home/eda/xs-env/xs-signoff/scripts/sidecar/fm_closure_digest.py	5ee7e694620c54600ce493b0c0af47d614a883e105073736d9ed1e228a6be906
-infra	/home/eda/xs-env/xs-signoff/scripts/sidecar/fm_sidecar_verdict.py	952af082ec7f57318b45e44bb0f92cd56740aba592bbfd3359d00dbf70ee7570
-infra	/home/eda/xs-env/xs-signoff/scripts/sidecar/gen_305_manifest.py	cf2cce73404f83c3b3ac46c0fca9a812e5bb37ab30ecec647b2c4898ab127bdb
+infra	/home/eda/xs-env/xs-archive-shardA/scripts/sidecar/run_signoff_target.sh	84066491f073fc9c11af5bf99036ea81c5f635718411566f1d36c60f5152d887
+infra	/home/eda/xs-env/xs-archive-shardA/scripts/sidecar/fm_closure_digest.py	5ee7e694620c54600ce493b0c0af47d614a883e105073736d9ed1e228a6be906
+infra	/home/eda/xs-env/xs-archive-shardA/scripts/sidecar/fm_sidecar_verdict.py	952af082ec7f57318b45e44bb0f92cd56740aba592bbfd3359d00dbf70ee7570
+infra	/home/eda/xs-env/xs-archive-shardA/scripts/sidecar/gen_305_manifest.py	cf2cce73404f83c3b3ac46c0fca9a812e5bb37ab30ecec647b2c4898ab127bdb
 manifest_sha256	scripts/sidecar/manifest_305.json	74603e0eff8dab466b91270bf418bc6ed2005ebd33feed59d0ad2d40567327f3
 canonical_baseline_id	G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456	-
 target_entry	verif/ut/MemBlock/fm_eq_bb.tcl	-
@@ -16,10 +16,10 @@ verify_matched_unread_compare_points	true	-
 executed_snapshot	sourced_000_fm_eq_bb.tcl	40db7a414484762d8db52f852c8b1e215520e913bade604ba83e223f767d54b3
 executed_snapshot	sourced_001_fm_native_emit.tcl	f2cd9feaf192ca0687dee6abfbdd45e61c5db1c3a2b582cd73ee8b294c21015a
 executed_snapshot	sourced_002_fm_pins.tcl	05046a38a6c1d18e2acc0212aeb8ca5e7c1f5d48526f298e2c8f65c684c51d3c
-impl_commit	f0b0067129d1b985adccdf2b51912705ed1864e7	-
-main_tracked_dirty	13	-
-worktree_head_pre	f0b0067129d1b985adccdf2b51912705ed1864e7	-
-worktree_head_post	f0b0067129d1b985adccdf2b51912705ed1864e7	-
+impl_commit	e17e787f35c5b82b03f90f5603a38faeaf0143ba	-
+main_tracked_dirty	0	-
+worktree_head_pre	e17e787f35c5b82b03f90f5603a38faeaf0143ba	-
+worktree_head_post	e17e787f35c5b82b03f90f5603a38faeaf0143ba	-
 worktree_tracked_dirty_pre	0	-
 worktree_tracked_dirty_post	0	-
 worktree_untracked_files	0	-
