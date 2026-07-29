@@ -1,18 +1,19 @@
 # MainPipe FM 钉点（FM 审计 2026-07）—— 匹配前(FM_PIN_PRE_TCL)版本。
 # 实证: post-match 里 set_app_var(undriven/reg_init)与 set_user_match 常不生效
 # (验证模型已按默认值构建/点已被签名错配), 必须在首次 match 前设置。
-# 1) Arbiter4_MainPipeReq 两侧同定义，但 probe/refill 腿的 store_data/amo_* 输入脚
-#    两侧都悬空。FM 默认 verification_set_undriven_signals=BINARY:X（ref 悬空=自由
-#    割点、impl 悬空=X），凡比对点锥含悬空信号必失配。设 BINARY 让两侧悬空信号
-#    按同名配对为同一自由变量，锥一致。
-if {[catch {set_app_var verification_set_undriven_signals BINARY} msg]} {
-  puts "MAINPIPE_PINS: set_app_var failed: $msg"
-}
-# 2) Auto 模式下 FM 会用「寄存器初值推断」把一侧的部分寄存器约束成常量（两侧不对称
-#    → 宽数据锥失配）。关掉初值假设，按纯次态函数比对。
-if {[catch {set_app_var verification_assume_reg_init none} msg]} {
-  puts "MAINPIPE_PINS: assume_reg_init failed: $msg"
-}
+# NOTE(deadref-contract-B, codex_0089): the two relaxing appvars formerly set here
+#   set_app_var verification_set_undriven_signals BINARY   (FM default BINARY:X)
+#   set_app_var verification_assume_reg_init      none      (FM default auto)
+# were REMOVED. Empirically they masked NO impl defect: with the FM defaults the
+# MainPipe native proof is still SUCCEEDED with failing=0, unmatched=0,
+# unread_impl=0 and the SAME 77 golden-only cone-dead unread_ref residual (removing
+# them only shifts passing 8932->8930). Critically, both registered spurious
+# relaxed_appvars qualifications that forced PARTIAL. There is no impl over-wide
+# register / multi-driver / undriven-signal asymmetry to fix (impl side is 100%
+# clean). The residual 77 points are declared golden-only cone-dead in
+# verif/signoff/dead_ref/MainPipe.json (debug SC-conflict regs, assertion regs,
+# dangling _GEN wires, never-read byte-offset/reserved bits). Removing the relaxes
+# makes the proof a clean strict PASS_DEAD_REF with zero qualifications.
 
 set _n 0; set _f 0
 proc _pin {r i} {

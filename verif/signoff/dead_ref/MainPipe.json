@@ -1,0 +1,315 @@
+{
+  "schema": "fm-sidecar-dead-ref-v1",
+  "target": "MainPipe",
+  "rationale": "strict signoff (NO relaxed appvars -- the two spurious relaxes 'set_undriven_signals BINARY' and 'assume_reg_init none' were removed from verif/ut/MainPipe/fm_pins_pre.tcl; they masked nothing, native stays SUCCEEDED impl-clean either way, only changing passing 8932->8930). Native SUCCEEDED passing~8930 failing=0 unmatched=0 unread_impl=0 unread_notcompared=0; the only residual = 77 golden-only cone-dead unread_ref in families: (1) debug_sc_fail_addr[47:0] & debug_sc_addr_match_fail_cnt[7:0] -- dontTouch SC-conflict debug regs (fan-out only into assertions/self); (2) REG_2..6 -- assertion registers compiled out under SYNTHESIS; (3) io_replace_way_set_valid_last_REG -- read only by dangling _GEN_2; (4) low/high dead bits s2_repl_pf[0], s3_req_addr[5:0], s3_error_paddr_beu_r[5:0], s3_req_vaddr[49:48] -- never-read byte-offset/reserved bits (top reads only block tag [47:6] / vaddr[47:0]). The readable core narrows all of these; impl 100%% clean (unread_impl=0). Enumerated exactly from committed native_facts (gate-runs/MainPipe).",
+  "entries": [
+    {
+      "ref_path": "r:/WORK/MainPipe/REG_2_reg",
+      "rationale": "Assertion register: golden reg read ONLY inside an 'if(~reset & [~]REG_N) $fwrite(\"Assertion failed\")' guard (MainPipe.sv:1536/1548/1572/1578/1584). Under +define+SYNTHESIS the assertion body is compiled out => zero output fan-out, cone-dead. Impl omits it."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/REG_3_reg",
+      "rationale": "Assertion register: golden reg read ONLY inside an 'if(~reset & [~]REG_N) $fwrite(\"Assertion failed\")' guard (MainPipe.sv:1536/1548/1572/1578/1584). Under +define+SYNTHESIS the assertion body is compiled out => zero output fan-out, cone-dead. Impl omits it."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/REG_4_reg",
+      "rationale": "Assertion register: golden reg read ONLY inside an 'if(~reset & [~]REG_N) $fwrite(\"Assertion failed\")' guard (MainPipe.sv:1536/1548/1572/1578/1584). Under +define+SYNTHESIS the assertion body is compiled out => zero output fan-out, cone-dead. Impl omits it."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/REG_5_reg",
+      "rationale": "Assertion register: golden reg read ONLY inside an 'if(~reset & [~]REG_N) $fwrite(\"Assertion failed\")' guard (MainPipe.sv:1536/1548/1572/1578/1584). Under +define+SYNTHESIS the assertion body is compiled out => zero output fan-out, cone-dead. Impl omits it."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/REG_6_reg",
+      "rationale": "Assertion register: golden reg read ONLY inside an 'if(~reset & [~]REG_N) $fwrite(\"Assertion failed\")' guard (MainPipe.sv:1536/1548/1572/1578/1584). Under +define+SYNTHESIS the assertion body is compiled out => zero output fan-out, cone-dead. Impl omits it."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_addr_match_fail_cnt_reg[0]",
+      "rationale": "Bit[0] of golden debug_sc_addr_match_fail_cnt[7:0], a dontTouch SC-fail counter. Its only extra reader _GEN_11=(cnt>100) feeds solely an assertion (LogUtils.scala:126, SYNTHESIS-out); no io_ output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_addr_match_fail_cnt_reg[1]",
+      "rationale": "Bit[1] of golden debug_sc_addr_match_fail_cnt[7:0], a dontTouch SC-fail counter. Its only extra reader _GEN_11=(cnt>100) feeds solely an assertion (LogUtils.scala:126, SYNTHESIS-out); no io_ output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_addr_match_fail_cnt_reg[2]",
+      "rationale": "Bit[2] of golden debug_sc_addr_match_fail_cnt[7:0], a dontTouch SC-fail counter. Its only extra reader _GEN_11=(cnt>100) feeds solely an assertion (LogUtils.scala:126, SYNTHESIS-out); no io_ output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_addr_match_fail_cnt_reg[3]",
+      "rationale": "Bit[3] of golden debug_sc_addr_match_fail_cnt[7:0], a dontTouch SC-fail counter. Its only extra reader _GEN_11=(cnt>100) feeds solely an assertion (LogUtils.scala:126, SYNTHESIS-out); no io_ output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_addr_match_fail_cnt_reg[4]",
+      "rationale": "Bit[4] of golden debug_sc_addr_match_fail_cnt[7:0], a dontTouch SC-fail counter. Its only extra reader _GEN_11=(cnt>100) feeds solely an assertion (LogUtils.scala:126, SYNTHESIS-out); no io_ output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_addr_match_fail_cnt_reg[5]",
+      "rationale": "Bit[5] of golden debug_sc_addr_match_fail_cnt[7:0], a dontTouch SC-fail counter. Its only extra reader _GEN_11=(cnt>100) feeds solely an assertion (LogUtils.scala:126, SYNTHESIS-out); no io_ output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_addr_match_fail_cnt_reg[6]",
+      "rationale": "Bit[6] of golden debug_sc_addr_match_fail_cnt[7:0], a dontTouch SC-fail counter. Its only extra reader _GEN_11=(cnt>100) feeds solely an assertion (LogUtils.scala:126, SYNTHESIS-out); no io_ output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_addr_match_fail_cnt_reg[7]",
+      "rationale": "Bit[7] of golden debug_sc_addr_match_fail_cnt[7:0], a dontTouch SC-fail counter. Its only extra reader _GEN_11=(cnt>100) feeds solely an assertion (LogUtils.scala:126, SYNTHESIS-out); no io_ output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[0]",
+      "rationale": "Bit[0] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[10]",
+      "rationale": "Bit[10] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[11]",
+      "rationale": "Bit[11] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[12]",
+      "rationale": "Bit[12] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[13]",
+      "rationale": "Bit[13] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[14]",
+      "rationale": "Bit[14] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[15]",
+      "rationale": "Bit[15] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[16]",
+      "rationale": "Bit[16] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[17]",
+      "rationale": "Bit[17] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[18]",
+      "rationale": "Bit[18] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[19]",
+      "rationale": "Bit[19] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[1]",
+      "rationale": "Bit[1] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[20]",
+      "rationale": "Bit[20] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[21]",
+      "rationale": "Bit[21] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[22]",
+      "rationale": "Bit[22] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[23]",
+      "rationale": "Bit[23] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[24]",
+      "rationale": "Bit[24] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[25]",
+      "rationale": "Bit[25] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[26]",
+      "rationale": "Bit[26] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[27]",
+      "rationale": "Bit[27] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[28]",
+      "rationale": "Bit[28] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[29]",
+      "rationale": "Bit[29] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[2]",
+      "rationale": "Bit[2] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[30]",
+      "rationale": "Bit[30] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[31]",
+      "rationale": "Bit[31] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[32]",
+      "rationale": "Bit[32] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[33]",
+      "rationale": "Bit[33] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[34]",
+      "rationale": "Bit[34] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[35]",
+      "rationale": "Bit[35] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[36]",
+      "rationale": "Bit[36] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[37]",
+      "rationale": "Bit[37] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[38]",
+      "rationale": "Bit[38] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[39]",
+      "rationale": "Bit[39] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[3]",
+      "rationale": "Bit[3] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[40]",
+      "rationale": "Bit[40] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[41]",
+      "rationale": "Bit[41] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[42]",
+      "rationale": "Bit[42] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[43]",
+      "rationale": "Bit[43] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[44]",
+      "rationale": "Bit[44] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[45]",
+      "rationale": "Bit[45] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[46]",
+      "rationale": "Bit[46] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[47]",
+      "rationale": "Bit[47] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[4]",
+      "rationale": "Bit[4] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[5]",
+      "rationale": "Bit[5] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[6]",
+      "rationale": "Bit[6] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[7]",
+      "rationale": "Bit[7] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[8]",
+      "rationale": "Bit[8] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/debug_sc_fail_addr_reg[9]",
+      "rationale": "Bit[9] of golden debug_sc_fail_addr[47:0], a dontTouch store-conditional-fail address tracker. Fan-out is only _GEN_28 (feeds the debug regs' own next-state) with no io_ output; no path to any primary output => cone-dead. Impl omits this debug register."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/io_replace_way_set_valid_last_REG_reg",
+      "rationale": "Golden io_replace_way_set_valid_last_REG read only by _GEN_2=io_replace_way_set_valid_last_REG&s1_need_replacement, a wire referenced exactly once (its own decl) and never consumed => no output fan-out, cone-dead. Impl correctly omits it (see verif/ut/MainPipe/fm_pins_pre.tcl note)."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/s2_repl_pf_reg[0]",
+      "rationale": "Bit[0] of golden s2_repl_pf[2:0]. The only read is s2_repl_pf[2:1] (MainPipe.sv:3209); bit[0] is never read => cone-dead. The readable core registers only [2:1] (s2_repl_pf_r[PF_SRC_BITS-1:1]); golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/s3_error_paddr_beu_r_reg[0]",
+      "rationale": "Bit[0] (byte offset) of golden s3_error_paddr_beu_r[47:0]. Read only as [47:6] (MainPipe.sv:3201, cacheline-aligned error paddr to BEU); bits [5:0] never read => cone-dead. The readable core stores [47:6] only; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/s3_error_paddr_beu_r_reg[1]",
+      "rationale": "Bit[1] (byte offset) of golden s3_error_paddr_beu_r[47:0]. Read only as [47:6] (MainPipe.sv:3201, cacheline-aligned error paddr to BEU); bits [5:0] never read => cone-dead. The readable core stores [47:6] only; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/s3_error_paddr_beu_r_reg[2]",
+      "rationale": "Bit[2] (byte offset) of golden s3_error_paddr_beu_r[47:0]. Read only as [47:6] (MainPipe.sv:3201, cacheline-aligned error paddr to BEU); bits [5:0] never read => cone-dead. The readable core stores [47:6] only; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/s3_error_paddr_beu_r_reg[3]",
+      "rationale": "Bit[3] (byte offset) of golden s3_error_paddr_beu_r[47:0]. Read only as [47:6] (MainPipe.sv:3201, cacheline-aligned error paddr to BEU); bits [5:0] never read => cone-dead. The readable core stores [47:6] only; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/s3_error_paddr_beu_r_reg[4]",
+      "rationale": "Bit[4] (byte offset) of golden s3_error_paddr_beu_r[47:0]. Read only as [47:6] (MainPipe.sv:3201, cacheline-aligned error paddr to BEU); bits [5:0] never read => cone-dead. The readable core stores [47:6] only; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/s3_error_paddr_beu_r_reg[5]",
+      "rationale": "Bit[5] (byte offset) of golden s3_error_paddr_beu_r[47:0]. Read only as [47:6] (MainPipe.sv:3201, cacheline-aligned error paddr to BEU); bits [5:0] never read => cone-dead. The readable core stores [47:6] only; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/s3_req_addr_reg[0]",
+      "rationale": "Bit[0] (cacheline byte offset) of golden 48-bit s3_req_addr. Every read uses the block tag [47:6]/[47:12]/[17:6]/[29:18]; bits [5:0] are never read => cone-dead. The readable core registers only addr[47:6]; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/s3_req_addr_reg[1]",
+      "rationale": "Bit[1] (cacheline byte offset) of golden 48-bit s3_req_addr. Every read uses the block tag [47:6]/[47:12]/[17:6]/[29:18]; bits [5:0] are never read => cone-dead. The readable core registers only addr[47:6]; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/s3_req_addr_reg[2]",
+      "rationale": "Bit[2] (cacheline byte offset) of golden 48-bit s3_req_addr. Every read uses the block tag [47:6]/[47:12]/[17:6]/[29:18]; bits [5:0] are never read => cone-dead. The readable core registers only addr[47:6]; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/s3_req_addr_reg[3]",
+      "rationale": "Bit[3] (cacheline byte offset) of golden 48-bit s3_req_addr. Every read uses the block tag [47:6]/[47:12]/[17:6]/[29:18]; bits [5:0] are never read => cone-dead. The readable core registers only addr[47:6]; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/s3_req_addr_reg[4]",
+      "rationale": "Bit[4] (cacheline byte offset) of golden 48-bit s3_req_addr. Every read uses the block tag [47:6]/[47:12]/[17:6]/[29:18]; bits [5:0] are never read => cone-dead. The readable core registers only addr[47:6]; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/s3_req_addr_reg[5]",
+      "rationale": "Bit[5] (cacheline byte offset) of golden 48-bit s3_req_addr. Every read uses the block tag [47:6]/[47:12]/[17:6]/[29:18]; bits [5:0] are never read => cone-dead. The readable core registers only addr[47:6]; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/s3_req_vaddr_reg[48]",
+      "rationale": "Bit[48] of golden 50-bit s3_req_vaddr. Reads use [11:6] and [47:0]; bits [49:48] (above the 48-bit vaddr window) are never read => cone-dead. Golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/MainPipe/s3_req_vaddr_reg[49]",
+      "rationale": "Bit[49] of golden 50-bit s3_req_vaddr. Reads use [11:6] and [47:0]; bits [49:48] (above the 48-bit vaddr window) are never read => cone-dead. Golden-only cone-dead, impl clean."
+    }
+  ]
+}

@@ -1,0 +1,135 @@
+{
+  "schema": "fm-sidecar-dead-ref-v1",
+  "target": "PMP",
+  "rationale": "strict signoff: golden-only unread_ref = the 32 reserved bits pmpcfg[6:5] of the 8 PMP config entries in both pmpMapping_cfgMerged_0_reg and pmpMapping_cfgMerged_1_reg (2 regs x 8 entries x 2 reserved bits). RISC-V pmpcfg[6:5] are architecturally reserved (WARL read-as-0) in the PMP bank; no module output nor PMPChecker reads them. Golden's firtool retains them as plain register bits whose only fan-out is a self-referential lock-hold mux (locked ? old : wdata) that loops back into the same bit -- zero external observability => cone-dead. The readable core (rtl/memblock/PMP.sv, xs_pmp_pack/unpack) deliberately stores only the 6 live bits per byte and reconstructs [6:5]=0, so impl is 100%% clean (unread_impl=0). Native SUCCEEDED passing=6548 failing=0 unmatched=0 unread_impl=0 unread_notcompared=0; only these 32 golden-only cone-dead reserved bits remain. Enumerated exactly from committed native_facts (gate-runs/PMP).",
+  "entries": [
+    {
+      "ref_path": "r:/WORK/PMP/pmpMapping_cfgMerged_0_reg[13]",
+      "rationale": "Reserved pmpcfg bit[5] of PMP config entry 1 in pmpMapping_cfgMerged_0. RISC-V pmpcfg[6:5] are architecturally reserved (WARL, read-as-0) in the PMP bank; the module reads only [7]=L,[4:3]=A,[2:0]=X/W/R for every output (io_pmp_N_cfg_* and PMPChecker), never [6:5]. Golden stores wdata into this bit but its ONLY fan-out is the self-referential lock-hold loop (L ? old : wdata) which loops back into itself with no path to any primary output => cone-dead. PMP old value is always 0 so the locked branch also holds 0 (inert). Impl omits this redundant dead state (stores 6 live bits/byte, reconstructs [6:5]=0). Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/PMP/pmpMapping_cfgMerged_0_reg[14]",
+      "rationale": "Reserved pmpcfg bit[6] of PMP config entry 1 in pmpMapping_cfgMerged_0. RISC-V pmpcfg[6:5] are architecturally reserved (WARL, read-as-0) in the PMP bank; the module reads only [7]=L,[4:3]=A,[2:0]=X/W/R for every output (io_pmp_N_cfg_* and PMPChecker), never [6:5]. Golden stores wdata into this bit but its ONLY fan-out is the self-referential lock-hold loop (L ? old : wdata) which loops back into itself with no path to any primary output => cone-dead. PMP old value is always 0 so the locked branch also holds 0 (inert). Impl omits this redundant dead state (stores 6 live bits/byte, reconstructs [6:5]=0). Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/PMP/pmpMapping_cfgMerged_0_reg[21]",
+      "rationale": "Reserved pmpcfg bit[5] of PMP config entry 2 in pmpMapping_cfgMerged_0. RISC-V pmpcfg[6:5] are architecturally reserved (WARL, read-as-0) in the PMP bank; the module reads only [7]=L,[4:3]=A,[2:0]=X/W/R for every output (io_pmp_N_cfg_* and PMPChecker), never [6:5]. Golden stores wdata into this bit but its ONLY fan-out is the self-referential lock-hold loop (L ? old : wdata) which loops back into itself with no path to any primary output => cone-dead. PMP old value is always 0 so the locked branch also holds 0 (inert). Impl omits this redundant dead state (stores 6 live bits/byte, reconstructs [6:5]=0). Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/PMP/pmpMapping_cfgMerged_0_reg[22]",
+      "rationale": "Reserved pmpcfg bit[6] of PMP config entry 2 in pmpMapping_cfgMerged_0. RISC-V pmpcfg[6:5] are architecturally reserved (WARL, read-as-0) in the PMP bank; the module reads only [7]=L,[4:3]=A,[2:0]=X/W/R for every output (io_pmp_N_cfg_* and PMPChecker), never [6:5]. Golden stores wdata into this bit but its ONLY fan-out is the self-referential lock-hold loop (L ? old : wdata) which loops back into itself with no path to any primary output => cone-dead. PMP old value is always 0 so the locked branch also holds 0 (inert). Impl omits this redundant dead state (stores 6 live bits/byte, reconstructs [6:5]=0). Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/PMP/pmpMapping_cfgMerged_0_reg[29]",
+      "rationale": "Reserved pmpcfg bit[5] of PMP config entry 3 in pmpMapping_cfgMerged_0. RISC-V pmpcfg[6:5] are architecturally reserved (WARL, read-as-0) in the PMP bank; the module reads only [7]=L,[4:3]=A,[2:0]=X/W/R for every output (io_pmp_N_cfg_* and PMPChecker), never [6:5]. Golden stores wdata into this bit but its ONLY fan-out is the self-referential lock-hold loop (L ? old : wdata) which loops back into itself with no path to any primary output => cone-dead. PMP old value is always 0 so the locked branch also holds 0 (inert). Impl omits this redundant dead state (stores 6 live bits/byte, reconstructs [6:5]=0). Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/PMP/pmpMapping_cfgMerged_0_reg[30]",
+      "rationale": "Reserved pmpcfg bit[6] of PMP config entry 3 in pmpMapping_cfgMerged_0. RISC-V pmpcfg[6:5] are architecturally reserved (WARL, read-as-0) in the PMP bank; the module reads only [7]=L,[4:3]=A,[2:0]=X/W/R for every output (io_pmp_N_cfg_* and PMPChecker), never [6:5]. Golden stores wdata into this bit but its ONLY fan-out is the self-referential lock-hold loop (L ? old : wdata) which loops back into itself with no path to any primary output => cone-dead. PMP old value is always 0 so the locked branch also holds 0 (inert). Impl omits this redundant dead state (stores 6 live bits/byte, reconstructs [6:5]=0). Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/PMP/pmpMapping_cfgMerged_0_reg[37]",
+      "rationale": "Reserved pmpcfg bit[5] of PMP config entry 4 in pmpMapping_cfgMerged_0. RISC-V pmpcfg[6:5] are architecturally reserved (WARL, read-as-0) in the PMP bank; the module reads only [7]=L,[4:3]=A,[2:0]=X/W/R for every output (io_pmp_N_cfg_* and PMPChecker), never [6:5]. Golden stores wdata into this bit but its ONLY fan-out is the self-referential lock-hold loop (L ? old : wdata) which loops back into itself with no path to any primary output => cone-dead. PMP old value is always 0 so the locked branch also holds 0 (inert). Impl omits this redundant dead state (stores 6 live bits/byte, reconstructs [6:5]=0). Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/PMP/pmpMapping_cfgMerged_0_reg[38]",
+      "rationale": "Reserved pmpcfg bit[6] of PMP config entry 4 in pmpMapping_cfgMerged_0. RISC-V pmpcfg[6:5] are architecturally reserved (WARL, read-as-0) in the PMP bank; the module reads only [7]=L,[4:3]=A,[2:0]=X/W/R for every output (io_pmp_N_cfg_* and PMPChecker), never [6:5]. Golden stores wdata into this bit but its ONLY fan-out is the self-referential lock-hold loop (L ? old : wdata) which loops back into itself with no path to any primary output => cone-dead. PMP old value is always 0 so the locked branch also holds 0 (inert). Impl omits this redundant dead state (stores 6 live bits/byte, reconstructs [6:5]=0). Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/PMP/pmpMapping_cfgMerged_0_reg[45]",
+      "rationale": "Reserved pmpcfg bit[5] of PMP config entry 5 in pmpMapping_cfgMerged_0. RISC-V pmpcfg[6:5] are architecturally reserved (WARL, read-as-0) in the PMP bank; the module reads only [7]=L,[4:3]=A,[2:0]=X/W/R for every output (io_pmp_N_cfg_* and PMPChecker), never [6:5]. Golden stores wdata into this bit but its ONLY fan-out is the self-referential lock-hold loop (L ? old : wdata) which loops back into itself with no path to any primary output => cone-dead. PMP old value is always 0 so the locked branch also holds 0 (inert). Impl omits this redundant dead state (stores 6 live bits/byte, reconstructs [6:5]=0). Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/PMP/pmpMapping_cfgMerged_0_reg[46]",
+      "rationale": "Reserved pmpcfg bit[6] of PMP config entry 5 in pmpMapping_cfgMerged_0. RISC-V pmpcfg[6:5] are architecturally reserved (WARL, read-as-0) in the PMP bank; the module reads only [7]=L,[4:3]=A,[2:0]=X/W/R for every output (io_pmp_N_cfg_* and PMPChecker), never [6:5]. Golden stores wdata into this bit but its ONLY fan-out is the self-referential lock-hold loop (L ? old : wdata) which loops back into itself with no path to any primary output => cone-dead. PMP old value is always 0 so the locked branch also holds 0 (inert). Impl omits this redundant dead state (stores 6 live bits/byte, reconstructs [6:5]=0). Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/PMP/pmpMapping_cfgMerged_0_reg[53]",
+      "rationale": "Reserved pmpcfg bit[5] of PMP config entry 6 in pmpMapping_cfgMerged_0. RISC-V pmpcfg[6:5] are architecturally reserved (WARL, read-as-0) in the PMP bank; the module reads only [7]=L,[4:3]=A,[2:0]=X/W/R for every output (io_pmp_N_cfg_* and PMPChecker), never [6:5]. Golden stores wdata into this bit but its ONLY fan-out is the self-referential lock-hold loop (L ? old : wdata) which loops back into itself with no path to any primary output => cone-dead. PMP old value is always 0 so the locked branch also holds 0 (inert). Impl omits this redundant dead state (stores 6 live bits/byte, reconstructs [6:5]=0). Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/PMP/pmpMapping_cfgMerged_0_reg[54]",
+      "rationale": "Reserved pmpcfg bit[6] of PMP config entry 6 in pmpMapping_cfgMerged_0. RISC-V pmpcfg[6:5] are architecturally reserved (WARL, read-as-0) in the PMP bank; the module reads only [7]=L,[4:3]=A,[2:0]=X/W/R for every output (io_pmp_N_cfg_* and PMPChecker), never [6:5]. Golden stores wdata into this bit but its ONLY fan-out is the self-referential lock-hold loop (L ? old : wdata) which loops back into itself with no path to any primary output => cone-dead. PMP old value is always 0 so the locked branch also holds 0 (inert). Impl omits this redundant dead state (stores 6 live bits/byte, reconstructs [6:5]=0). Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/PMP/pmpMapping_cfgMerged_0_reg[5]",
+      "rationale": "Reserved pmpcfg bit[5] of PMP config entry 0 in pmpMapping_cfgMerged_0. RISC-V pmpcfg[6:5] are architecturally reserved (WARL, read-as-0) in the PMP bank; the module reads only [7]=L,[4:3]=A,[2:0]=X/W/R for every output (io_pmp_N_cfg_* and PMPChecker), never [6:5]. Golden stores wdata into this bit but its ONLY fan-out is the self-referential lock-hold loop (L ? old : wdata) which loops back into itself with no path to any primary output => cone-dead. PMP old value is always 0 so the locked branch also holds 0 (inert). Impl omits this redundant dead state (stores 6 live bits/byte, reconstructs [6:5]=0). Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/PMP/pmpMapping_cfgMerged_0_reg[61]",
+      "rationale": "Reserved pmpcfg bit[5] of PMP config entry 7 in pmpMapping_cfgMerged_0. RISC-V pmpcfg[6:5] are architecturally reserved (WARL, read-as-0) in the PMP bank; the module reads only [7]=L,[4:3]=A,[2:0]=X/W/R for every output (io_pmp_N_cfg_* and PMPChecker), never [6:5]. Golden stores wdata into this bit but its ONLY fan-out is the self-referential lock-hold loop (L ? old : wdata) which loops back into itself with no path to any primary output => cone-dead. PMP old value is always 0 so the locked branch also holds 0 (inert). Impl omits this redundant dead state (stores 6 live bits/byte, reconstructs [6:5]=0). Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/PMP/pmpMapping_cfgMerged_0_reg[62]",
+      "rationale": "Reserved pmpcfg bit[6] of PMP config entry 7 in pmpMapping_cfgMerged_0. RISC-V pmpcfg[6:5] are architecturally reserved (WARL, read-as-0) in the PMP bank; the module reads only [7]=L,[4:3]=A,[2:0]=X/W/R for every output (io_pmp_N_cfg_* and PMPChecker), never [6:5]. Golden stores wdata into this bit but its ONLY fan-out is the self-referential lock-hold loop (L ? old : wdata) which loops back into itself with no path to any primary output => cone-dead. PMP old value is always 0 so the locked branch also holds 0 (inert). Impl omits this redundant dead state (stores 6 live bits/byte, reconstructs [6:5]=0). Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/PMP/pmpMapping_cfgMerged_0_reg[6]",
+      "rationale": "Reserved pmpcfg bit[6] of PMP config entry 0 in pmpMapping_cfgMerged_0. RISC-V pmpcfg[6:5] are architecturally reserved (WARL, read-as-0) in the PMP bank; the module reads only [7]=L,[4:3]=A,[2:0]=X/W/R for every output (io_pmp_N_cfg_* and PMPChecker), never [6:5]. Golden stores wdata into this bit but its ONLY fan-out is the self-referential lock-hold loop (L ? old : wdata) which loops back into itself with no path to any primary output => cone-dead. PMP old value is always 0 so the locked branch also holds 0 (inert). Impl omits this redundant dead state (stores 6 live bits/byte, reconstructs [6:5]=0). Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/PMP/pmpMapping_cfgMerged_1_reg[13]",
+      "rationale": "Reserved pmpcfg bit[5] of PMP config entry 1 in pmpMapping_cfgMerged_1. RISC-V pmpcfg[6:5] are architecturally reserved (WARL, read-as-0) in the PMP bank; the module reads only [7]=L,[4:3]=A,[2:0]=X/W/R for every output (io_pmp_N_cfg_* and PMPChecker), never [6:5]. Golden stores wdata into this bit but its ONLY fan-out is the self-referential lock-hold loop (L ? old : wdata) which loops back into itself with no path to any primary output => cone-dead. PMP old value is always 0 so the locked branch also holds 0 (inert). Impl omits this redundant dead state (stores 6 live bits/byte, reconstructs [6:5]=0). Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/PMP/pmpMapping_cfgMerged_1_reg[14]",
+      "rationale": "Reserved pmpcfg bit[6] of PMP config entry 1 in pmpMapping_cfgMerged_1. RISC-V pmpcfg[6:5] are architecturally reserved (WARL, read-as-0) in the PMP bank; the module reads only [7]=L,[4:3]=A,[2:0]=X/W/R for every output (io_pmp_N_cfg_* and PMPChecker), never [6:5]. Golden stores wdata into this bit but its ONLY fan-out is the self-referential lock-hold loop (L ? old : wdata) which loops back into itself with no path to any primary output => cone-dead. PMP old value is always 0 so the locked branch also holds 0 (inert). Impl omits this redundant dead state (stores 6 live bits/byte, reconstructs [6:5]=0). Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/PMP/pmpMapping_cfgMerged_1_reg[21]",
+      "rationale": "Reserved pmpcfg bit[5] of PMP config entry 2 in pmpMapping_cfgMerged_1. RISC-V pmpcfg[6:5] are architecturally reserved (WARL, read-as-0) in the PMP bank; the module reads only [7]=L,[4:3]=A,[2:0]=X/W/R for every output (io_pmp_N_cfg_* and PMPChecker), never [6:5]. Golden stores wdata into this bit but its ONLY fan-out is the self-referential lock-hold loop (L ? old : wdata) which loops back into itself with no path to any primary output => cone-dead. PMP old value is always 0 so the locked branch also holds 0 (inert). Impl omits this redundant dead state (stores 6 live bits/byte, reconstructs [6:5]=0). Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/PMP/pmpMapping_cfgMerged_1_reg[22]",
+      "rationale": "Reserved pmpcfg bit[6] of PMP config entry 2 in pmpMapping_cfgMerged_1. RISC-V pmpcfg[6:5] are architecturally reserved (WARL, read-as-0) in the PMP bank; the module reads only [7]=L,[4:3]=A,[2:0]=X/W/R for every output (io_pmp_N_cfg_* and PMPChecker), never [6:5]. Golden stores wdata into this bit but its ONLY fan-out is the self-referential lock-hold loop (L ? old : wdata) which loops back into itself with no path to any primary output => cone-dead. PMP old value is always 0 so the locked branch also holds 0 (inert). Impl omits this redundant dead state (stores 6 live bits/byte, reconstructs [6:5]=0). Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/PMP/pmpMapping_cfgMerged_1_reg[29]",
+      "rationale": "Reserved pmpcfg bit[5] of PMP config entry 3 in pmpMapping_cfgMerged_1. RISC-V pmpcfg[6:5] are architecturally reserved (WARL, read-as-0) in the PMP bank; the module reads only [7]=L,[4:3]=A,[2:0]=X/W/R for every output (io_pmp_N_cfg_* and PMPChecker), never [6:5]. Golden stores wdata into this bit but its ONLY fan-out is the self-referential lock-hold loop (L ? old : wdata) which loops back into itself with no path to any primary output => cone-dead. PMP old value is always 0 so the locked branch also holds 0 (inert). Impl omits this redundant dead state (stores 6 live bits/byte, reconstructs [6:5]=0). Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/PMP/pmpMapping_cfgMerged_1_reg[30]",
+      "rationale": "Reserved pmpcfg bit[6] of PMP config entry 3 in pmpMapping_cfgMerged_1. RISC-V pmpcfg[6:5] are architecturally reserved (WARL, read-as-0) in the PMP bank; the module reads only [7]=L,[4:3]=A,[2:0]=X/W/R for every output (io_pmp_N_cfg_* and PMPChecker), never [6:5]. Golden stores wdata into this bit but its ONLY fan-out is the self-referential lock-hold loop (L ? old : wdata) which loops back into itself with no path to any primary output => cone-dead. PMP old value is always 0 so the locked branch also holds 0 (inert). Impl omits this redundant dead state (stores 6 live bits/byte, reconstructs [6:5]=0). Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/PMP/pmpMapping_cfgMerged_1_reg[37]",
+      "rationale": "Reserved pmpcfg bit[5] of PMP config entry 4 in pmpMapping_cfgMerged_1. RISC-V pmpcfg[6:5] are architecturally reserved (WARL, read-as-0) in the PMP bank; the module reads only [7]=L,[4:3]=A,[2:0]=X/W/R for every output (io_pmp_N_cfg_* and PMPChecker), never [6:5]. Golden stores wdata into this bit but its ONLY fan-out is the self-referential lock-hold loop (L ? old : wdata) which loops back into itself with no path to any primary output => cone-dead. PMP old value is always 0 so the locked branch also holds 0 (inert). Impl omits this redundant dead state (stores 6 live bits/byte, reconstructs [6:5]=0). Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/PMP/pmpMapping_cfgMerged_1_reg[38]",
+      "rationale": "Reserved pmpcfg bit[6] of PMP config entry 4 in pmpMapping_cfgMerged_1. RISC-V pmpcfg[6:5] are architecturally reserved (WARL, read-as-0) in the PMP bank; the module reads only [7]=L,[4:3]=A,[2:0]=X/W/R for every output (io_pmp_N_cfg_* and PMPChecker), never [6:5]. Golden stores wdata into this bit but its ONLY fan-out is the self-referential lock-hold loop (L ? old : wdata) which loops back into itself with no path to any primary output => cone-dead. PMP old value is always 0 so the locked branch also holds 0 (inert). Impl omits this redundant dead state (stores 6 live bits/byte, reconstructs [6:5]=0). Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/PMP/pmpMapping_cfgMerged_1_reg[45]",
+      "rationale": "Reserved pmpcfg bit[5] of PMP config entry 5 in pmpMapping_cfgMerged_1. RISC-V pmpcfg[6:5] are architecturally reserved (WARL, read-as-0) in the PMP bank; the module reads only [7]=L,[4:3]=A,[2:0]=X/W/R for every output (io_pmp_N_cfg_* and PMPChecker), never [6:5]. Golden stores wdata into this bit but its ONLY fan-out is the self-referential lock-hold loop (L ? old : wdata) which loops back into itself with no path to any primary output => cone-dead. PMP old value is always 0 so the locked branch also holds 0 (inert). Impl omits this redundant dead state (stores 6 live bits/byte, reconstructs [6:5]=0). Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/PMP/pmpMapping_cfgMerged_1_reg[46]",
+      "rationale": "Reserved pmpcfg bit[6] of PMP config entry 5 in pmpMapping_cfgMerged_1. RISC-V pmpcfg[6:5] are architecturally reserved (WARL, read-as-0) in the PMP bank; the module reads only [7]=L,[4:3]=A,[2:0]=X/W/R for every output (io_pmp_N_cfg_* and PMPChecker), never [6:5]. Golden stores wdata into this bit but its ONLY fan-out is the self-referential lock-hold loop (L ? old : wdata) which loops back into itself with no path to any primary output => cone-dead. PMP old value is always 0 so the locked branch also holds 0 (inert). Impl omits this redundant dead state (stores 6 live bits/byte, reconstructs [6:5]=0). Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/PMP/pmpMapping_cfgMerged_1_reg[53]",
+      "rationale": "Reserved pmpcfg bit[5] of PMP config entry 6 in pmpMapping_cfgMerged_1. RISC-V pmpcfg[6:5] are architecturally reserved (WARL, read-as-0) in the PMP bank; the module reads only [7]=L,[4:3]=A,[2:0]=X/W/R for every output (io_pmp_N_cfg_* and PMPChecker), never [6:5]. Golden stores wdata into this bit but its ONLY fan-out is the self-referential lock-hold loop (L ? old : wdata) which loops back into itself with no path to any primary output => cone-dead. PMP old value is always 0 so the locked branch also holds 0 (inert). Impl omits this redundant dead state (stores 6 live bits/byte, reconstructs [6:5]=0). Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/PMP/pmpMapping_cfgMerged_1_reg[54]",
+      "rationale": "Reserved pmpcfg bit[6] of PMP config entry 6 in pmpMapping_cfgMerged_1. RISC-V pmpcfg[6:5] are architecturally reserved (WARL, read-as-0) in the PMP bank; the module reads only [7]=L,[4:3]=A,[2:0]=X/W/R for every output (io_pmp_N_cfg_* and PMPChecker), never [6:5]. Golden stores wdata into this bit but its ONLY fan-out is the self-referential lock-hold loop (L ? old : wdata) which loops back into itself with no path to any primary output => cone-dead. PMP old value is always 0 so the locked branch also holds 0 (inert). Impl omits this redundant dead state (stores 6 live bits/byte, reconstructs [6:5]=0). Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/PMP/pmpMapping_cfgMerged_1_reg[5]",
+      "rationale": "Reserved pmpcfg bit[5] of PMP config entry 0 in pmpMapping_cfgMerged_1. RISC-V pmpcfg[6:5] are architecturally reserved (WARL, read-as-0) in the PMP bank; the module reads only [7]=L,[4:3]=A,[2:0]=X/W/R for every output (io_pmp_N_cfg_* and PMPChecker), never [6:5]. Golden stores wdata into this bit but its ONLY fan-out is the self-referential lock-hold loop (L ? old : wdata) which loops back into itself with no path to any primary output => cone-dead. PMP old value is always 0 so the locked branch also holds 0 (inert). Impl omits this redundant dead state (stores 6 live bits/byte, reconstructs [6:5]=0). Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/PMP/pmpMapping_cfgMerged_1_reg[61]",
+      "rationale": "Reserved pmpcfg bit[5] of PMP config entry 7 in pmpMapping_cfgMerged_1. RISC-V pmpcfg[6:5] are architecturally reserved (WARL, read-as-0) in the PMP bank; the module reads only [7]=L,[4:3]=A,[2:0]=X/W/R for every output (io_pmp_N_cfg_* and PMPChecker), never [6:5]. Golden stores wdata into this bit but its ONLY fan-out is the self-referential lock-hold loop (L ? old : wdata) which loops back into itself with no path to any primary output => cone-dead. PMP old value is always 0 so the locked branch also holds 0 (inert). Impl omits this redundant dead state (stores 6 live bits/byte, reconstructs [6:5]=0). Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/PMP/pmpMapping_cfgMerged_1_reg[62]",
+      "rationale": "Reserved pmpcfg bit[6] of PMP config entry 7 in pmpMapping_cfgMerged_1. RISC-V pmpcfg[6:5] are architecturally reserved (WARL, read-as-0) in the PMP bank; the module reads only [7]=L,[4:3]=A,[2:0]=X/W/R for every output (io_pmp_N_cfg_* and PMPChecker), never [6:5]. Golden stores wdata into this bit but its ONLY fan-out is the self-referential lock-hold loop (L ? old : wdata) which loops back into itself with no path to any primary output => cone-dead. PMP old value is always 0 so the locked branch also holds 0 (inert). Impl omits this redundant dead state (stores 6 live bits/byte, reconstructs [6:5]=0). Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/PMP/pmpMapping_cfgMerged_1_reg[6]",
+      "rationale": "Reserved pmpcfg bit[6] of PMP config entry 0 in pmpMapping_cfgMerged_1. RISC-V pmpcfg[6:5] are architecturally reserved (WARL, read-as-0) in the PMP bank; the module reads only [7]=L,[4:3]=A,[2:0]=X/W/R for every output (io_pmp_N_cfg_* and PMPChecker), never [6:5]. Golden stores wdata into this bit but its ONLY fan-out is the self-referential lock-hold loop (L ? old : wdata) which loops back into itself with no path to any primary output => cone-dead. PMP old value is always 0 so the locked branch also holds 0 (inert). Impl omits this redundant dead state (stores 6 live bits/byte, reconstructs [6:5]=0). Golden-only cone-dead; impl side clean."
+    }
+  ]
+}

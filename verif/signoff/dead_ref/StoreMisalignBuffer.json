@@ -1,0 +1,55 @@
+{
+  "schema": "fm-sidecar-dead-ref-v1",
+  "target": "StoreMisalignBuffer",
+  "rationale": "signoff-strict (no blackbox, no vendor macro, no allow): native FM SUCCEEDED, impl side 100% clean (unmatched_impl=0, unread_impl=0, unread_notcompared=0, passing=1779, failing=0). The only residual is 12 golden-only unread_ref points, each a golden-only cone-dead register bit with no functional output fan-out. Three cone-dead families, enumerated exactly from committed native_facts (/tmp/deadref-C-evidence/official/StoreMisalignBuffer): (1) REG_1_reg = RegNext(~req_valid) feeding only _GEN_17 = REG_1 & req_valid, and _GEN_17 has zero consumers (grep count 1 = its own def) = DCE'd XSPerfAccumulate/assertion probe; impl core omits it. (2) req_alignedType_reg[2] = bit[2] of the golden [2:0] req_alignedType register; the only functional read is alignedType = req_alignedType[1:0] (line 528), bit[2] is written-but-never-read; impl core narrows to logic[1:0] alignedType (documented rtl/memblock/StoreMisalignBuffer.sv line 221). (3) splitStoreReqs_0_uop_fuOpType_reg[2..8] = high 7 bits of the golden [8:0] fuOpType register; the only functional read is splitStoreReqs_0_uop_fuOpType[1:0] (line 1741, output rebuilds {..,size[1:0]}), bits[2:8] written-but-never-read; impl core does not store fuOpType, rebuilds on the output side (documented line 227-228,699). (4) splitStoreResp_1_paddr_reg[0..2] = low 3 bits of the golden [47:0] paddr register; the only functional read is {splitStoreResp_1_paddr[47:3], 3'h0} (line 1836, low 3 bits masked to 0 = 8B-aligned), bits[0:2] written-but-never-read; impl core stores only logic[47:3] (documented line 342-344). All impl-side compare points pass; impl correctly omits/narrows the redundant golden-only dead registers.",
+  "entries": [
+    {
+      "ref_path": "r:/WORK/StoreMisalignBuffer/REG_1_reg",
+      "rationale": "Golden-only RegNext(~req_valid) probe register; feeds only _GEN_17 = REG_1 & req_valid which has zero consumers (DCE'd XSPerfAccumulate/assertion). Cone-dead, no functional output fan-out. Impl core omits it."
+    },
+    {
+      "ref_path": "r:/WORK/StoreMisalignBuffer/req_alignedType_reg[2]",
+      "rationale": "Golden-only over-wide bit: req_alignedType is [2:0] but the sole functional read alignedType (line 528) uses only req_alignedType[1:0]; bit[2] is written-but-never-read (cone-dead). Impl core narrows alignedType to logic[1:0]."
+    },
+    {
+      "ref_path": "r:/WORK/StoreMisalignBuffer/splitStoreReqs_0_uop_fuOpType_reg[2]",
+      "rationale": "Golden-only over-wide bit: splitStoreReqs_0_uop_fuOpType is [8:0] but the sole functional read (line 1741) uses only [1:0]; bit[2] written-but-never-read (cone-dead). Impl core does not store fuOpType, rebuilds it on the output side."
+    },
+    {
+      "ref_path": "r:/WORK/StoreMisalignBuffer/splitStoreReqs_0_uop_fuOpType_reg[3]",
+      "rationale": "Golden-only over-wide bit: splitStoreReqs_0_uop_fuOpType is [8:0] but the sole functional read (line 1741) uses only [1:0]; bit[3] written-but-never-read (cone-dead). Impl core does not store fuOpType, rebuilds it on the output side."
+    },
+    {
+      "ref_path": "r:/WORK/StoreMisalignBuffer/splitStoreReqs_0_uop_fuOpType_reg[4]",
+      "rationale": "Golden-only over-wide bit: splitStoreReqs_0_uop_fuOpType is [8:0] but the sole functional read (line 1741) uses only [1:0]; bit[4] written-but-never-read (cone-dead). Impl core does not store fuOpType, rebuilds it on the output side."
+    },
+    {
+      "ref_path": "r:/WORK/StoreMisalignBuffer/splitStoreReqs_0_uop_fuOpType_reg[5]",
+      "rationale": "Golden-only over-wide bit: splitStoreReqs_0_uop_fuOpType is [8:0] but the sole functional read (line 1741) uses only [1:0]; bit[5] written-but-never-read (cone-dead). Impl core does not store fuOpType, rebuilds it on the output side."
+    },
+    {
+      "ref_path": "r:/WORK/StoreMisalignBuffer/splitStoreReqs_0_uop_fuOpType_reg[6]",
+      "rationale": "Golden-only over-wide bit: splitStoreReqs_0_uop_fuOpType is [8:0] but the sole functional read (line 1741) uses only [1:0]; bit[6] written-but-never-read (cone-dead). Impl core does not store fuOpType, rebuilds it on the output side."
+    },
+    {
+      "ref_path": "r:/WORK/StoreMisalignBuffer/splitStoreReqs_0_uop_fuOpType_reg[7]",
+      "rationale": "Golden-only over-wide bit: splitStoreReqs_0_uop_fuOpType is [8:0] but the sole functional read (line 1741) uses only [1:0]; bit[7] written-but-never-read (cone-dead). Impl core does not store fuOpType, rebuilds it on the output side."
+    },
+    {
+      "ref_path": "r:/WORK/StoreMisalignBuffer/splitStoreReqs_0_uop_fuOpType_reg[8]",
+      "rationale": "Golden-only over-wide bit: splitStoreReqs_0_uop_fuOpType is [8:0] but the sole functional read (line 1741) uses only [1:0]; bit[8] written-but-never-read (cone-dead). Impl core does not store fuOpType, rebuilds it on the output side."
+    },
+    {
+      "ref_path": "r:/WORK/StoreMisalignBuffer/splitStoreResp_1_paddr_reg[0]",
+      "rationale": "Golden-only over-wide bit: splitStoreResp_1_paddr is [47:0] but the sole functional read (line 1836) is {splitStoreResp_1_paddr[47:3], 3'h0} (8B-aligned, low 3 bits masked to 0); bit[0] written-but-never-read (cone-dead). Impl core stores only logic[47:3]."
+    },
+    {
+      "ref_path": "r:/WORK/StoreMisalignBuffer/splitStoreResp_1_paddr_reg[1]",
+      "rationale": "Golden-only over-wide bit: splitStoreResp_1_paddr is [47:0] but the sole functional read (line 1836) is {splitStoreResp_1_paddr[47:3], 3'h0} (8B-aligned, low 3 bits masked to 0); bit[1] written-but-never-read (cone-dead). Impl core stores only logic[47:3]."
+    },
+    {
+      "ref_path": "r:/WORK/StoreMisalignBuffer/splitStoreResp_1_paddr_reg[2]",
+      "rationale": "Golden-only over-wide bit: splitStoreResp_1_paddr is [47:0] but the sole functional read (line 1836) is {splitStoreResp_1_paddr[47:3], 3'h0} (8B-aligned, low 3 bits masked to 0); bit[2] written-but-never-read (cone-dead). Impl core stores only logic[47:3]."
+    }
+  ]
+}

@@ -1,0 +1,559 @@
+{
+  "schema": "fm-sidecar-dead-ref-v1",
+  "target": "LoadMisalignBuffer",
+  "rationale": "signoff-strict, NO blackbox / NO vmucp / NO relaxed appvar: native SUCCEEDED (passing 2370, failing 0), impl side 100% clean (unmatched_impl=0, unread_impl=0, unread_notcompared=0). The only residual is 138 golden-only unread_ref in 4 families: (1) REG_reg = assert/dead register (RegNext(~req_valid)) read only by dead wire _GEN_13 = REG & req_valid which has zero downstream readers; (2) splitLoadReqs_0_uop_fuOpType_reg[2..8] = 7 upper bits of the [8:0] fuOpType register, read only as [1:0] (line 2445); (3) splitLoadResp_0_data_reg[64..128] = 65 upper bits of the [128:0] resp-data register, read only within [63:0] (lines 860-873); (4) splitLoadResp_1_data_reg[64..128] = same for split 1 (lines 918-931). All are golden-only cone-dead with no functional output fan-out. The readable impl core (rtl/memblock/LoadMisalignBuffer.sv) deliberately narrows each field to its golden read-range (fuOpType[1:0], resp data to read window) and omits REG -- documented comments lines 377/401/438/757 -- so impl side is 100% clean (superseding the stale gap_schedule ui319; fresh current-HEAD run shows unread_impl=0). Enumerated exactly from native_facts (evidence /tmp/deadref-A-evidence/LoadMisalignBuffer-native/native_facts.json).",
+  "entries": [
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/REG_reg",
+      "rationale": "Golden-only assert/dead register REG (RegNext of ~req_valid). Read only by wire _GEN_13 = REG & req_valid, which itself has zero downstream readers (dead wire). Cone-dead with no functional output fan-out. Impl core omits it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadReqs_0_uop_fuOpType_reg[2]",
+      "rationale": "Golden-only dead bit: splitLoadReqs_0_uop_fuOpType[2]. Golden fuOpType is [8:0] but read ONLY as [1:0] (line 2445, alignedType select); bits [2:8] have zero readers. Cone-dead, no functional output fan-out. Impl core stores only fuOpType[1:0], omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadReqs_0_uop_fuOpType_reg[3]",
+      "rationale": "Golden-only dead bit: splitLoadReqs_0_uop_fuOpType[3]. Golden fuOpType is [8:0] but read ONLY as [1:0] (line 2445, alignedType select); bits [2:8] have zero readers. Cone-dead, no functional output fan-out. Impl core stores only fuOpType[1:0], omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadReqs_0_uop_fuOpType_reg[4]",
+      "rationale": "Golden-only dead bit: splitLoadReqs_0_uop_fuOpType[4]. Golden fuOpType is [8:0] but read ONLY as [1:0] (line 2445, alignedType select); bits [2:8] have zero readers. Cone-dead, no functional output fan-out. Impl core stores only fuOpType[1:0], omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadReqs_0_uop_fuOpType_reg[5]",
+      "rationale": "Golden-only dead bit: splitLoadReqs_0_uop_fuOpType[5]. Golden fuOpType is [8:0] but read ONLY as [1:0] (line 2445, alignedType select); bits [2:8] have zero readers. Cone-dead, no functional output fan-out. Impl core stores only fuOpType[1:0], omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadReqs_0_uop_fuOpType_reg[6]",
+      "rationale": "Golden-only dead bit: splitLoadReqs_0_uop_fuOpType[6]. Golden fuOpType is [8:0] but read ONLY as [1:0] (line 2445, alignedType select); bits [2:8] have zero readers. Cone-dead, no functional output fan-out. Impl core stores only fuOpType[1:0], omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadReqs_0_uop_fuOpType_reg[7]",
+      "rationale": "Golden-only dead bit: splitLoadReqs_0_uop_fuOpType[7]. Golden fuOpType is [8:0] but read ONLY as [1:0] (line 2445, alignedType select); bits [2:8] have zero readers. Cone-dead, no functional output fan-out. Impl core stores only fuOpType[1:0], omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadReqs_0_uop_fuOpType_reg[8]",
+      "rationale": "Golden-only dead bit: splitLoadReqs_0_uop_fuOpType[8]. Golden fuOpType is [8:0] but read ONLY as [1:0] (line 2445, alignedType select); bits [2:8] have zero readers. Cone-dead, no functional output fan-out. Impl core stores only fuOpType[1:0], omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[100]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[100]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[101]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[101]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[102]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[102]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[103]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[103]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[104]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[104]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[105]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[105]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[106]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[106]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[107]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[107]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[108]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[108]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[109]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[109]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[110]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[110]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[111]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[111]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[112]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[112]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[113]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[113]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[114]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[114]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[115]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[115]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[116]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[116]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[117]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[117]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[118]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[118]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[119]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[119]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[120]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[120]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[121]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[121]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[122]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[122]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[123]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[123]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[124]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[124]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[125]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[125]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[126]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[126]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[127]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[127]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[128]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[128]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[64]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[64]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[65]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[65]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[66]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[66]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[67]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[67]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[68]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[68]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[69]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[69]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[70]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[70]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[71]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[71]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[72]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[72]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[73]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[73]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[74]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[74]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[75]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[75]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[76]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[76]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[77]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[77]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[78]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[78]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[79]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[79]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[80]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[80]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[81]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[81]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[82]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[82]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[83]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[83]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[84]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[84]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[85]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[85]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[86]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[86]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[87]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[87]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[88]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[88]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[89]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[89]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[90]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[90]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[91]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[91]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[92]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[92]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[93]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[93]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[94]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[94]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[95]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[95]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[96]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[96]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[97]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[97]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[98]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[98]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_0_data_reg[99]",
+      "rationale": "Golden-only dead bit: splitLoadResp_0_data[99]. Golden data is [128:0] but read ONLY within [63:0] (lines 860-873, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[100]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[100]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[101]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[101]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[102]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[102]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[103]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[103]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[104]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[104]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[105]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[105]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[106]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[106]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[107]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[107]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[108]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[108]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[109]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[109]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[110]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[110]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[111]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[111]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[112]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[112]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[113]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[113]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[114]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[114]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[115]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[115]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[116]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[116]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[117]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[117]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[118]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[118]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[119]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[119]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[120]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[120]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[121]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[121]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[122]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[122]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[123]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[123]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[124]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[124]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[125]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[125]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[126]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[126]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[127]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[127]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[128]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[128]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[64]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[64]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[65]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[65]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[66]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[66]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[67]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[67]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[68]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[68]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[69]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[69]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[70]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[70]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[71]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[71]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[72]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[72]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[73]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[73]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[74]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[74]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[75]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[75]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[76]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[76]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[77]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[77]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[78]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[78]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[79]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[79]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[80]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[80]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[81]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[81]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[82]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[82]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[83]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[83]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[84]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[84]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[85]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[85]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[86]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[86]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[87]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[87]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[88]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[88]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[89]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[89]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[90]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[90]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[91]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[91]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[92]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[92]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[93]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[93]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[94]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[94]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[95]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[95]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[96]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[96]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[97]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[97]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[98]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[98]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadMisalignBuffer/splitLoadResp_1_data_reg[99]",
+      "rationale": "Golden-only dead bit: splitLoadResp_1_data[99]. Golden data is [128:0] but read ONLY within [63:0] (lines 918-931, lowResult byte-shift select); bits [64:128] have zero readers. Cone-dead, no functional output fan-out. Impl core narrows resp data to the read range, omitting it."
+    }
+  ]
+}

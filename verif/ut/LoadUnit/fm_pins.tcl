@@ -42,8 +42,18 @@ foreach {rp ip} {
   catch {set_user_match "r:/WORK/$top/$rp" "i:/WORK/$top/u_core/$ip"}
 }
 
-# 常量 0 影子链（isNCIO/isPerfCnt/ptr_chasing 无复位 D=0 链）：FM 的寄存器初值推断
-# 会把一侧折成常量而另一侧保留（不对称）→ 关掉初值推断，两侧按对称 DFF 比对。
-# （禁 set_constant 约束 ref；与 Sbuffer/BankedDataArray 同法。）
-catch {set_app_var verification_assume_reg_init none}
-puts "LOADUNIT_PINS: applied"
+# NOTE(deadref-contract-B, codex_0089): the previous line
+#   catch {set_app_var verification_assume_reg_init none}
+# was REMOVED. Empirically it masked NOTHING: with the FM default
+# (verification_assume_reg_init auto) the LoadUnit native proof is still
+# SUCCEEDED with failing=0, unmatched=0, unread_impl=0 and the SAME 89
+# golden-only cone-dead unread_ref residual. The relax only turned a handful
+# of no-reset init points from "compared-equivalent" into "compared" (passing
+# 7714->7705) and, critically, registered a spurious relaxed_appvars
+# qualification that forced PARTIAL. There is no impl over-wide register /
+# multi-driver / undriven-signal asymmetry to fix (impl side is 100% clean).
+# The residual 89 points are declared golden-only cone-dead in
+# verif/signoff/dead_ref/LoadUnit.json (vec-vaddr page-scale high bits, assertion
+# registers, dangling dontTouch debug wires). Removing the relax makes the proof
+# a clean strict PASS_DEAD_REF with zero qualifications.
+puts "LOADUNIT_PINS: applied (no relaxed appvars)"

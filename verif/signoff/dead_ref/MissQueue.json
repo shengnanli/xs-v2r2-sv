@@ -1,0 +1,55 @@
+{
+  "schema": "fm-sidecar-dead-ref-v1",
+  "target": "MissQueue",
+  "rationale": "strict+vmucp signoff: native SUCCEEDED passing=22979 failing=0 unmatched=0 unread_impl=0 unread_notcompared=0 (all 3563 vmucp matched-unread pairs actually compared & passing). The only residual = 12 golden-only cone-dead unread_ref in 3 families: (1) REG = an assertion-only register (MissQueue.scala:1131 assert, compiled out under SYNTHESIS); (2) max_inflight[4:0] = a dontTouch perf max-occupancy probe (only reader max_inflight_probe is dangling); (3) miss_req_pipe_reg_req_addr[5:0] = the cacheline byte-offset of the enqueue pipe-reg address, never read (top uses only [47:6], black-box entries use {[47:6],6'h0}). The readable core (rtl/memblock/MissQueue.sv, missqueue_pkg.sv) omits all three redundant dead states => impl 100%% clean. Enumerated exactly from committed native_facts (gate-runs/MissQueue).",
+  "entries": [
+    {
+      "ref_path": "r:/WORK/MissQueue/REG_reg",
+      "rationale": "Golden 'reg REG;' (MissQueue.sv:1809). It is an ASSERTION register: written 'REG <= RegNext(PopCount(secondary_ready_vec)<=1 || !io.req.valid)' and read ONLY at line 2343 'if (~reset & ~REG) $fwrite(\"Assertion failed ... MissQueue.scala:1131\")' guarded by ASSERT_VERBOSE_COND_/STOP_COND_. Under +define+SYNTHESIS the assertion body is compiled out => REG has zero fan-out to any output => cone-dead. Impl omits this assertion-only register. Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/MissQueue/max_inflight_reg[0]",
+      "rationale": "Bit[0] of golden 'reg [4:0] max_inflight;' (MissQueue.sv:2616), a dontTouch perf max-occupancy tracker: 'if (num_valids_probe > max_inflight) max_inflight <= num_valids_probe'. Its ONLY reader is 'wire [4:0] max_inflight_probe = max_inflight;' (line 2617), a dangling dontTouch probe with no downstream fan-out (plus the self-compare). No path to any output => cone-dead. Impl omits this perf-probe register. Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/MissQueue/max_inflight_reg[1]",
+      "rationale": "Bit[1] of golden 'reg [4:0] max_inflight;' (MissQueue.sv:2616), a dontTouch perf max-occupancy tracker: 'if (num_valids_probe > max_inflight) max_inflight <= num_valids_probe'. Its ONLY reader is 'wire [4:0] max_inflight_probe = max_inflight;' (line 2617), a dangling dontTouch probe with no downstream fan-out (plus the self-compare). No path to any output => cone-dead. Impl omits this perf-probe register. Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/MissQueue/max_inflight_reg[2]",
+      "rationale": "Bit[2] of golden 'reg [4:0] max_inflight;' (MissQueue.sv:2616), a dontTouch perf max-occupancy tracker: 'if (num_valids_probe > max_inflight) max_inflight <= num_valids_probe'. Its ONLY reader is 'wire [4:0] max_inflight_probe = max_inflight;' (line 2617), a dangling dontTouch probe with no downstream fan-out (plus the self-compare). No path to any output => cone-dead. Impl omits this perf-probe register. Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/MissQueue/max_inflight_reg[3]",
+      "rationale": "Bit[3] of golden 'reg [4:0] max_inflight;' (MissQueue.sv:2616), a dontTouch perf max-occupancy tracker: 'if (num_valids_probe > max_inflight) max_inflight <= num_valids_probe'. Its ONLY reader is 'wire [4:0] max_inflight_probe = max_inflight;' (line 2617), a dangling dontTouch probe with no downstream fan-out (plus the self-compare). No path to any output => cone-dead. Impl omits this perf-probe register. Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/MissQueue/max_inflight_reg[4]",
+      "rationale": "Bit[4] of golden 'reg [4:0] max_inflight;' (MissQueue.sv:2616), a dontTouch perf max-occupancy tracker: 'if (num_valids_probe > max_inflight) max_inflight <= num_valids_probe'. Its ONLY reader is 'wire [4:0] max_inflight_probe = max_inflight;' (line 2617), a dangling dontTouch probe with no downstream fan-out (plus the self-compare). No path to any output => cone-dead. Impl omits this perf-probe register. Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/MissQueue/miss_req_pipe_reg_req_addr_reg[0]",
+      "rationale": "Bit[0] (cacheline byte-offset) of golden 'reg [47:0] miss_req_pipe_reg_req_addr;' (MissQueue.sv:1555). Every read in the MissQueue top uses only the block tag [47:6] (all block-match comparisons); the low 6 bits [5:0] are never read at the top level, and even the black-boxed MissEntry sub-modules use only {addr[47:6],6'h0}. So [5:0] have no functional fan-out => cone-dead. The readable core stores addr at block granularity [47:6] (missqueue_pkg.sv addr field is [PADDR_BITS-1:6]) and reconstructs the low bits as 0 when driving acquire => impl clean. Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/MissQueue/miss_req_pipe_reg_req_addr_reg[1]",
+      "rationale": "Bit[1] (cacheline byte-offset) of golden 'reg [47:0] miss_req_pipe_reg_req_addr;' (MissQueue.sv:1555). Every read in the MissQueue top uses only the block tag [47:6] (all block-match comparisons); the low 6 bits [5:0] are never read at the top level, and even the black-boxed MissEntry sub-modules use only {addr[47:6],6'h0}. So [5:0] have no functional fan-out => cone-dead. The readable core stores addr at block granularity [47:6] (missqueue_pkg.sv addr field is [PADDR_BITS-1:6]) and reconstructs the low bits as 0 when driving acquire => impl clean. Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/MissQueue/miss_req_pipe_reg_req_addr_reg[2]",
+      "rationale": "Bit[2] (cacheline byte-offset) of golden 'reg [47:0] miss_req_pipe_reg_req_addr;' (MissQueue.sv:1555). Every read in the MissQueue top uses only the block tag [47:6] (all block-match comparisons); the low 6 bits [5:0] are never read at the top level, and even the black-boxed MissEntry sub-modules use only {addr[47:6],6'h0}. So [5:0] have no functional fan-out => cone-dead. The readable core stores addr at block granularity [47:6] (missqueue_pkg.sv addr field is [PADDR_BITS-1:6]) and reconstructs the low bits as 0 when driving acquire => impl clean. Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/MissQueue/miss_req_pipe_reg_req_addr_reg[3]",
+      "rationale": "Bit[3] (cacheline byte-offset) of golden 'reg [47:0] miss_req_pipe_reg_req_addr;' (MissQueue.sv:1555). Every read in the MissQueue top uses only the block tag [47:6] (all block-match comparisons); the low 6 bits [5:0] are never read at the top level, and even the black-boxed MissEntry sub-modules use only {addr[47:6],6'h0}. So [5:0] have no functional fan-out => cone-dead. The readable core stores addr at block granularity [47:6] (missqueue_pkg.sv addr field is [PADDR_BITS-1:6]) and reconstructs the low bits as 0 when driving acquire => impl clean. Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/MissQueue/miss_req_pipe_reg_req_addr_reg[4]",
+      "rationale": "Bit[4] (cacheline byte-offset) of golden 'reg [47:0] miss_req_pipe_reg_req_addr;' (MissQueue.sv:1555). Every read in the MissQueue top uses only the block tag [47:6] (all block-match comparisons); the low 6 bits [5:0] are never read at the top level, and even the black-boxed MissEntry sub-modules use only {addr[47:6],6'h0}. So [5:0] have no functional fan-out => cone-dead. The readable core stores addr at block granularity [47:6] (missqueue_pkg.sv addr field is [PADDR_BITS-1:6]) and reconstructs the low bits as 0 when driving acquire => impl clean. Golden-only cone-dead; impl side clean."
+    },
+    {
+      "ref_path": "r:/WORK/MissQueue/miss_req_pipe_reg_req_addr_reg[5]",
+      "rationale": "Bit[5] (cacheline byte-offset) of golden 'reg [47:0] miss_req_pipe_reg_req_addr;' (MissQueue.sv:1555). Every read in the MissQueue top uses only the block tag [47:6] (all block-match comparisons); the low 6 bits [5:0] are never read at the top level, and even the black-boxed MissEntry sub-modules use only {addr[47:6],6'h0}. So [5:0] have no functional fan-out => cone-dead. The readable core stores addr at block granularity [47:6] (missqueue_pkg.sv addr field is [PADDR_BITS-1:6]) and reconstructs the low bits as 0 when driving acquire => impl clean. Golden-only cone-dead; impl side clean."
+    }
+  ]
+}

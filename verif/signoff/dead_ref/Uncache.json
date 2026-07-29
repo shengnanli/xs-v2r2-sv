@@ -1,0 +1,235 @@
+{
+  "schema": "fm-sidecar-dead-ref-v1",
+  "target": "Uncache",
+  "rationale": "signoff-strict (no blackbox, no vendor macro, no allow): native FM SUCCEEDED, impl side 100% clean (unmatched_impl=0, unread_impl=0, unread_notcompared=0, passing=2450, failing=0). The only residual is 57 golden-only unread_ref points, all byte-offset (low 3 bits) dead register slices with no functional output fan-out, enumerated exactly from committed native_facts (/tmp/deadref-C-evidence/official/Uncache). Three cone-dead families: (1) entries_0..3_vaddr_reg[0..2] = low 3 bits of the four [49:0] entry vaddr registers; every functional read uses only [49:3] (block-aligned tag compares + merge feedback _entries_vaddr_T_2 = {_GEN_44[idx][49:3], resOffset} which replaces low 3 bits). (2) f1_fwdPAddr / f1_fwdPAddr_1 / f1_fwdPAddr_2 _reg[0..2] = low 3 bits of the three [47:0] forward-paddr registers; every functional read uses only bit[3] and [47:3]. (3) f1_ptagMatches_r{,_1..._11}_reg[0..2] = low 3 bits of the twelve [47:0] ptag-match registers; sole functional read uses [47:3]. In all cases the low 3 bits (byte offset within an 8B block) are written-but-never-read (cone-dead). Impl core (rtl/memblock/Uncache.sv) stores only the block bits and documents the golden low-bit redundancy (lines 276, 581, 605-607). All impl-side compare points pass.",
+  "entries": [
+    {
+      "ref_path": "r:/WORK/Uncache/entries_0_vaddr_reg[0]",
+      "rationale": "Golden-only byte-offset dead bit: entries_0_vaddr is [49:0] but every functional read uses only [49:3] (block-aligned tag compares f0_vtagMatches* and the merge feedback _entries_vaddr_T_2 = {_GEN_44[idx][49:3], resOffset} which discards the stored low 3 bits); bit[0] written-but-never-read (cone-dead). Impl core stores only block bits [49:3] via vaddr_blk()."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/entries_0_vaddr_reg[1]",
+      "rationale": "Golden-only byte-offset dead bit: entries_0_vaddr is [49:0] but every functional read uses only [49:3] (block-aligned tag compares f0_vtagMatches* and the merge feedback _entries_vaddr_T_2 = {_GEN_44[idx][49:3], resOffset} which discards the stored low 3 bits); bit[1] written-but-never-read (cone-dead). Impl core stores only block bits [49:3] via vaddr_blk()."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/entries_0_vaddr_reg[2]",
+      "rationale": "Golden-only byte-offset dead bit: entries_0_vaddr is [49:0] but every functional read uses only [49:3] (block-aligned tag compares f0_vtagMatches* and the merge feedback _entries_vaddr_T_2 = {_GEN_44[idx][49:3], resOffset} which discards the stored low 3 bits); bit[2] written-but-never-read (cone-dead). Impl core stores only block bits [49:3] via vaddr_blk()."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/entries_1_vaddr_reg[0]",
+      "rationale": "Golden-only byte-offset dead bit: entries_1_vaddr is [49:0] but every functional read uses only [49:3] (block-aligned tag compares f0_vtagMatches* and the merge feedback _entries_vaddr_T_2 = {_GEN_44[idx][49:3], resOffset} which discards the stored low 3 bits); bit[0] written-but-never-read (cone-dead). Impl core stores only block bits [49:3] via vaddr_blk()."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/entries_1_vaddr_reg[1]",
+      "rationale": "Golden-only byte-offset dead bit: entries_1_vaddr is [49:0] but every functional read uses only [49:3] (block-aligned tag compares f0_vtagMatches* and the merge feedback _entries_vaddr_T_2 = {_GEN_44[idx][49:3], resOffset} which discards the stored low 3 bits); bit[1] written-but-never-read (cone-dead). Impl core stores only block bits [49:3] via vaddr_blk()."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/entries_1_vaddr_reg[2]",
+      "rationale": "Golden-only byte-offset dead bit: entries_1_vaddr is [49:0] but every functional read uses only [49:3] (block-aligned tag compares f0_vtagMatches* and the merge feedback _entries_vaddr_T_2 = {_GEN_44[idx][49:3], resOffset} which discards the stored low 3 bits); bit[2] written-but-never-read (cone-dead). Impl core stores only block bits [49:3] via vaddr_blk()."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/entries_2_vaddr_reg[0]",
+      "rationale": "Golden-only byte-offset dead bit: entries_2_vaddr is [49:0] but every functional read uses only [49:3] (block-aligned tag compares f0_vtagMatches* and the merge feedback _entries_vaddr_T_2 = {_GEN_44[idx][49:3], resOffset} which discards the stored low 3 bits); bit[0] written-but-never-read (cone-dead). Impl core stores only block bits [49:3] via vaddr_blk()."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/entries_2_vaddr_reg[1]",
+      "rationale": "Golden-only byte-offset dead bit: entries_2_vaddr is [49:0] but every functional read uses only [49:3] (block-aligned tag compares f0_vtagMatches* and the merge feedback _entries_vaddr_T_2 = {_GEN_44[idx][49:3], resOffset} which discards the stored low 3 bits); bit[1] written-but-never-read (cone-dead). Impl core stores only block bits [49:3] via vaddr_blk()."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/entries_2_vaddr_reg[2]",
+      "rationale": "Golden-only byte-offset dead bit: entries_2_vaddr is [49:0] but every functional read uses only [49:3] (block-aligned tag compares f0_vtagMatches* and the merge feedback _entries_vaddr_T_2 = {_GEN_44[idx][49:3], resOffset} which discards the stored low 3 bits); bit[2] written-but-never-read (cone-dead). Impl core stores only block bits [49:3] via vaddr_blk()."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/entries_3_vaddr_reg[0]",
+      "rationale": "Golden-only byte-offset dead bit: entries_3_vaddr is [49:0] but every functional read uses only [49:3] (block-aligned tag compares f0_vtagMatches* and the merge feedback _entries_vaddr_T_2 = {_GEN_44[idx][49:3], resOffset} which discards the stored low 3 bits); bit[0] written-but-never-read (cone-dead). Impl core stores only block bits [49:3] via vaddr_blk()."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/entries_3_vaddr_reg[1]",
+      "rationale": "Golden-only byte-offset dead bit: entries_3_vaddr is [49:0] but every functional read uses only [49:3] (block-aligned tag compares f0_vtagMatches* and the merge feedback _entries_vaddr_T_2 = {_GEN_44[idx][49:3], resOffset} which discards the stored low 3 bits); bit[1] written-but-never-read (cone-dead). Impl core stores only block bits [49:3] via vaddr_blk()."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/entries_3_vaddr_reg[2]",
+      "rationale": "Golden-only byte-offset dead bit: entries_3_vaddr is [49:0] but every functional read uses only [49:3] (block-aligned tag compares f0_vtagMatches* and the merge feedback _entries_vaddr_T_2 = {_GEN_44[idx][49:3], resOffset} which discards the stored low 3 bits); bit[2] written-but-never-read (cone-dead). Impl core stores only block bits [49:3] via vaddr_blk()."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_fwdPAddr_1_reg[0]",
+      "rationale": "Golden-only byte-offset dead bit: f1_fwdPAddr_1 is [47:0] but every functional read uses only bit[3] (mask select) and [47:3] (block-aligned ptag compare); bit[0] written-but-never-read (cone-dead). Impl core stores only block bits [PADDR_BITS-1:BLOCK_OFFSET]."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_fwdPAddr_1_reg[1]",
+      "rationale": "Golden-only byte-offset dead bit: f1_fwdPAddr_1 is [47:0] but every functional read uses only bit[3] (mask select) and [47:3] (block-aligned ptag compare); bit[1] written-but-never-read (cone-dead). Impl core stores only block bits [PADDR_BITS-1:BLOCK_OFFSET]."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_fwdPAddr_1_reg[2]",
+      "rationale": "Golden-only byte-offset dead bit: f1_fwdPAddr_1 is [47:0] but every functional read uses only bit[3] (mask select) and [47:3] (block-aligned ptag compare); bit[2] written-but-never-read (cone-dead). Impl core stores only block bits [PADDR_BITS-1:BLOCK_OFFSET]."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_fwdPAddr_2_reg[0]",
+      "rationale": "Golden-only byte-offset dead bit: f1_fwdPAddr_2 is [47:0] but every functional read uses only bit[3] (mask select) and [47:3] (block-aligned ptag compare); bit[0] written-but-never-read (cone-dead). Impl core stores only block bits [PADDR_BITS-1:BLOCK_OFFSET]."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_fwdPAddr_2_reg[1]",
+      "rationale": "Golden-only byte-offset dead bit: f1_fwdPAddr_2 is [47:0] but every functional read uses only bit[3] (mask select) and [47:3] (block-aligned ptag compare); bit[1] written-but-never-read (cone-dead). Impl core stores only block bits [PADDR_BITS-1:BLOCK_OFFSET]."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_fwdPAddr_2_reg[2]",
+      "rationale": "Golden-only byte-offset dead bit: f1_fwdPAddr_2 is [47:0] but every functional read uses only bit[3] (mask select) and [47:3] (block-aligned ptag compare); bit[2] written-but-never-read (cone-dead). Impl core stores only block bits [PADDR_BITS-1:BLOCK_OFFSET]."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_fwdPAddr_reg[0]",
+      "rationale": "Golden-only byte-offset dead bit: f1_fwdPAddr is [47:0] but every functional read uses only bit[3] (mask select) and [47:3] (block-aligned ptag compare); bit[0] written-but-never-read (cone-dead). Impl core stores only block bits [PADDR_BITS-1:BLOCK_OFFSET]."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_fwdPAddr_reg[1]",
+      "rationale": "Golden-only byte-offset dead bit: f1_fwdPAddr is [47:0] but every functional read uses only bit[3] (mask select) and [47:3] (block-aligned ptag compare); bit[1] written-but-never-read (cone-dead). Impl core stores only block bits [PADDR_BITS-1:BLOCK_OFFSET]."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_fwdPAddr_reg[2]",
+      "rationale": "Golden-only byte-offset dead bit: f1_fwdPAddr is [47:0] but every functional read uses only bit[3] (mask select) and [47:3] (block-aligned ptag compare); bit[2] written-but-never-read (cone-dead). Impl core stores only block bits [PADDR_BITS-1:BLOCK_OFFSET]."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_ptagMatches_r_10_reg[0]",
+      "rationale": "Golden-only byte-offset dead bit: f1_ptagMatches_r_10 is [47:0] but the sole functional read uses only [47:3] (block-aligned f1_tagMismatchVec compare vs f1_fwdPAddr[47:3]); bit[0] written-but-never-read (cone-dead). Impl core notes low 3 bits are golden-only redundant dead bits."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_ptagMatches_r_10_reg[1]",
+      "rationale": "Golden-only byte-offset dead bit: f1_ptagMatches_r_10 is [47:0] but the sole functional read uses only [47:3] (block-aligned f1_tagMismatchVec compare vs f1_fwdPAddr[47:3]); bit[1] written-but-never-read (cone-dead). Impl core notes low 3 bits are golden-only redundant dead bits."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_ptagMatches_r_10_reg[2]",
+      "rationale": "Golden-only byte-offset dead bit: f1_ptagMatches_r_10 is [47:0] but the sole functional read uses only [47:3] (block-aligned f1_tagMismatchVec compare vs f1_fwdPAddr[47:3]); bit[2] written-but-never-read (cone-dead). Impl core notes low 3 bits are golden-only redundant dead bits."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_ptagMatches_r_11_reg[0]",
+      "rationale": "Golden-only byte-offset dead bit: f1_ptagMatches_r_11 is [47:0] but the sole functional read uses only [47:3] (block-aligned f1_tagMismatchVec compare vs f1_fwdPAddr[47:3]); bit[0] written-but-never-read (cone-dead). Impl core notes low 3 bits are golden-only redundant dead bits."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_ptagMatches_r_11_reg[1]",
+      "rationale": "Golden-only byte-offset dead bit: f1_ptagMatches_r_11 is [47:0] but the sole functional read uses only [47:3] (block-aligned f1_tagMismatchVec compare vs f1_fwdPAddr[47:3]); bit[1] written-but-never-read (cone-dead). Impl core notes low 3 bits are golden-only redundant dead bits."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_ptagMatches_r_11_reg[2]",
+      "rationale": "Golden-only byte-offset dead bit: f1_ptagMatches_r_11 is [47:0] but the sole functional read uses only [47:3] (block-aligned f1_tagMismatchVec compare vs f1_fwdPAddr[47:3]); bit[2] written-but-never-read (cone-dead). Impl core notes low 3 bits are golden-only redundant dead bits."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_ptagMatches_r_1_reg[0]",
+      "rationale": "Golden-only byte-offset dead bit: f1_ptagMatches_r_1 is [47:0] but the sole functional read uses only [47:3] (block-aligned f1_tagMismatchVec compare vs f1_fwdPAddr[47:3]); bit[0] written-but-never-read (cone-dead). Impl core notes low 3 bits are golden-only redundant dead bits."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_ptagMatches_r_1_reg[1]",
+      "rationale": "Golden-only byte-offset dead bit: f1_ptagMatches_r_1 is [47:0] but the sole functional read uses only [47:3] (block-aligned f1_tagMismatchVec compare vs f1_fwdPAddr[47:3]); bit[1] written-but-never-read (cone-dead). Impl core notes low 3 bits are golden-only redundant dead bits."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_ptagMatches_r_1_reg[2]",
+      "rationale": "Golden-only byte-offset dead bit: f1_ptagMatches_r_1 is [47:0] but the sole functional read uses only [47:3] (block-aligned f1_tagMismatchVec compare vs f1_fwdPAddr[47:3]); bit[2] written-but-never-read (cone-dead). Impl core notes low 3 bits are golden-only redundant dead bits."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_ptagMatches_r_2_reg[0]",
+      "rationale": "Golden-only byte-offset dead bit: f1_ptagMatches_r_2 is [47:0] but the sole functional read uses only [47:3] (block-aligned f1_tagMismatchVec compare vs f1_fwdPAddr[47:3]); bit[0] written-but-never-read (cone-dead). Impl core notes low 3 bits are golden-only redundant dead bits."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_ptagMatches_r_2_reg[1]",
+      "rationale": "Golden-only byte-offset dead bit: f1_ptagMatches_r_2 is [47:0] but the sole functional read uses only [47:3] (block-aligned f1_tagMismatchVec compare vs f1_fwdPAddr[47:3]); bit[1] written-but-never-read (cone-dead). Impl core notes low 3 bits are golden-only redundant dead bits."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_ptagMatches_r_2_reg[2]",
+      "rationale": "Golden-only byte-offset dead bit: f1_ptagMatches_r_2 is [47:0] but the sole functional read uses only [47:3] (block-aligned f1_tagMismatchVec compare vs f1_fwdPAddr[47:3]); bit[2] written-but-never-read (cone-dead). Impl core notes low 3 bits are golden-only redundant dead bits."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_ptagMatches_r_3_reg[0]",
+      "rationale": "Golden-only byte-offset dead bit: f1_ptagMatches_r_3 is [47:0] but the sole functional read uses only [47:3] (block-aligned f1_tagMismatchVec compare vs f1_fwdPAddr[47:3]); bit[0] written-but-never-read (cone-dead). Impl core notes low 3 bits are golden-only redundant dead bits."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_ptagMatches_r_3_reg[1]",
+      "rationale": "Golden-only byte-offset dead bit: f1_ptagMatches_r_3 is [47:0] but the sole functional read uses only [47:3] (block-aligned f1_tagMismatchVec compare vs f1_fwdPAddr[47:3]); bit[1] written-but-never-read (cone-dead). Impl core notes low 3 bits are golden-only redundant dead bits."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_ptagMatches_r_3_reg[2]",
+      "rationale": "Golden-only byte-offset dead bit: f1_ptagMatches_r_3 is [47:0] but the sole functional read uses only [47:3] (block-aligned f1_tagMismatchVec compare vs f1_fwdPAddr[47:3]); bit[2] written-but-never-read (cone-dead). Impl core notes low 3 bits are golden-only redundant dead bits."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_ptagMatches_r_4_reg[0]",
+      "rationale": "Golden-only byte-offset dead bit: f1_ptagMatches_r_4 is [47:0] but the sole functional read uses only [47:3] (block-aligned f1_tagMismatchVec compare vs f1_fwdPAddr[47:3]); bit[0] written-but-never-read (cone-dead). Impl core notes low 3 bits are golden-only redundant dead bits."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_ptagMatches_r_4_reg[1]",
+      "rationale": "Golden-only byte-offset dead bit: f1_ptagMatches_r_4 is [47:0] but the sole functional read uses only [47:3] (block-aligned f1_tagMismatchVec compare vs f1_fwdPAddr[47:3]); bit[1] written-but-never-read (cone-dead). Impl core notes low 3 bits are golden-only redundant dead bits."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_ptagMatches_r_4_reg[2]",
+      "rationale": "Golden-only byte-offset dead bit: f1_ptagMatches_r_4 is [47:0] but the sole functional read uses only [47:3] (block-aligned f1_tagMismatchVec compare vs f1_fwdPAddr[47:3]); bit[2] written-but-never-read (cone-dead). Impl core notes low 3 bits are golden-only redundant dead bits."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_ptagMatches_r_5_reg[0]",
+      "rationale": "Golden-only byte-offset dead bit: f1_ptagMatches_r_5 is [47:0] but the sole functional read uses only [47:3] (block-aligned f1_tagMismatchVec compare vs f1_fwdPAddr[47:3]); bit[0] written-but-never-read (cone-dead). Impl core notes low 3 bits are golden-only redundant dead bits."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_ptagMatches_r_5_reg[1]",
+      "rationale": "Golden-only byte-offset dead bit: f1_ptagMatches_r_5 is [47:0] but the sole functional read uses only [47:3] (block-aligned f1_tagMismatchVec compare vs f1_fwdPAddr[47:3]); bit[1] written-but-never-read (cone-dead). Impl core notes low 3 bits are golden-only redundant dead bits."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_ptagMatches_r_5_reg[2]",
+      "rationale": "Golden-only byte-offset dead bit: f1_ptagMatches_r_5 is [47:0] but the sole functional read uses only [47:3] (block-aligned f1_tagMismatchVec compare vs f1_fwdPAddr[47:3]); bit[2] written-but-never-read (cone-dead). Impl core notes low 3 bits are golden-only redundant dead bits."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_ptagMatches_r_6_reg[0]",
+      "rationale": "Golden-only byte-offset dead bit: f1_ptagMatches_r_6 is [47:0] but the sole functional read uses only [47:3] (block-aligned f1_tagMismatchVec compare vs f1_fwdPAddr[47:3]); bit[0] written-but-never-read (cone-dead). Impl core notes low 3 bits are golden-only redundant dead bits."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_ptagMatches_r_6_reg[1]",
+      "rationale": "Golden-only byte-offset dead bit: f1_ptagMatches_r_6 is [47:0] but the sole functional read uses only [47:3] (block-aligned f1_tagMismatchVec compare vs f1_fwdPAddr[47:3]); bit[1] written-but-never-read (cone-dead). Impl core notes low 3 bits are golden-only redundant dead bits."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_ptagMatches_r_6_reg[2]",
+      "rationale": "Golden-only byte-offset dead bit: f1_ptagMatches_r_6 is [47:0] but the sole functional read uses only [47:3] (block-aligned f1_tagMismatchVec compare vs f1_fwdPAddr[47:3]); bit[2] written-but-never-read (cone-dead). Impl core notes low 3 bits are golden-only redundant dead bits."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_ptagMatches_r_7_reg[0]",
+      "rationale": "Golden-only byte-offset dead bit: f1_ptagMatches_r_7 is [47:0] but the sole functional read uses only [47:3] (block-aligned f1_tagMismatchVec compare vs f1_fwdPAddr[47:3]); bit[0] written-but-never-read (cone-dead). Impl core notes low 3 bits are golden-only redundant dead bits."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_ptagMatches_r_7_reg[1]",
+      "rationale": "Golden-only byte-offset dead bit: f1_ptagMatches_r_7 is [47:0] but the sole functional read uses only [47:3] (block-aligned f1_tagMismatchVec compare vs f1_fwdPAddr[47:3]); bit[1] written-but-never-read (cone-dead). Impl core notes low 3 bits are golden-only redundant dead bits."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_ptagMatches_r_7_reg[2]",
+      "rationale": "Golden-only byte-offset dead bit: f1_ptagMatches_r_7 is [47:0] but the sole functional read uses only [47:3] (block-aligned f1_tagMismatchVec compare vs f1_fwdPAddr[47:3]); bit[2] written-but-never-read (cone-dead). Impl core notes low 3 bits are golden-only redundant dead bits."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_ptagMatches_r_8_reg[0]",
+      "rationale": "Golden-only byte-offset dead bit: f1_ptagMatches_r_8 is [47:0] but the sole functional read uses only [47:3] (block-aligned f1_tagMismatchVec compare vs f1_fwdPAddr[47:3]); bit[0] written-but-never-read (cone-dead). Impl core notes low 3 bits are golden-only redundant dead bits."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_ptagMatches_r_8_reg[1]",
+      "rationale": "Golden-only byte-offset dead bit: f1_ptagMatches_r_8 is [47:0] but the sole functional read uses only [47:3] (block-aligned f1_tagMismatchVec compare vs f1_fwdPAddr[47:3]); bit[1] written-but-never-read (cone-dead). Impl core notes low 3 bits are golden-only redundant dead bits."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_ptagMatches_r_8_reg[2]",
+      "rationale": "Golden-only byte-offset dead bit: f1_ptagMatches_r_8 is [47:0] but the sole functional read uses only [47:3] (block-aligned f1_tagMismatchVec compare vs f1_fwdPAddr[47:3]); bit[2] written-but-never-read (cone-dead). Impl core notes low 3 bits are golden-only redundant dead bits."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_ptagMatches_r_9_reg[0]",
+      "rationale": "Golden-only byte-offset dead bit: f1_ptagMatches_r_9 is [47:0] but the sole functional read uses only [47:3] (block-aligned f1_tagMismatchVec compare vs f1_fwdPAddr[47:3]); bit[0] written-but-never-read (cone-dead). Impl core notes low 3 bits are golden-only redundant dead bits."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_ptagMatches_r_9_reg[1]",
+      "rationale": "Golden-only byte-offset dead bit: f1_ptagMatches_r_9 is [47:0] but the sole functional read uses only [47:3] (block-aligned f1_tagMismatchVec compare vs f1_fwdPAddr[47:3]); bit[1] written-but-never-read (cone-dead). Impl core notes low 3 bits are golden-only redundant dead bits."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_ptagMatches_r_9_reg[2]",
+      "rationale": "Golden-only byte-offset dead bit: f1_ptagMatches_r_9 is [47:0] but the sole functional read uses only [47:3] (block-aligned f1_tagMismatchVec compare vs f1_fwdPAddr[47:3]); bit[2] written-but-never-read (cone-dead). Impl core notes low 3 bits are golden-only redundant dead bits."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_ptagMatches_r_reg[0]",
+      "rationale": "Golden-only byte-offset dead bit: f1_ptagMatches_r is [47:0] but the sole functional read uses only [47:3] (block-aligned f1_tagMismatchVec compare vs f1_fwdPAddr[47:3]); bit[0] written-but-never-read (cone-dead). Impl core notes low 3 bits are golden-only redundant dead bits."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_ptagMatches_r_reg[1]",
+      "rationale": "Golden-only byte-offset dead bit: f1_ptagMatches_r is [47:0] but the sole functional read uses only [47:3] (block-aligned f1_tagMismatchVec compare vs f1_fwdPAddr[47:3]); bit[1] written-but-never-read (cone-dead). Impl core notes low 3 bits are golden-only redundant dead bits."
+    },
+    {
+      "ref_path": "r:/WORK/Uncache/f1_ptagMatches_r_reg[2]",
+      "rationale": "Golden-only byte-offset dead bit: f1_ptagMatches_r is [47:0] but the sole functional read uses only [47:3] (block-aligned f1_tagMismatchVec compare vs f1_fwdPAddr[47:3]); bit[2] written-but-never-read (cone-dead). Impl core notes low 3 bits are golden-only redundant dead bits."
+    }
+  ]
+}

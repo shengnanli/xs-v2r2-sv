@@ -1,0 +1,15 @@
+{
+  "schema": "fm-sidecar-dead-ref-v1",
+  "target": "StorePfWrapper",
+  "rationale": "signoff-strict native SUCCEEDED (100 passing / 0 failing / 0 unmatched / unread_impl=0 / unread_notcompared=0). Only residual = 2 golden-only unread_ref bits inside the Serializer submodule: r:/WORK/StorePfWrapper/serializer/enqPtrExt_0_value_reg[1] and [3]. Under KunminghuV2Config (EnableStorePrefetchSPB=false) firtool constant-folds StorePfWrapper down to two prefetch vaddr outputs sourced by StorePrefetchBursts->PrefetchBurstGenerator->Arbiter2 with hardcoded inputs (50'h0 / 50'h40 constants); the vaddr outputs never depend on Serializer. The golden Serializer module (Serializer.sv, byte-identical on both FM sides via UT INLINE) has ZERO output ports and only clock/reset inputs -- verified: no output/assign/assert/$display/$fwrite/$error/$fatal/_probe/DPI. Its enqPtrExt_0 pointer register is a self-referential dead FSM whose entire fan-out cone (canEnqueue, _GEN, _enqPtrExt_0_diff_T_4, _GEN_0) terminates at the module boundary with zero consumers. FM's merge_dup collapses the impl-side serializer instance (i:/WORK/StorePfWrapper/serializer), leaving these two ref-side bits with no impl counterpart => golden-only cone-dead. The readable impl core xs_StorePfWrapper_core is pure combinational pass-through and correctly omits this dead state (unread_impl=0). No functional output fan-out exists on either side; this is an irreducible golden-only dead-ref, not a bug. Enumerated exactly from committed native_facts (unmatched_unread_ref).",
+  "entries": [
+    {
+      "ref_path": "r:/WORK/StorePfWrapper/serializer/enqPtrExt_0_value_reg[1]",
+      "rationale": "Bit [1] of the 4-bit Serializer.enqPtrExt_0_value pointer register. Serializer has NO output ports (clock/reset inputs only); this register only self-recurs through internal wires canEnqueue/_GEN/_enqPtrExt_0_diff_T_4/_GEN_0, all of which terminate at the module boundary with zero consumers. StorePfWrapper's prefetch vaddr outputs are constant (Arbiter2 hardcoded 50'h0/50'h40) and never read the serializer. Cone-dead with no functional fan-out; golden-only (impl-side instance merge_dup'd away, readable core is combinational). Not a bug."
+    },
+    {
+      "ref_path": "r:/WORK/StorePfWrapper/serializer/enqPtrExt_0_value_reg[3]",
+      "rationale": "Bit [3] of the 4-bit Serializer.enqPtrExt_0_value pointer register. Serializer has NO output ports (clock/reset inputs only); this register only self-recurs through internal wires canEnqueue/_GEN/_enqPtrExt_0_diff_T_4/_GEN_0, all of which terminate at the module boundary with zero consumers. StorePfWrapper's prefetch vaddr outputs are constant (Arbiter2 hardcoded 50'h0/50'h40) and never read the serializer. Cone-dead with no functional fan-out; golden-only (impl-side instance merge_dup'd away, readable core is combinational). Not a bug."
+    }
+  ]
+}

@@ -1783,11 +1783,11 @@
    "entry": "scripts/fm_eq.tcl",
    "proof_mode": "signoff-strict",
    "config_status": "CONFIGURED",
-   "required_verdict": "SUCCEEDED",
+   "required_verdict": "PASS_DEAD_REF",
    "allow_ref": "",
-   "rationale": "",
+   "rationale": "strict dead-ref: 12 golden-only old_reqs_0..3低3位常量0(golden读[37:3]dedup, 0读者); impl narrowed到line-VPN",
    "verify_matched_unread_compare_points": "false",
-   "dead_ref": "",
+   "dead_ref": "verif/signoff/dead_ref/L2TlbPrefetch.json",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1873,11 +1873,11 @@
    "entry": "scripts/fm_eq.tcl",
    "proof_mode": "signoff-strict",
    "config_status": "CONFIGURED",
-   "required_verdict": "SUCCEEDED",
+   "required_verdict": "PASS_DEAD_REF",
    "allow_ref": "",
-   "rationale": "",
+   "rationale": "strict dead-ref: 1 golden-only cone-dead REG_reg(assert(false) RegNext, ifndef SYNTHESIS DCE); impl clean unread_impl0",
    "verify_matched_unread_compare_points": "false",
-   "dead_ref": "",
+   "dead_ref": "verif/signoff/dead_ref/LLPTW.json",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1918,11 +1918,11 @@
    "entry": "scripts/fm_eq.tcl",
    "proof_mode": "signoff-strict",
    "config_status": "CONFIGURED",
-   "required_verdict": "SUCCEEDED",
+   "required_verdict": "PASS_DEAD_REF",
    "allow_ref": "",
-   "rationale": "",
+   "rationale": "strict dead-ref: 138 golden-only(REG喂dead _GEN_13 + splitLoadReqs fuOpType[2:8]/splitLoadResp data[64:128]过宽只读低位); impl narrowed",
    "verify_matched_unread_compare_points": "false",
-   "dead_ref": "",
+   "dead_ref": "verif/signoff/dead_ref/LoadMisalignBuffer.json",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -1933,11 +1933,11 @@
    "entry": "scripts/fm_eq.tcl",
    "proof_mode": "signoff-strict",
    "config_status": "CONFIGURED",
-   "required_verdict": "SUCCEEDED",
+   "required_verdict": "PASS_DEAD_REF",
    "allow_ref": "",
    "rationale": "strict+vmucp+dead-ref: impl-clean(unread_impl0); 59对称matched-unread双射(golden存宽读窄vaddr/bank_oh各位两侧同)vmucp compared; 残留unread_ref3=REG_1/2/4断言RegNext golden-only cone-dead",
    "verify_matched_unread_compare_points": "true",
-   "dead_ref": "",
+   "dead_ref": "verif/signoff/dead_ref/LoadPipe.json",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2023,11 +2023,11 @@
    "entry": "scripts/fm_eq.tcl",
    "proof_mode": "signoff-strict",
    "config_status": "CONFIGURED",
-   "required_verdict": "SUCCEEDED",
+   "required_verdict": "PASS_DEAD_REF",
    "allow_ref": "",
-   "rationale": "",
+   "rationale": "strict dead-ref: 89 golden-only(vec-vaddr页高位只读vstart[7:0]+assert reg REG_1/2+dangling debug _GEN); de-relaxed spurious appvar(非RTL, 删多余assume_reg_init); impl clean",
    "verify_matched_unread_compare_points": "false",
-   "dead_ref": "",
+   "dead_ref": "verif/signoff/dead_ref/LoadUnit.json",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2128,11 +2128,11 @@
    "entry": "scripts/fm_eq.tcl",
    "proof_mode": "signoff-strict",
    "config_status": "CONFIGURED",
-   "required_verdict": "SUCCEEDED",
+   "required_verdict": "PASS_DEAD_REF",
    "allow_ref": "",
-   "rationale": "",
+   "rationale": "strict dead-ref: 77 golden-only(debug SC-conflict addr/cnt扇出只断言/自环+assert reg REG_2..6+dangling+byte-offset/保留位); de-relaxed spurious appvar; impl clean",
    "verify_matched_unread_compare_points": "false",
-   "dead_ref": "",
+   "dead_ref": "verif/signoff/dead_ref/MainPipe.json",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2158,11 +2158,11 @@
    "entry": "scripts/fm_eq.tcl",
    "proof_mode": "signoff-strict",
    "config_status": "CONFIGURED",
-   "required_verdict": "SUCCEEDED",
+   "required_verdict": "PASS_DEAD_REF",
    "allow_ref": "",
    "rationale": "strict+vmucp+dead-ref: impl-clean(unread_impl0); 3563对称matched-unread双射(golden子模块两侧同elaborate内部死reg)vmucp实开比较; 残留unread_ref12(REG断言+max_inflight probe+pipe addr[5:0] bbox-input)golden-only cone-dead",
    "verify_matched_unread_compare_points": "true",
-   "dead_ref": "",
+   "dead_ref": "verif/signoff/dead_ref/MissQueue.json",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2263,11 +2263,11 @@
    "entry": "scripts/fm_eq.tcl",
    "proof_mode": "signoff-strict",
    "config_status": "CONFIGURED",
-   "required_verdict": "SUCCEEDED",
+   "required_verdict": "PASS_DEAD_REF",
    "allow_ref": "",
-   "rationale": "",
+   "rationale": "strict dead-ref: 32 golden-only pmpcfg[6:5]保留位(RISC-V WARL读0, 扇出只自环lock-hold mux无输出路径); impl存6live位/byte",
    "verify_matched_unread_compare_points": "false",
-   "dead_ref": "",
+   "dead_ref": "verif/signoff/dead_ref/PMP.json",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2308,11 +2308,11 @@
    "entry": "scripts/fm_eq.tcl",
    "proof_mode": "signoff-strict",
    "config_status": "CONFIGURED",
-   "required_verdict": "SUCCEEDED",
+   "required_verdict": "PASS_DEAD_REF",
    "allow_ref": "",
-   "rationale": "",
+   "rationale": "strict dead-ref: 1 golden-only dontTouch perf probe reg r(唯一读者r_probe自身dangling无消费者)",
    "verify_matched_unread_compare_points": "false",
-   "dead_ref": "",
+   "dead_ref": "verif/signoff/dead_ref/PTW.json",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3418,11 +3418,11 @@
    "entry": "scripts/fm_eq.tcl",
    "proof_mode": "signoff-strict",
    "config_status": "CONFIGURED",
-   "required_verdict": "SUCCEEDED",
+   "required_verdict": "PASS_DEAD_REF",
    "allow_ref": "",
-   "rationale": "",
+   "rationale": "strict dead-ref: 12 golden-only(REG_1 DCE _GEN_17 + alignedType[2]/fuOpType[2:8]/paddr[0:2]过宽只读); impl narrowed",
    "verify_matched_unread_compare_points": "false",
-   "dead_ref": "",
+   "dead_ref": "verif/signoff/dead_ref/StoreMisalignBuffer.json",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3433,11 +3433,11 @@
    "entry": "scripts/fm_eq.tcl",
    "proof_mode": "signoff-strict",
    "config_status": "CONFIGURED",
-   "required_verdict": "SUCCEEDED",
+   "required_verdict": "PASS_DEAD_REF",
    "allow_ref": "",
-   "rationale": "",
+   "rationale": "strict dead-ref: 2 golden-only Serializer enqPtrExt_0_value_reg[1][3](Serializer无输出端口自环死FSM, 扇出canEnqueue→_GEN终止模块边界零消费者)",
    "verify_matched_unread_compare_points": "false",
-   "dead_ref": "",
+   "dead_ref": "verif/signoff/dead_ref/StorePfWrapper.json",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -3478,11 +3478,11 @@
    "entry": "scripts/fm_eq.tcl",
    "proof_mode": "signoff-strict",
    "config_status": "CONFIGURED",
-   "required_verdict": "SUCCEEDED",
+   "required_verdict": "PASS_DEAD_REF",
    "allow_ref": "",
-   "rationale": "",
+   "rationale": "strict dead-ref: 98 golden-only(isFirstIssue DCE probe+vecActive assert-only+vecVaddr高位只读vstart+fuOpType/gpaddr过宽只读)",
    "verify_matched_unread_compare_points": "false",
-   "dead_ref": "",
+   "dead_ref": "verif/signoff/dead_ref/StoreUnit.json",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -4333,11 +4333,11 @@
    "entry": "scripts/fm_eq.tcl",
    "proof_mode": "signoff-strict",
    "config_status": "CONFIGURED",
-   "required_verdict": "SUCCEEDED",
+   "required_verdict": "PASS_DEAD_REF",
    "allow_ref": "",
-   "rationale": "",
+   "rationale": "strict dead-ref: 57 golden-only byte-offset低3位(entries vaddr/f1_fwdPAddr/f1_ptagMatches golden读[47:3]); impl narrowed",
    "verify_matched_unread_compare_points": "false",
-   "dead_ref": "",
+   "dead_ref": "verif/signoff/dead_ref/Uncache.json",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {

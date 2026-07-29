@@ -1,0 +1,11 @@
+{
+  "schema": "fm-sidecar-dead-ref-v1",
+  "target": "PTW",
+  "rationale": "strict signoff: single golden-only unread_ref = r:/WORK/PTW/r_reg (golden 'reg r;' at PTW.sv:794). It is a XiangShan dontTouch perf-counter PROBE register: written 'r <= perfEvents_4_2_probe | ~io_mem_resp_valid & r' (self-loop + mem-in-flight event), reset to 0. Its ONLY reader is 'wire r_probe = r;' (line 795), and r_probe is referenced nowhere else -- a dangling dontTouch probe wire with zero downstream fan-out. So r has no path to any primary output => cone-dead. Its sibling perfEvents_5_2 has the identical update expression BUT is read by io_perf_5_value_REG (line 1085) => live; the readable core (rtl/memblock/PTW.sv) correctly keeps that as perf_event_s1_5 and omits the redundant dead probe reg r. Native SUCCEEDED passing=2653 failing=0 unmatched=0 unread_impl=0 unread_notcompared=0; only this 1 golden-only cone-dead probe register remains. Enumerated exactly from committed native_facts (gate-runs/PTW).",
+  "entries": [
+    {
+      "ref_path": "r:/WORK/PTW/r_reg",
+      "rationale": "Golden 'reg r;' (PTW.sv:794), a dontTouch perf-probe register. Only reader is 'wire r_probe = r;' which is itself never consumed (dangling dontTouch probe) => zero output fan-out, cone-dead. Sibling perfEvents_5_2 with the same update logic IS output-connected (io_perf_5) and IS kept by impl (perf_event_s1_5); impl omits only this dead probe reg. Golden-only cone-dead; impl side clean."
+    }
+  ]
+}

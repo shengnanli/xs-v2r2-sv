@@ -1,5 +1,4 @@
 SIGNOFF_RESULT VfofBuffer: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=signoff-strict fm_shell_rc=0 validator_rc=0)
-run_id: SGN-VfofBuffer-1785257990
-impl_commit: 884e7c40189755863bb87ce8648ae4402d6b5d78
-manifest_sha256: b35956b46a9e24f21cbda42505faab2053021cf927aebcf036b621f7fc9edbae
-CLEAN_GATE_FAIL
+run_id: SGN-VfofBuffer-1785296321
+impl_commit: 56111561e2006220a5f0a8a787a0c691b040edf7
+manifest_sha256: 6b3d8dab81d0b858188ddd3d232227d73a19682413f19bdc8a2345b8f66572b6

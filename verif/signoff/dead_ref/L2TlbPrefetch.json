@@ -1,0 +1,55 @@
+{
+  "schema": "fm-sidecar-dead-ref-v1",
+  "target": "L2TlbPrefetch",
+  "rationale": "signoff-strict, NO blackbox / NO vmucp / NO relaxed appvar: native SUCCEEDED (passing 223, failing 0), impl side 100% clean (unmatched_impl=0, unread_impl=0, unread_notcompared=0). The only residual is 12 golden-only unread_ref = the low 3 bits [2:0] of each of the 4 record-window registers old_reqs_{0,1,2,3}_reg. In golden L2TlbPrefetch.sv old_reqs_N is declared [37:0] (line 106-109) but read ONLY as old_reqs_N[37:3] in the dedup comparison (already_have, lines 121-124); bits [2:0] have zero readers. The written value next_req = RegEnable(get_next_line(vpn)) whose low sector bits are constant-0 fill, so old_reqs_N[2:0] is constant-0 dead storage with no functional output fan-out (cone-dead). The readable impl core (rtl/memblock/L2TlbPrefetch.sv line 54/115) deliberately stores only the line-VPN [37:3] (LINE_VPN_W wide, documented comment lines 50-51) and thus correctly omits the dead low 3 bits. Enumerated exactly from native_facts (evidence /tmp/deadref-A-evidence/L2TlbPrefetch-native/native_facts.json). NOTE: the stale gap_schedule row ui12 is superseded -- fresh current-HEAD run shows unread_impl=0 (impl already narrowed to line-VPN).",
+  "entries": [
+    {
+      "ref_path": "r:/WORK/L2TlbPrefetch/old_reqs_0_reg[0]",
+      "rationale": "Golden-only dead bit: old_reqs_0[0] (sub-line offset bit). old_reqs_0 read only as [37:3] (dedup line-VPN compare); bits [2:0] have zero readers and are constant-0 (next_req low sector bits zero-filled by get_next_line). Cone-dead, no functional output fan-out. Impl core stores only line-VPN [37:3], omitting it."
+    },
+    {
+      "ref_path": "r:/WORK/L2TlbPrefetch/old_reqs_0_reg[1]",
+      "rationale": "Golden-only dead bit: old_reqs_0[1] (sub-line offset bit). old_reqs_0 read only as [37:3]; bit [1] has zero readers and is constant-0. Cone-dead, no functional output fan-out. Impl core omits it."
+    },
+    {
+      "ref_path": "r:/WORK/L2TlbPrefetch/old_reqs_0_reg[2]",
+      "rationale": "Golden-only dead bit: old_reqs_0[2] (sub-line offset bit). old_reqs_0 read only as [37:3]; bit [2] has zero readers and is constant-0. Cone-dead, no functional output fan-out. Impl core omits it."
+    },
+    {
+      "ref_path": "r:/WORK/L2TlbPrefetch/old_reqs_1_reg[0]",
+      "rationale": "Golden-only dead bit: old_reqs_1[0] (sub-line offset bit). old_reqs_1 read only as [37:3]; bit [0] has zero readers and is constant-0. Cone-dead, no functional output fan-out. Impl core omits it."
+    },
+    {
+      "ref_path": "r:/WORK/L2TlbPrefetch/old_reqs_1_reg[1]",
+      "rationale": "Golden-only dead bit: old_reqs_1[1] (sub-line offset bit). old_reqs_1 read only as [37:3]; bit [1] has zero readers and is constant-0. Cone-dead, no functional output fan-out. Impl core omits it."
+    },
+    {
+      "ref_path": "r:/WORK/L2TlbPrefetch/old_reqs_1_reg[2]",
+      "rationale": "Golden-only dead bit: old_reqs_1[2] (sub-line offset bit). old_reqs_1 read only as [37:3]; bit [2] has zero readers and is constant-0. Cone-dead, no functional output fan-out. Impl core omits it."
+    },
+    {
+      "ref_path": "r:/WORK/L2TlbPrefetch/old_reqs_2_reg[0]",
+      "rationale": "Golden-only dead bit: old_reqs_2[0] (sub-line offset bit). old_reqs_2 read only as [37:3]; bit [0] has zero readers and is constant-0. Cone-dead, no functional output fan-out. Impl core omits it."
+    },
+    {
+      "ref_path": "r:/WORK/L2TlbPrefetch/old_reqs_2_reg[1]",
+      "rationale": "Golden-only dead bit: old_reqs_2[1] (sub-line offset bit). old_reqs_2 read only as [37:3]; bit [1] has zero readers and is constant-0. Cone-dead, no functional output fan-out. Impl core omits it."
+    },
+    {
+      "ref_path": "r:/WORK/L2TlbPrefetch/old_reqs_2_reg[2]",
+      "rationale": "Golden-only dead bit: old_reqs_2[2] (sub-line offset bit). old_reqs_2 read only as [37:3]; bit [2] has zero readers and is constant-0. Cone-dead, no functional output fan-out. Impl core omits it."
+    },
+    {
+      "ref_path": "r:/WORK/L2TlbPrefetch/old_reqs_3_reg[0]",
+      "rationale": "Golden-only dead bit: old_reqs_3[0] (sub-line offset bit). old_reqs_3 read only as [37:3]; bit [0] has zero readers and is constant-0. Cone-dead, no functional output fan-out. Impl core omits it."
+    },
+    {
+      "ref_path": "r:/WORK/L2TlbPrefetch/old_reqs_3_reg[1]",
+      "rationale": "Golden-only dead bit: old_reqs_3[1] (sub-line offset bit). old_reqs_3 read only as [37:3]; bit [1] has zero readers and is constant-0. Cone-dead, no functional output fan-out. Impl core omits it."
+    },
+    {
+      "ref_path": "r:/WORK/L2TlbPrefetch/old_reqs_3_reg[2]",
+      "rationale": "Golden-only dead bit: old_reqs_3[2] (sub-line offset bit). old_reqs_3 read only as [37:3]; bit [2] has zero readers and is constant-0. Cone-dead, no functional output fan-out. Impl core omits it."
+    }
+  ]
+}

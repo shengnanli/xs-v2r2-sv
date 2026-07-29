@@ -1,0 +1,363 @@
+{
+  "schema": "fm-sidecar-dead-ref-v1",
+  "target": "LoadUnit",
+  "rationale": "strict signoff (NO relaxed appvars -- the spurious 'assume_reg_init none' was removed from verif/ut/LoadUnit/fm_pins.tcl; it masked nothing, native stays SUCCEEDED impl-clean either way). Native SUCCEEDED passing~7705 failing=0 unmatched=0 unread_impl=0 unread_notcompared=0; the only residual = 89 golden-only cone-dead unread_ref in 4 families: (1) s1_in_r_vecBaseVaddr[49:11] & s2_in_r_vecVaddrOffset[49:11] -- page-scale vector vaddr registers whose only observable output is vstart[7:0] via (offset>>veew)[7:0]; the readable core stores them at 11-bit VECOFF width; (2) REG_1/REG_2 & s2_ld_valid_dup[5:0] -- assertion registers (LoadUnit.scala:1510) compiled out under SYNTHESIS; (3) REG_3/REG_4 & s2_in_r_forward_tlDchannel -- read only by dangling dontTouch _GEN wires with no output fan-out. Impl 100%% clean (unread_impl=0). Enumerated exactly from committed native_facts (gate-runs/LoadUnit).",
+  "entries": [
+    {
+      "ref_path": "r:/WORK/LoadUnit/REG_1_reg",
+      "rationale": "Assertion-chain register: golden REG_1<=s1_in_r_isHWPrefetch, REG_2<=(s2_valid==s2_ld_valid_dup[0])|REG_1; REG_2 is read ONLY at LoadUnit.sv:2376 'if(~reset & ~REG_2)$fwrite(\"...LoadUnit.scala:1510 assert...\")'. Under +define+SYNTHESIS the assertion is compiled out => zero output fan-out, cone-dead. Impl omits it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/REG_2_reg",
+      "rationale": "Assertion-chain register: golden REG_1<=s1_in_r_isHWPrefetch, REG_2<=(s2_valid==s2_ld_valid_dup[0])|REG_1; REG_2 is read ONLY at LoadUnit.sv:2376 'if(~reset & ~REG_2)$fwrite(\"...LoadUnit.scala:1510 assert...\")'. Under +define+SYNTHESIS the assertion is compiled out => zero output fan-out, cone-dead. Impl omits it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/REG_3_reg",
+      "rationale": "Golden reg read only by a dangling wire (_GEN_73=_GEN_67&REG_3 / _GEN_74=_GEN_67&REG_4); those _GEN wires are each referenced exactly once (their own decl) and never consumed => no output fan-out, cone-dead. Impl omits it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/REG_4_reg",
+      "rationale": "Golden reg read only by a dangling wire (_GEN_73=_GEN_67&REG_3 / _GEN_74=_GEN_67&REG_4); those _GEN wires are each referenced exactly once (their own decl) and never consumed => no output fan-out, cone-dead. Impl omits it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[11]",
+      "rationale": "Bit[11] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[12]",
+      "rationale": "Bit[12] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[13]",
+      "rationale": "Bit[13] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[14]",
+      "rationale": "Bit[14] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[15]",
+      "rationale": "Bit[15] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[16]",
+      "rationale": "Bit[16] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[17]",
+      "rationale": "Bit[17] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[18]",
+      "rationale": "Bit[18] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[19]",
+      "rationale": "Bit[19] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[20]",
+      "rationale": "Bit[20] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[21]",
+      "rationale": "Bit[21] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[22]",
+      "rationale": "Bit[22] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[23]",
+      "rationale": "Bit[23] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[24]",
+      "rationale": "Bit[24] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[25]",
+      "rationale": "Bit[25] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[26]",
+      "rationale": "Bit[26] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[27]",
+      "rationale": "Bit[27] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[28]",
+      "rationale": "Bit[28] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[29]",
+      "rationale": "Bit[29] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[30]",
+      "rationale": "Bit[30] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[31]",
+      "rationale": "Bit[31] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[32]",
+      "rationale": "Bit[32] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[33]",
+      "rationale": "Bit[33] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[34]",
+      "rationale": "Bit[34] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[35]",
+      "rationale": "Bit[35] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[36]",
+      "rationale": "Bit[36] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[37]",
+      "rationale": "Bit[37] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[38]",
+      "rationale": "Bit[38] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[39]",
+      "rationale": "Bit[39] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[40]",
+      "rationale": "Bit[40] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[41]",
+      "rationale": "Bit[41] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[42]",
+      "rationale": "Bit[42] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[43]",
+      "rationale": "Bit[43] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[44]",
+      "rationale": "Bit[44] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[45]",
+      "rationale": "Bit[45] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[46]",
+      "rationale": "Bit[46] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[47]",
+      "rationale": "Bit[47] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[48]",
+      "rationale": "Bit[48] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s1_in_r_vecBaseVaddr_reg[49]",
+      "rationale": "Bit[49] of golden 50-bit s1_in_r_vecBaseVaddr. It feeds ONLY the vecVaddrOffset subtraction whose shifted result reaches only vstart[7:0] (LoadUnit.sv:3680 _s2_out_uop_vpu_vstart_T_1[7:0]). Only the low ~11 bits are observable; bits [49:11] have no output fan-out => cone-dead. The readable core stores vecBaseVaddr at VECOFF_BITS=11 width; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_forward_tlDchannel_reg",
+      "rationale": "Golden s2_in_r_forward_tlDchannel read only by _GEN_63=s2_fire_probe&s2_in_r_forward_tlDchannel, a wire referenced exactly once (its own decl) and never consumed => no output fan-out, cone-dead. Impl omits it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[11]",
+      "rationale": "Bit[11] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[12]",
+      "rationale": "Bit[12] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[13]",
+      "rationale": "Bit[13] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[14]",
+      "rationale": "Bit[14] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[15]",
+      "rationale": "Bit[15] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[16]",
+      "rationale": "Bit[16] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[17]",
+      "rationale": "Bit[17] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[18]",
+      "rationale": "Bit[18] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[19]",
+      "rationale": "Bit[19] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[20]",
+      "rationale": "Bit[20] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[21]",
+      "rationale": "Bit[21] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[22]",
+      "rationale": "Bit[22] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[23]",
+      "rationale": "Bit[23] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[24]",
+      "rationale": "Bit[24] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[25]",
+      "rationale": "Bit[25] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[26]",
+      "rationale": "Bit[26] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[27]",
+      "rationale": "Bit[27] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[28]",
+      "rationale": "Bit[28] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[29]",
+      "rationale": "Bit[29] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[30]",
+      "rationale": "Bit[30] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[31]",
+      "rationale": "Bit[31] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[32]",
+      "rationale": "Bit[32] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[33]",
+      "rationale": "Bit[33] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[34]",
+      "rationale": "Bit[34] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[35]",
+      "rationale": "Bit[35] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[36]",
+      "rationale": "Bit[36] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[37]",
+      "rationale": "Bit[37] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[38]",
+      "rationale": "Bit[38] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[39]",
+      "rationale": "Bit[39] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[40]",
+      "rationale": "Bit[40] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[41]",
+      "rationale": "Bit[41] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[42]",
+      "rationale": "Bit[42] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[43]",
+      "rationale": "Bit[43] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[44]",
+      "rationale": "Bit[44] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[45]",
+      "rationale": "Bit[45] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[46]",
+      "rationale": "Bit[46] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[47]",
+      "rationale": "Bit[47] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[48]",
+      "rationale": "Bit[48] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_in_r_vecVaddrOffset_reg[49]",
+      "rationale": "Bit[49] of golden 50-bit s2_in_r_vecVaddrOffset. Read only as (vecVaddrOffset>>veew) then sliced [7:0] into the 8-bit vstart output (LoadUnit.sv:2663,3680). Bits [49:11] never reach any output => cone-dead. The readable core stores it at VECOFF_BITS=11; golden-only cone-dead, impl clean."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_ld_valid_dup_reg[0]",
+      "rationale": "Bit[0] of golden s2_ld_valid_dup[5:0]. Read only at LoadUnit.sv:2378 (assertion LoadUnit.scala:1510) and :3643 (feeds REG_2 which is itself assertion-only). All fan-out is into SYNTHESIS-compiled-out assertions => cone-dead. Impl omits it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_ld_valid_dup_reg[1]",
+      "rationale": "Bit[1] of golden s2_ld_valid_dup[5:0]. Read only at LoadUnit.sv:2378 (assertion LoadUnit.scala:1510) and :3643 (feeds REG_2 which is itself assertion-only). All fan-out is into SYNTHESIS-compiled-out assertions => cone-dead. Impl omits it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_ld_valid_dup_reg[2]",
+      "rationale": "Bit[2] of golden s2_ld_valid_dup[5:0]. Read only at LoadUnit.sv:2378 (assertion LoadUnit.scala:1510) and :3643 (feeds REG_2 which is itself assertion-only). All fan-out is into SYNTHESIS-compiled-out assertions => cone-dead. Impl omits it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_ld_valid_dup_reg[3]",
+      "rationale": "Bit[3] of golden s2_ld_valid_dup[5:0]. Read only at LoadUnit.sv:2378 (assertion LoadUnit.scala:1510) and :3643 (feeds REG_2 which is itself assertion-only). All fan-out is into SYNTHESIS-compiled-out assertions => cone-dead. Impl omits it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_ld_valid_dup_reg[4]",
+      "rationale": "Bit[4] of golden s2_ld_valid_dup[5:0]. Read only at LoadUnit.sv:2378 (assertion LoadUnit.scala:1510) and :3643 (feeds REG_2 which is itself assertion-only). All fan-out is into SYNTHESIS-compiled-out assertions => cone-dead. Impl omits it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadUnit/s2_ld_valid_dup_reg[5]",
+      "rationale": "Bit[5] of golden s2_ld_valid_dup[5:0]. Read only at LoadUnit.sv:2378 (assertion LoadUnit.scala:1510) and :3643 (feeds REG_2 which is itself assertion-only). All fan-out is into SYNTHESIS-compiled-out assertions => cone-dead. Impl omits it."
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "schema": "fm-sidecar-dead-ref-v1",
+  "target": "LoadPipe",
+  "rationale": "signoff-strict + vmucp (verify_matched_unread_compare_points=true, LoadPipe is in the fm_eq.tcl vmucp whitelist), NO blackbox / NO relaxed appvar: native SUCCEEDED (passing 1285, failing 0), impl side 100% clean (unmatched_impl=0, unread_impl=0). Under vmucp the 59 symmetric matched-unread points (golden stores wide vaddr/bank_oh, reads narrow; ref==impl bijection) are actually compared and pass, so unread_notcompared=0. The only residual is 3 golden-only unread_ref = REG_1_reg / REG_2_reg / REG_4_reg, all RegNext'd assert-condition registers read ONLY inside the `ifndef SYNTHESIS assertion block (golden LoadPipe.sv lines 311/317/323: if (~reset & ~REG_N) -> $fwrite/xs_assert_v2) -- REG_1 = assert(RegNext(!(s0_valid && bad cmd))) LoadPipe.scala:147; REG_2 = assert(RegNext(!s1_valid || PopCount(tag_match)<=1)) LoadPipe.scala:277; REG_4 = assert(RegNext(s1_ready && s2_ready)) LoadPipe.scala:530. Each is read exactly once, only in that assertion; under +define+SYNTHESIS the entire block is DCE'd, so all three are cone-dead with no functional output fan-out. The readable impl core (rtl/memblock/LoadPipe.sv, grep REG_1/REG_2/REG_4 = 0 hits) omits these redundant golden-only assertion registers. Enumerated exactly from native_facts (evidence /tmp/deadref-A-evidence/LoadPipe-native/native_facts.json).",
+  "entries": [
+    {
+      "ref_path": "r:/WORK/LoadPipe/REG_1_reg",
+      "rationale": "Golden-only assert-condition RegNext register (assert(RegNext(!(s0_valid && bad cmd))), LoadPipe.scala:147). Read only in `ifndef SYNTHESIS assertion block (line 311: if (~reset & ~REG_1) -> $fwrite/xs_assert_v2). DCE'd under SYNTHESIS, cone-dead, no functional output fan-out. Impl core omits it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadPipe/REG_2_reg",
+      "rationale": "Golden-only assert-condition RegNext register (assert(RegNext(!s1_valid || PopCount(s1_tag_match_way)<=1)), LoadPipe.scala:277). Read only in `ifndef SYNTHESIS assertion block (line 317: if (~reset & ~REG_2) -> $fwrite/xs_assert_v2). DCE'd under SYNTHESIS, cone-dead, no functional output fan-out. Impl core omits it."
+    },
+    {
+      "ref_path": "r:/WORK/LoadPipe/REG_4_reg",
+      "rationale": "Golden-only assert-condition RegNext register (assert(RegNext(s1_ready && s2_ready)), LoadPipe.scala:530). Read only in `ifndef SYNTHESIS assertion block (line 323: if (~reset & ~REG_4) -> $fwrite/xs_assert_v2). DCE'd under SYNTHESIS, cone-dead, no functional output fan-out. Impl core omits it."
+    }
+  ]
+}

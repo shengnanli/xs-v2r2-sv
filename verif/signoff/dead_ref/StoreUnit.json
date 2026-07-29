@@ -1,0 +1,399 @@
+{
+  "schema": "fm-sidecar-dead-ref-v1",
+  "target": "StoreUnit",
+  "rationale": "signoff-strict (no blackbox, no vendor macro, no allow): native FM SUCCEEDED, impl side 100% clean (unmatched_impl=0, unread_impl=0, unread_notcompared=0, passing=3313, failing=0). The only residual is 98 golden-only unread_ref points, each cone-dead with no functional output fan-out, enumerated exactly from committed native_facts (/tmp/deadref-C-evidence/official/StoreUnit). Families: (1) s1_in_isFirstIssue_reg = DCE'd probe (feeds only _GEN_10/_GEN_12 with zero consumers). (2) s1_in_vecBaseVaddr_reg[11..49] + s2_in_vecVaddrOffset_reg[11..49] = truncation dead bits: baseVaddr feeds only the vecVaddrOffset subtraction, vecVaddrOffset feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew<=3, so only bits [10:0] can reach a live output (impl narrows both to VECOFF_BITS=11). (3) s2_in_uop_fuOpType_reg[0,1,7,8] = over-wide bits outside the only reads [3:2] and [6:4]. (4) s3_in_gpaddr_reg[50..63] = high bits outside the only read s3_in_gpaddr[49:0]. (5) s3_in_vecActive_reg = assertion-only register whose sole consumer _GEN_2 lives inside an `ifndef SYNTHESIS assertion block compiled out under +define+SYNTHESIS. Impl core (rtl/memblock/StoreUnit.sv) narrows/omits every one and documents the golden redundancy (lines 379, 568-569, 844-845, 1013). All impl-side compare points pass.",
+  "entries": [
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_isFirstIssue_reg",
+      "rationale": "Golden-only debug/perf probe register (RegNext of s0_isFirstIssue); feeds only _GEN_10 = _s1_fire_T_1_probe & s1_in_isFirstIssue and _GEN_12 = _GEN_11 & s1_in_isFirstIssue, both referenced solely at their own def (zero consumers) = DCE'd XSPerfAccumulate/probe. Cone-dead, no functional output fan-out. Impl core keeps isFirstIssue combinational, does not store this probe register."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[11]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[11] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[12]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[12] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[13]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[13] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[14]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[14] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[15]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[15] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[16]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[16] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[17]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[17] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[18]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[18] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[19]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[19] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[20]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[20] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[21]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[21] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[22]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[22] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[23]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[23] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[24]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[24] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[25]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[25] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[26]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[26] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[27]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[27] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[28]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[28] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[29]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[29] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[30]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[30] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[31]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[31] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[32]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[32] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[33]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[33] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[34]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[34] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[35]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[35] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[36]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[36] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[37]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[37] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[38]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[38] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[39]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[39] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[40]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[40] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[41]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[41] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[42]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[42] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[43]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[43] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[44]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[44] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[45]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[45] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[46]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[46] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[47]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[47] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[48]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[48] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s1_in_vecBaseVaddr_reg[49]",
+      "rationale": "Golden-only truncation dead bit: s1_in_vecBaseVaddr is [49:0] but feeds only the s2_in_vecVaddrOffset subtraction ({trigVa|va} - vecBaseVaddr); vecVaddrOffset then feeds only vstart <= (vecVaddrOffset >> veew)[7:0] with veew in [1:0] (max 3), so only offset[10:0] (=> baseVaddr[10:0] via subtract borrow which propagates low->high) reaches a live output. bit[49] cone-dead. Impl core narrows vecBaseVaddr to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_uop_fuOpType_reg[0]",
+      "rationale": "Golden-only over-wide dead bit: s2_in_uop_fuOpType is [8:0] but the only functional reads are s2_in_uop_fuOpType[3:2] and s2_in_uop_fuOpType[6:4] (isCbo/fence decode); bit[0] (outside [2:6]) is written-but-never-read (cone-dead). Impl core reconstructs fuOpType decode without storing these bits."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_uop_fuOpType_reg[1]",
+      "rationale": "Golden-only over-wide dead bit: s2_in_uop_fuOpType is [8:0] but the only functional reads are s2_in_uop_fuOpType[3:2] and s2_in_uop_fuOpType[6:4] (isCbo/fence decode); bit[1] (outside [2:6]) is written-but-never-read (cone-dead). Impl core reconstructs fuOpType decode without storing these bits."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_uop_fuOpType_reg[7]",
+      "rationale": "Golden-only over-wide dead bit: s2_in_uop_fuOpType is [8:0] but the only functional reads are s2_in_uop_fuOpType[3:2] and s2_in_uop_fuOpType[6:4] (isCbo/fence decode); bit[7] (outside [2:6]) is written-but-never-read (cone-dead). Impl core reconstructs fuOpType decode without storing these bits."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_uop_fuOpType_reg[8]",
+      "rationale": "Golden-only over-wide dead bit: s2_in_uop_fuOpType is [8:0] but the only functional reads are s2_in_uop_fuOpType[3:2] and s2_in_uop_fuOpType[6:4] (isCbo/fence decode); bit[8] (outside [2:6]) is written-but-never-read (cone-dead). Impl core reconstructs fuOpType decode without storing these bits."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[11]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[11] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[12]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[12] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[13]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[13] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[14]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[14] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[15]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[15] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[16]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[16] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[17]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[17] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[18]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[18] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[19]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[19] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[20]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[20] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[21]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[21] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[22]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[22] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[23]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[23] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[24]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[24] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[25]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[25] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[26]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[26] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[27]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[27] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[28]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[28] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[29]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[29] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[30]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[30] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[31]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[31] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[32]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[32] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[33]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[33] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[34]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[34] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[35]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[35] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[36]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[36] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[37]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[37] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[38]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[38] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[39]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[39] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[40]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[40] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[41]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[41] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[42]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[42] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[43]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[43] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[44]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[44] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[45]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[45] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[46]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[46] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[47]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[47] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[48]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[48] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s2_in_vecVaddrOffset_reg[49]",
+      "rationale": "Golden-only truncation dead bit: s2_in_vecVaddrOffset is [49:0] but the sole functional read is _s2_out_uop_vpu_vstart_T = vecVaddrOffset >> veew (veew in [1:0], max 3) consumed as [7:0] into s3_in_uop_vpu_vstart, so only offset[10:0] can reach a live output. bit[49] cone-dead. Impl core narrows vecVaddrOffset to VECOFF_BITS=11 (stores [10:0])."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s3_in_gpaddr_reg[50]",
+      "rationale": "Golden-only over-wide dead bit: s3_in_gpaddr is [63:0] but the sole functional read is sx_in_1_r_gpaddr <= s3_in_gpaddr[49:0]; bit[50] is written-but-never-read (cone-dead). Impl core notes golden stores full 64 bits with high [63:50] golden-only dead-ref."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s3_in_gpaddr_reg[51]",
+      "rationale": "Golden-only over-wide dead bit: s3_in_gpaddr is [63:0] but the sole functional read is sx_in_1_r_gpaddr <= s3_in_gpaddr[49:0]; bit[51] is written-but-never-read (cone-dead). Impl core notes golden stores full 64 bits with high [63:50] golden-only dead-ref."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s3_in_gpaddr_reg[52]",
+      "rationale": "Golden-only over-wide dead bit: s3_in_gpaddr is [63:0] but the sole functional read is sx_in_1_r_gpaddr <= s3_in_gpaddr[49:0]; bit[52] is written-but-never-read (cone-dead). Impl core notes golden stores full 64 bits with high [63:50] golden-only dead-ref."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s3_in_gpaddr_reg[53]",
+      "rationale": "Golden-only over-wide dead bit: s3_in_gpaddr is [63:0] but the sole functional read is sx_in_1_r_gpaddr <= s3_in_gpaddr[49:0]; bit[53] is written-but-never-read (cone-dead). Impl core notes golden stores full 64 bits with high [63:50] golden-only dead-ref."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s3_in_gpaddr_reg[54]",
+      "rationale": "Golden-only over-wide dead bit: s3_in_gpaddr is [63:0] but the sole functional read is sx_in_1_r_gpaddr <= s3_in_gpaddr[49:0]; bit[54] is written-but-never-read (cone-dead). Impl core notes golden stores full 64 bits with high [63:50] golden-only dead-ref."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s3_in_gpaddr_reg[55]",
+      "rationale": "Golden-only over-wide dead bit: s3_in_gpaddr is [63:0] but the sole functional read is sx_in_1_r_gpaddr <= s3_in_gpaddr[49:0]; bit[55] is written-but-never-read (cone-dead). Impl core notes golden stores full 64 bits with high [63:50] golden-only dead-ref."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s3_in_gpaddr_reg[56]",
+      "rationale": "Golden-only over-wide dead bit: s3_in_gpaddr is [63:0] but the sole functional read is sx_in_1_r_gpaddr <= s3_in_gpaddr[49:0]; bit[56] is written-but-never-read (cone-dead). Impl core notes golden stores full 64 bits with high [63:50] golden-only dead-ref."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s3_in_gpaddr_reg[57]",
+      "rationale": "Golden-only over-wide dead bit: s3_in_gpaddr is [63:0] but the sole functional read is sx_in_1_r_gpaddr <= s3_in_gpaddr[49:0]; bit[57] is written-but-never-read (cone-dead). Impl core notes golden stores full 64 bits with high [63:50] golden-only dead-ref."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s3_in_gpaddr_reg[58]",
+      "rationale": "Golden-only over-wide dead bit: s3_in_gpaddr is [63:0] but the sole functional read is sx_in_1_r_gpaddr <= s3_in_gpaddr[49:0]; bit[58] is written-but-never-read (cone-dead). Impl core notes golden stores full 64 bits with high [63:50] golden-only dead-ref."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s3_in_gpaddr_reg[59]",
+      "rationale": "Golden-only over-wide dead bit: s3_in_gpaddr is [63:0] but the sole functional read is sx_in_1_r_gpaddr <= s3_in_gpaddr[49:0]; bit[59] is written-but-never-read (cone-dead). Impl core notes golden stores full 64 bits with high [63:50] golden-only dead-ref."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s3_in_gpaddr_reg[60]",
+      "rationale": "Golden-only over-wide dead bit: s3_in_gpaddr is [63:0] but the sole functional read is sx_in_1_r_gpaddr <= s3_in_gpaddr[49:0]; bit[60] is written-but-never-read (cone-dead). Impl core notes golden stores full 64 bits with high [63:50] golden-only dead-ref."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s3_in_gpaddr_reg[61]",
+      "rationale": "Golden-only over-wide dead bit: s3_in_gpaddr is [63:0] but the sole functional read is sx_in_1_r_gpaddr <= s3_in_gpaddr[49:0]; bit[61] is written-but-never-read (cone-dead). Impl core notes golden stores full 64 bits with high [63:50] golden-only dead-ref."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s3_in_gpaddr_reg[62]",
+      "rationale": "Golden-only over-wide dead bit: s3_in_gpaddr is [63:0] but the sole functional read is sx_in_1_r_gpaddr <= s3_in_gpaddr[49:0]; bit[62] is written-but-never-read (cone-dead). Impl core notes golden stores full 64 bits with high [63:50] golden-only dead-ref."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s3_in_gpaddr_reg[63]",
+      "rationale": "Golden-only over-wide dead bit: s3_in_gpaddr is [63:0] but the sole functional read is sx_in_1_r_gpaddr <= s3_in_gpaddr[49:0]; bit[63] is written-but-never-read (cone-dead). Impl core notes golden stores full 64 bits with high [63:50] golden-only dead-ref."
+    },
+    {
+      "ref_path": "r:/WORK/StoreUnit/s3_in_vecActive_reg",
+      "rationale": "Golden-only assertion-only register: s3_in_vecActive feeds only _GEN_2 = s3_valid & s3_in_isvec & s3_in_vecActive & (s3_in_mask==0), which is consumed exclusively inside an `ifndef SYNTHESIS` assertion block (if(_GEN_2 & ~reset) { $fwrite \"Assertion failed\"; xs_assert_v2 }). Under +define+SYNTHESIS (the FM run) that block is compiled out, leaving the register + combinational fanout cone-dead with no functional output fan-out. Impl core keeps vecActive combinational, does not store this assertion probe."
+    }
+  ]
+}

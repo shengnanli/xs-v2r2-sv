@@ -1,0 +1,11 @@
+{
+  "schema": "fm-sidecar-dead-ref-v1",
+  "target": "LLPTW",
+  "rationale": "signoff-strict, NO blackbox / NO vmucp / NO relaxed appvar: native SUCCEEDED (passing 1698, failing 0), impl side 100% clean (unmatched_impl=0, unread_impl=0, unread_notcompared=0). The only residual is 1 golden-only unread_ref = r:/WORK/LLPTW/REG_reg, an assert(false.B) RegNext register (RegNext of dup_req_fire & |dup_vec_wait_*, golden LLPTW.sv line 2995) that is read ONLY inside the `ifndef SYNTHESIS assertion block at line 870 (if (REG & ~reset) -> $fwrite/xs_assert_v2). Its only other reader REG_probe (line 773, wire REG_probe = REG) is itself read 0 times (dead wire). Under +define+SYNTHESIS (the FM run defines SYNTHESIS) the entire assertion always-block is DCE'd, so REG has no functional output fan-out (cone-dead). The readable impl core (rtl/memblock/LLPTW.sv, grep REG_reg = 0 hits) correctly omits this redundant golden-only assertion register while keeping the functional dup_req_fire logic. Enumerated exactly from native_facts (evidence /tmp/deadref-A-evidence/LLPTW-native/native_facts.json: unmatched_unread_ref=[r:/WORK/LLPTW/REG_reg]).",
+  "entries": [
+    {
+      "ref_path": "r:/WORK/LLPTW/REG_reg",
+      "rationale": "Golden-only assert(false.B) RegNext register (RegNext of dup_req_fire & |dup_vec_wait_*). Read only inside `ifndef SYNTHESIS assertion block (if (REG & ~reset) -> $fwrite/xs_assert_v2) at golden line 870; its wire mirror REG_probe is read 0 times. DCE'd under SYNTHESIS, cone-dead with no functional output fan-out. Impl core omits it."
+    }
+  ]
+}
