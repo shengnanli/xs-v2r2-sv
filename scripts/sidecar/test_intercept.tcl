@@ -15,6 +15,9 @@ proc set_app_var {name value} {
 proc get_app_var {name} { if {[info exists ::AVMAP($name)]} { return $::AVMAP($name) }; return "" }
 proc set_user_match {args} { lappend ::USERMATCH $args }
 proc match {} { return 1 }
+# 桩: 只读查询命令(redirect -variable 捕获其输出; CtrlBlock 现场推导 unmatched 用)
+proc report_unmatched_points {args} {
+    return "  Ref DFF  r:/WORK/T/foo_reg\n  Impl DFF  i:/WORK/T/u_core/bar_reg" }
 
 source $here/fm_native_emit.tcl
 set ::INTERCEPTED {}
@@ -225,5 +228,105 @@ T phase_optional_relaxing_allowed_after_match {
     if {[llength $::INTERCEPTED] != $n} { error "OPTIONAL post-match 被误拦" }
     if {"verification_assume_reg_init" ni $::SIDECAR_EXTRA_KEYS} { error "OPTIONAL未记账(应入relaxed)" }
 }
+# ---- sidecar-pin-compat: 只读 redirect 兼容(codex_0088 §5) ----
+# 正测: CtrlBlock 实际用法 `redirect -variable um_txt {report_unmatched_points}` 现通过,
+# 被捕获文本回写 child 变量, 后续 set_user_match 生效(过去 invalid command name → rc=1)。
+T redirect_variable_capture_readonly_ok {
+    set f [file join $::here .ti_pin_redir.tcl]
+    set fh [open $f w]
+    puts $fh {redirect -variable um_txt {report_unmatched_points}}
+    puts $fh {if {![string match "*foo_reg*" $um_txt]} { error "capture failed" }}
+    puts $fh {set_user_match r:/WORK/T/foo_reg i:/WORK/T/u_core/bar_reg}
+    close $fh
+    set ::USERMATCH {}
+    sidecar_pin_source $f
+    file delete $f
+    if {[llength $::USERMATCH] != 1} { error "redirect 捕获后 set_user_match 未生效" }
+}
+# 负测: 裸文件写到任意路径被拒(修改类能力不放行, fail-closed)
+T redirect_bare_file_arbitrary_path_rejected {
+    set f [file join $::here .ti_pin_redir2.tcl]
+    set fh [open $f w]
+    puts $fh {redirect /tmp/evil_pin_out.txt {report_unmatched_points}}
+    close $fh
+    set rc [catch {sidecar_pin_source $f} msg]
+    file delete $f
+    if {!$rc} { error "裸文件写未拦截" }
+    if {[file exists /tmp/evil_pin_out.txt]} { file delete /tmp/evil_pin_out.txt; error "任意路径文件竟被写" }
+}
+# 负测: -append 到证据目录外/无前缀文件被拒
+T redirect_file_missing_prefix_rejected {
+    set f [file join $::here .ti_pin_redir3.tcl]
+    set fh [open $f w]
+    puts $fh {redirect um_report.txt {report_unmatched_points}}
+    close $fh
+    set rc [catch {sidecar_pin_source $f} msg]
+    file delete $f
+    if {!$rc} { error "无 pin_redirect_ 前缀文件写未拦截" }
+}
+# 负测: 路径穿越(..)被拒, 即便有 pin_redirect_ 前缀
+T redirect_file_path_traversal_rejected {
+    set f [file join $::here .ti_pin_redir4.tcl]
+    set fh [open $f w]
+    puts $fh {redirect pin_redirect_../escape.txt {report_unmatched_points}}
+    close $fh
+    set rc [catch {sidecar_pin_source $f} msg]
+    file delete $f
+    if {!$rc} { error "路径穿越未拦截" }
+}
+# 负测: 未知 flag(如 -channel/-tee)被拒(不静默降级为文件写)
+T redirect_unknown_flag_rejected {
+    set f [file join $::here .ti_pin_redir5.tcl]
+    set fh [open $f w]
+    puts $fh {redirect -channel somechan {report_unmatched_points}}
+    close $fh
+    set rc [catch {sidecar_pin_source $f} msg]
+    file delete $f
+    if {!$rc} { error "未知 flag 未拦截" }
+}
+# 正测: 只读报告导到证据目录内 pin_redirect_ 文件(任务允许的 file 只读报告用法)
+T redirect_file_evidence_dir_allowed {
+    set f [file join $::here .ti_pin_redir6.tcl]
+    set fh [open $f w]
+    puts $fh {redirect pin_redirect_um.rpt {report_unmatched_points}}
+    close $fh
+    sidecar_pin_source $f
+    file delete $f
+    set rpt [file join $::env(FM_SIDECAR_OUT) pin_redirect_um.rpt]
+    if {![file exists $rpt]} { error "证据目录内只读报告未写出" }
+    set fh [open $rpt r]; set c [read $fh]; close $fh
+    if {![string match "*foo_reg*" $c]} { error "报告内容不符" }
+    file delete $rpt
+}
+# 负测(核心): redirect 不能被当作**修改类命令**载体绕过父层拦截。被包裹的 <script>
+# 仍在 child safe interp 内执行 → 非法 set_app_var 照常触发父层 execution trace(生产里
+# sidecar_intercept_fail=exit 3, child catch 拦不住进程退出), 且**非法值绝不生效**。
+# 未被 pin catch 时错误照常上抛(rc=1)。
+T redirect_body_unknown_appvar_guard_fires_and_no_effect {
+    set n [llength $::INTERCEPTED]
+    set f [file join $::here .ti_pin_redir7.tcl]
+    set fh [open $f w]
+    puts $fh {redirect -variable z {set_app_var verification_timeout_limit 100}}
+    close $fh
+    set rc [catch {sidecar_pin_source $f} msg]
+    file delete $f
+    if {!$rc} { error "redirect 包裹的非法 set_app_var 未上抛" }
+    if {[llength $::INTERCEPTED] <= $n} { error "父层 guard 未触发" }
+    if {![string match "*not-in-registry*" [lindex $::INTERCEPTED end]]} { error "类别不符: [lindex $::INTERCEPTED end]" }
+    if {[info exists ::AVMAP(verification_timeout_limit)]} { error "非法值经 redirect 竟生效" }
+}
+# 负测: 即便 pin 用 catch 吞掉 guard 的 error(生产是 exit 3 吞不掉), 非法值仍绝不生效。
+T redirect_body_caught_error_still_no_effect {
+    set n [llength $::INTERCEPTED]
+    set f [file join $::here .ti_pin_redir7b.tcl]
+    set fh [open $f w]
+    puts $fh {catch {redirect -variable z {set_app_var verification_effort_level high}}}
+    close $fh
+    catch {sidecar_pin_source $f}
+    file delete $f
+    if {[llength $::INTERCEPTED] <= $n} { error "父层 guard 未触发" }
+    if {[info exists ::AVMAP(verification_effort_level)]} { error "非法值经 catch+redirect 竟生效" }
+}
+
 puts "$pass/[expr {$pass+$fail}] passed"
 if {$fail} { exit 1 }
