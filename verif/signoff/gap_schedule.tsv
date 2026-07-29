@@ -66,7 +66,7 @@ Pipeline	BB	nc0/ur0/ui0/bb1
 PtwCache	IMPL_DEAD	nc62/ur5/ui1561/bb0/NONSYM
 RASStack	IMPL_DEAD	nc0/ur0/ui4/bb0
 RegCache	IMPL_DEAD	nc0/ur6/ui6/bb0
-Rename	NATIVE_FAIL	nc2/ur0/ui1/bb0
+Rename	SIGNOFF_PASS	regate-B官方gate RC0 SUCCEEDED(strict+vmucp解nc2对称死双射); 旧NATIVE_FAIL nc2/ur0/ui1 stale
 RenameBuffer	IMPL_DEAD	nc0/ur7/ui8/bb0
 Sbuffer	IMPL_DEAD	nc0/ur0/ui15/bb1
 Scheduler_2	UNMATCH_COMPARE	nc647/ur0/ui0/bb0
