@@ -295,3 +295,5 @@ ReceiverLinkMonitor	XSTop CHI链路监视器(OpenNCB侧, LINKACTIVE 4态FSM同�
 TransmitterLinkMonitor	XSTop CHI链路监视器(发送向, 3 Queue15 interface_only因golden FMR_ELAB-147 OOB), assembly AUX, 移出305
 NCB200	OpenNCB CHI<->AXI bridge主体(纯结构装配壳0reg); PASS assembly+vmucp
 NCB200_1	OpenNCB_1 CHI<->AXI bridge 32entry变体(纯结构装配壳); PASS assembly+vmucp
+OpenNCB	NCB200父装配壳(纯组合0reg, 唯一child NCB200对称unresolved黑盒); PASS assembly; depends_on NCB200
+OpenNCB_1	NCB200_1父装配壳(纯组合0reg, 唯一child NCB200_1对称interface_only); PASS assembly; depends_on NCB200_1

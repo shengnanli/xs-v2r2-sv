@@ -1,0 +1,8 @@
+{
+  "unresolved_blackbox": [],
+  "interface_only": [
+    {"id": "NCB200_1", "ref_path": "r:/WORK/OpenNCB_1/uNCB200", "impl_path": "i:/WORK/OpenNCB_1/u_core/uNCB200"}
+  ],
+  "empty_blackbox": [],
+  "unmatched": []
+}

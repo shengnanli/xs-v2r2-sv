@@ -1,0 +1,4 @@
+SIGNOFF_RESULT OpenNCB_1: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=assembly fm_shell_rc=0 validator_rc=0)
+run_id: SGN-OpenNCB_1-1785315519
+impl_commit: 19d5b04241b2000114e6bf84a17e1440f0ba4f9f
+manifest_sha256: 5c31be635631cb58b4aeb6484b60a69152a01ce220bcd7a995136dfbd700f82d

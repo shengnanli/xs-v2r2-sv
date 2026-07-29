@@ -112,6 +112,8 @@ MvipModule	signoff-strict			false
 NCB200	signoff-strict			true	
 NCB200_1	assembly	verif/signoff/allow/NCB200_1.json		true	
 Og2ForVector	signoff-strict			false	
+OpenNCB	assembly	verif/signoff/allow/OpenNCB.json		false	
+OpenNCB_1	assembly	verif/signoff/allow/OpenNCB_1.json		false	
 PBestOffsetPrefetch	signoff-strict			false	
 PFEvent	signoff-strict			false	
 PMAEntryHandleModule	signoff-strict			false	
