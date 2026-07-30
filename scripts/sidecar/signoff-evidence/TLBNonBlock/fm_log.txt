@@ -21,11 +21,11 @@
 
 Build: 8868332
 Hostname: localhost.localdomain
-Current time: Mon Jul 20 14:10:37 2026
+Current time: Thu Jul 30 14:11:12 2026
 
 Loading db file '/home/eda/app/synopsys/fm/V-2023.12-SP3/libraries/syn/gtech.db'
 
-Script: /tmp/tmp.rzYKRzUwTX/wt/scripts/fm_eq.tcl
+Script: /tmp/tmp.G75CqE7lqB/wt/scripts/fm_eq.tcl
 
 Information: Term was not able to be set up using xterm-256color . Using "xterm" by default instead. (CLE-10)
 # Formality 等价性检查通用脚本
@@ -36,9 +36,9 @@ Information: Term was not able to be set up using xterm-256color . Using "xterm"
 set top       $env(FM_TOP)
 TLBNonBlock
 set ref_srcs  $env(FM_REF_SRCS)
-/home/eda/xs-env/G0-canonical/golden-rtl/TLBNonBlock.sv 
+/home/eda/xs-env/G0-canonical/golden-rtl/TLBNonBlock.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayN_7.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayN_9.sv /home/eda/xs-env/G0-canonical/golden-rtl/TlbStorageWrapper_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/TLBFA_1.sv 
 set impl_srcs $env(FM_IMPL_SRCS)
-/tmp/tmp.rzYKRzUwTX/wt/rtl/memblock/tlbnonblock_pkg.sv /tmp/tmp.rzYKRzUwTX/wt/rtl/memblock/tlbstoragewrapper_pkg.sv /tmp/tmp.rzYKRzUwTX/wt/rtl/memblock/tlbfa_pkg.sv /tmp/tmp.rzYKRzUwTX/wt/rtl/memblock/TLBNonBlock.sv /tmp/tmp.rzYKRzUwTX/wt/rtl/memblock/TLBNonBlock_wrapper.sv
+/tmp/tmp.G75CqE7lqB/wt/rtl/memblock/tlbnonblock_pkg.sv /tmp/tmp.G75CqE7lqB/wt/rtl/memblock/TLBNonBlock.sv /tmp/tmp.G75CqE7lqB/wt/rtl/memblock/TLBNonBlock_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayN_7.sv /home/eda/xs-env/G0-canonical/golden-rtl/DelayN_9.sv /home/eda/xs-env/G0-canonical/golden-rtl/TlbStorageWrapper_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/TLBFA_1.sv
 # ----------------------------------------------------------------------------
 # Step 3B sidecar emitter(FM_SIDECAR_OUT 非空时启用; 契约 = SIDECAR_SCHEMA.md v7 冻结版):
 # source 后立即对将被 source 的模块本地 Tcl 做**运行期 appvar 拦截**(set_app_var 名字
@@ -95,8 +95,34 @@ switch -- $_fmmode {
 # 后三项 true 即工具默认(man cat3 逐页核对), 显式钉死防版本漂移。
 set_app_var verification_verify_unread_compare_points false
 false
-set_app_var verification_verify_matched_unread_compare_points false
+# LoadQueueUncache target-scoped strengthening: verify matched unread compare
+# points instead of accepting them as Not-Compared.  The signoff runner obtains
+# this value from the committed declaration/manifest and binds it into input
+# provenance.  It is deliberately not a waiver: true asks FM to prove *more*.
+set _verify_matched_unread_compare_points "false"
 false
+if {[info exists env(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS)] &&
+    [string trim $env(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS)] ne ""} {
+    set _verify_matched_unread_compare_points \
+        [string trim $env(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS)]
+}
+true
+switch -- $_verify_matched_unread_compare_points {
+  "true" {
+    if {$top ni {LoadQueueUncache FastArbiter_46 FastArbiter_47 FastArbiter_27 FastArbiter_44 ICacheCtrlUnit ICacheDataArray IPrefetchPipe DivUnit FDivSqrt InstrMMIOEntry InstrUncache TXDAT_4 FAlu FCVT IssueQueueStdMoud MulUnit TXREQ TlbStorageWrapper TlbStorageWrapper_1 IssueQueueStaMou IssueQueueLdu TXDAT Scheduler_1 Scheduler Scheduler_3 MSHR TageBTable Directory SCTable SCTable_1 SCTable_2 SCTable_3 Tage_SC ITTage FauFTB FTBBank FTB Composer EntriesAluCsrFenceDiv Bku SourceB Predictor EntriesAluMulBkuBrhJmp DuplicatedTagArray PtwCache WritebackQueue LinkMonitor Ftq LoadQueue LoadPipe MissQueue IssueQueueAluMulBkuBrhJmp L2TLB Rename IssueQueueAluCsrFenceDiv Scheduler_2 DebugModule WbDataPath IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v Slice LoadQueueReplay NewCSR DCache DataPath SnoopUnit MemUnit RefillUnit ResponseUnit OpenLLC StoreQueue FastArbiter_1 FastArbiter_2 FastArbiter_28 FastArbiter_29 Slice_1 Slice_2 Slice_3 Directory_1 Directory_2 Directory_3 PrefetchReqBuffer RXSNP Prefetcher Pipeline_2 Pipeline_3 FusionDecoder TL2CHICoupledL2 L2Top PrefetchQueue VBestOffsetPrefetch MemCtrl Frontend CSR VLSplitImp VSSplitImp AtomicsUnit VSMergeBufferImp VLMergeBufferImp PTWNewFilter L1Prefetcher SMSPrefetcher VSegmentUnit MemBlock HPerfMonitor_2 FastArbiter_77 FastArbiter_78 FastArbiter_79 TLBNonBlock_1 TLBNonBlock_2 ExuBlock_2 NCB200 NCB200_1 TLBNonBlock}} {
+      puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
+      exit 3
+    }
+  }
+  "false" { }
+  default {
+    puts "FM_MODE_ERROR: FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS 非法值 $_verify_matched_unread_compare_points"
+    exit 3
+  }
+}
+set_app_var verification_verify_matched_unread_compare_points \
+    $_verify_matched_unread_compare_points
+true
 set_app_var verification_verify_unread_bbox_inputs false
 false
 set_app_var verification_verify_matched_unread_bbox_inputs true
@@ -134,53 +160,45 @@ false
 read_sverilog -r -define {SYNTHESIS} $ref_srcs
 No target library specified, default is WORK
 Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/TLBNonBlock.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayN_7.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayN_9.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/TlbStorageWrapper_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/TLBFA_1.sv'
 Current container set to 'r'
 1
 set_top r:/WORK/$top
 Setting top design to 'r:/WORK/TLBNonBlock'
 Status:   Elaborating design TLBNonBlock   ...  
-Warning: Cannot link cell '/WORK/TLBNonBlock/sfence_delay' to its reference design 'DelayN_9'. (FE-LINK-2)
-Warning: Cannot link cell '/WORK/TLBNonBlock/csr_delay' to its reference design 'DelayN_7'. (FE-LINK-2)
-Warning: Cannot link cell '/WORK/TLBNonBlock/entries' to its reference design 'TlbStorageWrapper_1'. (FE-LINK-2)
+Status:   Elaborating design DelayN_9   ...  
+Status:   Elaborating design DelayN_7   ...  
+Status:   Elaborating design TlbStorageWrapper_1   ...  
+Status:   Elaborating design TLBFA_1   ...  
 Status:  Implementing inferred operators...
-Status:  Creating black-box designs...
-Created technology library 'FM_BBOX' in container 'r' for black-box designs
-Created black-box design 'DelayN_9' in library 'FM_BBOX'
-Created black-box design 'DelayN_7' in library 'FM_BBOX'
-Created black-box design 'TlbStorageWrapper_1' in library 'FM_BBOX'
-Warning: 3 blackbox designs were created for missing references. (FM-064)
-Status:  Attempting to resolve unlinked cells by using black-boxes...
-Warning: 1225 black-box pins of unknown direction found; see formality.log for list (FM-230)
-Top design set to 'r:/WORK/TLBNonBlock' with warnings
+Top design successfully set to 'r:/WORK/TLBNonBlock'
 Reference design set to 'r:/WORK/TLBNonBlock'
 1
 # Implementation: 手写 SV
 read_sverilog -i -define {SYNTHESIS} $impl_srcs
 No target library specified, default is WORK
-Loading verilog file '/tmp/tmp.rzYKRzUwTX/wt/rtl/memblock/tlbnonblock_pkg.sv'
-Loading verilog file '/tmp/tmp.rzYKRzUwTX/wt/rtl/memblock/tlbstoragewrapper_pkg.sv'
-Loading verilog file '/tmp/tmp.rzYKRzUwTX/wt/rtl/memblock/tlbfa_pkg.sv'
-Loading verilog file '/tmp/tmp.rzYKRzUwTX/wt/rtl/memblock/TLBNonBlock.sv'
-Loading verilog file '/tmp/tmp.rzYKRzUwTX/wt/rtl/memblock/TLBNonBlock_wrapper.sv'
+Loading verilog file '/tmp/tmp.G75CqE7lqB/wt/rtl/memblock/tlbnonblock_pkg.sv'
+Loading verilog file '/tmp/tmp.G75CqE7lqB/wt/rtl/memblock/TLBNonBlock.sv'
+Loading verilog file '/tmp/tmp.G75CqE7lqB/wt/rtl/memblock/TLBNonBlock_wrapper.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayN_7.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DelayN_9.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/TlbStorageWrapper_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/TLBFA_1.sv'
 Current container set to 'i'
 1
 set_top i:/WORK/$top
 Setting top design to 'i:/WORK/TLBNonBlock'
 Status:   Elaborating design TLBNonBlock   ...  
-Warning: Cannot link cell '/WORK/TLBNonBlock/sfence_delay' to its reference design 'DelayN_9'. (FE-LINK-2)
-Warning: Cannot link cell '/WORK/TLBNonBlock/csr_delay' to its reference design 'DelayN_7'. (FE-LINK-2)
+Status:   Elaborating design DelayN_9   ...  
+Status:   Elaborating design DelayN_7   ...  
 Status:   Elaborating design xs_TLBNonBlock_core   ...  
-Warning: Cannot link cell '/WORK/TLBNonBlock/entries' to its reference design 'TlbStorageWrapper_1'. (FE-LINK-2)
+Status:   Elaborating design TlbStorageWrapper_1   ...  
+Status:   Elaborating design TLBFA_1   ...  
 Status:  Implementing inferred operators...
-Status:  Creating black-box designs...
-Created technology library 'FM_BBOX' in container 'i' for black-box designs
-Created black-box design 'DelayN_9' in library 'FM_BBOX'
-Created black-box design 'DelayN_7' in library 'FM_BBOX'
-Created black-box design 'TlbStorageWrapper_1' in library 'FM_BBOX'
-Warning: 3 blackbox designs were created for missing references. (FM-064)
-Status:  Attempting to resolve unlinked cells by using black-boxes...
-Warning: 1226 black-box pins of unknown direction found; see formality.log for list (FM-230)
-Top design set to 'i:/WORK/TLBNonBlock' with warnings
+Top design successfully set to 'i:/WORK/TLBNonBlock'
 Implementation design set to 'i:/WORK/TLBNonBlock'
 1
 # ----------------------------------------------------------------------------
@@ -221,25 +239,17 @@ match
 Reference design is 'r:/WORK/TLBNonBlock'
 Implementation design is 'i:/WORK/TLBNonBlock'
 Status:  Checking designs...
-    Warning: Design r:/FM_BBOX/DelayN_9 is a black box and there are cells referencing it (FM-160)
-    Warning: Design r:/FM_BBOX/DelayN_7 is a black box and there are cells referencing it (FM-160)
-    Warning: Design r:/FM_BBOX/TlbStorageWrapper_1 is a black box and there are cells referencing it (FM-160)
-    Warning: Design i:/FM_BBOX/DelayN_9 is a black box and there are cells referencing it (FM-160)
-    Warning: Design i:/FM_BBOX/DelayN_7 is a black box and there are cells referencing it (FM-160)
-    Warning: Design i:/FM_BBOX/TlbStorageWrapper_1 is a black box and there are cells referencing it (FM-160)
-    Info:  120 (120) multiply-driven nets found in reference (implementation) design; see formality.log for list.
-    Warning: 3 (3) black-box references found in reference (implementation) design; see formality.log for list (FM-182)
 Status:  Building verification models...
 Status:  Matching...
     
 *********************************** Matching Results ***********************************    
- 2111 Compare points matched by name    
- 1670 Compare points matched by signature analysis    
+ 9880 Compare points matched by name    
+ 1652 Compare points matched by signature analysis    
  0 Compare points matched by topology    
- 1561 Matched primary inputs, black-box outputs    
+ 1150 Matched primary inputs, black-box outputs    
  0(0) Unmatched reference(implementation) compare points    
  0(0) Unmatched reference(implementation) primary inputs, black-box outputs    
- 12(185) Unmatched reference(implementation) unread points    
+ 12(0) Unmatched reference(implementation) unread points    
 ****************************************************************************************
 
     Info:  Formality Guide Files (SVF) can improve matching performance and success by automating setup.
@@ -1963,46 +1973,26 @@ Set a match between the following objects:
 Set a match between the following objects:
 	r:/WORK/TLBNonBlock/ptw_resp_bits_reg_3_s1_valididx_7_reg
     (?) i:/WORK/TLBNonBlock/u_core/pr_s1_valididx_reg[3][7]
-Set a match between the following objects:
-	r:/WORK/TLBNonBlock/readResult_p_s2xlate_reg[0]
-    (?) i:/WORK/TLBNonBlock/u_core/p_s2xlate_reg[0][0]
-Set a match between the following objects:
-	r:/WORK/TLBNonBlock/readResult_p_s2xlate_reg[1]
-    (?) i:/WORK/TLBNonBlock/u_core/p_s2xlate_reg[0][1]
-Set a match between the following objects:
-	r:/WORK/TLBNonBlock/readResult_p_s2xlate_1_reg[0]
-    (?) i:/WORK/TLBNonBlock/u_core/p_s2xlate_reg[1][0]
-Set a match between the following objects:
-	r:/WORK/TLBNonBlock/readResult_p_s2xlate_1_reg[1]
-    (?) i:/WORK/TLBNonBlock/u_core/p_s2xlate_reg[1][1]
-Set a match between the following objects:
-	r:/WORK/TLBNonBlock/readResult_p_s2xlate_2_reg[0]
-    (?) i:/WORK/TLBNonBlock/u_core/p_s2xlate_reg[2][0]
-Set a match between the following objects:
-	r:/WORK/TLBNonBlock/readResult_p_s2xlate_2_reg[1]
-    (?) i:/WORK/TLBNonBlock/u_core/p_s2xlate_reg[2][1]
+Error: Unknown name: 'i:/WORK/TLBNonBlock/u_core/p_s2xlate_reg[0][0]' (FM-036)
+Error: Unknown name: 'i:/WORK/TLBNonBlock/u_core/p_s2xlate_reg[0][1]' (FM-036)
+Error: Unknown name: 'i:/WORK/TLBNonBlock/u_core/p_s2xlate_reg[1][0]' (FM-036)
+Error: Unknown name: 'i:/WORK/TLBNonBlock/u_core/p_s2xlate_reg[1][1]' (FM-036)
+Error: Unknown name: 'i:/WORK/TLBNonBlock/u_core/p_s2xlate_reg[2][0]' (FM-036)
+Error: Unknown name: 'i:/WORK/TLBNonBlock/u_core/p_s2xlate_reg[2][1]' (FM-036)
 Error: Unknown name: 'r:/WORK/TLBNonBlock/readResult_p_s2xlate_3_reg[0]' (FM-036)
+Error: Unknown name: 'i:/WORK/TLBNonBlock/u_core/p_s2xlate_reg[3][0]' (FM-036)
 Error: Unknown name: 'r:/WORK/TLBNonBlock/readResult_p_s2xlate_3_reg[1]' (FM-036)
-Set a match between the following objects:
-	r:/WORK/TLBNonBlock/readResult_p_s1_level_reg[0]
-    (?) i:/WORK/TLBNonBlock/u_core/p_s1_level_reg[0][0]
-Set a match between the following objects:
-	r:/WORK/TLBNonBlock/readResult_p_s1_level_reg[1]
-    (?) i:/WORK/TLBNonBlock/u_core/p_s1_level_reg[0][1]
-Set a match between the following objects:
-	r:/WORK/TLBNonBlock/readResult_p_s1_level_1_reg[0]
-    (?) i:/WORK/TLBNonBlock/u_core/p_s1_level_reg[1][0]
-Set a match between the following objects:
-	r:/WORK/TLBNonBlock/readResult_p_s1_level_1_reg[1]
-    (?) i:/WORK/TLBNonBlock/u_core/p_s1_level_reg[1][1]
-Set a match between the following objects:
-	r:/WORK/TLBNonBlock/readResult_p_s1_level_2_reg[0]
-    (?) i:/WORK/TLBNonBlock/u_core/p_s1_level_reg[2][0]
-Set a match between the following objects:
-	r:/WORK/TLBNonBlock/readResult_p_s1_level_2_reg[1]
-    (?) i:/WORK/TLBNonBlock/u_core/p_s1_level_reg[2][1]
+Error: Unknown name: 'i:/WORK/TLBNonBlock/u_core/p_s2xlate_reg[3][1]' (FM-036)
+Error: Unknown name: 'i:/WORK/TLBNonBlock/u_core/p_s1_level_reg[0][0]' (FM-036)
+Error: Unknown name: 'i:/WORK/TLBNonBlock/u_core/p_s1_level_reg[0][1]' (FM-036)
+Error: Unknown name: 'i:/WORK/TLBNonBlock/u_core/p_s1_level_reg[1][0]' (FM-036)
+Error: Unknown name: 'i:/WORK/TLBNonBlock/u_core/p_s1_level_reg[1][1]' (FM-036)
+Error: Unknown name: 'i:/WORK/TLBNonBlock/u_core/p_s1_level_reg[2][0]' (FM-036)
+Error: Unknown name: 'i:/WORK/TLBNonBlock/u_core/p_s1_level_reg[2][1]' (FM-036)
 Error: Unknown name: 'r:/WORK/TLBNonBlock/readResult_p_s1_level_3_reg[0]' (FM-036)
+Error: Unknown name: 'i:/WORK/TLBNonBlock/u_core/p_s1_level_reg[3][0]' (FM-036)
 Error: Unknown name: 'r:/WORK/TLBNonBlock/readResult_p_s1_level_3_reg[1]' (FM-036)
+Error: Unknown name: 'i:/WORK/TLBNonBlock/u_core/p_s1_level_reg[3][1]' (FM-036)
 Set a match between the following objects:
 	r:/WORK/TLBNonBlock/readResult_p_pbmt_reg[0]
     (?) i:/WORK/TLBNonBlock/u_core/p_pbmt_reg[0][0]
@@ -2027,9 +2017,7 @@ Set a match between the following objects:
 Set a match between the following objects:
 	r:/WORK/TLBNonBlock/readResult_p_pbmt_3_reg[1]
     (?) i:/WORK/TLBNonBlock/u_core/p_pbmt_reg[3][1]
-Set a match between the following objects:
-	r:/WORK/TLBNonBlock/readResult_p_s1_isFakePte_reg
-    (?) i:/WORK/TLBNonBlock/u_core/p_s1_isFakePte_reg[0]
+Error: Unknown name: 'i:/WORK/TLBNonBlock/u_core/p_s1_isFakePte_reg[0]' (FM-036)
 Set a match between the following objects:
 	r:/WORK/TLBNonBlock/readResult_p_perm_x_reg
     (?) i:/WORK/TLBNonBlock/u_core/p_perm_reg[0]\[x]
@@ -2078,9 +2066,7 @@ Set a match between the following objects:
 Set a match between the following objects:
 	r:/WORK/TLBNonBlock/readResult_p_g_perm_a_reg
     (?) i:/WORK/TLBNonBlock/u_core/p_g_perm_reg[0]\[a]
-Set a match between the following objects:
-	r:/WORK/TLBNonBlock/readResult_p_s1_isFakePte_1_reg
-    (?) i:/WORK/TLBNonBlock/u_core/p_s1_isFakePte_reg[1]
+Error: Unknown name: 'i:/WORK/TLBNonBlock/u_core/p_s1_isFakePte_reg[1]' (FM-036)
 Set a match between the following objects:
 	r:/WORK/TLBNonBlock/readResult_p_perm_1_x_reg
     (?) i:/WORK/TLBNonBlock/u_core/p_perm_reg[1]\[x]
@@ -2129,9 +2115,7 @@ Set a match between the following objects:
 Set a match between the following objects:
 	r:/WORK/TLBNonBlock/readResult_p_g_perm_1_a_reg
     (?) i:/WORK/TLBNonBlock/u_core/p_g_perm_reg[1]\[a]
-Set a match between the following objects:
-	r:/WORK/TLBNonBlock/readResult_p_s1_isFakePte_2_reg
-    (?) i:/WORK/TLBNonBlock/u_core/p_s1_isFakePte_reg[2]
+Error: Unknown name: 'i:/WORK/TLBNonBlock/u_core/p_s1_isFakePte_reg[2]' (FM-036)
 Set a match between the following objects:
 	r:/WORK/TLBNonBlock/readResult_p_perm_2_x_reg
     (?) i:/WORK/TLBNonBlock/u_core/p_perm_reg[2]\[x]
@@ -2181,6 +2165,7 @@ Set a match between the following objects:
 	r:/WORK/TLBNonBlock/readResult_p_g_perm_2_a_reg
     (?) i:/WORK/TLBNonBlock/u_core/p_g_perm_reg[2]\[a]
 Error: Unknown name: 'r:/WORK/TLBNonBlock/readResult_p_s1_isFakePte_3_reg' (FM-036)
+Error: Unknown name: 'i:/WORK/TLBNonBlock/u_core/p_s1_isFakePte_reg[3]' (FM-036)
 Set a match between the following objects:
 	r:/WORK/TLBNonBlock/readResult_p_perm_3_x_reg
     (?) i:/WORK/TLBNonBlock/u_core/p_perm_reg[3]\[x]
@@ -2391,15 +2376,15 @@ Implementation design is 'i:/WORK/TLBNonBlock'
 Status:  Matching...
     
 *********************************** Matching Results ***********************************    
- 3094 Compare points matched previously    
- 687 Compare points matched by user    
+ 10860 Compare points matched previously    
+ 672 Compare points matched by user    
  0 Compare points matched by name    
  0 Compare points matched by signature analysis    
  0 Compare points matched by topology    
- 1561 Matched primary inputs, black-box outputs    
+ 1150 Matched primary inputs, black-box outputs    
  0(0) Unmatched reference(implementation) compare points    
  0(0) Unmatched reference(implementation) primary inputs, black-box outputs    
- 12(185) Unmatched reference(implementation) unread points    
+ 12(0) Unmatched reference(implementation) unread points    
 ****************************************************************************************
 
 1
@@ -2417,18 +2402,19 @@ Reference design is 'r:/WORK/TLBNonBlock'
 Implementation design is 'i:/WORK/TLBNonBlock'
     
 *********************************** Matching Results ***********************************    
- 3094 Compare points matched previously    
- 687 Compare points matched by user    
+ 10860 Compare points matched previously    
+ 672 Compare points matched by user    
  0 Compare points matched by name    
  0 Compare points matched by signature analysis    
  0 Compare points matched by topology    
- 1561 Matched primary inputs, black-box outputs    
+ 1150 Matched primary inputs, black-box outputs    
  0(0) Unmatched reference(implementation) compare points    
  0(0) Unmatched reference(implementation) primary inputs, black-box outputs    
- 12(185) Unmatched reference(implementation) unread points    
+ 12(0) Unmatched reference(implementation) unread points    
 ****************************************************************************************
 
 Status:  Verifying...
+.
 
 
 ********************************* Verification Results *********************************
@@ -2436,11 +2422,11 @@ Verification SUCCEEDED
 ----------------------
  Reference design: r:/WORK/TLBNonBlock
  Implementation design: i:/WORK/TLBNonBlock
- 3781 Passing compare points
+ 11532 Passing compare points
 ----------------------------------------------------------------------------------------
 Matched Compare Points     BBPin    Loop   BBNet     Cut    Port     DFF     LAT   TOTAL
 ----------------------------------------------------------------------------------------
-Passing (equivalent)         831       0      50       0    1140    1760       0    3781
+Passing (equivalent)           0       0       0       0    1140   10392       0   11532
 Failing (not equivalent)       0       0       0       0       0       0       0       0
 ****************************************************************************************
 FM_RESULT: Verification SUCCEEDED for TLBNonBlock
@@ -2449,9 +2435,9 @@ if {$SIDECAR_ON} { sidecar_emit $top }
 SIDECAR_NATIVE_FACTS_WRITTEN
 exit
 
-Maximum memory usage for this session: 867 MB
-CPU usage for this session: 7.02 seconds ( 0.00 hours )
-Current time: Mon Jul 20 14:10:55 2026
-Elapsed time: 21 seconds ( 0.01 hours )
+Maximum memory usage for this session: 1377 MB
+CPU usage for this session: 185.45 seconds ( 0.05 hours )
+Current time: Thu Jul 30 14:14:29 2026
+Elapsed time: 201 seconds ( 0.06 hours )
 
 Thank you for using Formality (R)!
