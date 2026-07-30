@@ -3838,11 +3838,11 @@
    "entry": "scripts/fm_eq.tcl",
    "proof_mode": "signoff-strict",
    "config_status": "CONFIGURED",
-   "required_verdict": "SUCCEEDED",
+   "required_verdict": "PASS_DEAD_REF",
    "allow_ref": "",
-   "rationale": "",
-   "verify_matched_unread_compare_points": "false",
-   "dead_ref": "",
+   "rationale": "strict+vmucp+dead-ref(305主目标, 独立于TLBNonBlock_1/_2 AUX): 两侧elaborate子(DelayN_7/9/TlbStorageWrapper_1/TLBFA_1)0黑盒; 70对称matched-unread(golden子DelayN/TlbStorage/TLBFA内两侧同名死reg双射)vmucp实比passing; 12 golden-only cone-dead(r/r_1..7=RegNext isFirstIssue喂dead _GEN零消费者 + result_ok_last_REG XSPerf DCE)=dead-ref; impl核rtl/memblock/TLBNonBlock.sv grep result_ok_last/isFirstIssue=0 unread_impl0; native SUCCEEDED 11532/0 → PASS_DEAD_REF",
+   "verify_matched_unread_compare_points": "true",
+   "dead_ref": "verif/signoff/dead_ref/TLBNonBlock.json",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {

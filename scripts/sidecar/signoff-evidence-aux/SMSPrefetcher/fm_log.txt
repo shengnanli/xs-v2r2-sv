@@ -21,11 +21,11 @@
 
 Build: 8868332
 Hostname: localhost.localdomain
-Current time: Tue Jul 28 14:39:17 2026
+Current time: Thu Jul 30 13:23:41 2026
 
 Loading db file '/home/eda/app/synopsys/fm/V-2023.12-SP3/libraries/syn/gtech.db'
 
-Script: /tmp/tmp.cw8tEJBe5V/wt/scripts/fm_eq.tcl
+Script: /tmp/tmp.FvuNiRbfki/wt/scripts/fm_eq.tcl
 
 Information: Term was not able to be set up using xterm-256color . Using "xterm" by default instead. (CLE-10)
 # Formality 等价性检查通用脚本
@@ -38,7 +38,7 @@ SMSPrefetcher
 set ref_srcs  $env(FM_REF_SRCS)
 /home/eda/xs-env/G0-canonical/golden-rtl/SMSPrefetcher.sv /home/eda/xs-env/G0-canonical/golden-rtl/SMSTrainFilter.sv /home/eda/xs-env/G0-canonical/golden-rtl/ActiveGenerationTable.sv /home/eda/xs-env/G0-canonical/golden-rtl/StridePF.sv /home/eda/xs-env/G0-canonical/golden-rtl/PatternHistoryTable.sv /home/eda/xs-env/G0-canonical/golden-rtl/PrefetchFilter.sv /home/eda/xs-env/G0-canonical/golden-rtl/Arbiter3_PfGenReq.sv /home/eda/xs-env/G0-canonical/golden-rtl/OverrideableQueue.sv /home/eda/xs-env/G0-canonical/golden-rtl/OverrideableQueue_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_134.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistClockGateCell.sv /home/eda/xs-env/G0-canonical/golden-rtl/ClockGate.sv /home/eda/xs-env/G0-canonical/golden-rtl/RRArbiterInit_3.sv /home/eda/xs-env/G0-canonical/golden-rtl/RRArbiterInit_4.sv 
 set impl_srcs $env(FM_IMPL_SRCS)
-/tmp/tmp.cw8tEJBe5V/wt/rtl/memblock/SMSPrefetcher.sv /home/eda/xs-env/G0-canonical/golden-rtl/SMSTrainFilter.sv /home/eda/xs-env/G0-canonical/golden-rtl/ActiveGenerationTable.sv /home/eda/xs-env/G0-canonical/golden-rtl/StridePF.sv /home/eda/xs-env/G0-canonical/golden-rtl/PatternHistoryTable.sv /home/eda/xs-env/G0-canonical/golden-rtl/PrefetchFilter.sv /home/eda/xs-env/G0-canonical/golden-rtl/Arbiter3_PfGenReq.sv /home/eda/xs-env/G0-canonical/golden-rtl/OverrideableQueue.sv /home/eda/xs-env/G0-canonical/golden-rtl/OverrideableQueue_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_134.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistClockGateCell.sv /home/eda/xs-env/G0-canonical/golden-rtl/ClockGate.sv /home/eda/xs-env/G0-canonical/golden-rtl/RRArbiterInit_3.sv /home/eda/xs-env/G0-canonical/golden-rtl/RRArbiterInit_4.sv /tmp/tmp.cw8tEJBe5V/wt/rtl/memblock/SMSPrefetcher_wrapper.sv
+/tmp/tmp.FvuNiRbfki/wt/rtl/memblock/SMSPrefetcher.sv /home/eda/xs-env/G0-canonical/golden-rtl/SMSTrainFilter.sv /home/eda/xs-env/G0-canonical/golden-rtl/ActiveGenerationTable.sv /home/eda/xs-env/G0-canonical/golden-rtl/StridePF.sv /home/eda/xs-env/G0-canonical/golden-rtl/PatternHistoryTable.sv /home/eda/xs-env/G0-canonical/golden-rtl/PrefetchFilter.sv /home/eda/xs-env/G0-canonical/golden-rtl/Arbiter3_PfGenReq.sv /home/eda/xs-env/G0-canonical/golden-rtl/OverrideableQueue.sv /home/eda/xs-env/G0-canonical/golden-rtl/OverrideableQueue_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_134.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistClockGateCell.sv /home/eda/xs-env/G0-canonical/golden-rtl/ClockGate.sv /home/eda/xs-env/G0-canonical/golden-rtl/RRArbiterInit_3.sv /home/eda/xs-env/G0-canonical/golden-rtl/RRArbiterInit_4.sv /tmp/tmp.FvuNiRbfki/wt/rtl/memblock/SMSPrefetcher_wrapper.sv
 # ----------------------------------------------------------------------------
 # Step 3B sidecar emitter(FM_SIDECAR_OUT 非空时启用; 契约 = SIDECAR_SCHEMA.md v7 冻结版):
 # source 后立即对将被 source 的模块本地 Tcl 做**运行期 appvar 拦截**(set_app_var 名字
@@ -109,7 +109,7 @@ if {[info exists env(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS)] &&
 true
 switch -- $_verify_matched_unread_compare_points {
   "true" {
-    if {$top ni {LoadQueueUncache FastArbiter_46 FastArbiter_47 FastArbiter_27 FastArbiter_44 ICacheCtrlUnit ICacheDataArray IPrefetchPipe DivUnit FDivSqrt InstrMMIOEntry InstrUncache TXDAT_4 FAlu FCVT IssueQueueStdMoud MulUnit TXREQ TlbStorageWrapper TlbStorageWrapper_1 IssueQueueStaMou IssueQueueLdu TXDAT Scheduler_1 Scheduler Scheduler_3 MSHR TageBTable Directory SCTable SCTable_1 SCTable_2 SCTable_3 Tage_SC ITTage FauFTB FTBBank FTB Composer EntriesAluCsrFenceDiv Bku SourceB Predictor EntriesAluMulBkuBrhJmp DuplicatedTagArray PtwCache WritebackQueue LinkMonitor Ftq LoadQueue LoadPipe MissQueue IssueQueueAluMulBkuBrhJmp L2TLB Rename IssueQueueAluCsrFenceDiv Scheduler_2 DebugModule WbDataPath IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v Slice LoadQueueReplay NewCSR DCache DataPath SnoopUnit MemUnit RefillUnit ResponseUnit OpenLLC StoreQueue FastArbiter_1 FastArbiter_2 FastArbiter_28 FastArbiter_29 Slice_1 Slice_2 Slice_3 Directory_1 Directory_2 Directory_3 PrefetchReqBuffer RXSNP Prefetcher Pipeline_2 Pipeline_3 FusionDecoder TL2CHICoupledL2 L2Top PrefetchQueue VBestOffsetPrefetch MemCtrl Frontend CSR VLSplitImp VSSplitImp AtomicsUnit VSMergeBufferImp VLMergeBufferImp PTWNewFilter L1Prefetcher SMSPrefetcher VSegmentUnit MemBlock HPerfMonitor_2 FastArbiter_77 FastArbiter_78 FastArbiter_79 TLBNonBlock_1 TLBNonBlock_2 ExuBlock_2}} {
+    if {$top ni {LoadQueueUncache FastArbiter_46 FastArbiter_47 FastArbiter_27 FastArbiter_44 ICacheCtrlUnit ICacheDataArray IPrefetchPipe DivUnit FDivSqrt InstrMMIOEntry InstrUncache TXDAT_4 FAlu FCVT IssueQueueStdMoud MulUnit TXREQ TlbStorageWrapper TlbStorageWrapper_1 IssueQueueStaMou IssueQueueLdu TXDAT Scheduler_1 Scheduler Scheduler_3 MSHR TageBTable Directory SCTable SCTable_1 SCTable_2 SCTable_3 Tage_SC ITTage FauFTB FTBBank FTB Composer EntriesAluCsrFenceDiv Bku SourceB Predictor EntriesAluMulBkuBrhJmp DuplicatedTagArray PtwCache WritebackQueue LinkMonitor Ftq LoadQueue LoadPipe MissQueue IssueQueueAluMulBkuBrhJmp L2TLB Rename IssueQueueAluCsrFenceDiv Scheduler_2 DebugModule WbDataPath IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v Slice LoadQueueReplay NewCSR DCache DataPath SnoopUnit MemUnit RefillUnit ResponseUnit OpenLLC StoreQueue FastArbiter_1 FastArbiter_2 FastArbiter_28 FastArbiter_29 Slice_1 Slice_2 Slice_3 Directory_1 Directory_2 Directory_3 PrefetchReqBuffer RXSNP Prefetcher Pipeline_2 Pipeline_3 FusionDecoder TL2CHICoupledL2 L2Top PrefetchQueue VBestOffsetPrefetch MemCtrl Frontend CSR VLSplitImp VSSplitImp AtomicsUnit VSMergeBufferImp VLMergeBufferImp PTWNewFilter L1Prefetcher SMSPrefetcher VSegmentUnit MemBlock HPerfMonitor_2 FastArbiter_77 FastArbiter_78 FastArbiter_79 TLBNonBlock_1 TLBNonBlock_2 ExuBlock_2 NCB200 NCB200_1}} {
       puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
       exit 3
     }
@@ -205,7 +205,7 @@ Reference design set to 'r:/WORK/SMSPrefetcher'
 # Implementation: 手写 SV
 read_sverilog -i -define {SYNTHESIS} $impl_srcs
 No target library specified, default is WORK
-Loading verilog file '/tmp/tmp.cw8tEJBe5V/wt/rtl/memblock/SMSPrefetcher.sv'
+Loading verilog file '/tmp/tmp.FvuNiRbfki/wt/rtl/memblock/SMSPrefetcher.sv'
 Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/SMSTrainFilter.sv'
 Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/ActiveGenerationTable.sv'
 Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/StridePF.sv'
@@ -219,7 +219,7 @@ Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/MbistClockGateCel
 Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/ClockGate.sv'
 Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/RRArbiterInit_3.sv'
 Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/RRArbiterInit_4.sv'
-Loading verilog file '/tmp/tmp.cw8tEJBe5V/wt/rtl/memblock/SMSPrefetcher_wrapper.sv'
+Loading verilog file '/tmp/tmp.FvuNiRbfki/wt/rtl/memblock/SMSPrefetcher_wrapper.sv'
 Current container set to 'i'
 1
 set_top i:/WORK/$top
@@ -402,7 +402,7 @@ Implementation design is 'i:/WORK/SMSPrefetcher'
 ****************************************************************************************
 
 Status:  Verifying...
-. 0F/0A/0P/8719U (0% Verification completed) 07/28/26 14:40 993MB/  47sec (36.0 hrs until timeout)
+. 0F/0A/0P/8719U (0% Verification completed) 07/30/26 13:24 993MB/  48sec (36.0 hrs until timeout)
 
 
 ********************************* Verification Results *********************************
@@ -423,9 +423,9 @@ if {$SIDECAR_ON} { sidecar_emit $top }
 SIDECAR_NATIVE_FACTS_WRITTEN
 exit
 
-Maximum memory usage for this session: 994 MB
-CPU usage for this session: 52.39 seconds ( 0.01 hours )
-Current time: Tue Jul 28 14:40:21 2026
-Elapsed time: 67 seconds ( 0.02 hours )
+Maximum memory usage for this session: 993 MB
+CPU usage for this session: 54.06 seconds ( 0.02 hours )
+Current time: Thu Jul 30 13:24:45 2026
+Elapsed time: 69 seconds ( 0.02 hours )
 
 Thank you for using Formality (R)!

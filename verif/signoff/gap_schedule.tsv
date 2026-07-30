@@ -84,7 +84,7 @@ SyncDataModuleTemplate__1024entry_1	UNMATCH_COMPARE	nc0/ur0/ui0/bb0
 TL2CHICoupledL2	VMUCP+BB	nc0/ur0/ui0/bb93/CHILD_GAP: native SUCCEEDED 150499p/0f/0(0)unmatched/0unread(vmucp+allow 89 unresolved+4 iface对称golden+grantBeat 4双射), gate PASS; 依赖闭包缺14孙子(Directory_1/2/3,L2Slice_1/2/3,RRArbiterInit_11,Arbiter8_CHIDAT/TLBundleD,PBestOffsetPrefetch,VBestOffsetPrefetch,PrefetchReceiver,MbistPipeL2Prefetcher,Pipeline_1;已在agent/tl2-final签绿待main集成)故ledger保持PROOF_GAP
 TLBFA	IMPL_DEAD	nc22/ur11/ui347/bb0/NONSYM
 TLBFA_1	IMPL_DEAD	nc33/ur11/ui155/bb0/NONSYM
-TLBNonBlock	IMPL_DEAD	nc0/ur12/ui186/bb3
+TLBNonBlock	VMUCP+BB	nc0/ur12/ui0/bb0(两侧elaborate+vmucp+dead_ref PASS_DEAD_REF, tlbnb-gate官方gate RC0; 旧IMPL_DEAD stale)
 TLPLIC	IMPL_DEAD	nc0/ur0/ui4/bb0
 TageTable	IMPL_DEAD	nc0/ur48/ui11/bb13
 TageTable_1	IMPL_DEAD	nc0/ur48/ui11/bb13

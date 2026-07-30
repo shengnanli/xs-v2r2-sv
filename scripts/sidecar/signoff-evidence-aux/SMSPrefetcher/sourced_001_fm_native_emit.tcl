@@ -121,6 +121,59 @@ proc sidecar_source_trace {cmd op} {
     # 不再固定取参数1(那会把 -encoding 记成路径)。(父层 source 仅入口自身使用)
     sidecar_register_script [lindex $cmd end]
 }
+# ---------------- 只读 redirect 兼容 shim(sidecar-pin-compat, codex_0088 §5) ----------------
+# 背景: CtrlBlock/其他用 fm_pins.tcl 的 target 官方 gate 需要
+#   `redirect -variable um_txt {report_unmatched_points}`
+# 把**只读**查询命令的输出捕获进一个 Tcl 变量后按命名规则现场推导 set_user_match。
+# safe interp 未暴露 fm 原生 `redirect` → pin 脚本 `invalid command name "redirect"` 整体
+# rc=1(SIDECAR_FM_RC=1), 阻塞 clean gate。此 shim **仅**提供 redirect 的只读子集:
+#   - `redirect -variable <var> {script}` : script 在 **child interp 内**执行(只见白名单
+#     命令, 如 report_unmatched_points), 输出捕获进 child 的 <var>。纯内存, 不碰文件系统。
+#   - `redirect [-append] <file> {script}` : 仅允许写到证据目录 FM_SIDECAR_OUT 下、以
+#     `pin_redirect_` 为前缀的普通文件名(无路径分隔符/无 .. 穿越), 且**禁**覆盖台账文件
+#     (script_closure.list / sourced_*)。用于把只读报告导到文件。
+# ★安全边界(与四审隔离一致, 绝不放宽修改类能力):
+#   - 被包裹的 <script> 永远在 child safe interp 里 eval → 只能调白名单命令; redirect 本身
+#     不给 pin 任何**新**的证明修改能力(它只捕获既有只读查询的文本)。
+#   - 任何其它 redirect 形式(裸文件写到任意路径 / -channel / -tee / -close / 未知 flag /
+#     写台账 / 路径穿越)一律 fail-closed(error), pin rc 立即失败, 不静默降级。
+proc sidecar_pin_redirect {args} {
+    if {[llength $args] < 2} { error "sidecar redirect: need <target> <script>" }
+    set body [lindex $args end]
+    set head [lrange $args 0 end-1]
+    # 形式 1: -variable <var> {script} —— 纯内存捕获(pin 文件实测唯一用法)
+    if {[lindex $head 0] eq "-variable"} {
+        if {[llength $head] != 2} { error "sidecar redirect -variable: bad form" }
+        set var [lindex $head 1]
+        # <script> 在 child interp 内执行(只见白名单只读命令); 输出即其返回值文本。
+        set out [interp eval $::SIDECAR_PIN_INTERP $body]
+        # 把捕获文本写回 child interp 的调用者变量(redirect 语义: 目标变量存输出)
+        interp eval $::SIDECAR_PIN_INTERP [list set $var $out]
+        return
+    }
+    # 形式 2: [-append] <file> {script} —— 只允许写证据目录下 pin_redirect_ 前缀的只读报告
+    set append 0
+    if {[lindex $head 0] eq "-append"} { set append 1; set head [lrange $head 1 end] }
+    if {[llength $head] != 1} { error "sidecar redirect: unsupported form: $head" }
+    set fname [lindex $head 0]
+    # fail-closed: 禁路径分隔/穿越/台账名; 只允许证据目录内 pin_redirect_* 普通文件
+    if {[string match "*/*" $fname] || [string match "*\\*" $fname] \
+            || [string first ".." $fname] >= 0} {
+        error "sidecar redirect: file must be a bare name under evidence dir (no path)"
+    }
+    if {![string match "pin_redirect_*" $fname]} {
+        error "sidecar redirect: file must be prefixed pin_redirect_ (read-only report)"
+    }
+    if {![info exists ::env(FM_SIDECAR_OUT)] || $::env(FM_SIDECAR_OUT) eq ""} {
+        error "sidecar redirect: no evidence dir (FM_SIDECAR_OUT unset)"
+    }
+    set out [interp eval $::SIDECAR_PIN_INTERP $body]
+    set fh [open [file join $::env(FM_SIDECAR_OUT) $fname] [expr {$append ? "a" : "w"}]]
+    puts $fh $out
+    close $fh
+    return
+}
+
 # ---------------- 四审: pin/custom Tcl 进受限 child interpreter ----------------
 # 同解释器执行被裁定可拆除 guard(set ::SIDECAR_PHASE / trace remove)并覆盖快照。
 # 现 pin 代码在 **safe child interp** 中执行: 无 file/open/exec/source 权限, 拿不到
@@ -144,6 +197,8 @@ proc sidecar_pin_source {path} {
             }
         }
         interp alias $::SIDECAR_PIN_INTERP source {} sidecar_pin_source
+        # 只读 redirect 兼容(见 sidecar_pin_redirect): 只捕获只读查询输出, 不给新修改能力。
+        interp alias $::SIDECAR_PIN_INTERP redirect {} sidecar_pin_redirect
         # pin 代码引用的只读上下文变量(top 等); 只传值, 不给父层命名空间访问权
         if {[uplevel #0 {info exists top}]} {
             interp eval $::SIDECAR_PIN_INTERP [list set top [uplevel #0 {set top}]]

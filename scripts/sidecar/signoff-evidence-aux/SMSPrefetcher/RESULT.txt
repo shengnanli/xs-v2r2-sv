@@ -1,5 +1,4 @@
 SIGNOFF_RESULT SMSPrefetcher: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=assembly fm_shell_rc=0 validator_rc=0)
-run_id: SGN-SMSPrefetcher-1785263951
-impl_commit: f0b0067129d1b985adccdf2b51912705ed1864e7
-manifest_sha256: 0e5865dab1e74a5626250fe175406a24d80f2189bdf2f5c7babddb7699bc8951
-CLEAN_GATE_FAIL
+run_id: SGN-SMSPrefetcher-1785432212
+impl_commit: cb51d5e354cbe1aa270d12b5daf06c6a236df762
+manifest_sha256: 5c31be635631cb58b4aeb6484b60a69152a01ce220bcd7a995136dfbd700f82d
