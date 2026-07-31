@@ -9,6 +9,31 @@ set ref_srcs  $env(FM_REF_SRCS)
 set impl_srcs $env(FM_IMPL_SRCS)
 
 # ----------------------------------------------------------------------------
+# 目标级语义面包装(codex_0092 §1 选项 B; canonical_derivative 专用, runner 硬绑):
+# 当 runner 从 committed+hash 校验的 ledger 置入这三个 env 时, FM 顶层换成语义面
+# 包装模块(两侧同名 StorePipe_surface): 它只再导出 36 个源定义输出 + 23 输入, 把 14
+# 个源 FIRRTL invalidate-only(未定义)输出叶留作内部悬空 net → 真正退出观测面(既非
+# dont_verify 也非 0 填充也非通用排除)。ref/impl 各追加自己那侧的包装 .sv, 顶层改为
+# semantic_surface_top。包装 .sv 字节由 runner 逐一 hash 校验(见 run_signoff_target.sh),
+# 无 env 路径覆盖; 这不是通用"任意换顶层"钩子, 只服务 canonical_derivative 语义面。
+if {[info exists env(FM_SEMANTIC_SURFACE_TOP)] &&
+    [string trim $env(FM_SEMANTIC_SURFACE_TOP)] ne ""} {
+    if {![info exists env(FM_SEMANTIC_SURFACE_REF_SV)] ||
+        ![info exists env(FM_SEMANTIC_SURFACE_IMPL_SV)] ||
+        ![file exists $env(FM_SEMANTIC_SURFACE_REF_SV)] ||
+        ![file exists $env(FM_SEMANTIC_SURFACE_IMPL_SV)]} {
+        puts "FM_MODE_ERROR: FM_SEMANTIC_SURFACE_TOP set without both wrapper .sv"
+        exit 3
+    }
+    set top $env(FM_SEMANTIC_SURFACE_TOP)
+    lappend ref_srcs  $env(FM_SEMANTIC_SURFACE_REF_SV)
+    lappend impl_srcs $env(FM_SEMANTIC_SURFACE_IMPL_SV)
+    # reports are written under fm_work/$top; the Makefile only created the work
+    # dir for the target name, so ensure the surface-top report dir exists too.
+    file mkdir fm_work/$top
+}
+
+# ----------------------------------------------------------------------------
 # Step 3B sidecar emitter(FM_SIDECAR_OUT 非空时启用; 契约 = SIDECAR_SCHEMA.md v7 冻结版):
 # source 后立即对将被 source 的模块本地 Tcl 做**运行期 appvar 拦截**(set_app_var 名字
 # 不在注册表 → exit 3, 拒产 native facts)。
@@ -62,7 +87,31 @@ switch -- $_fmmode {
 # emitter 于全部 pin/custom Tcl 执行后、verify 前逐项 get_app_var 读回有效值)。
 # 后三项 true 即工具默认(man cat3 逐页核对), 显式钉死防版本漂移。
 set_app_var verification_verify_unread_compare_points false
-set_app_var verification_verify_matched_unread_compare_points false
+# LoadQueueUncache target-scoped strengthening: verify matched unread compare
+# points instead of accepting them as Not-Compared.  The signoff runner obtains
+# this value from the committed declaration/manifest and binds it into input
+# provenance.  It is deliberately not a waiver: true asks FM to prove *more*.
+set _verify_matched_unread_compare_points "false"
+if {[info exists env(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS)] &&
+    [string trim $env(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS)] ne ""} {
+    set _verify_matched_unread_compare_points \
+        [string trim $env(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS)]
+}
+switch -- $_verify_matched_unread_compare_points {
+  "true" {
+    if {$top ni {LoadQueueUncache FastArbiter_46 FastArbiter_47 FastArbiter_27 FastArbiter_44 ICacheCtrlUnit ICacheDataArray IPrefetchPipe DivUnit FDivSqrt InstrMMIOEntry InstrUncache TXDAT_4 FAlu FCVT IssueQueueStdMoud MulUnit TXREQ TlbStorageWrapper TlbStorageWrapper_1 IssueQueueStaMou IssueQueueLdu TXDAT Scheduler_1 Scheduler Scheduler_3 MSHR TageBTable Directory SCTable SCTable_1 SCTable_2 SCTable_3 Tage_SC ITTage FauFTB FTBBank FTB Composer EntriesAluCsrFenceDiv Bku SourceB Predictor EntriesAluMulBkuBrhJmp DuplicatedTagArray PtwCache WritebackQueue LinkMonitor Ftq LoadQueue LoadPipe MissQueue IssueQueueAluMulBkuBrhJmp L2TLB Rename IssueQueueAluCsrFenceDiv Scheduler_2 DebugModule WbDataPath IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v Slice LoadQueueReplay NewCSR DCache DataPath SnoopUnit MemUnit RefillUnit ResponseUnit OpenLLC StoreQueue FastArbiter_1 FastArbiter_2 FastArbiter_28 FastArbiter_29 Slice_1 Slice_2 Slice_3 Directory_1 Directory_2 Directory_3 PrefetchReqBuffer RXSNP Prefetcher Pipeline_2 Pipeline_3 FusionDecoder TL2CHICoupledL2 L2Top PrefetchQueue VBestOffsetPrefetch MemCtrl Frontend CSR VLSplitImp VSSplitImp AtomicsUnit VSMergeBufferImp VLMergeBufferImp PTWNewFilter L1Prefetcher SMSPrefetcher VSegmentUnit MemBlock HPerfMonitor_2 FastArbiter_77 FastArbiter_78 FastArbiter_79 TLBNonBlock_1 TLBNonBlock_2 ExuBlock_2 NCB200 NCB200_1 TLBNonBlock BankedDataArray StorePipe StorePipe_surface RenameBuffer}} {
+      puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
+      exit 3
+    }
+  }
+  "false" { }
+  default {
+    puts "FM_MODE_ERROR: FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS 非法值 $_verify_matched_unread_compare_points"
+    exit 3
+  }
+}
+set_app_var verification_verify_matched_unread_compare_points \
+    $_verify_matched_unread_compare_points
 set_app_var verification_verify_unread_bbox_inputs false
 set_app_var verification_verify_matched_unread_bbox_inputs true
 set_app_var verification_verify_unread_tech_cell_pins true

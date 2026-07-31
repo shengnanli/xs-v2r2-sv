@@ -21,11 +21,11 @@
 
 Build: 8868332
 Hostname: localhost.localdomain
-Current time: Mon Jul 20 14:00:29 2026
+Current time: Fri Jul 31 15:45:57 2026
 
 Loading db file '/home/eda/app/synopsys/fm/V-2023.12-SP3/libraries/syn/gtech.db'
 
-Script: /tmp/tmp.lc6zpi3bDL/wt/scripts/fm_eq.tcl
+Script: /tmp/tmp.xazTlMfoDA/wt/scripts/fm_eq.tcl
 
 Information: Term was not able to be set up using xterm-256color . Using "xterm" by default instead. (CLE-10)
 # Formality 等价性检查通用脚本
@@ -36,9 +36,33 @@ Information: Term was not able to be set up using xterm-256color . Using "xterm"
 set top       $env(FM_TOP)
 RenameBuffer
 set ref_srcs  $env(FM_REF_SRCS)
-/home/eda/xs-env/G0-canonical/golden-rtl/RenameBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/SnapshotGenerator.sv
+/home/eda/xs-env/G0-canonical/golden-rtl/RenameBuffer.sv /home/eda/xs-env/G0-canonical/golden-rtl/SnapshotGenerator.sv 
 set impl_srcs $env(FM_IMPL_SRCS)
-/tmp/tmp.lc6zpi3bDL/wt/rtl/backend/renamebuffer_pkg.sv /tmp/tmp.lc6zpi3bDL/wt/rtl/backend/RenameBuffer.sv /tmp/tmp.lc6zpi3bDL/wt/rtl/backend/RenameBuffer_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/SnapshotGenerator.sv
+/tmp/tmp.xazTlMfoDA/wt/rtl/backend/renamebuffer_pkg.sv /tmp/tmp.xazTlMfoDA/wt/rtl/backend/RenameBuffer.sv /tmp/tmp.xazTlMfoDA/wt/rtl/backend/RenameBuffer_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/SnapshotGenerator.sv
+# ----------------------------------------------------------------------------
+# 目标级语义面包装(codex_0092 §1 选项 B; canonical_derivative 专用, runner 硬绑):
+# 当 runner 从 committed+hash 校验的 ledger 置入这三个 env 时, FM 顶层换成语义面
+# 包装模块(两侧同名 StorePipe_surface): 它只再导出 36 个源定义输出 + 23 输入, 把 14
+# 个源 FIRRTL invalidate-only(未定义)输出叶留作内部悬空 net → 真正退出观测面(既非
+# dont_verify 也非 0 填充也非通用排除)。ref/impl 各追加自己那侧的包装 .sv, 顶层改为
+# semantic_surface_top。包装 .sv 字节由 runner 逐一 hash 校验(见 run_signoff_target.sh),
+# 无 env 路径覆盖; 这不是通用"任意换顶层"钩子, 只服务 canonical_derivative 语义面。
+if {[info exists env(FM_SEMANTIC_SURFACE_TOP)] &&
+    [string trim $env(FM_SEMANTIC_SURFACE_TOP)] ne ""} {
+    if {![info exists env(FM_SEMANTIC_SURFACE_REF_SV)] ||
+        ![info exists env(FM_SEMANTIC_SURFACE_IMPL_SV)] ||
+        ![file exists $env(FM_SEMANTIC_SURFACE_REF_SV)] ||
+        ![file exists $env(FM_SEMANTIC_SURFACE_IMPL_SV)]} {
+        puts "FM_MODE_ERROR: FM_SEMANTIC_SURFACE_TOP set without both wrapper .sv"
+        exit 3
+    }
+    set top $env(FM_SEMANTIC_SURFACE_TOP)
+    lappend ref_srcs  $env(FM_SEMANTIC_SURFACE_REF_SV)
+    lappend impl_srcs $env(FM_SEMANTIC_SURFACE_IMPL_SV)
+    # reports are written under fm_work/$top; the Makefile only created the work
+    # dir for the target name, so ensure the surface-top report dir exists too.
+    file mkdir fm_work/$top
+}
 # ----------------------------------------------------------------------------
 # Step 3B sidecar emitter(FM_SIDECAR_OUT 非空时启用; 契约 = SIDECAR_SCHEMA.md v7 冻结版):
 # source 后立即对将被 source 的模块本地 Tcl 做**运行期 appvar 拦截**(set_app_var 名字
@@ -95,8 +119,34 @@ switch -- $_fmmode {
 # 后三项 true 即工具默认(man cat3 逐页核对), 显式钉死防版本漂移。
 set_app_var verification_verify_unread_compare_points false
 false
-set_app_var verification_verify_matched_unread_compare_points false
+# LoadQueueUncache target-scoped strengthening: verify matched unread compare
+# points instead of accepting them as Not-Compared.  The signoff runner obtains
+# this value from the committed declaration/manifest and binds it into input
+# provenance.  It is deliberately not a waiver: true asks FM to prove *more*.
+set _verify_matched_unread_compare_points "false"
 false
+if {[info exists env(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS)] &&
+    [string trim $env(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS)] ne ""} {
+    set _verify_matched_unread_compare_points \
+        [string trim $env(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS)]
+}
+true
+switch -- $_verify_matched_unread_compare_points {
+  "true" {
+    if {$top ni {LoadQueueUncache FastArbiter_46 FastArbiter_47 FastArbiter_27 FastArbiter_44 ICacheCtrlUnit ICacheDataArray IPrefetchPipe DivUnit FDivSqrt InstrMMIOEntry InstrUncache TXDAT_4 FAlu FCVT IssueQueueStdMoud MulUnit TXREQ TlbStorageWrapper TlbStorageWrapper_1 IssueQueueStaMou IssueQueueLdu TXDAT Scheduler_1 Scheduler Scheduler_3 MSHR TageBTable Directory SCTable SCTable_1 SCTable_2 SCTable_3 Tage_SC ITTage FauFTB FTBBank FTB Composer EntriesAluCsrFenceDiv Bku SourceB Predictor EntriesAluMulBkuBrhJmp DuplicatedTagArray PtwCache WritebackQueue LinkMonitor Ftq LoadQueue LoadPipe MissQueue IssueQueueAluMulBkuBrhJmp L2TLB Rename IssueQueueAluCsrFenceDiv Scheduler_2 DebugModule WbDataPath IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v Slice LoadQueueReplay NewCSR DCache DataPath SnoopUnit MemUnit RefillUnit ResponseUnit OpenLLC StoreQueue FastArbiter_1 FastArbiter_2 FastArbiter_28 FastArbiter_29 Slice_1 Slice_2 Slice_3 Directory_1 Directory_2 Directory_3 PrefetchReqBuffer RXSNP Prefetcher Pipeline_2 Pipeline_3 FusionDecoder TL2CHICoupledL2 L2Top PrefetchQueue VBestOffsetPrefetch MemCtrl Frontend CSR VLSplitImp VSSplitImp AtomicsUnit VSMergeBufferImp VLMergeBufferImp PTWNewFilter L1Prefetcher SMSPrefetcher VSegmentUnit MemBlock HPerfMonitor_2 FastArbiter_77 FastArbiter_78 FastArbiter_79 TLBNonBlock_1 TLBNonBlock_2 ExuBlock_2 NCB200 NCB200_1 TLBNonBlock BankedDataArray StorePipe StorePipe_surface RenameBuffer}} {
+      puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
+      exit 3
+    }
+  }
+  "false" { }
+  default {
+    puts "FM_MODE_ERROR: FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS 非法值 $_verify_matched_unread_compare_points"
+    exit 3
+  }
+}
+set_app_var verification_verify_matched_unread_compare_points \
+    $_verify_matched_unread_compare_points
+true
 set_app_var verification_verify_unread_bbox_inputs false
 false
 set_app_var verification_verify_matched_unread_bbox_inputs true
@@ -147,9 +197,9 @@ Reference design set to 'r:/WORK/RenameBuffer'
 # Implementation: 手写 SV
 read_sverilog -i -define {SYNTHESIS} $impl_srcs
 No target library specified, default is WORK
-Loading verilog file '/tmp/tmp.lc6zpi3bDL/wt/rtl/backend/renamebuffer_pkg.sv'
-Loading verilog file '/tmp/tmp.lc6zpi3bDL/wt/rtl/backend/RenameBuffer.sv'
-Loading verilog file '/tmp/tmp.lc6zpi3bDL/wt/rtl/backend/RenameBuffer_wrapper.sv'
+Loading verilog file '/tmp/tmp.xazTlMfoDA/wt/rtl/backend/renamebuffer_pkg.sv'
+Loading verilog file '/tmp/tmp.xazTlMfoDA/wt/rtl/backend/RenameBuffer.sv'
+Loading verilog file '/tmp/tmp.xazTlMfoDA/wt/rtl/backend/RenameBuffer_wrapper.sv'
 Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/SnapshotGenerator.sv'
 Current container set to 'i'
 1
@@ -157,11 +207,11 @@ set_top i:/WORK/$top
 Setting top design to 'i:/WORK/RenameBuffer'
 Status:   Elaborating design RenameBuffer   ...  
 Status:   Elaborating design xs_RenameBuffer_core   ...  
-Warning: Signed to unsigned assignment occurs. (File: /tmp/tmp.lc6zpi3bDL/wt/rtl/backend/RenameBuffer.sv Line: 410)  (FMR_VLOG-063)
-Warning: Signed to unsigned assignment occurs. (File: /tmp/tmp.lc6zpi3bDL/wt/rtl/backend/RenameBuffer.sv Line: 411)  (FMR_VLOG-063)
-Warning: Signed to unsigned assignment occurs. (File: /tmp/tmp.lc6zpi3bDL/wt/rtl/backend/RenameBuffer.sv Line: 412)  (FMR_VLOG-063)
-Warning: Signed to unsigned assignment occurs. (File: /tmp/tmp.lc6zpi3bDL/wt/rtl/backend/RenameBuffer.sv Line: 413)  (FMR_VLOG-063)
-Warning: Signed to unsigned assignment occurs. (File: /tmp/tmp.lc6zpi3bDL/wt/rtl/backend/RenameBuffer.sv Line: 414)  (FMR_VLOG-063)
+Warning: Signed to unsigned assignment occurs. (File: /tmp/tmp.xazTlMfoDA/wt/rtl/backend/RenameBuffer.sv Line: 421)  (FMR_VLOG-063)
+Warning: Signed to unsigned assignment occurs. (File: /tmp/tmp.xazTlMfoDA/wt/rtl/backend/RenameBuffer.sv Line: 422)  (FMR_VLOG-063)
+Warning: Signed to unsigned assignment occurs. (File: /tmp/tmp.xazTlMfoDA/wt/rtl/backend/RenameBuffer.sv Line: 423)  (FMR_VLOG-063)
+Warning: Signed to unsigned assignment occurs. (File: /tmp/tmp.xazTlMfoDA/wt/rtl/backend/RenameBuffer.sv Line: 424)  (FMR_VLOG-063)
+Warning: Signed to unsigned assignment occurs. (File: /tmp/tmp.xazTlMfoDA/wt/rtl/backend/RenameBuffer.sv Line: 425)  (FMR_VLOG-063)
 Status:   Elaborating design SnapshotGenerator   ...  
 Status:  Implementing inferred operators...
 Top design set to 'i:/WORK/RenameBuffer' with warnings
@@ -218,7 +268,7 @@ Status:  Matching...
  156 Matched primary inputs, black-box outputs    
  0(0) Unmatched reference(implementation) compare points    
  0(0) Unmatched reference(implementation) primary inputs, black-box outputs    
- 7(8) Unmatched reference(implementation) unread points    
+ 7(7) Unmatched reference(implementation) unread points    
 ****************************************************************************************
 
     Info:  Formality Guide Files (SVF) can improve matching performance and success by automating setup.
@@ -298,6 +348,44 @@ if {[info exists env(FM_PIN_TCL)] && [file exists $env(FM_PIN_TCL)]} {
     if {$SIDECAR_ON} { sidecar_pin_source $env(FM_PIN_TCL) } else { source $env(FM_PIN_TCL) }
     match
 }
+Set a match between the following objects:
+	r:/WORK/RenameBuffer/diffPtr_flag_reg
+    (?) i:/WORK/RenameBuffer/u_core/diff_ptr_reg\[flag]
+Set a match between the following objects:
+	r:/WORK/RenameBuffer/io_toVecExcpMod_logicPhyRegMap_0_bits_preg_r_reg[7]
+    (?) i:/WORK/RenameBuffer/u_core/io_toVecExcpMod_preg_reg[0][7]
+Set a match between the following objects:
+	r:/WORK/RenameBuffer/io_toVecExcpMod_logicPhyRegMap_1_bits_preg_r_reg[7]
+    (?) i:/WORK/RenameBuffer/u_core/io_toVecExcpMod_preg_reg[1][7]
+Set a match between the following objects:
+	r:/WORK/RenameBuffer/io_toVecExcpMod_logicPhyRegMap_2_bits_preg_r_reg[7]
+    (?) i:/WORK/RenameBuffer/u_core/io_toVecExcpMod_preg_reg[2][7]
+Set a match between the following objects:
+	r:/WORK/RenameBuffer/io_toVecExcpMod_logicPhyRegMap_3_bits_preg_r_reg[7]
+    (?) i:/WORK/RenameBuffer/u_core/io_toVecExcpMod_preg_reg[3][7]
+Set a match between the following objects:
+	r:/WORK/RenameBuffer/io_toVecExcpMod_logicPhyRegMap_4_bits_preg_r_reg[7]
+    (?) i:/WORK/RenameBuffer/u_core/io_toVecExcpMod_preg_reg[4][7]
+Set a match between the following objects:
+	r:/WORK/RenameBuffer/io_toVecExcpMod_logicPhyRegMap_5_bits_preg_r_reg[7]
+    (?) i:/WORK/RenameBuffer/u_core/io_toVecExcpMod_preg_reg[5][7]
+RENAMEBUFFER_PINS: 7 matched-unread bijection points pinned (1 diffPtr_flag + 6 preg_r[7])
+Reference design is 'r:/WORK/RenameBuffer'
+Implementation design is 'i:/WORK/RenameBuffer'
+Status:  Matching...
+    
+*********************************** Matching Results ***********************************    
+ 10927 Compare points matched previously    
+ 7 Compare points matched by user    
+ 0 Compare points matched by name    
+ 0 Compare points matched by signature analysis    
+ 0 Compare points matched by topology    
+ 156 Matched primary inputs, black-box outputs    
+ 0(0) Unmatched reference(implementation) compare points    
+ 0(0) Unmatched reference(implementation) primary inputs, black-box outputs    
+****************************************************************************************
+
+1
 report_unmatched_points > fm_work/$top/unmatched.rpt
 report_matched_points > fm_work/$top/matched.rpt
 # sidecar: appvar 有效值读回——全部 pin/custom Tcl 之后、verify 之前(schema v7 契约)
@@ -312,17 +400,19 @@ Reference design is 'r:/WORK/RenameBuffer'
 Implementation design is 'i:/WORK/RenameBuffer'
     
 *********************************** Matching Results ***********************************    
- 10526 Compare points matched by name    
- 401 Compare points matched by signature analysis    
+ 10927 Compare points matched previously    
+ 7 Compare points matched by user    
+ 0 Compare points matched by name    
+ 0 Compare points matched by signature analysis    
  0 Compare points matched by topology    
  156 Matched primary inputs, black-box outputs    
  0(0) Unmatched reference(implementation) compare points    
  0(0) Unmatched reference(implementation) primary inputs, black-box outputs    
- 7(8) Unmatched reference(implementation) unread points    
 ****************************************************************************************
 
 Status:  Verifying...
-...
+............. 0F/0A/10934P/0U (100% Verification completed) 07/31/26 16:30 3482MB/2646sec (35.8 hrs until timeout)
+
 
 
 ********************************* Verification Results *********************************
@@ -330,27 +420,22 @@ Verification SUCCEEDED
 ----------------------
  Reference design: r:/WORK/RenameBuffer
  Implementation design: i:/WORK/RenameBuffer
- 10927 Passing compare points
+ 10934 Passing compare points
 ----------------------------------------------------------------------------------------
 Matched Compare Points     BBPin    Loop   BBNet     Cut    Port     DFF     LAT   TOTAL
 ----------------------------------------------------------------------------------------
-Passing (equivalent)           0       0       0       0    5322    5605       0   10927
+Passing (equivalent)           0       0       0       0    5322    5612       0   10934
 Failing (not equivalent)       0       0       0       0       0       0       0       0
 ****************************************************************************************
 FM_RESULT: Verification SUCCEEDED for RenameBuffer
 # sidecar: 全查询→内存解析→原子写 native_facts.json(任何错误删 tmp 并 exit 4)
 if {$SIDECAR_ON} { sidecar_emit $top }
+SIDECAR_NATIVE_FACTS_WRITTEN
+exit
 
--------- SIGTERM INFO --------
-Signal Number   = '15'
-Signal Code     = '0'
-Signal ErrNo    = '0'
-Sender PID      = '3095330'
-Real Sender UID = '1000'
--------- ------------ --------
-timeout
--------- ------------ --------
+Maximum memory usage for this session: 3483 MB
+CPU usage for this session: 2659.91 seconds ( 0.74 hours )
+Current time: Fri Jul 31 16:30:43 2026
+Elapsed time: 2690 seconds ( 0.75 hours )
 
-
-Process terminated by kill.
-
+Thank you for using Formality (R)!

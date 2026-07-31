@@ -1,3 +1,4 @@
-TARGET RenameBuffer: TIMEOUT (required=SUCCEEDED make_rc=124 fm_shell_rc=NA) [SIGNOFF FAIL-CLOSED]
-      puts "FM_MODE_ERROR: $_fmmode 拒绝 FM_INTERFACE_ONLY(assembly 专用手段)"
-    puts "FM_MODE_ERROR: 未知 FM_MODE=$_fmmode"
+SIGNOFF_RESULT RenameBuffer: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=signoff-strict fm_shell_rc=0 validator_rc=0)
+run_id: SGN-RenameBuffer-1785527149
+impl_commit: 47209de91ec468a06fe5e7e31af81d387e06de34
+manifest_sha256: c360c8f88d63b7298eba0caea4b5762019a788ea63511712215b26d748a7732e
