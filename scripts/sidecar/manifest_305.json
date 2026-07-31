@@ -3909,7 +3909,7 @@
    "required_verdict": "SUCCEEDED",
    "allow_ref": "",
    "rationale": "G0-StorePipe-observable-v1 canonical derivative (pre-DCE observable reference from frozen SimTop.fir; firtool-1.62.1) replaces the DCE-collapsed 5-line golden shell so the FM proof is non-vacuous. Target-scoped semantic-surface WRAPPER (codex_0092 §1 opt B): two per-side StorePipe_surface wrappers re-export only 36 source-defined outputs + 23 inputs and leave 14 source-UNSPECIFIED (invalidate-only) output leaves OFF the compare surface (source-derived by derive_surface.py, hash-bound in the ledger; NOT dont_verify, NOT 0-fill, NOT a generic knob). 36 defined outputs compared. vmucp promotion is a separate integrator decision.",
-   "verify_matched_unread_compare_points": "false",
+   "verify_matched_unread_compare_points": "true",
    "dead_ref": "",
    "reference_kind": "canonical_derivative",
    "derivative_id": "G0-StorePipe-observable-v1",
