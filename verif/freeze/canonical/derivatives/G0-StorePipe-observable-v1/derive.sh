@@ -43,7 +43,18 @@ CANONICAL_BASELINE_ID="G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd
 EXPECT_SIMTOP_SHA="73b0a83256ffbd9486bacfaa909c6d3aeec2d10ac81ee624bd18ae32106ab967"
 EXPECT_FIRTOOL_SHA="7f52d2a3782d09736895f66e7eb0e5cc4b3b1b18aa1ad0d04fca4cd6e42cd2ee"
 # The firtool argv used to lower the standalone circuit (recorded verbatim).
-FIRTOOL_ARGV=(--format=fir)
+# --lowering-options=disallowLocalVariables: hoist FIRRTL `node`s that firtool
+# would otherwise emit as `automatic logic` locals INSIDE the clocked always
+# block (s1_tag_match_T_*/r_c_cat_T_*/_r_T/_GEN_5/s1_hit_meta_coh_state) up to
+# module-level combinational wires.  Without this flag FM (read_sverilog)
+# REIFIES those clocked-block automatic locals as shadow DFFs (24 spurious
+# *_reg cone-dead registers) that exist in neither the source nor the readable
+# impl core (which is already lowered with these G0 flags -> 11 real DFFs, 0
+# shadow).  With the flag the derivative's register set is exactly the 11 real
+# pipeline registers, matching the impl; the only residual matched-unread is the
+# 6 genuine s2_paddr byte-offset dead bits (block-addr uses s2_paddr[47:6]).
+# IO port surface is byte-identical with/without the flag (verified).
+FIRTOOL_ARGV=(--format=fir --lowering-options=disallowLocalVariables)
 
 mkdir -p "$OUTDIR"
 

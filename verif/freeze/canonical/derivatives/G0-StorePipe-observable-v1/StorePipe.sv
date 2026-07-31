@@ -126,28 +126,87 @@ module StorePipe(	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dca
   output         io_error_bits_report_to_beu	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:60:14
 );
 
-  wire        io_lsu_req_ready_0 = io_meta_read_ready & io_tag_read_ready;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:103:42
-  wire        _GEN = io_lsu_req_valid & ~io_lsu_req_ready_0;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:103:42, :106:{59,62}
-  reg         s1_valid;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:115:25
-  reg  [4:0]  s1_req_cmd;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
-  reg  [49:0] s1_req_vaddr;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
-  reg  [3:0]  s1_req_instrtype;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
-  reg         s2_valid_REG;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:149:25
-  reg         s2_valid_REG_1;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:149:46
-  wire        s2_valid = s2_valid_REG & s2_valid_REG_1;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:149:{25,36,46}
-  reg  [49:0] s2_req_vaddr;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:150:25
-  reg         s2_hit;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:152:25
-  reg  [47:0] s2_paddr;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:153:27
-  reg  [1:0]  s2_hit_coh_state;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:154:29
-  reg         s2_is_prefetch;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:155:33
-  wire        io_miss_req_valid_0 = s2_valid & ~s2_hit & s2_is_prefetch;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:149:36, :152:25, :155:33, :158:28, :172:46
-  wire        _GEN_0 = s2_valid & ~io_lsu_s2_kill;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:149:36, :192:{43,46}
-  wire        _GEN_1 = s2_valid & s2_hit & ~io_lsu_s2_kill;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:149:36, :152:25, :192:46, :193:52
-  wire        _GEN_2 = s2_valid & ~s2_hit & ~io_lsu_s2_kill;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:149:36, :152:25, :158:28, :192:46, :194:52
-  wire        _GEN_3 = io_miss_req_ready & io_miss_req_valid_0 & ~io_lsu_s2_kill;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:172:46, :192:46, :195:65
-  wire        _GEN_4 = io_miss_req_valid_0 & ~io_miss_req_ready & ~io_lsu_s2_kill;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:172:46, :192:46, :196:{73,92}
+  wire             io_lsu_req_ready_0 = io_meta_read_ready & io_tag_read_ready;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:103:42
+  wire             _GEN = io_lsu_req_valid & ~io_lsu_req_ready_0;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:103:42, :106:{59,62}
+  reg              s1_valid;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:115:25
+  reg  [4:0]       s1_req_cmd;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
+  reg  [49:0]      s1_req_vaddr;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
+  reg  [3:0]       s1_req_instrtype;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
+  reg              s2_valid_REG;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:149:25
+  reg              s2_valid_REG_1;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:149:46
+  wire             s2_valid = s2_valid_REG & s2_valid_REG_1;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:149:{25,36,46}
+  reg  [49:0]      s2_req_vaddr;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:150:25
+  reg              s2_hit;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:152:25
+  reg  [47:0]      s2_paddr;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:153:27
+  reg  [1:0]       s2_hit_coh_state;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:154:29
+  reg              s2_is_prefetch;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:155:33
+  wire             io_miss_req_valid_0 = s2_valid & ~s2_hit & s2_is_prefetch;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:149:36, :152:25, :155:33, :158:28, :172:46
+  wire             _GEN_0 = s2_valid & ~io_lsu_s2_kill;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:149:36, :192:{43,46}
+  wire             _GEN_1 = s2_valid & s2_hit & ~io_lsu_s2_kill;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:149:36, :152:25, :192:46, :193:52
+  wire             _GEN_2 = s2_valid & ~s2_hit & ~io_lsu_s2_kill;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:149:36, :152:25, :158:28, :192:46, :194:52
+  wire             _GEN_3 = io_miss_req_ready & io_miss_req_valid_0 & ~io_lsu_s2_kill;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:172:46, :192:46, :195:65
+  wire             _GEN_4 = io_miss_req_valid_0 & ~io_miss_req_ready & ~io_lsu_s2_kill;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:172:46, :192:46, :196:{73,92}
+  wire             _s1_tag_match_T_3 =
+    io_tag_resp_0[35:0] == io_lsu_s1_paddr[47:12] & (|io_meta_resp_0_coh_state);	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/tilelink/Metadata.scala:50:45, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/L1Cache.scala:81:41, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:119:48, :127:{62,84}
+  wire             _s1_tag_match_T_7 =
+    io_tag_resp_1[35:0] == io_lsu_s1_paddr[47:12] & (|io_meta_resp_1_coh_state);	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/tilelink/Metadata.scala:50:45, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/L1Cache.scala:81:41, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:119:48, :127:{62,84}
+  wire             _s1_tag_match_T_11 =
+    io_tag_resp_2[35:0] == io_lsu_s1_paddr[47:12] & (|io_meta_resp_2_coh_state);	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/tilelink/Metadata.scala:50:45, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/L1Cache.scala:81:41, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:119:48, :127:{62,84}
+  wire             _s1_tag_match_T_15 =
+    io_tag_resp_3[35:0] == io_lsu_s1_paddr[47:12] & (|io_meta_resp_3_coh_state);	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/tilelink/Metadata.scala:50:45, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/L1Cache.scala:81:41, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:119:48, :127:{62,84}
+  wire [3:0]       s1_tag_match =
+    {_s1_tag_match_T_15, _s1_tag_match_T_11, _s1_tag_match_T_7, _s1_tag_match_T_3};	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:127:{84,123}
+  wire [1:0]       s1_hit_meta_coh_state =
+    (|s1_tag_match)
+      ? (_s1_tag_match_T_3 ? io_meta_resp_0_coh_state : 2'h0)
+        | (_s1_tag_match_T_7 ? io_meta_resp_1_coh_state : 2'h0)
+        | (_s1_tag_match_T_11 ? io_meta_resp_2_coh_state : 2'h0)
+        | (_s1_tag_match_T_15 ? io_meta_resp_3_coh_state : 2'h0)
+      : 2'h0;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/tilelink/Metadata.scala:50:45, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:127:{84,123}, :130:{24,38}, src/main/scala/chisel3/util/Mux.scala:30:73
+  wire             _r_c_cat_T_29 = s1_req_cmd == 5'h1;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/rocket/Consts.scala:91:32, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
+  wire             _r_c_cat_T_30 = s1_req_cmd == 5'h11;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/rocket/Consts.scala:91:49, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
+  wire             _r_c_cat_T_32 = s1_req_cmd == 5'h7;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/rocket/Consts.scala:91:66, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
+  wire             _r_c_cat_T_34 = s1_req_cmd == 5'h4;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/package.scala:16:47, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
+  wire             _r_c_cat_T_35 = s1_req_cmd == 5'h9;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/package.scala:16:47, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
+  wire             _r_c_cat_T_36 = s1_req_cmd == 5'hA;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/package.scala:16:47, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
+  wire             _r_c_cat_T_37 = s1_req_cmd == 5'hB;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/package.scala:16:47, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
+  wire             _r_c_cat_T_41 = s1_req_cmd == 5'h8;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/package.scala:16:47, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
+  wire             _r_c_cat_T_42 = s1_req_cmd == 5'hC;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/package.scala:16:47, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
+  wire             _r_c_cat_T_43 = s1_req_cmd == 5'hD;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/package.scala:16:47, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
+  wire             _r_c_cat_T_44 = s1_req_cmd == 5'hE;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/package.scala:16:47, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
+  wire             _r_c_cat_T_45 = s1_req_cmd == 5'hF;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/package.scala:16:47, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
+  wire             _r_c_cat_T_51 = s1_req_cmd == 5'h1A;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/rocket/Consts.scala:86:33, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
+  wire             _r_c_cat_T_52 = s1_req_cmd == 5'h1B;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/rocket/Consts.scala:86:54, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
+  wire             _r_c_cat_T_54 = s1_req_cmd == 5'h18;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/rocket/Consts.scala:86:75, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
+  wire [3:0]       _r_T =
+    {_r_c_cat_T_29 | _r_c_cat_T_30 | _r_c_cat_T_32 | _r_c_cat_T_34 | _r_c_cat_T_35
+       | _r_c_cat_T_36 | _r_c_cat_T_37 | _r_c_cat_T_41 | _r_c_cat_T_42 | _r_c_cat_T_43
+       | _r_c_cat_T_44 | _r_c_cat_T_45 | _r_c_cat_T_51 | _r_c_cat_T_52 | _r_c_cat_T_54,
+     _r_c_cat_T_29 | _r_c_cat_T_30 | _r_c_cat_T_32 | _r_c_cat_T_34 | _r_c_cat_T_35
+       | _r_c_cat_T_36 | _r_c_cat_T_37 | _r_c_cat_T_41 | _r_c_cat_T_42 | _r_c_cat_T_43
+       | _r_c_cat_T_44 | _r_c_cat_T_45 | _r_c_cat_T_51 | _r_c_cat_T_52 | _r_c_cat_T_54
+       | s1_req_cmd == 5'h3 | s1_req_cmd == 5'h6,
+     s1_hit_meta_coh_state};	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/rocket/Consts.scala:86:{33,54,75}, :91:{32,49,66,76}, :92:{54,64,71}, home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/tilelink/Metadata.scala:58:19, home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/package.scala:16:47, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25, :130:24, :178:24
+  wire [1:0]       _r_T_27 = {1'h0, _r_T == 4'hC};	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/tilelink/Metadata.scala:58:19, home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/Misc.scala:35:36, :49:20, home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/package.scala:16:47, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:86:27
+  wire [15:0][1:0] _GEN_5 =
+    {{2'h3},
+     {2'h3},
+     {2'h2},
+     {_r_T_27},
+     {_r_T_27},
+     {_r_T_27},
+     {_r_T_27},
+     {_r_T_27},
+     {2'h3},
+     {2'h2},
+     {2'h2},
+     {2'h1},
+     {2'h3},
+     {2'h2},
+     {2'h1},
+     {2'h0}};	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/rocket/Consts.scala:92:54, home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/tilelink/Metadata.scala:50:45, :61:10, :62:10, home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/Misc.scala:35:36, :49:20
+  wire             s0_fire = io_lsu_req_ready_0 & io_lsu_req_valid;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:103:42, src/main/scala/chisel3/util/Decoupled.scala:51:35
   always @(posedge clock) begin	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:59:7
-    automatic logic s0_fire = io_lsu_req_ready_0 & io_lsu_req_valid;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:103:42, src/main/scala/chisel3/util/Decoupled.scala:51:35
     s1_valid <= s0_fire;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:115:25, src/main/scala/chisel3/util/Decoupled.scala:51:35
     if (s0_fire) begin	// src/main/scala/chisel3/util/Decoupled.scala:51:35
       s1_req_cmd <= io_lsu_req_bits_cmd;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
@@ -157,85 +216,7 @@ module StorePipe(	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dca
     s2_valid_REG <= s1_valid;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:115:25, :149:25
     s2_valid_REG_1 <= ~io_lsu_s1_kill;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:149:{46,47}
     if (s1_valid) begin	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:115:25
-      automatic logic             _s1_tag_match_T_3 =
-        io_tag_resp_0[35:0] == io_lsu_s1_paddr[47:12] & (|io_meta_resp_0_coh_state);	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/tilelink/Metadata.scala:50:45, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/L1Cache.scala:81:41, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:119:48, :127:{62,84}
-      automatic logic             _s1_tag_match_T_7 =
-        io_tag_resp_1[35:0] == io_lsu_s1_paddr[47:12] & (|io_meta_resp_1_coh_state);	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/tilelink/Metadata.scala:50:45, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/L1Cache.scala:81:41, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:119:48, :127:{62,84}
-      automatic logic             _s1_tag_match_T_11 =
-        io_tag_resp_2[35:0] == io_lsu_s1_paddr[47:12] & (|io_meta_resp_2_coh_state);	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/tilelink/Metadata.scala:50:45, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/L1Cache.scala:81:41, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:119:48, :127:{62,84}
-      automatic logic             _s1_tag_match_T_15 =
-        io_tag_resp_3[35:0] == io_lsu_s1_paddr[47:12] & (|io_meta_resp_3_coh_state);	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/tilelink/Metadata.scala:50:45, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/L1Cache.scala:81:41, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:119:48, :127:{62,84}
-      automatic logic [3:0]       s1_tag_match =
-        {_s1_tag_match_T_15, _s1_tag_match_T_11, _s1_tag_match_T_7, _s1_tag_match_T_3};	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:127:{84,123}
-      automatic logic [1:0]       s1_hit_meta_coh_state =
-        (|s1_tag_match)
-          ? (_s1_tag_match_T_3 ? io_meta_resp_0_coh_state : 2'h0)
-            | (_s1_tag_match_T_7 ? io_meta_resp_1_coh_state : 2'h0)
-            | (_s1_tag_match_T_11 ? io_meta_resp_2_coh_state : 2'h0)
-            | (_s1_tag_match_T_15 ? io_meta_resp_3_coh_state : 2'h0)
-          : 2'h0;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/tilelink/Metadata.scala:50:45, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:127:{84,123}, :130:{24,38}, src/main/scala/chisel3/util/Mux.scala:30:73
-      automatic logic             _r_c_cat_T_29;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/rocket/Consts.scala:91:32
-      automatic logic             _r_c_cat_T_30;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/rocket/Consts.scala:91:49
-      automatic logic             _r_c_cat_T_32;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/rocket/Consts.scala:91:66
-      automatic logic             _r_c_cat_T_34;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/package.scala:16:47
-      automatic logic             _r_c_cat_T_35;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/package.scala:16:47
-      automatic logic             _r_c_cat_T_36;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/package.scala:16:47
-      automatic logic             _r_c_cat_T_37;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/package.scala:16:47
-      automatic logic             _r_c_cat_T_41;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/package.scala:16:47
-      automatic logic             _r_c_cat_T_42;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/package.scala:16:47
-      automatic logic             _r_c_cat_T_43;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/package.scala:16:47
-      automatic logic             _r_c_cat_T_44;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/package.scala:16:47
-      automatic logic             _r_c_cat_T_45;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/package.scala:16:47
-      automatic logic             _r_c_cat_T_51;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/rocket/Consts.scala:86:33
-      automatic logic             _r_c_cat_T_52;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/rocket/Consts.scala:86:54
-      automatic logic             _r_c_cat_T_54;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/rocket/Consts.scala:86:75
-      automatic logic [3:0]       _r_T;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/tilelink/Metadata.scala:58:19
-      automatic logic [1:0]       _r_T_27;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/Misc.scala:35:36
-      automatic logic [15:0][1:0] _GEN_5;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/Misc.scala:35:36, :49:20
-      _r_c_cat_T_29 = s1_req_cmd == 5'h1;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/rocket/Consts.scala:91:32, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
-      _r_c_cat_T_30 = s1_req_cmd == 5'h11;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/rocket/Consts.scala:91:49, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
-      _r_c_cat_T_32 = s1_req_cmd == 5'h7;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/rocket/Consts.scala:91:66, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
-      _r_c_cat_T_34 = s1_req_cmd == 5'h4;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/package.scala:16:47, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
-      _r_c_cat_T_35 = s1_req_cmd == 5'h9;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/package.scala:16:47, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
-      _r_c_cat_T_36 = s1_req_cmd == 5'hA;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/package.scala:16:47, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
-      _r_c_cat_T_37 = s1_req_cmd == 5'hB;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/package.scala:16:47, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
-      _r_c_cat_T_41 = s1_req_cmd == 5'h8;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/package.scala:16:47, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
-      _r_c_cat_T_42 = s1_req_cmd == 5'hC;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/package.scala:16:47, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
-      _r_c_cat_T_43 = s1_req_cmd == 5'hD;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/package.scala:16:47, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
-      _r_c_cat_T_44 = s1_req_cmd == 5'hE;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/package.scala:16:47, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
-      _r_c_cat_T_45 = s1_req_cmd == 5'hF;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/package.scala:16:47, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
-      _r_c_cat_T_51 = s1_req_cmd == 5'h1A;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/rocket/Consts.scala:86:33, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
-      _r_c_cat_T_52 = s1_req_cmd == 5'h1B;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/rocket/Consts.scala:86:54, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
-      _r_c_cat_T_54 = s1_req_cmd == 5'h18;	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/rocket/Consts.scala:86:75, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25
-      _r_T =
-        {_r_c_cat_T_29 | _r_c_cat_T_30 | _r_c_cat_T_32 | _r_c_cat_T_34 | _r_c_cat_T_35
-           | _r_c_cat_T_36 | _r_c_cat_T_37 | _r_c_cat_T_41 | _r_c_cat_T_42 | _r_c_cat_T_43
-           | _r_c_cat_T_44 | _r_c_cat_T_45 | _r_c_cat_T_51 | _r_c_cat_T_52
-           | _r_c_cat_T_54,
-         _r_c_cat_T_29 | _r_c_cat_T_30 | _r_c_cat_T_32 | _r_c_cat_T_34 | _r_c_cat_T_35
-           | _r_c_cat_T_36 | _r_c_cat_T_37 | _r_c_cat_T_41 | _r_c_cat_T_42 | _r_c_cat_T_43
-           | _r_c_cat_T_44 | _r_c_cat_T_45 | _r_c_cat_T_51 | _r_c_cat_T_52 | _r_c_cat_T_54
-           | s1_req_cmd == 5'h3 | s1_req_cmd == 5'h6,
-         s1_hit_meta_coh_state};	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/rocket/Consts.scala:86:{33,54,75}, :91:{32,49,66,76}, :92:{54,64,71}, home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/tilelink/Metadata.scala:58:19, home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/package.scala:16:47, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25, :130:24, :178:24
-      _r_T_27 = {1'h0, _r_T == 4'hC};	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/tilelink/Metadata.scala:58:19, home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/Misc.scala:35:36, :49:20, home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/package.scala:16:47, home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:86:27
       s2_req_vaddr <= s1_req_vaddr;	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:116:25, :150:25
-      _GEN_5 =
-        {{2'h3},
-         {2'h3},
-         {2'h2},
-         {_r_T_27},
-         {_r_T_27},
-         {_r_T_27},
-         {_r_T_27},
-         {_r_T_27},
-         {2'h3},
-         {2'h2},
-         {2'h2},
-         {2'h1},
-         {2'h3},
-         {2'h2},
-         {2'h1},
-         {2'h0}};	// home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/rocket/Consts.scala:92:54, home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/tilelink/Metadata.scala:50:45, :61:10, :62:10, home/eda/xs-env/xs-clean/rocket-chip/src/main/scala/util/Misc.scala:35:36, :49:20
       s2_hit <=
         (_r_T == 4'h3 | _r_T == 4'h2 | _r_T == 4'h1 | _r_T == 4'h7 | _r_T == 4'h6
          | (&_r_T) | _r_T == 4'hE) & _GEN_5[_r_T] == s1_hit_meta_coh_state
@@ -249,8 +230,8 @@ module StorePipe(	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dca
     `ifdef FIRRTL_BEFORE_INITIAL	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:59:7
       `FIRRTL_BEFORE_INITIAL	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:59:7
     `endif // FIRRTL_BEFORE_INITIAL
+    logic [31:0] _RANDOM[0:5];	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:59:7
     initial begin	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:59:7
-      automatic logic [31:0] _RANDOM[0:5];	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:59:7
       `ifdef INIT_RANDOM_PROLOG_	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:59:7
         `INIT_RANDOM_PROLOG_	// home/eda/xs-env/xs-clean/src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala:59:7
       `endif // INIT_RANDOM_PROLOG_

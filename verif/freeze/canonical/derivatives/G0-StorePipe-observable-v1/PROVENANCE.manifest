@@ -5,7 +5,7 @@ source_baseline_id=G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dc
 firtool_version=firtool-1.62.1
 firrtl_version=3.3.0
 firtool_path=/home/eda/.cache/llvm-firtool/1.62.1/bin/firtool
-firtool_argv=firtool <standalone.fir> --format=fir -o StorePipe.sv
+firtool_argv=firtool <standalone.fir> --format=fir --lowering-options=disallowLocalVariables -o StorePipe.sv
 simtop_fir_path=/home/eda/xs-env/G0-canonical/golden-rtl/SimTop.fir
 extract_lines=7084336-7084662
 reset_type=AsyncReset (behavior-irrelevant; init-free registers)
@@ -14,5 +14,5 @@ sha256_firtool=7f52d2a3782d09736895f66e7eb0e5cc4b3b1b18aa1ad0d04fca4cd6e42cd2ee
 sha256_module_fir=170415f1d028346b44ea74d6a210a530bc56cc971988b29243dfce471c46bd7e
 sha256_module_asyncreset_fir=32ec920f1e19775f83a9f6b25b79daa1c0688485d86ffbe52ff11a8e587044f4
 sha256_standalone_fir=1782175e1bdce6f9b8ffd19bfeed4663104785b576414bfa8b6cdce99502f4f6
-sha256_derivative_sv=0ad96d9250844029feea91844c69d89a9f4f05cbf0d95419dfaafd3823e261fe
-sha256_this_script=08506bc9ef6c599e1802f96c9fd50e1d6554419dba8d6c09e680fa0bf622e945
+sha256_derivative_sv=9a0edf9bfd82e1a716a7426c2979c22b9dfc0c0f5bee196fe49b9412311ada7c
+sha256_this_script=a7c0d5a36037530d35c463ec1d448df0306d4e27495bc9ae821413c0fe46c36b
