@@ -1,5 +1,5 @@
 Backend	VMUCP+BB	nc264/ur0/ui0/bb76
-BankedDataArray	BB+GOLD	nc0/ur3/ui0/bb9
+BankedDataArray	VMUCP+BB+GOLD	nc0/ur3/ui0/bb33(两侧elaborate DataSRAMBank消undriven+vmucp+dead_ref, exact-cutpoint官方PASS_DEAD_REF, relaxed_appvars=[]; 旧BB+GOLD bb9 stale)
 Bku	IMPL_DEAD	nc1/ur19/ui19/bb0/NONSYM
 CSR	VMUCP+BB	nc48/ur0/ui0/bb2
 Composer	VMUCP+BB+GOLD	nc15/ur602/ui0/bb5

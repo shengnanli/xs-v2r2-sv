@@ -1,0 +1,172 @@
+{
+    "unresolved_blackbox": [
+        {
+            "id": "array_8_ext_0",
+            "ref_path": "r:/WORK/BankedDataArray/data_banks_0_0/data_bank_0/array/array/array_8_ext",
+            "impl_path": "i:/WORK/BankedDataArray/data_banks_0_0/data_bank_0/array/array/array_8_ext"
+        },
+        {
+            "id": "array_8_ext_1",
+            "ref_path": "r:/WORK/BankedDataArray/data_banks_0_0/data_bank_1/array/array/array_8_ext",
+            "impl_path": "i:/WORK/BankedDataArray/data_banks_0_0/data_bank_1/array/array/array_8_ext"
+        },
+        {
+            "id": "array_8_ext_10",
+            "ref_path": "r:/WORK/BankedDataArray/data_banks_0_2/data_bank_2/array/array/array_8_ext",
+            "impl_path": "i:/WORK/BankedDataArray/data_banks_0_2/data_bank_2/array/array/array_8_ext"
+        },
+        {
+            "id": "array_8_ext_11",
+            "ref_path": "r:/WORK/BankedDataArray/data_banks_0_2/data_bank_3/array/array/array_8_ext",
+            "impl_path": "i:/WORK/BankedDataArray/data_banks_0_2/data_bank_3/array/array/array_8_ext"
+        },
+        {
+            "id": "array_8_ext_12",
+            "ref_path": "r:/WORK/BankedDataArray/data_banks_0_3/data_bank_0/array/array/array_8_ext",
+            "impl_path": "i:/WORK/BankedDataArray/data_banks_0_3/data_bank_0/array/array/array_8_ext"
+        },
+        {
+            "id": "array_8_ext_13",
+            "ref_path": "r:/WORK/BankedDataArray/data_banks_0_3/data_bank_1/array/array/array_8_ext",
+            "impl_path": "i:/WORK/BankedDataArray/data_banks_0_3/data_bank_1/array/array/array_8_ext"
+        },
+        {
+            "id": "array_8_ext_14",
+            "ref_path": "r:/WORK/BankedDataArray/data_banks_0_3/data_bank_2/array/array/array_8_ext",
+            "impl_path": "i:/WORK/BankedDataArray/data_banks_0_3/data_bank_2/array/array/array_8_ext"
+        },
+        {
+            "id": "array_8_ext_15",
+            "ref_path": "r:/WORK/BankedDataArray/data_banks_0_3/data_bank_3/array/array/array_8_ext",
+            "impl_path": "i:/WORK/BankedDataArray/data_banks_0_3/data_bank_3/array/array/array_8_ext"
+        },
+        {
+            "id": "array_8_ext_16",
+            "ref_path": "r:/WORK/BankedDataArray/data_banks_0_4/data_bank_0/array/array/array_8_ext",
+            "impl_path": "i:/WORK/BankedDataArray/data_banks_0_4/data_bank_0/array/array/array_8_ext"
+        },
+        {
+            "id": "array_8_ext_17",
+            "ref_path": "r:/WORK/BankedDataArray/data_banks_0_4/data_bank_1/array/array/array_8_ext",
+            "impl_path": "i:/WORK/BankedDataArray/data_banks_0_4/data_bank_1/array/array/array_8_ext"
+        },
+        {
+            "id": "array_8_ext_18",
+            "ref_path": "r:/WORK/BankedDataArray/data_banks_0_4/data_bank_2/array/array/array_8_ext",
+            "impl_path": "i:/WORK/BankedDataArray/data_banks_0_4/data_bank_2/array/array/array_8_ext"
+        },
+        {
+            "id": "array_8_ext_19",
+            "ref_path": "r:/WORK/BankedDataArray/data_banks_0_4/data_bank_3/array/array/array_8_ext",
+            "impl_path": "i:/WORK/BankedDataArray/data_banks_0_4/data_bank_3/array/array/array_8_ext"
+        },
+        {
+            "id": "array_8_ext_2",
+            "ref_path": "r:/WORK/BankedDataArray/data_banks_0_0/data_bank_2/array/array/array_8_ext",
+            "impl_path": "i:/WORK/BankedDataArray/data_banks_0_0/data_bank_2/array/array/array_8_ext"
+        },
+        {
+            "id": "array_8_ext_20",
+            "ref_path": "r:/WORK/BankedDataArray/data_banks_0_5/data_bank_0/array/array/array_8_ext",
+            "impl_path": "i:/WORK/BankedDataArray/data_banks_0_5/data_bank_0/array/array/array_8_ext"
+        },
+        {
+            "id": "array_8_ext_21",
+            "ref_path": "r:/WORK/BankedDataArray/data_banks_0_5/data_bank_1/array/array/array_8_ext",
+            "impl_path": "i:/WORK/BankedDataArray/data_banks_0_5/data_bank_1/array/array/array_8_ext"
+        },
+        {
+            "id": "array_8_ext_22",
+            "ref_path": "r:/WORK/BankedDataArray/data_banks_0_5/data_bank_2/array/array/array_8_ext",
+            "impl_path": "i:/WORK/BankedDataArray/data_banks_0_5/data_bank_2/array/array/array_8_ext"
+        },
+        {
+            "id": "array_8_ext_23",
+            "ref_path": "r:/WORK/BankedDataArray/data_banks_0_5/data_bank_3/array/array/array_8_ext",
+            "impl_path": "i:/WORK/BankedDataArray/data_banks_0_5/data_bank_3/array/array/array_8_ext"
+        },
+        {
+            "id": "array_8_ext_24",
+            "ref_path": "r:/WORK/BankedDataArray/data_banks_0_6/data_bank_0/array/array/array_8_ext",
+            "impl_path": "i:/WORK/BankedDataArray/data_banks_0_6/data_bank_0/array/array/array_8_ext"
+        },
+        {
+            "id": "array_8_ext_25",
+            "ref_path": "r:/WORK/BankedDataArray/data_banks_0_6/data_bank_1/array/array/array_8_ext",
+            "impl_path": "i:/WORK/BankedDataArray/data_banks_0_6/data_bank_1/array/array/array_8_ext"
+        },
+        {
+            "id": "array_8_ext_26",
+            "ref_path": "r:/WORK/BankedDataArray/data_banks_0_6/data_bank_2/array/array/array_8_ext",
+            "impl_path": "i:/WORK/BankedDataArray/data_banks_0_6/data_bank_2/array/array/array_8_ext"
+        },
+        {
+            "id": "array_8_ext_27",
+            "ref_path": "r:/WORK/BankedDataArray/data_banks_0_6/data_bank_3/array/array/array_8_ext",
+            "impl_path": "i:/WORK/BankedDataArray/data_banks_0_6/data_bank_3/array/array/array_8_ext"
+        },
+        {
+            "id": "array_8_ext_28",
+            "ref_path": "r:/WORK/BankedDataArray/data_banks_0_7/data_bank_0/array/array/array_8_ext",
+            "impl_path": "i:/WORK/BankedDataArray/data_banks_0_7/data_bank_0/array/array/array_8_ext"
+        },
+        {
+            "id": "array_8_ext_29",
+            "ref_path": "r:/WORK/BankedDataArray/data_banks_0_7/data_bank_1/array/array/array_8_ext",
+            "impl_path": "i:/WORK/BankedDataArray/data_banks_0_7/data_bank_1/array/array/array_8_ext"
+        },
+        {
+            "id": "array_8_ext_3",
+            "ref_path": "r:/WORK/BankedDataArray/data_banks_0_0/data_bank_3/array/array/array_8_ext",
+            "impl_path": "i:/WORK/BankedDataArray/data_banks_0_0/data_bank_3/array/array/array_8_ext"
+        },
+        {
+            "id": "array_8_ext_30",
+            "ref_path": "r:/WORK/BankedDataArray/data_banks_0_7/data_bank_2/array/array/array_8_ext",
+            "impl_path": "i:/WORK/BankedDataArray/data_banks_0_7/data_bank_2/array/array/array_8_ext"
+        },
+        {
+            "id": "array_8_ext_31",
+            "ref_path": "r:/WORK/BankedDataArray/data_banks_0_7/data_bank_3/array/array/array_8_ext",
+            "impl_path": "i:/WORK/BankedDataArray/data_banks_0_7/data_bank_3/array/array/array_8_ext"
+        },
+        {
+            "id": "array_8_ext_4",
+            "ref_path": "r:/WORK/BankedDataArray/data_banks_0_1/data_bank_0/array/array/array_8_ext",
+            "impl_path": "i:/WORK/BankedDataArray/data_banks_0_1/data_bank_0/array/array/array_8_ext"
+        },
+        {
+            "id": "array_8_ext_5",
+            "ref_path": "r:/WORK/BankedDataArray/data_banks_0_1/data_bank_1/array/array/array_8_ext",
+            "impl_path": "i:/WORK/BankedDataArray/data_banks_0_1/data_bank_1/array/array/array_8_ext"
+        },
+        {
+            "id": "array_8_ext_6",
+            "ref_path": "r:/WORK/BankedDataArray/data_banks_0_1/data_bank_2/array/array/array_8_ext",
+            "impl_path": "i:/WORK/BankedDataArray/data_banks_0_1/data_bank_2/array/array/array_8_ext"
+        },
+        {
+            "id": "array_8_ext_7",
+            "ref_path": "r:/WORK/BankedDataArray/data_banks_0_1/data_bank_3/array/array/array_8_ext",
+            "impl_path": "i:/WORK/BankedDataArray/data_banks_0_1/data_bank_3/array/array/array_8_ext"
+        },
+        {
+            "id": "array_8_ext_8",
+            "ref_path": "r:/WORK/BankedDataArray/data_banks_0_2/data_bank_0/array/array/array_8_ext",
+            "impl_path": "i:/WORK/BankedDataArray/data_banks_0_2/data_bank_0/array/array/array_8_ext"
+        },
+        {
+            "id": "array_8_ext_9",
+            "ref_path": "r:/WORK/BankedDataArray/data_banks_0_2/data_bank_1/array/array/array_8_ext",
+            "impl_path": "i:/WORK/BankedDataArray/data_banks_0_2/data_bank_1/array/array/array_8_ext"
+        },
+        {
+            "id": "mbistPl",
+            "ref_path": "r:/WORK/BankedDataArray/mbistPl",
+            "impl_path": "i:/WORK/BankedDataArray/mbistPl"
+        }
+    ],
+    "interface_only": [],
+    "empty_blackbox": [],
+    "unmatched": []
+}

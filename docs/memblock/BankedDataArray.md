@@ -1,11 +1,22 @@
 # BankedDataArray —— DCache 分体数据阵列
 
-> ✅ **FM 分类 = REPLACEMENT_EQ（可读核真驱动 + 冻结基线原生 SUCCEEDED）**。依据台账
-> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md) 与冻结基线日志
-> `verif/ut/BankedDataArray/fm_work/BankedDataArray/fm_full.log`：本模块在当前冻结 golden 基线上 FM **原生
-> `Verification SUCCEEDED`，17367 passing / 0 failing / 0 unverified**。下文验证节里任何
-> "FAILED / 20 failing 截断 / 部分验证 / 未收敛"的表述是**冻结前的旧叙事，已作废**——以本
-> banner 与台账为准。
+> ✅ **FM 分类 = REPLACEMENT_EQ（可读核真驱动 + 原生 SUCCEEDED）**。
+>
+> **签核配置（codex_0093 §1 exact-cutpoint, 2026-07-30）= assembly + vmucp + dead-ref**：
+> 把 `DataSRAMBank` + `SRAMTemplate` 两侧同源 elaborate（Makefile `ELAB_SRCS`）。这样
+> `boreChildrenBd_bore_*_rdata`（MBIST 回读口）成 SRAM 真实驱动输出，消除了 golden 侧那条
+> undriven readback 死锥——**不再需要**全局 `verification_set_undriven_signals=BINARY` 放宽
+> （`relaxed_appvars=[]` 全空）。唯一黑盒边界 = 厂商 SRAM 宏 `array_8_ext`×32 + `mbistPl`
+> (`MbistPipeDCacheData`)，共 33 个 unresolved（`verif/signoff/allow/BankedDataArray.json`）。
+> 2344 个对称 SRAM-internal matched-unread（`rdataReg_reg`/`respReg_reg`/`REG_reg`, ref==impl
+> 双射）由 vmucp=true 实证 passing；3 个 golden-only cone-dead `REG_8/9/10`（RegNext 断言 reg）
+> = dead-ref（`verif/signoff/dead_ref/BankedDataArray.json`）。
+> **native SUCCEEDED：passing 12707 / failing 0 / unread_notcompared 0 / unread_impl 0 /
+> unread_ref 3(REG_8/9/10) / relaxed_appvars []** → 验证器 verdict = **PASS_DEAD_REF**。
+>
+> 旧叙事（"9 个 SRAM/MBIST 黑盒 + set_undriven=BINARY + 17367 passing"）已作废：那条路径
+> 因 `relaxed_appvars` 非空被 sidecar 判 PARTIAL。下文验证节任何 "FAILED / 20 failing 截断 /
+> set_undriven 放宽" 的表述是旧叙事，以本 banner 为准。
 
 ## 1. 架构定位
 
