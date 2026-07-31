@@ -71,7 +71,7 @@ StoreMisalignBuffer · Tage_SC² · TLBNonBlock² · Uncache · Ftq
 |------|------|
 | **StoreQueue** | **FAILED**,当前 1487 failing(per-entry committed/completed 需改成 golden gather-mux 形式);UT 三种子过。 |
 | **CtrlBlock** | **UNRUN**,FM 被 SIGTERM 中止无终态;RTL 修复已在但未确认(且 UT 收尾结果为空,须重查)。 |
-| **StorePipe** | **VACUOUS**,golden 在本配置被 firtool 消成空壳(0 输出/0 寄存器),reference 被读成 blackbox → `Verification NOT RUN`,0 比对点;wrapper 与 golden 逐字一致。不是等价失败,但也**不构成等价证明**。 |
+| **StorePipe** | **VACUOUS 已解除 → PROOF_GAP(VMUCP 待晋升)**。原因: 本配置 golden 被 whole-chip firtool DCE 成 5 行空壳(0 输出/0 寄存器)→reference 读成 blackbox(FM-081),proof vacuous。**解法1(codex_0088 §3)**: `reference_kind=canonical_derivative` 机械派生件 `G0-StorePipe-observable-v1`(从冻结 SimTop.fir 7084336-7084662 抽取 + 锁定 firtool-1.62.1 standalone 重降),committed 到 `verif/freeze/canonical/derivatives/`,runner 按 committed ledger+hash 校验取字节替换空壳(无 env 覆盖)。**解法2(codex_0092 §1 选项 B, 目标级语义面)**: 派生件里 14 个源 FIRRTL `invalidate`-only 输出叶(store_mask/store_data/amo_*/id/... = source **未定义**)被 firtool 驱常量 0, 忠实 impl 驱 X→比较即伪 FAILED。改建**语义面排除**: 这 14 叶从比较面 `remove_compare_points`(源派生 = `derive_surface.py` 按 FIRRTL last-connect-wins 复算; hash 绑进 ledger `semantic_surface_sha256`; **非 dont_verify, 非归 0**), 只比 **36 defined 输出 + 6 perf probe**。runner 硬绑 derivative_id + 精确 surface hash(非通用排除选项), 4 项负测(多排/少排/改名/源变 defined)全 fail-closed。余 30 对称 matched-unread(死位)待 vmucp=true 晋升(integrator 决定)。 |
 | 其余 ~188 目标 | **UNRUN_ON_FROZEN**:只有旧基线日志或无日志(LoadQueueRAR/RAW/Rename/VirtualLoadQueue/XSTile/XSTop 等)。待全量重跑。 |
 
 ## 汇总口径(替代"38/43 SUCCEEDED、只剩三个")

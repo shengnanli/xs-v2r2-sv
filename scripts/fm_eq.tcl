@@ -9,6 +9,31 @@ set ref_srcs  $env(FM_REF_SRCS)
 set impl_srcs $env(FM_IMPL_SRCS)
 
 # ----------------------------------------------------------------------------
+# 目标级语义面包装(codex_0092 §1 选项 B; canonical_derivative 专用, runner 硬绑):
+# 当 runner 从 committed+hash 校验的 ledger 置入这三个 env 时, FM 顶层换成语义面
+# 包装模块(两侧同名 StorePipe_surface): 它只再导出 36 个源定义输出 + 23 输入, 把 14
+# 个源 FIRRTL invalidate-only(未定义)输出叶留作内部悬空 net → 真正退出观测面(既非
+# dont_verify 也非 0 填充也非通用排除)。ref/impl 各追加自己那侧的包装 .sv, 顶层改为
+# semantic_surface_top。包装 .sv 字节由 runner 逐一 hash 校验(见 run_signoff_target.sh),
+# 无 env 路径覆盖; 这不是通用"任意换顶层"钩子, 只服务 canonical_derivative 语义面。
+if {[info exists env(FM_SEMANTIC_SURFACE_TOP)] &&
+    [string trim $env(FM_SEMANTIC_SURFACE_TOP)] ne ""} {
+    if {![info exists env(FM_SEMANTIC_SURFACE_REF_SV)] ||
+        ![info exists env(FM_SEMANTIC_SURFACE_IMPL_SV)] ||
+        ![file exists $env(FM_SEMANTIC_SURFACE_REF_SV)] ||
+        ![file exists $env(FM_SEMANTIC_SURFACE_IMPL_SV)]} {
+        puts "FM_MODE_ERROR: FM_SEMANTIC_SURFACE_TOP set without both wrapper .sv"
+        exit 3
+    }
+    set top $env(FM_SEMANTIC_SURFACE_TOP)
+    lappend ref_srcs  $env(FM_SEMANTIC_SURFACE_REF_SV)
+    lappend impl_srcs $env(FM_SEMANTIC_SURFACE_IMPL_SV)
+    # reports are written under fm_work/$top; the Makefile only created the work
+    # dir for the target name, so ensure the surface-top report dir exists too.
+    file mkdir fm_work/$top
+}
+
+# ----------------------------------------------------------------------------
 # Step 3B sidecar emitter(FM_SIDECAR_OUT 非空时启用; 契约 = SIDECAR_SCHEMA.md v7 冻结版):
 # source 后立即对将被 source 的模块本地 Tcl 做**运行期 appvar 拦截**(set_app_var 名字
 # 不在注册表 → exit 3, 拒产 native facts)。

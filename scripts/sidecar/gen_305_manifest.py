@@ -66,11 +66,26 @@ def load_declarations(path):
         # 十四审: 第 6 列(可选)= per-target dead-ref 声明文件路径。声明存在 ⇒ 该 target
         # 的 required_verdict 变为 PASS_DEAD_REF(golden-only 死点已逐点声明+审核)。
         dead_ref = p[5] if len(p) > 5 and p[5] and p[5] != "-" else ""
+        # 第 7 列(可选)= reference_kind: golden(默认) | canonical_derivative。
+        # 第 8 列(可选)= derivative_id: canonical_derivative 时必填, 定位 committed
+        #   verif/freeze/canonical/derivatives/<id> ledger(runner 逐字 hash 校验)。
+        # 二者只是设计契约(引用来源), 不声明 verdict; 派生件的可观测参考替换冻结
+        # golden 空壳, 但 runner 只从 committed ledger 按 id+hash 取字节, 无 env 覆盖。
+        ref_kind = p[6] if len(p) > 6 and p[6] and p[6] != "-" else "golden"
+        deriv_id = p[7] if len(p) > 7 and p[7] and p[7] != "-" else ""
+        if ref_kind not in ("golden", "canonical_derivative"):
+            raise SystemExit(f"bad reference_kind for {p[0]}: {ref_kind}")
+        if ref_kind == "canonical_derivative" and not deriv_id:
+            raise SystemExit(f"reference_kind=canonical_derivative requires derivative_id for {p[0]}")
+        if ref_kind == "golden" and deriv_id:
+            raise SystemExit(f"derivative_id set but reference_kind=golden for {p[0]}")
         decl[p[0]] = {"proof_mode": p[1] or None,
                       "allow_ref": p[2] if len(p) > 2 else "",
                       "rationale": p[3] if len(p) > 3 else "",
                       "verify_matched_unread_compare_points": vmucp,
-                      "dead_ref": dead_ref}
+                      "dead_ref": dead_ref,
+                      "reference_kind": ref_kind,
+                      "derivative_id": deriv_id}
     return decl
 
 
@@ -174,6 +189,8 @@ def mk_entry(target, ut_dir, makefile, make_target, entry, pmode, decl, bid, cfg
             "verify_matched_unread_compare_points":
                 d.get("verify_matched_unread_compare_points", "false"),
             "dead_ref": dead_ref,
+            "reference_kind": d.get("reference_kind", "golden"),
+            "derivative_id": d.get("derivative_id", ""),
             "canonical_baseline_id": bid}
 
 

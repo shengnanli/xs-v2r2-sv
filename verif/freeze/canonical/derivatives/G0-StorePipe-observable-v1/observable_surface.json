@@ -1,0 +1,385 @@
+{
+ "schema": "storepipe-observable-surface-v1",
+ "derivative_id": "G0-StorePipe-observable-v1",
+ "source_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456",
+ "classification_rule": "FIRRTL last-connect-wins over the StorePipe module body. A leaf whose final driver in source is a `connect` -> defined_output. A leaf whose only driver is `invalidate` (never reconnected) -> UNSPECIFIED_BY_SOURCE. Probe<> outputs -> perf_probe (XMR macros).",
+ "counts": {
+  "inputs": 23,
+  "defined_outputs": 36,
+  "perf_probes": 6,
+  "unspecified_by_source": 14,
+  "harness_surface_outputs": 36
+ },
+ "inputs": [
+  {
+   "leaf": "clock",
+   "width": 1
+  },
+  {
+   "leaf": "reset",
+   "width": 1
+  },
+  {
+   "leaf": "io_lsu_s1_paddr",
+   "width": 48
+  },
+  {
+   "leaf": "io_lsu_s1_kill",
+   "width": 1
+  },
+  {
+   "leaf": "io_lsu_s2_kill",
+   "width": 1
+  },
+  {
+   "leaf": "io_lsu_s2_pc",
+   "width": 50
+  },
+  {
+   "leaf": "io_lsu_req_valid",
+   "width": 1
+  },
+  {
+   "leaf": "io_lsu_req_bits_cmd",
+   "width": 5
+  },
+  {
+   "leaf": "io_lsu_req_bits_vaddr",
+   "width": 50
+  },
+  {
+   "leaf": "io_lsu_req_bits_instrtype",
+   "width": 4
+  },
+  {
+   "leaf": "io_lsu_resp_ready",
+   "width": 1
+  },
+  {
+   "leaf": "io_meta_read_ready",
+   "width": 1
+  },
+  {
+   "leaf": "io_meta_resp_0_coh_state",
+   "width": 2
+  },
+  {
+   "leaf": "io_meta_resp_1_coh_state",
+   "width": 2
+  },
+  {
+   "leaf": "io_meta_resp_2_coh_state",
+   "width": 2
+  },
+  {
+   "leaf": "io_meta_resp_3_coh_state",
+   "width": 2
+  },
+  {
+   "leaf": "io_tag_read_ready",
+   "width": 1
+  },
+  {
+   "leaf": "io_tag_resp_0",
+   "width": 43
+  },
+  {
+   "leaf": "io_tag_resp_1",
+   "width": 43
+  },
+  {
+   "leaf": "io_tag_resp_2",
+   "width": 43
+  },
+  {
+   "leaf": "io_tag_resp_3",
+   "width": 43
+  },
+  {
+   "leaf": "io_miss_req_ready",
+   "width": 1
+  },
+  {
+   "leaf": "io_replace_way_way",
+   "width": 2
+  }
+ ],
+ "defined_outputs": [
+  {
+   "leaf": "io_lsu_req_ready",
+   "width": 1
+  },
+  {
+   "leaf": "io_lsu_resp_valid",
+   "width": 1
+  },
+  {
+   "leaf": "io_lsu_resp_bits_miss",
+   "width": 1
+  },
+  {
+   "leaf": "io_lsu_resp_bits_replay",
+   "width": 1
+  },
+  {
+   "leaf": "io_lsu_resp_bits_tag_error",
+   "width": 1
+  },
+  {
+   "leaf": "io_meta_read_valid",
+   "width": 1
+  },
+  {
+   "leaf": "io_meta_read_bits_idx",
+   "width": 8
+  },
+  {
+   "leaf": "io_meta_read_bits_way_en",
+   "width": 4
+  },
+  {
+   "leaf": "io_tag_read_valid",
+   "width": 1
+  },
+  {
+   "leaf": "io_tag_read_bits_idx",
+   "width": 8
+  },
+  {
+   "leaf": "io_tag_read_bits_way_en",
+   "width": 4
+  },
+  {
+   "leaf": "io_miss_req_valid",
+   "width": 1
+  },
+  {
+   "leaf": "io_miss_req_bits_source",
+   "width": 4
+  },
+  {
+   "leaf": "io_miss_req_bits_pf_source",
+   "width": 3
+  },
+  {
+   "leaf": "io_miss_req_bits_cmd",
+   "width": 5
+  },
+  {
+   "leaf": "io_miss_req_bits_addr",
+   "width": 48
+  },
+  {
+   "leaf": "io_miss_req_bits_vaddr",
+   "width": 50
+  },
+  {
+   "leaf": "io_miss_req_bits_pc",
+   "width": 50
+  },
+  {
+   "leaf": "io_miss_req_bits_req_coh_state",
+   "width": 2
+  },
+  {
+   "leaf": "io_miss_req_bits_cancel",
+   "width": 1
+  },
+  {
+   "leaf": "io_replace_access_valid",
+   "width": 1
+  },
+  {
+   "leaf": "io_replace_way_set_valid",
+   "width": 1
+  },
+  {
+   "leaf": "io_replace_way_set_bits",
+   "width": 8
+  },
+  {
+   "leaf": "io_replace_way_dmWay",
+   "width": 2
+  },
+  {
+   "leaf": "io_error_valid",
+   "width": 1
+  },
+  {
+   "leaf": "io_error_bits_source_tag",
+   "width": 1
+  },
+  {
+   "leaf": "io_error_bits_source_data",
+   "width": 1
+  },
+  {
+   "leaf": "io_error_bits_source_l2",
+   "width": 1
+  },
+  {
+   "leaf": "io_error_bits_opType_fetch",
+   "width": 1
+  },
+  {
+   "leaf": "io_error_bits_opType_load",
+   "width": 1
+  },
+  {
+   "leaf": "io_error_bits_opType_store",
+   "width": 1
+  },
+  {
+   "leaf": "io_error_bits_opType_probe",
+   "width": 1
+  },
+  {
+   "leaf": "io_error_bits_opType_release",
+   "width": 1
+  },
+  {
+   "leaf": "io_error_bits_opType_atom",
+   "width": 1
+  },
+  {
+   "leaf": "io_error_bits_paddr",
+   "width": 48
+  },
+  {
+   "leaf": "io_error_bits_report_to_beu",
+   "width": 1
+  }
+ ],
+ "perf_probes": [
+  {
+   "probe": "perfCnt_bore",
+   "gen_wire": "_GEN",
+   "event": "s0_valid_not_ready"
+  },
+  {
+   "probe": "perfCnt_bore_1",
+   "gen_wire": "_GEN_0",
+   "event": "store_fire"
+  },
+  {
+   "probe": "perfCnt_bore_2",
+   "gen_wire": "_GEN_1",
+   "event": "sta_hit"
+  },
+  {
+   "probe": "perfCnt_bore_3",
+   "gen_wire": "_GEN_2",
+   "event": "sta_miss"
+  },
+  {
+   "probe": "perfCnt_bore_4",
+   "gen_wire": "_GEN_3",
+   "event": "store_miss_prefetch_fire"
+  },
+  {
+   "probe": "perfCnt_bore_5",
+   "gen_wire": "_GEN_4",
+   "event": "store_miss_prefetch_not_fire"
+  }
+ ],
+ "unspecified_by_source": [
+  {
+   "leaf": "io_miss_req_bits_store_mask",
+   "width": 64,
+   "disposition": "EXCLUDE_FROM_HARNESS_SURFACE",
+   "not_concretized_to_zero": true,
+   "not_dont_verify": true
+  },
+  {
+   "leaf": "io_miss_req_bits_store_data",
+   "width": 512,
+   "disposition": "EXCLUDE_FROM_HARNESS_SURFACE",
+   "not_concretized_to_zero": true,
+   "not_dont_verify": true
+  },
+  {
+   "leaf": "io_miss_req_bits_occupy_way",
+   "width": 4,
+   "disposition": "EXCLUDE_FROM_HARNESS_SURFACE",
+   "not_concretized_to_zero": true,
+   "not_dont_verify": true
+  },
+  {
+   "leaf": "io_miss_req_bits_isBtoT",
+   "width": 1,
+   "disposition": "EXCLUDE_FROM_HARNESS_SURFACE",
+   "not_concretized_to_zero": true,
+   "not_dont_verify": true
+  },
+  {
+   "leaf": "io_miss_req_bits_id",
+   "width": 6,
+   "disposition": "EXCLUDE_FROM_HARNESS_SURFACE",
+   "not_concretized_to_zero": true,
+   "not_dont_verify": true
+  },
+  {
+   "leaf": "io_miss_req_bits_amo_cmp",
+   "width": 128,
+   "disposition": "EXCLUDE_FROM_HARNESS_SURFACE",
+   "not_concretized_to_zero": true,
+   "not_dont_verify": true
+  },
+  {
+   "leaf": "io_miss_req_bits_amo_mask",
+   "width": 16,
+   "disposition": "EXCLUDE_FROM_HARNESS_SURFACE",
+   "not_concretized_to_zero": true,
+   "not_dont_verify": true
+  },
+  {
+   "leaf": "io_miss_req_bits_amo_data",
+   "width": 128,
+   "disposition": "EXCLUDE_FROM_HARNESS_SURFACE",
+   "not_concretized_to_zero": true,
+   "not_dont_verify": true
+  },
+  {
+   "leaf": "io_miss_req_bits_word_idx",
+   "width": 3,
+   "disposition": "EXCLUDE_FROM_HARNESS_SURFACE",
+   "not_concretized_to_zero": true,
+   "not_dont_verify": true
+  },
+  {
+   "leaf": "io_miss_req_bits_full_overwrite",
+   "width": 1,
+   "disposition": "EXCLUDE_FROM_HARNESS_SURFACE",
+   "not_concretized_to_zero": true,
+   "not_dont_verify": true
+  },
+  {
+   "leaf": "io_miss_req_bits_lqIdx_value",
+   "width": 7,
+   "disposition": "EXCLUDE_FROM_HARNESS_SURFACE",
+   "not_concretized_to_zero": true,
+   "not_dont_verify": true
+  },
+  {
+   "leaf": "io_miss_req_bits_lqIdx_flag",
+   "width": 1,
+   "disposition": "EXCLUDE_FROM_HARNESS_SURFACE",
+   "not_concretized_to_zero": true,
+   "not_dont_verify": true
+  },
+  {
+   "leaf": "io_replace_access_bits_way",
+   "width": 2,
+   "disposition": "EXCLUDE_FROM_HARNESS_SURFACE",
+   "not_concretized_to_zero": true,
+   "not_dont_verify": true
+  },
+  {
+   "leaf": "io_replace_access_bits_set",
+   "width": 8,
+   "disposition": "EXCLUDE_FROM_HARNESS_SURFACE",
+   "not_concretized_to_zero": true,
+   "not_dont_verify": true
+  }
+ ]
+}

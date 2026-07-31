@@ -1,18 +1,150 @@
 // =============================================================================
-//  StorePipe_wrapper —— golden 同名顶层 `StorePipe`(本配置 firtool 裁剪后接口)
+//  StorePipe_wrapper —— FM impl 侧顶层 `StorePipe`(对齐 canonical-derivative 全可观测面)
 // -----------------------------------------------------------------------------
-//  本顶层配置(KunmingHu V2R2)下 golden StorePipe 仅剩 input io_lsu_req_valid:
-//  DCache 例化 StorePipe 时其所有输出悬空(DontCare) + EnableStorePrefetchAtIssue=false,
-//  firtool 常量传播/死代码消除后只留这唯一端口。为与 golden 逐端口一致(供 FM / ST),
-//  顶层只暴露这唯一端口, 内部直通 probe(无下游逻辑)。
+//  codex_0088 §3: StorePipe 官方 reference 改为从冻结 G0 `SimTop.fir` production
+//  pre-DCE 机械派生的 canonical-derivative(module StorePipe, 50 output leaves +
+//  6 perf probes)。故 FM impl 侧顶层也须暴露同一完整可观测面, 而非旧的 firtool-DCE
+//  空壳(1 端口)。本 wrapper = golden 同名 `StorePipe`, 内部例化可读核 xs_StorePipe_core
+//  并把其端口逐一提升为顶层, 与 derivative 逐端口对齐。
 //
-//  StorePipe 完整三级流水(s0/s1/s2)的可读实现见 rtl/memblock/StorePipe.sv 的
-//  xs_StorePipe_core, 学习文档见 docs/memblock/StorePipe.md —— 那才是本任务的设计载体;
-//  本 wrapper 只是裁剪配置下的机械端口适配。
+//  ★ 14 UNSPECIFIED_BY_SOURCE(miss_req DontCare×12 + replace_access.bits×2): 可读核
+//    把它们驱为 'x(源未指定)。这些顶层输出仍存在(与 derivative 端口一致), 但其等价
+//    由 plumbing owner 的 manifest 从比较面排除(canonical_derivative surface = 36+6),
+//    不具体化为 0, 不 dont_verify。★
+//
+//  可读核完整设计载体见 rtl/memblock/StorePipe.sv, 学习文档 docs/memblock/StorePipe.md。
 // =============================================================================
 module StorePipe(
-  input io_lsu_req_valid
+  input          clock,
+  input          reset,
+  input  [47:0]  io_lsu_s1_paddr,
+  input          io_lsu_s1_kill,
+  input          io_lsu_s2_kill,
+  input  [49:0]  io_lsu_s2_pc,
+  output         io_lsu_req_ready,
+  input          io_lsu_req_valid,
+  input  [4:0]   io_lsu_req_bits_cmd,
+  input  [49:0]  io_lsu_req_bits_vaddr,
+  input  [3:0]   io_lsu_req_bits_instrtype,
+  input          io_lsu_resp_ready,
+  output         io_lsu_resp_valid,
+  output         io_lsu_resp_bits_miss,
+  output         io_lsu_resp_bits_replay,
+  output         io_lsu_resp_bits_tag_error,
+  input          io_meta_read_ready,
+  output         io_meta_read_valid,
+  output [7:0]   io_meta_read_bits_idx,
+  output [3:0]   io_meta_read_bits_way_en,
+  input  [1:0]   io_meta_resp_0_coh_state,
+  input  [1:0]   io_meta_resp_1_coh_state,
+  input  [1:0]   io_meta_resp_2_coh_state,
+  input  [1:0]   io_meta_resp_3_coh_state,
+  input          io_tag_read_ready,
+  output         io_tag_read_valid,
+  output [7:0]   io_tag_read_bits_idx,
+  output [3:0]   io_tag_read_bits_way_en,
+  input  [42:0]  io_tag_resp_0,
+  input  [42:0]  io_tag_resp_1,
+  input  [42:0]  io_tag_resp_2,
+  input  [42:0]  io_tag_resp_3,
+  input          io_miss_req_ready,
+  output         io_miss_req_valid,
+  output [3:0]   io_miss_req_bits_source,
+  output [2:0]   io_miss_req_bits_pf_source,
+  output [4:0]   io_miss_req_bits_cmd,
+  output [47:0]  io_miss_req_bits_addr,
+  output [49:0]  io_miss_req_bits_vaddr,
+  output [49:0]  io_miss_req_bits_pc,
+  output         io_miss_req_bits_lqIdx_flag,
+  output [6:0]   io_miss_req_bits_lqIdx_value,
+  output         io_miss_req_bits_full_overwrite,
+  output [2:0]   io_miss_req_bits_word_idx,
+  output [127:0] io_miss_req_bits_amo_data,
+  output [15:0]  io_miss_req_bits_amo_mask,
+  output [127:0] io_miss_req_bits_amo_cmp,
+  output [1:0]   io_miss_req_bits_req_coh_state,
+  output [5:0]   io_miss_req_bits_id,
+  output         io_miss_req_bits_isBtoT,
+  output [3:0]   io_miss_req_bits_occupy_way,
+  output         io_miss_req_bits_cancel,
+  output [511:0] io_miss_req_bits_store_data,
+  output [63:0]  io_miss_req_bits_store_mask,
+  output         io_replace_access_valid,
+  output [7:0]   io_replace_access_bits_set,
+  output [1:0]   io_replace_access_bits_way,
+  output         io_replace_way_set_valid,
+  output [7:0]   io_replace_way_set_bits,
+  output [1:0]   io_replace_way_dmWay,
+  input  [1:0]   io_replace_way_way,
+  output         io_error_valid,
+  output         io_error_bits_source_tag,
+  output         io_error_bits_source_data,
+  output         io_error_bits_source_l2,
+  output         io_error_bits_opType_fetch,
+  output         io_error_bits_opType_load,
+  output         io_error_bits_opType_store,
+  output         io_error_bits_opType_probe,
+  output         io_error_bits_opType_release,
+  output         io_error_bits_opType_atom,
+  output [47:0]  io_error_bits_paddr,
+  output         io_error_bits_report_to_beu
 );
-  // golden 行为: 仅把请求 valid 透传(无下游逻辑, 与 golden 逐位一致)。
-  wire io_lsu_req_valid_probe = io_lsu_req_valid;
+  // production/derivative 配置 EnableStorePrefetchAtIssue=false。
+  xs_StorePipe_core #(.EN_STORE_PF_AT_ISSUE(1'b0)) u_core (
+    .clock(clock), .reset(reset),
+    .io_lsu_s1_paddr(io_lsu_s1_paddr), .io_lsu_s1_kill(io_lsu_s1_kill),
+    .io_lsu_s2_kill(io_lsu_s2_kill), .io_lsu_s2_pc(io_lsu_s2_pc),
+    .io_lsu_req_ready(io_lsu_req_ready), .io_lsu_req_valid(io_lsu_req_valid),
+    .io_lsu_req_bits_cmd(io_lsu_req_bits_cmd), .io_lsu_req_bits_vaddr(io_lsu_req_bits_vaddr),
+    .io_lsu_req_bits_instrtype(io_lsu_req_bits_instrtype),
+    .io_lsu_resp_ready(io_lsu_resp_ready),
+    .io_lsu_resp_valid(io_lsu_resp_valid), .io_lsu_resp_bits_miss(io_lsu_resp_bits_miss),
+    .io_lsu_resp_bits_replay(io_lsu_resp_bits_replay),
+    .io_lsu_resp_bits_tag_error(io_lsu_resp_bits_tag_error),
+    .io_meta_read_ready(io_meta_read_ready), .io_meta_read_valid(io_meta_read_valid),
+    .io_meta_read_bits_idx(io_meta_read_bits_idx), .io_meta_read_bits_way_en(io_meta_read_bits_way_en),
+    .io_meta_resp_0_coh_state(io_meta_resp_0_coh_state),
+    .io_meta_resp_1_coh_state(io_meta_resp_1_coh_state),
+    .io_meta_resp_2_coh_state(io_meta_resp_2_coh_state),
+    .io_meta_resp_3_coh_state(io_meta_resp_3_coh_state),
+    .io_tag_read_ready(io_tag_read_ready), .io_tag_read_valid(io_tag_read_valid),
+    .io_tag_read_bits_idx(io_tag_read_bits_idx), .io_tag_read_bits_way_en(io_tag_read_bits_way_en),
+    .io_tag_resp_0(io_tag_resp_0), .io_tag_resp_1(io_tag_resp_1),
+    .io_tag_resp_2(io_tag_resp_2), .io_tag_resp_3(io_tag_resp_3),
+    .io_miss_req_ready(io_miss_req_ready), .io_miss_req_valid(io_miss_req_valid),
+    .io_miss_req_bits_source(io_miss_req_bits_source),
+    .io_miss_req_bits_pf_source(io_miss_req_bits_pf_source),
+    .io_miss_req_bits_cmd(io_miss_req_bits_cmd), .io_miss_req_bits_addr(io_miss_req_bits_addr),
+    .io_miss_req_bits_vaddr(io_miss_req_bits_vaddr), .io_miss_req_bits_pc(io_miss_req_bits_pc),
+    .io_miss_req_bits_lqIdx_flag(io_miss_req_bits_lqIdx_flag),
+    .io_miss_req_bits_lqIdx_value(io_miss_req_bits_lqIdx_value),
+    .io_miss_req_bits_full_overwrite(io_miss_req_bits_full_overwrite),
+    .io_miss_req_bits_word_idx(io_miss_req_bits_word_idx),
+    .io_miss_req_bits_amo_data(io_miss_req_bits_amo_data),
+    .io_miss_req_bits_amo_mask(io_miss_req_bits_amo_mask),
+    .io_miss_req_bits_amo_cmp(io_miss_req_bits_amo_cmp),
+    .io_miss_req_bits_req_coh_state(io_miss_req_bits_req_coh_state),
+    .io_miss_req_bits_id(io_miss_req_bits_id), .io_miss_req_bits_isBtoT(io_miss_req_bits_isBtoT),
+    .io_miss_req_bits_occupy_way(io_miss_req_bits_occupy_way),
+    .io_miss_req_bits_cancel(io_miss_req_bits_cancel),
+    .io_miss_req_bits_store_data(io_miss_req_bits_store_data),
+    .io_miss_req_bits_store_mask(io_miss_req_bits_store_mask),
+    .io_replace_access_valid(io_replace_access_valid),
+    .io_replace_access_bits_set(io_replace_access_bits_set),
+    .io_replace_access_bits_way(io_replace_access_bits_way),
+    .io_replace_way_set_valid(io_replace_way_set_valid),
+    .io_replace_way_set_bits(io_replace_way_set_bits),
+    .io_replace_way_dmWay(io_replace_way_dmWay), .io_replace_way_way(io_replace_way_way),
+    .io_error_valid(io_error_valid), .io_error_bits_source_tag(io_error_bits_source_tag),
+    .io_error_bits_source_data(io_error_bits_source_data),
+    .io_error_bits_source_l2(io_error_bits_source_l2),
+    .io_error_bits_opType_fetch(io_error_bits_opType_fetch),
+    .io_error_bits_opType_load(io_error_bits_opType_load),
+    .io_error_bits_opType_store(io_error_bits_opType_store),
+    .io_error_bits_opType_probe(io_error_bits_opType_probe),
+    .io_error_bits_opType_release(io_error_bits_opType_release),
+    .io_error_bits_opType_atom(io_error_bits_opType_atom),
+    .io_error_bits_paddr(io_error_bits_paddr),
+    .io_error_bits_report_to_beu(io_error_bits_report_to_beu)
+  );
 endmodule

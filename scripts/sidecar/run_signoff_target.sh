@@ -16,7 +16,7 @@ MANIFEST=$1; TARGET=$2; TMO=${3:-1200}
 EROOT="${SIGNOFF_EVIDENCE_ROOT:-$SC/signoff-evidence}"
 
 # --- manifest 条目(tab 分隔) ---
-IFS=$'\t' read -r UTDIR MK MT ENTRY PMODE REQV ALLOWREF CFG VERIFY_MU DEADREF <<<"$(python3 - "$MANIFEST" "$TARGET" <<'PY'
+IFS=$'\t' read -r UTDIR MK MT ENTRY PMODE REQV ALLOWREF CFG VERIFY_MU DEADREF REFKIND DERIVID <<<"$(python3 - "$MANIFEST" "$TARGET" <<'PY'
 import json,sys
 m=json.load(open(sys.argv[1]))
 for e in m["entries"]:
@@ -24,11 +24,26 @@ for e in m["entries"]:
         print("\t".join([e["ut_dir"],e["makefile"] or "-",e["make_target"],e["entry"],
             e["proof_mode"],e["required_verdict"],e.get("allow_ref","") or "-",e["config_status"],
             e.get("verify_matched_unread_compare_points", "false"),
-            e.get("dead_ref","") or "-"])); break
+            e.get("dead_ref","") or "-",
+            e.get("reference_kind","") or "golden",
+            e.get("derivative_id","") or "-"])); break
 else: print("NOTFOUND")
 PY
 )"
 [ "$UTDIR" = "NOTFOUND" ] && { echo "MANIFEST_MISS $TARGET"; exit 2; }
+# reference_kind security gate: only two committed kinds are legal. A
+# canonical_derivative reference substitutes the frozen (possibly DCE-collapsed)
+# golden StorePipe.sv with the pre-DCE observable derivative -- but ONLY from a
+# committed, hash-pinned ledger resolved by manifest derivative_id. There is NO
+# environment-variable path override; the reference bytes come exclusively from
+# the committed ledger at IMPL_COMMIT (verified below).
+case "$REFKIND" in
+  golden|canonical_derivative) ;;
+  *) echo "MANIFEST_BAD reference_kind=$REFKIND (only golden|canonical_derivative)"; exit 2 ;;
+esac
+if [ "$REFKIND" = "canonical_derivative" ] && { [ "$DERIVID" = "-" ] || [ -z "$DERIVID" ]; }; then
+  echo "MANIFEST_BAD reference_kind=canonical_derivative requires derivative_id"; exit 2
+fi
 [ "$VERIFY_MU" = "true" ] || [ "$VERIFY_MU" = "false" ] || {
   echo "MANIFEST_BAD verify_matched_unread_compare_points=$VERIFY_MU"; exit 2; }
 case "$TARGET" in LoadQueueUncache|FastArbiter_46|FastArbiter_47|FastArbiter_27|FastArbiter_44|ICacheCtrlUnit|ICacheDataArray|IPrefetchPipe|DivUnit|FDivSqrt|InstrMMIOEntry|InstrUncache|TXDAT_4|FAlu|FCVT|IssueQueueStdMoud|MulUnit|TXREQ|TlbStorageWrapper|TlbStorageWrapper_1|IssueQueueStaMou|IssueQueueLdu|TXDAT|Scheduler_1|Scheduler|Scheduler_3|MSHR|TageBTable|Directory|SCTable|SCTable_1|SCTable_2|SCTable_3|Tage_SC|ITTage|FauFTB|FTBBank|FTB|Composer|EntriesAluCsrFenceDiv|Bku|SourceB|Predictor|EntriesAluMulBkuBrhJmp|DuplicatedTagArray|PtwCache|WritebackQueue|LinkMonitor|Ftq|LoadQueue|LoadPipe|MissQueue|IssueQueueAluMulBkuBrhJmp|L2TLB|Rename|IssueQueueAluCsrFenceDiv|Scheduler_2|DebugModule|WbDataPath|IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v|Slice|LoadQueueReplay|NewCSR|DCache|DataPath|SnoopUnit|MemUnit|RefillUnit|ResponseUnit|OpenLLC|StoreQueue|FastArbiter_1|FastArbiter_2|FastArbiter_28|FastArbiter_29|Slice_1|Slice_2|Slice_3|Directory_1|Directory_2|Directory_3|PrefetchReqBuffer|RXSNP|Prefetcher|Pipeline_2|Pipeline_3|FusionDecoder|TL2CHICoupledL2|L2Top|PrefetchQueue|VBestOffsetPrefetch|MemCtrl|Frontend|CSR|VLSplitImp|VSSplitImp|AtomicsUnit|VSMergeBufferImp|VLMergeBufferImp|PTWNewFilter|L1Prefetcher|SMSPrefetcher|VSegmentUnit|MemBlock|HPerfMonitor_2|FastArbiter_77|FastArbiter_78|FastArbiter_79|TLBNonBlock_1|TLBNonBlock_2|ExuBlock_2|NCB200|NCB200_1|TLBNonBlock|BankedDataArray) ;;
@@ -118,6 +133,111 @@ WT_HEAD_PRE=$(git -C "$WT" rev-parse HEAD)
 WT_DIRTY_PRE=$(git -C "$WT" status --porcelain --untracked-files=no | wc -l)
 D="$WT/verif/ut/$UTDIR"
 
+# --- reference_kind=canonical_derivative: committed, hash-pinned overlay ------
+# Default reference root = frozen G0 golden. For a canonical_derivative target we
+# resolve a per-id ledger under verif/freeze/canonical/derivatives/<derivative_id>,
+# read its bytes ONLY from the committed tree (IMPL_COMMIT), verify the derivative
+# .sv against the ledger's reference_sv_sha256 AND the whole ledger's root digest,
+# then build a symlink-overlay of $GOLDEN with the top's .sv replaced by the
+# derivative. GOLDEN is repointed at that overlay for both `make` and the closure
+# digest. No env-var path is honored (security boundary).
+DERIV_LEDGER_ROOT="-"; DERIV_SV_SHA="-"
+DERIV_SURFACE_TOP=""; DERIV_SURFACE_REF_SV=""; DERIV_SURFACE_IMPL_SV=""
+DERIV_SURFACE_REF_SHA="-"; DERIV_SURFACE_IMPL_SHA="-"
+if [ "$REFKIND" = "canonical_derivative" ]; then
+  LREL="verif/freeze/canonical/derivatives/$DERIVID"
+  LEDGER_REL="$LREL/LEDGER.tsv"
+  git -C "$SIGNOFF" cat-file -e "$IMPL_COMMIT:$LEDGER_REL" 2>/dev/null || {
+    echo "TARGET $TARGET: DERIVATIVE_LEDGER_NOT_COMMITTED $LEDGER_REL"; rm -rf "$STG"; git -C "$SIGNOFF" worktree remove --force "$WT" >/dev/null 2>&1; rm -rf "$WTROOT"; exit 2; }
+  # Parse ledger fields from committed bytes (not the worktree checkout).
+  LEDGER_TXT=$(git -C "$SIGNOFF" show "$IMPL_COMMIT:$LEDGER_REL")
+  lval(){ printf '%s\n' "$LEDGER_TXT" | awk -F'\t' -v k="$1" '$1==k{print $2; exit}'; }
+  L_KIND=$(lval reference_kind); L_ID=$(lval derivative_id)
+  L_TOP=$(lval reference_top);   L_SV=$(lval reference_sv)
+  L_SVSHA=$(lval reference_sv_sha256); L_ROOT=$(lval ledger_root_sha256)
+  # Target-scoped semantic-surface WRAPPER (codex_0092 §1, option B). OPTIONAL
+  # ledger fields: two per-side wrapper .sv (module semantic_surface_top) that
+  # re-export ONLY the source-defined outputs and leave the UNSPECIFIED-by-source
+  # (invalidate-only) output leaves off the surface.  This is NOT a generic
+  # dont_verify / "exclude any point" / "swap any top" runner knob: the wrapper
+  # bytes come EXCLUSIVELY from the committed ledger, keyed by this derivative_id,
+  # and are hash-checked against the ledger's per-wrapper sha256 (themselves bound
+  # into ledger_root_sha256).  No env-var path override.  Absent => full compare.
+  L_STOP=$(lval semantic_surface_top)
+  L_SREF=$(lval semantic_surface_ref);   L_SREFSHA=$(lval semantic_surface_ref_sha256)
+  L_SIMPL=$(lval semantic_surface_impl); L_SIMPLSHA=$(lval semantic_surface_impl_sha256)
+  [ "$L_KIND" = "canonical_derivative" ] || { echo "TARGET $TARGET: LEDGER_KIND_BAD $L_KIND"; rm -rf "$STG"; git -C "$SIGNOFF" worktree remove --force "$WT" >/dev/null 2>&1; rm -rf "$WTROOT"; exit 2; }
+  [ "$L_ID" = "$DERIVID" ] || { echo "TARGET $TARGET: LEDGER_ID_MISMATCH manifest=$DERIVID ledger=$L_ID"; rm -rf "$STG"; git -C "$SIGNOFF" worktree remove --force "$WT" >/dev/null 2>&1; rm -rf "$WTROOT"; exit 2; }
+  [ "$L_TOP" = "$TARGET" ] || { echo "TARGET $TARGET: LEDGER_TOP_MISMATCH ledger reference_top=$L_TOP"; rm -rf "$STG"; git -C "$SIGNOFF" worktree remove --force "$WT" >/dev/null 2>&1; rm -rf "$WTROOT"; exit 2; }
+  # Reproduce the ledger root digest over committed artifact bytes; must match.
+  CALC_ROOT=$(python3 - "$SIGNOFF" "$IMPL_COMMIT" "$LREL" <<'PY'
+import subprocess,sys,hashlib
+signoff,commit,lrel=sys.argv[1:4]
+ledger=subprocess.check_output(["git","-C",signoff,"show",f"{commit}:{lrel}/LEDGER.tsv"]).decode()
+arts=[]
+for ln in ledger.splitlines():
+    p=ln.split("\t")
+    if p[0]=="artifact": arts.append((p[1],int(p[2]),p[3]))
+blob=b""
+for fn,size,sha in sorted(arts):
+    b=subprocess.check_output(["git","-C",signoff,"show",f"{commit}:{lrel}/{fn}"])
+    if len(b)!=size or hashlib.sha256(b).hexdigest()!=sha:
+        print("ARTIFACT_DRIFT "+fn); sys.exit(0)
+    blob+=f"{fn}\t{size}\t{sha}\n".encode()
+print(hashlib.sha256(blob).hexdigest())
+PY
+)
+  [ "$CALC_ROOT" = "$L_ROOT" ] || { echo "TARGET $TARGET: LEDGER_ROOT_MISMATCH computed=$CALC_ROOT ledger=$L_ROOT"; rm -rf "$STG"; git -C "$SIGNOFF" worktree remove --force "$WT" >/dev/null 2>&1; rm -rf "$WTROOT"; exit 2; }
+  # Materialize the derivative .sv from committed bytes; verify against ledger SHA.
+  OVL="$WTROOT/golden-overlay"; mkdir -p "$OVL"
+  # symlink-farm the frozen golden so any deps still resolve
+  for g in "$GOLDEN"/*; do ln -s "$g" "$OVL/$(basename "$g")"; done
+  rm -f "$OVL/$L_SV"
+  git -C "$SIGNOFF" show "$IMPL_COMMIT:$LREL/$L_SV" > "$OVL/$L_SV"
+  GOT_SVSHA=$(sha256sum "$OVL/$L_SV" | cut -d' ' -f1)
+  [ "$GOT_SVSHA" = "$L_SVSHA" ] || { echo "TARGET $TARGET: DERIVATIVE_SV_SHA_MISMATCH got=$GOT_SVSHA ledger=$L_SVSHA"; rm -rf "$STG"; git -C "$SIGNOFF" worktree remove --force "$WT" >/dev/null 2>&1; rm -rf "$WTROOT"; exit 2; }
+  GOLDEN="$OVL"; DERIV_LEDGER_ROOT="$L_ROOT"; DERIV_SV_SHA="$L_SVSHA"
+  echo "REFERENCE_KIND canonical_derivative id=$DERIVID sv_sha=$L_SVSHA ledger_root=$L_ROOT" > "$STG/reference_kind.txt"
+  # ---- semantic-surface wrapper staging (hard-bound; no env override) -------
+  # Present only when the committed ledger declares the surface fields.  All or
+  # nothing: a partial set (top without a wrapper, wrapper without a sha, etc.)
+  # is a corrupt/tampered ledger => fail-closed.
+  bail(){ echo "TARGET $TARGET: $1"; rm -rf "$STG"; git -C "$SIGNOFF" worktree remove --force "$WT" >/dev/null 2>&1; rm -rf "$WTROOT"; exit 2; }
+  _surf_any=0
+  for v in "$L_STOP" "$L_SREF" "$L_SREFSHA" "$L_SIMPL" "$L_SIMPLSHA"; do
+    { [ -n "$v" ] && [ "$v" != "-" ]; } && _surf_any=1
+  done
+  if [ "$_surf_any" = 1 ]; then
+    for kv in "semantic_surface_top:$L_STOP" "semantic_surface_ref:$L_SREF" \
+              "semantic_surface_ref_sha256:$L_SREFSHA" \
+              "semantic_surface_impl:$L_SIMPL" "semantic_surface_impl_sha256:$L_SIMPLSHA"; do
+      val=${kv#*:}
+      { [ -n "$val" ] && [ "$val" != "-" ]; } || bail "SEMANTIC_SURFACE_INCOMPLETE missing ${kv%%:*}"
+    done
+    # stage + hash-verify each wrapper from committed bytes (never worktree).
+    stage_surf(){ # <file> <want_sha> <outvar-name>
+      local f="$1" want="$2" out="$3" p="$WTROOT/$1" got
+      git -C "$SIGNOFF" cat-file -e "$IMPL_COMMIT:$LREL/$f" 2>/dev/null || bail "SEMANTIC_SURFACE_NOT_COMMITTED $LREL/$f"
+      git -C "$SIGNOFF" show "$IMPL_COMMIT:$LREL/$f" > "$p"
+      got=$(sha256sum "$p" | cut -d' ' -f1)
+      [ "$got" = "$want" ] || bail "SEMANTIC_SURFACE_SHA_MISMATCH $f got=$got ledger=$want"
+      printf -v "$out" '%s' "$p"
+    }
+    stage_surf "$L_SREF"  "$L_SREFSHA"  DERIV_SURFACE_REF_SV
+    stage_surf "$L_SIMPL" "$L_SIMPLSHA" DERIV_SURFACE_IMPL_SV
+    DERIV_SURFACE_TOP="$L_STOP"; DERIV_SURFACE_REF_SHA="$L_SREFSHA"; DERIV_SURFACE_IMPL_SHA="$L_SIMPLSHA"
+    cp "$DERIV_SURFACE_REF_SV"  "$STG/$L_SREF"
+    cp "$DERIV_SURFACE_IMPL_SV" "$STG/$L_SIMPL"
+    echo "SEMANTIC_SURFACE id=$DERIVID top=$L_STOP ref_sha=$L_SREFSHA impl_sha=$L_SIMPLSHA" >> "$STG/reference_kind.txt"
+  fi
+fi
+# Security invariant: a semantic surface is ONLY ever set from the committed,
+# hash-verified canonical_derivative ledger above.  A golden-reference target can
+# never carry one (no code path sets DERIV_SURFACE_TOP outside the block).
+if [ "$REFKIND" = "golden" ] && [ -n "$DERIV_SURFACE_TOP" ]; then
+  echo "TARGET $TARGET: SEMANTIC_SURFACE_ON_GOLDEN (illegal)"; rm -rf "$STG"; git -C "$SIGNOFF" worktree remove --force "$WT" >/dev/null 2>&1; rm -rf "$WTROOT"; exit 2
+fi
+
 finalize() {  # rc
   local rc=$1
   local hpo=$(git -C "$WT" rev-parse HEAD 2>/dev/null || echo GONE)
@@ -138,6 +258,13 @@ finalize() {  # rc
     echo -e "allow_ref\t$ALLOWREF\t$ALLOW_SHA"
     echo -e "dead_ref\t$DEADREF\t$DEADREF_SHA"
     echo -e "declarations_ref\t$DECL_REL\t$DECL_SHA"
+    echo -e "reference_kind\t$REFKIND\t-"
+    echo -e "derivative_id\t$DERIVID\t-"
+    echo -e "derivative_sv_sha256\t-\t$DERIV_SV_SHA"
+    echo -e "derivative_ledger_root\t-\t$DERIV_LEDGER_ROOT"
+    echo -e "semantic_surface_top\t${DERIV_SURFACE_TOP:--}\t-"
+    echo -e "semantic_surface_ref_sha256\t-\t$DERIV_SURFACE_REF_SHA"
+    echo -e "semantic_surface_impl_sha256\t-\t$DERIV_SURFACE_IMPL_SHA"
     echo -e "verify_matched_unread_compare_points\t$VERIFY_MU\t-"
     if [ -f "$STG/script_closure.list" ]; then
       while IFS=$'\t' read -r orig snap lhash; do
@@ -168,9 +295,16 @@ finalize() {  # rc
 }
 
 # --- 运行(clean worktree; XSSV_HOME=WT 即提交态脚本; 落真实 fm_shell.rc)---
+# FM_SEMANTIC_SURFACE_* are only ever the hash-verified committed wrappers staged
+# above (empty otherwise).  They repoint the FM top to the surface wrapper and
+# append each side's wrapper .sv -- a dedicated, target-scoped mechanism, never a
+# free-form dont_verify list or arbitrary top-swap.
+SURF_MK=""
+[ -n "$DERIV_SURFACE_TOP" ] && SURF_MK="FM_SEMANTIC_SURFACE_TOP=$DERIV_SURFACE_TOP FM_SEMANTIC_SURFACE_REF_SV=$DERIV_SURFACE_REF_SV FM_SEMANTIC_SURFACE_IMPL_SV=$DERIV_SURFACE_IMPL_SV"
 ( cd "$D" && rm -f "fm_work/$TARGET/fm.log" && \
   FM_SIDECAR_OUT="$STG" FM_RUN_ID="$RID" \
   timeout "$TMO" make $MKARG "$MT" GOLDEN_RTL="$GOLDEN" XSSV_HOME="$WT" \
+    $SURF_MK \
     FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS="$VERIFY_MU" \
     $([ "${MT:0:3}" = "fm-" ] && echo "FM_MODE=$PMODE") ) > "$STG/make.out" 2>&1
 MAKE_RC=$?
@@ -198,6 +332,7 @@ done < "$STG/script_closure.list"
 [ "$CBAD" != 0 ] && { echo "TARGET $TARGET: INFRA_FAIL closure" | tee -a "$STG/RESULT.txt"; finalize 3; }
 SCRIPT_DIG=$(python3 "$SC/fm_closure_digest.py" --mode concat "${SNAPS[@]}")
 CMD=$(cd "$D" && make -n $MKARG "$MT" GOLDEN_RTL="$GOLDEN" XSSV_HOME="$WT" \
+      $SURF_MK \
       FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS="$VERIFY_MU" \
       $([ "${MT:0:3}" = "fm-" ] && echo "FM_MODE=$PMODE") 2>/dev/null \
       | sed -e ':a' -e '/\\$/{N;s/\\\n//;ba}' | grep "fm_shell -64" | head -1)
@@ -208,7 +343,12 @@ SEM=(--semantic "DEFINE=SYNTHESIS" --semantic "MERGE_DUP=$MERGE" --semantic "MOD
      --semantic "VERIFY_MATCHED_UNREAD_COMPARE_POINTS=$VERIFY_MU" \
      --semantic "DECLARATIONS_SHA=$DECL_SHA" \
      --semantic "SCRIPT_CLOSURE_SHA=$SCRIPT_DIG" --semantic "MANIFEST_SHA=$MANIFEST_SHA" \
-     --semantic "ALLOW_SHA=$ALLOW_SHA" --semantic "DEAD_REF_SHA=$DEADREF_SHA")
+     --semantic "ALLOW_SHA=$ALLOW_SHA" --semantic "DEAD_REF_SHA=$DEADREF_SHA" \
+     --semantic "REFERENCE_KIND=$REFKIND" --semantic "DERIVATIVE_ID=$DERIVID" \
+     --semantic "DERIVATIVE_LEDGER_ROOT=$DERIV_LEDGER_ROOT" \
+     --semantic "SEMANTIC_SURFACE_TOP=${DERIV_SURFACE_TOP:--}" \
+     --semantic "SEMANTIC_SURFACE_REF_SHA=$DERIV_SURFACE_REF_SHA" \
+     --semantic "SEMANTIC_SURFACE_IMPL_SHA=$DERIV_SURFACE_IMPL_SHA")
 REF_DIG=$(cd "$D" && python3 "$SC/fm_closure_digest.py" --mode files --root "$GOLDEN" "${SEM[@]}" $REF_SRCS 2>/dev/null)
 IMPL_DIG=$(cd "$D" && python3 "$SC/fm_closure_digest.py" --mode files --root "$WT" "${SEM[@]}" $IMPL_SRCS 2>/dev/null)
 TOOL_DIG=$(python3 "$SC/fm_closure_digest.py" --mode tool "$(command -v fm_shell)")
