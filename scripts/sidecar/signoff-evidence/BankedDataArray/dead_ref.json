@@ -1,0 +1,19 @@
+{
+  "schema": "fm-sidecar-dead-ref-v1",
+  "target": "BankedDataArray",
+  "rationale": "assembly+vmucp (codex_0093 §1 exact-cutpoint, 2026-07-30): DataSRAMBank+SRAMTemplate two-sided elaborated (ELAB_SRCS), so the boundary is now 33 unresolved blackboxes = 32 vendor SRAM macro array_8_ext + mbistPl (declared in allow). This removes the undriven readback cone (childBd_N_rdata) that previously forced verification_set_undriven_signals=BINARY; relaxed_appvars is now empty. impl side 100% clean (unmatched_impl=0, unread_impl=0). 2344 symmetric SRAM-internal matched-unread points (rdataReg_reg/respReg_reg/REG_reg, ref==impl bijection) proven equivalent by vmucp=true. Only residual is 3 golden-only unread_ref = REG_8/9/10 RegNext assertion registers, cone-dead (no functional output fan-out); impl omits the redundant golden-only registers. Enumerated exactly from committed native_facts. NOTE: qualifies ONLY in assembly mode + allow(33 blackboxes) + vmucp=true.",
+  "entries": [
+    {
+      "ref_path": "r:/WORK/BankedDataArray/REG_10_reg",
+      "rationale": "Golden-only RegNext assertion register (REG_10_reg), cone-dead with no functional output fan-out; impl constant-folds/omits it."
+    },
+    {
+      "ref_path": "r:/WORK/BankedDataArray/REG_8_reg",
+      "rationale": "Golden-only RegNext assertion register (REG_8_reg), cone-dead with no functional output fan-out; impl constant-folds/omits it."
+    },
+    {
+      "ref_path": "r:/WORK/BankedDataArray/REG_9_reg",
+      "rationale": "Golden-only RegNext assertion register (REG_9_reg), cone-dead with no functional output fan-out; impl constant-folds/omits it."
+    }
+  ]
+}

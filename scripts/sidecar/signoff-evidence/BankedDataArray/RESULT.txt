@@ -1,3 +1,4 @@
-TARGET BankedDataArray: NO_NATIVE_FACTS (required=SUCCEEDED make_rc=2 fm_shell_rc=1) [SIGNOFF FAIL-CLOSED]
-      puts "FM_MODE_ERROR: $_fmmode 拒绝 FM_INTERFACE_ONLY(assembly 专用手段)"
-    puts "FM_MODE_ERROR: 未知 FM_MODE=$_fmmode"
+SIGNOFF_RESULT BankedDataArray: measured=PASS_DEAD_REF required=PASS_DEAD_REF gate=PASS (proof=assembly fm_shell_rc=0 validator_rc=0)
+run_id: SGN-BankedDataArray-1785465311
+impl_commit: 64bb10e14a9308020b0dbb7ad28afe30dbe6aed3
+manifest_sha256: db2ce8a55c121e65cb2df5da194374120c80b59c9eae7733b157e08bbfbc081f

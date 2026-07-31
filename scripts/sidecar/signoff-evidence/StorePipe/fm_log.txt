@@ -21,11 +21,11 @@
 
 Build: 8868332
 Hostname: localhost.localdomain
-Current time: Mon Jul 20 14:07:54 2026
+Current time: Thu Jul 30 22:47:15 2026
 
 Loading db file '/home/eda/app/synopsys/fm/V-2023.12-SP3/libraries/syn/gtech.db'
 
-Script: /tmp/tmp.YbyPXi5Bw9/wt/scripts/fm_eq.tcl
+Script: /tmp/tmp.qjam9LI6Ls/wt/scripts/fm_eq.tcl
 
 Information: Term was not able to be set up using xterm-256color . Using "xterm" by default instead. (CLE-10)
 # Formality 等价性检查通用脚本
@@ -36,9 +36,33 @@ Information: Term was not able to be set up using xterm-256color . Using "xterm"
 set top       $env(FM_TOP)
 StorePipe
 set ref_srcs  $env(FM_REF_SRCS)
-/home/eda/xs-env/G0-canonical/golden-rtl/StorePipe.sv 
+/tmp/tmp.qjam9LI6Ls/golden-overlay/StorePipe.sv  
 set impl_srcs $env(FM_IMPL_SRCS)
-/tmp/tmp.YbyPXi5Bw9/wt/rtl/memblock/storepipe_pkg.sv /tmp/tmp.YbyPXi5Bw9/wt/rtl/memblock/StorePipe.sv /tmp/tmp.YbyPXi5Bw9/wt/rtl/memblock/StorePipe_wrapper.sv
+/tmp/tmp.qjam9LI6Ls/wt/rtl/memblock/storepipe_pkg.sv /tmp/tmp.qjam9LI6Ls/wt/rtl/memblock/StorePipe.sv /tmp/tmp.qjam9LI6Ls/wt/rtl/memblock/StorePipe_wrapper.sv
+# ----------------------------------------------------------------------------
+# 目标级语义面包装(codex_0092 §1 选项 B; canonical_derivative 专用, runner 硬绑):
+# 当 runner 从 committed+hash 校验的 ledger 置入这三个 env 时, FM 顶层换成语义面
+# 包装模块(两侧同名 StorePipe_surface): 它只再导出 36 个源定义输出 + 23 输入, 把 14
+# 个源 FIRRTL invalidate-only(未定义)输出叶留作内部悬空 net → 真正退出观测面(既非
+# dont_verify 也非 0 填充也非通用排除)。ref/impl 各追加自己那侧的包装 .sv, 顶层改为
+# semantic_surface_top。包装 .sv 字节由 runner 逐一 hash 校验(见 run_signoff_target.sh),
+# 无 env 路径覆盖; 这不是通用"任意换顶层"钩子, 只服务 canonical_derivative 语义面。
+if {[info exists env(FM_SEMANTIC_SURFACE_TOP)] &&
+    [string trim $env(FM_SEMANTIC_SURFACE_TOP)] ne ""} {
+    if {![info exists env(FM_SEMANTIC_SURFACE_REF_SV)] ||
+        ![info exists env(FM_SEMANTIC_SURFACE_IMPL_SV)] ||
+        ![file exists $env(FM_SEMANTIC_SURFACE_REF_SV)] ||
+        ![file exists $env(FM_SEMANTIC_SURFACE_IMPL_SV)]} {
+        puts "FM_MODE_ERROR: FM_SEMANTIC_SURFACE_TOP set without both wrapper .sv"
+        exit 3
+    }
+    set top $env(FM_SEMANTIC_SURFACE_TOP)
+    lappend ref_srcs  $env(FM_SEMANTIC_SURFACE_REF_SV)
+    lappend impl_srcs $env(FM_SEMANTIC_SURFACE_IMPL_SV)
+    # reports are written under fm_work/$top; the Makefile only created the work
+    # dir for the target name, so ensure the surface-top report dir exists too.
+    file mkdir fm_work/$top
+}
 # ----------------------------------------------------------------------------
 # Step 3B sidecar emitter(FM_SIDECAR_OUT 非空时启用; 契约 = SIDECAR_SCHEMA.md v7 冻结版):
 # source 后立即对将被 source 的模块本地 Tcl 做**运行期 appvar 拦截**(set_app_var 名字
@@ -95,8 +119,34 @@ switch -- $_fmmode {
 # 后三项 true 即工具默认(man cat3 逐页核对), 显式钉死防版本漂移。
 set_app_var verification_verify_unread_compare_points false
 false
-set_app_var verification_verify_matched_unread_compare_points false
+# LoadQueueUncache target-scoped strengthening: verify matched unread compare
+# points instead of accepting them as Not-Compared.  The signoff runner obtains
+# this value from the committed declaration/manifest and binds it into input
+# provenance.  It is deliberately not a waiver: true asks FM to prove *more*.
+set _verify_matched_unread_compare_points "false"
 false
+if {[info exists env(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS)] &&
+    [string trim $env(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS)] ne ""} {
+    set _verify_matched_unread_compare_points \
+        [string trim $env(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS)]
+}
+true
+switch -- $_verify_matched_unread_compare_points {
+  "true" {
+    if {$top ni {LoadQueueUncache FastArbiter_46 FastArbiter_47 FastArbiter_27 FastArbiter_44 ICacheCtrlUnit ICacheDataArray IPrefetchPipe DivUnit FDivSqrt InstrMMIOEntry InstrUncache TXDAT_4 FAlu FCVT IssueQueueStdMoud MulUnit TXREQ TlbStorageWrapper TlbStorageWrapper_1 IssueQueueStaMou IssueQueueLdu TXDAT Scheduler_1 Scheduler Scheduler_3 MSHR TageBTable Directory SCTable SCTable_1 SCTable_2 SCTable_3 Tage_SC ITTage FauFTB FTBBank FTB Composer EntriesAluCsrFenceDiv Bku SourceB Predictor EntriesAluMulBkuBrhJmp DuplicatedTagArray PtwCache WritebackQueue LinkMonitor Ftq LoadQueue LoadPipe MissQueue IssueQueueAluMulBkuBrhJmp L2TLB Rename IssueQueueAluCsrFenceDiv Scheduler_2 DebugModule WbDataPath IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v Slice LoadQueueReplay NewCSR DCache DataPath SnoopUnit MemUnit RefillUnit ResponseUnit OpenLLC StoreQueue FastArbiter_1 FastArbiter_2 FastArbiter_28 FastArbiter_29 Slice_1 Slice_2 Slice_3 Directory_1 Directory_2 Directory_3 PrefetchReqBuffer RXSNP Prefetcher Pipeline_2 Pipeline_3 FusionDecoder TL2CHICoupledL2 L2Top PrefetchQueue VBestOffsetPrefetch MemCtrl Frontend CSR VLSplitImp VSSplitImp AtomicsUnit VSMergeBufferImp VLMergeBufferImp PTWNewFilter L1Prefetcher SMSPrefetcher VSegmentUnit MemBlock HPerfMonitor_2 FastArbiter_77 FastArbiter_78 FastArbiter_79 TLBNonBlock_1 TLBNonBlock_2 ExuBlock_2 NCB200 NCB200_1 TLBNonBlock BankedDataArray StorePipe StorePipe_surface}} {
+      puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
+      exit 3
+    }
+  }
+  "false" { }
+  default {
+    puts "FM_MODE_ERROR: FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS 非法值 $_verify_matched_unread_compare_points"
+    exit 3
+  }
+}
+set_app_var verification_verify_matched_unread_compare_points \
+    $_verify_matched_unread_compare_points
+true
 set_app_var verification_verify_unread_bbox_inputs false
 false
 set_app_var verification_verify_matched_unread_bbox_inputs true
@@ -132,30 +182,36 @@ true
 # Reference: Chisel 生成的 golden RTL（SYNTHESIS 关掉随机初始化 initial 块）
 read_sverilog -r -define {SYNTHESIS} $ref_srcs
 No target library specified, default is WORK
-Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/StorePipe.sv'
+Loading verilog file '/tmp/tmp.qjam9LI6Ls/golden-overlay/StorePipe.sv'
+Loading verilog file '/tmp/tmp.qjam9LI6Ls/StorePipe_ref_surface.sv'
 Current container set to 'r'
 1
 set_top r:/WORK/$top
-Setting top design to 'r:/WORK/StorePipe'
+Setting top design to 'r:/WORK/StorePipe_surface'
+Status:   Elaborating design StorePipe_surface   ...  
 Status:   Elaborating design StorePipe   ...  
 Status:  Implementing inferred operators...
-Top design successfully set to 'r:/WORK/StorePipe'
-Reference design set to 'r:/WORK/StorePipe'
+Top design successfully set to 'r:/WORK/StorePipe_surface'
+Reference design set to 'r:/WORK/StorePipe_surface'
 1
 # Implementation: 手写 SV
 read_sverilog -i -define {SYNTHESIS} $impl_srcs
 No target library specified, default is WORK
-Loading verilog file '/tmp/tmp.YbyPXi5Bw9/wt/rtl/memblock/storepipe_pkg.sv'
-Loading verilog file '/tmp/tmp.YbyPXi5Bw9/wt/rtl/memblock/StorePipe.sv'
-Loading verilog file '/tmp/tmp.YbyPXi5Bw9/wt/rtl/memblock/StorePipe_wrapper.sv'
+Loading verilog file '/tmp/tmp.qjam9LI6Ls/wt/rtl/memblock/storepipe_pkg.sv'
+Loading verilog file '/tmp/tmp.qjam9LI6Ls/wt/rtl/memblock/StorePipe.sv'
+Loading verilog file '/tmp/tmp.qjam9LI6Ls/wt/rtl/memblock/StorePipe_wrapper.sv'
+Loading verilog file '/tmp/tmp.qjam9LI6Ls/StorePipe_impl_surface.sv'
 Current container set to 'i'
 1
 set_top i:/WORK/$top
-Setting top design to 'i:/WORK/StorePipe'
+Setting top design to 'i:/WORK/StorePipe_surface'
+Status:   Elaborating design StorePipe_surface   ...  
 Status:   Elaborating design StorePipe   ...  
+Status:   Elaborating design xs_StorePipe_core  EN_STORE_PF_AT_ISSUE=1'b0 ...  
+Information: Created design named 'xs_StorePipe_core_0'. (FE-LINK-13)
 Status:  Implementing inferred operators...
-Top design successfully set to 'i:/WORK/StorePipe'
-Implementation design set to 'i:/WORK/StorePipe'
+Top design successfully set to 'i:/WORK/StorePipe_surface'
+Implementation design set to 'i:/WORK/StorePipe_surface'
 1
 # ----------------------------------------------------------------------------
 # 字段映射配对（在首次 match 之前全量钉死）：当手写核心把整个 payload 打包进一个
@@ -192,10 +248,24 @@ if {[info exists env(FM_PIN_PRE_TCL)] && [file exists $env(FM_PIN_PRE_TCL)]} {
 }
 match_packed_payload $top
 match
-Reference design is 'r:/WORK/StorePipe'
-Implementation design is 'i:/WORK/StorePipe'
-    Error: The reference design 'r:/WORK/StorePipe' is a black box. (FM-081)
-0
+Reference design is 'r:/WORK/StorePipe_surface'
+Implementation design is 'i:/WORK/StorePipe_surface'
+Status:  Checking designs...
+Status:  Building verification models...
+Status:  Matching...
+    
+*********************************** Matching Results ***********************************    
+ 266 Compare points matched by name    
+ 158 Compare points matched by signature analysis    
+ 0 Compare points matched by topology    
+ 309 Matched primary inputs, black-box outputs    
+ 0(0) Unmatched reference(implementation) compare points    
+ 0(0) Unmatched reference(implementation) primary inputs, black-box outputs    
+ 6(6) Unmatched reference(implementation) unread points    
+****************************************************************************************
+
+    Info:  Formality Guide Files (SVF) can improve matching performance and success by automating setup.
+1
 # ----------------------------------------------------------------------------
 # 自动配对 Chisel 展平命名与 SV 数组命名的寄存器：
 #   ref:  name_1_0_reg / array_0_reg[2]   （firtool 把 Vec 展平成带下标后缀的标量名）
@@ -271,6 +341,47 @@ if {[info exists env(FM_PIN_TCL)] && [file exists $env(FM_PIN_TCL)]} {
     if {$SIDECAR_ON} { sidecar_pin_source $env(FM_PIN_TCL) } else { source $env(FM_PIN_TCL) }
     match
 }
+Set a match between the following objects:
+	r:/WORK/StorePipe_surface/u_dut/s2_paddr_reg[0]
+    (?) i:/WORK/StorePipe_surface/u_dut/u_core/s2_paddr_reg[0]
+STOREPIPE_PIN: s2_paddr_reg[0] r/u_dut <-> i/u_dut/u_core
+Set a match between the following objects:
+	r:/WORK/StorePipe_surface/u_dut/s2_paddr_reg[1]
+    (?) i:/WORK/StorePipe_surface/u_dut/u_core/s2_paddr_reg[1]
+STOREPIPE_PIN: s2_paddr_reg[1] r/u_dut <-> i/u_dut/u_core
+Set a match between the following objects:
+	r:/WORK/StorePipe_surface/u_dut/s2_paddr_reg[2]
+    (?) i:/WORK/StorePipe_surface/u_dut/u_core/s2_paddr_reg[2]
+STOREPIPE_PIN: s2_paddr_reg[2] r/u_dut <-> i/u_dut/u_core
+Set a match between the following objects:
+	r:/WORK/StorePipe_surface/u_dut/s2_paddr_reg[3]
+    (?) i:/WORK/StorePipe_surface/u_dut/u_core/s2_paddr_reg[3]
+STOREPIPE_PIN: s2_paddr_reg[3] r/u_dut <-> i/u_dut/u_core
+Set a match between the following objects:
+	r:/WORK/StorePipe_surface/u_dut/s2_paddr_reg[4]
+    (?) i:/WORK/StorePipe_surface/u_dut/u_core/s2_paddr_reg[4]
+STOREPIPE_PIN: s2_paddr_reg[4] r/u_dut <-> i/u_dut/u_core
+Set a match between the following objects:
+	r:/WORK/StorePipe_surface/u_dut/s2_paddr_reg[5]
+    (?) i:/WORK/StorePipe_surface/u_dut/u_core/s2_paddr_reg[5]
+STOREPIPE_PIN: s2_paddr_reg[5] r/u_dut <-> i/u_dut/u_core
+STOREPIPE_PINS: 6 s2_paddr byte-offset dead bits pinned (true bijection)
+Reference design is 'r:/WORK/StorePipe_surface'
+Implementation design is 'i:/WORK/StorePipe_surface'
+Status:  Matching...
+    
+*********************************** Matching Results ***********************************    
+ 424 Compare points matched previously    
+ 6 Compare points matched by user    
+ 0 Compare points matched by name    
+ 0 Compare points matched by signature analysis    
+ 0 Compare points matched by topology    
+ 309 Matched primary inputs, black-box outputs    
+ 0(0) Unmatched reference(implementation) compare points    
+ 0(0) Unmatched reference(implementation) primary inputs, black-box outputs    
+****************************************************************************************
+
+1
 report_unmatched_points > fm_work/$top/unmatched.rpt
 report_matched_points > fm_work/$top/matched.rpt
 # sidecar: appvar 有效值读回——全部 pin/custom Tcl 之后、verify 之前(schema v7 契约)
@@ -281,88 +392,44 @@ if {[verify]} {
     report_failing_points > fm_work/$top/failing.rpt
     puts "FM_RESULT: Verification FAILED or INCONCLUSIVE for $top"
 }
-Reference design is 'r:/WORK/StorePipe'
-Implementation design is 'i:/WORK/StorePipe'
-    Error: The reference design 'r:/WORK/StorePipe' is a black box. (FM-081)
+Reference design is 'r:/WORK/StorePipe_surface'
+Implementation design is 'i:/WORK/StorePipe_surface'
+    
+*********************************** Matching Results ***********************************    
+ 424 Compare points matched previously    
+ 6 Compare points matched by user    
+ 0 Compare points matched by name    
+ 0 Compare points matched by signature analysis    
+ 0 Compare points matched by topology    
+ 309 Matched primary inputs, black-box outputs    
+ 0(0) Unmatched reference(implementation) compare points    
+ 0(0) Unmatched reference(implementation) primary inputs, black-box outputs    
+****************************************************************************************
+
+Status:  Verifying...
 
 
 ********************************* Verification Results *********************************
-Verification NOT RUN
-(Equivalence checking aborted due to errors)
---------------------------------------------
- Reference design: r:/WORK/StorePipe
- Implementation design: i:/WORK/StorePipe
+Verification SUCCEEDED
+----------------------
+ Reference design: r:/WORK/StorePipe_surface
+ Implementation design: i:/WORK/StorePipe_surface
+ 430 Passing compare points
 ----------------------------------------------------------------------------------------
 Matched Compare Points     BBPin    Loop   BBNet     Cut    Port     DFF     LAT   TOTAL
 ----------------------------------------------------------------------------------------
-Passing (equivalent)           0       0       0       0       0       0       0       0
+Passing (equivalent)           0       0       0       0     266     164       0     430
 Failing (not equivalent)       0       0       0       0       0       0       0       0
 ****************************************************************************************
-FM_RESULT: Verification FAILED or INCONCLUSIVE for StorePipe
+FM_RESULT: Verification SUCCEEDED for StorePipe_surface
 # sidecar: 全查询→内存解析→原子写 native_facts.json(任何错误删 tmp 并 exit 4)
 if {$SIDECAR_ON} { sidecar_emit $top }
-
-No passing points available before verification.
-
-
-No failing points available before matching.
-
-
-No unverified points available before matching.
-
-
-No aborted points available before verification.
-
-
-No matched points available before matching.
-
-
-No matched points available before matching.
-
-
-No matched points available before matching.
-
-
-No unmatched points available before matching.
-
-
-No unmatched points available before matching.
-
-
-No unmatched points available before matching.
-
-
-No unmatched points available before matching.
-
-
-No unmatched points available before matching.
-
-
-No unmatched points available before matching.
-
-
-No unmatched points available before matching.
-
-
-No unmatched points available before matching.
-
-
-No unmatched points available before matching.
-
-
-No unmatched points available before matching.
-
-
-No unmatched points available before matching.
-
-
-No unmatched points available before matching.
-
-SIDECAR_ERROR: emit_failed: bbox_BLOCKS_unparsed:e *    StorePipe
+SIDECAR_NATIVE_FACTS_WRITTEN
+exit
 
 Maximum memory usage for this session: 867 MB
-CPU usage for this session: 0.62 seconds ( 0.00 hours )
-Current time: Mon Jul 20 14:08:05 2026
-Elapsed time: 13 seconds ( 0.00 hours )
+CPU usage for this session: 3.98 seconds ( 0.00 hours )
+Current time: Thu Jul 30 22:47:29 2026
+Elapsed time: 18 seconds ( 0.01 hours )
 
 Thank you for using Formality (R)!

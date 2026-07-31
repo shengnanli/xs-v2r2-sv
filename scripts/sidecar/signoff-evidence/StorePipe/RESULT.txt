@@ -1,3 +1,4 @@
-TARGET StorePipe: NO_NATIVE_FACTS (required=SUCCEEDED make_rc=2 fm_shell_rc=4) [SIGNOFF FAIL-CLOSED]
-      puts "FM_MODE_ERROR: $_fmmode 拒绝 FM_INTERFACE_ONLY(assembly 专用手段)"
-    puts "FM_MODE_ERROR: 未知 FM_MODE=$_fmmode"
+SIGNOFF_RESULT StorePipe: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=signoff-strict fm_shell_rc=0 validator_rc=0)
+run_id: SGN-StorePipe-1785466007
+impl_commit: 39d559ec5b038a30f5a7d5391a31a2fa39ea2f23
+manifest_sha256: 717f2aa98af44227036d676b3ccf401f9bbcaf546f05b894ca90c8d41530d428

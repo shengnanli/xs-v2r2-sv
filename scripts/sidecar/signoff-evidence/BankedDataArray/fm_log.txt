@@ -21,11 +21,11 @@
 
 Build: 8868332
 Hostname: localhost.localdomain
-Current time: Mon Jul 20 13:35:24 2026
+Current time: Thu Jul 30 22:35:19 2026
 
 Loading db file '/home/eda/app/synopsys/fm/V-2023.12-SP3/libraries/syn/gtech.db'
 
-Script: /tmp/tmp.QKfTi4lktK/wt/scripts/fm_eq.tcl
+Script: /tmp/tmp.yrHIb64RyJ/wt/scripts/fm_eq.tcl
 
 Information: Term was not able to be set up using xterm-256color . Using "xterm" by default instead. (CLE-10)
 # Formality 等价性检查通用脚本
@@ -36,9 +36,9 @@ Information: Term was not able to be set up using xterm-256color . Using "xterm"
 set top       $env(FM_TOP)
 BankedDataArray
 set ref_srcs  $env(FM_REF_SRCS)
-/home/eda/xs-env/G0-canonical/golden-rtl/BankedDataArray.sv 
+/home/eda/xs-env/G0-canonical/golden-rtl/BankedDataArray.sv /home/eda/xs-env/G0-canonical/golden-rtl/DataSRAMBank.sv /home/eda/xs-env/G0-canonical/golden-rtl/DataSRAMBank_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/DataSRAMBank_2.sv /home/eda/xs-env/G0-canonical/golden-rtl/DataSRAMBank_4.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_82.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_84.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_86.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_90.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_98.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p256x72m72s1h0l1b_dcsh_dat.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_8.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistClockGateCell.sv /home/eda/xs-env/G0-canonical/golden-rtl/ClockGate.sv 
 set impl_srcs $env(FM_IMPL_SRCS)
-/tmp/tmp.QKfTi4lktK/wt/rtl/memblock/bankeddata_pkg.sv /tmp/tmp.QKfTi4lktK/wt/rtl/memblock/BankedDataArray.sv /tmp/tmp.QKfTi4lktK/wt/rtl/memblock/BankedDataArray_wrapper.sv
+/tmp/tmp.yrHIb64RyJ/wt/rtl/memblock/bankeddata_pkg.sv /tmp/tmp.yrHIb64RyJ/wt/rtl/memblock/BankedDataArray.sv /tmp/tmp.yrHIb64RyJ/wt/rtl/memblock/BankedDataArray_wrapper.sv /home/eda/xs-env/G0-canonical/golden-rtl/DataSRAMBank.sv /home/eda/xs-env/G0-canonical/golden-rtl/DataSRAMBank_1.sv /home/eda/xs-env/G0-canonical/golden-rtl/DataSRAMBank_2.sv /home/eda/xs-env/G0-canonical/golden-rtl/DataSRAMBank_4.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_82.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_84.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_86.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_90.sv /home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_98.sv /home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p256x72m72s1h0l1b_dcsh_dat.sv /home/eda/xs-env/G0-canonical/golden-rtl/array_8.sv /home/eda/xs-env/G0-canonical/golden-rtl/MbistClockGateCell.sv /home/eda/xs-env/G0-canonical/golden-rtl/ClockGate.sv
 # ----------------------------------------------------------------------------
 # Step 3B sidecar emitter(FM_SIDECAR_OUT 非空时启用; 契约 = SIDECAR_SCHEMA.md v7 冻结版):
 # source 后立即对将被 source 的模块本地 Tcl 做**运行期 appvar 拦截**(set_app_var 名字
@@ -71,7 +71,7 @@ if {[info exists env(FM_SIDECAR_OUT)] && [string trim $env(FM_SIDECAR_OUT)] ne "
 set _fmmode "signoff-strict"
 signoff-strict
 if {[info exists env(FM_MODE)]} { set _fmmode $env(FM_MODE) }
-signoff-strict
+assembly
 switch -- $_fmmode {
   "assembly" {
     if {[info exists env(FM_INTERFACE_ONLY)] && [string trim $env(FM_INTERFACE_ONLY)] ne ""} {
@@ -95,8 +95,34 @@ switch -- $_fmmode {
 # 后三项 true 即工具默认(man cat3 逐页核对), 显式钉死防版本漂移。
 set_app_var verification_verify_unread_compare_points false
 false
-set_app_var verification_verify_matched_unread_compare_points false
+# LoadQueueUncache target-scoped strengthening: verify matched unread compare
+# points instead of accepting them as Not-Compared.  The signoff runner obtains
+# this value from the committed declaration/manifest and binds it into input
+# provenance.  It is deliberately not a waiver: true asks FM to prove *more*.
+set _verify_matched_unread_compare_points "false"
 false
+if {[info exists env(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS)] &&
+    [string trim $env(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS)] ne ""} {
+    set _verify_matched_unread_compare_points \
+        [string trim $env(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS)]
+}
+true
+switch -- $_verify_matched_unread_compare_points {
+  "true" {
+    if {$top ni {LoadQueueUncache FastArbiter_46 FastArbiter_47 FastArbiter_27 FastArbiter_44 ICacheCtrlUnit ICacheDataArray IPrefetchPipe DivUnit FDivSqrt InstrMMIOEntry InstrUncache TXDAT_4 FAlu FCVT IssueQueueStdMoud MulUnit TXREQ TlbStorageWrapper TlbStorageWrapper_1 IssueQueueStaMou IssueQueueLdu TXDAT Scheduler_1 Scheduler Scheduler_3 MSHR TageBTable Directory SCTable SCTable_1 SCTable_2 SCTable_3 Tage_SC ITTage FauFTB FTBBank FTB Composer EntriesAluCsrFenceDiv Bku SourceB Predictor EntriesAluMulBkuBrhJmp DuplicatedTagArray PtwCache WritebackQueue LinkMonitor Ftq LoadQueue LoadPipe MissQueue IssueQueueAluMulBkuBrhJmp L2TLB Rename IssueQueueAluCsrFenceDiv Scheduler_2 DebugModule WbDataPath IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v Slice LoadQueueReplay NewCSR DCache DataPath SnoopUnit MemUnit RefillUnit ResponseUnit OpenLLC StoreQueue FastArbiter_1 FastArbiter_2 FastArbiter_28 FastArbiter_29 Slice_1 Slice_2 Slice_3 Directory_1 Directory_2 Directory_3 PrefetchReqBuffer RXSNP Prefetcher Pipeline_2 Pipeline_3 FusionDecoder TL2CHICoupledL2 L2Top PrefetchQueue VBestOffsetPrefetch MemCtrl Frontend CSR VLSplitImp VSSplitImp AtomicsUnit VSMergeBufferImp VLMergeBufferImp PTWNewFilter L1Prefetcher SMSPrefetcher VSegmentUnit MemBlock HPerfMonitor_2 FastArbiter_77 FastArbiter_78 FastArbiter_79 TLBNonBlock_1 TLBNonBlock_2 ExuBlock_2 NCB200 NCB200_1 TLBNonBlock BankedDataArray}} {
+      puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
+      exit 3
+    }
+  }
+  "false" { }
+  default {
+    puts "FM_MODE_ERROR: FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS 非法值 $_verify_matched_unread_compare_points"
+    exit 3
+  }
+}
+set_app_var verification_verify_matched_unread_compare_points \
+    $_verify_matched_unread_compare_points
+true
 set_app_var verification_verify_unread_bbox_inputs false
 false
 set_app_var verification_verify_matched_unread_bbox_inputs true
@@ -134,66 +160,160 @@ false
 read_sverilog -r -define {SYNTHESIS} $ref_srcs
 No target library specified, default is WORK
 Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/BankedDataArray.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DataSRAMBank.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DataSRAMBank_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DataSRAMBank_2.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DataSRAMBank_4.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_82.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_84.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_86.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_90.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_98.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p256x72m72s1h0l1b_dcsh_dat.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/array_8.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/MbistClockGateCell.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/ClockGate.sv'
 Current container set to 'r'
 1
 set_top r:/WORK/$top
 Setting top design to 'r:/WORK/BankedDataArray'
 Status:   Elaborating design BankedDataArray   ...  
-Warning: Cannot link cell '/WORK/BankedDataArray/data_banks_0_0' to its reference design 'DataSRAMBank'. (FE-LINK-2)
-Warning: Cannot link cell '/WORK/BankedDataArray/data_banks_0_1' to its reference design 'DataSRAMBank_1'. (FE-LINK-2)
-Warning: Cannot link cell '/WORK/BankedDataArray/data_banks_0_2' to its reference design 'DataSRAMBank_2'. (FE-LINK-2)
-Warning: Cannot link cell '/WORK/BankedDataArray/data_banks_0_3' to its reference design 'DataSRAMBank_2'. (FE-LINK-2)
-Warning: Cannot link cell '/WORK/BankedDataArray/data_banks_0_4' to its reference design 'DataSRAMBank_4'. (FE-LINK-2)
-Warning: Cannot link cell '/WORK/BankedDataArray/data_banks_0_5' to its reference design 'DataSRAMBank_4'. (FE-LINK-2)
-Warning: Cannot link cell '/WORK/BankedDataArray/data_banks_0_6' to its reference design 'DataSRAMBank_4'. (FE-LINK-2)
-Warning: Cannot link cell '/WORK/BankedDataArray/data_banks_0_7' to its reference design 'DataSRAMBank_4'. (FE-LINK-2)
+Status:   Elaborating design DataSRAMBank   ...  
+Status:   Elaborating design SRAMTemplate_82   ...  
+Status:   Elaborating design MbistClockGateCell   ...  
+Status:   Elaborating design ClockGate   ...  
+Status:   Elaborating design sram_array_1p256x72m72s1h0l1b_dcsh_dat   ...  
+Status:   Elaborating design array_8   ...  
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Status:   Elaborating design SRAMTemplate_84   ...  
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Status:   Elaborating design DataSRAMBank_1   ...  
+Status:   Elaborating design SRAMTemplate_86   ...  
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Status:   Elaborating design DataSRAMBank_2   ...  
+Status:   Elaborating design SRAMTemplate_90   ...  
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Status:   Elaborating design DataSRAMBank_4   ...  
+Status:   Elaborating design SRAMTemplate_98   ...  
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
 Warning: Cannot link cell '/WORK/BankedDataArray/mbistPl' to its reference design 'MbistPipeDCacheData'. (FE-LINK-2)
 Status:  Implementing inferred operators...
 Status:  Creating black-box designs...
 Created technology library 'FM_BBOX' in container 'r' for black-box designs
-Created black-box design 'DataSRAMBank' in library 'FM_BBOX'
-Created black-box design 'DataSRAMBank_1' in library 'FM_BBOX'
-Created black-box design 'DataSRAMBank_2' in library 'FM_BBOX'
-Created black-box design 'DataSRAMBank_4' in library 'FM_BBOX'
+Created black-box design 'array_8_ext' in library 'FM_BBOX'
 Created black-box design 'MbistPipeDCacheData' in library 'FM_BBOX'
-Warning: 5 blackbox designs were created for missing references. (FM-064)
+Warning: 2 blackbox designs were created for missing references. (FM-064)
 Status:  Attempting to resolve unlinked cells by using black-boxes...
-Warning: 14419 black-box pins of unknown direction found; see formality.log for list (FM-230)
+Warning: 5804 black-box pins of unknown direction found; see formality.log for list (FM-230)
 Top design set to 'r:/WORK/BankedDataArray' with warnings
 Reference design set to 'r:/WORK/BankedDataArray'
 1
 # Implementation: 手写 SV
 read_sverilog -i -define {SYNTHESIS} $impl_srcs
 No target library specified, default is WORK
-Loading verilog file '/tmp/tmp.QKfTi4lktK/wt/rtl/memblock/bankeddata_pkg.sv'
-Loading verilog file '/tmp/tmp.QKfTi4lktK/wt/rtl/memblock/BankedDataArray.sv'
-Loading verilog file '/tmp/tmp.QKfTi4lktK/wt/rtl/memblock/BankedDataArray_wrapper.sv'
+Loading verilog file '/tmp/tmp.yrHIb64RyJ/wt/rtl/memblock/bankeddata_pkg.sv'
+Loading verilog file '/tmp/tmp.yrHIb64RyJ/wt/rtl/memblock/BankedDataArray.sv'
+Loading verilog file '/tmp/tmp.yrHIb64RyJ/wt/rtl/memblock/BankedDataArray_wrapper.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DataSRAMBank.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DataSRAMBank_1.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DataSRAMBank_2.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/DataSRAMBank_4.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_82.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_84.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_86.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_90.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/SRAMTemplate_98.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/sram_array_1p256x72m72s1h0l1b_dcsh_dat.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/array_8.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/MbistClockGateCell.sv'
+Loading verilog file '/home/eda/xs-env/G0-canonical/golden-rtl/ClockGate.sv'
 Current container set to 'i'
 1
 set_top i:/WORK/$top
 Setting top design to 'i:/WORK/BankedDataArray'
 Status:   Elaborating design BankedDataArray   ...  
 Status:   Elaborating design xs_BankedDataArray_core   ...  
-Warning: Cannot link cell '/WORK/BankedDataArray/data_banks_0_0' to its reference design 'DataSRAMBank'. (FE-LINK-2)
-Warning: Cannot link cell '/WORK/BankedDataArray/data_banks_0_1' to its reference design 'DataSRAMBank_1'. (FE-LINK-2)
-Warning: Cannot link cell '/WORK/BankedDataArray/data_banks_0_2' to its reference design 'DataSRAMBank_2'. (FE-LINK-2)
-Warning: Cannot link cell '/WORK/BankedDataArray/data_banks_0_3' to its reference design 'DataSRAMBank_2'. (FE-LINK-2)
-Warning: Cannot link cell '/WORK/BankedDataArray/data_banks_0_4' to its reference design 'DataSRAMBank_4'. (FE-LINK-2)
-Warning: Cannot link cell '/WORK/BankedDataArray/data_banks_0_5' to its reference design 'DataSRAMBank_4'. (FE-LINK-2)
-Warning: Cannot link cell '/WORK/BankedDataArray/data_banks_0_6' to its reference design 'DataSRAMBank_4'. (FE-LINK-2)
-Warning: Cannot link cell '/WORK/BankedDataArray/data_banks_0_7' to its reference design 'DataSRAMBank_4'. (FE-LINK-2)
+Status:   Elaborating design DataSRAMBank   ...  
+Status:   Elaborating design SRAMTemplate_82   ...  
+Status:   Elaborating design MbistClockGateCell   ...  
+Status:   Elaborating design ClockGate   ...  
+Status:   Elaborating design sram_array_1p256x72m72s1h0l1b_dcsh_dat   ...  
+Status:   Elaborating design array_8   ...  
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Status:   Elaborating design SRAMTemplate_84   ...  
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Status:   Elaborating design DataSRAMBank_1   ...  
+Status:   Elaborating design SRAMTemplate_86   ...  
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Status:   Elaborating design DataSRAMBank_2   ...  
+Status:   Elaborating design SRAMTemplate_90   ...  
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Status:   Elaborating design DataSRAMBank_4   ...  
+Status:   Elaborating design SRAMTemplate_98   ...  
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
+Warning: Cannot link cell '/WORK/array_8/array_8_ext' to its reference design 'array_8_ext'. (FE-LINK-2)
 Warning: Cannot link cell '/WORK/BankedDataArray/mbistPl' to its reference design 'MbistPipeDCacheData'. (FE-LINK-2)
 Status:  Implementing inferred operators...
 Status:  Creating black-box designs...
 Created technology library 'FM_BBOX' in container 'i' for black-box designs
-Created black-box design 'DataSRAMBank' in library 'FM_BBOX'
-Created black-box design 'DataSRAMBank_1' in library 'FM_BBOX'
-Created black-box design 'DataSRAMBank_2' in library 'FM_BBOX'
-Created black-box design 'DataSRAMBank_4' in library 'FM_BBOX'
+Created black-box design 'array_8_ext' in library 'FM_BBOX'
 Created black-box design 'MbistPipeDCacheData' in library 'FM_BBOX'
-Warning: 5 blackbox designs were created for missing references. (FM-064)
+Warning: 2 blackbox designs were created for missing references. (FM-064)
 Status:  Attempting to resolve unlinked cells by using black-boxes...
-Warning: 14419 black-box pins of unknown direction found; see formality.log for list (FM-230)
+Warning: 5804 black-box pins of unknown direction found; see formality.log for list (FM-230)
 Top design set to 'i:/WORK/BankedDataArray' with warnings
 Implementation design set to 'i:/WORK/BankedDataArray'
 1
@@ -235,34 +355,22 @@ match
 Reference design is 'r:/WORK/BankedDataArray'
 Implementation design is 'i:/WORK/BankedDataArray'
 Status:  Checking designs...
-    Warning: Design r:/FM_BBOX/DataSRAMBank is a black box and there are cells referencing it (FM-160)
-    Warning: Design r:/FM_BBOX/DataSRAMBank_1 is a black box and there are cells referencing it (FM-160)
-    Warning: Design r:/FM_BBOX/DataSRAMBank_2 is a black box and there are cells referencing it (FM-160)
-    Warning: Design r:/FM_BBOX/DataSRAMBank_4 is a black box and there are cells referencing it (FM-160)
     Warning: Design r:/FM_BBOX/MbistPipeDCacheData is a black box and there are cells referencing it (FM-160)
-    Warning: Design i:/FM_BBOX/DataSRAMBank is a black box and there are cells referencing it (FM-160)
-    Warning: Design i:/FM_BBOX/DataSRAMBank_1 is a black box and there are cells referencing it (FM-160)
-    Warning: Design i:/FM_BBOX/DataSRAMBank_2 is a black box and there are cells referencing it (FM-160)
-    Warning: Design i:/FM_BBOX/DataSRAMBank_4 is a black box and there are cells referencing it (FM-160)
+    Warning: Design r:/FM_BBOX/array_8_ext is a black box and there are cells referencing it (FM-160)
     Warning: Design i:/FM_BBOX/MbistPipeDCacheData is a black box and there are cells referencing it (FM-160)
-    Warning: 2304 (2304) undriven nets found in reference (implementation) design; see formality.log for list (FM-399)
-    Info:  3170 (3170) multiply-driven nets found in reference (implementation) design; see formality.log for list.
-    Warning: 9 (9) black-box references found in reference (implementation) design; see formality.log for list (FM-182)
+    Warning: Design i:/FM_BBOX/array_8_ext is a black box and there are cells referencing it (FM-160)
+    Warning: 2 (2) black-box references found in reference (implementation) design; see formality.log for list (FM-182)
 Status:  Building verification models...
 Status:  Matching...
     
 *********************************** Matching Results ***********************************    
- 13607 Compare points matched by name    
- 3760 Compare points matched by signature analysis    
+ 9003 Compare points matched by name    
+ 3704 Compare points matched by signature analysis    
  0 Compare points matched by topology    
- 3999 Matched primary inputs, black-box outputs    
- 2304(0) Unmatched reference(implementation) compare points    
+ 6495 Matched primary inputs, black-box outputs    
+ 0(0) Unmatched reference(implementation) compare points    
  0(0) Unmatched reference(implementation) primary inputs, black-box outputs    
  3(0) Unmatched reference(implementation) unread points    
-----------------------------------------------------------------------------------------    
-Unmatched Objects                                                        REF        IMPL    
-----------------------------------------------------------------------------------------    
- Cut-points (Cut)                                                       2304           0    
 ****************************************************************************************
 
     Info:  Formality Guide Files (SVF) can improve matching performance and success by automating setup.
@@ -342,23 +450,70 @@ if {[info exists env(FM_PIN_TCL)] && [file exists $env(FM_PIN_TCL)]} {
     if {$SIDECAR_ON} { sidecar_pin_source $env(FM_PIN_TCL) } else { source $env(FM_PIN_TCL) }
     match
 }
-Error: invalid command name "setup"
-	Use error_info for more info. (CMD-013)
-Information: script '/tmp/tmp.QKfTi4lktK/wt/scripts/fm_eq.tcl'
-	stopped at line 212 due to error. (CMD-081)
-Extended error info:
-invalid command name "setup"
-    while executing
-"interp eval $::SIDECAR_PIN_INTERP [encoding convertfrom utf-8 $rawbytes]"
-    (procedure "sidecar_pin_source" line 20)
-    invoked from within
-"sidecar_pin_source $env(FM_PIN_TCL) "
-    (file "/tmp/tmp.QKfTi4lktK/wt/scripts/fm_eq.tcl" line 212)
- -- End Extended Error Info
-fm_shell (match)> 
-Maximum memory usage for this session: 867 MB
-CPU usage for this session: 6.14 seconds ( 0.00 hours )
-Current time: Mon Jul 20 13:35:42 2026
-Elapsed time: 21 seconds ( 0.01 hours )
+BDA_PINS: no relax; DataSRAMBank/SRAMTemplate two-sided elaborated -> rdata driven (no undriven cone)
+Reference design is 'r:/WORK/BankedDataArray'
+Implementation design is 'i:/WORK/BankedDataArray'
+    
+*********************************** Matching Results ***********************************    
+ 12707 Compare points matched previously    
+ 0 Compare points matched by name    
+ 0 Compare points matched by signature analysis    
+ 0 Compare points matched by topology    
+ 6495 Matched primary inputs, black-box outputs    
+ 0(0) Unmatched reference(implementation) compare points    
+ 0(0) Unmatched reference(implementation) primary inputs, black-box outputs    
+ 3(0) Unmatched reference(implementation) unread points    
+****************************************************************************************
+
+1
+report_unmatched_points > fm_work/$top/unmatched.rpt
+report_matched_points > fm_work/$top/matched.rpt
+# sidecar: appvar 有效值读回——全部 pin/custom Tcl 之后、verify 之前(schema v7 契约)
+if {$SIDECAR_ON} { sidecar_capture_appvars }
+if {[verify]} {
+    puts "FM_RESULT: Verification SUCCEEDED for $top"
+} else {
+    report_failing_points > fm_work/$top/failing.rpt
+    puts "FM_RESULT: Verification FAILED or INCONCLUSIVE for $top"
+}
+Reference design is 'r:/WORK/BankedDataArray'
+Implementation design is 'i:/WORK/BankedDataArray'
+    
+*********************************** Matching Results ***********************************    
+ 12707 Compare points matched previously    
+ 0 Compare points matched by name    
+ 0 Compare points matched by signature analysis    
+ 0 Compare points matched by topology    
+ 6495 Matched primary inputs, black-box outputs    
+ 0(0) Unmatched reference(implementation) compare points    
+ 0(0) Unmatched reference(implementation) primary inputs, black-box outputs    
+ 3(0) Unmatched reference(implementation) unread points    
+****************************************************************************************
+
+Status:  Verifying...
+
+
+********************************* Verification Results *********************************
+Verification SUCCEEDED
+----------------------
+ Reference design: r:/WORK/BankedDataArray
+ Implementation design: i:/WORK/BankedDataArray
+ 12707 Passing compare points
+----------------------------------------------------------------------------------------
+Matched Compare Points     BBPin    Loop   BBNet     Cut    Port     DFF     LAT   TOTAL
+----------------------------------------------------------------------------------------
+Passing (equivalent)        5062       0       0       0     988    6625      32   12707
+Failing (not equivalent)       0       0       0       0       0       0       0       0
+****************************************************************************************
+FM_RESULT: Verification SUCCEEDED for BankedDataArray
+# sidecar: 全查询→内存解析→原子写 native_facts.json(任何错误删 tmp 并 exit 4)
+if {$SIDECAR_ON} { sidecar_emit $top }
+SIDECAR_NATIVE_FACTS_WRITTEN
+exit
+
+Maximum memory usage for this session: 868 MB
+CPU usage for this session: 64.27 seconds ( 0.02 hours )
+Current time: Thu Jul 30 22:36:34 2026
+Elapsed time: 79 seconds ( 0.02 hours )
 
 Thank you for using Formality (R)!
