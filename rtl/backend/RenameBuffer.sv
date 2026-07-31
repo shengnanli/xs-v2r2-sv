@@ -67,9 +67,11 @@ module xs_RenameBuffer_core
   output logic                       io_status_commitEnd,
 
   // 送 VecExcpDataMergeModule 的 (lreg,preg) 映射(仅 special_walk + vecLoadExcp 时有效)
+  //   preg 内部寄存整 8 位 pdest(与 golden preg_r 同宽)；对外端口只取低 7 位[6:0]，
+  //   MSB[7] 两侧同为无观测(cone-dead)但逐位相等——保留以构成对称双射(vmucp 实证)。
   output logic                       io_toVecExcpMod_valid [COMMIT_WIDTH],
   output logic [LDEST_W-1:0]         io_toVecExcpMod_lreg  [COMMIT_WIDTH],
-  output logic [VEC_PREG_W-1:0]      io_toVecExcpMod_preg  [COMMIT_WIDTH],
+  output logic [PDEST_W-1:0]         io_toVecExcpMod_preg  [COMMIT_WIDTH],
 
   // difftest 真值提交流(无旁路，直接读队列)
   output logic                       io_diffCommits_commitValid [NUM_DIFF],
@@ -94,10 +96,10 @@ module xs_RenameBuffer_core
   rab_ptr_t   deq_ptr;                     // 出队头(commit)
   logic [RAB_SIZE-1:0] deq_ptr_oh;         // deq_ptr 的 256 位 one-hot(与 golden 同名 reg 对齐)
   rab_ptr_t   walk_ptr;                    // 回滚回放指针
-  // diffPtr：golden 存 {flag,value} 但只用 value 作环形索引，flag 是自环死位(无扇出)。
-  // 这里只保留 value(8 位环形回绕加法)，与 golden diffPtr_value 逐位相等；golden 侧
-  // diffPtr_flag 因输出只读 value 成 golden-only cone-dead(可读 impl 正确省略)。
-  logic [PTR_W-1:0] diff_ptr_value;         // difftest 读指针(仅 value)
+  // diffPtr：{flag,value} 与 golden 同构。difftest 读队列只用 value 作环形索引；flag 是
+  // 自环寄存器(每拍 = 9 位 diffPtr+commitSize 加法的进位 bit8)，两侧无观测扇出但逐位相等。
+  // 保留 flag 以与 golden diffPtr_flag 形成对称 matched-unread 双射(vmucp 下 FM 实证等价)。
+  rab_ptr_t   diff_ptr;                     // difftest 读指针({flag,value})
 
   rab_state_e state;
   logic       rob_walk_end_reg;            // 锁存 fromRob.walkEnd(redirect 拍清除)
@@ -335,8 +337,9 @@ module xs_RenameBuffer_core
   end
 
   // ---- diffPtr：按 fromRob.commitSize 前进(difftest 真值流) ----
-  logic [PTR_W-1:0] diff_ptr_value_next;
-  always_comb diff_ptr_value_next = PTR_W'(diff_ptr_value + io_fromRob_commitSize);
+  //   {flag,value} 做 9 位环形加法(与 golden diffPtrNext 一致)：进位入 flag。
+  rab_ptr_t diff_ptr_next;
+  always_comb diff_ptr_next = ptr_add(diff_ptr, {1'h0, io_fromRob_commitSize});
 
   // =====================================================================
   // 9. 入队写：每口写到 enqPtrVec[前序占位数] 指向的表项
@@ -405,7 +408,7 @@ module xs_RenameBuffer_core
   always_comb
     for (int i = 0; i < NUM_DIFF; i++) begin
       io_diffCommits_commitValid[i] = (9'(i) < {1'h0, io_fromRob_commitSize});
-      io_diffCommits_info[i]        = rename_buffer[PTR_W'(diff_ptr_value + PTR_W'(i))];
+      io_diffCommits_info[i]        = rename_buffer[PTR_W'(diff_ptr.value + PTR_W'(i))];
     end
 
   // =====================================================================
@@ -422,7 +425,7 @@ module xs_RenameBuffer_core
       enqPtrVec_5_value <= 6'(PTR_W'(5) >> 2);   // 5[7:2] = 1
       deq_ptr <= '{flag:1'b0, value:'0};
       deq_ptr_oh <= {{(RAB_SIZE-1){1'b0}}, 1'b1};
-      diff_ptr_value <= '0;
+      diff_ptr <= '{flag:1'b0, value:'0};
       state <= S_IDLE;
       rob_walk_end_reg <= 1'b0;
       commit_size <= '0;
@@ -439,7 +442,7 @@ module xs_RenameBuffer_core
       enqPtrVec_5_value <= PTR_W'(enq_ptr_next.value + PTR_W'(5)) >> 2;
       deq_ptr    <= deq_ptr_next;
       deq_ptr_oh <= deq_ptr_oh_next;
-      diff_ptr_value <= diff_ptr_value_next;
+      diff_ptr   <= diff_ptr_next;
 
       state <= state_next;
 
@@ -497,7 +500,7 @@ module xs_RenameBuffer_core
       io_toVecExcpMod_valid[i] <= vec_excp_fire[i];
       if (vec_excp_fire[i]) begin
         io_toVecExcpMod_lreg[i] <= io_commits_info[i].ldest;
-        io_toVecExcpMod_preg[i] <= io_commits_info[i].pdest[VEC_PREG_W-1:0];
+        io_toVecExcpMod_preg[i] <= io_commits_info[i].pdest;  // 整 8 位(端口取[6:0])
       end
     end
   end
