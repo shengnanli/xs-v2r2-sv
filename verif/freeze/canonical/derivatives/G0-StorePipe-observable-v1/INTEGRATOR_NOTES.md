@@ -55,26 +55,56 @@ construction). Evidence: `/tmp/storepipe-sem-evidence/official-fm-native-SUCCEED
 - Ledger/status: `combined_ledger.tsv` (INFRA_ERROR→PROOF_GAP), `gap_schedule.tsv`,
   `FM_STATUS.md`.
 
-## Integrator must do to reach strict SUCCEEDED / SIGNOFF_PASS
+## vmucp promotion — DONE (codex_0093 §2 integrator, 2026-07)
 
-The **semantic-surface makes the 36-defined-output proof clean**; the remaining
-gap is the vmucp promotion (30 symmetric matched-unread dead bits inside the
-compared surface), a separate integrator decision — same as the plumb owner's note:
+CORRECTION to an earlier draft of this note: the residual was NOT "30 symmetric
+matched-unread". The pre-vmucp baseline gate (native SUCCEEDED 424p/0f, PARTIAL)
+showed `unread_ref=30 / unread_impl=6`, and only **6 of the 30 were symmetric**:
 
-1. Run the official gate in an isolated clean worktree at this commit:
-   `SIGNOFF_EVIDENCE_ROOT=<dir> scripts/sidecar/run_signoff_target.sh \
-    scripts/sidecar/manifest_305.json StorePipe`.
-   Expect the native surface proof SUCCEEDED (36 outputs), with 30 symmetric
-   matched-unread under strict → PARTIAL until vmucp.
-2. To promote the 30 matched-unread (all symmetric, ref↔impl same leaf after
-   `u_core/` strip: 6 `s2_paddr_reg[0..5]` byte-offset dead bits + 24 firtool
-   clocked-block reified `*_reg` cone-dead shadow DFFs), flip vmucp:
-   - `manifest_declarations.tsv` StorePipe col 5 `false`→`true`, regen manifest;
-   - add `StorePipe` to the vmucp whitelist in `scripts/fm_eq.tcl`,
-     `scripts/sidecar/run_signoff_target.sh` (line ~49 `case`), and
-     `scripts/sidecar/gen_305_manifest.py` (`load_declarations` guard set).
-   Re-run the gate → SUCCEEDED; `combined_ledger.tsv` StorePipe → SUCCEEDED /
-   SIGNOFF_PASS, drop the gap_schedule row.
+- **6 genuine symmetric bijective** `s2_paddr_reg[0..5]` (ref `u_dut/...` ↔ impl
+  `u_dut/u_core/...`, same 1-bit leaf) — the low 6 byte-offset bits of the 48-bit
+  s2_paddr, written but never read (block addr = `{s2_paddr[47:6],6'h0}`),
+  cone-dead on BOTH sides.
+- **24 ref-ONLY** `_GEN_5_reg / _r_T_reg / _r_c_cat_T_*_reg / _s1_tag_match_T_*_reg`
+  — these had NO impl counterpart, so they were unmatched-unread, not symmetric.
+  ROOT CAUSE: the derivative was lowered WITHOUT `disallowLocalVariables`, so
+  firtool kept those combinational temporaries as `automatic logic` locals INSIDE
+  the clocked `always` block, which FM `read_sverilog` REIFIES as shadow DFFs.
+  They exist in neither the source FIRRTL nor the readable impl core (already
+  lowered with the G0 flags → 11 real DFFs, 0 shadow). These are exactly the
+  "old automatic-local shadow DFFs" the vmucp gate forbids.
+
+Integrator actions (all committed on this branch, agent/storepipe-vmucp):
+
+1. **Re-lowered the derivative** with the correct G0 firtool flag:
+   `derive.sh` FIRTOOL_ARGV += `--lowering-options=disallowLocalVariables`. Re-ran
+   `derive.sh` (deterministic) → derivative StorePipe.sv now 11 registers, 0
+   `automatic logic`, **byte-identical 73-port IO surface** → surface wrappers
+   unchanged (same sha b8495c77/e1b171e3). `derive_surface.py --check` OK,
+   `negtests.sh` 7/7 fail-closed. Ledger regenerated (reference_sv 9a0edf9b, root
+   37d6a7d5, firtool_argv recorded). This kills all 24 shadow DFFs.
+2. **Pinned the 6 true-bijection dead bits** via `verif/ut/StorePipe/fm_pins.tcl`
+   (`set_user_match r:.../u_dut/s2_paddr_reg[N] i:.../u_dut/u_core/s2_paddr_reg[N]`
+   for N=0..5). The shared `auto_match_flattened_arrays` only strips ONE `u_core/`
+   level and cannot see through the double `u_dut/u_core` surface-wrapper hierarchy,
+   so these land unmatched-unread; pinning them by name is TRUE-equivalence
+   strengthening (NOT fake pairing, NOT dont_verify, NOT 0-fill). vmucp=true then
+   makes FM compare them bit-for-bit → passing.
+3. **Enabled vmucp in FOUR places** (the earlier draft listed only 3):
+   - `manifest_declarations.tsv` StorePipe col 5 `true`, regen manifest;
+   - `scripts/fm_eq.tcl` `ni {...}` whitelist += **`StorePipe_surface`** (NOT
+     `StorePipe`: the semantic-surface hook reassigns `$top` to `StorePipe_surface`
+     BEFORE the vmucp whitelist check — verified by an empirical FM_MODE_ERROR);
+   - `scripts/sidecar/run_signoff_target.sh` (line ~49 `case`) += `StorePipe`;
+   - `scripts/sidecar/gen_305_manifest.py` (`load_declarations` guard) += `StorePipe`;
+   - `scripts/sidecar/fm_sidecar_verdict.py` (`_MU_STRENGTHEN` validator set) +=
+     `StorePipe` — the 4th, validator-side gate, keyed on the manifest TARGET name.
+
+**Official clean gate (isolated worktree, MAIN_DIRTY=0) verdict:**
+`measured=SUCCEEDED required=SUCCEEDED gate=PASS`, RUNNER_RC=0. Native SUCCEEDED
+**430 passing (266 Port + 164 DFF), 0 failing, 0(0) unmatched, 0 unread, 0
+matched_unread_notcompared, no dont_verify, no relaxed appvars, vmucp=true.**
+`combined_ledger.tsv` StorePipe → SUCCEEDED / SIGNOFF_PASS; gap_schedule row dropped.
 
 ## Runner semantic-surface security invariants (do NOT relax)
 

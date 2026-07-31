@@ -78,7 +78,6 @@ Slice_3	VMUCP+BB	nc9/ur0/ui0/bb47
 SourceB	IMPL_DEAD	nc0/ur4/ui5/bb1
 StoreExceptionBuffer	UNMATCH_COMPARE	nc0/ur0/ui0/bb0
 StoreMisalignBuffer	UNMATCH_COMPARE	nc1/ur11/ui101/bb0/NONSYM
-StorePipe	VMUCP	nc30/ur0/ui0/bb0/canonical_derivative(G0-StorePipe-observable-v1)+semantic_surface_wrapper(14 UNSPECIFIED off surface,36 defined compared)
 StoreQueue	NATIVE_FAIL	nc119/ur41/ui2603/bb0/NONSYM
 StoreUnit	IMPL_DEAD	nc94/ur4/ui4/bb0/NONSYM
 SyncDataModuleTemplate__1024entry_1	UNMATCH_COMPARE	nc0/ur0/ui0/bb0
