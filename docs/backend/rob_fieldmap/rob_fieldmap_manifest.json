@@ -1,0 +1,197 @@
+{
+  "generator": "gen_rob_fieldmap.py",
+  "top": "Rob",
+  "impl_reg_array": "i:/WORK/Rob/u_core/rob_entries_reg",
+  "rob_entry_t_width": 59,
+  "rob_size": 160,
+  "impl_fields_mapped": 25,
+  "golden_regs_total": 4320,
+  "golden_regs_mapped": 4000,
+  "golden_only_regs": 320,
+  "golden_only_fields": [
+    "debug_ldest",
+    "debug_pdest"
+  ],
+  "map_entries": 4000,
+  "map_bits": 9440,
+  "bijection_ok": true,
+  "errors": [],
+  "field_map_root_sha256": "a49fbbf8c70052cb4cdbb9987158a8a9d4f55becf4dbca86ccdd170d8b556b3f",
+  "layout": [
+    {
+      "impl_field": "valid",
+      "golden_suffix": "valid",
+      "width": 1,
+      "lo": 58,
+      "hi": 58
+    },
+    {
+      "impl_field": "uop_num",
+      "golden_suffix": "uopNum",
+      "width": 7,
+      "lo": 51,
+      "hi": 57
+    },
+    {
+      "impl_field": "std_writebacked",
+      "golden_suffix": "stdWritebacked",
+      "width": 1,
+      "lo": 50,
+      "hi": 50
+    },
+    {
+      "impl_field": "real_dest_size",
+      "golden_suffix": "realDestSize",
+      "width": 7,
+      "lo": 43,
+      "hi": 49
+    },
+    {
+      "impl_field": "need_flush",
+      "golden_suffix": "needFlush",
+      "width": 1,
+      "lo": 42,
+      "hi": 42
+    },
+    {
+      "impl_field": "interrupt_safe",
+      "golden_suffix": "interrupt_safe",
+      "width": 1,
+      "lo": 41,
+      "hi": 41
+    },
+    {
+      "impl_field": "mmio",
+      "golden_suffix": "mmio",
+      "width": 1,
+      "lo": 40,
+      "hi": 40
+    },
+    {
+      "impl_field": "vls",
+      "golden_suffix": "vls",
+      "width": 1,
+      "lo": 39,
+      "hi": 39
+    },
+    {
+      "impl_field": "fflags",
+      "golden_suffix": "fflags",
+      "width": 5,
+      "lo": 34,
+      "hi": 38
+    },
+    {
+      "impl_field": "vxsat",
+      "golden_suffix": "vxsat",
+      "width": 1,
+      "lo": 33,
+      "hi": 33
+    },
+    {
+      "impl_field": "rf_wen",
+      "golden_suffix": "rfWen",
+      "width": 1,
+      "lo": 32,
+      "hi": 32
+    },
+    {
+      "impl_field": "fp_wen",
+      "golden_suffix": "fpWen",
+      "width": 1,
+      "lo": 31,
+      "hi": 31
+    },
+    {
+      "impl_field": "wflags",
+      "golden_suffix": "wflags",
+      "width": 1,
+      "lo": 30,
+      "hi": 30
+    },
+    {
+      "impl_field": "dirty_vs",
+      "golden_suffix": "dirtyVs",
+      "width": 1,
+      "lo": 29,
+      "hi": 29
+    },
+    {
+      "impl_field": "commit_type",
+      "golden_suffix": "commitType",
+      "width": 3,
+      "lo": 26,
+      "hi": 28
+    },
+    {
+      "impl_field": "is_rvc",
+      "golden_suffix": "isRVC",
+      "width": 1,
+      "lo": 25,
+      "hi": 25
+    },
+    {
+      "impl_field": "is_vset",
+      "golden_suffix": "isVset",
+      "width": 1,
+      "lo": 24,
+      "hi": 24
+    },
+    {
+      "impl_field": "is_hls",
+      "golden_suffix": "isHls",
+      "width": 1,
+      "lo": 23,
+      "hi": 23
+    },
+    {
+      "impl_field": "instr_size",
+      "golden_suffix": "instrSize",
+      "width": 3,
+      "lo": 20,
+      "hi": 22
+    },
+    {
+      "impl_field": "ftq_idx_value",
+      "golden_suffix": "ftqIdx_value",
+      "width": 6,
+      "lo": 14,
+      "hi": 19
+    },
+    {
+      "impl_field": "ftq_idx_flag",
+      "golden_suffix": "ftqIdx_flag",
+      "width": 1,
+      "lo": 13,
+      "hi": 13
+    },
+    {
+      "impl_field": "ftq_offset",
+      "golden_suffix": "ftqOffset",
+      "width": 4,
+      "lo": 9,
+      "hi": 12
+    },
+    {
+      "impl_field": "itype",
+      "golden_suffix": "traceBlockInPipe_itype",
+      "width": 4,
+      "lo": 5,
+      "hi": 8
+    },
+    {
+      "impl_field": "iretire",
+      "golden_suffix": "traceBlockInPipe_iretire",
+      "width": 4,
+      "lo": 1,
+      "hi": 4
+    },
+    {
+      "impl_field": "ilastsize",
+      "golden_suffix": "traceBlockInPipe_ilastsize",
+      "width": 1,
+      "lo": 0,
+      "hi": 0
+    }
+  ]
+}

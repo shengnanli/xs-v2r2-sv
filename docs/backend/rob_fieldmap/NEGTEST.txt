@@ -1,0 +1,6 @@
+Bijection negative control (codex 0099):
+- corrupt IMPL_FIELDS uop_num width 7->6 => bijection_ok=False, 160 WIDTH MISMATCH errors,
+  root sha256 changes a49fbbf8... -> 182068c9... => field-map is non-vacuous (broken layout is detected).
+- Baseline (correct layout, ROB_SIZE=160, impl-prefix=u_core, gold-prefix=""):
+  bijection_ok=True, 4000 field regs / 9440 bits, golden-only=320 (debug_ldest/debug_pdest x160),
+  impl extra reg=0 (W*N=59*160=9440 == mapped bits), root sha256=a49fbbf8c70052cb4cdbb9987158a8a9d4f55becf4dbca86ccdd170d8b556b3f

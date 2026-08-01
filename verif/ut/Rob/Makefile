@@ -14,42 +14,38 @@ TB_SRCS = tb.sv
 GOLDEN_SRCS =
 
 # ---------------------------------------------------------------------
-# FM assembly 目标配置 (Rob, 第 306 个 target) —— 见 docs/backend/Rob.md §FM
+# FM assembly 目标配置 (Rob) —— 见 docs/backend/Rob.md §FM
 #   proof_mode = assembly (可读核只覆盖控制锥, 无法在 golden 端口面 port-for-port
-#     驱动被省略的数据通路口 ⇒ strict 会产生大量 unmatched; 故走 assembly, 6 逻辑叶子
-#     两侧 elaborate 白盒受验, 唯一黑盒 = difftest DPI sink)。
-# 装配壳 = rtl/backend/Rob_wrapper.sv (module Rob, golden 同名 3234 pin);
-#   两侧 elaborate 的 golden 叶子进 WRAPPER_SRCS(impl 侧) 与 FM_REF_DEPS_Rob(ref 侧)。
-# DiffExtInstrCommit/DiffExtTrapEvent(外部 DPI, 无体) ⇒ hdlin_unresolved=black_box,
-#   allow/Rob.json 精确声明 (9 个 unresolved_blackbox 对)。
+#     驱动被省略的数据通路口 ⇒ strict 会产生大量 unmatched; 故走 assembly)。
+# 装配壳 = rtl/backend/Rob_wrapper.sv (module Rob, golden 同名 pin)。
 #
-# 注: 本 target 当前 Rob_wrapper.sv 是**接口锚+装配契约 SCAFFOLD, body 未补齐**,
-#   故 FM_VARIANTS 暂留空(禁止空目标绿灯 = 诚实, 不产假 native_facts)。补齐 body 后:
-#     FM_VARIANTS = Rob
-#   即启用。
-# 端口面残留精确分解(agent/rob 逐口审计, 262 body-driven 口):
-#   2081 叶子直通(免证) + 70 A_CORE(核已产) + 92 B_SHALLOW(RegNext 叶子) + 100 C_DEEP(唯一真 blocker)。
-#   逐口 golden 驱动见 docs/backend/Rob_residual_ports.tsv; 概述见 docs/backend/Rob.md §FM。
+# ★ 7-child 黑盒契约(codex 0099 组合正解): 7 个已独立 SIGNOFF_PASS 的子模块
+#   (RenameBuffer / SnapshotGenerator_3 / ExceptionGen / NewRobDeqPtrWrapper /
+#    RobEnqPtrWrapper / DelayReg / SyncDataModuleTemplate__64entry_3)从两侧 srcs
+#   移除 ⇒ hdlin_unresolved_modules=black_box 令其成对称 unresolved_blackbox 边界;
+#   depends_on 已证 PASS(见 assembly_depends.tsv Rob→7 child)。
+#   VTypeBuffer 保持白盒两侧 elaborate(其内 SyncDataModule 嵌套黑盒;
+#   其内 SnapshotGenerator_1/_2 保持白盒故仍需提供)。
+#   DummyDPICWrapper/_8 保持白盒, 其内 DiffExtInstrCommit/DiffExtTrapEvent 9 DPI
+#   sink 仍为 unresolved_blackbox(无 synthesizable body)。
+#   allow/Rob.json 精确声明全部 unresolved_blackbox 对(7 child 实例 + 9 DPI)。
 FM_VARIANTS = Rob
 WRAPPER_SRCS = $(RTL_DIR)/backend/Rob_wrapper.sv \
                $(RTL_DIR)/backend/Rob.sv $(RTL_DIR)/backend/rob_pkg.sv \
                $(RTL_DIR)/backend/rob_lsq_deep_outputs.sv \
-               $(GOLDEN_RTL)/RenameBuffer.sv $(GOLDEN_RTL)/VTypeBuffer.sv \
-               $(GOLDEN_RTL)/SnapshotGenerator_3.sv $(GOLDEN_RTL)/ExceptionGen.sv \
-               $(GOLDEN_RTL)/NewRobDeqPtrWrapper.sv $(GOLDEN_RTL)/RobEnqPtrWrapper.sv \
-               $(GOLDEN_RTL)/DelayReg.sv $(GOLDEN_RTL)/DummyDPICWrapper.sv \
+               $(GOLDEN_RTL)/VTypeBuffer.sv \
+               $(GOLDEN_RTL)/DummyDPICWrapper.sv \
                $(GOLDEN_RTL)/DummyDPICWrapper_8.sv $(GOLDEN_RTL)/dt_160x1.sv \
-               $(GOLDEN_RTL)/SnapshotGenerator.sv $(GOLDEN_RTL)/SnapshotGenerator_1.sv \
+               $(GOLDEN_RTL)/SnapshotGenerator_1.sv \
                $(GOLDEN_RTL)/SnapshotGenerator_2.sv \
-               $(GOLDEN_RTL)/SyncDataModuleTemplate__64entry_3.sv \
                $(GOLDEN_RTL)/DataModule__16entry_12.sv \
                $(RTL_DIR)/backend/Rob_difftest_stubs.sv
-# ref 侧 golden 叶子依赖(与 impl WRAPPER_SRCS 对称提供, 两侧同 elaborate 受验白盒):
-FM_REF_DEPS_Rob = RenameBuffer.sv VTypeBuffer.sv SnapshotGenerator_3.sv ExceptionGen.sv \
-                  NewRobDeqPtrWrapper.sv RobEnqPtrWrapper.sv DelayReg.sv \
+# ref 侧 golden 叶子依赖(与 impl WRAPPER_SRCS 对称提供, 两侧同 elaborate 受验白盒;
+# 7 child 不在此列 = 两侧同黑盒):
+FM_REF_DEPS_Rob = VTypeBuffer.sv \
                   DummyDPICWrapper.sv DummyDPICWrapper_8.sv dt_160x1.sv \
-                  SnapshotGenerator.sv SnapshotGenerator_1.sv SnapshotGenerator_2.sv \
-                  DataModule__16entry_12.sv SyncDataModuleTemplate__64entry_3.sv
+                  SnapshotGenerator_1.sv SnapshotGenerator_2.sv \
+                  DataModule__16entry_12.sv
 FM_MODE = assembly
 FM_ALLOWLIST = ../../signoff/allow/Rob.json
 
