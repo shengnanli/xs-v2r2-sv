@@ -1,7 +1,7 @@
 {
  "schema": "fm-signoff-aux-manifest-v1",
  "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456",
- "count_aux": 226,
+ "count_aux": 230,
  "entries": [
   {
    "target": "Arbiter4_L2CacheErrorInfo",
@@ -308,6 +308,21 @@
    "ut_dir": "MscratchModule",
    "makefile": "verif/ut/MscratchModule/Makefile",
    "make_target": "fm-Dscratch1Module",
+   "entry": "scripts/fm_eq.tcl",
+   "proof_mode": "signoff-strict",
+   "config_status": "AUX",
+   "required_verdict": "SUCCEEDED",
+   "allow_ref": "",
+   "rationale": "",
+   "verify_matched_unread_compare_points": "false",
+   "dead_ref": "",
+   "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
+  },
+  {
+   "target": "ExceptionGen",
+   "ut_dir": "ExceptionGen",
+   "makefile": "verif/ut/ExceptionGen/Makefile",
+   "make_target": "fm-ExceptionGen",
    "entry": "scripts/fm_eq.tcl",
    "proof_mode": "signoff-strict",
    "config_status": "AUX",
@@ -1669,6 +1684,21 @@
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
+   "target": "NewRobDeqPtrWrapper",
+   "ut_dir": "NewRobDeqPtrWrapper",
+   "makefile": "verif/ut/NewRobDeqPtrWrapper/Makefile",
+   "make_target": "fm-NewRobDeqPtrWrapper",
+   "entry": "scripts/fm_eq.tcl",
+   "proof_mode": "signoff-strict",
+   "config_status": "AUX",
+   "required_verdict": "SUCCEEDED",
+   "allow_ref": "",
+   "rationale": "",
+   "verify_matched_unread_compare_points": "false",
+   "dead_ref": "",
+   "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
+  },
+  {
    "target": "Og2ForVector",
    "ut_dir": "Og2ForVector",
    "makefile": "verif/ut/Og2ForVector/Makefile",
@@ -2449,6 +2479,21 @@
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
+   "target": "RobEnqPtrWrapper",
+   "ut_dir": "RobEnqPtrWrapper",
+   "makefile": "verif/ut/RobEnqPtrWrapper/Makefile",
+   "make_target": "fm-RobEnqPtrWrapper",
+   "entry": "scripts/fm_eq.tcl",
+   "proof_mode": "signoff-strict",
+   "config_status": "AUX",
+   "required_verdict": "SUCCEEDED",
+   "allow_ref": "",
+   "rationale": "",
+   "verify_matched_unread_compare_points": "false",
+   "dead_ref": "",
+   "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
+  },
+  {
    "target": "SMSPrefetcher",
    "ut_dir": "SMSPrefetcher",
    "makefile": "verif/ut/SMSPrefetcher/Makefile",
@@ -2768,6 +2813,21 @@
    "ut_dir": "SnapshotGenerator_14",
    "makefile": "verif/ut/SnapshotGenerator_14/Makefile",
    "make_target": "fm-SnapshotGenerator_14",
+   "entry": "scripts/fm_eq.tcl",
+   "proof_mode": "signoff-strict",
+   "config_status": "AUX",
+   "required_verdict": "SUCCEEDED",
+   "allow_ref": "",
+   "rationale": "",
+   "verify_matched_unread_compare_points": "false",
+   "dead_ref": "",
+   "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
+  },
+  {
+   "target": "SnapshotGenerator_3",
+   "ut_dir": "SnapshotGenerator_3",
+   "makefile": "verif/ut/SnapshotGenerator_3/Makefile",
+   "make_target": "fm-SnapshotGenerator_3",
    "entry": "scripts/fm_eq.tcl",
    "proof_mode": "signoff-strict",
    "config_status": "AUX",

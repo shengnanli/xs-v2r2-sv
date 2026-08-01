@@ -297,3 +297,5 @@ NCB200	OpenNCB CHI<->AXI bridge主体(纯结构装配壳0reg); PASS assembly+vmu
 NCB200_1	OpenNCB_1 CHI<->AXI bridge 32entry变体(纯结构装配壳); PASS assembly+vmucp
 OpenNCB	NCB200父装配壳(纯组合0reg, 唯一child NCB200对称unresolved黑盒); PASS assembly; depends_on NCB200
 OpenNCB_1	NCB200_1父装配壳(纯组合0reg, 唯一child NCB200_1对称interface_only); PASS assembly; depends_on NCB200_1
+ExceptionGen	Rob exception 聚合 pipeline 单模块 leaf; 供 Rob 分层证明黑盒; strict PASS
+SnapshotGenerator_3	Rob rename 快照环形缓冲 leaf(Rob 子, SnapshotGenerator_14 窄参数变体) [codex_0098 universe: 移出 305 主分母]

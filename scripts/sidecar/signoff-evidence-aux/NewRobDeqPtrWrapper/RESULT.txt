@@ -1,0 +1,4 @@
+SIGNOFF_RESULT NewRobDeqPtrWrapper: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=signoff-strict fm_shell_rc=0 validator_rc=0)
+run_id: SGN-NewRobDeqPtrWrapper-1785541843
+impl_commit: 4533d78caca4db85553aae0d7826d637cbb8a379
+manifest_sha256: c8c6596fdcba4aefad9b1c4053d5874298f529f9f849b8b3c86944766ca86503

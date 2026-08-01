@@ -21,6 +21,7 @@ DpcModule	signoff-strict			false
 DretEventModule	signoff-strict			false	
 Dscratch0Module	signoff-strict			false	
 Dscratch1Module	signoff-strict			false	
+ExceptionGen	signoff-strict			false	
 ExuBlock_2	signoff-strict			true	
 FastArbiter_1	signoff-strict			true	
 FastArbiter_2	signoff-strict			true	
@@ -111,6 +112,7 @@ MvienModule	signoff-strict			false
 MvipModule	signoff-strict			false	
 NCB200	signoff-strict			true	
 NCB200_1	assembly	verif/signoff/allow/NCB200_1.json		true	
+NewRobDeqPtrWrapper	signoff-strict			false	
 Og2ForVector	signoff-strict			false	
 OpenNCB	assembly	verif/signoff/allow/OpenNCB.json		false	
 OpenNCB_1	assembly	verif/signoff/allow/OpenNCB_1.json		false	
@@ -163,6 +165,7 @@ RenameTable_2	signoff-strict			false
 RenameTable_3	signoff-strict			false	
 ResetGen	signoff-strict			false	
 ResponseUnit	signoff-strict			true	
+RobEnqPtrWrapper	signoff-strict			false	
 SMSPrefetcher	assembly	verif/signoff/allow/SMSPrefetcher.json		true	
 SRAMTemplate_197	signoff-strict			false	
 SRAMTemplate_198	signoff-strict			false	
@@ -185,6 +188,7 @@ Slice_3	signoff-strict			false
 SlvpredctlModule	signoff-strict			false	
 SmblockctlModule	signoff-strict			false	
 SnapshotGenerator_14	signoff-strict			false	
+SnapshotGenerator_3	signoff-strict			false	
 SnoopUnit	signoff-strict			true	
 SpfctlModule	signoff-strict			false	
 SretEventModule	signoff-strict			false	

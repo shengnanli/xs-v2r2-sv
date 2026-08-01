@@ -1,0 +1,48 @@
+// 自动生成: _xs 变体(UT), 例化 xs_RobEnqPtrWrapper_core。
+module RobEnqPtrWrapper_xs(
+  input        clock,
+  input        reset,
+  input        io_redirect_valid,
+  input        io_redirect_bits_robIdx_flag,
+  input  [7:0] io_redirect_bits_robIdx_value,
+  input        io_redirect_bits_level,
+  input        io_allowEnqueue,
+  input        io_hasBlockBackward,
+  input        io_enq_0,
+  input        io_enq_1,
+  input        io_enq_2,
+  input        io_enq_3,
+  input        io_enq_4,
+  input        io_enq_5,
+  output       io_out_0_flag,
+  output [7:0] io_out_0_value,
+  output [7:0] io_out_1_value,
+  output [7:0] io_out_2_value,
+  output [7:0] io_out_3_value,
+  output [7:0] io_out_4_value,
+  output [7:0] io_out_5_value
+);
+  xs_RobEnqPtrWrapper_core u_core (
+    .clock(clock),
+    .reset(reset),
+    .io_redirect_valid(io_redirect_valid),
+    .io_redirect_bits_robIdx_flag(io_redirect_bits_robIdx_flag),
+    .io_redirect_bits_robIdx_value(io_redirect_bits_robIdx_value),
+    .io_redirect_bits_level(io_redirect_bits_level),
+    .io_allowEnqueue(io_allowEnqueue),
+    .io_hasBlockBackward(io_hasBlockBackward),
+    .io_enq_0(io_enq_0),
+    .io_enq_1(io_enq_1),
+    .io_enq_2(io_enq_2),
+    .io_enq_3(io_enq_3),
+    .io_enq_4(io_enq_4),
+    .io_enq_5(io_enq_5),
+    .io_out_0_flag(io_out_0_flag),
+    .io_out_0_value(io_out_0_value),
+    .io_out_1_value(io_out_1_value),
+    .io_out_2_value(io_out_2_value),
+    .io_out_3_value(io_out_3_value),
+    .io_out_4_value(io_out_4_value),
+    .io_out_5_value(io_out_5_value)
+  );
+endmodule
