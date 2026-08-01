@@ -33,6 +33,7 @@ module tb;
   logic io_fromVecExcpMod_busy, io_trace_blockCommit;
   logic rab_can_enq, rab_status_commit_end, rab_status_walk_end, vtype_status_walk_end;
   logic io_misPredWb;
+  logic io_wb1_redir, io_wb3_redir, io_wb5_redir;   // perf_16 misPred 输入 (rob-perf-trace)
   // ---- 核输出 ----
   rob_state_e o_state;
   logic o_commits_isCommit, o_commits_isWalk;
@@ -48,6 +49,16 @@ module tb;
   logic o_exception_valid, o_intrEnable;
   logic o_enq_canAccept, o_enq_canAcceptForDispatch, o_robFull, o_headNotReady;
   logic o_cpu_halt, o_wfiReq; logic [PTR_W:0] o_numValidEntries;
+  // ---- perf/trace 输出 (rob-perf-trace; smoke tb 仅接住 .*, 不做 cycle-exact 比对) ----
+  logic [5:0] o_perf_0_value,o_perf_1_value,o_perf_2_value,o_perf_3_value,o_perf_4_value,
+              o_perf_5_value,o_perf_6_value,o_perf_7_value,o_perf_8_value,o_perf_9_value,
+              o_perf_10_value,o_perf_11_value,o_perf_12_value,o_perf_13_value,o_perf_14_value,
+              o_perf_15_value,o_perf_16_value,o_perf_17_value;
+  logic [COMMIT_WIDTH-1:0] o_trace_valid, o_trace_ilastsize;
+  logic [FTQ_PTR_W-1:0]    o_trace_ftqIdx_value [COMMIT_WIDTH];
+  logic [FTQ_OFFSET_W-1:0] o_trace_ftqOffset    [COMMIT_WIDTH];
+  logic [ITYPE_W-1:0]      o_trace_itype        [COMMIT_WIDTH];
+  logic [IRETIRE_W-1:0]    o_trace_iretire      [COMMIT_WIDTH];
 
   // ---- testbench 侧 enqPtr/deqPtr 环形模型(模拟两个黑盒 wrapper) ----
   // 简单实现: enqPtr 按本拍入队数前进, deqPtr 按提交数前进。
@@ -109,7 +120,7 @@ module tb;
       io_snpt_useSnpt<=0; io_wfi_enable<=1; io_wfi_safeFromMem<=1; io_wfi_safeFromFrontend<=1;
       io_fromVecExcpMod_busy<=0; io_trace_blockCommit<=0;
       rab_can_enq<=1; rab_status_commit_end<=1; rab_status_walk_end<=1; vtype_status_walk_end<=1;
-      io_misPredWb<=0;
+      io_misPredWb<=0; io_wb1_redir<=0; io_wb3_redir<=0; io_wb5_redir<=0;
       for (int i=0;i<RENAME_WIDTH;i++) begin enq_num_wb[i]<=1; enq_robidx_value[i]<=0; enq_info[i]<='0; end
       for (int i=0;i<NUM_EXU_WB;i++) begin wb_robidx[i]<=0; wb_num[i]<=1; wb_fflags[i]<=0; end
       for (int i=0;i<NUM_WB;i++) excp_wb_robidx[i]<=0;
@@ -161,6 +172,9 @@ module tb;
       rab_can_enq <= ($urandom_range(0,99)<95);
       rab_status_walk_end <= ($urandom_range(0,99)<60); vtype_status_walk_end <= ($urandom_range(0,99)<60);
       io_misPredWb <= ($urandom_range(0,99)<3);
+      io_wb1_redir <= ($urandom_range(0,99)<8);
+      io_wb3_redir <= ($urandom_range(0,99)<8);
+      io_wb5_redir <= ($urandom_range(0,99)<8);
     end
   end
   // ---- 不变量自检 ----
@@ -186,6 +200,12 @@ module tb;
     // 5) walk/commit 互斥(非 special 态; 本 ROB 只有 idle/walk 两态, isCommit=>!isWalk)
     if (o_commits_isCommit && o_commits_isWalk) begin errors++;
       if(errors<=50) $display("[%0t] commit&&walk both",$time); end
+    // 6) perf/trace 输出无 X (rob-perf-trace)
+    if ($isunknown({o_perf_0_value,o_perf_1_value,o_perf_2_value,o_perf_3_value,o_perf_4_value,
+                    o_perf_5_value,o_perf_6_value,o_perf_7_value,o_perf_8_value,o_perf_9_value,
+                    o_perf_10_value,o_perf_11_value,o_perf_12_value,o_perf_13_value,o_perf_14_value,
+                    o_perf_15_value,o_perf_16_value,o_perf_17_value,o_trace_valid,o_trace_ilastsize})) begin
+      errors++; if(errors<=50) $display("[%0t] X on perf/trace outputs",$time); end
   end
   initial begin
     rst = 1; repeat (8) @(posedge clk); rst = 0;

@@ -1,0 +1,39 @@
+# rob_vec_exception_ports.tsv — toVecExcpMod_excpInfo(10 个 C_DEEP 端口) 逐口映射
+# owner: agent/rob-vec-exception (codex 0090 P2)  base: 15d5d7d  golden: G0-canonical/golden-rtl/Rob.sv
+# 任务: 向量异常合并模块(VecExcpMod)接口的 excpInfo 打包逻辑, 忠实复刻 golden(bug-for-bug)。
+#
+# 结构总述:
+#   golden 里 excpInfo 是 10 个寄存器 vecExcpInfo_{valid, bits_*}, 分两组时序:
+#     (1) bits_* 组(9 位域): always @(posedge clock) 内, 门控 `if (exceptionHappen)` 时
+#         从 ExceptionGen 子模块输出 _exceptionGen_io_state_bits_* 打拍锁存(无 reset)。
+#         (golden Rob.sv L126207-126216)
+#     (2) valid 组(1 位): always @(posedge clock or posedge reset), reset→0(L187934);
+#         否则每拍无条件更新为组合表达式(L193414-193416):
+#           vecExcpInfo_valid <= exceptionHappen & ~intrEnable
+#                              & _exceptionGen_io_state_bits_vstartEn
+#                              & _exceptionGen_io_state_bits_isVecLoad
+#                              & ~_exceptionGen_io_state_bits_isEnqExcp;
+#   输出口全部是 assign io_toVecExcpMod_excpInfo_* = vecExcpInfo_*;(golden L220832-220841, 纯透传)
+#
+# exceptionHappen / intrEnable 已由可读核内部产出(rtl/backend/Rob.sv L547 / L503,
+#   与 golden L21561 / L21495 逐字等价), 不需新增输入。
+#
+# 新增可读核输入(来自 ExceptionGen 黑盒的向量 state 输出, wrapper 侧直连子模块):
+#   eg_state_vstart[6:0] eg_state_vsew[1:0] eg_state_veew[1:0] eg_state_vlmul[2:0]
+#   eg_state_nf[2:0] eg_state_isStrided eg_state_isIndexed eg_state_isWhole eg_state_isVlm
+#   eg_state_vstartEn eg_state_isVecLoad eg_state_isEnqExcp
+#   (注: golden vstart 源宽 [63:0], 锁存时取 [6:0]; wrapper 直接接 eg_state_vstart = _exceptionGen_io_state_bits_vstart[6:0])
+#
+# 列: ref_port | impl_port(核输出) | width | golden_state_reg | golden_next(RHS) | valid_cond/latch_cond | fanout
+#
+ref_port	impl_port	width	golden_state_reg	golden_next	latch_or_valid_cond	fanout
+io_toVecExcpMod_excpInfo_valid	o_toVecExcpMod_excpInfo_valid	1	vecExcpInfo_valid	exceptionHappen & ~intrEnable & eg_state_vstartEn & eg_state_isVecLoad & ~eg_state_isEnqExcp	每拍无条件(reset→0)	VecExcpMod.io_in.excpInfo.valid(向量异常合并触发)
+io_toVecExcpMod_excpInfo_bits_vstart	o_toVecExcpMod_excpInfo_bits_vstart	7	vecExcpInfo_bits_vstart	eg_state_vstart[6:0]	if(exceptionHappen)锁存(无reset)	VecExcpMod: 异常发生处 vstart
+io_toVecExcpMod_excpInfo_bits_vsew	o_toVecExcpMod_excpInfo_bits_vsew	2	vecExcpInfo_bits_vsew	eg_state_vsew	if(exceptionHappen)锁存(无reset)	VecExcpMod: 向量单元位宽 SEW
+io_toVecExcpMod_excpInfo_bits_veew	o_toVecExcpMod_excpInfo_bits_veew	2	vecExcpInfo_bits_veew	eg_state_veew	if(exceptionHappen)锁存(无reset)	VecExcpMod: 有效元素位宽 EEW
+io_toVecExcpMod_excpInfo_bits_vlmul	o_toVecExcpMod_excpInfo_bits_vlmul	3	vecExcpInfo_bits_vlmul	eg_state_vlmul	if(exceptionHappen)锁存(无reset)	VecExcpMod: 向量寄存器组倍数 LMUL
+io_toVecExcpMod_excpInfo_bits_nf	o_toVecExcpMod_excpInfo_bits_nf	3	vecExcpInfo_bits_nf	eg_state_nf	if(exceptionHappen)锁存(无reset)	VecExcpMod: 段访存字段数 nf
+io_toVecExcpMod_excpInfo_bits_isStride	o_toVecExcpMod_excpInfo_bits_isStride	1	vecExcpInfo_bits_isStride	eg_state_isStrided	if(exceptionHappen)锁存(无reset)	VecExcpMod: 跨步访存(strided)标志
+io_toVecExcpMod_excpInfo_bits_isIndexed	o_toVecExcpMod_excpInfo_bits_isIndexed	1	vecExcpInfo_bits_isIndexed	eg_state_isIndexed	if(exceptionHappen)锁存(无reset)	VecExcpMod: 索引访存(indexed)标志
+io_toVecExcpMod_excpInfo_bits_isWhole	o_toVecExcpMod_excpInfo_bits_isWhole	1	vecExcpInfo_bits_isWhole	eg_state_isWhole	if(exceptionHappen)锁存(无reset)	VecExcpMod: 整寄存器访存(whole)标志
+io_toVecExcpMod_excpInfo_bits_isVlm	o_toVecExcpMod_excpInfo_bits_isVlm	1	vecExcpInfo_bits_isVlm	eg_state_isVlm	if(exceptionHappen)锁存(无reset)	VecExcpMod: 掩码 load(vlm)标志

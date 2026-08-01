@@ -102,6 +102,52 @@ module xs_Rob_core
   // 实际在 Backend 顶层由 redirectWBs 聚合, 经 wrapper 喂入。
   input  logic                       io_misPredWb,
 
+  // ---- misPred 性能计数(io_perf_16)所需的 3 个分支 exu 写回 redirect ----
+  //   golden misPred_probe = 2*(wb1_redir + wb3_redir + wb5_redir), 对应 exuWriteback
+  //   端口 1/3/5 的 (valid & bits.redirect.valid)。wrapper 由 flat 端口忠实重建后喂入。
+  input  logic                       io_wb1_redir,   // io_exuWriteback_1_valid & _1_bits_redirect_valid
+  input  logic                       io_wb3_redir,   // io_exuWriteback_3_valid & _3_bits_redirect_valid
+  input  logic                       io_wb5_redir,   // io_exuWriteback_5_valid & _5_bits_redirect_valid
+
+  // ====================================================================
+  // [csr/debug 组新增] C_DEEP csr(9)+debug(6) 端口所需输入
+  //   (owner rob-csr-debug; 见 docs/backend/rob_csr_debug_ports.tsv)
+  // ====================================================================
+  // ---- csr: vstart 来自 ExceptionGen 黑盒(异常时 CSR 需回写 vstart) ----
+  input  logic                       io_eg_vstartEn,   // exceptionGen.io_state_bits_vstartEn
+  input  logic [63:0]                io_eg_vstart,     // exceptionGen.io_state_bits_vstart
+  input  logic                       io_vstartIsZero,  // io.vstartIsZero(CSR 现 vstart 是否为 0)
+
+  // ---- debug: 每条目 debug 信息的入队/更新输入 ----
+  input  logic [34:0]                enq_fuType   [RENAME_WIDTH], // 各口 uop.fuType(入队写 debug_microOp)
+  input  logic                       io_debugHeadLsIssue,         // 队头 ls 是否已发射(topdown)
+  // lsTopdownInfo 3 口(load/store 拓扑 topdown 反馈, 按 robIdx 更新对应条目)
+  input  logic [PTR_W-1:0]           io_lsTopdown_s1_robIdx [3],
+  input  logic [2:0]                 io_lsTopdown_s1_valid,       // 3 口 s1_vaddr_valid
+  input  logic [49:0]                io_lsTopdown_s1_bits   [3],
+  input  logic [PTR_W-1:0]           io_lsTopdown_s2_robIdx [3],
+  input  logic [2:0]                 io_lsTopdown_s2_valid,       // 3 口 s2_paddr_valid
+  input  logic [47:0]                io_lsTopdown_s2_bits   [3],
+
+  // ====================================================================
+  // [vec 异常组新增] exceptionGen 输出(向量 state 子集, 供 toVecExcpMod.excpInfo 打包)
+  //   golden: _exceptionGen_io_state_bits_{vstart[6:0],vsew,veew,vlmul,nf,isStrided,
+  //           isIndexed,isWhole,isVlm,vstartEn,isVecLoad,isEnqExcp}
+  //   (wrapper 侧直连 ExceptionGen 子模块; vstart 源宽 [63:0] 由 wrapper 切 [6:0])
+  // ====================================================================
+  input  logic [6:0]                 eg_state_vstart,
+  input  logic [1:0]                 eg_state_vsew,
+  input  logic [1:0]                 eg_state_veew,
+  input  logic [2:0]                 eg_state_vlmul,
+  input  logic [2:0]                 eg_state_nf,
+  input  logic                       eg_state_isStrided,
+  input  logic                       eg_state_isIndexed,
+  input  logic                       eg_state_isWhole,
+  input  logic                       eg_state_isVlm,
+  input  logic                       eg_state_vstartEn,
+  input  logic                       eg_state_isVecLoad,
+  input  logic                       eg_state_isEnqExcp,
+
   // ---- 输出: 提交/walk 决策 ----
   output rob_state_e                 o_state,          // 当前态(供 deqPtrGen / 外部)
   output logic                       o_commits_isCommit,
@@ -144,6 +190,8 @@ module xs_Rob_core
   output logic                       o_flushOut_ftqIdx_flag,
   output logic [FTQ_OFFSET_W-1:0]    o_flushOut_ftqOffset,
   output logic                       o_exception_valid,        // RegNext(exceptionHappen)
+  output logic                       o_exceptionHappen,        // 本拍异常发生(wrapper B_SHALLOW r_3_*/*_r latch 门控)
+  output logic                       o_deqHasException,        // 队头本拍带异常(wrapper isFetchMalAddr_r 源)
   output logic                       o_intrEnable,             // 中断使能(本拍)
 
   // ---- enq / 队列状态 ----
@@ -153,15 +201,115 @@ module xs_Rob_core
   output logic                       o_headNotReady,
   output logic                       o_cpu_halt,
   output logic                       o_wfiReq,
-  output logic [PTR_W:0]             o_numValidEntries
+  output logic [PTR_W:0]             o_numValidEntries,
+
+  // ---- 性能计数(18 路, 均 [5:0], 两拍 RegNext 后零扩展)----
+  //   对齐 golden io_perf_N_value = {pad, RegNext(RegNext(src_N))}。详见 §13。
+  output logic [5:0]                 o_perf_0_value,
+  output logic [5:0]                 o_perf_1_value,
+  output logic [5:0]                 o_perf_2_value,
+  output logic [5:0]                 o_perf_3_value,
+  output logic [5:0]                 o_perf_4_value,
+  output logic [5:0]                 o_perf_5_value,
+  output logic [5:0]                 o_perf_6_value,
+  output logic [5:0]                 o_perf_7_value,
+  output logic [5:0]                 o_perf_8_value,
+  output logic [5:0]                 o_perf_9_value,
+  output logic [5:0]                 o_perf_10_value,
+  output logic [5:0]                 o_perf_11_value,
+  output logic [5:0]                 o_perf_12_value,
+  output logic [5:0]                 o_perf_13_value,
+  output logic [5:0]                 o_perf_14_value,
+  output logic [5:0]                 o_perf_15_value,
+  output logic [5:0]                 o_perf_16_value,
+  output logic [5:0]                 o_perf_17_value,
+
+  // ---- trace 提交信息(8 块, 组合读 robDeqGroup 的 trace 字段 + 异常覆盖)----
+  //   对齐 golden io_trace_traceCommitInfo_blocks_N_{valid,bits_*}。详见 §14。
+  output logic [COMMIT_WIDTH-1:0]    o_trace_valid,
+  output logic [FTQ_PTR_W-1:0]       o_trace_ftqIdx_value [COMMIT_WIDTH],
+  output logic [FTQ_OFFSET_W-1:0]    o_trace_ftqOffset    [COMMIT_WIDTH],
+  output logic [ITYPE_W-1:0]         o_trace_itype        [COMMIT_WIDTH],
+  output logic [IRETIRE_W-1:0]       o_trace_iretire      [COMMIT_WIDTH],
+  output logic [COMMIT_WIDTH-1:0]    o_trace_ilastsize,
+
+  // ====================================================================
+  // [csr/debug 组新增] C_DEEP csr(9)+debug(6) 输出端口
+  // ====================================================================
+  // ---- csr(9): 提交时向 CSR 回写的浮点/向量状态与退休计数 ----
+  output logic                       o_csr_fflags_valid,
+  output logic [4:0]                 o_csr_fflags_bits,
+  output logic                       o_csr_vxsat_valid,
+  output logic                       o_csr_vxsat_bits,
+  output logic                       o_csr_vstart_valid,
+  output logic [63:0]                o_csr_vstart_bits,
+  output logic                       o_csr_dirty_fs,
+  output logic                       o_csr_dirty_vs,
+  output logic [6:0]                 o_csr_perfinfo_retiredInstr,
+  // ---- debug(6): 队头(deqPtr)调试/topdown 信息 ----
+  output logic [34:0]                o_debugRobHead_fuType,
+  output logic                       o_debugTopDown_robHeadLsIssue,
+  output logic                       o_debugTopDown_robHeadVaddr_valid,
+  output logic [49:0]                o_debugTopDown_robHeadVaddr_bits,
+  output logic                       o_debugTopDown_robHeadPaddr_valid,
+  output logic [47:0]                o_debugTopDown_robHeadPaddr_bits,
+
+  // ====================================================================
+  // [vec 异常组新增] toVecExcpMod.excpInfo(向量异常合并模块接口, 10 口)
+  //   golden vecExcpInfo_{valid,bits_*} 寄存器打包, 见 rob_vec_exception_ports.tsv。
+  // ====================================================================
+  output logic                       o_toVecExcpMod_excpInfo_valid,
+  output logic [6:0]                 o_toVecExcpMod_excpInfo_bits_vstart,
+  output logic [1:0]                 o_toVecExcpMod_excpInfo_bits_vsew,
+  output logic [1:0]                 o_toVecExcpMod_excpInfo_bits_veew,
+  output logic [2:0]                 o_toVecExcpMod_excpInfo_bits_vlmul,
+  output logic [2:0]                 o_toVecExcpMod_excpInfo_bits_nf,
+  output logic                       o_toVecExcpMod_excpInfo_bits_isStride,
+  output logic                       o_toVecExcpMod_excpInfo_bits_isIndexed,
+  output logic                       o_toVecExcpMod_excpInfo_bits_isWhole,
+  output logic                       o_toVecExcpMod_excpInfo_bits_isVlm,
+
+  // ====================================================================
+  // [lsq deep 组新增] 组合全存储读 / 状态导出(供 rob_lsq_deep_outputs 消费)
+  //   (owner rob-lsq-deep; 见 docs/backend/rob_lsq_deep_ports.tsv)
+  // ====================================================================
+  output logic [COMMIT_WIDTH-1:0]    o_deq_entry_vls,     // rob_entries[deq_ptr_vec[N].value].vls
+  output logic                       o_deq_entry_valid_0, // rob_entries[deqValIdx[0]].valid
+  output logic                       o_deq_entry_mmio_0,  // rob_entries[deqValIdx[0]].mmio
+  output logic                       o_deqHasFlushed      // deqHasFlushed
 );
 
   // =====================================================================
   // 0. 主存储 + 状态寄存器
   // =====================================================================
-  rob_entry_t  rob_entries [ROB_SIZE];   // 160 条目状态
+  // 存储阵列 = ROB_SIZE=160 条目(对齐 golden robEntries_0..159, 无 padding)。
+  //  之前扩到 256(2 的幂)是为让 8 位 robIdx 下标静态在界(消 FMR_ELAB-147),
+  //  但 96 死项 × 25 字段 = 2592 impl-only 寄存器拖慢 FM match。改回 160 后:
+  //   - 写入: 写路径是「按 entry 并行更新」循环 for(i<ROB_SIZE), 天然仅写 0..159;
+  //           enq 命中判定用 allocate_ptr[i].value==idx(idx<ROB_SIZE), 无 ≥160 写。
+  //   - 读取: 指针值下标(deqPtr/deqPtrVec/walkPtr.value)全来自 mod-160 环形指针
+  //           (NewRobDeqPtrWrapper/ptr_add 均以 160 取模), 架构上恒 <160。为让
+  //           FM 8 位下标静态在界, 仍用 256 宽组合读向量(§13/§15/§7 debug), 但
+  //           160..255 位填「不可达/X」而非正常 entry 数据, 且下标经 index_in_range
+  //           guard(≥160→'x)。见本文件 index_in_range() 与各读向量注释。
+  //  ★invalid index(≥160)是否影响输出: 否。deqPtr/walkPtr.value 由 golden mod-160
+  //   环形指针产生(commitDeqPtrAll 减 10'hA0=160), 恒 <160, ≥160 分支运行期不可达。
+  //   golden 自身对 ≥160 下标(_GEN_2611 等 256 宽 wire 的 [160:255] 位)填 entry-0
+  //   值(firtool 越界 Vec 访问的默认 lowering), 同样不可达故无 RTL gap。★
+  rob_entry_t  rob_entries [ROB_SIZE];  // 160 条目状态(对齐 golden, 无 padding)
+  // FM 下标空间: 组合读向量宽度用 2 的幂 256, 让 8 位 robIdx 下标静态在界
+  //  (消 FMR_ELAB-147)。这些是 wire(0 寄存器), 不同于上面 ROB_SIZE 宽的寄存器阵列。
+  //  160..255 位统一填「不可达/X」(见各读向量), 且下标经 index_in_range guard。
+  localparam int IDX_SPACE = 256;
   rob_state_e  state;
   assign o_state = state;
+
+  // ---- 集中越界 guard: robIdx 是否落在合法 entry 范围 [0, ROB_SIZE-1] ----
+  //  唯一判据; 用于读向量 mux 下标(≥160 时返回 'x, 不 clamp/wrap/取 entry-0)。
+  //  写路径无需 guard(写循环本身 for i<ROB_SIZE 已限界)。
+  function automatic logic index_in_range(input logic [PTR_W-1:0] idx);
+    return idx < PTR_W'(ROB_SIZE);
+  endfunction
 
   // 入队特殊态(blockBackward/waitForward): 阻塞后续派遣直到清空。
   logic hasBlockBackward, hasWaitForward, hasWFI;
@@ -193,12 +341,19 @@ module xs_Rob_core
 
   // allocatePtrVec[i]: 选第 (前序有效 firstUop 数) 个 enqPtrVec。
   rob_ptr_t allocate_ptr [RENAME_WIDTH];
+  // enq_ptr_vec 8 宽(2 的幂)padded 视图: prior 是 3 位(0..7), 直接索引 8 宽消越界
+  //  (FMR_ELAB-147); 6/7 项填 0, prior 架构 <= i < RENAME_WIDTH 故不被读, 行为等价。
+  rob_ptr_t enqPtrVec8 [8];
+  always_comb begin
+    for (int k = 0; k < 8; k++) enqPtrVec8[k] = '0;
+    for (int k = 0; k < RENAME_WIDTH; k++) enqPtrVec8[k] = enq_ptr_vec[k];
+  end
   always_comb
     for (int i = 0; i < RENAME_WIDTH; i++) begin
       logic [2:0] prior;
       prior = '0;
       for (int j = 0; j < i; j++) prior += 3'(enqForPtr[j]);
-      allocate_ptr[i] = enq_ptr_vec[prior];
+      allocate_ptr[i] = enqPtrVec8[prior];
     end
 
   // dispatchNum: 本拍真正入队的指令数(给 allowEnqueue 计数)。
@@ -339,8 +494,13 @@ module xs_Rob_core
   //    注: golden 用 robBanksRdataThisLineUpdate 做「读出后即时合并 wb」, 这里
   //    用 connect_commit_entry(下一拍 entry) 表达同一语义。
   // =====================================================================
-  rob_entry_t rob_entries_next [ROB_SIZE];
+  // rob_entries_next 是纯组合(always_comb)下一拍值, 非寄存器(0 flip-flop, 不计入
+  //  impl reg)。宽度用 IDX_SPACE=256 让 8 位行读下标 robIdxThisLine[b] 静态在界
+  //  (消 FMR_ELAB-147); 160..255 项填不可达 'x(下方 §3 行读下标恒 row*8+bank<160)。
+  rob_entry_t rob_entries_next [IDX_SPACE];
   always_comb begin
+    // 160..255 死项: 不可达组合默认 'x(非正常 entry 数据; 行读下标恒 <160 不选中)。
+    for (int i = ROB_SIZE; i < IDX_SPACE; i++) rob_entries_next[i] = 'x;
     for (int i = 0; i < ROB_SIZE; i++) begin
       rob_entry_t e;
       logic [RENAME_WIDTH-1:0] ihit;
@@ -467,6 +627,14 @@ module xs_Rob_core
       commitInfo[i] = robDeqGroup[deq_ptr_vec[i].value[BANK_ADDR_W-1:0]];
       walkInfo[i]   = robDeqGroup[walkPtrVec[i].value[BANK_ADDR_W-1:0]];
     end
+
+  // 每提交槽在全存储 rob_entries 里的下标(deq_ptr_vec[i].value 架构 < ROB_SIZE, 由
+  //  golden mod-160 环形指针保证)。index_in_range guard: ≥160 时下标取 'x(不可达,
+  //  ≠clamp/wrap/取 entry-0)——喂 256 宽读向量的 'x 顶部, 读出 'x。运行期 ≥160 不发生。
+  logic [PTR_W-1:0] deqValIdx [COMMIT_WIDTH];
+  always_comb
+    for (int i = 0; i < COMMIT_WIDTH; i++)
+      deqValIdx[i] = index_in_range(deq_ptr_vec[i].value) ? deq_ptr_vec[i].value : 'x;
 
   always_comb
     for (int i = 0; i < COMMIT_WIDTH; i++) begin
@@ -712,6 +880,7 @@ module xs_Rob_core
   function automatic rob_ptr_t ptr_add(input rob_ptr_t p, input logic [PTR_W:0] inc);
     logic [PTR_W:0] raw;
     rob_ptr_t o;
+    o = '0;   // FM 静态分析要求确定返回值(FMR_ELAB-118); 下方两分支全赋 value/flag
     raw = {p.flag, p.value} + inc;
     // value 需对 RobSize 取模(非 2 的幂), 这里按 golden 的环形语义处理。
     if (raw[PTR_W-1:0] >= PTR_W'(ROB_SIZE)) begin
@@ -730,6 +899,7 @@ module xs_Rob_core
   function automatic rob_ptr_t ptr_sub1(input rob_ptr_t p);
     logic [PTR_W:0] nv, dv;
     rob_ptr_t o;
+    o = '0;   // FM 静态分析要求确定返回值(FMR_ELAB-118)
     nv = {1'b0, p.value} + (PTR_W+1)'(ROB_SIZE-1);
     dv = nv - (PTR_W+1)'(ROB_SIZE);
     if (nv >= (PTR_W+1)'(ROB_SIZE)) begin
@@ -858,7 +1028,7 @@ module xs_Rob_core
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       state <= S_IDLE;
-      for (int i = 0; i < ROB_SIZE; i++) rob_entries[i] <= '0;
+      for (int i = 0; i < ROB_SIZE; i++) rob_entries[i] <= '0;  // 160 条目复位 0
       hasBlockBackward <= 1'b0;
       hasWaitForward   <= 1'b0;
       hasWFI           <= 1'b0;
@@ -1039,6 +1209,8 @@ module xs_Rob_core
     if (reset) exceptionValidReg <= 1'b0;
     else       exceptionValidReg <= exceptionHappen;
   assign o_exception_valid = exceptionValidReg;
+  assign o_exceptionHappen = exceptionHappen;
+  assign o_deqHasException = deqHasException;
 
   // vls 异常 2 拍门控寄存器(对齐 golden Rob.scala 578/584 的 RegNext(RegNext(...)))。
   always_ff @(posedge clock or posedge reset)
@@ -1051,5 +1223,568 @@ module xs_Rob_core
       vlsExcCommitw_d1 <= deqIsVlsException & deqPtrEntry.commit_w;
       vlsExcCommitw_d2 <= vlsExcCommitw_d1;
     end
+
+  // =====================================================================
+  // 13. 性能计数(io_perf_0..17) —— 忠实复刻 golden 2 拍打拍性能计数树。
+  //     golden: io_perf_N_value = {pad, io_perf_N_value_REG_1}
+  //             io_perf_N_value_REG_1 <= io_perf_N_value_REG      (第 2 拍)
+  //             io_perf_N_value_REG   <= <src_N>                  (第 1 拍)
+  //     本核直接产出 [5:0] 端口 = 2 拍 RegNext 后的零扩展, 与 golden 逐位一致。
+  //
+  //     统一简称:
+  //       isCommit  = o_commits_isCommit           (= golden io_commits_isCommit_0)
+  //       cv[i]     = o_commits_commitValid[i]      (= golden io_commits_commitValid_i_0)
+  //       flushV    = o_flushOut_valid              (= golden io_flushOut_valid_0)
+  //       isWalk    = (state == S_WALK)             (= golden state)
+  //       numVE     = numValidEntries[7:0]          (= golden numValidEntries_probe)
+  // =====================================================================
+  localparam logic [7:0] NVE_Q1 = 8'h29;   // 1/4 * 160 + 1 = 41
+  localparam logic [7:0] NVE_HALF_LO = 8'h28; // 40
+  localparam logic [7:0] NVE_HALF_HI = 8'h51; // 81
+  localparam logic [7:0] NVE_50 = 8'h50;      // 80  (exHalf 阈值 >)
+  localparam logic [7:0] NVE_Q3_LO = 8'h79;   // 121 (exHalf 且 < 121)
+  localparam logic [7:0] NVE_Q3 = 8'h78;      // 120 (> 120 = 3/4 满)
+
+  logic [7:0] numVE8;
+  always_comb numVE8 = numValidEntries[7:0];
+
+  // —— 分类向量(本拍组合, 对齐 golden commitLoadVec/BranchVec/StoreVec) ——
+  logic [COMMIT_WIDTH-1:0] commitLoadVec, commitBranchVec, commitStoreVec, fuseVec;
+  always_comb
+    for (int i = 0; i < COMMIT_WIDTH; i++) begin
+      commitLoadVec[i]   = o_commits_commitValid[i] & (commitInfo[i].commit_type == 3'h2);
+      commitBranchVec[i] = o_commits_commitValid[i] & (commitInfo[i].commit_type == 3'h1);
+      commitStoreVec[i]  = o_commits_commitValid[i] & (commitInfo[i].commit_type == 3'h3);
+      fuseVec[i]         = o_commits_commitValid[i] &  commitInfo[i].commit_type[2];
+    end
+
+  // —— 打拍寄存器族(golden: RegEnable(..., isCommit) + RegNext(isCommit)) ——
+  logic                    isCommitReg_last;          // RegNext(isCommit)
+  logic [COMMIT_WIDTH-1:0] perfLoad_r, perfBranch_r, perfStore_r;  // RegEnable(vec, isCommit)
+  logic [COMMIT_WIDTH-1:0] fuse_r;                    // RegEnable(fuseVec, isCommit)
+  logic [9:0]              trueCommitCnt_r;           // RegEnable(sum instrSize, isCommit)
+  logic                    isInterrupt_r;             // RegEnable(intrEnable, exceptionHappen) —— 供 trace itype 覆盖
+
+  // —— 组合中间量 ——
+  // popcount 帮助函数(8 位 one-per-bank 求和, 结果 [3:0])。
+  function automatic logic [3:0] pc8(input logic [COMMIT_WIDTH-1:0] v);
+    logic [3:0] s;
+    s = '0;
+    for (int i = 0; i < COMMIT_WIDTH; i++) s += 4'(v[i]);
+    return s;
+  endfunction
+
+  // trueCommitCnt: 本拍提交各槽 instrSize 之和(commit 时)。
+  logic [9:0] trueCommitCnt_next;
+  always_comb begin
+    trueCommitCnt_next = '0;
+    for (int i = 0; i < COMMIT_WIDTH; i++)
+      if (o_commits_commitValid[i])
+        trueCommitCnt_next += 10'(commitInfo[i].instr_size);
+  end
+
+  // fuseCommitCnt(第 2 级组合读, golden fuseCommitCnt = popcount(fuse_r)):
+  logic [3:0] fuseCommitCnt;
+  always_comb fuseCommitCnt = pc8(fuse_r);
+
+  // retireCounter(golden): isCommitReg_last ? trueCommitCnt_r + fuseCommitCnt : 0。
+  logic [10:0] retireCounter;
+  always_comb retireCounter = isCommitReg_last
+                            ? (11'({1'b0, trueCommitCnt_r}) + 11'({7'h0, fuseCommitCnt}))
+                            : 11'h0;
+
+  // perfEvents_4 = commit 时提交条数(popcount cv)。
+  logic [3:0] commitCnt;
+  always_comb commitCnt = o_commits_isCommit ? pc8(o_commits_commitValid) : 4'h0;
+
+  // walk 条数(state 时 popcount shouldWalkVec)。
+  logic [3:0] walkCnt;
+  always_comb walkCnt = (state == S_WALK) ? pc8(shouldWalkVec) : 4'h0;
+
+  // misPred_probe(golden 有 bug: 计数被翻倍 = 2 * sum(wb1/3/5 redir))。
+  logic [2:0] misPred;
+  always_comb begin
+    logic [1:0] mp;
+    mp = 2'({1'b0, io_wb1_redir}) + 2'({1'b0, io_wb3_redir}) + 2'({1'b0, io_wb5_redir});
+    misPred = 3'({1'b0, mp}) + 3'({1'b0, mp});   // = 2*mp, 逐位对齐 golden misPred_probe
+  end
+
+  // —— 第 1 级源(src_N) ——
+  logic pe0_src, pe1_src, pe2_src, pe3_src, pe11_src, pe12_src, pe13_src, pe14_src, pe15_src, pe17_src;
+  always_comb begin
+    pe0_src  = o_flushOut_valid & intrEnable;                 // 中断刷
+    pe1_src  = o_flushOut_valid & deqHasException;            // 异常刷
+    pe2_src  = o_flushOut_valid & isFlushPipe;                // flushPipe
+    pe3_src  = pe2_src & deqHasReplayInst;                    // replay
+    pe11_src = (state == S_WALK);                             // walk cycle
+    pe12_src = numVE8 <  NVE_Q1;
+    pe13_src = (numVE8 > NVE_HALF_LO) & (numVE8 < NVE_HALF_HI);
+    pe14_src = (numVE8 > NVE_50) & (numVE8 < NVE_Q3_LO);
+    pe15_src = numVE8 >  NVE_Q3;
+    pe17_src = o_flushOut_valid;
+  end
+
+  // —— 2 拍寄存器: <src> -> REG -> REG_1 (=端口值前身) ——
+  // 位宽随 golden: 0/1/2/3/11..17=1b; 4/6/7/8/9/10=4b; 5=11b; 16=3b。
+  logic       p0r,p0r1, p1r,p1r1, p2r,p2r1, p3r,p3r1;
+  logic [3:0] p4r,p4r1, p6r,p6r1, p7r,p7r1, p8r,p8r1, p9r,p9r1, p10r,p10r1;
+  logic [10:0] p5r,p5r1;
+  logic       p11r,p11r1, p12r,p12r1, p13r,p13r1, p14r,p14r1, p15r,p15r1;
+  logic [2:0] p16r,p16r1;
+  logic       p17r,p17r1;
+
+  always_ff @(posedge clock) begin
+    // 第 1 拍
+    p0r  <= pe0_src;  p1r  <= pe1_src;  p2r  <= pe2_src;  p3r  <= pe3_src;
+    p4r  <= commitCnt;
+    p5r  <= retireCounter;
+    p6r  <= isCommitReg_last ? fuseCommitCnt : 4'h0;
+    p7r  <= isCommitReg_last ? pc8(perfLoad_r)   : 4'h0;
+    p8r  <= isCommitReg_last ? pc8(perfBranch_r) : 4'h0;
+    p9r  <= isCommitReg_last ? pc8(perfStore_r)  : 4'h0;
+    p10r <= walkCnt;
+    p11r <= pe11_src; p12r <= pe12_src; p13r <= pe13_src; p14r <= pe14_src; p15r <= pe15_src;
+    p16r <= misPred;
+    p17r <= pe17_src;
+    // 第 2 拍
+    p0r1<=p0r; p1r1<=p1r; p2r1<=p2r; p3r1<=p3r; p4r1<=p4r; p5r1<=p5r; p6r1<=p6r;
+    p7r1<=p7r; p8r1<=p8r; p9r1<=p9r; p10r1<=p10r; p11r1<=p11r; p12r1<=p12r;
+    p13r1<=p13r; p14r1<=p14r; p15r1<=p15r; p16r1<=p16r; p17r1<=p17r;
+  end
+
+  // —— 端口零扩展(逐位对齐 golden assign io_perf_N_value = {pad, REG_1}) ——
+  always_comb begin
+    o_perf_0_value  = {5'h0, p0r1};
+    o_perf_1_value  = {5'h0, p1r1};
+    o_perf_2_value  = {5'h0, p2r1};
+    o_perf_3_value  = {5'h0, p3r1};
+    o_perf_4_value  = {2'h0, p4r1};
+    o_perf_5_value  = p5r1[5:0];
+    o_perf_6_value  = {2'h0, p6r1};
+    o_perf_7_value  = {2'h0, p7r1};
+    o_perf_8_value  = {2'h0, p8r1};
+    o_perf_9_value  = {2'h0, p9r1};
+    o_perf_10_value = {2'h0, p10r1};
+    o_perf_11_value = {5'h0, p11r1};
+    o_perf_12_value = {5'h0, p12r1};
+    o_perf_13_value = {5'h0, p13r1};
+    o_perf_14_value = {5'h0, p14r1};
+    o_perf_15_value = {5'h0, p15r1};
+    o_perf_16_value = {3'h0, p16r1};
+    o_perf_17_value = {5'h0, p17r1};
+  end
+
+  // RegEnable(vec, isCommit) 族 + RegNext(isCommit) + trueCommitCnt。
+  always_ff @(posedge clock or posedge reset)
+    if (reset) begin
+      isCommitReg_last <= 1'b0;
+      perfLoad_r <= '0; perfBranch_r <= '0; perfStore_r <= '0; fuse_r <= '0;
+      trueCommitCnt_r <= '0;
+    end else begin
+      isCommitReg_last <= o_commits_isCommit;
+      if (o_commits_isCommit) begin
+        perfLoad_r      <= commitLoadVec;
+        perfBranch_r    <= commitBranchVec;
+        perfStore_r     <= commitStoreVec;
+        fuse_r          <= fuseVec;
+        trueCommitCnt_r <= trueCommitCnt_next;
+      end
+    end
+
+  // isInterrupt_r = RegEnable(intrEnable, exceptionHappen)(golden 同门控)。
+  always_ff @(posedge clock or posedge reset)
+    if (reset)                 isInterrupt_r <= 1'b0;
+    else if (exceptionHappen)  isInterrupt_r <= intrEnable;
+
+  // =====================================================================
+  // 14. trace 提交信息(io_trace_traceCommitInfo_blocks_0..7) —— 纯组合。
+  //     golden 直接从 robDeqGroup(经 deqPtr 各槽的 bank 低 3 位读)取 trace 字段,
+  //     block0 的 itype/iretire 在 exception 拍(io_exception_valid_REG)被覆盖。
+  //       block0.valid  = io_exception_valid_REG | (isCommit & cv[0])
+  //       blockN.valid  =                          (isCommit & cv[N])   (N>=1)
+  //       ftqIdx/Offset = commitInfo[N].ftq_idx_value / ftq_offset
+  //       itype[0]      = exValidReg ? {2'h0, isInterrupt_r?2'h2:2'h1} : commitInfo[0].itype
+  //       itype[N>=1]   =                                                 commitInfo[N].itype
+  //       iretire[0]    = exValidReg ? 4'h0 : commitInfo[0].iretire
+  //       iretire[N>=1] =                     commitInfo[N].iretire
+  //       ilastsize[N]  = commitInfo[N].ilastsize
+  // =====================================================================
+  always_comb begin
+    for (int i = 0; i < COMMIT_WIDTH; i++) begin
+      o_trace_valid[i]        = o_commits_isCommit & o_commits_commitValid[i];
+      o_trace_ftqIdx_value[i] = commitInfo[i].ftq_idx_value;
+      o_trace_ftqOffset[i]    = commitInfo[i].ftq_offset;
+      o_trace_itype[i]        = commitInfo[i].itype;
+      o_trace_iretire[i]      = commitInfo[i].iretire;
+      o_trace_ilastsize[i]    = commitInfo[i].ilastsize;
+    end
+    // block0 异常覆盖(io_exception_valid_REG = exceptionValidReg)。
+    o_trace_valid[0]   = exceptionValidReg | (o_commits_isCommit & o_commits_commitValid[0]);
+    o_trace_itype[0]   = exceptionValidReg
+                       ? {2'h0, (isInterrupt_r ? 2'h2 : 2'h1)}
+                       : commitInfo[0].itype;
+    o_trace_iretire[0] = exceptionValidReg ? 4'h0 : commitInfo[0].iretire;
+  end
+
+
+  // =====================================================================
+  // 13. [csr/debug 组] C_DEEP csr(9) + debug(6) = 15 端口
+  //     owner rob-csr-debug; 忠实复刻 golden Rob.sv 220815-220851 的输出形成。
+  //     依赖核内既有: robDeqGroup / rob_entries / deqPtr / deq_ptr_vec /
+  //                   o_commits_isCommit / o_commits_commitValid /
+  //                   exceptionHappen / deqHasException。
+  // =====================================================================
+
+  // ---- 13.0 每提交槽的 per-bank 提交条目视图(commit 路)------------------
+  //   golden commitInfo_N = robDeqGroup[ deqPtr_N.value[2:0] ](commit 路读)。
+  //   核内 commitInfo[] 已按此定义(§5), 直接复用(FM read_sverilog 不支持
+  //   函数返回值域选 func(n).field FMR_VLOG-481, 故用数组 commitInfo[n].field)。
+
+  // ---- 13.1 fflags: valid = RegNext(fflags_valid); bits = latch(选中槽 fflags) ----
+  //   wflags_N   = commitValid_N & robDeqGroup[N].wflags     (golden _GEN_19)
+  //   fflags_val = isCommit & |wflags                        (golden 21666)
+  //   bits 数据  = robEntries[deqPtr_N.value].fflags          (golden _GEN_2621)
+  // IDX_SPACE(256, 2 的幂)宽全存储读向量(0 寄存器 wire; 消 8 位下标越界 FMR_ELAB-147)。
+  //  160..255 位填不可达 'x(≠entry-0/0); 下标 deqValIdx 经 index_in_range guard。
+  logic [4:0]   robFflagsVec [IDX_SPACE];
+  logic [IDX_SPACE-1:0] robVxsatVec;
+  always_comb begin
+    robVxsatVec = 'x;
+    for (int i = 0; i < IDX_SPACE; i++) robFflagsVec[i] = 'x;
+    for (int i = 0; i < ROB_SIZE; i++) begin
+      robFflagsVec[i] = rob_entries[i].fflags;
+      robVxsatVec[i]  = rob_entries[i].vxsat;
+    end
+  end
+  logic [COMMIT_WIDTH-1:0] wflagsSel;
+  logic                    fflags_valid_c;
+  logic [4:0]              fflags_bits_c;
+  always_comb begin
+    fflags_bits_c = '0;
+    for (int n = 0; n < COMMIT_WIDTH; n++) begin
+      wflagsSel[n] = o_commits_commitValid[n] & commitInfo[n].wflags;
+      if (wflagsSel[n])
+        fflags_bits_c |= robFflagsVec[deqValIdx[n]];
+    end
+    fflags_valid_c = o_commits_isCommit & (|wflagsSel);
+  end
+
+  // ---- 13.2 vxsat: valid = RegNext(vxsat_valid); bits = latch(vxsat_bits) ----
+  //   vxsat_bits = |(commitValid_N & robEntries[deqPtr_N.value].vxsat)  (golden _GEN_2625)
+  //   vxsat_valid= isCommit & vxsat_bits
+  logic vxsat_bits_c, vxsat_valid_c;
+  always_comb begin
+    vxsat_bits_c = 1'b0;
+    for (int n = 0; n < COMMIT_WIDTH; n++)
+      vxsat_bits_c |= o_commits_commitValid[n] & robVxsatVec[deqValIdx[n]];
+    vxsat_valid_c = o_commits_isCommit & vxsat_bits_c;
+  end
+
+  // ---- 13.3 dirty_fs / dirty_vs: RegNext(isCommit & |(commitValid & 槽 dirty*)) ----
+  //   dirty_fs 用 robDeqGroup[N].dirty_fs (=fp_wen|wflags, golden _GEN_8548)
+  //   dirty_vs 用 robDeqGroup[N].dirty_vs (golden _GEN_25)
+  logic dirty_fs_c, dirty_vs_c;
+  always_comb begin
+    logic anyFs, anyVs;
+    anyFs = 1'b0; anyVs = 1'b0;
+    for (int n = 0; n < COMMIT_WIDTH; n++) begin
+      anyFs |= o_commits_commitValid[n] & commitInfo[n].dirty_fs;
+      anyVs |= o_commits_commitValid[n] & commitInfo[n].dirty_vs;
+    end
+    dirty_fs_c = o_commits_isCommit & anyFs;
+    dirty_vs_c = o_commits_isCommit & anyVs;
+  end
+
+  // ---- 13.4 vstart: 异常发生时取 exceptionGen 的 vstart, 否则 dirty_vs&~vstartIsZero ----
+  //   _io_csr_vstart_bits_T = exceptionHappen & deqHasException     (golden 80231)
+  //   valid_next = T ? egVstartEn : dirty_vs & ~vstartIsZero        (golden 181499)
+  //   bits_next  = T ? egVstart   : 0                               (golden 181503)
+  logic        vstartExcp;
+  logic        vstart_valid_next;
+  logic [63:0] vstart_bits_next;
+  always_comb begin
+    vstartExcp        = exceptionHappen & deqHasException;
+    vstart_valid_next = vstartExcp ? io_eg_vstartEn : (dirty_vs_c & ~io_vstartIsZero);
+    vstart_bits_next  = vstartExcp ? io_eg_vstart   : 64'h0;
+  end
+
+  // ---- 13.5 retiredInstr: RegNext 链 ----
+  //   trueCommitCnt_r_csr = RegNext( Σ commitValid_N ? robDeqGroup[N].instr_size : 0 )
+  //   fuseCommitCnt_r_N = RegNext( commitValid_N & robDeqGroup[N].commit_type[2] )
+  //   isCommitReg_last_csr  = RegNext(isCommit)
+  //   retiredInstr = isCommitReg_last_csr ? (trueCommitCnt_r_csr + Σ fuseCommitCnt_r_csr)[6:0] : 0
+  logic [9:0]              trueCommitCnt_r_csr;
+  logic [COMMIT_WIDTH-1:0] fuseCommitCnt_r_csr;
+  logic                    isCommitReg_last_csr;
+  logic [9:0]              trueCommitCnt_c;      // 组合下一拍值
+  logic [COMMIT_WIDTH-1:0] fuseCommitCnt_c;
+  always_comb begin
+    trueCommitCnt_c = '0;
+    for (int n = 0; n < COMMIT_WIDTH; n++) begin
+      fuseCommitCnt_c[n] = o_commits_commitValid[n] & commitInfo[n].commit_type[2];
+      if (o_commits_commitValid[n])
+        trueCommitCnt_c += 10'({7'h0, commitInfo[n].instr_size});
+    end
+  end
+  logic [3:0] fuseCommitCntSum;
+  always_comb begin
+    fuseCommitCntSum = '0;
+    for (int n = 0; n < COMMIT_WIDTH; n++)
+      fuseCommitCntSum += 4'(fuseCommitCnt_r_csr[n]);
+  end
+  logic [10:0] retireCounter_c;
+  always_comb
+    retireCounter_c = isCommitReg_last_csr
+                    ? 11'({1'h0, trueCommitCnt_r_csr} + {7'h0, fuseCommitCntSum})
+                    : 11'h0;
+
+  // ---- csr 输出寄存器 ----
+  //   *_last_REG 每拍更新(仅 reset 清 0); *_bits_r 数据 latch(仅 valid 时更新, 否则保持)。
+  logic       fflags_valid_r, vxsat_valid_r, vstart_valid_r, dirty_fs_r, dirty_vs_r;
+  logic [4:0] fflags_bits_r;
+  logic       vxsat_bits_r;
+  logic [63:0] vstart_bits_r;
+  always_ff @(posedge clock or posedge reset)
+    if (reset) begin
+      fflags_valid_r   <= 1'b0;
+      vxsat_valid_r    <= 1'b0;
+      vstart_valid_r   <= 1'b0;
+      dirty_fs_r       <= 1'b0;
+      dirty_vs_r       <= 1'b0;
+      fflags_bits_r    <= '0;
+      vxsat_bits_r     <= 1'b0;
+      vstart_bits_r    <= '0;
+      trueCommitCnt_r_csr  <= '0;
+      fuseCommitCnt_r_csr  <= '0;
+      isCommitReg_last_csr <= 1'b0;
+    end else begin
+      fflags_valid_r  <= fflags_valid_c;
+      vxsat_valid_r   <= vxsat_valid_c;
+      vstart_valid_r  <= vstart_valid_next;
+      dirty_fs_r      <= dirty_fs_c;
+      dirty_vs_r      <= dirty_vs_c;
+      vstart_bits_r   <= vstart_bits_next;
+      if (fflags_valid_c) fflags_bits_r <= fflags_bits_c;  // golden: if(fflags_valid) latch
+      if (vxsat_valid_c)  vxsat_bits_r  <= vxsat_bits_c;   // golden: if(vxsat_valid)  latch
+      trueCommitCnt_r_csr  <= trueCommitCnt_c;
+      fuseCommitCnt_r_csr  <= fuseCommitCnt_c;
+      isCommitReg_last_csr <= o_commits_isCommit;
+    end
+
+  assign o_csr_fflags_valid          = fflags_valid_r;
+  assign o_csr_fflags_bits           = fflags_bits_r;
+  assign o_csr_vxsat_valid           = vxsat_valid_r;
+  assign o_csr_vxsat_bits            = vxsat_bits_r;
+  assign o_csr_vstart_valid          = vstart_valid_r;
+  assign o_csr_vstart_bits           = vstart_bits_r;
+  assign o_csr_dirty_fs              = dirty_fs_r;
+  assign o_csr_dirty_vs              = dirty_vs_r;
+  assign o_csr_perfinfo_retiredInstr = retireCounter_c[6:0];
+
+  // =====================================================================
+  // 13.6 debug(6): 队头 fuType / lsIssue / lsTopdown vaddr/paddr
+  // =====================================================================
+
+  // ---- debug_microOp fuType: 每条目寄存, 入队时按口优先级(5..0)写入 ----
+  logic [34:0] debug_fuType [ROB_SIZE];
+  // ---- debug_lsIssued: 每条目寄存(累计队头 lsIssue, 入队清) ----
+  logic        debug_lsIssued [ROB_SIZE];
+  // ---- debug_lsTopdownInfo: 每条目寄存 s1 vaddr / s2 paddr ----
+  logic        debug_s1_valid [ROB_SIZE];
+  logic [49:0] debug_s1_bits  [ROB_SIZE];
+  logic        debug_s2_valid [ROB_SIZE];
+  logic [47:0] debug_s2_bits  [ROB_SIZE];
+
+  // lsTopdown 端口对某条目的命中(port 2>1>0 优先; 忠实 golden 更新链)。
+  //   valid_next = OR_p(port_p_valid & robIdx==i) | (~enqHit(i) & valid[i])
+  //   bits_next  = 最高优先命中口的 bits; 若无命中口且 enqHit(i) → 0; 否则保持。
+  logic [ROB_SIZE-1:0] enqHitAny;
+  always_comb
+    for (int i = 0; i < ROB_SIZE; i++)
+      enqHitAny[i] = |enq_inst_hit(i);
+
+  logic        debug_s1_valid_n [ROB_SIZE];
+  logic [49:0] debug_s1_bits_n  [ROB_SIZE];
+  logic        debug_s2_valid_n [ROB_SIZE];
+  logic [47:0] debug_s2_bits_n  [ROB_SIZE];
+  always_comb
+    for (int i = 0; i < ROB_SIZE; i++) begin
+      logic [2:0] s1hit, s2hit;   // 3 口对本条目命中(port p)
+      // s1 (vaddr)
+      for (int p = 0; p < 3; p++)
+        s1hit[p] = io_lsTopdown_s1_valid[p] & (io_lsTopdown_s1_robIdx[p] == PTR_W'(i));
+      debug_s1_valid_n[i] = (|s1hit) | (~enqHitAny[i] & debug_s1_valid[i]);
+      if      (s1hit[2]) debug_s1_bits_n[i] = io_lsTopdown_s1_bits[2];
+      else if (s1hit[1]) debug_s1_bits_n[i] = io_lsTopdown_s1_bits[1];
+      else if (s1hit[0]) debug_s1_bits_n[i] = io_lsTopdown_s1_bits[0];
+      else if (enqHitAny[i]) debug_s1_bits_n[i] = 50'h0;
+      else               debug_s1_bits_n[i] = debug_s1_bits[i];
+      // s2 (paddr)
+      for (int p = 0; p < 3; p++)
+        s2hit[p] = io_lsTopdown_s2_valid[p] & (io_lsTopdown_s2_robIdx[p] == PTR_W'(i));
+      debug_s2_valid_n[i] = (|s2hit) | (~enqHitAny[i] & debug_s2_valid[i]);
+      if      (s2hit[2]) debug_s2_bits_n[i] = io_lsTopdown_s2_bits[2];
+      else if (s2hit[1]) debug_s2_bits_n[i] = io_lsTopdown_s2_bits[1];
+      else if (s2hit[0]) debug_s2_bits_n[i] = io_lsTopdown_s2_bits[0];
+      else if (enqHitAny[i]) debug_s2_bits_n[i] = 48'h0;
+      else               debug_s2_bits_n[i] = debug_s2_bits[i];
+    end
+
+  // 入队各口写 fuType 的优先级: golden 顺序 port5>4>3>2>1>0(高口优先, 与 enq_info 同)。
+  function automatic logic [34:0] enq_fuType_hit(input int idx);
+    logic [34:0]             r;
+    logic [RENAME_WIDTH-1:0] h;
+    r = '0;
+    h = enq_inst_hit(idx);
+    for (int k = RENAME_WIDTH-1; k >= 0; k--)
+      if (h[k]) r = enq_fuType[k];
+    return r;
+  endfunction
+
+  always_ff @(posedge clock or posedge reset)
+    if (reset) begin
+      for (int i = 0; i < ROB_SIZE; i++) begin
+        debug_fuType[i]   <= '0;
+        debug_lsIssued[i] <= 1'b0;
+        debug_s1_valid[i] <= 1'b0;
+        debug_s1_bits[i]  <= '0;
+        debug_s2_valid[i] <= 1'b0;
+        debug_s2_bits[i]  <= '0;
+      end
+    end else begin
+      for (int i = 0; i < ROB_SIZE; i++) begin
+        // fuType: 入队命中时写(其余保持); 高口优先。
+        if (enqHitAny[i]) debug_fuType[i] <= enq_fuType_hit(i);
+        // lsIssued: (队头且 headLsIssue) 置; 入队清; 否则保持。
+        //   golden 197626: io_debugHeadLsIssue & (i==head) | (~enqHit(i) & lsIssued[i])
+        debug_lsIssued[i] <= (io_debugHeadLsIssue & (deqPtr.value == PTR_W'(i)))
+                           | (~enqHitAny[i] & debug_lsIssued[i]);
+        // lsTopdown s1/s2
+        debug_s1_valid[i] <= debug_s1_valid_n[i];
+        debug_s1_bits[i]  <= debug_s1_bits_n[i];
+        debug_s2_valid[i] <= debug_s2_valid_n[i];
+        debug_s2_bits[i]  <= debug_s2_bits_n[i];
+      end
+    end
+
+  // ---- debug 输出(队头 deqPtr.value 读出)----
+  //   robHeadLsIssue: golden io_debugTopDown_toDispatch_robHeadLsIssue = debug_lsIssue[deqV],
+  //   其中 debug_lsIssue[k] = (deqV==k)? io_debugHeadLsIssue : debug_lsIssued[k]
+  //   (golden 15303-15311)。deqV==k 处 ⇒ 恒选 io_debugHeadLsIssue ⇒ 输出 = io_debugHeadLsIssue。
+  //   debug_lsIssued[] 仍需维护(golden 状态), 供 FM 逐位对齐(其它下标读出用)。
+  // 队头下标(deqPtr.value 由 golden mod-160 环形指针保证恒 < ROB_SIZE)。index_in_range
+  //  guard: ≥160 时取 'x(不可达; ≠clamp/wrap/取 entry-0)。运行期 ≥160 不发生。
+  logic [PTR_W-1:0] deqHeadIdx;
+  assign deqHeadIdx = index_in_range(deqPtr.value) ? deqPtr.value : 'x;
+  // IDX_SPACE(256, 2 的幂)宽全存储读向量(0 寄存器 wire; 消 8 位下标越界 FMR_ELAB-147)。
+  //  160..255 位填不可达 'x(≠entry-0/0), 下标经 guard, 运行期恒读 <160 有效项。
+  logic [34:0]  dbgFuTypeVec [IDX_SPACE];
+  logic [IDX_SPACE-1:0] dbgS1ValidVec, dbgS2ValidVec;
+  logic [49:0]  dbgS1BitsVec [IDX_SPACE];
+  logic [47:0]  dbgS2BitsVec [IDX_SPACE];
+  always_comb begin
+    dbgS1ValidVec = 'x; dbgS2ValidVec = 'x;
+    for (int i = 0; i < IDX_SPACE; i++) begin
+      dbgFuTypeVec[i] = 'x; dbgS1BitsVec[i] = 'x; dbgS2BitsVec[i] = 'x;
+    end
+    for (int i = 0; i < ROB_SIZE; i++) begin
+      dbgFuTypeVec[i]  = debug_fuType[i];
+      dbgS1ValidVec[i] = debug_s1_valid[i];
+      dbgS1BitsVec[i]  = debug_s1_bits[i];
+      dbgS2ValidVec[i] = debug_s2_valid[i];
+      dbgS2BitsVec[i]  = debug_s2_bits[i];
+    end
+  end
+  assign o_debugRobHead_fuType             = dbgFuTypeVec[deqHeadIdx];
+  assign o_debugTopDown_robHeadLsIssue     = io_debugHeadLsIssue; // = debug_lsIssue[deqV], deqV==head
+  assign o_debugTopDown_robHeadVaddr_valid = dbgS1ValidVec[deqHeadIdx];
+  assign o_debugTopDown_robHeadVaddr_bits  = dbgS1BitsVec[deqHeadIdx];
+  assign o_debugTopDown_robHeadPaddr_valid = dbgS2ValidVec[deqHeadIdx];
+  assign o_debugTopDown_robHeadPaddr_bits  = dbgS2BitsVec[deqHeadIdx];
+
+
+  // =====================================================================
+  // 8. toVecExcpMod.excpInfo —— 向量异常合并模块接口(10 口)
+  //    向量 load/store 触发异常时, 把发生处的向量上下文(vstart/vsew/veew/vlmul/nf
+  //    + strided/indexed/whole/vlm 访存类型)锁存并送 VecExcpMod, 用于把整条向量
+  //    指令跨 uop 的部分异常合并成一次精确异常。忠实复刻 golden(bug-for-bug):
+  //      - bits_* 组: 仅在 exceptionHappen 拍锁存 ExceptionGen 的 io_state 向量域,
+  //                   无 reset(golden Rob.sv L126207-126216, always@posedge clock)。
+  //      - valid 组: 每拍无条件更新(reset→0), 表达式含 vstartEn & isVecLoad & ~isEnqExcp
+  //                   (golden L193414-193416 / reset L187934)。
+  //    输出全为寄存器直通(golden L220832-220841)。见 rob_vec_exception_ports.tsv。
+  // =====================================================================
+  logic       vecExcpInfo_valid;
+  logic [6:0] vecExcpInfo_bits_vstart;
+  logic [1:0] vecExcpInfo_bits_vsew;
+  logic [1:0] vecExcpInfo_bits_veew;
+  logic [2:0] vecExcpInfo_bits_vlmul;
+  logic [2:0] vecExcpInfo_bits_nf;
+  logic       vecExcpInfo_bits_isStride;
+  logic       vecExcpInfo_bits_isIndexed;
+  logic       vecExcpInfo_bits_isWhole;
+  logic       vecExcpInfo_bits_isVlm;
+
+  // valid: 有 reset, 每拍无条件更新(golden always@(posedge clock or posedge reset))。
+  always_ff @(posedge clock or posedge reset)
+    if (reset)
+      vecExcpInfo_valid <= 1'b0;
+    else
+      vecExcpInfo_valid <= exceptionHappen & ~intrEnable
+                         & eg_state_vstartEn & eg_state_isVecLoad & ~eg_state_isEnqExcp;
+
+  // bits: 仅 exceptionHappen 拍锁存 ExceptionGen 向量 state(golden 无 reset)。
+  always_ff @(posedge clock)
+    if (exceptionHappen) begin
+      vecExcpInfo_bits_vstart    <= eg_state_vstart;    // golden 取 _..._vstart[6:0]
+      vecExcpInfo_bits_vsew      <= eg_state_vsew;
+      vecExcpInfo_bits_veew      <= eg_state_veew;
+      vecExcpInfo_bits_vlmul     <= eg_state_vlmul;
+      vecExcpInfo_bits_nf        <= eg_state_nf;
+      vecExcpInfo_bits_isStride  <= eg_state_isStrided;
+      vecExcpInfo_bits_isIndexed <= eg_state_isIndexed;
+      vecExcpInfo_bits_isWhole   <= eg_state_isWhole;
+      vecExcpInfo_bits_isVlm     <= eg_state_isVlm;
+    end
+
+  assign o_toVecExcpMod_excpInfo_valid          = vecExcpInfo_valid;
+  assign o_toVecExcpMod_excpInfo_bits_vstart    = vecExcpInfo_bits_vstart;
+  assign o_toVecExcpMod_excpInfo_bits_vsew      = vecExcpInfo_bits_vsew;
+  assign o_toVecExcpMod_excpInfo_bits_veew      = vecExcpInfo_bits_veew;
+  assign o_toVecExcpMod_excpInfo_bits_vlmul     = vecExcpInfo_bits_vlmul;
+  assign o_toVecExcpMod_excpInfo_bits_nf        = vecExcpInfo_bits_nf;
+  assign o_toVecExcpMod_excpInfo_bits_isStride  = vecExcpInfo_bits_isStride;
+  assign o_toVecExcpMod_excpInfo_bits_isIndexed = vecExcpInfo_bits_isIndexed;
+  assign o_toVecExcpMod_excpInfo_bits_isWhole   = vecExcpInfo_bits_isWhole;
+  assign o_toVecExcpMod_excpInfo_bits_isVlm     = vecExcpInfo_bits_isVlm;
+
+
+  // =====================================================================
+  // 15. [lsq deep 组] 组合全存储读 / 状态导出(供 rob_lsq_deep_outputs 消费)
+  //     owner rob-lsq-deep; golden 用组合读 rob_entries[deqPtr_N.value](非寄存
+  //     robDeqGroup), 故必须由本核直取整存储导出。见 docs/backend/rob_lsq_deep_ports.tsv。
+  //       o_deq_entry_vls[N]   = rob_entries[deq_ptr_vec[N].value].vls   (golden _GEN_8225)
+  //       o_deq_entry_valid_0  = rob_entries[deqValIdx[0]].valid (golden _GEN_2611)
+  //       o_deq_entry_mmio_0   = rob_entries[deqValIdx[0]].mmio  (golden _GEN_2622)
+  //       o_deqHasFlushed      = deqHasFlushed(核内既有状态)
+  // =====================================================================
+  //   FM 全存储读: 用 IDX_SPACE(256, 2 的幂)宽 packed 向量索引(替直接数组下标, 0 寄存器
+  //   wire), 使 8 位下标恒在界(消 FMR_ELAB-147); 160..255 位填不可达 'x(≠entry-0/0),
+  //   下标 deqValIdx 经 index_in_range guard, 恒读 <160 有效项。
+  logic [IDX_SPACE-1:0] robVlsVec, robValidVec, robMmioVec;
+  always_comb begin
+    robVlsVec   = 'x; robValidVec = 'x; robMmioVec = 'x;
+    for (int i = 0; i < ROB_SIZE; i++) begin
+      robVlsVec[i]   = rob_entries[i].vls;
+      robValidVec[i] = rob_entries[i].valid;
+      robMmioVec[i]  = rob_entries[i].mmio;
+    end
+  end
+  always_comb
+    for (int i = 0; i < COMMIT_WIDTH; i++)
+      o_deq_entry_vls[i] = robVlsVec[deqValIdx[i]];
+  assign o_deq_entry_valid_0 = robValidVec[deqValIdx[0]];
+  assign o_deq_entry_mmio_0  = robMmioVec[deqValIdx[0]];
+  assign o_deqHasFlushed     = deqHasFlushed;
 
 endmodule

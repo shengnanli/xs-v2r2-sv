@@ -26,19 +26,29 @@ GOLDEN_SRCS =
 # 注: 本 target 当前 Rob_wrapper.sv 是**接口锚+装配契约 SCAFFOLD, body 未补齐**,
 #   故 FM_VARIANTS 暂留空(禁止空目标绿灯 = 诚实, 不产假 native_facts)。补齐 body 后:
 #     FM_VARIANTS = Rob
-#   即启用。补齐清单见 Rob_wrapper.sv 的 RESIDUAL 段 + ASSESSMENT.md §4。
-FM_VARIANTS =
+#   即启用。
+# 端口面残留精确分解(agent/rob 逐口审计, 262 body-driven 口):
+#   2081 叶子直通(免证) + 70 A_CORE(核已产) + 92 B_SHALLOW(RegNext 叶子) + 100 C_DEEP(唯一真 blocker)。
+#   逐口 golden 驱动见 docs/backend/Rob_residual_ports.tsv; 概述见 docs/backend/Rob.md §FM。
+FM_VARIANTS = Rob
 WRAPPER_SRCS = $(RTL_DIR)/backend/Rob_wrapper.sv \
+               $(RTL_DIR)/backend/Rob.sv $(RTL_DIR)/backend/rob_pkg.sv \
+               $(RTL_DIR)/backend/rob_lsq_deep_outputs.sv \
                $(GOLDEN_RTL)/RenameBuffer.sv $(GOLDEN_RTL)/VTypeBuffer.sv \
                $(GOLDEN_RTL)/SnapshotGenerator_3.sv $(GOLDEN_RTL)/ExceptionGen.sv \
                $(GOLDEN_RTL)/NewRobDeqPtrWrapper.sv $(GOLDEN_RTL)/RobEnqPtrWrapper.sv \
                $(GOLDEN_RTL)/DelayReg.sv $(GOLDEN_RTL)/DummyDPICWrapper.sv \
                $(GOLDEN_RTL)/DummyDPICWrapper_8.sv $(GOLDEN_RTL)/dt_160x1.sv \
+               $(GOLDEN_RTL)/SnapshotGenerator.sv $(GOLDEN_RTL)/SnapshotGenerator_1.sv \
+               $(GOLDEN_RTL)/SnapshotGenerator_2.sv \
+               $(GOLDEN_RTL)/SyncDataModuleTemplate__64entry_3.sv \
+               $(GOLDEN_RTL)/DataModule__16entry_12.sv \
                $(RTL_DIR)/backend/Rob_difftest_stubs.sv
 # ref 侧 golden 叶子依赖(与 impl WRAPPER_SRCS 对称提供, 两侧同 elaborate 受验白盒):
 FM_REF_DEPS_Rob = RenameBuffer.sv VTypeBuffer.sv SnapshotGenerator_3.sv ExceptionGen.sv \
                   NewRobDeqPtrWrapper.sv RobEnqPtrWrapper.sv DelayReg.sv \
                   DummyDPICWrapper.sv DummyDPICWrapper_8.sv dt_160x1.sv \
+                  SnapshotGenerator.sv SnapshotGenerator_1.sv SnapshotGenerator_2.sv \
                   DataModule__16entry_12.sv SyncDataModuleTemplate__64entry_3.sv
 FM_MODE = assembly
 FM_ALLOWLIST = ../../signoff/allow/Rob.json
@@ -83,3 +93,17 @@ tap-compile:
 tap-run: tap-compile
 	./simv_tap +ntb_random_seed=$(SEED) -l tap_sim_$(SEED).log
 	@grep -E "checks=|TEST" tap_sim_$(SEED).log
+
+# ---------------------------------------------------------------------
+# ROB_SIZE=160 边界定向 UT(tb_arr160.sv): 直接驱动 deq_ptr_vec[0] 到
+# 158/159(合法, 读出正确 entry)与 160/255(越界, index_in_range guard → X,
+# 不 clamp/wrap/取 entry-0)。验证 rob_entries[160] + guard。生成器:
+# scripts/gen_rob_arr160_tb.py(需 /tmp/rob-arr160-evidence/ports.json+tb_body.svh)。
+ARR160_SRCS = $(RTL_DIR)/backend/rob_pkg.sv $(RTL_DIR)/backend/Rob.sv
+.PHONY: arr160-compile arr160-run
+arr160-compile:
+	$(VCS) $(ARR160_SRCS) tb_arr160.sv -top tb -o simv_arr160 -l arr160_compile.log
+	@echo "=== arr160 boundary UT elaborate OK ==="
+arr160-run: arr160-compile
+	./simv_arr160 +ntb_random_seed=$(SEED) +vcs+initreg+0 -l arr160_sim_$(SEED).log
+	@grep -E "boundary UT|MISMATCH|NOT-X|GAP|TEST" arr160_sim_$(SEED).log

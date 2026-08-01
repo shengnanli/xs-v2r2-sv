@@ -1,0 +1,26 @@
+# Rob C_DEEP csr(9) + debug(6) = 15 ports — owner rob-csr-debug (codex 0090 P2)
+# columns: port | group | golden_ref_port(width) | impl_core_out_port | golden_state_equation | valid/enable_cond | fanout(consumer)
+# golden = /home/eda/xs-env/G0-canonical/golden-rtl/Rob.sv @ G0-canonical
+# impl   = xs_Rob_core (rtl/backend/Rob.sv @ agent/rob-csr-debug), driven up into Rob_wrapper flat ports
+# --- notation ---
+#   robDeqGroup[b]      = per-bank commit entry (already in core), b=deqPtr_N low3bits
+#   robEntries[v]       = per-entry raw state (already in core), v=deqPtr_N value(8b)
+#   isCommit            = o_commits_isCommit ;  cV_N = o_commits_commitValid[N]
+#   enqHit(i)           = |enq_inst_hit(i)  (core: entry i enqueued this cycle)
+#   deqV                = _deqPtrGenModule_io_out_0_value (= deqPtr.value ; core deq_ptr_vec[0].value)
+port	group	golden_ref_port(w)	impl_core_out_port	golden_state_equation	valid/enable_cond	fanout
+io_csr_fflags_valid	csr	io_csr_fflags_valid(1)	o_csr_fflags_valid	io_csr_fflags_next_valid_last_REG = RegNext(fflags_valid)	every clk (reset→0)	CSR fcsr fflags accrue
+io_csr_fflags_bits	csr	io_csr_fflags_bits(5)	o_csr_fflags_bits	io_csr_fflags_next_bits_r = latch(OR_{N} wflags_N ? robEntries[deqV_N].fflags : 0)	latch-en = fflags_valid (hold else)	CSR fcsr fflags[4:0]
+io_csr_vxsat_valid	csr	io_csr_vxsat_valid(1)	o_csr_vxsat_valid	io_csr_vxsat_next_valid_last_REG = RegNext(vxsat_valid)	every clk (reset→0)	CSR vcsr vxsat accrue
+io_csr_vxsat_bits	csr	io_csr_vxsat_bits(1)	o_csr_vxsat_bits	io_csr_vxsat_next_bits_r = latch(vxsat_bits = OR_{N} cV_N & robEntries[deqV_N].vxsat)	latch-en = vxsat_valid (hold else)	CSR vcsr vxsat
+io_csr_vstart_valid	csr	io_csr_vstart_valid(1)	o_csr_vstart_valid	io_csr_vstart_valid_REG = RegNext( vstartExcp ? egVstartEn : dirty_vs & ~vstartIsZero )	every clk (reset→0)	CSR vstart
+io_csr_vstart_bits	csr	io_csr_vstart_bits(64)	o_csr_vstart_bits	io_csr_vstart_bits_REG = RegNext( vstartExcp ? egVstart : 0 )	every clk (reset→0)	CSR vstart
+io_csr_dirty_fs	csr	io_csr_dirty_fs(1)	o_csr_dirty_fs	io_csr_dirty_fs_last_REG = RegNext( isCommit & OR_{N} cV_N & robDeqGroup[N].dirty_fs )	every clk (reset→0)	CSR mstatus.FS dirty
+io_csr_dirty_vs	csr	io_csr_dirty_vs(1)	o_csr_dirty_vs	io_csr_dirty_vs_last_REG = RegNext(dirty_vs)	every clk (reset→0)	CSR mstatus.VS dirty
+io_csr_perfinfo_retiredInstr	csr	io_csr_perfinfo_retiredInstr(7)	o_csr_perfinfo_retiredInstr	retireCounter_probe[6:0] = (RegNext(isCommit) ? trueCommitCnt_r + Σ fuseCommitCnt_r : 0)[6:0]; trueCommitCnt_r=RegNext(Σ cV_N?robDeqGroup[N].instr_size:0); fuseCommitCnt_r_N=RegNext(cV_N & robDeqGroup[N].commit_type[2])	comb read of RegNext chain	CSR perf retired-instr count (instr_size-weighted, +fusion)
+io_debugRobHead_fuType	debug	io_debugRobHead_fuType(35)	o_debugRobHead_fuType	debug_microOp_debugReg[deqV].fuType  (per-entry reg, written at enq w/ enq-port priority 5..0)	combinational read @deqV	CSR/debug commitIsFuType decode, difftest
+io_debugTopDown_toDispatch_robHeadLsIssue	debug	..._robHeadLsIssue(1)	o_debugTopDown_robHeadLsIssue	debug_lsIssue[deqV] = (deqV==head)? io_debugHeadLsIssue : debug_lsIssued[deqV]  (=> = io_debugHeadLsIssue)	combinational read @deqV	topdown dispatch stall attribution
+io_debugTopDown_toCore_robHeadVaddr_valid	debug	..._robHeadVaddr_valid(1)	o_debugTopDown_robHeadVaddr_valid	debug_lsTopdownInfo[deqV].s1_vaddr_valid (per-entry reg)	comb read; reg upd: port2>port1>port0 set, else hold ~enqHit, enqHit→0	topdown L1D miss vaddr
+io_debugTopDown_toCore_robHeadVaddr_bits	debug	..._robHeadVaddr_bits(50)	o_debugTopDown_robHeadVaddr_bits	debug_lsTopdownInfo[deqV].s1_vaddr_bits (per-entry reg)	comb read; reg upd: prio port2>1>0 bits, enqHit→0	topdown vaddr bits
+io_debugTopDown_toCore_robHeadPaddr_valid	debug	..._robHeadPaddr_valid(1)	o_debugTopDown_robHeadPaddr_valid	debug_lsTopdownInfo[deqV].s2_paddr_valid (per-entry reg)	comb read; reg upd like s1 but s2_paddr port fields	topdown L2 miss paddr
+io_debugTopDown_toCore_robHeadPaddr_bits	debug	..._robHeadPaddr_bits(48)	o_debugTopDown_robHeadPaddr_bits	debug_lsTopdownInfo[deqV].s2_paddr_bits (per-entry reg)	comb read; reg upd: prio port2>1>0 bits, enqHit→0	topdown paddr bits

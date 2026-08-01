@@ -1,36 +1,29 @@
 #!/usr/bin/env python3
 """
-gen_rob_wrapper.py —— 生成 rtl/backend/Rob_wrapper.sv (FM impl 侧顶层, 名为 `Rob`)。
+gen_rob_wrapper.py —— 生成 rtl/backend/Rob_wrapper.sv (FM impl 侧顶层 `Rob`)。
 
-目标: 造一个与 golden Rob.sv **同名同端口(3234 pin)** 的 impl 顶层, 内部:
-  1) 例化可读控制核 xs_Rob_core (rtl/backend/Rob.sv);
-  2) 例化 6 个 golden 逻辑叶子 (RenameBuffer/VTypeBuffer/SnapshotGenerator_3/
-     ExceptionGen/NewRobDeqPtrWrapper/RobEnqPtrWrapper) + difftest 叶子
-     (DelayReg/DummyDPICWrapper*/dt_160x1) —— 这些叶子**两侧 elaborate**(assembly),
-     其体由 golden 提供, FM 两侧对称受验(白盒), 非黑盒;
-  3) difftest DPI 叶子 (DiffExtInstrCommit/DiffExtTrapEvent) 无可综合体 ⇒ 合法 unresolved
-     黑盒 (allow/Rob.json 精确声明)。
+FM assembly 装配壳(与 golden Rob.sv 同名同 2343-output 端口):
+  1) 6 golden 逻辑叶子(两侧 elaborate 白盒): rab/vtypeBuffer/snapshots_snapshotGen/
+     exceptionGen/deqPtrGenModule/enqPtrGenModule —— **原样**从 golden 抽取实例块,
+     只把 66 body-glue net 重连到 xs_Rob_core 输出 / flat-port 组合译码(非空耦合);
+     其输出净 _<leaf>_io_* 驱动 2081 leaf-passthrough 顶层输出 + 喂回 u_core;
+  2) difftest 叶子链(两侧 elaborate)+ _ext 内存 —— 无 top-output, DPI sink = 黑盒;
+  3) xs_Rob_core u_core —— 输入 = 叶子输出净 + flat-port 译码(**复用已验证的
+     tb_tap.sv u_i 驱动块**, 把 u_g. 前缀去掉即成 wrapper 本地叶子净); 输出 =
+     A_CORE(70)+C_DEEP(100), 驱动 262 body 输出中的 170;
+  4) rob_lsq_deep_outputs —— lsq(5)/gpaddr(2)/toDecode(1)/error(1) 9 口;
+  5) B_SHALLOW(92) —— wrapper 侧 RegNext(both-side 叶子输出) 复刻。
 
-设计事实(见 docs/backend/Rob.md + 证据 /tmp/rob-w-evidence):
-  - golden 里驱动各叶子输入的 body-glue 线全部是 xs_Rob_core 已产出的输出
-    (o_allowEnqueue/o_blockCommit/o_deq_commit_v|w/o_hasCommitted/o_commits_walkValid/...);
-  - golden 2343 output 里 ~2102 直接来自 rab 叶子端口(both-side elaborate ⇒ 免证相等);
-  - 少量 body 数据通路输出(exception exceptionVec 存储 r_3_*/GPA/commit-info 寄存器流水/
-    trace/perf)由可读核有意省略 —— 这部分本 wrapper 需从 golden 叶子/核补齐或声明。
-
-本脚本采取「机械忠实复刻 golden 顶层装配」策略: 从 golden Rob.sv 抽取
-  (a) 端口头;
-  (b) 全部叶子实例块(原样, 名字/连接与 golden 一致);
-  (c) 驱动叶子输入的 body-glue wire 定义 —— 但把其中「可读核已算的中心控制量」重连到
-      xs_Rob_core 的输出, 使核真正参与驱动(非旁路), 其余纯 combinational 前导 decode
-      从 flat port 忠实重建。
-输出 rtl/backend/Rob_wrapper.sv。
+u_core 输入驱动来源 = tb_tap.sv 行[UI_START..UI_END] 的 u_i 驱动块(已 seed1/7/42
+errors=0 验证), 转换: `u_g.` -> 本地净(叶子输出); `u_i` -> `u_core`。
 """
-import re, sys
+import re, sys, json
 from pathlib import Path
 
 XSSV = Path(__file__).resolve().parent.parent
 GOLDEN = Path("/home/eda/xs-env/G0-canonical/golden-rtl/Rob.sv")
+if not GOLDEN.exists():
+    GOLDEN = XSSV / "golden/chisel-rtl/Rob.sv"
 
 
 def read_golden():
@@ -38,9 +31,7 @@ def read_golden():
 
 
 def extract_port_header(lines):
-    """golden Rob 的 module 头(port 声明), 供 wrapper 复用为同名同端口。"""
-    out = []
-    started = False
+    out, started = [], False
     for ln in lines:
         if ln.startswith("module Rob("):
             started = True
@@ -52,18 +43,12 @@ def extract_port_header(lines):
 
 
 def find_instances(lines):
-    """定位所有叶子实例块 [start,end] (行号, 0-based)。"""
-    inst_re = re.compile(r"^  ([A-Z][A-Za-z0-9_]+) +([A-Za-z_][A-Za-z0-9_]*) +\($")
-    inst_re2 = re.compile(r"^  ([A-Z][A-Za-z0-9_]+) +([A-Za-z_][A-Za-z0-9_]*) +\(\s*$")
-    # also *_ext SRAM instances like "dt_160x1 dt_eliminatedMove_ext ("
-    ext_re = re.compile(r"^  ([a-zA-Z_][A-Za-z0-9_]+) +([A-Za-z_][A-Za-z0-9_]*_ext) +\($")
+    inst_re = re.compile(r"^  ([A-Z][A-Za-z0-9_]+|[a-z_][A-Za-z0-9_]*_ext) +([A-Za-z_][A-Za-z0-9_]*) +\($")
     insts = []
-    i = 0
-    n = len(lines)
+    i, n = 0, len(lines)
     while i < n:
-        m = inst_re.match(lines[i]) or ext_re.match(lines[i])
+        m = inst_re.match(lines[i])
         if m:
-            # find matching close "  );"
             j = i + 1
             while j < n and lines[j].strip() != ");":
                 j += 1
@@ -74,31 +59,117 @@ def find_instances(lines):
     return insts
 
 
+def subst_expr(e):
+    """Map a golden leaf-input glue expr to the wrapper net (u_core o_* or local decode)."""
+    e = e.strip()
+    if e in ("{1'h0, state}", "{1'h0,state}"):
+        return "{1'h0, o_state}"
+    if e == "state & walkFinished":
+        return "o_rab_walkEnd"
+    if e == "allowEnqueue & _rab_io_canEnq & ~io_fromVecExcpMod_busy":
+        return "o_allowEnqueue & _rab_io_canEnq & ~io_fromVecExcpMod_busy"
+    if re.match(r"^[A-Za-z_][A-Za-z0-9_]*$", e):
+        if e == "io_flushOut_valid_0":   # exceptionGen.io_flush = flushOut.valid
+            return "o_flushOut_valid"
+        m = re.match(r"^robDeqGroup_(\d+)_commit_([vw])$", e)
+        if m:
+            return f"o_deq_commit_{m.group(2)}[{m.group(1)}]"
+        m = re.match(r"^hasCommitted_(\d+)$", e)
+        if m:
+            return f"o_hasCommitted[{m.group(1)}]"
+        m = re.match(r"^canEnqueueEG_(\d+)$", e)
+        if m:
+            return f"canEnqueueEG_{m.group(1)}"
+        m = re.match(r"^_dispatchNum_T(?:_(\d+))?$", e)
+        if m:
+            return f"o_enq_for_ptr[{m.group(1) or '0'}]"
+        gmap = {
+            "hasBlockBackward": "o_hasBlockBackward",
+            "hasWaitForward": "o_hasNoSpecExec",
+            "intrBitSetReg": "o_intrBitSetReg",
+            "allowOnlyOneCommit": "o_allowOnlyOneCommit",
+            "blockCommit": "o_blockCommit",
+            "rawInfo_0_interrupt_safe": "o_commit_info_0_interrupt_safe",
+            "snptEnq": "snptEnq",
+            "rab_io_fromRob_vecLoadExcp_valid_REG": "rab_vecLoadExcp_valid_REG",
+        }
+        return gmap.get(e)
+    return None
+
+
+def subst_glue(block):
+    out = []
+    i, n = 0, len(block)
+    while i < n:
+        ln = block[i]
+        m = re.match(r"(\s*)\.io_fromRob_walkSize\b", ln)
+        if m:
+            j = i
+            while j < n and not block[j].rstrip().endswith("),"):
+                j += 1
+            out.append(f"{m.group(1)}.io_fromRob_walkSize (o_rab_walkSize),")
+            i = j + 1
+            continue
+        m = re.match(r"(\s*)\.io_fromRob_commitSize\b", ln)
+        if m:
+            j = i
+            while j < n and not block[j].rstrip().endswith("),"):
+                j += 1
+            out.append(f"{m.group(1)}.io_fromRob_commitSize (o_rab_commitSize),")
+            i = j + 1
+            continue
+        # enqPtr .io_allowEnqueue spans 2 lines: allowEnqueue(reg) -> o_allowEnqueue
+        m = re.match(r"(\s*)\.io_allowEnqueue\b", ln)
+        if m and "(" not in ln:
+            j = i
+            while j < n and not block[j].rstrip().endswith("),"):
+                j += 1
+            out.append(f"{m.group(1)}.io_allowEnqueue (o_allowEnqueue & _rab_io_canEnq & ~io_fromVecExcpMod_busy),")
+            i = j + 1
+            continue
+        cm = re.match(r"(\s*\.[A-Za-z0-9_]+\s*)\((.*?)\)(,?)\s*$", ln)
+        if cm:
+            new = subst_expr(cm.group(2))
+            if new is not None:
+                out.append(f"{cm.group(1)}({new}){cm.group(3)}")
+                i += 1
+                continue
+        out.append(ln)
+        i += 1
+    return out
+
+
 def main():
     lines = read_golden()
     header = extract_port_header(lines)
     insts = find_instances(lines)
 
-    print("=== golden Rob port header lines:", len(header), file=sys.stderr)
-    print("=== leaf instances found:", len(insts), file=sys.stderr)
+    parts = []
+    W = parts.append
+    for ln in header:
+        W(ln)
+    W("")
+    W("  import rob_pkg::*;")
+    W("")
+    # hand-written prelude: leaf-output net decls, glue defs, u_core-o alias nets,
+    # u_core input wiring (from tb_tap), u_core instance, B_SHALLOW RegNext.
+    prelude = XSSV / "scripts/rob_wrapper_prelude.svh"
+    W(prelude.read_text() if prelude.exists() else "  // PRELUDE MISSING")
+    W("")
+    # leaf instances (glue-substituted)
     for mod, nm, s, e in insts:
-        print(f"    {mod:24s} {nm:24s} [{s+1},{e+1}]", file=sys.stderr)
+        W(f"  // ---- {mod} {nm} ----")
+        parts.extend(subst_glue(lines[s:e + 1]))
+        W("")
+    # 262 body output assigns + 2081 leaf-passthrough handled by named leaf-port
+    # connections above (io_TOP already appears as the .port net in golden blocks).
+    epilogue = XSSV / "scripts/rob_wrapper_epilogue.svh"
+    W(epilogue.read_text() if epilogue.exists() else "  // EPILOGUE MISSING")
+    W("endmodule")
 
-    # This generator's job is to emit the assembly-mode wrapper. Given the
-    # dominant output routing is leaf pass-through, the faithful path is to
-    # reproduce golden's top-level assembly with xs_Rob_core supplying the
-    # control glue. That reproduction is large; this script currently emits the
-    # analysis manifest so main/reviewer can see the exact leaf inventory and
-    # port surface before the full wrapper body is committed.
-    manifest = XSSV / "docs/backend/Rob_fm_assembly_manifest.txt"
-    manifest.parent.mkdir(parents=True, exist_ok=True)
-    with manifest.open("w") as f:
-        f.write("# Rob FM assembly manifest (generated by gen_rob_wrapper.py)\n")
-        f.write(f"golden_ports\t{sum(1 for l in header if l.strip().startswith(('input','output')))}\n")
-        f.write("# leaf instances (module inst [start,end]):\n")
-        for mod, nm, s, e in insts:
-            f.write(f"leaf\t{mod}\t{nm}\t{s+1}\t{e+1}\n")
-    print("wrote", manifest, file=sys.stderr)
+    dst = XSSV / "rtl/backend/Rob_wrapper.sv"
+    dst.write_text("\n".join(parts) + "\n")
+    print("wrote", dst, "lines:", len(parts), file=sys.stderr)
 
 
 if __name__ == "__main__":
