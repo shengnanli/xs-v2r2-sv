@@ -238,3 +238,7 @@ NCB200	PASS	assembly+vmucp native SUCCEEDED: 56520p→vmucp61728/0fail/0(0)unmat
 NCB200_1	PASS	assembly+vmucp+FM_MERGE_DUP=false native SUCCEEDED: 30149p→vmucp2552 bijective/0fail/0unmatched/0unread; 1 empty_blackbox(NCBOrderAddressCAM_1 golden32entry config自身空模块0输出); 26模块闭包two-sided elaborate; UT seed1/7/42 130M errors0
 OpenNCB	PASS	assembly official gate RC0: native SUCCEEDED 1662p(722sig+940ports)/0fail/0(0)unmatched/0unread; 1 unresolved_blackbox=NCB200(对称)depends_on aux PASS; 纯组合装配壳0reg; UT seed1/7/42 5799536 errors0
 OpenNCB_1	PASS	assembly official gate RC0: native SUCCEEDED 1666p(720BBPin+946ports)/0fail/0(0)unmatched/0unread; 1 interface_only=NCB200_1对称depends_on aux PASS; 纯组合壳0reg; UT seed1/7/42 6.2M errors0
+ExceptionGen	PASS	Rob child独立AUX(codex 0098 B): 两侧whitebox official clean RC0(exact variant golden Rob例化); 供Rob分层证明黑盒
+SnapshotGenerator_3	PASS	Rob child独立AUX(codex 0098 B): 两侧whitebox official clean RC0(exact variant golden Rob例化); 供Rob分层证明黑盒
+NewRobDeqPtrWrapper	PASS	Rob child独立AUX(codex 0098 B): 两侧whitebox official clean RC0(exact variant golden Rob例化); 供Rob分层证明黑盒
+RobEnqPtrWrapper	PASS	Rob child独立AUX(codex 0098 B): 两侧whitebox official clean RC0(exact variant golden Rob例化); 供Rob分层证明黑盒

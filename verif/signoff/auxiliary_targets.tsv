@@ -297,3 +297,7 @@ NCB200	OpenNCB CHI<->AXI bridge主体(纯结构装配壳0reg); PASS assembly+vmu
 NCB200_1	OpenNCB_1 CHI<->AXI bridge 32entry变体(纯结构装配壳); PASS assembly+vmucp
 OpenNCB	NCB200父装配壳(纯组合0reg, 唯一child NCB200对称unresolved黑盒); PASS assembly; depends_on NCB200
 OpenNCB_1	NCB200_1父装配壳(纯组合0reg, 唯一child NCB200_1对称interface_only); PASS assembly; depends_on NCB200_1
+ExceptionGen	Rob child leaf(exact variant); PASS strict; 供Rob assembly depends_on黑盒边界
+SnapshotGenerator_3	Rob child leaf(exact variant); PASS strict; 供Rob assembly depends_on黑盒边界
+NewRobDeqPtrWrapper	Rob child leaf(exact variant); PASS strict; 供Rob assembly depends_on黑盒边界
+RobEnqPtrWrapper	Rob child leaf(exact variant); PASS strict; 供Rob assembly depends_on黑盒边界

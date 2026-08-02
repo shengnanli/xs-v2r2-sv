@@ -1,0 +1,4 @@
+SIGNOFF_RESULT RobEnqPtrWrapper: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=signoff-strict fm_shell_rc=0 validator_rc=0)
+run_id: SGN-RobEnqPtrWrapper-1785540220
+impl_commit: 2bb09dbb4ff9f79f6a2f6628a61513d422a06f45
+manifest_sha256: 031346674a65af4e571fb151befed60371ec1fb01bba4fab65e7a47f091ac3da

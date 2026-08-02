@@ -1,0 +1,4 @@
+SIGNOFF_RESULT ExceptionGen: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=signoff-strict fm_shell_rc=0 validator_rc=0)
+run_id: SGN-ExceptionGen-1785540310
+impl_commit: 358258b43e0b48a58e6362878c5bd856a40a7cc0
+manifest_sha256: d913bef91b71cc0620037d4da3040d632cbaa20a2909279395a5b78aaacae06c

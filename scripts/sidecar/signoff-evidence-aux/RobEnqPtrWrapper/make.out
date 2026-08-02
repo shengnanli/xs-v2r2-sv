@@ -1,0 +1,20 @@
+=== FM: RobEnqPtrWrapper (mode=signoff-strict) ===
+FM_TOP=RobEnqPtrWrapper \
+FM_MODE=signoff-strict \
+FM_REF_SRCS="/home/eda/xs-env/G0-canonical/golden-rtl/RobEnqPtrWrapper.sv  " \
+FM_IMPL_SRCS="/tmp/tmp.bHOh5203Xo/wt/rtl/backend/RobEnqPtrWrapper.sv /tmp/tmp.bHOh5203Xo/wt/rtl/backend/RobEnqPtrWrapper_wrapper.sv" \
+ \
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=false \
+ \
+ \
+ \
+ \
+ \
+ \
+ \
+fm_shell -64 -work_path fm_work/RobEnqPtrWrapper -file /tmp/tmp.bHOh5203Xo/wt/scripts/fm_eq.tcl \
+    > fm_work/RobEnqPtrWrapper/fm.log 2>&1; \
+rc=$?; \
+if [ -n "$FM_SIDECAR_OUT" ]; then echo $rc > "$FM_SIDECAR_OUT/fm_shell.rc"; fi; \
+python3 /tmp/tmp.bHOh5203Xo/wt/scripts/fm_verdict.py fm_work/RobEnqPtrWrapper/fm.log --rc $rc --mode signoff-strict --top RobEnqPtrWrapper --allowlist 0
+SUCCEEDED	{"passing": 98, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": null, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": "signoff-strict", "native": "SUCCEEDED", "top": "RobEnqPtrWrapper", "dont_verify": false, "elab147": false, "reason": null, "unmatched_ref": 0, "unmatched_impl": 0}
