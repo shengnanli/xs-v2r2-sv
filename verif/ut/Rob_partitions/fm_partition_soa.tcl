@@ -37,7 +37,54 @@ set t_read [clock seconds]
 puts "SOA_PHASE read_done epoch=$t_read"
 
 # ---- SoA family reg-level pins (480, name-driven whole-reg match) ----
-if {[info exists env(FM_SOA_ENTRY_PINS)] && [file exists $env(FM_SOA_ENTRY_PINS)]} {
+# ★SoA-aware DFF auto-match (codex 0101)★ 正确机制: DFF-cell↔DFF-cell 配对(避 raw
+#  net/cell FM-013 类型不匹配 + 避 packed 的 FM-036 unknown-name)。把 golden
+#  robEntries_<N>_<field> DFF 映射到 impl SoA rob_<field>_reg[<N>](多位含 [b])DFF。
+#  用 report_unmatched_points 拿两侧真实 DFF 对象(类型一致), 逐条 set_user_match。
+proc soa_family_dff_match { top } {
+    # golden_suffix -> impl SoA array leaf
+    array set map {valid rob_valid_reg  stdWritebacked rob_std_wb_reg  uopNum rob_uop_num_reg}
+    redirect -variable um {report_unmatched_points}
+    array set impl_dff {}
+    set ref_dffs {}
+    foreach line [split $um "\n"] {
+        if {[regexp {Ref\s+DFF\S*\s+(r:\S+)} $line -> rp]} {
+            lappend ref_dffs $rp
+        } elseif {[regexp {Impl\s+DFF\S*\s+(i:\S+)} $line -> ip]} {
+            # normalize impl leaf: rob_<field>_reg[N] or rob_uop_num_reg[N][b]
+            set leaf [file tail $ip]
+            set impl_dff($ip) 1
+        }
+    }
+    set n 0
+    foreach rp $ref_dffs {
+        set leaf [file tail $rp]
+        # golden leaf: robEntries_<N>_<field>  or  robEntries_<N>_<field>[b]
+        if {![regexp {robEntries_(\d+)_([A-Za-z]+)(?:\[(\d+)\])?$} $leaf -> N fld b]} { continue }
+        if {![info exists map($fld)]} { continue }
+        set arr $map($fld)
+        # build impl DFF path from ref path prefix (swap robEntries_N_field -> u_core/arr[N]([b]))
+        set pre $rp
+        regsub {robEntries_\d+_[A-Za-z]+(?:\[\d+\])?$} $pre "" pre
+        regsub {^r:} $pre "i:" ipre
+        if {$b eq ""} {
+            set ip "${ipre}u_core/${arr}\[$N\]"
+        } else {
+            set ip "${ipre}u_core/${arr}\[$N\]\[$b\]"
+        }
+        if {![catch {set_user_match $rp $ip} msg]} {
+            incr n
+        } elseif {$n < 5} {
+            puts "SOA_DFF_MATCH_FAIL: $rp <-> $ip : $msg"
+        }
+    }
+    puts "SOA_FAMILY_DFF_MATCH: paired=$n"
+}
+if {[info exists env(FM_SOA_DFF_MATCH)] && $env(FM_SOA_DFF_MATCH) eq "1"} {
+    # need a first match pass to populate unmatched DFF list
+    match
+    soa_family_dff_match $top
+} elseif {[info exists env(FM_SOA_ENTRY_PINS)] && [file exists $env(FM_SOA_ENTRY_PINS)]} {
     source $env(FM_SOA_ENTRY_PINS)
     puts "SOA_ENTRY_PINS sourced: $env(FM_SOA_ENTRY_PINS)"
 }

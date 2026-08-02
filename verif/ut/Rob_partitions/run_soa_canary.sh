@@ -47,6 +47,8 @@ else
       --impl-prefix "u_rob/u_core" --gold-prefix "u_rob/" \
       --out "$EV/soa_fieldmap" > "$EV/soa_fieldmap_gen.log" 2>&1 || { echo SOA_FIELDMAP_FAIL; exit 2; }
   export FM_SOA_ENTRY_PINS="$EV/soa_fieldmap/rob_soa_entry_pins.tcl"
+  # FM_SOA_DFF_MATCH=1 → 用 DFF-cell↔DFF-cell 名映射(避 FM-036/FM-013); 默认走 raw pins。
+  export FM_SOA_DFF_MATCH="${FM_SOA_DFF_MATCH:-0}"
   DRIVER="$HERE/fm_partition_soa.tcl"
 fi
 
