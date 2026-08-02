@@ -94,13 +94,27 @@ def main():
     pin.append("    if {$_rob_soa_pin_fail <= 40} { puts \"ROB_SOA_PIN_FAIL: $rp <-> $ip : $m\" }")
     pin.append("  } else { incr _rob_soa_pin_n }")
     pin.append("}")
+    # FM 把 >1 位寄存器(golden robEntries_N_uopNum / impl rob_uop_num_reg[N])都
+    #  拍平成 per-bit, 整寄存器名不可寻址 → 多位字段用 per-bit pin(1-bit 用整名)。
+    #  关键: impl 侧 rob_uop_num_reg 是干净 unpacked 数组, [N][b] 可寻址(不同于
+    #  packed struct 的 rob_entries_reg[N][slice] 完全不可寻址)。
+    npins = 0
     for e in layout:
         N = e["entry"]
         arr = e["impl_array"]
         gsuf = e["golden_suffix"]
-        rp = f"r:/WORK/{top}/{gp}robEntries_{N}_{gsuf}"
-        ip = f"i:/WORK/{top}/{pre}/{arr}\\[{N}\\]"
-        pin.append(f"_rob_soa_pin {rp} {ip}")
+        w = e["width"]
+        if w == 1:
+            rp = f"r:/WORK/{top}/{gp}robEntries_{N}_{gsuf}"
+            ip = f"i:/WORK/{top}/{pre}/{arr}\\[{N}\\]"
+            pin.append(f"_rob_soa_pin {rp} {ip}")
+            npins += 1
+        else:
+            for b in range(w):
+                rp = f"r:/WORK/{top}/{gp}robEntries_{N}_{gsuf}\\[{b}\\]"
+                ip = f"i:/WORK/{top}/{pre}/{arr}\\[{N}\\]\\[{b}\\]"
+                pin.append(f"_rob_soa_pin {rp} {ip}")
+                npins += 1
     pin.append('puts "ROB_SOA_ENTRY_PINS: applied=$_rob_soa_pin_n fail=$_rob_soa_pin_fail"')
     with open(f"{a.out}/rob_soa_entry_pins.tcl", "w") as fh:
         fh.write("\n".join(pin) + "\n")
@@ -122,10 +136,17 @@ def main():
         "impl_soa_arrays": [f"i:/WORK/{top}/{pre}/{a_}" for a_, _, _ in SOA_FAMILY],
         "family": [f"{a_}<->robEntries_N_{g}" for a_, g, _ in SOA_FAMILY],
         "rob_size": ROB_SIZE,
-        "soa_reg_pins": len(layout),
+        "soa_reg_entries": len(layout),
+        "soa_pins_emitted": npins,
+        "soa_wholereg_pins": sum(1 for e in layout if e["width"] == 1),
+        "soa_perbit_pins": sum(e["width"] for e in layout if e["width"] > 1),
         "packed_bit_pins_same_family": ROB_SIZE * sum(w for _, _, w in SOA_FAMILY),
-        "reduction_ratio": round(
+        "wholereg_pin_reduction_ratio": round(
             (ROB_SIZE * sum(w for _, _, w in SOA_FAMILY)) / max(1, len(layout)), 3),
+        "note": "SoA 1-bit family regs matched at whole-reg (160/field); multi-bit "
+                "(uopNum 7b) needs per-bit pins BUT impl side rob_uop_num_reg[N][b] is a "
+                "clean addressable unpacked-array element (packed rob_entries_reg[N][b] is "
+                "NOT addressable=0/1440 resolve). Win = pin RESOLUTION, not count.",
         "bijection_ok": len(errors) == 0,
         "errors": errors,
         "soa_field_map_root_sha256": root,
@@ -134,9 +155,11 @@ def main():
     with open(f"{a.out}/rob_soa_fieldmap_manifest.json", "w") as fh:
         json.dump(manifest, fh, indent=2)
 
-    print(f"SoA family reg pins   : {len(layout)}")
+    print(f"SoA family reg entries: {len(layout)} (pins emitted {npins}: "
+          f"{manifest['soa_wholereg_pins']} whole-reg 1-bit + "
+          f"{manifest['soa_perbit_pins']} per-bit multi)")
     print(f"packed bit pins (same): {ROB_SIZE * sum(w for _,_,w in SOA_FAMILY)}")
-    print(f"reduction ratio       : {manifest['reduction_ratio']}x")
+    print(f"whole-reg pin reduction: {manifest['wholereg_pin_reduction_ratio']}x")
     print(f"bijection_ok          : {manifest['bijection_ok']}  errors={len(errors)}")
     if errors:
         for e in errors[:10]:
