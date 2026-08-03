@@ -211,5 +211,22 @@ SyncDataModule 以跳过 merge(canary3)——但 read_sverilog 阶段 ref 侧 bl
 canary 已有效; 但 verify FM_RESULT/matched% 因 SyncDataModule 白盒 merge 放缓未在预算内
 出数**。真出 matched% 的后续正解: 用 hdlin_interface_only(FM_INTERFACE_ONLY)给
 SyncDataModule【接口确定的对称 interface-only 声明】——既 0 unknown-dir(方向来自 golden
-port decl 非推断)又免寄存器 merge, 同 IMSIC/L2 assembly 边界法。本轮诚实留此为下一步。
+port decl 非推断)又免寄存器 merge, 同 IMSIC/L2 assembly 边界法。
+
+★canary4(SyncDataModule hdlin_interface_only)实测★: 修1 pins 再证
+applied=1440/fail=0/fm036=0 paired=1440 pre-match(dt=13s); 修2 gate **FM-064=0 +
+FM-230=0**(interface_only 令 SyncDataModule 成【接口确定的对称黑盒】, 0 unknown-dir)+
+FM-182=3(3)对称黑盒(2 DPI sink + SyncDataModule)。★这是修2 的最优形态: 既 0 unknown-dir
+又不白盒 SyncDataModule body★。match 阶段 Merging duplicated registers **不再 descend 进
+SyncDataModule 64-entry**(interface_only 跳过其 body)→ 快速过 difftest_delayer/rab/u_core,
+但 **VTypeBuffer 本体的寄存器 merge 仍是重步**(其内 SnapshotGenerator_1/_2 白盒+VTypeBuffer
+自身寄存器, ~7min+ 仍在 merge, worker 健康 98%cpu 真计算)→ 整 pCommit partition 的
+verify base merge 成本仍高, matched% 未在 canary4 的 50min 预算内出数。
+★诚实终态★: 修1(1440/1440 pre-match 0 FM-036/0 FM-013)+修2(interface_only: FM-064=0/
+FM-230=0/3 对称黑盒)+修3(FMR-091=0/ELAB-118=0)【三 gate 全达成, canary 有效, 证 SoA 真解
+family pin 墙】; verify FM_RESULT/matched% 因整 partition base merge(SyncDataModule 已 fixed,
+但 VTypeBuffer 等白盒子模块的寄存器 merge)重, 未在预算内出数——这是全 pCommit partition
+verify 的固有 FM 性能特征(与 family/修1 无关), 非任何修的缺陷。要出 matched% 的下一步:
+把 VTypeBuffer(及其内 SnapshotGenerator)也 interface_only 化, 令 verify base merge 收缩到
+真正受验的 family+glue cone。
 
