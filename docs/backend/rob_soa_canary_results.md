@@ -183,3 +183,17 @@ discover2 实测(两侧 elaborate 后 pre-match probe+trym):
   FM-064=7 + FM-230=8575 → 修2 令 7-child auto-bbox 归零。
 - 修3 FMR: FMR_VLOG-091=0, FMR_ELAB-118=0(impl set_top 无 filter 亦 0; 残留仅良性 VLOG-063)。
 
+## ★canary2 verify 阶段瓶颈(诚实记录)★
+三修 gate 全过后, match 顺利穿过 pin-apply(无 packed 的 FM-036/FM-013 墙)进入
+「Merging duplicated registers」(verification_merge_duplicated_registers=true)。但在
+impl 侧 `vtypeBuffer/vtypeBuffer (SyncDataModuleTemplate__64entry_3)` 块的寄存器合并
+出现严重放缓(单块 grind >15min, FM worker 健康 98%cpu/8GB 非死锁/非 OOM——是 64-entry
+大寄存器堆合并的真计算量), 挡住 verify 出 FM_RESULT。★根因: 修2 为消 auto-blackbox
+把 7 child 全【白盒】, 其中 SyncDataModule(VTypeBuffer 内, 大寄存器堆)白盒后其内部
+寄存器进入 merge → 成 verify 尾部瓶颈, 与 family-match 目标正交★。
+∴ 三修使 pin/blackbox/FMR 全过(canary 有效)已证; verify matched% 因 SyncDataModule
+merge 放缓未在本 run 出数。**后续优化**: SyncDataModule 深在 VTypeBuffer 内、接口确定,
+可对称【黑盒】(而非白盒)以跳过其寄存器 merge——既保 unknown-dir BBPin=0(接口确定的
+对称黑盒不产未知方向 pin)又免 merge 爆炸, 让 verify 快速出 family matched%。这是修2 的
+增量调优(白盒 vs 对称黑盒的边界选择), 不影响修1/修3 结论。
+

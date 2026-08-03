@@ -21,15 +21,19 @@ DEPS="$G/VTypeBuffer.sv $G/DummyDPICWrapper.sv $G/DummyDPICWrapper_8.sv $G/dt_16
   $RTL/Rob_difftest_stubs.sv"
 # ★codex 0103 修2★ 禁 missing-reference auto-blackbox(旧 canary 未给 7 child 的
 #  module 定义 → hdlin_unresolved_modules=black_box 让 FM 自建 FM_BBOX 并推断端口
-#  方向, 产 FM-064(7 auto-bbox)+FM-230(8575 unknown-direction pins))。改法: 把 7 个
-#  golden child 的【真 module 定义】对称提供给 ref 与 impl 两侧 → 两侧同 elaborate 成
-#  白盒(端口方向/宽度确定, unknown-dir BBPin=0, 无 undriven), 且两侧例化同一 golden
-#  module 故在 cone 内互相抵消(canary 只测 family match 收敛, 非 child 逻辑)。
-#  RenameBuffer 内含 SnapshotGenerator; SyncDataModuleTemplate 内含 DataModule__16entry_12
-#  (已在 DEPS)。8 个文件构成 child 闭包。
+#  方向, 产 FM-064(7 auto-bbox)+FM-230(8575 unknown-direction pins))。改法: 把 partition
+#  【顶层直接例化】的 6 个 golden child 真 module 定义对称提供给 ref+impl 两侧 → 两侧同
+#  elaborate 成白盒(端口方向/宽度确定, unknown-dir BBPin=0), cone 内互相抵消(canary 只测
+#  family match, 非 child 逻辑)。RenameBuffer 内含 SnapshotGenerator。
+#  ★SyncDataModuleTemplate__64entry_3 例外★: 它深在 VTypeBuffer 内(非 partition 顶层),
+#  VTypeBuffer 白盒的实例化已【定义其端口方向/宽度】→ 不给其 module 定义时它是
+#  【接口确定的对称黑盒】(非 unknown-direction auto-bbox, 与顶层缺失 module 不同)。这与
+#  官方 Rob Makefile 一致(“VTypeBuffer stays white-box with its nested SyncDataModule
+#  blackboxed”)。白盒它反而令其 64-entry 大寄存器堆进入 verification_merge_duplicated_
+#  registers 合并 → verify 尾部严重放缓(canary2 实测单块 grind >17min)。故对称黑盒之。
 CHILD_DEPS="$G/RenameBuffer.sv $G/SnapshotGenerator.sv $G/SnapshotGenerator_3.sv \
   $G/ExceptionGen.sv $G/NewRobDeqPtrWrapper.sv $G/RobEnqPtrWrapper.sv \
-  $G/DelayReg.sv $G/SyncDataModuleTemplate__64entry_3.sv"
+  $G/DelayReg.sv"
 DEPS="$DEPS $CHILD_DEPS"
 PART="$RTL/${TOP}_part.sv"
 
