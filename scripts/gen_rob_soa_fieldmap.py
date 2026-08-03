@@ -87,17 +87,34 @@ def main():
     pin.append(f"set ROB_SOA_TOP \"{top}\"")
     pin.append("set _rob_soa_pin_n 0")
     pin.append("set _rob_soa_pin_fail 0")
+    pin.append("set _rob_soa_pin_fm036 0")
+    # ★codex 0103 修1★ set_user_match on an unknown name may print FM-036 to stdout
+    #  WITHOUT raising a Tcl error (the old `catch`-only proc masked FM-036 → false
+    #  applied count). Capture command output via redirect and scan for FM-036 /
+    #  error markers so every unresolved pin is counted as a hard failure.
     pin.append("proc _rob_soa_pin {rp ip} {")
-    pin.append("  global _rob_soa_pin_n _rob_soa_pin_fail")
-    pin.append("  if {[catch {set_user_match $rp $ip} m]} {")
+    pin.append("  global _rob_soa_pin_n _rob_soa_pin_fail _rob_soa_pin_fm036")
+    pin.append("  set _out {}")
+    pin.append("  set _rc [catch {redirect -variable _out {set_user_match $rp $ip}} m]")
+    pin.append("  set _bad 0")
+    pin.append("  if {$_rc} { set _bad 1 }")
+    pin.append("  if {[regexp {FM-036} $_out]} { set _bad 1; incr _rob_soa_pin_fm036 }")
+    pin.append("  if {[regexp -nocase {error} $_out]} { set _bad 1 }")
+    pin.append("  if {$_bad} {")
     pin.append("    incr _rob_soa_pin_fail")
-    pin.append("    if {$_rob_soa_pin_fail <= 40} { puts \"ROB_SOA_PIN_FAIL: $rp <-> $ip : $m\" }")
+    pin.append("    if {$_rob_soa_pin_fail <= 40} { puts \"ROB_SOA_PIN_FAIL: $rp <-> $ip : rc=$_rc out=[string trim $_out] $m\" }")
     pin.append("  } else { incr _rob_soa_pin_n }")
     pin.append("}")
     # FM 把 >1 位寄存器(golden robEntries_N_uopNum / impl rob_uop_num_reg[N])都
     #  拍平成 per-bit, 整寄存器名不可寻址 → 多位字段用 per-bit pin(1-bit 用整名)。
     #  关键: impl 侧 rob_uop_num_reg 是干净 unpacked 数组, [N][b] 可寻址(不同于
     #  packed struct 的 rob_entries_reg[N][slice] 完全不可寻址)。
+    # ★codex 0103 修1 (Cell↔Cell)★ set_user_match 要求两侧同 class。golden `reg
+    #  robEntries_N_valid;` 的【输出 Net】名是 robEntries_N_valid, 而 FM 推断的【flop
+    #  Cell】名是 robEntries_N_valid_reg。impl `logic rob_valid[N]` 的 flop Cell 是
+    #  rob_valid_reg[N](FM-013 报文已证 impl 侧 rob_valid_reg[N] 是 Cell)。故必须两侧
+    #  都用 flop Cell: golden robEntries_N_<f>_reg ↔ impl rob_<f>_reg[N]([b])。
+    #  (旧版 golden 用无 _reg 的 Net 名 → 与 impl Cell 撞 FM-013 incompatible types。)
     npins = 0
     for e in layout:
         N = e["entry"]
@@ -105,17 +122,24 @@ def main():
         gsuf = e["golden_suffix"]
         w = e["width"]
         if w == 1:
-            rp = f"r:/WORK/{top}/{gp}robEntries_{N}_{gsuf}"
+            rp = f"r:/WORK/{top}/{gp}robEntries_{N}_{gsuf}_reg"
             ip = f"i:/WORK/{top}/{pre}/{arr}\\[{N}\\]"
             pin.append(f"_rob_soa_pin {rp} {ip}")
             npins += 1
         else:
             for b in range(w):
-                rp = f"r:/WORK/{top}/{gp}robEntries_{N}_{gsuf}\\[{b}\\]"
+                rp = f"r:/WORK/{top}/{gp}robEntries_{N}_{gsuf}_reg\\[{b}\\]"
                 ip = f"i:/WORK/{top}/{pre}/{arr}\\[{N}\\]\\[{b}\\]"
                 pin.append(f"_rob_soa_pin {rp} {ip}")
                 npins += 1
-    pin.append('puts "ROB_SOA_ENTRY_PINS: applied=$_rob_soa_pin_n fail=$_rob_soa_pin_fail"')
+    pin.append('puts "ROB_SOA_ENTRY_PINS: applied=$_rob_soa_pin_n fail=$_rob_soa_pin_fail fm036=$_rob_soa_pin_fm036"')
+    # ★修1 log-assert★ emit the paired count with the expected total so the driver
+    #  can assert `paired==expected` (0 FM-036) BEFORE the first `match`.
+    pin.append(f'puts "SOA_FAMILY_DFF_MATCH paired=$_rob_soa_pin_n expected={npins} fm036=$_rob_soa_pin_fm036"')
+    pin.append(f'if {{$_rob_soa_pin_n != {npins} || $_rob_soa_pin_fail != 0}} {{')
+    pin.append('  puts "SOA_PIN_ASSERT_FAIL: paired=$_rob_soa_pin_n fail=$_rob_soa_pin_fail fm036=$_rob_soa_pin_fm036 (expected all pins resolve pre-match)"')
+    pin.append('  exit 7')
+    pin.append('}')
     with open(f"{a.out}/rob_soa_entry_pins.tcl", "w") as fh:
         fh.write("\n".join(pin) + "\n")
 

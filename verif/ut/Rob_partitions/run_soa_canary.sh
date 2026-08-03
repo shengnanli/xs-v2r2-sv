@@ -19,6 +19,18 @@ rm -rf "$EV"; mkdir -p "$EV"
 DEPS="$G/VTypeBuffer.sv $G/DummyDPICWrapper.sv $G/DummyDPICWrapper_8.sv $G/dt_160x1.sv \
   $G/SnapshotGenerator_1.sv $G/SnapshotGenerator_2.sv $G/DataModule__16entry_12.sv \
   $RTL/Rob_difftest_stubs.sv"
+# ★codex 0103 修2★ 禁 missing-reference auto-blackbox(旧 canary 未给 7 child 的
+#  module 定义 → hdlin_unresolved_modules=black_box 让 FM 自建 FM_BBOX 并推断端口
+#  方向, 产 FM-064(7 auto-bbox)+FM-230(8575 unknown-direction pins))。改法: 把 7 个
+#  golden child 的【真 module 定义】对称提供给 ref 与 impl 两侧 → 两侧同 elaborate 成
+#  白盒(端口方向/宽度确定, unknown-dir BBPin=0, 无 undriven), 且两侧例化同一 golden
+#  module 故在 cone 内互相抵消(canary 只测 family match 收敛, 非 child 逻辑)。
+#  RenameBuffer 内含 SnapshotGenerator; SyncDataModuleTemplate 内含 DataModule__16entry_12
+#  (已在 DEPS)。8 个文件构成 child 闭包。
+CHILD_DEPS="$G/RenameBuffer.sv $G/SnapshotGenerator.sv $G/SnapshotGenerator_3.sv \
+  $G/ExceptionGen.sv $G/NewRobDeqPtrWrapper.sv $G/RobEnqPtrWrapper.sv \
+  $G/DelayReg.sv $G/SyncDataModuleTemplate__64entry_3.sv"
+DEPS="$DEPS $CHILD_DEPS"
 PART="$RTL/${TOP}_part.sv"
 
 export FM_REF_SRCS="$PART $G/Rob.sv $DEPS"
@@ -47,8 +59,8 @@ else
       --impl-prefix "u_rob/u_core" --gold-prefix "u_rob/" \
       --out "$EV/soa_fieldmap" > "$EV/soa_fieldmap_gen.log" 2>&1 || { echo SOA_FIELDMAP_FAIL; exit 2; }
   export FM_SOA_ENTRY_PINS="$EV/soa_fieldmap/rob_soa_entry_pins.tcl"
-  # FM_SOA_DFF_MATCH=1 → 用 DFF-cell↔DFF-cell 名映射(避 FM-036/FM-013); 默认走 raw pins。
-  export FM_SOA_DFF_MATCH="${FM_SOA_DFF_MATCH:-0}"
+  # ★修1★ 全部 set_user_match 前置于首个 match(fm_partition_soa.tcl 已删除
+  #  前置-match 的 FM_SOA_DFF_MATCH 路径), 只走 pre-match name-driven pins。
   DRIVER="$HERE/fm_partition_soa.tcl"
 fi
 
@@ -59,5 +71,21 @@ echo "start $(date -u +%H:%M:%S) epoch=$(date +%s)" | tee -a phase_timing.log
     -file "$DRIVER" > "$EV/fm.log" 2>"$EV/time.log"
 RC=$?
 echo "rc=$RC end $(date -u +%H:%M:%S) epoch=$(date +%s)" | tee -a phase_timing.log | tee "$EV/rc.txt"
-grep -E "FM_RESULT|SOA_PHASE|ROB_ENTRY_PINS|ROB_SOA_ENTRY_PINS|ROB_PIN_FAIL|ROB_SOA_PIN_FAIL|AUTO_MATCH|Passing|Failing|Unmatched|passing|failing|unmatched|Compare points|compare points" "$EV/fm.log" | tail -40
+grep -E "FM_RESULT|SOA_PHASE|SOA_FAMILY_DFF_MATCH|SOA_PREMATCH_COMPLETE|SOA_PIN_ASSERT_FAIL|ROB_SOA_ENTRY_PINS|ROB_SOA_PIN_FAIL|AUTO_MATCH|Passing|Failing|Unmatched|passing|failing|unmatched|Compare points|compare points" "$EV/fm.log" | tail -40
+
+# ================= codex 0103 三修 gate 汇总 (canary 前门禁) =================
+echo "=== THREE-FIX GATE ($MODE $TOP) ===" | tee "$EV/gate.txt"
+# 修1: pre-match paired 数 + 0 FM-036 (family)
+PAIRED=$(grep -oE 'SOA_FAMILY_DFF_MATCH paired=[0-9]+ expected=[0-9]+ fm036=[0-9]+' "$EV/fm.log" | tail -1)
+PREMATCH=$(grep -c 'SOA_PREMATCH_COMPLETE' "$EV/fm.log")
+echo "FIX1 family pre-match: ${PAIRED:-MISSING}  prematch_before_match=$PREMATCH" | tee -a "$EV/gate.txt"
+# 修2: auto-blackbox unknown-direction BBPin=0 (FM-064 / FM-230)
+FM064=$(grep -cE 'FM-064' "$EV/fm.log")
+FM230=$(grep -oE '[0-9]+ black-box pins of unknown direction' "$EV/fm.log" | grep -oE '^[0-9]+' | tail -1)
+UNDRIVEN=$(grep -oE '[0-9]+ (nets?|pins?) (are|is)? *undriven' "$EV/fm.log" | tail -1)
+echo "FIX2 auto-bbox: FM-064_count=$FM064  unknown_dir_BBPin=${FM230:-0}  undriven=${UNDRIVEN:-none}" | tee -a "$EV/gate.txt"
+# 修3: FMR_VLOG-091=0 at impl set_top (grep whole log; both-side reads)
+FMR091=$(grep -cE 'FMR_VLOG-091' "$EV/fm.log")
+FMR118=$(grep -cE 'FMR_ELAB-118' "$EV/fm.log")
+echo "FIX3 FMR: VLOG-091_count=$FMR091  ELAB-118_count=$FMR118" | tee -a "$EV/gate.txt"
 exit $RC

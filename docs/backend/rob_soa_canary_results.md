@@ -112,3 +112,57 @@ SoA 对 packed 收敛墙的改善是 **categorical(远超 2x)**:
 诚实保留: 全量前需(1)确认全 25 家族 SoA 化后 co-sim errors=0(本轮仅 3 家族已证);
 (2)nf 22 家族同样 SoA 化后 packed struct 完全消除(本轮 nf 仍 packed=残留同类墙);
 (3)整 partition verify 时间与家族无关, 全量收益在 match 阶段。
+
+## ★codex 0103 三修(令 canary 有效)★
+0101 的 canary run 因 3 个 run-level bug 无效; 0103 修 3 项后重跑有效 canary。
+
+### 修1: mapping 应用顺序(全部 set_user_match 在首个 match 之前)
+- ★决定性 discovery★(discover.tcl 两侧 elaborate 后 pre-match `set_user_match` 试配):
+  **所有 name 形态 pre-match 全解析 0 FM-036**——`rob_valid_reg[N]` / `rob_valid[N]` /
+  `rob_valid_reg_N`(下划线)/ `rob_uop_num_reg[N][b]` / `rob_uop_num[N][b]` 均 TRYMATCH OK。
+  ∴ 0101 结果表「uopNum 整名不解析 / packed 0/1440」实为【probe 时机错误】(用 get_cells
+  post-netlist 或全局 match 后拍平), 而【pre-match set_user_match on RTL compare-point
+  名】干净解析。
+- 修法(fm_partition_soa.tcl 重写): 删除 FM_SOA_DFF_MATCH 的【前置全局 match】路径(该路径
+  先跑一次 match 取 report_unmatched → SoA pin 来不及, 先撞墙); 只走 pre-match name-driven
+  pins(FM_SOA_ENTRY_PINS, source 于首个 match 之前); 多位 uopNum 用 [N][b] per-bit pin。
+- gen_rob_soa_fieldmap.py: `_rob_soa_pin` proc 用 `redirect -variable` 捕获 set_user_match
+  输出并 scan FM-036/error(旧版仅 catch Tcl-error → FM-036 被吞产假 applied 数);
+  末尾 emit `SOA_FAMILY_DFF_MATCH paired=<n> expected=1440 fm036=<k>`【在首个 match 之前】,
+  `paired!=1440 || fail!=0` 立即 `exit 7`(证 pin 真生效)。目标: family 1440 bit/reg pins
+  全解析 0 FM-036。
+
+### 修2: child blackbox 接口合格(禁 auto-blackbox)
+- ★根因★: 0101 canary 未把 7 child 的 module 定义给任一侧 → `hdlin_unresolved_modules=
+  black_box` 让 FM 对 missing reference 自建 FM_BBOX 并【推断】端口方向 → FM-064(7 auto-bbox)
+  + FM-230(8575 black-box pins of unknown direction)。
+- 修法(run_soa_canary.sh): 把 7 golden child 真 module 定义(RenameBuffer/SnapshotGenerator/
+  SnapshotGenerator_3/ExceptionGen/NewRobDeqPtrWrapper/RobEnqPtrWrapper/DelayReg/
+  SyncDataModuleTemplate__64entry_3, 闭包完整: RenameBuffer→SnapshotGenerator,
+  SyncDataModule→DataModule__16entry_12 已在 DEPS)【对称提供给 ref+impl 两侧】→ 两侧同
+  elaborate 成白盒(端口方向/宽度确定), unknown-dir BBPin=0, 两侧例化同一 golden module 故
+  cone 内抵消(canary 只测 family match, 非 child 逻辑)。禁 set_undriven/dont_verify。
+
+### 修3: FMR 严格性(带回丢失的修复)
+- ★FMR_VLOG-091=0(41→0)★: 可读核 14 个 `function automatic f(idx)` 读模块级 non-local
+  数组(wb_valid/wb_robidx/wb_num/enq_*/excp_*/hasCommitted/robDeqGroup/redirect* 等)→ FM 报
+  41 FMR_VLOG-091。全部改为【模块级 always_comb 预算数组】(procedural module code 读模块信号
+  合法, 不触发 FMR-091), 表达式逐字一致 0 语义变化。impl set_top FMR_VLOG-091=0(实测)。
+- ★FMR_ELAB-118=0(1→0)★: `ptr_add` 含 if/else 分支+逐字段 struct 赋值 → FM 保守报 "may not
+  return a value"。改为【纯三元表达式单路径 return struct-literal】(wrap=raw.value>=RobSize;
+  value 取模 RobSize; flag wrap 时翻转)→ FM 见确定返回值 0 ELAB-118。语义逐字不变。
+- 残留 FMR_VLOG-063(signed→unsigned, `PTR_W'(int e)` 字面量转无符号位宽)= 良性且 pre-existing
+  (packed_ref 同款), 确定值无风险, 保留 message-filter(非 091/118 那类需真修)。
+- co-sim(SoA vs packed_ref 逐拍全 94 输出, ptr_add 三元版): seed 1/7/42 全
+  checks=199997 errors=0 TEST PASSED(证 always_comb 数组化 + 三元 ptr_add 0 语义变化)。
+
+### ★修1 FM-013 真相(Net↔Cell 类型不匹配, 非 FM-036)★
+canary 重跑于 read_done 后 pin-apply 阶段实测: golden `reg robEntries_N_valid` 的 pin
+对象是 **Net**(robEntries_N_valid), 而 impl `logic rob_valid[N]` 的 flop 对象是 **Cell**
+(rob_valid_reg[N])→ `set_user_match` 报 **FM-013 "incompatible types (Net vs Cell)"**,
+applied=0/1440。★fix1 的 redirect-capture assert 正确捕获此错并 exit 7(旧 catch-only
+proc 会把 FM-013 打印吞掉误报 applied)——这正是 0101 结果表「TRYMATCH OK」的假阳性根源:
+旧 discover 用裸 catch 未捕获 stdout 的 FM-013★。修法: 两侧都用 flop **Cell**——golden
+robEntries_N_<f>_reg(FM 给 reg 推断的 cell 名加 _reg)↔ impl rob_<f>_reg[N]([b])。
+gen_rob_soa_fieldmap.py 已改 golden ref path 加 _reg 后缀(discover2 probe 确认 Cell 名)。
+
