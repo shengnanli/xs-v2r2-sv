@@ -227,7 +227,7 @@ VSstatusModule	signoff-strict			false
 VStopeiModule	signoff-strict			false	
 VStopiModule	signoff-strict			false	
 VStvalModule	signoff-strict			false	
-VTypeBuffer	assembly			true	
+VTypeBuffer	assembly	verif/signoff/allow/VTypeBuffer.json		true	
 VcsrModule	signoff-strict			false	
 VecExcpDataMergeModule	signoff-strict			false	
 VfofBuffer	signoff-strict			false	

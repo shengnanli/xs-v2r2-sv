@@ -24,6 +24,7 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/VTypeBuffer.sv \
 WRAPPER_SRCS = $(RTL_DIR)/backend/VTypeBuffer_wrapper.sv
 FM_VARIANTS = VTypeBuffer
 FM_MODE = assembly
+FM_ALLOWLIST = ../../signoff/allow/VTypeBuffer.json
 # allow.json 由 official runner 经 manifest allow_ref(verif/signoff/allow/VTypeBuffer.json)
 # 绑定 + hash 入证据; FM_ALLOWLIST(整数, 仅 make 侧 legacy fm_verdict 用)保持默认 0
 # —— 3 子模块是 matched blackbox pair(非 unmatched 点), 不占 unmatched 配额。
