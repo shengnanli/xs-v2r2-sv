@@ -16,10 +16,26 @@ As of this snapshot, ALL four owner branches are 0 commits ahead of base a63efe4
 - agent/soa-g2 : 0 committed (in-flight uncommitted Rob.sv in worktree)
 - agent/soa-g3 : 0 committed (in-flight uncommitted Rob.sv in worktree)
 - agent/soa-g4 : 0 committed (no uncommitted edits at snapshot)
-Owners are actively coding but have NOT delivered committed patches. Per the
-serial-absorption contract (each patch = delivered, co-sim/UT/FMR-passing unit),
-in-flight uncommitted worktree edits are NOT absorbed. Absorption begins the
-moment an owner commits their group patch to agent/soa-gN (or supplies a .patch).
+Owners are actively coding but (at first snapshot) had NOT delivered committed
+patches. Per the serial-absorption contract (each patch = delivered,
+co-sim/UT/FMR-passing unit), in-flight uncommitted worktree edits are NOT absorbed.
+
+★UPDATE (late in session): agent/soa-g3 delivered 1 commit (58f49a5 "Rob SoA G3:
+exception/redirect/vector state family → SoA"). Validated structurally READY:
+- 7 SoA arrays declared with correct widths (rob_vls/vxsat/dirty_vs/wflags/rf_wen/
+  fp_wen 1-bit + rob_fflags 5-bit) matching frozen inventory G3 exactly.
+- reconstruction + next-state arrays added; nf reset+update lines for all 7 fields
+  REMOVED (no double-store: `rob_entries_nf[i].vls` count=0; disjoint G1 field
+  `mmio` still in nf count=2 — untouched, correct).
+- matches canary pattern + documented workflow. Co-sim/UT/FMR gates PENDING
+  in-order absorption.
+BUT per absorption ORDER (G1→G2→[2-grp checkpoint]→G3→G4), G3 is NOT absorbed yet:
+G1+G2 must land and be absorbed first (checkpoint gates on G1+G2; out-of-order
+absorb complicates conflict resolution + violates codex 0104 checkpoint discipline).
+G1 (agent/soa-g1) and G2 (agent/soa-g2) remain 0 committed → STILL BLOCKED.★
+
+Absorption begins the moment G1 commits its group patch (then G2, then absorb the
+already-delivered G3, then G4).
 
 ## Ready-to-run harness (committed under verif/ut/Rob_partitions/soa_integ/;
 ##  originals in /tmp/rob-soa-integ-evidence/)
