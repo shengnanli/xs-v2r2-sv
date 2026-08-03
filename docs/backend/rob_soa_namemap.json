@@ -1,0 +1,212 @@
+{
+  "map": [
+    {
+      "golden": "valid",
+      "impl_struct": "valid",
+      "golden_w": 1,
+      "impl_struct_w": 1,
+      "width_ok": true,
+      "note": ""
+    },
+    {
+      "golden": "uopNum",
+      "impl_struct": "uop_num",
+      "golden_w": 7,
+      "impl_struct_w": 7,
+      "width_ok": true,
+      "note": ""
+    },
+    {
+      "golden": "stdWritebacked",
+      "impl_struct": "std_writebacked",
+      "golden_w": 1,
+      "impl_struct_w": 1,
+      "width_ok": true,
+      "note": ""
+    },
+    {
+      "golden": "realDestSize",
+      "impl_struct": "real_dest_size",
+      "golden_w": 7,
+      "impl_struct_w": 7,
+      "width_ok": true,
+      "note": ""
+    },
+    {
+      "golden": "needFlush",
+      "impl_struct": "need_flush",
+      "golden_w": 1,
+      "impl_struct_w": 1,
+      "width_ok": true,
+      "note": ""
+    },
+    {
+      "golden": "interrupt_safe",
+      "impl_struct": "interrupt_safe",
+      "golden_w": 1,
+      "impl_struct_w": 1,
+      "width_ok": true,
+      "note": ""
+    },
+    {
+      "golden": "mmio",
+      "impl_struct": "mmio",
+      "golden_w": 1,
+      "impl_struct_w": 1,
+      "width_ok": true,
+      "note": ""
+    },
+    {
+      "golden": "vls",
+      "impl_struct": "vls",
+      "golden_w": 1,
+      "impl_struct_w": 1,
+      "width_ok": true,
+      "note": ""
+    },
+    {
+      "golden": "fflags",
+      "impl_struct": "fflags",
+      "golden_w": 5,
+      "impl_struct_w": 5,
+      "width_ok": true,
+      "note": ""
+    },
+    {
+      "golden": "vxsat",
+      "impl_struct": "vxsat",
+      "golden_w": 1,
+      "impl_struct_w": 1,
+      "width_ok": true,
+      "note": ""
+    },
+    {
+      "golden": "rfWen",
+      "impl_struct": "rf_wen",
+      "golden_w": 1,
+      "impl_struct_w": 1,
+      "width_ok": true,
+      "note": ""
+    },
+    {
+      "golden": "fpWen",
+      "impl_struct": "fp_wen",
+      "golden_w": 1,
+      "impl_struct_w": 1,
+      "width_ok": true,
+      "note": ""
+    },
+    {
+      "golden": "wflags",
+      "impl_struct": "wflags",
+      "golden_w": 1,
+      "impl_struct_w": 1,
+      "width_ok": true,
+      "note": ""
+    },
+    {
+      "golden": "dirtyVs",
+      "impl_struct": "dirty_vs",
+      "golden_w": 1,
+      "impl_struct_w": 1,
+      "width_ok": true,
+      "note": ""
+    },
+    {
+      "golden": "commitType",
+      "impl_struct": "commit_type",
+      "golden_w": 3,
+      "impl_struct_w": 3,
+      "width_ok": true,
+      "note": ""
+    },
+    {
+      "golden": "isRVC",
+      "impl_struct": "is_rvc",
+      "golden_w": 1,
+      "impl_struct_w": 1,
+      "width_ok": true,
+      "note": ""
+    },
+    {
+      "golden": "isVset",
+      "impl_struct": "is_vset",
+      "golden_w": 1,
+      "impl_struct_w": 1,
+      "width_ok": true,
+      "note": ""
+    },
+    {
+      "golden": "isHls",
+      "impl_struct": "is_hls",
+      "golden_w": 1,
+      "impl_struct_w": 1,
+      "width_ok": true,
+      "note": ""
+    },
+    {
+      "golden": "instrSize",
+      "impl_struct": "instr_size",
+      "golden_w": 3,
+      "impl_struct_w": 3,
+      "width_ok": true,
+      "note": ""
+    },
+    {
+      "golden": "ftqIdx_value",
+      "impl_struct": "ftq_idx_value",
+      "golden_w": 6,
+      "impl_struct_w": 6,
+      "width_ok": true,
+      "note": ""
+    },
+    {
+      "golden": "ftqIdx_flag",
+      "impl_struct": "ftq_idx_flag",
+      "golden_w": 1,
+      "impl_struct_w": 1,
+      "width_ok": true,
+      "note": ""
+    },
+    {
+      "golden": "ftqOffset",
+      "impl_struct": "ftq_offset",
+      "golden_w": 4,
+      "impl_struct_w": 4,
+      "width_ok": true,
+      "note": ""
+    },
+    {
+      "golden": "traceBlockInPipe_itype",
+      "impl_struct": "itype",
+      "golden_w": 4,
+      "impl_struct_w": 4,
+      "width_ok": true,
+      "note": ""
+    },
+    {
+      "golden": "traceBlockInPipe_iretire",
+      "impl_struct": "iretire",
+      "golden_w": 4,
+      "impl_struct_w": 4,
+      "width_ok": true,
+      "note": ""
+    },
+    {
+      "golden": "traceBlockInPipe_ilastsize",
+      "impl_struct": "ilastsize",
+      "golden_w": 1,
+      "impl_struct_w": 2,
+      "width_ok": false,
+      "note": "WIDTH DIFF golden=1 impl_struct=2"
+    }
+  ],
+  "width_mismatches": [
+    [
+      "traceBlockInPipe_ilastsize",
+      "ilastsize",
+      1,
+      2
+    ]
+  ]
+}
