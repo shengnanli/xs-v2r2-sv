@@ -332,7 +332,16 @@ module xs_Rob_core
   logic [UOP_CNT_W-1:0] rob_real_dest_size [ROB_SIZE]; // = golden robEntries_N_realDestSize
   logic [INSTR_SIZE_W-1:0] rob_instr_size  [ROB_SIZE]; // = golden robEntries_N_instrSize
   logic [2:0]           rob_commit_type    [ROB_SIZE]; // = golden robEntries_N_commitType
-  // ---- 非-G1-family packed 存储(G1 位不寄存, 见 §12 always_ff)。 ----
+  // ---- SoA G2 family (codex 0104 阶段2, pointers/indices, 3 字段, 每字段 160 深)----
+  //  ftqIdx/ftqOffset 组: 取指队列指针(异常/重定向/trace 用), 从原 packed
+  //  rob_entries[i].{ftq_idx_flag,ftq_idx_value,ftq_offset} 拆为语义命名 unpacked
+  //  arrays, 令 FM 按名(rob_ftq_flag_reg[N]/rob_ftq_value_reg[N]/rob_ftq_offset_reg[N])
+  //  直接配对 golden robEntries_N_ftqIdx_flag / _ftqIdx_value / _ftqOffset(免逐位
+  //  set_user_match)。语义 bit-exact 复刻旧 packed 版(见 §4/§12 reset/write/priority)。
+  logic                    rob_ftq_flag   [ROB_SIZE]; // = golden robEntries_N_ftqIdx_flag
+  logic [FTQ_PTR_W-1:0]    rob_ftq_value  [ROB_SIZE]; // = golden robEntries_N_ftqIdx_value
+  logic [FTQ_OFFSET_W-1:0] rob_ftq_offset [ROB_SIZE]; // = golden robEntries_N_ftqOffset
+  // ---- 非-family packed 存储(G1/G2 family 位不寄存, 见 §12 always_ff)。 ----
   rob_entry_t  rob_entries_nf [ROB_SIZE];
   // ---- rob_entries 组合重建视图: nf + SoA G1 family(全核读用, 0 flip-flop) ----
   rob_entry_t  rob_entries    [ROB_SIZE];
@@ -351,6 +360,10 @@ module xs_Rob_core
       rob_entries[i].real_dest_size  = rob_real_dest_size[i];
       rob_entries[i].instr_size      = rob_instr_size[i];
       rob_entries[i].commit_type     = rob_commit_type[i];
+      // G2 pointers/indices family 覆盖到 nf 上
+      rob_entries[i].ftq_idx_flag    = rob_ftq_flag[i];
+      rob_entries[i].ftq_idx_value   = rob_ftq_value[i];
+      rob_entries[i].ftq_offset      = rob_ftq_offset[i];
     end
   // FM 下标空间: 组合读向量宽度用 2 的幂 256, 让 8 位 robIdx 下标静态在界
   //  (消 FMR_ELAB-147)。这些是 wire(0 寄存器), 不同于上面 ROB_SIZE 宽的寄存器阵列。
@@ -646,6 +659,19 @@ module xs_Rob_core
     for (int i = 0; i < ROB_SIZE; i++) begin
       rob_uop_num_next[i] = rob_entries_next[i].uop_num;
       rob_std_wb_next[i]  = rob_entries_next[i].std_writebacked;
+    end
+
+  // ---- SoA G2 family 下一拍(组合): ftq flag/value/offset 直取 rob_entries_next
+  //  (与 packed 版 §12 落 rob_entries[i]<=rob_entries_next[i] 同源; enq 命中口写入
+  //  s.ftq_*, 非命中/非 enq 保持, 见 §4 next-state 逐字复刻 golden)。 ----
+  logic                    rob_ftq_flag_next   [ROB_SIZE];
+  logic [FTQ_PTR_W-1:0]    rob_ftq_value_next  [ROB_SIZE];
+  logic [FTQ_OFFSET_W-1:0] rob_ftq_offset_next [ROB_SIZE];
+  always_comb
+    for (int i = 0; i < ROB_SIZE; i++) begin
+      rob_ftq_flag_next[i]   = rob_entries_next[i].ftq_idx_flag;
+      rob_ftq_value_next[i]  = rob_entries_next[i].ftq_idx_value;
+      rob_ftq_offset_next[i] = rob_entries_next[i].ftq_offset;
     end
 
   // 分支类型判定(itype: 4=NoBranch/NotTaken 之外的 branch code)。
@@ -1103,7 +1129,11 @@ module xs_Rob_core
         rob_real_dest_size[i] <= '0;
         rob_instr_size[i]     <= '0;
         rob_commit_type[i]    <= '0;
-        // 非-G1 packed nf 字段:
+        // G2 pointers/indices family reset(与 packed 版 rob_entries[i]<='0 逐位一致)
+        rob_ftq_flag[i]   <= 1'b0;
+        rob_ftq_value[i]  <= '0;
+        rob_ftq_offset[i] <= '0;
+        // 非-G1/G2 packed nf 字段:
         rob_entries_nf[i].vls            <= 1'b0;
         rob_entries_nf[i].fflags         <= '0;
         rob_entries_nf[i].vxsat          <= 1'b0;
@@ -1111,9 +1141,7 @@ module xs_Rob_core
         rob_entries_nf[i].fp_wen         <= 1'b0;
         rob_entries_nf[i].wflags         <= 1'b0;
         rob_entries_nf[i].dirty_vs       <= 1'b0;
-        rob_entries_nf[i].ftq_idx_value  <= '0;
-        rob_entries_nf[i].ftq_idx_flag   <= 1'b0;
-        rob_entries_nf[i].ftq_offset     <= '0;
+        // ftq_idx_value/ftq_idx_flag/ftq_offset 现为 G2 SoA family, 不寄存于 nf
         rob_entries_nf[i].itype          <= '0;
         rob_entries_nf[i].iretire        <= '0;
         rob_entries_nf[i].ilastsize      <= '0;
@@ -1177,9 +1205,7 @@ module xs_Rob_core
         rob_entries_nf[i].fp_wen          <= rob_entries_next[i].fp_wen;
         rob_entries_nf[i].wflags          <= rob_entries_next[i].wflags;
         rob_entries_nf[i].dirty_vs        <= rob_entries_next[i].dirty_vs;
-        rob_entries_nf[i].ftq_idx_value   <= rob_entries_next[i].ftq_idx_value;
-        rob_entries_nf[i].ftq_idx_flag    <= rob_entries_next[i].ftq_idx_flag;
-        rob_entries_nf[i].ftq_offset      <= rob_entries_next[i].ftq_offset;
+        // ftq_idx_value/ftq_idx_flag/ftq_offset 现为 G2 SoA family, 落各自数组(见下)
         rob_entries_nf[i].itype           <= rob_entries_next[i].itype;
         rob_entries_nf[i].iretire         <= rob_entries_next[i].iretire;
         rob_entries_nf[i].ilastsize       <= rob_entries_next[i].ilastsize;
@@ -1196,7 +1222,11 @@ module xs_Rob_core
         rob_real_dest_size[i] <= rob_entries_next[i].real_dest_size;
         rob_instr_size[i]     <= rob_entries_next[i].instr_size;
         rob_commit_type[i]    <= rob_entries_next[i].commit_type;
-        // G1 valid: 按优先级覆盖(commit 清 > enq 置 > flush 清 > hold)
+        // G2 family ftq flag / value / offset(与 packed 版 rob_entries[i]<=next 同源)
+        rob_ftq_flag[i]   <= rob_ftq_flag_next[i];
+        rob_ftq_value[i]  <= rob_ftq_value_next[i];
+        rob_ftq_offset[i] <= rob_ftq_offset_next[i];
+        // G1/G2 valid: 按优先级覆盖(commit 清 > enq 置 > flush 清 > hold)
         if (commitCond)
           rob_valid[i] <= 1'b0;
         else if (enqOH & ~io_redirect_valid)

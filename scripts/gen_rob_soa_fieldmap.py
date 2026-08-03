@@ -38,6 +38,10 @@ SOA_FAMILY = [
     ("rob_real_dest_size_reg", "realDestSize",   7),
     ("rob_instr_size_reg",     "instrSize",      3),
     ("rob_commit_type_reg",    "commitType",     3),
+    # G2 扩展(阶段2): pointers / indices (ftqIdx/ftqOffset)
+    ("rob_ftq_flag_reg",       "ftqIdx_flag",    1),
+    ("rob_ftq_value_reg",      "ftqIdx_value",   6),
+    ("rob_ftq_offset_reg",     "ftqOffset",      4),
 ]
 
 
@@ -66,7 +70,22 @@ def main():
     ap.add_argument("--gold-prefix", default="",
                     help="golden hier prefix under r:/WORK/<top>")
     ap.add_argument("--out", required=True)
+    # ★checkpoint(codex 0104)用★ 只生成指定 golden 字段的 pins(逗号分隔 suffix)。
+    #  cone-DCE 派生 golden(如 Rob_golden_commit.sv)物理删除了 off-cone 字段
+    #  (mmio/isHls/instrSize 等), 对已删字段发 set_user_match 会 FM-036 →
+    #  fail-closed exit 7; 故 checkpoint 按「kept-fields-only」过滤。
+    ap.add_argument("--only-fields", default=None,
+                    help="comma-separated golden suffixes; restrict SOA_FAMILY")
     a = ap.parse_args()
+
+    global SOA_FAMILY
+    if a.only_fields:
+        keep = set(a.only_fields.split(","))
+        unknown = keep - {g for _, g, _ in SOA_FAMILY}
+        if unknown:
+            print(f"ERROR --only-fields unknown suffixes: {sorted(unknown)}")
+            sys.exit(2)
+        SOA_FAMILY = [t for t in SOA_FAMILY if t[1] in keep]
 
     top = a.top
     pre = a.impl_prefix
