@@ -3641,7 +3641,7 @@ module Rob(
   logic eg_is_exception, eg_flush_pipe, eg_replay_inst, eg_is_vls, eg_is_enq_excp, eg_is_vset;
   rob_ptr_t deq_ptr_vec [COMMIT_WIDTH]; rob_ptr_t deq_ptr_next0;
   rob_ptr_t enq_ptr_vec [RENAME_WIDTH]; rob_ptr_t snap_ptr0;
-  logic rab_can_enq, rab_status_commit_end, rab_status_walk_end, vtype_status_walk_end;
+  logic rab_can_enq, rab_can_enq_for_dispatch, rab_status_commit_end, rab_status_walk_end, vtype_status_walk_end;
 
   // exceptionGen 状态探针 -> eg_*
   assign eg_valid        = _exceptionGen_io_state_valid;
@@ -3712,7 +3712,10 @@ module Rob(
       default: snap_ptr0 = '0;
     endcase
   end
-  assign rab_can_enq           = _rab_io_canEnq;
+  // ★codex 0107 修★ golden canAccept 含 vtypeBuffer.io_canEnq 项(旧 glue 漏);
+  //  ForDispatch 用独立对(rab/vtype 的 canEnqForDispatch)。
+  assign rab_can_enq              = _rab_io_canEnq & _vtypeBuffer_io_canEnq;
+  assign rab_can_enq_for_dispatch = _rab_io_canEnqForDispatch & _vtypeBuffer_io_canEnqForDispatch;
   assign rab_status_commit_end = _rab_io_status_commitEnd;
   assign rab_status_walk_end   = _rab_io_status_walkEnd;
   assign vtype_status_walk_end = _vtypeBuffer_io_status_walkEnd;

@@ -95,6 +95,7 @@ module xs_Rob_core_packed_ref
   input  logic                       io_fromVecExcpMod_busy,
   input  logic                       io_trace_blockCommit,
   input  logic                       rab_can_enq,
+  input  logic                       rab_can_enq_for_dispatch,
   input  logic                       rab_status_commit_end,
   input  logic                       rab_status_walk_end,
   input  logic                       vtype_status_walk_end,
@@ -372,7 +373,7 @@ module xs_Rob_core_packed_ref
   assign o_allowEnqueue = allowEnqueue;
   always_comb begin
     o_enq_canAccept            = allowEnqueue            & ~hasBlockBackward & rab_can_enq & ~io_fromVecExcpMod_busy;
-    o_enq_canAcceptForDispatch = allowEnqueueForDispatch & ~hasBlockBackward & rab_can_enq & ~io_fromVecExcpMod_busy;
+    o_enq_canAcceptForDispatch = allowEnqueueForDispatch & ~hasBlockBackward & rab_can_enq_for_dispatch & ~io_fromVecExcpMod_busy;
   end
   assign o_robFull = ~allowEnqueue;
 

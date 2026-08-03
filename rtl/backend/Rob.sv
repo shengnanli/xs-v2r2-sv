@@ -94,7 +94,13 @@ module xs_Rob_core
   input  logic                       io_wfi_safeFromFrontend,
   input  logic                       io_fromVecExcpMod_busy,
   input  logic                       io_trace_blockCommit,
+  // ★codex 0107 修(canAccept 缺 vtypeBuffer 项)★ rab_can_enq 语义 =
+  //  rab.io_canEnq & vtypeBuffer.io_canEnq(wrapper glue 相与后喂入; 旧 glue 漏
+  //  vtype 项 = FM 抓到的真 bug: golden io_enq_canAccept_0 五项与, impl 四项)。
+  //  ForDispatch 用【另一对】信号(rab.io_canEnqForDispatch &
+  //  vtypeBuffer.io_canEnqForDispatch), 不能复用 rab_can_enq → 新增独立输入。
   input  logic                       rab_can_enq,
+  input  logic                       rab_can_enq_for_dispatch,
   input  logic                       rab_status_commit_end,
   input  logic                       rab_status_walk_end,
   input  logic                       vtype_status_walk_end,
@@ -439,8 +445,10 @@ module xs_Rob_core
   logic allowEnqueue, allowEnqueueForDispatch;
   assign o_allowEnqueue = allowEnqueue;
   always_comb begin
-    o_enq_canAccept            = allowEnqueue            & ~hasBlockBackward & rab_can_enq & ~io_fromVecExcpMod_busy;
-    o_enq_canAcceptForDispatch = allowEnqueueForDispatch & ~hasBlockBackward & rab_can_enq & ~io_fromVecExcpMod_busy;
+    // golden: allowEnqueue & ~hasBlockBackward & rab.canEnq & vtypeBuffer.canEnq
+    //         & ~busy(rab_can_enq 已含 vtype 项, 见端口注); ForDispatch 用独立对。
+    o_enq_canAccept            = allowEnqueue            & ~hasBlockBackward & rab_can_enq              & ~io_fromVecExcpMod_busy;
+    o_enq_canAcceptForDispatch = allowEnqueueForDispatch & ~hasBlockBackward & rab_can_enq_for_dispatch & ~io_fromVecExcpMod_busy;
   end
   assign o_robFull = ~allowEnqueue;
 

@@ -4152,7 +4152,7 @@ module tb;
   logic eg_is_exception, eg_flush_pipe, eg_replay_inst, eg_is_vls, eg_is_enq_excp, eg_is_vset;
   rob_ptr_t deq_ptr_vec [COMMIT_WIDTH]; rob_ptr_t deq_ptr_next0;
   rob_ptr_t enq_ptr_vec [RENAME_WIDTH]; rob_ptr_t snap_ptr0;
-  logic rab_can_enq, rab_status_commit_end, rab_status_walk_end, vtype_status_walk_end;
+  logic rab_can_enq, rab_can_enq_for_dispatch, rab_status_commit_end, rab_status_walk_end, vtype_status_walk_end;
 
   // exceptionGen 状态探针 -> eg_*
   assign eg_valid        = u_g._exceptionGen_io_state_valid;
@@ -4204,7 +4204,8 @@ module tb;
       default: snap_ptr0 = '0;
     endcase
   end
-  assign rab_can_enq           = u_g._rab_io_canEnq;
+  assign rab_can_enq           = u_g._rab_io_canEnq & u_g._vtypeBuffer_io_canEnq;
+  assign rab_can_enq_for_dispatch = u_g._rab_io_canEnqForDispatch & u_g._vtypeBuffer_io_canEnqForDispatch;
   assign rab_status_commit_end = u_g._rab_io_status_commitEnd;
   assign rab_status_walk_end   = u_g._rab_io_status_walkEnd;
   assign vtype_status_walk_end = u_g._vtypeBuffer_io_status_walkEnd;

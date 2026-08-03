@@ -238,6 +238,7 @@ module tb;
     .io_fromVecExcpMod_busy(io_fromVecExcpMod_busy),
     .io_trace_blockCommit(io_trace_blockCommit),
     .rab_can_enq(rab_can_enq),
+    .rab_can_enq_for_dispatch(rab_can_enq),
     .rab_status_commit_end(rab_status_commit_end),
     .rab_status_walk_end(rab_status_walk_end),
     .vtype_status_walk_end(vtype_status_walk_end),

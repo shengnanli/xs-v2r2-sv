@@ -43,7 +43,7 @@ module tb;
   logic io_csr_intrBitSet, io_csr_wfiEvent, io_csr_criticalErrorState;
   logic io_snpt_useSnpt, io_wfi_enable, io_wfi_safeFromMem, io_wfi_safeFromFrontend;
   logic io_fromVecExcpMod_busy, io_trace_blockCommit;
-  logic rab_can_enq, rab_status_commit_end, rab_status_walk_end, vtype_status_walk_end;
+  logic rab_can_enq, rab_can_enq_for_dispatch, rab_status_commit_end, rab_status_walk_end, vtype_status_walk_end;
   logic io_misPredWb;
   logic io_wb1_redir, io_wb3_redir, io_wb5_redir;   // <-- 新增 (perf_16)
   // ---- 核输出 ----
@@ -123,7 +123,7 @@ module tb;
       io_csr_intrBitSet<=0; io_csr_wfiEvent<=0; io_csr_criticalErrorState<=0;
       io_snpt_useSnpt<=0; io_wfi_enable<=1; io_wfi_safeFromMem<=1; io_wfi_safeFromFrontend<=1;
       io_fromVecExcpMod_busy<=0; io_trace_blockCommit<=0;
-      rab_can_enq<=1; rab_status_commit_end<=1; rab_status_walk_end<=1; vtype_status_walk_end<=1;
+      rab_can_enq<=1; rab_can_enq_for_dispatch<=1; rab_status_commit_end<=1; rab_status_walk_end<=1; vtype_status_walk_end<=1;
       io_misPredWb<=0; io_wb1_redir<=0; io_wb3_redir<=0; io_wb5_redir<=0;
       for (int i=0;i<RENAME_WIDTH;i++) begin enq_num_wb[i]<=1; enq_robidx_value[i]<=0; enq_info[i]<='0; end
       for (int i=0;i<NUM_EXU_WB;i++) begin wb_robidx[i]<=0; wb_num[i]<=1; wb_fflags[i]<=0; end
@@ -180,6 +180,7 @@ module tb;
       io_snpt_useSnpt <= $urandom_range(0,1);
       io_fromVecExcpMod_busy <= ($urandom_range(0,99)<2);
       rab_can_enq <= ($urandom_range(0,99)<95);
+      rab_can_enq_for_dispatch <= ($urandom_range(0,99)<95);
       rab_status_walk_end <= ($urandom_range(0,99)<60); vtype_status_walk_end <= ($urandom_range(0,99)<60);
       io_misPredWb <= ($urandom_range(0,99)<3);
       io_wb1_redir <= ($urandom_range(0,99)<8);
