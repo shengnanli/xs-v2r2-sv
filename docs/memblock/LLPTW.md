@@ -3,16 +3,12 @@
 > ✅ **FM 分类 = REPLACEMENT_EQ（可读核真驱动 + 冻结基线原生 SUCCEEDED）**。依据台账
 > [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md) 与冻结基线日志
 > `verif/ut/LLPTW/fm_work/LLPTW/fm_full.log`：本模块在当前冻结 golden 基线上 FM **原生
-> `Verification SUCCEEDED`，1698 passing / 0 failing / 0 unverified**。下文验证节里任何
-> "FAILED / 20 failing 截断 / 部分验证 / 未收敛"的表述是**冻结前的旧叙事，已作废**——以本
-> banner 与台账为准。
+> `Verification SUCCEEDED`，1698 passing / 0 failing / 0 unverified**。
 
-> 当前状态：已落地可读核 `rtl/memblock/LLPTW.sv`、类型包 `rtl/memblock/llptw_pkg.sv`、
+> 产物：可读核 `rtl/memblock/LLPTW.sv`、类型包 `rtl/memblock/llptw_pkg.sv`、
 > golden 同名 wrapper `rtl/memblock/LLPTW_wrapper.sv`、生成脚本 `scripts/gen_llptw.py`、
 > UT 框架 `verif/ut/LLPTW/`。三种子（1/7/42）各 200000 拍随机 UT 全部输出 `errors=0`，
-> 11 个内部层次探针 `probe_errors=0`；FM 因「struct 数组 vs golden 扁平标量」无法配对
-> 输入锥而 FAILED（36 passing / 20 failing(截断上限) / 1627 unverified，部分验证），
-> 已用探针证明已报告 failing 点在可达激励下不分歧，以 UT 为权威。
+> 11 个内部层次探针 `probe_errors=0`。
 
 ## 架构定位
 
@@ -175,28 +171,19 @@ UT（双例化 golden `LLPTW` vs 手写 `LLPTW_xs`，共用 golden 子模块；�
 | 7  | 200000 | 0 | 0 | PASSED |
 | 42 | 200000 | 0 | 0 | PASSED |
 
-内部探针（11 个，证 FM failing 为假阳性）：6 个 `state[0..5]` + `addr_reg`、`enq_ptr_reg`、
+内部探针（11 个）：6 个 `state[0..5]` + `addr_reg`、`enq_ptr_reg`、
 `hptw_resp_ptr_reg`、`mem_refill_id`、`need_addr_check`，对应 golden 的 `state_N`/`addr`/
 `enq_ptr_reg`/`hptw_resp_ptr_reg`/`mem_refill_id`/`need_addr_check_last_REG`。三种子全程 0 分歧。
 
 FM（`make fm`，子模块黑盒）：
 
-- 结果：末次 verify 结论 `Verification FAILED`——**36 passing / 20 failing / 1627
-  unverified**（已验 passing 仅 36 点，FM 覆盖极有限）。
-- 读入/elaborate 通过（无 `FMR_ELAB-147`/`FM-089` 中断）。
-- 已报告 20 个 **matched failing** DFF：`addr_reg[3..11]`(9)、`enq_ptr_reg[0..2]`(3)、
-  `hptw_resp_ptr_reg[0..2]`(3)、`mem_refill_id[0..2]`(3)、`need_addr_check`(1)、`io_mem_req_bits_id[0]`(1)。
-  注意 **20 是 Formality 默认 `verification_failing_point_limit=20` 的截断上限**——verify
-  攒满 20 个失配即提前中止，1627 个 unverified 点未验。
-- 约 2814 个 **unmatched implementation** + 15 个 unmatched reference：根因是可读核把整个条目池
-  实现为 `llptw_entry_t entries[6]` 的 **packed 数组**，而 golden 是 firtool 展平的逐条目逐字段
-  标量 `entries_0_*`…`entries_5_*`；FM 既无法按名字配对，等价条目间签名又对称，导致大量
-  寄存器无法 match，进而上面 20 个下游小寄存器的输入锥也配不齐而误判 failing。
-- 这正是 `docs/memblock/PTW.md` 已确立的「struct 数组 vs 扁平标量不收敛 → UT 充分 + FM 不可判」
-  先例。已按要求用 TB 内部层次探针，在 seed 1/7/42 各 200000 拍可达激励下证明上述 failing 寄存器
-  逐拍与 golden 一致（`probe_errors=0`），故判定为 FM 结构性不可判的假阳性，而非可达行为分歧。
-  结论口径：UT（三种子逐拍全输出 0 错 + 11 探针 0 分歧）为权威；FM 为部分验证——36 passing，
-  20 failing（截断）已证伪，1627 unverified 未覆盖。
+- 冻结基线全貌重跑（`fm_full.log`）**原生 `Verification SUCCEEDED`：1698 passing /
+  0 failing / 0 unverified**（读入/elaborate 无 `FMR_ELAB-147`/`FM-089` 中断）。
+- 历史注脚：冻结前的部分验证曾因「可读核条目池 `llptw_entry_t entries[6]` packed 数组 vs
+  golden firtool 展平逐条目逐字段标量 `entries_0_*`…`entries_5_*`」配对不收敛（等价条目间
+  签名对称），导致下游小寄存器（`addr_reg`/`enq_ptr_reg` 等）输入锥配不齐而误判失配；
+  当时用 11 个 TB 内部层次探针在三种子可达激励下证伪（`probe_errors=0`）；冻结基线重跑后
+  FM 已原生收敛。
 
 ## 产物清单
 

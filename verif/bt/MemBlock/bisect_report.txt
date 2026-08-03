@@ -1,0 +1,37 @@
+######## SWAP=DCacheWrapper ########
+  checks=5000 errors=7161
+  distinct diverging ports:
+    io_mem_to_ooo_lsqio_uop_1_robIdx_value
+    io_mem_to_ooo_wakeup_1_bits_rfWen
+######## SWAP=Uncache ########
+  checks=5000 errors=7161
+  distinct diverging ports:
+    io_mem_to_ooo_lsqio_uop_1_robIdx_value
+    io_mem_to_ooo_wakeup_1_bits_rfWen
+######## SWAP=L2TLBWrapper ########
+  checks=5000 errors=7161
+  distinct diverging ports:
+    io_mem_to_ooo_lsqio_uop_1_robIdx_value
+    io_mem_to_ooo_wakeup_1_bits_rfWen
+######## SWAP=Sbuffer ########
+  checks=5000 errors=7161
+  distinct diverging ports:
+    io_mem_to_ooo_lsqio_uop_1_robIdx_value
+    io_mem_to_ooo_wakeup_1_bits_rfWen
+######## SWAP=TLBNonBlock ########
+  checks=5000 errors=7161
+  distinct diverging ports:
+    io_mem_to_ooo_lsqio_uop_1_robIdx_value
+    io_mem_to_ooo_wakeup_1_bits_rfWen
+######## SWAP=PMP ########
+  checks=5000 errors=7161
+  distinct diverging ports:
+    io_mem_to_ooo_lsqio_uop_1_robIdx_value
+    io_mem_to_ooo_wakeup_1_bits_rfWen
+######## SWAP=PMPChecker_10 ########
+  checks=5000 errors=7174
+  distinct diverging ports:
+    auto_inner_dcache_client_out_b_ready
+    io_mem_to_ooo_lsqio_uop_1_robIdx_value
+    io_mem_to_ooo_wakeup_1_bits_rfWen
+ALL DONE

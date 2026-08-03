@@ -1,0 +1,10 @@
+Directory = /home/eda/xs-env/xs-v2r2-sv/verif/ut/StdFreeList
+Total     = 425 GB
+Available = 216 GB
+Used      = 209 GB (50%)
+
+Directory = /tmp
+Total     = 70 GB
+Available = 59 GB
+Used      = 11 GB (16%)
+

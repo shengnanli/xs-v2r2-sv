@@ -120,7 +120,7 @@ flowchart LR
     MP["MainPipe<br/>probe / refill / store / atomic"]
   end
   LP -. miss .-> MQ["MissQueue"]
-  SP -. miss .-> MQ
+  SP -. "miss→写预取 M_PFW(本配置裁剪,边不存在)" .-> MQ
   MP -. miss .-> MQ
   MP -. 脏行/降级 .-> WBQ["WritebackQueue"]
 ```
@@ -272,7 +272,7 @@ SC 才成功。DCache 在 MainPipe s3 维护这个保留锁：
 
 - **保留计数 `lrsc_count`**（6 位）：LR 命中且可做原子时置 `LRSC_CYCLES-1`（=63），存下块地址；每拍自减；
   外部 `invalid_resv_set`（别的核抢锁 / probe 命中）清 0。
-- **backoff 窗口**：保留**只在 `lrsc_count > LRSC_BACKOFF`（=3）时才有效**——尾部 3 拍刻意判失效。这是
+- **backoff 窗口**：保留**只在 `lrsc_count > LRSC_BACKOFF`（=8）时才有效**——尾部 8 拍刻意判失效。这是
   **活锁避免**：两核互相打断对方保留时，尾窗让 SC 必然失败一次，打破对称重试的死循环。
 - **SC 成败**：SC 要求保留仍有效、地址匹配且命中，否则失败（不写、回失败码）。
 
@@ -312,7 +312,7 @@ flowchart TB
   ARR["Tag / Data / Meta 阵列（+ECC）"]
   PIPES <--> ARR
   LP -->|miss| MQ["MissQueue (16 MSHR)"]
-  SP -->|"写预取"| MQ
+  SP -. "写预取(本配置裁剪)" .-> MQ
   MP -->|"miss / refill"| MQ
   MP -->|"脏行 / probe 降级"| WBQ["WritebackQueue (18)"]
   PQ["ProbeQueue (8)"] -->|"probe → 降级"| MP

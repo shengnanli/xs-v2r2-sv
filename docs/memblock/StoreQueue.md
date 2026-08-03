@@ -1,11 +1,9 @@
 # StoreQueue —— Store 顺序队列
 
 > ⚠ **FM 分类 = FAILED（未取得终态成功）**。依据台账
-> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md)：当前 FM **1487 failing**
-> （per-entry committed/completed 需改成 golden gather-mux 形式）。UT 三种子逐拍 errors=0
-> 通过，但 **FM 尚未等价**——不得称本模块"完成/等价/SUCCEEDED"。等价性目前仅由 UT 充分性
-> 佐证，FM 收敛为待办项。（下文 §7.3 记录的是较早一次 20 failing 截断的运行，与冻结基线台账
-> 的 1487 failing 口径不同，均属"FM 未通过"。）
+> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md)：本模块 FM 未等价——
+> 不得称"完成/等价/SUCCEEDED"。UT 三种子逐拍 errors=0 通过，但等价性目前仅由 UT 充分性
+> 佐证，FM 收敛为待办项。最终数字见 §7.3。
 
 > 香山 V2R2（昆明湖）乱序访存的 **store 顺序核心**。
 > 设计意图来源：`src/main/scala/xiangshan/mem/lsqueue/StoreQueue.scala`（class StoreQueue）
@@ -184,25 +182,24 @@ deq）；跨 4K 页时高半地址来自 storeMisalignBuffer。dataBuffer 出队
 UT 即「逐拍层次对照」的等价证明：相同激励下两顶层全部输出（含 forward、sbuffer、
 uncache、就绪向量、指针、exceptionAddr、perf）逐拍 bit-exact。
 
-### 7.3 FM（Formality）
+### 7.3 FM（Formality）—— FAILED（未等价，待办）
 设 5 个数据存储子模块为黑盒（两侧共用真实 golden 子模块定义），`make fm`。
-末次 verify 结论 **Verification FAILED**：**7211 passing / 20 failing / 3591 unverified**
-——与本工程其他大队列模块（Sbuffer 26473 unmatched、
-LsqWrapper）同基线：reference 与 implementation 均成功 elaborate、set top、进入比对
-（4457 by name + 6365 by topology matched），但可读核的**寄存器结构与 golden 完全不同**
-（struct 数组 `ent_reg[i][field]` / `uop_reg[i][field]` vs golden 展平标量
-`allocated_N`/`addrvalid_N`…），自动配对器（针对 `name_i_reg` 扁平命名）无法配对这
-~35K 个 struct-array 寄存器，导致依赖它们的少量已配对点（addr/dataReadyPtr）也判 FAIL。
-注意 **20 是 Formality 默认 `verification_failing_point_limit=20` 的截断上限**——verify
-攒满 20 个失配即提前中止，3591 个 unverified 点未验，故 FM 为**部分验证**。
 
-**已报告的 failing 点是结构配对工件而非逻辑错误**：它们直接驱动的输出
-（`stAddrReadySqPtr`/`stDataReadySqPtr` 等）已被 7.2 的三种子逐拍 UT 证明 bit-exact。
-按 `docs/REWRITE_STYLE.md`「可读代码 FM 靠签名分析，大状态机配不齐可接受 UT 充分 +
-FM 部分/不可判，不得为过 FM 退回照抄 golden 命名」，本模块以**充分 UT** 作为正确性
-第一保证。为让 FM 至少能 elaborate 可读核，`ent`/`uop`/`needCancel` 按 2^6=64 槽声明、
-selj 索引的 enq 元数据按 8 槽声明（消除 FMR_ELAB-147 越界告警），并把引用模块信号的
-函数改为纯函数/内联（消除 FMR_VLOG-091）。
+- **冻结台账口径**（[`FM_STATUS.md`](../../verif/freeze/FM_STATUS.md)，2026-07-18）：**FAILED，
+  1487 failing**——per-entry `committed`/`completed` 需改成 golden 的 gather-mux 形式。
+- **冻结目录内末次完整 verify**（`fm_work/StoreQueue/fm_full.log`，2026-07-18 14:48，
+  100% verification completed）：**Verification FAILED——46005 passing / 2 failing /
+  0 unverified**，剩余 2 个失配点为 `dataBuffer/data_{0,1}_vecValid_reg`
+  （ref `dataBuffer` vs impl `u_core/u_databuf`）。两个口径数字不同（台账未反映当日
+  更晚的重跑），但结论一致：**FM 未取得终态成功，不得称等价**。
+- 结论：等价性目前仅由 §7.2 的三种子 UT 佐证（UT 不能替代 FM 等价主张）；收敛剩余
+  failing（vecValid 寄存器对齐 golden 形式）为待办项。
+
+历史注脚：更早的运行曾因「struct 数组 `ent_reg[i][field]` vs golden 展平标量
+`allocated_N`…」约 35K 寄存器配对不收敛而大量 unverified（当时报 20 failing 截断）；
+后经配对收敛已把失配压缩到上述 2 点。为让 FM 能 elaborate 可读核：`ent`/`uop`/`needCancel`
+按 2^6=64 槽声明、selj 索引的 enq 元数据按 8 槽声明（消除 FMR_ELAB-147 越界告警），
+引用模块信号的函数改为纯函数/内联（消除 FMR_VLOG-091）。
 
 ## 8. 文件清单
 

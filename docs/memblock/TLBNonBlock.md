@@ -3,9 +3,8 @@
 > ✅ **FM 分类 = REPLACEMENT_EQ（可读核真驱动 + 冻结基线原生 SUCCEEDED）**。依据台账
 > [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md) 与冻结基线日志
 > `verif/ut/TLBNonBlock/fm_work/TLBNonBlock/fm_full.log`：本模块在当前冻结 golden 基线上 FM **原生
-> `Verification SUCCEEDED`，3781 passing / 0 failing / 0 unverified**。下文验证节里任何
-> "FAILED / 20 failing 截断 / 部分验证 / 未收敛"的表述是**冻结前的旧叙事，已作废**——以本
-> banner 与台账为准。
+> `Verification SUCCEEDED`，3781 passing / 0 failing / 0 unverified**（台账脚注：含外部
+> `TlbStorageWrapper_1`/`DelayN` 子模块两侧同名黑盒，主体逻辑为真替换）。
 
 > 可读重写：`rtl/memblock/TLBNonBlock.sv`（核 `xs_TLBNonBlock_core`）
 > + `rtl/memblock/tlbnonblock_pkg.sv`（类型/纯函数）
@@ -113,18 +112,13 @@ wrapper 按此打包/拆分核的数组端口，缺失项 tie 0。
 激励覆盖：4 端口随机 req（vaddr 压窄高位提高跨端口/PTW 命中）、satp/vsatp/hgatp 模式取 {关,Sv39,Sv48}、
 ptw_resp 随机回填、redirect/sfence/csr-changed 偶发、kill/req_kill 随机。
 
-### FM（签名分析，不靠名字）
-`1262` 点按名匹配 + `825` 点按签名匹配；末次 verify 结论 **Verification FAILED**：
-**792 passing / 20 failing（matched）/ 1275 unverified**。
-已报告的 20 个 failing 全是 s0 预检异常流水寄存 `excp_*_REG` / `REG`(预检使能) 与 `need_gpa_vpn`。
-**经 tb 内部层次探针（`u_g.<reg>` vs `u_i.u_core.<reg>`）逐拍比对，3 种子 ×200k 拍
-`need_gpa_vpn / REG / pf_ld / af_ld / pf_st` 全 `0` 分歧 → 确认为假阳性**：
-这些寄存器在 UT 实际激励下与 golden 逐拍 bit 等价，FM 的 failing 来自其探索的不可达输入组合
-（约束广但仍不可达的 don't-care 态）。注意 **20 是 Formality 默认
-`verification_failing_point_limit=20` 的截断上限**——verify 攒满 20 个失配即提前中止，
-1275 个 unverified 点未验，故 FM 为**部分验证**，以 UT（多种子逐拍 0 错 + 探针 0 分歧）为权威。
-其余 unmatched 为可读核 packed 数组/struct 与 golden
-firtool 展平寄存器无法按名/签名配对（结构差异，预期）。
+### FM
+冻结基线全貌重跑（`fm_full.log`）**原生 `Verification SUCCEEDED`：3781 passing /
+0 failing / 0 unverified**（`TlbStorageWrapper_1`/`DelayN` 子模块两侧同名黑盒）。
+
+历史注脚：冻结前的部分验证曾在 s0 预检异常流水寄存（`excp_*_REG`）与 `need_gpa_vpn` 上
+因 FM 探索不可达输入组合报出失配，当时用 tb 内部层次探针（3 种子 ×200k 拍全 0 分歧）证伪；
+冻结基线重跑后 FM 已原生收敛。
 
 ## 9. 结构门槛（逐条 grep）
 

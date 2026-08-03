@@ -1,0 +1,4 @@
+seed 1: checks=100000 errors=552955
+seed 7: checks=100000 errors=415535
+seed 42: checks=100000 errors=848101
+SEEDS DONE

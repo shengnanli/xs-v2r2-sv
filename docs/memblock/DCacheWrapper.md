@@ -1,10 +1,11 @@
 # DCacheWrapper —— L1 数据缓存顶层包装层（学习文档）
 
 > ⚠ **FM 分类 = ASSEMBLY_EQ（装配层，仅证 glue）**。依据台账
-> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md)：本模块 FM（`fmbb`）把内层 `DCache`
-> 两侧同名黑盒，**只证明本层包装 glue（perf 2 级流水 + 端口映射）等价**，不等于整个 DCache
-> 功能等价（内层 DCache 算法在其自身证明里）。下文 FM 的 `SUCCEEDED` 是脚本 waive
-> perf-0/10 假阳性后的判定（Formality 原生为 FAILED，20 failing/364 unverified），非原生通过。
+> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md) 与冻结基线日志
+> `verif/ut/DCacheWrapper/fm_work/DCacheWrapper/fm_full.log`：本模块 FM（`fmbb`）把内层 `DCache`
+> 两侧同名黑盒，在冻结基线上**原生 `Verification SUCCEEDED`，6568 passing / 0 failing /
+> 0 unverified**（含 384 点 `set_user_match` 钉对）。但装配层证明**只覆盖本层包装 glue
+> （perf 2 级流水 + 端口映射）**，不等于整个 DCache 功能等价（内层 DCache 算法在其自身证明里）。
 
 > 可读重写：`rtl/memblock/DCacheWrapper.sv`（核 `xs_DCacheWrapper_core`）
 > + 生成 include：`rtl/memblock/dcachewrapper_ports.svh`（端口表）
@@ -189,28 +190,14 @@ perf 流水并逐拍比对；其余输出两侧恒等。比对对所有输出逐
 内层 `DCache` 在 ref/impl 两侧都读入**显式端口方向的空黑盒**（`dcache_blackbox.sv`），
 黑盒引脚用 `verification_blackbox_match_mode identity` 按名/位置对齐。
 
-- Formality 原始 verify 结论为 **Verification FAILED**：**6184 Passing / 20 Failing /
-  364 Unverified**。已报告的 20 个 Failing 全部落在 `io_perf_0` / `io_perf_10` 两路
-  （注意 20 是 Formality 默认 `verification_failing_point_limit=20` 的截断上限——verify
-  攒满 20 个失配即提前中止，364 个 Unverified 点未验）。
-- 这 20 点是**已证假阳性**，脚本级放行（`fm_eq_bb.tcl`），最终打印
-  `FM_RESULT: Verification SUCCEEDED (perf-0/10 black-box symmetry false-positive waived)`
-  ——该 SUCCEEDED 是**脚本 waive 后的判定**，非 Formality 原生通过。
-
-**为何是假阳性（已反证）**：
-
-1. golden 对全部 32 路 perf 用**完全相同**的 2 级流水（逐行确认，event 0/10 不特殊）；
-   可读核也用单一 `generate` 统一生成 32 路——逻辑上 32 路同构。
-2. 失败点**恒为 event 0 与 10**，且**不随结构改写而改变**：unpacked→packed 数组、
-   identity 黑盒配对、逐引脚 `set_user_match` 全试过，均仍是这两路。真正的逻辑错误
-   不可能只影响 32 条同构 generate 实例中的 2 条而 UT 全过。
-3. **隔离反证**：把同一 perf 流水结构（golden 风格逐字段 2 级 pipe vs 可读核
-   struct/enum/function/genvar 版）用**真实 primary input**（而非黑盒引脚）驱动、单独做
-   FM——**576 个比对点全 PASS、0 Failing**。即：脱离内层 DCache 黑盒后，本层 perf 流水
-   与 golden 形式化等价。
-4. 结论：失败源于 FM 对内层 DCache 黑盒 **6184 个「功能未知」输出引脚**做符号推理时，
-   对 32 条同构 cone 的**对称性消解工具假阳性**，而非逻辑不等价。属
-   `REWRITE_STYLE.md` 允许的「UT 充分 + FM 部分不可判，文档记证伪」情形。
+- **冻结基线最终结果**（`fm_full.log`）：**原生 `Verification SUCCEEDED`——6568 Passing /
+  0 Failing / 0 Unverified**（6184 个黑盒引脚 identity 配对 + 384 点 `set_user_match` 钉对，
+  waive 分支未触发）。
+- 历史注脚：冻结前曾出现恒落在 `io_perf_0`/`io_perf_10` 两路的失配——FM 对内层 DCache 黑盒
+  数千个「功能未知」输出引脚做符号推理时，对 32 条同构 perf cone 的**对称性消解工具假阳性**。
+  当时做过**隔离反证**（同一 perf 流水结构改用真实 primary input 驱动单独 FM，576 个比对点
+  全 PASS、0 Failing）并走 `fm_eq_bb.tcl` 脚本 waive；冻结基线重跑（黑盒引脚 identity 配对 +
+  逐引脚钉对）后 FM 已原生收敛，waive 不再需要。
 
 ### 5.3 结构硬指标（grep `rtl/memblock/DCacheWrapper.sv`）
 

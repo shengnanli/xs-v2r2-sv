@@ -1,15 +1,17 @@
 # L2TlbMissQueue —— L2TLB Miss 队列（带 flush 的 FIFO）
 
 > ⚠ **FM 分类 = PARTIAL_WAIVED（范围受限）**。依据台账
-> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md)：本模块含厂商 RAM 越界读的
-> `FMR_ELAB-147`，被 `fm_eq_full.tcl` **全局降级为 warning**；严格签核应证明指针可达范围或用
-> 严格内存模型，不能全局忽略。故 FM 属受限证明——**scoped/partial proof 非全等价**，当前
-> 等价性以 UT 内部指针探针（3 种子×200k 拍 probe_errors=0）为权威。
+> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md) 与冻结基线日志
+> `verif/ut/L2TlbMissQueue/fm_work/L2TlbMissQueue/fm_full.log`：冻结基线上 FM 结论为
+> `Verification SUCCEEDED`（1938 passing / 0 failing），**但**该结果依赖 `fm_eq_full.tcl`
+> 把厂商 RAM 越界读 lint `FMR_ELAB-147` **全局降级为 warning** 才能读入 golden 的
+> `ram_40x47`；严格签核应证明指针可达范围或用严格内存模型，不能全局忽略。故 FM 属受限
+> 证明——**scoped/partial proof 非全等价**，等价性另以 UT 内部指针探针
+> （3 种子×200k 拍 probe_errors=0）佐证。
 
 > 已落地：可读核 `rtl/memblock/L2TlbMissQueue.sv`、类型包 `rtl/memblock/l2tlbmissqueue_pkg.sv`、
 > golden 同名 wrapper、生成脚本 `scripts/gen_l2tlbmissqueue.py`、UT `verif/ut/L2TlbMissQueue/`。
-> 三种子 UT（含内部指针探针）全过；FM 因 golden `ram_40x47` 的 OOB-index lint 无法 link
-> 而不可判，已用 UT 内部层次探针逐拍证明控制状态机等价（见“验证状态”）。
+> 三种子 UT（含内部指针探针）全过。
 
 ## 架构定位
 
@@ -75,16 +77,18 @@ UT（`verif/ut/L2TlbMissQueue/`，双例化：golden 侧含真实 `Queue40`+`ram
 maybe_full}` vs 手写 `u_i.u_core.{enq_ptr, deq_ptr, maybe_full}`，三种子 200k 拍
 全 0，证明环形缓冲控制状态机与 golden 逐拍位等价。
 
-### FM 结果与判定
+### FM 结果与判定（PARTIAL_WAIVED）
 
-`make fm` → `FM_RESULT: Verification FAILED or INCONCLUSIVE`。**根因不在手写实现**：
-golden 的存储宏 `ram_40x47.sv` 第 118 行 `assign R0_data = Memory[R0_addr]` 用 6-bit
-地址（0..63）索引 40 项数组，Formality 把越界索引 lint（`FMR_ELAB-147`）提升为
-**unsuppressed error**，导致 golden 参考设计在 **link 阶段就失败**（`FM-156`），根本
-没进入比对。这是 golden 侧 SRAM 宏的 elaboration 行为，与可读重写的功能无关，且
-共享脚本 `fm_eq.tcl` 不允许改动（无法在其中 `set_message_severity` 抑制该消息）。
+冻结基线全貌重跑（`fm_full.log`，`fm_eq_full.tcl`）：**`Verification SUCCEEDED`——
+1938 passing / 0 failing**（结果块带 "RTL interpretation messages" ATTENTION）。
 
-此外，golden 的 SRAM 宏存储（`ram_40x47` 黑盒）与可读核的触发器寄存器阵列在
-结构表示上本就不同，即便 link 成功，存储单元也无法逐位配对。因此本模块采用
-prompt 允许的“**UT 充分 + FM 不可判并注明**”路径，用上面的内部层次指针探针
-（3 种子 × 200k 拍 probe_errors=0）+ 全端口逐拍比对作为等价证据。
+**范围受限的原因（不许美化）**：golden 存储宏 `ram_40x47.sv` 的组合读
+`assign R0_data = Memory[R0_addr]` 用 6-bit 地址（0..63）索引 40 项数组，触发越界读 lint
+`FMR_ELAB-147`；`fm_eq_full.tcl` 把它**全局降级为 warning** 才能完成读入与比对。严格签核
+应证明 `enq_ptr/deq_ptr` 的可达范围（0..39）或使用严格内存模型，而非全局忽略——故台账
+定级 **PARTIAL_WAIVED**，本结果不作全等价主张。
+
+历史注脚：更早的 `make fm`（严格 lint 的共享 `fm_eq.tcl`）曾因该 lint 被提升为
+unsuppressed error 而在 golden 侧 **link 阶段即失败**（`FM-156`，未进入比对），当时以
+「UT 充分 + FM 不可判」路径用内部指针探针作为等价证据；全貌脚本降级后已能完成比对，
+但受限性质如上。

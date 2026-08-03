@@ -3,9 +3,7 @@
 > ✅ **FM 分类 = REPLACEMENT_EQ（可读核真驱动 + 冻结基线原生 SUCCEEDED）**。依据台账
 > [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md) 与冻结基线日志
 > `verif/ut/StoreMisalignBuffer/fm_work/StoreMisalignBuffer/fm_full.log`：本模块在当前冻结 golden 基线上 FM **原生
-> `Verification SUCCEEDED`，1775 passing / 0 failing / 0 unverified**。下文验证节里任何
-> "FAILED / 20 failing 截断 / 部分验证 / 未收敛"的表述是**冻结前的旧叙事，已作废**——以本
-> banner 与台账为准。
+> `Verification SUCCEEDED`，1775 passing / 0 failing / 0 unverified**。
 
 > 设计意图来源：`src/main/scala/xiangshan/mem/lsqueue/StoreMisalignBuffer.scala`
 > 可读核：`rtl/memblock/StoreMisalignBuffer.sv`（`xs_StoreMisalignBuffer_core`）+ 类型包 `rtl/memblock/storemisalignbuffer_pkg.sv`
@@ -106,28 +104,16 @@ raw-rollback 时序——misalign 写回须比对齐的 raw 回滚晚一拍，�
 | UT seed 1 | checks=200000, **errors=0** |
 | UT seed 7 | checks=200000, **errors=0** |
 | UT seed 42 | checks=200000, **errors=0** |
-| FM（golden vs 手写 wrapper→核） | **FAILED**：708 passing / **20 failing**（截断上限，已证伪为假阳性，见下）/ 1047 unverified 未验 |
+| FM（golden vs 手写 wrapper→核，冻结基线） | **原生 `Verification SUCCEEDED`：1775 passing / 0 failing / 0 unverified** |
 
 - **UT**：`verif/ut/StoreMisalignBuffer/`，golden 与手写核双例化，随机激励 2 路 enq（含 revoke）、
   splitStoreResp（含 need_rep/异常/uncache/mmio/nc）、rob.pendingst/pendingPtr、sqControl、
   redirect、各 ready，**逐拍比对全部输出**（`!$isunknown(golden)` 跳 don't-care）。三种子全
   200000 拍 errors=0。激励 `vaddr` 低 13 位充分随机以覆盖 cross16/cross4KB 两种边界。
-- **FM 假阳性证伪**：末次 verify 结论 **Verification FAILED**——708 passing / 20 failing /
-  0 aborted / **1047 unverified**。**20 是 Formality 默认 `verification_failing_point_limit=20`
-  的截断上限**（verify 攒满 20 个失配即提前中止，1047 个 unverified 点未验），FM 为部分验证、
-  以 UT 为权威。已报告的 20 个 failing **全部**落在
-  `req` 缓冲条目寄存器的两个字段：`req.alignedType`（2 bit）与 `req.dbg_enqRsTime`（18 bit，
-  `req_uop_debugInfo_enqRsTime`）——与 LoadMisalignBuffer 完全同型。根因：`req` 是**非复位**
-  寄存器（与 golden 一致，仅 `req_valid` 等控制位复位），条目空闲时这两个字段保持陈旧值/上电 X；
-  Formality 对其数据输入锥（喂入 `connectSamePort`/`alignedType` 选择 mux，门级结构与展平 golden
-  略异）在**不可达 don't-care 状态**下判不等，但这些状态在仿真里永不出现。
-- **证伪手段（tb 内部层次探针）**：在 `verif/ut/StoreMisalignBuffer/tb.sv` 加探针，**仅在
-  `u_g.req_valid` 为真**时逐拍比对
-  `u_g.req_alignedType` vs `u_i.u_core.req.alignedType`、
-  `u_g.req_uop_debugInfo_enqRsTime` vs `u_i.u_core.req.dbg_enqRsTime`
-  （`!$isunknown(golden)` 跳 don't-care）。seed 1/7/42 各 200000 拍 **`PROBE ... mismatch=0`**，
-  证明两寄存器在**所有可达状态**逐位等价。符合 `docs/REWRITE_STYLE.md` 允许的
-  「UT 充分 + FM 部分/不可判」并已书面证伪。
+- **FM**：冻结基线全貌重跑（`fm_full.log`）原生 `Verification SUCCEEDED`，0 failing / 0 unverified。
+  历史注脚：冻结前的部分验证曾在非复位条目寄存器 `req.alignedType` / `req.dbg_enqRsTime`
+  的**不可达 don't-care 状态**上报出失配（与 LoadMisalignBuffer 完全同型），当时用 tb 层次探针
+  （仅 `req_valid` 有效时逐拍比对，3 种子 mismatch=0）书面证伪；冻结基线重跑后 FM 已原生收敛。
 
 ## 6. 关键坑（重写时踩过）
 

@@ -1,0 +1,7 @@
+run 300ns
+force tb.reset 1'b0
+run 60ns
+ucli2Proc -cmdtype tcl {puts "ev3=[get -radix hex tb.u_i.u_core.perf_ev3]"}
+ucli2Proc -cmdtype tcl {puts "iswait=[get -radix hex tb.u_i.u_core.is_waiting]"}
+ucli2Proc -cmdtype tcl {puts "perf3s1=[get -radix hex tb.u_i.u_core.perf3_s1]"}
+quit

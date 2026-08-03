@@ -1,0 +1,10 @@
+Directory = /home/eda/xs-env/xs-v2r2-sv/verif/ut/Ftq
+Total     = 425 GB
+Available = 44 GB
+Used      = 381 GB (90%)
+
+Directory = /tmp
+Total     = 70 GB
+Available = 58 GB
+Used      = 12 GB (18%)
+

@@ -1,5 +1,10 @@
 # LoadQueueRAW —— store→load 违例（nuke）检测队列
 
+> ⚠ **FM 分类 = UNRUN_ON_FROZEN（冻结基线未重跑）**。依据台账
+> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md)：本模块在当前冻结 golden
+> 基线上**无 FM 日志**（无 `fm_full.log`），属约 188 个待"同一冻结基线全量重跑"的目标之一。
+> UT 三种子逐拍 errors=0 通过，但**当前不能以 FM 主张等价**；旧基线的 FM 历史见 §8。
+
 > 可读重写：`rtl/memblock/LoadQueueRAW.sv`（核 `xs_LoadQueueRAW_core`）+
 > `rtl/memblock/loadqueueraw_pkg.sv`（类型/常量/纯函数）。
 > 设计意图来源（人写 Chisel，非 firtool golden）：
@@ -199,32 +204,17 @@ flowchart TD
 
 `!$isunknown(golden)` 跳 don't-care；`+define+SYNTHESIS` 关 golden 行为断言/随机化。
 
-### FM —— INCONCLUSIVE（已证伪，非真失配）
+### FM —— UNRUN_ON_FROZEN（冻结基线未重跑）
 
-FM ref 是 golden 顶层 `LoadQueueRAW` + 其子模块（`LqPAddrModule_1`/`LqMaskModule`/
-`FreeList_4`/`DelayN*`），impl 是手写 wrapper → 把 freelist / CAM / DelayN 全部**内联
-重写**的可读核。
+按冻结台账（`FM_STATUS.md`），本模块在当前冻结 golden 基线上**没有 FM 日志**
+（`verif/ut/LoadQueueRAW/` 下无 `fm_work`），属待全量重跑的约 188 个目标之一。
+**当前不能以 FM 主张与 golden 等价**；等价性证据目前只有上述 UT（3 种子 ×200k 拍
+全 24 路输出 0 错）与下述历史探针。
 
-结果：`Verification FAILED or INCONCLUSIVE`。
-- **5785 unmatched points**（3598 ref / 2187 impl）：golden 把 freelist（环形队列 32 索引
-  寄存器 + head/tail/cnt/freeMask）、CAM 写时序（分 8 bank、numWDelay 打拍）、以及违例
-  select 流水里**整条 Redirect bundle**（`level`/`cfiUpdate`/`debug_*` 等输出端口已裁剪但
-  内部仍存）都放在独立子模块、用 firtool 展平命名；impl 用完全不同的命名/层次/状态编码
-  内联实现，且只保留真正到达输出的字段。两侧寄存器既无法按名配对，状态编码也不同构，
-  签名分析无法对齐 → 大量 unmatched（其中相当一部分是 golden 侧 unobservable 的死寄存器）。
-- **20 failing compare points**：全部是 `allocated_<i>_reg`（被 auto-matcher 配上了），
-  但因其输入锥依赖上述未配对的 freelist 寄存器，FM 判其 fail。
-
-**已用 tb 内部层次探针证伪**（满足「不可只凭推断」要求）：直接逐拍比对全部 32 条
-`u_g.allocated_<i>` vs `u_i.u_core.allocated[i]`（即 20 个 failing 点的超集），
-
-| seed | cycles | allocated[] mismatches |
-|------|--------|------------------------|
-| 1 | 200000 | 0 |
-| 7 | 200000 | 0 |
-| 42 | 200000 | 0 |
-
-3 种子共 600k 拍 0 失配，证明这 20 个 failing 点是 **FM 配对假阳性**（输入锥未对齐导致），
-非真功能差异。叠加双例化 UT 全部 24 路输出 3 种子各 200k 拍 0 error，功能等价性由 UT +
-内部探针充分保证。按 REWRITE_STYLE「UT 充分 + FM 不可判并注明」结案；**不为迎合 FM 而
-退回照抄 golden 命名/结构**。
+历史注脚（旧 golden 基线）：曾跑出 `Verification FAILED or INCONCLUSIVE`——golden 把
+freelist / CAM 写时序 / 违例 select 流水放在独立子模块并用 firtool 展平命名，impl 内联
+重写后两侧寄存器无法按名/签名配对（大量 unmatched，其中相当部分是 golden 侧不可观测的
+死寄存器），少量已配对点（`allocated_<i>_reg`）因输入锥未对齐被判失配。当时用 tb 内部
+层次探针直接逐拍比对全部 32 条 `u_g.allocated_<i>` vs `u_i.u_core.allocated[i]`
+（3 种子各 200000 拍 mismatch=0）证伪为配对假阳性。该历史结论**不能替代**冻结基线上的
+FM 重跑。

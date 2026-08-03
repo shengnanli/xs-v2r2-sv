@@ -1,0 +1,241 @@
+vcs -full64 -sverilog -timescale=1ns/1ps -kdb -lca -debug_access+all +lint=TFIPC-L -l compile.log +define+SYNTHESIS +incdir+../../../rtl/l2 +vcs+initreg+random -f golden_filelist.f +libext+.sv+.v -assert disable ../../../rtl/l2/coupledl2_pkg.sv ../../../rtl/l2/TL2CHICoupledL2.sv ../../../golden/chisel-rtl/TL2CHICoupledL2.sv variants_xs.sv tb.sv -top tb -o simv
+                         Chronologic VCS (TM)
+       Version W-2024.09-SP1_Full64 -- Sun Jun 28 02:05:39 2026
+
+                    Copyright (c) 1991 - 2024 Synopsys, Inc.
+   This software and the associated documentation are proprietary to Synopsys,
+ Inc. This software may only be used in accordance with the terms and conditions
+ of a written license agreement with Synopsys, Inc. All other use, reproduction,
+   or distribution of this software is strictly prohibited.  Licensed Products
+     communicate with Synopsys servers for the purpose of providing software
+    updates, detecting software piracy and verifying that customers are using
+    Licensed Products in conformity with the applicable License Key for such
+  Licensed Products. Synopsys will use information gathered in connection with
+    this process to deliver software updates and pursue software pirates and
+                                   infringers.
+
+ Inclusivity & Diversity - Visit SolvNetPlus to read the "Synopsys Statement on
+            Inclusivity and Diversity" (Refer to article 000036315 at
+                        https://solvnetplus.synopsys.com)
+
+
+Warning-[LCA_FEATURES_ENABLED] Usage warning
+  LCA features enabled by '-lca' argument on the command line.  For more 
+  information regarding list of LCA features please refer to Chapter "LCA 
+  features" in the VCS Release Notes
+
+Parsing design file '../../../golden/chisel-rtl/Arbiter3_CHIREQ.sv'
+Parsing design file '../../../golden/chisel-rtl/Arbiter3_TaskBundle.sv'
+Parsing design file '../../../golden/chisel-rtl/Arbiter3_TaskWithData.sv'
+Parsing design file '../../../golden/chisel-rtl/Arbiter4_L2CacheErrorInfo.sv'
+Parsing design file '../../../golden/chisel-rtl/Arbiter4_L2ToL1Hint.sv'
+Parsing design file '../../../golden/chisel-rtl/Arbiter8_CHIDAT.sv'
+Parsing design file '../../../golden/chisel-rtl/Arbiter8_TLBundleD.sv'
+Parsing design file '../../../golden/chisel-rtl/ClockGate.sv'
+Parsing design file '../../../golden/chisel-rtl/ClockMux.sv'
+Parsing design file '../../../golden/chisel-rtl/CustomL1Hint.sv'
+Parsing design file '../../../golden/chisel-rtl/DataStorage.sv'
+Parsing design file '../../../golden/chisel-rtl/DataStorage_1.sv'
+Parsing design file '../../../golden/chisel-rtl/DataStorage_2.sv'
+Parsing design file '../../../golden/chisel-rtl/DataStorage_3.sv'
+Parsing design file '../../../golden/chisel-rtl/Decoupled2LCredit.sv'
+Parsing design file '../../../golden/chisel-rtl/Decoupled2LCredit_1.sv'
+Parsing design file '../../../golden/chisel-rtl/Decoupled2LCredit_2.sv'
+Parsing design file '../../../golden/chisel-rtl/DelayQueue.sv'
+Parsing design file '../../../golden/chisel-rtl/DelayQueue_1.sv'
+Parsing design file '../../../golden/chisel-rtl/Directory.sv'
+Parsing design file '../../../golden/chisel-rtl/Directory_1.sv'
+Parsing design file '../../../golden/chisel-rtl/Directory_2.sv'
+Parsing design file '../../../golden/chisel-rtl/Directory_3.sv'
+Parsing design file '../../../golden/chisel-rtl/FastArbiter_1.sv'
+Parsing design file '../../../golden/chisel-rtl/FastArbiter_2.sv'
+Parsing design file '../../../golden/chisel-rtl/FastArbiter_27.sv'
+Parsing design file '../../../golden/chisel-rtl/FastArbiter_28.sv'
+Parsing design file '../../../golden/chisel-rtl/FastArbiter_29.sv'
+Parsing design file '../../../golden/chisel-rtl/FastArbiter_3.sv'
+Parsing design file '../../../golden/chisel-rtl/FastArbiter_4.sv'
+Parsing design file '../../../golden/chisel-rtl/FastArbiter_5.sv'
+Parsing design file '../../../golden/chisel-rtl/FastArbiter_6.sv'
+Parsing design file '../../../golden/chisel-rtl/FastArbiter_7.sv'
+Parsing design file '../../../golden/chisel-rtl/FastArbiter_8.sv'
+Parsing design file '../../../golden/chisel-rtl/GatedSplittedSRAM.sv'
+Parsing design file '../../../golden/chisel-rtl/GatedSplittedSRAM_1.sv'
+Parsing design file '../../../golden/chisel-rtl/GatedSplittedSRAM_2.sv'
+Parsing design file '../../../golden/chisel-rtl/GrantBuffer.sv'
+Parsing design file '../../../golden/chisel-rtl/L2Cache.sv'
+Parsing design file '../../../golden/chisel-rtl/L2DataStorage.sv'
+Parsing design file '../../../golden/chisel-rtl/L2DataStorage_1.sv'
+Parsing design file '../../../golden/chisel-rtl/L2DataStorage_2.sv'
+Parsing design file '../../../golden/chisel-rtl/L2DataStorage_3.sv'
+Parsing design file '../../../golden/chisel-rtl/L2Directory.sv'
+Parsing design file '../../../golden/chisel-rtl/L2Directory_1.sv'
+Parsing design file '../../../golden/chisel-rtl/L2Directory_2.sv'
+Parsing design file '../../../golden/chisel-rtl/L2Directory_3.sv'
+Parsing design file '../../../golden/chisel-rtl/L2Slice.sv'
+Parsing design file '../../../golden/chisel-rtl/L2Slice_1.sv'
+Parsing design file '../../../golden/chisel-rtl/L2Slice_2.sv'
+Parsing design file '../../../golden/chisel-rtl/L2Slice_3.sv'
+Parsing design file '../../../golden/chisel-rtl/LCredit2Decoupled.sv'
+Parsing design file '../../../golden/chisel-rtl/LCredit2Decoupled_1.sv'
+Parsing design file '../../../golden/chisel-rtl/LCredit2Decoupled_2.sv'
+Parsing design file '../../../golden/chisel-rtl/LinkMonitor.sv'
+Parsing design file '../../../golden/chisel-rtl/MMIOBridge.sv'
+Parsing design file '../../../golden/chisel-rtl/MMIOBridgeEntry.sv'
+Parsing design file '../../../golden/chisel-rtl/MMIOBridgeEntry_2.sv'
+Parsing design file '../../../golden/chisel-rtl/MMIOBridgeEntry_4.sv'
+Parsing design file '../../../golden/chisel-rtl/MSHR.sv'
+Parsing design file '../../../golden/chisel-rtl/MSHRBuffer.sv'
+Parsing design file '../../../golden/chisel-rtl/MSHRBuffer_1.sv'
+Parsing design file '../../../golden/chisel-rtl/MSHRCtl.sv'
+Parsing design file '../../../golden/chisel-rtl/MSHRSelector.sv'
+Parsing design file '../../../golden/chisel-rtl/MainPipe_1.sv'
+Parsing design file '../../../golden/chisel-rtl/MbistClockGateCell_101.sv'
+Parsing design file '../../../golden/chisel-rtl/MbistIntfL2.sv'
+Parsing design file '../../../golden/chisel-rtl/MbistPipeL2Prefetcher.sv'
+Parsing design file '../../../golden/chisel-rtl/OffsetScoreTable.sv'
+Parsing design file '../../../golden/chisel-rtl/OffsetScoreTable_1.sv'
+Parsing design file '../../../golden/chisel-rtl/PBestOffsetPrefetch.sv'
+Parsing design file '../../../golden/chisel-rtl/Pipeline_1.sv'
+Parsing design file '../../../golden/chisel-rtl/Pipeline_10.sv'
+Parsing design file '../../../golden/chisel-rtl/Pipeline_11.sv'
+Parsing design file '../../../golden/chisel-rtl/Pipeline_2.sv'
+Parsing design file '../../../golden/chisel-rtl/Pipeline_3.sv'
+Parsing design file '../../../golden/chisel-rtl/PrefetchQueue.sv'
+Parsing design file '../../../golden/chisel-rtl/PrefetchReceiver.sv'
+Parsing design file '../../../golden/chisel-rtl/PrefetchReqBuffer.sv'
+Parsing design file '../../../golden/chisel-rtl/Prefetcher.sv'
+Parsing design file '../../../golden/chisel-rtl/Queue10_GrantBuffer_Anon.sv'
+Parsing design file '../../../golden/chisel-rtl/Queue16_CHIREQ.sv'
+Parsing design file '../../../golden/chisel-rtl/Queue16_CHIRSP.sv'
+Parsing design file '../../../golden/chisel-rtl/Queue16_DSBeat.sv'
+Parsing design file '../../../golden/chisel-rtl/Queue16_GrantQueueData.sv'
+Parsing design file '../../../golden/chisel-rtl/Queue16_GrantQueueTask.sv'
+Parsing design file '../../../golden/chisel-rtl/Queue16_HintQueueEntry.sv'
+Parsing design file '../../../golden/chisel-rtl/Queue16_TaskBundle.sv'
+Parsing design file '../../../golden/chisel-rtl/Queue1_ChosenQBundle.sv'
+Parsing design file '../../../golden/chisel-rtl/Queue1_PrefetchReq.sv'
+Parsing design file '../../../golden/chisel-rtl/Queue1_PrefetchResp.sv'
+Parsing design file '../../../golden/chisel-rtl/Queue1_PrefetchTrain.sv'
+Parsing design file '../../../golden/chisel-rtl/Queue1_UInt32.sv'
+Parsing design file '../../../golden/chisel-rtl/Queue2_CHISNP.sv'
+Parsing design file '../../../golden/chisel-rtl/Queue4_CHISNP.sv'
+Parsing design file '../../../golden/chisel-rtl/Queue4_HintQueueEntry.sv'
+Parsing design file '../../../golden/chisel-rtl/Queue72_CoupledL2Imp_Anon.sv'
+Parsing design file '../../../golden/chisel-rtl/RRArbiterInit_11.sv'
+Parsing design file '../../../golden/chisel-rtl/RRArbiterInit_12.sv'
+Parsing design file '../../../golden/chisel-rtl/RRArbiterInit_13.sv'
+Parsing design file '../../../golden/chisel-rtl/RRArbiterInit_14.sv'
+Parsing design file '../../../golden/chisel-rtl/RRArbiterInit_18.sv'
+Parsing design file '../../../golden/chisel-rtl/RXDAT.sv'
+Parsing design file '../../../golden/chisel-rtl/RXRSP.sv'
+Parsing design file '../../../golden/chisel-rtl/RXSNP.sv'
+Parsing design file '../../../golden/chisel-rtl/RecentRequestTable.sv'
+Parsing design file '../../../golden/chisel-rtl/RecentRequestTable_1.sv'
+Parsing design file '../../../golden/chisel-rtl/RequestArb.sv'
+Parsing design file '../../../golden/chisel-rtl/RequestBuffer.sv'
+Parsing design file '../../../golden/chisel-rtl/SRAMTemplate_135.sv'
+Parsing design file '../../../golden/chisel-rtl/SRAMTemplate_137.sv'
+Parsing design file '../../../golden/chisel-rtl/SRAMTemplate_139.sv'
+Parsing design file '../../../golden/chisel-rtl/SRAMTemplate_141.sv'
+Parsing design file '../../../golden/chisel-rtl/SRAMTemplate_142.sv'
+Parsing design file '../../../golden/chisel-rtl/SRAMTemplate_143.sv'
+Parsing design file '../../../golden/chisel-rtl/SRAMTemplate_144.sv'
+Parsing design file '../../../golden/chisel-rtl/SRAMTemplate_151.sv'
+Parsing design file '../../../golden/chisel-rtl/SRAMTemplate_152.sv'
+Parsing design file '../../../golden/chisel-rtl/SRAMTemplate_156.sv'
+Parsing design file '../../../golden/chisel-rtl/SRAMTemplate_157.sv'
+Parsing design file '../../../golden/chisel-rtl/SRAMTemplate_158.sv'
+Parsing design file '../../../golden/chisel-rtl/SRAMTemplate_167.sv'
+Parsing design file '../../../golden/chisel-rtl/SRAMTemplate_171.sv'
+Parsing design file '../../../golden/chisel-rtl/SRAMTemplate_172.sv'
+Parsing design file '../../../golden/chisel-rtl/SRAMTemplate_173.sv'
+Parsing design file '../../../golden/chisel-rtl/SRAMTemplate_174.sv'
+Parsing design file '../../../golden/chisel-rtl/SinkA.sv'
+Parsing design file '../../../golden/chisel-rtl/SinkC.sv'
+Parsing design file '../../../golden/chisel-rtl/Slice.sv'
+Parsing design file '../../../golden/chisel-rtl/Slice_1.sv'
+Parsing design file '../../../golden/chisel-rtl/Slice_2.sv'
+Parsing design file '../../../golden/chisel-rtl/Slice_3.sv'
+Parsing design file '../../../golden/chisel-rtl/SourceB.sv'
+Parsing design file '../../../golden/chisel-rtl/SplittedSRAM_2.sv'
+Parsing design file '../../../golden/chisel-rtl/SplittedSRAM_3.sv'
+Parsing design file '../../../golden/chisel-rtl/SplittedSRAM_4.sv'
+Parsing design file '../../../golden/chisel-rtl/TL2CHICoupledL2.sv'
+Parsing design file '../../../golden/chisel-rtl/TXDAT.sv'
+Parsing design file '../../../golden/chisel-rtl/TXREQ.sv'
+Parsing design file '../../../golden/chisel-rtl/TXRSP.sv'
+Parsing design file '../../../golden/chisel-rtl/TopDownMonitor.sv'
+Parsing design file '../../../golden/chisel-rtl/VBestOffsetPrefetch.sv'
+Parsing design file '../../../golden/chisel-rtl/array_13.sv'
+Parsing design file '../../../golden/chisel-rtl/array_13_ext.v'
+Parsing design file '../../../golden/chisel-rtl/array_14.sv'
+Parsing design file '../../../golden/chisel-rtl/array_14_ext.v'
+Parsing design file '../../../golden/chisel-rtl/array_15.sv'
+Parsing design file '../../../golden/chisel-rtl/array_15_ext.v'
+Parsing design file '../../../golden/chisel-rtl/array_16.sv'
+Parsing design file '../../../golden/chisel-rtl/array_16_ext.v'
+Parsing design file '../../../golden/chisel-rtl/array_17.sv'
+Parsing design file '../../../golden/chisel-rtl/array_17_ext.v'
+Parsing design file '../../../golden/chisel-rtl/array_18.sv'
+Parsing design file '../../../golden/chisel-rtl/array_18_ext.v'
+Parsing design file '../../../golden/chisel-rtl/ram_10x89.sv'
+Parsing design file '../../../golden/chisel-rtl/ram_16x11.sv'
+Parsing design file '../../../golden/chisel-rtl/ram_16x137.sv'
+Parsing design file '../../../golden/chisel-rtl/ram_16x25.sv'
+Parsing design file '../../../golden/chisel-rtl/ram_16x62.sv'
+Parsing design file '../../../golden/chisel-rtl/ram_16x67.sv'
+Parsing design file '../../../golden/chisel-rtl/ram_2x98.sv'
+Parsing design file '../../../golden/chisel-rtl/ram_4x11.sv'
+Parsing design file '../../../golden/chisel-rtl/ram_4x115.sv'
+Parsing design file '../../../golden/chisel-rtl/ram_72x15.sv'
+Parsing design file '../../../golden/chisel-rtl/ram_data_16x256.sv'
+Parsing design file '../../../golden/chisel-rtl/sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt.sv'
+Parsing design file '../../../golden/chisel-rtl/sram_array_1p4096x69m69s1h1l2b_l2_dat.sv'
+Parsing design file '../../../golden/chisel-rtl/sram_array_1p512x104m13s1h0l1b_l2_meta.sv'
+Parsing design file '../../../golden/chisel-rtl/sram_array_1p512x16m16s1h0l1b_l2_repl.sv'
+Parsing design file '../../../golden/chisel-rtl/sram_array_1p512x76m19s1h0l1b_l2_tag.sv'
+Parsing design file '../../../golden/chisel-rtl/sram_array_1p512x8m1s1h0l1b_l2_orgb.sv'
+Parsing design file '../../../rtl/l2/coupledl2_pkg.sv'
+Parsing design file '../../../rtl/l2/TL2CHICoupledL2.sv'
+Parsing included file '../../../rtl/l2/coupledl2_ports.svh'.
+Back to file '../../../rtl/l2/TL2CHICoupledL2.sv'.
+Parsing included file '../../../rtl/l2/coupledl2_decls.svh'.
+Back to file '../../../rtl/l2/TL2CHICoupledL2.sv'.
+Parsing included file '../../../rtl/l2/coupledl2_glue.svh'.
+Back to file '../../../rtl/l2/TL2CHICoupledL2.sv'.
+Parsing included file '../../../rtl/l2/coupledl2_inst.svh'.
+Back to file '../../../rtl/l2/TL2CHICoupledL2.sv'.
+Parsing included file '../../../rtl/l2/coupledl2_outassign.svh'.
+Back to file '../../../rtl/l2/TL2CHICoupledL2.sv'.
+Parsing design file '../../../golden/chisel-rtl/TL2CHICoupledL2.sv'
+
+Warning-[OPD] Override previous declaration
+../../../golden/chisel-rtl/TL2CHICoupledL2.sv, 87
+  module 'TL2CHICoupledL2' previously declared 
+  at:"../../../golden/chisel-rtl/TL2CHICoupledL2.sv", 87
+  This module will be overridden by the last declaration.
+  
+
+Parsing design file 'variants_xs.sv'
+Parsing design file 'tb.sv'
+Top Level Modules:
+       tb
+TimeScale is 1 ns / 1 ps
+Starting vcs inline pass...
+Notice: Ports coerced to inout, use -notice for details
+85 modules and 0 UDP read.
+recompiling module Arbiter4_L2CacheErrorInfo
+recompiling module Arbiter4_L2ToL1Hint
+recompiling module TL2CHICoupledL2_xs
+3 of 85 modules done
+	However, due to incremental compilation, only 3 modules need to be compiled. 
+make[1]: Entering directory '/home/eda/xs-env/xs-v2r2-sv/verif/ut/TL2CHICoupledL2/csrc'
+make[1]: Leaving directory '/home/eda/xs-env/xs-v2r2-sv/verif/ut/TL2CHICoupledL2/csrc'
+make[1]: Entering directory '/home/eda/xs-env/xs-v2r2-sv/verif/ut/TL2CHICoupledL2/csrc'
+rm -f _cuarc*.so _csrc*.so pre_vcsobj_*.so share_vcsobj_*.so
+if [ -x ../simv ]; then chmod a-x ../simv; fi
+g++  -o ../simv      -rdynamic  -Wl,-rpath='$ORIGIN'/simv.daidir -Wl,-rpath=./simv.daidir -Wl,-rpath=/home/eda/app/synopsys/vcs/W-2024.09-SP1/linux64/lib -L/home/eda/app/synopsys/vcs/W-2024.09-SP1/linux64/lib  -Wl,-rpath-link=./  /usr/lib64/libnuma.so.1   objs/amcQw_d.o   _3943547_archive_1.so _prev_archive_1.so   SIM_l.o      rmapats_mop.o rmapats.o rmar.o rmar_nd.o  rmar_llvm_0_1.o rmar_llvm_0_0.o            -lvirsim -lerrorinf -lsnpsmalloc -lvfs    -lvcsnew -lsimprofile -luclinative /home/eda/app/synopsys/vcs/W-2024.09-SP1/linux64/lib/vcs_tls.o   -Wl,-whole-archive  -lvcsucli    -Wl,-no-whole-archive        _vcs_pli_stub_.o   /home/eda/app/synopsys/vcs/W-2024.09-SP1/linux64/lib/vcs_save_restore_new.o /home/eda/app/synopsys/verdi/W-2024.09-SP1/share/PLI/VCS/LINUX64/pli.a -ldl  -lc -lm -lpthread -ldl 
+../simv up to date
+make[1]: Leaving directory '/home/eda/xs-env/xs-v2r2-sv/verif/ut/TL2CHICoupledL2/csrc'
+CPU time: 5.010 seconds to compile + .741 seconds to elab + .242 seconds to link
+Verdi KDB elaboration done and the database successfully generated

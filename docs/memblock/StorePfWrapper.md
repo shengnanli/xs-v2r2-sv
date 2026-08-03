@@ -47,4 +47,12 @@ KunmingHu V2R2 当前 golden 中 `EnableStorePrefetchSPB=false`，firtool 常量
 
 UT 位于 `verif/ut/StorePfWrapper`，双例化 golden `StorePfWrapper` 与实现侧 `StorePfWrapper_xs`，逐拍比对两路输出；golden 为 X 时跳过。FM 目标是 golden 同名 wrapper 与 `rtl/memblock/StorePfWrapper_wrapper.sv`。
 
-实测结果见任务结束报告。
+实测结果：
+
+- **UT**：seed 1 / 7 / 42 各 200000 拍（2 路输出，`checks=400000`），**errors=0，TEST PASSED**
+  （日志 `verif/ut/StorePfWrapper/sim_{1,7,42}.log`）。
+- **FM**：目录内末次 `make fm`（2026-07-18，`fm_work/StorePfWrapper/fm.log`）
+  `Verification SUCCEEDED`——102 passing / 0 failing。注意：本目标**不在**冻结台账
+  [`FM_STATUS.md`](../../verif/freeze/FM_STATUS.md) 覆盖的 44 个 `fm_full.log` 变体之列
+  （台账口径属 UNRUN_ON_FROZEN 组，待全量重跑）；在 **Sbuffer** 的 REPLACEMENT_EQ 证明里，
+  本模块是两侧同名黑盒边界（台账脚注，Sbuffer 主体逻辑为真替换、本模块另行验证）。

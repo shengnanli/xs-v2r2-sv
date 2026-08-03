@@ -1,0 +1,2842 @@
+diff --git a/rtl/backend/ctrlblock_glue2.svh b/rtl/backend/ctrlblock_glue2.svh
+index 635e1e7..7ff989e 100644
+--- a/rtl/backend/ctrlblock_glue2.svh
++++ b/rtl/backend/ctrlblock_glue2.svh
+@@ -293,10 +293,13 @@
+   //   decodeInFoldpc[k] = decodeBufValid[k] ? decodeBufFoldpc[k] : cfVec[k].bits.foldpc
+   // decodeBufFoldpc 为 decode buffer 内缓存的 foldpc(随 buffer 移位,见块2 注释:
+   // buffer bits 搬移本轮只跟 foldpc 这一分量;完整 StaticInst 搬移仍待后续轮)。
+-  // 这里给出 foldpc 的搬移寄存器(与块2 decodeBufValid 同源 FSM,移位逻辑一致)。
++  // (FM 审计 2026-07 修订)原先此处保留了一套独立的 decodeBufFoldpc 搬移寄存器
++  // (reset 清 0 + 越界保持旧值),与块 2b 的 decodeBufBits[k].foldpc(golden 语义:
++  // 无 reset + lane-wrap 到 lane0)构成"同值双份"但更新语义有细微出入 —— FM 视角
++  // 是一份多余的、无 ref 对应的状态(unmatched free-var),污染 decode.foldpc BBPin
++  // 与 mdpFlodPcVec 下游比对点。现直接复用块 2b 的 payload 机(与 golden
++  // decodeBufBits_k_foldpc 一一对应),不再有第二份寄存器。
+   // ==========================================================================
+-  // decode buffer foldpc 寄存器(6 路);移位规则同 decodeBufValid。
+-  reg  [9:0] decodeBufFoldpc [0:ctrlblock_pkg::DecodeWidth-1];
+   // cfVec foldpc 聚合别名
+   wire [9:0] cfVecFoldpc [0:ctrlblock_pkg::DecodeWidth-1];
+   assign cfVecFoldpc[0] = io_frontend_cfVec_0_bits_foldpc;
+@@ -306,48 +309,8 @@
+   assign cfVecFoldpc[4] = io_frontend_cfVec_4_bits_foldpc;
+   assign cfVecFoldpc[5] = io_frontend_cfVec_5_bits_foldpc;
+ 
+-  // 移位源选择(同 buf_shift_src,但作用在 foldpc 数据上)。
+-  // 纯函数:foldpc 源数组作显式入参(不读非局部 -> 避免 FMR_VLOG-091)。
+-  // 用显式 case 选源(非变量 unpacked-array 索引)避免 FMR_ELAB-147。
+-  function automatic logic [9:0] buf_shift_foldpc(
+-      input logic [2:0] i, input logic [2:0] num,
+-      input logic [9:0] src[0:ctrlblock_pkg::DecodeWidth-1]);
+-    logic [2:0] idx;
+-    idx = i + num;
+-    unique case (idx)
+-      3'd0:    buf_shift_foldpc = src[0];
+-      3'd1:    buf_shift_foldpc = src[1];
+-      3'd2:    buf_shift_foldpc = src[2];
+-      3'd3:    buf_shift_foldpc = src[3];
+-      3'd4:    buf_shift_foldpc = src[4];
+-      3'd5:    buf_shift_foldpc = src[5];
+-      default: buf_shift_foldpc = 10'h0;   // idx>=6 越界:取 0(同原三元)
+-    endcase
+-  endfunction
+-
+-  integer dfi;
+-  always_ff @(posedge clock) begin
+-    if (reset) begin
+-      for (dfi = 0; dfi < ctrlblock_pkg::DecodeWidth; dfi = dfi + 1)
+-        decodeBufFoldpc[dfi] <= 10'h0;
+-    end else begin
+-      for (dfi = 0; dfi < ctrlblock_pkg::DecodeWidth; dfi = dfi + 1) begin
+-        // 与 decodeBufValid 的移位分支一致(清零分支保留旧 foldpc 无害,因 valid=0)
+-        if (decodeBufValid[dfi] && bufNotAcceptDropOr[dfi]) begin
+-          decodeBufFoldpc[dfi] <=
+-            (decodeBufAcceptNum > (ctrlblock_pkg::DecodeWidth[2:0] - 3'd1 - dfi[2:0])) ? decodeBufFoldpc[dfi]
+-              : buf_shift_foldpc(dfi[2:0], decodeBufAcceptNum, decodeBufFoldpc);
+-        end else if (!decodeBufValid[0] && feNotAcceptDropOr[dfi]) begin
+-          decodeBufFoldpc[dfi] <=
+-            (decodeFromFrontendAcceptNum > (ctrlblock_pkg::DecodeWidth[2:0] - 3'd1 - dfi[2:0])) ? decodeBufFoldpc[dfi]
+-              : buf_shift_foldpc(dfi[2:0], decodeFromFrontendAcceptNum, cfVecFoldpc);
+-        end
+-      end
+-    end
+-  end
+-
+   generate
+     for (gj = 0; gj < ctrlblock_pkg::DecodeWidth; gj++) begin : g_decinfoldpc
+-      assign decodeInFoldpc[gj] = decodeBufValid[gj] ? decodeBufFoldpc[gj] : cfVecFoldpc[gj];
++      assign decodeInFoldpc[gj] = decodeBufValid[gj] ? decodeBufBits[gj].foldpc : cfVecFoldpc[gj];
+     end
+   endgenerate
+diff --git a/rtl/backend/ctrlblock_outglue.svh b/rtl/backend/ctrlblock_outglue.svh
+index 546b7d6..48c0da9 100644
+--- a/rtl/backend/ctrlblock_outglue.svh
++++ b/rtl/backend/ctrlblock_outglue.svh
+@@ -169,7 +169,10 @@
+     logic [63:0] fullTarget;       // 重定向完整目标地址
+   } s2s4_redirect_bits_t;
+ 
+-  reg                  s2s4RedirectValid;     // RegNext(s1_s3_redirect_valid)
++  // (FM 审计 2026-07 修订)valid 复用块 1(ctrlblock_logic.svh)的 s2_s4_redirect_valid
++  // 寄存器 —— 原先此处另立一个同源同值的 s2s4RedirectValid 寄存器,golden 只有一份
++  // (s2_s4_redirect_next_valid_last_REG),impl 双份导致 FM unmatched free-var 污染下游。
++  wire                 s2s4RedirectValid = s2_s4_redirect_valid;
+   s2s4_redirect_bits_t s2s4RedirectBits;      // RegEnable(...)
+ 
+   // 本拍 s2_s4 的 bits 输入（组合选择，X 铁律：三元 mux）。
+@@ -191,8 +194,6 @@
+       s1_robFlushValid ? 64'h0 : _redirectGen_io_stage2Redirect_bits_fullTarget;
+ 
+   always_ff @(posedge clock) begin
+-    if (reset) s2s4RedirectValid <= 1'b0;
+-    else       s2s4RedirectValid <= s1_s3_redirect_valid;
+     if (s1_s3_redirect_valid) begin
+       s2s4RedirectBits.robIdxFlag     <= s1_s3_redirect_robFlag;
+       s2s4RedirectBits.robIdxValue    <= s1_s3_redirect_robValue;
+diff --git a/rtl/backend/datapath_logic.svh b/rtl/backend/datapath_logic.svh
+index 18688a8..a0580b6 100644
+--- a/rtl/backend/datapath_logic.svh
++++ b/rtl/backend/datapath_logic.svh
+@@ -1654,9 +1654,11 @@
+   assign io_toMemIQ_0_0_og0resp_valid = og0Failed_10_0;
+   assign io_toMemIQ_0_0_og1resp_valid = s1_valid_10_0;
+   assign io_toMemIQ_0_0_og1resp_bits_resp = og1Failed_10_0 ? datapath_pkg::RESP_BLOCK : datapath_pkg::RESP_UNCERTAIN;
+-  always_ff @(posedge clock) if (io_fromMemIQ_0_0_valid) begin  // 立即数打一拍透传
+-    s1_imm_10_0     <= io_fromMemIQ_0_0_bits_common_imm[31:0];
+-    s1_immType_10_0 <= io_fromMemIQ_0_0_bits_immType;
++  // 立即数打一拍透传(FM 审计: imm 用 mux-loop 形与 golden s1_immInfo 同形,
++  // 避免被 FM 并进 s1_ctrl_10_0_imm payload 副本导致 ref/impl 合并不对称)
++  always_ff @(posedge clock) begin
++    s1_imm_10_0 <= io_fromMemIQ_0_0_valid ? io_fromMemIQ_0_0_bits_common_imm[31:0] : s1_imm_10_0;
++    if (io_fromMemIQ_0_0_valid) s1_immType_10_0 <= io_fromMemIQ_0_0_bits_immType;
+   end
+   assign io_og1ImmInfo_18_imm     = s1_imm_10_0;
+   assign io_og1ImmInfo_18_immType = s1_immType_10_0;
+@@ -1667,9 +1669,11 @@
+   assign io_toMemIQ_1_0_og0resp_valid = og0Failed_11_0;
+   assign io_toMemIQ_1_0_og1resp_valid = s1_valid_11_0;
+   assign io_toMemIQ_1_0_og1resp_bits_resp = og1Failed_11_0 ? datapath_pkg::RESP_BLOCK : datapath_pkg::RESP_UNCERTAIN;
+-  always_ff @(posedge clock) if (io_fromMemIQ_1_0_valid) begin  // 立即数打一拍透传
+-    s1_imm_11_0     <= io_fromMemIQ_1_0_bits_common_imm[31:0];
+-    s1_immType_11_0 <= io_fromMemIQ_1_0_bits_immType;
++  // 立即数打一拍透传(FM 审计: imm 用 mux-loop 形与 golden s1_immInfo 同形,
++  // 避免被 FM 并进 s1_ctrl_11_0_imm payload 副本导致 ref/impl 合并不对称)
++  always_ff @(posedge clock) begin
++    s1_imm_11_0 <= io_fromMemIQ_1_0_valid ? io_fromMemIQ_1_0_bits_common_imm[31:0] : s1_imm_11_0;
++    if (io_fromMemIQ_1_0_valid) s1_immType_11_0 <= io_fromMemIQ_1_0_bits_immType;
+   end
+   assign io_og1ImmInfo_19_imm     = s1_imm_11_0;
+   assign io_og1ImmInfo_19_immType = s1_immType_11_0;
+@@ -1682,9 +1686,9 @@
+   assign io_toMemIQ_2_0_og1resp_valid = s1_valid_12_0;
+   assign io_toMemIQ_2_0_og1resp_bits_resp = og1Failed_12_0 ? datapath_pkg::RESP_BLOCK : datapath_pkg::RESP_UNCERTAIN;
+   assign io_toMemIQ_2_0_og1resp_bits_fuType = s1_ctrl_12_0_fuType;
+-  always_ff @(posedge clock) if (io_fromMemIQ_2_0_valid) begin  // 立即数打一拍透传
+-    s1_imm_12_0     <= io_fromMemIQ_2_0_bits_common_imm[31:0];
+-  end
++  // 立即数打一拍透传(FM 审计: mux-loop 形,理由同上)
++  always_ff @(posedge clock)
++    s1_imm_12_0 <= io_fromMemIQ_2_0_valid ? io_fromMemIQ_2_0_bits_common_imm[31:0] : s1_imm_12_0;
+   assign io_og1ImmInfo_20_imm     = s1_imm_12_0;
+ 
+   // EXU g13.0 (Mem IQ3.0) og 响应
+@@ -1695,9 +1699,9 @@
+   assign io_toMemIQ_3_0_og1resp_valid = s1_valid_13_0;
+   assign io_toMemIQ_3_0_og1resp_bits_resp = og1Failed_13_0 ? datapath_pkg::RESP_BLOCK : datapath_pkg::RESP_UNCERTAIN;
+   assign io_toMemIQ_3_0_og1resp_bits_fuType = s1_ctrl_13_0_fuType;
+-  always_ff @(posedge clock) if (io_fromMemIQ_3_0_valid) begin  // 立即数打一拍透传
+-    s1_imm_13_0     <= io_fromMemIQ_3_0_bits_common_imm[31:0];
+-  end
++  // 立即数打一拍透传(FM 审计: mux-loop 形,理由同上)
++  always_ff @(posedge clock)
++    s1_imm_13_0 <= io_fromMemIQ_3_0_valid ? io_fromMemIQ_3_0_bits_common_imm[31:0] : s1_imm_13_0;
+   assign io_og1ImmInfo_21_imm     = s1_imm_13_0;
+ 
+   // EXU g14.0 (Mem IQ4.0) og 响应
+@@ -1708,9 +1712,9 @@
+   assign io_toMemIQ_4_0_og1resp_valid = s1_valid_14_0;
+   assign io_toMemIQ_4_0_og1resp_bits_resp = og1Failed_14_0 ? datapath_pkg::RESP_BLOCK : datapath_pkg::RESP_UNCERTAIN;
+   assign io_toMemIQ_4_0_og1resp_bits_fuType = s1_ctrl_14_0_fuType;
+-  always_ff @(posedge clock) if (io_fromMemIQ_4_0_valid) begin  // 立即数打一拍透传
+-    s1_imm_14_0     <= io_fromMemIQ_4_0_bits_common_imm[31:0];
+-  end
++  // 立即数打一拍透传(FM 审计: mux-loop 形,理由同上)
++  always_ff @(posedge clock)
++    s1_imm_14_0 <= io_fromMemIQ_4_0_valid ? io_fromMemIQ_4_0_bits_common_imm[31:0] : s1_imm_14_0;
+   assign io_og1ImmInfo_22_imm     = s1_imm_14_0;
+ 
+   // EXU g15.0 (Mem IQ5.0) og 响应
+diff --git a/rtl/frontend/IBuffer.sv b/rtl/frontend/IBuffer.sv
+index e51c489..92233ee 100644
+--- a/rtl/frontend/IBuffer.sv
++++ b/rtl/frontend/IBuffer.sv
+@@ -120,15 +120,18 @@ module xs_IBuffer_core #(
+   localparam int CntW         = $clog2(DecodeWidth);           // 出队计数位宽 = 3
+   localparam int EnqW         = $clog2(PredictWidth + 1);      // 入队计数位宽 = 5（0..16）
+   localparam int ExcW         = 3;                             // IBufferExceptionType 宽
+-  // TopDown 计数器枚举里的几个 id（与 Chisel TopDownCounters 对齐）
++  // TopDown 计数器枚举里的几个 id —— 以 golden RTL 为准
++  // (golden IBuffer.sv 18667-18691: reasons_3=TAGEMiss, 4=SCMiss, 5=ITTAGEMiss,
++  //  6=RASMiss, 7=MemVioRedirect, 8=OtherRedirect, 12=BTBMiss; 旧映射(4..10)与
++  //  golden 错位, 是 FM 仅剩 9 个 topdown 位 failing 的根因)
+   localparam int NUM_STALL_REASONS = 38;
+-  localparam int ID_BTBMiss        = 4;
+-  localparam int ID_TAGEMiss       = 5;
+-  localparam int ID_SCMiss         = 6;
+-  localparam int ID_ITTAGEMiss     = 7;
+-  localparam int ID_RASMiss        = 8;
+-  localparam int ID_MemVioRedirect = 9;
+-  localparam int ID_OtherRedirect  = 10;
++  localparam int ID_BTBMiss        = 12;
++  localparam int ID_TAGEMiss       = 3;
++  localparam int ID_SCMiss         = 4;
++  localparam int ID_ITTAGEMiss     = 5;
++  localparam int ID_RASMiss        = 6;
++  localparam int ID_MemVioRedirect = 7;
++  localparam int ID_OtherRedirect  = 8;
+   localparam int ID_FetchFragBubble= 13;  // 对齐 golden 浪费槽原因值 6'hD
+ 
+   genvar gi;
+@@ -359,9 +362,13 @@ module xs_IBuffer_core #(
+   // ===========================================================================
+   generate
+     for (gi = 0; gi < IBufSize; gi++) begin : g_enq
+-      always_ff @(posedge clock) begin
+-        ibuf_entry_t wdata;
+-        logic        wen;
++      // golden 对 ibuf 全部载荷寄存器做**异步复位清 0**(reset 块 ibuf_N_* <= 0)；
++      // 漏掉复位则 UT 过(输出被 valid 门控)但 FM 判次态不等价 —— 整模块同为
++      // async reset(golden 全部寄存器在 always @(posedge clock or posedge reset))。
++      // 组合部分提出到 always_comb: Formality 要求异步复位块首语句必须是 if(reset)。
++      ibuf_entry_t wdata;
++      logic        wen;
++      always_comb begin
+         wdata = '0;
+         wen   = 1'b0;
+         for (int i = 0; i < PredictWidth; i++) begin
+@@ -376,11 +383,18 @@ module xs_IBuffer_core #(
+           else
+             match = (enqPtrVec_value[off] == PtrW'(gi));
+           if (in_valid_mask[i] && in_enqEnable[i] && match) begin
+-            wdata = enqData[i];
++            // golden 的写数据是 ParallelMux(OR 归约: validOH ? data : 0 逐项 OR),
++            // 多/零命中(不可达)时语义为 OR/0; 优先级覆盖写会在这些不可达输入上
++            // 与 golden 次态函数不一致(FM 不知不变式) —— 用 OR 累积对齐。
++            wdata = wdata | enqData[i];
+             wen   = 1'b1;
+           end
+         end
+-        if (wen && in_fire && !flush)
++      end
++      always_ff @(posedge clock or posedge reset) begin
++        if (reset)
++          ibuf[gi] <= '0;
++        else if (wen && in_fire && !flush)
+           ibuf[gi] <= wdata;
+       end
+     end
+@@ -436,11 +450,11 @@ module xs_IBuffer_core #(
+   // - Decode 接收：bypass 时填旁路项，否则填正常读出项。
+   // - Decode 不收但没满：在已有有效项之后拼接新读出项（保留前 valid 个不动）。
+   // ===========================================================================
+-  // 单一 always_ff：先在组合临时变量里算好整组下一态，再统一寄存。
+-  // （避免 per-genvar 块对 packed-struct 数组逐元素 NBA 的仿真器调度歧义。）
+-  always_ff @(posedge clock) begin
+-    ibuf_entry_t            nextEntries [DecodeWidth];
+-    logic [DecodeWidth-1:0] nextValid;
++  // 先在组合块里算好整组下一态，再统一寄存(异步复位块内只留 if(reset)/else,
++  // Formality 的 async 模板不允许复位判断前有其它语句)。
++  ibuf_entry_t            nextEntries [DecodeWidth];
++  logic [DecodeWidth-1:0] nextValid;
++  always_comb begin
+     for (int i = 0; i < DecodeWidth; i++) begin
+       nextEntries[i] = outputEntries[i];   // 默认保留旧 bits
+       nextValid[i]   = outputEntriesValid[i];
+@@ -460,6 +474,8 @@ module xs_IBuffer_core #(
+       end
+       if (flush) nextValid[i] = 1'b0;       // flush 只清 valid，bits 保留（同 golden）
+     end
++  end
++  always_ff @(posedge clock or posedge reset) begin
+     if (reset) begin
+       for (int i = 0; i < DecodeWidth; i++) begin
+         outputEntriesValid[i] <= 1'b0;
+@@ -479,15 +495,15 @@ module xs_IBuffer_core #(
+   // 入队指针：fire 且非 flush 时整体 + numTryEnq；flush 时复位成 0,1,2,...
+   generate
+     for (gi = 0; gi < PredictWidth; gi++) begin : g_enqptr
+-      always_ff @(posedge clock) begin
++      // 循环加 numTryEnq：value 越过 IBufSize 则翻转 flag(组合提出, FM async 模板)
++      logic [PtrW+1:0] nv;
++      assign nv = {2'b0, enqPtrVec_value[gi]} + {{(PtrW+2-EnqW){1'b0}}, numTryEnq};
++      always_ff @(posedge clock or posedge reset) begin
+         if (reset) begin
+           {enqPtrVec_flag[gi], enqPtrVec_value[gi]} <= (PtrW+1)'(gi);
+         end else if (flush) begin
+           {enqPtrVec_flag[gi], enqPtrVec_value[gi]} <= (PtrW+1)'(gi);
+         end else if (in_fire) begin
+-          // 循环加 numTryEnq：value 越过 IBufSize 则翻转 flag
+-          logic [PtrW+1:0] nv;
+-          nv = {2'b0, enqPtrVec_value[gi]} + {{(PtrW+2-EnqW){1'b0}}, numTryEnq};
+           if (nv >= IBufSize) begin
+             enqPtrVec_value[gi] <= PtrW'(nv - IBufSize);
+             enqPtrVec_flag[gi]  <= ~enqPtrVec_flag[gi];
+@@ -504,12 +520,14 @@ module xs_IBuffer_core #(
+   // 与 golden 逐位一致（含 value 取 6/7 等 don't-care 输入时的行为），利于 FM 签名分析。
+   generate
+     for (gi = 0; gi < DecodeWidth; gi++) begin : g_bankptr
+-      always_ff @(posedge clock) begin
+-        logic [BankPtrW:0]   bnewv;   // value + numDeq（4 位）
+-        logic signed [BankPtrW+1:0] bdiff;
+-        bnewv = {1'b0, deqBankPtrVec_value[gi]} + {{(BankPtrW+1-CntW){1'b0}}, numDeq};
+-        bdiff = $signed({1'b0, bnewv}) - $signed((BankPtrW+2)'(IBufNBank));
+-        if (reset || flush)
++      logic [BankPtrW:0]   bnewv;   // value + numDeq（4 位）
++      logic signed [BankPtrW+1:0] bdiff;
++      assign bnewv = {1'b0, deqBankPtrVec_value[gi]} + {{(BankPtrW+1-CntW){1'b0}}, numDeq};
++      assign bdiff = $signed({1'b0, bnewv}) - $signed((BankPtrW+2)'(IBufNBank));
++      always_ff @(posedge clock or posedge reset) begin
++        if (reset)
++          deqBankPtrVec_value[gi] <= BankPtrW'(gi % IBufNBank);
++        else if (flush)
+           deqBankPtrVec_value[gi] <= BankPtrW'(gi % IBufNBank);
+         else
+           deqBankPtrVec_value[gi] <= (bdiff > -1) ? bdiff[BankPtrW-1:0] : bnewv[BankPtrW-1:0];
+@@ -518,14 +536,17 @@ module xs_IBuffer_core #(
+   endgenerate
+ 
+   // 全局出队指针：每拍 + numDeq（循环）；flush 复位 0。同样用 signed-diff 回绕。
+-  always_ff @(posedge clock) begin
+-    logic [PtrW:0]          dnewv;   // value + numDeq（7 位）
+-    logic signed [PtrW+1:0] ddiff;
+-    logic                   dwrap;
+-    dnewv = {1'b0, deqPtr_value} + {{(PtrW+1-CntW){1'b0}}, numDeq};
+-    ddiff = $signed({1'b0, dnewv}) - $signed((PtrW+2)'(IBufSize));
+-    dwrap = (ddiff > -1);
+-    if (reset || flush) begin
++  logic [PtrW:0]          dnewv;   // value + numDeq（7 位）
++  logic signed [PtrW+1:0] ddiff;
++  logic                   dwrap;
++  assign dnewv = {1'b0, deqPtr_value} + {{(PtrW+1-CntW){1'b0}}, numDeq};
++  assign ddiff = $signed({1'b0, dnewv}) - $signed((PtrW+2)'(IBufSize));
++  assign dwrap = (ddiff > -1);
++  always_ff @(posedge clock or posedge reset) begin
++    if (reset) begin
++      deqPtr_value <= '0;
++      deqPtr_flag  <= 1'b0;
++    end else if (flush) begin
+       deqPtr_value <= '0;
+       deqPtr_flag  <= 1'b0;
+     end else begin
+@@ -540,15 +561,17 @@ module xs_IBuffer_core #(
+   assign deqBankPtr0_value = deqBankPtrVec_value[0];
+   generate
+     for (gi = 0; gi < IBufNBank; gi++) begin : g_inbankptr
+-      always_ff @(posedge clock) begin
+-        logic [BankPtrW-1:0] validIdx;
+-        logic                advance;
+-        if (gi >= deqBankPtr0_value)
+-          validIdx = BankPtrW'(gi - deqBankPtr0_value);
+-        else
+-          validIdx = BankPtrW'((gi + IBufNBank) - deqBankPtr0_value);
+-        advance = (numOut > validIdx);
+-        if (reset || flush) begin
++      logic [BankPtrW-1:0] validIdx;
++      logic                advance;
++      assign validIdx = (gi >= deqBankPtr0_value)
++                        ? BankPtrW'(gi - deqBankPtr0_value)
++                        : BankPtrW'((gi + IBufNBank) - deqBankPtr0_value);
++      assign advance = (numOut > validIdx);
++      always_ff @(posedge clock or posedge reset) begin
++        if (reset) begin
++          deqInBankPtr_value[gi] <= '0;
++          deqInBankPtr_flag[gi]  <= 1'b0;
++        end else if (flush) begin
+           deqInBankPtr_value[gi] <= '0;
+           deqInBankPtr_flag[gi]  <= 1'b0;
+         end else if (advance) begin
+@@ -566,7 +589,7 @@ module xs_IBuffer_core #(
+   // (IBufSize-PredictWidth) >= numValidNext ⟺ numValidNext < IBufSize-PredictWidth+1。
+   // flush 时直接置 1（与 golden `io_flush | (...)` 同义）。
+   localparam logic [PtrW-1:0] ALMOST_FULL_THR = PtrW'(IBufSize - PredictWidth + 1); // = 33
+-  always_ff @(posedge clock) begin
++  always_ff @(posedge clock or posedge reset) begin
+     if (reset)      allowEnq <= 1'b1;
+     else            allowEnq <= flush | (numValidNext < ALMOST_FULL_THR);
+   end
+@@ -610,7 +633,7 @@ module xs_IBuffer_core #(
+   // TopDown：把本拍 fetch 的 topdown 信息打一拍；flush 时按重定向类型置归因位
+   // ===========================================================================
+   logic [37:0] topdown_stage;
+-  always_ff @(posedge clock) begin
++  always_ff @(posedge clock or posedge reset) begin
+     if (reset)
+       topdown_stage <= '0;
+     else begin
+@@ -671,11 +694,11 @@ module xs_IBuffer_core #(
+   // 性能事件计数（HasPerfEvents：9 个事件，本核仅输出本拍 value）
+   // ===========================================================================
+   logic afterInit, headBubble, instrHungry;
+-  always_ff @(posedge clock) begin
++  always_ff @(posedge clock or posedge reset) begin
+     if (reset)            afterInit <= 1'b0;
+     else if (in_fire)     afterInit <= 1'b1;
+   end
+-  always_ff @(posedge clock) begin
++  always_ff @(posedge clock or posedge reset) begin
+     if (reset)              headBubble <= 1'b0;
+     else if (flush)         headBubble <= 1'b1;
+     else if (numValid != 0) headBubble <= 1'b0;
+diff --git a/rtl/frontend/IPrefetchPipe.sv b/rtl/frontend/IPrefetchPipe.sv
+index 468b8cb..b62a9d5 100644
+--- a/rtl/frontend/IPrefetchPipe.sv
++++ b/rtl/frontend/IPrefetchPipe.sv
+@@ -724,7 +724,9 @@ module xs_IPrefetchPipe
+   logic s2_miss      [PORT_NUM];
+   for (genvar p = 0; p < PORT_NUM; p++) begin : g_hits
+     assign s2_SRAM_hits[p] = |s2_waymasks[p];
+-    assign s2_hits[p]      = s2_MSHR_hits[p] || s2_SRAM_hits[p];
++    // golden: miss = ~(hits_valid | 当拍 MSHR_match | waymask) —— 当拍匹配也算命中,
++    // 不能只看寄存过的 s2_MSHR_hits(否则同拍 MSHRResp 命中时会多发一拍预取请求)。
++    assign s2_hits[p]      = s2_MSHR_hits[p] || s2_MSHR_match[p] || s2_SRAM_hits[p];
+   end
+   always_comb begin
+     logic prefix_ok;    // 「本 port 之前的所有 port 都无例外且非 mmio」
+diff --git a/rtl/memblock/DCacheWrapper.sv b/rtl/memblock/DCacheWrapper.sv
+index d32b5d1..7ba8ccb 100644
+--- a/rtl/memblock/DCacheWrapper.sv
++++ b/rtl/memblock/DCacheWrapper.sv
+@@ -116,15 +116,15 @@ module xs_DCacheWrapper_core(
+   // perf event 2 级流水 + 输出
+   // ---------------------------------------------------------------------------
+   // 32 路事件结构完全一致，用 generate/for 统一推进，不手工展开 32*2 条赋值。
+-  // 复位时清零（与 golden 的随机初始化语义一致：SYNTHESIS 下视为 0）。
++  // (FM 审计 2026-07 修订)golden 的 perf 打拍寄存器**无复位分支**(仅 RANDOM 初始化,
++  // SYNTHESIS 下被剥除);原先此处 if(reset) 清零使两侧函数在复位路径上真不等价,
++  // 是历史 "20 failing 全在 perf" 的实际根因(驱动型 stub 隔离实验证实,非黑盒对称性
++  // 假阳性)。现去掉复位分支与 golden 同形;UT 用 +vcs+initreg+0,动态行为不变。
+   genvar gi;
+   generate
+     for (gi = 0; gi < NUM_PERF_EVENTS; gi++) begin : g_perf
+       always_ff @(posedge clock) begin
+-        if (reset)
+-          perf_pipe[gi] <= '0;
+-        else
+-          perf_pipe[gi] <= perf_advance(perf_pipe[gi], perf_raw[gi]);
++        perf_pipe[gi] <= perf_advance(perf_pipe[gi], perf_raw[gi]);
+       end
+       // 第二级寄存器即对外 perf 输出（golden 中 perf 输出取第二级打拍值）。
+       assign perf_out[gi] = perf_pipe[gi].stage[PERF_STAGE_2];
+diff --git a/rtl/memblock/L2TLBWrapper.sv b/rtl/memblock/L2TLBWrapper.sv
+index 434f4b1..a67a7cd 100644
+--- a/rtl/memblock/L2TLBWrapper.sv
++++ b/rtl/memblock/L2TLBWrapper.sv
+@@ -111,15 +111,15 @@ module xs_L2TLBWrapper_core(
+   // perf event 2 级流水 + 输出
+   // ---------------------------------------------------------------------------
+   // 19 路事件结构完全一致，用 generate/for 统一推进，不手工展开 19*2 条赋值。
+-  // 复位时清零（与 golden 的随机初始化语义一致：SYNTHESIS 下视为 0）。
++  // (FM 审计 2026-07 修订)golden 的 perf 打拍寄存器**无复位分支**;原先 if(reset)
++  // 清零使两侧函数在复位路径上真不等价(历史 perf failing 的实际根因,驱动型 stub
++  // 隔离实验证实,非黑盒对称性假阳性)。去掉复位分支与 golden 同形;UT 用
++  // +vcs+initreg+0,动态行为不变。
+   genvar gi;
+   generate
+     for (gi = 0; gi < NUM_PERF_EVENTS; gi++) begin : g_perf
+       always_ff @(posedge clock) begin
+-        if (reset)
+-          perf_pipe[gi] <= '0;
+-        else
+-          perf_pipe[gi] <= perf_advance(perf_pipe[gi], perf_raw[gi]);
++        perf_pipe[gi] <= perf_advance(perf_pipe[gi], perf_raw[gi]);
+       end
+       // 第二级寄存器即对外 perf 输出（golden 中 perf 输出取第二级打拍值）。
+       assign perf_out[gi] = perf_pipe[gi].stage[PERF_STAGE_2];
+diff --git a/rtl/memblock/LLPTW.sv b/rtl/memblock/LLPTW.sv
+index a4144c3..d4a409c 100644
+--- a/rtl/memblock/LLPTW.sv
++++ b/rtl/memblock/LLPTW.sv
+@@ -118,13 +118,21 @@ module xs_LLPTW_core
+   // 这正是 firtool 对 ParallelPriorityEncoder(6) 生成的形态——其“无置位”默认值
+   // 决定了 enq/mem 指针在不可达分支下的取值，必须复刻以使逐拍/FM 比对一致。
+   // 写成 s0?0:s1?1:...:s4?4:5，避免 unique 在 0-hot 时报 FMR_ELAB-116。
++  // hptw_resp 整体写入时折叠 gpf 字段(替代"struct 写+字段覆盖"的部分写序列, 消 FM DC)。
++  function automatic hptw_resp_t hr_set_gpf(input hptw_resp_t h, input logic g);
++    hr_set_gpf = h;
++    hr_set_gpf.gpf = g;
++  endfunction
++
++  // 单一 return(嵌套三元): 多 return 早退会被 Formality 建成带 DC 缺省支路的优先
++  // mux(X 源), 见 llptw_pkg 同类改写。
+   function automatic logic [ID_W-1:0] ppe6(input logic [LLPTW_SIZE-1:0] oh);
+-    if (oh[0]) return 3'h0;
+-    if (oh[1]) return 3'h1;
+-    if (oh[2]) return 3'h2;
+-    if (oh[3]) return 3'h3;
+-    if (oh[4]) return 3'h4;
+-    return 3'h5;
++    return oh[0] ? 3'h0
++         : oh[1] ? 3'h1
++         : oh[2] ? 3'h2
++         : oh[3] ? 3'h3
++         : oh[4] ? 3'h4
++         : 3'h5;
+   endfunction
+ 
+   // cache_ptr 在 golden 里是 ParallelMux(is_cache, idx)（各下标 OR），全 0 时为 0；
+@@ -678,19 +686,27 @@ module xs_LLPTW_core
+         entries[k] <= '0;
+         mem_resp_hit[k] <= 1'b0;
+       end
+-      enq_ptr_reg <= '0;
++      // 复位域与 golden 对齐: golden 只复位 state/entries/mem_resp_hit/
++      // need_addr_check_last_REG(=need_addr_check); enq_ptr_reg/addr/
++      // hptw_resp_ptr_reg/hptw_need_addr_check_REG/mem_refill_id/io_perf_* 无复位
++      // (见下方独立无复位块)。
+       need_addr_check <= 1'b0;
+-      addr_reg <= '0;
+-      hptw_resp_ptr_reg <= '0;
+-      hptw_need_addr_check_q <= 1'b0;
+-      mem_refill_id <= '0;
+-      perf <= '0;
+-      perf0_s1 <= 1'b0; perf1_s1 <= 1'b0; perf2_s1 <= 1'b0; perf3_s1 <= '0;
+     end else begin
+       // --- 默认：mem_resp_hit 每拍清零（Scala: mem_resp_hit.map(when(a){a:=0}))。
+       //     入队/响应时再按需要置位，故先全清。
++      //     golden 次态 = ~old & (set...)：old=1 时无条件回 0，set 不得翻转它——
++      //     下方两处置位都要 && !mem_resp_hit[k] 与 golden 次态函数逐位对齐。
+       for (k = 0; k < LLPTW_SIZE; k++) mem_resp_hit[k] <= 1'b0;
+ 
++      // --- 显式默认 hold（次态完整化）：条件写不覆盖的部分保持原值。
++      //     语义与"不写"完全一致（NBA 后写覆盖先写），但让 Formality 的
++      //     word-level 抽取得到完整 mux 树——否则部分写(尤其 struct 写+字段覆盖
++      //     混合)会被建成带 DC 缺省支路的 WMUX，X 传染判不等价。
++      for (k = 0; k < LLPTW_SIZE; k++) begin
++        state[k]   <= state[k];
++        entries[k] <= entries[k];
++      end
++
+       // --- 入队 io.in.fire ---------------------------------------------------
+       //   用 per-entry index-compare 写（而非 entries[enq_ptr]），让 Formality
+       //   能静态确定写目标、不报越界（与 golden firtool 的逐条目寄存器一致）。
+@@ -702,23 +718,22 @@ module xs_LLPTW_core
+           entries[k].wait_id <= to_wait ? wait_id : enq_ptr;
+           entries[k].af <= 1'b0;
+           // hptw_resp 继承：last_hptw_req 继承被响应条目；to_wait 继承所跟随条目；否则保持。
+-          if (to_last_hptw_req)
+-            entries[k].hptw_resp <= resp_id_entry.hptw_resp;
+-          else if (to_wait)
+-            entries[k].hptw_resp <= wait_id_hptw_resp;
+-          entries[k].hptw_resp.gpf <= last_hptw_excp ? enq_g_pf : 1'b0;
++          // 整 struct 一次性写入(gpf 折叠进数据, 经 hr_set_gpf): "struct 写+字段覆盖"
++          // 的部分写序列会让 Formality word-level 抽取产生 DC(X 源)误判不等价。
++          entries[k].hptw_resp <= hr_set_gpf(
++              to_last_hptw_req ? resp_id_entry.hptw_resp
++            : to_wait          ? wait_id_hptw_resp
++            :                    entries[k].hptw_resp,
++              last_hptw_excp ? enq_g_pf : 1'b0);
+           entries[k].first_s2xlate_fault <= 1'b0;
+-          mem_resp_hit[k] <= to_mem_out || to_last_hptw_req;
++          mem_resp_hit[k] <= (to_mem_out || to_last_hptw_req) && !mem_resp_hit[k];
+         end
+       end
+ 
+       // --- addr_check 流水寄存（RegNext/RegEnable）---------------------------
+-      enq_ptr_reg <= enq_ptr;
++      // (enq_ptr_reg/addr_reg/hptw_resp_ptr_reg/hptw_need_addr_check_q 已移至
++      //  下方无复位块, 与 golden 复位域一致)
+       need_addr_check <= (enq_state == S_ADDR_CHECK) && in_fire && !flush;
+-      if (in_fire) addr_reg <= make_addr(in_ppn[PPN_W-1:0], get_vpnn0(in_req_info.vpn));
+-
+-      hptw_resp_ptr_reg <= hptw_resp_id;
+-      hptw_need_addr_check_q <= any_hptw_resp_state && hptw_resp_fire && !flush;
+ 
+       // --- PMP 同拍结果写回（addr_check → mem_req / mem_out）-----------------
+       if (pmp_req_valid) begin
+@@ -749,7 +764,7 @@ module xs_LLPTW_core
+           if (resp_match[k]) begin
+             state[k] <= (entries[k].req_info.s2xlate == ALL_STAGE && !(resp_vs_pf[k] || resp_g_pf[k]))
+                           ? S_LAST_HPTW_REQ : S_MEM_OUT;
+-            mem_resp_hit[k] <= 1'b1;
++            mem_resp_hit[k] <= !mem_resp_hit[k];
+             entries[k].ppn <= resp_last_ppn[k];
+             entries[k].hptw_resp.gpf <= (entries[k].req_info.s2xlate == ALL_STAGE) ? resp_g_pf[k] : 1'b0;
+           end
+@@ -782,24 +797,29 @@ module xs_LLPTW_core
+       if (hptw_resp_fire) begin
+         for (k = 0; k < LLPTW_SIZE; k++) begin
+           // 首次 hptw 响应
++          // tag 匹配是 44 位全宽比较({6'h0,tag} == ppn, golden _GEN_219/225):
++          // ppn 高 6 位非零则不匹配, 不能只比低 GVPN_W 位。
+           if (state[k] == S_HPTW_RESP && hptw_resp_id == entries[k].wait_id &&
+-              hptw_resp_h.tag == entries[k].ppn[GVPN_W-1:0]) begin
++              {6'h0, hptw_resp_h.tag} == entries[k].ppn) begin
++            // 整 struct 一次性写入(gpf 折叠, 消 FM 部分写 DC): fault 时 gpf|=perm_fail;
++            // 正常路 hr_perm_fail 恒 0, 统一写 gpf||hr_perm_fail 语义不变。
++            entries[k].hptw_resp <= hr_set_gpf(hptw_resp_h,
++                                               hptw_resp_h.gpf || hr_perm_fail);
+             if (hr_perm_fail || hptw_resp_h.gaf || hptw_resp_h.gpf) begin
+               // G-stage fault：直接出错，转 mem_out
+               state[k] <= S_MEM_OUT;
+-              entries[k].hptw_resp <= hptw_resp_h;
+-              entries[k].hptw_resp.gpf <= hptw_resp_h.gpf || hr_perm_fail;
+               entries[k].first_s2xlate_fault <= hptw_resp_h.gaf || hptw_resp_h.gpf || hr_perm_fail;
+             end else begin
+               // 正常：若有同 cacheline 的 waiting 条目则跟随它，否则进 addr_check
+               state[k] <= any_need_to_waiting ? S_MEM_WAITING : S_ADDR_CHECK;
+-              entries[k].hptw_resp <= hptw_resp_h;
+-              if (any_need_to_waiting) entries[k].wait_id <= waiting_index;
++              // 显式 else-hold, 消 FM DC 支路(同上)
++              entries[k].wait_id <= any_need_to_waiting ? waiting_index
++                                                        : entries[k].wait_id;
+             end
+           end
+-          // 最后一次 hptw 响应：填 hptw_resp 后转 mem_out
++          // 最后一次 hptw 响应：填 hptw_resp 后转 mem_out(44 位全宽 tag 比较, 同上)
+           if (state[k] == S_LAST_HPTW_RESP && hptw_resp_id == entries[k].wait_id &&
+-              hptw_resp_h.tag == entries[k].ppn[GVPN_W-1:0]) begin
++              {6'h0, hptw_resp_h.tag} == entries[k].ppn) begin
+             state[k] <= S_MEM_OUT;
+             entries[k].hptw_resp <= hptw_resp_h;
+           end
+@@ -812,21 +832,29 @@ module xs_LLPTW_core
+       // --- cache fire：释放 cache_ptr 条目 ----------------------------------
+       if (cache_fire) for (k = 0; k < LLPTW_SIZE; k++) if (cache_ptr == ID_W'(k)) state[k] <= S_IDLE;
+ 
+-      // --- refill id：RegNext(mem.resp.id) ----------------------------------
+-      mem_refill_id <= mem_resp_id;
+-
+       // --- flush：全部清空 ---------------------------------------------------
+       if (flush) for (k = 0; k < LLPTW_SIZE; k++) state[k] <= S_IDLE;
+-
+-      // --- perf：事件打两拍（与 XSPerfAccumulate 的 FIRRTL 形态一致：REG→REG_1）-
+-      //   0: in.fire   1: in.valid&&!ready   2: mem.req.fire   3: PopCount(is_waiting)
+-      perf0_s1 <= perf_ev0; perf[0] <= {5'h0, perf0_s1};
+-      perf1_s1 <= perf_ev1; perf[1] <= {5'h0, perf1_s1};
+-      perf2_s1 <= perf_ev2; perf[2] <= {5'h0, perf2_s1};
+-      perf3_s1 <= perf_ev3; perf[3] <= {3'h0, perf3_s1};
+     end
+   end
+ 
++  // ===========================================================================
++  // 无复位寄存器(golden 3018 行 always @(posedge clock) 块): 流水打拍/perf。
++  // ===========================================================================
++  always_ff @(posedge clock) begin
++    enq_ptr_reg <= enq_ptr;
++    if (in_fire) addr_reg <= make_addr(in_ppn[PPN_W-1:0], get_vpnn0(in_req_info.vpn));
++    hptw_resp_ptr_reg <= hptw_resp_id;
++    hptw_need_addr_check_q <= any_hptw_resp_state && hptw_resp_fire && !flush;
++    // --- refill id：RegNext(mem.resp.id) ----------------------------------
++    mem_refill_id <= mem_resp_id;
++    // --- perf：事件打两拍（与 XSPerfAccumulate 的 FIRRTL 形态一致：REG→REG_1）-
++    //   0: in.fire   1: in.valid&&!ready   2: mem.req.fire   3: PopCount(is_waiting)
++    perf0_s1 <= perf_ev0; perf[0] <= {5'h0, perf0_s1};
++    perf1_s1 <= perf_ev1; perf[1] <= {5'h0, perf1_s1};
++    perf2_s1 <= perf_ev2; perf[2] <= {5'h0, perf2_s1};
++    perf3_s1 <= perf_ev3; perf[3] <= {3'h0, perf3_s1};
++  end
++
+   // block_hptw_req：发访存那拍被一起拨到 mem_waiting 的条目，本拍屏蔽其 hptw_req。
+   always_comb begin
+     block_hptw_req = '0;
+diff --git a/rtl/memblock/LoadMisalignBuffer.sv b/rtl/memblock/LoadMisalignBuffer.sv
+index 9539b43..6374879 100644
+--- a/rtl/memblock/LoadMisalignBuffer.sv
++++ b/rtl/memblock/LoadMisalignBuffer.sv
+@@ -594,14 +594,16 @@ module xs_LoadMisalignBuffer_core
+         splitResp_data[i] <= '0;
+       end
+     end else begin
+-      // ---- 入队：锁存选中 req + genRdataOH ----
++      // ---- 入队：置位 valid + genRdataOH（req 数据本体在下方独立无复位块锁存：
++      //      golden 的 req_* 在无复位 always 块，若留在本块 else 分支，FM 视其
++      //      使能含 ~reset，与 golden 判不等价）----
+       if (canEnqValid) begin
+-        req         <= sel_bits;
+         req_valid   <= 1'b1;
+         data_select <= genRdataOH(sel_bits.fuOpType, sel_bits.fpWen);
+       end
+ 
+       // ---- 状态转移（用优先级 if-else 链表达，等价于 golden 的嵌套 if）----
++      // （req 数据锁存见本块之后的独立无复位 always_ff）
+       //  写成「先判当前状态、逐级跳转」的链：每个未跳转分支天然保持(reg 不赋值即保持)，
+       //  没有 case 默认分支被建成 X 的风险。
+       // S_SPLIT 的拆分寄存器写入（仅 cross16，且 size 非 LB 时写地址/掩码/宽度）。
+@@ -694,6 +696,11 @@ module xs_LoadMisalignBuffer_core
+     end
+   end
+ 
++  // req 数据本体与 golden 一致「不复位」（golden req_* 在无复位 always 块，仅入队时写）。
++  always_ff @(posedge clock) begin
++    if (canEnqValid) req <= sel_bits;
++  end
++
+   // ---- 逐字节合并 + 符号/零扩展（组合逻辑，s_comb 时锁存到 combinedData）----
+   //  lowSeg / highSeg：把两次回应数据各自右移/截取出有效段；
+   //  catResult[i] = (i < lowWidth) ? lowSeg[i] : highSeg[i-lowWidth]。
+@@ -867,16 +874,17 @@ module xs_LoadMisalignBuffer_core
+   //   各档对应不同扩展（zext8/16/32、原 64b、sext8/16/32、box H/S）。
+   logic [63:0] wb_data;
+   always_comb begin
+-    wb_data = 64'h0;
+-    if (data_select[0]) wb_data = {56'h0, combinedData[7:0]};   // zext8
+-    if (data_select[1]) wb_data = {48'h0, combinedData[15:0]};  // zext16
+-    if (data_select[2]) wb_data = {32'h0, combinedData[31:0]};  // zext32
+-    if (data_select[3]) wb_data = combinedData;                 // 64b
+-    if (data_select[4]) wb_data = {{56{combinedData[7]}},  combinedData[7:0]};  // sext8
+-    if (data_select[5]) wb_data = {{48{combinedData[15]}}, combinedData[15:0]}; // sext16
+-    if (data_select[6]) wb_data = {{32{combinedData[31]}}, combinedData[31:0]}; // sext32
+-    if (data_select[7]) wb_data = {48'hFFFFFFFFFFFF, combinedData[15:0]};       // box H
+-    if (data_select[8]) wb_data = {32'hFFFFFFFF, combinedData[31:0]};           // box S
++    // Chisel Mux1H 是「OR 归约」而非优先级链：data_select 理论 one-hot，但 FM 按全
++    // 空间比对（多热时 golden 各项按位或），必须保留 OR 语义。
++    wb_data = ({64{data_select[0]}} & {56'h0, combinedData[7:0]})                    // zext8
++            | ({64{data_select[1]}} & {48'h0, combinedData[15:0]})                   // zext16
++            | ({64{data_select[2]}} & {32'h0, combinedData[31:0]})                   // zext32
++            | ({64{data_select[3]}} & combinedData)                                  // 64b
++            | ({64{data_select[4]}} & {{56{combinedData[7]}},  combinedData[7:0]})   // sext8
++            | ({64{data_select[5]}} & {{48{combinedData[15]}}, combinedData[15:0]})  // sext16
++            | ({64{data_select[6]}} & {{32{combinedData[31]}}, combinedData[31:0]})  // sext32
++            | ({64{data_select[7]}} & {48'hFFFFFFFFFFFF, combinedData[15:0]})        // box H
++            | ({64{data_select[8]}} & {32'hFFFFFFFF, combinedData[31:0]});           // box S
+   end
+   assign io_writeBack_bits_data = wb_data;
+   assign io_writeBack_bits_debug_isMMIO = globalMMIO;
+diff --git a/rtl/memblock/LoadQueueUncache.sv b/rtl/memblock/LoadQueueUncache.sv
+index 7092fb4..6fbe7cd 100644
+--- a/rtl/memblock/LoadQueueUncache.sv
++++ b/rtl/memblock/LoadQueueUncache.sv
+@@ -102,6 +102,16 @@ module xs_LoadQueueUncache_core
+   lqu_nc_out_t    nc_pipe_empty_bits, nc_pipe_even_bits, nc_pipe_odd_bits;
+ 
+   lqu_redirect_t  redirect_d1, redirect_d2;
++  // golden 的 s2 冲刷检查消费的是**无使能** RegNext 副本（每 lane 一份：
++  // s2_valid_REG_1/3/5_{valid,bits}，每拍无条件采样 io_redirect），与带使能的
++  // lastCycleRedirect（redirect_d1，仅 io_redirect_valid 时锁存 bits）是两类寄存器。
++  // 行为上二者在 valid=1 时等值（bits 只在 valid=1 时被消费），但 FM 逐寄存器比对
++  // next-state 函数不同，且 FM 不接受多 golden 副本钉到同一 impl 寄存器（n-to-1）。
++  // 故按 golden 结构建 per-lane 副本数组，1:1 配对。
++  logic           redirect_s2_nc_valid [LOAD_PIPE_W];
++  logic           redirect_s2_nc_flag  [LOAD_PIPE_W];
++  logic [7:0]     redirect_s2_nc_value [LOAD_PIPE_W];
++  logic           redirect_s2_nc_level [LOAD_PIPE_W];
+   logic           rollback_valid_d;
+   lqu_redirect_t  rollback_bits_d;
+ 
+@@ -156,6 +166,13 @@ module xs_LoadQueueUncache_core
+     end
+ 
+     redirect_d1.valid <= io_redirect_valid;
++    // per-lane 无使能副本（对齐 golden s2_valid_REG_1/3/5）：每拍无条件采样。
++    for (int i = 0; i < LOAD_PIPE_W; i++) begin
++      redirect_s2_nc_valid[i] <= io_redirect_valid;
++      redirect_s2_nc_flag[i]  <= io_redirect_bits_robIdx_flag;
++      redirect_s2_nc_value[i] <= io_redirect_bits_robIdx_value;
++      redirect_s2_nc_level[i] <= io_redirect_bits_level;
++    end
+     if (io_redirect_valid) begin
+       redirect_d1.robIdx.flag  <= io_redirect_bits_robIdx_flag;
+       redirect_d1.robIdx.value <= io_redirect_bits_robIdx_value;
+@@ -182,8 +199,8 @@ module xs_LoadQueueUncache_core
+       s2_valid_q[i] =
+         s1_valid[i]
+         & ~rob_need_flush(s2_req[i].uop_robIdx_flag, s2_req[i].uop_robIdx_value,
+-                          redirect_d1.valid, redirect_d1.robIdx.flag,
+-                          redirect_d1.robIdx.value, redirect_d1.level)
++                          redirect_s2_nc_valid[i], redirect_s2_nc_flag[i],
++                          redirect_s2_nc_value[i], redirect_s2_nc_level[i])
+         & ~rob_need_flush(s2_req[i].uop_robIdx_flag, s2_req[i].uop_robIdx_value,
+                           io_redirect_valid, io_redirect_bits_robIdx_flag,
+                           io_redirect_bits_robIdx_value, io_redirect_bits_level);
+@@ -282,8 +299,10 @@ module xs_LoadQueueUncache_core
+ 
+   always_comb begin
+     mmio_wb_sel          = '0;
+-    mmio_pipe_in_bits    = zero_mmio_out();
+-    mmio_raw_sel         = '0;
++    // payload 缺省 = entry0（golden 的 foreach 覆盖链缺省暴露 entry0 载荷，而非 0；
++    // pipelineReg 黑盒输入是无 valid 门控的 FM 比对点，缺省值必须一致）
++    mmio_pipe_in_bits    = entry_mmio_out[0];
++    mmio_raw_sel         = entry_raw[0];
+ 
+     for (int e = 0; e < ENTRY_NUM; e++) begin
+       entry_mmio_ready[e] = entry_mmio_select[e] & mmio_pipe_in_ready;
+@@ -330,9 +349,17 @@ module xs_LoadQueueUncache_core
+     rem1_not_mmio = entry_nc_valid[1] ? ~entry_mmio_select[1] : ~entry_mmio_select[3];
+ 
+     nc_pipe_even_valid = rem0_has_nc & rem0_not_mmio;
+-    nc_pipe_even_bits  = entry_nc_valid[0] ? entry_nc_out[0] : entry_nc_out[2];
++    // payload mux 与 golden 的 foreach 覆盖链一致：被选中(且非 mmio)的 entry 覆盖，
++    // **缺省暴露 entry0** 载荷（黑盒输入无 valid 门控，缺省值参与 FM 比对）。
++    // even 口只有 entry0/2 可选：entry2 被选 = ~v0 & v2（组内优先编码）。
++    nc_pipe_even_bits  = (~entry_mmio_select[2] & ~entry_nc_valid[0] & entry_nc_valid[2])
++                       ? entry_nc_out[2] : entry_nc_out[0];
+     nc_pipe_odd_valid  = rem1_has_nc & rem1_not_mmio;
+-    nc_pipe_odd_bits   = entry_nc_valid[1] ? entry_nc_out[1] : entry_nc_out[3];
++    // odd 口只有 entry1/3 可选：entry3 被选 = ~v1 & v3；entry1 被选 = v1；缺省 entry0。
++    nc_pipe_odd_bits   = (~entry_mmio_select[3] & ~entry_nc_valid[1] & entry_nc_valid[3])
++                       ? entry_nc_out[3]
++                       : ((~entry_mmio_select[1] & entry_nc_valid[1])
++                          ? entry_nc_out[1] : entry_nc_out[0]);
+ 
+     entry_nc_ready[0] = ~entry_mmio_select[0] & rem0_has_nc & (rem0_idx == 2'd0) & nc_pipe_even_ready;
+     entry_nc_ready[1] = ~entry_mmio_select[1] & rem1_has_nc & (rem1_idx == 2'd1) & nc_pipe_odd_ready;
+diff --git a/rtl/memblock/LoadUnit.sv b/rtl/memblock/LoadUnit.sv
+index c622cc2..e8f3c6a 100644
+--- a/rtl/memblock/LoadUnit.sv
++++ b/rtl/memblock/LoadUnit.sv
+@@ -1434,7 +1434,10 @@ module xs_LoadUnit_core(
+   logic [VADDR_BITS-1:0] reg_ifetch_pf_vaddr;
+   always_ff @(posedge clock) begin
+     reg_ifetch_pf_valid <= s0_ifetch_pf;
+-    if (reset)             reg_ifetch_pf_vaddr <= {VADDR_BITS{1'b0}};  // golden 复位 vaddr_r=0
++  end
++  // golden io_ifetchPrefetch_bits_vaddr_r 为**异步**复位（posedge reset），对齐。
++  always_ff @(posedge clock or posedge reset) begin
++    if (reset)             reg_ifetch_pf_vaddr <= {VADDR_BITS{1'b0}};
+     else if (s0_ifetch_pf) reg_ifetch_pf_vaddr <= s0_out_vaddr;
+   end
+   assign io_ifetchPrefetch_valid      = reg_ifetch_pf_valid;
+@@ -1642,15 +1645,21 @@ module xs_LoadUnit_core(
+   logic s1_kill, s1_can_go, s1_fire;
+   assign s1_ready  = ~s1_valid | s1_kill | s2_ready;
+   assign s1_can_go = s2_ready;
+-  always_ff @(posedge clock) begin
++  always_ff @(posedge clock or posedge reset) begin  // golden 异步复位
+     if (reset)              s1_valid <= 1'b0;
+     else if (s0_fire)       s1_valid <= 1'b1;
+     else if (s1_fire | s1_kill) s1_valid <= 1'b0;
+   end
++  // golden 有两份 vecActive 打拍副本：s1_vecActive（异步复位 1，s1 异常重算消费）
++  // 与 s1_in_r_vecActive（无复位，喂 s2）。分开建两个寄存器精确对齐。
++  logic s1_vecActive_ar;
++  always_ff @(posedge clock or posedge reset) begin
++    if (reset)        s1_vecActive_ar <= 1'b1;
++    else if (s0_fire) s1_vecActive_ar <= s0_sel_vecActive;
++  end
+   always_ff @(posedge clock) begin
+     s1_nc_with_data <= s0_nc_with_data;
+-    if (reset) s1_in_vecActive <= 1'b1;  // 与 golden 一致：vecActive 复位为 1
+-    else if (s0_fire) s1_in_vecActive <= s0_sel_vecActive;
++    if (s0_fire) s1_in_vecActive <= s0_sel_vecActive;  // 无复位副本（golden s1_in_r_vecActive）
+     if (s0_fire) begin
+       s1_in_vaddr        <= s0_out_vaddr;
+       s1_in_fullva       <= s0_out_fullva;
+@@ -1731,9 +1740,11 @@ module xs_LoadUnit_core(
+   // ---- redirect 打一拍（s1_kill 需同时比较当拍 redirect 与上一拍 redirect）-----
+   logic       s1_redir_v_d, s1_redir_level_d, s1_redir_flag_d;
+   logic [7:0] s1_redir_value_d;
+-  always_ff @(posedge clock) begin
++  always_ff @(posedge clock or posedge reset) begin  // golden 异步复位
+     if (reset) s1_redir_v_d <= 1'b0;
+     else       s1_redir_v_d <= io_redirect_valid;
++  end
++  always_ff @(posedge clock) begin
+     if (io_redirect_valid) begin
+       s1_redir_level_d <= io_redirect_bits_level;
+       s1_redir_flag_d  <= io_redirect_bits_robIdx_flag;
+@@ -1755,14 +1766,14 @@ module xs_LoadUnit_core(
+   logic s1_checkfullva_d;  // RegNext(io_tlb_req_bits_checkfullva)
+   always_ff @(posedge clock) s1_checkfullva_d <= io_tlb_req_bits_checkfullva;
+   logic s1_exc_lpf, s1_exc_lgpf, s1_exc_laf, s1_exc_lam, s1_exc_hwe;
+-  assign s1_exc_lpf  = ~s1_dly_err & io_tlb_resp_bits_excp_0_pf_ld  & s1_in_vecActive & ~s1_tlb_miss & ~s1_in_tlbNoQuery;
++  assign s1_exc_lpf  = ~s1_dly_err & io_tlb_resp_bits_excp_0_pf_ld  & s1_vecActive_ar & ~s1_tlb_miss & ~s1_in_tlbNoQuery;
+   assign s1_exc_lgpf = ~s1_dly_err & io_tlb_resp_bits_excp_0_gpf_ld &                    ~s1_tlb_miss & ~s1_in_tlbNoQuery;
+-  assign s1_exc_laf  = ~s1_dly_err & io_tlb_resp_bits_excp_0_af_ld  & s1_in_vecActive & ~s1_tlb_miss & ~s1_in_tlbNoQuery;
++  assign s1_exc_laf  = ~s1_dly_err & io_tlb_resp_bits_excp_0_af_ld  & s1_vecActive_ar & ~s1_tlb_miss & ~s1_in_tlbNoQuery;
+   // checkfullva 命中且产生 pf/gpf/af 时，清除 LAM（误对齐让位真异常）
+   logic s1_lam_clear;
+   assign s1_lam_clear = s1_checkfullva_d & (s1_exc_lpf | s1_exc_lgpf | s1_exc_laf);
+   assign s1_exc_lam  = ~s1_dly_err & ~s1_lam_clear & s1_in_excVec[EXC_LAM];
+-  assign s1_exc_hwe  = s1_dly_err ? (s1_dly_err & s1_in_vecActive) : s1_in_excVec[EXC_HWE];
++  assign s1_exc_hwe  = s1_dly_err ? (s1_dly_err & s1_vecActive_ar) : s1_in_excVec[EXC_HWE];
+ 
+   // s1 trigger：action==0 表示断点异常(breakpoint)，action==1 表示进入 debug mode
+   // （与 golden s1_trigger_breakpoint/s1_trigger_debug_mode 一致）
+@@ -1966,7 +1977,7 @@ module xs_LoadUnit_core(
+   assign s2_can_go = s3_ready;
+   assign s2_fire   = s2_valid & ~s2_kill & s3_ready;
+ 
+-  always_ff @(posedge clock) begin
++  always_ff @(posedge clock or posedge reset) begin  // golden 异步复位
+     if (reset) begin
+       s2_valid <= 1'b0; s2_vecActive <= 1'b1; s2_isvec <= 1'b0; s2_trigger_dmode <= 1'b0;
+     end else begin
+@@ -2284,7 +2295,7 @@ module xs_LoadUnit_core(
+   logic [63:0] s1_tlD_use_hi;  // golden _GEN_81
+   assign s1_tlD_use_hi = s1_paddr_dup_lsu[3] ? s1_tlD_lo : s1_tlD_hi;
+ 
+-  always_ff @(posedge clock) begin
++  always_ff @(posedge clock or posedge reset) begin  // golden 异步复位
+     if (reset) begin
+       s2_fwd_frm_d_chan <= 1'b0;
+       for (int b = 0; b < MASK_BITS; b++) s2_fwd_data_frm_d_chan[b] <= 8'h0;
+@@ -2307,10 +2318,14 @@ module xs_LoadUnit_core(
+     s2_mem_amb_REG  <= io_lsq_forward_valid;
+     s2_fwd_fail_REG <= io_lsq_forward_valid;
+     s2_tlb_hit_REG  <= s1_tlb_hit;
+-    s2_mis_align_REG<= io_csrCtrl_hd_misalign_ld_enable;
+     s2_nc_with_data <= s1_nc_with_data;
+     if (s1_fire) s2_pbmt <= s1_pbmt;
+   end
++  // golden s2_mis_align_last_REG 为异步复位 0
++  always_ff @(posedge clock or posedge reset) begin
++    if (reset) s2_mis_align_REG <= 1'b0;
++    else       s2_mis_align_REG <= io_csrCtrl_hd_misalign_ld_enable;
++  end
+ 
+   // ---- S2 prefetch train（valid 打一拍 + inputReg 锁存）----------------------
+   logic s2_prefetch_train_valid, s2_prefetch_train_l1_valid;
+@@ -2322,9 +2337,11 @@ module xs_LoadUnit_core(
+   logic                  pf_tr_isFirstIssue, pf_tr_miss; logic [2:0] pf_tr_meta;
+   logic                  pf_tr1_robIdx_flag; logic [7:0] pf_tr1_robIdx_value;
+   logic [VADDR_BITS-1:0] pf_tr1_vaddr;       logic pf_tr1_isFirstIssue, pf_tr1_miss; logic [2:0] pf_tr1_meta;
+-  always_ff @(posedge clock) begin
++  always_ff @(posedge clock or posedge reset) begin  // golden 异步复位
+     if (reset) begin pf_tr_valid_d <= 1'b0; pf_tr_l1_valid_d <= 1'b0; end
+     else begin pf_tr_valid_d <= s2_prefetch_train_valid; pf_tr_l1_valid_d <= s2_prefetch_train_l1_valid; end
++  end
++  always_ff @(posedge clock) begin
+     if (s2_prefetch_train_valid) begin
+       pf_tr_robIdx_flag <= s2_in_robIdx_flag; pf_tr_robIdx_value <= s2_in_robIdx_value;
+       pf_tr_vaddr <= s2_in_vaddr; pf_tr_paddr <= s2_in_paddr; pf_tr_isFirstIssue <= s2_in_isFirstIssue;
+@@ -2349,12 +2366,14 @@ module xs_LoadUnit_core(
+   logic [7:0] s2_mmio_pdest_1, s2_mmio_robIdx_value_1; logic s2_mmio_robIdx_flag_1;
+   logic [63:0] s2_mmio_enqRsTime_1, s2_mmio_selectTime_1, s2_mmio_issueTime_1;
+   logic s2_mmio_replayInst_1, s2_mmio_isMMIO_1, s2_mmio_isNCIO_1, s2_mmio_isPerfCnt_1;
+-  always_ff @(posedge clock) begin
++  always_ff @(posedge clock or posedge reset) begin  // golden 异步复位
+     if (reset) begin s2_mmio_req_valid_d <= 1'b0; s2_mmio_req_valid_d2 <= 1'b0; end
+     else begin
+       s2_mmio_req_valid_d   <= s0_mmio_fire & io_lsq_uncache_valid;
+       s2_mmio_req_valid_d2 <= s2_mmio_req_valid_d;
+     end
++  end
++  always_ff @(posedge clock) begin
+     s2_mmio_v3  <= io_lsq_uncache_bits_uop_exceptionVec_3;  s2_mmio_v4 <= io_lsq_uncache_bits_uop_exceptionVec_4;
+     s2_mmio_v5  <= io_lsq_uncache_bits_uop_exceptionVec_5;  s2_mmio_v13 <= io_lsq_uncache_bits_uop_exceptionVec_13;
+     s2_mmio_v19 <= io_lsq_uncache_bits_uop_exceptionVec_19; s2_mmio_v21 <= io_lsq_uncache_bits_uop_exceptionVec_21;
+@@ -2453,7 +2472,7 @@ module xs_LoadUnit_core(
+   // S2->S3 寄存器加载
+   logic [8:0] s2_data_select_oh;
+   assign s2_data_select_oh = gen_rdata_oh(s2_in_fuOpType, s2_in_fpWen);
+-  always_ff @(posedge clock) begin
++  always_ff @(posedge clock or posedge reset) begin  // golden 异步复位
+     if (reset) begin
+       s3_vecActive <= 1'b1; s3_isvec <= 1'b0; s3_data_select <= 9'h0; s3_data_select_by_offset <= 16'h0;
+     end else if (s2_fire) begin
+@@ -2461,6 +2480,8 @@ module xs_LoadUnit_core(
+       s3_data_select <= s2_data_select_oh;
+       s3_data_select_by_offset <= gen_data_select_by_offset(s2_in_paddr[3:0]);
+     end
++  end
++  always_ff @(posedge clock) begin
+     if (s2_fire) begin
+       s3_in_excVec[0]  <= ~s2_supress & s2_in_excVec[0];
+       s3_in_excVec[1]  <= ~s2_supress & s2_in_excVec[1];
+@@ -2567,6 +2588,9 @@ module xs_LoadUnit_core(
+     s3_mwk_v13_2 <= s3_mwk_v13_1; s3_mwk_v19_2 <= s3_mwk_v19_1; s3_mwk_v21_2 <= s3_mwk_v21_1;
+     s3_mwk_trig_2 <= s3_mwk_trig_1; s3_mwk_nc_2 <= s3_mwk_nc_1; s3_mwk_mmio_2 <= s3_mwk_mmio_1;
+     s3_mwk_mm_2 <= s3_mwk_mm_1; s3_mwk_vecAct_2 <= s3_mwk_vecAct_1; s3_mwk_needWk_2 <= s3_mwk_needWk_1;
++  end
++  // golden 异步复位组（s3_*_last_REG / s3_misalign_wakeup_req_valid_REG*）
++  always_ff @(posedge clock or posedge reset) begin
+     if (reset) begin
+       s3_valid_REG <= 1'b0; s3_troublem_REG <= 1'b0; s3_hw_err_REG <= 1'b0;
+       s3_vp_match_fail_REG <= 1'b0; s3_ldld_rep_inst_REG <= 1'b0;
+@@ -2665,9 +2689,10 @@ module xs_LoadUnit_core(
+   // ---- S3 数据：按 16-way offset 选 64 位窗口，再按 9 路独热扩展 -------------
+   logic [63:0] s3_picked_pipe;
+   always_comb begin
++    // Chisel Mux1H 是「OR 归约」而非优先级链（多热时 golden 各窗口按位或），保留 OR 语义。
+     s3_picked_pipe = 64'h0;
+     for (int o = 0; o < MASK_BITS; o++)
+-      if (s3_data_select_by_offset[o]) s3_picked_pipe = pick_data_window(s3_merged_data, 4'(o));
++      s3_picked_pipe |= {64{s3_data_select_by_offset[o]}} & pick_data_window(s3_merged_data, 4'(o));
+   end
+   logic [63:0] s3_data_frm_pipe;
+   assign s3_data_frm_pipe = new_rdata(s3_data_select, s3_picked_pipe);
+@@ -3065,17 +3090,22 @@ module xs_LoadUnit_core(
+ 
+   // ---- perf 计数（每路事件打两拍再零扩展到 6 位）----
+   logic perf0_d, perf0_dd, perf2_d, perf2_dd, perf4_d, perf4_dd, perf5_d, perf5_dd, perf6_d, perf6_dd;
++  // golden 对 perf_0/perf_3 各保留一条独立打拍链（同值副本）、perf_1 是常量 0 打拍链；
++  // FM_MERGE_DUP=false 下重复链不合并，须逐条建同构寄存器（1:1 配对）。
++  logic perf1_d, perf1_dd, perf3_d, perf3_dd;
+   always_ff @(posedge clock) begin
+     perf0_d <= s0_fire;                            perf0_dd <= perf0_d;
++    perf1_d <= 1'b0;                               perf1_dd <= perf1_d;
+     perf2_d <= s0_fire & ~io_dcache_req_ready;     perf2_dd <= perf2_d;
++    perf3_d <= s0_fire;                            perf3_dd <= perf3_d;
+     perf4_d <= s1_fire & io_tlb_resp_bits_miss;    perf4_dd <= perf4_d;
+     perf5_d <= s1_fire;                            perf5_dd <= perf5_d;
+     perf6_d <= s2_fire & io_dcache_resp_bits_miss; perf6_dd <= perf6_d;
+   end
+   assign io_perf_0_value = {5'h0, perf0_dd};
+-  assign io_perf_1_value = 6'h0;
++  assign io_perf_1_value = {5'h0, perf1_dd};
+   assign io_perf_2_value = {5'h0, perf2_dd};
+-  assign io_perf_3_value = {5'h0, perf0_dd};
++  assign io_perf_3_value = {5'h0, perf3_dd};
+   assign io_perf_4_value = {5'h0, perf4_dd};
+   assign io_perf_5_value = {5'h0, perf5_dd};
+   assign io_perf_6_value = {5'h0, perf6_dd};
+diff --git a/rtl/memblock/LqExceptionBuffer.sv b/rtl/memblock/LqExceptionBuffer.sv
+index 904254c..1e1d0ff 100644
+--- a/rtl/memblock/LqExceptionBuffer.sv
++++ b/rtl/memblock/LqExceptionBuffer.sv
+@@ -93,8 +93,8 @@ module xs_LqExceptionBuffer_core
+         s2_req[w].isForVSnonLeafPTE <= req_isForVSnonLeafPTE[w];
+       end
+     end
+-    if (reset) s2_valid_q <= '0;
+-    else       s2_valid_q <= req_valid;
++    // 对齐 golden：s2_valid_REG* 为无复位 RegNext（golden 仅 req_valid 有异步复位）。
++    s2_valid_q <= req_valid;
+     // redirect 延迟版（无需复位：仅在 valid 参与判断时使用）
+     redirect_valid_q  <= redirect_valid;
+     redirect_robIdx_q <= redirect_robIdx;
+diff --git a/rtl/memblock/MainPipe.sv b/rtl/memblock/MainPipe.sv
+index e9769cb..c37f5e5 100644
+--- a/rtl/memblock/MainPipe.sv
++++ b/rtl/memblock/MainPipe.sv
+@@ -543,7 +543,7 @@ module xs_MainPipe_core
+   assign s1_idx = get_idx(s1_req.vaddr);
+ 
+   // s1 valid 推进
+-  always_ff @(posedge clock) begin
++  always_ff @(posedge clock or posedge reset) begin  // golden 异步复位
+     if (reset)            s1_valid <= 1'b0;
+     else if (s0_fire)     s1_valid <= 1'b1;
+     else if (s1_valid && s1_can_go) s1_valid <= 1'b0;
+@@ -555,10 +555,16 @@ module xs_MainPipe_core
+   // ---- meta / encTag 在 s1 锁存（s0_fire 当拍取 SRAM 输出，之后保持）----
+   //   GatedValidRegNext(s0_fire)：上一拍 s0_fire → 本拍直接采 SRAM 组合输出；
+   //   否则保持上次锁存值（s1 多拍停留时数据不变）。
+-  logic s1_meta_sel;       // = RegNext(s0_fire)：选 SRAM 直出 vs 锁存
++  logic s1_meta_sel;       // = RegNext(s0_fire)：选 SRAM 直出 vs 锁存（golden last_REG）
++  logic s1_enctag_sel;     // 同值副本（golden last_REG_1，encTag 路径专用）
++  logic s1_replway_sel;    // 同值副本（golden s1_repl_way_en_last_REG，repl way 路径专用）
+   logic [1:0]  meta_hold   [N_WAYS];
+   logic [ENC_TAG_BITS-1:0] enctag_hold [N_WAYS];
+-  always_ff @(posedge clock) if (reset) s1_meta_sel <= 1'b0; else s1_meta_sel <= s0_fire;
++  always_ff @(posedge clock or posedge reset) if (reset) begin
++    s1_meta_sel <= 1'b0; s1_enctag_sel <= 1'b0; s1_replway_sel <= 1'b0;
++  end else begin
++    s1_meta_sel <= s0_fire; s1_enctag_sel <= s0_fire; s1_replway_sel <= s0_fire;  // golden 三份副本，异步复位
++  end
+ 
+   // pseudo error 注入：把 tag 低 36 位按 mask 翻转，模拟 tag ECC 错误。
+   wire [TAG_BITS-1:0] pseudo_tag_toggle =
+@@ -580,17 +586,17 @@ module xs_MainPipe_core
+   // 保持寄存器：当本拍刚从 SRAM 取值（s1_meta_sel）且 s1 仍有效时，把 SRAM/注入后
+   //   的值锁存下来；s1 多拍停留（s1_meta_sel=0）时一直用这份锁存值（与 golden
+   //   r_0/r_1_0 的 RegEnable(s1_valid & last_REG) 语义一致）。
+-  always_ff @(posedge clock) if (s1_valid && s1_meta_sel) begin
++  always_ff @(posedge clock) begin
+     for (int w = 0; w < N_WAYS; w++) begin
+-      meta_hold[w]   <= meta_resp_in[w];
+-      enctag_hold[w] <= enctag_pseudo[w];
++      if (s1_valid && s1_meta_sel)   meta_hold[w]   <= meta_resp_in[w];
++      if (s1_valid && s1_enctag_sel) enctag_hold[w] <= enctag_pseudo[w];
+     end
+   end
+   logic [1:0]              meta_resp [N_WAYS];
+   logic [ENC_TAG_BITS-1:0] enctag    [N_WAYS];
+   always_comb for (int w = 0; w < N_WAYS; w++) begin
+-    meta_resp[w] = s1_meta_sel ? meta_resp_in[w]  : meta_hold[w];
+-    enctag[w]    = s1_meta_sel ? enctag_pseudo[w] : enctag_hold[w];
++    meta_resp[w] = s1_meta_sel   ? meta_resp_in[w]  : meta_hold[w];
++    enctag[w]    = s1_enctag_sel ? enctag_pseudo[w] : enctag_hold[w];
+   end
+ 
+   // ---- tag 命中判定（per way，含 ECC 检错）----
+@@ -645,8 +651,8 @@ module xs_MainPipe_core
+         (io_pseudo_error_valid && s1_has_real_tag_eq) ? s1_real_tag_match_oh :
+         s1_req.miss_fail_cause_evict_btot             ? s1_req.occupy_way    :
+                                                         (4'b1 << io_replace_way_way);
+-  always_ff @(posedge clock) if (s1_valid && s1_meta_sel) s1_repl_way_en_r <= s1_repl_way_en_comb;
+-  wire [N_WAYS-1:0] s1_repl_way_en = s1_meta_sel ? s1_repl_way_en_comb : s1_repl_way_en_r;
++  always_ff @(posedge clock) if (s1_valid && s1_replway_sel) s1_repl_way_en_r <= s1_repl_way_en_comb;
++  wire [N_WAYS-1:0] s1_repl_way_en = s1_replway_sel ? s1_repl_way_en_comb : s1_repl_way_en_r;
+ 
+   // 替换 way 的 tag / coh / prefetch 标志 / 真 encTag（均按 s1_repl_way_en one-hot 选）
+   logic [TAG_BITS-1:0]     s1_repl_tag;
+@@ -714,7 +720,7 @@ module xs_MainPipe_core
+   wire s2_fire_to_s3 = s2_valid && s2_can_go_to_s3;
+   wire s2_fire       = s2_valid && s2_can_go;
+ 
+-  always_ff @(posedge clock) if (reset) s2_has_pseudo_inj <= 1'b0;
++  always_ff @(posedge clock or posedge reset) if (reset) s2_has_pseudo_inj <= 1'b0;
+                             else if (s1_fire) s2_has_pseudo_inj <= io_pseudo_error_valid;
+   always_ff @(posedge clock) if (s1_fire) begin
+     s2_req               <= s1_req;
+@@ -735,7 +741,7 @@ module xs_MainPipe_core
+     s2_need_data         <= s1_need_data;
+     s2_need_tag          <= s1_need_tag;
+     s2_way_en            <= s1_way_en;
+-    s2_tag_r             <= s1_repl_tag; // 注：s2_tag = need_repl?repl:hit；hit tag = repl_tag(=命中way tag 经 repl 选择) — 见下
++    s2_tag_r             <= get_tag(s1_req.addr); // golden s2_tag_r <= s1_req_addr[47:12]（地址 tag 的专用寄存器）
+     s2_coh_r             <= s1_hit_coh;
+     s2_banked_store_wmask<= s1_banked_store_wmask;
+     s2_flag_error        <= s1_flag_error;
+@@ -744,15 +750,16 @@ module xs_MainPipe_core
+   end
+   // 注：golden 的 s2_tag = Mux(need_repl, repl_tag, RegEnable(s1_tag)),
+   //     而 s1_tag = s1_hit_tag = get_tag(s1_req.addr)。这里直接用 s2_req.addr 的 tag 重算命中 tag。
+-  wire [TAG_BITS-1:0] s2_hit_tag = get_tag(s2_req.addr);
+-  wire [TAG_BITS-1:0] s2_tag = s2_need_replacement ? s2_repl_tag : s2_hit_tag;
++  // golden：s2_tag = need_repl ? repl_tag : s2_tag_r（专用寄存器，而非用 s2_req.addr 重算——
++  // 重算在功能上等值，但 FM 逐寄存器比对时锥落在不同 cut 变量上）。
++  wire [TAG_BITS-1:0] s2_tag = s2_need_replacement ? s2_repl_tag : s2_tag_r;
+   coh_e s2_coh; assign s2_coh = s2_need_replacement ? s2_repl_coh : s2_coh_r;
+ 
+   assign s2_idx = get_idx(s2_req.vaddr);
+   wire s2_grow_perm = s2_grow_perm_r && s2_tag_match;
+ 
+   // s2 valid 推进
+-  always_ff @(posedge clock) begin
++  always_ff @(posedge clock or posedge reset) begin  // golden 异步复位
+     if (reset)             s2_valid <= 1'b0;
+     else if (s1_fire)      s2_valid <= 1'b1;
+     else if (s2_fire)      s2_valid <= 1'b0;
+@@ -788,7 +795,7 @@ module xs_MainPipe_core
+   wire s2_req_miss_without_data = s2_valid && s2_req.miss && !io_refill_info_valid;
+   // no-data replay 计数寄存器：miss 但 refill 数据未到，可阻 1 拍再 replay
+   logic s2_can_go_to_mq_no_data_r;
+-  always_ff @(posedge clock) begin
++  always_ff @(posedge clock or posedge reset) begin  // golden 异步复位
+     if (reset)         s2_can_go_to_mq_no_data_r <= 1'b0;
+     else if (s2_valid) s2_can_go_to_mq_no_data_r <= s2_req_miss_without_data && !s2_can_go_to_mq_no_data;
+   end
+@@ -821,7 +828,7 @@ module xs_MainPipe_core
+ 
+   // data readline 流控
+   logic s2_fire_to_s3_q;
+-  always_ff @(posedge clock) if (reset) s2_fire_to_s3_q <= 1'b0; else s2_fire_to_s3_q <= s1_fire; // data_readline_can_go = RegNext(s1_fire)
++  always_ff @(posedge clock or posedge reset) if (reset) s2_fire_to_s3_q <= 1'b0; else s2_fire_to_s3_q <= s1_fire; // golden 异步复位
+   assign io_data_readline_can_go   = s2_fire_to_s3_q;
+   assign io_data_readline_stall    = s2_valid;
+   assign io_data_readline_can_resp = s2_fire_to_s3;
+@@ -867,7 +874,7 @@ module xs_MainPipe_core
+   end
+ 
+   // s3 valid 推进
+-  always_ff @(posedge clock) begin
++  always_ff @(posedge clock or posedge reset) begin  // golden 异步复位
+     if (reset)              s3_valid <= 1'b0;
+     else if (s2_fire_to_s3) s3_valid <= 1'b1;
+     else if (s3_valid && s3_can_go) s3_valid <= 1'b0;
+@@ -991,15 +998,15 @@ module xs_MainPipe_core
+ 
+   // s3_s_amoalu：等 AMOALU 那一拍置 1，请求完成清 0
+   logic s3_s_amoalu_r;
+-  always_ff @(posedge clock) begin
+-    if (reset)          s3_s_amoalu_r <= 1'b0;
+-    else if (do_amoalu) s3_s_amoalu_r <= 1'b1;
+-    else if (s3_fire)   s3_s_amoalu_r <= 1'b0;
++  always_ff @(posedge clock or posedge reset) begin  // golden 异步复位
++    // golden：s3_s_amoalu <= ~s3_fire & (do_amoalu | s3_s_amoalu)——fire 清零优先于置位。
++    if (reset) s3_s_amoalu_r <= 1'b0;
++    else       s3_s_amoalu_r <= ~s3_fire & (do_amoalu | s3_s_amoalu_r);
+   end
+   assign s3_s_amoalu = s3_s_amoalu_r;
+ 
+   // ---- LR/SC 保留锁维护 ----
+-  always_ff @(posedge clock) begin
++  always_ff @(posedge clock or posedge reset) begin  // golden 异步复位
+     if (reset) lrsc_count <= '0;
+     else if (s3_valid && (s3_lr || s3_sc)) begin
+       if (s3_can_do_amo && s3_lr) lrsc_count <= LRSC_CYCLES - 1;
+@@ -1011,7 +1018,7 @@ module xs_MainPipe_core
+     if (s3_valid && (s3_lr || s3_sc) && s3_can_do_amo && s3_lr) lrsc_addr <= s3_block_addr;
+ 
+   logic io_block_lr_q;
+-  always_ff @(posedge clock) if (reset) io_block_lr_q <= 1'b0; else io_block_lr_q <= (lrsc_count > 0);
++  always_ff @(posedge clock or posedge reset) if (reset) io_block_lr_q <= 1'b0; else io_block_lr_q <= (lrsc_count > 0);
+   assign io_lrsc_locked_block_valid = lrsc_valid;
+   assign io_lrsc_locked_block_bits  = lrsc_addr;
+   assign io_block_lr                = io_block_lr_q;
+@@ -1032,26 +1039,32 @@ module xs_MainPipe_core
+   logic s3_tag_error_beu, s3_tag_error_wb, s3_data_error_beu_r, s3_data_error_wb_r;
+   logic s3_l2_error_wb, s3_flag_error_beu, s3_l2_error_beu;
+   logic s3_error_beu_r, s3_error_wb_r; logic [PADDR_BITS-1:0] s3_error_paddr_beu_r;
+-  always_ff @(posedge clock) begin
++  // 汇总错误位（golden 异步复位）
++  always_ff @(posedge clock or posedge reset) begin
+     if (reset) begin
+-      // 仅这两个汇总错误位 golden 复位（其余 beu/wb 位无观测前不影响输出）。
+       s3_error_beu_r <= 1'b0;
+       s3_error_wb_r  <= 1'b0;
+     end else begin
++      if (s2_fire) s3_error_beu_r <= s2_error;
++      if (s2_fire_to_s3) s3_error_wb_r <= s2_error;
++    end
++  end
++  // 其余 beu/wb 载荷位 golden 无复位
++  always_ff @(posedge clock) begin
++    begin
+       if (s2_fire) begin
+         s3_tag_error_beu    <= s2_tag_error;
+         s3_data_error_beu_r <= s2_may_report_data_error;
+         s3_l2_error_beu     <= s2_l2_error;
+         s3_flag_error_beu   <= s2_flag_error;
+-        s3_error_beu_r      <= s2_error;
+-        // 存块对齐地址（低 6 位清零），与 golden get_block_addr 后再打拍一致。
+-        s3_error_paddr_beu_r<= {s2_tag, s2_req.vaddr[11:6], 6'b0};
++        // golden 寄存器存全 12 位 vaddr（{s2_tag, vaddr[11:0]}），输出端才做块对齐。
++        s3_error_paddr_beu_r<= {s2_tag, s2_req.vaddr[11:0]};
+       end
+       if (s2_fire_to_s3) begin
+         s3_tag_error_wb     <= s2_tag_error;
+         s3_data_error_wb_r  <= s2_may_report_data_error;
+         s3_l2_error_wb      <= s2_l2_error;
+-        s3_error_wb_r       <= s2_error;
++        // s3_error_wb_r 在上面的异步复位块更新
+       end
+     end
+   end
+@@ -1199,22 +1212,24 @@ module xs_MainPipe_core
+ 
+   // ---- replace 算法访问更新（s3 命中/补块更新 plru）----
+   logic replace_access_valid_q;
+-  always_ff @(posedge clock) if (reset) replace_access_valid_q <= 1'b0; else replace_access_valid_q <= s2_fire_to_s3;
++  always_ff @(posedge clock or posedge reset) if (reset) replace_access_valid_q <= 1'b0; else replace_access_valid_q <= s2_fire_to_s3;
+   assign io_replace_access_valid = replace_access_valid_q && !s3_req.probe
+                                    && (s3_req.miss || ((req_is_amo(s3_req) || req_is_store(s3_req)) && s3_hit));
+   assign io_replace_access_bits_set = s3_idx;
+   assign io_replace_access_bits_way = oh_to_way(s3_way_en);
+ 
+   logic replace_way_set_valid_q;
+-  always_ff @(posedge clock) if (reset) replace_way_set_valid_q <= 1'b0; else replace_way_set_valid_q <= s0_fire;
++  always_ff @(posedge clock or posedge reset) if (reset) replace_way_set_valid_q <= 1'b0; else replace_way_set_valid_q <= s0_fire;
+   assign io_replace_way_set_bits = s1_idx;
+ 
+   // ---- SMS evict 提示（s2 miss → s3 时发，延一拍）----
+   wire sms_agt_evict_valid = s2_valid && s2_req.miss && s2_fire_to_s3;
+   logic sms_evict_valid_q; logic [VADDR_BITS-1:0] sms_evict_vaddr_q;
+-  always_ff @(posedge clock) begin
++  always_ff @(posedge clock or posedge reset) begin  // golden 异步复位
+     if (reset) sms_evict_valid_q <= 1'b0;
+     else       sms_evict_valid_q <= sms_agt_evict_valid;
++  end
++  always_ff @(posedge clock) begin
+     if (sms_agt_evict_valid)
+       sms_evict_vaddr_q <= {s2_repl_tag[TAG_BITS-1:2], s2_req.vaddr[13:12], {(VADDR_BITS-TAG_BITS){1'b0}}};
+   end
+@@ -1246,41 +1261,48 @@ module xs_MainPipe_core
+ 
+   // ---- ECC error 上报 BEU/CSR（s2_fire 后一拍）----
+   logic error_valid_gate_q, report_beu_q;
+-  always_ff @(posedge clock) begin
++  always_ff @(posedge clock or posedge reset) begin  // golden 异步复位
+     if (reset) error_valid_gate_q <= 1'b0;
+     else       error_valid_gate_q <= s2_fire && !s2_should_not_report_ecc_error;
++  end
++  always_ff @(posedge clock) begin
+     report_beu_q       <= s2_fire; // golden io_error_bits_report_to_beu_REG 无复位
+   end
+   assign io_error_valid = s3_error_beu && error_valid_gate_q;
+   assign io_error_bits_report_to_beu = (s3_tag_error_beu || s3_data_error_beu) && report_beu_q;
+-  assign io_error_bits_paddr = s3_error_paddr_beu_r; // 已块对齐
+-
+-  // ---- 流水状态扇出复制（24 份；s1 set 在 s0_fire 锁存，s2/s3 逐级打拍）----
+-  logic [IDX_BITS-1:0] status_s1_set_q, status_s2_set_q, status_s3_set_q;
+-  logic [N_WAYS-1:0]   status_s3_way_q;
+-  logic                status_s2_notrepl_q, status_s3_notrepl_q;
++  assign io_error_bits_paddr = {s3_error_paddr_beu_r[PADDR_BITS-1:6], 6'h0}; // 输出端块对齐（golden）
++
++  // ---- 流水状态扇出复制（24 份；golden 每份有**独立寄存器副本**（io_status_dup_N_*_r），
++  //      FM 不接受 n-to-1 钉点，按 golden 结构建 [24] 副本数组）----
++  logic [IDX_BITS-1:0] status_s1_set_q [24];
++  logic [IDX_BITS-1:0] status_s2_set_q [24];
++  logic [IDX_BITS-1:0] status_s3_set_q [24];
++  logic [N_WAYS-1:0]   status_s3_way_q [24];
++  logic                status_s2_replace_q [24];   // golden io_status_dup_N_s2_valid_r（正相存 replace）
++  logic                status_s3_replace_q [24];
+   always_ff @(posedge clock) begin
+-    if (s0_fire)        status_s1_set_q <= get_idx(s0_req.vaddr);
+-    if (s1_fire)        status_s2_set_q <= get_idx(s1_req.vaddr);
+-    if (s2_fire_to_s3) begin status_s3_set_q <= get_idx(s2_req.vaddr); status_s3_way_q <= s2_way_en; end
+-    if (s1_fire)        status_s2_notrepl_q <= !s1_req.replace;
+-    if (s2_fire_to_s3)  status_s3_notrepl_q <= !s2_req.replace;
++    for (int d = 0; d < 24; d++) begin
++      if (s0_fire)        status_s1_set_q[d] <= get_idx(s0_req.vaddr);
++      if (s1_fire) begin  status_s2_set_q[d] <= get_idx(s1_req.vaddr); status_s2_replace_q[d] <= s1_req.replace; end
++      if (s2_fire_to_s3) begin
++        status_s3_set_q[d] <= get_idx(s2_req.vaddr); status_s3_way_q[d] <= s2_way_en;
++        status_s3_replace_q[d] <= s2_req.replace;
++      end
++    end
+   end
+   wire status_s1_valid = s1_valid;
+-  wire status_s2_valid = s2_valid && status_s2_notrepl_q;
+-  wire status_s3_valid = s3_valid && status_s3_notrepl_q;
+ 
+-  // 24 份完全相同：用宏展开（机械复制，对齐 golden 扁平输出）
++  // 24 份输出，各接自己那份寄存器副本（对齐 golden 扁平输出）
+   `define STAT_DUP(N) \
+     assign io_status_dup_``N``_s1_valid = status_s1_valid; \
+-    assign io_status_dup_``N``_s1_bits_set = status_s1_set_q; \
++    assign io_status_dup_``N``_s1_bits_set = status_s1_set_q[N]; \
+     assign io_status_dup_``N``_s1_bits_way_en = s1_way_en; \
+-    assign io_status_dup_``N``_s2_valid = status_s2_valid; \
+-    assign io_status_dup_``N``_s2_bits_set = status_s2_set_q; \
++    assign io_status_dup_``N``_s2_valid = s2_valid && !status_s2_replace_q[N]; \
++    assign io_status_dup_``N``_s2_bits_set = status_s2_set_q[N]; \
+     assign io_status_dup_``N``_s2_bits_way_en = s2_way_en; \
+-    assign io_status_dup_``N``_s3_valid = status_s3_valid; \
+-    assign io_status_dup_``N``_s3_bits_set = status_s3_set_q; \
+-    assign io_status_dup_``N``_s3_bits_way_en = status_s3_way_q;
++    assign io_status_dup_``N``_s3_valid = s3_valid && !status_s3_replace_q[N]; \
++    assign io_status_dup_``N``_s3_bits_set = status_s3_set_q[N]; \
++    assign io_status_dup_``N``_s3_bits_way_en = status_s3_way_q[N];
+   `STAT_DUP(0)  `STAT_DUP(1)  `STAT_DUP(2)  `STAT_DUP(3)  `STAT_DUP(4)  `STAT_DUP(5)
+   `STAT_DUP(6)  `STAT_DUP(7)  `STAT_DUP(8)  `STAT_DUP(9)  `STAT_DUP(10) `STAT_DUP(11)
+   `STAT_DUP(12) `STAT_DUP(13) `STAT_DUP(14) `STAT_DUP(15) `STAT_DUP(16) `STAT_DUP(17)
+diff --git a/rtl/memblock/MissQueue.sv b/rtl/memblock/MissQueue.sv
+index 1e05798..0671247 100644
+--- a/rtl/memblock/MissQueue.sv
++++ b/rtl/memblock/MissQueue.sv
+@@ -204,7 +204,7 @@ module xs_MissQueue_core (
+                             : {3'h1, (mqpr.source != SRC_AMO), 1'h0};
+   // needHint：!l2_pf_store_only | store；isKeyword：仅 load 且 vaddr[5]
+   wire pr_acq_needhint  = ~io_l2_pf_store_only | pr_is_store;
+-  wire pr_acq_iskeyword = pr_is_load & mqpr.vaddr[5];
++  wire pr_acq_iskeyword = mqpr_alloc & pr_is_load & mqpr.vaddr[5];  // golden 含 alloc 门（锁定期 muxState 可为 1 而 alloc=0）
+ 
+   // ===========================================================================
+   //  D. 4 路 queryMQ ready（与主请求同构的提前判定，给上游 timing）
+@@ -275,15 +275,22 @@ module xs_MissQueue_core (
+ 
+   // acquire_from_pipereg 是否真的发出（用于 entry 的 acquire_fired_by_pipe_reg）
+   // = io_mem_acquire_ready & allowed_pipereg & acquire_from_pipereg_valid（allowed_pipereg 见 F 节）
+-  wire acquire_pipereg_allowed = ~cmo_acq_valid;   // 单 beat：idle 仲裁，pipereg 被允许 = CMO 不占
++  // TLArbiter：锁定期（beatsLeft）看 state，空闲期看 lowest-allowed（= CMO 不占）。
++  // （acq_grant 前向声明见下；此处仅声明，赋值在声明之后）
++  wire acquire_pipereg_allowed;
+   wire acquire_pipereg_fired   = io_mem_acquire_ready & acquire_pipereg_allowed & acquire_from_pipereg_valid;
+ 
+   // 前向声明（被 entry genvar 例化引用，其驱动逻辑在 F/G/H 节）：A/E 通道仲裁 one-hot
+   // winner 与 mem_grant 路由信号。generate 作用域内引用须先声明。
+-  logic [N_ACQ_SRC-1:0] acq_allowed;       // mem_acquire：源 i 无更高优先级阻挡（给 ready）
+-  logic [N_ACQ_SRC-1:0] acq_winner;        // mem_acquire：allowed & valid（给 payload mux）
++  logic [N_ACQ_SRC-1:0] acq_allowed;       // mem_acquire：源 i 无更高优先级阻挡（idle 时给 ready）
++  logic [N_ACQ_SRC-1:0] acq_winner;        // mem_acquire：allowed & valid（idle 时的选中源）
++  logic [N_ACQ_SRC-1:0] acq_grant;         // beatsLeft ? state : allowed（给各源 ready）
++  logic [N_ACQ_SRC-1:0] acq_sel;           // beatsLeft ? state : winner（muxState，给 payload mux）
+   logic [N_FIN_SRC-1:0] fin_allowed;       // mem_finish 同上
+   logic [N_FIN_SRC-1:0] fin_winner;
++  logic [N_FIN_SRC-1:0] fin_grant;
++  logic [N_FIN_SRC-1:0] fin_sel;
++  assign acquire_pipereg_allowed = acq_grant[1];
+   logic                 grant_is_cbo;      // grant.opcode==CBOAck → 交 CMOUnit
+   logic [N_ENTRY-1:0]   grant_hit_entry;   // grant.source==i
+   // memset 检测寄存器：entry 例化用它做 memSetPattenDetected 输入；驱动在 K 节。
+@@ -309,7 +316,35 @@ module xs_MissQueue_core (
+   end
+   assign acq_allowed = lowest_allowed_acq(acq_valids);
+   assign acq_winner  = acq_allowed & acq_valids;
+-  assign io_mem_acquire_valid = |acq_valids;
++
++  // ---- TLArbiter 突发锁定框架（golden beatsLeft/state_0..17，异步复位 0）----
++  //  beats1(源) = ~opcode[2]：AcquireBlock/Perm(6/7) opcode[2]=1 → 0 拍尾巴；CMO 的
++  //  CBO 请求 opcode[2]=0 → 1 拍尾巴，锁定期路由看 state 而非 winner。虽然本配置
++  //  实际总线行为难以出现多拍，但 FM 按全状态空间比对，必须保留同构寄存器。
++  logic                 acq_beatsLeft;
++  logic [N_ACQ_SRC-1:0] acq_state;
++  logic [N_ACQ_SRC-1:0] acq_beats1;
++  always_comb begin
++    acq_beats1[0] = ~cmo_acq_opcode[2];
++    acq_beats1[1] = ~pr_acq_opcode[2];
++    for (int i = 0; i < N_ENTRY; i++) acq_beats1[2+i] = ~e_acq_opcode[i][2];
++  end
++  assign acq_sel   = acq_beatsLeft ? acq_state : acq_winner;
++  assign acq_grant = acq_beatsLeft ? acq_state : acq_allowed;
++  assign io_mem_acquire_valid =
++      acq_beatsLeft ? |(acq_state & acq_valids) : |acq_valids;
++  always_ff @(posedge clock or posedge reset) begin
++    if (reset) begin
++      acq_beatsLeft <= 1'b0;
++      acq_state     <= '0;
++    end else begin
++      if (~acq_beatsLeft & io_mem_acquire_ready)
++        acq_beatsLeft <= |(acq_winner & acq_beats1);
++      else
++        acq_beatsLeft <= 1'(acq_beatsLeft - (io_mem_acquire_ready & io_mem_acquire_valid));
++      if (~acq_beatsLeft) acq_state <= acq_winner;
++    end
++  end
+ 
+ `include "missqueue_acq_arb.svh"
+ 
+@@ -318,11 +353,30 @@ module xs_MissQueue_core (
+   // ===========================================================================
+   assign fin_allowed = lowest_allowed_fin(e_fin_valid);  // fin_allowed/winner 已前向声明
+   assign fin_winner  = fin_allowed & e_fin_valid;
+-  assign io_mem_finish_valid = |e_fin_valid;
++
++  // ---- TLArbiter 突发锁定框架（golden beatsLeft_1/state_1_0..15；GrantAck 恒单 beat，
++  //      beats1=0，锁存装载化简为 0，但寄存器仍在，FM 按全状态空间比对须保留）----
++  logic                 fin_beatsLeft;
++  logic [N_FIN_SRC-1:0] fin_state;
++  assign fin_sel   = fin_beatsLeft ? fin_state : fin_winner;
++  assign fin_grant = fin_beatsLeft ? fin_state : fin_allowed;
++  assign io_mem_finish_valid =
++      fin_beatsLeft ? |(fin_state & e_fin_valid) : |e_fin_valid;
++  always_ff @(posedge clock or posedge reset) begin
++    if (reset) begin
++      fin_beatsLeft <= 1'b0;
++      fin_state     <= '0;
++    end else begin
++      // golden: beatsLeft_1 <= ~(~beatsLeft_1 & ready) & 1'(beatsLeft_1 - fire)
++      fin_beatsLeft <= ~(~fin_beatsLeft & io_mem_finish_ready)
++                     & 1'(fin_beatsLeft - (io_mem_finish_ready & io_mem_finish_valid));
++      if (~fin_beatsLeft) fin_state <= fin_winner;
++    end
++  end
+   always_comb begin
+     io_mem_finish_bits_sink = '0;
+     for (int i = 0; i < N_FIN_SRC; i++)
+-      if (fin_winner[i]) io_mem_finish_bits_sink |= e_fin_sink[i];
++      if (fin_sel[i]) io_mem_finish_bits_sink |= e_fin_sink[i];
+   end
+ 
+   // ===========================================================================
+@@ -400,7 +454,7 @@ module xs_MissQueue_core (
+   // memset 检测：连续 >=8 条非 load（store）请求被处理 且 lqEmpty → 判定为 memset，放宽 prefetch entry。
+   //  （source_except_load_cnt / memset_detected_q 已在 entry 例化前前置声明。）
+   wire        any_handled = (|e_req_handled) | req_pipeline_reg_handled;
+-  always_ff @(posedge clock) begin
++  always_ff @(posedge clock or posedge reset) begin  // golden 异步复位
+     if (reset) begin
+       source_except_load_cnt <= '0;
+       memset_detected_q      <= 1'b0;
+@@ -470,7 +524,7 @@ module xs_MissQueue_core (
+   // ===========================================================================
+   //  C(续). miss_req_pipe_reg 时序更新（放最后，靠近其使用的判定信号定义）
+   // ===========================================================================
+-  always_ff @(posedge clock) begin
++  always_ff @(posedge clock or posedge reset) begin  // golden 异步复位
+     if (reset) begin
+       mqpr         <= '0;
+       mqpr_merge   <= 1'b0;
+diff --git a/rtl/memblock/PTW.sv b/rtl/memblock/PTW.sv
+index d00c296..2b83f85 100644
+--- a/rtl/memblock/PTW.sv
++++ b/rtl/memblock/PTW.sv
+@@ -107,8 +107,11 @@ module xs_PTW_core
+   logic access_fault_r;
+   logic update_full_gvpn_from_mem;
+   logic [PTE_PPN_W-1:0] full_gvpn_r;
+-  logic [6:0] perf_event_s1;
++  logic [6:0] perf_event_s1;   // bit5 由 perf_event_s1_5 提供(见下), 本向量 bit5 不驱动不读
+   logic [6:0] perf_event_s2;
++  // perf[5] 的事件累积器(mem 在途): golden perfEvents_5_2 带复位, 单独拆出放复位块;
++  // 其余 perf 流水级 golden 无复位(XSPerfAccumulate 的 REG/REG_1), 放无复位块。
++  logic perf_event_s1_5;
+ 
+   // 这个 enum 是代码阅读用的高层状态投影；实际控制仍保持 Scala 的 s/w
+   // 位级协议，避免把并行 handshake 行为压扁成过度简化的单状态。
+@@ -230,6 +233,9 @@ module xs_PTW_core
+     resp_merge = '0;
+     for (int i = 0; i < CONTIGUOUS; i++) begin
+       resp_merge.entry[i] = return_stage1 ? stage1_r.entry[i] : generated_entry;
++      // golden 的 stage1 entry 输入没有 af 字段(常量0折叠), stage1_r.entry[i].af
++      // 寄存器无复位后上电为 X, 读出点强制回 golden 的常量 0。
++      resp_merge.entry[i].af = return_stage1 ? 1'b0 : generated_entry.af;
+       resp_merge.pteidx[i] = return_stage1 ? stage1_r.pteidx[i] : (vpn[2:0] == 3'(i));
+     end
+     resp_merge.not_super = return_stage1 && stage1_r.not_super;
+@@ -312,21 +318,20 @@ module xs_PTW_core
+     return idx;
+   endfunction
+ 
++  // ---------------------------------------------------------------------------
++  // 复位域拆分与 golden 精确对齐(FM 等价性):
++  //   golden 只复位控制寄存器(idle/level/af_level/gpf_level/s_*/w_*/mem_addr_update/
++  //   hptw_pageFault/hptw_accessFault/need_last_s2xlate/first_gvpn_check_fail/
++  //   pte_valid/accessFault/update_full_gvpn_mem_resp/perfEvents_5_2), 异步复位;
++  //   payload 寄存器(req_s2xlate/ppn/vpn/l2Hit/l3Hit/source/stage1Hit/stage1_entry/
++  //   hptw_resp_entry/hptw_resp_stage2/full_gvpn_reg/perf 打拍级)golden 无复位。
++  // ---------------------------------------------------------------------------
+   always_ff @(posedge clock or posedge reset) begin
+     if (reset) begin
+       idle <= 1'b1;
+-      req_s2xlate <= NO_S2XLATE;
+       level <= 2'h3;
+       af_level <= 2'h3;
+       gpf_level <= 2'h3;
+-      root_or_cache_ppn <= '0;
+-      vpn <= '0;
+-      l3_hit_r <= 1'b0;
+-      l2_hit_r <= 1'b0;
+-      source_r <= '0;
+-      stage1_hit_r <= 1'b0;
+-      stage1_r <= '0;
+-      hptw_resp_r <= '0;
+       sent_pmp_check <= 1'b1;
+       sent_mem_req <= 1'b1;
+       sent_llptw_req <= 1'b1;
+@@ -339,25 +344,17 @@ module xs_PTW_core
+       hptw_page_fault <= 1'b0;
+       hptw_access_fault <= 1'b0;
+       need_last_s2xlate <= 1'b0;
+-      hptw_resp_stage2 <= 1'b0;
+       first_gvpn_check_fail <= 1'b0;
+       pte_valid <= 1'b0;
+       access_fault_r <= 1'b0;
+       update_full_gvpn_from_mem <= 1'b0;
+-      full_gvpn_r <= '0;
+       state_q <= PTW_IDLE;
+-      perf_event_s1 <= '0;
+-      perf_event_s2 <= '0;
+-      perf <= '0;
++      perf_event_s1_5 <= 1'b0;
+     end else begin
+       state_q <= state_d;
+ 
+       // 请求进入：按 PTW cache 命中情况决定从 level3/2/1 开始走。
+       if (req_fire) begin
+-        req_s2xlate <= req_info.s2xlate;
+-        source_r <= req_info.source;
+-        stage1_hit_r <= req_stage1_hit;
+-        stage1_r <= req_stage1;
+         hptw_page_fault <= 1'b0;
+         hptw_access_fault <= 1'b0;
+         idle <= 1'b0;
+@@ -365,33 +362,27 @@ module xs_PTW_core
+ 
+       if (req_fire && req_stage1_hit) begin
+         need_last_s2xlate <= 1'b0;
+-        hptw_resp_stage2 <= 1'b0;
+         sent_last_hptw_req <= 1'b0;
+-        wait_last_hptw_resp <= 1'b1;
+-        full_gvpn_r <= merge_resp_gen_ppn(req_stage1);
++        // golden 不在 stage1Hit 入队时写 w_last_hptw_resp(靠不变式此时恒为1),
++        // 显式置1会造成 FM 次态函数不等价 —— 保持 hold。
+       end
+ 
+       if (req_fire && !req_stage1_hit) begin
+-        vpn <= req_info.vpn;
+-        l2_hit_r <= req_l2_hit;
+-        l3_hit_r <= (satp_mode == 4'h9) && req_l3_hit;
+         access_fault_r <= 1'b0;
+         pte_valid <= 1'b0;
+-        first_gvpn_check_fail <= 1'b0;
++        // first_gvpn_check_fail: golden 在新请求进入时是 chk|old(OR 保持), 不清零
++        // (上一走完 resp_fire/flush 已清), 此处不写 0 以对齐次态函数。
+         if (satp_mode == 4'h9) begin
+           level <= req_l2_hit ? 2'h1 : (req_l3_hit ? 2'h2 : 2'h3);
+           af_level <= req_l2_hit ? 2'h1 : (req_l3_hit ? 2'h2 : 2'h3);
+           gpf_level <= req_l2_hit ? 2'h2 : (req_l3_hit ? 2'h3 : 2'h0);
+-          root_or_cache_ppn <= (req_l2_hit || req_l3_hit) ? req_ppn : satp_ppn;
+         end else begin
+           level <= req_l2_hit ? 2'h1 : 2'h2;
+           af_level <= req_l2_hit ? 2'h1 : 2'h2;
+           gpf_level <= req_l2_hit ? 2'h2 : 2'h0;
+-          root_or_cache_ppn <= req_l2_hit ? req_ppn : satp_ppn;
+         end
+ 
+         if (req_info.s2xlate == ONLY_STAGE2) begin
+-          full_gvpn_r <= {6'h0, req_info.vpn};
+           need_last_s2xlate <= 1'b0;
+           if (csr.hgatp_mode == 4'h8 && |req_info.vpn[37:29]) begin
+             mem_addr_ready <= 1'b1;
+@@ -400,7 +391,6 @@ module xs_PTW_core
+             sent_last_hptw_req <= 1'b0;
+           end
+         end else if (req_info.s2xlate == ALL_STAGE) begin
+-          full_gvpn_r <= '0;
+           if ((csr.hgatp_mode == 4'h8 && |req_start_ppn[43:29]) ||
+               (csr.hgatp_mode == 4'h9 && |req_start_ppn[43:38])) begin
+             mem_addr_ready <= 1'b1;
+@@ -410,7 +400,6 @@ module xs_PTW_core
+             sent_hptw_req <= 1'b0;
+           end
+         end else begin
+-          full_gvpn_r <= '0;
+           need_last_s2xlate <= 1'b0;
+           sent_pmp_check <= 1'b0;
+         end
+@@ -428,8 +417,6 @@ module xs_PTW_core
+         wait_hptw_resp <= 1'b1;
+         hptw_page_fault <= hptw_resp_in.gpf || hptw_perm_fail;
+         hptw_access_fault <= hptw_resp_in.gaf;
+-        hptw_resp_r <= hptw_resp_in;
+-        hptw_resp_r.gpf <= hptw_resp_in.gpf || hptw_perm_fail;
+         if (!(hptw_perm_fail || hptw_resp_in.gpf || hptw_resp_in.gaf))
+           sent_pmp_check <= 1'b0;
+         else begin
+@@ -444,14 +431,11 @@ module xs_PTW_core
+       end
+       if (hptw_resp_valid && !wait_last_hptw_resp && stage1_hit_r) begin
+         wait_last_hptw_resp <= 1'b1;
+-        hptw_resp_stage2 <= 1'b1;
+-        hptw_resp_r <= hptw_resp_in;
+       end
+       if (hptw_resp_valid && !wait_last_hptw_resp && !stage1_hit_r) begin
+         wait_last_hptw_resp <= 1'b1;
+         hptw_page_fault <= hptw_resp_in.gpf;
+         hptw_access_fault <= hptw_resp_in.gaf;
+-        hptw_resp_r <= hptw_resp_in;
+         mem_addr_ready <= 1'b1;
+       end
+ 
+@@ -505,7 +489,6 @@ module xs_PTW_core
+       end
+       if (update_full_gvpn_from_mem) begin
+         update_full_gvpn_from_mem <= 1'b0;
+-        full_gvpn_r <= pte_full_ppn;
+       end
+ 
+       if (mem_addr_ready) begin
+@@ -556,18 +539,68 @@ module xs_PTW_core
+         wait_last_hptw_resp <= 1'b1;
+       end
+ 
+-      // perf 输出是事件打一拍、再输出打一拍，和 XSPerfAccumulate 的 FIRRTL 形态一致。
+-      perf_event_s1[0] <= req_fire;
+-      perf_event_s1[1] <= !idle;
+-      perf_event_s1[2] <= idle;
+-      perf_event_s1[3] <= resp_valid && !resp_ready;
+-      perf_event_s1[4] <= mem_req_fire;
+-      perf_event_s1[5] <= mem_req_fire || (perf_event_s1[5] && !mem_resp_valid);
+-      perf_event_s1[6] <= mem_req_valid && !mem_req_ready;
+-      perf_event_s2 <= perf_event_s1;
+-      for (int i = 0; i < 7; i++) begin
+-        perf[i] <= {5'h0, (i == 5) ? perf_event_s2[i] : perf_event_s1[i]};
+-      end
++      // perf[5] 事件累积器(golden perfEvents_5_2, 带复位): mem 请求在途。
++      perf_event_s1_5 <= mem_req_fire || (perf_event_s1_5 && !mem_resp_valid);
++    end
++  end
++
++  // ---------------------------------------------------------------------------
++  // 无复位 payload 寄存器(golden 873-1089 行 always @(posedge clock) 块):
++  // 写使能条件与上面复位块中的控制流保持一致, 只是这些寄存器 golden 不复位。
++  // ---------------------------------------------------------------------------
++  always_ff @(posedge clock) begin
++    if (req_fire) begin
++      req_s2xlate <= req_info.s2xlate;
++      source_r <= req_info.source;
++      stage1_hit_r <= req_stage1_hit;
++      stage1_r <= req_stage1;
++    end
++
++    if (req_fire && req_stage1_hit) begin
++      hptw_resp_stage2 <= 1'b0;
++      full_gvpn_r <= merge_resp_gen_ppn(req_stage1);
++    end
++
++    if (req_fire && !req_stage1_hit) begin
++      vpn <= req_info.vpn;
++      l2_hit_r <= req_l2_hit;
++      l3_hit_r <= (satp_mode == 4'h9) && req_l3_hit;
++      if (satp_mode == 4'h9)
++        root_or_cache_ppn <= (req_l2_hit || req_l3_hit) ? req_ppn : satp_ppn;
++      else
++        root_or_cache_ppn <= req_l2_hit ? req_ppn : satp_ppn;
++      if (req_info.s2xlate == ONLY_STAGE2)
++        full_gvpn_r <= {6'h0, req_info.vpn};
++      else
++        full_gvpn_r <= '0;
++    end
++
++    if (hptw_resp_valid && !wait_hptw_resp) begin
++      hptw_resp_r <= hptw_resp_in;
++      hptw_resp_r.gpf <= hptw_resp_in.gpf || hptw_perm_fail;
++    end
++    if (hptw_resp_valid && !wait_last_hptw_resp && stage1_hit_r) begin
++      hptw_resp_stage2 <= 1'b1;
++      hptw_resp_r <= hptw_resp_in;
++    end
++    if (hptw_resp_valid && !wait_last_hptw_resp && !stage1_hit_r) begin
++      hptw_resp_r <= hptw_resp_in;
++    end
++
++    if (update_full_gvpn_from_mem) begin
++      full_gvpn_r <= pte_full_ppn;
++    end
++
++    // perf 输出是事件打一拍、再输出打一拍(XSPerfAccumulate 的 REG/REG_1, golden 无复位)。
++    perf_event_s1[0] <= req_fire;
++    perf_event_s1[1] <= !idle;
++    perf_event_s1[2] <= idle;
++    perf_event_s1[3] <= resp_valid && !resp_ready;
++    perf_event_s1[4] <= mem_req_fire;
++    perf_event_s1[6] <= mem_req_valid && !mem_req_ready;
++    perf_event_s2 <= {perf_event_s1[6], perf_event_s1_5, perf_event_s1[4:0]};
++    for (int i = 0; i < 7; i++) begin
++      perf[i] <= {5'h0, (i == 5) ? perf_event_s2[i] : perf_event_s1[i]};
+     end
+   end
+ 
+diff --git a/rtl/memblock/StoreExceptionBuffer.sv b/rtl/memblock/StoreExceptionBuffer.sv
+index 4298811..e475801 100644
+--- a/rtl/memblock/StoreExceptionBuffer.sv
++++ b/rtl/memblock/StoreExceptionBuffer.sv
+@@ -96,8 +96,8 @@ module xs_StoreExceptionBuffer_core
+         s2_req[w].isForVSnonLeafPTE <= req_isForVSnonLeafPTE[w];
+       end
+     end
+-    if (reset) s2_valid_q <= '0;
+-    else       s2_valid_q <= s1_valid;
++    // 对齐 golden：s2_valid_REG* 为无复位 RegNext（golden 仅 req_valid 有异步复位）。
++    s2_valid_q <= s1_valid;
+   end
+ 
+   // ===========================================================================
+diff --git a/rtl/memblock/StoreMisalignBuffer.sv b/rtl/memblock/StoreMisalignBuffer.sv
+index 394a51f..d37d253 100644
+--- a/rtl/memblock/StoreMisalignBuffer.sv
++++ b/rtl/memblock/StoreMisalignBuffer.sv
+@@ -463,14 +463,8 @@ module xs_StoreMisalignBuffer_core
+       end
+     end else begin
+       // ---- 入队锁存（普通 或 跨页抢占）----
+-      //  req 数据字段的更新使能：跨页时取「候选更老」(candidateNewer)，否则取 canEnq。
+-      //  （与 golden 的 req 更新使能 (cross4KB&~reqRedirect)? candidateNewer : canEnq 一致；
+-      //   因 cross4KB 蕴含 req_valid，两者在可达空间等价，但写成此形式可让 FM 的
+-      //   req 次态锥与 golden 同构。）
+-      if ((cross4KB & ~reqRedirect) ? candidateNewer : canEnq) begin
+-        req          <= sel_bits;
+-        req.portIndex<= sel_port;
+-      end
++      //  req 数据本体的锁存在下方独立**无复位** always_ff：golden 的 req_* 在无复位
++      //  always 块，若留在本块 else 分支，FM 视其使能含 ~reset，与 golden 判不等价。
+       if (canEnq) begin
+         req_valid    <= 1'b1;
+         if (cross4KBEnq) needFlushPipe <= 1'b1;
+@@ -581,6 +575,18 @@ module xs_StoreMisalignBuffer_core
+     raw_delay_reg <= io_splitStoreResp_valid & ~respExcOrUnc & ~respMoreUnsent;
+   end
+ 
++  // ---- req 数据本体：与 golden 一致「不复位」（golden req_* 在无复位 always 块）。
++  //  更新使能：跨页时取「候选更老」(candidateNewer)，否则取 canEnq。
++  //  （与 golden 的 req 更新使能 (cross4KB&~reqRedirect)? candidateNewer : canEnq 一致；
++  //   因 cross4KB 蕴含 req_valid，两者在可达空间等价，但写成此形式可让 FM 的
++  //   req 次态锥与 golden 同构。）
++  always_ff @(posedge clock) begin
++    if ((cross4KB & ~reqRedirect) ? candidateNewer : canEnq) begin
++      req           <= sel_bits;
++      req.portIndex <= sel_port;
++    end
++  end
++
+   // ===========================================================================
+   //  splitStoreReq 输出
+   // ===========================================================================
+@@ -698,6 +704,7 @@ module xs_StoreMisalignBuffer_core
+   // ===========================================================================
+   //  crossPageWithHit：sqControl 查询的 sqPtr 命中本缓冲条目且跨页 → 该 sq 项需等本缓冲。
+   assign io_sqControl_toStoreQueue_crossPageWithHit =
++      (io_sqControl_toStoreMisalignBuffer_sqPtr_flag  == req.sqIdx_flag) &
+       (io_sqControl_toStoreMisalignBuffer_sqPtr_value == req.sqIdx_value) & isCrossPage;
+   //  crossPageCanDeq：非跨页 或 已进 s_block → 可出队。
+   assign io_sqControl_toStoreQueue_crossPageCanDeq = ~isCrossPage | (bufferState == S_BLOCK);
+diff --git a/rtl/memblock/StoreQueue.sv b/rtl/memblock/StoreQueue.sv
+index 9ef67e4..aceac15 100644
+--- a/rtl/memblock/StoreQueue.sv
++++ b/rtl/memblock/StoreQueue.sv
+@@ -64,9 +64,11 @@ module xs_StoreQueue_core
+     logic waitStoreS2;   // 等 store_s2 的 mmio/exception 结果
+   } sq_entry_t;
+ 
+-  // entry 数组按 2^SQ_IDX_W=64 声明（实际只用 0..SQ_SIZE-1=55）：使任意 6 位下标都在
+-  // 界内，避免 Formality 的「下标可能越界」(FMR_ELAB-147) 把可读核误判为不可解释。
+-  sq_entry_t ent [1<<SQ_IDX_W];       // 64 槽（有效 56）
++  // 寄存器数组按 SQ_SIZE=56 声明（与 golden 的 56 项 Vec 逐一对应，避免 8 个死寄存器
++  // 在 FM 里成为 impl 侧自由变量）；动态读经 64 槽**读视图** ent/uop（见下），
++  // 下标 56..63 回绕到槽 0 —— 与 golden firtool 对 Vec(56) 动态读的填充语义一致。
++  sq_entry_t ent_r [SQ_SIZE];
++  sq_entry_t ent   [1<<SQ_IDX_W];     // 只读视图（组合），写一律走 ent_r
+   // allvalid = addrvalid & datavalid（组合派生）
+   logic [SQ_SIZE-1:0] allocated_v, addrvalid_v, datavalid_v, committed_v,
+                       allvalid_v, mmio_v, nc_v, unaligned_v, isvec_v,
+@@ -88,7 +90,13 @@ module xs_StoreQueue_core
+     logic [63:0]         dbg_selectTime;
+     logic [63:0]         dbg_issueTime;
+   } sq_uop_t;
+-  sq_uop_t uop [1<<SQ_IDX_W];         // 同 ent：按 64 槽声明，下标恒在界内
++  sq_uop_t uop_r [SQ_SIZE];
++  sq_uop_t uop   [1<<SQ_IDX_W];       // 只读视图（组合），写一律走 uop_r
++  always_comb
++    for (int s64 = 0; s64 < (1<<SQ_IDX_W); s64++) begin
++      ent[s64] = ent_r[(s64 < SQ_SIZE) ? s64 : 0];
++      uop[s64] = uop_r[(s64 < SQ_SIZE) ? s64 : 0];
++    end
+ 
+   genvar gi;
+   generate
+diff --git a/rtl/memblock/TLBNonBlock.sv b/rtl/memblock/TLBNonBlock.sv
+index 076fb50..10a3ea7 100644
+--- a/rtl/memblock/TLBNonBlock.sv
++++ b/rtl/memblock/TLBNonBlock.sv
+@@ -46,7 +46,7 @@ module xs_TLBNonBlock_core
+   input  logic [15:0]         io_csrd_vsatp_asid,
+   input  logic                io_csrd_vsatp_changed,
+   input  logic [3:0]          io_csrd_hgatp_mode,
+-  input  logic [13:0]         io_csrd_hgatp_vmid,
++  input  logic [15:0]         io_csrd_hgatp_vmid,  // 16 位全宽（golden 比较含高 2 位）
+   input  logic                io_csrd_hgatp_changed,
+   input  logic                io_csrd_priv_mxr,
+   input  logic                io_csrd_priv_sum,
+@@ -292,10 +292,12 @@ module xs_TLBNonBlock_core
+   logic                resp_s1_isFakePte;
+ 
+   // —— lastCycleRedirect 寄存（RegNext(redirect)）——
+-  logic                lcr_valid;
+-  logic                lcr_robIdx_flag;
+-  logic [ROB_W-1:0]    lcr_robIdx_value;
+-  logic                lcr_level;
++  // golden 每 lane 各打一份副本（readResult_lastCycleRedirect_REG[_N]），FM 不接受
++  // n-to-1 钉点，按 golden 结构建 per-lane 数组。
++  logic [WIDTH-1:0]                lcr_valid;
++  logic [WIDTH-1:0]                lcr_robIdx_flag;
++  logic [WIDTH-1:0][ROB_W-1:0]     lcr_robIdx_value;
++  logic [WIDTH-1:0]                lcr_level;
+ 
+   // —— readResult_p_*：PTW 回填后旁路 1 拍的翻译结果（per port）——
+   logic [WIDTH-1:0]              p_hit;        // GatedValidRegNext(...)
+@@ -382,6 +384,8 @@ module xs_TLBNonBlock_core
+   logic [WIDTH-1:0] isHyperInst;
+   logic [WIDTH-1:0][1:0] req_out_s2xlate;
+   logic [WIDTH-1:0] REG_pre;           // RegNext(prepf|pregpf|preaf)
++  logic [WIDTH-1:0] REG_pre2;          // golden 每 lane 有两份相同 RegNext 副本（REG/REG_1 …），
++                                       // 分别喂 excp/vaNeedExt 与 isForVSnonLeafPTE/miss，1:1 对齐
+   logic [WIDTH-1:0] excp_pf_ld_REG, excp_pf_st_REG, excp_gpf_ld_REG, excp_gpf_st_REG;
+   logic [WIDTH-1:0] excp_af_ld_REG, excp_af_st_REG;
+   // need_gpa 状态机的逐端口控制项(对应 golden readResult 的 redirect/enter 控制位)
+@@ -398,9 +402,14 @@ module xs_TLBNonBlock_core
+                                                : io_ptw_resp_s1_entry_level))
+       : io_ptw_resp_s1_entry_level;
+   wire [2:0] ptw_pteidx_or = io_ptw_resp_s1_pteidx[7:5] | io_ptw_resp_s1_pteidx[3:1];
+-  // s1 napot ppn 低 3 位（ppn_low_*[0] 拼）
+-  wire [2:0] ptw_napot_low =
+-      {io_ptw_resp_s1_ppn_low[2][0], io_ptw_resp_s1_ppn_low[1][0], io_ptw_resp_s1_ppn_low[0][0]};
++  // s1 非 napot（n=0）时 ppn 低 3 位来自 ppn_low 子项表，按访问 vpn[2:0] 选一项
++  // （golden _GEN_87[vaddr[14:12]] / _GEN_87[need_gpa_vpn[2:0]]，逐口不同）。
++  // ⚠ 不用 function 捕获模块级数组（generate 内敏感表坑），打包成向量直接下标取。
++  wire [7:0][2:0] ptw_ppn_low_tbl = {
++      io_ptw_resp_s1_ppn_low[7], io_ptw_resp_s1_ppn_low[6],
++      io_ptw_resp_s1_ppn_low[5], io_ptw_resp_s1_ppn_low[4],
++      io_ptw_resp_s1_ppn_low[3], io_ptw_resp_s1_ppn_low[2],
++      io_ptw_resp_s1_ppn_low[1], io_ptw_resp_s1_ppn_low[0]};
+ 
+   // PTW 回包 getVpn(need_gpa_vpn)：按 s2xlate/level 取被 napot/level 截断后的 vpn 段。
+   //   对应 golden 的 s1/s2 tag 选择 + level 索引。组合算出（只读 need_gpa_vpn + ptw）。
+@@ -458,11 +467,11 @@ module xs_TLBNonBlock_core
+     wire need_gpa_vpn_hit = need_gpa_vpn == vaddr[VADDR_W-1:12];
+     assign hit_read[gi] = io_entries_hit[gi] | p_hit[gi];
+     // lastCycleRedirect 命中本端口（用上拍 redirect 寄存）
+-    wire lcr_hit = lcr_valid
+-        & ( (lcr_level & ({req_out_robIdx_flag[gi],req_out_robIdx_value[gi]}
+-                            == {lcr_robIdx_flag, lcr_robIdx_value}))
+-            | (req_out_robIdx_flag[gi]^lcr_robIdx_flag
+-               ^ (req_out_robIdx_value[gi] > lcr_robIdx_value)) );
++    wire lcr_hit = lcr_valid[gi]
++        & ( (lcr_level[gi] & ({req_out_robIdx_flag[gi],req_out_robIdx_value[gi]}
++                            == {lcr_robIdx_flag[gi], lcr_robIdx_value[gi]}))
++            | (req_out_robIdx_flag[gi]^lcr_robIdx_flag[gi]
++               ^ (req_out_robIdx_value[gi] > lcr_robIdx_value[gi])) );
+     assign miss_read[gi] = (~hit_read[gi] & porttr[gi])
+         | (hasGpf[gi] & ~p_hit[gi] & ~(resp_gpa_refill & need_gpa_vpn_hit)
+            & ~onlyS2 & ~req_out_isPrefetch[gi] & ~lcr_hit);
+@@ -524,7 +533,7 @@ module xs_TLBNonBlock_core
+     assign io_resp_excp_vaNeedExt[gi] = ~REG_pre[gi];
+     assign io_resp_excp_isHyper[gi]   = isHyperInst[gi];
+     // isForVSnonLeafPTE（gpf 时给 CSR 用，用 dup1 的 perm）
+-    assign io_resp_isForVSnonLeafPTE[gi] = ~REG_pre[gi]
++    assign io_resp_isForVSnonLeafPTE[gi] = ~REG_pre2[gi]
+         & ( (~(perm1.r|perm1.w|perm1.x) & perm1.v & ~perm1.pf & ~perm1.af)
+           | (~perm1.v & ~perm1.pf & ~perm1.af & ~onlyS2) );
+ 
+@@ -552,6 +561,7 @@ module xs_TLBNonBlock_core
+                                   ? {16'h0, vaddr[47:0]} : req_out_fullva[gi];
+     wire [1:0] vpn_idx = isFakePteSel_q & (io_csrd_vsatp_mode==4'h8) ? 2'h2
+                        : isFakePteSel_q & (io_csrd_vsatp_mode==4'h9) ? 2'h3
++                       : isFakePteSel_q                              ? 2'h0   // golden: fake 且非 Sv39/48 → 0
+                        : (levelSel - 2'h1);
+     wire [8:0] vpnn = get_vpnn(crossPageVaddr[VADDR_W-1:12], vpn_idx);
+     wire [11:0] gpaddr_off = isLeafSel ? crossPageVaddr[11:0] : {vpnn, 3'h0};
+@@ -561,7 +571,7 @@ module xs_TLBNonBlock_core
+                                     : {8'h0, gvpnSel, gpaddr_off});
+ 
+     assign io_resp_fullva[gi] = resp_fullva_r[gi];
+-    assign io_resp_miss[gi]   = ~REG_pre[gi] & miss_read[gi];
++    assign io_resp_miss[gi]   = ~(REG_pre2[gi] | REG_pre[gi]) & miss_read[gi];  // golden ~(REG_1|REG)
+     assign io_resp_valid[gi]  = req_out_v[gi];
+ 
+     // ===== PMP 检查请求 =====
+@@ -740,7 +750,7 @@ module xs_TLBNonBlock_core
+   wire [GVPN_W-1:0] resp_gpa_gvpn_next = (io_ptw_resp_s2xlate==ONLY_STAGE2)
+       ? {6'h0, io_ptw_resp_s2_entry_tag}
+       : gen_gvpn(io_ptw_resp_s1_entry_ppn, io_ptw_resp_s1_entry_n, io_ptw_resp_s1_entry_level,
+-                 ptw_napot_low, io_ptw_resp_s2_entry_tag, ptw_gvpn_isNonLeaf, 1'b0, need_gpa_vpn);
++                 ptw_ppn_low_tbl[need_gpa_vpn[2:0]], io_ptw_resp_s2_entry_tag, ptw_gvpn_isNonLeaf, 1'b0, need_gpa_vpn);
+ 
+   // ===========================================================================
+   // s0 PTW 旁路命中 + 旁路结果（按 io_req_vaddr 的 s0 视角，组合，逐端口）
+@@ -771,14 +781,14 @@ module xs_TLBNonBlock_core
+ 
+     // s0 旁路 ppn：两阶段取 s2 合成，否则 s1 合成
+     wire [GVPN_W-1:0] s1ppn = gen_s1_ppn44(io_ptw_resp_s1_entry_ppn, io_ptw_resp_s1_entry_n,
+-                                     io_ptw_resp_s1_entry_level, ptw_napot_low, v[VADDR_W-1:12]);
++                                     io_ptw_resp_s1_entry_level, ptw_ppn_low_tbl[v[14:12]], v[VADDR_W-1:12]);
+     // s0 gvpn27（用于 p_ppn 的 s2 合成，对应 golden readResult_gvpn）
+     wire [26:0] gvpn27 = (s2x==ONLY_STAGE2) ? v[38:12] : s1ppn[26:0];
+     wire [37:0] s2ppn = gen_s2_ppn38(io_ptw_resp_s2_entry_ppn, io_ptw_resp_s2_entry_n,
+                                      io_ptw_resp_s2_entry_level, gvpn27);
+     assign p_ppn_s0[gi]  = (s2x==ONLY_STAGE2 | (&s2x)) ? s2ppn[PPN_W-1:0] : s1ppn[PPN_W-1:0];
+     assign p_gvpn_s0[gi] = gen_gvpn(io_ptw_resp_s1_entry_ppn, io_ptw_resp_s1_entry_n,
+-                                    io_ptw_resp_s1_entry_level, ptw_napot_low,
++                                    io_ptw_resp_s1_entry_level, ptw_ppn_low_tbl[v[14:12]],
+                                     io_ptw_resp_s2_entry_tag, ptw_gvpn_isNonLeaf,
+                                     s2x==ONLY_STAGE2, v[VADDR_W-1:12]);
+   end
+@@ -803,6 +813,7 @@ module xs_TLBNonBlock_core
+       end
+       // 预检异常寄存 + noTranslate 寄存（每拍）
+       REG_pre[i]         <= prepf[i] | pregpf[i] | preaf[i];
++      REG_pre2[i]        <= prepf[i] | pregpf[i] | preaf[i];
+       excp_pf_ld_REG[i]  <= prepf[i];
+       excp_pf_st_REG[i]  <= prepf[i];
+       excp_gpf_ld_REG[i] <= pregpf[i];
+@@ -811,16 +822,22 @@ module xs_TLBNonBlock_core
+       excp_af_st_REG[i]  <= preaf[i];
+       noTransReg[i]      <= io_req_no_translate[i];
+     end
+-    // redirect 寄存（lastCycleRedirect）
+-    lcr_valid        <= io_redirect_valid;
+-    lcr_robIdx_flag  <= io_redirect_robIdx_flag;
+-    lcr_robIdx_value <= io_redirect_robIdx_value;
+-    lcr_level        <= io_redirect_level;
++    // redirect 寄存（lastCycleRedirect，per-lane 副本对齐 golden）
++    for (int i = 0; i < WIDTH; i++) begin
++      lcr_valid[i]        <= io_redirect_valid;
++      lcr_robIdx_flag[i]  <= io_redirect_robIdx_flag;
++      lcr_robIdx_value[i] <= io_redirect_robIdx_value;
++      lcr_level[i]        <= io_redirect_level;
++    end
+   end
+ 
+   // ===========================================================================
+   // 时序：req_out_v + need_gpa 状态机 + ptw 旁路寄存（带复位）
+   // ===========================================================================
++  // resp_gpa 写使能（golden 嵌套优先级的折叠形式）：任一端口「未被 redirect/enter
++  // 抢占 且 ptwhit」→ 本拍写 PTW 回包（各端口回包相同，数据无差别）。
++  wire resp_gpa_wr_en = |( ~(rr_T_redirect | rr_T_enter) & rr_T_ptwhit );
++
+   always_ff @(posedge clock or posedge reset) begin
+     if (reset) begin
+       req_out_v <= '0;
+@@ -856,28 +873,7 @@ module xs_TLBNonBlock_core
+                        | rr_T_redirect[0] )
+                     & ( rr_T_enter[0] | need_gpa ) ) ) );
+ 
+-      // need_gpa_vpn / robidx：端口 3>2>1>0，redirect 清 0、enter 写本端口 vpn
+-      if (rr_T_redirect[3])      need_gpa_vpn <= '0;
+-      else if (rr_T_enter[3])    need_gpa_vpn <= req_out_vaddr[3][VADDR_W-1:12];
+-      else if (rr_T_redirect[2]) need_gpa_vpn <= '0;
+-      else if (rr_T_enter[2])    need_gpa_vpn <= req_out_vaddr[2][VADDR_W-1:12];
+-      else if (rr_T_redirect[1]) need_gpa_vpn <= '0;
+-      else if (rr_T_enter[1])    need_gpa_vpn <= req_out_vaddr[1][VADDR_W-1:12];
+-      else if (rr_T_redirect[0]) need_gpa_vpn <= '0;
+-      else if (rr_T_enter[0])    need_gpa_vpn <= req_out_vaddr[0][VADDR_W-1:12];
+-
+-      if (rr_T_redirect[3] | ~rr_T_enter[3]) begin
+-        if (rr_T_redirect[2] | ~rr_T_enter[2]) begin
+-          if (rr_T_redirect[1] | ~rr_T_enter[1]) begin
+-            if (rr_T_redirect[0] | ~rr_T_enter[0]) begin end
+-            else begin need_gpa_robidx_flag <= req_out_robIdx_flag[0];
+-                       need_gpa_robidx_value <= req_out_robIdx_value[0]; end
+-          end else begin need_gpa_robidx_flag <= req_out_robIdx_flag[1];
+-                         need_gpa_robidx_value <= req_out_robIdx_value[1]; end
+-        end else begin need_gpa_robidx_flag <= req_out_robIdx_flag[2];
+-                       need_gpa_robidx_value <= req_out_robIdx_value[2]; end
+-      end else begin need_gpa_robidx_flag <= req_out_robIdx_flag[3];
+-                     need_gpa_robidx_value <= req_out_robIdx_value[3]; end
++      // （need_gpa_vpn / need_gpa_robidx 为 golden 无复位寄存器，移到下方独立无复位块）
+ 
+       // —— resp_gpa_refill：PTW 回来命中 need_gpa_vpn 则置（优先级链同上）——
+       // 等价 golden 的 redirect/enter 优先级链；这里直接用 rr_ 信号复刻。
+@@ -888,44 +884,80 @@ module xs_TLBNonBlock_core
+             & ( rr_T_ptwhit[1] | ~(rr_T_redirect[0]|rr_T_enter[0])
+               & ( rr_T_ptwhit[0] | resp_gpa_refill ) ) ) );
+ 
+-      // resp_gpa_gvpn / resp_s1_level / isLeaf / isFakePte：PTW 命中 need_gpa_vpn 时更新。
+-      // golden 用嵌套优先级取“最后被选中端口”的 PTW 回包；各端口回包相同（同一 io_ptw_resp），
+-      // 故这里统一在“任一端口 ptwhit 或回包默认更新”时写 PTW 回包值（与 golden 等价）。
+-      resp_gpa_gvpn     <= resp_gpa_gvpn_next;
+-      resp_s1_level     <= io_ptw_resp_s1_entry_level;
+-      resp_s1_isLeaf    <= ptw_isLeaf;
+-      resp_s1_isFakePte <= ptw_isFakePte;
++      // resp_s1_level / isLeaf / isFakePte：golden 异步复位组，留在本块；
++      // 写使能与 resp_gpa_gvpn 相同（嵌套优先级折叠）。
++      if (resp_gpa_wr_en) begin
++        resp_s1_level     <= io_ptw_resp_s1_entry_level;
++        resp_s1_isLeaf    <= ptw_isLeaf;
++        resp_s1_isFakePte <= ptw_isFakePte;
++      end
+ 
+-      // —— PTW 回填旁路寄存 + p_hit（GatedValidRegNext）——
+-      //   旁路命中/ppn/gvpn 已在 g_s0_bypass 组合算好（p_hit_s0/p_ppn_s0/p_gvpn_s0）。
++      // —— p_hit（GatedValidRegNext，golden 异步复位）——
+       for (int i = 0; i < WIDTH; i++) begin
+         p_hit[i] <= p_hit_s0[i];
+-        if (io_ptw_resp_valid) begin
+-          p_ppn[i]   <= p_ppn_s0[i];
+-          p_pbmt[i]  <= io_ptw_resp_s1_entry_pbmt;
+-          p_perm[i]  <= ptw_perm;
+-          p_gvpn[i]  <= p_gvpn_s0[i];
+-          p_g_pbmt[i]<= io_ptw_resp_s2_entry_pbmt;
+-          p_g_perm[i]<= ptw_gperm;
+-          p_s2xlate[i]<= io_ptw_resp_s2xlate;
+-          p_s1_level[i]<= io_ptw_resp_s1_entry_level;
+-          p_s1_isLeaf[i]<= ptw_isLeaf;
+-          p_s1_isFakePte[i]<= ptw_isFakePte;
+-          // 整包寄存（ptw_already_back 用）
+-          pr_s2xlate[i]   <= io_ptw_resp_s2xlate;
+-          pr_s1_tag[i]    <= io_ptw_resp_s1_entry_tag;
+-          pr_s1_asid[i]   <= io_ptw_resp_s1_entry_asid;
+-          pr_s1_vmid[i]   <= io_ptw_resp_s1_entry_vmid;
+-          pr_s1_n[i]      <= io_ptw_resp_s1_entry_n;
+-          pr_s1_perm_g[i] <= io_ptw_resp_s1_entry_perm_g;
+-          pr_s1_level[i]  <= io_ptw_resp_s1_entry_level;
+-          pr_s1_addr_low[i]<= io_ptw_resp_s1_addr_low;
+-          pr_s1_valididx[i]<= io_ptw_resp_s1_valididx;
+-          pr_s2_tag[i]    <= io_ptw_resp_s2_entry_tag;
+-          pr_s2_vmid[i]   <= io_ptw_resp_s2_entry_vmid;
+-          pr_s2_n[i]      <= io_ptw_resp_s2_entry_n;
+-          pr_s2_level[i]  <= io_ptw_resp_s2_entry_level;
+-        end
++      end
++    end
++  end
++
++  // ===========================================================================
++  //  无复位寄存器组（golden 在无复位 always 块；若留在异步复位块 else 分支，FM 视
++  //  其使能含 ~reset，与 golden 判不等价）：need_gpa_vpn/robidx、resp_gpa_gvpn、
++  //  PTW 回填旁路 pr_*/p_* 载荷。
++  // ===========================================================================
++  always_ff @(posedge clock) begin
++    // need_gpa_vpn / robidx：端口 3>2>1>0，redirect 清 0、enter 写本端口 vpn
++    if (rr_T_redirect[3])      need_gpa_vpn <= '0;
++    else if (rr_T_enter[3])    need_gpa_vpn <= req_out_vaddr[3][VADDR_W-1:12];
++    else if (rr_T_redirect[2]) need_gpa_vpn <= '0;
++    else if (rr_T_enter[2])    need_gpa_vpn <= req_out_vaddr[2][VADDR_W-1:12];
++    else if (rr_T_redirect[1]) need_gpa_vpn <= '0;
++    else if (rr_T_enter[1])    need_gpa_vpn <= req_out_vaddr[1][VADDR_W-1:12];
++    else if (rr_T_redirect[0]) need_gpa_vpn <= '0;
++    else if (rr_T_enter[0])    need_gpa_vpn <= req_out_vaddr[0][VADDR_W-1:12];
++
++    if (rr_T_redirect[3] | ~rr_T_enter[3]) begin
++      if (rr_T_redirect[2] | ~rr_T_enter[2]) begin
++        if (rr_T_redirect[1] | ~rr_T_enter[1]) begin
++          if (rr_T_redirect[0] | ~rr_T_enter[0]) begin end
++          else begin need_gpa_robidx_flag <= req_out_robIdx_flag[0];
++                     need_gpa_robidx_value <= req_out_robIdx_value[0]; end
++        end else begin need_gpa_robidx_flag <= req_out_robIdx_flag[1];
++                       need_gpa_robidx_value <= req_out_robIdx_value[1]; end
++      end else begin need_gpa_robidx_flag <= req_out_robIdx_flag[2];
++                     need_gpa_robidx_value <= req_out_robIdx_value[2]; end
++    end else begin need_gpa_robidx_flag <= req_out_robIdx_flag[3];
++                   need_gpa_robidx_value <= req_out_robIdx_value[3]; end
++
++    // resp_gpa_gvpn：PTW 命中 need_gpa_vpn 时更新（各端口回包相同，统一写）。
++    if (resp_gpa_wr_en) resp_gpa_gvpn <= resp_gpa_gvpn_next;
++
++    // —— PTW 回填旁路寄存（无复位；使能 io_ptw_resp_valid）——
++    for (int i = 0; i < WIDTH; i++) begin
++      if (io_ptw_resp_valid) begin
++        p_ppn[i]   <= p_ppn_s0[i];
++        p_pbmt[i]  <= io_ptw_resp_s1_entry_pbmt;
++        p_perm[i]  <= ptw_perm;
++        p_gvpn[i]  <= p_gvpn_s0[i];
++        p_g_pbmt[i]<= io_ptw_resp_s2_entry_pbmt;
++        p_g_perm[i]<= ptw_gperm;
++        p_s2xlate[i]<= io_ptw_resp_s2xlate;
++        p_s1_level[i]<= io_ptw_resp_s1_entry_level;
++        p_s1_isLeaf[i]<= ptw_isLeaf;
++        p_s1_isFakePte[i]<= ptw_isFakePte;
++        // 整包寄存（ptw_already_back 用）
++        pr_s2xlate[i]   <= io_ptw_resp_s2xlate;
++        pr_s1_tag[i]    <= io_ptw_resp_s1_entry_tag;
++        pr_s1_asid[i]   <= io_ptw_resp_s1_entry_asid;
++        pr_s1_vmid[i]   <= io_ptw_resp_s1_entry_vmid;
++        pr_s1_n[i]      <= io_ptw_resp_s1_entry_n;
++        pr_s1_perm_g[i] <= io_ptw_resp_s1_entry_perm_g;
++        pr_s1_level[i]  <= io_ptw_resp_s1_entry_level;
++        pr_s1_addr_low[i]<= io_ptw_resp_s1_addr_low;
++        pr_s1_valididx[i]<= io_ptw_resp_s1_valididx;
++        pr_s2_tag[i]    <= io_ptw_resp_s2_entry_tag;
++        pr_s2_vmid[i]   <= io_ptw_resp_s2_entry_vmid;
++        pr_s2_n[i]      <= io_ptw_resp_s2_entry_n;
++        pr_s2_level[i]  <= io_ptw_resp_s2_entry_level;
+       end
+     end
+   end
+diff --git a/rtl/memblock/TLBNonBlock_wrapper.sv b/rtl/memblock/TLBNonBlock_wrapper.sv
+index 32016e4..f4b0580 100644
+--- a/rtl/memblock/TLBNonBlock_wrapper.sv
++++ b/rtl/memblock/TLBNonBlock_wrapper.sv
+@@ -379,7 +379,7 @@ module TLBNonBlock import xs_tlbnb_pkg::*; (
+     .io_sfd_valid(sfd_valid), .io_sfd_flushPipe(sfd_flushPipe),
+     .io_csrd_satp_mode(cd_satp_mode), .io_csrd_satp_asid(cd_satp_asid), .io_csrd_satp_changed(cd_satp_changed),
+     .io_csrd_vsatp_mode(cd_vsatp_mode), .io_csrd_vsatp_asid(cd_vsatp_asid), .io_csrd_vsatp_changed(cd_vsatp_changed),
+-    .io_csrd_hgatp_mode(cd_hgatp_mode), .io_csrd_hgatp_vmid(cd_hgatp_vmid), .io_csrd_hgatp_changed(cd_hgatp_changed),
++    .io_csrd_hgatp_mode(cd_hgatp_mode), .io_csrd_hgatp_vmid(cd_hgatp_vmid_16), .io_csrd_hgatp_changed(cd_hgatp_changed),
+     .io_csrd_priv_mxr(cd_mxr), .io_csrd_priv_sum(cd_sum), .io_csrd_priv_vmxr(cd_vmxr), .io_csrd_priv_vsum(cd_vsum),
+     .io_csrd_priv_virt(cd_virt), .io_csrd_priv_spvp(cd_spvp), .io_csrd_priv_imode(cd_imode), .io_csrd_priv_dmode(cd_dmode),
+     .io_csrd_pmm_mseccfg(cd_mseccfg), .io_csrd_pmm_menvcfg(cd_menvcfg), .io_csrd_pmm_henvcfg(cd_henvcfg),
+@@ -433,7 +433,7 @@ module TLBNonBlock import xs_tlbnb_pkg::*; (
+     .io_sfence_valid(sfd_valid), .io_sfence_bits_rs1(sfd_rs1), .io_sfence_bits_rs2(sfd_rs2),
+     .io_sfence_bits_addr(sfd_addr), .io_sfence_bits_id(sfd_id), .io_sfence_bits_hv(sfd_hv), .io_sfence_bits_hg(sfd_hg),
+     .io_csr_satp_asid(cd_satp_asid), .io_csr_vsatp_asid(cd_vsatp_asid),
+-    .io_csr_hgatp_vmid(cd_hgatp_vmid), .io_csr_priv_virt(cd_virt),
++    .io_csr_hgatp_vmid(cd_hgatp_vmid_16), .io_csr_priv_virt(cd_virt),  // 全 16 位（截 14 位会让黑盒高 2 位悬空,FM 失配）
+     .io_r_req_0_valid(e_rreq_valid[0]), .io_r_req_0_bits_vpn(e_rreq_vpn[0]), .io_r_req_0_bits_s2xlate(e_rreq_s2xlate[0]),
+     .io_r_req_1_valid(e_rreq_valid[1]), .io_r_req_1_bits_vpn(e_rreq_vpn[1]), .io_r_req_1_bits_s2xlate(e_rreq_s2xlate[1]),
+     .io_r_req_2_valid(e_rreq_valid[2]), .io_r_req_2_bits_vpn(e_rreq_vpn[2]), .io_r_req_2_bits_s2xlate(e_rreq_s2xlate[2]),
+diff --git a/rtl/memblock/Uncache.sv b/rtl/memblock/Uncache.sv
+index 9451c27..1afbc9f 100644
+--- a/rtl/memblock/Uncache.sv
++++ b/rtl/memblock/Uncache.sv
+@@ -229,7 +229,7 @@ module xs_Uncache_core
+   logic empty;
+   logic f1_needDrain;
+   logic do_uarch_drain;
+-  always_ff @(posedge clock) begin
++  always_ff @(posedge clock or posedge reset) begin  // golden 异步复位
+     if (reset) do_uarch_drain <= 1'b0;
+     // next = ((f1_needDrain | flush) & ~empty)；写成单表达式以利形式化按签名配对
+     else       do_uarch_drain <= (f1_needDrain || io_flush_valid) && !empty;
+@@ -242,14 +242,14 @@ module xs_Uncache_core
+   // 前向声明：q0 发 A、resp 回 LSQ 的 fire 在后文定义
+   logic mem_acquire_fire;
+   logic resp_fire;
+-  always_ff @(posedge clock) begin
++  always_ff @(posedge clock or posedge reset) begin  // golden 异步复位
+     if (reset) uState <= US_IDLE;
+     else begin
+       unique case (uState)
+         US_IDLE:        if (mem_acquire_fire) uState <= US_INFLIGHT;
+         US_INFLIGHT:    if (mem_d_valid)      uState <= US_WAIT_RETURN; // mem_grant.ready 恒 1，fire==valid
+         US_WAIT_RETURN: if (resp_fire)        uState <= US_IDLE;
+-        default:        uState <= US_IDLE;
++        default:        uState <= uState;     // 非法编码 3：golden 自持（不归零），FM 按可达全空间比对
+       endcase
+     end
+   end
+@@ -309,10 +309,10 @@ module xs_Uncache_core
+   logic [IDX_W-1:0] e0_mergeIdx, e0_allocIdx;
+   logic             e0_canMerge, e0_canAlloc, e0_allocWaitSame;
+   always_comb begin
+-    e0_mergeIdx = '0; e0_canMerge = 1'b0;
++    e0_mergeIdx = '1; e0_canMerge = 1'b0;  // 缺省 3：golden 优先编码 v0?0:v1?1:{1,~v2} 的空向量缺省
+     for (int i = UNC_SIZE-1; i >= 0; i--)
+       if (e0_mergeVec[i]) begin e0_mergeIdx = i[IDX_W-1:0]; e0_canMerge = 1'b1; end
+-    e0_allocIdx = '0; e0_canAlloc = 1'b0;
++    e0_allocIdx = '1; e0_canAlloc = 1'b0;  // 缺省 3（golden 同）
+     for (int i = UNC_SIZE-1; i >= 0; i--)
+       if (e0_invalidVec[i]) begin e0_allocIdx = i[IDX_W-1:0]; e0_canAlloc = 1'b1; end
+     e0_allocWaitSame = |e0_allocWaitSameVec;
+@@ -350,7 +350,7 @@ module xs_Uncache_core
+       q0_canSentVec[i] = (io_enableOutstanding || (uState == US_IDLE)) && st_can2bus(states[i]);
+ 
+   always_comb begin
+-    q0_canSentIdx = '0; q0_canSent = 1'b0;
++    q0_canSentIdx = '1; q0_canSent = 1'b0;  // 缺省 3（golden 同；q0 idx 直通 a_bits_source/entry mux，缺省必须一致）
+     for (int i = UNC_SIZE-1; i >= 0; i--)
+       if (q0_canSentVec[i]) begin q0_canSentIdx = i[IDX_W-1:0]; q0_canSent = 1'b1; end
+   end
+@@ -387,7 +387,7 @@ module xs_Uncache_core
+   logic                r0_canSent;
+   always_comb begin
+     for (int i = 0; i < UNC_SIZE; i++) r0_canSentVec[i] = st_can2lsq(states[i]);
+-    r0_canSentIdx = '0; r0_canSent = 1'b0;
++    r0_canSentIdx = '1; r0_canSent = 1'b0;  // 缺省 3（golden 同；r0 idx 直通 lsq_resp 数据/id mux）
+     for (int i = UNC_SIZE-1; i >= 0; i--)
+       if (r0_canSentVec[i]) begin r0_canSentIdx = i[IDX_W-1:0]; r0_canSent = 1'b1; end
+   end
+@@ -413,7 +413,10 @@ module xs_Uncache_core
+     for (ge = 0; ge < UNC_SIZE; ge++) begin : g_entry
+       // 本 entry 是否被各动态下标选中
+       wire sel_merge = e0_canMerge   && req_valid && (e0_mergeIdx   == ge[IDX_W-1:0]);
+-      wire sel_alloc = e0_canAlloc   && e0_fire   && (e0_allocIdx   == ge[IDX_W-1:0]);
++      // golden 的 alloc 写入被**全局** merge 门（_GEN = canMerge&req_valid）压制：
++      // 本拍发生 merge（哪怕并到别的 entry）就绝不 alloc。
++      wire sel_alloc = e0_canAlloc && e0_fire && !(e0_canMerge && req_valid)
++                     && (e0_allocIdx == ge[IDX_W-1:0]);
+       wire sel_qfire = mem_acquire_fire           && (q0_canSentIdx == ge[IDX_W-1:0]);
+       wire sel_dfire = mem_grant_fire             && (mem_d_src     == ge[IDX_W-1:0]);
+       wire sel_rfire = resp_fire                  && (r0_canSentIdx == ge[IDX_W-1:0]);
+@@ -423,21 +426,36 @@ module xs_Uncache_core
+       wire [DATA_BYTES-1:0]   m_nm  = entries[ge].mask | io_lsq_req_bits_mask;
+       wire [BLOCK_OFFSET-1:0] m_off = res_offset(m_nm);
+ 
++      // ---- entries 数据本体：与 golden 一致「不复位」（golden entries_* 在无复位
++      //      always 块；若留在异步复位块的 else 分支，FM 视其使能含 ~reset）----
+       always_ff @(posedge clock) begin
++        // ---- (1) Enter：merge 优先于 alloc ----
++        if (sel_merge) begin
++          entries[ge].data <= m_nd;
++          entries[ge].mask <= m_nm;
++          if (res_flag(m_nm)) begin
++            entries[ge].addr  <= realign_p(entries[ge].addr,  m_off);
++            entries[ge].vaddr <= realign_v(entries[ge].vaddr, m_off);
++          end
++        end else if (sel_alloc) begin
++          entries[ge] <= e0_req_entry;
++        end
++        // ---- (3) UncResp fire：被回应的 entry 写回 data/nderr ----
++        if (sel_dfire) begin
++          if (entries[ge].cmd == M_XRD) entries[ge].data <= auto_client_out_d_bits_data;
++          entries[ge].resp_nderr <= auto_client_out_d_bits_denied | auto_client_out_d_bits_corrupt;
++        end
++      end
++
++      // ---- states/noPending：异步复位（golden 为 posedge reset 异步复位集）----
++      always_ff @(posedge clock or posedge reset) begin
+         if (reset) begin
+           states[ge]    <= '0;
+           noPending[ge] <= 1'b1;
+         end else begin
+-          // ---- (1) Enter：merge 优先于 alloc ----
++          // ---- (1) Enter：merge 优先于 alloc（merge 不改状态位）----
+           if (sel_merge) begin
+-            entries[ge].data <= m_nd;
+-            entries[ge].mask <= m_nm;
+-            if (res_flag(m_nm)) begin
+-              entries[ge].addr  <= realign_p(entries[ge].addr,  m_off);
+-              entries[ge].vaddr <= realign_v(entries[ge].vaddr, m_off);
+-            end
+           end else if (sel_alloc) begin
+-            entries[ge]        <= e0_req_entry;
+             states[ge].valid   <= 1'b1;
+             if (e0_allocWaitSame) states[ge].waitSame <= 1'b1;
+           end
+@@ -452,11 +470,8 @@ module xs_Uncache_core
+             states[ge].waitSame <= 1'b1;
+           end
+ 
+-          // ---- (3) UncResp fire：被回应的 entry 写回 data/nderr 并 inflight→waitReturn；
+-          //          其余同 block 的 waitSame 等待者解除 ----
++          // ---- (3) UncResp fire：inflight→waitReturn；其余 waitSame 等待者解除 ----
+           if (sel_dfire) begin
+-            if (entries[ge].cmd == M_XRD) entries[ge].data <= auto_client_out_d_bits_data;
+-            entries[ge].resp_nderr <= auto_client_out_d_bits_denied | auto_client_out_d_bits_corrupt;
+             states[ge].inflight    <= 1'b0;
+             states[ge].waitReturn  <= 1'b1;
+             noPending[ge]          <= 1'b1;
+@@ -481,8 +496,8 @@ module xs_Uncache_core
+   logic              idResp_is2lq_q;
+   logic              idResp_nc_q;
+   always_ff @(posedge clock) begin
+-    if (reset) idResp_valid_q <= 1'b0;
+-    else       idResp_valid_q <= e0_fire;
++    // golden io_lsq_idResp_valid_REG 无复位（在无复位 always 块），对齐。
++    idResp_valid_q <= e0_fire;
+     if (e0_fire) begin
+       idResp_mid_q   <= io_lsq_req_bits_id;
+       idResp_sid_q   <= e0_sid;
+@@ -513,7 +528,7 @@ module xs_Uncache_core
+ 
+   // WFI safe：所有 entry 无在途 且 收到 wfiReq → 打一拍输出
+   logic wfi_safe_q;
+-  always_ff @(posedge clock) begin
++  always_ff @(posedge clock or posedge reset) begin  // golden 异步复位
+     if (reset) wfi_safe_q <= 1'b0;
+     else begin
+       logic all_no_pending;
+diff --git a/rtl/memblock/l2tlb_pkg.sv b/rtl/memblock/l2tlb_pkg.sv
+index 3340994..9e6a94c 100644
+--- a/rtl/memblock/l2tlb_pkg.sv
++++ b/rtl/memblock/l2tlb_pkg.sv
+@@ -167,6 +167,7 @@ package l2tlb_pkg;
+     logic            is_pf, is_af;
+     ptw_merge_entry_t e;
+     logic [2:0]      sel;
++    logic [PTE_PPN_W-1:0] ppn_full;   // 先存函数返回值再切片(Formality 不接受对函数调用结果直接下标)
+     has_s2 = (s2xlate != NO_S2XLATE);
+     // pbmte：onlyStage1 或 allStage 用 hPBMTE，否则 mPBMTE
+     pbmte  = (s2xlate == ONLY_STAGE1 || s2xlate == ALL_STAGE) ? hPBMTE : mPBMTE;
+@@ -178,8 +179,9 @@ package l2tlb_pkg;
+       is_af = pte_access_fault(pte_in)
+               && (s2xlate == NO_S2XLATE || s2xlate == ONLY_STAGE1) && !is_pf;
+       e = '0;
+-      e.ppn     = pte_ppn(pte_in)[PTE_PPN_W-1:SECTOR_BITS]; // ppn(ptePPNLen-1, sectortlbwidth)
+-      e.ppn_low = pte_ppn(pte_in)[SECTOR_BITS-1:0];
++      ppn_full  = pte_ppn(pte_in);
++      e.ppn     = ppn_full[PTE_PPN_W-1:SECTOR_BITS]; // ppn(ptePPNLen-1, sectortlbwidth)
++      e.ppn_low = ppn_full[SECTOR_BITS-1:0];
+       e.level   = 2'h0;
+       e.pbmt    = pte_in.pbmt;
+       e.n       = pte_in.n;
+diff --git a/rtl/memblock/llptw_pkg.sv b/rtl/memblock/llptw_pkg.sv
+index adc8482..1521ee3 100644
+--- a/rtl/memblock/llptw_pkg.sv
++++ b/rtl/memblock/llptw_pkg.sv
+@@ -170,12 +170,14 @@ package xs_llptw_pkg;
+         (level == 2'h1 && pte.ppn[VPNN_W-1:0]     == '0) ||
+         (level == 2'h2 && pte.ppn[VPNN_W*2-1:0]   == '0) ||
+         (level == 2'h3 && pte.ppn[VPNN_W*3-1:0]   == '0));
+-    if (pte.reserved != '0) return 1'b1;
+-    if (pte.pbmt == 2'h3 || (!pbmte && pte.pbmt != 2'h0)) return 1'b1;
+-    if (pte_is_next(pte)) return pte.perm.u || pte.perm.a || pte.perm.d || pte.n || (pte.pbmt != 2'h0);
+-    if (!pte.perm.v || (!pte.perm.r && pte.perm.w)) return 1'b1;
+-    if (pte.n && (pte.ppn[3:0] != 4'h8 || level != 2'h0)) return 1'b1;
+-    return unaligned;
++    // 单一 return(嵌套三元): 多 return 早退结构会被 Formality 建成带 DC 缺省支路的
++    // 优先级 mux, X 传染导致大片 failing —— 与 IMSIC 的 generate 内函数教训同族。
++    return (pte.reserved != '0)                                ? 1'b1
++         : (pte.pbmt == 2'h3 || (!pbmte && pte.pbmt != 2'h0))  ? 1'b1
++         : pte_is_next(pte) ? (pte.perm.u || pte.perm.a || pte.perm.d || pte.n || (pte.pbmt != 2'h0))
++         : (!pte.perm.v || (!pte.perm.r && pte.perm.w))        ? 1'b1
++         : (pte.n && (pte.ppn[3:0] != 4'h8 || level != 2'h0))  ? 1'b1
++         : unaligned;
+   endfunction
+ 
+   // PteBundle.isStage1Gpf：PPN 高位越过 G-stage 地址空间时的 gpf（v 有效才算）。
+@@ -184,9 +186,10 @@ package xs_llptw_pkg;
+     full_ppn = pte_get_ppn(pte);
+     // GPAddrBitsSv39x4=41 → 高位段 = full_ppn >> (41-12)=29
+     // GPAddrBitsSv48x4=50 → 高位段 = full_ppn >> (50-12)=38
+-    if (hgatp_mode == 4'h8) return (|full_ppn[PTE_PPN_W-1:29]) && pte.perm.v;
+-    if (hgatp_mode == 4'h9) return (|full_ppn[PTE_PPN_W-1:38]) && pte.perm.v;
+-    return 1'b0;
++    // 单一 return: 消 FM 多 return DC 支路。
++    return (hgatp_mode == 4'h8) ? ((|full_ppn[PTE_PPN_W-1:29]) && pte.perm.v)
++         : (hgatp_mode == 4'h9) ? ((|full_ppn[PTE_PPN_W-1:38]) && pte.perm.v)
++         : 1'b0;
+   endfunction
+ 
+   // 最后一级 PPN：非 NAPOT 直接取 PTE.ppn；NAPOT 用 vpn 低 NAPOT_BITS 位拼接。
+@@ -195,21 +198,21 @@ package xs_llptw_pkg;
+   );
+     logic [PTE_PPN_W-1:0] full_ppn;
+     full_ppn = pte_get_ppn(pte);
+-    if (!pte.n) return full_ppn;
+-    return {full_ppn[PTE_PPN_W-1:NAPOT_BITS], vpn[NAPOT_BITS-1:0]};
++    // 单一 return: 消 FM 多 return DC 支路。
++    return (!pte.n) ? full_ppn
++                    : {full_ppn[PTE_PPN_W-1:NAPOT_BITS], vpn[NAPOT_BITS-1:0]};
+   endfunction
+ 
+   // HptwResp.genPPNS2：按 G-stage entry level 把 GPA 页内 VPN 补回，得到 host PPN。
+   function automatic logic [GVPN_W-1:0] gen_ppn_s2(
+     input hptw_resp_t resp, input logic [GVPN_W-1:0] gvpn
+   );
+-    priority case (resp.level)
+-      2'h3:    return {resp.ppn[GVPN_W-1:VPNN_W*3], gvpn[VPNN_W*3-1:0]};
+-      2'h2:    return {resp.ppn[GVPN_W-1:VPNN_W*2], gvpn[VPNN_W*2-1:0]};
+-      2'h1:    return {resp.ppn[GVPN_W-1:VPNN_W],   gvpn[VPNN_W-1:0]};
+-      default: return resp.n ? {resp.ppn[GVPN_W-1:NAPOT_BITS], gvpn[NAPOT_BITS-1:0]}
+-                             : resp.ppn;
+-    endcase
++    // 单一 return(嵌套三元, 替代 priority case+return): 消 FM DC 支路。
++    return (resp.level == 2'h3) ? {resp.ppn[GVPN_W-1:VPNN_W*3], gvpn[VPNN_W*3-1:0]}
++         : (resp.level == 2'h2) ? {resp.ppn[GVPN_W-1:VPNN_W*2], gvpn[VPNN_W*2-1:0]}
++         : (resp.level == 2'h1) ? {resp.ppn[GVPN_W-1:VPNN_W],   gvpn[VPNN_W-1:0]}
++         : (resp.n ? {resp.ppn[GVPN_W-1:NAPOT_BITS], gvpn[NAPOT_BITS-1:0]}
++                   : resp.ppn);
+   endfunction
+ 
+   // dup：两个 vpn 是否落在同一条 L0 cacheline（去掉 sector 位后相等）。
+diff --git a/rtl/memblock/mainpipe_pkg.sv b/rtl/memblock/mainpipe_pkg.sv
+index c02ccde..02dfc54 100644
+--- a/rtl/memblock/mainpipe_pkg.sv
++++ b/rtl/memblock/mainpipe_pkg.sv
+@@ -44,7 +44,7 @@ package mainpipe_pkg;
+   localparam int PF_SRC_BITS   = 3;    // L1PfSourceBits
+   localparam int N_DUP_STATUS  = 24;   // nDupStatus：s1/s2/s3 状态信息的扇出复制份数
+   localparam int LRSC_CYCLES   = 64;   // LRSCCycles：LR 保留锁的存活拍数
+-  localparam int LRSC_BACKOFF  = 3;    // LRSCBackOff
++  localparam int LRSC_BACKOFF  = 8;    // LRSCBackOff（golden lrsc_valid = count > 6'h8）
+   localparam int LRSC_CNT_BITS = 6;    // log2Ceil(LRSCCycles)
+   localparam int BLOOM_ADDR_BITS = 12; // BloomQuery 地址宽
+ 
+@@ -149,6 +149,10 @@ package mainpipe_pkg;
+                                               input coh_e state);
+     logic has_perm; logic [1:0] grow; coh_e next_coh;
+     has_perm  = 1'b0; grow = PERM_NtoB; next_coh = COH_NOTHING;
++    // next_coh 全表对齐 golden _GEN_29（无权限 miss 时该值也被寄存进 s2_new_hit_coh，
++    // FM 按寄存器比对，不能只覆盖有权限的格子）：
++    //   cat=00(rd): 保持原状态；cat=01(wi): N→B, B→T, T→T, D→D；
++    //   cat=10: 恒 N；cat=11(wr): N→B, B→T, T→D, D→D。
+     case ({cmd_cat, state})
+       {2'b00, COH_DIRTY}  : begin has_perm=1; next_coh=COH_DIRTY;  end // rd
+       {2'b00, COH_TRUNK}  : begin has_perm=1; next_coh=COH_TRUNK;  end
+@@ -157,11 +161,11 @@ package mainpipe_pkg;
+       {2'b01, COH_TRUNK}  : begin has_perm=1; next_coh=COH_TRUNK;  end
+       {2'b11, COH_DIRTY}  : begin has_perm=1; next_coh=COH_DIRTY;  end // wr
+       {2'b11, COH_TRUNK}  : begin has_perm=1; next_coh=COH_DIRTY;  end
+-      {2'b00, COH_NOTHING}: begin has_perm=0; grow=PERM_NtoB; end
+-      {2'b01, COH_BRANCH} : begin has_perm=0; grow=PERM_BtoT; end
+-      {2'b01, COH_NOTHING}: begin has_perm=0; grow=PERM_NtoT; end
+-      {2'b11, COH_BRANCH} : begin has_perm=0; grow=PERM_BtoT; end
+-      {2'b11, COH_NOTHING}: begin has_perm=0; grow=PERM_NtoT; end
++      {2'b00, COH_NOTHING}: begin has_perm=0; grow=PERM_NtoB; next_coh=COH_NOTHING; end
++      {2'b01, COH_BRANCH} : begin has_perm=0; grow=PERM_BtoT; next_coh=COH_TRUNK;   end
++      {2'b01, COH_NOTHING}: begin has_perm=0; grow=PERM_NtoT; next_coh=COH_BRANCH;  end
++      {2'b11, COH_BRANCH} : begin has_perm=0; grow=PERM_BtoT; next_coh=COH_TRUNK;   end
++      {2'b11, COH_NOTHING}: begin has_perm=0; grow=PERM_NtoT; next_coh=COH_BRANCH;  end
+       default             : ;
+     endcase
+     return {has_perm, grow, next_coh};
+diff --git a/rtl/memblock/missqueue_acq_arb.svh b/rtl/memblock/missqueue_acq_arb.svh
+index ea5637c..d273e1f 100644
+--- a/rtl/memblock/missqueue_acq_arb.svh
++++ b/rtl/memblock/missqueue_acq_arb.svh
+@@ -1,7 +1,7 @@
+ // =============================================================================
+ //  missqueue_acq_arb.svh —— mem_acquire（A 通道）payload Mux1H（被 xs_MissQueue_core 内联）
+ // -----------------------------------------------------------------------------
+-//  A 通道单 beat，仲裁退化为 idle lowest 优先：选中源 = acq_winner（one-hot，至多 1 位）。
++//  A 通道单 beat，仲裁退化为 idle lowest 优先：选中源 = acq_sel = beatsLeft?state:winner（golden muxState）。
+ //    idx0 = CMOUnit（CBO 操作）：opcode/address 来自 cmo，source 固定 17，无 alias/vaddr/...
+ //    idx1 = acquire_from_pipereg（pipereg 直发）：opcode/param/source/address/alias/vaddr/
+ //           reqSource/needHint/isKeyword 由 C 节 get_acquire 推导出的 pr_acq_* 提供
+@@ -22,13 +22,13 @@ always_comb begin
+   io_mem_acquire_bits_echo_isKeyword = 1'b0;
+ 
+   // idx0：CMOUnit（仅 opcode/address/source）
+-  if (acq_winner[0]) begin
++  if (acq_sel[0]) begin
+     io_mem_acquire_bits_opcode  |= cmo_acq_opcode;
+     io_mem_acquire_bits_address |= cmo_acq_address;
+     io_mem_acquire_bits_source  |= SRC_BITS'(ACQ_SRC_ID);   // 6'h11
+   end
+   // idx1：pipereg 直发
+-  if (acq_winner[1]) begin
++  if (acq_sel[1]) begin
+     io_mem_acquire_bits_opcode       |= pr_acq_opcode;
+     io_mem_acquire_bits_param        |= pr_acq_param;
+     io_mem_acquire_bits_source       |= pr_acq_source;
+@@ -41,7 +41,7 @@ always_comb begin
+   end
+   // idx2+i：entry i
+   for (int i = 0; i < N_ENTRY; i++) begin
+-    if (acq_winner[2+i]) begin
++    if (acq_sel[2+i]) begin
+       io_mem_acquire_bits_opcode       |= e_acq_opcode[i];
+       io_mem_acquire_bits_param        |= e_acq_param[i];
+       io_mem_acquire_bits_source       |= e_acq_source[i];
+@@ -56,8 +56,8 @@ always_comb begin
+ end
+ 
+ // size：有任一 winner → 6（整行），否则 0
+-wire acq_any = |acq_winner;
++wire acq_any = |acq_sel;
+ assign io_mem_acquire_bits_size = acq_any ? 3'h6 : 3'h0;
+ // mask：golden 仅 idx1..17 winner 时置全 1（cmo 项不贡献 mask）
+-wire acq_mask_any = |acq_winner[N_ACQ_SRC-1:1];
++wire acq_mask_any = |acq_sel[N_ACQ_SRC-1:1];
+ assign io_mem_acquire_bits_mask = {32{acq_mask_any}};
+diff --git a/rtl/memblock/missqueue_entry_inst.svh b/rtl/memblock/missqueue_entry_inst.svh
+index 3a85c47..418551d 100644
+--- a/rtl/memblock/missqueue_entry_inst.svh
++++ b/rtl/memblock/missqueue_entry_inst.svh
+@@ -18,9 +18,9 @@ for (genvar i = 0; i < N_ENTRY; i++) begin : g_entry
+   // mem_grant 路由到 entry：source==i（不看 opcode；CBO 路由只影响 mem_grant.ready 的选择）
+   wire grant_v = grant_hit_entry[i] & io_mem_grant_valid;
+   // mem_acquire.ready（TLArbiter allowed 语义）：无更高优先级阻挡 且通道 ready（与本源 valid 无关）
+-  wire acq_rdy = io_mem_acquire_ready & acq_allowed[2+i];
++  wire acq_rdy = io_mem_acquire_ready & acq_grant[2+i];  // beatsLeft?state:allowed（golden）
+   // mem_finish.ready（同上）
+-  wire fin_rdy = io_mem_finish_ready & fin_allowed[i];
++  wire fin_rdy = io_mem_finish_ready & fin_grant[i];    // beatsLeft?state:allowed（golden）
+ 
+   MissEntry u_entry (
+     .clock                                            (clock),
+diff --git a/rtl/memblock/missqueue_forward.svh b/rtl/memblock/missqueue_forward.svh
+index 518bb4e..899a4ae 100644
+--- a/rtl/memblock/missqueue_forward.svh
++++ b/rtl/memblock/missqueue_forward.svh
+@@ -44,20 +44,23 @@ always_comb
+     fwd_corr_n[k]  = e_fwd_corrupt[m];
+   end
+ 
+-// 打一拍寄存（reset 清 0，与 golden *_REG 一致）
++// 打一拍寄存。golden 复位集：forwardData/forward_mshr 为**异步**复位 0；
++// forward_result_valid/corrupt **无复位**（在无复位 always 块）。逐类对齐。
+ logic [LD_WIDTH-1:0] fwd_valid_q, fwd_mshr_q, fwd_corr_q;
+ logic [127:0]        fwd_data_q [LD_WIDTH];
+-always_ff @(posedge clock) begin
++always_ff @(posedge clock or posedge reset) begin
+   if (reset) begin
+-    fwd_valid_q <= '0; fwd_mshr_q <= '0; fwd_corr_q <= '0;
++    fwd_mshr_q <= '0;
+     for (int k = 0; k < LD_WIDTH; k++) fwd_data_q[k] <= '0;
+   end else begin
+-    fwd_valid_q <= fwd_valid_n;
+     fwd_mshr_q  <= fwd_mshr_n;
+-    fwd_corr_q  <= fwd_corr_n;
+     for (int k = 0; k < LD_WIDTH; k++) fwd_data_q[k] <= fwd_data_n[k];
+   end
+ end
++always_ff @(posedge clock) begin
++  fwd_valid_q <= fwd_valid_n;
++  fwd_corr_q  <= fwd_corr_n;
++end
+ 
+ // 拆回扁平输出（forwardData 16 字节）
+ assign io_forward_0_forward_result_valid = fwd_valid_q[0];
+diff --git a/rtl/memblock/missqueue_subinst.svh b/rtl/memblock/missqueue_subinst.svh
+index c46b22c..65fd9e1 100644
+--- a/rtl/memblock/missqueue_subinst.svh
++++ b/rtl/memblock/missqueue_subinst.svh
+@@ -16,7 +16,7 @@ CMOUnit cmo_unit (
+   .io_req_valid               (io_cmo_req_valid),
+   .io_req_bits_opcode         (io_cmo_req_bits_opcode),
+   .io_req_bits_address        (io_cmo_req_bits_address),
+-  .io_req_chanA_ready         (io_mem_acquire_ready & acq_allowed[0]),
++  .io_req_chanA_ready         (io_mem_acquire_ready & acq_grant[0]),
+   .io_req_chanA_valid         (cmo_acq_valid),
+   .io_req_chanA_bits_opcode   (cmo_acq_opcode),
+   .io_req_chanA_bits_address  (cmo_acq_address),
+diff --git a/rtl/memblock/ptwcache_pkg.sv b/rtl/memblock/ptwcache_pkg.sv
+index e2b57d3..d1db569 100644
+--- a/rtl/memblock/ptwcache_pkg.sv
++++ b/rtl/memblock/ptwcache_pkg.sv
+@@ -323,18 +323,22 @@ package xs_ptwcache_pkg;
+   //   need_vmid_check：有 s2xlate 时检查 vmid
+   function automatic logic nonleaf_hit(
+     input logic                tag_hit,
++    input logic                is_global,  // 该项 g 位: 全局页跳过 ASID 比较
+     input logic [ASID_W-1:0]   easid,
+     input logic [VMID_W-1:0]   evmid,
+     input logic [ASID_W-1:0]   satp_asid,
+     input logic [ASID_W-1:0]   vsatp_asid,
+-    input logic [VMID_W-1:0]   hgatp_vmid,
++    input logic [ASID_W-1:0]   hgatp_vmid,  // 16 位全宽(golden {2'h0,vmid14}==hgatp[15:0])
+     input logic [1:0]          h           // change_h 后的 s2xlate
+   );
+     logic [ASID_W-1:0] asid_value;
+     logic asid_hit, vmid_hit;
+     asid_value = (h != NO_S2XLATE) ? vsatp_asid : satp_asid;
+-    asid_hit   = (h == ONLY_STAGE2) ? 1'b1 : (easid == asid_value);
+-    vmid_hit   = (h != NO_S2XLATE) ? (evmid == hgatp_vmid) : 1'b1;
++    // golden hitVec_N: `(l3g[n] | onlyS2) | asid==`(12770) —— g 位旁路 ASID, 不能省
++    asid_hit   = (h == ONLY_STAGE2) ? 1'b1 : ((easid == asid_value) || is_global);
++    // golden _l3vmidhit_T: {2'h0, vmid14} == hgatp_vmid[15:0] —— 16 位全宽比较,
++    // 隐含要求 hgatp_vmid 高 2 位为 0; 截断成 14 位会与 golden 次态不等价。
++    vmid_hit   = (h != NO_S2XLATE) ? ({{(ASID_W-VMID_W){1'b0}}, evmid} == hgatp_vmid) : 1'b1;
+     return asid_hit && vmid_hit && tag_hit;
+   endfunction
+ 
+@@ -348,14 +352,14 @@ package xs_ptwcache_pkg;
+     input logic                is_global,
+     input logic [ASID_W-1:0]   satp_asid,
+     input logic [ASID_W-1:0]   vsatp_asid,
+-    input logic [VMID_W-1:0]   hgatp_vmid,
++    input logic [ASID_W-1:0]   hgatp_vmid, // 16 位全宽(golden {2'h0,vmid14}==hgatp[15:0])
+     input logic [1:0]          h
+   );
+     logic [ASID_W-1:0] asid_value;
+     logic asid_hit, vmid_hit;
+     asid_value = (h != NO_S2XLATE) ? vsatp_asid : satp_asid;
+     asid_hit   = (h == ONLY_STAGE2) ? 1'b1 : ((easid == asid_value) || is_global);
+-    vmid_hit   = (h != NO_S2XLATE) ? (evmid == hgatp_vmid) : 1'b1;
++    vmid_hit   = (h != NO_S2XLATE) ? ({{(ASID_W-VMID_W){1'b0}}, evmid} == hgatp_vmid) : 1'b1;
+     return asid_hit && vmid_hit && tag_hit && evs;
+   endfunction
+ 
+@@ -417,7 +421,7 @@ package xs_ptwcache_pkg;
+     input logic [VPN_W-1:0] vpn,
+     input logic [ASID_W-1:0] satp_asid,
+     input logic [ASID_W-1:0] vsatp_asid,
+-    input logic [VMID_W-1:0] hgatp_vmid,
++    input logic [ASID_W-1:0] hgatp_vmid,  // 16 位全宽(同 nonleaf_hit)
+     input logic [1:0]     h
+   );
+     logic [ASID_W-1:0] asid_value;
+@@ -427,7 +431,8 @@ package xs_ptwcache_pkg;
+     is_global  = e.perm.g;
+     asid_value = (h != NO_S2XLATE) ? vsatp_asid : satp_asid;
+     asid_hit   = (h == ONLY_STAGE2) ? 1'b1 : ((e.asid == asid_value) || is_global);
+-    vmid_hit   = (h != NO_S2XLATE) ? (e.vmid == hgatp_vmid) : 1'b1;
++    // 16 位全宽 vmid 比较(golden {2'h0,vmid14}==hgatp[15:0])
++    vmid_hit   = (h != NO_S2XLATE) ? ({{(ASID_W-VMID_W){1'b0}}, e.vmid} == hgatp_vmid) : 1'b1;
+     // tag_match(0)：napot 时 tag[8:napotBits]==vpn[8:napotBits]，否则 tag[8:0]==vpn[8:0]
+     if (e.n)
+       tag_match[0] = (e.tag[VPNN_W-1:NAPOT_BITS] == vpn[VPNN_W-1:NAPOT_BITS]);
+diff --git a/rtl/memblock/ptwcache_query.svh b/rtl/memblock/ptwcache_query.svh
+index 328b904..6759872 100644
+--- a/rtl/memblock/ptwcache_query.svh
++++ b/rtl/memblock/ptwcache_query.svh
+@@ -60,7 +60,7 @@
+   logic [L3_SIZE-1:0] l3_hitVecT, l3_hitVec;
+   for (gi = 0; gi < L3_SIZE; gi++) begin : g_l3_hit
+     wire l3_tag_hit = (l3[gi].tag[L3_TAG_W-1:0] == vpn_search[VPN_W-1 -: L3_TAG_W]);
+-    assign l3_hitVecT[gi] = nonleaf_hit(l3_tag_hit, l3[gi].asid, l3[gi].vmid,
++    assign l3_hitVecT[gi] = nonleaf_hit(l3_tag_hit, l3g[gi], l3[gi].asid, l3[gi].vmid,
+                               csr_satp_asid[2], csr_vsatp_asid[2], csr_hgatp_vmid[2], h_search)
+                             && l3v[gi] && (h_search == l3h[gi]);
+   end
+@@ -103,7 +103,7 @@
+   logic [L2_SIZE-1:0] l2_hitVecT, l2_hitVec;
+   for (gi = 0; gi < L2_SIZE; gi++) begin : g_l2_hit
+     wire l2_tag_hit = (l2[gi].tag[L2_TAG_W-1:0] == vpn_search[VPN_W-1 -: L2_TAG_W]);
+-    assign l2_hitVecT[gi] = nonleaf_hit(l2_tag_hit, l2[gi].asid, l2[gi].vmid,
++    assign l2_hitVecT[gi] = nonleaf_hit(l2_tag_hit, l2g[gi], l2[gi].asid, l2[gi].vmid,
+                               csr_satp_asid[2], csr_vsatp_asid[2], csr_hgatp_vmid[2], h_search)
+                             && l2v[gi] && (h_search == l2h[gi]);
+   end
+@@ -165,8 +165,10 @@
+     for (int w = 0; w < L1_WAYS; w++) begin
+       automatic logic tag_hit = (l1_data_use[w].tag == delay_vpn[VPN_W-1 -: L1_TAG_W]);
+       automatic logic evs      = l1_data_use[w].vs[l1_sector_idx(delay_vpn)];
+-      // L1 非叶：is_global 恒 0；asid/vmid 用 SRAM 行里存的完整字段比对（PtwEntries.hit）
+-      l1_hitVec_delay[w] = sram_hit(tag_hit, l1_data_use[w].asid, l1_data_use[w].vmid, evs, 1'b0,
++      // L1 非叶 is_global = stageReq 锁存的 gVec(golden gVec_delay, 13293:
++      // `gVec_delay[w] | onlyS2 | asid==` —— 全局页跳过 ASID 比较), 不能传常 0。
++      l1_hitVec_delay[w] = sram_hit(tag_hit, l1_data_use[w].asid, l1_data_use[w].vmid, evs,
++                              l1gVec_delay[w],
+                               csr_satp_asid[1], csr_vsatp_asid[1], csr_hgatp_vmid[1], delay_h)
+                            && l1vVec_delay[w] && (delay_h == l1hVec_delay[w]);
+     end
+diff --git a/rtl/memblock/ptwcache_refill.svh b/rtl/memblock/ptwcache_refill.svh
+index 683a423..7aeff12 100644
+--- a/rtl/memblock/ptwcache_refill.svh
++++ b/rtl/memblock/ptwcache_refill.svh
+@@ -228,18 +228,18 @@
+   // PLRU 状态更新：refill（access victim）或查询命中（access hitWay）
+   //   优先级与 golden 一致：refill 优先于查询命中。
+   // ===========================================================================
+-  // L3（golden state_reg：复位到 0，见 golden reset 块 state_reg <= 15'h0）
++  // L3（golden state_reg：复位到 0; golden 只在命中访问时 touch —— 全 RTL 仅一处
++  //     `if (hit & stageDelay_valid_1cycle) state_reg <= ...`，refill 不 access）
+   always_ff @(posedge clock or posedge reset) begin
+     if (reset)               l3replace <= '0;
+-    else if (l3Refill)       l3replace <= plru16_access(l3replace, l3RefillIdx);
+     else if (l3_access_en)   l3replace <= plru16_access(l3replace, l3_hitWay_d);
+   end
+-  // L2（golden state_reg_1：复位到 0；注意 golden 中 l3Refill 也 access l2replace
+-  //     —— 见 Scala ptwl2replace.access(l3RefillIdx)）
++  // L2（golden state_reg_1：复位到 0; golden 优先级 l2Refill > l3Refill > 命中 touch
++  //     —— 见 golden 9632/9661/9690 的 if/else-if 链）
+   always_ff @(posedge clock or posedge reset) begin
+     if (reset)               l2replace <= '0;
+-    else if (l3Refill)       l2replace <= plru16_access(l2replace, l3RefillIdx);
+     else if (l2Refill)       l2replace <= plru16_access(l2replace, l2RefillIdx);
++    else if (l3Refill)       l2replace <= plru16_access(l2replace, l3RefillIdx);
+     else if (l2_access_en)   l2replace <= plru16_access(l2replace, l2_hitWay_d);
+   end
+   // SP
+diff --git a/rtl/memblock/storequeue_regupd.svh b/rtl/memblock/storequeue_regupd.svh
+index 3b6d829..be40616 100644
+--- a/rtl/memblock/storequeue_regupd.svh
++++ b/rtl/memblock/storequeue_regupd.svh
+@@ -10,39 +10,39 @@
+     if (reset) begin
+       // 所有 entry 状态位都是 RegInit(false)：复位清 0（含 memBackTypeMM/nc/mmio 等，
+       // 否则 uncache 路读未分配 entry 的 memBackTypeMM 会是 X）。
+-      for (int i = 0; i < SQ_SIZE; i++) ent[i] <= '0;
++      for (int i = 0; i < SQ_SIZE; i++) ent_r[i] <= '0;
+     end else begin
+       // ---- (0) 出队推进：清 allocated/completed（必须在 enq 之前，使同拍 enq 覆盖
+       //          deq-clear——与 Scala 源 when 顺序一致：deq(L353) 在 enq(L404) 之前）----
+       if (readyDeqVec[0]) begin
+-        ent[deqPtrExt[0].value].allocated <= 1'b0;
+-        ent[deqPtrExt[0].value].completed <= 1'b0;
++        ent_r[deqPtrExt[0].value].allocated <= 1'b0;
++        ent_r[deqPtrExt[0].value].completed <= 1'b0;
+       end
+       if (readyDeqVec[0] & readyDeqVec[1]) begin
+-        ent[deqPtrExt[1].value].allocated <= 1'b0;
+-        ent[deqPtrExt[1].value].completed <= 1'b0;
++        ent_r[deqPtrExt[1].value].allocated <= 1'b0;
++        ent_r[deqPtrExt[1].value].completed <= 1'b0;
+       end
+ 
+       // ---- (1) dispatch 入队（§4 组合好的 entryEnq）----
+       for (int i = 0; i < SQ_SIZE; i++) begin
+         if (entryEnq[i]) begin
+-          ent[i].allocated   <= 1'b1;
+-          ent[i].completed   <= 1'b0;
+-          ent[i].datavalid   <= 1'b0;
+-          ent[i].addrvalid   <= 1'b0;
+-          ent[i].unaligned   <= 1'b0;
+-          ent[i].cross16Byte <= 1'b0;
+-          ent[i].committed   <= 1'b0;
+-          ent[i].pending     <= 1'b0;
+-          ent[i].prefetch    <= 1'b0;
+-          ent[i].nc          <= 1'b0;
+-          ent[i].mmio        <= 1'b0;
+-          ent[i].isVec       <= entryEnqIsVec[i];
+-          ent[i].vecMbCommit <= 1'b0;
+-          ent[i].hasException<= 1'b0;
+-          ent[i].waitStoreS2 <= 1'b1;
+-          ent[i].vecLastFlow <= entryEnqLastFlow[i];
+-          uop[i]             <= entryEnqUop[i];
++          ent_r[i].allocated   <= 1'b1;
++          ent_r[i].completed   <= 1'b0;
++          ent_r[i].datavalid   <= 1'b0;
++          ent_r[i].addrvalid   <= 1'b0;
++          ent_r[i].unaligned   <= 1'b0;
++          ent_r[i].cross16Byte <= 1'b0;
++          ent_r[i].committed   <= 1'b0;
++          ent_r[i].pending     <= 1'b0;
++          ent_r[i].prefetch    <= 1'b0;
++          ent_r[i].nc          <= 1'b0;
++          ent_r[i].mmio        <= 1'b0;
++          ent_r[i].isVec       <= entryEnqIsVec[i];
++          ent_r[i].vecMbCommit <= 1'b0;
++          ent_r[i].hasException<= 1'b0;
++          ent_r[i].waitStoreS2 <= 1'b1;
++          ent_r[i].vecLastFlow <= entryEnqLastFlow[i];
++          uop_r[i]             <= entryEnqUop[i];
+         end
+       end
+ 
+@@ -52,98 +52,98 @@
+       //   entry 的 addrvalid 时优先级会反，导致 addrvalid 残留（store miss 未清）。
+       // -- port 0 s1 --
+       if (sta0_fire & io_storeAddrIn_0_bits_updateAddrValid) begin
+-        ent[io_storeAddrIn_0_bits_uop_sqIdx_value].addrvalid <= ~io_storeAddrIn_0_bits_miss;
+-        ent[io_storeAddrIn_0_bits_uop_sqIdx_value].nc        <= io_storeAddrIn_0_bits_nc;
++        ent_r[io_storeAddrIn_0_bits_uop_sqIdx_value].addrvalid <= ~io_storeAddrIn_0_bits_miss;
++        ent_r[io_storeAddrIn_0_bits_uop_sqIdx_value].nc        <= io_storeAddrIn_0_bits_nc;
+       end
+       if (sta0_fire & ~io_storeAddrIn_0_bits_isFrmMisAlignBuf) begin
+-        ent[io_storeAddrIn_0_bits_uop_sqIdx_value].unaligned   <= io_storeAddrIn_0_bits_isMisalign;
+-        ent[io_storeAddrIn_0_bits_uop_sqIdx_value].cross16Byte <= io_storeAddrIn_0_bits_isMisalign & ~io_storeAddrIn_0_bits_misalignWith16Byte;
++        ent_r[io_storeAddrIn_0_bits_uop_sqIdx_value].unaligned   <= io_storeAddrIn_0_bits_isMisalign;
++        ent_r[io_storeAddrIn_0_bits_uop_sqIdx_value].cross16Byte <= io_storeAddrIn_0_bits_isMisalign & ~io_storeAddrIn_0_bits_misalignWith16Byte;
+       end
+       if (sta0_fire) begin
+-        uop[io_storeAddrIn_0_bits_uop_sqIdx_value].robIdx_flag   <= io_storeAddrIn_0_bits_uop_robIdx_flag;
+-        uop[io_storeAddrIn_0_bits_uop_sqIdx_value].robIdx_value  <= io_storeAddrIn_0_bits_uop_robIdx_value;
+-        uop[io_storeAddrIn_0_bits_uop_sqIdx_value].uopIdx        <= io_storeAddrIn_0_bits_uop_uopIdx;
+-        uop[io_storeAddrIn_0_bits_uop_sqIdx_value].fuOpType      <= io_storeAddrIn_0_bits_uop_fuOpType;
+-        uop[io_storeAddrIn_0_bits_uop_sqIdx_value].trigger       <= io_storeAddrIn_0_bits_uop_trigger;
+-        uop[io_storeAddrIn_0_bits_uop_sqIdx_value].dbg_enqRsTime <= io_storeAddrIn_0_bits_uop_debugInfo_enqRsTime;
+-        uop[io_storeAddrIn_0_bits_uop_sqIdx_value].dbg_selectTime<= io_storeAddrIn_0_bits_uop_debugInfo_selectTime;
+-        uop[io_storeAddrIn_0_bits_uop_sqIdx_value].dbg_issueTime <= io_storeAddrIn_0_bits_uop_debugInfo_issueTime;
++        uop_r[io_storeAddrIn_0_bits_uop_sqIdx_value].robIdx_flag   <= io_storeAddrIn_0_bits_uop_robIdx_flag;
++        uop_r[io_storeAddrIn_0_bits_uop_sqIdx_value].robIdx_value  <= io_storeAddrIn_0_bits_uop_robIdx_value;
++        uop_r[io_storeAddrIn_0_bits_uop_sqIdx_value].uopIdx        <= io_storeAddrIn_0_bits_uop_uopIdx;
++        uop_r[io_storeAddrIn_0_bits_uop_sqIdx_value].fuOpType      <= io_storeAddrIn_0_bits_uop_fuOpType;
++        uop_r[io_storeAddrIn_0_bits_uop_sqIdx_value].trigger       <= io_storeAddrIn_0_bits_uop_trigger;
++        uop_r[io_storeAddrIn_0_bits_uop_sqIdx_value].dbg_enqRsTime <= io_storeAddrIn_0_bits_uop_debugInfo_enqRsTime;
++        uop_r[io_storeAddrIn_0_bits_uop_sqIdx_value].dbg_selectTime<= io_storeAddrIn_0_bits_uop_debugInfo_selectTime;
++        uop_r[io_storeAddrIn_0_bits_uop_sqIdx_value].dbg_issueTime <= io_storeAddrIn_0_bits_uop_debugInfo_issueTime;
+       end
+       // -- port 0 s2 --
+       if (sta0_reFire) begin
+-        ent[sta0_wbIdxReg_q].pending       <= io_storeAddrInRe_0_mmio;
+-        ent[sta0_wbIdxReg_q].mmio          <= io_storeAddrInRe_0_mmio;
+-        ent[sta0_wbIdxReg_q].memBackTypeMM <= io_storeAddrInRe_0_memBackTypeMM;
+-        ent[sta0_wbIdxReg_q].hasException  <= io_storeAddrInRe_0_hasException;
+-        ent[sta0_wbIdxReg_q].addrvalid     <= ent[sta0_wbIdxReg_q].addrvalid | io_storeAddrInRe_0_hasException;
+-        ent[sta0_wbIdxReg_q].waitStoreS2   <= 1'b0;
++        ent_r[sta0_wbIdxReg_q].pending       <= io_storeAddrInRe_0_mmio;
++        ent_r[sta0_wbIdxReg_q].mmio          <= io_storeAddrInRe_0_mmio;
++        ent_r[sta0_wbIdxReg_q].memBackTypeMM <= io_storeAddrInRe_0_memBackTypeMM;
++        ent_r[sta0_wbIdxReg_q].hasException  <= io_storeAddrInRe_0_hasException;
++        ent_r[sta0_wbIdxReg_q].addrvalid     <= ent[sta0_wbIdxReg_q].addrvalid | io_storeAddrInRe_0_hasException;
++        ent_r[sta0_wbIdxReg_q].waitStoreS2   <= 1'b0;
+         // 注：本配置 EnableAtCommitMissTrigger=false，prefetch 不由 miss 驱动（golden 无该寄存器）。
+       end
+       // -- port 1 s1 --
+       if (sta1_fire & io_storeAddrIn_1_bits_updateAddrValid) begin
+-        ent[io_storeAddrIn_1_bits_uop_sqIdx_value].addrvalid <= ~io_storeAddrIn_1_bits_miss;
+-        ent[io_storeAddrIn_1_bits_uop_sqIdx_value].nc        <= io_storeAddrIn_1_bits_nc;
++        ent_r[io_storeAddrIn_1_bits_uop_sqIdx_value].addrvalid <= ~io_storeAddrIn_1_bits_miss;
++        ent_r[io_storeAddrIn_1_bits_uop_sqIdx_value].nc        <= io_storeAddrIn_1_bits_nc;
+       end
+       if (sta1_fire & ~io_storeAddrIn_1_bits_isFrmMisAlignBuf) begin
+-        ent[io_storeAddrIn_1_bits_uop_sqIdx_value].unaligned   <= io_storeAddrIn_1_bits_isMisalign;
+-        ent[io_storeAddrIn_1_bits_uop_sqIdx_value].cross16Byte <= io_storeAddrIn_1_bits_isMisalign & ~io_storeAddrIn_1_bits_misalignWith16Byte;
++        ent_r[io_storeAddrIn_1_bits_uop_sqIdx_value].unaligned   <= io_storeAddrIn_1_bits_isMisalign;
++        ent_r[io_storeAddrIn_1_bits_uop_sqIdx_value].cross16Byte <= io_storeAddrIn_1_bits_isMisalign & ~io_storeAddrIn_1_bits_misalignWith16Byte;
+       end
+       if (sta1_fire) begin
+-        uop[io_storeAddrIn_1_bits_uop_sqIdx_value].robIdx_flag   <= io_storeAddrIn_1_bits_uop_robIdx_flag;
+-        uop[io_storeAddrIn_1_bits_uop_sqIdx_value].robIdx_value  <= io_storeAddrIn_1_bits_uop_robIdx_value;
+-        uop[io_storeAddrIn_1_bits_uop_sqIdx_value].uopIdx        <= io_storeAddrIn_1_bits_uop_uopIdx;
+-        uop[io_storeAddrIn_1_bits_uop_sqIdx_value].fuOpType      <= io_storeAddrIn_1_bits_uop_fuOpType;
+-        uop[io_storeAddrIn_1_bits_uop_sqIdx_value].trigger       <= io_storeAddrIn_1_bits_uop_trigger;
+-        uop[io_storeAddrIn_1_bits_uop_sqIdx_value].dbg_enqRsTime <= io_storeAddrIn_1_bits_uop_debugInfo_enqRsTime;
+-        uop[io_storeAddrIn_1_bits_uop_sqIdx_value].dbg_selectTime<= io_storeAddrIn_1_bits_uop_debugInfo_selectTime;
+-        uop[io_storeAddrIn_1_bits_uop_sqIdx_value].dbg_issueTime <= io_storeAddrIn_1_bits_uop_debugInfo_issueTime;
++        uop_r[io_storeAddrIn_1_bits_uop_sqIdx_value].robIdx_flag   <= io_storeAddrIn_1_bits_uop_robIdx_flag;
++        uop_r[io_storeAddrIn_1_bits_uop_sqIdx_value].robIdx_value  <= io_storeAddrIn_1_bits_uop_robIdx_value;
++        uop_r[io_storeAddrIn_1_bits_uop_sqIdx_value].uopIdx        <= io_storeAddrIn_1_bits_uop_uopIdx;
++        uop_r[io_storeAddrIn_1_bits_uop_sqIdx_value].fuOpType      <= io_storeAddrIn_1_bits_uop_fuOpType;
++        uop_r[io_storeAddrIn_1_bits_uop_sqIdx_value].trigger       <= io_storeAddrIn_1_bits_uop_trigger;
++        uop_r[io_storeAddrIn_1_bits_uop_sqIdx_value].dbg_enqRsTime <= io_storeAddrIn_1_bits_uop_debugInfo_enqRsTime;
++        uop_r[io_storeAddrIn_1_bits_uop_sqIdx_value].dbg_selectTime<= io_storeAddrIn_1_bits_uop_debugInfo_selectTime;
++        uop_r[io_storeAddrIn_1_bits_uop_sqIdx_value].dbg_issueTime <= io_storeAddrIn_1_bits_uop_debugInfo_issueTime;
+       end
+       // -- port 1 s2 --
+       if (sta1_reFire) begin
+-        ent[sta1_wbIdxReg_q].pending       <= io_storeAddrInRe_1_mmio;
+-        ent[sta1_wbIdxReg_q].mmio          <= io_storeAddrInRe_1_mmio;
+-        ent[sta1_wbIdxReg_q].memBackTypeMM <= io_storeAddrInRe_1_memBackTypeMM;
+-        ent[sta1_wbIdxReg_q].hasException  <= io_storeAddrInRe_1_hasException;
+-        ent[sta1_wbIdxReg_q].addrvalid     <= ent[sta1_wbIdxReg_q].addrvalid | io_storeAddrInRe_1_hasException;
+-        ent[sta1_wbIdxReg_q].waitStoreS2   <= 1'b0;
++        ent_r[sta1_wbIdxReg_q].pending       <= io_storeAddrInRe_1_mmio;
++        ent_r[sta1_wbIdxReg_q].mmio          <= io_storeAddrInRe_1_mmio;
++        ent_r[sta1_wbIdxReg_q].memBackTypeMM <= io_storeAddrInRe_1_memBackTypeMM;
++        ent_r[sta1_wbIdxReg_q].hasException  <= io_storeAddrInRe_1_hasException;
++        ent_r[sta1_wbIdxReg_q].addrvalid     <= ent[sta1_wbIdxReg_q].addrvalid | io_storeAddrInRe_1_hasException;
++        ent_r[sta1_wbIdxReg_q].waitStoreS2   <= 1'b0;
+       end
+ 
+       // ---- (4) StoreData 写回数据 s1：置 datavalid（RegNext(fire) & allocated）----
+-      if (std0_fireReg_q & ent[std0_wbIdxReg_q].allocated) ent[std0_wbIdxReg_q].datavalid <= 1'b1;
+-      if (std1_fireReg_q & ent[std1_wbIdxReg_q].allocated) ent[std1_wbIdxReg_q].datavalid <= 1'b1;
++      if (std0_fireReg_q & ent[std0_wbIdxReg_q].allocated) ent_r[std0_wbIdxReg_q].datavalid <= 1'b1;
++      if (std1_fireReg_q & ent[std1_wbIdxReg_q].allocated) ent_r[std1_wbIdxReg_q].datavalid <= 1'b1;
+ 
+       // ---- (5) ROB 提交：置 committed ----
+       for (int i = 0; i < COMMIT_W; i++) begin
+-        if (commitEntPtr_committed[i]) ent[commitPtrIdx[i]].committed <= 1'b1;
++        if (commitEntPtr_committed[i]) ent_r[commitPtrIdx[i]].committed <= 1'b1;
+         // nc & hasException & isCommit → completed（提前出队，不进 Sbuffer）
+         if (commitEntPtr_committed[i] & ent[commitPtrIdx[i]].nc & ent[commitPtrIdx[i]].hasException)
+-          ent[commitPtrIdx[i]].completed <= 1'b1;
++          ent_r[commitPtrIdx[i]].completed <= 1'b1;
+       end
+ 
+       // ---- (7) 出队动作完成 → 置 completed ----
+       // mmio 写回 ROB / vec mmio：completed(deqPtr)
+-      if (mmioStout_fire | vecmmioStout_fire) ent[deqPtr].completed <= 1'b1;
++      if (mmioStout_fire | vecmmioStout_fire) ent_r[deqPtr].completed <= 1'b1;
+       // nc 完成：completed(ncPtr)
+-      if (ncDeqTrig) ent[ncPtr[SQ_IDX_W-1:0]].completed <= 1'b1;
++      if (ncDeqTrig) ent_r[ncPtr[SQ_IDX_W-1:0]].completed <= 1'b1;
+       // Sbuffer fire 且需 deq：completed(sqPtr)
+-      if (sbuffer0_fire & db_deq_0_bits_sqNeedDeq) ent[db_deq_0_bits_sqPtr_value].completed <= 1'b1;
+-      if (sbuffer1_fire & db_deq_1_bits_sqNeedDeq) ent[db_deq_1_bits_sqPtr_value].completed <= 1'b1;
++      if (sbuffer0_fire & db_deq_0_bits_sqNeedDeq) ent_r[db_deq_0_bits_sqPtr_value].completed <= 1'b1;
++      if (sbuffer1_fire & db_deq_1_bits_sqNeedDeq) ent_r[db_deq_1_bits_sqPtr_value].completed <= 1'b1;
+       // mmioDoReq：清 pending(deqPtr)
+-      if (mmioDoReq) ent[deqPtr].pending <= 1'b0;
++      if (mmioDoReq) ent_r[deqPtr].pending <= 1'b0;
+ 
+       // ---- (8) 向量 vecMbCommit：vecCommit 命中 / 跨页同 uop ----
+       for (int i = 0; i < SQ_SIZE; i++) begin
+-        if (vecCommit[i]) ent[i].vecMbCommit <= 1'b1;
++        if (vecCommit[i]) ent_r[i].vecMbCommit <= 1'b1;
+       end
+       if (io_maControl_toStoreQueue_withSameUop
+           & (ent[rdataPtrExt[0].value].addrvalid & ent[rdataPtrExt[0].value].datavalid))
+-        ent[rdataPtrExt[0].value].vecMbCommit <= 1'b1;
++        ent_r[rdataPtrExt[0].value].vecMbCommit <= 1'b1;
+ 
+       // ---- (9) redirect 取消：清 allocated/completed（最高优先级，最后写）----
+       for (int i = 0; i < SQ_SIZE; i++) begin
+         if (needCancel[i]) begin
+-          ent[i].allocated <= 1'b0;
+-          ent[i].completed <= 1'b0;
++          ent_r[i].allocated <= 1'b0;
++          ent_r[i].completed <= 1'b0;
+         end
+       end
+     end

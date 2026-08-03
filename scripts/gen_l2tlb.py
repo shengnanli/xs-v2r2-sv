@@ -418,8 +418,10 @@ def gen_struct_includes():
         for b in range(8):
             L.append(f"  assign {pre}_pteidx_{b} = mq_s1.pteidx[{b}];")
         L.append(f"  assign {pre}_not_super = mq_s1.not_super;")
-        # not_merge = s2xlate != noS2xlate（顶层在 mergeArb in_2 也给 not_merge）
-        L.append(f"  assign {pre}_not_merge = (llptw_out_s2x != 2'h0);")
+        # not_merge = ~first_s2xlate_fault & (s2xlate != noS2xlate)
+        # （golden _GEN_318：first_s2xlate_fault 时强制 not_merge=0；缺此门控 valididx 分叉）
+        L.append(f"  assign {pre}_not_merge = "
+                 f"~u_llptw_out_bits_first_s2xlate_fault & (llptw_out_s2x != 2'h0);")
     (XSSV / "rtl/memblock/L2TLB_merge_in2.svh").write_text("\n".join(L) + "\n")
 
     # (C) marb_out：mergeArb_{0,1}.out.bits.s1 扁平网 → marbN_out_s1（struct，to_struct）

@@ -3,9 +3,7 @@
 > ✅ **FM 分类 = REPLACEMENT_EQ（可读核真驱动 + 冻结基线原生 SUCCEEDED）**。依据台账
 > [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md) 与冻结基线日志
 > `verif/ut/Uncache/fm_work/Uncache/fm_full.log`：本模块在当前冻结 golden 基线上 FM **原生
-> `Verification SUCCEEDED`，2450 passing / 0 failing / 0 unverified**。下文验证节里任何
-> "FAILED / 20 failing 截断 / 部分验证 / 未收敛"的表述是**冻结前的旧叙事，已作废**——以本
-> banner 与台账为准。
+> `Verification SUCCEEDED`，2450 passing / 0 failing / 0 unverified**。
 
 > 可读重写：`rtl/memblock/Uncache.sv`（核 `xs_Uncache_core`）+ `rtl/memblock/uncache_pkg.sv`
 > 设计意图来源（人写 Chisel）：`src/main/scala/xiangshan/cache/dcache/Uncache.scala`
@@ -166,24 +164,16 @@ data/nc/nderr，`is2lq = (cmd==M_XRD)`。resp.fire 时清空该 entry 全部状�
   golden 断言。payload 类输出按对应 valid 门控比对（valid=0 时 golden 暴露优先级编码器
   缺省值，与 impl 缺省不同属正常）。
 - 结果：**seed 1 / 7 / 42 各 200000 拍，errors = 0**。
-- 内部交叉验证：把 FM 失配点 `do_uarch_drain`、`entries[0].addr` 用层次引用接入比对，
+- 内部交叉验证：把 `do_uarch_drain`、`entries[0].addr` 用层次引用接入比对，
   3 个种子 600k 拍 **mismatch 全 0**，证明这两点在所有可达状态下与 golden 逐位等价。
 
 ### 6.2 FM（形式化等价）
-- 末次 verify 结论：**Verification FAILED——1079 passing / 20 failing（do_uarch_drain ×1 +
-  entries_0_addr ×19）/ 1351 unverified**。**20 是 Formality 默认
-  `verification_failing_point_limit=20` 的截断上限**——verify 攒满 20 个失配即提前中止，
-  1351 个 unverified 点未验。
-- 性质：`analyze_points` 显示 `entries_0_addr` 的失配**全部位于 `do_uarch_drain` 的扇出锥内**
-  （do_uarch_drain → e0_reject → e0_fire → entry0 alloc/merge）；即根因是 `do_uarch_drain`
-  这一个组合锥的签名分析未能配对。
-- 判断：该次态 `((f1_needDrain|flush)&~empty)` 的全部输入（`f1_tagMismatch`=各路 matchInvalid、
-  `empty`=states valid 归约、`flush`）在 FM 中均**已配对为 passing**，逻辑上恒等；UT 600k×3
-  拍内部探针 0 失配进一步证明等价。残留失配是「可读 struct/genvar 结构 vs firtool 展平
-  + entries 寄存器无复位（自由初值）」下 FM 对不可达组合的保守判定，**非功能缺陷**。
-- 结论：按 `docs/REWRITE_STYLE.md` 的策略，本模块取「**UT 充分（逐位等价）+ FM 部分验证**」
-  ——1079 passing，20 failing（截断）已证伪，1351 unverified 未覆盖，以 UT 为权威；
-  不为迁就 FM 而退回照抄 golden 命名/结构。
+- 冻结基线全貌重跑（`fm_full.log`）**原生 `Verification SUCCEEDED`：2450 passing /
+  0 failing / 0 unverified**。
+- 历史注脚：冻结前的部分验证曾在 `do_uarch_drain` 组合锥（及其扇出内的 `entries[0].addr`）
+  上因签名分析配对不齐报出失配——「可读 struct/genvar 结构 vs firtool 展平 + entries 寄存器
+  无复位（自由初值）」下 FM 对不可达组合的保守判定，当时用上面的内部层次探针（600k×3 拍
+  mismatch=0）证伪；冻结基线重跑后 FM 已原生收敛，可读核未退回照抄 golden 命名/结构。
 
 ### 6.3 结构硬指标（grep）
 | 指标 | 值 |

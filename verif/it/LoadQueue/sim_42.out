@@ -1,0 +1,95 @@
+Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomization) is detected on the machine. To enable $save functionality, ASLR will be switched off and simv re-executed.
+Please use '-no_save' simv switch to avoid re-execution or '-suppress=ASLR_DETECTED_INFO' to suppress this message.
+Chronologic VCS simulator copyright 1991-2024
+Contains Synopsys proprietary information.
+Compiler version W-2024.09-SP1_Full64; Runtime version W-2024.09-SP1_Full64;  Jun 23 07:59 2026
+[6004000] io_replay_0_bits_uop_exceptionVec_1 g=1 i=0
+[6004000] io_replay_0_bits_uop_exceptionVec_6 g=0 i=1
+[6004000] io_replay_0_bits_uop_exceptionVec_7 g=1 i=0
+[6004000] io_replay_0_bits_uop_exceptionVec_9 g=1 i=0
+[6004000] io_replay_0_bits_uop_exceptionVec_11 g=1 i=0
+[6004000] io_replay_0_bits_uop_exceptionVec_12 g=0 i=1
+[6004000] io_replay_0_bits_uop_exceptionVec_15 g=1 i=0
+[6004000] io_replay_0_bits_uop_exceptionVec_17 g=0 i=1
+[6004000] io_replay_0_bits_uop_exceptionVec_19 g=0 i=1
+[6004000] io_replay_0_bits_uop_preDecodeInfo_isRVC g=1 i=0
+[6004000] io_replay_0_bits_uop_ftqPtr_flag g=0 i=1
+[6004000] io_replay_0_bits_uop_ftqPtr_value g=1f i=06
+[6004000] io_replay_0_bits_uop_ftqOffset g=5 i=8
+[6004000] io_replay_0_bits_uop_fuOpType g=11b i=13f
+[6004000] io_replay_0_bits_uop_rfWen g=1 i=0
+[6004000] io_replay_0_bits_uop_fpWen g=0 i=1
+[6004000] io_replay_0_bits_uop_vpu_vstart g=28 i=4a
+[6004000] io_replay_0_bits_uop_vpu_veew g=1 i=0
+[6004000] io_replay_0_bits_uop_uopIdx g=2d i=0b
+[6004000] io_replay_0_bits_uop_pdest g=cb i=7b
+[6004000] io_replay_0_bits_uop_robIdx_value g=7f i=d5
+[6004000] io_replay_0_bits_uop_debugInfo_enqRsTime g=ac189266897bae7a i=1c347aa608793831
+[6004000] io_replay_0_bits_uop_debugInfo_selectTime g=597b2ac6375ea6cb i=98015dd47e71b62d
+[6004000] io_replay_0_bits_uop_debugInfo_issueTime g=a5eb713734ddf3dd i=62a4ab15240db0f7
+[6004000] io_replay_0_bits_uop_storeSetHit g=1 i=0
+[6004000] io_replay_0_bits_uop_waitForRobIdx_flag g=0 i=1
+[6004000] io_replay_0_bits_uop_waitForRobIdx_value g=61 i=01
+[6004000] io_replay_0_bits_uop_lqIdx_value g=04 i=01
+[6004000] io_replay_0_bits_uop_sqIdx_flag g=1 i=0
+[6004000] io_replay_0_bits_uop_sqIdx_value g=36 i=19
+[6004000] io_replay_0_bits_vaddr g=2f50127e98b92 i=15a83f9f4ce02
+[6004000] io_replay_0_bits_mask g=f734 i=5c60
+[6004000] io_replay_0_bits_isvec g=1 i=0
+[6004000] io_replay_0_bits_elemIdx g=cc i=df
+[6004000] io_replay_0_bits_alignedType g=5 i=1
+[6004000] io_replay_0_bits_reg_offset g=0 i=c
+[6004000] io_replay_0_bits_elemIdxInsideVd g=e6 i=de
+[6004000] io_replay_0_bits_mshrid g=5 i=0
+[6004000] io_replay_0_bits_forward_tlDchannel g=0 i=1
+[6004000] io_replay_0_bits_schedIndex g=18 i=09
+[6014000] io_replay_0_valid g=1 i=0
+[6014000] io_replay_0_bits_uop_exceptionVec_0 g=0 i=1
+[6014000] io_replay_0_bits_uop_exceptionVec_7 g=0 i=1
+[6014000] io_replay_0_bits_uop_exceptionVec_10 g=1 i=0
+[6014000] io_replay_0_bits_uop_exceptionVec_11 g=0 i=1
+[6014000] io_replay_0_bits_uop_exceptionVec_15 g=0 i=1
+[6014000] io_replay_0_bits_uop_exceptionVec_16 g=0 i=1
+[6014000] io_replay_0_bits_uop_exceptionVec_17 g=1 i=0
+[6014000] io_replay_0_bits_uop_preDecodeInfo_isRVC g=0 i=1
+[6014000] io_replay_0_bits_uop_ftqPtr_flag g=1 i=0
+[6014000] io_replay_0_bits_uop_ftqPtr_value g=06 i=2c
+[6014000] io_replay_0_bits_uop_ftqOffset g=8 i=4
+[6014000] io_replay_0_bits_uop_fuOpType g=13f i=1a6
+[6014000] io_replay_0_bits_uop_fpWen g=1 i=0
+[6014000] io_replay_0_bits_uop_vpu_vstart g=4a i=35
+[6014000] io_replay_0_bits_uop_uopIdx g=0b i=7b
+[6014000] io_replay_0_bits_uop_pdest g=7b i=ad
+[6014000] io_replay_0_bits_uop_robIdx_flag g=0 i=1
+[6014000] io_replay_0_bits_uop_robIdx_value g=d5 i=63
+[6014000] io_replay_0_bits_uop_debugInfo_enqRsTime g=1c347aa608793831 i=4d96eaa805411e68
+[6014000] io_replay_0_bits_uop_debugInfo_selectTime g=98015dd47e71b62d i=ab3aa3fa3359c7c8
+[6014000] io_replay_0_bits_uop_debugInfo_issueTime g=62a4ab15240db0f7 i=d848c40dafec59cf
+[6014000] io_replay_0_bits_uop_waitForRobIdx_value g=01 i=a4
+[6014000] io_replay_0_bits_uop_lqIdx_flag g=1 i=0
+[6014000] io_replay_0_bits_uop_lqIdx_value g=01 i=02
+[6014000] io_replay_0_bits_uop_sqIdx_value g=19 i=20
+[6014000] io_replay_0_bits_mask g=5c60 i=b62d
+[6014000] io_replay_0_bits_isvec g=0 i=1
+[6014000] io_replay_0_bits_is128bit g=1 i=0
+[6014000] io_replay_0_bits_elemIdx g=df i=75
+[6014000] io_replay_0_bits_alignedType g=1 i=4
+[6014000] io_replay_0_bits_mbIndex g=1 i=3
+[6014000] io_replay_0_bits_reg_offset g=c i=f
+[6014000] io_replay_0_bits_elemIdxInsideVd g=de i=b9
+[6014000] io_replay_0_bits_vecActive g=1 i=0
+[6014000] io_replay_0_bits_mshrid g=0 i=7
+[6014000] io_replay_0_bits_forward_tlDchannel g=1 i=0
+[6014000] io_replay_0_bits_schedIndex g=09 i=00
+[6034000] io_replay_0_valid g=0 i=1
+[6034000] io_replay_0_bits_uop_exceptionVec_0 g=1 i=0
+checks=200000 errors=2312
+ACTIVITY: lq_nonempty_cyc=191005 enq_fire=95132 replay_fire=139302 ldin_fire=174842 (of 200000)
+PROBE_RESULT: loadQueueReplay internal regs mismatch=0 / checked=0
+TEST FAILED
+$finish called from file "tb.sv", line 3317.
+$finish at simulation time           2000155000
+           V C S   S i m u l a t i o n   R e p o r t 
+Time: 2000155000 ps
+CPU Time:    267.000 seconds;       Data structure size:   1.7Mb
+Tue Jun 23 08:03:49 2026

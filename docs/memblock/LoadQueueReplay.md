@@ -3,9 +3,7 @@
 > ✅ **FM 分类 = REPLACEMENT_EQ（可读核真驱动 + 冻结基线原生 SUCCEEDED）**。依据台账
 > [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md) 与冻结基线日志
 > `verif/ut/LoadQueueReplay/fm_work/LoadQueueReplay/fm_full.log`：本模块在当前冻结 golden 基线上 FM **原生
-> `Verification SUCCEEDED`，33337 passing / 0 failing / 0 unverified**。下文验证节里任何
-> "FAILED / 20 failing 截断 / 部分验证 / 未收敛"的表述是**冻结前的旧叙事，已作废**——以本
-> banner 与台账为准。
+> `Verification SUCCEEDED`，33337 passing / 0 failing / 0 unverified**。
 
 > 设计意图来源：`src/main/scala/xiangshan/mem/lsqueue/LoadQueueReplay.scala`（`class LoadQueueReplay`）
 > 可读重写核：`rtl/memblock/LoadQueueReplay.sv`（`xs_LoadQueueReplay_core`）+ `loadqueuereplay_pkg.sv` + 多个 `loadqueuereplay_*.svh` 分节
@@ -303,16 +301,9 @@ sequenceDiagram
 
 ### 形式等价（FM）
 
-golden 顶层（含 3 子模块黑盒）vs 手写同名 wrapper（→ 可读核 + 同 3 子模块黑盒），子模块设为黑盒，`set_app_var verification_merge_duplicated_registers false`（队列状态规模大，合并同值寄存器会令未配对寄存器搜索空间组合爆炸）。
+golden 顶层（含 3 子模块黑盒）vs 手写同名 wrapper（→ 可读核 + 同 3 子模块黑盒），子模块设为黑盒。冻结基线全貌重跑（`fm_full.log`）**原生 `Verification SUCCEEDED`：33337 passing / 0 failing / 0 unverified**（14858 点 `set_user_match` 钉对 + 17358 by name + 1121 by signature——用户钉点只做「struct 数组 ↔ golden 逐字段标量」的一一对应配对，不约束 ref）。
 
-**FM 结论：不收敛（按「UT 充分 + FM 不可判」先例处理，已用层次探针证伪失败点）。**
-
-FM 跑完报 `Verification FAILED`，但实质是**配对不收敛**而非真不等价：
-
-- 1155 Passing / **20 Failing** / **17141 Unverified** compare points；matching 阶段 18311 点按名字配对、**0 点靠签名分析配对**、5 点靠拓扑——大量 struct 数组打包寄存器（`cause_reg[i][b]`、`blockSqIdx_reg[i]`）无法与 golden 的逐字段标量寄存器（`cause_<i>`、`blockSqIdx_<i>_{flag,value}`）配对，21504 个 ref 寄存器 unmatched。这是本工程预期的「struct 数组 vs 扁平标量配对不收敛」情形。
-- 已报告的 20 个 failing 点全部落在 `u_core/cause_reg[0]`、`u_core/cause_reg[54]`、`u_core/blockSqIdx_reg[66]`——典型的「FM 把可读核的某个 packed 寄存器位错配到 golden 的另一个标量位」误报。注意 **20 是 Formality 默认 `verification_failing_point_limit=20` 的截断上限**（verify 攒满 20 个失配即提前中止，17141 个 Unverified 点未验）；下方层次探针**覆盖全部 72 个 entry**，其覆盖面远超 FM 已判的这 20 点。
-
-**失败点证伪（层次探针，UT 内部信号比对）**：在 UT testbench 用层次引用逐拍直接比对两侧真实内部状态——`u_g.cause_<i>` vs `u_i.u_core.cause[i]`、`u_g.blockSqIdx_<i>_{flag,value}` vs `u_i.u_core.blockSqIdx[i].{flag,value}`，**覆盖全部 72 个 entry**（远超 FM 报的 3 个点，含 entry 0/54/66）。X 用 `!$isunknown(golden)` 选通。
+历史注脚：冻结前的部分验证曾因「struct 数组打包寄存器（`cause_reg[i][b]`、`blockSqIdx_reg[i]`）vs golden 逐字段标量（`cause_<i>`、`blockSqIdx_<i>_{flag,value}`）」大规模配对不收敛而失配，当时用层次探针（`tb_probe.sv` + `probe_block.svh`，**覆盖全部 72 个 entry** 的 cause/blockSqIdx 寄存器）证伪。该探针本身仍是有效的仿真侧证据：
 
 | seed | probe_checks | probe_mismatch | output errors | 结果 |
 |------|--------------|----------------|---------------|------|
@@ -320,9 +311,7 @@ FM 跑完报 `Verification FAILED`，但实质是**配对不收敛**而非真不
 | 7  | 249994 | **0** | 0 | PASSED |
 | 42 | 249994 | **0** | 0 | PASSED |
 
-三种子各约 25 万拍，golden 内部寄存器与可读核 struct 数组寄存器**逐拍 bit-for-bit 完全一致（mismatch=0）**，证明 20 个 FM 失败点为假阳性。探针 tb 见 `verif/ut/LoadQueueReplay/tb_probe.sv` + `probe_block.svh`，结果见 `sim_probe_{1,7,42}.log`。
-
-> `s2_oldestSel` 家族的下标读 X 收敛已在可读核中用三元 mux 保证（见 §6）。综上：正确性以**充分 UT（三种子各 25 万拍逐拍全输出 errors=0）+ 全内部寄存器层次探针（mismatch=0）**为权威；FM 为部分验证——1155 passing，20 failing（截断上限）已证伪，17141 unverified 未覆盖（struct 数组配对不收敛）。
+> `s2_oldestSel` 家族的下标读 X 收敛已在可读核中用三元 mux 保证（见 §6）。
 
 ---
 
