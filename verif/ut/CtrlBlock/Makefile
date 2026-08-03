@@ -42,7 +42,7 @@ FM_REF_DEPS_CtrlBlock = DecodeStage.sv DelayN_15.sv DelayN_17.sv FusionDecoder.s
 #   FM 把全部黑盒 pin 设为 inout(canary formality.log 76778 条 "direction unknown ->
 #   inout"), 导致 driven 黑盒输出被误判 undriven → rename lsrc / rob exception 等 20 个
 #   glue-partition 伪 failing. 给 interface(方向已知)后这些伪 failing 消失(见
-#   docs/backend/CtrlBlock_partition_plan.md). assembly 边界由 allow/CtrlBlock.json 声明.
+#   verif/ut/CtrlBlock/PARTITION_PLAN.md). assembly 边界由 allow/CtrlBlock.json 声明.
 FM_INTERFACE_ONLY = DecodeStage DelayN_15 DelayN_17 FusionDecoder GPAMem MemCtrl \
                     NewDispatch PipeGroupConnect PipelineConnectPipe RedirectGenerator \
                     Rename RenameTableWrapper Rob SnapshotGenerator_14 \

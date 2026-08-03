@@ -1,7 +1,7 @@
 # ============================================================================
 # CtrlBlock PARTITION CANARY — "glue" partition (Worker H, agent/ctrlblock-w)
 # ----------------------------------------------------------------------------
-# See docs/backend/CtrlBlock_partition_plan.md for the full diagnosis + plan.
+# See verif/ut/CtrlBlock/PARTITION_PLAN.md for the full diagnosis + plan.
 #
 # The monolithic FM run reads ALL 22 golden submodules (Rob=220K lines,
 # NewDispatch=20K, ...) on BOTH ref and impl, so Formality flattens a ~320K+

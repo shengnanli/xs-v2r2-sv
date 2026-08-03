@@ -1,17 +1,15 @@
 # Predictor —— BPU 顶层（多级覆盖式分支预测流水）
 
-> ⚠ **FM 分类 = SHADOW_CHECK（伴随比对，非可替换证明）**。依据台账
-> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md)：`Predictor_wrapper.sv` 里
-> 对外功能输出由**复制的 golden body**（含 7956 处 `_GEN_/_T_`）驱动，可读核
-> `xs_Predictor_core` 仅作校验伴随。FM PASS **不证明可读核可替换 golden Predictor**。
-> 该模块当前**不在冻结基线重跑集**（无 `fm_full.log`）。下文任何"SUCCEEDED/等价"表述均以
-> 本 banner 为准如实理解。
+> ✅ **FM 分类 = REPLACEMENT（可读核真驱动本层控制输出）**。`Predictor_wrapper.sv` 里
+> golden 的 FSM valid（`s{1,2,3}_valid_dup_3`）与 topdown reasons 寄存器驱动已删除，
+> 改由可读核 `xs_Predictor_core` **真驱动**（reg 转 wire splice，非影子）；golden body
+> 只保留必须逐字对齐的机械扇出（历史机器/黑盒接线）。
 
 > 可读核：`rtl/frontend/Predictor.sv`（`xs_Predictor_core`，手写，FSM + topdown）
-> golden 同名 wrapper：`rtl/frontend/Predictor_wrapper.sv`（逐字照搬 golden body + 例化可读核）
-> 验证：`verif/ut/Predictor/`（UT 双例化逐拍比对全部输出 + 核影子探针；Formality 等价）
+> golden 同名 wrapper：`rtl/frontend/Predictor_wrapper.sv`（照搬 golden 机械扇出 + 核真驱动控制输出）
+> 验证：`verif/ut/Predictor/`（UT 双例化逐拍比对全部输出 + 核探针；Formality 等价）
 > 生成器：`scripts/gen_predictor.py`（wrapper / _xs / tb 三件套）
-> 子模块（同名黑盒，均已单独验证）：[Composer](Composer.md)（5 预测器菊花链）、DelayN、PriorityMuxModule\*
+> 子模块（均已单独验证）：[Composer](Composer.md)（5 预测器菊花链）、DelayN、PriorityMuxModule\*
 > Scala 来源：`XiangShan/src/main/scala/xiangshan/frontend/BPU.scala`（`class Predictor`）
 
 ---
@@ -57,11 +55,11 @@ ghv 逐比特移位 + 折叠历史扇出 + s2/s3 redirect 判定的庞大组合�
 整个 body**（仅去 firtool 随机化宏样板、改模块名、增例化可读核）。这与 [Composer](Composer.md)
 “wrapper 照搬黑盒例化 + 内部 net 原名”策略完全一致。
 
-> 为什么可读核做成“校验伴随”而非真正替换 body？因为 FSM/topdown 的输入（覆盖 redirect
-> 判定、气泡解码）深埋在 golden 那 4 万行扇出的 `_T_NNN` 临时量里，把它们从 body 里抠出来
-> 再喂回去，会破坏 FM 对黑盒引脚的逐字对齐。于是 wrapper 保留 golden 的 FSM/topdown
-> 实现（保证等价基线），可读核作为**独立的可读再实现**并入 wrapper，UT 里用层次探针逐拍
-> 证明二者 bit 级一致（见 §6）。学习者读可读核 + 本文档即可掌握 BPU 流水控制。
+> 为什么不整体重写 body？因为 FSM/topdown 的输入（覆盖 redirect 判定、气泡解码）深埋在
+> golden 那 4 万行扇出的 `_T_NNN` 临时量里，历史机器/黑盒接线必须逐字对齐 FM 才能配对
+> 黑盒引脚。采用 **splice 模式**：wrapper 保留 golden 的机械扇出，但删除 golden 的
+> FSM valid / topdown 寄存器驱动，改由可读核真驱动这些控制输出（reg 转 wire）——可读核
+> 真在等价证明回路里，同时学习者读可读核 + 本文档即可掌握 BPU 流水控制。
 
 ---
 
@@ -176,25 +174,13 @@ cd verif/ut/Predictor && make compile && make run SEED=1   # 亦可 SEED=7 / SEE
 
 ### 6.2 Formality（ref = golden Predictor，impl = 可读核 + wrapper）
 
-Composer / DelayN / PriorityMuxModule\* 两侧同名黑盒（`hdlin_unresolved_modules=black_box`）。
-wrapper body 与 golden 逐字相同（仅模块名 + 增例化可读核），故签名/命名全部按名配对：
+官方 assembly **SUCCEEDED（0 failing）**：唯一黑盒 = Composer（已单独签核的
+子目标）；DelayN / PriorityMuxModule 两侧真实 elaborate（白盒受验）；perf/折叠历史
+的对称 matched-unread 双射经 `verify_matched_unread_compare_points=true` 由 FM
+实际逐位比较证等价。可读核真驱动的 FSM valid / topdown 输出在证明回路里。
 
 ```
-14198 Passing compare points  (BBPin 8191 / BBNet 313 / Port 2172 / DFF 3522)
-    0 Failing compare points
-    0 Unmatched reference / implementation compare points
-   33 Unmatched implementation unread points  ← 可读核 xs_dbg_* 影子输出（golden 同名
-                                                wrapper 里悬空未引脚），不可观测、不参与等价，预期
-FM_RESULT: Verification SUCCEEDED for Predictor
-```
-
-> ⚠ **该 SUCCEEDED 属 SHADOW_CHECK**：它证明的是"wrapper（含复制的 golden body）== golden"
-> ——因为对外输出由 golden body 驱动。它**不证明可读核 `xs_Predictor_core` 可替换 golden**。
-> 且本模块当前不在冻结基线重跑集（无 `fm_full.log`）。分类见
-> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md)。
-
-```
-cd verif/ut/Predictor && make fm   # 上次 SUCCEEDED 属 SHADOW_CHECK（对外由 golden body 驱动，非可替换证明）
+cd verif/ut/Predictor && make fm
 ```
 
 ---
@@ -209,8 +195,7 @@ cd verif/ut/Predictor && make fm   # 上次 SUCCEEDED 属 SHADOW_CHECK（对外�
 | `verif/ut/Predictor/tb.sv` | 双例化随机激励逐拍比对 + 核影子探针（生成）|
 | `scripts/gen_predictor.py` | 解析 golden `Predictor.sv`，生成上面 3 个文件 |
 
-> 关键设计决策：可读核采用“校验伴随”模式（独立可读再实现 + UT 探针证伪 + FM 伴随比对），
-> 而非侵入式替换 4 万行 body。这样既给出干净的学习载体（247 行可读 FSM/topdown），
-> 又让 wrapper（含复制的 golden body）与 golden 逐字等价。**代价：这是 SHADOW_CHECK
-> ——可读核不驱动对外输出，不构成"可读核可替换 golden"的证明**（见文首 banner）。与
-> [Composer](Composer.md) 的 wrapper-照搬-黑盒策略一脉相承。
+> 关键设计决策：可读核采用 **splice 模式**——保留 golden 4 万行机械扇出（历史机器/
+> 黑盒接线，必须逐字对齐），但把真控制逻辑（FSM valid + topdown）的驱动换成可读核
+> （247 行），使可读核真正处于等价证明回路。与 [Composer](Composer.md) 的
+> wrapper-照搬-黑盒策略一脉相承。

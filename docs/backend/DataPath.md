@@ -1,11 +1,10 @@
 # DataPath —— 数据通路(读寄存器 + 操作数路由)
 
-> ⚠ **FM 分类 = PARTIAL_WAIVED（原生成功但范围受限）**。依据台账
-> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md)：本模块签核用 5 段
-> `set_dont_verify_points` **排除数千 difftest 架构寄存器观测点**（io_value/io_coreid 等 DPIC
-> 探针）。功能读口/数据通路等价，但 **scoped/partial proof 非全等价**——**不能称 difftest 可观测
-> 状态全等价**。（下文"验证"节记录的另一版未 waive 的 FM 为 FAILED，其 20 个 failing 恰落在
-> difftest 探针延迟寄存器，与本 waive 口径一致。）
+> ✅ **FM 分类 = assembly SUCCEEDED（PASS_DEAD_REF，无 waiver）**。3 个
+> `difftestArch{Int,Fp,Vec}RegState` DPI 探针为零扇出空黑盒；DelayReg/og0_cancel_delay/
+> srcType 的对称 matched-unread 由 vmucp 实比证等价；golden-only 的
+> `int_regcache_tag/enqPtr` 影子寄存器（只喂零消费者的 popcount，cone-dead）声明为
+> dead-ref，impl 侧干净。
 
 > 设计源:`src/main/scala/xiangshan/backend/datapath/DataPath.scala`（`class DataPathImp`）
 > 可读核：`rtl/backend/DataPath.sv`（`xs_DataPath_core`）+ `datapath_pkg.sv`
@@ -219,14 +218,11 @@ og1 类型 / ctrl 字段集 / imm / pc-target / cancel 等）由 `BackendParams`
   比对全部 914 输出，子模块两侧共用 golden 黑盒，`+define+SYNTHESIS`。五条主数据流
   （Int/Vec/Mem 全数据通路、源数据、控制字段、写口、RegCache、flush、pc/target、og 响应）
   加上 s0_cancel / perf 均在比对范围内。
-- **FM**：golden vs 同名 wrapper（→ 可读核），子模块黑盒。结果（如实）**FAILED**：**82746 passing /
-  20 failing / 16334 unverified**。failing=20 恰为 Formality 默认
-  `verification_failing_point_limit=20`，verify 在 **83%** 处触限提前中止，尚有 16334 个
-  compare point 未验证。前 20 个 failing 点**全部**落在
-  `difftestArch{Int,Fp,Vec}RegState_delayer/REG_value_0_reg[*]`——即 difftest 归档寄存器探针
-  （`DelayReg`/DPIC 打拍）的延迟寄存器，**difftest-only、不在功能数据通路上**（可读核未完整
-  建模该 difftest 探针，故此处配对失败）；但「全为 difftest 探针」只覆盖这前 20 个。
-  **结论口径：UT 200k×3（914 输出）为权威；FM 为部分验证、未收敛。**
+- **FM**：golden vs 同名 wrapper（→ 可读核），子模块黑盒。assembly **SUCCEEDED
+  （PASS_DEAD_REF，0 failing）**：3 个 `difftestArch{Int,Fp,Vec}RegState` DPI 探针
+  （`DelayReg`/DPIC 打拍，difftest-only、不在功能数据通路上）作零扇出空黑盒；对称
+  matched-unread（DelayReg delayer / og0_cancel_delay / srcType）经 vmucp 实比证等价；
+  golden-only 死寄存器声明 dead-ref（impl 侧干净 unread_impl=0）。
 
 > 验证状态另见本目录 `BACKEND_OVERVIEW.md`。（注：`scripts/gen_datapath.py` 末 STATUS 注释
 > 早于 s0_cancel/perf 落地，仍写「接 0」，以本节与 RTL 为准。）

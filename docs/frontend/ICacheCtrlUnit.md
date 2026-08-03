@@ -165,8 +165,3 @@ stateDiagram-v2
    若手写 FSM 用 `default: <= S_IDLE`，FM 会在这些 don't-care 状态判 `inject_state_reg[2:0]`
    不等价（3 个失败点）。改成 `default: ;`（保持）后 FM 全过。UT 不暴露（这些状态不可达），
    靠 FM 兜底。
-
-## 未改动
-
-仅改动 ICacheCtrlUnit 相关文件（核心 / 两个 wrapper / 本文档 / verif 下的 variants/tb 端口适配）。
-未修改 `scripts/fm_eq.tcl`、`scripts/ut_common.mk` 及其它模块；通用 FM 脚本即可通过。

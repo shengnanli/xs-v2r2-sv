@@ -25,7 +25,7 @@ FTBBank	IMPL_DEAD	nc0/ur50/ui64/bb2
 FTBEntryGen	IMPL_DEAD	nc0/ur0/ui9/bb0
 FauFTB	IMPL_DEAD	nc515/ur435/ui2/bb0
 Fence	IMPL_DEAD	nc0/ur116/ui116/bb0
-Frontend	NATIVE_FAIL	nc3268/ur0/ui3656/bb23
+Frontend	SIGNOFF_PASS	REAL REPLACEMENT(codex_0072两侧elaborate Predictor): native SUCCEEDED 52910/0/0unmatched, vmucp; 旧NATIVE_FAIL nc3268/ui3656 stale(shadow时代)
 Ftq	IMPL_DEAD	nc3330/ur4282/ui97/bb7/NONSYM
 GrantBuffer	IMPL_DEAD	nc1/ur1040/ui32/bb4
 IBuffer	IMPL_DEAD	nc0/ur6/ui27/bb0

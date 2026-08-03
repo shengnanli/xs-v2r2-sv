@@ -48,14 +48,14 @@ StoreMisalignBuffer · Tage_SC² · TLBNonBlock² · Uncache · Ftq
 
 > 装配层证明**只保证本层互联/流水 glue 等价**,不等于整模块功能等价——须叠加各子模块自身的 REPLACEMENT/PARTIAL 证明。CtrlBlock/DataPath 等在 Backend 里是黑盒,其自身证明见各自条目。
 
-## 三、SHADOW_CHECK(可读核不驱动输出,只伴随比对)—— 2
+## 三、SHADOW_CHECK —— 0(已全部升级为 REAL REPLACEMENT,历史记录)
 
-| 模块 | 证据 |
+| 模块 | 现状 |
 |------|------|
-| **Frontend** | `Frontend_wrapper.sv:9576` 明写"可读核 xs_Frontend_core(校验伴随;纯增量,**不影响对外功能**)";对外输出由复制的 golden body `inner_*` 驱动。FM SUCCEEDED **不证明可读核可替换 Frontend**。 |
-| **Predictor** | `Predictor_wrapper.sv` 含 **7956 处 `_GEN_/_T_`**(golden body 复制驱动输出),可读核 `xs_Predictor_core` 仅伴随。**当前不在冻结基线重跑集**(无 fm_full.log)。 |
+| **Frontend** | ~~shadow~~ → **REAL REPLACEMENT**(codex_0072): `xs_Frontend_core` 真驱动 `io_error_*/io_perf_*`+PC 连续性检查器; Predictor 两侧真实 elaborate 消 inner__probe cut 污染; native SUCCEEDED 52910/0/0unmatched(vmucp)。见 manifest_declarations Frontend 行。 |
+| **Predictor** | ~~shadow~~ → 核真驱动 FSM/topdown 输出(wrapper 已 splice); ledger SUCCEEDED/SIGNOFF_PASS(assembly declaration)。 |
 
-> 这两个必须停止以其 FM "PASS" 主张可读性替换;可读核要真正接管对外输出后才能升级为 REPLACEMENT。
+> 历史注: 早期两者为 shadow(可读核只伴随比对), 后经真实接管输出+两侧 elaborate 升级; 本节保留作演进记录。
 
 ## 四、PARTIAL_WAIVED(原生成功但范围受限)—— 3
 

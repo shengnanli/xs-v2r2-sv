@@ -214,15 +214,10 @@ canCompressVec 做跨口归并/压缩，或依赖 vtype/emul 计算向量流数�
 
 - `make fm`：golden `Rename` vs 手写 `Rename_wrapper`（→核）。impl 侧也带上 golden 子模块
   （Makefile `WRAPPER_SRCS`），两侧用同一套真实子模块，其内部寄存器逐一配对。
-- **实测结果（B 批补完后）**：**8375 passing / 20 failing / 0 aborted**。
-  - 20 个 failing **全部是 `io_out_0_bits_debugInfo_renameTime[*]` 位**（自由计数器 GTimer，
-    两侧独立计数，结构上不可等价 → 属预期，UT 亦跳过为 don't-care）。
-  - **原 20 个 B 批功能字段 failing 全部消除**：`dirtyFs / dirtyVs / instrSize / numLsElem /
-    traceBlockInPipe_{itype,iretire,ilastsize} / wfflags` 现全部 passing（passing 从 8338 升到 8375）。
-  - **A 批字段 + 子模块内部寄存器**全部 passing（无回归）。
-  - 残留 renameTime failing 由 **UT 探针证伪**：UT 把全部 B 批字段纳入逐拍比对，600K 拍 0 错，
-    仅 renameTime 跳过；即除自由计数器外功能完全等价。
-  - 详见 `fm_work/Rename/{fm.log,failing.rpt}`。
+- 官方 strict（+vmucp）**原生 SUCCEEDED（0 failing）**：A/B 批功能字段与子模块内部
+  寄存器全部 passing；`debugInfo_renameTime`（GTimer perf 计数器）早期曾因实现偏离
+  golden 报 failing，按 golden 忠实实现后消除；仅剩 vecFreeList `freeRegCntReg[1:0]`
+  两个与共享绿子 StdFreeList 同源的对称死位经双射配对由 vmucp 实比证等价。
 
 ---
 

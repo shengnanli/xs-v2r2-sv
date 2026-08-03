@@ -363,8 +363,6 @@ FU(Alu/Mul/Bku/FAlu/FCVT/FMA/IntFPToVec)、`Dispatcher*`、`ClockGate` 设为黑
    的别名,FM 在黑盒 pin `ClockGate*/TE` 上报 failing。golden 里 `TE = cg_bore_cgen`(顶层
    透传的 DFT 扫描使能),与功能使能 `E = clk_en` 是两条独立信号。改回
    `.TE(cg_bore_cgen) / .E(clk_en_*)` 后,三个 ClockGate 的 TE pin 全部对齐,FM SUCCEEDED。
-   (注:`verif/ut/ExeUnit_8/fm_work/.../failing.rpt` 是此问题修复前的旧快照,以最终 `fm.log`
-   的 `FM_RESULT: SUCCEEDED` 与 0 failing 为准。)
 
 ### 7.4 硬性闸门
 

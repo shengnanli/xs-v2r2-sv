@@ -5,7 +5,7 @@
 | 手写 SV | `rtl/frontend/NewIFU.sv`（可读核 `xs_NewIFU_core`）+ `NewIFU_subs.sv`（子模块适配）+ `NewIFU_wrapper.sv` |
 | Scala 来源 | `xiangshan/frontend/NewIFU.scala` |
 | 依赖 | PreDecode / RVCExpander / F3Predecoder / PredChecker / FrontendTrigger（均当已验证黑盒） |
-| 验证 | UT ✅ seed 1/7/42 各 80000 拍 0 错 / FM ❌ FAILED，部分验证：4824 passing、20 failing（截断上限，已证伪为假阳性）、6001 unverified 未验（见 §5），以 UT 为权威 |
+| 验证 | UT ✅ seed 1/7/42 各 80000 拍 0 错 / FM ✅ SUCCEEDED（0 failing，见 §5） |
 
 ## 1. 它在前端的位置
 
@@ -156,14 +156,7 @@ brType/isRet，确保预测校验基于 f3 的分支信息。MMIO 路径例外�
 - **UT**：golden `NewIFU` vs `NewIFU_xs` 双例化，两侧共用 golden 子模块。随机 FTQ 请求 / ICache 响应 /
   flush / redirect，逐拍比对全部输出（送 IBuffer 的指令/valid、向 ICache 的请求、redirect、perf）。
   **seed 1/7/42 各 80000 拍 0 错**。
-- **FM**：子模块两侧同名黑盒。末次 verify 结论 **Verification FAILED**：**4824 passing /
-  20 failing / 6001 unverified**。**20 是 Formality 默认 `verification_failing_point_limit=20`
-  的截断上限**（verify 攒满 20 个失配即提前中止，6001 个 unverified 点未验，属可读结构 vs
-  firtool 展平结构配对不收敛）。已报告的 20 个 failing 经核实全为**假阳性**：
-  - 19 × `f2_pc_high_plus1_reg`：tb 内部探针对比 `u_g.f2_pc_high_plus1` vs `u_i.u_core.f2_pc_high_plus1`，
-    2 种子 80000 拍 **uncond=0**（仿真中从不相异）——FM 仅在不可达输入组合上判次态不同。
-  - 1 × `f2_fire_no_flush_q_reg`：FM 自动配对**错配**到无关的 golden `fromFtqRedirectReg_bits_r_ftqOffset[3]`，
-    非真实比对；该信号是 `RegNext(f2_fire & !f2_flush)`，其效果（gate wb_enable/mmio_use_seq_pc）已由 UT 输出等价背书。
-  属风格指南允许的「UT 充分 + FM 部分」。
-- **修复记录**：核里 `has_last_half` 原读非局部信号（f3_pd/chk_fixedRange/...），FM 读入触 FMR_VLOG-091
-  致 impl 无法建模 → 改纯函数传参后 FM 正常 elaborate。
+- **FM**：子模块两侧同名黑盒，原生 **`Verification SUCCEEDED`（0 failing；仅剩
+  golden 侧 cone-dead 寄存器，impl 侧干净）**。
+- **修复记录（FM 教训）**：核里 `has_last_half` 原读非局部信号（f3_pd/chk_fixedRange/...），
+  FM 读入触 FMR_VLOG-091 致 impl 无法建模 → 改纯函数传参后 FM 正常 elaborate。

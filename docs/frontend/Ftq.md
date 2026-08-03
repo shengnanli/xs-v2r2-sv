@@ -1,11 +1,6 @@
 # Ftq —— Fetch Target Queue（取指目标队列）学习文档
 
-> ✅ **FM 分类 = REPLACEMENT_EQ（可读核真驱动 + 冻结基线原生 SUCCEEDED）**。依据台账
-> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md) 与冻结基线日志
-> `verif/ut/Ftq/fm_work/Ftq/fm_full.log`：本模块在当前冻结 golden 基线上 FM **原生
-> `Verification SUCCEEDED`，9952 passing / 0 failing / 0 unverified**。下文验证节里任何
-> "FAILED / 20 failing 截断 / 部分验证 / 未收敛"的表述是**冻结前的旧叙事，已作废**——以本
-> banner 与台账为准。
+> ✅ **FM 分类 = REPLACEMENT_EQ（可读核真驱动，原生 SUCCEEDED）**。
 
 | | |
 |---|---|
@@ -168,29 +163,11 @@ golden `Ftq` vs 手写 `Ftq_xs`（→`xs_Ftq_core`）双例化，**自洽指针�
 > resp_ready 是否变 X）作安全网。理想做法是给 golden 的提交存储一确定初值或灌真实 commit 流量，
 > 但二者改动量大且不改变结论，故保留 force 并在此如实说明。
 
-### 7.2 FM（Formality 签名分析）
+### 7.2 FM（Formality）
 
 `make fm`：golden 顶层 `Ftq`（含全部子模块黑盒）vs 手写同名 wrapper（→ `xs_Ftq_core`）。
-本模块庞大，FM 建模/匹配很慢（一次 ~40min，匹配 6700 by-name + 3974 by-signature）。
-结果 **Verification FAILED or INCONCLUSIVE**，但失配集中且可解释（与修复前同质，本次两处修复
-**未引入任何新增 failing point**）：
-
-- **5419 passing compare points**：取指主链全部匹配寄存器/输出形式等价。
-- **20 failing points —— 全部是 `commitStateQueue`**（`grep -cvE commitStateQueueReg
-  failing.rpt` == 0，已报告的失配无一在 commitStateQueue 之外）：提交状态机次态在 golden 里经 X 毒化的
-  `bpu_ftb_update_stall`→`canCommit` 链耦合，FM 把它判为与我方"复位完备、自洽"的提交逻辑不
-  等价——与 UT commit-path 现象同根（见 §7.1 force 说明），非取指主链真功能不等价。
-  **注意 20 是 Formality 默认 `verification_failing_point_limit=20` 的截断上限**——verify
-  攒满 20 个失配即提前中止，"全部是 commitStateQueue"只对已判的这 20 点成立。
-- **705/536 unmatched ref/impl + 5235 unverified**：per-entry 阵列（cfiIndex/mispred/
-  commitStateQueue，golden 展平成 64 个独立寄存器且扇出结构不同）、reduce-fanout 复制
-  （golden 的 `copied_*`）、提交路径流水寄存器（按可读重命名/重构）——可读结构与 firtool 展平
-  结构不签名匹配，属预期现象。**5235 个 unverified 点因 verify 截断中止而未验**。
-
-> 结论：等价性以 **UT（全种子逐拍全输出 errors=0）为权威**；FM 为**部分验证**：
-> 5419 passing，20 failing（截断上限，全在提交状态机、受 golden 独立 UT 的 X 毒化影响——DUT
-> 侧复位完备、commit 自洽，UT 中受 commit 影响的输出如 resp_ready/new_entry_ready 已逐拍等价，
-> 判为参考侧 sim-init X 假阳性），5235 unverified 未覆盖，如实记录。
+本模块庞大，FM 建模/匹配很慢（一次 ~40min，by-name + by-signature 混合配对）。
+当前**原生 `Verification SUCCEEDED`（0 failing）**。
 
 ### 7.3 复跑
 

@@ -1,11 +1,6 @@
 # RenameBuffer —— 重命名缓冲(Rename Buffer, Rab)
 
-> ✅ **FM 分类 = REPLACEMENT_EQ（可读核真驱动 + 冻结基线原生 SUCCEEDED）**。依据台账
-> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md) 与冻结基线日志
-> `verif/ut/RenameBuffer/fm_work/RenameBuffer/fm_full.log`：本模块在当前冻结 golden 基线上 FM **原生
-> `Verification SUCCEEDED`，10927 passing / 0 failing / 0 unverified**。下文验证节里任何
-> "FAILED / 20 failing 截断 / 部分验证 / 未收敛"的表述是**冻结前的旧叙事，已作废**——以本
-> banner 与台账为准。
+> ✅ **FM 分类 = REPLACEMENT_EQ（可读核真驱动，原生 SUCCEEDED）**。
 
 > 可读核：`rtl/backend/RenameBuffer.sv`（`xs_RenameBuffer_core`）+ `rtl/backend/renamebuffer_pkg.sv`
 > 包装层：`rtl/backend/RenameBuffer_wrapper.sv`（golden 同名 `RenameBuffer`，扁平端口 → 核）
@@ -161,12 +156,9 @@ specialWalkSizeNxt = specialWalkSize + newSpecialWalkSize - specialWalkCount
   seed 1/7/42 各 200000 拍 `errors=0`。激励覆盖 rename 入队、commit 出队、redirect 的快照
   walk 与无快照 special_walk、walkEnd。
 - **FM**：golden `RenameBuffer` vs 手写 `RenameBuffer_wrapper`(→核)，`SnapshotGenerator`
-  两侧同一黑盒。**FM 未完成、无任何比对结果**：golden 是 47092 行的极大扁平叶子(256×8bit
-  队列数组扇出到 6 路 commit + 255 路 diff 的巨型 Mux1H/OH 选择树)，fm_shell 在 `match`
-  阶段的「Building verification models / Merging duplicated registers」步骤上反复被中止
-  (fm.log 末尾为 SIGTERM `Process terminated by kill`)，始终无法走到 `verify`(三次重试
-  均如此)——**从未产生 passing/failing 任何比对点结果**，既非通过也非失配，如实记录。
-  **正确性改由 UT 内部层次探针保证**：tb 每拍把手写核的 `state`/五个指针(value+flag)/
-  256 位 `deq_ptr_oh`/三个 size/`vec_load_excp_valid`/**全部 256 个队列条目(ldest+pdest)**
-  逐一与 golden 同名内部寄存器比对，seed 1/7/42 各 200000 拍全部 0 失配——等价于对
-  golden 内部状态做了逐拍形式无关的强等价检查。
+  两侧同一黑盒。**原生 `Verification SUCCEEDED`（0 failing）**：strict+vmucp，7 个对称
+  matched-unread（`diffPtr_flag` + toVecExcpMod 的 `preg_r[7]`×6，两侧同源 cone-dead）
+  经双射配对由 FM 实比证等价；impl 的 `enqPtrVec_5_value_reg[1]` 按 golden 收窄
+  （该位零功能扇出）。此外 UT 的内部层次探针（`state`/五个指针/256 位 `deq_ptr_oh`/
+  三个 size/全部 256 个队列条目 ldest+pdest）逐拍与 golden 同名寄存器比对 0 失配，
+  相当于对内部状态的逐拍强等价检查。

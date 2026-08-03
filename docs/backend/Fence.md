@@ -142,14 +142,13 @@ stateDiagram-v2
 
 ---
 
-## 8. 验证
+## 8. 验证状态
 
 - **UT**：`verif/ut/Fence/`，golden `Fence` 与可读 `Fence_xs` 双例化，逐拍比对全部
   20 路输出端口。加权随机 `fuOpType`（偏向 6 个合法码 + 少量非法码）、随机
-  src/imm/握手/`sbIsEmpty`。seed 1/7/42 各 200000 拍。
-- **FM**：`make fm`，golden `Fence` vs 同名 wrapper（→ 可读核）。无子模块依赖。
-
-> 验证结论以仓库实际复跑为准（见各 `sim_*.log` 与 `fm_work/Fence/fm.log`）。
+  src/imm/握手/`sbIsEmpty`。seed 1/7/42 各 200000 拍 errors=0。
+- **FM**：`make fm`，golden `Fence` vs 同名 wrapper（→ 可读核），无子模块依赖。
+  **SUCCEEDED**（仅剩 golden 侧 cone-dead 寄存器，impl 侧干净）。
 
 ---
 

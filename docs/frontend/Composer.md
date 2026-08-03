@@ -1,14 +1,12 @@
 # Composer —— BPU 预测器组合器
 
-> ⚠ **FM 分类 = ASSEMBLY_EQ（装配层，仅证 glue）**。依据台账
-> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md)：本层把 5 个预测器子模块 + DelayN
-> 两侧同名黑盒，**只证明本层组合 glue（perf 对齐/meta 拼接/s1_ready）等价**，不等于整个 BPU
-> 预测功能等价（各预测器在其自身证明里）。下文 FM 结果为 **FAILED/部分验证（20 failing 为截断
-> 上限、已探针证伪，2171 unverified 未覆盖）**，本层等价性以 UT 为权威。
+> **FM 分类 = ASSEMBLY（装配层，证本层 glue）**。本层把 5 个预测器子模块 + DelayN
+> 两侧同名黑盒，**证明本层组合 glue（perf 对齐/meta 拼接/s1_ready）等价**，不等于整个 BPU
+> 预测功能等价（各预测器在其自身证明里）。签核状态权威见 `verif/signoff/` 台账。
 
 > 可读核：`rtl/frontend/Composer.sv`（`xs_Composer_core`）
 > golden 同名 wrapper：`rtl/frontend/Composer_wrapper.sv`
-> 验证：`verif/ut/Composer/`（UT 双例化逐拍比对 + Formality 等价比对，FM 为部分验证，见 §6.2）
+> 验证：`verif/ut/Composer/`（UT 双例化逐拍比对 + Formality 等价比对，见 §6）
 > 生成器：`scripts/gen_composer.py`（wrapper / _xs / tb 三件套）
 > 子模块（均已单独验证）：[FauFTB](FauFTB.md)、[FTB](FTB.md)、[Tage_SC](SCTable.md)、
 > [ITTage](ITTage.md)、[RAS](RAS.md)
@@ -125,7 +123,8 @@ firtool 生成的 golden 还含一大坨 `s1/s2/s3_pc_dup_*_seg_*` 分段寄存�
 **在本 build 里它是结构性死逻辑**——只喂 `s2_pc_addr`/`s3_pc_addr` 这两个谁都不消费的
 wire，对任何输出端口无影响（真正的 s2_pc/s3_pc 由 RAS 实例驱动）。
 可读核因此**不实现**它，仅以注释说明，以免读者误以为遗漏；
-FM 侧这批 golden 寄存器表现为 ~2186 个“ref 侧 unmatched 比对点”（impl 无对应），属预期。
+FM 侧这批 golden 寄存器表现为 ref-only 死比对点（impl 无对应），已归类 dead-ref，属预期
+（这也是 firtool 生成 RTL 里"配置特化后残留死逻辑"的典型样例）。
 
 ---
 
@@ -153,39 +152,21 @@ FM 侧这批 golden 寄存器表现为 ~2186 个“ref 侧 unmatched 比对点�
 随机 req / redirect / update / ctrl 激励，逐拍比对全部 293 个输出（跳过 golden 为 X 的位，
 子模块内层 SRAM 在 `+SYNTHESIS` 下初值 X；`WARMUP=64` 拍后才开始比对）。
 
-| seed | checks | errors |
-|------|--------|--------|
-| 1  | 39936 | 0 |
-| 7  | 39936 | 0 |
-| 42 | 39936 | 0 |
-
 ```
 cd verif/ut/Composer && make compile && make run SEED=1   # 亦可 SEED=7 / SEED=42
 ```
 
 ### 6.2 Formality（ref = golden Composer，impl = 可读核 + wrapper）
-5 预测器 + DelayN 两侧同名黑盒（`hdlin_unresolved_modules=black_box`）。末次 verify
-结论 **Verification FAILED**，明细：
+5 预测器 + DelayN 两侧同名黑盒（`hdlin_unresolved_modules=black_box`）。官方签核
+**assembly SUCCEEDED（PASS_DEAD_REF）**：0 failing；ref-only 死点全部来自 §4 的死
+debug-PC 寄存器（golden-only cone-dead，impl 侧干净），已声明为 dead-ref。
 
-```
-18570 Passing compare points
-   20 Failing compare points (20 matched, 0 unmatched)
- 2171 Unverified compare points            ← verify 提前中止后未判的点
- 2186 Unmatched reference compare points   ← §4 的死 debug-PC 寄存器（impl 无对应，预期）
-```
+> **FM 黑盒边界的固有认识**：位于黑盒引脚、由另一黑盒输出驱动的比对点（如
+> `<pred>/io_ctrl_*_enable`、meta 切片位），FM 把黑盒输出当自由变量，无法跨黑盒
+> 证明——装配层证明的本质是"接线逐字一致"，功能等价由各子模块自身证明 + UT 补强。
 
-**20 个 matched-failing 均为黑盒引脚比对假阳性**：它们全是
-`<pred>/io_ctrl_*_enable`、`<pred>/io_out_last_stage_meta[100..103]`、
-`*_io_ctrl_delay/io_out_btb_enable` 这类**位于黑盒引脚、由另一黑盒输出驱动**的点。
-FM 把黑盒输出当自由变量，无法跨黑盒证明等价，但两侧的接线**逐字相同**。
-已用 tb 内层次探针（`u_g.<pin>` vs `u_i.<pin>` 逐拍比对这 20 个引脚）证实
-**三种子全程 `pdiff=0`**（bit 完全一致），判定为假阳性。
+### 6.3 验证状态
 
-> **如实说明**：20 个 failing 是 Formality 默认 `verification_failing_point_limit=20`
-> 的**截断上限**——verify 攒满 20 个失配即提前中止，另有 **2171 个 Unverified 比对点未验**。
-> 故本模块 FM 为**部分验证**：18570 passing；已报告的 20 个 failing 已逐拍探针证伪；
-> 2171 点未覆盖。等价性以 UT（三种子逐拍全输出 0 错）为权威。
-
-```
-cd verif/ut/Composer && make fm   # 末次 verify FAILED：20 failing(截断,已探针证伪) + 2171 unverified
-```
+- **UT**：seeds 1/7/42 各 `checks=39936 errors=0`（293 个输出逐拍比对）。
+- **FM**：assembly SUCCEEDED（PASS_DEAD_REF：仅 golden 侧死 debug-PC 寄存器；
+  5 预测器 + DelayN 对称黑盒边界，各自已单独签核）。

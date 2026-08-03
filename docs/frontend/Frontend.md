@@ -1,21 +1,10 @@
 # Frontend —— 香山 V2R2（昆明湖）前端总顶层
 
-> ⚠ **FM 分类 = SHADOW_CHECK（伴随比对，非可替换证明）**。依据台账
-> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md)：本模块顶层可读核
-> `xs_Frontend_core` **不驱动任何对外功能输出**（对外输出由 wrapper 里复制的 golden body
-> `inner_*` 驱动），可读核仅作校验伴随/探针。FM PASS **不证明可读核可替换 golden Frontend**，
-> 也不能据此主张"可读性替换"。要升级为 REPLACEMENT，需可读核真正接管对外输出后重跑。
-> 下文任何"FM SUCCEEDED/等价/可替换"表述均以本 banner 为准如实理解。
 > ✅ **FM 分类 = REPLACEMENT（可读核真正驱动本层输出）**。可读核 `xs_Frontend_core`
 > **实际驱动**顶层 `io_error_*`/`io_perf_*` 输出端口，以及本层全部 glue 消费者 net
 > （IBuffer 冲刷 / ITLB sfence / ICache fencei·预取）。wrapper 里 golden body 的同名
 > glue+checker 寄存器已**整体删除**，改由 `u_core` 重新实现并驱动 → FM 真正比较"可读核 vs
-> golden 的 glue+checker"（非 golden==golden 空证）。native FM `SUCCEEDED`（48971 passing,
-> 0 failing）；UT golden-vs-replacement seeds 1/7/42 `errors=0 core_errors=0`。
-> **更新（codex_0072 结构收口, 官方 gate=PASS）**: golden `Predictor.sv` + 其纯逻辑叶子（DelayN / PriorityMuxModule×6）在 ref/impl 两侧真实 elaborate（golden==golden 对称, 非重证 Predictor 内部, Predictor 自身已 305 SIGNOFF_PASS）, 令 `io_bpu_to_ftq_resp_bits_s3_valid_0` 成 driven internal net → 死探针 `inner__probe` 不再是 ref-only undriven cut-point（`Cut=0`）, 此前毒化 matched BBPin 的 failing 消除。**不再需要 dont_verify / dead-ref**。官方 assembly gate（vmucp=true）`measured=SUCCEEDED required=SUCCEEDED gate=PASS`, native `SUCCEEDED` **52910 passing / 0 failing / 0 unmatched / 0 unread**, qualifications 全空。Predictor 层唯一 对称黑盒 = Composer（`inner_bpu/predictors`, 绿 305 child）; 顶层 23 对称 unresolved 黑盒（ICache/NewIFU/IBuffer/Ftq + Composer + TLB/PTW*/PMP*/DelayN_7·8·13/HPerf/PFEvent/Mbist*）。
-> **剩余边界**（见本文末 §签核）：B 类 PC 连续性检查器 SYNTHESIS 下两侧皆 cone-dead，
-> 作为 matched-unread 双射保留（需 main 级 `verify_matched_unread=true` 白名单转 passing）；
-> 25 子模块黑盒（5 已证子目标 assembly-depend + vendor SRAM）需 assembly 模式 + allow.json。
+> golden 的 glue+checker"（非 golden==golden 空证）。签核状态权威见 `verif/signoff/` 台账。
 
 > 学习导向文档。先读 `docs/FRONTEND_OVERVIEW.md` 建立前端全局认知，再读本文了解前端
 > **总顶层 Frontend** 如何把五大子系统组装成完整取指前端、如何完成取指地址翻译、如何路由
@@ -94,7 +83,7 @@ Frontend 是整个取指前端的**总顶层**。它本身 **几乎没有功能�
 ## 4. 顶层自身逻辑（可读核 `xs_Frontend_core` 的内容）
 
 golden Frontend 里真正属于"Frontend 自身"的逻辑只有两类。它们被手写为可读核
-`xs_Frontend_core`，作为 wrapper 的"校验伴随"（见 §5）。
+`xs_Frontend_core`，并在 wrapper 中真正驱动本层 glue 输出（见 §5）。
 
 ### 4.A 跨级打拍的流水寄存（驱动真实信号）
 
@@ -151,72 +140,64 @@ startAddr 作为应有的下一 PC。
 - 三类违例（块内 ftqPtr / 块内 taken 目标 / 块内顺序 PC）+ 跨块版本，或在一起得
   `pc_continuity_violation` 影子输出。
 
-## 5. 验证策略：校验伴随（companion）+ 双例化
+## 5. 验证策略：wrapper 替换 + 双例化
 
-由于 golden Frontend 95% 是必须与 golden 逐字对齐（FM 才能把两侧黑盒引脚配对）的接线/
-sideband，采用与 [Predictor](Predictor.md) 一致的 **"校验伴随"** 范式：
+golden Frontend 95% 是必须与 golden 逐字对齐（FM 才能把两侧黑盒引脚配对）的接线/
+sideband，因此采用 **"golden body 复制 + 可读核接管 glue"** 结构：
 
 ```mermaid
 flowchart TB
   subgraph W["Frontend_wrapper.sv (golden 同名 Frontend)"]
-    GB["golden body 忠实复制<br/>(25 子模块黑盒 + sideband 扇出 + glue)"]
-    CC["xs_Frontend_core u_core<br/>(影子输出悬空)"]
+    GB["golden body 忠实复制<br/>(25 子模块黑盒 + sideband 扇出)"]
+    CC["xs_Frontend_core u_core<br/>(驱动本层全部 glue 输出)"]
   end
   GB -.同名源 net.-> CC
 ```
 
-- **wrapper `Frontend`** = golden body 忠实复制（去 firtool 随机化样板、改模块名），额外例化
-  可读核 `xs_Frontend_core` 作校验伴随，**影子输出悬空** → 对外功能与 golden 完全一致
-  （因为对外由 golden body 驱动），故 FM 判 wrapper 与 golden 等价。**注意：此 FM 只证明
-  "wrapper（含复制的 golden body）== golden"，属 SHADOW_CHECK，不证明可读核本身可替换
-  golden**（见文首 banner）。
-- **`Frontend_xs`**（`variants_xs.sv`）= 同 wrapper，但把可读核影子输出经 `xs_dbg_*` **额外
-  输出端口** 引出，供 tb 探针比对。
+- **wrapper `Frontend`** = golden body 忠实复制（去 firtool 随机化样板、改模块名），但
+  golden 的同名 glue+checker 寄存器**整体删除**，改由可读核 `xs_Frontend_core` 重新实现
+  并驱动（`io_error_*`/`io_perf_*` 输出与 IBuffer 冲刷 / ITLB sfence / ICache fencei·预取
+  等 glue 消费者 net）→ FM 真正比较"可读核 vs golden 的 glue+checker"。
+- **`Frontend_xs`**（`variants_xs.sv`）= 同 wrapper，但把可读核内部信号经 `xs_dbg_*`
+  **额外输出端口** 引出，供 tb 探针比对。
 - **tb**：`Frontend u_g` vs `Frontend_xs u_i` 双例化，随机后端 redirect/commit/取指握手/
   sfence/TLB 响应，逐拍比对：
   1. **全部 146 个对外功能输出** `g_* === i_*`；
-  2. **影子探针**：可读核 `xs_dbg_*` === golden 内部对应寄存器（`u_g.inner_needFlush`、
+  2. **内部探针**：可读核 `xs_dbg_*` === golden 内部对应寄存器（`u_g.inner_needFlush`、
      `u_g.inner_sfence_bits_*`、`u_g.io_error_*`、`u_g.io_perf_*`、…）与
-     `pc_continuity_violation`。此比对表明可读核 glue 与 golden 内部对应信号逐拍一致，
-     但可读核仍**不驱动对外输出**（SHADOW_CHECK，见文首 banner）。
+     `pc_continuity_violation`。
 
 UT 双例化两侧共用同一批 golden 子模块实现（197 个传递依赖文件，由 `gen_frontend.py` 自动
 算出），故比对仅检验顶层 glue + 互联是否等价。
 
-### 验证结果
-
-- **UT**：`make compile && make run`，多种子（SEED=1/7/42）**均 `TEST PASSED`**，
-  `checks=120000 errors=0 core_errors=0`（146 对外输出 + 24 影子探针逐拍全等）。
-- **FM（SHADOW_CHECK，非可替换证明）**：`make fm`，**48971 passing compare points，仅 1 failing**
-  ——该 1 个是假阳性（见 §6）。**此 FM 证明的是"wrapper（含复制的 golden body）== golden"，
-  即对外输出等价；因为对外由 golden body 驱动，故它不证明可读核 `xs_Frontend_core` 可替换
-  golden**（分类见 [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md)）。
-- **可读性**：核 RTL 内 0 处生成痕迹（`_GEN_n`/`_T_n`/`RANDOMIZE`/`SYNTHESIS` 等）；
-  仅注释里引用 golden 名（`_GEN/childBd/inner__16`）作教学对照。
-
-## 6. X 坑与 FM 假阳性处理
+## 6. X 坑与 FM 假阳性教训
 
 - **动态索引越界（FMR_ELAB-147）**：块尾 lane 选择最初用 `ib_lane[endIdx]`（`endIdx` 3 位
   0..7，数组只有 6 项），FM 报"index may take values outside array bound"而拒绝 elaborate。
   **改法**：扫描时直接 mux 出选中 lane 的字段（`endTaken_flag/value`、`endNt_pc/rvc`），
   消除动态索引。改后 UT 仍全 PASS、FM 可 elaborate。
-- **FM 唯一 failing 是假阳性**：失败点
-  `inner_bpu/io_bpu_to_ftq_resp_bits_s3_valid_0`——这是 **被黑盒的 BPU 的一个输入引脚**。
-  golden 里该引脚由 net `inner__probe`（`Frontend.sv:496` 声明、**全文件从未赋值**，是
-  firtool 在 SYNTHESIS 下剥掉的 probe 残留）驱动。wrapper 逐字复制 golden body，同样有这条
-  **未驱动的 `inner__probe`**。FM 报告明确提示 *"This failure may be due to an undriven
-  signal in the reference design"*。两侧黑盒引脚被同一条未驱动 net 驱动（恒 X），FM 无法
-  判定 X-vs-X 等价而保守标红——属典型黑盒引脚不可达态假阳性，**非功能差异**。
-  - 探针证据：`u_g.inner__probe` 与 `u_i.inner__probe` 同为未驱动同名 net（wrapper =
-    golden body 复制）；UT 三种子 146 对外输出逐拍全等（`errors=0`），可读核影子全等
-    （`core_errors=0`）。UT 表明可读核 glue 与 golden 内部信号逐拍一致，但对外输出仍由
-    golden body 驱动（SHADOW_CHECK）——**这不等于"可读核可替换 golden"**。
+- **未驱动 probe 残留 net 会毒化黑盒引脚比对**：golden 里 BPU 黑盒输入引脚
+  `inner_bpu/io_bpu_to_ftq_resp_bits_s3_valid_0` 由 net `inner__probe` 驱动——该 net
+  声明后**全文件从未赋值**，是 firtool 在 SYNTHESIS 下剥掉 probe 后的残留。恒 X 的
+  ref-only undriven cut-point 让 FM 无法判定该黑盒引脚等价而标 failing（非功能差异）。
+  **正解不是 dont_verify**，而是把 golden `Predictor.sv` 及其纯逻辑叶子（DelayN /
+  PriorityMuxModule×6）在 ref/impl 两侧真实 elaborate（对称的 golden==golden，不重证
+  Predictor 内部），使该 net 成为 driven internal net，failing 自然消除。
+
+## 验证状态
+
+- **UT**：seeds 1/7/42 各 `checks=120000 errors=0 core_errors=0`（146 对外输出 +
+  24 内部探针逐拍全等）。
+- **FM**：assembly SUCCEEDED，官方 gate=PASS（0 failing / 0 unmatched / 0 unread，无
+  dont_verify/dead-ref；边界 = 23 个对称黑盒：ICache/NewIFU/IBuffer/Ftq/Composer 等
+  已证子目标 + TLB/PTW/PMP/MBIST 等 sideband）。
+- **可读性**：核 RTL 内 0 处生成痕迹（`_GEN_n`/`_T_n`/`RANDOMIZE`/`SYNTHESIS`）。
 
 ## 7. 关键文件
 
 | 文件 | 说明 |
 |------|------|
 | `rtl/frontend/Frontend.sv` | 可读核 `xs_Frontend_core` + `xs_frontend_pkg`（学习载体） |
-| `rtl/frontend/Frontend_wrapper.sv` | golden 同名 wrapper（golden body 复制 + 校验伴随） |
+| `rtl/frontend/Frontend_wrapper.sv` | golden 同名 wrapper（golden body 复制 + 核接管 glue 驱动） |
 | `scripts/gen_frontend.py` | 生成 wrapper/_xs/tb/Makefile，自动算 197 个 golden 依赖 |
 | `verif/ut/Frontend/{Makefile,variants_xs.sv,tb.sv}` | 双例化随机比对 + 影子探针 |

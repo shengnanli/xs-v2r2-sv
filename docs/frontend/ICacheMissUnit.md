@@ -1,17 +1,12 @@
 # ICacheMissUnit —— ICache Miss 处理单元（学习文档）
 
-> ✅ **FM 分类 = REPLACEMENT_EQ（可读核真驱动 + 冻结基线原生 SUCCEEDED）**。依据台账
-> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md) 与冻结基线日志
-> `verif/ut/ICacheMissUnit/fm_work/ICacheMissUnit/fm_full.log`：本模块在当前冻结 golden 基线上 FM **原生
-> `Verification SUCCEEDED`，2613 passing / 0 failing / 0 unverified**。下文验证节里任何
-> "FAILED / 20 failing 截断 / 部分验证 / 未收敛"的表述是**冻结前的旧叙事，已作废**——以本
-> banner 与台账为准。
+> ✅ **FM 分类 = REPLACEMENT_EQ（可读核真驱动，原生 SUCCEEDED）**。
 
 | | |
 |---|---|
 | 手写 SV | `rtl/frontend/ICacheMissUnit.sv`（`xs_ICacheMissUnit` + 局部 pkg `xs_icache_miss_pkg`）+ `rtl/frontend/ICacheMissUnit_wrapper.sv` |
 | Scala 来源 | `src/main/scala/xiangshan/frontend/icache/ICacheMissUnit.scala`（class ICacheMissUnit 及子类 ICacheMSHR/DeMultiplexer/MuxBundle/FIFOReg） |
-| 验证状态 | UT ✅（8 万拍 × 多种子，全部输出 0 错；内部寄存器探针 0 错）/ FM ❌ FAILED，部分验证：1660 通过、20 failing（截断上限，**经证明为假阳性**）、845 unverified 未验（见 §6），以 UT 为权威 |
+| 验证状态 | UT ✅（8 万拍 × 多种子，全部输出 0 错；内部寄存器探针 0 错）/ FM ✅ SUCCEEDED（0 failing，见 §6） |
 | 重写标准 | 符合 `docs/REWRITE_STYLE.md`：自包含可读核，MSHR 用 struct+数组+genvar，仲裁/FIFO 用清晰组合逻辑，无 firtool 痕迹 |
 
 ## 1. 它在前端的位置
@@ -119,9 +114,10 @@ s2_ready → ftq ready` 这条路尽快放行（时序考量）。下游 MainPip
 - **MSHR 用 struct（`mshr_t`）+ 数组 + genvar** 表达 14 个，而非 golden 展平的 14 份
   `_fetchMSHRs_0_io_*`/`_prefetchMSHRs_0_io_*` 网表。每条 MSHR 的状态转移在一个 genvar
   循环体里集中可读。
-- **状态合并**：golden 每个 MSHR 有 `flush`+`fencei` 两个寄存器（且 fetch MSHR 两者驱动
-  逻辑完全相同），本实现合并为单个 `killed`（= golden 的 `flush_reg` 语义），更贴近"被作废"
-  这一意图。这正是 FM 出现假阳性的来源（§6）。
+- **killed / killed2 双寄存器**：golden 每个 MSHR 有 `flush`+`fencei` 两个寄存器（且
+  fetch MSHR 两者驱动逻辑完全相同）。语义上二者可合并为单个 `killed`（"被作废"），但
+  为让 FM 寄存器 1:1 配对，可读核保留了次态相同的第二只 `killed2`，读侧与 golden 一致
+  读两只（`~flush & ~fencei` ↔ `~killed & ~killed2`）——见 §6 的教训。
 - **仲裁/Demux/FIFO 全部用清晰组合逻辑 + 纯函数**自包含实现，不例化 golden 的
   `DeMultiplexer/MuxBundle/Arbiter5_MSHRAcquire/FIFOReg` 网表子模块：
   - Demux = 「最低空闲槽」优先编码（`always_comb` 反向遍历）；
@@ -145,22 +141,13 @@ s2_ready → ftq ready` 这条路尽快放行（时序考量）。下游 MainPip
 - `mem_acquire_*`/`victim_*` 的 bits 仅在对应 valid 时比对（valid=0 时是组合 stale 值，
   两侧可不同且无意义）。
 
-### FM（尽量做，⚠️ failing 已证明为假阳性）
-`make fm` 末次 verify 结论 **Verification FAILED**：**1660 通过，20 failing，845 unverified**。
-注意 **20 是 Formality 默认 `verification_failing_point_limit=20` 的截断上限**——verify 攒满
-20 个失配即提前中止，845 个 unverified 点未验。其中 88(96) 个 golden(impl)
-比对点 unmatched，根因是每个 MSHR 的 `flush_reg`/`fencei_reg`/`way_reg` 配不上——
-因为本实现把 golden 的 `flush`+`fencei` **两个寄存器合并成单个 `killed`**（§5）。
-FM 把这些未匹配的 golden 寄存器当作自由变量，污染了依赖它们的下游锥（`id_r`、各 MSHR
-`valid`、`io_fetch_resp_valid`、`io_mem_acquire_bits_address[...]`），从而误报 failing。
+### FM（✅ SUCCEEDED）
+当前 FM **原生 `Verification SUCCEEDED`（0 failing）**。
 
-**这是 `docs/REWRITE_STYLE.md` 预期的"UT 充分 + FM 部分不可判"情形，不为讨好 FM 而退回抄
-golden 命名/状态编码。** 已用 tb 层次探针做对抗验证以排除真 bug：
-
-> `tb.sv` 内 `pchk` 探针逐拍比对 golden 与 xs 的**内部寄存器**：`id_r`、`last_fire_r`、
-> 全部 MSHR `.valid`（含 FM 报 failing 的 prefetchMSHRs_8/9）、prefetch `.way`。
-> 8 万拍 × {seed 1,2,7} 共 24 万拍，**probe_err=0**——内部状态逐位相同。
-
-由此结论：**已报告的 20 个 FM failing point 全部为状态合并导致的假阳性**（输出等价 +
-内部寄存器等价双重证明）。FM 整体为**部分验证**（20 failing 为截断上限、845 点未验），
-等价性以 UT（多种子逐拍全输出 0 错 + 内部探针 0 错）为权威。
+**寄存器双射教训（早期迭代）**：重写初版把 golden 每 MSHR 的 `flush`+`fencei` 两个
+寄存器合并成单个 `killed`，导致这批 golden 寄存器 FM unmatched。FM 会把未匹配的
+golden 寄存器当**自由变量**，污染依赖它们的下游锥（`id_r`、各 MSHR `valid`、
+`io_fetch_resp_valid`、acquire 地址位…），成片误报 failing——虽经 tb 层次探针逐拍
+比对内部寄存器证明是假阳性，但正解是恢复寄存器 1:1 双射：保留次态相同的第二只
+`killed2`（§5），FM 即可全配对、原生通过。教训：**语义等价的状态合并会破坏 FM 的
+寄存器配对，代价远大于省一只 flop**。

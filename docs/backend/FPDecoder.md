@@ -92,22 +92,16 @@ don't-care 位填随机），逐输出 `!$isunknown` 比对。
 **0 mismatch**。
 
 ### FM
-`make fm` 结果：**FAILED**（5 passing / 5 failing / 0 unverified，verify 完整跑完、
-非 20 点截断），**仅 5 个比对点失配**：
-`typeTagOut[1:0]`、`wflags`、`fmt[1:0]`（`typ`/`rm` 直连切片全过 = 5 个 passing）。
+`make fm`：**`Verification SUCCEEDED`（0 failing）**，FPDecoder 为 FM 完全等价。
 
-> 注：上述 5 failing 的 FM 运行于 2026-06-17，早于 2026-06-23 IT 集成验证抓出的半精度编码
-> 修复（commit 4ec9805）——那次修复恰好把译码对齐到 golden 最小真值表（含 don't-care 取值）。
-> **修复后已于 2026-07-16 复跑 FM：`Verification SUCCEEDED`（10 passing / 0 failing / 0 unverified）**，
-> 原 5 个 don't-care 失配随半精度修复一并消除，FPDecoder 现为 FM 完全等价。
-
-**失配根因（已证伪为 don't-care）**：这 5 位来自 `DecodeLogic`，其 Scala
-default 是 `"??"`（typeTagOut）与 `N`（wflags 的 default 是 0，但其 on-set 是
-DC 最小化的）——对**非法/表外**指令编码，golden 经 firtool 最小化后取了某
-组**任意**值（don't-care 区），可读核取了另一组值。二者在**全部合法指令
-on-set 上逐位相等**（§验证的 753-编码穷举 + 3×1M 随机 UT 全 0 错已证），失配
-纯属设计 don't-care 空间。这是 DC-最小化译码表用可读 `casez` 重写时的固有
-现象（与项目 DecodeUnit 中同类字段一致），不影响功能正确性。
+**早期 don't-care 失配教训**：初版 FM 曾在 `typeTagOut[1:0]`、`wflags`、`fmt[1:0]`
+5 个点失配。这些位来自 `DecodeLogic`，其 Scala default 是 `"??"`（typeTagOut）与
+DC 最小化的 on-set——对**非法/表外**指令编码，golden 经 firtool 最小化后取了某组
+**任意**值（don't-care 区），可读核取了另一组值；合法指令 on-set 上二者逐位相等
+（753-编码穷举 + 3×1M 随机 UT 全 0 错）。后来的半精度编码修复恰好把译码对齐到
+golden 的最小真值表（含 don't-care 取值），失配随之消除。教训：**DC-最小化译码表用
+可读 `casez` 重写时，don't-care 区取值也要对齐 golden 才能 FM 全等**（DecodeUnit
+同类字段同理）。
 
 ## 6. 结构闸门实测
 

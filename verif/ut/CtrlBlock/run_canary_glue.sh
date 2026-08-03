@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # CtrlBlock glue-partition canary FM run (Worker H, agent/ctrlblock-w).
-# See docs/backend/CtrlBlock_partition_plan.md. Partitions CtrlBlock by
+# See verif/ut/CtrlBlock/PARTITION_PLAN.md. Partitions CtrlBlock by
 # symmetrically black-boxing the 22 submodules (Rob=220K lines etc.) so the FM
 # model build is tractable and the real glue equivalence gaps are surfaced.
 #

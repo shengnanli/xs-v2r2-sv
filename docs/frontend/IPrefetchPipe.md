@@ -1,18 +1,13 @@
 # IPrefetchPipe —— ICache 预取流水
 
-> ✅ **FM 分类 = REPLACEMENT_EQ（可读核真驱动 + 冻结基线原生 SUCCEEDED）**。依据台账
-> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md) 与冻结基线日志
-> `verif/ut/IPrefetchPipe/fm_work/IPrefetchPipe/fm_full.log`：本模块在当前冻结 golden 基线上 FM **原生
-> `Verification SUCCEEDED`，901 passing / 0 failing / 0 unverified**。下文验证节里任何
-> "FAILED / 20 failing 截断 / 部分验证 / 未收敛"的表述是**冻结前的旧叙事，已作废**——以本
-> banner 与台账为准。
+> ✅ **FM 分类 = REPLACEMENT_EQ（可读核真驱动，原生 SUCCEEDED）**。
 
 | | |
 |---|---|
 | 手写 SV | `rtl/frontend/IPrefetchPipe.sv`（`xs_IPrefetchPipe_core`）+ `rtl/frontend/IPrefetchPipe_wrapper.sv` |
 | Scala 来源 | `src/main/scala/xiangshan/frontend/icache/IPrefetch.scala`（class IPrefetchPipe） |
 | 生成器 | `scripts/gen_iprefetchpipe.py` |
-| 验证状态 | UT ✅（多 seed 各 checks=80000 errors=0 internal_probe_err=0）/ FM ❌ FAILED，部分验证：590 passing、20 failing（截断上限，已被 tb 内部层次探针证伪为假阳性）、291 unverified 未验（详见下），以 UT 为权威 |
+| 验证状态 | UT ✅（多 seed 各 checks=80000 errors=0 internal_probe_err=0）/ FM ✅ SUCCEEDED（0 failing） |
 
 ## 功能
 
@@ -86,33 +81,10 @@ stateDiagram-v2
 - **UT**（`verif/ut/IPrefetchPipe/`）：golden vs `IPrefetchPipe_xs`，随机激励（ITLB 异常
   pf/gpf/af 做 one-hot 化避免误触 golden 断言，paddr/tag/vSet 值域压窄提高覆盖），
   可读核仅 14 个 output，多 seed 实测 **checks=80000 errors=0 internal_probe_err=0**。
-- **FM**：末次 verify 结论 **Verification FAILED**（590 passing / 20 failing / 291
-  unverified），已报告的 20 个 failing 均为 s0/s1 流水寄存器
-  （`s0_fire_r` / `s1_req_vaddr` / `s1_req_ftqIdx_value` / `s1_backendException` /
-  `s1_isSoftPrefetch`），已被 tb 内部层次探针证伪为假阳性（详见下节）。
+- **FM**：原生 **`Verification SUCCEEDED`（0 failing）**。
 
 ## 工程提示（踩坑）
 
 golden 含 `ifndef SYNTHESIS` 的 multi-hit/one-hot 断言，随机激励会误触发 `$fatal`，
 UT 需 `+define+SYNTHESIS` 屏蔽。**注意**：`ut_common.mk` 用 `VCS := ...` 简单赋值，
 故 `VCS += +define+SYNTHESIS` 必须放在 `include` **之后**追加才生效（放之前会被覆盖）。
-
-## FM 状态（重要，诚实记录）
-
-可读重写后 FM（签名分析）末次 verify 结论为 **Verification FAILED：590 passing / 20
-failing / 291 unverified**。**20 是 Formality 默认 `verification_failing_point_limit=20`
-的截断上限**（verify 攒满 20 个失配即提前中止，291 个 unverified 点未验）；已报告的 20 个
-failing 全部是 `s0_fire` 门控的 s1 流水捕获寄存器（`s0_fire_r` / `s1_req_vaddr` /
-`s1_req_ftqIdx_value` / `s1_backendException` / `s1_isSoftPrefetch`）。经核查这些是
-**不可达输入 / X 的 FM 假阳性**，非真 bug：
-- s0_fire 及其全部分量（s0_valid/s0_can_go/from_bpu_s0_flush/s1_flush，及循环指针
-  比较 `flag^flag^(val<=val)`）逐一核对与 golden 一致；
-- tb 加**层次探针**逐拍比对 golden 与本设计的内部寄存器（s0_fire_r、s1_req_ftqIdx_value
-  等上述 failing 点）：三种子（1/2/3）均 **internal_probe_err=0**（逐拍逐位完全一致）；
-- UT 三种子均 **checks=80000 errors=0 internal_probe_err=0**。
-
-即在所有**可达**状态下功能严格等价；FM 的 failing 来自设计实际到不了的输入组合
-（签名分析不知道可达状态空间）。结论口径：**UT（多种子逐拍全输出 0 错 + 内部探针 0 错）为
-权威；FM 为部分验证——590 passing，20 failing（截断上限）已证伪，291 unverified 未覆盖**。
-符合工程标准「可读优先、FM 尽量做」，不为消除该假阳性而牺牲可读性。后续可用 FSM
-可达性约束令 FM 全绿。

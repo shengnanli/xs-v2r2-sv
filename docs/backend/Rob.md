@@ -235,15 +235,16 @@ hasBlockBackward/hasWaitForward/deqHasFlushed/各阻塞计数器）。
   **本核刻意未实现**的 difftest/data/trace/perf 逻辑产生。可读核（124 端口）只产出
   *中心控制* 输出（state/commits valid/flushOut/exception/size/canAccept…）。要对齐全部
   3234 输出，wrapper 必须重建这些被丢弃的逻辑 ≈ 重写 golden 主体，超出「可读核分解」边界。
-- **可达且正确的等价形态（设计已定，待实现/收敛）**：hierarchical-tap 双例化——`u_g`
+- **可达且正确的等价形态（已实现，见 §12b）**：hierarchical-tap 双例化——`u_g`
   例化 golden Rob 并喂全平铺随机激励；`u_i` 例化 `xs_Rob_core`，输入为「同一激励的抽象
   翻译」+「层次探针抽取 `u_g` 的子模块输出（`_exceptionGen_io_state_*`、
   `_deqPtrGenModule_io_out_*`、`_enqPtrGenModule_io_out_*`、`_rab_io_*`、
   `_vtypeBuffer_io_status_walkEnd`、`_snapshots_*`）」，逐拍比对二者*控制输出子集*。
-  这就是任务所述「两侧共用同一份 golden 黑盒子模块」。难点（尚未收敛）：tb 需复现
+  这就是任务所述「两侧共用同一份 golden 黑盒子模块」。难点：tb 需复现
   golden 的 ~15 个派生 enq 字段（FuType/CommitType 译码表→needWriteRf/numUops/isWFI/
   isHls/allow_interrupts）与写回归类（27 exuWB 里哪些是 std/branch/fflags/vxsat、25
-  writeback 里哪些是 exception），任一不一致都会在指针/异常态上引入分叉。
+  writeback 里哪些是 exception），任一不一致都会在指针/异常态上引入分叉——§12b 用
+  「直接 tap golden 已算好的派生 wire」消解。
   `eg_is_exception = (|exceptionVec[23:0]) | singleStep | (trigger==4'h1)`（Rob.scala 577）。
 
 ### §12b hierarchical-tap 子集双例化 —— 已实现并收敛（errors=0）
@@ -295,38 +296,25 @@ debugTopDown/perf、`io_csr_*`/`io_vxsat`/`io_fflags` 累计输出、`isHls`（F
 
 ---
 
-## FM 签核目标 (Rob, 第 306 个 target) —— assembly 装配证明
+## FM 签核形态（assembly 装配证明）
 
-### 现状(agent/rob-w 诚实结论)
-- `rtl/backend/Rob.sv`(`xs_Rob_core`, 1055 行, 0 `_GEN_`/`_T_`)是**真实可读控制核**,
-  非 skeleton/stub。golden co-sim(`tb_tap.sv`)逐拍比对 40 控制/状态量, seed7 20k
-  **errors=0**(历史 seed 1/7/42 200k errors=0), 控制锥与 golden cycle-exact。
-- 但它**不是 golden 端口面的整体替换**: 它把 6 个 golden 逻辑叶子(RobEnqPtrWrapper/
-  NewRobDeqPtrWrapper/ExceptionGen/SnapshotGenerator_3/RenameBuffer/VTypeBuffer)的输出
-  当**输入**, 且只产出 golden 2343 输出口里的**控制子集**; golden 数据通路(9446 reg:
-  exception payload/commit-info 全 payload/GPA/difftest 通路/trace/perf)驱动的 ~200 输出口
-  被可读核**有意省略**。
+- 可读核**不是 golden 端口面的整体替换**：它把 6 个 golden 逻辑叶子（RobEnqPtrWrapper/
+  NewRobDeqPtrWrapper/ExceptionGen/SnapshotGenerator_3/RenameBuffer/VTypeBuffer）的输出
+  当**输入**，且只产出 golden 2343 输出口里的**控制子集**；golden 数据通路（9446 reg：
+  exception payload/commit-info 全 payload/GPA/difftest 通路/trace/perf）驱动的 ~200
+  输出口被可读核**有意省略**。因此 proof_mode 只能是 **assembly**（strict 会因省略
+  数据通路口产生大量 unmatched）。
+- 装配壳 `rtl/backend/Rob_wrapper.sv`（module `Rob`，golden 同名 3234 pin）例化
+  `xs_Rob_core` + 6 逻辑叶子 + difftest sink；**叶子两侧 elaborate**（白盒受验），
+  叶子控制输入**由 u_core 输出驱动**——核逻辑一旦分叉会经叶子输出传到 golden 输出口
+  被 FM 抓住，核真在证明回路里。唯一合法黑盒 = `DiffExtInstrCommit`/`DiffExtTrapEvent`
+  （外部 DPI-C sink，无可综合体）。
 
-### 正确的 FM 配置 = assembly(仿 IMSIC)
-- proof_mode = **assembly**(strict 会因省略数据通路口产生大量 unmatched)。
-- 装配壳 `rtl/backend/Rob_wrapper.sv`(module `Rob`, golden 同名 3234 pin, VCS elaborate OK):
-  例化 `xs_Rob_core` + 6 逻辑叶子 + difftest DelayReg/DummyDPICWrapper*/dt_160x1,
-  **叶子两侧 elaborate**(白盒受验); 叶子控制输入**由 u_core 输出驱动**(非空耦合点:
-  核逻辑分叉→叶子输出→golden 输出口分叉→FM fail, 核真在证明回路里)。
-- 唯一合法黑盒 = `DiffExtInstrCommit`/`DiffExtTrapEvent`(外部 DPI-C sink, 无可综合体),
-  `verif/signoff/allow/Rob.json` 精确声明 9 个 unresolved_blackbox 对。
-- 每个叶子输入驱动均已核实 ∈ {flat golden 口, u_core 输出, flat 口 trivial 译码}
-  (证据 `/tmp/rob-w-evidence`, `Rob_fm_assembly_manifest.txt`)。
+### 验证状态
 
-### 残留(main / 下一 worker 补齐, 之后 `FM_VARIANTS=Rob` 启用)
-`Rob_wrapper.sv` 现为**接口锚 + 装配契约 SCAFFOLD, body 待补齐**(诚实: 不产假绿)。
-需补: (a) 浅层 `r_3_*=RegNext(exceptionGen.io_state_*)` 等; (b) 从两侧 elaborate 的 rab
-叶子直取 ~2102 payload 口(免证); (c) 深层 commit-info payload/GPA/trace/perf 需复刻或
-main 级 matched-unread 双射声明。详见 `Rob_wrapper.sv` RESIDUAL 段。
-
-### main-owned 改动(worker 无权改)
-1. `scripts/sidecar/manifest_declarations.tsv` 加行:
-   `Rob<TAB>assembly<TAB>verif/signoff/allow/Rob.json<TAB><rationale><TAB>false`
-2. `verif/signoff/assembly_depends.tsv`: Rob → difftest DPI sink(DiffExt*)边界。
-3. `scripts/sidecar/gen_305_manifest.py` 重生 306-target manifest(纳入 Rob)。
-4. `combined_ledger`: Rob 由 UNCONFIGURED → 配置后按 official gate=PASS 入账(worker 不自 promote)。
+- **UT**：tap 子集双例化 seed 1/7/42 各 200000 拍 `errors=0`（40 控制/状态量 +
+  内部状态探针）；自检不变量 UT 同步 errors=0。
+- **FM**：目标当前 **UNCONFIGURED**——`Rob_wrapper.sv` 仍为接口锚 + 装配契约
+  scaffold，body（浅层打拍 / payload 直通 / commit-info payload 复刻）未收口，
+  故尚无 FM 证明（诚实：不产假绿）。残留项见 `Rob_wrapper.sv` RESIDUAL 段，
+  状态权威见 `verif/signoff/` 台账。

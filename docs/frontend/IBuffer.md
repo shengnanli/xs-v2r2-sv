@@ -1,11 +1,6 @@
 # IBuffer —— 指令缓冲（Instruction Buffer）
 
-> ✅ **FM 分类 = REPLACEMENT_EQ（可读核真驱动 + 冻结基线原生 SUCCEEDED）**。依据台账
-> [`verif/freeze/FM_STATUS.md`](../../verif/freeze/FM_STATUS.md) 与冻结基线日志
-> `verif/ut/IBuffer/fm_work/IBuffer/fm_full.log`：本模块在当前冻结 golden 基线上 FM **原生
-> `Verification SUCCEEDED`，7278 passing / 0 failing / 0 unverified**。下文验证节里任何
-> "FAILED / 20 failing 截断 / 部分验证 / 未收敛"的表述是**冻结前的旧叙事，已作废**——以本
-> banner 与台账为准。
+> ✅ **FM 分类 = REPLACEMENT_EQ（可读核真驱动，原生 SUCCEEDED）**。
 
 > 香山 V2R2（KunMingHu）前端模块。手写可读 SV 重写：`rtl/frontend/IBuffer.sv`
 > （可读核 `xs_IBuffer_core`）+ `rtl/frontend/IBuffer_wrapper.sv`（golden 同名扁平端口适配层）。
@@ -167,16 +162,14 @@ cd verif/ut/IBuffer && make compile && make run
 结果：**TEST PASSED，checks=38004，errors=0**（默认 40000 拍）。多种子（1/2/3/7/42/11）
 与 200k 拍长跑（checks=198004, errors=0）均通过。
 
-### FM（Formality 签名等价）
+### FM（Formality 等价）
 
 ```
 make fm
 ```
 
-末次 verify 结论 **Verification FAILED**：**781 passing / 20 failing / 6427 unverified**。
-20 个 failing 全部是出队指针寄存器（`deqPtr_flag` / `deqBankPtrVec_*_value` 等），在
-**不可达 don't-care 状态**下编码与 golden 不同（已尽量用 golden 的 signed-diff 回绕形式对齐）。
-注意 **20 是 Formality 默认 `verification_failing_point_limit=20` 的截断上限**——verify 攒满
-20 个失配即提前中止，**6427 个比对点落在 Unverified 未验**（可读核 struct/数组 vs golden 展平
-标量导致大量点配对/验证不收敛）。故本模块 FM 为**部分验证**，功能正确性以上述充分 UT
-（多种子逐拍全输出 0 错）为权威。子模块无（golden 顶层全展平，无外部例化）。
+**原生 `Verification SUCCEEDED`（0 failing）**。早期迭代曾在出队指针寄存器
+（`deqPtr_flag` / `deqBankPtrVec_*_value` 等）的**不可达 don't-care 状态**上与 golden
+编码不同而报 failing——教训：循环指针的更新式要用 golden 的 signed-diff 回绕形式对齐，
+FM 不知道哪些状态不可达，don't-care 态的次态差异同样判不等价。
+子模块无（golden 顶层全展平，无外部例化）。

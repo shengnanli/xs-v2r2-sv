@@ -1,0 +1,6 @@
+ 0(0) Unmatched reference(implementation) compare points    
+    puts "FM_RESULT: Verification SUCCEEDED for $top (iface-only)"
+    puts "FM_RESULT: Verification FAILED for $top (iface-only)"
+ 0(0) Unmatched reference(implementation) compare points    
+ 54839 Passing compare points
+FM_RESULT: Verification SUCCEEDED for CtrlBlock (iface-only)
