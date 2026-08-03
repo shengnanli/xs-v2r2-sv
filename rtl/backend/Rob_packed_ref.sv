@@ -785,15 +785,23 @@ module xs_Rob_core_packed_ref
   // vls 路 2 拍门控(golden Rob.scala 578-584):
   //   deqHasException 在 vls 时需 RegNext(RegNext(deqPtrEntry.commit_w)) 才置;
   //   deqVlsCanCommit = RegNext(RegNext(deqIsVlsException && commit_w)) && rab.commitEnd。
-  logic commit_w_d1, commit_w_d2;        // RegNext / RegNext(RegNext)(deqPtrEntry.commit_w)
-  logic vlsExcCommitw_d1, vlsExcCommitw_d2; // RegNext^2(deqIsVlsException & commit_w)
+  // ★codex 0107 修(与 Rob.sv 同步): 双链 vls 门控 + 三级 deqVlsCanCommit +
+  //  vls 异常提交状态机(deqVlsExcpLock/NeedCommit/CommitSize)★
+  logic deqHasException_REG, deqHasException_REG_1;
+  logic deqHasFlushPipe_REG, deqHasFlushPipe_REG_1;
+  logic deqVlsCanCommit_REG, deqVlsCanCommit_REG_1;
   logic deqVlsCanCommit;
-  logic vlsCommitwGate;                  // (!isVls || RegNext(RegNext(commit_w)))
-  always_comb vlsCommitwGate = ~deqPtrEntry.is_vls | commit_w_d2;
-  always_comb deqVlsCanCommit = vlsExcCommitw_d2 & rab_status_commit_end;
+  logic                 deqVlsExcpLock;
+  logic                 deqVlsExceptionNeedCommit;
+  logic [UOP_CNT_W-1:0] deqVlsExceptionCommitSize;
+  logic handleVlsExcp;
+  always_comb handleVlsExcp = deqIsVlsException & deqVlsCanCommit
+                            & ~deqVlsExcpLock & (state == S_IDLE);
   always_comb begin
-    deqHasException  = deqNeedFlushAndHitEG & eg_is_exception  & vlsCommitwGate;
-    deqHasFlushPipe  = deqNeedFlushAndHitEG & eg_flush_pipe & ~deqHasException & vlsCommitwGate;
+    deqHasException  = deqNeedFlushAndHitEG & eg_is_exception
+                     & (~deqPtrEntry.is_vls | deqHasException_REG_1);
+    deqHasFlushPipe  = deqNeedFlushAndHitEG & eg_flush_pipe & ~deqHasException
+                     & (~deqPtrEntry.is_vls | deqHasFlushPipe_REG_1);
     deqHasReplayInst = deqNeedFlushAndHitEG & eg_replay_inst;
     deqIsVlsException= deqHasException & deqPtrEntry.is_vls & ~eg_is_enq_excp;
   end
@@ -916,7 +924,8 @@ module xs_Rob_core_packed_ref
       if (o_commits_isWalk & (shouldWalkVec[i] | donotNeedWalk[i]))
         wsum = prefix_realdest_walk(i);
     end
-    o_rab_commitSize = csum;
+    o_rab_commitSize = deqVlsExceptionNeedCommit
+                     ? {1'b0, deqVlsExceptionCommitSize} : csum;
     o_rab_walkSize   = wsum;
   end
   function automatic logic [UOP_CNT_W:0] prefix_realdest_commit(input int upto);
@@ -1324,14 +1333,28 @@ module xs_Rob_core_packed_ref
   // vls 异常 2 拍门控寄存器(对齐 golden Rob.scala 578/584 的 RegNext(RegNext(...)))。
   always_ff @(posedge clock or posedge reset)
     if (reset) begin
-      commit_w_d1 <= 1'b0; commit_w_d2 <= 1'b0;
-      vlsExcCommitw_d1 <= 1'b0; vlsExcCommitw_d2 <= 1'b0;
+      deqVlsCanCommit           <= 1'b0;
+      deqVlsExcpLock            <= 1'b0;
+      deqVlsExceptionNeedCommit <= 1'b0;
+      deqVlsExceptionCommitSize <= '0;
     end else begin
-      commit_w_d1 <= deqPtrEntry.commit_w;
-      commit_w_d2 <= commit_w_d1;
-      vlsExcCommitw_d1 <= deqIsVlsException & deqPtrEntry.commit_w;
-      vlsExcCommitw_d2 <= vlsExcCommitw_d1;
+      deqVlsCanCommit <= deqVlsCanCommit_REG_1 & rab_status_commit_end;
+      deqVlsExceptionNeedCommit <= ~deqVlsExceptionNeedCommit
+                                 & (handleVlsExcp | deqVlsExceptionNeedCommit);
+      if (~deqVlsExceptionNeedCommit & handleVlsExcp)
+        deqVlsExceptionCommitSize <= deqPtrEntry.real_dest_size;
+      deqVlsExcpLock <= handleVlsExcp
+                      | ({deqPtr.flag, deqPtr.value} == {deq_ptr_next0.flag, deq_ptr_next0.value})
+                      & deqVlsExcpLock;
     end
+  always_ff @(posedge clock) begin
+    deqHasException_REG   <= deqPtrEntry.commit_w;
+    deqHasException_REG_1 <= deqHasException_REG;
+    deqHasFlushPipe_REG   <= deqPtrEntry.commit_w;
+    deqHasFlushPipe_REG_1 <= deqHasFlushPipe_REG;
+    deqVlsCanCommit_REG   <= deqIsVlsException & deqPtrEntry.commit_w;
+    deqVlsCanCommit_REG_1 <= deqVlsCanCommit_REG;
+  end
 
   // =====================================================================
   // 13. 性能计数(io_perf_0..17) —— 忠实复刻 golden 2 拍打拍性能计数树。

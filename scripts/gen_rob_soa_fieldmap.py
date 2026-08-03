@@ -76,6 +76,12 @@ def main():
     #  fail-closed exit 7; 故 checkpoint 按「kept-fields-only」过滤。
     ap.add_argument("--only-fields", default=None,
                     help="comma-separated golden suffixes; restrict SOA_FAMILY")
+    # ★codex 0107 修★ nf(packed struct)字段 pins: golden robEntries_<N>_<suf>_reg
+    #  <-> impl u_core/rob_entries_nf_reg[N][<suf>](struct member cell)。G3 未落地
+    #  前 vls 等字段仍寄存于 nf struct, 名字无法 auto-match → robDeqGroup isVls 等
+    #  下游比较点因 unmatched-in-cone 失败。仅 1-bit 字段(vls)。
+    ap.add_argument("--nf-fields", default=None,
+                    help="comma-separated golden suffixes pinned to rob_entries_nf struct members")
     a = ap.parse_args()
 
     global SOA_FAMILY
@@ -148,6 +154,19 @@ def main():
     #  rob_valid_reg[N](FM-013 报文已证 impl 侧 rob_valid_reg[N] 是 Cell)。故必须两侧
     #  都用 flop Cell: golden robEntries_N_<f>_reg ↔ impl rob_<f>_reg[N]([b])。
     #  (旧版 golden 用无 _reg 的 Net 名 → 与 impl Cell 撞 FM-013 incompatible types。)
+    # nf-struct member pins (codex 0107): 1-bit golden fields living in impl's
+    #  rob_entries_nf packed-struct storage.
+    nf_layout = []
+    if a.nf_fields:
+        for suf in a.nf_fields.split(","):
+            for N in range(ROB_SIZE):
+                if (N, suf) not in golden:
+                    errors.append(f"MISSING golden reg robEntries_{N}_{suf} (nf)")
+                    continue
+                if golden[(N, suf)] != 1:
+                    errors.append(f"NF FIELD {suf} width != 1 (unsupported)")
+                    continue
+                nf_layout.append((N, suf))
     npins = 0
     for e in layout:
         N = e["entry"]
@@ -165,6 +184,11 @@ def main():
                 ip = f"i:/WORK/{top}/{pre}/{arr}\\[{N}\\]\\[{b}\\]"
                 pin.append(f"_rob_soa_pin {rp} {ip}")
                 npins += 1
+    for (N, suf) in nf_layout:
+        rp = f"r:/WORK/{top}/{gp}robEntries_{N}_{suf}_reg"
+        ip = f"i:/WORK/{top}/{pre}/rob_entries_nf_reg\\[{N}\\]\\[{suf}\\]"
+        pin.append(f"_rob_soa_pin {rp} {ip}")
+        npins += 1
     pin.append('puts "ROB_SOA_ENTRY_PINS: applied=$_rob_soa_pin_n fail=$_rob_soa_pin_fail fm036=$_rob_soa_pin_fm036"')
     # ★修1 log-assert★ emit the paired count with the expected total so the driver
     #  can assert `paired==expected` (0 FM-036) BEFORE the first `match`.
