@@ -1145,7 +1145,12 @@ module xs_Rob_core
   rob_ptr_t walkingPtrVec [COMMIT_WIDTH];// RegNext(walkPtrVec)
   rob_ptr_t walkPtrTrue, lastWalkPtr;
   logic [BANK_ADDR_W-1:0] walkPtrLowBits;
-  logic redirectValidReg;
+  logic redirectValidReg;   // golden redirectValidReg: 仅 valid-flush 用
+  // ★codex 0107 修★ golden 对 RegNext(io_redirect_valid) 生成【四个独立寄存器】:
+  //  REG_6(shouldWalkVec 门) / REG_7(donotNeedWalk) / state_next_REG(state) /
+  //  redirectValidReg(valid flush)。impl 旧版共用一个 redirectValidReg ⇒ golden
+  //  其余三个成 unmatched-ref 落在 state/walkSize(rab/vtypeBuffer 白盒)锥 → failing。
+  logic REG_6, REG_7, state_next_REG;
 
   // 环形指针加法。
   // ★FMR-strict (修3)★ 用纯三元表达式【单路径 return】消 FMR_ELAB-118(FM 对含
@@ -1182,7 +1187,7 @@ module xs_Rob_core
 
   // shouldWalkVec(组合, 依赖 walkingPtrVec/lastWalkPtr/donotNeedWalk)。
   always_comb begin
-    if (io_redirect_valid | redirectValidReg)
+    if (io_redirect_valid | REG_6)
       shouldWalkVec = '0;
     else if (state == S_WALK)
       for (int i = 0; i < COMMIT_WIDTH; i++)
@@ -1273,7 +1278,7 @@ module xs_Rob_core
   // ---- 12b. 主时序 ----
   rob_state_e state_next;
   always_comb begin
-    if (io_redirect_valid | redirectValidReg)
+    if (io_redirect_valid | state_next_REG)
       state_next = S_WALK;
     else if ((state == S_WALK) & walkFinished & rab_status_walk_end & vtype_status_walk_end)
       state_next = S_IDLE;
@@ -1398,7 +1403,7 @@ module xs_Rob_core
       // ---- donotNeedWalk(redirect 后第 2 拍按 lowBits 置; golden 复位) ----
       if (io_redirect_valid)
         donotNeedWalk <= '1;
-      else if (redirectValidReg)
+      else if (REG_7)
         for (int i = 0; i < COMMIT_WIDTH; i++)
           donotNeedWalk[i] <= (BANK_ADDR_W'(i) < walkPtrLowBits);
       else
@@ -1412,6 +1417,9 @@ module xs_Rob_core
     intrBitSetReg    <= io_csr_intrBitSet;
     lastCycleFlush   <= o_flushOut_valid;
     redirectValidReg <= io_redirect_valid;
+    REG_6            <= io_redirect_valid;   // golden REG_6(shouldWalk 门)
+    REG_7            <= io_redirect_valid;   // golden REG_7(donotNeedWalk)
+    state_next_REG   <= io_redirect_valid;   // golden state_next_REG
 
     // ---- robDeqGroup 寄存器流水(§5 merged) ----
     for (int b = 0; b < COMMIT_WIDTH; b++) robDeqGroup[b] <= robDeqGroup_next[b];
