@@ -165,4 +165,21 @@ proc 会把 FM-013 打印吞掉误报 applied)——这正是 0101 结果表「T
 旧 discover 用裸 catch 未捕获 stdout 的 FM-013★。修法: 两侧都用 flop **Cell**——golden
 robEntries_N_<f>_reg(FM 给 reg 推断的 cell 名加 _reg)↔ impl rob_<f>_reg[N]([b])。
 gen_rob_soa_fieldmap.py 已改 golden ref path 加 _reg 后缀(discover2 probe 确认 Cell 名)。
+discover2 实测(两侧 elaborate 后 pre-match probe+trym):
+  PROBE golden robEntries_0_valid → nets=1 cells=0(Net); robEntries_0_valid_reg → cells=1(Cell)
+  PROBE impl   rob_valid[0] → nets=1(Net); rob_valid_reg[0] → cells=1(Cell)
+  PROBE golden robEntries_0_uopNum_reg[0] → cells=1; impl rob_uop_num_reg[0][0] → cells=1
+  TRYM(Cell↔Cell _reg 形): valid/stdWritebacked/uopNum[b] 全 8 采样 TRYM OK(0 FM-013/FM-036)。
+∴ Cell↔Cell(golden _reg ↔ impl _reg[N]([b]))是正确 pre-match 配对形态。
+
+## ★三修有效 canary(canary2, Cell↔Cell 修正后)实测 gate★
+- 修1 pins(首个 match 之前): `ROB_SOA_ENTRY_PINS: applied=1440 fail=0 fm036=0` +
+  `SOA_FAMILY_DFF_MATCH paired=1440 expected=1440 fm036=0` + `SOA_PREMATCH_COMPLETE`
+  (pins_done dt=15s)。★1440/1440 family pin 全解析 0 FM-036/0 FM-013, 全部在首个 match 前★。
+- 修2 blackbox(match 阶段 Checking designs): **FM-064=0**(无 missing-ref auto-bbox)+
+  **FM-230=0**(无 unknown-direction BBPin)+ FM-182=2(2)(仅 DiffExtInstrCommit/
+  DiffExtTrapEvent 两个纯 DPI sink, ref/impl 对称)+ FM-399 undriven=0(ref)/1232(impl,
+  可读核组合重建视图 wire + dbg 悬空输出, 非 auto-bbox 未知方向 pin)。对比 canary1(未修2):
+  FM-064=7 + FM-230=8575 → 修2 令 7-child auto-bbox 归零。
+- 修3 FMR: FMR_VLOG-091=0, FMR_ELAB-118=0(impl set_top 无 filter 亦 0; 残留仅良性 VLOG-063)。
 
