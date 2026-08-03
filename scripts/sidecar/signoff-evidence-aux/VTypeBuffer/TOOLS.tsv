@@ -1,9 +1,9 @@
 kind	path	sha256
-infra	/tmp/vtb-scratch-evidence/scripts/sidecar/run_signoff_target.sh	be280d64cc09ef0e17a2fc143ae733a6f51cf4a95468ce72f770a326ceee8843
-infra	/tmp/vtb-scratch-evidence/scripts/sidecar/fm_closure_digest.py	5ee7e694620c54600ce493b0c0af47d614a883e105073736d9ed1e228a6be906
-infra	/tmp/vtb-scratch-evidence/scripts/sidecar/fm_sidecar_verdict.py	fe7784c496fed9684e4e5e5299d7afea255a6ae2b8e41cee4155bc79b4a60c25
-infra	/tmp/vtb-scratch-evidence/scripts/sidecar/gen_305_manifest.py	2f99093894dba66bf356a51f2d066663b62648d6b6f0885126f5f9efdcbbec6e
-manifest_sha256	scripts/sidecar/manifest_aux.json	d172008fe2d78e65ee94e3dd8cae3c89b429b661b2bfb066d6c967aaa6355526
+infra	/tmp/vtb-val2-1317240/scripts/sidecar/run_signoff_target.sh	be280d64cc09ef0e17a2fc143ae733a6f51cf4a95468ce72f770a326ceee8843
+infra	/tmp/vtb-val2-1317240/scripts/sidecar/fm_closure_digest.py	5ee7e694620c54600ce493b0c0af47d614a883e105073736d9ed1e228a6be906
+infra	/tmp/vtb-val2-1317240/scripts/sidecar/fm_sidecar_verdict.py	1bea54de81c36377dd66abc1411bb71dd261d163aaa7f50dfdd51662a937c024
+infra	/tmp/vtb-val2-1317240/scripts/sidecar/gen_305_manifest.py	2f99093894dba66bf356a51f2d066663b62648d6b6f0885126f5f9efdcbbec6e
+manifest_sha256	scripts/sidecar/manifest_aux.json	206521c53853b2652ac0b556f8e5abcf185a65dfa4869478946bc272182967da
 canonical_baseline_id	G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456	-
 target_entry	scripts/fm_eq.tcl	-
 make_target	fm-VTypeBuffer	-
@@ -11,7 +11,7 @@ proof_mode	assembly	-
 required_verdict	SUCCEEDED	-
 allow_ref	verif/signoff/allow/VTypeBuffer.json	571f36201ece5eec7b60c6b03058ad9324912daad84060eb16d022399939b801
 dead_ref	-	-
-declarations_ref	scripts/sidecar/manifest_declarations_aux.tsv	b79c4edca7d43c45a03597ea52e1d972f0c0e863a0787402c04daba63a8cc295
+declarations_ref	scripts/sidecar/manifest_declarations_aux.tsv	9c6d1d8a42f0de988bce0ace81f777c16f28096a4e7df034a80b7931b37aa963
 reference_kind	golden	-
 derivative_id	-	-
 derivative_sv_sha256	-	-
@@ -22,10 +22,10 @@ semantic_surface_impl_sha256	-	-
 verify_matched_unread_compare_points	true	-
 executed_snapshot	sourced_000_fm_eq.tcl	03d521a73add9ba0083acf87c1b29a4167d87078bfec62bb6eb2d44d5104e777
 executed_snapshot	sourced_001_fm_native_emit.tcl	decc6ac8af6128600a1df554ab9550735bbe472772a93afb98dfa38302da7972
-impl_commit	b7e0b6399cd9ac1a4c951cdc06bbd68c2229d4fc	-
+impl_commit	87af84fc08be2d3b6a5556824b9a35d67fb1348c	-
 main_tracked_dirty	0	-
-worktree_head_pre	b7e0b6399cd9ac1a4c951cdc06bbd68c2229d4fc	-
-worktree_head_post	b7e0b6399cd9ac1a4c951cdc06bbd68c2229d4fc	-
+worktree_head_pre	87af84fc08be2d3b6a5556824b9a35d67fb1348c	-
+worktree_head_post	87af84fc08be2d3b6a5556824b9a35d67fb1348c	-
 worktree_tracked_dirty_pre	0	-
 worktree_tracked_dirty_post	0	-
 worktree_untracked_files	0	-

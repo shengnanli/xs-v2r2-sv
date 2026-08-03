@@ -21,11 +21,11 @@
 
 Build: 8868332
 Hostname: localhost.localdomain
-Current time: Mon Aug  3 04:44:30 2026
+Current time: Mon Aug  3 05:25:50 2026
 
 Loading db file '/home/eda/app/synopsys/fm/V-2023.12-SP3/libraries/syn/gtech.db'
 
-Script: /tmp/tmp.MFFvmaObNE/wt/scripts/fm_eq.tcl
+Script: /tmp/tmp.FTQAbnWSFb/wt/scripts/fm_eq.tcl
 
 Information: Term was not able to be set up using xterm-256color . Using "xterm" by default instead. (CLE-10)
 # Formality 等价性检查通用脚本
@@ -38,7 +38,7 @@ VTypeBuffer
 set ref_srcs  $env(FM_REF_SRCS)
 /home/eda/xs-env/G0-canonical/golden-rtl/VTypeBuffer.sv  
 set impl_srcs $env(FM_IMPL_SRCS)
-/tmp/tmp.MFFvmaObNE/wt/rtl/backend/VTypeBuffer.sv /tmp/tmp.MFFvmaObNE/wt/rtl/backend/VTypeBuffer_wrapper.sv
+/tmp/tmp.FTQAbnWSFb/wt/rtl/backend/VTypeBuffer.sv /tmp/tmp.FTQAbnWSFb/wt/rtl/backend/VTypeBuffer_wrapper.sv
 # ----------------------------------------------------------------------------
 # 目标级语义面包装(codex_0092 §1 选项 B; canonical_derivative 专用, runner 硬绑):
 # 当 runner 从 committed+hash 校验的 ledger 置入这三个 env 时, FM 顶层换成语义面
@@ -207,8 +207,8 @@ Reference design set to 'r:/WORK/VTypeBuffer'
 # Implementation: 手写 SV
 read_sverilog -i -define {SYNTHESIS} $impl_srcs
 No target library specified, default is WORK
-Loading verilog file '/tmp/tmp.MFFvmaObNE/wt/rtl/backend/VTypeBuffer.sv'
-Loading verilog file '/tmp/tmp.MFFvmaObNE/wt/rtl/backend/VTypeBuffer_wrapper.sv'
+Loading verilog file '/tmp/tmp.FTQAbnWSFb/wt/rtl/backend/VTypeBuffer.sv'
+Loading verilog file '/tmp/tmp.FTQAbnWSFb/wt/rtl/backend/VTypeBuffer_wrapper.sv'
 Current container set to 'i'
 1
 set_top i:/WORK/$top
@@ -410,9 +410,9 @@ if {$SIDECAR_ON} { sidecar_emit $top }
 SIDECAR_NATIVE_FACTS_WRITTEN
 exit
 
-Maximum memory usage for this session: 869 MB
-CPU usage for this session: 6.96 seconds ( 0.00 hours )
-Current time: Mon Aug  3 04:44:48 2026
-Elapsed time: 23 seconds ( 0.01 hours )
+Maximum memory usage for this session: 867 MB
+CPU usage for this session: 7.32 seconds ( 0.00 hours )
+Current time: Mon Aug  3 05:26:08 2026
+Elapsed time: 22 seconds ( 0.01 hours )
 
 Thank you for using Formality (R)!
