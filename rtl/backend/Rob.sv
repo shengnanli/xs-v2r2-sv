@@ -458,26 +458,26 @@ module xs_Rob_core
   logic [ENTRY_PER_BANK-1:0] robBanksRaddrThisLine;
   logic [ENTRY_PER_BANK-1:0] robBanksRaddrNextLine;  // 组合(FSM, 见 §12)
 
-  // 行号(高位): 由当前 one-hot 行读地址译码; this/next 行的 robIdx。
-  function automatic logic [PTR_W-1:0] onehot_to_row(input logic [ENTRY_PER_BANK-1:0] oh);
-    logic [PTR_W-1:0] r;
-    r = '0;
-    for (int e = 0; e < ENTRY_PER_BANK; e++) if (oh[e]) r = PTR_W'(e);
-    return r;
-  endfunction
-  logic [PTR_W-1:0] highDeqPtrThisLine, highDeqPtrNextLine;
+  // ★codex 0107 修(robDeqGroup failing 根因之一)★ 行合并下标 robIdxThisLine/
+  //  NextLine 按 golden 由 deqPtr 高位派生(golden: robIdxThisLine_b =
+  //  {_deqPtrGenModule_io_out_0_value[7:3], b}; highDeqPtrNextLine = 行号+1
+  //  mod 20), 而【不是】onehot_to_row(robBanksRaddrThisLine) 译码。二者仅在
+  //  运行期不变量「raddr one-hot 且 == deqPtr 所在行」下相等; FM 全输入空间下
+  //  (raddr 与 deqPtr 是独立寄存器)不等 → 旧版 robDeqGroup commit_w 合并项
+  //  判 not-equivalent。行读数据仍用 raddr 做 Mux1H(见 §5, 同 golden)。
+  logic [ENTRY_ADDR_W-1:0] highDeqPtrThisLine, highDeqPtrNextLine;  // 行号(0..19)
   always_comb begin
-    highDeqPtrThisLine = onehot_to_row(robBanksRaddrThisLine);
-    highDeqPtrNextLine = (highDeqPtrThisLine == PTR_W'(ENTRY_PER_BANK-1))
-                       ? '0 : (highDeqPtrThisLine + PTR_W'(1));
+    highDeqPtrThisLine = deqPtr.value[PTR_W-1:BANK_ADDR_W];
+    highDeqPtrNextLine = (highDeqPtrThisLine == ENTRY_ADDR_W'(ENTRY_PER_BANK-1))
+                       ? '0 : (highDeqPtrThisLine + ENTRY_ADDR_W'(1));
   end
-  // 各 bank 在 this/next 行的 robIdx = row*8 + bank。
+  // 各 bank 在 this/next 行的 robIdx = {行号, bank}。
   logic [PTR_W-1:0] robIdxThisLine [COMMIT_WIDTH];
   logic [PTR_W-1:0] robIdxNextLine [COMMIT_WIDTH];
   always_comb
     for (int b = 0; b < BANK_NUM; b++) begin
-      robIdxThisLine[b] = {highDeqPtrThisLine[PTR_W-1-BANK_SEL_W:0], BANK_SEL_W'(b)};
-      robIdxNextLine[b] = {highDeqPtrNextLine[PTR_W-1-BANK_SEL_W:0], BANK_SEL_W'(b)};
+      robIdxThisLine[b] = {highDeqPtrThisLine, BANK_ADDR_W'(b)};
+      robIdxNextLine[b] = {highDeqPtrNextLine, BANK_ADDR_W'(b)};
     end
 
   // robDeqGroup: 寄存的当前行 8 个 bank 提交条目(对齐 golden 的 Reg)。
@@ -500,28 +500,52 @@ module xs_Rob_core
   //  filter 掩盖非诚实。∴改为模块级 always_comb 预算数组(procedural module code 读
   //  模块信号合法, 不触发 FMR-091), 表达式与原 function 逐字一致, 0 语义变化。
   //  下标空间用 ROB_SIZE(与旧 f(i) 调用域 i∈[0,ROB_SIZE) 相同)。
-  logic [4:0]              sum_wb_for_arr        [ROB_SIZE];
+  logic [4:0]              wbnum_or_for_arr      [ROB_SIZE];
   logic                    any_std_wb_for_arr    [ROB_SIZE];
   logic [4:0]              or_fflags_for_arr     [ROB_SIZE];
   logic                    or_vxsat_for_arr      [ROB_SIZE];
   logic                    any_branch_taken_arr  [ROB_SIZE];
   logic                    any_excp_flush_arr    [ROB_SIZE];
   logic [RENAME_WIDTH-1:0] enq_inst_hit_arr      [ROB_SIZE];
+  // ★codex 0107 修(uopNum failing 根因)★ golden 有【三族】入队命中信号, 语义
+  //  不同不可混用(FM 全输入空间下互不可推; 运行期 dispatch 不变量
+  //  req.robIdx == allocatePtr 使三者一致, 故 co-sim 抓不到):
+  //   A 族 enqOH(enq_inst_hit_arr):  canEnqueue[k](=valid&firstUop&canAccept)
+  //       & allocatePtr[k]==idx(内部分配指针)。用于: valid 置位 / _GEN_7265
+  //       静态信息写 / needFlush 入队 / vls / interrupt_safe / mmio 清。
+  //   B 族 instCanEnqSeq(inst_canenq_arr): canAccept & req[k].valid
+  //       & req[k].firstUop & req[k].robIdx==idx(【请求自带 robIdx】)。用于:
+  //       uopNum/stdWritebacked 入队(_GEN_2637) + isFirstEnq(realDestSize 置/
+  //       fflags/vxsat 清)。
+  //   C 族 uopCanEnqSeq(uop_canenq_arr): canAccept & req[k].valid
+  //       & req[k].robIdx==idx(不要求 firstUop)。用于: realDestSize 累计门控
+  //       与计数(enqNeedWriteRFSeq&uopCanEnqSeq)。
+  logic [RENAME_WIDTH-1:0] inst_canenq_arr       [ROB_SIZE];
+  logic [RENAME_WIDTH-1:0] uop_canenq_arr        [ROB_SIZE];
   logic [UOP_CNT_W-1:0]    real_dest_enq_num_arr [ROB_SIZE];
   // 前置声明(被后文 always_ff/always_comb 引用, 其 always_comb 赋值在各自定义点):
   logic                    commit_hit_arr             [ROB_SIZE];
   logic                    in_flush_range_arr         [ROB_SIZE];
-  logic                    enq_allow_interrupt_hit_arr [ROB_SIZE];
   logic [UOP_CNT_W:0]      prefix_realdest_commit_arr [COMMIT_WIDTH];
   logic [UOP_CNT_W:0]      prefix_realdest_walk_arr   [COMMIT_WIDTH];
   logic [34:0]             enq_fuType_hit_arr         [ROB_SIZE];
   always_comb
     for (int idx = 0; idx < ROB_SIZE; idx++) begin
-      // sum_wb_for
-      sum_wb_for_arr[idx] = '0;
+      // wbnum_or_for: ★codex 0107 修(uopNum failing 根因)★ golden _GEN_2636 是
+      //  Mux1H【OR-blend】((valid&hit ? writebackNums : 0) 逐口按位或), 不是算术
+      //  求和; 多口同拍命中同 entry 的输入组合下 SUM ≠ OR → FM 判不等价。
+      //  (口 25/26 wb_num 恒 0, 与 golden 只列 0..24 口等价。)
+      wbnum_or_for_arr[idx] = '0;
       for (int p = 0; p < NUM_EXU_WB; p++)
         if (wb_valid[p] & (wb_robidx[p] == PTR_W'(idx)))
-          sum_wb_for_arr[idx] += wb_num[p];
+          wbnum_or_for_arr[idx] |= wb_num[p];
+      // inst_canenq(B 族) / uop_canenq(C 族): 请求位 robIdx 匹配(golden
+      //  robIdxMatchSeq_k = io_enq_req_k_bits_robIdx_value == idx)。
+      for (int k = 0; k < RENAME_WIDTH; k++) begin
+        uop_canenq_arr[idx][k]  = o_enq_canAccept & enq_valid[k]
+                                & (enq_robidx_value[k] == PTR_W'(idx));
+        inst_canenq_arr[idx][k] = uop_canenq_arr[idx][k] & enq_first_uop[k];
+      end
       // any_std_wb_for
       any_std_wb_for_arr[idx] = 1'b0;
       for (int p = 0; p < NUM_EXU_WB; p++)
@@ -553,99 +577,127 @@ module xs_Rob_core
     end
 
   // =====================================================================
-  // 5. robDeqGroup 行读更新: 把「行内 8 条 + 下一行 8 条」按 writeback/enq 更新后
-  //    存进 robDeqGroup(本可读核简化: 直接用 rob_entries 当前值经 connect 装入,
-  //    writeback 的当拍合并在 rob_entries 的下一拍值里体现)。
-  //    注: golden 用 robBanksRdataThisLineUpdate 做「读出后即时合并 wb」, 这里
-  //    用 connect_commit_entry(下一拍 entry) 表达同一语义。
+  // 5. per-entry 下一拍值 rob_entries_next + robDeqGroup 行读更新(golden 同构:
+  //    raw Mux1H 行读 + 动态下标即时合并, 见下方 ★codex 0107 全重构★ 块)。
   // =====================================================================
   // rob_entries_next 是纯组合(always_comb)下一拍值, 非寄存器(0 flip-flop, 不计入
-  //  impl reg)。宽度用 IDX_SPACE=256 让 8 位行读下标 robIdxThisLine[b] 静态在界
-  //  (消 FMR_ELAB-147); 160..255 项填不可达 'x(下方 §3 行读下标恒 row*8+bank<160)。
+  //  impl reg)。宽度保留 IDX_SPACE=256 形状(历史: 动态行下标直索引时代消
+  //  FMR_ELAB-147); ★codex 0107 重构后仅静态下标 0..159 被读★, 160..255 死项
+  //  填 'x 无读者(综合/FM 直接剪除, 0 伪影)。
   rob_entry_t rob_entries_next [IDX_SPACE];
+  // ★codex 0107 修(G1+G2 checkpoint 20 failing 根因修复)★ 本块按 golden 逐方程
+  //  重写: (1) uopNum/std 入队门 = B 族 inst_canenq(请求 robIdx), 非 A 族 enqOH;
+  //  (2) 递减数 = OR-blend(wbnum_or_for_arr), 非 SUM; (3) 入队值 mux = port0 优先
+  //  嵌套 mux 缺省 port5(golden instCanEnqSeq_0?numWB0:...:numWB5); (4) 静态信息
+  //  写门 = golden _GEN_7265 = |enqOH & ~redirect(【不】gate ~valid), 值 = OR-blend
+  //  融合(多口命中按位或), 非 priority-pick; (5) vls/interrupt_safe/mmio清 =
+  //  per-port when 链, port5 最高优先(升序循环 last-wins), 不 gate valid/redirect;
+  //  (6) realDestSize 置门 = B 族 isFirstEnq, 累计门 = valid & |C 族; (7) itype
+  //  taken 覆盖 = (valid & itype==4 & taken)→5, 优先于入队写(golden else-if 序)。
   always_comb begin
     // 160..255 死项: 不可达组合默认 'x(非正常 entry 数据; 行读下标恒 <160 不选中)。
     for (int i = ROB_SIZE; i < IDX_SPACE; i++) rob_entries_next[i] = 'x;
     for (int i = 0; i < ROB_SIZE; i++) begin
       rob_entry_t e;
-      logic [RENAME_WIDTH-1:0] ihit;
-      logic                    is_first_enq;
+      logic [RENAME_WIDTH-1:0] ihit;    // A 族 enqOH(分配指针命中)
+      logic [RENAME_WIDTH-1:0] ienq;    // B 族 instCanEnqSeq(请求 robIdx+firstUop)
+      logic                    is_first_enq; // = golden isFirstEnq/_GEN_2637
+      logic                    enq_wr;       // = golden _GEN_7265
       logic [4:0]              wbc;
       logic                    nf_wb;
-      e   = rob_entries[i];
+      logic [UOP_CNT_W-1:0]    nwb;
+      logic                    wstd;
+      e    = rob_entries[i];
       ihit = enq_inst_hit_arr[i];
-      is_first_enq = ~rob_entries[i].valid & (|ihit);
-      wbc   = sum_wb_for_arr[i];
+      ienq = inst_canenq_arr[i];
+      is_first_enq = ~rob_entries[i].valid & (|ienq);
+      enq_wr = (|ihit) & ~io_redirect_valid;
+      wbc   = wbnum_or_for_arr[i];
       nf_wb = any_excp_flush_arr[i];
 
       // ---- valid ----
       // commit 清, enq 置(redirect 拍不入队), redirect flush 清。
-      // (commit/flush 的具体条件在第 12 节时序里和 commit 决策一起处理。)
+      // (commit/flush 的具体条件在第 12 节时序里和 commit 决策一起处理。
+      //  rob_entries_next.valid 保持现值 = golden needUpdate_N_valid 的 raw 语义。)
 
-      // ---- needFlush ----
+      // ---- needFlush ----(golden: valid → old|wb; else _GEN_7265 → OR-blend 入队)
       if (rob_entries[i].valid)
         e.need_flush = rob_entries[i].need_flush | nf_wb;
+      else if (enq_wr) begin
+        e.need_flush = 1'b0;
+        for (int k = 0; k < RENAME_WIDTH; k++)
+          e.need_flush |= ihit[k] & enq_info[k].need_flush;  // hasException|flushPipe
+      end
 
-      // ---- uopNum / stdWritebacked ----
+      // ---- uopNum / stdWritebacked ----(golden 3 分支:
+      //  _GEN_2635(valid&(needFlush|wbFlush)) > _GEN_2637(B 族入队) > valid)
+      nwb  = enq_num_wb[RENAME_WIDTH-1];       // golden 嵌套 mux 缺省 = port5
+      wstd = enq_write_std[RENAME_WIDTH-1];
+      for (int k = RENAME_WIDTH-2; k >= 0; k--)
+        if (ienq[k]) begin nwb = enq_num_wb[k]; wstd = enq_write_std[k]; end
       if (rob_entries[i].valid & (rob_entries[i].need_flush | nf_wb)) begin
-        e.uop_num         = rob_entries[i].uop_num - wbc;
+        e.uop_num         = rob_entries[i].uop_num - {2'b0, wbc};
         e.std_writebacked = 1'b1;
-      end else if (~rob_entries[i].valid & (|ihit)) begin
-        // enq: 取命中口的 numWB; isStore 则 std 待回。
-        logic [UOP_CNT_W-1:0] nwb;
-        logic                 wstd;
-        nwb  = '0; wstd = 1'b0;
-        for (int k = RENAME_WIDTH-1; k >= 0; k--)
-          if (ihit[k]) begin nwb = enq_num_wb[k]; wstd = enq_write_std[k]; end
+      end else if (is_first_enq) begin
         e.uop_num         = nwb;
         e.std_writebacked = ~wstd;
       end else if (rob_entries[i].valid) begin
-        e.uop_num = rob_entries[i].uop_num - wbc;
+        e.uop_num = rob_entries[i].uop_num - {2'b0, wbc};
         if (any_std_wb_for_arr[i]) e.std_writebacked = 1'b1;
       end
 
-      // ---- realDestSize ----
+      // ---- realDestSize ----(golden: isFirstEnq(B 族) 置; valid&|uopCanEnq(C 族) 累计)
       if (is_first_enq)
         e.real_dest_size = real_dest_enq_num_arr[i];
-      else if (rob_entries[i].valid & (|enq_inst_hit_arr[i]))
+      else if (rob_entries[i].valid & (|uop_canenq_arr[i]))
         e.real_dest_size = rob_entries[i].real_dest_size + real_dest_enq_num_arr[i];
 
-      // ---- fflags / vxsat ----
+      // ---- fflags / vxsat ----(golden 清 0 门 = isFirstEnq(B 族))
       if (is_first_enq) e.fflags = '0;
       else              e.fflags = rob_entries[i].fflags | or_fflags_for_arr[i];
       if (is_first_enq) e.vxsat = 1'b0;
       else              e.vxsat = rob_entries[i].vxsat | or_vxsat_for_arr[i];
 
-      // ---- trace itype: 分支 taken → Taken(=3) ----
-      if (rob_entries[i].valid & is_branch_type(rob_entries[i].itype) & any_branch_taken_arr[i])
-        e.itype = 4'd3;
-
-      // ---- 入队静态信息 + 状态初值(首次入队覆盖) ----
-      if (is_first_enq) begin
-        rob_entry_t s;
-        s = '0;
-        for (int k = RENAME_WIDTH-1; k >= 0; k--)
-          if (ihit[k]) s = enq_info[k];
-        e.rf_wen        = s.rf_wen;
-        e.fp_wen        = s.fp_wen;
-        e.wflags        = s.wflags;
-        e.dirty_vs      = s.dirty_vs;
-        e.commit_type   = s.commit_type;
-        e.is_rvc        = s.is_rvc;
-        e.is_vset       = s.is_vset;
-        e.is_hls        = s.is_hls;
-        e.instr_size    = s.instr_size;
-        e.ftq_idx_value = s.ftq_idx_value;
-        e.ftq_idx_flag  = s.ftq_idx_flag;
-        e.ftq_offset    = s.ftq_offset;
-        e.itype         = s.itype;
-        e.iretire       = s.iretire;
-        e.ilastsize     = s.ilastsize;
-        e.need_flush    = s.need_flush;          // hasException||flushPipe
-        e.mmio          = 1'b0;                  // 入队清, 之后由 lsq.mmio 置
-        e.vls           = s.vls;
-        e.interrupt_safe= enq_allow_interrupt_hit_arr[i];
+      // ---- 入队静态信息(golden _GEN_7265 块: |enqOH & ~redirect, OR-blend 融合) ----
+      if (enq_wr) begin
+        e.rf_wen = 1'b0; e.fp_wen = 1'b0; e.wflags = 1'b0; e.dirty_vs = 1'b0;
+        e.commit_type = '0; e.is_rvc = 1'b0; e.is_vset = 1'b0; e.is_hls = 1'b0;
+        e.instr_size = '0; e.ftq_idx_value = '0; e.ftq_idx_flag = 1'b0;
+        e.ftq_offset = '0; e.itype = '0; e.iretire = '0; e.ilastsize = '0;
+        for (int k = 0; k < RENAME_WIDTH; k++)
+          if (ihit[k]) begin
+            e.rf_wen        |= enq_info[k].rf_wen;
+            e.fp_wen        |= enq_info[k].fp_wen;       // = req.dirtyFs(见 wrapper glue)
+            e.wflags        |= enq_info[k].wflags;
+            e.dirty_vs      |= enq_info[k].dirty_vs;
+            e.commit_type   |= enq_info[k].commit_type;
+            e.is_rvc        |= enq_info[k].is_rvc;
+            e.is_vset       |= enq_info[k].is_vset;
+            e.is_hls        |= enq_info[k].is_hls;
+            e.instr_size    |= enq_info[k].instr_size;
+            e.ftq_idx_value |= enq_info[k].ftq_idx_value;
+            e.ftq_idx_flag  |= enq_info[k].ftq_idx_flag;
+            e.ftq_offset    |= enq_info[k].ftq_offset;
+            e.itype         |= enq_info[k].itype;
+            e.iretire       |= enq_info[k].iretire;
+            e.ilastsize     |= enq_info[k].ilastsize;
+          end
       end
+      // ---- trace itype taken 覆盖(golden: valid & 旧值==4(NonTaken) & 口1/3/5
+      //  taken 命中 → 5(Taken); else-if 入队写(上块) —— taken 优先, 故后赋值覆盖) ----
+      if (rob_entries[i].valid & (rob_entries[i].itype == ITYPE_W'(4)) & any_branch_taken_arr[i])
+        e.itype = ITYPE_W'(5);
+
+      // ---- vls / interrupt_safe / mmio 清(golden per-port when 链) ----
+      //  golden: if (canEnqueue_5&hit5) {vls,int_safe}<=port5; else if hit4 ... hit0
+      //  —— port5 最高优先(升序循环 last-wins 等价); 【不】gate valid/redirect。
+      //  mmio: golden = lsq-set | (~任一命中 & hold), 链上每臂写 0 ⇔ 任一命中清 0。
+      for (int k = 0; k < RENAME_WIDTH; k++)
+        if (ihit[k]) begin
+          e.vls            = enq_info[k].vls;
+          e.interrupt_safe = enq_allow_interrupt[k];
+          e.mmio           = 1'b0;               // 入队清, 之后由 lsq.mmio 置
+        end
       rob_entries_next[i] = e;
     end
   end
@@ -674,38 +726,143 @@ module xs_Rob_core
       rob_ftq_offset_next[i] = rob_entries_next[i].ftq_offset;
     end
 
-  // 分支类型判定(itype: 4=NoBranch/NotTaken 之外的 branch code)。
-  function automatic logic is_branch_type(input logic [ITYPE_W-1:0] t);
-    // 香山 Itype: branch 类(Taken=3, NotTaken=4 也算 branch);此处保留与 golden 同义。
-    return (t >= 4'd3) & (t <= 4'd6);
-  endfunction
-  // 入队该条目 interrupt_safe: 命中口的 allow_interrupt。
-  // ★FMR-strict (修3)★ 原读模块级 enq_allow_interrupt/enq_inst_hit → 改 always_comb 数组。
-  // (声明前置于 §4 helper-array 块, 因 §4 next-state always_comb 之前引用。)
-  always_comb
-    for (int idx = 0; idx < ROB_SIZE; idx++) begin
-      enq_allow_interrupt_hit_arr[idx] = 1'b0;
-      for (int k = RENAME_WIDTH-1; k >= 0; k--)
-        if (enq_inst_hit_arr[idx][k]) enq_allow_interrupt_hit_arr[idx] = enq_allow_interrupt[k];
-    end
-
-  // 行读 + 即时合并(needUpdate): this/next 行各 8 bank 的「读出已合并本拍 wb/enq」条目。
-  // rob_entries_next[idx] 即 golden 的 needUpdate(读出后合并)语义, 故直接索引即可。
-  rob_entry_t robBanksRdataThisLineUpdate [COMMIT_WIDTH];
-  rob_entry_t robBanksRdataNextLineUpdate [COMMIT_WIDTH];
+  // =====================================================================
+  //  行读 + 即时合并 —— ★codex 0107 全重构, 逐方程对齐 golden(robDeqGroup
+  //  commit_v/commit_w/interrupt_safe failing 根因修复)★
+  //  golden 结构:
+  //   (1) raw 行读 robBanksRdata_N = Mux1H(robBanksRaddrThisLine, 列条目)
+  //       —— 20 项 one-hot【OR-blend】(raddr[e] ? entry[e*8+b] : 0 逐项按位或),
+  //       nextLine 用同一 raddr 选「行+1 mod 20」的列。旧版
+  //       rob_entries_next[onehot_to_row(raddr)*8+b](one-hot→二进制译码后下标)
+  //       仅在 raddr one-hot 时与 Mux1H 相等, FM 全输入空间下不等 → failing。
+  //   (2) 合并(needUpdate)在【动态行下标 robIdxThisLine/NextLine(deqPtr 派生)】
+  //       上重求 uopNum/std/needFlush/realDestSize/itype 的入队/写回方程
+  //       (命中信号 = 请求 robIdx == 动态 idx / 写回 robIdx == 动态 idx),
+  //       其余字段取 raw 读值(golden robDeqGroup_N_<static> = raw Mux1H)。
+  //   (3) robDeqGroup <= allCommitted ? merged(next) : merged(this)。
+  // =====================================================================
+  rob_entry_t robBanksRdataThis [COMMIT_WIDTH];   // raw Mux1H 行读(this)
+  rob_entry_t robBanksRdataNext [COMMIT_WIDTH];   // raw Mux1H 行读(next = 行+1)
   always_comb
     for (int b = 0; b < BANK_NUM; b++) begin
-      robBanksRdataThisLineUpdate[b] = rob_entries_next[robIdxThisLine[b]];
-      robBanksRdataNextLineUpdate[b] = rob_entries_next[robIdxNextLine[b]];
+      robBanksRdataThis[b] = '0;
+      robBanksRdataNext[b] = '0;
+      for (int r = 0; r < ENTRY_PER_BANK; r++)
+        if (robBanksRaddrThisLine[r]) begin
+          robBanksRdataThis[b] |= rob_entries[r*BANK_NUM + b];
+          robBanksRdataNext[b] |= rob_entries[((r+1)%ENTRY_PER_BANK)*BANK_NUM + b];
+        end
     end
 
-  // robDeqGroup 的下一拍值: 每拍取 thisLineUpdate; allCommitted 时取 nextLineUpdate。
+  // line 维度: [0]=thisLine, [1]=nextLine(allCommitted 用)。
+  rob_entry_t        deq_rdata_line [2][COMMIT_WIDTH];
+  logic [PTR_W-1:0]  deq_idx_line   [2][COMMIT_WIDTH];
+  always_comb
+    for (int b = 0; b < BANK_NUM; b++) begin
+      deq_rdata_line[0][b] = robBanksRdataThis[b];
+      deq_rdata_line[1][b] = robBanksRdataNext[b];
+      deq_idx_line[0][b]   = robIdxThisLine[b];
+      deq_idx_line[1][b]   = robIdxNextLine[b];
+    end
+
+  rob_commit_entry_t robDeqMerged [2][COMMIT_WIDTH];
+  always_comb
+    for (int l = 0; l < 2; l++)
+      for (int b = 0; b < BANK_NUM; b++) begin
+        rob_entry_t              raw;
+        logic [PTR_W-1:0]        idx;
+        logic [RENAME_WIDTH-1:0] ienq;    // B 族 instCanEnqSeq @动态 idx
+        logic [UOP_CNT_W-1:0]    cnt;     // Σ needWriteRF & C 族 @动态 idx(=_GEN_3116/3148)
+        logic [4:0]              wbnum;   // OR-blend writebackNums @动态 idx(=_GEN_3118/3150)
+        logic                    stdwb, nfwb, taken;
+        logic [4:0]              offl;    // fflags 写回 OR @动态 idx
+        logic                    ovx;     // vxsat 写回 OR @动态 idx
+        logic                    updV, g_wbf, g_enq;
+        logic [UOP_CNT_W-1:0]    nwb, upd_uop;
+        logic                    wstd, upd_std;
+        rob_commit_entry_t       c;
+
+        raw = deq_rdata_line[l][b];
+        idx = deq_idx_line[l][b];
+
+        // ---- 动态 idx 命中信号(与 §4 per-entry 同式, 静态 i 换动态 idx) ----
+        ienq = '0; cnt = '0;
+        for (int k = 0; k < RENAME_WIDTH; k++) begin
+          logic um;                              // C 族 uopCanEnqSeq @ idx
+          um = o_enq_canAccept & enq_valid[k] & (enq_robidx_value[k] == idx);
+          ienq[k] = um & enq_first_uop[k];
+          if (um & enq_need_write_rf[k]) cnt += UOP_CNT_W'(1);
+        end
+        wbnum = '0; stdwb = 1'b0; taken = 1'b0; offl = '0; ovx = 1'b0;
+        for (int p = 0; p < NUM_EXU_WB; p++)
+          if (wb_valid[p] & (wb_robidx[p] == idx)) begin
+            wbnum |= wb_num[p];                                  // OR-blend(同 §4)
+            if (wb_is_std[p])                    stdwb = 1'b1;   // 口 25/26
+            if (wb_branch_taken[p])              taken = 1'b1;   // 口 1/3/5
+            if (wb_fflags_valid[p])              offl |= wb_fflags[p];
+            if (wb_vxsat_valid[p] & wb_vxsat[p]) ovx  = 1'b1;
+          end
+        nfwb = 1'b0;
+        for (int p = 0; p < NUM_WB; p++)
+          if (excp_wb_valid[p] & excp_wb_need_flush[p] & (excp_wb_robidx[p] == idx))
+            nfwb = 1'b1;
+
+        // ---- 合并(golden robDeqGroup 更新方程) ----
+        updV  = raw.valid;                       // = golden needUpdate_N_valid(raw)
+        g_wbf = updV & (raw.need_flush | nfwb);  // = golden _GEN_3117/_GEN_3149
+        g_enq = ~updV & (|ienq);                 // = golden _GEN_3115/_GEN_3147
+        nwb  = enq_num_wb[RENAME_WIDTH-1];       // 嵌套 mux 缺省 = port5(同 §4)
+        wstd = enq_write_std[RENAME_WIDTH-1];
+        for (int k = RENAME_WIDTH-2; k >= 0; k--)
+          if (ienq[k]) begin nwb = enq_num_wb[k]; wstd = enq_write_std[k]; end
+        upd_uop = g_wbf ? UOP_CNT_W'(raw.uop_num - {2'b0, wbnum})
+                : g_enq ? nwb
+                : updV  ? UOP_CNT_W'(raw.uop_num - {2'b0, wbnum})
+                :         raw.uop_num;
+        upd_std = g_wbf | (g_enq ? ~wstd : (updV & stdwb | raw.std_writebacked));
+
+        c = '0;
+        c.commit_v       = updV;
+        c.walk_v         = updV;
+        c.commit_w       = (upd_uop == '0) & upd_std;
+        c.need_flush     = updV & nfwb | raw.need_flush;   // golden robDeqGroup_N_needFlush
+        c.real_dest_size = g_enq ? cnt
+                         : (updV & (|ienq)) ? UOP_CNT_W'(raw.real_dest_size + cnt)
+                         : raw.real_dest_size;             // golden robDeqGroup_N_realDestSize
+        // ---- raw 静态字段(golden robDeqGroup_N_<f> = raw Mux1H) ----
+        c.interrupt_safe = raw.interrupt_safe;
+        c.is_rvc         = raw.is_rvc;
+        c.is_vset        = raw.is_vset;
+        c.is_hls         = raw.is_hls;
+        c.is_vls         = raw.vls;
+        c.vls            = raw.vls;
+        c.mmio           = raw.mmio;
+        c.commit_type    = raw.commit_type;
+        c.instr_size     = raw.instr_size;
+        c.ftq_idx_value  = raw.ftq_idx_value;
+        c.ftq_idx_flag   = raw.ftq_idx_flag;
+        c.ftq_offset     = raw.ftq_offset;
+        c.rf_wen         = raw.rf_wen;
+        c.fp_wen         = raw.fp_wen;
+        c.wflags         = raw.wflags;
+        c.dirty_fs       = raw.fp_wen | raw.wflags;  // golden dirtyFs = Mux1H(fpWen)|Mux1H(wflags)
+        c.dirty_vs       = raw.dirty_vs;
+        c.iretire        = raw.iretire;
+        c.ilastsize      = raw.ilastsize;
+        // ---- fflags/vxsat(golden robDeqGroup 无此二 reg; impl-only 字段, 按
+        //  per-entry 方程在动态 idx 求值 = 旧版 entries_next 行为, one-hot 下一致) ----
+        c.fflags = g_enq ? '0   : (raw.fflags | offl);
+        c.vxsat  = g_enq ? 1'b0 : (raw.vxsat | ovx);
+        // ---- itype(golden: updValid & raw==4(NonTaken) & taken@idx → 5(Taken)) ----
+        c.itype  = (updV & (raw.itype == ITYPE_W'(4)) & taken) ? ITYPE_W'(5) : raw.itype;
+        robDeqMerged[l][b] = c;
+      end
+
+  // robDeqGroup 的下一拍值: 每拍取 merged(this); allCommitted 时取 merged(next)。
   rob_commit_entry_t robDeqGroup_next [COMMIT_WIDTH];
   always_comb
     for (int b = 0; b < BANK_NUM; b++)
-      robDeqGroup_next[b] = o_allCommitted
-                          ? connect_commit_entry(robBanksRdataNextLineUpdate[b])
-                          : connect_commit_entry(robBanksRdataThisLineUpdate[b]);
+      robDeqGroup_next[b] = o_allCommitted ? robDeqMerged[1][b] : robDeqMerged[0][b];
 
   // 每个提交槽 i 取所在 bank 的 robDeqGroup(golden: deqPtrVec(i)/walkPtrVec(i) 的低 3 位)。
   rob_commit_entry_t commitInfo [COMMIT_WIDTH];
@@ -1108,125 +1265,46 @@ module xs_Rob_core
   logic deqHitRedirectReg, deqHitRedirect_d1, deqHitRedirect_d2;
   always_comb deqHitRedirectReg = deqHitRedirect_d1 | deqHitRedirect_d2;
 
+  // ★codex 0107 修(reset 拓扑对齐 golden)★ golden 异步复位寄存器集(pCommit 锥)
+  //  仅: state / robEntries_N_valid / robBanksRaddrThisLine / allowEnqueue(×2) /
+  //  hasBlockBackward / hasWaitForward / hasWFI / wfi_cycles / deqHasFlushed /
+  //  hasCommitted / donotNeedWalk / redirectAll(+ deqVls* 家族, impl 无对应 reg)。
+  //  其余(robEntries 各字段 / robDeqGroup / walk 指针族 / intrBitSetReg /
+  //  lastCycleFlush / redirectValidReg / misPred·deqFlush 计数器 / deqHitRedirect /
+  //  wfiEvent 打拍链)golden 均在【无复位】always @(posedge clock) 块 —— impl 之前
+  //  全部挂异步复位 ⇒ FM 比较点含 async-reset 引脚, reset=1 输入组合下
+  //  impl→0 / golden→f(x) 不等价(uopNum/robDeqGroup failing 的独立根因)。
+  //  照 MSHRCtl 教训「golden 无 reset——照搬各自」逐寄存器镜像; 无复位寄存器
+  //  移入下方独立 always_ff @(posedge clock) 块。
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       state <= S_IDLE;
-      // ★SoA G1 family★ 12 字段复位 0(与 packed 版 rob_entries[i]<='0 逐位一致)。
-      //  nf 逐字段复位仅剩非-G1 位(G1 位 valid/uop_num/std_writebacked/need_flush/
-      //  interrupt_safe/mmio/is_rvc/is_vset/is_hls/real_dest_size/instr_size/
-      //  commit_type 在 nf 里全程无驱动=DCE, 免 constant-0 死 flop 伪影)。
-      for (int i = 0; i < ROB_SIZE; i++) begin
-        // SoA G1 family(canary 3 + 扩展 9), 各 reset 0:
-        rob_valid[i]          <= 1'b0;
-        rob_uop_num[i]        <= '0;
-        rob_std_wb[i]         <= 1'b0;
-        rob_needflush[i]      <= 1'b0;
-        rob_interrupt_safe[i] <= 1'b0;
-        rob_mmio[i]           <= 1'b0;
-        rob_is_rvc[i]         <= 1'b0;
-        rob_is_vset[i]        <= 1'b0;
-        rob_is_hls[i]         <= 1'b0;
-        rob_real_dest_size[i] <= '0;
-        rob_instr_size[i]     <= '0;
-        rob_commit_type[i]    <= '0;
-        // G2 pointers/indices family reset(与 packed 版 rob_entries[i]<='0 逐位一致)
-        rob_ftq_flag[i]   <= 1'b0;
-        rob_ftq_value[i]  <= '0;
-        rob_ftq_offset[i] <= '0;
-        // 非-G1/G2 packed nf 字段:
-        rob_entries_nf[i].vls            <= 1'b0;
-        rob_entries_nf[i].fflags         <= '0;
-        rob_entries_nf[i].vxsat          <= 1'b0;
-        rob_entries_nf[i].rf_wen         <= 1'b0;
-        rob_entries_nf[i].fp_wen         <= 1'b0;
-        rob_entries_nf[i].wflags         <= 1'b0;
-        rob_entries_nf[i].dirty_vs       <= 1'b0;
-        // ftq_idx_value/ftq_idx_flag/ftq_offset 现为 G2 SoA family, 不寄存于 nf
-        rob_entries_nf[i].itype          <= '0;
-        rob_entries_nf[i].iretire        <= '0;
-        rob_entries_nf[i].ilastsize      <= '0;
-      end
+      for (int i = 0; i < ROB_SIZE; i++)
+        rob_valid[i] <= 1'b0;          // golden 仅 valid 复位; 其余字段无复位
       hasBlockBackward <= 1'b0;
       hasWaitForward   <= 1'b0;
       hasWFI           <= 1'b0;
-      wfiEvent_d1      <= 1'b0;
-      wfiEvent_d2      <= 1'b0;
-      hasWFI_d1        <= 1'b0;
       wfi_cycles       <= '0;
       deqHasFlushed    <= 1'b0;
-      intrBitSetReg    <= 1'b0;
       allowEnqueue     <= 1'b1;
       allowEnqueueForDispatch <= 1'b1;
       hasCommitted     <= '0;
       donotNeedWalk    <= '0;
-      lastCycleFlush   <= 1'b0;
-      redirectValidReg <= 1'b0;
-      misPredBlockCounter  <= '0;
-      deqFlushBlockCounter <= '0;
-      deqHitRedirect_d1 <= 1'b0;
-      deqHitRedirect_d2 <= 1'b0;
-      walkPtrTrue  <= '0;
-      lastWalkPtr  <= '0;
-      walkPtrLowBits <= '0;
       robBanksRaddrThisLine <= {{(ENTRY_PER_BANK-1){1'b0}}, 1'b1}; // 行 0
-      for (int b = 0; b < COMMIT_WIDTH; b++) robDeqGroup[b] <= '0;
-      for (int i = 0; i < COMMIT_WIDTH; i++) begin
-        walkPtrVec[i]    <= '0;
-        walkingPtrVec[i] <= '0;
-      end
     end else begin
       state            <= state_next;
-      intrBitSetReg    <= io_csr_intrBitSet;
-      lastCycleFlush   <= o_flushOut_valid;
-      redirectValidReg <= io_redirect_valid;
 
-      // ---- 行读地址 / robDeqGroup 寄存器流水(§3) ----
+      // ---- 行读地址寄存器流水(§3) ----
       robBanksRaddrThisLine <= robBanksRaddrNextLine;
-      for (int b = 0; b < COMMIT_WIDTH; b++) robDeqGroup[b] <= robDeqGroup_next[b];
 
-      // ---- robEntries 状态(写回/累计) + valid(commit/enq/flush) ----
-      // ★SoA G1 family★ 非-G1 字段落 rob_entries_nf(逐字段, 不寄存 G1 位=免
-      //  impl-only 死寄存器伪影); G1 12 字段落各自 SoA 数组:
-      //   uop_num/std_wb <= 专用 next 数组(与 packed 版 rob_entries[i]<=next 同源);
-      //   need_flush/interrupt_safe/mmio/is_rvc/is_vset/is_hls/real_dest_size/
-      //     instr_size/commit_type <= rob_entries_next[i].<field>(与 packed 版
-      //     rob_entries[i]<=rob_entries_next[i] 的对应位 100% 同源同拍);
-      //   valid <= commit/enq/flush 优先级覆盖(与 packed 版逐字一致, hold 读 SoA)。
+      // ---- robEntries valid(commit/enq/flush; golden 复位寄存器, 留在本 async 块;
+      //  其余字段无复位, 已移入下方 always_ff @(posedge clock) 块) ----
       for (int i = 0; i < ROB_SIZE; i++) begin
         logic commitCond, enqOH, needFlushRange;
         commitCond = o_commits_isCommit & commit_hit_arr[i];
         enqOH      = |enq_inst_hit_arr[i];
         needFlushRange = redirectValidReg & in_flush_range_arr[i];
-        // 非-G1: 逐字段落 nf(G1 位不寄存)
-        rob_entries_nf[i].vls             <= rob_entries_next[i].vls;
-        rob_entries_nf[i].fflags          <= rob_entries_next[i].fflags;
-        rob_entries_nf[i].vxsat           <= rob_entries_next[i].vxsat;
-        rob_entries_nf[i].rf_wen          <= rob_entries_next[i].rf_wen;
-        rob_entries_nf[i].fp_wen          <= rob_entries_next[i].fp_wen;
-        rob_entries_nf[i].wflags          <= rob_entries_next[i].wflags;
-        rob_entries_nf[i].dirty_vs        <= rob_entries_next[i].dirty_vs;
-        // ftq_idx_value/ftq_idx_flag/ftq_offset 现为 G2 SoA family, 落各自数组(见下)
-        rob_entries_nf[i].itype           <= rob_entries_next[i].itype;
-        rob_entries_nf[i].iretire         <= rob_entries_next[i].iretire;
-        rob_entries_nf[i].ilastsize       <= rob_entries_next[i].ilastsize;
-        // G1 uop_num / std_writebacked (专用 next 数组)
-        rob_uop_num[i] <= rob_uop_num_next[i];
-        rob_std_wb[i]  <= rob_std_wb_next[i];
-        // G1 扩展 9 字段 <= rob_entries_next[i].<field> (与 packed 版同源同拍)
-        rob_needflush[i]      <= rob_entries_next[i].need_flush;
-        rob_interrupt_safe[i] <= rob_entries_next[i].interrupt_safe;
-        rob_mmio[i]           <= rob_entries_next[i].mmio;
-        rob_is_rvc[i]         <= rob_entries_next[i].is_rvc;
-        rob_is_vset[i]        <= rob_entries_next[i].is_vset;
-        rob_is_hls[i]         <= rob_entries_next[i].is_hls;
-        rob_real_dest_size[i] <= rob_entries_next[i].real_dest_size;
-        rob_instr_size[i]     <= rob_entries_next[i].instr_size;
-        rob_commit_type[i]    <= rob_entries_next[i].commit_type;
-        // G2 family ftq flag / value / offset(与 packed 版 rob_entries[i]<=next 同源)
-        rob_ftq_flag[i]   <= rob_ftq_flag_next[i];
-        rob_ftq_value[i]  <= rob_ftq_value_next[i];
-        rob_ftq_offset[i] <= rob_ftq_offset_next[i];
-        // G1/G2 valid: 按优先级覆盖(commit 清 > enq 置 > flush 清 > hold)
+        // valid: 按优先级覆盖(commit 清 > enq 置 > flush 清 > hold)
         if (commitCond)
           rob_valid[i] <= 1'b0;
         else if (enqOH & ~io_redirect_valid)
@@ -1269,10 +1347,7 @@ module xs_Rob_core
         if (~io_wfi_enable)      hasWFI <= 1'b0;  // 末尾覆盖, 同 golden when(!wfi_enable)
       end
 
-      // ---- wfiEvent 两拍 / timeout 计数 ----
-      wfiEvent_d1 <= io_csr_wfiEvent;
-      wfiEvent_d2 <= wfiEvent_d1;
-      hasWFI_d1   <= hasWFI;
+      // ---- wfi timeout 计数(golden 复位; wfiEvent 打拍链无复位, 在下方 B 块) ----
       if (hasWFI)                      wfi_cycles <= wfi_cycles + 20'd1;
       else if (~hasWFI & hasWFI_d1)    wfi_cycles <= '0;
 
@@ -1292,21 +1367,7 @@ module xs_Rob_core
         for (int i = 0; i < COMMIT_WIDTH; i++)
           hasCommitted[i] <= commitValidThisLine[i] | hasCommitted[i];
 
-      // ---- walk 指针族 ----
-      for (int i = 0; i < COMMIT_WIDTH; i++) begin
-        walkPtrVec[i]    <= walkPtrVec_next[i];
-        walkingPtrVec[i] <= walkPtrVec[i];
-      end
-      walkPtrTrue <= walkPtrTrue_next;
-      if (io_redirect_valid) begin
-        lastWalkPtr <= io_redirect_bits_level
-                     ? ptr_sub1('{flag:io_redirect_bits_robIdx_flag, value:io_redirect_bits_robIdx_value})
-                     : '{flag:io_redirect_bits_robIdx_flag, value:io_redirect_bits_robIdx_value};
-        walkPtrLowBits <= io_snpt_useSnpt ? snap_ptr0.value[BANK_ADDR_W-1:0]
-                                          : deq_ptr_next0.value[BANK_ADDR_W-1:0];
-      end
-
-      // ---- donotNeedWalk(redirect 后第 2 拍按 lowBits 置) ----
+      // ---- donotNeedWalk(redirect 后第 2 拍按 lowBits 置; golden 复位) ----
       if (io_redirect_valid)
         donotNeedWalk <= '1;
       else if (redirectValidReg)
@@ -1314,14 +1375,78 @@ module xs_Rob_core
           donotNeedWalk[i] <= (BANK_ADDR_W'(i) < walkPtrLowBits);
       else
         donotNeedWalk <= '0;
-
-      // ---- 阻塞计数器 ----
-      misPredBlockCounter  <= misPredWb ? 3'b111 : (misPredBlockCounter >> 1);
-      if (deqNeedFlush & deqHitRedirectReg) deqFlushBlockCounter <= 3'b111;
-      else deqFlushBlockCounter <= deqFlushBlockCounter >> 1;
-      deqHitRedirect_d1 <= io_redirect_valid & (io_redirect_bits_robIdx_value == deqPtr.value);
-      deqHitRedirect_d2 <= deqHitRedirect_d1;
     end
+  end
+
+  // ---- 12c. ★codex 0107★ 无复位寄存器块(golden 在 always @(posedge clock) 无
+  //  reset 分支的寄存器, 逐一照搬「各自」——见 12b 头注) ----
+  always_ff @(posedge clock) begin
+    intrBitSetReg    <= io_csr_intrBitSet;
+    lastCycleFlush   <= o_flushOut_valid;
+    redirectValidReg <= io_redirect_valid;
+
+    // ---- robDeqGroup 寄存器流水(§5 merged) ----
+    for (int b = 0; b < COMMIT_WIDTH; b++) robDeqGroup[b] <= robDeqGroup_next[b];
+
+    // ---- robEntries 字段状态(写回/累计/入队; golden 无复位) ----
+    // ★SoA G1/G2 family★ 非-family 字段落 rob_entries_nf(逐字段); family 字段落
+    //  各自 SoA 数组(<= 对应 next, 与 packed 版 rob_entries[i]<=next 同源同拍)。
+    for (int i = 0; i < ROB_SIZE; i++) begin
+      // 非-G1/G2: 逐字段落 nf(family 位不寄存)
+      rob_entries_nf[i].vls             <= rob_entries_next[i].vls;
+      rob_entries_nf[i].fflags          <= rob_entries_next[i].fflags;
+      rob_entries_nf[i].vxsat           <= rob_entries_next[i].vxsat;
+      rob_entries_nf[i].rf_wen          <= rob_entries_next[i].rf_wen;
+      rob_entries_nf[i].fp_wen          <= rob_entries_next[i].fp_wen;
+      rob_entries_nf[i].wflags          <= rob_entries_next[i].wflags;
+      rob_entries_nf[i].dirty_vs        <= rob_entries_next[i].dirty_vs;
+      rob_entries_nf[i].itype           <= rob_entries_next[i].itype;
+      rob_entries_nf[i].iretire         <= rob_entries_next[i].iretire;
+      rob_entries_nf[i].ilastsize       <= rob_entries_next[i].ilastsize;
+      // G1 uop_num / std_writebacked (专用 next 数组)
+      rob_uop_num[i] <= rob_uop_num_next[i];
+      rob_std_wb[i]  <= rob_std_wb_next[i];
+      // G1 扩展 9 字段 <= rob_entries_next[i].<field>
+      rob_needflush[i]      <= rob_entries_next[i].need_flush;
+      rob_interrupt_safe[i] <= rob_entries_next[i].interrupt_safe;
+      rob_mmio[i]           <= rob_entries_next[i].mmio;
+      rob_is_rvc[i]         <= rob_entries_next[i].is_rvc;
+      rob_is_vset[i]        <= rob_entries_next[i].is_vset;
+      rob_is_hls[i]         <= rob_entries_next[i].is_hls;
+      rob_real_dest_size[i] <= rob_entries_next[i].real_dest_size;
+      rob_instr_size[i]     <= rob_entries_next[i].instr_size;
+      rob_commit_type[i]    <= rob_entries_next[i].commit_type;
+      // G2 family ftq flag / value / offset
+      rob_ftq_flag[i]   <= rob_ftq_flag_next[i];
+      rob_ftq_value[i]  <= rob_ftq_value_next[i];
+      rob_ftq_offset[i] <= rob_ftq_offset_next[i];
+    end
+
+    // ---- wfiEvent 打拍链(golden RegNext 链, 无复位) ----
+    wfiEvent_d1 <= io_csr_wfiEvent;
+    wfiEvent_d2 <= wfiEvent_d1;
+    hasWFI_d1   <= hasWFI;
+
+    // ---- walk 指针族(golden 无复位) ----
+    for (int i = 0; i < COMMIT_WIDTH; i++) begin
+      walkPtrVec[i]    <= walkPtrVec_next[i];
+      walkingPtrVec[i] <= walkPtrVec[i];
+    end
+    walkPtrTrue <= walkPtrTrue_next;
+    if (io_redirect_valid) begin
+      lastWalkPtr <= io_redirect_bits_level
+                   ? ptr_sub1('{flag:io_redirect_bits_robIdx_flag, value:io_redirect_bits_robIdx_value})
+                   : '{flag:io_redirect_bits_robIdx_flag, value:io_redirect_bits_robIdx_value};
+      walkPtrLowBits <= io_snpt_useSnpt ? snap_ptr0.value[BANK_ADDR_W-1:0]
+                                        : deq_ptr_next0.value[BANK_ADDR_W-1:0];
+    end
+
+    // ---- 阻塞计数器(golden 无复位) ----
+    misPredBlockCounter  <= misPredWb ? 3'b111 : (misPredBlockCounter >> 1);
+    if (deqNeedFlush & deqHitRedirectReg) deqFlushBlockCounter <= 3'b111;
+    else deqFlushBlockCounter <= deqFlushBlockCounter >> 1;
+    deqHitRedirect_d1 <= io_redirect_valid & (io_redirect_bits_robIdx_value == deqPtr.value);
+    deqHitRedirect_d2 <= deqHitRedirect_d1;
   end
 
   // commit 命中(deqPtrVec 任一槽匹配 i 且 commitValid)。
@@ -1336,6 +1461,8 @@ module xs_Rob_core
     end
 
   // redirect flush 范围(redirectBegin..redirectEnd 环形区间内)。
+  // ★codex 0107 修(reset 拓扑对齐 golden)★ golden: redirectBegin/End 无复位;
+  //  redirectAll 有异步复位 0(在 golden async 块 else 分支按 io_redirect_valid 更新)。
   logic [PTR_W-1:0] redirectBegin, redirectEnd;
   logic redirectAll;
   always_ff @(posedge clock) begin
@@ -1343,9 +1470,13 @@ module xs_Rob_core
       redirectBegin <= io_redirect_bits_level ? (io_redirect_bits_robIdx_value - PTR_W'(1))
                                               : io_redirect_bits_robIdx_value;
       redirectEnd   <= enqPtr.value;
-      redirectAll   <= io_redirect_bits_level & (io_redirect_bits_robIdx_value == enqPtr.value)
-                     & (io_redirect_bits_robIdx_flag ^ enqPtr.flag);
     end
+  end
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) redirectAll <= 1'b0;
+    else if (io_redirect_valid)
+      redirectAll <= io_redirect_bits_level & (io_redirect_bits_robIdx_value == enqPtr.value)
+                   & (io_redirect_bits_robIdx_flag ^ enqPtr.flag);
   end
   // ★FMR-strict (修3)★ in_flush_range 读模块级 redirectBegin/End/All → 数组。
   // (in_flush_range_arr 声明前置于 §4 helper-array 块。)
@@ -1369,16 +1500,13 @@ module xs_Rob_core
   assign o_deqHasException = deqHasException;
 
   // vls 异常 2 拍门控寄存器(对齐 golden Rob.scala 578/584 的 RegNext(RegNext(...)))。
-  always_ff @(posedge clock or posedge reset)
-    if (reset) begin
-      commit_w_d1 <= 1'b0; commit_w_d2 <= 1'b0;
-      vlsExcCommitw_d1 <= 1'b0; vlsExcCommitw_d2 <= 1'b0;
-    end else begin
-      commit_w_d1 <= deqPtrEntry.commit_w;
-      commit_w_d2 <= commit_w_d1;
-      vlsExcCommitw_d1 <= deqIsVlsException & deqPtrEntry.commit_w;
-      vlsExcCommitw_d2 <= vlsExcCommitw_d1;
-    end
+  // ★codex 0107 修(reset 拓扑对齐 golden)★ golden RegNext 打拍链无复位(REG_x 系)。
+  always_ff @(posedge clock) begin
+    commit_w_d1 <= deqPtrEntry.commit_w;
+    commit_w_d2 <= commit_w_d1;
+    vlsExcCommitw_d1 <= deqIsVlsException & deqPtrEntry.commit_w;
+    vlsExcCommitw_d2 <= vlsExcCommitw_d1;
+  end
 
   // =====================================================================
   // 13. 性能计数(io_perf_0..17) —— 忠实复刻 golden 2 拍打拍性能计数树。
