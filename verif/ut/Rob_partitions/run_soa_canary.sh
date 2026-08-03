@@ -25,13 +25,15 @@ DEPS="$G/VTypeBuffer.sv $G/DummyDPICWrapper.sv $G/DummyDPICWrapper_8.sv $G/dt_16
 #  golden child 的【真 module 定义】对称提供给 ref+impl 两侧 → 两侧同 elaborate 成白盒
 #  (端口方向/宽度确定, unknown-dir BBPin=0, FM-064=0/FM-230=0), cone 内互相抵消(canary
 #  只测 family match, 非 child 逻辑)。RenameBuffer 内含 SnapshotGenerator; SyncDataModule
-#  内含 DataModule__16entry_12(已在 DEPS)。canary2 实测: FM-064=0 + FM-230=0(修2 gate 达成)。
-#  ★白盒 vs 黑盒 SyncDataModule 的诚实权衡★: SyncDataModule(VTypeBuffer 内 64-entry 大
-#  寄存器堆)白盒→修2 gate 达成(0 unknown-dir)但 verification_merge_duplicated_registers
-#  在该块 merge 严重放缓(canary2 verify 尾部单块 grind >17min); 反之对称黑盒它→verify
-#  快但 read_sverilog 阶段 ref 侧 blackbox 推断产 FM-230=218 unknown-dir(canary3 实测,
-#  违修2 gate)。∵修2 gate 明确要 unknown-dir BBPin=0, 故取【白盒】(修2 gate 达成为准);
-#  SyncDataModule merge 放缓是 verify-time 性能问题(非修2 缺陷), 见 results doc。
+#  内含 DataModule__16entry_12(已在 DEPS)。
+#  ★SyncDataModule 特例 = hdlin_interface_only(见下 FM_INTERFACE_ONLY export + 下方 tcl)★:
+#  它文件仍在 CHILD_DEPS 供 FM 读 interface, 但 tcl 用 hdlin_interface_only 只读其 golden
+#  port 声明(方向确定→ 0 unknown-dir, 修2 gate 达成)【不读 body】→ 其 64-entry 大寄存器堆
+#  不进 verification_merge_duplicated_registers(免 canary2 白盒它时的 merge 放缓)。三态实测:
+#   canary2 白盒 SyncDataModule → FM-230=0 但 verify 尾部 merge grind >17min;
+#   canary3 缺失 SyncDataModule(纯黑盒) → verify 快但 ref blackbox 推断产 FM-230=218(违 gate);
+#   canary4 SyncDataModule interface_only → FM-064=0/FM-230=0(修2 gate 达成)+ merge 跳过其 body。
+#  ∴取 interface_only(修2 最优形态: 0 unknown-dir + 免其 body merge)。同 IMSIC/L2 边界法。
 CHILD_DEPS="$G/RenameBuffer.sv $G/SnapshotGenerator.sv $G/SnapshotGenerator_3.sv \
   $G/ExceptionGen.sv $G/NewRobDeqPtrWrapper.sv $G/RobEnqPtrWrapper.sv \
   $G/DelayReg.sv $G/SyncDataModuleTemplate__64entry_3.sv"
