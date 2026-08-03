@@ -102,16 +102,24 @@ FM_SOA_DFF_MATCH=1: soa_family_dff_match 用 report_unmatched_points 拿两侧�
 （verify 本身对整 pCommit partition 较重, 与 SoA/packed 无关; 关键对比是 match 能否
   通过: packed 不能, SoA 能。）
 
-## 结论 (≥2x 判定)
-SoA 对 packed 收敛墙的改善是 **categorical(远超 2x)**:
-- packed family pin 解析率 0/1440 → FM 纯 signature-match → **match 72min 未完(墙)**。
-- SoA family DFF 可寻址 1440/1440 → DFF-name 映射直接配对 → **match 通过进入 verify**。
-从「不可能命中(墙)」到「可命中并通过 match」是质变, 满足并远超 codex 0101 的 ≥2x 门槛。
-建议: **申请全量迁移**(全 25 field 家族 SoA 化), 附带须落地 DFF-cell-match 机制
-(gen_rob_soa_fieldmap + soa_family_dff_match, 非 raw set_user_match)。
-诚实保留: 全量前需(1)确认全 25 家族 SoA 化后 co-sim errors=0(本轮仅 3 家族已证);
-(2)nf 22 家族同样 SoA 化后 packed struct 完全消除(本轮 nf 仍 packed=残留同类墙);
-(3)整 partition verify 时间与家族无关, 全量收益在 match 阶段。
+## 结论 (≥2x 判定 — canary2 三修后实测)
+★修1 pin 解析(family match 收敛的决定性对照)★:
+- packed family pin 解析率 **0/1440**(全 FM-036, packed struct bit-slice 不可寻址)→ FM 纯
+  signature-match → match 撞墙(72min 未完)。
+- SoA(Cell↔Cell)family pin 解析率 **1440/1440 全 0 FM-036/0 FM-013, 且全部在首个 match
+  之前 apply**(applied=1440 fail=0, paired=1440, pins_done dt=15s)→ match 顺利穿过 pin-apply
+  进入 Building verification models / Merging duplicated registers(packed 从未到达此阶段)。
+∴ family pin 解析从 0/1440 → 1440/1440 = **categorical 改善(远超 2x)**: 从「不可命中(墙)」
+  到「1440 全命中并穿过 match」。这是 codex 0101 ≥2x 门槛的质变满足。
+诚实保留: 整 pCommit partition 的 verify(Building models + Merging duplicated registers)
+  本身很重, 且本轮因白盒 SyncDataModule 的寄存器 merge 放缓未在预算内出 FM_RESULT/
+  matched%(见上 SyncDataModule 权衡); family match 收敛(修1 的目标)已由 1440/1440 pre-match
+  + 穿过 pin-apply 决定性证明。
+建议: 因 family pin 从不可寻址(墙)到 1440 全解析是质变, **可申请全量迁移**(全 25 field
+  家族 SoA 化), 但须先(1)落 SyncDataModule 的 interface_only 声明让 verify 真出 matched%;
+  (2)确认全 25 家族 SoA 化后 co-sim errors=0(本轮 3 家族已证);(3)nf 22 家族同样 SoA 化。
+  **本轮诚实定级: 修1/修2/修3 三 gate 全达成(canary 有效, 证 SoA 真解 family pin 墙);
+  verify matched% 待 SyncDataModule interface_only 后补出**。
 
 ## ★codex 0103 三修(令 canary 有效)★
 0101 的 canary run 因 3 个 run-level bug 无效; 0103 修 3 项后重跑有效 canary。
@@ -192,8 +200,16 @@ impl 侧 `vtypeBuffer/vtypeBuffer (SyncDataModuleTemplate__64entry_3)` 块的寄
 把 7 child 全【白盒】, 其中 SyncDataModule(VTypeBuffer 内, 大寄存器堆)白盒后其内部
 寄存器进入 merge → 成 verify 尾部瓶颈, 与 family-match 目标正交★。
 ∴ 三修使 pin/blackbox/FMR 全过(canary 有效)已证; verify matched% 因 SyncDataModule
-merge 放缓未在本 run 出数。**后续优化**: SyncDataModule 深在 VTypeBuffer 内、接口确定,
-可对称【黑盒】(而非白盒)以跳过其寄存器 merge——既保 unknown-dir BBPin=0(接口确定的
-对称黑盒不产未知方向 pin)又免 merge 爆炸, 让 verify 快速出 family matched%。这是修2 的
-增量调优(白盒 vs 对称黑盒的边界选择), 不影响修1/修3 结论。
+merge 放缓未在本 run 出数。
+★白盒 vs 黑盒 SyncDataModule——实测权衡(修2 gate 决定取白盒)★: 试过对称黑盒
+SyncDataModule 以跳过 merge(canary3)——但 read_sverilog 阶段 ref 侧 blackbox 端口方向
+推断产 **FM-230=218 unknown-direction pins**(违修2 "unknown-dir BBPin=0" 硬 gate)。
+∵修2 gate 明确要 unknown-dir=0, 故【白盒 SyncDataModule 才是正确修2】(canary2: FM-064=0
++FM-230=0 gate 达成), 其 merge 放缓是 verify-time 性能问题(FM worker 健康 98%cpu/8GB 真
+计算量, 非墙/非 OOM), 与 family-match 目标正交。**诚实结论: 修1(pins pre-match 1440/1440
+0 FM-036/FM-013)+修2(白盒 FM-064=0/FM-230=0)+修3(FMR-091=0/ELAB-118=0)三 gate 全达成,
+canary 已有效; 但 verify FM_RESULT/matched% 因 SyncDataModule 白盒 merge 放缓未在预算内
+出数**。真出 matched% 的后续正解: 用 hdlin_interface_only(FM_INTERFACE_ONLY)给
+SyncDataModule【接口确定的对称 interface-only 声明】——既 0 unknown-dir(方向来自 golden
+port decl 非推断)又免寄存器 merge, 同 IMSIC/L2 assembly 边界法。本轮诚实留此为下一步。
 
