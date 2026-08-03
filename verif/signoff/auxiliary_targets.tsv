@@ -301,3 +301,6 @@ ExceptionGen	Rob child leaf(exact variant); PASS strict; 供Rob assembly depends
 SnapshotGenerator_3	Rob child leaf(exact variant); PASS strict; 供Rob assembly depends_on黑盒边界
 NewRobDeqPtrWrapper	Rob child leaf(exact variant); PASS strict; 供Rob assembly depends_on黑盒边界
 RobEnqPtrWrapper	Rob child leaf(exact variant); PASS strict; 供Rob assembly depends_on黑盒边界
+VTypeBuffer	VTypeBuffer glue/child leaf; PASS
+SnapshotGenerator_1	VTypeBuffer glue/child leaf; PASS
+SnapshotGenerator_2	VTypeBuffer glue/child leaf; PASS

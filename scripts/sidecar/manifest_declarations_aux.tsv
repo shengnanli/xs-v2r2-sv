@@ -187,7 +187,9 @@ Slice_2	signoff-strict			false
 Slice_3	signoff-strict			false	
 SlvpredctlModule	signoff-strict			false	
 SmblockctlModule	signoff-strict			false	
+SnapshotGenerator_1	signoff-strict			false	
 SnapshotGenerator_14	signoff-strict			false	
+SnapshotGenerator_2	signoff-strict			false	
 SnapshotGenerator_3	signoff-strict			false	
 SnoopUnit	signoff-strict			true	
 SpfctlModule	signoff-strict			false	
@@ -225,6 +227,7 @@ VSstatusModule	signoff-strict			false
 VStopeiModule	signoff-strict			false	
 VStopiModule	signoff-strict			false	
 VStvalModule	signoff-strict			false	
+VTypeBuffer	assembly			true	
 VcsrModule	signoff-strict			false	
 VecExcpDataMergeModule	signoff-strict			false	
 VfofBuffer	signoff-strict			false	

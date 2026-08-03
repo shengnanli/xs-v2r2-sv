@@ -1,0 +1,4 @@
+SIGNOFF_RESULT SnapshotGenerator_2: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=signoff-strict fm_shell_rc=0 validator_rc=0)
+run_id: SGN-SnapshotGenerator_2-1785746887
+impl_commit: d6c019bb2af080b98de9159ac81f14db4d1a70c2
+manifest_sha256: d172008fe2d78e65ee94e3dd8cae3c89b429b661b2bfb066d6c967aaa6355526

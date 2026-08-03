@@ -1,0 +1,22 @@
+{
+ "unresolved_blackbox": [
+  {
+   "id": "vtypeBuffer",
+   "ref_path": "r:/WORK/VTypeBuffer/vtypeBuffer",
+   "impl_path": "i:/WORK/VTypeBuffer/u_core/vtypeBuffer"
+  },
+  {
+   "id": "walkPtrSnapshots_snapshotGen",
+   "ref_path": "r:/WORK/VTypeBuffer/walkPtrSnapshots_snapshotGen",
+   "impl_path": "i:/WORK/VTypeBuffer/u_core/walkPtrSnapshots_snapshotGen"
+  },
+  {
+   "id": "walkVTypeSnapshots_snapshotGen",
+   "ref_path": "r:/WORK/VTypeBuffer/walkVTypeSnapshots_snapshotGen",
+   "impl_path": "i:/WORK/VTypeBuffer/u_core/walkVTypeSnapshots_snapshotGen"
+  }
+ ],
+ "interface_only": [],
+ "empty_blackbox": [],
+ "unmatched": []
+}

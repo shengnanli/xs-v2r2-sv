@@ -242,3 +242,6 @@ ExceptionGen	PASS	Rob child独立AUX(codex 0098 B): 两侧whitebox official clea
 SnapshotGenerator_3	PASS	Rob child独立AUX(codex 0098 B): 两侧whitebox official clean RC0(exact variant golden Rob例化); 供Rob分层证明黑盒
 NewRobDeqPtrWrapper	PASS	Rob child独立AUX(codex 0098 B): 两侧whitebox official clean RC0(exact variant golden Rob例化); 供Rob分层证明黑盒
 RobEnqPtrWrapper	PASS	Rob child独立AUX(codex 0098 B): 两侧whitebox official clean RC0(exact variant golden Rob例化); 供Rob分层证明黑盒
+VTypeBuffer	PASS	Rob/VTypeBuffer child AUX(codex 0104 §3): 两侧whitebox glue official clean RC0
+SnapshotGenerator_1	PASS	Rob/VTypeBuffer child AUX(codex 0104 §3): 两侧whitebox glue official clean RC0
+SnapshotGenerator_2	PASS	Rob/VTypeBuffer child AUX(codex 0104 §3): 两侧whitebox glue official clean RC0

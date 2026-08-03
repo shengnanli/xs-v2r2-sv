@@ -1,7 +1,7 @@
 {
  "schema": "fm-signoff-aux-manifest-v1",
  "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456",
- "count_aux": 230,
+ "count_aux": 233,
  "entries": [
   {
    "target": "Arbiter4_L2CacheErrorInfo",
@@ -2809,10 +2809,40 @@
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
+   "target": "SnapshotGenerator_1",
+   "ut_dir": "SnapshotGenerator_1",
+   "makefile": "verif/ut/SnapshotGenerator_1/Makefile",
+   "make_target": "fm-SnapshotGenerator_1",
+   "entry": "scripts/fm_eq.tcl",
+   "proof_mode": "signoff-strict",
+   "config_status": "AUX",
+   "required_verdict": "SUCCEEDED",
+   "allow_ref": "",
+   "rationale": "",
+   "verify_matched_unread_compare_points": "false",
+   "dead_ref": "",
+   "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
+  },
+  {
    "target": "SnapshotGenerator_14",
    "ut_dir": "SnapshotGenerator_14",
    "makefile": "verif/ut/SnapshotGenerator_14/Makefile",
    "make_target": "fm-SnapshotGenerator_14",
+   "entry": "scripts/fm_eq.tcl",
+   "proof_mode": "signoff-strict",
+   "config_status": "AUX",
+   "required_verdict": "SUCCEEDED",
+   "allow_ref": "",
+   "rationale": "",
+   "verify_matched_unread_compare_points": "false",
+   "dead_ref": "",
+   "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
+  },
+  {
+   "target": "SnapshotGenerator_2",
+   "ut_dir": "SnapshotGenerator_2",
+   "makefile": "verif/ut/SnapshotGenerator_2/Makefile",
+   "make_target": "fm-SnapshotGenerator_2",
    "entry": "scripts/fm_eq.tcl",
    "proof_mode": "signoff-strict",
    "config_status": "AUX",
@@ -3375,6 +3405,21 @@
    "allow_ref": "",
    "rationale": "",
    "verify_matched_unread_compare_points": "false",
+   "dead_ref": "",
+   "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
+  },
+  {
+   "target": "VTypeBuffer",
+   "ut_dir": "VTypeBuffer",
+   "makefile": "verif/ut/VTypeBuffer/Makefile",
+   "make_target": "fm-VTypeBuffer",
+   "entry": "scripts/fm_eq.tcl",
+   "proof_mode": "assembly",
+   "config_status": "AUX",
+   "required_verdict": "SUCCEEDED",
+   "allow_ref": "",
+   "rationale": "",
+   "verify_matched_unread_compare_points": "true",
    "dead_ref": "",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },

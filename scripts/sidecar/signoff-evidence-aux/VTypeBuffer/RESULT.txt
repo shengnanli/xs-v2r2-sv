@@ -1,0 +1,4 @@
+SIGNOFF_RESULT VTypeBuffer: measured=ERROR required=SUCCEEDED gate=GAP (proof=assembly fm_shell_rc=0 validator_rc=1)
+run_id: SGN-VTypeBuffer-1785746661
+impl_commit: b7e0b6399cd9ac1a4c951cdc06bbd68c2229d4fc
+manifest_sha256: d172008fe2d78e65ee94e3dd8cae3c89b429b661b2bfb066d6c967aaa6355526
