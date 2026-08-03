@@ -66,6 +66,8 @@ else
   export FM_SOA_ENTRY_PINS="$EV/soa_fieldmap/rob_soa_entry_pins.tcl"
   # ★修1★ 全部 set_user_match 前置于首个 match(fm_partition_soa.tcl 已删除
   #  前置-match 的 FM_SOA_DFF_MATCH 路径), 只走 pre-match name-driven pins。
+  # ★修2 refine★ SyncDataModule 声明 interface-only(0 unknown-dir + 免寄存器 merge)。
+  export FM_INTERFACE_ONLY="${FM_INTERFACE_ONLY:-SyncDataModuleTemplate__64entry_3}"
   DRIVER="$HERE/fm_partition_soa.tcl"
 fi
 

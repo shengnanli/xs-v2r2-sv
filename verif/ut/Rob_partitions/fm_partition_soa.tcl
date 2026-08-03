@@ -27,6 +27,16 @@ set_app_var verification_verify_unread_tech_cell_pg_pins true
 set_app_var hdlin_unresolved_modules black_box
 set_app_var verification_merge_duplicated_registers true
 
+# ★修2 refine★ SyncDataModuleTemplate__64entry_3(VTypeBuffer 内 64-entry 大寄存器堆)
+#  用 hdlin_interface_only 声明【接口-only 对称黑盒】: FM 只读其 golden port 声明(方向/
+#  宽度确定→ 0 unknown-dir pin, 达修2 gate)而【不读 body】→ 其内部寄存器不进
+#  verification_merge_duplicated_registers → 免 canary2 的 merge 放缓。两侧对称(ref+impl
+#  同名 interface-only 边界)。$G 文件仍在 srcs 供 FM 取 interface。同 IMSIC/L2 assembly 边界法。
+if {[info exists env(FM_INTERFACE_ONLY)] && $env(FM_INTERFACE_ONLY) ne ""} {
+    set_app_var hdlin_interface_only $env(FM_INTERFACE_ONLY)
+    puts "FM_INTERFACE_ONLY set: $env(FM_INTERFACE_ONLY)"
+}
+
 # ★修3★ 不再过滤 FMR_VLOG-091(可读核已把 14 个读 non-local 的 function 改为
 #  always_comb 预算数组 → impl set_top 时 FMR_VLOG-091=0, 无需 filter 掩盖)。
 #  仍保留 golden 侧 difftest 链的 FMR_ELAB-147(dt_160x1 越界)+ FMR_VLOG-063 过滤。
