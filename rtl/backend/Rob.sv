@@ -297,25 +297,44 @@ module xs_Rob_core
   //   golden 自身对 ≥160 下标(_GEN_2611 等 256 宽 wire 的 [160:255] 位)填 entry-0
   //   值(firtool 越界 Vec 访问的默认 lowering), 同样不可达故无 RTL gap。★
   // =====================================================================
-  // ★SoA canary (codex 0101 阶段1)★ commit-state field-family 从原 packed
-  //  struct 数组 rob_entries[160] 拆出为语义命名 unpacked arrays, 令 FM 按名
-  //  (rob_valid_reg[N]/rob_uop_num_reg[N]/rob_std_wb_reg[N])直接配对 golden
-  //  robEntries_N_valid/uopNum/stdWritebacked, 免去 9440-bit set_user_match
-  //  逐位强配(=Rob FM 收敛墙: packed 数组 FM 无法 cone-reduce+签名匹配 golden
-  //  per-field scalar)。这三字段 = commit_v/commit_w 的直接驱动(pCommit cone
-  //  读扇出最高): commit_v = valid; commit_w = (uop_num==0) & std_writebacked。
-  //  语义 bit-exact 复刻旧 packed 版(见 §4/§12 reset/write-enable/priority)。
-  //  非本 family 字段仍走 packed struct(rob_entries_nf, 仅寄存这些字段)。
+  // ★SoA (codex 0101 阶段1 canary + 阶段2 G1)★ commit-state / lifecycle /
+  //  control / status field-family 从原 packed struct 数组 rob_entries[160]
+  //  拆出为语义命名 unpacked arrays, 令 FM 按名(rob_<field>_reg[N])直接配对
+  //  golden robEntries_N_<field>, 免去逐位 set_user_match 强配(=Rob FM 收敛墙:
+  //  packed 数组 FM 无法 cone-reduce+签名匹配 golden per-field scalar)。
+  //  SoA G1 family = 12 字段(lifecycle/control/status):
+  //    canary(阶段1, 已证 A/B co-sim): valid(1b) / uop_num(7b) / std_writebacked(1b)
+  //      = commit_v/commit_w 直接驱动(pCommit cone 读扇出最高): commit_v = valid;
+  //        commit_w = (uop_num==0) & std_writebacked。
+  //    G1 扩展(阶段2, 本 patch): need_flush(1b) / interrupt_safe(1b) / mmio(1b) /
+  //      is_rvc(1b) / is_vset(1b) / is_hls(1b) / real_dest_size(7b) /
+  //      instr_size(3b) / commit_type(3b)。
+  //  语义 bit-exact 复刻旧 packed 版(见 §4/§12 reset/write-enable/priority):
+  //  每字段 reset 0 + 下一拍取 rob_entries_next[i].<field>(与 packed 版
+  //  rob_entries[i]<=rob_entries_next[i] 同源逐字), valid 另按 commit>enq>flush>hold。
+  //  非-G1 字段(vls/fflags/vxsat/rf_wen/fp_wen/wflags/dirty_vs/ftq_*/trace)仍走
+  //  packed struct(rob_entries_nf, 仅寄存这些字段)。
   //  rob_entries[i] 现为组合重建视图(0 flip-flop): 把 SoA family 覆盖到 nf 上,
   //  供全核读路径(next-state/robDeqGroup/lsq-deep)透明复用。
   //  旧全-packed 版整体保留于 Rob_packed_ref.sv 作同分支 A/B co-sim 参考。
-  // ---- SoA family 寄存器(3 字段, 每字段 160 深, 名字直接对齐 golden) ----
-  logic                 rob_valid   [ROB_SIZE]; // = golden robEntries_N_valid
-  logic [UOP_CNT_W-1:0] rob_uop_num [ROB_SIZE]; // = golden robEntries_N_uopNum
-  logic                 rob_std_wb  [ROB_SIZE]; // = golden robEntries_N_stdWritebacked
-  // ---- 非-family packed 存储(family 位不寄存, 见 §12 always_ff)。 ----
+  // ---- SoA G1 family 寄存器(12 字段, 每字段 160 深, 名字直接对齐 golden) ----
+  //  canary 3 字段(commit-state):
+  logic                 rob_valid          [ROB_SIZE]; // = golden robEntries_N_valid
+  logic [UOP_CNT_W-1:0] rob_uop_num        [ROB_SIZE]; // = golden robEntries_N_uopNum
+  logic                 rob_std_wb         [ROB_SIZE]; // = golden robEntries_N_stdWritebacked
+  //  G1 扩展 9 字段(lifecycle/control/status):
+  logic                 rob_needflush      [ROB_SIZE]; // = golden robEntries_N_needFlush
+  logic                 rob_interrupt_safe [ROB_SIZE]; // = golden robEntries_N_interrupt_safe
+  logic                 rob_mmio           [ROB_SIZE]; // = golden robEntries_N_mmio
+  logic                 rob_is_rvc         [ROB_SIZE]; // = golden robEntries_N_isRVC
+  logic                 rob_is_vset        [ROB_SIZE]; // = golden robEntries_N_isVset
+  logic                 rob_is_hls         [ROB_SIZE]; // = golden robEntries_N_isHls
+  logic [UOP_CNT_W-1:0] rob_real_dest_size [ROB_SIZE]; // = golden robEntries_N_realDestSize
+  logic [INSTR_SIZE_W-1:0] rob_instr_size  [ROB_SIZE]; // = golden robEntries_N_instrSize
+  logic [2:0]           rob_commit_type    [ROB_SIZE]; // = golden robEntries_N_commitType
+  // ---- 非-G1-family packed 存储(G1 位不寄存, 见 §12 always_ff)。 ----
   rob_entry_t  rob_entries_nf [ROB_SIZE];
-  // ---- rob_entries 组合重建视图: nf + SoA family(全核读用, 0 flip-flop) ----
+  // ---- rob_entries 组合重建视图: nf + SoA G1 family(全核读用, 0 flip-flop) ----
   rob_entry_t  rob_entries    [ROB_SIZE];
   always_comb
     for (int i = 0; i < ROB_SIZE; i++) begin
@@ -323,6 +342,15 @@ module xs_Rob_core
       rob_entries[i].valid           = rob_valid[i];
       rob_entries[i].uop_num         = rob_uop_num[i];
       rob_entries[i].std_writebacked = rob_std_wb[i];
+      rob_entries[i].need_flush      = rob_needflush[i];
+      rob_entries[i].interrupt_safe  = rob_interrupt_safe[i];
+      rob_entries[i].mmio            = rob_mmio[i];
+      rob_entries[i].is_rvc          = rob_is_rvc[i];
+      rob_entries[i].is_vset         = rob_is_vset[i];
+      rob_entries[i].is_hls          = rob_is_hls[i];
+      rob_entries[i].real_dest_size  = rob_real_dest_size[i];
+      rob_entries[i].instr_size      = rob_instr_size[i];
+      rob_entries[i].commit_type     = rob_commit_type[i];
     end
   // FM 下标空间: 组合读向量宽度用 2 的幂 256, 让 8 位 robIdx 下标静态在界
   //  (消 FMR_ELAB-147)。这些是 wire(0 寄存器), 不同于上面 ROB_SIZE 宽的寄存器阵列。
@@ -1057,17 +1085,25 @@ module xs_Rob_core
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       state <= S_IDLE;
-      // ★SoA canary★ family(valid/uop_num/std_wb)复位 0(与 packed 版
-      //  rob_entries[i]<='0 逐位一致)。nf 逐字段复位(family 位 valid/uop_num/
-      //  std_writebacked 全程无驱动=DCE, 免 constant-0 死 flop 伪影)。
+      // ★SoA G1 family★ 12 字段复位 0(与 packed 版 rob_entries[i]<='0 逐位一致)。
+      //  nf 逐字段复位仅剩非-G1 位(G1 位 valid/uop_num/std_writebacked/need_flush/
+      //  interrupt_safe/mmio/is_rvc/is_vset/is_hls/real_dest_size/instr_size/
+      //  commit_type 在 nf 里全程无驱动=DCE, 免 constant-0 死 flop 伪影)。
       for (int i = 0; i < ROB_SIZE; i++) begin
-        rob_valid[i]   <= 1'b0;
-        rob_uop_num[i] <= '0;
-        rob_std_wb[i]  <= 1'b0;
-        rob_entries_nf[i].need_flush     <= 1'b0;
-        rob_entries_nf[i].real_dest_size <= '0;
-        rob_entries_nf[i].interrupt_safe <= 1'b0;
-        rob_entries_nf[i].mmio           <= 1'b0;
+        // SoA G1 family(canary 3 + 扩展 9), 各 reset 0:
+        rob_valid[i]          <= 1'b0;
+        rob_uop_num[i]        <= '0;
+        rob_std_wb[i]         <= 1'b0;
+        rob_needflush[i]      <= 1'b0;
+        rob_interrupt_safe[i] <= 1'b0;
+        rob_mmio[i]           <= 1'b0;
+        rob_is_rvc[i]         <= 1'b0;
+        rob_is_vset[i]        <= 1'b0;
+        rob_is_hls[i]         <= 1'b0;
+        rob_real_dest_size[i] <= '0;
+        rob_instr_size[i]     <= '0;
+        rob_commit_type[i]    <= '0;
+        // 非-G1 packed nf 字段:
         rob_entries_nf[i].vls            <= 1'b0;
         rob_entries_nf[i].fflags         <= '0;
         rob_entries_nf[i].vxsat          <= 1'b0;
@@ -1075,11 +1111,6 @@ module xs_Rob_core
         rob_entries_nf[i].fp_wen         <= 1'b0;
         rob_entries_nf[i].wflags         <= 1'b0;
         rob_entries_nf[i].dirty_vs       <= 1'b0;
-        rob_entries_nf[i].commit_type    <= '0;
-        rob_entries_nf[i].is_rvc         <= 1'b0;
-        rob_entries_nf[i].is_vset        <= 1'b0;
-        rob_entries_nf[i].is_hls         <= 1'b0;
-        rob_entries_nf[i].instr_size     <= '0;
         rob_entries_nf[i].ftq_idx_value  <= '0;
         rob_entries_nf[i].ftq_idx_flag   <= 1'b0;
         rob_entries_nf[i].ftq_offset     <= '0;
@@ -1126,20 +1157,19 @@ module xs_Rob_core
       for (int b = 0; b < COMMIT_WIDTH; b++) robDeqGroup[b] <= robDeqGroup_next[b];
 
       // ---- robEntries 状态(写回/累计) + valid(commit/enq/flush) ----
-      // ★SoA canary★ 非-family 字段落 rob_entries_nf(逐字段, 不寄存 family 位=免
-      //  impl-only 死寄存器伪影); family 三字段落各自 SoA 数组:
-      //   uop_num/std_wb <= next 数组(与 packed 版 rob_entries[i]<=next 同源);
+      // ★SoA G1 family★ 非-G1 字段落 rob_entries_nf(逐字段, 不寄存 G1 位=免
+      //  impl-only 死寄存器伪影); G1 12 字段落各自 SoA 数组:
+      //   uop_num/std_wb <= 专用 next 数组(与 packed 版 rob_entries[i]<=next 同源);
+      //   need_flush/interrupt_safe/mmio/is_rvc/is_vset/is_hls/real_dest_size/
+      //     instr_size/commit_type <= rob_entries_next[i].<field>(与 packed 版
+      //     rob_entries[i]<=rob_entries_next[i] 的对应位 100% 同源同拍);
       //   valid <= commit/enq/flush 优先级覆盖(与 packed 版逐字一致, hold 读 SoA)。
       for (int i = 0; i < ROB_SIZE; i++) begin
         logic commitCond, enqOH, needFlushRange;
         commitCond = o_commits_isCommit & commit_hit_arr[i];
         enqOH      = |enq_inst_hit_arr[i];
         needFlushRange = redirectValidReg & in_flush_range_arr[i];
-        // 非-family: 逐字段落 nf(family 位 valid/uop_num/std_writebacked 不寄存)
-        rob_entries_nf[i].need_flush      <= rob_entries_next[i].need_flush;
-        rob_entries_nf[i].real_dest_size  <= rob_entries_next[i].real_dest_size;
-        rob_entries_nf[i].interrupt_safe  <= rob_entries_next[i].interrupt_safe;
-        rob_entries_nf[i].mmio            <= rob_entries_next[i].mmio;
+        // 非-G1: 逐字段落 nf(G1 位不寄存)
         rob_entries_nf[i].vls             <= rob_entries_next[i].vls;
         rob_entries_nf[i].fflags          <= rob_entries_next[i].fflags;
         rob_entries_nf[i].vxsat           <= rob_entries_next[i].vxsat;
@@ -1147,21 +1177,26 @@ module xs_Rob_core
         rob_entries_nf[i].fp_wen          <= rob_entries_next[i].fp_wen;
         rob_entries_nf[i].wflags          <= rob_entries_next[i].wflags;
         rob_entries_nf[i].dirty_vs        <= rob_entries_next[i].dirty_vs;
-        rob_entries_nf[i].commit_type     <= rob_entries_next[i].commit_type;
-        rob_entries_nf[i].is_rvc          <= rob_entries_next[i].is_rvc;
-        rob_entries_nf[i].is_vset         <= rob_entries_next[i].is_vset;
-        rob_entries_nf[i].is_hls          <= rob_entries_next[i].is_hls;
-        rob_entries_nf[i].instr_size      <= rob_entries_next[i].instr_size;
         rob_entries_nf[i].ftq_idx_value   <= rob_entries_next[i].ftq_idx_value;
         rob_entries_nf[i].ftq_idx_flag    <= rob_entries_next[i].ftq_idx_flag;
         rob_entries_nf[i].ftq_offset      <= rob_entries_next[i].ftq_offset;
         rob_entries_nf[i].itype           <= rob_entries_next[i].itype;
         rob_entries_nf[i].iretire         <= rob_entries_next[i].iretire;
         rob_entries_nf[i].ilastsize       <= rob_entries_next[i].ilastsize;
-        // family uop_num / std_writebacked
+        // G1 uop_num / std_writebacked (专用 next 数组)
         rob_uop_num[i] <= rob_uop_num_next[i];
         rob_std_wb[i]  <= rob_std_wb_next[i];
-        // family valid: 按优先级覆盖(commit 清 > enq 置 > flush 清 > hold)
+        // G1 扩展 9 字段 <= rob_entries_next[i].<field> (与 packed 版同源同拍)
+        rob_needflush[i]      <= rob_entries_next[i].need_flush;
+        rob_interrupt_safe[i] <= rob_entries_next[i].interrupt_safe;
+        rob_mmio[i]           <= rob_entries_next[i].mmio;
+        rob_is_rvc[i]         <= rob_entries_next[i].is_rvc;
+        rob_is_vset[i]        <= rob_entries_next[i].is_vset;
+        rob_is_hls[i]         <= rob_entries_next[i].is_hls;
+        rob_real_dest_size[i] <= rob_entries_next[i].real_dest_size;
+        rob_instr_size[i]     <= rob_entries_next[i].instr_size;
+        rob_commit_type[i]    <= rob_entries_next[i].commit_type;
+        // G1 valid: 按优先级覆盖(commit 清 > enq 置 > flush 清 > hold)
         if (commitCond)
           rob_valid[i] <= 1'b0;
         else if (enqOH & ~io_redirect_valid)

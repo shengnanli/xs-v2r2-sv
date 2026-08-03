@@ -20,10 +20,24 @@ import argparse, json, re, hashlib, sys
 ROB_SIZE = 160
 
 # (impl_soa_array_leaf, golden_suffix, width)
+# SoA G1 family = 12 字段(lifecycle/control/status). impl_soa_array_leaf 是 FM 给
+# impl `logic rob_<field>[N]` 推断的 flop Cell 名(自动加 _reg 后缀), golden_suffix 是
+# golden `reg robEntries_N_<suffix>` 的字段名(_reg Cell 名由 gen 逻辑追加)。
 SOA_FAMILY = [
-    ("rob_valid_reg",   "valid",          1),
-    ("rob_uop_num_reg", "uopNum",         7),
-    ("rob_std_wb_reg",  "stdWritebacked", 1),
+    # canary(阶段1): commit-state
+    ("rob_valid_reg",          "valid",          1),
+    ("rob_uop_num_reg",        "uopNum",         7),
+    ("rob_std_wb_reg",         "stdWritebacked", 1),
+    # G1 扩展(阶段2): lifecycle / control / status
+    ("rob_needflush_reg",      "needFlush",      1),
+    ("rob_interrupt_safe_reg", "interrupt_safe", 1),
+    ("rob_mmio_reg",           "mmio",           1),
+    ("rob_is_rvc_reg",         "isRVC",          1),
+    ("rob_is_vset_reg",        "isVset",         1),
+    ("rob_is_hls_reg",         "isHls",          1),
+    ("rob_real_dest_size_reg", "realDestSize",   7),
+    ("rob_instr_size_reg",     "instrSize",      3),
+    ("rob_commit_type_reg",    "commitType",     3),
 ]
 
 
