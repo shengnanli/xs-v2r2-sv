@@ -4705,7 +4705,7 @@ module tb;
   logic o_flushOut_level, o_flushOut_isRVC; logic [FTQ_PTR_W-1:0] o_flushOut_ftqIdx_value;
   logic o_flushOut_ftqIdx_flag; logic [FTQ_OFFSET_W-1:0] o_flushOut_ftqOffset;
   logic o_exception_valid, o_intrEnable;
-  logic o_enq_canAccept, o_enq_canAcceptForDispatch, o_robFull, o_headNotReady;
+  logic o_enq_canAccept, o_enq_canAcceptForDispatch, o_robFull, o_enq_isEmpty, o_headNotReady;
   logic o_cpu_halt, o_wfiReq; logic [PTR_W:0] o_numValidEntries;
   // 新增核输出(rob-lsq-deep): 组合全存储读 + deqHasFlushed 导出
   logic [COMMIT_WIDTH-1:0] o_deq_entry_vls;

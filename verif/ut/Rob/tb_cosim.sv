@@ -47,7 +47,7 @@ module tb;
   logic o_flushOut_level, o_flushOut_isRVC; logic [FTQ_PTR_W-1:0] o_flushOut_ftqIdx_value;
   logic o_flushOut_ftqIdx_flag; logic [FTQ_OFFSET_W-1:0] o_flushOut_ftqOffset;
   logic o_exception_valid, o_intrEnable;
-  logic o_enq_canAccept, o_enq_canAcceptForDispatch, o_robFull, o_headNotReady;
+  logic o_enq_canAccept, o_enq_canAcceptForDispatch, o_robFull, o_enq_isEmpty, o_headNotReady;
   logic o_cpu_halt, o_wfiReq; logic [PTR_W:0] o_numValidEntries;
   // ---- perf/trace 输出 (rob-perf-trace; smoke tb 仅接住 .*, 不做 cycle-exact 比对) ----
   logic [5:0] o_perf_0_value,o_perf_1_value,o_perf_2_value,o_perf_3_value,o_perf_4_value,

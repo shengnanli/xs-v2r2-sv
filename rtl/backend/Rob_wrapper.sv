@@ -3420,6 +3420,7 @@ module Rob(
   logic                       o_enq_canAccept;
   logic                       o_enq_canAcceptForDispatch;
   logic                       o_robFull;
+  logic                       o_enq_isEmpty;
   logic                       o_headNotReady;
   logic                       o_cpu_halt;
   logic                       o_wfiReq;
@@ -7951,7 +7952,7 @@ module Rob(
   assign io_debugTopDown_toDispatch_robHeadLsIssue = o_debugTopDown_robHeadLsIssue;
   assign io_enq_canAccept = o_enq_canAccept;
   assign io_enq_canAcceptForDispatch = o_enq_canAcceptForDispatch;
-  assign io_enq_isEmpty = o_robFull;
+  assign io_enq_isEmpty = o_enq_isEmpty;  // codex 0107 修: 旧 glue 错接 o_robFull
   assign io_exception_valid = o_exception_valid;
   assign io_flushOut_bits_ftqIdx_flag = o_flushOut_ftqIdx_flag;
   assign io_flushOut_bits_ftqIdx_value = o_flushOut_ftqIdx_value;

@@ -199,6 +199,7 @@ module xs_Rob_core_packed_ref
   output logic                       o_enq_canAccept,
   output logic                       o_enq_canAcceptForDispatch,
   output logic                       o_robFull,
+  output logic                       o_enq_isEmpty,
   output logic                       o_headNotReady,
   output logic                       o_cpu_halt,
   output logic                       o_wfiReq,
@@ -376,6 +377,13 @@ module xs_Rob_core_packed_ref
     o_enq_canAcceptForDispatch = allowEnqueueForDispatch & ~hasBlockBackward & rab_can_enq_for_dispatch & ~io_fromVecExcpMod_busy;
   end
   assign o_robFull = ~allowEnqueue;
+  // ★codex 0107 修★ golden io_enq_isEmpty = RegNext(isEmpty), isEmpty =
+  //  {enqPtr.flag,value} == {deqPtr.flag,value}(含 flag 全比较), 无复位寄存器
+  //  io_enq_isEmpty_REG(同名 automatch)。旧 wrapper glue 错接 o_robFull。
+  logic io_enq_isEmpty_REG;
+  always_ff @(posedge clock)
+    io_enq_isEmpty_REG <= ({enqPtr.flag, enqPtr.value} == {deqPtr.flag, deqPtr.value});
+  assign o_enq_isEmpty = io_enq_isEmpty_REG;
 
   // =====================================================================
   // 3. 8-bank 行读流水(对齐 golden Rob.scala 205-263 的 robBanksRdata / robDeqGroup)
@@ -1072,8 +1080,10 @@ module xs_Rob_core_packed_ref
   end
   always_comb begin
     rob_ptr_t base;
-    if (io_redirect_valid)
-      base = io_snpt_useSnpt ? snapHead : deqNextHead;
+    // ★codex 0107 修★ 旧版只在 if(io_redirect_valid) 下赋 base → always_comb 内
+    //  推断【锁存器】(FM Impl LAT ×6, 落在 walkPtrVec 锥 → failing)。golden 是
+    //  纯组合 mux; 改无条件赋值(仅 redirect 分支消费, 语义不变, 0 锁存器)。
+    base = io_snpt_useSnpt ? snapHead : deqNextHead;
     for (int i = 0; i < COMMIT_WIDTH; i++) begin
       if (io_redirect_valid)
         walkPtrVec_next[i] = ptr_add(base, PTR_W'(i));
