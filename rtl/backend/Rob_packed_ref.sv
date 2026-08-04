@@ -384,7 +384,9 @@ module xs_Rob_core_packed_ref
   //  io_enq_isEmpty_REG(同名 automatch)。旧 wrapper glue 错接 o_robFull。
   logic io_enq_isEmpty_REG;
   always_ff @(posedge clock)
-    io_enq_isEmpty_REG <= ({enqPtr.flag, enqPtr.value} == {deqPtr.flag, deqPtr.value});
+    // golden: isEmpty & 六路 io_enq_req_*_valid 全 0(漏掉的 &~|enq_valid 项)
+    io_enq_isEmpty_REG <= ({enqPtr.flag, enqPtr.value} == {deqPtr.flag, deqPtr.value})
+                        & ~(|enq_valid);
   assign o_enq_isEmpty = io_enq_isEmpty_REG;
 
   // =====================================================================
@@ -986,13 +988,18 @@ module xs_Rob_core_packed_ref
   // =====================================================================
   rob_ptr_t enqPtr;
   assign enqPtr = enq_ptr_vec[0];
-  logic [PTR_W:0] numValidEntries;
+  // ★codex 0107 修★ golden numValidEntries_probe 是【8 位模 256】环形距离:
+  //  同 flag: enq.value - deq.value; 异 flag: (enq.value - 8'd96) - deq.value
+  //  (96 = 256-160; 全 8 位截断)。旧版 9 位算术在 FM 自由状态点与 8 位模不等。
+  logic [PTR_W-1:0] numValidEntries8;
   always_comb begin
     if (enqPtr.flag == deqPtr.flag)
-      numValidEntries = {1'b0, PTR_W'(enqPtr.value - deqPtr.value)};
+      numValidEntries8 = PTR_W'(enqPtr.value - deqPtr.value);
     else
-      numValidEntries = (PTR_W+1)'(ROB_SIZE) - {1'b0, deqPtr.value} + {1'b0, enqPtr.value};
+      numValidEntries8 = PTR_W'(PTR_W'(enqPtr.value - PTR_W'(256 - ROB_SIZE)) - deqPtr.value);
   end
+  logic [PTR_W:0] numValidEntries;
+  always_comb numValidEntries = {1'b0, numValidEntries8};
   assign o_numValidEntries = numValidEntries;
 
   // headNotReady: 队头有效但未写回(commit_v & !commit_w)。
@@ -1292,8 +1299,9 @@ module xs_Rob_core_packed_ref
         deqHasFlushed <= 1'b1;
 
       // ---- allowEnqueue 阈值 ----
-      allowEnqueue            <= (numValidEntries + {5'b0, dispatchNum}) <= (PTR_W+1)'(ROB_SIZE - RENAME_WIDTH);
-      allowEnqueueForDispatch <= (numValidEntries + {5'b0, dispatchNum}) <= (PTR_W+1)'(ROB_SIZE - 2*RENAME_WIDTH);
+      // golden: 8'(probe + dispatchNum) < 8'h9B / < 8'h95(8 位截断和比较)
+      allowEnqueue            <= PTR_W'(numValidEntries8 + {4'b0, dispatchNum}) < PTR_W'(ROB_SIZE - RENAME_WIDTH + 1);
+      allowEnqueueForDispatch <= PTR_W'(numValidEntries8 + {4'b0, dispatchNum}) < PTR_W'(ROB_SIZE - 2*RENAME_WIDTH + 1);
 
       // ---- hasCommitted ----
       if (o_allCommitted) hasCommitted <= '0;
