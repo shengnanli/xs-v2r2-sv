@@ -1028,10 +1028,10 @@ module xs_Rob_core_packed_ref
     logic [PTR_W:0] raw;
     rob_ptr_t o;
     o = '0;   // FM 静态分析要求确定返回值(FMR_ELAB-118); 下方两分支全赋 value/flag
-    raw = {p.flag, p.value} + inc;
-    // value 需对 RobSize 取模(非 2 的幂), 这里按 golden 的环形语义处理。
-    if (raw[PTR_W-1:0] >= PTR_W'(ROB_SIZE)) begin
-      o.value = raw[PTR_W-1:0] - PTR_W'(ROB_SIZE);
+    // ★codex 0107 修(与 Rob.sv 同步)★ golden 9 位零扩展 value 加法(不含 flag)。
+    raw = {1'b0, p.value} + inc;
+    if (raw >= (PTR_W+1)'(ROB_SIZE)) begin
+      o.value = PTR_W'(raw - (PTR_W+1)'(ROB_SIZE));
       o.flag  = ~p.flag;
     end else begin
       o.value = raw[PTR_W-1:0];
