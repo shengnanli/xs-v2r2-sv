@@ -4278,6 +4278,14 @@ module Rob(
   assign io_lsTopdown_s2_valid={io_lsTopdownInfo_2_s2_paddr_valid,io_lsTopdownInfo_1_s2_paddr_valid,io_lsTopdownInfo_0_s2_paddr_valid};
   assign io_lsTopdown_s2_bits[0]=io_lsTopdownInfo_0_s2_paddr_bits; assign io_lsTopdown_s2_bits[1]=io_lsTopdownInfo_1_s2_paddr_bits; assign io_lsTopdown_s2_bits[2]=io_lsTopdownInfo_2_s2_paddr_bits;
 
+  // ---- [pLsqDeep] lsq→mmio 置位输入(core 新增; golden io_lsq_mmio_*/io_lsq_uop_*_robIdx_value 忠实重建) ----
+  logic [2:0]       lsq_mmio;
+  logic [PTR_W-1:0] lsq_uop_robidx_value [3];
+  assign lsq_mmio = {io_lsq_mmio_2, io_lsq_mmio_1, io_lsq_mmio_0};
+  assign lsq_uop_robidx_value[0] = io_lsq_uop_0_robIdx_value;
+  assign lsq_uop_robidx_value[1] = io_lsq_uop_1_robIdx_value;
+  assign lsq_uop_robidx_value[2] = io_lsq_uop_2_robIdx_value;
+
   // ---- u_i 输出 ----
   // toVecExcpMod.excpInfo(10 口)
   // perf(18)/trace(48) 核输出(在 tb_perftrace.sv 中做 cycle-exact 比对; 此 tap tb 仅悬空占位供 .* 绑定)

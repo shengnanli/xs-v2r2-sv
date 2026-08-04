@@ -4712,6 +4712,14 @@ module tb;
   logic [COMMIT_WIDTH-1:0] o_deq_entry_vls;
   logic o_deq_entry_valid_0, o_deq_entry_mmio_0, o_deqHasFlushed;
 
+  // ---- [pLsqDeep] lsq→mmio 核输入(golden 平铺激励 reg 重建) ----
+  logic [2:0]       lsq_mmio;
+  logic [PTR_W-1:0] lsq_uop_robidx_value [3];
+  assign lsq_mmio = {io_lsq_mmio_2, io_lsq_mmio_1, io_lsq_mmio_0};
+  assign lsq_uop_robidx_value[0] = io_lsq_uop_0_robIdx_value;
+  assign lsq_uop_robidx_value[1] = io_lsq_uop_1_robIdx_value;
+  assign lsq_uop_robidx_value[2] = io_lsq_uop_2_robIdx_value;
+
   xs_Rob_core u_i (.*);
 
   // ===================================================================
@@ -5699,6 +5707,13 @@ module tb;
       io_wfi_enable <= 1'b1; io_wfi_safeFromMem <= 1'b1; io_wfi_safeFromFrontend <= 1'b1;
       io_fromVecExcpMod_busy <= ($urandom_range(0,99)<2);
       io_trace_blockCommit <= ($urandom_range(0,99)<2);
+      // ---- [pLsqDeep] lsq→mmio 置位激励(令 pendingMMIOld 比对非 vacuous) ----
+      io_lsq_mmio_0 <= ($urandom_range(0,99) < 10);
+      io_lsq_mmio_1 <= ($urandom_range(0,99) < 10);
+      io_lsq_mmio_2 <= ($urandom_range(0,99) < 10);
+      io_lsq_uop_0_robIdx_value <= u_g._deqPtrGenModule_io_out_0_value;
+      io_lsq_uop_1_robIdx_value <= u_g._deqPtrGenModule_io_out_0_value + 8'($urandom_range(0,7));
+      io_lsq_uop_2_robIdx_value <= 8'($urandom);
       // ---- enqueue: 6 口随机, robIdx 跟随 enqPtrVec ----
       for (int i=0;i<6;i++) begin
       end

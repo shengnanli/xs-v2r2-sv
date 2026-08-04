@@ -111,6 +111,12 @@ module xs_Rob_core_packed_ref
   input  logic                       io_wb5_redir,   // io_exuWriteback_5_valid & _5_bits_redirect_valid
 
   // ====================================================================
+  // [pLsqDeep 组新增] lsq→mmio 置位通知(与 Rob.sv 同步; golden io_lsq_mmio_*)
+  // ====================================================================
+  input  logic [2:0]                 lsq_mmio,                    // io_lsq_mmio_{0,1,2}
+  input  logic [PTR_W-1:0]           lsq_uop_robidx_value [3],    // io_lsq_uop_N_robIdx_value
+
+  // ====================================================================
   // [csr/debug 组新增] C_DEEP csr(9)+debug(6) 端口所需输入
   //   (owner rob-csr-debug; 见 docs/backend/rob_csr_debug_ports.tsv)
   // ====================================================================
@@ -519,6 +525,16 @@ module xs_Rob_core_packed_ref
   // rob_entries_next 是纯组合(always_comb)下一拍值, 非寄存器(0 flip-flop, 不计入
   //  impl reg)。宽度用 IDX_SPACE=256 让 8 位行读下标 robIdxThisLine[b] 静态在界
   //  (消 FMR_ELAB-147); 160..255 项填不可达 'x(下方 §3 行读下标恒 row*8+bank<160)。
+  // ---- [pLsqDeep] lsq→mmio 打拍级(与 Rob.sv 同步; golden REG_3/4/5 +
+  //  r_value/r_1_value/r_2_value; 无复位 clock-only, 见下方独立 always_ff) ----
+  logic [2:0]       lsq_mmio_q;              // golden REG_3 / REG_4 / REG_5
+  logic [PTR_W-1:0] lsq_mmio_robidx_q [3];   // golden r_value / r_1_value / r_2_value
+  always_ff @(posedge clock) begin
+    lsq_mmio_q <= lsq_mmio;
+    for (int k = 0; k < 3; k++)
+      if (lsq_mmio[k]) lsq_mmio_robidx_q[k] <= lsq_uop_robidx_value[k];
+  end
+
   rob_entry_t rob_entries_next [IDX_SPACE];
   // ★codex 0107 修(与 Rob.sv 逐方程同步, golden-exact; 详细注释见 Rob.sv §4)★
   always_comb begin
@@ -619,6 +635,11 @@ module xs_Rob_core_packed_ref
           e.interrupt_safe = enq_allow_interrupt[k];
           e.mmio           = 1'b0;               // 入队清, 之后由 lsq.mmio 置
         end
+      // ---- [pLsqDeep] lsq→mmio 置位(与 Rob.sv 同步; last-connect 在入队清后
+      //  ⇒ 置位优先; 3 口全写 1 ⇔ 按位或; 不 gate valid/redirect) ----
+      for (int k = 0; k < 3; k++)
+        if (lsq_mmio_q[k] & (lsq_mmio_robidx_q[k] == PTR_W'(i)))
+          e.mmio = 1'b1;
       rob_entries_next[i] = e;
     end
   end
@@ -1956,11 +1977,17 @@ module xs_Rob_core_packed_ref
   //       o_deqHasFlushed      = deqHasFlushed(核内既有状态)
   // =====================================================================
   //   FM 全存储读: 用 IDX_SPACE(256, 2 的幂)宽 packed 向量索引(替直接数组下标, 0 寄存器
-  //   wire), 使 8 位下标恒在界(消 FMR_ELAB-147); 160..255 位填不可达 'x(≠entry-0/0),
-  //   下标 deqValIdx 经 index_in_range guard, 恒读 <160 有效项。
+  //   wire), 使 8 位下标恒在界(消 FMR_ELAB-147)。
+  //   ★codex 0108 步6 (pLsqDeep) 与 Rob.sv 同步修★ o_deq_entry_{valid,mmio}_0 =
+  //   golden _GEN_2611/_GEN_2622[deqPtr_0]: 256 宽复制向量下标 160..255 填
+  //   robEntries_0_{valid,mmio}(golden pad), 用原始 deq_ptr_vec[0].value 直索引
+  //   (无 guard), 消 lsq→mmio set 上线后经 commitStuck 传的越界读 X。见 Rob.sv 详注。
   logic [IDX_SPACE-1:0] robVlsVec, robValidVec, robMmioVec;
   always_comb begin
-    robVlsVec   = 'x; robValidVec = 'x; robMmioVec = 'x;
+    // golden pad: 160..255 位 = entry-0(_GEN_8225/_GEN_2611/_GEN_2622 复制尾)
+    robVlsVec   = {IDX_SPACE{rob_entries[0].vls}};
+    robValidVec = {IDX_SPACE{rob_entries[0].valid}};
+    robMmioVec  = {IDX_SPACE{rob_entries[0].mmio}};
     for (int i = 0; i < ROB_SIZE; i++) begin
       robVlsVec[i]   = rob_entries[i].vls;
       robValidVec[i] = rob_entries[i].valid;
@@ -1969,9 +1996,9 @@ module xs_Rob_core_packed_ref
   end
   always_comb
     for (int i = 0; i < COMMIT_WIDTH; i++)
-      o_deq_entry_vls[i] = robVlsVec[deqValIdx[i]];
-  assign o_deq_entry_valid_0 = robValidVec[deqValIdx[0]];
-  assign o_deq_entry_mmio_0  = robMmioVec[deqValIdx[0]];
+      o_deq_entry_vls[i] = robVlsVec[deq_ptr_vec[i].value];
+  assign o_deq_entry_valid_0 = robValidVec[deq_ptr_vec[0].value];
+  assign o_deq_entry_mmio_0  = robMmioVec[deq_ptr_vec[0].value];
   assign o_deqHasFlushed     = deqHasFlushed;
 
 endmodule

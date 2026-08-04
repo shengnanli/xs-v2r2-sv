@@ -65,6 +65,9 @@ module tb;
   logic io_wb1_redir;
   logic io_wb3_redir;
   logic io_wb5_redir;
+  // ---- [pLsqDeep] lsq→mmio 核输入(本定向 UT 恒 0) ----
+  logic [2:0] lsq_mmio;
+  logic [PTR_W-1:0] lsq_uop_robidx_value [3];
   logic io_eg_vstartEn;
   logic [63:0] io_eg_vstart;
   logic io_vstartIsZero;
@@ -246,6 +249,8 @@ module tb;
     .io_wb1_redir(io_wb1_redir),
     .io_wb3_redir(io_wb3_redir),
     .io_wb5_redir(io_wb5_redir),
+    .lsq_mmio(lsq_mmio),
+    .lsq_uop_robidx_value(lsq_uop_robidx_value),
     .io_eg_vstartEn(io_eg_vstartEn),
     .io_eg_vstart(io_eg_vstart),
     .io_vstartIsZero(io_vstartIsZero),
@@ -391,6 +396,7 @@ module tb;
     io_fromVecExcpMod_busy = 0; io_trace_blockCommit = 0;
     rab_can_enq = 1; rab_status_commit_end = 1; rab_status_walk_end = 1; vtype_status_walk_end = 1;
     io_misPredWb = 0; io_wb1_redir = 0; io_wb3_redir = 0; io_wb5_redir = 0;
+    lsq_mmio = '0; lsq_uop_robidx_value[0] = '0; lsq_uop_robidx_value[1] = '0; lsq_uop_robidx_value[2] = '0;
     io_debugHeadLsIssue = 0;
     io_vstartIsZero = 0;
     io_lsTopdown_s1_valid = 0; io_lsTopdown_s2_valid = 0;

@@ -116,6 +116,14 @@ module xs_Rob_core
   input  logic                       io_wb5_redir,   // io_exuWriteback_5_valid & _5_bits_redirect_valid
 
   // ====================================================================
+  // [pLsqDeep 组新增] lsq→mmio 置位通知(golden io_lsq_mmio_*/io_lsq_uop_*)
+  //   load 流水判定 uncache(MMIO) 后按 uop.robIdx 通知 ROB 置对应条目 mmio 位
+  //   (Rob.scala 557-560, LoadPipelineWidth=3)。wrapper 由 flat 端口重建喂入。
+  // ====================================================================
+  input  logic [2:0]                 lsq_mmio,                    // io_lsq_mmio_{0,1,2}
+  input  logic [PTR_W-1:0]           lsq_uop_robidx_value [3],    // io_lsq_uop_N_robIdx_value
+
+  // ====================================================================
   // [csr/debug 组新增] C_DEEP csr(9)+debug(6) 端口所需输入
   //   (owner rob-csr-debug; 见 docs/backend/rob_csr_debug_ports.tsv)
   // ====================================================================
@@ -642,6 +650,13 @@ module xs_Rob_core
   //  impl reg)。宽度保留 IDX_SPACE=256 形状(历史: 动态行下标直索引时代消
   //  FMR_ELAB-147); ★codex 0107 重构后仅静态下标 0..159 被读★, 160..255 死项
   //  填 'x 无读者(综合/FM 直接剪除, 0 伪影)。
+  // ---- [pLsqDeep] lsq→mmio 打拍级(golden REG_3/REG_4/REG_5 =
+  //  RegNext(io_lsq_mmio_k) 无条件打拍; r_value/r_1_value/r_2_value =
+  //  RegEnable(io_lsq_uop_k_robIdx_value, io_lsq_mmio_k) 使能=【本拍原始】
+  //  io_lsq_mmio_k。二者均无复位(golden 大 no-reset 块), 见 §12c。 ----
+  logic [2:0]       lsq_mmio_q;              // golden REG_3 / REG_4 / REG_5
+  logic [PTR_W-1:0] lsq_mmio_robidx_q [3];   // golden r_value / r_1_value / r_2_value
+
   rob_entry_t rob_entries_next [IDX_SPACE];
   // ★codex 0107 修(G1+G2 checkpoint 20 failing 根因修复)★ 本块按 golden 逐方程
   //  重写: (1) uopNum/std 入队门 = B 族 inst_canenq(请求 robIdx), 非 A 族 enqOH;
@@ -756,6 +771,14 @@ module xs_Rob_core
           e.interrupt_safe = enq_allow_interrupt[k];
           e.mmio           = 1'b0;               // 入队清, 之后由 lsq.mmio 置
         end
+      // ---- [pLsqDeep] lsq→mmio 置位(golden Rob.scala 557-560: 打拍后按锁存
+      //  robIdx 置 1。Chisel last-connect 在入队清【之后】⇒ 置位优先于清;
+      //  3 口全写 1 ⇔ 按位或; 【不】gate valid/redirect。golden 方程:
+      //  robEntries_i_mmio <= REG_5&r_2_value==i | REG_4&r_1_value==i
+      //                     | REG_3&r_value==i | (~任一enq命中 & hold)。 ----
+      for (int k = 0; k < 3; k++)
+        if (lsq_mmio_q[k] & (lsq_mmio_robidx_q[k] == PTR_W'(i)))
+          e.mmio = 1'b1;
       rob_entries_next[i] = e;
     end
   end
@@ -1561,6 +1584,12 @@ module xs_Rob_core
       rob_trace_ilastsize[i] <= rob_entries_next[i].ilastsize[0];
     end
 
+    // ---- [pLsqDeep] lsq→mmio 打拍(golden REG_3/4/5 无条件 RegNext;
+    //  r_*_value 为 RegEnable, 使能=【本拍原始】lsq_mmio[k] 非打拍后; 均无复位) ----
+    lsq_mmio_q <= lsq_mmio;
+    for (int k = 0; k < 3; k++)
+      if (lsq_mmio[k]) lsq_mmio_robidx_q[k] <= lsq_uop_robidx_value[k];
+
     // ---- wfiEvent 打拍链(golden RegNext 链, 无复位, golden 名) ----
     REG_1 <= io_csr_wfiEvent;
     REG_2 <= REG_1;
@@ -2219,22 +2248,37 @@ module xs_Rob_core
   //       o_deqHasFlushed      = deqHasFlushed(核内既有状态)
   // =====================================================================
   //   FM 全存储读: 用 IDX_SPACE(256, 2 的幂)宽 packed 向量索引(替直接数组下标, 0 寄存器
-  //   wire), 使 8 位下标恒在界(消 FMR_ELAB-147); 160..255 位填不可达 'x(≠entry-0/0),
-  //   下标 deqValIdx 经 index_in_range guard, 恒读 <160 有效项。
+  //   wire), 使 8 位下标恒在界(消 FMR_ELAB-147)。
+  //   ★codex 0108 步6 (pLsqDeep) 修★ o_deq_entry_{valid,mmio}_0 = golden
+  //   _GEN_2611/_GEN_2622[deqPtr_0] —— golden 的 256 宽复制向量【下标 160..255 填
+  //   robEntries_0_{valid,mmio}】(Chisel Vec[160] 被 8 位下标读时的 pad), 且用
+  //   【原始 deq_ptr_vec[0].value 直索引】(无 index_in_range guard)。原实现填 'x +
+  //   deqValIdx 的 'x-guard 令越界读 → X; mmio 恒 0 时(patch 前)commitStuck 的
+  //   `_GEN_2620 & _GEN_2622[deqPtr]` 被 0 掩盖故不失配, 但 lsq→mmio set 上线后
+  //   mmio 可为 1, X 经 commitStuck 传到 commitStuckCycle/REG_8(FM 反例 20 点)。
+  //   ∴ deq_entry 读向量按 golden pad entry-0 + 原始下标, 消 X, bit-exact。
+  //   robVlsVec 同理 = golden _GEN_8225(vls padded 256-vec, 尾 entry-0), 8 个
+  //   deq 槽各用【原始 deq_ptr_vec[k].value 直索引】喂 io_lsq_scommit 的
+  //   `commitIsStore & ~vls` popcount(lsq 锥); 原 deqValIdx guard 'x 经此传 X 到
+  //   io_lsq_scommit_REG(FM 反例 4 点), 故一并 golden pad + 原始下标。
   logic [IDX_SPACE-1:0] robVlsVec, robValidVec, robMmioVec;
   always_comb begin
-    robVlsVec   = 'x; robValidVec = 'x; robMmioVec = 'x;
+    // golden pad: 160..255 位 = entry-0(与 _GEN_8225/_GEN_2611/_GEN_2622 复制尾一致)
+    robVlsVec   = {IDX_SPACE{rob_entries[0].vls}};
+    robValidVec = {IDX_SPACE{rob_entries[0].valid}};
+    robMmioVec  = {IDX_SPACE{rob_entries[0].mmio}};
     for (int i = 0; i < ROB_SIZE; i++) begin
       robVlsVec[i]   = rob_entries[i].vls;
       robValidVec[i] = rob_entries[i].valid;
       robMmioVec[i]  = rob_entries[i].mmio;
     end
   end
+  // golden _GEN_8225/_GEN_2620/_GEN_2622[deqPtr_k]: 原始 8 位 deq_ptr_vec[k].value 直索引
   always_comb
     for (int i = 0; i < COMMIT_WIDTH; i++)
-      o_deq_entry_vls[i] = robVlsVec[deqValIdx[i]];
-  assign o_deq_entry_valid_0 = robValidVec[deqValIdx[0]];
-  assign o_deq_entry_mmio_0  = robMmioVec[deqValIdx[0]];
+      o_deq_entry_vls[i] = robVlsVec[deq_ptr_vec[i].value];
+  assign o_deq_entry_valid_0 = robValidVec[deq_ptr_vec[0].value];
+  assign o_deq_entry_mmio_0  = robMmioVec[deq_ptr_vec[0].value];
   assign o_deqHasFlushed     = deqHasFlushed;
 
 endmodule

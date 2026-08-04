@@ -34,6 +34,9 @@ module tb;
   logic rab_can_enq, rab_can_enq_for_dispatch, rab_status_commit_end, rab_status_walk_end, vtype_status_walk_end;
   logic io_misPredWb;
   logic io_wb1_redir, io_wb3_redir, io_wb5_redir;   // perf_16 misPred 输入 (rob-perf-trace)
+  // ---- [pLsqDeep] lsq→mmio 核输入 ----
+  logic [2:0]       lsq_mmio;
+  logic [PTR_W-1:0] lsq_uop_robidx_value [3];
   // ---- 核输出 ----
   rob_state_e o_state;
   logic o_commits_isCommit, o_commits_isWalk;
@@ -298,6 +301,7 @@ module tb;
       io_fromVecExcpMod_busy<=0; io_trace_blockCommit<=0;
       rab_can_enq<=1; rab_can_enq_for_dispatch<=1; rab_status_commit_end<=1; rab_status_walk_end<=1; vtype_status_walk_end<=1;
       io_misPredWb<=0; io_wb1_redir<=0; io_wb3_redir<=0; io_wb5_redir<=0;
+      lsq_mmio<='0; lsq_uop_robidx_value[0]<='0; lsq_uop_robidx_value[1]<='0; lsq_uop_robidx_value[2]<='0;
       for (int i=0;i<RENAME_WIDTH;i++) begin enq_num_wb[i]<=1; enq_robidx_value[i]<=0; enq_info[i]<='0; end
       for (int i=0;i<NUM_EXU_WB;i++) begin wb_robidx[i]<=0; wb_num[i]<=1; wb_fflags[i]<=0; end
       for (int i=0;i<NUM_WB;i++) excp_wb_robidx[i]<=0;
@@ -353,6 +357,11 @@ module tb;
       io_wb1_redir <= ($urandom_range(0,99)<8);
       io_wb3_redir <= ($urandom_range(0,99)<8);
       io_wb5_redir <= ($urandom_range(0,99)<8);
+      // ---- [pLsqDeep] lsq→mmio 置位激励(低段/中段/全域 robIdx) ----
+      lsq_mmio <= {($urandom_range(0,99)<10), ($urandom_range(0,99)<10), ($urandom_range(0,99)<10)};
+      lsq_uop_robidx_value[0] <= 8'($urandom_range(0,15));
+      lsq_uop_robidx_value[1] <= 8'($urandom_range(0,159));
+      lsq_uop_robidx_value[2] <= 8'($urandom);
     end
   end
   // ---- 双核: SoA(B, 被测, 输出接 o_*) + packed-ref(A, 输出接 *_ref), 同激励 ----

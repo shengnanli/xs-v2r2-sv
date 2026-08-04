@@ -4783,6 +4783,14 @@ module tb;
   // wrapper B_SHALLOW latch 门控用核输出(悬空占位)
   logic o_exceptionHappen, o_deqHasException;
 
+  // ---- [pLsqDeep] lsq→mmio 核输入(golden 平铺激励 reg 重建) ----
+  logic [2:0]       lsq_mmio;
+  logic [PTR_W-1:0] lsq_uop_robidx_value [3];
+  assign lsq_mmio = {io_lsq_mmio_2, io_lsq_mmio_1, io_lsq_mmio_0};
+  assign lsq_uop_robidx_value[0] = io_lsq_uop_0_robIdx_value;
+  assign lsq_uop_robidx_value[1] = io_lsq_uop_1_robIdx_value;
+  assign lsq_uop_robidx_value[2] = io_lsq_uop_2_robIdx_value;
+
   xs_Rob_core u_i (.*);
 
   // ===================================================================
@@ -5695,6 +5703,13 @@ module tb;
       io_wfi_enable <= 1'b1; io_wfi_safeFromMem <= 1'b1; io_wfi_safeFromFrontend <= 1'b1;
       io_fromVecExcpMod_busy <= ($urandom_range(0,99)<2);
       io_trace_blockCommit <= ($urandom_range(0,99)<2);
+      // ---- [pLsqDeep] lsq→mmio 置位激励: 低段/队头/全域 robIdx, ~10% 脉冲每口 ----
+      io_lsq_mmio_0 <= ($urandom_range(0,99) < 10);
+      io_lsq_mmio_1 <= ($urandom_range(0,99) < 10);
+      io_lsq_mmio_2 <= ($urandom_range(0,99) < 10);
+      io_lsq_uop_0_robIdx_value <= 8'($urandom_range(0,15));
+      io_lsq_uop_1_robIdx_value <= u_g._deqPtrGenModule_io_out_0_value + 8'($urandom_range(0,7));
+      io_lsq_uop_2_robIdx_value <= 8'($urandom);
       // ---- [csr/debug 组] 随机激励 debug topdown / vstart 输入(additive) ----
       io_vstartIsZero    <= ($urandom_range(0,99)<50);
       io_debugHeadLsIssue<= ($urandom_range(0,99)<30);
@@ -6083,6 +6098,7 @@ module tb;
   always @(posedge clk) if (!rst) cyc <= cyc + 1;
   // [csr/debug 组] 覆盖计数
   int cov_fuType=0, cov_vaddr=0, cov_paddr=0, cov_lsissue=0, cov_iscommit=0;
+  int cov_mmio_set=0;  // [pLsqDeep] golden 低 16 entry mmio==1 观测拍数
   // golden io_exception_bits_isInterrupt 是 exceptionHappen 条件锁存(非每拍更新);
   // tb 用同条件(u_i.exceptionHappen)锁存 impl intrEnable 对齐。
   logic intrEnable_q;
@@ -6135,6 +6151,34 @@ module tb;
     chk("hasWFI", u_g.hasWFI, o_wfiReq);
     chk("deqHasFlushed", u_g.deqHasFlushed, u_i.deqHasFlushed);
     chk("intrBitSetReg", u_g.intrBitSetReg, o_intrBitSetReg);
+    // ---- [pLsqDeep] robEntries mmio 状态逐拍比对(entry 0..15 directed; lsq set/enq clear/hold) ----
+    chk("mmio_e0", u_g.robEntries_0_mmio, u_i.rob_mmio[0]);
+    chk("mmio_e1", u_g.robEntries_1_mmio, u_i.rob_mmio[1]);
+    chk("mmio_e2", u_g.robEntries_2_mmio, u_i.rob_mmio[2]);
+    chk("mmio_e3", u_g.robEntries_3_mmio, u_i.rob_mmio[3]);
+    chk("mmio_e4", u_g.robEntries_4_mmio, u_i.rob_mmio[4]);
+    chk("mmio_e5", u_g.robEntries_5_mmio, u_i.rob_mmio[5]);
+    chk("mmio_e6", u_g.robEntries_6_mmio, u_i.rob_mmio[6]);
+    chk("mmio_e7", u_g.robEntries_7_mmio, u_i.rob_mmio[7]);
+    chk("mmio_e8", u_g.robEntries_8_mmio, u_i.rob_mmio[8]);
+    chk("mmio_e9", u_g.robEntries_9_mmio, u_i.rob_mmio[9]);
+    chk("mmio_e10", u_g.robEntries_10_mmio, u_i.rob_mmio[10]);
+    chk("mmio_e11", u_g.robEntries_11_mmio, u_i.rob_mmio[11]);
+    chk("mmio_e12", u_g.robEntries_12_mmio, u_i.rob_mmio[12]);
+    chk("mmio_e13", u_g.robEntries_13_mmio, u_i.rob_mmio[13]);
+    chk("mmio_e14", u_g.robEntries_14_mmio, u_i.rob_mmio[14]);
+    chk("mmio_e15", u_g.robEntries_15_mmio, u_i.rob_mmio[15]);
+    begin
+      logic [15:0] g_mmio_lo16;
+      g_mmio_lo16 = {u_g.robEntries_15_mmio,u_g.robEntries_14_mmio,u_g.robEntries_13_mmio,
+                     u_g.robEntries_12_mmio,u_g.robEntries_11_mmio,u_g.robEntries_10_mmio,
+                     u_g.robEntries_9_mmio,u_g.robEntries_8_mmio,u_g.robEntries_7_mmio,
+                     u_g.robEntries_6_mmio,u_g.robEntries_5_mmio,u_g.robEntries_4_mmio,
+                     u_g.robEntries_3_mmio,u_g.robEntries_2_mmio,u_g.robEntries_1_mmio,
+                     u_g.robEntries_0_mmio};
+      for (int b = 0; b < 16; b++)
+        if (g_mmio_lo16[b] === 1'b1) begin cov_mmio_set++; break; end
+    end
     chk("walkPtrTrue_value", u_g.walkPtrTrue_value, u_i.walkPtrTrue.value);
     chk("walkPtrTrue_flag", u_g.walkPtrTrue_flag, u_i.walkPtrTrue.flag);
     chk("lastWalkPtr_value", u_g.lastWalkPtr_value, u_i.lastWalkPtr.value);
@@ -6175,6 +6219,7 @@ module tb;
     repeat (NCYCLES) @(posedge clk);
     $display("COV[csr/debug] fuType=%0d vaddr_v=%0d paddr_v=%0d lsIssue=%0d isCommit=%0d",
              cov_fuType, cov_vaddr, cov_paddr, cov_lsissue, cov_iscommit);
+    $display("COV[pLsqDeep] mmio_set_cycles=%0d", cov_mmio_set);
     $display("checks=%0d errors=%0d", checks, errors);
     if (errors == 0 && checks > 1000) $display("TEST PASSED"); else $display("TEST FAILED");
     $finish;
