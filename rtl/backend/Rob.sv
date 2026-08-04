@@ -1190,12 +1190,17 @@ module xs_Rob_core
   //  if/else 分支+逐字段 struct 赋值的 function 会保守报 "may not return a value";
   //  无分支的单 return struct-literal 令 FM 见确定返回值)。语义逐字不变:
   //   wrap = (raw.value >= RobSize); value 取模 RobSize; flag 在 wrap 时翻转。
+  // ★codex 0107 修★ golden 的环形加法在【9 位零扩展 value】上做(不含 flag):
+  //  sum = {1'b0,value}+inc; wrap = sum>=160; value = sum-160(9 位差)。旧版把
+  //  inc 加在 {flag,value} 拼接上 ⇒ value+inc 跨 256 时进位窜入 flag 位且
+  //  raw[7:0] 先 mod 256 再判 wrap, 与 golden 在 value>=249 的(FM 自由)状态点
+  //  不等 → walkPtrVec 高位/flag 失配根因。
   function automatic rob_ptr_t ptr_add(input rob_ptr_t p, input logic [PTR_W:0] inc);
-    logic [PTR_W:0]   raw;
+    logic [PTR_W:0]   sum;
     logic             wrap;
-    raw  = {p.flag, p.value} + inc;
-    wrap = (raw[PTR_W-1:0] >= PTR_W'(ROB_SIZE));
-    return '{value: (wrap ? (raw[PTR_W-1:0] - PTR_W'(ROB_SIZE)) : raw[PTR_W-1:0]),
+    sum  = {1'b0, p.value} + inc;
+    wrap = (sum >= (PTR_W+1)'(ROB_SIZE));
+    return '{value: (wrap ? PTR_W'(sum - (PTR_W+1)'(ROB_SIZE)) : sum[PTR_W-1:0]),
              flag:  (wrap ? ~p.flag : p.flag)};
   endfunction
 
