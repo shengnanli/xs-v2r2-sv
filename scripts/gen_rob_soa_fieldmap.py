@@ -52,6 +52,12 @@ SOA_FAMILY = [
     ("rob_fflags_reg",         "fflags",         5),
     ("rob_rf_wen_reg",         "rfWen",          1),
     ("rob_fp_wen_reg",         "fpWen",          1),
+    # G4 扩展(codex 0108 步4): trace(3 字段)。ilastsize ★1 位★
+    #  (narrow-to-golden-shape: golden robEntries_N_..._ilastsize 本身 1 位,
+    #  impl rob_trace_ilastsize_reg[N] 亦 1 位, bit[1] 无功能扇出已弃)。
+    ("rob_trace_itype_reg",     "traceBlockInPipe_itype",     4),
+    ("rob_trace_iretire_reg",   "traceBlockInPipe_iretire",   4),
+    ("rob_trace_ilastsize_reg", "traceBlockInPipe_ilastsize", 1),
 ]
 
 

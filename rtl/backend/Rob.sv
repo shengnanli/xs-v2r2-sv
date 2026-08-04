@@ -324,10 +324,10 @@ module xs_Rob_core
   //  语义 bit-exact 复刻旧 packed 版(见 §4/§12 reset/write-enable/priority):
   //  每字段 reset 0 + 下一拍取 rob_entries_next[i].<field>(与 packed 版
   //  rob_entries[i]<=rob_entries_next[i] 同源逐字), valid 另按 commit>enq>flush>hold。
-  //  非-G1 字段(vls/fflags/vxsat/rf_wen/fp_wen/wflags/dirty_vs/ftq_*/trace)仍走
-  //  packed struct(rob_entries_nf, 仅寄存这些字段)。
-  //  rob_entries[i] 现为组合重建视图(0 flip-flop): 把 SoA family 覆盖到 nf 上,
-  //  供全核读路径(next-state/robDeqGroup/lsq-deep)透明复用。
+  //  ★codex 0108 步4完成★ 全 25 字段(G1 12 + G2 3 + G3 7 + G4 3)均已 SoA 化,
+  //  packed struct rob_entries_nf 已删除(无双存)。rob_entries[i] 现为纯 SoA 组合
+  //  重建视图(0 flip-flop): 从 25 个 SoA 数组拼 struct, 供全核读路径(next-state/
+  //  robDeqGroup/lsq-deep)透明复用。
   //  旧全-packed 版整体保留于 Rob_packed_ref.sv 作同分支 A/B co-sim 参考。
   // ---- SoA G1 family 寄存器(12 字段, 每字段 160 深, 名字直接对齐 golden) ----
   //  canary 3 字段(commit-state):
@@ -366,13 +366,23 @@ module xs_Rob_core
   logic [4:0]           rob_fflags   [ROB_SIZE]; // = golden robEntries_N_fflags
   logic                 rob_rf_wen   [ROB_SIZE]; // = golden robEntries_N_rfWen
   logic                 rob_fp_wen   [ROB_SIZE]; // = golden robEntries_N_fpWen
-  // ---- 非-family packed 存储(G1/G2/G3 family 位不寄存, 见 §12 always_ff)。 ----
-  rob_entry_t  rob_entries_nf [ROB_SIZE];
-  // ---- rob_entries 组合重建视图: nf + SoA G1 family(全核读用, 0 flip-flop) ----
+  // ---- SoA G4 family (codex 0108 步4, trace, 3 字段)----
+  //  itype/iretire: golden robEntries_N_traceBlockInPipe_{itype,iretire}(各 4 位)。
+  //  ilastsize: ★narrow-to-golden-shape★ 存 1 位 —— golden robEntries_N_
+  //  traceBlockInPipe_ilastsize 本身即 1 位 reg(bit[1] 无功能扇出: 唯一读点
+  //  §trace-pc 用 ilastsize[0](1<<ilastsize[0]) + o_trace_ilastsize[i] 为 1 位输出;
+  //  packed 版 [1:0].bit[1] 从不达任何输出, A/B co-sim 逐拍等价证丢弃 bit 无扇出)。
+  logic [ITYPE_W-1:0]   rob_trace_itype     [ROB_SIZE]; // = golden ..._itype
+  logic [IRETIRE_W-1:0] rob_trace_iretire   [ROB_SIZE]; // = golden ..._iretire
+  logic                 rob_trace_ilastsize [ROB_SIZE]; // = golden ..._ilastsize (1 位)
+  // ---- rob_entries 组合重建视图: 纯 SoA 25 字段装配(0 flip-flop, 无 packed 双存)。 ----
+  //  ★codex 0108 步4完成门禁★ 25 字段全 SoA, packed rob_entries_nf 已删(无双存);
+  //  本视图直接从 25 个 SoA 数组拼 struct, 供全核读路径(next-state/robDeqGroup/
+  //  lsq-deep)透明复用。ilastsize 上位 bit[1] 零扩(golden 只存 1 位, 该位死)。
   rob_entry_t  rob_entries    [ROB_SIZE];
   always_comb
     for (int i = 0; i < ROB_SIZE; i++) begin
-      rob_entries[i]                 = rob_entries_nf[i];
+      rob_entries[i]                 = '0;
       rob_entries[i].valid           = rob_valid[i];
       rob_entries[i].uop_num         = rob_uop_num[i];
       rob_entries[i].std_writebacked = rob_std_wb[i];
@@ -389,7 +399,7 @@ module xs_Rob_core
       rob_entries[i].ftq_idx_flag    = rob_ftq_flag[i];
       rob_entries[i].ftq_idx_value   = rob_ftq_value[i];
       rob_entries[i].ftq_offset      = rob_ftq_offset[i];
-      // G3 exception/vector state family 覆盖到 nf 上
+      // G3 exception/vector state family
       rob_entries[i].vls             = rob_vls[i];
       rob_entries[i].vxsat           = rob_vxsat[i];
       rob_entries[i].dirty_vs        = rob_dirty_vs[i];
@@ -397,6 +407,10 @@ module xs_Rob_core
       rob_entries[i].fflags          = rob_fflags[i];
       rob_entries[i].rf_wen          = rob_rf_wen[i];
       rob_entries[i].fp_wen          = rob_fp_wen[i];
+      // G4 trace family(ilastsize 上位 bit[1] 零扩: golden 只存 1 位, 该位死)
+      rob_entries[i].itype           = rob_trace_itype[i];
+      rob_entries[i].iretire         = rob_trace_iretire[i];
+      rob_entries[i].ilastsize       = {1'b0, rob_trace_ilastsize[i]};
     end
   // FM 下标空间: 组合读向量宽度用 2 的幂 256, 让 8 位 robIdx 下标静态在界
   //  (消 FMR_ELAB-147)。这些是 wire(0 寄存器), 不同于上面 ROB_SIZE 宽的寄存器阵列。
@@ -1511,13 +1525,9 @@ module xs_Rob_core
     for (int b = 0; b < COMMIT_WIDTH; b++) robDeqGroup[b] <= robDeqGroup_next[b];
 
     // ---- robEntries 字段状态(写回/累计/入队; golden 无复位) ----
-    // ★SoA G1/G2 family★ 非-family 字段落 rob_entries_nf(逐字段); family 字段落
-    //  各自 SoA 数组(<= 对应 next, 与 packed 版 rob_entries[i]<=next 同源同拍)。
+    // ★SoA 全 25 字段★ 每字段落各自 SoA 数组(<= 对应 next, 与 packed 版
+    //  rob_entries[i]<=next 同源同拍)。packed rob_entries_nf 已删——无双存。
     for (int i = 0; i < ROB_SIZE; i++) begin
-      // 非-G1/G2/G3: G4 trace 字段仍落 nf(family 位不寄存)
-      rob_entries_nf[i].itype           <= rob_entries_next[i].itype;
-      rob_entries_nf[i].iretire         <= rob_entries_next[i].iretire;
-      rob_entries_nf[i].ilastsize       <= rob_entries_next[i].ilastsize;
       // G1 uop_num / std_writebacked (专用 next 数组)
       rob_uop_num[i] <= rob_uop_num_next[i];
       rob_std_wb[i]  <= rob_std_wb_next[i];
@@ -1544,6 +1554,11 @@ module xs_Rob_core
       rob_fflags[i]   <= rob_entries_next[i].fflags;
       rob_rf_wen[i]   <= rob_entries_next[i].rf_wen;
       rob_fp_wen[i]   <= rob_entries_next[i].fp_wen;
+      // G4 trace family <= rob_entries_next[i].<field>(ilastsize narrow: 只存 bit[0],
+      //  golden robEntries_N_..._ilastsize 即 1 位; bit[1] 无功能扇出, 丢弃)
+      rob_trace_itype[i]     <= rob_entries_next[i].itype;
+      rob_trace_iretire[i]   <= rob_entries_next[i].iretire;
+      rob_trace_ilastsize[i] <= rob_entries_next[i].ilastsize[0];
     end
 
     // ---- wfiEvent 打拍链(golden RegNext 链, 无复位, golden 名) ----

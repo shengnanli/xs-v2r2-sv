@@ -5,8 +5,12 @@
    Emit root hash."""
 import re, hashlib, json, sys
 
+import os
 GOLDEN = "/home/eda/xs-env/G0-canonical/golden-rtl/Rob.sv"
-IMPL   = "/tmp/rob-soa-integ/rtl/backend/Rob.sv"
+# impl core (provenance only; the audit parses GOLDEN reg decls + the GROUPS
+# partition, so IMPL is not read — kept pointing at the repo core for the record).
+IMPL   = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                      "rtl", "backend", "Rob.sv")
 ROB_SIZE = 160
 
 # ---- 1. golden reg decls for entry 0 (canonical field set + widths) ----

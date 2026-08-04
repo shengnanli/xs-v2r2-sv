@@ -36,15 +36,20 @@ export FM_DPI_STUBS="$ROOT/verif/signoff/conedce/DiffExt_dpic_sink_stubs.sv"
 
 python3 "$ROOT/scripts/gen_rob_soa_fieldmap.py" \
   --golden "$GEN/Rob_golden_commit.sv" --out "$EV/pins" \
-  --only-fields valid,uopNum,stdWritebacked,needFlush,interrupt_safe,isRVC,isVset,realDestSize,commitType,ftqIdx_flag,ftqIdx_value,ftqOffset,vls \
+  --only-fields valid,uopNum,stdWritebacked,needFlush,interrupt_safe,isRVC,isVset,realDestSize,commitType,ftqIdx_flag,ftqIdx_value,ftqOffset,vls,traceBlockInPipe_iretire,traceBlockInPipe_ilastsize \
   > "$EV/fieldmap_gen.log" 2>&1 || { echo "rc=3" > "$EV/rc.txt"; exit 3; }
-# ★codex 0108 步3 (G3 SoA)★ vls 从 nf-struct 迁到 SoA array: 现在
-#  golden robEntries_N_vls_reg <-> impl u_core/rob_vls_reg[N](整寄存器名配对,
-#  免逐位), 故移入 --only-fields。其余 6 个 G3 字段(vxsat/dirtyVs/wflags/
-#  fflags/rfWen/fpWen)在 pCommit 锥外(cone-DCE, reduced golden 0 refs, 见
-#  g3_gen 派生), 由 perf 分区覆盖, pCommit 不 pin。
-# ★codex 0107 round4 extra pins★ 剩余 unmatched 双射: deq-group isVset/ilastsize,
-#  entry trace iretire/ilastsize(nf), deqHitRedirect 打拍链(纯 set_user_match)。
+# ★codex 0108 步3 (G3 SoA)★ vls 从 nf-struct 迁到 SoA array: golden
+#  robEntries_N_vls_reg <-> impl u_core/rob_vls_reg[N](整寄存器名配对)。其余 6
+#  个 G3 字段(vxsat/dirtyVs/wflags/fflags/rfWen/fpWen)在 pCommit 锥外
+#  (cone-DCE, reduced golden 0 refs), 由 perf 分区覆盖, pCommit 不 pin。
+# ★codex 0108 步4 (G4 SoA + nf 删)★ 原 round4 的 entry trace iretire/ilastsize
+#  pin 指向已删的 rob_entries_nf_reg[n][iretire]/[ilastsize] —— G4 后 iretire/
+#  ilastsize 成 SoA array (rob_trace_iretire_reg[n] / rob_trace_ilastsize_reg[n]),
+#  且二者在 pCommit 锥内存活(trace-pc -> commit 输出), 故直接移入 --only-fields
+#  (whole-reg 名配对 golden robEntries_N_traceBlockInPipe_{iretire,ilastsize}_reg),
+#  删去旧 nf per-bit pins。itype 不在 commit 锥(reduced golden 无该 reg)不 pin。
+# ★codex 0107 round4 残留 extra pins★ deq-group isVset/ilastsize(robDeqGroup 独立
+#  流水寄存器, 非 entry SoA, 未受 G4 影响)+ deqHitRedirect 打拍链(纯 set_user_match)。
 cat >> "$EV/pins/rob_soa_entry_pins.tcl" <<'EOT'
 set _extra_pin_start $_rob_soa_pin_fail
 foreach b {0 1 2 3 4 5 6 7} {
@@ -54,12 +59,6 @@ foreach b {0 1 2 3 4 5 6 7} {
 _rob_soa_pin r:/WORK/Rob/deqHitRedirectReg_REG_reg i:/WORK/Rob/u_core/deqHitRedirect_d1_reg
 _rob_soa_pin r:/WORK/Rob/deqHitRedirectReg_REG_1_reg i:/WORK/Rob/u_core/deqHitRedirect_d1b_reg
 _rob_soa_pin r:/WORK/Rob/deqHitRedirectReg_REG_2_reg i:/WORK/Rob/u_core/deqHitRedirect_d2_reg
-for {set n 0} {$n < 160} {incr n} {
-  foreach b {0 1 2 3} {
-    _rob_soa_pin r:/WORK/Rob/robEntries_${n}_traceBlockInPipe_iretire_reg\[$b\] i:/WORK/Rob/u_core/rob_entries_nf_reg\[$n\]\[iretire\]\[$b\]
-  }
-  _rob_soa_pin r:/WORK/Rob/robEntries_${n}_traceBlockInPipe_ilastsize_reg i:/WORK/Rob/u_core/rob_entries_nf_reg\[$n\]\[ilastsize\]\[0\]
-}
 puts "EXTRA_PINS_ROUND4 applied_total=$_rob_soa_pin_n fail_total=$_rob_soa_pin_fail (new_fail=[expr {$_rob_soa_pin_fail - $_extra_pin_start}])"
 if {$_rob_soa_pin_fail != 0} { puts "EXTRA_PIN_ASSERT_FAIL"; exit 7 }
 EOT

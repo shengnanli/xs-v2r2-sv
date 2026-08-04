@@ -1,10 +1,11 @@
 # impl A+B integration freeze artifacts, refreshed from commit 39c69219 (agent/rob-soa-diag, codex 0107 fixed core+wrapper)
-#  + G3 SoA (codex 0108 步3): Rob.sv core refreshed — 7 exception/vector fields
-#    (vls/vxsat/dirtyVs/wflags/fflags/rfWen/fpWen) moved from packed nf to SoA arrays.
-#    Wrapper/pkg/stubs unchanged (core-internal storage reorg, ports identical).
+#  + G3 SoA (codex 0108 步3): 7 exception/vector fields → SoA arrays.
+#  + G4 SoA (codex 0108 步4): 3 trace fields (itype/iretire/ilastsize-1bit) → SoA,
+#    packed rob_entries_nf 完全删除(全 25 字段 SoA, 无双存)。Wrapper/pkg/stubs
+#    unchanged (core-internal storage reorg, ports identical 182/182)。
 # these are the impl-side inputs the cone-DCE derivative reduces (impl_port_trim over Rob_wrapper.sv)
 # MUST equal rtl/backend/<same file> at the same commit (drift gate in gen_all.sh)
-Rob.sv	ab9912ae39e8cdfe541e148017cec57ac620df573b0747e9ff9332482cf33582
+Rob.sv	9dd3a5c301a3b587ce284d3d33526d2949c72804ea7232d47c3d6de21915f23f
 Rob_wrapper.sv	f6d5dd971ac6e420d916c14e55a5b71e1abf630525340cfdef002c8612e04940
 rob_pkg.sv	e43da2e5b9bb475b93f79a3464b2daefdc168c568af4f80ddf7a7ead11afcfe6
 rob_lsq_deep_outputs.sv	dce305936367523bfd29cb7852f0aa7751c98fa3db63d9ef71f0314ab7ac1d74
