@@ -3519,7 +3519,17 @@ module Rob(
   wire [255:0] _GEN_192 = '0;
   wire [7:0] _GEN_22 = '0;
   wire [255:0] _GEN_24 = '0;
-  wire [9:0] _GEN_3185 = '0;
+  wire [9:0] _GEN_3185 =
+    {io_writeback_24_bits_exceptionVec_23,
+     io_writeback_24_bits_exceptionVec_21,
+     io_writeback_24_bits_exceptionVec_19,
+     io_writeback_24_bits_exceptionVec_15,
+     io_writeback_24_bits_exceptionVec_13,
+     io_writeback_24_bits_exceptionVec_7,
+     io_writeback_24_bits_exceptionVec_6,
+     io_writeback_24_bits_exceptionVec_5,
+     io_writeback_24_bits_exceptionVec_4,
+     io_writeback_24_bits_exceptionVec_3};  // codex 0107 修: 旧 stub '0(真连线)
   wire [255:0] _GEN_3559 = '0;
   wire [255:0] _GEN_3560 = '0;
   wire [255:0] _GEN_3561 = '0;
@@ -3737,8 +3747,14 @@ module Rob(
     enq_write_std[0]     = io_enq_req_0_bits_fuType[16];
     enq_block_backward[0]= io_enq_req_0_bits_blockBackward;
     enq_wait_forward[0]  = io_enq_req_0_bits_waitForward;
-    enq_is_wfi[0]        = (io_enq_req_0_bits_fuType == 35'h2) & (io_enq_req_0_bits_fuOpType == 9'h22);
-    enq_has_exception[0] = io_enq_req_0_bits_hasException;
+    // codex 0107 修: golden WFI 判定 = fuType==35'h20 & fuOpType==9'h20 &
+    //  excVec{22,20,12,3,2,1,0}==0 & trigger!=1(旧: fuType==2/op==22 常数错 +
+    //  hasException 位非 excVec 切片)。
+    enq_is_wfi[0]        = (io_enq_req_0_bits_fuType == 35'h20) & (io_enq_req_0_bits_fuOpType == 9'h20);
+    enq_has_exception[0] = |{io_enq_req_0_bits_exceptionVec_22, io_enq_req_0_bits_exceptionVec_20,
+                              io_enq_req_0_bits_exceptionVec_12, io_enq_req_0_bits_exceptionVec_3,
+                              io_enq_req_0_bits_exceptionVec_2,  io_enq_req_0_bits_exceptionVec_1,
+                              io_enq_req_0_bits_exceptionVec_0};
     enq_trigger_dmode[0] = io_enq_req_0_bits_trigger == 4'h1;
     enq_allow_interrupt[0]= allow_interrupts;
     enq_num_wb[0]        = io_enq_req_0_bits_numWB;
@@ -3766,8 +3782,14 @@ module Rob(
     enq_write_std[1]     = io_enq_req_1_bits_fuType[16];
     enq_block_backward[1]= io_enq_req_1_bits_blockBackward;
     enq_wait_forward[1]  = io_enq_req_1_bits_waitForward;
-    enq_is_wfi[1]        = (io_enq_req_1_bits_fuType == 35'h2) & (io_enq_req_1_bits_fuOpType == 9'h22);
-    enq_has_exception[1] = io_enq_req_1_bits_hasException;
+    // codex 0107 修: golden WFI 判定 = fuType==35'h20 & fuOpType==9'h20 &
+    //  excVec{22,20,12,3,2,1,0}==0 & trigger!=1(旧: fuType==2/op==22 常数错 +
+    //  hasException 位非 excVec 切片)。
+    enq_is_wfi[1]        = (io_enq_req_1_bits_fuType == 35'h20) & (io_enq_req_1_bits_fuOpType == 9'h20);
+    enq_has_exception[1] = |{io_enq_req_1_bits_exceptionVec_22, io_enq_req_1_bits_exceptionVec_20,
+                              io_enq_req_1_bits_exceptionVec_12, io_enq_req_1_bits_exceptionVec_3,
+                              io_enq_req_1_bits_exceptionVec_2,  io_enq_req_1_bits_exceptionVec_1,
+                              io_enq_req_1_bits_exceptionVec_0};
     enq_trigger_dmode[1] = io_enq_req_1_bits_trigger == 4'h1;
     enq_allow_interrupt[1]= allow_interrupts_1;
     enq_num_wb[1]        = io_enq_req_1_bits_numWB;
@@ -3795,8 +3817,14 @@ module Rob(
     enq_write_std[2]     = io_enq_req_2_bits_fuType[16];
     enq_block_backward[2]= io_enq_req_2_bits_blockBackward;
     enq_wait_forward[2]  = io_enq_req_2_bits_waitForward;
-    enq_is_wfi[2]        = (io_enq_req_2_bits_fuType == 35'h2) & (io_enq_req_2_bits_fuOpType == 9'h22);
-    enq_has_exception[2] = io_enq_req_2_bits_hasException;
+    // codex 0107 修: golden WFI 判定 = fuType==35'h20 & fuOpType==9'h20 &
+    //  excVec{22,20,12,3,2,1,0}==0 & trigger!=1(旧: fuType==2/op==22 常数错 +
+    //  hasException 位非 excVec 切片)。
+    enq_is_wfi[2]        = (io_enq_req_2_bits_fuType == 35'h20) & (io_enq_req_2_bits_fuOpType == 9'h20);
+    enq_has_exception[2] = |{io_enq_req_2_bits_exceptionVec_22, io_enq_req_2_bits_exceptionVec_20,
+                              io_enq_req_2_bits_exceptionVec_12, io_enq_req_2_bits_exceptionVec_3,
+                              io_enq_req_2_bits_exceptionVec_2,  io_enq_req_2_bits_exceptionVec_1,
+                              io_enq_req_2_bits_exceptionVec_0};
     enq_trigger_dmode[2] = io_enq_req_2_bits_trigger == 4'h1;
     enq_allow_interrupt[2]= allow_interrupts_2;
     enq_num_wb[2]        = io_enq_req_2_bits_numWB;
@@ -3824,8 +3852,14 @@ module Rob(
     enq_write_std[3]     = io_enq_req_3_bits_fuType[16];
     enq_block_backward[3]= io_enq_req_3_bits_blockBackward;
     enq_wait_forward[3]  = io_enq_req_3_bits_waitForward;
-    enq_is_wfi[3]        = (io_enq_req_3_bits_fuType == 35'h2) & (io_enq_req_3_bits_fuOpType == 9'h22);
-    enq_has_exception[3] = io_enq_req_3_bits_hasException;
+    // codex 0107 修: golden WFI 判定 = fuType==35'h20 & fuOpType==9'h20 &
+    //  excVec{22,20,12,3,2,1,0}==0 & trigger!=1(旧: fuType==2/op==22 常数错 +
+    //  hasException 位非 excVec 切片)。
+    enq_is_wfi[3]        = (io_enq_req_3_bits_fuType == 35'h20) & (io_enq_req_3_bits_fuOpType == 9'h20);
+    enq_has_exception[3] = |{io_enq_req_3_bits_exceptionVec_22, io_enq_req_3_bits_exceptionVec_20,
+                              io_enq_req_3_bits_exceptionVec_12, io_enq_req_3_bits_exceptionVec_3,
+                              io_enq_req_3_bits_exceptionVec_2,  io_enq_req_3_bits_exceptionVec_1,
+                              io_enq_req_3_bits_exceptionVec_0};
     enq_trigger_dmode[3] = io_enq_req_3_bits_trigger == 4'h1;
     enq_allow_interrupt[3]= allow_interrupts_3;
     enq_num_wb[3]        = io_enq_req_3_bits_numWB;
@@ -3853,8 +3887,14 @@ module Rob(
     enq_write_std[4]     = io_enq_req_4_bits_fuType[16];
     enq_block_backward[4]= io_enq_req_4_bits_blockBackward;
     enq_wait_forward[4]  = io_enq_req_4_bits_waitForward;
-    enq_is_wfi[4]        = (io_enq_req_4_bits_fuType == 35'h2) & (io_enq_req_4_bits_fuOpType == 9'h22);
-    enq_has_exception[4] = io_enq_req_4_bits_hasException;
+    // codex 0107 修: golden WFI 判定 = fuType==35'h20 & fuOpType==9'h20 &
+    //  excVec{22,20,12,3,2,1,0}==0 & trigger!=1(旧: fuType==2/op==22 常数错 +
+    //  hasException 位非 excVec 切片)。
+    enq_is_wfi[4]        = (io_enq_req_4_bits_fuType == 35'h20) & (io_enq_req_4_bits_fuOpType == 9'h20);
+    enq_has_exception[4] = |{io_enq_req_4_bits_exceptionVec_22, io_enq_req_4_bits_exceptionVec_20,
+                              io_enq_req_4_bits_exceptionVec_12, io_enq_req_4_bits_exceptionVec_3,
+                              io_enq_req_4_bits_exceptionVec_2,  io_enq_req_4_bits_exceptionVec_1,
+                              io_enq_req_4_bits_exceptionVec_0};
     enq_trigger_dmode[4] = io_enq_req_4_bits_trigger == 4'h1;
     enq_allow_interrupt[4]= allow_interrupts_4;
     enq_num_wb[4]        = io_enq_req_4_bits_numWB;
@@ -3882,8 +3922,14 @@ module Rob(
     enq_write_std[5]     = io_enq_req_5_bits_fuType[16];
     enq_block_backward[5]= io_enq_req_5_bits_blockBackward;
     enq_wait_forward[5]  = io_enq_req_5_bits_waitForward;
-    enq_is_wfi[5]        = (io_enq_req_5_bits_fuType == 35'h2) & (io_enq_req_5_bits_fuOpType == 9'h22);
-    enq_has_exception[5] = io_enq_req_5_bits_hasException;
+    // codex 0107 修: golden WFI 判定 = fuType==35'h20 & fuOpType==9'h20 &
+    //  excVec{22,20,12,3,2,1,0}==0 & trigger!=1(旧: fuType==2/op==22 常数错 +
+    //  hasException 位非 excVec 切片)。
+    enq_is_wfi[5]        = (io_enq_req_5_bits_fuType == 35'h20) & (io_enq_req_5_bits_fuOpType == 9'h20);
+    enq_has_exception[5] = |{io_enq_req_5_bits_exceptionVec_22, io_enq_req_5_bits_exceptionVec_20,
+                              io_enq_req_5_bits_exceptionVec_12, io_enq_req_5_bits_exceptionVec_3,
+                              io_enq_req_5_bits_exceptionVec_2,  io_enq_req_5_bits_exceptionVec_1,
+                              io_enq_req_5_bits_exceptionVec_0};
     enq_trigger_dmode[5] = io_enq_req_5_bits_trigger == 4'h1;
     enq_allow_interrupt[5]= allow_interrupts_5;
     enq_num_wb[5]        = io_enq_req_5_bits_numWB;

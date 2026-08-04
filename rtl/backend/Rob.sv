@@ -902,9 +902,18 @@ module xs_Rob_core
     for (int i = 0; i < COMMIT_WIDTH; i++)
       deqValIdx[i] = index_in_range(deq_ptr_vec[i].value) ? deq_ptr_vec[i].value : 'x;
 
+  // ★codex 0107 修★ golden io_commits_info_N_* = rawInfo_N(robDeqGroup 按
+  //  deqPtrVec bank 读)——【无 state/walk mux】(旧版 walk 态换 walkInfo = impl
+  //  发明, state 落入 impl 锥 → 16 端口 failing); 且 ftqOffset 有 fusion 修正:
+  //  commitType[2] ? ftqOffset : (iretire - (1<<ilastsize)) + ftqOffset。
   always_comb
     for (int i = 0; i < COMMIT_WIDTH; i++) begin
-      o_commit_info[i]    = (state == S_IDLE) ? commitInfo[i] : walkInfo[i];
+      o_commit_info[i]    = commitInfo[i];
+      o_commit_info[i].ftq_offset = commitInfo[i].commit_type[2]
+        ? commitInfo[i].ftq_offset
+        : FTQ_OFFSET_W'(FTQ_OFFSET_W'(commitInfo[i].iretire
+                         - {2'b0, 2'b01 << commitInfo[i].ilastsize[0]})
+                        + commitInfo[i].ftq_offset);
       o_commits_robIdx[i] = deq_ptr_vec[i];
     end
 
