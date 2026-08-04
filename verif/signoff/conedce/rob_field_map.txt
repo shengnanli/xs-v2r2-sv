@@ -1,0 +1,26 @@
+# golden_suffix  lo  width  (impl rob_entries_reg[N] packed bit slice)
+valid 58 1
+uopNum 51 7
+stdWritebacked 50 1
+realDestSize 43 7
+needFlush 42 1
+interrupt_safe 41 1
+mmio 40 1
+vls 39 1
+fflags 34 5
+vxsat 33 1
+rfWen 32 1
+fpWen 31 1
+wflags 30 1
+dirtyVs 29 1
+commitType 26 3
+isRVC 25 1
+isVset 24 1
+isHls 23 1
+instrSize 20 3
+ftqIdx_value 14 6
+ftqIdx_flag 13 1
+ftqOffset 9 4
+traceBlockInPipe_itype 5 4
+traceBlockInPipe_iretire 1 4
+traceBlockInPipe_ilastsize 0 1

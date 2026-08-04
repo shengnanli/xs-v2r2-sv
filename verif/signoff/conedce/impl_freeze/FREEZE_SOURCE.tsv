@@ -1,0 +1,9 @@
+# impl A+B integration freeze artifacts, refreshed from commit 39c69219 (agent/rob-soa-diag, codex 0107 fixed core+wrapper)
+# these are the impl-side inputs the cone-DCE derivative reduces (impl_port_trim over Rob_wrapper.sv)
+# MUST equal rtl/backend/<same file> at the same commit (drift gate in gen_all.sh)
+Rob.sv	4c473c4a1d1495e49a4aa51e2a5028d7c85cba372004a9701e5690a7c376cf09
+Rob_wrapper.sv	f6d5dd971ac6e420d916c14e55a5b71e1abf630525340cfdef002c8612e04940
+rob_pkg.sv	e43da2e5b9bb475b93f79a3464b2daefdc168c568af4f80ddf7a7ead11afcfe6
+rob_lsq_deep_outputs.sv	dce305936367523bfd29cb7852f0aa7751c98fa3db63d9ef71f0314ab7ac1d74
+Rob_difftest_stubs.sv	e3b44405c26638928e4ad8ae2105b3dafa021b803d34a51e27b3a76495c2876a
+Rob_blackbox_stubs.sv	a008ca130af7abefa81e5da242915be99c7295a73f48190add6db49790e9c92e
