@@ -42,6 +42,16 @@ SOA_FAMILY = [
     ("rob_ftq_flag_reg",       "ftqIdx_flag",    1),
     ("rob_ftq_value_reg",      "ftqIdx_value",   6),
     ("rob_ftq_offset_reg",     "ftqOffset",      4),
+    # G3 扩展(codex 0108 步3): exception / vector state (7 字段)
+    #  storage-only SoA (方程零改, 见 G3_equation_audit); FM 整寄存器名配对
+    #  golden robEntries_N_<F>_reg <-> impl u_core/rob_<f>_reg[N]。
+    ("rob_vls_reg",            "vls",            1),
+    ("rob_vxsat_reg",          "vxsat",          1),
+    ("rob_dirty_vs_reg",       "dirtyVs",        1),
+    ("rob_wflags_reg",         "wflags",         1),
+    ("rob_fflags_reg",         "fflags",         5),
+    ("rob_rf_wen_reg",         "rfWen",          1),
+    ("rob_fp_wen_reg",         "fpWen",          1),
 ]
 
 

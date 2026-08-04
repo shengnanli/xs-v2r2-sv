@@ -353,7 +353,20 @@ module xs_Rob_core
   logic                    rob_ftq_flag   [ROB_SIZE]; // = golden robEntries_N_ftqIdx_flag
   logic [FTQ_PTR_W-1:0]    rob_ftq_value  [ROB_SIZE]; // = golden robEntries_N_ftqIdx_value
   logic [FTQ_OFFSET_W-1:0] rob_ftq_offset [ROB_SIZE]; // = golden robEntries_N_ftqOffset
-  // ---- 非-family packed 存储(G1/G2 family 位不寄存, 见 §12 always_ff)。 ----
+  // ---- SoA G3 family (codex 0108 阶段2, exception/vector state, 7 字段)----
+  //  vls/vxsat/dirtyVs/wflags/fflags/rfWen/fpWen: 异常/浮点/向量状态位, 从原 packed
+  //  rob_entries[i].<f> 拆为语义命名 unpacked arrays, 令 FM 按名(rob_<f>_reg[N])
+  //  直接配对 golden robEntries_N_<F>_reg(免逐位 set_user_match)。语义 bit-exact:
+  //  仅搬存储, 复位/写门/优先级方程零改(next 仍直取 rob_entries_next[i].<f>, 指向
+  //  §4 修复后方程; 全字段 golden 无复位落 §12 无复位 always_ff。见 G3_equation_audit)。
+  logic                 rob_vls      [ROB_SIZE]; // = golden robEntries_N_vls
+  logic                 rob_vxsat    [ROB_SIZE]; // = golden robEntries_N_vxsat
+  logic                 rob_dirty_vs [ROB_SIZE]; // = golden robEntries_N_dirtyVs
+  logic                 rob_wflags   [ROB_SIZE]; // = golden robEntries_N_wflags
+  logic [4:0]           rob_fflags   [ROB_SIZE]; // = golden robEntries_N_fflags
+  logic                 rob_rf_wen   [ROB_SIZE]; // = golden robEntries_N_rfWen
+  logic                 rob_fp_wen   [ROB_SIZE]; // = golden robEntries_N_fpWen
+  // ---- 非-family packed 存储(G1/G2/G3 family 位不寄存, 见 §12 always_ff)。 ----
   rob_entry_t  rob_entries_nf [ROB_SIZE];
   // ---- rob_entries 组合重建视图: nf + SoA G1 family(全核读用, 0 flip-flop) ----
   rob_entry_t  rob_entries    [ROB_SIZE];
@@ -376,6 +389,14 @@ module xs_Rob_core
       rob_entries[i].ftq_idx_flag    = rob_ftq_flag[i];
       rob_entries[i].ftq_idx_value   = rob_ftq_value[i];
       rob_entries[i].ftq_offset      = rob_ftq_offset[i];
+      // G3 exception/vector state family 覆盖到 nf 上
+      rob_entries[i].vls             = rob_vls[i];
+      rob_entries[i].vxsat           = rob_vxsat[i];
+      rob_entries[i].dirty_vs        = rob_dirty_vs[i];
+      rob_entries[i].wflags          = rob_wflags[i];
+      rob_entries[i].fflags          = rob_fflags[i];
+      rob_entries[i].rf_wen          = rob_rf_wen[i];
+      rob_entries[i].fp_wen          = rob_fp_wen[i];
     end
   // FM 下标空间: 组合读向量宽度用 2 的幂 256, 让 8 位 robIdx 下标静态在界
   //  (消 FMR_ELAB-147)。这些是 wire(0 寄存器), 不同于上面 ROB_SIZE 宽的寄存器阵列。
@@ -1493,14 +1514,7 @@ module xs_Rob_core
     // ★SoA G1/G2 family★ 非-family 字段落 rob_entries_nf(逐字段); family 字段落
     //  各自 SoA 数组(<= 对应 next, 与 packed 版 rob_entries[i]<=next 同源同拍)。
     for (int i = 0; i < ROB_SIZE; i++) begin
-      // 非-G1/G2: 逐字段落 nf(family 位不寄存)
-      rob_entries_nf[i].vls             <= rob_entries_next[i].vls;
-      rob_entries_nf[i].fflags          <= rob_entries_next[i].fflags;
-      rob_entries_nf[i].vxsat           <= rob_entries_next[i].vxsat;
-      rob_entries_nf[i].rf_wen          <= rob_entries_next[i].rf_wen;
-      rob_entries_nf[i].fp_wen          <= rob_entries_next[i].fp_wen;
-      rob_entries_nf[i].wflags          <= rob_entries_next[i].wflags;
-      rob_entries_nf[i].dirty_vs        <= rob_entries_next[i].dirty_vs;
+      // 非-G1/G2/G3: G4 trace 字段仍落 nf(family 位不寄存)
       rob_entries_nf[i].itype           <= rob_entries_next[i].itype;
       rob_entries_nf[i].iretire         <= rob_entries_next[i].iretire;
       rob_entries_nf[i].ilastsize       <= rob_entries_next[i].ilastsize;
@@ -1521,6 +1535,15 @@ module xs_Rob_core
       rob_ftq_flag[i]   <= rob_ftq_flag_next[i];
       rob_ftq_value[i]  <= rob_ftq_value_next[i];
       rob_ftq_offset[i] <= rob_ftq_offset_next[i];
+      // G3 exception/vector state family <= rob_entries_next[i].<field>
+      //  (与 packed 版 rob_entries[i]<=next 同源同拍; §4 修复后方程; golden 无复位)
+      rob_vls[i]      <= rob_entries_next[i].vls;
+      rob_vxsat[i]    <= rob_entries_next[i].vxsat;
+      rob_dirty_vs[i] <= rob_entries_next[i].dirty_vs;
+      rob_wflags[i]   <= rob_entries_next[i].wflags;
+      rob_fflags[i]   <= rob_entries_next[i].fflags;
+      rob_rf_wen[i]   <= rob_entries_next[i].rf_wen;
+      rob_fp_wen[i]   <= rob_entries_next[i].fp_wen;
     end
 
     // ---- wfiEvent 打拍链(golden RegNext 链, 无复位, golden 名) ----

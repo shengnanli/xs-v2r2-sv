@@ -36,8 +36,13 @@ export FM_DPI_STUBS="$ROOT/verif/signoff/conedce/DiffExt_dpic_sink_stubs.sv"
 
 python3 "$ROOT/scripts/gen_rob_soa_fieldmap.py" \
   --golden "$GEN/Rob_golden_commit.sv" --out "$EV/pins" \
-  --only-fields valid,uopNum,stdWritebacked,needFlush,interrupt_safe,isRVC,isVset,realDestSize,commitType,ftqIdx_flag,ftqIdx_value,ftqOffset --nf-fields vls \
+  --only-fields valid,uopNum,stdWritebacked,needFlush,interrupt_safe,isRVC,isVset,realDestSize,commitType,ftqIdx_flag,ftqIdx_value,ftqOffset,vls \
   > "$EV/fieldmap_gen.log" 2>&1 || { echo "rc=3" > "$EV/rc.txt"; exit 3; }
+# ★codex 0108 步3 (G3 SoA)★ vls 从 nf-struct 迁到 SoA array: 现在
+#  golden robEntries_N_vls_reg <-> impl u_core/rob_vls_reg[N](整寄存器名配对,
+#  免逐位), 故移入 --only-fields。其余 6 个 G3 字段(vxsat/dirtyVs/wflags/
+#  fflags/rfWen/fpWen)在 pCommit 锥外(cone-DCE, reduced golden 0 refs, 见
+#  g3_gen 派生), 由 perf 分区覆盖, pCommit 不 pin。
 # ★codex 0107 round4 extra pins★ 剩余 unmatched 双射: deq-group isVset/ilastsize,
 #  entry trace iretire/ilastsize(nf), deqHitRedirect 打拍链(纯 set_user_match)。
 cat >> "$EV/pins/rob_soa_entry_pins.tcl" <<'EOT'
