@@ -183,6 +183,11 @@ module xs_Rob_core
 
   // 送 rab / vtypeBuffer
   output logic [UOP_CNT_W:0]         o_rab_commitSize,
+  // ★codex 0107 修★ vtypeBuffer 的 fromRob commit/walk size 与 rab 的【不同】:
+  //  golden 是「isVset 条目计数」(robDeqGroup isVset 列按 deqPtrVec/walkPtrVec
+  //  bank 索引), 旧 glue 错接 o_rab_*(realDestSize 前缀和) = 真 bug。
+  output logic [UOP_CNT_W:0]         o_vtype_commitSize,
+  output logic [UOP_CNT_W:0]         o_vtype_walkSize,
   output logic [UOP_CNT_W:0]         o_rab_walkSize,
   output logic                       o_rab_walkEnd,
 
@@ -1108,6 +1113,24 @@ module xs_Rob_core
   logic walkFinished;
   always_comb o_rab_walkEnd = (state == S_WALK) & walkFinished;
 
+  // ★codex 0107★ vtypeBuffer 专用 size(isVset 计数, 见端口注; golden 69452/69473):
+  //  commit: Σ_k (isCommit & commitValid[k]) & robDeqGroup[deqPtrVec_k[2:0]].is_vset
+  //  walk:   Σ_k (state==WALK) & shouldWalkVec[k] & robDeqGroup[walkPtrVec_k[2:0]].is_vset
+  always_comb begin
+    logic [UOP_CNT_W:0] vcs, vws;
+    vcs = '0; vws = '0;
+    for (int k = 0; k < COMMIT_WIDTH; k++) begin
+      if (o_commits_isCommit & o_commits_commitValid[k]
+          & robDeqGroup[deq_ptr_vec[k].value[BANK_ADDR_W-1:0]].is_vset)
+        vcs += (UOP_CNT_W+1)'(1);
+      if ((state == S_WALK) & shouldWalkVec[k]
+          & robDeqGroup[walkPtrVec[k].value[BANK_ADDR_W-1:0]].is_vset)
+        vws += (UOP_CNT_W+1)'(1);
+    end
+    o_vtype_commitSize = vcs;
+    o_vtype_walkSize   = vws;
+  end
+
   // =====================================================================
   // 10. 队列占用 / allowEnqueue 阈值
   //     numValidEntries = enqPtr - deqPtr(环形距离)。
@@ -1138,9 +1161,11 @@ module xs_Rob_core
   assign o_cpu_halt = hasWFI & wfiSafe;
 
   // wfiEvent 打两拍 + 20 位 timeout 计数(对齐 golden Rob.scala 411-422)。
-  logic wfiEvent_d1, wfiEvent_d2;
+  // ★codex 0107 修★ golden 名: REG = RegNext(hasWFI)(下降沿助记),
+  //  REG_1 = RegNext(io_csr_wfiEvent), REG_2 = RegNext(REG_1)(同名 automatch)。
+  logic REG_1, REG_2;
   logic [19:0] wfi_cycles;
-  logic        hasWFI_d1;
+  logic        REG;
   logic        wfi_timeout;
   always_comb wfi_timeout = &wfi_cycles;
   // wfiClr 在主时序里用 (wfiEvent_d2 | flushOut | timeout) 计算。
@@ -1305,7 +1330,11 @@ module xs_Rob_core
   assign deqFlushBlock = deqFlushBlockCounter[0];
 
   // deqHitRedirectReg: redirect 命中队头(打 1~2 拍)。
-  logic deqHitRedirectReg, deqHitRedirect_d1, deqHitRedirect_d2;
+  // ★codex 0107 修★ golden 命中比较是 9 位 {robIdx.flag, robIdx.value} 全比较
+  //  (旧版漏 flag = 真 bug: 隔圈同 value 误命中); 且 golden 对第一级生成两个
+  //  独立复制寄存器(deqHitRedirectReg_REG / _REG_1), _REG_2 = RegNext(_REG_1),
+  //  门 = _REG | _REG_2。impl 同构三寄存器(d1 / d1b / d2)。
+  logic deqHitRedirectReg, deqHitRedirect_d1, deqHitRedirect_d1b, deqHitRedirect_d2;
   always_comb deqHitRedirectReg = deqHitRedirect_d1 | deqHitRedirect_d2;
 
   // ★codex 0107 修(reset 拓扑对齐 golden)★ golden 异步复位寄存器集(pCommit 锥)
@@ -1359,40 +1388,44 @@ module xs_Rob_core
       end
 
       // ---- hasBlockBackward / hasWaitForward ----
-      if (enqPtr == deqPtr) hasBlockBackward <= 1'b0; // isEmpty
-      else begin
+      // ★codex 0107 修★ golden 均为「置位项 OR (~清除 & 保持)」= 置位【压过】清除
+      //  (旧版清除优先 = 反了); 且 hasWaitForward 清除须 & isCommit 门控;
+      //  hasBlockBackward 清除条件 = isEmpty({enqPtr}=={deqPtr} 含 flag)。
+      begin
         logic setBB;
         setBB = 1'b0;
         for (int i = 0; i < RENAME_WIDTH; i++)
           if (enq_valid[i] & enq_block_backward[i] & o_enq_canAccept) setBB = 1'b1;
-        if (setBB) hasBlockBackward <= 1'b1;
+        hasBlockBackward <= setBB
+          | ~({enqPtr.flag, enqPtr.value} == {deqPtr.flag, deqPtr.value}) & hasBlockBackward;
       end
       begin
         logic setWF;
         setWF = 1'b0;
         for (int i = 0; i < RENAME_WIDTH; i++)
           if (canEnqueue[i] & enq_wait_forward[i]) setWF = 1'b1;
-        if (|o_commits_walkValid | |o_commits_commitValid) hasWaitForward <= 1'b0;
-        else if (setWF) hasWaitForward <= 1'b1;
+        hasWaitForward <= setWF
+          | ~((state == S_WALK) & (|shouldWalkVec)
+              | o_commits_isCommit & (|o_commits_commitValid)) & hasWaitForward;
       end
 
       // ---- WFI ----
       // golden 顺序(Rob.scala 414-468): 先按 clr(wfiEvent2/flush/timeout)清,
       // 再按 enqueue 置, 最后 !wfi_enable 强制清(优先级最高)。
       begin
-        logic setWFI, clrWFI;
+        // ★codex 0107 修★ golden: hasWFI <= wfi_enable & (置位链 | ~清除 & 保持)
+        //  —— 置位压过清除(旧版清除优先反了)。
+        logic setWFI;
         setWFI = 1'b0;
         for (int i = 0; i < RENAME_WIDTH; i++)
           if (canEnqueue[i] & enq_is_wfi[i] & ~enq_has_exception[i] & ~enq_trigger_dmode[i]) setWFI = 1'b1;
-        clrWFI = wfiEvent_d2 | o_flushOut_valid | wfi_timeout;
-        if (clrWFI)              hasWFI <= 1'b0;
-        else if (setWFI)         hasWFI <= 1'b1;
-        if (~io_wfi_enable)      hasWFI <= 1'b0;  // 末尾覆盖, 同 golden when(!wfi_enable)
+        hasWFI <= io_wfi_enable
+                & (setWFI | ~(REG_2 | o_flushOut_valid | wfi_timeout) & hasWFI);
       end
 
       // ---- wfi timeout 计数(golden 复位; wfiEvent 打拍链无复位, 在下方 B 块) ----
       if (hasWFI)                      wfi_cycles <= wfi_cycles + 20'd1;
-      else if (~hasWFI & hasWFI_d1)    wfi_cycles <= '0;
+      else if (~hasWFI & REG)          wfi_cycles <= '0;
 
       // ---- deqHasFlushed ----
       if (o_commits_isCommit & o_commits_commitValid[0])
@@ -1468,10 +1501,10 @@ module xs_Rob_core
       rob_ftq_offset[i] <= rob_ftq_offset_next[i];
     end
 
-    // ---- wfiEvent 打拍链(golden RegNext 链, 无复位) ----
-    wfiEvent_d1 <= io_csr_wfiEvent;
-    wfiEvent_d2 <= wfiEvent_d1;
-    hasWFI_d1   <= hasWFI;
+    // ---- wfiEvent 打拍链(golden RegNext 链, 无复位, golden 名) ----
+    REG_1 <= io_csr_wfiEvent;
+    REG_2 <= REG_1;
+    REG   <= hasWFI;
 
     // ---- walk 指针族(golden 无复位) ----
     for (int i = 0; i < COMMIT_WIDTH; i++) begin
@@ -1491,8 +1524,13 @@ module xs_Rob_core
     misPredBlockCounter  <= misPredWb ? 3'b111 : (misPredBlockCounter >> 1);
     if (deqNeedFlush & deqHitRedirectReg) deqFlushBlockCounter <= 3'b111;
     else deqFlushBlockCounter <= deqFlushBlockCounter >> 1;
-    deqHitRedirect_d1 <= io_redirect_valid & (io_redirect_bits_robIdx_value == deqPtr.value);
-    deqHitRedirect_d2 <= deqHitRedirect_d1;
+    deqHitRedirect_d1  <= io_redirect_valid
+                        & ({io_redirect_bits_robIdx_flag, io_redirect_bits_robIdx_value}
+                           == {deqPtr.flag, deqPtr.value});
+    deqHitRedirect_d1b <= io_redirect_valid
+                        & ({io_redirect_bits_robIdx_flag, io_redirect_bits_robIdx_value}
+                           == {deqPtr.flag, deqPtr.value});
+    deqHitRedirect_d2  <= deqHitRedirect_d1b;
   end
 
   // commit 命中(deqPtrVec 任一槽匹配 i 且 commitValid)。

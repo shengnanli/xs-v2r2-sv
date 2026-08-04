@@ -43,6 +43,9 @@ module tb;
   logic o_intrBitSetReg, o_hasNoSpecExec, o_allowOnlyOneCommit, o_blockCommit, o_allCommitted;
   logic o_allowEnqueue, o_hasBlockBackward; logic [RENAME_WIDTH-1:0] o_enq_for_ptr;
   logic o_eg_flush; logic [UOP_CNT_W:0] o_rab_commitSize, o_rab_walkSize; logic o_rab_walkEnd;
+  logic [UOP_CNT_W:0] o_vtype_commitSize, o_vtype_walkSize;
+  logic [UOP_CNT_W:0] o_vtype_commitSize_ref, o_vtype_walkSize_ref;
+  logic o_enq_isEmpty_ref;
   logic o_flushOut_valid, o_flushOut_robIdx_flag; logic [PTR_W-1:0] o_flushOut_robIdx_value;
   logic o_flushOut_level, o_flushOut_isRVC; logic [FTQ_PTR_W-1:0] o_flushOut_ftqIdx_value;
   logic o_flushOut_ftqIdx_flag; logic [FTQ_OFFSET_W-1:0] o_flushOut_ftqOffset;
@@ -376,6 +379,9 @@ module tb;
     .o_enq_for_ptr(o_enq_for_ptr_ref),
     .o_eg_flush(o_eg_flush_ref),
     .o_rab_commitSize(o_rab_commitSize_ref),
+    .o_vtype_commitSize(o_vtype_commitSize_ref),
+    .o_vtype_walkSize(o_vtype_walkSize_ref),
+    .o_enq_isEmpty(o_enq_isEmpty_ref),
     .o_rab_walkSize(o_rab_walkSize_ref),
     .o_rab_walkEnd(o_rab_walkEnd_ref),
     .o_flushOut_valid(o_flushOut_valid_ref),
@@ -477,6 +483,9 @@ module tb;
     if (o_enq_for_ptr !== o_enq_for_ptr_ref) begin errors++; if(errors<=80) $display("[%0t] MISMATCH o_enq_for_ptr soa=%p ref=%p",$time,o_enq_for_ptr,o_enq_for_ptr_ref); end
     if (o_eg_flush !== o_eg_flush_ref) begin errors++; if(errors<=80) $display("[%0t] MISMATCH o_eg_flush soa=%p ref=%p",$time,o_eg_flush,o_eg_flush_ref); end
     if (o_rab_commitSize !== o_rab_commitSize_ref) begin errors++; if(errors<=80) $display("[%0t] MISMATCH o_rab_commitSize soa=%p ref=%p",$time,o_rab_commitSize,o_rab_commitSize_ref); end
+    if (o_vtype_commitSize !== o_vtype_commitSize_ref) begin errors++; if(errors<=80) $display("[%0t] MISMATCH o_vtype_commitSize soa=%p ref=%p",$time,o_vtype_commitSize,o_vtype_commitSize_ref); end
+    if (o_vtype_walkSize !== o_vtype_walkSize_ref) begin errors++; if(errors<=80) $display("[%0t] MISMATCH o_vtype_walkSize soa=%p ref=%p",$time,o_vtype_walkSize,o_vtype_walkSize_ref); end
+    if (o_enq_isEmpty !== o_enq_isEmpty_ref) begin errors++; if(errors<=80) $display("[%0t] MISMATCH o_enq_isEmpty soa=%p ref=%p",$time,o_enq_isEmpty,o_enq_isEmpty_ref); end
     if (o_rab_walkSize !== o_rab_walkSize_ref) begin errors++; if(errors<=80) $display("[%0t] MISMATCH o_rab_walkSize soa=%p ref=%p",$time,o_rab_walkSize,o_rab_walkSize_ref); end
     if (o_rab_walkEnd !== o_rab_walkEnd_ref) begin errors++; if(errors<=80) $display("[%0t] MISMATCH o_rab_walkEnd soa=%p ref=%p",$time,o_rab_walkEnd,o_rab_walkEnd_ref); end
     if (o_flushOut_valid !== o_flushOut_valid_ref) begin errors++; if(errors<=80) $display("[%0t] MISMATCH o_flushOut_valid soa=%p ref=%p",$time,o_flushOut_valid,o_flushOut_valid_ref); end

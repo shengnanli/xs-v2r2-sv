@@ -3421,6 +3421,8 @@ module Rob(
   logic                       o_enq_canAcceptForDispatch;
   logic                       o_robFull;
   logic                       o_enq_isEmpty;
+  logic [7:0]                 o_vtype_commitSize;
+  logic [7:0]                 o_vtype_walkSize;
   logic                       o_headNotReady;
   logic                       o_cpu_halt;
   logic                       o_wfiReq;
@@ -6537,9 +6539,9 @@ module Rob(
     .io_req_5_bits_vpu_specVlmul                (io_enq_req_5_bits_vpu_specVlmul),
     .io_req_5_bits_isVset                       (io_enq_req_5_bits_isVset),
     .io_req_5_bits_lastUop                      (io_enq_req_5_bits_lastUop),
-    .io_fromRob_walkSize (o_rab_walkSize),
+    .io_fromRob_walkSize (o_vtype_walkSize),
     .io_fromRob_walkEnd                         (o_rab_walkEnd),
-    .io_fromRob_commitSize (o_rab_commitSize),
+    .io_fromRob_commitSize (o_vtype_commitSize),
     .io_snpt_snptEnq                            (snptEnq),
     .io_snpt_snptDeq                            (io_snpt_snptDeq),
     .io_snpt_useSnpt                            (io_snpt_useSnpt),
