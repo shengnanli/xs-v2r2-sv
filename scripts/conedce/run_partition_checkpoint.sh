@@ -110,6 +110,31 @@ have() { grep -qE "reg .*$1\b" "$REDG"; }
     echo '_rob_soa_pin r:/WORK/Rob/deqHitRedirectReg_REG_1_reg i:/WORK/Rob/u_core/deqHitRedirect_d1b_reg'
     echo '_rob_soa_pin r:/WORK/Rob/deqHitRedirectReg_REG_2_reg i:/WORK/Rob/u_core/deqHitRedirect_d2_reg'
   fi
+  # ★rob-perf-cone (codex 0113 选项A)★ debug_microOp fuType per-entry SoA family.
+  #  golden emits a FLAT per-entry reg `debug_microOp_debugReg_<N>_fuType` [34:0]
+  #  (no-reset always@(posedge clock) block, L84370). The impl core stores the same
+  #  head-tracking debug fuType in a packed unpacked-array `debug_fuType[<N>]`
+  #  [34:0] (also no-reset — perf6 already aligned the reset topology). Because the
+  #  golden flat name (debug_microOp_debugReg_N_fuType) and the impl array name
+  #  (debug_fuType[N]) differ, FM's auto-matcher leaves ALL 160×35 entry bits
+  #  UNMATCHED → they become free cone inputs to io_debugRobHead_fuType
+  #  (= _GEN_187[deqPtr.value], golden L15883; impl dbgFuTypeVec[deqHeadIdx]).
+  #  FM proves bits [0:9]/[24:34] independently (constant/derivable in this config)
+  #  but leaves bits [10:23] unprovable → the 14 io_debugRobHead_fuType[10..23]
+  #  failing points. Pinning the COMPLETE entry array (golden flat reg ↔ impl
+  #  array member, per-bit) restores the read-multiplexer fanin symmetry so all 35
+  #  output bits are provable. Pure set_user_match bijection, NO dont_verify, NO
+  #  ref constraint; fail-closed on any FM-036. Same golden DFF ↔ impl DFF (both
+  #  are RegEnable(io_enq_req_<port>_bits_fuType, enq-hit) — proven bit-exact by
+  #  co-sim seed 1/7/42 checks=199997 errors=0). Only pinned when present in the
+  #  reduced golden (perf partition is the sole family that reads debugRobHead).
+  if have 'debug_microOp_debugReg_0_fuType'; then
+    echo 'for {set n 0} {$n < 160} {incr n} {'
+    echo '  for {set k 0} {$k < 35} {incr k} {'
+    echo '    _rob_soa_pin r:/WORK/Rob/debug_microOp_debugReg_${n}_fuType_reg\[$k\] i:/WORK/Rob/u_core/debug_fuType_reg\[$n\]\[$k\]'
+    echo '  }'
+    echo '}'
+  fi
   # NOTE: entry trace iretire/ilastsize (perf) are already pinned via --only-fields
   #  (SOA_FAMILY whole-reg/per-bit) — do NOT re-pin here (would double-match).
   echo 'puts "EXTRA_PINS_'"$FAM"' applied_total=$_rob_soa_pin_n fail_total=$_rob_soa_pin_fail (new_fail=[expr {$_rob_soa_pin_fail - $_extra_pin_start}])"'

@@ -8,7 +8,7 @@
 #    Rob_wrapper.sv glue 两侧刷新; pkg/stubs unchanged。
 # these are the impl-side inputs the cone-DCE derivative reduces (impl_port_trim over Rob_wrapper.sv)
 # MUST equal rtl/backend/<same file> at the same commit (drift gate in gen_all.sh)
-Rob.sv	767fa13f871d8dcec06901a917551dd476860cb77e7fea86bdf6ec5056ce3810
+Rob.sv	4d5659e71ccf308e3b8c27e924c4310a48851037d3a37f5c5dcfeec54372d7ce
 Rob_wrapper.sv	939a4f54c3cac8332d8c5c9d7290a02f43720f32df72f9c9d67a3d7626637cab
 rob_pkg.sv	e43da2e5b9bb475b93f79a3464b2daefdc168c568af4f80ddf7a7ead11afcfe6
 rob_lsq_deep_outputs.sv	dce305936367523bfd29cb7852f0aa7751c98fa3db63d9ef71f0314ab7ac1d74
