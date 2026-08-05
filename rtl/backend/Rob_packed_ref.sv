@@ -1857,7 +1857,8 @@ module xs_Rob_core_packed_ref
     logic [RENAME_WIDTH-1:0] h;
     r = '0;
     h = enq_inst_hit(idx);
-    for (int k = RENAME_WIDTH-1; k >= 0; k--)
+    // ★perf6 修★ 镜像 Rob.sv: golden fuType 写 port 5 最高优先(升序 last-wins)。
+    for (int k = 0; k < RENAME_WIDTH; k++)
       if (h[k]) r = enq_fuType[k];
     return r;
   endfunction

@@ -2141,10 +2141,14 @@ module xs_Rob_core
   // 入队各口写 fuType 的优先级: golden 顺序 port5>4>3>2>1>0(高口优先, 与 enq_info 同)。
   // ★FMR-strict (修3)★ enq_fuType_hit 读模块级 enq_fuType/enq_inst_hit → 数组。
   // (enq_fuType_hit_arr 声明前置于 §4 helper-array 块。)
+  // ★perf6 修★ golden debug_microOp fuType 写是 priority if/else-if 链, port 5 最高
+  //  (L84375: if(hit5) w5 else if(hit4)... else if(hit0) w0)。旧 impl 降序 last-wins
+  //  = port 0 最高(反了)→ FM 自由非法双口撞同 entry 时 fuType 失配。改升序 last-wins
+  //  = port 5 最高, 与 golden 逐位一致(合法单口命中下二者等价)。
   always_comb
     for (int idx = 0; idx < ROB_SIZE; idx++) begin
       enq_fuType_hit_arr[idx] = '0;
-      for (int k = RENAME_WIDTH-1; k >= 0; k--)
+      for (int k = 0; k < RENAME_WIDTH; k++)
         if (enq_inst_hit_arr[idx][k]) enq_fuType_hit_arr[idx] = enq_fuType[k];
     end
 
