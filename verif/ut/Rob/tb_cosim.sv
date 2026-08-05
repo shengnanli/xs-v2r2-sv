@@ -18,6 +18,9 @@ module tb;
   logic [UOP_CNT_W-1:0] enq_num_wb [RENAME_WIDTH];
   logic [PTR_W-1:0] enq_robidx_value [RENAME_WIDTH];
   rob_entry_t enq_info [RENAME_WIDTH];
+  // codex 0108 步6 isHls: 每 enq 口原始 fuType(35b)+fuOpType[8:4](5b)喂两核 blend-decode
+  logic [34:0] enq_fu_type [RENAME_WIDTH];
+  logic [4:0]  enq_fu_optype_hls [RENAME_WIDTH];
   logic [NUM_EXU_WB-1:0] wb_valid; logic [PTR_W-1:0] wb_robidx [NUM_EXU_WB];
   logic [4:0] wb_num [NUM_EXU_WB]; logic [NUM_EXU_WB-1:0] wb_is_std;
   logic [NUM_EXU_WB-1:0] wb_fflags_valid; logic [4:0] wb_fflags [NUM_EXU_WB];
@@ -302,7 +305,7 @@ module tb;
       rab_can_enq<=1; rab_can_enq_for_dispatch<=1; rab_status_commit_end<=1; rab_status_walk_end<=1; vtype_status_walk_end<=1;
       io_misPredWb<=0; io_wb1_redir<=0; io_wb3_redir<=0; io_wb5_redir<=0;
       lsq_mmio<='0; lsq_uop_robidx_value[0]<='0; lsq_uop_robidx_value[1]<='0; lsq_uop_robidx_value[2]<='0;
-      for (int i=0;i<RENAME_WIDTH;i++) begin enq_num_wb[i]<=1; enq_robidx_value[i]<=0; enq_info[i]<='0; end
+      for (int i=0;i<RENAME_WIDTH;i++) begin enq_num_wb[i]<=1; enq_robidx_value[i]<=0; enq_info[i]<='0; enq_fu_type[i]<='0; enq_fu_optype_hls[i]<='0; end
       for (int i=0;i<NUM_EXU_WB;i++) begin wb_robidx[i]<=0; wb_num[i]<=1; wb_fflags[i]<=0; end
       for (int i=0;i<NUM_WB;i++) excp_wb_robidx[i]<=0;
     end else begin
@@ -325,6 +328,14 @@ module tb;
         enq_num_wb[i] <= rnwb();
         enq_robidx_value[i] <= padd(tb_enq, i).value;
         enq_info[i] <= '0;
+        // isHls stimulus: 偶尔喂 HLS fuType(0x8000 LDU / 0x10000 STU)+ 匹配 fuOpType
+        //  以 exercise blend-decode; 其余给随机 fuType/fuOpType(含非法值/多口撞)。
+        case ($urandom_range(0,3))
+          0: enq_fu_type[i] <= 35'h8000;
+          1: enq_fu_type[i] <= 35'h10000;
+          default: enq_fu_type[i] <= (35'h1 << $urandom_range(0,34));
+        endcase
+        enq_fu_optype_hls[i] <= $urandom_range(0,31);
       end
       // writeback: 各口随机命中某个在飞 robIdx
       for (int i=0;i<NUM_EXU_WB;i++) begin

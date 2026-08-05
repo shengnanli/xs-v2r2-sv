@@ -116,6 +116,10 @@ module xs_Rob_core_packed_ref
   input  logic [2:0]                 lsq_mmio,                    // io_lsq_mmio_{0,1,2}
   input  logic [PTR_W-1:0]           lsq_uop_robidx_value [3],    // io_lsq_uop_N_robIdx_value
 
+  // [isHls, codex 0108 步6] 与 Rob.sv 同步: 每 enq 口原始 fuType/fuOpType[8:4]
+  input  logic [34:0]                enq_fu_type      [RENAME_WIDTH],
+  input  logic [4:0]                 enq_fu_optype_hls[RENAME_WIDTH],
+
   // ====================================================================
   // [csr/debug 组新增] C_DEEP csr(9)+debug(6) 端口所需输入
   //   (owner rob-csr-debug; 见 docs/backend/rob_csr_debug_ports.tsv)
@@ -614,7 +618,6 @@ module xs_Rob_core_packed_ref
             e.commit_type   |= enq_info[k].commit_type;
             e.is_rvc        |= enq_info[k].is_rvc;
             e.is_vset       |= enq_info[k].is_vset;
-            e.is_hls        |= enq_info[k].is_hls;
             e.instr_size    |= enq_info[k].instr_size;
             e.ftq_idx_value |= enq_info[k].ftq_idx_value;
             e.ftq_idx_flag  |= enq_info[k].ftq_idx_flag;
@@ -623,6 +626,19 @@ module xs_Rob_core_packed_ref
             e.iretire       |= enq_info[k].iretire;
             e.ilastsize     |= enq_info[k].ilastsize;
           end
+        // ---- isHls: golden blend-then-decode(与 Rob.sv 同步)★核内混★ ----
+        begin
+          logic [34:0] hls_futype;
+          logic [4:0]  hls_op86;
+          hls_futype = '0; hls_op86 = '0;
+          for (int k = 0; k < RENAME_WIDTH; k++)
+            if (ihit[k]) begin
+              hls_futype |= enq_fu_type[k];
+              hls_op86   |= enq_fu_optype_hls[k];
+            end
+          e.is_hls = (hls_futype == 35'h8000 | hls_futype == 35'h10000)
+                   & hls_op86[0] & ~hls_op86[1] & ~(|hls_op86[4:3]);
+        end
       end
       // ---- trace itype taken 覆盖(golden: valid & 旧值==4 & taken → 5, 优先于入队写) ----
       if (rob_entries[i].valid & (rob_entries[i].itype == ITYPE_W'(4)) & any_branch_taken_for(i))
@@ -776,7 +792,7 @@ module xs_Rob_core_packed_ref
   logic [PTR_W-1:0] deqValIdx [COMMIT_WIDTH];
   always_comb
     for (int i = 0; i < COMMIT_WIDTH; i++)
-      deqValIdx[i] = index_in_range(deq_ptr_vec[i].value) ? deq_ptr_vec[i].value : 'x;
+      deqValIdx[i] = deq_ptr_vec[i].value;  // ★perf6 修★ 直取(同 golden), 读向量已 entry-0 pad
 
   // ★codex 0107 修★ golden io_commits_info_N_* = rawInfo_N(robDeqGroup 按
   //  deqPtrVec bank 读)——【无 state/walk mux】(旧版 walk 态换 walkInfo = impl
@@ -1397,11 +1413,10 @@ module xs_Rob_core_packed_ref
     return inrange | redirectAll;
   endfunction
 
-  // exception.valid 打一拍。
+  // exception.valid 打一拍。★codex 0108 步6★ 无复位对齐 golden(与 Rob.sv 同步)。
   logic exceptionValidReg;
-  always_ff @(posedge clock or posedge reset)
-    if (reset) exceptionValidReg <= 1'b0;
-    else       exceptionValidReg <= exceptionHappen;
+  always_ff @(posedge clock)
+    exceptionValidReg <= exceptionHappen;
   assign o_exception_valid = exceptionValidReg;
   assign o_exceptionHappen = exceptionHappen;
   assign o_deqHasException = deqHasException;
@@ -1653,12 +1668,12 @@ module xs_Rob_core_packed_ref
   //   fflags_val = isCommit & |wflags                        (golden 21666)
   //   bits 数据  = robEntries[deqPtr_N.value].fflags          (golden _GEN_2621)
   // IDX_SPACE(256, 2 的幂)宽全存储读向量(0 寄存器 wire; 消 8 位下标越界 FMR_ELAB-147)。
-  //  160..255 位填不可达 'x(≠entry-0/0); 下标 deqValIdx 经 index_in_range guard。
+  // ★perf6 修★ 镜像 Rob.sv: golden _GEN_2621/_GEN_2625 高位 160..255 填 entry-0(非 'x)。
   logic [4:0]   robFflagsVec [IDX_SPACE];
   logic [IDX_SPACE-1:0] robVxsatVec;
   always_comb begin
-    robVxsatVec = 'x;
-    for (int i = 0; i < IDX_SPACE; i++) robFflagsVec[i] = 'x;
+    for (int i = 0; i < IDX_SPACE; i++) robVxsatVec[i] = rob_entries[0].vxsat;   // pad = entry-0
+    for (int i = 0; i < IDX_SPACE; i++) robFflagsVec[i] = rob_entries[0].fflags; // pad = entry-0
     for (int i = 0; i < ROB_SIZE; i++) begin
       robFflagsVec[i] = rob_entries[i].fflags;
       robVxsatVec[i]  = rob_entries[i].vxsat;
@@ -1752,32 +1767,30 @@ module xs_Rob_core_packed_ref
   logic [4:0] fflags_bits_r;
   logic       vxsat_bits_r;
   logic [63:0] vstart_bits_r;
+  // ★codex 0108 步6★ 与 Rob.sv 同步两族拓扑: fflags_valid/vxsat_valid/dirty_fs/
+  //  dirty_vs = RESET(golden L187770); vstart_valid/fflags_bits/vxsat_bits/
+  //  vstart_bits/trueCommitCnt/fuseCommitCnt/isCommitReg_last = NO-RESET(golden L84370)。
   always_ff @(posedge clock or posedge reset)
     if (reset) begin
       fflags_valid_r   <= 1'b0;
       vxsat_valid_r    <= 1'b0;
-      vstart_valid_r   <= 1'b0;
       dirty_fs_r       <= 1'b0;
       dirty_vs_r       <= 1'b0;
-      fflags_bits_r    <= '0;
-      vxsat_bits_r     <= 1'b0;
-      vstart_bits_r    <= '0;
-      trueCommitCnt_r_csr  <= '0;
-      fuseCommitCnt_r_csr  <= '0;
-      isCommitReg_last_csr <= 1'b0;
     end else begin
       fflags_valid_r  <= fflags_valid_c;
       vxsat_valid_r   <= vxsat_valid_c;
-      vstart_valid_r  <= vstart_valid_next;
       dirty_fs_r      <= dirty_fs_c;
       dirty_vs_r      <= dirty_vs_c;
-      vstart_bits_r   <= vstart_bits_next;
-      if (fflags_valid_c) fflags_bits_r <= fflags_bits_c;  // golden: if(fflags_valid) latch
-      if (vxsat_valid_c)  vxsat_bits_r  <= vxsat_bits_c;   // golden: if(vxsat_valid)  latch
-      trueCommitCnt_r_csr  <= trueCommitCnt_c;
-      fuseCommitCnt_r_csr  <= fuseCommitCnt_c;
-      isCommitReg_last_csr <= o_commits_isCommit;
     end
+  always_ff @(posedge clock) begin
+    vstart_valid_r  <= vstart_valid_next;
+    vstart_bits_r   <= vstart_bits_next;
+    if (fflags_valid_c) fflags_bits_r <= fflags_bits_c;
+    if (vxsat_valid_c)  vxsat_bits_r  <= vxsat_bits_c;
+    trueCommitCnt_r_csr  <= trueCommitCnt_c;
+    fuseCommitCnt_r_csr  <= fuseCommitCnt_c;
+    isCommitReg_last_csr <= o_commits_isCommit;
+  end
 
   assign o_csr_fflags_valid          = fflags_valid_r;
   assign o_csr_fflags_bits           = fflags_bits_r;
@@ -1849,10 +1862,13 @@ module xs_Rob_core_packed_ref
     return r;
   endfunction
 
+  // ★perf6 修★ 镜像 Rob.sv: debug_fuType 无复位(golden L84370 no-reset 块), 拆独立块。
+  always_ff @(posedge clock)
+    for (int i = 0; i < ROB_SIZE; i++)
+      if (enqHitAny[i]) debug_fuType[i] <= enq_fuType_hit(i);  // 命中写, 其余保持
   always_ff @(posedge clock or posedge reset)
     if (reset) begin
       for (int i = 0; i < ROB_SIZE; i++) begin
-        debug_fuType[i]   <= '0;
         debug_lsIssued[i] <= 1'b0;
         debug_s1_valid[i] <= 1'b0;
         debug_s1_bits[i]  <= '0;
@@ -1861,8 +1877,6 @@ module xs_Rob_core_packed_ref
       end
     end else begin
       for (int i = 0; i < ROB_SIZE; i++) begin
-        // fuType: 入队命中时写(其余保持); 高口优先。
-        if (enqHitAny[i]) debug_fuType[i] <= enq_fuType_hit(i);
         // lsIssued: (队头且 headLsIssue) 置; 入队清; 否则保持。
         //   golden 197626: io_debugHeadLsIssue & (i==head) | (~enqHit(i) & lsIssued[i])
         debug_lsIssued[i] <= (io_debugHeadLsIssue & (deqPtr.value == PTR_W'(i)))
@@ -1880,20 +1894,22 @@ module xs_Rob_core_packed_ref
   //   其中 debug_lsIssue[k] = (deqV==k)? io_debugHeadLsIssue : debug_lsIssued[k]
   //   (golden 15303-15311)。deqV==k 处 ⇒ 恒选 io_debugHeadLsIssue ⇒ 输出 = io_debugHeadLsIssue。
   //   debug_lsIssued[] 仍需维护(golden 状态), 供 FM 逐位对齐(其它下标读出用)。
-  // 队头下标(deqPtr.value 由 golden mod-160 环形指针保证恒 < ROB_SIZE)。index_in_range
-  //  guard: ≥160 时取 'x(不可达; ≠clamp/wrap/取 entry-0)。运行期 ≥160 不发生。
+  // ★perf6 修★ 镜像 Rob.sv: 队头下标直取 deqPtr.value(同 golden _GEN_187[value]),
+  //  读向量高位 160..255 填 entry-0(非 'x)。
   logic [PTR_W-1:0] deqHeadIdx;
-  assign deqHeadIdx = index_in_range(deqPtr.value) ? deqPtr.value : 'x;
+  assign deqHeadIdx = deqPtr.value;
   // IDX_SPACE(256, 2 的幂)宽全存储读向量(0 寄存器 wire; 消 8 位下标越界 FMR_ELAB-147)。
-  //  160..255 位填不可达 'x(≠entry-0/0), 下标经 guard, 运行期恒读 <160 有效项。
   logic [34:0]  dbgFuTypeVec [IDX_SPACE];
   logic [IDX_SPACE-1:0] dbgS1ValidVec, dbgS2ValidVec;
   logic [49:0]  dbgS1BitsVec [IDX_SPACE];
   logic [47:0]  dbgS2BitsVec [IDX_SPACE];
   always_comb begin
-    dbgS1ValidVec = 'x; dbgS2ValidVec = 'x;
     for (int i = 0; i < IDX_SPACE; i++) begin
-      dbgFuTypeVec[i] = 'x; dbgS1BitsVec[i] = 'x; dbgS2BitsVec[i] = 'x;
+      dbgFuTypeVec[i]  = debug_fuType[0];   // pad = entry-0
+      dbgS1ValidVec[i] = debug_s1_valid[0];
+      dbgS2ValidVec[i] = debug_s2_valid[0];
+      dbgS1BitsVec[i]  = debug_s1_bits[0];
+      dbgS2BitsVec[i]  = debug_s2_bits[0];
     end
     for (int i = 0; i < ROB_SIZE; i++) begin
       dbgFuTypeVec[i]  = debug_fuType[i];

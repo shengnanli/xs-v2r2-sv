@@ -3740,6 +3740,22 @@ module Rob(
   logic [UOP_CNT_W-1:0] enq_num_wb [RENAME_WIDTH];
   logic [PTR_W-1:0] enq_robidx_value [RENAME_WIDTH];
   rob_entry_t enq_info [RENAME_WIDTH];
+  // ★codex 0108 步6 isHls★ 每 enq 口原始 fuType(35b)+ fuOpType[8:4](5b)喂核, 核内
+  //  按 golden blend-then-decode isHls(见 Rob.sv enq_fu_type/enq_fu_optype_hls 端口注)。
+  logic [34:0] enq_fu_type      [RENAME_WIDTH];
+  logic [4:0]  enq_fu_optype_hls[RENAME_WIDTH];
+  assign enq_fu_type[0] = io_enq_req_0_bits_fuType;
+  assign enq_fu_type[1] = io_enq_req_1_bits_fuType;
+  assign enq_fu_type[2] = io_enq_req_2_bits_fuType;
+  assign enq_fu_type[3] = io_enq_req_3_bits_fuType;
+  assign enq_fu_type[4] = io_enq_req_4_bits_fuType;
+  assign enq_fu_type[5] = io_enq_req_5_bits_fuType;
+  assign enq_fu_optype_hls[0] = io_enq_req_0_bits_fuOpType[8:4];
+  assign enq_fu_optype_hls[1] = io_enq_req_1_bits_fuOpType[8:4];
+  assign enq_fu_optype_hls[2] = io_enq_req_2_bits_fuOpType[8:4];
+  assign enq_fu_optype_hls[3] = io_enq_req_3_bits_fuOpType[8:4];
+  assign enq_fu_optype_hls[4] = io_enq_req_4_bits_fuOpType[8:4];
+  assign enq_fu_optype_hls[5] = io_enq_req_5_bits_fuOpType[8:4];
   always_comb begin
     enq_valid[0]         = io_enq_req_0_valid;
     enq_first_uop[0]     = io_enq_req_0_bits_firstUop;
