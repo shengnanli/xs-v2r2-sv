@@ -1877,25 +1877,30 @@ module xs_Rob_core
   end
 
   // RegEnable(vec, isCommit) 族 + RegNext(isCommit) + trueCommitCnt。
-  // ★reset-topology 对齐 golden(codex cone-completion)★ golden 的 perf/commit 计数
-  //  族(trueCommitCnt_r L181588 / fuseCommitCnt_r* / isCommitReg_last / perfLoad_r…)
-  //  全部落在 no-reset 的 `always @(posedge clock)` 块(golden Rob.sv L84370),firtool
-  //  未给它们生成复位分支(仅 ENABLE_INITIAL_REG 随机初值,SYNTHESIS 下关闭)。之前
-  //  impl 给整块加了 `posedge reset`+`if(reset)…<='0`,使 FM 的 perf 锥里 `reset` 进
-  //  impl 侧 trueCommitCnt_r 的 fanin 而 golden 侧没有 → 6 个 trueCommitCnt_r_reg[0..5]
-  //  失配(io_debugTopDown/io_perf/retiredInstr 读该累加器)。去掉复位使复位拓扑与
-  //  golden 逐字一致(纯拓扑对齐,非功能改动:golden 本就不复位这些寄存器;门控/次态
-  //  表达式不变)。
-  always_ff @(posedge clock) begin
-    isCommitReg_last <= o_commits_isCommit;
-    if (o_commits_isCommit) begin
-      perfLoad_r      <= commitLoadVec;
-      perfBranch_r    <= commitBranchVec;
-      perfStore_r     <= commitStoreVec;
-      fuse_r          <= fuseVec;
-      trueCommitCnt_r <= trueCommitCnt_next;
+  // ★复位拓扑(codex 0116-A 更正,回退 6d5db12f)★ 逐 register 以 golden 方程为准,
+  //  不再按"计数器家族"批量处理: isCommitReg_last golden **有** async reset
+  //  (golden Rob.sv L187770 `always @(posedge clock or posedge reset)`, L188768
+  //  `isCommitReg_last_REG <= 1'h0`); trueCommitCnt_r golden **无** reset(L84370
+  //  no-reset 块)。6d5db12f 曾整块去 reset 令 isCommitReg_last 丢失 golden 有的 reset
+  //  而回归失配(FM: reset 在 ref 有 impl 无), 现回退恢复。整块保留 async reset:
+  //  conerun1(完整 debug_fuType 160×35 pin)已证 FM 下 trueCommitCnt_r 带此额外 reset
+  //  仍与 golden 等价(reset 仅复位期起作用, 比较的可达态下恒等), 且 isCommitReg_last
+  //  的 reset 与 golden 逐字一致。
+  always_ff @(posedge clock or posedge reset)
+    if (reset) begin
+      isCommitReg_last <= 1'b0;
+      perfLoad_r <= '0; perfBranch_r <= '0; perfStore_r <= '0; fuse_r <= '0;
+      trueCommitCnt_r <= '0;
+    end else begin
+      isCommitReg_last <= o_commits_isCommit;
+      if (o_commits_isCommit) begin
+        perfLoad_r      <= commitLoadVec;
+        perfBranch_r    <= commitBranchVec;
+        perfStore_r     <= commitStoreVec;
+        fuse_r          <= fuseVec;
+        trueCommitCnt_r <= trueCommitCnt_next;
+      end
     end
-  end
 
   // isInterrupt_r = RegEnable(intrEnable, exceptionHappen)(golden 同门控)。
   always_ff @(posedge clock or posedge reset)
