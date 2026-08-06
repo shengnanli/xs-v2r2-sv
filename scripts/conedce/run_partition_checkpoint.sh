@@ -94,6 +94,22 @@ if [ "$FAM" = truecommitcnt ]; then
     > "$EV/truecommitcnt_inventory_gen.log" 2>&1 || { echo "rc=6" > "$EV/rc.txt"; exit 6; }
 fi
 
+# ★perf completion-pin per-family manifest (codex 0119 item1)★ READ-ONLY audit
+#  gate. Records the EXACT (ref,impl) pairs the perf EXTRA_PINS block below emits
+#  inline for the two SoA completion families (debug_lsTopdownInfo=16000 +
+#  walk-pointer=161 = 16161), with per-family path_gen rule + count + sha256 and
+#  fm036_policy. This gate does NOT emit/set_user_match any pin — it only mirrors
+#  and audits A's echo. Fails CLOSED (rc=6) if ANY enumerated golden reg is absent
+#  from the reduced golden (which would mean the cone did not retain the head-
+#  tracked debug / walk-pointer chain → the inline pins would be invalid FM-036).
+#  The runner echo (below) remains the sole PIN emit path; this is the authoritative
+#  "which pins are asserted" record for the long perf FM audit.
+if [ "$FAM" = perf ]; then
+  python3 "$HERE/gen_perf_completion_manifest.py" \
+    --reduced-golden "$GEN/Rob_golden_${FAM}.sv" --out "$EV/pins" --emit-pin-list \
+    > "$EV/perf_completion_manifest_gen.log" 2>&1 || { echo "rc=6" > "$EV/rc.txt"; exit 6; }
+fi
+
 # extra pins (all fail-closed). Only-present golden reg targets are guarded with
 # find_dc / regexp on the reduced golden so absent partitions skip cleanly.
 REDG="$GEN/Rob_golden_${FAM}.sv"
