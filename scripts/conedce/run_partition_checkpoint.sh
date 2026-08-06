@@ -196,6 +196,96 @@ have() { grep -qE "reg .*$1\b" "$REDG"; }
     echo '  }'
     echo '}'
   fi
+  # ★rob-perf-cone (codex 0118-A)★ debug lsTopdownInfo per-entry SoA family
+  #  (s1_vaddr / s2_paddr / lsIssued). IDENTICAL matching-completeness situation as
+  #  debug_microOp_fuType above, but for the perf partition's *other* debug-head
+  #  outputs (io_debugTopDown_toCore_robHeadVaddr_{valid,bits} /
+  #  robHeadPaddr_{valid,bits} / toDispatch_robHeadLsIssue — perf.txt outlist L59-63,
+  #  absent from commit/robdeqgroup, so this family is retained ONLY in the perf
+  #  reduced golden). golden emits FLAT per-entry regs
+  #  debug_lsTopdownInfo_<N>_s1_vaddr_{valid,bits[49:0]} /
+  #  debug_lsTopdownInfo_<N>_s2_paddr_{valid,bits[47:0]} / debug_lsIssued_<N>
+  #  (Rob.sv golden L14235.. / L14875..). The impl core (rtl/backend/Rob.sv
+  #  L2110-2113,2108) stores the SAME head-tracked debug info in packed
+  #  unpacked-arrays debug_s1_valid/bits[<N>], debug_s2_valid/bits[<N>],
+  #  debug_lsIssued[<N>], read head-indexed via dbgS1BitsVec[deqHeadIdx] etc.
+  #  (L2216-2237) — exactly parallel to dbgFuTypeVec. Because golden's flat name
+  #  and impl's array-member name differ, FM auto-match leaves ALL 160×(50+48+1+1+1)
+  #  entry bits UNMATCHED → 16000 free golden cone inputs (perf_conerun4
+  #  unmatched.rpt: 8000 s1_vaddr_bits + 7680 s2_paddr_bits + 3×160). Pinning the
+  #  COMPLETE entry arrays (golden flat reg ↔ impl array member, per-bit) restores
+  #  the read-mux fanin symmetry so io_debugTopDown_robHead* become provable and the
+  #  16000 free inputs are eliminated. Same golden DFF ↔ impl DFF (both RegNext of
+  #  the same per-entry s1/s2/lsIssue capture — co-sim seed 1/7/42 checks=199997
+  #  errors=0). Pure set_user_match bijection, NO dont_verify, NO ref constraint;
+  #  fail-closed on any FM-036. Only pinned when present in the reduced golden.
+  #  ★NOTE on debug_lsIssued★: the golden lsIssued family (debug_lsIssued_<N>) is
+  #  DELIBERATELY NOT pinned. The impl output o_debugTopDown_robHeadLsIssue reads the
+  #  primary input io_debugHeadLsIssue DIRECTLY (rtl/backend/Rob.sv L2233) — the impl
+  #  debug_lsIssued[] array is maintained but UNREAD for the output, so FM DCEs the
+  #  impl debug_lsIssued_reg cells (perf_conerun4: 0 impl-side occurrences in any FM
+  #  report, vs 160 for the read debug_s1/s2 arrays). Pinning a DCE'd impl cell would
+  #  FM-036 → EXTRA_PIN_ASSERT_FAIL (fail-closed). The 160 golden debug_lsIssued_<N>
+  #  regs stay unmatched-free, but robHeadLsIssue is still PROVABLE: golden
+  #  io_...robHeadLsIssue = _GEN_26[deqPtr] where _GEN_26[k]=(deqV==k)?io_debugHeadLsIssue
+  #  :debug_lsIssued_k, and at k=deqPtr the head selects io_debugHeadLsIssue == impl.
+  if have 'debug_lsTopdownInfo_0_s1_vaddr_bits'; then
+    echo 'for {set n 0} {$n < 160} {incr n} {'
+    echo '  _rob_soa_pin r:/WORK/Rob/debug_lsTopdownInfo_${n}_s1_vaddr_valid_reg i:/WORK/Rob/u_core/debug_s1_valid_reg\[$n\]'
+    echo '  _rob_soa_pin r:/WORK/Rob/debug_lsTopdownInfo_${n}_s2_paddr_valid_reg i:/WORK/Rob/u_core/debug_s2_valid_reg\[$n\]'
+    echo '  for {set k 0} {$k < 50} {incr k} {'
+    echo '    _rob_soa_pin r:/WORK/Rob/debug_lsTopdownInfo_${n}_s1_vaddr_bits_reg\[$k\] i:/WORK/Rob/u_core/debug_s1_bits_reg\[$n\]\[$k\]'
+    echo '  }'
+    echo '  for {set k 0} {$k < 48} {incr k} {'
+    echo '    _rob_soa_pin r:/WORK/Rob/debug_lsTopdownInfo_${n}_s2_paddr_bits_reg\[$k\] i:/WORK/Rob/u_core/debug_s2_bits_reg\[$n\]\[$k\]'
+    echo '  }'
+    echo '}'
+  fi
+  # ★rob-perf-cone (codex 0118-A)★ walk-pointer SoA family
+  #  (walkPtrVec / walkingPtrVec {flag,value[7:0]} + lastWalkPtr {flag,value[7:0]} +
+  #  donotNeedWalk[7:0]). These are the golden↔impl name-diff regs that FM AUTO-
+  #  MATCHES CLEANLY in the pCommit partition (checkpoint_pcommit_final RC0:
+  #  walkPtrVec=72 passing, walkingPtrVec=72, donotNeedWalk=8, lastWalkPtr=9 — all
+  #  0 unmatched, formally proven EQUIVALENT). In the perf partition the larger
+  #  retained cone changes FM's structural constant-propagation so 12 walkPtrVec +
+  #  12 walkingPtrVec low bits fall to DFF0X and FM's name-based auto-matcher fails
+  #  to pair golden flat walkPtrVec_<N>_value_reg[k] with impl array-member
+  #  walkPtrVec_reg[<N>][value][k] (perf_conerun4 unmatched.rpt: 12+12; passing
+  #  drops 72→48 / 72→60). Those unmatched bits + the now-free lastWalkPtr/
+  #  donotNeedWalk become the cone-input asymmetry driving the 11
+  #  robBanksRaddrThisLine + 3 vtypeBuffer/walkSize failing points (perf_conerun4
+  #  analyze_failing.rpt required inputs = walkPtrVec/walkingPtrVec/lastWalkPtr/
+  #  donotNeedWalk — NOT any real value diff). Pinning the COMPLETE walk-pointer
+  #  family (golden flat ↔ impl struct member, per-bit) imports the SAME 1:1
+  #  bijection pCommit RC0 already FM-verified equivalent, restoring cone-input
+  #  symmetry so robBanksRaddrThisLine / walkSize become provable (they pass in
+  #  pCommit: robBanksRaddrThisLine=20, walkSize=3). This is a family-level matching
+  #  completion (NOT per-failing-point whack-a-mole) that aligns perf's matching
+  #  surface with pCommit. impl struct = rob_ptr_t {flag, value[PTR_W-1:0]}
+  #  (rob_pkg.sv L57-60); FM member path = ...walkPtrVec_reg[N]\[value][k]. Pure
+  #  set_user_match, NO dont_verify, fail-closed on any FM-036. Only when present.
+  #  ★Scoped to the perf partition★: walkPtrVec/lastWalkPtr/donotNeedWalk are
+  #  present in EVERY fam's reduced golden, but FM auto-matches them CLEANLY in
+  #  commit/robdeqgroup/exception/vecexcp/lsq (0 unmatched there). Only perf's
+  #  larger cone breaks the auto-match. Restricting to perf keeps the already-RC0
+  #  partitions byte-for-byte unperturbed (no redundant pins on passing runs).
+  if [ "$FAM" = perf ] && have 'walkPtrVec_0_value'; then
+    echo 'for {set n 0} {$n < 8} {incr n} {'
+    echo '  _rob_soa_pin r:/WORK/Rob/walkPtrVec_${n}_flag_reg    i:/WORK/Rob/u_core/walkPtrVec_reg\[$n\]\[flag\]'
+    echo '  _rob_soa_pin r:/WORK/Rob/walkingPtrVec_${n}_flag_reg i:/WORK/Rob/u_core/walkingPtrVec_reg\[$n\]\[flag\]'
+    echo '  _rob_soa_pin r:/WORK/Rob/donotNeedWalk_${n}_reg      i:/WORK/Rob/u_core/donotNeedWalk_reg\[$n\]'
+    echo '  for {set k 0} {$k < 8} {incr k} {'
+    echo '    _rob_soa_pin r:/WORK/Rob/walkPtrVec_${n}_value_reg\[$k\]    i:/WORK/Rob/u_core/walkPtrVec_reg\[$n\]\[value\]\[$k\]'
+    echo '    _rob_soa_pin r:/WORK/Rob/walkingPtrVec_${n}_value_reg\[$k\] i:/WORK/Rob/u_core/walkingPtrVec_reg\[$n\]\[value\]\[$k\]'
+    echo '  }'
+    echo '}'
+  fi
+  if [ "$FAM" = perf ] && have 'lastWalkPtr_value'; then
+    echo '_rob_soa_pin r:/WORK/Rob/lastWalkPtr_flag_reg i:/WORK/Rob/u_core/lastWalkPtr_reg\[flag\]'
+    echo 'for {set k 0} {$k < 8} {incr k} {'
+    echo '  _rob_soa_pin r:/WORK/Rob/lastWalkPtr_value_reg\[$k\] i:/WORK/Rob/u_core/lastWalkPtr_reg\[value\]\[$k\]'
+    echo '}'
+  fi
   # NOTE: entry trace iretire/ilastsize (perf) are already pinned via --only-fields
   #  (SOA_FAMILY whole-reg/per-bit) — do NOT re-pin here (would double-match).
   echo 'puts "EXTRA_PINS_'"$FAM"' applied_total=$_rob_soa_pin_n fail_total=$_rob_soa_pin_fail (new_fail=[expr {$_rob_soa_pin_fail - $_extra_pin_start}])"'
