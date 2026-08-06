@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# gen_all.sh — deterministic generator for ALL 5 cone-DCE Rob partition
+# gen_all.sh — deterministic generator for ALL 6 cone-DCE Rob partition
 # derivatives (ref reduced golden + impl reduced wrapper) + hashes manifest.
 #
 # Pure function of: frozen golden Rob (hash-checked), frozen impl integration
@@ -47,7 +47,7 @@ printf "# always_tree_sha256\t%s\n" "$(sha256sum "$HERE/always_tree.py" | awk '{
 printf "# impltrim_sha256\t%s\n" "$(sha256sum "$HERE/impl_port_trim.py" | awk '{print $1}')" >> "$MAN"
 printf "# fam\treduced_golden_sha256\treduced_impl_sha256\n" >> "$MAN"
 
-for fam in commit exception perf vecexcp lsq; do
+for fam in commit exception perf vecexcp lsq robdeqgroup; do
   python3 "$HERE/rob_cone_slicer.py" --src "$GOLDEN" --module Rob \
      --outputs "$OUTLIST/$fam.txt" --keep-name Rob \
      --out "$OUT/Rob_golden_${fam}.sv" --report "$OUT/report_golden_${fam}.json" >/dev/null
@@ -58,6 +58,6 @@ for fam in commit exception perf vecexcp lsq; do
   ri=$(sha256sum "$OUT/Rob_impl_${fam}.sv" | awk '{print $1}')
   printf "%s\t%s\t%s\n" "$fam" "$rg" "$ri" >> "$MAN"
 done
-echo "[gen_all] wrote 5 reduced-golden + 5 reduced-impl to $OUT"
+echo "[gen_all] wrote 6 reduced-golden + 6 reduced-impl to $OUT"
 echo "[gen_all] manifest: $MAN"
 cat "$MAN"

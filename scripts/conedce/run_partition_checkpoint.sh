@@ -10,7 +10,7 @@
 # set_user_match pins (lsq→mmio 6 regs + robDeqGroup packed-struct members that
 # do not auto-match + deqHitRedirect chain) is appended, each fail-closed.
 set -u
-FAM="${1:?usage: run_partition_checkpoint.sh <exception|perf|vecexcp> [evdir]}"
+FAM="${1:?usage: run_partition_checkpoint.sh <exception|perf|vecexcp|robdeqgroup> [evdir]}"
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$HERE/../.." && pwd)"
 EV="${2:-/tmp/rob-g3g4-evidence/checkpoint_${FAM}}"
@@ -23,6 +23,15 @@ case "$FAM" in
   exception) ONLY="valid,uopNum,stdWritebacked,needFlush,interrupt_safe,isVset,isHls,realDestSize,commitType,vls" ;;
   perf)      ONLY="valid,uopNum,stdWritebacked,needFlush,interrupt_safe,isVset,realDestSize,instrSize,commitType,ftqIdx_value,ftqOffset,vls,vxsat,dirtyVs,wflags,fflags,fpWen,traceBlockInPipe_itype,traceBlockInPipe_iretire,traceBlockInPipe_ilastsize" ;;
   vecexcp)   ONLY="valid,uopNum,stdWritebacked,needFlush,interrupt_safe,isVset,realDestSize,vls" ;;
+  # ★pRobDeqGroup (codex 0117)★ dedicated partition whose retained outputs are
+  #  io_commits_commitValid_0..7 / io_headNotReady / io_flushOut_* / io_robDeqPtr_*.
+  #  These outputs read robDeqGroup_N_{commit_v,commit_w,needFlush} DIRECTLY via
+  #  commitValidThisLine_N / commit_block_N / allowOnlyOneCommit (golden L21956-
+  #  22044; impl Rob.sv L1119/1129/1144). So the head-of-queue commit state chain
+  #  becomes a set of *read* compare points that FM VERIFIES (not skips) — this is
+  #  the sole purpose of this fam. --only-fields = the robEntries_N_<f> storage
+  #  regs that survive the cone (parsed above; feed robDeqGroup line-read merge).
+  robdeqgroup) ONLY="valid,uopNum,stdWritebacked,needFlush,interrupt_safe,isRVC,isVset,realDestSize,ftqIdx_flag,ftqIdx_value,ftqOffset,vls" ;;
   *) echo "unsupported fam $FAM (commit/lsq have dedicated runners)"; echo "rc=5" > "$EV/rc.txt"; exit 5 ;;
 esac
 
@@ -42,6 +51,18 @@ python3 "$ROOT/scripts/gen_rob_soa_fieldmap.py" \
   --golden "$GEN/Rob_golden_${FAM}.sv" --out "$EV/pins" \
   --only-fields "$ONLY" \
   > "$EV/fieldmap_gen.log" 2>&1 || { echo "rc=3" > "$EV/rc.txt"; exit 3; }
+
+# ★pRobDeqGroup (codex 0117)★ locked head-state bijection manifest + hash. Fails
+#  closed (rc=6) if any robDeqGroup_N_{commit_v,commit_w,needFlush} reg is absent
+#  from the reduced golden (would mean the cone did not retain the head-state
+#  chain → the partition is not actually verifying it). The emitted-pin fragment
+#  it writes must match the inline commit_v/commit_w pins in the extra-pins block.
+if [ "$FAM" = robdeqgroup ]; then
+  python3 "$HERE/gen_robdeqgroup_pins.py" \
+    --reduced-golden "$GEN/Rob_golden_${FAM}.sv" --out "$EV/pins" \
+    --emit "commit_v,commit_w" \
+    > "$EV/robdeqgroup_pins_gen.log" 2>&1 || { echo "rc=6" > "$EV/rc.txt"; exit 6; }
+fi
 
 # extra pins (all fail-closed). Only-present golden reg targets are guarded with
 # find_dc / regexp on the reduced golden so absent partitions skip cleanly.
@@ -99,6 +120,38 @@ have() { grep -qE "reg .*$1\b" "$REDG"; }
     fi
   done
   echo '}'
+  # ★pRobDeqGroup (codex 0117) — the head-of-queue commit-state chain★
+  #  robDeqGroup_N_commit_v / commit_w are the golden merge-output registers that
+  #  DO NOT live in robEntries (they are robDeqGroup-only: golden reg
+  #  robDeqGroup_N_commit_v/_commit_w, Rob.sv L11680-11681; next-state written in
+  #  the allCommitted-branched always block L126255/126256). The impl stores them
+  #  as members of the robDeqGroup unpacked-array struct
+  #  (i:/WORK/Rob/u_core/robDeqGroup_reg[b][commit_v|commit_w], rtl/backend/Rob.sv
+  #  L1570 `robDeqGroup[b] <= robDeqGroup_next[b]`). Because golden's FLAT name
+  #  (robDeqGroup_N_commit_v) and impl's ARRAY-member name differ, FM's auto-match
+  #  NEVER pairs them → they are not compare points anywhere (grep commit_w
+  #  compare-point in pCommit = 0). In THIS fam the retained outputs
+  #  (io_commits_commitValid_0..7 / io_headNotReady) READ robDeqGroup_N_commit_v/
+  #  _w directly (commitValidThisLine_N = commit_v & commit_w & …, commit_block_N =
+  #  ~commit_w & …), so pinning golden↔impl 1:1 makes commit_v/commit_w *read*
+  #  compare points that FM VERIFIES (next-state equivalence), NOT matched-unread
+  #  (verification_verify_matched_unread_compare_points=false only skips UNREAD
+  #  matched regs; these are read). needFlush is already pinned by the shared
+  #  foreach-b loop above (do NOT re-pin here → would double-match). Pure
+  #  set_user_match, NO dont_verify, fail-closed on any FM-036 (the driver's
+  #  EXTRA_PIN_ASSERT_FAIL exits 7 if any pin fails to resolve). ★This block is the
+  #  entire reason pRobDeqGroup exists: independently DECIDE whether the impl
+  #  8-bank line-read merge of commit_w/commit_v equals golden — it does NOT pin
+  #  deqVlsCanCommit / exceptionGen / blockCommit / s0_out (those are the DOWNSTREAM
+  #  measured targets; pinning them would mask the very failure under test).★
+  if [ "$FAM" = robdeqgroup ]; then
+    echo 'foreach b {0 1 2 3 4 5 6 7} {'
+    for gm in "commit_v:commit_v" "commit_w:commit_w"; do
+      g="${gm%%:*}"; m="${gm##*:}"
+      have "robDeqGroup_0_${g}" && echo "  _rob_soa_pin r:/WORK/Rob/robDeqGroup_\${b}_${g}_reg i:/WORK/Rob/u_core/robDeqGroup_reg\\[\$b\\]\\[${m}\\]"
+    done
+    echo '}'
+  fi
   # ★perf5★ standalone regs feeding perf-family + exceptionGen cones that share a
   #  golden↔impl name-diff (all proven equivalent in pException/pVecExcp). Pure
   #  set_user_match.
