@@ -9,9 +9,12 @@
 #  + 0116-A revert (codex 0116): 回退 6d5db12f 的 Rob.sv reset-removal 段, 恢复
 #    isCommitReg_last 等的 golden async reset(golden L187770); 保留 debug_fuType pin。
 #    仅 Rob.sv 核刷新(逻辑=fe7a5603 conerun1 基线, 仅加更正注释); wrapper/pkg/stubs unchanged。
+#  + 0118 reset-split (codex 0118): truecommitcnt focused FM 实证 trueCommitCnt_r[0:5]+fuse_r[0]
+#    reset 不对称真失配 → 拆 always 块: isCommitReg_last 留 async reset(golden L187770); 计数族
+#    (trueCommitCnt_r/fuse_r/perfLoad/Branch/Store_r)改 no-reset(golden L84370)。仅 Rob.sv 核刷新。
 # these are the impl-side inputs the cone-DCE derivative reduces (impl_port_trim over Rob_wrapper.sv)
 # MUST equal rtl/backend/<same file> at the same commit (drift gate in gen_all.sh)
-Rob.sv	869104808864d98013a6e1e298d53cd0271035a1cfa2a473cdcad748986f61b5
+Rob.sv	fc324a4ec835b3e3c91da3ef25392498b143e2674d8d2272b2e6ce9dec73c65b
 Rob_wrapper.sv	939a4f54c3cac8332d8c5c9d7290a02f43720f32df72f9c9d67a3d7626637cab
 rob_pkg.sv	e43da2e5b9bb475b93f79a3464b2daefdc168c568af4f80ddf7a7ead11afcfe6
 rob_lsq_deep_outputs.sv	dce305936367523bfd29cb7852f0aa7751c98fa3db63d9ef71f0314ab7ac1d74
