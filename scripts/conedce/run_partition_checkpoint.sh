@@ -163,6 +163,14 @@ have() { grep -qE "reg .*$1\b" "$REDG"; }
     echo '_rob_soa_pin r:/WORK/Rob/deqHitRedirectReg_REG_1_reg i:/WORK/Rob/u_core/deqHitRedirect_d1b_reg'
     echo '_rob_soa_pin r:/WORK/Rob/deqHitRedirectReg_REG_2_reg i:/WORK/Rob/u_core/deqHitRedirect_d2_reg'
   fi
+  # ★codex 0117 分支2★ deqVlsCanCommit completion pin(第三级异步复位 reg):
+  #  链 deqVlsCanCommit_REG(=deqIsVlsException & deqPtrEntry.commit_w)→REG_1→deqVlsCanCommit
+  #  (& rab.commitEnd)。golden flat `deqVlsCanCommit` ↔ impl u_core 同名标量, FM 跨 u_core 边界
+  #  漏配 → 成 io_flush/lastCycleFlush 的 free cone input → perf 20 个 exceptionGen s0_out 失配。
+  #  其输入 robDeqGroup commit_w/commit_v/needFlush 已由 pRobDeqGroup 专用分区(commit e4e6991f,
+  #  robdeqgroup_run1 SUCCEEDED, 24/24 head-state reg 实证等价)FM 证等价 → 此 completion pin 有
+  #  形式背书, 非掩盖。★不钉 s0_out/exceptionGen/blockCommit(被测下游目标)★。纯 set_user_match, FM-036 fail-closed。
+  have 'deqVlsCanCommit' && echo '_rob_soa_pin r:/WORK/Rob/deqVlsCanCommit_reg i:/WORK/Rob/u_core/deqVlsCanCommit_reg'
   # ★rob-perf-cone (codex 0113 选项A)★ debug_microOp fuType per-entry SoA family.
   #  golden emits a FLAT per-entry reg `debug_microOp_debugReg_<N>_fuType` [34:0]
   #  (no-reset always@(posedge clock) block, L84370). The impl core stores the same
