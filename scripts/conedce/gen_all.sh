@@ -47,7 +47,7 @@ printf "# always_tree_sha256\t%s\n" "$(sha256sum "$HERE/always_tree.py" | awk '{
 printf "# impltrim_sha256\t%s\n" "$(sha256sum "$HERE/impl_port_trim.py" | awk '{print $1}')" >> "$MAN"
 printf "# fam\treduced_golden_sha256\treduced_impl_sha256\n" >> "$MAN"
 
-for fam in commit exception perf vecexcp lsq robdeqgroup; do
+for fam in commit exception perf vecexcp lsq robdeqgroup truecommitcnt; do
   python3 "$HERE/rob_cone_slicer.py" --src "$GOLDEN" --module Rob \
      --outputs "$OUTLIST/$fam.txt" --keep-name Rob \
      --out "$OUT/Rob_golden_${fam}.sv" --report "$OUT/report_golden_${fam}.json" >/dev/null

@@ -32,6 +32,24 @@ case "$FAM" in
   #  the sole purpose of this fam. --only-fields = the robEntries_N_<f> storage
   #  regs that survive the cone (parsed above; feed robDeqGroup line-read merge).
   robdeqgroup) ONLY="valid,uopNum,stdWritebacked,needFlush,interrupt_safe,isRVC,isVset,realDestSize,ftqIdx_flag,ftqIdx_value,ftqOffset,vls" ;;
+  # ★trueCommitCnt (codex 0118)★ focused partition whose SOLE retained output is
+  #  io_perf_5_value. That output reads the 10-bit commit counter trueCommitCnt_r
+  #  DIRECTLY: golden io_perf_5_value = io_perf_5_value_REG_1[5:0]; io_perf_5_value_REG
+  #  <= retireCounter_probe = isCommitReg_last_REG ? (trueCommitCnt_r + fuseCommitCnt)
+  #  : 0 (golden Rob.sv reg trueCommitCnt_r L47539; no-reset next-state L181588 gated
+  #  by io_commits_isCommit_0 = Σ_N commitValid_N ? commitInfo_N_instrSize : 0). Impl
+  #  rtl/backend/Rob.sv same-named reg trueCommitCnt_r (L1767, RegEnable(Σ instr_size,
+  #  isCommit)) -> retireCounter -> p5r -> p5r1 -> o_perf_5_value[5:0]. Because BOTH
+  #  sides name the register trueCommitCnt_r, FM's auto-matcher pairs golden
+  #  r:/WORK/Rob/trueCommitCnt_r_reg <-> impl i:/WORK/Rob/u_core/trueCommitCnt_r_reg
+  #  WITHOUT any set_user_match, and since io_perf_5_value READS it, trueCommitCnt_r
+  #  is a *read* matched compare point that FM VERIFIES (next-state equivalence) —
+  #  NOT skipped (verify_matched_unread=false only skips UNREAD matched regs). This
+  #  is the entire purpose: independently DECIDE trueCommitCnt_r golden==impl; it is
+  #  NOT pinned (auto-match by identical leaf name). --only-fields = the
+  #  robEntries_N_<f> storage regs that survive the cone (the trueCommitCnt fanin:
+  #  commitInfo instr_size + commit-valid gating), pinned by the shared SoA loop.
+  truecommitcnt) ONLY="valid,uopNum,stdWritebacked,needFlush,interrupt_safe,isVset,realDestSize,instrSize,commitType,vls" ;;
   *) echo "unsupported fam $FAM (commit/lsq have dedicated runners)"; echo "rc=5" > "$EV/rc.txt"; exit 5 ;;
 esac
 
@@ -62,6 +80,18 @@ if [ "$FAM" = robdeqgroup ]; then
     --reduced-golden "$GEN/Rob_golden_${FAM}.sv" --out "$EV/pins" \
     --emit "commit_v,commit_w" \
     > "$EV/robdeqgroup_pins_gen.log" 2>&1 || { echo "rc=6" > "$EV/rc.txt"; exit 6; }
+fi
+
+# ★trueCommitCnt (codex 0118)★ inventory + readiness gate (NO pin emitted). Fails
+#  closed (rc=6) if trueCommitCnt_r is absent from the reduced golden or not read by
+#  io_perf_5_value (would mean the counter is not an FM-verified compare point). The
+#  golden↔impl reg pair is AUTO-MATCHED by identical leaf name — this generator only
+#  audits the correspondence, it does NOT set_user_match / pin trueCommitCnt_r.
+if [ "$FAM" = truecommitcnt ]; then
+  python3 "$HERE/gen_truecommitcnt_inventory.py" \
+    --reduced-golden "$GEN/Rob_golden_${FAM}.sv" --impl-core "$RTL/Rob.sv" \
+    --out "$EV/pins" \
+    > "$EV/truecommitcnt_inventory_gen.log" 2>&1 || { echo "rc=6" > "$EV/rc.txt"; exit 6; }
 fi
 
 # extra pins (all fail-closed). Only-present golden reg targets are guarded with
