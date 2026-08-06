@@ -4729,6 +4729,16 @@ module tb;
   assign enq_fuType[0]=u_g.io_enq_req_0_bits_fuType; assign enq_fuType[1]=u_g.io_enq_req_1_bits_fuType;
   assign enq_fuType[2]=u_g.io_enq_req_2_bits_fuType; assign enq_fuType[3]=u_g.io_enq_req_3_bits_fuType;
   assign enq_fuType[4]=u_g.io_enq_req_4_bits_fuType; assign enq_fuType[5]=u_g.io_enq_req_5_bits_fuType;
+  // f96c6142 新增 isHls-blend 入端口: enq_fu_type(各口 fuType) + enq_fu_optype_hls
+  //  (=fuOpType[8:4], 见核 blend86 语义)。tb_tap 早于该 commit, 补齐 .* 绑定净。
+  logic [34:0] enq_fu_type [RENAME_WIDTH];
+  logic [4:0]  enq_fu_optype_hls [RENAME_WIDTH];
+  assign enq_fu_type[0]=u_g.io_enq_req_0_bits_fuType; assign enq_fu_type[1]=u_g.io_enq_req_1_bits_fuType;
+  assign enq_fu_type[2]=u_g.io_enq_req_2_bits_fuType; assign enq_fu_type[3]=u_g.io_enq_req_3_bits_fuType;
+  assign enq_fu_type[4]=u_g.io_enq_req_4_bits_fuType; assign enq_fu_type[5]=u_g.io_enq_req_5_bits_fuType;
+  assign enq_fu_optype_hls[0]=u_g.io_enq_req_0_bits_fuOpType[8:4]; assign enq_fu_optype_hls[1]=u_g.io_enq_req_1_bits_fuOpType[8:4];
+  assign enq_fu_optype_hls[2]=u_g.io_enq_req_2_bits_fuOpType[8:4]; assign enq_fu_optype_hls[3]=u_g.io_enq_req_3_bits_fuOpType[8:4];
+  assign enq_fu_optype_hls[4]=u_g.io_enq_req_4_bits_fuOpType[8:4]; assign enq_fu_optype_hls[5]=u_g.io_enq_req_5_bits_fuOpType[8:4];
   logic [PTR_W-1:0] io_lsTopdown_s1_robIdx [3]; logic [2:0] io_lsTopdown_s1_valid; logic [49:0] io_lsTopdown_s1_bits [3];
   logic [PTR_W-1:0] io_lsTopdown_s2_robIdx [3]; logic [2:0] io_lsTopdown_s2_valid; logic [47:0] io_lsTopdown_s2_bits [3];
   assign io_lsTopdown_s1_robIdx[0]=u_g.io_lsTopdownInfo_0_s1_robIdx; assign io_lsTopdown_s1_robIdx[1]=u_g.io_lsTopdownInfo_1_s1_robIdx; assign io_lsTopdown_s1_robIdx[2]=u_g.io_lsTopdownInfo_2_s1_robIdx;
