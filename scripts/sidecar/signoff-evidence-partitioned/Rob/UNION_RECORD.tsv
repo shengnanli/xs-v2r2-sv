@@ -1,0 +1,15 @@
+# fm-partition-union-v1 — cone-DCE Rob partition union root record
+# generated 2026-08-07T09:40:29Z
+golden_src_sha256	c3f1aa603afb25d5b40472a52c8a1fd50f420ffe0273faf1abe1f9ac89c89428
+slicer_sha256	c1fecb4d4519457526f409c7db871fc89d19087c39195aa6302e4a7fb8c15784
+always_tree_sha256	e5972c6b0ccc3de9b5f5e787805f33b34a10be0d204fe427dcccb5063da72f8f
+impltrim_sha256	5026d334c7473145de2a1a30eb00cfcb6eeb1af4e31113b48597311265f0a842
+impl_wrapper_sha256	1ea6598cac4c36565370f407013db4d7a7d516d39845c9c88b725df0cfa29bf4
+output_union_sha256	3ebb4932d36c2c8d98a6c8d162795a3fef1112e5ab91d768f072b71341837fda	(2343 outputs, total+disjoint verified)
+# per-partition FM
+part.commit	RC=0	Verification SUCCEEDED			golden=d4e4b9a7c50f	impl=8c91bd53a641
+part.exception	RC=0	Verification SUCCEEDED			golden=38c5d49ec2c7	impl=fe593dfd30d1
+part.perf	RC=0	Verification SUCCEEDED			golden=6a6f903ad05b	impl=cccbc32190fc
+part.vecexcp	RC=0	Verification SUCCEEDED			golden=6502120ece94	impl=f30ad14c8b36
+part.lsq	RC=0	Verification SUCCEEDED			golden=e788bf8dd2ec	impl=541a9dc2ea39
+UNION_STATUS	PASS	(5/5 partitions RUNNER_RC=0 SUCCEEDED; union covers 2343 golden outputs)

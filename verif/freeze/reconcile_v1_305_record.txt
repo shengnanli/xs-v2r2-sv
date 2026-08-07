@@ -1,0 +1,3 @@
+# 目标全集对账: 冻结=305 当前CONFIGURED=305 UNCONFIGURED=1['Rob']
+# 缺失(冻结有当前无)=0  新增(当前有冻结无)=0
+RECONCILE_DIFF=0

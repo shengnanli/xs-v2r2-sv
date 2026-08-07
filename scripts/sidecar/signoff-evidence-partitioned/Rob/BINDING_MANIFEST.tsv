@@ -1,0 +1,10 @@
+# rob-union-binding-manifest-v1 — codex 0122 canonical union record binding
+impl_commit	7babaa3ccd1cf65a0eef0d495f0712fce88ddeb6
+completion_pins_manifest_sha	b62fc181e5e9debf (16161 pins: debug_lsTopdownInfo 16000 + walk 161)
+cosim_receipt	seed1/7/42 checks=199959 errors=0 TEST PASSED (full, @7babaa3ccd1cf65a0eef0d495f0712fce88ddeb6)
+# fam	source_evidence	rc	fm_log_sha256	golden_deriv_sha	impl_deriv_sha
+commit	pcommit_r2	0	f4f842fc3ee668f32e5dbbdc45fcfa5d227c86f1f722e03291782b7b5f79eb97	d4e4b9a7c50f9d69	8c91bd53a641189e
+exception	exception_r2	0	3c6ff43233672235ef19f3fc23ac98c47c2024ee2a1cc4e0ed1c12a4363be384	38c5d49ec2c72e63	fe593dfd30d1ef1a
+perf	perf_final2	0	f43828d90d97a9063f90b9097db2e2475413db87dbd22d639ff1510d9f580d75	6a6f903ad05bbe5f	cccbc32190fcc12f
+vecexcp	vecexcp_r2	0	dff2a8b76f089950dd374cfe41de4883ae785667ca79b2cab948e188e4b22d80	6502120ece94a119	f30ad14c8b36aa51
+lsq	plsqdeep_r2	0	ca99f3f3691864039bd1ceddc30537dc4ad37c394f1a3fd66b6af13b6696b5ea	e788bf8dd2ec0cf4	541a9dc2ea3986ee
