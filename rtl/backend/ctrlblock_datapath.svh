@@ -46,7 +46,13 @@
   // delayedNotFlushedWriteBack[i]:杀过的 valid + 打拍 bits
   logic            wbDelayedValid [0:ctrlblock_pkg::WbNum-1]; // 送 rob.io.writeback
   logic            wbDelayedValidRaw [0:ctrlblock_pkg::WbNum-1]; // 送 rob.io.exuWriteback(不杀)
-  wb_exu_output_t  wbDelayedBits  [0:ctrlblock_pkg::WbNum-1];
+  // ★ wbDelayedBits 现为**组合重建视图(net,非寄存器)**:每路只寄存 golden(firtool DCE 后)
+  //   保留的字段(= 该路 Rob 实际消费的字段),未消费字段为组合常数 0。真正的打拍窄寄存器
+  //   wbd<N>_<field> 与视图重建 always_comb 由 ctrlblock_wbdelayed.svh 生成。原实现把整个
+  //   wb_exu_output_t(474 位/路)寄进 27 路,未消费字段成 7436 位 impl-only 死寄存器(FM
+  //   unread_impl)。窄化后消费字段的取值/时序/lane 映射/接口逐字不变,只删死寄存字段。
+  //   保留字段清单与 golden 一致性证据:verif/ut/CtrlBlock/wbdelayed_field_inventory.json。
+  wb_exu_output_t  wbDelayedBits  [0:ctrlblock_pkg::WbNum-1]; // 组合重建视图(net)
   generate
     for (gj = 0; gj < ctrlblock_pkg::WbNum; gj++) begin : g_wbpipe
       // valid:GatedValidRegNext(复位清 0)。
@@ -62,12 +68,11 @@
           wbDelayedValidRaw[gj] <= wbInValid[gj];
         end
       end
-      // bits:RegEnable(整 struct,enable=输入 valid)
-      always_ff @(posedge clock) begin
-        if (wbInValid[gj]) wbDelayedBits[gj] <= wbInBits[gj];
-      end
     end
   endgenerate
+  // bits:per-lane 窄化打拍(RegEnable,enable=wbInValid[N],无复位)+ always_comb 重建 struct
+  //   视图。逐路只寄存 golden 保留字段(消费字段),消 7436 位 impl-only 死寄存器。
+  `include "ctrlblock_wbdelayed.svh"
 
   // ==========================================================================
   // 块 3-B:同 robIdx 压缩计数 delayedNotFlushedWriteBackNums[0..24]
