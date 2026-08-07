@@ -12,9 +12,16 @@
 #  + 0118 reset-split (codex 0118): truecommitcnt focused FM 实证 trueCommitCnt_r[0:5]+fuse_r[0]
 #    reset 不对称真失配 → 拆 always 块: isCommitReg_last 留 async reset(golden L187770); 计数族
 #    (trueCommitCnt_r/fuse_r/perfLoad/Branch/Store_r)改 no-reset(golden L84370)。仅 Rob.sv 核刷新。
+#  + 0120-A retiredInstr reuse (codex 0120 A): 删 impl-only 冗余 _csr 计数链
+#    (trueCommitCnt_r_csr/fuseCommitCnt_r_csr/isCommitReg_last_csr + trueCommitCnt_c/
+#    fuseCommitCnt_c/fuseCommitCntSum/retireCounter_c 中间量及其 RegNext always_ff),
+#    令 io_csr_perfinfo_retiredInstr 复用主链 retireCounter[6:0]。golden 用单一
+#    retireCounter_probe(Rob.sv L47540)同喂 io_perf_5(L181651)与 retiredInstr(L220823);
+#    主链 retireCounter 已逐字复刻且 io_perf_5 focused-FM passing。_csr 链错在用 RegNext
+#    而 golden 计数族是 RegEnable(x, isCommit)(L181579)→ FM unmatched/失配。仅 Rob.sv 核刷新。
 # these are the impl-side inputs the cone-DCE derivative reduces (impl_port_trim over Rob_wrapper.sv)
 # MUST equal rtl/backend/<same file> at the same commit (drift gate in gen_all.sh)
-Rob.sv	fc324a4ec835b3e3c91da3ef25392498b143e2674d8d2272b2e6ce9dec73c65b
+Rob.sv	e5252ce5c7cc7a1e425ccb884998e684b73a98df86ba0d7bff8df26b8d9e1613
 Rob_wrapper.sv	939a4f54c3cac8332d8c5c9d7290a02f43720f32df72f9c9d67a3d7626637cab
 rob_pkg.sv	e43da2e5b9bb475b93f79a3464b2daefdc168c568af4f80ddf7a7ead11afcfe6
 rob_lsq_deep_outputs.sv	dce305936367523bfd29cb7852f0aa7751c98fa3db63d9ef71f0314ab7ac1d74

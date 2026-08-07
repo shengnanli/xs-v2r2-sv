@@ -2018,35 +2018,16 @@ module xs_Rob_core
     vstart_bits_next  = vstartExcp ? io_eg_vstart   : 64'h0;
   end
 
-  // ---- 13.5 retiredInstr: RegNext 链 ----
-  //   trueCommitCnt_r_csr = RegNext( Σ commitValid_N ? robDeqGroup[N].instr_size : 0 )
-  //   fuseCommitCnt_r_N = RegNext( commitValid_N & robDeqGroup[N].commit_type[2] )
-  //   isCommitReg_last_csr  = RegNext(isCommit)
-  //   retiredInstr = isCommitReg_last_csr ? (trueCommitCnt_r_csr + Σ fuseCommitCnt_r_csr)[6:0] : 0
-  logic [9:0]              trueCommitCnt_r_csr;
-  logic [COMMIT_WIDTH-1:0] fuseCommitCnt_r_csr;
-  logic                    isCommitReg_last_csr;
-  logic [9:0]              trueCommitCnt_c;      // 组合下一拍值
-  logic [COMMIT_WIDTH-1:0] fuseCommitCnt_c;
-  always_comb begin
-    trueCommitCnt_c = '0;
-    for (int n = 0; n < COMMIT_WIDTH; n++) begin
-      fuseCommitCnt_c[n] = o_commits_commitValid[n] & commitInfo[n].commit_type[2];
-      if (o_commits_commitValid[n])
-        trueCommitCnt_c += 10'({7'h0, commitInfo[n].instr_size});
-    end
-  end
-  logic [3:0] fuseCommitCntSum;
-  always_comb begin
-    fuseCommitCntSum = '0;
-    for (int n = 0; n < COMMIT_WIDTH; n++)
-      fuseCommitCntSum += 4'(fuseCommitCnt_r_csr[n]);
-  end
-  logic [10:0] retireCounter_c;
-  always_comb
-    retireCounter_c = isCommitReg_last_csr
-                    ? 11'({1'h0, trueCommitCnt_r_csr} + {7'h0, fuseCommitCntSum})
-                    : 11'h0;
+  // ---- 13.5 retiredInstr: 复用主 retire 计数链(不建独立 _csr 链) ----
+  //   golden 用单一 retireCounter_probe(Rob.sv L47540-47541)同时喂
+  //   io_perf_5_value_REG(L181651) 与 io_csr_perfinfo_retiredInstr(L220823):
+  //     retireCounter_probe = isCommitReg_last_REG
+  //                         ? 11'({1'h0, trueCommitCnt_r} + {7'h0, fuseCommitCnt}) : 11'h0
+  //   impl 的主链 retireCounter(§本文件 L1793-1796)已逐字复刻该式且喂 io_perf_5
+  //   (p5r), focused truecommitcnt FM 已证等价; 故 retiredInstr 直接复用 retireCounter,
+  //   不再建 RegNext 版 _csr 链(golden 的 trueCommitCnt_r/fuseCommitCnt_r 是
+  //   RegEnable(x, isCommit)——见 golden L181579 `if(io_commits_isCommit_0)`——
+  //   与 RegNext 门控不同, 独立 _csr 链会失配, 为 impl-only 冗余)。
 
   // ---- csr 输出寄存器 ----
   //   *_last_REG 每拍更新(仅 reset 清 0); *_bits_r 数据 latch(仅 valid 时更新, 否则保持)。
@@ -2079,9 +2060,6 @@ module xs_Rob_core
     vstart_bits_r   <= vstart_bits_next;
     if (fflags_valid_c) fflags_bits_r <= fflags_bits_c;  // golden: if(fflags_valid) latch
     if (vxsat_valid_c)  vxsat_bits_r  <= vxsat_bits_c;   // golden: if(vxsat_valid)  latch
-    trueCommitCnt_r_csr  <= trueCommitCnt_c;
-    fuseCommitCnt_r_csr  <= fuseCommitCnt_c;
-    isCommitReg_last_csr <= o_commits_isCommit;
   end
 
   assign o_csr_fflags_valid          = fflags_valid_r;
@@ -2092,7 +2070,7 @@ module xs_Rob_core
   assign o_csr_vstart_bits           = vstart_bits_r;
   assign o_csr_dirty_fs              = dirty_fs_r;
   assign o_csr_dirty_vs              = dirty_vs_r;
-  assign o_csr_perfinfo_retiredInstr = retireCounter_c[6:0];
+  assign o_csr_perfinfo_retiredInstr = retireCounter[6:0];
 
   // =====================================================================
   // 13.6 debug(6): 队头 fuType / lsIssue / lsTopdown vaddr/paddr
