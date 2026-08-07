@@ -1,6 +1,22 @@
-# CtrlBlock FM 钉点(FM 审计 2026-07)
-# golden(firtool 展平字段名) ↔ 手写核(struct/unpacked-array 寄存器)自动配对失败的
-# 1-1 对应,按命名规则从 report_unmatched_points 现场推导后 set_user_match。
+# CtrlBlock FM 钉点(FM 审计 2026-07, sidecar-compat 修订 2026-08)
+# ----------------------------------------------------------------------------
+# golden(firtool 展平字段名)↔ 手写核(struct/unpacked-array 寄存器)自动配对失败的
+# 1-1 对应, 按命名规则从**未匹配寄存器集**现场推导后 set_user_match。
+# 这些是 same-source 对称常数 0 寄存器(golden 在 SYNTHESIS 下把 debugInfo_*Time /
+# 部分 exceptionVec / debug_* 字段硬连 0; 可读核对应 struct 字段也恒 0), 值等价;
+# FM 的 auto_match_flattened_arrays 只能处理纯 name_reg[i][j], 处理不了字段名内嵌的
+# struct+array 情形 → 1962 对落单 unmatched。set_user_match 后 FM 实证 0==0 passing
+# (非 dont_verify, 非 vmucp 掩盖, 非强配)。规则+bijection 见 ctrlblock_pin_manifest.json
+# (1962 对, sha256, gen: scripts/gen_ctrlblock_pin_manifest.py)。
+#
+# ★ sidecar-compat 修订: 旧版用 `redirect -variable um_txt {report_unmatched_points}`
+#   捕获**stdout**。官方 signoff runner 在受限 child interp 里 source 本文件, 其
+#   redirect shim(sidecar_pin_redirect)捕获的是命令**返回值**, 而 FM 原生
+#   report_unmatched_points 把表打到 stdout、返回空串 → um_txt 为空 → 0 pinned
+#   (官方 gate 遗留 1962 unmatched 根因)。改用 `report_unmatched_points -reference|
+#   -implementation -list`(**返回 Tcl list**, 被 interp eval 正确捕获, 与 emitter 同 API,
+#   非 sidecar 直跑亦可)后, 两条路径都能拿到未匹配寄存器集。★
+# ----------------------------------------------------------------------------
 # 规则表(ref 相对路径 → impl u_core 下规范键):
 #   enqRob_req_<k>_bits_r_<field>_reg[b]                      -> enqRobBits_reg[k][<field>][b]
 #   delayedNotFlushedWriteBack_delayed_bits_r_<k>_exceptionVec_<j>_reg
@@ -14,20 +30,18 @@
 #   decodeBufBits_<k>_foldpc_reg[b]                           -> decodeBufBits_reg[k][foldpc][b]
 #   io_perf_<n>_value_REG_reg[b] / REG_1_reg[b]               -> perfStage0/1_reg[n][b]
 proc ctrlblock_pin_unmatched { top } {
-    redirect -variable um_txt {report_unmatched_points}
-    # impl 未匹配 DFF: 规范键(去 u_core/ 前缀与转义反斜杠) -> 实际路径
+    # sidecar-compat: -list 返回 Tcl list(命令返回值), 两条路径都能拿到; 不依赖 stdout。
+    # -reference/-implementation(无 -status)返回该侧全部未匹配点(含 compare 与 unread);
+    # 只有匹配下方寄存器命名规则的点会被钉, 非寄存器点(黑盒 pin 等)自然跳过。
     array set ilut {}
-    set refs {}
-    foreach line [split $um_txt "\n"] {
-        if {[regexp {Ref\s+DFF\S*\s+(r:\S+)} $line -> rp]} { lappend refs $rp }
-        if {[regexp {Impl\s+DFF\S*\s+(i:\S+)} $line -> ip]} {
-            set key $ip
-            regsub "^i:/WORK/${top}/" $key "" key
-            regsub "^u_core/" $key "" key
-            set key [string map {\\ ""} $key]
-            set ilut($key) $ip
-        }
+    foreach ip [report_unmatched_points -implementation -list] {
+        set key $ip
+        regsub "^i:/WORK/${top}/" $key "" key
+        regsub "^u_core/" $key "" key
+        set key [string map {\\ ""} $key]
+        set ilut($key) $ip
     }
+    set refs [report_unmatched_points -reference -list]
     set n 0
     set miss 0
     foreach rp $refs {
@@ -71,17 +85,14 @@ proc ctrlblock_pin_unmatched { top } {
             unset ilut($key)
         }
     }
-    puts "CTRLBLOCK_PINS: $n pinned, $miss ref-side un-mappable (见 unmatched_full.rpt)"
+    puts "CTRLBLOCK_PINS: $n pinned, $miss ref-side un-mappable"
 }
 ctrlblock_pin_unmatched $top
 
-# rob 内部 deqHitRedirectReg_REG/REG_1 是 firtool 同驱动复制对(Rob.sv 两侧同一份源),
-# merge pass 在 ref 侧把 REG 并入 REG_1、impl 侧未并 → impl REG 落单 unmatched。
-# 依次尝试: (a) ref 同名 REG 还在(未并)则直接钉; (b) 多对一钉到 ref 幸存者 REG_1。
-if {[catch {set_user_match "r:/WORK/$top/rob/deqHitRedirectReg_REG_reg" \
-                           "i:/WORK/$top/u_core/rob/deqHitRedirectReg_REG_reg"} m1]} {
-    if {[catch {set_user_match "r:/WORK/$top/rob/deqHitRedirectReg_REG_1_reg" \
-                               "i:/WORK/$top/u_core/rob/deqHitRedirectReg_REG_reg"} m2]} {
-        puts "CTRLBLOCK_PINS: rob deqHitRedirectReg 钉点两式均拒 ($m1 / $m2)"
-    } else { puts "CTRLBLOCK_PINS: rob deqHitRedirectReg 多对一钉到 REG_1" }
-} else { puts "CTRLBLOCK_PINS: rob deqHitRedirectReg 同名钉上" }
+# ★ rob 内部 deqHitRedirectReg 钉点已删除(2026-08): Rob 现为 partitioned interface_only
+#   黑盒(见 allow/CtrlBlock.json + Makefile FM_INTERFACE_ONLY), 其内部寄存器不 elaborate,
+#   钉黑盒内部寄存器会触发 FM-036 Unknown name(官方 gate fm_log:10314-10315 实证), 且
+#   违反 partitioned boundary 铁律(禁 pin 黑盒内部)。Rob 等价性由 Rob 自身 305 签核目标
+#   证明, 非在此跨边界钉。本文件其余钉点全部作用于 CtrlBlock **glue 层**寄存器(enqRob 打包
+#   / writeback 延迟 / redirect / decodeBuf / perf), 无任何黑盒内部或 interface_only 子模块
+#   (Rob/Rename/DecodeStage/NewDispatch/... 16 类)内部 reg 引用。
