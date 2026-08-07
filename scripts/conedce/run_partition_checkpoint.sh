@@ -265,16 +265,44 @@ have() { grep -qE "reg .*$1\b" "$REDG"; }
   #  the same per-entry s1/s2/lsIssue capture — co-sim seed 1/7/42 checks=199997
   #  errors=0). Pure set_user_match bijection, NO dont_verify, NO ref constraint;
   #  fail-closed on any FM-036. Only pinned when present in the reduced golden.
-  #  ★NOTE on debug_lsIssued★: the golden lsIssued family (debug_lsIssued_<N>) is
-  #  DELIBERATELY NOT pinned. The impl output o_debugTopDown_robHeadLsIssue reads the
-  #  primary input io_debugHeadLsIssue DIRECTLY (rtl/backend/Rob.sv L2233) — the impl
-  #  debug_lsIssued[] array is maintained but UNREAD for the output, so FM DCEs the
-  #  impl debug_lsIssued_reg cells (perf_conerun4: 0 impl-side occurrences in any FM
-  #  report, vs 160 for the read debug_s1/s2 arrays). Pinning a DCE'd impl cell would
-  #  FM-036 → EXTRA_PIN_ASSERT_FAIL (fail-closed). The 160 golden debug_lsIssued_<N>
-  #  regs stay unmatched-free, but robHeadLsIssue is still PROVABLE: golden
-  #  io_...robHeadLsIssue = _GEN_26[deqPtr] where _GEN_26[k]=(deqV==k)?io_debugHeadLsIssue
-  #  :debug_lsIssued_k, and at k=deqPtr the head selects io_debugHeadLsIssue == impl.
+  #  ★NOTE on debug_lsIssued (codex 0120-B investigated — CANNOT be pinned)★: the
+  #  golden lsIssued family (debug_lsIssued_<N>) is DELIBERATELY NOT pinned and MUST
+  #  NOT be. The impl output o_debugTopDown_robHeadLsIssue reads the primary input
+  #  io_debugHeadLsIssue DIRECTLY (rtl/backend/Rob.sv `assign o_debugTopDown_robHead-
+  #  LsIssue = io_debugHeadLsIssue;`) — the impl debug_lsIssued[] array is written but
+  #  UNREAD for any output, so FM DCEs the impl debug_lsIssued_reg cells. This is NOT
+  #  the same situation as debug_lsTopdownInfo (which HAS live impl cells: impl reads
+  #  debug_s1_bits[deqHeadIdx]/debug_s2_bits[...] → the pins create a real bijection FM
+  #  verifies). debug_lsIssued has NO impl cell to match to.
+  #  ★perf_final evidence (RC of long perf FM, /tmp/rob-perf-cone-evidence/perf_final)★:
+  #    - unmatched.rpt: 160 `Ref DFF r:/WORK/Rob/debug_lsIssued_<N>_reg` (golden-side),
+  #      and ZERO impl-side (Impl/i:) debug_lsIssued cells in ANY report
+  #      (unmatched/passing/failing/analyze_failing/unverified all = 0 impl-side; the
+  #      read debug_s1/s2 arrays show 15680 live impl cells for contrast).
+  #    - So `set_user_match r:/WORK/Rob/debug_lsIssued_<N>_reg
+  #      i:/WORK/Rob/u_core/debug_lsIssued_reg[<N>]` would reference a non-existent
+  #      impl object → 160× FM-036 → _rob_soa_pin fail-closed → EXTRA_PIN_ASSERT_FAIL
+  #      (exit 7) → the entire perf run ABORTS. (perf_final A-block currently applies
+  #      30718 pins with fail_total=0 BECAUSE debug_lsIssued is not emitted.)
+  #  ★why golden is cone-dead here (irreducible, golden-only)★: golden
+  #    io_...robHeadLsIssue = _GEN_26[deqV] where _GEN_26[k] = debug_lsIssue_k, and
+  #    debug_lsIssue_k = (deqV==k) ? io_debugHeadLsIssue : debug_lsIssued_k. At the
+  #    selected index k=deqV the guard is TRUE ⇒ golden always yields io_debugHeadLsIssue
+  #    == impl. The 160 debug_lsIssued_<N> regs feed ONLY the non-selected mux legs and
+  #    are functionally dead for this output — but FM cannot collapse the constant
+  #    select without proving (deqV==k) at k=deqV over the deqPtrVec bits, so they
+  #    remain 160 free golden cone inputs and robHeadLsIssue shows as a matched FAILING
+  #    point (perf_final failing.rpt: io_...robHeadLsIssue among 11 matched-failing;
+  #    analyze_failing.rpt: debug_lsIssued_0_reg globally-unmatched affecting it, plus
+  #    deqPtrVec_0_value[5..7] "in ref cone not impl cone").
+  #  ★conclusion★: this is a GOLDEN-ONLY cone-dead-ref (like WbDataPath's
+  #    intArbiterInputsWire[127:64] / RASStack narrow-to-golden) — NOT a matchable
+  #    bijection. Resolving robHeadLsIssue is a verdict-policy / cutpoint matter
+  #    (declare the 160 golden regs dead-ref, or constant-select the mux), NOT a
+  #    scripts-side set_user_match. Adding a "debug_lsIssued" family to
+  #    gen_perf_completion_manifest.py (16161→16321) would produce a FALSELY-green
+  #    manifest (golden-only scan cannot see the missing impl side) while the actual
+  #    FM run fails-closed — so it is NOT added. codex 0120-B outcome: NO pins.
   if have 'debug_lsTopdownInfo_0_s1_vaddr_bits'; then
     echo 'for {set n 0} {$n < 160} {incr n} {'
     echo '  _rob_soa_pin r:/WORK/Rob/debug_lsTopdownInfo_${n}_s1_vaddr_valid_reg i:/WORK/Rob/u_core/debug_s1_valid_reg\[$n\]'
