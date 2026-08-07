@@ -1,117 +1,117 @@
 {
-    "unresolved_blackbox": [
-        {
-            "id": "rob",
-            "ref_path": "r:/WORK/CtrlBlock/rob",
-            "impl_path": "i:/WORK/CtrlBlock/u_core/rob"
-        },
-        {
-            "id": "gpaMem",
-            "ref_path": "r:/WORK/CtrlBlock/gpaMem",
-            "impl_path": "i:/WORK/CtrlBlock/u_core/gpaMem"
-        },
-        {
-            "id": "dispatch",
-            "ref_path": "r:/WORK/CtrlBlock/dispatch",
-            "impl_path": "i:/WORK/CtrlBlock/u_core/dispatch"
-        },
-        {
-            "id": "decode",
-            "ref_path": "r:/WORK/CtrlBlock/decode",
-            "impl_path": "i:/WORK/CtrlBlock/u_core/decode"
-        },
-        {
-            "id": "fusionDecoder",
-            "ref_path": "r:/WORK/CtrlBlock/fusionDecoder",
-            "impl_path": "i:/WORK/CtrlBlock/u_core/fusionDecoder"
-        },
-        {
-            "id": "rat",
-            "ref_path": "r:/WORK/CtrlBlock/rat",
-            "impl_path": "i:/WORK/CtrlBlock/u_core/rat"
-        },
-        {
-            "id": "rename",
-            "ref_path": "r:/WORK/CtrlBlock/rename",
-            "impl_path": "i:/WORK/CtrlBlock/u_core/rename"
-        },
-        {
-            "id": "redirectGen",
-            "ref_path": "r:/WORK/CtrlBlock/redirectGen",
-            "impl_path": "i:/WORK/CtrlBlock/u_core/redirectGen"
-        },
-        {
-            "id": "pcMem",
-            "ref_path": "r:/WORK/CtrlBlock/pcMem",
-            "impl_path": "i:/WORK/CtrlBlock/u_core/pcMem"
-        },
-        {
-            "id": "memCtrl",
-            "ref_path": "r:/WORK/CtrlBlock/memCtrl",
-            "impl_path": "i:/WORK/CtrlBlock/u_core/memCtrl"
-        },
-        {
-            "id": "trace",
-            "ref_path": "r:/WORK/CtrlBlock/trace",
-            "impl_path": "i:/WORK/CtrlBlock/u_core/trace"
-        },
-        {
-            "id": "s5_flushFromRobValidAhead_delay",
-            "ref_path": "r:/WORK/CtrlBlock/s5_flushFromRobValidAhead_delay",
-            "impl_path": "i:/WORK/CtrlBlock/u_core/s5_flushFromRobValidAhead_delay"
-        },
-        {
-            "id": "s5_csrIsTrap_delay",
-            "ref_path": "r:/WORK/CtrlBlock/s5_csrIsTrap_delay",
-            "impl_path": "i:/WORK/CtrlBlock/u_core/s5_csrIsTrap_delay"
-        },
-        {
-            "id": "snpt",
-            "ref_path": "r:/WORK/CtrlBlock/snpt",
-            "impl_path": "i:/WORK/CtrlBlock/u_core/snpt"
-        },
-        {
-            "id": "decodePipeRenameModule",
-            "ref_path": "r:/WORK/CtrlBlock/decodePipeRenameModule",
-            "impl_path": "i:/WORK/CtrlBlock/u_core/decodePipeRenameModule"
-        },
-        {
-            "id": "decodePipeRenameModule_1",
-            "ref_path": "r:/WORK/CtrlBlock/decodePipeRenameModule_1",
-            "impl_path": "i:/WORK/CtrlBlock/u_core/decodePipeRenameModule_1"
-        },
-        {
-            "id": "decodePipeRenameModule_2",
-            "ref_path": "r:/WORK/CtrlBlock/decodePipeRenameModule_2",
-            "impl_path": "i:/WORK/CtrlBlock/u_core/decodePipeRenameModule_2"
-        },
-        {
-            "id": "decodePipeRenameModule_3",
-            "ref_path": "r:/WORK/CtrlBlock/decodePipeRenameModule_3",
-            "impl_path": "i:/WORK/CtrlBlock/u_core/decodePipeRenameModule_3"
-        },
-        {
-            "id": "decodePipeRenameModule_4",
-            "ref_path": "r:/WORK/CtrlBlock/decodePipeRenameModule_4",
-            "impl_path": "i:/WORK/CtrlBlock/u_core/decodePipeRenameModule_4"
-        },
-        {
-            "id": "decodePipeRenameModule_5",
-            "ref_path": "r:/WORK/CtrlBlock/decodePipeRenameModule_5",
-            "impl_path": "i:/WORK/CtrlBlock/u_core/decodePipeRenameModule_5"
-        },
-        {
-            "id": "renamePipeDispatch",
-            "ref_path": "r:/WORK/CtrlBlock/renamePipeDispatch",
-            "impl_path": "i:/WORK/CtrlBlock/u_core/renamePipeDispatch"
-        },
-        {
-            "id": "io_toTop_cpuHalt_delay",
-            "ref_path": "r:/WORK/CtrlBlock/io_toTop_cpuHalt_delay",
-            "impl_path": "i:/WORK/CtrlBlock/u_core/io_toTop_cpuHalt_delay"
-        }
-    ],
-    "interface_only": [],
-    "empty_blackbox": [],
-    "unmatched": []
+  "unresolved_blackbox": [],
+  "interface_only": [
+    {
+      "id": "decode",
+      "ref_path": "r:/WORK/CtrlBlock/decode",
+      "impl_path": "i:/WORK/CtrlBlock/u_core/decode"
+    },
+    {
+      "id": "decodePipeRenameModule",
+      "ref_path": "r:/WORK/CtrlBlock/decodePipeRenameModule",
+      "impl_path": "i:/WORK/CtrlBlock/u_core/decodePipeRenameModule"
+    },
+    {
+      "id": "decodePipeRenameModule_1",
+      "ref_path": "r:/WORK/CtrlBlock/decodePipeRenameModule_1",
+      "impl_path": "i:/WORK/CtrlBlock/u_core/decodePipeRenameModule_1"
+    },
+    {
+      "id": "decodePipeRenameModule_2",
+      "ref_path": "r:/WORK/CtrlBlock/decodePipeRenameModule_2",
+      "impl_path": "i:/WORK/CtrlBlock/u_core/decodePipeRenameModule_2"
+    },
+    {
+      "id": "decodePipeRenameModule_3",
+      "ref_path": "r:/WORK/CtrlBlock/decodePipeRenameModule_3",
+      "impl_path": "i:/WORK/CtrlBlock/u_core/decodePipeRenameModule_3"
+    },
+    {
+      "id": "decodePipeRenameModule_4",
+      "ref_path": "r:/WORK/CtrlBlock/decodePipeRenameModule_4",
+      "impl_path": "i:/WORK/CtrlBlock/u_core/decodePipeRenameModule_4"
+    },
+    {
+      "id": "decodePipeRenameModule_5",
+      "ref_path": "r:/WORK/CtrlBlock/decodePipeRenameModule_5",
+      "impl_path": "i:/WORK/CtrlBlock/u_core/decodePipeRenameModule_5"
+    },
+    {
+      "id": "dispatch",
+      "ref_path": "r:/WORK/CtrlBlock/dispatch",
+      "impl_path": "i:/WORK/CtrlBlock/u_core/dispatch"
+    },
+    {
+      "id": "fusionDecoder",
+      "ref_path": "r:/WORK/CtrlBlock/fusionDecoder",
+      "impl_path": "i:/WORK/CtrlBlock/u_core/fusionDecoder"
+    },
+    {
+      "id": "gpaMem",
+      "ref_path": "r:/WORK/CtrlBlock/gpaMem",
+      "impl_path": "i:/WORK/CtrlBlock/u_core/gpaMem"
+    },
+    {
+      "id": "io_toTop_cpuHalt_delay",
+      "ref_path": "r:/WORK/CtrlBlock/io_toTop_cpuHalt_delay",
+      "impl_path": "i:/WORK/CtrlBlock/u_core/io_toTop_cpuHalt_delay"
+    },
+    {
+      "id": "memCtrl",
+      "ref_path": "r:/WORK/CtrlBlock/memCtrl",
+      "impl_path": "i:/WORK/CtrlBlock/u_core/memCtrl"
+    },
+    {
+      "id": "pcMem",
+      "ref_path": "r:/WORK/CtrlBlock/pcMem",
+      "impl_path": "i:/WORK/CtrlBlock/u_core/pcMem"
+    },
+    {
+      "id": "rat",
+      "ref_path": "r:/WORK/CtrlBlock/rat",
+      "impl_path": "i:/WORK/CtrlBlock/u_core/rat"
+    },
+    {
+      "id": "redirectGen",
+      "ref_path": "r:/WORK/CtrlBlock/redirectGen",
+      "impl_path": "i:/WORK/CtrlBlock/u_core/redirectGen"
+    },
+    {
+      "id": "rename",
+      "ref_path": "r:/WORK/CtrlBlock/rename",
+      "impl_path": "i:/WORK/CtrlBlock/u_core/rename"
+    },
+    {
+      "id": "renamePipeDispatch",
+      "ref_path": "r:/WORK/CtrlBlock/renamePipeDispatch",
+      "impl_path": "i:/WORK/CtrlBlock/u_core/renamePipeDispatch"
+    },
+    {
+      "id": "rob",
+      "ref_path": "r:/WORK/CtrlBlock/rob",
+      "impl_path": "i:/WORK/CtrlBlock/u_core/rob"
+    },
+    {
+      "id": "s5_csrIsTrap_delay",
+      "ref_path": "r:/WORK/CtrlBlock/s5_csrIsTrap_delay",
+      "impl_path": "i:/WORK/CtrlBlock/u_core/s5_csrIsTrap_delay"
+    },
+    {
+      "id": "s5_flushFromRobValidAhead_delay",
+      "ref_path": "r:/WORK/CtrlBlock/s5_flushFromRobValidAhead_delay",
+      "impl_path": "i:/WORK/CtrlBlock/u_core/s5_flushFromRobValidAhead_delay"
+    },
+    {
+      "id": "snpt",
+      "ref_path": "r:/WORK/CtrlBlock/snpt",
+      "impl_path": "i:/WORK/CtrlBlock/u_core/snpt"
+    },
+    {
+      "id": "trace",
+      "ref_path": "r:/WORK/CtrlBlock/trace",
+      "impl_path": "i:/WORK/CtrlBlock/u_core/trace"
+    }
+  ],
+  "empty_blackbox": [],
+  "unmatched": []
 }
