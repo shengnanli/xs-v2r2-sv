@@ -140,6 +140,11 @@ module xs_Rob_core
   // ---- debug: 每条目 debug 信息的入队/更新输入 ----
   input  logic [34:0]                enq_fuType   [RENAME_WIDTH], // 各口 uop.fuType(入队写 debug_microOp)
   input  logic                       io_debugHeadLsIssue,         // 队头 ls 是否已发射(topdown)
+  // ★tracePipe itype 修 (codex 0121)★ isInterrupt latched(供 trace block0 itype 覆盖)。
+  //  wrapper io_exception_bits_isInterrupt_r(no-reset, exceptionHappen 门控 <= o_intrEnable,
+  //  已 FM 匹配 golden L126250 同源 reg)回连进本端口 → core trace 读与 golden 同一 matched reg,
+  //  删掉 core 冗余带 reset 的 isInterrupt_r 副本(消 name-unmatched)。
+  input  logic                       io_isInterrupt_latched,      // = wrapper isInterrupt_r(golden io_exception_bits_isInterrupt_r)
   // lsTopdownInfo 3 口(load/store 拓扑 topdown 反馈, 按 robIdx 更新对应条目)
   input  logic [PTR_W-1:0]           io_lsTopdown_s1_robIdx [3],
   input  logic [2:0]                 io_lsTopdown_s1_valid,       // 3 口 s1_vaddr_valid
@@ -1765,7 +1770,8 @@ module xs_Rob_core
   logic [COMMIT_WIDTH-1:0] perfLoad_r, perfBranch_r, perfStore_r;  // RegEnable(vec, isCommit)
   logic [COMMIT_WIDTH-1:0] fuse_r;                    // RegEnable(fuseVec, isCommit)
   logic [9:0]              trueCommitCnt_r;           // RegEnable(sum instrSize, isCommit)
-  logic                    isInterrupt_r;             // RegEnable(intrEnable, exceptionHappen) —— 供 trace itype 覆盖
+  // ★tracePipe itype 修 (codex 0121)★ core 冗余 isInterrupt_r(带 reset, 只喂 trace)已删,
+  //  改用 wrapper matched reg 回连的 io_isInterrupt_latched(见端口 + trace block0 itype)。
 
   // —— 组合中间量 ——
   // popcount 帮助函数(8 位 one-per-bank 求和, 结果 [3:0])。
@@ -1898,10 +1904,10 @@ module xs_Rob_core
       trueCommitCnt_r <= trueCommitCnt_next;
     end
 
-  // isInterrupt_r = RegEnable(intrEnable, exceptionHappen)(golden 同门控)。
-  always_ff @(posedge clock or posedge reset)
-    if (reset)                 isInterrupt_r <= 1'b0;
-    else if (exceptionHappen)  isInterrupt_r <= intrEnable;
+  // ★tracePipe itype 修 (codex 0121)★ 原 core isInterrupt_r RegEnable(带 reset)已删。
+  //  golden 用【单一】no-reset io_exception_bits_isInterrupt_r(L126250 exceptionHappen<=intrEnable)
+  //  同喂异常输出 + trace itype。impl 该 reg 已在 wrapper(no-reset, exceptionHappen 门控 <= o_intrEnable,
+  //  FM 匹配 golden)并回连到 core io_isInterrupt_latched → trace 读同源, 不再另存副本。
 
   // =====================================================================
   // 14. trace 提交信息(io_trace_traceCommitInfo_blocks_0..7) —— 纯组合。
@@ -1910,7 +1916,7 @@ module xs_Rob_core
   //       block0.valid  = io_exception_valid_REG | (isCommit & cv[0])
   //       blockN.valid  =                          (isCommit & cv[N])   (N>=1)
   //       ftqIdx/Offset = commitInfo[N].ftq_idx_value / ftq_offset
-  //       itype[0]      = exValidReg ? {2'h0, isInterrupt_r?2'h2:2'h1} : commitInfo[0].itype
+  //       itype[0]      = exValidReg ? {2'h0, io_isInterrupt_latched?2'h2:2'h1} : commitInfo[0].itype
   //       itype[N>=1]   =                                                 commitInfo[N].itype
   //       iretire[0]    = exValidReg ? 4'h0 : commitInfo[0].iretire
   //       iretire[N>=1] =                     commitInfo[N].iretire
@@ -1928,7 +1934,7 @@ module xs_Rob_core
     // block0 异常覆盖(io_exception_valid_REG = exceptionValidReg)。
     o_trace_valid[0]   = exceptionValidReg | (o_commits_isCommit & o_commits_commitValid[0]);
     o_trace_itype[0]   = exceptionValidReg
-                       ? {2'h0, (isInterrupt_r ? 2'h2 : 2'h1)}
+                       ? {2'h0, (io_isInterrupt_latched ? 2'h2 : 2'h1)}
                        : commitInfo[0].itype;
     o_trace_iretire[0] = exceptionValidReg ? 4'h0 : commitInfo[0].iretire;
   end
@@ -2183,6 +2189,19 @@ module xs_Rob_core
   logic [IDX_SPACE-1:0] dbgS1ValidVec, dbgS2ValidVec;
   logic [49:0]  dbgS1BitsVec [IDX_SPACE];
   logic [47:0]  dbgS2BitsVec [IDX_SPACE];
+  // ★robHeadLsIssue 修 (codex 0121)★ 恢复 golden 的 mux 读取结构:
+  //   golden io_debugTopDown_toDispatch_robHeadLsIssue = _GEN_26[deqV],
+  //   _GEN_26 = {255:0} 全存读向量, [k] = debug_lsIssue_k (k<160), 高位 160..255 pad = debug_lsIssue_0。
+  //   debug_lsIssue_k = (deqV==k) ? io_debugHeadLsIssue : debug_lsIssued[k] (golden 15303-15311)。
+  //   deqV==k 处恒选 io_debugHeadLsIssue(功能=原捷径值不变), 但输出显式读全部
+  //   debug_lsIssued[] 寄存器 → 该 160-reg 数组不再被 FM DCE, 与 golden debug_lsIssued_N 逐位匹配。
+  logic         dbgLsIssueVec [IDX_SPACE];   // = golden debug_lsIssue_k mux 结果
+  always_comb begin
+    for (int i = 0; i < IDX_SPACE; i++)
+      dbgLsIssueVec[i] = (deqHeadIdx == PTR_W'(0)) ? io_debugHeadLsIssue : debug_lsIssued[0]; // pad = debug_lsIssue_0
+    for (int i = 0; i < ROB_SIZE; i++)
+      dbgLsIssueVec[i] = (deqHeadIdx == PTR_W'(i)) ? io_debugHeadLsIssue : debug_lsIssued[i];
+  end
   // ★perf6 修★ golden firtool 读数组 _GEN_187(fuType)/_GEN_186(s1)/... 是 [255:0]
   //  padded, 高位 160..255 填【entry-0】(debug_microOp_debugReg_0_*), 非 'x。旧版填 'x
   //  → FM 自由队头下标≥160 时 impl 出 X 而 golden 出 entry-0 → io_debugRobHead_fuType
@@ -2204,7 +2223,7 @@ module xs_Rob_core
     end
   end
   assign o_debugRobHead_fuType             = dbgFuTypeVec[deqHeadIdx];
-  assign o_debugTopDown_robHeadLsIssue     = io_debugHeadLsIssue; // = debug_lsIssue[deqV], deqV==head
+  assign o_debugTopDown_robHeadLsIssue     = dbgLsIssueVec[deqHeadIdx]; // golden _GEN_26[deqV] mux (读全 debug_lsIssued[])
   assign o_debugTopDown_robHeadVaddr_valid = dbgS1ValidVec[deqHeadIdx];
   assign o_debugTopDown_robHeadVaddr_bits  = dbgS1BitsVec[deqHeadIdx];
   assign o_debugTopDown_robHeadPaddr_valid = dbgS2ValidVec[deqHeadIdx];

@@ -4801,6 +4801,12 @@ module tb;
   assign lsq_uop_robidx_value[1] = io_lsq_uop_1_robIdx_value;
   assign lsq_uop_robidx_value[2] = io_lsq_uop_2_robIdx_value;
 
+  // ---- [tracePipe itype 修 codex 0121] core 新增 io_isInterrupt_latched 输入 ----
+  //  co-sim 下从 golden 同源 reg u_g.io_exception_bits_isInterrupt_r 取(golden 单一 reg
+  //  同喂异常输出 + trace itype)→ 可读核 trace itype 与 golden 逐拍比对同源值。
+  logic io_isInterrupt_latched;
+  assign io_isInterrupt_latched = u_g.io_exception_bits_isInterrupt_r;
+
   xs_Rob_core u_i (.*);
 
   // ===================================================================

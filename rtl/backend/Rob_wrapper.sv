@@ -4302,6 +4302,13 @@ module Rob(
   assign lsq_uop_robidx_value[1] = io_lsq_uop_1_robIdx_value;
   assign lsq_uop_robidx_value[2] = io_lsq_uop_2_robIdx_value;
 
+  // ---- [tracePipe itype 修 codex 0121] core 新增 io_isInterrupt_latched 输入 ----
+  //  回连 wrapper io_exception_bits_isInterrupt_r(no-reset, o_exceptionHappen 门控 <= o_intrEnable;
+  //  FM 匹配 golden L126250 同源 reg)供 core trace block0 itype 覆盖。删了 core 冗余 isInterrupt_r
+  //  副本(带 reset, name-unmatched)。net 声明须在 u_core(.*) 前(供 .* 绑定); 其 continuous
+  //  assign 驱动放在 io_exception_bits_isInterrupt_r reg 声明之后(见下方 assign)。
+  logic io_isInterrupt_latched;
+
   // ---- u_i 输出 ----
   // toVecExcpMod.excpInfo(10 口)
   // perf(18)/trace(48) 核输出(在 tb_perftrace.sv 中做 cycle-exact 比对; 此 tap tb 仅悬空占位供 .* 绑定)
@@ -8337,6 +8344,8 @@ module Rob(
   assign io_exception_bits_isFetchMalAddr = io_exception_bits_isFetchMalAddr_r;
   assign io_exception_bits_isHls = io_exception_bits_isHls_r;
   assign io_exception_bits_isInterrupt = io_exception_bits_isInterrupt_r;
+  // [tracePipe itype 修 codex 0121] 回连同源 matched reg 到 core io_isInterrupt_latched(net 上方声明)。
+  assign io_isInterrupt_latched = io_exception_bits_isInterrupt_r;
   assign io_exception_bits_singleStep = io_exception_bits_singleStep_r;
   assign io_exception_bits_trigger = io_exception_bits_trigger_r;
   assign io_rabCommits_commitValid_0 = io_rabCommits_REG_commitValid_0;
