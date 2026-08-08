@@ -1,0 +1,4 @@
+SIGNOFF_RESULT XSTile: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=assembly fm_shell_rc=0 validator_rc=0)
+run_id: SGN-XSTile-1786209548
+impl_commit: 60e6d1444ebec1a3ae209dd6b7089a3ae77f6b54
+manifest_sha256: 20ae036247646e670e4c712055265980de7b105d0b9d4cf920924cf392a09ea1

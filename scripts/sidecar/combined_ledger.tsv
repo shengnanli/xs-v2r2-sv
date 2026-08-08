@@ -303,5 +303,5 @@ WrBypass_41	SUCCEEDED	SIGNOFF_PASS
 WrBypass_43	SUCCEEDED	SIGNOFF_PASS
 WritebackQueue	SUCCEEDED	SIGNOFF_PASS
 XSCore	SUCCEEDED	SIGNOFF_PASS	official gate PASS(validator_rc=0, config 65b3e12c assembly+allow 3对): native SUCCEEDED 30820/0/0 全unmatched零(regen 8e11e7eb清31196 stale difftest pin); 3 child fresh receipt齐: Frontend SIGNOFF_PASS+Backend ce846bd8+MemBlock fresh campaign 15/15
-XSTile	FAILED	PROOF_GAP
+XSTile	SUCCEEDED	SIGNOFF_PASS	official gate PASS(validator_rc=0, config 60e6d144 L2Top配方上提): native SUCCEEDED 185040/0/0 全unmatched零(20 inner_beu failing+28 sourceId 经两侧elaborate 15直子+35叶全消); allow 130+4 与Lane D预测完全吻合; children XSCore/L2Top SIGNOFF_PASS
 XSTop	FAILED	PROOF_GAP
