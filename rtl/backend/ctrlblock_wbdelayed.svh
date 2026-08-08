@@ -564,7 +564,6 @@
     wbd18_trigger <= wbInBits[18].trigger;
     wbd18_debug_isMMIO <= wbInBits[18].debug_isMMIO;
     wbd18_debug_isNCIO <= wbInBits[18].debug_isNCIO;
-    wbd18_debug_isPerfCnt <= wbInBits[18].debug_isPerfCnt;
     wbd18_debugInfo_enqRsTime <= wbInBits[18].debugInfo_enqRsTime;
     wbd18_debugInfo_issueTime <= wbInBits[18].debugInfo_issueTime;
     wbd18_debugInfo_selectTime <= wbInBits[18].debugInfo_selectTime;
@@ -728,29 +727,15 @@
     wbd20_debugInfo_enqRsTime <= wbInBits[20].debugInfo_enqRsTime;
     wbd20_debugInfo_issueTime <= wbInBits[20].debugInfo_issueTime;
     wbd20_debugInfo_selectTime <= wbInBits[20].debugInfo_selectTime;
-    wbd20_exceptionVec_0 <= wbInBits[20].exceptionVec[0];
-    wbd20_exceptionVec_1 <= wbInBits[20].exceptionVec[1];
-    wbd20_exceptionVec_2 <= wbInBits[20].exceptionVec[2];
     wbd20_exceptionVec_3 <= wbInBits[20].exceptionVec[3];
     wbd20_exceptionVec_4 <= wbInBits[20].exceptionVec[4];
     wbd20_exceptionVec_5 <= wbInBits[20].exceptionVec[5];
     wbd20_exceptionVec_6 <= wbInBits[20].exceptionVec[6];
     wbd20_exceptionVec_7 <= wbInBits[20].exceptionVec[7];
-    wbd20_exceptionVec_8 <= wbInBits[20].exceptionVec[8];
-    wbd20_exceptionVec_9 <= wbInBits[20].exceptionVec[9];
-    wbd20_exceptionVec_10 <= wbInBits[20].exceptionVec[10];
-    wbd20_exceptionVec_11 <= wbInBits[20].exceptionVec[11];
-    wbd20_exceptionVec_12 <= wbInBits[20].exceptionVec[12];
     wbd20_exceptionVec_13 <= wbInBits[20].exceptionVec[13];
-    wbd20_exceptionVec_14 <= wbInBits[20].exceptionVec[14];
     wbd20_exceptionVec_15 <= wbInBits[20].exceptionVec[15];
-    wbd20_exceptionVec_16 <= wbInBits[20].exceptionVec[16];
-    wbd20_exceptionVec_17 <= wbInBits[20].exceptionVec[17];
-    wbd20_exceptionVec_18 <= wbInBits[20].exceptionVec[18];
     wbd20_exceptionVec_19 <= wbInBits[20].exceptionVec[19];
-    wbd20_exceptionVec_20 <= wbInBits[20].exceptionVec[20];
     wbd20_exceptionVec_21 <= wbInBits[20].exceptionVec[21];
-    wbd20_exceptionVec_22 <= wbInBits[20].exceptionVec[22];
     wbd20_exceptionVec_23 <= wbInBits[20].exceptionVec[23];
   end
   always_comb begin
@@ -986,29 +971,15 @@
     wbd23_vls_vpu_vsew <= wbInBits[23].vls_vpu_vsew;
     wbd23_vls_vpu_vstart <= wbInBits[23].vls_vpu_vstart;
     wbd23_vls_vpu_vuopIdx <= wbInBits[23].vls_vpu_vuopIdx;
-    wbd23_exceptionVec_0 <= wbInBits[23].exceptionVec[0];
-    wbd23_exceptionVec_1 <= wbInBits[23].exceptionVec[1];
-    wbd23_exceptionVec_2 <= wbInBits[23].exceptionVec[2];
     wbd23_exceptionVec_3 <= wbInBits[23].exceptionVec[3];
     wbd23_exceptionVec_4 <= wbInBits[23].exceptionVec[4];
     wbd23_exceptionVec_5 <= wbInBits[23].exceptionVec[5];
     wbd23_exceptionVec_6 <= wbInBits[23].exceptionVec[6];
     wbd23_exceptionVec_7 <= wbInBits[23].exceptionVec[7];
-    wbd23_exceptionVec_8 <= wbInBits[23].exceptionVec[8];
-    wbd23_exceptionVec_9 <= wbInBits[23].exceptionVec[9];
-    wbd23_exceptionVec_10 <= wbInBits[23].exceptionVec[10];
-    wbd23_exceptionVec_11 <= wbInBits[23].exceptionVec[11];
-    wbd23_exceptionVec_12 <= wbInBits[23].exceptionVec[12];
     wbd23_exceptionVec_13 <= wbInBits[23].exceptionVec[13];
-    wbd23_exceptionVec_14 <= wbInBits[23].exceptionVec[14];
     wbd23_exceptionVec_15 <= wbInBits[23].exceptionVec[15];
-    wbd23_exceptionVec_16 <= wbInBits[23].exceptionVec[16];
-    wbd23_exceptionVec_17 <= wbInBits[23].exceptionVec[17];
-    wbd23_exceptionVec_18 <= wbInBits[23].exceptionVec[18];
     wbd23_exceptionVec_19 <= wbInBits[23].exceptionVec[19];
-    wbd23_exceptionVec_20 <= wbInBits[23].exceptionVec[20];
     wbd23_exceptionVec_21 <= wbInBits[23].exceptionVec[21];
-    wbd23_exceptionVec_22 <= wbInBits[23].exceptionVec[22];
     wbd23_exceptionVec_23 <= wbInBits[23].exceptionVec[23];
   end
   always_comb begin
@@ -1111,9 +1082,6 @@
     wbd24_trigger <= wbInBits[24].trigger;
     wbd24_v0Wen <= wbInBits[24].v0Wen;
     wbd24_vecWen <= wbInBits[24].vecWen;
-    wbd24_debug_isMMIO <= wbInBits[24].debug_isMMIO;
-    wbd24_debug_isNCIO <= wbInBits[24].debug_isNCIO;
-    wbd24_debug_isPerfCnt <= wbInBits[24].debug_isPerfCnt;
     wbd24_debugInfo_enqRsTime <= wbInBits[24].debugInfo_enqRsTime;
     wbd24_debugInfo_issueTime <= wbInBits[24].debugInfo_issueTime;
     wbd24_debugInfo_selectTime <= wbInBits[24].debugInfo_selectTime;
@@ -1198,4 +1166,49 @@
   always_comb begin
     wbDelayedBits[26] = '{default:'0};
     wbDelayedBits[26].robIdx_value = wbd26_robIdx_value;
+  end
+
+  // ==== [codex 0129 exact-equation] 32 hold-clear 状态改写为 golden 同形方程 ====
+  //  golden: reg <= ~io_fromWB_wbData_<N>_valid & reg (无条件, 无 reset, 只清不置)。
+  //  原 impl 写法 if(wbInValid[N]) reg <= wbInBits(D经wbpack默认恒0) 状态转移等价, 但
+  //  FM 对两种语法常数折叠不同→13 Constrained-0X unmatched。同形后两侧折叠一致。
+  always_ff @(posedge clock) begin // lane 18 hold-clear (golden 同形)
+    wbd18_debug_isPerfCnt <= ~wbInValid[18] & wbd18_debug_isPerfCnt;
+  end
+  always_ff @(posedge clock) begin // lane 20 hold-clear (golden 同形)
+    wbd20_exceptionVec_0 <= ~wbInValid[20] & wbd20_exceptionVec_0;
+    wbd20_exceptionVec_1 <= ~wbInValid[20] & wbd20_exceptionVec_1;
+    wbd20_exceptionVec_10 <= ~wbInValid[20] & wbd20_exceptionVec_10;
+    wbd20_exceptionVec_11 <= ~wbInValid[20] & wbd20_exceptionVec_11;
+    wbd20_exceptionVec_12 <= ~wbInValid[20] & wbd20_exceptionVec_12;
+    wbd20_exceptionVec_14 <= ~wbInValid[20] & wbd20_exceptionVec_14;
+    wbd20_exceptionVec_16 <= ~wbInValid[20] & wbd20_exceptionVec_16;
+    wbd20_exceptionVec_17 <= ~wbInValid[20] & wbd20_exceptionVec_17;
+    wbd20_exceptionVec_18 <= ~wbInValid[20] & wbd20_exceptionVec_18;
+    wbd20_exceptionVec_2 <= ~wbInValid[20] & wbd20_exceptionVec_2;
+    wbd20_exceptionVec_20 <= ~wbInValid[20] & wbd20_exceptionVec_20;
+    wbd20_exceptionVec_22 <= ~wbInValid[20] & wbd20_exceptionVec_22;
+    wbd20_exceptionVec_8 <= ~wbInValid[20] & wbd20_exceptionVec_8;
+    wbd20_exceptionVec_9 <= ~wbInValid[20] & wbd20_exceptionVec_9;
+  end
+  always_ff @(posedge clock) begin // lane 23 hold-clear (golden 同形)
+    wbd23_exceptionVec_0 <= ~wbInValid[23] & wbd23_exceptionVec_0;
+    wbd23_exceptionVec_1 <= ~wbInValid[23] & wbd23_exceptionVec_1;
+    wbd23_exceptionVec_10 <= ~wbInValid[23] & wbd23_exceptionVec_10;
+    wbd23_exceptionVec_11 <= ~wbInValid[23] & wbd23_exceptionVec_11;
+    wbd23_exceptionVec_12 <= ~wbInValid[23] & wbd23_exceptionVec_12;
+    wbd23_exceptionVec_14 <= ~wbInValid[23] & wbd23_exceptionVec_14;
+    wbd23_exceptionVec_16 <= ~wbInValid[23] & wbd23_exceptionVec_16;
+    wbd23_exceptionVec_17 <= ~wbInValid[23] & wbd23_exceptionVec_17;
+    wbd23_exceptionVec_18 <= ~wbInValid[23] & wbd23_exceptionVec_18;
+    wbd23_exceptionVec_2 <= ~wbInValid[23] & wbd23_exceptionVec_2;
+    wbd23_exceptionVec_20 <= ~wbInValid[23] & wbd23_exceptionVec_20;
+    wbd23_exceptionVec_22 <= ~wbInValid[23] & wbd23_exceptionVec_22;
+    wbd23_exceptionVec_8 <= ~wbInValid[23] & wbd23_exceptionVec_8;
+    wbd23_exceptionVec_9 <= ~wbInValid[23] & wbd23_exceptionVec_9;
+  end
+  always_ff @(posedge clock) begin // lane 24 hold-clear (golden 同形)
+    wbd24_debug_isMMIO <= ~wbInValid[24] & wbd24_debug_isMMIO;
+    wbd24_debug_isNCIO <= ~wbInValid[24] & wbd24_debug_isNCIO;
+    wbd24_debug_isPerfCnt <= ~wbInValid[24] & wbd24_debug_isPerfCnt;
   end
