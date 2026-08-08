@@ -1,0 +1,4 @@
+SIGNOFF_RESULT XSTop: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=assembly fm_shell_rc=0 validator_rc=0)
+run_id: SGN-XSTop-1786215162
+impl_commit: bce861e72d41aa3a3b70f0708d571d81abfc5b3e
+manifest_sha256: 6895de09ac0ceda0e6fe9535715e1d4a17be8db6f91f6a33c69e728a92384071
