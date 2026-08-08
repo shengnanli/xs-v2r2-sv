@@ -268,11 +268,11 @@
       "entry": "scripts/fm_eq.tcl",
       "proof_mode": "assembly",
       "config_status": "CONFIGURED",
-      "required_verdict": "SUCCEEDED",
+      "required_verdict": "PASS_DEAD_REF",
       "allow_ref": "verif/signoff/allow/CtrlBlock.json",
       "rationale": "glue-partition assembly: 22实例/16类型全对称interface_only黑盒(allow/CtrlBlock.json). glue侧FM native SUCCEEDED 54839/0. ★依赖已闭合: Rob(PARTITIONED_SUCCEEDED)+Rename/NewDispatch/DecodeStage(SIGNOFF_PASS)+RenameTableWrapper/RenameTable_1/2/3等aux PASS. wbDelayedBits golden-faithful窄化消7608 impl-only死寄存(co-sim seed1/7/42 200k errors0). 26 golden-only unread_ref(firtool reg-wideningcfiUpdate_target[50:63]/ratOldPest[7])→dead_ref/CtrlBlock.json PASS_DEAD_REF. 无vmucp(无matched-unread)",
       "verify_matched_unread_compare_points": "false",
-      "dead_ref": "",
+      "dead_ref": "verif/signoff/dead_ref/CtrlBlock.json",
       "reference_kind": "golden",
       "derivative_id": "",
       "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
