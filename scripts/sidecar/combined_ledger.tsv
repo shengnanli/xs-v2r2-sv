@@ -149,7 +149,7 @@ MSHRCtl	PASS_DEAD_REF	SIGNOFF_PASS
 MSHRSelector	SUCCEEDED	SIGNOFF_PASS
 MainPipe	PASS_DEAD_REF	SIGNOFF_PASS
 MainPipe_1	SUCCEEDED	SIGNOFF_PASS
-MemBlock	WORKING_POLICY_PARENT_CLEAN_RC0	PROOF_GAP
+MemBlock	SUCCEEDED	SIGNOFF_PASS	fresh-provenance campaign(codex 0130 Lane A)@当前HEAD: 14 AUX+parent 15/15 gate=PASS RC0(evidence /tmp/memblock-fresh-evidence→signoff-evidence-refresh/MemBlock*); parent native SUCCEEDED assembly+vmucp; 34 黑盒child全闭合(20×305+14 AUX fresh); 旧WORKING_POLICY stale receipt已被fresh取代
 MissQueue	PASS_DEAD_REF	SIGNOFF_PASS
 MulUnit	SUCCEEDED	SIGNOFF_PASS
 NewCSR	SUCCEEDED	SIGNOFF_PASS
@@ -302,6 +302,6 @@ WrBypass_33	SUCCEEDED	SIGNOFF_PASS
 WrBypass_41	SUCCEEDED	SIGNOFF_PASS
 WrBypass_43	SUCCEEDED	SIGNOFF_PASS
 WritebackQueue	SUCCEEDED	SIGNOFF_PASS
-XSCore	PARTIAL	PROOF_GAP
+XSCore	SUCCEEDED	SIGNOFF_PASS	official gate PASS(validator_rc=0, config 65b3e12c assembly+allow 3对): native SUCCEEDED 30820/0/0 全unmatched零(regen 8e11e7eb清31196 stale difftest pin); 3 child fresh receipt齐: Frontend SIGNOFF_PASS+Backend ce846bd8+MemBlock fresh campaign 15/15
 XSTile	FAILED	PROOF_GAP
 XSTop	FAILED	PROOF_GAP

@@ -1,0 +1,4 @@
+SIGNOFF_RESULT XSCore: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=assembly fm_shell_rc=0 validator_rc=0)
+run_id: SGN-XSCore-1786206490
+impl_commit: 65b3e12c56e41442007bf8d787f4d9c7e22b3c1b
+manifest_sha256: e059de91a319c8467dd787b1a2f37cef805440f84f9febd713fcad18899f0052
