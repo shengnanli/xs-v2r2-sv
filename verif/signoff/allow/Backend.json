@@ -1,0 +1,388 @@
+{
+    "unresolved_blackbox": [
+        {
+            "id": "Backend__inner_fpExuBlock__exus",
+            "ref_path": "r:/WORK/Backend/inner_fpExuBlock/exus",
+            "impl_path": "i:/WORK/Backend/u_core/inner_fpExuBlock/exus"
+        },
+        {
+            "id": "Backend__inner_fpExuBlock__exus_1",
+            "ref_path": "r:/WORK/Backend/inner_fpExuBlock/exus_1",
+            "impl_path": "i:/WORK/Backend/u_core/inner_fpExuBlock/exus_1"
+        },
+        {
+            "id": "Backend__inner_fpExuBlock__exus_2",
+            "ref_path": "r:/WORK/Backend/inner_fpExuBlock/exus_2",
+            "impl_path": "i:/WORK/Backend/u_core/inner_fpExuBlock/exus_2"
+        },
+        {
+            "id": "Backend__inner_fpExuBlock__exus_3",
+            "ref_path": "r:/WORK/Backend/inner_fpExuBlock/exus_3",
+            "impl_path": "i:/WORK/Backend/u_core/inner_fpExuBlock/exus_3"
+        },
+        {
+            "id": "Backend__inner_fpExuBlock__exus_4",
+            "ref_path": "r:/WORK/Backend/inner_fpExuBlock/exus_4",
+            "impl_path": "i:/WORK/Backend/u_core/inner_fpExuBlock/exus_4"
+        },
+        {
+            "id": "Backend__inner_fpScheduler__IssueQueueFaluFcvtF2vFmacFdiv",
+            "ref_path": "r:/WORK/Backend/inner_fpScheduler/IssueQueueFaluFcvtF2vFmacFdiv",
+            "impl_path": "i:/WORK/Backend/u_core/inner_fpScheduler/IssueQueueFaluFcvtF2vFmacFdiv"
+        },
+        {
+            "id": "Backend__inner_fpScheduler__IssueQueueFaluFmac",
+            "ref_path": "r:/WORK/Backend/inner_fpScheduler/IssueQueueFaluFmac",
+            "impl_path": "i:/WORK/Backend/u_core/inner_fpScheduler/IssueQueueFaluFmac"
+        },
+        {
+            "id": "Backend__inner_fpScheduler__IssueQueueFaluFmacFdiv",
+            "ref_path": "r:/WORK/Backend/inner_fpScheduler/IssueQueueFaluFmacFdiv",
+            "impl_path": "i:/WORK/Backend/u_core/inner_fpScheduler/IssueQueueFaluFmacFdiv"
+        },
+        {
+            "id": "Backend__inner_intExuBlock__exus",
+            "ref_path": "r:/WORK/Backend/inner_intExuBlock/exus",
+            "impl_path": "i:/WORK/Backend/u_core/inner_intExuBlock/exus"
+        },
+        {
+            "id": "Backend__inner_intExuBlock__exus_1",
+            "ref_path": "r:/WORK/Backend/inner_intExuBlock/exus_1",
+            "impl_path": "i:/WORK/Backend/u_core/inner_intExuBlock/exus_1"
+        },
+        {
+            "id": "Backend__inner_intExuBlock__exus_2",
+            "ref_path": "r:/WORK/Backend/inner_intExuBlock/exus_2",
+            "impl_path": "i:/WORK/Backend/u_core/inner_intExuBlock/exus_2"
+        },
+        {
+            "id": "Backend__inner_intExuBlock__exus_3",
+            "ref_path": "r:/WORK/Backend/inner_intExuBlock/exus_3",
+            "impl_path": "i:/WORK/Backend/u_core/inner_intExuBlock/exus_3"
+        },
+        {
+            "id": "Backend__inner_intExuBlock__exus_4",
+            "ref_path": "r:/WORK/Backend/inner_intExuBlock/exus_4",
+            "impl_path": "i:/WORK/Backend/u_core/inner_intExuBlock/exus_4"
+        },
+        {
+            "id": "Backend__inner_intExuBlock__exus_5",
+            "ref_path": "r:/WORK/Backend/inner_intExuBlock/exus_5",
+            "impl_path": "i:/WORK/Backend/u_core/inner_intExuBlock/exus_5"
+        },
+        {
+            "id": "Backend__inner_intExuBlock__exus_6",
+            "ref_path": "r:/WORK/Backend/inner_intExuBlock/exus_6",
+            "impl_path": "i:/WORK/Backend/u_core/inner_intExuBlock/exus_6"
+        },
+        {
+            "id": "Backend__inner_intExuBlock__exus_7",
+            "ref_path": "r:/WORK/Backend/inner_intExuBlock/exus_7",
+            "impl_path": "i:/WORK/Backend/u_core/inner_intExuBlock/exus_7"
+        },
+        {
+            "id": "Backend__inner_intScheduler__IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v",
+            "ref_path": "r:/WORK/Backend/inner_intScheduler/IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v",
+            "impl_path": "i:/WORK/Backend/u_core/inner_intScheduler/IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v"
+        },
+        {
+            "id": "Backend__inner_intScheduler__IssueQueueAluCsrFenceDiv",
+            "ref_path": "r:/WORK/Backend/inner_intScheduler/IssueQueueAluCsrFenceDiv",
+            "impl_path": "i:/WORK/Backend/u_core/inner_intScheduler/IssueQueueAluCsrFenceDiv"
+        },
+        {
+            "id": "Backend__inner_intScheduler__IssueQueueAluMulBkuBrhJmp",
+            "ref_path": "r:/WORK/Backend/inner_intScheduler/IssueQueueAluMulBkuBrhJmp",
+            "impl_path": "i:/WORK/Backend/u_core/inner_intScheduler/IssueQueueAluMulBkuBrhJmp"
+        },
+        {
+            "id": "Backend__inner_intScheduler__IssueQueueAluMulBkuBrhJmp_1",
+            "ref_path": "r:/WORK/Backend/inner_intScheduler/IssueQueueAluMulBkuBrhJmp_1",
+            "impl_path": "i:/WORK/Backend/u_core/inner_intScheduler/IssueQueueAluMulBkuBrhJmp_1"
+        },
+        {
+            "id": "Backend__inner_memScheduler__IssueQueueLdu",
+            "ref_path": "r:/WORK/Backend/inner_memScheduler/IssueQueueLdu",
+            "impl_path": "i:/WORK/Backend/u_core/inner_memScheduler/IssueQueueLdu"
+        },
+        {
+            "id": "Backend__inner_memScheduler__IssueQueueLdu_1",
+            "ref_path": "r:/WORK/Backend/inner_memScheduler/IssueQueueLdu_1",
+            "impl_path": "i:/WORK/Backend/u_core/inner_memScheduler/IssueQueueLdu_1"
+        },
+        {
+            "id": "Backend__inner_memScheduler__IssueQueueLdu_2",
+            "ref_path": "r:/WORK/Backend/inner_memScheduler/IssueQueueLdu_2",
+            "impl_path": "i:/WORK/Backend/u_core/inner_memScheduler/IssueQueueLdu_2"
+        },
+        {
+            "id": "Backend__inner_memScheduler__IssueQueueStaMou",
+            "ref_path": "r:/WORK/Backend/inner_memScheduler/IssueQueueStaMou",
+            "impl_path": "i:/WORK/Backend/u_core/inner_memScheduler/IssueQueueStaMou"
+        },
+        {
+            "id": "Backend__inner_memScheduler__IssueQueueStaMou_1",
+            "ref_path": "r:/WORK/Backend/inner_memScheduler/IssueQueueStaMou_1",
+            "impl_path": "i:/WORK/Backend/u_core/inner_memScheduler/IssueQueueStaMou_1"
+        },
+        {
+            "id": "Backend__inner_memScheduler__IssueQueueStdMoud",
+            "ref_path": "r:/WORK/Backend/inner_memScheduler/IssueQueueStdMoud",
+            "impl_path": "i:/WORK/Backend/u_core/inner_memScheduler/IssueQueueStdMoud"
+        },
+        {
+            "id": "Backend__inner_memScheduler__IssueQueueStdMoud_1",
+            "ref_path": "r:/WORK/Backend/inner_memScheduler/IssueQueueStdMoud_1",
+            "impl_path": "i:/WORK/Backend/u_core/inner_memScheduler/IssueQueueStdMoud_1"
+        },
+        {
+            "id": "Backend__inner_memScheduler__IssueQueueVlduVstu",
+            "ref_path": "r:/WORK/Backend/inner_memScheduler/IssueQueueVlduVstu",
+            "impl_path": "i:/WORK/Backend/u_core/inner_memScheduler/IssueQueueVlduVstu"
+        },
+        {
+            "id": "Backend__inner_memScheduler__IssueQueueVlduVstuVseglduVsegstu",
+            "ref_path": "r:/WORK/Backend/inner_memScheduler/IssueQueueVlduVstuVseglduVsegstu",
+            "impl_path": "i:/WORK/Backend/u_core/inner_memScheduler/IssueQueueVlduVstuVseglduVsegstu"
+        },
+        {
+            "id": "Backend__inner_perfEvents_hpm__perfEvents_hpc",
+            "ref_path": "r:/WORK/Backend/inner_perfEvents_hpm/perfEvents_hpc",
+            "impl_path": "i:/WORK/Backend/u_core/inner_perfEvents_hpm/perfEvents_hpc"
+        },
+        {
+            "id": "Backend__inner_perfEvents_hpm__perfEvents_hpc_1",
+            "ref_path": "r:/WORK/Backend/inner_perfEvents_hpm/perfEvents_hpc_1",
+            "impl_path": "i:/WORK/Backend/u_core/inner_perfEvents_hpm/perfEvents_hpc_1"
+        },
+        {
+            "id": "Backend__inner_perfEvents_hpm__perfEvents_hpc_2",
+            "ref_path": "r:/WORK/Backend/inner_perfEvents_hpm/perfEvents_hpc_2",
+            "impl_path": "i:/WORK/Backend/u_core/inner_perfEvents_hpm/perfEvents_hpc_2"
+        },
+        {
+            "id": "Backend__inner_perfEvents_hpm__perfEvents_hpc_3",
+            "ref_path": "r:/WORK/Backend/inner_perfEvents_hpm/perfEvents_hpc_3",
+            "impl_path": "i:/WORK/Backend/u_core/inner_perfEvents_hpm/perfEvents_hpc_3"
+        },
+        {
+            "id": "Backend__inner_perfEvents_hpm__perfEvents_hpc_4",
+            "ref_path": "r:/WORK/Backend/inner_perfEvents_hpm/perfEvents_hpc_4",
+            "impl_path": "i:/WORK/Backend/u_core/inner_perfEvents_hpm/perfEvents_hpc_4"
+        },
+        {
+            "id": "Backend__inner_perfEvents_hpm__perfEvents_hpc_5",
+            "ref_path": "r:/WORK/Backend/inner_perfEvents_hpm/perfEvents_hpc_5",
+            "impl_path": "i:/WORK/Backend/u_core/inner_perfEvents_hpm/perfEvents_hpc_5"
+        },
+        {
+            "id": "Backend__inner_perfEvents_hpm__perfEvents_hpc_6",
+            "ref_path": "r:/WORK/Backend/inner_perfEvents_hpm/perfEvents_hpc_6",
+            "impl_path": "i:/WORK/Backend/u_core/inner_perfEvents_hpm/perfEvents_hpc_6"
+        },
+        {
+            "id": "Backend__inner_perfEvents_hpm__perfEvents_hpc_7",
+            "ref_path": "r:/WORK/Backend/inner_perfEvents_hpm/perfEvents_hpc_7",
+            "impl_path": "i:/WORK/Backend/u_core/inner_perfEvents_hpm/perfEvents_hpc_7"
+        },
+        {
+            "id": "Backend__inner_pfevent__perfEvents_0",
+            "ref_path": "r:/WORK/Backend/inner_pfevent/perfEvents_0",
+            "impl_path": "i:/WORK/Backend/u_core/inner_pfevent/perfEvents_0"
+        },
+        {
+            "id": "Backend__inner_pfevent__perfEvents_1",
+            "ref_path": "r:/WORK/Backend/inner_pfevent/perfEvents_1",
+            "impl_path": "i:/WORK/Backend/u_core/inner_pfevent/perfEvents_1"
+        },
+        {
+            "id": "Backend__inner_pfevent__perfEvents_10",
+            "ref_path": "r:/WORK/Backend/inner_pfevent/perfEvents_10",
+            "impl_path": "i:/WORK/Backend/u_core/inner_pfevent/perfEvents_10"
+        },
+        {
+            "id": "Backend__inner_pfevent__perfEvents_11",
+            "ref_path": "r:/WORK/Backend/inner_pfevent/perfEvents_11",
+            "impl_path": "i:/WORK/Backend/u_core/inner_pfevent/perfEvents_11"
+        },
+        {
+            "id": "Backend__inner_pfevent__perfEvents_12",
+            "ref_path": "r:/WORK/Backend/inner_pfevent/perfEvents_12",
+            "impl_path": "i:/WORK/Backend/u_core/inner_pfevent/perfEvents_12"
+        },
+        {
+            "id": "Backend__inner_pfevent__perfEvents_13",
+            "ref_path": "r:/WORK/Backend/inner_pfevent/perfEvents_13",
+            "impl_path": "i:/WORK/Backend/u_core/inner_pfevent/perfEvents_13"
+        },
+        {
+            "id": "Backend__inner_pfevent__perfEvents_14",
+            "ref_path": "r:/WORK/Backend/inner_pfevent/perfEvents_14",
+            "impl_path": "i:/WORK/Backend/u_core/inner_pfevent/perfEvents_14"
+        },
+        {
+            "id": "Backend__inner_pfevent__perfEvents_15",
+            "ref_path": "r:/WORK/Backend/inner_pfevent/perfEvents_15",
+            "impl_path": "i:/WORK/Backend/u_core/inner_pfevent/perfEvents_15"
+        },
+        {
+            "id": "Backend__inner_pfevent__perfEvents_16",
+            "ref_path": "r:/WORK/Backend/inner_pfevent/perfEvents_16",
+            "impl_path": "i:/WORK/Backend/u_core/inner_pfevent/perfEvents_16"
+        },
+        {
+            "id": "Backend__inner_pfevent__perfEvents_17",
+            "ref_path": "r:/WORK/Backend/inner_pfevent/perfEvents_17",
+            "impl_path": "i:/WORK/Backend/u_core/inner_pfevent/perfEvents_17"
+        },
+        {
+            "id": "Backend__inner_pfevent__perfEvents_18",
+            "ref_path": "r:/WORK/Backend/inner_pfevent/perfEvents_18",
+            "impl_path": "i:/WORK/Backend/u_core/inner_pfevent/perfEvents_18"
+        },
+        {
+            "id": "Backend__inner_pfevent__perfEvents_19",
+            "ref_path": "r:/WORK/Backend/inner_pfevent/perfEvents_19",
+            "impl_path": "i:/WORK/Backend/u_core/inner_pfevent/perfEvents_19"
+        },
+        {
+            "id": "Backend__inner_pfevent__perfEvents_2",
+            "ref_path": "r:/WORK/Backend/inner_pfevent/perfEvents_2",
+            "impl_path": "i:/WORK/Backend/u_core/inner_pfevent/perfEvents_2"
+        },
+        {
+            "id": "Backend__inner_pfevent__perfEvents_20",
+            "ref_path": "r:/WORK/Backend/inner_pfevent/perfEvents_20",
+            "impl_path": "i:/WORK/Backend/u_core/inner_pfevent/perfEvents_20"
+        },
+        {
+            "id": "Backend__inner_pfevent__perfEvents_21",
+            "ref_path": "r:/WORK/Backend/inner_pfevent/perfEvents_21",
+            "impl_path": "i:/WORK/Backend/u_core/inner_pfevent/perfEvents_21"
+        },
+        {
+            "id": "Backend__inner_pfevent__perfEvents_22",
+            "ref_path": "r:/WORK/Backend/inner_pfevent/perfEvents_22",
+            "impl_path": "i:/WORK/Backend/u_core/inner_pfevent/perfEvents_22"
+        },
+        {
+            "id": "Backend__inner_pfevent__perfEvents_23",
+            "ref_path": "r:/WORK/Backend/inner_pfevent/perfEvents_23",
+            "impl_path": "i:/WORK/Backend/u_core/inner_pfevent/perfEvents_23"
+        },
+        {
+            "id": "Backend__inner_pfevent__perfEvents_3",
+            "ref_path": "r:/WORK/Backend/inner_pfevent/perfEvents_3",
+            "impl_path": "i:/WORK/Backend/u_core/inner_pfevent/perfEvents_3"
+        },
+        {
+            "id": "Backend__inner_pfevent__perfEvents_4",
+            "ref_path": "r:/WORK/Backend/inner_pfevent/perfEvents_4",
+            "impl_path": "i:/WORK/Backend/u_core/inner_pfevent/perfEvents_4"
+        },
+        {
+            "id": "Backend__inner_pfevent__perfEvents_5",
+            "ref_path": "r:/WORK/Backend/inner_pfevent/perfEvents_5",
+            "impl_path": "i:/WORK/Backend/u_core/inner_pfevent/perfEvents_5"
+        },
+        {
+            "id": "Backend__inner_pfevent__perfEvents_6",
+            "ref_path": "r:/WORK/Backend/inner_pfevent/perfEvents_6",
+            "impl_path": "i:/WORK/Backend/u_core/inner_pfevent/perfEvents_6"
+        },
+        {
+            "id": "Backend__inner_pfevent__perfEvents_7",
+            "ref_path": "r:/WORK/Backend/inner_pfevent/perfEvents_7",
+            "impl_path": "i:/WORK/Backend/u_core/inner_pfevent/perfEvents_7"
+        },
+        {
+            "id": "Backend__inner_pfevent__perfEvents_8",
+            "ref_path": "r:/WORK/Backend/inner_pfevent/perfEvents_8",
+            "impl_path": "i:/WORK/Backend/u_core/inner_pfevent/perfEvents_8"
+        },
+        {
+            "id": "Backend__inner_pfevent__perfEvents_9",
+            "ref_path": "r:/WORK/Backend/inner_pfevent/perfEvents_9",
+            "impl_path": "i:/WORK/Backend/u_core/inner_pfevent/perfEvents_9"
+        },
+        {
+            "id": "Backend__inner_vecExcpMod__GetE8OffsetInVreg",
+            "ref_path": "r:/WORK/Backend/inner_vecExcpMod/GetE8OffsetInVreg",
+            "impl_path": "i:/WORK/Backend/u_core/inner_vecExcpMod/GetE8OffsetInVreg"
+        },
+        {
+            "id": "Backend__inner_vecExcpMod__NfMappedElemIdx",
+            "ref_path": "r:/WORK/Backend/inner_vecExcpMod/NfMappedElemIdx",
+            "impl_path": "i:/WORK/Backend/u_core/inner_vecExcpMod/NfMappedElemIdx"
+        },
+        {
+            "id": "Backend__inner_vecExcpMod__o_status_busy_delay",
+            "ref_path": "r:/WORK/Backend/inner_vecExcpMod/o_status_busy_delay",
+            "impl_path": "i:/WORK/Backend/u_core/inner_vecExcpMod/o_status_busy_delay"
+        },
+        {
+            "id": "Backend__inner_vfExuBlock__exus",
+            "ref_path": "r:/WORK/Backend/inner_vfExuBlock/exus",
+            "impl_path": "i:/WORK/Backend/u_core/inner_vfExuBlock/exus"
+        },
+        {
+            "id": "Backend__inner_vfExuBlock__exus_1",
+            "ref_path": "r:/WORK/Backend/inner_vfExuBlock/exus_1",
+            "impl_path": "i:/WORK/Backend/u_core/inner_vfExuBlock/exus_1"
+        },
+        {
+            "id": "Backend__inner_vfExuBlock__exus_2",
+            "ref_path": "r:/WORK/Backend/inner_vfExuBlock/exus_2",
+            "impl_path": "i:/WORK/Backend/u_core/inner_vfExuBlock/exus_2"
+        },
+        {
+            "id": "Backend__inner_vfExuBlock__exus_3",
+            "ref_path": "r:/WORK/Backend/inner_vfExuBlock/exus_3",
+            "impl_path": "i:/WORK/Backend/u_core/inner_vfExuBlock/exus_3"
+        },
+        {
+            "id": "Backend__inner_vfExuBlock__exus_4",
+            "ref_path": "r:/WORK/Backend/inner_vfExuBlock/exus_4",
+            "impl_path": "i:/WORK/Backend/u_core/inner_vfExuBlock/exus_4"
+        },
+        {
+            "id": "Backend__inner_vfScheduler__IssueQueueVfdivVidiv",
+            "ref_path": "r:/WORK/Backend/inner_vfScheduler/IssueQueueVfdivVidiv",
+            "impl_path": "i:/WORK/Backend/u_core/inner_vfScheduler/IssueQueueVfdivVidiv"
+        },
+        {
+            "id": "Backend__inner_vfScheduler__IssueQueueVfmaVialuFixVfalu",
+            "ref_path": "r:/WORK/Backend/inner_vfScheduler/IssueQueueVfmaVialuFixVfalu",
+            "impl_path": "i:/WORK/Backend/u_core/inner_vfScheduler/IssueQueueVfmaVialuFixVfalu"
+        },
+        {
+            "id": "Backend__inner_vfScheduler__IssueQueueVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf",
+            "ref_path": "r:/WORK/Backend/inner_vfScheduler/IssueQueueVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf",
+            "impl_path": "i:/WORK/Backend/u_core/inner_vfScheduler/IssueQueueVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf"
+        }
+    ],
+    "interface_only": [
+        {
+            "id": "Backend__inner_bypassNetwork",
+            "ref_path": "r:/WORK/Backend/inner_bypassNetwork",
+            "impl_path": "i:/WORK/Backend/u_core/inner_bypassNetwork"
+        },
+        {
+            "id": "Backend__inner_ctrlBlock",
+            "ref_path": "r:/WORK/Backend/inner_ctrlBlock",
+            "impl_path": "i:/WORK/Backend/u_core/inner_ctrlBlock"
+        },
+        {
+            "id": "Backend__inner_dataPath",
+            "ref_path": "r:/WORK/Backend/inner_dataPath",
+            "impl_path": "i:/WORK/Backend/u_core/inner_dataPath"
+        },
+        {
+            "id": "Backend__inner_wbDataPath",
+            "ref_path": "r:/WORK/Backend/inner_wbDataPath",
+            "impl_path": "i:/WORK/Backend/u_core/inner_wbDataPath"
+        }
+    ],
+    "empty_blackbox": [],
+    "unmatched": []
+}
