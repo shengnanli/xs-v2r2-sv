@@ -378,14 +378,14 @@
     else       s6_flushFromRobValid <= s5_flushFromRobValidAhead;
   end
   // frontendFlushBits = RegEnable(s1_robFlush.bits, s1_robFlush.valid)
-  reg                   feFlushRobFlag;
-  reg  [7:0]            feFlushRobValue;
+  // (round-2 窄化)feFlushRobFlag/feFlushRobValue 已删除:golden frontendFlushBits 只保留
+  // ftqIdx_flag/ftqIdx_value/ftqOffset(robIdx 字段被 firtool DCE,无对应寄存器),impl 侧
+  // 原 9 个 robIdx 锁存寄存器全工程零读者(audit 家族 b5, 写-only)→ 整族不生成。
+  // feFlushFtq* 与 outglue 的 frontendFlushFtq* 同 D 同 enable(FM 合并,非 unread),保留。
   reg                   feFlushFtqFlag;
   reg  [5:0]            feFlushFtqValue;
   always_ff @(posedge clock) begin
     if (s1_robFlushValid) begin
-      feFlushRobFlag  <= s1_robFlushRobFlag;
-      feFlushRobValue <= s1_robFlushRobValue;
       feFlushFtqFlag  <= s1_robFlushFtqFlag;
       feFlushFtqValue <= s1_robFlushFtqValue;
     end
@@ -630,6 +630,31 @@
     endcase
   endfunction
 
+  // (round-2 窄化)搬移/装载先在组合域算出「下一值 + 写使能」,再逐字段落寄存器:
+  //   原整 struct 一条 <= 会把 exceptionVec 全 24 位推断成 flop,而 golden 每 lane 只有
+  //   22 个 exceptionVec 寄存器(位 3/22 恒 0 被 firtool DCE)。选源/条件逐字不变。
+  ctrlblock_pkg::decode_buf_bits_t decodeBufNext [0:ctrlblock_pkg::DecodeWidth-1];
+  logic                            decodeBufWrEn [0:ctrlblock_pkg::DecodeWidth-1];
+  integer dbn;
+  always_comb begin
+    for (dbn = 0; dbn < ctrlblock_pkg::DecodeWidth; dbn = dbn + 1) begin
+      if (decodeBufValid[dbn] && bufNotAcceptDropOr[dbn]) begin
+        // ① buffer 内左移(本 lane 有效且 [i..] 仍有 notAccept):从 (i+acceptNum) lane 搬来
+        decodeBufWrEn[dbn] = 1'b1;
+        decodeBufNext[dbn] = buf_shift_bits(decodeBufBits, dbn[2:0], decodeBufAcceptNum);
+      end else if (!decodeBufValid[0] && feNotAcceptDropOr[dbn]) begin
+        // ② 从 frontend 装载(buffer 头空且 [i..] frontend 仍有 notAccept):
+        //    frontend 提供的字段从 cfVec 取;buffer 比 frontend 多出的异常位(exceptionVec
+        //    除 1/2/12/20 外)由 pack_cfvec 已置 0,整条覆盖即等价 golden「present 装载+其余清 0」。
+        decodeBufWrEn[dbn] = 1'b1;
+        decodeBufNext[dbn] = buf_shift_bits(cfVecBits, dbn[2:0], decodeFromFrontendAcceptNum);
+      end else begin
+        // ③ 二者皆否:保持(buffer 内字段不变,buffer-only 异常位保持旧值)。
+        decodeBufWrEn[dbn] = 1'b0;
+        decodeBufNext[dbn] = decodeBufBits[dbn];
+      end
+    end
+  end
   integer dbi;
   always_ff @(posedge clock) begin
     // 注:golden 此状态机无 reset 分支(payload 随 valid 失效自然无意义),与之一致。
@@ -642,16 +667,45 @@
     //   instr 残留 → 影响 DecodeStage 的 complexNum/ready。UT round7 探针在 t=174000
     //   抓到 decodeBufBits_4/5_instr 分叉(此为整条 CtrlBlock 第一处分叉)。
     for (dbi = 0; dbi < ctrlblock_pkg::DecodeWidth; dbi = dbi + 1) begin
-      if (decodeBufValid[dbi] && bufNotAcceptDropOr[dbi]) begin
-        // ① buffer 内左移(本 lane 有效且 [i..] 仍有 notAccept):从 (i+acceptNum) lane 搬来
-        decodeBufBits[dbi] <= buf_shift_bits(decodeBufBits, dbi[2:0], decodeBufAcceptNum);
-      end else if (!decodeBufValid[0] && feNotAcceptDropOr[dbi]) begin
-        // ② 从 frontend 装载(buffer 头空且 [i..] frontend 仍有 notAccept):
-        //    frontend 提供的字段从 cfVec 取;buffer 比 frontend 多出的异常位(exceptionVec
-        //    除 1/2/12/20 外)由 pack_cfvec 已置 0,整条覆盖即等价 golden「present 装载+其余清 0」。
-        decodeBufBits[dbi] <= buf_shift_bits(cfVecBits, dbi[2:0], decodeFromFrontendAcceptNum);
+      if (decodeBufWrEn[dbi]) begin
+        decodeBufBits[dbi].instr                <= decodeBufNext[dbi].instr;
+        decodeBufBits[dbi].foldpc               <= decodeBufNext[dbi].foldpc;
+        // exceptionVec:只寄存 golden 存在的 22 位 {0,1,2,4..21,23}。位 3/22 恒 0
+        //   (frontend 不给,pack_cfvec 填 0),golden 无 decodeBufBits_*_exceptionVec_3/_22
+        //   寄存器且全工程零读者(audit 家族 b3)→ 不推断 flop(存储位无驱动)。
+        decodeBufBits[dbi].exceptionVec[0]  <= decodeBufNext[dbi].exceptionVec[0];
+        decodeBufBits[dbi].exceptionVec[1]  <= decodeBufNext[dbi].exceptionVec[1];
+        decodeBufBits[dbi].exceptionVec[2]  <= decodeBufNext[dbi].exceptionVec[2];
+        decodeBufBits[dbi].exceptionVec[4]  <= decodeBufNext[dbi].exceptionVec[4];
+        decodeBufBits[dbi].exceptionVec[5]  <= decodeBufNext[dbi].exceptionVec[5];
+        decodeBufBits[dbi].exceptionVec[6]  <= decodeBufNext[dbi].exceptionVec[6];
+        decodeBufBits[dbi].exceptionVec[7]  <= decodeBufNext[dbi].exceptionVec[7];
+        decodeBufBits[dbi].exceptionVec[8]  <= decodeBufNext[dbi].exceptionVec[8];
+        decodeBufBits[dbi].exceptionVec[9]  <= decodeBufNext[dbi].exceptionVec[9];
+        decodeBufBits[dbi].exceptionVec[10] <= decodeBufNext[dbi].exceptionVec[10];
+        decodeBufBits[dbi].exceptionVec[11] <= decodeBufNext[dbi].exceptionVec[11];
+        decodeBufBits[dbi].exceptionVec[12] <= decodeBufNext[dbi].exceptionVec[12];
+        decodeBufBits[dbi].exceptionVec[13] <= decodeBufNext[dbi].exceptionVec[13];
+        decodeBufBits[dbi].exceptionVec[14] <= decodeBufNext[dbi].exceptionVec[14];
+        decodeBufBits[dbi].exceptionVec[15] <= decodeBufNext[dbi].exceptionVec[15];
+        decodeBufBits[dbi].exceptionVec[16] <= decodeBufNext[dbi].exceptionVec[16];
+        decodeBufBits[dbi].exceptionVec[17] <= decodeBufNext[dbi].exceptionVec[17];
+        decodeBufBits[dbi].exceptionVec[18] <= decodeBufNext[dbi].exceptionVec[18];
+        decodeBufBits[dbi].exceptionVec[19] <= decodeBufNext[dbi].exceptionVec[19];
+        decodeBufBits[dbi].exceptionVec[20] <= decodeBufNext[dbi].exceptionVec[20];
+        decodeBufBits[dbi].exceptionVec[21] <= decodeBufNext[dbi].exceptionVec[21];
+        decodeBufBits[dbi].exceptionVec[23] <= decodeBufNext[dbi].exceptionVec[23];
+        decodeBufBits[dbi].isFetchMalAddr       <= decodeBufNext[dbi].isFetchMalAddr;
+        decodeBufBits[dbi].trigger              <= decodeBufNext[dbi].trigger;
+        decodeBufBits[dbi].preDecodeInfo_isRVC  <= decodeBufNext[dbi].preDecodeInfo_isRVC;
+        decodeBufBits[dbi].preDecodeInfo_brType <= decodeBufNext[dbi].preDecodeInfo_brType;
+        decodeBufBits[dbi].pred_taken           <= decodeBufNext[dbi].pred_taken;
+        decodeBufBits[dbi].crossPageIPFFix      <= decodeBufNext[dbi].crossPageIPFFix;
+        decodeBufBits[dbi].ftqPtr_flag          <= decodeBufNext[dbi].ftqPtr_flag;
+        decodeBufBits[dbi].ftqPtr_value         <= decodeBufNext[dbi].ftqPtr_value;
+        decodeBufBits[dbi].ftqOffset            <= decodeBufNext[dbi].ftqOffset;
+        decodeBufBits[dbi].isLastInFtqEntry     <= decodeBufNext[dbi].isLastInFtqEntry;
       end
-      // ③ 二者皆否:保持(buffer 内字段不变,buffer-only 异常位保持旧值)。
     end
   end
 

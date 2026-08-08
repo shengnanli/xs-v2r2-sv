@@ -53,6 +53,15 @@
   //   unread_impl)。窄化后消费字段的取值/时序/lane 映射/接口逐字不变,只删死寄存字段。
   //   保留字段清单与 golden 一致性证据:verif/ut/CtrlBlock/wbdelayed_field_inventory.json。
   wb_exu_output_t  wbDelayedBits  [0:ctrlblock_pkg::WbNum-1]; // 组合重建视图(net)
+  // ★ wbDelayedValid 只对「有读者」的 lane 生成寄存器(round-2 窄化):
+  //   ・13 个 rob 消费 lane {1,3,5,7,13,14,18,19,20,21,22,23,24}(inst.svh 接
+  //     rob.io_writeback_N_valid;golden delayedNotFlushedWriteBack_delayed_valid_last_REG_N
+  //     恰只有这 13 个);
+  //   ・lane 25/26(Std FU):wbKilled=0 ⇒ 与 wbDelayedValidRaw 恒等,golden 同有,保持不动。
+  //   死 lane {0,2,4,6,8,9,10,11,12,15,16,17}:golden 无对应寄存器(Rob 无该 writeback
+  //   valid 端口),全工程零读者(audit 家族 b4)→ 不生成 always_ff,数组元素无驱动也无读者。
+  localparam logic [ctrlblock_pkg::WbNum-1:0] WBDV_LANE_LIVE
+      = 27'b111_1111_1100_0110_0000_1010_1010; // bit N=1 ⇔ lane N 生成 wbDelayedValid 寄存器
   generate
     for (gj = 0; gj < ctrlblock_pkg::WbNum; gj++) begin : g_wbpipe
       // valid:GatedValidRegNext(复位清 0)。
@@ -60,12 +69,13 @@
       //   delayedWriteBack_*_valid_last_REG 在**异步复位块**(golden line 10429),
       //   故 valid 用异步复位对齐;bits 无复位(下方 enable 块)。
       always_ff @(posedge clock or posedge reset) begin
-        if (reset) begin
-          wbDelayedValid[gj]    <= 1'b0;
-          wbDelayedValidRaw[gj] <= 1'b0;
-        end else begin
-          wbDelayedValid[gj]    <= wbInValid[gj] & ~wbKilled[gj];
-          wbDelayedValidRaw[gj] <= wbInValid[gj];
+        if (reset) wbDelayedValidRaw[gj] <= 1'b0;
+        else       wbDelayedValidRaw[gj] <= wbInValid[gj];
+      end
+      if (WBDV_LANE_LIVE[gj]) begin : g_vld
+        always_ff @(posedge clock or posedge reset) begin
+          if (reset) wbDelayedValid[gj] <= 1'b0;
+          else       wbDelayedValid[gj] <= wbInValid[gj] & ~wbKilled[gj];
         end
       end
     end
@@ -237,7 +247,9 @@
   endfunction
 
   logic [4:0]  wbNumsBits  [0:WbRobNum-1];  // 送 rob 的零扩 wire(高位字面常数 0, 非寄存器)
-  logic        wbNumsValid [0:WbRobNum-1];
+  // (round-2 窄化)wbNumsValid 寄存器族已删除:golden 无 delayedNotFlushedWriteBackNums_
+  // delayed_valid* 寄存器(Rob 也无 io_writebackNums_N_valid 端口),impl 侧原 25 个 valid
+  // 寄存器全工程零读者(audit 家族 b2, 写-only)→ 整族不生成。
   generate
     for (gj = 0; gj < WbRobNum; gj++) begin : g_wbnums
       localparam int GW = wbnums_width(gj[4:0]);          // 本 lane golden 位宽(编译期常数)
@@ -248,8 +260,6 @@
       logic [4:0]    wbNumsCntFull;
       always_comb wbNumsCntFull = wb_compress_count(gj[4:0], wbRobFlag, wbRobValue, wbV, wbK3);
       always_ff @(posedge clock) begin
-        if (reset) wbNumsValid[gj] <= 1'b0;
-        else       wbNumsValid[gj] <= wbInValid[gj] & ~wbKilledByOlder3[gj];
         if (wbInValid[gj])
           wbNumsCnt <= wbNumsCntFull[GW-1:0];
       end
@@ -306,7 +316,79 @@
       //   掩盖,修 redirect 后暴露)。bits 无复位(enable)不变。
       always_ff @(posedge clock) begin
         enqRobValid[gj] <= enqInValid[gj] & ~s1_s3_redirect_valid;
-        if (enqInValid[gj]) enqRobBits[gj] <= enqInBits[gj];
+        // (round-2 窄化)bits 逐字段落寄存器(原整 struct 一条 RegEnable 会把 exceptionVec
+        // 全 23 位推断成 flop;golden 每 lane 只有 7 个 exceptionVec 寄存器)。除 exceptionVec
+        // 外字段与原整 struct 打拍逐字段等价(同 enable 同 D),取值/时序/接口不变。
+        if (enqInValid[gj]) begin
+          enqRobBits[gj].robIdx_flag                <= enqInBits[gj].robIdx_flag;
+          enqRobBits[gj].robIdx_value               <= enqInBits[gj].robIdx_value;
+          enqRobBits[gj].pdest                      <= enqInBits[gj].pdest;
+          enqRobBits[gj].ldest                      <= enqInBits[gj].ldest;
+          enqRobBits[gj].instr                      <= enqInBits[gj].instr;
+          enqRobBits[gj].instrSize                  <= enqInBits[gj].instrSize;
+          enqRobBits[gj].fuType                     <= enqInBits[gj].fuType;
+          enqRobBits[gj].fuOpType                   <= enqInBits[gj].fuOpType;
+          enqRobBits[gj].commitType                 <= enqInBits[gj].commitType;
+          enqRobBits[gj].ftqPtr_flag                <= enqInBits[gj].ftqPtr_flag;
+          enqRobBits[gj].ftqPtr_value               <= enqInBits[gj].ftqPtr_value;
+          enqRobBits[gj].ftqOffset                  <= enqInBits[gj].ftqOffset;
+          enqRobBits[gj].numWB                      <= enqInBits[gj].numWB;
+          enqRobBits[gj].rfWen                      <= enqInBits[gj].rfWen;
+          enqRobBits[gj].fpWen                      <= enqInBits[gj].fpWen;
+          enqRobBits[gj].vecWen                     <= enqInBits[gj].vecWen;
+          enqRobBits[gj].v0Wen                      <= enqInBits[gj].v0Wen;
+          enqRobBits[gj].vlWen                      <= enqInBits[gj].vlWen;
+          enqRobBits[gj].dirtyFs                    <= enqInBits[gj].dirtyFs;
+          enqRobBits[gj].dirtyVs                    <= enqInBits[gj].dirtyVs;
+          enqRobBits[gj].hasException               <= enqInBits[gj].hasException;
+          // exceptionVec:只寄存 golden 存在的 7 位 {0,1,2,3,12,20,22}(NewDispatch 只输出
+          //   这 7 位,enqpack 其余位填 0;rob 也只读这 7 位)。其余 16 位 {4..11,13..19,21}
+          //   golden 无对应寄存器且全工程零读者(audit 家族 b1)→ 不推断 flop(存储位无驱动)。
+          enqRobBits[gj].exceptionVec[0]  <= enqInBits[gj].exceptionVec[0];
+          enqRobBits[gj].exceptionVec[1]  <= enqInBits[gj].exceptionVec[1];
+          enqRobBits[gj].exceptionVec[2]  <= enqInBits[gj].exceptionVec[2];
+          enqRobBits[gj].exceptionVec[3]  <= enqInBits[gj].exceptionVec[3];
+          enqRobBits[gj].exceptionVec[12] <= enqInBits[gj].exceptionVec[12];
+          enqRobBits[gj].exceptionVec[20] <= enqInBits[gj].exceptionVec[20];
+          enqRobBits[gj].exceptionVec[22] <= enqInBits[gj].exceptionVec[22];
+          enqRobBits[gj].flushPipe                  <= enqInBits[gj].flushPipe;
+          enqRobBits[gj].blockBackward              <= enqInBits[gj].blockBackward;
+          enqRobBits[gj].waitForward                <= enqInBits[gj].waitForward;
+          enqRobBits[gj].isXSTrap                   <= enqInBits[gj].isXSTrap;
+          enqRobBits[gj].crossPageIPFFix            <= enqInBits[gj].crossPageIPFFix;
+          enqRobBits[gj].isFetchMalAddr             <= enqInBits[gj].isFetchMalAddr;
+          enqRobBits[gj].singleStep                 <= enqInBits[gj].singleStep;
+          enqRobBits[gj].firstUop                   <= enqInBits[gj].firstUop;
+          enqRobBits[gj].lastUop                    <= enqInBits[gj].lastUop;
+          enqRobBits[gj].isMove                     <= enqInBits[gj].isMove;
+          enqRobBits[gj].eliminatedMove             <= enqInBits[gj].eliminatedMove;
+          enqRobBits[gj].isVset                     <= enqInBits[gj].isVset;
+          enqRobBits[gj].vlsInstr                   <= enqInBits[gj].vlsInstr;
+          enqRobBits[gj].replayInst                 <= enqInBits[gj].replayInst;
+          enqRobBits[gj].wfflags                    <= enqInBits[gj].wfflags;
+          enqRobBits[gj].preDecodeInfo_isRVC        <= enqInBits[gj].preDecodeInfo_isRVC;
+          enqRobBits[gj].snapshot                   <= enqInBits[gj].snapshot;
+          enqRobBits[gj].traceBlockInPipe_ilastsize <= enqInBits[gj].traceBlockInPipe_ilastsize;
+          enqRobBits[gj].traceBlockInPipe_iretire   <= enqInBits[gj].traceBlockInPipe_iretire;
+          enqRobBits[gj].traceBlockInPipe_itype     <= enqInBits[gj].traceBlockInPipe_itype;
+          enqRobBits[gj].trigger                    <= enqInBits[gj].trigger;
+          enqRobBits[gj].vpu_vill                   <= enqInBits[gj].vpu_vill;
+          enqRobBits[gj].vpu_vlmul                  <= enqInBits[gj].vpu_vlmul;
+          enqRobBits[gj].vpu_vma                    <= enqInBits[gj].vpu_vma;
+          enqRobBits[gj].vpu_vta                    <= enqInBits[gj].vpu_vta;
+          enqRobBits[gj].vpu_vsew                   <= enqInBits[gj].vpu_vsew;
+          enqRobBits[gj].vpu_specVill               <= enqInBits[gj].vpu_specVill;
+          enqRobBits[gj].vpu_specVlmul              <= enqInBits[gj].vpu_specVlmul;
+          enqRobBits[gj].vpu_specVma                <= enqInBits[gj].vpu_specVma;
+          enqRobBits[gj].vpu_specVta                <= enqInBits[gj].vpu_specVta;
+          enqRobBits[gj].vpu_specVsew               <= enqInBits[gj].vpu_specVsew;
+          enqRobBits[gj].debugInfo_renameTime       <= enqInBits[gj].debugInfo_renameTime;
+          enqRobBits[gj].debugInfo_dispatchTime     <= enqInBits[gj].debugInfo_dispatchTime;
+          enqRobBits[gj].debugInfo_enqRsTime        <= enqInBits[gj].debugInfo_enqRsTime;
+          enqRobBits[gj].debugInfo_selectTime       <= enqInBits[gj].debugInfo_selectTime;
+          enqRobBits[gj].debugInfo_issueTime        <= enqInBits[gj].debugInfo_issueTime;
+          enqRobBits[gj].debugInfo_writebackTime    <= enqInBits[gj].debugInfo_writebackTime;
+        end
       end
     end
   endgenerate

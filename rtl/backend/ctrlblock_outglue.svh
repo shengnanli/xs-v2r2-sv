@@ -54,13 +54,17 @@
   endgenerate
 
   // 2 级打拍：perfStage0 = RegNext(perfSrc)，perfStage1 = RegNext(perfStage0)。
+  // (round-2 窄化)40 号 lane 跳过:golden 无 io_perf_40 端口(dispatch.perf[4] 不引出)
+  // 也无对应打拍寄存器,impl 原对常数 0 源造的 2 级寄存器零读者(audit 家族 b6)→ 不生成。
   reg [5:0] perfStage0 [0:PerfNum-1];
   reg [5:0] perfStage1 [0:PerfNum-1];
   generate
     for (gk = 0; gk < PerfNum; gk++) begin : g_perf_pipe
-      always_ff @(posedge clock) begin
-        perfStage0[gk] <= perfSrc[gk];
-        perfStage1[gk] <= perfStage0[gk];
+      if (gk != 40) begin : g_pipe
+        always_ff @(posedge clock) begin
+          perfStage0[gk] <= perfSrc[gk];
+          perfStage1[gk] <= perfStage0[gk];
+        end
       end
     end
   endgenerate
@@ -332,14 +336,17 @@
   //      trap 时取 csr.trapTarget,否则取 s2_robFlushPc(核块5 已有 s2_robFlushPc/s5_csrIsTrap)。
   // --------------------------------------------------------------------------
   // s6_flushFromRobValid 已在 logic.svh 块5 产出;这里只补 cfiUpdate_*_r 锁存寄存器。
-  reg [63:0] toFtqCfiTargetR;     // trap? csr.trapTarget.pc : {14'h0, s2_robFlushPc}
+  // (round-2 窄化)toFtqCfiTargetR 收窄 [63:0]→[49:0]:唯一读者(下方 cfiUpdate_target)
+  // 只取 [49:0];golden 同名 64 位寄存器的 [63:50] 亦为 cone-dead(唯一功能读同样只取
+  // [49:0],audit 家族 a)。impl 只寄存活位,D 取 mux 低 50 位;读处 [49:0] 切片不变。
+  reg [49:0] toFtqCfiTargetR;     // trap? csr.trapTarget.pc[49:0] : s2_robFlushPc
   reg        toFtqCfiIAFR;        // trap & raiseIAF
   reg        toFtqCfiIPFR;        // trap & raiseIPF
   reg        toFtqCfiIGPFR;       // trap & raiseIGPF
   always_ff @(posedge clock) begin
     if (s5_flushFromRobValidAhead) begin
-      toFtqCfiTargetR <= s5_csrIsTrap ? io_robio_csr_trapTarget_pc
-                                      : {14'h0, s2_robFlushPc};
+      toFtqCfiTargetR <= s5_csrIsTrap ? io_robio_csr_trapTarget_pc[49:0]
+                                      : s2_robFlushPc;
       toFtqCfiIAFR    <= s5_csrIsTrap & io_robio_csr_trapTarget_raiseIAF;
       toFtqCfiIPFR    <= s5_csrIsTrap & io_robio_csr_trapTarget_raiseIPF;
       toFtqCfiIGPFR   <= s5_csrIsTrap & io_robio_csr_trapTarget_raiseIGPF;
