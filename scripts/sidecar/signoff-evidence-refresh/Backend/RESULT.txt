@@ -1,0 +1,4 @@
+SIGNOFF_RESULT Backend: measured=SUCCEEDED required=SUCCEEDED gate=PASS (proof=assembly fm_shell_rc=0 validator_rc=0)
+run_id: SGN-Backend-1786197667
+impl_commit: a6fe182cea307c82c8b4eadf9cc643da5c783105
+manifest_sha256: b29bdd28c1dddd0ff3603eb7312799f8242d1ab59a10a3428b37b0f24db883b0

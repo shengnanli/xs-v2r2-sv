@@ -6,7 +6,7 @@ AXI4Xbar	SUCCEEDED	SIGNOFF_PASS
 AXI4Xbar_1	SUCCEEDED	SIGNOFF_PASS
 Alu	SUCCEEDED	SIGNOFF_PASS
 Arbiter1_InsUncacheResp	SUCCEEDED	SIGNOFF_PASS
-Backend	PARTIAL	PROOF_GAP
+Backend	SUCCEEDED	SIGNOFF_PASS	official gate PASS(validator_rc=0 RUNNER_RC=0): native SUCCEEDED 110031p/0f/0unverified, 全unmatched=0(compare/unread/bbout全零); assembly+vmucp(264对称双射实证passing 109767→110031); allow 4 iface+72 unresolved; 14 gating children全闭合(9×305+4aux+CtrlBlock PASS_DEAD_REF); config commit a6fe182c+ef980b40; evidence signoff-evidence-refresh/Backend/
 BankedDataArray	PASS_DEAD_REF	SIGNOFF_PASS
 Bku	SUCCEEDED	SIGNOFF_PASS
 BranchUnit	SUCCEEDED	SIGNOFF_PASS
