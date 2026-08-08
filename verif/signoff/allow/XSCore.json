@@ -1,0 +1,22 @@
+{
+  "unresolved_blackbox": [
+    {
+      "id": "backend",
+      "ref_path": "r:/WORK/XSCore/backend",
+      "impl_path": "i:/WORK/XSCore/u_core/backend"
+    },
+    {
+      "id": "frontend",
+      "ref_path": "r:/WORK/XSCore/frontend",
+      "impl_path": "i:/WORK/XSCore/u_core/frontend"
+    },
+    {
+      "id": "memBlock",
+      "ref_path": "r:/WORK/XSCore/memBlock",
+      "impl_path": "i:/WORK/XSCore/u_core/memBlock"
+    }
+  ],
+  "interface_only": [],
+  "empty_blackbox": [],
+  "unmatched": []
+}
