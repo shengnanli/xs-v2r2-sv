@@ -15,7 +15,7 @@ CHILogger	SUCCEEDED	SIGNOFF_PASS
 CLINT	SUCCEEDED	SIGNOFF_PASS
 Composer	PASS_DEAD_REF	SIGNOFF_PASS
 CompressUnit	SUCCEEDED	SIGNOFF_PASS
-CtrlBlock	?	INFRA_ERROR
+CtrlBlock	PASS_DEAD_REF	SIGNOFF_PASS	official gate PASS(validator_rc=0 RUNNER_RC=0): native SUCCEEDED 54839p/0f, compare=0/0, unread_impl=0, 26 unread_ref⊆dead_ref/CtrlBlock.json(firtool reg-widening cone-dead); commit链 c912b9be(1962 pin)+9a4cb5fc(allow)+b490e6b1(wbDelayed窄化)+a3e19a25(dead_ref)+525e6117(prepin双射)+2a1acfcd(round2 156+14)+cc77760d(dead_ref修正)+c708dd17(32 exact-equation); co-sim seed1/7/42 200k errors=0×3轮; 依赖闭合: Rob PARTITIONED_SUCCEEDED+15子全绿(assembly_depends)
 DCache	SUCCEEDED	SIGNOFF_PASS
 DCacheWrapper	SUCCEEDED	SIGNOFF_PASS
 DataModule_BackendPC_16entry	SUCCEEDED	SIGNOFF_PASS

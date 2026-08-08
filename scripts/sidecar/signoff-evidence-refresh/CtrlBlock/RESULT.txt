@@ -1,0 +1,4 @@
+SIGNOFF_RESULT CtrlBlock: measured=PASS_DEAD_REF required=PASS_DEAD_REF gate=PASS (proof=assembly fm_shell_rc=0 validator_rc=0)
+run_id: SGN-CtrlBlock-1786196187
+impl_commit: c708dd1724a27d05bb332d94b5f9773cbb82645d
+manifest_sha256: 7e1ea2699e2155ac88191d7a046ac00610d0446844439e319399979973f6ed94
