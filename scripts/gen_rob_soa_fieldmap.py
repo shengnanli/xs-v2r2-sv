@@ -1,0 +1,268 @@
+#!/usr/bin/env python3
+# gen_rob_soa_fieldmap.py — Rob SoA-canary field-map (codex 0101 阶段1)
+# ---------------------------------------------------------------------
+# 与 gen_rob_fieldmap.py(packed 版, 逐位 9440 set_user_match)对照:
+# SoA canary 把 commit-state family(valid/uopNum/stdWritebacked)从 packed
+# rob_entries_reg[N][slice] 拆成语义命名 unpacked arrays:
+#     impl : i:/WORK/<TOP>/u_core/rob_valid_reg[N]              (1 位)
+#            i:/WORK/<TOP>/u_core/rob_uop_num_reg[N]            (7 位整寄存器)
+#            i:/WORK/<TOP>/u_core/rob_std_wb_reg[N]             (1 位)
+#     ref  : r:/WORK/<TOP>/robEntries_<N>_valid / _uopNum / _stdWritebacked
+# 关键差异: uopNum 从「7 bit-pin/entry」降为「1 reg-pin/entry」(整寄存器名配对),
+# 故本 family pin 数 1440(packed 逐位) -> 480(SoA 逐寄存器)。
+# 生成:
+#   1) <out>/rob_soa_entry_pins.tcl  —— 480 reg-level set_user_match(供 FM_ENTRY_PINS)
+#   2) <out>/rob_soa_field_map.txt   —— 人读 family 名映射
+#   3) <out>/rob_soa_fieldmap_manifest.json —— 计数/校验(bijection_ok/pin 计数对照)
+# 纯 set_user_match, 不改 RTL, 不 dont_verify, 不删点。
+import argparse, json, re, hashlib, sys
+
+ROB_SIZE = 160
+
+# (impl_soa_array_leaf, golden_suffix, width)
+# SoA G1 family = 12 字段(lifecycle/control/status). impl_soa_array_leaf 是 FM 给
+# impl `logic rob_<field>[N]` 推断的 flop Cell 名(自动加 _reg 后缀), golden_suffix 是
+# golden `reg robEntries_N_<suffix>` 的字段名(_reg Cell 名由 gen 逻辑追加)。
+SOA_FAMILY = [
+    # canary(阶段1): commit-state
+    ("rob_valid_reg",          "valid",          1),
+    ("rob_uop_num_reg",        "uopNum",         7),
+    ("rob_std_wb_reg",         "stdWritebacked", 1),
+    # G1 扩展(阶段2): lifecycle / control / status
+    ("rob_needflush_reg",      "needFlush",      1),
+    ("rob_interrupt_safe_reg", "interrupt_safe", 1),
+    ("rob_mmio_reg",           "mmio",           1),
+    ("rob_is_rvc_reg",         "isRVC",          1),
+    ("rob_is_vset_reg",        "isVset",         1),
+    ("rob_is_hls_reg",         "isHls",          1),
+    ("rob_real_dest_size_reg", "realDestSize",   7),
+    ("rob_instr_size_reg",     "instrSize",      3),
+    ("rob_commit_type_reg",    "commitType",     3),
+    # G2 扩展(阶段2): pointers / indices (ftqIdx/ftqOffset)
+    ("rob_ftq_flag_reg",       "ftqIdx_flag",    1),
+    ("rob_ftq_value_reg",      "ftqIdx_value",   6),
+    ("rob_ftq_offset_reg",     "ftqOffset",      4),
+    # G3 扩展(codex 0108 步3): exception / vector state (7 字段)
+    #  storage-only SoA (方程零改, 见 G3_equation_audit); FM 整寄存器名配对
+    #  golden robEntries_N_<F>_reg <-> impl u_core/rob_<f>_reg[N]。
+    ("rob_vls_reg",            "vls",            1),
+    ("rob_vxsat_reg",          "vxsat",          1),
+    ("rob_dirty_vs_reg",       "dirtyVs",        1),
+    ("rob_wflags_reg",         "wflags",         1),
+    ("rob_fflags_reg",         "fflags",         5),
+    ("rob_rf_wen_reg",         "rfWen",          1),
+    ("rob_fp_wen_reg",         "fpWen",          1),
+    # G4 扩展(codex 0108 步4): trace(3 字段)。ilastsize ★1 位★
+    #  (narrow-to-golden-shape: golden robEntries_N_..._ilastsize 本身 1 位,
+    #  impl rob_trace_ilastsize_reg[N] 亦 1 位, bit[1] 无功能扇出已弃)。
+    ("rob_trace_itype_reg",     "traceBlockInPipe_itype",     4),
+    ("rob_trace_iretire_reg",   "traceBlockInPipe_iretire",   4),
+    ("rob_trace_ilastsize_reg", "traceBlockInPipe_ilastsize", 1),
+]
+
+
+def scan_golden(golden_path):
+    """从 golden Rob.sv 提 robEntries_<N>_<field> reg 名+宽度。"""
+    pat = re.compile(
+        r'^\s*reg\s+(?:\[(\d+):(\d+)\]\s+)?robEntries_(\d+)_([A-Za-z_][A-Za-z_0-9]*)\s*;')
+    regs = {}
+    with open(golden_path) as fh:
+        for line in fh:
+            m = pat.match(line)
+            if not m:
+                continue
+            hi, lo, N, field = m.groups()
+            w = 1 if hi is None else (int(hi) - int(lo) + 1)
+            regs[(int(N), field)] = w
+    return regs
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--top", default="Rob")
+    ap.add_argument("--golden", required=True)
+    ap.add_argument("--impl-prefix", default="u_core",
+                    help="impl hier prefix under i:/WORK/<top> to SoA arrays")
+    ap.add_argument("--gold-prefix", default="",
+                    help="golden hier prefix under r:/WORK/<top>")
+    ap.add_argument("--out", required=True)
+    # ★checkpoint(codex 0104)用★ 只生成指定 golden 字段的 pins(逗号分隔 suffix)。
+    #  cone-DCE 派生 golden(如 Rob_golden_commit.sv)物理删除了 off-cone 字段
+    #  (mmio/isHls/instrSize 等), 对已删字段发 set_user_match 会 FM-036 →
+    #  fail-closed exit 7; 故 checkpoint 按「kept-fields-only」过滤。
+    ap.add_argument("--only-fields", default=None,
+                    help="comma-separated golden suffixes; restrict SOA_FAMILY")
+    # ★codex 0107 修★ nf(packed struct)字段 pins: golden robEntries_<N>_<suf>_reg
+    #  <-> impl u_core/rob_entries_nf_reg[N][<suf>](struct member cell)。G3 未落地
+    #  前 vls 等字段仍寄存于 nf struct, 名字无法 auto-match → robDeqGroup isVls 等
+    #  下游比较点因 unmatched-in-cone 失败。仅 1-bit 字段(vls)。
+    ap.add_argument("--nf-fields", default=None,
+                    help="comma-separated golden suffixes pinned to rob_entries_nf struct members")
+    a = ap.parse_args()
+
+    global SOA_FAMILY
+    if a.only_fields:
+        keep = set(a.only_fields.split(","))
+        unknown = keep - {g for _, g, _ in SOA_FAMILY}
+        if unknown:
+            print(f"ERROR --only-fields unknown suffixes: {sorted(unknown)}")
+            sys.exit(2)
+        SOA_FAMILY = [t for t in SOA_FAMILY if t[1] in keep]
+
+    top = a.top
+    pre = a.impl_prefix
+    gp = a.gold_prefix
+    golden = scan_golden(a.golden)
+
+    errors = []
+    layout = []
+    for arr, gold_suf, w in SOA_FAMILY:
+        for N in range(ROB_SIZE):
+            key = (N, gold_suf)
+            if key not in golden:
+                errors.append(f"MISSING golden reg robEntries_{N}_{gold_suf}")
+                continue
+            gw = golden[key]
+            if gw != w:
+                errors.append(
+                    f"WIDTH MISMATCH robEntries_{N}_{gold_suf}: golden={gw} impl={w}")
+            layout.append({"impl_array": arr, "golden_suffix": gold_suf,
+                           "entry": N, "width": w})
+
+    import os
+    os.makedirs(a.out, exist_ok=True)
+
+    # ---- output 1: reg-level entry pins tcl (1 pin/(entry,field), NOT per-bit) ----
+    pin = []
+    pin.append("# AUTO-GENERATED by gen_rob_soa_fieldmap.py — DO NOT EDIT")
+    pin.append("# Rob SoA-canary commit-state family reg-level pins (codex 0101 阶段1).")
+    pin.append(f"# {len(layout)} reg pins (vs packed {ROB_SIZE*(1+7+1)}=1440 bit pins) — same family.")
+    pin.append("# ref  robEntries_<N>_<field>  <->  impl u_core/<soa_array>[N]  (whole reg)")
+    pin.append("# NO dont_verify / NO ref constraint / pure set_user_match.")
+    pin.append(f"set ROB_SOA_TOP \"{top}\"")
+    pin.append("set _rob_soa_pin_n 0")
+    pin.append("set _rob_soa_pin_fail 0")
+    pin.append("set _rob_soa_pin_fm036 0")
+    # ★codex 0103 修1★ set_user_match on an unknown name may print FM-036 to stdout
+    #  WITHOUT raising a Tcl error (the old `catch`-only proc masked FM-036 → false
+    #  applied count). Capture command output via redirect and scan for FM-036 /
+    #  error markers so every unresolved pin is counted as a hard failure.
+    pin.append("proc _rob_soa_pin {rp ip} {")
+    pin.append("  global _rob_soa_pin_n _rob_soa_pin_fail _rob_soa_pin_fm036")
+    pin.append("  set _out {}")
+    pin.append("  set _rc [catch {redirect -variable _out {set_user_match $rp $ip}} m]")
+    pin.append("  set _bad 0")
+    pin.append("  if {$_rc} { set _bad 1 }")
+    pin.append("  if {[regexp {FM-036} $_out]} { set _bad 1; incr _rob_soa_pin_fm036 }")
+    pin.append("  if {[regexp -nocase {error} $_out]} { set _bad 1 }")
+    pin.append("  if {$_bad} {")
+    pin.append("    incr _rob_soa_pin_fail")
+    pin.append("    if {$_rob_soa_pin_fail <= 40} { puts \"ROB_SOA_PIN_FAIL: $rp <-> $ip : rc=$_rc out=[string trim $_out] $m\" }")
+    pin.append("  } else { incr _rob_soa_pin_n }")
+    pin.append("}")
+    # FM 把 >1 位寄存器(golden robEntries_N_uopNum / impl rob_uop_num_reg[N])都
+    #  拍平成 per-bit, 整寄存器名不可寻址 → 多位字段用 per-bit pin(1-bit 用整名)。
+    #  关键: impl 侧 rob_uop_num_reg 是干净 unpacked 数组, [N][b] 可寻址(不同于
+    #  packed struct 的 rob_entries_reg[N][slice] 完全不可寻址)。
+    # ★codex 0103 修1 (Cell↔Cell)★ set_user_match 要求两侧同 class。golden `reg
+    #  robEntries_N_valid;` 的【输出 Net】名是 robEntries_N_valid, 而 FM 推断的【flop
+    #  Cell】名是 robEntries_N_valid_reg。impl `logic rob_valid[N]` 的 flop Cell 是
+    #  rob_valid_reg[N](FM-013 报文已证 impl 侧 rob_valid_reg[N] 是 Cell)。故必须两侧
+    #  都用 flop Cell: golden robEntries_N_<f>_reg ↔ impl rob_<f>_reg[N]([b])。
+    #  (旧版 golden 用无 _reg 的 Net 名 → 与 impl Cell 撞 FM-013 incompatible types。)
+    # nf-struct member pins (codex 0107): 1-bit golden fields living in impl's
+    #  rob_entries_nf packed-struct storage.
+    nf_layout = []
+    if a.nf_fields:
+        for suf in a.nf_fields.split(","):
+            for N in range(ROB_SIZE):
+                if (N, suf) not in golden:
+                    errors.append(f"MISSING golden reg robEntries_{N}_{suf} (nf)")
+                    continue
+                if golden[(N, suf)] != 1:
+                    errors.append(f"NF FIELD {suf} width != 1 (unsupported)")
+                    continue
+                nf_layout.append((N, suf))
+    npins = 0
+    for e in layout:
+        N = e["entry"]
+        arr = e["impl_array"]
+        gsuf = e["golden_suffix"]
+        w = e["width"]
+        if w == 1:
+            rp = f"r:/WORK/{top}/{gp}robEntries_{N}_{gsuf}_reg"
+            ip = f"i:/WORK/{top}/{pre}/{arr}\\[{N}\\]"
+            pin.append(f"_rob_soa_pin {rp} {ip}")
+            npins += 1
+        else:
+            for b in range(w):
+                rp = f"r:/WORK/{top}/{gp}robEntries_{N}_{gsuf}_reg\\[{b}\\]"
+                ip = f"i:/WORK/{top}/{pre}/{arr}\\[{N}\\]\\[{b}\\]"
+                pin.append(f"_rob_soa_pin {rp} {ip}")
+                npins += 1
+    for (N, suf) in nf_layout:
+        rp = f"r:/WORK/{top}/{gp}robEntries_{N}_{suf}_reg"
+        ip = f"i:/WORK/{top}/{pre}/rob_entries_nf_reg\\[{N}\\]\\[{suf}\\]"
+        pin.append(f"_rob_soa_pin {rp} {ip}")
+        npins += 1
+    pin.append('puts "ROB_SOA_ENTRY_PINS: applied=$_rob_soa_pin_n fail=$_rob_soa_pin_fail fm036=$_rob_soa_pin_fm036"')
+    # ★修1 log-assert★ emit the paired count with the expected total so the driver
+    #  can assert `paired==expected` (0 FM-036) BEFORE the first `match`.
+    pin.append(f'puts "SOA_FAMILY_DFF_MATCH paired=$_rob_soa_pin_n expected={npins} fm036=$_rob_soa_pin_fm036"')
+    pin.append(f'if {{$_rob_soa_pin_n != {npins} || $_rob_soa_pin_fail != 0}} {{')
+    pin.append('  puts "SOA_PIN_ASSERT_FAIL: paired=$_rob_soa_pin_n fail=$_rob_soa_pin_fail fm036=$_rob_soa_pin_fm036 (expected all pins resolve pre-match)"')
+    pin.append('  exit 7')
+    pin.append('}')
+    with open(f"{a.out}/rob_soa_entry_pins.tcl", "w") as fh:
+        fh.write("\n".join(pin) + "\n")
+
+    # ---- output 2: human field map ----
+    with open(f"{a.out}/rob_soa_field_map.txt", "w") as fh:
+        fh.write("# impl_soa_array  golden_suffix  width  (reg-level, 160 entries each)\n")
+        for arr, gsuf, w in SOA_FAMILY:
+            fh.write(f"{arr} {gsuf} {w}\n")
+
+    # ---- output 3: manifest ----
+    body = "\n".join(f"{e['impl_array']}|{e['golden_suffix']}|{e['entry']}|{e['width']}"
+                     for e in layout)
+    root = hashlib.sha256(body.encode()).hexdigest()
+    manifest = {
+        "generator": "gen_rob_soa_fieldmap.py",
+        "top": top,
+        "mode": "SoA reg-level (canary)",
+        "impl_soa_arrays": [f"i:/WORK/{top}/{pre}/{a_}" for a_, _, _ in SOA_FAMILY],
+        "family": [f"{a_}<->robEntries_N_{g}" for a_, g, _ in SOA_FAMILY],
+        "rob_size": ROB_SIZE,
+        "soa_reg_entries": len(layout),
+        "soa_pins_emitted": npins,
+        "soa_wholereg_pins": sum(1 for e in layout if e["width"] == 1),
+        "soa_perbit_pins": sum(e["width"] for e in layout if e["width"] > 1),
+        "packed_bit_pins_same_family": ROB_SIZE * sum(w for _, _, w in SOA_FAMILY),
+        "wholereg_pin_reduction_ratio": round(
+            (ROB_SIZE * sum(w for _, _, w in SOA_FAMILY)) / max(1, len(layout)), 3),
+        "note": "SoA 1-bit family regs matched at whole-reg (160/field); multi-bit "
+                "(uopNum 7b) needs per-bit pins BUT impl side rob_uop_num_reg[N][b] is a "
+                "clean addressable unpacked-array element (packed rob_entries_reg[N][b] is "
+                "NOT addressable=0/1440 resolve). Win = pin RESOLUTION, not count.",
+        "bijection_ok": len(errors) == 0,
+        "errors": errors,
+        "soa_field_map_root_sha256": root,
+        "layout": layout,
+    }
+    with open(f"{a.out}/rob_soa_fieldmap_manifest.json", "w") as fh:
+        json.dump(manifest, fh, indent=2)
+
+    print(f"SoA family reg entries: {len(layout)} (pins emitted {npins}: "
+          f"{manifest['soa_wholereg_pins']} whole-reg 1-bit + "
+          f"{manifest['soa_perbit_pins']} per-bit multi)")
+    print(f"packed bit pins (same): {ROB_SIZE * sum(w for _,_,w in SOA_FAMILY)}")
+    print(f"whole-reg pin reduction: {manifest['wholereg_pin_reduction_ratio']}x")
+    print(f"bijection_ok          : {manifest['bijection_ok']}  errors={len(errors)}")
+    if errors:
+        for e in errors[:10]:
+            print("  ", e)
+        sys.exit(2)
+
+
+if __name__ == "__main__":
+    main()

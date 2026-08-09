@@ -1,0 +1,35 @@
+{
+  "target": "Rob",
+  "route": "B",
+  "total_authored_outputs": 2343,
+  "union_output_sha256": "5d76debcf8457bb72d511a34e9191c3a0086660d56426c17ead09868198257dc",
+  "partitions": {
+    "commit": {
+      "module": "Rob_pCommit",
+      "count": 135,
+      "sha256": "7b8c5c94959d2f89387ab36e62fb60eb1ff97ece987ef7c1361f79c09d7b7b99"
+    },
+    "exception": {
+      "module": "Rob_pException",
+      "count": 35,
+      "sha256": "54b3d93ff99d99f7b88202536c0561d628f3e85ef7f7740693e20bf885b66694"
+    },
+    "perf": {
+      "module": "Rob_pPerfTraceCsrDbg",
+      "count": 81,
+      "sha256": "3429dec7d2414155ea2b8299a0e7f4267beff0ab1d0c047db24069088a092772"
+    },
+    "vecexcp": {
+      "module": "Rob_pVecExcp",
+      "count": 28,
+      "sha256": "40bc89e6ce7c34e27eca3243e5bdbee690f723a03da267cbfaae04500e230925"
+    },
+    "lsq": {
+      "module": "Rob_pLsqDeep",
+      "count": 2064,
+      "sha256": "48ada53552ff34b88ef090ae026a1900ebb21c8bd3936d4c83b6f9197a939a0c"
+    }
+  },
+  "disjoint": true,
+  "total_cover": true
+}

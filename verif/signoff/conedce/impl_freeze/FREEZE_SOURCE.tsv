@@ -1,0 +1,39 @@
+# impl A+B integration freeze artifacts, refreshed from commit 39c69219 (agent/rob-soa-diag, codex 0107 fixed core+wrapper)
+#  + G3 SoA (codex 0108 步3): 7 exception/vector fields → SoA arrays.
+#  + G4 SoA (codex 0108 步4): 3 trace fields (itype/iretire/ilastsize-1bit) → SoA,
+#    packed rob_entries_nf 完全删除(全 25 字段 SoA, 无双存)。
+#  + pLsqDeep (codex 0108 步6): lsq→mmio set 路径补全(io_lsq_mmio_*/io_lsq_uop_*
+#    重建喂入 core 新增 lsq_mmio/lsq_uop_robidx_value 端口; 打拍 lsq_mmio_q/
+#    lsq_mmio_robidx_q; entry mmio-set 循环 last-connect 置位优先)。Rob.sv 核 +
+#    Rob_wrapper.sv glue 两侧刷新; pkg/stubs unchanged。
+#  + 0116-A revert (codex 0116): 回退 6d5db12f 的 Rob.sv reset-removal 段, 恢复
+#    isCommitReg_last 等的 golden async reset(golden L187770); 保留 debug_fuType pin。
+#    仅 Rob.sv 核刷新(逻辑=fe7a5603 conerun1 基线, 仅加更正注释); wrapper/pkg/stubs unchanged。
+#  + 0118 reset-split (codex 0118): truecommitcnt focused FM 实证 trueCommitCnt_r[0:5]+fuse_r[0]
+#    reset 不对称真失配 → 拆 always 块: isCommitReg_last 留 async reset(golden L187770); 计数族
+#    (trueCommitCnt_r/fuse_r/perfLoad/Branch/Store_r)改 no-reset(golden L84370)。仅 Rob.sv 核刷新。
+#  + 0120-A retiredInstr reuse (codex 0120 A): 删 impl-only 冗余 _csr 计数链
+#    (trueCommitCnt_r_csr/fuseCommitCnt_r_csr/isCommitReg_last_csr + trueCommitCnt_c/
+#    fuseCommitCnt_c/fuseCommitCntSum/retireCounter_c 中间量及其 RegNext always_ff),
+#    令 io_csr_perfinfo_retiredInstr 复用主链 retireCounter[6:0]。golden 用单一
+#    retireCounter_probe(Rob.sv L47540)同喂 io_perf_5(L181651)与 retiredInstr(L220823);
+#    主链 retireCounter 已逐字复刻且 io_perf_5 focused-FM passing。_csr 链错在用 RegNext
+#    而 golden 计数族是 RegEnable(x, isCommit)(L181579)→ FM unmatched/失配。仅 Rob.sv 核刷新。
+#  + 0121 perf-cone 结构对齐 (codex 0121): perf_final 残余 3 点 = 两处 impl 偏离 golden
+#    单-reg/单-mux 结构。修复1 robHeadLsIssue(1 点): 恢复 golden _GEN_26[deqV] mux 读取结构
+#    (dbgLsIssueVec[k]=(deqV==k)?io_debugHeadLsIssue:debug_lsIssued[k]), 令 debug_lsIssued[160]
+#    数组真被输出读进锥(原 impl L2207 直取 io_debugHeadLsIssue 捷径 → 数组 DCE → 160 golden reg
+#    unmatched)。功能不变(deqV==k 处恒选 io_debugHeadLsIssue=原捷径值)。修复2 tracePipe_itype
+#    (2 点): 删 core 冗余 isInterrupt_r(带 reset, 只喂 trace, name-unmatched); golden 用单一
+#    no-reset io_exception_bits_isInterrupt_r(L126250 exceptionHappen<=intrEnable)同喂异常输出+
+#    trace itype。core 加窄输入 io_isInterrupt_latched, wrapper 把已 FM 匹配的
+#    io_exception_bits_isInterrupt_r reg 回连进该端口 → trace 读同源 matched reg。Rob.sv 核 +
+#    Rob_wrapper.sv glue 两侧刷新; pkg/stubs unchanged。tap co-sim 回归/长 perf FM 由主循环跑。
+# these are the impl-side inputs the cone-DCE derivative reduces (impl_port_trim over Rob_wrapper.sv)
+# MUST equal rtl/backend/<same file> at the same commit (drift gate in gen_all.sh)
+Rob.sv	89861cda26b8f3df3f4b57f37e84ea724e457e16f75a3242a392a39d37fef04c
+Rob_wrapper.sv	1ea6598cac4c36565370f407013db4d7a7d516d39845c9c88b725df0cfa29bf4
+rob_pkg.sv	e43da2e5b9bb475b93f79a3464b2daefdc168c568af4f80ddf7a7ead11afcfe6
+rob_lsq_deep_outputs.sv	dce305936367523bfd29cb7852f0aa7751c98fa3db63d9ef71f0314ab7ac1d74
+Rob_difftest_stubs.sv	e3b44405c26638928e4ad8ae2105b3dafa021b803d34a51e27b3a76495c2876a
+Rob_blackbox_stubs.sv	a008ca130af7abefa81e5da242915be99c7295a73f48190add6db49790e9c92e

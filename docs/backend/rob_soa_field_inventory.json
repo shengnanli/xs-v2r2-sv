@@ -1,0 +1,161 @@
+{
+  "golden_src": "/home/eda/xs-env/G0-canonical/golden-rtl/Rob.sv",
+  "rob_size": 160,
+  "golden_reg_fields_total": 27,
+  "golden_only_dpi_sink": [
+    "debug_ldest",
+    "debug_pdest"
+  ],
+  "golden_only_bits_per_entry": 14,
+  "impl_stored_field_count": 25,
+  "impl_stored_bits_per_entry": 59,
+  "impl_stored_reg_bits_x160": 9440,
+  "golden_bits_per_entry_all27": 73,
+  "groups": {
+    "G1_lifecycle_control_status": [
+      {
+        "field": "valid",
+        "width": 1
+      },
+      {
+        "field": "stdWritebacked",
+        "width": 1
+      },
+      {
+        "field": "needFlush",
+        "width": 1
+      },
+      {
+        "field": "interrupt_safe",
+        "width": 1
+      },
+      {
+        "field": "mmio",
+        "width": 1
+      },
+      {
+        "field": "isRVC",
+        "width": 1
+      },
+      {
+        "field": "isVset",
+        "width": 1
+      },
+      {
+        "field": "isHls",
+        "width": 1
+      },
+      {
+        "field": "uopNum",
+        "width": 7
+      },
+      {
+        "field": "realDestSize",
+        "width": 7
+      },
+      {
+        "field": "instrSize",
+        "width": 3
+      },
+      {
+        "field": "commitType",
+        "width": 3
+      }
+    ],
+    "G2_pointers_indices": [
+      {
+        "field": "ftqIdx_flag",
+        "width": 1
+      },
+      {
+        "field": "ftqIdx_value",
+        "width": 6
+      },
+      {
+        "field": "ftqOffset",
+        "width": 4
+      }
+    ],
+    "G3_exception_vector": [
+      {
+        "field": "vls",
+        "width": 1
+      },
+      {
+        "field": "vxsat",
+        "width": 1
+      },
+      {
+        "field": "dirtyVs",
+        "width": 1
+      },
+      {
+        "field": "wflags",
+        "width": 1
+      },
+      {
+        "field": "fflags",
+        "width": 5
+      },
+      {
+        "field": "rfWen",
+        "width": 1
+      },
+      {
+        "field": "fpWen",
+        "width": 1
+      }
+    ],
+    "G4_trace_perf_deep": [
+      {
+        "field": "traceBlockInPipe_itype",
+        "width": 4
+      },
+      {
+        "field": "traceBlockInPipe_iretire",
+        "width": 4
+      },
+      {
+        "field": "traceBlockInPipe_ilastsize",
+        "width": 1
+      }
+    ]
+  },
+  "group_field_counts": {
+    "G1_lifecycle_control_status": 12,
+    "G2_pointers_indices": 3,
+    "G3_exception_vector": 7,
+    "G4_trace_perf_deep": 3
+  },
+  "partition_ok": true,
+  "errors": [],
+  "field_inventory_root_sha256": "a07cd2f3652b1560132f1267f01e4307638c268e21eef8ce952f329c4d67a9a9",
+  "field_inventory_group_root_sha256": "5faeb6d4793571a76473cdc4db609ed053dabccc76c45207aa08e682e574e83f",
+  "impl_stored_fields_sorted": {
+    "commitType": 3,
+    "dirtyVs": 1,
+    "fflags": 5,
+    "fpWen": 1,
+    "ftqIdx_flag": 1,
+    "ftqIdx_value": 6,
+    "ftqOffset": 4,
+    "instrSize": 3,
+    "interrupt_safe": 1,
+    "isHls": 1,
+    "isRVC": 1,
+    "isVset": 1,
+    "mmio": 1,
+    "needFlush": 1,
+    "realDestSize": 7,
+    "rfWen": 1,
+    "stdWritebacked": 1,
+    "traceBlockInPipe_ilastsize": 1,
+    "traceBlockInPipe_iretire": 4,
+    "traceBlockInPipe_itype": 4,
+    "uopNum": 7,
+    "valid": 1,
+    "vls": 1,
+    "vxsat": 1,
+    "wflags": 1
+  }
+}

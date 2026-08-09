@@ -225,6 +225,32 @@ hasBlockBackward/hasWaitForward/deqHasFlushed/各阻塞计数器）。
    `wfi_cycles`（hasWFI 时+1，退出 WFI 沿清零）、`wfi_timeout=&wfi_cycles`；
    清除条件 `wfiEvent_d2 | flushOut.valid | wfi_timeout`，末尾 `~wfi_enable` 强制清。
 
+### 主存储阵列 `rob_entries` = ROB_SIZE=160（对齐 golden，消 padding 死寄存器）
+
+- **背景**：早期为让 8 位 `robIdx` 下标静态在界（消 FMR_ELAB-147），把存储阵列扩到
+  `ROB_ARR=256`（2 的幂）。副作用：160..255 的 96 个 padding 项 × 25 字段 = 2592 个
+  **impl-only 死寄存器**，拖慢 FM signature match（golden 只有 `robEntries_0..159`）。
+- **改动**：`rob_entries [ROB_SIZE]`（160，无 padding）。写路径本就是 `for(i<ROB_SIZE)`
+  的按 entry 并行更新循环（enq 命中判定 `allocate_ptr[i].value==idx`，idx<ROB_SIZE），
+  天然仅写 0..159，无需 guard。**读路径**（`o_deq_entry_*`/`o_csr_fflags/vxsat`/debug head）
+  用指针值 `deqPtr/deqPtrVec/walkPtr.value` 作下标：仍保留 256 宽**组合读向量**
+  （`IDX_SPACE=256`，是 wire 非寄存器，0 flip-flop），让 8 位下标静态在界；但 160..255
+  位填**不可达 'x**（非 entry-0/0），下标经集中 `index_in_range(idx)=idx<ROB_SIZE` guard，
+  ≥160 时取 `'x`。
+- **越界（≥160）不影响输出（无 RTL gap）**：`deqPtr/walkPtr.value` 由 golden mod-160
+  环形指针产生（`NewRobDeqPtrWrapper` 的 `commitDeqPtrAll` 减 `10'hA0=160`；核内
+  `ptr_add`/`ptr_sub1` 亦以 160 取模），架构上恒 `<160`，≥160 分支运行期不可达。golden
+  自身对 ≥160 下标（`_GEN_2611`/`_GEN_187` 等 256 宽 wire 的 [160:255] 位）填 entry-0 值
+  （firtool 越界 `Vec(160)` 访问的默认 lowering），与 impl 的 'x 都落在不可达锥，故等价。
+  **纪律**：不 clamp 到 159 / 不 wrap 到 0 / 不返回正常 entry 数据 / 不加 formal assumption。
+- **验证**：(1) 边界定向 UT `tb_arr160.sv`（`make arr160-run`）直驱 `deq_ptr_vec[0]` 到
+  158/159（合法→读出正确 entry）与 160/255（越界→输出 X），seed 1/7/42 + `+vcs+initreg+0`
+  errors=0；负控（把 guard 改回 clamp→'0）UT 立即 FAIL 6 项，证非 vacuous。(2) golden 双例化
+  cycle-exact tap co-sim `tb_tap.sv`（`u_g`=golden Rob，`u_i`=xs_Rob_core，`deq_ptr_vec`
+  取 golden `_deqPtrGenModule_io_out_N_value`）逐拍比对含 deq-read 输出。(3) 装配 wrapper +
+  14 golden 叶子 + 改后核 elaborate 0 error、0 FMR_ELAB。(4) field-map 重生（
+  `scripts/gen_rob_fieldmap.py`）4000 field-reg/9440 bit 严格 bijection，**额外 impl reg=0**。
+
 ### golden 双例化等价的可行性结论（诚实记录）
 
 - golden `Rob.sv`（220873 行）**可被 VCS 编译/elaborate**（~14s），依赖闭包 = 14 个
@@ -235,16 +261,15 @@ hasBlockBackward/hasWaitForward/deqHasFlushed/各阻塞计数器）。
   **本核刻意未实现**的 difftest/data/trace/perf 逻辑产生。可读核（124 端口）只产出
   *中心控制* 输出（state/commits valid/flushOut/exception/size/canAccept…）。要对齐全部
   3234 输出，wrapper 必须重建这些被丢弃的逻辑 ≈ 重写 golden 主体，超出「可读核分解」边界。
-- **可达且正确的等价形态（已实现，见 §12b）**：hierarchical-tap 双例化——`u_g`
+- **可达且正确的等价形态（设计已定，待实现/收敛）**：hierarchical-tap 双例化——`u_g`
   例化 golden Rob 并喂全平铺随机激励；`u_i` 例化 `xs_Rob_core`，输入为「同一激励的抽象
   翻译」+「层次探针抽取 `u_g` 的子模块输出（`_exceptionGen_io_state_*`、
   `_deqPtrGenModule_io_out_*`、`_enqPtrGenModule_io_out_*`、`_rab_io_*`、
   `_vtypeBuffer_io_status_walkEnd`、`_snapshots_*`）」，逐拍比对二者*控制输出子集*。
-  这就是任务所述「两侧共用同一份 golden 黑盒子模块」。难点：tb 需复现
+  这就是任务所述「两侧共用同一份 golden 黑盒子模块」。难点（尚未收敛）：tb 需复现
   golden 的 ~15 个派生 enq 字段（FuType/CommitType 译码表→needWriteRf/numUops/isWFI/
   isHls/allow_interrupts）与写回归类（27 exuWB 里哪些是 std/branch/fflags/vxsat、25
-  writeback 里哪些是 exception），任一不一致都会在指针/异常态上引入分叉——§12b 用
-  「直接 tap golden 已算好的派生 wire」消解。
+  writeback 里哪些是 exception），任一不一致都会在指针/异常态上引入分叉。
   `eg_is_exception = (|exceptionVec[23:0]) | singleStep | (trigger==4'h1)`（Rob.scala 577）。
 
 ### §12b hierarchical-tap 子集双例化 —— 已实现并收敛（errors=0）
@@ -296,25 +321,61 @@ debugTopDown/perf、`io_csr_*`/`io_vxsat`/`io_fflags` 累计输出、`isHls`（F
 
 ---
 
-## FM 签核形态（assembly 装配证明）
+## FM 签核目标 (Rob, 第 306 个 target) —— assembly 装配证明
 
-- 可读核**不是 golden 端口面的整体替换**：它把 6 个 golden 逻辑叶子（RobEnqPtrWrapper/
-  NewRobDeqPtrWrapper/ExceptionGen/SnapshotGenerator_3/RenameBuffer/VTypeBuffer）的输出
-  当**输入**，且只产出 golden 2343 输出口里的**控制子集**；golden 数据通路（9446 reg：
-  exception payload/commit-info 全 payload/GPA/difftest 通路/trace/perf）驱动的 ~200
-  输出口被可读核**有意省略**。因此 proof_mode 只能是 **assembly**（strict 会因省略
-  数据通路口产生大量 unmatched）。
-- 装配壳 `rtl/backend/Rob_wrapper.sv`（module `Rob`，golden 同名 3234 pin）例化
-  `xs_Rob_core` + 6 逻辑叶子 + difftest sink；**叶子两侧 elaborate**（白盒受验），
-  叶子控制输入**由 u_core 输出驱动**——核逻辑一旦分叉会经叶子输出传到 golden 输出口
-  被 FM 抓住，核真在证明回路里。唯一合法黑盒 = `DiffExtInstrCommit`/`DiffExtTrapEvent`
-  （外部 DPI-C sink，无可综合体）。
+### 现状(agent/rob-w 诚实结论)
+- `rtl/backend/Rob.sv`(`xs_Rob_core`, 1055 行, 0 `_GEN_`/`_T_`)是**真实可读控制核**,
+  非 skeleton/stub。golden co-sim(`tb_tap.sv`)逐拍比对 40 控制/状态量, seed7 20k
+  **errors=0**(历史 seed 1/7/42 200k errors=0), 控制锥与 golden cycle-exact。
+- 但它**不是 golden 端口面的整体替换**: 它把 6 个 golden 逻辑叶子(RobEnqPtrWrapper/
+  NewRobDeqPtrWrapper/ExceptionGen/SnapshotGenerator_3/RenameBuffer/VTypeBuffer)的输出
+  当**输入**, 且只产出 golden 2343 输出口里的**控制子集**; golden 数据通路(9446 reg:
+  exception payload/commit-info 全 payload/GPA/difftest 通路/trace/perf)驱动的 ~200 输出口
+  被可读核**有意省略**。
 
-### 验证状态
+### 正确的 FM 配置 = assembly(仿 IMSIC)
+- proof_mode = **assembly**(strict 会因省略数据通路口产生大量 unmatched)。
+- 装配壳 `rtl/backend/Rob_wrapper.sv`(module `Rob`, golden 同名 3234 pin, VCS elaborate OK):
+  例化 `xs_Rob_core` + 6 逻辑叶子 + difftest DelayReg/DummyDPICWrapper*/dt_160x1,
+  **叶子两侧 elaborate**(白盒受验); 叶子控制输入**由 u_core 输出驱动**(非空耦合点:
+  核逻辑分叉→叶子输出→golden 输出口分叉→FM fail, 核真在证明回路里)。
+- 唯一合法黑盒 = `DiffExtInstrCommit`/`DiffExtTrapEvent`(外部 DPI-C sink, 无可综合体),
+  `verif/signoff/allow/Rob.json` 精确声明 9 个 unresolved_blackbox 对。
+- 每个叶子输入驱动均已核实 ∈ {flat golden 口, u_core 输出, flat 口 trivial 译码}
+  (证据 `/tmp/rob-w-evidence`, `Rob_fm_assembly_manifest.txt`)。
 
-- **UT**：tap 子集双例化 seed 1/7/42 各 200000 拍 `errors=0`（40 控制/状态量 +
-  内部状态探针）；自检不变量 UT 同步 errors=0。
-- **FM**：目标当前 **UNCONFIGURED**——`Rob_wrapper.sv` 仍为接口锚 + 装配契约
-  scaffold，body（浅层打拍 / payload 直通 / commit-info payload 复刻）未收口，
-  故尚无 FM 证明（诚实：不产假绿）。残留项见 `Rob_wrapper.sv` RESIDUAL 段，
-  状态权威见 `verif/signoff/` 台账。
+### 残留(main / 下一 worker 补齐, 之后 `FM_VARIANTS=Rob` 启用)
+`Rob_wrapper.sv` 现为**接口锚 + 装配契约 SCAFFOLD, body 待补齐**(诚实: 不产假绿)。
+
+#### 端口面精确分解(agent/rob 逐口审计, 见 `docs/backend/Rob_residual_ports.tsv`)
+golden `Rob` 共 **2343 输出口**, 按驱动来源划三档:
+
+| 档 | 口数 | 来源 | 补齐难度 |
+|----|------|------|----------|
+| **叶子直通** | **2081** | 某 golden 叶子实例的输出直接连到顶层 io(主体 = `io_diffCommits_*` 2040 口, 由两侧 elaborate 的 `rab`/difftest 叶子**免证**驱动) | 装配即得 |
+| **A_CORE** | **70** | `xs_Rob_core` 已产出的控制量(`io_commits_commitValid/isCommit/robIdx`, `io_flushOut_*`, `io_enq_canAccept*/isEmpty`, `io_exception_valid`, `io_wfi_wfiReq`, `io_headNotReady`, `io_cpu_halt`, `io_robDeqPtr_*`, `io_readGPAMemAddr_valid`, `io_rabCommits_isCommit/isWalk`) | 核输出直接映射 |
+| **B_SHALLOW** | **92** | 叶子输出的**单/双拍 RegNext**(`io_rabCommits_{commitValid,info,walkValid}=RegNext(rab.io_commits_*)`; `io_exception_bits_exceptionVec_N=r_3_N=RegNext(exceptionGen.io_state_*)`; exception 标量 `_r`) | 壳内加 RegNext 即可, 源全在两侧叶子 |
+| **C_DEEP** | **100** | golden body 深层计数/数据通路寄存器 | 需在核/壳复刻真逻辑 |
+
+C_DEEP 100 口明细(唯一真正 blocker): `io_perf_*`(18, 提交/flush 事件 2 拍计数; 其中
+event 0/1/2 = `flushOut & {intrEnable/deqHasException/isFlushPipe}` 核可导, 4/6/... 为
+commit-count 计数)、`io_trace_*`(48, traceCommitInfo 提交块流水)、`io_csr_*`(9,
+fflags/vxsat/vstart 累计 + dirty_fs/vs + retiredInstr)、`io_toVecExcpMod_*`(10, 向量异常
+信息抽取)、`io_debugTopDown_*`/`io_debugRobHead_*`(6)、`io_lsq_*`(5, scommit/pendingst
+计数)、`io_exception_bits_{gpaddr,isForVSnonLeafPTE}`(2, GPA mem 读回)、
+`io_toDecode_isResumeVType`(1)、`io_error_0`(1)。
+
+#### 补齐路线
+- **档 A(70)**: 壳直接把 `u_core.o_commits_*/o_flushOut_*/...` 连到对应 io。
+- **档 B(92)**: 壳内 `always_ff` 加 RegNext 复刻(源 = 两侧 elaborate 叶子输出 `_rab_io_commits_*`
+  / `_exceptionGen_io_state_*`), golden 逐口对照见 `Rob_residual_ports.tsv`。
+- **档 C(100)**: 需复刻 golden 深层 body(perf/trace/csr/vecExcp 计数)或核内扩数据通路。
+  这是 Rob 走**完整端口面 assembly SUCCEEDED 的唯一真 blocker**(≈ ASSESSMENT.md Option B,
+  多轮工程)。在补齐前, `FM_VARIANTS` **诚实留空**(不产假绿 native_facts)。
+
+### main-owned 改动(worker 无权改)
+1. `scripts/sidecar/manifest_declarations.tsv` 加行:
+   `Rob<TAB>assembly<TAB>verif/signoff/allow/Rob.json<TAB><rationale><TAB>false`
+2. `verif/signoff/assembly_depends.tsv`: Rob → difftest DPI sink(DiffExt*)边界。
+3. `scripts/sidecar/gen_305_manifest.py` 重生 306-target manifest(纳入 Rob)。
+4. `combined_ledger`: Rob 由 UNCONFIGURED → 配置后按 official gate=PASS 入账(worker 不自 promote)。

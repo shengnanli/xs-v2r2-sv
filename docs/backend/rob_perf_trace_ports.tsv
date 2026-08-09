@@ -1,0 +1,38 @@
+# Rob perf(18) + trace(48) = 66 C_DEEP ports — owner: rob-perf-trace (codex 0090 P2)
+# columns: ref_port | impl_port(xs_Rob_core) | golden_state_eq(RHS in golden Rob.sv) | valid_cond | fanout
+# golden source: /home/eda/xs-env/G0-canonical/golden-rtl/Rob.sv
+# ---------------------------------------------------------------------------------------------------------------------
+# NOTE: perf ports are all output [5:0]; final = zero-extend of a 2-stage RegNext(RegNext(src)).
+#       impl core produces o_perf_N_value [5:0] (already zero-extended, RegNext x2 of same src).
+#       trace ports are combinational reads of committed-group (robDeqGroup) trace fields + exception override.
+# ---------------------------------------------------------------------------------------------------------------------
+ref_port	impl_port	golden_state_eq	valid_cond	fanout
+## ---- PERF (18) : io_perf_N_value = {pad, RegNext(RegNext(src_N))} ----
+io_perf_0_value	o_perf_0_value	{5'h0, R2(perfEvents_0_2_probe)}; perfEvents_0_2_probe = io_flushOut_valid_0 & intrEnable	always (free-running perf ctr)	CtrlBlock io_robio.robio? -> PerfCounter csv (interrupt flush count)
+io_perf_1_value	o_perf_1_value	{5'h0, R2(perfEvents_1_2_probe)}; perfEvents_1_2_probe = io_flushOut_valid_0 & deqHasException	always	exception flush count
+io_perf_2_value	o_perf_2_value	{5'h0, R2(perfEvents_2_2_probe)}; perfEvents_2_2_probe = io_flushOut_valid_0 & isFlushPipe	always	flushPipe count
+io_perf_3_value	o_perf_3_value	{5'h0, R2(perfEvents_2_2_probe & deqHasReplayInst)}	always	replay flush count
+io_perf_4_value	o_perf_4_value	{2'h0, R2(perfEvents_4_2_probe)}; perfEvents_4_2_probe = isCommit ? popcount(commitValid_0..7) : 0	always	commit-instr count/cycle
+io_perf_5_value	o_perf_5_value	R2(retireCounter_probe)[5:0]; retireCounter = isCommitReg_last_REG ? (trueCommitCnt_r + fuseCommitCnt) : 0	always	retire-instr count (rvc-expanded + fuse)
+io_perf_6_value	o_perf_6_value	{2'h0, R2(perfEvents_6_2_probe)}; perfEvents_6_2_probe = isCommitReg_last_REG ? fuseCommitCnt : 0	always	fused-commit count
+io_perf_7_value	o_perf_7_value	{2'h0, R2( isCommitReg_last_REG ? popcount(perfEvents_r_0..7) : 0 )}; perfEvents_r_N = RegEnable(commitLoadVec_N, isCommit)	always	committed-load count
+io_perf_8_value	o_perf_8_value	{2'h0, R2( isCommitReg_last_REG ? popcount(perfEvents_r_1_0..7) : 0 )}; perfEvents_r_1_N = RegEnable(commitBranchVec_N, isCommit)	always	committed-branch count
+io_perf_9_value	o_perf_9_value	{2'h0, R2( isCommitReg_last_REG ? popcount(perfEvents_r_2_0..7) : 0 )}; perfEvents_r_2_N = RegEnable(commitStoreVec_N, isCommit)	always	committed-store count
+io_perf_10_value	o_perf_10_value	{2'h0, R2( state ? popcount(shouldWalkVec_0..7) : 0 )}	always	walk-instr count/cycle
+io_perf_11_value	o_perf_11_value	{5'h0, R2(state)}	always	walk-cycle count (state==1)
+io_perf_12_value	o_perf_12_value	{5'h0, R2(numValidEntries_probe < 8'h29)}	always	rob 1/4-full cycles
+io_perf_13_value	o_perf_13_value	{5'h0, R2(numValidEntries_probe > 8'h28 & < 8'h51)}	always	rob 1/4..1/2 cycles
+io_perf_14_value	o_perf_14_value	{5'h0, R2(exHalf_probe & numValidEntries_probe < 8'h79)}; exHalf_probe = numValidEntries_probe > 8'h50	always	rob 1/2..3/4 cycles
+io_perf_15_value	o_perf_15_value	{5'h0, R2(numValidEntries_probe > 8'h78)}	always	rob 3/4-full cycles
+io_perf_16_value	o_perf_16_value	{3'h0, R2(misPred_probe)}; misPred_probe = 2*(wb1_redir + wb3_redir + wb5_redir)	always	branch-mispredict count (=2x per golden bug-for-bug)
+io_perf_17_value	o_perf_17_value	{5'h0, R2(io_flushOut_valid_0)}	always	total-flush count
+## ---- TRACE (48) : io_trace_traceCommitInfo_blocks_N_* (combinational, N=0..7) ----
+io_trace_traceCommitInfo_blocks_0_valid	o_trace_blocks_0_valid	io_exception_valid_REG | deqHasCommitted; deqHasCommitted = isCommit & commitValid_0	comb	FTQ/Ftrace commit trace pipe
+io_trace_traceCommitInfo_blocks_N_valid (N=1..7)	o_trace_blocks_N_valid	isCommit & commitValid_N	comb	FTQ/Ftrace commit trace pipe
+io_trace_traceCommitInfo_blocks_N_bits_ftqIdx_value	o_trace_blocks_N_ftqIdx_value	rawInfo_N_ftqIdx_value (= robDeqGroup[deqIdxN].ftq_idx_value)	comb	trace ftqIdx
+io_trace_traceCommitInfo_blocks_N_bits_ftqOffset	o_trace_blocks_N_ftqOffset	rawInfo_N_ftqOffset (= robDeqGroup[deqIdxN].ftq_offset)	comb	trace ftqOffset
+io_trace_traceCommitInfo_blocks_0_bits_tracePipe_itype	o_trace_blocks_0_itype	io_exception_valid_REG ? {2'h0, isInterrupt_r ? 2'h2 : 2'h1} : robDeqGroup[deqIdx0].itype	comb	trace itype (exception override to Trap/Exception)
+io_trace_traceCommitInfo_blocks_N_bits_tracePipe_itype (N=1..7)	o_trace_blocks_N_itype	robDeqGroup[deqIdxN].itype	comb	trace itype
+io_trace_traceCommitInfo_blocks_0_bits_tracePipe_iretire	o_trace_blocks_0_iretire	io_exception_valid_REG ? 4'h0 : robDeqGroup[deqIdx0].iretire	comb	trace iretire (0 on exception)
+io_trace_traceCommitInfo_blocks_N_bits_tracePipe_iretire (N=1..7)	o_trace_blocks_N_iretire	robDeqGroup[deqIdxN].iretire	comb	trace iretire
+io_trace_traceCommitInfo_blocks_N_bits_tracePipe_ilastsize	o_trace_blocks_N_ilastsize	robDeqGroup[deqIdxN].ilastsize	comb	trace ilastsize

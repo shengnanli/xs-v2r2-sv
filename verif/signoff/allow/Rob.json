@@ -1,6 +1,46 @@
 {
-    "_comment": "Rob assembly proof allowlist. The ONLY legitimate black boxes are the external difftest DPI-C sink modules DiffExtInstrCommit / DiffExtTrapEvent, instantiated (as 'dpic') inside the both-side-elaborated DummyDPICWrapper / DummyDPICWrapper_8. They have NO synthesizable body (pure DPI-C sinks that forward the commit/trap stream to the reference model, no reverse RTL effect), so hdlin_unresolved_modules=black_box gives a symmetric unresolved edge on both FM sides. All 6 ROB logic leaves (RenameBuffer, VTypeBuffer, SnapshotGenerator_3, ExceptionGen, NewRobDeqPtrWrapper, RobEnqPtrWrapper) and the DelayReg/DummyDPICWrapper*/dt_160x1 datapath cells are elaborated BOTH SIDES (white-box, NOT black-boxed).",
+    "_comment": "Rob assembly proof allowlist (codex 0099 7-child blackbox). Two symmetric unresolved_blackbox families: (1) 7 ROB logic children each independently SIGNOFF_PASS (RenameBuffer/SnapshotGenerator_3/ExceptionGen/NewRobDeqPtrWrapper/RobEnqPtrWrapper/DelayReg x8/SyncDataModuleTemplate__64entry_3), removed from both-side WRAPPER_SRCS/FM_REF_DEPS so hdlin_unresolved_modules=black_box makes them symmetric unresolved edges; depends_on recorded in assembly_depends.tsv (Rob->7). VTypeBuffer stays white-box (both-side elaborate) with its nested SyncDataModule blackboxed; VTypeBuffer's inner SnapshotGenerator_1/_2 stay white-box. (2) 9 external difftest DPI-C sinks DiffExtInstrCommit/DiffExtTrapEvent inside both-side-elaborated DummyDPICWrapper/DummyDPICWrapper_8 (pure DPI sinks, no synthesizable body).",
     "unresolved_blackbox": [
+        {
+            "id": "DelayReg",
+            "ref_path": "r:/WORK/Rob/difftest_delayer",
+            "impl_path": "i:/WORK/Rob/difftest_delayer"
+        },
+        {
+            "id": "DelayReg_1",
+            "ref_path": "r:/WORK/Rob/difftest_delayer_1",
+            "impl_path": "i:/WORK/Rob/difftest_delayer_1"
+        },
+        {
+            "id": "DelayReg_2",
+            "ref_path": "r:/WORK/Rob/difftest_delayer_2",
+            "impl_path": "i:/WORK/Rob/difftest_delayer_2"
+        },
+        {
+            "id": "DelayReg_3",
+            "ref_path": "r:/WORK/Rob/difftest_delayer_3",
+            "impl_path": "i:/WORK/Rob/difftest_delayer_3"
+        },
+        {
+            "id": "DelayReg_4",
+            "ref_path": "r:/WORK/Rob/difftest_delayer_4",
+            "impl_path": "i:/WORK/Rob/difftest_delayer_4"
+        },
+        {
+            "id": "DelayReg_5",
+            "ref_path": "r:/WORK/Rob/difftest_delayer_5",
+            "impl_path": "i:/WORK/Rob/difftest_delayer_5"
+        },
+        {
+            "id": "DelayReg_6",
+            "ref_path": "r:/WORK/Rob/difftest_delayer_6",
+            "impl_path": "i:/WORK/Rob/difftest_delayer_6"
+        },
+        {
+            "id": "DelayReg_7",
+            "ref_path": "r:/WORK/Rob/difftest_delayer_7",
+            "impl_path": "i:/WORK/Rob/difftest_delayer_7"
+        },
         {
             "id": "DiffExtInstrCommit",
             "ref_path": "r:/WORK/Rob/difftest_module/dpic",
@@ -45,6 +85,36 @@
             "id": "DiffExtTrapEvent",
             "ref_path": "r:/WORK/Rob/difftest_module_8/dpic",
             "impl_path": "i:/WORK/Rob/difftest_module_8/dpic"
+        },
+        {
+            "id": "ExceptionGen",
+            "ref_path": "r:/WORK/Rob/exceptionGen",
+            "impl_path": "i:/WORK/Rob/exceptionGen"
+        },
+        {
+            "id": "NewRobDeqPtrWrapper",
+            "ref_path": "r:/WORK/Rob/deqPtrGenModule",
+            "impl_path": "i:/WORK/Rob/deqPtrGenModule"
+        },
+        {
+            "id": "RenameBuffer",
+            "ref_path": "r:/WORK/Rob/rab",
+            "impl_path": "i:/WORK/Rob/rab"
+        },
+        {
+            "id": "RobEnqPtrWrapper",
+            "ref_path": "r:/WORK/Rob/enqPtrGenModule",
+            "impl_path": "i:/WORK/Rob/enqPtrGenModule"
+        },
+        {
+            "id": "SnapshotGenerator_3",
+            "ref_path": "r:/WORK/Rob/snapshots_snapshotGen",
+            "impl_path": "i:/WORK/Rob/snapshots_snapshotGen"
+        },
+        {
+            "id": "SyncDataModuleTemplate__64entry_3",
+            "ref_path": "r:/WORK/Rob/vtypeBuffer/vtypeBuffer",
+            "impl_path": "i:/WORK/Rob/vtypeBuffer/vtypeBuffer"
         }
     ],
     "interface_only": [],
