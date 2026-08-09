@@ -245,3 +245,5 @@ RobEnqPtrWrapper	PASS	Rob child独立AUX(codex 0098 B): 两侧whitebox official 
 VTypeBuffer	PASS	Rob/VTypeBuffer child AUX(codex 0104 §3): 两侧whitebox glue official clean RC0
 SnapshotGenerator_1	PASS	Rob/VTypeBuffer child AUX(codex 0104 §3): 两侧whitebox glue official clean RC0
 SnapshotGenerator_2	PASS	Rob/VTypeBuffer child AUX(codex 0104 §3): 两侧whitebox glue official clean RC0
+PredChecker	PASS	NewIFU child独立AUX(rc3-ifu-subs): 可读核xs_PredChecker_core strict SUCCEEDED 3495点全name-match/0fail/0unmatched/0unread; UT seed1/7/42 checks200000 errors0六类faultType全激活; 解锁NewIFU黑盒receipt
+FrontendTrigger	PASS_DEAD_REF	NewIFU child独立AUX(rc3-ifu-subs): 可读核xs_FrontendTrigger_core strict native SUCCEEDED 300p/0fail/0unmatched/0nc; 仅golden-only tdataVec_*_tdata2[63:50]×56 cone-dead(dead_ref逐点申报, impl收窄至读域[49:0]); FM_MERGE_DUP=false消timing常数合并伪影; UT seed1/7/42 checks200000 errors0

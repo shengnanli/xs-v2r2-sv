@@ -304,3 +304,5 @@ RobEnqPtrWrapper	Rob child leaf(exact variant); PASS strict; 供Rob assembly dep
 VTypeBuffer	VTypeBuffer glue/child leaf; PASS
 SnapshotGenerator_1	VTypeBuffer glue/child leaf; PASS
 SnapshotGenerator_2	VTypeBuffer glue/child leaf; PASS
+PredChecker	NewIFU child leaf(IFU F3预测检查器); PASS strict clean; 供NewIFU assembly depends_on黑盒边界
+FrontendTrigger	NewIFU child leaf(前端硬件断点触发); PASS_DEAD_REF(golden tdata2[63:50]死位申报); 供NewIFU assembly depends_on黑盒边界

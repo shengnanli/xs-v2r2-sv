@@ -1,7 +1,7 @@
 {
  "schema": "fm-signoff-aux-manifest-v1",
  "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456",
- "count_aux": 233,
+ "count_aux": 235,
  "entries": [
   {
    "target": "Arbiter4_L2CacheErrorInfo",
@@ -466,6 +466,21 @@
    "rationale": "",
    "verify_matched_unread_compare_points": "false",
    "dead_ref": "",
+   "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
+  },
+  {
+   "target": "FrontendTrigger",
+   "ut_dir": "FrontendTrigger",
+   "makefile": "verif/ut/FrontendTrigger/Makefile",
+   "make_target": "fm-FrontendTrigger",
+   "entry": "scripts/fm_eq.tcl",
+   "proof_mode": "signoff-strict",
+   "config_status": "AUX",
+   "required_verdict": "PASS_DEAD_REF",
+   "allow_ref": "",
+   "rationale": "",
+   "verify_matched_unread_compare_points": "false",
+   "dead_ref": "verif/signoff/dead_ref/FrontendTrigger.json",
    "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
   },
   {
@@ -2213,6 +2228,21 @@
    "ut_dir": "Pmpcfg0Module",
    "makefile": "verif/ut/Pmpcfg0Module/Makefile",
    "make_target": "fm-Pmpcfg0Module",
+   "entry": "scripts/fm_eq.tcl",
+   "proof_mode": "signoff-strict",
+   "config_status": "AUX",
+   "required_verdict": "SUCCEEDED",
+   "allow_ref": "",
+   "rationale": "",
+   "verify_matched_unread_compare_points": "false",
+   "dead_ref": "",
+   "canonical_baseline_id": "G0-89fe69e83a4f2ea81065ecf9d5d9ab46b0b5a29911fd4f6aa2fefd54dcc13456"
+  },
+  {
+   "target": "PredChecker",
+   "ut_dir": "PredChecker",
+   "makefile": "verif/ut/PredChecker/Makefile",
+   "make_target": "fm-PredChecker",
    "entry": "scripts/fm_eq.tcl",
    "proof_mode": "signoff-strict",
    "config_status": "AUX",

@@ -31,6 +31,7 @@ FastArbiter_77	signoff-strict			true
 FastArbiter_78	signoff-strict			true	
 FastArbiter_79	signoff-strict			true	
 FcsrModule	signoff-strict			false	
+FrontendTrigger	signoff-strict			false	verif/signoff/dead_ref/FrontendTrigger.json
 FusionDecoder	signoff-strict			true	
 GPAMem	signoff-strict			false	
 HPerfMonitor_2	signoff-strict			true	
@@ -148,6 +149,7 @@ Pmp8cfgModule	signoff-strict			false
 Pmp9cfgModule	signoff-strict			false	
 Pmpaddr0Module	signoff-strict			false	
 Pmpcfg0Module	signoff-strict			false	
+PredChecker	signoff-strict			false	
 PrefetchQueue	signoff-strict			true	
 PrefetchReceiver	signoff-strict			false	
 PrefetchReqBuffer	signoff-strict			true	

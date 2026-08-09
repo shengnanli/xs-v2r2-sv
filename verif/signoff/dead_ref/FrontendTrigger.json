@@ -1,0 +1,231 @@
+{
+ "schema": "fm-sidecar-dead-ref-v1",
+ "target": "FrontendTrigger",
+ "rationale": "golden-only cone-dead family: tdataVec_{0..3}_tdata2_reg[63:50] (56 bits). golden stores the full 64-bit tdata2 CSR write data but the trigger match logic only ever reads tdata2[49:5] (32B half-line block compare vs pc[49:5]/pc[49:5]+1) and tdata2[4:0] (low-PC compare) = bits [49:0]; bits [63:50] (beyond VAddrBits=50) are written on tUpdate and reset but have no reader anywhere in the module -> cone-dead. impl readable core narrows the register to the golden read span [49:0] per fm-strict-unread methodology (impl clean: unread_impl=0, unmatched_impl=0, unread_notcompared=0). Harvested mechanically from native_facts.json objects.unmatched_unread_ref of the strict run (native SUCCEEDED passing=300 failing=0).",
+ "entries": [
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_0_tdata2_reg[50]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_0_tdata2_reg[51]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_0_tdata2_reg[52]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_0_tdata2_reg[53]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_0_tdata2_reg[54]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_0_tdata2_reg[55]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_0_tdata2_reg[56]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_0_tdata2_reg[57]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_0_tdata2_reg[58]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_0_tdata2_reg[59]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_0_tdata2_reg[60]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_0_tdata2_reg[61]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_0_tdata2_reg[62]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_0_tdata2_reg[63]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_1_tdata2_reg[50]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_1_tdata2_reg[51]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_1_tdata2_reg[52]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_1_tdata2_reg[53]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_1_tdata2_reg[54]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_1_tdata2_reg[55]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_1_tdata2_reg[56]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_1_tdata2_reg[57]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_1_tdata2_reg[58]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_1_tdata2_reg[59]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_1_tdata2_reg[60]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_1_tdata2_reg[61]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_1_tdata2_reg[62]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_1_tdata2_reg[63]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_2_tdata2_reg[50]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_2_tdata2_reg[51]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_2_tdata2_reg[52]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_2_tdata2_reg[53]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_2_tdata2_reg[54]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_2_tdata2_reg[55]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_2_tdata2_reg[56]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_2_tdata2_reg[57]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_2_tdata2_reg[58]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_2_tdata2_reg[59]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_2_tdata2_reg[60]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_2_tdata2_reg[61]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_2_tdata2_reg[62]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_2_tdata2_reg[63]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_3_tdata2_reg[50]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_3_tdata2_reg[51]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_3_tdata2_reg[52]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_3_tdata2_reg[53]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_3_tdata2_reg[54]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_3_tdata2_reg[55]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_3_tdata2_reg[56]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_3_tdata2_reg[57]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_3_tdata2_reg[58]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_3_tdata2_reg[59]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_3_tdata2_reg[60]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_3_tdata2_reg[61]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_3_tdata2_reg[62]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  },
+  {
+   "ref_path": "r:/WORK/FrontendTrigger/tdataVec_3_tdata2_reg[63]",
+   "rationale": "golden-only cone-dead: tdata2 bit beyond VAddrBits=50 read span (family: tdataVec_*_tdata2[63:50], no reader)"
+  }
+ ]
+}
