@@ -1,0 +1,117 @@
+{
+    "unresolved_blackbox": [
+        {
+            "id": "mshrSelector",
+            "ref_path": "r:/WORK/MSHRCtl/mshrSelector",
+            "impl_path": "i:/WORK/MSHRCtl/u_core/mshrSelector"
+        },
+        {
+            "id": "mshr_task_arb",
+            "ref_path": "r:/WORK/MSHRCtl/mshr_task_arb",
+            "impl_path": "i:/WORK/MSHRCtl/u_core/mshr_task_arb"
+        },
+        {
+            "id": "mshrs_0",
+            "ref_path": "r:/WORK/MSHRCtl/mshrs_0",
+            "impl_path": "i:/WORK/MSHRCtl/u_core/g_mshr[0].mshrs"
+        },
+        {
+            "id": "mshrs_1",
+            "ref_path": "r:/WORK/MSHRCtl/mshrs_1",
+            "impl_path": "i:/WORK/MSHRCtl/u_core/g_mshr[1].mshrs"
+        },
+        {
+            "id": "mshrs_10",
+            "ref_path": "r:/WORK/MSHRCtl/mshrs_10",
+            "impl_path": "i:/WORK/MSHRCtl/u_core/g_mshr[10].mshrs"
+        },
+        {
+            "id": "mshrs_11",
+            "ref_path": "r:/WORK/MSHRCtl/mshrs_11",
+            "impl_path": "i:/WORK/MSHRCtl/u_core/g_mshr[11].mshrs"
+        },
+        {
+            "id": "mshrs_12",
+            "ref_path": "r:/WORK/MSHRCtl/mshrs_12",
+            "impl_path": "i:/WORK/MSHRCtl/u_core/g_mshr[12].mshrs"
+        },
+        {
+            "id": "mshrs_13",
+            "ref_path": "r:/WORK/MSHRCtl/mshrs_13",
+            "impl_path": "i:/WORK/MSHRCtl/u_core/g_mshr[13].mshrs"
+        },
+        {
+            "id": "mshrs_14",
+            "ref_path": "r:/WORK/MSHRCtl/mshrs_14",
+            "impl_path": "i:/WORK/MSHRCtl/u_core/g_mshr[14].mshrs"
+        },
+        {
+            "id": "mshrs_15",
+            "ref_path": "r:/WORK/MSHRCtl/mshrs_15",
+            "impl_path": "i:/WORK/MSHRCtl/u_core/g_mshr[15].mshrs"
+        },
+        {
+            "id": "mshrs_2",
+            "ref_path": "r:/WORK/MSHRCtl/mshrs_2",
+            "impl_path": "i:/WORK/MSHRCtl/u_core/g_mshr[2].mshrs"
+        },
+        {
+            "id": "mshrs_3",
+            "ref_path": "r:/WORK/MSHRCtl/mshrs_3",
+            "impl_path": "i:/WORK/MSHRCtl/u_core/g_mshr[3].mshrs"
+        },
+        {
+            "id": "mshrs_4",
+            "ref_path": "r:/WORK/MSHRCtl/mshrs_4",
+            "impl_path": "i:/WORK/MSHRCtl/u_core/g_mshr[4].mshrs"
+        },
+        {
+            "id": "mshrs_5",
+            "ref_path": "r:/WORK/MSHRCtl/mshrs_5",
+            "impl_path": "i:/WORK/MSHRCtl/u_core/g_mshr[5].mshrs"
+        },
+        {
+            "id": "mshrs_6",
+            "ref_path": "r:/WORK/MSHRCtl/mshrs_6",
+            "impl_path": "i:/WORK/MSHRCtl/u_core/g_mshr[6].mshrs"
+        },
+        {
+            "id": "mshrs_7",
+            "ref_path": "r:/WORK/MSHRCtl/mshrs_7",
+            "impl_path": "i:/WORK/MSHRCtl/u_core/g_mshr[7].mshrs"
+        },
+        {
+            "id": "mshrs_8",
+            "ref_path": "r:/WORK/MSHRCtl/mshrs_8",
+            "impl_path": "i:/WORK/MSHRCtl/u_core/g_mshr[8].mshrs"
+        },
+        {
+            "id": "mshrs_9",
+            "ref_path": "r:/WORK/MSHRCtl/mshrs_9",
+            "impl_path": "i:/WORK/MSHRCtl/u_core/g_mshr[9].mshrs"
+        },
+        {
+            "id": "sourceB",
+            "ref_path": "r:/WORK/MSHRCtl/sourceB",
+            "impl_path": "i:/WORK/MSHRCtl/u_core/sourceB"
+        },
+        {
+            "id": "source_b_arb",
+            "ref_path": "r:/WORK/MSHRCtl/source_b_arb",
+            "impl_path": "i:/WORK/MSHRCtl/u_core/source_b_arb"
+        },
+        {
+            "id": "txreq_arb",
+            "ref_path": "r:/WORK/MSHRCtl/txreq_arb",
+            "impl_path": "i:/WORK/MSHRCtl/u_core/txreq_arb"
+        },
+        {
+            "id": "txrsp_arb",
+            "ref_path": "r:/WORK/MSHRCtl/txrsp_arb",
+            "impl_path": "i:/WORK/MSHRCtl/u_core/txrsp_arb"
+        }
+    ],
+    "interface_only": [],
+    "empty_blackbox": [],
+    "unmatched": []
+}

@@ -1,0 +1,27 @@
+{
+    "unresolved_blackbox": [
+        {
+            "id": "grantQueueData0_ram_data_data_ext",
+            "ref_path": "r:/WORK/GrantBuffer/grantQueueData0/ram_data_data_ext",
+            "impl_path": "i:/WORK/GrantBuffer/grantQueueData0/ram_data_data_ext"
+        },
+        {
+            "id": "grantQueueData1_ram_data_data_ext",
+            "ref_path": "r:/WORK/GrantBuffer/grantQueueData1/ram_data_data_ext",
+            "impl_path": "i:/WORK/GrantBuffer/grantQueueData1/ram_data_data_ext"
+        },
+        {
+            "id": "grantQueue_ram_ext",
+            "ref_path": "r:/WORK/GrantBuffer/grantQueue/ram_ext",
+            "impl_path": "i:/WORK/GrantBuffer/grantQueue/ram_ext"
+        },
+        {
+            "id": "pftRespQueue_ram_ext",
+            "ref_path": "r:/WORK/GrantBuffer/pftRespQueue/ram_ext",
+            "impl_path": "i:/WORK/GrantBuffer/pftRespQueue/ram_ext"
+        }
+    ],
+    "interface_only": [],
+    "empty_blackbox": [],
+    "unmatched": []
+}

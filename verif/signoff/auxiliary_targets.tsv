@@ -306,3 +306,7 @@ SnapshotGenerator_1	VTypeBuffer glue/child leaf; PASS
 SnapshotGenerator_2	VTypeBuffer glue/child leaf; PASS
 PredChecker	NewIFU child leaf(IFU F3预测检查器); PASS strict clean; 供NewIFU assembly depends_on黑盒边界
 FrontendTrigger	NewIFU child leaf(前端硬件断点触发); PASS_DEAD_REF(golden tdata2[63:50]死位申报); 供NewIFU assembly depends_on黑盒边界
+FastArbiter_4	MSHRCtl 直接子(txreq_arb CHI TXREQ 16路仲裁) AUX; 可读 xs_FastArbiter_4_core 同族 round-robin NUM=16; native FM SUCCEEDED, vmucp 加强后 0unread; 解锁 MSHRCtl NO_GO 黑盒之一
+FastArbiter_5	MSHRCtl 直接子(txrsp_arb CHI TXRSP) AUX; 可读 xs_FastArbiter_5_core NUM=16; native FM SUCCEEDED, vmucp 加强后 0unread; 解锁 MSHRCtl NO_GO 黑盒之一
+FastArbiter_7	MSHRCtl 直接子(source_b_arb SourceB probe) AUX; 可读 xs_FastArbiter_7_core NUM=16; native FM SUCCEEDED, vmucp 加强后 0unread; 解锁 MSHRCtl NO_GO 黑盒之一
+FastArbiter_8	MSHRCtl 直接子(mshr_task_arb MainPipe TaskBundle) AUX; 可读 xs_FastArbiter_8_core NUM=16; native FM SUCCEEDED, vmucp 加强后 0unread; 解锁 MSHRCtl NO_GO 黑盒之一

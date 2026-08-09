@@ -27,9 +27,13 @@ FastArbiter_1	signoff-strict			true
 FastArbiter_2	signoff-strict			true	
 FastArbiter_28	signoff-strict			true	
 FastArbiter_29	signoff-strict			true	
+FastArbiter_4	signoff-strict			true	
+FastArbiter_5	signoff-strict			true	
+FastArbiter_7	signoff-strict			true	
 FastArbiter_77	signoff-strict			true	
 FastArbiter_78	signoff-strict			true	
 FastArbiter_79	signoff-strict			true	
+FastArbiter_8	signoff-strict			true	
 FcsrModule	signoff-strict			false	
 FrontendTrigger	signoff-strict			false	verif/signoff/dead_ref/FrontendTrigger.json
 FusionDecoder	signoff-strict			true	

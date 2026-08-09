@@ -1,0 +1,112 @@
+{
+    "unresolved_blackbox": [],
+    "interface_only": [
+        {
+            "id": "expanders_0",
+            "ref_path": "r:/WORK/NewIFU/expanders_0",
+            "impl_path": "i:/WORK/NewIFU/u_core/g_expand[0].u_exp/u"
+        },
+        {
+            "id": "expanders_1",
+            "ref_path": "r:/WORK/NewIFU/expanders_1",
+            "impl_path": "i:/WORK/NewIFU/u_core/g_expand[1].u_exp/u"
+        },
+        {
+            "id": "expanders_10",
+            "ref_path": "r:/WORK/NewIFU/expanders_10",
+            "impl_path": "i:/WORK/NewIFU/u_core/g_expand[10].u_exp/u"
+        },
+        {
+            "id": "expanders_11",
+            "ref_path": "r:/WORK/NewIFU/expanders_11",
+            "impl_path": "i:/WORK/NewIFU/u_core/g_expand[11].u_exp/u"
+        },
+        {
+            "id": "expanders_12",
+            "ref_path": "r:/WORK/NewIFU/expanders_12",
+            "impl_path": "i:/WORK/NewIFU/u_core/g_expand[12].u_exp/u"
+        },
+        {
+            "id": "expanders_13",
+            "ref_path": "r:/WORK/NewIFU/expanders_13",
+            "impl_path": "i:/WORK/NewIFU/u_core/g_expand[13].u_exp/u"
+        },
+        {
+            "id": "expanders_14",
+            "ref_path": "r:/WORK/NewIFU/expanders_14",
+            "impl_path": "i:/WORK/NewIFU/u_core/g_expand[14].u_exp/u"
+        },
+        {
+            "id": "expanders_15",
+            "ref_path": "r:/WORK/NewIFU/expanders_15",
+            "impl_path": "i:/WORK/NewIFU/u_core/g_expand[15].u_exp/u"
+        },
+        {
+            "id": "expanders_2",
+            "ref_path": "r:/WORK/NewIFU/expanders_2",
+            "impl_path": "i:/WORK/NewIFU/u_core/g_expand[2].u_exp/u"
+        },
+        {
+            "id": "expanders_3",
+            "ref_path": "r:/WORK/NewIFU/expanders_3",
+            "impl_path": "i:/WORK/NewIFU/u_core/g_expand[3].u_exp/u"
+        },
+        {
+            "id": "expanders_4",
+            "ref_path": "r:/WORK/NewIFU/expanders_4",
+            "impl_path": "i:/WORK/NewIFU/u_core/g_expand[4].u_exp/u"
+        },
+        {
+            "id": "expanders_5",
+            "ref_path": "r:/WORK/NewIFU/expanders_5",
+            "impl_path": "i:/WORK/NewIFU/u_core/g_expand[5].u_exp/u"
+        },
+        {
+            "id": "expanders_6",
+            "ref_path": "r:/WORK/NewIFU/expanders_6",
+            "impl_path": "i:/WORK/NewIFU/u_core/g_expand[6].u_exp/u"
+        },
+        {
+            "id": "expanders_7",
+            "ref_path": "r:/WORK/NewIFU/expanders_7",
+            "impl_path": "i:/WORK/NewIFU/u_core/g_expand[7].u_exp/u"
+        },
+        {
+            "id": "expanders_8",
+            "ref_path": "r:/WORK/NewIFU/expanders_8",
+            "impl_path": "i:/WORK/NewIFU/u_core/g_expand[8].u_exp/u"
+        },
+        {
+            "id": "expanders_9",
+            "ref_path": "r:/WORK/NewIFU/expanders_9",
+            "impl_path": "i:/WORK/NewIFU/u_core/g_expand[9].u_exp/u"
+        },
+        {
+            "id": "f3Predecoder",
+            "ref_path": "r:/WORK/NewIFU/f3Predecoder",
+            "impl_path": "i:/WORK/NewIFU/u_core/u_f3pd/u"
+        },
+        {
+            "id": "frontendTrigger",
+            "ref_path": "r:/WORK/NewIFU/frontendTrigger",
+            "impl_path": "i:/WORK/NewIFU/u_core/u_fronttrig/u"
+        },
+        {
+            "id": "mmioRVCExpander",
+            "ref_path": "r:/WORK/NewIFU/mmioRVCExpander",
+            "impl_path": "i:/WORK/NewIFU/u_core/u_mmio_exp/u"
+        },
+        {
+            "id": "preDecoder",
+            "ref_path": "r:/WORK/NewIFU/preDecoder",
+            "impl_path": "i:/WORK/NewIFU/u_core/u_predecode/u"
+        },
+        {
+            "id": "predChecker",
+            "ref_path": "r:/WORK/NewIFU/predChecker",
+            "impl_path": "i:/WORK/NewIFU/u_core/u_predchecker/u"
+        }
+    ],
+    "empty_blackbox": [],
+    "unmatched": []
+}

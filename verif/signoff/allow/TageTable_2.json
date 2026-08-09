@@ -1,0 +1,72 @@
+{
+    "unresolved_blackbox": [
+        {
+            "id": "bank_wrbypasses_0_0",
+            "ref_path": "r:/WORK/TageTable_2/bank_wrbypasses_0_0",
+            "impl_path": "i:/WORK/TageTable_2/u_core/g_wb_bank[0].g_wb_br[0].bank_wrbypass"
+        },
+        {
+            "id": "bank_wrbypasses_0_1",
+            "ref_path": "r:/WORK/TageTable_2/bank_wrbypasses_0_1",
+            "impl_path": "i:/WORK/TageTable_2/u_core/g_wb_bank[0].g_wb_br[1].bank_wrbypass"
+        },
+        {
+            "id": "bank_wrbypasses_1_0",
+            "ref_path": "r:/WORK/TageTable_2/bank_wrbypasses_1_0",
+            "impl_path": "i:/WORK/TageTable_2/u_core/g_wb_bank[1].g_wb_br[0].bank_wrbypass"
+        },
+        {
+            "id": "bank_wrbypasses_1_1",
+            "ref_path": "r:/WORK/TageTable_2/bank_wrbypasses_1_1",
+            "impl_path": "i:/WORK/TageTable_2/u_core/g_wb_bank[1].g_wb_br[1].bank_wrbypass"
+        },
+        {
+            "id": "bank_wrbypasses_2_0",
+            "ref_path": "r:/WORK/TageTable_2/bank_wrbypasses_2_0",
+            "impl_path": "i:/WORK/TageTable_2/u_core/g_wb_bank[2].g_wb_br[0].bank_wrbypass"
+        },
+        {
+            "id": "bank_wrbypasses_2_1",
+            "ref_path": "r:/WORK/TageTable_2/bank_wrbypasses_2_1",
+            "impl_path": "i:/WORK/TageTable_2/u_core/g_wb_bank[2].g_wb_br[1].bank_wrbypass"
+        },
+        {
+            "id": "bank_wrbypasses_3_0",
+            "ref_path": "r:/WORK/TageTable_2/bank_wrbypasses_3_0",
+            "impl_path": "i:/WORK/TageTable_2/u_core/g_wb_bank[3].g_wb_br[0].bank_wrbypass"
+        },
+        {
+            "id": "bank_wrbypasses_3_1",
+            "ref_path": "r:/WORK/TageTable_2/bank_wrbypasses_3_1",
+            "impl_path": "i:/WORK/TageTable_2/u_core/g_wb_bank[3].g_wb_br[1].bank_wrbypass"
+        },
+        {
+            "id": "table_banks_0",
+            "ref_path": "r:/WORK/TageTable_2/table_banks_0",
+            "impl_path": "i:/WORK/TageTable_2/u_core/g_bank[0].table_bank"
+        },
+        {
+            "id": "table_banks_1",
+            "ref_path": "r:/WORK/TageTable_2/table_banks_1",
+            "impl_path": "i:/WORK/TageTable_2/u_core/g_bank[1].table_bank"
+        },
+        {
+            "id": "table_banks_2",
+            "ref_path": "r:/WORK/TageTable_2/table_banks_2",
+            "impl_path": "i:/WORK/TageTable_2/u_core/g_bank[2].table_bank"
+        },
+        {
+            "id": "table_banks_3",
+            "ref_path": "r:/WORK/TageTable_2/table_banks_3",
+            "impl_path": "i:/WORK/TageTable_2/u_core/g_bank[3].table_bank"
+        },
+        {
+            "id": "us",
+            "ref_path": "r:/WORK/TageTable_2/us",
+            "impl_path": "i:/WORK/TageTable_2/u_core/us"
+        }
+    ],
+    "interface_only": [],
+    "empty_blackbox": [],
+    "unmatched": []
+}

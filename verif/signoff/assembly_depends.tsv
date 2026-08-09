@@ -55,3 +55,10 @@ XSCore	Frontend,Backend,MemBlock	assembly XSCore 顶层: 3 对称黑盒 child。
 XSTile	XSCore,L2Top	assembly XSTile: XSCore SIGNOFF_PASS(682d986a)+L2Top SIGNOFF_PASS(TL2 14孙已集成, receipt补档B3待codex); IntBuffer 白盒 elaborate 非依赖
 XSTop	XSTile,OpenLLC	assembly XSTop: XSTile SIGNOFF_PASS(513adbc1)+OpenLLC SIGNOFF_PASS; 其余(MemMisc叶/LinkMonitor/CHILogger/NCB)两侧elaborate或复用IP
 Rob	ExceptionGen,SnapshotGenerator_3,NewRobDeqPtrWrapper,RobEnqPtrWrapper,RenameBuffer,SyncDataModuleTemplate__64entry_3,DelayReg	assembly 7-child黑盒(codex 0099组合正解): 7子模块各独立SIGNOFF_PASS(RenameBuffer=PASS_DEAD_REF/DelayReg/SyncDataModuleTemplate__64entry_3=SUCCEEDED已绿; ExceptionGen/SnapshotGenerator_3/NewRobDeqPtrWrapper/RobEnqPtrWrapper=aux PASS官方RC0). 从两侧WRAPPER_SRCS/FM_REF_DEPS移除→hdlin_unresolved_modules=black_box对称unresolved_blackbox(allow/Rob.json 14 child实例含DelayReg×8 + SyncDataModule嵌套于白盒VTypeBuffer + 9 DPI sink). VTypeBuffer两侧elaborate白盒(内SnapshotGenerator_1/_2白盒). ROB_SIZE=160 rob_entries+index_in_range guard. ★UNCONFIGURED直到5 partition(pCommit/pLsqDeep/pException/pPerfTraceCsrDbg/pVecExcp)+union全RC0; 依赖闭合前保持PROOF_GAP不promote CtrlBlock
+MSHRCtl	MSHR,SourceB,MSHRSelector,FastArbiter_4,FastArbiter_5,FastArbiter_7,FastArbiter_8	MSHR/SourceB/MSHRSelector=305绿; FastArbiter_4/5/7/8=green-AUX(agent/rc3-fastarb 40e1412c fresh AUX gate PASS, vmucp族标准)
+GrantBuffer	-	仅4 firtool ram_ext厂商FIFO宏边界(unresolved类), 无child依赖
+TageTable	FoldedSRAMTemplate,FoldedSRAMTemplate_1,WrBypass	13实例全SIGNOFF_PASS receipt(设计审核/tmp/rc3-prep REPORT)
+TageTable_1	FoldedSRAMTemplate,FoldedSRAMTemplate_1,WrBypass	同TageTable
+TageTable_2	FoldedSRAMTemplate,FoldedSRAMTemplate_1,WrBypass	同TageTable
+TageTable_3	FoldedSRAMTemplate,FoldedSRAMTemplate_1,WrBypass	同TageTable
+NewIFU	RVCExpander,PreDecode,F3Predecoder,PredChecker,FrontendTrigger	前3=305绿; PredChecker/FrontendTrigger=green-AUX(agent/rc3-ifu-subs 9d260fd5 fresh AUX gate PASS)
