@@ -1,0 +1,8 @@
+{
+    "unresolved_blackbox": [
+        {"id": "rrTable_rrTable_array", "ref_path": "r:/WORK/PBestOffsetPrefetch/rrTable/rrTable/array", "impl_path": "i:/WORK/PBestOffsetPrefetch/u_core/rrTable/rrTable/array"}
+    ],
+    "interface_only": [],
+    "empty_blackbox": [],
+    "unmatched": []
+}

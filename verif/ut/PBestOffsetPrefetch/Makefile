@@ -22,11 +22,16 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/PBestOffsetPrefetch.sv \
 # UT 变体: impl 顶层改名 PBestOffsetPrefetch_xs 与 golden 双例化。
 TB_SRCS = variants_xs.sv tb.sv
 
-# FM: 单顶层 strict; 全部功能逻辑两侧可读 elaborate, 唯一黑盒 = 厂商 SRAM 宏
+# FM: 全部功能逻辑两侧可读 elaborate, 唯一黑盒 = 厂商 SRAM 宏
 # sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt(两侧 unresolved → hdlin_unresolved_modules=
-# black_box, 对称匹配)。
+# black_box, 对称匹配)。strict 验证器政策=任意黑盒→PARTIAL(strict_has_objects), 厂商
+# SRAM 宏的 sanctioned 边界 = assembly + allow 声明该对称 unresolved 黑盒实例对
+# (RC1 GAP class A_aux_blackbox 同 VBestOffsetPrefetch; 先例 AtomicsUnit assembly+
+# allow+vmucp)。allow 只列黑盒实例对, 不吸收任何 compare/unread 点。
 FM_VARIANTS = PBestOffsetPrefetch
 FM_REF_DEPS_PBestOffsetPrefetch = DelayQueue.sv RecentRequestTable.sv OffsetScoreTable.sv SRAMTemplate_135.sv
+FM_MODE = assembly
+FM_ALLOWLIST = ../../signoff/allow/PBestOffsetPrefetch.json
 # vmucp(证明加强非 waiver): delayQueue 高位 addrNoOffset[41:20] 两侧对称 cone-dead
 # (16 条目×22 位=352), golden 逐条目具名标量 vs 手写核数组展平名令签名/命名匹配都
 # 配不上 → fm_pins.tcl 按名 1:1 双射 set_user_match; 加 rrTable REG(单口读写冲突
