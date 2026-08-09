@@ -304,5 +304,3 @@ RobEnqPtrWrapper	Rob child leaf(exact variant); PASS strict; 供Rob assembly dep
 VTypeBuffer	VTypeBuffer glue/child leaf; PASS
 SnapshotGenerator_1	VTypeBuffer glue/child leaf; PASS
 SnapshotGenerator_2	VTypeBuffer glue/child leaf; PASS
-ExceptionGen	Rob exception 聚合 pipeline 单模块 leaf; 供 Rob 分层证明黑盒; strict PASS
-SnapshotGenerator_3	Rob rename 快照环形缓冲 leaf(Rob 子, SnapshotGenerator_14 窄参数变体) [codex_0098 universe: 移出 305 主分母]

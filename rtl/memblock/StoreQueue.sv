@@ -111,21 +111,6 @@ module xs_StoreQueue_core
       entR[k] = ent[kk];
     end
 
-  // ---- 越界折叠读视图（FM 配平）：golden 对 Vec(56) 以 6 位下标做**纯值读取**时，
-  //      firtool 生成 64 项读表、高 8 项(56..63)复制条目 0（越界回绕 vec[0]）。
-  //      运行期下标的"纯值读"（喂输出/其它状态，不带 idx==j 写译码卫）一律走
-  //      uopR/entR 视图，与 golden 位级一致；idx≥56 实际不可达，不改真实行为。
-  //      per-entry 写译码/RMW（形如 ent[idx].x <= f(ent[idx])）不折叠——golden 同为
-  //      per-entry 译码，等价性由 idx==j 卫自然保证。条目 56..63 因此变为只写不读，
-  //      FM 两侧同被剪除。
-  sq_uop_t   uopR [1<<SQ_IDX_W];
-  sq_entry_t entR [1<<SQ_IDX_W];
-  always_comb
-    for (int k = 0; k < (1<<SQ_IDX_W); k++) begin
-      uopR[k] = (k >= SQ_SIZE) ? uop[0] : uop[k];
-      entR[k] = (k >= SQ_SIZE) ? ent[0] : ent[k];
-    end
-
   genvar gi;
   generate
     for (gi = 0; gi < SQ_SIZE; gi++) begin : g_entvec

@@ -1,0 +1,1615 @@
+{
+ "schema": "fm-sidecar-dead-ref-v1",
+ "target": "Tage_SC",
+ "rationale": "RC2 mechanical restore (Lane A audit, codex 0133 Class B): ledger PASS_DEAD_REF banked at 083abc4c; authoritative historical enumeration = signoff-evidence-delta/Tage_SC@083abc4c (unread_ref=402); RC1 fresh facts @2c0df9c4 (shardB) native SUCCEEDED failing=0 unread_impl=0 compare_ref=compare_impl=0 unread_notcompared=0, fresh unmatched_unread_ref set EXACTLY EQUAL to this declaration (402 pts). Class: 402 = 400 s2/s3_pc_dup pipeline PC copies + 2 updateMeta use_alt_on_na dead latches — cone-dead, zero functional state (bank 083abc4c)",
+ "entries": [
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_1_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_1_reg[10]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_1_reg[11]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_1_reg[12]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_1_reg[13]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_1_reg[14]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_1_reg[15]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_1_reg[16]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_1_reg[17]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_1_reg[18]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_1_reg[19]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_1_reg[1]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_1_reg[20]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_1_reg[21]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_1_reg[22]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_1_reg[23]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_1_reg[24]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_1_reg[25]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_1_reg[2]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_1_reg[3]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_1_reg[4]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_1_reg[5]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_1_reg[6]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_1_reg[7]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_1_reg[8]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_1_reg[9]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_2_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_2_reg[10]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_2_reg[11]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_2_reg[12]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_2_reg[13]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_2_reg[14]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_2_reg[15]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_2_reg[16]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_2_reg[17]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_2_reg[18]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_2_reg[19]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_2_reg[1]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_2_reg[20]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_2_reg[21]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_2_reg[22]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_2_reg[23]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_2_reg[24]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_2_reg[25]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_2_reg[2]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_2_reg[3]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_2_reg[4]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_2_reg[5]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_2_reg[6]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_2_reg[7]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_2_reg[8]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_2_reg[9]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_3_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_3_reg[10]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_3_reg[11]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_3_reg[12]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_3_reg[13]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_3_reg[14]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_3_reg[15]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_3_reg[16]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_3_reg[17]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_3_reg[18]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_3_reg[19]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_3_reg[1]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_3_reg[20]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_3_reg[21]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_3_reg[22]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_3_reg[23]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_3_reg[24]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_3_reg[25]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_3_reg[2]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_3_reg[3]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_3_reg[4]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_3_reg[5]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_3_reg[6]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_3_reg[7]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_3_reg[8]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_3_reg[9]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_reg[10]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_reg[11]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_reg[12]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_reg[13]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_reg[14]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_reg[15]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_reg[16]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_reg[17]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_reg[18]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_reg[19]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_reg[1]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_reg[20]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_reg[21]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_reg[22]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_reg[23]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_reg[24]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_reg[25]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_reg[2]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_reg[3]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_reg[4]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_reg[5]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_reg[6]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_reg[7]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_reg[8]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_0_value_reg[9]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_1_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_1_reg[10]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_1_reg[11]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_1_reg[1]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_1_reg[2]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_1_reg[3]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_1_reg[4]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_1_reg[5]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_1_reg[6]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_1_reg[7]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_1_reg[8]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_1_reg[9]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_2_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_2_reg[10]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_2_reg[11]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_2_reg[1]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_2_reg[2]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_2_reg[3]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_2_reg[4]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_2_reg[5]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_2_reg[6]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_2_reg[7]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_2_reg[8]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_2_reg[9]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_3_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_3_reg[10]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_3_reg[11]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_3_reg[1]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_3_reg[2]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_3_reg[3]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_3_reg[4]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_3_reg[5]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_3_reg[6]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_3_reg[7]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_3_reg[8]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_3_reg[9]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_reg[10]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_reg[11]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_reg[1]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_reg[2]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_reg[3]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_reg[4]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_reg[5]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_reg[6]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_reg[7]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_reg[8]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_1_value_reg[9]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_1_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_1_reg[10]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_1_reg[11]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_1_reg[1]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_1_reg[2]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_1_reg[3]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_1_reg[4]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_1_reg[5]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_1_reg[6]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_1_reg[7]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_1_reg[8]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_1_reg[9]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_2_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_2_reg[10]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_2_reg[11]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_2_reg[1]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_2_reg[2]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_2_reg[3]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_2_reg[4]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_2_reg[5]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_2_reg[6]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_2_reg[7]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_2_reg[8]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_2_reg[9]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_3_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_3_reg[10]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_3_reg[11]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_3_reg[1]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_3_reg[2]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_3_reg[3]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_3_reg[4]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_3_reg[5]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_3_reg[6]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_3_reg[7]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_3_reg[8]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_3_reg[9]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_reg[10]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_reg[11]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_reg[1]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_reg[2]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_reg[3]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_reg[4]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_reg[5]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_reg[6]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_reg[7]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_reg[8]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s2_pc_dup_s2_pc_seg_2_value_reg[9]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_1_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_1_reg[10]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_1_reg[11]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_1_reg[12]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_1_reg[13]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_1_reg[14]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_1_reg[15]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_1_reg[16]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_1_reg[17]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_1_reg[18]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_1_reg[19]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_1_reg[1]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_1_reg[20]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_1_reg[21]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_1_reg[22]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_1_reg[23]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_1_reg[24]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_1_reg[25]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_1_reg[2]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_1_reg[3]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_1_reg[4]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_1_reg[5]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_1_reg[6]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_1_reg[7]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_1_reg[8]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_1_reg[9]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_2_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_2_reg[10]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_2_reg[11]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_2_reg[12]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_2_reg[13]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_2_reg[14]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_2_reg[15]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_2_reg[16]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_2_reg[17]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_2_reg[18]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_2_reg[19]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_2_reg[1]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_2_reg[20]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_2_reg[21]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_2_reg[22]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_2_reg[23]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_2_reg[24]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_2_reg[25]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_2_reg[2]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_2_reg[3]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_2_reg[4]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_2_reg[5]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_2_reg[6]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_2_reg[7]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_2_reg[8]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_2_reg[9]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_3_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_3_reg[10]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_3_reg[11]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_3_reg[12]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_3_reg[13]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_3_reg[14]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_3_reg[15]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_3_reg[16]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_3_reg[17]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_3_reg[18]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_3_reg[19]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_3_reg[1]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_3_reg[20]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_3_reg[21]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_3_reg[22]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_3_reg[23]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_3_reg[24]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_3_reg[25]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_3_reg[2]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_3_reg[3]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_3_reg[4]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_3_reg[5]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_3_reg[6]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_3_reg[7]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_3_reg[8]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_3_reg[9]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_reg[10]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_reg[11]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_reg[12]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_reg[13]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_reg[14]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_reg[15]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_reg[16]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_reg[17]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_reg[18]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_reg[19]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_reg[1]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_reg[20]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_reg[21]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_reg[22]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_reg[23]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_reg[24]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_reg[25]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_reg[2]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_reg[3]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_reg[4]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_reg[5]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_reg[6]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_reg[7]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_reg[8]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_0_value_reg[9]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_1_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_1_reg[10]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_1_reg[11]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_1_reg[1]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_1_reg[2]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_1_reg[3]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_1_reg[4]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_1_reg[5]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_1_reg[6]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_1_reg[7]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_1_reg[8]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_1_reg[9]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_2_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_2_reg[10]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_2_reg[11]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_2_reg[1]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_2_reg[2]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_2_reg[3]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_2_reg[4]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_2_reg[5]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_2_reg[6]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_2_reg[7]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_2_reg[8]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_2_reg[9]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_3_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_3_reg[10]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_3_reg[11]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_3_reg[1]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_3_reg[2]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_3_reg[3]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_3_reg[4]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_3_reg[5]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_3_reg[6]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_3_reg[7]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_3_reg[8]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_3_reg[9]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_reg[10]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_reg[11]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_reg[1]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_reg[2]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_reg[3]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_reg[4]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_reg[5]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_reg[6]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_reg[7]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_reg[8]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_1_value_reg[9]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_1_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_1_reg[10]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_1_reg[11]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_1_reg[1]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_1_reg[2]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_1_reg[3]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_1_reg[4]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_1_reg[5]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_1_reg[6]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_1_reg[7]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_1_reg[8]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_1_reg[9]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_2_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_2_reg[10]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_2_reg[11]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_2_reg[1]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_2_reg[2]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_2_reg[3]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_2_reg[4]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_2_reg[5]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_2_reg[6]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_2_reg[7]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_2_reg[8]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_2_reg[9]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_3_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_3_reg[10]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_3_reg[11]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_3_reg[1]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_3_reg[2]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_3_reg[3]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_3_reg[4]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_3_reg[5]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_3_reg[6]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_3_reg[7]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_3_reg[8]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_3_reg[9]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_reg[10]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_reg[11]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_reg[1]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_reg[2]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_reg[3]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_reg[4]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_reg[5]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_reg[6]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_reg[7]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_reg[8]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/s3_pc_dup_s3_pc_seg_2_value_reg[9]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/updateMeta_r_use_alt_on_na_0_reg",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/Tage_SC/updateMeta_r_use_alt_on_na_1_reg",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 083abc4c; see target rationale"
+  }
+ ]
+}

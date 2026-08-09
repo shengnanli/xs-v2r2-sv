@@ -14,9 +14,9 @@ DelayN_15	signoff-strict			false
 DelayN_17	signoff-strict			false	
 DelayReg_11	signoff-strict			false	
 DelayReg_12	signoff-strict			false	
-Directory_1	signoff-strict			true	
-Directory_2	signoff-strict			true	
-Directory_3	signoff-strict			true	
+Directory_1	assembly	verif/signoff/allow/Directory_1.json		true	
+Directory_2	assembly	verif/signoff/allow/Directory_2.json		true	
+Directory_3	assembly	verif/signoff/allow/Directory_3.json		true	
 DpcModule	signoff-strict			false	
 DretEventModule	signoff-strict			false	
 Dscratch0Module	signoff-strict			false	
@@ -210,7 +210,7 @@ TrapEntryMNEventModule	signoff-strict			false
 TrapEntryVSEventModule	signoff-strict			false	
 TrapHandleModule	signoff-strict			false	
 TselectModule	signoff-strict			false	
-VBestOffsetPrefetch	signoff-strict			true	
+VBestOffsetPrefetch	assembly	verif/signoff/allow/VBestOffsetPrefetch.json		true	
 VLMergeBufferImp	signoff-strict			true	
 VLSplitImp	signoff-strict			true	
 VSMergeBufferImp	signoff-strict			true	

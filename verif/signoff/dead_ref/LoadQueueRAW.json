@@ -1,0 +1,199 @@
+{
+ "schema": "fm-sidecar-dead-ref-v1",
+ "target": "LoadQueueRAW",
+ "rationale": "RC2 mechanical restore (Lane A audit, codex 0133 Class B): ledger PASS_DEAD_REF banked at 4255a15f; authoritative historical enumeration = signoff-evidence/LoadQueueRAW@fdb8e6b9 (unread_ref=48); RC1 fresh facts @2c0df9c4 (shardB) native SUCCEEDED failing=0 unread_impl=0 compare_ref=compare_impl=0 unread_notcompared=0, fresh unmatched_unread_ref set EXACTLY EQUAL to this declaration (48 pts). Class: 48 detectedRollback_paddrModule_io_violationMdata_{0,1}_r_reg bits: golden-only per bank 4255a15f (composition re-run clean, ur48); CAVEAT enumeration from sweep run that was native FAILED (cr=3598) — set must be re-confirmed against fresh facts",
+ "entries": [
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_0_r_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_0_r_reg[1]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_0_r_reg[28]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_0_r_reg[29]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_0_r_reg[2]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_0_r_reg[30]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_0_r_reg[31]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_0_r_reg[32]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_0_r_reg[33]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_0_r_reg[34]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_0_r_reg[35]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_0_r_reg[36]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_0_r_reg[37]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_0_r_reg[38]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_0_r_reg[39]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_0_r_reg[3]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_0_r_reg[40]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_0_r_reg[41]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_0_r_reg[42]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_0_r_reg[43]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_0_r_reg[44]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_0_r_reg[45]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_0_r_reg[46]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_0_r_reg[47]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_1_r_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_1_r_reg[1]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_1_r_reg[28]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_1_r_reg[29]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_1_r_reg[2]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_1_r_reg[30]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_1_r_reg[31]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_1_r_reg[32]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_1_r_reg[33]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_1_r_reg[34]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_1_r_reg[35]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_1_r_reg[36]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_1_r_reg[37]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_1_r_reg[38]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_1_r_reg[39]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_1_r_reg[3]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_1_r_reg[40]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_1_r_reg[41]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_1_r_reg[42]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_1_r_reg[43]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_1_r_reg[44]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_1_r_reg[45]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_1_r_reg[46]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/LoadQueueRAW/detectedRollback_paddrModule_io_violationMdata_1_r_reg[47]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 4255a15f; see target rationale"
+  }
+ ]
+}

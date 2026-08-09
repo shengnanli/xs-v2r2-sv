@@ -1,0 +1,11 @@
+{
+ "schema": "fm-sidecar-dead-ref-v1",
+ "target": "LqExceptionBuffer",
+ "rationale": "RC2 mechanical restore (Lane A audit, codex 0133 Class B): ledger PASS_DEAD_REF banked at d329289b; authoritative historical enumeration = signoff-evidence-delta/LqExceptionBuffer@e4395a50 (unread_ref=1); RC1 fresh facts @2c0df9c4 (shardC) native SUCCEEDED failing=0 unread_impl=0 compare_ref=compare_impl=0 unread_notcompared=0, fresh unmatched_unread_ref set EXACTLY EQUAL to this declaration (1 pts). Class: 1 golden-only REG_reg: cone-dead; bank d329289b records ur1/impl0 (count matches delta enumeration)",
+ "entries": [
+  {
+   "ref_path": "r:/WORK/LqExceptionBuffer/REG_reg",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt d329289b; see target rationale"
+  }
+ ]
+}

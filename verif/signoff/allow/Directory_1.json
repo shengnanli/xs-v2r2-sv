@@ -1,0 +1,47 @@
+{
+ "unresolved_blackbox": [
+  {
+   "id": "array_14_ext",
+   "ref_path": "r:/WORK/Directory_1/tagArray/array_0_0_0/array/array/array_14_ext",
+   "impl_path": "i:/WORK/Directory_1/tagArray/array_0_0_0/array/array/array_14_ext"
+  },
+  {
+   "id": "array_14_ext_1",
+   "ref_path": "r:/WORK/Directory_1/tagArray/array_0_0_1/array/array/array_14_ext",
+   "impl_path": "i:/WORK/Directory_1/tagArray/array_0_0_1/array/array/array_14_ext"
+  },
+  {
+   "id": "array_14_ext_2",
+   "ref_path": "r:/WORK/Directory_1/tagArray/array_0_1_0/array/array/array_14_ext",
+   "impl_path": "i:/WORK/Directory_1/tagArray/array_0_1_0/array/array/array_14_ext"
+  },
+  {
+   "id": "array_14_ext_3",
+   "ref_path": "r:/WORK/Directory_1/tagArray/array_0_1_1/array/array/array_14_ext",
+   "impl_path": "i:/WORK/Directory_1/tagArray/array_0_1_1/array/array/array_14_ext"
+  },
+  {
+   "id": "array_15_ext",
+   "ref_path": "r:/WORK/Directory_1/metaArray/array/array/array_15_ext",
+   "impl_path": "i:/WORK/Directory_1/metaArray/array/array/array_15_ext"
+  },
+  {
+   "id": "array_16_ext",
+   "ref_path": "r:/WORK/Directory_1/replacer_sram_opt/array/array/array_16_ext",
+   "impl_path": "i:/WORK/Directory_1/replacer_sram_opt/array/array/array_16_ext"
+  },
+  {
+   "id": "array_17_ext",
+   "ref_path": "r:/WORK/Directory_1/origin_bit_opt/array/array/array_17_ext",
+   "impl_path": "i:/WORK/Directory_1/origin_bit_opt/array/array/array_17_ext"
+  },
+  {
+   "id": "mbistPl",
+   "ref_path": "r:/WORK/Directory_1/mbistPl",
+   "impl_path": "i:/WORK/Directory_1/mbistPl"
+  }
+ ],
+ "interface_only": [],
+ "empty_blackbox": [],
+ "unmatched": []
+}

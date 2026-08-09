@@ -51,6 +51,8 @@ TB_SRCS = variants_xs.sv tb.sv
 # FM (option-2): ref 侧 = golden Directory_2 + SRAM 链 elaborate (与 impl 侧 WRAPPER_SRCS 对称);
 # array_N_ext (vendor 宏) 与 L2Directory_2 (未独立签 MBIST 分发, assembly_depends 缺口) 两侧不提供 → 黑盒。
 FM_VARIANTS = Directory_2
+FM_MODE = assembly
+FM_ALLOWLIST = ../../signoff/allow/Directory_2.json
 FM_REF_DEPS_Directory_2 = $(FM_SRAM_ELAB)
 
 FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true

@@ -1,0 +1,207 @@
+{
+ "schema": "fm-sidecar-dead-ref-v1",
+ "target": "FTBBank",
+ "rationale": "RC2 mechanical restore (Lane A audit, codex 0133 Class B): ledger PASS_DEAD_REF banked at aaba1e33; authoritative historical enumeration = signoff-evidence-delta/FTBBank@aaba1e33 (unread_ref=50); RC1 fresh facts @2c0df9c4 (shardB) native SUCCEEDED failing=0 unread_impl=0 compare_ref=compare_impl=0 unread_notcompared=0, fresh unmatched_unread_ref set EXACTLY EQUAL to this declaration (50 pts). Class: req_pc_reg_1_reg (50 bits): assertion-only PC copy (FTB fallThrough assert, compiled out under SYNTHESIS) — zero functional fanout, golden-only cone-dead",
+ "entries": [
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[10]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[11]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[12]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[13]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[14]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[15]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[16]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[17]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[18]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[19]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[1]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[20]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[21]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[22]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[23]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[24]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[25]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[26]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[27]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[28]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[29]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[2]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[30]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[31]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[32]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[33]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[34]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[35]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[36]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[37]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[38]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[39]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[3]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[40]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[41]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[42]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[43]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[44]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[45]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[46]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[47]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[48]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[49]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[4]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[5]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[6]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[7]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[8]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/FTBBank/req_pc_reg_1_reg[9]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt aaba1e33; see target rationale"
+  }
+ ]
+}

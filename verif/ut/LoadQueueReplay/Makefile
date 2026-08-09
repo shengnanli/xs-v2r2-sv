@@ -19,12 +19,18 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/LoadQueueReplay.sv \
               $(GOLDEN_RTL)/DelayNWithValid_152.sv \
               $(GOLDEN_RTL)/DelayNWithValid_155.sv
 
-# FM：golden 顶层（含 3 子模块）vs 手写同名 wrapper（→ 可读核 + 同 3 子模块黑盒）。
-WRAPPER_SRCS = $(RTL_DIR)/memblock/LoadQueueReplay_wrapper.sv
+# FM：golden 顶层 vs 手写同名 wrapper（→ 可读核）。子模块两侧同源深 elaborate
+# （StoreQueue/L2Top 配方）：FM_REF_DEPS 喂 ref 侧 + FM_SUBS 进 WRAPPER_SRCS 喂 impl 侧。
+# 沿革：deps 只给 ref 侧曾致两侧不对称白盒展开（数万 unmatched, 8cc97a46 审计）；
+# 改双侧同黑盒又违反 signoff-strict 禁黑盒（RC1 FINAL_306_REFRESH GAP）。双侧同源
+# elaborate 同时满足对称性与 strict 无黑盒。
+FM_SUBS = $(GOLDEN_RTL)/AgeDetector_38.sv $(GOLDEN_RTL)/FreeList_5.sv \
+          $(GOLDEN_RTL)/LqVAddrModule.sv $(GOLDEN_RTL)/DelayN_13.sv \
+          $(GOLDEN_RTL)/DelayNWithValid_152.sv $(GOLDEN_RTL)/DelayNWithValid_155.sv
+WRAPPER_SRCS = $(RTL_DIR)/memblock/LoadQueueReplay_wrapper.sv $(FM_SUBS)
 FM_VARIANTS = LoadQueueReplay
-# FM 审计 2026-07：deps 只给 ref 侧会白盒展开（impl 侧 unresolved 黑盒），两侧层次
-# 不对称 → 数万 unmatched 传染。改为两侧同黑盒（同名实例自动配对）。UT 不受影响。
-FM_REF_DEPS_LoadQueueReplay =
+FM_REF_DEPS_LoadQueueReplay = AgeDetector_38.sv FreeList_5.sv LqVAddrModule.sv \
+              DelayN_13.sv DelayNWithValid_152.sv DelayNWithValid_155.sv
 
 # 关闭 FM「合并同值重复寄存器」：本模块状态规模大（72 entry × 多字段 + 3 流水级 +
 # 冷却/perf），合并后未配对寄存器搜索空间组合爆炸。关掉由 fm_eq.tcl 按展平名配对阵列。

@@ -1,0 +1,55 @@
+{
+ "schema": "fm-sidecar-dead-ref-v1",
+ "target": "EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v",
+ "rationale": "RC2 mechanical restore (Lane A audit, codex 0133 Class B): ledger PASS_DEAD_REF banked at 490b8635; authoritative historical enumeration = signoff-evidence-delta/EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v@e4395a50 (unread_ref=12); RC1 fresh facts @2c0df9c4 (shardC) native SUCCEEDED failing=0 unread_impl=0 compare_ref=compare_impl=0 unread_notcompared=0, fresh unmatched_unread_ref set EXACTLY EQUAL to this declaration (12 pts). Class: 12 golden-only r_*_reg single-bit entry registers, impl-clean per bank 490b8635 (ur12); enumeration from delta evidence (pre-impl-fix run, ui=1405 at that time)",
+ "entries": [
+  {
+   "ref_path": "r:/WORK/EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v/r_0_0_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 490b8635; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v/r_0_1_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 490b8635; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v/r_0_2_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 490b8635; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v/r_1_0_0_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 490b8635; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v/r_1_0_1_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 490b8635; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v/r_1_0_2_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 490b8635; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v/r_1_0_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 490b8635; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v/r_1_1_0_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 490b8635; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v/r_1_1_1_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 490b8635; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v/r_1_1_2_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 490b8635; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v/r_1_1_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 490b8635; see target rationale"
+  },
+  {
+   "ref_path": "r:/WORK/EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v/r_1_2_reg[0]",
+   "rationale": "golden-only cone-dead register bit (impl clean); audited receipt 490b8635; see target rationale"
+  }
+ ]
+}

@@ -45,6 +45,8 @@ TB_SRCS = variants_xs.sv tb.sv
 # fm_pins_pre.tcl 建双射 + verify_matched_unread_compare_points=true 让 FM 逐位实证相等
 # →从 Not-Compared 提升为 Passing(加强证明, 非 waiver; 见 fm_pins_pre.tcl 详注)。
 FM_VARIANTS = VBestOffsetPrefetch
+FM_MODE = assembly
+FM_ALLOWLIST = ../../signoff/allow/VBestOffsetPrefetch.json
 FM_REF_DEPS_VBestOffsetPrefetch = DelayQueue_1.sv RecentRequestTable_1.sv OffsetScoreTable_1.sv SRAMTemplate_135.sv \
                                   PrefetchReqBuffer.sv RRArbiterInit_12.sv RRArbiterInit_13.sv
 

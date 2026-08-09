@@ -215,9 +215,21 @@ def main():
     auxiliary_seen = set()
     emptyvar_dirs = set()  # 非 FMBB 且 FM_VARIANTS 真空(如 Rob)——显式 UNCONFIGURED
 
+    # v1 锚语义固化(codex 0123/0133, RC2 blocker-2): Rob 的证明属 cone-DCE partitioned
+    # 流程(manifest_306_v2), 永不由 monolithic Makefile entry 表达——即使
+    # verif/ut/Rob/Makefile 携带 FM_VARIANTS(分区工作 7310becb 引入)也强制 UNCONFIGURED;
+    # verif/ut/Rob_partitions 只放分区脚本、非独立 target, 整目录忽略。
+    V1_FORCE_UNCONFIGURED = {"Rob"}
+    V1_IGNORE_DIRS = {"Rob_partitions"}
+
     for mk in sorted(glob.glob(os.path.join(a.ut_root, "*", "Makefile")) +
                      glob.glob(os.path.join(a.ut_root, "*", "Makefile.*"))):
         ut_dir = os.path.basename(os.path.dirname(mk))
+        if ut_dir in V1_IGNORE_DIRS:
+            continue
+        if ut_dir in V1_FORCE_UNCONFIGURED:
+            emptyvar_dirs.add(ut_dir)
+            continue
         if ut_dir in FMBB and mk.endswith("Makefile"):
             mt = FMBB[ut_dir]
             # entry 从 Makefile mt 规则实际 `-file <tcl>` 派生(codex_0075: provenance 须
@@ -256,6 +268,8 @@ def main():
         if not os.path.isdir(dd):
             continue
         ud = os.path.basename(dd)
+        if ud in V1_IGNORE_DIRS:
+            continue
         if ud in fm_dirs:
             continue
         # 该目录是否有任何 Makefile 含 FM 配置?
