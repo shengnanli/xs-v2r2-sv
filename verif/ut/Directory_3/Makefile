@@ -53,6 +53,7 @@ TB_SRCS = variants_xs.sv tb.sv
 FM_VARIANTS = Directory_3
 FM_REF_DEPS_Directory_3 = $(FM_SRAM_ELAB)
 
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 include ../../../scripts/ut_common.mk
 
 VCS += +define+SYNTHESIS +vcs+initreg+random +incdir+$(RTL_DIR)/uncore

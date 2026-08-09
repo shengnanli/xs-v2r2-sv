@@ -14,9 +14,9 @@ DelayN_15	signoff-strict			false
 DelayN_17	signoff-strict			false	
 DelayReg_11	signoff-strict			false	
 DelayReg_12	signoff-strict			false	
-Directory_1	signoff-strict			false	
-Directory_2	signoff-strict			false	
-Directory_3	signoff-strict			false	
+Directory_1	signoff-strict			true	
+Directory_2	signoff-strict			true	
+Directory_3	signoff-strict			true	
 DpcModule	signoff-strict			false	
 DretEventModule	signoff-strict			false	
 Dscratch0Module	signoff-strict			false	
