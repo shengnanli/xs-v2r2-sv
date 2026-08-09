@@ -27,6 +27,12 @@ TB_SRCS = variants_xs.sv tb.sv
 # black_box, 对称匹配)。
 FM_VARIANTS = PBestOffsetPrefetch
 FM_REF_DEPS_PBestOffsetPrefetch = DelayQueue.sv RecentRequestTable.sv OffsetScoreTable.sv SRAMTemplate_135.sv
+# vmucp(证明加强非 waiver): delayQueue 高位 addrNoOffset[41:20] 两侧对称 cone-dead
+# (16 条目×22 位=352), golden 逐条目具名标量 vs 手写核数组展平名令签名/命名匹配都
+# 配不上 → fm_pins.tcl 按名 1:1 双射 set_user_match; 加 rrTable REG(单口读写冲突
+# 检测寄存器, 两侧同名对称 matched-unread) → vmucp=true 让 FM 实际比较全部
+# matched-unread 点转 passing, unread 全零(同型先例 ICacheCtrlUnit/Prefetcher)。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 
 include ../../../scripts/ut_common.mk
 

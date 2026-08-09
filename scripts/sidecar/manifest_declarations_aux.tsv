@@ -116,7 +116,7 @@ NewRobDeqPtrWrapper	signoff-strict			false
 Og2ForVector	signoff-strict			false	
 OpenNCB	assembly	verif/signoff/allow/OpenNCB.json		false	
 OpenNCB_1	assembly	verif/signoff/allow/OpenNCB_1.json		false	
-PBestOffsetPrefetch	signoff-strict			false	
+PBestOffsetPrefetch	signoff-strict			true	
 PFEvent	signoff-strict			false	
 PMAEntryHandleModule	signoff-strict			false	
 PMPEntryHandleModule	signoff-strict			false	
