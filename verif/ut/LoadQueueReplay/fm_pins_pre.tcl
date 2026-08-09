@@ -1,11 +1,10 @@
 # LoadQueueReplay FM 钉点（FM 审计 2026-07）
-# 子模块（vaddrModule/freeList/ageOldest_age*）两侧同黑盒（Makefile 已清 FM_REF_DEPS）。
+# 子模块两侧同源深 elaborate(RC2: FM_REF_DEPS+FM_SUBS 进 WRAPPER_SRCS, StoreQueue/L2Top 配方)。
 # 核内 72-entry 元数据：golden 逐 entry 展平 ↔ impl struct/packed 数组，显式钉。
 setup
 
-# FM 的寄存器初值推断（Auto）会把一侧部分寄存器约束成常量（两侧不对称 → 锥失配），关掉。
-if {[catch {set_app_var verification_assume_reg_init none} msg]} { puts "PINS: assume_reg_init failed: $msg" }
-if {[catch {set_app_var verification_set_undriven_signals BINARY} msg]} { puts "PINS: undriven failed: $msg" }
+# (RC2) 曾在此关寄存器初值推断/设 undriven BINARY——那是两侧不对称黑盒时代的锥失配对策,
+# 属 relaxed_appvars, signoff-strict 下 validator 判 PARTIAL。双侧同源 elaborate 后不再需要。
 
 # ---- ent 状态位（1 位 × 72）----
 foreach {gf if} {
