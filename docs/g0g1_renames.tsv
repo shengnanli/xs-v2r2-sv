@@ -1,0 +1,18 @@
+# G0<->G1 纯重编号映射(自名+断言行号归一后逐字一致, 2026-09-11 内容哈希交叉匹配)
+# 方向1: G1 目标名 <== 内容来自 G0 文件(上轮该名字的重写核可直接对号继承)
+DataModule__16entry_12	G0:DataModule__16entry_8
+DataModule__16entry_16	G0:DataModule__16entry_12
+DataModule__16entry_8	G0:DataModule__16entry_4
+FastArbiter_30	G0:FastArbiter_31
+NewPipelineConnectPipe_33	G0:NewPipelineConnectPipe_31
+Queue1_RegMapperInput_3	G0:Queue1_RegMapperInput_1
+# 方向2: 上轮 RESTRUCTURED 目标(G1 无同名文件) ==> G1 新名字
+FastArbiter_31	G1:FastArbiter_30
+FastArbiter_36	G1:FastArbiter_35
+NewPipelineConnectPipe_31	G1:NewPipelineConnectPipe_33
+SRAMTemplate_70	G1:SRAMTemplate_76
+SRAMTemplate_72	G1:SRAMTemplate_78
+# 真消失/内容也变(11个, 需逐个人工定位): CLINT(G1整体无CLINT模块,中断架构重构)
+# FastArbiter_44 FastArbiter_47 FoldedSRAMTemplate_21 FoldedSRAMTemplate_23
+# L1FlagMetaArray_1 NewPipelineConnectPipe_32 PMPChecker_10 SRAMTemplate_66
+# SplittedSRAMTemplate_24 SplittedSRAMTemplate_26

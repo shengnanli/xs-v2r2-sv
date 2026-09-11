@@ -1,0 +1,308 @@
+# G0<->G1 306目标delta  G0=v2r2(c8bbd5c6)  G1=kunminghu-v2(b36a1a2a5)
+# target	own_file	class	diff_lines	n_dirty_deps	dirty_deps_sample	note
+AXI4Deinterleaver	SAME	INHERIT		0		
+AXI4IdIndexer	SAME	INHERIT		0		
+AXI4IdIndexer_1	SAME	INHERIT		0		
+AXI4Xbar	SAME	INHERIT		0		
+AXI4Xbar_1	DIFF	REWRITE_L	1008	0		
+Alu	DIFF	REWRITE_S	35	0		
+Arbiter1_InsUncacheResp	SAME	INHERIT		0		
+Backend	DIFF	REWRITE_L	50402	458	Alu,Bku,BranchUnit,BusyTable,BypassNetwork,CSR…	
+BankedDataArray	DIFF	REWRITE_L	571	11	DataSRAMBank,DataSRAMBank_1,DataSRAMBank_2,DataSRAMBank_4,SRAMTemplate_100,SRAMTemplate_84…	
+Bku	DIFF	REWRITE_M	123	0		
+BranchUnit	DIFF	REWRITE_M	81	0		
+BypassNetwork	DIFF	REWRITE_L	1274	0		
+CHILogger	SAME	INHERIT		0		
+CLINT	ONLY_G0	RESTRUCTURED		0		
+Composer	DIFF	REWRITE_L	1088	46	FTB,FauFTB,FoldedSRAMTemplate_20,FoldedSRAMTemplate_22,FoldedSRAMTemplate_24,ITTage…	
+CompressUnit	SAME	INHERIT		0		
+CtrlBlock	DIFF	REWRITE_L	48083	52	BusyTable,CommitStuckCounter,DataModule__16entry_16,DataModule__16entry_20,DecodeStage,DecodeUnit…	
+DCache	DIFF	REWRITE_L	1766	30	Arbiter16_MainPipeReq,Arbiter4_MainPipeReq,BankedDataArray,CMOUnit,CounterFilter,CtrlUnit…	
+DCacheWrapper	DIFF	REWRITE_L	1626	31	Arbiter16_MainPipeReq,Arbiter4_MainPipeReq,BankedDataArray,CMOUnit,CounterFilter,CtrlUnit…	
+DataModule_BackendPC_16entry	SAME	INHERIT		0		
+DataModule_FtqPC_16entry	SAME	INHERIT		0		
+DataModule__16entry	SAME	INHERIT		0		
+DataModule__16entry_12	DIFF	REWRITE_L	4854	0		
+DataModule__16entry_16	DIFF	REWRITE_L	2194	0		
+DataModule__16entry_4	DIFF	REWRITE_L	2297	0		
+DataModule__16entry_8	DIFF	REWRITE_L	3494	0		
+DataModule__64entry	SAME	INHERIT		0		
+DataModule__64entry_16	SAME	INHERIT		0		
+DataPath	DIFF	REWRITE_L	19656	15	FpRegFilePart0,FpRegFilePart1,FpRegFilePart2,FpRegFilePart3,IntRegFilePart0,IntRegFilePart1…	
+DebugModule	SAME	GLUE_INHERIT		2	SBToTL,TLDebugModuleInner	
+DecodeStage	DIFF	REWRITE_L	4282	2	DecodeUnit,DecodeUnitComp	
+DecodeUnit	DIFF	REWRITE_M	172	0		
+Decoupled2LCredit	DIFF	REWRITE_S	8	0		
+Decoupled2LCredit_1	DIFF	REWRITE_S	8	0		
+Decoupled2LCredit_2	DIFF	REWRITE_S	8	0		
+Decoupled2LCredit_5	DIFF	REWRITE_S	8	0		
+DelayReg	DIFF	REWRITE_L	917	0		
+Directory	DIFF	REWRITE_M	293	6	SRAMTemplate_148,SRAMTemplate_150,SRAMTemplate_152,SRAMTemplate_153,SRAMTemplate_154,SplittedSRAM_3	
+DivUnit	DIFF	REWRITE_M	97	0		
+DuplicatedTagArray	SAME	GLUE_INHERIT		4	SRAMTemplate_116,TagSRAMBank,array_8,sram_array_1p256x86m43s1h0l1b_dcsh_tag	
+EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	DIFF	REWRITE_L	44969	3	EnqEntry_4,OthersEntry_44,OthersEntry_50	
+EntriesAluCsrFenceDiv	DIFF	REWRITE_L	44261	3	EnqEntry_6,OthersEntry_66,OthersEntry_72	
+EntriesAluMulBkuBrhJmp	DIFF	REWRITE_L	44341	3	EnqEntry,OthersEntry,OthersEntry_6	
+EntriesFaluFcvtF2vFmacFdiv	DIFF	REWRITE_L	28273	3	EnqEntry_8,OthersEntry_88,OthersEntry_90	
+EntriesFaluFmac	DIFF	REWRITE_L	26522	3	EnqEntry_12,OthersEntry_120,OthersEntry_122	
+EntriesFaluFmacFdiv	DIFF	REWRITE_L	27787	3	EnqEntry_10,OthersEntry_104,OthersEntry_106	
+EntriesVfdivVidiv	DIFF	REWRITE_L	20390	3	EnqEntry_18,OthersEntry_164,OthersEntry_166	
+EntriesVfmaVialuFixVfalu	DIFF	REWRITE_L	30810	3	EnqEntry_16,OthersEntry_150,OthersEntry_152	
+EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	DIFF	REWRITE_L	31320	3	EnqEntry_14,OthersEntry_136,OthersEntry_138	
+EntriesVlduVstu	DIFF	REWRITE_L	34485	3	EnqEntryVecMem_2,OthersEntryVecMem_14,OthersEntryVecMem_16	
+EntriesVlduVstuVseglduVsegstu	DIFF	REWRITE_L	34729	3	EnqEntryVecMem,OthersEntryVecMem,OthersEntryVecMem_2	
+ExeUnit	DIFF	REWRITE_L	513	4	Alu,Bku,Dispatcher,MulUnit	
+ExeUnit_4	DIFF	REWRITE_M	170	2	Alu,Dispatcher_4	
+ExeUnit_8	DIFF	REWRITE_L	762	6	Dispatcher_8,FAlu,FCVT,FMA,FloatFMA,IntFPToVec	
+ExuBlock	DIFF	REWRITE_L	3485	253	Alu,Bku,BranchUnit,CSR,CommitIDModule,DcsrModule…	
+ExuBlock_1	DIFF	REWRITE_L	717	12	Dispatcher_10,Dispatcher_8,Dispatcher_9,ExeUnit_10,ExeUnit_8,ExeUnit_9…	
+F3Predecoder	SAME	INHERIT		0		
+FAlu	DIFF	REWRITE_M	71	0		
+FCVT	DIFF	REWRITE_M	173	0		
+FDivSqrt	DIFF	REWRITE_M	74	0		
+FMA	DIFF	REWRITE_M	150	1	FloatFMA	
+FPDecoder	SAME	INHERIT		0		
+FTB	DIFF	REWRITE_L	1033	0		
+FTBBank	SAME	INHERIT		0		
+FTBEntryGen	SAME	INHERIT		0		
+FastArbiter_27	DIFF	REWRITE_M	332	0		
+FastArbiter_30	DIFF	REWRITE_M	141	0		
+FastArbiter_31	ONLY_G0	RESTRUCTURED		0		
+FastArbiter_36	ONLY_G0	RESTRUCTURED		0		
+FastArbiter_44	ONLY_G0	RESTRUCTURED		0		
+FastArbiter_46	DIFF	REWRITE_M	247	0		
+FastArbiter_47	ONLY_G0	RESTRUCTURED		0		
+FauFTB	DIFF	REWRITE_L	515	0		
+FauFTBWay	SAME	INHERIT		0		
+Fence	DIFF	REWRITE_S	48	0		
+FoldedSRAMTemplate	SAME	INHERIT		0		
+FoldedSRAMTemplate_1	SAME	INHERIT		0		
+FoldedSRAMTemplate_20	DIFF	REWRITE_M	155	4	SRAMTemplate_64,SplittedSRAMTemplate_23,array_4,sram_array_1p256x8m2s1h0l1b_bp_tage_bt	
+FoldedSRAMTemplate_21	ONLY_G0	RESTRUCTURED		0		
+FoldedSRAMTemplate_23	ONLY_G0	RESTRUCTURED		0		
+FpRegFilePart0	DIFF	REWRITE_M	490	0		
+FreeList	SAME	INHERIT		0		
+Frontend	DIFF	REWRITE_L	5055	85	Composer,DataModule__16entry_12,DataModule__16entry_4,DataModule__16entry_8,DelayN_7,DelayN_8…	
+Ftq	DIFF	REWRITE_L	94821	6	DataModule__16entry_12,DataModule__16entry_4,DataModule__16entry_8,SyncDataModuleTemplate__64entry_1,SyncDataModuleTemplate__64entry_2,SyncDataModuleTemplate__64entry_3	
+FtqPcMemWrapper	SAME	INHERIT		0		
+GrantBuffer	DIFF	REWRITE_M	105	1	Queue16_GrantQueueTask	
+HPTW	DIFF	REWRITE_M	439	0		
+IBuffer	DIFF	REWRITE_L	6615	0		
+ICache	DIFF	REWRITE_S	45	9	ICacheCtrlUnit,ICacheMainPipe,ICacheMissUnit,IPrefetchPipe,Queue1_RegMapperInput_5,SRAMTemplate_16…	
+ICacheCtrlUnit	DIFF	REWRITE_S	6	1	Queue1_RegMapperInput_5	
+ICacheDataArray	SAME	GLUE_INHERIT		4	SRAMTemplate_16,SRAMTemplate_32,SRAMTemplate_4,SRAMTemplate_8	
+ICacheMainPipe	DIFF	REWRITE_L	581	0		
+ICacheMetaArray	SAME	INHERIT		0		
+ICacheMissUnit	DIFF	REWRITE_M	52	0		
+ICacheReplacer	SAME	INHERIT		0		
+IMSIC	DIFF	REWRITE_M	174	2	IMSICGateWay,IntFile	
+IMSICGateWay	DIFF	REWRITE_S	26	0		
+IPrefetchPipe	DIFF	REWRITE_M	107	0		
+ITTage	DIFF	REWRITE_L	578	18	FoldedSRAMTemplate_22,FoldedSRAMTemplate_24,ITTageTable,ITTageTable_1,ITTageTable_2,ITTageTable_3…	
+ITTageTable	DIFF	REWRITE_S	2	4	FoldedSRAMTemplate_22,MbistPipeIttage,SRAMTemplate_76,SplittedSRAMTemplate_25	
+ITTageTable_1	DIFF	REWRITE_S	2	4	FoldedSRAMTemplate_22,MbistPipeIttage_1,SRAMTemplate_76,SplittedSRAMTemplate_25	
+ITTageTable_2	DIFF	REWRITE_S	2	4	FoldedSRAMTemplate_24,MbistPipeIttage_2,SRAMTemplate_78,SplittedSRAMTemplate_27	
+ITTageTable_3	DIFF	REWRITE_S	2	4	FoldedSRAMTemplate_24,MbistPipeIttage_3,SRAMTemplate_78,SplittedSRAMTemplate_27	
+ITTageTable_4	DIFF	REWRITE_S	2	4	FoldedSRAMTemplate_24,MbistPipeIttage_4,SRAMTemplate_78,SplittedSRAMTemplate_27	
+ImmExtractor	SAME	INHERIT		0		
+ImmExtractor_12	SAME	INHERIT		0		
+InstrMMIOEntry	DIFF	REWRITE_S	36	0		
+InstrUncache	DIFF	REWRITE_S	42	1	InstrMMIOEntry	
+IntRegFilePart0	DIFF	REWRITE_L	556	0		
+IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v	DIFF	REWRITE_L	3516	4	EnqEntry_4,EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v,OthersEntry_44,OthersEntry_50	
+IssueQueueAluCsrFenceDiv	DIFF	REWRITE_L	3219	4	EnqEntry_6,EntriesAluCsrFenceDiv,OthersEntry_66,OthersEntry_72	
+IssueQueueAluMulBkuBrhJmp	DIFF	REWRITE_L	3319	5	EnqEntry,EntriesAluMulBkuBrhJmp,MultiWakeupQueue,OthersEntry,OthersEntry_6	
+IssueQueueLdu	DIFF	REWRITE_L	2608	4	EnqEntry_24,EntriesLdu,OthersEntry_200,OthersEntry_202	
+IssueQueueStaMou	DIFF	REWRITE_L	2286	4	EnqEntry_20,EntriesStaMou,OthersEntry_172,OthersEntry_174	
+IssueQueueStdMoud	DIFF	REWRITE_L	2448	4	EnqEntry_30,EntriesStdMoud,OthersEntry_242,OthersEntry_244	
+JumpUnit	DIFF	REWRITE_M	89	0		
+L1CohMetaArray	SAME	INHERIT		0		
+L1FlagMetaArray	DIFF	REWRITE_L	9689	0		
+L1FlagMetaArray_1	ONLY_G0	RESTRUCTURED		0		
+L2DataStorage	DIFF	REWRITE_M	304	0		
+L2Directory	SAME	INHERIT		0		
+L2Slice	DIFF	REWRITE_M	93	0		
+L2TLB	DIFF	REWRITE_L	16561	35	Arbiter3_L2TLBImp_Anon,Arbiter3_bitmapReqBundle,Arbiter4_L2TlbMemReqBundle,Arbiter8_bitmapCacheReqBundle,Bitmap,BitmapCache…	
+L2TLBWrapper	DIFF	REWRITE_M	198	36	Arbiter3_L2TLBImp_Anon,Arbiter3_bitmapReqBundle,Arbiter4_L2TlbMemReqBundle,Arbiter8_bitmapCacheReqBundle,Bitmap,BitmapCache…	
+L2TlbMissQueue	DIFF	REWRITE_S	5	0		
+L2TlbPrefetch	DIFF	REWRITE_S	4	0		
+L2Top	DIFF	REWRITE_L	533	144	Arbiter16_CHIDAT,Arbiter16_TLBundleD,Arbiter3_TaskWithData,Arbiter4_PrefetchReq,BusErrorUnit,BusPerfMonitor…	
+LCredit2Decoupled	DIFF	TRIVIAL	0	0		
+LCredit2Decoupled_1	DIFF	REWRITE_S	14	0		
+LCredit2Decoupled_10	DIFF	TRIVIAL	0	0		
+LCredit2Decoupled_8	DIFF	TRIVIAL	0	0		
+LLPTW	DIFF	REWRITE_L	3505	2	RRArbiterInit_1,RRArbiterInit_4	
+LevelGateway	SAME	INHERIT		0		
+LinkMonitor	DIFF	REWRITE_S	40	6	Decoupled2LCredit,Decoupled2LCredit_1,Decoupled2LCredit_2,LCredit2Decoupled,LCredit2Decoupled_1,LCredit2Decoupled_2	
+LoadMisalignBuffer	DIFF	REWRITE_L	4504	0		
+LoadPipe	DIFF	REWRITE_M	232	0		
+LoadQueue	DIFF	REWRITE_L	7422	30	DelayNWithValid_148,DelayN_225,DelayN_297,FreeList_6,LoadQueueRAR,LoadQueueRAW…	
+LoadQueueRAR	DIFF	REWRITE_L	4712	2	DelayN_225,LqPAddrModule	
+LoadQueueRAW	DIFF	REWRITE_L	1904	2	DelayNWithValid_148,DelayN_297	
+LoadQueueReplay	DIFF	REWRITE_L	142077	0		
+LoadQueueUncache	DIFF	REWRITE_L	59847	20	FreeList_6,PipelineRegModule_1,PipelineRegModule_2,RRArbiterInit_11,UncacheEntry,UncacheEntry_1…	
+LoadUnit	DIFF	REWRITE_L	10801	1	MemTrigger	
+LqExceptionBuffer	DIFF	REWRITE_L	793	0		
+LsqWrapper	DIFF	REWRITE_L	5811	35	DatamoduleResultBuffer,DelayNWithValid_148,DelayN_225,DelayN_297,FreeList_6,LoadQueue…	
+MEFreeList	DIFF	REWRITE_L	991	1	SnapshotGenerator	
+MSHR	DIFF	REWRITE_L	813	0		
+MSHRCtl	DIFF	REWRITE_M	493	7	FastArbiter_3,FastArbiter_4,FastArbiter_5,FastArbiter_6,FastArbiter_7,MSHR…	
+MSHRSelector	SAME	INHERIT		0		
+MainPipe	DIFF	REWRITE_L	801	1	Arbiter4_MainPipeReq	
+MainPipe_1	DIFF	REWRITE_L	1103	1	Arbiter3_TaskWithData	
+MemBlock	DIFF	REWRITE_L	31406	197	Arbiter16_MainPipeReq,Arbiter3_L2TLBImp_Anon,Arbiter3_bitmapReqBundle,Arbiter4_L2TlbMemReqBundle,Arbiter4_MainPipeReq,Arbiter8_bitmapCacheReqBundle…	
+MissQueue	DIFF	REWRITE_L	1065	3	Arbiter16_MainPipeReq,CMOUnit,MissEntry	
+MulUnit	DIFF	REWRITE_M	119	0		
+NewCSR	DIFF	REWRITE_L	6824	222	CommitIDModule,DcsrModule,Debug,DelayN_208,HPerfCounter_8,HPerfMonitor_1…	
+NewDispatch	DIFF	REWRITE_L	110509	4	BusyTable,LsqEnqCtrl,RegCacheTagModule_1,RegCacheTagTable	
+NewIFU	DIFF	REWRITE_L	1396	2	FrontendTrigger,PreDecode	
+NewPipelineConnectPipe	DIFF	REWRITE_M	100	0		
+NewPipelineConnectPipe_1	DIFF	REWRITE_M	186	0		
+NewPipelineConnectPipe_10	DIFF	REWRITE_M	112	0		
+NewPipelineConnectPipe_13	DIFF	REWRITE_M	66	0		
+NewPipelineConnectPipe_14	DIFF	REWRITE_M	142	0		
+NewPipelineConnectPipe_16	DIFF	REWRITE_M	137	0		
+NewPipelineConnectPipe_18	DIFF	REWRITE_M	85	0		
+NewPipelineConnectPipe_20	DIFF	REWRITE_M	97	0		
+NewPipelineConnectPipe_23	DIFF	REWRITE_M	234	0		
+NewPipelineConnectPipe_25	SAME	INHERIT		0		
+NewPipelineConnectPipe_27	DIFF	REWRITE_M	360	0		
+NewPipelineConnectPipe_31	ONLY_G0	RESTRUCTURED		0		
+NewPipelineConnectPipe_32	ONLY_G0	RESTRUCTURED		0		
+NewPipelineConnectPipe_33	DIFF	REWRITE_M	323	0		
+NewPipelineConnectPipe_5	DIFF	REWRITE_M	217	0		
+NewPipelineConnectPipe_7	DIFF	REWRITE_M	98	0		
+NewPipelineConnectPipe_8	DIFF	REWRITE_M	116	0		
+NewPipelineConnectPipe_9	DIFF	REWRITE_M	66	0		
+OpenLLC	SAME	GLUE_INHERIT		36	DataStorage_4,Decoupled2LCredit,Decoupled2LCredit_1,Decoupled2LCredit_2,Decoupled2LCredit_5,FastArbiter_26…	
+PLICFanIn	SAME	INHERIT		0		
+PMP	DIFF	REWRITE_L	2871	0		
+PMPChecker	DIFF	REWRITE_L	1430	0		
+PMPChecker_10	ONLY_G0	RESTRUCTURED		0		
+PTW	DIFF	REWRITE_L	953	0		
+Pipeline	SAME	INHERIT		0		
+PreDecode	DIFF	TRIVIAL	0	0		
+Predictor	DIFF	REWRITE_L	1722	47	Composer,FTB,FauFTB,FoldedSRAMTemplate_20,FoldedSRAMTemplate_22,FoldedSRAMTemplate_24…	
+ProbeQueue	SAME	INHERIT		0		
+PtwCache	DIFF	REWRITE_L	37968	11	MbistPipePtwL0,MbistPipePtwL1,SRAMTemplate_128,SRAMTemplate_129,SRAMTemplate_143,SplittedSRAM_1…	
+Queue1_RegMapperInput_3	DIFF	REWRITE_S	28	0		
+RASStack	DIFF	TRIVIAL	0	0		
+RNXbar	DIFF	REWRITE_S	30	6	FastArbiter_26,FastArbiter_29,FastArbiter_30,FastArbiter_35,FastArbiter_43,FastArbiter_45	
+RVCExpander	SAME	INHERIT		0		
+RXDAT	DIFF	REWRITE_S	2	0		
+RXDAT_4	SAME	INHERIT		0		
+RXREQ	SAME	INHERIT		0		
+RXRSP	SAME	INHERIT		0		
+RXRSP_4	SAME	INHERIT		0		
+RegCache	SAME	INHERIT		0		
+Rename	DIFF	REWRITE_L	1081	8	MEFreeList,SnapshotGenerator,SnapshotGenerator_11,SnapshotGenerator_12,StdFreeList,StdFreeList_1…	
+RenameBuffer	DIFF	REWRITE_L	11035	1	SnapshotGenerator	
+RenameTable	DIFF	REWRITE_L	19285	1	SnapshotGenerator_4	
+RequestArb	DIFF	REWRITE_M	216	0		
+Rob	DIFF	REWRITE_L	236990	13	CommitStuckCounter,DataModule__16entry_16,ExceptionGen,NewRobDeqPtrWrapper,RenameBuffer,RobEnqPtrWrapper…	
+SCTable	DIFF	REWRITE_M	184	4	MbistPipeSc,SRAMTemplate_68,array_5,sram_array_1p128x24m6s1h0l1b_bp_sc	
+SCTable_1	DIFF	REWRITE_M	191	4	MbistPipeSc_1,SRAMTemplate_68,array_5,sram_array_1p128x24m6s1h0l1b_bp_sc	
+SCTable_2	DIFF	REWRITE_M	185	4	MbistPipeSc_2,SRAMTemplate_68,array_5,sram_array_1p128x24m6s1h0l1b_bp_sc	
+SCTable_3	DIFF	REWRITE_M	185	4	MbistPipeSc_3,SRAMTemplate_68,array_5,sram_array_1p128x24m6s1h0l1b_bp_sc	
+SNXbar	DIFF	REWRITE_S	4	2	FastArbiter_45,FastArbiter_46	
+SRAMTemplate	SAME	INHERIT		0		
+SRAMTemplate_16	DIFF	REWRITE_S	6	0		
+SRAMTemplate_2	SAME	INHERIT		0		
+SRAMTemplate_32	DIFF	REWRITE_S	6	0		
+SRAMTemplate_36	SAME	INHERIT		0		
+SRAMTemplate_4	DIFF	REWRITE_S	6	0		
+SRAMTemplate_44	SAME	INHERIT		0		
+SRAMTemplate_45	SAME	INHERIT		0		
+SRAMTemplate_64	DIFF	REWRITE_M	276	2	array_4,sram_array_1p256x8m2s1h0l1b_bp_tage_bt	
+SRAMTemplate_66	ONLY_G0	RESTRUCTURED		0		
+SRAMTemplate_70	ONLY_G0	RESTRUCTURED		0		
+SRAMTemplate_72	ONLY_G0	RESTRUCTURED		0		
+SRAMTemplate_8	DIFF	REWRITE_S	6	0		
+Sbuffer	DIFF	REWRITE_L	5388	1	StorePfWrapper	
+Scheduler	DIFF	REWRITE_L	6361	16	EnqEntry,EnqEntry_4,EnqEntry_6,EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v,EntriesAluCsrFenceDiv,EntriesAluMulBkuBrhJmp…	
+Scheduler_1	DIFF	REWRITE_L	4112	21	EnqEntry_10,EnqEntry_12,EnqEntry_8,EntriesFaluFcvtF2vFmacFdiv,EntriesFaluFmac,EntriesFaluFmacFdiv…	
+Scheduler_2	DIFF	REWRITE_L	4948	15	EnqEntry_14,EnqEntry_16,EnqEntry_18,EntriesVfdivVidiv,EntriesVfmaVialuFixVfalu,EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf…	
+Scheduler_3	DIFF	REWRITE_L	13842	25	EnqEntryVecMem,EnqEntryVecMem_2,EnqEntry_20,EnqEntry_24,EnqEntry_30,EntriesLdu…	
+SinkA	SAME	INHERIT		0		
+SinkC	DIFF	REWRITE_L	639	1	RRArbiterInit_16	
+Slice	DIFF	REWRITE_L	676	38	Arbiter3_TaskWithData,DataStorage,Directory,FastArbiter_2,FastArbiter_3,FastArbiter_4…	
+SourceB	DIFF	REWRITE_S	2	1	FastArbiter_5	
+SplittedSRAMTemplate	SAME	INHERIT		0		
+SplittedSRAMTemplate_1	SAME	INHERIT		0		
+SplittedSRAMTemplate_2	SAME	INHERIT		0		
+SplittedSRAMTemplate_23	DIFF	REWRITE_M	144	3	SRAMTemplate_64,array_4,sram_array_1p256x8m2s1h0l1b_bp_tage_bt	
+SplittedSRAMTemplate_24	ONLY_G0	RESTRUCTURED		0		
+SplittedSRAMTemplate_26	ONLY_G0	RESTRUCTURED		0		
+SplittedSRAMTemplate_3	SAME	INHERIT		0		
+SplittedSRAMTemplate_4	SAME	INHERIT		0		
+StdFreeList	DIFF	TRIVIAL	0	1	SnapshotGenerator	
+StoreExceptionBuffer	DIFF	REWRITE_L	1045	0		
+StoreMisalignBuffer	DIFF	REWRITE_L	1177	0		
+StorePfWrapper	DIFF	REWRITE_S	10	0		
+StorePipe	SAME	INHERIT		0		
+StoreQueue	DIFF	REWRITE_L	33825	3	DatamoduleResultBuffer,SQData8Module,StoreExceptionBuffer	
+StoreUnit	DIFF	REWRITE_L	995	1	MemTrigger_3	
+SubDirectory	DIFF	REWRITE_S	4	3	MaxPeriodFibonacciLFSR_3,SRAMTemplate_192,SRAMTemplate_193	
+SubDirectory_1	DIFF	REWRITE_S	6	3	SRAMTemplate_194,SRAMTemplate_195,SRAMTemplate_196	
+SyncDataModuleTemplate_BackendPC_64entry	SAME	INHERIT		0		
+SyncDataModuleTemplate_FtqPC_64entry	SAME	INHERIT		0		
+SyncDataModuleTemplate__1024entry	SAME	INHERIT		0		
+SyncDataModuleTemplate__1024entry_1	SAME	INHERIT		0		
+SyncDataModuleTemplate__64entry	SAME	INHERIT		0		
+SyncDataModuleTemplate__64entry_1	DIFF	REWRITE_L	1208	1	DataModule__16entry_4	
+SyncDataModuleTemplate__64entry_2	DIFF	REWRITE_L	2168	1	DataModule__16entry_8	
+SyncDataModuleTemplate__64entry_3	DIFF	REWRITE_L	3510	1	DataModule__16entry_12	
+SyncDataModuleTemplate__64entry_4	DIFF	REWRITE_L	1850	1	DataModule__16entry_16	
+TL2CHICoupledL2	DIFF	REWRITE_L	4062	118	Arbiter16_CHIDAT,Arbiter16_TLBundleD,Arbiter3_TaskWithData,Arbiter4_PrefetchReq,DataStorage,DataStorage_1…	
+TLBFA	DIFF	REWRITE_L	5180	0		
+TLBFA_1	DIFF	REWRITE_L	5347	0		
+TLBNonBlock	DIFF	REWRITE_L	3476	3	DelayN_7,TLBFA_1,TlbStorageWrapper_1	
+TLBuffer	SAME	INHERIT		0		
+TLBuffer_13	SAME	INHERIT		0		
+TLBuffer_15	DIFF	REWRITE_M	52	2	Queue2_TLBundleA_12,ram_2x133	
+TLBuffer_2	SAME	INHERIT		0		
+TLBuffer_20	DIFF	REWRITE_S	8	4	Queue2_TLBundleA_10,Queue2_TLBundleD_11,ram_2x117,ram_2x80	
+TLBuffer_22	DIFF	REWRITE_S	8	4	Queue2_TLBundleA_31,Queue2_TLBundleD_11,ram_2x137,ram_2x80	
+TLBuffer_6	DIFF	REWRITE_S	8	3	Queue2_TLBundleA_6,Queue2_TLBundleD_7,ram_2x356	
+TLBuffer_7	SAME	INHERIT		0		
+TLBuffer_8	DIFF	REWRITE_S	8	4	Queue2_TLBundleA_14,Queue2_TLBundleD_15,ram_2x136,ram_2x79	
+TLBuffer_9	DIFF	REWRITE_S	8	4	Queue2_TLBundleA_15,Queue2_TLBundleD_15,ram_2x116,ram_2x79	
+TLLogger	SAME	INHERIT		0		
+TLPLIC	DIFF	TRIVIAL	0	0		
+TLXbar_1	DIFF	REWRITE_M	325	0		
+TLXbar_2	DIFF	REWRITE_M	345	0		
+TLXbar_3	SAME	INHERIT		0		
+TLXbar_4	DIFF	REWRITE_S	16	0		
+TLXbar_6	DIFF	REWRITE_M	62	0		
+TXDAT	DIFF	REWRITE_M	79	1	Queue16_TaskBundle	
+TXDAT_4	SAME	INHERIT		0		
+TXREQ	DIFF	REWRITE_S	2	0		
+TXREQ_4	SAME	INHERIT		0		
+TXRSP	SAME	INHERIT		0		
+TXRSP_4	SAME	INHERIT		0		
+TXSNP	SAME	INHERIT		0		
+TageBTable	DIFF	REWRITE_M	193	5	FoldedSRAMTemplate_20,SRAMTemplate_64,SplittedSRAMTemplate_23,array_4,sram_array_1p256x8m2s1h0l1b_bp_tage_bt	
+TageTable	DIFF	TRIVIAL	0	0		
+TageTable_1	DIFF	TRIVIAL	0	0		
+TageTable_2	DIFF	TRIVIAL	0	0		
+TageTable_3	DIFF	TRIVIAL	0	0		
+Tage_SC	DIFF	REWRITE_L	3341	23	FoldedSRAMTemplate_20,MaxPeriodFibonacciLFSR,MbistPipeSc,MbistPipeSc_1,MbistPipeSc_2,MbistPipeSc_3…	
+TlbStorageWrapper	DIFF	REWRITE_S	4	1	TLBFA	
+TlbStorageWrapper_1	DIFF	REWRITE_S	4	1	TLBFA_1	
+Uncache	DIFF	REWRITE_L	4883	0		
+UopInfoGen	SAME	INHERIT		0		
+VSetRiWi	DIFF	REWRITE_S	35	0		
+VSetRvfWvf	DIFF	REWRITE_S	33	0		
+VirtualLoadQueue	DIFF	REWRITE_L	9480	0		
+WayLookup	SAME	INHERIT		0		
+WbDataPath	DIFF	REWRITE_L	20112	2	RealWBCollideChecker_1,VldMergeUnit	
+WbFuBusyTable	SAME	INHERIT		0		
+WrBypass	SAME	INHERIT		0		
+WrBypass_32	SAME	INHERIT		0		
+WrBypass_33	SAME	INHERIT		0		
+WrBypass_41	SAME	INHERIT		0		
+WrBypass_43	SAME	INHERIT		0		
+WritebackQueue	SAME	INHERIT		0		
+XSCore	DIFF	REWRITE_L	6539	737	Alu,Arbiter16_MainPipeReq,Arbiter3_L2TLBImp_Anon,Arbiter3_bitmapReqBundle,Arbiter4_L2TlbMemReqBundle,Arbiter4_MainPipeReq…	
+XSTile	DIFF	REWRITE_L	586	870	Alu,Arbiter16_CHIDAT,Arbiter16_MainPipeReq,Arbiter16_TLBundleD,Arbiter3_L2TLBImp_Anon,Arbiter3_TaskWithData…	
+XSTop	DIFF	REWRITE_L	1241	974	APLIC,AXI4APLIC,AXI4Buffer_7,AXI4Buffer_8,AXI4Map,AXI4ToLite…	

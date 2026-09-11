@@ -17,6 +17,17 @@
 - `verif/ut/<Module>/` 每目标 UT（VCS 双例化）+ FM（`make run SEED=…` / `make fm`）
 - `scripts/` 公共 harness：ut_common.mk / derive_ut_impl.py / fm_eq.tcl / fm_verdict.py
 
+## G0↔G1 delta（306 目标分类，`scripts/g0g1_delta.py` → `docs/g0g1_delta.tsv`）
+| 类 | 数 | 含义 |
+|---|---|---|
+| INHERIT | 76 | 自身+例化闭包逐字一致 → 上轮重写整体继承（快车道） |
+| GLUE_INHERIT | 4 | 自身一致、子树有变 → 本体继承，先处理变化的子目标 |
+| TRIVIAL | 11 | 仅断言 .scala 行号漂移 → 等同继承 |
+| REWRITE_S / M / L | 43 / 55 / 101 | diff <50 / <500 / ≥500 行 → 对照 G1 改造或真重写 |
+| RESTRUCTURED | 16 | G1 无同名文件；其中 5 个纯重编号（见 `docs/g0g1_renames.tsv`），11 个真变（CLINT 整体消失） |
+
+另有 6 个 REWRITE_L 实为纯重编号（DataModule__16entry_8/12/16 等，见 renames.tsv）。
+
 ## 进度台账
 | 目标 | UT (seed 1/7/42) | FM (signoff-strict) | 备注 |
 |---|---|---|---|
