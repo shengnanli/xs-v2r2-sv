@@ -1,0 +1,6 @@
+{
+ "/home/eda/xs-env/xs-v2r2-sv/rtl/frontend/RAS.sv": "/home/eda/xs-env/xs-v2-sv/rtl/frontend/RASStack.sv",
+ "/home/eda/xs-env/xs-v2r2-sv/rtl/uncore/MSHRSelector.sv": "/home/eda/xs-env/xs-v2-sv/rtl/uncore/MSHRSelector.sv",
+ "/home/eda/xs-env/xs-v2r2-sv/rtl/uncore/mshrselector_pkg.sv": "/home/eda/xs-env/xs-v2-sv/rtl/uncore/MSHRSelector.sv",
+ "/home/eda/xs-env/xs-v2r2-sv/rtl/uncore/AXI4IdIndexer.sv": "/home/eda/xs-env/xs-v2-sv/rtl/uncore/AXI4IdIndexer.sv"
+}
