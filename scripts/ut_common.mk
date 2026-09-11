@@ -26,6 +26,9 @@ SIM_ARGS ?=
 
 UT_GEN_DIR := ut_gen
 UT_SRCS    := $(addprefix $(UT_GEN_DIR)/,$(notdir $(RTL_SRCS)))
+# RTL_GOLDEN_DEPS: golden 行为模型/闭包（不 derive 不改名, UT 两侧共用同一定义;
+# FM 时并入 impl 侧与 ref 侧同源 elaborate）。模块 Makefile 可选定义。
+RTL_GOLDEN_DEPS ?=
 
 .PHONY: compile run verdi fm clean derive
 
@@ -34,8 +37,8 @@ derive $(UT_SRCS): $(RTL_SRCS) $(XSSV_HOME)/scripts/derive_ut_impl.py
 
 compile: simv
 
-simv: $(UT_SRCS) $(TB_SRCS) $(GOLDEN_SRCS)
-	$(VCS) $(UT_SRCS) $(GOLDEN_SRCS) $(TB_SRCS) -top tb -o simv
+simv: $(UT_SRCS) $(TB_SRCS) $(GOLDEN_SRCS) $(RTL_GOLDEN_DEPS)
+	$(VCS) $(UT_SRCS) $(RTL_GOLDEN_DEPS) $(GOLDEN_SRCS) $(TB_SRCS) -top tb -o simv
 
 run: simv
 	./simv +ntb_random_seed=$(SEED) $(SIM_ARGS) -l sim.log
@@ -63,7 +66,7 @@ fm-%:
 	FM_TOP=$* \
 	FM_MODE=$(FM_MODE) \
 	FM_REF_SRCS="$(GOLDEN_RTL)/$*.sv $(addprefix $(GOLDEN_RTL)/,$(FM_REF_DEPS_$*))" \
-	FM_IMPL_SRCS="$(abspath $(RTL_SRCS))" \
+	FM_IMPL_SRCS="$(abspath $(RTL_SRCS) $(RTL_GOLDEN_DEPS))" \
 	$(if $(FM_MERGE_DUP),FM_MERGE_DUP=$(FM_MERGE_DUP),) \
 	$(if $(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS),FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=$(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS),) \
 	$(if $(FM_INTERFACE_ONLY),FM_INTERFACE_ONLY="$(FM_INTERFACE_ONLY)",) \

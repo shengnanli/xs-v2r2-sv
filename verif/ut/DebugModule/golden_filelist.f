@@ -1,0 +1,36 @@
+// 自动生成：scripts/gen_debugmodule.py —— DebugModule 两大黑盒子块的 golden 依赖闭包
+// (UT 双例化需编入真实子模块; -f 显式列出, 每文件一次)
+/home/eda/xs-env/G1-canonical/golden-rtl/AsyncQueueSink.sv
+/home/eda/xs-env/G1-canonical/golden-rtl/AsyncQueueSink_1.sv
+/home/eda/xs-env/G1-canonical/golden-rtl/AsyncQueueSink_2.sv
+/home/eda/xs-env/G1-canonical/golden-rtl/AsyncQueueSource.sv
+/home/eda/xs-env/G1-canonical/golden-rtl/AsyncQueueSource_1.sv
+/home/eda/xs-env/G1-canonical/golden-rtl/AsyncQueueSource_2.sv
+/home/eda/xs-env/G1-canonical/golden-rtl/AsyncResetSynchronizerPrimitiveShiftReg_d3_i0.sv
+/home/eda/xs-env/G1-canonical/golden-rtl/AsyncResetSynchronizerShiftReg_w1_d3_i0.sv
+/home/eda/xs-env/G1-canonical/golden-rtl/CaptureChain.sv
+/home/eda/xs-env/G1-canonical/golden-rtl/CaptureUpdateChain.sv
+/home/eda/xs-env/G1-canonical/golden-rtl/CaptureUpdateChain_1.sv
+/home/eda/xs-env/G1-canonical/golden-rtl/CaptureUpdateChain_2.sv
+/home/eda/xs-env/G1-canonical/golden-rtl/ClockCrossingReg_w15.sv
+/home/eda/xs-env/G1-canonical/golden-rtl/ClockCrossingReg_w44.sv
+/home/eda/xs-env/G1-canonical/golden-rtl/ClockCrossingReg_w56.sv
+/home/eda/xs-env/G1-canonical/golden-rtl/DMIToTL.sv
+/home/eda/xs-env/G1-canonical/golden-rtl/DebugTransportModuleJTAG.sv
+/home/eda/xs-env/G1-canonical/golden-rtl/JtagBypassChain.sv
+/home/eda/xs-env/G1-canonical/golden-rtl/JtagStateMachine.sv
+/home/eda/xs-env/G1-canonical/golden-rtl/JtagTapController.sv
+/home/eda/xs-env/G1-canonical/golden-rtl/Queue2_TLBundleD_2.sv
+/home/eda/xs-env/G1-canonical/golden-rtl/SBToTL.sv
+/home/eda/xs-env/G1-canonical/golden-rtl/TLAsyncCrossingSink.sv
+/home/eda/xs-env/G1-canonical/golden-rtl/TLAsyncCrossingSource.sv
+/home/eda/xs-env/G1-canonical/golden-rtl/TLBusBypass.sv
+/home/eda/xs-env/G1-canonical/golden-rtl/TLBusBypassBar.sv
+/home/eda/xs-env/G1-canonical/golden-rtl/TLDebugModule.sv
+/home/eda/xs-env/G1-canonical/golden-rtl/TLDebugModuleInner.sv
+/home/eda/xs-env/G1-canonical/golden-rtl/TLDebugModuleInnerAsync.sv
+/home/eda/xs-env/G1-canonical/golden-rtl/TLDebugModuleOuter.sv
+/home/eda/xs-env/G1-canonical/golden-rtl/TLDebugModuleOuterAsync.sv
+/home/eda/xs-env/G1-canonical/golden-rtl/TLError_1.sv
+/home/eda/xs-env/G1-canonical/golden-rtl/TLXbar_3.sv
+/home/eda/xs-env/G1-canonical/golden-rtl/ram_2x66.sv

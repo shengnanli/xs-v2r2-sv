@@ -1,0 +1,82 @@
+# 快车道批量台账: target	status	note
+RASStack	PASS	手工验证 fm 3018p 全零 (batch 前打样)
+AXI4Deinterleaver	INHERIT_FAIL	ERROR: AXI4Deinterleaver RTL_SRC 不存在 $(GOLDEN_RTL)/Queue2_AXI4BundleR_3.sv
+AXI4IdIndexer	PASS	fm_verdicts=1
+AXI4IdIndexer_1	PASS	fm_verdicts=1
+AXI4Xbar	INHERIT_FAIL	ERROR: AXI4Xbar RTL_SRC 不存在 $(GOLDEN_RTL)/Queue2_UInt2.sv
+Arbiter1_InsUncacheResp	UT_FAIL	seed1: [214000] mismatch g_rdy=0 resp=x/a58d0da1/0 acq=0/000029e0aec8 wfis=1 | i_rdy=0 resp=1/a6a807c9/0 acq=0/00005beb0090 wfis=1 | [224000] mismatch g_rdy=0 resp=x/a58d0da1/0 acq=0/000029e0aec8 wfis=1 | i_rdy=1 resp=0/a6a807c9/0 acq=0/00005beb0090 wfis=1
+CHILogger	PASS	fm_verdicts=1
+CompressUnit	PASS	fm_verdicts=1
+DataModule_BackendPC_16entry	INHERIT_FAIL	ERROR: DataModule_BackendPC_16entry 缺 wrapper 模块: ['$(INNER)', '$(OUTER)']（人工处理）
+DataModule_FtqPC_16entry	INHERIT_FAIL	ERROR: DataModule_FtqPC_16entry 缺 wrapper 模块: ['$(INNER)', '$(OUTER)']（人工处理）
+DataModule__16entry	INHERIT_FAIL	ERROR: DataModule__16entry 缺 wrapper 模块: ['$(INNER)', '$(OUTER)']（人工处理）
+DataModule__64entry	INHERIT_FAIL	ERROR: DataModule__64entry 缺 wrapper 模块: ['$(INNER)', '$(OUTER)']（人工处理）
+DataModule__64entry_16	INHERIT_FAIL	ERROR: DataModule__64entry_16 缺 wrapper 模块: ['$(INNER)', '$(OUTER)']（人工处理）
+DebugModule	INHERIT_FAIL	ERROR: DebugModule WRAPPER_SRC 不存在 $(addprefix
+F3Predecoder	PASS	fm_verdicts=1
+FPDecoder	PASS	fm_verdicts=1
+FTBEntryGen	PASS	fm_verdicts=1
+FauFTBWay	PASS	fm_verdicts=1
+FreeList	PASS	fm_verdicts=1
+FtqPcMemWrapper	INHERIT_FAIL	ERROR: FtqPcMemWrapper WRAPPER_SRC 不存在 TB_SRCS
+ICacheReplacer	PASS	fm_verdicts=1
+ImmExtractor	PASS	fm_verdicts=2
+ImmExtractor_12	INHERIT_FAIL	ERROR: /home/eda/xs-env/xs-v2-sv/rtl/backend/ImmExtractor_12.sv 已存在且内容不同（人工处理）
+L1CohMetaArray	PASS	fm_verdicts=1
+L2Directory	PASS	fm_verdicts=1
+LCredit2Decoupled	INHERIT_FAIL	ERROR: LCredit2Decoupled WRAPPER_SRC 不存在 $(GOLDEN_RTL)/Queue4_CHISNP.sv
+LCredit2Decoupled_8	INHERIT_FAIL	ERROR: LCredit2Decoupled_8 WRAPPER_SRC 不存在 $(GOLDEN_RTL)/Queue4_CHIREQ.sv
+LCredit2Decoupled_10	INHERIT_FAIL	ERROR: LCredit2Decoupled_10 WRAPPER_SRC 不存在 $(GOLDEN_RTL)/Queue4_CHIDAT.sv
+FtqPcMemWrapper	INHERIT_FAIL	ERROR: FtqPcMemWrapper WRAPPER_SRC 不存在 TB_SRCS
+ImmExtractor_12	INHERIT_FAIL	ERROR: /home/eda/xs-env/xs-v2-sv/rtl/backend/ImmExtractor_12.sv 已存在且内容不同（人工处理）
+NewPipelineConnectPipe_25	INHERIT_FAIL	ERROR: NewPipelineConnectPipe_25 GOLDEN_SRC 在 G1 缺失: NewPipelineConnectPipe_31.sv（改动目标? 人工处理）
+DebugModule	COMPILE_FAIL	vcs -full64 -sverilog -timescale=1ns/1ps -kdb -lca -debug_access+all +lint=TFIPC-L -l compile.log +define+SYNTHESIS +vcs+initreg+random -assert disable +libext+.sv+.v -f golden_filelist.f ut_gen/DebugModule.sv ut_gen/AsyncQueueSink.sv ut_gen/AsyncQueueSink_1.sv ut_gen/AsyncQueueSink_2.sv ut_gen/Asyn
+AXI4Deinterleaver	COMPILE_FAIL	Note-[MAX_ERROR_COUNT] Maximum error count reached |   Current number of errors has reached the default maximum error count (10). |   Please use +error+<count> to increase the limit. |  | 1 warning | 10 errors | CPU time: 1.540 seconds to compile | make: *** [../../../scripts/ut_common.mk:38: simv] 
+AXI4Xbar	COMPILE_FAIL	  Source Info: Queue2_UInt2 awOut_1( .clock (clock),  .reset (reset),   |   .io_enq_ready (_awOut_1_io_enq_ready),  .io_enq_valid  |   (_awOut_1_io_enq_valid_T_1),  .io_enq_bits ({awO ... |  | 1 warning | 4 errors | CPU time: 1.748 seconds to compile | make: *** [../../../scripts/ut_common.mk:38: si
+PreDecode	COMPILE_FAIL	  Identifier 'xs_assert_v2' has not been declared yet. If this error is not  |   expected, please check if you have set `default_nettype to none. |    |  | 1 warning | 4 errors | CPU time: 1.158 seconds to compile | make: *** [../../../scripts/ut_common.mk:38: simv] Error 255
+ProbeQueue	COMPILE_FAIL	  Source Info: ProbeEntry entries_7( .clock (clock),  .reset (reset),   |   .io_req_ready (_entries_7_io_req_ready),  .io_req_valid ((((&alloc_idx) &  |   (|_allocate_T)) & io_mem_pro ... |  | 1 warning | 9 errors | CPU time: 1.084 seconds to compile | make: *** [../../../scripts/ut_common.mk:38: si
+LevelGateway	PASS	fm_verdicts=1
+MSHRSelector	PASS	fm_verdicts=1
+LCredit2Decoupled	PASS	fm_verdicts=1
+Pipeline	PASS	fm_verdicts=1
+LCredit2Decoupled_8	PASS	fm_verdicts=1
+LCredit2Decoupled_10	PASS	fm_verdicts=1
+RVCExpander	PASS	fm_verdicts=1
+PLICFanIn	PASS	fm_verdicts=1
+RXRSP	PASS	fm_verdicts=1
+RXREQ	PASS	fm_verdicts=1
+RXDAT_4	PASS	fm_verdicts=1
+RXRSP_4	PASS	fm_verdicts=1
+TLPLIC	COMPILE_FAIL	Parsing design file '/home/eda/xs-env/G1-canonical/golden-rtl/PLICFanIn.sv' | Parsing design file '/home/eda/xs-env/G1-canonical/golden-rtl/LevelGateway.sv' | Parsing design file '/home/eda/xs-env/G1-canonical/golden-rtl/Queue1_RegMapperInput.sv' | Parsing design file 'tb.sv' | 1 warning | 1 error |
+SinkA	PASS	fm_verdicts=1
+StorePipe	FM_FAIL	FAILED	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 1, "make_rc":
+TLBuffer	PASS	fm_verdicts=1
+TLBuffer_2	PASS	fm_verdicts=1
+TLXbar_3	PASS	fm_verdicts=1
+TXDAT_4	FM_FAIL	PARTIAL	{"passing": 973, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": 3, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": 
+TLLogger	PASS	fm_verdicts=1
+TXREQ_4	PASS	fm_verdicts=1
+TLBuffer_7	PASS	fm_verdicts=1
+WritebackQueue	COMPILE_FAIL	Note-[MAX_ERROR_COUNT] Maximum error count reached |   Current number of errors has reached the default maximum error count (10). |   Please use +error+<count> to increase the limit. |  | 1 warning | 10 errors | CPU time: 1.171 seconds to compile | make: *** [../../../scripts/ut_common.mk:38: simv] 
+TXRSP_4	PASS	fm_verdicts=1
+TXSNP	PASS	fm_verdicts=1
+TXRSP	PASS	fm_verdicts=1
+UopInfoGen	PASS	fm_verdicts=1
+WbFuBusyTable	PASS	fm_verdicts=1
+StdFreeList	PASS	fm_verdicts=1
+WayLookup	PASS	fm_verdicts=1
+StorePipe	SPECIAL	golden为DCE塌缩探针壳; 老战役用canonical_derivative(G0-StorePipe-observable-v1)+surface wrapper签; 需G1版专项复刻
+Arbiter1_InsUncacheResp	DEFER_FAMILY	共用InstrUncache家族UT, golden InstrUncache/InstrMMIOEntry在G1已变(REWRITE_M); 随家族重写一并处理
+ImmExtractor_12	MERGED_PASS	ImmExtractor家族FM_VARIANTS含_12, 两变体fm.log均SUCCEEDED
+NewPipelineConnectPipe_25	DEFER_RENUMBER	家族GOLDEN_SRCS引用NPC_31(G1重编号为_33); 随重编号remap专项处理
+TLPLIC	COMPILE_FAIL	Parsing design file '/home/eda/xs-env/G1-canonical/golden-rtl/PLICFanIn.sv' | Parsing design file '/home/eda/xs-env/G1-canonical/golden-rtl/LevelGateway.sv' | Parsing design file '/home/eda/xs-env/G1-canonical/golden-rtl/Queue1_RegMapperInput.sv' | Parsing design file 'tb.sv' | 1 warning | 1 error |
+ProbeQueue	PASS	fm_verdicts=1
+FtqPcMemWrapper	COMPILE_FAIL	  Source Info: FtqPcMemWrapper u_impl( .clock (clk),  .reset (rst),   |   .io_ifuPtr_w_value (ifuPtr),  .io_ifuPtrPlus1_w_value (ifuPtrPlus1),   |   .io_ifuPtrPlus2_w_value (ifuPtrPlu ... |  | 1 warning | 1 error | CPU time: 1.124 seconds to compile | make: *** [../../../scripts/ut_common.mk:41: sim
+DebugModule	PASS	fm_verdicts=1
+WritebackQueue	PASS	fm_verdicts=1
+TXDAT_4	PASS	fm_verdicts=1
+PreDecode	PASS	fm_verdicts=1
+AXI4Xbar	PASS	fm_verdicts=1
+AXI4Deinterleaver	PASS	fm_verdicts=1
+TLPLIC	PASS	fm_verdicts=1
+FtqPcMemWrapper	PASS	fm_verdicts=1

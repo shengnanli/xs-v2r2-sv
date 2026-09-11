@@ -24,16 +24,57 @@ G1 = pathlib.Path('/home/eda/xs-env/G1-canonical/golden-rtl')
 MANIFEST = pathlib.Path('/home/eda/xs-env/xs-signoff/scripts/sidecar/manifest_305.json')
 
 MOD_RE = re.compile(r'^module\s+([A-Za-z_]\w*)', re.MULTILINE)
+FM_EQ = NEW / 'scripts' / 'fm_eq.tcl'
+
+
+def _whitelist_add(name):
+    """把 vmucp 目标幂等插入 fm_eq.tcl 的精确白名单（继承老战役审计声明）。"""
+    txt = FM_EQ.read_text()
+    m = re.search(r'if \{\$top ni \{([^}]*)\}\} \{', txt)
+    if not m:
+        sys.exit('ERROR: fm_eq.tcl 白名单结构未找到')
+    cur = m.group(1).split()
+    if name in cur:
+        return
+    cur = sorted(set(cur + [name]))
+    FM_EQ.write_text(txt[:m.start(1)] + ' '.join(cur) + txt[m.end(1):])
 
 
 def parse_makefile(text):
     """解析 make 变量（支持行继续），返回 dict。"""
     text = re.sub(r'\\\n', ' ', text)
     vals = {}
-    for m in re.finditer(r'^(\w+)\s*[:+?]?=\s*(.*)$', text, re.MULTILINE):
+    # 注意: = 后用 [ \t]* 而非 \s*（\s 含换行, 空值行会吞掉下一行）
+    for m in re.finditer(r'^(\w+)[ \t]*[:+?]?=[ \t]*(.*)$', text, re.MULTILINE):
         k, v = m.group(1), m.group(2).strip()
         vals[k] = (vals.get(k, '') + ' ' + v).strip() if k in vals else v
     return vals
+
+
+MAKE_FUNC_RE = re.compile(r'\$\((addprefix|addsuffix)\s+([^,()$]*),([^()$]*)\)')
+
+
+def expand_make(v, vals):
+    """迭代展开 $(VAR) 与 addprefix/addsuffix；GOLDEN_RTL 保留为 @GOLDEN@ 记号。"""
+    for _ in range(20):
+        def sub_var(m):
+            name = m.group(1)
+            if name == 'GOLDEN_RTL':
+                return '@GOLDEN@'
+            if name == 'RTL_DIR':
+                return str(OLD / 'rtl')
+            return vals.get(name, '')
+        new = re.sub(r'\$\((\w+)\)', sub_var, v)
+
+        def sub_func(m):
+            func, a1, a2 = m.group(1), m.group(2).strip(), m.group(3)
+            return ' '.join((a1 + i) if func == 'addprefix' else (i + a1)
+                            for i in a2.split())
+        new = MAKE_FUNC_RE.sub(sub_func, new)
+        if new == v:
+            return v
+        v = new
+    sys.exit(f'ERROR: make 表达式展开不收敛: {v[:120]}')
 
 
 def split_modules(text):
@@ -62,23 +103,31 @@ def main():
     man = {e['target']: e for e in json.load(MANIFEST.open())['entries']}
     if t not in man:
         sys.exit(f'ERROR: {t} 不在 306 manifest')
+    if man[t].get('reference_kind', 'golden') != 'golden':
+        sys.exit(f"ERROR: {t} 老战役用 canonical_derivative 参考"
+                 f"({man[t].get('derivative_id')}), 非快车道, SPECIAL 专项处理")
+    vmucp = man[t].get('verify_matched_unread_compare_points') == 'true'
     old_mk = OLD / man[t]['makefile']
     old_ut = old_mk.parent
     vals = parse_makefile(old_mk.read_text())
 
     def expand(v):
-        v = v.replace('$(RTL_DIR)', str(OLD / 'rtl'))
-        return [x for x in v.split() if x]
+        return [x for x in expand_make(v, vals).split() if x]
 
     rtl_srcs = expand(vals.get('RTL_SRCS', ''))
-    wrap_srcs = expand(vals.get('WRAPPER_SRCS', ''))
-    fm_variants = vals.get('FM_VARIANTS', '').split()
+    wrap_srcs_all = expand(vals.get('WRAPPER_SRCS', ''))
+    fm_variants = expand(vals.get('FM_VARIANTS', ''))
     if not fm_variants:
         sys.exit(f'ERROR: {t} 老 Makefile 无 FM_VARIANTS')
 
-    # --- 分拣源文件 ---
+    # --- 分拣源文件（@GOLDEN@ 开头 = golden 行为模型/闭包, 原样引用不合并） ---
     common_deps, pkg_files, core_files = [], [], []
+    golden_passthru = []
+    wrap_srcs = []
     for s in rtl_srcs:
+        if s.startswith('@GOLDEN@'):
+            golden_passthru.append(s.replace('@GOLDEN@/', ''))
+            continue
         p = pathlib.Path(s)
         if not p.exists():
             sys.exit(f'ERROR: {t} RTL_SRC 不存在 {p}')
@@ -88,6 +137,15 @@ def main():
             pkg_files.append(p)
         else:
             core_files.append(p)
+    for s in wrap_srcs_all:
+        if s.startswith('@GOLDEN@'):
+            golden_passthru.append(s.replace('@GOLDEN@/', ''))
+        else:
+            wrap_srcs.append(s)
+    golden_passthru = sorted(set(golden_passthru))
+    for g in golden_passthru:
+        if not (G1 / g).exists():
+            sys.exit(f'ERROR: {t} golden 依赖在 G1 缺失: {g}')
 
     # 子系统目录：取第一个非 common 源的目录名，缺省 uncore
     subsys = 'uncore'
@@ -154,6 +212,14 @@ def main():
     # --- 主文件 = pkg + 核 + 目标 wrapper ---
     parts = []
     for p in pkg_files:
+        key = str(p)
+        if key in registry and registry[key] != str(main_path):
+            # pkg 已在其他目标主文件内（家族共享）→ 引用不再内联, 防 package 重定义
+            np = pathlib.Path(registry[key])
+            if np not in new_files:
+                new_files.insert(0, np)
+            notes.append(f'{p.name} 已由 {registry[key]} 提供（共享 pkg）')
+            continue
         parts.append(p.read_text().rstrip())
     for p, txt in core_texts:
         parts.append(txt.rstrip())
@@ -162,14 +228,12 @@ def main():
     parts.append('// ' + '-' * 75 + '\n// golden 同名 wrapper\n// ' + '-' * 75)
     parts.append(wrapper_of[t].rstrip())
     body = '\n\n'.join(x for x in parts if x.strip()) + '\n'
-    if main_path.exists() and main_path.read_text() != body:
-        sys.exit(f'ERROR: {main_path} 已存在且内容不同（人工处理）')
-    main_path.write_text(body)
+    main_path.write_text(body)   # 目标自有主文件, 重跑覆盖（跨目标冲突由 registry/ut_dir 去重挡）
     new_files.append(main_path)
     for p, _ in core_texts:
-        registry[str(p)] = str(main_path)
+        registry.setdefault(str(p), str(main_path))
     for p in pkg_files:
-        registry[str(p)] = str(main_path)
+        registry.setdefault(str(p), str(main_path))
 
     # --- 兄弟变体薄文件 ---
     for name in fm_variants:
@@ -178,8 +242,6 @@ def main():
         vpath = new_rtl_dir / (name + '.sv')
         vbody = (f'// {name} —— {t} 单态化变体 wrapper（核体见 {t}.sv）\n\n'
                  + wrapper_of[name].rstrip() + '\n')
-        if vpath.exists() and vpath.read_text() != vbody:
-            sys.exit(f'ERROR: {vpath} 已存在且内容不同')
         vpath.write_text(vbody)
         new_files.append(vpath)
         sibling_files.append(vpath)
@@ -192,8 +254,9 @@ def main():
     for v in fm_variants:
         if decl_count.get(v, 0) != 1:
             sys.exit(f'ERROR: {t} 模块 {v} 声明 {decl_count.get(v,0)} 次(须恰 1)')
-    golden_srcs = vals.get('GOLDEN_SRCS', '')
-    for g in golden_srcs.replace('$(GOLDEN_RTL)/', '').split():
+    golden_srcs = [x.replace('@GOLDEN@/', '')
+                   for x in expand_make(vals.get('GOLDEN_SRCS', ''), vals).split()]
+    for g in golden_srcs:
         if not (G1 / g).exists():
             sys.exit(f'ERROR: {t} GOLDEN_SRC 在 G1 缺失: {g}（改动目标? 人工处理）')
 
@@ -210,20 +273,40 @@ def main():
                 m.endswith('_xs') and m[:-3] in fm_variants for m in mods):
             notes.append(f'丢弃 {s}（手写 _xs 壳, 新框架由 derive 自动提供）')
             continue
-        (new_ut / s).write_bytes(src.read_bytes())
+        txt = src.read_text()
+        # tb 修正(可选): verif/ut_overrides/<t>.tb.sed 每行「old<TAB>new」逐条替换
+        # （典型: 老 tb 直接例化 golden 同名 impl, 新框架该名已 derive 成 <名>_xs）
+        sed = NEW / 'verif' / 'ut_overrides' / (t + '.tb.sed')
+        if s == 'tb.sv' and sed.exists():
+            for ln in sed.read_text().splitlines():
+                if '\t' in ln and not ln.startswith('#'):
+                    a, b = ln.split('\t', 1)
+                    txt = txt.replace(a, b)
+            notes.append('tb 已按 overrides sed 修正')
+        (new_ut / s).write_text(txt)
         tb_srcs.append(s)
     fmmap = old_ut / 'fm_map'
     if fmmap.is_dir():
         (new_ut / 'fm_map').mkdir(exist_ok=True)
         for f in fmmap.iterdir():
             (new_ut / 'fm_map' / f.name).write_bytes(f.read_bytes())
+    # filelist(.f)/fm_pins 附属文件: 原样搬运, golden 路径改指 G1
+    for f in sorted(old_ut.glob('*.f')) + sorted(old_ut.glob('fm_pins*.tcl')):
+        txt = f.read_text().replace('../../../golden/chisel-rtl', str(G1))
+        txt = txt.replace(str(OLD / 'golden' / 'chisel-rtl'), str(G1))
+        (new_ut / f.name).write_text(txt)
+        notes.append(f'附属 {f.name} 已搬(golden 路径→G1)')
 
     rel = [str(f).replace(str(NEW / 'rtl'), '$(RTL_DIR)') for f in new_files]
     old_flat = re.sub(r'\\\n', ' ', old_mk.read_text())
     keep_fm = []
     for ln in old_flat.splitlines():
-        if re.match(r'^(FM_(?!VARIANTS)\w+|GOLDEN_SRCS)\s*[:+?]?=', ln):
-            keep_fm.append(ln)
+        m = re.match(r'^(FM_(?!VARIANTS)\w+)\s*[:+?]?=\s*(.*)$', ln)
+        if m:
+            keep_fm.append(m.group(1) + ' = '
+                           + expand_make(m.group(2), vals).replace('@GOLDEN@', '$(GOLDEN_RTL)'))
+    keep_fm.append('GOLDEN_SRCS = ' + ' \\\n              '.join(
+        '$(GOLDEN_RTL)/' + g for g in golden_srcs))
     # include 之后的追加段（VCS += +define+SYNTHESIS 等）连注释原样保留
     tail = []
     seen_inc = False
@@ -236,11 +319,29 @@ def main():
     mk = ['MODULE = ' + t, '', 'RTL_DIR = ../../../rtl',
           'RTL_SRCS = ' + ' \\\n           '.join(rel),
           'TB_SRCS = ' + ' '.join(tb_srcs), '']
+    if golden_passthru:
+        # golden 行为模型/闭包: 不进 derive(保留原名, UT 两侧共用), FM 时并入 impl 侧
+        mk += ['RTL_GOLDEN_DEPS = ' + ' \\\n                  '.join(
+            '$(GOLDEN_RTL)/' + g for g in golden_passthru), '']
     mk += keep_fm
+    if vmucp and 'FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS' not in '\n'.join(keep_fm):
+        mk.append('# 老战役审计声明继承: vmucp=加强证明(FM 实比 matched-unread, 非 waiver)')
+        mk.append('FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true')
     mk += ['FM_VARIANTS = ' + ' '.join(fm_variants), '',
            'include ../../../scripts/ut_common.mk']
-    mk += tail + ['']
+    mk += tail
+    ovr = NEW / 'verif' / 'ut_overrides' / (t + '.mk')
+    if ovr.exists():
+        mk += ['', '# --- ut_overrides/' + t + '.mk (新战役目标级修正) ---',
+               ovr.read_text().rstrip()]
+        notes.append('已附加 overrides')
+    mk += ['']
     (new_ut / 'Makefile').write_text('\n'.join(mk))
+
+    # vmucp 目标须在 fm_eq.tcl 白名单（继承老战役审计声明, 幂等插入）
+    if vmucp:
+        for v in fm_variants:
+            _whitelist_add(v)
 
     regp.parent.mkdir(parents=True, exist_ok=True)
     regp.write_text(json.dumps(registry, indent=1, ensure_ascii=False))
