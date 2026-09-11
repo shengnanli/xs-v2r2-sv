@@ -1,0 +1,15 @@
+verif/ut/*/ut_gen/
+verif/ut/*/simv*
+verif/ut/*/csrc/
+verif/ut/*/fm_work/
+verif/ut/*/*.log
+verif/ut/*/*.fsdb
+verif/ut/*/verdiLog/
+verif/ut/*/novas.*
+verif/ut/*/ucli.key
+verif/ut/*/*.daidir
+verif/ut/*/vc_hdrs.h
+verif/ut/*/*.fdc
+verif/ut/*/default.svf
+verif/ut/*/formality*
+verif/ut/*/fm_shell_command.log*
