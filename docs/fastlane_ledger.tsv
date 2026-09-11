@@ -80,3 +80,21 @@ AXI4Xbar	PASS	fm_verdicts=1
 AXI4Deinterleaver	PASS	fm_verdicts=1
 TLPLIC	PASS	fm_verdicts=1
 FtqPcMemWrapper	PASS	fm_verdicts=1
+DataModule_BackendPC_16entry	PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
+DataModule_FtqPC_16entry	PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
+DataModule__16entry	PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
+DataModule__16entry_4	PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
+DataModule__16entry_8	PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
+DataModule__16entry_12	PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
+DataModule__16entry_16	PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
+DataModule__64entry	PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
+DataModule__64entry_16	PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
+SyncDataModuleTemplate_BackendPC_64entry	PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
+SyncDataModuleTemplate_FtqPC_64entry	PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
+SyncDataModuleTemplate__1024entry	PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
+SyncDataModuleTemplate__1024entry_1	PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
+SyncDataModuleTemplate__64entry	PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
+SyncDataModuleTemplate__64entry_1	PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
+SyncDataModuleTemplate__64entry_2	PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
+SyncDataModuleTemplate__64entry_3	PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
+SyncDataModuleTemplate__64entry_4	PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
