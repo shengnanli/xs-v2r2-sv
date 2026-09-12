@@ -62,7 +62,9 @@ FM_MODE ?= $(if $(FM_INTERFACE_ONLY),assembly,signoff-strict)
 FM_ALLOWLIST ?= 0
 # sidecar native-facts 采集（codex 0139 §3.2）：每次 proof 绑定 run id；
 # 证据目录 fm_work/<top>/sidecar/ 含 native_facts.json + appvar readback + 脚本字节快照。
-FM_RUN_ID ?= $(MODULE)-$(shell date -u +%Y%m%dT%H%M%SZ)-$(shell git -C $(XSSV_HOME) rev-parse --short HEAD 2>/dev/null || echo nogit)
+# 必须用 := 一次求值：递归展开会让 fm_shell 阶段与 receipt 阶段各取一次时间戳，
+# 秒数一跳就被 run_id 绑定判为"捡到别次的 facts"。
+FM_RUN_ID := $(if $(FM_RUN_ID),$(FM_RUN_ID),$(MODULE)-$(shell date -u +%Y%m%dT%H%M%SZ)-$(shell git -C $(XSSV_HOME) rev-parse --short HEAD 2>/dev/null || echo nogit))
 
 fm-%:
 	@mkdir -p fm_work/$*/sidecar
