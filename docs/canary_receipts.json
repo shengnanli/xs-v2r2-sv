@@ -1,0 +1,103 @@
+[
+ {
+  "target": "WrBypass",
+  "verdict": "SUCCEEDED",
+  "mode": "signoff-strict",
+  "native": "SUCCEEDED",
+  "stats": {
+   "passing": 124,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "canonical": "G1-a4ea14f2ddf612bb4ad02…",
+  "golden_files": 3,
+  "impl_files": 7,
+  "rc": 0,
+  "run_id": "WrBypass-20260912T025816Z-8689f18",
+  "bbox_pairs": 0,
+  "decls": [],
+  "appvar_vmucp": "false",
+  "appvar_unread": "false",
+  "appvar_unresolved": "black_box",
+  "appvar_iface_only": "''"
+ },
+ {
+  "target": "SRAMTemplate",
+  "verdict": "SUCCEEDED",
+  "mode": "assembly",
+  "native": "SUCCEEDED",
+  "stats": {
+   "passing": 394,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "canonical": "G1-a4ea14f2ddf612bb4ad02…",
+  "golden_files": 5,
+  "impl_files": 66,
+  "rc": 0,
+  "run_id": "SRAMTemplate-20260912T025905Z-8689f18",
+  "bbox_pairs": 1,
+  "decls": [
+   "allow"
+  ],
+  "appvar_vmucp": "false",
+  "appvar_unread": "false",
+  "appvar_unresolved": "black_box",
+  "appvar_iface_only": "''"
+ },
+ {
+  "target": "TageTable",
+  "verdict": "PASS_DEAD_REF",
+  "mode": "assembly",
+  "native": "SUCCEEDED",
+  "stats": {
+   "passing": 797,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 48,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "canonical": "G1-a4ea14f2ddf612bb4ad02…",
+  "golden_files": 1,
+  "impl_files": 4,
+  "rc": 0,
+  "run_id": "TageTable-20260912T030617Z-8689f18",
+  "bbox_pairs": 13,
+  "decls": [
+   "allow",
+   "dead_ref"
+  ],
+  "appvar_vmucp": "false",
+  "appvar_unread": "false",
+  "appvar_unresolved": "black_box",
+  "appvar_iface_only": "''"
+ }
+]

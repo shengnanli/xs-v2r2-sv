@@ -95,13 +95,29 @@ def _unmatch_max(text, pat):
 ALLOWED_BBOX_CLASSES = {'vendor_macro', 'green_child'}
 
 
-def _mirror(path):
-    """r:/WORK/... ↔ i:/WORK/... 镜像路径（impl 侧允许多一层 u_core）。"""
-    if path.startswith('r:'):
-        return 'i:' + path[2:]
-    if path.startswith('i:'):
-        return 'r:' + path[2:]
-    return path
+def _hier_key(path):
+    """把黑盒实例路径归一到可跨两侧比对的层次键：
+    去掉容器前缀（r:/i:）与 /WORK/<top>，并**抹掉 wrapper 自身的 u_core 层**
+    （impl 侧 wrapper 例化可读核，天然多一级；ref 侧没有）。
+    结果是"这个黑盒挂在设计里的哪个位置"，两侧应完全一致。"""
+    s = re.sub(r'^[ri]:/WORK/[^/]+/?', '', path)
+    s = re.sub(r'(^|/)u_core(/|$)', r'\1', s)
+    return s.strip('/')
+
+
+def _green_children_status():
+    """读归一化台账，返回 {target: status}（green_child 依据）。"""
+    import pathlib as _pl
+    f = _pl.Path('/home/eda/xs-env/xs-v2-sv/docs/ledger_normalized.tsv')
+    st = {}
+    if f.exists():
+        for ln in f.read_text().splitlines():
+            if ln.startswith('#') or not ln.strip():
+                continue
+            c = ln.split('\t')
+            if len(c) >= 3:
+                st[c[0]] = c[2]
+    return st
 
 
 def _assembly_bbox_check(observed, attrs, decl):
@@ -127,12 +143,29 @@ def _assembly_bbox_check(observed, attrs, decl):
     bad_cls = sorted({e.get('class', '?') for e in declared.values()} - ALLOWED_BBOX_CLASSES)
     if bad_cls:
         return f'assembly_bbox_class_not_allowed:{",".join(bad_cls)}'
+    # 对称性：按**设计名的实例条数**两侧相等。
+    # 为什么不比实例路径：可读核用 generate-for 数组（g_bank[0].table_bank）取代 golden
+    # 的展平副本（table_banks_0），实例名本就应该不同——那正是本工程要的可读性改进。
+    # 防"两侧共同黑盒错逻辑"的实际约束来自另外三条：①观测集合须与**已提交的**声明
+    # 精确相等（任何新增/改名/改路径的黑盒都会打破）；②类别门控（厂商宏无条件，
+    # green_child 须有独立已绿目标背书，golden_logic_reuse 直接 NO-GO）；
+    # ③green_child 的 child 必须在归一化台账里确为通过。
+    from collections import Counter
+    ref_cnt = Counter(d for s, d, _ in declared if s == 'r')
+    impl_cnt = Counter(d for s, d, _ in declared if s == 'i')
+    if ref_cnt != impl_cnt:
+        diff = sorted(set(ref_cnt) ^ set(impl_cnt)) or \
+            sorted(d for d in ref_cnt if ref_cnt[d] != impl_cnt.get(d))
+        return f'assembly_bbox_not_symmetric:{diff[0]}(ref={ref_cnt.get(diff[0], 0)},impl={impl_cnt.get(diff[0], 0)})'
     for k, e in declared.items():
-        if e.get('class') == 'green_child' and not e.get('child_target'):
-            return f'assembly_green_child_without_target:{k[1]}'
-        mk = (('i' if k[0] == 'r' else 'r'), k[1], _mirror(k[2]))
-        if mk not in declared:
-            return f'assembly_bbox_not_symmetric:{k[2]}'
+        if e.get('class') == 'green_child':
+            ct = e.get('child_target')
+            if not ct:
+                return f'assembly_green_child_without_target:{k[1]}'
+            st = _green_children_status().get(ct)
+            if st not in ('WORKING_PASS', 'WORKING_PASS_DEAD_REF', 'WORKING_MERGED_PASS'):
+                # 条件绿：child 尚未通过时本目标只能是 conditional，不给 SUCCEEDED
+                return f'assembly_green_child_not_green:{ct}={st or "NOT_IN_LEDGER"}'
     return True
 
 

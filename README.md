@@ -28,27 +28,42 @@
 
 另有 6 个 REWRITE_L 实为纯重编号（DataModule__16entry_8/12/16 等，见 renames.tsv）。
 
-## 进度台账（逐目标状态见 `docs/fastlane_ledger.tsv`，以最新一行为准）
+## 进度台账（权威口径：`docs/ledger_normalized.tsv` + `docs/g1_universe.tsv`）
 
-**通过 128 个目标**：老 306 目标内 101（33.0%）+ G1 新增变体 27（老战役未覆盖的 SRAM 变体）。
-判定分布：123 SUCCEEDED + 5 PASS_DEAD_REF。
+> **一切状态均为 `WORKING_*`（功能候选），不是签核结论**。晋升须绑定
+> G1 canonical ID + golden closure hash + impl commit + proof config，
+> 且 G0 的 receipt/allow/dead-ref/vmucp 一律不继承（codex 0139 §2/§5）。
 
-| 批次 | 通过 | UT (seed 1/7/42) | FM |
+主 universe = 上轮 306 目标解析到 G1（同名 290 / 人工核对重编号 5 / G1 已消失 7），
+与本轮多覆盖的 AUX 变体分栏，机器对账 + 守恒检查见 `scripts/g1_universe.py`。
+
+| 分栏 | 通过 | 分母 | 说明 |
 |---|---|---|---|
-| WrBypass 家族 | 5 | 25 万 ×3, 0 err | strict 全零 |
-| simple 批（AXI/CHI/TLBuffer/TLPLIC/DebugModule…） | 49 | 全 0 err | strict 全零 |
-| SyncDataModule 家族 | 18 | 84.6 万 ×3, 0 err | strict 全零（banked 逐位双射钉点） |
-| SRAMTemplate 家族 | 33 | 130.7 万 ×3, 0 err | assembly 全零 |
-| Splitted / Folded SRAM | 13 | 3.96 万 ×3, 0 err | assembly 全零（含 2 个 G1 重塑变体） |
-| ICache 阵列 / DuplicatedTagArray / TLBuffer_13 | 4 | 0 err | assembly 全零 |
-| TageTable×4 + FTBBank | 5 | 0 err | PASS_DEAD_REF（声明精确相等） |
-| REWRITE_S 机械可继承部分 | 6 | 0 err | 全零 |
+| MAIN | 112 | 306 | 36.6%；含 5 个 WORKING_PASS_DEAD_REF |
+| AUX | 22 | 31 | G1 新增 SRAM 变体，老战役未覆盖 |
 
-**诚实挂起 44 个**（全部带原因记录，不计入通过）：
-- `REWRITE_TODO` 32：G1 真改了逻辑或依赖链，机械继承已验证不适用，需逐个对照 G1 重写
-  （典型：Alu/Fence/VSet* 新增 perfDebugInfo 透传与 ready 端口；ITTage/RNXbar/SNXbar 的仲裁器依赖内容变化）
-- `TODO_CORE_*` 9：G1 新 SRAM 形态（掩码复制 5 / 外置时钟门控 3 / 多读口 1），需扩 `xs_SRAMTemplate_core`
-- `SPECIAL` 1（StorePipe）、`DEFER_*` 2
+MAIN 其余：`NOT_STARTED` 157、`REWRITE_TODO` 32（G1 真改逻辑/依赖链，机械继承已验证不适用）、
+`MERGED` 2、`DEFER_*` 2、`SPECIAL` 1。
+G1 已消失 7 个需人工定位去向（CLINT / FastArbiter_44 / FastArbiter_47 / L1FlagMetaArray_1 /
+PMPChecker_10 / NewPipelineConnectPipe_32 / SRAMTemplate_66），不允许自动改判。
 
-**尚未开工 170 个**（老 306 目标内，主要是 REWRITE_M/L 的深逻辑模块）。
+## 证明基础设施（codex 0139 minimal rebase）
+
+- **G1 canonical**：`G1-canonical/MANIFEST.tsv`（2062 文件逐文件 sha256）+ `CANONICAL_ID.txt`
+  + `TOOLCHAIN.tsv`（firtool 1.62.1 / chisel 6.7.0 / JDK17 / mill 0.12.3 / 源码 commit + 子模块 gitlink），
+  可用 `find|sha256sum` 独立复算。
+- **sidecar native facts**：每次 proof 落 `fm_work/<top>/sidecar/native_facts.json`
+  （native verdict / stats / unmatched 六元组 / 黑盒对象集 / appvar readback）+ 脚本字节快照。
+- **receipt**：`fm_work/<top>/receipt.json` 绑定 canonical ID、golden 逐文件闭包、
+  impl commit 与 dirty 状态、proof config（mode / pin hash / 声明 hash / appvar readback）、rc；
+  native 事实与 log 判定不一致即拒绝出 receipt。
+- **assembly 精确集合**（取代数字配额）：观测黑盒集合须与 `verif/allow/<top>.json`
+  逐对象逐路径精确相等；类别三分 `vendor_macro` / `green_child`（须 child 目标在台账确为通过）/
+  `golden_logic_reuse`（NO-GO）。对称性按设计名实例条数校验（可读核用 generate 数组，
+  实例名本应与 golden 展平副本不同）。负测 7 例全部 fail-closed。
+- **PASS_DEAD_REF**：唯一残余是 golden 侧 cone-dead 未读点，且观测集合与
+  `verif/dead_ref/<top>.json` 精确相等；负测 4 例全部 fail-closed。
+- **三个 canary**（受 receipt 绑定）：WrBypass strict-clean SUCCEEDED 124p；
+  SRAMTemplate assembly SUCCEEDED 394p（1 对 vendor 宏黑盒）；
+  TageTable PASS_DEAD_REF 797p + 48 条声明死 ref。全部 rc=0、六元组除声明项外全零。
 

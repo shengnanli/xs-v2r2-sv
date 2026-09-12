@@ -1,0 +1,7 @@
+# 人工确认的 G0→G1 目标映射（机器判据不认：除自名外还改了内层例化名，故字节不全等）
+# 每条都经逐行 diff 核对，差异**仅限**自名 + 所例化子模块名的同步重编号。
+# old_target	g1_name	reason
+FoldedSRAMTemplate_21	FoldedSRAMTemplate_22	diff 仅 2 处: 自名 + 内层 SplittedSRAMTemplate_24→_25
+FoldedSRAMTemplate_23	FoldedSRAMTemplate_24	diff 仅 2 处: 自名 + 内层 SplittedSRAMTemplate_26→_27
+SplittedSRAMTemplate_24	SplittedSRAMTemplate_25	diff 仅 2 处: 自名 + 内层 SRAMTemplate_70→_76
+SplittedSRAMTemplate_26	SplittedSRAMTemplate_27	diff 仅 3 处: 自名 + 内层 SRAMTemplate_72→_78 (两处例化)

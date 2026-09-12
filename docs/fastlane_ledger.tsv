@@ -1,29 +1,32 @@
-# 快车道批量台账: target	status	note
-RASStack	PASS	手工验证 fm 3018p 全零 (batch 前打样)
+# 本轮台账。status 一律为 WORKING_* —— 功能候选，非签核结论（codex 0139 §2）：
+#   WORKING_PASS / WORKING_PASS_DEAD_REF / WORKING_MERGED_PASS = UT+FM 已过但未晋升
+#   晋升须绑定 G1 canonical ID + golden closure hash + impl commit + proof config，
+#   且待 minimal rebase 完成后批量重跑（G0 的 receipt/allow/dead-ref/vmucp 一律不继承）
+RASStack	WORKING_PASS	手工验证 fm 3018p 全零 (batch 前打样)
 AXI4Deinterleaver	INHERIT_FAIL	ERROR: AXI4Deinterleaver RTL_SRC 不存在 $(GOLDEN_RTL)/Queue2_AXI4BundleR_3.sv
-AXI4IdIndexer	PASS	fm_verdicts=1
-AXI4IdIndexer_1	PASS	fm_verdicts=1
+AXI4IdIndexer	WORKING_PASS	fm_verdicts=1
+AXI4IdIndexer_1	WORKING_PASS	fm_verdicts=1
 AXI4Xbar	INHERIT_FAIL	ERROR: AXI4Xbar RTL_SRC 不存在 $(GOLDEN_RTL)/Queue2_UInt2.sv
 Arbiter1_InsUncacheResp	UT_FAIL	seed1: [214000] mismatch g_rdy=0 resp=x/a58d0da1/0 acq=0/000029e0aec8 wfis=1 | i_rdy=0 resp=1/a6a807c9/0 acq=0/00005beb0090 wfis=1 | [224000] mismatch g_rdy=0 resp=x/a58d0da1/0 acq=0/000029e0aec8 wfis=1 | i_rdy=1 resp=0/a6a807c9/0 acq=0/00005beb0090 wfis=1
-CHILogger	PASS	fm_verdicts=1
-CompressUnit	PASS	fm_verdicts=1
+CHILogger	WORKING_PASS	fm_verdicts=1
+CompressUnit	WORKING_PASS	fm_verdicts=1
 DataModule_BackendPC_16entry	INHERIT_FAIL	ERROR: DataModule_BackendPC_16entry 缺 wrapper 模块: ['$(INNER)', '$(OUTER)']（人工处理）
 DataModule_FtqPC_16entry	INHERIT_FAIL	ERROR: DataModule_FtqPC_16entry 缺 wrapper 模块: ['$(INNER)', '$(OUTER)']（人工处理）
 DataModule__16entry	INHERIT_FAIL	ERROR: DataModule__16entry 缺 wrapper 模块: ['$(INNER)', '$(OUTER)']（人工处理）
 DataModule__64entry	INHERIT_FAIL	ERROR: DataModule__64entry 缺 wrapper 模块: ['$(INNER)', '$(OUTER)']（人工处理）
 DataModule__64entry_16	INHERIT_FAIL	ERROR: DataModule__64entry_16 缺 wrapper 模块: ['$(INNER)', '$(OUTER)']（人工处理）
 DebugModule	INHERIT_FAIL	ERROR: DebugModule WRAPPER_SRC 不存在 $(addprefix
-F3Predecoder	PASS	fm_verdicts=1
-FPDecoder	PASS	fm_verdicts=1
-FTBEntryGen	PASS	fm_verdicts=1
-FauFTBWay	PASS	fm_verdicts=1
-FreeList	PASS	fm_verdicts=1
+F3Predecoder	WORKING_PASS	fm_verdicts=1
+FPDecoder	WORKING_PASS	fm_verdicts=1
+FTBEntryGen	WORKING_PASS	fm_verdicts=1
+FauFTBWay	WORKING_PASS	fm_verdicts=1
+FreeList	WORKING_PASS	fm_verdicts=1
 FtqPcMemWrapper	INHERIT_FAIL	ERROR: FtqPcMemWrapper WRAPPER_SRC 不存在 TB_SRCS
-ICacheReplacer	PASS	fm_verdicts=1
-ImmExtractor	PASS	fm_verdicts=2
+ICacheReplacer	WORKING_PASS	fm_verdicts=1
+ImmExtractor	WORKING_PASS	fm_verdicts=2
 ImmExtractor_12	INHERIT_FAIL	ERROR: /home/eda/xs-env/xs-v2-sv/rtl/backend/ImmExtractor_12.sv 已存在且内容不同（人工处理）
-L1CohMetaArray	PASS	fm_verdicts=1
-L2Directory	PASS	fm_verdicts=1
+L1CohMetaArray	WORKING_PASS	fm_verdicts=1
+L2Directory	WORKING_PASS	fm_verdicts=1
 LCredit2Decoupled	INHERIT_FAIL	ERROR: LCredit2Decoupled WRAPPER_SRC 不存在 $(GOLDEN_RTL)/Queue4_CHISNP.sv
 LCredit2Decoupled_8	INHERIT_FAIL	ERROR: LCredit2Decoupled_8 WRAPPER_SRC 不存在 $(GOLDEN_RTL)/Queue4_CHIREQ.sv
 LCredit2Decoupled_10	INHERIT_FAIL	ERROR: LCredit2Decoupled_10 WRAPPER_SRC 不存在 $(GOLDEN_RTL)/Queue4_CHIDAT.sv
@@ -35,114 +38,114 @@ AXI4Deinterleaver	COMPILE_FAIL	Note-[MAX_ERROR_COUNT] Maximum error count reache
 AXI4Xbar	COMPILE_FAIL	  Source Info: Queue2_UInt2 awOut_1( .clock (clock),  .reset (reset),   |   .io_enq_ready (_awOut_1_io_enq_ready),  .io_enq_valid  |   (_awOut_1_io_enq_valid_T_1),  .io_enq_bits ({awO ... |  | 1 warning | 4 errors | CPU time: 1.748 seconds to compile | make: *** [../../../scripts/ut_common.mk:38: si
 PreDecode	COMPILE_FAIL	  Identifier 'xs_assert_v2' has not been declared yet. If this error is not  |   expected, please check if you have set `default_nettype to none. |    |  | 1 warning | 4 errors | CPU time: 1.158 seconds to compile | make: *** [../../../scripts/ut_common.mk:38: simv] Error 255
 ProbeQueue	COMPILE_FAIL	  Source Info: ProbeEntry entries_7( .clock (clock),  .reset (reset),   |   .io_req_ready (_entries_7_io_req_ready),  .io_req_valid ((((&alloc_idx) &  |   (|_allocate_T)) & io_mem_pro ... |  | 1 warning | 9 errors | CPU time: 1.084 seconds to compile | make: *** [../../../scripts/ut_common.mk:38: si
-LevelGateway	PASS	fm_verdicts=1
-MSHRSelector	PASS	fm_verdicts=1
-LCredit2Decoupled	PASS	fm_verdicts=1
-Pipeline	PASS	fm_verdicts=1
-LCredit2Decoupled_8	PASS	fm_verdicts=1
-LCredit2Decoupled_10	PASS	fm_verdicts=1
-RVCExpander	PASS	fm_verdicts=1
-PLICFanIn	PASS	fm_verdicts=1
-RXRSP	PASS	fm_verdicts=1
-RXREQ	PASS	fm_verdicts=1
-RXDAT_4	PASS	fm_verdicts=1
-RXRSP_4	PASS	fm_verdicts=1
+LevelGateway	WORKING_PASS	fm_verdicts=1
+MSHRSelector	WORKING_PASS	fm_verdicts=1
+LCredit2Decoupled	WORKING_PASS	fm_verdicts=1
+Pipeline	WORKING_PASS	fm_verdicts=1
+LCredit2Decoupled_8	WORKING_PASS	fm_verdicts=1
+LCredit2Decoupled_10	WORKING_PASS	fm_verdicts=1
+RVCExpander	WORKING_PASS	fm_verdicts=1
+PLICFanIn	WORKING_PASS	fm_verdicts=1
+RXRSP	WORKING_PASS	fm_verdicts=1
+RXREQ	WORKING_PASS	fm_verdicts=1
+RXDAT_4	WORKING_PASS	fm_verdicts=1
+RXRSP_4	WORKING_PASS	fm_verdicts=1
 TLPLIC	COMPILE_FAIL	Parsing design file '/home/eda/xs-env/G1-canonical/golden-rtl/PLICFanIn.sv' | Parsing design file '/home/eda/xs-env/G1-canonical/golden-rtl/LevelGateway.sv' | Parsing design file '/home/eda/xs-env/G1-canonical/golden-rtl/Queue1_RegMapperInput.sv' | Parsing design file 'tb.sv' | 1 warning | 1 error |
-SinkA	PASS	fm_verdicts=1
+SinkA	WORKING_PASS	fm_verdicts=1
 StorePipe	FM_FAIL	FAILED	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 1, "make_rc":
-TLBuffer	PASS	fm_verdicts=1
-TLBuffer_2	PASS	fm_verdicts=1
-TLXbar_3	PASS	fm_verdicts=1
+TLBuffer	WORKING_PASS	fm_verdicts=1
+TLBuffer_2	WORKING_PASS	fm_verdicts=1
+TLXbar_3	WORKING_PASS	fm_verdicts=1
 TXDAT_4	FM_FAIL	PARTIAL	{"passing": 973, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": 3, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode": 
-TLLogger	PASS	fm_verdicts=1
-TXREQ_4	PASS	fm_verdicts=1
-TLBuffer_7	PASS	fm_verdicts=1
+TLLogger	WORKING_PASS	fm_verdicts=1
+TXREQ_4	WORKING_PASS	fm_verdicts=1
+TLBuffer_7	WORKING_PASS	fm_verdicts=1
 WritebackQueue	COMPILE_FAIL	Note-[MAX_ERROR_COUNT] Maximum error count reached |   Current number of errors has reached the default maximum error count (10). |   Please use +error+<count> to increase the limit. |  | 1 warning | 10 errors | CPU time: 1.171 seconds to compile | make: *** [../../../scripts/ut_common.mk:38: simv] 
-TXRSP_4	PASS	fm_verdicts=1
-TXSNP	PASS	fm_verdicts=1
-TXRSP	PASS	fm_verdicts=1
-UopInfoGen	PASS	fm_verdicts=1
-WbFuBusyTable	PASS	fm_verdicts=1
-StdFreeList	PASS	fm_verdicts=1
-WayLookup	PASS	fm_verdicts=1
+TXRSP_4	WORKING_PASS	fm_verdicts=1
+TXSNP	WORKING_PASS	fm_verdicts=1
+TXRSP	WORKING_PASS	fm_verdicts=1
+UopInfoGen	WORKING_PASS	fm_verdicts=1
+WbFuBusyTable	WORKING_PASS	fm_verdicts=1
+StdFreeList	WORKING_PASS	fm_verdicts=1
+WayLookup	WORKING_PASS	fm_verdicts=1
 StorePipe	SPECIAL	golden为DCE塌缩探针壳; 老战役用canonical_derivative(G0-StorePipe-observable-v1)+surface wrapper签; 需G1版专项复刻
 Arbiter1_InsUncacheResp	DEFER_FAMILY	共用InstrUncache家族UT, golden InstrUncache/InstrMMIOEntry在G1已变(REWRITE_M); 随家族重写一并处理
-ImmExtractor_12	MERGED_PASS	ImmExtractor家族FM_VARIANTS含_12, 两变体fm.log均SUCCEEDED
+ImmExtractor_12	WORKING_MERGED_PASS	ImmExtractor家族FM_VARIANTS含_12, 两变体fm.log均SUCCEEDED
 NewPipelineConnectPipe_25	DEFER_RENUMBER	家族GOLDEN_SRCS引用NPC_31(G1重编号为_33); 随重编号remap专项处理
 TLPLIC	COMPILE_FAIL	Parsing design file '/home/eda/xs-env/G1-canonical/golden-rtl/PLICFanIn.sv' | Parsing design file '/home/eda/xs-env/G1-canonical/golden-rtl/LevelGateway.sv' | Parsing design file '/home/eda/xs-env/G1-canonical/golden-rtl/Queue1_RegMapperInput.sv' | Parsing design file 'tb.sv' | 1 warning | 1 error |
-ProbeQueue	PASS	fm_verdicts=1
+ProbeQueue	WORKING_PASS	fm_verdicts=1
 FtqPcMemWrapper	COMPILE_FAIL	  Source Info: FtqPcMemWrapper u_impl( .clock (clk),  .reset (rst),   |   .io_ifuPtr_w_value (ifuPtr),  .io_ifuPtrPlus1_w_value (ifuPtrPlus1),   |   .io_ifuPtrPlus2_w_value (ifuPtrPlu ... |  | 1 warning | 1 error | CPU time: 1.124 seconds to compile | make: *** [../../../scripts/ut_common.mk:41: sim
-DebugModule	PASS	fm_verdicts=1
-WritebackQueue	PASS	fm_verdicts=1
-TXDAT_4	PASS	fm_verdicts=1
-PreDecode	PASS	fm_verdicts=1
-AXI4Xbar	PASS	fm_verdicts=1
-AXI4Deinterleaver	PASS	fm_verdicts=1
-TLPLIC	PASS	fm_verdicts=1
-FtqPcMemWrapper	PASS	fm_verdicts=1
-DataModule_BackendPC_16entry	PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
-DataModule_FtqPC_16entry	PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
-DataModule__16entry	PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
-DataModule__16entry_4	PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
-DataModule__16entry_8	PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
-DataModule__16entry_12	PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
-DataModule__16entry_16	PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
-DataModule__64entry	PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
-DataModule__64entry_16	PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
-SyncDataModuleTemplate_BackendPC_64entry	PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
-SyncDataModuleTemplate_FtqPC_64entry	PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
-SyncDataModuleTemplate__1024entry	PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
-SyncDataModuleTemplate__1024entry_1	PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
-SyncDataModuleTemplate__64entry	PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
-SyncDataModuleTemplate__64entry_1	PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
-SyncDataModuleTemplate__64entry_2	PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
-SyncDataModuleTemplate__64entry_3	PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
-SyncDataModuleTemplate__64entry_4	PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
-SRAMTemplate	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
-SRAMTemplate_100	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
-SRAMTemplate_116	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
-SRAMTemplate_124	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
-SRAMTemplate_129	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
-SRAMTemplate_143	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
-SRAMTemplate_148	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
-SRAMTemplate_150	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
-SRAMTemplate_153	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
-SRAMTemplate_154	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
-SRAMTemplate_159	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
-SRAMTemplate_16	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
-SRAMTemplate_162	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
-SRAMTemplate_164	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
-SRAMTemplate_165	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
-SRAMTemplate_181	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
-SRAMTemplate_186	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
-SRAMTemplate_187	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
-SRAMTemplate_2	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
-SRAMTemplate_32	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
-SRAMTemplate_36	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
-SRAMTemplate_4	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
-SRAMTemplate_44	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
-SRAMTemplate_45	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
-SRAMTemplate_64	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
-SRAMTemplate_68	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
-SRAMTemplate_76	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
-SRAMTemplate_78	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
-SRAMTemplate_8	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
-SRAMTemplate_84	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
-SRAMTemplate_86	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
-SRAMTemplate_88	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
-SRAMTemplate_92	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
+DebugModule	WORKING_PASS	fm_verdicts=1
+WritebackQueue	WORKING_PASS	fm_verdicts=1
+TXDAT_4	WORKING_PASS	fm_verdicts=1
+PreDecode	WORKING_PASS	fm_verdicts=1
+AXI4Xbar	WORKING_PASS	fm_verdicts=1
+AXI4Deinterleaver	WORKING_PASS	fm_verdicts=1
+TLPLIC	WORKING_PASS	fm_verdicts=1
+FtqPcMemWrapper	WORKING_PASS	fm_verdicts=1
+DataModule_BackendPC_16entry	WORKING_PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
+DataModule_FtqPC_16entry	WORKING_PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
+DataModule__16entry	WORKING_PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
+DataModule__16entry_4	WORKING_PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
+DataModule__16entry_8	WORKING_PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
+DataModule__16entry_12	WORKING_PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
+DataModule__16entry_16	WORKING_PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
+DataModule__64entry	WORKING_PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
+DataModule__64entry_16	WORKING_PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
+SyncDataModuleTemplate_BackendPC_64entry	WORKING_PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
+SyncDataModuleTemplate_FtqPC_64entry	WORKING_PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
+SyncDataModuleTemplate__1024entry	WORKING_PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
+SyncDataModuleTemplate__1024entry_1	WORKING_PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
+SyncDataModuleTemplate__64entry	WORKING_PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
+SyncDataModuleTemplate__64entry_1	WORKING_PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
+SyncDataModuleTemplate__64entry_2	WORKING_PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
+SyncDataModuleTemplate__64entry_3	WORKING_PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
+SyncDataModuleTemplate__64entry_4	WORKING_PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDED全零(banked双射钉点)
+SRAMTemplate	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
+SRAMTemplate_100	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
+SRAMTemplate_116	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
+SRAMTemplate_124	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
+SRAMTemplate_129	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
+SRAMTemplate_143	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
+SRAMTemplate_148	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
+SRAMTemplate_150	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
+SRAMTemplate_153	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
+SRAMTemplate_154	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
+SRAMTemplate_159	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
+SRAMTemplate_16	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
+SRAMTemplate_162	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
+SRAMTemplate_164	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
+SRAMTemplate_165	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
+SRAMTemplate_181	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
+SRAMTemplate_186	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
+SRAMTemplate_187	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
+SRAMTemplate_2	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
+SRAMTemplate_32	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
+SRAMTemplate_36	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
+SRAMTemplate_4	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
+SRAMTemplate_44	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
+SRAMTemplate_45	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
+SRAMTemplate_64	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
+SRAMTemplate_68	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
+SRAMTemplate_76	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
+SRAMTemplate_78	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
+SRAMTemplate_8	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
+SRAMTemplate_84	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
+SRAMTemplate_86	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
+SRAMTemplate_88	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
+SRAMTemplate_92	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
 DuplicatedTagArray	INHERIT_FAIL	ERROR: DuplicatedTagArray golden 依赖在 G1 缺失: SRAMTemplate_114.sv
-SplittedSRAMTemplate	PASS	Splitted家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链两侧elaborate至SRAMTemplate核)
-SplittedSRAMTemplate_1	PASS	Splitted家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链两侧elaborate至SRAMTemplate核)
-SplittedSRAMTemplate_2	PASS	Splitted家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链两侧elaborate至SRAMTemplate核)
-SplittedSRAMTemplate_3	PASS	Splitted家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链两侧elaborate至SRAMTemplate核)
-SplittedSRAMTemplate_4	PASS	Splitted家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链两侧elaborate至SRAMTemplate核)
-SplittedSRAMTemplate_25	PASS	Splitted家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链两侧elaborate至SRAMTemplate核)
-SplittedSRAMTemplate_27	PASS	Splitted家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链两侧elaborate至SRAMTemplate核)
-FoldedSRAMTemplate	PASS	Folded家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链Folded→Splitted→SRAMTemplate两侧elaborate)
-FoldedSRAMTemplate_1	PASS	Folded家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链Folded→Splitted→SRAMTemplate两侧elaborate)
-FoldedSRAMTemplate_22	PASS	Folded家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链Folded→Splitted→SRAMTemplate两侧elaborate)
-FoldedSRAMTemplate_24	PASS	Folded家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链Folded→Splitted→SRAMTemplate两侧elaborate)
+SplittedSRAMTemplate	WORKING_PASS	Splitted家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链两侧elaborate至SRAMTemplate核)
+SplittedSRAMTemplate_1	WORKING_PASS	Splitted家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链两侧elaborate至SRAMTemplate核)
+SplittedSRAMTemplate_2	WORKING_PASS	Splitted家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链两侧elaborate至SRAMTemplate核)
+SplittedSRAMTemplate_3	WORKING_PASS	Splitted家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链两侧elaborate至SRAMTemplate核)
+SplittedSRAMTemplate_4	WORKING_PASS	Splitted家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链两侧elaborate至SRAMTemplate核)
+SplittedSRAMTemplate_25	WORKING_PASS	Splitted家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链两侧elaborate至SRAMTemplate核)
+SplittedSRAMTemplate_27	WORKING_PASS	Splitted家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链两侧elaborate至SRAMTemplate核)
+FoldedSRAMTemplate	WORKING_PASS	Folded家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链Folded→Splitted→SRAMTemplate两侧elaborate)
+FoldedSRAMTemplate_1	WORKING_PASS	Folded家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链Folded→Splitted→SRAMTemplate两侧elaborate)
+FoldedSRAMTemplate_22	WORKING_PASS	Folded家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链Folded→Splitted→SRAMTemplate两侧elaborate)
+FoldedSRAMTemplate_24	WORKING_PASS	Folded家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链Folded→Splitted→SRAMTemplate两侧elaborate)
 FoldedSRAMTemplate_20	TODO_RESHAPE	G1形态变(折叠WIDTH 4→2/setIdx 11→10/物理8→4way), 老wrapper端口宽度硬编码需按G1重做
 SplittedSRAMTemplate_23	TODO_RESHAPE	G1形态变(8way→4way, 内层SRAMTemplate_64), 同上
 SRAMTemplate_128	TODO_CORE_MASKREPL	G1新形态: 宏wmask粒度细于way(每way复制N位掩码), 需xs_SRAMTemplate_core支持掩码复制
@@ -154,21 +157,21 @@ SRAMTemplate_155	TODO_CORE_EXTCG	G1新形态: 时钟门控外置(导出mbistCgCt
 SRAMTemplate_166	TODO_CORE_EXTCG	G1新形态: 时钟门控外置(导出mbistCgCtl_en/rckEn/wckEn+取rclk), 需核支持external clockgate
 SRAMTemplate_178	TODO_CORE_EXTCG	G1新形态: 时钟门控外置(导出mbistCgCtl_en/rckEn/wckEn+取rclk), 需核支持external clockgate
 SRAMTemplate_146	TODO_CORE_MULTIRD	G1新形态: 多读口, 核仅支持单读口
-ICacheMetaArray	PASS	fm_verdicts=1
-ICacheDataArray	PASS	fm_verdicts=1
+ICacheMetaArray	WORKING_PASS	fm_verdicts=1
+ICacheDataArray	WORKING_PASS	fm_verdicts=1
 TageTable	FM_FAIL	PARTIAL	{"passing": 797, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": 48, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode":
 FTBBank	FM_FAIL	PARTIAL	{"passing": 3276, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": 50, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode"
-TLBuffer_13	PASS	fm_verdicts=1
-ICacheDataArray	PASS	assembly(vmucp继承); FM SUCCEEDED
-ICacheMetaArray	PASS	assembly; FM SUCCEEDED
-TLBuffer_13	PASS	assembly; FM SUCCEEDED
-FTBBank	PASS_DEAD_REF	FM native SUCCEEDED 3276p/0fail/0unmatched; 唯50条golden-only cone-dead(req_pc_reg_1_reg=断言专用PC副本,SYNTHESIS下零扇出), 声明verif/dead_ref/FTBBank.json精确相等
-TageTable	PASS_DEAD_REF	FM native SUCCEEDED 797p/0fail/0unmatched; 唯48条golden-only cone-dead(s1_unhashed_idx[48:1], golden声明49位仅读bit0), 声明精确相等
-TageTable_1	PASS_DEAD_REF	FM native SUCCEEDED 797p/0fail/0unmatched; 唯48条golden-only cone-dead(s1_unhashed_idx[48:1], golden声明49位仅读bit0), 声明精确相等
-TageTable_2	PASS_DEAD_REF	FM native SUCCEEDED 797p/0fail/0unmatched; 唯48条golden-only cone-dead(s1_unhashed_idx[48:1], golden声明49位仅读bit0), 声明精确相等
-TageTable_3	PASS_DEAD_REF	FM native SUCCEEDED 797p/0fail/0unmatched; 唯48条golden-only cone-dead(s1_unhashed_idx[48:1], golden声明49位仅读bit0), 声明精确相等
+TLBuffer_13	WORKING_PASS	fm_verdicts=1
+ICacheDataArray	WORKING_PASS	assembly(vmucp继承); FM SUCCEEDED
+ICacheMetaArray	WORKING_PASS	assembly; FM SUCCEEDED
+TLBuffer_13	WORKING_PASS	assembly; FM SUCCEEDED
+FTBBank	WORKING_PASS_DEAD_REF	FM native SUCCEEDED 3276p/0fail/0unmatched; 唯50条golden-only cone-dead(req_pc_reg_1_reg=断言专用PC副本,SYNTHESIS下零扇出), 声明verif/dead_ref/FTBBank.json精确相等
+TageTable	WORKING_PASS_DEAD_REF	FM native SUCCEEDED 797p/0fail/0unmatched; 唯48条golden-only cone-dead(s1_unhashed_idx[48:1], golden声明49位仅读bit0), 声明精确相等
+TageTable_1	WORKING_PASS_DEAD_REF	FM native SUCCEEDED 797p/0fail/0unmatched; 唯48条golden-only cone-dead(s1_unhashed_idx[48:1], golden声明49位仅读bit0), 声明精确相等
+TageTable_2	WORKING_PASS_DEAD_REF	FM native SUCCEEDED 797p/0fail/0unmatched; 唯48条golden-only cone-dead(s1_unhashed_idx[48:1], golden声明49位仅读bit0), 声明精确相等
+TageTable_3	WORKING_PASS_DEAD_REF	FM native SUCCEEDED 797p/0fail/0unmatched; 唯48条golden-only cone-dead(s1_unhashed_idx[48:1], golden声明49位仅读bit0), 声明精确相等
 DuplicatedTagArray	TODO_RENUMBER	老FM_REF_DEPS引用SRAMTemplate_114(G1已重编号), 需按G1依赖链重导
-DuplicatedTagArray	PASS	G1重编号自动remap(SRAMTemplate_114→_116)+宏链闭包补全(array_9→array_8); UT 3seed 0err; FM SUCCEEDED 2460p
+DuplicatedTagArray	WORKING_PASS	G1重编号自动remap(SRAMTemplate_114→_116)+宏链闭包补全(array_9→array_8); UT 3seed 0err; FM SUCCEEDED 2460p
 ITTageTable	INHERIT_FAIL	ERROR: ITTageTable GOLDEN_SRC 在 G1 缺失且非纯重编号: FoldedSRAMTemplate_21.sv（改动目标? 人工处理）
 ITTageTable_1	MERGED	与 ITTageTable 家族同 UT 目录, 由代表目标覆盖
 ITTageTable_2	MERGED	与 ITTageTable 家族同 UT 目录, 由代表目标覆盖
@@ -195,10 +198,10 @@ LCredit2Decoupled_1	UT_FAIL	seed1: no TEST PASSED
 RXDAT	COMPILE_FAIL	  Module instance: RXDAT u_g( .clock (clock),  .reset (reset),  .io_out_valid  |   (io_out_valid),  .io_out_bits_txnID (io_out_bits_txnID),   |   .io_out_bits_homeNID (io_out_bits_homeNID ... |  | 1 warning | 1 error | CPU time: 1.067 seconds to compile | make: *** [../../../scripts/ut_common.mk:41:
 SourceB	COMPILE_FAIL	  Source Info: FastArbiter_5 issueArb( .clock (clock),  .reset (reset),   |   .io_in_0_ready (_issueArb_io_in_0_ready),  .io_in_0_valid  |   (_issueArb_io_in_0_valid_T),  .io_in_0_bit ... |  | 2 warnings | 1 error | CPU time: 1.242 seconds to compile | make: *** [../../../scripts/ut_common.mk:41: si
 SubDirectory	COMPILE_FAIL	  Source Info: array_0_1 array_0( .R0_addr (io_r_req_bits_setIdx),  .R0_en  |   (io_r_req_valid),  .R0_clk (clock),  .R0_data (_array_0_R0_data),  .W0_addr  |   (io_w_req_bits_setIdx) ... |  | 1 warning | 2 errors | CPU time: 1.140 seconds to compile | make: *** [../../../scripts/ut_common.mk:41: si
-Decoupled2LCredit_1	PASS	fm_verdicts=1
-Decoupled2LCredit_5	PASS	fm_verdicts=1
-Decoupled2LCredit	PASS	fm_verdicts=1
-Decoupled2LCredit_2	PASS	fm_verdicts=1
+Decoupled2LCredit_1	WORKING_PASS	fm_verdicts=1
+Decoupled2LCredit_5	WORKING_PASS	fm_verdicts=1
+Decoupled2LCredit	WORKING_PASS	fm_verdicts=1
+Decoupled2LCredit_2	WORKING_PASS	fm_verdicts=1
 IMSICGateWay	FM_FAIL	FAILED	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 1, "make_rc":
 TlbStorageWrapper	COMPILE_FAIL	  Identifier 'xs_assert_v2' has not been declared yet. If this error is not  |   expected, please check if you have set `default_nettype to none. |    |  | 3 warnings | 1 error | CPU time: 5.051 seconds to compile | make: *** [../../../scripts/ut_common.mk:41: simv] Error 255
 TXREQ	UT_FAIL	seed1: no TEST PASSED
@@ -206,15 +209,15 @@ Alu	FM_FAIL	FAILED	{"passing": null, "failing": null, "unverified": null, "unmat
 VSetRiWi	FM_FAIL	FAILED	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 1, "make_rc":
 LinkMonitor	FM_FAIL	FAILED	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 1, "make_rc":
 TLXbar_4	FM_FAIL	FAILED	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 1, "make_rc":
-SubDirectory_1	PASS	fm_verdicts=1
+SubDirectory_1	WORKING_PASS	fm_verdicts=1
 VSetRvfWvf	FM_FAIL	FAILED	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 1, "make_rc":
-SplittedSRAMTemplate_23	PASS	G1重塑(8way→4way,内层SRAMTemplate_64)按G1端口重做; FM SUCCEEDED 110p
-FoldedSRAMTemplate_20	PASS	G1重塑(折叠WIDTH4→2,setIdx11→10)按G1端口重做; UT 3seed 0err; FM SUCCEEDED 148p
-Decoupled2LCredit	PASS	REWRITE_S批: 机械继承直接通过(diff仅断言行号/端口宽)
-Decoupled2LCredit_1	PASS	REWRITE_S批: 机械继承直接通过(diff仅断言行号/端口宽)
-Decoupled2LCredit_2	PASS	REWRITE_S批: 机械继承直接通过(diff仅断言行号/端口宽)
-Decoupled2LCredit_5	PASS	REWRITE_S批: 机械继承直接通过(diff仅断言行号/端口宽)
-SubDirectory_1	PASS	REWRITE_S批: 机械继承直接通过(diff仅断言行号/端口宽)
+SplittedSRAMTemplate_23	WORKING_PASS	G1重塑(8way→4way,内层SRAMTemplate_64)按G1端口重做; FM SUCCEEDED 110p
+FoldedSRAMTemplate_20	WORKING_PASS	G1重塑(折叠WIDTH4→2,setIdx11→10)按G1端口重做; UT 3seed 0err; FM SUCCEEDED 148p
+Decoupled2LCredit	WORKING_PASS	REWRITE_S批: 机械继承直接通过(diff仅断言行号/端口宽)
+Decoupled2LCredit_1	WORKING_PASS	REWRITE_S批: 机械继承直接通过(diff仅断言行号/端口宽)
+Decoupled2LCredit_2	WORKING_PASS	REWRITE_S批: 机械继承直接通过(diff仅断言行号/端口宽)
+Decoupled2LCredit_5	WORKING_PASS	REWRITE_S批: 机械继承直接通过(diff仅断言行号/端口宽)
+SubDirectory_1	WORKING_PASS	REWRITE_S批: 机械继承直接通过(diff仅断言行号/端口宽)
 ITTageTable	REWRITE_TODO	依赖FoldedSRAMTemplate_21在G1非纯重编号(内容也变); 待按G1链重做
 ITTageTable_1	REWRITE_TODO	同ITTageTable(家族)
 ITTageTable_2	REWRITE_TODO	同ITTageTable(家族)
@@ -247,3 +250,9 @@ LinkMonitor	REWRITE_TODO	G1逻辑改动, FM/UT失配需逐个对照重写
 TLXbar_4	REWRITE_TODO	G1逻辑改动, FM/UT失配需逐个对照重写
 TXREQ	REWRITE_TODO	G1逻辑改动, FM/UT失配需逐个对照重写
 LCredit2Decoupled_1	REWRITE_TODO	G1逻辑改动, FM/UT失配需逐个对照重写
+WrBypass	WORKING_PASS	定式打样批(首commit, 补录): UT 250000×3seed 0err; FM strict SUCCEEDED 全零
+WrBypass_32	WORKING_PASS	定式打样批(首commit, 补录): UT 250000×3seed 0err; FM strict SUCCEEDED 全零
+WrBypass_33	WORKING_PASS	定式打样批(首commit, 补录): UT 250000×3seed 0err; FM strict SUCCEEDED 全零
+WrBypass_41	WORKING_PASS	定式打样批(首commit, 补录): UT 250000×3seed 0err; FM strict SUCCEEDED 全零
+WrBypass_43	WORKING_PASS	定式打样批(首commit, 补录): UT 250000×3seed 0err; FM strict SUCCEEDED 全零
+IndexableCAMTemplate	WORKING_PASS	随WrBypass家族覆盖(base wrapper+核), FM经WrBypass深链两侧elaborate
