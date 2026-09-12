@@ -7,8 +7,11 @@ green_child 不能拿 WORKING 文本台账自证（会形成父子循环自证�
 
   target  verdict  canonical_id  impl_commit  provisional  receipt_sha256  path
 
-冲突处理：同一 target 出现多份 receipt 时，若 (verdict, canonical, impl_commit) 不一致
-则标 CONFLICT 并非零退出——不允许"挑一份好看的"。
+冲突处理：
+  - 同一 (target, impl_commit) 下两份 receipt 的关键字段不一致 → CONFLICT，非零退出
+    （同一份字节不可能有两种结论，出现即证据被污染）；
+  - 不同 impl_commit 的多份 receipt 是正常的重跑历史：取 **commit 时间最新的一份**，
+    并在输出里记 superseded 份数，便于审计。
 """
 import hashlib
 import json
@@ -23,8 +26,21 @@ PASS = {'SUCCEEDED', 'PASS_DEAD_REF'}
 
 def main():
     root = REPO / 'evidence'
-    rows, byt = {}, {}
-    conflicts = []
+    import subprocess
+
+    def commit_time(c):
+        if not c:
+            return -1
+        p = subprocess.run(['git', 'show', '-s', '--format=%ct', c], cwd=str(REPO),
+                           stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                           universal_newlines=True)
+        try:
+            return int(p.stdout.strip())
+        except ValueError:
+            return -1
+
+    rows, bykey = {}, {}
+    conflicts, superseded = [], 0
     for rp in sorted(root.rglob('receipt.json')) if root.exists() else []:
         r = json.loads(rp.read_text())
         t = r['top']
@@ -37,11 +53,21 @@ def main():
             'receipt_sha256': hashlib.sha256(rp.read_bytes()).hexdigest(),
             'path': str(rp.relative_to(REPO)),
         }
-        key = (rec['verdict'], rec['canonical_id'], rec['impl_commit'], rec['provisional'])
-        if t in byt and byt[t] != key:
-            conflicts.append(t)
-        byt[t] = key
-        rows[t] = rec
+        # 同一份字节（同 impl_commit）下结论必须唯一
+        k = (t, rec['impl_commit'])
+        sig = (rec['verdict'], rec['canonical_id'], rec['provisional'])
+        if k in bykey and bykey[k] != sig:
+            conflicts.append(f'{t}@{rec["impl_commit"][:12]}')
+        bykey[k] = sig
+        # 跨 commit 取最新
+        if t in rows:
+            if commit_time(rec['impl_commit']) >= commit_time(rows[t]['impl_commit']):
+                superseded += 1
+                rows[t] = rec
+            else:
+                superseded += 1
+        else:
+            rows[t] = rec
 
     out = REPO / 'docs' / 'receipt_index.tsv'
     out.parent.mkdir(parents=True, exist_ok=True)
@@ -53,8 +79,8 @@ def main():
             f.write('\t'.join([r['target'], r['verdict'], r['canonical_id'], r['impl_commit'],
                                r['provisional'], r['receipt_sha256'], r['path']]) + '\n')
     npass = sum(1 for r in rows.values() if r['verdict'] in PASS and r['provisional'] == 'false')
-    print(f'receipt 索引: {len(rows)} 个 target，其中可作 green_child 背书的 {npass} 个 -> '
-          f'{out.relative_to(REPO)}')
+    print(f'receipt 索引: {len(rows)} 个 target（取各自最新 commit；被取代 {superseded} 份），'
+          f'其中可作 green_child 背书的 {npass} 个 -> {out.relative_to(REPO)}')
     if conflicts:
         print('★冲突（同 target 多份 receipt 关键字段不一致）:', ' '.join(sorted(set(conflicts))))
         return 1
