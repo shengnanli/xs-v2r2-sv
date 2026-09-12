@@ -171,16 +171,21 @@ def _assembly_bbox_check(observed, attrs, decl, expect_canonical=None,
             if expect_canonical and cr['canonical_id'] != expect_canonical:
                 return (f'assembly_green_child_canonical_mismatch:{ct}='
                         f'{cr["canonical_id"][:16]}')
-            # 绑定的是 **child 被证明时的字节**（impl_commit），不是 receipt 文件自身的
-            # 摘要——同样输入重跑会换 run_id/时间戳，文件摘要必然变，拿它当约束只会制造
-            # 假失配。codex 0140 要求的"impl commit/closure 一致"由此满足：
-            # child 必须与父跑在同一 committed 树上。
+            # child 必须证在父之前（或同一 commit）的 committed 字节上：
+            # 要求 child.impl_commit 是父 commit 的祖先或同一个。
+            # 不要求"同一 commit"——否则每加一条声明都会让先前的 child 证据失效，
+            # 形成无法收敛的循环；也不比 receipt 文件摘要（重跑必变，纯噪声）。
+            # 真正的字节一致性由 make_receipt 逐文件比对共享闭包完成（见该脚本）。
             if expect_impl_commit and cr['impl_commit'] != expect_impl_commit:
-                return (f'assembly_green_child_commit_mismatch:{ct}='
-                        f'{cr["impl_commit"][:12]}!={expect_impl_commit[:12]}')
-            want = e.get('child_impl_commit')
-            if want and want != cr['impl_commit']:
-                return f'assembly_green_child_declared_commit_stale:{ct}'
+                import subprocess as _sp
+                anc = _sp.run(['git', 'merge-base', '--is-ancestor',
+                               cr['impl_commit'], expect_impl_commit],
+                              cwd=os.environ.get('XSSV_HOME') or
+                              os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                              stdout=_sp.DEVNULL, stderr=_sp.DEVNULL).returncode
+                if anc != 0:
+                    return (f'assembly_green_child_commit_not_ancestor:{ct}='
+                            f'{cr["impl_commit"][:12]}')
     return True
 
 

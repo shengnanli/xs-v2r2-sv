@@ -104,13 +104,46 @@ def main():
                  '请用 scripts/run_proof.sh（detached clean worktree）或先提交改动。'
                  f'\n首条: {dirty.splitlines()[0][:100]}')
 
+    # green_child 共享闭包字节一致性（codex 0140 P0-3 的 closure 部分）：
+    # 父的 impl 闭包里凡是 child receipt 也读过的文件，两侧 sha256 必须逐一相同。
+    # 否则说明 child 被证明时用的不是本次这份字节。
+    impl_cl = closure(a.impl_srcs.split())
+    child_checks = []
+    allow_p = NEW / 'verif' / 'allow' / f'{a.top}.json'
+    if allow_p.exists():
+        sys.path.insert(0, str(_HERE))
+        import build_receipt_index as _BRI
+        idx = _BRI.load(NEW)
+        adecl = json.loads(allow_p.read_text())
+        children = sorted({o['child_target'] for o in adecl.get('objects', [])
+                           if o.get('class') == 'green_child' and o.get('child_target')})
+        mine = {pathlib.Path(e['path']).name: e['sha256'] for e in impl_cl}
+        for ct in children:
+            cr = idx.get(ct)
+            if cr is None:
+                sys.exit(f'ERROR: green_child {ct} 无 receipt —— 拒绝出 receipt')
+            crj = json.loads((NEW / cr['path']).read_text())
+            shared, bad = 0, []
+            for e in crj.get('impl_closure', []):
+                nm = pathlib.Path(e['path']).name
+                if nm in mine:
+                    shared += 1
+                    if mine[nm] != e['sha256']:
+                        bad.append(nm)
+            if bad:
+                sys.exit(f'ERROR: green_child {ct} 的共享闭包字节与本次不一致: '
+                         f'{bad[:3]} —— 拒绝出 receipt')
+            child_checks.append({'child_target': ct, 'child_impl_commit': cr['impl_commit'],
+                                 'child_verdict': cr['verdict'],
+                                 'shared_closure_files_matched': shared})
+
     receipt = {
         'schema': 'xs-v2-sv-receipt-v1',
         'top': a.top,
         'run_id': facts.get('run_id'),
         'g1_canonical_id': cid,
         'golden_closure': closure(a.ref_srcs.split()),
-        'impl_closure': closure(a.impl_srcs.split()),
+        'impl_closure': impl_cl,
         'impl_commit': impl_commit,
         'impl_worktree_dirty': bool(dirty),
         'provisional': bool(dirty),   # dirty 只在 --allow-dirty 调试路径出现
@@ -123,6 +156,7 @@ def main():
             'declarations': decls,
             'entry_appvars_readback': facts.get('entry_appvars'),
         },
+        'green_child_closure_checks': child_checks,
         'fm_shell_rc': int(a.rc),
         'native_facts': facts,
         'verdict': vname,
