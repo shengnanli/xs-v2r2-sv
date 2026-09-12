@@ -471,12 +471,195 @@ proc sidecar_pairs_sorted {raw} {
     return $out
 }
 
+# ---------------- 失败侧证据(FCVT 事故补课) ----------------
+# 事故: FCVT native 报 20 failing, 但 evidence/<commit>/FCVT/ 里没有任何一处记着
+# "是哪 20 个"——unmatched.rpt 是空的(unmatched=0), native_facts.json 只有计数 20。
+# 诊断只能手写 tcl 重跑一遍 verify(130s) 才拿到点名; 大目标要几十分钟到几小时。
+# **最该留的证据反而没留**。这里补上: 失败/未验证/中止三类点, 原文 + 结构化摘要。
+#
+# 成本说明: 三个 -list 查询在 sidecar_emit_inner 里**本来就已经执行过**(用来算计数),
+# 摘要是零额外查询成本; 只有"原文报告"是新增查询, 受 cap 保护(见 sidecar_emit_points)。
+
+# 原文报告查询: 任何失败 → error(由 sidecar_emit 统一删 tmp + exit 4), 绝不吞。
+# 注意区分两件事: **查询失败**(必须炸) vs **报告为空**(verify 全过时完全合法)。
+proc sidecar_report_text {label script} {
+    set txt ""
+    if {[catch {redirect -variable txt $script} err]} {
+        error "report_query_failed:$label:$err"
+    }
+    return $txt
+}
+
+# 报告是否有"实质内容"(剥掉星号框/Report/Reference/... 头、redirect 的返回值回显、
+# "No xxx points." 空集标准行)。用于交叉核对"计数>0 却报告空"这种捕获漏。
+proc sidecar_report_has_body {txt} {
+    foreach ln [split $txt "\n"] {
+        set t [string trim $ln]
+        if {$t eq ""} continue
+        if {[regexp {^\*+$} $t]} continue
+        if {[regexp {^(Report|Reference|Implementation|Version|Date)\s*:} $t]} continue
+        if {[regexp {FM-\d+} $t]} continue
+        if {[string is integer -strict $t]} continue
+        if {[regexp -nocase {^No .*points\.?$} $t]} continue
+        return 1
+    }
+    return 0
+}
+
+# 原子写 + 失败可回滚: tmp 登记进 ::SIDECAR_TMPS, 出错由 sidecar_emit 统一清理。
+proc sidecar_atomic_write {path text} {
+    if {[file exists $path]} { error "evidence_file_exists_no_force:$path" }
+    set tmp "$path.tmp.[pid]"
+    lappend ::SIDECAR_TMPS $tmp
+    set fh [open $tmp {WRONLY CREAT EXCL} 0644]
+    puts -nonewline $fh $text
+    flush $fh
+    close $fh
+    file rename $tmp $path
+    set ::SIDECAR_TMPS [lsearch -all -inline -not -exact $::SIDECAR_TMPS $tmp]
+}
+
+# failing/unverified/aborted 的 -list 规整。**不能复用 sidecar_pairs_sorted**:
+# 那个对空侧直接 error(matched 语境的正确选择), 但失败点可以是**未配对**的单边点
+# ——实证 evidence/26c4bf21b739/Alu: 450 个 failing 全是 unmatched(单边)。
+proc sidecar_norm_points {raw ctx} {
+    set out {}
+    foreach e $raw {
+        set n [llength $e]
+        if {$n == 2} {
+            set r [lindex $e 0]; set i [lindex $e 1]
+        } elseif {$n == 1} {
+            set pt [lindex $e 0]
+            if {[string match {r:/*} $pt]} {
+                set r $pt; set i ""
+            } elseif {[string match {i:/*} $pt]} {
+                set r ""; set i $pt
+            } else {
+                error "point_side_unknown:$ctx:$pt"
+            }
+        } else {
+            error "point_not_1or2elem:$ctx:$e"
+        }
+        if {$r eq "" && $i eq ""} { error "point_both_sides_empty:$ctx:$e" }
+        lappend out [list $r $i]
+    }
+    # 与 sidecar_pairs_sorted 同样的 "\n" 分隔键排序(等价于 Python 元组序)
+    set keyed {}
+    foreach pr $out { lappend keyed [list "[lindex $pr 0]\n[lindex $pr 1]" $pr] }
+    set res {}
+    foreach kp [lsort -index 0 $keyed] { lappend res [lindex $kp 1] }
+    return $res
+}
+
+# 去掉末尾位下标: foo_reg[7] -> {foo_reg 7}; 无下标 -> {foo -1}
+proc sidecar_split_bit {pt} {
+    if {[regexp {^(.*)\[(\d+)\]$} $pt -> base idx]} {
+        return [list $base [scan $idx %d]]
+    }
+    return [list $pt -1]
+}
+
+# 按寄存器归并: "result_r_1_reg 20 位" 比 20 行原文有用得多。
+# 归并键 = (ref 词干, impl 词干); 同时记录位下标的 lo/hi 便于一眼看出是否整字失配。
+proc sidecar_merge_regs {pairs} {
+    array set acc {}
+    set order {}
+    foreach pr $pairs {
+        lassign $pr r i
+        lassign [sidecar_split_bit $r] rb ri
+        lassign [sidecar_split_bit $i] ib ii
+        set k "$rb\n$ib"
+        if {![info exists acc($k)]} {
+            set acc($k) [list $rb $ib 0 "" ""]
+            lappend order $k
+        }
+        lassign $acc($k) a b cnt lo hi
+        incr cnt
+        set idx $ri
+        if {$idx < 0} { set idx $ii }
+        if {$idx >= 0} {
+            if {$lo eq "" || $idx < $lo} { set lo $idx }
+            if {$hi eq "" || $idx > $hi} { set hi $idx }
+        }
+        set acc($k) [list $a $b $cnt $lo $hi]
+    }
+    set out {}
+    foreach k [lsort $order] { lappend out $acc($k) }
+    return $out
+}
+
+proc sidecar_jregs {regs} {
+    set parts {}
+    foreach e $regs {
+        lassign $e rb ib cnt lo hi
+        set j "{\"ref\":[sidecar_jstr $rb],\"impl\":[sidecar_jstr $ib],\"count\":$cnt"
+        if {$lo ne ""} {
+            append j ",\"bit_lo\":$lo,\"bit_hi\":$hi"
+            # 位集合可能**不连续**(FCVT 实证: 20 个失败位是 {0,1,10..27}, 而不是 0..19)。
+            # 只给 lo/hi 会被读成"连续 28 位", 所以显式标出来, 别让读者自己去减。
+            if {$cnt == $hi - $lo + 1} {
+                append j ",\"contiguous\":true"
+            } else {
+                append j ",\"contiguous\":false"
+            }
+        }
+        append j "}"
+        lappend parts $j
+    }
+    return "\[[join $parts ,]\]"
+}
+
+# 落盘一类点 + 返回 JSON 片段。
+# cap: 原文报告只在 count<=cap 时生成(避免大目标上巨量输出); 超限时**明确写出**
+# "已截断, 共 N 条"横幅 + 用已在手的 -list 渲染前 cap 条, 绝不静默截断。
+proc sidecar_emit_points {out kind script raw cap} {
+    set n [llength $raw]
+    set pairs [sidecar_norm_points $raw $kind]
+    set trunc 0
+    if {$n <= $cap} {
+        set body [sidecar_report_text $kind $script]
+        # 计数>0 却报告无实质内容 = 捕获漏, fail-closed(不是"报告为空"的合法情形)
+        if {$n > 0 && ![sidecar_report_has_body $body]} {
+            error "report_empty_but_count_nonzero:$kind:$n"
+        }
+    } else {
+        set trunc 1
+        set body "### TRUNCATED: $kind 共 $n 条, 超过上限 cap=$cap\n"
+        append body "### 原文报告($script)未生成——大目标上输出量不可控;\n"
+        append body "### 以下为 -list 渲染的前 $cap 条(ref<TAB>impl), 完整计数见 native_facts.json\n"
+        set k 0
+        foreach pr $pairs {
+            if {$k >= $cap} break
+            append body "[lindex $pr 0]\t[lindex $pr 1]\n"
+            incr k
+        }
+    }
+    sidecar_atomic_write "$out/${kind}_points.txt" $body
+
+    set keep $pairs
+    if {[llength $keep] > $cap} { set keep [lrange $keep 0 [expr {$cap - 1}]] }
+    set regs [sidecar_merge_regs $pairs]
+    set regs_trunc 0
+    if {[llength $regs] > $cap} {
+        set regs [lrange $regs 0 [expr {$cap - 1}]]
+        set regs_trunc 1
+    }
+    set j "{\"total\":$n"
+    append j ",\"truncated\":[expr {$trunc ? {true} : {false}}]"
+    append j ",\"pairs\":[sidecar_jpairs $keep]"
+    append j ",\"by_register\":[sidecar_jregs $regs]"
+    append j ",\"by_register_truncated\":[expr {$regs_trunc ? {true} : {false}}]}"
+    return $j
+}
+
 # ---------------- ③ 汇采与原子写 ----------------
 proc sidecar_emit {top} {
     if {![info exists ::env(FM_SIDECAR_OUT)] || $::env(FM_SIDECAR_OUT) eq ""} return
     set ::SIDECAR_TMP ""
+    set ::SIDECAR_TMPS {}
     if {[catch {sidecar_emit_inner $top} msg]} {
         if {$::SIDECAR_TMP ne ""} { catch {file delete $::SIDECAR_TMP} }
+        foreach _t $::SIDECAR_TMPS { catch {file delete $_t} }
         puts "SIDECAR_ERROR: emit_failed: $msg"
         exit 4
     }
@@ -520,6 +703,20 @@ proc sidecar_emit_inner {top} {
     # gate-3 探针证据(非契约文件): combined unread 查询原始返回
     set fh [open "$out/probe_nc_unread.list" w]
     puts -nonewline $fh $l_nc_unr; close $fh
+
+    # ---- 失败侧证据(无论 verify 成败都落盘) ----
+    # cap 可用 FM_SIDECAR_POINTS_MAX 调; 非法值直接炸(不做"看不懂就用默认"的 fail-open)。
+    set cap 5000
+    if {[info exists ::env(FM_SIDECAR_POINTS_MAX)]
+        && [string trim $::env(FM_SIDECAR_POINTS_MAX)] ne ""} {
+        set cap [string trim $::env(FM_SIDECAR_POINTS_MAX)]
+        if {![string is integer -strict $cap] || $cap < 1} {
+            error "bad_FM_SIDECAR_POINTS_MAX:$cap"
+        }
+    }
+    set j_fail  [sidecar_emit_points $out failing    {report_failing_points}    $l_fail  $cap]
+    set j_unver [sidecar_emit_points $out unverified {report_unverified_points} $l_unver $cap]
+    set j_abort [sidecar_emit_points $out aborted    {report_aborted_points}    $l_abort $cap]
     # (script_closure.list 已由 sidecar_register_script 在每次 source 时**即时**落盘,
     #  连同执行时刻字节快照 sourced_NNN_*; 拒产会话同样留痕)
 
@@ -599,7 +796,10 @@ proc sidecar_emit_inner {top} {
     append J "\"qualifications\":{\"dont_verify_objects\":[sidecar_jlist [lsort -unique $dv_objs]],"
     append J "\"elab147\":\[\],"
     append J "\"relaxed_appvars\":[sidecar_jlist [lsort -unique $relaxed]]},"
-    append J "\"entry_appvars\":{[join $av_parts ,]}"
+    append J "\"entry_appvars\":{[join $av_parts ,]},"
+    # failures: 失败侧结构化摘要(本次新增, 纯附加键; 既有消费者用 .get 读, 不受影响)
+    append J "\"failures\":{\"cap\":$cap,"
+    append J "\"failing\":$j_fail,\"unverified\":$j_unver,\"aborted\":$j_abort}"
     append J "}"
 
     # 原子写: 独占 tmp 创建 → flush/close → no-force rename

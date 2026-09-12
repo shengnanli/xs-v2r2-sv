@@ -47,7 +47,55 @@ _UNREAD_UM  = re.compile(r'(\d+)\((\d+)\)\s+Unmatched \S+ unread points', re.M)
 # black-box outputs 未配对(存在黑盒的精确信号,区别于 app_var 名回显)。
 _BBOUT      = re.compile(r'(\d+)\((\d+)\)\s+Unmatched \S+ (?:primary inputs, )?black-box outputs', re.M)
 
-# qualification 痕迹
+# "Verification Results" 段的散文计数行。与下面那张 "Matched Compare Points" 表
+# **口径不同**，这是本工程踩过的坑：
+#   表里 `Failing (not equivalent)` 只数 **matched** 失败点；
+#   散文 `N Failing compare points (M matched, U unmatched)` 数的是 **M+U 总数**。
+# 实证(evidence/26c4bf21b739/Alu)：表 failing=0，散文 450(0 matched, 450 unmatched)
+# ——只看表会把"450 个点在失败"读成"0 个点在失败"。
+# 另外 FM 对全零类别**不产生表行**（FCVT 的 Aborted 行就不存在），所以
+# passing/unverified/aborted 用散文兜底填 null；两者都在且不一致 → 视为日志完整性问题。
+_PROSE = {
+    "passing":    re.compile(r'^\s*(\d+)\s+Passing compare points\s*$', re.M),
+    "unverified": re.compile(r'^\s*(\d+)\s+Unverified compare points\s*$', re.M),
+    "aborted":    re.compile(r'^\s*(\d+)\s+Aborted compare points\s*$', re.M),
+}
+_PROSE_FAILING = re.compile(
+    r'^\s*(\d+)\s+Failing compare points\s*\((\d+)\s+matched,\s*(\d+)\s+unmatched\)\s*$', re.M)
+
+
+# 一次 fm_shell 会话里可以 verify 多次（或日志被拼接），此时散文段/汇总表都会出现多份。
+# reviewer 0146 P0：散文原来用 search() 取的是**第一次**，而表和 native verdict 取的是
+# **最后一轮**，两者会错配。这里统一改成"先切到最后一个 Verification Results 段，
+# 再在段内取值"——表(_last_table)本来就落在这个段内，两个来源从此同源同轮。
+_RESULTS_HDR = re.compile(r'^\*+\s*Verification Results\s*\*+\s*$', re.M)
+
+
+def _last_results_block(text):
+    """最后一个 "Verification Results" 段（到文本末）。没有则返回 None。"""
+    ms = list(_RESULTS_HDR.finditer(text))
+    if not ms:
+        return None
+    return text[ms[-1].start():]
+
+
+def _prose_int(text, key):
+    """取散文计数。text 应已是**最后一轮**的结果段；仍用 findall[-1] 兜底。"""
+    ms = _PROSE[key].findall(text)
+    return int(ms[-1]) if ms else None
+
+
+def _prose_failing(text):
+    """散文失败行 -> (total, matched, unmatched)；无则 None。取最后一个(非 search 首个)。"""
+    ms = _PROSE_FAILING.findall(text)
+    if not ms:
+        return None
+    return tuple(int(x) for x in ms[-1])
+
+
+# qualification 痕迹。
+# 注: 这两个用 search()/bool 是**故意**的——它们是"整份日志里只要出现过就算被污染"的
+# taint 标记(保守方向), 不是 reviewer 0146 P0 说的"多轮里取错轮次"那类 bug。
 _DONTVERIFY = re.compile(r'set_dont_verify_points|Don\'t verify', re.M)
 _ELAB147    = re.compile(r'FMR_ELAB-147', re.M)
 
@@ -83,6 +131,95 @@ def _unmatch_max(text, pat):
     for mt in pat.finditer(text):
         val = max(int(mt.group(1)), int(mt.group(2)))
     return val
+
+
+def _fill_stats(q, log_text):
+    """把汇总表 + 未配对报告的**数字**填进 q（纯采集，不做任何判定）。
+
+    以前这段代码只长在 `final == SUCCEEDED` 分支里，FAILED/WAIVED 直接 early-return，
+    于是**失败时 passing/failing/unverified 全是 null**——恰恰是最需要数字的时候没有数字，
+    诊断只能重跑一遍 FM。数字采集与判定本就无关，这里抽出来给所有分支共用。
+
+    返回 None 表示表存在且已填；返回原因串表示表缺失（调用方决定这算不算 ERROR：
+    SUCCEEDED 分支必须 fail-closed 判 ERROR，FAILED 分支只记 reason——FAILED 本身
+    已经是非通过，记不到数字不构成"静默放行"）。
+    """
+    tbl = _last_table(log_text)
+    if tbl is None:
+        return "no_summary_table"
+    q["passing"]    = _row_int(tbl, "passing")
+    q["failing"]    = _row_int(tbl, "failing")
+    q["unverified"] = _row_int(tbl, "unverified")
+    q["aborted"]    = _row_int(tbl, "aborted")
+    _nc = _row_int(tbl, "unread_nc")
+    _umr, _umi = _unmatch_pair(log_text, _UNREAD_UM)
+    q["unread"]    = max([x for x in (_nc, _umr, _umi) if x is not None], default=None)
+    umr, umi = _unmatch_pair(log_text, _UNMATCH_CP)
+    q["unmatched_ref"], q["unmatched_impl"] = umr, umi
+    q["unmatched"] = max([x for x in (umr, umi) if x is not None], default=None)
+    bbr, bbi = _unmatch_pair(log_text, _BBOUT)
+    q["blackbox_out"] = max([x for x in (bbr, bbi) if x is not None], default=None)
+
+    # 散文兜底 + 交叉核对（口径差异见 _PROSE 注释）。
+    # 只在**最后一个**结果段里取，保证与 _last_table 同一轮 verify。
+    blk = _last_results_block(log_text)
+    if blk is None:
+        # 有表却没有结果段头 = 日志被截断/裁剪过，两个来源无法互证 → fail-closed
+        return "no_results_block"
+
+    for k in ("passing", "unverified", "aborted"):
+        pv = _prose_int(blk, k)
+        if pv is None:
+            continue
+        if q[k] is None:
+            q[k] = pv                      # FM 对全零类别不出表行 → 散文兜底
+        elif q[k] != pv:
+            # 682 份真实日志实测从未发生；真发生说明日志被拼接/截断 → fail-closed
+            return f"stats_inconsistent:{k}:table={q[k]},prose={pv}"
+
+    pf = _prose_failing(blk)
+    if pf is not None:
+        total, matched, unmatched = pf
+        q["failing_total"]     = total
+        q["failing_matched"]   = matched
+        q["failing_unmatched"] = unmatched
+        if total != matched + unmatched:
+            return (f"stats_inconsistent:failing:prose_total={total}!="
+                    f"{matched}+{unmatched}")
+        if q["failing"] is not None and q["failing"] != matched:
+            return (f"stats_inconsistent:failing:table={q['failing']},"
+                    f"prose_matched={matched}")
+    elif q["failing"] is not None:
+        # 没有散文失败行 = 一个失败点都没有；表里 failing 必须也是 0
+        if q["failing"] != 0:
+            return f"stats_inconsistent:failing:table={q['failing']},prose_absent"
+        q["failing_total"] = q["failing_matched"] = q["failing_unmatched"] = 0
+    return None
+
+
+def _failure_reason(q, stats_err):
+    """FAILED 时给出**可机读**的失败画像，取代原来的 reason=null。"""
+    if stats_err:
+        return "failed_" + stats_err          # 表都没有 → 日志本身可疑
+    bits = []
+    # failing 优先报**总数**：Alu 那种 "表 0 / 实际 450 全是 unmatched" 只看表会谎报 0。
+    ft, fm_ = q.get("failing_total"), q.get("failing_matched")
+    if ft:
+        if fm_ is not None and fm_ != ft:
+            bits.append(f"failing={ft}(matched={fm_},unmatched={q.get('failing_unmatched')})")
+        else:
+            bits.append(f"failing={ft}")
+    elif q.get("failing"):
+        bits.append(f"failing={q['failing']}")
+    for k in ("unverified", "aborted"):
+        if q.get(k):
+            bits.append(f"{k}={q[k]}")
+    if q.get("unmatched"):
+        bits.append(f"unmatched={q['unmatched']}")
+    if not bits:
+        # marker/native 说失败，但表里每一类都是 0 → 数字与结论矛盾，必须显形。
+        return "failed_but_all_rows_zero"
+    return "failed:" + ",".join(bits)
 
 
 
@@ -223,6 +360,7 @@ def verdict(log_text, make_rc=0, mode="signoff-strict", expected_top=None, allow
             dead_ref_decl=None, unread_points=None, bbox_obs=None, bbox_attrs=None,
             allow_decl=None, expect_canonical=None, expect_impl_commit=None):
     q = {"passing": None, "failing": None, "unverified": None, "unmatched": None, "aborted": None,
+         "failing_total": None, "failing_matched": None, "failing_unmatched": None,
          "unread": None, "blackbox_out": None, "markers": 0, "make_rc": make_rc, "mode": mode,
          "native": None, "top": None, "dont_verify": bool(_DONTVERIFY.search(log_text)),
          "elab147": bool(_ELAB147.search(log_text)), "reason": None}
@@ -262,34 +400,28 @@ def verdict(log_text, make_rc=0, mode="signoff-strict", expected_top=None, allow
     # P0-4: 交叉检查 Formality 原生 verdict
     natives = _NATIVE.findall(log_text)
     q["native"] = natives[-1] if natives else None
+    # 数字采集提到所有分支之前：失败时同样要有 passing/failing/unverified，
+    # 否则诊断只能重跑 FM（本工程真实事故：FCVT 20 个失败点靠重跑 130s 才拿到）。
+    stats_err = _fill_stats(q, log_text)
+
     if q["native"] in ("FAILED", "INCONCLUSIVE") and final == "SUCCEEDED":
         q["reason"] = f"native_{q['native']}_vs_marker_SUCCEEDED"
         return "FAILED", q
 
-    # WAIVED / FAILED marker 直接归类
+    # WAIVED / FAILED marker 直接归类（数字已采集，reason 给出失败画像）
     if final == "WAIVED":
+        if stats_err:
+            q["reason"] = "waived_" + stats_err
         return "WAIVED", q
     if final == "FAILED":
+        q["reason"] = _failure_reason(q, stats_err)
         return "FAILED", q
 
     # final == SUCCEEDED: 必须过全部数字闸门
-    # P0-7 + P0-8: 只认最后一个汇总表;表缺失 → ERROR
-    tbl = _last_table(log_text)
-    if tbl is None:
-        q["reason"] = "no_summary_table"
+    # P0-7 + P0-8: 只认最后一个汇总表;表缺失 → ERROR(fail-closed, 不得放行)
+    if stats_err:
+        q["reason"] = stats_err
         return "ERROR", q
-    q["passing"]    = _row_int(tbl, "passing")
-    q["failing"]    = _row_int(tbl, "failing")
-    q["unverified"] = _row_int(tbl, "unverified")
-    q["aborted"]    = _row_int(tbl, "aborted")
-    _nc = _row_int(tbl, "unread_nc")
-    _umr, _umi = _unmatch_pair(log_text, _UNREAD_UM)
-    q["unread"]    = max([x for x in (_nc, _umr, _umi) if x is not None], default=None)
-    umr, umi = _unmatch_pair(log_text, _UNMATCH_CP)
-    q["unmatched_ref"], q["unmatched_impl"] = umr, umi
-    q["unmatched"] = max([x for x in (umr, umi) if x is not None], default=None)
-    bbr, bbi = _unmatch_pair(log_text, _BBOUT)
-    q["blackbox_out"] = max([x for x in (bbr, bbi) if x is not None], default=None)
 
     if q["failing"] is None:
         q["reason"] = "failing_row_missing"   # 表在但没 Failing 行 → 不确定, fail-closed
@@ -310,8 +442,9 @@ def verdict(log_text, make_rc=0, mode="signoff-strict", expected_top=None, allow
     if mode == "assembly":
         # P0-2 + 对抗: assembly 只允许**对称**黑盒(ref==impl)且总数在 allowlist 内。
         # 非对称如 5(0) 说明一侧多出未配对点(缺依赖/端口不齐), 即便 ≤allowlist 也拒绝。
-        if (umr or 0) != (umi or 0):
-            q["reason"] = f"assembly_asymmetric_unmatched:{umr}({umi})"
+        umr_, umi_ = q["unmatched_ref"], q["unmatched_impl"]
+        if (umr_ or 0) != (umi_ or 0):
+            q["reason"] = f"assembly_asymmetric_unmatched:{umr_}({umi_})"
             return "PARTIAL", q
         if (q["unmatched"] or 0) > allowlist:
             q["reason"] = f"assembly_unmatched>{allowlist}:{q['unmatched']}"
