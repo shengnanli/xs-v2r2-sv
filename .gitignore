@@ -29,3 +29,10 @@ docs/receipt_index.tsv
 /formality*.log
 /fm_shell_command*.log
 /default.svf
+verif/study/*/verdiLog/
+verif/study/*/novas.*
+verif/study/*/*.fsdb
+verif/study/*/csrc/
+verif/study/*/simv*
+verif/study/*/*.log
+verif/study/*/ucli.key
