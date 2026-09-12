@@ -1,3 +1,6 @@
+// SyncDataModuleTemplate__1024entry —— 外层同步读存储（分 bank + 输入寄存器复制）
+// 形状：1024 项 × 1 位，2 读口 / 2 写口；载荷字段：<flat>
+// 核体见 rtl/common/xs_SyncDataModule.sv；本文件只做参数化与端口展平。
 // 自动生成：scripts/gen_dm_wrappers.py（G1 基线驱动）—— 勿手改
 module SyncDataModuleTemplate__1024entry(
   input  clock,

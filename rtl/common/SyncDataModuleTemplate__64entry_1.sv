@@ -1,3 +1,6 @@
+// SyncDataModuleTemplate__64entry_1 —— 外层同步读存储（分 bank + 输入寄存器复制）
+// 形状：64 项 × 576 位，1 读口 / 1 写口；载荷字段：meta, ftb_entry_isCall, ftb_entry_isRet, ftb_entry_isJalr…
+// 核体见 rtl/common/xs_SyncDataModule.sv；本文件只做参数化与端口展平。
 // 自动生成：scripts/gen_dm_wrappers.py（G1 基线驱动）—— 勿手改
 module SyncDataModuleTemplate__64entry_1(
   input  clock,

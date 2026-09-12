@@ -75,3 +75,5 @@ source -echo -verbose scripts/g1_xstop_universe.tcl
 #@                  [lsort [glob -nocomplain $golden/*.v]]]
 #@ puts "XSTOP_UNIVERSE: reading [llength $srcs] files with -define SYNTHESIS"
 #@ read_sverilog -container r -libname WORK -define {SYNTHESIS} $srcs
+#@ 
+#@ set_top r:/WORK/XSTop

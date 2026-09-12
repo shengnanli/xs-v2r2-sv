@@ -1,4 +1,6 @@
 // NewPipelineConnectPipe_8 —— NewPipelineConnectPipe_25 单态化变体 wrapper（核体见 NewPipelineConnectPipe_25.sv）
+// 本文件只做端口适配与直通，不含逻辑。
+// 端口规模：23 输入 / 19 输出。
 
 module NewPipelineConnectPipe_8(
   input  clock,

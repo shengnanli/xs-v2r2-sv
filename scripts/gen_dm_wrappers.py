@@ -286,6 +286,25 @@ def canon_layout(ports):
     return out
 
 
+
+def variant_header(name, ports, inner):
+    """每个变体薄文件自己的头：读者打开就知道这是什么形状的存储、核在哪。
+    （此前只发一行"自动生成"，等于没说——可读性验收 B 类）"""
+    entries = int(re.search(r"_(\d+)entry", name).group(1))
+    rd, wr = group(ports, "raddr"), group(ports, "waddr")
+    rdat = group(ports, "rdata")
+    canon = canonical_fields(group(ports, "wdata"))
+    width = sum(w for _, w in canon)
+    kind = "内层单 bank 存储" if inner else "外层同步读存储（分 bank + 输入寄存器复制）"
+    flds = ", ".join(s or "<flat>" for s, _ in canon[:4]) + ("…" if len(canon) > 4 else "")
+    return (f"// {name} —— {kind}\n"
+            f"// 形状：{entries} 项 × {width} 位，{len(rd)} 读口 / {len(wr)} 写口；"
+            f"载荷字段：{flds}\n"
+            f"// 核体见 rtl/common/xs_{'DataModule' if inner else 'SyncDataModule'}.sv；"
+            f"本文件只做参数化与端口展平。\n"
+            f"// 自动生成：scripts/gen_dm_wrappers.py（G1 基线驱动）—— 勿手改\n")
+
+
 def main():
     all_variants = []
     hdr = "// 自动生成：scripts/gen_dm_wrappers.py（G1 基线驱动）—— 勿手改\n"
@@ -301,7 +320,7 @@ def main():
             path.write_text(SPECIAL_CORE_SRC.read_text().rstrip() + "\n\n"
                             + SPECIAL_WRAPPER_TXT.read_text().rstrip() + "\n")
             continue
-        path.write_text(hdr + gen_wrapper(name, ports, inner=inner))
+        path.write_text(variant_header(name, ports, inner) + gen_wrapper(name, ports, inner=inner))
 
     ut = XSSV / "verif/ut/SyncDataModule"
     ut.mkdir(parents=True, exist_ok=True)

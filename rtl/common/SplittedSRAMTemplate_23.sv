@@ -1,7 +1,8 @@
-// SplittedSRAMTemplate_23 —— 按 setIdx 最低位分 2 bank 的 SRAM 中间层
+// SplittedSRAMTemplate_23 —— SplittedSRAMTemplate 家族变体
+// 家族共性（结构原理、保持逻辑、与内层的关系）见 SplittedSRAMTemplate.sv 文件头；
+// 本文件只放本变体的参数与端口。
 // （G1 形态：逻辑 512set×4way，每 bank 内层 SRAMTemplate_64 = 256set×4way）。
 // 结构与保持逻辑见 SplittedSRAMTemplate.sv 文件头；本变体相对上轮 G0 路数
-// 由 8 收窄为 4（对应 TAGE useful 表在 G1 变窄），读响应 Mux1H 宽度同步收窄。
 
 module SplittedSRAMTemplate_23(
   input        clock,

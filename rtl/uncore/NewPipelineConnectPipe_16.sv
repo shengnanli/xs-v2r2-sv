@@ -1,4 +1,6 @@
 // NewPipelineConnectPipe_16 —— NewPipelineConnectPipe_25 单态化变体 wrapper（核体见 NewPipelineConnectPipe_25.sv）
+// 端口规模：35 输入 / 31 输出；本文件只做参数化与端口展平。
+// 端口规模：35 输入 / 31 输出。
 
 module NewPipelineConnectPipe_16(
   input  clock,

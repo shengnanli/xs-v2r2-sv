@@ -1,6 +1,8 @@
+// FoldedSRAMTemplate_20 —— FoldedSRAMTemplate 家族变体
+// 家族共性（结构原理、保持逻辑、与内层的关系）见 FoldedSRAMTemplate.sv 文件头；
+// 本文件只放本变体的参数与端口。
 // FoldedSRAMTemplate_20 —— 折叠式 SRAM 中间层（G1 形态：逻辑 1024set×2way，
 // 折叠系数 WIDTH=2 → 内层 SplittedSRAMTemplate_23 为 512set×4way）。
-// 折叠原理与保持逻辑见 FoldedSRAMTemplate.sv 文件头；本变体相对上轮 G0
 // 折叠系数由 4 降为 2（逻辑 set 2048→1024），地址切分与物理路数同步收窄。
 
 module FoldedSRAMTemplate_20(

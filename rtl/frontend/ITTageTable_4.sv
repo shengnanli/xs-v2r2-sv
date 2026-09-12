@@ -1,4 +1,6 @@
 // ITTageTable_4 —— ITTageTable 单态化变体 wrapper（核体见 ITTageTable.sv）
+// 本变体参数：IDX_W=9，IDX_FH_W=9，TAG_FH_W=9，ALT_FH_W=8，IDX_HIST_LEN=32，TAG_HIST_LEN=32…
+// 端口规模：44 输入 / 9 输出。家族共性与逻辑说明见核体文件头。
 
 module ITTageTable_4(
   input clock,

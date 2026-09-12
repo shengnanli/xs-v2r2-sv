@@ -1,3 +1,6 @@
+// SyncDataModuleTemplate__64entry_4 —— 外层同步读存储（分 bank + 输入寄存器复制）
+// 形状：64 项 × 9 位，8 读口 / 6 写口；载荷字段：vtype_illegal, vtype_vma, vtype_vta, vtype_vsew…
+// 核体见 rtl/common/xs_SyncDataModule.sv；本文件只做参数化与端口展平。
 // 自动生成：scripts/gen_dm_wrappers.py（G1 基线驱动）—— 勿手改
 module SyncDataModuleTemplate__64entry_4(
   input  clock,

@@ -1,3 +1,6 @@
+// DataModule__64entry_16 —— 内层单 bank 存储
+// 形状：64 项 × 6 位，2 读口 / 2 写口；载荷字段：ssid, strict
+// 核体见 rtl/common/xs_DataModule.sv；本文件只做参数化与端口展平。
 // 自动生成：scripts/gen_dm_wrappers.py（G1 基线驱动）—— 勿手改
 module DataModule__64entry_16(
   input  clock,

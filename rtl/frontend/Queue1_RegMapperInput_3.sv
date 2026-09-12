@@ -1,4 +1,6 @@
 // Queue1_RegMapperInput_3 —— ICacheCtrlUnit 单态化变体 wrapper（核体见 ICacheCtrlUnit.sv）
+// 本变体参数：INDEX_W=4，DATA_W=64，MASK_W=8，SOURCE_W=3，SIZE_W=2
+// 端口规模：10 输入 / 8 输出。家族共性与逻辑说明见核体文件头。
 
 module Queue1_RegMapperInput_3(
   input         clock,

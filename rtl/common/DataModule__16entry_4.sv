@@ -1,3 +1,6 @@
+// DataModule__16entry_4 —— 内层单 bank 存储
+// 形状：16 项 × 576 位，1 读口 / 1 写口；载荷字段：meta, ftb_entry_isCall, ftb_entry_isRet, ftb_entry_isJalr…
+// 核体见 rtl/common/xs_DataModule.sv；本文件只做参数化与端口展平。
 // 自动生成：scripts/gen_dm_wrappers.py（G1 基线驱动）—— 勿手改
 module DataModule__16entry_4(
   input  clock,

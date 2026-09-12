@@ -1,4 +1,6 @@
 // TageTable_1 —— TageTable 单态化变体 wrapper（核体见 TageTable.sv）
+// 本变体参数：HIST_LEN=13
+// 端口规模：104 输入 / 14 输出；本文件只做参数化与端口展平。
 
 module TageTable_1(
   input clock,

@@ -1,3 +1,6 @@
+// DataModule_FtqPC_16entry —— 内层单 bank 存储
+// 形状：16 项 × 101 位，7 读口 / 1 写口；载荷字段：startAddr, nextLineAddr, fallThruError
+// 核体见 rtl/common/xs_DataModule.sv；本文件只做参数化与端口展平。
 // 自动生成：scripts/gen_dm_wrappers.py（G1 基线驱动）—— 勿手改
 module DataModule_FtqPC_16entry(
   input  clock,

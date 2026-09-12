@@ -1,37 +1,6 @@
-// =============================================================================
-// FoldedSRAMTemplate 变体包装层（golden 同名，FM/ST 用）
-//
-// 对应 Chisel: utility.sram.FoldedSRAMTemplate —— 「折叠式」SRAM 中间层。
-//
-// 【folding（折叠）原理】
-// 逻辑上有 nRows 个 set，但物理 SRAM 不想做这么「深」（深 SRAM 面积/时序差），
-// 于是把逻辑 set 沿「行」折叠成 width 份：物理阵列只有 nRows/width 个 set，
-// 但每个物理 set 横向放 width 组（每组 = 逻辑的若干路）。即：
-//   物理 way 数 = width × 逻辑 way 数
-//   物理 set 数 = 逻辑 set 数 / width
-//
-//   逻辑 setIdx  ──┬─► 高位 setIdx[..:log2(width)]  = 物理 set 地址（raddr）
-//                 └─► 低位 setIdx[log2(width)-1:0]  = 折叠组号（ridx，选哪一组）
-//
-// 读：用 raddr 读出物理 set 的「全部 width 组」，再用「寄存后的 ridx」选出本次
-//     请求那一组的输出（读延迟 1 拍，故 ridx 要打一拍对齐数据）。
-// 写：只写「ridx 对应那一组」的路 —— 通过把 waymask 按组展开（只有该组的位为 1）。
-//
-// 【holdRidx：读保持】
-// SRAMTemplate 自带 holdRead（读结果保持到下次读）。Folded 层的 ridx 选择也要
-// 跟着「保持」：当本拍没有新读请求时，沿用上一次锁存的 ridx，使输出与内层保持的
-// 数据对齐。holdRidx = last_read ? ridx : hold_data，其中 last_read 是「上一拍有读」。
-// 每条输出数据 lane 有独立的一套 ridx 保持（golden 如此，逐 lane 复制）。
-//
-// 内层是已验证的 SplittedSRAMTemplate_*（FM 时当黑盒）。
-// =============================================================================
-
-// -----------------------------------------------------------------------------
-// FoldedSRAMTemplate —— width=8，逻辑 2048set×2way×1b（折叠到 256set×16way）
-//   内层 SplittedSRAMTemplate_3（256×16×1，TAGE useful 表）。
-//   raddr = setIdx[10:3]（8 位），ridx = setIdx[2:0]（3 位，8 个折叠组）。
-//   物理 16 路 = 8 组 × 2 逻辑路。
-// -----------------------------------------------------------------------------
+// FoldedSRAMTemplate_1 —— FoldedSRAMTemplate 家族变体
+// 家族共性（结构原理、保持逻辑、与内层的关系）见 FoldedSRAMTemplate.sv 文件头；
+// 本文件只放本变体的参数与端口。
 
 module FoldedSRAMTemplate_1(
   input         clock,

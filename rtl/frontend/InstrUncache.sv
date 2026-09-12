@@ -1,4 +1,6 @@
 // InstrUncache —— InstrMMIOEntry 单态化变体 wrapper（核体见 InstrMMIOEntry.sv）
+// 端口规模：10 输入 / 7 输出。家族共性与逻辑说明见核体文件头。
+// 本文件只做参数化与端口展平，不含逻辑。
 
 module InstrUncache(
   input         clock,

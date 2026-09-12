@@ -1,3 +1,6 @@
+// DataModule__16entry_16 —— 内层单 bank 存储
+// 形状：16 项 × 9 位，8 读口 / 6 写口；载荷字段：vtype_illegal, vtype_vma, vtype_vta, vtype_vsew…
+// 核体见 rtl/common/xs_DataModule.sv；本文件只做参数化与端口展平。
 // 自动生成：scripts/gen_dm_wrappers.py（G1 基线驱动）—— 勿手改
 module DataModule__16entry_16(
   input  clock,
