@@ -18,3 +18,14 @@ __pycache__/
 evidence/
 docs/receipt_index.tsv
 .test_tmp/
+
+# 仓库根的 EDA 派生物（从仓库根启动的 FM/芯片级任务会写这里）。
+# 教训（2026-09-12）：这些曾被误提交进版本库，导致任何 FM 一跑仓库就 dirty，
+# run_proof.sh 的 clean-worktree 前提被破、批跑连环失败。
+# 之前两次只修了症状（PROOF_COMMIT 钉住、改用 worktree 自己的 HEAD），根因是
+# **派生态进了版本控制**。
+/FM_WORK*/
+/FM_INFO*/
+/formality*.log
+/fm_shell_command*.log
+/default.svf
