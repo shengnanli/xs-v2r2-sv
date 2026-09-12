@@ -1,3 +1,13 @@
+// VSetRiWi —— 由 scripts/port_increment_migrate.py 迁移自上轮可读核
+//
+// 迁移依据（脚本已校验）：G0 与 G1 的 golden 去掉端口表后**逐字相同**，
+// 即 G1 的改动只是接口增量（perfDebugInfo / debug.seqNum / ready 等透传字段），
+// 运算逻辑未动。故核体沿用，wrapper 按 G1 端口重做，直通 assign 由 golden
+// 文本机械提取（不手打）。
+//
+// vset 写 vtype/vl，本变体为 rs1-immediate(RiWi) 形态。
+
+
 // =============================================================================
 // vset_pkg —— 香山 V2R2(昆明湖)向量配置单元 VSet 的共享类型与计算函数包
 // -----------------------------------------------------------------------------
@@ -191,7 +201,6 @@ endpackage
 //
 // VSetBase 的握手/控制位(valid/robIdx/pdest/rfWen/perfDebugInfo)由 wrapper 直通。
 // =============================================================================
-
 module xs_VSetRiWi_core
   import vset_pkg::*;
 (
@@ -263,19 +272,11 @@ module xs_VSetRiWi_core
 
 endmodule
 
-// =============================================================================
-// VSetRiWi (wrapper) —— golden 同名顶层,端口与 golden/chisel-rtl/VSetRiWi.sv 一致。
-// -----------------------------------------------------------------------------
-// 作用:把可读核 xs_VSetRiWi_core 适配成 golden 扁平端口,供 Formality 等价比对
-//       与系统替换。本层为机械的端口适配 + 控制位直通(对应 VSetBase 的
-//       out := in 直通:valid/robIdx/pdest/rfWen/perfDebugInfo 原样透传)。
-// =============================================================================
-
 // ---------------------------------------------------------------------------
-// golden 同名 wrapper
+// golden 同名 wrapper：端口与 G1 golden VSetRiWi.sv 完全一致
 // ---------------------------------------------------------------------------
-
-module VSetRiWi (
+module VSetRiWi(
+  output        io_in_ready,
   input         io_in_valid,
   input  [8:0]  io_in_bits_ctrl_fuOpType,
   input         io_in_bits_ctrl_robIdx_flag,
@@ -284,20 +285,40 @@ module VSetRiWi (
   input         io_in_bits_ctrl_rfWen,
   input  [63:0] io_in_bits_data_src_1,
   input  [63:0] io_in_bits_data_src_0,
+  input         io_in_bits_perfDebugInfo_eliminatedMove,
+  input  [63:0] io_in_bits_perfDebugInfo_renameTime,
+  input  [63:0] io_in_bits_perfDebugInfo_dispatchTime,
   input  [63:0] io_in_bits_perfDebugInfo_enqRsTime,
   input  [63:0] io_in_bits_perfDebugInfo_selectTime,
   input  [63:0] io_in_bits_perfDebugInfo_issueTime,
+  input  [63:0] io_in_bits_perfDebugInfo_writebackTime,
+  input  [63:0] io_in_bits_perfDebugInfo_runahead_checkpoint_id,
+  input  [63:0] io_in_bits_perfDebugInfo_tlbFirstReqTime,
+  input  [63:0] io_in_bits_perfDebugInfo_tlbRespTime,
+  input  [55:0] io_in_bits_debug_seqNum_seqNum,
+  input  [7:0]  io_in_bits_debug_seqNum_uopIdx,
+  input         io_out_ready,
   output        io_out_valid,
   output        io_out_bits_ctrl_robIdx_flag,
   output [7:0]  io_out_bits_ctrl_robIdx_value,
   output [7:0]  io_out_bits_ctrl_pdest,
   output        io_out_bits_ctrl_rfWen,
   output [63:0] io_out_bits_res_data,
+  output        io_out_bits_perfDebugInfo_eliminatedMove,
+  output [63:0] io_out_bits_perfDebugInfo_renameTime,
+  output [63:0] io_out_bits_perfDebugInfo_dispatchTime,
   output [63:0] io_out_bits_perfDebugInfo_enqRsTime,
   output [63:0] io_out_bits_perfDebugInfo_selectTime,
-  output [63:0] io_out_bits_perfDebugInfo_issueTime
+  output [63:0] io_out_bits_perfDebugInfo_issueTime,
+  output [63:0] io_out_bits_perfDebugInfo_writebackTime,
+  output [63:0] io_out_bits_perfDebugInfo_runahead_checkpoint_id,
+  output [63:0] io_out_bits_perfDebugInfo_tlbFirstReqTime,
+  output [63:0] io_out_bits_perfDebugInfo_tlbRespTime,
+  output [55:0] io_out_bits_debug_seqNum_seqNum,
+  output [7:0]  io_out_bits_debug_seqNum_uopIdx
 );
 
+  // vset 计算核：func/src -> {vtype, vl} 打包结果
   xs_VSetRiWi_core u_core (
     .func     (io_in_bits_ctrl_fuOpType),
     .src0     (io_in_bits_data_src_0),
@@ -305,14 +326,26 @@ module VSetRiWi (
     .res_data (io_out_bits_res_data)
   );
 
-  // 控制/调试旁路直通(VSetBase: out := in)。
-  assign io_out_valid                         = io_in_valid;
-  assign io_out_bits_ctrl_robIdx_flag         = io_in_bits_ctrl_robIdx_flag;
-  assign io_out_bits_ctrl_robIdx_value        = io_in_bits_ctrl_robIdx_value;
-  assign io_out_bits_ctrl_pdest               = io_in_bits_ctrl_pdest;
-  assign io_out_bits_ctrl_rfWen               = io_in_bits_ctrl_rfWen;
-  assign io_out_bits_perfDebugInfo_enqRsTime  = io_in_bits_perfDebugInfo_enqRsTime;
-  assign io_out_bits_perfDebugInfo_selectTime = io_in_bits_perfDebugInfo_selectTime;
-  assign io_out_bits_perfDebugInfo_issueTime  = io_in_bits_perfDebugInfo_issueTime;
+  // 握手直通（无内部阻塞）
+  assign io_in_ready                                      = io_out_ready;
+
+  // 控制/调试旁路直通（Chisel PipedFuncUnit 的 out := in）
+  assign io_out_valid                                     = io_in_valid;
+  assign io_out_bits_ctrl_robIdx_flag                     = io_in_bits_ctrl_robIdx_flag;
+  assign io_out_bits_ctrl_robIdx_value                    = io_in_bits_ctrl_robIdx_value;
+  assign io_out_bits_ctrl_pdest                           = io_in_bits_ctrl_pdest;
+  assign io_out_bits_ctrl_rfWen                           = io_in_bits_ctrl_rfWen;
+  assign io_out_bits_perfDebugInfo_eliminatedMove         = io_in_bits_perfDebugInfo_eliminatedMove;
+  assign io_out_bits_perfDebugInfo_renameTime             = io_in_bits_perfDebugInfo_renameTime;
+  assign io_out_bits_perfDebugInfo_dispatchTime           = io_in_bits_perfDebugInfo_dispatchTime;
+  assign io_out_bits_perfDebugInfo_enqRsTime              = io_in_bits_perfDebugInfo_enqRsTime;
+  assign io_out_bits_perfDebugInfo_selectTime             = io_in_bits_perfDebugInfo_selectTime;
+  assign io_out_bits_perfDebugInfo_issueTime              = io_in_bits_perfDebugInfo_issueTime;
+  assign io_out_bits_perfDebugInfo_writebackTime          = io_in_bits_perfDebugInfo_writebackTime;
+  assign io_out_bits_perfDebugInfo_runahead_checkpoint_id = io_in_bits_perfDebugInfo_runahead_checkpoint_id;
+  assign io_out_bits_perfDebugInfo_tlbFirstReqTime        = io_in_bits_perfDebugInfo_tlbFirstReqTime;
+  assign io_out_bits_perfDebugInfo_tlbRespTime            = io_in_bits_perfDebugInfo_tlbRespTime;
+  assign io_out_bits_debug_seqNum_seqNum                  = io_in_bits_debug_seqNum_seqNum;
+  assign io_out_bits_debug_seqNum_uopIdx                  = io_in_bits_debug_seqNum_uopIdx;
 
 endmodule
