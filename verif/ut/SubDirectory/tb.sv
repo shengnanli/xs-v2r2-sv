@@ -45,6 +45,68 @@ module tb;
   wire g_io_resp_bits_error;
   wire i_io_resp_bits_error;
 
+
+  // ---- 覆盖闸（防假绿）----------------------------------------------
+  // errors=0 本身不是证据：激励若让 DUT 根本不动（握手永远握不上、状态机卡死），
+  // 纯比对 tb 会给出一个漂亮的 0。所以另外统计"观测信号翻转过几个"与"握手成功
+  // 几拍"，低于门限判 FAIL。门限取自标定跑（真实数字打折），不是自我实现。
+  localparam int unsigned MIN_TOGGLED = 7;
+  localparam int unsigned MIN_FIRES   = 20000;
+  localparam int unsigned N_OBS       = 8;
+  int     cov_toggled = 0;
+  longint cov_fires = 0;
+  logic p_g_io_read_ready;
+  bit tog_g_io_read_ready;
+  logic p_g_io_resp_valid;
+  bit tog_g_io_resp_valid;
+  logic p_g_io_resp_bits_hit;
+  bit tog_g_io_resp_bits_hit;
+  logic [29:0] p_g_io_resp_bits_tag;
+  bit tog_g_io_resp_bits_tag;
+  logic [9:0] p_g_io_resp_bits_set;
+  bit tog_g_io_resp_bits_set;
+  logic [3:0] p_g_io_resp_bits_way;
+  bit tog_g_io_resp_bits_way;
+  logic p_g_io_resp_bits_meta_0_valid;
+  bit tog_g_io_resp_bits_meta_0_valid;
+  logic p_g_io_resp_bits_error;
+  bit tog_g_io_resp_bits_error;
+  task automatic sample_cov();
+    if (g_io_read_ready !== p_g_io_read_ready) tog_g_io_read_ready = 1'b1;
+    p_g_io_read_ready = g_io_read_ready;
+    if (g_io_resp_valid !== p_g_io_resp_valid) tog_g_io_resp_valid = 1'b1;
+    p_g_io_resp_valid = g_io_resp_valid;
+    if (g_io_resp_bits_hit !== p_g_io_resp_bits_hit) tog_g_io_resp_bits_hit = 1'b1;
+    p_g_io_resp_bits_hit = g_io_resp_bits_hit;
+    if (g_io_resp_bits_tag !== p_g_io_resp_bits_tag) tog_g_io_resp_bits_tag = 1'b1;
+    p_g_io_resp_bits_tag = g_io_resp_bits_tag;
+    if (g_io_resp_bits_set !== p_g_io_resp_bits_set) tog_g_io_resp_bits_set = 1'b1;
+    p_g_io_resp_bits_set = g_io_resp_bits_set;
+    if (g_io_resp_bits_way !== p_g_io_resp_bits_way) tog_g_io_resp_bits_way = 1'b1;
+    p_g_io_resp_bits_way = g_io_resp_bits_way;
+    if (g_io_resp_bits_meta_0_valid !== p_g_io_resp_bits_meta_0_valid) tog_g_io_resp_bits_meta_0_valid = 1'b1;
+    p_g_io_resp_bits_meta_0_valid = g_io_resp_bits_meta_0_valid;
+    if (g_io_resp_bits_error !== p_g_io_resp_bits_error) tog_g_io_resp_bits_error = 1'b1;
+    p_g_io_resp_bits_error = g_io_resp_bits_error;
+    if ((io_read_valid && g_io_read_ready)) cov_fires++;
+  endtask
+  task automatic cov_report_and_gate();
+    if (tog_g_io_read_ready) cov_toggled++; else $display("COV: g_io_read_ready never toggled");
+    if (tog_g_io_resp_valid) cov_toggled++; else $display("COV: g_io_resp_valid never toggled");
+    if (tog_g_io_resp_bits_hit) cov_toggled++; else $display("COV: g_io_resp_bits_hit never toggled");
+    if (tog_g_io_resp_bits_tag) cov_toggled++; else $display("COV: g_io_resp_bits_tag never toggled");
+    if (tog_g_io_resp_bits_set) cov_toggled++; else $display("COV: g_io_resp_bits_set never toggled");
+    if (tog_g_io_resp_bits_way) cov_toggled++; else $display("COV: g_io_resp_bits_way never toggled");
+    if (tog_g_io_resp_bits_meta_0_valid) cov_toggled++; else $display("COV: g_io_resp_bits_meta_0_valid never toggled");
+    if (tog_g_io_resp_bits_error) cov_toggled++; else $display("COV: g_io_resp_bits_error never toggled");
+    $display("COV SubDirectory: toggled=%0d/%0d fires=%0d", cov_toggled, N_OBS, cov_fires);
+    if (cov_toggled < MIN_TOGGLED) begin
+      $display("TEST FAILED (coverage: only %0d observed signals toggled, need >= %0d)", cov_toggled, MIN_TOGGLED); $fatal(1);
+    end
+    if (cov_fires < MIN_FIRES) begin
+      $display("TEST FAILED (coverage: only %0d handshake fires, need >= %0d)", cov_fires, MIN_FIRES); $fatal(1);
+    end
+  endtask
   SubDirectory u_g (
     .clock(clock),
     .reset(reset),
@@ -186,8 +248,10 @@ module tb;
       drive_random();
       #1 check_outputs();
       check_internal();
+      sample_cov();
       @(posedge clock);
     end
+    cov_report_and_gate();
     $display("SubDirectory checks=%0d errors=%0d ierr=%0d", checks, errors, ierr);
     if (errors == 0 && ierr == 0) begin $display("TEST PASSED"); $finish; end
     $display("TEST FAILED"); $fatal(1);

@@ -198,14 +198,14 @@ endpackage
 //
 //  数据流 (6 通道):
 //    上行 TX (RN→HN, 1→4 按路由位拆分):
-//      · TXREQ 路由位 = addr[7:6]  ; 4 个 bank 各一个 FastArbiter_30 (单输入透传黑盒)
+//      · TXREQ 路由位 = addr[7:6]  ; 4 个 bank 各一个 FastArbiter_29 (单输入透传黑盒)
 //      · TXRSP 路由位 = txnID[10:9]; 4 个 FastArbiter_35
 //      · TXDAT 路由位 = txnID[10:9]; 4 个 FastArbiter_30
 //      RN 侧 ready = 路由命中 bank 的输出 valid 的或归约 (TXREQ 还 & 该 bank out_ready)。
 //    下行 RX (HN→RN, 4→1 仲裁汇聚):
-//      · RXRSP : FastArbiter_27 (4 输入, 按 srcID==0 门控), io_chosen 决定 ready 回送
-//      · RXDAT : FastArbiter_46 (4 输入, 按 srcID==0 门控)
-//      · RXSNP : FastArbiter_44 (4 输入), 但输入先经「snoop 跟踪状态机」缓存一拍 ——
+//      · RXRSP : FastArbiter_26 (4 输入, 按 srcID==0 门控), io_chosen 决定 ready 回送
+//      · RXDAT : FastArbiter_45 (4 输入, 按 srcID==0 门控)
+//      · RXSNP : FastArbiter_43 (4 输入), 但输入先经「snoop 跟踪状态机」缓存一拍 ——
 //                这是本核相对 SNXbar 的关键差异, 见下方 snoop 跟踪段落。
 //
 //  snoop 跟踪状态机 (snpReqs / snpMasks 快照寄存器):
@@ -221,8 +221,8 @@ endpackage
 //    清空 (有快照 valid 且 mask 将清), 即 1 深槽的接收背压。
 //
 //  黑盒子模块 (15 个 FastArbiter, 仲裁 + 胜者 payload 选择由其内部完成, 本核不重写):
-//    txreqArbs ×4 (FastArbiter_30) / txrspArbs ×4 (_36) / txdatArbs ×4 (_31)
-//    rxsnpArbs ×1 (_44) / rxrspArbs ×1 (_27) / rxdatArbs ×1 (_46)
+//    txreqArbs ×4 (FastArbiter_29) / txrspArbs ×4 (_35) / txdatArbs ×4 (_30)
+//    rxsnpArbs ×1 (_43) / rxrspArbs ×1 (_26) / rxdatArbs ×1 (_45)
 //  UT 两侧共用同名黑盒 (同一仲裁内部状态), FM 两侧黑盒按连接配对, 故验证聚焦本核的
 //  路由 / 解复用 / snoop 跟踪逻辑。X 铁律: 复位清零 + initreg+0, 不产生 X。
 // =============================================================================
@@ -638,9 +638,9 @@ module xs_RNXbar_core
   rn_rsp_t txrsp_arb_out [NUM_HN];
   rn_dat_t txdat_arb_out [NUM_HN];
 
-  // ---- TXREQ: 4 个单输入 FastArbiter_30, 输入由 route_req 门控到目标 bank ----
+  // ---- TXREQ: 4 个单输入 FastArbiter_29, 输入由 route_req 门控到目标 bank ----
   for (genvar j = 0; j < NUM_HN; j++) begin : g_txreq
-    FastArbiter_30 txreqArbs (
+    FastArbiter_29 txreqArbs (
       .io_in_0_valid (io_in_0_tx_req_valid & (txreq_sel == 2'(j))),
       .io_in_0_bits_qos (in_tx_req.qos),
       .io_in_0_bits_tgtID (in_tx_req.tgtID),
@@ -957,8 +957,8 @@ module xs_RNXbar_core
     end
   end
 
-  // ---- RXSNP 仲裁器 (FastArbiter_44, 4 输入): 输入 = 挂起的快照 snoop ----
-  FastArbiter_44 rxsnpArbs_0 (
+  // ---- RXSNP 仲裁器 (FastArbiter_43, 4 输入): 输入 = 挂起的快照 snoop ----
+  FastArbiter_43 rxsnpArbs_0 (
     .clock (clock),
     .reset (reset),
     .io_in_0_valid (snp_req_valid[0] & snp_pending[0]),
@@ -1033,8 +1033,8 @@ module xs_RNXbar_core
 
   wire       rxrsp_out_valid;
   wire [1:0] rxrsp_chosen;
-  // ---- RXRSP 仲裁器 (FastArbiter_27): 不存在于 HN 的字段由仲裁器注入常量 0 ----
-  FastArbiter_27 rxrspArbs_0 (
+  // ---- RXRSP 仲裁器 (FastArbiter_26): 不存在于 HN 的字段由仲裁器注入常量 0 ----
+  FastArbiter_26 rxrspArbs_0 (
     .clock (clock),
     .reset (reset),
     .io_in_0_ready (),
@@ -1112,8 +1112,8 @@ module xs_RNXbar_core
 
   wire       rxdat_out_valid;
   wire [1:0] rxdat_chosen;
-  // ---- RXDAT 仲裁器 (FastArbiter_46): 输出端丢弃 tgtID/srcID ----
-  FastArbiter_46 rxdatArbs_0 (
+  // ---- RXDAT 仲裁器 (FastArbiter_45): 输出端丢弃 tgtID/srcID ----
+  FastArbiter_45 rxdatArbs_0 (
     .clock (clock),
     .reset (reset),
     .io_in_0_valid (rxdat_in_valid[0]),

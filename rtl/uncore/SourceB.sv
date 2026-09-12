@@ -9,7 +9,7 @@
 //
 //  单态化 (firtool SourceB.sv): entries=4, grantBufInflightSize=16,
 //    SourceBReq = {tag[30:0], set[8:0], opcode[2:0], param[1:0], alias[1:0]}。
-//  FastArbiter_6 (4 入 1 出轮询仲裁) 为黑盒, 在 golden 同名 wrapper 内例化; 本核暴露
+//  FastArbiter_5 (4 入 1 出轮询仲裁) 为黑盒, 在 golden 同名 wrapper 内例化; 本核暴露
 //    与其对接的 in_k(valid/bits)/in_k_ready 端口, 出口 io_sourceB 由 wrapper 直接接仲裁器。
 //
 //  ===== X 铁律 =====
@@ -47,7 +47,7 @@ module xs_SourceB_core (
   input  logic        io_grantStatus_14_valid, input  logic [8:0] io_grantStatus_14_set, input  logic [30:0] io_grantStatus_14_tag,
   input  logic        io_grantStatus_15_valid, input  logic [8:0] io_grantStatus_15_set, input  logic [30:0] io_grantStatus_15_tag,
 
-  // ---- 与 FastArbiter_6 黑盒对接 ----
+  // ---- 与 FastArbiter_5 黑盒对接 ----
   input  logic        arb_in_0_ready, arb_in_1_ready, arb_in_2_ready, arb_in_3_ready,
   output logic        arb_in_0_valid, arb_in_1_valid, arb_in_2_valid, arb_in_3_valid,
   output logic [30:0] arb_in_0_tag, arb_in_1_tag, arb_in_2_tag, arb_in_3_tag,
@@ -257,7 +257,7 @@ module SourceB(
   input [30:0] io_grantStatus_15_tag
 );
 
-  // ---- 核与 FastArbiter_6 的边界 wire ----
+  // ---- 核与 FastArbiter_5 的边界 wire ----
   wire        arb_in_0_ready, arb_in_1_ready, arb_in_2_ready, arb_in_3_ready;
   wire        arb_in_0_valid, arb_in_1_valid, arb_in_2_valid, arb_in_3_valid;
   wire [30:0] arb_in_0_tag, arb_in_1_tag, arb_in_2_tag, arb_in_3_tag;
@@ -357,7 +357,7 @@ module SourceB(
     .arb_in_3_alias(arb_in_3_alias)
   );
 
-  FastArbiter_6 issueArb (
+  FastArbiter_5 issueArb (
     .clock(clock),
     .reset(reset),
     .io_in_0_ready(arb_in_0_ready),
