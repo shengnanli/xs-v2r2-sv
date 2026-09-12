@@ -28,10 +28,8 @@ read_sverilog -container r -libname WORK -define {SYNTHESIS} $srcs
 
 u_set_top r:/WORK/XSTop
 
-redirect $outdir/xstop_designs.txt    {report_designs}
-redirect $outdir/xstop_hierarchy.txt  {report_hierarchy}
-redirect $outdir/xstop_blackboxes.txt {report_black_boxes}
 
+u_write_reports $outdir r:/WORK/XSTop
 u_check_reports $outdir
 puts "XSTOP_UNIVERSE: done"
 exit

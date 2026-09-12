@@ -62,3 +62,16 @@ proc u_check_reports {outdir} {
     if {!$ok} { puts "UNIVERSE_GUARD: FAIL 报告校验未通过"; exit 3 }
     puts "UNIVERSE_GUARD: 三份报告校验通过"
 }
+
+# 生成三份报告。★report_hierarchy 必须显式传 designID★：
+# set_top 设的是 reference design，不是 current_design，report_hierarchy 默认作用于
+# 后者，于是即便 set_top 成功也会报 "The current design is not set (FM-008)"。
+# 实测（bbox2, 3.34 小时）：set_top OK、report_designs 2.2MB、report_black_boxes 419 条
+# 都正常，唯独 hierarchy 只有 334 字节的错误占位。工具自带 help 确认
+# `report_hierarchy [-level N] [designID]` 接受设计名，故显式传入。
+proc u_write_reports {outdir top} {
+    current_design $top
+    redirect $outdir/xstop_designs.txt    {report_designs}
+    redirect $outdir/xstop_hierarchy.txt  "report_hierarchy $top"
+    redirect $outdir/xstop_blackboxes.txt {report_black_boxes}
+}

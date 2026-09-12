@@ -43,9 +43,6 @@ puts "BBOX_UNIVERSE: reading [llength $srcs] files with -define SYNTHESIS (top=X
 read_sverilog -container r -libname WORK -define {SYNTHESIS} $srcs
 u_set_top r:/WORK/XSTop
 
-redirect $outdir/xstop_designs.txt    {report_designs}
-redirect $outdir/xstop_hierarchy.txt  {report_hierarchy}
-redirect $outdir/xstop_blackboxes.txt {report_black_boxes}
 
 # provenance：命令 / define / top / 工具版本 / 名单，保证可复算
 set pf [open $outdir/PROVENANCE.tsv w]
@@ -60,6 +57,7 @@ puts $pf "tool_version\t[get_app_var sh_product_version]"
 puts $pf "bbox_list_file\t$bblist"
 close $pf
 
+u_write_reports $outdir r:/WORK/XSTop
 u_check_reports $outdir
 puts "BBOX_UNIVERSE: done"
 exit
