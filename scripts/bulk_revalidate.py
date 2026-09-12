@@ -97,6 +97,8 @@ def main():
     ap.add_argument('--run', action='store_true')
     ap.add_argument('--jobs', type=int, default=6)
     ap.add_argument('--limit', type=int, default=0)
+    ap.add_argument('--collect-allow', action='store_true',
+                    help='跑 needs_allow 组以采集黑盒报告（判定会是 PARTIAL）')
     ap.add_argument('--with-children', action='store_true',
                     help='把含 green_child 依赖的父目标一并纳入（组合性绑定已就绪后可用）')
     a = ap.parse_args()
@@ -114,7 +116,12 @@ def main():
     head = subprocess.run(['git', 'rev-parse', 'HEAD'], cwd=str(REPO),
                           stdout=subprocess.PIPE, universal_newlines=True).stdout.strip()
     evid = str(REPO / 'evidence' / head[:12])
-    todo = g['no_dep'] + (g['has_green_child'] if a.with_children else [])
+    if a.collect_allow:
+        # 先跑一遍 needs_allow 组：判定必然 PARTIAL（缺声明），但会产出 black_boxes.rpt，
+        # 据此生成精确声明后再正式复验。不自动放行——声明内容仍须是观测到的真实对象集。
+        todo = g['needs_allow']
+    else:
+        todo = g['no_dep'] + (g['has_green_child'] if a.with_children else [])
     todo = todo[:a.limit] if a.limit else todo
     print(f'== 复验 {len(todo)} 个目标（commit {head[:12]}, jobs={a.jobs}）==', flush=True)
     with ThreadPoolExecutor(max_workers=a.jobs) as ex:
