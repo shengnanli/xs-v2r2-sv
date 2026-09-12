@@ -20,9 +20,13 @@ TARGETS=("$@")
 [[ ${#TARGETS[@]} -gt 0 ]] || { echo "ERROR: 未指定 target" >&2; exit 2; }
 
 cd "$REPO"
-if [[ -n "$(git status --porcelain)" ]]; then
-  echo "ERROR: 仓库 dirty，proof 必须跑在 committed 字节上。先提交或 stash：" >&2
-  git status --porcelain | head -5 >&2
+# dirty 判定只看**会进入证明闭包的路径**（rtl / verif / scripts / docs 里的声明与工具）。
+# 仓库里出现无关新文件（如正在写的分析脚本）不该把证明拦死，但凡是证明会读到的字节
+# 必须 committed。新增未跟踪文件同样算 dirty——它可能被 Makefile 引用。
+DIRTY="$(git status --porcelain -- rtl verif scripts)"
+if [[ -n "$DIRTY" ]]; then
+  echo "ERROR: 证明输入路径 dirty（rtl/verif/scripts），必须跑在 committed 字节上：" >&2
+  echo "$DIRTY" | head -5 >&2
   exit 3
 fi
 COMMIT="$(git rev-parse HEAD)"
