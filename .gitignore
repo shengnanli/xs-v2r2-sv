@@ -15,3 +15,4 @@ verif/ut/*/formality*
 verif/ut/*/fm_shell_command.log*
 __pycache__/
 *.pyc
+evidence/
