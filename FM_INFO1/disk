@@ -1,0 +1,10 @@
+Directory = /home/eda/xs-env/xs-v2-sv
+Total     = 1925 GB
+Available = 1545 GB
+Used      = 380 GB (20%)
+
+Directory = /tmp
+Total     = 70 GB
+Available = 52 GB
+Used      = 18 GB (26%)
+

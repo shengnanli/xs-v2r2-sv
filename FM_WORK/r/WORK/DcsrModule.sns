@@ -1,0 +1,11 @@
+# struct_name_map
+reg_CAUSE[0]
+reg_CAUSE_reg[0]
+reg_CAUSE[1]
+reg_CAUSE_reg[1]
+reg_CAUSE[2]
+reg_CAUSE_reg[2]
+reg_PRV[0]
+reg_PRV_reg[0]
+reg_PRV[1]
+reg_PRV_reg[1]

@@ -1,0 +1,13 @@
+# struct_name_map
+reg_VLMUL[0]
+reg_VLMUL_reg[0]
+reg_VLMUL[1]
+reg_VLMUL_reg[1]
+reg_VLMUL[2]
+reg_VLMUL_reg[2]
+reg_VSEW[0]
+reg_VSEW_reg[0]
+reg_VSEW[1]
+reg_VSEW_reg[1]
+reg_VSEW[2]
+reg_VSEW_reg[2]

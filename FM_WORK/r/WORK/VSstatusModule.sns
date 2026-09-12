@@ -1,0 +1,9 @@
+# struct_name_map
+reg_FS[0]
+reg_FS_reg[0]
+reg_FS[1]
+reg_FS_reg[1]
+reg_VS[0]
+reg_VS_reg[0]
+reg_VS[1]
+reg_VS_reg[1]

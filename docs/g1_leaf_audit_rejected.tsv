@@ -1,0 +1,2 @@
+# 被拒的黑盒候选：仍例化了排除闭包之外的 module，黑盒它会截断真实设计层次
+# module	class	def_file	outside_children
