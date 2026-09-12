@@ -7,7 +7,7 @@ TB_SRCS = tb.sv
 FM_REF_DEPS_ICache = 
 GOLDEN_SRCS = $(GOLDEN_RTL)/ICache.sv \
               $(GOLDEN_RTL)/ICacheCtrlUnit.sv \
-              $(GOLDEN_RTL)/Queue1_RegMapperInput_3.sv \
+              $(GOLDEN_RTL)/Queue1_RegMapperInput_5.sv \
               $(GOLDEN_RTL)/ICacheMetaArray.sv \
               $(GOLDEN_RTL)/SplittedSRAMTemplate.sv \
               $(GOLDEN_RTL)/SplittedSRAMTemplate_1.sv \
