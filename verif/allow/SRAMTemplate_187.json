@@ -1,0 +1,21 @@
+{
+ "schema": "xs-v2-sv-allow-v1",
+ "target": "SRAMTemplate_187",
+ "baseline": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "objects": [
+  {
+   "side": "i",
+   "design": "array_17_ext",
+   "path": "i:/WORK/SRAMTemplate_187/array/array/array_17_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_17_ext",
+   "path": "r:/WORK/SRAMTemplate_187/array/array/array_17_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  }
+ ]
+}
