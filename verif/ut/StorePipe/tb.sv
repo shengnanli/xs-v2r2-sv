@@ -266,6 +266,8 @@ module tb;
   end
 
   initial begin
+    // 全工程统一拍数开关（ut_common.mk 下发 +ncycles=<n>）
+    void'($value$plusargs("ncycles=%d", NCYCLES));
     rst = 1; repeat (8) @(posedge clk); rst = 0;
     repeat (NCYCLES) @(posedge clk);
     cov_report_and_gate();

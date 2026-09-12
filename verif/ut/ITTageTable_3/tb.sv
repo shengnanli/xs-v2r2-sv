@@ -4,7 +4,9 @@
 // 收尾判 errors / checks / toggled / fires 四项，后三项是覆盖闸（防假绿）。
 `timescale 1ns/1ps
 module tb;
-  localparam int unsigned NCYCLES     = 120000;
+  // 拍数：默认 120000（>= CONVENTIONS 要求的 10 万），可被 ut_common 下发的
+  // +ncycles=<n> 覆盖，这样全工程统一调拍数的开关对本 tb 同样生效。
+  int unsigned NCYCLES = 120000;
   localparam int unsigned MIN_TOGGLED = 9;
   localparam int unsigned MIN_FIRES   = 20000;
   localparam int unsigned N_OUT       = 9;
@@ -349,6 +351,7 @@ module tb;
   endtask
 
   initial begin
+    void'($value$plusargs("ncycles=%d", NCYCLES));
     io_req_valid = '0;
     io_req_bits_pc = '0;
     io_req_bits_folded_hist_hist_6_folded_hist = '0;

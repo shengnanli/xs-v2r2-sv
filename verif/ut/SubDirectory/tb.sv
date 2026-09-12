@@ -226,6 +226,8 @@ module tb;
   endtask
 
   initial begin
+    // 全工程统一拍数开关（ut_common.mk 下发 +ncycles=<n>）
+    void'($value$plusargs("ncycles=%d", NCYCLES));
     if ($value$plusargs("NCYCLES=%d", NCYCLES)) begin end
     reset = 1'b1;
     io_read_valid = '0;

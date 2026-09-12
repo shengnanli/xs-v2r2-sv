@@ -102,7 +102,9 @@ def main():
         ap_(f'// {a.note}')
     ap_('`timescale 1ns/1ps')
     ap_('module tb;')
-    ap_(f'  localparam int unsigned NCYCLES     = {a.ncycles};')
+    ap_(f'  // 拍数：默认 {a.ncycles}（>= CONVENTIONS 要求的 10 万），可被 ut_common 下发的')
+    ap_('  // +ncycles=<n> 覆盖，这样全工程统一调拍数的开关对本 tb 同样生效。')
+    ap_('  int unsigned NCYCLES = ' + str(a.ncycles) + ';')
     ap_(f'  localparam int unsigned MIN_TOGGLED = {a.min_toggled};')
     ap_(f'  localparam int unsigned MIN_FIRES   = {a.min_fires};')
     ap_(f'  localparam int unsigned N_OUT       = {len(outs)};')
@@ -190,6 +192,7 @@ def main():
     ap_('  endtask')
     ap_('')
     ap_('  initial begin')
+    ap_("    void'($value$plusargs(\"ncycles=%d\", NCYCLES));")
     for d, w, n, _w in ins:
         ap_(f"    {n} = '0;")
     for d, w, n, _w in outs:
