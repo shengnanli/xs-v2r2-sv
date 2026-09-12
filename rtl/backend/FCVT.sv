@@ -320,6 +320,11 @@ module xs_FCVT_core
   //     ★ 这两级的使能是第三种写法：第 1 级用裸 io_in_valid（不带 ready），
   //       第 2 级用 fireReg_last_r（io_in_valid 的延迟版）。同样在 ready 恒 1 时
   //       与 fire 门控等价，照搬 golden。
+  //     ★ 对应 golden：mvResult_s1 = result_r，mvResult_s2 = result_r_1。
+  //       两级同宽同无复位、只差使能，词干又与 golden 不同（mvResult_s* vs result_r*），
+  //       Formality 的名字匹配会退化成「比尾部序号」而把 result_r_1 配到 mvResult_s1，
+  //       两级前后颠倒 → 报一堆假 failing。verif/ut/FCVT/fm_pins_pre.tcl 里按语义
+  //       逐位钉死这 128 个点的双射（只消名差，不放宽任何判定），那里有完整诊断记录。
   logic [XLEN-1:0] mvResult_s1, mvResult_s2;
 
   // fireReg_last_r：Chisel GatedValidRegNext —— 只在「本拍 fire 或上拍还是 1」时更新。

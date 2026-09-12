@@ -1,0 +1,23 @@
+FCVT 变异体反证 —— 生成时间 2026-09-12T22:45:35Z
+基准 RTL : f59af52745a7303c3a2919e5e669fd83c711380c + 工作区改动
+判据     : 每个变异体都必须让 UT FAIL（errors>0）。任一变异体 PASS = UT 失效。
+时间戳换算: timescale 1ns/1ps, 时钟周期 10000ps —— 拍号 = t/10000
+-----------------------------------------------------------------------
+M1 : 末级选择器取 mvResult_s1（少走一级 fmv 流水）
+      OK 被抓到  errors=24339  首条非X失配=第 13 拍
+      [134000] io_out_bits_res_data mismatch: g=0000000000000000 i=0000006000320387
+M2 : fmv 第 2 级使能 fireReg_last -> io_in_valid
+      OK 被抓到  errors=8347  首条非X失配=第 7 拍
+      [74000] io_out_bits_res_data mismatch: g=0000000000000000 i=ffffffffff800000
+M3 : outIs32bits 少打一拍（无使能 RegNext 链级数错）
+      OK 被抓到  errors=35050  首条非X失配=第 12 拍
+      [124000] io_out_bits_res_data mismatch: g=ffffffff00000000 i=0000000000000000
+M4 : e8 的 fmv 由符号扩展改成零扩展
+      OK 被抓到  errors=568  首条非X失配=第 35 拍
+      [354000] io_out_bits_res_data mismatch: g=ffffffffffffff9c i=000000000000009c
+M5 : fmv 第 1 级使能由裸 io_in_valid 改成 fire
+      OK 被抓到  errors=4584  首条非X失配=第 22 拍
+      [224000] io_out_bits_res_data mismatch: g=000000c8006a878f i=000000000063878e
+-----------------------------------------------------------------------
+RTL 已逐字节还原：OK
+结论：5/5 变异体全部被 UT 抓到 —— UT 对这三条流水的相位与使能是有效的。

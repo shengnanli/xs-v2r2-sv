@@ -278,6 +278,8 @@ module tb;
              cov_ow[0], cov_ow[1], cov_ow[2], cov_ow[3], cov_ow[4]);
     $display("  末级 ctrlPipe_2: fmv / 输出浮点 / 输出整数 : %0d / %0d / %0d",
              cov_mv, cov_outfp, cov_outint);
+    $display("  定向相位（fmv 旁路 / 输出宽度标志 / valid 链 三条流水相位对齐）驱动拍数 : %0d",
+             cov_dir);
   endtask
 
   FCVT u_g (.clock(clk), .reset(reset), .io_in_valid(io_in_valid), .io_in_bits_ctrl_fuOpType(io_in_bits_ctrl_fuOpType), .io_in_bits_ctrl_fpu_fmt(io_in_bits_ctrl_fpu_fmt), .io_in_bits_ctrl_fpu_rm(io_in_bits_ctrl_fpu_rm), .io_in_bits_ctrlPipe_2_fuOpType(io_in_bits_ctrlPipe_2_fuOpType), .io_in_bits_ctrlPipe_2_robIdx_flag(io_in_bits_ctrlPipe_2_robIdx_flag), .io_in_bits_ctrlPipe_2_robIdx_value(io_in_bits_ctrlPipe_2_robIdx_value), .io_in_bits_ctrlPipe_2_pdest(io_in_bits_ctrlPipe_2_pdest), .io_in_bits_ctrlPipe_2_rfWen(io_in_bits_ctrlPipe_2_rfWen), .io_in_bits_ctrlPipe_2_fpWen(io_in_bits_ctrlPipe_2_fpWen), .io_in_bits_ctrlPipe_2_fpu_wflags(io_in_bits_ctrlPipe_2_fpu_wflags), .io_in_bits_validPipe_2(io_in_bits_validPipe_2), .io_in_bits_data_src_0(io_in_bits_data_src_0), .io_in_bits_perfDebugInfo_eliminatedMove(io_in_bits_perfDebugInfo_eliminatedMove), .io_in_bits_perfDebugInfo_renameTime(io_in_bits_perfDebugInfo_renameTime), .io_in_bits_perfDebugInfo_dispatchTime(io_in_bits_perfDebugInfo_dispatchTime), .io_in_bits_perfDebugInfo_enqRsTime(io_in_bits_perfDebugInfo_enqRsTime), .io_in_bits_perfDebugInfo_selectTime(io_in_bits_perfDebugInfo_selectTime), .io_in_bits_perfDebugInfo_issueTime(io_in_bits_perfDebugInfo_issueTime), .io_in_bits_perfDebugInfo_writebackTime(io_in_bits_perfDebugInfo_writebackTime), .io_in_bits_perfDebugInfo_runahead_checkpoint_id(io_in_bits_perfDebugInfo_runahead_checkpoint_id), .io_in_bits_perfDebugInfo_tlbFirstReqTime(io_in_bits_perfDebugInfo_tlbFirstReqTime), .io_in_bits_perfDebugInfo_tlbRespTime(io_in_bits_perfDebugInfo_tlbRespTime), .io_in_bits_debug_seqNum_seqNum(io_in_bits_debug_seqNum_seqNum), .io_in_bits_debug_seqNum_uopIdx(io_in_bits_debug_seqNum_uopIdx), .io_out_ready(io_out_ready), .io_frm(io_frm), .io_in_ready(g_io_in_ready), .io_out_valid(g_io_out_valid), .io_out_bits_ctrl_robIdx_flag(g_io_out_bits_ctrl_robIdx_flag), .io_out_bits_ctrl_robIdx_value(g_io_out_bits_ctrl_robIdx_value), .io_out_bits_ctrl_pdest(g_io_out_bits_ctrl_pdest), .io_out_bits_ctrl_rfWen(g_io_out_bits_ctrl_rfWen), .io_out_bits_ctrl_fpWen(g_io_out_bits_ctrl_fpWen), .io_out_bits_ctrl_fpu_wflags(g_io_out_bits_ctrl_fpu_wflags), .io_out_bits_res_data(g_io_out_bits_res_data), .io_out_bits_res_fflags(g_io_out_bits_res_fflags), .io_out_bits_perfDebugInfo_eliminatedMove(g_io_out_bits_perfDebugInfo_eliminatedMove), .io_out_bits_perfDebugInfo_renameTime(g_io_out_bits_perfDebugInfo_renameTime), .io_out_bits_perfDebugInfo_dispatchTime(g_io_out_bits_perfDebugInfo_dispatchTime), .io_out_bits_perfDebugInfo_enqRsTime(g_io_out_bits_perfDebugInfo_enqRsTime), .io_out_bits_perfDebugInfo_selectTime(g_io_out_bits_perfDebugInfo_selectTime), .io_out_bits_perfDebugInfo_issueTime(g_io_out_bits_perfDebugInfo_issueTime), .io_out_bits_perfDebugInfo_writebackTime(g_io_out_bits_perfDebugInfo_writebackTime), .io_out_bits_perfDebugInfo_runahead_checkpoint_id(g_io_out_bits_perfDebugInfo_runahead_checkpoint_id), .io_out_bits_perfDebugInfo_tlbFirstReqTime(g_io_out_bits_perfDebugInfo_tlbFirstReqTime), .io_out_bits_perfDebugInfo_tlbRespTime(g_io_out_bits_perfDebugInfo_tlbRespTime), .io_out_bits_debug_seqNum_seqNum(g_io_out_bits_debug_seqNum_seqNum), .io_out_bits_debug_seqNum_uopIdx(g_io_out_bits_debug_seqNum_uopIdx));
@@ -319,6 +321,90 @@ module tb;
     io_frm <= 3'($urandom);
   endtask
 
+  // ---------------------------------------------------------------------------
+  //  定向相位 —— 把三条本地流水的**相位对齐**变成确定性检查
+  // ---------------------------------------------------------------------------
+  // 背景（2026-09-12 FM 反例诊断）：signoff-strict 曾报 20 个 failing，全落在
+  //   golden result_r_1 <-> 重写核 mvResult_s1 上。查清后是 Formality 把 fmv 旁路的
+  //   **两级前后配反**（两级同宽同无复位、词干不同名，名字匹配退化成比尾部序号），
+  //   钉正双射后 FM SUCCEEDED —— 设计本身没有 bug，随机 UT 也没有漏报。
+  // 诚实的定位：随机激励**并没有**漏掉这类缺陷。诊断时做了 5 个变异体的反证
+  //   （两级写反 / 第 2 级使能改成 io_in_valid / outIs32bits 少打一拍 /
+  //     e8 改零扩展 / 第 1 级使能改成 fire），原 tb 全部能抓到，最快 8 拍、最慢
+  //   455 拍，都远在 200k 拍预算之内。所以本相位不是来补漏的，是来**去随机性**的：
+  //     · 每拍喂一个**互不相同、带拍号指纹**的源：相位差一拍必然出不同位型；
+  //     · valid 走固定花样（连发 / 单拍气泡 / 长空窗）——这正是区分
+  //       「使能=io_in_valid」「使能=fire」「使能=RegNext(valid)」三种写法的地方；
+  //     · io_out_ready 的周期取 13（与 valid 的 32 互质），512 拍内把
+  //       {valid 花样 × ready 相位} 组合扫全，让「连发 3 拍 + ready 拉低」这种
+  //       使 rdy[] 真的落 0 的窗口**必然出现**，而不是等随机撞上；
+  //     · fmt 与 widen 同步轮扫，把 outIs16bits/outIs32bits 这条**完全无使能**的
+  //       RegNext 链也钉在确定相位上：fmv 的结果还要过 (outIs32bits & ~outIsFp)
+  //       的 32bit 符号扩展支路，两条流水错一拍就会被抓到；
+  //     · 源的第 7/15/31/63 位由**与 fmt 解耦**的拍号高位驱动，保证每种 sew 都
+  //       既扫到符号位 0 也扫到 1（第一版按 k 的低位取，与 fmt=k%4 撞相位，
+  //       e8/e16 的符号位恒 0，等于没测符号扩展宽度——已修）。
+  //   修完后同样 5 个变异体：最快 7 拍、最慢 35 拍被抓到，且与 seed 无关。
+  localparam int unsigned DIR_LEN = 512;   // 定向相位长度（复位撤除后立即开始）
+  localparam logic [31:0] DIR_VLD = 32'b1111_1010_1100_0100_1110_0010_1000_0001;
+  localparam logic [12:0] DIR_RDY = 13'b1_1011_0110_0001;   // 周期 13，与 32 互质
+  int unsigned cov_dir;                    // 定向相位实际驱动的拍数
+
+  // 每拍唯一，且四种 sew 的符号位（bit7/15/31/63）都随拍号翻转的源操作数。
+  // 符号位取 k>>2 的低 4 位：fmt = k%4，两者用的是 k 的不同位段，不会撞相位。
+  function automatic logic [63:0] dir_src(int unsigned k);
+    logic [63:0] s;
+    logic [3:0]  sgn;
+    sgn = 4'(k >> 2);
+    s[7:0]   = {sgn[0], 7'(k)};
+    s[15:8]  = {sgn[1], 7'(k >> 1)};
+    s[31:16] = {sgn[2], 15'(k * 7 + 1)};
+    s[63:32] = {sgn[3], 31'(k * 13 + 5)};
+    dir_src = s;
+  endfunction
+
+  task automatic drive_directed(int unsigned k);
+    logic [1:0] fmt_n, widen;
+    fmt_n = 2'(k % 4);
+    widen = 2'((k / 4) % 4);
+    last_fmt = fmt_n;
+    cov_fmt[fmt_n]++;
+    cov_rm[3'(k % 8)]++;
+    cov_dir++;
+    io_in_valid                     <= DIR_VLD[k % 32];
+    io_in_bits_ctrl_fuOpType        <= {4'b0000, widen, 3'(k % 8)};
+    io_in_bits_ctrl_fpu_fmt         <= fmt_n;
+    io_in_bits_ctrl_fpu_rm          <= 3'(k % 8);
+    // 末级 ctrlPipe_2：多数拍走 fmv 旁路（本相位主目标），每 8 拍插一拍非 fmv
+    // （0x140 的 bit6=1 ⇒ 输出是浮点），检查末级选择器在两条来源间切换时相位不乱。
+    io_in_bits_ctrlPipe_2_fuOpType     <= ((k % 8) == 7) ? 9'h140 : 9'h180;
+    if ((k % 8) == 7) cov_outfp++; else begin cov_mv++; cov_outint++; end
+    io_in_bits_ctrlPipe_2_robIdx_flag  <= k[4];
+    io_in_bits_ctrlPipe_2_robIdx_value <= 8'(k);
+    io_in_bits_ctrlPipe_2_pdest        <= 8'(k * 3);
+    io_in_bits_ctrlPipe_2_rfWen        <= k[0];
+    io_in_bits_ctrlPipe_2_fpWen        <= k[1];
+    io_in_bits_ctrlPipe_2_fpu_wflags   <= k[2];
+    io_in_bits_validPipe_2             <= 1'b1;
+    io_in_bits_data_src_0              <= dir_src(k);
+    // payload 也给带拍号指纹的值：perf/seqNum 走的是第三种使能（fire 门控），
+    // 相位错一拍同样会被逐拍比对抓到。
+    io_in_bits_perfDebugInfo_eliminatedMove         <= k[3];
+    io_in_bits_perfDebugInfo_renameTime             <= 64'h1100_0000_0000_0000 + 64'(k);
+    io_in_bits_perfDebugInfo_dispatchTime           <= 64'h2200_0000_0000_0000 + 64'(k);
+    io_in_bits_perfDebugInfo_enqRsTime              <= 64'h3300_0000_0000_0000 + 64'(k);
+    io_in_bits_perfDebugInfo_selectTime             <= 64'h4400_0000_0000_0000 + 64'(k);
+    io_in_bits_perfDebugInfo_issueTime              <= 64'h5500_0000_0000_0000 + 64'(k);
+    io_in_bits_perfDebugInfo_writebackTime          <= 64'h6600_0000_0000_0000 + 64'(k);
+    io_in_bits_perfDebugInfo_runahead_checkpoint_id <= 64'h7700_0000_0000_0000 + 64'(k);
+    io_in_bits_perfDebugInfo_tlbFirstReqTime        <= 64'h8800_0000_0000_0000 + 64'(k);
+    io_in_bits_perfDebugInfo_tlbRespTime            <= 64'h9900_0000_0000_0000 + 64'(k);
+    io_in_bits_debug_seqNum_seqNum                  <= 56'hAA_0000_0000_0000 + 56'(k);
+    io_in_bits_debug_seqNum_uopIdx                  <= 8'(k + 1);
+    io_out_ready <= DIR_RDY[k % 13];
+    io_frm       <= 3'((k / 8) % 8);
+  endtask
+
   initial begin
     reset = 1;
     drive();          // t=0 就把输入喂成确定值：
@@ -327,9 +413,11 @@ module tb;
 
   always @(negedge clk) begin
     cyc++;
-    // 前 4 拍复位；之后偶发单拍复位，覆盖 valid 链的异步复位分支
-    reset <= (cyc <= 4) || ($urandom_range(0, 1999) == 0);
-    drive();
+    // 前 4 拍复位；随后 DIR_LEN 拍是定向相位（相位要确定，期间不插随机复位）；
+    // 之后回到随机激励，并偶发单拍复位，覆盖 valid 链的异步复位分支。
+    reset <= (cyc <= 4) || ((cyc > 4 + DIR_LEN) && ($urandom_range(0, 1999) == 0));
+    if (cyc > 4 && cyc <= 4 + DIR_LEN) drive_directed(cyc - 5);
+    else                               drive();
   end
 
   always @(negedge clk) begin
