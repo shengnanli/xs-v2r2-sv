@@ -16,3 +16,4 @@ verif/ut/*/fm_shell_command.log*
 __pycache__/
 *.pyc
 evidence/
+docs/receipt_index.tsv
