@@ -27,6 +27,16 @@ ap.add_argument('--report', required=True)
 ap.add_argument('--class', dest='cls', nargs='*', default=[])
 a = ap.parse_args()
 
+# codex 0142 §50：禁止自动批准。自动归类只对**已审定并提交**的厂商边界名单生效
+# （verif/vendor_boundary.tsv），表外一律要求逐条显式 --class。
+VENDOR = set()
+vb = NEW / 'verif' / 'vendor_boundary.tsv'
+if vb.exists():
+    for _l in vb.read_text().splitlines():
+        if _l.startswith('#') or not _l.strip():
+            continue
+        VENDOR.add(_l.split('\t')[0])
+
 manual = {}
 for spec in a.cls:
     d, _, rest = spec.partition('=')
@@ -38,11 +48,13 @@ objs = []
 for side, attrs, design, path in sorted(ents):
     if design in manual:
         cls, child = manual[design]
-    elif design.endswith('_ext'):
+    elif design in VENDOR:
         cls, child = 'vendor_macro', None
     else:
-        sys.exit(f'ERROR: {design} 非厂商宏叶子，须用 --class {design}=green_child:<目标> '
-                 f'或 --class {design}=golden_logic_reuse 显式声明（后者会被判 PARTIAL）')
+        sys.exit(f'ERROR: {design} 不在已审定的厂商边界名单（verif/vendor_boundary.tsv）。'
+                 f'须逐条人工分类：--class {design}=green_child:<已证目标>，'
+                 f'或先把它审定进厂商边界名单，'
+                 f'或 --class {design}=golden_logic_reuse（NO-GO，会被判 PARTIAL）')
     e = {'side': side, 'design': design, 'path': path, 'attrs': attrs, 'class': cls}
     if child:
         e['child_target'] = child

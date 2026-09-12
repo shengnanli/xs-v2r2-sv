@@ -1,0 +1,28 @@
+# 已审定的厂商硬宏边界（VENDOR_BOUNDARY）。codex 0142 §50：assembly 声明不得自动批准。
+# 本表是**一次性人工审定并提交**的名单，declare_allow.py 只对表内 design 自动归
+# vendor_macro；表外一律要求逐条显式 --class，仍不得自动放行。
+#
+# 审定依据：这些是 SRAM 编译器产出的行为级叶子（.v），golden 与 impl 两侧读**同一份文件**，
+# 不含被重写的设计逻辑；其外层（sram_array_* 包装与 array_N）在本工程里两侧同源 elaborate，
+# 是真受验的，不在本表。
+# design_pattern	kind	rationale
+array_ext	vendor_sram_leaf	SRAM 编译器行为模型叶子，两侧同源 .v，FM 不读其内部
+array_0_ext	vendor_sram_leaf	同上
+array_1_ext	vendor_sram_leaf	同上
+array_2_ext	vendor_sram_leaf	同上
+array_3_ext	vendor_sram_leaf	同上
+array_4_ext	vendor_sram_leaf	同上
+array_5_ext	vendor_sram_leaf	同上
+array_6_ext	vendor_sram_leaf	同上
+array_7_ext	vendor_sram_leaf	同上
+array_8_ext	vendor_sram_leaf	同上
+array_9_ext	vendor_sram_leaf	同上
+array_10_ext	vendor_sram_leaf	同上
+array_11_ext	vendor_sram_leaf	同上
+array_12_ext	vendor_sram_leaf	同上
+array_13_ext	vendor_sram_leaf	同上
+array_14_ext	vendor_sram_leaf	同上
+array_15_ext	vendor_sram_leaf	同上
+array_16_ext	vendor_sram_leaf	同上
+array_17_ext	vendor_sram_leaf	同上
+array_18_ext	vendor_sram_leaf	同上

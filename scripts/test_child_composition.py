@@ -20,6 +20,11 @@ import sys
 import tempfile
 
 REPO = pathlib.Path(__file__).resolve().parent.parent
+# reviewer 环境反馈：/tmp 上 shutil.copytree 会因复制 ACL/xattr 报 Errno 22，
+# 导致三条断言根本没执行却"通过"（第二次栽在同一个测试上）。
+# 对策：① fixture 建在仓库内的可写临时目录；② 所有复制用 copyfile（只搬字节，
+# 不碰元数据）；③ 末尾校验"每条用例确实跑到了判定"，跑不到即 FAIL。
+FIXTURE_ROOT = REPO / '.test_tmp' 
 
 
 def newest_evidence():
@@ -31,25 +36,31 @@ def newest_evidence():
 def run_case(name, mutate, expect_fail=True):
     ev = newest_evidence()
     if ev is None:
-        print('  SKIP 无可用 TageTable 证据'); return True
-    with tempfile.TemporaryDirectory() as td:
+        print(f'  BAD  {name}: 无可用 TageTable 证据 —— 断言未执行（不算通过）')
+        return False
+    FIXTURE_ROOT.mkdir(exist_ok=True)
+    with tempfile.TemporaryDirectory(dir=str(FIXTURE_ROOT)) as td:
         td = pathlib.Path(td)
         # 复制整份证据树到临时索引根，只改 child receipt
-        # 只复制判定需要的东西：证据树里的 receipt.json + verif/allow（跳过 UT 编译产物，
-        # 里面有悬空符号链接）
+        # 只搬判定需要的字节：证据树里的 receipt.json + verif/allow。
+        # 一律 copyfile（不复制权限/ACL/xattr），避免跨文件系统的 Errno 22。
         for rp in (REPO / 'evidence').glob('*/*/receipt.json'):
             dst = td / rp.relative_to(REPO)
             dst.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy(rp, dst)
+            shutil.copyfile(str(rp), str(dst))
         (td / 'docs').mkdir(exist_ok=True)
-        shutil.copytree(REPO / 'verif' / 'allow', td / 'verif' / 'allow')
+        (td / 'verif' / 'allow').mkdir(parents=True, exist_ok=True)
+        for ap_ in (REPO / 'verif' / 'allow').glob('*.json'):
+            shutil.copyfile(str(ap_), str(td / 'verif' / 'allow' / ap_.name))
         (td / 'scripts').mkdir(exist_ok=True)
         for f in ('build_receipt_index.py',):
-            shutil.copy(REPO / 'scripts' / f, td / 'scripts' / f)
+            shutil.copyfile(str(REPO / 'scripts' / f), str(td / 'scripts' / f))
         # 找 WrBypass child receipt 并改
         target = sorted((td / 'evidence').glob('*/WrBypass/receipt.json'))
         if not target:
-            print('  SKIP 无 WrBypass child receipt'); return True
+            print(f'  BAD  {name}: 无 WrBypass child receipt —— fixture 没建起来，'
+                  f'断言未执行（不算通过）')
+            return False
         for tp in target:
             d = json.loads(tp.read_text())
             mutate(d)
@@ -60,7 +71,8 @@ def run_case(name, mutate, expect_fail=True):
                        env=env, stdout=subprocess.DEVNULL)
         # 用真实父证据 + 临时索引跑 make_receipt
         wd = td / 'work'; (wd / 'sidecar').mkdir(parents=True)
-        shutil.copy(ev / 'sidecar' / 'native_facts.json', wd / 'sidecar' / 'native_facts.json')
+        shutil.copyfile(str(ev / 'sidecar' / 'native_facts.json'),
+                        str(wd / 'sidecar' / 'native_facts.json'))
         facts = json.loads((wd / 'sidecar' / 'native_facts.json').read_text())
         head = subprocess.run(['git', 'rev-parse', 'HEAD'], cwd=str(REPO),
                               stdout=subprocess.PIPE, universal_newlines=True).stdout.strip()

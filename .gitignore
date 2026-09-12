@@ -17,3 +17,4 @@ __pycache__/
 *.pyc
 evidence/
 docs/receipt_index.tsv
+.test_tmp/
