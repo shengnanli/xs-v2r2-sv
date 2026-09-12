@@ -18,6 +18,9 @@ file mkdir $outdir
 
 set_app_var hdlin_unresolved_modules black_box
 
+source [file dirname [info script]]/_universe_guard.tcl
+u_allow_x_interpretation
+
 # 读黑盒名单（module 名 → 跳过其定义文件）
 set bb {}
 set fh [open $bblist r]
@@ -38,7 +41,7 @@ foreach f [concat [lsort [glob -nocomplain $golden/*.sv]] [lsort [glob -nocompla
 }
 puts "BBOX_UNIVERSE: reading [llength $srcs] files with -define SYNTHESIS (top=XSTop)"
 read_sverilog -container r -libname WORK -define {SYNTHESIS} $srcs
-set_top r:/WORK/XSTop
+u_set_top r:/WORK/XSTop
 
 redirect $outdir/xstop_designs.txt    {report_designs}
 redirect $outdir/xstop_hierarchy.txt  {report_hierarchy}
@@ -57,5 +60,6 @@ puts $pf "tool_version\t[get_app_var sh_product_version]"
 puts $pf "bbox_list_file\t$bblist"
 close $pf
 
+u_check_reports $outdir
 puts "BBOX_UNIVERSE: done"
 exit

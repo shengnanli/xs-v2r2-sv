@@ -17,17 +17,21 @@ file mkdir $outdir
 
 set_app_var hdlin_unresolved_modules black_box
 
+source [file dirname [info script]]/_universe_guard.tcl
+u_allow_x_interpretation
+
 # 读全部 golden RTL（.sv 与 .v 都读；.v 里是厂商行为模型叶子）
 set srcs [concat [lsort [glob -nocomplain $golden/*.sv]] \
                  [lsort [glob -nocomplain $golden/*.v]]]
 puts "XSTOP_UNIVERSE: reading [llength $srcs] files with -define SYNTHESIS"
 read_sverilog -container r -libname WORK -define {SYNTHESIS} $srcs
 
-set_top r:/WORK/XSTop
+u_set_top r:/WORK/XSTop
 
 redirect $outdir/xstop_designs.txt    {report_designs}
 redirect $outdir/xstop_hierarchy.txt  {report_hierarchy}
 redirect $outdir/xstop_blackboxes.txt {report_black_boxes}
 
+u_check_reports $outdir
 puts "XSTOP_UNIVERSE: done"
 exit
