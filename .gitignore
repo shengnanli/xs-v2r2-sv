@@ -36,3 +36,10 @@ verif/study/*/csrc/
 verif/study/*/simv*
 verif/study/*/*.log
 verif/study/*/ucli.key
+
+# Formality 锁文件（仓库根，运行时产生）
+/*.lck
+# study 目录的 VCS 编译产物（compile.log / csrc / simv 等）
+verif/study/*/compile.log
+verif/study/*/csrc/
+verif/study/*/simv.daidir/
