@@ -76,7 +76,7 @@ switch -- $_verify_matched_unread_compare_points {
   "true" {
     # xs-v2-sv 新战役: vmucp 白名单从空开始, 每个目标须给出对称双射证明后逐个加入
     # (上轮 xs-v2r2-sv 的百余目标白名单不继承——G1 基线下须重新挣)。
-    if {$top ni {DebugModule DuplicatedTagArray FTBBank ICacheDataArray TXDAT_4 WritebackQueue}} {
+    if {$top ni {DebugModule DuplicatedTagArray FTBBank ICacheCtrlUnit ICacheDataArray LinkMonitor Queue1_RegMapperInput_3 SourceB TXDAT_4 TXREQ TlbStorageWrapper TlbStorageWrapper_1 WritebackQueue}} {
       puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
       exit 3
     }

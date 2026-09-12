@@ -1,4 +1,15 @@
-// InstrMMIOEntry —— Arbiter1_InsUncacheResp 单态化变体 wrapper（核体见 Arbiter1_InsUncacheResp.sv）
+// =============================================================================
+// InstrUncache 变体包装层（golden 同名，FM/ST 用）
+//   - InstrMMIOEntry          : 例化 xs_InstrMMIOEntry 核
+//   - Arbiter1_InsUncacheResp : 单输入仲裁（透传）
+//   - InstrUncache            : 顶层（nMMIOs=1，单 entry + 仲裁 + TileLink 路由）
+// =============================================================================
+
+// 单输入响应仲裁器：透传
+
+// ---------------------------------------------------------------------------
+// golden 同名 wrapper
+// ---------------------------------------------------------------------------
 
 module InstrMMIOEntry(
   input         clock,

@@ -1,4 +1,4 @@
-// InstrUncache —— Arbiter1_InsUncacheResp 单态化变体 wrapper（核体见 Arbiter1_InsUncacheResp.sv）
+// InstrUncache —— InstrMMIOEntry 单态化变体 wrapper（核体见 InstrMMIOEntry.sv）
 
 module InstrUncache(
   input         clock,

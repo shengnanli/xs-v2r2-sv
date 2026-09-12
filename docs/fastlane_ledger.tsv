@@ -169,3 +169,81 @@ TageTable_2	PASS_DEAD_REF	FM native SUCCEEDED 797p/0fail/0unmatched; 唯48条gol
 TageTable_3	PASS_DEAD_REF	FM native SUCCEEDED 797p/0fail/0unmatched; 唯48条golden-only cone-dead(s1_unhashed_idx[48:1], golden声明49位仅读bit0), 声明精确相等
 DuplicatedTagArray	TODO_RENUMBER	老FM_REF_DEPS引用SRAMTemplate_114(G1已重编号), 需按G1依赖链重导
 DuplicatedTagArray	PASS	G1重编号自动remap(SRAMTemplate_114→_116)+宏链闭包补全(array_9→array_8); UT 3seed 0err; FM SUCCEEDED 2460p
+ITTageTable	INHERIT_FAIL	ERROR: ITTageTable GOLDEN_SRC 在 G1 缺失且非纯重编号: FoldedSRAMTemplate_21.sv（改动目标? 人工处理）
+ITTageTable_1	MERGED	与 ITTageTable 家族同 UT 目录, 由代表目标覆盖
+ITTageTable_2	MERGED	与 ITTageTable 家族同 UT 目录, 由代表目标覆盖
+ITTageTable_3	MERGED	与 ITTageTable 家族同 UT 目录, 由代表目标覆盖
+ITTageTable_4	MERGED	与 ITTageTable 家族同 UT 目录, 由代表目标覆盖
+InstrMMIOEntry	INHERIT_FAIL	ERROR: InstrMMIOEntry 模块 Arbiter1_InsUncacheResp 声明 2 次(须恰 1)
+InstrUncache	MERGED	与 InstrUncache 家族同 UT 目录, 由代表目标覆盖
+Queue1_RegMapperInput_3	MERGED	与 ICacheCtrlUnit 家族同 UT 目录, 由代表目标覆盖
+RNXbar	INHERIT_FAIL	ERROR: RNXbar GOLDEN_SRC 在 G1 缺失且非纯重编号: FastArbiter_44.sv（改动目标? 人工处理）
+SNXbar	INHERIT_FAIL	ERROR: SNXbar GOLDEN_SRC 在 G1 缺失且非纯重编号: FastArbiter_47.sv（改动目标? 人工处理）
+StorePfWrapper	INHERIT_FAIL	ERROR: StorePfWrapper golden 依赖在 G1 缺失且非纯重编号: Arbiter2_StorePrefetchReq.sv（人工处理）
+TLBuffer_20	INHERIT_FAIL	ERROR: TLBuffer_20 golden 依赖在 G1 缺失且非纯重编号: ram_2x115.sv（人工处理）
+TLBuffer_22	INHERIT_FAIL	ERROR: TLBuffer_22 golden 依赖在 G1 缺失且非纯重编号: ram_2x135.sv（人工处理）
+TLBuffer_6	INHERIT_FAIL	ERROR: TLBuffer_6 golden 依赖在 G1 缺失且非纯重编号: ram_2x280.sv（人工处理）
+TLBuffer_8	INHERIT_FAIL	ERROR: TLBuffer_8 golden 依赖在 G1 缺失且非纯重编号: ram_2x134.sv（人工处理）
+TLBuffer_9	INHERIT_FAIL	ERROR: TLBuffer_9 golden 依赖在 G1 缺失且非纯重编号: ram_2x114.sv（人工处理）
+TlbStorageWrapper_1	MERGED	与 TlbStorageWrapper 家族同 UT 目录, 由代表目标覆盖
+ICacheCtrlUnit	COMPILE_FAIL	  Source Info: Queue1_RegMapperInput_5 out_back_q( .clock (clock),  .reset  |   (reset),  .io_enq_ready (auto_in_a_ready),  .io_enq_valid (auto_in_a_valid), |   .io_enq_bits_read (( ... |  | 1 warning | 1 error | CPU time: 1.257 seconds to compile | make: *** [../../../scripts/ut_common.mk:41: simv]
+ICache	COMPILE_FAIL	  Source Info: Queue1_RegMapperInput_5 out_back_q( .clock (clock),  .reset  |   (reset),  .io_enq_ready (auto_in_a_ready),  .io_enq_valid (auto_in_a_valid), |   .io_enq_bits_read (( ... |  | 1 warning | 2 errors | CPU time: 2.095 seconds to compile | make: *** [../../../scripts/ut_common.mk:41: simv
+L2TlbMissQueue	COMPILE_FAIL	  Source Info: L2TlbMissQueue_xs u_i( .clock (clock),  .reset (reset),   |   .io_sfence_valid (io_sfence_valid),  .io_csr_satp_changed  |   (io_csr_satp_changed),  .io_csr_vsatp_chang ... |  | 2 warnings | 1 error | CPU time: 1.012 seconds to compile | make: *** [Makefile:20: simv] Error 255
+Fence	UT_FAIL	seed1: no TEST PASSED
+L2TlbPrefetch	COMPILE_FAIL	  Source Info: L2TlbPrefetch_xs u_i( .clock (clock),  .reset (reset),   |   .io_sfence_valid (io_sfence_valid),  .io_csr_satp_changed  |   (io_csr_satp_changed),  .io_csr_vsatp_mode ( ... |  | 2 warnings | 1 error | CPU time: 1.107 seconds to compile | make: *** [Makefile:14: simv] Error 255
+LCredit2Decoupled_1	UT_FAIL	seed1: no TEST PASSED
+RXDAT	COMPILE_FAIL	  Module instance: RXDAT u_g( .clock (clock),  .reset (reset),  .io_out_valid  |   (io_out_valid),  .io_out_bits_txnID (io_out_bits_txnID),   |   .io_out_bits_homeNID (io_out_bits_homeNID ... |  | 1 warning | 1 error | CPU time: 1.067 seconds to compile | make: *** [../../../scripts/ut_common.mk:41:
+SourceB	COMPILE_FAIL	  Source Info: FastArbiter_5 issueArb( .clock (clock),  .reset (reset),   |   .io_in_0_ready (_issueArb_io_in_0_ready),  .io_in_0_valid  |   (_issueArb_io_in_0_valid_T),  .io_in_0_bit ... |  | 2 warnings | 1 error | CPU time: 1.242 seconds to compile | make: *** [../../../scripts/ut_common.mk:41: si
+SubDirectory	COMPILE_FAIL	  Source Info: array_0_1 array_0( .R0_addr (io_r_req_bits_setIdx),  .R0_en  |   (io_r_req_valid),  .R0_clk (clock),  .R0_data (_array_0_R0_data),  .W0_addr  |   (io_w_req_bits_setIdx) ... |  | 1 warning | 2 errors | CPU time: 1.140 seconds to compile | make: *** [../../../scripts/ut_common.mk:41: si
+Decoupled2LCredit_1	PASS	fm_verdicts=1
+Decoupled2LCredit_5	PASS	fm_verdicts=1
+Decoupled2LCredit	PASS	fm_verdicts=1
+Decoupled2LCredit_2	PASS	fm_verdicts=1
+IMSICGateWay	FM_FAIL	FAILED	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 1, "make_rc":
+TlbStorageWrapper	COMPILE_FAIL	  Identifier 'xs_assert_v2' has not been declared yet. If this error is not  |   expected, please check if you have set `default_nettype to none. |    |  | 3 warnings | 1 error | CPU time: 5.051 seconds to compile | make: *** [../../../scripts/ut_common.mk:41: simv] Error 255
+TXREQ	UT_FAIL	seed1: no TEST PASSED
+Alu	FM_FAIL	FAILED	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 1, "make_rc":
+VSetRiWi	FM_FAIL	FAILED	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 1, "make_rc":
+LinkMonitor	FM_FAIL	FAILED	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 1, "make_rc":
+TLXbar_4	FM_FAIL	FAILED	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 1, "make_rc":
+SubDirectory_1	PASS	fm_verdicts=1
+VSetRvfWvf	FM_FAIL	FAILED	{"passing": null, "failing": null, "unverified": null, "unmatched": null, "aborted": null, "unread": null, "blackbox_out": null, "markers": 1, "make_rc":
+SplittedSRAMTemplate_23	PASS	G1重塑(8way→4way,内层SRAMTemplate_64)按G1端口重做; FM SUCCEEDED 110p
+FoldedSRAMTemplate_20	PASS	G1重塑(折叠WIDTH4→2,setIdx11→10)按G1端口重做; UT 3seed 0err; FM SUCCEEDED 148p
+Decoupled2LCredit	PASS	REWRITE_S批: 机械继承直接通过(diff仅断言行号/端口宽)
+Decoupled2LCredit_1	PASS	REWRITE_S批: 机械继承直接通过(diff仅断言行号/端口宽)
+Decoupled2LCredit_2	PASS	REWRITE_S批: 机械继承直接通过(diff仅断言行号/端口宽)
+Decoupled2LCredit_5	PASS	REWRITE_S批: 机械继承直接通过(diff仅断言行号/端口宽)
+SubDirectory_1	PASS	REWRITE_S批: 机械继承直接通过(diff仅断言行号/端口宽)
+ITTageTable	REWRITE_TODO	依赖FoldedSRAMTemplate_21在G1非纯重编号(内容也变); 待按G1链重做
+ITTageTable_1	REWRITE_TODO	同ITTageTable(家族)
+ITTageTable_2	REWRITE_TODO	同ITTageTable(家族)
+ITTageTable_3	REWRITE_TODO	同ITTageTable(家族)
+ITTageTable_4	REWRITE_TODO	同ITTageTable(家族)
+RNXbar	REWRITE_TODO	依赖FastArbiter_44(G1内容变)
+SNXbar	REWRITE_TODO	依赖FastArbiter_47(G1内容变)
+StorePfWrapper	REWRITE_TODO	依赖Arbiter2_StorePrefetchReq(G1内容变)
+TLBuffer_20	REWRITE_TODO	source位宽3→5b, 依赖ram_2xNNN行为模型随之变宽; 需按G1重导
+TLBuffer_22	REWRITE_TODO	source位宽3→5b, 依赖ram_2xNNN行为模型随之变宽; 需按G1重导
+TLBuffer_6	REWRITE_TODO	source位宽3→5b, 依赖ram_2xNNN行为模型随之变宽; 需按G1重导
+TLBuffer_8	REWRITE_TODO	source位宽3→5b, 依赖ram_2xNNN行为模型随之变宽; 需按G1重导
+TLBuffer_9	REWRITE_TODO	source位宽3→5b, 依赖ram_2xNNN行为模型随之变宽; 需按G1重导
+InstrMMIOEntry	REWRITE_TODO	与Arbiter1_InsUncacheResp同UT目录模块重名冲突, 需拆分目标
+ICache	REWRITE_TODO	内部Queue1_RegMapperInput_5在G1重编号+逻辑改动
+ICacheCtrlUnit	REWRITE_TODO	内部Queue1_RegMapperInput_5在G1重编号+逻辑改动
+L2TlbMissQueue	REWRITE_TODO	端口/逻辑改动, _xs例化端口不匹配
+L2TlbPrefetch	REWRITE_TODO	端口/逻辑改动, _xs例化端口不匹配
+RXDAT	REWRITE_TODO	端口改动, tb例化不匹配
+SourceB	REWRITE_TODO	内部FastArbiter_5在G1变
+SubDirectory	REWRITE_TODO	内部array_0_1重编号
+TlbStorageWrapper	REWRITE_TODO	需+define+SYNTHESIS(xs_assert_v2)+逻辑改动
+TlbStorageWrapper_1	REWRITE_TODO	同上(家族)
+Alu	REWRITE_TODO	G1加perfDebugInfo透传+io_in_ready端口+逻辑改动, 需按G1重做核
+Fence	REWRITE_TODO	G1加perfDebugInfo透传+io_in_ready端口+逻辑改动, 需按G1重做核
+VSetRiWi	REWRITE_TODO	G1加perfDebugInfo透传+io_in_ready端口+逻辑改动, 需按G1重做核
+VSetRvfWvf	REWRITE_TODO	G1加perfDebugInfo透传+io_in_ready端口+逻辑改动, 需按G1重做核
+IMSICGateWay	REWRITE_TODO	G1逻辑改动, FM/UT失配需逐个对照重写
+LinkMonitor	REWRITE_TODO	G1逻辑改动, FM/UT失配需逐个对照重写
+TLXbar_4	REWRITE_TODO	G1逻辑改动, FM/UT失配需逐个对照重写
+TXREQ	REWRITE_TODO	G1逻辑改动, FM/UT失配需逐个对照重写
+LCredit2Decoupled_1	REWRITE_TODO	G1逻辑改动, FM/UT失配需逐个对照重写

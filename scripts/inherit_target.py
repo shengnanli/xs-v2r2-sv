@@ -82,6 +82,22 @@ def macro_closure(files):
     return out
 
 
+
+def remap_rtl_instantiations(text, remapped, notes, what):
+    """重写源里例化的 golden 子模块名若在 G1 已重编号，同步改名。
+    仅接受 golden_remap 认定的**纯重编号**（内容字节全等），改名后记入 notes。"""
+    for m in sorted({m.group(1) for m in INST_RE.finditer(text)}, key=lambda s: -len(s)):
+        if (G1 / f'{m}.sv').exists() or not (G0 / f'{m}.sv').exists():
+            continue
+        r = golden_remap(f'{m}.sv')
+        if r:
+            new = r[:-3]
+            text = re.sub(r'\b' + re.escape(m) + r'\b', new, text)
+            remapped[f'{m}.sv'] = r
+            notes.append(f'{what}: 例化 {m}→{new}')
+    return text
+
+
 def _whitelist_add(name):
     """把 vmucp 目标幂等插入 fm_eq.tcl 的精确白名单（继承老战役审计声明）。"""
     txt = FM_EQ.read_text()
@@ -301,6 +317,7 @@ def main():
     parts.append('// ' + '-' * 75 + '\n// golden 同名 wrapper\n// ' + '-' * 75)
     parts.append(wrapper_of[t].rstrip())
     body = '\n\n'.join(x for x in parts if x.strip()) + '\n'
+    body = remap_rtl_instantiations(body, remapped, notes, main_path.name)
     main_path.write_text(body)   # 目标自有主文件, 重跑覆盖（跨目标冲突由 registry/ut_dir 去重挡）
     new_files.append(main_path)
     for p, _ in core_texts:
@@ -315,6 +332,7 @@ def main():
         vpath = new_rtl_dir / (name + '.sv')
         vbody = (f'// {name} —— {t} 单态化变体 wrapper（核体见 {t}.sv）\n\n'
                  + wrapper_of[name].rstrip() + '\n')
+        vbody = remap_rtl_instantiations(vbody, remapped, notes, vpath.name)
         vpath.write_text(vbody)
         new_files.append(vpath)
         sibling_files.append(vpath)
