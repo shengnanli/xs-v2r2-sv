@@ -135,9 +135,34 @@ def main():
             if bad:
                 sys.exit(f'ERROR: green_child {ct} 的共享闭包字节与本次不一致: '
                          f'{bad[:3]} —— 拒绝出 receipt')
+            # 被黑盒的 child，父侧本就不读它的 impl 字节 ⇒ shared 常为 0，
+            # 那条比对对这类 child 是空转。真正该绑的是「被黑盒的这个 golden 模块，
+            # 与 child 被证明时用的 golden 模块是同一份字节」：
+            # child receipt 的 golden_closure 里须含 <child>.sv，且其 sha256 与
+            # G1 MANIFEST 记录一致（canonical 同源已另行校验）。
+            gsha = {pathlib.Path(e['path']).name: e['sha256']
+                    for e in crj.get('golden_closure', [])}
+            key = f'{ct}.sv'
+            man = {}
+            mp = G1 / 'MANIFEST.tsv'
+            if mp.exists():
+                for ln in mp.read_text().splitlines():
+                    c = ln.split('\t')
+                    if len(c) == 3:
+                        man[c[2]] = c[0]
+            if key not in gsha:
+                sys.exit(f'ERROR: green_child {ct} 的 receipt 未把 {key} 记入 golden 闭包 '
+                         f'—— 无法证明黑盒的就是它，拒绝出 receipt')
+            if key in man and man[key] != gsha[key]:
+                sys.exit(f'ERROR: green_child {ct} 证明时的 {key} 字节与 G1 MANIFEST 不符 '
+                         f'—— 拒绝出 receipt')
             child_checks.append({'child_target': ct, 'child_impl_commit': cr['impl_commit'],
                                  'child_verdict': cr['verdict'],
-                                 'shared_closure_files_matched': shared})
+                                 'shared_impl_closure_files_matched': shared,
+                                 'shared_impl_closure_vacuous': shared == 0,
+                                 'child_golden_file': key,
+                                 'child_golden_sha256': gsha[key],
+                                 'child_golden_matches_g1_manifest': man.get(key) == gsha[key]})
 
     receipt = {
         'schema': 'xs-v2-sv-receipt-v1',
