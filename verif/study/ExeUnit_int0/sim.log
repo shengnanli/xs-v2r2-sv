@@ -1,0 +1,46 @@
+Command: /home/eda/xs-env/xs-v2-sv/verif/study/ExeUnit_int0/./simv -l sim.log
+Chronologic VCS simulator copyright 1991-2024
+Contains Synopsys proprietary information.
+Compiler version W-2024.09-SP1_Full64; Runtime version W-2024.09-SP1_Full64;  Sep 12 08:20 2026
+*Verdi* Loading libsscore_vcs202409.so
+FSDB Dumper for VCS, Release Verdi_W-2024.09-SP1, Linux x86_64/64bit, 11/30/2024
+(C) 1996 - 2024 by Synopsys, Inc.
+*Verdi* FSDB WARNING: The FSDB file already exists. Overwriting the FSDB file may crash the programs that are using this file.
+*Verdi* : Create FSDB file 'novas.fsdb'
+*Verdi* : Begin traversing the scope (tb), layer (0).
+*Verdi* : Enable +all dumping.
+*Verdi* : End of traversing.
+
+===== 阶段 1 @75000 : ALU add 单周期：组合出结果，无流水级 =====
+  [85000] OUT  robIdx=10 pdest=10 data=0x0000000000000007 intWen=1
+
+===== 阶段 2 @140000 : MUL 三级流水：validVecThisFu 逐级移位，3 拍后出结果 =====
+  [175000] OUT  robIdx=11 pdest=11 data=0x000000000000002a intWen=1
+
+===== 阶段 3 @230000 : BKU clz 三级流水：走另一条 FU，Dispatcher 路由可见 =====
+  [265000] OUT  robIdx=12 pdest=12 data=0x0000000000000038 intWen=1
+
+===== 阶段 4 @320000 : 连发 ALU/MUL/BKU：Dispatcher 路由 + 输出或归约 =====
+  [335000] OUT  robIdx=20 pdest=20 data=0x000000000000002a intWen=1
+  [375000] OUT  robIdx=21 pdest=21 data=0x0000000000000051 intWen=1
+  [395000] OUT  robIdx=22 pdest=22 data=0x000000000000000f intWen=1
+
+===== 阶段 51 @470000 : flush 与发射同拍：第0级判定掐断，validPipe 从不置起 =====
+
+===== 阶段 52 @580000 : flush 晚 1 拍：指令在第1级，inPipe_2_2 被掐断，不写回 =====
+
+===== 阶段 53 @700000 : flush 晚 2 拍：已过判定窗口 → 照常写回(0x100=13x13 不出现,应为 14x14=0xC4) =====
+  [735000] OUT  robIdx=32 pdest=32 data=0x00000000000000c4 intWen=1
+
+===== 阶段 6 @830000 : flush level=1 只打 robIdx=40 自己，41 存活 =====
+  [865000] OUT  robIdx=41 pdest=41 data=0x000000000000001b intWen=1
+
+===== 阶段 99 @1000000 : 结束 =====
+
+波形已写入 novas.fsdb —— 用 make verdi 打开
+$finish called from file "tb.sv", line 249.
+$finish at simulation time              1035000
+           V C S   S i m u l a t i o n   R e p o r t 
+Time: 1035000 ps
+CPU Time:      1.270 seconds;       Data structure size:   0.8Mb
+Sat Sep 12 08:20:36 2026

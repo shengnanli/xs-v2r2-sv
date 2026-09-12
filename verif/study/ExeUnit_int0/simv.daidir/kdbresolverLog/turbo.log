@@ -1,0 +1,3 @@
+Command Line: /home/eda/app/synopsys/vcs/W-2024.09-SP1/linux64/bin/elabcom -simflow -KDBRESOLVER -simvdaidir /home/eda/xs-env/xs-v2-sv/verif/study/ExeUnit_int0/simv.daidir -saveLevel -ssv -ssy -q -logdir /home/eda/xs-env/xs-v2-sv/verif/study/ExeUnit_int0/simv.daidir/kdbresolverLog
+uname(Linux localhost.localdomain 4.18.0-553.111.1.el8_10.x86_64 #1 SMP Sat Mar 21 14:41:42 UTC 2026 x86_64)
+au time 0.211909 0.199665 0.062195 delta 100126720 100126720 total 352149504 352149504

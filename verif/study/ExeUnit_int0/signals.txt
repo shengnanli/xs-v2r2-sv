@@ -1,0 +1,26 @@
+tb.phase
+tb.phase_name
+tb.u_exe.io_in_valid
+tb.u_exe.io_in_bits_fuType
+tb.u_exe.io_in_bits_fuOpType
+tb.u_exe.io_in_bits_robIdx_value
+tb.u_exe.io_in_ready
+# --- Dispatcher 路由（谁被选中）---
+tb.u_exe.in1ToN.io_out_0_valid
+tb.u_exe.in1ToN.io_out_1_valid
+tb.u_exe.in1ToN.io_out_2_valid
+# --- 存活链 validPipe（flush 在这里生效）---
+tb.u_exe.inPipe_2_1
+tb.u_exe.inPipe_2_2
+tb.u_exe.io_flush_valid
+tb.u_exe.io_flush_bits_robIdx_value
+tb.u_exe.io_flush_bits_level
+# --- 占用链 validVecThisFu（不管 flush）---
+tb.u_exe.Mul.validVecThisFu_1
+tb.u_exe.Mul.validVecThisFu_2
+tb.u_exe.Bku.validVecThisFu_1
+tb.u_exe.Bku.validVecThisFu_2
+# --- 输出 ---
+tb.u_exe.io_out_valid
+tb.u_exe.io_out_bits_data_0
+tb.u_exe.io_out_bits_robIdx_value
