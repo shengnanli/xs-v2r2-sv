@@ -87,7 +87,8 @@ fm-%:
 	    $(if $(wildcard $(XSSV_HOME)/verif/dead_ref/$*.json),--dead-ref $(XSSV_HOME)/verif/dead_ref/$*.json --unread-points fm_work/$*/unread_points.txt,) \
 	    --bbox-report fm_work/$*/black_boxes.rpt \
 	    $(if $(wildcard $(XSSV_HOME)/verif/allow/$*.json),--allow $(XSSV_HOME)/verif/allow/$*.json,) \
-	    --canonical-id "$$(cat $(G1_CANONICAL)/CANONICAL_ID.txt)"); \
+	    --canonical-id "$$(cat $(G1_CANONICAL)/CANONICAL_ID.txt)" \
+	    --impl-commit "$$(git -C $(XSSV_HOME) rev-parse HEAD)"); \
 	vrc=$$?; echo "$$v"; \
 	XSSV_HOME=$(XSSV_HOME) python3 $(XSSV_HOME)/scripts/make_receipt.py --top $* --workdir fm_work/$* \
 	    --ref-srcs "$(GOLDEN_RTL)/$*.sv $(addprefix $(GOLDEN_RTL)/,$(FM_REF_DEPS_$*))" \

@@ -117,7 +117,8 @@ def _child_receipts():
     return build_receipt_index.load(_home)
 
 
-def _assembly_bbox_check(observed, attrs, decl, expect_canonical=None):
+def _assembly_bbox_check(observed, attrs, decl, expect_canonical=None,
+                         expect_impl_commit=None):
     """观测黑盒集合须与声明**精确相等**，且每条类别合法、ref/impl 成对。
     返回 True 或失败原因串。"""
     if decl is None:
@@ -170,10 +171,16 @@ def _assembly_bbox_check(observed, attrs, decl, expect_canonical=None):
             if expect_canonical and cr['canonical_id'] != expect_canonical:
                 return (f'assembly_green_child_canonical_mismatch:{ct}='
                         f'{cr["canonical_id"][:16]}')
-            # 父声明须钉住所引用的 child receipt 字节（防日后换一份 receipt）
-            want = e.get('child_receipt_sha256')
-            if want and want != cr['receipt_sha256']:
-                return f'assembly_green_child_receipt_sha_mismatch:{ct}'
+            # 绑定的是 **child 被证明时的字节**（impl_commit），不是 receipt 文件自身的
+            # 摘要——同样输入重跑会换 run_id/时间戳，文件摘要必然变，拿它当约束只会制造
+            # 假失配。codex 0140 要求的"impl commit/closure 一致"由此满足：
+            # child 必须与父跑在同一 committed 树上。
+            if expect_impl_commit and cr['impl_commit'] != expect_impl_commit:
+                return (f'assembly_green_child_commit_mismatch:{ct}='
+                        f'{cr["impl_commit"][:12]}!={expect_impl_commit[:12]}')
+            want = e.get('child_impl_commit')
+            if want and want != cr['impl_commit']:
+                return f'assembly_green_child_declared_commit_stale:{ct}'
     return True
 
 
@@ -209,7 +216,7 @@ def _dead_ref_check(q, decl, unread_points, assembly=False):
 
 def verdict(log_text, make_rc=0, mode="signoff-strict", expected_top=None, allowlist=0,
             dead_ref_decl=None, unread_points=None, bbox_obs=None, bbox_attrs=None,
-            allow_decl=None, expect_canonical=None):
+            allow_decl=None, expect_canonical=None, expect_impl_commit=None):
     q = {"passing": None, "failing": None, "unverified": None, "unmatched": None, "aborted": None,
          "unread": None, "blackbox_out": None, "markers": 0, "make_rc": make_rc, "mode": mode,
          "native": None, "top": None, "dont_verify": bool(_DONTVERIFY.search(log_text)),
@@ -309,7 +316,7 @@ def verdict(log_text, make_rc=0, mode="signoff-strict", expected_top=None, allow
             q["reason"] = "assembly_no_bbox_report(须 fm_eq.tcl 导出 black_boxes.rpt)"
             return "PARTIAL", q
         bb = _assembly_bbox_check(bbox_obs, bbox_attrs or {}, allow_decl,
-                                  expect_canonical)
+                                  expect_canonical, expect_impl_commit)
         if bb is not True:
             q["reason"] = bb
             return "PARTIAL", q
@@ -369,6 +376,8 @@ if __name__ == "__main__":
                     help="assembly 黑盒精确声明 verif/allow/<top>.json")
     ap.add_argument("--canonical-id", default=None,
                     help="本次 G1 canonical ID；green_child 的 child receipt 必须同源")
+    ap.add_argument("--impl-commit", default=None,
+                    help="本次 impl commit；green_child 必须在同一 committed 树上被证明")
     a = ap.parse_args()
     txt = open(a.log).read()
     decl = None
@@ -398,7 +407,7 @@ if __name__ == "__main__":
         with open(a.allow) as f:
             allow_decl = json.load(f)
     v, q = verdict(txt, a.rc, a.mode, a.top, a.allowlist, decl, pts,
-                   bbox_obs, bbox_attrs, allow_decl, a.canonical_id)
+                   bbox_obs, bbox_attrs, allow_decl, a.canonical_id, a.impl_commit)
     print(v + "\t" + json.dumps(q, ensure_ascii=False))
     # P0-3: 只有 SUCCEEDED 退 0；其余非零(签核 CI fail-closed)。
     # PASS_DEAD_REF 例外：仅当调用方显式给了 --dead-ref 声明文件(即该目标已被审计、
