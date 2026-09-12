@@ -242,6 +242,20 @@ if {[info exists env(FM_PIN_TCL)] && [file exists $env(FM_PIN_TCL)]} {
 report_unmatched_points > fm_work/$top/unmatched.rpt
 report_matched_points > fm_work/$top/matched.rpt
 
+# unread 点逐条枚举（PASS_DEAD_REF 判定依据：观测集合须与声明**精确相等**）。
+# report_unmatched_points 的默认报告不含 unread 类，必须显式 -status unread。
+set _fh [open fm_work/$top/unread_points.txt w]
+foreach _p [lsort -unique [report_unmatched_points -reference -status unread -list]] {
+    puts $_fh "ref\t$_p"
+}
+foreach _p [lsort -unique [report_unmatched_points -implementation -status unread -list]] {
+    puts $_fh "impl\t$_p"
+}
+foreach _p [lsort -unique [report_matched_points -not_compared -status unread -list]] {
+    puts $_fh "matched_nc\t$_p"
+}
+close $_fh
+
 # sidecar: appvar 有效值读回——全部 pin/custom Tcl 之后、verify 之前(schema v7 契约)
 if {$SIDECAR_ON} { sidecar_capture_appvars }
 

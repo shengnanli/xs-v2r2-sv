@@ -1,0 +1,201 @@
+{
+ "schema": "xs-v2-sv-dead-ref-v1",
+ "target": "TageTable_2",
+ "baseline": "G1-canonical (kunminghu-v2 @b36a1a2a5)",
+ "rationale": "golden 的 s1_unhashed_idx 声明为 reg [48:0]（整条 PC[49:1] 打拍），但全模块只读取 bit[0]（用于 hit_selected 的奇偶选择，见 TageTable.sv:356/358），bit[1:48] 写入后零扇出=cone-dead。可读核按真实读取宽度只存 1 位，故 impl 侧不存在这些位（impl unread=0）。本轮 G1 实跑观测 48 条 unmatched-unread(ref) 与本声明精确相等；native FM SUCCEEDED，failing=0，unmatched compare points=0。",
+ "observed_points": 48,
+ "entries": [
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[10]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[11]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[12]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[13]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[14]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[15]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[16]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[17]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[18]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[19]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[1]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[20]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[21]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[22]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[23]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[24]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[25]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[26]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[27]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[28]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[29]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[2]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[30]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[31]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[32]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[33]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[34]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[35]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[36]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[37]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[38]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[39]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[3]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[40]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[41]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[42]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[43]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[44]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[45]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[46]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[47]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[48]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[4]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[5]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[6]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[7]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[8]",
+   "class": "golden_wide_reg_low_bit_only"
+  },
+  {
+   "ref_path": "r:/WORK/TageTable_2/s1_unhashed_idx_reg[9]",
+   "class": "golden_wide_reg_low_bit_only"
+  }
+ ]
+}

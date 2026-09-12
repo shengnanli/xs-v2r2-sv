@@ -154,3 +154,17 @@ SRAMTemplate_155	TODO_CORE_EXTCG	G1新形态: 时钟门控外置(导出mbistCgCt
 SRAMTemplate_166	TODO_CORE_EXTCG	G1新形态: 时钟门控外置(导出mbistCgCtl_en/rckEn/wckEn+取rclk), 需核支持external clockgate
 SRAMTemplate_178	TODO_CORE_EXTCG	G1新形态: 时钟门控外置(导出mbistCgCtl_en/rckEn/wckEn+取rclk), 需核支持external clockgate
 SRAMTemplate_146	TODO_CORE_MULTIRD	G1新形态: 多读口, 核仅支持单读口
+ICacheMetaArray	PASS	fm_verdicts=1
+ICacheDataArray	PASS	fm_verdicts=1
+TageTable	FM_FAIL	PARTIAL	{"passing": 797, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": 48, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode":
+FTBBank	FM_FAIL	PARTIAL	{"passing": 3276, "failing": 0, "unverified": null, "unmatched": 0, "aborted": null, "unread": 50, "blackbox_out": 0, "markers": 1, "make_rc": 0, "mode"
+TLBuffer_13	PASS	fm_verdicts=1
+ICacheDataArray	PASS	assembly(vmucp继承); FM SUCCEEDED
+ICacheMetaArray	PASS	assembly; FM SUCCEEDED
+TLBuffer_13	PASS	assembly; FM SUCCEEDED
+FTBBank	PASS_DEAD_REF	FM native SUCCEEDED 3276p/0fail/0unmatched; 唯50条golden-only cone-dead(req_pc_reg_1_reg=断言专用PC副本,SYNTHESIS下零扇出), 声明verif/dead_ref/FTBBank.json精确相等
+TageTable	PASS_DEAD_REF	FM native SUCCEEDED 797p/0fail/0unmatched; 唯48条golden-only cone-dead(s1_unhashed_idx[48:1], golden声明49位仅读bit0), 声明精确相等
+TageTable_1	PASS_DEAD_REF	FM native SUCCEEDED 797p/0fail/0unmatched; 唯48条golden-only cone-dead(s1_unhashed_idx[48:1], golden声明49位仅读bit0), 声明精确相等
+TageTable_2	PASS_DEAD_REF	FM native SUCCEEDED 797p/0fail/0unmatched; 唯48条golden-only cone-dead(s1_unhashed_idx[48:1], golden声明49位仅读bit0), 声明精确相等
+TageTable_3	PASS_DEAD_REF	FM native SUCCEEDED 797p/0fail/0unmatched; 唯48条golden-only cone-dead(s1_unhashed_idx[48:1], golden声明49位仅读bit0), 声明精确相等
+DuplicatedTagArray	TODO_RENUMBER	老FM_REF_DEPS引用SRAMTemplate_114(G1已重编号), 需按G1依赖链重导

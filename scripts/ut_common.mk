@@ -76,7 +76,8 @@ fm-%:
 	fm_shell -64 -work_path fm_work/$* -file $(XSSV_HOME)/scripts/fm_eq.tcl \
 	    > fm_work/$*/fm.log 2>&1; \
 	rc=$$?; \
-	python3 $(XSSV_HOME)/scripts/fm_verdict.py fm_work/$*/fm.log --rc $$rc --mode $(FM_MODE) --top $* --allowlist $(FM_ALLOWLIST)
+	python3 $(XSSV_HOME)/scripts/fm_verdict.py fm_work/$*/fm.log --rc $$rc --mode $(FM_MODE) --top $* --allowlist $(FM_ALLOWLIST) \
+	    $(if $(wildcard $(XSSV_HOME)/verif/dead_ref/$*.json),--dead-ref $(XSSV_HOME)/verif/dead_ref/$*.json --unread-points fm_work/$*/unread_points.txt,)
 
 clean:
 	rm -rf simv* csrc *.log ucli.key novas.* verdiLog fm_work ut_gen *.fsdb *.daidir \

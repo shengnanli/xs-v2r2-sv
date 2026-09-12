@@ -18,6 +18,8 @@ verdict ∈ {SUCCEEDED, FAILED, WAIVED, PARTIAL, SHADOW_CHECK, DIAGNOSTIC, UNRUN
  P0-8 汇总表缺失 → ERROR(不按零处理);表内某类别缺失才视为 0。
  P0-9 freshness:要求 run 元数据(input_hash/baseline)绑定,不匹配 → 标记 stale。
 """
+import json
+import os
 import re
 
 KNOWN_MODES = {"signoff-strict", "assembly", "diagnostic-full", "shadow"}
@@ -83,7 +85,39 @@ def _unmatch_max(text, pat):
     return val
 
 
-def verdict(log_text, make_rc=0, mode="signoff-strict", expected_top=None, allowlist=0):
+
+def _dead_ref_check(q, decl, unread_points, assembly=False):
+    """PASS_DEAD_REF 六条件(全满足才返回 True, 否则返回失败原因串)。
+    decl = 声明 json(entries[].ref_path); unread_points = fm_eq.tcl 导出的实际未读点。"""
+    if q.get("failing") not in (0, None):
+        return "dead_ref_failing!=0"
+    dims = ("unverified", "aborted") if assembly else ("unverified", "unmatched", "aborted")
+    for k in dims:
+        if q.get(k) not in (0, None):
+            return f"dead_ref_{k}!=0"
+    if not assembly and q.get("blackbox_out"):
+        return "dead_ref_has_blackbox"
+    if q["dont_verify"] or q["elab147"]:
+        return "dead_ref_has_dontverify_or_elab147"
+    if not assembly and q.get("unmatched_impl"):
+        return f"dead_ref_impl_not_clean:{q['unmatched_impl']}"
+    if unread_points is None:
+        return "dead_ref_no_unread_points_file(须 fm_eq.tcl 导出)"
+    obs_ref = {p for kind, p in unread_points if kind == "ref"}
+    obs_other = {(k, p) for k, p in unread_points if k != "ref"}
+    if obs_other:
+        return f"dead_ref_nonref_unread:{len(obs_other)}"
+    declared = {e["ref_path"] for e in decl.get("entries", [])}
+    if obs_ref != declared:
+        extra, missing = obs_ref - declared, declared - obs_ref
+        return (f"dead_ref_set_mismatch:extra={len(extra)},missing={len(missing)}"
+                + (f",e.g.{sorted(extra)[0]}" if extra else ""))
+    q["dead_ref_points"] = len(declared)
+    return True
+
+
+def verdict(log_text, make_rc=0, mode="signoff-strict", expected_top=None, allowlist=0,
+            dead_ref_decl=None, unread_points=None):
     q = {"passing": None, "failing": None, "unverified": None, "unmatched": None, "aborted": None,
          "unread": None, "blackbox_out": None, "markers": 0, "make_rc": make_rc, "mode": mode,
          "native": None, "top": None, "dont_verify": bool(_DONTVERIFY.search(log_text)),
@@ -178,12 +212,31 @@ def verdict(log_text, make_rc=0, mode="signoff-strict", expected_top=None, allow
         if (q["unmatched"] or 0) > allowlist:
             q["reason"] = f"assembly_unmatched>{allowlist}:{q['unmatched']}"
             return "PARTIAL", q
-        for k in ("unverified", "aborted", "unread"):
+        for k in ("unverified", "aborted"):
             if q.get(k) not in (0, None):
                 q["reason"] = f"assembly_{k}!=0"
                 return "PARTIAL", q
+        if q.get("unread"):
+            # 同 strict: 唯一残余是 golden 侧 cone-dead 未读点且与声明精确相等 ⇒ PASS_DEAD_REF
+            if dead_ref_decl is None:
+                q["reason"] = "assembly_unread!=0"
+                return "PARTIAL", q
+            dr = _dead_ref_check(q, dead_ref_decl, unread_points, assembly=True)
+            if dr is True:
+                return "PASS_DEAD_REF", q
+            q["reason"] = dr
+            return "PARTIAL", q
         return "SUCCEEDED", q
     # signoff-strict: 全部质保维为 0 + 无任何黑盒(strict-replacement 不允许子模块抽象)。
+    # 例外 PASS_DEAD_REF: 唯一残余是 **golden 侧 cone-dead 未读点**(impl 干净),
+    # 且观测集合与声明文件**精确相等**(多一条/少一条/换一条都退 PARTIAL)。
+    # 不是 waiver: 声明逐条列出 ref_path, FM 仍证明了全部可达点等价。
+    if dead_ref_decl is not None and q.get("unread"):
+        dr = _dead_ref_check(q, dead_ref_decl, unread_points)
+        if dr is True:
+            return "PASS_DEAD_REF", q
+        q["reason"] = dr
+        return "PARTIAL", q
     for k in ("unverified", "unmatched", "aborted", "unread"):
         if q.get(k) not in (0, None):
             q["reason"] = f"strict_{k}!=0"
@@ -204,9 +257,27 @@ if __name__ == "__main__":
     ap.add_argument("--mode", default="signoff-strict")
     ap.add_argument("--top", default=None)
     ap.add_argument("--allowlist", type=int, default=0)
+    ap.add_argument("--dead-ref", default=None,
+                    help="PASS_DEAD_REF 声明 json(entries[].ref_path 精确枚举)")
+    ap.add_argument("--unread-points", default=None,
+                    help="fm_eq.tcl 导出的 unread_points.txt")
     a = ap.parse_args()
     txt = open(a.log).read()
-    v, q = verdict(txt, a.rc, a.mode, a.top, a.allowlist)
+    decl = None
+    if a.dead_ref and os.path.exists(a.dead_ref):
+        with open(a.dead_ref) as f:
+            decl = json.load(f)
+    pts = None
+    if a.unread_points and os.path.exists(a.unread_points):
+        pts = []
+        with open(a.unread_points) as f:
+            for ln in f:
+                if "\t" in ln:
+                    k, p = ln.rstrip("\n").split("\t", 1)
+                    pts.append((k, p))
+    v, q = verdict(txt, a.rc, a.mode, a.top, a.allowlist, decl, pts)
     print(v + "\t" + json.dumps(q, ensure_ascii=False))
-    # P0-3: 只有 SUCCEEDED 退 0;其余非零(签核 CI fail-closed)
-    sys.exit(0 if v == "SUCCEEDED" else 1)
+    # P0-3: 只有 SUCCEEDED 退 0；其余非零(签核 CI fail-closed)。
+    # PASS_DEAD_REF 例外：仅当调用方显式给了 --dead-ref 声明文件(即该目标已被审计、
+    # 声明已提交)时才算通过——没有声明的 unread 一律非零退出，不会被静默放行。
+    sys.exit(0 if v == "SUCCEEDED" or (v == "PASS_DEAD_REF" and a.dead_ref) else 1)
