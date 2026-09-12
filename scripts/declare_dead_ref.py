@@ -18,7 +18,9 @@ import json
 import pathlib
 import sys
 
-NEW = pathlib.Path('/home/eda/xs-env/xs-v2-sv')
+import os
+_HERE = pathlib.Path(__file__).resolve().parent
+NEW = pathlib.Path(os.environ.get('XSSV_HOME') or _HERE.parent)
 
 
 def main():

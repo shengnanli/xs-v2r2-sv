@@ -108,7 +108,9 @@ def _hier_key(path):
 def _green_children_status():
     """读归一化台账，返回 {target: status}（green_child 依据）。"""
     import pathlib as _pl
-    f = _pl.Path('/home/eda/xs-env/xs-v2-sv/docs/ledger_normalized.tsv')
+    _home = _pl.Path(os.environ.get('XSSV_HOME')
+                     or _pl.Path(__file__).resolve().parent.parent)
+    f = _home / 'docs' / 'ledger_normalized.tsv'
     st = {}
     if f.exists():
         for ln in f.read_text().splitlines():

@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+# run_proof.sh —— 在 detached clean worktree 里跑一个目标的 proof（codex 0140 P0-2）。
+#
+# 为什么要 worktree：receipt 必须绑定 **committed 字节**。在活动工作树里跑，证明输入
+# 可能在跑的过程中被改，事后再 hash 就成了"执行 A、记录 B"。这里的做法是：
+#   1. 要求仓库 clean（有未提交改动直接退出，不给绕过开关）；
+#   2. 在 HEAD 上开一个 detached worktree（只读意义上的隔离：别人改活动树不影响它）；
+#   3. 在 worktree 内跑 make fm-<target>，receipt 随之产生，dirty 必然为 false；
+#   4. 跑前/跑后对 impl 闭包文件与 HEAD 各取一次摘要，要求完全一致；
+#   5. 把 receipt / native_facts / 报告 收进证据目录，然后删掉 worktree。
+#
+# 用法: scripts/run_proof.sh <ut_dir> <target> [<target>...]
+#   EVIDENCE_ROOT=<dir>  证据落地根目录（默认 <repo>/evidence/<commit>）
+set -uo pipefail
+
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO="$(cd "$HERE/.." && pwd)"
+UT_DIR="${1:?用法: run_proof.sh <ut_dir> <target>...}"; shift
+TARGETS=("$@")
+[[ ${#TARGETS[@]} -gt 0 ]] || { echo "ERROR: 未指定 target" >&2; exit 2; }
+
+cd "$REPO"
+if [[ -n "$(git status --porcelain)" ]]; then
+  echo "ERROR: 仓库 dirty，proof 必须跑在 committed 字节上。先提交或 stash：" >&2
+  git status --porcelain | head -5 >&2
+  exit 3
+fi
+COMMIT="$(git rev-parse HEAD)"
+HEAD_BEFORE="$COMMIT"
+EVID="${EVIDENCE_ROOT:-$REPO/evidence/${COMMIT:0:12}}"
+WT="$(mktemp -d "${TMPDIR:-/tmp}/xsv2-proof-XXXXXX")"
+
+cleanup() { cd "$REPO"; git worktree remove --force "$WT" >/dev/null 2>&1 || rm -rf "$WT"; }
+trap cleanup EXIT
+
+git worktree add --detach "$WT" "$COMMIT" >/dev/null || exit 4
+echo "[run_proof] worktree=$WT commit=${COMMIT:0:12} ut=$UT_DIR targets=${TARGETS[*]}"
+
+# 跑前闭包摘要（worktree 内 tracked 文件的整体摘要）
+digest_worktree() { (cd "$WT" && git ls-files -s | sha256sum | cut -d' ' -f1); }
+D_BEFORE="$(digest_worktree)"
+
+rc_all=0
+mkdir -p "$EVID"
+for t in "${TARGETS[@]}"; do
+  ( cd "$WT/verif/ut/$UT_DIR" && XSSV_HOME="$WT" make "fm-$t" ) ; rc=$?
+  dst="$EVID/$t"; mkdir -p "$dst"
+  src="$WT/verif/ut/$UT_DIR/fm_work/$t"
+  for f in receipt.json fm.log black_boxes.rpt unread_points.txt unmatched.rpt; do
+    [[ -f "$src/$f" ]] && cp "$src/$f" "$dst/" 2>/dev/null
+  done
+  [[ -d "$src/sidecar" ]] && cp -r "$src/sidecar" "$dst/" 2>/dev/null
+  echo "$rc" > "$dst/MAKE_RC"
+  if [[ $rc -ne 0 ]]; then rc_all=$rc; fi
+  echo "[run_proof] $t rc=$rc evidence=$dst"
+done
+
+D_AFTER="$(digest_worktree)"
+HEAD_AFTER="$(git -C "$REPO" rev-parse HEAD)"
+{
+  echo "commit	$COMMIT"
+  echo "head_before	$HEAD_BEFORE"
+  echo "head_after	$HEAD_AFTER"
+  echo "worktree_digest_before	$D_BEFORE"
+  echo "worktree_digest_after	$D_AFTER"
+  echo "targets	${TARGETS[*]}"
+} > "$EVID/RUN_CONTEXT.tsv"
+
+if [[ "$D_BEFORE" != "$D_AFTER" || "$HEAD_BEFORE" != "$HEAD_AFTER" ]]; then
+  echo "ERROR: 跑期间输入发生变化（worktree 摘要或 HEAD 变了）—— 证据作废" >&2
+  exit 5
+fi
+echo "[run_proof] 输入前后一致；证据在 $EVID"
+exit $rc_all

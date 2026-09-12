@@ -17,7 +17,9 @@ import argparse, json, os, pathlib, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import bbox_parse
 
-NEW = pathlib.Path('/home/eda/xs-env/xs-v2-sv')
+import os
+_HERE = pathlib.Path(__file__).resolve().parent
+NEW = pathlib.Path(os.environ.get('XSSV_HOME') or _HERE.parent)
 
 ap = argparse.ArgumentParser()
 ap.add_argument('top')

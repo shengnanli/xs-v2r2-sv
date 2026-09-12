@@ -82,17 +82,17 @@ fm-%:
 	fm_shell -64 -work_path fm_work/$* -file $(XSSV_HOME)/scripts/fm_eq.tcl \
 	    > fm_work/$*/fm.log 2>&1; \
 	rc=$$?; \
-	v=$$(python3 $(XSSV_HOME)/scripts/fm_verdict.py fm_work/$*/fm.log --rc $$rc --mode $(FM_MODE) --top $* --allowlist $(FM_ALLOWLIST) \
+	v=$$(XSSV_HOME=$(XSSV_HOME) python3 $(XSSV_HOME)/scripts/fm_verdict.py fm_work/$*/fm.log --rc $$rc --mode $(FM_MODE) --top $* --allowlist $(FM_ALLOWLIST) \
 	    $(if $(wildcard $(XSSV_HOME)/verif/dead_ref/$*.json),--dead-ref $(XSSV_HOME)/verif/dead_ref/$*.json --unread-points fm_work/$*/unread_points.txt,) \
 	    --bbox-report fm_work/$*/black_boxes.rpt \
 	    $(if $(wildcard $(XSSV_HOME)/verif/allow/$*.json),--allow $(XSSV_HOME)/verif/allow/$*.json,)); \
 	vrc=$$?; echo "$$v"; \
-	python3 $(XSSV_HOME)/scripts/make_receipt.py --top $* --workdir fm_work/$* \
+	XSSV_HOME=$(XSSV_HOME) python3 $(XSSV_HOME)/scripts/make_receipt.py --top $* --workdir fm_work/$* \
 	    --ref-srcs "$(GOLDEN_RTL)/$*.sv $(addprefix $(GOLDEN_RTL)/,$(FM_REF_DEPS_$*))" \
 	    --impl-srcs "$(abspath $(RTL_SRCS) $(RTL_GOLDEN_DEPS))" \
 	    --mode $(FM_MODE) --allowlist $(FM_ALLOWLIST) \
 	    --vmucp "$(if $(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS),$(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS),false)" \
-	    --rc $$rc --verdict "$$v" || exit 1; \
+	    --rc $$rc --verdict "$$v" --expect-run-id "$(FM_RUN_ID)" || exit 1; \
 	exit $$vrc
 
 clean:

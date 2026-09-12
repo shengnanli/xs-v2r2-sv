@@ -24,8 +24,9 @@ import pathlib
 import subprocess
 import sys
 
-G1 = pathlib.Path('/home/eda/xs-env/G1-canonical')
-NEW = pathlib.Path('/home/eda/xs-env/xs-v2-sv')
+_HERE = pathlib.Path(__file__).resolve().parent
+NEW = pathlib.Path(os.environ.get('XSSV_HOME') or _HERE.parent)
+G1 = pathlib.Path(os.environ.get('G1_CANONICAL') or '/home/eda/xs-env/G1-canonical')
 
 
 def sha(p):
@@ -53,6 +54,11 @@ def main():
     ap.add_argument('--vmucp', default='false')
     ap.add_argument('--rc', default='0')
     ap.add_argument('--verdict', required=True)
+    ap.add_argument('--expect-run-id', default=None,
+                    help='本次 FM_RUN_ID；与 sidecar 记录不符即拒（防捡到上次残留 facts）')
+    ap.add_argument('--allow-dirty', action='store_true',
+                    help='仅用于本地调试：允许 dirty 工作树（产出的 receipt 标记 provisional，'
+                         '不可用于晋升）')
     a = ap.parse_args()
 
     wd = pathlib.Path(a.workdir)
@@ -82,10 +88,21 @@ def main():
         if p.exists():
             pins[f] = sha(p)
 
+    # run_id 绑定：sidecar facts 必须属于本次 run（否则可能捡到上一次残留）
+    if a.expect_run_id and facts.get('run_id') != a.expect_run_id:
+        sys.exit(f"ERROR: sidecar run_id({facts.get('run_id')}) != 本次 FM_RUN_ID"
+                 f"({a.expect_run_id}) —— 拒绝出 receipt")
+
     impl_commit = subprocess.run('git rev-parse HEAD', shell=True, cwd=str(NEW),
                                  stdout=subprocess.PIPE, universal_newlines=True).stdout.strip()
-    dirty = subprocess.run('git status --porcelain -- rtl scripts verif', shell=True, cwd=str(NEW),
+    # codex 0140 P0-2: dirty 工作树**直接拒产 receipt**（不再只是记录一个 flag）。
+    # 证明输入必须是 committed 字节；正规跑法是 run_proof.sh 起 detached clean worktree。
+    dirty = subprocess.run('git status --porcelain', shell=True, cwd=str(NEW),
                            stdout=subprocess.PIPE, universal_newlines=True).stdout.strip()
+    if dirty and not a.allow_dirty:
+        sys.exit('ERROR: impl 工作树 dirty —— 拒绝出 receipt。'
+                 '请用 scripts/run_proof.sh（detached clean worktree）或先提交改动。'
+                 f'\n首条: {dirty.splitlines()[0][:100]}')
 
     receipt = {
         'schema': 'xs-v2-sv-receipt-v1',
@@ -96,6 +113,8 @@ def main():
         'impl_closure': closure(a.impl_srcs.split()),
         'impl_commit': impl_commit,
         'impl_worktree_dirty': bool(dirty),
+        'provisional': bool(dirty),   # dirty 只在 --allow-dirty 调试路径出现
+        'impl_closure_hashed_at': 'post_run',
         'proof_config': {
             'fm_mode': a.mode,
             'fm_allowlist_numeric_prefilter': a.allowlist,
@@ -109,8 +128,11 @@ def main():
         'verdict': vname,
         'verdict_detail': vq,
     }
+    # 原子写：先写 tmp 再 rename（避免中断留下半截 receipt）
     out = wd / 'receipt.json'
-    out.write_text(json.dumps(receipt, ensure_ascii=False, indent=1))
+    tmp = wd / 'receipt.json.tmp'
+    tmp.write_text(json.dumps(receipt, ensure_ascii=False, indent=1))
+    os.replace(str(tmp), str(out))
     print(f'receipt: {out} (verdict={vname}, canonical={cid[:20]}…, '
           f'golden={len(receipt["golden_closure"])} files, dirty={bool(dirty)})')
 
