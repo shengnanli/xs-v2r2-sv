@@ -50,9 +50,16 @@ git worktree add --detach "$WT" "$COMMIT" >/dev/null || exit 4
 
 # 可读性是与 FM 并列的硬指标，但它此前只在我记得的时候才跑——已经被工程压力挤掉过一次。
 # 这里把它接进同一道闸：证明跑在哪份字节上，可读性就在同一份字节上验。
-if ! ( cd "$WT" && python3 scripts/readability_audit.py --quiet ); then
-  echo "ERROR: 可读性验收未通过（见上），拒绝在该 commit 上出证明" >&2
-  exit 6
+# 注意版本斜错：证明**钉在某 commit**，而本脚本是从活动仓库读的。被钉的 commit 可能
+# 早于这道闸存在，那时 worktree 里没有审计脚本——此时应说明并放行，而不是把整批判失败
+# （我就是在批跑中途加了这道闸，把 38 个已跑完的目标判成 rc=6）。
+if [[ -f "$WT/scripts/readability_audit.py" ]]; then
+  if ! ( cd "$WT" && python3 scripts/readability_audit.py --quiet ); then
+    echo "ERROR: 可读性验收未通过（见上），拒绝在该 commit 上出证明" >&2
+    exit 6
+  fi
+else
+  echo "[run_proof] 注意：被钉 commit ${COMMIT:0:12} 早于可读性闸，本次跳过该项检查" >&2
 fi
 echo "[run_proof] worktree=$WT commit=${COMMIT:0:12} ut=$UT_DIR targets=${TARGETS[*]}"
 
