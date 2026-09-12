@@ -23,6 +23,24 @@
 //  完成); 本核重写的是「TX 路由拆分 / RX ready 解复用 / snoop 跟踪状态机」这些路由
 //  与时序逻辑。
 // =============================================================================
+// 本文件导航（共 2050 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+//   L59    TXREQ —— 请求通道 (RN→HN), 上游全字段 (CHIBundleUpstream REQ)
+//   L95    TXRSP —— 响应通道 (RN→HN)
+//   L105   TXDAT —— 写数据通道 (RN→HN), 上游全字段
+//   L133   RXSNP —— snoop 通道 (HN→RN)
+//   L146   RXRSP —— 响应通道 (HN→RN) 喂给 rxrsp 仲裁器的载荷 (不含 srcID, srcID 仅用于
+//   L160   RXDAT —— 读数据通道 (HN→RN) 喂给 rxdat 仲裁器的载荷 (含 srcID, 仲裁器输出端
+//   L179   路由位提取
+//   L181   TXREQ 按物理地址的 bank 交织位 addr[7:6] 选目标 HN (0..3)
+//   L193   RNXbar —— 香山 V2R2 CHI Request-Node 交叉开关 (可读重写核 xs_RNXbar_core)
+//   L195   源自 OpenLLC 的 RNXbar: 1 个上游 Request-Node (io_in_0, 携带完整 CHIBundle
+//   L585   上行 TX: 把 RN (io_in_0) 的 TXREQ / TXRSP / TXDAT flit 打包成结构体, 喂给
+//   L775   下行 RX —— snoop 跟踪状态机 (本核相对 SNXbar 的核心增量)
+//   L1009  下行 RX —— RXRSP / RXDAT (4 HN bank → 1 RN 仲裁汇聚)
+//   L1189  端口输出装配
+//   L1191  ---- RN (io_in_0) 侧: rx valid / tx ready ----
+//   L1345  golden 同名 wrapper
+//
 package rnxbar_pkg;
 
   // 下游 Home-Node bank 数量 (4); 上游 Request-Node 数量 (1, 单 RN)。

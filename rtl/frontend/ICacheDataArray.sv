@@ -41,6 +41,24 @@
 //   例化并完成 DFT 互联。本核只产出/接收各 (way,bank) SRAM 的读写端口信号（见末尾的
 //   sram_* 数组端口），不含存储体与 DFT 细节，从而聚焦数据阵列本身的可读逻辑。
 // =============================================================================
+// 本文件导航（共 2233 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+//   L102   0) 派生常量
+//   L109   1) 写数据切 bank + 计算校验码
+//   L112   纯函数：对 64bit 数据算 1bit 奇偶校验码
+//   L125   2) 读地址译码：bankSel / lineSel / masks
+//   L165   3) masks 打一拍：第 1 拍据此对各 bank 做 Mux1H 选路
+//   L183   4) 驱动各 (way,bank) SRAM 读/写端口
+//   L202   5) 读数据选路
+//   L221   6) 读 ready：写优先，有写请求时读不被接受
+//   L228   ICacheDataArray —— ICacheDataArray 包装层
+//   L230   本文件由 scripts/gen_icachedata.py 生成
+//   L240   golden 同名 wrapper
+//   L563   把扁平 read/write 端口聚合成可读核的数组端口
+//   L614   可读核：数据阵列全部逻辑
+//   L658   Mbist <-> SRAM DFT 互联网
+//   L982   32 块数据 SRAM 黑盒
+//   L1850  4 条 Mbist 流水黑盒
+//
 
 module xs_ICacheDataArray #(
     parameter int NUM_WAYS  = 4,    // 路数

@@ -13,7 +13,8 @@
      - 头里若列了"已覆盖变体/覆盖 X 个"之类清单，清单中的模块必须真在本文件里；
      - 头里不得引用已不存在的文件（单文件规范下 `<X>_wrapper.sv` 已并入，再提就是误导）。
   D. 单文件结构：模块声明顺序须是 package → xs_*_core → golden 同名 wrapper。
-  E. 体量提示：单文件 > 2000 行给出提示（不判失败，仅提示人工评估是否该拆核）。
+  E. 大文件导航：>1500 行的文件不拆（保持一模块一文件），但必须有"本文件导航"，
+     且导航行号须真落在分节注释上——导航一旦腐烂就成了误导。
 
 退出码非零 = 有 A/B/C/D 类问题。
 """
@@ -161,8 +162,25 @@ def audit_file(p, modidx=None):
         for msg in claim_problems(p, text, hdr, modidx, REPO):
             problems.append(('F', msg))
 
+    # E 类（大文件）：用户裁定**不拆文件**，保持"一个 golden 模块一个文件"。
+    # 代价是读者要在两千行里找路，所以改判为：>1500 行必须有"本文件导航"，
+    # 且导航里的行号必须真落在一条分节注释上（否则导航会随改动腐烂成误导）。
     n = text.count('\n') + 1
-    hint = [f'{rel}: {n} 行，建议人工评估是否该把核拆细'] if n > 2000 else []
+    hint = []
+    if n > 1500:
+        lines = text.splitlines()
+        if '本文件导航' not in text:
+            problems.append(('E', f'{rel}: {n} 行且无"本文件导航"——不拆文件就必须给导航'))
+        else:
+            stale = []
+            for m in re.finditer(r'^//\s+L(\d+)\s+(\S.*)$', text, re.M):
+                ln = int(m.group(1))
+                near = [lines[i].strip() for i in range(max(0, ln - 2), min(len(lines), ln + 1))]
+                if not any(x.startswith('//') and len(x) > 6 for x in near):
+                    stale.append(ln)
+            if stale:
+                problems.append(('E', f'{rel}: 导航行号 {stale[:4]} 没落在分节注释上（导航已腐烂）'))
+        hint = [f'{rel}: {n} 行（按裁定不拆，已配导航）']
     return problems, hint
 
 
@@ -184,15 +202,15 @@ def main():
     print(f'可读性验收：扫描 {nfiles} 个文件')
     labels = {'A': 'A 代码区禁用命名', 'B': 'B 文件头缺失/过短',
               'C': 'C 头注释与内容不符', 'D': 'D 单文件结构顺序',
-              'F': 'F 头注释断言与事实矛盾'}
-    for k in 'ABCDF':
+              'E': 'E 大文件导航缺失/腐烂', 'F': 'F 头注释断言与事实矛盾'}
+    for k in 'ABCDEF':
         print(f'  {labels[k]}: {cnt.get(k, 0)}')
     if hints:
-        print(f'  E 体量提示（不判失败）: {len(hints)}')
+        print(f'  （大文件，按裁定不拆）: {len(hints)}')
         for h in hints[:5]:
             print(f'      {h}')
     if not a.quiet:
-        for k in 'ABCDF':
+        for k in 'ABCDEF':
             items = [m for kk, m in all_problems if kk == k]
             for m in items[:8]:
                 print(f'    [{k}] {m}')

@@ -13,6 +13,14 @@
 //    D (Grant/AccessAck)  manager->client 应答
 //    E (GrantAck)         client->manager 授权确认
 // =============================================================================
+// 本文件导航（共 1911 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+//   L12    TLBuffer_13 由 4 个完全相同的 bank 组成, 每个 bank 是一条 TL-C 五通道 (A/B/C/D/E)
+//   L130   xs_TLBuffer_13_bank —— TLBuffer_13 的单个 bank (TL-C 五通道 skid 缓冲)
+//   L132   五通道各插一个 Queue2 (两拍 skid FIFO)
+//   L366   TLBuffer_13 —— 4×bank TL-C 五通道时序缓冲 (可读重写核 xs_TLBuffer_13_core)
+//   L368   golden 把 4 个相同的 bank 扁平展开 (20 个 Queue2 / 374 端口)
+//   L1156  golden 同名 wrapper
+//
 package tlbuffer13_pkg;
   localparam int TL_NUM_BANKS = 4;
 
