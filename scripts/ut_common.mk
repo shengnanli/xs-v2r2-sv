@@ -37,14 +37,51 @@ UT_SRCS    := $(addprefix $(UT_GEN_DIR)/,$(notdir $(RTL_SRCS)))
 # FM 时并入 impl 侧与 ref 侧同源 elaborate）。模块 Makefile 可选定义。
 RTL_GOLDEN_DEPS ?=
 
-.PHONY: compile run verdi fm clean derive
+.PHONY: compile run verdi fm clean derive portlint
+
+# ---------------------------------------------------------------------------
+# 端口契约闸（codex 0145 决策三）：**UT 之前**必须过 G1 端口契约 lint。
+#
+# 核对对象 = FM_VARIANTS 里每个 golden 顶层名 vs RTL_SRCS 里的同名 wrapper，
+# 逐项比端口集合/方向/packed 维/unpacked 维/总位宽（判据见 port_contract_lint.py）。
+#
+# 为什么用 FM_VARIANTS 判定"本 UT 是否适用"：FM_VARIANTS 就是本 UT 声称要证明的
+# golden 顶层集合——有它才有"golden 同名模块"这个对位对象。FM_VARIANTS 为空的 UT
+# （纯学习用例 / 家族聚合 tb）本来就不对任何 golden 模块下断言，没有契约可核；而且
+# 下面的 `fm` 目标本身就拒绝空 FM_VARIANTS，所以"清空 FM_VARIANTS 绕闸"是自断签核
+# 路，不构成后门。这里仍然打一行显式 SKIP，别让它悄悄溜过去。
+#
+# PORTLINT_EXTRA_SRCS：极少数 wrapper 不在 RTL_SRCS 里（例如被别处 include）时，
+# 由模块 Makefile 补充搜索范围。它只能**扩大**搜索范围，不能放宽任何判据。
+# PORTLINT_ORDER：warn（默认）/ fail —— 端口顺序不一致的处置。
+PORTLINT_EXTRA_SRCS ?=
+PORTLINT_ORDER      ?= warn
+PORTLINT_CMD = python3 $(XSSV_HOME)/scripts/port_contract_lint.py \
+               --order $(PORTLINT_ORDER) \
+               $(addprefix --impl-src ,$(abspath $(RTL_SRCS) $(PORTLINT_EXTRA_SRCS))) \
+               $(FM_VARIANTS)
+
+portlint:
+ifeq ($(strip $(FM_VARIANTS)),)
+	@echo "[SKIP] portlint($(MODULE)): FM_VARIANTS 为空 —— 本 UT 不对任何 golden 顶层"
+	@echo "       下断言，没有端口契约可核。显式 SKIP，**不产生任何 signoff receipt**"
+	@echo "       （codex 0146）；fm / fm-% 目标也一并拒绝空 or 未声明的顶层。"
+else
+	@echo "=== portlint: $(MODULE) [$(FM_VARIANTS)] ==="
+	@$(PORTLINT_CMD) || { \
+	  echo "=== PORTLINT FAILED ($(MODULE)) —— 端口契约与 G1 golden 不一致，UT 前置闸拦下 ==="; \
+	  exit 1; }
+endif
 
 derive $(UT_SRCS): $(RTL_SRCS) $(XSSV_HOME)/scripts/derive_ut_impl.py
 	python3 $(XSSV_HOME)/scripts/derive_ut_impl.py --out $(UT_GEN_DIR) $(RTL_SRCS)
 
 compile: simv
 
-simv: $(UT_SRCS) $(TB_SRCS) $(GOLDEN_SRCS) $(RTL_GOLDEN_DEPS)
+# order-only 依赖：portlint 在 simv 的配方之前**总是**跑（含 -j 并行），但不会因为
+# 它是 .PHONY 就把 simv 判成过期而反复重新链接。`make compile` / `make run` 都会
+# 经过这道闸。
+simv: $(UT_SRCS) $(TB_SRCS) $(GOLDEN_SRCS) $(RTL_GOLDEN_DEPS) | portlint
 	$(VCS) $(UT_SRCS) $(RTL_GOLDEN_DEPS) $(GOLDEN_SRCS) $(TB_SRCS) -top tb -o simv
 
 run: simv
@@ -72,7 +109,16 @@ FM_ALLOWLIST ?= 0
 # 秒数一跳就被 run_id 绑定判为"捡到别次的 facts"。
 FM_RUN_ID := $(if $(FM_RUN_ID),$(FM_RUN_ID),$(MODULE)-$(shell date -u +%Y%m%dT%H%M%SZ)-$(shell git -C $(XSSV_HOME) rev-parse --short HEAD 2>/dev/null || echo nogit))
 
+# codex 0146：FM_VARIANTS 为空只能显式 SKIP，**不能产生 signoff receipt**。
+# 上面的 `fm` 目标已经拒绝空 FM_VARIANTS；这里把同一条规矩钉到 fm-% 上，堵住
+# 直接 `make fm-<某个没声明的顶层>` 绕过去、却照样生成 receipt 的路。
+# 合法用法（`fm` 展开出来的、或手工重跑某个已声明变体）不受影响。
 fm-%:
+	@case " $(strip $(FM_VARIANTS)) " in \
+	  *" $* "*) ;; \
+	  *) echo "ERROR($(MODULE)): '$*' 不在 FM_VARIANTS='$(FM_VARIANTS)' 里 ——" \
+	          "未声明的顶层不许出 receipt（codex 0146）"; exit 1;; \
+	esac
 	@mkdir -p fm_work/$*/sidecar
 	@rm -rf fm_work/$*/sidecar && mkdir -p fm_work/$*/sidecar
 	@echo "=== FM: $* (mode=$(FM_MODE)) ==="
