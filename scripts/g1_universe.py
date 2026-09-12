@@ -24,7 +24,8 @@ NEW = pathlib.Path('/home/eda/xs-env/xs-v2-sv')
 MANIFEST = pathlib.Path('/home/eda/xs-env/xs-signoff/scripts/sidecar/manifest_305.json')
 SCALA = re.compile(rb'\.scala:\d+')
 
-PASS_STATES = {'WORKING_PASS', 'WORKING_PASS_DEAD_REF', 'WORKING_MERGED_PASS'}
+PASS_STATES = {'WORKING_PASS', 'WORKING_PASS_DEAD_REF', 'WORKING_MERGED_PASS',
+               'REVALIDATED_PASS', 'REVALIDATED_PASS_DEAD_REF'}
 
 
 def norm_bytes(p, self_name):
@@ -74,6 +75,23 @@ def main():
             continue
         f = ln.split('\t')
         status[f[0]] = (f[1], f[2] if len(f) > 2 else '')
+
+    # ★REVALIDATED_*：由 receipt **机械派生**，不接受手工写入（codex 0141）。
+    # 条件：存在非 provisional 的 receipt、verdict 为通过、且 canonical 与当前 G1 一致。
+    import sys as _s
+    _s.path.insert(0, str(NEW / 'scripts'))
+    import build_receipt_index as _BRI
+    cid = (pathlib.Path('/home/eda/xs-env/G1-canonical/CANONICAL_ID.txt')
+           .read_text().strip())
+    revalidated = 0
+    for tgt, rec in _BRI.load(NEW).items():
+        if (rec['provisional'] == 'false' and rec['canonical_id'] == cid
+                and rec['verdict'] in ('SUCCEEDED', 'PASS_DEAD_REF')):
+            note = (f"receipt {rec['path']} @{rec['impl_commit'][:12]} "
+                    f"canonical={cid[:16]}…")
+            status[tgt] = ('REVALIDATED_' + rec['verdict'].replace('SUCCEEDED', 'PASS'), note)
+            revalidated += 1
+    print(f'由 receipt 机械派生 REVALIDATED_*: {revalidated} 个')
 
     rows, g1_of = [], {}
     for t in old_targets:

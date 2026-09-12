@@ -40,9 +40,27 @@ def ut_dirs():
     return out
 
 
+def ledger_status():
+    st = {}
+    f = REPO / 'docs' / 'fastlane_ledger.tsv'
+    if f.exists():
+        for ln in f.read_text().splitlines():
+            if ln.startswith('#') or not ln.strip():
+                continue
+            c = ln.split('\t')
+            st[c[0]] = c[1]
+    return st
+
+
 def classify():
-    groups = {'no_dep': [], 'needs_allow': [], 'has_green_child': []}
+    # 只复验"已迁到 G1 且此前通过"的目标。RTL 还没迁的 REWRITE_TODO/SPECIAL 等
+    # 必然 FM FAILED——那不是回归，把它们混进批跑只会淹没真信号。
+    st = ledger_status()
+    groups = {'no_dep': [], 'needs_allow': [], 'has_green_child': [], 'not_candidate': []}
     for t, (d, mode) in sorted(ut_dirs().items()):
+        if not st.get(t, '').startswith('WORKING_'):
+            groups['not_candidate'].append((t, d))
+            continue
         ap = REPO / 'verif' / 'allow' / f'{t}.json'
         if mode == 'assembly':
             if not ap.exists():
@@ -79,13 +97,16 @@ def main():
     ap.add_argument('--run', action='store_true')
     ap.add_argument('--jobs', type=int, default=6)
     ap.add_argument('--limit', type=int, default=0)
+    ap.add_argument('--with-children', action='store_true',
+                    help='把含 green_child 依赖的父目标一并纳入（组合性绑定已就绪后可用）')
     a = ap.parse_args()
 
     g = classify()
     print(f"无依赖可直接复验: {len(g['no_dep'])}")
     print(f"assembly 但缺 allow 声明（须先补声明，不自动放行）: {len(g['needs_allow'])}"
           + ('  ' + ' '.join(t for t, _ in g['needs_allow'][:10]) if g['needs_allow'] else ''))
-    print(f"含 green_child 依赖（后批）: {len(g['has_green_child'])}"
+    print(f"非复验对象（RTL 未迁 G1 / 非 WORKING 态）: {len(g['not_candidate'])}")
+    print(f"含 green_child 依赖: {len(g['has_green_child'])}"
           + ('  ' + ' '.join(t for t, _ in g['has_green_child'][:10]) if g['has_green_child'] else ''))
     if a.plan or not a.run:
         return 0
@@ -93,7 +114,8 @@ def main():
     head = subprocess.run(['git', 'rev-parse', 'HEAD'], cwd=str(REPO),
                           stdout=subprocess.PIPE, universal_newlines=True).stdout.strip()
     evid = str(REPO / 'evidence' / head[:12])
-    todo = g['no_dep'][:a.limit] if a.limit else g['no_dep']
+    todo = g['no_dep'] + (g['has_green_child'] if a.with_children else [])
+    todo = todo[:a.limit] if a.limit else todo
     print(f'== 复验 {len(todo)} 个目标（commit {head[:12]}, jobs={a.jobs}）==', flush=True)
     with ThreadPoolExecutor(max_workers=a.jobs) as ex:
         rows = list(ex.map(run_one, [(t, d, evid) for t, d in todo]))

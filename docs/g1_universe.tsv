@@ -1,31 +1,31 @@
 # G1 主 universe 对账（g1_universe.py 生成；主分母 = 上轮 306 目标解析到 G1）
 # old_target	g1_name	resolve	delta_class	status	note
-AXI4Deinterleaver	AXI4Deinterleaver	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
-AXI4IdIndexer	AXI4IdIndexer	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
-AXI4IdIndexer_1	AXI4IdIndexer_1	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
-AXI4Xbar	AXI4Xbar	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
+AXI4Deinterleaver	AXI4Deinterleaver	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/AXI4Deinterleaver/receipt.json @ba7e4c59d337 canon
+AXI4IdIndexer	AXI4IdIndexer	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/AXI4IdIndexer/receipt.json @ba7e4c59d337 canonical
+AXI4IdIndexer_1	AXI4IdIndexer_1	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/AXI4IdIndexer_1/receipt.json @ba7e4c59d337 canonic
+AXI4Xbar	AXI4Xbar	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/AXI4Xbar/receipt.json @ba7e4c59d337 canonical=G1-a
 AXI4Xbar_1	AXI4Xbar_1	same_name	REWRITE_L	NOT_STARTED	
-Alu	Alu	same_name	REWRITE_S	REWRITE_TODO	G1加perfDebugInfo透传+io_in_ready端口+逻辑改动, 需按G1重做核
+Alu	Alu	same_name	REWRITE_S	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/Alu/receipt.json @ba7e4c59d337 canonical=G1-a4ea14
 Backend	Backend	same_name	REWRITE_L	NOT_STARTED	
 BankedDataArray	BankedDataArray	same_name	REWRITE_L	NOT_STARTED	
 Bku	Bku	same_name	REWRITE_M	NOT_STARTED	
 BranchUnit	BranchUnit	same_name	REWRITE_M	NOT_STARTED	
 BypassNetwork	BypassNetwork	same_name	REWRITE_L	NOT_STARTED	
-CHILogger	CHILogger	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
+CHILogger	CHILogger	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/CHILogger/receipt.json @ba7e4c59d337 canonical=G1-
 CLINT	-	gone_in_g1	RESTRUCTURED	NOT_STARTED	
 Composer	Composer	same_name	REWRITE_L	NOT_STARTED	
-CompressUnit	CompressUnit	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
+CompressUnit	CompressUnit	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/CompressUnit/receipt.json @ba7e4c59d337 canonical=
 CtrlBlock	CtrlBlock	same_name	REWRITE_L	NOT_STARTED	
 DCache	DCache	same_name	REWRITE_L	NOT_STARTED	
 DCacheWrapper	DCacheWrapper	same_name	REWRITE_L	NOT_STARTED	
 DataPath	DataPath	same_name	REWRITE_L	NOT_STARTED	
-DebugModule	DebugModule	same_name	GLUE_INHERIT	WORKING_PASS	fm_verdicts=1
+DebugModule	DebugModule	same_name	GLUE_INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/DebugModule/receipt.json @ba7e4c59d337 canonical=G
 DecodeStage	DecodeStage	same_name	REWRITE_L	NOT_STARTED	
 DecodeUnit	DecodeUnit	same_name	REWRITE_M	NOT_STARTED	
-Decoupled2LCredit	Decoupled2LCredit	same_name	REWRITE_S	WORKING_PASS	REWRITE_S批: 机械继承直接通过(diff仅断言行号/端口宽)
-Decoupled2LCredit_1	Decoupled2LCredit_1	same_name	REWRITE_S	WORKING_PASS	REWRITE_S批: 机械继承直接通过(diff仅断言行号/端口宽)
-Decoupled2LCredit_2	Decoupled2LCredit_2	same_name	REWRITE_S	WORKING_PASS	REWRITE_S批: 机械继承直接通过(diff仅断言行号/端口宽)
-Decoupled2LCredit_5	Decoupled2LCredit_5	same_name	REWRITE_S	WORKING_PASS	REWRITE_S批: 机械继承直接通过(diff仅断言行号/端口宽)
+Decoupled2LCredit	Decoupled2LCredit	same_name	REWRITE_S	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/Decoupled2LCredit/receipt.json @ba7e4c59d337 canon
+Decoupled2LCredit_1	Decoupled2LCredit_1	same_name	REWRITE_S	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/Decoupled2LCredit_1/receipt.json @ba7e4c59d337 can
+Decoupled2LCredit_2	Decoupled2LCredit_2	same_name	REWRITE_S	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/Decoupled2LCredit_2/receipt.json @ba7e4c59d337 can
+Decoupled2LCredit_5	Decoupled2LCredit_5	same_name	REWRITE_S	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/Decoupled2LCredit_5/receipt.json @ba7e4c59d337 can
 DelayReg	DelayReg	same_name	REWRITE_L	NOT_STARTED	
 Directory	Directory	same_name	REWRITE_M	NOT_STARTED	
 DivUnit	DivUnit	same_name	REWRITE_M	NOT_STARTED	
@@ -35,15 +35,15 @@ ExeUnit_4	ExeUnit_4	same_name	REWRITE_M	NOT_STARTED
 ExeUnit_8	ExeUnit_8	same_name	REWRITE_L	NOT_STARTED	
 ExuBlock	ExuBlock	same_name	REWRITE_L	NOT_STARTED	
 ExuBlock_1	ExuBlock_1	same_name	REWRITE_L	NOT_STARTED	
-F3Predecoder	F3Predecoder	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
+F3Predecoder	F3Predecoder	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/F3Predecoder/receipt.json @ba7e4c59d337 canonical=
 FAlu	FAlu	same_name	REWRITE_M	NOT_STARTED	
 FCVT	FCVT	same_name	REWRITE_M	NOT_STARTED	
 FDivSqrt	FDivSqrt	same_name	REWRITE_M	NOT_STARTED	
 FMA	FMA	same_name	REWRITE_M	NOT_STARTED	
-FPDecoder	FPDecoder	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
+FPDecoder	FPDecoder	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/FPDecoder/receipt.json @ba7e4c59d337 canonical=G1-
 FTB	FTB	same_name	REWRITE_L	NOT_STARTED	
 FTBBank	FTBBank	same_name	INHERIT	WORKING_PASS_DEAD_REF	FM native SUCCEEDED 3276p/0fail/0unmatched; 唯50条golden-only cone-dead(req_pc_reg
-FTBEntryGen	FTBEntryGen	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
+FTBEntryGen	FTBEntryGen	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/FTBEntryGen/receipt.json @ba7e4c59d337 canonical=G
 FastArbiter_27	FastArbiter_27	same_name	REWRITE_M	NOT_STARTED	
 FastArbiter_30	FastArbiter_30	same_name	REWRITE_M	NOT_STARTED	
 FastArbiter_31	FastArbiter_30	renumbered	RESTRUCTURED	NOT_STARTED	
@@ -52,18 +52,18 @@ FastArbiter_44	-	gone_in_g1	RESTRUCTURED	NOT_STARTED
 FastArbiter_46	FastArbiter_46	same_name	REWRITE_M	NOT_STARTED	
 FastArbiter_47	-	gone_in_g1	RESTRUCTURED	NOT_STARTED	
 FauFTB	FauFTB	same_name	REWRITE_L	NOT_STARTED	
-FauFTBWay	FauFTBWay	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
+FauFTBWay	FauFTBWay	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/FauFTBWay/receipt.json @ba7e4c59d337 canonical=G1-
 Fence	Fence	same_name	REWRITE_S	REWRITE_TODO	G1加perfDebugInfo透传+io_in_ready端口+逻辑改动, 需按G1重做核
-FoldedSRAMTemplate	FoldedSRAMTemplate	same_name	INHERIT	WORKING_PASS	Folded家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链Folded→
-FoldedSRAMTemplate_1	FoldedSRAMTemplate_1	same_name	INHERIT	WORKING_PASS	Folded家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链Folded→
+FoldedSRAMTemplate	FoldedSRAMTemplate	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/FoldedSRAMTemplate/receipt.json @ba7e4c59d337 cano
+FoldedSRAMTemplate_1	FoldedSRAMTemplate_1	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/FoldedSRAMTemplate_1/receipt.json @ba7e4c59d337 ca
 FoldedSRAMTemplate_20	FoldedSRAMTemplate_20	same_name	REWRITE_M	WORKING_PASS	G1重塑(折叠WIDTH4→2,setIdx11→10)按G1端口重做; UT 3seed 0err; FM SUCCEEDED 148p
 FoldedSRAMTemplate_21	FoldedSRAMTemplate_22	manual_map	RESTRUCTURED	WORKING_PASS	Folded家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链Folded→
 FoldedSRAMTemplate_23	FoldedSRAMTemplate_24	manual_map	RESTRUCTURED	WORKING_PASS	Folded家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链Folded→
 FpRegFilePart0	FpRegFilePart0	same_name	REWRITE_M	NOT_STARTED	
-FreeList	FreeList	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
+FreeList	FreeList	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/FreeList/receipt.json @ba7e4c59d337 canonical=G1-a
 Frontend	Frontend	same_name	REWRITE_L	NOT_STARTED	
 Ftq	Ftq	same_name	REWRITE_L	NOT_STARTED	
-FtqPcMemWrapper	FtqPcMemWrapper	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
+FtqPcMemWrapper	FtqPcMemWrapper	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/FtqPcMemWrapper/receipt.json @ba7e4c59d337 canonic
 GrantBuffer	GrantBuffer	same_name	REWRITE_M	NOT_STARTED	
 HPTW	HPTW	same_name	REWRITE_M	NOT_STARTED	
 IBuffer	IBuffer	same_name	REWRITE_L	NOT_STARTED	
@@ -74,7 +74,7 @@ ICacheDataArray	ICacheDataArray	same_name	GLUE_INHERIT	WORKING_PASS	assembly(vmu
 ICacheMainPipe	ICacheMainPipe	same_name	REWRITE_L	NOT_STARTED	
 ICacheMetaArray	ICacheMetaArray	same_name	INHERIT	WORKING_PASS	assembly; FM SUCCEEDED
 ICacheMissUnit	ICacheMissUnit	same_name	REWRITE_M	NOT_STARTED	
-ICacheReplacer	ICacheReplacer	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
+ICacheReplacer	ICacheReplacer	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/ICacheReplacer/receipt.json @ba7e4c59d337 canonica
 IMSIC	IMSIC	same_name	REWRITE_M	NOT_STARTED	
 IMSICGateWay	IMSICGateWay	same_name	REWRITE_S	REWRITE_TODO	G1逻辑改动, FM/UT失配需逐个对照重写
 IPrefetchPipe	IPrefetchPipe	same_name	REWRITE_M	NOT_STARTED	
@@ -84,9 +84,9 @@ ITTageTable_1	ITTageTable_1	same_name	REWRITE_S	REWRITE_TODO	同ITTageTable(家�
 ITTageTable_2	ITTageTable_2	same_name	REWRITE_S	REWRITE_TODO	同ITTageTable(家族)
 ITTageTable_3	ITTageTable_3	same_name	REWRITE_S	REWRITE_TODO	同ITTageTable(家族)
 ITTageTable_4	ITTageTable_4	same_name	REWRITE_S	REWRITE_TODO	同ITTageTable(家族)
-ImmExtractor	ImmExtractor	same_name	INHERIT	WORKING_PASS	fm_verdicts=2
-ImmExtractor_12	ImmExtractor_12	same_name	INHERIT	WORKING_MERGED_PASS	ImmExtractor家族FM_VARIANTS含_12, 两变体fm.log均SUCCEEDED
-Arbiter1_InsUncacheResp	Arbiter1_InsUncacheResp	same_name	INHERIT	DEFER_FAMILY	共用InstrUncache家族UT, golden InstrUncache/InstrMMIOEntry在G1已变(REWRITE_M); 随家族重写一并处
+ImmExtractor	ImmExtractor	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/ImmExtractor/receipt.json @ba7e4c59d337 canonical=
+ImmExtractor_12	ImmExtractor_12	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/ImmExtractor_12/receipt.json @ba7e4c59d337 canonic
+Arbiter1_InsUncacheResp	Arbiter1_InsUncacheResp	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/Arbiter1_InsUncacheResp/receipt.json @ba7e4c59d337
 InstrMMIOEntry	InstrMMIOEntry	same_name	REWRITE_S	REWRITE_TODO	与Arbiter1_InsUncacheResp同UT目录模块重名冲突, 需拆分目标
 InstrUncache	InstrUncache	same_name	REWRITE_S	MERGED	与 InstrUncache 家族同 UT 目录, 由代表目标覆盖
 IntRegFilePart0	IntRegFilePart0	same_name	REWRITE_L	NOT_STARTED	
@@ -108,11 +108,11 @@ EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	EntriesVfmaVialuFixVimacVpp
 EntriesVlduVstu	EntriesVlduVstu	same_name	REWRITE_L	NOT_STARTED	
 EntriesVlduVstuVseglduVsegstu	EntriesVlduVstuVseglduVsegstu	same_name	REWRITE_L	NOT_STARTED	
 JumpUnit	JumpUnit	same_name	REWRITE_M	NOT_STARTED	
-L1CohMetaArray	L1CohMetaArray	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
+L1CohMetaArray	L1CohMetaArray	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/L1CohMetaArray/receipt.json @ba7e4c59d337 canonica
 L1FlagMetaArray	L1FlagMetaArray	same_name	REWRITE_L	NOT_STARTED	
 L1FlagMetaArray_1	-	gone_in_g1	RESTRUCTURED	NOT_STARTED	
 L2DataStorage	L2DataStorage	same_name	REWRITE_M	NOT_STARTED	
-L2Directory	L2Directory	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
+L2Directory	L2Directory	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/L2Directory/receipt.json @ba7e4c59d337 canonical=G
 MainPipe_1	MainPipe_1	same_name	REWRITE_L	NOT_STARTED	
 L2Slice	L2Slice	same_name	REWRITE_M	NOT_STARTED	
 L2TLB	L2TLB	same_name	REWRITE_L	NOT_STARTED	
@@ -120,12 +120,12 @@ L2TLBWrapper	L2TLBWrapper	same_name	REWRITE_M	NOT_STARTED
 L2TlbMissQueue	L2TlbMissQueue	same_name	REWRITE_S	REWRITE_TODO	端口/逻辑改动, _xs例化端口不匹配
 L2TlbPrefetch	L2TlbPrefetch	same_name	REWRITE_S	REWRITE_TODO	端口/逻辑改动, _xs例化端口不匹配
 L2Top	L2Top	same_name	REWRITE_L	NOT_STARTED	
-LCredit2Decoupled	LCredit2Decoupled	same_name	TRIVIAL	WORKING_PASS	fm_verdicts=1
+LCredit2Decoupled	LCredit2Decoupled	same_name	TRIVIAL	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/LCredit2Decoupled/receipt.json @ba7e4c59d337 canon
 LCredit2Decoupled_1	LCredit2Decoupled_1	same_name	REWRITE_S	REWRITE_TODO	G1逻辑改动, FM/UT失配需逐个对照重写
-LCredit2Decoupled_10	LCredit2Decoupled_10	same_name	TRIVIAL	WORKING_PASS	fm_verdicts=1
-LCredit2Decoupled_8	LCredit2Decoupled_8	same_name	TRIVIAL	WORKING_PASS	fm_verdicts=1
+LCredit2Decoupled_10	LCredit2Decoupled_10	same_name	TRIVIAL	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/LCredit2Decoupled_10/receipt.json @ba7e4c59d337 ca
+LCredit2Decoupled_8	LCredit2Decoupled_8	same_name	TRIVIAL	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/LCredit2Decoupled_8/receipt.json @ba7e4c59d337 can
 LLPTW	LLPTW	same_name	REWRITE_L	NOT_STARTED	
-LevelGateway	LevelGateway	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
+LevelGateway	LevelGateway	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/LevelGateway/receipt.json @ba7e4c59d337 canonical=
 LinkMonitor	LinkMonitor	same_name	REWRITE_S	REWRITE_TODO	G1逻辑改动, FM/UT失配需逐个对照重写
 LoadMisalignBuffer	LoadMisalignBuffer	same_name	REWRITE_L	NOT_STARTED	
 LoadPipe	LoadPipe	same_name	REWRITE_M	NOT_STARTED	
@@ -140,7 +140,7 @@ LsqWrapper	LsqWrapper	same_name	REWRITE_L	NOT_STARTED
 MEFreeList	MEFreeList	same_name	REWRITE_L	NOT_STARTED	
 MSHR	MSHR	same_name	REWRITE_L	NOT_STARTED	
 MSHRCtl	MSHRCtl	same_name	REWRITE_M	NOT_STARTED	
-MSHRSelector	MSHRSelector	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
+MSHRSelector	MSHRSelector	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/MSHRSelector/receipt.json @ba7e4c59d337 canonical=
 MainPipe	MainPipe	same_name	REWRITE_L	NOT_STARTED	
 MemBlock	MemBlock	same_name	REWRITE_L	NOT_STARTED	
 MissQueue	MissQueue	same_name	REWRITE_L	NOT_STARTED	
@@ -149,12 +149,12 @@ NewCSR	NewCSR	same_name	REWRITE_L	NOT_STARTED
 NewDispatch	NewDispatch	same_name	REWRITE_L	NOT_STARTED	
 NewIFU	NewIFU	same_name	REWRITE_L	NOT_STARTED	
 OpenLLC	OpenLLC	same_name	GLUE_INHERIT	NOT_STARTED	
-PLICFanIn	PLICFanIn	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
+PLICFanIn	PLICFanIn	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/PLICFanIn/receipt.json @ba7e4c59d337 canonical=G1-
 PMP	PMP	same_name	REWRITE_L	NOT_STARTED	
 PMPChecker	PMPChecker	same_name	REWRITE_L	NOT_STARTED	
 PMPChecker_10	-	gone_in_g1	RESTRUCTURED	NOT_STARTED	
 PTW	PTW	same_name	REWRITE_L	NOT_STARTED	
-Pipeline	Pipeline	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
+Pipeline	Pipeline	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/Pipeline/receipt.json @ba7e4c59d337 canonical=G1-a
 NewPipelineConnectPipe	NewPipelineConnectPipe	same_name	REWRITE_M	NOT_STARTED	
 NewPipelineConnectPipe_1	NewPipelineConnectPipe_1	same_name	REWRITE_M	NOT_STARTED	
 NewPipelineConnectPipe_10	NewPipelineConnectPipe_10	same_name	REWRITE_M	NOT_STARTED	
@@ -173,18 +173,18 @@ NewPipelineConnectPipe_5	NewPipelineConnectPipe_5	same_name	REWRITE_M	NOT_STARTE
 NewPipelineConnectPipe_7	NewPipelineConnectPipe_7	same_name	REWRITE_M	NOT_STARTED	
 NewPipelineConnectPipe_8	NewPipelineConnectPipe_8	same_name	REWRITE_M	NOT_STARTED	
 NewPipelineConnectPipe_9	NewPipelineConnectPipe_9	same_name	REWRITE_M	NOT_STARTED	
-PreDecode	PreDecode	same_name	TRIVIAL	WORKING_PASS	fm_verdicts=1
+PreDecode	PreDecode	same_name	TRIVIAL	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/PreDecode/receipt.json @ba7e4c59d337 canonical=G1-
 Predictor	Predictor	same_name	REWRITE_L	NOT_STARTED	
-ProbeQueue	ProbeQueue	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
+ProbeQueue	ProbeQueue	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/ProbeQueue/receipt.json @ba7e4c59d337 canonical=G1
 PtwCache	PtwCache	same_name	REWRITE_L	NOT_STARTED	
-RASStack	RASStack	same_name	TRIVIAL	WORKING_PASS	手工验证 fm 3018p 全零 (batch 前打样)
+RASStack	RASStack	same_name	TRIVIAL	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/RASStack/receipt.json @ba7e4c59d337 canonical=G1-a
 RNXbar	RNXbar	same_name	REWRITE_S	REWRITE_TODO	依赖FastArbiter_44(G1内容变)
-RVCExpander	RVCExpander	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
+RVCExpander	RVCExpander	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/RVCExpander/receipt.json @ba7e4c59d337 canonical=G
 RXDAT	RXDAT	same_name	REWRITE_S	REWRITE_TODO	端口改动, tb例化不匹配
-RXDAT_4	RXDAT_4	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
-RXREQ	RXREQ	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
-RXRSP	RXRSP	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
-RXRSP_4	RXRSP_4	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
+RXDAT_4	RXDAT_4	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/RXDAT_4/receipt.json @ba7e4c59d337 canonical=G1-a4
+RXREQ	RXREQ	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/RXREQ/receipt.json @ba7e4c59d337 canonical=G1-a4ea
+RXRSP	RXRSP	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/RXRSP/receipt.json @ba7e4c59d337 canonical=G1-a4ea
+RXRSP_4	RXRSP_4	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/RXRSP_4/receipt.json @ba7e4c59d337 canonical=G1-a4
 RegCache	RegCache	same_name	INHERIT	NOT_STARTED	
 Rename	Rename	same_name	REWRITE_L	NOT_STARTED	
 RenameBuffer	RenameBuffer	same_name	REWRITE_L	NOT_STARTED	
@@ -195,7 +195,7 @@ SCTable_1	SCTable_1	same_name	REWRITE_M	NOT_STARTED
 SCTable_2	SCTable_2	same_name	REWRITE_M	NOT_STARTED	
 SCTable_3	SCTable_3	same_name	REWRITE_M	NOT_STARTED	
 SNXbar	SNXbar	same_name	REWRITE_S	REWRITE_TODO	依赖FastArbiter_47(G1内容变)
-SRAMTemplate	SRAMTemplate	same_name	INHERIT	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM asse
+SRAMTemplate	SRAMTemplate	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/SRAMTemplate/receipt.json @ba7e4c59d337 canonical=
 SRAMTemplate_16	SRAMTemplate_16	same_name	REWRITE_S	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM asse
 SRAMTemplate_2	SRAMTemplate_2	same_name	INHERIT	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM asse
 SRAMTemplate_32	SRAMTemplate_32	same_name	REWRITE_S	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM asse
@@ -213,7 +213,7 @@ Scheduler	Scheduler	same_name	REWRITE_L	NOT_STARTED
 Scheduler_1	Scheduler_1	same_name	REWRITE_L	NOT_STARTED	
 Scheduler_2	Scheduler_2	same_name	REWRITE_L	NOT_STARTED	
 Scheduler_3	Scheduler_3	same_name	REWRITE_L	NOT_STARTED	
-SinkA	SinkA	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
+SinkA	SinkA	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/SinkA/receipt.json @ba7e4c59d337 canonical=G1-a4ea
 SinkC	SinkC	same_name	REWRITE_L	NOT_STARTED	
 Slice	Slice	same_name	REWRITE_L	NOT_STARTED	
 SourceB	SourceB	same_name	REWRITE_S	REWRITE_TODO	内部FastArbiter_5在G1变
@@ -225,7 +225,7 @@ SplittedSRAMTemplate_24	SplittedSRAMTemplate_25	manual_map	RESTRUCTURED	WORKING_
 SplittedSRAMTemplate_26	SplittedSRAMTemplate_27	manual_map	RESTRUCTURED	WORKING_PASS	Splitted家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链两侧ela
 SplittedSRAMTemplate_3	SplittedSRAMTemplate_3	same_name	INHERIT	WORKING_PASS	Splitted家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链两侧ela
 SplittedSRAMTemplate_4	SplittedSRAMTemplate_4	same_name	INHERIT	WORKING_PASS	Splitted家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链两侧ela
-StdFreeList	StdFreeList	same_name	TRIVIAL	WORKING_PASS	fm_verdicts=1
+StdFreeList	StdFreeList	same_name	TRIVIAL	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/StdFreeList/receipt.json @ba7e4c59d337 canonical=G
 StoreExceptionBuffer	StoreExceptionBuffer	same_name	REWRITE_L	NOT_STARTED	
 StoreMisalignBuffer	StoreMisalignBuffer	same_name	REWRITE_L	NOT_STARTED	
 StorePfWrapper	StorePfWrapper	same_name	REWRITE_S	REWRITE_TODO	依赖Arbiter2_StorePrefetchReq(G1内容变)
@@ -234,54 +234,54 @@ StoreQueue	StoreQueue	same_name	REWRITE_L	NOT_STARTED
 StoreUnit	StoreUnit	same_name	REWRITE_L	NOT_STARTED	
 SubDirectory	SubDirectory	same_name	REWRITE_S	REWRITE_TODO	内部array_0_1重编号
 SubDirectory_1	SubDirectory_1	same_name	REWRITE_S	WORKING_PASS	REWRITE_S批: 机械继承直接通过(diff仅断言行号/端口宽)
-DataModule_BackendPC_16entry	DataModule_BackendPC_16entry	same_name	INHERIT	WORKING_PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDE
-DataModule_FtqPC_16entry	DataModule_FtqPC_16entry	same_name	INHERIT	WORKING_PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDE
-DataModule__16entry	DataModule__16entry	same_name	INHERIT	WORKING_PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDE
-DataModule__16entry_12	DataModule__16entry_12	same_name	REWRITE_L	WORKING_PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDE
-DataModule__16entry_16	DataModule__16entry_16	same_name	REWRITE_L	WORKING_PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDE
-DataModule__16entry_4	DataModule__16entry_4	same_name	REWRITE_L	WORKING_PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDE
-DataModule__16entry_8	DataModule__16entry_8	same_name	REWRITE_L	WORKING_PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDE
-DataModule__64entry	DataModule__64entry	same_name	INHERIT	WORKING_PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDE
-DataModule__64entry_16	DataModule__64entry_16	same_name	INHERIT	WORKING_PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDE
-SyncDataModuleTemplate_BackendPC_64entry	SyncDataModuleTemplate_BackendPC_64entry	same_name	INHERIT	WORKING_PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDE
-SyncDataModuleTemplate_FtqPC_64entry	SyncDataModuleTemplate_FtqPC_64entry	same_name	INHERIT	WORKING_PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDE
-SyncDataModuleTemplate__1024entry	SyncDataModuleTemplate__1024entry	same_name	INHERIT	WORKING_PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDE
-SyncDataModuleTemplate__1024entry_1	SyncDataModuleTemplate__1024entry_1	same_name	INHERIT	WORKING_PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDE
-SyncDataModuleTemplate__64entry	SyncDataModuleTemplate__64entry	same_name	INHERIT	WORKING_PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDE
-SyncDataModuleTemplate__64entry_1	SyncDataModuleTemplate__64entry_1	same_name	REWRITE_L	WORKING_PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDE
-SyncDataModuleTemplate__64entry_2	SyncDataModuleTemplate__64entry_2	same_name	REWRITE_L	WORKING_PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDE
-SyncDataModuleTemplate__64entry_3	SyncDataModuleTemplate__64entry_3	same_name	REWRITE_L	WORKING_PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDE
-SyncDataModuleTemplate__64entry_4	SyncDataModuleTemplate__64entry_4	same_name	REWRITE_L	WORKING_PASS	SyncDataModule家族: gen_dm_wrappers G1驱动重生成; UT 846k×3seed 0err; FM 18/18 SUCCEEDE
+DataModule_BackendPC_16entry	DataModule_BackendPC_16entry	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/DataModule_BackendPC_16entry/receipt.json @ba7e4c5
+DataModule_FtqPC_16entry	DataModule_FtqPC_16entry	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/DataModule_FtqPC_16entry/receipt.json @ba7e4c59d33
+DataModule__16entry	DataModule__16entry	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/DataModule__16entry/receipt.json @ba7e4c59d337 can
+DataModule__16entry_12	DataModule__16entry_12	same_name	REWRITE_L	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/DataModule__16entry_12/receipt.json @ba7e4c59d337 
+DataModule__16entry_16	DataModule__16entry_16	same_name	REWRITE_L	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/DataModule__16entry_16/receipt.json @ba7e4c59d337 
+DataModule__16entry_4	DataModule__16entry_4	same_name	REWRITE_L	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/DataModule__16entry_4/receipt.json @ba7e4c59d337 c
+DataModule__16entry_8	DataModule__16entry_8	same_name	REWRITE_L	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/DataModule__16entry_8/receipt.json @ba7e4c59d337 c
+DataModule__64entry	DataModule__64entry	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/DataModule__64entry/receipt.json @ba7e4c59d337 can
+DataModule__64entry_16	DataModule__64entry_16	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/DataModule__64entry_16/receipt.json @ba7e4c59d337 
+SyncDataModuleTemplate_BackendPC_64entry	SyncDataModuleTemplate_BackendPC_64entry	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/SyncDataModuleTemplate_BackendPC_64entry/receipt.j
+SyncDataModuleTemplate_FtqPC_64entry	SyncDataModuleTemplate_FtqPC_64entry	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/SyncDataModuleTemplate_FtqPC_64entry/receipt.json 
+SyncDataModuleTemplate__1024entry	SyncDataModuleTemplate__1024entry	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/SyncDataModuleTemplate__1024entry/receipt.json @ba
+SyncDataModuleTemplate__1024entry_1	SyncDataModuleTemplate__1024entry_1	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/SyncDataModuleTemplate__1024entry_1/receipt.json @
+SyncDataModuleTemplate__64entry	SyncDataModuleTemplate__64entry	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/SyncDataModuleTemplate__64entry/receipt.json @ba7e
+SyncDataModuleTemplate__64entry_1	SyncDataModuleTemplate__64entry_1	same_name	REWRITE_L	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/SyncDataModuleTemplate__64entry_1/receipt.json @ba
+SyncDataModuleTemplate__64entry_2	SyncDataModuleTemplate__64entry_2	same_name	REWRITE_L	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/SyncDataModuleTemplate__64entry_2/receipt.json @ba
+SyncDataModuleTemplate__64entry_3	SyncDataModuleTemplate__64entry_3	same_name	REWRITE_L	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/SyncDataModuleTemplate__64entry_3/receipt.json @ba
+SyncDataModuleTemplate__64entry_4	SyncDataModuleTemplate__64entry_4	same_name	REWRITE_L	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/SyncDataModuleTemplate__64entry_4/receipt.json @ba
 TL2CHICoupledL2	TL2CHICoupledL2	same_name	REWRITE_L	NOT_STARTED	
 TLBFA	TLBFA	same_name	REWRITE_L	NOT_STARTED	
 TLBFA_1	TLBFA_1	same_name	REWRITE_L	NOT_STARTED	
 TLBNonBlock	TLBNonBlock	same_name	REWRITE_L	NOT_STARTED	
-TLBuffer	TLBuffer	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
+TLBuffer	TLBuffer	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/TLBuffer/receipt.json @ba7e4c59d337 canonical=G1-a
 TLBuffer_13	TLBuffer_13	same_name	INHERIT	WORKING_PASS	assembly; FM SUCCEEDED
 TLBuffer_15	TLBuffer_15	same_name	REWRITE_M	NOT_STARTED	
-TLBuffer_2	TLBuffer_2	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
+TLBuffer_2	TLBuffer_2	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/TLBuffer_2/receipt.json @ba7e4c59d337 canonical=G1
 TLBuffer_20	TLBuffer_20	same_name	REWRITE_S	REWRITE_TODO	source位宽3→5b, 依赖ram_2xNNN行为模型随之变宽; 需按G1重导
 TLBuffer_22	TLBuffer_22	same_name	REWRITE_S	REWRITE_TODO	source位宽3→5b, 依赖ram_2xNNN行为模型随之变宽; 需按G1重导
 TLBuffer_6	TLBuffer_6	same_name	REWRITE_S	REWRITE_TODO	source位宽3→5b, 依赖ram_2xNNN行为模型随之变宽; 需按G1重导
-TLBuffer_7	TLBuffer_7	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
+TLBuffer_7	TLBuffer_7	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/TLBuffer_7/receipt.json @ba7e4c59d337 canonical=G1
 TLBuffer_8	TLBuffer_8	same_name	REWRITE_S	REWRITE_TODO	source位宽3→5b, 依赖ram_2xNNN行为模型随之变宽; 需按G1重导
 TLBuffer_9	TLBuffer_9	same_name	REWRITE_S	REWRITE_TODO	source位宽3→5b, 依赖ram_2xNNN行为模型随之变宽; 需按G1重导
-TLLogger	TLLogger	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
-TLPLIC	TLPLIC	same_name	TRIVIAL	WORKING_PASS	fm_verdicts=1
+TLLogger	TLLogger	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/TLLogger/receipt.json @ba7e4c59d337 canonical=G1-a
+TLPLIC	TLPLIC	same_name	TRIVIAL	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/TLPLIC/receipt.json @ba7e4c59d337 canonical=G1-a4e
 TLXbar_1	TLXbar_1	same_name	REWRITE_M	NOT_STARTED	
 TLXbar_2	TLXbar_2	same_name	REWRITE_M	NOT_STARTED	
-TLXbar_3	TLXbar_3	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
+TLXbar_3	TLXbar_3	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/TLXbar_3/receipt.json @ba7e4c59d337 canonical=G1-a
 TLXbar_4	TLXbar_4	same_name	REWRITE_S	REWRITE_TODO	G1逻辑改动, FM/UT失配需逐个对照重写
 TLXbar_6	TLXbar_6	same_name	REWRITE_M	NOT_STARTED	
 TXDAT	TXDAT	same_name	REWRITE_M	NOT_STARTED	
-TXDAT_4	TXDAT_4	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
+TXDAT_4	TXDAT_4	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/TXDAT_4/receipt.json @ba7e4c59d337 canonical=G1-a4
 TXREQ	TXREQ	same_name	REWRITE_S	REWRITE_TODO	G1逻辑改动, FM/UT失配需逐个对照重写
-TXREQ_4	TXREQ_4	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
-TXRSP	TXRSP	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
-TXRSP_4	TXRSP_4	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
-TXSNP	TXSNP	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
+TXREQ_4	TXREQ_4	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/TXREQ_4/receipt.json @ba7e4c59d337 canonical=G1-a4
+TXRSP	TXRSP	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/TXRSP/receipt.json @ba7e4c59d337 canonical=G1-a4ea
+TXRSP_4	TXRSP_4	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/TXRSP_4/receipt.json @ba7e4c59d337 canonical=G1-a4
+TXSNP	TXSNP	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/TXSNP/receipt.json @ba7e4c59d337 canonical=G1-a4ea
 TageBTable	TageBTable	same_name	REWRITE_M	NOT_STARTED	
-TageTable	TageTable	same_name	TRIVIAL	WORKING_PASS_DEAD_REF	FM native SUCCEEDED 797p/0fail/0unmatched; 唯48条golden-only cone-dead(s1_unhashed
+TageTable	TageTable	same_name	TRIVIAL	REVALIDATED_PASS_DEAD_REF	receipt evidence/f811f8d51f92/TageTable/receipt.json @f811f8d51f92 canonical=G1-
 TageTable_1	TageTable_1	same_name	TRIVIAL	WORKING_PASS_DEAD_REF	FM native SUCCEEDED 797p/0fail/0unmatched; 唯48条golden-only cone-dead(s1_unhashed
 TageTable_2	TageTable_2	same_name	TRIVIAL	WORKING_PASS_DEAD_REF	FM native SUCCEEDED 797p/0fail/0unmatched; 唯48条golden-only cone-dead(s1_unhashed
 TageTable_3	TageTable_3	same_name	TRIVIAL	WORKING_PASS_DEAD_REF	FM native SUCCEEDED 797p/0fail/0unmatched; 唯48条golden-only cone-dead(s1_unhashed
@@ -289,19 +289,19 @@ Tage_SC	Tage_SC	same_name	REWRITE_L	NOT_STARTED
 TlbStorageWrapper	TlbStorageWrapper	same_name	REWRITE_S	REWRITE_TODO	需+define+SYNTHESIS(xs_assert_v2)+逻辑改动
 TlbStorageWrapper_1	TlbStorageWrapper_1	same_name	REWRITE_S	REWRITE_TODO	同上(家族)
 Uncache	Uncache	same_name	REWRITE_L	NOT_STARTED	
-UopInfoGen	UopInfoGen	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
-VSetRiWi	VSetRiWi	same_name	REWRITE_S	REWRITE_TODO	G1加perfDebugInfo透传+io_in_ready端口+逻辑改动, 需按G1重做核
-VSetRvfWvf	VSetRvfWvf	same_name	REWRITE_S	REWRITE_TODO	G1加perfDebugInfo透传+io_in_ready端口+逻辑改动, 需按G1重做核
+UopInfoGen	UopInfoGen	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/UopInfoGen/receipt.json @ba7e4c59d337 canonical=G1
+VSetRiWi	VSetRiWi	same_name	REWRITE_S	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/VSetRiWi/receipt.json @ba7e4c59d337 canonical=G1-a
+VSetRvfWvf	VSetRvfWvf	same_name	REWRITE_S	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/VSetRvfWvf/receipt.json @ba7e4c59d337 canonical=G1
 VirtualLoadQueue	VirtualLoadQueue	same_name	REWRITE_L	NOT_STARTED	
-WayLookup	WayLookup	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
+WayLookup	WayLookup	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/WayLookup/receipt.json @ba7e4c59d337 canonical=G1-
 WbDataPath	WbDataPath	same_name	REWRITE_L	NOT_STARTED	
-WbFuBusyTable	WbFuBusyTable	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
-WrBypass	WrBypass	same_name	INHERIT	WORKING_PASS	定式打样批(首commit, 补录): UT 250000×3seed 0err; FM strict SUCCEEDED 全零
-WrBypass_32	WrBypass_32	same_name	INHERIT	WORKING_PASS	定式打样批(首commit, 补录): UT 250000×3seed 0err; FM strict SUCCEEDED 全零
-WrBypass_33	WrBypass_33	same_name	INHERIT	WORKING_PASS	定式打样批(首commit, 补录): UT 250000×3seed 0err; FM strict SUCCEEDED 全零
-WrBypass_41	WrBypass_41	same_name	INHERIT	WORKING_PASS	定式打样批(首commit, 补录): UT 250000×3seed 0err; FM strict SUCCEEDED 全零
-WrBypass_43	WrBypass_43	same_name	INHERIT	WORKING_PASS	定式打样批(首commit, 补录): UT 250000×3seed 0err; FM strict SUCCEEDED 全零
-WritebackQueue	WritebackQueue	same_name	INHERIT	WORKING_PASS	fm_verdicts=1
+WbFuBusyTable	WbFuBusyTable	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/WbFuBusyTable/receipt.json @ba7e4c59d337 canonical
+WrBypass	WrBypass	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/WrBypass/receipt.json @ba7e4c59d337 canonical=G1-a
+WrBypass_32	WrBypass_32	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/WrBypass_32/receipt.json @ba7e4c59d337 canonical=G
+WrBypass_33	WrBypass_33	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/WrBypass_33/receipt.json @ba7e4c59d337 canonical=G
+WrBypass_41	WrBypass_41	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/WrBypass_41/receipt.json @ba7e4c59d337 canonical=G
+WrBypass_43	WrBypass_43	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/WrBypass_43/receipt.json @ba7e4c59d337 canonical=G
+WritebackQueue	WritebackQueue	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/WritebackQueue/receipt.json @ba7e4c59d337 canonica
 XSCore	XSCore	same_name	REWRITE_L	NOT_STARTED	
 XSTile	XSTile	same_name	REWRITE_L	NOT_STARTED	
 XSTop	XSTop	same_name	REWRITE_L	NOT_STARTED	
