@@ -110,7 +110,7 @@ def _child_receipts():
     （docs/receipt_index.tsv，由 build_receipt_index.py 从 evidence/ 机械派生）。
     codex 0140 P0-3：不得用 WORKING 文本台账自证——那会让父子依赖循环自证。"""
     import pathlib as _pl
-    _home = _pl.Path(os.environ.get('XSSV_HOME')
+    _home = _pl.Path(os.environ.get('XSSV_INDEX_HOME') or os.environ.get('XSSV_HOME')
                      or _pl.Path(__file__).resolve().parent.parent)
     sys.path.insert(0, str(_pl.Path(__file__).resolve().parent))
     import build_receipt_index

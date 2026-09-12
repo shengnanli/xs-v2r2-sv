@@ -27,6 +27,8 @@ import sys
 _HERE = pathlib.Path(__file__).resolve().parent
 NEW = pathlib.Path(os.environ.get('XSSV_HOME') or _HERE.parent)
 G1 = pathlib.Path(os.environ.get('G1_CANONICAL') or '/home/eda/xs-env/G1-canonical')
+# 证据/索引在真实仓库（worktree 内 evidence/ 不存在）
+INDEX_HOME = pathlib.Path(os.environ.get('XSSV_INDEX_HOME') or NEW)
 
 
 def sha(p):
@@ -113,7 +115,7 @@ def main():
     if allow_p.exists():
         sys.path.insert(0, str(_HERE))
         import build_receipt_index as _BRI
-        idx = _BRI.load(NEW)
+        idx = _BRI.load(INDEX_HOME)
         adecl = json.loads(allow_p.read_text())
         children = sorted({o['child_target'] for o in adecl.get('objects', [])
                            if o.get('class') == 'green_child' and o.get('child_target')})
@@ -122,7 +124,7 @@ def main():
             cr = idx.get(ct)
             if cr is None:
                 sys.exit(f'ERROR: green_child {ct} 无 receipt —— 拒绝出 receipt')
-            crj = json.loads((NEW / cr['path']).read_text())
+            crj = json.loads((INDEX_HOME / cr['path']).read_text())
             shared, bad = 0, []
             for e in crj.get('impl_closure', []):
                 nm = pathlib.Path(e['path']).name

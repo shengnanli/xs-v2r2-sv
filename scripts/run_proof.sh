@@ -43,7 +43,7 @@ D_BEFORE="$(digest_worktree)"
 rc_all=0
 mkdir -p "$EVID"
 for t in "${TARGETS[@]}"; do
-  ( cd "$WT/verif/ut/$UT_DIR" && XSSV_HOME="$WT" make "fm-$t" ) ; rc=$?
+  ( cd "$WT/verif/ut/$UT_DIR" && XSSV_HOME="$WT" XSSV_INDEX_HOME="$REPO" make "fm-$t" ) ; rc=$?
   dst="$EVID/$t"; mkdir -p "$dst"
   src="$WT/verif/ut/$UT_DIR/fm_work/$t"
   for f in receipt.json fm.log black_boxes.rpt unread_points.txt unmatched.rpt; do
