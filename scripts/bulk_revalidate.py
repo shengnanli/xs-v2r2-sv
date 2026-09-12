@@ -119,13 +119,24 @@ def main():
     if a.collect_allow:
         # 先跑一遍 needs_allow 组：判定必然 PARTIAL（缺声明），但会产出 black_boxes.rpt，
         # 据此生成精确声明后再正式复验。不自动放行——声明内容仍须是观测到的真实对象集。
-        todo = g['needs_allow']
-    else:
-        todo = g['no_dep'] + (g['has_green_child'] if a.with_children else [])
-    todo = todo[:a.limit] if a.limit else todo
-    print(f'== 复验 {len(todo)} 个目标（commit {head[:12]}, jobs={a.jobs}）==', flush=True)
-    with ThreadPoolExecutor(max_workers=a.jobs) as ex:
-        rows = list(ex.map(run_one, [(t, d, evid) for t, d in todo]))
+        g = dict(g, no_dep=g['needs_allow'], has_green_child=[])
+
+    # 顺序依赖：green_child 父目标必须**在其 child 之后**跑，且跑之前刷新 receipt 索引。
+    # 否则父会拿到旧 child receipt——若 child 源文件在此期间变过（哪怕只是注释），
+    # 组合性检查会正确地判该 receipt 失效，父就白跑一次。
+    phase1 = g['no_dep'] if not a.limit else g['no_dep'][:a.limit]
+    phase2 = g['has_green_child'] if a.with_children else []
+    rows = []
+    for phase_name, batch in (('无依赖', phase1), ('含 green_child 依赖', phase2)):
+        if not batch:
+            continue
+        print(f'== 阶段「{phase_name}」：{len(batch)} 个（commit {head[:12]}, '
+              f'jobs={a.jobs}）==', flush=True)
+        with ThreadPoolExecutor(max_workers=a.jobs) as ex:
+            rows += list(ex.map(run_one, [(t, d, evid) for t, d in batch]))
+        # 刷新索引，让下一阶段的父目标看到本阶段新出的 child receipt
+        subprocess.run([sys.executable, str(REPO / 'scripts' / 'build_receipt_index.py')],
+                       cwd=str(REPO), stdout=subprocess.DEVNULL)
     from collections import Counter
     print('汇总:', dict(Counter(v for _, v, _ in rows).most_common()))
     bad = [t for t, v, rc in rows if v not in ('SUCCEEDED', 'PASS_DEAD_REF') or rc != 0]
