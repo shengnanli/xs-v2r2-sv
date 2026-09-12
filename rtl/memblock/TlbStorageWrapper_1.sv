@@ -1,6 +1,7 @@
-// TlbStorageWrapper_1 —— TlbStorageWrapper 单态化变体 wrapper（核体见 TlbStorageWrapper.sv）
-// 本变体参数：PORTS=4，WAYS=48，WW=6
-// 端口规模：83 输入 / 104 输出；本文件只做参数化与端口展平。
+// TlbStorageWrapper_1 —— TlbStorageWrapper 家族变体（4 端口 / 48 路 / 位宽 6）
+// 例化可读核 xs_TlbStorageWrapper_core；除参数与端口展平外，本文件还含一段
+// always_comb：把核输出的 access 数组按端口展开成 golden 的扁平 access_<i>_* 端口。
+// 端口规模：83 输入 / 104 输出。
 
 module TlbStorageWrapper_1 import xs_tlbsw_pkg::*; (
   input clock,

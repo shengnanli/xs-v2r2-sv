@@ -1,6 +1,7 @@
-// Arbiter1_InsUncacheResp —— InstrMMIOEntry 单态化变体 wrapper（核体见 InstrMMIOEntry.sv）
-// 端口规模：3 输入 / 3 输出。家族共性与逻辑说明见核体文件头。
-// 本文件只做参数化与端口展平，不含逻辑。
+// Arbiter1_InsUncacheResp —— 单入仲裁器（InstrUncache 的响应通道）
+// 只有一个输入源，所谓"仲裁"退化为直通：valid/data/corrupt 三条各自一条 assign。
+// golden 里它是 Arbiter 的单入特化实例；本文件自足，不例化任何核。
+// 端口规模：3 输入 / 3 输出。
 
 module Arbiter1_InsUncacheResp(
   input         io_in_0_valid,

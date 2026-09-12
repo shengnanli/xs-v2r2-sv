@@ -47,6 +47,13 @@ cleanup() { cd "$REPO"; git worktree remove --force "$WT" >/dev/null 2>&1 || rm 
 trap cleanup EXIT
 
 git worktree add --detach "$WT" "$COMMIT" >/dev/null || exit 4
+
+# 可读性是与 FM 并列的硬指标，但它此前只在我记得的时候才跑——已经被工程压力挤掉过一次。
+# 这里把它接进同一道闸：证明跑在哪份字节上，可读性就在同一份字节上验。
+if ! ( cd "$WT" && python3 scripts/readability_audit.py --quiet ); then
+  echo "ERROR: 可读性验收未通过（见上），拒绝在该 commit 上出证明" >&2
+  exit 6
+fi
 echo "[run_proof] worktree=$WT commit=${COMMIT:0:12} ut=$UT_DIR targets=${TARGETS[*]}"
 
 # 跑前闭包摘要（worktree 内 tracked 文件的整体摘要）

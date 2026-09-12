@@ -50,7 +50,78 @@ def header_block(text):
     return out
 
 
-def audit_file(p):
+
+# --- F 类：头注释的断言与文件事实是否相符 ------------------------------------
+# 为什么需要这一类：B 类（头 ≥3 行）只管"有没有写"，不管"写的对不对"。
+# 本轮补审时我用脚本批量补头，结果补出了假话——某个 74 行、含 16 条 always/assign
+# 的自足模块，头上写着"只做参数化与端口展平""核体见 X.sv"。注释里的假话比没有注释更害人。
+CLAIM_THIN = re.compile(r'只做参数化与端口展平|只做端口适配|不含逻辑')
+CLAIM_CORE = re.compile(r'核体见\s+(\S+?\.sv)')
+# 端口展平 = 给端口赋一个不含运算符的表达式（切片/拼接/常量都算）
+FLATTEN_RHS = re.compile(r'^[\w\[\]:{},\s\']+$')
+# 例化：覆盖 `Name inst (`、`Name #( ... ) inst (`、`Name #(` 三种写法
+# 例化写法三种都要认：`Name inst (`、`Name #(...) inst (`、以及参数表换行的 `Name #(`
+INST_ANY = re.compile(
+    r'^\s+([A-Za-z_]\w*)\s*(?:#\s*\((?:[^()]|\([^()]*\))*\)\s*\w*\s*\('
+    r'|#\s*\($'
+    r'|\s+\w+\s*\()', re.MULTILINE)
+
+
+def _module_index(root):
+    idx = {}
+    for f in root.rglob('*.sv'):
+        for m in re.finditer(r'^module\s+(\w+)', f.read_text(errors='replace'), re.M):
+            idx[m.group(1)] = f
+    return idx
+
+
+def _resolve(tgt, f, repo):
+    import pathlib as _pl
+    for c in (repo / tgt, f.parent / _pl.Path(tgt).name, repo / 'rtl' / 'common' / _pl.Path(tgt).name):
+        if c.exists():
+            return c
+    return None
+
+
+def claim_problems(p, text, hdr, modidx, repo):
+    rel = str(p.relative_to(repo))
+    h = '\n'.join(hdr)
+    out = []
+    n_always = len(re.findall(r'\balways(_ff|_comb|_latch)?\b', text))
+    n_logic = 0
+    for a in re.findall(r'^\s*assign\b.*?;', text, re.M | re.S):
+        rhs = a.split('=', 1)[1].rstrip(';').strip() if '=' in a else ''
+        if rhs and not FLATTEN_RHS.match(rhs):
+            n_logic += 1
+    insts = [m.group(1) for m in INST_ANY.finditer(text) if m.group(1) in modidx]
+    if CLAIM_THIN.search(h) and (n_always > 0 or n_logic > 0):
+        out.append(f'{rel}: 头称"只做端口展平/不含逻辑"，实有 {n_always} 个 always '
+                   f'+ {n_logic} 条含运算的 assign —— 注释在说假话')
+    m = CLAIM_CORE.search(h)
+    if m:
+        tgt = m.group(1)
+        if _resolve(tgt, p, repo) is None:
+            out.append(f'{rel}: 头称"核体见 {tgt}"，该文件不存在')
+        elif not insts:
+            out.append(f'{rel}: 头称"核体见 {tgt}"，但本文件没有例化任何模块')
+    # 头部重复行（补头脚本容易叠出来的噪音；空 // 分隔行不算）
+    # 分隔线（// 后面只有重复标点）成对出现是正常排版，不算重复噪音
+    DIVIDER = re.compile(r'^//[\s=\-*_~#]*$')
+    seen, dup = set(), None
+    for l in hdr:
+        s = l.strip()
+        if DIVIDER.match(s):
+            continue
+        if s in seen:
+            dup = s
+            break
+        seen.add(s)
+    if dup:
+        out.append(f'{rel}: 头注释有重复行 "{dup[:40]}"')
+    return out
+
+
+def audit_file(p, modidx=None):
     text = p.read_text(errors='replace')
     rel = str(p.relative_to(REPO))
     problems = []
@@ -86,6 +157,10 @@ def audit_file(p):
     if core_i is not None and wrap_i is not None and core_i > wrap_i:
         problems.append(('D', f'{rel}: 模块顺序应为 核 → golden 同名 wrapper，当前相反'))
 
+    if modidx is not None:
+        for msg in claim_problems(p, text, hdr, modidx, REPO):
+            problems.append(('F', msg))
+
     n = text.count('\n') + 1
     hint = [f'{rel}: {n} 行，建议人工评估是否该把核拆细'] if n > 2000 else []
     return problems, hint
@@ -96,10 +171,11 @@ def main():
     ap.add_argument('--quiet', action='store_true')
     a = ap.parse_args()
 
+    modidx = _module_index(RTL)
     all_problems, hints, nfiles = [], [], 0
     for p in sorted(RTL.rglob('*.sv')):
         nfiles += 1
-        pr, hi = audit_file(p)
+        pr, hi = audit_file(p, modidx)
         all_problems += pr
         hints += hi
 
@@ -107,15 +183,16 @@ def main():
     cnt = Counter(k for k, _ in all_problems)
     print(f'可读性验收：扫描 {nfiles} 个文件')
     labels = {'A': 'A 代码区禁用命名', 'B': 'B 文件头缺失/过短',
-              'C': 'C 头注释与内容不符', 'D': 'D 单文件结构顺序'}
-    for k in 'ABCD':
+              'C': 'C 头注释与内容不符', 'D': 'D 单文件结构顺序',
+              'F': 'F 头注释断言与事实矛盾'}
+    for k in 'ABCDF':
         print(f'  {labels[k]}: {cnt.get(k, 0)}')
     if hints:
         print(f'  E 体量提示（不判失败）: {len(hints)}')
         for h in hints[:5]:
             print(f'      {h}')
     if not a.quiet:
-        for k in 'ABCD':
+        for k in 'ABCDF':
             items = [m for kk, m in all_problems if kk == k]
             for m in items[:8]:
                 print(f'    [{k}] {m}')
