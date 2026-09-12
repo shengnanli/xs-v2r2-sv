@@ -9,7 +9,9 @@
    "path": "i:/WORK/TageTable_1/u_core/us",
    "attrs": "u",
    "class": "green_child",
-   "child_target": "FoldedSRAMTemplate"
+   "child_target": "FoldedSRAMTemplate",
+   "child_receipt_sha256": "cccdc02ac8217a3b7bc3405db770411260f5f9648476b8bc0b253daacb08b57d",
+   "child_impl_commit": "0a37a00bad480836c1d1bb536c850cb4b9518680"
   },
   {
    "side": "i",
@@ -17,7 +19,9 @@
    "path": "i:/WORK/TageTable_1/u_core/g_bank[0].table_bank",
    "attrs": "u",
    "class": "green_child",
-   "child_target": "FoldedSRAMTemplate_1"
+   "child_target": "FoldedSRAMTemplate_1",
+   "child_receipt_sha256": "2b1bc6a3a8be1817c1a67dfae73996de159956868d5b594bab76d061a36d6df8",
+   "child_impl_commit": "0a37a00bad480836c1d1bb536c850cb4b9518680"
   },
   {
    "side": "i",
@@ -25,7 +29,9 @@
    "path": "i:/WORK/TageTable_1/u_core/g_bank[1].table_bank",
    "attrs": "u",
    "class": "green_child",
-   "child_target": "FoldedSRAMTemplate_1"
+   "child_target": "FoldedSRAMTemplate_1",
+   "child_receipt_sha256": "2b1bc6a3a8be1817c1a67dfae73996de159956868d5b594bab76d061a36d6df8",
+   "child_impl_commit": "0a37a00bad480836c1d1bb536c850cb4b9518680"
   },
   {
    "side": "i",
@@ -33,7 +39,9 @@
    "path": "i:/WORK/TageTable_1/u_core/g_bank[2].table_bank",
    "attrs": "u",
    "class": "green_child",
-   "child_target": "FoldedSRAMTemplate_1"
+   "child_target": "FoldedSRAMTemplate_1",
+   "child_receipt_sha256": "2b1bc6a3a8be1817c1a67dfae73996de159956868d5b594bab76d061a36d6df8",
+   "child_impl_commit": "0a37a00bad480836c1d1bb536c850cb4b9518680"
   },
   {
    "side": "i",
@@ -41,7 +49,9 @@
    "path": "i:/WORK/TageTable_1/u_core/g_bank[3].table_bank",
    "attrs": "u",
    "class": "green_child",
-   "child_target": "FoldedSRAMTemplate_1"
+   "child_target": "FoldedSRAMTemplate_1",
+   "child_receipt_sha256": "2b1bc6a3a8be1817c1a67dfae73996de159956868d5b594bab76d061a36d6df8",
+   "child_impl_commit": "0a37a00bad480836c1d1bb536c850cb4b9518680"
   },
   {
    "side": "i",
@@ -49,7 +59,9 @@
    "path": "i:/WORK/TageTable_1/u_core/g_wb_bank[0].g_wb_br[0].bank_wrbypass",
    "attrs": "u",
    "class": "green_child",
-   "child_target": "WrBypass"
+   "child_target": "WrBypass",
+   "child_receipt_sha256": "c7e237abe913185dc6adf256e4d03a850ab02d75b9d635af9149d87e5f4c60f8",
+   "child_impl_commit": "caa62eea67860ad374cbebe69ffdb4a6ed91dc04"
   },
   {
    "side": "i",
@@ -57,7 +69,9 @@
    "path": "i:/WORK/TageTable_1/u_core/g_wb_bank[0].g_wb_br[1].bank_wrbypass",
    "attrs": "u",
    "class": "green_child",
-   "child_target": "WrBypass"
+   "child_target": "WrBypass",
+   "child_receipt_sha256": "c7e237abe913185dc6adf256e4d03a850ab02d75b9d635af9149d87e5f4c60f8",
+   "child_impl_commit": "caa62eea67860ad374cbebe69ffdb4a6ed91dc04"
   },
   {
    "side": "i",
@@ -65,7 +79,9 @@
    "path": "i:/WORK/TageTable_1/u_core/g_wb_bank[1].g_wb_br[0].bank_wrbypass",
    "attrs": "u",
    "class": "green_child",
-   "child_target": "WrBypass"
+   "child_target": "WrBypass",
+   "child_receipt_sha256": "c7e237abe913185dc6adf256e4d03a850ab02d75b9d635af9149d87e5f4c60f8",
+   "child_impl_commit": "caa62eea67860ad374cbebe69ffdb4a6ed91dc04"
   },
   {
    "side": "i",
@@ -73,7 +89,9 @@
    "path": "i:/WORK/TageTable_1/u_core/g_wb_bank[1].g_wb_br[1].bank_wrbypass",
    "attrs": "u",
    "class": "green_child",
-   "child_target": "WrBypass"
+   "child_target": "WrBypass",
+   "child_receipt_sha256": "c7e237abe913185dc6adf256e4d03a850ab02d75b9d635af9149d87e5f4c60f8",
+   "child_impl_commit": "caa62eea67860ad374cbebe69ffdb4a6ed91dc04"
   },
   {
    "side": "i",
@@ -81,7 +99,9 @@
    "path": "i:/WORK/TageTable_1/u_core/g_wb_bank[2].g_wb_br[0].bank_wrbypass",
    "attrs": "u",
    "class": "green_child",
-   "child_target": "WrBypass"
+   "child_target": "WrBypass",
+   "child_receipt_sha256": "c7e237abe913185dc6adf256e4d03a850ab02d75b9d635af9149d87e5f4c60f8",
+   "child_impl_commit": "caa62eea67860ad374cbebe69ffdb4a6ed91dc04"
   },
   {
    "side": "i",
@@ -89,7 +109,9 @@
    "path": "i:/WORK/TageTable_1/u_core/g_wb_bank[2].g_wb_br[1].bank_wrbypass",
    "attrs": "u",
    "class": "green_child",
-   "child_target": "WrBypass"
+   "child_target": "WrBypass",
+   "child_receipt_sha256": "c7e237abe913185dc6adf256e4d03a850ab02d75b9d635af9149d87e5f4c60f8",
+   "child_impl_commit": "caa62eea67860ad374cbebe69ffdb4a6ed91dc04"
   },
   {
    "side": "i",
@@ -97,7 +119,9 @@
    "path": "i:/WORK/TageTable_1/u_core/g_wb_bank[3].g_wb_br[0].bank_wrbypass",
    "attrs": "u",
    "class": "green_child",
-   "child_target": "WrBypass"
+   "child_target": "WrBypass",
+   "child_receipt_sha256": "c7e237abe913185dc6adf256e4d03a850ab02d75b9d635af9149d87e5f4c60f8",
+   "child_impl_commit": "caa62eea67860ad374cbebe69ffdb4a6ed91dc04"
   },
   {
    "side": "i",
@@ -105,7 +129,9 @@
    "path": "i:/WORK/TageTable_1/u_core/g_wb_bank[3].g_wb_br[1].bank_wrbypass",
    "attrs": "u",
    "class": "green_child",
-   "child_target": "WrBypass"
+   "child_target": "WrBypass",
+   "child_receipt_sha256": "c7e237abe913185dc6adf256e4d03a850ab02d75b9d635af9149d87e5f4c60f8",
+   "child_impl_commit": "caa62eea67860ad374cbebe69ffdb4a6ed91dc04"
   },
   {
    "side": "r",
@@ -113,7 +139,9 @@
    "path": "r:/WORK/TageTable_1/us",
    "attrs": "u",
    "class": "green_child",
-   "child_target": "FoldedSRAMTemplate"
+   "child_target": "FoldedSRAMTemplate",
+   "child_receipt_sha256": "cccdc02ac8217a3b7bc3405db770411260f5f9648476b8bc0b253daacb08b57d",
+   "child_impl_commit": "0a37a00bad480836c1d1bb536c850cb4b9518680"
   },
   {
    "side": "r",
@@ -121,7 +149,9 @@
    "path": "r:/WORK/TageTable_1/table_banks_0",
    "attrs": "u",
    "class": "green_child",
-   "child_target": "FoldedSRAMTemplate_1"
+   "child_target": "FoldedSRAMTemplate_1",
+   "child_receipt_sha256": "2b1bc6a3a8be1817c1a67dfae73996de159956868d5b594bab76d061a36d6df8",
+   "child_impl_commit": "0a37a00bad480836c1d1bb536c850cb4b9518680"
   },
   {
    "side": "r",
@@ -129,7 +159,9 @@
    "path": "r:/WORK/TageTable_1/table_banks_1",
    "attrs": "u",
    "class": "green_child",
-   "child_target": "FoldedSRAMTemplate_1"
+   "child_target": "FoldedSRAMTemplate_1",
+   "child_receipt_sha256": "2b1bc6a3a8be1817c1a67dfae73996de159956868d5b594bab76d061a36d6df8",
+   "child_impl_commit": "0a37a00bad480836c1d1bb536c850cb4b9518680"
   },
   {
    "side": "r",
@@ -137,7 +169,9 @@
    "path": "r:/WORK/TageTable_1/table_banks_2",
    "attrs": "u",
    "class": "green_child",
-   "child_target": "FoldedSRAMTemplate_1"
+   "child_target": "FoldedSRAMTemplate_1",
+   "child_receipt_sha256": "2b1bc6a3a8be1817c1a67dfae73996de159956868d5b594bab76d061a36d6df8",
+   "child_impl_commit": "0a37a00bad480836c1d1bb536c850cb4b9518680"
   },
   {
    "side": "r",
@@ -145,7 +179,9 @@
    "path": "r:/WORK/TageTable_1/table_banks_3",
    "attrs": "u",
    "class": "green_child",
-   "child_target": "FoldedSRAMTemplate_1"
+   "child_target": "FoldedSRAMTemplate_1",
+   "child_receipt_sha256": "2b1bc6a3a8be1817c1a67dfae73996de159956868d5b594bab76d061a36d6df8",
+   "child_impl_commit": "0a37a00bad480836c1d1bb536c850cb4b9518680"
   },
   {
    "side": "r",
@@ -153,7 +189,9 @@
    "path": "r:/WORK/TageTable_1/bank_wrbypasses_0_0",
    "attrs": "u",
    "class": "green_child",
-   "child_target": "WrBypass"
+   "child_target": "WrBypass",
+   "child_receipt_sha256": "c7e237abe913185dc6adf256e4d03a850ab02d75b9d635af9149d87e5f4c60f8",
+   "child_impl_commit": "caa62eea67860ad374cbebe69ffdb4a6ed91dc04"
   },
   {
    "side": "r",
@@ -161,7 +199,9 @@
    "path": "r:/WORK/TageTable_1/bank_wrbypasses_0_1",
    "attrs": "u",
    "class": "green_child",
-   "child_target": "WrBypass"
+   "child_target": "WrBypass",
+   "child_receipt_sha256": "c7e237abe913185dc6adf256e4d03a850ab02d75b9d635af9149d87e5f4c60f8",
+   "child_impl_commit": "caa62eea67860ad374cbebe69ffdb4a6ed91dc04"
   },
   {
    "side": "r",
@@ -169,7 +209,9 @@
    "path": "r:/WORK/TageTable_1/bank_wrbypasses_1_0",
    "attrs": "u",
    "class": "green_child",
-   "child_target": "WrBypass"
+   "child_target": "WrBypass",
+   "child_receipt_sha256": "c7e237abe913185dc6adf256e4d03a850ab02d75b9d635af9149d87e5f4c60f8",
+   "child_impl_commit": "caa62eea67860ad374cbebe69ffdb4a6ed91dc04"
   },
   {
    "side": "r",
@@ -177,7 +219,9 @@
    "path": "r:/WORK/TageTable_1/bank_wrbypasses_1_1",
    "attrs": "u",
    "class": "green_child",
-   "child_target": "WrBypass"
+   "child_target": "WrBypass",
+   "child_receipt_sha256": "c7e237abe913185dc6adf256e4d03a850ab02d75b9d635af9149d87e5f4c60f8",
+   "child_impl_commit": "caa62eea67860ad374cbebe69ffdb4a6ed91dc04"
   },
   {
    "side": "r",
@@ -185,7 +229,9 @@
    "path": "r:/WORK/TageTable_1/bank_wrbypasses_2_0",
    "attrs": "u",
    "class": "green_child",
-   "child_target": "WrBypass"
+   "child_target": "WrBypass",
+   "child_receipt_sha256": "c7e237abe913185dc6adf256e4d03a850ab02d75b9d635af9149d87e5f4c60f8",
+   "child_impl_commit": "caa62eea67860ad374cbebe69ffdb4a6ed91dc04"
   },
   {
    "side": "r",
@@ -193,7 +239,9 @@
    "path": "r:/WORK/TageTable_1/bank_wrbypasses_2_1",
    "attrs": "u",
    "class": "green_child",
-   "child_target": "WrBypass"
+   "child_target": "WrBypass",
+   "child_receipt_sha256": "c7e237abe913185dc6adf256e4d03a850ab02d75b9d635af9149d87e5f4c60f8",
+   "child_impl_commit": "caa62eea67860ad374cbebe69ffdb4a6ed91dc04"
   },
   {
    "side": "r",
@@ -201,7 +249,9 @@
    "path": "r:/WORK/TageTable_1/bank_wrbypasses_3_0",
    "attrs": "u",
    "class": "green_child",
-   "child_target": "WrBypass"
+   "child_target": "WrBypass",
+   "child_receipt_sha256": "c7e237abe913185dc6adf256e4d03a850ab02d75b9d635af9149d87e5f4c60f8",
+   "child_impl_commit": "caa62eea67860ad374cbebe69ffdb4a6ed91dc04"
   },
   {
    "side": "r",
@@ -209,7 +259,9 @@
    "path": "r:/WORK/TageTable_1/bank_wrbypasses_3_1",
    "attrs": "u",
    "class": "green_child",
-   "child_target": "WrBypass"
+   "child_target": "WrBypass",
+   "child_receipt_sha256": "c7e237abe913185dc6adf256e4d03a850ab02d75b9d635af9149d87e5f4c60f8",
+   "child_impl_commit": "caa62eea67860ad374cbebe69ffdb4a6ed91dc04"
   }
  ]
 }
