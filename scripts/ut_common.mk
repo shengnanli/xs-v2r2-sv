@@ -23,7 +23,13 @@ export VCS_ARCH_OVERRIDE := linux
 VCS      := vcs -full64 -sverilog -timescale=1ns/1ps -kdb -lca \
             -debug_access+all +lint=TFIPC-L -l compile.log
 SEED     ?= 1
-SIM_ARGS ?=
+# 拍数：CONVENTIONS 要求每 seed >= 100k 拍。各 tb 自带的默认值参差（实测 Alu/
+# VSetRiWi/VSetRvfWvf 20k、SRAMTemplate/TageTable 40k、SyncDataModule/WrBypass 50k），
+# 全都低于标准，且没有一个 Makefile 覆盖过——意味着这些目标的 UT 验收是在不达标的
+# 拍数下过的。这里统一由 ut_common 下发，**按构造**满足标准，不依赖谁记得加 plusarg。
+# tb 若不读 +ncycles 则该参数被忽略，无副作用。
+NCYCLES  ?= 200000
+SIM_ARGS ?= +ncycles=$(NCYCLES)
 
 UT_GEN_DIR := ut_gen
 UT_SRCS    := $(addprefix $(UT_GEN_DIR)/,$(notdir $(RTL_SRCS)))
