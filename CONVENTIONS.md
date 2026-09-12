@@ -71,7 +71,12 @@ endmodule
 - generate-for 内禁止用 function 捕获模块级信号（仿真返 X），
   路由/选择用显式 assign 或 always_comb-for。
 - FM read_sverilog 不支持函数返回值域选 `f(x).value`，拆成独立函数。
-- FM 严禁并发多实例大模块验证（内存 OOM），串行跑；禁 `pkill -f`。
+- FM 并发：**小模块可高并发**（批跑默认 `--jobs 16`）。实测 676 次 FM 峰值内存
+  中位 867 MB / 90 分位 869 MB / 最大 1455 MB，16 并发约 24 GB，本机 125 GB 宽裕；
+  Formality license 9999 席不是约束。
+  **例外**：整芯片级目标（XSTop 全量 elaborate 实测 9.6 GB/实例）必须单独串行——
+  上轮 OOM 事故是 63k 行大模块并发造成的，教训适用于大模块，不适用于小模块。
+  禁 `pkill -f`（会误杀其他任务的 simv）。
 - chisel Vec 越界读语义是回绕不是 0（上轮 LoadQueue replay 真 bug 根因）。
 
 ## 可读性验收（与 FM 同等地位，须常态化跑）

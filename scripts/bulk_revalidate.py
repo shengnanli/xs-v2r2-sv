@@ -95,7 +95,13 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--plan', action='store_true')
     ap.add_argument('--run', action='store_true')
-    ap.add_argument('--jobs', type=int, default=6)
+    # 并发默认 16（用户指示）。依据是实测而非估计：676 次 FM 的峰值内存中位 867 MB、
+    # 90 分位 869 MB、最大 1455 MB（AXI4Deinterleaver），只有 2 次超过 1.2 GB。
+    # 16 × 1.5 GB ≈ 24 GB，本机 125 GB（可用 90+ GB）宽裕；32 核跑 16 个基本单线程的
+    # FM 也不挤。license 9999 席不是约束。
+    # 例外：整芯片级目标（如 XSTop 全量 elaborate 实测 9.6 GB）必须单独串行，
+    # 不要混进批跑——上轮 OOM 事故正是 63k 行大模块并发造成的。
+    ap.add_argument('--jobs', type=int, default=16)
     ap.add_argument('--limit', type=int, default=0)
     ap.add_argument('--collect-allow', action='store_true',
                     help='跑 needs_allow 组以采集黑盒报告（判定会是 PARTIAL）')
