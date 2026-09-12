@@ -66,7 +66,10 @@ for t in "${TARGETS[@]}"; do
 done
 
 D_AFTER="$(digest_worktree)"
-HEAD_AFTER="$(git -C "$REPO" rev-parse HEAD)"
+# 跑后校验的是 **worktree 自己的 HEAD**（detached 在 $COMMIT 上），不是活动仓库的 HEAD。
+# 证明钉在某个 commit 的字节上，主线在此期间提交新代码与本次证明无关；
+# 之前误取活动 HEAD，导致批跑中途我一提交就把 6 个已完成目标判成"输入变了"（exit 5）。
+HEAD_AFTER="$(git -C "$WT" rev-parse HEAD)"
 {
   echo "commit	$COMMIT"
   echo "head_before	$HEAD_BEFORE"
