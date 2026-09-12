@@ -242,6 +242,14 @@ if {[info exists env(FM_PIN_TCL)] && [file exists $env(FM_PIN_TCL)]} {
 report_unmatched_points > fm_work/$top/unmatched.rpt
 report_matched_points > fm_work/$top/matched.rpt
 
+# 黑盒对象逐条枚举（assembly 判定依据：观测集合须与 verif/allow/<top>.json 精确相等）。
+# 报告文本按 side(ref/impl) + 属性类别分块；这里原样落盘，解析与判定交 fm_verdict.py，
+# 保证「工具说了什么」与「我们据此判了什么」可分别审计。
+redirect -variable _bb_txt {report_black_boxes}
+set _fh [open fm_work/$top/black_boxes.rpt w]
+puts $_fh $_bb_txt
+close $_fh
+
 # unread 点逐条枚举（PASS_DEAD_REF 判定依据：观测集合须与声明**精确相等**）。
 # report_unmatched_points 的默认报告不含 unread 类，必须显式 -status unread。
 set _fh [open fm_work/$top/unread_points.txt w]

@@ -13,3 +13,5 @@ verif/ut/*/*.fdc
 verif/ut/*/default.svf
 verif/ut/*/formality*
 verif/ut/*/fm_shell_command.log*
+__pycache__/
+*.pyc

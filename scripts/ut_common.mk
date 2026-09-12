@@ -59,9 +59,13 @@ endif
 # FM_MODE 默认 signoff-strict。判定权威 = fm_verdict.py(fail-closed)。
 FM_MODE ?= $(if $(FM_INTERFACE_ONLY),assembly,signoff-strict)
 FM_ALLOWLIST ?= 0
+# sidecar native-facts 采集（codex 0139 §3.2）：每次 proof 绑定 run id；
+# 证据目录 fm_work/<top>/sidecar/ 含 native_facts.json + appvar readback + 脚本字节快照。
+FM_RUN_ID ?= $(MODULE)-$(shell date -u +%Y%m%dT%H%M%SZ)-$(shell git -C $(XSSV_HOME) rev-parse --short HEAD 2>/dev/null || echo nogit)
 
 fm-%:
-	@mkdir -p fm_work/$*
+	@mkdir -p fm_work/$*/sidecar
+	@rm -rf fm_work/$*/sidecar && mkdir -p fm_work/$*/sidecar
 	@echo "=== FM: $* (mode=$(FM_MODE)) ==="
 	FM_TOP=$* \
 	FM_MODE=$(FM_MODE) \
@@ -73,11 +77,23 @@ fm-%:
 	$(if $(wildcard fm_map/$*.txt),FM_FIELD_MAP=$(abspath fm_map/$*.txt),) \
 	$(if $(wildcard fm_pins_pre.tcl),FM_PIN_PRE_TCL=$(abspath fm_pins_pre.tcl),) \
 	$(if $(wildcard fm_pins.tcl),FM_PIN_TCL=$(abspath fm_pins.tcl),) \
+	FM_SIDECAR_OUT=$(abspath fm_work/$*/sidecar) \
+	FM_RUN_ID=$(FM_RUN_ID) \
 	fm_shell -64 -work_path fm_work/$* -file $(XSSV_HOME)/scripts/fm_eq.tcl \
 	    > fm_work/$*/fm.log 2>&1; \
 	rc=$$?; \
-	python3 $(XSSV_HOME)/scripts/fm_verdict.py fm_work/$*/fm.log --rc $$rc --mode $(FM_MODE) --top $* --allowlist $(FM_ALLOWLIST) \
-	    $(if $(wildcard $(XSSV_HOME)/verif/dead_ref/$*.json),--dead-ref $(XSSV_HOME)/verif/dead_ref/$*.json --unread-points fm_work/$*/unread_points.txt,)
+	v=$$(python3 $(XSSV_HOME)/scripts/fm_verdict.py fm_work/$*/fm.log --rc $$rc --mode $(FM_MODE) --top $* --allowlist $(FM_ALLOWLIST) \
+	    $(if $(wildcard $(XSSV_HOME)/verif/dead_ref/$*.json),--dead-ref $(XSSV_HOME)/verif/dead_ref/$*.json --unread-points fm_work/$*/unread_points.txt,) \
+	    --bbox-report fm_work/$*/black_boxes.rpt \
+	    $(if $(wildcard $(XSSV_HOME)/verif/allow/$*.json),--allow $(XSSV_HOME)/verif/allow/$*.json,)); \
+	vrc=$$?; echo "$$v"; \
+	python3 $(XSSV_HOME)/scripts/make_receipt.py --top $* --workdir fm_work/$* \
+	    --ref-srcs "$(GOLDEN_RTL)/$*.sv $(addprefix $(GOLDEN_RTL)/,$(FM_REF_DEPS_$*))" \
+	    --impl-srcs "$(abspath $(RTL_SRCS) $(RTL_GOLDEN_DEPS))" \
+	    --mode $(FM_MODE) --allowlist $(FM_ALLOWLIST) \
+	    --vmucp "$(if $(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS),$(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS),false)" \
+	    --rc $$rc --verdict "$$v" || exit 1; \
+	exit $$vrc
 
 clean:
 	rm -rf simv* csrc *.log ucli.key novas.* verdiLog fm_work ut_gen *.fsdb *.daidir \

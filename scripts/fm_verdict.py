@@ -86,6 +86,56 @@ def _unmatch_max(text, pat):
 
 
 
+
+# --- assembly 精确黑盒集合策略（codex 0139 §3.3：禁止纯数字配额）-------------
+# 三类抽象边界，判定强度不同：
+#   vendor_macro      厂商硬宏叶子（array_*_ext 等 .v 行为模型）——两侧同源，无条件允许
+#   green_child       独立目标且已在台账通过——条件允许，须写明 child 目标名
+#   golden_logic_reuse 直接复用 golden 功能逻辑当黑盒——**NO-GO**，必须独立证明后才可引用
+ALLOWED_BBOX_CLASSES = {'vendor_macro', 'green_child'}
+
+
+def _mirror(path):
+    """r:/WORK/... ↔ i:/WORK/... 镜像路径（impl 侧允许多一层 u_core）。"""
+    if path.startswith('r:'):
+        return 'i:' + path[2:]
+    if path.startswith('i:'):
+        return 'r:' + path[2:]
+    return path
+
+
+def _assembly_bbox_check(observed, attrs, decl):
+    """观测黑盒集合须与声明**精确相等**，且每条类别合法、ref/impl 成对。
+    返回 True 或失败原因串。"""
+    if decl is None:
+        return 'assembly_no_allow_decl(须 verif/allow/<top>.json 逐对象声明)'
+    declared = {}
+    for e in decl.get('objects', []):
+        try:
+            declared[(e['side'], e['design'], e['path'])] = e
+        except KeyError:
+            return 'assembly_allow_entry_missing_field'
+    if observed != set(declared):
+        extra = observed - set(declared)
+        missing = set(declared) - observed
+        det = ''
+        if extra:
+            det = ',observed_not_declared=' + sorted(extra)[0][2]
+        elif missing:
+            det = ',declared_not_observed=' + sorted(missing)[0][2]
+        return f'assembly_bbox_set_mismatch:extra={len(extra)},missing={len(missing)}{det}'
+    bad_cls = sorted({e.get('class', '?') for e in declared.values()} - ALLOWED_BBOX_CLASSES)
+    if bad_cls:
+        return f'assembly_bbox_class_not_allowed:{",".join(bad_cls)}'
+    for k, e in declared.items():
+        if e.get('class') == 'green_child' and not e.get('child_target'):
+            return f'assembly_green_child_without_target:{k[1]}'
+        mk = (('i' if k[0] == 'r' else 'r'), k[1], _mirror(k[2]))
+        if mk not in declared:
+            return f'assembly_bbox_not_symmetric:{k[2]}'
+    return True
+
+
 def _dead_ref_check(q, decl, unread_points, assembly=False):
     """PASS_DEAD_REF 六条件(全满足才返回 True, 否则返回失败原因串)。
     decl = 声明 json(entries[].ref_path); unread_points = fm_eq.tcl 导出的实际未读点。"""
@@ -117,7 +167,8 @@ def _dead_ref_check(q, decl, unread_points, assembly=False):
 
 
 def verdict(log_text, make_rc=0, mode="signoff-strict", expected_top=None, allowlist=0,
-            dead_ref_decl=None, unread_points=None):
+            dead_ref_decl=None, unread_points=None, bbox_obs=None, bbox_attrs=None,
+            allow_decl=None):
     q = {"passing": None, "failing": None, "unverified": None, "unmatched": None, "aborted": None,
          "unread": None, "blackbox_out": None, "markers": 0, "make_rc": make_rc, "mode": mode,
          "native": None, "top": None, "dont_verify": bool(_DONTVERIFY.search(log_text)),
@@ -212,6 +263,15 @@ def verdict(log_text, make_rc=0, mode="signoff-strict", expected_top=None, allow
         if (q["unmatched"] or 0) > allowlist:
             q["reason"] = f"assembly_unmatched>{allowlist}:{q['unmatched']}"
             return "PARTIAL", q
+        # 精确黑盒集合（唯一签核依据；数字配额只作为上面的粗筛）
+        if bbox_obs is None:
+            q["reason"] = "assembly_no_bbox_report(须 fm_eq.tcl 导出 black_boxes.rpt)"
+            return "PARTIAL", q
+        bb = _assembly_bbox_check(bbox_obs, bbox_attrs or {}, allow_decl)
+        if bb is not True:
+            q["reason"] = bb
+            return "PARTIAL", q
+        q["bbox_objects"] = len(bbox_obs)
         for k in ("unverified", "aborted"):
             if q.get(k) not in (0, None):
                 q["reason"] = f"assembly_{k}!=0"
@@ -261,6 +321,10 @@ if __name__ == "__main__":
                     help="PASS_DEAD_REF 声明 json(entries[].ref_path 精确枚举)")
     ap.add_argument("--unread-points", default=None,
                     help="fm_eq.tcl 导出的 unread_points.txt")
+    ap.add_argument("--bbox-report", default=None,
+                    help="fm_eq.tcl 导出的 black_boxes.rpt（assembly 必需）")
+    ap.add_argument("--allow", default=None,
+                    help="assembly 黑盒精确声明 verif/allow/<top>.json")
     a = ap.parse_args()
     txt = open(a.log).read()
     decl = None
@@ -275,7 +339,22 @@ if __name__ == "__main__":
                 if "\t" in ln:
                     k, p = ln.rstrip("\n").split("\t", 1)
                     pts.append((k, p))
-    v, q = verdict(txt, a.rc, a.mode, a.top, a.allowlist, decl, pts)
+    bbox_obs = bbox_attrs = None
+    if a.bbox_report and os.path.exists(a.bbox_report):
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import bbox_parse
+        try:
+            bbox_obs, bbox_attrs = bbox_parse.normalize(
+                bbox_parse.parse(open(a.bbox_report).read()))
+        except bbox_parse.BBoxParseError as e:
+            print("ERROR\t" + json.dumps({"reason": f"bbox_parse:{e}"}, ensure_ascii=False))
+            sys.exit(1)
+    allow_decl = None
+    if a.allow and os.path.exists(a.allow):
+        with open(a.allow) as f:
+            allow_decl = json.load(f)
+    v, q = verdict(txt, a.rc, a.mode, a.top, a.allowlist, decl, pts,
+                   bbox_obs, bbox_attrs, allow_decl)
     print(v + "\t" + json.dumps(q, ensure_ascii=False))
     # P0-3: 只有 SUCCEEDED 退 0；其余非零(签核 CI fail-closed)。
     # PASS_DEAD_REF 例外：仅当调用方显式给了 --dead-ref 声明文件(即该目标已被审计、
