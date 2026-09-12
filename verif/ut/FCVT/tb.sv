@@ -80,6 +80,12 @@ module tb;
   int unsigned cov_rm[8];                // 指令 rm（7 = 动态，走 fcsr.frm）
   logic [1:0]  last_fmt;                 // 本拍选中的 fmt，供 optype 覆盖统计复用
 
+  // 输出侧观测统计 —— 用来回答「这个 UT 会不会是两边一起躺平（都输出 X/常数）才过的」：
+  // fflags 五个位都被置起过、结果数据绝大多数拍已知，说明真的在做浮点运算。
+  int unsigned cov_outvalid;             // 写回有效的拍数
+  int unsigned cov_fflag[5];            // fflags 各位被置起的拍数（[4]NV [3]DZ [2]OF [1]UF [0]NX）
+  int unsigned cov_res_known, cov_res_x; // 结果数据无 X / 含 X 的拍数
+
   // 舍入模式：均匀扫 0..7。7 是「动态舍入」，本层会换用 fcsr.frm，必须常打。
   function automatic logic [2:0] pick_rm();
     pick_rm = 3'($urandom);
@@ -192,6 +198,10 @@ module tb;
     $display("  fmt e8/e16/e32/e64 : %0d %0d %0d %0d",
              cov_fmt[0], cov_fmt[1], cov_fmt[2], cov_fmt[3]);
     $display("  窄浮点 NaN-box 合法/故意不合法 : %0d / %0d", cov_boxed, cov_unboxed);
+    $display("  写回有效拍数 : %0d", cov_outvalid);
+    $display("  fflags 被置起的拍数 NV/DZ/OF/UF/NX : %0d %0d %0d %0d %0d",
+             cov_fflag[4], cov_fflag[3], cov_fflag[2], cov_fflag[1], cov_fflag[0]);
+    $display("  res_data 无 X / 含 X 的拍数 : %0d / %0d", cov_res_known, cov_res_x);
     $display("  指令 rm 0..7 : %0d %0d %0d %0d %0d %0d %0d %0d (7=动态,走 fcsr.frm)",
              cov_rm[0], cov_rm[1], cov_rm[2], cov_rm[3],
              cov_rm[4], cov_rm[5], cov_rm[6], cov_rm[7]);
@@ -325,6 +335,12 @@ module tb;
   always @(negedge clk) begin
     #4;
     checks++;
+    // 输出侧观测（只看 golden 侧；两侧相等由下面的逐位比对保证）
+    if (g_io_out_valid === 1'b1) cov_outvalid++;
+    if ((^g_io_out_bits_res_fflags) !== 1'bx)
+      for (int k = 0; k < 5; k++)
+        if (g_io_out_bits_res_fflags[k] === 1'b1) cov_fflag[k]++;
+    if ((^g_io_out_bits_res_data) === 1'bx) cov_res_x++; else cov_res_known++;
     if (g_io_in_ready !== i_io_in_ready) begin
       errors++;
       $display("[%0t] io_in_ready mismatch: g=%h i=%h", $time, g_io_in_ready, i_io_in_ready);
