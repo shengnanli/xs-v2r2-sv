@@ -168,3 +168,4 @@ TageTable_1	PASS_DEAD_REF	FM native SUCCEEDED 797p/0fail/0unmatched; 唯48条gol
 TageTable_2	PASS_DEAD_REF	FM native SUCCEEDED 797p/0fail/0unmatched; 唯48条golden-only cone-dead(s1_unhashed_idx[48:1], golden声明49位仅读bit0), 声明精确相等
 TageTable_3	PASS_DEAD_REF	FM native SUCCEEDED 797p/0fail/0unmatched; 唯48条golden-only cone-dead(s1_unhashed_idx[48:1], golden声明49位仅读bit0), 声明精确相等
 DuplicatedTagArray	TODO_RENUMBER	老FM_REF_DEPS引用SRAMTemplate_114(G1已重编号), 需按G1依赖链重导
+DuplicatedTagArray	PASS	G1重编号自动remap(SRAMTemplate_114→_116)+宏链闭包补全(array_9→array_8); UT 3seed 0err; FM SUCCEEDED 2460p

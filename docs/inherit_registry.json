@@ -81,5 +81,7 @@
  "/home/eda/xs-env/xs-v2r2-sv/rtl/frontend/FTBBank.sv": "/home/eda/xs-env/xs-v2-sv/rtl/frontend/FTBBank.sv",
  "/home/eda/xs-env/xs-v2r2-sv/rtl/memblock/xs_tlbuffer13_bank.sv": "/home/eda/xs-env/xs-v2-sv/rtl/memblock/TLBuffer_13.sv",
  "/home/eda/xs-env/xs-v2r2-sv/rtl/memblock/TLBuffer_13.sv": "/home/eda/xs-env/xs-v2-sv/rtl/memblock/TLBuffer_13.sv",
- "/home/eda/xs-env/xs-v2r2-sv/rtl/memblock/tlbuffer13_pkg.sv": "/home/eda/xs-env/xs-v2-sv/rtl/memblock/TLBuffer_13.sv"
+ "/home/eda/xs-env/xs-v2r2-sv/rtl/memblock/tlbuffer13_pkg.sv": "/home/eda/xs-env/xs-v2-sv/rtl/memblock/TLBuffer_13.sv",
+ "/home/eda/xs-env/xs-v2r2-sv/rtl/memblock/DuplicatedTagArray.sv": "/home/eda/xs-env/xs-v2-sv/rtl/memblock/DuplicatedTagArray.sv",
+ "/home/eda/xs-env/xs-v2r2-sv/rtl/memblock/dtagarray_pkg.sv": "/home/eda/xs-env/xs-v2-sv/rtl/memblock/DuplicatedTagArray.sv"
 }

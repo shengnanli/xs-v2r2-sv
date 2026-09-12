@@ -25,6 +25,61 @@ MANIFEST = pathlib.Path('/home/eda/xs-env/xs-signoff/scripts/sidecar/manifest_30
 
 MOD_RE = re.compile(r'^module\s+([A-Za-z_]\w*)', re.MULTILINE)
 FM_EQ = NEW / 'scripts' / 'fm_eq.tcl'
+G0 = pathlib.Path('/home/eda/xs-env/G0-canonical/golden-rtl')
+_SCALA_LN = re.compile(rb'\.scala:\d+')
+_remap_cache = {}
+
+
+def golden_remap(fname):
+    """G1 重编号自动解析：老配置引用的 golden 文件在 G1 已改名时，找回同一模块。
+    判据 = 自身模块名与断言行号归一后**字节完全相同**（纯重编号），否则不认——
+    内容真变的目标必须人工处理，不允许悄悄换成另一个模块。"""
+    if fname in _remap_cache:
+        return _remap_cache[fname]
+    if (G1 / fname).exists() or not (G0 / fname).exists():
+        _remap_cache[fname] = None
+        return None
+    stem = fname[:-3]
+    want = _SCALA_LN.sub(b'.scala:0', (G0 / fname).read_bytes()).replace(stem.encode(), b'@S@')
+    fam = re.match(r'^(.*?)(_\d+)?$', stem).group(1)
+    for cand in sorted(G1.glob(fam + '*.sv')):
+        cs = cand.stem
+        got = _SCALA_LN.sub(b'.scala:0', cand.read_bytes()).replace(cs.encode(), b'@S@')
+        if got == want:
+            _remap_cache[fname] = cand.name
+            return cand.name
+    _remap_cache[fname] = None
+    return None
+
+
+
+MACRO_RE = re.compile(r'^(sram_array_\w+|array(_\d+)?)$')
+INST_RE = re.compile(r'^\s+([A-Za-z_]\w*)\s+[A-Za-z_]\w*\s*\(', re.MULTILINE)
+
+
+def macro_closure(files):
+    """厂商 SRAM 宏链闭包补全：G1 里宏内部例化的 array_N 也可能被重编号
+    （如 dcsh_tag 宏的子阵列 array_9→array_8），老配置里的名字会失配。
+    只对宏类文件（sram_array_*/array_*）做传递补全，不扩散到功能模块。"""
+    out, seen = list(files), set(files)
+    queue = [f for f in files if MACRO_RE.match(f.rsplit('.', 1)[0])]
+    while queue:
+        f = queue.pop()
+        fp = G1 / f
+        if not fp.exists() or not f.endswith('.sv'):
+            continue
+        for m in INST_RE.finditer(fp.read_text(errors='replace')):
+            child = m.group(1)
+            if not MACRO_RE.match(child):
+                continue
+            for cand in (child + '.sv', child + '_ext.v'):
+                if cand in seen or not (G1 / cand).exists():
+                    continue
+                seen.add(cand)
+                out.append(cand)
+                if cand.endswith('.sv'):
+                    queue.append(cand)
+    return out
 
 
 def _whitelist_add(name):
@@ -155,9 +210,15 @@ def main():
         else:
             wrap_srcs.append(s)
     golden_passthru = sorted(set(golden_passthru))
-    for g in golden_passthru:
+    remapped = {}
+    for i, g in enumerate(list(golden_passthru)):
         if not (G1 / g).exists():
-            sys.exit(f'ERROR: {t} golden 依赖在 G1 缺失: {g}')
+            r = golden_remap(g)
+            if not r:
+                sys.exit(f'ERROR: {t} golden 依赖在 G1 缺失且非纯重编号: {g}（人工处理）')
+            remapped[g] = r
+            golden_passthru[i] = r
+    golden_passthru = sorted(set(golden_passthru))
 
     # 子系统目录：取第一个非 common 源的目录名，缺省 uncore
     subsys = 'uncore'
@@ -268,9 +329,14 @@ def main():
             sys.exit(f'ERROR: {t} 模块 {v} 声明 {decl_count.get(v,0)} 次(须恰 1)')
     golden_srcs = [x.replace('@GOLDEN@/', '')
                    for x in expand_make(vals.get('GOLDEN_SRCS', ''), vals).split()]
-    for g in golden_srcs:
+    golden_srcs = macro_closure(golden_srcs)
+    for i, g in enumerate(list(golden_srcs)):
         if not (G1 / g).exists():
-            sys.exit(f'ERROR: {t} GOLDEN_SRC 在 G1 缺失: {g}（改动目标? 人工处理）')
+            r = golden_remap(g)
+            if not r:
+                sys.exit(f'ERROR: {t} GOLDEN_SRC 在 G1 缺失且非纯重编号: {g}（改动目标? 人工处理）')
+            remapped[g] = r
+            golden_srcs[i] = r
 
     # --- 新 UT 目录 ---
     new_ut = NEW / 'verif' / 'ut' / man[t]['ut_dir']
@@ -315,8 +381,22 @@ def main():
     for ln in old_flat.splitlines():
         m = re.match(r'^(FM_(?!VARIANTS)\w+)\s*[:+?]?=\s*(.*)$', ln)
         if m:
-            keep_fm.append(m.group(1) + ' = '
-                           + expand_make(m.group(2), vals).replace('@GOLDEN@', '$(GOLDEN_RTL)'))
+            val = expand_make(m.group(2), vals).replace('@GOLDEN@', '$(GOLDEN_RTL)')
+            toks = []
+            for tok in val.split():
+                base = tok.split('/')[-1]
+                if base.endswith(('.sv', '.v')) and not (G1 / base).exists():
+                    r = remapped.get(base) or golden_remap(base)
+                    if r:
+                        remapped[base] = r
+                        tok = tok.replace(base, r)
+                toks.append(tok)
+            if m.group(1).startswith('FM_REF_DEPS_'):
+                bases = [x.split('/')[-1] for x in toks]
+                extra = [x for x in macro_closure(bases) if x not in bases
+                         and not x.endswith('.v')]   # FM 不读 vendor _ext.v
+                toks += extra
+            keep_fm.append(m.group(1) + ' = ' + ' '.join(toks))
     keep_fm.append('GOLDEN_SRCS = ' + ' \\\n              '.join(
         '$(GOLDEN_RTL)/' + g for g in golden_srcs))
     # include 之后的追加段（VCS += +define+SYNTHESIS 等）连注释原样保留
@@ -361,6 +441,9 @@ def main():
         for v in fm_variants:
             _whitelist_add(v)
 
+    if remapped:
+        notes.append('G1重编号自动remap: '
+                     + ', '.join(f'{a}->{b}' for a, b in sorted(remapped.items())))
     regp.parent.mkdir(parents=True, exist_ok=True)
     regp.write_text(json.dumps(registry, indent=1, ensure_ascii=False))
     print(f'OK {t}: 主文件={main_path.relative_to(NEW)} 兄弟变体={len(sibling_files)} '
