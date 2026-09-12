@@ -61,6 +61,7 @@ def parse(text):
     want = None            # 本 design 块声明的实例数
     got = 0
     sec_blocks = 0
+    total_blocks = 0      # 全报告 design 块总数（区分"根本没有块"与"块都是 0 实例"）
     out = []
     seen = set()
 
@@ -153,6 +154,7 @@ def parse(text):
             close_block()
             design, want, got = (m.group(1), m.group(2)), None, 0
             sec_blocks += 1
+            total_blocks += 1
             continue
 
         if IGNORE_RE.match(l):
@@ -168,8 +170,13 @@ def parse(text):
     elif phase not in ('EMPTY_TAIL',):
         raise BBoxParseError(f'报告在 {phase} 阶段意外结束')
 
-    if not out and phase != 'EMPTY_TAIL':
-        raise BBoxParseError('黑盒集合为空但没有 FM-249 空终态标记')
+    # 空结果的两种**合法**形态，其它一律拒：
+    #   (a) FM-249 空终态（根本没有 section）；
+    #   (b) 有 section/design 块但每块 Instances : 0 —— 读进容器却未被本 top 例化的
+    #       兄弟变体（e * 标记），不构成抽象边界。
+    # 若既无 249、又连一个 design 块都没有，说明报告残缺，拒。
+    if not out and phase != 'EMPTY_TAIL' and total_blocks == 0:
+        raise BBoxParseError('黑盒集合为空、无 FM-249 空终态、且无任何 design 块（报告残缺）')
     return out
 
 

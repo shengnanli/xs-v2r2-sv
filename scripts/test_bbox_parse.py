@@ -116,7 +116,24 @@ def main():
                      '####    TECH LIBRARY - i:/FM_BBOX\n'
                      '##################################################################\n'
                      '       Instances : 1 of 1\n       i:/WORK/T/a/b\n' + TAIL))
-    res.append(rej('空集但无249终态',
+
+    # 全 0 实例形态（有 section/design 块但都未被例化）→ 合法空集
+    zero_blk = ("""##################################################################
+####    DESIGN LIBRARY - i:/WORK
+##################################################################
+Type  Design Name
+----  ----------
+e *    Sibling_1
+
+       Instances : 0
+
+e *    Sibling_2
+
+       Instances : 0
+""")
+    res.append(ok('全0实例(未例化兄弟变体)',
+                  BANNER + B.FM184 + '\n' + LEGEND + zero_blk + TAIL, 0))
+    res.append(rej('无249且无任何design块(报告残缺)',
                    BANNER + B.FM184 + '\n' + LEGEND + TAIL))
 
     # G1 真实样本（含 Instances : 0 的未例化兄弟变体）
