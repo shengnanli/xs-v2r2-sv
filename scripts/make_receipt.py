@@ -35,13 +35,28 @@ def sha(p):
     return hashlib.sha256(pathlib.Path(p).read_bytes()).hexdigest()
 
 
-def closure(files):
+def closure(files, repo=None):
+    """闭包条目：路径一律记 **repo-relative**（worktree 绝对路径跑完即失效，
+    无法事后 `git show <commit>:<path>` 复算）。仓库外的文件（golden）记 kind=golden
+    并保留其相对 G1 的路径。"""
     out = []
+    repo = pathlib.Path(repo) if repo else None
     for f in files:
-        if f and os.path.exists(f):
-            out.append({'path': str(f), 'sha256': sha(f)})
-        elif f:
+        if not f:
+            continue
+        fp = pathlib.Path(f)
+        if not fp.exists():
             sys.exit(f'ERROR: receipt 闭包文件不存在: {f}')
+        rel, kind = str(fp), 'external'
+        try:
+            if repo:
+                rel, kind = str(fp.resolve().relative_to(repo.resolve())), 'repo'
+        except ValueError:
+            try:
+                rel, kind = str(fp.resolve().relative_to(G1.resolve())), 'golden'
+            except ValueError:
+                pass
+        out.append({'path': rel, 'kind': kind, 'sha256': sha(fp)})
     return out
 
 
@@ -58,6 +73,8 @@ def main():
     ap.add_argument('--verdict', required=True)
     ap.add_argument('--expect-run-id', default=None,
                     help='本次 FM_RUN_ID；与 sidecar 记录不符即拒（防捡到上次残留 facts）')
+    ap.add_argument('--parent-commit', default=None,
+                    help='本次父 proof 的 commit；green_child 的 impl 闭包按该 commit 复算')
     ap.add_argument('--allow-dirty', action='store_true',
                     help='仅用于本地调试：允许 dirty 工作树（产出的 receipt 标记 provisional，'
                          '不可用于晋升）')
@@ -109,7 +126,7 @@ def main():
     # green_child 共享闭包字节一致性（codex 0140 P0-3 的 closure 部分）：
     # 父的 impl 闭包里凡是 child receipt 也读过的文件，两侧 sha256 必须逐一相同。
     # 否则说明 child 被证明时用的不是本次这份字节。
-    impl_cl = closure(a.impl_srcs.split())
+    impl_cl = closure(a.impl_srcs.split(), NEW)
     child_checks = []
     allow_p = NEW / 'verif' / 'allow' / f'{a.top}.json'
     if allow_p.exists():
@@ -135,7 +152,35 @@ def main():
             if bad:
                 sys.exit(f'ERROR: green_child {ct} 的共享闭包字节与本次不一致: '
                          f'{bad[:3]} —— 拒绝出 receipt')
-            # 被黑盒的 child，父侧本就不读它的 impl 字节 ⇒ shared 常为 0，
+            # ★codex 0141：父把 child 黑盒掉，**更**需要组合性保证——父最终集成的
+            # child 实现字节必须仍等于 child receipt 证明过的字节。对 child receipt 的
+            # 每个 repo-relative impl 闭包条目，取父 commit 下同路径的字节算 sha256，
+            # 必须逐一相等；文件缺失或改过一字节即 child receipt 失效（须重跑 child）。
+            pcommit = a.parent_commit or impl_commit
+            comp_ok, comp_bad, comp_missing = 0, [], []
+            for e in crj.get('impl_closure', []):
+                if e.get('kind') != 'repo':
+                    continue
+                r = subprocess.run(['git', 'show', f'{pcommit}:{e["path"]}'],
+                                   cwd=str(NEW), stdout=subprocess.PIPE,
+                                   stderr=subprocess.DEVNULL)
+                if r.returncode != 0:
+                    comp_missing.append(e['path'])
+                    continue
+                if hashlib.sha256(r.stdout).hexdigest() != e['sha256']:
+                    comp_bad.append(e['path'])
+                else:
+                    comp_ok += 1
+            if comp_missing or comp_bad:
+                sys.exit(f'ERROR: green_child {ct} 的 impl 闭包在父 commit '
+                         f'{pcommit[:12]} 下已变化 —— child receipt 失效，须重跑 child。'
+                         f'缺失={comp_missing[:2]} 改动={comp_bad[:2]}')
+            if comp_ok == 0:
+                sys.exit(f'ERROR: green_child {ct} 的 receipt 无任何 repo-relative impl '
+                         f'闭包条目可核对 —— 无法建立组合性保证，拒绝出 receipt')
+
+            # 下面这条比对（父自身闭包与 child 闭包的交集）对被黑盒 child 恒空，
+            # 保留仅作记录，**不再作为放行依据**。
             # 那条比对对这类 child 是空转。真正该绑的是「被黑盒的这个 golden 模块，
             # 与 child 被证明时用的 golden 模块是同一份字节」：
             # child receipt 的 golden_closure 里须含 <child>.sv，且其 sha256 与
@@ -156,20 +201,34 @@ def main():
             if key in man and man[key] != gsha[key]:
                 sys.exit(f'ERROR: green_child {ct} 证明时的 {key} 字节与 G1 MANIFEST 不符 '
                          f'—— 拒绝出 receipt')
-            child_checks.append({'child_target': ct, 'child_impl_commit': cr['impl_commit'],
-                                 'child_verdict': cr['verdict'],
-                                 'shared_impl_closure_files_matched': shared,
-                                 'shared_impl_closure_vacuous': shared == 0,
-                                 'child_golden_file': key,
-                                 'child_golden_sha256': gsha[key],
-                                 'child_golden_matches_g1_manifest': man.get(key) == gsha[key]})
+            child_checks.append({
+                'child_target': ct,
+                'child_impl_commit': cr['impl_commit'],
+                'child_verdict': cr['verdict'],
+                'child_receipt_sha256': cr['receipt_sha256'],
+                # 稳定语义摘要：child 的判定 + canonical + 其 impl/golden 闭包逐文件
+                # (repo-relative path, sha256) 排序后取 sha256。重跑同输入不变。
+                'child_semantic_digest': hashlib.sha256(json.dumps({
+                    'verdict': cr['verdict'], 'canonical': cr['canonical_id'],
+                    'impl': sorted((e['path'], e['sha256'])
+                                   for e in crj.get('impl_closure', [])),
+                    'golden': sorted((e['path'], e['sha256'])
+                                     for e in crj.get('golden_closure', [])),
+                }, sort_keys=True).encode()).hexdigest(),
+                'child_impl_files_verified_at_parent_commit': comp_ok,
+                'parent_commit_used': pcommit,
+                'child_golden_file': key,
+                'child_golden_sha256': gsha[key],
+                'child_golden_matches_g1_manifest': man.get(key) == gsha[key],
+                'parent_impl_closure_overlap': shared,
+            })
 
     receipt = {
         'schema': 'xs-v2-sv-receipt-v1',
         'top': a.top,
         'run_id': facts.get('run_id'),
         'g1_canonical_id': cid,
-        'golden_closure': closure(a.ref_srcs.split()),
+        'golden_closure': closure(a.ref_srcs.split(), NEW),
         'impl_closure': impl_cl,
         'impl_commit': impl_commit,
         'impl_worktree_dirty': bool(dirty),

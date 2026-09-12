@@ -37,7 +37,13 @@ git worktree add --detach "$WT" "$COMMIT" >/dev/null || exit 4
 echo "[run_proof] worktree=$WT commit=${COMMIT:0:12} ut=$UT_DIR targets=${TARGETS[*]}"
 
 # 跑前闭包摘要（worktree 内 tracked 文件的整体摘要）
-digest_worktree() { (cd "$WT" && git ls-files -s | sha256sum | cut -d' ' -f1); }
+# 摘要必须覆盖**工作树实际字节**：`git ls-files -s` 只是 index 条目，工作树文件被改动
+# 时它不会变（codex 0141 P1）。这里按稳定顺序对每个 tracked 文件的真实内容取 sha256，
+# 再对 "<sha>  <path>" 列表整体取一次。
+digest_worktree() {
+  ( cd "$WT" && git ls-files -z | LC_ALL=C sort -z \
+      | xargs -0 -r sha256sum -- | sha256sum | cut -d' ' -f1 )
+}
 D_BEFORE="$(digest_worktree)"
 
 rc_all=0

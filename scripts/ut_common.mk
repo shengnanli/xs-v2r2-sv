@@ -97,7 +97,8 @@ fm-%:
 	    --impl-srcs "$(abspath $(RTL_SRCS) $(RTL_GOLDEN_DEPS))" \
 	    --mode $(FM_MODE) --allowlist $(FM_ALLOWLIST) \
 	    --vmucp "$(if $(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS),$(FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS),false)" \
-	    --rc $$rc --verdict "$$v" --expect-run-id "$(FM_RUN_ID)" || exit 1; \
+	    --rc $$rc --verdict "$$v" --expect-run-id "$(FM_RUN_ID)" \
+	    --parent-commit "$$(git -C $(XSSV_HOME) rev-parse HEAD)" || exit 1; \
 	exit $$vrc
 
 clean:
