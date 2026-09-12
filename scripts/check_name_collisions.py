@@ -314,6 +314,11 @@ class Baseline(object):
 
 # ---------------------------------------------------------------- 比对
 
+# 判据强度。「多义」（同一指纹命中多个名字）与空判据一律 -1：不可用作证据。
+_RANK = {'site': 4, 'site_common': 3, 'site_parentnorm': 2,
+         'body_exact': 1, 'body_childnorm': 0}
+
+
 def _uniq(lst, exclude=None):
     out = sorted(set(x for x in lst if x != exclude))
     return out
@@ -397,7 +402,12 @@ def analyse(g0, g1, name_filter=None):
             continue                      # 端口 + 模块体逐字一致：无话可说
         fwd, fwd_by = resolve(g0, g1, nm)
         rev, rev_by = resolve(g1, g0, nm)
-        collide = (fwd and nm not in fwd) or (rev and nm not in rev)
+        # 两个方向可能给出不同强度的证据（例如正向"共有坑位"说是自己、反向
+        # "模块体逐字相等"说是别人——参数化家族里两个变体体一样是常事）。
+        # 只让**最强的那一档**证据说话，弱证据不足以推翻强证据。
+        best = max(_RANK.get(fwd_by, -1), _RANK.get(rev_by, -1))
+        collide = ((fwd and nm not in fwd and _RANK.get(fwd_by, -1) == best)
+                   or (rev and nm not in rev and _RANK.get(rev_by, -1) == best))
         if collide and not same_site:
             v = 'SILENT_COLLISION' if ports_equal else 'RENUMBER_COLLISION'
         elif fwd == [nm] and rev == [nm]:

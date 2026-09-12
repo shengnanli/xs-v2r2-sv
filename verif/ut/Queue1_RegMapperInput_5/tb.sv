@@ -17,6 +17,11 @@ module tb;
   always #5 clock = ~clock;
   bit reset;
   longint checks = 0, errors = 0, fires = 0;
+  // 位宽覆盖闸：G0->G1 这一轮 source 从 3 位加到 5 位。若激励只打低 3 位，
+  // 位宽写错的实现照样 errors=0（要等 FM 才炸）。这里数 source >= 8 的入队，
+  // 为 0 就说明这轮跑根本没验到新加的高位，直接判 FAIL。
+  longint hi_src_enq = 0;
+  localparam int unsigned MIN_HI_SRC = 1000;
   int     toggled = 0;
 
   // 宽随机：$urandom 一次给 32 位，拼够位宽。
@@ -183,6 +188,8 @@ module tb;
   endtask
 
   task automatic sample_coverage();
+    if (io_enq_valid && g_io_enq_ready && io_enq_bits_extra_tlrr_extra_source >= 5'd8)
+      hi_src_enq++;
     if (g_io_enq_ready !== p_io_enq_ready) tog_io_enq_ready = 1'b1;
     p_io_enq_ready = g_io_enq_ready;
     if (g_io_deq_valid !== p_io_deq_valid) tog_io_deq_valid = 1'b1;
@@ -246,8 +253,8 @@ module tb;
     if (tog_io_deq_bits_mask) toggled++; else $display("COV: output io_deq_bits_mask never toggled");
     if (tog_io_deq_bits_extra_tlrr_extra_source) toggled++; else $display("COV: output io_deq_bits_extra_tlrr_extra_source never toggled");
     if (tog_io_deq_bits_extra_tlrr_extra_size) toggled++; else $display("COV: output io_deq_bits_extra_tlrr_extra_size never toggled");
-    $display("Queue1_RegMapperInput_5 checks=%0d errors=%0d toggled=%0d/%0d fires=%0d",
-             checks, errors, toggled, N_OUT, fires);
+    $display("Queue1_RegMapperInput_5 checks=%0d errors=%0d toggled=%0d/%0d fires=%0d hi_src_enq=%0d",
+             checks, errors, toggled, N_OUT, fires, hi_src_enq);
     if (errors != 0) begin $display("TEST FAILED (mismatch)"); $fatal(1); end
     if (checks == 0) begin $display("TEST FAILED (coverage: no comparison happened)"); $fatal(1); end
     if (toggled < MIN_TOGGLED) begin
@@ -256,6 +263,11 @@ module tb;
     end
     if (fires < MIN_FIRES) begin
       $display("TEST FAILED (coverage: only %0d handshake fires, need >= %0d)", fires, MIN_FIRES);
+      $fatal(1);
+    end
+    if (hi_src_enq < MIN_HI_SRC) begin
+      $display("TEST FAILED (coverage: source>=8 only %0d enqueues, need >= %0d)",
+               hi_src_enq, MIN_HI_SRC);
       $fatal(1);
     end
     $display("TEST PASSED");

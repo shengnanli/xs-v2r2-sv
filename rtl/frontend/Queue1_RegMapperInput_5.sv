@@ -30,8 +30,34 @@ module Queue1_RegMapperInput_5(
   output [4:0]  io_deq_bits_extra_tlrr_extra_source,
   output [1:0]  io_deq_bits_extra_tlrr_extra_size
 );
+  localparam int unsigned INDEX_W  = 4;
+  localparam int unsigned DATA_W   = 64;
+  localparam int unsigned MASK_W   = 8;
+  localparam int unsigned SOURCE_W = 5;   // G0 是 3；ICacheCtrlUnit 的 TL source 加宽了
+  localparam int unsigned SIZE_W   = 2;
+
+  // 位宽自检（elaborate/time 0）：端口位宽必须与传给核体的参数一致。
+  // source 3->5 这种改动最阴：端口停在旧的 [2:0]、参数写成 5，例化处会静默零扩展，
+  // 逻辑一行不错，随机激励也未必打到高位，UT 照样 errors=0，要到 FM 才炸。
+  // 这里让它 time 0 就炸。（"端口 vs G1 golden" 那一层由 scripts/port_contract_lint.py 管。）
+  initial begin
+    if ($bits(io_enq_bits_extra_tlrr_extra_source) != SOURCE_W)
+      $fatal(1, "Queue1_RegMapperInput_5: source 端口 %0d 位 != SOURCE_W %0d",
+             $bits(io_enq_bits_extra_tlrr_extra_source), SOURCE_W);
+    if ($bits(io_deq_bits_extra_tlrr_extra_source) != SOURCE_W)
+      $fatal(1, "Queue1_RegMapperInput_5: deq source 端口 %0d 位 != SOURCE_W %0d",
+             $bits(io_deq_bits_extra_tlrr_extra_source), SOURCE_W);
+    if ($bits(io_enq_bits_index) != INDEX_W || $bits(io_enq_bits_data) != DATA_W ||
+        $bits(io_enq_bits_mask) != MASK_W  || $bits(io_enq_bits_extra_tlrr_extra_size) != SIZE_W)
+      $fatal(1, "Queue1_RegMapperInput_5: index/data/mask/size 端口位宽与参数不符");
+    if (MASK_W * 8 != DATA_W)
+      $fatal(1, "Queue1_RegMapperInput_5: MASK_W=%0d 与 DATA_W=%0d 不是字节掩码关系",
+             MASK_W, DATA_W);
+  end
+
   xs_Queue1_RegMapperInput #(
-    .INDEX_W(4), .DATA_W(64), .MASK_W(8), .SOURCE_W(5), .SIZE_W(2)
+    .INDEX_W(INDEX_W), .DATA_W(DATA_W), .MASK_W(MASK_W),
+    .SOURCE_W(SOURCE_W), .SIZE_W(SIZE_W)
   ) u_core (
     .clock                               (clock),
     .reset                               (reset),

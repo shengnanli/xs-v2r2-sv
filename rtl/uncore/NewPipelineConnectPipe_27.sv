@@ -51,9 +51,10 @@ module NewPipelineConnectPipe_27(
   output [63:0] io_out_bits_7_mask,
   input  io_rightOutFire
 );
-  // 8 条通道等宽（65 位/条），按通道号从高位到低位排列。
+  // 8 条通道等宽（65 位/条 = 1 位 valid + 64 位 mask），按通道号从高位到低位排列。
   localparam int unsigned LANES  = 8;
-  localparam int unsigned LANE_W = 65;
+  localparam int unsigned MASK_W = 64;
+  localparam int unsigned LANE_W = 1 + MASK_W;
 
   wire [LANES*LANE_W-1:0] in_bus = {
     io_in_bits_0_valid, io_in_bits_0_mask,
@@ -67,22 +68,35 @@ module NewPipelineConnectPipe_27(
   };
   wire [LANES*LANE_W-1:0] out_bus;
 
-  assign io_out_bits_0_valid = out_bus[7*LANE_W + 64];
-  assign io_out_bits_0_mask  = out_bus[7*LANE_W +: 64];
-  assign io_out_bits_1_valid = out_bus[6*LANE_W + 64];
-  assign io_out_bits_1_mask  = out_bus[6*LANE_W +: 64];
-  assign io_out_bits_2_valid = out_bus[5*LANE_W + 64];
-  assign io_out_bits_2_mask  = out_bus[5*LANE_W +: 64];
-  assign io_out_bits_3_valid = out_bus[4*LANE_W + 64];
-  assign io_out_bits_3_mask  = out_bus[4*LANE_W +: 64];
-  assign io_out_bits_4_valid = out_bus[3*LANE_W + 64];
-  assign io_out_bits_4_mask  = out_bus[3*LANE_W +: 64];
-  assign io_out_bits_5_valid = out_bus[2*LANE_W + 64];
-  assign io_out_bits_5_mask  = out_bus[2*LANE_W +: 64];
-  assign io_out_bits_6_valid = out_bus[1*LANE_W + 64];
-  assign io_out_bits_6_mask  = out_bus[1*LANE_W +: 64];
-  assign io_out_bits_7_valid = out_bus[0*LANE_W + 64];
-  assign io_out_bits_7_mask  = out_bus[0*LANE_W +: 64];
+  // 位宽自检（elaborate/time 0）：mask 宽度必须与布局一致。
+  // 这一轮反复出事的形态是「逻辑全对、只有某个字段位宽停在旧值」——随机激励未必
+  // 打得到高位，UT 照样 errors=0，要等 FM 才炸。这里让它在 time 0 就炸。
+  initial begin
+    if ($bits(io_in_bits_0_mask) != MASK_W)
+      $fatal(1, "NewPipelineConnectPipe_27: mask %0d 位 != 布局的 %0d",
+             $bits(io_in_bits_0_mask), MASK_W);
+    if ($bits(in_bus) != LANES * LANE_W)
+      $fatal(1, "NewPipelineConnectPipe_27: 入口打包 %0d 位 != %0d 条 x %0d 位",
+             $bits(in_bus), LANES, LANE_W);
+  end
+
+
+  assign io_out_bits_0_valid = out_bus[7*LANE_W + MASK_W];
+  assign io_out_bits_0_mask  = out_bus[7*LANE_W +: MASK_W];
+  assign io_out_bits_1_valid = out_bus[6*LANE_W + MASK_W];
+  assign io_out_bits_1_mask  = out_bus[6*LANE_W +: MASK_W];
+  assign io_out_bits_2_valid = out_bus[5*LANE_W + MASK_W];
+  assign io_out_bits_2_mask  = out_bus[5*LANE_W +: MASK_W];
+  assign io_out_bits_3_valid = out_bus[4*LANE_W + MASK_W];
+  assign io_out_bits_3_mask  = out_bus[4*LANE_W +: MASK_W];
+  assign io_out_bits_4_valid = out_bus[3*LANE_W + MASK_W];
+  assign io_out_bits_4_mask  = out_bus[3*LANE_W +: MASK_W];
+  assign io_out_bits_5_valid = out_bus[2*LANE_W + MASK_W];
+  assign io_out_bits_5_mask  = out_bus[2*LANE_W +: MASK_W];
+  assign io_out_bits_6_valid = out_bus[1*LANE_W + MASK_W];
+  assign io_out_bits_6_mask  = out_bus[1*LANE_W +: MASK_W];
+  assign io_out_bits_7_valid = out_bus[0*LANE_W + MASK_W];
+  assign io_out_bits_7_mask  = out_bus[0*LANE_W +: MASK_W];
 
   xs_PipelineConnect #(.DATA_WIDTH(LANES*LANE_W)) u_core (
     .clock(clock),
