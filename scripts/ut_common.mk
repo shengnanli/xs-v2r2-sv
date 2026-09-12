@@ -42,8 +42,8 @@ simv: $(UT_SRCS) $(TB_SRCS) $(GOLDEN_SRCS) $(RTL_GOLDEN_DEPS)
 	$(VCS) $(UT_SRCS) $(RTL_GOLDEN_DEPS) $(GOLDEN_SRCS) $(TB_SRCS) -top tb -o simv
 
 run: simv
-	./simv +ntb_random_seed=$(SEED) $(SIM_ARGS) -l sim.log
-	@grep -q "TEST PASSED" sim.log && echo "=== UT PASSED ($(MODULE) seed=$(SEED)) ===" \
+	./simv +ntb_random_seed=$(SEED) $(SIM_ARGS) -l sim_$(SEED).log
+	@grep -q "TEST PASSED" sim_$(SEED).log && echo "=== UT PASSED ($(MODULE) seed=$(SEED)) ===" \
 		|| { echo "=== UT FAILED ($(MODULE) seed=$(SEED)) ==="; exit 1; }
 
 verdi:
