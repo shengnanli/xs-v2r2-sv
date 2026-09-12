@@ -12,7 +12,8 @@
   P2 随机化块     : 只有 `ifdef ENABLE_INITIAL_REG_ 块大小不同的样本必须被放行
   P3 实例名配对   : 兄弟实例互换编号的样本，按家族配会错、按实例名配必须对，
                     且替换必须是同时替换（链式替换的样本要能被抓出来）
-另加 4 例真 golden 回归（G0/G1 实样本），避免判据在重构中失效。
+  P4 同名子模块    : 子模块没改名、内容变了的样本必须被拒，除非显式声明它是黑盒
+另加真 golden 回归（G0/G1 实样本），避免判据在重构中失效。
 """
 import pathlib
 import sys
@@ -247,6 +248,77 @@ for _n, _lo, _hi in (('NewPipelineConnectPipe_9', 20, 40),
         _a, _b = _resid(_n, False), _resid(_n, True)
         expect(_b < _a and _lo <= _b <= _hi,
                f'{_n}: P2 shrinks residual diff {_a} -> {_b} (expected {_lo}..{_hi})')
+
+# ---------------------------------------------------------------------------
+# P4：同名但内容变了的子模块
+# ---------------------------------------------------------------------------
+print('P4 —— 子模块没改名但 golden 内容变了，必须被拒（这条是 UT 抓出来的真事故）')
+
+
+def syn_check_with_child(parent_a, parent_b, child_a, child_b,
+                         child='Child', **kw):
+    """父模块两侧完全一样，只有子模块的 golden 内容变了。"""
+    import tempfile as _tf
+    with _tf.TemporaryDirectory() as d:
+        d0 = pathlib.Path(d) / 'g0'; d0.mkdir()
+        d1 = pathlib.Path(d) / 'g1'; d1.mkdir()
+        (d0 / 'T.sv').write_text(parent_a)
+        (d1 / 'T.sv').write_text(parent_b)
+        (d0 / f'{child}.sv').write_text(child_a)
+        (d1 / f'{child}.sv').write_text(child_b)
+        o0, o1 = M.G0, M.G1
+        M.G0, M.G1 = d0, d1
+        try:
+            return M.check('T', **kw)
+        finally:
+            M.G0, M.G1 = o0, o1
+
+
+PARENT = """\
+module T(
+  input  clock
+);
+  Child u_c (
+    .clock (clock)
+  );
+endmodule
+"""
+CHILD_A = "module Child(\n  input clock\n);\n  wire sel = 7'h46;\nendmodule\n"
+CHILD_B = "module Child(\n  input clock\n);\n  wire sel = 7'h4C;\nendmodule\n"
+
+v = syn_check_with_child(PARENT, PARENT, CHILD_A, CHILD_B)
+expect(not v.ok and any('P4' in r for r in v.reasons),
+       'a same-named child whose golden content changed is REJECTED')
+expect(v.detail['body_equal_after_normalisation'] and not v.detail['child_rename'],
+       'the parent body IS identical and there is NO rename -- P1/P2/P3 are all '
+       'blind to this case, only P4 sees it')
+expect(v.detail['kept_name_children_changed'] == [('Child', 'golden content changed')],
+       'the offending child is named in the verdict')
+
+v = syn_check_with_child(PARENT, PARENT, CHILD_A, CHILD_B,
+                         child_blackboxed=['Child'])
+expect(v.ok, 'declaring the child black-boxed (shared G1 definition) ACCEPTS it')
+
+v = syn_check_with_child(PARENT, PARENT, CHILD_A, CHILD_A)
+expect(v.ok, 'an unchanged same-named child needs no declaration')
+
+print('P4 —— 真 golden 回归')
+if (M.G0 / 'ITTageTable.sv').exists():
+    v = M.check('ITTageTable', allow_child_renumber=True)
+    expect(not v.ok and v.detail['kept_name_children_changed'] ==
+           [('MbistPipeIttage', 'golden content changed')],
+           'ITTageTable is REJECTED by P4 (MbistPipeIttage MBIST array id 0x46->0x4C); '
+           'the readable impl re-implements that child, so the stale parameter '
+           'was a real UT failure')
+    v = M.check('ITTageTable', allow_child_renumber=True,
+                child_blackboxed=['MbistPipeIttage'])
+    expect(v.ok, 'ITTageTable passes once MbistPipeIttage is declared handled')
+if (M.G0 / 'SubDirectory.sv').exists():
+    v = M.check('SubDirectory', allow_child_renumber=True)
+    expect(not v.ok and v.detail['kept_name_children_changed'] ==
+           [('MaxPeriodFibonacciLFSR_3', 'golden content changed')],
+           'SubDirectory is flagged by P4 too (lfsr_prng changed) -- there it IS '
+           'black-boxed, so the flag is an acknowledgement, not a bug')
 
 print()
 print(f'{len(RAN)} checks, {len(FAILS)} failures')

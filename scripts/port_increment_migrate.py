@@ -4,7 +4,7 @@
 本脚本同时是"这个 target 能不能机械继承上轮核"的**判据 oracle**：
 `--check` 只跑判据不写文件，迁移路径则先过判据、不过就拒绝。
 
-判据（三条，全部机械可复算；负测见 scripts/test_migrate_criteria.py）：
+判据（四条，全部机械可复算；负测见 scripts/test_migrate_criteria.py）：
 
   P1 端口表判据 —— 共同端口的**位宽与方向必须都没变**。
      历史 bug：老版 strip_ports 把端口表整段切掉，位宽信息随之丢失，于是
@@ -25,6 +25,15 @@
      顺序 sub 会把 _31→_30 的结果再被 _30→_29 吃掉（RNXbar 一个模块里
      15 处重编号，链式替换后残余 8 行假 diff）。
 
+  P4 **改了名的子模块看得见，没改名却改了内容的子模块看不见** —— 这条是 UT 抓出来的，
+     不是想出来的。P1..P3 只比"本模块自己的模块体"；如果一个子模块在 G1 里名字没变、
+     内容变了（ITTage 的 MbistPipeIttage：MBIST array ID 7'h46→7'h4C），
+     那么按实例名配对显示"无改名"、本模块体逐字相同，三条判据全绿 ——
+     可只要**可读实现没有把这个子模块当黑盒**（而是自己重写了一份，如
+     xs_MbistPipeIttage_core），继承进来的就是过时的行为。
+     所以 P4 把"同名但内容变了的子模块"全部列出来，必须由调用方用
+     `--child-blackboxed <名>` 逐个确认"这个子模块两侧共用同一份 G1 定义"才放行。
+
 迁移做法（判据通过后）：
   1. 核文件从上轮工程原样取（并校验其不含 golden 展平中间名）；
   2. wrapper 端口表**整段取自 G1 golden**（位宽即 G1 位宽）；
@@ -34,6 +43,7 @@
 
 用法:
   port_increment_migrate.py --check <target> [--g1-name <名>] [--allow-child-renumber]
+                            [--child-blackboxed <名>...]
   port_increment_migrate.py <target> --core <上轮核文件> [--pkg <上轮pkg>]
       --core-inst "<核例化整段>"   核如何被例化（含端口连接），由调用方给出
       --core-drives <端口>...      由可读核驱动的输出端口（不列入直通）
@@ -206,8 +216,25 @@ class Verdict:
         return '\n'.join(lines)
 
 
-def check(target, g1_name=None, allow_child_renumber=False):
-    """三条判据一起跑。返回 Verdict。"""
+def changed_kept_children(b0, b1):
+    """P4：两侧**同名**、但 golden 内容变了的子模块。
+
+    这些子模块对 P1/P2/P3 完全隐形（名字没变 ⇒ 无改名；本模块体逐字相同）。
+    只有当可读实现把它当黑盒（两侧共用同一份 G1 定义）时，继承才成立。"""
+    i0, i1 = instances(b0), instances(b1)
+    kept = {i1[k] for k in set(i0) & set(i1) if i0[k] == i1[k]}
+    out = []
+    for c in sorted(kept):
+        a, b = G0 / f'{c}.sv', G1 / f'{c}.sv'
+        if not a.exists() or not b.exists():
+            out.append((c, 'missing on one side'))
+        elif a.read_bytes() != b.read_bytes():
+            out.append((c, 'golden content changed'))
+    return out
+
+
+def check(target, g1_name=None, allow_child_renumber=False, child_blackboxed=()):
+    """四条判据一起跑。返回 Verdict。"""
     g1_name = g1_name or target
     t0 = (G0 / f'{target}.sv').read_text(errors='replace')
     t1 = (G1 / f'{g1_name}.sv').read_text(errors='replace')
@@ -239,20 +266,33 @@ def check(target, g1_name=None, allow_child_renumber=False):
         reasons.append('P2 module body differs after normalisation '
                        '(randomize blocks stripped, pure passthrough dropped)')
 
+    # P4
+    changed = changed_kept_children(b0, b1)
+    unack = [(c, why) for c, why in changed if c not in set(child_blackboxed)]
+    if unack:
+        reasons.append(
+            'P4 same-named child module(s) changed content in G1: '
+            + ', '.join(f'{c} ({why})' for c, why in unack)
+            + ' -- inheriting is only valid if the readable implementation BLACK-BOXES '
+              'them (both sides elaborate the same G1 file); pass --child-blackboxed '
+              'for each one you have checked')
+
     detail = {
         'ports_added': delta['added'],
         'ports_removed': delta['removed'],
         'width_chg': delta['width_chg'],
         'dir_chg': delta['dir_chg'],
         'child_rename': mapping,
+        'kept_name_children_changed': changed,
         'body_equal_after_normalisation': body_eq,
     }
     return Verdict(not reasons, reasons, detail)
 
 
-def body_identical(name, g1_name=None, allow_child_renumber=False):
-    """兼容旧接口：判据是否成立（现在含 P1/P2/P3）。"""
-    return bool(check(name, g1_name, allow_child_renumber))
+def body_identical(name, g1_name=None, allow_child_renumber=False,
+                   child_blackboxed=()):
+    """兼容旧接口：判据是否成立（现在含 P1/P2/P3/P4）。"""
+    return bool(check(name, g1_name, allow_child_renumber, child_blackboxed))
 
 
 # ---------------------------------------------------------------------------
@@ -290,6 +330,9 @@ def main():
     ap.add_argument('--g1-name', default=None, help='target 在 G1 里的名字（重编号时用）')
     ap.add_argument('--allow-child-renumber', action='store_true',
                     help='允许子模块重编号（按实例名配对代入后比较）')
+    ap.add_argument('--child-blackboxed', nargs='*', default=[],
+                    help='P4：确认这些"同名但内容变了"的子模块在可读实现里是黑盒'
+                         '（两侧共用同一份 G1 定义），而不是自己重写了一份')
     ap.add_argument('--core')
     ap.add_argument('--pkg', default=None)
     ap.add_argument('--core-inst')
@@ -300,7 +343,7 @@ def main():
     a = ap.parse_args()
     t = a.target
 
-    v = check(t, a.g1_name, a.allow_child_renumber)
+    v = check(t, a.g1_name, a.allow_child_renumber, a.child_blackboxed)
     if a.check:
         print(v.report(t))
         sys.exit(0 if v.ok else 1)
@@ -314,7 +357,7 @@ def main():
     pieces = []
     hdr = [f'// {t} —— 由 scripts/port_increment_migrate.py 迁移自上轮可读核',
            '//',
-           '// 迁移依据（脚本已校验 P1/P2/P3）：G0 与 G1 的 golden 端口位宽/方向未变，',
+           '// 迁移依据（脚本已校验 P1/P2/P3/P4）：G0 与 G1 的 golden 端口位宽/方向未变，',
            '// 且剥掉 firtool 随机化初始化块、去掉纯直通后模块体逐字相同，',
            '// 即 G1 的改动只是接口增量（perfDebugInfo / debug.seqNum / ready 等透传字段），',
            '// 运算逻辑未动。故核体沿用，wrapper 按 G1 端口重做，直通 assign 由 golden',
