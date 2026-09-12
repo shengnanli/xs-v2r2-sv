@@ -10,7 +10,8 @@ RTL_SRCS = $(RTL_DIR)/common/xs_PlruReplacer.sv \
            $(RTL_DIR)/frontend/WrBypass_43.sv
 TB_SRCS = tb.sv
 
-GOLDEN_RTL ?= /home/eda/xs-env/G1-canonical/golden-rtl
+G1_CANONICAL ?= /home/eda/xs-env/G1-canonical
+GOLDEN_RTL ?= $(G1_CANONICAL)/golden-rtl
 GOLDEN_SRCS = $(GOLDEN_RTL)/WrBypass.sv    $(GOLDEN_RTL)/IndexableCAMTemplate.sv    $(GOLDEN_RTL)/data_mem_0_8x3.sv \
               $(GOLDEN_RTL)/WrBypass_32.sv $(GOLDEN_RTL)/IndexableCAMTemplate_32.sv $(GOLDEN_RTL)/data_mem_8x4.sv \
               $(GOLDEN_RTL)/WrBypass_33.sv $(GOLDEN_RTL)/IndexableCAMTemplate_33.sv $(GOLDEN_RTL)/data_mem_16x12.sv \

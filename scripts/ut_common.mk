@@ -15,7 +15,8 @@
 # 分容器，不撞名），wrapper 的接线正确性由 FM 覆盖。
 
 XSSV_HOME ?= $(abspath $(dir $(lastword $(MAKEFILE_LIST)))/..)
-GOLDEN_RTL ?= /home/eda/xs-env/G1-canonical/golden-rtl
+G1_CANONICAL ?= /home/eda/xs-env/G1-canonical
+GOLDEN_RTL ?= $(G1_CANONICAL)/golden-rtl
 
 export VCS_ARCH_OVERRIDE := linux
 
@@ -85,7 +86,8 @@ fm-%:
 	v=$$(XSSV_HOME=$(XSSV_HOME) python3 $(XSSV_HOME)/scripts/fm_verdict.py fm_work/$*/fm.log --rc $$rc --mode $(FM_MODE) --top $* --allowlist $(FM_ALLOWLIST) \
 	    $(if $(wildcard $(XSSV_HOME)/verif/dead_ref/$*.json),--dead-ref $(XSSV_HOME)/verif/dead_ref/$*.json --unread-points fm_work/$*/unread_points.txt,) \
 	    --bbox-report fm_work/$*/black_boxes.rpt \
-	    $(if $(wildcard $(XSSV_HOME)/verif/allow/$*.json),--allow $(XSSV_HOME)/verif/allow/$*.json,)); \
+	    $(if $(wildcard $(XSSV_HOME)/verif/allow/$*.json),--allow $(XSSV_HOME)/verif/allow/$*.json,) \
+	    --canonical-id "$$(cat $(G1_CANONICAL)/CANONICAL_ID.txt)"); \
 	vrc=$$?; echo "$$v"; \
 	XSSV_HOME=$(XSSV_HOME) python3 $(XSSV_HOME)/scripts/make_receipt.py --top $* --workdir fm_work/$* \
 	    --ref-srcs "$(GOLDEN_RTL)/$*.sv $(addprefix $(GOLDEN_RTL)/,$(FM_REF_DEPS_$*))" \

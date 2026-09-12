@@ -105,24 +105,19 @@ def _hier_key(path):
     return s.strip('/')
 
 
-def _green_children_status():
-    """读归一化台账，返回 {target: status}（green_child 依据）。"""
+def _child_receipts():
+    """green_child 背书来源：**受接受 runner 产出的 child receipt 索引**
+    （docs/receipt_index.tsv，由 build_receipt_index.py 从 evidence/ 机械派生）。
+    codex 0140 P0-3：不得用 WORKING 文本台账自证——那会让父子依赖循环自证。"""
     import pathlib as _pl
     _home = _pl.Path(os.environ.get('XSSV_HOME')
                      or _pl.Path(__file__).resolve().parent.parent)
-    f = _home / 'docs' / 'ledger_normalized.tsv'
-    st = {}
-    if f.exists():
-        for ln in f.read_text().splitlines():
-            if ln.startswith('#') or not ln.strip():
-                continue
-            c = ln.split('\t')
-            if len(c) >= 3:
-                st[c[0]] = c[2]
-    return st
+    sys.path.insert(0, str(_pl.Path(__file__).resolve().parent))
+    import build_receipt_index
+    return build_receipt_index.load(_home)
 
 
-def _assembly_bbox_check(observed, attrs, decl):
+def _assembly_bbox_check(observed, attrs, decl, expect_canonical=None):
     """观测黑盒集合须与声明**精确相等**，且每条类别合法、ref/impl 成对。
     返回 True 或失败原因串。"""
     if decl is None:
@@ -164,10 +159,21 @@ def _assembly_bbox_check(observed, attrs, decl):
             ct = e.get('child_target')
             if not ct:
                 return f'assembly_green_child_without_target:{k[1]}'
-            st = _green_children_status().get(ct)
-            if st not in ('WORKING_PASS', 'WORKING_PASS_DEAD_REF', 'WORKING_MERGED_PASS'):
-                # 条件绿：child 尚未通过时本目标只能是 conditional，不给 SUCCEEDED
-                return f'assembly_green_child_not_green:{ct}={st or "NOT_IN_LEDGER"}'
+            idx = _child_receipts()
+            cr = idx.get(ct)
+            if cr is None:
+                return f'assembly_green_child_no_receipt:{ct}'
+            if cr['verdict'] not in ('SUCCEEDED', 'PASS_DEAD_REF'):
+                return f'assembly_green_child_receipt_not_pass:{ct}={cr["verdict"]}'
+            if cr['provisional'] != 'false':
+                return f'assembly_green_child_receipt_provisional:{ct}'
+            if expect_canonical and cr['canonical_id'] != expect_canonical:
+                return (f'assembly_green_child_canonical_mismatch:{ct}='
+                        f'{cr["canonical_id"][:16]}')
+            # 父声明须钉住所引用的 child receipt 字节（防日后换一份 receipt）
+            want = e.get('child_receipt_sha256')
+            if want and want != cr['receipt_sha256']:
+                return f'assembly_green_child_receipt_sha_mismatch:{ct}'
     return True
 
 
@@ -203,7 +209,7 @@ def _dead_ref_check(q, decl, unread_points, assembly=False):
 
 def verdict(log_text, make_rc=0, mode="signoff-strict", expected_top=None, allowlist=0,
             dead_ref_decl=None, unread_points=None, bbox_obs=None, bbox_attrs=None,
-            allow_decl=None):
+            allow_decl=None, expect_canonical=None):
     q = {"passing": None, "failing": None, "unverified": None, "unmatched": None, "aborted": None,
          "unread": None, "blackbox_out": None, "markers": 0, "make_rc": make_rc, "mode": mode,
          "native": None, "top": None, "dont_verify": bool(_DONTVERIFY.search(log_text)),
@@ -302,7 +308,8 @@ def verdict(log_text, make_rc=0, mode="signoff-strict", expected_top=None, allow
         if bbox_obs is None:
             q["reason"] = "assembly_no_bbox_report(须 fm_eq.tcl 导出 black_boxes.rpt)"
             return "PARTIAL", q
-        bb = _assembly_bbox_check(bbox_obs, bbox_attrs or {}, allow_decl)
+        bb = _assembly_bbox_check(bbox_obs, bbox_attrs or {}, allow_decl,
+                                  expect_canonical)
         if bb is not True:
             q["reason"] = bb
             return "PARTIAL", q
@@ -360,6 +367,8 @@ if __name__ == "__main__":
                     help="fm_eq.tcl 导出的 black_boxes.rpt（assembly 必需）")
     ap.add_argument("--allow", default=None,
                     help="assembly 黑盒精确声明 verif/allow/<top>.json")
+    ap.add_argument("--canonical-id", default=None,
+                    help="本次 G1 canonical ID；green_child 的 child receipt 必须同源")
     a = ap.parse_args()
     txt = open(a.log).read()
     decl = None
@@ -389,7 +398,7 @@ if __name__ == "__main__":
         with open(a.allow) as f:
             allow_decl = json.load(f)
     v, q = verdict(txt, a.rc, a.mode, a.top, a.allowlist, decl, pts,
-                   bbox_obs, bbox_attrs, allow_decl)
+                   bbox_obs, bbox_attrs, allow_decl, a.canonical_id)
     print(v + "\t" + json.dumps(q, ensure_ascii=False))
     # P0-3: 只有 SUCCEEDED 退 0；其余非零(签核 CI fail-closed)。
     # PASS_DEAD_REF 例外：仅当调用方显式给了 --dead-ref 声明文件(即该目标已被审计、
