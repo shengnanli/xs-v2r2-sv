@@ -74,5 +74,12 @@
  "/home/eda/xs-env/xs-v2r2-sv/rtl/backend/wbfubusytable_pkg.sv": "/home/eda/xs-env/xs-v2-sv/rtl/backend/WbFuBusyTable.sv",
  "/home/eda/xs-env/xs-v2r2-sv/rtl/memblock/WritebackQueue.sv": "/home/eda/xs-env/xs-v2-sv/rtl/memblock/WritebackQueue.sv",
  "/home/eda/xs-env/xs-v2r2-sv/rtl/memblock/writebackqueue_pkg.sv": "/home/eda/xs-env/xs-v2-sv/rtl/memblock/WritebackQueue.sv",
- "/home/eda/xs-env/xs-v2r2-sv/rtl/frontend/FtqPcMemWrapper.sv": "/home/eda/xs-env/xs-v2-sv/rtl/frontend/FtqPcMemWrapper.sv"
+ "/home/eda/xs-env/xs-v2r2-sv/rtl/frontend/FtqPcMemWrapper.sv": "/home/eda/xs-env/xs-v2-sv/rtl/frontend/FtqPcMemWrapper.sv",
+ "/home/eda/xs-env/xs-v2r2-sv/rtl/frontend/TageTable.sv": "/home/eda/xs-env/xs-v2-sv/rtl/frontend/TageTable.sv",
+ "/home/eda/xs-env/xs-v2r2-sv/rtl/frontend/ICacheDataArray.sv": "/home/eda/xs-env/xs-v2-sv/rtl/frontend/ICacheDataArray.sv",
+ "/home/eda/xs-env/xs-v2r2-sv/rtl/frontend/ICacheMetaArray.sv": "/home/eda/xs-env/xs-v2-sv/rtl/frontend/ICacheMetaArray.sv",
+ "/home/eda/xs-env/xs-v2r2-sv/rtl/frontend/FTBBank.sv": "/home/eda/xs-env/xs-v2-sv/rtl/frontend/FTBBank.sv",
+ "/home/eda/xs-env/xs-v2r2-sv/rtl/memblock/xs_tlbuffer13_bank.sv": "/home/eda/xs-env/xs-v2-sv/rtl/memblock/TLBuffer_13.sv",
+ "/home/eda/xs-env/xs-v2r2-sv/rtl/memblock/TLBuffer_13.sv": "/home/eda/xs-env/xs-v2-sv/rtl/memblock/TLBuffer_13.sv",
+ "/home/eda/xs-env/xs-v2r2-sv/rtl/memblock/tlbuffer13_pkg.sv": "/home/eda/xs-env/xs-v2-sv/rtl/memblock/TLBuffer_13.sv"
 }

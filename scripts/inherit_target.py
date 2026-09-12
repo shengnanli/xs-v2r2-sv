@@ -107,6 +107,18 @@ def main():
         sys.exit(f"ERROR: {t} 老战役用 canonical_derivative 参考"
                  f"({man[t].get('derivative_id')}), 非快车道, SPECIAL 专项处理")
     vmucp = man[t].get('verify_matched_unread_compare_points') == 'true'
+    # 老战役 assembly 契约继承: allow/<t>.json 声明的对称黑盒条数 → FM_ALLOWLIST 配额。
+    # fm_verdict 的 assembly 判定要求「未匹配对称且 ≤ 配额」, 非对称一律 PARTIAL。
+    asm_mode = man[t].get('proof_mode') == 'assembly'
+    allow_n, allow_ids = 0, []
+    if asm_mode and man[t].get('allow_ref'):
+        ap = pathlib.Path('/home/eda/xs-env/xs-signoff') / man[t]['allow_ref']
+        if ap.exists():
+            aj = json.loads(ap.read_text())
+            for k in ('unresolved_blackbox', 'interface_only', 'empty_blackbox', 'unmatched'):
+                for e in aj.get(k, []):
+                    allow_ids.append(e.get('id', k) if isinstance(e, dict) else str(e))
+            allow_n = len(allow_ids)
     old_mk = OLD / man[t]['makefile']
     old_ut = old_mk.parent
     vals = parse_makefile(old_mk.read_text())
@@ -324,6 +336,12 @@ def main():
         mk += ['RTL_GOLDEN_DEPS = ' + ' \\\n                  '.join(
             '$(GOLDEN_RTL)/' + g for g in golden_passthru), '']
     mk += keep_fm
+    if asm_mode and 'FM_MODE' not in '\n'.join(keep_fm):
+        mk.append('# 老战役审计声明继承: proof_mode=assembly, 对称黑盒边界 = '
+                  + (', '.join(allow_ids[:6]) + ('…' if len(allow_ids) > 6 else '')
+                     if allow_ids else '(allow 文件未列条目)'))
+        mk.append('FM_MODE = assembly')
+        mk.append(f'FM_ALLOWLIST ?= {max(allow_n, 1)}')
     if vmucp and 'FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS' not in '\n'.join(keep_fm):
         mk.append('# 老战役审计声明继承: vmucp=加强证明(FM 实比 matched-unread, 非 waiver)')
         mk.append('FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true')

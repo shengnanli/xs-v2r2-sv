@@ -28,8 +28,20 @@
 
 另有 6 个 REWRITE_L 实为纯重编号（DataModule__16entry_8/12/16 等，见 renames.tsv）。
 
-## 进度台账
-| 目标 | UT (seed 1/7/42) | FM (signoff-strict) | 备注 |
-|---|---|---|---|
-| WrBypass 家族 ×5（base/_32/_33/_41/_43） | 25 万比对 ×3 seed, errors=0 | 5/5 SUCCEEDED (124/158/398/50/54 点, 全零) | 与 G0 逐字一致，继承上轮核，重组为单文件定式 |
-| IndexableCAMTemplate（base wrapper 已写） | 随 WrBypass 覆盖 | 待独立 target（变体 _32/_33/_41/_43 wrapper 未写） | |
+## 进度台账（逐目标状态见 `docs/fastlane_ledger.tsv`，以最新一行为准）
+
+| 批次 | 目标数 | UT (seed 1/7/42) | FM | 备注 |
+|---|---|---|---|---|
+| WrBypass 家族 ×5 | 5 | 25 万 ×3, errors=0 | strict 5/5 SUCCEEDED 全零 | 单文件定式打样 |
+| simple 批（AXI/CHI 通道/TLBuffer/TLPLIC/DebugModule…） | 49 | 全 3 seed errors=0 | strict 全 SUCCEEDED | `inherit_target.py` 机械重组 |
+| SyncDataModule 家族 | 18 | 84.6 万 ×3, errors=0 | strict 18/18 SUCCEEDED | G1 驱动重生成；banked 存储逐位双射钉点 |
+| SRAMTemplate 家族 | 33 | 130.7 万 ×3, errors=0 | assembly 33/33 SUCCEEDED | 形态检测 fail-closed；唯一黑盒=vendor `array_*_ext` |
+| Splitted/Folded SRAM | 11 | 3.96 万 ×3, errors=0 | assembly 11/11 SUCCEEDED | 深链两侧 elaborate 到 SRAMTemplate 核 |
+
+**合计 PASS 111**（其中属老 306 目标 78 = 25.5%；其余 33 为 G1 新增 SRAM 变体，老战役未覆盖）。
+
+未完成项（台账中带 TODO/SPECIAL/DEFER 前缀，均为诚实挂起，不计入 PASS）：
+- `TODO_CORE_*` 9 个：G1 新 SRAM 形态（掩码复制 5 / 外置时钟门控 3 / 多读口 1），需扩 `xs_SRAMTemplate_core`
+- `TODO_RESHAPE` 2 个：FoldedSRAMTemplate_20 / SplittedSRAMTemplate_23 折叠因子与路数在 G1 变了
+- `SPECIAL` 1：StorePipe（golden 是 DCE 塌缩空壳，需 canonical derivative 专项）
+- `DEFER_*` 2：随对应家族重写一并处理

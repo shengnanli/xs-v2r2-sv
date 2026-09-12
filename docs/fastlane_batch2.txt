@@ -1,0 +1,6 @@
+TageTable
+ICacheDataArray
+ICacheMetaArray
+DuplicatedTagArray
+FTBBank
+TLBuffer_13

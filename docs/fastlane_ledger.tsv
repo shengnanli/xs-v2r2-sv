@@ -131,3 +131,26 @@ SRAMTemplate_84	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测f
 SRAMTemplate_86	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
 SRAMTemplate_88	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
 SRAMTemplate_92	PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子)
+DuplicatedTagArray	INHERIT_FAIL	ERROR: DuplicatedTagArray golden 依赖在 G1 缺失: SRAMTemplate_114.sv
+SplittedSRAMTemplate	PASS	Splitted家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链两侧elaborate至SRAMTemplate核)
+SplittedSRAMTemplate_1	PASS	Splitted家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链两侧elaborate至SRAMTemplate核)
+SplittedSRAMTemplate_2	PASS	Splitted家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链两侧elaborate至SRAMTemplate核)
+SplittedSRAMTemplate_3	PASS	Splitted家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链两侧elaborate至SRAMTemplate核)
+SplittedSRAMTemplate_4	PASS	Splitted家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链两侧elaborate至SRAMTemplate核)
+SplittedSRAMTemplate_25	PASS	Splitted家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链两侧elaborate至SRAMTemplate核)
+SplittedSRAMTemplate_27	PASS	Splitted家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链两侧elaborate至SRAMTemplate核)
+FoldedSRAMTemplate	PASS	Folded家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链Folded→Splitted→SRAMTemplate两侧elaborate)
+FoldedSRAMTemplate_1	PASS	Folded家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链Folded→Splitted→SRAMTemplate两侧elaborate)
+FoldedSRAMTemplate_22	PASS	Folded家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链Folded→Splitted→SRAMTemplate两侧elaborate)
+FoldedSRAMTemplate_24	PASS	Folded家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链Folded→Splitted→SRAMTemplate两侧elaborate)
+FoldedSRAMTemplate_20	TODO_RESHAPE	G1形态变(折叠WIDTH 4→2/setIdx 11→10/物理8→4way), 老wrapper端口宽度硬编码需按G1重做
+SplittedSRAMTemplate_23	TODO_RESHAPE	G1形态变(8way→4way, 内层SRAMTemplate_64), 同上
+SRAMTemplate_128	TODO_CORE_MASKREPL	G1新形态: 宏wmask粒度细于way(每way复制N位掩码), 需xs_SRAMTemplate_core支持掩码复制
+SRAMTemplate_145	TODO_CORE_MASKREPL	G1新形态: 宏wmask粒度细于way(每way复制N位掩码), 需xs_SRAMTemplate_core支持掩码复制
+SRAMTemplate_152	TODO_CORE_MASKREPL	G1新形态: 宏wmask粒度细于way(每way复制N位掩码), 需xs_SRAMTemplate_core支持掩码复制
+SRAMTemplate_163	TODO_CORE_MASKREPL	G1新形态: 宏wmask粒度细于way(每way复制N位掩码), 需xs_SRAMTemplate_core支持掩码复制
+SRAMTemplate_185	TODO_CORE_MASKREPL	G1新形态: 宏wmask粒度细于way(每way复制N位掩码), 需xs_SRAMTemplate_core支持掩码复制
+SRAMTemplate_155	TODO_CORE_EXTCG	G1新形态: 时钟门控外置(导出mbistCgCtl_en/rckEn/wckEn+取rclk), 需核支持external clockgate
+SRAMTemplate_166	TODO_CORE_EXTCG	G1新形态: 时钟门控外置(导出mbistCgCtl_en/rckEn/wckEn+取rclk), 需核支持external clockgate
+SRAMTemplate_178	TODO_CORE_EXTCG	G1新形态: 时钟门控外置(导出mbistCgCtl_en/rckEn/wckEn+取rclk), 需核支持external clockgate
+SRAMTemplate_146	TODO_CORE_MULTIRD	G1新形态: 多读口, 核仅支持单读口
