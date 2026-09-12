@@ -23,13 +23,22 @@ cd "$REPO"
 # dirty 判定只看**会进入证明闭包的路径**（rtl / verif / scripts / docs 里的声明与工具）。
 # 仓库里出现无关新文件（如正在写的分析脚本）不该把证明拦死，但凡是证明会读到的字节
 # 必须 committed。新增未跟踪文件同样算 dirty——它可能被 Makefile 引用。
-DIRTY="$(git status --porcelain -- rtl verif scripts)"
-if [[ -n "$DIRTY" ]]; then
-  echo "ERROR: 证明输入路径 dirty（rtl/verif/scripts），必须跑在 committed 字节上：" >&2
-  echo "$DIRTY" | head -5 >&2
-  exit 3
+# 证明钉在**某个 commit 的字节**上，与活动工作树当前状态无关：
+#   PROOF_COMMIT=<rev>  显式指定（批跑用：钉住一个 commit，期间主线可继续改 RTL/加脚本）
+#   未指定             = HEAD，此时要求证明输入路径 clean，
+#                        否则"跑的是工作树、记的是 HEAD"就对不上。
+if [[ -n "${PROOF_COMMIT:-}" ]]; then
+  COMMIT="$(git rev-parse "$PROOF_COMMIT^{commit}")" || {
+    echo "ERROR: PROOF_COMMIT=$PROOF_COMMIT 无法解析" >&2; exit 3; }
+else
+  DIRTY="$(git status --porcelain -- rtl verif scripts)"
+  if [[ -n "$DIRTY" ]]; then
+    echo "ERROR: 证明输入路径 dirty（rtl/verif/scripts）。要么提交，要么用 PROOF_COMMIT=<rev> 钉住一个 commit：" >&2
+    echo "$DIRTY" | head -5 >&2
+    exit 3
+  fi
+  COMMIT="$(git rev-parse HEAD)"
 fi
-COMMIT="$(git rev-parse HEAD)"
 HEAD_BEFORE="$COMMIT"
 EVID="${EVIDENCE_ROOT:-$REPO/evidence/${COMMIT:0:12}}"
 WT="$(mktemp -d "${TMPDIR:-/tmp}/xsv2-proof-XXXXXX")"
