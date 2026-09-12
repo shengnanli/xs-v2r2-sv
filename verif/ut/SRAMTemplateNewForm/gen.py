@@ -433,6 +433,9 @@ def emit_tb(infos):
             cov += [f"{p}_cov_m0", f"{p}_cov_m1", f"{p}_cov_mmix"]
         if i["bore_nseg"] > 1:
             cov += [f"{p}_cov_seg_all"]
+        if i["extcg"]:
+            # 外置门控才看得见使能：请求在、但门控使能被压低的拍（多周期宏的隔拍关门）
+            cov += [f"{p}_cov_cg_gap"]
         covnames += cov
         L.append("  int " + ", ".join(f"{c} = 0" for c in cov) + ";")
         if i["bore_nseg"] > 1:
@@ -497,6 +500,10 @@ def emit_tb(infos):
             L.append(f"    if ({p}_boreChildrenBd_bore_ack)"
                      f" {p}_seg_seen <= {p}_seg_seen | {p}_boreChildrenBd_bore_selectedOH;")
             L.append(f"    {p}_cov_seg_all = &{p}_seg_seen;")
+        if i["extcg"]:
+            L.append(f"    if (({p}_io_r_req_valid || {p}_io_w_req_valid)"
+                     f" && !({p}_g_io_mbistCgCtl_rckEn || {p}_g_io_mbistCgCtl_wckEn))"
+                     f" {p}_cov_cg_gap++;")
         allrd = "{" + ", ".join(f"{p}_g_{nm}" for _, nm in rdport) + "}"
         tot = sum(w for w, _ in rdport)
         L.append(f"    if (!has_x({allrd}, {tot}) && !has_z({allrd}, {tot})) begin")
