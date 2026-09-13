@@ -1,0 +1,29 @@
+# registry 缺项集中报告（codex 0148 A1：本批不得为迁就 observed 临时扩 registry，
+# 缺项集中成一次 QUESTION）。冻结基线 = verif/vendor_boundary.tsv 当前 20 条 array_*_ext。
+#
+# 共性：这 6 个模块类型都是 **firtool 生成的行为级存储叶子**（module 体 = 单个
+# `reg [W-1:0] Memory[0:D-1]` + 一写口 + 一读口 + RANDOMIZE 初始化，无任何设计逻辑），
+# 与 registry 里 array_*_ext（SRAM 编译器行为模型）同性质，但：
+#   (a) 命名规则不同（ram_<D>x<W> / ram_sink_<D>x<W>，非 *_ext）；
+#   (b) 扩展名是 .sv 且**就在 golden-rtl 目录里**——理论上两侧都能读进来白盒化；
+#   (c) 现有 50+ 份 verif/allow/*.json 全是 array_*_ext，无先例。
+#
+# ★两条互斥的解法，须 reviewer 裁定选哪条★
+#   路线 A（推荐先试，无需扩 registry）：把这些 ram_*.sv 同时加进 FM_REF_DEPS_<top>
+#     与 RTL_GOLDEN_DEPS，两侧读同一个绝对路径 ⇒ 黑盒消失、边界清零。
+#     TLBuffer_13 尤其适用：两侧的 ram_* 都是**经同一份 golden Queue2_* 模块**到达的
+#     （RTL_GOLDEN_DEPS 已经在读那 5 个 Queue2_*.sv），所以两侧定义必然逐字节相同。
+#     ⚠ 未验证：另一 owner 在 L2TlbMissQueue 上做过控制实验，把 golden RAM 读进 ref 侧
+#       会触发 FMR_ELAB-147 -> FM-262 -> set_top 失败。TLBuffer_13 的拓扑与之不同
+#       （L2TlbMissQueue 的 impl 是自己直接例化 ram_40x47，TLBuffer_13 的两侧都经 golden
+#       Queue2 包装），故 A 在 TLBuffer_13 上仍值得一试。本批禁跑 heavy，未实测。
+#   路线 B：把它们审定进 vendor_boundary.tsv，新增 kind=firtool_behavioral_ram。
+#     若走 B，建议同时补齐 codex 0148 要求但当前表缺失的字段（见 README 的 registry 完整性一节）。
+#
+# design_pattern	appears_in_target	instances_per_side	golden_file	sha256_16	depth x width	ports
+ram_2x119	TLBuffer_13	4	/home/eda/xs-env/G1-canonical/golden-rtl/ram_2x119.sv	a0e3decb8cdc8479	2 x 119	R0_addr/R0_en/R0_clk/R0_data + W0_addr/W0_en/W0_clk/W0_data
+ram_2x283	TLBuffer_13	4	/home/eda/xs-env/G1-canonical/golden-rtl/ram_2x283.sv	0ecfd2433b2416f2	2 x 283	同上
+ram_2x321	TLBuffer_13	4	/home/eda/xs-env/G1-canonical/golden-rtl/ram_2x321.sv	3a7e31027c7d514c	2 x 321	同上
+ram_2x352	TLBuffer_13	4	/home/eda/xs-env/G1-canonical/golden-rtl/ram_2x352.sv	49c27c74e681cde1	2 x 352	同上
+ram_sink_2x8	TLBuffer_13	4	/home/eda/xs-env/G1-canonical/golden-rtl/ram_sink_2x8.sv	60f5062676facc15	2 x 8	同上
+ram_40x47	L2TlbMissQueue	1	/home/eda/xs-env/G1-canonical/golden-rtl/ram_40x47.sv	68dbc6df0bcb0aaf	40 x 47	同上

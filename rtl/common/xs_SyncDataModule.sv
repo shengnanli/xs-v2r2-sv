@@ -20,6 +20,11 @@ module xs_SyncDataModule #(
   parameter int unsigned DATA_WIDTH  = 8,
   parameter bit          HAS_REN     = 1'b1,  // 0 时 io_ren 接 '1，地址恒采样
   parameter logic [NUM_READ-1:0] BYPASS_EN = '1,
+  // G1 锚点（fail-closed，无可用默认值）：golden 对应的 SyncDataModuleTemplate_*
+  // 里例化了几个 DataModule* 子模块。分 bank 是本核唯一的“数组深度派生算术”
+  // （MAX_BANK_ENTRIES 随 NUM_ENTRIES 跳变 64/16，NUM_BANKS 再向上取整），
+  // 条目数抄错时逻辑照跑、UT 未必打得到边界，只有 FM 才炸。
+  parameter int unsigned G1_NUM_BANKS = 0,
   localparam int unsigned ADDR_W           = (NUM_ENTRIES > 1) ? $clog2(NUM_ENTRIES) : 1,
   localparam int unsigned MAX_BANK_ENTRIES = (NUM_ENTRIES >= 128) ? 64 : 16,
   localparam int unsigned NUM_BANKS        = (NUM_ENTRIES + MAX_BANK_ENTRIES - 1) / MAX_BANK_ENTRIES,
@@ -36,11 +41,37 @@ module xs_SyncDataModule #(
   input  logic [NUM_WRITE-1:0][DATA_WIDTH-1:0] io_wdata
 );
 
-  initial begin
-    if (NUM_BANKS > 1 && (NUM_ENTRIES % MAX_BANK_ENTRIES) != 0)
-      $fatal(1, "xs_SyncDataModule: NUM_ENTRIES=%0d 须为 bank 容量 %0d 的整数倍",
-             NUM_ENTRIES, MAX_BANK_ENTRIES);
-  end
+  // ---------------------------------------------------------------------------
+  // §参数自检（elaboration-time system task）
+  //
+  // 写法：$fatal 直接写在模块体里，不写在 initial 里 —— 模块体形式是 IEEE 1800
+  // §20.11 的 elaboration system task，VCS 在 elaborate 阶段就报
+  // `Error-[FEST] $fatal elaboration system task` 并 rc=255 退出，纯 elaborate /
+  // 综合流程也拦得住；initial 形式只有仿真启动 time 0 才炸。Formality
+  // （V-2023.12-SP3）两种都读得进，条件为真时打印同一条消息并把本模块降级成黑盒，
+  // 被 fm_verdict 的 bbox 闸拦下，仍是 fail-closed。
+  // 消息里避开 UTF-8 含 0xAE 字节的汉字（宏/位宽/实/定/段/算…）：VCS 在
+  // elaboration 消息里会把该字节打成 '.'，好好一句话变乱码（运行期 $fatal 正常）。
+  //
+  // G1_NUM_BANKS 是**从 golden 现读**的锚点：golden 对应的
+  // SyncDataModuleTemplate_* 里例化了几个 DataModule* 子模块，这里就该分出几个
+  // bank。它是 fail-closed 的（默认 0 = 没传就炸），别指望"不传即免检"。
+  // ---------------------------------------------------------------------------
+  if (G1_NUM_BANKS == 0)
+    $fatal(1, "xs_SyncDataModule: 调用方必须传 G1_NUM_BANKS(= golden 对应 SyncDataModuleTemplate_* 里 DataModule* 子模块的个数), 不传不给过 -- 当前 NUM_ENTRIES=%0d 会分出 %0d 个 bank",
+           NUM_ENTRIES, NUM_BANKS);
+  if (NUM_BANKS != G1_NUM_BANKS)
+    $fatal(1, "xs_SyncDataModule: NUM_ENTRIES=%0d 分出 %0d 个 bank, 但 golden 里是 %0d 个 -- entry 数或分 bank 规则对不上",
+           NUM_ENTRIES, NUM_BANKS, G1_NUM_BANKS);
+  if (NUM_BANKS > 1 && (NUM_ENTRIES % MAX_BANK_ENTRIES) != 0)
+    $fatal(1, "xs_SyncDataModule: NUM_ENTRIES=%0d 不是 bank 大小 %0d 的整数倍 -- 最后一个 bank 会不满, 与 golden 的等分结构不符",
+           NUM_ENTRIES, MAX_BANK_ENTRIES);
+  // bank_index() 取地址高 BANK_W 位当下标去索引 bank_rdata[NUM_BANKS]。只要
+  // 2**BANK_W != NUM_BANKS, 高位就能取出 >= NUM_BANKS 的值 -> 数组越界(chisel Vec
+  // 越界是回绕, SV 里是 X), 这条挡的正是这种静默越界。
+  if (NUM_BANKS > 1 && (32'd1 << BANK_W) != NUM_BANKS)
+    $fatal(1, "xs_SyncDataModule: bank 下标 %0d 位能表示 %0d 个 bank, 但只有 %0d 个 -- bank_index() 会越界",
+           BANK_W, 32'd1 << BANK_W, NUM_BANKS);
 
   function automatic logic [BANK_W-1:0] bank_index(input logic [ADDR_W-1:0] addr);
     if (NUM_BANKS > 1) bank_index = addr[ADDR_W-1:OFF_W];

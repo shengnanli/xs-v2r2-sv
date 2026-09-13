@@ -4,11 +4,12 @@
 // -----------------------------------------------------------------------------
 //  对照 Scala: coupledL2/.../tl2chi/chi/LinkLayer.scala (class LCredit2Decoupled, blocking=false)
 //  接收对端 CHI 链路层 flit, 解包成内部 DecoupledIO。本变体: RSP 通道 (payload 73b),
-//  lcreditNum=15, blocking=false ⇒ 无缓冲队列, 直接解包输出 (假定下游恒 ready)。
+//  lcreditNum=15, blocking=false ⇒ 无缓冲队列, 直接解包输出 (下游 ready 反过来门控信用发放)。
 //
 //  ===== L-Credit 授信 (5 位池, 不变式 inflight+pool === 15) =====
 //    accept     = lcreditInflight!=0 & in.flitv
-//    lcreditOut = lcreditPool!=0 & state==RUN     (非阻塞: 只看池非空, 不看队列占用)
+//    lcreditOut = lcreditPool!=0 & state==RUN & out.ready
+//                 (非阻塞分支没有队列, 发信用还要看下游此拍收不收得下)
 //    in.lcrdv   = RegNext(lcreditOut)
 //    更新: lcreditOut&~accept ⇒ inflight+1/pool-1 ; ~lcreditOut&accept ⇒ inflight-1/pool+1
 //    reclaimLCredit = lcreditInflight==0
@@ -51,7 +52,11 @@ module xs_LCredit2Decoupled_1_core (
   reg        in_lcrdv_q;
 
   wire accept     = (|lcreditInflight) & io_in_flitv;
-  wire lcreditOut = (|lcreditPool) & (io_state_state == 2'h2); // RUN
+  // LinkLayer.scala:213 (blocking=false 分支):
+  //   lcreditOut := (lcreditPool > 0.U) && enableLCredit && io.out.ready
+  // ★ io_out_ready 是发放条件的一部分：非阻塞分支没有队列兜底，下游不 ready 时
+  //   再放信用会让对端送来无处安放的 flit，所以池非空还不够，必须下游也收得下。
+  wire lcreditOut = (|lcreditPool) & (io_state_state == 2'h2) & io_out_ready; // RUN
 
   always @(posedge clock or posedge reset) begin
     if (reset) begin

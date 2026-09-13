@@ -1,4 +1,6 @@
-// 自动生成 scripts/gen_chi_channel.py —— 勿手改
+// 自动生成 scripts/gen_chi_channel.py —— 生成区勿手改
+// 【手写增补 2026-09-12, diag-tlb-txreq】directed_pipereq_qos() 定向激励为手写,
+// 若重跑生成器请保留（钉 pipeReq 路径 QoS 常量 = 4'hE, golden TXREQ.sv queue 实例连线）。
 // TXREQ 双例化逐拍比对: golden TXREQ vs 可读重写 TXREQ_xs。
 `timescale 1ns/1ps
 `define CHK(SIG) begin \
@@ -347,6 +349,46 @@ module tb;
     `CHK(io_toReqArb_blockMSHRReqEntrance)
   endtask
 
+  // -------------------------------------------------------------------------
+  // 定向激励: pipeReq 路径的 QoS 常量
+  //   Scala (TXREQ.scala:74) queue.io.enq.bits := Mux(pipeReq.valid, pipeReq.bits, mshrReq.bits)
+  //   但 pipeReq.bits.qos 在上级恒为 0xE, firtool 跨模块常量传播后 TXREQ 连
+  //   io_pipeReq_bits_qos 这个端口都没有 —— 常量只能从 golden 连线抄, 抄错一位
+  //   随机激励虽然也能撞上, 这里显式钉死: 只从 pipeReq 入队一条, 出队 qos 必须 == 4'hE。
+  // -------------------------------------------------------------------------
+  int directed_errors = 0;
+  task automatic directed_pipereq_qos();
+    // 单条 pipeReq 入队 (mshrReq 关掉, 保证队里只有这一条)
+    @(negedge clock);
+    io_pipeReq_valid   = 1'b1;
+    io_mshrReq_valid   = 1'b0;
+    io_mshrReq_bits_qos = 4'h3;     // 故意与 0xE/0xF 都不同, 排除"走错了 mux 分支"
+    io_out_ready       = 1'b0;
+    @(posedge clock);
+    @(negedge clock);
+    io_pipeReq_valid   = 1'b0;
+    io_out_ready       = 1'b1;      // 放它出队
+    #1;
+    if (g_io_out_valid !== 1'b1) begin
+      directed_errors++;
+      $display("[%0t] DIRECTED qos: golden 未出队 (g_io_out_valid=%0b), 激励失效", $time, g_io_out_valid);
+    end
+    if (g_io_out_bits_qos !== 4'hE) begin
+      directed_errors++;
+      $display("[%0t] DIRECTED qos: golden 出队 qos=%0h, 期望 4'hE —— 激励假设错了", $time, g_io_out_bits_qos);
+    end
+    if (i_io_out_bits_qos !== g_io_out_bits_qos) begin
+      directed_errors++;
+      $display("[%0t] DIRECTED qos MISMATCH g=%0h i=%0h (pipeReq 路径 QoS 常量抄错)",
+               $time, g_io_out_bits_qos, i_io_out_bits_qos);
+    end
+    @(posedge clock);
+    @(negedge clock);
+    io_out_ready = 1'b0;
+    @(posedge clock);
+    $display("DIRECTED pipereq_qos errors=%0d", directed_errors);
+  endtask
+
   initial begin
     if ($value$plusargs("NCYCLES=%d", NCYCLES)) begin end
     reset = 1'b1;
@@ -395,13 +437,15 @@ module tb;
     io_sliceId = '0;
     repeat (5) @(posedge clock);
     reset = 1'b0;
+    directed_pipereq_qos();
+    errors += directed_errors;
     repeat (NCYCLES) begin
       @(negedge clock);
       drive_random();
       #1 check_outputs();
       @(posedge clock);
     end
-    $display("TXREQ checks=%0d errors=%0d", checks, errors);
+    $display("TXREQ checks=%0d errors=%0d (含 directed=%0d)", checks, errors, directed_errors);
     if (errors == 0) begin $display("TEST PASSED"); $finish; end
     $display("TEST FAILED"); $fatal(1);
   end

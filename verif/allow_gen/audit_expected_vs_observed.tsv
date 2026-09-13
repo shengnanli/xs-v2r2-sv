@@ -1,0 +1,50 @@
+# expected（本目录从设计源+elaboration 元数据独立生成，先落 expected_sets.json）
+#   × observed（主树 evidence/<commit>/<target>/black_boxes.rpt，历史诊断证据）
+# codex 0150：报告只作**候选审计表**，差异一律如实列出，不得反向修改 expected。
+# 逐条差异明细见本目录 audit_detail.txt。
+target	expected_n	evidence_commit	observed_n	verdict
+DuplicatedTagArray	16	3b72cb1a8513	16	EQUAL
+DuplicatedTagArray	16	71684d76f0be	16	EQUAL
+DuplicatedTagArray	16	bb2f134fee0c	16	EQUAL
+ICache	16	3b72cb1a8513	16	EQUAL
+ICache	16	bb2f134fee0c	16	EQUAL
+ICacheMetaArray	6	3b72cb1a8513	6	EQUAL
+ICacheMetaArray	6	71684d76f0be	6	EQUAL
+ICacheMetaArray	6	bb2f134fee0c	6	EQUAL
+IMSICGateWay	2	3b72cb1a8513	2	EQUAL
+IMSICGateWay	2	bb2f134fee0c	2	EQUAL
+L2TlbMissQueue	2	3b72cb1a8513	2	EQUAL
+L2TlbMissQueue	2	bb2f134fee0c	2	EQUAL
+SRAMTemplate_128	2	3b72cb1a8513	2	EQUAL
+SRAMTemplate_128	2	bb2f134fee0c	2	EQUAL
+SRAMTemplate_128	2	f59af52745a7	2	EQUAL
+SRAMTemplate_145	2	3b72cb1a8513	2	EQUAL
+SRAMTemplate_145	2	bb2f134fee0c	2	EQUAL
+SRAMTemplate_145	2	f59af52745a7	2	EQUAL
+SRAMTemplate_146	2	3b72cb1a8513	2	EQUAL
+SRAMTemplate_146	2	bb2f134fee0c	2	EQUAL
+SRAMTemplate_146	2	f59af52745a7	2	EQUAL
+SRAMTemplate_155	2	3b72cb1a8513	2	EQUAL
+SRAMTemplate_155	2	bb2f134fee0c	2	EQUAL
+SRAMTemplate_155	2	f59af52745a7	2	EQUAL
+SRAMTemplate_163	2	3b72cb1a8513	2	EQUAL
+SRAMTemplate_163	2	bb2f134fee0c	2	EQUAL
+SRAMTemplate_163	2	f59af52745a7	2	EQUAL
+SRAMTemplate_166	2	3b72cb1a8513	2	EQUAL
+SRAMTemplate_166	2	bb2f134fee0c	2	EQUAL
+SRAMTemplate_166	2	f59af52745a7	2	EQUAL
+SRAMTemplate_178	2	3b72cb1a8513	2	EQUAL
+SRAMTemplate_178	2	bb2f134fee0c	2	EQUAL
+SRAMTemplate_178	2	f59af52745a7	2	EQUAL
+SRAMTemplate_185	2	3b72cb1a8513	2	EQUAL
+SRAMTemplate_185	2	bb2f134fee0c	2	EQUAL
+SRAMTemplate_185	2	f59af52745a7	2	EQUAL
+SubDirectory	6	3b72cb1a8513	6	EQUAL
+SubDirectory	6	bb2f134fee0c	6	DIFF
+SubDirectory_1	6	3b72cb1a8513	6	EQUAL
+SubDirectory_1	6	71684d76f0be	6	EQUAL
+SubDirectory_1	6	bb2f134fee0c	6	EQUAL
+TLBuffer_13	40	3b72cb1a8513	40	EQUAL
+TLBuffer_13	40	71684d76f0be	40	EQUAL
+TLBuffer_13	40	bb2f134fee0c	40	EQUAL
+TageBTable	6	3b72cb1a8513	6	EQUAL

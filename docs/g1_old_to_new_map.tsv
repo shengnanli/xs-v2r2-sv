@@ -1,10 +1,16 @@
 # old306 → G1 守恒映射（same_name / manual_renumber / auto_renumber / removed_in_g1 / no_g0_file）
+# ★★ 本文件含 18 处「槽位判据」人工改判（resolve/disposition = slot_map），
+# ★★ 依据逐条在 docs/g1_slot_map_evidence.tsv，由 scripts/check_universe_freeze.py C5 重算校验。
+# ★★ 生成器 scripts/g1_universe.py 与 scripts/g1_configured_universe.py 的 resolve() 是
+# ★★ 「同名优先」（`if t in files: same_name` 排在 manual/renumber 之前），跑一遍会把这 18 处
+# ★★ 全部改回错的。重跑生成器前必须先给它们接上槽位判据，跑完必须跑一次
+# ★★ `python3 scripts/check_universe_freeze.py`（应为 FREEZE OK）。
 # old_target	g1_name	disposition	in_universe
 AXI4Deinterleaver	AXI4Deinterleaver	same_name	yes
 AXI4IdIndexer	AXI4IdIndexer	same_name	yes
 AXI4IdIndexer_1	AXI4IdIndexer_1	same_name	yes
 AXI4Xbar	AXI4Xbar	same_name	yes
-AXI4Xbar_1	AXI4Xbar_1	same_name	yes
+AXI4Xbar_1	AXI4Xbar_6	slot_map	yes
 Alu	Alu	same_name	yes
 Backend	Backend	same_name	yes
 BankedDataArray	BankedDataArray	same_name	yes
@@ -44,13 +50,13 @@ FPDecoder	FPDecoder	same_name	yes
 FTB	FTB	same_name	yes
 FTBBank	FTBBank	same_name	yes
 FTBEntryGen	FTBEntryGen	same_name	yes
-FastArbiter_27	FastArbiter_27	same_name	yes
-FastArbiter_30	FastArbiter_30	same_name	yes
+FastArbiter_27	FastArbiter_26	slot_map	yes
+FastArbiter_30	FastArbiter_29	slot_map	yes
 FastArbiter_31	FastArbiter_30	auto_renumber	yes
 FastArbiter_36	FastArbiter_35	auto_renumber	yes
-FastArbiter_44	-	removed_in_g1	no
-FastArbiter_46	FastArbiter_46	same_name	yes
-FastArbiter_47	-	removed_in_g1	no
+FastArbiter_44	FastArbiter_43	slot_map	yes
+FastArbiter_46	FastArbiter_45	slot_map	yes
+FastArbiter_47	FastArbiter_46	slot_map	yes
 FauFTB	FauFTB	same_name	yes
 FauFTBWay	FauFTBWay	same_name	yes
 Fence	Fence	same_name	yes
@@ -69,7 +75,7 @@ HPTW	HPTW	same_name	yes
 IBuffer	IBuffer	same_name	yes
 ICache	ICache	same_name	yes
 ICacheCtrlUnit	ICacheCtrlUnit	same_name	yes
-Queue1_RegMapperInput_3	Queue1_RegMapperInput_3	same_name	yes
+Queue1_RegMapperInput_3	Queue1_RegMapperInput_5	slot_map	yes
 ICacheDataArray	ICacheDataArray	same_name	yes
 ICacheMainPipe	ICacheMainPipe	same_name	yes
 ICacheMetaArray	ICacheMetaArray	same_name	yes
@@ -109,8 +115,8 @@ EntriesVlduVstu	EntriesVlduVstu	same_name	yes
 EntriesVlduVstuVseglduVsegstu	EntriesVlduVstuVseglduVsegstu	same_name	yes
 JumpUnit	JumpUnit	same_name	yes
 L1CohMetaArray	L1CohMetaArray	same_name	yes
-L1FlagMetaArray	L1FlagMetaArray	same_name	yes
-L1FlagMetaArray_1	-	removed_in_g1	no
+L1FlagMetaArray	L1ErrorMetaArray	slot_map	yes
+L1FlagMetaArray_1	L1FlagMetaArray	slot_map	yes
 L2DataStorage	L2DataStorage	same_name	yes
 L2Directory	L2Directory	same_name	yes
 MainPipe_1	MainPipe_1	same_name	yes
@@ -152,7 +158,7 @@ OpenLLC	OpenLLC	same_name	yes
 PLICFanIn	PLICFanIn	same_name	yes
 PMP	PMP	same_name	yes
 PMPChecker	PMPChecker	same_name	yes
-PMPChecker_10	-	removed_in_g1	no
+PMPChecker_10	PMPChecker_12	slot_map	yes
 PTW	PTW	same_name	yes
 Pipeline	Pipeline	same_name	yes
 NewPipelineConnectPipe	NewPipelineConnectPipe	same_name	yes
@@ -165,10 +171,10 @@ NewPipelineConnectPipe_18	NewPipelineConnectPipe_18	same_name	yes
 NewPipelineConnectPipe_20	NewPipelineConnectPipe_20	same_name	yes
 NewPipelineConnectPipe_23	NewPipelineConnectPipe_23	same_name	yes
 NewPipelineConnectPipe_25	NewPipelineConnectPipe_25	same_name	yes
-NewPipelineConnectPipe_27	NewPipelineConnectPipe_27	same_name	yes
+NewPipelineConnectPipe_27	NewPipelineConnectPipe_29	slot_map	yes
 NewPipelineConnectPipe_31	NewPipelineConnectPipe_33	auto_renumber	yes
-NewPipelineConnectPipe_32	-	removed_in_g1	no
-NewPipelineConnectPipe_33	NewPipelineConnectPipe_33	same_name	yes
+NewPipelineConnectPipe_32	NewPipelineConnectPipe_34	slot_map	yes
+NewPipelineConnectPipe_33	NewPipelineConnectPipe_35	slot_map	yes
 NewPipelineConnectPipe_5	NewPipelineConnectPipe_5	same_name	yes
 NewPipelineConnectPipe_7	NewPipelineConnectPipe_7	same_name	yes
 NewPipelineConnectPipe_8	NewPipelineConnectPipe_8	same_name	yes
@@ -207,7 +213,7 @@ SRAMTemplate_70	SRAMTemplate_76	auto_renumber	yes
 SRAMTemplate_72	SRAMTemplate_78	auto_renumber	yes
 SRAMTemplate_8	SRAMTemplate_8	same_name	yes
 SRAMTemplate_64	SRAMTemplate_64	same_name	yes
-SRAMTemplate_66	-	removed_in_g1	no
+SRAMTemplate_66	SRAMTemplate_68	slot_map	yes
 Sbuffer	Sbuffer	same_name	yes
 Scheduler	Scheduler	same_name	yes
 Scheduler_1	Scheduler_1	same_name	yes
@@ -248,10 +254,10 @@ SyncDataModuleTemplate_FtqPC_64entry	SyncDataModuleTemplate_FtqPC_64entry	same_n
 SyncDataModuleTemplate__1024entry	SyncDataModuleTemplate__1024entry	same_name	yes
 SyncDataModuleTemplate__1024entry_1	SyncDataModuleTemplate__1024entry_1	same_name	yes
 SyncDataModuleTemplate__64entry	SyncDataModuleTemplate__64entry	same_name	yes
-SyncDataModuleTemplate__64entry_1	SyncDataModuleTemplate__64entry_1	same_name	yes
-SyncDataModuleTemplate__64entry_2	SyncDataModuleTemplate__64entry_2	same_name	yes
-SyncDataModuleTemplate__64entry_3	SyncDataModuleTemplate__64entry_3	same_name	yes
-SyncDataModuleTemplate__64entry_4	SyncDataModuleTemplate__64entry_4	same_name	yes
+SyncDataModuleTemplate__64entry_1	SyncDataModuleTemplate__64entry_2	slot_map	yes
+SyncDataModuleTemplate__64entry_2	SyncDataModuleTemplate__64entry_3	slot_map	yes
+SyncDataModuleTemplate__64entry_3	SyncDataModuleTemplate__64entry_4	slot_map	yes
+SyncDataModuleTemplate__64entry_4	SyncDataModuleTemplate__64entry_5	slot_map	yes
 TL2CHICoupledL2	TL2CHICoupledL2	same_name	yes
 TLBFA	TLBFA	same_name	yes
 TLBFA_1	TLBFA_1	same_name	yes

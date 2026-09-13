@@ -57,21 +57,48 @@ VCS += +define+SYNTHESIS
 
 # ---------------------------------------------------------------------------
 # 参数不变式负测（codex 0145）：故意把 PAYLOAD_W_G1 传成与 DATA_WIDTH 不符的值，
-# 核里的 initial 自检必须 $fatal。**跑不失败就说明闸是摆设**，所以这里反过来判：
-# 仿真没炸 = NEG FAILED。
+# 核里的自检必须炸。**跑不失败就说明闸是摆设**，所以这里反过来判。
+#
+# 2026-09-12 更新：核里的自检从 initial（运行期 time 0 $fatal）改成了
+# **elaboration-time system task**（$fatal 写在模块体里）。于是错误参数现在在
+# **VCS elaborate 阶段**就被拦下（Error-[FEST]，rc!=0，根本产不出 neg_simv），
+# 比原来更早。判据相应改成「编译必须失败且日志里有那条消息」；仍然保留
+# NEG_ESCAPED 这条退路——万一哪天编译过了、还跑到底，一样判 FAILED。
 # ---------------------------------------------------------------------------
 .PHONY: neg
 neg:
 	@rm -rf neg_build && mkdir -p neg_build
 	@cd neg_build && $(VCS) ../$(RTL_DIR)/common/PipelineConnect.sv ../neg_invariant.sv \
-	    -top neg_tb -o neg_simv > neg_compile.log 2>&1 \
-	  || { echo "=== NEG: 编译就失败了（也算拦下，但请看 neg_build/neg_compile.log）==="; }
-	@cd neg_build && ./neg_simv -l neg_sim.log > /dev/null 2>&1; true
-	@if grep -q "G1 golden 字段位宽之和" neg_build/neg_sim.log 2>/dev/null; then \
-	  echo "=== NEG PASSED: 错误参数被 xs_PipelineConnect 的不变式拦下 ==="; \
-	  grep -m1 "G1 golden 字段位宽之和" neg_build/neg_sim.log; \
-	elif grep -q "NEG_ESCAPED" neg_build/neg_sim.log 2>/dev/null; then \
-	  echo "=== NEG FAILED: 错误参数没被拦下，不变式是摆设 ==="; exit 1; \
+	    -top neg_tb -o neg_simv > neg_compile.log 2>&1; true
+	@if grep -q "G1 golden 逐项位数之和" neg_build/neg_compile.log 2>/dev/null; then \
+	  echo "=== NEG PASSED: 错误参数在 elaborate 期被 xs_PipelineConnect 的不变式拦下 ==="; \
+	  grep -m1 "G1 golden 逐项位数之和" neg_build/neg_compile.log; \
+	elif [ -x neg_build/neg_simv ]; then \
+	  cd neg_build && ./neg_simv -l neg_sim.log > /dev/null 2>&1; true; \
+	  echo "=== NEG FAILED: 错误参数居然 elaborate 过了，不变式是摆设 ==="; exit 1; \
 	else \
-	  echo "=== NEG FAILED: 既没触发不变式也没跑到底，看 neg_build/ ==="; exit 1; \
+	  echo "=== NEG FAILED: 编译失败但不是因为不变式，看 neg_build/neg_compile.log ==="; exit 1; \
 	fi
+
+# ---------------------------------------------------------------------------
+# negtest：xs_PipelineConnect 的 G1 锚点不变式必失败负测（codex 0145 决策三）。
+#   NEG_PC_NARROW    payload 少 1 位（真实事故形态）
+#   NEG_PC_NO_ANCHOR 不传 PAYLOAD_W_G1（改造前这条会静静放行 —— 老 fail-open）
+# 判据：两个都必须在 elaborate 期非零退出。
+NEG_CASES = NEG_PC_NARROW NEG_PC_NO_ANCHOR
+.PHONY: negtest
+negtest:
+	@rc=0; for c in $(NEG_CASES); do \
+	  rm -rf neg_csrc simv_neg simv_neg.daidir; \
+	  if vcs -full64 -sverilog -Mdir=neg_csrc +define+SYNTHESIS +define+$$c \
+	         $(RTL_DIR)/common/PipelineConnect.sv negtest.sv \
+	         -top neg_pc_probe -o simv_neg > neg_$$c.log 2>&1; then \
+	    echo "=== NEGTEST FAILED ($$c)：抄错的参数竟然 elaborate 过了 ==="; rc=1; \
+	  elif grep -q 'Error-\[FEST\]' neg_$$c.log; then \
+	    echo "=== NEGTEST PASSED ($$c)：elaborate 期被不变式拦下 ==="; \
+	    sed -n '/FEST/,/^$$/p' neg_$$c.log | grep -m2 'msg:' || true; \
+	  else \
+	    echo "=== NEGTEST FAILED ($$c)：编译是失败了, 但不是 \$$fatal 不变式拦的(看 neg_$$c.log) ==="; \
+	    grep -m3 -E '^Error' neg_$$c.log || true; rc=1; \
+	  fi; \
+	done; rm -rf neg_csrc simv_neg simv_neg.daidir; exit $$rc

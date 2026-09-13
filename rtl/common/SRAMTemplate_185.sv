@@ -294,7 +294,11 @@ module SRAMTemplate_185(
     .ENABLE_CLOCKGATE(0), .EXTRA_RESET(0),
     .USE_BITMASK(0),
     .MASK_SEG_W(0), .BORE_NSEG(1),
-    .EXT_CLOCKGATE(0), .MCP_HOLD(0)
+    .EXT_CLOCKGATE(0), .MCP_HOLD(0),
+    // G1 锚点（勿手改，全部来自 golden SRAMTemplate_185.sv）：
+    //   宏名 sram_array_1p512x104m13...l1b_* / io_r_resp_data_<k> 共 8 个 / bore_addr 10 位
+    .G1_MACRO_SETS(512), .G1_MACRO_BITS(104), .G1_MACRO_MASK(13),
+    .G1_MACRO_LAT(1), .G1_WAY_PORTS(8), .G1_BORE_AW(10)
   ) u_core (
     .clock(clock), .reset(reset), .io_extra_reset(1'b0),
     .io_r_req_ready(io_r_req_ready),

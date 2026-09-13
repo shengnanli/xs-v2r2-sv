@@ -49,22 +49,23 @@
 //   同序同宽（含 auto_*/sigFromSrams_*/boreChildrenBd_* 全部 sideband）。可读性体现在
 //   **模块体**：分节、具名信号、结构化注释。
 // =============================================================================
-// 本文件导航（共 2477 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
-//   L23    它在前端的位置
-//   L39    核心数据流：prefetch 与 mainpipe 经 WayLookup 解耦
-//   L48    顶层真正承担的逻辑
-//   L56    可读性重写要点
-//   L64    端口说明
-//   L232   以下 boreChildrenBd_*
-//   L551   子模块输出线网
-//   L553   ---- WayLookup
-//   L665   逻辑 1】软件预取仲裁
-//   L707   逻辑 2】错误上报寄存器
-//   L734   逻辑 3】Meta/Data array 读写仲裁
-//   L739   meta 写源选择
-//   L764   逻辑 4】顶层输出汇聚
-//   L772   子模块例化
-//   L1586  golden 同名 wrapper
+// 本文件导航（共 2550 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+//   L24    它在前端的位置
+//   L40    核心数据流：prefetch 与 mainpipe 经 WayLookup 解耦
+//   L49    顶层真正承担的逻辑
+//   L57    可读性重写要点
+//   L65    端口说明
+//   L246   以下 boreChildrenBd_*
+//   L570   子模块输出线网
+//   L572   ---- WayLookup
+//   L686   逻辑 1】软件预取仲裁
+//   L728   逻辑 2】错误上报寄存器
+//   L755   逻辑 2b】topdown 性能计数口 io_perf_0
+//   L774   逻辑 3】Meta/Data array 读写仲裁
+//   L779   meta 写源选择
+//   L804   逻辑 4】顶层输出汇聚
+//   L812   子模块例化
+//   L1637  golden 同名 wrapper
 //
 
 package xs_icache_pkg;
@@ -90,7 +91,7 @@ module xs_ICache_core
   input          auto_ctrlUnitOpt_in_a_valid,
   input  [3:0]   auto_ctrlUnitOpt_in_a_bits_opcode,
   input  [1:0]   auto_ctrlUnitOpt_in_a_bits_size,
-  input  [2:0]   auto_ctrlUnitOpt_in_a_bits_source,
+  input  [4:0]   auto_ctrlUnitOpt_in_a_bits_source,
   input  [29:0]  auto_ctrlUnitOpt_in_a_bits_address,
   input  [7:0]   auto_ctrlUnitOpt_in_a_bits_mask,
   input  [63:0]  auto_ctrlUnitOpt_in_a_bits_data,
@@ -98,7 +99,7 @@ module xs_ICache_core
   output         auto_ctrlUnitOpt_in_d_valid,
   output [3:0]   auto_ctrlUnitOpt_in_d_bits_opcode,
   output [1:0]   auto_ctrlUnitOpt_in_d_bits_size,
-  output [2:0]   auto_ctrlUnitOpt_in_d_bits_source,
+  output [4:0]   auto_ctrlUnitOpt_in_d_bits_source,
   output [63:0]  auto_ctrlUnitOpt_in_d_bits_data,
   // ---- MissUnit 的 L2/TileLink client 口（acquire/grant）----
   input          auto_client_out_a_ready,
@@ -111,6 +112,8 @@ module xs_ICache_core
   input  [3:0]   auto_client_out_d_bits_source,
   input  [255:0] auto_client_out_d_bits_data,
   input          auto_client_out_d_bits_corrupt,
+  // ---- 核 ID：MainPipe 用全 6 位（打印/难度统计），MissUnit 只用最低位 ----
+  input  [5:0]   io_hartId,
   // ---- IFU 取指请求/响应（MainPipe）----
   output         io_fetch_req_ready,
   input          io_fetch_req_valid,
@@ -130,6 +133,9 @@ module xs_ICache_core
   input          io_fetch_req_bits_readValid_3,
   input          io_fetch_req_bits_readValid_4,
   input          io_fetch_req_bits_backendException,
+  // satp 刚被改写（SFENCE/写 satp）时置位：本次取指要连带作废旧地址翻译结果，
+  // MainPipe 原样带着它走完流水，再从 resp 侧还给 IFU（下面的 resp_hasSatpFlush）。
+  input          io_fetch_req_bits_hasSatpFlush,
   output         io_fetch_resp_valid,
   output         io_fetch_resp_bits_doubleline,
   output [49:0]  io_fetch_resp_bits_vaddr_0,
@@ -143,6 +149,7 @@ module xs_ICache_core
   output [1:0]   io_fetch_resp_bits_itlb_pbmt_0,
   output [1:0]   io_fetch_resp_bits_itlb_pbmt_1,
   output         io_fetch_resp_bits_backendException,
+  output         io_fetch_resp_bits_hasSatpFlush,   // 随请求透传回来的 satp-flush 标记
   output [55:0]  io_fetch_resp_bits_gpaddr,
   output         io_fetch_resp_bits_isForVSnonLeafPTE,
   output         io_fetch_topdownIcacheMiss,
@@ -171,15 +178,20 @@ module xs_ICache_core
   input          io_stop,
   output         io_toIFU,
   // ---- PMP 检查口：pmp_0/1 给 MainPipe，pmp_2/3 给 Prefetch ----
+  //  每口是 req_valid + req_bits_addr（发起检查）与 resp_instr/resp_mmio（结果）。
+  output         io_pmp_0_req_valid,
   output [47:0]  io_pmp_0_req_bits_addr,
   input          io_pmp_0_resp_instr,
   input          io_pmp_0_resp_mmio,
+  output         io_pmp_1_req_valid,
   output [47:0]  io_pmp_1_req_bits_addr,
   input          io_pmp_1_resp_instr,
   input          io_pmp_1_resp_mmio,
+  output         io_pmp_2_req_valid,
   output [47:0]  io_pmp_2_req_bits_addr,
   input          io_pmp_2_resp_instr,
   input          io_pmp_2_resp_mmio,
+  output         io_pmp_3_req_valid,
   output [47:0]  io_pmp_3_req_bits_addr,
   input          io_pmp_3_resp_instr,
   input          io_pmp_3_resp_mmio,
@@ -228,6 +240,8 @@ module xs_ICache_core
   output         io_perfInfo_bank_hit_0,
   output         io_perfInfo_bank_hit_1,
   output         io_perfInfo_hit,
+  // topdown 性能计数口 0：MainPipe 的 topdownIcacheMiss 打两拍后零扩到 6 位。
+  output [5:0]   io_perf_0_value,
   // ===========================================================================
   // 以下 boreChildrenBd_*（MBIST 串）与 sigFromSrams_*（SRAM 物理控制）均为
   // **纯透传 sideband**：本顶层不产生也不消费，只把它们路由到 Meta/DataArray 内的
@@ -544,7 +558,12 @@ module xs_ICache_core
   input          sigFromSrams_bore_35_ram_aux_clk,
   input          sigFromSrams_bore_35_ram_aux_ckbp,
   input          sigFromSrams_bore_35_ram_mcp_hold,
-  input          sigFromSrams_bore_35_cgen
+  input          sigFromSrams_bore_35_cgen,
+  // ---- MBIST gateway 打包串（同样是纯透传 sideband）----
+  //  0/1 来自 MainPipe 里的两条 gateway，2 来自 MissUnit；本顶层只做直连。
+  output [600:0] gatewayIn_packed_0_bore,
+  output [600:0] gatewayIn_packed_1_bore,
+  output [600:0] gatewayIn_packed_2_bore
 );
 
   // ===========================================================================
@@ -627,6 +646,8 @@ module xs_ICache_core
   wire [41:0] mp_mshr_req_blkPaddr;
   wire [7:0]  mp_mshr_req_vSetIdx;
   wire        mp_fetch_req_ready;
+  // topdown 计数用：既直接出到 io_fetch_topdownIcacheMiss，又喂给下面的 perf 打拍链
+  wire        mp_fetch_topdownIcacheMiss;
   wire        mp_errors_0_valid, mp_errors_1_valid;
   wire [47:0] mp_errors_0_paddr,  mp_errors_1_paddr;
   wire        mp_errors_0_report_to_beu, mp_errors_1_report_to_beu;
@@ -729,6 +750,25 @@ module xs_ICache_core
   assign io_error_valid          = error_valid_r;
   assign io_error_bits_paddr     = error_paddr_r;
   assign io_error_bits_report_to_beu = error_report_to_beu_r;
+
+  // ===========================================================================
+  // 【逻辑 2b】topdown 性能计数口 io_perf_0（G1 新增）
+  //   MainPipe 的 topdownIcacheMiss 一路**直接**出到 io_fetch_topdownIcacheMiss
+  //   （给 IFU 的 topdown 通路），另一路打**两拍**后零扩到 6 位当作性能计数口
+  //   io_perf_0_value 上报。两拍是为了和 backend 采样点对齐。
+  //   ★ 这两个寄存器在 golden 里是**无复位**的（单独一个 always @(posedge clock)，
+  //     不在带 posedge reset 的块里），这里照搬，不许顺手加复位。★
+  // ===========================================================================
+  reg perf_topdown_miss_r;    // golden: io_perf_0_value_REG
+  reg perf_topdown_miss_r_1;  // golden: io_perf_0_value_REG_1
+
+  always @(posedge clock) begin
+    perf_topdown_miss_r   <= mp_fetch_topdownIcacheMiss;
+    perf_topdown_miss_r_1 <= perf_topdown_miss_r;
+  end
+
+  assign io_fetch_topdownIcacheMiss = mp_fetch_topdownIcacheMiss;
+  assign io_perf_0_value            = {5'h0, perf_topdown_miss_r_1};
 
   // ===========================================================================
   // 【逻辑 3】Meta/Data array 读写仲裁（CtrlUnit 注入 vs 正常 refill/prefetch）
@@ -1229,6 +1269,7 @@ module xs_ICache_core
   ICacheMainPipe mainPipe (
     .clock                                        (clock),
     .reset                                        (reset),
+    .io_hartId                                    (io_hartId),
     .io_dataArray_toIData_0_valid                 (mp_iData_0_valid),
     .io_dataArray_toIData_0_bits_vSetIdx_0        (mp_iData_0_vSetIdx_0),
     .io_dataArray_toIData_0_bits_vSetIdx_1        (mp_iData_0_vSetIdx_1),
@@ -1323,6 +1364,7 @@ module xs_ICache_core
     .io_fetch_req_bits_readValid_3                (io_fetch_req_bits_readValid_3),
     .io_fetch_req_bits_readValid_4                (io_fetch_req_bits_readValid_4),
     .io_fetch_req_bits_backendException           (io_fetch_req_bits_backendException),
+    .io_fetch_req_bits_hasSatpFlush               (io_fetch_req_bits_hasSatpFlush),
     .io_fetch_resp_valid                          (io_fetch_resp_valid),
     .io_fetch_resp_bits_doubleline                (io_fetch_resp_bits_doubleline),
     .io_fetch_resp_bits_vaddr_0                   (io_fetch_resp_bits_vaddr_0),
@@ -1336,14 +1378,17 @@ module xs_ICache_core
     .io_fetch_resp_bits_itlb_pbmt_0               (io_fetch_resp_bits_itlb_pbmt_0),
     .io_fetch_resp_bits_itlb_pbmt_1               (io_fetch_resp_bits_itlb_pbmt_1),
     .io_fetch_resp_bits_backendException          (io_fetch_resp_bits_backendException),
+    .io_fetch_resp_bits_hasSatpFlush              (io_fetch_resp_bits_hasSatpFlush),
     .io_fetch_resp_bits_gpaddr                    (io_fetch_resp_bits_gpaddr),
     .io_fetch_resp_bits_isForVSnonLeafPTE         (io_fetch_resp_bits_isForVSnonLeafPTE),
-    .io_fetch_topdownIcacheMiss                   (io_fetch_topdownIcacheMiss),
+    .io_fetch_topdownIcacheMiss                   (mp_fetch_topdownIcacheMiss),
     .io_fetch_topdownItlbMiss                     (io_fetch_topdownItlbMiss),
     .io_flush                                     (io_flush),
+    .io_pmp_0_req_valid                           (io_pmp_0_req_valid),
     .io_pmp_0_req_bits_addr                       (io_pmp_0_req_bits_addr),
     .io_pmp_0_resp_instr                          (io_pmp_0_resp_instr),
     .io_pmp_0_resp_mmio                           (io_pmp_0_resp_mmio),
+    .io_pmp_1_req_valid                           (io_pmp_1_req_valid),
     .io_pmp_1_req_bits_addr                       (io_pmp_1_req_bits_addr),
     .io_pmp_1_resp_instr                          (io_pmp_1_resp_instr),
     .io_pmp_1_resp_mmio                           (io_pmp_1_resp_mmio),
@@ -1365,13 +1410,16 @@ module xs_ICache_core
     .io_perfInfo_except_0                         (io_perfInfo_except_0),
     .io_perfInfo_bank_hit_0                       (io_perfInfo_bank_hit_0),
     .io_perfInfo_bank_hit_1                       (io_perfInfo_bank_hit_1),
-    .io_perfInfo_hit                              (io_perfInfo_hit)
+    .io_perfInfo_hit                              (io_perfInfo_hit),
+    .gatewayIn_packed_0_bore                      (gatewayIn_packed_0_bore),
+    .gatewayIn_packed_1_bore                      (gatewayIn_packed_1_bore)
   );
 
   // ---- ICacheMissUnit：MSHR；接 MainPipe(取指 miss) 与 Prefetch(预取 miss)，向 L2 取行回填 ----
   ICacheMissUnit missUnit (
     .clock                         (clock),
     .reset                         (reset),
+    .io_hartId                     (io_hartId[0]),
     .io_fencei                     (io_fencei),
     .io_flush                      (io_flush),
     .io_wfi_wfiReq                 (io_wfi_wfiReq),
@@ -1411,7 +1459,8 @@ module xs_ICache_core
     .io_mem_grant_bits_size        (auto_client_out_d_bits_size),
     .io_mem_grant_bits_source      (auto_client_out_d_bits_source),
     .io_mem_grant_bits_data        (auto_client_out_d_bits_data),
-    .io_mem_grant_bits_corrupt     (auto_client_out_d_bits_corrupt)
+    .io_mem_grant_bits_corrupt     (auto_client_out_d_bits_corrupt),
+    .gatewayIn_packed_2_bore       (gatewayIn_packed_2_bore)
   );
 
   // ---- ICacheReplacer：PLRU；touch（命中/重填）更新，victim_vSetIdx 查询给出 victim_way ----
@@ -1472,9 +1521,11 @@ module xs_ICache_core
     .io_itlb_1_resp_bits_excp_0_af_instr           (io_itlb_1_resp_bits_excp_0_af_instr),
     .io_itlbFlushPipe                              (io_itlbFlushPipe),
     // 注意：prefetcher 用 pmp_2/3（mainPipe 用 pmp_0/1）
+    .io_pmp_0_req_valid                            (io_pmp_2_req_valid),
     .io_pmp_0_req_bits_addr                        (io_pmp_2_req_bits_addr),
     .io_pmp_0_resp_instr                           (io_pmp_2_resp_instr),
     .io_pmp_0_resp_mmio                            (io_pmp_2_resp_mmio),
+    .io_pmp_1_req_valid                            (io_pmp_3_req_valid),
     .io_pmp_1_req_bits_addr                        (io_pmp_3_req_bits_addr),
     .io_pmp_1_resp_instr                           (io_pmp_3_resp_instr),
     .io_pmp_1_resp_mmio                            (io_pmp_3_resp_mmio),
@@ -1593,7 +1644,7 @@ module ICache(
   input  auto_ctrlUnitOpt_in_a_valid,
   input  [3:0] auto_ctrlUnitOpt_in_a_bits_opcode,
   input  [1:0] auto_ctrlUnitOpt_in_a_bits_size,
-  input  [2:0] auto_ctrlUnitOpt_in_a_bits_source,
+  input  [4:0] auto_ctrlUnitOpt_in_a_bits_source,
   input  [29:0] auto_ctrlUnitOpt_in_a_bits_address,
   input  [7:0] auto_ctrlUnitOpt_in_a_bits_mask,
   input  [63:0] auto_ctrlUnitOpt_in_a_bits_data,
@@ -1601,7 +1652,7 @@ module ICache(
   output auto_ctrlUnitOpt_in_d_valid,
   output [3:0] auto_ctrlUnitOpt_in_d_bits_opcode,
   output [1:0] auto_ctrlUnitOpt_in_d_bits_size,
-  output [2:0] auto_ctrlUnitOpt_in_d_bits_source,
+  output [4:0] auto_ctrlUnitOpt_in_d_bits_source,
   output [63:0] auto_ctrlUnitOpt_in_d_bits_data,
   input  auto_client_out_a_ready,
   output auto_client_out_a_valid,
@@ -1613,6 +1664,7 @@ module ICache(
   input  [3:0] auto_client_out_d_bits_source,
   input  [255:0] auto_client_out_d_bits_data,
   input  auto_client_out_d_bits_corrupt,
+  input  [5:0] io_hartId,
   output io_fetch_req_ready,
   input  io_fetch_req_valid,
   input  [49:0] io_fetch_req_bits_pcMemRead_0_startAddr,
@@ -1631,6 +1683,7 @@ module ICache(
   input  io_fetch_req_bits_readValid_3,
   input  io_fetch_req_bits_readValid_4,
   input  io_fetch_req_bits_backendException,
+  input  io_fetch_req_bits_hasSatpFlush,
   output io_fetch_resp_valid,
   output io_fetch_resp_bits_doubleline,
   output [49:0] io_fetch_resp_bits_vaddr_0,
@@ -1644,6 +1697,7 @@ module ICache(
   output [1:0] io_fetch_resp_bits_itlb_pbmt_0,
   output [1:0] io_fetch_resp_bits_itlb_pbmt_1,
   output io_fetch_resp_bits_backendException,
+  output io_fetch_resp_bits_hasSatpFlush,
   output [55:0] io_fetch_resp_bits_gpaddr,
   output io_fetch_resp_bits_isForVSnonLeafPTE,
   output io_fetch_topdownIcacheMiss,
@@ -1669,15 +1723,19 @@ module ICache(
   input  [49:0] io_softPrefetch_2_bits_vaddr,
   input  io_stop,
   output io_toIFU,
+  output io_pmp_0_req_valid,
   output [47:0] io_pmp_0_req_bits_addr,
   input  io_pmp_0_resp_instr,
   input  io_pmp_0_resp_mmio,
+  output io_pmp_1_req_valid,
   output [47:0] io_pmp_1_req_bits_addr,
   input  io_pmp_1_resp_instr,
   input  io_pmp_1_resp_mmio,
+  output io_pmp_2_req_valid,
   output [47:0] io_pmp_2_req_bits_addr,
   input  io_pmp_2_resp_instr,
   input  io_pmp_2_resp_mmio,
+  output io_pmp_3_req_valid,
   output [47:0] io_pmp_3_req_bits_addr,
   input  io_pmp_3_resp_instr,
   input  io_pmp_3_resp_mmio,
@@ -1722,6 +1780,7 @@ module ICache(
   output io_perfInfo_bank_hit_0,
   output io_perfInfo_bank_hit_1,
   output io_perfInfo_hit,
+  output [5:0] io_perf_0_value,
   input  [1:0] boreChildrenBd_bore_array,
   input  boreChildrenBd_bore_all,
   input  boreChildrenBd_bore_req,
@@ -2028,7 +2087,10 @@ module ICache(
   input  sigFromSrams_bore_35_ram_aux_clk,
   input  sigFromSrams_bore_35_ram_aux_ckbp,
   input  sigFromSrams_bore_35_ram_mcp_hold,
-  input  sigFromSrams_bore_35_cgen
+  input  sigFromSrams_bore_35_cgen,
+  output [600:0] gatewayIn_packed_0_bore,
+  output [600:0] gatewayIn_packed_1_bore,
+  output [600:0] gatewayIn_packed_2_bore
 );
   xs_ICache_core u_core (
     .clock(clock),
@@ -2057,6 +2119,7 @@ module ICache(
     .auto_client_out_d_bits_source(auto_client_out_d_bits_source),
     .auto_client_out_d_bits_data(auto_client_out_d_bits_data),
     .auto_client_out_d_bits_corrupt(auto_client_out_d_bits_corrupt),
+    .io_hartId(io_hartId),
     .io_fetch_req_ready(io_fetch_req_ready),
     .io_fetch_req_valid(io_fetch_req_valid),
     .io_fetch_req_bits_pcMemRead_0_startAddr(io_fetch_req_bits_pcMemRead_0_startAddr),
@@ -2075,6 +2138,7 @@ module ICache(
     .io_fetch_req_bits_readValid_3(io_fetch_req_bits_readValid_3),
     .io_fetch_req_bits_readValid_4(io_fetch_req_bits_readValid_4),
     .io_fetch_req_bits_backendException(io_fetch_req_bits_backendException),
+    .io_fetch_req_bits_hasSatpFlush(io_fetch_req_bits_hasSatpFlush),
     .io_fetch_resp_valid(io_fetch_resp_valid),
     .io_fetch_resp_bits_doubleline(io_fetch_resp_bits_doubleline),
     .io_fetch_resp_bits_vaddr_0(io_fetch_resp_bits_vaddr_0),
@@ -2088,6 +2152,7 @@ module ICache(
     .io_fetch_resp_bits_itlb_pbmt_0(io_fetch_resp_bits_itlb_pbmt_0),
     .io_fetch_resp_bits_itlb_pbmt_1(io_fetch_resp_bits_itlb_pbmt_1),
     .io_fetch_resp_bits_backendException(io_fetch_resp_bits_backendException),
+    .io_fetch_resp_bits_hasSatpFlush(io_fetch_resp_bits_hasSatpFlush),
     .io_fetch_resp_bits_gpaddr(io_fetch_resp_bits_gpaddr),
     .io_fetch_resp_bits_isForVSnonLeafPTE(io_fetch_resp_bits_isForVSnonLeafPTE),
     .io_fetch_topdownIcacheMiss(io_fetch_topdownIcacheMiss),
@@ -2113,15 +2178,19 @@ module ICache(
     .io_softPrefetch_2_bits_vaddr(io_softPrefetch_2_bits_vaddr),
     .io_stop(io_stop),
     .io_toIFU(io_toIFU),
+    .io_pmp_0_req_valid(io_pmp_0_req_valid),
     .io_pmp_0_req_bits_addr(io_pmp_0_req_bits_addr),
     .io_pmp_0_resp_instr(io_pmp_0_resp_instr),
     .io_pmp_0_resp_mmio(io_pmp_0_resp_mmio),
+    .io_pmp_1_req_valid(io_pmp_1_req_valid),
     .io_pmp_1_req_bits_addr(io_pmp_1_req_bits_addr),
     .io_pmp_1_resp_instr(io_pmp_1_resp_instr),
     .io_pmp_1_resp_mmio(io_pmp_1_resp_mmio),
+    .io_pmp_2_req_valid(io_pmp_2_req_valid),
     .io_pmp_2_req_bits_addr(io_pmp_2_req_bits_addr),
     .io_pmp_2_resp_instr(io_pmp_2_resp_instr),
     .io_pmp_2_resp_mmio(io_pmp_2_resp_mmio),
+    .io_pmp_3_req_valid(io_pmp_3_req_valid),
     .io_pmp_3_req_bits_addr(io_pmp_3_req_bits_addr),
     .io_pmp_3_resp_instr(io_pmp_3_resp_instr),
     .io_pmp_3_resp_mmio(io_pmp_3_resp_mmio),
@@ -2166,6 +2235,7 @@ module ICache(
     .io_perfInfo_bank_hit_0(io_perfInfo_bank_hit_0),
     .io_perfInfo_bank_hit_1(io_perfInfo_bank_hit_1),
     .io_perfInfo_hit(io_perfInfo_hit),
+    .io_perf_0_value(io_perf_0_value),
     .boreChildrenBd_bore_array(boreChildrenBd_bore_array),
     .boreChildrenBd_bore_all(boreChildrenBd_bore_all),
     .boreChildrenBd_bore_req(boreChildrenBd_bore_req),
@@ -2472,6 +2542,9 @@ module ICache(
     .sigFromSrams_bore_35_ram_aux_clk(sigFromSrams_bore_35_ram_aux_clk),
     .sigFromSrams_bore_35_ram_aux_ckbp(sigFromSrams_bore_35_ram_aux_ckbp),
     .sigFromSrams_bore_35_ram_mcp_hold(sigFromSrams_bore_35_ram_mcp_hold),
-    .sigFromSrams_bore_35_cgen(sigFromSrams_bore_35_cgen)
+    .sigFromSrams_bore_35_cgen(sigFromSrams_bore_35_cgen),
+    .gatewayIn_packed_0_bore(gatewayIn_packed_0_bore),
+    .gatewayIn_packed_1_bore(gatewayIn_packed_1_bore),
+    .gatewayIn_packed_2_bore(gatewayIn_packed_2_bore)
   );
 endmodule

@@ -1,0 +1,21 @@
+# A 类 assembly 边界分类（codex 0148 §A：只接受 A1 vendor_macro / A2 green_child）
+# 分类依据全部来自设计源 + elaboration 元数据 + 冻结 registry，不来自 black_boxes.rpt。
+# decision: DECLARED=本批已写 verif/allow/<top>.json；STOP=不满足 A1/A2，须人工裁定。
+target	utdir	expected_n	symmetric	boundary_designs	class	decision	blocker
+SRAMTemplate_128	SRAMTemplateNewForm	2	yes	array_10_ext	A1	DECLARED	-
+SRAMTemplate_145	SRAMTemplateNewForm	2	yes	array_12_ext	A1	DECLARED	-
+SRAMTemplate_146	SRAMTemplateNewForm	2	yes	array_13_ext	A1	DECLARED	-
+SRAMTemplate_155	SRAMTemplateNewForm	2	yes	array_18_ext	A1	DECLARED	-
+SRAMTemplate_163	SRAMTemplateNewForm	2	yes	array_15_ext	A1	DECLARED	-
+SRAMTemplate_166	SRAMTemplateNewForm	2	yes	array_18_ext	A1	DECLARED	-
+SRAMTemplate_178	SRAMTemplateNewForm	2	yes	array_18_ext	A1	DECLARED	-
+SRAMTemplate_185	SRAMTemplateNewForm	2	yes	array_15_ext	A1	DECLARED	-
+DuplicatedTagArray	DuplicatedTagArray	16	NO	ref:array_8_ext(8) / impl:array_8(8)	A1(潜在)	STOP	RTL_GOLDEN_DEPS 缺 array_8.sv ⇒ 两侧 elaboration 集合不对称，声明必被 assembly_bbox_not_symmetric 拒；须先补 Makefile 再重跑
+TageBTable	TageBTable	6	yes	FoldedSRAMTemplate_20(2) WrBypass_32(1)	A2	STOP	两 child 虽都是已声明 target，但 receipt 全部钉在已作废的 PROOF_COMMIT=3b72cb1；且 docs/receipt_index.tsv 被 .gitignore 忽略，clean clone 下 _child_receipts() 返回空 ⇒ assembly_green_child_no_receipt
+ICacheMetaArray	ICacheMetaArray	6	yes	MbistPipeIcacheTag(1) SplittedSRAMTemplate(1) SplittedSRAMTemplate_1(1)	A2	STOP	MbistPipeIcacheTag 根本不是任何 UT 的 FM target ⇒ child 不闭合（永远无法变绿）
+SubDirectory	SubDirectory	6	yes	MaxPeriodFibonacciLFSR_3(1) SRAMTemplate_192(1) SRAMTemplate_193(1)	A2	STOP	三个 child 全都不是 FM target ⇒ child 不闭合
+SubDirectory_1	SubDirectory_1	6	yes	SRAMTemplate_194(1) SRAMTemplate_195(1) SRAMTemplate_196(1)	A2	STOP	三个 child 全都不是 FM target ⇒ child 不闭合
+IMSICGateWay	IMSICGateWay	2	yes	AsyncResetSynchronizerShiftReg_w1_d3_i0(1)	A2	STOP	child 不是 FM target ⇒ 不闭合
+ICache	ICache	16	yes	ICacheCtrlUnit ICacheDataArray ICacheMainPipe ICacheMetaArray ICacheMissUnit ICacheReplacer IPrefetchPipe WayLookup	A2	STOP	ICacheMainPipe/ICacheMissUnit/IPrefetchPipe 不是 FM target；ICacheCtrlUnit/ICacheMetaArray 历史 verdict=PARTIAL
+TLBuffer_13	TLBuffer_13	40	yes	ram_2x119(4) ram_2x283(4) ram_2x321(4) ram_2x352(4) ram_sink_2x8(4)	都不是	STOP	5 个 firtool 内联存储叶子不在冻结 registry；本批不得扩表（见 registry_gaps.tsv）
+L2TlbMissQueue	L2TlbMissQueue	2	yes	ram_40x47(1)	都不是	STOP	同上，另一位 owner 已就同类叶子停下待审

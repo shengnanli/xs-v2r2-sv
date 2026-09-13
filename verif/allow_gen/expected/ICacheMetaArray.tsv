@@ -1,0 +1,17 @@
+# expected 黑盒集合 —— ICacheMetaArray
+# 来源（三样，均与 FM 运行结果无关）：
+#  1) elaboration 元数据：/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/verif/ut/ICacheMetaArray/Makefile 展开的 FM_REF_SRCS / FM_IMPL_SRCS
+#  2) 设计源：下列文件的 module/instance 层次图（verif/allow_gen/sv_elab.py 解析）
+#  3) 判据：fm_eq.tcl 设 hdlin_unresolved_modules=black_box 且不设任何库搜索路径
+#     ⇒ 黑盒 ⟺ 被例化但其模块类型不在该侧读入文件集里
+# ref 侧读入文件:
+#   /home/eda/xs-env/G1-canonical/golden-rtl/ICacheMetaArray.sv
+# impl 侧读入文件:
+#   /tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/frontend/ICacheMetaArray.sv
+side	attrs	design	path
+i	u	MbistPipeIcacheTag	i:/WORK/ICacheMetaArray/mbistPl
+i	u	SplittedSRAMTemplate	i:/WORK/ICacheMetaArray/tagArrays_0
+i	u	SplittedSRAMTemplate_1	i:/WORK/ICacheMetaArray/tagArrays_1
+r	u	MbistPipeIcacheTag	r:/WORK/ICacheMetaArray/mbistPl
+r	u	SplittedSRAMTemplate	r:/WORK/ICacheMetaArray/tagArrays_0
+r	u	SplittedSRAMTemplate_1	r:/WORK/ICacheMetaArray/tagArrays_1
