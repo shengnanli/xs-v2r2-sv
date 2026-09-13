@@ -1,115 +1,142 @@
 #!/usr/bin/env python3
-"""test_child_composition.py —— 组合性绑定负测（codex 0141 §29）。
+"""test_child_composition.py —— 组合性绑定负测（codex 0141 §29 → codex 0157 D57 重写）。
 
-要证明的事：child receipt 证过的 impl 字节，若在父 commit 下被改了一个字节，
-父 proof 必须拒绝复用该 child receipt。
+要证明的事**没变**：child 被证明过的 impl 字节，若在父 commit 下被改了一个字节，
+父 proof 必须拒绝复用该 child 的背书。
 
-做法（不跑 FM，只测 make_receipt 的绑定逻辑）：
-  1. 取一份真实 child receipt，把其中某个 impl 闭包条目的 sha256 改掉一位
-     （等价于"父 commit 下的字节与 child 证过的不一致"）；
-  2. 让 make_receipt 以该 child 为 green_child 出父 receipt → 必须非零退出并报
-     child receipt 失效；
-  3. 另测"条目路径在父 commit 下不存在"同样必须拒。
+变的是背书从哪儿来。原版把一份 `evidence/**/receipt.json` 改一位、重建
+`docs/receipt_index.tsv`、再跑 `make_receipt.py`。D57 之后：
+
+  * `evidence/` 与 `docs/receipt_index.tsv` 都在 .gitignore 里，clean clone 下原版
+    **三条断言一条都跑不起来**（实测 0/3，报 "无可用 TageTable 证据"）；
+  * `make_receipt.py` 已改读 tracked 的 `verif/proof_certificates/<child>.json`，
+    原版改 receipt 的做法根本碰不到现在的判据 —— 更糟的是它的通过判据只查
+    "原因里有没有 green_child"，而新路径在没有证书时也会报一个带 green_child 的原因，
+    于是原版会**因为完全无关的理由报 PASS**。这正是本工程反复栽的"测试假通过"。
+
+所以这里改成：用 `test_proof_certificate.Fixture` 造一个自带 git 历史的最小仓库
+（clean clone 下也能跑），驱动**真的 `make_receipt.py` 子进程**，验四件事：
+
+  CONTROL  证书有效 → make_receipt 正常出 receipt（rc=0），
+           且 receipt 里记下了 green_child_closure_checks。
+  A        child 源在父 commit 下改了一个字节 → 拒绝，原因 closure_changed
+  B        child 闭包条目在父 commit 下不存在   → 拒绝，原因 closure_missing_at_parent
+  C        证书没进 commit（只躺在工作树里）   → 拒绝，原因 certificate_not_in_commit
+
+每条都断言**具体原因关键字**，不是"原因里有 green_child 就算过"。
+CONTROL 不过 = 夹具没走到判据，整体判失败。
+
+用法: python3 scripts/test_child_composition.py
 """
+import hashlib
 import json
 import os
 import pathlib
 import shutil
 import subprocess
 import sys
-import tempfile
 
-REPO = pathlib.Path(__file__).resolve().parent.parent
-# reviewer 环境反馈：/tmp 上 shutil.copytree 会因复制 ACL/xattr 报 Errno 22，
-# 导致三条断言根本没执行却"通过"（第二次栽在同一个测试上）。
-# 对策：① fixture 建在仓库内的可写临时目录；② 所有复制用 copyfile（只搬字节，
-# 不碰元数据）；③ 末尾校验"每条用例确实跑到了判定"，跑不到即 FAIL。
-FIXTURE_ROOT = REPO / '.test_tmp' 
+HERE = pathlib.Path(__file__).resolve().parent
+REPO = HERE.parent
+sys.path.insert(0, str(HERE))
 
+import test_proof_certificate as T                          # noqa: E402
 
-def newest_evidence():
-    cands = sorted(REPO.glob('evidence/*/TageTable/receipt.json'),
-                   key=lambda p: p.stat().st_mtime)
-    return cands[-1].parent if cands else None
+RESULTS = []
 
 
-def run_case(name, mutate, expect_fail=True):
-    ev = newest_evidence()
-    if ev is None:
-        print(f'  BAD  {name}: 无可用 TageTable 证据 —— 断言未执行（不算通过）')
-        return False
-    FIXTURE_ROOT.mkdir(exist_ok=True)
-    with tempfile.TemporaryDirectory(dir=str(FIXTURE_ROOT)) as td:
-        td = pathlib.Path(td)
-        # 复制整份证据树到临时索引根，只改 child receipt
-        # 只搬判定需要的字节：证据树里的 receipt.json + verif/allow。
-        # 一律 copyfile（不复制权限/ACL/xattr），避免跨文件系统的 Errno 22。
-        for rp in (REPO / 'evidence').glob('*/*/receipt.json'):
-            dst = td / rp.relative_to(REPO)
-            dst.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(str(rp), str(dst))
-        (td / 'docs').mkdir(exist_ok=True)
-        (td / 'verif' / 'allow').mkdir(parents=True, exist_ok=True)
-        for ap_ in (REPO / 'verif' / 'allow').glob('*.json'):
-            shutil.copyfile(str(ap_), str(td / 'verif' / 'allow' / ap_.name))
-        (td / 'scripts').mkdir(exist_ok=True)
-        for f in ('build_receipt_index.py',):
-            shutil.copyfile(str(REPO / 'scripts' / f), str(td / 'scripts' / f))
-        # 找 WrBypass child receipt 并改
-        target = sorted((td / 'evidence').glob('*/WrBypass/receipt.json'))
-        if not target:
-            print(f'  BAD  {name}: 无 WrBypass child receipt —— fixture 没建起来，'
-                  f'断言未执行（不算通过）')
-            return False
-        for tp in target:
-            d = json.loads(tp.read_text())
-            mutate(d)
-            tp.write_text(json.dumps(d))
-        # 重建索引（指向临时根）
-        env = dict(os.environ, XSSV_HOME=str(td), XSSV_INDEX_HOME=str(td))
-        subprocess.run([sys.executable, str(td / 'scripts' / 'build_receipt_index.py')],
-                       env=env, stdout=subprocess.DEVNULL)
-        # 用真实父证据 + 临时索引跑 make_receipt
-        wd = td / 'work'; (wd / 'sidecar').mkdir(parents=True)
-        shutil.copyfile(str(ev / 'sidecar' / 'native_facts.json'),
-                        str(wd / 'sidecar' / 'native_facts.json'))
-        facts = json.loads((wd / 'sidecar' / 'native_facts.json').read_text())
-        head = subprocess.run(['git', 'rev-parse', 'HEAD'], cwd=str(REPO),
-                              stdout=subprocess.PIPE, universal_newlines=True).stdout.strip()
-        verdict = 'PASS_DEAD_REF\t' + json.dumps({'native': facts['native_verdict']})
-        r = subprocess.run([
-            sys.executable, str(REPO / 'scripts' / 'make_receipt.py'),
-            '--top', 'TageTable', '--workdir', str(wd),
-            '--ref-srcs', str(REPO / '..' / 'G1-canonical' / 'golden-rtl' / 'TageTable.sv'),
-            '--impl-srcs', str(REPO / 'rtl' / 'frontend' / 'TageTable.sv'),
-            '--mode', 'assembly', '--rc', '0', '--verdict', verdict,
-            '--expect-run-id', facts['run_id'], '--parent-commit', head,
-            # 本测试要验的是**组合性闸**，故放过 dirty 闸，否则 dirty 会先拦下来、
-            # 测试就变成假过（第一次写就踩了这个坑）。
-            '--allow-dirty',
-        ], env=dict(os.environ, XSSV_HOME=str(REPO), XSSV_INDEX_HOME=str(td)),
-            stdout=subprocess.PIPE, stderr=subprocess.STDOUT, universal_newlines=True)
-        reason = [l for l in r.stdout.splitlines() if 'ERROR' in l]
-        msg = reason[0] if reason else ''
-        # 必须是"组合性/child receipt 失效"这类原因，不接受被别的闸误拦而算过
-        by_composition = ('green_child' in msg)
-        good = (r.returncode != 0 and by_composition) if expect_fail else (r.returncode == 0)
-        print(f'  {"ok " if good else "BAD"} {name}: rc={r.returncode} {msg[:100]}')
-        return good
+def _prep_workdir(fx):
+    wd = fx.root / 'work'
+    (wd / 'sidecar').mkdir(parents=True, exist_ok=True)
+    facts = {'schema': 'fm-sidecar-native-v1', 'run_id': 'parent-run-1',
+             'top': 'ParentAsm', 'native_verdict': 'SUCCEEDED',
+             'stats': {'passing': 9, 'failing': 0}, 'unmatched': {}}
+    (wd / 'sidecar' / 'native_facts.json').write_text(json.dumps(facts))
+    return wd, facts
+
+
+def run_make_receipt(fx, allow_dirty=False):
+    wd, facts = _prep_workdir(fx)
+    verdict = 'SUCCEEDED\t' + json.dumps({'native': 'SUCCEEDED'})
+    env = dict(os.environ, XSSV_HOME=str(fx.repo_dir), G1_CANONICAL=str(fx.g1))
+    env.pop('XSSV_INDEX_HOME', None)
+    argv = [
+        sys.executable, str(HERE / 'make_receipt.py'),
+        '--top', 'ParentAsm', '--workdir', str(wd),
+        '--ref-srcs', str(fx.g1 / 'golden-rtl' / 'ChildLeaf.sv'),
+        '--impl-srcs', str(fx.repo_dir / 'rtl' / 'common' / 'ChildLeaf.sv'),
+        '--mode', 'assembly', '--rc', '0', '--verdict', verdict,
+        '--expect-run-id', facts['run_id'], '--parent-commit', fx.parent_commit,
+    ]
+    if allow_dirty:
+        argv.append('--allow-dirty')
+    r = subprocess.run(argv, env=env, cwd=str(fx.repo_dir), stdout=subprocess.PIPE,
+                       stderr=subprocess.STDOUT, universal_newlines=True)
+    return r.returncode, r.stdout, wd
+
+
+def case(name, fx, expect_rc_nonzero, keyword=None, allow_dirty=False):
+    rc, out, wd = run_make_receipt(fx, allow_dirty)
+    if expect_rc_nonzero:
+        if rc == 0:
+            print('  BAD  %s: make_receipt 竟然放行了（rc=0）' % name)
+            print('       %s' % out.strip().splitlines()[-1:] or out[:200])
+            RESULTS.append(False)
+            return
+        ok = keyword in out
+        print('  %s %s: rc=%d %s' % ('ok ' if ok else 'BAD', name, rc,
+                                     [l for l in out.splitlines() if 'ERROR' in l][:1]))
+        if not ok:
+            print('       期望原因含 %r，实际输出：\n%s' % (keyword, out[-600:]))
+        RESULTS.append(ok)
+    else:
+        recp = wd / 'receipt.json'
+        ok = rc == 0 and recp.exists()
+        detail = ''
+        if ok:
+            d = json.loads(recp.read_text())
+            checks = d.get('green_child_closure_checks') or []
+            ok = bool(checks) and checks[0].get('child_target') == 'ChildLeaf' \
+                and checks[0].get('child_impl_files_verified_at_parent_commit', 0) > 0
+            detail = 'green_child_closure_checks=%r' % checks
+        print('  %s %s[CONTROL]: rc=%d %s' % ('ok ' if ok else 'BAD', name, rc,
+                                              detail if ok else out[-500:]))
+        RESULTS.append(ok)
 
 
 def main():
-    res = []
-    res.append(run_case('child impl 闭包某文件 sha 改一位',
-                        lambda d: d['impl_closure'][0].update(
-                            sha256='0' * 63 + '1') if d.get('impl_closure') else None))
-    res.append(run_case('child impl 闭包指向父 commit 下不存在的路径',
-                        lambda d: d['impl_closure'][0].update(
-                            path='rtl/common/__no_such_file__.sv') if d.get('impl_closure') else None))
-    res.append(run_case('child impl 闭包被清空(无可核对条目)',
-                        lambda d: d.update(impl_closure=[])))
-    print(f'\n{sum(res)}/{len(res)} 通过')
-    return 0 if all(res) else 1
+    if shutil.which('git') is None:
+        print('SKIP: 没有 git')
+        return 2
+
+    case('证书有效', T.Fixture(), expect_rc_nonzero=False)
+
+    def change_src(fx):
+        (fx.repo_dir / 'rtl/common/xs_child_core.sv').write_text(
+            'module xs_child_core; wire tampered; endmodule\n')
+    case('child 源在父 commit 下改了一个字节', T.Fixture(post_commit=change_src),
+         True, 'green_child_closure_changed')
+
+    def rm_src(fx):
+        (fx.repo_dir / 'rtl/common/xs_child_core.sv').unlink()
+    case('child 闭包条目在父 commit 下不存在', T.Fixture(post_commit=rm_src),
+         True, 'green_child_closure_missing_at_parent')
+
+    # ★这条要**显式打开 dirty 闸**才测得到。未提交的证书文件本身就让工作树 dirty，
+    # 于是 make_receipt 会先在 dirty 闸上退出——第一版就这样，本测试如实报了 BAD
+    # （"期望原因含 green_child_certificate_not_in_commit，实际是 impl 工作树 dirty"），
+    # 没有把"被更早的门拦下"冒充成"抓到了"。这里给 --allow-dirty 放过前一道闸，
+    # 断言仍然钉在具体关键字上，所以不会因为换了个理由失败就算过。
+    case('证书没进 commit（只躺在工作树里）', T.Fixture(commit_cert=False),
+         True, 'green_child_certificate_not_in_commit', allow_dirty=True)
+
+    for d in T._TMPDIRS:
+        shutil.rmtree(str(d), ignore_errors=True)
+    print('\n%d/%d 通过' % (sum(RESULTS), len(RESULTS)))
+    if len(RESULTS) != 4:
+        print('★断言条数 %d != 4 —— 有用例没跑到，判失败' % len(RESULTS))
+        return 1
+    return 0 if all(RESULTS) else 1
 
 
 if __name__ == '__main__':

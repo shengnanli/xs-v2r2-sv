@@ -15,6 +15,11 @@ codex 0139 §5：任何晋升必须绑定
   verdict             fm_verdict.py 的判定与理由
   rc                  fm_shell 退出码
 fail-closed：sidecar 缺失、native 与 log 判定不一致、声明文件缺失一律非零退出。
+
+codex 0157 D57 变更：green_child 的背书从 untracked 的 docs/receipt_index.tsv
+改为 tracked 的 verif/proof_certificates/<child>.json（见 scripts/proof_certificate.py）。
+本文件 157-177 行那套「用 `git show <父commit>:<path>` 逐字节复算 child 闭包」的做法
+就是 D57 第 3 条要的，原样保留，只是记录来源换成了证书。
 """
 import argparse
 import hashlib
@@ -28,6 +33,8 @@ _HERE = pathlib.Path(__file__).resolve().parent
 NEW = pathlib.Path(os.environ.get('XSSV_HOME') or _HERE.parent)
 G1 = pathlib.Path(os.environ.get('G1_CANONICAL') or '/home/eda/xs-env/G1-canonical')
 # 证据/索引在真实仓库（worktree 内 evidence/ 不存在）
+# ⚠ 已废弃（codex 0157 D57）：原先指向 untracked 的 evidence/ 与 docs/receipt_index.tsv。
+# green_child 背书已改读 tracked 证书，本变量不再参与任何判定，仅为兼容旧调用方保留。
 INDEX_HOME = pathlib.Path(os.environ.get('XSSV_INDEX_HOME') or NEW)
 
 
@@ -123,105 +130,67 @@ def main():
                  '请用 scripts/run_proof.sh（detached clean worktree）或先提交改动。'
                  f'\n首条: {dirty.splitlines()[0][:100]}')
 
-    # green_child 共享闭包字节一致性（codex 0140 P0-3 的 closure 部分）：
-    # 父的 impl 闭包里凡是 child receipt 也读过的文件，两侧 sha256 必须逐一相同。
-    # 否则说明 child 被证明时用的不是本次这份字节。
+    # green_child 组合性保证（codex 0140 P0-3 的 closure 部分 → codex 0157 D57）：
+    # 父把 child 黑盒掉，就更需要「父最终集成的 child 实现字节 == child 被证明过的字节」。
     impl_cl = closure(a.impl_srcs.split(), NEW)
     child_checks = []
     allow_p = NEW / 'verif' / 'allow' / f'{a.top}.json'
     if allow_p.exists():
+        # ★codex 0157 D57★ 背书来源从 untracked 的 docs/receipt_index.tsv 换成
+        # tracked 的 verif/proof_certificates/<child>.json（见 proof_certificate.py 文件头）。
+        # 组合性保证的**做法**没变，仍是本文件原来那套：对 child 闭包里每个
+        # repo-relative 条目，取**父 commit** 下同路径的字节算 sha256，逐一必须相等。
+        # 变的只是"那份 child 记录从哪儿读"——现在从 commit 里读，clean clone 可复现。
         sys.path.insert(0, str(_HERE))
-        import build_receipt_index as _BRI
-        idx = _BRI.load(INDEX_HOME)
+        import proof_certificate as _PC
+        import fm_target_universe as _FTU
+        repo = _PC.Repo(NEW)
         adecl = json.loads(allow_p.read_text())
-        children = sorted({o['child_target'] for o in adecl.get('objects', [])
-                           if o.get('class') == 'green_child' and o.get('child_target')})
-        mine = {pathlib.Path(e['path']).name: e['sha256'] for e in impl_cl}
-        for ct in children:
-            cr = idx.get(ct)
-            if cr is None:
-                sys.exit(f'ERROR: green_child {ct} 无 receipt —— 拒绝出 receipt')
-            crj = json.loads((INDEX_HOME / cr['path']).read_text())
-            shared, bad = 0, []
-            for e in crj.get('impl_closure', []):
-                nm = pathlib.Path(e['path']).name
-                if nm in mine:
-                    shared += 1
-                    if mine[nm] != e['sha256']:
-                        bad.append(nm)
-            if bad:
-                sys.exit(f'ERROR: green_child {ct} 的共享闭包字节与本次不一致: '
-                         f'{bad[:3]} —— 拒绝出 receipt')
-            # ★codex 0141：父把 child 黑盒掉，**更**需要组合性保证——父最终集成的
-            # child 实现字节必须仍等于 child receipt 证明过的字节。对 child receipt 的
-            # 每个 repo-relative impl 闭包条目，取父 commit 下同路径的字节算 sha256，
-            # 必须逐一相等；文件缺失或改过一字节即 child receipt 失效（须重跑 child）。
+        gc = [o for o in adecl.get('objects', [])
+              if o.get('class') == 'green_child']
+        if gc:
             pcommit = a.parent_commit or impl_commit
-            comp_ok, comp_bad, comp_missing = 0, [], []
-            for e in crj.get('impl_closure', []):
-                if e.get('kind') != 'repo':
+            commit = repo.rev_parse(pcommit)
+            if commit is None:
+                sys.exit(f'ERROR: 父 commit {pcommit[:12]} 解析不到 —— 拒绝出 receipt')
+            pol, perr = _PC.load_policy(repo, commit)
+            if perr:
+                sys.exit(f'ERROR: {perr} —— green_child 无工具/配置策略可依，拒绝出 receipt')
+            try:
+                tmap, unresolved = _FTU.targets_at(str(NEW), commit)
+            except Exception as e:                          # noqa: BLE001
+                sys.exit(f'ERROR: 无法重建 FM target 全集({e}) —— 拒绝出 receipt')
+            g1root = str(G1)
+            done = {}
+            for o in gc:
+                ct = o.get('child_target')
+                if not ct:
+                    sys.exit('ERROR: allow 里有 green_child 却没写 child_target —— 拒绝出 receipt')
+                key = (ct, o.get('certificate_sha256'))
+                if key in done:
                     continue
-                r = subprocess.run(['git', 'show', f'{pcommit}:{e["path"]}'],
-                                   cwd=str(NEW), stdout=subprocess.PIPE,
-                                   stderr=subprocess.DEVNULL)
-                if r.returncode != 0:
-                    comp_missing.append(e['path'])
-                    continue
-                if hashlib.sha256(r.stdout).hexdigest() != e['sha256']:
-                    comp_bad.append(e['path'])
-                else:
-                    comp_ok += 1
-            if comp_missing or comp_bad:
-                sys.exit(f'ERROR: green_child {ct} 的 impl 闭包在父 commit '
-                         f'{pcommit[:12]} 下已变化 —— child receipt 失效，须重跑 child。'
-                         f'缺失={comp_missing[:2]} 改动={comp_bad[:2]}')
-            if comp_ok == 0:
-                sys.exit(f'ERROR: green_child {ct} 的 receipt 无任何 repo-relative impl '
-                         f'闭包条目可核对 —— 无法建立组合性保证，拒绝出 receipt')
-
-            # 下面这条比对（父自身闭包与 child 闭包的交集）对被黑盒 child 恒空，
-            # 保留仅作记录，**不再作为放行依据**。
-            # 那条比对对这类 child 是空转。真正该绑的是「被黑盒的这个 golden 模块，
-            # 与 child 被证明时用的 golden 模块是同一份字节」：
-            # child receipt 的 golden_closure 里须含 <child>.sv，且其 sha256 与
-            # G1 MANIFEST 记录一致（canonical 同源已另行校验）。
-            gsha = {pathlib.Path(e['path']).name: e['sha256']
-                    for e in crj.get('golden_closure', [])}
-            key = f'{ct}.sv'
-            man = {}
-            mp = G1 / 'MANIFEST.tsv'
-            if mp.exists():
-                for ln in mp.read_text().splitlines():
-                    c = ln.split('\t')
-                    if len(c) == 3:
-                        man[c[2]] = c[0]
-            if key not in gsha:
-                sys.exit(f'ERROR: green_child {ct} 的 receipt 未把 {key} 记入 golden 闭包 '
-                         f'—— 无法证明黑盒的就是它，拒绝出 receipt')
-            if key in man and man[key] != gsha[key]:
-                sys.exit(f'ERROR: green_child {ct} 证明时的 {key} 字节与 G1 MANIFEST 不符 '
-                         f'—— 拒绝出 receipt')
-            child_checks.append({
-                'child_target': ct,
-                'child_impl_commit': cr['impl_commit'],
-                'child_verdict': cr['verdict'],
-                'child_receipt_sha256': cr['receipt_sha256'],
-                # 稳定语义摘要：child 的判定 + canonical + 其 impl/golden 闭包逐文件
-                # (repo-relative path, sha256) 排序后取 sha256。重跑同输入不变。
-                'child_semantic_digest': hashlib.sha256(json.dumps({
-                    'verdict': cr['verdict'], 'canonical': cr['canonical_id'],
-                    'impl': sorted((e['path'], e['sha256'])
-                                   for e in crj.get('impl_closure', [])),
-                    'golden': sorted((e['path'], e['sha256'])
-                                     for e in crj.get('golden_closure', [])),
-                }, sort_keys=True).encode()).hexdigest(),
-                'child_impl_files_verified_at_parent_commit': comp_ok,
-                'parent_commit_used': pcommit,
-                'child_golden_file': key,
-                'child_golden_sha256': gsha[key],
-                'child_golden_matches_g1_manifest': man.get(key) == gsha[key],
-                'parent_impl_closure_overlap': shared,
-            })
+                r = _PC.validate_child_certificate(
+                    repo, commit, ct, o.get('certificate_sha256'),
+                    expect_canonical=cid, policy=pol, fm_targets=tmap,
+                    fm_targets_unresolved=unresolved, g1_root=g1root)
+                if r is not True:
+                    sys.exit(f'ERROR: green_child {ct} 证书校验失败: {r} —— 拒绝出 receipt')
+                done[key] = True
+                doc, csha, _ = _PC.load_certificate(repo, commit, ct)
+                ok, _chg, _mis = _PC.recompute_closure_at(
+                    repo, commit, doc['input_closure']['impl'])
+                child_checks.append({
+                    'child_target': ct,
+                    'child_certificate_path': f'{_PC.CERT_DIR}/{ct}.json',
+                    'child_certificate_sha256': csha,
+                    'child_verdict': doc['verdict'],
+                    'child_impl_commit': doc['impl_commit'],
+                    'child_impl_closure_sha256': doc['input_closure']['impl_sha256'],
+                    'child_script_closure_sha256': doc['script_closure']['sha256'],
+                    'child_impl_files_verified_at_parent_commit': ok,
+                    'parent_commit_used': commit,
+                    'child_evidence_retention': doc['evidence_retention'],
+                })
 
     receipt = {
         'schema': 'xs-v2-sv-receipt-v1',

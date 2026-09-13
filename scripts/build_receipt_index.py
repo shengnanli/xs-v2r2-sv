@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 """build_receipt_index.py —— 由证据目录里的 receipt 机械派生索引（codex 0140 P0-3）。
 
+★codex 0157 D57 起，本索引**不再是权威输入**★
+`evidence/` 与本脚本产出的 `docs/receipt_index.tsv` 都在 .gitignore 里，clean clone /
+clean freeze 下必然为空；用它做 green_child 背书等于「冻结当天所有已绿目标一起翻红」。
+green_child 的权威来源改成 tracked 的 `verif/proof_certificates/<target>.json`
+（见 scripts/proof_certificate.py）。本脚本保留为**本地可再生的审计索引**：
+看某个 target 跑过几次、有没有冲突、哪一份最新，都还靠它。
+`load()` 已无生产调用方（fm_verdict / make_receipt 都已迁走）。
+
 green_child 不能拿 WORKING 文本台账自证（会形成父子循环自证）。本索引只收
 **受接受 runner（run_proof.sh，clean worktree）产出**的 receipt，字段全部来自 receipt
 本身，不接受人工录入：
