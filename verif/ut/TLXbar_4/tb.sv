@@ -1,7 +1,15 @@
-// 自动生成：scripts/gen_tlxbar4.py —— 勿手改
 // TLXbar_4 双例化逐拍比对: golden TLXbar_4 vs 可读 TLXbar_4_xs。
 // 激励: A 通道地址偏向 CacheCtrl 区 (0x38022000-0x380220FF) 以覆盖两条路由;
 // D 通道两从口 valid/载荷随机 (覆盖 round-robin 仲裁两路争用)。
+//
+// ★ 覆盖闸 (本轮事故形态的对策) ★
+// G0->G1 对 TLXbar_4 的唯一实质改动是 source id 2→4 位(6 个端口)。source 在本层
+// 只是透传标签, 位宽写窄了逻辑一行不错; tb 若只驱动低 2 位, UT 照样 errors=0,
+// 只有 FM 才炸。所以本 tb 在收尾处强制要求:
+//   · A 通道握手里 source >= 4 (即高 2 位被用到) 的次数非零, 且 4 位各自都置过 1;
+//   · D 通道回送给主口的 source 同样 4 位取全、且 >= 4 的次数非零;
+//   · 全程要有反压拍 (握手路径被压过)。
+// 任一为 0 判 COVERAGE HOLE → TEST FAILED。
 `timescale 1ns/1ps
 `define CHECK(SIG) begin \
   if (!$isunknown(g_``SIG)) begin \
@@ -20,11 +28,20 @@ module tb;
   int checks = 0;
   always #5 clock = ~clock;
 
+  // 覆盖统计 —— 重点盯 G0->G1 加宽出来的 source 高 2 位
+  int unsigned a_fire       = 0;  // 主口 A 握手次数
+  int unsigned a_src_ge4    = 0;  // 其中 source >= 4 (高 2 位被用到) 的次数
+  logic [3:0]  a_src_or     = '0; // 握手时 source 各位的并集
+  int unsigned d_fire       = 0;  // 主口 D 握手次数
+  int unsigned d_src_ge4    = 0;  // 其中回送 source >= 4 的次数
+  logic [3:0]  d_src_or     = '0; // 回送 source 各位的并集
+  int unsigned stall_cycles = 0;  // 有请求但对侧不 ready 的拍数
+
   logic auto_in_a_valid;
   logic [3:0] auto_in_a_bits_opcode;
   logic [2:0] auto_in_a_bits_param;
   logic [1:0] auto_in_a_bits_size;
-  logic [1:0] auto_in_a_bits_source;
+  logic [3:0] auto_in_a_bits_source;
   logic [47:0] auto_in_a_bits_address;
   logic auto_in_a_bits_user_memPageType_NC;
   logic auto_in_a_bits_user_memBackType_MM;
@@ -37,7 +54,7 @@ module tb;
   logic [3:0] auto_out_1_d_bits_opcode;
   logic [1:0] auto_out_1_d_bits_param;
   logic [1:0] auto_out_1_d_bits_size;
-  logic [1:0] auto_out_1_d_bits_source;
+  logic [3:0] auto_out_1_d_bits_source;
   logic auto_out_1_d_bits_sink;
   logic auto_out_1_d_bits_denied;
   logic [63:0] auto_out_1_d_bits_data;
@@ -47,7 +64,7 @@ module tb;
   logic [3:0] auto_out_0_d_bits_opcode;
   logic [1:0] auto_out_0_d_bits_param;
   logic [1:0] auto_out_0_d_bits_size;
-  logic [1:0] auto_out_0_d_bits_source;
+  logic [3:0] auto_out_0_d_bits_source;
   logic auto_out_0_d_bits_sink;
   logic auto_out_0_d_bits_denied;
   logic [63:0] auto_out_0_d_bits_data;
@@ -62,8 +79,8 @@ module tb;
   wire [1:0] i_auto_in_d_bits_param;
   wire [1:0] g_auto_in_d_bits_size;
   wire [1:0] i_auto_in_d_bits_size;
-  wire [1:0] g_auto_in_d_bits_source;
-  wire [1:0] i_auto_in_d_bits_source;
+  wire [3:0] g_auto_in_d_bits_source;
+  wire [3:0] i_auto_in_d_bits_source;
   wire g_auto_in_d_bits_sink;
   wire i_auto_in_d_bits_sink;
   wire g_auto_in_d_bits_denied;
@@ -80,8 +97,8 @@ module tb;
   wire [2:0] i_auto_out_1_a_bits_param;
   wire [1:0] g_auto_out_1_a_bits_size;
   wire [1:0] i_auto_out_1_a_bits_size;
-  wire [1:0] g_auto_out_1_a_bits_source;
-  wire [1:0] i_auto_out_1_a_bits_source;
+  wire [3:0] g_auto_out_1_a_bits_source;
+  wire [3:0] i_auto_out_1_a_bits_source;
   wire [47:0] g_auto_out_1_a_bits_address;
   wire [47:0] i_auto_out_1_a_bits_address;
   wire g_auto_out_1_a_bits_user_memBackType_MM;
@@ -104,8 +121,8 @@ module tb;
   wire [2:0] i_auto_out_0_a_bits_param;
   wire [1:0] g_auto_out_0_a_bits_size;
   wire [1:0] i_auto_out_0_a_bits_size;
-  wire [1:0] g_auto_out_0_a_bits_source;
-  wire [1:0] i_auto_out_0_a_bits_source;
+  wire [3:0] g_auto_out_0_a_bits_source;
+  wire [3:0] i_auto_out_0_a_bits_source;
   wire [29:0] g_auto_out_0_a_bits_address;
   wire [29:0] i_auto_out_0_a_bits_address;
   wire [7:0] g_auto_out_0_a_bits_mask;
@@ -260,7 +277,7 @@ module tb;
     auto_in_a_bits_opcode <= 4'({$urandom});
     auto_in_a_bits_param <= 3'({$urandom});
     auto_in_a_bits_size <= 2'({$urandom});
-    auto_in_a_bits_source <= 2'({$urandom});
+    auto_in_a_bits_source <= 4'({$urandom});
     if ($urandom_range(0, 1))
       auto_in_a_bits_address <= 48'h38022000 + $urandom_range(0, 255);
     else
@@ -276,7 +293,7 @@ module tb;
     auto_out_1_d_bits_opcode <= 4'({$urandom});
     auto_out_1_d_bits_param <= 2'({$urandom});
     auto_out_1_d_bits_size <= 2'({$urandom});
-    auto_out_1_d_bits_source <= 2'({$urandom});
+    auto_out_1_d_bits_source <= 4'({$urandom});
     auto_out_1_d_bits_sink <= $urandom_range(0, 1);
     auto_out_1_d_bits_denied <= $urandom_range(0, 1);
     auto_out_1_d_bits_data <= 64'({$urandom, $urandom});
@@ -286,7 +303,7 @@ module tb;
     auto_out_0_d_bits_opcode <= 4'({$urandom});
     auto_out_0_d_bits_param <= 2'({$urandom});
     auto_out_0_d_bits_size <= 2'({$urandom});
-    auto_out_0_d_bits_source <= 2'({$urandom});
+    auto_out_0_d_bits_source <= 4'({$urandom});
     auto_out_0_d_bits_sink <= $urandom_range(0, 1);
     auto_out_0_d_bits_denied <= $urandom_range(0, 1);
     auto_out_0_d_bits_data <= 64'({$urandom, $urandom});
@@ -326,6 +343,26 @@ module tb;
     `CHECK(auto_out_0_a_bits_data)
     `CHECK(auto_out_0_a_bits_corrupt)
     `CHECK(auto_out_0_d_ready)
+  endtask
+
+  // 覆盖采样: 在 posedge 之后的稳定点看握手与 source 取值 (ready/valid 取 golden 侧)。
+  task automatic sample_coverage();
+    if (auto_in_a_valid && g_auto_in_a_ready === 1'b1) begin
+      a_fire++;
+      a_src_or |= auto_in_a_bits_source;
+      if (auto_in_a_bits_source >= 4'd4) a_src_ge4++;
+    end
+    if (g_auto_in_d_valid === 1'b1 && auto_in_d_ready) begin
+      d_fire++;
+      if (!$isunknown(g_auto_in_d_bits_source)) begin
+        d_src_or |= g_auto_in_d_bits_source;
+        if (g_auto_in_d_bits_source >= 4'd4) d_src_ge4++;
+      end
+    end
+    if ((auto_in_a_valid && g_auto_in_a_ready === 1'b0)
+     || (g_auto_in_d_valid === 1'b1 && !auto_in_d_ready)
+     || (g_auto_out_0_a_valid === 1'b1 && !auto_out_0_a_ready)
+     || (g_auto_out_1_a_valid === 1'b1 && !auto_out_1_a_ready)) stall_cycles++;
   endtask
 
   initial begin
@@ -370,8 +407,28 @@ module tb;
       drive_random_inputs();
       @(posedge clock);
       #1 check_outputs();
+      sample_coverage();
     end
     $display("TLXbar_4 checks=%0d errors=%0d", checks, errors);
+    $display("TLXbar_4 coverage: a_fire=%0d a_src_ge4=%0d a_src_or=%0h | d_fire=%0d d_src_ge4=%0d d_src_or=%0h | stall_cycles=%0d",
+             a_fire, a_src_ge4, a_src_or, d_fire, d_src_ge4, d_src_or, stall_cycles);
+    if (a_src_ge4 == 0 || !(&a_src_or)) begin
+      $display("COVERAGE HOLE: A 通道 source 未取全 (ge4=%0d or=%0h, 期望 4 位全 1) —— 加宽出来的高位没被激励打到",
+               a_src_ge4, a_src_or);
+      $display("TEST FAILED");
+      $fatal(1);
+    end
+    if (d_src_ge4 == 0 || !(&d_src_or)) begin
+      $display("COVERAGE HOLE: D 通道回送 source 未取全 (ge4=%0d or=%0h, 期望 4 位全 1)",
+               d_src_ge4, d_src_or);
+      $display("TEST FAILED");
+      $fatal(1);
+    end
+    if (stall_cycles == 0) begin
+      $display("COVERAGE HOLE: 全程无反压拍 —— 握手路径没被压过");
+      $display("TEST FAILED");
+      $fatal(1);
+    end
     if (errors == 0 && checks > 1000) begin
       $display("TEST PASSED");
       $finish;

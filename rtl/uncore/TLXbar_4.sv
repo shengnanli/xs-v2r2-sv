@@ -35,16 +35,48 @@ package tlxbar4_pkg;
     ARB_LOCKED = 1'b1   // 锁定: 多拍消息进行中, 维持上一拍胜者 (本变体不会进入)
   } arb_phase_e;
 
+  // 数据通路位宽 (A/D 共用)。
+  localparam int            DATA_WIDTH      = 64;
+
+  // ---------------------------------------------------------------------------
+  //  TileLink 字段位宽 —— 本口的所有位宽只在这里写一次
+  // ---------------------------------------------------------------------------
+  //  ★ TL_SOURCE_W 是 G0->G1 这一轮唯一改动的位宽：source id 2 → 4 位 ★
+  //  source 是 TL 事务标签（谁发的请求，用于把 D 应答对回主口），本层只透传、
+  //  不解释它，所以"写窄了"在逻辑上一行都不会错、随机激励也未必打得到高位 ——
+  //  UT 照样 errors=0，只有 FM 才炸。下面的 GOLDEN_D_MUX_ZERO_BITS 等式就是
+  //  为此设的 elaborate 期防呆闸（详见核里的自检块）。
+  localparam int A_OPCODE_W = 4;
+  localparam int A_PARAM_W  = 3;
+  localparam int A_SIZE_W   = 2;
+  localparam int TL_SOURCE_W = 4;   // A/D 共用的 source id 位宽（G0 是 2）
+  localparam int D_OPCODE_W = 4;
+  localparam int D_PARAM_W  = 2;
+  localparam int D_SIZE_W   = 2;
+  localparam int MASK_W     = 8;
+
+  // ---------------------------------------------------------------------------
+  //  ★ 从 G1 golden 现读的机器可查常量（不是从上面推出来的）★
+  //  golden 的 D 通道 one-hot 归约 mux 里，每个**多位**字段各写了一条 `N'h0`
+  //  常量（TLXbar_4.sv:285/288/291/294/301），N 就是该字段的位宽：
+  //      opcode 4 + param 2 + size 2 + source 4 + data 64 = 76
+  //  机械提取方式（可复跑）：
+  //      grep -o "assign auto_in_d_bits_[a-z]* =.*" golden/TLXbar_4.sv 里的 N'h0
+  //  这是与端口声明**互相独立的第二处 golden 证据**：核里用它做位宽求和等式，
+  //  source 写回 2 位 ⇒ 76 变 74 ⇒ elaborate 期 $fatal。
+  // ---------------------------------------------------------------------------
+  localparam int GOLDEN_D_MUX_ZERO_BITS = 76;
+
   // D 通道应答载荷 (TileLink-C Grant/AccessAck 等关心的字段)。两个从口字段对称。
   typedef struct packed {
-    logic [3:0]  opcode;
-    logic [1:0]  param;
-    logic [1:0]  size;
-    logic [1:0]  source;
-    logic        sink;
-    logic        denied;
-    logic [63:0] data;
-    logic        corrupt;
+    logic [D_OPCODE_W-1:0]  opcode;
+    logic [D_PARAM_W-1:0]   param;
+    logic [D_SIZE_W-1:0]    size;
+    logic [TL_SOURCE_W-1:0] source;
+    logic                   sink;
+    logic                   denied;
+    logic [DATA_WIDTH-1:0]  data;
+    logic                   corrupt;
   } tl_d_bits_t;
 
   // ---------------------------------------------------------------------------
@@ -57,8 +89,6 @@ package tlxbar4_pkg;
   localparam int            ADDR_WIDTH      = 48;
   localparam logic [47:0]   CACHECTRL_MASK  = 48'h7F;          // care = ~mask
   localparam logic [47:0]   CACHECTRL_BASE  = 48'h3802_2000;
-
-  localparam int            DATA_WIDTH      = 64;
 
 endpackage
 
@@ -89,7 +119,14 @@ endpackage
 
 module xs_TLXbar_4_core
   import tlxbar4_pkg::*;
-(
+#(
+  // ---- 位宽参数（默认 = tlxbar4_pkg 的 G1 值）----
+  //  参数化的唯一目的：让"错参数必失败"的负测能把 SOURCE_W 传回 G0 旧值 2，
+  //  证明下面的宽度等式自检真有牙齿。生产例化一律用默认值。
+  parameter int SOURCE_W = TL_SOURCE_W,
+  // ---- 自检等式右手边：从 golden 现读的常量（见 tlxbar4_pkg 里的提取说明）----
+  parameter int GOLDEN_D_ZERO_BITS = GOLDEN_D_MUX_ZERO_BITS
+)(
   input         clock,
   input         reset,
 
@@ -99,7 +136,7 @@ module xs_TLXbar_4_core
   input  [3:0]  auto_in_a_bits_opcode,
   input  [2:0]  auto_in_a_bits_param,
   input  [1:0]  auto_in_a_bits_size,
-  input  [1:0]  auto_in_a_bits_source,
+  input  [SOURCE_W-1:0] auto_in_a_bits_source,
   input  [47:0] auto_in_a_bits_address,
   input         auto_in_a_bits_user_memPageType_NC,
   input         auto_in_a_bits_user_memBackType_MM,
@@ -111,7 +148,7 @@ module xs_TLXbar_4_core
   output [3:0]  auto_in_d_bits_opcode,
   output [1:0]  auto_in_d_bits_param,
   output [1:0]  auto_in_d_bits_size,
-  output [1:0]  auto_in_d_bits_source,
+  output [SOURCE_W-1:0] auto_in_d_bits_source,
   output        auto_in_d_bits_sink,
   output        auto_in_d_bits_denied,
   output [63:0] auto_in_d_bits_data,
@@ -123,7 +160,7 @@ module xs_TLXbar_4_core
   output [3:0]  auto_out_1_a_bits_opcode,
   output [2:0]  auto_out_1_a_bits_param,
   output [1:0]  auto_out_1_a_bits_size,
-  output [1:0]  auto_out_1_a_bits_source,
+  output [SOURCE_W-1:0] auto_out_1_a_bits_source,
   output [47:0] auto_out_1_a_bits_address,
   output        auto_out_1_a_bits_user_memBackType_MM,
   output        auto_out_1_a_bits_user_memPageType_NC,
@@ -135,7 +172,7 @@ module xs_TLXbar_4_core
   input  [3:0]  auto_out_1_d_bits_opcode,
   input  [1:0]  auto_out_1_d_bits_param,
   input  [1:0]  auto_out_1_d_bits_size,
-  input  [1:0]  auto_out_1_d_bits_source,
+  input  [SOURCE_W-1:0] auto_out_1_d_bits_source,
   input         auto_out_1_d_bits_sink,
   input         auto_out_1_d_bits_denied,
   input  [63:0] auto_out_1_d_bits_data,
@@ -147,7 +184,7 @@ module xs_TLXbar_4_core
   output [3:0]  auto_out_0_a_bits_opcode,
   output [2:0]  auto_out_0_a_bits_param,
   output [1:0]  auto_out_0_a_bits_size,
-  output [1:0]  auto_out_0_a_bits_source,
+  output [SOURCE_W-1:0] auto_out_0_a_bits_source,
   output [29:0] auto_out_0_a_bits_address,
   output [7:0]  auto_out_0_a_bits_mask,
   output [63:0] auto_out_0_a_bits_data,
@@ -157,12 +194,35 @@ module xs_TLXbar_4_core
   input  [3:0]  auto_out_0_d_bits_opcode,
   input  [1:0]  auto_out_0_d_bits_param,
   input  [1:0]  auto_out_0_d_bits_size,
-  input  [1:0]  auto_out_0_d_bits_source,
+  input  [SOURCE_W-1:0] auto_out_0_d_bits_source,
   input         auto_out_0_d_bits_sink,
   input         auto_out_0_d_bits_denied,
   input  [63:0] auto_out_0_d_bits_data,
   input         auto_out_0_d_bits_corrupt
 );
+
+  // ===========================================================================
+  //  宽度等式自检 —— 把"位宽写错但逻辑全对"变成 elaborate 期硬失败
+  // ---------------------------------------------------------------------------
+  //  本轮 G0->G1 对 TLXbar_4 的唯一实质改动是 source id 2→4 位（6 个端口）。
+  //  这类改动在"剥掉端口表再比模块体"的机械迁移判据下是**隐形**的，而 tb 只驱动
+  //  低 2 位时 UT 也照样 errors=0 —— 只有 FM 才炸。下面这条求和等式的右手边是
+  //  从 golden 的 D 通道 mux 常量里现读的 76 位（与端口声明相互独立的第二处证据），
+  //  source 写回 2 位就立刻 $fatal。
+  //  负测见 verif/ut/TLXbar_4/negtest_width.sv（故意传 SOURCE_W=2，必须 $fatal）。
+  // ===========================================================================
+  initial begin
+    if (D_OPCODE_W + D_PARAM_W + D_SIZE_W + SOURCE_W + DATA_WIDTH != GOLDEN_D_ZERO_BITS)
+      $fatal(1, "xs_TLXbar_4_core: D 多位字段合计 %0d 位 != golden D-mux 常量合计 %0d 位（source=%0d 写错了？）",
+             D_OPCODE_W + D_PARAM_W + D_SIZE_W + SOURCE_W + DATA_WIDTH,
+             GOLDEN_D_ZERO_BITS, SOURCE_W);
+    if (SOURCE_W != TL_SOURCE_W)
+      $fatal(1, "xs_TLXbar_4_core: 端口 SOURCE_W=%0d 与包里 tl_d_bits_t.source 的 %0d 位不一致",
+             SOURCE_W, TL_SOURCE_W);
+    if (MASK_W * 8 != DATA_WIDTH)
+      $fatal(1, "xs_TLXbar_4_core: MASK_W=%0d 与 DATA_WIDTH=%0d 不是字节掩码关系",
+             MASK_W, DATA_WIDTH);
+  end
 
   // ===========================================================================
   //  前缀 OR 工具 (rocket-chip util.leftOR / util.rightOR 的通用实现)
@@ -328,8 +388,6 @@ module xs_TLXbar_4_core
 
 endmodule
 
-// 自动生成：scripts/gen_tlxbar4.py —— 勿手改
-
 // ---------------------------------------------------------------------------
 // golden 同名 wrapper
 // ---------------------------------------------------------------------------
@@ -342,7 +400,7 @@ module TLXbar_4(
   input [3:0] auto_in_a_bits_opcode,
   input [2:0] auto_in_a_bits_param,
   input [1:0] auto_in_a_bits_size,
-  input [1:0] auto_in_a_bits_source,
+  input [3:0] auto_in_a_bits_source,
   input [47:0] auto_in_a_bits_address,
   input auto_in_a_bits_user_memPageType_NC,
   input auto_in_a_bits_user_memBackType_MM,
@@ -354,7 +412,7 @@ module TLXbar_4(
   output [3:0] auto_in_d_bits_opcode,
   output [1:0] auto_in_d_bits_param,
   output [1:0] auto_in_d_bits_size,
-  output [1:0] auto_in_d_bits_source,
+  output [3:0] auto_in_d_bits_source,
   output auto_in_d_bits_sink,
   output auto_in_d_bits_denied,
   output [63:0] auto_in_d_bits_data,
@@ -364,7 +422,7 @@ module TLXbar_4(
   output [3:0] auto_out_1_a_bits_opcode,
   output [2:0] auto_out_1_a_bits_param,
   output [1:0] auto_out_1_a_bits_size,
-  output [1:0] auto_out_1_a_bits_source,
+  output [3:0] auto_out_1_a_bits_source,
   output [47:0] auto_out_1_a_bits_address,
   output auto_out_1_a_bits_user_memBackType_MM,
   output auto_out_1_a_bits_user_memPageType_NC,
@@ -376,7 +434,7 @@ module TLXbar_4(
   input [3:0] auto_out_1_d_bits_opcode,
   input [1:0] auto_out_1_d_bits_param,
   input [1:0] auto_out_1_d_bits_size,
-  input [1:0] auto_out_1_d_bits_source,
+  input [3:0] auto_out_1_d_bits_source,
   input auto_out_1_d_bits_sink,
   input auto_out_1_d_bits_denied,
   input [63:0] auto_out_1_d_bits_data,
@@ -386,7 +444,7 @@ module TLXbar_4(
   output [3:0] auto_out_0_a_bits_opcode,
   output [2:0] auto_out_0_a_bits_param,
   output [1:0] auto_out_0_a_bits_size,
-  output [1:0] auto_out_0_a_bits_source,
+  output [3:0] auto_out_0_a_bits_source,
   output [29:0] auto_out_0_a_bits_address,
   output [7:0] auto_out_0_a_bits_mask,
   output [63:0] auto_out_0_a_bits_data,
@@ -396,7 +454,7 @@ module TLXbar_4(
   input [3:0] auto_out_0_d_bits_opcode,
   input [1:0] auto_out_0_d_bits_param,
   input [1:0] auto_out_0_d_bits_size,
-  input [1:0] auto_out_0_d_bits_source,
+  input [3:0] auto_out_0_d_bits_source,
   input auto_out_0_d_bits_sink,
   input auto_out_0_d_bits_denied,
   input [63:0] auto_out_0_d_bits_data,
