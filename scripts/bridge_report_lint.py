@@ -318,6 +318,14 @@ def lint_file(path, repos, default_repo, run_counts=True,
             # 纯十进制的数字不当 commit（表格里的计数）
             if tok.isdigit():
                 continue
+            # ★ sha256 语境不当 commit ★（2026-09-13 实测误报 7 例）
+            # 形态一：`<hex>  <文件名>` —— sha256sum 的标准输出格式
+            if re.match(r'^\s*' + re.escape(tok) + r'\s\s+\S+\s*$', line):
+                continue
+            # 形态二：同一行里出现 sha256/sha-256/hash 字样（例如
+            #   "内核日志原文（`x.txt`，sha256 前 16 位 `44322654683538eb`）"）
+            if re.search(r'sha-?256|sha1|artifact hash|内容 ?hash', line, re.I):
+                continue
             if not repos:
                 continue
             where = {}
