@@ -127,11 +127,16 @@ NORM_TSV = """# 台账归一化
 Leaf_3\tMAIN\tWORKING_PASS\tfixture
 """
 
+# g0_fp/g1_fp 是**写死的**指纹短哈希，刻意不在测试里现算：现算等于用被测实现
+# 验被测实现，C6 的指纹定义一改测试也跟着改，永远绿。写死则任何对
+# g1_slotmap.fingerprint() 的改动都会让这里先红一次，逼人确认那是不是有意的。
+# 重生方式： scripts/check_universe_freeze.py --repo <夹具> --g0 ... --g1 ... \
+#            --emit-evidence <file>
 EVIDENCE_TSV = """# 槽位判据重算证据
-# old_target\tg1_name\tcriterion\tg0_ports\tg1_ports\tg0_slots\tg1_slots\tnote
-Leaf_1\tLeaf_2\tsite\t2\t2\tTop.a\tTop.a\t
-Leaf_2\tLeaf_3\tsite\t3\t3\tTop.b\tTop.b\t
-Top\t-\tUNRESOLVED\t2\t-\t(无例化点)\t-\t顶层, 两侧都没有例化点, 槽位判据不给答案
+# old_target\tg1_name\tcriterion\tg0_ports\tg1_ports\tg0_slots\tg1_slots\tnote\tg0_fp\tg1_fp
+Leaf_1\tLeaf_2\tsite\t2\t2\tTop.a\tTop.a\t\tf972d9efbb046b32\tf972d9efbb046b32
+Leaf_2\tLeaf_3\tsite\t3\t3\tTop.b\tTop.b\t\t14ffcb70acf58aff\t14ffcb70acf58aff
+Top\t-\tUNRESOLVED\t2\t-\t(无例化点)\t-\t顶层, 两侧都没有例化点, 槽位判据不给答案\t4aa0d2b36e0f4f28\t-
 """
 
 RTL_FILES = {
@@ -261,13 +266,13 @@ class TestCleanFixture(Base):
         r = self.run_check()
         self.assertEqual(r.rc, 0, '干净夹具没过:\n%s\n%s' % (r.out, r.err))
         self.assertIn('FREEZE OK', r.out)
-        for c in ('C1', 'C2', 'C3', 'C4', 'C5'):
+        for c in ('C1', 'C2', 'C3', 'C4', 'C5', 'C6'):
             self.assertEqual(r.verdict(c), 'PASS', '%s 在干净夹具上不是 PASS' % c)
 
     def test_01_each_check_individually_passes_when_clean(self):
         """每条 --only 单独跑也必须 PASS——这是后面每条负测「夹具确实走到了
         被测判据」的对照组：同一条 --only，干净=PASS / 变异=FAIL。"""
-        for c in ('C1', 'C2', 'C3', 'C4', 'C5'):
+        for c in ('C1', 'C2', 'C3', 'C4', 'C5', 'C6'):
             r = self.run_check('--only', c)
             self.assertEqual(r.verdict(c), 'PASS',
                              '%s 单跑干净夹具不是 PASS:\n%s' % (c, r.out))
@@ -411,7 +416,7 @@ class TestSlotConsistent(Base):
     def test_unresolved_row_without_documented_reason_is_fail_closed(self):
         """★沉默不等于通过★：槽位判不准的行，证据表里没登记留白理由就必须 FAIL。"""
         self.sub('g1_slot_map_evidence.tsv',
-                 'Top\t-\tUNRESOLVED\t2\t-\t(无例化点)\t-\t顶层, 两侧都没有例化点, 槽位判据不给答案\n', '')
+                 'Top\t-\tUNRESOLVED\t2\t-\t(无例化点)\t-\t顶层, 两侧都没有例化点, 槽位判据不给答案\t4aa0d2b36e0f4f28\t-\n', '')
         r = self.run_check('--only', 'C5')
         self.assert_caught(r, 'C5', '证据表里没有登记留白理由')
 
@@ -474,6 +479,76 @@ class TestFailClosed(Base):
         (self.root / 'g1' / 'Dup.sv').write_text(
             'module Leaf_3(\n  input clock\n);\nendmodule\n')
         self._expect_rc2(self.run_check(), '同名模块出现多次')
+
+
+# ====================================================================
+# C6 FINGERPRINT_BOUND —— 映射必须绑定指纹，禁止仅凭名字或端口总数
+# ====================================================================
+class TestFingerprintBound(Base):
+    """每条都先确认干净夹具下 `--only C6` 是 PASS（见 TestCleanFixture.test_01），
+    再验变异后恰好 C6 FAIL 且原因含预期关键字 —— 一失一得成对，证明夹具确实
+    走到了 C6 而不是被前置门挡掉。"""
+
+    def test_evidence_row_without_fingerprint_columns(self):
+        """证据表少了 g0_fp/g1_fp 两列 = 映射没绑定指纹 → fail-closed。"""
+        self.sub('g1_slot_map_evidence.tsv',
+                 'Top.a	Top.a		f972d9efbb046b32	f972d9efbb046b32',
+                 'Top.a	Top.a	')
+        r = self.run_check('--only', 'C6')
+        self.assert_caught(r, 'C6', '缺 g0_fp/g1_fp 指纹绑定列')
+
+    def test_fingerprint_drifted_from_recomputation(self):
+        """证据表里的指纹跟实际对不上（证据表跟着台账漂）→ FAIL。"""
+        self.sub('g1_slot_map_evidence.tsv',
+                 'f972d9efbb046b32	f972d9efbb046b32',
+                 'f972d9efbb046b32	deadbeefdeadbeef')
+        r = self.run_check('--only', 'C6')
+        self.assert_caught(r, 'C6', '记指纹')
+
+    def test_port_count_is_not_an_identity_criterion(self):
+        """★D58 C6 的正题★：criterion 写"端口数相等"之类一律不认。"""
+        self.sub('g1_slot_map_evidence.tsv', 'Leaf_1	Leaf_2	site', 'Leaf_1	Leaf_2	port_count')
+        r = self.run_check('--only', 'C6')
+        self.assert_caught(r, 'C6', '端口数相等之类不构成身份证据')
+
+    def test_receipt_of_another_module_is_caught(self):
+        """★串位事故的直接形态★：名字改对了，note 里挂的还是老名那份 receipt。
+        SyncDataModuleTemplate__64entry_4 → _5 一行如果继承 _4 的 receipt，
+        就是拿"证明了 _4"去冒充"证明了 _5"。"""
+        self.sub('g1_universe.tsv', 'Leaf_2	Leaf_3	slot_map	REWRITE_S	WORKING_PASS	',
+                 'Leaf_2	Leaf_3	slot_map	REWRITE_S	REVALIDATED_PASS	'
+                 'receipt evidence/abc123def456/Leaf_2/receipt.json @abc123def456')
+        r = self.run_check('--only', 'C6')
+        self.assert_caught(r, 'C6', 'receipt 串位')
+
+    def test_receipt_of_the_right_module_is_not_a_false_positive(self):
+        """对照组：note 里的 receipt 就是本行 g1_name 的，必须放行。
+        没有这一条，上一条可能只是"凡有 receipt 字样就报错"。"""
+        self.sub('g1_universe.tsv', 'Leaf_2	Leaf_3	slot_map	REWRITE_S	WORKING_PASS	',
+                 'Leaf_2	Leaf_3	slot_map	REWRITE_S	REVALIDATED_PASS	'
+                 'receipt evidence/abc123def456/Leaf_3/receipt.json @abc123def456')
+        r = self.run_check('--only', 'C6')
+        self.assertEqual(r.verdict('C6'), 'PASS',
+                         'receipt 指向本行 g1_name 却被报错（假阳性）:\n%s' % r.out)
+        self.assertEqual(r.rc, 0)
+
+    def test_name_only_mapping_with_differing_fingerprint(self):
+        """★禁止仅凭名字★：same-name 映射 + 槽位判据沉默 + 两侧指纹不同，
+        且证据表里没写留白理由（还挂着 TODO）→ 这行的全部依据就是"名字一样"。
+
+        夹具做法：给 G1 的 Top 加一个端口（两侧指纹在 ports 维不同），
+        并把 Top 那行证据的 note 退回 TODO。Top 在两侧都没有例化点，
+        槽位判据本来就沉默 —— 于是 C5 仍然 PASS（留白登记在案），
+        只有 C6 该报。这正好证明 C6 抓的是 C5 抓不到的那一类。
+        """
+        p = self.root / 'g1' / 'Top.sv'
+        p.write_text(p.read_text().replace(
+            '  input  reset\n', '  input  reset,\n  input  extra\n'))
+        self.sub('g1_slot_map_evidence.tsv',
+                 '顶层, 两侧都没有例化点, 槽位判据不给答案', 'TODO 填留白理由')
+        r = self.run_check()
+        self.assert_caught(r, 'C6', '唯一依据是"名字一样"', others_ok=('C5',))
+
 
 
 # ====================================================================

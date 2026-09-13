@@ -1,16 +1,13 @@
-# old306 → G1 守恒映射（same_name / manual_renumber / auto_renumber / removed_in_g1 / no_g0_file）
-# ★★ 本文件含 18 处「槽位判据」人工改判（resolve/disposition = slot_map），
-# ★★ 依据逐条在 docs/g1_slot_map_evidence.tsv，由 scripts/check_universe_freeze.py C5 重算校验。
-# ★★ 生成器 scripts/g1_universe.py 与 scripts/g1_configured_universe.py 的 resolve() 是
-# ★★ 「同名优先」（`if t in files: same_name` 排在 manual/renumber 之前），跑一遍会把这 18 处
-# ★★ 全部改回错的。重跑生成器前必须先给它们接上槽位判据，跑完必须跑一次
-# ★★ `python3 scripts/check_universe_freeze.py`（应为 FREEZE OK）。
+# old306 → G1 守恒映射（scripts/g1_configured_universe.py 生成；禁止手工编辑）
+# disposition: same_name / slot_map / manual_renumber / auto_renumber /
+#              removed_in_g1 / no_g0_file —— 决定权始终在**槽位判据**，
+#              标签只说明还有谁独立佐证了同一个答案。
 # old_target	g1_name	disposition	in_universe
 AXI4Deinterleaver	AXI4Deinterleaver	same_name	yes
 AXI4IdIndexer	AXI4IdIndexer	same_name	yes
 AXI4IdIndexer_1	AXI4IdIndexer_1	same_name	yes
 AXI4Xbar	AXI4Xbar	same_name	yes
-AXI4Xbar_1	AXI4Xbar_6	slot_map	yes
+AXI4Xbar_1	AXI4Xbar_6	slot_map	no
 Alu	Alu	same_name	yes
 Backend	Backend	same_name	yes
 BankedDataArray	BankedDataArray	same_name	yes
@@ -32,7 +29,7 @@ Decoupled2LCredit	Decoupled2LCredit	same_name	yes
 Decoupled2LCredit_1	Decoupled2LCredit_1	same_name	yes
 Decoupled2LCredit_2	Decoupled2LCredit_2	same_name	yes
 Decoupled2LCredit_5	Decoupled2LCredit_5	same_name	yes
-DelayReg	DelayReg	same_name	yes
+DelayReg	DelayReg	same_name	no
 Directory	Directory	same_name	yes
 DivUnit	DivUnit	same_name	yes
 DuplicatedTagArray	DuplicatedTagArray	same_name	yes
@@ -51,7 +48,7 @@ FTB	FTB	same_name	yes
 FTBBank	FTBBank	same_name	yes
 FTBEntryGen	FTBEntryGen	same_name	yes
 FastArbiter_27	FastArbiter_26	slot_map	yes
-FastArbiter_30	FastArbiter_29	slot_map	yes
+FastArbiter_30	FastArbiter_29	auto_renumber	yes
 FastArbiter_31	FastArbiter_30	auto_renumber	yes
 FastArbiter_36	FastArbiter_35	auto_renumber	yes
 FastArbiter_44	FastArbiter_43	slot_map	yes

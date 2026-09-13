@@ -83,124 +83,16 @@ PASSISH = ('WORKING_PASS', 'WORKING_PASS_DEAD_REF', 'WORKING_MERGED_PASS',
            'REVALIDATED_PASS', 'REVALIDATED_PASS_DEAD_REF')
 
 
-class InputError(Exception):
-    """fail-closed：读不到 / 解析不了的东西一律抛出，不猜、不跳过。"""
+# ★身份解析（Baseline / 槽位映射 / 指纹）统一由 scripts/g1_slotmap.py 提供。
+# 在此之前这里有一份、两个生成器各有一份互不相同的实现，生成器那两份"同名优先"，
+# 于是检查器说不一致、生成器重跑又改回去。现在三处 import 同一份，实现上不可能再漂。
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import g1_slotmap as _SM                                          # noqa: E402
 
-
-# ------------------------------------------------------------------ 基线解析
-
-class Baseline(object):
-    """流式扫一遍 golden：模块名 / 端口数 / 例化槽位。不留模块体，内存 O(MB)。"""
-
-    def __init__(self, root, tag):
-        p = pathlib.Path(root)
-        if not p.is_dir():
-            raise InputError('%s golden 目录不存在: %s' % (tag, root))
-        files = sorted(p.glob('*.sv'))
-        if not files:
-            raise InputError('%s: %s 下一个 .sv 都没有' % (tag, root))
-        self.tag = tag
-        self.ports = {}                       # name -> nports
-        self.sites = collections.defaultdict(set)   # type -> {(parent, inst)}
-        self.slot = {}                        # (parent, inst) -> type
-        self.kids = collections.defaultdict(list)   # parent -> [(type, inst)]
-        dups = []
-        for f in files:
-            cur, np_, inhdr = None, 0, False
-            with f.open(errors='replace') as fh:
-                for lineno, ln in enumerate(fh, 1):
-                    if cur is None:
-                        m = _MOD.match(ln)
-                        if m:
-                            cur, np_, inhdr = m.group(1), 0, True
-                        continue
-                    if _END.match(ln):
-                        if cur in self.ports:
-                            dups.append(cur)
-                        self.ports[cur] = np_
-                        cur, inhdr = None, False
-                        continue
-                    if inhdr:
-                        if _HDR_END.match(ln):
-                            inhdr = False
-                        elif _PORT.match(ln):
-                            np_ += 1
-                        continue
-                    im = _INST.match(ln.rstrip('\n'))
-                    if im:
-                        typ, inst = im.group(1), im.group(2)
-                        self.sites[typ].add((cur, inst))
-                        self.slot[(cur, inst)] = typ
-                        self.kids[cur].append((typ, inst))
-            if cur is not None:
-                raise InputError('%s: %s 里 module %s 没有 endmodule（解析器 fail-closed）'
-                                 % (tag, f.name, cur))
-        if not self.ports:
-            raise InputError('%s: 一个模块都没解析出来（解析器坏了？）' % tag)
-        if dups:
-            raise InputError('%s: 同名模块出现多次: %s' % (tag, ' '.join(sorted(set(dups))[:8])))
-
-    def site_key(self, name):
-        s = self.sites.get(name)
-        return tuple(sorted(s)) if s else None
-
-
-def build_slot_map(g0, g1):
-    """G0 模块 -> G1 模块。返回 (map, why)。判不准的**不进 map**。"""
-    by_site = collections.defaultdict(list)
-    for t, s in g1.sites.items():
-        by_site[tuple(sorted(s))].append(t)
-
-    mp, why = {}, {}
-    for n in g0.ports:
-        sk = g0.site_key(n)
-        if not sk:
-            continue
-        hit = sorted(set(by_site.get(sk, [])))
-        if len(hit) == 1:
-            mp[n], why[n] = hit[0], 'site'
-            continue
-        common = [x for x in sk if x in g1.slot]
-        if common:
-            hit = sorted(set(g1.slot[x] for x in common))
-            if len(hit) == 1:
-                mp[n], why[n] = hit[0], 'site_common'
-
-    # 父模块自己也重编号了：把槽位的父先映射过去，再查。迭代到不动点。
-    for _ in range(8):
-        added = 0
-        for n in g0.ports:
-            if n in mp:
-                continue
-            sk = g0.site_key(n)
-            if not sk:
-                continue
-            tgt, ok = set(), True
-            for (par, inst) in sk:
-                par2 = mp.get(par)
-                if par2 is None:
-                    ok = False
-                    break
-                t = g1.slot.get((par2, inst))
-                if t is None:
-                    ok = False
-                    break
-                tgt.add(t)
-            if ok and len(tgt) == 1:
-                mp[n], why[n] = tgt.pop(), 'site_via_parent'
-                added += 1
-        if not added:
-            break
-
-    # 新插入的薄壳：槽位答案 X 只有一个子例化且该子模块与源同名 → 真身仍是同名模块。
-    for n in list(mp):
-        m = mp[n]
-        if m == n:
-            continue
-        k = g1.kids.get(m, [])
-        if len(k) == 1 and k[0][0] == n:
-            mp[n], why[n] = n, 'wrapper_insert'
-    return mp, why
+InputError = _SM.InputError
+Baseline = _SM.Baseline
+build_slot_map = _SM.build_slot_map
+SLOT_CRITERIA = _SM.SLOT_CRITERIA
 
 
 # ------------------------------------------------------------------ 台账解析
@@ -456,11 +348,103 @@ def c5_slot_consistent(uni, ev, slotmap, slotwhy, g0, g1, rep):
                          % (i, old, got))
 
 
+def c6_fingerprint_bound(uni, ev, slotmap, slotwhy, g0, g1, rep):
+    """C6: 每个映射必须绑定 G0/G1 的 module fingerprint；禁止仅凭名字或端口总数。
+
+    ## 为什么端口总数不算证据（codex 0151 D58 C6 的由来）
+
+    SyncDataModuleTemplate__64entry 家族在 G1 里整体后移一位。**正确**映射下
+    两侧端口数逐位相同：
+
+        G0 _1(30) _2(121) _3(106) _4(10)
+        G1 _2(30) _3(121) _4(106) _5(10)
+
+    所以"比端口总数"这道闸在这一族上恒等通过 —— 无论台账写的是对是错。
+    指纹用的是**端口方向/位宽/名字的有序签名 + 参数签名 + 子例化类型多重集 +
+    层次角色**，端口总数刻意不作为分量。
+
+    ## 五条
+
+      R1 G0 侧必须有定义，否则指纹无从绑定。
+      R2 ★仅凭名字★：same-name 映射 + 槽位判据沉默 + 两侧指纹不同
+         → 这行的全部依据就是"名字一样"。必须在证据表里登记 UNRESOLVED + 理由。
+      R3 ★仅凭端口数★：证据表的 criterion 必须是真槽位判据或 UNRESOLVED。
+         写 port_count / ports_equal 之类一律 FAIL。
+      R4 证据表必须记录两侧指纹，且与重算一致（防证据表跟着台账漂）。
+      R5 ★receipt 绑定★：REVALIDATED_*/WORKING_* 行的 note 里引用的 receipt
+         路径段必须等于 g1_name。串位事故的直接形态就是"名字改对了、receipt
+         还是老名那一份"。
+    """
+    evrow = dict((f[0], (i, f)) for i, f in ev)
+    recpt = re.compile(r'evidence/[^/\s]+/([A-Za-z_]\w*)/receipt\.json')
+
+    for i, f in uni:
+        old, g1n, status = f[0], f[1], (f[4] if len(f) > 4 else '')
+        note = f[5] if len(f) > 5 else ''
+        claim = '' if g1n == '-' else g1n
+
+        # R5 —— 与映射本身无关，gone 行也要查
+        m = recpt.search(note)
+        if m and m.group(1) != (claim or '-'):
+            rep.bad('C6', 'g1_universe.tsv:%d %s → %s，但 note 引用的是 %s 的 receipt'
+                          '（%s）★receipt 串位：证明的是另一个模块★'
+                         % (i, old, claim or '(gone)', m.group(1), m.group(0)))
+        if not claim:
+            continue
+
+        if old not in g0.ports:
+            rep.bad('C6', 'g1_universe.tsv:%d %s 在 G0 golden 里没有定义，'
+                          '指纹无从绑定（fail-closed）' % (i, old))
+            continue
+        fp0, fp1 = g0.fp_parts(old), g1.fp_parts(claim)
+        if fp1 is None:
+            continue                       # G1 侧不存在 —— C4 会报，这里不重复
+        slot_ok = slotmap.get(old) == claim
+
+        # R2 仅凭名字
+        if not slot_ok and old == claim and fp0 != fp1:
+            e = evrow.get(old)
+            reg = (e is not None and e[1][2] == 'UNRESOLVED'
+                   and len(e[1]) > 7 and e[1][7].strip()
+                   and not e[1][7].strip().startswith('TODO'))
+            if not reg:
+                diff = [k for k in ('ports', 'params', 'children', 'role')
+                        if fp0[k] != fp1[k]]
+                rep.bad('C6', 'g1_universe.tsv:%d %s → %s 的唯一依据是"名字一样"：'
+                              '槽位判据沉默，两侧指纹在 %s 上不同（G0 %s / G1 %s），'
+                              '证据表里也没有登记留白理由 → fail-closed'
+                             % (i, old, claim, '/'.join(diff),
+                                fp0['ports'], fp1['ports']))
+
+    # R3 / R4 —— 证据表自身
+    for old, (i, f) in sorted(evrow.items()):
+        crit = f[2]
+        if crit not in SLOT_CRITERIA and crit != 'UNRESOLVED':
+            rep.bad('C6', '证据表:%d %s 的 criterion=%r 既不是槽位判据 %s 也不是 '
+                          'UNRESOLVED —— 端口数相等之类不构成身份证据'
+                         % (i, old, crit, list(SLOT_CRITERIA)))
+            continue
+        if len(f) < 10:
+            rep.bad('C6', '证据表:%d %s 只有 %d 列，缺 g0_fp/g1_fp 指纹绑定列'
+                          '（须 10 列；用 --emit-evidence 重生）' % (i, old, len(f)))
+            continue
+        want0 = g0.fp_hash(old) or '-'
+        want1 = g1.fp_hash(f[1]) if f[1] != '-' else '-'
+        want1 = want1 or '-'
+        if f[8] != want0 or f[9] != want1:
+            rep.bad('C6', '证据表:%d %s 记指纹 (%s, %s)，重算是 (%s, %s) → 证据表已失效'
+                         % (i, old, f[8], f[9], want0, want1))
+
+
 # ------------------------------------------------------------------ main
 
-EV_HDR = ('# 槽位判据重算证据（check_universe_freeze.py --emit-evidence 生成；note 列人工补）\n'
-          '# 只收录「槽位答案 != 同名」与「判不准」两类行；其余 274 行同名同槽位，无话可说。\n'
-          '# old_target\tg1_name\tcriterion\tg0_ports\tg1_ports\tg0_slots\tg1_slots\tnote')
+EV_HDR = ('# 槽位判据重算证据（check_universe_freeze.py --emit-evidence 生成；note 列人工补，重生时保留）\n'
+          '# 只收录「槽位答案 != 同名」与「判不准」两类行；其余同名同槽位的行无话可说。\n'
+          '# g0_fp/g1_fp = 模块指纹短哈希（端口方向/位宽/名字有序签名 + 参数签名 +\n'
+          '#   子例化类型多重集 + 层次角色）。★端口总数不是指纹分量★——同一个 Chisel 类的\n'
+          '#   两次例化端口表天生相同，端口数相等不构成身份证据（codex 0151 D58 C6）。\n'
+          '# old_target\tg1_name\tcriterion\tg0_ports\tg1_ports\tg0_slots\tg1_slots\tnote'
+          '\tg0_fp\tg1_fp')
 
 
 def fmt_sites(base, name):
@@ -468,12 +452,13 @@ def fmt_sites(base, name):
     return ';'.join('%s.%s' % t for t in sorted(s)) if s else '(无例化点)'
 
 
-CHECKS = ('C1', 'C2', 'C3', 'C4', 'C5')
+CHECKS = ('C1', 'C2', 'C3', 'C4', 'C5', 'C6')
 TITLES = {'C1': 'OWNER_UNIQUE   target/G1 owner 唯一',
           'C2': 'CONSERVATION   全集守恒（无法归类的残余 = FAIL）',
           'C3': 'NO_DUPLICATE   零重复',
           'C4': 'NO_DANGLING    零悬挂',
-          'C5': 'SLOT_CONSISTENT 槽位判据重算一致'}
+          'C5': 'SLOT_CONSISTENT 槽位判据重算一致',
+          'C6': 'FINGERPRINT_BOUND 映射绑定 G0/G1 指纹'}
 
 
 def main(argv=None):
@@ -484,7 +469,10 @@ def main(argv=None):
     ap.add_argument('--g0', default=G0_DEFAULT)
     ap.add_argument('--g1', default=G1_DEFAULT)
     ap.add_argument('--no-slots', action='store_true',
-                    help='跳过 C5（不读 G0/G1 golden，只查台账自洽）')
+                    help='跳过 C5/C6（不读 G0/G1 golden，只查台账自洽）')
+    ap.add_argument('--no-include-v', action='store_true',
+                    help='只扫 .sv。默认连 .v 一起扫（codex 0151 D59：'
+                         'PrintCommitIDModule.v 是真实设计定义，漏扫会让它凭空消失）')
     ap.add_argument('--only', action='append', choices=CHECKS,
                     help='只跑指定的检查（可重复）')
     ap.add_argument('--emit-evidence', metavar='FILE',
@@ -495,18 +483,32 @@ def main(argv=None):
     want = set(args.only) if args.only else set(CHECKS)
     if args.no_slots:
         want.discard('C5')
+        want.discard('C6')
     repo = pathlib.Path(args.repo)
+    incv = not args.no_include_v
     d = repo / 'docs'
     rep = Report()
 
     if args.emit_evidence:
         try:
             uni0 = read_tsv(d / 'g1_universe.tsv', 5, 'g1_universe.tsv')
-            g0b, g1b = Baseline(args.g0, 'G0'), Baseline(args.g1, 'G1')
+            g0b = Baseline(args.g0, 'G0', include_v=incv)
+            g1b = Baseline(args.g1, 'G1', include_v=incv)
         except InputError as e:
             sys.stderr.write('INPUT/PARSE ERROR (fail-closed): %s\n' % e)
             return 2
         mp, wy = build_slot_map(g0b, g1b)
+        # ★重生必须保留人工写的 note★：证据表里最有价值的就是那几条"为什么留白"
+        # 的人工判断，重生把它冲掉等于每次重跑都得重新人工填一遍。
+        keep = {}
+        oldev = d / 'g1_slot_map_evidence.tsv'
+        if oldev.exists():
+            for ln in oldev.read_text().splitlines():
+                if ln.startswith('#') or not ln.strip():
+                    continue
+                c = ln.split('\t')
+                if len(c) > 7 and c[7].strip():
+                    keep[c[0]] = c[7]
         lines = [EV_HDR]
         for _, f in uni0:
             old = f[0]
@@ -516,12 +518,17 @@ def main(argv=None):
             if got is None:
                 lines.append('\t'.join([old, '-', 'UNRESOLVED',
                                         str(g0b.ports.get(old, '-')), '-',
-                                        fmt_sites(g0b, old), '-', 'TODO 填留白理由']))
+                                        fmt_sites(g0b, old), '-',
+                                        keep.get(old, 'TODO 填留白理由'),
+                                        g0b.fp_hash(old) or '-', '-']))
             else:
                 lines.append('\t'.join([old, got, wy[old],
                                         str(g0b.ports.get(old, '-')),
                                         str(g1b.ports.get(got, '-')),
-                                        fmt_sites(g0b, old), fmt_sites(g1b, got), '']))
+                                        fmt_sites(g0b, old), fmt_sites(g1b, got),
+                                        keep.get(old, ''),
+                                        g0b.fp_hash(old) or '-',
+                                        g1b.fp_hash(got) or '-']))
         pathlib.Path(args.emit_evidence).write_text('\n'.join(lines) + '\n')
         sys.stderr.write('# 写出 %d 行证据 -> %s\n' % (len(lines) - 2, args.emit_evidence))
         return 0
@@ -532,11 +539,11 @@ def main(argv=None):
         cfg = read_tsv(d / 'g1_configured_universe.tsv', 3, 'g1_configured_universe.tsv')
         norm = read_tsv(d / 'ledger_normalized.tsv', 3, 'ledger_normalized.tsv')
         impl = rtl_modules(repo)
-        g1 = Baseline(args.g1, 'G1')
+        g1 = Baseline(args.g1, 'G1', include_v=incv)
         g1mods = set(g1.ports)
         g0 = slotmap = slotwhy = ev = None
-        if 'C5' in want:
-            g0 = Baseline(args.g0, 'G0')
+        if 'C5' in want or 'C6' in want:
+            g0 = Baseline(args.g0, 'G0', include_v=incv)
             slotmap, slotwhy = build_slot_map(g0, g1)
             ev = read_tsv(d / 'g1_slot_map_evidence.tsv', 3, 'g1_slot_map_evidence.tsv')
     except InputError as e:
@@ -553,6 +560,8 @@ def main(argv=None):
         c2_conservation(uni, cfg, norm, g1mods, impl, rep)
     if 'C5' in want:
         c5_slot_consistent(uni, ev, slotmap, slotwhy, g0, g1, rep)
+    if 'C6' in want:
+        c6_fingerprint_bound(uni, ev, slotmap, slotwhy, g0, g1, rep)
 
     print('# check_universe_freeze  repo=%s' % repo)
     print('# g1_universe.tsv %d 行, old_to_new %d 行, configured_universe %d 行, '
