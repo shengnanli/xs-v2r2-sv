@@ -45,7 +45,10 @@ def main() -> int:
     for fname, text in texts.items():
         for pat, new in patterns:
             text = pat.sub(new, text)
-        (out_dir / fname).write_text(text)
+        # 幂等写入：内容不变就不动文件，避免每次 derive 都让 simv 判过期重链。
+        dst = out_dir / fname
+        if not dst.exists() or dst.read_text() != text:
+            dst.write_text(text)
 
     for old, new in sorted(renames.items()):
         print(f'derive_ut_impl: {old} -> {new}')

@@ -73,6 +73,15 @@ else
 	  exit 1; }
 endif
 
+# ★ derive 必须每次都跑，不能靠 mtime 判新旧 ★
+# 教训（2026-09-12，两位 owner 各自独立踩到）：原规则是 `derive $(UT_SRCS): $(RTL_SRCS)`，
+# 而 simv 依赖真实文件 $(UT_SRCS)。git checkout / git stash pop / 从备份还原都会让
+# RTL 源文件 mtime **倒退**，make 于是认为 ut_gen/ 更新、跳过派生 ——
+# **UT 就在一份不再对应源码的副本上报 errors=0**。
+# 实测：全仓 213 份派生文件里 28 份与源码不一致，其中 4 份有实质（非注释）差异，
+# 包括被 41 个变体共用的 xs_SRAMTemplate_core.sv（138 行）。
+# 修法：derive 改为 simv 的 order-only 前置（每次必跑），配合 derive_ut_impl.py
+# 的幂等写入（内容不变不碰文件），既杜绝陈旧又不会每次重链。
 derive $(UT_SRCS): $(RTL_SRCS) $(XSSV_HOME)/scripts/derive_ut_impl.py
 	python3 $(XSSV_HOME)/scripts/derive_ut_impl.py --out $(UT_GEN_DIR) $(RTL_SRCS)
 
@@ -81,7 +90,7 @@ compile: simv
 # order-only 依赖：portlint 在 simv 的配方之前**总是**跑（含 -j 并行），但不会因为
 # 它是 .PHONY 就把 simv 判成过期而反复重新链接。`make compile` / `make run` 都会
 # 经过这道闸。
-simv: $(UT_SRCS) $(TB_SRCS) $(GOLDEN_SRCS) $(RTL_GOLDEN_DEPS) | portlint
+simv: $(UT_SRCS) $(TB_SRCS) $(GOLDEN_SRCS) $(RTL_GOLDEN_DEPS) | portlint derive
 	$(VCS) $(UT_SRCS) $(RTL_GOLDEN_DEPS) $(GOLDEN_SRCS) $(TB_SRCS) -top tb -o simv
 
 run: simv
