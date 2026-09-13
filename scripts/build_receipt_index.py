@@ -59,7 +59,12 @@ def main():
         if k in bykey and bykey[k] != sig:
             conflicts.append(f'{t}@{rec["impl_commit"][:12]}')
         bykey[k] = sig
-        # 跨 commit 取最新
+        # 跨 commit 取最新。
+        # ⚠ 已知局限（2026-09-12 诊断）：钉住 PROOF_COMMIT 的批跑里，若有人在更新的
+        # commit 上重跑了某个 child 且该 commit 动过它的源文件，会**伪失效**所有钉住的
+        # 父目标——哪怕 evidence/ 里就躺着一份与钉住 commit 字节相符的 receipt。
+        # 正解是选择时优先 impl_commit == parent_commit；需要把 parent 传进来，
+        # 属接口变更，留给 reviewer 裁定后再做。当前先记录。
         if t in rows:
             if commit_time(rec['impl_commit']) >= commit_time(rows[t]['impl_commit']):
                 superseded += 1

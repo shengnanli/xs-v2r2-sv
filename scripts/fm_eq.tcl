@@ -119,11 +119,25 @@ switch -- $_mergedup {
 
 # Reference: Chisel 生成的 golden RTL（SYNTHESIS 关掉随机初始化 initial 块）
 read_sverilog -r -define {SYNTHESIS} $ref_srcs
-set_top r:/WORK/$top
+# ★ fail-closed：set_top 失败必须立刻终止 ★
+# 教训：SourceB 的 set_top 因子模块端口不符失败（FM-156），脚本不检查返回值
+# 继续往下跑，报告变成"reference-only"，最终由 bbox_parse 报出
+#   "FM-184 出现 0 次（须恰 1）" —— 距离真实错误约 800 行，几乎不可读。
+if {[catch {set_top r:/WORK/$top} _m]} {
+    puts "FM_ELAB_ERROR: set_top ref (r:/WORK/$top) 失败: $_m"
+    exit 3
+}
 
 # Implementation: 手写 SV
 read_sverilog -i -define {SYNTHESIS} $impl_srcs
-set_top i:/WORK/$top
+# ★ fail-closed：set_top 失败必须立刻终止 ★
+# 教训：SourceB 的 set_top 因子模块端口不符失败（FM-156），脚本不检查返回值
+# 继续往下跑，报告变成"reference-only"，最终由 bbox_parse 报出
+#   "FM-184 出现 0 次（须恰 1）" —— 距离真实错误约 800 行，几乎不可读。
+if {[catch {set_top i:/WORK/$top} _m]} {
+    puts "FM_ELAB_ERROR: set_top impl (i:/WORK/$top) 失败: $_m"
+    exit 3
+}
 
 # ----------------------------------------------------------------------------
 # 字段映射配对（在首次 match 之前全量钉死）：当手写核心把整个 payload 打包进一个
