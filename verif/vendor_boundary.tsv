@@ -5,24 +5,67 @@
 # 审定依据：这些是 SRAM 编译器产出的行为级叶子（.v），golden 与 impl 两侧读**同一份文件**，
 # 不含被重写的设计逻辑；其外层（sram_array_* 包装与 array_N）在本工程里两侧同源 elaborate，
 # 是真受验的，不在本表。
-# design_pattern	kind	rationale
-array_ext	vendor_sram_leaf	SRAM 编译器行为模型叶子，两侧同源 .v，FM 不读其内部
-array_0_ext	vendor_sram_leaf	同上
-array_1_ext	vendor_sram_leaf	同上
-array_2_ext	vendor_sram_leaf	同上
-array_3_ext	vendor_sram_leaf	同上
-array_4_ext	vendor_sram_leaf	同上
-array_5_ext	vendor_sram_leaf	同上
-array_6_ext	vendor_sram_leaf	同上
-array_7_ext	vendor_sram_leaf	同上
-array_8_ext	vendor_sram_leaf	同上
-array_9_ext	vendor_sram_leaf	同上
-array_10_ext	vendor_sram_leaf	同上
-array_11_ext	vendor_sram_leaf	同上
-array_12_ext	vendor_sram_leaf	同上
-array_13_ext	vendor_sram_leaf	同上
-array_14_ext	vendor_sram_leaf	同上
-array_15_ext	vendor_sram_leaf	同上
-array_16_ext	vendor_sram_leaf	同上
-array_17_ext	vendor_sram_leaf	同上
-array_18_ext	vendor_sram_leaf	同上
+#
+# ---------------------------------------------------------------------------
+# schema v2（codex 0151 D60：registry 必须补端口/参数签名与 body/hash 规则；
+#            旁证文件 verif/allow_gen/a1_vendor_evidence.tsv 不得永久替代本冻结权威表）
+#
+# 列（**追加在 rationale 之后**，前三列位置不变，故 declare_allow.py / gen_expected.py /
+# coverage_three_axis.py 三个既有位置式解析器无需改动）：
+#   1 design_pattern       黑盒 design 名（FM 两侧观测到的模块类型名）
+#   2 kind                 边界类别
+#   3 rationale            审定理由
+#   4 leaf_file            厂商行为模型文件名（相对 $(GOLDEN_RTL)）
+#   5 leaf_sha256          该文件全文 sha256（**body 规则的锚点**）
+#   6 port_count           端口个数
+#   7 port_signature       端口签名：模块头端口列表按源序规范化后以 ';' 连接
+#   8 port_sig_sha256_16   port_signature 的 sha256 前 16 位（便于快速比对）
+#   9 param_signature      参数签名；'none' = 该模块无 parameter（本表 20 条全为 none）
+#  10 body_rule            body/hash 规则，见下
+#
+# body_rule = fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
+#   语义（与 scripts/fm_eq.tcl 的 `hdlin_unresolved_modules black_box` 一致）：
+#     * FM 两侧都**不** read_sverilog 该 .v，故两侧都是未解析黑盒 —— 这正是"厂商宏无条件绿"
+#       的前提：被声明的是**边界**，不是被证明的逻辑；
+#     * 该 .v 只进 VCS 的 GOLDEN_SRCS（行为仿真需要），不进任何一侧的 FM 文件集；
+#     * body 不参与证明，故其正确性**不由 FM 承担**；本表用 leaf_sha256 把"当时审定的
+#       是哪一份 body"钉死 —— golden 换版导致 hash 变化时，本条审定即失效，须重新审定。
+#   端口签名的作用：黑盒的等价性只依赖其**接口**在两侧一致。port_signature/port_count
+#   记录审定时刻的接口形状，接口一旦变化（位宽、端口增删）本条同样失效。
+#
+# 机器校验（fail-closed，不跑 FM）：
+#   python3 scripts/check_closure_symmetry.py --check-registry
+#   逐条把 leaf_sha256 / port_signature / port_count / param_signature 与 $(GOLDEN_RTL)
+#   下的现文件重新提取比对，任一不符即 exit 1。
+# ---------------------------------------------------------------------------
+#
+# 不在本表的边界（**须 reviewer 逐条裁定，不得自行扩表**）：
+#   ram_* / ram_sink_* —— firtool 行为级存储叶子（reg Memory[0:D-1] + 一写一读口）。
+#   codex 0151 D60 裁定：优先走两侧同一已提交源的 **inline elaborate**（把 golden
+#   ram_*.sv 同时加进 FM_REF_DEPS_<top> 与 RTL_GOLDEN_DEPS），边界直接清零、无需扩表。
+#   已按此处理：verif/ut/TLBuffer_13（ram_2x119/2x283/2x321/2x352/ram_sink_2x8，各 4 实例/侧）。
+#   例外：verif/ut/L2TlbMissQueue 的 ram_40x47 **不可 inline** —— 其 addr 6 位、深度 40，
+#   2^6=64>40，白盒化必触发 FMR_ELAB-147(Index may take values outside array bound)
+#   -> FM-262 -> set_top FM-156。该条单独挂起待裁（详见该 UT Makefile 注释）。
+#
+# design_pattern	kind	rationale	leaf_file	leaf_sha256	port_count	port_signature	port_sig_sha256_16	param_signature	body_rule
+array_ext	vendor_sram_leaf	SRAM 编译器行为模型叶子，两侧同源 .v，FM 不读其内部	array_ext.v	471f30707686e10670a018a7347a69fb103bd595fe7de1aab63f0aa4f9a82e10	7	input RW0_clk;input [6:0] RW0_addr;input RW0_en;input RW0_wmode;input [1:0] RW0_wmask;input [73:0] RW0_wdata;output [73:0] RW0_rdata	8061bdbdb046d487	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
+array_0_ext	vendor_sram_leaf	同上	array_0_ext.v	f41875929d1d20c1b91cdb2b44946f1bc8b0f8ecacd0f19b129268cf6f269d66	6	input RW0_clk;input [7:0] RW0_addr;input RW0_en;input RW0_wmode;input [65:0] RW0_wdata;output [65:0] RW0_rdata	31da948ed0716ad0	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
+array_1_ext	vendor_sram_leaf	同上	array_1_ext.v	7124905b5fdb7c19294fd0529aeaeb06e1d1ecc08936c99cda85306d7a9d2b53	7	input RW0_clk;input [8:0] RW0_addr;input RW0_en;input RW0_wmode;input [3:0] RW0_wmask;input [39:0] RW0_wdata;output [39:0] RW0_rdata	79a8a8697e271e6a	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
+array_2_ext	vendor_sram_leaf	同上	array_2_ext.v	392155fafd2b472569edc3f9affe3989c64bb746b4a33f6cdd9412898b94334a	7	input RW0_clk;input [7:0] RW0_addr;input RW0_en;input RW0_wmode;input [15:0] RW0_wmask;input [15:0] RW0_wdata;output [15:0] RW0_rdata	2e54ef7a84ab9074	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
+array_3_ext	vendor_sram_leaf	同上	array_3_ext.v	76099ddd1c6f05c1813bd52fa8764d3e1d6e14632c89cdfa678558975bd3a466	7	input RW0_clk;input [8:0] RW0_addr;input RW0_en;input RW0_wmode;input [1:0] RW0_wmask;input [23:0] RW0_wdata;output [23:0] RW0_rdata	4d2cb292768a6c5c	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
+array_4_ext	vendor_sram_leaf	同上	array_4_ext.v	d4612a5252c86c3838d44ae0bf9ad8f4c21b9e2ee78ae2ecfc7f69b467aab7eb	7	input RW0_clk;input [7:0] RW0_addr;input RW0_en;input RW0_wmode;input [3:0] RW0_wmask;input [7:0] RW0_wdata;output [7:0] RW0_rdata	1581d5b8177ad527	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
+array_5_ext	vendor_sram_leaf	同上	array_5_ext.v	2e2882f57dcd53f1d7f9fa597b0dd4bb901cee9d47fbb67a07881e673587e886	7	input RW0_clk;input [6:0] RW0_addr;input RW0_en;input RW0_wmode;input [3:0] RW0_wmask;input [23:0] RW0_wdata;output [23:0] RW0_rdata	3998a3df26c0fa47	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
+array_6_ext	vendor_sram_leaf	同上	array_6_ext.v	9e0a36f23925910cc8ce8fee9fe340b75ca8109fa592544b758c9804c1ae43c5	7	input RW0_clk;input [6:0] RW0_addr;input RW0_en;input RW0_wmode;input [75:0] RW0_wmask;input [75:0] RW0_wdata;output [75:0] RW0_rdata	3d7a056321d38bfa	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
+array_7_ext	vendor_sram_leaf	同上	array_7_ext.v	132be32c3a482ca234ed84a84b370e2297c7565a6b709d28ae5fad52cf79629b	6	input RW0_clk;input [7:0] RW0_addr;input RW0_en;input RW0_wmode;input [71:0] RW0_wdata;output [71:0] RW0_rdata	d61158460ce13c30	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
+array_8_ext	vendor_sram_leaf	同上	array_8_ext.v	a7ff1d99adc868f3379f6150fc55f211d28d7040b32866c77906e30a905b46a6	7	input RW0_clk;input [7:0] RW0_addr;input RW0_en;input RW0_wmode;input [1:0] RW0_wmask;input [85:0] RW0_wdata;output [85:0] RW0_rdata	ffef017fcc9f4176	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
+array_9_ext	vendor_sram_leaf	同上	array_9_ext.v	1e1d27fed16928404438c1890e16c771471821799faf07e890f938943035ecb5	7	input RW0_clk;input [4:0] RW0_addr;input RW0_en;input RW0_wmode;input [1:0] RW0_wmask;input [89:0] RW0_wdata;output [89:0] RW0_rdata	33926c8142c4afe1	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
+array_10_ext	vendor_sram_leaf	同上	array_10_ext.v	fe8f6db403ae1d8778c5778c3acb63dce6408dd57c521ca80715a30a7ae72f07	7	input RW0_clk;input [1:0] RW0_addr;input RW0_en;input RW0_wmode;input [5:0] RW0_wmask;input [785:0] RW0_wdata;output [785:0] RW0_rdata	bd0202396f77bf3a	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
+array_11_ext	vendor_sram_leaf	同上	array_11_ext.v	69a1bc43f15de9c58efadc11869359fb614d0000c15c2e6c92ac754be2e723cb	7	input RW0_clk;input [5:0] RW0_addr;input RW0_en;input RW0_wmode;input [1:0] RW0_wmask;input [113:0] RW0_wdata;output [113:0] RW0_rdata	60e983574fd3edc2	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
+array_12_ext	vendor_sram_leaf	同上	array_12_ext.v	4ac03e6692a6e53b01ff84d4889218bf74dae79e10bfdf8de3a535fc4426ab74	7	input RW0_clk;input [4:0] RW0_addr;input RW0_en;input RW0_wmode;input [1:0] RW0_wmask;input [147:0] RW0_wdata;output [147:0] RW0_rdata	b8485f2b24161d24	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
+array_13_ext	vendor_sram_leaf	同上	array_13_ext.v	3c97dec6495aecad66cf4cc8b95052036bd25e73535217610c8edc604d10a9e9	6	input RW0_clk;input [7:0] RW0_addr;input RW0_en;input RW0_wmode;input [12:0] RW0_wdata;output [12:0] RW0_rdata	f70346c58b520494	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
+array_14_ext	vendor_sram_leaf	同上	array_14_ext.v	9020ee8da662b94b19e559e31ff8e64871e1fc9cfc040e5e281a0a566f8b35fb	7	input RW0_clk;input [8:0] RW0_addr;input RW0_en;input RW0_wmode;input [3:0] RW0_wmask;input [75:0] RW0_wdata;output [75:0] RW0_rdata	7e21d2804df9f5b3	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
+array_15_ext	vendor_sram_leaf	同上	array_15_ext.v	e8d753254f0931e29c0becb1c9e765d05ae1f2cb040749cb044d451de350edc3	7	input RW0_clk;input [8:0] RW0_addr;input RW0_en;input RW0_wmode;input [7:0] RW0_wmask;input [103:0] RW0_wdata;output [103:0] RW0_rdata	3399e5fc2ff2f9a1	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
+array_16_ext	vendor_sram_leaf	同上	array_16_ext.v	ef88c4b6fdc9211ca14c2930491da59319ca2d2bc2df2127b8b9c3b801d96773	6	input RW0_clk;input [8:0] RW0_addr;input RW0_en;input RW0_wmode;input [15:0] RW0_wdata;output [15:0] RW0_rdata	bf4d9c3388a4ea5b	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
+array_17_ext	vendor_sram_leaf	同上	array_17_ext.v	1597f3fb2a7553b9f4b7794dc411700cb137aec4fd6cc44cdaac4238a5c23161	7	input RW0_clk;input [8:0] RW0_addr;input RW0_en;input RW0_wmode;input [7:0] RW0_wmask;input [7:0] RW0_wdata;output [7:0] RW0_rdata	ab84462f150380b9	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
+array_18_ext	vendor_sram_leaf	同上	array_18_ext.v	322efdbd7cc4c24511b9e6c533323d3e573922ea76d5c23ac6231bcdf52ccc08	6	input RW0_clk;input [11:0] RW0_addr;input RW0_en;input RW0_wmode;input [136:0] RW0_wdata;output [136:0] RW0_rdata	78e501c5f9c3d978	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
