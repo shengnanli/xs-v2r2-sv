@@ -1,10 +1,16 @@
 # G1 主 universe 对账（g1_universe.py 生成；主分母 = 上轮 306 目标解析到 G1）
+# ★★ 本文件含 18 处「槽位判据」人工改判（resolve/disposition = slot_map），
+# ★★ 依据逐条在 docs/g1_slot_map_evidence.tsv，由 scripts/check_universe_freeze.py C5 重算校验。
+# ★★ 生成器 scripts/g1_universe.py 与 scripts/g1_configured_universe.py 的 resolve() 是
+# ★★ 「同名优先」（`if t in files: same_name` 排在 manual/renumber 之前），跑一遍会把这 18 处
+# ★★ 全部改回错的。重跑生成器前必须先给它们接上槽位判据，跑完必须跑一次
+# ★★ `python3 scripts/check_universe_freeze.py`（应为 FREEZE OK）。
 # old_target	g1_name	resolve	delta_class	status	note
 AXI4Deinterleaver	AXI4Deinterleaver	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/8edb193e2e50/AXI4Deinterleaver/receipt.json @8edb193e2e50 canon
 AXI4IdIndexer	AXI4IdIndexer	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/8edb193e2e50/AXI4IdIndexer/receipt.json @8edb193e2e50 canonical
 AXI4IdIndexer_1	AXI4IdIndexer_1	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/8edb193e2e50/AXI4IdIndexer_1/receipt.json @8edb193e2e50 canonic
 AXI4Xbar	AXI4Xbar	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/8edb193e2e50/AXI4Xbar/receipt.json @8edb193e2e50 canonical=G1-a
-AXI4Xbar_1	AXI4Xbar_1	same_name	REWRITE_L	NOT_STARTED	
+AXI4Xbar_1	AXI4Xbar_6	slot_map	REWRITE_L	NOT_STARTED	槽位判据(site)改判: 原记 AXI4Xbar_1; 依据见 docs/g1_slot_map_evidence.tsv; 状态按 g1_name 重取: 无 receipt/无 fastlane 记录
 Alu	Alu	same_name	REWRITE_S	REVALIDATED_PASS	receipt evidence/ba7e4c59d337/Alu/receipt.json @ba7e4c59d337 canonical=G1-a4ea14
 Backend	Backend	same_name	REWRITE_L	NOT_STARTED	
 BankedDataArray	BankedDataArray	same_name	REWRITE_L	NOT_STARTED	
@@ -44,13 +50,13 @@ FPDecoder	FPDecoder	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/8edb193e
 FTB	FTB	same_name	REWRITE_L	NOT_STARTED	
 FTBBank	FTBBank	same_name	INHERIT	WORKING_PASS_DEAD_REF	FM native SUCCEEDED 3276p/0fail/0unmatched; 唯50条golden-only cone-dead(req_pc_reg
 FTBEntryGen	FTBEntryGen	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/8edb193e2e50/FTBEntryGen/receipt.json @8edb193e2e50 canonical=G
-FastArbiter_27	FastArbiter_27	same_name	REWRITE_M	NOT_STARTED	
-FastArbiter_30	FastArbiter_30	same_name	REWRITE_M	NOT_STARTED	
+FastArbiter_27	FastArbiter_26	slot_map	REWRITE_M	NOT_STARTED	槽位判据(site)改判: 原记 FastArbiter_27; 依据见 docs/g1_slot_map_evidence.tsv; 状态按 g1_name 重取: 无 receipt/无 fastlane 记录
+FastArbiter_30	FastArbiter_29	slot_map	REWRITE_M	NOT_STARTED	槽位判据(site)改判: 原记 FastArbiter_30; 依据见 docs/g1_slot_map_evidence.tsv; 状态按 g1_name 重取: 无 receipt/无 fastlane 记录
 FastArbiter_31	FastArbiter_30	renumbered	RESTRUCTURED	NOT_STARTED	
 FastArbiter_36	FastArbiter_35	renumbered	RESTRUCTURED	NOT_STARTED	
-FastArbiter_44	-	gone_in_g1	RESTRUCTURED	NOT_STARTED	
-FastArbiter_46	FastArbiter_46	same_name	REWRITE_M	NOT_STARTED	
-FastArbiter_47	-	gone_in_g1	RESTRUCTURED	NOT_STARTED	
+FastArbiter_44	FastArbiter_43	slot_map	RESTRUCTURED	NOT_STARTED	槽位判据(site)改判: 原记 gone_in_g1; 依据见 docs/g1_slot_map_evidence.tsv; 状态按 g1_name 重取: 无 receipt/无 fastlane 记录
+FastArbiter_46	FastArbiter_45	slot_map	REWRITE_M	NOT_STARTED	槽位判据(site)改判: 原记 FastArbiter_46; 依据见 docs/g1_slot_map_evidence.tsv; 状态按 g1_name 重取: 无 receipt/无 fastlane 记录
+FastArbiter_47	FastArbiter_46	slot_map	RESTRUCTURED	NOT_STARTED	槽位判据(site)改判: 原记 gone_in_g1; 依据见 docs/g1_slot_map_evidence.tsv; 状态按 g1_name 重取: 无 receipt/无 fastlane 记录
 FauFTB	FauFTB	same_name	REWRITE_L	NOT_STARTED	
 FauFTBWay	FauFTBWay	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/8edb193e2e50/FauFTBWay/receipt.json @8edb193e2e50 canonical=G1-
 Fence	Fence	same_name	REWRITE_S	REWRITE_TODO	G1加perfDebugInfo透传+io_in_ready端口+逻辑改动, 需按G1重做核
@@ -69,7 +75,7 @@ HPTW	HPTW	same_name	REWRITE_M	NOT_STARTED
 IBuffer	IBuffer	same_name	REWRITE_L	NOT_STARTED	
 ICache	ICache	same_name	REWRITE_S	REWRITE_TODO	内部Queue1_RegMapperInput_5在G1重编号+逻辑改动
 ICacheCtrlUnit	ICacheCtrlUnit	same_name	REWRITE_S	REWRITE_TODO	内部Queue1_RegMapperInput_5在G1重编号+逻辑改动
-Queue1_RegMapperInput_3	Queue1_RegMapperInput_3	same_name	REWRITE_S	MERGED	与 ICacheCtrlUnit 家族同 UT 目录, 由代表目标覆盖
+Queue1_RegMapperInput_3	Queue1_RegMapperInput_5	slot_map	REWRITE_S	REVALIDATED_PASS	槽位判据(site)改判: 原记 Queue1_RegMapperInput_3; 依据见 docs/g1_slot_map_evidence.tsv; 状态按 g1_name 重取: receipt evidence/3b72cb1a8513/Queue1_RegMapperInput_5/receipt.json @3b72cb1a8513 canonical=G1-a4ea14f2ddf61
 ICacheDataArray	ICacheDataArray	same_name	GLUE_INHERIT	WORKING_PASS	assembly(vmucp继承); FM SUCCEEDED
 ICacheMainPipe	ICacheMainPipe	same_name	REWRITE_L	NOT_STARTED	
 ICacheMetaArray	ICacheMetaArray	same_name	INHERIT	WORKING_PASS	assembly; FM SUCCEEDED
@@ -109,8 +115,8 @@ EntriesVlduVstu	EntriesVlduVstu	same_name	REWRITE_L	NOT_STARTED
 EntriesVlduVstuVseglduVsegstu	EntriesVlduVstuVseglduVsegstu	same_name	REWRITE_L	NOT_STARTED	
 JumpUnit	JumpUnit	same_name	REWRITE_M	NOT_STARTED	
 L1CohMetaArray	L1CohMetaArray	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/8edb193e2e50/L1CohMetaArray/receipt.json @8edb193e2e50 canonica
-L1FlagMetaArray	L1FlagMetaArray	same_name	REWRITE_L	NOT_STARTED	
-L1FlagMetaArray_1	-	gone_in_g1	RESTRUCTURED	NOT_STARTED	
+L1FlagMetaArray	L1ErrorMetaArray	slot_map	REWRITE_L	NOT_STARTED	槽位判据(site)改判: 原记 L1FlagMetaArray; 依据见 docs/g1_slot_map_evidence.tsv; 状态按 g1_name 重取: 无 receipt/无 fastlane 记录
+L1FlagMetaArray_1	L1FlagMetaArray	slot_map	RESTRUCTURED	NOT_STARTED	槽位判据(site)改判: 原记 gone_in_g1; 依据见 docs/g1_slot_map_evidence.tsv; 状态按 g1_name 重取: 无 receipt/无 fastlane 记录
 L2DataStorage	L2DataStorage	same_name	REWRITE_M	NOT_STARTED	
 L2Directory	L2Directory	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/8edb193e2e50/L2Directory/receipt.json @8edb193e2e50 canonical=G
 MainPipe_1	MainPipe_1	same_name	REWRITE_L	NOT_STARTED	
@@ -152,7 +158,7 @@ OpenLLC	OpenLLC	same_name	GLUE_INHERIT	NOT_STARTED
 PLICFanIn	PLICFanIn	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/8edb193e2e50/PLICFanIn/receipt.json @8edb193e2e50 canonical=G1-
 PMP	PMP	same_name	REWRITE_L	NOT_STARTED	
 PMPChecker	PMPChecker	same_name	REWRITE_L	NOT_STARTED	
-PMPChecker_10	-	gone_in_g1	RESTRUCTURED	NOT_STARTED	
+PMPChecker_10	PMPChecker_12	slot_map	RESTRUCTURED	NOT_STARTED	槽位判据(site)改判: 原记 gone_in_g1; 依据见 docs/g1_slot_map_evidence.tsv; 状态按 g1_name 重取: 无 receipt/无 fastlane 记录
 PTW	PTW	same_name	REWRITE_L	NOT_STARTED	
 Pipeline	Pipeline	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/8edb193e2e50/Pipeline/receipt.json @8edb193e2e50 canonical=G1-a
 NewPipelineConnectPipe	NewPipelineConnectPipe	same_name	REWRITE_M	NOT_STARTED	
@@ -165,10 +171,10 @@ NewPipelineConnectPipe_18	NewPipelineConnectPipe_18	same_name	REWRITE_M	NOT_STAR
 NewPipelineConnectPipe_20	NewPipelineConnectPipe_20	same_name	REWRITE_M	NOT_STARTED	
 NewPipelineConnectPipe_23	NewPipelineConnectPipe_23	same_name	REWRITE_M	NOT_STARTED	
 NewPipelineConnectPipe_25	NewPipelineConnectPipe_25	same_name	INHERIT	DEFER_RENUMBER	家族GOLDEN_SRCS引用NPC_31(G1重编号为_33); 随重编号remap专项处理
-NewPipelineConnectPipe_27	NewPipelineConnectPipe_27	same_name	REWRITE_M	NOT_STARTED	
+NewPipelineConnectPipe_27	NewPipelineConnectPipe_29	slot_map	REWRITE_M	NOT_STARTED	槽位判据(site)改判: 原记 NewPipelineConnectPipe_27; 依据见 docs/g1_slot_map_evidence.tsv; 状态按 g1_name 重取: 无 receipt/无 fastlane 记录
 NewPipelineConnectPipe_31	NewPipelineConnectPipe_33	renumbered	RESTRUCTURED	NOT_STARTED	
-NewPipelineConnectPipe_32	-	gone_in_g1	RESTRUCTURED	NOT_STARTED	
-NewPipelineConnectPipe_33	NewPipelineConnectPipe_33	same_name	REWRITE_M	NOT_STARTED	
+NewPipelineConnectPipe_32	NewPipelineConnectPipe_34	slot_map	RESTRUCTURED	NOT_STARTED	槽位判据(site)改判: 原记 gone_in_g1; 依据见 docs/g1_slot_map_evidence.tsv; 状态按 g1_name 重取: 无 receipt/无 fastlane 记录
+NewPipelineConnectPipe_33	NewPipelineConnectPipe_35	slot_map	REWRITE_M	NOT_STARTED	槽位判据(site)改判: 原记 NewPipelineConnectPipe_33; 依据见 docs/g1_slot_map_evidence.tsv; 状态按 g1_name 重取: 无 receipt/无 fastlane 记录
 NewPipelineConnectPipe_5	NewPipelineConnectPipe_5	same_name	REWRITE_M	NOT_STARTED	
 NewPipelineConnectPipe_7	NewPipelineConnectPipe_7	same_name	REWRITE_M	NOT_STARTED	
 NewPipelineConnectPipe_8	NewPipelineConnectPipe_8	same_name	REWRITE_M	NOT_STARTED	
@@ -207,7 +213,7 @@ SRAMTemplate_70	SRAMTemplate_76	renumbered	RESTRUCTURED	WORKING_PASS	SRAMTemplat
 SRAMTemplate_72	SRAMTemplate_78	renumbered	RESTRUCTURED	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM asse
 SRAMTemplate_8	SRAMTemplate_8	same_name	REWRITE_S	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM asse
 SRAMTemplate_64	SRAMTemplate_64	same_name	REWRITE_M	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM asse
-SRAMTemplate_66	-	gone_in_g1	RESTRUCTURED	NOT_STARTED	
+SRAMTemplate_66	SRAMTemplate_68	slot_map	RESTRUCTURED	REVALIDATED_PASS	槽位判据(site_common)改判: 原记 gone_in_g1; 依据见 docs/g1_slot_map_evidence.tsv; 状态按 g1_name 重取: receipt evidence/bb2f134fee0c/SRAMTemplate_68/receipt.json @bb2f134fee0c canonical=G1-a4ea14f2ddf61…
 Sbuffer	Sbuffer	same_name	REWRITE_L	NOT_STARTED	
 Scheduler	Scheduler	same_name	REWRITE_L	NOT_STARTED	
 Scheduler_1	Scheduler_1	same_name	REWRITE_L	NOT_STARTED	
@@ -248,10 +254,10 @@ SyncDataModuleTemplate_FtqPC_64entry	SyncDataModuleTemplate_FtqPC_64entry	same_n
 SyncDataModuleTemplate__1024entry	SyncDataModuleTemplate__1024entry	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/8edb193e2e50/SyncDataModuleTemplate__1024entry/receipt.json @8e
 SyncDataModuleTemplate__1024entry_1	SyncDataModuleTemplate__1024entry_1	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/8edb193e2e50/SyncDataModuleTemplate__1024entry_1/receipt.json @
 SyncDataModuleTemplate__64entry	SyncDataModuleTemplate__64entry	same_name	INHERIT	REVALIDATED_PASS	receipt evidence/8edb193e2e50/SyncDataModuleTemplate__64entry/receipt.json @8edb
-SyncDataModuleTemplate__64entry_1	SyncDataModuleTemplate__64entry_1	same_name	REWRITE_L	REVALIDATED_PASS	receipt evidence/016c65585dfc/SyncDataModuleTemplate__64entry_1/receipt.json @01
-SyncDataModuleTemplate__64entry_2	SyncDataModuleTemplate__64entry_2	same_name	REWRITE_L	REVALIDATED_PASS	receipt evidence/8edb193e2e50/SyncDataModuleTemplate__64entry_2/receipt.json @8e
-SyncDataModuleTemplate__64entry_3	SyncDataModuleTemplate__64entry_3	same_name	REWRITE_L	REVALIDATED_PASS	receipt evidence/8edb193e2e50/SyncDataModuleTemplate__64entry_3/receipt.json @8e
-SyncDataModuleTemplate__64entry_4	SyncDataModuleTemplate__64entry_4	same_name	REWRITE_L	REVALIDATED_PASS	receipt evidence/8edb193e2e50/SyncDataModuleTemplate__64entry_4/receipt.json @8e
+SyncDataModuleTemplate__64entry_1	SyncDataModuleTemplate__64entry_2	slot_map	REWRITE_L	REVALIDATED_PASS	槽位判据(site)改判: 原记 SyncDataModuleTemplate__64entry_1; 依据见 docs/g1_slot_map_evidence.tsv; 状态按 g1_name 重取: receipt evidence/bb2f134fee0c/SyncDataModuleTemplate__64entry_2/receipt.json @bb2f134fee0c canoni
+SyncDataModuleTemplate__64entry_2	SyncDataModuleTemplate__64entry_3	slot_map	REWRITE_L	REVALIDATED_PASS	槽位判据(site)改判: 原记 SyncDataModuleTemplate__64entry_2; 依据见 docs/g1_slot_map_evidence.tsv; 状态按 g1_name 重取: receipt evidence/bb2f134fee0c/SyncDataModuleTemplate__64entry_3/receipt.json @bb2f134fee0c canoni
+SyncDataModuleTemplate__64entry_3	SyncDataModuleTemplate__64entry_4	slot_map	REWRITE_L	REVALIDATED_PASS	槽位判据(site)改判: 原记 SyncDataModuleTemplate__64entry_3; 依据见 docs/g1_slot_map_evidence.tsv; 状态按 g1_name 重取: receipt evidence/bb2f134fee0c/SyncDataModuleTemplate__64entry_4/receipt.json @bb2f134fee0c canoni
+SyncDataModuleTemplate__64entry_4	SyncDataModuleTemplate__64entry_5	slot_map	REWRITE_L	NOT_STARTED	槽位判据(site)改判: 原记 SyncDataModuleTemplate__64entry_4; 依据见 docs/g1_slot_map_evidence.tsv; 状态按 g1_name 重取: 无 receipt/无 fastlane 记录
 TL2CHICoupledL2	TL2CHICoupledL2	same_name	REWRITE_L	NOT_STARTED	
 TLBFA	TLBFA	same_name	REWRITE_L	NOT_STARTED	
 TLBFA_1	TLBFA_1	same_name	REWRITE_L	NOT_STARTED	
