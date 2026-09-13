@@ -10,13 +10,29 @@
 //     屏蔽从未写过的条目的假命中。
 //
 // 本文件 = 参数化可读核 + golden 同名 wrapper（基础变体 8 项 × 9b 键）。
-// 其余单态化变体（IndexableCAMTemplate_32/_33/_41/_43）各自一个薄 wrapper 文件。
+// 其余单态化变体（IndexableCAMTemplate_32/_33/_41/_43）各自一个薄文件，
+// 都例化本文件里的同一个 xs_IndexableCAMTemplate_core，核体不复制。
+//
+// 家族参数表（按 G1 golden 现读，端口宽度即事实）：
+//   变体                       键宽 ENTRY_WIDTH   条目数 NUM_ENTRIES   索引口宽
+//   IndexableCAMTemplate            9                   8                3
+//   IndexableCAMTemplate_32        11                   8                3
+//   IndexableCAMTemplate_33         8                  16                4
+//   IndexableCAMTemplate_41         8                   4                2
+//   IndexableCAMTemplate_43         9                   4                2
 // =============================================================================
 
 module xs_IndexableCAMTemplate_core #(
   parameter int unsigned ENTRY_WIDTH = 9,  // 条目（查询键）位宽
   parameter int unsigned NUM_ENTRIES = 8,  // 条目数
-  localparam int unsigned IDX_W = (NUM_ENTRIES > 1) ? $clog2(NUM_ENTRIES) : 1
+  // ---- 端口契约自检参数：薄文件用 $bits(golden 端口) 传进来 ----
+  // 为什么需要：本核的写译码宽度 IDX_W 是从 NUM_ENTRIES 派生出来的算术，键宽也
+  // 只出现在参数里。若薄文件把某个变体的键宽/条目数抄错（例如 _32 的 11 位键抄成
+  // 基础变体的 9 位），逻辑一行都不会错、随机激励也未必打得到高位，UT 照样全绿，
+  // 要到 FM 才炸。这里把"golden 端口表的真实位宽"和"传给核的参数"钉成等式，
+  // 抄错参数在 time 0 就 $fatal。默认值等于派生值，故等式对正确参数恒成立。
+  parameter int unsigned PORT_KEY_W = ENTRY_WIDTH,                          // = $bits(io_r_req_0_idx)
+  parameter int unsigned PORT_IDX_W = (NUM_ENTRIES > 1) ? $clog2(NUM_ENTRIES) : 1  // = $bits(io_w_bits_index)
 )(
   input  logic                   clock,
   // 读口（组合查询）
@@ -25,8 +41,20 @@ module xs_IndexableCAMTemplate_core #(
   // 写口（同步写入）
   input  logic                   w_valid,
   input  logic [ENTRY_WIDTH-1:0] w_key,
-  input  logic [IDX_W-1:0]       w_index
+  input  logic [((NUM_ENTRIES > 1) ? $clog2(NUM_ENTRIES) : 1)-1:0] w_index
 );
+
+  localparam int unsigned IDX_W = (NUM_ENTRIES > 1) ? $clog2(NUM_ENTRIES) : 1;
+
+  // ---- elaborate 期不变式：端口表 vs 参数 ----
+  initial begin
+    if (PORT_KEY_W != ENTRY_WIDTH)
+      $fatal(1, "xs_IndexableCAMTemplate_core: golden 键端口 %0d 位 != ENTRY_WIDTH=%0d（参数抄错）",
+             PORT_KEY_W, ENTRY_WIDTH);
+    if (PORT_IDX_W != IDX_W)
+      $fatal(1, "xs_IndexableCAMTemplate_core: golden 写索引端口 %0d 位 != clog2(NUM_ENTRIES=%0d)=%0d（条目数抄错）",
+             PORT_IDX_W, NUM_ENTRIES, IDX_W);
+  end
 
   logic [ENTRY_WIDTH-1:0] array [NUM_ENTRIES];
 
@@ -63,7 +91,8 @@ module IndexableCAMTemplate(
   logic [7:0] match;
 
   xs_IndexableCAMTemplate_core #(
-    .ENTRY_WIDTH(9), .NUM_ENTRIES(8)
+    .ENTRY_WIDTH(9), .NUM_ENTRIES(8),
+    .PORT_KEY_W($bits(io_r_req_0_idx)), .PORT_IDX_W($bits(io_w_bits_index))
   ) u_core (
     .clock  (clock),
     .r_key  (io_r_req_0_idx),
