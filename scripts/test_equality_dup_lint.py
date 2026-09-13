@@ -22,6 +22,7 @@
 
 跑法: python3 scripts/test_equality_dup_lint.py    （退出码 0 = 全过）
 """
+import atexit
 import os
 import pathlib
 import shutil
@@ -31,6 +32,10 @@ import tempfile
 
 HERE = pathlib.Path(os.path.abspath(__file__)).parent
 LINT = str(HERE / 'equality_dup_lint.py')
+
+_TMPDIRS = []
+atexit.register(lambda: [shutil.rmtree(d, ignore_errors=True)
+                         for d in _TMPDIRS])
 
 failures = []
 
@@ -46,6 +51,7 @@ def check(cond, what):
 def mkrepo(files, registry_rows=None, header=None, extra_lines=None):
     """造一个临时仓库：rtl/<path> + docs/deferred_refactor.tsv。"""
     root = pathlib.Path(tempfile.mkdtemp(prefix='eqdup_'))
+    _TMPDIRS.append(str(root))
     for rel, text in files.items():
         p = root / rel
         p.parent.mkdir(parents=True, exist_ok=True)
@@ -243,6 +249,7 @@ expect_failclosed(
 
 print('\n== 11. rtl 根目录不存在 → rc=2（不静默当成 0 个文件）==')
 empty = pathlib.Path(tempfile.mkdtemp(prefix='eqdup_norlt_'))
+_TMPDIRS.append(str(empty))
 rc, out = run(empty)
 check(rc == 2 and 'Traceback' not in out, 'rtl/ 缺失 → rc=2  [rc=%d]' % rc)
 

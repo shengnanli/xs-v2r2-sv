@@ -18,15 +18,21 @@
      历史回归需要 /home/eda/xs-env/.agent-bridge 与两个 repo 在位；
      不在位时该组显式 SKIP，不会假装通过。
 """
+import atexit
 import hashlib
 import os
 import pathlib
+import shutil
 import subprocess
 import sys
 import tempfile
 
 HERE = pathlib.Path(os.path.abspath(__file__)).parent
 LINT = str(HERE / 'bridge_report_lint.py')
+
+_TMPDIRS = []
+atexit.register(lambda: [shutil.rmtree(d, ignore_errors=True)
+                         for d in _TMPDIRS])
 
 failures = []
 skipped = []
@@ -48,6 +54,7 @@ def git(repo, *args):
 
 def mkgitrepo(name, files=None):
     root = pathlib.Path(tempfile.mkdtemp(prefix='brl_%s_' % name))
+    _TMPDIRS.append(str(root))
     git(root, 'init', '-q')
     for rel, txt in (files or {'README.md': 'x\n'}).items():
         p = root / rel
@@ -65,6 +72,7 @@ HDR = ('schema: agent-bridge-v1\nsender: claude\nrecipient: codex\n'
 
 def msg(body, header=HDR):
     d = pathlib.Path(tempfile.mkdtemp(prefix='brl_msg_'))
+    _TMPDIRS.append(str(d))
     p = d / 'm.md'
     p.write_text(header + body, encoding='utf-8')
     return p
