@@ -8,7 +8,7 @@
 import os, sys, subprocess, shutil
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-REPO = os.path.abspath(os.path.join(HERE, '..', '..', '..'))
+REPO = os.path.abspath(os.path.join(HERE, '..', '..', '..', '..'))
 sys.path.insert(0, os.path.join(REPO, 'scripts'))
 import gen_mbist_pipe_family as F   # noqa: E402
 
@@ -67,14 +67,20 @@ endmodule
 
 def run(name, p):
     os.makedirs(WORK, exist_ok=True)
+    simv = os.path.join(WORK, name + '.simv')
+    if os.path.exists(simv):
+        shutil.rmtree(simv, ignore_errors=True) if os.path.isdir(simv) else os.remove(simv)
     src = os.path.join(WORK, name + '.sv')
     open(src, 'w').write(emit(p, name))
     env = dict(os.environ, VCS_ARCH_OVERRIDE='linux')
     r = subprocess.run(['vcs', '-full64', '-sverilog', CORE, src, '-top', name + '_top',
                         '-o', os.path.join(WORK, name + '.simv'),
                         '-l', os.path.join(WORK, name + '.log')],
-                       cwd=WORK, env=env, capture_output=True, text=True)
-    log = open(os.path.join(WORK, name + '.log')).read()
+                       cwd=WORK, env=env, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    # ★VCS 在 elaborate 期消息里会把 UTF-8 的 0xAE 字节吞掉，日志因此不是合法
+    # UTF-8（认/宽/算/定/实/家/容/据/目/宏/段 这些字都中招）。用 replace 读，
+    # 真正的修法是不在 elaborate 期 $fatal 文本里用这些字，见 check_fatal_bytes。
+    log = open(os.path.join(WORK, name + '.log'), errors='replace').read()
     return r.returncode, log
 
 
@@ -84,28 +90,36 @@ def main():
     fails = 0
 
     rc, log = run('neg_control', good)
-    if rc != 0:
-        print('!! 正对照编不过——负测无意义'); print(log[-2000:]); return 1
-    print('[POS ] neg_control            : 未扰动参数 elaborate 通过（正对照成立）')
+    if ('Error-[FEST]' in log) or (not os.path.exists(os.path.join(WORK, 'neg_control.simv'))):
+        print('!! 正对照编不过 —— 负测无意义'); print(log[-2000:]); return 1
+    print('[POS ] neg_control            : 未扰动参数 elaborate 通过（正对照成立，simv 产出了）')
 
     cases = []
     p = dict(good); p['ARRAY_W'] = good['ARRAY_W'] - 1
-    cases.append(('neg_array_w', p, 'ARRAY_W=%d' % p['ARRAY_W'], '算出来的不是拍脑袋'))
+    cases.append(('neg_array_w', p, 'ARRAY_W=%d' % p['ARRAY_W'], '由最大 id 求得'))
     p = dict(good); p['ID_LO'] = [good['ID_LO'][0], good['ID_LO'][1] + 1]
     cases.append(('neg_id_gap', p, 'ID_LO 第二个 child +1 造出空洞', '首尾相接'))
     p = dict(good); p['ID_CNT'] = [good['ID_CNT'][0], 0]
-    cases.append(('neg_id_zero', p, 'ID_CNT 有 0', '至少认领一个'))
+    cases.append(('neg_id_zero', p, 'ID_CNT 有 0', '至少要负责一个'))
     p = dict(good); p['MAX_IDS'] = good['MAX_IDS'] + 1
-    cases.append(('neg_max_ids', p, 'MAX_IDS=%d（真值 %d）' % (good['MAX_IDS'] + 1, good['MAX_IDS']), 'selectedOH 宽度'))
+    cases.append(('neg_max_ids', p, 'MAX_IDS=%d（真值 %d）' % (good['MAX_IDS'] + 1, good['MAX_IDS']), 'selectedOH 位数'))
 
     for name, p, what, expect in cases:
         rc, log = run(name, p)
+        # ★判据不能用 rc★：VCS 对 elaborate 期 $fatal 的退出码并不稳定（另一位
+        # owner 实测拿到过 0），按 rc 判会报出假的"负测没牙齿"。按日志内容判：
+        # 必须出现 Error-[FEST]（elaborate 期系统任务），且必须**没有**产出 simv，
+        # 且消息文本要命中本条不变量的关键字。
+        fest = 'Error-[FEST]' in log
+        nosimv = not os.path.exists(os.path.join(WORK, name + '.simv'))
         hit = expect in log
-        ok = (rc != 0) and hit
+        ok = fest and nosimv and hit
         if not ok:
             fails += 1
         line = [l for l in log.splitlines() if 'xs_mbist_pipe_core:' in l]
-        print('[%s] %-22s: 扰动=%s  rc=%d' % ('PASS' if ok else 'FAIL', name, what, rc))
+        print('[%s] %-22s: 扰动=%s' % ('PASS' if ok else 'FAIL', name, what))
+        print('        Error-[FEST]=%s  simv 未产出=%s  关键字命中=%s  (rc=%d, 仅供参考)'
+              % (fest, nosimv, hit, rc))
         for l in line[:2]:
             print('        $fatal 原文: %s' % l.strip())
         if not hit:

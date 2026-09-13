@@ -71,6 +71,33 @@ SERVES = {
 }
 
 
+# ------------------------------------------------- elaborate 期消息可读性闸 ---
+CORE_SV = os.path.join(REPO, 'rtl', 'dft', 'xs_mbist_pipe_core.sv')
+
+
+def check_fatal_bytes(path=None):
+    """核里 elaborate 期 $fatal 的文本不许含 UTF-8 编码里带 0xAE 字节的汉字。
+
+    实测（本机 VCS W-2024.09-SP1）：elaborate 阶段的 Error-[FEST] 消息会把 0xAE
+    这个字节吞掉，日志因此既不是合法 UTF-8、读起来也是乱码——参数写错的人恰恰
+    最需要看懂这句话。运行期 $fatal 不受影响，只有 elaborate 期这样。
+    中招的常用字（按字节判，不是背黑名单）：认 宽 算 定 实 完 家 容 据 目 宏 段 管 …
+    """
+    path = path or CORE_SV
+    txt = open(path).read()
+    bad = []
+    for m in re.finditer(r'\$fatal\(\s*\d+\s*,\s*"((?:[^"\\]|\\.)*)"', txt, re.S):
+        ch = sorted({c for c in m.group(1) if b'\xae' in c.encode('utf-8')})
+        if ch:
+            bad.append((txt[:m.start()].count('\n') + 1, ''.join(ch)))
+    if bad:
+        for ln, ch in bad:
+            print('!! %s:%d elaborate 期 $fatal 文本含会被 VCS 吞掉的字: %s' % (path, ln, ch))
+        raise SystemExit('elaborate 期消息里有 0xAE 字节，出错时读到的会是乱码')
+    print('== elaborate 期 $fatal 文本闸：%d 条消息均无 0xAE 字节（VCS 不会打成乱码）=='
+          % len(re.findall(r'\$fatal\(', txt)))
+
+
 # ---------------------------------------------------------------- 同构分析 ---
 def check_groups(verbose=True):
     """归一化模块名后按 md5 分组，报告真正有几种模块体。"""
@@ -477,11 +504,49 @@ def emit_variant(R):
     return '\n'.join(L) + '\n'
 
 
+# G1 里"名字不叫 MbistPipe*、但总线长得一样"的邻居。同一个 Chisel
+# utility.mbist.MbistPipeline 单态化出来的其实不止 24 个：本函数把家族模板拿去
+# 套这些邻居，机器判定哪些能直接复用本核、哪些还差点什么。给下一个 owner 用。
+ADJACENT = ['MbistBitmapCache', 'L2Cache',
+            'L2Slice', 'L2Slice_1', 'L2Slice_2', 'L2Slice_3',
+            'L2Directory', 'L2Directory_1', 'L2Directory_2', 'L2Directory_3',
+            'L2DataStorage', 'L2DataStorage_1', 'L2DataStorage_2', 'L2DataStorage_3',
+            'MbistIntfFrontend', 'MbistIntfL2', 'MbistIntfMemBlk']
+
+
+def scan_adjacent():
+    print('== 家族邻居扫描：把本核的模板拿去套 MbistPipe* 之外的同总线模块 ==')
+    ok, ng = [], []
+    for m in ADJACENT:
+        if not os.path.exists(os.path.join(G, m + '.sv')):
+            continue
+        try:
+            R = parse_golden(m)
+            check_invariants(R)
+            verify_reduce(R)
+            verify_selected_oh(R)
+            ok.append(m)
+            print('   [可直接复用] %-18s %-4s nch=%-2d AW=%-2d BE=%-2d ADDR=%-2d DATA=%-4d'
+                  % (m, R['kind'], R['nchild'], R['ARRAY_W'], R['BE_W'], R['ADDR_W'], R['DATA_W']))
+        except (AssertionError, KeyError, ValueError) as e:
+            ng.append((m, str(e)[:110]))
+    for m, why in ng:
+        print('   [还差点  ] %-18s %s' % (m, why))
+    print('   小结：%d 个可原样套本核，%d 个套不上（需要扩核或另立）' % (len(ok), len(ng)))
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--check', action='store_true', help='只校验，不写文件')
+    ap.add_argument('--scan-adjacent', action='store_true',
+                    help='扫描 MbistPipe* 之外、总线相同的邻居模块能否复用本核')
     a = ap.parse_args()
+    if a.scan_adjacent:
+        scan_adjacent()
+        return 0
 
+    check_fatal_bytes()
+    print()
     check_groups()
     print()
     Rs, nred, noh = [], 0, 0

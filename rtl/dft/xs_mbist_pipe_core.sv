@@ -186,16 +186,16 @@ module xs_mbist_pipe_core #(
   localparam int unsigned FIRST_EMPTY = f_first_empty();
 
   if (FIRST_EMPTY != N_CHILD)
-    $fatal(1, "xs_mbist_pipe_core: child %0d 的 ID_CNT 为 0 —— 每个 child 至少认领一个 array id",
+    $fatal(1, "xs_mbist_pipe_core: child %0d 的 ID_CNT 为 0 —— 每个 child 至少要负责一个 array id",
            FIRST_EMPTY);
   if (FIRST_GAP != N_CHILD)
     $fatal(1, "xs_mbist_pipe_core: child %0d 的 ID_LO=0x%0h 与前序 child 不接续 —— 同一节点的 id 区间必须首尾相接、无空洞无重叠",
            FIRST_GAP, ID_LO[FIRST_GAP]);
   if (ARRAY_W != $clog2(MAX_ID + 1))
-    $fatal(1, "xs_mbist_pipe_core: ARRAY_W=%0d，但最大 array id=0x%0h 要求 $clog2(0x%0h)=%0d —— golden 按最小位宽生成，array 位宽是算出来的不是拍脑袋的",
+    $fatal(1, "xs_mbist_pipe_core: ARRAY_W=%0d，但最大 array id=0x%0h 要求 $clog2(0x%0h)=%0d —— golden 按最小位数生成，array 位数是由最大 id 求得的，不是拍脑袋写的",
            ARRAY_W, MAX_ID, MAX_ID + 1, $clog2(MAX_ID + 1));
   if (MAX_IDS != MAX_CNT)
-    $fatal(1, "xs_mbist_pipe_core: MAX_IDS=%0d，但各 child 的 ID_CNT 最大值是 %0d —— selectedOH 宽度 = 该 child 认领的 id 个数",
+    $fatal(1, "xs_mbist_pipe_core: MAX_IDS=%0d，但各 child 的 ID_CNT 最大值是 %0d —— selectedOH 位数 = 该 child 负责的 id 个数",
            MAX_IDS, MAX_CNT);
   if (DATA_W == 0 || ADDR_W == 0 || BE_W == 0)
     $fatal(1, "xs_mbist_pipe_core: DATA_W/ADDR_W/BE_W 不能为 0");
