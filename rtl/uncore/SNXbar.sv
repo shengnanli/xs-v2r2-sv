@@ -16,7 +16,7 @@
 //    RXRSP : 响应通道 (Comp/DBIDResp/RetryAck 等), 含 dbID;
 //    RXDAT : 读数据通道, 含 256 位 data / resp / dataID。
 //
-//  注意: 仲裁器 FastArbiter_46 (TXDAT) / FastArbiter_47 (TXREQ) 在本核中按
+//  注意: 仲裁器 FastArbiter_45 (TXDAT) / FastArbiter_46 (TXREQ) 在本核中按
 //  黑盒例化 (仲裁 + 胜者 payload 多路选择由其内部完成); 本核只重写
 //  「ready 解复用 (按 chosen)」与「RX 解复用 (按 txnID 路由)」这两段路由逻辑。
 // =============================================================================
@@ -120,8 +120,8 @@ endpackage
 //      ready 背压, 故 out 侧 rx_*_ready = 各主口接受信号的 OR (路由命中即接受)。
 //
 //  黑盒子模块 (仲裁主体, 不在本核重写):
-//    FastArbiter_47 txreqArb : TXREQ 4 路仲裁;
-//    FastArbiter_46 txdatArb : TXDAT 4 路仲裁。
+//    FastArbiter_46 txreqArb : TXREQ 4 路仲裁;
+//    FastArbiter_45 txdatArb : TXDAT 4 路仲裁。
 //  二者在 golden 与本核中按同名同端口例化, UT 两侧共用、FM 两侧黑盒, 故仲裁内部
 //  状态/选择逻辑等价, 本核验证聚焦路由/解复用。
 //
@@ -485,7 +485,7 @@ module xs_SNXbar_core
   logic [1:0]  txdat_chosen;
   chi_dat_tx_t out_tx_dat;
 
-  FastArbiter_47 txreqArb (
+  FastArbiter_46 txreqArb (
     .clock                          (clock),
     .reset                          (reset),
     .io_in_0_valid                  (tx_req_valid[IN_0]),
@@ -572,7 +572,7 @@ module xs_SNXbar_core
     .io_chosen                      (txreq_chosen)
   );
 
-  FastArbiter_46 txdatArb (
+  FastArbiter_45 txdatArb (
     .clock                   (clock),
     .reset                   (reset),
     .io_in_0_valid           (tx_dat_valid[IN_0]),

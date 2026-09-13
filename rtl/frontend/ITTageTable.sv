@@ -64,7 +64,7 @@
 //   写过的 ctr，更新取 old_ctr 时优先用命中值，未命中才退回 io_update_oldCtr。
 //
 // 【分层：核 vs wrapper —— 为什么 SRAM/WrBypass/MBIST 在 wrapper 例化】
-//   5 个变体不仅参数不同，所用 SRAM(FoldedSRAMTemplate_21/_23)、WrBypass(_41/_43)、
+//   5 个变体不仅参数不同，所用 SRAM(FoldedSRAMTemplate_22/_24)、WrBypass(_41/_43)、
 //   MBIST(MbistPipeIttage/_1.._4) 的**模块名也不同**（firtool 单态化命名）。SystemVerilog
 //   无法按参数选模块名，故本核把这三类子模块的端口**全部引出**，由 golden 同名 wrapper
 //   按变体例化正确命名的黑盒并对接。核因此只含「纯功能逻辑」，最易读；wrapper 是机械适配层。
@@ -132,7 +132,7 @@ module xs_ITTageTable_core #(
   // ===========================================================================
   // 与 wrapper 内变体专属子模块对接的端口（核不直接例化 SRAM/WrBypass/MBIST）
   // ===========================================================================
-  // ---- 条目 SRAM (FoldedSRAMTemplate_21/_23 黑盒) 读口 ----
+  // ---- 条目 SRAM (FoldedSRAMTemplate_22/_24 黑盒) 读口 ----
   output logic                sram_r_req_valid,
   output logic [IDX_W-1:0]    sram_r_req_setIdx,
   input  logic                sram_r_req_ready,
@@ -373,15 +373,16 @@ endmodule
 //   才真正驱动 SRAM；否则 SRAM 侧地址/读写使能保持 0，避免误触发。
 //
 //   两类拓扑（参数 N_SRAM）：
-//     - N_SRAM=1（var0/1，SRAM=FoldedSRAMTemplate_21 单 bore 口）：一个 array ID(ARRAY_ID0)。
-//     - N_SRAM=2（var2/3/4，SRAM=FoldedSRAMTemplate_23 双 bore 口）：两个相邻 array ID
+//     - N_SRAM=1（var0/1，SRAM=FoldedSRAMTemplate_22 单 bore 口）：一个 array ID(ARRAY_ID0)。
+//     - N_SRAM=2（var2/3/4，SRAM=FoldedSRAMTemplate_24 双 bore 口）：两个相邻 array ID
 //       (ARRAY_ID0, ARRAY_ID0+1)，各自独立 selected/doSpread；mbist_outdata = 两口或合。
-//   array ID：var0=0x46 var1=0x47 var2=0x48/49 var3=0x4A/4B var4=0x4C/4D。
+//   array ID（G1 值；G0 时整体小 6，是 G1 里 MBIST array 编号重排的结果）：
+//     var0=0x4C var1=0x4D var2=0x4E/4F var3=0x50/51 var4=0x52/53。
 // =============================================================================
 
 module xs_MbistPipeIttage_core #(
   parameter int unsigned N_SRAM    = 1,
-  parameter logic [6:0]  ARRAY_ID0 = 7'h46,
+  parameter logic [6:0]  ARRAY_ID0 = 7'h4C,
   parameter int unsigned ADDR_W    = 8,
   parameter int unsigned DATA_W    = 76
 )(
@@ -613,7 +614,7 @@ module ITTageTable(
     .wrbp_hit(wrbp_hit), .wrbp_hit_data(wrbp_hit_data)
   );
   // ===== 条目 SRAM（已验证黑盒）=====
-  FoldedSRAMTemplate_21 table_0 (
+  FoldedSRAMTemplate_22 table_0 (
     .clock(clock), .reset(reset),
     .io_r_req_ready(sram_r_req_ready), .io_r_req_valid(sram_r_req_valid),
     .io_r_req_bits_setIdx(sram_r_req_setIdx),
@@ -666,7 +667,7 @@ module ITTageTable(
   assign childBd0_re=ms_re[0];           assign childBd0_we=ms_we[0];
   assign childBd0_ack=ms_ack[0];         assign childBd0_sel=ms_sel[0];
   assign childBd0_array=ms_array[0];     assign ms_rdata[0]=childBd0_rdata;
-  xs_MbistPipeIttage_core #(.N_SRAM(1), .ARRAY_ID0(7'h46), .ADDR_W(8), .DATA_W(76)) mbistPl (
+  xs_MbistPipeIttage_core #(.N_SRAM(1), .ARRAY_ID0(7'h4C), .ADDR_W(8), .DATA_W(76)) mbistPl (
     .clock(clock), .reset(reset),
     .mbist_array(boreChildrenBd_bore_array), .mbist_all(boreChildrenBd_bore_all),
     .mbist_req(boreChildrenBd_bore_req), .mbist_ack(boreChildrenBd_bore_ack),

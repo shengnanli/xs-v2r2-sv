@@ -6,7 +6,7 @@ TB_SRCS = tb.sv
 
 FM_REF_DEPS_SubDirectory = 
 GOLDEN_SRCS = $(GOLDEN_RTL)/SubDirectory.sv \
-              $(GOLDEN_RTL)/SRAMTemplate_197.sv \
+              $(GOLDEN_RTL)/SRAMTemplate_192.sv \
               $(GOLDEN_RTL)/SRAMTemplate_193.sv \
               $(GOLDEN_RTL)/array_19.sv \
               $(GOLDEN_RTL)/array_19_ext.v \

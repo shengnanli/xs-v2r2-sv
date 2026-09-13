@@ -509,7 +509,7 @@ module ICacheCtrlUnit(
   input  auto_in_a_valid,
   input  [3:0] auto_in_a_bits_opcode,
   input  [1:0] auto_in_a_bits_size,
-  input  [2:0] auto_in_a_bits_source,
+  input  [4:0] auto_in_a_bits_source,
   input  [29:0] auto_in_a_bits_address,
   input  [7:0] auto_in_a_bits_mask,
   input  [63:0] auto_in_a_bits_data,
@@ -517,7 +517,7 @@ module ICacheCtrlUnit(
   output auto_in_d_valid,
   output [3:0] auto_in_d_bits_opcode,
   output [1:0] auto_in_d_bits_size,
-  output [2:0] auto_in_d_bits_source,
+  output [4:0] auto_in_d_bits_source,
   output [63:0] auto_in_d_bits_data,
   output io_ecc_enable,
   output io_injecting,
@@ -553,7 +553,7 @@ module ICacheCtrlUnit(
   wire [7:0]  q_deq_bits_mask;
 
   xs_Queue1_RegMapperInput #(
-    .INDEX_W(4), .DATA_W(64), .MASK_W(8), .SOURCE_W(3), .SIZE_W(2)
+    .INDEX_W(4), .DATA_W(64), .MASK_W(8), .SOURCE_W(5), .SIZE_W(2)
   ) out_back_q (
     .clock                               (clock),
     .reset                               (reset),

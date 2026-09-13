@@ -123,7 +123,7 @@ module ITTageTable_1(
     .wrbp_hit(wrbp_hit), .wrbp_hit_data(wrbp_hit_data)
   );
   // ===== 条目 SRAM（已验证黑盒）=====
-  FoldedSRAMTemplate_21 table_0 (
+  FoldedSRAMTemplate_22 table_0 (
     .clock(clock), .reset(reset),
     .io_r_req_ready(sram_r_req_ready), .io_r_req_valid(sram_r_req_valid),
     .io_r_req_bits_setIdx(sram_r_req_setIdx),
@@ -176,7 +176,7 @@ module ITTageTable_1(
   assign childBd0_re=ms_re[0];           assign childBd0_we=ms_we[0];
   assign childBd0_ack=ms_ack[0];         assign childBd0_sel=ms_sel[0];
   assign childBd0_array=ms_array[0];     assign ms_rdata[0]=childBd0_rdata;
-  xs_MbistPipeIttage_core #(.N_SRAM(1), .ARRAY_ID0(7'h47), .ADDR_W(8), .DATA_W(76)) mbistPl (
+  xs_MbistPipeIttage_core #(.N_SRAM(1), .ARRAY_ID0(7'h4D), .ADDR_W(8), .DATA_W(76)) mbistPl (
     .clock(clock), .reset(reset),
     .mbist_array(boreChildrenBd_bore_array), .mbist_all(boreChildrenBd_bore_all),
     .mbist_req(boreChildrenBd_bore_req), .mbist_ack(boreChildrenBd_bore_ack),

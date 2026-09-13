@@ -36,6 +36,103 @@ module tb;
   wire [49:0]  o_miss_vaddr;
   wire [1:0]   o_miss_coh;
 
+
+  // ---- 覆盖闸（防假绿）----------------------------------------------
+  // errors=0 本身不是证据：激励若让 DUT 根本不动（握手永远握不上、状态机卡死），
+  // 纯比对 tb 会给出一个漂亮的 0。所以另外统计"观测信号翻转过几个"与"握手成功
+  // 几拍"，低于门限判 FAIL。门限取自标定跑（真实数字打折），不是自我实现。
+  localparam int unsigned MIN_TOGGLED = 15;
+  localparam int unsigned MIN_FIRES   = 40000;
+  localparam int unsigned N_OBS       = 15;
+  int     cov_toggled = 0;
+  longint cov_fires = 0;
+  logic p_o_req_ready;
+  bit tog_o_req_ready;
+  logic p_o_meta_rd_valid;
+  bit tog_o_meta_rd_valid;
+  logic p_o_tag_rd_valid;
+  bit tog_o_tag_rd_valid;
+  logic [7:0] p_o_meta_idx;
+  bit tog_o_meta_idx;
+  logic [7:0] p_o_tag_idx;
+  bit tog_o_tag_idx;
+  logic p_o_resp_valid;
+  bit tog_o_resp_valid;
+  logic p_o_resp_miss;
+  bit tog_o_resp_miss;
+  logic p_o_resp_replay;
+  bit tog_o_resp_replay;
+  logic p_o_resp_tag_error;
+  bit tog_o_resp_tag_error;
+  logic p_o_miss_valid;
+  bit tog_o_miss_valid;
+  logic p_o_miss_cancel;
+  bit tog_o_miss_cancel;
+  logic [4:0] p_o_miss_cmd;
+  bit tog_o_miss_cmd;
+  logic [47:0] p_o_miss_addr;
+  bit tog_o_miss_addr;
+  logic [49:0] p_o_miss_vaddr;
+  bit tog_o_miss_vaddr;
+  logic [1:0] p_o_miss_coh;
+  bit tog_o_miss_coh;
+  task automatic sample_cov();
+    if (o_req_ready !== p_o_req_ready) tog_o_req_ready = 1'b1;
+    p_o_req_ready = o_req_ready;
+    if (o_meta_rd_valid !== p_o_meta_rd_valid) tog_o_meta_rd_valid = 1'b1;
+    p_o_meta_rd_valid = o_meta_rd_valid;
+    if (o_tag_rd_valid !== p_o_tag_rd_valid) tog_o_tag_rd_valid = 1'b1;
+    p_o_tag_rd_valid = o_tag_rd_valid;
+    if (o_meta_idx !== p_o_meta_idx) tog_o_meta_idx = 1'b1;
+    p_o_meta_idx = o_meta_idx;
+    if (o_tag_idx !== p_o_tag_idx) tog_o_tag_idx = 1'b1;
+    p_o_tag_idx = o_tag_idx;
+    if (o_resp_valid !== p_o_resp_valid) tog_o_resp_valid = 1'b1;
+    p_o_resp_valid = o_resp_valid;
+    if (o_resp_miss !== p_o_resp_miss) tog_o_resp_miss = 1'b1;
+    p_o_resp_miss = o_resp_miss;
+    if (o_resp_replay !== p_o_resp_replay) tog_o_resp_replay = 1'b1;
+    p_o_resp_replay = o_resp_replay;
+    if (o_resp_tag_error !== p_o_resp_tag_error) tog_o_resp_tag_error = 1'b1;
+    p_o_resp_tag_error = o_resp_tag_error;
+    if (o_miss_valid !== p_o_miss_valid) tog_o_miss_valid = 1'b1;
+    p_o_miss_valid = o_miss_valid;
+    if (o_miss_cancel !== p_o_miss_cancel) tog_o_miss_cancel = 1'b1;
+    p_o_miss_cancel = o_miss_cancel;
+    if (o_miss_cmd !== p_o_miss_cmd) tog_o_miss_cmd = 1'b1;
+    p_o_miss_cmd = o_miss_cmd;
+    if (o_miss_addr !== p_o_miss_addr) tog_o_miss_addr = 1'b1;
+    p_o_miss_addr = o_miss_addr;
+    if (o_miss_vaddr !== p_o_miss_vaddr) tog_o_miss_vaddr = 1'b1;
+    p_o_miss_vaddr = o_miss_vaddr;
+    if (o_miss_coh !== p_o_miss_coh) tog_o_miss_coh = 1'b1;
+    p_o_miss_coh = o_miss_coh;
+    if ((c_req_valid && o_req_ready)) cov_fires++;
+  endtask
+  task automatic cov_report_and_gate();
+    if (tog_o_req_ready) cov_toggled++; else $display("COV: o_req_ready never toggled");
+    if (tog_o_meta_rd_valid) cov_toggled++; else $display("COV: o_meta_rd_valid never toggled");
+    if (tog_o_tag_rd_valid) cov_toggled++; else $display("COV: o_tag_rd_valid never toggled");
+    if (tog_o_meta_idx) cov_toggled++; else $display("COV: o_meta_idx never toggled");
+    if (tog_o_tag_idx) cov_toggled++; else $display("COV: o_tag_idx never toggled");
+    if (tog_o_resp_valid) cov_toggled++; else $display("COV: o_resp_valid never toggled");
+    if (tog_o_resp_miss) cov_toggled++; else $display("COV: o_resp_miss never toggled");
+    if (tog_o_resp_replay) cov_toggled++; else $display("COV: o_resp_replay never toggled");
+    if (tog_o_resp_tag_error) cov_toggled++; else $display("COV: o_resp_tag_error never toggled");
+    if (tog_o_miss_valid) cov_toggled++; else $display("COV: o_miss_valid never toggled");
+    if (tog_o_miss_cancel) cov_toggled++; else $display("COV: o_miss_cancel never toggled");
+    if (tog_o_miss_cmd) cov_toggled++; else $display("COV: o_miss_cmd never toggled");
+    if (tog_o_miss_addr) cov_toggled++; else $display("COV: o_miss_addr never toggled");
+    if (tog_o_miss_vaddr) cov_toggled++; else $display("COV: o_miss_vaddr never toggled");
+    if (tog_o_miss_coh) cov_toggled++; else $display("COV: o_miss_coh never toggled");
+    $display("COV StorePipe: toggled=%0d/%0d fires=%0d", cov_toggled, N_OBS, cov_fires);
+    if (cov_toggled < MIN_TOGGLED) begin
+      $display("TEST FAILED (coverage: only %0d observed signals toggled, need >= %0d)", cov_toggled, MIN_TOGGLED); $fatal(1);
+    end
+    if (cov_fires < MIN_FIRES) begin
+      $display("TEST FAILED (coverage: only %0d handshake fires, need >= %0d)", cov_fires, MIN_FIRES); $fatal(1);
+    end
+  endtask
   xs_StorePipe_core #(.EN_STORE_PF_AT_ISSUE(1'b0)) u_core (
     .clock(clk), .reset(rst),
     .io_lsu_req_valid(c_req_valid),
@@ -135,6 +232,8 @@ module tb;
       gp_valid        <= $urandom_range(0,1);
       c_req_valid     <= ($urandom_range(0,4)!=0);
       c_req_cmd       <= 5'($urandom_range(0,15));
+      // 覆盖补洞：原 tb 漏驱 vaddr，meta/tag 组索引与 miss_vaddr 恒 0 从不翻转。
+      c_req_vaddr     <= 50'($urandom);
       c_req_instrtype <= 4'($urandom_range(0,3));
       // paddr tag 区压窄(低 2 位)以提高 4 路命中概率
       c_s1_paddr      <= {34'h0, 2'($urandom_range(0,3)), 12'($urandom)};
@@ -154,6 +253,7 @@ module tb;
   // ---- 比对 ----
   always @(negedge clk) if (!rst) begin
     #4; checks++;
+    sample_cov();
     // (1) passthrough 直通
     if (u_g.io_lsu_req_valid_probe !== u_i.io_lsu_req_valid_probe) begin errors++;
       if(errors<=60) $display("[%0t] probe g=%b i=%b", $time, u_g.io_lsu_req_valid_probe, u_i.io_lsu_req_valid_probe); end
@@ -166,10 +266,14 @@ module tb;
   end
 
   initial begin
+    // 全工程统一拍数开关（ut_common.mk 下发 +ncycles=<n>）
+    void'($value$plusargs("ncycles=%d", NCYCLES));
     rst = 1; repeat (8) @(posedge clk); rst = 0;
     repeat (NCYCLES) @(posedge clk);
+    cov_report_and_gate();
     $display("checks=%0d errors=%0d", checks, errors);
-    if (errors == 0 && checks > 1000) $display("TEST PASSED"); else $display("TEST FAILED");
+    if (errors == 0 && checks > 1000) $display("TEST PASSED");
+    else begin $display("TEST FAILED"); $fatal(1); end
     $finish;
   end
 endmodule

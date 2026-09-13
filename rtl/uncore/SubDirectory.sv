@@ -18,7 +18,7 @@
 //    stage3: 算 hit/way, 选出 meta/tag, io.resp.valid=reqValid_s3
 //
 //  3 个黑盒子模块(在 wrapper 内例化, 核只接其读口/控制口):
-//    SRAMTemplate_197  tagArray  (10 路 × 30bit × 1024 set, 单口)
+//    SRAMTemplate_192  tagArray  (10 路 × 30bit × 1024 set, 单口)
 //    SRAMTemplate_193  metaArray (10 路 × 1bit(valid) × 1024 set, 单口)
 //    MaxPeriodFibonacciLFSR_3    随机替换的 16 位 Fibonacci LFSR(自由运行, 取低 7 位)
 // =============================================================================
@@ -432,7 +432,7 @@ module SubDirectory(
     .o_metaWaymask(o_metaWaymask)
   );
 
-  SRAMTemplate_197 tagArray (
+  SRAMTemplate_192 tagArray (
     .clock                 (clock),
     .io_r_req_ready        (/* unused */),
     .io_r_req_valid        (o_ren),

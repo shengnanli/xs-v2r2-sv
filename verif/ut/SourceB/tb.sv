@@ -83,6 +83,58 @@ module tb;
   wire g_io_task_ready;
   wire i_io_task_ready;
 
+
+  // ---- 覆盖闸（防假绿）----------------------------------------------
+  // errors=0 本身不是证据：激励若让 DUT 根本不动（握手永远握不上、状态机卡死），
+  // 纯比对 tb 会给出一个漂亮的 0。所以另外统计"观测信号翻转过几个"与"握手成功
+  // 几拍"，低于门限判 FAIL。门限取自标定跑（真实数字打折），不是自我实现。
+  localparam int unsigned MIN_TOGGLED = 6;
+  localparam int unsigned MIN_FIRES   = 50000;
+  localparam int unsigned N_OBS       = 6;
+  int     cov_toggled = 0;
+  longint cov_fires = 0;
+  logic p_g_io_sourceB_valid;
+  bit tog_g_io_sourceB_valid;
+  logic [2:0] p_g_io_sourceB_bits_opcode;
+  bit tog_g_io_sourceB_bits_opcode;
+  logic [1:0] p_g_io_sourceB_bits_param;
+  bit tog_g_io_sourceB_bits_param;
+  logic [47:0] p_g_io_sourceB_bits_address;
+  bit tog_g_io_sourceB_bits_address;
+  logic [255:0] p_g_io_sourceB_bits_data;
+  bit tog_g_io_sourceB_bits_data;
+  logic p_g_io_task_ready;
+  bit tog_g_io_task_ready;
+  task automatic sample_cov();
+    if (g_io_sourceB_valid !== p_g_io_sourceB_valid) tog_g_io_sourceB_valid = 1'b1;
+    p_g_io_sourceB_valid = g_io_sourceB_valid;
+    if (g_io_sourceB_bits_opcode !== p_g_io_sourceB_bits_opcode) tog_g_io_sourceB_bits_opcode = 1'b1;
+    p_g_io_sourceB_bits_opcode = g_io_sourceB_bits_opcode;
+    if (g_io_sourceB_bits_param !== p_g_io_sourceB_bits_param) tog_g_io_sourceB_bits_param = 1'b1;
+    p_g_io_sourceB_bits_param = g_io_sourceB_bits_param;
+    if (g_io_sourceB_bits_address !== p_g_io_sourceB_bits_address) tog_g_io_sourceB_bits_address = 1'b1;
+    p_g_io_sourceB_bits_address = g_io_sourceB_bits_address;
+    if (g_io_sourceB_bits_data !== p_g_io_sourceB_bits_data) tog_g_io_sourceB_bits_data = 1'b1;
+    p_g_io_sourceB_bits_data = g_io_sourceB_bits_data;
+    if (g_io_task_ready !== p_g_io_task_ready) tog_g_io_task_ready = 1'b1;
+    p_g_io_task_ready = g_io_task_ready;
+    if ((io_task_valid && g_io_task_ready) || (io_sourceB_ready && g_io_sourceB_valid)) cov_fires++;
+  endtask
+  task automatic cov_report_and_gate();
+    if (tog_g_io_sourceB_valid) cov_toggled++; else $display("COV: g_io_sourceB_valid never toggled");
+    if (tog_g_io_sourceB_bits_opcode) cov_toggled++; else $display("COV: g_io_sourceB_bits_opcode never toggled");
+    if (tog_g_io_sourceB_bits_param) cov_toggled++; else $display("COV: g_io_sourceB_bits_param never toggled");
+    if (tog_g_io_sourceB_bits_address) cov_toggled++; else $display("COV: g_io_sourceB_bits_address never toggled");
+    if (tog_g_io_sourceB_bits_data) cov_toggled++; else $display("COV: g_io_sourceB_bits_data never toggled");
+    if (tog_g_io_task_ready) cov_toggled++; else $display("COV: g_io_task_ready never toggled");
+    $display("COV SourceB: toggled=%0d/%0d fires=%0d", cov_toggled, N_OBS, cov_fires);
+    if (cov_toggled < MIN_TOGGLED) begin
+      $display("TEST FAILED (coverage: only %0d observed signals toggled, need >= %0d)", cov_toggled, MIN_TOGGLED); $fatal(1);
+    end
+    if (cov_fires < MIN_FIRES) begin
+      $display("TEST FAILED (coverage: only %0d handshake fires, need >= %0d)", cov_fires, MIN_FIRES); $fatal(1);
+    end
+  endtask
   SourceB u_g (
     .clock(clock),
     .reset(reset),
@@ -326,6 +378,8 @@ module tb;
   endtask
 
   initial begin
+    // 全工程统一拍数开关（ut_common.mk 下发 +ncycles=<n>）
+    void'($value$plusargs("ncycles=%d", NCYCLES));
     if ($value$plusargs("NCYCLES=%d", NCYCLES)) begin end
     reset = 1'b1;
     io_sourceB_ready = '0;
@@ -390,8 +444,10 @@ module tb;
       drive_random();
       #1 check_outputs();
       check_internal();
+      sample_cov();
       @(posedge clock);
     end
+    cov_report_and_gate();
     $display("SourceB checks=%0d errors=%0d ierr=%0d", checks, errors, ierr);
     if (errors == 0 && ierr == 0) begin $display("TEST PASSED"); $finish; end
     $display("TEST FAILED"); $fatal(1);
