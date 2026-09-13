@@ -14,6 +14,13 @@
 //     ignore_old_vd 向量专属「旧 vd 可忽略」通路被打中过
 //     full / flush  阵列填满过、冲刷过
 //
+// ★ 第二个坑（+vcs+initreg+random 才暴露）：io_issued / io_fuType_* /
+//   io_dataSources_* 是条目寄存器的**裸读**，没有被 valid 门控。条目在被写过
+//   之前，golden 的 entryReg_* 和重写核的 r_* 是两组不同的寄存器，随机初始化下
+//   取值必然不同 —— 不 initreg 时 golden 是 X、被 $isunknown 跳过，看不出来；
+//   一开 initreg+random 就是 750 个错。所以本 tb 等到 10 个条目**每一个都被写过
+//   至少一次**（ever_valid 全 1）才开始比对，并且若整轮都没等到就判 FAIL。
+//
 // 激励要点：
 //   1) pdest/psrc 共用 8 值小池，否则唤醒永远打不中在队 uop 的源；
 //   2) srcType 按各源真实的门控位给（src3 走 v0 的 bit3，其余走 bit2），
@@ -46,6 +53,9 @@ module tb;
   int cov_trans2simp = 0, cov_trans2comp = 0, cov_simp2comp = 0;
   int cov_ignore_old_vd = 0, cov_full = 0, cov_flush = 0;
   int cov_fail = 0;
+  bit [9:0] ever_valid = '0;   // 哪些条目被写过（裸读输出只在写过后才可比）
+  bit warm = 0;              // 全部条目都写过 -> 进入比对
+  longint warm_cycle = -1;
   task automatic covchk(string nm, int c);
     $display("  cov %-20s = %0d", nm, c);
     if (c == 0) begin cov_fail++; $display("  *** COVERAGE HOLE: %s == 0", nm); end
@@ -2810,6 +2820,8 @@ module tb;
     if ((u_g.othersEntriesComp_0.validReg_last_REG === 1'b1 && u_g.othersEntriesComp_0.io_commonIn_issueResp_valid === 1'b1 && u_g.othersEntriesComp_0.io_commonIn_issueResp_bits_resp === 2'b11) || (u_g.othersEntriesComp_1.validReg_last_REG === 1'b1 && u_g.othersEntriesComp_1.io_commonIn_issueResp_valid === 1'b1 && u_g.othersEntriesComp_1.io_commonIn_issueResp_bits_resp === 2'b11) || (u_g.othersEntriesComp_2.validReg_last_REG === 1'b1 && u_g.othersEntriesComp_2.io_commonIn_issueResp_valid === 1'b1 && u_g.othersEntriesComp_2.io_commonIn_issueResp_bits_resp === 2'b11) || (u_g.othersEntriesComp_3.validReg_last_REG === 1'b1 && u_g.othersEntriesComp_3.io_commonIn_issueResp_valid === 1'b1 && u_g.othersEntriesComp_3.io_commonIn_issueResp_bits_resp === 2'b11) || (u_g.othersEntriesComp_4.validReg_last_REG === 1'b1 && u_g.othersEntriesComp_4.io_commonIn_issueResp_valid === 1'b1 && u_g.othersEntriesComp_4.io_commonIn_issueResp_bits_resp === 2'b11) || (u_g.othersEntriesComp_5.validReg_last_REG === 1'b1 && u_g.othersEntriesComp_5.io_commonIn_issueResp_valid === 1'b1 && u_g.othersEntriesComp_5.io_commonIn_issueResp_bits_resp === 2'b11)) cov_deq_clear++;
   endtask
 
+  longint cyc = 0;
+
   initial begin
     if (!$value$plusargs("ncycles=%d", NCYCLES)) NCYCLES = 200000;
     reset = 1'b1;
@@ -3322,10 +3334,17 @@ module tb;
       sample_cov();   // 时钟沿之前采样
       @(posedge clock);
       #1;
-      check_outputs();
+      ever_valid |= g_io_valid;
+      if (!warm && (&ever_valid)) begin warm = 1; warm_cycle = cyc; end
+      if (warm) check_outputs();
+      cyc++;
     end
 
-    $display("EntriesVfdivVidiv checks=%0d errors=%0d", checks, errors);
+    $display("EntriesVfdivVidiv checks=%0d errors=%0d warm_cycle=%0d", checks, errors, warm_cycle);
+    if (!warm) begin
+      $display("TEST FAILED (整轮都没能把 10 个条目全写一遍，裸读输出的比对从未开启)");
+      $fatal(1);
+    end
     $display("---- 功能覆盖 ----");
     covchk("enq_fire", cov_enq_fire);
     covchk("wb_wake", cov_wb_wake);
@@ -3344,7 +3363,9 @@ module tb;
     covchk("flush", cov_flush);
     if (errors != 0) begin $display("TEST FAILED"); $fatal(1); end
     if (cov_fail != 0) begin $display("TEST FAILED (覆盖不足)"); $fatal(1); end
-    if (checks < 1000) begin $display("TEST FAILED (比对次数过少)"); $fatal(1); end
+    if (checks < 1000 || cyc - warm_cycle < NCYCLES/2) begin
+      $display("TEST FAILED (有效比对拍数过少)"); $fatal(1);
+    end
     $display("TEST PASSED");
     $finish;
   end

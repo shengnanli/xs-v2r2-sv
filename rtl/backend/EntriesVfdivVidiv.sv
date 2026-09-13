@@ -7,6 +7,7 @@
 //   条目 10 = enq 2 + simp 2 + comp 6，发射口 1，源寄存器 5 个
 //   WB 唤醒 16 路（无 IQ 唤醒、无 og0/og1Cancel、无 ldCancel —— 本变体是全家族最简的一个）
 //   保留的 FuType one-hot 位：FuType[22], FuType[26]（VFDIV 向量浮点除/开方、VIDIV 向量整数除）
+//   srcLoadDependency 影子：每源 3 条 load 流水 × 2 位（本变体无 ldCancel，恒 0，只为与 golden 寄存器结构对齐）
 //   负载：发射口可见 56 个字段 / 741 位；转移包另带 124 个字段，共 1330 位
 //   golden 层次：EnqEntry_18 ×2 + OthersEntry_164 ×2 + OthersEntry_166 ×6 + EnqPolicy ×2，本文件把它们一并扁平化。
 //
@@ -679,6 +680,7 @@ module EntriesVfdivVidiv (
     .NUM_REGSRC(5), .NUM_WK_WB(16), .NUM_FU_BIT(2),
     .ROB_W(8), .PSRC_W(7), .PDEST_W(8),
     .PL_DEQ_W(741), .PL_TRANS_W(1330),
+    .HAS_LD_DEP(1), .LD_PIPES(3), .LD_DEP_W(2),
     .SRC_WB_MASK({16'b1111000000000000, 16'b0000111111000000, 16'b0000000000111111, 16'b0000000000111111, 16'b0000000000111111}),
     .SRC_TYPE_BIT({3'd2, 3'd3, 3'd2, 3'd2, 3'd2}),
     .HAS_IGNORE_OLD_VD(1),
@@ -702,6 +704,7 @@ module EntriesVfdivVidiv (
     .enq_src_state({io_enq_1_bits_status_srcStatus_4_srcState, io_enq_1_bits_status_srcStatus_3_srcState, io_enq_1_bits_status_srcStatus_2_srcState, io_enq_1_bits_status_srcStatus_1_srcState, io_enq_1_bits_status_srcStatus_0_srcState, io_enq_0_bits_status_srcStatus_4_srcState, io_enq_0_bits_status_srcStatus_3_srcState, io_enq_0_bits_status_srcStatus_2_srcState, io_enq_0_bits_status_srcStatus_1_srcState, io_enq_0_bits_status_srcStatus_0_srcState}),
     .enq_data_src({io_enq_1_bits_status_srcStatus_4_dataSources_value, io_enq_1_bits_status_srcStatus_3_dataSources_value, io_enq_1_bits_status_srcStatus_2_dataSources_value, io_enq_1_bits_status_srcStatus_1_dataSources_value, io_enq_1_bits_status_srcStatus_0_dataSources_value, io_enq_0_bits_status_srcStatus_4_dataSources_value, io_enq_0_bits_status_srcStatus_3_dataSources_value, io_enq_0_bits_status_srcStatus_2_dataSources_value, io_enq_0_bits_status_srcStatus_1_dataSources_value, io_enq_0_bits_status_srcStatus_0_dataSources_value}),
     .enq_payload(enq_payload),
+    .enq_ld_dep('0),
     .wk_valid({io_wakeUpFromWB_15_valid, io_wakeUpFromWB_14_valid, io_wakeUpFromWB_13_valid, io_wakeUpFromWB_12_valid, io_wakeUpFromWB_11_valid, io_wakeUpFromWB_10_valid, io_wakeUpFromWB_9_valid, io_wakeUpFromWB_8_valid, io_wakeUpFromWB_7_valid, io_wakeUpFromWB_6_valid, io_wakeUpFromWB_5_valid, io_wakeUpFromWB_4_valid, io_wakeUpFromWB_3_valid, io_wakeUpFromWB_2_valid, io_wakeUpFromWB_1_valid, io_wakeUpFromWB_0_valid}),
     .wk_wen({io_wakeUpFromWB_15_bits_vlWen, io_wakeUpFromWB_14_bits_vlWen, io_wakeUpFromWB_13_bits_vlWen, io_wakeUpFromWB_12_bits_vlWen, io_wakeUpFromWB_11_bits_v0Wen, io_wakeUpFromWB_10_bits_v0Wen, io_wakeUpFromWB_9_bits_v0Wen, io_wakeUpFromWB_8_bits_v0Wen, io_wakeUpFromWB_7_bits_v0Wen, io_wakeUpFromWB_6_bits_v0Wen, io_wakeUpFromWB_5_bits_vecWen, io_wakeUpFromWB_4_bits_vecWen, io_wakeUpFromWB_3_bits_vecWen, io_wakeUpFromWB_2_bits_vecWen, io_wakeUpFromWB_1_bits_vecWen, io_wakeUpFromWB_0_bits_vecWen}),
     .wk_pdest({io_wakeUpFromWB_15_bits_pdest, io_wakeUpFromWB_14_bits_pdest, io_wakeUpFromWB_13_bits_pdest, io_wakeUpFromWB_12_bits_pdest, io_wakeUpFromWB_11_bits_pdest, io_wakeUpFromWB_10_bits_pdest, io_wakeUpFromWB_9_bits_pdest, io_wakeUpFromWB_8_bits_pdest, io_wakeUpFromWB_7_bits_pdest, io_wakeUpFromWB_6_bits_pdest, io_wakeUpFromWB_5_bits_pdest, io_wakeUpFromWB_4_bits_pdest, io_wakeUpFromWB_3_bits_pdest, io_wakeUpFromWB_2_bits_pdest, io_wakeUpFromWB_1_bits_pdest, io_wakeUpFromWB_0_bits_pdest}),

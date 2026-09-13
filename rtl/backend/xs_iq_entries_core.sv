@@ -26,25 +26,25 @@
 //   14 个 G1 变体全部走 hasCompAndSimp,故本核不实现另一分支(见文件尾 §11 待办)。
 //
 // =============================================================================
-// 本文件导航（共 1055 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+// 本文件导航（共 1095 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
 //   L51    §1 与变体无关的编码
 //   L73    §2 xs_iq_entry —— 单条目
-//   L219   §2.1 冲刷判定
-//   L231   §2.2 WB 唤醒匹配
-//   L259   §2.3 ignoreOldVd(向量专属)
-//   L294   §2.4 valid / enqReady / clear
-//   L309   §2.5 entryUpdate —— 不装载时条目的次态,同时也是 transEntry 的内容
-//   L352   §2.6 时序
-//   L406   §2.7 组合输出
-//   L454   §3 xs_iq_entries_core —— 条目阵列顶层(golden Entries<变体> 的可读核体)
-//   L563   §4 条目例化
-//   L683   §5 deqSel / deqPortIdxWrite / issueResp
-//   L723   §6 EnqPolicy —— golden 的 EnqPolicy 模块(SelectOne("circ", …, 2))
-//   L754   §7 转移策略
-//   L831   §8 othersEntryEnq 数据通路
-//   L953   §9 发射出口
-//   L1002  §10 阵列状态汇聚输出
-//   L1032  §11 本核尚未实现的家族维度(给后续变体 owner 的清单,全部有 golden 依据)
+//   L232   §2.1 冲刷判定
+//   L244   §2.2 WB 唤醒匹配
+//   L272   §2.3 ignoreOldVd(向量专属)
+//   L307   §2.4 valid / enqReady / clear
+//   L322   §2.5 entryUpdate —— 不装载时条目的次态,同时也是 transEntry 的内容
+//   L365   §2.6 时序
+//   L434   §2.7 组合输出
+//   L482   §3 xs_iq_entries_core —— 条目阵列顶层(golden Entries<变体> 的可读核体)
+//   L595   §4 条目例化
+//   L720   §5 deqSel / deqPortIdxWrite / issueResp
+//   L760   §6 EnqPolicy —— golden 的 EnqPolicy 模块(SelectOne("circ", …, 2))
+//   L791   §7 转移策略
+//   L868   §8 othersEntryEnq 数据通路
+//   L993   §9 发射出口
+//   L1042  §10 阵列状态汇聚输出
+//   L1072  §11 本核尚未实现的家族维度(给后续变体 owner 的清单,全部有 golden 依据)
 //
 
 // -----------------------------------------------------------------------------
@@ -97,6 +97,16 @@ module xs_iq_entry
   parameter int PL_DEQ_W   = 1,   // 发射口可见的负载位宽
   parameter int PL_TRANS_W = 1,   // 转移包携带的负载位宽(>= PL_DEQ_W,低位即 DEQ 部分)
 
+  // 投机 load 唤醒的依赖影子(EntryBundles.SrcStatus.srcLoadDependency)。
+  // 每源 LD_PIPES 条 load 流水各一个 LD_DEP_W 位的移位影子,次态 = 本值左移 1。
+  // ★ 只有产出 transEntry 的条目(enq/simp)存它;comp 的入口不带这些位(与 golden 同)。
+  //   本变体(VfdivVidiv)没有 ldCancel,整条影子恒 0、够不到任何输出 —— 这里实现它
+  //   纯粹是为了和 golden 的寄存器结构对齐(否则 FM 会多出一堆 ref-only 比较点)。
+  //   有 ldCancel 的变体还要接上 LoadShouldCancel,见文件尾 §11(a)/(b)。
+  parameter bit HAS_LD_DEP = 1'b0,
+  parameter int LD_PIPES   = 1,
+  parameter int LD_DEP_W   = 1,
+
   // 唤醒路由表:src s 只监听 SRC_WB_MASK[s] 里置 1 的那几路 WB,
   // 且要求 srcType[SRC_TYPE_BIT[s]] 为 1(源类型匹配)。
   parameter logic [NUM_REGSRC-1:0][NUM_WK_WB-1:0] SRC_WB_MASK  = '0,
@@ -139,6 +149,7 @@ module xs_iq_entry
   input  logic [1:0]                  enq_issue_timer,
   input  logic                        enq_deq_port_idx,
   input  logic [PL_TRANS_W-1:0]       enq_payload,
+  input  logic [NUM_REGSRC-1:0][LD_PIPES-1:0][LD_DEP_W-1:0] enq_ld_dep,
 
   // 唤醒总线:当拍 + 入队延迟 1 拍(后者只有 IS_ENQ 用)
   input  logic [NUM_WK_WB-1:0]              wk_valid,
@@ -193,7 +204,8 @@ module xs_iq_entry
   output logic                              o_trans_first_issue,
   output logic [1:0]                        o_trans_issue_timer,
   output logic                              o_trans_deq_port_idx,
-  output logic [PL_TRANS_W-1:0]             o_trans_payload
+  output logic [PL_TRANS_W-1:0]             o_trans_payload,
+  output logic [NUM_REGSRC-1:0][LD_PIPES-1:0][LD_DEP_W-1:0] o_trans_ld_dep
 );
 
   localparam bit KEEP_WIDE = IS_ENQ | IS_TRANS;         // 是否要产出 transEntry
@@ -214,6 +226,7 @@ module xs_iq_entry
   logic [1:0]                        r_issue_timer;
   logic                              r_deq_port_idx;
   logic [PL_W-1:0]                   r_payload;
+  logic [NUM_REGSRC-1:0][LD_PIPES-1:0][LD_DEP_W-1:0] r_ld_dep;
 
   // ---------------------------------------------------------------------------
   // §2.1 冲刷判定。RobPtr 是环形指针 {flag, value};「本条目比冲刷点新」=
@@ -391,6 +404,21 @@ module xs_iq_entry
     end
   end
 
+  // srcLoadDependency 影子:装载时吃入队值,否则整体左移一位。
+  generate
+    if (HAS_LD_DEP && KEEP_WIDE) begin : g_ld_dep
+      always_ff @(posedge clock)
+        for (int s = 0; s < NUM_REGSRC; s++)
+          for (int q = 0; q < LD_PIPES; q++)
+            r_ld_dep[s][q] <= load_now ? enq_ld_dep[s][q]
+                                       : LD_DEP_W'(r_ld_dep[s][q] << 1);
+      assign o_trans_ld_dep = r_ld_dep;
+    end else begin : g_no_ld_dep
+      always_comb r_ld_dep = '0;
+      assign o_trans_ld_dep = '0;
+    end
+  endgenerate
+
   // 入队延迟窗口寄存器:入队成功的下一拍为 1,用来再补一次唤醒。
   generate
     if (IS_ENQ) begin : g_enq_delay
@@ -468,6 +496,9 @@ module xs_iq_entries_core
   parameter int PDEST_W    = 8,
   parameter int PL_DEQ_W   = 1,
   parameter int PL_TRANS_W = 1,
+  parameter bit HAS_LD_DEP = 1'b0,
+  parameter int LD_PIPES   = 1,
+  parameter int LD_DEP_W   = 1,
   parameter logic [NUM_REGSRC-1:0][NUM_WK_WB-1:0] SRC_WB_MASK  = '0,
   parameter logic [NUM_REGSRC-1:0][2:0]           SRC_TYPE_BIT = '0,
   parameter bit HAS_IGNORE_OLD_VD = 1'b0,
@@ -500,6 +531,7 @@ module xs_iq_entries_core
   input  logic [NUM_ENQ-1:0][NUM_REGSRC-1:0]            enq_src_state,
   input  logic [NUM_ENQ-1:0][NUM_REGSRC-1:0][3:0]       enq_data_src,
   input  logic [NUM_ENQ-1:0][PL_TRANS_W-1:0]            enq_payload,
+  input  logic [NUM_ENQ-1:0][NUM_REGSRC-1:0][LD_PIPES-1:0][LD_DEP_W-1:0] enq_ld_dep,
 
   // 写回唤醒总线:当拍 + 延迟 1 拍
   input  logic [NUM_WK_WB-1:0]              wk_valid,
@@ -588,6 +620,7 @@ module xs_iq_entries_core
   logic [NUM_ENTRIES-1:0]                              t_first_issue, t_deq_port_idx;
   logic [NUM_ENTRIES-1:0][1:0]                         t_issue_timer;
   logic [NUM_ENTRIES-1:0][PL_TRANS_W-1:0]              t_payload;
+  logic [NUM_ENTRIES-1:0][NUM_REGSRC-1:0][LD_PIPES-1:0][LD_DEP_W-1:0] t_ld_dep;
 
   // 条目输入线(由 §7/§8 驱动)
   logic [NUM_ENTRIES-1:0]                              x_enq_valid, x_rob_flag;
@@ -600,6 +633,7 @@ module xs_iq_entries_core
   logic [NUM_ENTRIES-1:0]                              x_first_issue, x_deq_port_idx;
   logic [NUM_ENTRIES-1:0][1:0]                         x_issue_timer;
   logic [NUM_ENTRIES-1:0][PL_TRANS_W-1:0]              x_payload;
+  logic [NUM_ENTRIES-1:0][NUM_REGSRC-1:0][LD_PIPES-1:0][LD_DEP_W-1:0] x_ld_dep;
   logic [NUM_ENTRIES-1:0]                              x_trans_sel;
   logic [NUM_ENTRIES-1:0]                              x_deq_sel, x_deq_port_idx_w;
   logic [NUM_ENTRIES-1:0]                              x_resp_valid;
@@ -616,6 +650,7 @@ module xs_iq_entries_core
         .NUM_REGSRC(NUM_REGSRC), .NUM_WK_WB(NUM_WK_WB), .NUM_FU_BIT(NUM_FU_BIT),
         .ROB_W(ROB_W), .PSRC_W(PSRC_W), .PDEST_W(PDEST_W),
         .PL_DEQ_W(PL_DEQ_W), .PL_TRANS_W(PL_TRANS_W),
+        .HAS_LD_DEP(HAS_LD_DEP), .LD_PIPES(LD_PIPES), .LD_DEP_W(LD_DEP_W),
         .SRC_WB_MASK(SRC_WB_MASK), .SRC_TYPE_BIT(SRC_TYPE_BIT),
         .HAS_IGNORE_OLD_VD(HAS_IGNORE_OLD_VD),
         .VD_SRC(VD_SRC), .VL_SRC(VL_SRC),
@@ -640,6 +675,7 @@ module xs_iq_entries_core
         .enq_issue_timer(x_issue_timer  [i]),
         .enq_deq_port_idx(x_deq_port_idx[i]),
         .enq_payload    (x_payload      [i]),
+        .enq_ld_dep     (x_ld_dep       [i]),
         .wk_valid, .wk_wen, .wk_pdest, .wkd_valid, .wkd_wen, .wkd_pdest,
         .vl_int_is_zero, .vl_int_is_vlmax, .vl_vf_is_zero, .vl_vf_is_vlmax,
         .deq_sel           (x_deq_sel       [i]),
@@ -674,7 +710,8 @@ module xs_iq_entries_core
         .o_trans_first_issue (t_first_issue [i]),
         .o_trans_issue_timer (t_issue_timer [i]),
         .o_trans_deq_port_idx(t_deq_port_idx[i]),
-        .o_trans_payload     (t_payload     [i])
+        .o_trans_payload     (t_payload     [i]),
+        .o_trans_ld_dep      (t_ld_dep      [i])
       );
     end
   endgenerate
@@ -904,6 +941,7 @@ module xs_iq_entries_core
       x_issue_timer[i]  = 2'h0;
       x_deq_port_idx[i] = 1'b0;
       x_payload[i]      = enq_payload[i];
+      x_ld_dep[i]       = enq_ld_dep[i];
       x_trans_sel[i]    = (enq_can_trans2simp & simp_sel_v[i])
                         | (enq_can_trans2comp & comp_sel_v[i]);
     end
@@ -924,6 +962,7 @@ module xs_iq_entries_core
       `IQE_MUX1H(x_issue_timer[e],  final_simp_sel[k][j], t_issue_timer[k],  NUM_ENQ)
       `IQE_MUX1H(x_deq_port_idx[e], final_simp_sel[k][j], t_deq_port_idx[k], NUM_ENQ)
       `IQE_MUX1H(x_payload[e],      final_simp_sel[k][j], t_payload[k],      NUM_ENQ)
+      `IQE_MUX1H(x_ld_dep[e],       final_simp_sel[k][j], t_ld_dep[k],       NUM_ENQ)
       x_trans_sel[e] = 1'b0;
       for (int i = 0; i < NUM_ENQ; i++)
         x_trans_sel[e] |= simp_deq_sel_vec[i][j] & simp_can_trans2comp[i];
@@ -945,6 +984,7 @@ module xs_iq_entries_core
       `IQE_MUX1H(x_issue_timer[e],  final_comp_sel[k][j], c_issue_timer[k],  NUM_ENQ)
       `IQE_MUX1H(x_deq_port_idx[e], final_comp_sel[k][j], c_deq_port_idx[k], NUM_ENQ)
       `IQE_MUX1H(x_payload[e],      final_comp_sel[k][j], c_payload[k],      NUM_ENQ)
+      x_ld_dep[e]    = '0;   // golden 的 comp 条目入口不带 srcLoadDependency
       x_trans_sel[e] = 1'b0;
     end
   end

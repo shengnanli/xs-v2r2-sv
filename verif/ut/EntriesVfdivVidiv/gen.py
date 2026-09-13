@@ -102,6 +102,14 @@ class Variant:
             self.pl_off[n] = (off, w); off += w
         self.pl_deq_w   = sum(w for _, w in self.pl_deq)
         self.pl_trans_w = off
+        # srcLoadDependency 影子：从 EnqEntry 的 transEntry status 端口量出来
+        ld = [(n, w) for d, w, n, _ in ep
+              if re.match(r'io_commonOut_transEntry_bits_status_srcStatus_0_'
+                          r'srcLoadDependency_\d+$', n)]
+        self.has_ld_dep = bool(ld)
+        self.ld_pipes = len(ld) if ld else 1
+        self.ld_dep_w = ld[0][1] if ld else 1
+
         # 顶层 deqEntry 露出的负载字段必须与 EnqEntry 的 entry 出口一致
         top_deq = {n[len('io_deqEntry_0_bits_payload_'):] for n in self.pmap
                    if n.startswith('io_deqEntry_0_bits_payload_')}
@@ -159,6 +167,8 @@ def gen_rtl(v):
     A(f'//   WB 唤醒 {v.n_wk} 路（无 IQ 唤醒、无 og0/og1Cancel、无 ldCancel —— '
       f'本变体是全家族最简的一个）')
     A(f'//   保留的 FuType one-hot 位：{fu_list}（VFDIV 向量浮点除/开方、VIDIV 向量整数除）')
+    A(f'//   srcLoadDependency 影子：每源 {v.ld_pipes} 条 load 流水 × {v.ld_dep_w} 位'
+      f'（本变体无 ldCancel，恒 0，只为与 golden 寄存器结构对齐）')
     A(f'//   负载：发射口可见 {len(v.pl_deq)} 个字段 / {v.pl_deq_w} 位；'
       f'转移包另带 {len(v.pl_extra)} 个字段，共 {v.pl_trans_w} 位')
     A(f'//   golden 层次：{v.enq_mod} ×{v.n_enq} + {v.simp_mod} ×{v.n_simp}'
@@ -203,6 +213,8 @@ def gen_rtl(v):
       f' .NUM_FU_BIT({len(v.fu_bits)}),')
     A(f'    .ROB_W({v.rob_w}), .PSRC_W({v.psrc_w}), .PDEST_W({v.pdest_w}),')
     A(f'    .PL_DEQ_W({v.pl_deq_w}), .PL_TRANS_W({v.pl_trans_w}),')
+    A(f'    .HAS_LD_DEP({int(v.has_ld_dep)}), .LD_PIPES({v.ld_pipes}),'
+      f' .LD_DEP_W({v.ld_dep_w}),')
     A('    .SRC_WB_MASK({' + ', '.join(bitvec(set(v.src_wb[s]), v.n_wk)
                                        for s in reversed(range(v.n_regsrc))) + '}),')
     A("    .SRC_TYPE_BIT({" + ', '.join(f"3'd{v.src_tbit[s]}"
@@ -235,6 +247,9 @@ def gen_rtl(v):
             f'io_enq_{i}_bits_status_srcStatus_{s}_{port}'
             for i in reversed(range(v.n_enq)) for s in reversed(range(v.n_regsrc)))))
     c.append('.enq_payload(enq_payload)')
+    # golden 顶层没有 enq 侧的 srcLoadDependency 端口（上层 IssueQueue 恒喂 0），
+    # 影子从 0 起步、逐拍左移，因此这里也钉 0。
+    c.append(".enq_ld_dep('0)")
     for pfx, tag in (('io_wakeUpFromWB', 'wk'), ('io_wakeUpFromWBDelayed', 'wkd')):
         c.append('.%s_valid({%s})' % (tag, ', '.join(
             f'{pfx}_{w}_valid' for w in reversed(range(v.n_wk)))))
@@ -335,6 +350,13 @@ def gen_tb(v):
     A('//     ignore_old_vd 向量专属「旧 vd 可忽略」通路被打中过')
     A('//     full / flush  阵列填满过、冲刷过')
     A('//')
+    A('// ★ 第二个坑（+vcs+initreg+random 才暴露）：io_issued / io_fuType_* /')
+    A('//   io_dataSources_* 是条目寄存器的**裸读**，没有被 valid 门控。条目在被写过')
+    A('//   之前，golden 的 entryReg_* 和重写核的 r_* 是两组不同的寄存器，随机初始化下')
+    A('//   取值必然不同 —— 不 initreg 时 golden 是 X、被 $isunknown 跳过，看不出来；')
+    A('//   一开 initreg+random 就是 750 个错。所以本 tb 等到 10 个条目**每一个都被写过')
+    A('//   至少一次**（ever_valid 全 1）才开始比对，并且若整轮都没等到就判 FAIL。')
+    A('//')
     A('// 激励要点：')
     A('//   1) pdest/psrc 共用 8 值小池，否则唤醒永远打不中在队 uop 的源；')
     A('//   2) srcType 按各源真实的门控位给（src3 走 v0 的 bit3，其余走 bit2），')
@@ -367,6 +389,9 @@ def gen_tb(v):
     A('  int cov_trans2simp = 0, cov_trans2comp = 0, cov_simp2comp = 0;')
     A('  int cov_ignore_old_vd = 0, cov_full = 0, cov_flush = 0;')
     A('  int cov_fail = 0;')
+    A(f'  bit [{v.n_ent-1}:0] ever_valid = \'0;   // 哪些条目被写过（裸读输出只在写过后才可比）')
+    A('  bit warm = 0;              // 全部条目都写过 -> 进入比对')
+    A('  longint warm_cycle = -1;')
     A('  task automatic covchk(string nm, int c);')
     A('    $display("  cov %-20s = %0d", nm, c);')
     A('    if (c == 0) begin cov_fail++; $display("  *** COVERAGE HOLE: %s == 0", nm); end')
@@ -524,6 +549,8 @@ def gen_tb(v):
         for j in range(v.n_comp)))
     A('  endtask')
     A('')
+    A('  longint cyc = 0;')
+    A('')
     A('  initial begin')
     A('    if (!$value$plusargs("ncycles=%d", NCYCLES)) NCYCLES = 200000;')
     A("    reset = 1'b1;")
@@ -540,10 +567,18 @@ def gen_tb(v):
     A('      sample_cov();   // 时钟沿之前采样')
     A('      @(posedge clock);')
     A('      #1;')
-    A('      check_outputs();')
+    A('      ever_valid |= g_io_valid;')
+    A('      if (!warm && (&ever_valid)) begin warm = 1; warm_cycle = cyc; end')
+    A('      if (warm) check_outputs();')
+    A('      cyc++;')
     A('    end')
     A('')
-    A(f'    $display("{v.top} checks=%0d errors=%0d", checks, errors);')
+    A(f'    $display("{v.top} checks=%0d errors=%0d warm_cycle=%0d", checks, errors, warm_cycle);')
+    A('    if (!warm) begin')
+    A(f'      $display("TEST FAILED (整轮都没能把 {v.n_ent} 个条目全写一遍，'
+      f'裸读输出的比对从未开启)");')
+    A('      $fatal(1);')
+    A('    end')
     A('    $display("---- 功能覆盖 ----");')
     for nm in ('enq_fire', 'wb_wake', 'can_issue', 'deq_fire', 'deq_clear', 'first_issue',
                'resp_succ', 'resp_block', 'resp_uncertain',
@@ -552,7 +587,9 @@ def gen_tb(v):
         A(f'    covchk("{nm}", cov_{nm});')
     A('    if (errors != 0) begin $display("TEST FAILED"); $fatal(1); end')
     A('    if (cov_fail != 0) begin $display("TEST FAILED (覆盖不足)"); $fatal(1); end')
-    A('    if (checks < 1000) begin $display("TEST FAILED (比对次数过少)"); $fatal(1); end')
+    A(f'    if (checks < 1000 || cyc - warm_cycle < NCYCLES/2) begin')
+    A('      $display("TEST FAILED (有效比对拍数过少)"); $fatal(1);')
+    A('    end')
     A('    $display("TEST PASSED");')
     A('    $finish;')
     A('  end')
