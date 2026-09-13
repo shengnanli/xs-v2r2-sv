@@ -6,6 +6,7 @@ module tb;
   logic io_csr_satp_changed;
   logic io_csr_vsatp_changed;
   logic io_csr_hgatp_changed;
+  logic io_csr_priv_virt_changed;
   logic io_in_valid;
   logic [37:0] io_in_bits_req_info_vpn;
   logic [1:0] io_in_bits_req_info_s2xlate;
@@ -40,6 +41,7 @@ module tb;
     .io_csr_satp_changed(io_csr_satp_changed),
     .io_csr_vsatp_changed(io_csr_vsatp_changed),
     .io_csr_hgatp_changed(io_csr_hgatp_changed),
+    .io_csr_priv_virt_changed(io_csr_priv_virt_changed),
     .io_in_ready(g_io_in_ready),
     .io_in_valid(io_in_valid),
     .io_in_bits_req_info_vpn(io_in_bits_req_info_vpn),
@@ -62,6 +64,7 @@ module tb;
     .io_csr_satp_changed(io_csr_satp_changed),
     .io_csr_vsatp_changed(io_csr_vsatp_changed),
     .io_csr_hgatp_changed(io_csr_hgatp_changed),
+    .io_csr_priv_virt_changed(io_csr_priv_virt_changed),
     .io_in_ready(i_io_in_ready),
     .io_in_valid(io_in_valid),
     .io_in_bits_req_info_vpn(io_in_bits_req_info_vpn),
@@ -87,6 +90,7 @@ module tb;
     io_csr_satp_changed = $urandom;
     io_csr_vsatp_changed = $urandom;
     io_csr_hgatp_changed = $urandom;
+    io_csr_priv_virt_changed = $urandom;
     io_in_valid = $urandom;
     io_in_bits_req_info_vpn = $urandom;
     io_in_bits_req_info_s2xlate = $urandom;
@@ -100,6 +104,41 @@ module tb;
     io_csr_satp_changed  = ($urandom_range(0, 511) == 0);
     io_csr_vsatp_changed = ($urandom_range(0, 511) == 0);
     io_csr_hgatp_changed = ($urandom_range(0, 511) == 0);
+    // priv.virt（V 位）变化同样要求整队作废。golden Queue40 的 io_flush 是五项 OR，
+    // 这一项曾在重写核里漏掉（见 rtl/memblock/L2TlbMissQueue.sv 的 flush 注释），
+    // 必须单独激励：**只**拉这一根、其余四根为 0，才能把它从 OR 里区分出来。
+    io_csr_priv_virt_changed = ($urandom_range(0, 511) == 0);
+  end
+  endtask
+
+  // 定向激励：把队列灌到非空，然后**只**脉冲 io_csr_priv_virt_changed（其余四根
+  // flush 源全 0），观察指针/满标志是否归零。漏掉该 OR 项的核在这里必失配。
+  task automatic directed_priv_virt_flush(input int unsigned fill_n);
+  begin
+    // 阶段 1：安静地灌 fill_n 拍入队（不出队、无任何 flush）。
+    io_sfence_valid          = 1'b0;
+    io_csr_satp_changed      = 1'b0;
+    io_csr_vsatp_changed     = 1'b0;
+    io_csr_hgatp_changed     = 1'b0;
+    io_csr_priv_virt_changed = 1'b0;
+    io_out_ready             = 1'b0;
+    io_in_valid              = 1'b1;
+    repeat (fill_n) begin
+      @(negedge clock);
+      io_in_bits_req_info_vpn     = 38'($urandom);
+      io_in_bits_req_info_s2xlate = 2'($urandom);
+      io_in_bits_req_info_source  = 2'($urandom);
+      io_in_bits_isLLptw          = 1'($urandom);
+      @(posedge clock);
+    end
+    // 阶段 2：单拍只拉 priv_virt_changed。
+    @(negedge clock);
+    io_in_valid              = 1'b0;
+    io_csr_priv_virt_changed = 1'b1;
+    @(posedge clock);
+    @(negedge clock);
+    io_csr_priv_virt_changed = 1'b0;
+    @(posedge clock);
   end
   endtask
 
@@ -111,6 +150,21 @@ module tb;
     drive_random();
     repeat (5) @(posedge clock);
     reset = 1'b0;
+    // 先跑定向 flush 用例（灌 3/17/40 条后单脉冲 priv_virt_changed），再进随机拍。
+    // 每个定向序列结束后立刻核对内部指针，缺 OR 项的核在这里就会被抓住。
+    for (int unsigned f = 0; f < 3; f++) begin
+      directed_priv_virt_flush((f == 0) ? 3 : (f == 1) ? 17 : 40);
+      #1;
+      if (u_g.io_out_q.enq_ptr_value !== u_i.u_core.enq_ptr
+          || u_g.io_out_q.deq_ptr_value !== u_i.u_core.deq_ptr
+          || u_g.io_out_q.maybe_full !== u_i.u_core.maybe_full) begin
+        probe_errors++;
+        $display("DIRECTED priv_virt_changed flush MISMATCH: enq g=%0h i=%0h  deq g=%0h i=%0h  full g=%0h i=%0h",
+                 u_g.io_out_q.enq_ptr_value, u_i.u_core.enq_ptr,
+                 u_g.io_out_q.deq_ptr_value, u_i.u_core.deq_ptr,
+                 u_g.io_out_q.maybe_full,    u_i.u_core.maybe_full);
+      end
+    end
     for (cycle = 0; cycle < 200000; cycle++) begin
       @(negedge clock);
       drive_random();

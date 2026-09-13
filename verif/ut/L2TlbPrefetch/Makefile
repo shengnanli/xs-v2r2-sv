@@ -10,5 +10,8 @@ FM_VARIANTS = L2TlbPrefetch
 
 include ../../../scripts/ut_common.mk
 
-simv: $(RTL_SRCS) $(TB_SRCS) $(GOLDEN_SRCS)
-	$(VCS) +define+SYNTHESIS $(RTL_SRCS) $(GOLDEN_RTL)/L2TlbPrefetch.sv $(TB_SRCS) -top tb -o simv
+# 同 L2TlbMissQueue：原先本文件的 simv override 编的是 $(RTL_SRCS) 原文件而非
+# ut_gen/ 派生副本，tb 例化的 L2TlbPrefetch_xs 找不到（Error-[CFCILFBI]），
+# 这个 UT 从未真正编过。删除 override，走 ut_common.mk 的公共规则。
+VCS      += +define+SYNTHESIS +vcs+initreg+random
+SIM_ARGS += +vcs+initreg+0

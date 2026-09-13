@@ -33,7 +33,8 @@ endpackage
 // xs_L2TlbMissQueue_core —— L2TLB Miss 队列（可读 SystemVerilog 重写）
 //
 // 设计意图来自 L2TLBMissQueue.scala class L2TlbMissQueue：
-//   io.out <> Queue(io.in, MissQueueSize, flush = sfence|satp|vsatp|hgatp changed)
+//   io.out <> Queue(io.in, MissQueueSize,
+//                   flush = sfence | satp|vsatp|hgatp|priv.virt changed)
 //
 // 它本质上就是一个深度 MissQueueSize=40、带 flush 的 FIFO，作为“在 page cache
 // 里 pde miss 的请求”的延迟槽（delay slot）：这些请求需要重新访问 page cache，
@@ -54,7 +55,7 @@ module xs_L2TlbMissQueue_core
   input  logic              clock,
   input  logic              reset,
 
-  input  logic              flush,        // sfence / satp / vsatp / hgatp changed
+  input  logic              flush,        // sfence / satp / vsatp / hgatp / priv.virt changed
 
   output logic              enq_ready,
   input  logic              enq_valid,
@@ -155,7 +156,8 @@ module xs_L2TlbMissQueue_core
 
 endmodule
 
-// 自动生成：scripts/gen_l2tlbmissqueue.py —— 仅机械端口适配，核心逻辑在 xs_L2TlbMissQueue_core
+// 下面的 wrapper 是机械端口适配，核心逻辑在 xs_L2TlbMissQueue_core。
+// （原注释称由 scripts/gen_l2tlbmissqueue.py 生成，但仓库里没有该脚本；本文件手工维护。）
 
 // ---------------------------------------------------------------------------
 // golden 同名 wrapper
@@ -168,6 +170,7 @@ module L2TlbMissQueue import xs_l2tlbmissqueue_pkg::*; (
   input  io_csr_satp_changed,
   input  io_csr_vsatp_changed,
   input  io_csr_hgatp_changed,
+  input  io_csr_priv_virt_changed,
   output io_in_ready,
   input  io_in_valid,
   input  [37:0] io_in_bits_req_info_vpn,
@@ -198,7 +201,10 @@ module L2TlbMissQueue import xs_l2tlbmissqueue_pkg::*; (
   xs_L2TlbMissQueue_core u_core (
     .clock(clock),
     .reset(reset),
-    .flush(io_sfence_valid | io_csr_satp_changed | io_csr_vsatp_changed | io_csr_hgatp_changed),
+    // flush = sfence.vma 或任一地址翻译相关 CSR 变化（satp/vsatp/hgatp/priv.virt）
+    // —— 与 golden Queue40_L2TlbMQBundle 的 io_flush 五项 OR 逐项一致。
+    .flush(io_sfence_valid | io_csr_satp_changed | io_csr_vsatp_changed
+           | io_csr_hgatp_changed | io_csr_priv_virt_changed),
     .enq_ready(io_in_ready),
     .enq_valid(io_in_valid),
     .enq_bits(enq_bits_bus),
