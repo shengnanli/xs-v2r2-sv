@@ -1,7 +1,9 @@
 // Arbiter1_InsUncacheResp —— 单入仲裁器（InstrUncache 的响应通道）
-// 只有一个输入源，所谓"仲裁"退化为直通：valid/data/corrupt 三条各自一条 assign。
-// golden 里它是 Arbiter 的单入特化实例；本文件自足，不例化任何核。
-// 端口规模：3 输入 / 3 输出。
+// Chisel 里是 Arbiter(new InsUncacheResp, cacheParams.nMMIOs)；KunminghuV2 的 nMMIOs=1，
+// 于是"仲裁"退化成直通：只有一个输入源，chosen 恒 0、in.ready 恒等于 out.ready，
+// 连 ready 端口本身都因为上下游都恒 1 而被 firtool 消掉了（见 InstrUncache.sv 文件头）。
+// 剩下的就是 valid/data/corrupt 三条直连线。本文件自足，不例化任何核。
+// 端口规模：3 输入 / 3 输出（都是 1 位，除 data 32 位）。
 
 module Arbiter1_InsUncacheResp(
   input         io_in_0_valid,
@@ -15,5 +17,3 @@ module Arbiter1_InsUncacheResp(
   assign io_out_bits_data    = io_in_0_bits_data;
   assign io_out_bits_corrupt = io_in_0_bits_corrupt;
 endmodule
-
-// golden 同名 entry wrapper（端口与 golden 一致），内部用 xs 核
