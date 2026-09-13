@@ -1,0 +1,61 @@
+# expected 黑盒集合 —— TLBuffer_13
+# 来源（三样，均与 FM 运行结果无关）：
+#  1) elaboration 元数据：/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/verif/ut/TLBuffer_13/Makefile 展开的 FM_REF_SRCS / FM_IMPL_SRCS
+#  2) 设计源：下列文件的 module/instance 层次图（verif/allow_gen/sv_elab.py 解析）
+#  3) 判据：fm_eq.tcl 设 hdlin_unresolved_modules=black_box 且不设任何库搜索路径
+#     ⇒ 黑盒 ⟺ 被例化但其模块类型不在该侧读入文件集里
+# ref 侧读入文件:
+#   /home/eda/xs-env/G1-canonical/golden-rtl/TLBuffer_13.sv
+#   /home/eda/xs-env/G1-canonical/golden-rtl/Queue2_TLBundleA_19.sv
+#   /home/eda/xs-env/G1-canonical/golden-rtl/Queue2_TLBundleB_1.sv
+#   /home/eda/xs-env/G1-canonical/golden-rtl/Queue2_TLBundleC_1.sv
+#   /home/eda/xs-env/G1-canonical/golden-rtl/Queue2_TLBundleD_20.sv
+#   /home/eda/xs-env/G1-canonical/golden-rtl/Queue2_TLBundleE_1.sv
+# impl 侧读入文件:
+#   /tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/memblock/TLBuffer_13.sv
+#   /home/eda/xs-env/G1-canonical/golden-rtl/Queue2_TLBundleA_19.sv
+#   /home/eda/xs-env/G1-canonical/golden-rtl/Queue2_TLBundleB_1.sv
+#   /home/eda/xs-env/G1-canonical/golden-rtl/Queue2_TLBundleC_1.sv
+#   /home/eda/xs-env/G1-canonical/golden-rtl/Queue2_TLBundleD_20.sv
+#   /home/eda/xs-env/G1-canonical/golden-rtl/Queue2_TLBundleE_1.sv
+side	attrs	design	path
+i	u	ram_2x119	i:/WORK/TLBuffer_13/u_core/g_bank[0].u_bank/nodeOut_a_q/ram_ext
+i	u	ram_2x119	i:/WORK/TLBuffer_13/u_core/g_bank[1].u_bank/nodeOut_a_q/ram_ext
+i	u	ram_2x119	i:/WORK/TLBuffer_13/u_core/g_bank[2].u_bank/nodeOut_a_q/ram_ext
+i	u	ram_2x119	i:/WORK/TLBuffer_13/u_core/g_bank[3].u_bank/nodeOut_a_q/ram_ext
+i	u	ram_2x283	i:/WORK/TLBuffer_13/u_core/g_bank[0].u_bank/nodeIn_d_q/ram_ext
+i	u	ram_2x283	i:/WORK/TLBuffer_13/u_core/g_bank[1].u_bank/nodeIn_d_q/ram_ext
+i	u	ram_2x283	i:/WORK/TLBuffer_13/u_core/g_bank[2].u_bank/nodeIn_d_q/ram_ext
+i	u	ram_2x283	i:/WORK/TLBuffer_13/u_core/g_bank[3].u_bank/nodeIn_d_q/ram_ext
+i	u	ram_2x321	i:/WORK/TLBuffer_13/u_core/g_bank[0].u_bank/nodeOut_c_q/ram_ext
+i	u	ram_2x321	i:/WORK/TLBuffer_13/u_core/g_bank[1].u_bank/nodeOut_c_q/ram_ext
+i	u	ram_2x321	i:/WORK/TLBuffer_13/u_core/g_bank[2].u_bank/nodeOut_c_q/ram_ext
+i	u	ram_2x321	i:/WORK/TLBuffer_13/u_core/g_bank[3].u_bank/nodeOut_c_q/ram_ext
+i	u	ram_2x352	i:/WORK/TLBuffer_13/u_core/g_bank[0].u_bank/nodeIn_b_q/ram_ext
+i	u	ram_2x352	i:/WORK/TLBuffer_13/u_core/g_bank[1].u_bank/nodeIn_b_q/ram_ext
+i	u	ram_2x352	i:/WORK/TLBuffer_13/u_core/g_bank[2].u_bank/nodeIn_b_q/ram_ext
+i	u	ram_2x352	i:/WORK/TLBuffer_13/u_core/g_bank[3].u_bank/nodeIn_b_q/ram_ext
+i	u	ram_sink_2x8	i:/WORK/TLBuffer_13/u_core/g_bank[0].u_bank/nodeOut_e_q/ram_sink_ext
+i	u	ram_sink_2x8	i:/WORK/TLBuffer_13/u_core/g_bank[1].u_bank/nodeOut_e_q/ram_sink_ext
+i	u	ram_sink_2x8	i:/WORK/TLBuffer_13/u_core/g_bank[2].u_bank/nodeOut_e_q/ram_sink_ext
+i	u	ram_sink_2x8	i:/WORK/TLBuffer_13/u_core/g_bank[3].u_bank/nodeOut_e_q/ram_sink_ext
+r	u	ram_2x119	r:/WORK/TLBuffer_13/nodeOut_a_q/ram_ext
+r	u	ram_2x119	r:/WORK/TLBuffer_13/nodeOut_a_q_1/ram_ext
+r	u	ram_2x119	r:/WORK/TLBuffer_13/nodeOut_a_q_2/ram_ext
+r	u	ram_2x119	r:/WORK/TLBuffer_13/nodeOut_a_q_3/ram_ext
+r	u	ram_2x283	r:/WORK/TLBuffer_13/nodeIn_d_q/ram_ext
+r	u	ram_2x283	r:/WORK/TLBuffer_13/nodeIn_d_q_1/ram_ext
+r	u	ram_2x283	r:/WORK/TLBuffer_13/nodeIn_d_q_2/ram_ext
+r	u	ram_2x283	r:/WORK/TLBuffer_13/nodeIn_d_q_3/ram_ext
+r	u	ram_2x321	r:/WORK/TLBuffer_13/nodeOut_c_q/ram_ext
+r	u	ram_2x321	r:/WORK/TLBuffer_13/nodeOut_c_q_1/ram_ext
+r	u	ram_2x321	r:/WORK/TLBuffer_13/nodeOut_c_q_2/ram_ext
+r	u	ram_2x321	r:/WORK/TLBuffer_13/nodeOut_c_q_3/ram_ext
+r	u	ram_2x352	r:/WORK/TLBuffer_13/nodeIn_b_q/ram_ext
+r	u	ram_2x352	r:/WORK/TLBuffer_13/nodeIn_b_q_1/ram_ext
+r	u	ram_2x352	r:/WORK/TLBuffer_13/nodeIn_b_q_2/ram_ext
+r	u	ram_2x352	r:/WORK/TLBuffer_13/nodeIn_b_q_3/ram_ext
+r	u	ram_sink_2x8	r:/WORK/TLBuffer_13/nodeOut_e_q/ram_sink_ext
+r	u	ram_sink_2x8	r:/WORK/TLBuffer_13/nodeOut_e_q_1/ram_sink_ext
+r	u	ram_sink_2x8	r:/WORK/TLBuffer_13/nodeOut_e_q_2/ram_sink_ext
+r	u	ram_sink_2x8	r:/WORK/TLBuffer_13/nodeOut_e_q_3/ram_sink_ext

@@ -1,0 +1,35 @@
+# expected 黑盒集合 —— SRAMTemplate_163
+# 来源（三样，均与 FM 运行结果无关）：
+#  1) elaboration 元数据：/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/verif/ut/SRAMTemplateNewForm/Makefile 展开的 FM_REF_SRCS / FM_IMPL_SRCS
+#  2) 设计源：下列文件的 module/instance 层次图（verif/allow_gen/sv_elab.py 解析）
+#  3) 判据：fm_eq.tcl 设 hdlin_unresolved_modules=black_box 且不设任何库搜索路径
+#     ⇒ 黑盒 ⟺ 被例化但其模块类型不在该侧读入文件集里
+# ref 侧读入文件:
+#   /home/eda/xs-env/G1-canonical/golden-rtl/SRAMTemplate_163.sv
+#   /home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p512x104m13s1h0l1b_l2_meta.sv
+#   /home/eda/xs-env/G1-canonical/golden-rtl/array_15.sv
+# impl 侧读入文件:
+#   /tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/xs_SRAMTemplate_core.sv
+#   /tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_128.sv
+#   /tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_145.sv
+#   /tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_146.sv
+#   /tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_155.sv
+#   /tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_163.sv
+#   /tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_166.sv
+#   /tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_178.sv
+#   /tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_185.sv
+#   /home/eda/xs-env/G1-canonical/golden-rtl/ClockGate.sv
+#   /home/eda/xs-env/G1-canonical/golden-rtl/MbistClockGateCell.sv
+#   /home/eda/xs-env/G1-canonical/golden-rtl/array_10.sv
+#   /home/eda/xs-env/G1-canonical/golden-rtl/array_12.sv
+#   /home/eda/xs-env/G1-canonical/golden-rtl/array_13.sv
+#   /home/eda/xs-env/G1-canonical/golden-rtl/array_15.sv
+#   /home/eda/xs-env/G1-canonical/golden-rtl/array_18.sv
+#   /home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt.sv
+#   /home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p32x148m74s1h0l1b_pftch_pht.sv
+#   /home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p4096x137m137s1h1l2b_l2_dat.sv
+#   /home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p4x786m131s1h0l1b_ptw_l1.sv
+#   /home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p512x104m13s1h0l1b_l2_meta.sv
+side	attrs	design	path
+i	u	array_15_ext	i:/WORK/SRAMTemplate_163/array/array/array_15_ext
+r	u	array_15_ext	r:/WORK/SRAMTemplate_163/array/array/array_15_ext
