@@ -1,0 +1,1009 @@
+{
+ "DuplicatedTagArray": {
+  "objects": [
+   [
+    "r",
+    "array_8_ext",
+    "r:/WORK/DuplicatedTagArray/array_0/tag_arrays_0/tag_array/array/array/array_8_ext"
+   ],
+   [
+    "r",
+    "array_8_ext",
+    "r:/WORK/DuplicatedTagArray/array_0/tag_arrays_1/tag_array/array/array/array_8_ext"
+   ],
+   [
+    "r",
+    "array_8_ext",
+    "r:/WORK/DuplicatedTagArray/array_1/tag_arrays_0/tag_array/array/array/array_8_ext"
+   ],
+   [
+    "r",
+    "array_8_ext",
+    "r:/WORK/DuplicatedTagArray/array_1/tag_arrays_1/tag_array/array/array/array_8_ext"
+   ],
+   [
+    "r",
+    "array_8_ext",
+    "r:/WORK/DuplicatedTagArray/array_2/tag_arrays_0/tag_array/array/array/array_8_ext"
+   ],
+   [
+    "r",
+    "array_8_ext",
+    "r:/WORK/DuplicatedTagArray/array_2/tag_arrays_1/tag_array/array/array/array_8_ext"
+   ],
+   [
+    "r",
+    "array_8_ext",
+    "r:/WORK/DuplicatedTagArray/array_3/tag_arrays_0/tag_array/array/array/array_8_ext"
+   ],
+   [
+    "r",
+    "array_8_ext",
+    "r:/WORK/DuplicatedTagArray/array_3/tag_arrays_1/tag_array/array/array/array_8_ext"
+   ],
+   [
+    "i",
+    "array_8",
+    "i:/WORK/DuplicatedTagArray/g_tarr[0].array_k/tag_arrays_0/tag_array/array/array"
+   ],
+   [
+    "i",
+    "array_8",
+    "i:/WORK/DuplicatedTagArray/g_tarr[0].array_k/tag_arrays_1/tag_array/array/array"
+   ],
+   [
+    "i",
+    "array_8",
+    "i:/WORK/DuplicatedTagArray/g_tarr[1].array_k/tag_arrays_0/tag_array/array/array"
+   ],
+   [
+    "i",
+    "array_8",
+    "i:/WORK/DuplicatedTagArray/g_tarr[1].array_k/tag_arrays_1/tag_array/array/array"
+   ],
+   [
+    "i",
+    "array_8",
+    "i:/WORK/DuplicatedTagArray/g_tarr[2].array_k/tag_arrays_0/tag_array/array/array"
+   ],
+   [
+    "i",
+    "array_8",
+    "i:/WORK/DuplicatedTagArray/g_tarr[2].array_k/tag_arrays_1/tag_array/array/array"
+   ],
+   [
+    "i",
+    "array_8",
+    "i:/WORK/DuplicatedTagArray/g_tarr[3].array_k/tag_arrays_0/tag_array/array/array"
+   ],
+   [
+    "i",
+    "array_8",
+    "i:/WORK/DuplicatedTagArray/g_tarr[3].array_k/tag_arrays_1/tag_array/array/array"
+   ]
+  ],
+  "warnings": [],
+  "errors": [],
+  "ref_files": [
+   "/home/eda/xs-env/G1-canonical/golden-rtl/DuplicatedTagArray.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/TagArray.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/TagSRAMBank.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/SRAMTemplate_116.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p256x86m43s1h0l1b_dcsh_tag.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_9.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/MbistClockGateCell.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/ClockGate.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/MbistPipeDcacheTag.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_8.sv"
+  ],
+  "impl_files": [
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/memblock/DuplicatedTagArray.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/ClockGate.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/MbistClockGateCell.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/MbistPipeDcacheTag.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/SRAMTemplate_116.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/TagArray.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/TagSRAMBank.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_9.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p256x86m43s1h0l1b_dcsh_tag.sv"
+  ],
+  "utdir": "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/verif/ut/DuplicatedTagArray"
+ },
+ "ICache": {
+  "objects": [
+   [
+    "r",
+    "ICacheCtrlUnit",
+    "r:/WORK/ICache/ctrlUnitOpt"
+   ],
+   [
+    "r",
+    "ICacheDataArray",
+    "r:/WORK/ICache/dataArray"
+   ],
+   [
+    "r",
+    "ICacheMainPipe",
+    "r:/WORK/ICache/mainPipe"
+   ],
+   [
+    "r",
+    "ICacheMetaArray",
+    "r:/WORK/ICache/metaArray"
+   ],
+   [
+    "r",
+    "ICacheMissUnit",
+    "r:/WORK/ICache/missUnit"
+   ],
+   [
+    "r",
+    "ICacheReplacer",
+    "r:/WORK/ICache/replacer"
+   ],
+   [
+    "r",
+    "IPrefetchPipe",
+    "r:/WORK/ICache/prefetcher"
+   ],
+   [
+    "r",
+    "WayLookup",
+    "r:/WORK/ICache/wayLookup"
+   ],
+   [
+    "i",
+    "ICacheCtrlUnit",
+    "i:/WORK/ICache/u_core/ctrlUnitOpt"
+   ],
+   [
+    "i",
+    "ICacheDataArray",
+    "i:/WORK/ICache/u_core/dataArray"
+   ],
+   [
+    "i",
+    "ICacheMainPipe",
+    "i:/WORK/ICache/u_core/mainPipe"
+   ],
+   [
+    "i",
+    "ICacheMetaArray",
+    "i:/WORK/ICache/u_core/metaArray"
+   ],
+   [
+    "i",
+    "ICacheMissUnit",
+    "i:/WORK/ICache/u_core/missUnit"
+   ],
+   [
+    "i",
+    "ICacheReplacer",
+    "i:/WORK/ICache/u_core/replacer"
+   ],
+   [
+    "i",
+    "IPrefetchPipe",
+    "i:/WORK/ICache/u_core/prefetcher"
+   ],
+   [
+    "i",
+    "WayLookup",
+    "i:/WORK/ICache/u_core/wayLookup"
+   ]
+  ],
+  "warnings": [],
+  "errors": [],
+  "ref_files": [
+   "/home/eda/xs-env/G1-canonical/golden-rtl/ICache.sv"
+  ],
+  "impl_files": [
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/frontend/ICache.sv"
+  ],
+  "utdir": "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/verif/ut/ICache"
+ },
+ "ICacheMetaArray": {
+  "objects": [
+   [
+    "r",
+    "MbistPipeIcacheTag",
+    "r:/WORK/ICacheMetaArray/mbistPl"
+   ],
+   [
+    "r",
+    "SplittedSRAMTemplate",
+    "r:/WORK/ICacheMetaArray/tagArrays_0"
+   ],
+   [
+    "r",
+    "SplittedSRAMTemplate_1",
+    "r:/WORK/ICacheMetaArray/tagArrays_1"
+   ],
+   [
+    "i",
+    "MbistPipeIcacheTag",
+    "i:/WORK/ICacheMetaArray/mbistPl"
+   ],
+   [
+    "i",
+    "SplittedSRAMTemplate",
+    "i:/WORK/ICacheMetaArray/tagArrays_0"
+   ],
+   [
+    "i",
+    "SplittedSRAMTemplate_1",
+    "i:/WORK/ICacheMetaArray/tagArrays_1"
+   ]
+  ],
+  "warnings": [],
+  "errors": [],
+  "ref_files": [
+   "/home/eda/xs-env/G1-canonical/golden-rtl/ICacheMetaArray.sv"
+  ],
+  "impl_files": [
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/frontend/ICacheMetaArray.sv"
+  ],
+  "utdir": "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/verif/ut/ICacheMetaArray"
+ },
+ "IMSICGateWay": {
+  "objects": [
+   [
+    "r",
+    "AsyncResetSynchronizerShiftReg_w1_d3_i0",
+    "r:/WORK/IMSICGateWay/msi_vld_req_cpu_chain"
+   ],
+   [
+    "i",
+    "AsyncResetSynchronizerShiftReg_w1_d3_i0",
+    "i:/WORK/IMSICGateWay/u_core/msi_vld_req_cpu_chain"
+   ]
+  ],
+  "warnings": [],
+  "errors": [],
+  "ref_files": [
+   "/home/eda/xs-env/G1-canonical/golden-rtl/IMSICGateWay.sv"
+  ],
+  "impl_files": [
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/uncore/IMSICGateWay.sv"
+  ],
+  "utdir": "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/verif/ut/IMSICGateWay"
+ },
+ "L2TlbMissQueue": {
+  "objects": [
+   [
+    "r",
+    "ram_40x47",
+    "r:/WORK/L2TlbMissQueue/io_out_q/ram_ext"
+   ],
+   [
+    "i",
+    "ram_40x47",
+    "i:/WORK/L2TlbMissQueue/u_core/mem_ext"
+   ]
+  ],
+  "warnings": [],
+  "errors": [],
+  "ref_files": [
+   "/home/eda/xs-env/G1-canonical/golden-rtl/L2TlbMissQueue.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/Queue40_L2TlbMQBundle.sv"
+  ],
+  "impl_files": [
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/memblock/L2TlbMissQueue.sv"
+  ],
+  "utdir": "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/verif/ut/L2TlbMissQueue"
+ },
+ "SRAMTemplate_128": {
+  "objects": [
+   [
+    "r",
+    "array_10_ext",
+    "r:/WORK/SRAMTemplate_128/array/array/array_10_ext"
+   ],
+   [
+    "i",
+    "array_10_ext",
+    "i:/WORK/SRAMTemplate_128/array/array/array_10_ext"
+   ]
+  ],
+  "warnings": [],
+  "errors": [],
+  "ref_files": [
+   "/home/eda/xs-env/G1-canonical/golden-rtl/SRAMTemplate_128.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p4x786m131s1h0l1b_ptw_l1.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_10.sv"
+  ],
+  "impl_files": [
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/xs_SRAMTemplate_core.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_128.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_145.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_146.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_155.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_163.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_166.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_178.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_185.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/ClockGate.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/MbistClockGateCell.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_10.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_12.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_13.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_15.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_18.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p32x148m74s1h0l1b_pftch_pht.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p4096x137m137s1h1l2b_l2_dat.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p4x786m131s1h0l1b_ptw_l1.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p512x104m13s1h0l1b_l2_meta.sv"
+  ],
+  "utdir": "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/verif/ut/SRAMTemplateNewForm"
+ },
+ "SRAMTemplate_145": {
+  "objects": [
+   [
+    "r",
+    "array_12_ext",
+    "r:/WORK/SRAMTemplate_145/array/array/array_12_ext"
+   ],
+   [
+    "i",
+    "array_12_ext",
+    "i:/WORK/SRAMTemplate_145/array/array/array_12_ext"
+   ]
+  ],
+  "warnings": [],
+  "errors": [],
+  "ref_files": [
+   "/home/eda/xs-env/G1-canonical/golden-rtl/SRAMTemplate_145.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p32x148m74s1h0l1b_pftch_pht.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_12.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/MbistClockGateCell.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/ClockGate.sv"
+  ],
+  "impl_files": [
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/xs_SRAMTemplate_core.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_128.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_145.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_146.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_155.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_163.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_166.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_178.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_185.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/ClockGate.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/MbistClockGateCell.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_10.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_12.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_13.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_15.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_18.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p32x148m74s1h0l1b_pftch_pht.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p4096x137m137s1h1l2b_l2_dat.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p4x786m131s1h0l1b_ptw_l1.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p512x104m13s1h0l1b_l2_meta.sv"
+  ],
+  "utdir": "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/verif/ut/SRAMTemplateNewForm"
+ },
+ "SRAMTemplate_146": {
+  "objects": [
+   [
+    "r",
+    "array_13_ext",
+    "r:/WORK/SRAMTemplate_146/array/array/array_13_ext"
+   ],
+   [
+    "i",
+    "array_13_ext",
+    "i:/WORK/SRAMTemplate_146/array/array/array_13_ext"
+   ]
+  ],
+  "warnings": [],
+  "errors": [],
+  "ref_files": [
+   "/home/eda/xs-env/G1-canonical/golden-rtl/SRAMTemplate_146.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_13.sv"
+  ],
+  "impl_files": [
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/xs_SRAMTemplate_core.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_128.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_145.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_146.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_155.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_163.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_166.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_178.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_185.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/ClockGate.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/MbistClockGateCell.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_10.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_12.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_13.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_15.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_18.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p32x148m74s1h0l1b_pftch_pht.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p4096x137m137s1h1l2b_l2_dat.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p4x786m131s1h0l1b_ptw_l1.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p512x104m13s1h0l1b_l2_meta.sv"
+  ],
+  "utdir": "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/verif/ut/SRAMTemplateNewForm"
+ },
+ "SRAMTemplate_155": {
+  "objects": [
+   [
+    "r",
+    "array_18_ext",
+    "r:/WORK/SRAMTemplate_155/array/array/array_18_ext"
+   ],
+   [
+    "i",
+    "array_18_ext",
+    "i:/WORK/SRAMTemplate_155/array/array/array_18_ext"
+   ]
+  ],
+  "warnings": [],
+  "errors": [],
+  "ref_files": [
+   "/home/eda/xs-env/G1-canonical/golden-rtl/SRAMTemplate_155.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p4096x137m137s1h1l2b_l2_dat.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_18.sv"
+  ],
+  "impl_files": [
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/xs_SRAMTemplate_core.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_128.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_145.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_146.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_155.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_163.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_166.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_178.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_185.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/ClockGate.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/MbistClockGateCell.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_10.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_12.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_13.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_15.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_18.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p32x148m74s1h0l1b_pftch_pht.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p4096x137m137s1h1l2b_l2_dat.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p4x786m131s1h0l1b_ptw_l1.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p512x104m13s1h0l1b_l2_meta.sv"
+  ],
+  "utdir": "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/verif/ut/SRAMTemplateNewForm"
+ },
+ "SRAMTemplate_163": {
+  "objects": [
+   [
+    "r",
+    "array_15_ext",
+    "r:/WORK/SRAMTemplate_163/array/array/array_15_ext"
+   ],
+   [
+    "i",
+    "array_15_ext",
+    "i:/WORK/SRAMTemplate_163/array/array/array_15_ext"
+   ]
+  ],
+  "warnings": [],
+  "errors": [],
+  "ref_files": [
+   "/home/eda/xs-env/G1-canonical/golden-rtl/SRAMTemplate_163.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p512x104m13s1h0l1b_l2_meta.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_15.sv"
+  ],
+  "impl_files": [
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/xs_SRAMTemplate_core.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_128.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_145.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_146.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_155.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_163.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_166.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_178.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_185.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/ClockGate.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/MbistClockGateCell.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_10.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_12.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_13.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_15.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_18.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p32x148m74s1h0l1b_pftch_pht.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p4096x137m137s1h1l2b_l2_dat.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p4x786m131s1h0l1b_ptw_l1.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p512x104m13s1h0l1b_l2_meta.sv"
+  ],
+  "utdir": "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/verif/ut/SRAMTemplateNewForm"
+ },
+ "SRAMTemplate_166": {
+  "objects": [
+   [
+    "r",
+    "array_18_ext",
+    "r:/WORK/SRAMTemplate_166/array/array/array_18_ext"
+   ],
+   [
+    "i",
+    "array_18_ext",
+    "i:/WORK/SRAMTemplate_166/array/array/array_18_ext"
+   ]
+  ],
+  "warnings": [],
+  "errors": [],
+  "ref_files": [
+   "/home/eda/xs-env/G1-canonical/golden-rtl/SRAMTemplate_166.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p4096x137m137s1h1l2b_l2_dat.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_18.sv"
+  ],
+  "impl_files": [
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/xs_SRAMTemplate_core.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_128.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_145.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_146.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_155.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_163.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_166.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_178.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_185.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/ClockGate.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/MbistClockGateCell.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_10.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_12.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_13.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_15.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_18.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p32x148m74s1h0l1b_pftch_pht.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p4096x137m137s1h1l2b_l2_dat.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p4x786m131s1h0l1b_ptw_l1.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p512x104m13s1h0l1b_l2_meta.sv"
+  ],
+  "utdir": "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/verif/ut/SRAMTemplateNewForm"
+ },
+ "SRAMTemplate_178": {
+  "objects": [
+   [
+    "r",
+    "array_18_ext",
+    "r:/WORK/SRAMTemplate_178/array/array/array_18_ext"
+   ],
+   [
+    "i",
+    "array_18_ext",
+    "i:/WORK/SRAMTemplate_178/array/array/array_18_ext"
+   ]
+  ],
+  "warnings": [],
+  "errors": [],
+  "ref_files": [
+   "/home/eda/xs-env/G1-canonical/golden-rtl/SRAMTemplate_178.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p4096x137m137s1h1l2b_l2_dat.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_18.sv"
+  ],
+  "impl_files": [
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/xs_SRAMTemplate_core.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_128.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_145.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_146.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_155.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_163.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_166.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_178.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_185.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/ClockGate.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/MbistClockGateCell.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_10.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_12.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_13.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_15.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_18.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p32x148m74s1h0l1b_pftch_pht.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p4096x137m137s1h1l2b_l2_dat.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p4x786m131s1h0l1b_ptw_l1.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p512x104m13s1h0l1b_l2_meta.sv"
+  ],
+  "utdir": "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/verif/ut/SRAMTemplateNewForm"
+ },
+ "SRAMTemplate_185": {
+  "objects": [
+   [
+    "r",
+    "array_15_ext",
+    "r:/WORK/SRAMTemplate_185/array/array/array_15_ext"
+   ],
+   [
+    "i",
+    "array_15_ext",
+    "i:/WORK/SRAMTemplate_185/array/array/array_15_ext"
+   ]
+  ],
+  "warnings": [],
+  "errors": [],
+  "ref_files": [
+   "/home/eda/xs-env/G1-canonical/golden-rtl/SRAMTemplate_185.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p512x104m13s1h0l1b_l2_meta.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_15.sv"
+  ],
+  "impl_files": [
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/xs_SRAMTemplate_core.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_128.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_145.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_146.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_155.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_163.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_166.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_178.sv",
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/common/SRAMTemplate_185.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/ClockGate.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/MbistClockGateCell.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_10.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_12.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_13.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_15.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/array_18.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p32x148m74s1h0l1b_pftch_pht.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p4096x137m137s1h1l2b_l2_dat.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p4x786m131s1h0l1b_ptw_l1.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/sram_array_1p512x104m13s1h0l1b_l2_meta.sv"
+  ],
+  "utdir": "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/verif/ut/SRAMTemplateNewForm"
+ },
+ "SubDirectory": {
+  "objects": [
+   [
+    "r",
+    "MaxPeriodFibonacciLFSR_3",
+    "r:/WORK/SubDirectory/lfsr_prng"
+   ],
+   [
+    "r",
+    "SRAMTemplate_192",
+    "r:/WORK/SubDirectory/tagArray"
+   ],
+   [
+    "r",
+    "SRAMTemplate_193",
+    "r:/WORK/SubDirectory/metaArray"
+   ],
+   [
+    "i",
+    "MaxPeriodFibonacciLFSR_3",
+    "i:/WORK/SubDirectory/lfsr_prng"
+   ],
+   [
+    "i",
+    "SRAMTemplate_192",
+    "i:/WORK/SubDirectory/tagArray"
+   ],
+   [
+    "i",
+    "SRAMTemplate_193",
+    "i:/WORK/SubDirectory/metaArray"
+   ]
+  ],
+  "warnings": [],
+  "errors": [],
+  "ref_files": [
+   "/home/eda/xs-env/G1-canonical/golden-rtl/SubDirectory.sv"
+  ],
+  "impl_files": [
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/uncore/SubDirectory.sv"
+  ],
+  "utdir": "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/verif/ut/SubDirectory"
+ },
+ "SubDirectory_1": {
+  "objects": [
+   [
+    "r",
+    "SRAMTemplate_194",
+    "r:/WORK/SubDirectory_1/tagArray"
+   ],
+   [
+    "r",
+    "SRAMTemplate_195",
+    "r:/WORK/SubDirectory_1/metaArray"
+   ],
+   [
+    "r",
+    "SRAMTemplate_196",
+    "r:/WORK/SubDirectory_1/replacer_sram_opt"
+   ],
+   [
+    "i",
+    "SRAMTemplate_194",
+    "i:/WORK/SubDirectory_1/tagArray"
+   ],
+   [
+    "i",
+    "SRAMTemplate_195",
+    "i:/WORK/SubDirectory_1/metaArray"
+   ],
+   [
+    "i",
+    "SRAMTemplate_196",
+    "i:/WORK/SubDirectory_1/replacer_sram_opt"
+   ]
+  ],
+  "warnings": [],
+  "errors": [],
+  "ref_files": [
+   "/home/eda/xs-env/G1-canonical/golden-rtl/SubDirectory_1.sv"
+  ],
+  "impl_files": [
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/uncore/SubDirectory_1.sv"
+  ],
+  "utdir": "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/verif/ut/SubDirectory_1"
+ },
+ "TLBuffer_13": {
+  "objects": [
+   [
+    "r",
+    "ram_2x119",
+    "r:/WORK/TLBuffer_13/nodeOut_a_q/ram_ext"
+   ],
+   [
+    "r",
+    "ram_2x119",
+    "r:/WORK/TLBuffer_13/nodeOut_a_q_1/ram_ext"
+   ],
+   [
+    "r",
+    "ram_2x119",
+    "r:/WORK/TLBuffer_13/nodeOut_a_q_2/ram_ext"
+   ],
+   [
+    "r",
+    "ram_2x119",
+    "r:/WORK/TLBuffer_13/nodeOut_a_q_3/ram_ext"
+   ],
+   [
+    "r",
+    "ram_2x283",
+    "r:/WORK/TLBuffer_13/nodeIn_d_q/ram_ext"
+   ],
+   [
+    "r",
+    "ram_2x283",
+    "r:/WORK/TLBuffer_13/nodeIn_d_q_1/ram_ext"
+   ],
+   [
+    "r",
+    "ram_2x283",
+    "r:/WORK/TLBuffer_13/nodeIn_d_q_2/ram_ext"
+   ],
+   [
+    "r",
+    "ram_2x283",
+    "r:/WORK/TLBuffer_13/nodeIn_d_q_3/ram_ext"
+   ],
+   [
+    "r",
+    "ram_2x321",
+    "r:/WORK/TLBuffer_13/nodeOut_c_q/ram_ext"
+   ],
+   [
+    "r",
+    "ram_2x321",
+    "r:/WORK/TLBuffer_13/nodeOut_c_q_1/ram_ext"
+   ],
+   [
+    "r",
+    "ram_2x321",
+    "r:/WORK/TLBuffer_13/nodeOut_c_q_2/ram_ext"
+   ],
+   [
+    "r",
+    "ram_2x321",
+    "r:/WORK/TLBuffer_13/nodeOut_c_q_3/ram_ext"
+   ],
+   [
+    "r",
+    "ram_2x352",
+    "r:/WORK/TLBuffer_13/nodeIn_b_q/ram_ext"
+   ],
+   [
+    "r",
+    "ram_2x352",
+    "r:/WORK/TLBuffer_13/nodeIn_b_q_1/ram_ext"
+   ],
+   [
+    "r",
+    "ram_2x352",
+    "r:/WORK/TLBuffer_13/nodeIn_b_q_2/ram_ext"
+   ],
+   [
+    "r",
+    "ram_2x352",
+    "r:/WORK/TLBuffer_13/nodeIn_b_q_3/ram_ext"
+   ],
+   [
+    "r",
+    "ram_sink_2x8",
+    "r:/WORK/TLBuffer_13/nodeOut_e_q/ram_sink_ext"
+   ],
+   [
+    "r",
+    "ram_sink_2x8",
+    "r:/WORK/TLBuffer_13/nodeOut_e_q_1/ram_sink_ext"
+   ],
+   [
+    "r",
+    "ram_sink_2x8",
+    "r:/WORK/TLBuffer_13/nodeOut_e_q_2/ram_sink_ext"
+   ],
+   [
+    "r",
+    "ram_sink_2x8",
+    "r:/WORK/TLBuffer_13/nodeOut_e_q_3/ram_sink_ext"
+   ],
+   [
+    "i",
+    "ram_2x119",
+    "i:/WORK/TLBuffer_13/u_core/g_bank[0].u_bank/nodeOut_a_q/ram_ext"
+   ],
+   [
+    "i",
+    "ram_2x119",
+    "i:/WORK/TLBuffer_13/u_core/g_bank[1].u_bank/nodeOut_a_q/ram_ext"
+   ],
+   [
+    "i",
+    "ram_2x119",
+    "i:/WORK/TLBuffer_13/u_core/g_bank[2].u_bank/nodeOut_a_q/ram_ext"
+   ],
+   [
+    "i",
+    "ram_2x119",
+    "i:/WORK/TLBuffer_13/u_core/g_bank[3].u_bank/nodeOut_a_q/ram_ext"
+   ],
+   [
+    "i",
+    "ram_2x283",
+    "i:/WORK/TLBuffer_13/u_core/g_bank[0].u_bank/nodeIn_d_q/ram_ext"
+   ],
+   [
+    "i",
+    "ram_2x283",
+    "i:/WORK/TLBuffer_13/u_core/g_bank[1].u_bank/nodeIn_d_q/ram_ext"
+   ],
+   [
+    "i",
+    "ram_2x283",
+    "i:/WORK/TLBuffer_13/u_core/g_bank[2].u_bank/nodeIn_d_q/ram_ext"
+   ],
+   [
+    "i",
+    "ram_2x283",
+    "i:/WORK/TLBuffer_13/u_core/g_bank[3].u_bank/nodeIn_d_q/ram_ext"
+   ],
+   [
+    "i",
+    "ram_2x321",
+    "i:/WORK/TLBuffer_13/u_core/g_bank[0].u_bank/nodeOut_c_q/ram_ext"
+   ],
+   [
+    "i",
+    "ram_2x321",
+    "i:/WORK/TLBuffer_13/u_core/g_bank[1].u_bank/nodeOut_c_q/ram_ext"
+   ],
+   [
+    "i",
+    "ram_2x321",
+    "i:/WORK/TLBuffer_13/u_core/g_bank[2].u_bank/nodeOut_c_q/ram_ext"
+   ],
+   [
+    "i",
+    "ram_2x321",
+    "i:/WORK/TLBuffer_13/u_core/g_bank[3].u_bank/nodeOut_c_q/ram_ext"
+   ],
+   [
+    "i",
+    "ram_2x352",
+    "i:/WORK/TLBuffer_13/u_core/g_bank[0].u_bank/nodeIn_b_q/ram_ext"
+   ],
+   [
+    "i",
+    "ram_2x352",
+    "i:/WORK/TLBuffer_13/u_core/g_bank[1].u_bank/nodeIn_b_q/ram_ext"
+   ],
+   [
+    "i",
+    "ram_2x352",
+    "i:/WORK/TLBuffer_13/u_core/g_bank[2].u_bank/nodeIn_b_q/ram_ext"
+   ],
+   [
+    "i",
+    "ram_2x352",
+    "i:/WORK/TLBuffer_13/u_core/g_bank[3].u_bank/nodeIn_b_q/ram_ext"
+   ],
+   [
+    "i",
+    "ram_sink_2x8",
+    "i:/WORK/TLBuffer_13/u_core/g_bank[0].u_bank/nodeOut_e_q/ram_sink_ext"
+   ],
+   [
+    "i",
+    "ram_sink_2x8",
+    "i:/WORK/TLBuffer_13/u_core/g_bank[1].u_bank/nodeOut_e_q/ram_sink_ext"
+   ],
+   [
+    "i",
+    "ram_sink_2x8",
+    "i:/WORK/TLBuffer_13/u_core/g_bank[2].u_bank/nodeOut_e_q/ram_sink_ext"
+   ],
+   [
+    "i",
+    "ram_sink_2x8",
+    "i:/WORK/TLBuffer_13/u_core/g_bank[3].u_bank/nodeOut_e_q/ram_sink_ext"
+   ]
+  ],
+  "warnings": [],
+  "errors": [],
+  "ref_files": [
+   "/home/eda/xs-env/G1-canonical/golden-rtl/TLBuffer_13.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/Queue2_TLBundleA_19.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/Queue2_TLBundleB_1.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/Queue2_TLBundleC_1.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/Queue2_TLBundleD_20.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/Queue2_TLBundleE_1.sv"
+  ],
+  "impl_files": [
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/memblock/TLBuffer_13.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/Queue2_TLBundleA_19.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/Queue2_TLBundleB_1.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/Queue2_TLBundleC_1.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/Queue2_TLBundleD_20.sv",
+   "/home/eda/xs-env/G1-canonical/golden-rtl/Queue2_TLBundleE_1.sv"
+  ],
+  "utdir": "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/verif/ut/TLBuffer_13"
+ },
+ "TageBTable": {
+  "objects": [
+   [
+    "r",
+    "FoldedSRAMTemplate_20",
+    "r:/WORK/TageBTable/bt_0"
+   ],
+   [
+    "r",
+    "FoldedSRAMTemplate_20",
+    "r:/WORK/TageBTable/bt_1"
+   ],
+   [
+    "r",
+    "WrBypass_32",
+    "r:/WORK/TageBTable/wrbypass"
+   ],
+   [
+    "i",
+    "FoldedSRAMTemplate_20",
+    "i:/WORK/TageBTable/u_core/g_bank[0].bt"
+   ],
+   [
+    "i",
+    "FoldedSRAMTemplate_20",
+    "i:/WORK/TageBTable/u_core/g_bank[1].bt"
+   ],
+   [
+    "i",
+    "WrBypass_32",
+    "i:/WORK/TageBTable/u_core/wrbypass"
+   ]
+  ],
+  "warnings": [],
+  "errors": [],
+  "ref_files": [
+   "/home/eda/xs-env/G1-canonical/golden-rtl/TageBTable.sv"
+  ],
+  "impl_files": [
+   "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/rtl/frontend/TageBTable.sv"
+  ],
+  "utdir": "/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-allow/verif/ut/TageBTable"
+ }
+}
