@@ -36,6 +36,15 @@ TB_SRCS = tb.sv
 #                 b) 改 impl 保留全宽 5 位，让死位在两侧对称 → matched-unread，
 #                    再用 vmucp（加强，非放宽）验掉。建议 b，但需 reviewer 裁定
 #                    后再动 RTL，本轮不擅自改。
+#   (3) 6 个子模块里有 4 个的**例化名与 golden 不同**（golden IntRegCacheAgeTimer /
+#       MemRegCacheAgeTimer / IntRegCacheRepRCIdx_age / MemRegCacheRepRCIdx_age
+#       ↔ impl IntRegCache_age_timer / MemRegCache_age_timer / IntRegCache_rep /
+#       MemRegCache_rep；IntRegCache/MemRegCache 两个是一致的）。层次名不同会
+#       让 Formality 少一条最直接的配对线索。同批的 RNXbar/SNXbar/ITTageTable
+#       实测证明 Formality 能吃下层次差异（impl 多一层 u_core、还用 generate
+#       块名，照样 0 unmatched），所以这不一定是问题；**若解冻后 RegCache 仍有
+#       unmatched，先试把这 4 个例化名改成与 golden 一致**（纯改名、零功能影响，
+#       UT 可立刻回归），再考虑 set_user_match。本轮不擅自改。
 # ---------------------------------------------------------------------------
 RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/RegCacheAgeDetector.sv \
                   $(GOLDEN_RTL)/RegCacheAgeDetector_1.sv \
