@@ -7,6 +7,9 @@ TB_SRCS = tb.sv
 
 # golden 双例化：golden 顶 + 其全部子模块传递闭包（两侧共用同一份子模块定义，
 # 比对的是本目标自己的逻辑；子模块本身由各自的目标去证）。
+# G1 里 ICacheCtrlUnit.out_back_q 的类型是 Queue1_RegMapperInput_5（G0 叫 _3；
+# G1 的 _3 是 MemMisc/TLPMA 的另一个队列——同名不同物）。该子模块自己的 UT/FM 在
+# verif/ut/Queue1_RegMapperInput_5/，本目录只证 ICacheCtrlUnit 本体。
 GOLDEN_SRCS = $(GOLDEN_RTL)/ICacheCtrlUnit.sv \
               $(GOLDEN_RTL)/Queue1_RegMapperInput_5.sv
 

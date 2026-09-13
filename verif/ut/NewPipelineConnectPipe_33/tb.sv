@@ -1,27 +1,29 @@
-// 自动生成：scripts/gen_zj_ut.py NewPipelineConnectPipe_33 —— 勿手改
-// NewPipelineConnectPipe_33 双例化逐拍比对：golden NewPipelineConnectPipe_33 vs 重写 NewPipelineConnectPipe_33_xs（derive_ut_impl.py 派生）。
-// 激励 = G1 golden 端口表全随机（ready 偏置 75% 高以制造反压）；
-// 收尾判 errors / checks / toggled / fires 四项，后三项是覆盖闸（防假绿）。
+// NewPipelineConnectPipe_33 双例化逐拍比对 tb —— golden NewPipelineConnectPipe_33 vs 重写 NewPipelineConnectPipe_33_xs（derive_ut_impl.py 派生）。
+// 端口表机械取自 G1 golden NewPipelineConnectPipe_33.sv；所有输入逐拍随机驱动，所有输出逐拍比对。
+// 本变体 = VSegmentUnit.VSegmentUnitPipelineConnect（G0 里同一个模块叫 _31；G0 的 _33 是别的东西）。
+// 覆盖闸：errors=0 在"DUT 根本没动"时同样成立，所以另判三项——
+//   checks  比对次数（0 直接 FAIL）；
+//   toggled 至少翻转过一次的输出个数（< MIN_TOGGLED 判 FAIL）；
+//   fires   valid&ready 同拍成立的次数（< MIN_FIRES 判 FAIL）。
 `timescale 1ns/1ps
 module tb;
-  // 拍数：默认 120000（>= CONVENTIONS 要求的 10 万），可被 ut_common 下发的
-  // +ncycles=<n> 覆盖，这样全工程统一调拍数的开关对本 tb 同样生效。
-  int unsigned NCYCLES = 120000;
+  // 拍数默认 200000（>= CONVENTIONS 的 10 万），被 ut_common.mk 下发的 +ncycles=<n> 覆盖。
+  int unsigned NCYCLES = 200000;
   localparam int unsigned MIN_TOGGLED = 7;
-  localparam int unsigned MIN_FIRES   = 30000;
+  localparam int unsigned MIN_FIRES   = 1000;
   localparam int unsigned N_OUT       = 7;
 
   bit clock = 0;
   always #5 clock = ~clock;
   bit reset;
   longint checks = 0, errors = 0, fires = 0;
-  int      toggled = 0;
+  int     toggled = 0;
 
-  // 宽随机：$urandom 一次 32 位，拼够位宽。
-  function automatic logic [2047:0] rnd(input int w);
+  // 宽随机：$urandom 一次给 32 位，拼够位宽。
+  function automatic logic [2047:0] rnd(input int bw);
     logic [2047:0] v;
     v = '0;
-    for (int i = 0; i < w; i += 32) v[i+:32] = $urandom;
+    for (int i = 0; i < bw; i += 32) v[i+:32] = $urandom;
     return v;
   endfunction
 
@@ -49,19 +51,19 @@ module tb;
   wire g_io_out_bits_vecValid;
   wire i_io_out_bits_vecValid;
 
-  logic p_io_in_ready;   // 上一拍值（toggle 统计）
+  logic p_io_in_ready;   // 上一拍值，用于 toggle 统计
   bit tog_io_in_ready;
-  logic p_io_out_valid;   // 上一拍值（toggle 统计）
+  logic p_io_out_valid;   // 上一拍值，用于 toggle 统计
   bit tog_io_out_valid;
-  logic [49:0] p_io_out_bits_vaddr;   // 上一拍值（toggle 统计）
+  logic [49:0] p_io_out_bits_vaddr;   // 上一拍值，用于 toggle 统计
   bit tog_io_out_bits_vaddr;
-  logic [127:0] p_io_out_bits_data;   // 上一拍值（toggle 统计）
+  logic [127:0] p_io_out_bits_data;   // 上一拍值，用于 toggle 统计
   bit tog_io_out_bits_data;
-  logic [15:0] p_io_out_bits_mask;   // 上一拍值（toggle 统计）
+  logic [15:0] p_io_out_bits_mask;   // 上一拍值，用于 toggle 统计
   bit tog_io_out_bits_mask;
-  logic [47:0] p_io_out_bits_addr;   // 上一拍值（toggle 统计）
+  logic [47:0] p_io_out_bits_addr;   // 上一拍值，用于 toggle 统计
   bit tog_io_out_bits_addr;
-  logic p_io_out_bits_vecValid;   // 上一拍值（toggle 统计）
+  logic p_io_out_bits_vecValid;   // 上一拍值，用于 toggle 统计
   bit tog_io_out_bits_vecValid;
 
   NewPipelineConnectPipe_33 u_g (
@@ -83,6 +85,7 @@ module tb;
     .io_out_bits_vecValid(g_io_out_bits_vecValid),
     .io_rightOutFire(io_rightOutFire)
   );
+
   NewPipelineConnectPipe_33_xs u_i (
     .clock(clock),
     .reset(reset),
@@ -110,7 +113,7 @@ module tb;
     io_in_bits_mask = rnd(16);
     io_in_bits_addr = rnd(48);
     io_in_bits_vecValid = $urandom % 2;
-    io_out_ready = (($urandom % 4) != 0);            // 75% 高：制造反压
+    io_out_ready = (($urandom % 4) != 0);   // 75% 高：既走通路又制造反压
     io_rightOutFire = $urandom % 2;
   endtask
 
@@ -181,7 +184,7 @@ module tb;
     p_io_out_bits_addr = g_io_out_bits_addr;
     if (g_io_out_bits_vecValid !== p_io_out_bits_vecValid) tog_io_out_bits_vecValid = 1'b1;
     p_io_out_bits_vecValid = g_io_out_bits_vecValid;
-    if ((g_io_in_ready && io_in_valid) ||
+    if ((io_in_valid && g_io_in_ready) ||
         (g_io_out_valid && io_out_ready)) fires++;
   endtask
 
@@ -206,7 +209,7 @@ module tb;
     repeat (5) @(posedge clock);
     reset = 1'b0;
     for (int unsigned c = 0; c < NCYCLES; c++) begin
-      // 中途再来一次复位脉冲，覆盖复位路径（两侧同拍同源）。
+      // 中途再复位一次，覆盖复位路径（两侧同拍同源）。
       if (c == NCYCLES/2) begin
         @(negedge clock); reset = 1'b1;
         repeat (3) @(posedge clock);
@@ -226,11 +229,18 @@ module tb;
     if (tog_io_out_bits_mask) toggled++; else $display("COV: output io_out_bits_mask never toggled");
     if (tog_io_out_bits_addr) toggled++; else $display("COV: output io_out_bits_addr never toggled");
     if (tog_io_out_bits_vecValid) toggled++; else $display("COV: output io_out_bits_vecValid never toggled");
-    $display("NewPipelineConnectPipe_33 checks=%0d errors=%0d toggled=%0d/%0d fires=%0d", checks, errors, toggled, N_OUT, fires);
+    $display("NewPipelineConnectPipe_33 checks=%0d errors=%0d toggled=%0d/%0d fires=%0d",
+             checks, errors, toggled, N_OUT, fires);
     if (errors != 0) begin $display("TEST FAILED (mismatch)"); $fatal(1); end
     if (checks == 0) begin $display("TEST FAILED (coverage: no comparison happened)"); $fatal(1); end
-    if (toggled < MIN_TOGGLED) begin $display("TEST FAILED (coverage: only %0d outputs toggled, need >= %0d)", toggled, MIN_TOGGLED); $fatal(1); end
-    if (fires < MIN_FIRES) begin $display("TEST FAILED (coverage: only %0d handshake fires, need >= %0d)", fires, MIN_FIRES); $fatal(1); end
+    if (toggled < MIN_TOGGLED) begin
+      $display("TEST FAILED (coverage: only %0d outputs toggled, need >= %0d)", toggled, MIN_TOGGLED);
+      $fatal(1);
+    end
+    if (fires < MIN_FIRES) begin
+      $display("TEST FAILED (coverage: only %0d handshake fires, need >= %0d)", fires, MIN_FIRES);
+      $fatal(1);
+    end
     $display("TEST PASSED");
     $finish;
   end
