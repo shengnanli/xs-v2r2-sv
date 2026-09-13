@@ -20,11 +20,12 @@
 """
 import argparse
 import pathlib
+import os
 import re
 import sys
 
 REPO = pathlib.Path(__file__).resolve().parent.parent
-RTL = REPO / 'rtl'
+RTL = pathlib.Path(os.environ['XSSV_RTL']) if os.environ.get('XSSV_RTL') else REPO / 'rtl'
 
 FORBIDDEN = re.compile(r'\b_(GEN|T)(_\d+)?\b')
 MOD_RE = re.compile(r'^(package|module)\s+(\w+)', re.MULTILINE)
@@ -85,7 +86,10 @@ def _resolve(tgt, f, repo):
 
 
 def claim_problems(p, text, hdr, modidx, repo):
-    rel = str(p.relative_to(repo))
+    try:
+        rel = str(p.relative_to(repo))
+    except ValueError:
+        rel = str(p)
     h = '\n'.join(hdr)
     out = []
     n_always = len(re.findall(r'\balways(_ff|_comb|_latch)?\b', text))
@@ -122,9 +126,64 @@ def claim_problems(p, text, hdr, modidx, repo):
     return out
 
 
+
+# ---- G 类：代码区与 golden 逐字重合率 ----
+# 为什么需要它：A 类只查 golden 的展平中间名（_GEN_/_T_），但如果照抄的那段 golden
+# 恰好不含这类名字（纯端口表、纯实例连线、纯 assign），A 类就抓不到。
+# 实证（上一轮 xs-v2r2-sv）：
+#   Predictor_wrapper.sv  44604 行，98.5% 逐字来自 G0 golden，代码区 7940 处 _GEN_/_T_  → A 类能抓
+#   Composer_wrapper.sv    4157 行，71.0% 逐字来自 G0 golden，代码区 **0** 处          → A 类抓不到
+# 后者正是"照抄但躲过审计"的形态。
+#
+# 判据只看**代码区**（去注释、去空行），且排除 wrapper 的端口表——端口必须与 golden
+# 逐位同名是规范要求，那部分重合是应该的。
+GOLDEN = pathlib.Path(os.environ.get('G1_GOLDEN',
+                      '/home/eda/xs-env/G1-canonical/golden-rtl'))
+OVERLAP_LIMIT = float(os.environ.get('XSSV_OVERLAP_LIMIT', '0.45'))
+_PORTLINE = re.compile(r'^\s*(input|output|inout)\b')
+# 实例连线 `.io_x (y),`、例化头 `Foo bar (`、收尾 `);`、纯声明、括号关键字 ——
+# 这些与 golden 逐字相同是**规范要求或结构必然**（端口名由 golden 定），不构成"照抄逻辑"。
+# 实证：ICacheDataArray 是 MBIST 分发壳，1351 行重合里 99.85% 属这几类
+# （实例连线 975 / 声明 320 / 例化头 36 / 括号 18），真逻辑行只重合 2 条。
+# 只看剩下的真逻辑行才有判别力。
+_STRUCTURAL = re.compile(
+    r'^(\.\w+'
+    r'|\)\s*\w*\s*;?$'
+    r'|(wire|logic|reg|localparam|parameter|genvar|typedef|import|package|endpackage)\b'
+    r'|[A-Za-z_]\w*(\s*#\s*\(.*)?\s+\w+\s*\($'
+    r'|(begin|end|endmodule|endcase|endgenerate|endfunction|else)\b'
+    r'|module\s+\w+'
+    r'|\{|\}|,$)')
+
+def _codelines(text, drop_ports=True):
+    out = []
+    for ln in strip_comments(text).splitlines():
+        s = ln.rstrip()
+        if not s.strip():
+            continue
+        if drop_ports and (_PORTLINE.match(s) or _STRUCTURAL.match(s.strip())):
+            continue
+        out.append(s.strip())
+    return out
+
+def golden_overlap(p, text):
+    """返回 (重合行数, 代码区行数, 比率)；golden 不存在时返回 None。"""
+    g = GOLDEN / p.name
+    if not g.exists():
+        return None
+    impl = _codelines(text)
+    if len(impl) < 60:          # 小文件重合率噪声大，不判
+        return None
+    gold = set(_codelines(g.read_text(errors='replace')))
+    same = sum(1 for l in impl if l in gold)
+    return same, len(impl), same / len(impl)
+
 def audit_file(p, modidx=None):
     text = p.read_text(errors='replace')
-    rel = str(p.relative_to(REPO))
+    try:
+        rel = str(p.relative_to(REPO))
+    except ValueError:          # RTL 根被 XSSV_RTL 覆盖（反测夹具）时不在 REPO 下
+        rel = str(p)
     problems = []
 
     code = strip_comments(text)
@@ -138,6 +197,12 @@ def audit_file(p, modidx=None):
         problems.append(('B', f'{rel}: 文件头没有注释'))
     elif len(hdr) < 3:
         problems.append(('B', f'{rel}: 文件头注释仅 {len(hdr)} 行（要求 ≥3，说清定位与机制）'))
+
+    ov = golden_overlap(p, text)
+    if ov and ov[2] > OVERLAP_LIMIT:
+        problems.append(('G', f'{rel}: 代码区 {ov[0]}/{ov[1]} 行（{100*ov[2]:.1f}%）'
+                              f'逐字来自 golden（已排除端口表/实例连线/声明），超过 {100*OVERLAP_LIMIT:.0f}% —— '
+                              f'疑似照抄而非重写（端口表已排除在外）'))
 
     decls = {m.group(2) for m in MOD_RE.finditer(text)}
     hdr_text = '\n'.join(hdr)
@@ -202,15 +267,16 @@ def main():
     print(f'可读性验收：扫描 {nfiles} 个文件')
     labels = {'A': 'A 代码区禁用命名', 'B': 'B 文件头缺失/过短',
               'C': 'C 头注释与内容不符', 'D': 'D 单文件结构顺序',
-              'E': 'E 大文件导航缺失/腐烂', 'F': 'F 头注释断言与事实矛盾'}
-    for k in 'ABCDEF':
+              'E': 'E 大文件导航缺失/腐烂', 'F': 'F 头注释断言与事实矛盾',
+              'G': 'G 代码区与 golden 逐字重合过高'}
+    for k in 'ABCDEFG':
         print(f'  {labels[k]}: {cnt.get(k, 0)}')
     if hints:
         print(f'  （大文件，按裁定不拆）: {len(hints)}')
         for h in hints[:5]:
             print(f'      {h}')
     if not a.quiet:
-        for k in 'ABCDEF':
+        for k in 'ABCDEFG':
             items = [m for kk, m in all_problems if kk == k]
             for m in items[:8]:
                 print(f'    [{k}] {m}')
