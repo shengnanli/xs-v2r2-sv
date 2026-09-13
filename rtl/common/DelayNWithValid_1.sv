@@ -1,0 +1,120 @@
+// =============================================================================
+// DelayNWithValid_1 —— 带 valid 使能的两级打拍链（xs_DelayNWithValid_core 家族的一个变体）
+//
+// 本变体的参数与规模（按 G1 golden 现读，不从上一轮继承）：
+//   载荷 WIDTH = 60 位，分 19 个字段；级数固定 2 级；
+//   golden 模块体 = 1 个异步复位的 valid 寄存器 + 120 个无复位数据 reg 位
+//     （2 级 × 60 位），无子模块；
+//   端口 41 个 = clock + reset + io_in_valid + 19 入 + 19 出。
+//   载荷字段：isCall=1b, isRet=1b, isJalr=1b, valid=1b, brSlots_0_offset=4b …共 19 个字段，明细见端口表。
+//   使用者：FTB —— FTBEntry（分支槽 / 尾槽 / 预取地址 / strong_bias）打两拍。
+//
+// 结构：golden 同名端口表 -> 打包成一根 60 位扁平载荷 -> 设参例化
+//   xs_DelayNWithValid_core（使能与复位语义、不变式都在 xs_DelayNWithValid_core.sv
+//   里讲）-> 拆包回 golden 的 io_out_bits_* 端口。本层只做拼包/拆包。
+//   PORT_BITS_IN/OUT 用 $bits(golden 端口拼接) 算出来传给核：端口位宽抄错 time 0 $fatal。
+// 自动生成：verif/ut/DelayNWithValid/gen.py（读 G1 golden）—— 勿手改
+// =============================================================================
+
+module DelayNWithValid_1(
+  input         clock,
+  input         reset,
+  input         io_in_bits_isCall,
+  input         io_in_bits_isRet,
+  input         io_in_bits_isJalr,
+  input         io_in_bits_valid,
+  input  [3:0]  io_in_bits_brSlots_0_offset,
+  input         io_in_bits_brSlots_0_sharing,
+  input         io_in_bits_brSlots_0_valid,
+  input  [11:0] io_in_bits_brSlots_0_lower,
+  input  [1:0]  io_in_bits_brSlots_0_tarStat,
+  input  [3:0]  io_in_bits_tailSlot_offset,
+  input         io_in_bits_tailSlot_sharing,
+  input         io_in_bits_tailSlot_valid,
+  input  [19:0] io_in_bits_tailSlot_lower,
+  input  [1:0]  io_in_bits_tailSlot_tarStat,
+  input  [3:0]  io_in_bits_pftAddr,
+  input         io_in_bits_carry,
+  input         io_in_bits_last_may_be_rvi_call,
+  input         io_in_bits_strong_bias_0,
+  input         io_in_bits_strong_bias_1,
+  input         io_in_valid,
+  output        io_out_bits_isCall,
+  output        io_out_bits_isRet,
+  output        io_out_bits_isJalr,
+  output        io_out_bits_valid,
+  output [3:0]  io_out_bits_brSlots_0_offset,
+  output        io_out_bits_brSlots_0_sharing,
+  output        io_out_bits_brSlots_0_valid,
+  output [11:0] io_out_bits_brSlots_0_lower,
+  output [1:0]  io_out_bits_brSlots_0_tarStat,
+  output [3:0]  io_out_bits_tailSlot_offset,
+  output        io_out_bits_tailSlot_sharing,
+  output        io_out_bits_tailSlot_valid,
+  output [19:0] io_out_bits_tailSlot_lower,
+  output [1:0]  io_out_bits_tailSlot_tarStat,
+  output [3:0]  io_out_bits_pftAddr,
+  output        io_out_bits_carry,
+  output        io_out_bits_last_may_be_rvi_call,
+  output        io_out_bits_strong_bias_0,
+  output        io_out_bits_strong_bias_1
+);
+
+  localparam int unsigned GOLDEN_DATA_REG_BITS = 120;  // golden 两级数据 reg 位数
+  localparam int unsigned PAYLOAD_W            = GOLDEN_DATA_REG_BITS / 2;
+
+  // 端口表事实：$bits 只认端口声明，抄错位宽这些常量立刻跟着变
+  localparam int unsigned PORT_BITS_IN = $bits(
+    {io_in_bits_isCall, io_in_bits_isRet, io_in_bits_isJalr, io_in_bits_valid,
+     io_in_bits_brSlots_0_offset, io_in_bits_brSlots_0_sharing,
+     io_in_bits_brSlots_0_valid, io_in_bits_brSlots_0_lower, io_in_bits_brSlots_0_tarStat,
+     io_in_bits_tailSlot_offset, io_in_bits_tailSlot_sharing, io_in_bits_tailSlot_valid,
+     io_in_bits_tailSlot_lower, io_in_bits_tailSlot_tarStat, io_in_bits_pftAddr,
+     io_in_bits_carry, io_in_bits_last_may_be_rvi_call, io_in_bits_strong_bias_0,
+     io_in_bits_strong_bias_1});
+  localparam int unsigned PORT_BITS_OUT = $bits(
+    {io_out_bits_isCall, io_out_bits_isRet, io_out_bits_isJalr, io_out_bits_valid,
+     io_out_bits_brSlots_0_offset, io_out_bits_brSlots_0_sharing,
+     io_out_bits_brSlots_0_valid, io_out_bits_brSlots_0_lower,
+     io_out_bits_brSlots_0_tarStat, io_out_bits_tailSlot_offset,
+     io_out_bits_tailSlot_sharing, io_out_bits_tailSlot_valid, io_out_bits_tailSlot_lower,
+     io_out_bits_tailSlot_tarStat, io_out_bits_pftAddr, io_out_bits_carry,
+     io_out_bits_last_may_be_rvi_call, io_out_bits_strong_bias_0,
+     io_out_bits_strong_bias_1});
+
+  logic [PAYLOAD_W-1:0] payload_in;
+  logic [PAYLOAD_W-1:0] payload_out;
+
+  assign payload_in =
+    {io_in_bits_isCall, io_in_bits_isRet, io_in_bits_isJalr, io_in_bits_valid,
+     io_in_bits_brSlots_0_offset, io_in_bits_brSlots_0_sharing,
+     io_in_bits_brSlots_0_valid, io_in_bits_brSlots_0_lower, io_in_bits_brSlots_0_tarStat,
+     io_in_bits_tailSlot_offset, io_in_bits_tailSlot_sharing, io_in_bits_tailSlot_valid,
+     io_in_bits_tailSlot_lower, io_in_bits_tailSlot_tarStat, io_in_bits_pftAddr,
+     io_in_bits_carry, io_in_bits_last_may_be_rvi_call, io_in_bits_strong_bias_0,
+     io_in_bits_strong_bias_1};
+
+  xs_DelayNWithValid_core #(
+    .WIDTH               (PAYLOAD_W),
+    .GOLDEN_DATA_REG_BITS(GOLDEN_DATA_REG_BITS),
+    .PORT_BITS_IN        (PORT_BITS_IN),
+    .PORT_BITS_OUT       (PORT_BITS_OUT)
+  ) u_core (
+    .clock   (clock),
+    .reset   (reset),
+    .in_valid(io_in_valid),
+    .d_in    (payload_in),
+    .d_out   (payload_out)
+  );
+
+  assign
+    {io_out_bits_isCall, io_out_bits_isRet, io_out_bits_isJalr, io_out_bits_valid,
+     io_out_bits_brSlots_0_offset, io_out_bits_brSlots_0_sharing,
+     io_out_bits_brSlots_0_valid, io_out_bits_brSlots_0_lower,
+     io_out_bits_brSlots_0_tarStat, io_out_bits_tailSlot_offset,
+     io_out_bits_tailSlot_sharing, io_out_bits_tailSlot_valid, io_out_bits_tailSlot_lower,
+     io_out_bits_tailSlot_tarStat, io_out_bits_pftAddr, io_out_bits_carry,
+     io_out_bits_last_may_be_rvi_call, io_out_bits_strong_bias_0,
+     io_out_bits_strong_bias_1} = payload_out;
+
+endmodule
