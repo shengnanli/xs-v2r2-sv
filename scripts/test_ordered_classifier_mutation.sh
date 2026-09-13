@@ -70,6 +70,15 @@ mutate_and_run "关掉 temp_blind 归一（Ftq 又变成「从头重写」）" \
   "    return _TEMPNUM.sub(r'\\1_@', text)|@|    return text" \
   "ftq"
 
+mutate_and_run "X_RETIRED 判据 key 回 g0_name（派生后继行会再触发一次）" \
+  "        retired = (target in self.b0.mods) and (target not in self.b1.mods)|@|        retired = (g0_name in self.b0.mods) and (g0_name not in self.b1.mods)" \
+  "derived_successor"
+
+mutate_and_run "关掉薄壳解壳（IMSIC 又被报成 IMSIC_WRAP）" \
+  "        peeled = []|@|        return name, []
+        peeled = []" \
+  "imsic"
+
 if [ "$ESCAPED" = 0 ]; then echo; echo "全部变异被抓：回归测试有实际保护力。"; else
   echo; echo "有变异逃逸 —— 对应的负测等于没测，必须补夹具。"; fi
 exit $ESCAPED

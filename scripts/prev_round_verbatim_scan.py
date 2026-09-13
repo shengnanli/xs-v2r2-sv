@@ -330,6 +330,35 @@ def main(argv=None):
             print('   %-28s %-44s union=%.1f%% 实质=%.1f%%'
                   % (n, r['rel'], 100 * r['rate_union'], 100 * r['rate_substantive']))
 
+    # ---- codex 0150 D56 名单 -------------------------------------------
+    # D56：任何**逻辑正文**从 G0 逐字复制的目标，不得计为「可读重写完成」，
+    # 即便 FM 通过；必须重写或显式留 gap。
+    # 「逻辑正文」= 本脚本的 substantive 类：已剔除结构上必然重合的四类
+    # （拼接元素 / 常量钉死 / 纯 io->io 直通 / 折行后的例化连接值）。
+    d56 = [r for r in rows if r['verdict'] == 'SCANNED'
+           and r['rate_substantive'] > a.threshold]
+    d56.sort(key=lambda r: -r['v_substantive'])
+    print('\n# codex 0150 D56 名单：逻辑正文逐字重合 > %.0f%% 的文件（%d 个）'
+          % (100 * a.threshold, len(d56)))
+    print('#   （union%% 列里那些「必然重合」的已经扣掉；扣完仍超阈值才进本名单）')
+    print('%-48s %7s %8s %7s %6s  %s'
+          % ('file', '实质行', '实质%', 'union%', 'A类', 'target -> 台账'))
+    for r in d56:
+        print('%-48s %7d %7.1f%% %6.1f%% %6d  %s'
+              % (r['rel'], r['v_substantive'], 100 * r['rate_substantive'],
+                 100 * r['rate_union'], r['a_class_hits'],
+                 (r.get('ledger_status') or r.get('targets') or '')[:80]))
+    borderline = [r for r in rows if r['verdict'] == 'SCANNED'
+                  and r['rate_union'] > a.threshold
+                  and r['rate_substantive'] <= a.threshold]
+    if borderline:
+        print('\n# 只在 union 口径超阈值、扣掉「结构上必然重合」后不超的（%d 个，'
+              '**不**进 D56 名单）:' % len(borderline))
+        for r in borderline:
+            print('   %-46s union=%.1f%% 实质=%.1f%%（实质行仅 %d）'
+                  % (r['rel'], 100 * r['rate_union'],
+                     100 * r['rate_substantive'], r['v_substantive']))
+
     ng = [r for r in rows if r['verdict'] == 'NO_GOLDEN_COUNTERPART']
     if ng:
         print('\n# 找不到 golden 对应文件（**列出来，不静默跳过**）: %d 个' % len(ng))

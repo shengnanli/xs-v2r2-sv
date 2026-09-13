@@ -1,0 +1,42 @@
+{
+  "generated_by": "scripts/ordered_classifier.py",
+  "script_sha256": "0fad2a5f0c377a02660f5899a6bc6b380ca87921b630c8843585f8119ef85c6d",
+  "dep_sha256": {
+    "scripts/check_name_collisions.py": "23fc91845356acb9473ccdf61ee3299a1ca40956c576e2300c70a55cbaf4a51c"
+  },
+  "g0_dir": "/home/eda/xs-env/G0-canonical/golden-rtl",
+  "g0_fingerprint": "2bc98fb682bd9dfa",
+  "g1_dir": "/home/eda/xs-env/G1-canonical/golden-rtl",
+  "g1_fingerprint": "da8fb60a92af072a",
+  "ledger": "docs/migration_plan_199.tsv",
+  "ledger_sha256": "af5d9f597497f2c83152277f56ae1ec830ab7c346fbb416c2d0235195685bbe8",
+  "n_rows": 204,
+  "tsv": "docs/ordered_classification.tsv",
+  "tsv_sha256": "9693874792d0cd31654db4a6563f313453cceb29fd742fff4c45b2e5a56cbc7d",
+  "distribution": {
+    "X_RETIRED": 10,
+    "G_NEWFORM": 2,
+    "P_SHIM": 3,
+    "A_BODY_IDENTICAL": 5,
+    "A2_IFACE_ONLY": 18,
+    "F_PORTWIDTH": 51,
+    "D_DEPRENUM": 9,
+    "B_HANDSHAKE": 23,
+    "E_F_RESIDUAL": 83
+  },
+  "elapsed_s": 778.1,
+  "order_contract": [
+    "rank1:X_RETIRED",
+    "rank2:G_NEWFORM",
+    "rank2:P_SHIM",
+    "rank3:A_BODY_IDENTICAL",
+    "rank4:A2_IFACE_ONLY",
+    "rank5:F_PORTWIDTH",
+    "rank6:D_DEPRENUM",
+    "rank7:C_ALPHA_RENAME",
+    "rank8:B_HANDSHAKE",
+    "rank9:E_F_RESIDUAL"
+  ],
+  "rerun": "python3 scripts/ordered_classifier.py --ledger docs/migration_plan_199.tsv --tsv docs/ordered_classification.tsv --manifest docs/ordered_classification.manifest.json --diff-ledger --diff-out docs/ordered_classification_vs_ledger.md",
+  "note": "分类分析专用。strip_randomize 只用于本分析；Formal 的 golden/ref 输入不得删除或重写这些字节。本脚本不生成 RTL（--selftest-nortl 机械证明）。"
+}

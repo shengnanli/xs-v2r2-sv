@@ -529,39 +529,79 @@ def test_neg_icachemshr_is_monomorphised_copies_not_one_core():
                '%s 与 %s 组内模块体应当逐字相同' % (n, v[0]))
 
 
-def test_neg_g1_universe_fastarbiter_map_is_self_contradictory():
-    """★台账反例 7★ g1_universe.tsv 第 48/49 行两个 G0 名字指向同一个 G1 名字。
+def _many_to_one(pairs):
+    """★被测的检测器本体★ 一张 G0->G1 映射表里，有没有多个 G0 名字撞到同一个 G1 名字。
+    映射图必须是双射；撞车 = 这张表自相矛盾，至少有一行是错的。"""
+    rev = collections.defaultdict(list)
+    for old, new_ in pairs:
+        if new_ and new_ != '-':
+            rev[new_].append(old)
+    return {k: sorted(v) for k, v in rev.items() if len(v) > 1}
 
-    例化点身份判据给出的是双射：_30 -> _29，_31 -> _30。
+
+# 历史坏数据快照（**冻结不动**）。台账已在 e327720 按槽位判据改判，
+# 但检测器必须继续被测到 —— 否则「台账现在是对的」会让这条反例悄悄失效。
+_HISTORIC_BAD_UNIVERSE = [          # docs/g1_universe.tsv 第 48/49 行（改判前）
+    ('FastArbiter_27', 'FastArbiter_27'),
+    ('FastArbiter_30', 'FastArbiter_30'),
+    ('FastArbiter_31', 'FastArbiter_30'),
+    ('FastArbiter_36', 'FastArbiter_35'),
+]
+_HISTORIC_BAD_OLD2NEW = [           # docs/g1_old_to_new_map.tsv 第 169/171 行（改判前）
+    ('NewPipelineConnectPipe_31', 'NewPipelineConnectPipe_33'),
+    ('NewPipelineConnectPipe_32', '-'),
+    ('NewPipelineConnectPipe_33', 'NewPipelineConnectPipe_33'),
+]
+
+
+def test_neg_g1_universe_fastarbiter_map_was_self_contradictory():
+    """★台账反例 7★ 改判前 g1_universe.tsv 第 48/49 行两个 G0 名字指向同一个 G1 名字。
+
+    台账已在 `e327720`（另一位 owner 的槽位判据 C5 门禁）按同一条判据改判，
+    所以这条测试**不再断言台账是错的** —— 那样只会随台账变绿变红。它改成断言三件事：
+      a) 检测器 `_many_to_one` 对**冻结的历史坏数据**仍然报错（检测器本身还活着）；
+      b) 槽位判据给出的是双射：_30 -> _29、_31 -> _30；
+      c) 改判后的台账在这两行上与槽位判据一致。
     """
+    bad = _many_to_one(_HISTORIC_BAD_UNIVERSE)
+    eq(bad, {'FastArbiter_30': ['FastArbiter_30', 'FastArbiter_31']},
+       '检测器对冻结的历史坏数据不再报错 —— 这条反例失效了')
+
     a = cl().map_name('FastArbiter_30')
     b = cl().map_name('FastArbiter_31')
     eq(a[0], 'FastArbiter_29', 'G0 FastArbiter_30 的 G1 对应物')
-    eq(a[1], 'site', '判据必须是例化点身份，不是同名')
+    truthy('site' in a[1], '判据必须是例化点身份，不是同名。实际 %s' % a[1])
     eq(b[0], 'FastArbiter_30', 'G0 FastArbiter_31 的 G1 对应物')
-    truthy(a[0] != b[0], '两个 G0 名字不得映到同一个 G1 名字（台账就是这么错的）')
+    truthy(a[0] != b[0], '两个 G0 名字不得映到同一个 G1 名字')
+
     led = _ledger_map('docs/g1_universe.tsv')
-    if led:
-        eq(led.get('FastArbiter_30'), 'FastArbiter_30', '台账原文（错的那条）')
-        eq(led.get('FastArbiter_31'), 'FastArbiter_30', '台账原文')
-        truthy(led['FastArbiter_30'] == led['FastArbiter_31'],
-               '台账这两行确实撞在同一个目标上 —— 这就是被推翻的那处')
+    truthy(led is not None, '找不到 docs/g1_universe.tsv')
+    eq(led.get('FastArbiter_30'), 'FastArbiter_29', '改判后台账应当与槽位判据一致')
+    eq(led.get('FastArbiter_31'), 'FastArbiter_30')
+    eq(_many_to_one(sorted(led.items())), {}, '改判后台账里不应再有撞车')
+
     r = R('FastArbiter_30')
     truthy('同名不同物' in r['caveats'],
            'FastArbiter_30 必须带「G1 同名模块是另一个设计元素」的告警')
 
 
-def test_neg_old_to_new_map_npc_is_self_contradictory():
-    """★台账反例 8★ g1_old_to_new_map.tsv 第 169/171 行同类矛盾（NPC_31/_33 -> _33）。"""
-    a = cl().map_name('NewPipelineConnectPipe_31')
-    b = cl().map_name('NewPipelineConnectPipe_33')
-    eq(a[0], 'NewPipelineConnectPipe_33')
-    eq(b[0], 'NewPipelineConnectPipe_35')
-    truthy(a[0] != b[0], '两个 G0 名字不得映到同一个 G1 名字')
+def test_neg_old_to_new_map_npc_was_self_contradictory():
+    """★台账反例 8★ 改判前 g1_old_to_new_map.tsv 第 169/171 行同类矛盾（NPC_31/_33 -> _33）。
+
+    与上一条同构：检测器盯冻结快照，映射结论盯槽位判据，一致性盯改判后的台账。
+    """
+    bad = _many_to_one(_HISTORIC_BAD_OLD2NEW)
+    eq(bad, {'NewPipelineConnectPipe_33':
+             ['NewPipelineConnectPipe_31', 'NewPipelineConnectPipe_33']},
+       '检测器对冻结的历史坏数据不再报错 —— 这条反例失效了')
+    eq(cl().map_name('NewPipelineConnectPipe_31')[0], 'NewPipelineConnectPipe_33')
+    eq(cl().map_name('NewPipelineConnectPipe_33')[0], 'NewPipelineConnectPipe_35')
     led = _ledger_map('docs/g1_old_to_new_map.tsv')
-    if led:
-        eq(led.get('NewPipelineConnectPipe_31'), 'NewPipelineConnectPipe_33')
-        eq(led.get('NewPipelineConnectPipe_33'), 'NewPipelineConnectPipe_33')
+    truthy(led is not None, '找不到 docs/g1_old_to_new_map.tsv')
+    eq(led.get('NewPipelineConnectPipe_31'), 'NewPipelineConnectPipe_33')
+    eq(led.get('NewPipelineConnectPipe_33'), 'NewPipelineConnectPipe_35',
+       '改判后台账应当与槽位判据一致')
+    eq(_many_to_one(sorted(led.items())), {}, '改判后台账里不应再有撞车')
 
 
 def test_neg_frontend_closure_counts():
@@ -622,6 +662,125 @@ def test_x_retired_is_bookkeeping_only_and_derives_successor():
     eq(r['successor_by'], 'site')
     eq(r['inherit_construction'], 'no', 'X_RETIRED 不产 RTL，谈不上继承施工')
     assert_reason(r, 'X_RETIRED', '无 RTL 可交付', 'FastArbiter_43')
+
+
+def test_neg_derived_successor_must_not_refire_x_retired():
+    """★rank1 最容易错的地方★ X_RETIRED 的判据必须 key 在 **target 名**上，
+    不能 key 在 g0_name 上。
+
+    实测过的 bug：X_RETIRED 会为后继派生一行 `row_kind=DERIVED_SUCCESSOR`，
+    那一行的 `g0_name` 就是**已退役的那个 G0 名字**。判据当时写的是
+    `g0_name in b0 and g0_name not in b1` —— 于是派生行原样再触发一次
+    X_RETIRED，五个后继全部被判成「仅台账动作、不产 RTL」，
+    施工量又在改名处丢了一遍，而且没有任何报错。
+
+    本测试直接盯住这个形态：派生行必须**落到真正的施工档**，且 X_RETIRED
+    的失败原因必须提到 target 名而不是 g0_name。
+    """
+    r = R('FastArbiter_44')
+    eq(r['bucket'], 'X_RETIRED')
+    succ = r['successor_g1']
+    eq(succ, 'FastArbiter_43')
+    d = cl().classify(succ, g1_name=succ, name_by='successor_of:FastArbiter_44',
+                      row_kind='DERIVED_SUCCESSOR', g0_name=r['g0_name'])
+    eq(d['g0_name'], 'FastArbiter_44', '派生行的对比侧应当是退役的 G0 名字')
+    assert_reached(d, 'X_RETIRED')
+    assert_reason(d, 'X_RETIRED', 'target 名 FastArbiter_43')
+    truthy(d['bucket'] != 'X_RETIRED',
+           '派生后继行又被判成 X_RETIRED —— 施工量在改名处丢了')
+    truthy(d['bucket'] in ('A_BODY_IDENTICAL', 'A2_IFACE_ONLY', 'F_PORTWIDTH',
+                           'D_DEPRENUM', 'C_ALPHA_RENAME', 'B_HANDSHAKE',
+                           'E_F_RESIDUAL', 'P_SHIM'),
+           '派生行应当落到真正的施工档，实际 %s' % d['bucket'])
+    # 全量 TSV 里也不许再出现这个形态
+    tsv = _HERE.parent / 'docs' / 'ordered_classification.tsv'
+    if tsv.exists():
+        import csv
+        bad = [row['target'] for row in csv.DictReader(
+            tsv.open(encoding='utf-8'), delimiter='\t')
+            if row['row_kind'] == 'DERIVED_SUCCESSOR' and row['bucket'] == 'X_RETIRED']
+        eq(bad, [], '全量 TSV 里仍有派生行被判成 X_RETIRED: %s' % bad)
+
+
+def test_neg_imsic_wrap_is_inserted_shell_not_class_rename():
+    """★订正★ `IMSIC -> IMSIC_WRAP` **不是类改名**，是 G1 在原槽位插了一层薄壳。
+
+    槽位判据认的是槽位。G1 把 `IMSIC_WRAP` 放进了 `(CSR, imsic)` 这个槽位，
+    真身 `IMSIC` 被挤到 `(IMSIC_WRAP, imsic)`。光看槽位会报「IMSIC 的后继是
+    IMSIC_WRAP」，让人以为 IMSIC 被重构掉了 —— 其实它一行没挪窝。
+    这是槽位判据的一个已知边界，必须显式解壳。
+    """
+    child = cl().is_thin_shell('IMSIC_WRAP')
+    eq(child, 'IMSIC', 'IMSIC_WRAP 的模块体应当只有一个子例化 IMSIC')
+    truthy(cl().is_thin_shell('IMSIC') is None,
+           'IMSIC 自己不是薄壳（否则解壳会一路剥穿）')
+    name, by, note = cl().map_name('IMSIC')
+    eq(name, 'IMSIC', '解壳后 IMSIC 的对应物仍然是 IMSIC')
+    truthy('shell_unwrap' in by, '判据应当标出「解壳」，实际 %s' % by)
+    truthy('薄壳' in note and 'IMSIC_WRAP' in note,
+           '必须说明薄壳的存在与它是一个独立新增 target。note=%s' % note)
+    # 解壳不能过度触发：真身模块与真装配壳都不该被当成薄壳
+    for n in ('SNXbar', 'RNXbar', 'Ftq'):
+        truthy(cl().is_thin_shell(n) is None, '%s 被误判成薄壳' % n)
+
+
+def test_neg_l1flagmetaarray_is_name_shift_not_merge():
+    """★订正★ `L1FlagMetaArray_1` 不是「并入」，G1 DCache 仍例化两个 meta array。
+
+    槽位摆出来就一目了然（两侧 DCache 都有 errorArray 与 accessArray 两个槽）：
+        G0 (DCache, errorArray)=L1FlagMetaArray    -> G1 同槽位 = L1ErrorMetaArray
+        G0 (DCache, accessArray)=L1FlagMetaArray_1 -> G1 同槽位 = L1FlagMetaArray
+    即整体平移一格，名字撞车。
+    """
+    b0, b1 = cl().b0, cl().b1
+    eq(sorted(b0.sites.get('L1FlagMetaArray', ())), [('DCache', 'errorArray')])
+    eq(sorted(b0.sites.get('L1FlagMetaArray_1', ())), [('DCache', 'accessArray')])
+    eq(sorted(b1.sites.get('L1ErrorMetaArray', ())), [('DCache', 'errorArray')])
+    eq(sorted(b1.sites.get('L1FlagMetaArray', ())), [('DCache', 'accessArray')])
+    eq(cl().map_name('L1FlagMetaArray')[0], 'L1ErrorMetaArray')
+    eq(cl().map_name('L1FlagMetaArray_1')[0], 'L1FlagMetaArray')
+    truthy('同名不同物' in cl().map_name('L1FlagMetaArray')[2],
+           'G1 里同名的 L1FlagMetaArray 是另一个设计元素，必须告警')
+    # 「并入」若成立，G1 DCache 应当只剩一个 meta array 槽位；实测是两个
+    slots = sorted(i for par, i in
+                   [t for n in ('L1FlagMetaArray', 'L1ErrorMetaArray', 'L1CohMetaArray')
+                    for t in b1.sites.get(n, ())] if par == 'DCache')
+    truthy(len(slots) >= 2,
+           'G1 DCache 里 meta array 槽位应当 >=2（并入说不成立），实际 %s' % slots)
+
+
+def test_slot_map_agrees_with_corrected_ledger():
+    """与另一位 owner 的 C5（槽位判据重算映射图）**独立实现互验**。
+
+    合入 e327720 之后台账已按槽位判据改判 18 行。本测试要求本分类器的
+    `map_name()` 与改判后的 `docs/g1_universe.tsv` **逐行一致** ——
+    两套独立实现给出同一张映射图，才算这张图可信。
+    不一致就打印出来：要么台账还有漏，要么本判据有 bug，两者都必须查。
+    """
+    p = _HERE.parent / 'docs' / 'g1_universe.tsv'
+    if not p.exists():
+        raise Fail('找不到 docs/g1_universe.tsv —— 无法互验')
+    rows = []
+    for line in p.read_text(encoding='utf-8', errors='replace').splitlines():
+        if line.startswith('#') or not line.strip():
+            continue
+        c = line.split('\t')
+        if len(c) >= 2:
+            rows.append((c[0], '' if c[1] in ('-', '') else c[1]))
+    truthy(len(rows) > 300, '台账行数异常：%d' % len(rows))
+    dis = []
+    for old, theirs in rows:
+        mine = cl().map_name(old)[0]
+        if mine != theirs:
+            dis.append('%s: 台账=%s 槽位判据=%s' % (old, theirs or '(gone)', mine))
+    eq(dis, [], '与改判后台账不一致 %d 处:\n  %s' % (len(dis), '\n  '.join(dis[:10])))
+    # 顺带把「多个 G0 名字映到同一个 G1 名字」这种自相矛盾也拦掉（历史上出过两次）
+    rev = collections.defaultdict(list)
+    for old, theirs in rows:
+        if theirs:
+            rev[theirs].append(old)
+    many = {k: v for k, v in rev.items() if len(v) > 1}
+    eq(many, {}, '台账里仍有多个 G0 名字撞到同一个 G1 名字: %s' % many)
 
 
 def test_p4_changed_children_are_flagged_not_swallowed():

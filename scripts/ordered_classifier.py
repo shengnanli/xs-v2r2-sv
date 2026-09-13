@@ -83,6 +83,16 @@ LHS 按定义在两侧都在。（`test_ordered_classifier.py::test_neg_a2_coars
   `PURE_REPARAM`       —— 把两侧所有位宽记号归一后模块体相同 => 纯重参数化；
   `REPARAM_PLUS_LOGIC` —— 归一后仍有残余 diff => 除了位宽还动了逻辑，别当纯参数化做。
 
+★实测反证（提请 codex 复核这一档的定义）★：按字面定义，199 个 target 里有 **46 个**
+落 rank5，其中只有 **7 个**是 `PURE_REPARAM`，**39 个**是 `REPARAM_PLUS_LOGIC`；
+13 个的残余 diff 超过 600 行。最极端的是 `Backend` —— **1** 个端口位宽从 [10:0]
+变成 [11:0]（`io_fromTop_msiInfo_bits`），就把一个残余 diff **20148 行**的目标
+提到了 rank5「走可读参数化适配」。`MemBlock`(16358)、`PtwCache`(15302)、
+`LoadQueueUncache`(16465)、`XSCore`(3450) 同样。
+本脚本**不擅自改档**：`bucket` 仍按 codex 字面定义给，同时输出对照列
+`bucket_if_f_strict` = 「若 rank5 收紧成必须 `PURE_REPARAM`，它会落哪一档」，
+以及 `f_strict_differs`。要不要收紧由 codex 定，证据在这两列里。
+
 ### rank 6 · D_DEPRENUM —— 只按实例名，**禁止 family 叉积**
 子模块对应表 = `{G0子模块类型 -> G1子模块类型}`，键是**实例名**：
 两侧例化点集合必须一致（`{实例名}` 相等），同一实例名上两侧放的类型配成一对。
@@ -623,6 +633,60 @@ class Classifier(object):
             self.b1, c1 = load_baseline(str(self.g1dir), cache_dir, use_cache)
             self.cache_files = (c0, c1)
 
+    # ---- 薄壳（wrapper）识别与解壳 ---------------------------------------
+    def is_thin_shell(self, name, side='g1'):
+        """`name` 是不是「只包一层」的薄壳：模块体里恰好 1 个子例化，
+        没有 always 块，除纯 io->io 直通外没有别的赋值。
+
+        为什么需要这条：槽位判据认的是**槽位**。G1 若在某个槽位上插了一层薄壳，
+        槽位的占用者就变成了薄壳，判据于是把薄壳报成后继 —— 而真正带逻辑的
+        那个模块被挤到了薄壳里面。实测就是 `IMSIC`：
+            G0 槽位 (CSR, imsic) 放 IMSIC
+            G1 槽位 (CSR, imsic) 放 IMSIC_WRAP，而 IMSIC 挪到 (IMSIC_WRAP, imsic)
+        `IMSIC_WRAP` 的模块体只有一行 `IMSIC imsic (`，别的什么都没有。
+        把它当成「IMSIC 的后继」会让人以为 IMSIC 被重构掉了，其实真身没动窝。
+        """
+        base = self.b1 if side == 'g1' else self.b0
+        d = self.g1dir if side == 'g1' else self.g0dir
+        m = base.mods.get(name)
+        if m is None or len(m.child_insts) != 1:
+            return None
+        f = d / ('%s.sv' % name)
+        if not f.exists():
+            return None
+        try:
+            _pt, body = module_span(f.read_text(errors='replace'), name)
+        except ClassifyError:
+            return None
+        rest = strip_pure_passthrough(strip_randomize(body))
+        rest = _INSTLINE.sub('', rest)
+        # 去掉例化的端口连线行、声明行、收尾括号
+        keep = []
+        for ln in rest.splitlines():
+            t = ln.strip()
+            if (not t or t.startswith('.') or t in (');', ')', ';')
+                    or re.match(r'^(wire|reg|logic)\b[^=]*;$', t)):
+                continue
+            keep.append(t)
+        if keep or 'always' in body:
+            return None
+        return m.child_insts[0][0]          # 唯一子例化的类型名
+
+    def unwrap_shell(self, name, origin, limit=3):
+        """槽位判据给出的后继若是薄壳，就往里剥，直到剥到带逻辑的那个。
+        返回 (真身名, 被剥掉的薄壳列表)。"""
+        peeled = []
+        cur = name
+        for _ in range(limit):
+            child = self.is_thin_shell(cur)
+            if child is None or child == cur or child not in self.b1.mods:
+                break
+            peeled.append(cur)
+            cur = child
+            if cur == origin:
+                break
+        return cur, peeled
+
     # ---- 名字映射：例化点身份优先，同名只是兜底 --------------------------
     def map_name(self, target):
         """G0 target -> G1 名字。返回 (g1_name, by, note)。
@@ -638,9 +702,18 @@ class Classifier(object):
         hit, by = CNC.resolve(self.b0, self.b1, target)
         if len(hit) == 1:
             note = ''
-            if hit[0] != target and in1:
+            g1n = hit[0]
+            if g1n != target:
+                real, peeled = self.unwrap_shell(g1n, target)
+                if peeled and real != g1n:
+                    # 槽位上是新插的薄壳，真身在里面。薄壳本身是**另一个新 target**。
+                    note = ('G1 在原槽位插了薄壳 %s（模块体只有一个子例化，无 always、'
+                            '无非直通赋值），真身是 %s；薄壳 %s 是一个独立的新增 target'
+                            % ('->'.join(peeled), real, peeled[0]))
+                    return real, by + '+shell_unwrap', note
+            if g1n != target and in1:
                 note = ('G1 同名模块 %s 是**另一个**设计元素（同名不同物）' % target)
-            return hit[0], by, note
+            return g1n, by, note
         if in1:
             return target, 'same_name_fallback', ('身份判据留白（%s），退回同名' % (by or '无'))
         return '', (by or 'unresolved'), '身份判据留白且 G1 无同名'
@@ -670,7 +743,10 @@ class Classifier(object):
         r['_pred'] = preds
 
         # ---------------- rank 1: X_RETIRED -------------------------------
-        retired = (g0_name in self.b0.mods) and (g0_name not in self.b1.mods)
+        # ★判据键的是 **target 名**，不是 g0_name★：派生出来的后继行（row_kind=
+        # DERIVED_SUCCESSOR）的 g0_name 就是那个已退役的名字，若拿 g0_name 判，
+        # 后继行会跟着一起被判成 X_RETIRED —— 施工量又丢回去了。
+        retired = (target in self.b0.mods) and (target not in self.b1.mods)
         succ, succ_by = ('', '')
         if g0_name in self.b0.mods:
             hit, by = CNC.resolve(self.b0, self.b1, g0_name)
@@ -682,8 +758,9 @@ class Classifier(object):
             retired,
             ('G0 有该名字而 G1 没有 => 该名字下无 RTL 可交付；'
              '后继=%s（判据 %s）' % (succ or '(判不准)', succ_by or '-')) if retired
-            else ('不成立：g1_same_name_exists=%s g0_exists=%s'
-                  % (r['g1_same_name_exists'], r['g0_exists'])))
+            else ('不成立：target 名 %s 在 G0=%s / 在 G1=%s'
+                  % (target, 'yes' if target in self.b0.mods else 'no',
+                     'yes' if target in self.b1.mods else 'no')))
 
         # ---------------- rank 2a: G_NEWFORM ------------------------------
         newform = (g0_name not in self.b0.mods) and (g1_name in self.b1.mods)
@@ -691,6 +768,7 @@ class Classifier(object):
         if newform:
             hit, by = CNC.resolve(self.b1, self.b0, g1_name)
             if len(hit) == 1:
+                # 反向定位到 G0 前身 => 这不是「G1 独有」，是重编号（内容可能也变了）
                 rev, rev_by = hit[0], by
                 newform = False
         r['g0_predecessor'] = rev
@@ -698,11 +776,24 @@ class Classifier(object):
         preds['G_NEWFORM'] = Pred(
             newform,
             'G0 无同名且反向身份判据也定位不到前身 => G1 独有' if newform
-            else ('不成立：g0_exists=%s%s'
-                  % (r['g0_exists'],
-                     ('，反向定位到 G0 前身 %s（%s）' % (rev, rev_by)) if rev else '')))
+            else ('不成立：G0 侧%s%s'
+                  % ('有同名模块' if g0_name in self.b0.mods and not rev else '无同名模块',
+                     ('，但反向例化点身份定位到 G0 前身 %s（%s）=> 是重编号不是新增'
+                      % (rev, rev_by)) if rev else '')))
 
         # 没有 G1 侧文件的，后面所有 body 判据都无从谈起
+        # G0 侧没有同名，但反向身份判据定位到了前身 —— 那就用**前身**当对比侧。
+        # 不这么做的话这类目标九档全落空（fail-closed 会抛「判不出档」）。
+        # 实测这正是台账把 8 个 SRAMTemplate 全判成 G_NEWFORM 的地方：
+        # 其中 6 个有 G0 前身（site / site_common），只有 _163/_166 是真新增。
+        if rev and g0_name not in self.b0.mods:
+            g0_name = rev
+            r['g0_name'] = rev
+            r['g0_exists'] = 'via_reverse_site'
+            r['name_map_note'] = (r['name_map_note'] + ' | ' if r['name_map_note'] else '') \
+                + ('G0 侧无同名，改用反向例化点身份定位到的前身 %s（判据 %s）作为对比侧'
+                   % (rev, rev_by))
+
         if g1_name not in self.b1.mods:
             for b in BUCKETS:
                 preds.setdefault(b, Pred(False, 'G1 侧无此模块，判据不可求值'))
@@ -982,6 +1073,15 @@ class Classifier(object):
                 % (','.join(sat), r['order_rank'], bucket, ','.join(later)))
         else:
             r['adjudication'] = '无重叠：只满足 %s' % bucket
+        # ---- 对照列：F_PORTWIDTH 若收紧成「必须 PURE_REPARAM」会落哪一档 ----
+        # 这不是改契约，是给 codex 的证据列。理由见文件头 §rank5 的「实测反证」。
+        f_strict_ok = (preds['F_PORTWIDTH'].ok
+                       and r.get('f_portwidth_grade') == 'PURE_REPARAM')
+        sat_s = [b for _k, b in ORDER
+                 if preds.get(b) and (f_strict_ok if b == 'F_PORTWIDTH' else preds[b].ok)]
+        r['bucket_if_f_strict'] = sat_s[0] if sat_s else ''
+        r['f_strict_differs'] = ('yes' if r['bucket_if_f_strict'] != bucket else 'no')
+
         # 判不准 / 继承语义
         r['determinacy'] = 'DETERMINATE'
         if bucket == 'E_F_RESIDUAL' and r.get('resid_diff_tb', 0) > 600:
@@ -1018,6 +1118,13 @@ class Classifier(object):
             caveats.append('★台账「从头重写」口径存疑★：raw 残余 %d 行，但抹掉 firtool '
                            '临时线编号后只剩 %d 行 —— 真改动是小手术，不是重写'
                            % (r.get('resid_diff', 0), r.get('resid_diff_tb', 0)))
+        if (r.get('bucket') == 'F_PORTWIDTH'
+                and r.get('f_portwidth_grade') == 'REPARAM_PLUS_LOGIC'):
+            caveats.append('★别当纯重参数化排期★：位宽变了 %s 个端口，但位宽记号归一后'
+                           '仍有 %s 行残余 diff —— 按 codex 字面定义归 rank5，'
+                           '收紧成「必须 PURE_REPARAM」后它会落 %s'
+                           % (r.get('width_chg'), r.get('resid_diff_tb'),
+                              r.get('bucket_if_f_strict')))
         if r.get('diff_method') == 'multiset':
             caveats.append('模块体过大（%s/%s 逻辑行），diff 走多重集口径，'
                            '不含语句顺序信息' % (r.get('g0_body_lines'), r.get('g1_body_lines')))
@@ -1057,7 +1164,8 @@ COLUMNS = [
     'attrib_ok', 'attrib_bad_add', 'attrib_bad_del', 'attrib_bad_sample',
     'diff_method', 'diff_add', 'diff_del', 'resid_diff', 'shape_change',
     'resid_diff_tb', 'diff_method_tb', 'attrib_ok_tb', 'tb_iface_only', 'tb_bad_sample',
-    'ef_subgrade', 'f_portwidth_grade',
+    'ef_subgrade', 'f_portwidth_grade', 'bucket_if_f_strict', 'f_strict_differs',
+    'ledger_mode', 'ledger_g1_name',
     'n_inst_g0', 'n_inst_g1', 'inst_added', 'inst_removed',
     'p4_n', 'p4_children_changed',
     'g0_body_lines', 'g1_body_lines', 'new_ident_cnt', 'old_ident_cnt',
@@ -1097,8 +1205,6 @@ def selftest_nortl(path=None):
             ctx = src[max(0, m.start() - 120):m.end()]
             if '.sv' in ctx:
                 bad.append('可能写 .sv: ' + ctx.replace('\n', ' ')[-120:])
-    if re.search(r"""['"]\.sv['"]\s*\)?\s*$""", '', re.M):
-        pass
     for m in re.finditer(r"\.sv['\"]", src):
         seg = src[max(0, m.start() - 200):m.start()]
         if re.search(r'(write_text|write_bytes|open\s*\([^)]*[\'"][wa])', seg):
