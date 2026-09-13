@@ -1,0 +1,17 @@
+{
+  "impl_root": "/home/eda/xs-env/xs-v2r2-sv/rtl",
+  "golden": "/home/eda/xs-env/G0-canonical/golden-rtl",
+  "threshold": 0.45,
+  "min_lines": 60,
+  "n_files": 909,
+  "n_hit": 30,
+  "verdicts": {
+    "SCANNED": 218,
+    "SKIP_TOO_SMALL": 658,
+    "NO_GOLDEN_COUNTERPART": 33
+  },
+  "tsv_sha256": "41d11d3544582dcb910d378772be009709f416ed403a0e3865fc6fd84cefc61b",
+  "script_sha256": "0d6392430fdae4c6e4b46375e36c329e984e9b7350b9a7194c2e58670f663250",
+  "criteria_from": "scripts/readability_audit.py@c922636 G 类（逐字复用）",
+  "rerun": "python3 scripts/prev_round_verbatim_scan.py --impl-root /home/eda/xs-env/xs-v2r2-sv/rtl --golden /home/eda/xs-env/G0-canonical/golden-rtl --threshold 0.45 --tsv docs/prev_round_verbatim.tsv"
+}
