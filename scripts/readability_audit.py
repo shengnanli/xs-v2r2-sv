@@ -166,10 +166,41 @@ def _codelines(text, drop_ports=True):
         out.append(s.strip())
     return out
 
+_GOLDEN_BY_MODULE = None
+
+def _golden_for(p, text):
+    """按**声明的模块名**解析 golden，而不是按文件名。
+
+    ★ 修正一处我引入的盲区（2026-09-13）★
+    原实现用 `GOLDEN / p.name`。golden 里没有 `Predictor_wrapper.sv` 这种名字，
+    于是所有 `*_wrapper.sv` 直接 return None —— **整类被静默跳过**。
+    我此前的"双向验证"是把 wrapper 复制成 `Predictor.sv` 才跑的，
+    改了文件名才匹配上，等于验的不是真实文件。
+    用声明的模块名解析后，上一轮实测从"2 个超阈值"变成 **30 个**。
+    """
+    global _GOLDEN_BY_MODULE
+    g = GOLDEN / p.name
+    if g.exists():
+        return g
+    if _GOLDEN_BY_MODULE is None:
+        _GOLDEN_BY_MODULE = {}
+        for gf in GOLDEN.glob('*.sv'):
+            for m in re.finditer(r'^module\s+(\w+)', gf.read_text(errors='replace'), re.M):
+                _GOLDEN_BY_MODULE.setdefault(m.group(1), gf)
+    for m in re.finditer(r'^module\s+(\w+)', text, re.M):
+        name = m.group(1)
+        if name.startswith('xs_'):
+            continue
+        gf = _GOLDEN_BY_MODULE.get(name)
+        if gf:
+            return gf
+    return None
+
+
 def golden_overlap(p, text):
     """返回 (重合行数, 代码区行数, 比率)；golden 不存在时返回 None。"""
-    g = GOLDEN / p.name
-    if not g.exists():
+    g = _golden_for(p, text)
+    if g is None:
         return None
     impl = _codelines(text)
     if len(impl) < 60:          # 小文件重合率噪声大，不判
