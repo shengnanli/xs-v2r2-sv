@@ -1,36 +1,39 @@
-# 槽位判据重算证据（check_universe_freeze.py --emit-evidence 生成；note 列人工补）
-# 只收录「槽位答案 != 同名」与「判不准」两类行；其余 274 行同名同槽位，无话可说。
-# old_target	g1_name	criterion	g0_ports	g1_ports	g0_slots	g1_slots	note
-AXI4Xbar_1	AXI4Xbar_6	site	220	240	SimMMIO.axi4xbar	SimMMIO.axi4xbar	
-CLINT	-	UNRESOLVED	21	-	MemMisc.clint	-	留白: G0 MemMisc.clint 在 G1 里实例名也改了(MemMisc.timer/TIMER 20端口), 无共有槽位。docs/g1_disappeared_targets.md 记人工判断=同位替换 TIMER(接口方向翻转, 须重写), 机器不背书。
-DelayReg	-	UNRESOLVED	42	-	Rob.difftest_delayer;Rob.difftest_delayer_1;Rob.difftest_delayer_2;Rob.difftest_delayer_3;Rob.difftest_delayer_4;Rob.difftest_delayer_5;Rob.difftest_delayer_6;Rob.difftest_delayer_7	-	留白: G0 在 Rob.difftest_delayer_0..7(42端口), G1 里 Rob 已无任何 *delayer* 槽位, 同名 DelayReg 改在 GatewayEndpoint.delayed_delayer_*(75端口)。类同名但例化上下文整体迁移, 槽位无交集 → 不判。台账保留 same_name(名字+Chisel 类一致), 但不作为机器结论。
-FastArbiter_27	FastArbiter_26	site	73	73	RNXbar.rxrspArbs_0;TL2CHICoupledL2.txrsp_arb	RNXbar.rxrspArbs_0;TL2CHICoupledL2.txrsp_arb	
-FastArbiter_30	FastArbiter_29	site	60	60	MMIODiverger.mmioReqArb;RNXbar.txreqArbs_0;RNXbar.txreqArbs_1;RNXbar.txreqArbs_2;RNXbar.txreqArbs_3	MMIODiverger.mmioReqArb;RNXbar.txreqArbs_0;RNXbar.txreqArbs_1;RNXbar.txreqArbs_2;RNXbar.txreqArbs_3	
-FastArbiter_31	FastArbiter_30	site	46	46	MMIODiverger.mmioDatArb;RNXbar.txdatArbs_0;RNXbar.txdatArbs_1;RNXbar.txdatArbs_2;RNXbar.txdatArbs_3	MMIODiverger.mmioDatArb;RNXbar.txdatArbs_0;RNXbar.txdatArbs_1;RNXbar.txdatArbs_2;RNXbar.txdatArbs_3	
-FastArbiter_36	FastArbiter_35	site	10	10	RNXbar.txrspArbs_0;RNXbar.txrspArbs_1;RNXbar.txrspArbs_2;RNXbar.txrspArbs_3	RNXbar.txrspArbs_0;RNXbar.txrspArbs_1;RNXbar.txrspArbs_2;RNXbar.txrspArbs_3	
-FastArbiter_44	FastArbiter_43	site	44	44	RNXbar.rxsnpArbs_0	RNXbar.rxsnpArbs_0	
-FastArbiter_46	FastArbiter_45	site	69	69	RNXbar.rxdatArbs_0;SNXbar.txdatArb	RNXbar.rxdatArbs_0;SNXbar.txdatArb	
-FastArbiter_47	FastArbiter_46	site	84	84	SNXbar.txreqArb	SNXbar.txreqArb	
-FoldedSRAMTemplate_20	-	UNRESOLVED	45	-	TageBTable.bt	-	留白: 同名同端口(45), 同父 TageBTable, 但实例名从 bt 拆成 bt_0/bt_1 → 无共有槽位。台账 same_name 有名字+端口表+父模块三重旁证, 但槽位判据本身不给答案。
-FoldedSRAMTemplate_21	FoldedSRAMTemplate_22	site	38	38	ITTageTable.table_0;ITTageTable_1.table_0	ITTageTable.table_0;ITTageTable_1.table_0	
-FoldedSRAMTemplate_23	FoldedSRAMTemplate_24	site	55	55	ITTageTable_2.table_0;ITTageTable_3.table_0;ITTageTable_4.table_0	ITTageTable_2.table_0;ITTageTable_3.table_0;ITTageTable_4.table_0	
-Queue1_RegMapperInput_3	Queue1_RegMapperInput_5	site	18	18	ICacheCtrlUnit.out_back_q	ICacheCtrlUnit.out_back_q	
-IMSIC	IMSIC	wrapper_insert	22	23	CSR.imsic	IMSIC_WRAP.imsic	槽位答案是 IMSIC_WRAP, 但 IMSIC_WRAP 恰好只有一个子例化 IMSIC imsic, 且 G1 IMSIC 的子例化集合 (IMSICGateWay + IntFile×n) 与 G0 IMSIC 同构(IntFile 7→9) → 判为「新插薄壳」, 真身仍是 IMSIC。★全基线仅此一例★; 前一轮把它记成「IMSIC→IMSIC_WRAP 类改名」是错的。
-L1FlagMetaArray	L1ErrorMetaArray	site	30	47	DCache.errorArray	DCache.errorArray	
-L1FlagMetaArray_1	L1FlagMetaArray	site	45	45	DCache.accessArray	DCache.accessArray	
-PMPChecker	-	UNRESOLVED	248	-	Frontend.inner_PMPChecker;Frontend.inner_PMPChecker_1;Frontend.inner_PMPChecker_2;Frontend.inner_PMPChecker_3;Frontend.inner_PMPChecker_4;L2TLB.PMPChecker;L2TLB.PMPChecker_1;L2TLB.PMPChecker_2;TLPMA.PMPChecker;TLPMA.PMPChecker_1	-	留白(★一分为二★): G0 PMPChecker 占 10 个槽位; G1 里 L2TLB/TLPMA 的 7 个槽位仍是 PMPChecker, Frontend 的 5 个槽位改成了 PMPChecker_2 → 共有槽位指向两个模块, 判不准。台账取 same_name(占多数槽位且同名); PMPChecker_2 作为 new_target 独立计数, 守恒不漏。
-PMPChecker_10	PMPChecker_12	site	251	492	MemBlock.inner_pmp_checkers_0;MemBlock.inner_pmp_checkers_1;MemBlock.inner_pmp_checkers_2;MemBlock.inner_pmp_checkers_3;MemBlock.inner_pmp_checkers_4;MemBlock.inner_pmp_checkers_5;MemBlock.inner_pmp_checkers_6;MemBlock.inner_pmp_checkers_7	MemBlock.inner_pmp_checkers_0;MemBlock.inner_pmp_checkers_1;MemBlock.inner_pmp_checkers_2;MemBlock.inner_pmp_checkers_3;MemBlock.inner_pmp_checkers_4;MemBlock.inner_pmp_checkers_5;MemBlock.inner_pmp_checkers_6;MemBlock.inner_pmp_checkers_7	
-NewPipelineConnectPipe_27	NewPipelineConnectPipe_29	site	82	152	VLMergeBufferImp.VMergebufferPipelineConnect0;VLMergeBufferImp.VMergebufferPipelineConnect1;VSMergeBufferImp.VMergebufferPipelineConnect0	VLMergeBufferImp.VMergebufferPipelineConnect0;VLMergeBufferImp.VMergebufferPipelineConnect1;VSMergeBufferImp.VMergebufferPipelineConnect0	
-NewPipelineConnectPipe_31	NewPipelineConnectPipe_33	site	17	17	VSegmentUnit.VSegmentUnitPipelineConnect	VSegmentUnit.VSegmentUnitPipelineConnect	
-NewPipelineConnectPipe_32	NewPipelineConnectPipe_34	site	71	99	MemBlock.inner_otherStoutConnect	MemBlock.inner_otherStoutConnect	
-NewPipelineConnectPipe_33	NewPipelineConnectPipe_35	site	96	356	MemBlock.inner_VlSplitConnectLdu;MemBlock.inner_VlSplitConnectLdu_1;MemBlock.inner_VsSplitConnectStu;MemBlock.inner_VsSplitConnectStu_1	MemBlock.inner_VlSplitConnectLdu;MemBlock.inner_VlSplitConnectLdu_1;MemBlock.inner_VsSplitConnectStu;MemBlock.inner_VsSplitConnectStu_1	
-SRAMTemplate_70	SRAMTemplate_76	site_via_parent	30	30	SplittedSRAMTemplate_24.array_0_0_0	SplittedSRAMTemplate_25.array_0_0_0	
-SRAMTemplate_72	SRAMTemplate_78	site_via_parent	34	34	SplittedSRAMTemplate_26.array_0_0_0;SplittedSRAMTemplate_26.array_0_0_1	SplittedSRAMTemplate_27.array_0_0_0;SplittedSRAMTemplate_27.array_0_0_1	
-SRAMTemplate_66	SRAMTemplate_68	site_common	33	33	SCTable.table_0;SCTable_1.table_0;SCTable_2.table_0;SCTable_3.table_0	SCTable.table_0;SCTable.table_1;SCTable_1.table_0;SCTable_1.table_1;SCTable_2.table_0;SCTable_2.table_1;SCTable_3.table_0;SCTable_3.table_1	
-SplittedSRAMTemplate_24	SplittedSRAMTemplate_25	site_via_parent	52	52	FoldedSRAMTemplate_21.array	FoldedSRAMTemplate_22.array	
-SplittedSRAMTemplate_26	SplittedSRAMTemplate_27	site_via_parent	95	95	FoldedSRAMTemplate_23.array	FoldedSRAMTemplate_24.array	
-SyncDataModuleTemplate__64entry_1	SyncDataModuleTemplate__64entry_2	site	30	30	Ftq.ftb_entry_mem	Ftq.ftb_entry_mem	
-SyncDataModuleTemplate__64entry_2	SyncDataModuleTemplate__64entry_3	site	121	121	Ftq.ftq_pd_mem	Ftq.ftq_pd_mem	
-SyncDataModuleTemplate__64entry_3	SyncDataModuleTemplate__64entry_4	site	106	106	VTypeBuffer.vtypeBuffer	VTypeBuffer.vtypeBuffer	
-SyncDataModuleTemplate__64entry_4	SyncDataModuleTemplate__64entry_5	site	10	10	GPAMem.mem	GPAMem.mem	
-XSTop	-	UNRESOLVED	128	-	SimTop.l_soc	-	留白: G0 SimTop.l_soc → G1 XiangShanSim.l_soc, 实例名 l_soc 未变但父模块改名 (G0 SimTop 的其余子例化 AXI4RAMWrapper.memory / SimMMIO.l_simMMIO 在 G1 也都挂到 XiangShanSim 下, G1 另起了一个新的 difftest 外壳 SimTop)。父改名不在槽位判据覆盖范围内 → 不判。台账 same_name。
+# 槽位判据重算证据（check_universe_freeze.py --emit-evidence 生成；note 列人工补，重生时保留）
+# 只收录「槽位答案 != 同名」与「判不准」两类行；其余同名同槽位的行无话可说。
+# g0_fp/g1_fp = 模块指纹短哈希（端口方向/位宽/名字有序签名 + 参数签名 +
+#   子例化类型多重集 + 层次角色）。★端口总数不是指纹分量★——同一个 Chisel 类的
+#   两次例化端口表天生相同，端口数相等不构成身份证据（codex 0151 D58 C6）。
+# old_target	g1_name	criterion	g0_ports	g1_ports	g0_slots	g1_slots	note	g0_fp	g1_fp
+AXI4Xbar_1	AXI4Xbar_6	site	220	240	SimMMIO.axi4xbar	SimMMIO.axi4xbar		afe8a168581d394a	6508ea267c2f90e2
+CLINT	-	UNRESOLVED	21	-	MemMisc.clint	-	留白: G0 MemMisc.clint 在 G1 里实例名也改了(MemMisc.timer/TIMER 20端口), 无共有槽位。docs/g1_disappeared_targets.md 记人工判断=同位替换 TIMER(接口方向翻转, 须重写), 机器不背书。	f8993ca0c2ac5eb7	-
+DelayReg	-	UNRESOLVED	42	-	Rob.difftest_delayer;Rob.difftest_delayer_1;Rob.difftest_delayer_2;Rob.difftest_delayer_3;Rob.difftest_delayer_4;Rob.difftest_delayer_5;Rob.difftest_delayer_6;Rob.difftest_delayer_7	-	留白: G0 在 Rob.difftest_delayer_0..7(42端口), G1 里 Rob 已无任何 *delayer* 槽位, 同名 DelayReg 改在 GatewayEndpoint.delayed_delayer_*(75端口)。类同名但例化上下文整体迁移, 槽位无交集 → 不判。台账保留 same_name(名字+Chisel 类一致), 但不作为机器结论。	5dd2703e5249e2c9	-
+FastArbiter_27	FastArbiter_26	site	73	73	RNXbar.rxrspArbs_0;TL2CHICoupledL2.txrsp_arb	RNXbar.rxrspArbs_0;TL2CHICoupledL2.txrsp_arb		0e40e7e1268946a0	0e40e7e1268946a0
+FastArbiter_30	FastArbiter_29	site	60	60	MMIODiverger.mmioReqArb;RNXbar.txreqArbs_0;RNXbar.txreqArbs_1;RNXbar.txreqArbs_2;RNXbar.txreqArbs_3	MMIODiverger.mmioReqArb;RNXbar.txreqArbs_0;RNXbar.txreqArbs_1;RNXbar.txreqArbs_2;RNXbar.txreqArbs_3		df65ea923a42429e	df65ea923a42429e
+FastArbiter_31	FastArbiter_30	site	46	46	MMIODiverger.mmioDatArb;RNXbar.txdatArbs_0;RNXbar.txdatArbs_1;RNXbar.txdatArbs_2;RNXbar.txdatArbs_3	MMIODiverger.mmioDatArb;RNXbar.txdatArbs_0;RNXbar.txdatArbs_1;RNXbar.txdatArbs_2;RNXbar.txdatArbs_3		d4c58da3b5d6c67b	d4c58da3b5d6c67b
+FastArbiter_36	FastArbiter_35	site	10	10	RNXbar.txrspArbs_0;RNXbar.txrspArbs_1;RNXbar.txrspArbs_2;RNXbar.txrspArbs_3	RNXbar.txrspArbs_0;RNXbar.txrspArbs_1;RNXbar.txrspArbs_2;RNXbar.txrspArbs_3		c4dfe5a3e75df041	c4dfe5a3e75df041
+FastArbiter_44	FastArbiter_43	site	44	44	RNXbar.rxsnpArbs_0	RNXbar.rxsnpArbs_0		af6317c218a0126b	af6317c218a0126b
+FastArbiter_46	FastArbiter_45	site	69	69	RNXbar.rxdatArbs_0;SNXbar.txdatArb	RNXbar.rxdatArbs_0;SNXbar.txdatArb		0b3cb08c39ee6222	0b3cb08c39ee6222
+FastArbiter_47	FastArbiter_46	site	84	84	SNXbar.txreqArb	SNXbar.txreqArb		144b2beda0ac902b	144b2beda0ac902b
+FoldedSRAMTemplate_20	-	UNRESOLVED	45	-	TageBTable.bt	-	留白: 同名同端口(45), 同父 TageBTable, 但实例名从 bt 拆成 bt_0/bt_1 → 无共有槽位。台账 same_name 有名字+端口表+父模块三重旁证, 但槽位判据本身不给答案。	6927d6925568c878	-
+FoldedSRAMTemplate_21	FoldedSRAMTemplate_22	site	38	38	ITTageTable.table_0;ITTageTable_1.table_0	ITTageTable.table_0;ITTageTable_1.table_0		4ba25e4cd4054323	4ba25e4cd4054323
+FoldedSRAMTemplate_23	FoldedSRAMTemplate_24	site	55	55	ITTageTable_2.table_0;ITTageTable_3.table_0;ITTageTable_4.table_0	ITTageTable_2.table_0;ITTageTable_3.table_0;ITTageTable_4.table_0		394fb8267df1527b	394fb8267df1527b
+Queue1_RegMapperInput_3	Queue1_RegMapperInput_5	site	18	18	ICacheCtrlUnit.out_back_q	ICacheCtrlUnit.out_back_q		30230ec19fdc70b6	78f60823def9e8f2
+IMSIC	IMSIC	wrapper_insert	22	23	CSR.imsic	IMSIC_WRAP.imsic	槽位答案是 IMSIC_WRAP, 但 IMSIC_WRAP 恰好只有一个子例化 IMSIC imsic, 且 G1 IMSIC 的子例化集合 (IMSICGateWay + IntFile×n) 与 G0 IMSIC 同构(IntFile 7→9) → 判为「新插薄壳」, 真身仍是 IMSIC。★全基线仅此一例★; 前一轮把它记成「IMSIC→IMSIC_WRAP 类改名」是错的。	435578ff8b8fcbc0	32fcb09e3b797eab
+L1FlagMetaArray	L1ErrorMetaArray	site	30	47	DCache.errorArray	DCache.errorArray		ac8ee420566907c0	fd538f39aabc733b
+L1FlagMetaArray_1	L1FlagMetaArray	site	45	45	DCache.accessArray	DCache.accessArray		af2f128f637f3971	af2f128f637f3971
+PMPChecker	-	UNRESOLVED	248	-	Frontend.inner_PMPChecker;Frontend.inner_PMPChecker_1;Frontend.inner_PMPChecker_2;Frontend.inner_PMPChecker_3;Frontend.inner_PMPChecker_4;L2TLB.PMPChecker;L2TLB.PMPChecker_1;L2TLB.PMPChecker_2;TLPMA.PMPChecker;TLPMA.PMPChecker_1	-	留白(★一分为二★): G0 PMPChecker 占 10 个槽位; G1 里 L2TLB/TLPMA 的 7 个槽位仍是 PMPChecker, Frontend 的 5 个槽位改成了 PMPChecker_2 → 共有槽位指向两个模块, 判不准。台账取 same_name(占多数槽位且同名); PMPChecker_2 作为 new_target 独立计数, 守恒不漏。	1e33082c755ce3d4	-
+PMPChecker_10	PMPChecker_12	site	251	492	MemBlock.inner_pmp_checkers_0;MemBlock.inner_pmp_checkers_1;MemBlock.inner_pmp_checkers_2;MemBlock.inner_pmp_checkers_3;MemBlock.inner_pmp_checkers_4;MemBlock.inner_pmp_checkers_5;MemBlock.inner_pmp_checkers_6;MemBlock.inner_pmp_checkers_7	MemBlock.inner_pmp_checkers_0;MemBlock.inner_pmp_checkers_1;MemBlock.inner_pmp_checkers_2;MemBlock.inner_pmp_checkers_3;MemBlock.inner_pmp_checkers_4;MemBlock.inner_pmp_checkers_5;MemBlock.inner_pmp_checkers_6;MemBlock.inner_pmp_checkers_7		f574cc5b210a7a37	63c717d118a6b21e
+NewPipelineConnectPipe_27	NewPipelineConnectPipe_29	site	82	152	VLMergeBufferImp.VMergebufferPipelineConnect0;VLMergeBufferImp.VMergebufferPipelineConnect1;VSMergeBufferImp.VMergebufferPipelineConnect0	VLMergeBufferImp.VMergebufferPipelineConnect0;VLMergeBufferImp.VMergebufferPipelineConnect1;VSMergeBufferImp.VMergebufferPipelineConnect0		77270223fedb3dad	9636fa2e82f09040
+NewPipelineConnectPipe_31	NewPipelineConnectPipe_33	site	17	17	VSegmentUnit.VSegmentUnitPipelineConnect	VSegmentUnit.VSegmentUnitPipelineConnect		e190b7e95beeeea8	e190b7e95beeeea8
+NewPipelineConnectPipe_32	NewPipelineConnectPipe_34	site	71	99	MemBlock.inner_otherStoutConnect	MemBlock.inner_otherStoutConnect		42dbf75506d770ed	3112bc02ae892ad5
+NewPipelineConnectPipe_33	NewPipelineConnectPipe_35	site	96	356	MemBlock.inner_VlSplitConnectLdu;MemBlock.inner_VlSplitConnectLdu_1;MemBlock.inner_VsSplitConnectStu;MemBlock.inner_VsSplitConnectStu_1	MemBlock.inner_VlSplitConnectLdu;MemBlock.inner_VlSplitConnectLdu_1;MemBlock.inner_VsSplitConnectStu;MemBlock.inner_VsSplitConnectStu_1		0a30eaf73ce89fbe	2371c23c1bcf61d2
+SRAMTemplate_70	SRAMTemplate_76	site_via_parent	30	30	SplittedSRAMTemplate_24.array_0_0_0	SplittedSRAMTemplate_25.array_0_0_0		9f922f6c3745bbc1	9f922f6c3745bbc1
+SRAMTemplate_72	SRAMTemplate_78	site_via_parent	34	34	SplittedSRAMTemplate_26.array_0_0_0;SplittedSRAMTemplate_26.array_0_0_1	SplittedSRAMTemplate_27.array_0_0_0;SplittedSRAMTemplate_27.array_0_0_1		63e22049f5167436	63e22049f5167436
+SRAMTemplate_66	SRAMTemplate_68	site_common	33	33	SCTable.table_0;SCTable_1.table_0;SCTable_2.table_0;SCTable_3.table_0	SCTable.table_0;SCTable.table_1;SCTable_1.table_0;SCTable_1.table_1;SCTable_2.table_0;SCTable_2.table_1;SCTable_3.table_0;SCTable_3.table_1		946016f234e3d332	7ecae86b0b96f1bb
+SplittedSRAMTemplate_24	SplittedSRAMTemplate_25	site_via_parent	52	52	FoldedSRAMTemplate_21.array	FoldedSRAMTemplate_22.array		4ecf3e79717cd565	4ecf3e79717cd565
+SplittedSRAMTemplate_26	SplittedSRAMTemplate_27	site_via_parent	95	95	FoldedSRAMTemplate_23.array	FoldedSRAMTemplate_24.array		bb9793951627b376	bb9793951627b376
+SyncDataModuleTemplate__64entry_1	SyncDataModuleTemplate__64entry_2	site	30	30	Ftq.ftb_entry_mem	Ftq.ftb_entry_mem		22019b8ba40d57ea	22019b8ba40d57ea
+SyncDataModuleTemplate__64entry_2	SyncDataModuleTemplate__64entry_3	site	121	121	Ftq.ftq_pd_mem	Ftq.ftq_pd_mem		2eaacd7359e503a4	2eaacd7359e503a4
+SyncDataModuleTemplate__64entry_3	SyncDataModuleTemplate__64entry_4	site	106	106	VTypeBuffer.vtypeBuffer	VTypeBuffer.vtypeBuffer		2668960184cd20a4	2668960184cd20a4
+SyncDataModuleTemplate__64entry_4	SyncDataModuleTemplate__64entry_5	site	10	10	GPAMem.mem	GPAMem.mem		c9b0a75f748405c8	c9b0a75f748405c8
+XSTop	-	UNRESOLVED	128	-	SimTop.l_soc	-	留白: G0 SimTop.l_soc → G1 XiangShanSim.l_soc, 实例名 l_soc 未变但父模块改名 (G0 SimTop 的其余子例化 AXI4RAMWrapper.memory / SimMMIO.l_simMMIO 在 G1 也都挂到 XiangShanSim 下, G1 另起了一个新的 difftest 外壳 SimTop)。父改名不在槽位判据覆盖范围内 → 不判。台账 same_name。	2b845305b1f7ae8a	-

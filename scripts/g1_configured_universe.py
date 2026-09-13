@@ -1,46 +1,94 @@
 #!/usr/bin/env python3
-"""g1_configured_universe.py —— G1 当前 configured target universe 的机械枚举（codex 0141 §48）。
+# -*- coding: utf-8 -*-
+"""g1_configured_universe.py —— G1 当前 configured target universe 的机械枚举。
 
-不再拿"上轮 306"当分母（里面含 G1 已消失的目标）。本脚本从 G1 golden RTL 机械推导
-本轮真正该覆盖的模块集合，并给出 old→new / removed / merged / new-target 的守恒映射。
+从 G1 golden RTL 机械推导本轮真正该覆盖的模块集合，并给出
+old→new / removed / merged / new-target 的守恒映射。
 
-**universe 定义（全部可机器判定，逐条可复算）**
-  候选 = G1 golden-rtl 下每个 `<M>.sv` 里声明的 module M，且满足：
-    1. 从 SimTop 出发的例化图可达（不可达 = 本 config 没用到，不计入分母）；
-    2. 非厂商宏叶子：模块名不以 `_ext` 结尾、且其定义文件不是 `.v`
-       （array_*_ext 等是签过字的 vendor 边界，两侧同源黑盒，不作为重写目标）；
-    3. 非 difftest 基础设施（Difftest* / *_dpic* / gateway 桩）——那是验证脚手架，
-       不属被验证设计；
-    4. 非纯行为级存储模型（ram_<N>x<W> / data_mem_* / mem_*_ext）——golden 提供的
-       存储行为模型，同样两侧同源。
-  其余全部计入 MAIN 分母。
+## universe 定义（全部可机器判定，逐条可复算）
 
-**守恒**：old306 = same + renumbered + merged_away + removed；
-         universe = covered_from_old + new_targets；两式各自打印并校验。
+候选 = G1 golden-rtl 下声明的每个 module，且满足：
+
+  1. **从 `XSTop` 出发的例化图可达**（codex 0151 D59：主 universe 根固定 XSTop）。
+     SimTop 及其外围（difftest gateway / Flash / SDCard / 行为级内存 helper）是
+     仿真脚手架，不属被验证的芯片设计，不进可读 RTL 主分母；它们仍会被逐个
+     记成 `excluded:simtop_only`，**不会从台账里消失**。
+  2. 非厂商宏叶子 / 非行为级存储模型 / 非 difftest 基础设施（见 EXCL_PATTERNS）。
+
+**扫描 `.sv` 与 `.v` 两种后缀**（D59）。只扫 `.sv` 会让 `PrintCommitIDModule.v`
+这种真实设计定义凭空消失 —— 它确实在 XSTop 可达闭包里。
+
+## ★排除 ≠ 免责★
+
+被 EXCL_PATTERNS 排除的模块（array_N / sram_array_* / ram_* / data_mem_*）
+**不等于已获批准**。按 D59，只有已冻结 registry（`verif/vendor_boundary.tsv`）
+批准者才能排除于可读 RTL 分母，其余一律记 gap。本脚本把它们排出 universe 只是
+为了"本轮重写目标分母"这一个用途，并会打印 gap 计数；逐个定性见
+`scripts/boundary_ledger.py` 产出的 `docs/g1_boundary_ledger.tsv`。
+
+## 本轮修了什么（codex 0151 D58）
+
+ 1. ★同名优先★ 原 `if t in files: same_name` 排在 manual / renumber 之前，
+    整串重编号一发生就串位，且与 g1_universe.py 各写各的，曾经产出过
+    `FastArbiter_30 <- FastArbiter_30, FastArbiter_31` 这种双认领（C1 FAIL）。
+    → 改：与 g1_universe.py 共用 scripts/g1_slotmap.py 的 Resolver，槽位判据优先。
+ 2. ★`cand[0]` 拿字典序当证据★ 全局 body 哈希多命中时取第一个。
+    → 改：body 判据要求唯一命中，多义即判不准。
+ 3. `REPO` 由 `--repo` 显式给出（原先是 `__file__` 的父目录，跨 worktree 易写错树）。
+
+## 守恒
+
+  old306 = same + renumbered + slot_map + merged_away + removed
+  universe = covered_from_old + new_targets
+  G1 全部模块 = universe + 各排除类（**无法归类的残余 = 失败**）
 """
-import hashlib
+from __future__ import print_function
+
+import argparse
 import json
+import os
 import pathlib
 import re
 import sys
 from collections import defaultdict, deque
 
-G0 = pathlib.Path('/home/eda/xs-env/G0-canonical/golden-rtl')
-G1 = pathlib.Path('/home/eda/xs-env/G1-canonical/golden-rtl')
-REPO = pathlib.Path(__file__).resolve().parent.parent
-OLD_MANIFEST = pathlib.Path('/home/eda/xs-env/xs-signoff/scripts/sidecar/manifest_305.json')
-SCALA = re.compile(rb'\.scala:\d+')
-INST = re.compile(r'^\s{2,}([A-Za-z_]\w*)\s+[A-Za-z_]\w*\s*\(\s*$', re.MULTILINE)
+HERE = pathlib.Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
+import g1_slotmap as SM                                            # noqa: E402
+
+OLD_MANIFEST_DEFAULT = '/home/eda/xs-env/xs-signoff/scripts/sidecar/manifest_305.json'
 
 EXCL_PATTERNS = [
     (re.compile(r'_ext$'), 'vendor_macro_leaf'),
     (re.compile(r'^Difftest'), 'difftest_infra'),
+    (re.compile(r'^DiffExt'), 'difftest_infra'),
     (re.compile(r'_dpic', re.I), 'difftest_infra'),
-    (re.compile(r'^ram_\d+x\d+$'), 'behavioral_ram'),
+    (re.compile(r'^ram_'), 'behavioral_ram'),
     (re.compile(r'^data_mem_'), 'behavioral_ram'),
     (re.compile(r'^array(_\d+)?$'), 'vendor_macro_wrapper'),
     (re.compile(r'^sram_array_'), 'vendor_macro_wrapper'),
 ]
+
+#: 排除类里哪些属于"厂商边界"性质 —— 这些才需要冻结 registry 批准，否则记 gap。
+BOUNDARY_CLASSES = ('vendor_macro_leaf', 'vendor_macro_wrapper', 'behavioral_ram')
+
+CFG_HDR = [
+    '# G1 configured target universe（scripts/g1_configured_universe.py 生成；禁止手工编辑）',
+    '# 见脚本 docstring：根=XSTop，扫 .sv 与 .v，四类机器可判的排除规则。',
+    '# ★excluded 不等于已获批准★：只有 verif/vendor_boundary.tsv 批准者才算合规排除，',
+    '#   其余记 gap，逐个定性见 docs/g1_boundary_ledger.tsv。',
+]
+
+MAP_HDR = [
+    '# old306 → G1 守恒映射（scripts/g1_configured_universe.py 生成；禁止手工编辑）',
+    '# disposition: same_name / slot_map / manual_renumber / auto_renumber /',
+    '#              removed_in_g1 / no_g0_file —— 决定权始终在**槽位判据**，',
+    '#              标签只说明还有谁独立佐证了同一个答案。',
+    '# old_target\tg1_name\tdisposition\tin_universe',
+]
+
+LABEL2DISP = {'same_name': 'same_name', 'slot_map': 'slot_map',
+              'manual_map': 'manual_renumber', 'renumbered': 'auto_renumber'}
 
 
 def excluded(name):
@@ -50,115 +98,160 @@ def excluded(name):
     return None
 
 
-def norm(p, self_name):
-    return SCALA.sub(b'.scala:0', p.read_bytes()).replace(self_name.encode(), b'@S@')
-
-
-def main():
-    files = {p.stem: p for p in G1.glob('*.sv')}
-    # 例化图
-    children = defaultdict(set)
-    for name, p in files.items():
-        for m in INST.finditer(p.read_text(errors='replace')):
-            c = m.group(1)
-            if c in files and c != name:
-                children[name].add(c)
-    # 从 SimTop 可达
-    root = 'SimTop' if 'SimTop' in files else ('XSTop' if 'XSTop' in files else None)
-    if root is None:
-        sys.exit('ERROR: G1 里找不到 SimTop/XSTop 根')
+def reachable(base, root):
+    if root not in base.ports:
+        raise SM.InputError('G1 里找不到根模块 %s' % root)
     seen, q = {root}, deque([root])
     while q:
         n = q.popleft()
-        for c in children[n]:
-            if c not in seen:
-                seen.add(c)
-                q.append(c)
+        for typ, _inst in base.kids.get(n, ()):
+            if typ in base.ports and typ not in seen:
+                seen.add(typ)
+                q.append(typ)
+    return seen
+
+
+def build(args):
+    repo = pathlib.Path(args.repo)
+    incv = not args.no_include_v
+    g0 = SM.Baseline(args.g0, 'G0', include_v=incv)
+    g1 = SM.Baseline(args.g1, 'G1', include_v=incv)
+    res = SM.Resolver(g0, g1, args.g0, args.g1, SM.load_manual_map(repo))
+
+    main_reach = reachable(g1, args.root)
+    alt_reach = reachable(g1, args.alt_root) if args.alt_root in g1.ports else set()
 
     universe, excl = {}, defaultdict(list)
-    for n in sorted(seen):
+    for n in sorted(g1.ports):
+        if n not in main_reach:
+            # ★不进主分母，但逐个记账，不许消失★
+            excl['simtop_only' if n in alt_reach else 'unreachable'].append(n)
+            continue
         why = excluded(n)
         if why:
             excl[why].append(n)
         else:
-            universe[n] = files[n]
+            universe[n] = g1.deffile[n]
 
-    # old 306 → G1 映射
-    old = [e['target'] for e in json.load(OLD_MANIFEST.open())['entries']]
-    manual = {}
-    mp = REPO / 'docs' / 'g1_manual_map.tsv'
-    if mp.exists():
-        for ln in mp.read_text().splitlines():
-            if not ln.startswith('#') and ln.strip():
-                f = ln.split('\t')
-                manual[f[0]] = f[1]
-
-    rows = []
-    same = renum = removed = 0
-    g1_hash = {}
-    for n, p in files.items():
-        g1_hash.setdefault(hashlib.sha256(norm(p, n)).hexdigest(), []).append(n)
-
-    mapped_to = defaultdict(list)
+    old = [e['target'] for e in json.load(open(args.manifest))['entries']]
+    rows, mapped_to = [], defaultdict(list)
     for t in old:
-        if t in files:
-            rows.append((t, t, 'same_name')); same += 1; mapped_to[t].append(t)
-        elif t in manual and manual[t] in files:
-            rows.append((t, manual[t], 'manual_renumber')); renum += 1; mapped_to[manual[t]].append(t)
-        elif (G0 / f'{t}.sv').exists():
-            h = hashlib.sha256(norm(G0 / f'{t}.sv', t)).hexdigest()
-            cand = [c for c in g1_hash.get(h, [])]
-            if cand:
-                rows.append((t, cand[0], 'auto_renumber')); renum += 1; mapped_to[cand[0]].append(t)
-            else:
-                rows.append((t, '-', 'removed_in_g1')); removed += 1
+        g1n, label, _crit = res.resolve(t)
+        if g1n:
+            rows.append((t, g1n, LABEL2DISP[label]))
+            mapped_to[g1n].append(t)
         else:
-            rows.append((t, '-', 'no_g0_file')); removed += 1
+            rows.append((t, '-', 'removed_in_g1' if t in g0.ports else 'no_g0_file'))
 
-    merged = {k: v for k, v in mapped_to.items() if len(v) > 1}
-    covered = {r[1] for r in rows if r[1] != '-' and r[1] in universe}
+    merged = dict((k, v) for k, v in mapped_to.items() if len(v) > 1)
+    covered = set(r[1] for r in rows if r[1] != '-' and r[1] in universe)
     new_targets = sorted(set(universe) - covered)
-    # 映射到 G1 但不在 universe（被排除类，如 vendor/difftest）
-    out_of_universe = sorted({r[1] for r in rows if r[1] != '-'} - set(universe))
+    out_of_universe = sorted(set(r[1] for r in rows if r[1] != '-') - set(universe))
 
-    up = REPO / 'docs' / 'g1_configured_universe.tsv'
-    with up.open('w') as f:
-        f.write('# G1 configured target universe（机械枚举；见脚本 docstring 的四条排除规则）\n')
-        f.write(f'# root={root}  reachable={len(seen)}  universe={len(universe)}\n')
-        f.write('# module\tin_universe\tsource\n')
-        for n in sorted(universe):
-            src = 'from_old_306' if n in covered else 'new_target'
-            f.write(f'{n}\tyes\t{src}\n')
-        for why, names in sorted(excl.items()):
-            for n in sorted(names):
-                f.write(f'{n}\tno\texcluded:{why}\n')
+    cfg_lines = list(CFG_HDR)
+    cfg_lines.append('# root=%s  可达=%d  universe=%d  排除=%d'
+                     % (args.root, len(main_reach), len(universe),
+                        sum(len(v) for v in excl.values())))
+    cfg_lines.append('# module\tin_universe\tsource')
+    for n in sorted(universe):
+        cfg_lines.append('%s\tyes\t%s'
+                         % (n, 'from_old_306' if n in covered else 'new_target'))
+    for why, names in sorted(excl.items()):
+        for n in sorted(names):
+            cfg_lines.append('%s\tno\texcluded:%s' % (n, why))
 
-    mp2 = REPO / 'docs' / 'g1_old_to_new_map.tsv'
-    with mp2.open('w') as f:
-        f.write('# old306 → G1 守恒映射（same_name / manual_renumber / auto_renumber / '
-                'removed_in_g1 / no_g0_file）\n')
-        f.write('# old_target\tg1_name\tdisposition\tin_universe\n')
-        for o, n, how in rows:
-            f.write(f'{o}\t{n}\t{how}\t{"yes" if n in universe else "no"}\n')
+    map_lines = list(MAP_HDR)
+    for o, n, how in rows:
+        map_lines.append('%s\t%s\t%s\t%s' % (o, n, how, 'yes' if n in universe else 'no'))
 
-    print(f'root={root}  从根可达模块={len(seen)}')
-    print('排除:', {k: len(v) for k, v in sorted(excl.items())})
-    print(f'★MAIN 分母（G1 configured universe）= {len(universe)}')
-    print(f'old306 处置: same_name={same} renumber={renum} removed/no_g0={removed}'
-          f'  合计={same + renum + removed}/{len(old)}'
-          f'  {"守恒 PASS" if same + renum + removed == len(old) else "★守恒 FAIL★"}')
-    print(f'universe 拆分: 来自 old306={len(covered)} + 新目标={len(new_targets)}'
-          f' = {len(covered) + len(new_targets)}'
-          f'  {"守恒 PASS" if len(covered) + len(new_targets) == len(universe) else "★守恒 FAIL★"}')
-    if merged:
+    gaps = [n for c in BOUNDARY_CLASSES for n in excl.get(c, [])]
+    return dict(rows=rows, excl=excl, universe=universe, covered=covered,
+                new_targets=new_targets, merged=merged, old=old,
+                out_of_universe=out_of_universe, main_reach=main_reach,
+                alt_reach=alt_reach, gaps=gaps,
+                files={repo / 'docs' / 'g1_configured_universe.tsv':
+                       '\n'.join(cfg_lines) + '\n',
+                       repo / 'docs' / 'g1_old_to_new_map.tsv':
+                       '\n'.join(map_lines) + '\n'})
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument('--repo', default=str(os.environ.get('XSSV_HOME') or HERE.parent),
+                    help='仓库根（默认 $XSSV_HOME 或本脚本所在仓库）。★禁止硬编码主树★')
+    ap.add_argument('--g0', default=SM.G0_DEFAULT)
+    ap.add_argument('--g1', default=SM.G1_DEFAULT)
+    ap.add_argument('--manifest', default=OLD_MANIFEST_DEFAULT)
+    ap.add_argument('--root', default='XSTop',
+                    help='主 universe 的根（D59 固定 XSTop）')
+    ap.add_argument('--alt-root', default='SimTop',
+                    help='外围根：只在它下面可达的模块记 excluded:simtop_only')
+    ap.add_argument('--no-include-v', action='store_true',
+                    help='只扫 .sv（D59 要求默认连 .v 一起扫）')
+    ap.add_argument('--check', action='store_true',
+                    help='不写文件，只校验仓库里的 TSV 与重新生成的结果逐字节一致')
+    args = ap.parse_args(argv)
+
+    try:
+        b = build(args)
+    except (SM.InputError, IOError, OSError) as e:
+        sys.stderr.write('INPUT/PARSE ERROR (fail-closed): %s\n' % e)
+        return 2
+
+    old, rows, excl = b['old'], b['rows'], b['excl']
+    disp = defaultdict(int)
+    for _o, _n, how in rows:
+        disp[how] += 1
+    n_removed = disp['removed_in_g1'] + disp['no_g0_file']
+    n_mapped = len(rows) - n_removed
+
+    print('root=%s  从根可达模块=%d  (外围根 %s 可达=%d)'
+          % (args.root, len(b['main_reach']), args.alt_root, len(b['alt_reach'])))
+    print('排除:', dict((k, len(v)) for k, v in sorted(excl.items())))
+    print('★MAIN 分母（G1 configured universe）= %d' % len(b['universe']))
+    print('old%d 处置: %s  合计=%d/%d  %s'
+          % (len(old), ' '.join('%s=%d' % kv for kv in sorted(disp.items())),
+             len(rows), len(old),
+             '守恒 PASS' if len(rows) == len(old) else '★守恒 FAIL★'))
+    ok1 = len(rows) == len(old)
+    ok2 = len(b['covered']) + len(b['new_targets']) == len(b['universe'])
+    print('universe 拆分: 来自 old306=%d + 新目标=%d = %d  %s'
+          % (len(b['covered']), len(b['new_targets']),
+             len(b['covered']) + len(b['new_targets']),
+             '守恒 PASS' if ok2 else '★守恒 FAIL★'))
+    if b['merged']:
         print('merged（多个 old 映到同一 G1 模块）:',
-              '; '.join(f'{k}<-{",".join(v)}' for k, v in list(merged.items())[:5]))
-    print(f'映射到 G1 但不在 universe（落在排除类）: {len(out_of_universe)}'
-          + ('  ' + ' '.join(out_of_universe[:8]) if out_of_universe else ''))
-    print(f'新目标示例: {" ".join(new_targets[:10])} …')
-    ok = (same + renum + removed == len(old)
-          and len(covered) + len(new_targets) == len(universe))
-    return 0 if ok else 1
+              '; '.join('%s<-%s' % (k, ','.join(v))
+                        for k, v in sorted(b['merged'].items())[:5]))
+    print('映射到 G1 但不在 universe（落在排除类）: %d%s'
+          % (len(b['out_of_universe']),
+             '  ' + ' '.join(b['out_of_universe'][:8]) if b['out_of_universe'] else ''))
+    print('新目标示例: %s …' % ' '.join(b['new_targets'][:10]))
+    print('★厂商/存储边界待定性（排除但未经冻结 registry 批准即为 gap）: %d 个'
+          % len(b['gaps']))
+    print('  逐个定性: python3 scripts/boundary_ledger.py --repo <repo>')
+
+    bad = SM_emit(b['files'], args.check)
+    if args.check:
+        if bad:
+            print('★幂等 FAIL★ 重新生成的结果与仓库里的文件不一致:')
+            for p in bad:
+                print('    -', p)
+            return 1
+        print('幂等 PASS: %d 个文件与重新生成的结果逐字节一致' % len(b['files']))
+    return 0 if (ok1 and ok2) else 1
+
+
+def SM_emit(files, check):
+    bad = []
+    for p, txt in sorted(files.items()):
+        if check:
+            if (p.read_text() if p.exists() else None) != txt:
+                bad.append(p)
+        else:
+            p.write_text(txt)
+    return bad
 
 
 if __name__ == '__main__':
