@@ -1,0 +1,101 @@
+// MbistPipePtwL1.sv —— MBIST 分发树的 叶子(leaf) 节点：L2TLB 页表缓存 L1 级 SplittedSRAM_1（单口 6 way）
+//
+// 本变体参数（全部从 G1 golden 逐根量出来，见 scripts/gen_mbist_pipe_family.py）：
+//   拓扑      叶子：直接驱动 SRAM 的 bore 口，1 个 child（toSRAM_0..0）
+//   例化于    PtwCache
+//   MBIST array id  0x2C..0x31（共 6 个），故 ARRAY_W = clog2(0x31+1) = 6 位
+//   上游总线  addr/addr_rd 3 位  indata/outdata 131 位  be 1 位
+//   规模      golden 229 行 / 23 端口；本文件只做参数化例化 + 端口展平，逻辑全在 xs_mbist_pipe_core
+//
+// 各 child 认领的 array id 与端口宽度。child 的 array 端口按**它自己**的最大 id 算宽，
+// 本变体各 child 恰好都是 6 位（不要当成"反正照抄父节点宽度"——换个变体就不是了）：
+//   child 0   id 0x2C..0x31    array 6 位  addr 3   data 131  be 1   selectedOH 6 位
+//
+// MBIST 分发树整体是怎么回事、bore 口每根线什么含义、array id 怎么编址，
+// 全部讲在核文件 rtl/dft/xs_mbist_pipe_core.sv 的文件头，不在这里重复。
+
+// BEGIN GENERATED(MbistPipePtwL1) —— 由 scripts/gen_mbist_pipe_family.py 从 G1 golden 生成
+module MbistPipePtwL1 (
+  input  logic clock,
+  input  logic reset,
+  input  logic [5:0] mbist_array,
+  input  logic mbist_all,
+  input  logic mbist_req,
+  output logic mbist_ack,
+  input  logic mbist_writeen,
+  input  logic mbist_be,
+  input  logic [2:0] mbist_addr,
+  input  logic [130:0] mbist_indata,
+  input  logic mbist_readen,
+  input  logic [2:0] mbist_addr_rd,
+  output logic [130:0] mbist_outdata,
+  output logic [2:0] toSRAM_0_addr,
+  output logic [2:0] toSRAM_0_addr_rd,
+  output logic [130:0] toSRAM_0_wdata,
+  output logic toSRAM_0_wmask,
+  output logic toSRAM_0_re,
+  output logic toSRAM_0_we,
+  input  logic [130:0] toSRAM_0_rdata,
+  output logic toSRAM_0_ack,
+  output logic [5:0] toSRAM_0_selectedOH,
+  output logic [5:0] toSRAM_0_array
+);
+
+  localparam int unsigned N_CHILD = 1;
+  localparam int unsigned MAX_IDS = 6;
+  localparam int unsigned ARRAY_W = 6;
+  localparam int unsigned ADDR_W  = 3;
+  localparam int unsigned DATA_W  = 131;
+  localparam int unsigned BE_W    = 1;
+
+  logic [ARRAY_W-1:0] ch_array      [N_CHILD];
+  logic               ch_all        [N_CHILD];
+  logic               ch_reqpulse   [N_CHILD];
+  logic               ch_writeen    [N_CHILD];
+  logic [BE_W-1:0]    ch_wmask      [N_CHILD];
+  logic [ADDR_W-1:0]  ch_addr       [N_CHILD];
+  logic [DATA_W-1:0]  ch_wdata      [N_CHILD];
+  logic               ch_readen     [N_CHILD];
+  logic [ADDR_W-1:0]  ch_addr_rd    [N_CHILD];
+  logic [MAX_IDS-1:0] ch_selectedOH [N_CHILD];
+  logic [DATA_W-1:0]  ch_rdata      [N_CHILD];
+  logic               ch_ack        [N_CHILD];
+
+  xs_mbist_pipe_core #(
+    .IS_NODE (1'b0),
+    .N_CHILD (N_CHILD),
+    .ARRAY_W (ARRAY_W),
+    .BE_W    (BE_W),
+    .ADDR_W  (ADDR_W),
+    .DATA_W  (DATA_W),
+    .ID_LO   ('{'h2C}),
+    .ID_CNT  ('{6}),
+    .MAX_IDS (MAX_IDS)
+  ) u_core (
+    .clock (clock), .reset (reset),
+    .mbist_array (mbist_array), .mbist_all (mbist_all), .mbist_req (mbist_req),
+    .mbist_ack (mbist_ack), .mbist_writeen (mbist_writeen), .mbist_be (mbist_be),
+    .mbist_addr (mbist_addr), .mbist_indata (mbist_indata), .mbist_readen (mbist_readen),
+    .mbist_addr_rd (mbist_addr_rd), .mbist_outdata (mbist_outdata),
+    .ch_array (ch_array), .ch_all (ch_all), .ch_reqpulse (ch_reqpulse),
+    .ch_writeen (ch_writeen), .ch_wmask (ch_wmask), .ch_addr (ch_addr),
+    .ch_wdata (ch_wdata), .ch_readen (ch_readen), .ch_addr_rd (ch_addr_rd),
+    .ch_selectedOH (ch_selectedOH), .ch_rdata (ch_rdata), .ch_ack (ch_ack)
+  );
+
+  // 端口展平：核按上游最大位宽给，这里截到每个 child 的实宽；读数据反向零扩展。
+  // ---- child 0：array id 0x2C..0x31 ----
+  assign toSRAM_0_addr       = ch_addr[0];
+  assign toSRAM_0_addr_rd    = ch_addr_rd[0];
+  assign toSRAM_0_wdata      = ch_wdata[0];
+  assign toSRAM_0_wmask      = ch_wmask[0];
+  assign toSRAM_0_re         = ch_readen[0];
+  assign toSRAM_0_we         = ch_writeen[0];
+  assign toSRAM_0_ack        = ch_reqpulse[0];
+  assign toSRAM_0_selectedOH = ch_selectedOH[0];
+  assign toSRAM_0_array      = ch_array[0];
+  assign ch_rdata[0]    = DATA_W'(toSRAM_0_rdata);
+  assign ch_ack[0]      = 1'b0;   // 叶子不看 SRAM 的 ack
+
+endmodule
+// END GENERATED(MbistPipePtwL1)
