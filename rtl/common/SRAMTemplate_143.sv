@@ -40,7 +40,11 @@ module SRAMTemplate_143(
     .SET(64), .WAY(2), .DATA_WIDTH(57), .BORE_AW(7),
     .ENABLE_RESET(0), .ENABLE_HOLDREAD(0),
     .ENABLE_CLOCKGATE(0), .EXTRA_RESET(0),
-    .USE_BITMASK(0)
+    .USE_BITMASK(0),
+    // G1 锚点（勿手改，全部来自 golden SRAMTemplate_143.sv）：
+    //   宏名 sram_array_1p64x114m57...l1b_* / io_r_resp_data_<k> 共 2 个 / bore_addr 7 位
+    .G1_MACRO_SETS(64), .G1_MACRO_BITS(114), .G1_MACRO_MASK(57),
+    .G1_MACRO_LAT(1), .G1_WAY_PORTS(2), .G1_BORE_AW(7)
   ) u_core (
     .clock(clock), .reset(reset), .io_extra_reset(1'b0),
     .io_r_req_ready(/* no ready port */),

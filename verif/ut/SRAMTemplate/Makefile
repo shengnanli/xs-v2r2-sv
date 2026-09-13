@@ -198,3 +198,28 @@ FM_VARIANTS = SRAMTemplate SRAMTemplate_100 SRAMTemplate_116 SRAMTemplate_124 SR
 include ../../../scripts/ut_common.mk
 
 VCS += +define+SYNTHESIS
+
+# ---------------------------------------------------------------------------
+# negtest：G1 锚点不变式的必失败负测（codex 0145 决策三要求"错误参数放一个必失败
+# 负测"）。negtest.sv 拿 SRAMTemplate_148 的规格做原型，三个负例各只抄错一处参数：
+#   NEG_DW_NARROW 位宽抄小 / NEG_WAY_SPLIT way 劈错(乘积仍对) / NEG_NO_ANCHOR 不传锚点。
+# 判据：三个都必须让 VCS 在 **elaborate 期** 非零退出（Error-[FEST]）。
+# 任何一个能链接成功 = 不变式形同虚设，判 FAIL。
+# 注意：这里不用 $(VCS)（不需要 -kdb/-debug_access，负测只看 elaborate 是否炸）。
+NEG_CASES = NEG_DW_NARROW NEG_WAY_SPLIT NEG_NO_ANCHOR
+.PHONY: negtest
+negtest:
+	@rc=0; for c in $(NEG_CASES); do \
+	  rm -rf neg_csrc simv_neg simv_neg.daidir; \
+	  if vcs -full64 -sverilog -Mdir=neg_csrc +define+SYNTHESIS +define+$$c \
+	         $(RTL_DIR)/common/xs_SRAMTemplate_core.sv negtest.sv \
+	         -top neg_sram_probe -o simv_neg > neg_$$c.log 2>&1; then \
+	    echo "=== NEGTEST FAILED ($$c)：抄错的参数竟然 elaborate 过了 ==="; rc=1; \
+	  elif grep -q 'Error-\[FEST\]' neg_$$c.log; then \
+	    echo "=== NEGTEST PASSED ($$c)：elaborate 期被不变式拦下 ==="; \
+	    sed -n '/FEST/,/^$$/p' neg_$$c.log | grep -m2 'msg:' || true; \
+	  else \
+	    echo "=== NEGTEST FAILED ($$c)：编译是失败了, 但不是 \$$fatal 不变式拦的(看 neg_$$c.log) ==="; \
+	    grep -m3 -E '^Error' neg_$$c.log || true; rc=1; \
+	  fi; \
+	done; rm -rf neg_csrc simv_neg simv_neg.daidir; exit $$rc

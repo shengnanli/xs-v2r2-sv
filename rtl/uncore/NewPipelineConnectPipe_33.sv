@@ -44,28 +44,32 @@ module NewPipelineConnectPipe_33(
   localparam int unsigned O_DATA     = O_MASK     + W_MASK;
   localparam int unsigned O_VADDR    = O_DATA     + W_DATA;
 
-  // 位宽自检（elaborate/time 0）：端口位宽必须与上面的布局一致。
-  // 这一轮反复出事的形态是「逻辑全对、只有某个字段位宽停在旧值」——随机激励未必
-  // 打得到高位，UT 照样 errors=0，要等 FM 才炸。这里让它在 time 0 就炸。
-  initial begin
-    if ($bits(io_in_bits_vaddr) != W_VADDR)
-      $fatal(1, "NewPipelineConnectPipe_33: vaddr %0d 位 != 布局的 %0d",
-             $bits(io_in_bits_vaddr), W_VADDR);
-    if ($bits(io_in_bits_data) != W_DATA)
-      $fatal(1, "NewPipelineConnectPipe_33: data %0d 位 != 布局的 %0d",
-             $bits(io_in_bits_data), W_DATA);
-    if ($bits(io_in_bits_mask) != W_MASK)
-      $fatal(1, "NewPipelineConnectPipe_33: mask %0d 位 != 布局的 %0d",
-             $bits(io_in_bits_mask), W_MASK);
-    if ($bits(io_in_bits_addr) != W_ADDR)
-      $fatal(1, "NewPipelineConnectPipe_33: addr %0d 位 != 布局的 %0d",
-             $bits(io_in_bits_addr), W_ADDR);
-    if ($bits({io_in_bits_vaddr, io_in_bits_data, io_in_bits_mask,
-               io_in_bits_addr, io_in_bits_vecValid}) != PAYLOAD_W)
-      $fatal(1, "NewPipelineConnectPipe_33: 入口打包 %0d 位 != PAYLOAD_W %0d",
-             $bits({io_in_bits_vaddr, io_in_bits_data, io_in_bits_mask,
-                    io_in_bits_addr, io_in_bits_vecValid}), PAYLOAD_W);
-  end
+  // G1 锚点：golden NewPipelineConnectPipe_33 的 io_in_bits_* 端口位数之和
+  // （逐行累加自 golden 端口表）：50+128+16+48+1 = 243。
+  localparam int unsigned PAYLOAD_W_G1 = 243;
+
+  // 位数自检：改成 **elaboration-time system task**（$fatal 写在模块体里，不写在
+  // initial 里）—— VCS 在 elaborate 就报 Error-[FEST] 并 rc=255 退出，纯 elaborate /
+  // 综合流程也拦得住；initial 形式只有跑仿真才炸。
+  // 这一轮反复出事的形态是「逻辑全对、只有某一项位数停在旧值」——随机激励未必打得到
+  // 高位，UT 照样 errors=0，要等 FM 才炸。
+  if ($bits(io_in_bits_vaddr) != W_VADDR)
+    $fatal(1, "NewPipelineConnectPipe_33: vaddr %0d 位 != 布局里的 %0d",
+           $bits(io_in_bits_vaddr), W_VADDR);
+  if ($bits(io_in_bits_data) != W_DATA)
+    $fatal(1, "NewPipelineConnectPipe_33: data %0d 位 != 布局里的 %0d",
+           $bits(io_in_bits_data), W_DATA);
+  if ($bits(io_in_bits_mask) != W_MASK)
+    $fatal(1, "NewPipelineConnectPipe_33: mask %0d 位 != 布局里的 %0d",
+           $bits(io_in_bits_mask), W_MASK);
+  if ($bits(io_in_bits_addr) != W_ADDR)
+    $fatal(1, "NewPipelineConnectPipe_33: addr %0d 位 != 布局里的 %0d",
+           $bits(io_in_bits_addr), W_ADDR);
+  if ($bits({io_in_bits_vaddr, io_in_bits_data, io_in_bits_mask,
+             io_in_bits_addr, io_in_bits_vecValid}) != PAYLOAD_W)
+    $fatal(1, "NewPipelineConnectPipe_33: 入口打包 %0d 位 != PAYLOAD_W %0d",
+           $bits({io_in_bits_vaddr, io_in_bits_data, io_in_bits_mask,
+                  io_in_bits_addr, io_in_bits_vecValid}), PAYLOAD_W);
 
   wire [PAYLOAD_W-1:0] out_bus;
   assign io_out_bits_vaddr    = out_bus[O_VADDR    +: W_VADDR];
@@ -74,7 +78,7 @@ module NewPipelineConnectPipe_33(
   assign io_out_bits_addr     = out_bus[O_ADDR     +: W_ADDR];
   assign io_out_bits_vecValid = out_bus[O_VECVALID +: W_VECVALID];
 
-  xs_PipelineConnect #(.DATA_WIDTH(PAYLOAD_W)) u_core (
+  xs_PipelineConnect #(.DATA_WIDTH(PAYLOAD_W), .PAYLOAD_W_G1(PAYLOAD_W_G1)) u_core (
     .clock(clock),
     .reset(reset),
     .io_in_ready(io_in_ready),

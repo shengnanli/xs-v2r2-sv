@@ -45,7 +45,11 @@ module SRAMTemplate_178(
     .ENABLE_CLOCKGATE(0), .EXTRA_RESET(0),
     .USE_BITMASK(0),
     .MASK_SEG_W(0), .BORE_NSEG(1),
-    .EXT_CLOCKGATE(1), .MCP_HOLD(1)
+    .EXT_CLOCKGATE(1), .MCP_HOLD(1),
+    // G1 锚点（勿手改，全部来自 golden SRAMTemplate_178.sv）：
+    //   宏名 sram_array_1p4096x137m137...l2b_* / io_r_resp_data_<k> 共 1 个 / bore_addr 13 位
+    .G1_MACRO_SETS(4096), .G1_MACRO_BITS(137), .G1_MACRO_MASK(137),
+    .G1_MACRO_LAT(2), .G1_WAY_PORTS(1), .G1_BORE_AW(13)
   ) u_core (
     .clock(clock), .reset(reset), .io_extra_reset(1'b0),
     .io_r_req_ready(/* 本变体无 r ready 口 */),

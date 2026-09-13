@@ -18,6 +18,15 @@
 //   BORE_NSEG     MBIST bore 口窄于宏、一次只盖一段时的“分段 bore”（见 §MBIST）。
 //   EXT_CLOCKGATE 时钟门控单元外置（见 §时钟门控）。
 //   MCP_HOLD      多周期宏(s1h1l2)的隔拍门控与 2 拍读延迟（见 §多周期宏）。
+//
+// ---- G1 锚点（G1_*）与 elaborate 期自检 ---------------------------------------
+// 本核的位宽全部是**派生算术**（MW=WAY*DATA_WIDTH、WMASK_W=MW/SEG_W、MASK_REP=
+// WMASK_W/IN_MASK_W、AW=clog2(SET)…）。一个变体只要把 WAY/DATA_WIDTH/MASK_SEG_W
+// 里任何一个抄错，逻辑一行都不会变、随机激励也未必打得到高位，UT 照样全绿，
+// 只有 FM 才炸——本轮已经这样出过 3 次事故。
+// 因此每个薄文件必须把「从 golden 现读的机器可查常量」原样传进来（见 §参数自检），
+// 由本核在 **elaborate 期**（模块体内的 $fatal，不是 initial）比对。
+// 这些 G1_* 参数**没有可用的默认值**：不传 = 立刻 $fatal，不留 fail-open 的口子。
 // =============================================================================
 module xs_SRAMTemplate_core #(
   parameter int unsigned SET        = 128,
@@ -44,6 +53,29 @@ module xs_SRAMTemplate_core #(
 
   // ---- 多周期宏：门控使能隔拍脉冲 + 读数据晚 2 拍回来 ----
   parameter bit          MCP_HOLD = 1'b0,
+
+  // =========================================================================
+  // G1 锚点：只许从 golden 现读，不许自己算
+  // -------------------------------------------------------------------------
+  // golden 的每个 SRAMTemplate_<N>.sv 里恰好例化一颗厂商宏，名字形如
+  //     sram_array_1p<SETS>x<BITS>m<MASK>s<S>h<H>l<LAT>b_<用途>
+  // 这串名字就是宏的规格书，机器可查、无歧义（41 个变体逐一核过，格式一致）：
+  //     <SETS> 宏深度            → 必须 == SET
+  //     <BITS> 宏数据总位宽      → 必须 == WAY*DATA_WIDTH
+  //     <MASK> 一位写掩码管几位  → 必须 == 本核算出的 SEG_W
+  //     <LAT>  宏读延迟(拍)      → >1 即多周期宏，必须 == MCP_HOLD
+  // 另两个锚点取自 golden 该变体自己的端口表：
+  //     io_r_resp_data_<k> 的**个数** → 必须 == WAY（宏名只给 WAY*DATA_WIDTH 的乘积，
+  //                                    单靠它 WAY/DATA_WIDTH 怎么劈都说得通）
+  //     boreChildrenBd_bore_addr 位宽 → 必须 == BORE_AW（MBIST 分组决定，与宏深度无关）
+  // 默认 0 = 薄文件没传 → 自检直接 $fatal（fail-closed）。
+  // =========================================================================
+  parameter int unsigned G1_MACRO_SETS = 0,   // golden 宏名 1p<SETS>x...
+  parameter int unsigned G1_MACRO_BITS = 0,   // golden 宏名 ...x<BITS>m...
+  parameter int unsigned G1_MACRO_MASK = 0,   // golden 宏名 ...m<MASK>s...
+  parameter int unsigned G1_MACRO_LAT  = 0,   // golden 宏名 ...l<LAT>b_...
+  parameter int unsigned G1_WAY_PORTS  = 0,   // golden io_r_resp_data_<k> 端口个数
+  parameter int unsigned G1_BORE_AW    = 0,   // golden boreChildrenBd_bore_addr 位宽
 
   localparam int unsigned AW  = (SET > 1) ? $clog2(SET) : 1,
   localparam int unsigned MW  = WAY * DATA_WIDTH,      // 宏数据总位宽
@@ -103,6 +135,72 @@ module xs_SRAMTemplate_core #(
   output logic [MW-1:0]         ram_wdata,
   input  logic [MW-1:0]         ram_rdata
 );
+
+  // =========================================================================
+  // §参数自检（elaboration-time system task）
+  //
+  // 写法一：$fatal 直接放在**模块体**里（`if (...) $fatal(...);`），不放 initial。
+  //   区别是实打实的（本轮实测，VCS W-2024.09-SP1 / Formality V-2023.12-SP3）：
+  //   - 模块体形式 = IEEE 1800 §20.11 的 elaboration system task。VCS 在
+  //     **elaborate 阶段**就报 `Error-[FEST] $fatal elaboration system task`
+  //     并以 rc=255 退出 —— 不跑仿真的纯 elaborate / 综合流程也拦得住。
+  //   - initial 形式只在仿真启动 time 0 才炸，`vcs -elab` / DC / Genus 照样放行。
+  //   - Formality 两种都读得进。模块体形式条件为假时零副作用；条件为真时它打印
+  //     同一条消息，并把本模块降级成黑盒 —— 黑盒会被 fm_verdict 的 bbox 闸拦下，
+  //     仍是 fail-closed（不是靠 FM 自己报错）。
+  //
+  // 写法二：消息里**不要用 UTF-8 编码含 0xAE 字节的汉字**（宏/位宽/算/段/定/实…）。
+  //   实测 VCS 在 elaboration 消息里会把 0xAE 字节打成 '.'，好好一句话变成乱码
+  //   （同样的字在 initial 的运行期 $fatal 里显示正常，只有 elaborate 期有这个 bug）。
+  //   所以下面一律用「位数 / 分组 / 求得 / macro」这类等价说法。
+  // =========================================================================
+  if (G1_MACRO_SETS == 0 || G1_MACRO_BITS == 0 || G1_MACRO_MASK == 0 ||
+      G1_MACRO_LAT  == 0 || G1_WAY_PORTS  == 0 || G1_BORE_AW    == 0)
+    $fatal(1, "xs_SRAMTemplate_core: 薄文件必须传全 6 个 G1_* 锚点(照抄 golden 的 sram_array_1p<SETS>x<BITS>m<MASK>s?h?l<LAT>b_* 名字、io_r_resp_data_<k> 端口个数、bore_addr 端口位数)。当前 SETS/BITS/MASK/LAT/WAY_PORTS/BORE_AW = %0d/%0d/%0d/%0d/%0d/%0d, 0 表示没传",
+           G1_MACRO_SETS, G1_MACRO_BITS, G1_MACRO_MASK, G1_MACRO_LAT,
+           G1_WAY_PORTS, G1_BORE_AW);
+
+  if (SET != G1_MACRO_SETS)
+    $fatal(1, "xs_SRAMTemplate_core: SET=%0d, 但 golden macro 是 1p%0dx... -- 深度参数抄错了",
+           SET, G1_MACRO_SETS);
+
+  if (MW != G1_MACRO_BITS)
+    $fatal(1, "xs_SRAMTemplate_core: WAY*DATA_WIDTH=%0d*%0d=%0d, 但 golden macro 是 ...x%0dm... -- 位数参数抄错了",
+           WAY, DATA_WIDTH, MW, G1_MACRO_BITS);
+
+  if (WAY != G1_WAY_PORTS)
+    $fatal(1, "xs_SRAMTemplate_core: WAY=%0d, 但 golden 只有 %0d 个 io_r_resp_data_<k> 端口 -- way 数抄错了(WAY*DATA_WIDTH 的乘积对了不等于劈得对)",
+           WAY, G1_WAY_PORTS);
+
+  if (SEG_W != G1_MACRO_MASK)
+    $fatal(1, "xs_SRAMTemplate_core: 求得的写掩码分组位数 SEG_W=%0d (USE_BITMASK=%0d, MASK_SEG_W=%0d), 但 golden macro 是 ...m%0ds... -- 掩码粒度对不上, 写一路会连带写坏隔壁",
+           SEG_W, USE_BITMASK, MASK_SEG_W, G1_MACRO_MASK);
+
+  if (int'(MCP_HOLD) != int'(G1_MACRO_LAT > 1))
+    $fatal(1, "xs_SRAMTemplate_core: MCP_HOLD=%0d, 但 golden macro 读延迟是 l%0d -- l>1 的多周期 macro 必须 MCP_HOLD=1, l==1 的必须 0",
+           MCP_HOLD, G1_MACRO_LAT);
+
+  if (BORE_AW != G1_BORE_AW)
+    $fatal(1, "xs_SRAMTemplate_core: BORE_AW=%0d, 但 golden 的 boreChildrenBd_bore_addr 是 %0d 位 -- MBIST 分组地址位数抄错了",
+           BORE_AW, G1_BORE_AW);
+
+  // ---- 下面几条不是 G1 锚点的重述, 管的是锚点管不到的整除关系 ----
+  // WMASK_W/IN_MASK_W 除不尽时 MASK_REP 被静默截断, g_wmask 里的 s/MASK_REP 会把
+  // 掩码摊到错的位置; 这条只有 USE_BITMASK / MASK_SEG_W 的组合能触发, 锚点推不出来。
+  if (WMASK_W % IN_MASK_W != 0)
+    $fatal(1, "xs_SRAMTemplate_core: macro 写掩码 %0d 位除不尽功能写掩码 %0d 位, MASK_REP 会被截断",
+           WMASK_W, IN_MASK_W);
+  if (MW % BORE_NSEG != 0)
+    $fatal(1, "xs_SRAMTemplate_core: macro 总位数 %0d 除不尽 bore 分组数 %0d, BORE_DW 会被截断",
+           MW, BORE_NSEG);
+  if (BORE_NSEG > 1 && BORE_NSEG != WMASK_W)
+    $fatal(1, "xs_SRAMTemplate_core: 分组 bore 要求「一组 = 一个掩码分组」, 但 BORE_NSEG=%0d != WMASK_W=%0d",
+           BORE_NSEG, WMASK_W);
+  // 上电清零 FSM 用 &resetSet 判「清满了」: 只有 SET 是 2 的幂时, resetSet 走满 AW 位
+  // 才恰好等于 SET 次; 非 2 的幂会多清或少清。
+  if (SET & (SET - 1))
+    $fatal(1, "xs_SRAMTemplate_core: SET=%0d 不是 2 的幂 -- 清零 FSM 的 &resetSet 结束条件只在 2 的幂下成立",
+           SET);
 
   // ---- 上电清零状态机：逐 set 写 0 ----
   logic           resetState;

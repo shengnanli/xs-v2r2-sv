@@ -41,7 +41,11 @@ module SRAMTemplate(
     .SET(128), .WAY(2), .DATA_WIDTH(37), .BORE_AW(8),
     .ENABLE_RESET(1), .ENABLE_HOLDREAD(1),
     .ENABLE_CLOCKGATE(1), .EXTRA_RESET(0),
-    .USE_BITMASK(0)
+    .USE_BITMASK(0),
+    // G1 锚点（勿手改，全部来自 golden SRAMTemplate.sv）：
+    //   宏名 sram_array_1p128x74m37...l1b_* / io_r_resp_data_<k> 共 2 个 / bore_addr 8 位
+    .G1_MACRO_SETS(128), .G1_MACRO_BITS(74), .G1_MACRO_MASK(37),
+    .G1_MACRO_LAT(1), .G1_WAY_PORTS(2), .G1_BORE_AW(8)
   ) u_core (
     .clock(clock), .reset(reset), .io_extra_reset(1'b0),
     .io_r_req_ready(io_r_req_ready),

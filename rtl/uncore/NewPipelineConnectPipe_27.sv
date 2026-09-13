@@ -68,17 +68,21 @@ module NewPipelineConnectPipe_27(
   };
   wire [LANES*LANE_W-1:0] out_bus;
 
-  // 位宽自检（elaborate/time 0）：mask 宽度必须与布局一致。
-  // 这一轮反复出事的形态是「逻辑全对、只有某个字段位宽停在旧值」——随机激励未必
-  // 打得到高位，UT 照样 errors=0，要等 FM 才炸。这里让它在 time 0 就炸。
-  initial begin
-    if ($bits(io_in_bits_0_mask) != MASK_W)
-      $fatal(1, "NewPipelineConnectPipe_27: mask %0d 位 != 布局的 %0d",
-             $bits(io_in_bits_0_mask), MASK_W);
-    if ($bits(in_bus) != LANES * LANE_W)
-      $fatal(1, "NewPipelineConnectPipe_27: 入口打包 %0d 位 != %0d 条 x %0d 位",
-             $bits(in_bus), LANES, LANE_W);
-  end
+  // G1 锚点：golden NewPipelineConnectPipe_27 的 io_in_bits_* 端口位数之和（逐行累加
+  // 自 golden 端口表）。8 条 lane x (1 valid + 64 mask) = 520。
+  localparam int unsigned PAYLOAD_W_G1 = 520;
+
+  // 位数自检：改成 **elaboration-time system task**（$fatal 写在模块体里，不写在
+  // initial 里）—— VCS 在 elaborate 就报 Error-[FEST] 并 rc=255 退出，纯 elaborate /
+  // 综合流程也拦得住；initial 形式只有跑仿真才炸。
+  // 这一轮反复出事的形态是「逻辑全对、只有某一项位数停在旧值」——随机激励未必打得到
+  // 高位，UT 照样 errors=0，要等 FM 才炸。
+  if ($bits(io_in_bits_0_mask) != MASK_W)
+    $fatal(1, "NewPipelineConnectPipe_27: mask %0d 位 != 布局里的 %0d",
+           $bits(io_in_bits_0_mask), MASK_W);
+  if ($bits(in_bus) != LANES * LANE_W)
+    $fatal(1, "NewPipelineConnectPipe_27: 入口打包 %0d 位 != %0d 条 x %0d 位",
+           $bits(in_bus), LANES, LANE_W);
 
 
   assign io_out_bits_0_valid = out_bus[7*LANE_W + MASK_W];
@@ -98,7 +102,7 @@ module NewPipelineConnectPipe_27(
   assign io_out_bits_7_valid = out_bus[0*LANE_W + MASK_W];
   assign io_out_bits_7_mask  = out_bus[0*LANE_W +: MASK_W];
 
-  xs_PipelineConnect #(.DATA_WIDTH(LANES*LANE_W)) u_core (
+  xs_PipelineConnect #(.DATA_WIDTH(LANES*LANE_W), .PAYLOAD_W_G1(PAYLOAD_W_G1)) u_core (
     .clock(clock),
     .reset(reset),
     .io_in_ready(io_in_ready),
