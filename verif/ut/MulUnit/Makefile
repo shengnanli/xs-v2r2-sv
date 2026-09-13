@@ -19,11 +19,29 @@ RTL_GOLDEN_DEPS = $(addprefix $(GOLDEN_RTL)/,$(MUL_LEAVES))
 FM_VARIANTS = MulUnit
 FM_REF_DEPS_MulUnit = $(MUL_LEAVES)
 
-# 注（G0 那一轮的经验，本轮未复验）：上一轮 MulUnit 的 FM 用了 FM_MERGE_DUP=false，
-# 当时阵列在 impl 侧是未解析黑盒、ref 侧是白盒，合并 pass 两侧不对称。本轮两侧
-# 都白盒同源例化 golden 阵列，情况已不同，故先用默认值 true；若 FM 出现阵列内部
-# 寄存器 unmatched，把下一行打开再跑：
-# FM_MERGE_DUP = false
+# 2026-09-12 复验结论：本轮**确实**踩到了阵列内部寄存器 unmatched（29 个），
+# 于是按上面这条注释的指示打开 FM_MERGE_DUP=false。取证见 diag/ 目录。
+#
+# 症状：signoff-strict 下 29(0) unmatched compare points + 1(0) unmatched unread，
+#       全部是 mulDataModule/r_<N>_reg，且 ref 侧独有、impl 侧为 0。
+# 根因：**不是** RTL 差异。ArrayMulDataModule.sv 两侧读的是同一个 golden 文件
+#       （sha256 0a77831be1b0…），例化名两侧同为 mulDataModule。该文件里有且只有
+#       31 个 `r_N <= io_regEnables_0 | r_N;`（第 9008-9038 行）——firtool 把
+#       「常数 1 的部分积位 + regEnable」折叠成的粘滞常数寄存器，无复位，
+#       Formality 判为 constant-1（report_potentially_constant_registers 报 DFF1）。
+#       merge_duplicated_registers=true 时，FM 在 impl 侧把这 31 个合并成 1 个
+#       （只剩 r_1285），ref 侧一个都不合并（31 个全留）：
+#           ref  r:/WORK/MulUnit/mulDataModule       cells 5177, 31 个 r_N 全在
+#           impl i:/WORK/MulUnit/u_core/mulDataModule cells 5147, 只剩 r_1285
+#       31 - 1 = 30 个 ref 侧孤儿 = 29 unmatched compare + 1 unmatched unread。
+# 控制实验（diag/diag_wrap_MulUnit.sv + diag_golden_MulUnit_inner.sv）：拿与 golden
+#       **逐字节相同**的 MulUnit（只改模块声明名）套一层 u_core 空壳当 impl 侧，
+#       两侧零逻辑差异，FM 报出**一模一样**的 29(0)/1(0) 和 5177/5147。
+#       ⇒ 该不对称 100% 由「impl 侧多一层层次」触发的工具建模差异造成，与可读核无关。
+# 处置：FM_MERGE_DUP=false。这是**加强**不是放宽——不黑盒、不跳点、不约束 ref，
+#       只是要求 FM 逐个而不是合并后比：两侧 cells 都回到 5180、31 个寄存器全部
+#       逐一配对，unmatched 29→0，passing 4535→4537。
+FM_MERGE_DUP = false
 
 include ../../../scripts/ut_common.mk
 
