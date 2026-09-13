@@ -13,6 +13,9 @@ verif/ut/*/*.fdc
 verif/ut/*/default.svf
 verif/ut/*/formality*
 verif/ut/*/fm_shell_command.log*
+# `make neg`（必失败负测）的 VCS 产物目录。此前没被覆盖到 —— 家族 owner 的
+# verif/ut/NewPipelineConnectPipe/neg_build/ 也是靠"没 git add"侥幸没进库。
+verif/ut/*/neg_build/
 __pycache__/
 *.pyc
 evidence/
