@@ -1,4 +1,4 @@
-# green_child 迁移评估 repo=/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/xs-v2-sv-cert commit=7c0fd5f9aa2cde7df34ef9c22ad2cdbb212b5a95
+# green_child 迁移评估 commit=450d57c3dfd4e9c945f08da2e4caf451055cae4f（repo 路径不入表：换台机器就成死线索）
 # FM target 全集=272（unresolved=0）；green_child 声明=104 条，涉及 child 3 个
 parent	child	is_fm_target	ut_dir	cert	has_cert_sha_in_allow	verdict	allow_file	side	path
 TageTable	FoldedSRAMTemplate	YES	FoldedSRAMTemplate	ABSENT	NO	NEEDS_CLEAN_RERUN_THEN_CERT	verif/allow/TageTable.json	i	i:/WORK/TageTable/u_core/us

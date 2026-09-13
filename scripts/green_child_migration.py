@@ -13,7 +13,10 @@
 
 用法:
     python3 scripts/green_child_migration.py [--commit HEAD] [--repo .] [--tsv out.tsv]
-    python3 scripts/green_child_migration.py --prospective verif/allow_gen/classification.tsv
+
+尚未写进 allow 的**预期**声明（verif/allow_gen/classification.tsv 里那批 STOP 目标）
+不在本表内。它们的 child 是不是 FM target，用：
+    python3 scripts/fm_target_universe.py --check <child> ...
 """
 import argparse
 import collections
@@ -136,7 +139,7 @@ def main():
     cols = ['parent', 'child', 'is_fm_target', 'ut_dir', 'cert', 'has_cert_sha_in_allow',
             'ev_verdict', 'ev_closure_at_commit', 'verdict', 'allow_file', 'side', 'path']
     cols = [c for c in cols if any(c in r for r in rows)]
-    out = ['# green_child 迁移评估 repo=%s commit=%s' % (a.repo, commit),
+    out = ['# green_child 迁移评估 commit=%s（repo 路径不入表：换台机器就成死线索）' % commit,
            '# FM target 全集=%d（unresolved=%d）；green_child 声明=%d 条，涉及 child %d 个'
            % (len(tmap), len(unresolved), len(rows), len(children)),
            '\t'.join(cols)]
