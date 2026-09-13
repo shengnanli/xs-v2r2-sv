@@ -1,4 +1,6 @@
-// 自动生成 scripts/gen_chi_channel.py —— 勿手改
+// 自动生成 scripts/gen_chi_channel.py —— 生成区勿手改
+// 【手写增补 2026-09-12, diag-tlb-txreq】末尾 directed_out_ready_gate() 定向激励为手写,
+// 若重跑生成器请保留（复现 lcreditOut 漏 io_out_ready 门控的真 bug, LinkLayer.scala:213）。
 // LCredit2Decoupled_1 双例化逐拍比对: golden LCredit2Decoupled_1 vs 可读重写 LCredit2Decoupled_1_xs。
 `timescale 1ns/1ps
 `define CHK(SIG) begin \
@@ -126,6 +128,40 @@ module tb;
     `CHK(io_reclaimLCredit)
   endtask
 
+  // -------------------------------------------------------------------------
+  // 定向激励: out.ready 门控 L-Credit 发放 (LinkLayer.scala:213 非阻塞分支)
+  //   lcreditOut := (lcreditPool > 0.U) && enableLCredit && io.out.ready
+  // 随机激励里 io_out_ready 有 3/4 概率为 1, 命中"链路 RUN + 池非空 + 下游不 ready"
+  // 这一格的机会被稀释; 这里把它钉死跑满 32 拍:
+  //   golden 期望: 一个信用都不发 —— io_in_lcrdv 恒 0, reclaimLCredit 恒 1。
+  //   漏门控的实现: 第 1 拍起 io_in_lcrdv=1、inflight 递增 ⇒ reclaimLCredit=0。
+  // -------------------------------------------------------------------------
+  int directed_errors = 0;
+  task automatic directed_out_ready_gate();
+    io_in_flitv    = 1'b0;
+    io_in_flit     = '0;
+    io_out_ready   = 1'b0;      // 下游持续不 ready
+    io_state_state = 2'h2;      // LinkStates.RUN, 且复位后 lcreditPool = 15 > 0
+    repeat (32) begin
+      @(negedge clock);
+      #1;
+      if (g_io_in_lcrdv !== 1'b0 || i_io_in_lcrdv !== g_io_in_lcrdv) begin
+        directed_errors++;
+        if (directed_errors <= 8)
+          $display("[%0t] DIRECTED lcrdv-gate: g_io_in_lcrdv=%0b i_io_in_lcrdv=%0b (期望两侧恒 0)",
+                   $time, g_io_in_lcrdv, i_io_in_lcrdv);
+      end
+      if (g_io_reclaimLCredit !== 1'b1 || i_io_reclaimLCredit !== g_io_reclaimLCredit) begin
+        directed_errors++;
+        if (directed_errors <= 8)
+          $display("[%0t] DIRECTED reclaim: g_io_reclaimLCredit=%0b i_io_reclaimLCredit=%0b (期望两侧恒 1)",
+                   $time, g_io_reclaimLCredit, i_io_reclaimLCredit);
+      end
+      @(posedge clock);
+    end
+    $display("DIRECTED out_ready_gate errors=%0d", directed_errors);
+  endtask
+
   initial begin
     if ($value$plusargs("NCYCLES=%d", NCYCLES)) begin end
     reset = 1'b1;
@@ -135,13 +171,15 @@ module tb;
     io_state_state = '0;
     repeat (5) @(posedge clock);
     reset = 1'b0;
+    directed_out_ready_gate();
+    errors += directed_errors;
     repeat (NCYCLES) begin
       @(negedge clock);
       drive_random();
       #1 check_outputs();
       @(posedge clock);
     end
-    $display("LCredit2Decoupled_1 checks=%0d errors=%0d", checks, errors);
+    $display("LCredit2Decoupled_1 checks=%0d errors=%0d (含 directed=%0d)", checks, errors, directed_errors);
     if (errors == 0) begin $display("TEST PASSED"); $finish; end
     $display("TEST FAILED"); $fatal(1);
   end

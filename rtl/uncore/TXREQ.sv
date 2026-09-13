@@ -136,7 +136,10 @@ module xs_TXREQ_core (
     .clock                         (clock),
     .reset                         (reset),
     .io_enq_valid                  (enq_valid),
-    .io_enq_bits_qos               (io_pipeReq_valid ? 4'hF : io_mshrReq_bits_qos),
+    // pipeReq 侧没有 qos 端口: Scala 里 enq.bits := pipeReq.bits, 但上级把
+    // pipeReq.bits.qos 恒驱成 0xE, firtool 跨模块常量传播后连端口都消掉了。
+    // ★ 常量是 4'hE (=14) 不是 4'hF —— 见 golden TXREQ.sv 的 queue 实例连线。
+    .io_enq_bits_qos               (io_pipeReq_valid ? 4'hE : io_mshrReq_bits_qos),
     .io_enq_bits_tgtID             (io_pipeReq_valid ? io_pipeReq_bits_tgtID : io_mshrReq_bits_tgtID),
     .io_enq_bits_srcID             (io_pipeReq_valid ? io_pipeReq_bits_srcID : 11'h0),
     .io_enq_bits_txnID             (io_pipeReq_valid ? io_pipeReq_bits_txnID : io_mshrReq_bits_txnID),

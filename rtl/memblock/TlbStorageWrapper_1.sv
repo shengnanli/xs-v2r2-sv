@@ -16,6 +16,11 @@ module TlbStorageWrapper_1 import xs_tlbsw_pkg::*; (
   input [15:0] io_csr_satp_asid,
   input [15:0] io_csr_vsatp_asid,
   input [15:0] io_csr_hgatp_vmid,
+  // Svbmt 位图内存(mbmc)现场: sfence 失效范围要看 BME/CMODE —— 见 TLBFA.sv 的
+  //   `if (io_sfence_bits_rs1 | io_csr_priv_virt | io_csr_mbmc_BME & ~io_csr_mbmc_CMODE)`。
+  //   本层不用它, 纯透传给内层 TLBFA。
+  input io_csr_mbmc_BME,
+  input io_csr_mbmc_CMODE,
   input io_csr_priv_virt,
   input io_r_req_0_valid,
   input [37:0] io_r_req_0_bits_vpn,
@@ -217,6 +222,8 @@ module TlbStorageWrapper_1 import xs_tlbsw_pkg::*; (
     .io_csr_satp_asid(io_csr_satp_asid),
     .io_csr_vsatp_asid(io_csr_vsatp_asid),
     .io_csr_hgatp_vmid(io_csr_hgatp_vmid),
+    .io_csr_mbmc_BME(io_csr_mbmc_BME),
+    .io_csr_mbmc_CMODE(io_csr_mbmc_CMODE),
     .io_csr_priv_virt(io_csr_priv_virt),
     .io_r_req_0_valid(io_r_req_0_valid),
     .io_r_req_0_bits_vpn(io_r_req_0_bits_vpn),
