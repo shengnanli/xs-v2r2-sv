@@ -1,0 +1,46 @@
+{
+ "schema": "xs-v2-sv-proof-policy-v1",
+ "_why": [
+  "codex 0157 D57：green_child 背书改由 tracked 证书承担，证书自身由 freeze commit 绑定。",
+  "本文件是 validator 的**工具/配置策略**一侧。它和证书一样是 tracked、reviewed 的；",
+  "改动它会让所有不符的证书立刻失效（D57 第 4 条：任一工具策略改变即证书失效）。"
+ ],
+ "freeze_commit": null,
+ "_freeze_commit_note": [
+  "★必须由 integrator 在 freeze 时填成那个 40-hex commit★。",
+  "D57 第 5 条：全部唯一 child 在 freeze commit 上 clean 重跑，随后才生成/更新证书。",
+  "validator 要求 certificate.impl_commit == freeze_commit；为 null 时一律拒绝放行",
+  "（fail-closed：宁可全红，也不能因为没人填这一格就默认放行）。"
+ ],
+ "qualifying_verdicts": ["SUCCEEDED", "PASS_DEAD_REF"],
+ "tool": {
+  "name": "fm_shell",
+  "version": "V-2023.12-SP3",
+  "build": "8868332",
+  "_evidence": "抽样 200 份 evidence/**/fm.log 的 banner，200/200 全一致（见报告复跑命令）"
+ },
+ "pinned_entry_appvars": {
+  "hdlin_interface_only": "",
+  "hdlin_unresolved_modules": "black_box",
+  "verification_verify_matched_unread_bbox_inputs": "true",
+  "verification_verify_unread_bbox_inputs": "false",
+  "verification_verify_unread_compare_points": "false",
+  "verification_verify_unread_tech_cell_pg_pins": "true",
+  "verification_verify_unread_tech_cell_pins": "true"
+ },
+ "_pinned_entry_appvars_note": [
+  "只钉在 1035 份历史 receipt 里**全部一致**的 7 个 appvar（实测：见报告）。",
+  "verification_merge_duplicated_registers（995 true / 40 false）与",
+  "verification_verify_matched_unread_compare_points（982 false / 53 true）逐目标不同，",
+  "属正当的 per-target 配置，不钉；它们的取值仍进 proof_config 并被 proof_config_sha256 绑定。"
+ ],
+ "script_closure_files": [
+  "scripts/fm_eq.tcl",
+  "scripts/sidecar/fm_native_emit.tcl"
+ ],
+ "_script_closure_files_note": [
+  "证书的 script_closure 必须**至少**覆盖这些仓库路径，且它们在父 commit 下的字节",
+  "须与证书记录一致 —— 证明脚本改一个字节，child 证书即失效。"
+ ],
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0"
+}

@@ -1,0 +1,206 @@
+{
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "qualifying_verdicts": [
+  "SUCCEEDED",
+  "PASS_DEAD_REF"
+ ],
+ "retention_modes": [
+  "archived",
+  "attestation_only"
+ ],
+ "required_fields": [
+  {
+   "field": "schema",
+   "description": "schema 标识",
+   "source": "常量"
+  },
+  {
+   "field": "target",
+   "description": "目标名（= verif/proof_certificates/<target>.json 的文件名）",
+   "source": "receipt.top"
+  },
+  {
+   "field": "variant",
+   "description": "实际被证明的 golden 顶层（FM_TOP / FM_VARIANTS 成员）",
+   "source": "receipt.top"
+  },
+  {
+   "field": "ut_dir",
+   "description": "verif/ut/<ut_dir>，复跑入口",
+   "source": "fm_target_universe(commit)"
+  },
+  {
+   "field": "verdict",
+   "description": "最终 verdict（合格性由 validator 用 QUALIFYING_VERDICTS 判）",
+   "source": "receipt.verdict"
+  },
+  {
+   "field": "proof_mode",
+   "description": "proof mode（= FM_MODE）",
+   "source": "receipt.proof_config.fm_mode"
+  },
+  {
+   "field": "provisional",
+   "description": "必须 false —— dirty 工作树产出的 receipt 不得出证书",
+   "source": "receipt.provisional"
+  },
+  {
+   "field": "impl_worktree_dirty",
+   "description": "必须 false",
+   "source": "receipt.impl_worktree_dirty"
+  },
+  {
+   "field": "impl_commit",
+   "description": "impl 侧被证明的 commit（40 hex）",
+   "source": "receipt.impl_commit"
+  },
+  {
+   "field": "proof_commit",
+   "description": "run_proof.sh detached worktree 所钉的 commit",
+   "source": "RUN_CONTEXT.tsv:commit"
+  },
+  {
+   "field": "proof_worktree_digest",
+   "description": "证明期 worktree 全量 tracked 字节摘要（前后一致才出证据）",
+   "source": "RUN_CONTEXT.tsv"
+  },
+  {
+   "field": "g1_canonical_id",
+   "description": "G1 golden manifest 摘要（canonical ID 全文，不截断）",
+   "source": "receipt.g1_canonical_id"
+  },
+  {
+   "field": "g1_manifest_sha256",
+   "description": "G1-canonical/MANIFEST.tsv 的 sha256",
+   "source": "生成时读 G1"
+  },
+  {
+   "field": "tool.name",
+   "description": "工具名",
+   "source": "常量 fm_shell"
+  },
+  {
+   "field": "tool.version",
+   "description": "Formality 版本串（从 fm.log banner 解析）",
+   "source": "fm.log"
+  },
+  {
+   "field": "tool.build",
+   "description": "Formality Build 号",
+   "source": "fm.log"
+  },
+  {
+   "field": "tool.fm_shell_rc",
+   "description": "fm_shell 退出码，必须 0",
+   "source": "receipt.fm_shell_rc"
+  },
+  {
+   "field": "proof_config",
+   "description": "FM_MODE/allowlist/vmucp/pin/声明文件 hash/appvar 回读",
+   "source": "receipt.proof_config"
+  },
+  {
+   "field": "proof_config_sha256",
+   "description": "canon_digest(proof_config)，自洽校验用",
+   "source": "派生"
+  },
+  {
+   "field": "input_closure.golden",
+   "description": "ref 侧逐文件 (path, kind, sha256)",
+   "source": "receipt.golden_closure"
+  },
+  {
+   "field": "input_closure.impl",
+   "description": "impl 侧逐文件 (path, kind, sha256)",
+   "source": "receipt.impl_closure"
+  },
+  {
+   "field": "input_closure.golden_sha256",
+   "description": "closure_digest(golden)",
+   "source": "派生"
+  },
+  {
+   "field": "input_closure.impl_sha256",
+   "description": "closure_digest(impl)",
+   "source": "派生"
+  },
+  {
+   "field": "input_closure.repo_impl_files",
+   "description": "impl 闭包里 kind==repo 的条数，必须 >0（否则无从在父 commit 上复算）",
+   "source": "派生"
+  },
+  {
+   "field": "script_closure.entries",
+   "description": "fm_eq.tcl / sidecar tcl 的逐文件 hash",
+   "source": "sidecar/script_closure.list"
+  },
+  {
+   "field": "script_closure.sha256",
+   "description": "closure_digest(script entries)",
+   "source": "派生"
+  },
+  {
+   "field": "native_facts_sha256",
+   "description": "sidecar/native_facts.json 原始字节 sha256",
+   "source": "sidecar"
+  },
+  {
+   "field": "native_result",
+   "description": "native verdict + stats + unmatched（供无 archive 时的事实核对）",
+   "source": "native_facts"
+  },
+  {
+   "field": "result_sha256",
+   "description": "canon_digest({verdict, native_result})",
+   "source": "派生"
+  },
+  {
+   "field": "receipt_sha256",
+   "description": "派生本证书所用 receipt.json 的原始字节 sha256",
+   "source": "evidence"
+  },
+  {
+   "field": "evidence_retention",
+   "description": "archived / attestation_only",
+   "source": "生成时由 --archive 决定"
+  },
+  {
+   "field": "reproduce.command",
+   "description": "可复跑命令",
+   "source": "派生"
+  },
+  {
+   "field": "generated_at",
+   "description": "UTC 生成时刻",
+   "source": "生成时"
+  },
+  {
+   "field": "generator.script",
+   "description": "生成器路径",
+   "source": "常量"
+  },
+  {
+   "field": "generator.version",
+   "description": "生成器版本",
+   "source": "常量"
+  },
+  {
+   "field": "generator.source_evidence_dir",
+   "description": "派生来源证据目录（untracked，仅作可审计线索）",
+   "source": "生成时"
+  },
+  {
+   "field": "run_id",
+   "description": "FM_RUN_ID（sidecar 与 receipt 双向绑定过）",
+   "source": "receipt.run_id"
+  }
+ ],
+ "self_consistency": [
+  "proof_config_sha256      == canon_digest(proof_config)",
+  "input_closure.*_sha256   == closure_digest(input_closure.*)",
+  "script_closure.sha256    == closure_digest(script_closure.entries)",
+  "result_sha256            == canon_digest({verdict, native_result})",
+  "input_closure.repo_impl_files == count(kind==\"repo\") > 0"
+ ],
+ "archive_rule": "evidence_retention==\"archived\" 必须有 evidence_archive.sha256；\"attestation_only\" 必须 evidence_archive==null。无 archive 的证书只是可复跑 attestation，不得声称 clean clone 含完整历史原件。"
+}

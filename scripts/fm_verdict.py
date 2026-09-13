@@ -21,6 +21,7 @@ verdict ∈ {SUCCEEDED, FAILED, WAIVED, PARTIAL, SHADOW_CHECK, DIAGNOSTIC, UNRUN
 import json
 import os
 import re
+import sys
 
 KNOWN_MODES = {"signoff-strict", "assembly", "diagnostic-full", "shadow"}
 
@@ -227,7 +228,8 @@ def _failure_reason(q, stats_err):
 # --- assembly 精确黑盒集合策略（codex 0139 §3.3：禁止纯数字配额）-------------
 # 三类抽象边界，判定强度不同：
 #   vendor_macro      厂商硬宏叶子（array_*_ext 等 .v 行为模型）——两侧同源，无条件允许
-#   green_child       独立目标且已在台账通过——条件允许，须写明 child 目标名
+#   green_child       独立 FM target 且持有 tracked 证明证书——条件允许，
+#                     须写明 child_target + certificate_sha256（codex 0157 D57）
 #   golden_logic_reuse 直接复用 golden 功能逻辑当黑盒——**NO-GO**，必须独立证明后才可引用
 ALLOWED_BBOX_CLASSES = {'vendor_macro', 'green_child'}
 
@@ -242,16 +244,50 @@ def _hier_key(path):
     return s.strip('/')
 
 
-def _child_receipts():
-    """green_child 背书来源：**受接受 runner 产出的 child receipt 索引**
-    （docs/receipt_index.tsv，由 build_receipt_index.py 从 evidence/ 机械派生）。
-    codex 0140 P0-3：不得用 WORKING 文本台账自证——那会让父子依赖循环自证。"""
+def _repo_home():
+    """证书与 target 全集都从**仓库的 commit** 里读，所以这里要的是仓库根，
+    不是 XSSV_INDEX_HOME（那是旧的 untracked evidence 索引位置，已不再是权威输入）。"""
     import pathlib as _pl
-    _home = _pl.Path(os.environ.get('XSSV_INDEX_HOME') or os.environ.get('XSSV_HOME')
-                     or _pl.Path(__file__).resolve().parent.parent)
-    sys.path.insert(0, str(_pl.Path(__file__).resolve().parent))
-    import build_receipt_index
-    return build_receipt_index.load(_home)
+    return _pl.Path(os.environ.get('XSSV_HOME')
+                    or _pl.Path(__file__).resolve().parent.parent)
+
+
+def _cert_ctx(expect_impl_commit):
+    """green_child 校验上下文（proof_certificate + fm_target_universe + POLICY）。
+
+    ★codex 0157 D57★ 旧路径 `_child_receipts()` 读 `docs/receipt_index.tsv`
+    ——那份索引与 `evidence/` 都在 .gitignore 里，clean clone / clean freeze 下必然为空，
+    于是所有 green_child 直接 `assembly_green_child_no_receipt`，已绿目标在冻结当天集体翻红。
+    D57 的解法不是把 evidence 提交进去，而是改读 **tracked、由 freeze commit 绑定的证书**
+    `verif/proof_certificates/<target>.json`，并在父 commit 的字节上重算 child 闭包。
+
+    返回 (ctx, None) 或 (None, 失败原因串)。**任何拿不到上下文的情况都是失败，不是放行。**
+    """
+    if not expect_impl_commit:
+        return None, 'assembly_green_child_no_commit_context(须 --impl-commit)'
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    try:
+        import proof_certificate as _PC
+        import fm_target_universe as _FTU
+    except ImportError as e:                                # noqa: BLE001
+        return None, 'assembly_green_child_toolchain_missing:%s' % e
+    home = _repo_home()
+    repo = _PC.Repo(home)
+    if not repo.available():
+        return None, 'assembly_green_child_git_unavailable'
+    commit = repo.rev_parse(expect_impl_commit)
+    if commit is None:
+        return None, 'assembly_green_child_commit_unresolvable:%s' % expect_impl_commit[:12]
+    pol, perr = _PC.load_policy(repo, commit)
+    if perr:
+        return None, 'assembly_green_child_%s' % perr
+    try:
+        tmap, unresolved = _FTU.targets_at(str(home), commit)
+    except Exception as e:                                  # noqa: BLE001
+        return None, 'assembly_green_child_target_universe_error:%s' % type(e).__name__
+    return {'PC': _PC, 'repo': repo, 'commit': commit, 'policy': pol,
+            'targets': tmap, 'unresolved': unresolved,
+            'g1': os.environ.get('G1_CANONICAL') or '/home/eda/xs-env/G1-canonical'}, None
 
 
 def _assembly_bbox_check(observed, attrs, decl, expect_canonical=None,
@@ -284,7 +320,8 @@ def _assembly_bbox_check(observed, attrs, decl, expect_canonical=None,
     # 防"两侧共同黑盒错逻辑"的实际约束来自另外三条：①观测集合须与**已提交的**声明
     # 精确相等（任何新增/改名/改路径的黑盒都会打破）；②类别门控（厂商宏无条件，
     # green_child 须有独立已绿目标背书，golden_logic_reuse 直接 NO-GO）；
-    # ③green_child 的 child 必须在归一化台账里确为通过。
+    # ③green_child 的 child 必须持有 tracked 证书，且证书在**本次父 commit 的字节上**
+    #   仍然成立（闭包/声明/工具策略逐项复算）——见 _cert_ctx 与 proof_certificate.py。
     from collections import Counter
     ref_cnt = Counter(d for s, d, _ in declared if s == 'r')
     impl_cnt = Counter(d for s, d, _ in declared if s == 'i')
@@ -292,37 +329,35 @@ def _assembly_bbox_check(observed, attrs, decl, expect_canonical=None,
         diff = sorted(set(ref_cnt) ^ set(impl_cnt)) or \
             sorted(d for d in ref_cnt if ref_cnt[d] != impl_cnt.get(d))
         return f'assembly_bbox_not_symmetric:{diff[0]}(ref={ref_cnt.get(diff[0], 0)},impl={impl_cnt.get(diff[0], 0)})'
-    for k, e in declared.items():
-        if e.get('class') == 'green_child':
+    # --- green_child：D57 证书路径 -------------------------------------------
+    gc = [(k, e) for k, e in declared.items() if e.get('class') == 'green_child']
+    if gc:
+        ctx, cerr = _cert_ctx(expect_impl_commit)
+        if cerr:
+            return cerr
+        seen = {}
+        for k, e in gc:
             ct = e.get('child_target')
             if not ct:
                 return f'assembly_green_child_without_target:{k[1]}'
-            idx = _child_receipts()
-            cr = idx.get(ct)
-            if cr is None:
-                return f'assembly_green_child_no_receipt:{ct}'
-            if cr['verdict'] not in ('SUCCEEDED', 'PASS_DEAD_REF'):
-                return f'assembly_green_child_receipt_not_pass:{ct}={cr["verdict"]}'
-            if cr['provisional'] != 'false':
-                return f'assembly_green_child_receipt_provisional:{ct}'
-            if expect_canonical and cr['canonical_id'] != expect_canonical:
-                return (f'assembly_green_child_canonical_mismatch:{ct}='
-                        f'{cr["canonical_id"][:16]}')
-            # child 必须证在父之前（或同一 commit）的 committed 字节上：
-            # 要求 child.impl_commit 是父 commit 的祖先或同一个。
-            # 不要求"同一 commit"——否则每加一条声明都会让先前的 child 证据失效，
-            # 形成无法收敛的循环；也不比 receipt 文件摘要（重跑必变，纯噪声）。
-            # 真正的字节一致性由 make_receipt 逐文件比对共享闭包完成（见该脚本）。
-            if expect_impl_commit and cr['impl_commit'] != expect_impl_commit:
-                import subprocess as _sp
-                anc = _sp.run(['git', 'merge-base', '--is-ancestor',
-                               cr['impl_commit'], expect_impl_commit],
-                              cwd=os.environ.get('XSSV_HOME') or
-                              os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                              stdout=_sp.DEVNULL, stderr=_sp.DEVNULL).returncode
-                if anc != 0:
-                    return (f'assembly_green_child_commit_not_ancestor:{ct}='
-                            f'{cr["impl_commit"][:12]}')
+            # 同一个 child 在一份 allow 里可能被声明很多次（TageTable 有 16 条指 WrBypass）。
+            # 判定只做一次，但**每条声明的 certificate_sha256 都必须各自对得上**，
+            # 否则"第一条写对、其余抄错"会被缓存掩盖。
+            key = (ct, e.get('certificate_sha256'))
+            if key in seen:
+                if seen[key] is not True:
+                    return seen[key]
+                continue
+            r = ctx['PC'].validate_child_certificate(
+                ctx['repo'], ctx['commit'], ct, e.get('certificate_sha256'),
+                expect_canonical=expect_canonical, policy=ctx['policy'],
+                fm_targets=ctx['targets'], fm_targets_unresolved=ctx['unresolved'],
+                g1_root=ctx['g1'])
+            if r is not True:
+                r = 'assembly_' + r
+            seen[key] = r
+            if r is not True:
+                return r
     return True
 
 
