@@ -5,15 +5,47 @@ RTL_DIR = ../../../rtl
 RTL_SRCS = $(RTL_DIR)/backend/RegCache.sv
 TB_SRCS = tb.sv
 
-# golden 双例化：golden 顶 + 其全部子模块传递闭包（两侧共用同一份子模块定义，
-# 比对的是本目标自己的逻辑；子模块本身由各自的目标去证）。
-GOLDEN_SRCS = $(GOLDEN_RTL)/RegCache.sv \
-              $(GOLDEN_RTL)/RegCacheAgeDetector.sv \
-              $(GOLDEN_RTL)/RegCacheAgeDetector_1.sv \
-              $(GOLDEN_RTL)/RegCacheAgeTimer.sv \
-              $(GOLDEN_RTL)/RegCacheAgeTimer_1.sv \
-              $(GOLDEN_RTL)/RegCacheDataModule.sv \
-              $(GOLDEN_RTL)/RegCacheDataModule_1.sv
+# ---------------------------------------------------------------------------
+# 结构性修复（agent/diag-structural，2026-09-13）
+#
+# 症状：native FM FAILED，passing=168 / failing=20(报告上限) / unmatched=2162。
+# 根因（与 SNXbar/RNXbar/ITTageTable 同一类）：impl 侧只给了
+#       rtl/backend/RegCache.sv，而 golden 同名 wrapper 里例化的 6 个子模块
+#         RegCacheDataModule / RegCacheDataModule_1
+#         RegCacheAgeTimer   / RegCacheAgeTimer_1
+#         RegCacheAgeDetector/ RegCacheAgeDetector_1
+#       在 impl 侧无定义 → 被 hdlin_unresolved_modules=black_box 当黑盒；
+#       ref 侧却完整 elaborate（这 6 个里一共 2078 个寄存器位：
+#         DataModule 16×64+16=1040、DataModule_1 12×64+12=780、
+#         AgeTimer 40、AgeTimer_1 32、AgeDetector C(16,2)=120、
+#         AgeDetector_1 C(12,2)=66）。**两侧建模不对称**。
+#       impl 侧黑盒输入位 1204（393+324+153+144+122+68），ref 侧那 2078 位
+#       寄存器全部无对象可配 —— 两项相加即 unmatched 的主体。
+# 修法：两侧同源 elaborate（RTL_GOLDEN_DEPS），去黑盒＝加强。
+#
+# ★ 尚未复跑 FM（reviewer codex 0149 冻结新 FM 启动）。待解冻后仍需确认两件事：
+#   (1) 顶层 23 个读地址/使能流水寄存器两侧命名完全不同
+#       （golden in_addr_* / int_ren_last_REG_* ↔ impl rd_idx_reg / int_ren_reg），
+#       fm_eq.tcl 的 auto_match_flattened_arrays 按「叶名词干+下标」配对，词干不同
+#       会失配；若签名分析兜不住需在 fm_pins.tcl 里 set_user_match 钉双射。
+#   (2) golden 的 delayToWakeupQueueRCIdx 三级流水是全宽 5 位（7 口×3 级=21 位
+#       的 bit[4]），impl 只存低 4 位（rtl/backend/RegCache.sv 注释里写明是刻意
+#       丢掉这个 write-never-read 的常数半区位）。这会让 golden 侧多出 21 个
+#       **golden-only cone-dead** 未读点 → strict 判定 PARTIAL。
+#       两条出路：a) 声明 dead_ref（reviewer 冻结中，禁止）；
+#                 b) 改 impl 保留全宽 5 位，让死位在两侧对称 → matched-unread，
+#                    再用 vmucp（加强，非放宽）验掉。建议 b，但需 reviewer 裁定
+#                    后再动 RTL，本轮不擅自改。
+# ---------------------------------------------------------------------------
+RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/RegCacheAgeDetector.sv \
+                  $(GOLDEN_RTL)/RegCacheAgeDetector_1.sv \
+                  $(GOLDEN_RTL)/RegCacheAgeTimer.sv \
+                  $(GOLDEN_RTL)/RegCacheAgeTimer_1.sv \
+                  $(GOLDEN_RTL)/RegCacheDataModule.sv \
+                  $(GOLDEN_RTL)/RegCacheDataModule_1.sv
+
+# golden 双例化：golden 顶（子模块闭包见 RTL_GOLDEN_DEPS，两侧共用同一份定义）。
+GOLDEN_SRCS = $(GOLDEN_RTL)/RegCache.sv
 
 FM_VARIANTS = RegCache
 FM_REF_DEPS_RegCache = RegCacheAgeDetector.sv RegCacheAgeDetector_1.sv RegCacheAgeTimer.sv RegCacheAgeTimer_1.sv RegCacheDataModule.sv RegCacheDataModule_1.sv
