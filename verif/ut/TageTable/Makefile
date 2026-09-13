@@ -41,3 +41,30 @@ FM_VARIANTS = TageTable TageTable_1 TageTable_2 TageTable_3
 include ../../../scripts/ut_common.mk
 
 VCS += +define+SYNTHESIS
+
+# ---------------------------------------------------------------------------
+# negtest：xs_TageTable_core 折叠历史位数不变式的必失败负测（codex 0145 决策三）。
+#   NEG_TT_HIST      HIST_LEN 抄错 → 三份折叠历史位数与 golden 端口不符
+#   NEG_TT_NO_ANCHOR 不传 G1_*_FH_W → fail-closed
+# 判据：两个都必须在 elaborate 期非零退出。
+NEG_CASES = NEG_TT_HIST NEG_TT_NO_ANCHOR
+.PHONY: negtest
+# 注意：xs_TageTable_core 例化了 FoldedSRAMTemplate / FoldedSRAMTemplate_1 / WrBypass，
+# 只编核文件的话 VCS 会先因"找不到 cell"报错 —— 那是**假通过**（负测看起来炸了，其实
+# 不是不变式拦的）。所以这里编 $(UT_SRCS)(改名后的重写侧) + $(GOLDEN_SRCS)(子模块闭包)，
+# 并且判据要求日志里必须出现 Error-[FEST]，把假通过堵死。
+negtest: $(UT_SRCS)
+	@rc=0; for c in $(NEG_CASES); do \
+	  rm -rf neg_csrc simv_neg simv_neg.daidir; \
+	  if vcs -full64 -sverilog -Mdir=neg_csrc +define+SYNTHESIS +define+$$c \
+	         $(UT_SRCS) $(GOLDEN_SRCS) negtest.sv \
+	         -top neg_tt_probe -o simv_neg > neg_$$c.log 2>&1; then \
+	    echo "=== NEGTEST FAILED ($$c)：抄错的参数竟然 elaborate 过了 ==="; rc=1; \
+	  elif grep -q 'Error-\[FEST\]' neg_$$c.log; then \
+	    echo "=== NEGTEST PASSED ($$c)：elaborate 期被不变式拦下 ==="; \
+	    sed -n '/FEST/,/^$$/p' neg_$$c.log | grep -m2 'msg:' || true; \
+	  else \
+	    echo "=== NEGTEST FAILED ($$c)：编译是失败了, 但不是 \$$fatal 不变式拦的(看 neg_$$c.log) ==="; \
+	    grep -m3 -E '^Error' neg_$$c.log || true; rc=1; \
+	  fi; \
+	done; rm -rf neg_csrc simv_neg simv_neg.daidir; exit $$rc

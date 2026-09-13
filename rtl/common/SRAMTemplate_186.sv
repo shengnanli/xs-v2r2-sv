@@ -37,7 +37,11 @@ module SRAMTemplate_186(
     .SET(512), .WAY(1), .DATA_WIDTH(16), .BORE_AW(10),
     .ENABLE_RESET(1), .ENABLE_HOLDREAD(0),
     .ENABLE_CLOCKGATE(0), .EXTRA_RESET(0),
-    .USE_BITMASK(0)
+    .USE_BITMASK(0),
+    // G1 锚点（勿手改，全部来自 golden SRAMTemplate_186.sv）：
+    //   宏名 sram_array_1p512x16m16...l1b_* / io_r_resp_data_<k> 共 1 个 / bore_addr 10 位
+    .G1_MACRO_SETS(512), .G1_MACRO_BITS(16), .G1_MACRO_MASK(16),
+    .G1_MACRO_LAT(1), .G1_WAY_PORTS(1), .G1_BORE_AW(10)
   ) u_core (
     .clock(clock), .reset(reset), .io_extra_reset(1'b0),
     .io_r_req_ready(/* no ready port */),

@@ -63,8 +63,7 @@
 //   历史端口的位宽（见上）。本核参数化 HIST_LEN/NROWS_PER_BR/TAG_LEN，wrapper 传不同值。
 // =============================================================================
 
-module xs_TageTable_core #(
-  parameter int unsigned NROWS_PER_BR = 2048,                 // 每分支行数（逻辑深度）
+module xs_TageTable_core #(parameter int unsigned NROWS_PER_BR = 2048,                 // 每分支行数（逻辑深度）
   parameter int unsigned HIST_LEN     = 8,                    // 本表使用的全局历史长度
   parameter int unsigned TAG_LEN      = 8,                    // tag 位宽
   parameter int unsigned CTR_W        = 3,                    // ctr 饱和计数位宽
@@ -80,7 +79,20 @@ module xs_TageTable_core #(
   parameter int unsigned IDX_FH_W     = (HIST_LEN < IDX_W)        ? HIST_LEN : IDX_W,
   parameter int unsigned TAG_FH_W     = (HIST_LEN < TAG_LEN)      ? HIST_LEN : TAG_LEN,
   parameter int unsigned ALT_FH_W     = (HIST_LEN < (TAG_LEN-1))  ? HIST_LEN : (TAG_LEN-1),
-  parameter int unsigned BORE_AW      = 9   // us 的 bore 地址宽（table_banks 用 10）
+  parameter int unsigned BORE_AW      = 9,  // us 的 bore 地址宽（table_banks 用 10）
+
+  // ---- G1 锚点（fail-closed，无可用默认值）----------------------------------
+  // 三份折叠历史的位数是本核最典型的**派生算术**：
+  //   IDX_FH_W = min(HIST_LEN, IDX_W)、TAG_FH_W = min(HIST_LEN, TAG_LEN)、
+  //   ALT_FH_W = min(HIST_LEN, TAG_LEN-1)
+  // 只要 HIST_LEN / NROWS_PER_BR / TAG_LEN 有一个抄错，这三个位数就跟着错，而
+  // 逻辑一行都不用改 —— 正是"只有 FM 才炸"的那类静默错误。
+  // 薄文件把 golden 对应端口的位数（$bits(io_req_bits_folded_hist_hist_<n>_folded_hist)）
+  // 原样传进来：那三个端口宽度由 G1 端口表决定（port_contract_lint 已对着 golden 核过），
+  // 所以是**从 golden 现读**的常量，不是谁心算出来的期望值。
+  parameter int unsigned G1_IDX_FH_W  = 0,
+  parameter int unsigned G1_TAG_FH_W  = 0,
+  parameter int unsigned G1_ALT_FH_W  = 0
 )(
   input  logic                clock,
   input  logic                reset,
@@ -149,6 +161,43 @@ module xs_TageTable_core #(
   input  logic [6:0]          sig_us,                   // 7 位打包 {cgen,mcp,ckbp,aux,bp,bypass,hold}
   input  logic [6:0]          sig_bank [NBANKS]
 );
+
+
+  // =========================================================================
+  // §参数自检（elaboration-time system task）
+  // $fatal 写在**模块体**里而不是 initial 里：VCS 在 elaborate 阶段就报
+  // `Error-[FEST] $fatal elaboration system task` 并 rc=255 退出, 纯 elaborate /
+  // 综合流程也拦得住; initial 形式只有仿真启动 time 0 才炸。Formality
+  // (V-2023.12-SP3) 两种都读得进, 条件为真时打印同一条消息并把本模块降级成黑盒,
+  // 被 fm_verdict 的 bbox 闸拦下, 仍是 fail-closed。
+  // 消息里避开 UTF-8 含 0xAE 字节的汉字(位宽/宏/实/定/段/算…): VCS 在 elaboration
+  // 消息里会把该字节打成 '.', 整句变乱码(运行期 $fatal 显示正常)。
+  // =========================================================================
+  if (G1_IDX_FH_W == 0 || G1_TAG_FH_W == 0 || G1_ALT_FH_W == 0)
+    $fatal(1, "xs_TageTable_core: 薄文件必须传 G1_IDX_FH_W/G1_TAG_FH_W/G1_ALT_FH_W(= golden 三个 folded_hist 端口的 $bits), 不传不给过 -- 当前 %0d/%0d/%0d",
+           G1_IDX_FH_W, G1_TAG_FH_W, G1_ALT_FH_W);
+  if (IDX_FH_W != G1_IDX_FH_W)
+    $fatal(1, "xs_TageTable_core: idx 折叠历史 min(HIST_LEN=%0d, IDX_W=%0d)=%0d 位, 但 golden 端口是 %0d 位",
+           HIST_LEN, IDX_W, IDX_FH_W, G1_IDX_FH_W);
+  if (TAG_FH_W != G1_TAG_FH_W)
+    $fatal(1, "xs_TageTable_core: tag 折叠历史 min(HIST_LEN=%0d, TAG_LEN=%0d)=%0d 位, 但 golden 端口是 %0d 位",
+           HIST_LEN, TAG_LEN, TAG_FH_W, G1_TAG_FH_W);
+  if (ALT_FH_W != G1_ALT_FH_W)
+    $fatal(1, "xs_TageTable_core: alt 折叠历史 min(HIST_LEN=%0d, TAG_LEN-1=%0d)=%0d 位, 但 golden 端口是 %0d 位",
+           HIST_LEN, TAG_LEN-1, ALT_FH_W, G1_ALT_FH_W);
+
+  // ---- 下面几条是锚点管不到的纯派生算术: 分 bank 的整除/取幂关系 ----
+  // BANK_SIZE = NROWS_PER_BR/NBANKS 除不尽 -> 被静默截断, 高地址行永远访问不到。
+  if (NROWS_PER_BR % NBANKS != 0)
+    $fatal(1, "xs_TageTable_core: NROWS_PER_BR=%0d 除不尽 NBANKS=%0d, BANK_SIZE 会被截断",
+           NROWS_PER_BR, NBANKS);
+  // idx 低 BANK_IDX_W 位选 bank、高 BANK_ADDR_W 位当行号, 两段必须正好拼成 IDX_W。
+  if (BANK_IDX_W + BANK_ADDR_W != IDX_W)
+    $fatal(1, "xs_TageTable_core: bank 选择 %0d 位 + bank 内行号 %0d 位 != idx 的 %0d 位, 地址会被切错",
+           BANK_IDX_W, BANK_ADDR_W, IDX_W);
+  if ((32'd1 << BANK_IDX_W) != NBANKS)
+    $fatal(1, "xs_TageTable_core: bank 选择 %0d 位能表示 %0d 个 bank, 但只有 %0d 个 -- 会越界",
+           BANK_IDX_W, 32'd1 << BANK_IDX_W, NBANKS);
 
   // ===========================================================================
   // 局部类型与纯函数
@@ -711,7 +760,14 @@ module TageTable(
   assign bb_array[3]=boreChildrenBd_bore_4_array;
   assign boreChildrenBd_bore_4_rdata=bb_rdata[3];
   assign sig_bk[3]={sigFromSrams_bore_4_cgen,sigFromSrams_bore_4_ram_mcp_hold,sigFromSrams_bore_4_ram_aux_ckbp,sigFromSrams_bore_4_ram_aux_clk,sigFromSrams_bore_4_ram_bp_clken,sigFromSrams_bore_4_ram_bypass,sigFromSrams_bore_4_ram_hold};
-  xs_TageTable_core #(.HIST_LEN(8)) u_core (
+  xs_TageTable_core #(
+    .HIST_LEN(8),
+    // G1 锚点: 直接取 golden 三个 folded_hist 端口的位数(端口表已由
+    // port_contract_lint 对着 G1 golden 核过), 不做人工转写。
+    .G1_IDX_FH_W($bits(io_req_bits_folded_hist_hist_14_folded_hist)),
+    .G1_TAG_FH_W($bits(io_req_bits_folded_hist_hist_14_folded_hist)),
+    .G1_ALT_FH_W($bits(io_req_bits_folded_hist_hist_7_folded_hist))
+  ) u_core (
     .clock(clock), .reset(reset),
     .io_req_ready(io_req_ready), .io_req_valid(io_req_valid),
     .io_req_bits_pc(io_req_bits_pc), .io_req_bits_ghist(io_req_bits_ghist),

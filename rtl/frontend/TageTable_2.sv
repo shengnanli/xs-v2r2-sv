@@ -158,7 +158,14 @@ module TageTable_2(
   assign bb_array[3]=boreChildrenBd_bore_4_array;
   assign boreChildrenBd_bore_4_rdata=bb_rdata[3];
   assign sig_bk[3]={sigFromSrams_bore_4_cgen,sigFromSrams_bore_4_ram_mcp_hold,sigFromSrams_bore_4_ram_aux_ckbp,sigFromSrams_bore_4_ram_aux_clk,sigFromSrams_bore_4_ram_bp_clken,sigFromSrams_bore_4_ram_bypass,sigFromSrams_bore_4_ram_hold};
-  xs_TageTable_core #(.HIST_LEN(32)) u_core (
+  xs_TageTable_core #(
+    .HIST_LEN(32),
+    // G1 锚点: 直接取 golden 三个 folded_hist 端口的位数(端口表已由
+    // port_contract_lint 对着 G1 golden 核过), 不做人工转写。
+    .G1_IDX_FH_W($bits(io_req_bits_folded_hist_hist_17_folded_hist)),
+    .G1_TAG_FH_W($bits(io_req_bits_folded_hist_hist_3_folded_hist)),
+    .G1_ALT_FH_W($bits(io_req_bits_folded_hist_hist_9_folded_hist))
+  ) u_core (
     .clock(clock), .reset(reset),
     .io_req_ready(io_req_ready), .io_req_valid(io_req_valid),
     .io_req_bits_pc(io_req_bits_pc), .io_req_bits_ghist(io_req_bits_ghist),

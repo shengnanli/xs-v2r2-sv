@@ -16,13 +16,17 @@
 // =============================================================================
 module xs_PipelineConnect #(
   parameter int unsigned DATA_WIDTH = 1,
-  // 防呆用：调用方（变体薄文件）把「G1 golden 该变体所有 io_in_bits_* 位宽之和」
-  // 原样传进来，本核校验它等于实际 payload 位宽。薄文件用 packed struct 打包，
-  // DATA_WIDTH 取 $bits(payload_t)——两者对不上，就说明 struct 字段表与 G1 端口表
-  // 脱节（这一族历史上正是集体照抄了 G0 端口表才全体配错）。
-  // 默认取 DATA_WIDTH = 未标注即不校验；权威闸仍是 scripts/port_contract_lint.py，
-  // 本自检只是把错误提前到 elaborate/仿真启动那一刻。
-  parameter int unsigned PAYLOAD_W_G1 = DATA_WIDTH
+  // G1 锚点（fail-closed，没有可用默认值）：调用方（变体薄文件）把「G1 golden 该
+  // 变体所有 io_in_bits_* 端口位数之和」原样传进来，本核校验它 == 实际 payload
+  // 位数。薄文件用 packed struct 打包、DATA_WIDTH 取 $bits(payload_t) —— 两者对
+  // 不上就说明 struct 字段表和 G1 端口表脱节（这一族历史上正是集体照抄了 G0 端口
+  // 表才全体配错，13 个变体缺 18~71 个端口躺在仓库里没人发现）。
+  //
+  // ★曾经的 fail-open 已封★：本参数原先默认 = DATA_WIDTH，于是「薄文件不传」
+  // 等于「不校验」——正好把最需要校验的那种文件（随手写的、没对过 golden 的）
+  // 放过去。现在默认 0 = 没传，直接 $fatal。
+  // 权威闸仍是 scripts/port_contract_lint.py；本自检把同一类错误提前到 elaborate。
+  parameter int unsigned PAYLOAD_W_G1 = 0
 )(
   input  logic                    clock,
   input  logic                    reset,          // 异步高有效，仅复位 valid
@@ -37,15 +41,25 @@ module xs_PipelineConnect #(
 );
 
   // ---------------------------------------------------------------------------
-  // 参数自检：位宽等式对不上就立刻炸，别让错位的 payload 悄悄跑完 20 万拍。
+  // 参数自检：位数等式对不上就立刻炸，别让错位的 payload 悄悄跑完 20 万拍。
+  //
+  // 这里用的是 **elaboration-time system task**（$fatal 直接写在模块体里，不是
+  // 写在 initial 里）。实测差别：模块体形式 VCS 在 elaborate 阶段就报
+  // `Error-[FEST] $fatal elaboration system task` 并以 rc=255 退出，不跑仿真的
+  // 纯 elaborate / 综合流程也拦得住；initial 形式只有仿真启动 time 0 才炸。
+  // Formality（V-2023.12-SP3）两种写法都读得进；条件为真时它打印同一条消息并把
+  // 本模块降级成黑盒，会被 fm_verdict 的 bbox 闸拦下，仍是 fail-closed。
+  // 注意：消息里不要用 UTF-8 含 0xAE 字节的汉字（宏/位宽/实/定/段/算…），VCS 在
+  // elaboration 消息里会把那个字节打成 '.'，好好一句话变乱码（运行期 $fatal 正常）。
   // ---------------------------------------------------------------------------
-  initial begin
-    if (DATA_WIDTH < 1)
-      $fatal(1, "xs_PipelineConnect: DATA_WIDTH=%0d 非法（payload 至少 1 位）", DATA_WIDTH);
-    if (DATA_WIDTH != PAYLOAD_W_G1)
-      $fatal(1, "xs_PipelineConnect: payload 实际 %0d 位 != G1 golden 字段位宽之和 %0d 位（字段表与 G1 端口表脱节）",
-             DATA_WIDTH, PAYLOAD_W_G1);
-  end
+  if (PAYLOAD_W_G1 == 0)
+    $fatal(1, "xs_PipelineConnect: 薄文件必须传 PAYLOAD_W_G1(= G1 golden 该变体 io_in_bits_* 端口位数之和), 不传不给过 -- 当前 DATA_WIDTH=%0d",
+           DATA_WIDTH);
+  if (DATA_WIDTH < 1)
+    $fatal(1, "xs_PipelineConnect: DATA_WIDTH=%0d 不合法(payload 至少 1 位)", DATA_WIDTH);
+  if (DATA_WIDTH != PAYLOAD_W_G1)
+    $fatal(1, "xs_PipelineConnect: payload 打包出来 %0d 位 != G1 golden 逐项位数之和 %0d 位 -- 打包清单和 G1 端口表脱节了",
+           DATA_WIDTH, PAYLOAD_W_G1);
 
   logic                  valid;
   logic [DATA_WIDTH-1:0] data;

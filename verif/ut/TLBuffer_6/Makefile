@@ -22,3 +22,26 @@ FM_VARIANTS = TLBuffer_6
 include ../../../scripts/ut_common.mk
 
 VCS += +define+SYNTHESIS
+
+# ---------------------------------------------------------------------------
+# negtest：xs_TLBuffer_ad_core 载荷位数等式不变式的必失败负测（codex 0145 决策三）。
+#   NEG_TLB_SOURCE     SOURCE_W 抄成旧值（G0->G1 真实事故形态）
+#   NEG_TLB_NO_ANCHOR  不传 ram_2x<N> 锚点（改造前会拿 TLBuffer_6 的默认值蒙混）
+# 判据：两个都必须在 elaborate 期非零退出。
+NEG_CASES = NEG_TLB_SOURCE NEG_TLB_NO_ANCHOR
+.PHONY: negtest
+negtest:
+	@rc=0; for c in $(NEG_CASES); do \
+	  rm -rf neg_csrc simv_neg simv_neg.daidir; \
+	  if vcs -full64 -sverilog -Mdir=neg_csrc +define+SYNTHESIS +define+$$c \
+	         $(RTL_DIR)/memblock/xs_TLBuffer_ad_core.sv negtest.sv \
+	         -top neg_tlb_probe -o simv_neg > neg_$$c.log 2>&1; then \
+	    echo "=== NEGTEST FAILED ($$c)：抄错的参数竟然 elaborate 过了 ==="; rc=1; \
+	  elif grep -q 'Error-\[FEST\]' neg_$$c.log; then \
+	    echo "=== NEGTEST PASSED ($$c)：elaborate 期被不变式拦下 ==="; \
+	    sed -n '/FEST/,/^$$/p' neg_$$c.log | grep -m2 'msg:' || true; \
+	  else \
+	    echo "=== NEGTEST FAILED ($$c)：编译是失败了, 但不是 \$$fatal 不变式拦的(看 neg_$$c.log) ==="; \
+	    grep -m3 -E '^Error' neg_$$c.log || true; rc=1; \
+	  fi; \
+	done; rm -rf neg_csrc simv_neg simv_neg.daidir; exit $$rc

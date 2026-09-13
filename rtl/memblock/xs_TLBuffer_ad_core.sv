@@ -35,9 +35,11 @@ module xs_TLBuffer_ad_core #(
   parameter int unsigned DATA_W     = 256,  // A/D 共用的数据位宽
   parameter int unsigned D_SINK_W   = 10,   // D 通道 sink id 位宽（TL-C 才用得上）
   parameter int unsigned A_USER_W   = 5,    // A 通道 user 附带位总位数（0 = 本变体没有 user）
-  // ---- golden Queue2 内 ram_2x<N> 的 N，仅用于载荷宽度自检 ----
-  parameter int unsigned A_RAM_WIDTH = 356,
-  parameter int unsigned D_RAM_WIDTH = 281,
+  // ---- G1 锚点（fail-closed，无可用默认值）：golden Queue2_TLBundle{A,D}_<n> 里
+  //      行为模型 ram_2x<N> 的那个 N，仅用于载荷位数自检。原先默认 356/281 等于
+  //      "薄文件不传就拿 TLBuffer_6 的值当真"，那是 fail-open；现在默认 0 = 没传就炸。
+  parameter int unsigned A_RAM_WIDTH = 0,
+  parameter int unsigned D_RAM_WIDTH = 0,
   // ---- TL 规范固定、5 个变体完全一致的位宽 ----
   localparam int unsigned A_OPCODE_W = 4,
   localparam int unsigned A_PARAM_W  = 3,
@@ -147,21 +149,30 @@ module xs_TLBuffer_ad_core #(
 );
 
   // ---------------------------------------------------------------------------
-  // 位宽自检：本核参数拼出来的载荷宽度，必须等于 golden 队列里 ram_2x<N> 的 N。
-  // 这是 G0->G1 这一轮唯一的实质改动（source 加宽）的防呆闸：把 SOURCE_W 留在
-  // 旧值上，逻辑一行都不会错、随机激励也未必打得到高位，但这里会立刻 $fatal。
+  // 位数自检：本核参数拼出来的载荷位数，必须等于 golden 队列里 ram_2x<N> 的 N。
+  // 这是 G0->G1 这一轮唯一的真改动（source 加宽）的防呆闸：把 SOURCE_W 留在旧值
+  // 上，逻辑一行都不会错、随机激励也未必打得到高位，但这里会立刻 $fatal。
+  //
+  // 写法：$fatal 直接写在**模块体**里（elaboration system task），不写在 initial
+  // 里。VCS 在 elaborate 阶段就报 `Error-[FEST] $fatal elaboration system task`
+  // 并 rc=255 退出 —— 纯 elaborate / 综合流程也拦得住；initial 形式只有仿真启动
+  // time 0 才炸。Formality（V-2023.12-SP3）两种都读得进，条件为真时打印同一条
+  // 消息并把本模块降级成黑盒，被 fm_verdict 的 bbox 闸拦下，仍是 fail-closed。
+  // 消息里避开 UTF-8 含 0xAE 字节的汉字（位宽/宏/实/定/段/算…）：VCS 在
+  // elaboration 消息里会把该字节打成 '.'，整句变乱码（运行期 $fatal 显示正常）。
   // ---------------------------------------------------------------------------
-  initial begin
-    if (A_PAYLOAD_W != A_RAM_WIDTH)
-      $fatal(1, "xs_TLBuffer_ad_core: A 通道载荷 %0d 位 != golden ram_2x%0d（位宽参数写错了）",
-             A_PAYLOAD_W, A_RAM_WIDTH);
-    if (D_PAYLOAD_W != D_RAM_WIDTH)
-      $fatal(1, "xs_TLBuffer_ad_core: D 通道载荷 %0d 位 != golden ram_2x%0d（位宽参数写错了）",
-             D_PAYLOAD_W, D_RAM_WIDTH);
-    if (MASK_W * 8 != DATA_W)
-      $fatal(1, "xs_TLBuffer_ad_core: MASK_W=%0d 与 DATA_W=%0d 不是字节掩码关系",
-             MASK_W, DATA_W);
-  end
+  if (A_RAM_WIDTH == 0 || D_RAM_WIDTH == 0)
+    $fatal(1, "xs_TLBuffer_ad_core: 薄文件必须传 A_RAM_WIDTH/D_RAM_WIDTH(= golden Queue2_TLBundleA/D_<n> 里 ram_2x<N> 的 N), 不传不给过 -- 当前 %0d/%0d",
+           A_RAM_WIDTH, D_RAM_WIDTH);
+  if (A_PAYLOAD_W != A_RAM_WIDTH)
+    $fatal(1, "xs_TLBuffer_ad_core: A 通道载荷 %0d 位 != golden ram_2x%0d -- 位数参数写错了",
+           A_PAYLOAD_W, A_RAM_WIDTH);
+  if (D_PAYLOAD_W != D_RAM_WIDTH)
+    $fatal(1, "xs_TLBuffer_ad_core: D 通道载荷 %0d 位 != golden ram_2x%0d -- 位数参数写错了",
+           D_PAYLOAD_W, D_RAM_WIDTH);
+  if (MASK_W * 8 != DATA_W)
+    $fatal(1, "xs_TLBuffer_ad_core: MASK_W=%0d 与 DATA_W=%0d 不是字节掩码关系",
+           MASK_W, DATA_W);
 
   // ---------------------------------------------------------------------------
   // A 通道：client -> [2 拍 skid FIFO] -> manager

@@ -41,7 +41,11 @@ module SRAMTemplate_45(
     .SET(512), .WAY(2), .DATA_WIDTH(12), .BORE_AW(10),
     .ENABLE_RESET(1), .ENABLE_HOLDREAD(1),
     .ENABLE_CLOCKGATE(1), .EXTRA_RESET(0),
-    .USE_BITMASK(0)
+    .USE_BITMASK(0),
+    // G1 锚点（勿手改，全部来自 golden SRAMTemplate_45.sv）：
+    //   宏名 sram_array_1p512x24m12...l1b_* / io_r_resp_data_<k> 共 2 个 / bore_addr 10 位
+    .G1_MACRO_SETS(512), .G1_MACRO_BITS(24), .G1_MACRO_MASK(12),
+    .G1_MACRO_LAT(1), .G1_WAY_PORTS(2), .G1_BORE_AW(10)
   ) u_core (
     .clock(clock), .reset(reset), .io_extra_reset(1'b0),
     .io_r_req_ready(io_r_req_ready),

@@ -121,7 +121,9 @@ module xs_FtqPcMemWrapper
     .NUM_WRITE   (1),
     .DATA_WIDTH  (FTQ_PC_ENTRY_W),
     .HAS_REN     (1'b0),
-    .BYPASS_EN   ({NUM_READ{1'b1}})
+    .BYPASS_EN   ({NUM_READ{1'b1}}),
+    // G1 锚点：golden FtqPcMemWrapper.sv 里的 SyncDataModuleTemplate_FtqPC_64entry 里例化了 4 个 DataModule* 子模块 = 应分出的 bank 数
+    .G1_NUM_BANKS(4)
   ) u_mem (
     .clock    (clock),
     .reset    (reset),

@@ -77,7 +77,9 @@ module SyncDataModuleTemplate__64entry_1(
     .NUM_WRITE(1),
     .DATA_WIDTH(576),
     .HAS_REN(1),
-    .BYPASS_EN(1'b1)
+    .BYPASS_EN(1'b1),
+    // G1 锚点：golden SyncDataModuleTemplate__64entry_1.sv 里例化了 4 个 DataModule* 子模块 = 应分出的 bank 数
+    .G1_NUM_BANKS(4)
   ) u_core (
     .clock(clock),
     .reset(reset),

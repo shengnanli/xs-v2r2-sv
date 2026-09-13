@@ -145,9 +145,18 @@ def analyze(name):
     i["set"] = 1 << i["aw"]
     i["macro"], i["child"], i["ext"], i["m_wmask"], i["m_bypass"] = macro_chain(text)
 
-    mm = re.match(r"sram_array_1p(\d+)x(\d+)m(\d+)s", i["macro"])
+    mm = re.match(r"sram_array_1p(\d+)x(\d+)m(\d+)s(\d+)h(\d+)l(\d+)b", i["macro"])
     i["macro_sets"], i["macro_w"], i["macro_seg"] = (int(mm.group(1)), int(mm.group(2)),
                                                      int(mm.group(3)))
+    # G1 锚点（核里的 elaborate 期自检要用，全部机械提取自 golden，不手填）：
+    #   macro 名里的 l<LAT> = 宏读延迟（>1 即多周期宏）
+    #   golden io_r_resp_data_<k> 端口个数 = way 数（宏名只给 way*位宽 的乘积）
+    i["macro_lat"] = int(mm.group(6))
+    # 注意用「不同的 way 序号个数」而不是「恰好叫 io_r_resp_data_<k> 的端口个数」：
+    # 结构体形态的变体(145/146/163/185)golden 端口叫 io_r_resp_data_<k>_<字段>，
+    # 用 $ 锚定会数出 0，静默把锚点废掉。
+    i["g1_way_ports"] = len({m.group(1) for _, _, n in ports
+                             for m in [re.match(r"io_r_resp_data_(\d+)", n)] if m})
     terms = wdata_terms(text)
     ways = sorted({int(m.group(1)) for t in terms
                    for m in [re.match(r"io_w_req_bits_data_(\d+)", t)] if m})
@@ -309,7 +318,14 @@ def emit_wrapper(i):
         f"    .ENABLE_CLOCKGATE({int(i['clockgate'])}), .EXTRA_RESET({int(i['extra_reset'])}),",
         f"    .USE_BITMASK({int(i['bitmask'])}),",
         f"    .MASK_SEG_W({i['mask_seg_w']}), .BORE_NSEG({i['bore_nseg']}),",
-        f"    .EXT_CLOCKGATE({int(i['extcg'])}), .MCP_HOLD({int(i['mcp'])})",
+        f"    .EXT_CLOCKGATE({int(i['extcg'])}), .MCP_HOLD({int(i['mcp'])}),",
+        f"    // G1 锚点（勿手改，全部来自 golden {i['name']}.sv）：",
+        f"    //   宏名 sram_array_1p{i['macro_sets']}x{i['macro_w']}m{i['macro_seg']}...l{i['macro_lat']}b_* "
+        f"/ io_r_resp_data_<k> 共 {i['g1_way_ports']} 个 / bore_addr {i['bore_aw']} 位",
+        f"    .G1_MACRO_SETS({i['macro_sets']}), .G1_MACRO_BITS({i['macro_w']}), "
+        f".G1_MACRO_MASK({i['macro_seg']}),",
+        f"    .G1_MACRO_LAT({i['macro_lat']}), .G1_WAY_PORTS({i['g1_way_ports']}), "
+        f".G1_BORE_AW({i['bore_aw']})",
         "  ) u_core (",
         f"    .clock(clock), .reset(reset), .io_extra_reset({extra}),",
         f"    .io_r_req_ready({rdy}),",
