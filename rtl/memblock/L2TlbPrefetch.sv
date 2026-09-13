@@ -81,6 +81,7 @@ module xs_L2TlbPrefetch_core
   input  logic [3:0]        hgatp_mode,
   input  logic              hgatp_changed,
   input  logic              priv_virt,
+  input  logic              priv_virt_changed,
 
   input  logic              in_valid,
   input  logic [VPN_W-1:0]  in_vpn,
@@ -105,7 +106,11 @@ module xs_L2TlbPrefetch_core
   logic [VPN_W-1:0]                next_req;  // RegEnable(next_line, in_valid)
   logic                            v;         // 预取请求 valid 保持位
 
-  wire flush = sfence_valid || satp_changed || vsatp_changed || hgatp_changed;
+  // flush = sfence.vma 或任一地址翻译上下文 CSR 变化。golden L2TlbPrefetch.sv:117
+  // 的 wire flush 是五项 OR：satp/vsatp/hgatp 内容变了、以及 V 位（priv.virt）变了，
+  // 之前记下的预取窗口与在途预取请求都失效，必须整体作废。
+  wire flush = sfence_valid || satp_changed || vsatp_changed || hgatp_changed
+            || priv_virt_changed;
 
   // 当拍计算的“下一行” VPN。
   wire [VPN_W-1:0] next_line = get_next_line(in_vpn);
@@ -186,7 +191,8 @@ module xs_L2TlbPrefetch_core
 
 endmodule
 
-// 自动生成：scripts/gen_l2tlbprefetch.py —— 仅机械端口适配，核心逻辑在 xs_L2TlbPrefetch_core
+// 下面的 wrapper 是机械端口适配，核心逻辑在 xs_L2TlbPrefetch_core。
+// （原注释称由 scripts/gen_l2tlbprefetch.py 生成，但仓库里没有该脚本；本文件手工维护。）
 
 // ---------------------------------------------------------------------------
 // golden 同名 wrapper
@@ -202,6 +208,7 @@ module L2TlbPrefetch import xs_l2tlbprefetch_pkg::*; (
   input  [3:0] io_csr_hgatp_mode,
   input  io_csr_hgatp_changed,
   input  io_csr_priv_virt,
+  input  io_csr_priv_virt_changed,
   input  io_in_valid,
   input  [37:0] io_in_bits_vpn,
   input  io_out_ready,
@@ -222,6 +229,7 @@ module L2TlbPrefetch import xs_l2tlbprefetch_pkg::*; (
     .hgatp_mode(io_csr_hgatp_mode),
     .hgatp_changed(io_csr_hgatp_changed),
     .priv_virt(io_csr_priv_virt),
+    .priv_virt_changed(io_csr_priv_virt_changed),
     .in_valid(io_in_valid),
     .in_vpn(io_in_bits_vpn),
     .out_ready(io_out_ready),

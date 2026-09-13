@@ -1,5 +1,6 @@
-// 自动生成：scripts/gen_linkmonitor.py —— 勿手改
 // LinkMonitor 双例化逐拍比对: golden LinkMonitor vs 可读 LinkMonitor_xs。
+// （原头写「自动生成：scripts/gen_linkmonitor.py —— 勿手改」，但仓库里没有那个
+//   脚本；本文件现为手工维护，下面的 directed_txsactive_after_reset() 是手写的。）
 // 激励: 全输入随机 —— linkactiveack/linkactivereq 覆盖 LINKACTIVE 4 态转换,
 //       syscoack 覆盖 txsactive, flit/flitv/lcrdv/valid 覆盖子模块与 L-Credit
 //       reclaim (rx 去激活) 路径。两侧共用 golden 子模块, 比对聚焦本核逻辑。
@@ -729,6 +730,41 @@ module tb;
     `CHECK(io_out_rx_snp_lcrdv)
   endtask
 
+  // ---------------------------------------------------------------------------
+  // 定向激励：复位释放后**第一拍**的 io_out_txsactive。
+  //
+  // golden 是 `io_out_txsactive_REG <= ~exitcoDone`，而
+  //   exitcoDone = ~syscoreq_REG & ~syscoack & exitcoDone_REG，
+  // 其中 syscoreq_REG 与 exitcoDone_REG 是同一个 `RegNext(1'b1, init=0)`（永远同值），
+  // 所以 exitcoDone ≡ 0、txsactive 复位后第一拍就是 1，与 syscoack 无关。
+  //
+  // 随机激励打不到这一点：整段仿真只有一次复位释放，而释放那一拍的输出落在
+  // 第一次 check_outputs() 之前的窗口里。这里显式再做一次复位，且
+  //   (a) 在 negedge 释放 reset —— 避开与时钟沿的竞争，保证下一个 posedge 时
+  //       syscoreq/exitcoDone 两个寄存器确实还是复位值 0；
+  //   (b) 把 io_out_syscoack 钉在 0 —— 这是把「~exitcoDone」与错误化简
+  //       「syscoreq | syscoack」区分开的唯一激励。
+  // ---------------------------------------------------------------------------
+  task automatic directed_txsactive_after_reset();
+  begin
+    io_out_syscoack = 1'b0;
+    reset = 1'b1;
+    repeat (4) @(posedge clock);
+    @(negedge clock);
+    reset = 1'b0;                 // negedge 释放，无竞争
+    @(posedge clock); #1;
+    if (g_io_out_txsactive !== i_io_out_txsactive) begin
+      errors++;
+      $display("[%0t] DIRECTED txsactive@reset-release MISMATCH g=%0h i=%0h (syscoack=0)",
+               $time, g_io_out_txsactive, i_io_out_txsactive);
+    end
+    checks++;
+    // 同一拍再核一遍 linkactivereq / syscoreq（同族寄存器，防连带回归）。
+    `CHECK(io_out_tx_linkactivereq)
+    `CHECK(io_out_syscoreq)
+  end
+  endtask
+
   initial begin
     if ($value$plusargs("NCYCLES=%d", NCYCLES)) begin end
     reset = 1'b1;
@@ -818,6 +854,7 @@ module tb;
     io_nodeID = '0;
     repeat (6) @(posedge clock);
     reset = 1'b0;
+    directed_txsactive_after_reset();
     repeat (NCYCLES) begin
       @(negedge clock);
       drive_random_inputs();

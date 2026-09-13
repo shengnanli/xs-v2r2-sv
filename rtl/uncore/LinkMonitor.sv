@@ -73,7 +73,9 @@ endpackage
 //    · 链路握手: tx.linkactivereq 复位后恒拉高 (本端总想激活链路);
 //      rx.linkactiveack = RegNext(rx.linkactivereq) | ~rxDeact —— 即对端撤请求后,
 //      仍要把三个 RX 子模块欠的 L-Credit 全部回收 (reclaim 全 1) 才允许撤确认。
-//    · 系统一致性: syscoreq 复位后恒高, syscoack 为其 RegNext; txsactive 指示。
+//    · 系统一致性: syscoreq 复位后恒高 (本端总请求进入一致性域); syscoack 是对端
+//      输入。txsactive 与 tx.linkactivereq 一样, 复位后恒高 —— 见下面 txsactive_q
+//      处对 golden exitcoDone 的推导 (该退出路径在本配置下是死逻辑)。
 //    · 性能计数器: RetryAck / PCrdGrant 响应数、不可重试请求数 (仅监测, 无端口)。
 //    · 给上行 (TX) flit 注入本节点 srcID = io_nodeID。
 //
@@ -287,7 +289,7 @@ module xs_LinkMonitor_core
   reg          rx_linkactiveack_d; // RegNext(rx.linkactivereq), 仅时钟无复位
   reg          rx_linkactiveack_q; // 本端 rx.linkactiveack (含 L-Credit 回收保持)
   reg          syscoreq_q;         // 系统一致性请求 (复位后恒 1)
-  reg          txsactive_q;        // txsactive 指示
+  reg          txsactive_q;        // txsactive 指示 (复位后恒 1, 见下)
 
   // 各方向送入译码器的 {req, ack} (读当前寄存器值, 非阻塞更新 ⇒ 用上一拍值)。
   wire [1:0]   reqack_tx = {tx_linkactivereq_q, io_out_tx_linkactiveack};
@@ -326,8 +328,26 @@ module xs_LinkMonitor_core
       syscoreq_q         <= 1'b1;
       // RX 确认: 对端请求的延迟值, 或仍有 L-Credit 未回收 (去激活未完成) 时保持高。
       rx_linkactiveack_q <= rx_linkactiveack_d | ~rx_deact;
-      // txsactive = syscoreq 或 syscoack (= ~(~syscoreq & ~syscoack))。
-      txsactive_q        <= syscoreq_q | io_out_syscoack;
+      // txsactive 与 tx.linkactivereq 同源, 复位后恒 1。
+      //
+      // golden 里它写成 `io_out_txsactive_REG <= ~exitcoDone`
+      // (LinkMonitor.sv:294), 其中
+      //   exitcoDone = ~io_out_syscoreq_REG & ~io_out_syscoack & exitcoDone_REG
+      // (LinkMonitor.sv:266)。Chisel 源 LinkLayer.scala:403 是
+      //   !io.out.syscoreq && !io.out.syscoack && RegNext(true.B, init=false.B)
+      // —— 而 io.out.syscoreq 本身就是 RegNext(!exitco, init=false.B) 且本配置
+      // 没有 exitco 端口 (exitco = false.B), 即 io_out_syscoreq_REG 与
+      // exitcoDone_REG 是**同一个** RegNext(1'b1, init=0), 两者永远同值。
+      // 于是 ~syscoreq_REG & exitcoDone_REG ≡ 0 ⇒ exitcoDone ≡ 0 ⇒ ~exitcoDone ≡ 1,
+      // 与 syscoack 无关: 「L2 flush 完成后退出一致性域」这条路径在本配置下
+      // 根本不会触发, 是 golden 里的死逻辑。故本核直接写常量 1
+      // (与上面 tx_linkactivereq_q 完全一致), 不复制那个恒 0 的 exitcoDone。
+      //
+      // 注意: 不能化简成 `syscoreq_q | io_out_syscoack` —— 那等于把 exitcoDone_REG
+      // 当成常 1, 在复位释放后的第一拍 (syscoreq_q 还是 0、syscoack=0) 会给出 0
+      // 而 golden 给 1。verif/ut/LinkMonitor 的 directed_txsactive_after_reset()
+      // 就是钉这一拍的。
+      txsactive_q        <= 1'b1;
       // 性能计数器。
       if (rxrsp_fire & (rxrsp_out_opcode == RSP_OP_RETRYACK))
         retryAckCnt  <= retryAckCnt + 64'h1;
