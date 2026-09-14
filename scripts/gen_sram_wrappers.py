@@ -93,6 +93,18 @@ def analyze(name):
     info["read_ports"] = nresp // max(info["way"], 1)
     info["ports"] = ports
     info["macro"], info["child"], info["ext"], info["m_wmask"], info["m_bypass"] = macro_chain(name)
+    # ---- G1 锚点：一律从 golden 机械提取（宏名 + 该变体自己的端口表），不手填 ----
+    # 宏名就是宏的规格书：sram_array_1p<SETS>x<BITS>m<MASK>s<S>h<H>l<LAT>b_<用途>。
+    # 核在 elaborate 期拿这 6 个数去比对自己算出来的位宽（见 xs_SRAMTemplate_core
+    # 的 §参数自检）；不传 = $fatal，所以生成器必须发，别指望事后手工补。
+    mm = re.match(r"sram_array_1p(\d+)x(\d+)m(\d+)s(\d+)h(\d+)l(\d+)b_", info["macro"])
+    assert mm, f"{name}: 宏名不符合 1p<SETS>x<BITS>m<MASK>s<S>h<H>l<LAT>b_ 规格: {info['macro']}"
+    info["g1_sets"] = int(mm.group(1))
+    info["g1_bits"] = int(mm.group(2))
+    info["g1_mask"] = int(mm.group(3))
+    info["g1_lat"] = int(mm.group(6))
+    info["g1_way_ports"] = nresp            # golden io_r_resp_data_<k> 端口个数
+    info["g1_bore_aw"] = info["bore_aw"]    # golden bore_addr 端口位宽
     info["bitmask"] = has_port(ports, "io_w_req_bits_flattened_bitmask")
     info["wmask_w"] = info["way"] * info["data_w"] if info["bitmask"] else info["way"]
     # G1 新形态检测（fail-closed：任何本核不驱动的输出端口都判不支持，
@@ -147,7 +159,15 @@ def emit_wrapper(info, suffix=""):
     L.append(f"    .SET({info['set']}), .WAY({way}), .DATA_WIDTH({dw}), .BORE_AW({info['bore_aw']}),")
     L.append(f"    .ENABLE_RESET({int(info['reset'])}), .ENABLE_HOLDREAD({int(info['hold'])}),")
     L.append(f"    .ENABLE_CLOCKGATE({int(info['clockgate'])}), .EXTRA_RESET({int(info['extra_reset'])}),")
-    L.append(f"    .USE_BITMASK({int(info['bitmask'])})")
+    L.append(f"    .USE_BITMASK({int(info['bitmask'])}),")
+    L.append(f"    // G1 锚点（勿手改，全部来自 golden {info['name']}.sv）：")
+    L.append(f"    //   宏名 sram_array_1p{info['g1_sets']}x{info['g1_bits']}m{info['g1_mask']}"
+             f"...l{info['g1_lat']}b_* / io_r_resp_data_<k> 共 {info['g1_way_ports']} 个"
+             f" / bore_addr {info['g1_bore_aw']} 位")
+    L.append(f"    .G1_MACRO_SETS({info['g1_sets']}), .G1_MACRO_BITS({info['g1_bits']}), "
+             f".G1_MACRO_MASK({info['g1_mask']}),")
+    L.append(f"    .G1_MACRO_LAT({info['g1_lat']}), .G1_WAY_PORTS({info['g1_way_ports']}), "
+             f".G1_BORE_AW({info['g1_bore_aw']})")
     L.append(f"  ) u_core (")
     L.append(f"    .clock(clock), .reset(reset), .io_extra_reset({extra}),")
     L.append(f"    .io_r_req_ready({rdy}),")
@@ -155,10 +175,23 @@ def emit_wrapper(info, suffix=""):
     L.append(f"    .io_r_resp_data({rdata_cat}),")
     L.append(f"    .io_w_req_valid(io_w_req_valid), .io_w_req_bits_setIdx(io_w_req_bits_setIdx),")
     L.append(f"    .io_w_req_bits_data({wdata_cat}), .io_w_mask({wmask}),")
+    # 清零完成：本族这 33 个变体的 golden 端口表里都没有这根线（既不叫 io_resetDone
+    # 也不当 io_w_req_ready 用），核里照样无条件驱动它 —— 所以显式写成空连接，表示
+    # "知道有、故意不接"，而不是漏连。省掉这一行 = 整芯片 elaborate 的
+    # Warning-[TFIPC]（UT 侧编译开了 +lint=TFIPC-L，则是同一条的逐端口明细）。
+    L.append(f"    .io_resetDone(/* 本变体 golden 不引出清零完成 */),")
     L.append(f"    .io_broadcast_ram_hold(io_broadcast_ram_hold),")
     L.append(f"    .io_broadcast_ram_bypass(io_broadcast_ram_bypass),")
     L.append(f"    .io_broadcast_ram_bp_clken(io_broadcast_ram_bp_clken),")
     L.append(f"    .io_broadcast_cgen(io_broadcast_cgen),")
+    # 外置时钟门控接口：本族这 33 个变体一律 EXT_CLOCKGATE=0（门控单元在核内例化，
+    # 或宏时钟直连 clock），三个使能输出不外引，rclk 被核里的 generate-if 挡在
+    # EXT_CLOCKGATE=1 分支内、根本不会被读 —— 功能上无风险，但必须显式写出来。
+    # 输入钉 1'b0 而不是留空：与已签核的 9 个新形态变体（128/145/146/152/155/163/
+    # 166/178/185）同一写法。实测 VCS 对 .写错的端口名() 与 .写错的端口名(1'b0)
+    # 报的都是 Error-[UPIMI-E]，两种写法同等 fail-closed，于是按家族统一取后者。
+    L.append(f"    .io_mbistCgCtl_en(/* 门控不外置 */), .io_mbistCgCtl_rckEn(/* 门控不外置 */),")
+    L.append(f"    .io_mbistCgCtl_wckEn(/* 门控不外置 */), .io_mbistCgCtl_rclk(1'b0),")
     L.append(f"    .boreChildrenBd_bore_addr(boreChildrenBd_bore_addr),")
     L.append(f"    .boreChildrenBd_bore_addr_rd(boreChildrenBd_bore_addr_rd),")
     L.append(f"    .boreChildrenBd_bore_wdata(boreChildrenBd_bore_wdata),")
@@ -265,7 +298,41 @@ endmodule
     return "\n".join(L)
 
 
+# negtest 段：UT Makefile 的一部分，**由生成器发**，不许手工贴在产物后面。
+# 教训（tlbuffer lane 实测）：手工贴在生成产物末尾的段，谁跑一次生成器它就被静默
+# 删掉，而那往往正是该家族唯一病因形态的防护。本族踩的是同一个坑 —— 这一段和上面
+# 的 6 个 G1_* 锚点，2026-09-14 之前都是手工补的，一跑生成器就全没。
+NEGTEST_MK = r"""
+# ---------------------------------------------------------------------------
+# negtest：G1 锚点不变式的必失败负测（codex 0145 决策三要求"错误参数放一个必失败
+# 负测"）。negtest.sv 拿 SRAMTemplate_148 的规格做原型，三个负例各只抄错一处参数：
+#   NEG_DW_NARROW 位宽抄小 / NEG_WAY_SPLIT way 劈错(乘积仍对) / NEG_NO_ANCHOR 不传锚点。
+# 判据：三个都必须让 VCS 在 **elaborate 期** 非零退出（Error-[FEST]）。
+# 任何一个能链接成功 = 不变式形同虚设，判 FAIL。
+# 注意：这里不用 $(VCS)（不需要 -kdb/-debug_access，负测只看 elaborate 是否炸）。
+NEG_CASES = NEG_DW_NARROW NEG_WAY_SPLIT NEG_NO_ANCHOR
+.PHONY: negtest
+negtest:
+	@rc=0; for c in $(NEG_CASES); do \
+	  rm -rf neg_csrc simv_neg simv_neg.daidir; \
+	  if vcs -full64 -sverilog -Mdir=neg_csrc +define+SYNTHESIS +define+$$c \
+	         $(RTL_DIR)/common/xs_SRAMTemplate_core.sv negtest.sv \
+	         -top neg_sram_probe -o simv_neg > neg_$$c.log 2>&1; then \
+	    echo "=== NEGTEST FAILED ($$c)：抄错的参数竟然 elaborate 过了 ==="; rc=1; \
+	  elif grep -q 'Error-\[FEST\]' neg_$$c.log; then \
+	    echo "=== NEGTEST PASSED ($$c)：elaborate 期被不变式拦下 ==="; \
+	    sed -n '/FEST/,/^$$/p' neg_$$c.log | grep -m2 'msg:' || true; \
+	  else \
+	    echo "=== NEGTEST FAILED ($$c)：编译是失败了, 但不是 \$$fatal 不变式拦的(看 neg_$$c.log) ==="; \
+	    grep -m3 -E '^Error' neg_$$c.log || true; rc=1; \
+	  fi; \
+	done; rm -rf neg_csrc simv_neg simv_neg.daidir; exit $$rc
+"""
+
+
 def main():
+    # --check：只重算、不写盘，逐字节比对现有产物（进 scripts/gate_all.sh 的幂等闸）。
+    check = "--check" in sys.argv[1:]
     names = ([p.stem for p in sorted(GOLDEN.glob("SRAMTemplate*.sv"))]
              if VARIANTS is None else VARIANTS)
     infos, skipped = [], []
@@ -284,12 +351,8 @@ def main():
            "// 变体薄文件：例化 xs_SRAMTemplate_core（rtl/common/xs_SRAMTemplate_core.sv）\n"
            "// + 厂商 SRAM 宏（golden 同源，两侧同读；唯一黑盒是宏内 *_ext 叶子）\n")
     common = XSSV / "rtl/common"
-    for i in infos:
-        (common / f"{i['name']}.sv").write_text(hdr + emit_wrapper(i))
 
     ut = XSSV / "verif/ut/SRAMTemplate"
-    ut.mkdir(parents=True, exist_ok=True)
-    (ut / "tb.sv").write_text(emit_tb(infos))
 
     # 宏链依赖：UT 需 array_*_ext.v 行为模型；FM 两侧同读宏与 array_N（不读 ext）
     sim_deps, fm_deps, fm_ref = set(), set(), {}
@@ -329,7 +392,29 @@ def main():
            "FM_VARIANTS = " + " ".join(i["name"] for i in infos), "",
            "include ../../../scripts/ut_common.mk", "",
            "VCS += +define+SYNTHESIS", ""]
-    (ut / "Makefile").write_text("\n".join(mk))
+
+    # ---- 全部产物先攒齐，再统一写盘 / 比对（--check 幂等闸靠这个）------------
+    outputs = {}
+    for i in infos:
+        outputs[common / f"{i['name']}.sv"] = hdr + emit_wrapper(i)
+    outputs[ut / "tb.sv"] = emit_tb(infos)
+    outputs[ut / "Makefile"] = "\n".join(mk) + NEGTEST_MK
+
+    if check:
+        drift = [q for q, c in sorted(outputs.items())
+                 if (not q.exists()) or q.read_text() != c]
+        for q in drift:
+            print(f"DRIFT: {q.relative_to(XSSV)}")
+        if drift:
+            print(f"★ {len(drift)}/{len(outputs)} 个产物与生成器重算结果不一致。"
+                  f"手改生成产物 = 下一次跑生成器时被静默删掉，先把差异并回生成器。")
+            return 1
+        print(f"生成器幂等 OK：{len(outputs)} 个产物与 G1 golden 重算结果逐字节一致")
+        return 0
+
+    for q, c in outputs.items():
+        q.parent.mkdir(parents=True, exist_ok=True)
+        q.write_text(c)
 
     print(f"covered {len(infos)} variants")
     for i in infos:
@@ -338,7 +423,8 @@ def main():
               f"macro={i['macro']}")
     if skipped:
         print(f"SKIPPED({len(skipped)}): {', '.join(str(s) for s in skipped)}")
+    return 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main() or 0)
