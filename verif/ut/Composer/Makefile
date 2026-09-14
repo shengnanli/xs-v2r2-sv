@@ -114,27 +114,38 @@ FM_REF_DEPS_Composer = ClockGate.sv DelayN.sv DelayNWithValid.sv DelayNWithValid
 # ---------------------------------------------------------------------------
 # matched-unread 加强（FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=true）
 #
-# 这是**加强不是放宽**：默认 FM 把"两侧都配上、但都没有输出锥"的未读点记成
-# Not-Compared 放过；打开后它真的去证这些点等价。本目标的证明因此覆盖全部
-# 519962 + 6323 = 526285 个点。
+# 这是**加强不是放宽**：默认 FM 把"没有输出锥"的未读点记成 Not-Compared 放过；
+# 打开后它真的去证这些点等价。本目标的证明因此覆盖全部 526285 个点。
 #
 # 未读点的构成与逐类死因写在 scripts/fm_eq.tcl 的白名单依据里（Composer 条），
 # 这里只记验收：
 #
-#   钉点前 strict 首跑（evidence/40ec7fc36bb8/Composer，RTL 与本 commit 同字节）
+#   不加强的基线（evidence/6a791d008f45/Composer_prepin，跑在本分支的父 commit
+#   6a791d0 上，Composer 的证明输入与本 commit 同字节）：
 #     native SUCCEEDED / passing 519962 / failing 0 / unverified 0 / aborted 0
 #     / unmatched compare points 0 / 无黑盒 / 无 qualification
-#     unread = 5923 matched_nc + 400(400) unmatched unread
+#     unread = 5923 matched_nc + 400(400) unmatched unread（合计 6323 点）
+#     判定 PARTIAL，reason=strict_unread!=0
 #
-#   fm_pins_pre.tcl 把那 400 点按段布局逐位钉成 400 对（seg_0/1/2 <-> hi/mid/lo，
-#   value 无后缀/_1/_2/_3 <-> dup 0/1/2/3，位下标同号）。钉点集合与实测未读点
-#   集合**精确相等**这件事由脚本核对，不是眼看的：
+#   fm_pins_pre.tcl 在首次 match 之前把 Composer **本层**那条 cone-dead 的影子
+#   PC 流水整条钉成 601 对（modified_reset 1 + s1_pc 200 + s2_pc 200 + s3_pc 200）。
+#   钉点集合与实测未读点集合**精确相等**这件事由脚本核对，不是眼看的：
 #       python3 ../../../tools/predictor_composer/check_pin_bijection.py \
-#               <钉点前那次跑的 fm_work/Composer/unread_points.txt>
+#               ../../../evidence/6a791d008f45/Composer_prepin/unread_points.txt
 #   钉不上任何一条即 error 退出（fail-closed）。
+#
+#   ★为什么钉 601 而不是基线里报出来的那 400★（实测，别踩第二次）
+#   基线里 s1_pc 的 200 点与 modified_reset 是 FM 自己配上的 matched unread，
+#   只有 s2/s3 的 400 点是 unmatched。但打开本加强后未读点升级成比对点，
+#   s1_pc 那 200 点的配对**掉了**，变成新的 200(200) unmatched unread ——
+#   只钉 400 的那一版实测 compare points 526085、判定仍 PARTIAL。
 #
 #   打开本项后应得：passing 519962 -> 526285（恰好 +6323）、failing 仍 0、
 #   unread 归 0。passing 不增 = FM 没真去比，那是空转，不算过。
+#
+#   另有一条独立于 FM 的旁证：tb.sv 对这 601 位里的 s1/s2/s3 分段寄存器逐拍做
+#   层次比对（24 个 `CHECKH`，见 tb.sv:3726-3752），三 seed × 200k 拍
+#   hier_errors=0 —— 仿真侧与形式侧指向同一个结论。
 # ---------------------------------------------------------------------------
 FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 
@@ -146,9 +157,16 @@ VCS += +define+SYNTHESIS
 # 挂成 simv 的 order-only 前置，跟 portlint 一样"每次编译都过一遍"——
 # 只放一份不会有人跑的校验脚本，等于没有闸。
 TOOLS = ../../../tools/predictor_composer
-.PHONY: assemblycheck
+.PHONY: assemblycheck pincheck
 assemblycheck:
 	@python3 $(TOOLS)/gen_assembly.py Composer --check
 	@python3 $(TOOLS)/verify_assembly.py Composer
 
-simv: | assemblycheck
+# 钉点双射闸：fm_pins_pre.tcl 自带的 fail-closed 只管"每条都钉上了"，管不住
+# 多钉/漏钉。这里拿**不加强那次跑**的实测未读点做集合相等核对。同样挂成 simv 的
+# order-only 前置——只放一份不会有人跑的校验脚本，等于没有闸。
+pincheck:
+	@python3 $(TOOLS)/check_pin_bijection.py \
+	    ../../../evidence/6a791d008f45/Composer_prepin/unread_points.txt
+
+simv: | assemblycheck pincheck
