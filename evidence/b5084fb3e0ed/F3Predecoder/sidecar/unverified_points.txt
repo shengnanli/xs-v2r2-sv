@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/F3Predecoder
+Implementation : i:/WORK/F3Predecoder
+Version        : V-2023.12-SP3
+Date           : Mon Sep 14 07:39:09 2026
+**************************************************
+
+No unverified compare points.
+
+1
