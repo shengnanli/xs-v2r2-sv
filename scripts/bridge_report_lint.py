@@ -225,6 +225,18 @@ def lint_file(path, repos, default_repo, run_counts=True,
                                     '消息头缺 `%s:`' % k))
     # in_reply_to 指向的消息必须真的在（同目录或兄弟 inbox/outbox）
     irt = hdr.get('in_reply_to')
+    # ★ 口头/带外转达的裁定没有 bridge 文件 ★（2026-09-13）
+    # codex 的裁定有时由用户直接转述，不落文件。此前只要 in_reply_to 解析不到文件就报
+    # HEADER_REPLY_TARGET_MISSING，逼着人**在头里编一个假文件名**才能过闸 —— 那比报错
+    # 更坏：台账上会出现指向不存在文件的"引用"。改成显式承认这一类：以 `(无 bridge 文件)`
+    # 或 `(verbal)` 开头即视为带外来源，但**必须在同一行写清转达途径**（否则仍报错，
+    # 不允许拿这个前缀当万能豁免）。
+    if irt and re.match(r'^\((?:无 bridge 文件|verbal|口头)\)', irt.strip()):
+        if len(irt.strip()) < 25:
+            findings.append(Finding(
+                'HEADER_REPLY_TARGET_VAGUE', 1,
+                'in_reply_to 标为带外来源但没写清转达途径: %r' % irt))
+        irt = None
     if irt:
         cands = [p.parent / irt,
                  p.parent.parent / 'outbox' / irt,
