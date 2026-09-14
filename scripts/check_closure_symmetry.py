@@ -70,13 +70,167 @@ _sv_evaluate_orig = sv_elab.evaluate
 
 
 def _evaluate_ws_normalized(expr, env):
-    return _sv_evaluate_orig(' '.join(str(expr).split()), env)
+    e = ' '.join(str(expr).split())
+    if '$bits' in e:
+        tbl = getattr(_BITS_TLS, 'tbl', None) or {}
+
+        def _sub(m):
+            w = tbl.get(m.group(1))
+            return m.group(0) if w is None else str(w)
+
+        e = _BITS_OF_IDENT.sub(_sub, e)
+    return _sv_evaluate_orig(e, env)
 
 
 sv_elab.evaluate = _evaluate_ws_normalized
 for _m in ('_cond_true', '_prev_taken', '_parse_overrides', 'enumerate_blackboxes',
            '_mod_env', 'LazyEnv'):
     pass  # 同模块内以全局名引用 evaluate，替换模块属性即可对全部调用点生效
+
+
+# --------------------------------------------------------------------------
+# sv_elab.evaluate 的 `$bits(<端口>)` 支持（**同样只在本脚本内 monkeypatch**）
+#
+# 为什么需要（2026-09-14, worker agent/tage）：重写侧用 `$bits(<golden 端口名>)` 把
+# G1 端口宽度**现读**进来当锚点，而不是人工把位数抄一遍 ——
+#   rtl/frontend/TageTable.sv:767  .G1_IDX_FH_W($bits(io_req_bits_folded_hist_hist_14_folded_hist))
+# 配套 negtest(NEG_TT_HIST / NEG_TT_NO_ANCHOR) 保证抄错或不传就在 elaborate 期 $fatal。
+# 这是**该做的**写法，但 sv_elab.evaluate 把 `$bits(` 一律翻成 `_unsupported(`，
+# 于是 TageTable 家族 4 个 target 一直判 CLOSURE_UNKNOWN。那是**轻量 elaborator 的
+# 能力缺口，不是设计/证明的缺口**：同一批文件在 FM 里实跑，两侧黑盒集精确相同
+# （array_2_ext×1 + array_3_ext×4，逐条在 verif/vendor_boundary.tsv 审定过）。
+#
+# 判据 fail-closed，三条同时满足才替换，否则原样落回 `_unsupported(` 继续报错
+# （宁可继续"判不准"，也不猜一个宽度出来）：
+#   1. 只认 `$bits(<简单标识符>)`，不认表达式/成员选择/位选；
+#   2. 标识符必须在**本次 elaboration 读入的文件集**里被声明为 ANSI 端口，且其
+#      packed range 的两端能在空环境下求值（即字面量算术；带参数的 range 一律放弃）；
+#   3. 读入文件集里所有声明该名字的模块必须给出**同一个**位宽，出现分歧即放弃。
+# 表随 enumerate_blackboxes 的一次调用建立、结束即清，且放在 thread-local 里
+# （本脚本用 ThreadPoolExecutor 并发跑 target，全局量会串味）。
+# --------------------------------------------------------------------------
+_BITS_TLS = __import__('threading').local()
+_BITS_OF_IDENT = re.compile(r'\$bits\s*\(\s*([A-Za-z_]\w*)\s*\)')
+_PORT_DIR = re.compile(r'(input|output|inout)\b(.*)$', re.S)
+
+
+def _ansi_port_widths(header):
+    """ANSI 端口表 -> {name: 位宽}。认不准的条目直接不入表（见上面判据 2）。"""
+    span = None
+    i = 0
+    while i < len(header):
+        if header[i] == '(':
+            j = sv_elab._match_paren(header, i)
+            if j < 0:
+                break
+            span = (i + 1, j)
+            i = j + 1
+            continue
+        i += 1
+    if span is None:
+        return {}
+    text = header[span[0]:span[1]]
+    items, item, d = [], '', 0
+    for ch in text:
+        if ch in '([{':
+            d += 1
+        elif ch in ')]}':
+            d -= 1
+        if ch == ',' and d == 0:
+            items.append(item)
+            item = ''
+            continue
+        item += ch
+    items.append(item)
+
+    out, cur = {}, None
+    for it in items:
+        it = it.strip()
+        if not it:
+            continue
+        m = _PORT_DIR.match(it)
+        if m:                       # 新的一条声明：range 重新确定
+            cur, rest = None, m.group(2)
+        else:                       # 逗号续写：继承前一条的 range
+            rest = it
+        rb = rest.rfind(']')
+        if rb >= 0:
+            lb, d2 = rb, 0
+            while lb >= 0:
+                if rest[lb] == ']':
+                    d2 += 1
+                elif rest[lb] == '[':
+                    d2 -= 1
+                    if d2 == 0:
+                        break
+                lb -= 1
+            if lb < 0:
+                continue
+            if m:
+                cur = rest[lb:rb + 1]
+            tail = rest[rb + 1:]
+        else:
+            tail = rest
+        nm = re.findall(r'[A-Za-z_]\w*', tail)
+        if not nm:
+            continue                # 名字后面还有 unpacked 维等：认不准，不入表
+        w = _range_width(cur)
+        if w is not None:
+            out[nm[-1]] = w
+    return out
+
+
+def _range_width(rng):
+    if rng is None:
+        return 1                    # 标量端口
+    inner = rng[1:-1]
+    d, pos = 0, -1
+    for k, ch in enumerate(inner):
+        if ch in '([{':
+            d += 1
+        elif ch in ')]}':
+            d -= 1
+        elif ch == ':' and d == 0:
+            pos = k
+            break
+    if pos < 0:
+        return None                 # `[N]` 不是 packed range
+    try:
+        hi = _sv_evaluate_orig(' '.join(inner[:pos].split()), {})
+        lo = _sv_evaluate_orig(' '.join(inner[pos + 1:].split()), {})
+    except Exception:               # noqa: BLE001 —— 带参数的 range 等，放弃
+        return None
+    w = abs(hi - lo) + 1
+    return w if w > 0 else None
+
+
+def _bits_table(universe):
+    """{name: 位宽}；同名端口在不同模块宽度不一致时置 None（= 放弃，不猜）。"""
+    tbl = {}
+    for mod in universe.values():
+        try:
+            pw = _ansi_port_widths(mod.header)
+        except Exception:           # noqa: BLE001
+            continue
+        for n, w in pw.items():
+            if n in tbl and tbl[n] != w:
+                tbl[n] = None
+            else:
+                tbl.setdefault(n, w)
+    return tbl
+
+
+def _enumerate_blackboxes_with_bits(top, universe, side):
+    prev = getattr(_BITS_TLS, 'tbl', None)
+    _BITS_TLS.tbl = _bits_table(universe)
+    try:
+        return _sv_enum_orig(top, universe, side)
+    finally:
+        _BITS_TLS.tbl = prev
+
+
+_sv_enum_orig = sv_elab.enumerate_blackboxes
+sv_elab.enumerate_blackboxes = _enumerate_blackboxes_with_bits
 
 MARK = '@@'
 EXIT_CLEAN, EXIT_VIOLATION, EXIT_USAGE, EXIT_INTERNAL = 0, 1, 2, 3
