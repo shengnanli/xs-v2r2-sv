@@ -22,6 +22,10 @@ run "台账行序闸"       python3 scripts/test_ledger_append_only.py
 # 完整写出这些串会让**每个目标**的判定中毒。agent/err3 实测撞到过：写全之后
 # MuxBundle 当场从 SUCCEEDED 翻成 elab147=true 的 PARTIAL，而 RTL 一字未动。
 run "FM Tcl 毒字符串闸"  python3 scripts/test_tcl_no_poison.py
+# fm_eq.tcl 结构闸：该文件是多 worker 并行改的共享件，冲突全集中在 vmucp 白名单那行。
+# 我两次处理错（"两侧都留"留出两条串联 if 互相拒目标；git add -A 提交了带冲突标记的
+# 文件）。两次都修好却没加闸，于是下次合并原样复发。这道闸把"修好"变成"修住"。
+run "fm_eq 结构闸"     python3 scripts/test_fm_eq_wellformed.py
 # 家族生成器幂等：tlbuffer worker 发现 gen_tlbuffer_ad_family.py --check 一直报 DRIFT
 # ——negtest 段是手工贴在生成产物后面的，谁跑一次生成器它就被静默删掉，而那正是该家族
 # 唯一病因形态（位宽）的防护。只有挂了 --check 的生成器进这道闸。

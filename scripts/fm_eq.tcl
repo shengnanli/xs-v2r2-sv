@@ -81,7 +81,6 @@ switch -- $_verify_matched_unread_compare_points {
     # impl 侧 20 个唯一点、非 matched_nc 项为 0，即严格双射；内容是 funcReg(功能码寄存器
     # 副本)里各子模块用不到的位——countModule[3..8] / cryptoModule[0,1,2,3,5,6,7,8] /
     # 顶层 funcReg_reg ↔ 可读核 func_s1_reg[0,1,4,6,7,8]，两侧同为死位。
-<<<<<<< HEAD
     # RNXbar / SNXbar 加入依据(2026-09-14, agent/arb)：strict 首跑均 native SUCCEEDED /
     # failing 0 / unmatched 0，只剩 unread 卡住 —— RNXbar 3 点、SNXbar 2 点，**全部**
     # matched_nc 且严格双射(ref 唯一点 ↔ impl 唯一点，非 matched_nc 项为 0)。
@@ -115,8 +114,6 @@ switch -- $_verify_matched_unread_compare_points {
     # （ICacheMissUnit.scala:348），golden 与可读核都把它放在 `ifndef SYNTHESIS 块里，
     # 而 FM 两侧都带 -define SYNTHESIS 读入 ⇒ 断言整块编译掉，计数器写了从不被读。
     # 加强后 FM 实比这一点：passing 3214 -> 3215（正好 +1）、failing 仍 0、unread 归 0。
-    if {$top ni {Bku DebugModule DuplicatedTagArray FTBBank ICacheCtrlUnit ICacheDataArray ICacheMissUnit ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 LinkMonitor Queue1_RegMapperInput_5 RNXbar SNXbar SourceB TXDAT_4 TXREQ TlbStorageWrapper TlbStorageWrapper_1 WritebackQueue}} {
-=======
     # TageBTable 加入依据(2026-09-14, worker agent/tage)：assembly(子模块两侧同源白盒,
     # 唯一黑盒 array_4_ext 为已审定厂商叶子) 首跑 native SUCCEEDED / passing 381 /
     # failing 0 / unmatched 0，仅 unread 10 卡住。10 点**全部** matched_nc，且 FM 自己
@@ -128,8 +125,7 @@ switch -- $_verify_matched_unread_compare_points {
     # SRAM 读地址走的是 s0_idx(在 FoldedSRAMTemplate 内部自己打拍)，所以 s1_idx[10:1]
     # 写入后零扇出。重写核照抄了 golden 这个结构(rtl/frontend/TageBTable.sv:321/327/342)，
     # 于是两侧同为死位、同名同位置。加强后 FM 真去比这 10 点：passing 381→391、failing 仍 0。
-    if {$top ni {Bku DebugModule DuplicatedTagArray FTBBank ICacheCtrlUnit ICacheDataArray LinkMonitor Queue1_RegMapperInput_5 SourceB TageBTable TXDAT_4 TXREQ TlbStorageWrapper TlbStorageWrapper_1 WritebackQueue}} {
->>>>>>> agent/tage
+    if {$top ni {Bku DebugModule DuplicatedTagArray FTBBank ICacheCtrlUnit ICacheDataArray ICacheMissUnit ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 LinkMonitor Queue1_RegMapperInput_5 RNXbar SNXbar SourceB TXDAT_4 TXREQ TageBTable TlbStorageWrapper TlbStorageWrapper_1 WritebackQueue}} {
       puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
       exit 3
     }
