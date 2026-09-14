@@ -150,6 +150,15 @@ class Fixture(object):
                 'MODULE = ChildLeaf\nFM_VARIANTS = %s\n'
                 % ('ChildLeaf' if child_is_fm_target else 'SomethingElse'))
         self._w('verif/ut/ParentAsm/Makefile', 'MODULE = ParentAsm\nFM_VARIANTS = ParentAsm\n')
+        # ★必须有这个文件★（2026-09-13）：D70 之后 target 全集改由 **make 引擎**权威求值，
+        # 而 fm_target_universe.targets_at_make() 会 `git archive` 出含 scripts/ut_common.mk
+        # 的临时树；夹具缺它 → MakeUnavailable → 退回 regex 并把原因记进 unresolved →
+        # 判定走保守分支 `..._target_universe_unresolved` 而非 `..._not_fm_target`。
+        # 两者都是 fail-closed 的拒绝，但前者是「判不出」、后者是「判定它不是 target」——
+        # 本测试要守的正是后者那条判据，夹具不能让它降级。（真实仓库上实测
+        # targets=272 / unresolved=0，所以这只是夹具上下文问题，不是功能退化。）
+        self._w('scripts/ut_common.mk',
+                '# 夹具占位：make 引擎 git archive 需要此文件存在\n')
         self._w('verif/dead_ref/ChildLeaf.json',
                 json.dumps({'entries': [{'ref_path': 'r:/WORK/ChildLeaf/dead'}]}) + '\n')
         sh(self.repo_dir, 'git', 'init', '-q')
