@@ -52,3 +52,7 @@ verif/study/*/ut_gen/
 verif/study/*/signals.txt
 verif/study/*/vc_hdrs.h
 verif/study/*/.inter.vpd.uvm
+
+# UT 批跑脚本的落盘输出（ut_run.sh），派生物，不进版本库
+verif/ut/*/ut_compile.out
+verif/ut/*/ut_run_*.out

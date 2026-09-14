@@ -125,7 +125,69 @@ switch -- $_verify_matched_unread_compare_points {
     # SRAM 读地址走的是 s0_idx(在 FoldedSRAMTemplate 内部自己打拍)，所以 s1_idx[10:1]
     # 写入后零扇出。重写核照抄了 golden 这个结构(rtl/frontend/TageBTable.sv:321/327/342)，
     # 于是两侧同为死位、同名同位置。加强后 FM 真去比这 10 点：passing 381→391、failing 仍 0。
-    if {$top ni {Bku DebugModule DuplicatedTagArray FTBBank ICacheCtrlUnit ICacheDataArray ICacheMissUnit ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 LinkMonitor Queue1_RegMapperInput_5 RNXbar SNXbar SourceB TXDAT_4 TXREQ TageBTable TlbStorageWrapper TlbStorageWrapper_1 WritebackQueue}} {
+    # FAlu / FCVT / MulUnit 加入依据(2026-09-14, PARTIAL 收口簇)：三者的共同形态是
+    # **未读点全部落在两侧同源 elaborate 的 golden 叶子里**——ref 与 impl 读的是
+    # G1-canonical 下同一份文件(FALU_LEAVES / FCVT_LEAVES / MUL_LEAVES 见各 UT
+    # Makefile)，因此 unread 的对称性是**按构造**成立的，不是人工配出来的：
+    #   FAlu  (strict native SUCCEEDED / passing 2462 / failing 0 / unmatched 0 /
+    #          unread 4)：4 点全 matched_nc，ref 4 ↔ impl 4，非 matched_nc 项为 0。
+    #          内容 = fudian 浮点加法器里被下游丢弃的最高/最低位：
+    #          F32Adder/F64Adder 的 U_close_path/U_CS4_io_adder_op0_r[23]/[52]
+    #          (ClosePathF32WidenF16MixedPipeline.sv:111 / ...F64Widen...:CS4 op0 的
+    #          MSB，加法器内部不取)、U_close_path/U_Lshift_io_src_r[24](同上，25 位
+    #          左移源的 MSB)、U_far_path/U_FS1/io_result_r_2[0]
+    #          (FarPathF32WidenF16MixedAdderPipeline.sv:97 拼接后被丢弃的 LSB)。
+    #   FCVT  (strict native SUCCEEDED / passing 2509 / failing 0 / unmatched 0 /
+    #          unread 5)：5 点全 matched_nc，ref 5 ↔ impl 5。内容 = FP_INCVT.sv:167
+    #          的 fcvtmodTrueExpReg[4:0]——该寄存器只有 [10:5] 被读(FP_INCVT.sv:600
+    #          `|(fcvtmodTrueExpReg[10:5])`)，低 5 位两侧同为死位。
+    #   MulUnit(strict + FM_MERGE_DUP=false, native SUCCEEDED / passing 4537 /
+    #          failing 0 / unmatched 0 / unread 7)：7 点全 matched_nc，ref 7 ↔ impl 7。
+    #          内容 = ArrayMulDataModule.sv 的部分积寄存器 r_2303/2304/2306/
+    #          2558/2559/2560/2561 —— 送进 C22/C53 压缩器后该位的进位/和被后级丢弃，
+    #          两侧同一份 golden 文件，同为死位。
+    # 三者打开后必须复验「passing 恰好 +4 / +5 / +7 且 failing 仍为 0」——
+    # passing 不增即说明 FM 没真去比，那是空转，不算过(见本轮证据 evidence/)。
+    #   InstrUncache 加入依据(2026-09-14, PARTIAL 收口簇)：strict native SUCCEEDED /
+    #          passing 204 / failing 0 / unmatched compare points 0，只剩 1(1) 个
+    #          **unmatched** unread。verif/ut/InstrUncache/fm_pins.tcl 先把它按名钉成
+    #          一对（ref entries_0/req_addr_reg[0] ↔ impl entries_0/u_core/req_reg\[addr][0]），
+    #          于是成为 1↔1 严格双射的 matched_nc、非 matched_nc 的未读项为 0。
+    #          内容 = InstrMMIOEntry 锁存的 MMIO 取指地址最低位：golden
+    #          InstrMMIOEntry.sv 只读 req_addr[2:1](选半字) 与 req_addr[47:3](按 8 字节
+    #          对齐发 Get)，bit 0 两侧同为死位。打开后 FM 真去比这一位，passing 应 +1。
+    #   ICacheMetaArray 加入依据(2026-09-14, PARTIAL 收口簇)：把 tag SRAM 子树两侧
+    #          同源 elaborate 之后（见该 UT Makefile），native SUCCEEDED / passing 2491 /
+    #          failing 0 / unmatched 0，只剩 9 个 matched_nc，ref 9 ↔ impl 9、
+    #          非 matched_nc 项为 0。9 点全在 mbistPl（MbistPipeIcacheTag，两侧读同一份
+    #          golden 文件、路径逐字相同）：
+    #            addrReg_reg[7:0]  —— MBIST 写地址。MbistPipeIcacheTag.sv:239 把它送到
+    #              toSRAM_*_addr，接到 SplittedSRAMTemplate 的 boreChildrenBd_bore_addr；
+    #              而该端口在 SplittedSRAMTemplate.sv 里**声明了却没有任何使用**，
+    #              整条写地址在本层无读者。
+    #            addrRdReg_reg[7]  —— MBIST 读地址最高位。读地址确实往下传，但本宏
+    #              （sram_array_1p128x74m37s1h0l1b_icsh_tag → array_ext）深 128、
+    #              地址只有 7 位，bit7 到不了存储阵列。
+    #          这 9 位在 SRAM 黑盒时期是"黑盒输入"因而算被读；白盒化后才暴露出来，
+    #          属于 golden 自身的死位，两侧同构。打开后 passing 应 2491 -> 2500。
+    #   EntriesVfdivVidiv 加入依据(2026-09-14, PARTIAL 收口簇)：本目标的未读点不是
+    #          零星几个而是 2420 对 —— 发射队列条目的 uop 负载里，本变体**用不到**的
+    #          字段（debugInfo / exceptionVec / preDecodeInfo / pc / imm / instr /
+    #          ftqPtr / lqIdx / sqIdx … 共 110 个字段）只是随 uop 逐级传递，在
+    #          Entries 这一层没有任何输出锥。golden 把它们展平成逐字段寄存器
+    #          entryReg_payload_<f>_reg[b]，可读核存成一根向量 r_payload_reg[off+b]，
+    #          词干完全不同、又没有输出锥，FM 的名字匹配与签名分析都无从下手。
+    #          verif/ut/EntriesVfdivVidiv/fm_pins_pre.tcl（由 gen_fm_pins.py 从
+    #          gen.py 的同一张字段偏移表机械生成）在首次 match 之前逐位钉 9898 对，
+    #          实测 9898/9898 全部钉上、0 miss（钉不上即 error 退出，fail-closed）。
+    #          钉完的实测结果：native SUCCEEDED / passing 9776 / failing 0 /
+    #          unmatched compare points 0(0) / unmatched unread 0(0)，
+    #          剩下的 2420 点**全部** matched_nc，即 ref 2420 ↔ impl 2420 严格双射。
+    #          配套两项：FM_MERGE_DUP=false（否则 golden 侧的常数负载位被合并，
+    #          两侧点数根本对不齐）与可读核里删掉 golden 没有的死寄存器
+    #          （EnqEntry 无 blocked、comp 条目无 deqPortIdx，见 xs_iq_entries_core.sv
+    #          §2.6a）。打开本项后 passing 应 9776 -> 12196（+2420）。
+    if {$top ni {Bku DebugModule DuplicatedTagArray EntriesVfdivVidiv FAlu FCVT FTBBank ICacheCtrlUnit ICacheDataArray ICacheMetaArray ICacheMissUnit ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 InstrUncache LinkMonitor MulUnit Queue1_RegMapperInput_5 RNXbar SNXbar SourceB TXDAT_4 TXREQ TageBTable TlbStorageWrapper TlbStorageWrapper_1 WritebackQueue}} {
       puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
       exit 3
     }

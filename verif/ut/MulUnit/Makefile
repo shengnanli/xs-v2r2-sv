@@ -43,6 +43,18 @@ FM_REF_DEPS_MulUnit = $(MUL_LEAVES)
 #       逐一配对，unmatched 29→0，passing 4535→4537。
 FM_MERGE_DUP = false
 
+# matched-unread 加强（vmucp）——★加强证明，不是 waiver★
+# FM_MERGE_DUP=false 把 29 个 unmatched 清零之后，仍剩 7 个 matched-unread 卡住
+# strict 判定(reason=strict_unread!=0)，全部在 mulDataModule 里：
+#   r_2303_reg r_2304_reg r_2306_reg r_2558_reg r_2559_reg r_2560_reg r_2561_reg
+# 它们是 ArrayMulDataModule.sv 的部分积/压缩器寄存器，送进 C22/C53 之后该位的
+# 输出被后级丢弃，因此无观测路径。ArrayMulDataModule.sv 在 MUL_LEAVES 里，
+# ref 与 impl 读的是**同一份 golden 文件**（RTL_GOLDEN_DEPS == FM_REF_DEPS_MulUnit），
+# 两侧路径除 u_core 外逐字相同 —— FM 自己配成 matched_nc，ref 7 ↔ impl 7，
+# 严格双射，非 matched_nc 的未读项为 0。打开本项让 FM **多证 7 个点**。
+# 白名单在 scripts/fm_eq.tcl（依据写在那一行紧邻的注释里），两处须同时生效。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 include ../../../scripts/ut_common.mk
 
 # golden 头部的 initial 随机化块靠 SYNTHESIS 关掉（两侧寄存器一致地起 X）

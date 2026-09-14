@@ -27,24 +27,25 @@
 //
 // =============================================================================
 // 本文件导航（共 1095 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
-//   L51    §1 与变体无关的编码
-//   L73    §2 xs_iq_entry —— 单条目
-//   L232   §2.1 冲刷判定
-//   L244   §2.2 WB 唤醒匹配
-//   L272   §2.3 ignoreOldVd(向量专属)
-//   L307   §2.4 valid / enqReady / clear
-//   L322   §2.5 entryUpdate —— 不装载时条目的次态,同时也是 transEntry 的内容
-//   L365   §2.6 时序
-//   L434   §2.7 组合输出
-//   L482   §3 xs_iq_entries_core —— 条目阵列顶层(golden Entries<变体> 的可读核体)
-//   L595   §4 条目例化
-//   L720   §5 deqSel / deqPortIdxWrite / issueResp
-//   L760   §6 EnqPolicy —— golden 的 EnqPolicy 模块(SelectOne("circ", …, 2))
-//   L791   §7 转移策略
-//   L868   §8 othersEntryEnq 数据通路
-//   L993   §9 发射出口
-//   L1042  §10 阵列状态汇聚输出
-//   L1072  §11 本核尚未实现的家族维度(给后续变体 owner 的清单,全部有 golden 依据)
+//   L52    §1 与变体无关的编码
+//   L74    §2 xs_iq_entry —— 单条目
+//   L234   §2.1 冲刷判定
+//   L246   §2.2 WB 唤醒匹配
+//   L274   §2.3 ignoreOldVd(向量专属)
+//   L309   §2.4 valid / enqReady / clear
+//   L324   §2.5 entryUpdate —— 不装载时条目的次态,同时也是 transEntry 的内容
+//   L367   §2.6 时序
+//   L407   §2.6a blocked / deqPortIdx —— 按条目类型决定是否真有寄存器
+//   L466   §2.7 组合输出
+//   L514   §3 xs_iq_entries_core —— 条目阵列顶层(golden Entries<变体> 的可读核体)
+//   L627   §4 条目例化
+//   L752   §5 deqSel / deqPortIdxWrite / issueResp
+//   L792   §6 EnqPolicy —— golden 的 EnqPolicy 模块(SelectOne("circ", …, 2))
+//   L823   §7 转移策略
+//   L900   §8 othersEntryEnq 数据通路
+//   L1025  §9 发射出口
+//   L1074  §10 阵列状态汇聚输出
+//   L1104  §11 本核尚未实现的家族维度(给后续变体 owner 的清单,全部有 golden 依据)
 //
 
 // -----------------------------------------------------------------------------
@@ -220,6 +221,7 @@ module xs_iq_entry
   logic [NUM_REGSRC-1:0][3:0]        r_src_type;
   logic [NUM_REGSRC-1:0]             r_src_state;
   logic [NUM_REGSRC-1:0][3:0]        r_data_src;
+  // r_blocked / r_deq_port_idx 不是每种条目都真有寄存器,见 §2.6a。
   logic                              r_blocked;
   logic                              r_issued;
   logic                              r_first_issue;
@@ -362,9 +364,10 @@ module xs_iq_entry
   end
 
   // ---------------------------------------------------------------------------
-  // §2.6 时序。装载时:enq 条目强制「从未发射」(issued=0/timer=3/firstIssue=0/
-  //      deqPortIdx=0/blocked=0,这几个 golden 里就是常数 0 折叠掉的);
+  // §2.6 时序。装载时:enq 条目强制「从未发射」(issued=0/timer=3/firstIssue=0);
   //      simp/comp 条目直接吃上一级的 transEntry。
+  //      blocked / deqPortIdx 两个状态位不在这里,它们按条目类型决定是否真的
+  //      存在寄存器,见紧随其后的 §2.6a。
   //      valid_reg 是唯一带复位的寄存器(与 golden 一致);entryReg 无复位。
   // ---------------------------------------------------------------------------
   always_ff @(posedge clock or posedge reset)
@@ -380,21 +383,17 @@ module xs_iq_entry
       r_src_type     <= enq_src_type;
       r_src_state    <= enq_src_state;
       r_data_src     <= enq_data_src;
-      r_blocked      <= IS_ENQ ? 1'b0 : enq_blocked;
       r_issued       <= IS_ENQ ? 1'b0 : enq_issued;
       r_first_issue  <= IS_ENQ ? 1'b0 : enq_first_issue;
       r_issue_timer  <= IS_ENQ ? 2'h3 : enq_issue_timer;
-      r_deq_port_idx <= IS_ENQ ? 1'b0 : enq_deq_port_idx;
       r_payload      <= enq_payload[PL_W-1:0];
     end else begin
       r_src_state    <= u_src_state;
       r_src_type     <= u_src_type;
       r_data_src     <= u_data_src;
-      r_blocked      <= 1'b0;             // entryUpdate.status.blocked := false.B
       r_issued       <= u_issued;
       r_first_issue  <= u_first_issue;
       r_issue_timer  <= u_issue_timer;
-      r_deq_port_idx <= u_deq_port_idx;
       // 其余字段 entryUpdate 原样保持
       r_rob_flag     <= r_rob_flag;
       r_rob_value    <= r_rob_value;
@@ -403,6 +402,39 @@ module xs_iq_entry
       r_payload      <= r_payload;
     end
   end
+
+  // ---------------------------------------------------------------------------
+  // §2.6a blocked / deqPortIdx —— 这两个状态位 golden 只在**部分**条目类型里
+  //   真有寄存器,另一类型被 firtool 常数折叠/DCE 掉了。可读核跟着一起不生成:
+  //   多出来的死寄存器既误导读者(让人以为 enq 条目会被 blocked),也会在 FM 里
+  //   变成 golden 侧根本不存在的比较点/未读点(实测 2+6 个)。
+  //
+  //   blocked    : golden EnqEntry_18 里**没有** entryReg_status_blocked ——
+  //                入队条目的 blocked 入口恒 0(dispatch 不会送 blocked 的 uop),
+  //                entryUpdate.status.blocked := false.B 又把次态钉死为 0。
+  //                OthersEntry_164(simp)/OthersEntry_166(comp) 两者都有该寄存器。
+  //   deqPortIdx : golden OthersEntry_166(comp) 里**没有** entryReg_status_deqPortIdx
+  //                —— comp 条目的 commonOut 不带 deqPortIdx(它是终端,不再往下转移),
+  //                EnqEntry_18 / OthersEntry_164 则都有(要随 transEntry 传下去)。
+  //                即"有 transEntry 出口的条目才存 deqPortIdx",正是 KEEP_WIDE。
+  // ---------------------------------------------------------------------------
+  generate
+    if (IS_ENQ) begin : g_no_blocked
+      assign r_blocked = 1'b0;
+    end else begin : g_blocked
+      always_ff @(posedge clock)
+        // 装载吃上一级的 transEntry.blocked;不装载时 entryUpdate 把它钉成 0。
+        r_blocked <= load_now ? enq_blocked : 1'b0;
+    end
+
+    if (KEEP_WIDE) begin : g_deq_port_idx
+      always_ff @(posedge clock)
+        r_deq_port_idx <= load_now ? (IS_ENQ ? 1'b0 : enq_deq_port_idx)
+                                   : u_deq_port_idx;
+    end else begin : g_no_deq_port_idx
+      assign r_deq_port_idx = 1'b0;
+    end
+  endgenerate
 
   // srcLoadDependency 影子:装载时吃入队值,否则整体左移一位。
   generate

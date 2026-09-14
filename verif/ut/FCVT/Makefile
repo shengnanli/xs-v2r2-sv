@@ -39,7 +39,8 @@ FM_REF_DEPS_FCVT = $(FCVT_LEAVES)
 #        +    if {$top ni {DebugModule DuplicatedTagArray FCVT FTBBank ICacheCtrlUnit ...
 # 在两处都改好之前保持注释：现状能跑出 native SUCCEEDED（verdict 因 unread=5 记
 # PARTIAL），而单改本行会让 make fm-FCVT 直接 FM_MODE_ERROR 退出。
-#FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+# 2026-09-14（PARTIAL 收口簇）：白名单已在 scripts/fm_eq.tcl 加上 FCVT，本行同时启用。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 
 include ../../../scripts/ut_common.mk
 
