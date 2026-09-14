@@ -28,6 +28,31 @@
 
 另有 6 个 REWRITE_L 实为纯重编号（DataModule__16entry_8/12/16 等，见 renames.tsv）。
 
+## 层次重绑（重写件的实例路径与 golden 不一样）
+
+重写件与 golden **逐位等价、层次不等价**：每个重写模块都多一层 `u_core`，
+扁平重复例化收成了 generate，还有一部分 golden 子模块被吸收进可读核。
+凡是按**实例路径**工作的东西（波形探针、force/deposit、bind 目标、故障注入
+scope、memory campaign 的阵列路径）都要按下面这张表重绑。
+
+| 产物 | 是什么 |
+|---|---|
+| `docs/hier_unreachable.tsv` | golden XSTop 闭包里有、重写件闭包里一个实例都没有的模块（46 个，其中 23 个是签核目标） |
+| `docs/hier_rebind_map.tsv` | 645 条 `golden 实例路径 → 重写实例路径`，由 `scripts/hier_map.py` 机械生成 |
+| `docs/hier_rebind_decl.tsv` | 机器判不准的那一小撮（类型也换了／彻底内联）的人工声明，生成器会校验其真实性 |
+| `docs/hier_consumer_audit.tsv` | 四类消费方逐个审查结论（difftest/探针、bind/SVA/STL、DFT/MBIST、force/deposit） |
+
+```bash
+python3 scripts/hier_reach.py --gen-filelist --out build_hier   # 可达性（26 秒）
+python3 scripts/hier_map.py                                     # 重算映射表（60 秒）
+python3 scripts/hier_map.py --check                             # 幂等闸（在 gate_all 里）
+python3 scripts/hier_xlate.py --paths 路径清单.txt --root-prefix stl_tb_top.dut
+```
+
+`hier_xlate.py` 是给消费方用的：喂一堆 golden 路径，它逐条说 OK / REMAP（给新路径）/
+INLINED（不再是路径，给宿主核与承载信号）/ SIGNAL_IN_REWRITTEN（末段是信号且
+所在模块已被重写，必须人工重找）。**判不准的一律如实说判不准，不猜。**
+
 ## 进度台账（权威口径：`docs/ledger_normalized.tsv` + `docs/g1_universe.tsv`）
 
 > **一切状态均为 `WORKING_*`（功能候选），不是签核结论**。晋升须绑定

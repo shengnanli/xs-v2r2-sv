@@ -1,0 +1,34 @@
+# hier_consumer_audit.tsv —— 「按实例路径工作」的消费方逐个过一遍（agent/hier，2026-09-14）
+#
+# codex 0159 §F-class 列了四类消费方要机械扫描并重绑：
+#   (a) difftest 与波形探针  (b) bind/SVA/STL 引用
+#   (c) DFT/scan/MBIST 脚本与存储替换规则  (d) 仿真/故障注入用的 force/deposit 路径
+# 本表是把这四类在**两个仓**里逐个找出来、逐个判定的结果。不是清单摘要，是判定结论。
+#
+# ★本表是人工审查记录，不是生成物★：路径翻译本身由 scripts/hier_xlate.py 机械给出，
+#   可随时复跑；本表记的是「这个消费方要不要改、为什么」。
+#
+# verdict:
+#   NO_CHANGE      路径/引用在重写层次里原样成立，无需改动（附为什么）
+#   NOT_A_PATH     它根本不是层次路径（模块名/文件名引用），不在本轮范围内
+#   WILDCARD_SAFE  用了 `**`/`*` 通配，路径变化被通配吸收
+#   FUTURE_RISK    今天成立，但只是因为相关父模块**本轮还没被重写**；重写推进后必须复跑翻译器
+#   TO_FIX         需要改（本轮如有，附改了什么）
+repo	consumer	class	kind	verdict	evidence
+xs-v2-sv	verif/ut/ITTageTable/fm_pins.tcl	(c) DFT/MBIST	FM 层次 pin 路径 r:/WORK/ITTageTable/mbistPl/* 与 i:/WORK/ITTageTable/mbistPl/*	NO_CHANGE	golden ITTageTable 例化 `MbistPipeIttage mbistPl`；重写 ITTageTable 例化 `xs_MbistPipeIttage_core mbistPl` —— **实例名一字未变**，只换了模块类型，两侧 FM 路径同名即可对上。docs/hier_rebind_map.tsv 判 SAME_PATH。
+xs-v2-sv	verif/ut/ITTageTable_1/fm_pins.tcl	(c) DFT/MBIST	同上（_1）	NO_CHANGE	同上
+xs-v2-sv	verif/ut/ITTageTable_2/fm_pins.tcl	(c) DFT/MBIST	同上（_2）	NO_CHANGE	同上
+xs-v2-sv	verif/ut/ITTageTable_3/fm_pins.tcl	(c) DFT/MBIST	同上（_3）	NO_CHANGE	同上
+xs-v2-sv	verif/ut/ITTageTable_4/fm_pins.tcl	(c) DFT/MBIST	同上（_4）	NO_CHANGE	同上
+xs-v2-sv	verif/ut/ICacheCtrlUnit/fm_pins.tcl	(c)	FM pin 注释里提到 Queue1_RegMapperInput_5	NOT_A_PATH	只是模块名注释；真实 pin 路径不经过被吸收实例。impl 侧 `ICacheCtrlUnit/out_back_q` 实例名保留（类型换成 xs_Queue1_RegMapperInput），SAME_PATH。
+xs-v2-sv	verif/ut/ICacheMissUnit/fm_pins.tcl	(c)	i:/WORK/ICacheMissUnit/u_core/grant_beat_left_q_reg	NO_CHANGE	指向本目标自己的可读核，与吸收无关。
+xs-v2-sv	verif/ut/*/Makefile 的 RTL_GOLDEN_DEPS / FM_REF_DEPS_*	(a)(c)	golden **文件名/模块名**依赖（44 个文件命中被吸收模块名）	NOT_A_PATH	这些是 FM ref 侧要一起 elaborate 的 golden 源文件清单，不是层次路径。★必须保持不变★：被吸收不等于 golden 侧不需要它，ref 侧仍要 elaborate 出同一棵 golden 层次才能做等价比对。
+xs-v2-sv	verif/ut/MbistPipe/Makefile	(c) MBIST	把 MbistPipeIttage{,_1..4} 当作独立 UT 目标	NO_CHANGE	这 5 个是**签核外壳**（FM impl 侧必须有一个 golden 同名模块才能比对），不是芯片里的实例。它们在 XSTop 里不可达是预期结果，不是缺陷。
+xs-v2-sv	verif/study/ExeUnit_int0/Makefile 的 `sig` 目标	(a) 波形探针	tb.u_read.u_core.u_disp.u_core.* 等 30 余条	NO_CHANGE	全是 study tb 内部路径（根是 tb，不是 XSTop），与整芯片层次无关。
+xs-v2-sv	verif/ram_model_parents.tsv	(c) 存储替换规则	ram_40x47 -> golden 父 Queue40_L2TlbMQBundle.sv / impl 父 rtl/memblock/L2TlbMissQueue.sv	NO_CHANGE	这一行**已经记的就是吸收后的事实**：golden 里 ram_40x47 挂在 Queue40 下，impl 里挂在 L2TlbMissQueue 的核下。与 docs/hier_rebind_map.tsv 的 `io_out_q/ram_ext -> u_core.mem_ext` 一致。
+xs-v2-sv	difftest 层次探针	(a) difftest	—	NO_CHANGE	扫 `force <path>.|deposit <path>.|$root|SimTop.|XSTop.|uvm_hdl|hdl_xmr`：rtl/ 与 verif/ 下**零命中**（命中全在 docs 文本与 Tcl 的 $root 变量名上）。本仓没有任何 difftest 波形/层次探针；difftest 是 golden RTL 内例化的 DPI 模块，随 golden 走，不按路径绑。
+xs-v2-sv	bind / SVA	(b)	—	NO_CHANGE	全仓 `^[ \t]*bind[ \t]` **零命中**；唯一出现 "bind" 的是 scripts/test_universe_decouple.py:513 的字符串字面量（自测用的假 RTL 片段），不是真绑定。
+XiangShan	stl/scripts_vcs2024/collateral/FCM/ed_scopes.txt	(d) 故障注入 scope	36 条 stl_tb_top.dut.* 全路径	FUTURE_RISK	scripts/hier_xlate.py 复跑：36/36 OK（路径原样成立）。★成立的原因是 CSR/NewCSR/Frontend/Backend/MemBlock/L2Cache 本轮都还没被重写★ —— 这些父模块一旦重写（每个重写模块都会插一层 u_core），同样的路径会全部失效。建议在 STL 侧把这条检查接成回归：`python3 scripts/hier_xlate.py --paths ed_scopes.txt --root-prefix stl_tb_top.dut`。
+XiangShan	stl/ 其余 11 条 stl_tb_top.dut.* 路径（tail_mon bind / faults_stu0.sff / model_boundary.md / D1 force）	(b)(d)	bind 目标 + 故障注入 scope + 一条 force	FUTURE_RISK	同上复跑：5 条 OK、6 条 SIGNAL_TAIL_OK（末段是信号名，所在模块 StoreUnit/LoadUnit/RenameTable/IntRegFilePart0 本轮未重写）。★注意★：`bind StoreUnit stu0_iface_props` 引用了 StoreUnit **内部信号**，StoreUnit 一旦重写，golden 的扁平信号名在可读核里不存在，必须人工重找 —— 翻译器会把这类判成 SIGNAL_IN_REWRITTEN。
+XiangShan	stl/scripts_vcs2024/gen_mem_scope.py	(c) 存储替换规则	遍历 build/rtl 按模块名匹配 sram_array_* / *_ext /（--with-regarray）SyncDataModuleTemplate|DataModule，逐个吐完整实例路径	NO_CHANGE	该脚本文件头已自标 **DEPRECATED**「no longer used by build_mem_campaign.sh … Do not wire back into the flow」，新流程改用 `NA [0,1] { ARRY "stl_tb_top.dut.**" }` 让 vc_fcc 自己认阵列 —— **与实例路径无关**，吸收影响不到它。★若将来有人把它接回来★：它的 REGARR_RE=^(SyncDataModuleTemplate|DataModule) 在重写件上会漏掉全部 bank（impl 侧模块名是 xs_DataModule，且挂在 u_core.g_bank[N].dataBank 下），WrBypass 的 data_mem_*_ext 更是整个消失（内联成寄存器阵列 u_core.data_mem）。
+XiangShan	stl/scripts_vcs2024/collateral/SFF/faults_mem.sff	(c) memory campaign	NA [0,1] { ARRY "stl_tb_top.dut.**" }	WILDCARD_SAFE	整棵 DUT 通配 + 按 ARRY 节点类型识别，路径变化被通配吸收。
