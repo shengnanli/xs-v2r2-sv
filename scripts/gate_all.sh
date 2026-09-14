@@ -41,6 +41,16 @@ run "fm_eq 结构闸"     python3 scripts/test_fm_eq_wellformed.py
 for g in scripts/gen_tlbuffer_ad_family.py scripts/gen_mbist_pipe_family.py; do
   [ -f "$g" ] && run "生成器幂等 $(basename $g .py | sed 's/^gen_//')" python3 "$g" --check
 done
+# 层次重绑映射表幂等（codex 0159 §F-class）：docs/hier_rebind_map.tsv 是
+# difftest 探针/故障注入 scope/DFT 存储路径重绑的唯一依据。它由 golden 例化图 +
+# 重写件例化图 + docs/hier_rebind_decl.tsv 机械算出 —— 任何一侧动了（多吸收一个
+# 子模块、改一个 generate 标号、改一个实例名），表就该跟着变。没有这道闸，表会在
+# 无人察觉的情况下变成过期的路径，而过期的探针路径不会报错，只会**静默探到空**。
+# 代价：约 90 秒（要扫 1.8 GB golden + 全部重写件）。
+# 先跑负测（秒级，不扫 golden），再跑真闸（约 60 秒）—— 顺序照 package 闸的先例。
+run "层次重绑闸负测"     python3 scripts/test_hier_map_gate.py
+run "层次重绑表幂等"     python3 scripts/hier_map.py --check
+
 rm -f /tmp/gate_$$.out
 [ $rc -eq 0 ] && echo "=== 全部机器闸 PASS ===" || echo "=== 有闸未过，见上 ==="
 exit $rc

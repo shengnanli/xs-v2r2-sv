@@ -1,0 +1,53 @@
+# hier_unreachable.tsv —— 在 golden XSTop 例化闭包里、在「重写件优先」的 XSTop
+# 闭包里**一个实例都没有**的模块（scripts/hier_map.py 生成；禁止手改）。
+# kind: SIGNED_OFF_TARGET = 它本身就是一个重写签核目标（重写了，却没人例化）
+#       GOLDEN_ONLY       = 只是 golden 的子模块，被重写父模块吸收掉
+# cause: ABSORBED_DIRECT  = 它的 golden 父模块在 impl 侧还在，是那个父模块吸收了它
+#        ABSORBED_COLLATERAL = 它的 golden 父模块自己先没了，它是被连带带走的
+# module	kind	cause	golden_parents	golden_sites	impl_owner	impl_file
+AddModule	GOLDEN_ONLY	ABSORBED_COLLATERAL	AluDataModule	1	-	$(GOLDEN_RTL)/AddModule.sv
+AluDataModule	GOLDEN_ONLY	ABSORBED_DIRECT	Alu	1	Alu	$(GOLDEN_RTL)/AluDataModule.sv
+AluResSel	GOLDEN_ONLY	ABSORBED_COLLATERAL	AluDataModule	1	-	$(GOLDEN_RTL)/AluResSel.sv
+ConditionalZeroModule	GOLDEN_ONLY	ABSORBED_COLLATERAL	AluDataModule	1	-	$(GOLDEN_RTL)/ConditionalZeroModule.sv
+DataModule_BackendPC_16entry	SIGNED_OFF_TARGET	ABSORBED_DIRECT	SyncDataModuleTemplate_BackendPC_64entry	4	SyncDataModuleTemplate_BackendPC_64entry	rtl/common/DataModule_BackendPC_16entry.sv
+DataModule_FtqPC_16entry	SIGNED_OFF_TARGET	ABSORBED_COLLATERAL	SyncDataModuleTemplate_FtqPC_64entry	4	-	rtl/common/DataModule_FtqPC_16entry.sv
+DataModule__16entry	SIGNED_OFF_TARGET	ABSORBED_DIRECT	SyncDataModuleTemplate__64entry	4	SyncDataModuleTemplate__64entry	rtl/common/DataModule__16entry.sv
+DataModule__16entry_12	SIGNED_OFF_TARGET	ABSORBED_DIRECT	SyncDataModuleTemplate__64entry_3	4	SyncDataModuleTemplate__64entry_3	rtl/common/DataModule__16entry_12.sv
+DataModule__16entry_16	SIGNED_OFF_TARGET	ABSORBED_DIRECT	SyncDataModuleTemplate__64entry_4	4	SyncDataModuleTemplate__64entry_4	rtl/common/DataModule__16entry_16.sv
+DataModule__16entry_4	SIGNED_OFF_TARGET	ABSORBED_DIRECT	SyncDataModuleTemplate__64entry_1	4	SyncDataModuleTemplate__64entry_1	rtl/common/DataModule__16entry_4.sv
+DataModule__16entry_8	SIGNED_OFF_TARGET	ABSORBED_DIRECT	SyncDataModuleTemplate__64entry_2	4	SyncDataModuleTemplate__64entry_2	rtl/common/DataModule__16entry_8.sv
+DataModule__64entry	SIGNED_OFF_TARGET	ABSORBED_DIRECT	SyncDataModuleTemplate__1024entry	16	SyncDataModuleTemplate__1024entry	rtl/common/DataModule__64entry.sv
+DataModule__64entry_16	SIGNED_OFF_TARGET	ABSORBED_DIRECT	SyncDataModuleTemplate__1024entry_1	16	SyncDataModuleTemplate__1024entry_1	rtl/common/DataModule__64entry_16.sv
+EnqEntry_18	GOLDEN_ONLY	ABSORBED_DIRECT	EntriesVfdivVidiv	2	EntriesVfdivVidiv	$(GOLDEN_RTL)/EnqEntry_18.sv
+EnqPolicy_18	GOLDEN_ONLY	ABSORBED_DIRECT	EntriesVfdivVidiv	2	EntriesVfdivVidiv	$(GOLDEN_RTL)/EnqPolicy_18.sv
+IndexableCAMTemplate	SIGNED_OFF_TARGET	ABSORBED_DIRECT	WrBypass	1	WrBypass	rtl/common/IndexableCAMTemplate.sv
+IndexableCAMTemplate_32	SIGNED_OFF_TARGET	ABSORBED_DIRECT	WrBypass_32	1	WrBypass_32	rtl/common/IndexableCAMTemplate_32.sv
+IndexableCAMTemplate_33	SIGNED_OFF_TARGET	ABSORBED_DIRECT	WrBypass_33	1	WrBypass_33	rtl/common/IndexableCAMTemplate_33.sv
+IndexableCAMTemplate_41	SIGNED_OFF_TARGET	ABSORBED_DIRECT	WrBypass_41	1	WrBypass_41	rtl/common/IndexableCAMTemplate_41.sv
+IndexableCAMTemplate_43	SIGNED_OFF_TARGET	ABSORBED_DIRECT	WrBypass_43	1	WrBypass_43	rtl/common/IndexableCAMTemplate_43.sv
+LeftShiftModule	GOLDEN_ONLY	ABSORBED_COLLATERAL	AluDataModule	1	-	$(GOLDEN_RTL)/LeftShiftModule.sv
+LeftShiftWordModule	GOLDEN_ONLY	ABSORBED_COLLATERAL	AluDataModule	1	-	$(GOLDEN_RTL)/LeftShiftWordModule.sv
+LevelGateway	SIGNED_OFF_TARGET	ABSORBED_DIRECT	TLPLIC	65	TLPLIC	rtl/uncore/LevelGateway.sv
+MbistPipeIttage	SIGNED_OFF_TARGET	ABSORBED_DIRECT	ITTageTable	1	ITTageTable	rtl/dft/MbistPipeIttage.sv
+MbistPipeIttage_1	SIGNED_OFF_TARGET	ABSORBED_DIRECT	ITTageTable_1	1	ITTageTable_1	rtl/dft/MbistPipeIttage_1.sv
+MbistPipeIttage_2	SIGNED_OFF_TARGET	ABSORBED_DIRECT	ITTageTable_2	1	ITTageTable_2	rtl/dft/MbistPipeIttage_2.sv
+MbistPipeIttage_3	SIGNED_OFF_TARGET	ABSORBED_DIRECT	ITTageTable_3	1	ITTageTable_3	rtl/dft/MbistPipeIttage_3.sv
+MbistPipeIttage_4	SIGNED_OFF_TARGET	ABSORBED_DIRECT	ITTageTable_4	1	ITTageTable_4	rtl/dft/MbistPipeIttage_4.sv
+MiscResultSelect	GOLDEN_ONLY	ABSORBED_COLLATERAL	AluDataModule	1	-	$(GOLDEN_RTL)/MiscResultSelect.sv
+OthersEntry_164	GOLDEN_ONLY	ABSORBED_DIRECT	EntriesVfdivVidiv	2	EntriesVfdivVidiv	$(GOLDEN_RTL)/OthersEntry_164.sv
+OthersEntry_166	GOLDEN_ONLY	ABSORBED_DIRECT	EntriesVfdivVidiv	6	EntriesVfdivVidiv	$(GOLDEN_RTL)/OthersEntry_166.sv
+PLICFanIn	SIGNED_OFF_TARGET	ABSORBED_DIRECT	TLPLIC	2	TLPLIC	rtl/uncore/PLICFanIn.sv
+Queue1_RegMapperInput	GOLDEN_ONLY	ABSORBED_DIRECT	TLPLIC	1	TLPLIC	$(GOLDEN_RTL)/Queue1_RegMapperInput.sv
+Queue1_RegMapperInput_5	SIGNED_OFF_TARGET	ABSORBED_DIRECT	ICacheCtrlUnit	1	ICacheCtrlUnit	rtl/frontend/Queue1_RegMapperInput_5.sv
+Queue40_L2TlbMQBundle	GOLDEN_ONLY	ABSORBED_DIRECT	L2TlbMissQueue	1	L2TlbMissQueue	$(GOLDEN_RTL)/Queue40_L2TlbMQBundle.sv
+RightShiftModule	GOLDEN_ONLY	ABSORBED_COLLATERAL	AluDataModule	1	-	$(GOLDEN_RTL)/RightShiftModule.sv
+RightShiftWordModule	GOLDEN_ONLY	ABSORBED_COLLATERAL	AluDataModule	1	-	$(GOLDEN_RTL)/RightShiftWordModule.sv
+ShiftResultSelect	GOLDEN_ONLY	ABSORBED_COLLATERAL	AluDataModule	1	-	$(GOLDEN_RTL)/ShiftResultSelect.sv
+SyncDataModuleTemplate_FtqPC_64entry	SIGNED_OFF_TARGET	ABSORBED_DIRECT	FtqPcMemWrapper	1	FtqPcMemWrapper	rtl/common/SyncDataModuleTemplate_FtqPC_64entry.sv
+WordResultSelect	GOLDEN_ONLY	ABSORBED_COLLATERAL	AluDataModule	1	-	$(GOLDEN_RTL)/WordResultSelect.sv
+data_mem_0_4x2	GOLDEN_ONLY	ABSORBED_DIRECT	WrBypass_41,WrBypass_43	2	WrBypass_41,WrBypass_43	$(GOLDEN_RTL)/data_mem_0_4x2.sv
+data_mem_0_8x3	GOLDEN_ONLY	ABSORBED_DIRECT	WrBypass	1	WrBypass	$(GOLDEN_RTL)/data_mem_0_8x3.sv
+data_mem_16x12	GOLDEN_ONLY	ABSORBED_DIRECT	WrBypass_33	1	WrBypass_33	$(GOLDEN_RTL)/data_mem_16x12.sv
+data_mem_8x4	GOLDEN_ONLY	ABSORBED_DIRECT	WrBypass_32	1	WrBypass_32	$(GOLDEN_RTL)/data_mem_8x4.sv
+indexedLSNumOfUopTable	GOLDEN_ONLY	ABSORBED_DIRECT	UopInfoGen	1	UopInfoGen	$(GOLDEN_RTL)/indexedLSNumOfUopTable.sv
+strdiedLSNumOfUopTable	GOLDEN_ONLY	ABSORBED_DIRECT	UopInfoGen	1	UopInfoGen	$(GOLDEN_RTL)/strdiedLSNumOfUopTable.sv

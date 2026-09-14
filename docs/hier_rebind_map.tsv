@@ -1,0 +1,656 @@
+# hier_rebind_map.tsv —— golden 实例路径 → 重写实例路径（scripts/hier_map.py 生成；禁止手改）
+# 每行 = golden 侧一个例化槽位。路径都相对 owner（= golden 同名的重写模块），
+# 消费方用法：把 `<...>/<owner 实例>/<golden_path>` 换成 `<...>/<owner 实例>/<impl_path>`。
+# class: SAME_PATH 同层同名 / DEEPER 同名但更深 / GEN_SITE generate 化 /
+#        GEN_SITE_UNINDEXED generate 化但下标对应关系未确立（须人工核对）/
+#        ONE_SITE 改名但唯一对应 / INSTANCE 声明的实例对应 /
+#        INLINE 内联成信号 / INLINE_REG_ARRAY 内联成寄存器阵列 /
+#        INLINE_DESCENDANT 父层次内联后随之消失的后代 / UNRESOLVED 判不准
+# resolve: auto_* = 机器判定；declared = docs/hier_rebind_decl.tsv
+# ★ impl_module 与 golden_child 不同 = 模块类型也换了（路径没变也要注意）★
+# owner	golden_path	golden_child	class	impl_path	impl_module	impl_signals	resolve	evidence
+AXI4Deinterleaver	qs_queue_0	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[0].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_1	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[1].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_10	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[10].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_11	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[11].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_12	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[12].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_13	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[13].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_14	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[14].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_15	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[15].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_16	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[16].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_17	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[17].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_18	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[18].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_19	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[19].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_2	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[2].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_20	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[20].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_21	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[21].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_22	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[22].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_23	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[23].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_24	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[24].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_25	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[25].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_26	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[26].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_27	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[27].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_28	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[28].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_29	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[29].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_3	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[3].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_30	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[30].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_31	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[31].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_32	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[32].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_33	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[33].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_34	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[34].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_35	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[35].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_36	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[36].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_37	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[37].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_38	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[38].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_39	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[39].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_4	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[4].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_40	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[40].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_41	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[41].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_42	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[42].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_43	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[43].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_44	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[44].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_45	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[45].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_46	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[46].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_47	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[47].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_48	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[48].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_49	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[49].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_5	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[5].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_50	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[50].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_51	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[51].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_52	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[52].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_53	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[53].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_54	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[54].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_55	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[55].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_56	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[56].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_57	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[57].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_58	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[58].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_59	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[59].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_6	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[6].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_60	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[60].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_61	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[61].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_62	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[62].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_63	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[63].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_64	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[64].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_65	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[65].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_66	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[66].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_67	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[67].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_68	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[68].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_69	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[69].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_7	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[7].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_70	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[70].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_71	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[71].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_72	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[72].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_73	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[73].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_74	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[74].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_75	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[75].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_76	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[76].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_77	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[77].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_78	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[78].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_79	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[79].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_8	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[8].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_80	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[80].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_81	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[81].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_82	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[82].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_83	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[83].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_84	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[84].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_85	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[85].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_86	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[86].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_87	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[87].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_88	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[88].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_89	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[89].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_9	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[9].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_90	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[90].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_91	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[91].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_92	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[92].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_93	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[93].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_94	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[94].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Deinterleaver	qs_queue_95	Queue2_AXI4BundleR_3	GEN_SITE	u_core.g_qs[95].qs	Queue2_AXI4BundleR_3		auto_gen_site_suffix	
+AXI4Xbar	awIn_0	Queue2_UInt2	DEEPER	u_core.awIn_0	Queue2_UInt2		auto_deeper	
+AXI4Xbar	awIn_1	Queue2_UInt2	DEEPER	u_core.awIn_1	Queue2_UInt2		auto_deeper	
+AXI4Xbar	awOut_0	Queue2_UInt2	DEEPER	u_core.awOut_0	Queue2_UInt2		auto_deeper	
+AXI4Xbar	awOut_1	Queue2_UInt2	DEEPER	u_core.awOut_1	Queue2_UInt2		auto_deeper	
+Alu	aluModule	AluDataModule	INLINE	u_core	-	(整个 xs_Alu_core 组合体)	declared	rtl/backend/Alu.sv 的 xs_Alu_core 无任何子例化：golden Alu/aluModule 及其 11 个叶子全部内联成组合逻辑。
+Alu	aluModule/addModule	AddModule	INLINE_DESCENDANT	u_core	-	(整个 xs_Alu_core 组合体)	auto_inline_parent	父层次已内联，本层随之消失
+Alu	aluModule/aluResSel	AluResSel	INLINE_DESCENDANT	u_core	-	(整个 xs_Alu_core 组合体)	auto_inline_parent	父层次已内联，本层随之消失
+Alu	aluModule/condModule	ConditionalZeroModule	INLINE_DESCENDANT	u_core	-	(整个 xs_Alu_core 组合体)	auto_inline_parent	父层次已内联，本层随之消失
+Alu	aluModule/leftShiftModule	LeftShiftModule	INLINE_DESCENDANT	u_core	-	(整个 xs_Alu_core 组合体)	auto_inline_parent	父层次已内联，本层随之消失
+Alu	aluModule/leftShiftWordModule	LeftShiftWordModule	INLINE_DESCENDANT	u_core	-	(整个 xs_Alu_core 组合体)	auto_inline_parent	父层次已内联，本层随之消失
+Alu	aluModule/miscResSel	MiscResultSelect	INLINE_DESCENDANT	u_core	-	(整个 xs_Alu_core 组合体)	auto_inline_parent	父层次已内联，本层随之消失
+Alu	aluModule/rightShiftModule	RightShiftModule	INLINE_DESCENDANT	u_core	-	(整个 xs_Alu_core 组合体)	auto_inline_parent	父层次已内联，本层随之消失
+Alu	aluModule/rightShiftWordModule	RightShiftWordModule	INLINE_DESCENDANT	u_core	-	(整个 xs_Alu_core 组合体)	auto_inline_parent	父层次已内联，本层随之消失
+Alu	aluModule/shiftResSel	ShiftResultSelect	INLINE_DESCENDANT	u_core	-	(整个 xs_Alu_core 组合体)	auto_inline_parent	父层次已内联，本层随之消失
+Alu	aluModule/subModule	SubModule	INLINE_DESCENDANT	u_core	-	(整个 xs_Alu_core 组合体)	auto_inline_parent	父层次已内联，本层随之消失
+Alu	aluModule/wordResSel	WordResultSelect	INLINE_DESCENDANT	u_core	-	(整个 xs_Alu_core 组合体)	auto_inline_parent	父层次已内联，本层随之消失
+Bku	clmulModule	ClmulModule	DEEPER	u_core.clmulModule	ClmulModule		auto_deeper	
+Bku	countModule	CountModule	DEEPER	u_core.countModule	CountModule		auto_deeper	
+Bku	cryptoModule	CryptoModule	DEEPER	u_core.cryptoModule	CryptoModule		auto_deeper	
+Bku	miscModule	MiscModule	DEEPER	u_core.miscModule	MiscModule		auto_deeper	
+Composer	ftb	FTB	SAME_PATH	ftb	FTB		auto_same	
+Composer	ftb_io_ctrl_delay	DelayN	SAME_PATH	ftb_io_ctrl_delay	DelayN		auto_same	
+Composer	ittage	ITTage	SAME_PATH	ittage	ITTage		auto_same	
+Composer	ras	RAS	SAME_PATH	ras	RAS		auto_same	
+Composer	ras_io_ctrl_delay	DelayN	SAME_PATH	ras_io_ctrl_delay	DelayN		auto_same	
+Composer	tage	Tage_SC	SAME_PATH	tage	Tage_SC		auto_same	
+Composer	tage_io_ctrl_delay	DelayN	SAME_PATH	tage_io_ctrl_delay	DelayN		auto_same	
+Composer	uftb	FauFTB	SAME_PATH	uftb	FauFTB		auto_same	
+Composer	uftb_io_ctrl_delay	DelayN	SAME_PATH	uftb_io_ctrl_delay	DelayN		auto_same	
+DebugModule	debug	TLDebugModule	DEEPER	u_core.debug	TLDebugModule		auto_deeper	
+DebugModule	dtm	DebugTransportModuleJTAG	DEEPER	u_core.dtm	DebugTransportModuleJTAG		auto_deeper	
+DuplicatedTagArray	array_0	TagArray	GEN_SITE	g_tarr[0].array_k	TagArray		auto_gen_site_suffix	
+DuplicatedTagArray	array_1	TagArray	GEN_SITE	g_tarr[1].array_k	TagArray		auto_gen_site_suffix	
+DuplicatedTagArray	array_2	TagArray	GEN_SITE	g_tarr[2].array_k	TagArray		auto_gen_site_suffix	
+DuplicatedTagArray	array_3	TagArray	GEN_SITE	g_tarr[3].array_k	TagArray		auto_gen_site_suffix	
+DuplicatedTagArray	mbistPl	MbistPipeDcacheTag	SAME_PATH	mbistPl	MbistPipeDcacheTag		auto_same	
+EntriesVfdivVidiv	compTransPolicy	EnqPolicy_18	INLINE	u_core	-	simp_sel_v,x_trans_sel,simp_deq_sel_vec,simp_can_trans2comp	declared	rtl/backend/xs_iq_entries_core.sv:792「§6 EnqPolicy —— golden 的 EnqPolicy 模块(SelectOne(\"circ\", …, 2))」整块内联。
+EntriesVfdivVidiv	enqEntries_0	EnqEntry_18	INSTANCE	u_core.g_entry[0].u_e	xs_iq_entry		declared	rtl/backend/xs_iq_entries_core.sv:17-20 条目分段 [0..NUM_ENQ-1]=enq；EntriesVfdivVidiv.sv:679 NUM_ENQ=2/NUM_SIMP=2/NUM_COMP=6。
+EntriesVfdivVidiv	enqEntries_1	EnqEntry_18	INSTANCE	u_core.g_entry[1].u_e	xs_iq_entry		declared	rtl/backend/xs_iq_entries_core.sv:17-20 条目分段 [0..NUM_ENQ-1]=enq；EntriesVfdivVidiv.sv:679 NUM_ENQ=2/NUM_SIMP=2/NUM_COMP=6。
+EntriesVfdivVidiv	othersEntriesComp_0	OthersEntry_166	INSTANCE	u_core.g_entry[4].u_e	xs_iq_entry		declared	同上：comp 段起点 = NUM_ENQ+NUM_SIMP = 4。
+EntriesVfdivVidiv	othersEntriesComp_1	OthersEntry_166	INSTANCE	u_core.g_entry[5].u_e	xs_iq_entry		declared	同上：comp 段起点 = NUM_ENQ+NUM_SIMP = 4。
+EntriesVfdivVidiv	othersEntriesComp_2	OthersEntry_166	INSTANCE	u_core.g_entry[6].u_e	xs_iq_entry		declared	同上：comp 段起点 = NUM_ENQ+NUM_SIMP = 4。
+EntriesVfdivVidiv	othersEntriesComp_3	OthersEntry_166	INSTANCE	u_core.g_entry[7].u_e	xs_iq_entry		declared	同上：comp 段起点 = NUM_ENQ+NUM_SIMP = 4。
+EntriesVfdivVidiv	othersEntriesComp_4	OthersEntry_166	INSTANCE	u_core.g_entry[8].u_e	xs_iq_entry		declared	同上：comp 段起点 = NUM_ENQ+NUM_SIMP = 4。
+EntriesVfdivVidiv	othersEntriesComp_5	OthersEntry_166	INSTANCE	u_core.g_entry[9].u_e	xs_iq_entry		declared	同上：comp 段起点 = NUM_ENQ+NUM_SIMP = 4。
+EntriesVfdivVidiv	othersEntriesSimp_0	OthersEntry_164	INSTANCE	u_core.g_entry[2].u_e	xs_iq_entry		declared	同上：simp 段起点 = NUM_ENQ = 2。
+EntriesVfdivVidiv	othersEntriesSimp_1	OthersEntry_164	INSTANCE	u_core.g_entry[3].u_e	xs_iq_entry		declared	同上：simp 段起点 = NUM_ENQ = 2。
+EntriesVfdivVidiv	simpTransPolicy	EnqPolicy_18	INLINE	u_core	-	simp_sel_v,x_trans_sel,simp_deq_sel_vec,simp_can_trans2comp	declared	rtl/backend/xs_iq_entries_core.sv:792「§6 EnqPolicy —— golden 的 EnqPolicy 模块(SelectOne(\"circ\", …, 2))」整块内联。
+FAlu	falu	FloatAdder	DEEPER	u_core.falu	FloatAdder		auto_deeper	
+FCVT	fcvt	FPCVT	DEEPER	u_core.fcvt	FPCVT		auto_deeper	
+FMA	fma	FloatFMA	DEEPER	u_core.fma	FloatFMA		auto_deeper	
+FTBBank	ftb	SplittedSRAMTemplate_2	SAME_PATH	ftb	SplittedSRAMTemplate_2		auto_same	
+FTBBank	mbistPl	MbistPipeFtb	SAME_PATH	mbistPl	MbistPipeFtb		auto_same	
+FoldedSRAMTemplate	array	SplittedSRAMTemplate_3	SAME_PATH	array	SplittedSRAMTemplate_3		auto_same	
+FoldedSRAMTemplate_1	array	SplittedSRAMTemplate_4	SAME_PATH	array	SplittedSRAMTemplate_4		auto_same	
+FoldedSRAMTemplate_20	array	SplittedSRAMTemplate_23	SAME_PATH	array	SplittedSRAMTemplate_23		auto_same	
+FoldedSRAMTemplate_22	array	SplittedSRAMTemplate_25	SAME_PATH	array	SplittedSRAMTemplate_25		auto_same	
+FoldedSRAMTemplate_24	array	SplittedSRAMTemplate_27	SAME_PATH	array	SplittedSRAMTemplate_27		auto_same	
+Ftq	FTBEntryGen	FTBEntryGen	DEEPER	u_core.FTBEntryGen	FTBEntryGen		auto_deeper	
+Ftq	ftb_entry_mem	SyncDataModuleTemplate__64entry_2	DEEPER	u_core.ftb_entry_mem	SyncDataModuleTemplate__64entry_2		auto_deeper	
+Ftq	ftq_meta_mem	SyncDataModuleTemplate__64entry_1	DEEPER	u_core.ftq_meta_mem	SyncDataModuleTemplate__64entry_1		auto_deeper	
+Ftq	ftq_pc_mem	FtqPcMemWrapper	DEEPER	u_core.ftq_pc_mem	FtqPcMemWrapper		auto_deeper	
+Ftq	ftq_pd_mem	SyncDataModuleTemplate__64entry_3	DEEPER	u_core.ftq_pd_mem	SyncDataModuleTemplate__64entry_3		auto_deeper	
+Ftq	ftq_redirect_mem	SyncDataModuleTemplate__64entry	DEEPER	u_core.ftq_redirect_mem	SyncDataModuleTemplate__64entry		auto_deeper	
+FtqPcMemWrapper	mem	SyncDataModuleTemplate_FtqPC_64entry	INSTANCE	u_core.u_mem	xs_SyncDataModule		declared	impl rtl/frontend/FtqPcMemWrapper.sv 的 xs_FtqPcMemWrapper 里 u_mem 即 golden 的 mem。
+FtqPcMemWrapper	mem/dataBanks_0	DataModule_FtqPC_16entry	INSTANCE	u_core.u_mem.g_bank[0].dataBank	xs_DataModule		declared	本行的 owner 自己也被吸收了（FtqPcMemWrapper/mem -> u_core.u_mem），故路径相对顶上它的 xs_SyncDataModule 写；bank 序与其余 SyncDataModuleTemplate 家族同。
+FtqPcMemWrapper	mem/dataBanks_1	DataModule_FtqPC_16entry	INSTANCE	u_core.u_mem.g_bank[1].dataBank	xs_DataModule		declared	本行的 owner 自己也被吸收了（FtqPcMemWrapper/mem -> u_core.u_mem），故路径相对顶上它的 xs_SyncDataModule 写；bank 序与其余 SyncDataModuleTemplate 家族同。
+FtqPcMemWrapper	mem/dataBanks_2	DataModule_FtqPC_16entry	INSTANCE	u_core.u_mem.g_bank[2].dataBank	xs_DataModule		declared	本行的 owner 自己也被吸收了（FtqPcMemWrapper/mem -> u_core.u_mem），故路径相对顶上它的 xs_SyncDataModule 写；bank 序与其余 SyncDataModuleTemplate 家族同。
+FtqPcMemWrapper	mem/dataBanks_3	DataModule_FtqPC_16entry	INSTANCE	u_core.u_mem.g_bank[3].dataBank	xs_DataModule		declared	本行的 owner 自己也被吸收了（FtqPcMemWrapper/mem -> u_core.u_mem），故路径相对顶上它的 xs_SyncDataModule 写；bank 序与其余 SyncDataModuleTemplate 家族同。
+ICache	ctrlUnitOpt	ICacheCtrlUnit	DEEPER	u_core.ctrlUnitOpt	ICacheCtrlUnit		auto_deeper	
+ICache	dataArray	ICacheDataArray	DEEPER	u_core.dataArray	ICacheDataArray		auto_deeper	
+ICache	mainPipe	ICacheMainPipe	DEEPER	u_core.mainPipe	ICacheMainPipe		auto_deeper	
+ICache	metaArray	ICacheMetaArray	DEEPER	u_core.metaArray	ICacheMetaArray		auto_deeper	
+ICache	missUnit	ICacheMissUnit	DEEPER	u_core.missUnit	ICacheMissUnit		auto_deeper	
+ICache	prefetcher	IPrefetchPipe	DEEPER	u_core.prefetcher	IPrefetchPipe		auto_deeper	
+ICache	replacer	ICacheReplacer	DEEPER	u_core.replacer	ICacheReplacer		auto_deeper	
+ICache	wayLookup	WayLookup	DEEPER	u_core.wayLookup	WayLookup		auto_deeper	
+ICacheCtrlUnit	out_back_q	Queue1_RegMapperInput_5	SAME_PATH	out_back_q	xs_Queue1_RegMapperInput		auto_same	
+ICacheDataArray	dataArrays_0_0	SRAMTemplateWithFixedWidth	SAME_PATH	dataArrays_0_0	SRAMTemplateWithFixedWidth		auto_same	
+ICacheDataArray	dataArrays_0_1	SRAMTemplateWithFixedWidth	SAME_PATH	dataArrays_0_1	SRAMTemplateWithFixedWidth		auto_same	
+ICacheDataArray	dataArrays_0_2	SRAMTemplateWithFixedWidth	SAME_PATH	dataArrays_0_2	SRAMTemplateWithFixedWidth		auto_same	
+ICacheDataArray	dataArrays_0_3	SRAMTemplateWithFixedWidth	SAME_PATH	dataArrays_0_3	SRAMTemplateWithFixedWidth		auto_same	
+ICacheDataArray	dataArrays_0_4	SRAMTemplateWithFixedWidth_4	SAME_PATH	dataArrays_0_4	SRAMTemplateWithFixedWidth_4		auto_same	
+ICacheDataArray	dataArrays_0_5	SRAMTemplateWithFixedWidth_4	SAME_PATH	dataArrays_0_5	SRAMTemplateWithFixedWidth_4		auto_same	
+ICacheDataArray	dataArrays_0_6	SRAMTemplateWithFixedWidth_4	SAME_PATH	dataArrays_0_6	SRAMTemplateWithFixedWidth_4		auto_same	
+ICacheDataArray	dataArrays_0_7	SRAMTemplateWithFixedWidth_4	SAME_PATH	dataArrays_0_7	SRAMTemplateWithFixedWidth_4		auto_same	
+ICacheDataArray	dataArrays_1_0	SRAMTemplateWithFixedWidth_4	SAME_PATH	dataArrays_1_0	SRAMTemplateWithFixedWidth_4		auto_same	
+ICacheDataArray	dataArrays_1_1	SRAMTemplateWithFixedWidth_4	SAME_PATH	dataArrays_1_1	SRAMTemplateWithFixedWidth_4		auto_same	
+ICacheDataArray	dataArrays_1_2	SRAMTemplateWithFixedWidth_4	SAME_PATH	dataArrays_1_2	SRAMTemplateWithFixedWidth_4		auto_same	
+ICacheDataArray	dataArrays_1_3	SRAMTemplateWithFixedWidth_4	SAME_PATH	dataArrays_1_3	SRAMTemplateWithFixedWidth_4		auto_same	
+ICacheDataArray	dataArrays_1_4	SRAMTemplateWithFixedWidth_12	SAME_PATH	dataArrays_1_4	SRAMTemplateWithFixedWidth_12		auto_same	
+ICacheDataArray	dataArrays_1_5	SRAMTemplateWithFixedWidth_12	SAME_PATH	dataArrays_1_5	SRAMTemplateWithFixedWidth_12		auto_same	
+ICacheDataArray	dataArrays_1_6	SRAMTemplateWithFixedWidth_12	SAME_PATH	dataArrays_1_6	SRAMTemplateWithFixedWidth_12		auto_same	
+ICacheDataArray	dataArrays_1_7	SRAMTemplateWithFixedWidth_12	SAME_PATH	dataArrays_1_7	SRAMTemplateWithFixedWidth_12		auto_same	
+ICacheDataArray	dataArrays_2_0	SRAMTemplateWithFixedWidth_12	SAME_PATH	dataArrays_2_0	SRAMTemplateWithFixedWidth_12		auto_same	
+ICacheDataArray	dataArrays_2_1	SRAMTemplateWithFixedWidth_12	SAME_PATH	dataArrays_2_1	SRAMTemplateWithFixedWidth_12		auto_same	
+ICacheDataArray	dataArrays_2_2	SRAMTemplateWithFixedWidth_12	SAME_PATH	dataArrays_2_2	SRAMTemplateWithFixedWidth_12		auto_same	
+ICacheDataArray	dataArrays_2_3	SRAMTemplateWithFixedWidth_12	SAME_PATH	dataArrays_2_3	SRAMTemplateWithFixedWidth_12		auto_same	
+ICacheDataArray	dataArrays_2_4	SRAMTemplateWithFixedWidth_12	SAME_PATH	dataArrays_2_4	SRAMTemplateWithFixedWidth_12		auto_same	
+ICacheDataArray	dataArrays_2_5	SRAMTemplateWithFixedWidth_12	SAME_PATH	dataArrays_2_5	SRAMTemplateWithFixedWidth_12		auto_same	
+ICacheDataArray	dataArrays_2_6	SRAMTemplateWithFixedWidth_12	SAME_PATH	dataArrays_2_6	SRAMTemplateWithFixedWidth_12		auto_same	
+ICacheDataArray	dataArrays_2_7	SRAMTemplateWithFixedWidth_12	SAME_PATH	dataArrays_2_7	SRAMTemplateWithFixedWidth_12		auto_same	
+ICacheDataArray	dataArrays_3_0	SRAMTemplateWithFixedWidth_12	SAME_PATH	dataArrays_3_0	SRAMTemplateWithFixedWidth_12		auto_same	
+ICacheDataArray	dataArrays_3_1	SRAMTemplateWithFixedWidth_12	SAME_PATH	dataArrays_3_1	SRAMTemplateWithFixedWidth_12		auto_same	
+ICacheDataArray	dataArrays_3_2	SRAMTemplateWithFixedWidth_12	SAME_PATH	dataArrays_3_2	SRAMTemplateWithFixedWidth_12		auto_same	
+ICacheDataArray	dataArrays_3_3	SRAMTemplateWithFixedWidth_12	SAME_PATH	dataArrays_3_3	SRAMTemplateWithFixedWidth_12		auto_same	
+ICacheDataArray	dataArrays_3_4	SRAMTemplateWithFixedWidth_28	SAME_PATH	dataArrays_3_4	SRAMTemplateWithFixedWidth_28		auto_same	
+ICacheDataArray	dataArrays_3_5	SRAMTemplateWithFixedWidth_28	SAME_PATH	dataArrays_3_5	SRAMTemplateWithFixedWidth_28		auto_same	
+ICacheDataArray	dataArrays_3_6	SRAMTemplateWithFixedWidth_28	SAME_PATH	dataArrays_3_6	SRAMTemplateWithFixedWidth_28		auto_same	
+ICacheDataArray	dataArrays_3_7	SRAMTemplateWithFixedWidth_28	SAME_PATH	dataArrays_3_7	SRAMTemplateWithFixedWidth_28		auto_same	
+ICacheDataArray	res	MbistPipeIcacheDataWay0	SAME_PATH	res	MbistPipeIcacheDataWay0		auto_same	
+ICacheDataArray	res_1	MbistPipeIcacheDataWay1	SAME_PATH	res_1	MbistPipeIcacheDataWay1		auto_same	
+ICacheDataArray	res_2	MbistPipeIcacheDataWay2	SAME_PATH	res_2	MbistPipeIcacheDataWay2		auto_same	
+ICacheDataArray	res_3	MbistPipeIcacheDataWay3	SAME_PATH	res_3	MbistPipeIcacheDataWay3		auto_same	
+ICacheMetaArray	mbistPl	MbistPipeIcacheTag	SAME_PATH	mbistPl	MbistPipeIcacheTag		auto_same	
+ICacheMetaArray	tagArrays_0	SplittedSRAMTemplate	SAME_PATH	tagArrays_0	SplittedSRAMTemplate		auto_same	
+ICacheMetaArray	tagArrays_1	SplittedSRAMTemplate_1	SAME_PATH	tagArrays_1	SplittedSRAMTemplate_1		auto_same	
+ICacheMissUnit	acquireArb	Arbiter5_MSHRAcquire	DEEPER	u_core.acquireArb	Arbiter5_MSHRAcquire		auto_deeper	
+ICacheMissUnit	fetchDemux	DeMultiplexer	DEEPER	u_core.fetchDemux	DeMultiplexer		auto_deeper	
+ICacheMissUnit	fetchMSHRs_0	ICacheMSHR	DEEPER	u_core.fetchMSHRs_0	ICacheMSHR		auto_deeper	
+ICacheMissUnit	fetchMSHRs_1	ICacheMSHR_1	DEEPER	u_core.fetchMSHRs_1	ICacheMSHR_1		auto_deeper	
+ICacheMissUnit	fetchMSHRs_2	ICacheMSHR_2	DEEPER	u_core.fetchMSHRs_2	ICacheMSHR_2		auto_deeper	
+ICacheMissUnit	fetchMSHRs_3	ICacheMSHR_3	DEEPER	u_core.fetchMSHRs_3	ICacheMSHR_3		auto_deeper	
+ICacheMissUnit	prefetchArb	MuxBundle	DEEPER	u_core.prefetchArb	MuxBundle		auto_deeper	
+ICacheMissUnit	prefetchDemux	DeMultiplexer_1	DEEPER	u_core.prefetchDemux	DeMultiplexer_1		auto_deeper	
+ICacheMissUnit	prefetchMSHRs_0	ICacheMSHR_4	DEEPER	u_core.prefetchMSHRs_0	ICacheMSHR_4		auto_deeper	
+ICacheMissUnit	prefetchMSHRs_1	ICacheMSHR_5	DEEPER	u_core.prefetchMSHRs_1	ICacheMSHR_5		auto_deeper	
+ICacheMissUnit	prefetchMSHRs_2	ICacheMSHR_6	DEEPER	u_core.prefetchMSHRs_2	ICacheMSHR_6		auto_deeper	
+ICacheMissUnit	prefetchMSHRs_3	ICacheMSHR_7	DEEPER	u_core.prefetchMSHRs_3	ICacheMSHR_7		auto_deeper	
+ICacheMissUnit	prefetchMSHRs_4	ICacheMSHR_8	DEEPER	u_core.prefetchMSHRs_4	ICacheMSHR_8		auto_deeper	
+ICacheMissUnit	prefetchMSHRs_5	ICacheMSHR_9	DEEPER	u_core.prefetchMSHRs_5	ICacheMSHR_9		auto_deeper	
+ICacheMissUnit	prefetchMSHRs_6	ICacheMSHR_10	DEEPER	u_core.prefetchMSHRs_6	ICacheMSHR_10		auto_deeper	
+ICacheMissUnit	prefetchMSHRs_7	ICacheMSHR_11	DEEPER	u_core.prefetchMSHRs_7	ICacheMSHR_11		auto_deeper	
+ICacheMissUnit	prefetchMSHRs_8	ICacheMSHR_12	DEEPER	u_core.prefetchMSHRs_8	ICacheMSHR_12		auto_deeper	
+ICacheMissUnit	prefetchMSHRs_9	ICacheMSHR_13	DEEPER	u_core.prefetchMSHRs_9	ICacheMSHR_13		auto_deeper	
+ICacheMissUnit	priorityFIFO	FIFOReg	DEEPER	u_core.priorityFIFO	FIFOReg		auto_deeper	
+IMSICGateWay	msi_vld_req_cpu_chain	AsyncResetSynchronizerShiftReg_w1_d3_i0	DEEPER	u_core.msi_vld_req_cpu_chain	AsyncResetSynchronizerShiftReg_w1_d3_i0		auto_deeper	
+ITTageTable	mbistPl	MbistPipeIttage	SAME_PATH	mbistPl	xs_MbistPipeIttage_core		auto_same	
+ITTageTable	table_0	FoldedSRAMTemplate_22	SAME_PATH	table_0	FoldedSRAMTemplate_22		auto_same	
+ITTageTable	wrbypass	WrBypass_41	SAME_PATH	wrbypass	WrBypass_41		auto_same	
+ITTageTable_1	mbistPl	MbistPipeIttage_1	SAME_PATH	mbistPl	xs_MbistPipeIttage_core		auto_same	
+ITTageTable_1	table_0	FoldedSRAMTemplate_22	SAME_PATH	table_0	FoldedSRAMTemplate_22		auto_same	
+ITTageTable_1	wrbypass	WrBypass_41	SAME_PATH	wrbypass	WrBypass_41		auto_same	
+ITTageTable_2	mbistPl	MbistPipeIttage_2	SAME_PATH	mbistPl	xs_MbistPipeIttage_core		auto_same	
+ITTageTable_2	table_0	FoldedSRAMTemplate_24	SAME_PATH	table_0	FoldedSRAMTemplate_24		auto_same	
+ITTageTable_2	wrbypass	WrBypass_43	SAME_PATH	wrbypass	WrBypass_43		auto_same	
+ITTageTable_3	mbistPl	MbistPipeIttage_3	SAME_PATH	mbistPl	xs_MbistPipeIttage_core		auto_same	
+ITTageTable_3	table_0	FoldedSRAMTemplate_24	SAME_PATH	table_0	FoldedSRAMTemplate_24		auto_same	
+ITTageTable_3	wrbypass	WrBypass_43	SAME_PATH	wrbypass	WrBypass_43		auto_same	
+ITTageTable_4	mbistPl	MbistPipeIttage_4	SAME_PATH	mbistPl	xs_MbistPipeIttage_core		auto_same	
+ITTageTable_4	table_0	FoldedSRAMTemplate_24	SAME_PATH	table_0	FoldedSRAMTemplate_24		auto_same	
+ITTageTable_4	wrbypass	WrBypass_43	SAME_PATH	wrbypass	WrBypass_43		auto_same	
+InstrUncache	entries_0	InstrMMIOEntry	SAME_PATH	entries_0	InstrMMIOEntry		auto_same	
+InstrUncache	resp_arb	Arbiter1_InsUncacheResp	SAME_PATH	resp_arb	Arbiter1_InsUncacheResp		auto_same	
+L2TlbMissQueue	io_out_q	Queue40_L2TlbMQBundle	INLINE	u_core	-	enq_ptr,deq_ptr,maybe_full	declared	rtl/memblock/L2TlbMissQueue.sv:48,69-114「实例化与 golden 完全相同的 ram_40x47」——队列控制内联，存储叶子仍是 ram_40x47（见 collateral 行）。
+L2TlbMissQueue	io_out_q/ram_ext	ram_40x47	ONE_SITE	u_core.mem_ext	ram_40x47		auto_one_site	父层次已内联，但本层在宿主核里仍是独立实例
+LCredit2Decoupled	queue	Queue4_CHISNP	DEEPER	u_core.queue	Queue4_CHISNP		auto_deeper	
+LCredit2Decoupled_10	queue	Queue4_CHIDAT	DEEPER	u_core.queue	Queue4_CHIDAT		auto_deeper	
+LCredit2Decoupled_8	queue	Queue4_CHIREQ	DEEPER	u_core.queue	Queue4_CHIREQ		auto_deeper	
+LinkMonitor	Decoupled2LCredit_txdatLink	Decoupled2LCredit_2	ONE_SITE	u_core.Decoupled2LCredit_txdat	Decoupled2LCredit_2		auto_one_site	
+LinkMonitor	Decoupled2LCredit_txreqLink	Decoupled2LCredit	ONE_SITE	u_core.Decoupled2LCredit_txreq	Decoupled2LCredit		auto_one_site	
+LinkMonitor	Decoupled2LCredit_txrspLink	Decoupled2LCredit_1	ONE_SITE	u_core.Decoupled2LCredit_txrsp	Decoupled2LCredit_1		auto_one_site	
+LinkMonitor	LCredit2Decoupled_rxdat	LCredit2Decoupled_2	DEEPER	u_core.LCredit2Decoupled_rxdat	LCredit2Decoupled_2		auto_deeper	
+LinkMonitor	LCredit2Decoupled_rxrsp	LCredit2Decoupled_1	DEEPER	u_core.LCredit2Decoupled_rxrsp	LCredit2Decoupled_1		auto_deeper	
+LinkMonitor	LCredit2Decoupled_rxsnp	LCredit2Decoupled	DEEPER	u_core.LCredit2Decoupled_rxsnp	LCredit2Decoupled		auto_deeper	
+MulUnit	mulDataModule	ArrayMulDataModule	DEEPER	u_core.mulDataModule	ArrayMulDataModule		auto_deeper	
+OpenLLC	mmioDiverger	MMIODiverger	DEEPER	u_core.mmioDiverger	MMIODiverger		auto_deeper	
+OpenLLC	mmioMerger	MMIOMerger	DEEPER	u_core.mmioMerger	MMIOMerger		auto_deeper	
+OpenLLC	rnLinkMonitor	RNLinkMonitor	DEEPER	u_core.rnLinkMonitor	RNLinkMonitor		auto_deeper	
+OpenLLC	rnXbar	RNXbar	DEEPER	u_core.rnXbar	RNXbar		auto_deeper	
+OpenLLC	slices_0	Slice_4	DEEPER	u_core.slices_0	Slice_4		auto_deeper	
+OpenLLC	slices_1	Slice_4	DEEPER	u_core.slices_1	Slice_4		auto_deeper	
+OpenLLC	slices_2	Slice_4	DEEPER	u_core.slices_2	Slice_4		auto_deeper	
+OpenLLC	slices_3	Slice_4	DEEPER	u_core.slices_3	Slice_4		auto_deeper	
+OpenLLC	snLinkMonitor	SNLinkMonitor	DEEPER	u_core.snLinkMonitor	SNLinkMonitor		auto_deeper	
+OpenLLC	snXbar	SNXbar	DEEPER	u_core.snXbar	SNXbar		auto_deeper	
+OpenLLC	topDown	TopDownMonitor_1	DEEPER	u_core.topDown	TopDownMonitor_1		auto_deeper	
+Pipeline	stages_0	Queue1_L1PrefetchReq	ONE_SITE	u_core.prefetch_stage	Queue1_L1PrefetchReq		auto_one_site	
+ProbeQueue	entries_0	ProbeEntry	GEN_SITE	u_core.g_entry[0].u_entry	ProbeEntry		auto_gen_site_suffix	
+ProbeQueue	entries_1	ProbeEntry	GEN_SITE	u_core.g_entry[1].u_entry	ProbeEntry		auto_gen_site_suffix	
+ProbeQueue	entries_2	ProbeEntry	GEN_SITE	u_core.g_entry[2].u_entry	ProbeEntry		auto_gen_site_suffix	
+ProbeQueue	entries_3	ProbeEntry	GEN_SITE	u_core.g_entry[3].u_entry	ProbeEntry		auto_gen_site_suffix	
+ProbeQueue	entries_4	ProbeEntry	GEN_SITE	u_core.g_entry[4].u_entry	ProbeEntry		auto_gen_site_suffix	
+ProbeQueue	entries_5	ProbeEntry	GEN_SITE	u_core.g_entry[5].u_entry	ProbeEntry		auto_gen_site_suffix	
+ProbeQueue	entries_6	ProbeEntry	GEN_SITE	u_core.g_entry[6].u_entry	ProbeEntry		auto_gen_site_suffix	
+ProbeQueue	entries_7	ProbeEntry	GEN_SITE	u_core.g_entry[7].u_entry	ProbeEntry		auto_gen_site_suffix	
+ProbeQueue	pipe_req_arb	Arbiter8_MainPipeReq	DEEPER	u_core.pipe_req_arb	Arbiter8_MainPipeReq		auto_deeper	
+RNXbar	rxdatArbs_0	FastArbiter_45	DEEPER	u_core.rxdatArbs_0	FastArbiter_45		auto_deeper	
+RNXbar	rxrspArbs_0	FastArbiter_26	DEEPER	u_core.rxrspArbs_0	FastArbiter_26		auto_deeper	
+RNXbar	rxsnpArbs_0	FastArbiter_43	DEEPER	u_core.rxsnpArbs_0	FastArbiter_43		auto_deeper	
+RNXbar	txdatArbs_0	FastArbiter_30	GEN_SITE	u_core.g_txdat[0].txdatArbs	FastArbiter_30		auto_gen_site_suffix	
+RNXbar	txdatArbs_1	FastArbiter_30	GEN_SITE	u_core.g_txdat[1].txdatArbs	FastArbiter_30		auto_gen_site_suffix	
+RNXbar	txdatArbs_2	FastArbiter_30	GEN_SITE	u_core.g_txdat[2].txdatArbs	FastArbiter_30		auto_gen_site_suffix	
+RNXbar	txdatArbs_3	FastArbiter_30	GEN_SITE	u_core.g_txdat[3].txdatArbs	FastArbiter_30		auto_gen_site_suffix	
+RNXbar	txreqArbs_0	FastArbiter_29	GEN_SITE	u_core.g_txreq[0].txreqArbs	FastArbiter_29		auto_gen_site_suffix	
+RNXbar	txreqArbs_1	FastArbiter_29	GEN_SITE	u_core.g_txreq[1].txreqArbs	FastArbiter_29		auto_gen_site_suffix	
+RNXbar	txreqArbs_2	FastArbiter_29	GEN_SITE	u_core.g_txreq[2].txreqArbs	FastArbiter_29		auto_gen_site_suffix	
+RNXbar	txreqArbs_3	FastArbiter_29	GEN_SITE	u_core.g_txreq[3].txreqArbs	FastArbiter_29		auto_gen_site_suffix	
+RNXbar	txrspArbs_0	FastArbiter_35	GEN_SITE	u_core.g_txrsp[0].txrspArbs	FastArbiter_35		auto_gen_site_suffix	
+RNXbar	txrspArbs_1	FastArbiter_35	GEN_SITE	u_core.g_txrsp[1].txrspArbs	FastArbiter_35		auto_gen_site_suffix	
+RNXbar	txrspArbs_2	FastArbiter_35	GEN_SITE	u_core.g_txrsp[2].txrspArbs	FastArbiter_35		auto_gen_site_suffix	
+RNXbar	txrspArbs_3	FastArbiter_35	GEN_SITE	u_core.g_txrsp[3].txrspArbs	FastArbiter_35		auto_gen_site_suffix	
+RegCache	IntRegCache	RegCacheDataModule	DEEPER	u_core.IntRegCache	RegCacheDataModule		auto_deeper	
+RegCache	IntRegCacheAgeTimer	RegCacheAgeTimer	ONE_SITE	u_core.IntRegCache_age_timer	RegCacheAgeTimer		auto_one_site	
+RegCache	IntRegCacheRepRCIdx_age	RegCacheAgeDetector	ONE_SITE	u_core.IntRegCache_rep	RegCacheAgeDetector		auto_one_site	
+RegCache	MemRegCache	RegCacheDataModule_1	DEEPER	u_core.MemRegCache	RegCacheDataModule_1		auto_deeper	
+RegCache	MemRegCacheAgeTimer	RegCacheAgeTimer_1	ONE_SITE	u_core.MemRegCache_age_timer	RegCacheAgeTimer_1		auto_one_site	
+RegCache	MemRegCacheRepRCIdx_age	RegCacheAgeDetector_1	ONE_SITE	u_core.MemRegCache_rep	RegCacheAgeDetector_1		auto_one_site	
+SNXbar	txdatArb	FastArbiter_45	DEEPER	u_core.txdatArb	FastArbiter_45		auto_deeper	
+SNXbar	txreqArb	FastArbiter_46	DEEPER	u_core.txreqArb	FastArbiter_46		auto_deeper	
+SRAMTemplate	array	sram_array_1p128x74m37s1h0l1b_icsh_tag	SAME_PATH	array	sram_array_1p128x74m37s1h0l1b_icsh_tag		auto_same	
+SRAMTemplate	rcg	MbistClockGateCell	DEEPER	u_core.g_extcg.rcg	MbistClockGateCell		auto_deeper	
+SRAMTemplate_100	array	sram_array_1p256x72m72s1h0l1b_dcsh_dat	SAME_PATH	array	sram_array_1p256x72m72s1h0l1b_dcsh_dat		auto_same	
+SRAMTemplate_100	rcg	MbistClockGateCell	DEEPER	u_core.g_extcg.rcg	MbistClockGateCell		auto_deeper	
+SRAMTemplate_116	array	sram_array_1p256x86m43s1h0l1b_dcsh_tag	SAME_PATH	array	sram_array_1p256x86m43s1h0l1b_dcsh_tag		auto_same	
+SRAMTemplate_116	rcg	MbistClockGateCell	DEEPER	u_core.g_extcg.rcg	MbistClockGateCell		auto_deeper	
+SRAMTemplate_124	array	sram_array_1p32x90m45s1h0l1b_bitmap	SAME_PATH	array	sram_array_1p32x90m45s1h0l1b_bitmap		auto_same	
+SRAMTemplate_128	array	sram_array_1p4x786m131s1h0l1b_ptw_l1	SAME_PATH	array	sram_array_1p4x786m131s1h0l1b_ptw_l1		auto_same	
+SRAMTemplate_129	array	sram_array_1p64x114m57s1h0l1b_ptw_l0	SAME_PATH	array	sram_array_1p64x114m57s1h0l1b_ptw_l0		auto_same	
+SRAMTemplate_143	array	sram_array_1p64x114m57s1h0l1b_ptw_l0	SAME_PATH	array	sram_array_1p64x114m57s1h0l1b_ptw_l0		auto_same	
+SRAMTemplate_145	array	sram_array_1p32x148m74s1h0l1b_pftch_pht	SAME_PATH	array	sram_array_1p32x148m74s1h0l1b_pftch_pht		auto_same	
+SRAMTemplate_145	rcg	MbistClockGateCell	DEEPER	u_core.g_extcg.rcg	MbistClockGateCell		auto_deeper	
+SRAMTemplate_146	array	sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt	SAME_PATH	array	sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt		auto_same	
+SRAMTemplate_148	array	sram_array_1p512x76m19s1h0l1b_l2_tag	SAME_PATH	array	sram_array_1p512x76m19s1h0l1b_l2_tag		auto_same	
+SRAMTemplate_150	array	sram_array_1p512x76m19s1h0l1b_l2_tag	SAME_PATH	array	sram_array_1p512x76m19s1h0l1b_l2_tag		auto_same	
+SRAMTemplate_152	array	sram_array_1p512x104m13s1h0l1b_l2_meta	SAME_PATH	array	sram_array_1p512x104m13s1h0l1b_l2_meta		auto_same	
+SRAMTemplate_153	array	sram_array_1p512x16m16s1h0l1b_l2_repl	SAME_PATH	array	sram_array_1p512x16m16s1h0l1b_l2_repl		auto_same	
+SRAMTemplate_154	array	sram_array_1p512x8m1s1h0l1b_l2_orgb	SAME_PATH	array	sram_array_1p512x8m1s1h0l1b_l2_orgb		auto_same	
+SRAMTemplate_155	array	sram_array_1p4096x137m137s1h1l2b_l2_dat	SAME_PATH	array	sram_array_1p4096x137m137s1h1l2b_l2_dat		auto_same	
+SRAMTemplate_159	array	sram_array_1p512x76m19s1h0l1b_l2_tag	SAME_PATH	array	sram_array_1p512x76m19s1h0l1b_l2_tag		auto_same	
+SRAMTemplate_16	array	sram_array_1p256x66m66s1h0l1b_icsh_dat	SAME_PATH	array	sram_array_1p256x66m66s1h0l1b_icsh_dat		auto_same	
+SRAMTemplate_162	array	sram_array_1p512x76m19s1h0l1b_l2_tag	SAME_PATH	array	sram_array_1p512x76m19s1h0l1b_l2_tag		auto_same	
+SRAMTemplate_163	array	sram_array_1p512x104m13s1h0l1b_l2_meta	SAME_PATH	array	sram_array_1p512x104m13s1h0l1b_l2_meta		auto_same	
+SRAMTemplate_164	array	sram_array_1p512x16m16s1h0l1b_l2_repl	SAME_PATH	array	sram_array_1p512x16m16s1h0l1b_l2_repl		auto_same	
+SRAMTemplate_165	array	sram_array_1p512x8m1s1h0l1b_l2_orgb	SAME_PATH	array	sram_array_1p512x8m1s1h0l1b_l2_orgb		auto_same	
+SRAMTemplate_166	array	sram_array_1p4096x137m137s1h1l2b_l2_dat	SAME_PATH	array	sram_array_1p4096x137m137s1h1l2b_l2_dat		auto_same	
+SRAMTemplate_178	array	sram_array_1p4096x137m137s1h1l2b_l2_dat	SAME_PATH	array	sram_array_1p4096x137m137s1h1l2b_l2_dat		auto_same	
+SRAMTemplate_181	array	sram_array_1p512x76m19s1h0l1b_l2_tag	SAME_PATH	array	sram_array_1p512x76m19s1h0l1b_l2_tag		auto_same	
+SRAMTemplate_185	array	sram_array_1p512x104m13s1h0l1b_l2_meta	SAME_PATH	array	sram_array_1p512x104m13s1h0l1b_l2_meta		auto_same	
+SRAMTemplate_186	array	sram_array_1p512x16m16s1h0l1b_l2_repl	SAME_PATH	array	sram_array_1p512x16m16s1h0l1b_l2_repl		auto_same	
+SRAMTemplate_187	array	sram_array_1p512x8m1s1h0l1b_l2_orgb	SAME_PATH	array	sram_array_1p512x8m1s1h0l1b_l2_orgb		auto_same	
+SRAMTemplate_2	array	sram_array_1p128x74m37s1h0l1b_icsh_tag	SAME_PATH	array	sram_array_1p128x74m37s1h0l1b_icsh_tag		auto_same	
+SRAMTemplate_2	rcg	MbistClockGateCell	DEEPER	u_core.g_extcg.rcg	MbistClockGateCell		auto_deeper	
+SRAMTemplate_32	array	sram_array_1p256x66m66s1h0l1b_icsh_dat	SAME_PATH	array	sram_array_1p256x66m66s1h0l1b_icsh_dat		auto_same	
+SRAMTemplate_36	array	sram_array_1p512x40m10s1h0l1b_bp_ftb	SAME_PATH	array	sram_array_1p512x40m10s1h0l1b_bp_ftb		auto_same	
+SRAMTemplate_36	rcg	MbistClockGateCell	DEEPER	u_core.g_extcg.rcg	MbistClockGateCell		auto_deeper	
+SRAMTemplate_4	array	sram_array_1p256x66m66s1h0l1b_icsh_dat	SAME_PATH	array	sram_array_1p256x66m66s1h0l1b_icsh_dat		auto_same	
+SRAMTemplate_44	array	sram_array_1p256x16m1s1h0l1b_bp_tage_us	SAME_PATH	array	sram_array_1p256x16m1s1h0l1b_bp_tage_us		auto_same	
+SRAMTemplate_44	rcg	MbistClockGateCell	DEEPER	u_core.g_extcg.rcg	MbistClockGateCell		auto_deeper	
+SRAMTemplate_45	array	sram_array_1p512x24m12s1h0l1b_bp_tage	SAME_PATH	array	sram_array_1p512x24m12s1h0l1b_bp_tage		auto_same	
+SRAMTemplate_45	rcg	MbistClockGateCell	DEEPER	u_core.g_extcg.rcg	MbistClockGateCell		auto_deeper	
+SRAMTemplate_64	array	sram_array_1p256x8m2s1h0l1b_bp_tage_bt	SAME_PATH	array	sram_array_1p256x8m2s1h0l1b_bp_tage_bt		auto_same	
+SRAMTemplate_64	rcg	MbistClockGateCell	DEEPER	u_core.g_extcg.rcg	MbistClockGateCell		auto_deeper	
+SRAMTemplate_68	array	sram_array_1p128x24m6s1h0l1b_bp_sc	SAME_PATH	array	sram_array_1p128x24m6s1h0l1b_bp_sc		auto_same	
+SRAMTemplate_68	rcg	MbistClockGateCell	DEEPER	u_core.g_extcg.rcg	MbistClockGateCell		auto_deeper	
+SRAMTemplate_76	array	sram_array_1p128x76m1s1h0l1b_bp_ittage	SAME_PATH	array	sram_array_1p128x76m1s1h0l1b_bp_ittage		auto_same	
+SRAMTemplate_76	rcg	MbistClockGateCell	DEEPER	u_core.g_extcg.rcg	MbistClockGateCell		auto_deeper	
+SRAMTemplate_78	array	sram_array_1p128x76m1s1h0l1b_bp_ittage	SAME_PATH	array	sram_array_1p128x76m1s1h0l1b_bp_ittage		auto_same	
+SRAMTemplate_78	rcg	MbistClockGateCell	DEEPER	u_core.g_extcg.rcg	MbistClockGateCell		auto_deeper	
+SRAMTemplate_8	array	sram_array_1p256x66m66s1h0l1b_icsh_dat	SAME_PATH	array	sram_array_1p256x66m66s1h0l1b_icsh_dat		auto_same	
+SRAMTemplate_84	array	sram_array_1p256x72m72s1h0l1b_dcsh_dat	SAME_PATH	array	sram_array_1p256x72m72s1h0l1b_dcsh_dat		auto_same	
+SRAMTemplate_84	rcg	MbistClockGateCell	DEEPER	u_core.g_extcg.rcg	MbistClockGateCell		auto_deeper	
+SRAMTemplate_86	array	sram_array_1p256x72m72s1h0l1b_dcsh_dat	SAME_PATH	array	sram_array_1p256x72m72s1h0l1b_dcsh_dat		auto_same	
+SRAMTemplate_86	rcg	MbistClockGateCell	DEEPER	u_core.g_extcg.rcg	MbistClockGateCell		auto_deeper	
+SRAMTemplate_88	array	sram_array_1p256x72m72s1h0l1b_dcsh_dat	SAME_PATH	array	sram_array_1p256x72m72s1h0l1b_dcsh_dat		auto_same	
+SRAMTemplate_88	rcg	MbistClockGateCell	DEEPER	u_core.g_extcg.rcg	MbistClockGateCell		auto_deeper	
+SRAMTemplate_92	array	sram_array_1p256x72m72s1h0l1b_dcsh_dat	SAME_PATH	array	sram_array_1p256x72m72s1h0l1b_dcsh_dat		auto_same	
+SRAMTemplate_92	rcg	MbistClockGateCell	DEEPER	u_core.g_extcg.rcg	MbistClockGateCell		auto_deeper	
+SourceB	issueArb	FastArbiter_5	SAME_PATH	issueArb	FastArbiter_5		auto_same	
+SplittedSRAMTemplate	array_0_0_0	SRAMTemplate	SAME_PATH	array_0_0_0	SRAMTemplate		auto_same	
+SplittedSRAMTemplate	array_0_1_0	SRAMTemplate	SAME_PATH	array_0_1_0	SRAMTemplate		auto_same	
+SplittedSRAMTemplate_1	array_0_0_0	SRAMTemplate_2	SAME_PATH	array_0_0_0	SRAMTemplate_2		auto_same	
+SplittedSRAMTemplate_1	array_0_1_0	SRAMTemplate_2	SAME_PATH	array_0_1_0	SRAMTemplate_2		auto_same	
+SplittedSRAMTemplate_2	array_0_0_0	SRAMTemplate_36	GEN_SITE	g_split[0].array_inst	SRAMTemplate_36		auto_gen_site_suffix	
+SplittedSRAMTemplate_2	array_0_0_1	SRAMTemplate_36	GEN_SITE	g_split[1].array_inst	SRAMTemplate_36		auto_gen_site_suffix	
+SplittedSRAMTemplate_2	array_0_0_2	SRAMTemplate_36	GEN_SITE	g_split[2].array_inst	SRAMTemplate_36		auto_gen_site_suffix	
+SplittedSRAMTemplate_2	array_0_0_3	SRAMTemplate_36	GEN_SITE	g_split[3].array_inst	SRAMTemplate_36		auto_gen_site_suffix	
+SplittedSRAMTemplate_2	array_0_0_4	SRAMTemplate_36	GEN_SITE	g_split[4].array_inst	SRAMTemplate_36		auto_gen_site_suffix	
+SplittedSRAMTemplate_2	array_0_0_5	SRAMTemplate_36	GEN_SITE	g_split[5].array_inst	SRAMTemplate_36		auto_gen_site_suffix	
+SplittedSRAMTemplate_2	array_0_0_6	SRAMTemplate_36	GEN_SITE	g_split[6].array_inst	SRAMTemplate_36		auto_gen_site_suffix	
+SplittedSRAMTemplate_2	array_0_0_7	SRAMTemplate_36	GEN_SITE	g_split[7].array_inst	SRAMTemplate_36		auto_gen_site_suffix	
+SplittedSRAMTemplate_23	array_0_0_0	SRAMTemplate_64	SAME_PATH	array_0_0_0	SRAMTemplate_64		auto_same	
+SplittedSRAMTemplate_23	array_1_0_0	SRAMTemplate_64	SAME_PATH	array_1_0_0	SRAMTemplate_64		auto_same	
+SplittedSRAMTemplate_25	array_0_0_0	SRAMTemplate_76	SAME_PATH	array_0_0_0	SRAMTemplate_76		auto_same	
+SplittedSRAMTemplate_27	array_0_0_0	SRAMTemplate_78	SAME_PATH	array_0_0_0	SRAMTemplate_78		auto_same	
+SplittedSRAMTemplate_27	array_0_0_1	SRAMTemplate_78	SAME_PATH	array_0_0_1	SRAMTemplate_78		auto_same	
+SplittedSRAMTemplate_3	array_0_0_0	SRAMTemplate_44	SAME_PATH	array_0_0_0	SRAMTemplate_44		auto_same	
+SplittedSRAMTemplate_4	array_0_0_0	SRAMTemplate_45	SAME_PATH	array_0_0_0	SRAMTemplate_45		auto_same	
+StdFreeList	snapshots_snapshotGen	SnapshotGenerator	DEEPER	u_core.snapshots_snapshotGen	SnapshotGenerator		auto_deeper	
+SubDirectory	lfsr_prng	MaxPeriodFibonacciLFSR_3	SAME_PATH	lfsr_prng	MaxPeriodFibonacciLFSR_3		auto_same	
+SubDirectory	metaArray	SRAMTemplate_193	SAME_PATH	metaArray	SRAMTemplate_193		auto_same	
+SubDirectory	tagArray	SRAMTemplate_192	SAME_PATH	tagArray	SRAMTemplate_192		auto_same	
+SubDirectory_1	metaArray	SRAMTemplate_195	SAME_PATH	metaArray	SRAMTemplate_195		auto_same	
+SubDirectory_1	replacer_sram_opt	SRAMTemplate_196	SAME_PATH	replacer_sram_opt	SRAMTemplate_196		auto_same	
+SubDirectory_1	tagArray	SRAMTemplate_194	SAME_PATH	tagArray	SRAMTemplate_194		auto_same	
+SyncDataModuleTemplate_BackendPC_64entry	dataBanks_0	DataModule_BackendPC_16entry	INSTANCE	u_core.g_bank[0].dataBank	xs_DataModule		declared	golden SyncDataModuleTemplate_*.sv 的 dataBanks_N 是 Chisel Vec 第 N 项；impl rtl/common/xs_SyncDataModule.sv 的 g_bank[b].dataBank 同序（FM 已判等价）。
+SyncDataModuleTemplate_BackendPC_64entry	dataBanks_1	DataModule_BackendPC_16entry	INSTANCE	u_core.g_bank[1].dataBank	xs_DataModule		declared	golden SyncDataModuleTemplate_*.sv 的 dataBanks_N 是 Chisel Vec 第 N 项；impl rtl/common/xs_SyncDataModule.sv 的 g_bank[b].dataBank 同序（FM 已判等价）。
+SyncDataModuleTemplate_BackendPC_64entry	dataBanks_2	DataModule_BackendPC_16entry	INSTANCE	u_core.g_bank[2].dataBank	xs_DataModule		declared	golden SyncDataModuleTemplate_*.sv 的 dataBanks_N 是 Chisel Vec 第 N 项；impl rtl/common/xs_SyncDataModule.sv 的 g_bank[b].dataBank 同序（FM 已判等价）。
+SyncDataModuleTemplate_BackendPC_64entry	dataBanks_3	DataModule_BackendPC_16entry	INSTANCE	u_core.g_bank[3].dataBank	xs_DataModule		declared	golden SyncDataModuleTemplate_*.sv 的 dataBanks_N 是 Chisel Vec 第 N 项；impl rtl/common/xs_SyncDataModule.sv 的 g_bank[b].dataBank 同序（FM 已判等价）。
+SyncDataModuleTemplate__1024entry	dataBanks_0	DataModule__64entry	INSTANCE	u_core.g_bank[0].dataBank	xs_DataModule		declared	同上（16 bank）
+SyncDataModuleTemplate__1024entry	dataBanks_1	DataModule__64entry	INSTANCE	u_core.g_bank[1].dataBank	xs_DataModule		declared	同上（16 bank）
+SyncDataModuleTemplate__1024entry	dataBanks_10	DataModule__64entry	INSTANCE	u_core.g_bank[10].dataBank	xs_DataModule		declared	同上（16 bank）
+SyncDataModuleTemplate__1024entry	dataBanks_11	DataModule__64entry	INSTANCE	u_core.g_bank[11].dataBank	xs_DataModule		declared	同上（16 bank）
+SyncDataModuleTemplate__1024entry	dataBanks_12	DataModule__64entry	INSTANCE	u_core.g_bank[12].dataBank	xs_DataModule		declared	同上（16 bank）
+SyncDataModuleTemplate__1024entry	dataBanks_13	DataModule__64entry	INSTANCE	u_core.g_bank[13].dataBank	xs_DataModule		declared	同上（16 bank）
+SyncDataModuleTemplate__1024entry	dataBanks_14	DataModule__64entry	INSTANCE	u_core.g_bank[14].dataBank	xs_DataModule		declared	同上（16 bank）
+SyncDataModuleTemplate__1024entry	dataBanks_15	DataModule__64entry	INSTANCE	u_core.g_bank[15].dataBank	xs_DataModule		declared	同上（16 bank）
+SyncDataModuleTemplate__1024entry	dataBanks_2	DataModule__64entry	INSTANCE	u_core.g_bank[2].dataBank	xs_DataModule		declared	同上（16 bank）
+SyncDataModuleTemplate__1024entry	dataBanks_3	DataModule__64entry	INSTANCE	u_core.g_bank[3].dataBank	xs_DataModule		declared	同上（16 bank）
+SyncDataModuleTemplate__1024entry	dataBanks_4	DataModule__64entry	INSTANCE	u_core.g_bank[4].dataBank	xs_DataModule		declared	同上（16 bank）
+SyncDataModuleTemplate__1024entry	dataBanks_5	DataModule__64entry	INSTANCE	u_core.g_bank[5].dataBank	xs_DataModule		declared	同上（16 bank）
+SyncDataModuleTemplate__1024entry	dataBanks_6	DataModule__64entry	INSTANCE	u_core.g_bank[6].dataBank	xs_DataModule		declared	同上（16 bank）
+SyncDataModuleTemplate__1024entry	dataBanks_7	DataModule__64entry	INSTANCE	u_core.g_bank[7].dataBank	xs_DataModule		declared	同上（16 bank）
+SyncDataModuleTemplate__1024entry	dataBanks_8	DataModule__64entry	INSTANCE	u_core.g_bank[8].dataBank	xs_DataModule		declared	同上（16 bank）
+SyncDataModuleTemplate__1024entry	dataBanks_9	DataModule__64entry	INSTANCE	u_core.g_bank[9].dataBank	xs_DataModule		declared	同上（16 bank）
+SyncDataModuleTemplate__1024entry_1	dataBanks_0	DataModule__64entry_16	INSTANCE	u_core.g_bank[0].dataBank	xs_DataModule		declared	同上（16 bank，核为 xs_SyncDataModule_1024e1）
+SyncDataModuleTemplate__1024entry_1	dataBanks_1	DataModule__64entry_16	INSTANCE	u_core.g_bank[1].dataBank	xs_DataModule		declared	同上（16 bank，核为 xs_SyncDataModule_1024e1）
+SyncDataModuleTemplate__1024entry_1	dataBanks_10	DataModule__64entry_16	INSTANCE	u_core.g_bank[10].dataBank	xs_DataModule		declared	同上（16 bank，核为 xs_SyncDataModule_1024e1）
+SyncDataModuleTemplate__1024entry_1	dataBanks_11	DataModule__64entry_16	INSTANCE	u_core.g_bank[11].dataBank	xs_DataModule		declared	同上（16 bank，核为 xs_SyncDataModule_1024e1）
+SyncDataModuleTemplate__1024entry_1	dataBanks_12	DataModule__64entry_16	INSTANCE	u_core.g_bank[12].dataBank	xs_DataModule		declared	同上（16 bank，核为 xs_SyncDataModule_1024e1）
+SyncDataModuleTemplate__1024entry_1	dataBanks_13	DataModule__64entry_16	INSTANCE	u_core.g_bank[13].dataBank	xs_DataModule		declared	同上（16 bank，核为 xs_SyncDataModule_1024e1）
+SyncDataModuleTemplate__1024entry_1	dataBanks_14	DataModule__64entry_16	INSTANCE	u_core.g_bank[14].dataBank	xs_DataModule		declared	同上（16 bank，核为 xs_SyncDataModule_1024e1）
+SyncDataModuleTemplate__1024entry_1	dataBanks_15	DataModule__64entry_16	INSTANCE	u_core.g_bank[15].dataBank	xs_DataModule		declared	同上（16 bank，核为 xs_SyncDataModule_1024e1）
+SyncDataModuleTemplate__1024entry_1	dataBanks_2	DataModule__64entry_16	INSTANCE	u_core.g_bank[2].dataBank	xs_DataModule		declared	同上（16 bank，核为 xs_SyncDataModule_1024e1）
+SyncDataModuleTemplate__1024entry_1	dataBanks_3	DataModule__64entry_16	INSTANCE	u_core.g_bank[3].dataBank	xs_DataModule		declared	同上（16 bank，核为 xs_SyncDataModule_1024e1）
+SyncDataModuleTemplate__1024entry_1	dataBanks_4	DataModule__64entry_16	INSTANCE	u_core.g_bank[4].dataBank	xs_DataModule		declared	同上（16 bank，核为 xs_SyncDataModule_1024e1）
+SyncDataModuleTemplate__1024entry_1	dataBanks_5	DataModule__64entry_16	INSTANCE	u_core.g_bank[5].dataBank	xs_DataModule		declared	同上（16 bank，核为 xs_SyncDataModule_1024e1）
+SyncDataModuleTemplate__1024entry_1	dataBanks_6	DataModule__64entry_16	INSTANCE	u_core.g_bank[6].dataBank	xs_DataModule		declared	同上（16 bank，核为 xs_SyncDataModule_1024e1）
+SyncDataModuleTemplate__1024entry_1	dataBanks_7	DataModule__64entry_16	INSTANCE	u_core.g_bank[7].dataBank	xs_DataModule		declared	同上（16 bank，核为 xs_SyncDataModule_1024e1）
+SyncDataModuleTemplate__1024entry_1	dataBanks_8	DataModule__64entry_16	INSTANCE	u_core.g_bank[8].dataBank	xs_DataModule		declared	同上（16 bank，核为 xs_SyncDataModule_1024e1）
+SyncDataModuleTemplate__1024entry_1	dataBanks_9	DataModule__64entry_16	INSTANCE	u_core.g_bank[9].dataBank	xs_DataModule		declared	同上（16 bank，核为 xs_SyncDataModule_1024e1）
+SyncDataModuleTemplate__64entry	dataBanks_0	DataModule__16entry	INSTANCE	u_core.g_bank[0].dataBank	xs_DataModule		declared	同上
+SyncDataModuleTemplate__64entry	dataBanks_1	DataModule__16entry	INSTANCE	u_core.g_bank[1].dataBank	xs_DataModule		declared	同上
+SyncDataModuleTemplate__64entry	dataBanks_2	DataModule__16entry	INSTANCE	u_core.g_bank[2].dataBank	xs_DataModule		declared	同上
+SyncDataModuleTemplate__64entry	dataBanks_3	DataModule__16entry	INSTANCE	u_core.g_bank[3].dataBank	xs_DataModule		declared	同上
+SyncDataModuleTemplate__64entry_1	dataBanks_0	DataModule__16entry_4	INSTANCE	u_core.g_bank[0].dataBank	xs_DataModule		declared	同上
+SyncDataModuleTemplate__64entry_1	dataBanks_1	DataModule__16entry_4	INSTANCE	u_core.g_bank[1].dataBank	xs_DataModule		declared	同上
+SyncDataModuleTemplate__64entry_1	dataBanks_2	DataModule__16entry_4	INSTANCE	u_core.g_bank[2].dataBank	xs_DataModule		declared	同上
+SyncDataModuleTemplate__64entry_1	dataBanks_3	DataModule__16entry_4	INSTANCE	u_core.g_bank[3].dataBank	xs_DataModule		declared	同上
+SyncDataModuleTemplate__64entry_2	dataBanks_0	DataModule__16entry_8	INSTANCE	u_core.g_bank[0].dataBank	xs_DataModule		declared	同上
+SyncDataModuleTemplate__64entry_2	dataBanks_1	DataModule__16entry_8	INSTANCE	u_core.g_bank[1].dataBank	xs_DataModule		declared	同上
+SyncDataModuleTemplate__64entry_2	dataBanks_2	DataModule__16entry_8	INSTANCE	u_core.g_bank[2].dataBank	xs_DataModule		declared	同上
+SyncDataModuleTemplate__64entry_2	dataBanks_3	DataModule__16entry_8	INSTANCE	u_core.g_bank[3].dataBank	xs_DataModule		declared	同上
+SyncDataModuleTemplate__64entry_3	dataBanks_0	DataModule__16entry_12	INSTANCE	u_core.g_bank[0].dataBank	xs_DataModule		declared	同上
+SyncDataModuleTemplate__64entry_3	dataBanks_1	DataModule__16entry_12	INSTANCE	u_core.g_bank[1].dataBank	xs_DataModule		declared	同上
+SyncDataModuleTemplate__64entry_3	dataBanks_2	DataModule__16entry_12	INSTANCE	u_core.g_bank[2].dataBank	xs_DataModule		declared	同上
+SyncDataModuleTemplate__64entry_3	dataBanks_3	DataModule__16entry_12	INSTANCE	u_core.g_bank[3].dataBank	xs_DataModule		declared	同上
+SyncDataModuleTemplate__64entry_4	dataBanks_0	DataModule__16entry_16	INSTANCE	u_core.g_bank[0].dataBank	xs_DataModule		declared	同上
+SyncDataModuleTemplate__64entry_4	dataBanks_1	DataModule__16entry_16	INSTANCE	u_core.g_bank[1].dataBank	xs_DataModule		declared	同上
+SyncDataModuleTemplate__64entry_4	dataBanks_2	DataModule__16entry_16	INSTANCE	u_core.g_bank[2].dataBank	xs_DataModule		declared	同上
+SyncDataModuleTemplate__64entry_4	dataBanks_3	DataModule__16entry_16	INSTANCE	u_core.g_bank[3].dataBank	xs_DataModule		declared	同上
+TLBuffer	nodeIn_d_q	Queue2_TLBundleD	ONE_SITE	u_core.response_queue	Queue2_TLBundleD		auto_one_site	
+TLBuffer	nodeOut_a_q	Queue2_TLBundleA	ONE_SITE	u_core.request_queue	Queue2_TLBundleA		auto_one_site	
+TLBuffer_13	nodeIn_b_q	Queue2_TLBundleB_1	DEEPER	u_core.g_bank[b].u_bank.nodeIn_b_q	Queue2_TLBundleB_1		auto_deeper	
+TLBuffer_13	nodeIn_b_q_1	Queue2_TLBundleB_1	GEN_SITE	u_core.g_bank[1].u_bank.nodeIn_b_q	Queue2_TLBundleB_1		auto_gen_site_suffix	
+TLBuffer_13	nodeIn_b_q_2	Queue2_TLBundleB_1	GEN_SITE	u_core.g_bank[2].u_bank.nodeIn_b_q	Queue2_TLBundleB_1		auto_gen_site_suffix	
+TLBuffer_13	nodeIn_b_q_3	Queue2_TLBundleB_1	GEN_SITE	u_core.g_bank[3].u_bank.nodeIn_b_q	Queue2_TLBundleB_1		auto_gen_site_suffix	
+TLBuffer_13	nodeIn_d_q	Queue2_TLBundleD_20	DEEPER	u_core.g_bank[b].u_bank.nodeIn_d_q	Queue2_TLBundleD_20		auto_deeper	
+TLBuffer_13	nodeIn_d_q_1	Queue2_TLBundleD_20	GEN_SITE	u_core.g_bank[1].u_bank.nodeIn_d_q	Queue2_TLBundleD_20		auto_gen_site_suffix	
+TLBuffer_13	nodeIn_d_q_2	Queue2_TLBundleD_20	GEN_SITE	u_core.g_bank[2].u_bank.nodeIn_d_q	Queue2_TLBundleD_20		auto_gen_site_suffix	
+TLBuffer_13	nodeIn_d_q_3	Queue2_TLBundleD_20	GEN_SITE	u_core.g_bank[3].u_bank.nodeIn_d_q	Queue2_TLBundleD_20		auto_gen_site_suffix	
+TLBuffer_13	nodeOut_a_q	Queue2_TLBundleA_19	DEEPER	u_core.g_bank[b].u_bank.nodeOut_a_q	Queue2_TLBundleA_19		auto_deeper	
+TLBuffer_13	nodeOut_a_q_1	Queue2_TLBundleA_19	GEN_SITE	u_core.g_bank[1].u_bank.nodeOut_a_q	Queue2_TLBundleA_19		auto_gen_site_suffix	
+TLBuffer_13	nodeOut_a_q_2	Queue2_TLBundleA_19	GEN_SITE	u_core.g_bank[2].u_bank.nodeOut_a_q	Queue2_TLBundleA_19		auto_gen_site_suffix	
+TLBuffer_13	nodeOut_a_q_3	Queue2_TLBundleA_19	GEN_SITE	u_core.g_bank[3].u_bank.nodeOut_a_q	Queue2_TLBundleA_19		auto_gen_site_suffix	
+TLBuffer_13	nodeOut_c_q	Queue2_TLBundleC_1	DEEPER	u_core.g_bank[b].u_bank.nodeOut_c_q	Queue2_TLBundleC_1		auto_deeper	
+TLBuffer_13	nodeOut_c_q_1	Queue2_TLBundleC_1	GEN_SITE	u_core.g_bank[1].u_bank.nodeOut_c_q	Queue2_TLBundleC_1		auto_gen_site_suffix	
+TLBuffer_13	nodeOut_c_q_2	Queue2_TLBundleC_1	GEN_SITE	u_core.g_bank[2].u_bank.nodeOut_c_q	Queue2_TLBundleC_1		auto_gen_site_suffix	
+TLBuffer_13	nodeOut_c_q_3	Queue2_TLBundleC_1	GEN_SITE	u_core.g_bank[3].u_bank.nodeOut_c_q	Queue2_TLBundleC_1		auto_gen_site_suffix	
+TLBuffer_13	nodeOut_e_q	Queue2_TLBundleE_1	DEEPER	u_core.g_bank[b].u_bank.nodeOut_e_q	Queue2_TLBundleE_1		auto_deeper	
+TLBuffer_13	nodeOut_e_q_1	Queue2_TLBundleE_1	GEN_SITE	u_core.g_bank[1].u_bank.nodeOut_e_q	Queue2_TLBundleE_1		auto_gen_site_suffix	
+TLBuffer_13	nodeOut_e_q_2	Queue2_TLBundleE_1	GEN_SITE	u_core.g_bank[2].u_bank.nodeOut_e_q	Queue2_TLBundleE_1		auto_gen_site_suffix	
+TLBuffer_13	nodeOut_e_q_3	Queue2_TLBundleE_1	GEN_SITE	u_core.g_bank[3].u_bank.nodeOut_e_q	Queue2_TLBundleE_1		auto_gen_site_suffix	
+TLBuffer_2	nodeIn_d_q	Queue2_TLBundleD_3	DEEPER	u_core.nodeIn_d_q	Queue2_TLBundleD_3		auto_deeper	
+TLBuffer_2	nodeOut_a_q	Queue2_TLBundleA_2	DEEPER	u_core.nodeOut_a_q	Queue2_TLBundleA_2		auto_deeper	
+TLBuffer_20	nodeIn_d_q	Queue2_TLBundleD_11	SAME_PATH	nodeIn_d_q	Queue2_TLBundleD_11		auto_same	
+TLBuffer_20	nodeOut_a_q	Queue2_TLBundleA_10	SAME_PATH	nodeOut_a_q	Queue2_TLBundleA_10		auto_same	
+TLBuffer_22	nodeIn_d_q	Queue2_TLBundleD_11	SAME_PATH	nodeIn_d_q	Queue2_TLBundleD_11		auto_same	
+TLBuffer_22	nodeOut_a_q	Queue2_TLBundleA_31	SAME_PATH	nodeOut_a_q	Queue2_TLBundleA_31		auto_same	
+TLBuffer_6	nodeIn_d_q	Queue2_TLBundleD_7	SAME_PATH	nodeIn_d_q	Queue2_TLBundleD_7		auto_same	
+TLBuffer_6	nodeOut_a_q	Queue2_TLBundleA_6	SAME_PATH	nodeOut_a_q	Queue2_TLBundleA_6		auto_same	
+TLBuffer_7	nodeIn_b_q	Queue2_TLBundleB	DEEPER	u_core.nodeIn_b_q	Queue2_TLBundleB		auto_deeper	
+TLBuffer_7	nodeIn_d_q	Queue2_TLBundleD_8	DEEPER	u_core.nodeIn_d_q	Queue2_TLBundleD_8		auto_deeper	
+TLBuffer_7	nodeOut_a_q	Queue2_TLBundleA_7	DEEPER	u_core.nodeOut_a_q	Queue2_TLBundleA_7		auto_deeper	
+TLBuffer_7	nodeOut_c_q	Queue2_TLBundleC	DEEPER	u_core.nodeOut_c_q	Queue2_TLBundleC		auto_deeper	
+TLBuffer_7	nodeOut_e_q	Queue2_TLBundleE	DEEPER	u_core.nodeOut_e_q	Queue2_TLBundleE		auto_deeper	
+TLBuffer_8	nodeIn_d_q	Queue2_TLBundleD_15	SAME_PATH	nodeIn_d_q	Queue2_TLBundleD_15		auto_same	
+TLBuffer_8	nodeOut_a_q	Queue2_TLBundleA_14	SAME_PATH	nodeOut_a_q	Queue2_TLBundleA_14		auto_same	
+TLBuffer_9	nodeIn_d_q	Queue2_TLBundleD_15	SAME_PATH	nodeIn_d_q	Queue2_TLBundleD_15		auto_same	
+TLBuffer_9	nodeOut_a_q	Queue2_TLBundleA_15	SAME_PATH	nodeOut_a_q	Queue2_TLBundleA_15		auto_same	
+TLPLIC	fanin	PLICFanIn	INSTANCE	u_core.g_fanin[0].u_fanin	xs_PLICFanIn_core		declared	golden TLPLIC.sv:2170 fanin / fanin_1 每 hart 一棵；impl rtl/uncore/TLPLIC.sv:264-272 g_fanin[h]，h=0..NHART-1。
+TLPLIC	fanin_1	PLICFanIn	INSTANCE	u_core.g_fanin[1].u_fanin	xs_PLICFanIn_core		declared	golden TLPLIC.sv:2170 fanin / fanin_1 每 hart 一棵；impl rtl/uncore/TLPLIC.sv:264-272 g_fanin[h]，h=0..NHART-1。
+TLPLIC	gateways_gateway	LevelGateway	INSTANCE	u_core.g_gateways[0].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_1	LevelGateway	INSTANCE	u_core.g_gateways[1].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_10	LevelGateway	INSTANCE	u_core.g_gateways[10].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_11	LevelGateway	INSTANCE	u_core.g_gateways[11].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_12	LevelGateway	INSTANCE	u_core.g_gateways[12].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_13	LevelGateway	INSTANCE	u_core.g_gateways[13].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_14	LevelGateway	INSTANCE	u_core.g_gateways[14].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_15	LevelGateway	INSTANCE	u_core.g_gateways[15].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_16	LevelGateway	INSTANCE	u_core.g_gateways[16].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_17	LevelGateway	INSTANCE	u_core.g_gateways[17].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_18	LevelGateway	INSTANCE	u_core.g_gateways[18].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_19	LevelGateway	INSTANCE	u_core.g_gateways[19].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_2	LevelGateway	INSTANCE	u_core.g_gateways[2].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_20	LevelGateway	INSTANCE	u_core.g_gateways[20].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_21	LevelGateway	INSTANCE	u_core.g_gateways[21].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_22	LevelGateway	INSTANCE	u_core.g_gateways[22].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_23	LevelGateway	INSTANCE	u_core.g_gateways[23].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_24	LevelGateway	INSTANCE	u_core.g_gateways[24].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_25	LevelGateway	INSTANCE	u_core.g_gateways[25].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_26	LevelGateway	INSTANCE	u_core.g_gateways[26].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_27	LevelGateway	INSTANCE	u_core.g_gateways[27].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_28	LevelGateway	INSTANCE	u_core.g_gateways[28].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_29	LevelGateway	INSTANCE	u_core.g_gateways[29].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_3	LevelGateway	INSTANCE	u_core.g_gateways[3].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_30	LevelGateway	INSTANCE	u_core.g_gateways[30].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_31	LevelGateway	INSTANCE	u_core.g_gateways[31].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_32	LevelGateway	INSTANCE	u_core.g_gateways[32].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_33	LevelGateway	INSTANCE	u_core.g_gateways[33].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_34	LevelGateway	INSTANCE	u_core.g_gateways[34].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_35	LevelGateway	INSTANCE	u_core.g_gateways[35].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_36	LevelGateway	INSTANCE	u_core.g_gateways[36].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_37	LevelGateway	INSTANCE	u_core.g_gateways[37].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_38	LevelGateway	INSTANCE	u_core.g_gateways[38].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_39	LevelGateway	INSTANCE	u_core.g_gateways[39].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_4	LevelGateway	INSTANCE	u_core.g_gateways[4].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_40	LevelGateway	INSTANCE	u_core.g_gateways[40].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_41	LevelGateway	INSTANCE	u_core.g_gateways[41].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_42	LevelGateway	INSTANCE	u_core.g_gateways[42].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_43	LevelGateway	INSTANCE	u_core.g_gateways[43].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_44	LevelGateway	INSTANCE	u_core.g_gateways[44].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_45	LevelGateway	INSTANCE	u_core.g_gateways[45].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_46	LevelGateway	INSTANCE	u_core.g_gateways[46].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_47	LevelGateway	INSTANCE	u_core.g_gateways[47].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_48	LevelGateway	INSTANCE	u_core.g_gateways[48].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_49	LevelGateway	INSTANCE	u_core.g_gateways[49].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_5	LevelGateway	INSTANCE	u_core.g_gateways[5].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_50	LevelGateway	INSTANCE	u_core.g_gateways[50].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_51	LevelGateway	INSTANCE	u_core.g_gateways[51].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_52	LevelGateway	INSTANCE	u_core.g_gateways[52].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_53	LevelGateway	INSTANCE	u_core.g_gateways[53].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_54	LevelGateway	INSTANCE	u_core.g_gateways[54].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_55	LevelGateway	INSTANCE	u_core.g_gateways[55].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_56	LevelGateway	INSTANCE	u_core.g_gateways[56].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_57	LevelGateway	INSTANCE	u_core.g_gateways[57].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_58	LevelGateway	INSTANCE	u_core.g_gateways[58].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_59	LevelGateway	INSTANCE	u_core.g_gateways[59].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_6	LevelGateway	INSTANCE	u_core.g_gateways[6].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_60	LevelGateway	INSTANCE	u_core.g_gateways[60].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_61	LevelGateway	INSTANCE	u_core.g_gateways[61].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_62	LevelGateway	INSTANCE	u_core.g_gateways[62].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_63	LevelGateway	INSTANCE	u_core.g_gateways[63].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_64	LevelGateway	INSTANCE	u_core.g_gateways[64].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_7	LevelGateway	INSTANCE	u_core.g_gateways[7].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_8	LevelGateway	INSTANCE	u_core.g_gateways[8].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	gateways_gateway_9	LevelGateway	INSTANCE	u_core.g_gateways[9].u_gw	xs_LevelGateway_core		declared	golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	out_back_q	Queue1_RegMapperInput	INLINE	u_core	-	q_full,q_read,q_index,q_data,q_mask,q_source,q_size	declared	impl rtl/uncore/TLPLIC.sv:107-140「TileLink A 通道: 1 深寄存器队列 (out_back_q)」，与 golden Queue1_RegMapperInput 同构，整块内联成 7 个寄存器。
+TXREQ	queue	Queue16_CHIREQ	DEEPER	u_core.queue	Queue16_CHIREQ		auto_deeper	
+TXRSP	queue	Queue16_CHIRSP	DEEPER	u_core.queue	Queue16_CHIRSP		auto_deeper	
+TageBTable	bt_0	FoldedSRAMTemplate_20	GEN_SITE	u_core.g_bank[0].bt	FoldedSRAMTemplate_20		auto_gen_site_suffix	
+TageBTable	bt_1	FoldedSRAMTemplate_20	GEN_SITE	u_core.g_bank[1].bt	FoldedSRAMTemplate_20		auto_gen_site_suffix	
+TageBTable	wrbypass	WrBypass_32	DEEPER	u_core.wrbypass	WrBypass_32		auto_deeper	
+TageTable	bank_wrbypasses_0_0	WrBypass	INSTANCE	u_core.g_wb_bank[0].g_wb_br[0].bank_wrbypass	WrBypass		declared	golden 名里两个编号就是 (bank, 逻辑分支)：`bank_wrbypasses_A_B` 的 io_write_data_0 取 `per_bank_update_wdata_A_*_ctr`（A=bank），B 侧走 `io_update_pc[1] ? … : …` 的分支交换（golden TageTable.sv:941-988）；impl rtl/frontend/TageTable.sv:505-521 的 g_wb_bank[gb]/g_wb_br[gp] 里 wb_wdata=bank_wdata[gb][gp^upd_swap]、wb_wen 按 gp 选 io_update_mask_0/1 —— gb=A、gp=B 逐项对上。机器只能判到「唯一 generate 点」，两层下标的拆分要人工定，故声明。
+TageTable	bank_wrbypasses_0_1	WrBypass	INSTANCE	u_core.g_wb_bank[0].g_wb_br[1].bank_wrbypass	WrBypass		declared	golden 名里两个编号就是 (bank, 逻辑分支)：`bank_wrbypasses_A_B` 的 io_write_data_0 取 `per_bank_update_wdata_A_*_ctr`（A=bank），B 侧走 `io_update_pc[1] ? … : …` 的分支交换（golden TageTable.sv:941-988）；impl rtl/frontend/TageTable.sv:505-521 的 g_wb_bank[gb]/g_wb_br[gp] 里 wb_wdata=bank_wdata[gb][gp^upd_swap]、wb_wen 按 gp 选 io_update_mask_0/1 —— gb=A、gp=B 逐项对上。机器只能判到「唯一 generate 点」，两层下标的拆分要人工定，故声明。
+TageTable	bank_wrbypasses_1_0	WrBypass	INSTANCE	u_core.g_wb_bank[1].g_wb_br[0].bank_wrbypass	WrBypass		declared	golden 名里两个编号就是 (bank, 逻辑分支)：`bank_wrbypasses_A_B` 的 io_write_data_0 取 `per_bank_update_wdata_A_*_ctr`（A=bank），B 侧走 `io_update_pc[1] ? … : …` 的分支交换（golden TageTable.sv:941-988）；impl rtl/frontend/TageTable.sv:505-521 的 g_wb_bank[gb]/g_wb_br[gp] 里 wb_wdata=bank_wdata[gb][gp^upd_swap]、wb_wen 按 gp 选 io_update_mask_0/1 —— gb=A、gp=B 逐项对上。机器只能判到「唯一 generate 点」，两层下标的拆分要人工定，故声明。
+TageTable	bank_wrbypasses_1_1	WrBypass	INSTANCE	u_core.g_wb_bank[1].g_wb_br[1].bank_wrbypass	WrBypass		declared	golden 名里两个编号就是 (bank, 逻辑分支)：`bank_wrbypasses_A_B` 的 io_write_data_0 取 `per_bank_update_wdata_A_*_ctr`（A=bank），B 侧走 `io_update_pc[1] ? … : …` 的分支交换（golden TageTable.sv:941-988）；impl rtl/frontend/TageTable.sv:505-521 的 g_wb_bank[gb]/g_wb_br[gp] 里 wb_wdata=bank_wdata[gb][gp^upd_swap]、wb_wen 按 gp 选 io_update_mask_0/1 —— gb=A、gp=B 逐项对上。机器只能判到「唯一 generate 点」，两层下标的拆分要人工定，故声明。
+TageTable	bank_wrbypasses_2_0	WrBypass	INSTANCE	u_core.g_wb_bank[2].g_wb_br[0].bank_wrbypass	WrBypass		declared	golden 名里两个编号就是 (bank, 逻辑分支)：`bank_wrbypasses_A_B` 的 io_write_data_0 取 `per_bank_update_wdata_A_*_ctr`（A=bank），B 侧走 `io_update_pc[1] ? … : …` 的分支交换（golden TageTable.sv:941-988）；impl rtl/frontend/TageTable.sv:505-521 的 g_wb_bank[gb]/g_wb_br[gp] 里 wb_wdata=bank_wdata[gb][gp^upd_swap]、wb_wen 按 gp 选 io_update_mask_0/1 —— gb=A、gp=B 逐项对上。机器只能判到「唯一 generate 点」，两层下标的拆分要人工定，故声明。
+TageTable	bank_wrbypasses_2_1	WrBypass	INSTANCE	u_core.g_wb_bank[2].g_wb_br[1].bank_wrbypass	WrBypass		declared	golden 名里两个编号就是 (bank, 逻辑分支)：`bank_wrbypasses_A_B` 的 io_write_data_0 取 `per_bank_update_wdata_A_*_ctr`（A=bank），B 侧走 `io_update_pc[1] ? … : …` 的分支交换（golden TageTable.sv:941-988）；impl rtl/frontend/TageTable.sv:505-521 的 g_wb_bank[gb]/g_wb_br[gp] 里 wb_wdata=bank_wdata[gb][gp^upd_swap]、wb_wen 按 gp 选 io_update_mask_0/1 —— gb=A、gp=B 逐项对上。机器只能判到「唯一 generate 点」，两层下标的拆分要人工定，故声明。
+TageTable	bank_wrbypasses_3_0	WrBypass	INSTANCE	u_core.g_wb_bank[3].g_wb_br[0].bank_wrbypass	WrBypass		declared	golden 名里两个编号就是 (bank, 逻辑分支)：`bank_wrbypasses_A_B` 的 io_write_data_0 取 `per_bank_update_wdata_A_*_ctr`（A=bank），B 侧走 `io_update_pc[1] ? … : …` 的分支交换（golden TageTable.sv:941-988）；impl rtl/frontend/TageTable.sv:505-521 的 g_wb_bank[gb]/g_wb_br[gp] 里 wb_wdata=bank_wdata[gb][gp^upd_swap]、wb_wen 按 gp 选 io_update_mask_0/1 —— gb=A、gp=B 逐项对上。机器只能判到「唯一 generate 点」，两层下标的拆分要人工定，故声明。
+TageTable	bank_wrbypasses_3_1	WrBypass	INSTANCE	u_core.g_wb_bank[3].g_wb_br[1].bank_wrbypass	WrBypass		declared	golden 名里两个编号就是 (bank, 逻辑分支)：`bank_wrbypasses_A_B` 的 io_write_data_0 取 `per_bank_update_wdata_A_*_ctr`（A=bank），B 侧走 `io_update_pc[1] ? … : …` 的分支交换（golden TageTable.sv:941-988）；impl rtl/frontend/TageTable.sv:505-521 的 g_wb_bank[gb]/g_wb_br[gp] 里 wb_wdata=bank_wdata[gb][gp^upd_swap]、wb_wen 按 gp 选 io_update_mask_0/1 —— gb=A、gp=B 逐项对上。机器只能判到「唯一 generate 点」，两层下标的拆分要人工定，故声明。
+TageTable	table_banks_0	FoldedSRAMTemplate_1	GEN_SITE	u_core.g_bank[0].table_bank	FoldedSRAMTemplate_1		auto_gen_site_suffix	
+TageTable	table_banks_1	FoldedSRAMTemplate_1	GEN_SITE	u_core.g_bank[1].table_bank	FoldedSRAMTemplate_1		auto_gen_site_suffix	
+TageTable	table_banks_2	FoldedSRAMTemplate_1	GEN_SITE	u_core.g_bank[2].table_bank	FoldedSRAMTemplate_1		auto_gen_site_suffix	
+TageTable	table_banks_3	FoldedSRAMTemplate_1	GEN_SITE	u_core.g_bank[3].table_bank	FoldedSRAMTemplate_1		auto_gen_site_suffix	
+TageTable	us	FoldedSRAMTemplate	DEEPER	u_core.us	FoldedSRAMTemplate		auto_deeper	
+TageTable_1	bank_wrbypasses_0_0	WrBypass	INSTANCE	u_core.g_wb_bank[0].g_wb_br[0].bank_wrbypass	WrBypass		declared	同 TageTable（家族共用 xs_TageTable_core 的同一段 generate）
+TageTable_1	bank_wrbypasses_0_1	WrBypass	INSTANCE	u_core.g_wb_bank[0].g_wb_br[1].bank_wrbypass	WrBypass		declared	同 TageTable（家族共用 xs_TageTable_core 的同一段 generate）
+TageTable_1	bank_wrbypasses_1_0	WrBypass	INSTANCE	u_core.g_wb_bank[1].g_wb_br[0].bank_wrbypass	WrBypass		declared	同 TageTable（家族共用 xs_TageTable_core 的同一段 generate）
+TageTable_1	bank_wrbypasses_1_1	WrBypass	INSTANCE	u_core.g_wb_bank[1].g_wb_br[1].bank_wrbypass	WrBypass		declared	同 TageTable（家族共用 xs_TageTable_core 的同一段 generate）
+TageTable_1	bank_wrbypasses_2_0	WrBypass	INSTANCE	u_core.g_wb_bank[2].g_wb_br[0].bank_wrbypass	WrBypass		declared	同 TageTable（家族共用 xs_TageTable_core 的同一段 generate）
+TageTable_1	bank_wrbypasses_2_1	WrBypass	INSTANCE	u_core.g_wb_bank[2].g_wb_br[1].bank_wrbypass	WrBypass		declared	同 TageTable（家族共用 xs_TageTable_core 的同一段 generate）
+TageTable_1	bank_wrbypasses_3_0	WrBypass	INSTANCE	u_core.g_wb_bank[3].g_wb_br[0].bank_wrbypass	WrBypass		declared	同 TageTable（家族共用 xs_TageTable_core 的同一段 generate）
+TageTable_1	bank_wrbypasses_3_1	WrBypass	INSTANCE	u_core.g_wb_bank[3].g_wb_br[1].bank_wrbypass	WrBypass		declared	同 TageTable（家族共用 xs_TageTable_core 的同一段 generate）
+TageTable_1	table_banks_0	FoldedSRAMTemplate_1	GEN_SITE	u_core.g_bank[0].table_bank	FoldedSRAMTemplate_1		auto_gen_site_suffix	
+TageTable_1	table_banks_1	FoldedSRAMTemplate_1	GEN_SITE	u_core.g_bank[1].table_bank	FoldedSRAMTemplate_1		auto_gen_site_suffix	
+TageTable_1	table_banks_2	FoldedSRAMTemplate_1	GEN_SITE	u_core.g_bank[2].table_bank	FoldedSRAMTemplate_1		auto_gen_site_suffix	
+TageTable_1	table_banks_3	FoldedSRAMTemplate_1	GEN_SITE	u_core.g_bank[3].table_bank	FoldedSRAMTemplate_1		auto_gen_site_suffix	
+TageTable_1	us	FoldedSRAMTemplate	DEEPER	u_core.us	FoldedSRAMTemplate		auto_deeper	
+TageTable_2	bank_wrbypasses_0_0	WrBypass	INSTANCE	u_core.g_wb_bank[0].g_wb_br[0].bank_wrbypass	WrBypass		declared	同 TageTable
+TageTable_2	bank_wrbypasses_0_1	WrBypass	INSTANCE	u_core.g_wb_bank[0].g_wb_br[1].bank_wrbypass	WrBypass		declared	同 TageTable
+TageTable_2	bank_wrbypasses_1_0	WrBypass	INSTANCE	u_core.g_wb_bank[1].g_wb_br[0].bank_wrbypass	WrBypass		declared	同 TageTable
+TageTable_2	bank_wrbypasses_1_1	WrBypass	INSTANCE	u_core.g_wb_bank[1].g_wb_br[1].bank_wrbypass	WrBypass		declared	同 TageTable
+TageTable_2	bank_wrbypasses_2_0	WrBypass	INSTANCE	u_core.g_wb_bank[2].g_wb_br[0].bank_wrbypass	WrBypass		declared	同 TageTable
+TageTable_2	bank_wrbypasses_2_1	WrBypass	INSTANCE	u_core.g_wb_bank[2].g_wb_br[1].bank_wrbypass	WrBypass		declared	同 TageTable
+TageTable_2	bank_wrbypasses_3_0	WrBypass	INSTANCE	u_core.g_wb_bank[3].g_wb_br[0].bank_wrbypass	WrBypass		declared	同 TageTable
+TageTable_2	bank_wrbypasses_3_1	WrBypass	INSTANCE	u_core.g_wb_bank[3].g_wb_br[1].bank_wrbypass	WrBypass		declared	同 TageTable
+TageTable_2	table_banks_0	FoldedSRAMTemplate_1	GEN_SITE	u_core.g_bank[0].table_bank	FoldedSRAMTemplate_1		auto_gen_site_suffix	
+TageTable_2	table_banks_1	FoldedSRAMTemplate_1	GEN_SITE	u_core.g_bank[1].table_bank	FoldedSRAMTemplate_1		auto_gen_site_suffix	
+TageTable_2	table_banks_2	FoldedSRAMTemplate_1	GEN_SITE	u_core.g_bank[2].table_bank	FoldedSRAMTemplate_1		auto_gen_site_suffix	
+TageTable_2	table_banks_3	FoldedSRAMTemplate_1	GEN_SITE	u_core.g_bank[3].table_bank	FoldedSRAMTemplate_1		auto_gen_site_suffix	
+TageTable_2	us	FoldedSRAMTemplate	DEEPER	u_core.us	FoldedSRAMTemplate		auto_deeper	
+TageTable_3	bank_wrbypasses_0_0	WrBypass	INSTANCE	u_core.g_wb_bank[0].g_wb_br[0].bank_wrbypass	WrBypass		declared	同 TageTable
+TageTable_3	bank_wrbypasses_0_1	WrBypass	INSTANCE	u_core.g_wb_bank[0].g_wb_br[1].bank_wrbypass	WrBypass		declared	同 TageTable
+TageTable_3	bank_wrbypasses_1_0	WrBypass	INSTANCE	u_core.g_wb_bank[1].g_wb_br[0].bank_wrbypass	WrBypass		declared	同 TageTable
+TageTable_3	bank_wrbypasses_1_1	WrBypass	INSTANCE	u_core.g_wb_bank[1].g_wb_br[1].bank_wrbypass	WrBypass		declared	同 TageTable
+TageTable_3	bank_wrbypasses_2_0	WrBypass	INSTANCE	u_core.g_wb_bank[2].g_wb_br[0].bank_wrbypass	WrBypass		declared	同 TageTable
+TageTable_3	bank_wrbypasses_2_1	WrBypass	INSTANCE	u_core.g_wb_bank[2].g_wb_br[1].bank_wrbypass	WrBypass		declared	同 TageTable
+TageTable_3	bank_wrbypasses_3_0	WrBypass	INSTANCE	u_core.g_wb_bank[3].g_wb_br[0].bank_wrbypass	WrBypass		declared	同 TageTable
+TageTable_3	bank_wrbypasses_3_1	WrBypass	INSTANCE	u_core.g_wb_bank[3].g_wb_br[1].bank_wrbypass	WrBypass		declared	同 TageTable
+TageTable_3	table_banks_0	FoldedSRAMTemplate_1	GEN_SITE	u_core.g_bank[0].table_bank	FoldedSRAMTemplate_1		auto_gen_site_suffix	
+TageTable_3	table_banks_1	FoldedSRAMTemplate_1	GEN_SITE	u_core.g_bank[1].table_bank	FoldedSRAMTemplate_1		auto_gen_site_suffix	
+TageTable_3	table_banks_2	FoldedSRAMTemplate_1	GEN_SITE	u_core.g_bank[2].table_bank	FoldedSRAMTemplate_1		auto_gen_site_suffix	
+TageTable_3	table_banks_3	FoldedSRAMTemplate_1	GEN_SITE	u_core.g_bank[3].table_bank	FoldedSRAMTemplate_1		auto_gen_site_suffix	
+TageTable_3	us	FoldedSRAMTemplate	DEEPER	u_core.us	FoldedSRAMTemplate		auto_deeper	
+TlbStorageWrapper	page_itlb_storage_fa	TLBFA	SAME_PATH	page_itlb_storage_fa	TLBFA		auto_same	
+TlbStorageWrapper_1	page_ldtlb_storage_fa	TLBFA_1	SAME_PATH	page_ldtlb_storage_fa	TLBFA_1		auto_same	
+UopInfoGen	indexedLSTable	indexedLSNumOfUopTable	INLINE	u_core	-	(function LUT)	declared	rtl/backend/UopInfoGen.sv:88「可读核把这两张表用 function 内联(语义等价),故 wrapper 无子模块」。
+UopInfoGen	stridedLSTable	strdiedLSNumOfUopTable	INLINE	u_core	-	(function LUT)	declared	同上
+VSetRiWi	vsetModule	VsetModule	INLINE	u_core	-	log2_sew,vlmax,illegal,vl	declared	rtl/backend/VSetRiWi.sv:88-101「③ VsetModule 计算」内联（VsetModule 模块本身仍被别的父模块例化，故不在丢失模块清单里，但这条路径没了）。
+VSetRvfWvf	vsetModule	VsetModule	INLINE	u_core	-	log2_sew,vlmax,illegal,vl	declared	同上
+WrBypass	data_mem_0_ext	data_mem_0_8x3	INLINE_REG_ARRAY	u_core	-	data_mem	declared	rtl/frontend/WrBypass.sv:124-126「对应 golden 的 data_mem_*_ext 寄存器堆」logic [NUM_ENTRIES][NUM_WAYS][DATA_WIDTH] data_mem。
+WrBypass	idx_tag_cam	IndexableCAMTemplate	DEEPER	u_core.idx_tag_cam	xs_IndexableCAMTemplate_core		auto_deeper	
+WrBypass_32	data_mem_ext	data_mem_8x4	INLINE_REG_ARRAY	u_core	-	data_mem	declared	同上
+WrBypass_32	idx_tag_cam	IndexableCAMTemplate_32	DEEPER	u_core.idx_tag_cam	xs_IndexableCAMTemplate_core		auto_deeper	
+WrBypass_33	data_mem_ext	data_mem_16x12	INLINE_REG_ARRAY	u_core	-	data_mem	declared	同上
+WrBypass_33	idx_tag_cam	IndexableCAMTemplate_33	DEEPER	u_core.idx_tag_cam	xs_IndexableCAMTemplate_core		auto_deeper	
+WrBypass_41	data_mem_0_ext	data_mem_0_4x2	INLINE_REG_ARRAY	u_core	-	data_mem	declared	同上
+WrBypass_41	idx_tag_cam	IndexableCAMTemplate_41	DEEPER	u_core.idx_tag_cam	xs_IndexableCAMTemplate_core		auto_deeper	
+WrBypass_43	data_mem_0_ext	data_mem_0_4x2	INLINE_REG_ARRAY	u_core	-	data_mem	declared	同上
+WrBypass_43	idx_tag_cam	IndexableCAMTemplate_43	DEEPER	u_core.idx_tag_cam	xs_IndexableCAMTemplate_core		auto_deeper	
+WritebackQueue	entries_0	WritebackEntry	DEEPER	u_core.entries_0	WritebackEntry		auto_deeper	
+WritebackQueue	entries_1	WritebackEntry	DEEPER	u_core.entries_1	WritebackEntry		auto_deeper	
+WritebackQueue	entries_10	WritebackEntry	DEEPER	u_core.entries_10	WritebackEntry		auto_deeper	
+WritebackQueue	entries_11	WritebackEntry	DEEPER	u_core.entries_11	WritebackEntry		auto_deeper	
+WritebackQueue	entries_12	WritebackEntry	DEEPER	u_core.entries_12	WritebackEntry		auto_deeper	
+WritebackQueue	entries_13	WritebackEntry	DEEPER	u_core.entries_13	WritebackEntry		auto_deeper	
+WritebackQueue	entries_14	WritebackEntry	DEEPER	u_core.entries_14	WritebackEntry		auto_deeper	
+WritebackQueue	entries_15	WritebackEntry_15	DEEPER	u_core.entries_15	WritebackEntry_15		auto_deeper	
+WritebackQueue	entries_16	WritebackEntry_15	DEEPER	u_core.entries_16	WritebackEntry_15		auto_deeper	
+WritebackQueue	entries_17	WritebackEntry_15	DEEPER	u_core.entries_17	WritebackEntry_15		auto_deeper	
+WritebackQueue	entries_2	WritebackEntry	DEEPER	u_core.entries_2	WritebackEntry		auto_deeper	
+WritebackQueue	entries_3	WritebackEntry	DEEPER	u_core.entries_3	WritebackEntry		auto_deeper	
+WritebackQueue	entries_4	WritebackEntry	DEEPER	u_core.entries_4	WritebackEntry		auto_deeper	
+WritebackQueue	entries_5	WritebackEntry	DEEPER	u_core.entries_5	WritebackEntry		auto_deeper	
+WritebackQueue	entries_6	WritebackEntry	DEEPER	u_core.entries_6	WritebackEntry		auto_deeper	
+WritebackQueue	entries_7	WritebackEntry	DEEPER	u_core.entries_7	WritebackEntry		auto_deeper	
+WritebackQueue	entries_8	WritebackEntry	DEEPER	u_core.entries_8	WritebackEntry		auto_deeper	
+WritebackQueue	entries_9	WritebackEntry	DEEPER	u_core.entries_9	WritebackEntry		auto_deeper	

@@ -1,0 +1,55 @@
+# hier_rebind_decl.tsv —— 「被吸收的 golden 子模块」路径重绑**声明**（人工填，机器校验）
+#
+# 背景：重写父模块把 golden 子模块吸收进了自己的可读核，于是那个 golden 模块在
+# XSTop 层次里一个实例都没有。凡是机器能自己认出去向的（同名实例、加一层
+# u_core、generate 化但类型没变），由 scripts/hier_map.py 自动解析，不进本表。
+# 只有「类型都换了/彻底内联成信号」这一类机器判不准的，才在这里逐条声明。
+#
+# 每一行都必须能被 scripts/hier_map.py 校验（--check 里同样跑）：
+#   * golden_inst_re 至少匹配到 1 个真实 golden 例化槽位，否则 FAIL（防陈旧声明）；
+#   * kind=INSTANCE 的 impl_path 必须在 impl 例化图里真实存在（下标形态归一后比对）；
+#   * kind=INLINE* 的 impl_module 必须是 `-`，且 signals 非空（说明状态落在哪些信号上）。
+#
+# 列：
+#   owner            吸收它的重写模块（golden 同名 wrapper）
+#   golden_child     被吸收的 golden 子模块名
+#   golden_inst_re   golden 侧实例名正则；捕获组按顺序填 impl_path 的 {i}/{j}
+#                    （捕获组缺省或没匹配到 = 0，对应 firtool「第一个不带后缀」的约定）
+#   impl_path        相对 owner 的 impl 层次路径；{i}/{j} 代入捕获组，{i+N} 做偏移
+#   impl_module      impl 侧该路径上的模块名；内联时写 `-`
+#   kind             INSTANCE / INLINE / INLINE_REG_ARRAY
+#   signals          内联时状态落在哪些信号上（逗号分隔）；INSTANCE 行留空
+#   evidence         这条结论是怎么得出的（文件:行）
+owner	golden_child	golden_inst_re	impl_path	impl_module	kind	signals	evidence
+TLPLIC	LevelGateway	gateways_gateway(?:_(\d+))?	u_core.g_gateways[{i}].u_gw	xs_LevelGateway_core	INSTANCE		golden TLPLIC.sv:1650+ 每个 gateways_gateway_N 接 completedDevs[N]/pending_N；impl rtl/uncore/TLPLIC.sv:238-249 g_gateways[d] 接 completedDevs[d]/pending_q[d]。已逐字核对 N=0/1/2/64。
+TLPLIC	PLICFanIn	fanin(?:_(\d+))?	u_core.g_fanin[{i}].u_fanin	xs_PLICFanIn_core	INSTANCE		golden TLPLIC.sv:2170 fanin / fanin_1 每 hart 一棵；impl rtl/uncore/TLPLIC.sv:264-272 g_fanin[h]，h=0..NHART-1。
+TLPLIC	Queue1_RegMapperInput	out_back_q	u_core	-	INLINE	q_full,q_read,q_index,q_data,q_mask,q_source,q_size	impl rtl/uncore/TLPLIC.sv:107-140「TileLink A 通道: 1 深寄存器队列 (out_back_q)」，与 golden Queue1_RegMapperInput 同构，整块内联成 7 个寄存器。
+SyncDataModuleTemplate_BackendPC_64entry	DataModule_BackendPC_16entry	dataBanks_(\d+)	u_core.g_bank[{i}].dataBank	xs_DataModule	INSTANCE		golden SyncDataModuleTemplate_*.sv 的 dataBanks_N 是 Chisel Vec 第 N 项；impl rtl/common/xs_SyncDataModule.sv 的 g_bank[b].dataBank 同序（FM 已判等价）。
+SyncDataModuleTemplate__64entry	DataModule__16entry	dataBanks_(\d+)	u_core.g_bank[{i}].dataBank	xs_DataModule	INSTANCE		同上
+SyncDataModuleTemplate__64entry_1	DataModule__16entry_4	dataBanks_(\d+)	u_core.g_bank[{i}].dataBank	xs_DataModule	INSTANCE		同上
+SyncDataModuleTemplate__64entry_2	DataModule__16entry_8	dataBanks_(\d+)	u_core.g_bank[{i}].dataBank	xs_DataModule	INSTANCE		同上
+SyncDataModuleTemplate__64entry_3	DataModule__16entry_12	dataBanks_(\d+)	u_core.g_bank[{i}].dataBank	xs_DataModule	INSTANCE		同上
+SyncDataModuleTemplate__64entry_4	DataModule__16entry_16	dataBanks_(\d+)	u_core.g_bank[{i}].dataBank	xs_DataModule	INSTANCE		同上
+SyncDataModuleTemplate__1024entry	DataModule__64entry	dataBanks_(\d+)	u_core.g_bank[{i}].dataBank	xs_DataModule	INSTANCE		同上（16 bank）
+SyncDataModuleTemplate__1024entry_1	DataModule__64entry_16	dataBanks_(\d+)	u_core.g_bank[{i}].dataBank	xs_DataModule	INSTANCE		同上（16 bank，核为 xs_SyncDataModule_1024e1）
+FtqPcMemWrapper	SyncDataModuleTemplate_FtqPC_64entry	mem	u_core.u_mem	xs_SyncDataModule	INSTANCE		impl rtl/frontend/FtqPcMemWrapper.sv 的 xs_FtqPcMemWrapper 里 u_mem 即 golden 的 mem。
+EntriesVfdivVidiv	EnqEntry_18	enqEntries_(\d+)	u_core.g_entry[{i}].u_e	xs_iq_entry	INSTANCE		rtl/backend/xs_iq_entries_core.sv:17-20 条目分段 [0..NUM_ENQ-1]=enq；EntriesVfdivVidiv.sv:679 NUM_ENQ=2/NUM_SIMP=2/NUM_COMP=6。
+EntriesVfdivVidiv	OthersEntry_164	othersEntriesSimp_(\d+)	u_core.g_entry[{i+2}].u_e	xs_iq_entry	INSTANCE		同上：simp 段起点 = NUM_ENQ = 2。
+EntriesVfdivVidiv	OthersEntry_166	othersEntriesComp_(\d+)	u_core.g_entry[{i+4}].u_e	xs_iq_entry	INSTANCE		同上：comp 段起点 = NUM_ENQ+NUM_SIMP = 4。
+EntriesVfdivVidiv	EnqPolicy_18	(?:comp|simp)TransPolicy	u_core	-	INLINE	simp_sel_v,x_trans_sel,simp_deq_sel_vec,simp_can_trans2comp	rtl/backend/xs_iq_entries_core.sv:792「§6 EnqPolicy —— golden 的 EnqPolicy 模块(SelectOne(\"circ\", …, 2))」整块内联。
+Alu	AluDataModule	aluModule	u_core	-	INLINE	(整个 xs_Alu_core 组合体)	rtl/backend/Alu.sv 的 xs_Alu_core 无任何子例化：golden Alu/aluModule 及其 11 个叶子全部内联成组合逻辑。
+L2TlbMissQueue	Queue40_L2TlbMQBundle	io_out_q	u_core	-	INLINE	enq_ptr,deq_ptr,maybe_full	rtl/memblock/L2TlbMissQueue.sv:48,69-114「实例化与 golden 完全相同的 ram_40x47」——队列控制内联，存储叶子仍是 ram_40x47（见 collateral 行）。
+UopInfoGen	indexedLSNumOfUopTable	indexedLSTable	u_core	-	INLINE	(function LUT)	rtl/backend/UopInfoGen.sv:88「可读核把这两张表用 function 内联(语义等价),故 wrapper 无子模块」。
+UopInfoGen	strdiedLSNumOfUopTable	stridedLSTable	u_core	-	INLINE	(function LUT)	同上
+VSetRiWi	VsetModule	vsetModule	u_core	-	INLINE	log2_sew,vlmax,illegal,vl	rtl/backend/VSetRiWi.sv:88-101「③ VsetModule 计算」内联（VsetModule 模块本身仍被别的父模块例化，故不在丢失模块清单里，但这条路径没了）。
+VSetRvfWvf	VsetModule	vsetModule	u_core	-	INLINE	log2_sew,vlmax,illegal,vl	同上
+WrBypass	data_mem_0_8x3	data_mem_0_ext	u_core	-	INLINE_REG_ARRAY	data_mem	rtl/frontend/WrBypass.sv:124-126「对应 golden 的 data_mem_*_ext 寄存器堆」logic [NUM_ENTRIES][NUM_WAYS][DATA_WIDTH] data_mem。
+WrBypass_32	data_mem_8x4	data_mem_ext	u_core	-	INLINE_REG_ARRAY	data_mem	同上
+WrBypass_33	data_mem_16x12	data_mem_ext	u_core	-	INLINE_REG_ARRAY	data_mem	同上
+WrBypass_41	data_mem_0_4x2	data_mem_0_ext	u_core	-	INLINE_REG_ARRAY	data_mem	同上
+WrBypass_43	data_mem_0_4x2	data_mem_0_ext	u_core	-	INLINE_REG_ARRAY	data_mem	同上
+SyncDataModuleTemplate_FtqPC_64entry	DataModule_FtqPC_16entry	dataBanks_(\d+)	g_bank[{i}].dataBank	xs_DataModule	INSTANCE		本行的 owner 自己也被吸收了（FtqPcMemWrapper/mem -> u_core.u_mem），故路径相对顶上它的 xs_SyncDataModule 写；bank 序与其余 SyncDataModuleTemplate 家族同。
+TageTable	WrBypass	bank_wrbypasses_(\d+)_(\d+)	u_core.g_wb_bank[{i}].g_wb_br[{j}].bank_wrbypass	WrBypass	INSTANCE		golden 名里两个编号就是 (bank, 逻辑分支)：`bank_wrbypasses_A_B` 的 io_write_data_0 取 `per_bank_update_wdata_A_*_ctr`（A=bank），B 侧走 `io_update_pc[1] ? … : …` 的分支交换（golden TageTable.sv:941-988）；impl rtl/frontend/TageTable.sv:505-521 的 g_wb_bank[gb]/g_wb_br[gp] 里 wb_wdata=bank_wdata[gb][gp^upd_swap]、wb_wen 按 gp 选 io_update_mask_0/1 —— gb=A、gp=B 逐项对上。机器只能判到「唯一 generate 点」，两层下标的拆分要人工定，故声明。
+TageTable_1	WrBypass	bank_wrbypasses_(\d+)_(\d+)	u_core.g_wb_bank[{i}].g_wb_br[{j}].bank_wrbypass	WrBypass	INSTANCE		同 TageTable（家族共用 xs_TageTable_core 的同一段 generate）
+TageTable_2	WrBypass	bank_wrbypasses_(\d+)_(\d+)	u_core.g_wb_bank[{i}].g_wb_br[{j}].bank_wrbypass	WrBypass	INSTANCE		同 TageTable
+TageTable_3	WrBypass	bank_wrbypasses_(\d+)_(\d+)	u_core.g_wb_bank[{i}].g_wb_br[{j}].bank_wrbypass	WrBypass	INSTANCE		同 TageTable
