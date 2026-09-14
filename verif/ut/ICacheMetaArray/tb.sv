@@ -146,6 +146,10 @@ module tb;
   end
 
   initial begin
+    // 拍数由 ut_common.mk 统一下发（+ncycles，默认 200000）。原来本 tb 只认硬编码的
+    // 60000，于是这个目标的 UT 验收长期跑在标准（>=200k/seed）的三分之一拍数上，
+    // 而 Makefile 明明已经把 +ncycles=200000 传进来了 —— 没人读它。
+    void'($value$plusargs("ncycles=%d", NCYCLES));
     rst=1; repeat(8) @(posedge clk); rst=0;
     repeat(NCYCLES) @(posedge clk);
     $display("checks=%0d errors=%0d entryValid1_observed=%0d tag_compared=%0d",
