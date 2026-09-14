@@ -62,7 +62,12 @@ module xs_SourceB_core (
   // probe 表项
   logic        probes_valid  [ENTRIES];
   logic        probes_rdy    [ENTRIES];
-  logic [3:0]  probes_waitG  [ENTRIES];  // 4 位真实所需(索引 16 项), golden 冗余高 3 位为 cone-dead
+  // waitG 只存真实需要的 4 位（索引 16 项 grantStatus）。
+  // golden 把它声明成 sourceIdBits(7) 位，但写入值是 {3'h0, OHToUInt(conflictMask)}
+  // —— 高 3 位由生成器恒写 0 且全模块只读 waitG[3:0]，是 golden 侧的 cone-dead 位。
+  // 这里按真实读取宽度建 4 位（class-3 缩尺寸），impl 侧不产生死位；golden 多出的
+  // 4 个未读位（probes_N_waitG_reg[4]）在 verif/dead_ref/SourceB.json 逐条声明。
+  logic [3:0]  probes_waitG  [ENTRIES];
   logic [30:0] probes_tag    [ENTRIES];
   logic [8:0]  probes_set    [ENTRIES];
   logic [2:0]  probes_opcode [ENTRIES];
@@ -104,9 +109,7 @@ module xs_SourceB_core (
   assign conflict = |conflictMask;
 
   // OHToUInt(conflictMask): one-hot → 4-bit 索引 (assert PopCount<=1 保证 one-hot)
-  // golden waitG 声明为 sourceIdBits(7)位, 但仅低 4 位被读(索引 16 项 grantStatus),
-  // 高 3 位恒为 OHToUInt 补零→死位. 本核化简 waitG 至真实所需 4 位(class-3 缩尺寸),
-  // 使 impl clean; golden 冗余高位为 golden-only cone-dead。
+  // 16 项 grantStatus 只需 4 位索引（golden 再零扩展到 7 位存进 waitG，见上）。
   function automatic logic [3:0] oh16_to_idx(input logic [15:0] m);
     logic [3:0] r;
     r[0] = |(m & 16'b1010101010101010);

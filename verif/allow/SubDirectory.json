@@ -1,0 +1,35 @@
+{
+ "schema": "xs-v2-sv-allow-v1",
+ "target": "SubDirectory",
+ "baseline": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "objects": [
+  {
+   "side": "i",
+   "design": "array_19_ext",
+   "path": "i:/WORK/SubDirectory/tagArray/array/array_19_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_20_ext",
+   "path": "i:/WORK/SubDirectory/metaArray/array/array_20_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_19_ext",
+   "path": "r:/WORK/SubDirectory/tagArray/array/array_19_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_20_ext",
+   "path": "r:/WORK/SubDirectory/metaArray/array/array_20_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  }
+ ]
+}

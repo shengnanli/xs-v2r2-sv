@@ -30,6 +30,20 @@ RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/FastArbiter_45.sv \
 # golden 双例化：golden 顶（子模块闭包见 RTL_GOLDEN_DEPS，两侧共用同一份定义）。
 GOLDEN_SRCS = $(GOLDEN_RTL)/SNXbar.sv
 
+# ---------------------------------------------------------------------------
+# matched-unread 加强（vmucp，2026-09-14，agent/arb）
+#
+# strict 首跑：native SUCCEEDED / passing 1839 / failing 0 / unmatched 0，只剩 2 个
+# unread 点卡成 PARTIAL。2 点**全部** matched_nc，严格 1:1：
+#     r:/WORK/SNXbar/txreqArb/pendingMask_reg[0] ↔ i:/WORK/SNXbar/u_core/txreqArb/...
+#     r:/WORK/SNXbar/txdatArb/pendingMask_reg[0] ↔ i:/WORK/SNXbar/u_core/txdatArb/...
+# 两点都在 **golden 自己的** FastArbiter_46/_45 内部；这两个模块经 RTL_GOLDEN_DEPS
+# 两侧同源 elaborate（同一份 golden 文件、同一实例名），双射是结构性的。
+# 死位成因同 RNXbar：轮转仲裁的 rrGrantMask bit0 恒 0（写入值末位是字面量 1'h0），
+# 而 pendingMask[0] 的唯一读出点是 rrGrantMask[0] & pendingMask[0] → 无可观测路径。
+# 加强（true = 要 FM 多证一些，不是 waiver）：让 FM 实际比较这 2 个 matched-unread 点。
+# ---------------------------------------------------------------------------
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 FM_VARIANTS = SNXbar
 FM_REF_DEPS_SNXbar = FastArbiter_45.sv FastArbiter_46.sv
 
