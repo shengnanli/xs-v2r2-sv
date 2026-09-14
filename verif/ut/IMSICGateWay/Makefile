@@ -4,12 +4,26 @@ RTL_DIR = ../../../rtl
 RTL_SRCS = $(RTL_DIR)/uncore/IMSICGateWay.sv
 TB_SRCS = tb.sv
 
-GOLDEN_SRCS = $(GOLDEN_RTL)/IMSICGateWay.sv \
-              $(GOLDEN_RTL)/AsyncResetSynchronizerShiftReg_w1_d3_i0.sv \
-              $(GOLDEN_RTL)/AsyncResetSynchronizerPrimitiveShiftReg_d3_i0.sv
-# 老战役审计声明继承: proof_mode=assembly, 对称黑盒边界 = msi_vld_req_cpu_chain
-FM_MODE = assembly
-FM_ALLOWLIST ?= 1
+# ---------------------------------------------------------------------------
+# 消黑盒 (2026-09-14)：本目标此前声明 proof_mode=assembly + 对称黑盒边界
+# msi_vld_req_cpu_chain（3 级异步复位同步链）。assembly 需要 verif/allow/<top>.json
+# 逐对象声明，缺声明即 PARTIAL；而这个黑盒本来就没必要——
+#   AsyncResetSynchronizerShiftReg_w1_d3_i0 不是厂商宏、也不是本轮的独立签核目标
+#   （docs/coverage_three_axis.tsv 记它 GOLDEN_REUSE / PROVEN_IN_CONE），
+#   golden 源码就在 G1 里，两侧同源 elaborate 即可白盒受验。
+# 做法与 verif/ut/DebugModule 一致：放进 RTL_GOLDEN_DEPS（impl 侧）+
+# FM_REF_DEPS_<top>（ref 侧），FM 于是不再有任何黑盒，模式回到 signoff-strict。
+# 实测效果（fm.log 的 Matched Compare Points 表）：总点数仍 39，但构成从
+#   BBPin 3 / Port 18 / DFF 18  变成  BBPin 0 / Port 18 / DFF 21 —— 同步链的 3 级
+#   DFF 从「黑盒引脚假设相等」变成「真做等价比较」，black_boxes.rpt 报 No black boxes。
+#   failing/unverified/unmatched/unread 全 0，verdict 从 PARTIAL 变 SUCCEEDED。
+# ---------------------------------------------------------------------------
+RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/AsyncResetSynchronizerShiftReg_w1_d3_i0.sv \
+                  $(GOLDEN_RTL)/AsyncResetSynchronizerPrimitiveShiftReg_d3_i0.sv
+
+FM_REF_DEPS_IMSICGateWay = AsyncResetSynchronizerShiftReg_w1_d3_i0.sv \
+                           AsyncResetSynchronizerPrimitiveShiftReg_d3_i0.sv
+GOLDEN_SRCS = $(GOLDEN_RTL)/IMSICGateWay.sv
 FM_VARIANTS = IMSICGateWay
 
 include ../../../scripts/ut_common.mk
@@ -26,9 +40,9 @@ SIM_ARGS += +vcs+initreg+0
 # 或正常退出一律判负测失败。
 # ---------------------------------------------------------------------------
 .PHONY: negtest
-negtest: $(UT_SRCS) negtest_width.sv $(GOLDEN_SRCS) | derive
+negtest: $(UT_SRCS) negtest_width.sv $(GOLDEN_SRCS) $(RTL_GOLDEN_DEPS) | derive
 	rm -rf simv_negtest simv_negtest.daidir simv_negtest.csrc
-	$(VCS) -Mdir=simv_negtest.csrc $(UT_SRCS) $(GOLDEN_SRCS) negtest_width.sv \
+	$(VCS) -Mdir=simv_negtest.csrc $(UT_SRCS) $(RTL_GOLDEN_DEPS) $(GOLDEN_SRCS) negtest_width.sv \
 	    -top tb -o simv_negtest -l compile_negtest.log
 	@./simv_negtest -l negtest.log > /dev/null 2>&1 || true
 	@if grep -q "NEGTEST ESCAPED" negtest.log; then \
