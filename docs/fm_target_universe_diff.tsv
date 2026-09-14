@@ -1,0 +1,10 @@
+# FM target 全集：make 权威求值 vs 轻量正则（scripts/fm_target_universe.py
+#   --diff-engines 生成；禁止手工编辑）。codex 0153 D70。
+# "谁是 FM target" 的权威定义是 scripts/ut_common.mk 的 `fm-%` 守卫，它对
+#   **make 已展开的字符串**做子串匹配 —— 所以唯一权威的求值器就是 make 自己。
+# engine=make  : git archive <commit> 出临时树后逐目录 `make --eval` 展开
+# engine=regex : 轻量正则近似（退路）
+# ★两栏不同即事故★：正则漂了而没人发现，not_fm_target 这条判据就会给出
+#   假阴性（"它不是 target" → 逼着本来可以出证书的 child 去走 allow 绕过）。
+# makefiles_sha256=ad7d1658db3160a50ccef6647034d4b6ec12ee2cc0e43c0472a4f08bf725b342  make=272  regex=272  regex_unresolved=0  分歧=0
+# target	ut_dirs_make	ut_dirs_regex	verdict

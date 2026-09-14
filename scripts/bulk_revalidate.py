@@ -23,20 +23,50 @@ import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import fm_target_universe as FTU                                   # noqa: E402
+
+
+def _rev(rev):
+    """rev -> 40-hex commit。解析不了就 fail-closed（不猜 HEAD）。"""
+    p = subprocess.run(['git', 'rev-parse', rev + '^{commit}'], cwd=str(REPO),
+                       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if p.returncode != 0:
+        raise SystemExit('无法解析 commit %r' % rev)
+    return p.stdout.decode().strip()
+
 REPO = pathlib.Path(__file__).resolve().parent.parent
 
 
-def ut_dirs():
-    """{target: ut_dir}，从各 UT Makefile 的 FM_VARIANTS 解析。"""
+def ut_dirs(commit='HEAD'):
+    """{target: (ut_dir, fm_mode)} —— target 全集由 **make 权威求值**给出。
+
+    ★这里原先自己写了一份正则★（codex 0153 D70 点名的那处）：
+
+        m = re.search(r'^FM_VARIANTS\\s*=\\s*(.*)$', txt, re.M)
+
+    三处不到位：`\\s*=` 匹配不上 `:=`、不展开 `$(VARIANTS)`、`re.search` 只取
+    第一处赋值。实测后果：**248 个 target 而不是 272**，整个 MbistPipe 家族
+    24 个变体（含 MbistPipeIcacheTag）凭空消失 —— 机器 diff 见
+    `docs/fm_target_universe_defect_diff.tsv`。被漏掉的 target 在这里表现为
+    "批量复验永远轮不到它"，在 verif/allow_gen/classification.tsv 里表现为
+    "根本不是任何 UT 的 FM target ⇒ 永远无法变绿"。
+
+    现在统一走 scripts/fm_target_universe.py（make 权威 + 正则交叉校验），
+    本文件不再持有第二份解析。FM_MODE 仍按目录取，它不参与"谁是 target"的判定。
+    """
+    tmap, unresolved = FTU.targets_at(str(REPO), _rev(commit))
+    if unresolved:
+        raise SystemExit('FM target 全集未完全展开（fail-closed）: %s'
+                         % ' '.join(unresolved[:5]))
     out = {}
-    for mk in sorted((REPO / 'verif' / 'ut').glob('*/Makefile')):
-        txt = re.sub(r'\\\n', ' ', mk.read_text())
-        m = re.search(r'^FM_VARIANTS\s*=\s*(.*)$', txt, re.M)
-        mode = re.search(r'^FM_MODE\s*[:?]?=\s*(\S+)', txt, re.M)
-        if not m:
-            continue
-        for t in m.group(1).split():
-            out[t] = (mk.parent.name, (mode.group(1) if mode else 'signoff-strict'))
+    for t, dirs in tmap.items():
+        d = sorted(dirs)[0]
+        mk = REPO / 'verif' / 'ut' / d / 'Makefile'
+        mode = None
+        if mk.exists():
+            mode = re.search(r'^FM_MODE\s*[:?]?=\s*(\S+)', mk.read_text(), re.M)
+        out[t] = (d, (mode.group(1) if mode else 'signoff-strict'))
     return out
 
 

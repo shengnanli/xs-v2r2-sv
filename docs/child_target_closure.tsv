@@ -1,0 +1,50 @@
+# A 类边界 child 的 FM target 闭合性与证明状态
+#   （scripts/child_target_closure.py 生成；禁止手工编辑）
+# ★这是 child 闭合性的最终来源★（codex 0153 D70）。
+#   verif/allow_gen/classification.tsv 的 blocker 是人写的散文，本表是机器结论；
+#   `--audit` 会把散文里每一句「X 不是 FM target」拿来和本表对账，对不上就 FAIL。
+# is_fm_target : scripts/fm_target_universe.py，engine=both（make 权威 + 正则交叉校验）
+# proof_status : scripts/proof_status.py，只认 tracked verif/proof_certificates/*.json
+# ★「是 target」≠「已证明」★：有 target 但没证书 = HAS_TARGET_UNVERIFIED，
+#   它**可以**通过 clean official rerun + 出证书变绿；而 NO_FM_TARGET 是结构性
+#   不闭合，只能改走两侧 inline elaborate 或新建 AUX leaf target。
+# boundary_class: A1=厂商宏（冻结 registry 批准即可，本就无需自己的 FM target）
+#                 A2=green_child 候选（**必须**是 FM target，否则结构性不闭合）
+# ★D70 盯的那个数是 A2 且无 target 的 child 数★（本轮 11 → 9）。
+# makefiles_sha256 = 所有被读入的 verif/ut/*/Makefile + scripts/ut_common.mk 的字节摘要。
+#   刻意不写 commit：artifact 自己被提交后 commit 就变了，--check 会永远失败。
+# makefiles_sha256=ad7d1658db3160a50ccef6647034d4b6ec12ee2cc0e43c0472a4f08bf725b342  FM target 全集=272  child=33  无 target=22（其中 A2=9 ★D70 盯的就是这个数★）
+# child	boundary_class	is_fm_target	ut_dirs	proof_status	verdict	referenced_by
+AsyncResetSynchronizerShiftReg_w1_d3_i0	A2	NO	-	UNVERIFIED	NO_FM_TARGET	IMSICGateWay
+FoldedSRAMTemplate_20	A2	YES	FoldedSRAMTemplate	UNVERIFIED	HAS_TARGET_UNVERIFIED	TageBTable
+ICacheCtrlUnit	A2	YES	ICacheCtrlUnit	UNVERIFIED	HAS_TARGET_UNVERIFIED	ICache
+ICacheDataArray	A2	YES	ICacheDataArray	UNVERIFIED	HAS_TARGET_UNVERIFIED	ICache
+ICacheMainPipe	A2	NO	-	UNVERIFIED	NO_FM_TARGET	ICache
+ICacheMetaArray	A2	YES	ICacheMetaArray	UNVERIFIED	HAS_TARGET_UNVERIFIED	ICache
+ICacheMissUnit	A2	YES	ICacheMissUnit	UNVERIFIED	HAS_TARGET_UNVERIFIED	ICache
+ICacheReplacer	A2	YES	ICacheReplacer	UNVERIFIED	HAS_TARGET_UNVERIFIED	ICache
+IPrefetchPipe	A2	NO	-	UNVERIFIED	NO_FM_TARGET	ICache
+MaxPeriodFibonacciLFSR_3	A2	NO	-	UNVERIFIED	NO_FM_TARGET	SubDirectory
+MbistPipeIcacheTag	A2	YES	MbistPipe	UNVERIFIED	HAS_TARGET_UNVERIFIED	ICacheMetaArray
+SRAMTemplate_192	A2	NO	-	UNVERIFIED	NO_FM_TARGET	SubDirectory
+SRAMTemplate_193	A2	NO	-	UNVERIFIED	NO_FM_TARGET	SubDirectory
+SRAMTemplate_194	A2	NO	-	UNVERIFIED	NO_FM_TARGET	SubDirectory_1
+SRAMTemplate_195	A2	NO	-	UNVERIFIED	NO_FM_TARGET	SubDirectory_1
+SRAMTemplate_196	A2	NO	-	UNVERIFIED	NO_FM_TARGET	SubDirectory_1
+SplittedSRAMTemplate	A2	YES	SplittedSRAMTemplate	UNVERIFIED	HAS_TARGET_UNVERIFIED	ICacheMetaArray
+SplittedSRAMTemplate_1	A2	YES	SplittedSRAMTemplate	UNVERIFIED	HAS_TARGET_UNVERIFIED	ICacheMetaArray
+WayLookup	A2	YES	WayLookup	UNVERIFIED	HAS_TARGET_UNVERIFIED	ICache
+WrBypass_32	A2	YES	WrBypass	UNVERIFIED	HAS_TARGET_UNVERIFIED	TageBTable
+array_10_ext	A1	NO	-	UNVERIFIED	NO_FM_TARGET	SRAMTemplate_128
+array_12_ext	A1	NO	-	UNVERIFIED	NO_FM_TARGET	SRAMTemplate_145
+array_13_ext	A1	NO	-	UNVERIFIED	NO_FM_TARGET	SRAMTemplate_146
+array_15_ext	A1	NO	-	UNVERIFIED	NO_FM_TARGET	SRAMTemplate_163,SRAMTemplate_185
+array_18_ext	A1	NO	-	UNVERIFIED	NO_FM_TARGET	SRAMTemplate_155,SRAMTemplate_166,SRAMTemplate_178
+array_8	A1	NO	-	UNVERIFIED	NO_FM_TARGET	DuplicatedTagArray
+array_8_ext	A1	NO	-	UNVERIFIED	NO_FM_TARGET	DuplicatedTagArray
+ram_2x119	都不是	NO	-	UNVERIFIED	NO_FM_TARGET	TLBuffer_13
+ram_2x283	都不是	NO	-	UNVERIFIED	NO_FM_TARGET	TLBuffer_13
+ram_2x321	都不是	NO	-	UNVERIFIED	NO_FM_TARGET	TLBuffer_13
+ram_2x352	都不是	NO	-	UNVERIFIED	NO_FM_TARGET	TLBuffer_13
+ram_40x47	都不是	NO	-	UNVERIFIED	NO_FM_TARGET	L2TlbMissQueue
+ram_sink_2x8	都不是	NO	-	UNVERIFIED	NO_FM_TARGET	TLBuffer_13

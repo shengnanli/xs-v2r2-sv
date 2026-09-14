@@ -12,10 +12,10 @@ SRAMTemplate_178	SRAMTemplateNewForm	2	yes	array_18_ext	A1	DECLARED	-
 SRAMTemplate_185	SRAMTemplateNewForm	2	yes	array_15_ext	A1	DECLARED	-
 DuplicatedTagArray	DuplicatedTagArray	16	NO	ref:array_8_ext(8) / impl:array_8(8)	A1(潜在)	STOP	RTL_GOLDEN_DEPS 缺 array_8.sv ⇒ 两侧 elaboration 集合不对称，声明必被 assembly_bbox_not_symmetric 拒；须先补 Makefile 再重跑
 TageBTable	TageBTable	6	yes	FoldedSRAMTemplate_20(2) WrBypass_32(1)	A2	STOP	两 child 虽都是已声明 target，但 receipt 全部钉在已作废的 PROOF_COMMIT=3b72cb1；且 docs/receipt_index.tsv 被 .gitignore 忽略，clean clone 下 _child_receipts() 返回空 ⇒ assembly_green_child_no_receipt
-ICacheMetaArray	ICacheMetaArray	6	yes	MbistPipeIcacheTag(1) SplittedSRAMTemplate(1) SplittedSRAMTemplate_1(1)	A2	STOP	MbistPipeIcacheTag 根本不是任何 UT 的 FM target ⇒ child 不闭合（永远无法变绿）
+ICacheMetaArray	ICacheMetaArray	6	yes	MbistPipeIcacheTag(1) SplittedSRAMTemplate(1) SplittedSRAMTemplate_1(1)	A2	STOP	3 个 child 全部是 FM target（MbistPipeIcacheTag=ut:MbistPipe；SplittedSRAMTemplate/_1=ut:SplittedSRAMTemplate），但都无 tracked 证书 ⇒ HAS_TARGET_UNVERIFIED，须 clean official rerun 后出证书才能谈 green_child。本行 blocker 的旧说法已由 docs/child_target_closure.tsv 机械推翻（坏解析器假阴性，根因见 docs/fm_target_universe_defect_diff.tsv，codex 0153 D70）
 SubDirectory	SubDirectory	6	yes	MaxPeriodFibonacciLFSR_3(1) SRAMTemplate_192(1) SRAMTemplate_193(1)	A2	STOP	三个 child 全都不是 FM target ⇒ child 不闭合
 SubDirectory_1	SubDirectory_1	6	yes	SRAMTemplate_194(1) SRAMTemplate_195(1) SRAMTemplate_196(1)	A2	STOP	三个 child 全都不是 FM target ⇒ child 不闭合
 IMSICGateWay	IMSICGateWay	2	yes	AsyncResetSynchronizerShiftReg_w1_d3_i0(1)	A2	STOP	child 不是 FM target ⇒ 不闭合
-ICache	ICache	16	yes	ICacheCtrlUnit ICacheDataArray ICacheMainPipe ICacheMetaArray ICacheMissUnit ICacheReplacer IPrefetchPipe WayLookup	A2	STOP	ICacheMainPipe/ICacheMissUnit/IPrefetchPipe 不是 FM target；ICacheCtrlUnit/ICacheMetaArray 历史 verdict=PARTIAL
+ICache	ICache	16	yes	ICacheCtrlUnit ICacheDataArray ICacheMainPipe ICacheMetaArray ICacheMissUnit ICacheReplacer IPrefetchPipe WayLookup	A2	STOP	ICacheMainPipe/IPrefetchPipe 确实不是 FM target ⇒ 这两个结构性不闭合；其余 6 个（ICacheCtrlUnit/ICacheDataArray/ICacheMetaArray/ICacheMissUnit/ICacheReplacer/WayLookup）都是 FM target 但无 tracked 证书 ⇒ HAS_TARGET_UNVERIFIED；★旧 blocker 曾把 ICacheMissUnit 也列为「不是 FM target」，系同一坏解析器的假阴性，已由 docs/child_target_closure.tsv 机械推翻（codex 0153 D70）
 TLBuffer_13	TLBuffer_13	40	yes	ram_2x119(4) ram_2x283(4) ram_2x321(4) ram_2x352(4) ram_sink_2x8(4)	都不是	STOP	5 个 firtool 内联存储叶子不在冻结 registry；本批不得扩表（见 registry_gaps.tsv）
 L2TlbMissQueue	L2TlbMissQueue	2	yes	ram_40x47(1)	都不是	STOP	同上，另一位 owner 已就同类叶子停下待审

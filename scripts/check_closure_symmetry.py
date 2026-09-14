@@ -206,6 +206,138 @@ def check_target(utdir, target):
     return row
 
 
+# --------------------------------------------------------------------------
+# 源清单对账（codex 0153 D69）—— 给 `$bits(...)` 那 95 个 ERROR 的第二条路
+# --------------------------------------------------------------------------
+# ★D69 的禁令：不要为支持完整 SystemVerilog 而自写第二个 elaborator。★
+# 所以这里**不**去教 sv_elab 认 `$bits(type/signal)`。换的是判据本身：
+#
+#   原判据（enumerate_blackboxes）要先把参数/generate 求值出来，才知道到底例化了谁，
+#   于是一遇到 `$bits(io_mem_acquire_bits_address)` 这种表达式就判不下去。
+#   但 `$bits` 出现的位置是**位宽**与**参数覆盖**（实测 ICacheMissUnit 的 7 处全是
+#   `localparam int unsigned W = $bits(t);` 与 `.PORT_ACQ_ADDR_W ($bits(...))`），
+#   它决定不了"例化的是哪个模块"。
+#
+#   新判据只问两件**不需要求值**的事：
+#     provides(side)   这一侧读入的文件里**定义**了哪些 design（纯声明扫描）
+#     refs_over(side)  从 target 出发，把所有 generate 分支都当成走到，
+#                      语法上可能例化到的 design 集合（**过近似**）
+#   黑盒 = 被引用但没被提供（FM 的 hdlin_unresolved_modules=black_box 就是这条）。
+#   真实黑盒集 ⊆ refs_over - provides。所以：
+#
+#       ★两侧的 (refs_over - provides) 都为空 ⇒ 两侧真实黑盒集都为空
+#         ⇒ Counter(ref)==Counter(impl)=={} ⇒ 一定对称。★
+#
+#   这是**充分**条件，不是充要：过近似不空时只能判不准（照旧 CLOSURE_UNKNOWN），
+#   绝不反过来当成"不对称"。方向是安全的那一边。
+#
+# 附带做 D69 要的 **provider hash 对账**：两侧都提供的 design，逐个记下它在各侧
+# 的提供文件与 sha256。同名不同字节 = 两侧在拿不同的东西当同一个设计。
+
+INV_CLOSED = 'CLOSED_NO_BLACKBOX'      # 已证明两侧黑盒集皆空 ⇒ 对称
+INV_UNKNOWN = 'INVENTORY_UNKNOWN'      # 过近似不为空 —— 判不准，维持 CLOSURE_UNKNOWN
+INV_ERROR = 'INVENTORY_ERROR'          # 连声明都扫不出来（fail-closed）
+
+#: `bind` 会在语法可见的例化之外再挂上实例，"语法过近似"这个前提就不成立了。
+#: 本仓 golden 是 firtool 产物、可读核也不用 bind；真出现就必须停下来，不许放行。
+_BIND = re.compile(r'^\s*bind\s+[A-Za-z_]', re.M)
+
+
+def _provider_inventory(files):
+    """{design: (文件名, sha256)} + {design: [被它例化的 design…]}。
+
+    纯声明扫描：不求值参数、不解 generate、不碰 `$bits`。
+    """
+    prov, insts = {}, {}
+    for f in files:
+        try:
+            raw = open(f, 'rb').read()
+        except OSError as e:
+            raise RuntimeError(f'源文件读不出来: {f}: {e}')
+        if _BIND.search(raw.decode('utf-8', 'replace')):
+            raise RuntimeError(f'{os.path.basename(f)} 里有 `bind` —— '
+                               f'"语法例化是过近似"这个前提不成立，拒绝下结论')
+        sha = hashlib.sha256(raw).hexdigest()
+        mods = sv_elab.parse_file(f)
+        for name, m in mods.items():
+            # 同名模块被后读的文件覆盖：与 FM 读文件的语义一致，记最后一个
+            prov[name] = (os.path.basename(f), sha)
+            insts[name] = [typ for (_p, typ, _i, _o) in m.insts]
+    return prov, insts
+
+
+def _refs_overapprox(target, prov, insts, drop):
+    """从 target 出发的**语法过近似**引用集（所有 generate 分支都当走到）。"""
+    seen, stack, refs = set(), [target], set()
+    while stack:
+        n = stack.pop()
+        if n in seen:
+            continue
+        seen.add(n)
+        for typ in insts.get(n, ()):
+            if typ in drop:
+                continue
+            refs.add(typ)
+            if typ in prov:
+                stack.append(typ)
+    return refs
+
+
+def inventory_check(utdir, target):
+    """源清单对账。返回 row dict（status ∈ INV_*）。任何异常都 fail-closed。"""
+    row = {'target': target, 'utdir': os.path.relpath(str(utdir), str(REPO)),
+           'inventory': INV_ERROR, 'inventory_detail': ''}
+    try:
+        v = make_vars(utdir, target)
+        ref = [f for f in v['REF'] if os.path.exists(f)]
+        impl = [f for f in v['IMPL'] if os.path.exists(f)]
+        missing = [f for f in v['REF'] + v['IMPL'] if not os.path.exists(f)]
+        if missing:
+            row['inventory_detail'] = ('elab_src_missing:' + ','.join(
+                os.path.basename(m) for m in missing[:4]))
+            return row
+        drop = typedef_names(ref) | typedef_names(impl)
+        rp, ri = _provider_inventory(ref)
+        ip, ii = _provider_inventory(impl)
+        if target not in rp:
+            row['inventory_detail'] = f'ref 侧没有提供 {target} 的定义'
+            return row
+        if target not in ip:
+            row['inventory_detail'] = f'impl 侧没有提供 {target} 的定义'
+            return row
+        rbb = sorted(_refs_overapprox(target, rp, ri, drop) - set(rp))
+        ibb = sorted(_refs_overapprox(target, ip, ii, drop) - set(ip))
+    except (RuntimeError, sv_elab.ElabError) as e:
+        row['inventory_detail'] = f'{type(e).__name__}:{e}'
+        return row
+    except Exception as e:  # noqa: BLE001 - fail-closed，不吞
+        row['inventory_detail'] = f'unexpected:{type(e).__name__}:{e}'
+        return row
+
+    # provider hash 对账（D69 明确要的那一半）
+    both = sorted(set(rp) & set(ip))
+    shared = [d for d in both if rp[d][1] == ip[d][1]]
+    row['provider_reconcile'] = {
+        'ref_provides': len(rp), 'impl_provides': len(ip),
+        'provided_both_sides': len(both),
+        'identical_bytes_both_sides': len(shared),
+        'ref_only': sorted(set(rp) - set(ip))[:20],
+        'impl_only': sorted(set(ip) - set(rp))[:20],
+    }
+    row['overapprox_bbox'] = {'ref': rbb, 'impl': ibb}
+    if not rbb and not ibb:
+        row['inventory'] = INV_CLOSED
+        row['inventory_detail'] = (
+            f'两侧语法过近似黑盒集皆空（ref 提供 {len(rp)} / impl 提供 {len(ip)} '
+            f'个 design，其中 {len(shared)} 个两侧字节相同）'
+            f' ⇒ 真实黑盒集必为空 ⇒ 对称')
+        return row
+    row['inventory'] = INV_UNKNOWN
+    row['inventory_detail'] = (f'过近似黑盒非空，判不准（不等于不对称）: '
+                               f'ref={rbb[:6]} impl={ibb[:6]}')
+    return row
+
+
 def dead_deps(utdir, target):
     """报告两侧文件集里读入、但层次闭包里无人例化的**死依赖**（提示，不判 FAIL）。
 
@@ -623,6 +755,13 @@ def main(argv=None):
     ap.add_argument('--only', action='append', default=[],
                     help='只查这些 UT 目录名（可重复）')
     ap.add_argument('--json', help='把完整结果写成 JSON（用于 artifact hash）')
+    # ★不要叫 --ledger★：main 上 agent/registry-memory-macro 已经用 --ledger 指
+    # docs/g1_boundary_ledger.tsv（配 --reconcile-ledger）。两边都叫 --ledger 时
+    # git 能"干净合并"，但 argparse 在运行期直接 conflicting option string 崩掉 ——
+    # 实测试merge后 scripts/test_check_closure_symmetry.py 整套挂掉。
+    ap.add_argument('--closure-ledger',
+                    help='把逐 target 判定写成 TSV 台账'
+                         '（CLOSURE_UNKNOWN 必须如实登记，D69）')
     ap.add_argument('--jobs', type=int, default=min(8, (os.cpu_count() or 4)))
     ap.add_argument('--check-registry', action='store_true',
                     help='只校验 verif/vendor_boundary.tsv 的 schema 与签名/hash（不扫 UT）')
@@ -634,6 +773,10 @@ def main(argv=None):
     ap.add_argument('--golden-rtl',
                     default=os.environ.get('GOLDEN_RTL',
                                            '/home/eda/xs-env/G1-canonical/golden-rtl'))
+    ap.add_argument('--inventory', action='store_true',
+                    help='对 elaboration 判不准（ERROR）的 target 再跑一遍**源清单对账**'
+                         '（codex 0153 D69）：两侧语法过近似黑盒集皆空即可判对称。'
+                         '不新写 elaborator，只用 make 展开的文件表 + 声明扫描。')
     ap.add_argument('--dead-deps', action='store_true',
                     help='额外报告死依赖（读入但闭包里无人例化的文件）')
     a = ap.parse_args(argv)
@@ -708,18 +851,63 @@ def main(argv=None):
             if r['status'] in ('SYMMETRIC', 'ASYMMETRIC'):
                 r['dead_deps'] = dead_deps(REPO / r['utdir'], r['target'])
 
+    # ---- D69 第二条路：对 ERROR 行做源清单对账，能关掉的关掉 ----
+    if a.inventory:
+        todo = [r for r in rows if r['status'] == 'ERROR' and r['target'].isidentifier()]
+        with _fut.ThreadPoolExecutor(max_workers=a.jobs) as ex:
+            futs = {ex.submit(inventory_check, REPO / r['utdir'], r['target']): r
+                    for r in todo}
+            for f in _fut.as_completed(futs):
+                r = futs[f]
+                inv = f.result()
+                r.update({k: v for k, v in inv.items()
+                          if k not in ('target', 'utdir')})
+                if inv['inventory'] == INV_CLOSED:
+                    # ★只把"判不准"升级成"已证明对称"，绝不反向把 ERROR 变 ASYMMETRIC★
+                    r['status'] = 'SYMMETRIC_BY_INVENTORY'
+                    r['detail'] = inv['inventory_detail']
+                else:
+                    r['status'] = 'CLOSURE_UNKNOWN'
+                    r['detail'] = f"{r['detail']} || 源清单对账: {inv['inventory_detail']}"
+        for r in rows:
+            if r['status'] == 'ERROR' and not r['target'].isidentifier():
+                r['status'] = 'CLOSURE_UNKNOWN'
+
     tally = Counter(r['status'] for r in rows)
-    bad = [r for r in rows if r['status'] in ('ASYMMETRIC', 'ERROR')]
+    bad = [r for r in rows
+           if r['status'] in ('ASYMMETRIC', 'ERROR', 'CLOSURE_UNKNOWN')]
 
     w = max([len(r['target']) for r in rows] + [6])
     print(f'=== closure symmetry: {len(rows)} 个 target / {len(utdirs)} 个 UT 目录 ===')
     for r in rows:
-        if r['status'] == 'SYMMETRIC' and not a.json and not bad:
-            pass
-        if r['status'] != 'SYMMETRIC':
+        if r['status'] not in ('SYMMETRIC', 'SYMMETRIC_BY_INVENTORY'):
             print(f'  [{r["status"]:<10}] {r["target"]:<{w}} ({r["mode"]:<8}) '
                   f'{r["utdir"]}  {r["detail"]}')
     print('--- tally: ' + ', '.join(f'{k}={v}' for k, v in sorted(tally.items())) + ' ---')
+
+    if a.closure_ledger:
+        led = [
+            '# UT elaboration closure 对称性台账'
+            '（scripts/check_closure_symmetry.py --inventory --closure-ledger 生成）',
+            '# SYMMETRIC              轻量 elaboration 直接判定两侧黑盒 Counter 相等',
+            '# SYMMETRIC_BY_INVENTORY 源清单对账（D69）：两侧**语法过近似**黑盒集皆空',
+            '#                        ⇒ 真实黑盒集必空 ⇒ 一定对称。充分条件，方向安全。',
+            '# CLOSURE_UNKNOWN        ★判不准★ —— 不等价于 clean，也不等价于不对称。',
+            '#                        它不阻塞"全集身份冻结"，但**阻塞该目标 PASS**；',
+            '#                        bank 前必须由权威编译/elaboration source inventory',
+            '#                        或扩展后的 checker 证明对称。',
+            '# ASYMMETRIC             两侧 elaboration 集合确实不对称（真缺陷）',
+            '# SKIP                   FM_INTERFACE_ONLY，不做层次闭包比较',
+            '# target\tutdir\tmode\tstatus\tdetail',
+        ]
+        for r in rows:
+            led.append('%s\t%s\t%s\t%s\t%s'
+                       % (r['target'], r['utdir'], r['mode'], r['status'],
+                          ' '.join(str(r.get('detail', '')).split())[:400]))
+        blob = '\n'.join(led) + '\n'
+        pathlib.Path(a.closure_ledger).write_text(blob)
+        print(f'ledger: {a.closure_ledger}  sha256='
+              f'{hashlib.sha256(blob.encode()).hexdigest()[:16]}')
 
     if a.json:
         blob = json.dumps({'rows': rows, 'tally': dict(tally)},
@@ -727,8 +915,13 @@ def main(argv=None):
         pathlib.Path(a.json).write_text(blob)
         print(f'json: {a.json}  sha256={hashlib.sha256(blob.encode()).hexdigest()[:16]}')
 
+    if a.inventory:
+        n_closed = tally.get('SYMMETRIC_BY_INVENTORY', 0)
+        print(f'--- 源清单对账（D69）关掉了 {n_closed} 个 CLOSURE_UNKNOWN；'
+              f'仍判不准 {tally.get("CLOSURE_UNKNOWN", 0)} 个 ---')
     if bad:
         print(f'FAIL: {len(bad)} 个 target closure 不对称或无法判定（fail-closed）')
+        print('  ★UNKNOWN 不等价于 clean★：它不阻塞"全集身份冻结"，但阻塞目标 PASS。')
         return EXIT_VIOLATION
     print('OK: 所检 target 两侧 elaboration closure 对称')
     return EXIT_CLEAN

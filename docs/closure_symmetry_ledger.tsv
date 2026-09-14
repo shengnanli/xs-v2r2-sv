@@ -1,0 +1,284 @@
+# UT elaboration closure 对称性台账（scripts/check_closure_symmetry.py --inventory --closure-ledger 生成）
+# SYMMETRIC              轻量 elaboration 直接判定两侧黑盒 Counter 相等
+# SYMMETRIC_BY_INVENTORY 源清单对账（D69）：两侧**语法过近似**黑盒集皆空
+#                        ⇒ 真实黑盒集必空 ⇒ 一定对称。充分条件，方向安全。
+# CLOSURE_UNKNOWN        ★判不准★ —— 不等价于 clean，也不等价于不对称。
+#                        它不阻塞"全集身份冻结"，但**阻塞该目标 PASS**；
+#                        bank 前必须由权威编译/elaboration source inventory
+#                        或扩展后的 checker 证明对称。
+# ASYMMETRIC             两侧 elaboration 集合确实不对称（真缺陷）
+# SKIP                   FM_INTERFACE_ONLY，不做层次闭包比较
+# target	utdir	mode	status	detail
+AXI4Deinterleaver	verif/ut/AXI4Deinterleaver	signoff-strict	SYMMETRIC	
+AXI4IdIndexer	verif/ut/AXI4IdIndexer	signoff-strict	SYMMETRIC	
+AXI4IdIndexer_1	verif/ut/AXI4IdIndexer_1	signoff-strict	SYMMETRIC	
+AXI4Xbar	verif/ut/AXI4Xbar	signoff-strict	SYMMETRIC	
+Alu	verif/ut/Alu	signoff-strict	SYMMETRIC	
+Arbiter2_ICacheMissReq	verif/ut/Arbiter2_ICacheMissReq	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 3 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+Arbiter5_MSHRAcquire	verif/ut/Arbiter2_ICacheMissReq	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 3 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+Bku	verif/ut/Bku	signoff-strict	SYMMETRIC	
+CHILogger	verif/ut/CHILogger	signoff-strict	SYMMETRIC	
+Composer	verif/ut/Composer	signoff-strict	SYMMETRIC	
+CompressUnit	verif/ut/CompressUnit	signoff-strict	SYMMETRIC	
+DeMultiplexer	verif/ut/DeMultiplexer	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 3 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+DeMultiplexer_1	verif/ut/DeMultiplexer	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 3 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+DebugModule	verif/ut/DebugModule	signoff-strict	SYMMETRIC	
+Decoupled2LCredit	verif/ut/Decoupled2LCredit	signoff-strict	SYMMETRIC	
+Decoupled2LCredit_1	verif/ut/Decoupled2LCredit_1	signoff-strict	SYMMETRIC	
+Decoupled2LCredit_2	verif/ut/Decoupled2LCredit_2	signoff-strict	SYMMETRIC	
+Decoupled2LCredit_5	verif/ut/Decoupled2LCredit_5	signoff-strict	SYMMETRIC	
+DelayN	verif/ut/DelayN	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 7 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+DelayN_1	verif/ut/DelayN	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 7 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+DelayN_13	verif/ut/DelayN	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 7 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+DelayN_7	verif/ut/DelayN	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 7 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+DelayN_8	verif/ut/DelayN	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 7 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+DelayN_9	verif/ut/DelayN	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 7 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+DelayNWithValid	verif/ut/DelayNWithValid	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 3 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+DelayNWithValid_1	verif/ut/DelayNWithValid	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 3 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+DuplicatedTagArray	verif/ut/DuplicatedTagArray	assembly	SYMMETRIC	bbox=array_8_extx8
+EntriesVfdivVidiv	verif/ut/EntriesVfdivVidiv	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 5 / impl 提供 3 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+F3Predecoder	verif/ut/F3Predecoder	signoff-strict	SYMMETRIC	
+FAlu	verif/ut/FAlu	signoff-strict	SYMMETRIC	
+FCVT	verif/ut/FCVT	signoff-strict	SYMMETRIC	
+FIFOReg	verif/ut/FIFOReg	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 2 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+FMA	verif/ut/FMA	signoff-strict	SYMMETRIC	
+FPDecoder	verif/ut/FPDecoder	signoff-strict	SYMMETRIC	
+FTBBank	verif/ut/FTBBank	assembly	SYMMETRIC	bbox=array_1_extx8
+FTBEntryGen	verif/ut/FTBEntryGen	signoff-strict	SYMMETRIC	
+FastArbiter_30	verif/ut/FastArbiter_30	signoff-strict	SYMMETRIC	
+FastArbiter_35	verif/ut/FastArbiter_35	signoff-strict	SYMMETRIC	
+FauFTBWay	verif/ut/FauFTBWay	signoff-strict	SYMMETRIC	
+Fence	verif/ut/Fence	signoff-strict	SYMMETRIC	
+FoldedSRAMTemplate	verif/ut/FoldedSRAMTemplate	assembly	SYMMETRIC	bbox=array_2_extx1
+FoldedSRAMTemplate_1	verif/ut/FoldedSRAMTemplate	assembly	SYMMETRIC	bbox=array_3_extx1
+FoldedSRAMTemplate_20	verif/ut/FoldedSRAMTemplate	assembly	SYMMETRIC	bbox=array_4_extx2
+FoldedSRAMTemplate_22	verif/ut/FoldedSRAMTemplate	assembly	SYMMETRIC	bbox=array_6_extx1
+FoldedSRAMTemplate_24	verif/ut/FoldedSRAMTemplate	assembly	SYMMETRIC	bbox=array_6_extx2
+FreeList	verif/ut/FreeList	signoff-strict	SYMMETRIC	
+Ftq	verif/ut/Ftq	signoff-strict	SYMMETRIC	
+FtqPcMemWrapper	verif/ut/FtqPcMemWrapper	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 3 / impl 提供 4 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+ICache	verif/ut/ICache	assembly	SYMMETRIC	bbox=ICacheCtrlUnitx1,ICacheDataArrayx1,ICacheMainPipex1,ICacheMetaArrayx1,ICacheMissUnitx1,ICacheReplacerx1,IPrefetchPipex1,WayLookupx1
+ICacheCtrlUnit	verif/ut/ICacheCtrlUnit	signoff-strict	SYMMETRIC	
+ICacheDataArray	verif/ut/ICacheDataArray	assembly	SYMMETRIC	bbox=array_0_extx32
+ICacheMSHR	verif/ut/ICacheMSHR	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 15 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+ICacheMSHR_1	verif/ut/ICacheMSHR	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 15 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+ICacheMSHR_10	verif/ut/ICacheMSHR	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 15 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+ICacheMSHR_11	verif/ut/ICacheMSHR	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 15 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+ICacheMSHR_12	verif/ut/ICacheMSHR	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 15 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+ICacheMSHR_13	verif/ut/ICacheMSHR	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 15 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+ICacheMSHR_2	verif/ut/ICacheMSHR	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 15 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+ICacheMSHR_3	verif/ut/ICacheMSHR	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 15 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+ICacheMSHR_4	verif/ut/ICacheMSHR	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 15 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+ICacheMSHR_5	verif/ut/ICacheMSHR	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 15 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+ICacheMSHR_6	verif/ut/ICacheMSHR	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 15 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+ICacheMSHR_7	verif/ut/ICacheMSHR	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 15 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+ICacheMSHR_8	verif/ut/ICacheMSHR	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 15 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+ICacheMSHR_9	verif/ut/ICacheMSHR	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 15 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+ICacheMetaArray	verif/ut/ICacheMetaArray	assembly	SYMMETRIC	bbox=MbistPipeIcacheTagx1,SplittedSRAMTemplatex1,SplittedSRAMTemplate_1x1
+ICacheMissUnit	verif/ut/ICacheMissUnit	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 20 / impl 提供 26 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+ICacheReplacer	verif/ut/ICacheReplacer	signoff-strict	SYMMETRIC	
+IMSICGateWay	verif/ut/IMSICGateWay	assembly	SYMMETRIC	bbox=AsyncResetSynchronizerShiftReg_w1_d3_i0x1
+ITTageTable	verif/ut/ITTageTable	signoff-strict	SYMMETRIC	
+ITTageTable_1	verif/ut/ITTageTable_1	signoff-strict	SYMMETRIC	
+ITTageTable_2	verif/ut/ITTageTable_2	signoff-strict	SYMMETRIC	
+ITTageTable_3	verif/ut/ITTageTable_3	signoff-strict	SYMMETRIC	
+ITTageTable_4	verif/ut/ITTageTable_4	signoff-strict	SYMMETRIC	
+ImmExtractor	verif/ut/ImmExtractor	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 3 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+ImmExtractor_12	verif/ut/ImmExtractor	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 3 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+IndexableCAMTemplate	verif/ut/IndexableCAMTemplate	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 6 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+IndexableCAMTemplate_32	verif/ut/IndexableCAMTemplate	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 6 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+IndexableCAMTemplate_33	verif/ut/IndexableCAMTemplate	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 6 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+IndexableCAMTemplate_41	verif/ut/IndexableCAMTemplate	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 6 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+IndexableCAMTemplate_43	verif/ut/IndexableCAMTemplate	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 6 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+Arbiter1_InsUncacheResp	verif/ut/InstrUncache	signoff-strict	SYMMETRIC	
+InstrMMIOEntry	verif/ut/InstrUncache	signoff-strict	SYMMETRIC	
+InstrUncache	verif/ut/InstrUncache	signoff-strict	SYMMETRIC	
+L1CohMetaArray	verif/ut/L1CohMetaArray	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 2 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+L2Directory	verif/ut/L2Directory	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 3 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+L2TlbMissQueue	verif/ut/L2TlbMissQueue	assembly	SYMMETRIC	bbox=ram_40x47x1
+L2TlbPrefetch	verif/ut/L2TlbPrefetch	signoff-strict	SYMMETRIC	
+LCredit2Decoupled	verif/ut/LCredit2Decoupled	signoff-strict	SYMMETRIC	
+LCredit2Decoupled_1	verif/ut/LCredit2Decoupled_1	signoff-strict	SYMMETRIC	
+LCredit2Decoupled_10	verif/ut/LCredit2Decoupled_10	signoff-strict	SYMMETRIC	
+LCredit2Decoupled_8	verif/ut/LCredit2Decoupled_8	signoff-strict	SYMMETRIC	
+LevelGateway	verif/ut/LevelGateway	signoff-strict	SYMMETRIC	
+LinkMonitor	verif/ut/LinkMonitor	signoff-strict	SYMMETRIC	
+MSHRSelector	verif/ut/MSHRSelector	signoff-strict	SYMMETRIC	
+MbistPipeDCacheData	verif/ut/MbistPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 25 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+MbistPipeDcacheTag	verif/ut/MbistPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 25 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+MbistPipeFrontend	verif/ut/MbistPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 25 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+MbistPipeFtb	verif/ut/MbistPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 25 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+MbistPipeIcacheDataWay0	verif/ut/MbistPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 25 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+MbistPipeIcacheDataWay1	verif/ut/MbistPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 25 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+MbistPipeIcacheDataWay2	verif/ut/MbistPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 25 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+MbistPipeIcacheDataWay3	verif/ut/MbistPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 25 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+MbistPipeIcacheTag	verif/ut/MbistPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 25 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+MbistPipeIttage	verif/ut/MbistPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 25 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+MbistPipeIttage_1	verif/ut/MbistPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 25 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+MbistPipeIttage_2	verif/ut/MbistPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 25 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+MbistPipeIttage_3	verif/ut/MbistPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 25 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+MbistPipeIttage_4	verif/ut/MbistPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 25 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+MbistPipeL2Prefetcher	verif/ut/MbistPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 25 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+MbistPipeMemBlk	verif/ut/MbistPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 25 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+MbistPipePtwL0	verif/ut/MbistPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 25 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+MbistPipePtwL1	verif/ut/MbistPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 25 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+MbistPipeSc	verif/ut/MbistPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 25 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+MbistPipeSc_1	verif/ut/MbistPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 25 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+MbistPipeSc_2	verif/ut/MbistPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 25 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+MbistPipeSc_3	verif/ut/MbistPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 25 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+MbistPipeSms	verif/ut/MbistPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 25 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+MbistPipeTage	verif/ut/MbistPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 25 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+MulUnit	verif/ut/MulUnit	signoff-strict	SYMMETRIC	
+MuxBundle	verif/ut/MuxBundle	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 2 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+NewPipelineConnectPipe	verif/ut/NewPipelineConnectPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 15 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+NewPipelineConnectPipe_1	verif/ut/NewPipelineConnectPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 15 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+NewPipelineConnectPipe_10	verif/ut/NewPipelineConnectPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 15 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+NewPipelineConnectPipe_13	verif/ut/NewPipelineConnectPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 15 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+NewPipelineConnectPipe_14	verif/ut/NewPipelineConnectPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 15 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+NewPipelineConnectPipe_16	verif/ut/NewPipelineConnectPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 15 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+NewPipelineConnectPipe_18	verif/ut/NewPipelineConnectPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 15 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+NewPipelineConnectPipe_20	verif/ut/NewPipelineConnectPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 15 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+NewPipelineConnectPipe_23	verif/ut/NewPipelineConnectPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 15 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+NewPipelineConnectPipe_25	verif/ut/NewPipelineConnectPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 15 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+NewPipelineConnectPipe_5	verif/ut/NewPipelineConnectPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 15 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+NewPipelineConnectPipe_7	verif/ut/NewPipelineConnectPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 15 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+NewPipelineConnectPipe_8	verif/ut/NewPipelineConnectPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 15 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+NewPipelineConnectPipe_9	verif/ut/NewPipelineConnectPipe	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 15 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+NewPipelineConnectPipe_25	verif/ut/NewPipelineConnectPipe_25	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 2 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+NewPipelineConnectPipe_27	verif/ut/NewPipelineConnectPipe_27	signoff-strict	SYMMETRIC	
+NewPipelineConnectPipe_29	verif/ut/NewPipelineConnectPipe_29_34_35	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 4 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+NewPipelineConnectPipe_34	verif/ut/NewPipelineConnectPipe_29_34_35	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 4 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+NewPipelineConnectPipe_35	verif/ut/NewPipelineConnectPipe_29_34_35	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 4 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+NewPipelineConnectPipe_33	verif/ut/NewPipelineConnectPipe_33	signoff-strict	SYMMETRIC	
+OpenLLC	verif/ut/OpenLLC	signoff-strict	ASYMMETRIC	assembly_bbox_not_symmetric:MMIODiverger(ref=0,impl=1)
+PLICFanIn	verif/ut/PLICFanIn	signoff-strict	SYMMETRIC	
+Pipeline	verif/ut/Pipeline	signoff-strict	SYMMETRIC	
+PreDecode	verif/ut/PreDecode	signoff-strict	SYMMETRIC	
+PriorityMuxModule	verif/ut/PriorityMuxModule	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 7 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+PriorityMuxModule_12	verif/ut/PriorityMuxModule	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 7 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+PriorityMuxModule_16	verif/ut/PriorityMuxModule	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 7 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+PriorityMuxModule_20	verif/ut/PriorityMuxModule	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 7 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+PriorityMuxModule_4	verif/ut/PriorityMuxModule	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 7 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+PriorityMuxModule_8	verif/ut/PriorityMuxModule	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 7 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+ProbeQueue	verif/ut/ProbeQueue	signoff-strict	SYMMETRIC	
+Queue1_RegMapperInput_5	verif/ut/Queue1_RegMapperInput_5	signoff-strict	SYMMETRIC	
+RASStack	verif/ut/RAS	signoff-strict	SYMMETRIC	
+RNXbar	verif/ut/RNXbar	signoff-strict	SYMMETRIC	
+RVCExpander	verif/ut/RVCExpander	signoff-strict	SYMMETRIC	
+RXDAT	verif/ut/RXDAT	signoff-strict	SYMMETRIC	
+RXDAT_4	verif/ut/RXDAT_4	signoff-strict	SYMMETRIC	
+RXREQ	verif/ut/RXREQ	signoff-strict	SYMMETRIC	
+RXRSP	verif/ut/RXRSP	signoff-strict	SYMMETRIC	
+RXRSP_4	verif/ut/RXRSP_4	signoff-strict	SYMMETRIC	
+RegCache	verif/ut/RegCache	signoff-strict	SYMMETRIC	
+SNXbar	verif/ut/SNXbar	signoff-strict	SYMMETRIC	
+SRAMTemplate	verif/ut/SRAMTemplate	assembly	SYMMETRIC	bbox=array_extx1
+SRAMTemplate_100	verif/ut/SRAMTemplate	assembly	SYMMETRIC	bbox=array_7_extx1
+SRAMTemplate_116	verif/ut/SRAMTemplate	assembly	SYMMETRIC	bbox=array_8_extx1
+SRAMTemplate_124	verif/ut/SRAMTemplate	assembly	SYMMETRIC	bbox=array_9_extx1
+SRAMTemplate_129	verif/ut/SRAMTemplate	assembly	SYMMETRIC	bbox=array_11_extx1
+SRAMTemplate_143	verif/ut/SRAMTemplate	assembly	SYMMETRIC	bbox=array_11_extx1
+SRAMTemplate_148	verif/ut/SRAMTemplate	assembly	SYMMETRIC	bbox=array_14_extx1
+SRAMTemplate_150	verif/ut/SRAMTemplate	assembly	SYMMETRIC	bbox=array_14_extx1
+SRAMTemplate_153	verif/ut/SRAMTemplate	assembly	SYMMETRIC	bbox=array_16_extx1
+SRAMTemplate_154	verif/ut/SRAMTemplate	assembly	SYMMETRIC	bbox=array_17_extx1
+SRAMTemplate_159	verif/ut/SRAMTemplate	assembly	SYMMETRIC	bbox=array_14_extx1
+SRAMTemplate_16	verif/ut/SRAMTemplate	assembly	SYMMETRIC	bbox=array_0_extx1
+SRAMTemplate_162	verif/ut/SRAMTemplate	assembly	SYMMETRIC	bbox=array_14_extx1
+SRAMTemplate_164	verif/ut/SRAMTemplate	assembly	SYMMETRIC	bbox=array_16_extx1
+SRAMTemplate_165	verif/ut/SRAMTemplate	assembly	SYMMETRIC	bbox=array_17_extx1
+SRAMTemplate_181	verif/ut/SRAMTemplate	assembly	SYMMETRIC	bbox=array_14_extx1
+SRAMTemplate_186	verif/ut/SRAMTemplate	assembly	SYMMETRIC	bbox=array_16_extx1
+SRAMTemplate_187	verif/ut/SRAMTemplate	assembly	SYMMETRIC	bbox=array_17_extx1
+SRAMTemplate_2	verif/ut/SRAMTemplate	assembly	SYMMETRIC	bbox=array_extx1
+SRAMTemplate_32	verif/ut/SRAMTemplate	assembly	SYMMETRIC	bbox=array_0_extx1
+SRAMTemplate_36	verif/ut/SRAMTemplate	assembly	SYMMETRIC	bbox=array_1_extx1
+SRAMTemplate_4	verif/ut/SRAMTemplate	assembly	SYMMETRIC	bbox=array_0_extx1
+SRAMTemplate_44	verif/ut/SRAMTemplate	assembly	SYMMETRIC	bbox=array_2_extx1
+SRAMTemplate_45	verif/ut/SRAMTemplate	assembly	SYMMETRIC	bbox=array_3_extx1
+SRAMTemplate_64	verif/ut/SRAMTemplate	assembly	SYMMETRIC	bbox=array_4_extx1
+SRAMTemplate_68	verif/ut/SRAMTemplate	assembly	SYMMETRIC	bbox=array_5_extx1
+SRAMTemplate_76	verif/ut/SRAMTemplate	assembly	SYMMETRIC	bbox=array_6_extx1
+SRAMTemplate_78	verif/ut/SRAMTemplate	assembly	SYMMETRIC	bbox=array_6_extx1
+SRAMTemplate_8	verif/ut/SRAMTemplate	assembly	SYMMETRIC	bbox=array_0_extx1
+SRAMTemplate_84	verif/ut/SRAMTemplate	assembly	SYMMETRIC	bbox=array_7_extx1
+SRAMTemplate_86	verif/ut/SRAMTemplate	assembly	SYMMETRIC	bbox=array_7_extx1
+SRAMTemplate_88	verif/ut/SRAMTemplate	assembly	SYMMETRIC	bbox=array_7_extx1
+SRAMTemplate_92	verif/ut/SRAMTemplate	assembly	SYMMETRIC	bbox=array_7_extx1
+SRAMTemplate_128	verif/ut/SRAMTemplateNewForm	assembly	SYMMETRIC	bbox=array_10_extx1
+SRAMTemplate_145	verif/ut/SRAMTemplateNewForm	assembly	SYMMETRIC	bbox=array_12_extx1
+SRAMTemplate_146	verif/ut/SRAMTemplateNewForm	assembly	SYMMETRIC	bbox=array_13_extx1
+SRAMTemplate_155	verif/ut/SRAMTemplateNewForm	assembly	SYMMETRIC	bbox=array_18_extx1
+SRAMTemplate_163	verif/ut/SRAMTemplateNewForm	assembly	SYMMETRIC	bbox=array_15_extx1
+SRAMTemplate_166	verif/ut/SRAMTemplateNewForm	assembly	SYMMETRIC	bbox=array_18_extx1
+SRAMTemplate_178	verif/ut/SRAMTemplateNewForm	assembly	SYMMETRIC	bbox=array_18_extx1
+SRAMTemplate_185	verif/ut/SRAMTemplateNewForm	assembly	SYMMETRIC	bbox=array_15_extx1
+SinkA	verif/ut/SinkA	signoff-strict	SYMMETRIC	
+SourceB	verif/ut/SourceB	signoff-strict	SYMMETRIC	
+SplittedSRAMTemplate	verif/ut/SplittedSRAMTemplate	assembly	SYMMETRIC	bbox=array_extx2
+SplittedSRAMTemplate_1	verif/ut/SplittedSRAMTemplate	assembly	SYMMETRIC	bbox=array_extx2
+SplittedSRAMTemplate_2	verif/ut/SplittedSRAMTemplate	assembly	SYMMETRIC	bbox=array_1_extx8
+SplittedSRAMTemplate_23	verif/ut/SplittedSRAMTemplate	assembly	SYMMETRIC	bbox=array_4_extx2
+SplittedSRAMTemplate_25	verif/ut/SplittedSRAMTemplate	assembly	SYMMETRIC	bbox=array_6_extx1
+SplittedSRAMTemplate_27	verif/ut/SplittedSRAMTemplate	assembly	SYMMETRIC	bbox=array_6_extx2
+SplittedSRAMTemplate_3	verif/ut/SplittedSRAMTemplate	assembly	SYMMETRIC	bbox=array_2_extx1
+SplittedSRAMTemplate_4	verif/ut/SplittedSRAMTemplate	assembly	SYMMETRIC	bbox=array_3_extx1
+StdFreeList	verif/ut/StdFreeList	signoff-strict	SYMMETRIC	
+StorePipe	verif/ut/StorePipe	signoff-strict	SYMMETRIC	
+SubDirectory	verif/ut/SubDirectory	assembly	SYMMETRIC	bbox=MaxPeriodFibonacciLFSR_3x1,SRAMTemplate_192x1,SRAMTemplate_193x1
+SubDirectory_1	verif/ut/SubDirectory_1	assembly	SYMMETRIC	bbox=SRAMTemplate_194x1,SRAMTemplate_195x1,SRAMTemplate_196x1
+DataModule_BackendPC_16entry	verif/ut/SyncDataModule	signoff-strict	SYMMETRIC	
+DataModule_FtqPC_16entry	verif/ut/SyncDataModule	signoff-strict	SYMMETRIC	
+DataModule__16entry	verif/ut/SyncDataModule	signoff-strict	SYMMETRIC	
+DataModule__16entry_12	verif/ut/SyncDataModule	signoff-strict	SYMMETRIC	
+DataModule__16entry_16	verif/ut/SyncDataModule	signoff-strict	SYMMETRIC	
+DataModule__16entry_4	verif/ut/SyncDataModule	signoff-strict	SYMMETRIC	
+DataModule__16entry_8	verif/ut/SyncDataModule	signoff-strict	SYMMETRIC	
+DataModule__64entry	verif/ut/SyncDataModule	signoff-strict	SYMMETRIC	
+DataModule__64entry_16	verif/ut/SyncDataModule	signoff-strict	SYMMETRIC	
+SyncDataModuleTemplate_BackendPC_64entry	verif/ut/SyncDataModule	signoff-strict	SYMMETRIC	
+SyncDataModuleTemplate_FtqPC_64entry	verif/ut/SyncDataModule	signoff-strict	SYMMETRIC	
+SyncDataModuleTemplate__1024entry	verif/ut/SyncDataModule	signoff-strict	SYMMETRIC	
+SyncDataModuleTemplate__1024entry_1	verif/ut/SyncDataModule	signoff-strict	SYMMETRIC	
+SyncDataModuleTemplate__64entry	verif/ut/SyncDataModule	signoff-strict	SYMMETRIC	
+SyncDataModuleTemplate__64entry_1	verif/ut/SyncDataModule	signoff-strict	SYMMETRIC	
+SyncDataModuleTemplate__64entry_2	verif/ut/SyncDataModule	signoff-strict	SYMMETRIC	
+SyncDataModuleTemplate__64entry_3	verif/ut/SyncDataModule	signoff-strict	SYMMETRIC	
+SyncDataModuleTemplate__64entry_4	verif/ut/SyncDataModule	signoff-strict	SYMMETRIC	
+TLBuffer	verif/ut/TLBuffer	signoff-strict	SYMMETRIC	
+TLBuffer_13	verif/ut/TLBuffer_13	signoff-strict	SYMMETRIC	
+TLBuffer_2	verif/ut/TLBuffer_2	signoff-strict	SYMMETRIC	
+TLBuffer_20	verif/ut/TLBuffer_20	signoff-strict	SYMMETRIC	
+TLBuffer_22	verif/ut/TLBuffer_22	signoff-strict	SYMMETRIC	
+TLBuffer_6	verif/ut/TLBuffer_6	signoff-strict	SYMMETRIC	
+TLBuffer_7	verif/ut/TLBuffer_7	signoff-strict	SYMMETRIC	
+TLBuffer_8	verif/ut/TLBuffer_8	signoff-strict	SYMMETRIC	
+TLBuffer_9	verif/ut/TLBuffer_9	signoff-strict	SYMMETRIC	
+TLLogger	verif/ut/TLLogger	signoff-strict	SYMMETRIC	
+TLPLIC	verif/ut/TLPLIC	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 4 / impl 提供 6 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+TLXbar_3	verif/ut/TLXbar_3	signoff-strict	SYMMETRIC	
+TLXbar_4	verif/ut/TLXbar_4	signoff-strict	SYMMETRIC	
+TXDAT_4	verif/ut/TXDAT_4	signoff-strict	SYMMETRIC	
+TXREQ	verif/ut/TXREQ	signoff-strict	SYMMETRIC	
+TXREQ_4	verif/ut/TXREQ_4	signoff-strict	SYMMETRIC	
+TXRSP	verif/ut/TXRSP	signoff-strict	SYMMETRIC	
+TXRSP_4	verif/ut/TXRSP_4	signoff-strict	SYMMETRIC	
+TXSNP	verif/ut/TXSNP	signoff-strict	SYMMETRIC	
+TageBTable	verif/ut/TageBTable	assembly	SYMMETRIC	bbox=FoldedSRAMTemplate_20x2,WrBypass_32x1
+TageTable	verif/ut/TageTable	assembly	CLOSURE_UNKNOWN	elab_error:未知标识符 io_req_bits_folded_hist_hist_14_folded_hist in '$bits(io_req_bits_folded_hist_hist_14_folded_hist)' || 源清单对账: 过近似黑盒非空，判不准（不等于不对称）: ref=['FoldedSRAMTemplate', 'FoldedSRAMTemplate_1', 'WrBypass'] impl=['FoldedSRAMTemplate', 'FoldedSRAMTemplate_1', 'WrBypass']
+TageTable_1	verif/ut/TageTable	assembly	CLOSURE_UNKNOWN	elab_error:未知标识符 io_req_bits_folded_hist_hist_1_folded_hist in '$bits(io_req_bits_folded_hist_hist_1_folded_hist)' || 源清单对账: 过近似黑盒非空，判不准（不等于不对称）: ref=['FoldedSRAMTemplate', 'FoldedSRAMTemplate_1', 'WrBypass'] impl=['FoldedSRAMTemplate', 'FoldedSRAMTemplate_1', 'WrBypass']
+TageTable_2	verif/ut/TageTable	assembly	CLOSURE_UNKNOWN	elab_error:未知标识符 io_req_bits_folded_hist_hist_17_folded_hist in '$bits(io_req_bits_folded_hist_hist_17_folded_hist)' || 源清单对账: 过近似黑盒非空，判不准（不等于不对称）: ref=['FoldedSRAMTemplate', 'FoldedSRAMTemplate_1', 'WrBypass'] impl=['FoldedSRAMTemplate', 'FoldedSRAMTemplate_1', 'WrBypass']
+TageTable_3	verif/ut/TageTable	assembly	CLOSURE_UNKNOWN	elab_error:未知标识符 _unsupported in '$bits(io_req_bits_folded_hist_hist_16_folded_hist)' || 源清单对账: 过近似黑盒非空，判不准（不等于不对称）: ref=['FoldedSRAMTemplate', 'FoldedSRAMTemplate_1', 'WrBypass'] impl=['FoldedSRAMTemplate', 'FoldedSRAMTemplate_1', 'WrBypass']
+TlbStorageWrapper	verif/ut/TlbStorageWrapper	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 2 / impl 提供 5 个 design，其中 1 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+TlbStorageWrapper_1	verif/ut/TlbStorageWrapper	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 2 / impl 提供 5 个 design，其中 1 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+UopInfoGen	verif/ut/UopInfoGen	signoff-strict	SYMMETRIC	
+VSetRiWi	verif/ut/VSetRiWi	signoff-strict	SYMMETRIC	
+VSetRvfWvf	verif/ut/VSetRvfWvf	signoff-strict	SYMMETRIC	
+WayLookup	verif/ut/WayLookup	signoff-strict	SYMMETRIC	
+WbFuBusyTable	verif/ut/WbFuBusyTable	signoff-strict	SYMMETRIC	
+WrBypass	verif/ut/WrBypass	signoff-strict	SYMMETRIC	
+WrBypass_32	verif/ut/WrBypass	signoff-strict	SYMMETRIC	
+WrBypass_33	verif/ut/WrBypass	signoff-strict	SYMMETRIC	
+WrBypass_41	verif/ut/WrBypass	signoff-strict	SYMMETRIC	
+WrBypass_43	verif/ut/WrBypass	signoff-strict	SYMMETRIC	
+WritebackQueue	verif/ut/WritebackQueue	signoff-strict	SYMMETRIC	
