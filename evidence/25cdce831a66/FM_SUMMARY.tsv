@@ -1,0 +1,24 @@
+# 本次（cleanup, 25cdce831a668e715319295f28acf99752207e29）受影响目标 FM 复跑 vs docs/fm_round_20260914.tsv 基线
+# 全部 native 判定，0 waiver / 0 dont_verify / 0 黑盒（black_boxes.rpt 均为 FM-249 无黑盒）
+# target	base_verdict	base_passing	new_verdict	new_passing	failing	unverified	aborted	unmatched	unread_ref	unread_impl	cmp
+DataModule_BackendPC_16entry	SUCCEEDED	1550	SUCCEEDED	1550	0	0	0	0	0	0	SAME
+DataModule_FtqPC_16entry	SUCCEEDED	2168	SUCCEEDED	2168	0	0	0	0	0	0	SAME
+DataModule__16entry	SUCCEEDED	1504	SUCCEEDED	1504	0	0	0	0	0	0	SAME
+DataModule__16entry_12	SUCCEEDED	1570	SUCCEEDED	1570	0	0	0	0	0	0	SAME
+DataModule__16entry_16	SUCCEEDED	216	SUCCEEDED	216	0	0	0	0	0	0	SAME
+DataModule__16entry_4	SUCCEEDED	9792	SUCCEEDED	9792	0	0	0	0	0	0	SAME
+DataModule__16entry_8	SUCCEEDED	250	SUCCEEDED	250	0	0	0	0	0	0	SAME
+DataModule__64entry	SUCCEEDED	66	SUCCEEDED	66	0	0	0	0	0	0	SAME
+DataModule__64entry_16	SUCCEEDED	395	SUCCEEDED	395	0	0	0	0	0	0	SAME
+FtqPcMemWrapper	SUCCEEDED	7166	SUCCEEDED	7166	0	0	0	0	0	0	SAME
+RegCache	PASS_DEAD_REF	3830	PASS_DEAD_REF	3830	0	0	0	0	6	0	SAME
+SyncDataModuleTemplate_BackendPC_64entry	SUCCEEDED	4097	SUCCEEDED	4097	0	0	0	0	0	0	SAME
+SyncDataModuleTemplate_FtqPC_64entry	SUCCEEDED	7166	SUCCEEDED	7166	0	0	0	0	0	0	SAME
+SyncDataModuleTemplate__1024entry	SUCCEEDED	1070	SUCCEEDED	1070	0	0	0	0	0	0	SAME
+SyncDataModuleTemplate__1024entry_1	SUCCEEDED	6208	SUCCEEDED	6208	0	0	0	0	0	0	SAME
+SyncDataModuleTemplate__64entry	SUCCEEDED	5743	SUCCEEDED	5743	0	0	0	0	0	0	SAME
+SyncDataModuleTemplate__64entry_1	SUCCEEDED	38029	SUCCEEDED	38029	0	0	0	0	0	0	SAME
+SyncDataModuleTemplate__64entry_2	SUCCEEDED	955	SUCCEEDED	955	0	0	0	0	0	0	SAME
+SyncDataModuleTemplate__64entry_3	SUCCEEDED	5999	SUCCEEDED	5999	0	0	0	0	0	0	SAME
+SyncDataModuleTemplate__64entry_4	SUCCEEDED	792	SUCCEEDED	792	0	0	0	0	0	0	SAME
+# 合计 20 个目标，与基线完全一致 20 个，变差 0 个

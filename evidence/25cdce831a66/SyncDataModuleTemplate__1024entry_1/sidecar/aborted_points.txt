@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/SyncDataModuleTemplate__1024entry_1
+Implementation : i:/WORK/SyncDataModuleTemplate__1024entry_1
+Version        : V-2023.12-SP3
+Date           : Mon Sep 14 12:56:00 2026
+**************************************************
+
+No aborted compare points.
+
+1

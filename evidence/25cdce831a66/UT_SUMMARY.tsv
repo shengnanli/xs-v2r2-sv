@@ -1,0 +1,5 @@
+# 受影响目标的 UT（25cdce831a66 工作树上跑，seed 1/7/42 各 +ncycles=200000）
+# target	portlint	seed1	seed7	seed42
+RegCache	PASS	checks=6000000 errors=0	checks=6000000 errors=0	checks=6000000 errors=0
+FtqPcMemWrapper	PASS	checks=2600000 errors=0	checks=2600000 errors=0	checks=2600000 errors=0
+SyncDataModule	PASS	checks=3546072 errors=0	checks=3546072 errors=0	checks=3546072 errors=0
