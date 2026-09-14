@@ -78,10 +78,10 @@ endpackage
 //   Scala 把这一函数对 2^6=64 种 key 预计算成 DecodeLogic 真值表;此处用逐 lane
 //   的组合游程统计**等价重建**,可读且无需查找表。
 // =============================================================================
-import compressunit_pkg::*;
 
-
-module xs_CompressUnit_core (
+module xs_CompressUnit_core
+  import compressunit_pkg::*;
+(
   input  compress_in_t [RENAME_WIDTH-1:0] in,
   output logic         [RENAME_WIDTH-1:0]              can_compress_vec,
   output logic         [RENAME_WIDTH-1:0]              need_rob_flags,
@@ -203,13 +203,14 @@ endmodule
 // struct/数组端口。算法逻辑在 rtl/backend/CompressUnit.sv。
 // 由 xs-v2r2-sv/scripts/gen_compressunit.py 生成。
 // =============================================================================
-import compressunit_pkg::*;
 
 // ---------------------------------------------------------------------------
 // golden 同名 wrapper
 // ---------------------------------------------------------------------------
 
-module CompressUnit (
+module CompressUnit
+  import compressunit_pkg::*;
+(
   input         io_in_0_valid,
   input         io_in_0_bits_exceptionVec_0,
   input         io_in_0_bits_exceptionVec_1,

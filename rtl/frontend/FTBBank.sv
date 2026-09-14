@@ -67,7 +67,7 @@
 // =============================================================================
 
 module xs_FTBBank
-  import xs_ftb_pkg::*;
+  import xs_ftb_pkg::*;   // 共享包，见 rtl/frontend/frontend_common_pkg.sv
 #(
   parameter int unsigned NUM_SETS = 512,
   parameter int unsigned NUM_WAYS = 4,
@@ -409,7 +409,7 @@ endmodule
 // ---------------------------------------------------------------------------
 
 module FTBBank
-  import xs_ftb_pkg::*;
+  import xs_ftb_pkg::*;   // 共享包，见 rtl/frontend/frontend_common_pkg.sv
 (
   input         clock,
   input         reset,

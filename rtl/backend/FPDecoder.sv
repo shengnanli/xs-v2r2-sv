@@ -98,10 +98,10 @@ endpackage
 //   wflags 的语义:会产生浮点异常标志的运算(算术/比较/带舍入的 cvt)置 1;
 //     纯搬移/符号注入/分类(FMV/FSGNJ/FCLASS)不产生 → 0。
 // =============================================================================
-import fpdecoder_pkg::*;
 
-
-module xs_FPDecoder_core (
+module xs_FPDecoder_core
+  import fpdecoder_pkg::*;
+(
   input  logic [31:0] instr,
   output fp_ctrl_t    fp_ctrl
 );
@@ -385,13 +385,14 @@ endmodule
 // FPDecoder (wrapper) —— golden 同名顶层,端口与 golden/chisel-rtl/FPDecoder.sv 一致。
 // 机械适配层:把可读核 xs_FPDecoder_core 的 packed struct 输出拆成 golden 扁平端口。
 // =============================================================================
-import fpdecoder_pkg::*;
 
 // ---------------------------------------------------------------------------
 // golden 同名 wrapper
 // ---------------------------------------------------------------------------
 
-module FPDecoder (
+module FPDecoder
+  import fpdecoder_pkg::*;
+(
   input  [31:0] io_instr,
   output [1:0]  io_fpCtrl_typeTagOut,
   output        io_fpCtrl_wflags,

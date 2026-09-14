@@ -17,6 +17,10 @@ run "重复/分叉闸"       python3 scripts/equality_dup_lint.py
 # 重名（vset_pkg / xs_predecode_pkg），UT+FM 全绿、10 道闸全过，整芯片 elaborate 第一次
 # 跑就 Error-[SV-PPD]。修完立刻配闸，否则下一个共用包还会这么长出来。
 run "package 作用域闸"   python3 scripts/check_pkg_scope.py
+# package 闸的负测（codex 0158 §3 续）：闸"跑了且退出 0"不等于"它会响"。
+# 这里在临时 rtl 树里逐条判据各种一个病（包重名 / 跨文件共享包 / $unit 作用域 import），
+# 要求闸每次都红；同时钉住两种合法的模块头 import 写法不许被误报。
+run "package 闸负测"     python3 scripts/test_pkg_scope_gate.py
 run "universe 冻结闸"   python3 scripts/check_universe_freeze.py
 run "位置依赖闸"       python3 scripts/test_no_location_dependency.py
 # 台账行序闸：我写了这条测试却没接进来（2026-09-14 由 bkperf worker 撞上才发现——

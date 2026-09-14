@@ -98,10 +98,10 @@ endpackage
 //
 //  详见 xs-v2r2-sv/docs/memblock/ProbeQueue.md(上一轮仓库,未移植)。
 // =============================================================================
-import probequeue_pkg::*;
 
-
-module xs_ProbeQueue_core (
+module xs_ProbeQueue_core
+  import probequeue_pkg::*;
+(
   input  logic                  clock,
   input  logic                  reset,
 

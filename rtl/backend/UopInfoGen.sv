@@ -120,10 +120,10 @@ endpackage
 //   3) 大 case:typeOfSplit -> numOfUop;
 //   4) numOfWB(AMOCAS 减半)、isComplex、lmul 输出。
 // =============================================================================
-import uopinfogen_pkg::*;
 
-
-module xs_UopInfoGen_core (
+module xs_UopInfoGen_core
+  import uopinfogen_pkg::*;
+(
   input  preinfo_t  pre,
   output logic      is_complex,
   output uopinfo_t  uop_info
@@ -354,13 +354,14 @@ endmodule
 // 注意:golden 顶层会例化 strdiedLSNumOfUopTable / indexedLSNumOfUopTable 两个子
 //   模块,而可读核把这两张表用 function 内联(语义等价),故 wrapper 无子模块。
 // =============================================================================
-import uopinfogen_pkg::*;
 
 // ---------------------------------------------------------------------------
 // golden 同名 wrapper
 // ---------------------------------------------------------------------------
 
-module UopInfoGen (
+module UopInfoGen
+  import uopinfogen_pkg::*;
+(
   input        io_in_preInfo_isVecArith,
   input        io_in_preInfo_isVecMem,
   input        io_in_preInfo_isAmoCAS,
