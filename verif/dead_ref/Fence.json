@@ -1,0 +1,281 @@
+{
+ "schema": "xs-v2-sv-dead-ref-v1",
+ "target": "Fence",
+ "baseline": "G1-canonical (kunminghu-v2 @b36a1a2a5)",
+ "rationale": "golden-only cone-dead（golden 冗余存储，impl 按真实读取宽度定宽）。golden Fence.sv 在 in.fire 拍把整条 uop 原样锁存：reg [63:0] uop_data_imm <= io_in_bits_data_imm，reg [63:0] io_fenceio_sfence_bits_addr_r <= io_in_bits_data_src_0；但读取侧只用低位——imm 只在 io_fenceio_sfence_bits_rs1 = uop_data_imm[4:0]==0 与 rs2 = uop_data_imm[9:5]==0 两处被读（[63:10] 共 54 位零扇出），addr_r 只经 io_fenceio_sfence_bits_addr = io_fenceio_sfence_bits_addr_r[49:0] 输出（输出端口本身就只有 50 位，[63:50] 共 14 位零扇出）。这 54+14=68 位在 golden 里是写入但永不被读的 cone-dead 位：它们来自 Chisel 按 bundle 全宽锁存、再在读点切片的写法，firtool 保留了全宽寄存器却没有任何下游消费者。可读核 rtl/backend/Fence.sv 用 IMM_USED_W=10 / SFENCE_ADDR_W=50 按真实读取范围定宽（fence_uop_t.imm、sfence_addr_r），因此 impl 侧 unread=0、unmatched_impl=0。本轮 G1 实跑观测 unmatched-unread(ref)=68，与本声明逐条精确相等；native FM SUCCEEDED、passing=905、failing=0、unverified=0、unmatched compare points=0、无黑盒、无 dont_verify。非 waiver：全部可达比对点（含 sfence addr 的低 50 位与 imm 的低 10 位）仍被 FM 证明等价。",
+ "observed_points": 68,
+ "entries": [
+  {
+   "ref_path": "r:/WORK/Fence/io_fenceio_sfence_bits_addr_r_reg[50]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/io_fenceio_sfence_bits_addr_r_reg[51]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/io_fenceio_sfence_bits_addr_r_reg[52]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/io_fenceio_sfence_bits_addr_r_reg[53]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/io_fenceio_sfence_bits_addr_r_reg[54]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/io_fenceio_sfence_bits_addr_r_reg[55]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/io_fenceio_sfence_bits_addr_r_reg[56]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/io_fenceio_sfence_bits_addr_r_reg[57]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/io_fenceio_sfence_bits_addr_r_reg[58]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/io_fenceio_sfence_bits_addr_r_reg[59]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/io_fenceio_sfence_bits_addr_r_reg[60]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/io_fenceio_sfence_bits_addr_r_reg[61]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/io_fenceio_sfence_bits_addr_r_reg[62]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/io_fenceio_sfence_bits_addr_r_reg[63]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[10]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[11]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[12]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[13]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[14]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[15]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[16]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[17]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[18]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[19]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[20]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[21]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[22]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[23]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[24]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[25]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[26]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[27]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[28]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[29]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[30]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[31]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[32]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[33]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[34]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[35]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[36]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[37]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[38]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[39]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[40]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[41]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[42]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[43]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[44]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[45]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[46]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[47]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[48]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[49]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[50]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[51]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[52]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[53]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[54]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[55]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[56]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[57]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[58]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[59]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[60]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[61]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[62]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  },
+  {
+   "ref_path": "r:/WORK/Fence/uop_data_imm_reg[63]",
+   "class": "golden_only_cone_dead_latch_high_bits"
+  }
+ ]
+}
