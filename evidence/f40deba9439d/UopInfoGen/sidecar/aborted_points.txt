@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/UopInfoGen
+Implementation : i:/WORK/UopInfoGen
+Version        : V-2023.12-SP3
+Date           : Mon Sep 14 10:45:23 2026
+**************************************************
+
+No aborted compare points.
+
+1

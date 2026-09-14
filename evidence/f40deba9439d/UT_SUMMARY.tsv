@@ -1,0 +1,14 @@
+# 受影响目标的 UT（f40deba9439d 工作树上跑，seed 1/7/42 各 +ncycles=200000）
+# target	portlint	seed1	seed7	seed42
+CompressUnit	PASS	checks=4800000 errors=0	checks=4800000 errors=0	checks=4800000 errors=0
+FPDecoder	PASS	checks=1000000 errors=0	checks=1000000 errors=0	checks=1000000 errors=0
+UopInfoGen	PASS	checks=800000 errors=0	checks=800000 errors=0	checks=800000 errors=0
+RVCExpander	PASS	checks=331072 errors=0	checks=331072 errors=0	checks=331072 errors=0
+ProbeQueue	PASS	checks=200000 errors=0	checks=200000 errors=0	checks=200000 errors=0
+WritebackQueue	PASS	checks=200000 errors=0	checks=200000 errors=0	checks=200000 errors=0
+FTBEntryGen	PASS	checks=200000 errors=0	checks=200000 errors=0	checks=200000 errors=0
+FTBBank	PASS	checks=59407 errors=0	checks=59407 errors=0	checks=59407 errors=0
+TlbStorageWrapper	PASS	checks=200000 errors=0	checks=200000 errors=0	checks=200000 errors=0
+PLICFanIn	PASS	checks=400000 errors=0	checks=400000 errors=0	checks=400000 errors=0
+TLPLIC	PASS	checks=1600000 errors=0	checks=1600000 errors=0	checks=1600000 errors=0
+TlbStorageWrapper_1	PASS	checks=200000 errors=0	checks=200000 errors=0	checks=200000 errors=0

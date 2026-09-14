@@ -49,6 +49,10 @@ SystemVerilog 的 **package 名是全局的**，而本工程的单目标 UT 每�
    ★ UT 和 FM 永远看不见这种错 ★：它们各编各的文件，只有整芯片一起编才有第二个包
    在场。所以这里必须有一道闸。
 
+   上面那条「0 Error / 0 Warning 地取前一个包的值」是**工具行为**，不是从 LRM 推出来的，
+   所以它可复跑：`bash scripts/demo_unit_scope_leak.sh`（需要 VCS，故不进 gate_all）。
+   它两种写法 × 两种文件序各编一次并断言结果；哪天 VCS 行为变了，它会当场报不符。
+
    合法写法是把 import 放进**模块头**（作用域限定在该模块内）：
 
        module xs_Foo_core

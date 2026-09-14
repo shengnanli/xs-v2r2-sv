@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/ProbeQueue
+Implementation : i:/WORK/ProbeQueue
+Version        : V-2023.12-SP3
+Date           : Mon Sep 14 10:43:17 2026
+**************************************************
+
+No failing compare points.
+
+1

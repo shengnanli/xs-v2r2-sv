@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/CompressUnit
+Implementation : i:/WORK/CompressUnit
+Version        : V-2023.12-SP3
+Date           : Mon Sep 14 10:43:03 2026
+**************************************************
+
+No aborted compare points.
+
+1

@@ -37,7 +37,8 @@ endmodule
   0 Error、0 Warning**，两个模块一起拿到排在前面那个文件的值；换文件顺序，值一起翻。
   **UT 和 FM 永远看不见这种错**（它们各编各的文件，第二个包不在场），只有整芯片
   一起编才会有第二个包。由 `scripts/check_pkg_scope.py` 判据 C 把守（含负测
-  `scripts/test_pkg_scope_gate.py`，两者都在 `scripts/gate_all.sh` 里）。
+  `scripts/test_pkg_scope_gate.py`，两者都在 `scripts/gate_all.sh` 里）；
+  上面那组数字可复跑：`bash scripts/demo_unit_scope_leak.sh`（要 VCS，故不进 gate_all）。
 - package 段仅在确有类型/参数共享需求时出现；无 struct/enum 的小模块直接省略
   （空包是噪音）。
 - 跨模块共享类型放子系统级公共包：`rtl/<subsys>/<subsys>_common_pkg.sv`，
