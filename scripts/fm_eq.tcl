@@ -81,7 +81,17 @@ switch -- $_verify_matched_unread_compare_points {
     # impl 侧 20 个唯一点、非 matched_nc 项为 0，即严格双射；内容是 funcReg(功能码寄存器
     # 副本)里各子模块用不到的位——countModule[3..8] / cryptoModule[0,1,2,3,5,6,7,8] /
     # 顶层 funcReg_reg ↔ 可读核 func_s1_reg[0,1,4,6,7,8]，两侧同为死位。
-    if {$top ni {Bku DebugModule DuplicatedTagArray FTBBank ICacheCtrlUnit ICacheDataArray LinkMonitor Queue1_RegMapperInput_5 SourceB TXDAT_4 TXREQ TlbStorageWrapper TlbStorageWrapper_1 WritebackQueue}} {
+    # RNXbar / SNXbar 加入依据(2026-09-14, agent/arb)：strict 首跑均 native SUCCEEDED /
+    # failing 0 / unmatched 0，只剩 unread 卡住 —— RNXbar 3 点、SNXbar 2 点，**全部**
+    # matched_nc 且严格双射(ref 唯一点 ↔ impl 唯一点，非 matched_nc 项为 0)。
+    # 这些点全部落在 **golden 自己的** FastArbiter 变体内部(RNXbar: _43/_26/_45;
+    # SNXbar: _46/_45)，而这些 FastArbiter 由 RTL_GOLDEN_DEPS 两侧同源 elaborate ——
+    # ref 与 impl 读同一份 golden 文件、同一实例名，双射是结构性的而非人工强配。
+    # 死位本身是 FastArbiter 轮转仲裁的常量折叠：
+    #   rrGrantMask <= {|chosenOH[2:0], |chosenOH[1:0], chosenOH[0], 1'h0}  ← bit0 恒 0，
+    #   而 pendingMask[0] 的唯一读出点是 rrGrantMask[0] & pendingMask[0] ⇒ 无观测路径。
+    # 两侧同为死位，加强后 FM 实比这几个点，passing 增、failing 仍 0。
+    if {$top ni {Bku DebugModule DuplicatedTagArray FTBBank ICacheCtrlUnit ICacheDataArray LinkMonitor Queue1_RegMapperInput_5 RNXbar SNXbar SourceB TXDAT_4 TXREQ TlbStorageWrapper TlbStorageWrapper_1 WritebackQueue}} {
       puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
       exit 3
     }

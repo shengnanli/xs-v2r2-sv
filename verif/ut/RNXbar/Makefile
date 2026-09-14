@@ -35,6 +35,26 @@ RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/FastArbiter_26.sv \
 # golden 双例化：golden 顶（子模块闭包见 RTL_GOLDEN_DEPS，两侧共用同一份定义）。
 GOLDEN_SRCS = $(GOLDEN_RTL)/RNXbar.sv
 
+# ---------------------------------------------------------------------------
+# matched-unread 加强（vmucp，2026-09-14，agent/arb）
+#
+# strict 首跑：native SUCCEEDED / passing 2642 / failing 0 / unmatched 0，只剩 3 个
+# unread 点卡成 PARTIAL。3 点**全部** matched_nc，且是严格 1:1（ref 3 点 ↔ impl 3 点，
+# 非 matched_nc 项为 0）：
+#     r:/WORK/RNXbar/rxsnpArbs_0/pendingMask_reg[0] ↔ i:/WORK/RNXbar/u_core/rxsnpArbs_0/...
+#     r:/WORK/RNXbar/rxrspArbs_0/pendingMask_reg[0] ↔ i:/WORK/RNXbar/u_core/rxrspArbs_0/...
+#     r:/WORK/RNXbar/rxdatArbs_0/pendingMask_reg[0] ↔ i:/WORK/RNXbar/u_core/rxdatArbs_0/...
+# 这 3 点落在 **golden 自己的** FastArbiter_43/_26/_45 里——这三个模块经 RTL_GOLDEN_DEPS
+# 两侧同源 elaborate，ref 与 impl 读的是同一份 golden 文件、同一个实例名，所以双射是
+# 结构性的而不是人工强配。
+# 死位成因（FastArbiter 轮转仲裁）：
+#   rrGrantMask <= {|chosenOH[2:0], |chosenOH[1:0], chosenOH[0], 1'h0}  ← bit0 恒 0
+#   pendingMask[0] 唯一的读出点是  rrGrantMask[0] & pendingMask[0]
+# bit0 的 grant mask 恒 0（轮转起点永远不会"停在自己之前"），于是 pendingMask[0] 虽是
+# 真寄存器却无任何可观测路径 → FM cone 分析判 unread。
+# 加强（true = 要 FM 多证一些，不是 waiver）：让 FM 实际比较这 3 个 matched-unread 点。
+# ---------------------------------------------------------------------------
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 FM_VARIANTS = RNXbar
 FM_REF_DEPS_RNXbar = FastArbiter_26.sv FastArbiter_29.sv FastArbiter_30.sv FastArbiter_35.sv FastArbiter_43.sv FastArbiter_45.sv
 

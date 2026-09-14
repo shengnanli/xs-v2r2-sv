@@ -13,7 +13,7 @@
 //    与其对接的 in_k(valid/bits)/in_k_ready 端口, 出口 io_sourceB 由 wrapper 直接接仲裁器。
 //
 //  ===== X 铁律 =====
-//    复位后 4 表项 valid=0 门控仲裁输入; waitG[3:0] 索引恒在 [0,15]; 优先编码对齐 golden。
+//    复位后 4 表项 valid=0 门控仲裁输入; waitG[3:0] 索引恒在 [0,15](高 3 位恒 0); 优先编码对齐 golden。
 // =============================================================================
 
 module xs_SourceB_core (
@@ -62,7 +62,11 @@ module xs_SourceB_core (
   // probe 表项
   logic        probes_valid  [ENTRIES];
   logic        probes_rdy    [ENTRIES];
-  logic [3:0]  probes_waitG  [ENTRIES];  // 4 位真实所需(索引 16 项), golden 冗余高 3 位为 cone-dead
+  // waitG 与 golden 逐位同宽: golden 声明 sourceIdBits(7) 位, 但写入值是
+  // {3'h0, OHToUInt(conflictMask)} —— 高 3 位由生成器恒写 0, 只有低 4 位
+  // (索引 16 项 grantStatus) 被读。这里照搬 7 位, 让高 3 位在两侧都是显式
+  // 的常 0 死位, 而不是只在 golden 一侧存在。
+  logic [6:0]  probes_waitG  [ENTRIES];
   logic [30:0] probes_tag    [ENTRIES];
   logic [8:0]  probes_set    [ENTRIES];
   logic [2:0]  probes_opcode [ENTRIES];
@@ -104,9 +108,7 @@ module xs_SourceB_core (
   assign conflict = |conflictMask;
 
   // OHToUInt(conflictMask): one-hot → 4-bit 索引 (assert PopCount<=1 保证 one-hot)
-  // golden waitG 声明为 sourceIdBits(7)位, 但仅低 4 位被读(索引 16 项 grantStatus),
-  // 高 3 位恒为 OHToUInt 补零→死位. 本核化简 waitG 至真实所需 4 位(class-3 缩尺寸),
-  // 使 impl clean; golden 冗余高位为 golden-only cone-dead。
+  // 16 项 grantStatus 只需 4 位索引; golden 把它零扩展到 7 位存进 waitG（见上）。
   function automatic logic [3:0] oh16_to_idx(input logic [15:0] m);
     logic [3:0] r;
     r[0] = |(m & 16'b1010101010101010);
@@ -160,7 +162,7 @@ module xs_SourceB_core (
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       for (int k = 0; k < ENTRIES; k++) begin
-        probes_valid[k] <= 1'b0; probes_rdy[k] <= 1'b0; probes_waitG[k] <= 4'h0;
+        probes_valid[k] <= 1'b0; probes_rdy[k] <= 1'b0; probes_waitG[k] <= 7'h0;
         probes_tag[k] <= '0; probes_set[k] <= '0; probes_opcode[k] <= '0;
         probes_param[k] <= '0; probes_alias[k] <= '0;
       end
@@ -169,10 +171,10 @@ module xs_SourceB_core (
         // valid: fire 清零; 否则 alloc 置位; 否则保持
         probes_valid[k] <= ~in_fire[k] & (allocOH[k] | probes_valid[k]);
         // rdy: 等待的 grantStatus 失效 → 置就绪(=1); 否则 alloc 时取 ~conflict, 否则保持
-        probes_rdy[k] <= (probes_valid[k] & ~gsValid[probes_waitG[k]]) |
+        probes_rdy[k] <= (probes_valid[k] & ~gsValid[probes_waitG[k][3:0]]) |
                          (allocOH[k] ? ~conflict : probes_rdy[k]);
         if (allocOH[k]) begin
-          probes_waitG[k]  <= waitG_new;
+          probes_waitG[k]  <= {3'h0, waitG_new};   // golden: {3'h0, OHToUInt(...)}
           probes_tag[k]    <= io_task_bits_tag;
           probes_set[k]    <= io_task_bits_set;
           probes_opcode[k] <= io_task_bits_opcode;
