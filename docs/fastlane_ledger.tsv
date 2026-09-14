@@ -5,6 +5,19 @@
 #   UNRUNNABLE_RESOURCE_LIMIT_CURRENT_HOST = 配置已就绪但**本机不具备运行条件**
 #   （codex 0153 D68）。★不算 PASS，也不算 RTL mismatch★ —— 它是「没跑」，不是
 #   「跑了没过」。解除条件写在 note 列与该 UT 的 Makefile 注释里。
+#
+# ★★ 本表是追加式尝试日志：同一 target 可有多行，以**最后一行**为准 ★★
+#   实测（2026-09-13）：66 个 target 有重复行，形态如
+#   `INHERIT_FAIL → COMPILE_FAIL → WORKING_PASS`，即每行是一次尝试。
+#   消费方（scripts/bulk_revalidate.py 的 ledger_status()、docs/ledger_normalized.tsv
+#   的生成）都是后者覆盖前者。对账：归一化结果与「取最后一行」**181/181 全等**，
+#   与「取第一行」只 123/181 相符 —— 也就是说 **58 个 target 的状态取决于行序**。
+#
+#   后果：谁把这个文件排一次序，58 个目标的状态会**静默改变**，而且不会有任何闸报警
+#   （C3 NO_DUPLICATE 查的是 universe 映射表，不是本表）。因此：
+#     - 只许在文件**末尾追加**，不得排序、不得就地改写历史行；
+#     - 要改一个 target 的现状，追加新行，别动旧行（历史是有用的证据）；
+#     - scripts/test_ledger_append_only.py 守这条不变式。
 RASStack	WORKING_PASS	手工验证 fm 3018p 全零 (batch 前打样)
 AXI4Deinterleaver	INHERIT_FAIL	ERROR: AXI4Deinterleaver RTL_SRC 不存在 $(GOLDEN_RTL)/Queue2_AXI4BundleR_3.sv
 AXI4IdIndexer	WORKING_PASS	fm_verdicts=1
