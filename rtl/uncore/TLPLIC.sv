@@ -5,7 +5,7 @@
 //  TLPLIC.sv (2387 行)。本核为该模块的「设计意图重写」: 用 packed 数组 + genvar
 //  循环 + 纯函数表达 PLIC 协议, 而非展开成上千条标量赋值。
 //
-//  本实例参数 (见 plic_pkg.sv):
+//  本实例参数 (见 rtl/uncore/uncore_common_pkg.sv 里的 plic_pkg):
 //    nDevices = 65   外设中断源 (设备号 1..65, 0 号保留=无中断)
 //    nHarts   = 2    目标 hart (每 hart 一个 threshold/claim/complete 接口)
 //    prioBits = 3    优先级位宽 (nPriorities = 7)
@@ -52,7 +52,7 @@
 // =============================================================================
 
 module xs_TLPLIC_core
-  import plic_pkg::*;
+  import plic_pkg::*;   // 共享包，见 rtl/uncore/uncore_common_pkg.sv
 (
   input  logic clock,
   input  logic reset,

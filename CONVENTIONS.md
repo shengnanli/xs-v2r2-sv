@@ -28,6 +28,17 @@ endmodule
 ```
 
 - **禁止 `.svh` include**（上轮教训：svh 套壳把 golden 原文藏进 include 蒙混）。
+- **`import` 必须写在模块头里**（`module M import m_pkg::*; (...);`，或把 import 单独占一行
+  放在模块名与端口表之间），
+  **禁止写在任何 module 之外**。模块外的 import 属于**编译单元(`$unit`)作用域**，
+  而 VCS 默认整个编译是单一编译单元 —— 它会**跨文件泄漏**到所有别的文件。
+  2026-09-14 实测（VCS W-2024.09-SP1）：两个文件各在模块外 import 一个包、两个包都
+  定义 `IDX_BITS`（probequeue_pkg=3 / writebackqueue_pkg=5）时，VCS **退出码 0、
+  0 Error、0 Warning**，两个模块一起拿到排在前面那个文件的值；换文件顺序，值一起翻。
+  **UT 和 FM 永远看不见这种错**（它们各编各的文件，第二个包不在场），只有整芯片
+  一起编才会有第二个包。由 `scripts/check_pkg_scope.py` 判据 C 把守（含负测
+  `scripts/test_pkg_scope_gate.py`，两者都在 `scripts/gate_all.sh` 里）；
+  上面那组数字可复跑：`bash scripts/demo_unit_scope_leak.sh`（要 VCS，故不进 gate_all）。
 - package 段仅在确有类型/参数共享需求时出现；无 struct/enum 的小模块直接省略
   （空包是噪音）。
 - 跨模块共享类型放子系统级公共包：`rtl/<subsys>/<subsys>_common_pkg.sv`，

@@ -133,10 +133,10 @@ endpackage : rvc_expander_pkg
 // 这里逐类用 {…} 拼出标准格式的立即数，注释给出该立即数的物理含义（字节/字/
 // 双字偏移、是否符号扩展）。位序严格对齐 golden（即 RISC-V 规范）。
 // =============================================================================
-import rvc_expander_pkg::*;
 
-
-module xs_RVCExpander_core (
+module xs_RVCExpander_core
+  import rvc_expander_pkg::*;
+(
   input  logic [31:0] io_in,
   input  logic        io_fsIsOff,
   output logic [31:0] io_out_bits,

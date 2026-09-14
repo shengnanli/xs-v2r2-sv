@@ -2,6 +2,8 @@
 // 例化可读核 xs_TlbStorageWrapper_core；除参数与端口展平外，本文件还含一段
 // always_comb：把核输出的 access 数组按端口展开成 golden 的扁平 access_<i>_* 端口。
 // 端口规模：83 输入 / 104 输出。
+// 替换策略包 xs_tlbsw_pkg 由本变体与 TlbStorageWrapper 共用，住在
+// rtl/memblock/memblock_common_pkg.sv（编译/FM 时须排在本文件之前）。
 
 module TlbStorageWrapper_1 import xs_tlbsw_pkg::*; (
   input clock,

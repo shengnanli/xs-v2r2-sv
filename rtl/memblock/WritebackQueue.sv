@@ -163,10 +163,10 @@ endpackage
 //
 //  详见 xs-v2r2-sv/docs/memblock/WritebackQueue.md(上一轮仓库,未移植)。
 // =============================================================================
-import writebackqueue_pkg::*;
 
-
-module xs_WritebackQueue_core (
+module xs_WritebackQueue_core
+  import writebackqueue_pkg::*;
+(
   input  logic                  clock,
   input  logic                  reset,
 

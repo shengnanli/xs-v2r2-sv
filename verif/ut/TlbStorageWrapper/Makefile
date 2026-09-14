@@ -1,7 +1,10 @@
 MODULE = TlbStorageWrapper
 
 RTL_DIR = ../../../rtl
-RTL_SRCS = $(RTL_DIR)/memblock/TlbStorageWrapper.sv \
+# memblock_common_pkg.sv 里的 xs_tlbsw_pkg 由 TlbStorageWrapper/_1 共用（每个子系统至多一个公共包文件，见
+# CONVENTIONS.md）。必须排在使用者之前：package 要先于引用它的模块可见。
+RTL_SRCS = $(RTL_DIR)/memblock/memblock_common_pkg.sv \
+           $(RTL_DIR)/memblock/TlbStorageWrapper.sv \
            $(RTL_DIR)/memblock/TlbStorageWrapper_1.sv
 TB_SRCS = tb.sv
 
