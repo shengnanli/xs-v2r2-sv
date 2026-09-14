@@ -13,7 +13,7 @@
 # ★D70 盯的那个数是 A2 且无 target 的 child 数★（本轮 11 → 9）。
 # makefiles_sha256 = 所有被读入的 verif/ut/*/Makefile + scripts/ut_common.mk 的字节摘要。
 #   刻意不写 commit：artifact 自己被提交后 commit 就变了，--check 会永远失败。
-# makefiles_sha256=ad7d1658db3160a50ccef6647034d4b6ec12ee2cc0e43c0472a4f08bf725b342  FM target 全集=272  child=33  无 target=22（其中 A2=9 ★D70 盯的就是这个数★）
+# makefiles_sha256=4ad03f98b6a51d2bc8f424fddcd477b2a883774004995e86065dc02e12565b3b  FM target 全集=272  child=33  无 target=22（其中 A2=9 ★D70 盯的就是这个数★）
 # child	boundary_class	is_fm_target	ut_dirs	proof_status	verdict	referenced_by
 AsyncResetSynchronizerShiftReg_w1_d3_i0	A2	NO	-	UNVERIFIED	NO_FM_TARGET	IMSICGateWay
 FoldedSRAMTemplate_20	A2	YES	FoldedSRAMTemplate	UNVERIFIED	HAS_TARGET_UNVERIFIED	TageBTable

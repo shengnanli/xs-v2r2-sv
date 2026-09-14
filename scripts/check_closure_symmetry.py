@@ -251,7 +251,8 @@ def _provider_inventory(files):
     prov, insts = {}, {}
     for f in files:
         try:
-            raw = open(f, 'rb').read()
+            with open(f, 'rb') as fh:          # 不用裸 open：整仓扫一遍要开上千个
+                raw = fh.read()                # 文件描述符，泄漏会在大批量跑时耗尽
         except OSError as e:
             raise RuntimeError(f'源文件读不出来: {f}: {e}')
         if _BIND.search(raw.decode('utf-8', 'replace')):
@@ -927,7 +928,25 @@ def main(argv=None):
     return EXIT_CLEAN
 
 
+#: ★确定性★（本轮实测的真事故，不是理论顾虑）
+#: sv_elab 在报"未知标识符"时取的是一个**无序容器里的第一个**未解析名字，而 Python
+#: 默认对 str 做 hash 随机化 —— 于是同一份输入两次运行会给出不同的 detail 文本：
+#:     TageTable_2  未知标识符 _unsupported in '$bits(...hist_17...)'
+#:     TageTable_2  未知标识符 io_req_bits_folded_hist_hist_17_folded_hist in '$bits(...)'
+#: 两种都出现过，**jobs=1 也复现**（所以与并发无关，是进程级 hash 种子）。
+#: 后果：docs/closure_symmetry_ledger.tsv 不可字节复现 —— 正是 D66 要根除的那类
+#: "生成物取决于没人钉住的东西"。
+#: 实测：PYTHONHASHSEED=0 下连跑 4 次逐字节一致；不钉时 4 次出 3 种结果。
+#: 修法刻意放在**入口自钉**而不是"调用方记得 export"：靠人记得设环境变量是 fail-open。
+#: 也刻意不改 verif/allow_gen/sv_elab.py（A 类 owner 做过 52/52 交叉校验的共享件）。
+def _pin_hash_seed():
+    if os.environ.get('PYTHONHASHSEED') != '0':
+        os.environ['PYTHONHASHSEED'] = '0'
+        os.execv(sys.executable, [sys.executable] + sys.argv)
+
+
 if __name__ == '__main__':
+    _pin_hash_seed()
     try:
         sys.exit(main())
     except SystemExit:

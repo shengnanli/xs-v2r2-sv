@@ -443,6 +443,65 @@ class TestClosureInventory(NoCrash):
         self.assertEqual(CCS.EXIT_VIOLATION, 1)
         self.assertEqual(CCS.EXIT_USAGE, 2)
 
+    def _ledger_rows(self, seed, bypass_pin=False):
+        """跑一次单 target 台账，返回数据行。
+
+        bypass_pin=True 时用 import+main() 调用，绕过 __main__ 里的种子自钉 ——
+        用来证明"输出确实对 hash 种子敏感"，即那道自钉不是摆设。
+        """
+        out = pathlib.Path(tempfile.mkdtemp(prefix='led-')) / 'l.tsv'
+        env = dict(os.environ, PYTHONHASHSEED=str(seed))
+        if bypass_pin:
+            cmd = [sys.executable, '-c',
+                   'import sys; sys.path.insert(0, %r); '
+                   'import check_closure_symmetry as C; '
+                   'sys.exit(C.main(sys.argv[1:]))' % str(HERE),
+                   '--only', 'TageTable', '--jobs', '8', '--inventory',
+                   '--closure-ledger', str(out)]
+        else:
+            cmd = [sys.executable, str(self.SCRIPT), '--only', 'TageTable',
+                   '--jobs', '8', '--inventory', '--closure-ledger', str(out)]
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                             universal_newlines=True, env=env)
+        _o, err = p.communicate()
+        self.assertNotIn('Traceback', err, err)
+        rows = [ln for ln in out.read_text().splitlines()
+                if ln and not ln.startswith('#')]
+        self.assertTrue(rows, '台账没有数据行，断言会退化成空断言')
+        shutil.rmtree(out.parent, ignore_errors=True)
+        return rows
+
+    def test_ledger_is_byte_reproducible(self):
+        """★本轮实测到的真事故★ 生成物必须字节可复现。
+
+        sv_elab 报"未知标识符"时取的是无序容器里的第一个名字，Python 默认对 str
+        做 hash 随机化 ⇒ 同一输入两次运行 detail 文本不同（TageTable_2/_3 在
+        `_unsupported` 与真实信号名之间来回跳，jobs=1 也复现）。
+        入口 `_pin_hash_seed()` 把种子钉成 0；这条守住它。
+        """
+        a = self._ledger_rows(0)
+        b = self._ledger_rows(0)
+        self.assertEqual(a, b, '同一输入两次运行台账不一致 —— 生成物不可复现')
+
+    def test_the_seed_pin_is_load_bearing_not_a_noop(self):
+        """★对照组★ 绕过自钉后，不同 hash 种子必须给出不同输出。
+
+        没有这一条，上一条可能只是"这个 target 本来就稳定"，
+        那道 PYTHONHASHSEED 自钉就成了自我安慰。
+        """
+        a = self._ledger_rows(0, bypass_pin=True)
+        b = self._ledger_rows(12345, bypass_pin=True)
+        self.assertNotEqual(
+            a, b,
+            '换 hash 种子输出没变 —— 要么事故形态变了、要么这条测试已失去意义，'
+            '必须先确认再改断言')
+
+    def test_entry_point_actually_pins_the_seed(self):
+        """自钉必须真的在入口被调用，而不只是定义了一个没人用的函数。"""
+        src = (HERE / 'check_closure_symmetry.py').read_text()
+        self.assertIn('_pin_hash_seed()', src.split("if __name__ == '__main__':")[1],
+                      '__main__ 里没有调用 _pin_hash_seed()')
+
     def test_bind_makes_the_overapproximation_invalid(self):
         """★必失败样本★ `bind` 会在语法可见的例化之外挂实例 ——
         "语法例化是过近似"这个前提不成立，必须拒绝下结论而不是照旧判 CLOSED。"""

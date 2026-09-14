@@ -69,6 +69,7 @@ LevelGateway	MAIN	WORKING_PASS	fm_verdicts=1
 LinkMonitor	MAIN	REWRITE_TODO	G1逻辑改动, FM/UT失配需逐个对照重写
 MSHRSelector	MAIN	WORKING_PASS	fm_verdicts=1
 NewPipelineConnectPipe_25	MAIN	DEFER_RENUMBER	家族GOLDEN_SRCS引用NPC_31(G1重编号为_33); 随重编号remap专项处理
+OpenLLC	MAIN	UNRUNNABLE_RESOURCE_LIMIT_CURRENT_HOST	codex 0153 D68：本机 cgroup-v1、无可信 memory containment，不得在此运行 OpenLLC XL；不得以 watcher 人工抢救替代隔离。 已修的前置条件：verif/ut/OpenLLC/Make
 PLICFanIn	MAIN	WORKING_PASS	fm_verdicts=1
 Pipeline	MAIN	WORKING_PASS	fm_verdicts=1
 PreDecode	MAIN	WORKING_PASS	fm_verdicts=1
