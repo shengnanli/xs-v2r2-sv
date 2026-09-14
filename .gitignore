@@ -56,3 +56,5 @@ verif/study/*/.inter.vpd.uvm
 # UT 批跑脚本的落盘输出（ut_run.sh），派生物，不进版本库
 verif/ut/*/ut_compile.out
 verif/ut/*/ut_run_*.out
+# scripts/full_elab.sh 的整芯片 elaborate 产物（VCS 中间文件 + simv，数百 MB）
+/build_full_elab/

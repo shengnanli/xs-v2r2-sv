@@ -46,7 +46,7 @@
 //   4. 新增 satpFlush 通路：后端 redirect 带 satpFlush → 打拍/选择 → hasSatpFlush 状态位 →
 //      io_toICache_req_bits_hasSatpFlush（与 backendException 共用 backendFlagPtr==ifuPtr 门控）。
 //   5. mmioLastCommit 比较整体由新输入 io_mmioCommitRead_valid 选通。
-// 本文件导航（共 3362 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+// 本文件导航（共 3393 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
 //   L44    在前端中的位置
 //   L55    为什么 FTQ 这么复杂
 //   L64    几大存储
@@ -65,24 +65,24 @@
 //   L1214  每项寄存器阵列
 //   L1245  ② to IFU / ICache / Prefetch
 //   L1247  bypass：上一拍 BPU 写入的块若正好是当前 ifuPtr，直接用旁路 buf 而非等 pc_mem 读出
-//   L1459  ③ wb from IFU
-//   L1524  ④ redirect from IFU
-//   L1540  指针 next 值
-//   L1542  redirect 冲刷优先级：backendRedirect > fromIfuRedirect
-//   L1636  ⑥ commit
-//   L1697  ⑤ update：据提交结果生成 FTB 新条目喂回 BPU
-//   L1699  FTBEntryGen 输入：start_addr=commit pc，old_entry=commit 时读出的 ftb_en
-//   L1796  redirect from backend：构造 cfiUpdate
-//   L1798  重定向块的 pd
-//   L1829  toBpu.redirect = Mux(fromBackendRedirect.valid, fromBackendRedir
-//   L1832  IFU redirect 打拍后送 BPU：cfiUpdate 由 ftq_redirect_mem 口0(IFU) 读出；re
-//   L1865  toIfu.redirect / topdown_redirect
-//   L1894  toBackend / mmio / 性能计数
-//   L1916  性能计数
-//   L2000  topdown_info
-//   L2087  统一时序更新
-//   L2089  commit 段移动 commPtr 后，记录提交项以驱动 update/FTBEntryGen
-//   L2403  Ftq —— golden 同名 wrapper：端口与 G1 golden 逐位同名同序
+//   L1476  ③ wb from IFU
+//   L1541  ④ redirect from IFU
+//   L1557  指针 next 值
+//   L1559  redirect 冲刷优先级：backendRedirect > fromIfuRedirect
+//   L1653  ⑥ commit
+//   L1714  ⑤ update：据提交结果生成 FTB 新条目喂回 BPU
+//   L1716  FTBEntryGen 输入：start_addr=commit pc，old_entry=commit 时读出的 ftb_en
+//   L1813  redirect from backend：构造 cfiUpdate
+//   L1815  重定向块的 pd
+//   L1846  toBpu.redirect = Mux(fromBackendRedirect.valid, fromBackendRedir
+//   L1849  IFU redirect 打拍后送 BPU：cfiUpdate 由 ftq_redirect_mem 口0(IFU) 读出；re
+//   L1882  toIfu.redirect / topdown_redirect
+//   L1911  toBackend / mmio / 性能计数
+//   L1933  性能计数
+//   L2017  topdown_info
+//   L2104  统一时序更新
+//   L2106  commit 段移动 commPtr 后，记录提交项以驱动 update/FTBEntryGen
+//   L2434  Ftq —— golden 同名 wrapper：端口与 G1 golden 逐位同名同序
 //
 
 module xs_Ftq_core(
@@ -1313,6 +1313,17 @@ module xs_Ftq_core(
   reg            copied_last_cycle_bpu_in_REG [0:4];
   reg            copied_last_cycle_to_ifu_fire_REG [0:4];
 
+  // golden 另有第 6、7 份 copied_last_cycle_bpu_in 复制，专供 commitStateQueue 的
+  // "新入队块清零"用（Scala 里这块自己 copy 了一份 last_cycle_bpu_in 以切扇出）：
+  //   copied_last_cycle_bpu_in_REG_5 驱动低 32 项(entry 0..31) 的清零，
+  //   copied_last_cycle_bpu_in_REG_6 驱动高 32 项(entry 32..63)，
+  // 与之配对的指针复制 copied_last_cycle_bpu_in_ptr_for_ftq_r{,_1}_value 与
+  // last_cycle_bpu_in_ptr 同值同使能、会被 FM 合并成一个代表，故指针侧直接复用
+  // last_cycle_bpu_in_ptr；使能侧则必须同样有两份独立寄存器，否则 golden 的
+  // REG_5/_6 在 FM 里找不到对象、退化成自由变量，整个 commitStateQueue 锥全部失配。
+  reg            copied_last_cycle_bpu_in_REG_5;
+  reg            copied_last_cycle_bpu_in_REG_6;
+
   // ★结构隔离 next-state 源★：golden 侧 copied_ifu_ptr_N<=ifuPtr_write_value(独立命名 wire，
   //   仅 icacheFlush/s3/s2/fire/hold 五选一)、ifuPtr_value<=(inline 过程块，含 ptr_recover 门控)，
   //   二者虽等值但 D-input net 结构不同→FM 不合并。为让 impl 侧与 golden 同样“不合并”(否则 impl
@@ -1353,6 +1364,12 @@ module xs_Ftq_core(
       end
     end
   endgenerate
+
+  // commitStateQueue 清零专用的两份复制（golden copied_last_cycle_bpu_in_REG_5/_6）
+  always_ff @(posedge clock) begin
+    copied_last_cycle_bpu_in_REG_5 <= bpu_in_fire;
+    copied_last_cycle_bpu_in_REG_6 <= bpu_in_fire;
+  end
 
   wire [4:0]  copied_bypass_hit;
   wire [49:0] copied_pcMemRead_startAddr    [0:4];
@@ -2121,13 +2138,18 @@ module xs_Ftq_core(
       newest_entry_target_modified<=1'b0;
       if (last_cycle_bpu_in) begin
         entry_fetch_status[last_cycle_bpu_in_ptr[PTR_W-1:0]] <= F_TO_SEND;
-      newest_entry_target_modified<=1'b1;
-        // 新入队块一拍后把其 commitStateQueue 复位为全 C_EMPTY（对应 Scala 748-757
-        // copied_last_cycle_bpu_in 复位块）。否则 FTQ 64 项环绕重用旧项时, 残留的
-        // C_COMMITTED/C_TO_COMMIT/C_FLUSHED 会污染 canCommit/commPtr 推进。
-        // 此处优先级最低: 后面的 ifu_wb(C_TO_COMMIT)/redirect-flush/rob-commit 写同一项会覆盖。
-        commitStateQueue[last_cycle_bpu_in_ptr[PTR_W-1:0]] <= '0;
+        newest_entry_target_modified<=1'b1;
       end
+      // 新入队块一拍后把其 commitStateQueue 复位为全 C_EMPTY（对应 Scala 748-757
+      // copied_last_cycle_bpu_in 复位块）。否则 FTQ 64 项环绕重用旧项时, 残留的
+      // C_COMMITTED/C_TO_COMMIT/C_FLUSHED 会污染 canCommit/commPtr 推进。
+      // 此处优先级最低: 后面的 ifu_wb(C_TO_COMMIT)/redirect-flush/rob-commit 写同一项会覆盖。
+      // golden 把这块按 entry 展成 64 路译码，低/高各 32 项用一份独立的使能复制
+      // （REG_5 / REG_6），这里按同一结构展开以与 golden 逐点对齐。
+      for (int i = 0; i < FTQ_SIZE; i++)
+        if ((i < FTQ_SIZE/2 ? copied_last_cycle_bpu_in_REG_5 : copied_last_cycle_bpu_in_REG_6)
+            & (last_cycle_bpu_in_ptr[PTR_W-1:0] == PTR_W'(i)))
+          commitStateQueue[i] <= '0;
       // 再延后一拍清 mispred（reduce fanout）
 
       // entry_hit_status：只用 s2 的 hit 结果（对应 Scala 775-777）
@@ -2283,8 +2305,17 @@ module xs_Ftq_core(
       // entry_next_addr 的 base：cur 用 RegNext(ifuPtrPlus1_rdata)，p1 用 RegNext(ifuPtrPlus2_rdata)
       enext_cur_reg <= pcmem_ifuP1_startAddr;
       enext_p1_reg  <= pcmem_ifuP2_startAddr;
-      // prefetch 提前一拍
-      toPrefetchPc_startAddr<=nextPfPc_startAddr; toPrefetchPc_nextLineAddr<=nextPfPc_nextLineAddr;
+      // prefetch 提前一拍。
+      // nextLineAddr = startAddr + 64B（pruned 地址少 1 位，故常数是 50'h40），进位永远
+      // 碰不到 [5:0]，两者低 6 位逐位相同——三条来源都满足：BPU 直写那路是同一个
+      // bpu_in_pc 加常数，另两路读的是 ftq_pc_mem 里成对写进去的同一块地址。golden 侧
+      // FM 的 merge_duplicated_registers 正是据此把这两条 50 位流水寄存器的低 6 位并成
+      // 一个代表（实测 golden 只剩 toPrefetchPcBundle_nextLineAddr_reg[5:0]）。这里显式
+      // 共用同一根 net，让可读核得到同样的合并结果；否则 impl 侧会多出 6 个在 golden
+      // 里没有对象的比对点，它们退化成自由变量，直接把 io_toPrefetch_req_bits_startAddr
+      // 的低 6 位判成不等价（实测 0(6) unmatched + 6 failing）。
+      toPrefetchPc_startAddr<=nextPfPc_startAddr;
+      toPrefetchPc_nextLineAddr<={nextPfPc_nextLineAddr[49:6], nextPfPc_startAddr[5:0]};
       toPrefetchEntryToSend <=nextPfEntryToSend;
 
       // ---- IFU 写回：commitStateQueue 标 toCommit（对应 Scala 1006-1016）----

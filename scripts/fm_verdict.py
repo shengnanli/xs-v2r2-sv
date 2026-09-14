@@ -247,7 +247,13 @@ def _failure_reason(q, stats_err):
 #   green_child       独立 FM target 且持有 tracked 证明证书——条件允许，
 #                     须写明 child_target + certificate_sha256（codex 0157 D57）
 #   golden_logic_reuse 直接复用 golden 功能逻辑当黑盒——**NO-GO**，必须独立证明后才可引用
-ALLOWED_BBOX_CLASSES = {'vendor_macro', 'green_child'}
+#   APPROVED_MEMORY_MACRO_MODEL  逐条审定的存储宏行为模型（codex 0153 D67 定类别，
+#                     0156 批准入集，0158 指定用于 8 个非 2 的幂 golden RAM 模型）——
+#                     ★只按 verif/vendor_boundary.tsv 里的**精确 module 名 + golden 源码
+#                     hash** 放行，禁止按 `_ext` 后缀或 ELAB-147 诊断文本放行★。
+#                     codex 0158 明确：**是 clean native 结果让目标转绿，不是入表本身**；
+#                     入表只是允许把同一个精确边界在两侧对称黑盒，证明仍要自己跑过。
+ALLOWED_BBOX_CLASSES = {'vendor_macro', 'green_child', 'APPROVED_MEMORY_MACRO_MODEL'}
 
 
 def _hier_key(path):

@@ -5,6 +5,9 @@ codex 0139 §3.3：assembly 不得再用数字配额。本声明逐条列出黑�
 观测集合须与声明**精确相等**，且每条必须归入允许类别：
   vendor_macro  厂商硬宏叶子（.v 行为模型，两侧同源）——须**逐条**在
                 verif/vendor_boundary.tsv 审定入表，按表内精确模块名放行
+  APPROVED_MEMORY_MACRO_MODEL  逐条审定的存储宏行为模型（D67 的 array_*_ext 六条、
+                0158 §1 的 firtool ram_* 若干）——同样只按表内精确模块名放行；
+                自动归类用的是表里那条的 **kind**，不是一律 vendor_macro
   green_child   独立目标且已在台账通过——须填 child_target
   golden_logic_reuse —— NO-GO，声明成这一类会被判 PARTIAL（必须先独立证明）
 
@@ -42,13 +45,27 @@ a = ap.parse_args()
 
 # codex 0142 §50：禁止自动批准。自动归类只对**已审定并提交**的厂商边界名单生效
 # （verif/vendor_boundary.tsv），表外一律要求逐条显式 --class。
-VENDOR = set()
+# 自动归类**用表里那条的 kind**，不是一律 vendor_macro（codex 0158 §1）：
+#   kind=vendor_sram_leaf              -> class vendor_macro（D60 的 20 条 SRAM 编译器叶子）
+#   kind=APPROVED_MEMORY_MACRO_MODEL   -> class 同名（D67 的 6 条 + 0158 §1 的 ram_*）
+# 两个 class 在 fm_verdict.ALLOWED_BBOX_CLASSES 里都是无条件允许，所以这不改变**判定强度**；
+# 改的是**声明的真实性** —— firtool 行为级 RAM 模型不是厂商 SRAM 编译器叶子，
+# 写成 vendor_macro 是把证据写错，而证据写错正是本工程反复踩到的那类坑。
+_KIND2CLASS = {'vendor_sram_leaf': 'vendor_macro',
+               'APPROVED_MEMORY_MACRO_MODEL': 'APPROVED_MEMORY_MACRO_MODEL'}
+VENDOR = {}
 vb = NEW / 'verif' / 'vendor_boundary.tsv'
 if vb.exists():
     for _l in vb.read_text().splitlines():
         if _l.startswith('#') or not _l.strip():
             continue
-        VENDOR.add(_l.split('\t')[0])
+        _f = _l.split('\t')
+        _k = _f[1] if len(_f) > 1 else ''
+        if _k not in _KIND2CLASS:
+            # fail-closed：表里出现本脚本不认识的 kind，不许猜一个 class 出来。
+            sys.exit(f'ERROR: verif/vendor_boundary.tsv 里 {_f[0]} 的 kind={_k!r} '
+                     f'本脚本不认识（已知 {sorted(_KIND2CLASS)}）——拒绝自动归类')
+        VENDOR[_f[0]] = _KIND2CLASS[_k]
 
 manual = {}
 for spec in a.cls:
@@ -62,7 +79,7 @@ for side, attrs, design, path in sorted(ents):
     if design in manual:
         cls, child = manual[design]
     elif design in VENDOR:
-        cls, child = 'vendor_macro', None
+        cls, child = VENDOR[design], None
     else:
         sys.exit(f'ERROR: {design} 不在已审定的厂商边界名单（verif/vendor_boundary.tsv）。'
                  f'须逐条人工分类：--class {design}=green_child:<已证目标>，'

@@ -12,6 +12,11 @@ run() { printf '=== %-28s ' "$1"; shift; if "$@" >/tmp/gate_$$.out 2>&1; then ec
 run "可读性 A-G"        python3 scripts/readability_audit.py --quiet
 run "端口契约闸"        python3 scripts/port_contract_lint.py --all-impl
 run "重复/分叉闸"       python3 scripts/equality_dup_lint.py
+# package 作用域闸（codex 0158 §3）：重复/分叉闸只认**模块**重名，看不见 **package**
+# 重名 —— 而 package 名在 SystemVerilog 里同样是全局的。实测 rtl/ 下 57 个包里有 2 个
+# 重名（vset_pkg / xs_predecode_pkg），UT+FM 全绿、10 道闸全过，整芯片 elaborate 第一次
+# 跑就 Error-[SV-PPD]。修完立刻配闸，否则下一个共用包还会这么长出来。
+run "package 作用域闸"   python3 scripts/check_pkg_scope.py
 run "universe 冻结闸"   python3 scripts/check_universe_freeze.py
 run "位置依赖闸"       python3 scripts/test_no_location_dependency.py
 # 台账行序闸：我写了这条测试却没接进来（2026-09-14 由 bkperf worker 撞上才发现——

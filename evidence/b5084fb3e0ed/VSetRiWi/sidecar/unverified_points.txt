@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/VSetRiWi
+Implementation : i:/WORK/VSetRiWi
+Version        : V-2023.12-SP3
+Date           : Mon Sep 14 07:20:10 2026
+**************************************************
+
+No unverified compare points.
+
+1
