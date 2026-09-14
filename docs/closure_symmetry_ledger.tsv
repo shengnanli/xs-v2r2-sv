@@ -40,7 +40,7 @@ EntriesVfdivVidiv	verif/ut/EntriesVfdivVidiv	signoff-strict	SYMMETRIC_BY_INVENTO
 F3Predecoder	verif/ut/F3Predecoder	signoff-strict	SYMMETRIC	
 FAlu	verif/ut/FAlu	signoff-strict	SYMMETRIC	
 FCVT	verif/ut/FCVT	signoff-strict	SYMMETRIC	
-FIFOReg	verif/ut/FIFOReg	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 1 / impl 提供 2 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
+FIFOReg	verif/ut/FIFOReg	signoff-strict	SYMMETRIC	
 FMA	verif/ut/FMA	signoff-strict	SYMMETRIC	
 FPDecoder	verif/ut/FPDecoder	signoff-strict	SYMMETRIC	
 FTBBank	verif/ut/FTBBank	assembly	SYMMETRIC	bbox=array_1_extx8
@@ -77,7 +77,7 @@ ICacheMSHR_9	verif/ut/ICacheMSHR	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语
 ICacheMetaArray	verif/ut/ICacheMetaArray	assembly	SYMMETRIC	bbox=MbistPipeIcacheTagx1,SplittedSRAMTemplatex1,SplittedSRAMTemplate_1x1
 ICacheMissUnit	verif/ut/ICacheMissUnit	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 20 / impl 提供 26 个 design，其中 0 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
 ICacheReplacer	verif/ut/ICacheReplacer	signoff-strict	SYMMETRIC	
-IMSICGateWay	verif/ut/IMSICGateWay	assembly	SYMMETRIC	bbox=AsyncResetSynchronizerShiftReg_w1_d3_i0x1
+IMSICGateWay	verif/ut/IMSICGateWay	signoff-strict	SYMMETRIC	
 ITTageTable	verif/ut/ITTageTable	signoff-strict	SYMMETRIC	
 ITTageTable_1	verif/ut/ITTageTable_1	signoff-strict	SYMMETRIC	
 ITTageTable_2	verif/ut/ITTageTable_2	signoff-strict	SYMMETRIC	
@@ -208,6 +208,7 @@ SRAMTemplate_92	verif/ut/SRAMTemplate	assembly	SYMMETRIC	bbox=array_7_extx1
 SRAMTemplate_128	verif/ut/SRAMTemplateNewForm	assembly	SYMMETRIC	bbox=array_10_extx1
 SRAMTemplate_145	verif/ut/SRAMTemplateNewForm	assembly	SYMMETRIC	bbox=array_12_extx1
 SRAMTemplate_146	verif/ut/SRAMTemplateNewForm	assembly	SYMMETRIC	bbox=array_13_extx1
+SRAMTemplate_152	verif/ut/SRAMTemplateNewForm	assembly	SYMMETRIC	bbox=array_15_extx1
 SRAMTemplate_155	verif/ut/SRAMTemplateNewForm	assembly	SYMMETRIC	bbox=array_18_extx1
 SRAMTemplate_163	verif/ut/SRAMTemplateNewForm	assembly	SYMMETRIC	bbox=array_15_extx1
 SRAMTemplate_166	verif/ut/SRAMTemplateNewForm	assembly	SYMMETRIC	bbox=array_18_extx1
@@ -264,11 +265,11 @@ TXREQ_4	verif/ut/TXREQ_4	signoff-strict	SYMMETRIC
 TXRSP	verif/ut/TXRSP	signoff-strict	SYMMETRIC	
 TXRSP_4	verif/ut/TXRSP_4	signoff-strict	SYMMETRIC	
 TXSNP	verif/ut/TXSNP	signoff-strict	SYMMETRIC	
-TageBTable	verif/ut/TageBTable	assembly	SYMMETRIC	bbox=FoldedSRAMTemplate_20x2,WrBypass_32x1
-TageTable	verif/ut/TageTable	assembly	CLOSURE_UNKNOWN	elab_error:未知标识符 io_req_bits_folded_hist_hist_14_folded_hist in '$bits(io_req_bits_folded_hist_hist_14_folded_hist)' || 源清单对账: 过近似黑盒非空，判不准（不等于不对称）: ref=['FoldedSRAMTemplate', 'FoldedSRAMTemplate_1', 'WrBypass'] impl=['FoldedSRAMTemplate', 'FoldedSRAMTemplate_1', 'WrBypass']
-TageTable_1	verif/ut/TageTable	assembly	CLOSURE_UNKNOWN	elab_error:未知标识符 io_req_bits_folded_hist_hist_1_folded_hist in '$bits(io_req_bits_folded_hist_hist_1_folded_hist)' || 源清单对账: 过近似黑盒非空，判不准（不等于不对称）: ref=['FoldedSRAMTemplate', 'FoldedSRAMTemplate_1', 'WrBypass'] impl=['FoldedSRAMTemplate', 'FoldedSRAMTemplate_1', 'WrBypass']
-TageTable_2	verif/ut/TageTable	assembly	CLOSURE_UNKNOWN	elab_error:未知标识符 _unsupported in '$bits(io_req_bits_folded_hist_hist_17_folded_hist)' || 源清单对账: 过近似黑盒非空，判不准（不等于不对称）: ref=['FoldedSRAMTemplate', 'FoldedSRAMTemplate_1', 'WrBypass'] impl=['FoldedSRAMTemplate', 'FoldedSRAMTemplate_1', 'WrBypass']
-TageTable_3	verif/ut/TageTable	assembly	CLOSURE_UNKNOWN	elab_error:未知标识符 io_req_bits_folded_hist_hist_16_folded_hist in '$bits(io_req_bits_folded_hist_hist_16_folded_hist)' || 源清单对账: 过近似黑盒非空，判不准（不等于不对称）: ref=['FoldedSRAMTemplate', 'FoldedSRAMTemplate_1', 'WrBypass'] impl=['FoldedSRAMTemplate', 'FoldedSRAMTemplate_1', 'WrBypass']
+TageBTable	verif/ut/TageBTable	assembly	SYMMETRIC	bbox=array_4_extx4
+TageTable	verif/ut/TageTable	assembly	SYMMETRIC	bbox=array_2_extx1,array_3_extx4
+TageTable_1	verif/ut/TageTable	assembly	SYMMETRIC	bbox=array_2_extx1,array_3_extx4
+TageTable_2	verif/ut/TageTable	assembly	SYMMETRIC	bbox=array_2_extx1,array_3_extx4
+TageTable_3	verif/ut/TageTable	assembly	SYMMETRIC	bbox=array_2_extx1,array_3_extx4
 TlbStorageWrapper	verif/ut/TlbStorageWrapper	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 2 / impl 提供 5 个 design，其中 1 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
 TlbStorageWrapper_1	verif/ut/TlbStorageWrapper	signoff-strict	SYMMETRIC_BY_INVENTORY	两侧语法过近似黑盒集皆空（ref 提供 2 / impl 提供 5 个 design，其中 1 个两侧字节相同） ⇒ 真实黑盒集必为空 ⇒ 对称
 UopInfoGen	verif/ut/UopInfoGen	signoff-strict	SYMMETRIC	

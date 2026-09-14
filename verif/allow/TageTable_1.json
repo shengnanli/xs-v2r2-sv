@@ -5,211 +5,73 @@
  "objects": [
   {
    "side": "i",
-   "design": "FoldedSRAMTemplate",
-   "path": "i:/WORK/TageTable_1/u_core/us",
+   "design": "array_2_ext",
+   "path": "i:/WORK/TageTable_1/u_core/us/array/array_0_0_0/array/array/array_2_ext",
    "attrs": "u",
-   "class": "green_child",
-   "child_target": "FoldedSRAMTemplate"
+   "class": "vendor_macro"
   },
   {
    "side": "i",
-   "design": "FoldedSRAMTemplate_1",
-   "path": "i:/WORK/TageTable_1/u_core/g_bank[0].table_bank",
+   "design": "array_3_ext",
+   "path": "i:/WORK/TageTable_1/u_core/g_bank[0].table_bank/array/array_0_0_0/array/array/array_3_ext",
    "attrs": "u",
-   "class": "green_child",
-   "child_target": "FoldedSRAMTemplate_1"
+   "class": "vendor_macro"
   },
   {
    "side": "i",
-   "design": "FoldedSRAMTemplate_1",
-   "path": "i:/WORK/TageTable_1/u_core/g_bank[1].table_bank",
+   "design": "array_3_ext",
+   "path": "i:/WORK/TageTable_1/u_core/g_bank[1].table_bank/array/array_0_0_0/array/array/array_3_ext",
    "attrs": "u",
-   "class": "green_child",
-   "child_target": "FoldedSRAMTemplate_1"
+   "class": "vendor_macro"
   },
   {
    "side": "i",
-   "design": "FoldedSRAMTemplate_1",
-   "path": "i:/WORK/TageTable_1/u_core/g_bank[2].table_bank",
+   "design": "array_3_ext",
+   "path": "i:/WORK/TageTable_1/u_core/g_bank[2].table_bank/array/array_0_0_0/array/array/array_3_ext",
    "attrs": "u",
-   "class": "green_child",
-   "child_target": "FoldedSRAMTemplate_1"
+   "class": "vendor_macro"
   },
   {
    "side": "i",
-   "design": "FoldedSRAMTemplate_1",
-   "path": "i:/WORK/TageTable_1/u_core/g_bank[3].table_bank",
+   "design": "array_3_ext",
+   "path": "i:/WORK/TageTable_1/u_core/g_bank[3].table_bank/array/array_0_0_0/array/array/array_3_ext",
    "attrs": "u",
-   "class": "green_child",
-   "child_target": "FoldedSRAMTemplate_1"
-  },
-  {
-   "side": "i",
-   "design": "WrBypass",
-   "path": "i:/WORK/TageTable_1/u_core/g_wb_bank[0].g_wb_br[0].bank_wrbypass",
-   "attrs": "u",
-   "class": "green_child",
-   "child_target": "WrBypass"
-  },
-  {
-   "side": "i",
-   "design": "WrBypass",
-   "path": "i:/WORK/TageTable_1/u_core/g_wb_bank[0].g_wb_br[1].bank_wrbypass",
-   "attrs": "u",
-   "class": "green_child",
-   "child_target": "WrBypass"
-  },
-  {
-   "side": "i",
-   "design": "WrBypass",
-   "path": "i:/WORK/TageTable_1/u_core/g_wb_bank[1].g_wb_br[0].bank_wrbypass",
-   "attrs": "u",
-   "class": "green_child",
-   "child_target": "WrBypass"
-  },
-  {
-   "side": "i",
-   "design": "WrBypass",
-   "path": "i:/WORK/TageTable_1/u_core/g_wb_bank[1].g_wb_br[1].bank_wrbypass",
-   "attrs": "u",
-   "class": "green_child",
-   "child_target": "WrBypass"
-  },
-  {
-   "side": "i",
-   "design": "WrBypass",
-   "path": "i:/WORK/TageTable_1/u_core/g_wb_bank[2].g_wb_br[0].bank_wrbypass",
-   "attrs": "u",
-   "class": "green_child",
-   "child_target": "WrBypass"
-  },
-  {
-   "side": "i",
-   "design": "WrBypass",
-   "path": "i:/WORK/TageTable_1/u_core/g_wb_bank[2].g_wb_br[1].bank_wrbypass",
-   "attrs": "u",
-   "class": "green_child",
-   "child_target": "WrBypass"
-  },
-  {
-   "side": "i",
-   "design": "WrBypass",
-   "path": "i:/WORK/TageTable_1/u_core/g_wb_bank[3].g_wb_br[0].bank_wrbypass",
-   "attrs": "u",
-   "class": "green_child",
-   "child_target": "WrBypass"
-  },
-  {
-   "side": "i",
-   "design": "WrBypass",
-   "path": "i:/WORK/TageTable_1/u_core/g_wb_bank[3].g_wb_br[1].bank_wrbypass",
-   "attrs": "u",
-   "class": "green_child",
-   "child_target": "WrBypass"
+   "class": "vendor_macro"
   },
   {
    "side": "r",
-   "design": "FoldedSRAMTemplate",
-   "path": "r:/WORK/TageTable_1/us",
+   "design": "array_2_ext",
+   "path": "r:/WORK/TageTable_1/us/array/array_0_0_0/array/array/array_2_ext",
    "attrs": "u",
-   "class": "green_child",
-   "child_target": "FoldedSRAMTemplate"
+   "class": "vendor_macro"
   },
   {
    "side": "r",
-   "design": "FoldedSRAMTemplate_1",
-   "path": "r:/WORK/TageTable_1/table_banks_0",
+   "design": "array_3_ext",
+   "path": "r:/WORK/TageTable_1/table_banks_0/array/array_0_0_0/array/array/array_3_ext",
    "attrs": "u",
-   "class": "green_child",
-   "child_target": "FoldedSRAMTemplate_1"
+   "class": "vendor_macro"
   },
   {
    "side": "r",
-   "design": "FoldedSRAMTemplate_1",
-   "path": "r:/WORK/TageTable_1/table_banks_1",
+   "design": "array_3_ext",
+   "path": "r:/WORK/TageTable_1/table_banks_1/array/array_0_0_0/array/array/array_3_ext",
    "attrs": "u",
-   "class": "green_child",
-   "child_target": "FoldedSRAMTemplate_1"
+   "class": "vendor_macro"
   },
   {
    "side": "r",
-   "design": "FoldedSRAMTemplate_1",
-   "path": "r:/WORK/TageTable_1/table_banks_2",
+   "design": "array_3_ext",
+   "path": "r:/WORK/TageTable_1/table_banks_2/array/array_0_0_0/array/array/array_3_ext",
    "attrs": "u",
-   "class": "green_child",
-   "child_target": "FoldedSRAMTemplate_1"
+   "class": "vendor_macro"
   },
   {
    "side": "r",
-   "design": "FoldedSRAMTemplate_1",
-   "path": "r:/WORK/TageTable_1/table_banks_3",
+   "design": "array_3_ext",
+   "path": "r:/WORK/TageTable_1/table_banks_3/array/array_0_0_0/array/array/array_3_ext",
    "attrs": "u",
-   "class": "green_child",
-   "child_target": "FoldedSRAMTemplate_1"
-  },
-  {
-   "side": "r",
-   "design": "WrBypass",
-   "path": "r:/WORK/TageTable_1/bank_wrbypasses_0_0",
-   "attrs": "u",
-   "class": "green_child",
-   "child_target": "WrBypass"
-  },
-  {
-   "side": "r",
-   "design": "WrBypass",
-   "path": "r:/WORK/TageTable_1/bank_wrbypasses_0_1",
-   "attrs": "u",
-   "class": "green_child",
-   "child_target": "WrBypass"
-  },
-  {
-   "side": "r",
-   "design": "WrBypass",
-   "path": "r:/WORK/TageTable_1/bank_wrbypasses_1_0",
-   "attrs": "u",
-   "class": "green_child",
-   "child_target": "WrBypass"
-  },
-  {
-   "side": "r",
-   "design": "WrBypass",
-   "path": "r:/WORK/TageTable_1/bank_wrbypasses_1_1",
-   "attrs": "u",
-   "class": "green_child",
-   "child_target": "WrBypass"
-  },
-  {
-   "side": "r",
-   "design": "WrBypass",
-   "path": "r:/WORK/TageTable_1/bank_wrbypasses_2_0",
-   "attrs": "u",
-   "class": "green_child",
-   "child_target": "WrBypass"
-  },
-  {
-   "side": "r",
-   "design": "WrBypass",
-   "path": "r:/WORK/TageTable_1/bank_wrbypasses_2_1",
-   "attrs": "u",
-   "class": "green_child",
-   "child_target": "WrBypass"
-  },
-  {
-   "side": "r",
-   "design": "WrBypass",
-   "path": "r:/WORK/TageTable_1/bank_wrbypasses_3_0",
-   "attrs": "u",
-   "class": "green_child",
-   "child_target": "WrBypass"
-  },
-  {
-   "side": "r",
-   "design": "WrBypass",
-   "path": "r:/WORK/TageTable_1/bank_wrbypasses_3_1",
-   "attrs": "u",
-   "class": "green_child",
-   "child_target": "WrBypass"
+   "class": "vendor_macro"
   }
  ]
 }
