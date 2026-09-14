@@ -100,3 +100,95 @@ XMR 总数: 9897
 「子实例不存在」这一类说明重写件不只是内部**信号**改名，**子模块划分本身**也变了
 （如 `WritebackQueue` 的 10 个 `entries_N` 单条目子模块被合进了阵列写法）。
 所以「按 golden 保留探针名」这条路对这类模块不是改名能解决的，得改结构。
+
+---
+
+# 2026-09-14 第一轮实跑结果
+
+## 结论先行
+
+**重写整芯片能复位、能出时钟、能提交指令，并且在最小体系结构测试上与 golden
+逐周期一致。** 目前**没有**发现任何功能失配。
+
+## 途中踩到的两个真阻塞（都不是 DUT 的问题，但不修就一步也跑不了）
+
+### 阻塞 1：SimTop 的 9897 条 perfCnt_bore 层次引用
+
+见上文。处理：本工作区生成打补丁的 SimTop 副本（不改 golden、不改 `rtl/`）。
+**只有 impl 侧需要**；golden 侧用原版 SimTop。
+
+### 阻塞 2：★golden 环境自己是坏的★ —— `XiangShan/build/generated-src` 与 `build/rtl` 不是同一次生成
+
+- `build/rtl/*`（= G1-canonical golden-rtl，逐字节相同）生成于 **2026-09-09 21:40**，
+  命令带 `--enable-difftest`。
+- `build/generated-src/*`（difftest 的 DPI C++ 胶水）却是 **22:01** 写的，
+  `difftest_profile.json` 里记的命令是
+  `--target-dir build_xstop/rtl --fpga-platform --disable-all --remove-assert`
+  —— 那是 20 分钟后另一次 **FPGA/RELEASE** 形态的生成，把 generated-src 覆盖了
+  （difftest 的 `FileControl.scala` 把 generated-src 硬编码写到 `$NOOP_HOME/build/generated-src`，
+  不跟 `--target-dir` 走）。
+- 后果：golden RTL 例化 27 种 `DummyDPICWrapper_*`，而这份 dpic 只提供 21 个函数，
+  且其中 3 个（`Phy*RegState` / `*RenameTable`）RTL 根本不用。缺的 12 个里就有
+  `ArchIntRegState` / `ArchFpRegState` / `CommitData` / `StoreEvent` …
+  **golden 自己一跑就死**：
+  `Error-[DPI-DIFNF] ... 'v_difftest_ArchFpRegState' does not exist`，Time 2287 ns。
+- 还有第二层坑：`difftest-state.h` 的**结构体布局**也跟着变了。只换 generated-src
+  再增量重编，VCS 只重编了 `difftest-dpic.cpp`，`difftest.cpp`/`diffstate.cpp` 等
+  **沿用旧头文件编出来的 .o**，于是出现"整数寄存器对得上、pc 和浮点寄存器是随机值"的
+  假失配（`pc ... right=0x10000000, wrong=0x002d002c002d002c`）和裸 segfault。
+  必须**显式删掉那 48 个 C++ .o 强制重编**（RTL 的 .o 不能删，否则 55 分钟白编）。
+
+**修法（本泳道做的）**：用 `make sim-verilog CONFIG=KunminghuV2Config` 在隔离目录
+（`NOOP_HOME=`/`BUILD_DIR=` 都指向 `sim-work/regen`）重新生成一份，取它的 generated-src。
+**顺带证明了 G1-canonical 可复现**：重新生成的 2061 个文件里 **2057 个与 G1 逐字节相同**，
+4 个差异分别是 `SimTop.fir`（dump 格式）、`metadata/`（本次未生成）、
+`CommitIDModule.sv` 与 `NewCSR.sv`（只差内嵌的 git SHA：`133d7dc4b` vs `b36a1a2a5`）。
+
+> **给 golden/基线 owner 的账**：`G1-canonical/` **不含 generated-src**，
+> 因此**这份"唯一 golden 对照"目前不足以复现一次仿真**——必须另外重生成 DPI 胶水。
+> 建议把 generated-src（6 个文件、约 120KB）纳入 canonical 包并记进 MANIFEST。
+
+## 里程碑（coremark-2-iteration，difftest + NEMU）
+
+| 里程碑 | golden | impl（重写件优先） |
+|---|---|---|
+| 出时钟（`tb_top` `always #1`） | ✅ | ✅ |
+| 复位释放（100 ns = cycle 50） | ✅ | ✅ |
+| **第一条指令提交** `The first instruction of core 0 has commited. Difftest enabled.` | ✅ | ✅ |
+| 走完 bootrom → 跳 0x80000000 → 跑到负载 UART 输出 `Running CoreMark for 2 iterations` | ✅ | ✅ |
+| difftest 逐指令锁步（NEMU）无失配 | ✅ | ✅ |
+
+## 最小既有体系结构测试：`flash_recursion_test.bin`（跑到终点）
+
+| | golden | impl |
+|---|---|---|
+| 结果 | `HIT GOOD TRAP at pc = 0xe` | `HIT GOOD TRAP at pc = 0xe` |
+| instrCnt | 289 | **289** |
+| cycleCnt | 4,642 | **4,642** |
+| IPC | 0.062258 | **0.062258** |
+| `DIFFTEST WORKLOAD DONE at cycle` | 4649 | **4649** |
+| difftest 失配 | 0 | **0** |
+
+**逐周期一致**。这是本工程第一次把重写整芯片跑到一个体系结构测试的终点。
+（该测试自带一次 `HIT CRITICAL ERROR: please check if software cause a double trap`，
+golden 侧同样出现，是负载行为不是 DUT 差异。）
+
+## 为什么 coremark 没跑到终点
+
+实测仿真速度 **≈75 cycle/s**（`+max-cycles=20000` 用了 267 s）。difftest 的 vcs.mk 固定带
+`-debug_access+all` + verdi PLI，整芯片下极慢。coremark 2 迭代远不止 memory 里记的
+"cycle 6492"（那个数字与本次实测对不上，**存疑**），按 IPC~1 估要千万级周期
+= 数十小时。所以本轮只能给"跑了多少周期无失配"，不能给 coremark 的 GOOD TRAP。
+要跑完 coremark 得先编一版**去掉 `-debug_access+all` 的快 simv**（需要改 difftest 的
+vcs.mk 或用 `EXTRA` 覆盖，未验证）。
+
+## 顺手抓到的一个 rtl/ 问题（**没改，交给对应 owner**）
+
+`rtl/uncore/SubDirectory.sv:60` 与 `rtl/uncore/SubDirectory_1.sv:61` 里有
+`` `timescale 1ns/1ps ``。golden 侧没有任何 timescale 指令。后果：impl 整芯片编译的
+时间精度被这两个文件改成 1ns/1ps（golden 侧是 1ns/1ns），**而且生效范围取决于文件顺序**。
+本轮结果未受影响（周期数完全一致），但这是个与 golden 的编译差异 + 顺序相关的隐患。
+
+`rtl/backend/RegCache.sv:150` 的 7 条 SIOB（`rcidx_delay[(0-1)][*]`）在**仿真**里
+不像综合那样只是 lint：越界读返回 X。本例中 `(s==0)?:` 的条件是 genvar 常量，
+VCS 会常量折叠，实测无影响；但清理 owner 值得知道仿真语义上的区别。
