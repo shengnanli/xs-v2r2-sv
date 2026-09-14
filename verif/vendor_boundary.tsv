@@ -48,24 +48,85 @@
 #   2^6=64>40，白盒化必触发 FMR_ELAB-147(Index may take values outside array bound)
 #   -> FM-262 -> set_top FM-156。该条单独挂起待裁（详见该 UT Makefile 注释）。
 #
-# design_pattern	kind	rationale	leaf_file	leaf_sha256	port_count	port_signature	port_sig_sha256_16	param_signature	body_rule
-array_ext	vendor_sram_leaf	SRAM 编译器行为模型叶子，两侧同源 .v，FM 不读其内部	array_ext.v	471f30707686e10670a018a7347a69fb103bd595fe7de1aab63f0aa4f9a82e10	7	input RW0_clk;input [6:0] RW0_addr;input RW0_en;input RW0_wmode;input [1:0] RW0_wmask;input [73:0] RW0_wdata;output [73:0] RW0_rdata	8061bdbdb046d487	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
-array_0_ext	vendor_sram_leaf	同上	array_0_ext.v	f41875929d1d20c1b91cdb2b44946f1bc8b0f8ecacd0f19b129268cf6f269d66	6	input RW0_clk;input [7:0] RW0_addr;input RW0_en;input RW0_wmode;input [65:0] RW0_wdata;output [65:0] RW0_rdata	31da948ed0716ad0	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
-array_1_ext	vendor_sram_leaf	同上	array_1_ext.v	7124905b5fdb7c19294fd0529aeaeb06e1d1ecc08936c99cda85306d7a9d2b53	7	input RW0_clk;input [8:0] RW0_addr;input RW0_en;input RW0_wmode;input [3:0] RW0_wmask;input [39:0] RW0_wdata;output [39:0] RW0_rdata	79a8a8697e271e6a	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
-array_2_ext	vendor_sram_leaf	同上	array_2_ext.v	392155fafd2b472569edc3f9affe3989c64bb746b4a33f6cdd9412898b94334a	7	input RW0_clk;input [7:0] RW0_addr;input RW0_en;input RW0_wmode;input [15:0] RW0_wmask;input [15:0] RW0_wdata;output [15:0] RW0_rdata	2e54ef7a84ab9074	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
-array_3_ext	vendor_sram_leaf	同上	array_3_ext.v	76099ddd1c6f05c1813bd52fa8764d3e1d6e14632c89cdfa678558975bd3a466	7	input RW0_clk;input [8:0] RW0_addr;input RW0_en;input RW0_wmode;input [1:0] RW0_wmask;input [23:0] RW0_wdata;output [23:0] RW0_rdata	4d2cb292768a6c5c	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
-array_4_ext	vendor_sram_leaf	同上	array_4_ext.v	d4612a5252c86c3838d44ae0bf9ad8f4c21b9e2ee78ae2ecfc7f69b467aab7eb	7	input RW0_clk;input [7:0] RW0_addr;input RW0_en;input RW0_wmode;input [3:0] RW0_wmask;input [7:0] RW0_wdata;output [7:0] RW0_rdata	1581d5b8177ad527	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
-array_5_ext	vendor_sram_leaf	同上	array_5_ext.v	2e2882f57dcd53f1d7f9fa597b0dd4bb901cee9d47fbb67a07881e673587e886	7	input RW0_clk;input [6:0] RW0_addr;input RW0_en;input RW0_wmode;input [3:0] RW0_wmask;input [23:0] RW0_wdata;output [23:0] RW0_rdata	3998a3df26c0fa47	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
-array_6_ext	vendor_sram_leaf	同上	array_6_ext.v	9e0a36f23925910cc8ce8fee9fe340b75ca8109fa592544b758c9804c1ae43c5	7	input RW0_clk;input [6:0] RW0_addr;input RW0_en;input RW0_wmode;input [75:0] RW0_wmask;input [75:0] RW0_wdata;output [75:0] RW0_rdata	3d7a056321d38bfa	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
-array_7_ext	vendor_sram_leaf	同上	array_7_ext.v	132be32c3a482ca234ed84a84b370e2297c7565a6b709d28ae5fad52cf79629b	6	input RW0_clk;input [7:0] RW0_addr;input RW0_en;input RW0_wmode;input [71:0] RW0_wdata;output [71:0] RW0_rdata	d61158460ce13c30	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
-array_8_ext	vendor_sram_leaf	同上	array_8_ext.v	a7ff1d99adc868f3379f6150fc55f211d28d7040b32866c77906e30a905b46a6	7	input RW0_clk;input [7:0] RW0_addr;input RW0_en;input RW0_wmode;input [1:0] RW0_wmask;input [85:0] RW0_wdata;output [85:0] RW0_rdata	ffef017fcc9f4176	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
-array_9_ext	vendor_sram_leaf	同上	array_9_ext.v	1e1d27fed16928404438c1890e16c771471821799faf07e890f938943035ecb5	7	input RW0_clk;input [4:0] RW0_addr;input RW0_en;input RW0_wmode;input [1:0] RW0_wmask;input [89:0] RW0_wdata;output [89:0] RW0_rdata	33926c8142c4afe1	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
-array_10_ext	vendor_sram_leaf	同上	array_10_ext.v	fe8f6db403ae1d8778c5778c3acb63dce6408dd57c521ca80715a30a7ae72f07	7	input RW0_clk;input [1:0] RW0_addr;input RW0_en;input RW0_wmode;input [5:0] RW0_wmask;input [785:0] RW0_wdata;output [785:0] RW0_rdata	bd0202396f77bf3a	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
-array_11_ext	vendor_sram_leaf	同上	array_11_ext.v	69a1bc43f15de9c58efadc11869359fb614d0000c15c2e6c92ac754be2e723cb	7	input RW0_clk;input [5:0] RW0_addr;input RW0_en;input RW0_wmode;input [1:0] RW0_wmask;input [113:0] RW0_wdata;output [113:0] RW0_rdata	60e983574fd3edc2	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
-array_12_ext	vendor_sram_leaf	同上	array_12_ext.v	4ac03e6692a6e53b01ff84d4889218bf74dae79e10bfdf8de3a535fc4426ab74	7	input RW0_clk;input [4:0] RW0_addr;input RW0_en;input RW0_wmode;input [1:0] RW0_wmask;input [147:0] RW0_wdata;output [147:0] RW0_rdata	b8485f2b24161d24	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
-array_13_ext	vendor_sram_leaf	同上	array_13_ext.v	3c97dec6495aecad66cf4cc8b95052036bd25e73535217610c8edc604d10a9e9	6	input RW0_clk;input [7:0] RW0_addr;input RW0_en;input RW0_wmode;input [12:0] RW0_wdata;output [12:0] RW0_rdata	f70346c58b520494	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
-array_14_ext	vendor_sram_leaf	同上	array_14_ext.v	9020ee8da662b94b19e559e31ff8e64871e1fc9cfc040e5e281a0a566f8b35fb	7	input RW0_clk;input [8:0] RW0_addr;input RW0_en;input RW0_wmode;input [3:0] RW0_wmask;input [75:0] RW0_wdata;output [75:0] RW0_rdata	7e21d2804df9f5b3	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
-array_15_ext	vendor_sram_leaf	同上	array_15_ext.v	e8d753254f0931e29c0becb1c9e765d05ae1f2cb040749cb044d451de350edc3	7	input RW0_clk;input [8:0] RW0_addr;input RW0_en;input RW0_wmode;input [7:0] RW0_wmask;input [103:0] RW0_wdata;output [103:0] RW0_rdata	3399e5fc2ff2f9a1	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
-array_16_ext	vendor_sram_leaf	同上	array_16_ext.v	ef88c4b6fdc9211ca14c2930491da59319ca2d2bc2df2127b8b9c3b801d96773	6	input RW0_clk;input [8:0] RW0_addr;input RW0_en;input RW0_wmode;input [15:0] RW0_wdata;output [15:0] RW0_rdata	bf4d9c3388a4ea5b	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
-array_17_ext	vendor_sram_leaf	同上	array_17_ext.v	1597f3fb2a7553b9f4b7794dc411700cb137aec4fd6cc44cdaac4238a5c23161	7	input RW0_clk;input [8:0] RW0_addr;input RW0_en;input RW0_wmode;input [7:0] RW0_wmask;input [7:0] RW0_wdata;output [7:0] RW0_rdata	ab84462f150380b9	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
-array_18_ext	vendor_sram_leaf	同上	array_18_ext.v	322efdbd7cc4c24511b9e6c533323d3e573922ea76d5c23ac6231bcdf52ccc08	6	input RW0_clk;input [11:0] RW0_addr;input RW0_en;input RW0_wmode;input [136:0] RW0_wdata;output [136:0] RW0_rdata	78e501c5f9c3d978	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256
+#
+# ---------------------------------------------------------------------------
+# schema v3（codex 0153 D67：第二批 6 条**存储宏行为模型**单条审定并登记）
+#
+# 追加 3 列（**继续追加在末尾**，前 10 列位置不变，故位置式解析器
+# declare_allow.py / gen_expected.py / coverage_three_axis.py / boundary_ledger.py
+# 仍只取前 1~3 列，无需改动）：
+#  11 depth              存储数组深度。★不得由 addr 位宽推算★ —— golden 里 ram_40x47 的
+#                        addr 是 6 位而深度只有 40（2^6=64>40），推出来的是错的。本列
+#                        只认 body 里 `reg [W:0] <name> [D-1:0];` 的 unpacked 维。
+#  12 mask_granularity   `<mask 位数>x<每个 mask 位覆盖的数据位宽>:<RTL 形态>`；无 mask
+#                        写端口则 `none`。两种形态都在 golden 里出现，必须区分：
+#                          slice     for(i..) if(wmask[i]) ram[a][i*G +: G] <= wd[i*G +: G]
+#                          bitblend  ram[a] <= (wmask & wd) | (~wmask & ram[a])（G 恒为 1）
+#                        提取时强制 mask 位数 × 粒度 == wdata 位宽，对不上即 fail-closed。
+#  13 clock_semantics    `nclk=<时钟端口数>;clk=<时钟前缀,…>;access=<1rw|1r1w|…>`。
+#                        单时钟单读写口（RW0）与双时钟独立写口/读口（W0/R0）是**两种
+#                        不同的存储语义**，必须逐条钉死：本表 26 条里 array_0_1_ext 是
+#                        唯一的 `nclk=2;clk=R0,W0;access=1r1w`。
+#
+# kind 取值（**封闭集合**，见 scripts/check_closure_symmetry.py:REG_KINDS）：
+#   vendor_sram_leaf              D60 一次性审定的 20 条 SRAM 编译器行为模型叶子。
+#   APPROVED_MEMORY_MACRO_MODEL   D67 单独审定的 6 条存储宏行为模型。reviewer（codex
+#                                 0153）**自己独立读了这六个文件**并给出 sha256，结论是
+#                                 「只有地址/读使能寄存、存储数组、掩码写与仿真随机化
+#                                 支路，无控制算法或其它功能逻辑」。
+#                                 ★这是逐条批准，不是泛化的「名字带 _ext 即 vendor」★
+#
+# ★★★ 禁止按名字形状批量放行 ★★★（codex 0153 D67 原文：「不得根据 `_ext` 后缀批量放行」）
+#   design_pattern 必须是**字面模块名**；含通配/正则的条目由 --check-registry 判
+#   `registry_pattern_not_literal` 拒绝。理由：本表的全部效力（hash / 端口方向与宽度 /
+#   深度 / mask 粒度 / 时钟语义）都是**逐个定义**绑定的，一条通配条目根本无从绑定。
+#   golden 里 `*_ext` 结尾的定义远多于本表 26 条，落表之外的一律继续算 GAP。
+#
+# ★★★ 只有"精确对应 + ref/impl 对称"的 occurrence 才算 approved ★★★（D67 原文）
+#   本表批准的是**定义**（design 名 + 上述签名）。某个 FM_BBOX occurrence 能不能算
+#   approved，还要该 occurrence 在 ref/impl **两侧对称**。两种合法形态，见 body_rule：
+#     regimeA 两侧都不读该 .v → 两侧同为未解析黑盒（现状：verif/ut/SubDirectory、
+#             verif/ut/SubDirectory_1 —— array_19..22_ext / array_0_0_ext 只进 GOLDEN_SRCS
+#             供 VCS 行为仿真，FM_REF_DEPS 为空且无 RTL_GOLDEN_DEPS）。
+#     regimeB 两侧都读该 .v → 边界清零、对称白盒（现状：verif/ut/OpenLLC —— 六条全部
+#             同时进 FM_REF_DEPS_OpenLLC 与 RTL_GOLDEN_DEPS）。
+#   ★单侧读一律 FORBIDDEN★ —— 那正是 D68 点名的 OpenLLC「1-vs-69 closure 不对称」。
+#   机器判据：scripts/check_closure_symmetry.py（不跑 FM）。
+#
+# 机器校验（fail-closed，不跑 FM）：
+#   python3 scripts/check_closure_symmetry.py --check-registry
+#     逐条把 leaf_sha256 / port_signature / port_count / param_signature /
+#     depth / mask_granularity / clock_semantics 与 $(GOLDEN_RTL) 下的现文件重新提取
+#     比对，任一不符、kind 越界、design_pattern 非字面名，即 exit 1。
+#   python3 scripts/check_closure_symmetry.py --reconcile-ledger
+#     把本表与 docs/g1_boundary_ledger.tsv 的 FM_BBOX_REACHABLE / BEHIND_BOUNDARY
+#     两轴做**逐名精确**对账，列出仍为 GAP 的每一项（★GAP 不得因上层边界获批而消失★）。
+#   负测：python3 scripts/test_check_closure_symmetry.py
+# ---------------------------------------------------------------------------
+# design_pattern	kind	rationale	leaf_file	leaf_sha256	port_count	port_signature	port_sig_sha256_16	param_signature	body_rule	depth	mask_granularity	clock_semantics
+array_ext	vendor_sram_leaf	SRAM 编译器行为模型叶子，两侧同源 .v，FM 不读其内部	array_ext.v	471f30707686e10670a018a7347a69fb103bd595fe7de1aab63f0aa4f9a82e10	7	input RW0_clk;input [6:0] RW0_addr;input RW0_en;input RW0_wmode;input [1:0] RW0_wmask;input [73:0] RW0_wdata;output [73:0] RW0_rdata	8061bdbdb046d487	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256	128	2x37:slice	nclk=1;clk=RW0;access=1rw
+array_0_ext	vendor_sram_leaf	同上	array_0_ext.v	f41875929d1d20c1b91cdb2b44946f1bc8b0f8ecacd0f19b129268cf6f269d66	6	input RW0_clk;input [7:0] RW0_addr;input RW0_en;input RW0_wmode;input [65:0] RW0_wdata;output [65:0] RW0_rdata	31da948ed0716ad0	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256	256	none	nclk=1;clk=RW0;access=1rw
+array_1_ext	vendor_sram_leaf	同上	array_1_ext.v	7124905b5fdb7c19294fd0529aeaeb06e1d1ecc08936c99cda85306d7a9d2b53	7	input RW0_clk;input [8:0] RW0_addr;input RW0_en;input RW0_wmode;input [3:0] RW0_wmask;input [39:0] RW0_wdata;output [39:0] RW0_rdata	79a8a8697e271e6a	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256	512	4x10:slice	nclk=1;clk=RW0;access=1rw
+array_2_ext	vendor_sram_leaf	同上	array_2_ext.v	392155fafd2b472569edc3f9affe3989c64bb746b4a33f6cdd9412898b94334a	7	input RW0_clk;input [7:0] RW0_addr;input RW0_en;input RW0_wmode;input [15:0] RW0_wmask;input [15:0] RW0_wdata;output [15:0] RW0_rdata	2e54ef7a84ab9074	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256	256	16x1:bitblend	nclk=1;clk=RW0;access=1rw
+array_3_ext	vendor_sram_leaf	同上	array_3_ext.v	76099ddd1c6f05c1813bd52fa8764d3e1d6e14632c89cdfa678558975bd3a466	7	input RW0_clk;input [8:0] RW0_addr;input RW0_en;input RW0_wmode;input [1:0] RW0_wmask;input [23:0] RW0_wdata;output [23:0] RW0_rdata	4d2cb292768a6c5c	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256	512	2x12:slice	nclk=1;clk=RW0;access=1rw
+array_4_ext	vendor_sram_leaf	同上	array_4_ext.v	d4612a5252c86c3838d44ae0bf9ad8f4c21b9e2ee78ae2ecfc7f69b467aab7eb	7	input RW0_clk;input [7:0] RW0_addr;input RW0_en;input RW0_wmode;input [3:0] RW0_wmask;input [7:0] RW0_wdata;output [7:0] RW0_rdata	1581d5b8177ad527	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256	256	4x2:slice	nclk=1;clk=RW0;access=1rw
+array_5_ext	vendor_sram_leaf	同上	array_5_ext.v	2e2882f57dcd53f1d7f9fa597b0dd4bb901cee9d47fbb67a07881e673587e886	7	input RW0_clk;input [6:0] RW0_addr;input RW0_en;input RW0_wmode;input [3:0] RW0_wmask;input [23:0] RW0_wdata;output [23:0] RW0_rdata	3998a3df26c0fa47	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256	128	4x6:slice	nclk=1;clk=RW0;access=1rw
+array_6_ext	vendor_sram_leaf	同上	array_6_ext.v	9e0a36f23925910cc8ce8fee9fe340b75ca8109fa592544b758c9804c1ae43c5	7	input RW0_clk;input [6:0] RW0_addr;input RW0_en;input RW0_wmode;input [75:0] RW0_wmask;input [75:0] RW0_wdata;output [75:0] RW0_rdata	3d7a056321d38bfa	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256	128	76x1:bitblend	nclk=1;clk=RW0;access=1rw
+array_7_ext	vendor_sram_leaf	同上	array_7_ext.v	132be32c3a482ca234ed84a84b370e2297c7565a6b709d28ae5fad52cf79629b	6	input RW0_clk;input [7:0] RW0_addr;input RW0_en;input RW0_wmode;input [71:0] RW0_wdata;output [71:0] RW0_rdata	d61158460ce13c30	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256	256	none	nclk=1;clk=RW0;access=1rw
+array_8_ext	vendor_sram_leaf	同上	array_8_ext.v	a7ff1d99adc868f3379f6150fc55f211d28d7040b32866c77906e30a905b46a6	7	input RW0_clk;input [7:0] RW0_addr;input RW0_en;input RW0_wmode;input [1:0] RW0_wmask;input [85:0] RW0_wdata;output [85:0] RW0_rdata	ffef017fcc9f4176	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256	256	2x43:slice	nclk=1;clk=RW0;access=1rw
+array_9_ext	vendor_sram_leaf	同上	array_9_ext.v	1e1d27fed16928404438c1890e16c771471821799faf07e890f938943035ecb5	7	input RW0_clk;input [4:0] RW0_addr;input RW0_en;input RW0_wmode;input [1:0] RW0_wmask;input [89:0] RW0_wdata;output [89:0] RW0_rdata	33926c8142c4afe1	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256	32	2x45:slice	nclk=1;clk=RW0;access=1rw
+array_10_ext	vendor_sram_leaf	同上	array_10_ext.v	fe8f6db403ae1d8778c5778c3acb63dce6408dd57c521ca80715a30a7ae72f07	7	input RW0_clk;input [1:0] RW0_addr;input RW0_en;input RW0_wmode;input [5:0] RW0_wmask;input [785:0] RW0_wdata;output [785:0] RW0_rdata	bd0202396f77bf3a	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256	4	6x131:slice	nclk=1;clk=RW0;access=1rw
+array_11_ext	vendor_sram_leaf	同上	array_11_ext.v	69a1bc43f15de9c58efadc11869359fb614d0000c15c2e6c92ac754be2e723cb	7	input RW0_clk;input [5:0] RW0_addr;input RW0_en;input RW0_wmode;input [1:0] RW0_wmask;input [113:0] RW0_wdata;output [113:0] RW0_rdata	60e983574fd3edc2	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256	64	2x57:slice	nclk=1;clk=RW0;access=1rw
+array_12_ext	vendor_sram_leaf	同上	array_12_ext.v	4ac03e6692a6e53b01ff84d4889218bf74dae79e10bfdf8de3a535fc4426ab74	7	input RW0_clk;input [4:0] RW0_addr;input RW0_en;input RW0_wmode;input [1:0] RW0_wmask;input [147:0] RW0_wdata;output [147:0] RW0_rdata	b8485f2b24161d24	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256	32	2x74:slice	nclk=1;clk=RW0;access=1rw
+array_13_ext	vendor_sram_leaf	同上	array_13_ext.v	3c97dec6495aecad66cf4cc8b95052036bd25e73535217610c8edc604d10a9e9	6	input RW0_clk;input [7:0] RW0_addr;input RW0_en;input RW0_wmode;input [12:0] RW0_wdata;output [12:0] RW0_rdata	f70346c58b520494	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256	256	none	nclk=1;clk=RW0;access=1rw
+array_14_ext	vendor_sram_leaf	同上	array_14_ext.v	9020ee8da662b94b19e559e31ff8e64871e1fc9cfc040e5e281a0a566f8b35fb	7	input RW0_clk;input [8:0] RW0_addr;input RW0_en;input RW0_wmode;input [3:0] RW0_wmask;input [75:0] RW0_wdata;output [75:0] RW0_rdata	7e21d2804df9f5b3	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256	512	4x19:slice	nclk=1;clk=RW0;access=1rw
+array_15_ext	vendor_sram_leaf	同上	array_15_ext.v	e8d753254f0931e29c0becb1c9e765d05ae1f2cb040749cb044d451de350edc3	7	input RW0_clk;input [8:0] RW0_addr;input RW0_en;input RW0_wmode;input [7:0] RW0_wmask;input [103:0] RW0_wdata;output [103:0] RW0_rdata	3399e5fc2ff2f9a1	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256	512	8x13:slice	nclk=1;clk=RW0;access=1rw
+array_16_ext	vendor_sram_leaf	同上	array_16_ext.v	ef88c4b6fdc9211ca14c2930491da59319ca2d2bc2df2127b8b9c3b801d96773	6	input RW0_clk;input [8:0] RW0_addr;input RW0_en;input RW0_wmode;input [15:0] RW0_wdata;output [15:0] RW0_rdata	bf4d9c3388a4ea5b	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256	512	none	nclk=1;clk=RW0;access=1rw
+array_17_ext	vendor_sram_leaf	同上	array_17_ext.v	1597f3fb2a7553b9f4b7794dc411700cb137aec4fd6cc44cdaac4238a5c23161	7	input RW0_clk;input [8:0] RW0_addr;input RW0_en;input RW0_wmode;input [7:0] RW0_wmask;input [7:0] RW0_wdata;output [7:0] RW0_rdata	ab84462f150380b9	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256	512	8x1:bitblend	nclk=1;clk=RW0;access=1rw
+array_18_ext	vendor_sram_leaf	同上	array_18_ext.v	322efdbd7cc4c24511b9e6c533323d3e573922ea76d5c23ac6231bcdf52ccc08	6	input RW0_clk;input [11:0] RW0_addr;input RW0_en;input RW0_wmode;input [136:0] RW0_wdata;output [136:0] RW0_rdata	78e501c5f9c3d978	none	fm_blackbox_both_sides;body_not_read_by_fm;vcs_only;pin_by=leaf_sha256	4096	none	nclk=1;clk=RW0;access=1rw
+array_19_ext	APPROVED_MEMORY_MACRO_MODEL	codex 0153 D67 独立审读全文后单条批准：只有地址/读使能寄存、存储数组、掩码写与仿真随机化支路，无控制算法或其它功能逻辑	array_19_ext.v	a2871e73c0933573a2bfc8e2746e8504cf8b4874884aabc9fe048fa0bcc68ac9	7	input RW0_clk;input [9:0] RW0_addr;input RW0_en;input RW0_wmode;input [9:0] RW0_wmask;input [299:0] RW0_wdata;output [299:0] RW0_rdata	0d299498d7bb6aa8	none	symmetric_both_sides_only;regimeA=fm_blackbox_both_sides;regimeB=fm_whitebox_both_sides;single_side_read=FORBIDDEN;pin_by=leaf_sha256	1024	10x30:slice	nclk=1;clk=RW0;access=1rw
+array_20_ext	APPROVED_MEMORY_MACRO_MODEL	codex 0153 D67 独立审读全文后单条批准：只有地址/读使能寄存、存储数组、掩码写与仿真随机化支路，无控制算法或其它功能逻辑	array_20_ext.v	682a8c4402fafe0500cae3915148614fa3f0c294cfc8a276e63566a76e762808	7	input RW0_clk;input [9:0] RW0_addr;input RW0_en;input RW0_wmode;input [9:0] RW0_wmask;input [9:0] RW0_wdata;output [9:0] RW0_rdata	3b9db733c9759328	none	symmetric_both_sides_only;regimeA=fm_blackbox_both_sides;regimeB=fm_whitebox_both_sides;single_side_read=FORBIDDEN;pin_by=leaf_sha256	1024	10x1:bitblend	nclk=1;clk=RW0;access=1rw
+array_21_ext	APPROVED_MEMORY_MACRO_MODEL	codex 0153 D67 独立审读全文后单条批准：只有地址/读使能寄存、存储数组、掩码写与仿真随机化支路，无控制算法或其它功能逻辑	array_21_ext.v	c4e9d83aa43344b2b67864977925a1023b17776ae60f328b08ea5a4a3c20d185	7	input RW0_clk;input [11:0] RW0_addr;input RW0_en;input RW0_wmode;input [15:0] RW0_wmask;input [447:0] RW0_wdata;output [447:0] RW0_rdata	f603f9abd7931c65	none	symmetric_both_sides_only;regimeA=fm_blackbox_both_sides;regimeB=fm_whitebox_both_sides;single_side_read=FORBIDDEN;pin_by=leaf_sha256	4096	16x28:slice	nclk=1;clk=RW0;access=1rw
+array_22_ext	APPROVED_MEMORY_MACRO_MODEL	codex 0153 D67 独立审读全文后单条批准：只有地址/读使能寄存、存储数组、掩码写与仿真随机化支路，无控制算法或其它功能逻辑	array_22_ext.v	86d0fb51ea2e5d1922b4a17b696e365d2f32814c50364eb11d8a275ec223c38d	7	input RW0_clk;input [11:0] RW0_addr;input RW0_en;input RW0_wmode;input [15:0] RW0_wmask;input [31:0] RW0_wdata;output [31:0] RW0_rdata	2a016e623f5df536	none	symmetric_both_sides_only;regimeA=fm_blackbox_both_sides;regimeB=fm_whitebox_both_sides;single_side_read=FORBIDDEN;pin_by=leaf_sha256	4096	16x2:slice	nclk=1;clk=RW0;access=1rw
+array_0_0_ext	APPROVED_MEMORY_MACRO_MODEL	codex 0153 D67 独立审读全文后单条批准：只有地址/读使能寄存、存储数组、掩码写与仿真随机化支路，无控制算法或其它功能逻辑	array_0_0_ext.v	d64d9b5dded9d34e6502ad82271860037c62e5a4934396920484b2b317b11b48	6	input RW0_clk;input [11:0] RW0_addr;input RW0_en;input RW0_wmode;input [14:0] RW0_wdata;output [14:0] RW0_rdata	2bcdfbeaf7333ebd	none	symmetric_both_sides_only;regimeA=fm_blackbox_both_sides;regimeB=fm_whitebox_both_sides;single_side_read=FORBIDDEN;pin_by=leaf_sha256	4096	none	nclk=1;clk=RW0;access=1rw
+array_0_1_ext	APPROVED_MEMORY_MACRO_MODEL	codex 0153 D67 独立审读全文后单条批准：只有地址/读使能寄存、存储数组、掩码写与仿真随机化支路，无控制算法或其它功能逻辑	array_0_1_ext.v	84b873d43a1e150fc144cd5a265bbe3e866a64ed03d629eaf39949fba2e271ef	8	input W0_clk;input [15:0] W0_addr;input W0_en;input [511:0] W0_data;input R0_clk;input [15:0] R0_addr;input R0_en;output [511:0] R0_data	c014cafbe8820604	none	symmetric_both_sides_only;regimeA=fm_blackbox_both_sides;regimeB=fm_whitebox_both_sides;single_side_read=FORBIDDEN;pin_by=leaf_sha256	65536	none	nclk=2;clk=R0,W0;access=1r1w
