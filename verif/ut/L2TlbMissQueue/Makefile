@@ -11,10 +11,20 @@ TB_SRCS = tb.sv
 #
 # 1) 结构上必炸（静态可判，无需跑 FM）：golden ram_40x47 的地址口是 `input [5:0]
 #    R0_addr/W0_addr`（6 位）而存储是 `reg [46:0] Memory[0:39]`（40 深），
-#    2^6 = 64 > 40。白盒化后 Memory[W0_addr]（ram_40x47.sv:15）与
-#    Memory[R0_addr]（:31）都是静态越界索引 ⇒ FMR_ELAB-147
-#    "Index may take values outside array bound" -> FM-262 -> set_top 失败 FM-156。
-#    另一 owner 的控制实验实测到的正是这条链。
+#    2^6 = 64 > 40，24 个地址落在数组之外。
+#    ★2026-09-14 本 owner 自己重跑了控制实验（ram_40x47.sv 同时进 FM_REF_SRCS 与
+#    FM_IMPL_SRCS），实测链条成立，但把前一版注释的两处说法按实测改正：★
+#      - 触发点只有 **1 个**，是组合读那行 `assign R0_data = R0_en ? Memory[R0_addr]
+#        : 47'bx;`（ram_40x47.sv **:118**）；写那行 `Memory[W0_addr] <= W0_data;`
+#        （**:102**）实测**没有**被报。前一版写「两处都是」且行号记成 :15/:31，都不对。
+#      - 实测日志原文：`Warning: Index may take values outside array bound ...
+#        (Signal: Memory Block: /ram_40x47 ... Line: 118) (FMR_ELAB-147)`
+#        -> `Error: Unsuppressed RTL interpretation message(s) ... (FM-262)`
+#        -> `Error: Failed to set top design to 'r:/WORK/L2TlbMissQueue' (FM-156)`
+#        -> fm_shell rc=3，整个 SEC 中止（不是「跑出来结果差」，是根本 link 不起来）。
+#    这就是 verif/vendor_boundary.tsv 里 ram_40x47 一行 body_rule 写
+#    `regimeB=FORBIDDEN_oob_static_index` 的实测依据：那六条 array_*_ext 可以选
+#    regimeB（两侧同时白盒）来把边界清零，本条不能选，只剩 regimeA（两侧对称黑盒）。
 #    对照 TLBuffer_13 的 5 个 ram：depth=2 / addr 1 位 ⇒ 2^1 == 2，地址空间与深度
 #    精确相等，越界在结构上不可能 —— 这才是那边 inline 安全的原因，与本目标无关，
 #    故**不可外推**。（golden 全量 68 个 ram_* 中 58 个满足 2^addr_w==depth，10 个不满足。）
