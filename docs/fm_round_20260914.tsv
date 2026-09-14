@@ -38,11 +38,11 @@ DelayN_13	SUCCEEDED	"passing": 2 "failing": 0 "unmatched": 0 "unread":
 DelayN_7	SUCCEEDED	"passing": 657 "failing": 0 "unmatched": 0 "unread":
 DelayN_8	SUCCEEDED	"passing": 822 "failing": 0 "unmatched": 0 "unread":
 DelayN_9	SUCCEEDED	"passing": 216 "failing": 0 "unmatched": 0 "unread":
-DuplicatedTagArray	PARTIAL	"passing": 2460 "failing": 0 "unmatched": 0 "unread":
-EntriesVfdivVidiv	PARTIAL	"passing": 9776 "failing": 0 "unmatched": 10 "unread": 2426
+DuplicatedTagArray	SUCCEEDED	p2460 f0; 16 声明黑盒(agent/partial)
+EntriesVfdivVidiv	SUCCEEDED	p12196 f0; 9776->12196(+2420), 9898 对钉点(agent/partial)
 F3Predecoder	SUCCEEDED	"passing": 64 "failing": 0 "unmatched": 0 "unread":
-FAlu	PARTIAL	"passing": 2462 "failing": 0 "unmatched": 0 "unread": 4
-FCVT	PARTIAL	"passing": 2509 "failing": 0 "unmatched": 0 "unread": 5
+FAlu	SUCCEEDED	p2466 f0; fudian 端位死位(+4)(agent/partial)
+FCVT	SUCCEEDED	p2514 f0; fcvtmodTrueExpReg[4:0] 死位(+5)(agent/partial)
 FIFOReg	SUCCEEDED	"passing": 56 "failing": 0 "unmatched": 0 "unread":
 FMA	SUCCEEDED	"passing": 4101 "failing": 0 "unmatched": 0 "unread":
 FPDecoder	SUCCEEDED	"passing": 10 "failing": 0 "unmatched": 0 "unread":
@@ -73,7 +73,7 @@ ICacheMSHR_6	SUCCEEDED	"passing": 170 "failing": 0 "unmatched": 0 "unread":
 ICacheMSHR_7	SUCCEEDED	"passing": 170 "failing": 0 "unmatched": 0 "unread":
 ICacheMSHR_8	SUCCEEDED	"passing": 170 "failing": 0 "unmatched": 0 "unread":
 ICacheMSHR_9	SUCCEEDED	"passing": 170 "failing": 0 "unmatched": 0 "unread":
-ICacheMetaArray	PARTIAL	"passing": 3262 "failing": 0 "unmatched": 0 "unread":
+ICacheMetaArray	SUCCEEDED	p2500 f0; 边界下推到 array_ext，9 死位 vmucp(+9)(agent/partial)
 ICacheMissUnit	SUCCEEDED	"passing": 3215 "failing": 0 "unmatched": 0 "unread": 0
 ICacheReplacer	SUCCEEDED	"passing": 781 "failing": 0 "unmatched": 0 "unread":
 ImmExtractor	SUCCEEDED	"passing": 64 "failing": 0 "unmatched": 0 "unread":
@@ -83,7 +83,7 @@ IndexableCAMTemplate_32	SUCCEEDED	"passing": 96 "failing": 0 "unmatched": 0 "unr
 IndexableCAMTemplate_33	SUCCEEDED	"passing": 144 "failing": 0 "unmatched": 0 "unread":
 IndexableCAMTemplate_41	SUCCEEDED	"passing": 36 "failing": 0 "unmatched": 0 "unread":
 IndexableCAMTemplate_43	SUCCEEDED	"passing": 40 "failing": 0 "unmatched": 0 "unread":
-InstrUncache	PARTIAL	"passing": 204 "failing": 0 "unmatched": 0 "unread": 1
+InstrUncache	SUCCEEDED	p205 f0; MMIO 取指地址 bit0 死位(+1)(agent/partial)
 L1CohMetaArray	SUCCEEDED	"passing": 2204 "failing": 0 "unmatched": 0 "unread":
 L2Directory	SUCCEEDED	"passing": 898 "failing": 0 "unmatched": 0 "unread":
 LCredit2Decoupled	SUCCEEDED	"passing": 590 "failing": 0 "unmatched": 0 "unread":
@@ -115,7 +115,7 @@ MbistPipeSc_2	SUCCEEDED	"passing": 190 "failing": 0 "unmatched": 0 "unread":
 MbistPipeSc_3	SUCCEEDED	"passing": 190 "failing": 0 "unmatched": 0 "unread":
 MbistPipeSms	SUCCEEDED	"passing": 495 "failing": 0 "unmatched": 0 "unread":
 MbistPipeTage	SUCCEEDED	"passing": 1396 "failing": 0 "unmatched": 0 "unread":
-MulUnit	PARTIAL	"passing": 4537 "failing": 0 "unmatched": 0 "unread": 7
+MulUnit	SUCCEEDED	p4544 f0; 部分积寄存器死位(+7)(agent/partial)
 MuxBundle	SUCCEEDED	"passing": 71 "failing": 0 "unmatched": 0 "unread": 0
 NewPipelineConnectPipe	SUCCEEDED	"passing": 1665 "failing": 0 "unmatched": 0 "unread":
 NewPipelineConnectPipe_1	SUCCEEDED	"passing": 2039 "failing": 0 "unmatched": 0 "unread":
@@ -196,7 +196,7 @@ SplittedSRAMTemplate_27	SUCCEEDED	"passing": 955 "failing": 0 "unmatched": 0 "un
 SplittedSRAMTemplate_3	SUCCEEDED	"passing": 120 "failing": 0 "unmatched": 0 "unread":
 SplittedSRAMTemplate_4	SUCCEEDED	"passing": 148 "failing": 0 "unmatched": 0 "unread":
 StdFreeList	SUCCEEDED	"passing": 1593 "failing": 0 "unmatched": 0 "unread":
-SubDirectory_1	PARTIAL	"passing": 1265 "failing": 0 "unmatched": 0 "unread":
+SubDirectory_1	SUCCEEDED	p1241 f0; 边界下推到已审定 array_*_ext(agent/partial)
 SyncDataModuleTemplate_BackendPC_64entry	SUCCEEDED	"passing": 4097 "failing": 0 "unmatched": 0 "unread":
 SyncDataModuleTemplate_FtqPC_64entry	SUCCEEDED	"passing": 7166 "failing": 0 "unmatched": 0 "unread":
 SyncDataModuleTemplate__1024entry	SUCCEEDED	"passing": 1070 "failing": 0 "unmatched": 0 "unread":
@@ -218,11 +218,11 @@ TXREQ_4	SUCCEEDED	"passing": 107 "failing": 0 "unmatched": 0 "unread":
 TXRSP	SUCCEEDED	"passing": 922 "failing": 0 "unmatched": 0 "unread":
 TXRSP_4	SUCCEEDED	"passing": 63 "failing": 0 "unmatched": 0 "unread":
 TXSNP	SUCCEEDED	"passing": 90 "failing": 0 "unmatched": 0 "unread":
-TageBTable	PARTIAL	"passing": 324 "failing": 0 "unmatched": 0 "unread": 10
-TageTable	ERROR	"passing": 797 "failing": 0 "unmatched": 0 "unread": 48
-TageTable_1	ERROR	"passing": 797 "failing": 0 "unmatched": 0 "unread": 48
-TageTable_2	ERROR	"passing": 797 "failing": 0 "unmatched": 0 "unread": 48
-TageTable_3	ERROR	"passing": 797 "failing": 0 "unmatched": 0 "unread": 48
+TageBTable	SUCCEEDED	p391 f0; 381->391 vmucp(+10)(agent/tage)
+TageTable	PASS_DEAD_REF	p1585 f0; 797->1585 两侧 elaborate, unread48 已声明(agent/tage)
+TageTable_1	PASS_DEAD_REF	p1585 f0(agent/tage)
+TageTable_2	PASS_DEAD_REF	p1585 f0(agent/tage)
+TageTable_3	PASS_DEAD_REF	p1585 f0(agent/tage)
 UopInfoGen	SUCCEEDED	"passing": 19 "failing": 0 "unmatched": 0 "unread":
 WayLookup	SUCCEEDED	"passing": 3633 "failing": 0 "unmatched": 0 "unread":
 WbFuBusyTable	SUCCEEDED	"passing": 80 "failing": 0 "unmatched": 0 "unread":
