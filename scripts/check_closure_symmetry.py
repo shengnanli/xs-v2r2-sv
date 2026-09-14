@@ -252,7 +252,102 @@ def dead_deps(utdir, target):
 # --------------------------------------------------------------------------
 REG_COLS = ['design_pattern', 'kind', 'rationale', 'leaf_file', 'leaf_sha256',
             'port_count', 'port_signature', 'port_sig_sha256_16',
-            'param_signature', 'body_rule']
+            'param_signature', 'body_rule',
+            # schema v3（codex 0153 D67）：registry 必须**同时绑定**端口方向/宽度、
+            # 深度、mask 粒度、单/双时钟读写语义与 body hash。前 10 列是 D60 的 v2，
+            # 位置不变；下面 3 列追加在末尾，位置式解析器（declare_allow.py /
+            # gen_expected.py / coverage_three_axis.py / boundary_ledger.py 都只取
+            # 前 1~3 列）无需改动。
+            'depth', 'mask_granularity', 'clock_semantics']
+
+# 合法的 kind 取值。★不得新增"按名字形状批量放行"的类别★（codex 0153 D67:
+# "不是泛化的『名字带 _ext 即 vendor』"）。
+REG_KINDS = {
+    # D60 一次性审定的 20 条 SRAM 编译器行为模型叶子
+    'vendor_sram_leaf',
+    # D67 单独审定的 6 条存储宏行为模型（reviewer 独立读过全文并给出 hash）
+    'APPROVED_MEMORY_MACRO_MODEL',
+}
+
+
+def _mem_facts(design, ports, body):
+    """从 body **现读** 深度 / mask 粒度 / 时钟读写语义。
+
+    三项都是 codex 0153 D67 点名要 registry 绑定的：
+      depth            存储数组深度。**不能从 addr 位宽推**：golden 里 ram_40x47 的
+                       addr 是 6 位而深度只有 40（2^6=64>40），推出来的是错的。
+                       只认 body 里 `reg [W:0] <name> [D-1:0];` 的 unpacked 维。
+      mask_granularity `<mask 位数>x<每个 mask 位覆盖的数据位宽>:<RTL 形态>`，无 mask 写
+                       端口则为 none。两种形态都在 golden 里出现，必须区分：
+                         slice     `for(i..) if(wmask[i]) ram[a][i*G +: G] <= wd[i*G +: G]`
+                         bitblend  `ram[a] <= (wmask & wd) | (~wmask & ram[a])`（G 恒为 1）
+                       并强制 mask 位数 × 粒度 == wdata 位宽（对不上即 fail-closed）。
+      clock_semantics  `nclk=<时钟端口数>;clk=<时钟前缀,…>;access=<1rw|1r1w|…>`。
+                       单时钟单读写口(RW0) 与 双时钟独立写口/读口(W0/R0) 是**两种不同
+                       的存储语义**，registry 必须钉死，不能只靠端口签名一眼看过去。
+
+    任何一项解析不出来 -> 抛异常（fail-closed：解析不了就不许登记，不得静默给默认值）。
+    """
+    # ---- depth：唯一一条带 unpacked 维的 reg 声明 ----
+    dims = re.findall(r'\breg\b\s*(?:\[[^\]]*\]\s*)?(\w+)\s*\[\s*(\d+)\s*:\s*0\s*\]\s*;', body)
+    if len(dims) != 1:
+        raise ValueError(f'{design}: 存储数组声明期望恰好 1 条，实得 {len(dims)} 条 '
+                         f'{[d[0] for d in dims]}（fail-closed）')
+    depth = int(dims[0][1]) + 1
+
+    # ---- 端口宽度表 ----
+    widths, prefixes = {}, []
+    for p in ports:
+        mm = re.match(r'(?:input|output)\s*(?:\[\s*(\d+)\s*:\s*0\s*\]\s*)?(\w+)$', p)
+        if not mm:
+            raise ValueError(f'{design}: 端口 {p!r} 解析失败（fail-closed）')
+        widths[mm.group(2)] = int(mm.group(1)) + 1 if mm.group(1) else 1
+        prefixes.append(mm.group(2).split('_')[0])
+
+    # ---- mask 粒度 ----
+    wm = [n for n in widths if n.endswith('_wmask')]
+    if len(wm) > 1:
+        raise ValueError(f'{design}: 多于一个 wmask 端口 {wm}（fail-closed）')
+    if not wm:
+        mask = 'none'
+    else:
+        mbits = widths[wm[0]]
+        # 写数据端口：`<前缀>_wdata`（单读写口形态），或 `W<n>_data`（独立写口形态）。
+        # 不能用「名字里有 data」筛——RW0_rdata / R0_data 是读口，混进来就判错。
+        wd = [n for n in widths
+              if n.endswith('_wdata') or re.fullmatch(r'W\d+_data', n)]
+        if len(wd) != 1:
+            raise ValueError(f'{design}: 找不到唯一写数据端口，候选 {wd}（fail-closed）')
+        dw = widths[wd[0]]
+        grans = sorted({int(x) for x in re.findall(r'\+:\s*(\d+)\s*\]', body)})
+        if grans:
+            if len(grans) != 1:
+                raise ValueError(f'{design}: mask 切片粒度不唯一 {grans}（fail-closed）')
+            g, form = grans[0], 'slice'
+        elif re.search(re.escape(wm[0]) + r'\s*&', body):
+            g, form = 1, 'bitblend'
+        else:
+            raise ValueError(f'{design}: 有 wmask 端口却认不出掩码写形态（fail-closed）')
+        if mbits * g != dw:
+            raise ValueError(f'{design}: mask 位数 {mbits} × 粒度 {g} != wdata 位宽 {dw}'
+                             f'（fail-closed）')
+        mask = f'{mbits}x{g}:{form}'
+
+    # ---- 时钟/读写口语义 ----
+    clks = sorted({n.split('_')[0] for n in widths if n.endswith('_clk')})
+    if not clks:
+        raise ValueError(f'{design}: 一个 *_clk 端口都没有（fail-closed）')
+    grp = sorted(set(prefixes))
+    n_rw = len([p for p in grp if re.fullmatch(r'RW\d+', p)])
+    n_r = len([p for p in grp if re.fullmatch(r'R\d+', p)])
+    n_w = len([p for p in grp if re.fullmatch(r'W\d+', p)])
+    if n_rw + n_r + n_w != len(grp):
+        raise ValueError(f'{design}: 端口前缀 {grp} 不是 RW*/R*/W* 形态（fail-closed）')
+    access = (f'{n_rw}rw' if n_rw and not (n_r or n_w)
+              else ('' if not n_r else f'{n_r}r') + ('' if not n_w else f'{n_w}w')
+              + (f'+{n_rw}rw' if n_rw else ''))
+    return {'depth': str(depth), 'mask_granularity': mask,
+            'clock_semantics': f'nclk={len(clks)};clk={",".join(clks)};access={access}'}
 
 
 def _extract_leaf(golden_rtl, design):
@@ -274,12 +369,14 @@ def _extract_leaf(golden_rtl, design):
     body = body[:body.find('endmodule')] if 'endmodule' in body else body
     params = re.findall(r'\bparameter\b\s+([^;]+);', (m.group(1) or '') + ' ; ' + body)
     psig = ';'.join(ports)
-    return {'leaf_file': f.name,
-            'leaf_sha256': hashlib.sha256(raw).hexdigest(),
-            'port_count': str(len(ports)),
-            'port_signature': psig,
-            'port_sig_sha256_16': hashlib.sha256(psig.encode()).hexdigest()[:16],
-            'param_signature': ';'.join(' '.join(x.split()) for x in params) if params else 'none'}
+    out = {'leaf_file': f.name,
+           'leaf_sha256': hashlib.sha256(raw).hexdigest(),
+           'port_count': str(len(ports)),
+           'port_signature': psig,
+           'port_sig_sha256_16': hashlib.sha256(psig.encode()).hexdigest()[:16],
+           'param_signature': ';'.join(' '.join(x.split()) for x in params) if params else 'none'}
+    out.update(_mem_facts(design, ports, body))
+    return out
 
 
 def check_registry(path, golden_rtl):
@@ -306,19 +403,217 @@ def check_registry(path, golden_rtl):
         if 'pin_by=leaf_sha256' not in row['body_rule']:
             probs.append(f'L{i} {row["design_pattern"]}: registry_body_rule_missing_pin '
                          f'(body_rule 必须含 pin_by=leaf_sha256)')
+        # ★禁止"按名字形状批量放行"（codex 0153 D67：不得根据 `_ext` 后缀批量放行）★
+        # design_pattern 必须是**字面模块名**。允许通配就等于允许一条 `array_*_ext`
+        # 放行一整族——而 registry 的全部效力（hash/端口/深度/mask/时钟）都是**逐个
+        # 定义**绑定的，通配条目根本无从绑定。
+        if not re.fullmatch(r'[A-Za-z_]\w*', row['design_pattern']):
+            probs.append(f'L{i} {row["design_pattern"]!r}: registry_pattern_not_literal '
+                         f'(design_pattern 必须是字面模块名，禁止通配/正则批量放行)')
+            continue
+        if row['kind'] not in REG_KINDS:
+            probs.append(f'L{i} {row["design_pattern"]}: registry_kind_unknown:{row["kind"]} '
+                         f'(合法取值 {sorted(REG_KINDS)})')
         try:
             cur = _extract_leaf(golden_rtl, row['design_pattern'])
         except Exception as e:  # noqa: BLE001
             probs.append(f'L{i} {row["design_pattern"]}: registry_golden_extract_failed:{e}')
             continue
         for c in ('leaf_file', 'leaf_sha256', 'port_count', 'port_signature',
-                  'port_sig_sha256_16', 'param_signature'):
+                  'port_sig_sha256_16', 'param_signature',
+                  'depth', 'mask_granularity', 'clock_semantics'):
             if row[c] != cur[c]:
                 probs.append(f'L{i} {row["design_pattern"]}: registry_mismatch:{c} '
                              f'表={row[c][:40]!r} golden={cur[c][:40]!r}')
     if n == 0:
         probs.append('registry_empty: 一条都没有（fail-closed：空表不算通过）')
     return (not probs), probs
+
+
+# --------------------------------------------------------------------------
+# registry × 冻结台账 的**逐名精确**对账（codex 0153 D67）
+#
+# D67 原文两条硬约束，本函数就是它们的机器实现：
+#   「只有与这六个定义精确对应且 ref/impl 对称的 FM_BBOX occurrence 才能转 approved；
+#     95 项若存在任何额外 definition/signature，额外项继续 GAP。」
+#   「BEHIND_BOUNDARY 的 24 GAP 继续保留，不能因上层边界已批准而消失。」
+#
+# ★本函数只做 registry 侧的「精确对应」那一半★。另一半「ref/impl 对称」由本脚本的
+# 主模式（closure symmetry，按 UT 逐目标比两侧 elaboration 闭包）判定，两者都过才算数。
+# --------------------------------------------------------------------------
+LEDGER_AXES = ('FM_BBOX_REACHABLE', 'BEHIND_BOUNDARY')
+
+
+def _load_registry_kinds(path):
+    """registry -> {design 名: kind}。★逐名精确★，不做任何前缀/后缀/通配匹配。"""
+    reg = {}
+    for i, ln in enumerate(pathlib.Path(path).read_text().splitlines(), 1):
+        if ln.startswith('#') or not ln.strip():
+            continue
+        f = ln.split('\t')
+        name = f[0]
+        if not re.fullmatch(r'[A-Za-z_]\w*', name):
+            raise ValueError(f'L{i}: registry_pattern_not_literal:{name!r} '
+                             f'(禁止按名字形状批量放行)')
+        reg[name] = f[1] if len(f) > 1 else ''
+    if not reg:
+        raise ValueError('registry_empty')
+    return reg
+
+
+def _leaf_sha(golden_rtl, deffile):
+    p = pathlib.Path(golden_rtl) / deffile
+    return hashlib.sha256(p.read_bytes()).hexdigest() if p.is_file() else None
+
+
+def reconcile_ledger(ledger, registry, golden_rtl):
+    """返回 (ok, 打印行列表, 结构化结果)。不跑 FM，不读任何 FM 产物。"""
+    lines, res = [], {}
+    try:
+        reg = _load_registry_kinds(registry)
+    except (OSError, ValueError) as e:
+        return False, [f'registry_unusable:{e}'], {}
+    try:
+        raw = pathlib.Path(ledger).read_text().splitlines()
+    except OSError as e:
+        return False, [f'ledger_unreadable:{e}'], {}
+
+    rows, hdr = [], [l for l in raw if l.startswith('#')]
+    for ln in raw:
+        if ln.startswith('#') or not ln.strip():
+            continue
+        f = ln.split('\t')
+        if len(f) < 4:
+            return False, [f'ledger_row_malformed:{ln[:80]!r}'], {}
+        rows.append({'axis': f[0], 'name': f[1], 'old_class': f[2], 'def_file': f[3]})
+    if not rows:
+        return False, ['ledger_empty'], {}
+
+    lines.append(f'=== registry × 台账 逐名精确对账 ===')
+    lines.append(f'    registry = {registry}  ({len(reg)} 条定义)')
+    lines.append(f'    ledger   = {ledger}  ({len(rows)} 行)')
+    for h in hdr[:3]:
+        lines.append(f'    ledger 抬头: {h}')
+
+    ok = True
+    for axis in LEDGER_AXES:
+        ax = [r for r in rows if r['axis'] == axis]
+        newly, still_gap, kept = [], [], Counter()
+        for r in ax:
+            if r['name'] in reg:                       # ★精确同名★
+                r['new_class'] = reg[r['name']]
+                if r['old_class'] == 'GAP':
+                    newly.append((r['name'], reg[r['name']]))
+            elif r['old_class'] == 'GAP':
+                r['new_class'] = 'GAP'
+                still_gap.append(r['name'])
+            else:
+                r['new_class'] = r['old_class']
+            kept[r['new_class']] += 1
+        res[axis] = {'total': len(ax), 'newly_approved': newly,
+                     'still_gap': still_gap, 'after': dict(kept)}
+        lines.append('')
+        lines.append(f'--- {axis}: {len(ax)} 项 ---')
+        lines.append('  台账原 class: ' + ', '.join(
+            f'{k}={v}' for k, v in sorted(Counter(
+                r['old_class'] for r in ax).items())))
+        lines.append('  本表批准后  : ' + ', '.join(
+            f'{k}={v}' for k, v in sorted(kept.items())))
+        lines.append(f'  ★由 GAP 转 approved = {len(newly)}★ ' +
+                     (', '.join(f'{n}[{k}]' for n, k in newly) or '(无)'))
+        lines.append(f'  ★仍为 GAP = {len(still_gap)}★（D67：额外项继续 GAP，不得消失）')
+        for n in still_gap:
+            lines.append(f'      GAP  {n}')
+
+    # ---- 反「按后缀批量放行」：把 golden 里**所有** `*_ext` 模块定义数出来，
+    #      与本表逐名对照。这是 D67「不得根据 `_ext` 后缀批量放行」的现场证据：
+    #      后缀能扫进来多少、表内逐条批了多少、差集是谁，全部当场列清楚。
+    gdir = pathlib.Path(golden_rtl)
+    ext_defs, ext_dup = {}, []
+    try:
+        for p in sorted(list(gdir.glob('*.v')) + list(gdir.glob('*.sv'))):
+            for mm in re.finditer(r'^module\s+([A-Za-z_]\w*_ext)\b',
+                                  p.read_text(errors='replace'), re.M):
+                n = mm.group(1)
+                if n in ext_defs:
+                    ext_dup.append((n, ext_defs[n], p.name))
+                ext_defs[n] = p.name
+    except OSError as e:
+        ok = False
+        lines.append(f'golden_scan_failed:{e}')
+    ext_not_reg = sorted(set(ext_defs) - set(reg))
+    res['golden_ext_defs'] = len(ext_defs)
+    res['golden_ext_not_in_registry'] = ext_not_reg
+    res['golden_ext_duplicate_defs'] = ext_dup
+    lines.append('')
+    lines.append(f'--- 反「_ext 后缀批量放行」自证 ---')
+    lines.append(f'  golden 里 `*_ext` 模块定义 = {len(ext_defs)} 个；'
+                 f'本表逐条批准 = {len(reg)} 个；'
+                 f'按后缀会扫进来但**不在表内** = {len(ext_not_reg)} 个')
+    for n in ext_not_reg:
+        lines.append(f'      NOT_APPROVED  {n}  ({ext_defs[n]})')
+    if ext_dup:
+        ok = False
+        for n, a, b in ext_dup:
+            lines.append(f'  ★DUPLICATE_DEFINITION {n}: 同时定义在 {a} 与 {b}'
+                         f'（fail-closed：一个名字两份定义，签名绑定无从成立）')
+    if not ext_not_reg and not ext_dup:
+        lines.append('  说明：当前 golden 的 `*_ext` 集合与本表**恰好等大**，故'
+                     '「按后缀放行」与「逐条批准」在**今天**结果相同 —— 这不是放行后缀'
+                     '的理由：本表的效力来自逐条绑定的 hash/端口/深度/mask/时钟签名，'
+                     'golden 一旦新增 `*_ext` 就会立刻分叉（新名字不在表内 = GAP）。')
+
+    # ---- 「额外 definition/signature」扫描：仍为 GAP 的名字里，有没有与已批准的六条
+    #      **同 body**（改名重复）或**同端口签名**的？有的话不是自动放行的理由，但必须
+    #      当场点名 —— 那正是 D67 说的「额外 definition/signature」。
+    appr_sha = {}
+    for n in reg:
+        s = _leaf_sha(golden_rtl, f'{n}.v') or _leaf_sha(golden_rtl, f'{n}.sv')
+        if s:
+            appr_sha.setdefault(s, []).append(n)
+    dup, unparsed = [], []
+    for r in rows:
+        if r.get('new_class') != 'GAP' or not r['def_file'] or r['def_file'] == '-':
+            continue
+        s = _leaf_sha(golden_rtl, r['def_file'])
+        if s is None:
+            unparsed.append(r['name'])
+        elif s in appr_sha:
+            dup.append((r['name'], appr_sha[s]))
+    res['gap_body_identical_to_approved'] = dup
+    res['gap_deffile_unreadable'] = unparsed
+    lines.append('')
+    lines.append(f'--- 「额外 definition/signature」扫描：仍为 GAP 的 def_file 与已批准'
+                 f'条目 body 逐字相同者 = {len(dup)} 项 ---')
+    for n, who in dup:
+        lines.append(f'      ★DUP_BODY  {n}  与已批准的 {",".join(who)} body 完全相同 '
+                     f'—— 仍算**额外 definition**，继续 GAP（不得因同 body 顺带放行）')
+    if unparsed:
+        ok = False
+        lines.append(f'  ★{len(unparsed)} 个 GAP 项的 def_file 在 golden 里读不到'
+                     f'（fail-closed）: {",".join(unparsed[:8])}')
+
+    # ---- 守恒：两条边界轴上的每一行都必须分到 class，且总数不变。
+    #      WORK_REACHABLE（真 elaborate 的设计）不在对账范围内 —— 它们本来就不是边界。
+    inax = [r for r in rows if r['axis'] in LEDGER_AXES]
+    assigned = [r for r in inax if 'new_class' in r]
+    if len(assigned) != len(inax):
+        ok = False
+        lines.append(f'★守恒失败★ 两条边界轴 {len(inax)} 行里只有 {len(assigned)} 行'
+                     f'分到了 class')
+    unknown_ax = sorted({r['axis'] for r in rows} - set(LEDGER_AXES) - {'WORK_REACHABLE'})
+    if unknown_ax:
+        ok = False
+        lines.append(f'★台账出现未知 axis {unknown_ax}（fail-closed：不认识就不放过）')
+    res['conservation'] = {'axis_rows': len(inax), 'classified': len(assigned),
+                           'work_reachable': len(rows) - len(inax)}
+    res['registry_names_not_in_ledger'] = sorted(set(reg) - {r['name'] for r in rows})
+    lines.append('')
+    lines.append(f'--- 表内但台账里没出现的定义 = {len(res["registry_names_not_in_ledger"])} 项 '
+                 f'（批准了但本台账 root 下用不到，信息项）---')
+    for n in res['registry_names_not_in_ledger']:
+        lines.append(f'      UNUSED_HERE  {n}')
+    return ok, lines, res
 
 
 def main(argv=None):
@@ -332,6 +627,10 @@ def main(argv=None):
     ap.add_argument('--check-registry', action='store_true',
                     help='只校验 verif/vendor_boundary.tsv 的 schema 与签名/hash（不扫 UT）')
     ap.add_argument('--registry', default=str(REPO / 'verif' / 'vendor_boundary.tsv'))
+    ap.add_argument('--reconcile-ledger', action='store_true',
+                    help='把 registry 与 docs/g1_boundary_ledger.tsv 的 FM_BBOX_REACHABLE /'
+                         ' BEHIND_BOUNDARY 两轴做逐名精确对账（codex 0153 D67）')
+    ap.add_argument('--ledger', default=str(REPO / 'docs' / 'g1_boundary_ledger.tsv'))
     ap.add_argument('--golden-rtl',
                     default=os.environ.get('GOLDEN_RTL',
                                            '/home/eda/xs-env/G1-canonical/golden-rtl'))
@@ -349,6 +648,21 @@ def main(argv=None):
             print('OK: registry 每条的端口签名/参数签名/leaf hash 与 golden 现文件一致')
             return EXIT_CLEAN
         print(f'FAIL: registry {len(probs)} 处问题（fail-closed）')
+        return EXIT_VIOLATION
+
+    if a.reconcile_ledger:
+        ok, lines, res = reconcile_ledger(a.ledger, a.registry, a.golden_rtl)
+        for x in lines:
+            print(x)
+        if a.json:
+            blob = json.dumps(res, ensure_ascii=False, indent=1, sort_keys=True)
+            pathlib.Path(a.json).write_text(blob)
+            print(f'json: {a.json}  '
+                  f'sha256={hashlib.sha256(blob.encode()).hexdigest()[:16]}')
+        if ok:
+            print('OK: 对账完成且守恒（GAP 是数据不是错误 —— 上面每一项都仍在义务内）')
+            return EXIT_CLEAN
+        print('FAIL: 对账无法完成（fail-closed）')
         return EXIT_VIOLATION
 
     root = pathlib.Path(a.ut_root)

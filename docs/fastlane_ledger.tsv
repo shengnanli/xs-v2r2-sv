@@ -2,6 +2,9 @@
 #   WORKING_PASS / WORKING_PASS_DEAD_REF / WORKING_MERGED_PASS = UT+FM 已过但未晋升
 #   晋升须绑定 G1 canonical ID + golden closure hash + impl commit + proof config，
 #   且待 minimal rebase 完成后批量重跑（G0 的 receipt/allow/dead-ref/vmucp 一律不继承）
+#   UNRUNNABLE_RESOURCE_LIMIT_CURRENT_HOST = 配置已就绪但**本机不具备运行条件**
+#   （codex 0153 D68）。★不算 PASS，也不算 RTL mismatch★ —— 它是「没跑」，不是
+#   「跑了没过」。解除条件写在 note 列与该 UT 的 Makefile 注释里。
 RASStack	WORKING_PASS	手工验证 fm 3018p 全零 (batch 前打样)
 AXI4Deinterleaver	INHERIT_FAIL	ERROR: AXI4Deinterleaver RTL_SRC 不存在 $(GOLDEN_RTL)/Queue2_AXI4BundleR_3.sv
 AXI4IdIndexer	WORKING_PASS	fm_verdicts=1
@@ -256,3 +259,4 @@ WrBypass_33	WORKING_PASS	定式打样批(首commit, 补录): UT 250000×3seed 0e
 WrBypass_41	WORKING_PASS	定式打样批(首commit, 补录): UT 250000×3seed 0err; FM strict SUCCEEDED 全零
 WrBypass_43	WORKING_PASS	定式打样批(首commit, 补录): UT 250000×3seed 0err; FM strict SUCCEEDED 全零
 IndexableCAMTemplate	WORKING_PASS	随WrBypass家族覆盖(base wrapper+核), FM经WrBypass深链两侧elaborate
+OpenLLC	UNRUNNABLE_RESOURCE_LIMIT_CURRENT_HOST	codex 0153 D68：本机 cgroup-v1、无可信 memory containment，不得在此运行 OpenLLC XL；不得以 watcher 人工抢救替代隔离。 已修的前置条件：verif/ut/OpenLLC/Makefile 原先无 RTL_GOLDEN_DEPS（ref 侧读 69 个依赖、impl 侧只读 rtl/l2/OpenLLC.sv），MMIODiverger/MMIOMerger/RNXbar/SNXbar/RNLinkMonitor/SNLinkMonitor/Slice_4x4/TopDownMonitor_1 单侧黑盒；现 RTL_GOLDEN_DEPS 由 FM_REF_DEPS_OpenLLC 派生，static 复核 SYMMETRIC（两侧黑盒均为空）。 ★该 closure 修改未经 FM 验证★，须转到有 cgroup-v2 memory controller 或更大内存且可独占的主机重跑 make fm-OpenLLC。 复跑静态复核：python3 scripts/check_closure_symmetry.py --only OpenLLC

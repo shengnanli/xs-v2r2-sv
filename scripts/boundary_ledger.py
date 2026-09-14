@@ -28,8 +28,13 @@
 
 ## 分类判据
 
-  APPROVED_VENDOR  名字在**已冻结 registry** `verif/vendor_boundary.tsv` 里
+  APPROVED_VENDOR  名字在**已冻结 registry** `verif/vendor_boundary.tsv` 里，
+                   且 kind=vendor_sram_leaf
                    （精确匹配，不做前缀/通配 —— declare_allow.py 也是精确匹配）。
+  APPROVED_MEMORY_MACRO_MODEL
+                   同上，但 kind=APPROVED_MEMORY_MACRO_MODEL —— codex 0153 D67
+                   **逐条**审定的存储宏行为模型（reviewer 自己读过全文并给出 hash）。
+                   单列一类，★不得并进泛化的「名字带 _ext 即 vendor」★。
   PROVEN_CHILD     自己就是某份通过 receipt 的 top（docs/receipt_index.tsv，
                    非 provisional、canonical_id 对得上、verdict 通过）。
   GAP              以上都不是。★默认落到这里，沉默不等于批准★
@@ -97,15 +102,22 @@ def parse_hierarchy(path):
 
 
 def load_registry(repo):
-    """verif/vendor_boundary.tsv —— 一次性人工审定并提交的厂商边界名单。"""
+    """verif/vendor_boundary.tsv —— 一次性人工审定并提交的厂商边界名单。
+
+    返回 {design 名: kind}。★逐名精确★，不做前缀/后缀/通配匹配
+    （codex 0153 D67：不得根据 `_ext` 后缀批量放行）。kind 带出来是因为 D67 的
+    6 条存储宏用的是**单独的类别** APPROVED_MEMORY_MACRO_MODEL，不能并进泛化的
+    vendor 类里 —— 台账的 class 列必须把这个区别透出来。
+    """
     p = pathlib.Path(repo) / 'verif' / 'vendor_boundary.tsv'
     if not p.exists():
-        return set(), str(p), ''
-    out = set()
+        return {}, str(p), ''
+    out = {}
     for ln in p.read_text().splitlines():
         if ln.startswith('#') or not ln.strip():
             continue
-        out.add(ln.split('\t')[0])
+        c = ln.split('\t')
+        out[c[0]] = c[1] if len(c) > 1 else ''
     return out, str(p), hashlib.sha256(p.read_bytes()).hexdigest()[:16]
 
 
@@ -166,7 +178,12 @@ def main(argv=None):
 
     def classify(n):
         if n in registry:
-            return 'APPROVED_VENDOR', '在已冻结 registry %s 内' % regpath
+            # kind 原样透出：vendor_sram_leaf -> APPROVED_VENDOR（保持既有口径）；
+            # APPROVED_MEMORY_MACRO_MODEL -> 同名 class（D67 要求单列，不并进 vendor）。
+            kind = registry[n]
+            cls = ('APPROVED_MEMORY_MACRO_MODEL'
+                   if kind == 'APPROVED_MEMORY_MACRO_MODEL' else 'APPROVED_VENDOR')
+            return cls, '在已冻结 registry %s 内（kind=%s）' % (regpath, kind)
         if n in proven:
             return 'PROVEN_CHILD', '自己是通过 receipt 的 top（docs/receipt_index.tsv）'
         return 'GAP', ('未经 %s 批准，也不是任何通过 receipt 的 top —— '
@@ -186,7 +203,10 @@ def main(argv=None):
         '#   WORK_REACHABLE     XSTop 下真实 elaborate 的设计定义（主分母候选）',
         '#   FM_BBOX_REACHABLE  黑盒边界定义 —— 逐个定性，GAP 不得消失',
         '#   BEHIND_BOUNDARY    只能经由黑盒父模块到达，FM 层次报告里没有它',
-        '# class 取值：DESIGN / APPROVED_VENDOR / PROVEN_CHILD / GAP',
+        '# class 取值：DESIGN / APPROVED_VENDOR / APPROVED_MEMORY_MACRO_MODEL /',
+        '#            PROVEN_CHILD / GAP',
+        '#   APPROVED_MEMORY_MACRO_MODEL = codex 0153 D67 单条审定的存储宏行为模型',
+        '#   （registry kind 同名）。★不是泛化的「名字带 _ext 即 vendor」★',
         '# axis\tname\tclass\tdef_file\tnote',
     ]
     counts = collections.Counter()
