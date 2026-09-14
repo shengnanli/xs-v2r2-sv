@@ -1,0 +1,1684 @@
+**************************************************
+Report         : black_boxes
+
+Reference      : r:/WORK/XSTop
+Implementation : <None>
+Version        : V-2023.12-SP3
+Date           : Sat Sep 12 22:31:16 2026
+**************************************************
+Information: Implementation design is not set. (FM-149)
+Information: Reporting black boxes for current reference design. (FM-184)
+
+ ___________________________________________________
+|                                                   |
+|  Legend:                                          |
+|           Black Box Attributes                    |
+|              s = Set with set_black_box command   |
+|              i = Module read with -interface_only |
+|              u = Unresolved design module         |
+|              e = Empty design module              |
+|              * = Unlinked design module           |
+|             ut = Unread tech cells pins           |
+|              L = Linked to non-black box design   |
+|             cp = Cutpoint blackbox                |
+|             ir = Internal rounded blackbox        |
+|              f = Formality Power Model            |
+|              m = Technology Macro cell (.db)      |
+|___________________________________________________|
+
+
+##################################################################
+####    TECH LIBRARY - r:/FM_BBOX
+##################################################################
+Type  Design Name
+----  ----------
+u      array_0_0_ext
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/XSTop/chi_openllc_opt/slices_0/directory/selfDir/replacer_sram_opt/array_0/array_0_0_ext
+       r:/WORK/XSTop/chi_openllc_opt/slices_1/directory/selfDir/replacer_sram_opt/array_0/array_0_0_ext
+       r:/WORK/XSTop/chi_openllc_opt/slices_2/directory/selfDir/replacer_sram_opt/array_0/array_0_0_ext
+       r:/WORK/XSTop/chi_openllc_opt/slices_3/directory/selfDir/replacer_sram_opt/array_0/array_0_0_ext
+
+u      array_0_1_ext
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/XSTop/chi_openllc_opt/slices_0/dataStorage/array/array_0/array_0_1_ext
+       r:/WORK/XSTop/chi_openllc_opt/slices_1/dataStorage/array/array_0/array_0_1_ext
+       r:/WORK/XSTop/chi_openllc_opt/slices_2/dataStorage/array/array_0/array_0_1_ext
+       r:/WORK/XSTop/chi_openllc_opt/slices_3/dataStorage/array/array_0/array_0_1_ext
+
+u      array_19
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/XSTop/chi_openllc_opt/slices_0/directory/clientDir/tagArray/array
+       r:/WORK/XSTop/chi_openllc_opt/slices_1/directory/clientDir/tagArray/array
+       r:/WORK/XSTop/chi_openllc_opt/slices_2/directory/clientDir/tagArray/array
+       r:/WORK/XSTop/chi_openllc_opt/slices_3/directory/clientDir/tagArray/array
+
+u      array_20
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/XSTop/chi_openllc_opt/slices_0/directory/clientDir/metaArray/array
+       r:/WORK/XSTop/chi_openllc_opt/slices_1/directory/clientDir/metaArray/array
+       r:/WORK/XSTop/chi_openllc_opt/slices_2/directory/clientDir/metaArray/array
+       r:/WORK/XSTop/chi_openllc_opt/slices_3/directory/clientDir/metaArray/array
+
+u      array_21
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/XSTop/chi_openllc_opt/slices_0/directory/selfDir/tagArray/array
+       r:/WORK/XSTop/chi_openllc_opt/slices_1/directory/selfDir/tagArray/array
+       r:/WORK/XSTop/chi_openllc_opt/slices_2/directory/selfDir/tagArray/array
+       r:/WORK/XSTop/chi_openllc_opt/slices_3/directory/selfDir/tagArray/array
+
+u      array_22
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/XSTop/chi_openllc_opt/slices_0/directory/selfDir/metaArray/array
+       r:/WORK/XSTop/chi_openllc_opt/slices_1/directory/selfDir/metaArray/array
+       r:/WORK/XSTop/chi_openllc_opt/slices_2/directory/selfDir/metaArray/array
+       r:/WORK/XSTop/chi_openllc_opt/slices_3/directory/selfDir/metaArray/array
+
+u      data_mem_0_4x2
+
+       Instances : 5 of 5
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/ittage/tables_0/wrbypass/data_mem_0_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/ittage/tables_1/wrbypass/data_mem_0_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/ittage/tables_2/wrbypass/data_mem_0_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/ittage/tables_3/wrbypass/data_mem_0_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/ittage/tables_4/wrbypass/data_mem_0_ext
+
+u      data_mem_0_8x3
+
+       Instances : 32 of 32
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_0/bank_wrbypasses_0_0/data_mem_0_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_0/bank_wrbypasses_0_1/data_mem_0_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_0/bank_wrbypasses_1_0/data_mem_0_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_0/bank_wrbypasses_1_1/data_mem_0_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_0/bank_wrbypasses_2_0/data_mem_0_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_0/bank_wrbypasses_2_1/data_mem_0_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_0/bank_wrbypasses_3_0/data_mem_0_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_0/bank_wrbypasses_3_1/data_mem_0_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_1/bank_wrbypasses_0_0/data_mem_0_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_1/bank_wrbypasses_0_1/data_mem_0_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_1/bank_wrbypasses_1_0/data_mem_0_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_1/bank_wrbypasses_1_1/data_mem_0_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_1/bank_wrbypasses_2_0/data_mem_0_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_1/bank_wrbypasses_2_1/data_mem_0_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_1/bank_wrbypasses_3_0/data_mem_0_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_1/bank_wrbypasses_3_1/data_mem_0_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_2/bank_wrbypasses_0_0/data_mem_0_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_2/bank_wrbypasses_0_1/data_mem_0_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_2/bank_wrbypasses_1_0/data_mem_0_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_2/bank_wrbypasses_1_1/data_mem_0_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_2/bank_wrbypasses_2_0/data_mem_0_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_2/bank_wrbypasses_2_1/data_mem_0_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_2/bank_wrbypasses_3_0/data_mem_0_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_2/bank_wrbypasses_3_1/data_mem_0_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_3/bank_wrbypasses_0_0/data_mem_0_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_3/bank_wrbypasses_0_1/data_mem_0_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_3/bank_wrbypasses_1_0/data_mem_0_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_3/bank_wrbypasses_1_1/data_mem_0_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_3/bank_wrbypasses_2_0/data_mem_0_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_3/bank_wrbypasses_2_1/data_mem_0_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_3/bank_wrbypasses_3_0/data_mem_0_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_3/bank_wrbypasses_3_1/data_mem_0_ext
+
+u      data_mem_16x12
+
+       Instances : 8 of 8
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/scTables_0/wrbypasses_0/data_mem_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/scTables_0/wrbypasses_1/data_mem_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/scTables_1/wrbypasses_0/data_mem_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/scTables_1/wrbypasses_1/data_mem_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/scTables_2/wrbypasses_0/data_mem_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/scTables_2/wrbypasses_1/data_mem_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/scTables_3/wrbypasses_0/data_mem_ext
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/scTables_3/wrbypasses_1/data_mem_ext
+
+u      data_mem_8x4
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/bt/wrbypass/data_mem_ext
+
+u      ram_10x89
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_0/grantBuf/pftRespQueue/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_1/grantBuf/pftRespQueue/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_2/grantBuf/pftRespQueue/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_3/grantBuf/pftRespQueue/ram_ext
+
+u      ram_128x19
+
+       Instances : 192 of 192
+       ------------------------
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_1/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_2/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_3/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_4/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_5/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_6/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_7/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_8/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_9/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_10/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_11/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_12/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_13/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_14/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_15/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_16/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_17/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_18/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_19/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_20/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_21/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_22/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_23/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_24/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_25/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_26/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_27/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_28/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_29/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_30/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_31/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_32/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_33/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_34/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_35/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_36/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_37/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_38/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_39/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_40/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_41/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_42/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_43/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_44/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_45/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_46/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_47/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_48/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_49/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_50/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_51/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_52/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_53/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_54/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_55/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_56/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_57/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_58/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_59/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_60/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_61/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_62/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_63/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_64/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_65/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_66/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_67/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_68/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_69/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_70/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_71/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_72/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_73/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_74/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_75/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_76/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_77/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_78/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_79/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_80/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_81/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_82/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_83/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_84/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_85/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_86/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_87/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_88/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_89/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_90/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_91/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_92/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_93/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_94/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_95/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_96/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_97/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_98/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_99/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_100/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_101/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_102/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_103/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_104/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_105/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_106/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_107/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_108/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_109/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_110/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_111/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_112/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_113/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_114/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_115/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_116/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_117/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_118/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_119/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_120/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_121/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_122/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_123/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_124/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_125/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_126/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_127/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_128/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_129/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_130/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_131/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_132/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_133/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_134/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_135/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_136/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_137/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_138/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_139/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_140/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_141/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_142/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_143/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_144/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_145/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_146/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_147/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_148/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_149/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_150/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_151/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_152/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_153/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_154/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_155/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_156/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_157/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_158/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_159/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_160/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_161/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_162/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_163/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_164/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_165/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_166/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_167/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_168/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_169/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_170/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_171/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_172/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_173/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_174/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_175/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_176/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_177/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_178/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_179/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_180/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_181/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_182/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_183/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_184/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_185/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_186/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_187/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_188/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_189/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_190/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_2/Queue128_BundleMap_191/ram_ext
+
+u      ram_15x115
+
+       Instances : 2 of 2
+       ------------------------
+       r:/WORK/XSTop/linkMonitor_1/LCredit2Decoupled_rxsnp/queue/ram_ext
+       r:/WORK/XSTop/linkMonitor_2/LCredit2Decoupled_rxsnp/queue/ram_ext
+
+u      ram_15x162
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/XSTop/chi_openllc_opt/rnLinkMonitor/LCredit2Decoupled_rxreq/queue/ram_ext
+
+u      ram_15x422
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/XSTop/chi_openllc_opt/snLinkMonitor/LCredit2Decoupled_rxdat/queue/ram_ext
+       r:/WORK/XSTop/chi_openllc_opt/rnLinkMonitor/LCredit2Decoupled_rxdat/queue/ram_ext
+       r:/WORK/XSTop/linkMonitor_1/LCredit2Decoupled_rxdat/queue/ram_ext
+       r:/WORK/XSTop/linkMonitor_2/LCredit2Decoupled_rxdat/queue/ram_ext
+
+u      ram_15x73
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/XSTop/chi_openllc_opt/snLinkMonitor/LCredit2Decoupled_rxrsp/queue/ram_ext
+       r:/WORK/XSTop/chi_openllc_opt/rnLinkMonitor/LCredit2Decoupled_rxrsp/queue/ram_ext
+       r:/WORK/XSTop/linkMonitor_1/LCredit2Decoupled_rxrsp/queue/ram_ext
+       r:/WORK/XSTop/linkMonitor_2/LCredit2Decoupled_rxrsp/queue/ram_ext
+
+u      ram_16x11
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_0/mainPipe/customL1Hint/hintQueue/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_1/mainPipe/customL1Hint/hintQueue/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_2/mainPipe/customL1Hint/hintQueue/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_3/mainPipe/customL1Hint/hintQueue/ram_ext
+
+u      ram_16x137
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_0/txreq/queue/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_1/txreq/queue/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_2/txreq/queue/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_3/txreq/queue/ram_ext
+
+u      ram_16x25
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_0/grantBuf/grantQueue/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_1/grantBuf/grantQueue/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_2/grantBuf/grantQueue/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_3/grantBuf/grantQueue/ram_ext
+
+u      ram_16x62
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_0/txrsp/queue/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_1/txrsp/queue/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_2/txrsp/queue/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_3/txrsp/queue/ram_ext
+
+u      ram_16x67
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_0/txdat/queue/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_1/txdat/queue/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_2/txdat/queue/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_3/txdat/queue/ram_ext
+
+u      ram_2x116
+
+       Instances : 2 of 2
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_buffers/nodeOut_a_q/ram_ext
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_buffers_1/nodeOut_a_q/ram_ext
+
+u      ram_2x117
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_frontendBridge/icachectrl/nodeOut_a_q/ram_ext
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_frontendBridge/icachectrl/nodeOut_a_q_1/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_buffers_4/nodeOut_a_q/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_buffers_5/nodeOut_a_q/ram_ext
+
+u      ram_2x119
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/l2top/inner_buffer/nodeOut_a_q/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_buffer/nodeOut_a_q_1/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_buffer/nodeOut_a_q_2/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_buffer/nodeOut_a_q_3/ram_ext
+
+u      ram_2x127
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/XSTop/nocMisc/buffers/nodeOut_a_q/ram_ext
+       r:/WORK/XSTop/nocMisc/buffers_1/nodeOut_a_q/ram_ext
+       r:/WORK/XSTop/nocMisc/buffers_2/nodeOut_a_q/ram_ext
+       r:/WORK/XSTop/nocMisc/buffers_3/nodeOut_a_q/ram_ext
+
+u      ram_2x133
+
+       Instances : 5 of 5
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_frontendBridge/instr_uncache/nodeOut_a_q/ram_ext
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_frontendBridge/instr_uncache/nodeOut_a_q_1/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_i_mmio_buffer/nodeOut_a_q/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_buffers/nodeOut_a_q/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_buffers_1/nodeOut_a_q/ram_ext
+
+u      ram_2x136
+
+       Instances : 5 of 5
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_buffer/nodeOut_a_q/ram_ext
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_buffers_2/nodeOut_a_q/ram_ext
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_buffers_3/nodeOut_a_q/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_buffers_2/nodeOut_a_q/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_buffers_3/nodeOut_a_q/ram_ext
+
+u      ram_2x137
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/l2top/inner_buffer_1/nodeOut_a_q/ram_ext
+
+u      ram_2x15
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/pCrdQueue_s3/ram_ext
+
+u      ram_2x153
+
+       Instances : 2 of 2
+       ------------------------
+       r:/WORK/XSTop/nocMisc/llc_to_peripheral_buffer_0/nodeOut_a_q/ram_ext
+       r:/WORK/XSTop/nocMisc/llc_to_peripheral_buffer_1/nodeOut_a_q/ram_ext
+
+u      ram_2x16
+
+       Instances : 3 of 3
+       ------------------------
+       r:/WORK/XSTop/nocMisc/axi4buf/nodeIn_b_deq_q/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4buf_1/nodeIn_b_deq_q/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4buf_2/nodeIn_b_deq_q/ram_ext
+
+u      ram_2x2
+
+       Instances : 8 of 8
+       ------------------------
+       r:/WORK/XSTop/nocMisc/axi4xbar/awIn_0/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4xbar/awIn_1/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4xbar/awOut_0/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4xbar/awOut_1/ram_ext
+       r:/WORK/XSTop/nocMisc/aplic/fromCPU/awIn_0/ram_ext
+       r:/WORK/XSTop/nocMisc/aplic/toIMSIC/awOut_0/ram_ext
+       r:/WORK/XSTop/imsic_bus_tops/axi_reg_imsic/axireg/axi4xbar/awIn_0/ram_ext
+       r:/WORK/XSTop/axi4buf/nodeIn_b_deq_q/ram_ext
+
+u      ram_2x264
+
+       Instances : 96 of 96
+       ------------------------
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_0/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_1/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_2/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_3/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_4/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_5/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_6/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_7/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_8/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_9/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_10/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_11/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_12/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_13/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_14/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_15/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_16/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_17/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_18/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_19/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_20/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_21/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_22/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_23/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_24/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_25/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_26/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_27/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_28/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_29/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_30/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_31/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_32/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_33/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_34/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_35/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_36/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_37/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_38/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_39/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_40/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_41/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_42/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_43/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_44/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_45/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_46/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_47/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_48/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_49/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_50/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_51/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_52/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_53/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_54/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_55/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_56/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_57/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_58/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_59/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_60/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_61/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_62/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_63/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_64/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_65/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_66/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_67/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_68/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_69/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_70/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_71/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_72/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_73/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_74/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_75/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_76/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_77/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_78/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_79/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_80/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_81/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_82/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_83/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_84/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_85/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_86/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_87/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_88/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_89/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_90/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_91/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_92/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_93/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_94/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4deint/qs_queue_95/ram_ext
+
+u      ram_2x273
+
+       Instances : 3 of 3
+       ------------------------
+       r:/WORK/XSTop/nocMisc/axi4buf/nodeIn_r_deq_q/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4buf_1/nodeIn_r_deq_q/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4buf_2/nodeIn_r_deq_q/ram_ext
+
+u      ram_2x281
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_ptw_to_l2_buffer/nodeIn_d_q/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_ptw_to_l2_buffer/nodeIn_d_q/ram_ext
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_frontendBridge/icache/nodeIn_d_q/ram_ext
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_frontendBridge/icache/nodeIn_d_q_1/ram_ext
+
+u      ram_2x283
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/l2top/inner_buffer/nodeIn_d_q/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_buffer/nodeIn_d_q_1/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_buffer/nodeIn_d_q_2/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_buffer/nodeIn_d_q_3/ram_ext
+
+u      ram_2x284
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_l1d_to_l2_buffer/nodeIn_d_q/ram_ext
+
+u      ram_2x289
+
+       Instances : 3 of 3
+       ------------------------
+       r:/WORK/XSTop/nocMisc/axi4buf/nodeOut_w_deq_q/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4buf_1/nodeOut_w_deq_q/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4buf_2/nodeOut_w_deq_q/ram_ext
+
+u      ram_2x3
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/XSTop/imsic_bus_tops/axi4xbar/awOut_0/ram_ext
+
+u      ram_2x309
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_l1d_to_l2_buffer/nodeIn_b_q/ram_ext
+
+u      ram_2x321
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/l2top/inner_buffer/nodeOut_c_q/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_buffer/nodeOut_c_q_1/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_buffer/nodeOut_c_q_2/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_buffer/nodeOut_c_q_3/ram_ext
+
+u      ram_2x35
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/XSTop/axi4buf/nodeIn_r_deq_q/ram_ext
+
+u      ram_2x352
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/l2top/inner_buffer/nodeIn_b_q/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_buffer/nodeIn_b_q_1/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_buffer/nodeIn_b_q_2/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_buffer/nodeIn_b_q_3/ram_ext
+
+u      ram_2x356
+
+       Instances : 2 of 2
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_ptw_to_l2_buffer/nodeOut_a_q/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_ptw_to_l2_buffer/nodeOut_a_q/ram_ext
+
+u      ram_2x359
+
+       Instances : 2 of 2
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_frontendBridge/icache/nodeOut_a_q/ram_ext
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_frontendBridge/icache/nodeOut_a_q_1/ram_ext
+
+u      ram_2x37
+
+       Instances : 2 of 2
+       ------------------------
+       r:/WORK/XSTop/imsic_bus_tops/axi4buf/nodeOut_w_deq_q/ram_ext
+       r:/WORK/XSTop/axi4buf/nodeOut_w_deq_q/ram_ext
+
+u      ram_2x373
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_l1d_to_l2_buffer/nodeOut_c_q/ram_ext
+
+u      ram_2x406
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_l1d_to_l2_buffer/nodeOut_a_q/ram_ext
+
+u      ram_2x56
+
+       Instances : 2 of 2
+       ------------------------
+       r:/WORK/XSTop/axi4buf/nodeOut_aw_deq_q/ram_ext
+       r:/WORK/XSTop/axi4buf/nodeOut_ar_deq_q/ram_ext
+
+u      ram_2x63
+
+       Instances : 8 of 8
+       ------------------------
+       r:/WORK/XSTop/nocMisc/axi4buf_3/nodeOut_aw_deq_q/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4buf_4/nodeOut_aw_deq_q/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4buf_5/nodeOut_aw_deq_q/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4buf_6/nodeOut_aw_deq_q/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4buf_3/nodeOut_ar_deq_q/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4buf_4/nodeOut_ar_deq_q/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4buf_5/nodeOut_ar_deq_q/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4buf_6/nodeOut_ar_deq_q/ram_ext
+
+u      ram_2x66
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/XSTop/nocMisc/debugModule/debug/dmInner/dmInner/sb2tlOpt/d_q/ram_ext
+
+u      ram_2x73
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/XSTop/nocMisc/axi4buf_3/nodeOut_w_deq_q/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4buf_4/nodeOut_w_deq_q/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4buf_5/nodeOut_w_deq_q/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4buf_6/nodeOut_w_deq_q/ram_ext
+
+u      ram_2x74
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/XSTop/nocMisc/axi4buf_3/nodeIn_r_deq_q/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4buf_4/nodeIn_r_deq_q/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4buf_5/nodeIn_r_deq_q/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4buf_6/nodeIn_r_deq_q/ram_ext
+
+u      ram_2x76
+
+       Instances : 5 of 5
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_frontendBridge/instr_uncache/nodeIn_d_q/ram_ext
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_frontendBridge/instr_uncache/nodeIn_d_q_1/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_i_mmio_buffer/nodeIn_d_q/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_buffers/nodeIn_d_q/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_buffers_1/nodeIn_d_q/ram_ext
+
+u      ram_2x79
+
+       Instances : 7 of 7
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_buffer/nodeIn_d_q/ram_ext
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_buffers_2/nodeIn_d_q/ram_ext
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_buffers_3/nodeIn_d_q/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_buffers_2/nodeIn_d_q/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_buffers_3/nodeIn_d_q/ram_ext
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_buffers/nodeIn_d_q/ram_ext
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_buffers_1/nodeIn_d_q/ram_ext
+
+u      ram_2x80
+
+       Instances : 5 of 5
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_frontendBridge/icachectrl/nodeIn_d_q/ram_ext
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_frontendBridge/icachectrl/nodeIn_d_q_1/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_buffers_4/nodeIn_d_q/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_buffers_5/nodeIn_d_q/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_buffer_1/nodeIn_d_q/ram_ext
+
+u      ram_2x87
+
+       Instances : 6 of 6
+       ------------------------
+       r:/WORK/XSTop/nocMisc/axi4buf/nodeOut_aw_deq_q/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4buf_1/nodeOut_aw_deq_q/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4buf_2/nodeOut_aw_deq_q/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4buf/nodeOut_ar_deq_q/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4buf_1/nodeOut_ar_deq_q/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4buf_2/nodeOut_ar_deq_q/ram_ext
+
+u      ram_2x9
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/XSTop/nocMisc/axi4buf_3/nodeIn_b_deq_q/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4buf_4/nodeIn_b_deq_q/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4buf_5/nodeIn_b_deq_q/ram_ext
+       r:/WORK/XSTop/nocMisc/axi4buf_6/nodeIn_b_deq_q/ram_ext
+
+u      ram_2x90
+
+       Instances : 6 of 6
+       ------------------------
+       r:/WORK/XSTop/nocMisc/llc_to_peripheral_buffer_0/nodeIn_d_q/ram_ext
+       r:/WORK/XSTop/nocMisc/llc_to_peripheral_buffer_1/nodeIn_d_q/ram_ext
+       r:/WORK/XSTop/nocMisc/buffers/nodeIn_d_q/ram_ext
+       r:/WORK/XSTop/nocMisc/buffers_1/nodeIn_d_q/ram_ext
+       r:/WORK/XSTop/nocMisc/buffers_2/nodeIn_d_q/ram_ext
+       r:/WORK/XSTop/nocMisc/buffers_3/nodeIn_d_q/ram_ext
+
+u      ram_2x93
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/XSTop/nocMisc/axi4deint_1_nodeIn_r_deq_q/ram_ext
+
+u      ram_2x98
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_0/rxsnp/queue/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_1/rxsnp/queue/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_2/rxsnp/queue/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_3/rxsnp/queue/ram_ext
+
+u      ram_40x47
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_ptw/ptw/missQueue/io_out_q/ram_ext
+
+u      ram_4x11
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_0/mainPipe/customL1Hint/hint_s1Queue/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_1/mainPipe/customL1Hint/hint_s1Queue/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_2/mainPipe/customL1Hint/hint_s1Queue/ram_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_3/mainPipe/customL1Hint/hint_s1Queue/ram_ext
+
+u      ram_4x115
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/linkMonitor/LCredit2Decoupled_rxsnp/queue/ram_ext
+
+u      ram_4x151
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/XSTop/linkMonitor/LCredit2Decoupled_rxreq/queue/ram_ext
+
+u      ram_4x422
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/XSTop/linkMonitor/LCredit2Decoupled_rxdat/queue/ram_ext
+
+u      ram_4x73
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/XSTop/linkMonitor/LCredit2Decoupled_rxrsp/queue/ram_ext
+
+u      ram_65540x21
+
+       Instances : 2 of 2
+       ------------------------
+       r:/WORK/XSTop/axi4yank/Queue65540_BundleMap/ram_ext
+       r:/WORK/XSTop/axi4yank/Queue65540_BundleMap_1/ram_ext
+
+u      ram_78x15
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/pCrdQueue_s2/ram_ext
+
+u      ram_8x12
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/XSTop/imsic_bus_tops/axi_reg_imsic/axireg/fifo_sync/ram_ext
+
+u      ram_data_16x256
+
+       Instances : 16 of 16
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_0/grantBuf/grantQueueData0/ram_data_data_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_1/grantBuf/grantQueueData0/ram_data_data_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_2/grantBuf/grantQueueData0/ram_data_data_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_3/grantBuf/grantQueueData0/ram_data_data_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_0/grantBuf/grantQueueData1/ram_data_data_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_1/grantBuf/grantQueueData1/ram_data_data_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_2/grantBuf/grantQueueData1/ram_data_data_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_3/grantBuf/grantQueueData1/ram_data_data_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_0/txdat/queueData0/ram_data_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_1/txdat/queueData0/ram_data_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_2/txdat/queueData0/ram_data_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_3/txdat/queueData0/ram_data_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_0/txdat/queueData1/ram_data_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_1/txdat/queueData1/ram_data_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_2/txdat/queueData1/ram_data_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_3/txdat/queueData1/ram_data_ext
+
+u      ram_extra_id_3072x5
+
+       Instances : 6 of 6
+       ------------------------
+       r:/WORK/XSTop/nocMisc/axi4yank_1/Queue3072_BundleMap/ram_extra_id_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_1/Queue3072_BundleMap_1/ram_extra_id_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_1/Queue3072_BundleMap_2/ram_extra_id_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_1/Queue3072_BundleMap_3/ram_extra_id_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_1/Queue3072_BundleMap_4/ram_extra_id_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_1/Queue3072_BundleMap_5/ram_extra_id_ext
+
+u      ram_extra_id_3073x5
+
+       Instances : 2 of 2
+       ------------------------
+       r:/WORK/XSTop/nocMisc/axi4yank_1/Queue3073_BundleMap/ram_extra_id_ext
+       r:/WORK/XSTop/nocMisc/axi4yank_1/Queue3073_BundleMap_1/ram_extra_id_ext
+
+u      ram_sink_2x10
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_l1d_to_l2_buffer/nodeOut_e_q/ram_sink_ext
+
+u      ram_sink_2x8
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/l2top/inner_buffer/nodeOut_e_q/ram_sink_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_buffer/nodeOut_e_q_1/ram_sink_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_buffer/nodeOut_e_q_2/ram_sink_ext
+       r:/WORK/XSTop/core_with_l2/l2top/inner_buffer/nodeOut_e_q_3/ram_sink_ext
+
+u      sram_array_1p128x24m6s1h0l1b_bp_sc
+
+       Instances : 8 of 8
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/scTables_0/table_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/scTables_0/table_1/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/scTables_1/table_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/scTables_1/table_1/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/scTables_2/table_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/scTables_2/table_1/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/scTables_3/table_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/scTables_3/table_1/array
+
+u      sram_array_1p128x74m37s1h0l1b_icsh_tag
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_icache/metaArray/tagArrays_0/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_icache/metaArray/tagArrays_0/array_0_1_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_icache/metaArray/tagArrays_1/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_icache/metaArray/tagArrays_1/array_0_1_0/array
+
+u      sram_array_1p128x76m1s1h0l1b_bp_ittage
+
+       Instances : 8 of 8
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/ittage/tables_0/table_0/array/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/ittage/tables_1/table_0/array/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/ittage/tables_2/table_0/array/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/ittage/tables_3/table_0/array/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/ittage/tables_4/table_0/array/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/ittage/tables_2/table_0/array/array_0_0_1/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/ittage/tables_3/table_0/array/array_0_0_1/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/ittage/tables_4/table_0/array/array_0_0_1/array
+
+u      sram_array_1p256x13m13s1h0l1b_l2_pftch_rrt
+
+       Instances : 2 of 2
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/prefetcher/pbop/rrTable/rrTable/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/prefetcher/vbop/rrTable/rrTable/array
+
+u      sram_array_1p256x16m1s1h0l1b_bp_tage_us
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_0/us/array/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_1/us/array/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_2/us/array/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_3/us/array/array_0_0_0/array
+
+u      sram_array_1p256x66m66s1h0l1b_icsh_dat
+
+       Instances : 32 of 32
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_icache/dataArray/dataArrays_0_0/srams_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_icache/dataArray/dataArrays_0_1/srams_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_icache/dataArray/dataArrays_0_2/srams_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_icache/dataArray/dataArrays_0_3/srams_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_icache/dataArray/dataArrays_0_4/srams_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_icache/dataArray/dataArrays_0_5/srams_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_icache/dataArray/dataArrays_0_6/srams_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_icache/dataArray/dataArrays_0_7/srams_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_icache/dataArray/dataArrays_1_0/srams_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_icache/dataArray/dataArrays_1_1/srams_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_icache/dataArray/dataArrays_1_2/srams_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_icache/dataArray/dataArrays_1_3/srams_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_icache/dataArray/dataArrays_1_4/srams_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_icache/dataArray/dataArrays_1_5/srams_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_icache/dataArray/dataArrays_1_6/srams_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_icache/dataArray/dataArrays_1_7/srams_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_icache/dataArray/dataArrays_2_0/srams_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_icache/dataArray/dataArrays_2_1/srams_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_icache/dataArray/dataArrays_2_2/srams_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_icache/dataArray/dataArrays_2_3/srams_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_icache/dataArray/dataArrays_2_4/srams_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_icache/dataArray/dataArrays_2_5/srams_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_icache/dataArray/dataArrays_2_6/srams_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_icache/dataArray/dataArrays_2_7/srams_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_icache/dataArray/dataArrays_3_0/srams_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_icache/dataArray/dataArrays_3_1/srams_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_icache/dataArray/dataArrays_3_2/srams_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_icache/dataArray/dataArrays_3_3/srams_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_icache/dataArray/dataArrays_3_4/srams_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_icache/dataArray/dataArrays_3_5/srams_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_icache/dataArray/dataArrays_3_6/srams_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_icache/dataArray/dataArrays_3_7/srams_0/array
+
+u      sram_array_1p256x72m72s1h0l1b_dcsh_dat
+
+       Instances : 32 of 32
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/bankedDataArray/data_banks_0_0/data_bank_0/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/bankedDataArray/data_banks_0_0/data_bank_1/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/bankedDataArray/data_banks_0_0/data_bank_2/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/bankedDataArray/data_banks_0_0/data_bank_3/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/bankedDataArray/data_banks_0_1/data_bank_0/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/bankedDataArray/data_banks_0_1/data_bank_1/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/bankedDataArray/data_banks_0_1/data_bank_2/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/bankedDataArray/data_banks_0_1/data_bank_3/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/bankedDataArray/data_banks_0_2/data_bank_0/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/bankedDataArray/data_banks_0_3/data_bank_0/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/bankedDataArray/data_banks_0_2/data_bank_1/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/bankedDataArray/data_banks_0_3/data_bank_1/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/bankedDataArray/data_banks_0_2/data_bank_2/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/bankedDataArray/data_banks_0_3/data_bank_2/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/bankedDataArray/data_banks_0_2/data_bank_3/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/bankedDataArray/data_banks_0_3/data_bank_3/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/bankedDataArray/data_banks_0_4/data_bank_0/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/bankedDataArray/data_banks_0_5/data_bank_0/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/bankedDataArray/data_banks_0_6/data_bank_0/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/bankedDataArray/data_banks_0_7/data_bank_0/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/bankedDataArray/data_banks_0_4/data_bank_1/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/bankedDataArray/data_banks_0_5/data_bank_1/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/bankedDataArray/data_banks_0_6/data_bank_1/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/bankedDataArray/data_banks_0_7/data_bank_1/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/bankedDataArray/data_banks_0_4/data_bank_2/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/bankedDataArray/data_banks_0_5/data_bank_2/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/bankedDataArray/data_banks_0_6/data_bank_2/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/bankedDataArray/data_banks_0_7/data_bank_2/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/bankedDataArray/data_banks_0_4/data_bank_3/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/bankedDataArray/data_banks_0_5/data_bank_3/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/bankedDataArray/data_banks_0_6/data_bank_3/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/bankedDataArray/data_banks_0_7/data_bank_3/array
+
+u      sram_array_1p256x86m43s1h0l1b_dcsh_tag
+
+       Instances : 8 of 8
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/tagArray/array_0/tag_arrays_0/tag_array/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/tagArray/array_1/tag_arrays_0/tag_array/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/tagArray/array_2/tag_arrays_0/tag_array/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/tagArray/array_3/tag_arrays_0/tag_array/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/tagArray/array_0/tag_arrays_1/tag_array/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/tagArray/array_1/tag_arrays_1/tag_array/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/tagArray/array_2/tag_arrays_1/tag_array/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/tagArray/array_3/tag_arrays_1/tag_array/array
+
+u      sram_array_1p256x8m2s1h0l1b_bp_tage_bt
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/bt/bt_0/array/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/bt/bt_1/array/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/bt/bt_0/array/array_1_0_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/bt/bt_1/array/array_1_0_0/array
+
+u      sram_array_1p32x148m74s1h0l1b_pftch_pht
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_prefetcherOpt/pht/pht_ram/array
+
+u      sram_array_1p32x90m45s1h0l1b_bitmap
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_ptw/ptw/bitmapcache/bitmapcache/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_ptw/ptw/bitmapcache/bitmapcache/array_0_0_1/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_ptw/ptw/bitmapcache/bitmapcache/array_0_1_0/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_ptw/ptw/bitmapcache/bitmapcache/array_0_1_1/array
+
+u      sram_array_1p4096x137m137s1h1l2b_l2_dat
+
+       Instances : 16 of 16
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_0/dataStorage/array/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_0/dataStorage/array/array_0_0_1/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_0/dataStorage/array/array_0_0_2/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_0/dataStorage/array/array_0_0_3/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_1/dataStorage/array/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_1/dataStorage/array/array_0_0_1/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_1/dataStorage/array/array_0_0_2/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_1/dataStorage/array/array_0_0_3/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_2/dataStorage/array/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_2/dataStorage/array/array_0_0_1/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_2/dataStorage/array/array_0_0_2/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_2/dataStorage/array/array_0_0_3/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_3/dataStorage/array/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_3/dataStorage/array/array_0_0_1/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_3/dataStorage/array/array_0_0_2/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_3/dataStorage/array/array_0_0_3/array
+
+u      sram_array_1p4x786m131s1h0l1b_ptw_l1
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_ptw/ptw/cache/l1/array_0_0_0/array
+
+u      sram_array_1p512x104m13s1h0l1b_l2_meta
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_0/directory/metaArray/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_1/directory/metaArray/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_2/directory/metaArray/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_3/directory/metaArray/array
+
+u      sram_array_1p512x16m16s1h0l1b_l2_repl
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_0/directory/replacer_sram_opt/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_1/directory/replacer_sram_opt/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_2/directory/replacer_sram_opt/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_3/directory/replacer_sram_opt/array
+
+u      sram_array_1p512x24m12s1h0l1b_bp_tage
+
+       Instances : 16 of 16
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_0/table_banks_0/array/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_0/table_banks_1/array/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_0/table_banks_2/array/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_0/table_banks_3/array/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_1/table_banks_0/array/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_1/table_banks_1/array/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_1/table_banks_2/array/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_1/table_banks_3/array/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_2/table_banks_0/array/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_2/table_banks_1/array/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_2/table_banks_2/array/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_2/table_banks_3/array/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_3/table_banks_0/array/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_3/table_banks_1/array/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_3/table_banks_2/array/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/tage/tables_3/table_banks_3/array/array_0_0_0/array
+
+u      sram_array_1p512x40m10s1h0l1b_bp_ftb
+
+       Instances : 8 of 8
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/ftb/ftbBank/ftb/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/ftb/ftbBank/ftb/array_0_0_1/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/ftb/ftbBank/ftb/array_0_0_2/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/ftb/ftbBank/ftb/array_0_0_3/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/ftb/ftbBank/ftb/array_0_0_4/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/ftb/ftbBank/ftb/array_0_0_5/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/ftb/ftbBank/ftb/array_0_0_6/array
+       r:/WORK/XSTop/core_with_l2/core/frontend/inner_bpu/predictors/ftb/ftbBank/ftb/array_0_0_7/array
+
+u      sram_array_1p512x76m19s1h0l1b_l2_tag
+
+       Instances : 16 of 16
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_0/directory/tagArray/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_0/directory/tagArray/array_0_0_1/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_0/directory/tagArray/array_0_1_0/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_0/directory/tagArray/array_0_1_1/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_1/directory/tagArray/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_1/directory/tagArray/array_0_0_1/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_1/directory/tagArray/array_0_1_0/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_1/directory/tagArray/array_0_1_1/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_2/directory/tagArray/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_2/directory/tagArray/array_0_0_1/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_2/directory/tagArray/array_0_1_0/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_2/directory/tagArray/array_0_1_1/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_3/directory/tagArray/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_3/directory/tagArray/array_0_0_1/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_3/directory/tagArray/array_0_1_0/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_3/directory/tagArray/array_0_1_1/array
+
+u      sram_array_1p512x8m1s1h0l1b_l2_orgb
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_0/directory/origin_bit_opt/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_1/directory/origin_bit_opt/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_2/directory/origin_bit_opt/array
+       r:/WORK/XSTop/core_with_l2/l2top/inner_l2cache/slices_3/directory/origin_bit_opt/array
+
+u      sram_array_1p64x114m57s1h0l1b_ptw_l0
+
+       Instances : 16 of 16
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_ptw/ptw/cache/l0/array_0_0_0/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_ptw/ptw/cache/l0/array_0_0_1/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_ptw/ptw/cache/l0/array_0_0_2/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_ptw/ptw/cache/l0/array_0_0_3/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_ptw/ptw/cache/l0/array_0_0_4/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_ptw/ptw/cache/l0/array_0_0_5/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_ptw/ptw/cache/l0/array_0_0_6/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_ptw/ptw/cache/l0/array_0_0_7/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_ptw/ptw/cache/l0/array_0_1_0/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_ptw/ptw/cache/l0/array_0_1_1/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_ptw/ptw/cache/l0/array_0_1_2/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_ptw/ptw/cache/l0/array_0_1_3/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_ptw/ptw/cache/l0/array_0_1_4/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_ptw/ptw/cache/l0/array_0_1_5/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_ptw/ptw/cache/l0/array_0_1_6/array
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_ptw/ptw/cache/l0/array_0_1_7/array
+
+
+
+##################################################################
+####    DESIGN LIBRARY - r:/WORK
+##################################################################
+Type  Design Name
+----  ----------
+e *    AXI4Buffer_9
+
+       Instances : 0
+
+e *    AXI4DummySD
+
+       Instances : 0
+
+e *    AXI4Error
+
+       Instances : 0
+
+e *    AXI4Flash
+
+       Instances : 0
+
+e *    AXI4IntrGenerator
+
+       Instances : 0
+
+e *    AXI4RAM
+
+       Instances : 0
+
+e *    AXI4RAMWrapper
+
+       Instances : 0
+
+e *    AXI4UART
+
+       Instances : 0
+
+e *    AXI4UART16550
+
+       Instances : 0
+
+e *    AXI4Xbar_6
+
+       Instances : 0
+
+e *    AsyncResetRegVec_w1_i0
+
+       Instances : 0
+
+e *    DelayN_335
+
+       Instances : 0
+
+e *    DelayN_336
+
+       Instances : 0
+
+e *    DelayReg
+
+       Instances : 0
+
+e *    DelayReg_16
+
+       Instances : 0
+
+e *    DelayReg_18
+
+       Instances : 0
+
+e *    DelayReg_19
+
+       Instances : 0
+
+e *    DelayReg_20
+
+       Instances : 0
+
+e *    DelayReg_21
+
+       Instances : 0
+
+e *    DelayReg_22
+
+       Instances : 0
+
+e *    DelayReg_23
+
+       Instances : 0
+
+e *    DelayReg_24
+
+       Instances : 0
+
+e *    DelayReg_25
+
+       Instances : 0
+
+e *    DelayReg_26
+
+       Instances : 0
+
+e *    DiffExtArchEvent
+
+       Instances : 0
+
+e *    DiffExtArchFpRegState
+
+       Instances : 0
+
+e *    DiffExtArchIntRegState
+
+       Instances : 0
+
+e *    DiffExtArchVecRegState
+
+       Instances : 0
+
+e *    DiffExtAtomicEvent
+
+       Instances : 0
+
+e *    DiffExtCMOInvalEvent
+
+       Instances : 0
+
+e *    DiffExtCSRState
+
+       Instances : 0
+
+e *    DiffExtCommitData
+
+       Instances : 0
+
+e *    DiffExtCriticalErrorEvent
+
+       Instances : 0
+
+e *    DiffExtDebugMode
+
+       Instances : 0
+
+e *    DiffExtFpCSRState
+
+       Instances : 0
+
+e *    DiffExtHCSRState
+
+       Instances : 0
+
+e *    DiffExtInstrCommit
+
+       Instances : 0
+
+e *    DiffExtL1TLBEvent
+
+       Instances : 0
+
+e *    DiffExtL2TLBEvent
+
+       Instances : 0
+
+e *    DiffExtLrScEvent
+
+       Instances : 0
+
+e *    DiffExtMhpmeventOverflowEvent
+
+       Instances : 0
+
+e *    DiffExtNonRegInterruptPendingEvent
+
+       Instances : 0
+
+e *    DiffExtRefillEvent
+
+       Instances : 0
+
+e *    DiffExtSbufferEvent
+
+       Instances : 0
+
+e *    DiffExtStoreEvent
+
+       Instances : 0
+
+e *    DiffExtSyncAIAEvent
+
+       Instances : 0
+
+e *    DiffExtSyncCustomMflushpwrEvent
+
+       Instances : 0
+
+e *    DiffExtTrapEvent
+
+       Instances : 0
+
+e *    DiffExtTriggerCSRState
+
+       Instances : 0
+
+e *    DiffExtUncacheMMStoreEvent
+
+       Instances : 0
+
+e *    DiffExtVecCSRState
+
+       Instances : 0
+
+e *    DifftestFlash
+
+       Instances : 0
+
+e *    DifftestMem1R1W
+
+       Instances : 0
+
+e *    DifftestSDCard
+
+       Instances : 0
+
+e *    DummyDPICWrapper_ArchEvent
+
+       Instances : 0
+
+e *    DummyDPICWrapper_ArchFpRegState
+
+       Instances : 0
+
+e *    DummyDPICWrapper_ArchIntRegState
+
+       Instances : 0
+
+e *    DummyDPICWrapper_ArchVecRegState
+
+       Instances : 0
+
+e *    DummyDPICWrapper_AtomicEvent
+
+       Instances : 0
+
+e *    DummyDPICWrapper_CMOInvalEvent
+
+       Instances : 0
+
+e *    DummyDPICWrapper_CSRState
+
+       Instances : 0
+
+e *    DummyDPICWrapper_CommitData
+
+       Instances : 0
+
+e *    DummyDPICWrapper_CriticalErrorEvent
+
+       Instances : 0
+
+e *    DummyDPICWrapper_DebugMode
+
+       Instances : 0
+
+e *    DummyDPICWrapper_FpCSRState
+
+       Instances : 0
+
+e *    DummyDPICWrapper_HCSRState
+
+       Instances : 0
+
+e *    DummyDPICWrapper_InstrCommit
+
+       Instances : 0
+
+e *    DummyDPICWrapper_L1TLBEvent
+
+       Instances : 0
+
+e *    DummyDPICWrapper_L2TLBEvent
+
+       Instances : 0
+
+e *    DummyDPICWrapper_LrScEvent
+
+       Instances : 0
+
+e *    DummyDPICWrapper_MhpmeventOverflowEvent
+
+       Instances : 0
+
+e *    DummyDPICWrapper_NonRegInterruptPendingEvent
+
+       Instances : 0
+
+e *    DummyDPICWrapper_RefillEvent
+
+       Instances : 0
+
+e *    DummyDPICWrapper_SbufferEvent
+
+       Instances : 0
+
+e *    DummyDPICWrapper_StoreEvent
+
+       Instances : 0
+
+e *    DummyDPICWrapper_SyncAIAEvent
+
+       Instances : 0
+
+e *    DummyDPICWrapper_SyncCustomMflushpwrEvent
+
+       Instances : 0
+
+e *    DummyDPICWrapper_TrapEvent
+
+       Instances : 0
+
+e *    DummyDPICWrapper_TriggerCSRState
+
+       Instances : 0
+
+e *    DummyDPICWrapper_UncacheMMStoreEvent
+
+       Instances : 0
+
+e *    DummyDPICWrapper_VecCSRState
+
+       Instances : 0
+
+e *    FlashHelper
+
+       Instances : 0
+
+e *    GatewayEndpoint
+
+       Instances : 0
+
+e *    IntSyncCrossingSource_1
+
+       Instances : 0
+
+e *    IntSyncSyncCrossingSink
+
+       Instances : 0
+
+e *    LogPerfEndpoint
+
+       Instances : 0
+
+e *    Mem1R1WHelper
+
+       Instances : 0
+
+e      NCBOrderAddressCAM_1
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/XSTop/chi_mmioBridge_opt/uNCB200/uOrderAddressCAM
+
+e *    PreprocessEndpoint
+
+       Instances : 0
+
+e *    Queue16_UInt8
+
+       Instances : 0
+
+e *    Queue1_AXI4BundleAR
+
+       Instances : 0
+
+e *    Queue1_AXI4BundleAW
+
+       Instances : 0
+
+e *    Queue1_AXI4BundleW_3
+
+       Instances : 0
+
+e *    Queue2_RegMapperOutput
+
+       Instances : 0
+
+e *    Queue2_UInt6
+
+       Instances : 0
+
+e *    SDCardHelper
+
+       Instances : 0
+
+e *    SimMMIO
+
+       Instances : 0
+
+e *    SimTop
+
+       Instances : 0
+
+e      StorePipe
+
+       Instances : 2 of 2
+       ------------------------
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/stu_0
+       r:/WORK/XSTop/core_with_l2/core/memBlock/inner_dcache/dcache/stu_1
+
+e *    Validator
+
+       Instances : 0
+
+e *    XiangShanSim
+
+       Instances : 0
+
+
+1

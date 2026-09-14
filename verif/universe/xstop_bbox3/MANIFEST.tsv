@@ -1,0 +1,8 @@
+# xstop bbox3 universe 产物 —— 台账 docs/g1_boundary_ledger.tsv 的 hierarchy 来源
+# 记的是**解压后**的 sha256（台账绑定的是未压缩文件的指纹前16位）
+file	stored_as	sha256_uncompressed	bytes_uncompressed
+xstop_hierarchy.txt	xstop_hierarchy.txt.gz	8bbf2b1bb1bf3f13f359af217e5ff63c114e280556f3593a2687aa5a568e2e55	5925744
+xstop_designs.txt	xstop_designs.txt.gz	fd0266ae489063601ce6319b47838661aff37d36f36ba5bcabf9536de817388c	2240656
+xstop_blackboxes.txt	xstop_blackboxes.txt	a47d2b69bf7d45e8eeba9c1bcb32ed13cb75e4144b80c77537962bdff238a4d6	77847
+PROVENANCE.tsv	PROVENANCE.tsv	ebd2243b2e560a2f3ef88d6a19fd1b117fc6d8dba1aaf9eb034eb1275a013e3a	319
+fm.log	fm.log.gz	71e400f3cad080a29c55cfed76e9f21abd4e0e35905a7ae33988786dc3c2a8f5	360310

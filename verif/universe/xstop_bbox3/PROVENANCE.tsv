@@ -1,0 +1,9 @@
+kind	boundary_blackbox_universe
+top	r:/WORK/XSTop
+define	SYNTHESIS
+read_cmd	read_sverilog -container r -libname WORK -define {SYNTHESIS} <srcs>
+n_src_files	1914
+n_blackbox_modules	142
+hdlin_unresolved_modules	black_box
+tool_version	V-2023.12-SP3
+bbox_list_file	/home/eda/xs-env/xs-v2-sv/docs/g1_blackbox_candidates.tsv
