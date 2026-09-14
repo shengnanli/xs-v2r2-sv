@@ -4,14 +4,16 @@
 
 ## 这道闸要解决的问题不是「有重复」，而是「重复的两份悄悄变得不一样」
 
-仓库里有两类**已知的、本轮 freeze 前不重构**的重复（登记在
-`docs/deferred_refactor.tsv`）：
+仓库里的已知重复登记在 `docs/deferred_refactor.tsv`，分两类：
 
-1. **逐字节重复的 common 文件**。`rtl/common/DataModule.sv` 与
-   `rtl/common/xs_DataModule.sv` 逐字节相同，且**定义同一个模块名**
-   `xs_DataModule`；`SyncDataModule` 同理。两份分别被 `FtqPcMemWrapper`
-   和 `SyncDataModule` 两个 UT 各用一份。改一份忘另一份 → 两个 UT 从此
-   验的是不同的 RTL，而**没有任何现有闸会响**。
+1. **逐字节重复的 common 文件**。历史上 `rtl/common/DataModule.sv` 与
+   `rtl/common/xs_DataModule.sv` 逐字节相同、且**定义同一个模块名**
+   `xs_DataModule`（`SyncDataModule` 同理），两份分别被 `FtqPcMemWrapper`
+   和 `SyncDataModule` 两个 UT 各用一份——改一份忘另一份，两个 UT 从此验的是
+   不同的 RTL，而**没有任何现有闸会响**。这正是本闸判据 B 要盯的形态。
+   ★ 2026-09-14 cleanup：这两组已真正合并（删掉无前缀那份），登记表里相应的
+   `dm_common_dup` / `sdm_common_dup` 两条随之删除，**现在 rtl/ 下逐字节相同的
+   组数为 0**。判据 A/B 依然在岗，等的是下一组。
 
 2. **功能重复的核**。`rtl/frontend/ITTageTable{,_1..4}.sv` 内嵌的
    `xs_MbistPipeIttage_core`，与 `rtl/dft/xs_mbist_pipe_core.sv` 功能重复
@@ -43,8 +45,10 @@
 同族变体（`SRAMTemplate_128` vs `_145`、`MbistPipeIttage_2` vs `_3`）至少在
 模块名上就不同，通常参数也不同。
 
-实测佐证：`rtl/` 289 个 .sv、393 处 module 定义 / 391 个不同名字，逐字节相同
-的组恰好 2 组，且这 2 组正好就是那 2 处同名定义——**完全重合**。
+实测佐证（合并前，2026-09-13）：`rtl/` 289 个 .sv、393 处 module 定义 /
+391 个不同名字，逐字节相同的组恰好 2 组，且这 2 组正好就是那 2 处同名定义
+——**完全重合**。（合并后两组都没了：两类 finding 数同时归 0，佐证的是同一条
+「逐字节相同 ⟺ 模块重名」的等价关系。）
 
 因此本闸对精确相等不设任何排除名单，**误伤风险为零**：若将来某个新生成的族成员
 真的与兄弟逐字节相同，那本身就是 bug（两个模块重名），报出来是对的。

@@ -1,0 +1,28 @@
+### full_elab.sh —— 改动前基线（detached worktree @ 53f4e7f）。完整 VCS 日志不入库。
+=== 1/3 生成源清单（impl, top=XSTop） ===
+golden filelist        : 2030
+重写文件（rtl/**.sv）  : 292（其中只含 package 的 5）
+已登记的逐字节重复剔除: ['rtl/common/DataModule.sv', 'rtl/common/SyncDataModule.sv']
+重写件顶掉的 golden    : 273
+重写件独有模块(xs_*)   : 119
+保留的 golden 文件     : 1757
+补入的黑盒/宏资源      : 26
+写出 /tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/elab_before/files.f（2075 项）
+=== 2/3 VCS elaborate ===
+VCS 退出码: 0
+=== 整芯片 elaborate 诊断归纳：/tmp/claude-1000/-home-eda-xs-env-XiangShan/6824a231-879a-49e3-b98d-f29f5afc381c/scratchpad/elab_before/vcs.log ===
+Error 共 0 条 / Warning 共 40 条 / Lint 共 0 条，分 2 类
+
+--- Warning ---
+[Warning-TFIPC] × 33   —— 例化连接的端口数少于模块定义（本工程形态：xs_*_core 是参数化**超集核**，某个变体用不到的可选端口没连；要确认没连的是输出还是输入）
+      涉及文件(前6): SRAMTemplate.sv×1, SRAMTemplate_2.sv×1, SRAMTemplate_4.sv×1, SRAMTemplate_8.sv×1, SRAMTemplate_16.sv×1, SRAMTemplate_32.sv×1
+      |
+      |
+[Warning-SIOB] × 7   —— 数组下标越界选择（本工程形态：generate 里用 ?: 而不是 generate-if，genvar=0 时把 idx-1 算成 -1；常量折叠让它功能上没事，但是潜在 X 写法）
+      涉及文件(前6): RegCache.sv×7
+      |
+      |
+
+--- vcs.log 原始计数 ---
+      7 Warning-[SIOB]
+     33 Warning-[TFIPC]

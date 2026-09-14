@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/DataModule_FtqPC_16entry
+Implementation : i:/WORK/DataModule_FtqPC_16entry
+Version        : V-2023.12-SP3
+Date           : Mon Sep 14 12:37:18 2026
+**************************************************
+
+No aborted compare points.
+
+1

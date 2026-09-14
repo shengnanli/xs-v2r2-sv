@@ -1,8 +1,8 @@
 MODULE = FtqPcMemWrapper
 
 RTL_DIR = ../../../rtl
-RTL_SRCS = $(RTL_DIR)/common/DataModule.sv \
-           $(RTL_DIR)/common/SyncDataModule.sv \
+RTL_SRCS = $(RTL_DIR)/common/xs_DataModule.sv \
+           $(RTL_DIR)/common/xs_SyncDataModule.sv \
            $(RTL_DIR)/frontend/FtqPcMemWrapper.sv
 TB_SRCS = tb.sv
 

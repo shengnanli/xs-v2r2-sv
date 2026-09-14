@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/DataModule__16entry_8
+Implementation : i:/WORK/DataModule__16entry_8
+Version        : V-2023.12-SP3
+Date           : Mon Sep 14 12:42:19 2026
+**************************************************
+
+No aborted compare points.
+
+1

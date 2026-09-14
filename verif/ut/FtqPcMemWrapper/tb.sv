@@ -134,8 +134,12 @@ module tb;
     checks++;
   endtask
 
+  // 拍数由 ut_common.mk 统一下发 +ncycles（CONVENTIONS 要求每 seed >= 100k 拍）。
+  // 此前这里硬编码 4000 且不读 plusarg —— ut_common.mk 把 NCYCLES=200000 传进来
+  // 也被静默忽略，本 UT 实际只跑了 4000 拍。缺省值保留 4000 仅为单独手跑方便。
   int unsigned N = 4000;
   initial begin
+    if (!$value$plusargs("ncycles=%d", N)) N = 4000;
     drive(); wen = 0;
     repeat (3) @(posedge clk);
     rst = 0;
