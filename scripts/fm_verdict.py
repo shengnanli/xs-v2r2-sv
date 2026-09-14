@@ -70,6 +70,9 @@ _PROSE_FAILING = re.compile(
 # **最后一轮**，两者会错配。这里统一改成"先切到最后一个 Verification Results 段，
 # 再在段内取值"——表(_last_table)本来就落在这个段内，两个来源从此同源同轮。
 _RESULTS_HDR = re.compile(r'^\*+\s*Verification Results\s*\*+\s*$', re.M)
+# "Matching Results" 段头。钉了 fm_pins 的目标会打印多个这样的段，只有最后一段反映
+# 最终配对状态；且 FM 省略零值行，所以必须按段取而不是在全文里取最后一次命中。
+_MATCH_HDR_RES = re.compile(r'^\*+\s*Matching Results\s*\*+\s*$', re.M)
 
 
 def _last_results_block(text):
@@ -153,7 +156,20 @@ def _fill_stats(q, log_text):
     q["unverified"] = _row_int(tbl, "unverified")
     q["aborted"]    = _row_int(tbl, "aborted")
     _nc = _row_int(tbl, "unread_nc")
-    _umr, _umi = _unmatch_pair(log_text, _UNREAD_UM)
+    # ★作用域必须限定在**最后一个** Matching Results 块★（2026-09-14）
+    # 踩到的坑：FM **省略零值行**。一个钉了 fm_pins 的目标会打印多个 Matching Results
+    # 块，pin 之前那块有 `9(9) Unmatched ... unread points`，pin 之后那两块因为归零而
+    # 根本不打印该行。于是 _unmatch_pair 的"取最后一次命中"退化成"取那唯一一次"——
+    # 拿到的是**钉 pin 之前的陈旧值**，判定报 unread=9 而实际是 0。
+    # 三个独立来源都证实实际为 0：sidecar/native_facts.json（走 Formality API 不过正则）
+    # unread_ref=unread_impl=0、unread_points.txt 为 0 字节、最后一块无 unread 行。
+    # 同文件里 _last_table 早就是按块取的，这里漏了。
+    # 影响面已实测：本轮主树 224 份 receipt 命中 0 个（无 pin 的目标只有一块，不受影响）；
+    # 全仓仅 5 个 UT 用 fm_pins（Bku/FCVT/ICacheCtrlUnit/ITTageTable/SyncDataModule），
+    # 其中 Bku/FCVT 的 unread 是真的（unread_points.txt 非空），本次修正不影响其判定。
+    _mblocks = list(_MATCH_HDR_RES.finditer(log_text))
+    _scope = log_text[_mblocks[-1].start():] if _mblocks else log_text
+    _umr, _umi = _unmatch_pair(_scope, _UNREAD_UM)
     q["unread"]    = max([x for x in (_nc, _umr, _umi) if x is not None], default=None)
     umr, umi = _unmatch_pair(log_text, _UNMATCH_CP)
     q["unmatched_ref"], q["unmatched_impl"] = umr, umi
