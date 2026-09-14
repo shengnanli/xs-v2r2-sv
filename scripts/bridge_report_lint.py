@@ -305,7 +305,15 @@ def lint_file(path, repos, default_repo, run_counts=True,
                 # 允许 `path:123` 这种带行号的引用
                 tok_nolineno = re.sub(r':\d+(-\d+)?$', '', tok)
                 if looks_like_path(tok_nolineno, repo_root):
-                    if not (pathlib.Path(repo_root) / tok_nolineno).exists():
+                    # ★路径首段是已登记的兄弟仓库名时，去那个仓库里查★（2026-09-14）
+                    # `xs-v2r2-sv/docs/X.md` 该在 xs-v2r2-sv 里找，而不是在本仓库里
+                    # 找一个叫 `xs-v2r2-sv/` 的子目录。不剥前缀的话，所有跨仓库引用
+                    # 一律报 MISSING_FILE，人很快就会对这道闸脱敏。
+                    _root, _rel = repo_root, tok_nolineno
+                    _head = tok_nolineno.split('/', 1)
+                    if len(_head) == 2 and _head[0] in repos:
+                        _root, _rel = repos[_head[0]], _head[1]
+                    if not (pathlib.Path(_root) / _rel).exists():
                         # ★「我在报告这个路径不存在」不是引用错误★（2026-09-13）
                         # 报告里经常需要说「X 不存在 / 已删 / 被 gitignore」，那正是结论本身。
                         # 此前这类句子一律被判 MISSING_FILE，等于逼人**不许如实描述缺失**。
@@ -317,7 +325,8 @@ def lint_file(path, repos, default_repo, run_counts=True,
                         findings.append(Finding(
                             'MISSING_FILE', lineno,
                             '引用的路径在 %s 里不存在: %s'
-                            % (declared, tok_nolineno), line))
+                            % (_head[0] if (len(_head) == 2 and _head[0] in repos)
+                               else declared, tok_nolineno), line))
                 elif check_bare and re.match(
                         r'^[\w.\-]+\.(py|tcl|mk|sv|svh|json|tsv|sh|md)$', tok):
                     hits = list(pathlib.Path(repo_root).rglob(tok))
@@ -463,6 +472,16 @@ def main():
         repos['xs-v2-sv'] = str(here)
         if args.default_repo is None:
             args.default_repo = 'xs-v2-sv'
+        # ★兄弟仓库也自动登记★（2026-09-14）
+        # 本工程的报告里跨仓库引用是常态：上一轮成果在 xs-v2r2-sv，golden 在
+        # G0/G1-canonical。此前它们一律判 MISSING_FILE —— 而那既不是「引错了」
+        # 也不是「不存在」，只是「不在本仓库」。登记之后，指向兄弟仓库的**错误**
+        # 路径才真正查得出来，而不是所有跨仓库引用一律报一遍、把人练脱敏。
+        for sib in sorted(pathlib.Path(here).parent.iterdir()):
+            if not sib.is_dir() or sib.name in repos:
+                continue
+            if any((sib / mark).exists() for mark in ('.git', 'scripts', 'golden-rtl')):
+                repos[sib.name] = str(sib)
 
     targets = [pathlib.Path(f) for f in args.files]
     if args.inbox:
