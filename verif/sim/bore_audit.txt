@@ -1,0 +1,48 @@
+XMR 总数: 9897
+    9126  信号存在-golden模块
+     507  信号缺失-重写模块
+     262  路径中断(实例名对不上)
+       2  信号存在-重写模块
+--- 信号缺失的模块 TOP25 ---
+      89  Ftq [重写模块]
+      52  SinkA [重写模块]
+      50  EntriesVfdivVidiv [重写模块]
+      49  TageTable [重写模块]
+      49  TageTable_1 [重写模块]
+      49  TageTable_2 [重写模块]
+      49  TageTable_3 [重写模块]
+      20  FTBBank [重写模块]
+      16  WrBypass_33 [重写模块]
+      16  SourceB [重写模块]
+      13  StdFreeList [重写模块]
+       7  LCredit2Decoupled_8 [重写模块]
+       7  LCredit2Decoupled_10 [重写模块]
+       6  WrBypass_43 [重写模块]
+       5  ICache [重写模块]
+       4  WrBypass_41 [重写模块]
+       4  PreDecode [重写模块]
+       3  RASStack [重写模块]
+       3  FAlu [重写模块]
+       3  FMA [重写模块]
+       2  L2TlbPrefetch [重写模块]
+       1  TageBTable [重写模块]
+       1  ITTageTable [重写模块]
+       1  ITTageTable_1 [重写模块]
+       1  ITTageTable_2 [重写模块]
+缺失涉及模块数: 32
+--- 路径中断 TOP15 ---
+      21  OpenLLC::rnLinkMonitor
+      14  OpenLLC::snLinkMonitor
+       9  ICache::mainPipe
+       7  ICache::prefetcher
+       7  LinkMonitor::LCredit2Decoupled_rxsnp
+       5  WritebackQueue::entries_0
+       5  WritebackQueue::entries_1
+       5  WritebackQueue::entries_2
+       5  WritebackQueue::entries_3
+       5  WritebackQueue::entries_4
+       5  WritebackQueue::entries_5
+       5  WritebackQueue::entries_6
+       5  WritebackQueue::entries_7
+       5  WritebackQueue::entries_8
+       5  WritebackQueue::entries_9

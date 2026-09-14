@@ -72,3 +72,31 @@ verif/sim/run_fullchip.sh run   impl
 ## 运行必需参数
 
 `+ram_size=8589934592`（8GiB）—— 默认 8TB 会让 NEMU `init_mem` 崩。
+
+## 这 9897 条里到底断了多少（`verif/sim/bore_audit.py` 机械可复算）
+
+```
+XMR 总数: 9897
+   9126  信号存在-golden模块      <- 指向未重写模块，正常解析
+    507  信号缺失-重写模块        <- 重写件里没有同名内部信号
+    262  路径中断(实例名对不上)   <- 重写件里没有同名**子实例**
+      2  信号存在-重写模块        <- 偶然同名
+```
+
+即 **771 条探针指向重写模块，其中 769 条断**（7.8%）。涉及 36 个重写模块，头部：
+
+| 断的条数 | 模块 | 断法 |
+|---|---|---|
+| 89 | `Ftq` | 内部信号名 |
+| 52 | `SinkA` | 内部信号名 |
+| 50 | `EntriesVfdivVidiv` | 内部信号名 |
+| 49×4 | `TageTable{,_1,_2,_3}` | 内部信号名 |
+| 35 | `OpenLLC` | 子实例 `rnLinkMonitor`/`snLinkMonitor` 不存在 |
+| 20 | `FTBBank` | 内部信号名 |
+| 16+9 | `ICache` | 子实例 `mainPipe`/`prefetcher` 不存在 + 内部信号名 |
+| 50 | `WritebackQueue` | 子实例 `entries_0..9` 不存在 |
+| 7 | `LinkMonitor` | 子实例 `LCredit2Decoupled_rxsnp` 不存在 |
+
+「子实例不存在」这一类说明重写件不只是内部**信号**改名，**子模块划分本身**也变了
+（如 `WritebackQueue` 的 10 个 `entries_N` 单条目子模块被合进了阵列写法）。
+所以「按 golden 保留探针名」这条路对这类模块不是改名能解决的，得改结构。
