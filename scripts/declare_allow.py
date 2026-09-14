@@ -3,12 +3,16 @@
 
 codex 0139 §3.3：assembly 不得再用数字配额。本声明逐条列出黑盒实例，判定时
 观测集合须与声明**精确相等**，且每条必须归入允许类别：
-  vendor_macro  厂商硬宏叶子（array_*_ext 等 .v 行为模型，两侧同源）——无条件允许
+  vendor_macro  厂商硬宏叶子（.v 行为模型，两侧同源）——须**逐条**在
+                verif/vendor_boundary.tsv 审定入表，按表内精确模块名放行
   green_child   独立目标且已在台账通过——须填 child_target
   golden_logic_reuse —— NO-GO，声明成这一类会被判 PARTIAL（必须先独立证明）
 
-vendor_macro 由文件名规则自动归类（*_ext）；其余一律要求 --class/--child 显式指定，
-不允许脚本替人判断。
+vendor_macro **只按 verif/vendor_boundary.tsv 的精确模块名**自动归类，且该表逐条绑定
+端口签名/深度/mask 粒度/时钟语义/body hash；★禁止按 `*_ext` 等名字形状批量放行★
+（codex 0153 D67）——名字像存储宏而内含功能逻辑的模块正是本规则要挡的东西。
+表外一律要求 --class/--child 显式指定，不允许脚本替人判断。
+负例见 scripts/test_ext_registry_negative.py（合成带 FSM 的假 `_ext`，实测被拒）。
 
 用法: declare_allow.py <top> --report <black_boxes.rpt>
         [--class <design>=<类别>[:<child_target>] ...]

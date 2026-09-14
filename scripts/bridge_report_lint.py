@@ -328,6 +328,18 @@ def lint_file(path, repos, default_repo, run_counts=True,
                 continue
             if not repos:
                 continue
+            # ★ 行内 repo 标注（2026-09-13 加）★
+            # 跨 repo 引用在本工程是常态（XiangShan 的 commit 常要在 xs-v2-sv 的报告里提）。
+            # 原实现只认消息头的 repo:，于是"在描述另一个 repo 的 commit"这件事无法表达 ——
+            # 实测我自己一封更正信就被判 COMMIT_WRONG_REPO，而行内加中文说明不算数。
+            # 支持 `repo:<name>` 出现在同一行（或紧邻上一行）时改用该 repo 判定。
+            line_repo = None
+            _m = re.search(r'repo:\s*([A-Za-z0-9_.\-]+)', line)
+            if not _m and lineno >= 2:
+                _m = re.search(r'repo:\s*([A-Za-z0-9_.\-]+)', lines[lineno - 2])
+            if _m and _m.group(1) in repos:
+                line_repo = _m.group(1)
+
             where = {}
             for name, rp in sorted(repos.items()):
                 t = git_resolve(rp, tok)
@@ -338,12 +350,12 @@ def lint_file(path, repos, default_repo, run_counts=True,
                     'COMMIT_UNRESOLVABLE', lineno,
                     '`%s` 在任何已知 repo（%s）里都 cat-file 不出来。'
                     % (tok, ', '.join(sorted(repos))), line))
-            elif declared and declared not in where:
+            elif (line_repo or declared) and (line_repo or declared) not in where:
                 findings.append(Finding(
                     'COMMIT_WRONG_REPO', lineno,
                     '★`%s` 在声明的 repo `%s` 里解析不了，但在 %s 里可以。'
                     '拿它做 `%s..HEAD` 之类的范围会直接失败、输出为空。'
-                    % (tok, declared,
+                    % (tok, (line_repo or declared),
                        ', '.join('%s(%s)' % (k, v) for k, v in sorted(where.items())),
                        tok), line))
 

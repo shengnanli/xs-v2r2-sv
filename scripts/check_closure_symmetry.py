@@ -682,8 +682,16 @@ def reconcile_ledger(ledger, registry, golden_rtl):
     lines.append(f'  golden 里 `*_ext` 模块定义 = {len(ext_defs)} 个；'
                  f'本表逐条批准 = {len(reg)} 个；'
                  f'按后缀会扫进来但**不在表内** = {len(ext_not_reg)} 个')
+    if ext_not_reg:
+        # ★fail-closed★（codex 0154）：golden 里出现表外 `*_ext` = 冻结名单已过期，
+        # 必须由人逐条审定后入表，绝不能因"名字像存储宏"顺势放行。此前这里只打印
+        # NOT_APPROVED 而不置 ok=False —— 合成负例实测 rc=0，等于以退出码为准的
+        # 流水线会放它过去。同函数内 ext_dup / unparsed / 守恒三处都是 fail-closed，
+        # 唯独这条漏了；补齐。
+        ok = False
     for n in ext_not_reg:
-        lines.append(f'      NOT_APPROVED  {n}  ({ext_defs[n]})')
+        lines.append(f'      ★NOT_APPROVED  {n}  ({ext_defs[n]})'
+                     f' —— 表外 `*_ext`，须人工审定入表（fail-closed，不得按后缀放行）')
     if ext_dup:
         ok = False
         for n, a, b in ext_dup:
