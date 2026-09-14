@@ -38,6 +38,16 @@ RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/ClockGate.sv \
 GOLDEN_SRCS = $(GOLDEN_RTL)/ITTageTable_2.sv \
               $(GOLDEN_RTL)/MbistPipeIttage_2.sv
 
+# vmucp（verification_verify_matched_unread_compare_points）——**加强**证明，不是 waiver：
+# 要求 FM 真去比对 matched-unread 的点，而不是当 Not-Compared 放过。
+# 依据（2026-09-14 本 worker 实测，非继承）：strict 首跑 native SUCCEEDED /
+# passing 见 evidence / failing 0 / unmatched 0，只剩 unread 卡住；unread 点在
+# fm_pins.tcl 钉完后**全部**是 matched_nc，ref 侧唯一点数 == impl 侧唯一点数、
+# 非 matched_nc 项为 0，即严格双射。内容是 MBIST 地址死位（addrReg[7:0] 整条写
+# 地址 + addrRdReg[7]，SRAMTemplate 侧无读者/RW0_addr 只有 7 位）与厂商 SRAM 宏
+# array_6_ext 的 reg_RW0_ren（非 RANDOMIZE_GARBAGE_ASSIGN 视图下无读者），两侧同
+# 为死位。逐行依据见本目录 fm_pins.tcl。白名单见 scripts/fm_eq.tcl。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 FM_VARIANTS = ITTageTable_2
 FM_REF_DEPS_ITTageTable_2 = ClockGate.sv FoldedSRAMTemplate_24.sv IndexableCAMTemplate_43.sv MbistClockGateCell.sv MbistPipeIttage_2.sv SRAMTemplate_78.sv SplittedSRAMTemplate_27.sv WrBypass_43.sv array_6.sv array_6_ext.v data_mem_0_4x2.sv sram_array_1p128x76m1s1h0l1b_bp_ittage.sv
 
