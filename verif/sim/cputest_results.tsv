@@ -1,0 +1,36 @@
+TEST             g_instrCnt g_cycleCnt i_instrCnt i_cycleCnt  VERDICT
+add                    929,     4,829,       929,     4,829,     SAME
+add-longlong           893,     4,842,       893,     4,842,     SAME
+bit                    374,     4,777,       374,     4,777,     SAME
+bubble-sort          3,173,     7,973,     3,173,     7,973,     SAME
+div                    953,     5,948,       953,     5,948,     SAME
+dummy                   98,     4,330,        98,     4,330,     SAME
+fact                   493,     4,803,       493,     4,803,     SAME
+fib                    612,     4,667,       612,     4,667,     SAME
+goldbach             1,526,     6,752,     1,526,     6,752,     SAME
+hello-str            2,356,     7,092,     2,356,     7,092,     SAME
+if-else                360,     4,663,       360,     4,663,     SAME
+leap-year            2,008,     5,199,     2,008,     5,199,     SAME
+load-store             466,     4,718,       466,     4,718,     SAME
+matrix-mul           9,051,     6,789,     9,051,     6,789,     SAME
+max                    929,     4,843,       929,     4,843,     SAME
+min3                 1,069,     5,060,     1,069,     5,060,     SAME
+mov-c                  163,     4,425,       163,     4,425,     SAME
+movsx                  203,     4,483,       203,     4,483,     SAME
+mul-longlong           303,     4,606,       303,     4,606,     SAME
+pascal               3,219,     5,797,     3,219,     5,797,     SAME
+prime                5,244,    13,774,     5,244,    13,774,     SAME
+quick-sort           2,925,     6,951,     2,925,     6,951,     SAME
+recursion            4,369,     6,641,     4,369,     6,641,     SAME
+select-sort          3,622,     7,425,     3,622,     7,425,     SAME
+shift                  408,     4,647,       408,     4,647,     SAME
+shuixianhua         10,562,     8,362,    10,562,     8,362,     SAME
+string               1,532,     5,614,     1,532,     5,614,     SAME
+sub-longlong           893,     4,842,       893,     4,842,     SAME
+sum                    613,     5,131,       613,     5,131,     SAME
+switch                 305,     4,510,       305,     4,510,     SAME
+to-lower-case        2,009,     5,062,     2,009,     5,062,     SAME
+unalign                301,     4,424,       301,     4,424,     SAME
+wanshu               1,976,     8,595,     1,976,     8,595,     SAME
+# 33/33 cycle-exact; 0 difftest mismatch on either side
+# golden simv 4407155fabe6  impl simv 3c979495a2d3
