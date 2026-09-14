@@ -69,7 +69,7 @@
 //   无法按参数选模块名，故本核把这三类子模块的端口**全部引出**，由 golden 同名 wrapper
 //   按变体例化正确命名的黑盒并对接。核因此只含「纯功能逻辑」，最易读；wrapper 是机械适配层。
 //
-// 【参数化 5 变体】见文件末与 docs/frontend/ITTageTable.md 变体表。核参数化
+// 【参数化 5 变体】见文件末与 xs-v2r2-sv/docs/frontend/ITTageTable.md(上一轮仓库,未移植) 变体表。核参数化
 //   IDX_W / 三份折叠历史宽度 / 三段历史长度（更新现折用），其余完全相同。
 // =============================================================================
 
@@ -487,7 +487,7 @@ module xs_MbistPipeIttage_core #(
   end
 endmodule
 
-// 自动生成：scripts/gen_ittagetable_wrappers.py —— 例化 xs_ITTageTable_core + 变体专属黑盒
+// 自动生成：xs-v2r2-sv/scripts/gen_ittagetable_wrappers.py —— 例化 xs_ITTageTable_core + 变体专属黑盒
 
 // ---------------------------------------------------------------------------
 // golden 同名 wrapper

@@ -1,4 +1,4 @@
-// 自动生成 scripts/gen_chi_channel.py —— 生成区勿手改
+// 自动生成 xs-v2r2-sv/scripts/gen_chi_channel.py —— 生成区该脚本未移植到本轮(它按上一轮规范产出独立 _wrapper.sv)，本文件手工维护
 // 【手写增补 2026-09-12, diag-tlb-txreq】末尾 directed_out_ready_gate() 定向激励为手写,
 // 若重跑生成器请保留（复现 lcreditOut 漏 io_out_ready 门控的真 bug, LinkLayer.scala:213）。
 // LCredit2Decoupled_1 双例化逐拍比对: golden LCredit2Decoupled_1 vs 可读重写 LCredit2Decoupled_1_xs。

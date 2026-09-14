@@ -1,4 +1,4 @@
-// 自动生成：scripts/gen_tlbuffer2.py —— 勿手改
+// 自动生成：xs-v2r2-sv/scripts/gen_tlbuffer2.py —— 该脚本未移植到本轮(它按上一轮规范产出独立 _wrapper.sv)，本文件手工维护
 // TLBuffer_2 双例化逐拍比对: golden TLBuffer_2 vs 可读 TLBuffer_2_xs。
 `timescale 1ns/1ps
 `define CHECK(SIG) begin \

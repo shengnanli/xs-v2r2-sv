@@ -1,5 +1,5 @@
 // cu_bridge —— UT 数组信号 <-> 两个 DUT 扁平端口的桥接(机械生成)。
-// 由 scripts/gen_compressunit.py --bridge 生成。
+// 由 xs-v2r2-sv/scripts/gen_compressunit.py --bridge 生成。
 module cu_bridge #(parameter int W=6, parameter int EXC=24) (
   input  logic            v   [W],
   input  logic [EXC-1:0]  exc [W],

@@ -1,4 +1,4 @@
-// 自动生成：scripts/gen_axi4idindexer.py —— 勿手改
+// 自动生成：xs-v2r2-sv/scripts/gen_axi4idindexer.py —— 该脚本未移植到本轮(它按上一轮规范产出独立 _wrapper.sv)，本文件手工维护
 // AXI4IdIndexer_1 双例化逐拍比对: golden AXI4IdIndexer_1 vs 可读 AXI4IdIndexer_1_xs (纯组合 ID 适配器)。
 `timescale 1ns/1ps
 `define CHECK(SIG) begin \

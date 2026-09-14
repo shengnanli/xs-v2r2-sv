@@ -8,7 +8,7 @@
 //   - freeList[] 存放当前空闲的槽位号。
 // 释放接口是一个 size 位的位图 io_free(每位代表某条目本拍被释放)，
 // 内部用「bank 优先编码」每拍最多回收 freeWidth 个，并打一拍写回 freeList。
-// 文档见 docs/memblock/FreeList.md。
+// 文档见 xs-v2r2-sv/docs/memblock/FreeList.md(上一轮仓库,未移植)。
 // =====================================================================
 package freelist_pkg;
 
@@ -259,7 +259,7 @@ module xs_FreeList_core
 
 endmodule
 
-// 自动生成：scripts/gen_freelist.py —— 勿手改
+// 自动生成：xs-v2r2-sv/scripts/gen_freelist.py —— 该脚本未移植到本轮(它按上一轮规范产出独立 _wrapper.sv)，本文件手工维护
 // golden 同名扁平端口 → 可读核 xs_FreeList_core 的机械适配层
 
 // ---------------------------------------------------------------------------

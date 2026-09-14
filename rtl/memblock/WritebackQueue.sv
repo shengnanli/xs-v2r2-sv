@@ -161,7 +161,7 @@ endpackage
 //    (3) 输出仲裁 TLArbiter.robin：把 18 个 entry 的 mem_release 轮转汇聚到单一 TL C 通道，
 //        多 beat 突发期间锁定授权给同一 entry。
 //
-//  详见 docs/memblock/WritebackQueue.md。
+//  详见 xs-v2r2-sv/docs/memblock/WritebackQueue.md(上一轮仓库,未移植)。
 // =============================================================================
 import writebackqueue_pkg::*;
 
@@ -940,7 +940,7 @@ module xs_WritebackQueue_core (
 
 endmodule
 
-// 自动生成：scripts/gen_writebackqueue.py —— 勿手改
+// 自动生成：xs-v2r2-sv/scripts/gen_writebackqueue.py —— 该脚本未移植到本轮(它按上一轮规范产出独立 _wrapper.sv)，本文件手工维护
 
 // ---------------------------------------------------------------------------
 // golden 同名 wrapper

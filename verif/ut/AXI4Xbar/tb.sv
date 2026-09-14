@@ -1,4 +1,4 @@
-// 自动生成：scripts/gen_axi4xbar.py —— 勿手改
+// 自动生成：xs-v2r2-sv/scripts/gen_axi4xbar.py —— 该脚本未移植到本轮(它按上一轮规范产出独立 _wrapper.sv)，本文件手工维护
 // AXI4Xbar 双例化逐拍比对: golden AXI4Xbar vs 可读 AXI4Xbar_xs。
 // 激励: 两主口 AW/AR 49 位随机地址 (≈50% MEM/MMIO); id 随机; 从口响应/握手随机。
 `timescale 1ns/1ps

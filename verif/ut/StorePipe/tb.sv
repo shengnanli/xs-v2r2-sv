@@ -1,4 +1,4 @@
-// 自动生成：scripts/gen_storepipe.py —— 勿手改
+// 自动生成：xs-v2r2-sv/scripts/gen_storepipe.py —— 该脚本未移植到本轮(它按上一轮规范产出独立 _wrapper.sv)，本文件手工维护
 `timescale 1ns/1ps
 module tb;
   localparam int N_WAYS = 4;

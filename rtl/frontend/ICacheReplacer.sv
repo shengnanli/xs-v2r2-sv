@@ -205,7 +205,7 @@ module xs_ICacheReplacer_core #(
 
 endmodule
 
-// 自动生成：scripts/gen_icachereplacer.py —— 勿手改
+// 自动生成：xs-v2r2-sv/scripts/gen_icachereplacer.py —— 该脚本未移植到本轮(它按上一轮规范产出独立 _wrapper.sv)，本文件手工维护
 // golden 同名包装层：模块名 ICacheReplacer，端口与 golden 完全一致；
 // 内部例化可读核 xs_ICacheReplacer_core（端口本就是 golden 扁平名）。
 

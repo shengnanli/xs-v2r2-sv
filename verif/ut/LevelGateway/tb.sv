@@ -1,4 +1,4 @@
-// 自动生成：scripts/gen_levelgateway.py —— 勿手改
+// 自动生成：xs-v2r2-sv/scripts/gen_levelgateway.py —— 该脚本未移植到本轮(它按上一轮规范产出独立 _wrapper.sv)，本文件手工维护
 // LevelGateway 双例化逐拍比对：golden LevelGateway vs 可读重写 LevelGateway_xs。
 // 激励：随机驱动 interrupt/ready/complete，覆盖 set(interrupt&ready)、
 // hold(在途)、clear(complete) 全部 inFlight 转移。

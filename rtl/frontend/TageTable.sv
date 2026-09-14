@@ -599,7 +599,7 @@ module xs_TageTable_core #(parameter int unsigned NROWS_PER_BR = 2048,          
 
 endmodule
 
-// 自动生成：scripts/gen_tagetable_wrappers.py —— 例化 xs_TageTable_core
+// 自动生成：xs-v2r2-sv/scripts/gen_tagetable_wrappers.py —— 例化 xs_TageTable_core
 
 // ---------------------------------------------------------------------------
 // golden 同名 wrapper

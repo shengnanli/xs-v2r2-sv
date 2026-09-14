@@ -1,4 +1,4 @@
-// 自动生成：scripts/gen_plicfanin.py —— 勿手改
+// 自动生成：xs-v2r2-sv/scripts/gen_plicfanin.py —— 该脚本未移植到本轮(它按上一轮规范产出独立 _wrapper.sv)，本文件手工维护
 // PLICFanIn 双例化逐拍比对：golden PLICFanIn vs 可读重写 PLICFanIn_xs。
 // 纯组合模块：每拍随机驱动 65 路优先级 + 65 位挂起向量，比对 io_dev/io_max。
 // 激励混合：全随机 + 偏置 (大量未挂起 / 单热挂起 / 全挂起) 以覆盖仲裁边界。

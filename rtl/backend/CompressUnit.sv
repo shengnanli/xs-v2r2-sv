@@ -201,7 +201,7 @@ endmodule
 // CompressUnit (wrapper) —— golden 同名顶层,端口与 golden/chisel-rtl/CompressUnit.sv
 // 完全一致。机械生成的端口适配层:扁平端口 <-> 可读核 xs_CompressUnit_core 的
 // struct/数组端口。算法逻辑在 rtl/backend/CompressUnit.sv。
-// 由 scripts/gen_compressunit.py 生成。
+// 由 xs-v2r2-sv/scripts/gen_compressunit.py 生成。
 // =============================================================================
 import compressunit_pkg::*;
 

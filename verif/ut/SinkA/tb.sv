@@ -1,4 +1,4 @@
-// 自动生成 scripts/gen_sinka.py —— 勿手改
+// 自动生成 xs-v2r2-sv/scripts/gen_sinka.py —— 该脚本未移植到本轮(它按上一轮规范产出独立 _wrapper.sv)，本文件手工维护
 // SinkA 双例化逐拍比对: golden SinkA vs 可读重写 SinkA_xs (纯组合)。
 `timescale 1ns/1ps
 `define CHK(SIG) begin \

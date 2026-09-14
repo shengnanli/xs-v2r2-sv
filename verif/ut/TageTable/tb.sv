@@ -1,4 +1,4 @@
-// 自动生成：scripts/gen_tagetable_wrappers.py
+// 自动生成：xs-v2r2-sv/scripts/gen_tagetable_wrappers.py
 `timescale 1ns/1ps
 module tb;
   int unsigned NCYCLES=40000; localparam int WARMUP=400;

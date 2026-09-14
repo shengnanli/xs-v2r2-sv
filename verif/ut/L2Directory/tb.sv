@@ -1,4 +1,4 @@
-// 自动生成：scripts/gen_l2mbist.py —— 勿手改
+// 自动生成：xs-v2r2-sv/scripts/gen_l2mbist.py —— 该脚本未移植到本轮(它按上一轮规范产出独立 _wrapper.sv)，本文件手工维护
 // L2Directory 双例化逐拍比对：golden L2Directory vs 可读重写 L2Directory_xs。
 // 激励：mbist 请求 (req/all/readen/writeen/array/addr/data/be) 随机，
 //       array 偏向落在合法编号上以充分覆盖各 child 的 spread 分支；

@@ -1,4 +1,4 @@
-// 自动生成：scripts/gen_debugmodule.py —— 勿手改
+// 自动生成：xs-v2r2-sv/scripts/gen_debugmodule.py —— 该脚本未移植到本轮(它按上一轮规范产出独立 _wrapper.sv)，本文件手工维护
 // DebugModule 双时钟双例化逐拍比对: golden DebugModule vs 可读重写 DebugModule_xs。
 // 两侧共用真实子模块 (TLDebugModule + DebugTransportModuleJTAG + 31 个依赖)。
 // 双时钟: clock 主域 (io_clock/io_debugIO_clock) + tck 域 (JTAG/DMI)。

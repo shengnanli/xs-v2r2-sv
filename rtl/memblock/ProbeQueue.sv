@@ -20,7 +20,7 @@
 //        一拍（selected_req）后送主流水 io_pipe_req；其间用 lrsc/reservation-set 阻塞，
 //        给地址比较一个独立周期改善时序。
 //
-//  详见 docs/memblock/ProbeQueue.md。
+//  详见 xs-v2r2-sv/docs/memblock/ProbeQueue.md(上一轮仓库,未移植)。
 // =============================================================================
 package probequeue_pkg;
 
@@ -96,7 +96,7 @@ endpackage
 //    (2) 分配：最低空闲下标优先，把 probe 分给一个空 ProbeEntry。
 //    (3) 仲裁 + 延迟：Arbiter8 汇聚 → 打一拍(selected_req) → lrsc/resv-set 阻塞 → io_pipe_req。
 //
-//  详见 docs/memblock/ProbeQueue.md。
+//  详见 xs-v2r2-sv/docs/memblock/ProbeQueue.md(上一轮仓库,未移植)。
 // =============================================================================
 import probequeue_pkg::*;
 
@@ -371,7 +371,7 @@ module xs_ProbeQueue_core (
 
 endmodule
 
-// 自动生成：scripts/gen_probequeue.py —— 勿手改
+// 自动生成：xs-v2r2-sv/scripts/gen_probequeue.py —— 该脚本未移植到本轮(它按上一轮规范产出独立 _wrapper.sv)，本文件手工维护
 
 // ---------------------------------------------------------------------------
 // golden 同名 wrapper

@@ -1,4 +1,4 @@
-// 自动生成：scripts/gen_tlplic.py —— 勿手改
+// 自动生成：xs-v2r2-sv/scripts/gen_tlplic.py —— 该脚本未移植到本轮(它按上一轮规范产出独立 _wrapper.sv)，本文件手工维护
 // TLPLIC 双例化逐拍比对: golden TLPLIC vs 可读重写 TLPLIC_xs。
 // 激励: 65 路外设中断 (偏置: 多数拉低/单热/稀疏/全高) + TileLink A 随机请求
 // (地址偏向命中合法寄存器区: priority/pending/enable/hart claim)。

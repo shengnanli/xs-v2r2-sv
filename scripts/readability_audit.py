@@ -30,6 +30,13 @@ RTL = pathlib.Path(os.environ['XSSV_RTL']) if os.environ.get('XSSV_RTL') else RE
 FORBIDDEN = re.compile(r'\b_(GEN|T)(_\d+)?\b')
 MOD_RE = re.compile(r'^(package|module)\s+(\w+)', re.MULTILINE)
 COVER_LIST = re.compile(r'^//\s{2,}(\w+)\s*[:：]', re.MULTILINE)
+# 注释里形如 scripts/foo.py、verif/ut/X/Makefile 的仓库相对路径引用
+# ★前置必须是「非路径字符」★：用 \b 会把 `golden-rtl/Fence.sv` 里的 `rtl/Fence.sv`
+# 当成引用（连字符是 \b 边界）—— 实测在 rtl/backend/Fence.sv:4 上误报过一次。
+REPO_PATH_REF = re.compile(r'(?<![\w./-])(?:scripts|verif|rtl|docs|tools)/[\w./-]*[\w-]\.(?:py|sh|sv|svh|v|mk|tsv|json|md)\b')
+# 断言「该文件不存在」的标记 —— 命中即认为这句是在报告缺失
+ABSENCE_MARK = re.compile(r'不存在|已删|已移除|缺失|从未存在|未跟踪|已并入')
+
 WRAPPER_REF = re.compile(r'\b(\w+)_wrapper(\.sv)?\b')
 
 
@@ -247,6 +254,22 @@ def audit_file(p, modidx=None):
         problems.append(('C', f'{rel}: 头注释引用了已不存在的 {m.group(0)}'
                               f'（单文件规范下 wrapper 已并入本文件）'))
         break
+    # ★注释里引用的仓库路径必须真的存在★（2026-09-14）
+    # 此前 C 类只认 `<X>_wrapper.sv` 一种形状，于是注释可以指向任何不存在的文件而无人过问。
+    # 实测：41 个文件（21 个 rtl + 20 个 tb）写着「自动生成 scripts/gen_chi_channel.py
+    # —— 勿手改」，而该脚本在本仓库及全部 git 历史中都不存在 —— 读者照做只会卡住，
+    # 而闸一声不吭。现在凡 `<dir>/<name>.<ext>` 形态的引用都要落地。
+    # 例外：同一行在断言"它不存在"（不存在/已删/缺失/从未存在/未跟踪…）时放行 ——
+    # 「我在说明这个文件没了」是有用的信息，不是引用错误。
+    for m in REPO_PATH_REF.finditer(hdr_text):
+        tok = m.group(0)
+        line_of = next((l for l in hdr_text.splitlines() if tok in l), '')
+        if ABSENCE_MARK.search(line_of):
+            continue
+        if not (REPO / tok).exists():
+            problems.append(('C', f'{rel}: 头注释引用的 {tok} 在仓库里不存在'
+                                  f'（要么补上，要么把话改成"该文件已不存在"）'))
+            break
 
     order = [m.group(2) for m in MOD_RE.finditer(text)]
     core_i = next((i for i, n in enumerate(order) if n.startswith('xs_') and n.endswith('_core')), None)

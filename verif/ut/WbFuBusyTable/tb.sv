@@ -1,4 +1,4 @@
-// 自动生成：scripts/gen_wbfubusytable.py —— 勿手改
+// 自动生成：xs-v2r2-sv/scripts/gen_wbfubusytable.py —— 该脚本未移植到本轮(它按上一轮规范产出独立 _wrapper.sv)，本文件手工维护
 // WbFuBusyTable UT: golden(u_g) vs 可读核 wrapper WbFuBusyTable_xs(u_i)。
 // 模块纯组合, 每拍随机驱动全部输入(各源忙表位图), 组合稳定后比对全部输出。
 `timescale 1ns/1ps

@@ -40,7 +40,7 @@ endpackage : wbfubusytable_pkg
 // =============================================================================
 // xs_WbFuBusyTable_core —— 写回 FU 忙表(可读核)
 // -----------------------------------------------------------------------------
-// 对应 Scala `WbFuBusyTableImp`(WbFuBusyTable.scala)。详见 docs/backend/WbFuBusyTable.md。
+// 对应 Scala `WbFuBusyTableImp`(WbFuBusyTable.scala)。详见 xs-v2r2-sv/docs/backend/WbFuBusyTable.md(上一轮仓库,未移植)。
 //
 // 【本核做什么】纯组合的"按写回端口归并忙表 + 扇出读回"(无状态):
 //   1) writeBusyTable: 每个物理寄存器写回端口(WB port)上, 把挂在它下面、延迟确定的

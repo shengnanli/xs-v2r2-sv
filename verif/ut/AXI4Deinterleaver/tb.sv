@@ -1,4 +1,4 @@
-// 自动生成：scripts/gen_axi4deint.py —— 勿手改
+// 自动生成：xs-v2r2-sv/scripts/gen_axi4deint.py —— 该脚本未移植到本轮(它按上一轮规范产出独立 _wrapper.sv)，本文件手工维护
 // AXI4Deinterleaver 双例化逐拍比对: golden AXI4Deinterleaver vs 可读 AXI4Deinterleaver_xs。
 // 激励: 下游 R 通道 valid/id(偏置小范围)/data/last 随机 + 上游 r ready 随机 + 其余通道随机。
 `timescale 1ns/1ps

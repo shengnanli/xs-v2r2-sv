@@ -203,7 +203,7 @@ module xs_L1CohMetaArray_core import xs_l1metaarray_pkg::*; #(
 
 endmodule
 
-// 自动生成：scripts/gen_l1metaarray.py —— 勿手改
+// 自动生成：xs-v2r2-sv/scripts/gen_l1metaarray.py —— 该脚本未移植到本轮(它按上一轮规范产出独立 _wrapper.sv)，本文件手工维护
 // L1 元数据阵列 golden 同名 / xs 变体扁平包装：扁平端口 <-> 可读核数组端口。
 
 // ---------------------------------------------------------------------------

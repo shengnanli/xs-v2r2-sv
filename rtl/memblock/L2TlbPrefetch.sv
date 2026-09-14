@@ -192,7 +192,7 @@ module xs_L2TlbPrefetch_core
 endmodule
 
 // 下面的 wrapper 是机械端口适配，核心逻辑在 xs_L2TlbPrefetch_core。
-// （原注释称由 scripts/gen_l2tlbprefetch.py 生成，但仓库里没有该脚本；本文件手工维护。）
+// （原注释称由 xs-v2r2-sv/scripts/gen_l2tlbprefetch.py 生成，但仓库里没有该脚本；本文件手工维护。）
 
 // ---------------------------------------------------------------------------
 // golden 同名 wrapper

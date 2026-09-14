@@ -243,11 +243,11 @@ module xs_TlbStorageWrapper_core import xs_tlbsw_pkg::*; #(
 
 endmodule
 
-// 自动生成：scripts/gen_tlbstoragewrapper.py —— 勿手改
+// 自动生成：xs-v2r2-sv/scripts/gen_tlbstoragewrapper.py —— 该脚本未移植到本轮(它按上一轮规范产出独立 _wrapper.sv)，本文件手工维护
 // TlbStorageWrapper golden 同名 / xs 变体包装：
 //   例化 golden 黑盒 TLBFA 做存储匹配 + 可读 PLRU 核 xs_TlbStorageWrapper_core 做替换。
 //   wayIdx 内部产生（PLRU），其余端口对 TLBFA 全透传。
-// 自动生成：scripts/gen_tlbstoragewrapper.py —— 勿手改
+// 自动生成：xs-v2r2-sv/scripts/gen_tlbstoragewrapper.py —— 该脚本未移植到本轮(它按上一轮规范产出独立 _wrapper.sv)，本文件手工维护
 // TlbStorageWrapper golden 同名 / xs 变体包装：
 //   例化 golden 黑盒 TLBFA 做存储匹配 + 可读 PLRU 核 xs_TlbStorageWrapper_core 做替换。
 //   wayIdx 内部产生（PLRU），其余端口对 TLBFA 全透传。

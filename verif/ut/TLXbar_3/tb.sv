@@ -1,4 +1,4 @@
-// 自动生成：scripts/gen_tlxbar3.py —— 勿手改
+// 自动生成：xs-v2r2-sv/scripts/gen_tlxbar3.py —— 该脚本未移植到本轮(它按上一轮规范产出独立 _wrapper.sv)，本文件手工维护
 // TLXbar_3 双例化逐拍比对: golden TLXbar_3 vs 可读 TLXbar_3_xs。
 // 激励: A 通道地址偏向设备区间 (0x40-0x57) 以覆盖两条路由; D 通道两从口
 // valid/data 随机 (覆盖 round-robin 仲裁两路争用)。

@@ -51,7 +51,7 @@
 //   L202   5) 读数据选路
 //   L221   6) 读 ready：写优先，有写请求时读不被接受
 //   L228   ICacheDataArray —— ICacheDataArray 包装层
-//   L230   本文件由 scripts/gen_icachedata.py 生成
+//   L230   本文件由 xs-v2r2-sv/scripts/gen_icachedata.py 生成
 //   L240   golden 同名 wrapper
 //   L563   把扁平 read/write 端口聚合成可读核的数组端口
 //   L614   可读核：数据阵列全部逻辑
@@ -227,7 +227,7 @@ endmodule
 // =============================================================================
 // ICacheDataArray —— ICacheDataArray 包装层（机械端口适配 + 黑盒例化）
 // -----------------------------------------------------------------------------
-// 本文件由 scripts/gen_icachedata.py 生成。职责：
+// 本文件由 xs-v2r2-sv/scripts/gen_icachedata.py 生成。职责：
 //   1) 把 golden 扁平端口（io_read_*, io_readResp_*, io_write_*）拆/拼成可读核
 //      xs_ICacheDataArray 的数组端口；
 //   2) 例化 4 路 × 8 bank = 32 块 golden 数据 SRAM 黑盒；

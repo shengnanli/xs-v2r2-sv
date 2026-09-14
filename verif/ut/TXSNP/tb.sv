@@ -1,4 +1,4 @@
-// 自动生成 scripts/gen_chi_channel.py —— 勿手改
+// 自动生成 xs-v2r2-sv/scripts/gen_chi_channel.py —— 该脚本未移植到本轮(它按上一轮规范产出独立 _wrapper.sv)，本文件手工维护
 // TXSNP 双例化逐拍比对: golden TXSNP vs 可读重写 TXSNP_xs。
 `timescale 1ns/1ps
 `define CHK(SIG) begin \

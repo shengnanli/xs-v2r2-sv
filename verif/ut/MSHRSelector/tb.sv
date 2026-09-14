@@ -1,4 +1,4 @@
-// 自动生成：scripts/gen_mshrselector.py —— 勿手改
+// 自动生成：xs-v2r2-sv/scripts/gen_mshrselector.py —— 该脚本未移植到本轮(它按上一轮规范产出独立 _wrapper.sv)，本文件手工维护
 // MSHRSelector 双例化逐拍比对：golden MSHRSelector vs 可读重写 MSHRSelector_xs。
 // 纯组合优先选择器：15 个 idle 输入随机，比对 16 位 one-hot 输出 io_out_bits。
 // 激励混合：全随机 idle + 偏向稀疏 (单/双 idle) 以覆盖各优先级分支。

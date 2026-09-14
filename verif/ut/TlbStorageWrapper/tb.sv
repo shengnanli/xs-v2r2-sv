@@ -1,4 +1,4 @@
-// 自动生成：scripts/gen_tlbstoragewrapper.py —— 生成区勿手改
+// 自动生成：xs-v2r2-sv/scripts/gen_tlbstoragewrapper.py —— 生成区该脚本未移植到本轮(它按上一轮规范产出独立 _wrapper.sv)，本文件手工维护
 // 【手写增补 2026-09-12, diag-tlb-txreq】原 tb 漏了 io_csr_mbmc_BME / io_csr_mbmc_CMODE
 // 两个 golden 端口(两侧都悬空 ⇒ 两侧同样 X ⇒ 逐拍比对看不出来, 但 FM 会炸)。这里补上
 // 端口连线与随机激励, 并加 directed_mbmc_sfence() 定向复现。另: NVEC 改为读 +ncycles。

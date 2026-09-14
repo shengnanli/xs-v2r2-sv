@@ -1,4 +1,4 @@
-// 自动生成：scripts/gen_axi4idindexer.py —— 勿手改
+// 自动生成：xs-v2r2-sv/scripts/gen_axi4idindexer.py —— 该脚本未移植到本轮(它按上一轮规范产出独立 _wrapper.sv)，本文件手工维护
 // 端口规模：39 输入 / 39 输出；本文件只做参数化与端口展平。
 // 例化可读核 xs_AXI4IdIndexer_1_core；家族共性与逻辑说明见核体文件头。
 

@@ -1,4 +1,4 @@
-// 原声称「自动生成 scripts/gen_chi_channel.py —— 勿手改」，但**该脚本在本仓库及其
+// 原声称「自动生成 xs-v2r2-sv/scripts/gen_chi_channel.py —— 该脚本未移植到本轮(它按上一轮规范产出独立 _wrapper.sv)，本文件手工维护」，但**该脚本在本仓库及其
 // 全部 git 历史中都不存在**（22 个 CHI 通道 UT 的 tb 都带这句话）。生成器缺失时
 // 「勿手改」无从执行，照做只会卡死，故本文件目前按手工维护。
 // 本次手改：删去 io_in_respInfo_dataCheckErr 的 5 处引用 —— 该端口是 G0 时代的，

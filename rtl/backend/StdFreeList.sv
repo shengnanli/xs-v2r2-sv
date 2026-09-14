@@ -11,7 +11,7 @@
 //     代表"真正用掉、不会再回退"的分配进度；
 //   - 当分支预测错误(redirect)发生时，head 需要回退到某个快照(snapshot)
 //     或回退到 archHeadPtr，再按 walk 重新分配。
-// 文档见 docs/backend/StdFreeList.md。
+// 文档见 xs-v2r2-sv/docs/backend/StdFreeList.md(上一轮仓库,未移植)。
 // =====================================================================
 package stdfreelist_pkg;
 
@@ -405,7 +405,7 @@ module xs_StdFreeList_core
 
 endmodule
 
-// 自动生成：scripts/gen_stdfreelist.py —— 勿手改
+// 自动生成：xs-v2r2-sv/scripts/gen_stdfreelist.py —— 该脚本未移植到本轮(它按上一轮规范产出独立 _wrapper.sv)，本文件手工维护
 // golden 同名扁平端口 → 可读核 xs_StdFreeList_core 的机械适配层
 
 // ---------------------------------------------------------------------------

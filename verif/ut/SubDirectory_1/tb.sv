@@ -1,4 +1,4 @@
-// 自动生成 scripts/gen_subdirectory1.py —— 勿手改
+// 自动生成 xs-v2r2-sv/scripts/gen_subdirectory1.py —— 该脚本未移植到本轮(它按上一轮规范产出独立 _wrapper.sv)，本文件手工维护
 // SubDirectory_1 双例化逐拍比对: golden vs 可读 SubDirectory_1_xs。
 // 偏小 set/tag 域促命中/空路/PLRU 替换全覆盖; opcode 偏向更新触发值。
 `timescale 1ns/1ps

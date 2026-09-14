@@ -1,4 +1,4 @@
-// 自动生成：scripts/gen_pc_wrappers.py —— 勿手改
+// 自动生成：xs-v2r2-sv/scripts/gen_pc_wrappers.py —— 该脚本未移植到本轮(它按上一轮规范产出独立 _wrapper.sv)，本文件手工维护
 // 本文件只做端口适配与直通，不含逻辑。
 // 端口规模：13 输入 / 9 输出。
 

@@ -495,7 +495,7 @@ module xs_Queue1_RegMapperInput #(
 
 endmodule
 
-// 自动生成：scripts/gen_icachectrlunit.py —— 勿手改
+// 自动生成：xs-v2r2-sv/scripts/gen_icachectrlunit.py —— 该脚本未移植到本轮(它按上一轮规范产出独立 _wrapper.sv)，本文件手工维护
 // golden 同名包装层：例化参数化核心 xs_Queue1_RegMapperInput，供 FM 单独比对队列。
 
 // ---------------------------------------------------------------------------

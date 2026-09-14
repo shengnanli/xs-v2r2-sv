@@ -265,7 +265,7 @@ module xs_AXI4IdIndexer_1_core(
 
 endmodule
 
-// 自动生成：scripts/gen_axi4idindexer.py —— 勿手改
+// 自动生成：xs-v2r2-sv/scripts/gen_axi4idindexer.py —— 该脚本未移植到本轮(它按上一轮规范产出独立 _wrapper.sv)，本文件手工维护
 
 // ---------------------------------------------------------------------------
 // golden 同名 wrapper

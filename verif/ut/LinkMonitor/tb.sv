@@ -1,5 +1,5 @@
 // LinkMonitor 双例化逐拍比对: golden LinkMonitor vs 可读 LinkMonitor_xs。
-// （原头写「自动生成：scripts/gen_linkmonitor.py —— 勿手改」，但仓库里没有那个
+// （原头写「自动生成：xs-v2r2-sv/scripts/gen_linkmonitor.py —— 该脚本未移植到本轮(它按上一轮规范产出独立 _wrapper.sv)，本文件手工维护」，但仓库里没有那个
 //   脚本；本文件现为手工维护，下面的 directed_txsactive_after_reset() 是手写的。）
 // 激励: 全输入随机 —— linkactiveack/linkactivereq 覆盖 LINKACTIVE 4 态转换,
 //       syscoack 覆盖 txsactive, flit/flitv/lcrdv/valid 覆盖子模块与 L-Credit

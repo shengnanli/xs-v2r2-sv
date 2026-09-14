@@ -8,7 +8,7 @@
 //     全部悬空(DontCare), 且 EnableStorePrefetchAtIssue=false, 故常量传播后顶层
 //     只剩唯一端口 `input io_lsu_req_valid`(其余被死代码消除)。
 //     => 可读核 xs_StorePipe_core 的「端口」对齐这个裁剪后接口(供 FM/UT)，
-//        而完整的三级流水设计意图见 docs/memblock/StorePipe.md(学习载体)。
+//        而完整的三级流水设计意图见 xs-v2r2-sv/docs/memblock/StorePipe.md(上一轮仓库,未移植)(学习载体)。
 //
 //  本包仍按设计意图给出 StorePipe 的几何参数与一致性模型(与 LoadPipe 同源)，
 //  以便文档与未来未裁剪配置复用。
@@ -59,7 +59,7 @@ endpackage
 //  StorePipe —— DCache store 探测流水(可读重写, 从 Scala 设计意图实现)
 // -----------------------------------------------------------------------------
 //  设计意图来源：src/main/scala/xiangshan/cache/dcache/storepipe/StorePipe.scala
-//  类型/参数包：rtl/memblock/storepipe_pkg.sv    学习文档：docs/memblock/StorePipe.md
+//  类型/参数包：rtl/memblock/storepipe_pkg.sv    学习文档：xs-v2r2-sv/docs/memblock/StorePipe.md(上一轮仓库,未移植)
 //
 //  ⚠️ 重要：本顶层配置(KunmingHu V2R2)下, golden StorePipe.sv 被 firtool 完全裁剪
 //     成「只有 input io_lsu_req_valid、无任何输出/寄存器」的空壳(原因见 pkg 注释:
@@ -245,7 +245,7 @@ endmodule
 //  顶层只暴露这唯一端口, 内部直通 probe(无下游逻辑)。
 //
 //  StorePipe 完整三级流水(s0/s1/s2)的可读实现见 rtl/memblock/StorePipe.sv 的
-//  xs_StorePipe_core, 学习文档见 docs/memblock/StorePipe.md —— 那才是本任务的设计载体;
+//  xs_StorePipe_core, 学习文档见 xs-v2r2-sv/docs/memblock/StorePipe.md(上一轮仓库,未移植) —— 那才是本任务的设计载体;
 //  本 wrapper 只是裁剪配置下的机械端口适配。
 // =============================================================================
 

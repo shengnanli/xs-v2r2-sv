@@ -29,7 +29,7 @@ module tb;
   logic g_ccv [W], i_ccv [W];
 
   // 数组信号 <-> 两个 DUT(golden u_g / 可读核 u_i)的 198 扁平端口,经机械生成
-  // 的 cu_bridge 连接(见 scripts/gen_compressunit.py --bridge)。
+  // 的 cu_bridge 连接(见 xs-v2r2-sv/scripts/gen_compressunit.py --bridge)。
   cu_bridge #(.W(W),.EXC(EXC)) u_b (
     .v(v), .exc(exc), .trg(trg), .crc(crc), .lu(lu), .ct(ct),
     .g_nrf(g_nrf), .i_nrf(i_nrf), .g_sz(g_sz), .i_sz(i_sz),
