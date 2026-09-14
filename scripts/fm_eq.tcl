@@ -104,7 +104,15 @@ switch -- $_verify_matched_unread_compare_points {
     #          两侧同一份 golden 文件，同为死位。
     # 三者打开后必须复验「passing 恰好 +4 / +5 / +7 且 failing 仍为 0」——
     # passing 不增即说明 FM 没真去比，那是空转，不算过(见本轮证据 evidence/)。
-    if {$top ni {Bku DebugModule DuplicatedTagArray FAlu FCVT FTBBank ICacheCtrlUnit ICacheDataArray LinkMonitor MulUnit Queue1_RegMapperInput_5 SourceB TXDAT_4 TXREQ TlbStorageWrapper TlbStorageWrapper_1 WritebackQueue}} {
+    #   InstrUncache 加入依据(2026-09-14, PARTIAL 收口簇)：strict native SUCCEEDED /
+    #          passing 204 / failing 0 / unmatched compare points 0，只剩 1(1) 个
+    #          **unmatched** unread。verif/ut/InstrUncache/fm_pins.tcl 先把它按名钉成
+    #          一对（ref entries_0/req_addr_reg[0] ↔ impl entries_0/u_core/req_reg\[addr][0]），
+    #          于是成为 1↔1 严格双射的 matched_nc、非 matched_nc 的未读项为 0。
+    #          内容 = InstrMMIOEntry 锁存的 MMIO 取指地址最低位：golden
+    #          InstrMMIOEntry.sv 只读 req_addr[2:1](选半字) 与 req_addr[47:3](按 8 字节
+    #          对齐发 Get)，bit 0 两侧同为死位。打开后 FM 真去比这一位，passing 应 +1。
+    if {$top ni {Bku DebugModule DuplicatedTagArray FAlu FCVT FTBBank ICacheCtrlUnit ICacheDataArray InstrUncache LinkMonitor MulUnit Queue1_RegMapperInput_5 SourceB TXDAT_4 TXREQ TlbStorageWrapper TlbStorageWrapper_1 WritebackQueue}} {
       puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
       exit 3
     }
