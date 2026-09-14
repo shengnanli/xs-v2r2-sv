@@ -2,13 +2,13 @@
 """gen.py —— G1 新形态 SRAMTemplate 变体（B7 核能力批）的薄文件与 UT 生成器。
 
 产物：
-  1) rtl/common/SRAMTemplate_{128,145,146,155,163,166,178,185}.sv
+  1) rtl/common/SRAMTemplate_{128,145,146,152,155,163,166,178,185}.sv
      变体薄文件：例化 xs_SRAMTemplate_core + 厂商 SRAM 宏，只设参数 + 端口装配。
-  2) verif/ut/SRAMTemplateNewForm/tb.sv        八变体 golden vs _xs 双例化比对
+  2) verif/ut/SRAMTemplateNewForm/tb.sv        九变体 golden vs _xs 双例化比对
   3) verif/ut/SRAMTemplateNewForm/Makefile     UT/FM 驱动
 
 为什么不并进 scripts/gen_sram_wrappers.py：本轮有别的 lane 在改 scripts/，约定不
-碰该目录；这八个变体的形态（掩码复制 / 分段 MBIST / 外置时钟门控 / 多周期宏 /
+碰该目录；这九个变体的形态（掩码复制 / 分段 MBIST / 外置时钟门控 / 多周期宏 /
 结构体数据口）在老生成器里被 fail-closed 判为 unsupported 直接 SKIP。合并回老生
 成器是集成者的事。
 
@@ -24,14 +24,15 @@ XSSV = HERE.parent.parent.parent
 GOLDEN = Path("/home/eda/xs-env/G1-canonical/golden-rtl")
 
 TARGETS = ["SRAMTemplate_128", "SRAMTemplate_145", "SRAMTemplate_146",
-           "SRAMTemplate_155", "SRAMTemplate_163", "SRAMTemplate_166",
-           "SRAMTemplate_178", "SRAMTemplate_185"]
+           "SRAMTemplate_152", "SRAMTemplate_155", "SRAMTemplate_163",
+           "SRAMTemplate_166", "SRAMTemplate_178", "SRAMTemplate_185"]
 
 # 每个变体一句人话（写进薄文件头，说清它在哪一层、存什么）
 BLURB = {
     "SRAMTemplate_128": "PTW 页表缓存 L1 层的 tag/数据阵列（MMU L2TLB 内）",
     "SRAMTemplate_145": "L2 预取器 SPP 的 Pattern History Table",
     "SRAMTemplate_146": "L2 预取器的 Recent Request Table（近期请求过滤表）",
+    "SRAMTemplate_152": "L2 Directory 的元数据阵列（coherence meta，每 way 一条）",
     "SRAMTemplate_155": "L2 Slice 的数据阵列（一个 bank 的 data storage）",
     "SRAMTemplate_163": "L2 Directory 的元数据阵列（coherence meta，每 way 一条）",
     "SRAMTemplate_166": "L2 Slice 的数据阵列（一个 bank 的 data storage）",
@@ -580,7 +581,7 @@ def emit_mk(infos):
             sim_deps |= {"MbistClockGateCell.sv", "ClockGate.sv"}
         fm_ref[i["name"]] = deps
     mk = ["# 自动生成：verif/ut/SRAMTemplateNewForm/gen.py（G1 基线驱动）—— 勿手改",
-          "# G1 新形态 SRAMTemplate 八变体（掩码复制 / 分段 MBIST / 外置时钟门控 /",
+          "# G1 新形态 SRAMTemplate 九变体（掩码复制 / 分段 MBIST / 外置时钟门控 /",
           "# 多周期宏 / 结构体数据口）。verif/ut/SRAMTemplate 覆盖其余变体，两边共用",
           "# 同一个 rtl/common/xs_SRAMTemplate_core.sv。",
           "MODULE = SRAMTemplateNewForm", "", "RTL_DIR = ../../../rtl",

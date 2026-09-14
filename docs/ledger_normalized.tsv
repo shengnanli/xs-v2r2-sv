@@ -9,7 +9,7 @@ AXI4Deinterleaver	MAIN	WORKING_PASS	fm_verdicts=1
 AXI4IdIndexer	MAIN	WORKING_PASS	fm_verdicts=1
 AXI4IdIndexer_1	MAIN	WORKING_PASS	fm_verdicts=1
 AXI4Xbar	MAIN	WORKING_PASS	fm_verdicts=1
-Alu	MAIN	WORKING_PASS	bkperf: 原 note "G1加perfDebugInfo透传+io_in_ready端口+逻辑改动,需按G1重做核" 已过期(写于 1f9c2a1, 核体 85e71ef 就已迁 G1)且"逻辑改动"不成立 —— 实测 G0→G1 golden diff 纯接口增量, 运算逻辑逐字未变(+io_in_ready=io_out_ready; perfDebugInfo 3→10 字段; +debug_seqNum, 全是直通). portlint 0 fail; FM signoff-strict SUCCEEDED passing725/failing0/unverified0/unmatched0/unread0/bbox0/无dont_verify; UT 200000拍×seed1,7,42 errors=0. 证据 evidence/466d169f9875/Alu
+Alu	MAIN	WORKING_PASS	bkperf: 原 note "G1加perfDebugInfo透传+io_in_ready端口+逻辑改动,需按G1重做核" 已过期(写于 1f9c2a1, 核体 85e71ef 就已迁 G1)且"逻辑改动"不成立 —— 实测 G0→G1 
 Arbiter1_InsUncacheResp	MAIN	DEFER_FAMILY	共用InstrUncache家族UT, golden InstrUncache/InstrMMIOEntry在G1已变(REWRITE_M); 随家族重写一并处理
 CHILogger	MAIN	WORKING_PASS	fm_verdicts=1
 CompressUnit	MAIN	WORKING_PASS	fm_verdicts=1
@@ -33,7 +33,7 @@ FPDecoder	MAIN	WORKING_PASS	fm_verdicts=1
 FTBBank	MAIN	WORKING_PASS_DEAD_REF	FM native SUCCEEDED 3276p/0fail/0unmatched; 唯50条golden-only cone-dead(req_pc_reg_1_reg=断言专用PC副本,SYNTHESIS下零扇出), 声明verif/
 FTBEntryGen	MAIN	WORKING_PASS	fm_verdicts=1
 FauFTBWay	MAIN	WORKING_PASS	fm_verdicts=1
-Fence	MAIN	WORKING_PASS_DEAD_REF	bkperf: 原 note 两处失实 —— (a) io_in_ready 是 G0 就有的单条目 FSM ready(state==s_idle), 非 G1 新增; (b) "需按G1重做核"已过期(bd0929c 已迁). G1 唯一真逻辑改动 = sfence id 寄存器 64→16 位且 hfence.gvma 按 VmidLength=14 高2位补零. FM signoff-strict native SUCCEEDED passing905/failing0/unverified0/unmatched0/bbox0/无dont_verify; 残余 unread 68 全为 golden 侧 cone-dead(uop_data_imm[63:10] 54 位 + io_fenceio_sfence_bits_addr_r[63:50] 14 位), 已由 verif/dead_ref/Fence.json 逐条精确声明 ⇒ PASS_DEAD_REF. UT 200000拍×seed1,7,42 errors=0. 证据 evidence/466d169f9875/Fence
+Fence	MAIN	WORKING_PASS_DEAD_REF	bkperf: 原 note 两处失实 —— (a) io_in_ready 是 G0 就有的单条目 FSM ready(state==s_idle), 非 G1 新增; (b) "需按G1重做核"已过期(bd0929c 已迁). G1 唯
 FoldedSRAMTemplate	MAIN	WORKING_PASS	Folded家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链Folded→Splitted→SRAMTemplate两侧elaborate)
 FoldedSRAMTemplate_1	MAIN	WORKING_PASS	Folded家族: 单文件重组+G1重编号remap; UT 39604×3seed 0err; FM assembly SUCCEEDED(深链Folded→Splitted→SRAMTemplate两侧elaborate)
 FoldedSRAMTemplate_20	MAIN	WORKING_PASS	G1重塑(折叠WIDTH4→2,setIdx11→10)按G1端口重做; UT 3seed 0err; FM SUCCEEDED 148p
@@ -88,27 +88,27 @@ SRAMTemplate	MAIN	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形
 SRAMTemplate_100	AUX	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子
 SRAMTemplate_116	AUX	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子
 SRAMTemplate_124	AUX	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子
-SRAMTemplate_128	AUX	TODO_CORE_MASKREPL	G1新形态: 宏wmask粒度细于way(每way复制N位掩码), 需xs_SRAMTemplate_core支持掩码复制
+SRAMTemplate_128	AUX	WORKING_PASS	G1新形态(NewForm批): 真·掩码复制MASK_REP=3(宏786b/131b=6段 vs 2way,每way掩码复制3份)+分段MBIST bore BORE_NSEG=6(bore口131b=宏1/6,selectedOH选段
 SRAMTemplate_129	AUX	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子
 SRAMTemplate_143	AUX	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子
-SRAMTemplate_145	AUX	TODO_CORE_MASKREPL	G1新形态: 宏wmask粒度细于way(每way复制N位掩码), 需xs_SRAMTemplate_core支持掩码复制
-SRAMTemplate_146	AUX	TODO_CORE_MULTIRD	G1新形态: 多读口, 核仅支持单读口
+SRAMTemplate_145	AUX	WORKING_PASS	G1新形态(NewForm批): L2 SPP预取PHT, 32字段struct数据口+内置MbistClockGateCell; 掩码2段x74b=每way一位,非掩码复制(台账原TODO_CORE_MASKREPL系误判); UT同上;
+SRAMTemplate_146	AUX	WORKING_PASS	G1新形态(NewForm批): L2预取RRT, 单读口+{valid,tag}struct数据口+上电清零; 台账原TODO_CORE_MULTIRD系误判(golden只有1个io_r_req_valid,被struct读口名数成多读
 SRAMTemplate_148	AUX	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子
 SRAMTemplate_150	AUX	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子
-SRAMTemplate_152	AUX	TODO_CORE_MASKREPL	G1新形态: 宏wmask粒度细于way(每way复制N位掩码), 需xs_SRAMTemplate_core支持掩码复制
+SRAMTemplate_152	AUX	WORKING_PASS	G1新形态(NewForm批): L2 Directory metaArray, 与_163仅差boreChildrenBd_bore_array位宽(3 vs 5,该口golden侧亦无人读); 掩码8段x13b=每way一位,非掩码复制
 SRAMTemplate_153	AUX	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子
 SRAMTemplate_154	AUX	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子
-SRAMTemplate_155	AUX	TODO_CORE_EXTCG	G1新形态: 时钟门控外置(导出mbistCgCtl_en/rckEn/wckEn+取rclk), 需核支持external clockgate
+SRAMTemplate_155	AUX	WORKING_PASS	G1新形态(NewForm批): L2 Slice数据阵列, 外置时钟门控EXT_CLOCKGATE(导出io_mbistCgCtl_en/rckEn/wckEn,宏RW0_clk取自io_mbistCgCtl_rclk)+多周期宏MCP_
 SRAMTemplate_159	AUX	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子
 SRAMTemplate_16	MAIN	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子
 SRAMTemplate_162	AUX	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子
-SRAMTemplate_163	AUX	TODO_CORE_MASKREPL	G1新形态: 宏wmask粒度细于way(每way复制N位掩码), 需xs_SRAMTemplate_core支持掩码复制
+SRAMTemplate_163	AUX	WORKING_PASS	G1新形态(NewForm批): L2 Directory metaArray, 9字段struct数据口x8way; 掩码8段x13b=每way一位,非掩码复制(台账原TODO_CORE_MASKREPL系误判); UT同上; FM as
 SRAMTemplate_164	AUX	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子
 SRAMTemplate_165	AUX	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子
-SRAMTemplate_166	AUX	TODO_CORE_EXTCG	G1新形态: 时钟门控外置(导出mbistCgCtl_en/rckEn/wckEn+取rclk), 需核支持external clockgate
-SRAMTemplate_178	AUX	TODO_CORE_EXTCG	G1新形态: 时钟门控外置(导出mbistCgCtl_en/rckEn/wckEn+取rclk), 需核支持external clockgate
+SRAMTemplate_166	AUX	WORKING_PASS	G1新形态(NewForm批): 同_155形态(EXT_CLOCKGATE+MCP_HOLD), 仅MBIST分组编号不同; UT同上; FM assembly SUCCEEDED p569/f0/u0/nc0 unmatched=0, 
+SRAMTemplate_178	AUX	WORKING_PASS	G1新形态(NewForm批): 同_155形态(EXT_CLOCKGATE+MCP_HOLD), 仅MBIST分组编号不同; UT同上; FM assembly SUCCEEDED p569/f0/u0/nc0 unmatched=0, 
 SRAMTemplate_181	AUX	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子
-SRAMTemplate_185	AUX	TODO_CORE_MASKREPL	G1新形态: 宏wmask粒度细于way(每way复制N位掩码), 需xs_SRAMTemplate_core支持掩码复制
+SRAMTemplate_185	AUX	WORKING_PASS	G1新形态(NewForm批): 同_163形态(9字段struct x8way), 仅MBIST分组编号不同; 非掩码复制(台账原TODO_CORE_MASKREPL系误判); UT同上; FM assembly SUCCEEDED p4
 SRAMTemplate_186	AUX	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子
 SRAMTemplate_187	AUX	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子
 SRAMTemplate_2	MAIN	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子
@@ -176,7 +176,7 @@ TageTable_3	MAIN	WORKING_PASS_DEAD_REF	FM native SUCCEEDED 797p/0fail/0unmatched
 TlbStorageWrapper	MAIN	REWRITE_TODO	需+define+SYNTHESIS(xs_assert_v2)+逻辑改动
 TlbStorageWrapper_1	MAIN	REWRITE_TODO	同上(家族)
 UopInfoGen	MAIN	WORKING_PASS	fm_verdicts=1
-VSetRiWi	MAIN	WORKING_PASS	bkperf: 同 Alu —— note 已过期(ba7e4c5 已迁), G0→G1 纯接口增量无逻辑改动. portlint 0 fail; FM signoff-strict SUCCEEDED passing725/failing0/unverified0/unmatched0/unread0/bbox0/无dont_verify; UT 200000拍×seed1,7,42 errors=0. 证据 evidence/466d169f9875/VSetRiWi
+VSetRiWi	MAIN	WORKING_PASS	bkperf: 同 Alu —— note 已过期(ba7e4c5 已迁), G0→G1 纯接口增量无逻辑改动. portlint 0 fail; FM signoff-strict SUCCEEDED passing725/failing
 VSetRvfWvf	MAIN	REWRITE_TODO	G1加perfDebugInfo透传+io_in_ready端口+逻辑改动, 需按G1重做核
 WayLookup	MAIN	WORKING_PASS	fm_verdicts=1
 WbFuBusyTable	MAIN	WORKING_PASS	fm_verdicts=1
