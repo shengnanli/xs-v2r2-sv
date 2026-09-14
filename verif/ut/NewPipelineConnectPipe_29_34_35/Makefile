@@ -28,6 +28,17 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/NewPipelineConnectPipe_29.sv \
 
 FM_VARIANTS = NewPipelineConnectPipe_29 NewPipelineConnectPipe_34 NewPipelineConnectPipe_35
 
+# fm_map/<变体>.txt —— FM payload 字段映射（ut_common.mk 的 fm-% 自动识别，传成
+# FM_FIELD_MAP；由 scripts/gen_npc_missing3.py 的 gen_field_map 生成，勿手改）。
+# 作用：golden 每字段一个寄存器 data_<f>，手写侧是共享核里一个扁平 data_reg；
+# 当 payload 里恰好有字段字面叫 data（本族 19 个变体里只有 _29/_34），Formality
+# 的名字匹配会把 data_data_reg[b] 按位配到 u_core/data_reg[b]，而 packed struct
+# 的 data 后面还有 vdIdx/vdIdxInField(_29, 错 6 位) / debug_isMMIO(_34, 错 1 位)，
+# 于是整体错位、每位都判不等价（取消 failing 上限后 _29 262 点 / _34 129 点；
+# 首跑报告里的 20 是 verification_failing_point_limit 的默认截断值）。
+# 这里把整个 payload 的逐位双射钉死，钉后三个变体均 0 unmatched / 0 failing。
+# 详细论证见 scripts/gen_npc_missing3.py 中 gen_field_map 上方注释。
+
 # 端口表逐行照 golden 生成（含顺序），所以把 ORDER 从 warn 升成硬闸。
 PORTLINT_ORDER = fail
 

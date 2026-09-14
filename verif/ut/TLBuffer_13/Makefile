@@ -55,6 +55,33 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/TLBuffer_13.sv \
 # 即 assembly 路径本就走不通）。★未经 FM 重跑验证：strict 另有 unread 等闸，
 # integrator 重跑后若 strict 不过，请回看本注释再定。
 FM_ALLOWLIST ?= 0
+
+# ---------------------------------------------------------------------------
+# FM_MERGE_DUP = false —— 为什么必须关（本轮实测，不是推断）
+#
+# 症状：默认（merge=true）跑出 20 failing / 64 unmatched(全在 impl 侧)。
+# 20 是 verification_failing_point_limit 的默认截断值；取消上限后真实数字是
+# **36 failing**，内容恰好是 4 个 bank 各 9 位 B 通道输出：
+#   auto_in_<0..3>_b_bits_{corrupt, size[0], source[0..6]}
+# 64 unmatched 则全是 impl 侧 g_bank[N].u_bank/nodeIn_b_q/ram_ext/Memory_reg[E][b]，
+# b ∈ {5, 8..14, 351}，4 bank × 2 表项 × 8 位。
+#
+# 根因：这 9 位正是 golden Queue2_TLBundleB_1 往 ram 写的**常量**位——
+#   W0_data = {1'h0, data, 32'hFFFFFFFF, address, 10'h6, param, opcode}
+# 其中 10'h6 给出 size=3'h6 / source=7'h0（bit5=0, bit6..7=1, bit8..14=0），
+# 末位 1'h0 是 corrupt。这 9 个常量 0 位的次态与使能完全相同，
+# verification_merge_duplicated_registers=true 时 Formality 把它们合并成 1 个，
+# 8 个被消掉。**实测两侧合并结果不对称**：ref 侧 bank0 的 b-ram 比对点
+# 704 → 688（每表项 -8），impl 侧仍是 704，于是 impl 每 bank 多出 16 个无对应的
+# 寄存器；它们成了自由变量，下游那 9 位输出就证不出等价 → 36 failing。
+#
+# 关掉合并后两侧都是 704，0 unmatched(两侧)、0 failing、passing 12840+72 = 12912。
+# 这是**加强不是放宽**：不黑盒、不跳点、不约束 ref、不加 waiver，只是让工具
+# 少做一步会引入两侧不对称的简化，比对点反而**变多**（12840 → 12912）。
+# 先例：MulUnit（verif/ut/MulUnit/Makefile 同款处置与同款论证）。
+# ---------------------------------------------------------------------------
+FM_MERGE_DUP = false
+
 FM_VARIANTS = TLBuffer_13
 
 include ../../../scripts/ut_common.mk

@@ -14,6 +14,7 @@ packed struct 成员表、打包/拆包赋值、位宽自检、以及 tb 的驱�
   rtl/uncore/NewPipelineConnectPipe_{29,34,35}.sv
   verif/ut/NewPipelineConnectPipe_29_34_35/tb.sv
   verif/ut/NewPipelineConnectPipe_29_34_35/neg_width.sv   （必失败负测的被测件）
+  verif/ut/NewPipelineConnectPipe_29_34_35/fm_map/*.txt   （FM 字段映射，见 gen_field_map）
 
 fail-closed：端口行解析不了、模块体语义与"纯参数变体"不符（in_ready/valid 方程、
 逐字段 RegEnable 直连、in/out 字段集对称）任一条不成立，立即退出，不生成任何东西。
@@ -285,6 +286,61 @@ HEADERS = {
         '//   判据是例化坑位集合相等，见 scripts/check_name_collisions.py。',
     ],
 }
+
+
+# ---------------------------------------------------------------------------
+# FM 字段映射（fm_map/<变体>.txt）
+# ---------------------------------------------------------------------------
+# 背景（本轮 FM 实测，不是推断）：golden 每个 payload 字段各有一个寄存器
+# `reg [w-1:0] data_<f>;`，Formality 把它命名成比对点 `data_<f>_reg[b]`；
+# 手写侧则是共享核 xs_PipelineConnect 里**一个扁平寄存器** `data`，比对点是
+# `u_core/data_reg[i]`。当 golden 的 payload 里恰好有一个**字面叫 data 的字段**
+# 时（全族 19 个变体里只有 _29 和 _34 是这样），golden 的比对点叫
+# `data_data_reg[b]`，Formality 的名字匹配会把它按位配到 `u_core/data_reg[b]`。
+# 而 packed struct 的最后一个成员在 LSB —— _29 的 data 后面还跟着 vdIdx(3) +
+# vdIdxInField(3)，_34 的 data 后面跟着 debug_isMMIO(1) —— 于是这个"按位同下标"
+# 的配对整体错位 6 位 / 1 位，**每一位都判不等价**：
+#   _29  262 failing = 128(data_data_reg) + 128(io_out_bits_data)
+#                       + 3(io_out_bits_vdIdx) + 3(io_out_bits_vdIdxInField)
+#   _34  129 failing =  64(data_data_reg) +  64(io_out_bits_data)
+#                       + 1(io_out_bits_debug_isMMIO)
+# （首跑报告里的 "20 failing" 是 verification_failing_point_limit 的默认截断值，
+#   不是真实数量；取消上限后才是上面这两个数。）
+#
+# 这里把**整个 payload 的双射**逐字段写进 fm_map/<变体>.txt，由 scripts/fm_eq.tcl
+# 的 match_packed_payload 在首次 match 之前 set_user_match 钉死。它是加强不是放宽：
+# 不黑盒、不跳点、不约束 ref，只是把"哪个 golden 寄存器位对应哪个扁平寄存器位"
+# 这件由 packed struct 布局唯一确定的事实告诉工具。钉完三个变体都是
+# **0 unmatched / 0 failing**，比对点数恰好等于全域（_29 2049 / _34 1523 / _35 2895）。
+# _35 本来就过（它的 payload 里没有叫 data 的字段），钉前钉后 passing 都是 2895，
+# 即字段映射对"工具自己就配对的情形"是恒等的——这正是它不是放宽的旁证。
+#
+# 偏移口径：packed struct 的成员按声明序从 MSB 排到 LSB，声明序 = golden 端口序，
+# 所以最后一个字段的 lo = 0，往前逐个累加宽度。
+_REG_DECL = re.compile(r'^\s+reg\s+(?:\[\s*(\d+)\s*:\s*0\s*\]\s*)?([A-Za-z_]\w*);', re.M)
+
+
+def gen_field_map(name, ports):
+    """返回 fm_map/<name>.txt 的内容：每行 `<字段名> <lo> <width>`。"""
+    infields = [(p[len('io_in_bits_'):], w) for d, w, p in ports
+                if p.startswith('io_in_bits_')]
+    rows, lo = [], 0
+    for f, w in reversed(infields):
+        rows.append((f, lo, w))
+        lo += w
+    rows.reverse()
+
+    # fail-closed：golden 必须真的有 `reg [w-1:0] data_<f>;`，宽度逐项相等。
+    # parse_golden 已核对过"每个 data_<f> 从 io_in_bits_<f> 装载、io_out_bits_<f>
+    # 由 data_<f> 驱动"，这里再把**位宽**也钉上，映射才是逐位双射而不是同名而已。
+    decls = dict((m.group(2), 1 if m.group(1) is None else int(m.group(1)) + 1)
+                 for m in _REG_DECL.finditer((GOLDEN / (name + '.sv')).read_text()))
+    for f, _lo, w in rows:
+        got = decls.get('data_' + f)
+        if got != w:
+            raise GoldenError('%s: golden 里 data_%s 的位宽是 %r，端口是 %d 位'
+                              % (name, f, got, w))
+    return ''.join('%s %d %d\n' % r for r in rows)
 
 
 def gen_rtl(name, ports, has_flush):
@@ -678,6 +734,12 @@ def main():
         p.write_text(gen_rtl(n, ports, hf))
         print('written', p)
     UT_DIR.mkdir(parents=True, exist_ok=True)
+    map_dir = UT_DIR / 'fm_map'
+    map_dir.mkdir(parents=True, exist_ok=True)
+    for n, ports, _hf in variants:
+        q = map_dir / (n + '.txt')
+        q.write_text(gen_field_map(n, ports))
+        print('written', q)
     (UT_DIR / 'tb.sv').write_text(gen_tb(variants))
     print('written', UT_DIR / 'tb.sv')
     n35, p35, f35 = variants[2]
