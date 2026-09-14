@@ -30,6 +30,16 @@
 # 本文件被同目录三个变体共用（FM_VARIANTS = InstrMMIOEntry
 # Arbiter1_InsUncacheResp InstrUncache）。只对 InstrUncache 生效：其余两个 top
 # 下该路径不存在，显式用 $top 门控，避免"钉不上也不报"的静默。
+#
+# ★为什么是 fm_pins_pre.tcl（首次 match 之前）而不是 fm_pins.tcl（match 之后）★
+#   实测：放在 match 之后钉，钉点本身是成功的（unread_points.txt 空、passing
+#   204->205），但 fm_verdict.py 仍判 strict_unread!=0。原因是 Formality 的
+#   `match` 只在计数**非零**时才打印 "N(M) Unmatched ... unread points" 这一行；
+#   第一次 match 打出 1(1)，钉点后的第二次 match 该行直接消失，而
+#   fm_verdict.py 的 _unmatch_pair 取的是日志里**最后一次出现**的那行，于是读回
+#   的仍是陈旧的 1(1)。这是 fail-closed 方向的误差（把 0 读成 1，不会放过真问题），
+#   但会把已经修好的目标判死。在首次 match 之前钉，第一次 match 就报 0，
+#   日志里根本不出现该行，采集到 None —— 与 Bku 的 fm_pins_pre.tcl 同一做法。
 # ============================================================================
 
 if {$top eq "InstrUncache"} {

@@ -41,6 +41,13 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/ICacheMetaArray.sv \
 # 本目标 unmatched 实测为 0，故收紧到 0（原值 3 是老战役继承的松口径）。
 FM_MODE = assembly
 FM_ALLOWLIST ?= 0
+# matched-unread 加强（vmucp）——★加强证明，不是 waiver★
+# SRAM 子树白盒化之后暴露出 9 个 matched-unread，全在 mbistPl（两侧同一份 golden
+# 文件、路径逐字相同，ref 9 ↔ impl 9 严格双射）：MBIST 写地址 addrReg[7:0] 在
+# SplittedSRAMTemplate 里无人使用，读地址 addrRdReg[7] 超出 128 深宏的 7 位地址。
+# 本项让 FM **真去比这 9 位**，而不是记作 Not-Compared。
+# 白名单在 scripts/fm_eq.tcl（依据写在那一行紧邻的注释里），两处须同时生效。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 FM_VARIANTS = ICacheMetaArray
 
 include ../../../scripts/ut_common.mk
