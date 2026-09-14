@@ -177,7 +177,8 @@ def emit_wrapper(info, suffix=""):
     L.append(f"    .io_w_req_bits_data({wdata_cat}), .io_w_mask({wmask}),")
     # 清零完成：本族这 33 个变体的 golden 端口表里都没有这根线（既不叫 io_resetDone
     # 也不当 io_w_req_ready 用），核里照样无条件驱动它 —— 所以显式写成空连接，表示
-    # "知道有、故意不接"，而不是漏连。省掉这一行 = VCS Warning-[TFIPC-L]。
+    # "知道有、故意不接"，而不是漏连。省掉这一行 = 整芯片 elaborate 的
+    # Warning-[TFIPC]（UT 侧编译开了 +lint=TFIPC-L，则是同一条的逐端口明细）。
     L.append(f"    .io_resetDone(/* 本变体 golden 不引出清零完成 */),")
     L.append(f"    .io_broadcast_ram_hold(io_broadcast_ram_hold),")
     L.append(f"    .io_broadcast_ram_bypass(io_broadcast_ram_bypass),")
