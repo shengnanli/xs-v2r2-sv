@@ -38,7 +38,11 @@ run "fm_eq 结构闸"     python3 scripts/test_fm_eq_wellformed.py
 # 家族生成器幂等：tlbuffer worker 发现 gen_tlbuffer_ad_family.py --check 一直报 DRIFT
 # ——negtest 段是手工贴在生成产物后面的，谁跑一次生成器它就被静默删掉，而那正是该家族
 # 唯一病因形态（位宽）的防护。只有挂了 --check 的生成器进这道闸。
-for g in scripts/gen_tlbuffer_ad_family.py scripts/gen_mbist_pipe_family.py; do
+# gen_sram_wrappers.py 2026-09-14 进闸：它当时**不是**幂等的——33 个薄文件里的 6 个
+# G1_* 锚点和 UT Makefile 的 negtest 段都是手工补在生成产物上的，谁跑一次生成器
+# 就全没（与 tlbuffer 同一个病）。并回生成器后才挂上 --check。
+for g in scripts/gen_tlbuffer_ad_family.py scripts/gen_mbist_pipe_family.py \
+         scripts/gen_sram_wrappers.py; do
   [ -f "$g" ] && run "生成器幂等 $(basename $g .py | sed 's/^gen_//')" python3 "$g" --check
 done
 rm -f /tmp/gate_$$.out
