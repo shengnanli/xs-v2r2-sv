@@ -100,6 +100,10 @@ module xs_L2TlbPrefetch_core
   //   而写入值 next_req 的低 sector 位恒 0（get_next_line 补 0）。故 old_reqs[i][2:0]
   //   在两侧都零扇出（golden 存 38 位、低 3 位是 golden-only dead-ref）。这里只存被比较的
   //   行 VPN（35 位），impl 侧不留任何死寄存器位。
+  //   FM 影响：golden 那 12 个死位（old_reqs_0..3_reg[2:0]）在本侧无对应点，实跑为
+  //   unmatched-unread(ref)=12 / impl=0，按 PASS_DEAD_REF 逐条声明在
+  //   verif/dead_ref/L2TlbPrefetch.json（含反向实验记录：impl 也做成 38 位反而变 12(12)，
+  //   因为 unread 点只按名字配对，数组名 old_reqs_reg[0][0] 配不上 old_reqs_0_reg[0]）。
   logic [OLD_REC_N-1:0][LINE_VPN_W-1:0] old_reqs;   // 只存行 VPN [37:3]
   logic [OLD_REC_N-1:0]            old_v;
   logic [OLD_IDX_W-1:0]            old_index;
