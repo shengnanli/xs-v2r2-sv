@@ -7,7 +7,8 @@ Queue2、D 通道插一个 Queue2"的装配壳，彼此只差**位宽**与**队�
 
   rtl/memblock/TLBuffer_<n>.sv    变体薄文件（golden 端口表 + 设参 + 两个队列例化）
   verif/ut/TLBuffer_<n>/tb.sv     双例化逐拍比对 tb（含位宽覆盖闸与反压统计）
-  verif/ut/TLBuffer_<n>/Makefile  UT/FM 入口
+  verif/ut/TLBuffer_<n>/Makefile  UT/FM 入口（TLBuffer_6 那份另带 negtest 目标：
+                                 核里载荷位数等式的必失败负测，全家族验一次）
 
 **所有位宽都从 G1 golden 现读**，不从 G0 继承、不手抄：G0->G1 这一轮改的就是
 TL source id 位宽，而"剥掉端口后模块体逐字相同"的机械判据对位宽是瞎的。
@@ -25,6 +26,40 @@ import sys
 GOLDEN = os.environ.get('GOLDEN_RTL', '/home/eda/xs-env/G1-canonical/golden-rtl')
 G0_GOLDEN = os.environ.get('G0_GOLDEN_RTL', '/home/eda/xs-env/G0-canonical/golden-rtl')
 VARIANTS = ['TLBuffer_6', 'TLBuffer_8', 'TLBuffer_9', 'TLBuffer_20', 'TLBuffer_22']
+
+# 家族只在一个变体上挂"不变式负测"（负测探针 verif/ut/TLBuffer_6/negtest.sv 是手写的，
+# 本脚本不生成也不删除它）。核是 5 个变体共用的同一份文件，负测验的是核里的载荷位数
+# 等式，**验一次就覆盖全家族**，5 份拷贝只是噪音。
+#
+# 为什么这段非生成不可（2026-09-14 实测）：它原本是手工加在生成出来的 Makefile 末尾的，
+# 于是 `--check` 一直报 DRIFT，而任何人跑一次本脚本就会把整段 negtest 目标**静默删掉** ——
+# 防"抄错位宽"的闸自己先烂掉。手写区要么进生成器、要么用 GENERATED 标记，不能悬在外面。
+NEGTEST_ANCHOR = 'TLBuffer_6'
+
+NEGTEST_MK = r"""
+# ---------------------------------------------------------------------------
+# negtest：xs_TLBuffer_ad_core 载荷位数等式不变式的必失败负测（codex 0145 决策三）。
+#   NEG_TLB_SOURCE     SOURCE_W 抄成旧值（G0->G1 真实事故形态）
+#   NEG_TLB_NO_ANCHOR  不传 ram_2x<N> 锚点（改造前会拿 TLBuffer_6 的默认值蒙混）
+# 判据：两个都必须在 elaborate 期非零退出。
+NEG_CASES = NEG_TLB_SOURCE NEG_TLB_NO_ANCHOR
+.PHONY: negtest
+negtest:
+	@rc=0; for c in $(NEG_CASES); do \
+	  rm -rf neg_csrc simv_neg simv_neg.daidir; \
+	  if vcs -full64 -sverilog -Mdir=neg_csrc +define+SYNTHESIS +define+$$c \
+	         $(RTL_DIR)/memblock/xs_TLBuffer_ad_core.sv negtest.sv \
+	         -top neg_tlb_probe -o simv_neg > neg_$$c.log 2>&1; then \
+	    echo "=== NEGTEST FAILED ($$c)：抄错的参数竟然 elaborate 过了 ==="; rc=1; \
+	  elif grep -q 'Error-\[FEST\]' neg_$$c.log; then \
+	    echo "=== NEGTEST PASSED ($$c)：elaborate 期被不变式拦下 ==="; \
+	    sed -n '/FEST/,/^$$/p' neg_$$c.log | grep -m2 'msg:' || true; \
+	  else \
+	    echo "=== NEGTEST FAILED ($$c)：编译是失败了, 但不是 \$$fatal 不变式拦的(看 neg_$$c.log) ==="; \
+	    grep -m3 -E '^Error' neg_$$c.log || true; rc=1; \
+	  fi; \
+	done; rm -rf neg_csrc simv_neg simv_neg.daidir; exit $$rc
+"""
 
 PORT_RE = re.compile(
     r'^\s*(input|output|inout)\s+(?:wire\s+)?(?:\[\s*(\d+)\s*:\s*(\d+)\s*\]\s+)?(\w+)\s*,?\s*$')
@@ -401,7 +436,7 @@ FM_VARIANTS = {v.name}
 include ../../../scripts/ut_common.mk
 
 VCS += +define+SYNTHESIS
-"""
+""" + (NEGTEST_MK if v.name == NEGTEST_ANCHOR else '')
 
 
 def main():
