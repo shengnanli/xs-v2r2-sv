@@ -23,19 +23,26 @@ TB_SRCS = tb.sv
 #       寄存器全部无对象可配 —— 两项相加即 unmatched 的主体。
 # 修法：两侧同源 elaborate（RTL_GOLDEN_DEPS），去黑盒＝加强。
 #
-# ★ 尚未复跑 FM（reviewer codex 0149 冻结新 FM 启动）。待解冻后仍需确认两件事：
+# ★ 复跑结论（agent/err3, 2026-09-14, 基线 7acbde8）：上面的结构性修复有效——
+#   native FM SUCCEEDED / passing 3830 / failing 0 / unverified 0 / aborted 0 /
+#   unmatched compare points 0 / 无黑盒。下面三条待确认项的现状：
 #   (1) 顶层 23 个读地址/使能流水寄存器两侧命名完全不同
 #       （golden in_addr_* / int_ren_last_REG_* ↔ impl rd_idx_reg / int_ren_reg），
 #       fm_eq.tcl 的 auto_match_flattened_arrays 按「叶名词干+下标」配对，词干不同
 #       会失配；若签名分析兜不住需在 fm_pins.tcl 里 set_user_match 钉双射。
-#   (2) golden 的 delayToWakeupQueueRCIdx 三级流水是全宽 5 位（7 口×3 级=21 位
-#       的 bit[4]），impl 只存低 4 位（rtl/backend/RegCache.sv 注释里写明是刻意
-#       丢掉这个 write-never-read 的常数半区位）。这会让 golden 侧多出 21 个
-#       **golden-only cone-dead** 未读点 → strict 判定 PARTIAL。
-#       两条出路：a) 声明 dead_ref（reviewer 冻结中，禁止）；
-#                 b) 改 impl 保留全宽 5 位，让死位在两侧对称 → matched-unread，
-#                    再用 vmucp（加强，非放宽）验掉。建议 b，但需 reviewer 裁定
-#                    后再动 RTL，本轮不擅自改。
+#     → 已结：实跑 unmatched compare points = 0，签名分析自己兜住了，不需要钉点。
+#   (2) golden 的 delayToWakeupQueueRCIdx 三级流水是全宽 5 位，impl 只存低 4 位
+#       （rtl/backend/RegCache.sv 注释里写明是刻意丢掉这个 write-never-read 的
+#       常数半区位）。这会让 golden 侧多出 **golden-only cone-dead** 未读点。
+#     → 已结（agent/err3, 2026-09-14）：走 a) 声明 dead_ref。
+#       实测不是当初估的 21 点而是 **6 点**：bit[4] 的驱动是常数（Int 口恒 0 /
+#       Mem 口恒 1），verification_merge_duplicated_registers=true 把同驱动同值的
+#       寄存器合并——Int 组 4 路合成代表 _0、Mem 组 3 路合成代表 _4，三级流水各
+#       一次，2×3=6。逐条依据见 verif/dead_ref/RegCache.json。
+#       实跑：native SUCCEEDED / passing 3830 / failing 0 / unverified 0 /
+#       unmatched 0 / 无黑盒 ⇒ 判定 PASS_DEAD_REF。
+#       没走 b)（改 impl 补回全宽 5 位再 vmucp）：那是为了让 FM 好看而往可读核里
+#       塞一个真实设计不需要的死寄存器，与"按真实读取宽度定宽"的可读性口径相反。
 #   (3) 6 个子模块里有 4 个的**例化名与 golden 不同**（golden IntRegCacheAgeTimer /
 #       MemRegCacheAgeTimer / IntRegCacheRepRCIdx_age / MemRegCacheRepRCIdx_age
 #       ↔ impl IntRegCache_age_timer / MemRegCache_age_timer / IntRegCache_rep /
@@ -44,7 +51,8 @@ TB_SRCS = tb.sv
 #       实测证明 Formality 能吃下层次差异（impl 多一层 u_core、还用 generate
 #       块名，照样 0 unmatched），所以这不一定是问题；**若解冻后 RegCache 仍有
 #       unmatched，先试把这 4 个例化名改成与 golden 一致**（纯改名、零功能影响，
-#       UT 可立刻回归），再考虑 set_user_match。本轮不擅自改。
+#       UT 可立刻回归），再考虑 set_user_match。
+#     → 已结：实跑 unmatched = 0，层次/例化名差异确实不构成问题，不用改名。
 # ---------------------------------------------------------------------------
 RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/RegCacheAgeDetector.sv \
                   $(GOLDEN_RTL)/RegCacheAgeDetector_1.sv \
