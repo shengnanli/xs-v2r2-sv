@@ -10,7 +10,7 @@ AXI4IdIndexer_1	SUCCEEDED	"passing": 292 "failing": 0 "unmatched": 0 "unread":
 AXI4Xbar	SUCCEEDED	"passing": 2280 "failing": 0 "unmatched": 0 "unread":
 Arbiter2_ICacheMissReq	SUCCEEDED	
 Arbiter5_MSHRAcquire	SUCCEEDED	
-Bku	PARTIAL	
+Bku	SUCCEEDED	"passing": 3391 "failing": 0 "unread": 0 (vmucp 加强后 3371->3391)
 Bku(vmucp)	SUCCEEDED	"passing": 3391 "failing": 0 "unread":
 CHILogger	SUCCEEDED	"passing": 1293 "failing": 0 "unmatched": 0 "unread":
 CompressUnit	SUCCEEDED	"passing": 66 "failing": 0 "unmatched": 0 "unread":
@@ -74,7 +74,7 @@ ICacheMSHR_7	SUCCEEDED	"passing": 170 "failing": 0 "unmatched": 0 "unread":
 ICacheMSHR_8	SUCCEEDED	"passing": 170 "failing": 0 "unmatched": 0 "unread":
 ICacheMSHR_9	SUCCEEDED	"passing": 170 "failing": 0 "unmatched": 0 "unread":
 ICacheMetaArray	PARTIAL	"passing": 3262 "failing": 0 "unmatched": 0 "unread":
-ICacheMissUnit	ERROR	
+ICacheMissUnit	SUCCEEDED	"passing": 3215 "failing": 0 "unmatched": 0 "unread": 0
 ICacheReplacer	SUCCEEDED	"passing": 781 "failing": 0 "unmatched": 0 "unread":
 ImmExtractor	SUCCEEDED	"passing": 64 "failing": 0 "unmatched": 0 "unread":
 ImmExtractor_12	SUCCEEDED	"passing": 128 "failing": 0 "unmatched": 0 "unread":
@@ -116,7 +116,7 @@ MbistPipeSc_3	SUCCEEDED	"passing": 190 "failing": 0 "unmatched": 0 "unread":
 MbistPipeSms	SUCCEEDED	"passing": 495 "failing": 0 "unmatched": 0 "unread":
 MbistPipeTage	SUCCEEDED	"passing": 1396 "failing": 0 "unmatched": 0 "unread":
 MulUnit	PARTIAL	"passing": 4537 "failing": 0 "unmatched": 0 "unread": 7
-MuxBundle	ERROR	
+MuxBundle	SUCCEEDED	"passing": 71 "failing": 0 "unmatched": 0 "unread": 0
 NewPipelineConnectPipe	SUCCEEDED	"passing": 1665 "failing": 0 "unmatched": 0 "unread":
 NewPipelineConnectPipe_1	SUCCEEDED	"passing": 2039 "failing": 0 "unmatched": 0 "unread":
 NewPipelineConnectPipe_10	SUCCEEDED	"passing": 1807 "failing": 0 "unmatched": 0 "unread":
@@ -127,9 +127,9 @@ NewPipelineConnectPipe_18	SUCCEEDED	"passing": 1719 "failing": 0 "unmatched": 0 
 NewPipelineConnectPipe_20	SUCCEEDED	"passing": 1865 "failing": 0 "unmatched": 0 "unread":
 NewPipelineConnectPipe_23	SUCCEEDED	"passing": 3169 "failing": 0 "unmatched": 0 "unread":
 NewPipelineConnectPipe_27	SUCCEEDED	"passing": 1043 "failing": 0 "unmatched": 0 "unread":
-NewPipelineConnectPipe_29	FAILED	"passing": 1781 "failing": 20 "unmatched": 6 "unread":
+NewPipelineConnectPipe_29	SUCCEEDED	"passing": 2049 "failing": 0 "unmatched": 0 "unread": 0
 NewPipelineConnectPipe_33	SUCCEEDED	"passing": 489 "failing": 0 "unmatched": 0 "unread":
-NewPipelineConnectPipe_34	FAILED	"passing": 1393 "failing": 20 "unmatched": 1 "unread":
+NewPipelineConnectPipe_34	SUCCEEDED	"passing": 1523 "failing": 0 "unmatched": 0 "unread": 0
 NewPipelineConnectPipe_35	SUCCEEDED	"passing": 2895 "failing": 0 "unmatched": 0 "unread":
 NewPipelineConnectPipe_5	SUCCEEDED	"passing": 2063 "failing": 0 "unmatched": 0 "unread":
 NewPipelineConnectPipe_7	SUCCEEDED	"passing": 1829 "failing": 0 "unmatched": 0 "unread":
@@ -152,7 +152,7 @@ RXDAT_4	SUCCEEDED	"passing": 292 "failing": 0 "unmatched": 0 "unread":
 RXREQ	SUCCEEDED	"passing": 128 "failing": 0 "unmatched": 0 "unread":
 RXRSP	SUCCEEDED	"passing": 49 "failing": 0 "unmatched": 0 "unread":
 RXRSP_4	SUCCEEDED	"passing": 43 "failing": 0 "unmatched": 0 "unread":
-RegCache	PARTIAL	"passing": 3830 "failing": 0 "unmatched": 0 "unread": 6
+RegCache	PASS_DEAD_REF	"passing": 3830 "failing": 0 "unmatched": 0 "unread": 6(ref-only,已声明)
 SRAMTemplate	SUCCEEDED	"passing": 394 "failing": 0 "unmatched": 0 "unread":
 SRAMTemplate_100	SUCCEEDED	"passing": 301 "failing": 0 "unmatched": 0 "unread":
 SRAMTemplate_116	SUCCEEDED	"passing": 359 "failing": 0 "unmatched": 0 "unread":
@@ -207,7 +207,7 @@ SyncDataModuleTemplate__64entry_2	SUCCEEDED	"passing": 955 "failing": 0 "unmatch
 SyncDataModuleTemplate__64entry_3	SUCCEEDED	"passing": 5999 "failing": 0 "unmatched": 0 "unread":
 SyncDataModuleTemplate__64entry_4	SUCCEEDED	"passing": 792 "failing": 0 "unmatched": 0 "unread":
 TLBuffer	SUCCEEDED	"passing": 739 "failing": 0 "unmatched": 0 "unread":
-TLBuffer_13	FAILED	"passing": 12840 "failing": 20 "unmatched": 64 "unread":
+TLBuffer_13	SUCCEEDED	"passing": 12912 "failing": 0 "unmatched": 0 "unread": 0
 TLBuffer_2	SUCCEEDED	"passing": 661 "failing": 0 "unmatched": 0 "unread":
 TLBuffer_7	SUCCEEDED	"passing": 3861 "failing": 0 "unmatched": 0 "unread":
 TLLogger	SUCCEEDED	"passing": 1434 "failing": 0 "unmatched": 0 "unread":
@@ -232,3 +232,26 @@ WrBypass_33	SUCCEEDED	"passing": 398 "failing": 0 "unmatched": 0 "unread":
 WrBypass_41	SUCCEEDED	"passing": 50 "failing": 0 "unmatched": 0 "unread":
 WrBypass_43	SUCCEEDED	"passing": 54 "failing": 0 "unmatched": 0 "unread":
 WritebackQueue	SUCCEEDED	"passing": 13053 "failing": 0 "unmatched": 0 "unread":
+Alu	SUCCEEDED	p725 f0 unread0  (agent/bkperf)
+Fence	PASS_DEAD_REF	p905 f0 unread68(ref-only,已声明)  (agent/bkperf)
+IMSICGateWay	SUCCEEDED	p39 f0 unread0  (agent/chi, assembly->strict 消黑盒)
+ITTageTable	SUCCEEDED	p10256 f0 unread0  (agent/ittage)
+ITTageTable_1	SUCCEEDED	p10256 f0 unread0  (agent/ittage)
+ITTageTable_2	SUCCEEDED	p20162 f0 unread0  (agent/ittage)
+ITTageTable_3	SUCCEEDED	p20162 f0 unread0  (agent/ittage)
+ITTageTable_4	SUCCEEDED	p20162 f0 unread0  (agent/ittage)
+L2TlbMissQueue	PARTIAL	p125 f0 全零; 卡 ram_40x47 边界裁定  (agent/tlb)
+L2TlbPrefetch	PASS_DEAD_REF	p223 f0 unread12(ref-only,已声明)  (agent/tlb)
+LCredit2Decoupled_1	SUCCEEDED	p87 f0 unread0  (agent/chi)
+LinkMonitor	SUCCEEDED	p2654 f0 unread0  (agent/chi, vmucp 2462->2654)
+RNXbar	SUCCEEDED	p2645 f0 unread0  (agent/arb, vmucp 2642->2645)
+SNXbar	SUCCEEDED	p1841 f0 unread0  (agent/arb, vmucp 1839->1841)
+SRAMTemplate_128	SUCCEEDED	p2507 f0  (agent/sram)
+SRAMTemplate_152	SUCCEEDED	p440 f0  (agent/sram, 新增第9变体)
+SourceB	PASS_DEAD_REF	p530 f0 unread4(ref-only,已声明)  (agent/arb)
+SubDirectory	SUCCEEDED	p824 f0 assembly, 边界下沉到已审定 array_19/20_ext  (agent/arb)
+TLXbar_4	SUCCEEDED	p342 f0 unread0  (agent/chi)
+TXREQ	SUCCEEDED	p1492 f0 unread0  (agent/chi, vmucp 1460->1492)
+TlbStorageWrapper	SUCCEEDED	p8208 f0 unread0  (agent/tlb, vmucp)
+TlbStorageWrapper_1	SUCCEEDED	p8682 f0 unread0  (agent/tlb, vmucp)
+VSetRiWi	SUCCEEDED	p725 f0 unread0  (agent/bkperf)
