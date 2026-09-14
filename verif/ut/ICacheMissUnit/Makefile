@@ -65,6 +65,15 @@ FM_REF_DEPS_ICacheMissUnit = \
   ICacheMSHR_5.sv ICacheMSHR_6.sv ICacheMSHR_7.sv ICacheMSHR_8.sv ICacheMSHR_9.sv \
   ICacheMSHR_10.sv ICacheMSHR_11.sv ICacheMSHR_12.sv ICacheMSHR_13.sv
 
+# vmucp = 加强证明（让 FM 真的去比 matched-unread 点），不是放宽。
+# 本目标只剩 1 个 unread 点：TileLink Grant 的 beats1 倒计数器，两侧同为死位
+# （唯一读出点是 `ifndef SYNTHESIS 里的 assert，FM 两侧都 -define SYNTHESIS ⇒ 编译掉），
+# 严格 1↔1 双射，已在 fm_pins.tcl 里 set_user_match 钉死、依据写在那里。
+# 实测：vmucp=false 时 passing 3214 / unread 1 → PARTIAL；
+#       vmucp=true  时 passing 3215（正好 +1，说明 FM 真比了这一点，不是空转）/
+#       failing 0 / unread 0 → SUCCEEDED。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 # 端口顺序也当硬闸（本 wrapper 与 golden 端口表逐位同序）
 PORTLINT_ORDER = fail
 

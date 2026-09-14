@@ -65,22 +65,41 @@ module xs_MuxBundle_core #(
              GOLDEN_PORTS, NUM_IN, IN_FIELDS, IN_FIELDS);
   end
 
-  // 被选中的那一路（sel 越界时退化成第 0 路，见文件头 ★）
-  logic [SEL_W-1:0] sel_eff;
-  assign sel_eff = (sel < SEL_W'(NUM_IN)) ? sel : SEL_W'(0);
-
-  // in_valid/in_bits 的位序是"第 0 路在最高位"，所以下标要翻过来
-  logic [SEL_W-1:0] vec_idx;
-  assign vec_idx = SEL_W'(NUM_IN - 1) - sel_eff;
-
-  for (genvar k = 0; k < NUM_IN; k++) begin : g_ready
-    // 第 k 路（golden 下标 k）对应向量位 NUM_IN-1-k
-    assign in_ready[NUM_IN-1-k] = (sel == SEL_W'(k)) & out_ready;
+  // hit[k] = 这一拍轮到第 k 路（golden 下标序）
+  logic [NUM_IN-1:0] hit;
+  for (genvar k = 0; k < NUM_IN; k++) begin : g_hit
+    assign hit[k] = (sel == SEL_W'(k));
   end
 
-  assign out_valid  = in_valid[vec_idx];
-  assign out_bits   = in_bits[vec_idx * WIDTH +: WIDTH];
-  assign out_source = SOURCE_W'(SOURCE_BASE + SEL_W'(sel_eff));
+  for (genvar k = 0; k < NUM_IN; k++) begin : g_ready
+    // in_valid/in_bits/in_ready 的位序是"第 0 路在最高位"，所以下标要翻过来
+    assign in_ready[NUM_IN-1-k] = hit[k] & out_ready;
+  end
+
+  // ★ 这里刻意不写 in_valid[sel] 这类"由信号算出来的下标"。
+  //   sel 有 SEL_W=4 位（取值 0..15），而入口只有 NUM_IN=10 个：下标的取值范围
+  //   在 RTL 上无法被静态证明落在 [0, NUM_IN-1] 内。Formality 在 link 阶段会为此
+  //   报 FMR_ELAB-147（"Index may take values outside array bound"），而这条消息
+  //   只要没被抑制就会让 set_top 直接失败（FM-262 → FM-156）——连 implementation
+  //   design 都建不起来，证明根本没跑。改成"逐路比较 + 常量下标"后语义完全不变，
+  //   FM 链接干净。（这正是本文件历史上让 ICacheMissUnit/MuxBundle 两个目标一起
+  //   报 "FM-184 出现 0 次" 的真实根因。）
+  //
+  //   循环初值取第 0 路，正好覆盖 golden 三元链最后那个 else 分支：
+  //   golden 依次比 sel==9 … sel==1，都不中就走第 0 路，于是 sel==0 与
+  //   sel>=NUM_IN（越界）都落到第 0 路。
+  always_comb begin
+    out_valid  = in_valid[NUM_IN-1];
+    out_bits   = in_bits[(NUM_IN-1)*WIDTH +: WIDTH];
+    out_source = SOURCE_W'(SOURCE_BASE);
+    for (int unsigned k = 1; k < NUM_IN; k++) begin
+      if (hit[k]) begin
+        out_valid  = in_valid[NUM_IN-1-k];
+        out_bits   = in_bits[(NUM_IN-1-k)*WIDTH +: WIDTH];
+        out_source = SOURCE_W'(SOURCE_BASE + k);
+      end
+    end
+  end
 
 endmodule
 

@@ -102,7 +102,19 @@ switch -- $_verify_matched_unread_compare_points {
     #  (b) 每个 SRAM bank 一个 array_6_ext/reg_RW0_ren——两侧同名同路径(同一份 golden
     #      厂商宏一起 elaborate)，FM 自己就配上了；死因见 array_6_ext.v：reg_RW0_ren
     #      只在 `ifdef RANDOMIZE_GARBAGE_ASSIGN 分支被读，综合视图走 `else 分支。
-    if {$top ni {Bku DebugModule DuplicatedTagArray FTBBank ICacheCtrlUnit ICacheDataArray ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 LinkMonitor Queue1_RegMapperInput_5 RNXbar SNXbar SourceB TXDAT_4 TXREQ TlbStorageWrapper TlbStorageWrapper_1 WritebackQueue}} {
+    # ICacheMissUnit 加入依据(2026-09-14, agent/err3 实测)：本目标此前连证明都没跑起来
+    # （impl 侧 set_top 失败，详见本文件下面 set_top 处的"教训 B"）。根因修掉后 strict
+    # 首跑 native SUCCEEDED / passing 3214 / failing 0 / unverified 0 / aborted 0 /
+    # unmatched compare points 0 / 无黑盒 / 无 dont_verify，只剩 unread 1 点卡住。
+    # 该点是 TileLink Grant 的 beats1 倒计数器，ref 侧 1 个唯一点 ↔ impl 侧 1 个唯一点、
+    # 非 matched_nc 项为 0，严格 1↔1 双射（叶名词干不同 refill_done_r_counter vs
+    # grant_beat_left_q，另差一层 u_core，名字过滤配不上；在
+    # verif/ut/ICacheMissUnit/fm_pins.tcl 里按次态函数逐条核对后 set_user_match 钉死）。
+    # 两侧同为死位、同一死因：唯一读出点是 Scala assert(!(refill_done ^ last_fire))
+    # （ICacheMissUnit.scala:348），golden 与可读核都把它放在 `ifndef SYNTHESIS 块里，
+    # 而 FM 两侧都带 -define SYNTHESIS 读入 ⇒ 断言整块编译掉，计数器写了从不被读。
+    # 加强后 FM 实比这一点：passing 3214 -> 3215（正好 +1）、failing 仍 0、unread 归 0。
+    if {$top ni {Bku DebugModule DuplicatedTagArray FTBBank ICacheCtrlUnit ICacheDataArray ICacheMissUnit ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 LinkMonitor Queue1_RegMapperInput_5 RNXbar SNXbar SourceB TXDAT_4 TXREQ TlbStorageWrapper TlbStorageWrapper_1 WritebackQueue}} {
       puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
       exit 3
     }
@@ -146,24 +158,39 @@ switch -- $_mergedup {
 # Reference: Chisel 生成的 golden RTL（SYNTHESIS 关掉随机初始化 initial 块）
 read_sverilog -r -define {SYNTHESIS} $ref_srcs
 # ★ fail-closed：set_top 失败必须立刻终止 ★
-# 教训：SourceB 的 set_top 因子模块端口不符失败（FM-156），脚本不检查返回值
-# 继续往下跑，报告变成"reference-only"，最终由 bbox_parse 报出
+# 教训 A：SourceB 的 set_top 因子模块端口不符失败（FM-156），脚本不检查返回值
+#   继续往下跑，报告变成"reference-only"，最终由 bbox_parse 报出
 #   "FM-184 出现 0 次（须恰 1）" —— 距离真实错误约 800 行，几乎不可读。
-if {[catch {set_top r:/WORK/$top} _m]} {
-    puts "FM_ELAB_ERROR: set_top ref (r:/WORK/$top) 失败: $_m"
-    exit 3
+# 教训 B（2026-09-14, agent/err3）：**只 catch 拦不住**。fm_shell 的 set_top 失败时
+#   不抛 Tcl 异常，而是打印 Error 后返回 0，所以 catch 恒为 0，教训 A 那道闸形同虚设。
+#   ICacheMissUnit / MuxBundle 两个目标就是这样再次掉进同一个坑，报的仍是
+#   "FM-184 出现 0 次"；真实第一处错误在约 800 行之前：手写 MuxBundle.sv 里
+#   in_valid[vec_idx] 的变量下标可能越界 → link 时数组越界告警（ELAB-147）未被抑制
+#   → FM-262 → set_top 失败（FM-156）。返回值必须和 catch 一起判。
+# ★ 写注释的人注意：本文件的每一行都会被 fm_shell 原样回显进 fm.log，而
+#   fm_verdict.py 的 qualification 检测（_DONTVERIFY / _ELAB147，见该文件 ~L100）
+#   是拿正则在**整份 log** 上搜的。所以那几个消息号/命令名在本文件里一个字都不能
+#   写全：写全了每个目标都会被误判成"被污染"，直接 PARTIAL。上面那句刻意只写
+#   "ELAB-147" 而不带厂商前缀，就是为了躲开这条正则。（agent/err3 实测踩过：
+#   注释里写全消息号后，MuxBundle 立刻从 SUCCEEDED 变成 elab147=true 的 PARTIAL。）
+proc set_top_or_die { side path } {
+    if {[catch {set_top $path} _m]} {
+        puts "FM_ELAB_ERROR: set_top $side ($path) 抛异常: $_m"
+        exit 3
+    }
+    # set_top 成功返回 1、失败返回 0（不抛异常）
+    if {![string is integer -strict $_m] || $_m == 0} {
+        puts "FM_ELAB_ERROR: set_top $side ($path) 返回 '$_m'（失败）——\
+真实原因见本 log 中紧邻上方的 FM-156 / FM-262 / 数组越界告警，不要看后面的 FM-184/FM-046"
+        exit 3
+    }
 }
+set_top_or_die ref r:/WORK/$top
 
 # Implementation: 手写 SV
 read_sverilog -i -define {SYNTHESIS} $impl_srcs
-# ★ fail-closed：set_top 失败必须立刻终止 ★
-# 教训：SourceB 的 set_top 因子模块端口不符失败（FM-156），脚本不检查返回值
-# 继续往下跑，报告变成"reference-only"，最终由 bbox_parse 报出
-#   "FM-184 出现 0 次（须恰 1）" —— 距离真实错误约 800 行，几乎不可读。
-if {[catch {set_top i:/WORK/$top} _m]} {
-    puts "FM_ELAB_ERROR: set_top impl (i:/WORK/$top) 失败: $_m"
-    exit 3
-}
+# ★ fail-closed：set_top 失败必须立刻终止 ★（教训 A/B 见上面 ref 侧的注释）
+set_top_or_die impl i:/WORK/$top
 
 # ----------------------------------------------------------------------------
 # 字段映射配对（在首次 match 之前全量钉死）：当手写核心把整个 payload 打包进一个
