@@ -46,8 +46,41 @@
 #   已按此处理：verif/ut/TLBuffer_13（ram_2x119/2x283/2x321/2x352/ram_sink_2x8，各 4 实例/侧）。
 #   例外：verif/ut/L2TlbMissQueue 的 ram_40x47 **不可 inline** —— 其 addr 6 位、深度 40，
 #   2^6=64>40，白盒化必触发 FMR_ELAB-147(Index may take values outside array bound)
-#   -> FM-262 -> set_top FM-156。该条单独挂起待裁（详见该 UT Makefile 注释）。
+#   -> FM-262 -> set_top FM-156。
+#   ★该条已由 codex 0158 §1 裁定，不再挂起★：见下面 schema v4 一段与表尾 ram_40x47 行。
 #
+#
+# ---------------------------------------------------------------------------
+# schema v4（codex 0158 §1：firtool 行为级 RAM 模型逐条审定入表；**列不变，仍 13 列**）
+#
+# codex 0158 §1 原文（方案 1，逐字照办的四条约束）：
+#   1) 把那批**非 2 的幂**的 golden RAM 模型登记为 `APPROVED_MEMORY_MACRO_MODEL`；
+#   2) 每条按**精确 module 名 + golden 源码 hash** 绑定；
+#   3) **不得**建通用 ELAB-147 政策例外，**不得**让后缀或诊断文本本身授权任何东西；
+#   4) 每条入表前做三项最小功能审查：memory-only / 端口与读写行为和实现边界一致 /
+#      父级控制不有意依赖越界地址值。先做 ram_40x47(L2TlbMissQueue)，其余**只在
+#      各自 parent 被实际验证时再加**（故本轮**只加 1 条**，不预登记另外 9 个）。
+#
+# ★★★ 入表不等于转绿 ★★★（codex 0158 原文）
+#   "A clean native result, not registry membership, turns the target green."
+#   本表只授权「把同一个精确边界在 ref/impl 两侧对称黑盒」，证明仍要自己跑 FM 且干净。
+#
+# 三项审查是**可复算**的，不是「我读过了」：
+#   python3 scripts/audit_ram_memory_model.py ram_40x47 \
+#       --parent-ref Queue40_L2TlbMQBundle.sv --parent-impl rtl/memblock/L2TlbMissQueue.sv
+#   M1 memory-only 用**精确模板等价**（按位宽/深度重建整段 firtool 模板逐字比对，
+#      外加宏定义头 sha256 与家族参照件比对），不是「grep 不到关键字所以没逻辑」；
+#   M2 两侧各恰好 1 个例化、端口集合与模块声明逐名相同、常量连接逐口相同；
+#   M3 对两侧的地址驱动寄存器做**归纳证明的机器复核**（基例 0 / 归纳步 +1 /
+#      在 depth-1 处被互斥守卫回卷），认不出即 MANUAL，绝不默认通过。
+#   parent 对照表：verif/ram_model_parents.tsv（`audit_ram_memory_model.py --check` 复跑）。
+#
+# 与 D60「优先 inline」的关系：inline 仍然优先，只在 inline 会把 golden 打成
+# 静态越界索引、从而根本 link 不起来时才走本条。判据是**结构性的**（2^addr > depth），
+# 不是诊断文本 —— golden 全量 68 个 ram_* 里 58 个满足 2^addr == depth（那些该 inline），
+# 10 个不满足（ram_10x89 / 15x115 / 15x162 / 15x422 / 15x73 / 40x47 / 65540x21 / 78x15 /
+# extra_id_3072x5 / extra_id_3073x5）。★注意 codex 0158 说的是 8 个，实测是 10 个★
+# —— 多出来的两个 ram_extra_id_* 同样 2^12=4096 > 3072/3073，后续逐个加时须一并裁定。
 #
 # ---------------------------------------------------------------------------
 # schema v3（codex 0153 D67：第二批 6 条**存储宏行为模型**单条审定并登记）
@@ -130,3 +163,4 @@ array_21_ext	APPROVED_MEMORY_MACRO_MODEL	codex 0153 D67 独立审读全文后单
 array_22_ext	APPROVED_MEMORY_MACRO_MODEL	codex 0153 D67 独立审读全文后单条批准：只有地址/读使能寄存、存储数组、掩码写与仿真随机化支路，无控制算法或其它功能逻辑	array_22_ext.v	86d0fb51ea2e5d1922b4a17b696e365d2f32814c50364eb11d8a275ec223c38d	7	input RW0_clk;input [11:0] RW0_addr;input RW0_en;input RW0_wmode;input [15:0] RW0_wmask;input [31:0] RW0_wdata;output [31:0] RW0_rdata	2a016e623f5df536	none	symmetric_both_sides_only;regimeA=fm_blackbox_both_sides;regimeB=fm_whitebox_both_sides;single_side_read=FORBIDDEN;pin_by=leaf_sha256	4096	16x2:slice	nclk=1;clk=RW0;access=1rw
 array_0_0_ext	APPROVED_MEMORY_MACRO_MODEL	codex 0153 D67 独立审读全文后单条批准：只有地址/读使能寄存、存储数组、掩码写与仿真随机化支路，无控制算法或其它功能逻辑	array_0_0_ext.v	d64d9b5dded9d34e6502ad82271860037c62e5a4934396920484b2b317b11b48	6	input RW0_clk;input [11:0] RW0_addr;input RW0_en;input RW0_wmode;input [14:0] RW0_wdata;output [14:0] RW0_rdata	2bcdfbeaf7333ebd	none	symmetric_both_sides_only;regimeA=fm_blackbox_both_sides;regimeB=fm_whitebox_both_sides;single_side_read=FORBIDDEN;pin_by=leaf_sha256	4096	none	nclk=1;clk=RW0;access=1rw
 array_0_1_ext	APPROVED_MEMORY_MACRO_MODEL	codex 0153 D67 独立审读全文后单条批准：只有地址/读使能寄存、存储数组、掩码写与仿真随机化支路，无控制算法或其它功能逻辑	array_0_1_ext.v	84b873d43a1e150fc144cd5a265bbe3e866a64ed03d629eaf39949fba2e271ef	8	input W0_clk;input [15:0] W0_addr;input W0_en;input [511:0] W0_data;input R0_clk;input [15:0] R0_addr;input R0_en;output [511:0] R0_data	c014cafbe8820604	none	symmetric_both_sides_only;regimeA=fm_blackbox_both_sides;regimeB=fm_whitebox_both_sides;single_side_read=FORBIDDEN;pin_by=leaf_sha256	65536	none	nclk=2;clk=R0,W0;access=1r1w
+ram_40x47	APPROVED_MEMORY_MACRO_MODEL	codex 0158 §1 单条审定（三项最小功能审查全部机器复算通过，见 scripts/audit_ram_memory_model.py）：M1 memory-only —— 正文与 firtool 行为级 RAM 模板逐字相等（1 个 reg [46:0] Memory[0:39] + 1 条 always @(posedge W0_clk) 写 + 1 条组合读 assign R0_data = R0_en ? Memory[R0_addr] : 47'bx，另加 ifdef ENABLE_INITIAL_MEM_ 的仿真专用随机初始化，SYNTHESIS 下整段不存在），无状态机/无算术/无其它功能逻辑，宏定义头 sha256=2b68dde00e97ee9a 与家族参照件逐字节相同；M2 端口与读写行为和实现边界一致 —— golden Queue40_L2TlbMQBundle.ram_ext 与重写核 xs_L2TlbMissQueue_core.mem_ext 两侧各恰好 1 个例化、8 个端口逐名相同、常量连接逐口相同（R0_en=1'h1）；M3 父级不依赖越界地址 —— 两侧的 enq/deq 指针都归纳可证 ∈[0,39]（基例 = 复位/flush 赋 0，归纳步 = 唯一自增 +1，且被 ptr==39 的互斥守卫回卷到 0），故 2^6=64 与深度 40 之间那 24 个越界地址在任何可达状态下都取不到；★注意：这 24 个越界地址正是白盒化时 FMR_ELAB-147 的来源，但本条审定依据的是上面三项功能事实，不是那条诊断文本本身（codex 0158 明令不得按诊断文本授权）★	ram_40x47.sv	68dbc6df0bcb0aafe5bdf199e6241e5a744207d34db15af3dd7aa191413f9766	8	input [5:0] R0_addr;input R0_en;input R0_clk;output [46:0] R0_data;input [5:0] W0_addr;input W0_en;input W0_clk;input [46:0] W0_data	0564943e02082506	none	symmetric_both_sides_only;regimeA=fm_blackbox_both_sides;regimeB=FORBIDDEN_oob_static_index;single_side_read=FORBIDDEN;pin_by=leaf_sha256	40	none	nclk=2;clk=R0,W0;access=1r1w

@@ -1,0 +1,21 @@
+{
+ "schema": "xs-v2-sv-allow-v1",
+ "target": "L2TlbMissQueue",
+ "baseline": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "objects": [
+  {
+   "side": "i",
+   "design": "ram_40x47",
+   "path": "i:/WORK/L2TlbMissQueue/u_core/mem_ext",
+   "attrs": "u",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "r",
+   "design": "ram_40x47",
+   "path": "r:/WORK/L2TlbMissQueue/io_out_q/ram_ext",
+   "attrs": "u",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  }
+ ]
+}

@@ -139,7 +139,7 @@ def with_registry(text, name, want_kw):
 
 body = [l for l in reg_orig.splitlines() if l.strip() and not l.startswith('#')]
 head = [l for l in reg_orig.splitlines() if l.startswith('#')]
-assert len(body) == 26, f'registry 期望 26 条（20 条 D60 + 6 条 D67），实得 {len(body)}'
+assert len(body) == 27, (f'registry 期望 27 条（20 条 D60 + 6 条 D67 + 1 条 0158 §1 ram_40x47），实得 {len(body)}')
 
 
 def row_by_name(name):
@@ -264,10 +264,18 @@ check('F0 对照：仓内 registry+台账 原样 -> CLEAN', rc, out, CLEAN, '对
 
 # F1 ★GAP 不得消失★：把两条边界轴的 GAP 余量钉死。任何一次「顺手把 GAP 吸收掉」
 #    的改动都会在这里炸。数字来源见报告；口径 = 逐名精确匹配，无通配。
+#
+#    ★这组数字只能随 reviewer 的**逐名**裁定而动，且每动一次都要在这里写明依据★
+#    2026-09-14 FM_BBOX 轴 2->3 / 93->92：codex 0158 §1 逐名批准 `ram_40x47`
+#    （L2TlbMissQueue 的存储边界）为 APPROVED_MEMORY_MACRO_MODEL。三项最小功能审查
+#    可复算：`python3 scripts/audit_ram_memory_model.py --check`。
+#    ★这不是「上层边界获批所以下面的 GAP 跟着消失」（那正是 D67 禁止的）★ ——
+#    是这**一个名字本身**被单独审定了，其余 92 项一个都没动。
 _want = [
     ('FM_BBOX_REACHABLE: 95 项', 'FM_BBOX 轴总数'),
-    ('★由 GAP 转 approved = 2★', 'FM_BBOX 轴只许 array_0_0_ext/array_0_1_ext 转绿'),
-    ('★仍为 GAP = 93★', 'FM_BBOX 轴剩余 GAP'),
+    ('★由 GAP 转 approved = 3★',
+     'FM_BBOX 轴只许 array_0_0_ext/array_0_1_ext(D67) + ram_40x47(0158 §1) 转绿'),
+    ('★仍为 GAP = 92★', 'FM_BBOX 轴剩余 GAP'),
     ('BEHIND_BOUNDARY: 44 项', 'BEHIND 轴总数'),
     ('★由 GAP 转 approved = 4★', 'BEHIND 轴只许 array_19..22_ext 转绿'),
     ('★仍为 GAP = 20★', 'BEHIND 轴剩余 GAP（24 里的 4 个本身就是 D67 批准的六条之一）'),
@@ -278,7 +286,7 @@ if rc != CLEAN or _miss:
     print(f'  FAIL  F1: rc={rc}; 缺 {"; ".join(_miss)}')
 else:
     PASS.append('F1')
-    print('  ok    F1 两轴 GAP 余量与逐名对账一致（95=2+93, 44=20vendor+4macro+20GAP）')
+    print('  ok    F1 两轴 GAP 余量与逐名对账一致（95=3+92, 44=20vendor+4macro+20GAP）')
 
 # F2 通配 registry 在对账口径下同样被拒（两条入口都不许按后缀批量放行）
 with tempfile.TemporaryDirectory() as td:

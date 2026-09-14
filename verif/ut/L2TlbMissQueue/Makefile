@@ -11,10 +11,20 @@ TB_SRCS = tb.sv
 #
 # 1) 结构上必炸（静态可判，无需跑 FM）：golden ram_40x47 的地址口是 `input [5:0]
 #    R0_addr/W0_addr`（6 位）而存储是 `reg [46:0] Memory[0:39]`（40 深），
-#    2^6 = 64 > 40。白盒化后 Memory[W0_addr]（ram_40x47.sv:15）与
-#    Memory[R0_addr]（:31）都是静态越界索引 ⇒ FMR_ELAB-147
-#    "Index may take values outside array bound" -> FM-262 -> set_top 失败 FM-156。
-#    另一 owner 的控制实验实测到的正是这条链。
+#    2^6 = 64 > 40，24 个地址落在数组之外。
+#    ★2026-09-14 本 owner 自己重跑了控制实验（ram_40x47.sv 同时进 FM_REF_SRCS 与
+#    FM_IMPL_SRCS），实测链条成立，但把前一版注释的两处说法按实测改正：★
+#      - 触发点只有 **1 个**，是组合读那行 `assign R0_data = R0_en ? Memory[R0_addr]
+#        : 47'bx;`（ram_40x47.sv **:118**）；写那行 `Memory[W0_addr] <= W0_data;`
+#        （**:102**）实测**没有**被报。前一版写「两处都是」且行号记成 :15/:31，都不对。
+#      - 实测日志原文：`Warning: Index may take values outside array bound ...
+#        (Signal: Memory Block: /ram_40x47 ... Line: 118) (FMR_ELAB-147)`
+#        -> `Error: Unsuppressed RTL interpretation message(s) ... (FM-262)`
+#        -> `Error: Failed to set top design to 'r:/WORK/L2TlbMissQueue' (FM-156)`
+#        -> fm_shell rc=3，整个 SEC 中止（不是「跑出来结果差」，是根本 link 不起来）。
+#    这就是 verif/vendor_boundary.tsv 里 ram_40x47 一行 body_rule 写
+#    `regimeB=FORBIDDEN_oob_static_index` 的实测依据：那六条 array_*_ext 可以选
+#    regimeB（两侧同时白盒）来把边界清零，本条不能选，只剩 regimeA（两侧对称黑盒）。
 #    对照 TLBuffer_13 的 5 个 ram：depth=2 / addr 1 位 ⇒ 2^1 == 2，地址空间与深度
 #    精确相等，越界在结构上不可能 —— 这才是那边 inline 安全的原因，与本目标无关，
 #    故**不可外推**。（golden 全量 68 个 ram_* 中 58 个满足 2^addr_w==depth，10 个不满足。）
@@ -31,10 +41,25 @@ TB_SRCS = tb.sv
 #
 # 当前状态（scripts/check_closure_symmetry.py --only L2TlbMissQueue 实测）：
 #    ref_bbox = {'ram_40x47': 1}, impl_bbox = {'ram_40x47': 1} ⇒ SYMMETRIC。
-# 遗留待裁：ram_40x47 不在 verif/vendor_boundary.tsv（该表当前只有 20 条 array_*_ext），
-#    故 declare_allow.py 不会自动归 vendor_macro，assembly 声明仍落不了盘。
-#    要么 reviewer 批准把 firtool 行为级存储叶子审定进 registry（新 kind），
-#    要么本目标另寻证法。**本 owner 未自行扩表**（codex 0151 D60 明令不扩 vendor registry）。
+#
+# ★遗留待裁已了结（codex 0158 §1）★
+#    reviewer 在 8 条路线里选了方案 1：把这批**非 2 的幂**的 golden RAM 模型逐条审定
+#    登记为 `APPROVED_MEMORY_MACRO_MODEL`，按**精确 module 名 + golden 源码 hash** 绑定；
+#    明确**不**建通用 ELAB-147 政策例外，也**不**让后缀或诊断文本本身授权任何东西。
+#    ram_40x47 是第一条，已登记在 verif/vendor_boundary.tsv 表尾
+#    （leaf_sha256=68dbc6df0bcb0aafe5bdf199e6241e5a744207d34db15af3dd7aa191413f9766）。
+#    三项最小功能审查可复算，不是「我读过了」：
+#        python3 scripts/audit_ram_memory_model.py --check
+#      M1 memory-only：正文与 firtool 行为级 RAM 模板**逐字相等**（模板等价，不是关键字排除）；
+#      M2 端口与读写行为和实现边界一致：两侧各 1 个例化、8 端口逐名相同、常量连接相同；
+#      M3 父级不依赖越界地址：两侧 enq/deq 指针**归纳可证** ∈[0,39]（基例 0、归纳步 +1、
+#         在 39 处被互斥守卫回卷），所以 2^6=64 与深度 40 之间那 24 个地址任何可达状态都取不到。
+#    本 tb 另有逐拍运行期复核（addr_errors）把 M3 这条在 200k 拍 × 3 seed 上再钉一遍。
+#
+# ★入表不让任何东西转绿★（codex 0158 原文）：
+#    "A clean native result, not registry membership, turns the target green."
+#    入表只授权把同一个精确边界两侧对称黑盒；本目标的绿灯来自
+#    `bash scripts/run_proof.sh L2TlbMissQueue L2TlbMissQueue` 的 clean native 结果本身。
 FM_REF_DEPS_L2TlbMissQueue = Queue40_L2TlbMQBundle.sv
 FM_MERGE_DUP = false
 GOLDEN_SRCS = $(GOLDEN_RTL)/L2TlbMissQueue.sv \
