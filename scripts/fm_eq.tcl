@@ -126,7 +126,24 @@ switch -- $_verify_matched_unread_compare_points {
     #              地址只有 7 位，bit7 到不了存储阵列。
     #          这 9 位在 SRAM 黑盒时期是"黑盒输入"因而算被读；白盒化后才暴露出来，
     #          属于 golden 自身的死位，两侧同构。打开后 passing 应 2491 -> 2500。
-    if {$top ni {Bku DebugModule DuplicatedTagArray FAlu FCVT FTBBank ICacheCtrlUnit ICacheDataArray ICacheMetaArray InstrUncache LinkMonitor MulUnit Queue1_RegMapperInput_5 SourceB TXDAT_4 TXREQ TlbStorageWrapper TlbStorageWrapper_1 WritebackQueue}} {
+    #   EntriesVfdivVidiv 加入依据(2026-09-14, PARTIAL 收口簇)：本目标的未读点不是
+    #          零星几个而是 2420 对 —— 发射队列条目的 uop 负载里，本变体**用不到**的
+    #          字段（debugInfo / exceptionVec / preDecodeInfo / pc / imm / instr /
+    #          ftqPtr / lqIdx / sqIdx … 共 110 个字段）只是随 uop 逐级传递，在
+    #          Entries 这一层没有任何输出锥。golden 把它们展平成逐字段寄存器
+    #          entryReg_payload_<f>_reg[b]，可读核存成一根向量 r_payload_reg[off+b]，
+    #          词干完全不同、又没有输出锥，FM 的名字匹配与签名分析都无从下手。
+    #          verif/ut/EntriesVfdivVidiv/fm_pins_pre.tcl（由 gen_fm_pins.py 从
+    #          gen.py 的同一张字段偏移表机械生成）在首次 match 之前逐位钉 9898 对，
+    #          实测 9898/9898 全部钉上、0 miss（钉不上即 error 退出，fail-closed）。
+    #          钉完的实测结果：native SUCCEEDED / passing 9776 / failing 0 /
+    #          unmatched compare points 0(0) / unmatched unread 0(0)，
+    #          剩下的 2420 点**全部** matched_nc，即 ref 2420 ↔ impl 2420 严格双射。
+    #          配套两项：FM_MERGE_DUP=false（否则 golden 侧的常数负载位被合并，
+    #          两侧点数根本对不齐）与可读核里删掉 golden 没有的死寄存器
+    #          （EnqEntry 无 blocked、comp 条目无 deqPortIdx，见 xs_iq_entries_core.sv
+    #          §2.6a）。打开本项后 passing 应 9776 -> 12196（+2420）。
+    if {$top ni {Bku DebugModule DuplicatedTagArray EntriesVfdivVidiv FAlu FCVT FTBBank ICacheCtrlUnit ICacheDataArray ICacheMetaArray InstrUncache LinkMonitor MulUnit Queue1_RegMapperInput_5 SourceB TXDAT_4 TXREQ TlbStorageWrapper TlbStorageWrapper_1 WritebackQueue}} {
       puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
       exit 3
     }
