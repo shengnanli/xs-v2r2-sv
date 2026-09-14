@@ -14,7 +14,9 @@ import pathlib
 import re
 import sys
 
-CODE_RE = re.compile(r'^(Error|Warning)-\[([A-Z0-9_\-]+)\]\s*(.*)$')
+# ★ Lint- 也要收 ★：`+lint=TFIPC-L` 这类详细诊断以 `Lint-[...]` 开头，
+# 只认 Error/Warning 会把 33 条 TFIPC-L 全部漏掉，摘要就在说假话。
+CODE_RE = re.compile(r'^(Error|Warning|Lint)-\[([A-Z0-9_\-]+)\]\s*(.*)$')
 # 只解释真见过的码；没见过的一律标「未归类」，不猜。
 MEANING = {
     'SV-PPD':   'package 重名（package 名是全局的，两个文件定义同名包即冲突）',
@@ -28,7 +30,13 @@ MEANING = {
     'UMI':      '例化了不存在的模块（缺件）',
     'IND':      '标识符未声明',
     'SV-UIOP':  '非法操作数',
-    'TFIPC-L':  '任务/函数例化端口数不符（lint）',
+    'TFIPC':    '例化连接的端口数少于模块定义（本工程形态：xs_*_core 是参数化**超集核**，'
+                '某个变体用不到的可选端口没连；要确认没连的是输出还是输入）',
+    'TFIPC-L':  '同 TFIPC，+lint=TFIPC-L 打开后的逐端口明细',
+    'SIOB':     '数组下标越界选择（本工程形态：generate 里用 ?: 而不是 generate-if，'
+                'genvar=0 时把 idx-1 算成 -1；常量折叠让它功能上没事，但是潜在 X 写法）',
+    'OPD':      '同一个模块被读进来两次（源清单里同一文件出现两次），后一次覆盖前一次 —— '
+                '通常是清单生成的问题，不是设计问题',
     'LCA_FEATURES_ENABLED': '用到需 -lca 的特性',
     'ACC_CLI_ON': '调试访问开启提示（非设计问题）',
 }
@@ -60,10 +68,12 @@ def main():
 
     n_err = sum(len(v) for (s, _), v in groups.items() if s == 'Error')
     n_warn = sum(len(v) for (s, _), v in groups.items() if s == 'Warning')
+    n_lint = sum(len(v) for (s, _), v in groups.items() if s == 'Lint')
     print(f'=== 整芯片 elaborate 诊断归纳：{log} ===')
-    print(f'Error 共 {n_err} 条 / Warning 共 {n_warn} 条，分 {len(groups)} 类\n')
+    print(f'Error 共 {n_err} 条 / Warning 共 {n_warn} 条 / Lint 共 {n_lint} 条，'
+          f'分 {len(groups)} 类\n')
 
-    for sev in ('Error', 'Warning'):
+    for sev in ('Error', 'Warning', 'Lint'):
         sel = sorted(((c, v) for (s, c), v in groups.items() if s == sev),
                      key=lambda kv: -len(kv[1]))
         if not sel:
