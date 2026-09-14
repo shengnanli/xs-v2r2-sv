@@ -68,7 +68,8 @@ run() { # $1=目录 $2=先编的文件 $3=后编的文件 -> 打印 "rc|错误�
   local rc=$?
   # grep -c 无命中时打印 0 并 exit 1；别再接 `|| echo 0`，那会多出一行
   local n; n=$(grep -cE '^(Error|Warning)-\[' "$d/vcs.log" 2>/dev/null); n=${n:-0}
-  local r; r=$("$d/simv" 2>/dev/null | sed -n 's/^RESULT //p')
+  # 必须在 $d 里跑 simv：它会往 cwd 写 ucli.key，在仓库根跑就把工作树弄脏了
+  local r; r=$( cd "$d" && ./simv 2>/dev/null | sed -n 's/^RESULT //p' )
   echo "$rc|$n|$r"
 }
 
