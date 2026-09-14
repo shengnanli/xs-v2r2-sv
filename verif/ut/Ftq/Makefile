@@ -31,6 +31,14 @@ FM_REF_DEPS_Ftq = FtqPcMemWrapper.sv SyncDataModuleTemplate_FtqPC_64entry.sv Dat
   SyncDataModuleTemplate__64entry_2.sv DataModule__16entry_8.sv \
   SyncDataModuleTemplate__64entry_3.sv DataModule__16entry_12.sv FTBEntryGen.sv
 
+# matched-unread 加强（非 waiver：要求 FM 证明**更多**点）。
+# Ftq 的 3395 个 matched-not-compared unread 点是两侧同名同路径的对称死位
+# （update_target 3200 / pred_stage 128 / ftq_pd_mem jalTarget 65 /
+#  last_cycle_bpu_in_stage 2），下游只有被 firtool 裁掉的 difftest/XSPerf 消费者。
+# 打开后这些点进入实比，matched_nc 归零，剩下的 unread 只有 golden-only 的 4282 位
+# （verif/dead_ref/Ftq.json，PASS_DEAD_REF）。依据与实测数据见 scripts/fm_eq.tcl 白名单注释。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 include ../../../scripts/ut_common.mk
 
 # golden 里 `ifndef SYNTHESIS 段调用未定义的 xs_assert_v2（Scala assert 的落地），
