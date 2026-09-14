@@ -141,14 +141,23 @@ module xs_RegCache_core
   //   (Int 口 0 / Mem 口 1)且从不被写口读用 —— 只存 4 位条目下标,不把这个
   //   write-never-read 的常数半区位打进流水寄存器(否则成死位,golden 侧保留全宽
   //   5 位 delayToWakeupQueueRCIdx 使其 bit[4] 成 golden-only cone-dead)。
+  //   级间用 generate-`if` 分流而非 `?:`:两者常量折叠后功能相同,但写成 `?:` 时
+  //   `rcidx_delay[s-1]` 这个下标在 s==0 那一圈仍会被工具**先算出来**(=-1,越出
+  //   声明界 [0:RCIDX_DELAY-1]),VCS 整芯片 elaborate 每个写口报一条
+  //   Warning-[SIOB]。generate-`if` 让越界那一支根本不被展开。
   logic [N_WRITE-1:0][ADDR_W-1:0] rcidx_delay [RCIDX_DELAY];
   generate
     for (p = 0; p < N_WRITE; p++) begin : g_rcidx_delay
       genvar s;
       for (s = 0; s < RCIDX_DELAY; s++) begin : g_stage
-        always_ff @(posedge clock) begin
-          rcidx_delay[s][p] <= (s == 0) ? to_wakeup_idx[p][ADDR_W-1:0]
-                                        : rcidx_delay[s-1][p];
+        if (s == 0) begin : g_head   // 首级:取唤醒队列回送的下标低位
+          always_ff @(posedge clock) begin
+            rcidx_delay[0][p] <= to_wakeup_idx[p][ADDR_W-1:0];
+          end
+        end else begin : g_tail      // 后续级:逐拍右移
+          always_ff @(posedge clock) begin
+            rcidx_delay[s][p] <= rcidx_delay[s-1][p];
+          end
         end
       end
     end

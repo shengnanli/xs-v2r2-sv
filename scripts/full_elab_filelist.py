@@ -54,10 +54,13 @@ PKG_DEF_RE = re.compile(r'^\s*package\s+(\w+)\s*;', re.M)
 PKG_USE_RE = re.compile(r'\b(\w+)\s*::')
 # firtool 产出的宏定义头，没有任何 module；不是错误。
 NO_MODULE_OK = {'extern_modules.sv'}
-# 已登记的逐字节重复（docs/deferred_refactor.tsv）：同一个模块名在两个文件里定义。
-# 单目标 UT 各用一份互不相干，但整芯片只能进一份。规则：保留 `xs_` 前缀那份
-# （它的文件名与模块名一致，是这对里更规范的一份），另一份剔除。
-BYTE_DUP_DROP = {'rtl/common/DataModule.sv', 'rtl/common/SyncDataModule.sv'}
+# 此处曾有一张 BYTE_DUP_DROP 名单，用来把两组逐字节重复
+# （rtl/common/{DataModule,SyncDataModule}.sv 与各自的 xs_ 前缀孪生）在整芯片清单里
+# 机械剔除一份——因为同一个模块名在两个文件里定义，整芯片只能进一份。
+# 2026-09-14 cleanup：两组已真正合并（删掉无前缀那份，FtqPcMemWrapper UT 改指
+# xs_ 前缀），名单随之清空并撤掉。**不要把它加回来**：现在任何新出现的同名重复
+# 都会撞下面 fail-closed 的「同一个模块名被多个重写文件声明」，这正是想要的行为；
+# 靠一张剔除名单绕过去只会把重复养大。
 
 
 def die(msg):
@@ -138,15 +141,6 @@ def main():
 
     # --- 重写侧 ---
     impl_files = sorted(p for p in R.rglob('*.sv'))
-    dropped_dup = []
-    kept = []
-    for p in impl_files:
-        rel = str(p.relative_to(REPO))
-        if rel in BYTE_DUP_DROP:
-            dropped_dup.append(rel)
-            continue
-        kept.append(p)
-    impl_files = kept
 
     owner = collections.defaultdict(list)   # module name -> [impl file]
     pkg_only, with_mod = [], []
@@ -187,8 +181,6 @@ def main():
     print(f'golden filelist        : {len(fl)}')
     print(f'重写文件（rtl/**.sv）  : {len(impl_files)}'
           f'（其中只含 package 的 {len(pkg_only)}）')
-    if dropped_dup:
-        print(f'已登记的逐字节重复剔除: {dropped_dup}')
     print(f'重写件顶掉的 golden    : {len(replaced)}')
     print(f'重写件独有模块(xs_*)   : {len(impl_only)}')
     print(f'保留的 golden 文件     : {len(gold_keep)}')
