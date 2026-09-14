@@ -31,10 +31,25 @@ TB_SRCS = tb.sv
 #
 # 当前状态（scripts/check_closure_symmetry.py --only L2TlbMissQueue 实测）：
 #    ref_bbox = {'ram_40x47': 1}, impl_bbox = {'ram_40x47': 1} ⇒ SYMMETRIC。
-# 遗留待裁：ram_40x47 不在 verif/vendor_boundary.tsv（该表当前只有 20 条 array_*_ext），
-#    故 declare_allow.py 不会自动归 vendor_macro，assembly 声明仍落不了盘。
-#    要么 reviewer 批准把 firtool 行为级存储叶子审定进 registry（新 kind），
-#    要么本目标另寻证法。**本 owner 未自行扩表**（codex 0151 D60 明令不扩 vendor registry）。
+#
+# ★遗留待裁已了结（codex 0158 §1）★
+#    reviewer 在 8 条路线里选了方案 1：把这批**非 2 的幂**的 golden RAM 模型逐条审定
+#    登记为 `APPROVED_MEMORY_MACRO_MODEL`，按**精确 module 名 + golden 源码 hash** 绑定；
+#    明确**不**建通用 ELAB-147 政策例外，也**不**让后缀或诊断文本本身授权任何东西。
+#    ram_40x47 是第一条，已登记在 verif/vendor_boundary.tsv 表尾
+#    （leaf_sha256=68dbc6df0bcb0aafe5bdf199e6241e5a744207d34db15af3dd7aa191413f9766）。
+#    三项最小功能审查可复算，不是「我读过了」：
+#        python3 scripts/audit_ram_memory_model.py --check
+#      M1 memory-only：正文与 firtool 行为级 RAM 模板**逐字相等**（模板等价，不是关键字排除）；
+#      M2 端口与读写行为和实现边界一致：两侧各 1 个例化、8 端口逐名相同、常量连接相同；
+#      M3 父级不依赖越界地址：两侧 enq/deq 指针**归纳可证** ∈[0,39]（基例 0、归纳步 +1、
+#         在 39 处被互斥守卫回卷），所以 2^6=64 与深度 40 之间那 24 个地址任何可达状态都取不到。
+#    本 tb 另有逐拍运行期复核（addr_errors）把 M3 这条在 200k 拍 × 3 seed 上再钉一遍。
+#
+# ★入表不让任何东西转绿★（codex 0158 原文）：
+#    "A clean native result, not registry membership, turns the target green."
+#    入表只授权把同一个精确边界两侧对称黑盒；本目标的绿灯来自
+#    `bash scripts/run_proof.sh L2TlbMissQueue L2TlbMissQueue` 的 clean native 结果本身。
 FM_REF_DEPS_L2TlbMissQueue = Queue40_L2TlbMQBundle.sv
 FM_MERGE_DUP = false
 GOLDEN_SRCS = $(GOLDEN_RTL)/L2TlbMissQueue.sv \

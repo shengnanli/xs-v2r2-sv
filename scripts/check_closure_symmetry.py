@@ -576,11 +576,18 @@ def _mem_facts(design, ports, body):
     任何一项解析不出来 -> 抛异常（fail-closed：解析不了就不许登记，不得静默给默认值）。
     """
     # ---- depth：唯一一条带 unpacked 维的 reg 声明 ----
-    dims = re.findall(r'\breg\b\s*(?:\[[^\]]*\]\s*)?(\w+)\s*\[\s*(\d+)\s*:\s*0\s*\]\s*;', body)
+    # 两种 unpacked 写法都必须认，它们来自**两种不同的 golden 产生器**：
+    #   降序 `reg [W:0] ram [D-1:0];`     —— SRAM 编译器行为模型（array_*_ext.v，D60/D67 的 26 条）
+    #   升序 `reg [W:0] Memory[0:D-1];`   —— firtool 生成的行为级存储叶子（ram_*.sv，0158 §1 的那批）
+    # 只认「两端之一恰为 0」的形态；`[3:1]` 这类偏置下标一律不收（宁可判不出也不猜深度），
+    # 且过滤后仍要求**恰好 1 条**，所以 fail-closed 强度不变。
+    raw_dims = re.findall(r'\breg\b\s*(?:\[[^\]]*\]\s*)?(\w+)\s*\[\s*(\d+)\s*:\s*(\d+)\s*\]\s*;', body)
+    dims = [(n, int(a), int(b)) for n, a, b in raw_dims if min(int(a), int(b)) == 0]
     if len(dims) != 1:
         raise ValueError(f'{design}: 存储数组声明期望恰好 1 条，实得 {len(dims)} 条 '
-                         f'{[d[0] for d in dims]}（fail-closed）')
-    depth = int(dims[0][1]) + 1
+                         f'{[d[0] for d in dims]}（扫到 {len(raw_dims)} 条带 unpacked 维的 reg：'
+                         f'{[d[0] for d in raw_dims]}）（fail-closed）')
+    depth = max(dims[0][1], dims[0][2]) + 1
 
     # ---- 端口宽度表 ----
     widths, prefixes = {}, []

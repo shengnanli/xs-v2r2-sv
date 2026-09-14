@@ -33,6 +33,33 @@ module tb;
   integer errors;
   integer checks;
   integer probe_errors;
+  integer addr_errors;
+
+  // ★codex 0158 §1 的第三项最小功能审查（父级不依赖越界地址）的运行期复核★
+  //
+  // ram_40x47 的地址口是 6 位而存储只有 40 深，2^6=64>40 —— 24 个地址落在数组外。
+  // 把它两侧对称黑盒、并审定进 verif/vendor_boundary.tsv 的**前提**是：父级控制
+  // 在任何可达状态下都取不到那 24 个地址。这条在
+  //   python3 scripts/audit_ram_memory_model.py --check
+  // 里已经用归纳（基例 0 / 归纳步 +1 / 在 39 处被互斥守卫回卷）机器复核过；
+  // 这里再用 200k 拍 × 3 seed 的实跑把**两侧**各自钉一遍 —— 静态归纳与动态实跑
+  // 两条独立证据，任一条不成立都不该入表。
+  task automatic check_addr_in_range(input integer cyc);
+  begin
+    if (u_g.io_out_q.enq_ptr_value >= 6'd40 || u_g.io_out_q.deq_ptr_value >= 6'd40) begin
+      addr_errors++;
+      if (addr_errors < 20)
+        $display("ADDR OOB[golden] enq=%0d deq=%0d cycle=%0d (ram_40x47 depth=40)",
+                 u_g.io_out_q.enq_ptr_value, u_g.io_out_q.deq_ptr_value, cyc);
+    end
+    if (u_i.u_core.enq_ptr >= 6'd40 || u_i.u_core.deq_ptr >= 6'd40) begin
+      addr_errors++;
+      if (addr_errors < 20)
+        $display("ADDR OOB[impl] enq=%0d deq=%0d cycle=%0d (ram_40x47 depth=40)",
+                 u_i.u_core.enq_ptr, u_i.u_core.deq_ptr, cyc);
+    end
+  end
+  endtask
 
   L2TlbMissQueue u_g (
     .clock(clock),
@@ -146,6 +173,7 @@ module tb;
     errors = 0;
     checks = 0;
     probe_errors = 0;
+    addr_errors = 0;
     reset = 1'b1;
     drive_random();
     repeat (5) @(posedge clock);
@@ -155,6 +183,7 @@ module tb;
     for (int unsigned f = 0; f < 3; f++) begin
       directed_priv_virt_flush((f == 0) ? 3 : (f == 1) ? 17 : 40);
       #1;
+      check_addr_in_range(-1);
       if (u_g.io_out_q.enq_ptr_value !== u_i.u_core.enq_ptr
           || u_g.io_out_q.deq_ptr_value !== u_i.u_core.deq_ptr
           || u_g.io_out_q.maybe_full !== u_i.u_core.maybe_full) begin
@@ -221,9 +250,12 @@ module tb;
         if (probe_errors < 20) $display("PROBE maybe_full g=%0h i=%0h cycle=%0d",
           u_g.io_out_q.maybe_full, u_i.u_core.maybe_full, cycle);
       end
+      check_addr_in_range(cycle);
     end
-    $display("L2TlbMissQueue_UT checks=%0d errors=%0d probe_errors=%0d", checks, errors, probe_errors);
-    if (errors == 0 && probe_errors == 0 && checks > 1000) $display("TEST PASSED"); else $fatal(1, "L2TlbMissQueue mismatch");
+    $display("L2TlbMissQueue_UT checks=%0d errors=%0d probe_errors=%0d addr_errors=%0d",
+             checks, errors, probe_errors, addr_errors);
+    if (errors == 0 && probe_errors == 0 && addr_errors == 0 && checks > 1000) $display("TEST PASSED");
+    else $fatal(1, "L2TlbMissQueue mismatch");
     $finish;
   end
 endmodule

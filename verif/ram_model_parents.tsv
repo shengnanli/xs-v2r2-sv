@@ -1,0 +1,17 @@
+# ram_model_parents.tsv —— firtool 行为级 RAM 模型的 parent 对照表（codex 0158 §1）。
+#
+# codex 0158 §1 明确：那批模型**只在各自 parent 被实际验证时再加**，所以本表与
+# verif/vendor_boundary.tsv 里 ram_* 的条目应当逐名一一对应 —— 一条 registry 行
+# 必须有一行 parent 记录，否则「三项最小功能审查」里的 M2/M3 根本无从复算。
+#
+# 复算：python3 scripts/audit_ram_memory_model.py --check
+#   逐行重跑 M1(memory-only 精确模板等价) / M2(两侧边界端口与常量连接一致) /
+#   M3(两侧地址驱动寄存器归纳可证不越界)；任何一项认不出即退出 1（fail-closed）。
+#
+# 列：
+#   1 design        golden RAM 模型的字面 module 名（与 registry 第 1 列同名）
+#   2 parent_ref    ref 侧例化它的 golden 文件（相对 $(GOLDEN_RTL)）
+#   3 parent_impl   impl 侧例化它的重写文件（相对仓库根）
+# ---------------------------------------------------------------------------
+# design	parent_ref	parent_impl
+ram_40x47	Queue40_L2TlbMQBundle.sv	rtl/memblock/L2TlbMissQueue.sv
