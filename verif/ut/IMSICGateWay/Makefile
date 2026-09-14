@@ -13,7 +13,10 @@ TB_SRCS = tb.sv
 #   golden 源码就在 G1 里，两侧同源 elaborate 即可白盒受验。
 # 做法与 verif/ut/DebugModule 一致：放进 RTL_GOLDEN_DEPS（impl 侧）+
 # FM_REF_DEPS_<top>（ref 侧），FM 于是不再有任何黑盒，模式回到 signoff-strict。
-# 效果：passing 39 -> 45（同步链 3 级 DFF 两侧真比），failing/unmatched/unread 仍全 0。
+# 实测效果（fm.log 的 Matched Compare Points 表）：总点数仍 39，但构成从
+#   BBPin 3 / Port 18 / DFF 18  变成  BBPin 0 / Port 18 / DFF 21 —— 同步链的 3 级
+#   DFF 从「黑盒引脚假设相等」变成「真做等价比较」，black_boxes.rpt 报 No black boxes。
+#   failing/unverified/unmatched/unread 全 0，verdict 从 PARTIAL 变 SUCCEEDED。
 # ---------------------------------------------------------------------------
 RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/AsyncResetSynchronizerShiftReg_w1_d3_i0.sv \
                   $(GOLDEN_RTL)/AsyncResetSynchronizerPrimitiveShiftReg_d3_i0.sv
