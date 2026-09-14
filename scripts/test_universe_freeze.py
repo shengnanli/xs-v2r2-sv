@@ -24,6 +24,7 @@
 """
 from __future__ import print_function
 
+import json
 import os
 import pathlib
 import shutil
@@ -100,11 +101,14 @@ endmodule
 """,
 }
 
+# ★7 列★（codex 0153 D66 之后）：obligation 由 scope 机械推出，
+# proof_status 由 tracked 证书重算 —— 两列都不许手写，C2(f)/(g) 就是在守这个。
+# 夹具里没有任何证书 ⇒ 三行 proof_status 只能是 UNVERIFIED。
 UNIVERSE_TSV = """# G1 主 universe 对账
-# old_target\tg1_name\tresolve\tdelta_class\tstatus\tnote
-Top\tTop\tsame_name\tTRIVIAL\tNOT_STARTED\t
-Leaf_1\tLeaf_2\tslot_map\tREWRITE_S\tNOT_STARTED\t
-Leaf_2\tLeaf_3\tslot_map\tREWRITE_S\tWORKING_PASS\t
+# old_target\tg1_name\tresolve\tdelta_class\tobligation\tproof_status\tnote
+Top\tTop\tsame_name\tTRIVIAL\tREQUIRED\tUNVERIFIED\t
+Leaf_1\tLeaf_2\tslot_map\tREWRITE_S\tREQUIRED\tUNVERIFIED\t
+Leaf_2\tLeaf_3\tslot_map\tREWRITE_S\tREQUIRED\tUNVERIFIED\t
 """
 
 OLD2NEW_TSV = """# old306 → G1 守恒映射
@@ -122,8 +126,8 @@ Leaf_3\tyes\tfrom_old_306
 Top\tyes\tfrom_old_306
 """
 
-NORM_TSV = """# 台账归一化
-# target\tbucket\tstatus\tnote
+NORM_TSV = """# 工作台账归一化
+# target\tbucket\twork_state\tnote
 Leaf_3\tMAIN\tWORKING_PASS\tfixture
 """
 
@@ -155,6 +159,15 @@ endmodule
 }
 
 
+def _git_init(repo):
+    """夹具必须是真 git 仓库：proof status 的 trackedness 由 git ls-files 判。"""
+    env = dict(os.environ, GIT_AUTHOR_NAME='t', GIT_AUTHOR_EMAIL='t@t',
+               GIT_COMMITTER_NAME='t', GIT_COMMITTER_EMAIL='t@t')
+    for args in (['init', '-q'], ['add', '-A'], ['commit', '-q', '-m', 'fixture']):
+        subprocess.run(['git'] + args, cwd=str(repo), env=env,
+                       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+
 def build_fixture(root):
     root = pathlib.Path(root)
     for tag, files in (('g0', G0_FILES), ('g1', G1_FILES)):
@@ -169,10 +182,21 @@ def build_fixture(root):
     (d / 'g1_configured_universe.tsv').write_text(CONFIG_TSV)
     (d / 'ledger_normalized.tsv').write_text(NORM_TSV)
     (d / 'g1_slot_map_evidence.tsv').write_text(EVIDENCE_TSV)
+    # C2(g) 要按 tracked 证书重算 proof_status —— 夹具必须有 POLICY.json 且是 git 仓库
+    certs = root / 'repo' / 'verif' / 'proof_certificates'
+    certs.mkdir(parents=True)
+    certs.joinpath('POLICY.json').write_text(json.dumps({
+        'schema': 'xs-v2-sv-proof-policy-v1', 'freeze_commit': None,
+        'qualifying_verdicts': ['SUCCEEDED', 'PASS_DEAD_REF'],
+        'tool': {'name': 'fm_shell', 'version': 'V', 'build': 'B'},
+        'pinned_entry_appvars': {'hdlin_unresolved_modules': 'black_box'},
+        'script_closure_files': ['scripts/fm_eq.tcl'],
+        'g1_canonical_id': 'G1-testcid'}, indent=1))
     r = root / 'repo' / 'rtl' / 'sub'
     r.mkdir(parents=True)
     for n, t in RTL_FILES.items():
         (r / n).write_text(t)
+    _git_init(root / 'repo')
     return root
 
 
@@ -294,14 +318,14 @@ class TestOwnerUnique(Base):
 
     def test_one_old_target_appears_on_two_rows(self):
         p = self.doc('g1_universe.tsv')
-        p.write_text(p.read_text() + 'Leaf_1\tLeaf_2\tslot_map\tREWRITE_S\tNOT_STARTED\t\n')
+        p.write_text(p.read_text() + 'Leaf_1\tLeaf_2\tslot_map\tREWRITE_S\tREQUIRED\tUNVERIFIED\t\n')
         r = self.run_check('--only', 'C1')
         self.assert_caught(r, 'C1', '出现在两行')
 
     def test_duplicate_row_is_not_excused_by_being_identical(self):
         """两行逐字相同也不算"没冲突"——C3 必须报重复行。"""
         p = self.doc('g1_universe.tsv')
-        p.write_text(p.read_text() + 'Leaf_1\tLeaf_2\tslot_map\tREWRITE_S\tNOT_STARTED\t\n')
+        p.write_text(p.read_text() + 'Leaf_1\tLeaf_2\tslot_map\tREWRITE_S\tREQUIRED\tUNVERIFIED\t\n')
         r = self.run_check('--only', 'C3')
         self.assert_caught(r, 'C3', '逐字重复')
 
@@ -515,17 +539,19 @@ class TestFingerprintBound(Base):
         """★串位事故的直接形态★：名字改对了，note 里挂的还是老名那份 receipt。
         SyncDataModuleTemplate__64entry_4 → _5 一行如果继承 _4 的 receipt，
         就是拿"证明了 _4"去冒充"证明了 _5"。"""
-        self.sub('g1_universe.tsv', 'Leaf_2	Leaf_3	slot_map	REWRITE_S	WORKING_PASS	',
-                 'Leaf_2	Leaf_3	slot_map	REWRITE_S	REVALIDATED_PASS	'
+        self.sub('g1_universe.tsv',
+                 'Leaf_2	Leaf_3	slot_map	REWRITE_S	REQUIRED	UNVERIFIED	',
+                 'Leaf_2	Leaf_3	slot_map	REWRITE_S	REQUIRED	UNVERIFIED	'
                  'receipt evidence/abc123def456/Leaf_2/receipt.json @abc123def456')
         r = self.run_check('--only', 'C6')
-        self.assert_caught(r, 'C6', 'receipt 串位')
+        self.assert_caught(r, 'C6', '串位')
 
     def test_receipt_of_the_right_module_is_not_a_false_positive(self):
         """对照组：note 里的 receipt 就是本行 g1_name 的，必须放行。
         没有这一条，上一条可能只是"凡有 receipt 字样就报错"。"""
-        self.sub('g1_universe.tsv', 'Leaf_2	Leaf_3	slot_map	REWRITE_S	WORKING_PASS	',
-                 'Leaf_2	Leaf_3	slot_map	REWRITE_S	REVALIDATED_PASS	'
+        self.sub('g1_universe.tsv',
+                 'Leaf_2	Leaf_3	slot_map	REWRITE_S	REQUIRED	UNVERIFIED	',
+                 'Leaf_2	Leaf_3	slot_map	REWRITE_S	REQUIRED	UNVERIFIED	'
                  'receipt evidence/abc123def456/Leaf_3/receipt.json @abc123def456')
         r = self.run_check('--only', 'C6')
         self.assertEqual(r.verdict('C6'), 'PASS',

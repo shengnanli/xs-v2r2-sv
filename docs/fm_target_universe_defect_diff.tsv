@@ -1,0 +1,34 @@
+# FM target 全集：**权威 make 求值** vs **缺陷模型**（codex 0153 D70 要的机器 diff）
+# scripts/fm_target_universe.py --defect-diff 生成；禁止手工编辑。
+# 缺陷模型 = scripts/bulk_revalidate.py:34 (pre-fix)，逐字复刻的坏正则；
+#   它匹配不上 `:=`、不展开 `$(VARIANTS)`、只取第一处赋值。
+# 这不是"两种同样合理的口径"：`fm-%` 守卫对 make 已展开的字符串做子串匹配，
+#   所以 make 那一栏是唯一权威，缺陷模型那一栏每一行都是**假阴性**。
+# 每一行都曾让一个真实存在的 FM target 被判成"不是 target"，进而让引用它的
+#   child 在 verif/allow_gen/classification.tsv 里被记成"永远无法变绿"。
+# makefiles_sha256=ad7d1658db3160a50ccef6647034d4b6ec12ee2cc0e43c0472a4f08bf725b342  权威=272  缺陷模型=248  被漏掉=24  多出来=0
+# target	ut_dirs_authoritative	seen_by_defect_model
+MbistPipeDCacheData	MbistPipe	MISSED
+MbistPipeDcacheTag	MbistPipe	MISSED
+MbistPipeFrontend	MbistPipe	MISSED
+MbistPipeFtb	MbistPipe	MISSED
+MbistPipeIcacheDataWay0	MbistPipe	MISSED
+MbistPipeIcacheDataWay1	MbistPipe	MISSED
+MbistPipeIcacheDataWay2	MbistPipe	MISSED
+MbistPipeIcacheDataWay3	MbistPipe	MISSED
+MbistPipeIcacheTag	MbistPipe	MISSED
+MbistPipeIttage	MbistPipe	MISSED
+MbistPipeIttage_1	MbistPipe	MISSED
+MbistPipeIttage_2	MbistPipe	MISSED
+MbistPipeIttage_3	MbistPipe	MISSED
+MbistPipeIttage_4	MbistPipe	MISSED
+MbistPipeL2Prefetcher	MbistPipe	MISSED
+MbistPipeMemBlk	MbistPipe	MISSED
+MbistPipePtwL0	MbistPipe	MISSED
+MbistPipePtwL1	MbistPipe	MISSED
+MbistPipeSc	MbistPipe	MISSED
+MbistPipeSc_1	MbistPipe	MISSED
+MbistPipeSc_2	MbistPipe	MISSED
+MbistPipeSc_3	MbistPipe	MISSED
+MbistPipeSms	MbistPipe	MISSED
+MbistPipeTage	MbistPipe	MISSED

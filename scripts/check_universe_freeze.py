@@ -79,8 +79,15 @@ _PORT = re.compile(r'^[ \t]*(input|output|inout)[ \t]')
 _HDR_END = re.compile(r'^[ \t]*\)[ \t]*;[ \t]*$')
 
 GONE_TOKENS = ('gone_in_g1', 'removed_in_g1', 'no_g0_file')
-PASSISH = ('WORKING_PASS', 'WORKING_PASS_DEAD_REF', 'WORKING_MERGED_PASS',
-           'REVALIDATED_PASS', 'REVALIDATED_PASS_DEAD_REF')
+
+# g1_universe.tsv 的列（codex 0153 D66 之后是 7 列；第 5、6 列是新增的
+# obligation / proof_status）。★不要按下标散在各处硬写★。
+UNI_OLD, UNI_NEW, UNI_RESOLVE, UNI_DELTA, UNI_OBL, UNI_PSTATUS, UNI_NOTE = range(7)
+UNI_NCOL = 7
+
+#: 合法的 proof obligation / proof status 取值。冻结表里出现别的值一律 FAIL
+#: （fail-closed：拼错一个状态名不该悄悄变成"没人认识所以放过"）。
+OBLIGATIONS = ('REQUIRED', 'OUT_OF_SCOPE', 'NONE')
 
 
 # ★身份解析（Baseline / 槽位映射 / 指纹）统一由 scripts/g1_slotmap.py 提供。
@@ -88,6 +95,7 @@ PASSISH = ('WORKING_PASS', 'WORKING_PASS_DEAD_REF', 'WORKING_MERGED_PASS',
 # 于是检查器说不一致、生成器重跑又改回去。现在三处 import 同一份，实现上不可能再漂。
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import g1_slotmap as _SM                                          # noqa: E402
+import proof_status as _PS                                        # noqa: E402
 
 InputError = _SM.InputError
 Baseline = _SM.Baseline
@@ -220,7 +228,7 @@ def c4_no_dangling(uni, o2n, g1mods, rep):
                                  % (label, i, old, g1n))
 
 
-def c2_conservation(uni, cfg, norm, g1mods, impl, rep):
+def c2_conservation(uni, cfg, norm, g1mods, impl, pmap, rep):
     """C2: 四个集合的差集必须能被明确归类；不能有无法归类的残余。"""
     A = set(f[0] for _, f in cfg if f[1] == 'yes')          # in_universe
     X = set(f[0] for _, f in cfg if f[1] == 'no')           # 排除类
@@ -289,7 +297,39 @@ def c2_conservation(uni, cfg, norm, g1mods, impl, rep):
             rep.bad('C2', 'ledger_normalized.tsv:%d %s 记 %s，但它%s被 old306 映射覆盖，应为 %s'
                          % (i, t, bucket, '' if t in covered else '不', want))
 
-    rep.note('C2 集合规模: G1 golden=%d = universe %d + 排除 %d; '
+    # (f) ★obligation 列必须与 scope 判定逐行一致★（codex 0153 D66）
+    # 冻结表要冻结的正是"这个身份该不该被证明"。这一列一旦能被手工改写，
+    # 就可以把一个该证的目标悄悄标成 OUT_OF_SCOPE 而分母不变。
+    for i, f in uni:
+        g1n, obl = f[UNI_NEW], f[UNI_OBL]
+        if obl not in OBLIGATIONS:
+            rep.bad('C2', 'g1_universe.tsv:%d %s 的 obligation=%r 不是 %s 之一'
+                         % (i, f[UNI_OLD], obl, list(OBLIGATIONS)))
+            continue
+        want = 'NONE' if g1n == '-' else ('REQUIRED' if g1n in A else 'OUT_OF_SCOPE')
+        if obl != want:
+            rep.bad('C2', 'g1_universe.tsv:%d %s → %s 记 obligation=%s，'
+                          '但按 configured universe 的 scope 应为 %s'
+                         % (i, f[UNI_OLD], g1n, obl, want))
+
+    # (g) ★proof_status 必须由 tracked 证书重算出来★（codex 0153 D66）
+    # 这一条是"status 与 universe 解耦"的机器闸：表里写 VERIFIED 而证书不在/不合格
+    # 的行，必须响。否则解耦只是把旧绿换了个列名继续写。
+    for i, f in uni:
+        g1n, pst = f[UNI_NEW], f[UNI_PSTATUS]
+        if pst not in _PS.ALL_STATES:
+            rep.bad('C2', 'g1_universe.tsv:%d %s 的 proof_status=%r 不是 %s 之一'
+                         % (i, f[UNI_OLD], pst, list(_PS.ALL_STATES)))
+            continue
+        want = (_PS.status_of(pmap, g1n)[0] if g1n != '-' else _PS.UNVERIFIED)
+        if pst != want:
+            rep.bad('C2', 'g1_universe.tsv:%d %s → %s 记 proof_status=%s，但按 tracked '
+                          '证书重算是 %s ★状态不得手写★'
+                         % (i, f[UNI_OLD], g1n, pst, want))
+
+    rep.note('C2 证书: tracked 证书 %d 份；proof_status=VERIFIED 的行 %d 行'
+             % (len(pmap), sum(1 for _i, f in uni if f[UNI_PSTATUS] == _PS.VERIFIED)))
+    rep.note('C2 集合规模: G1 golden=%d = universe %d + 排除 %d;'
              '台账映射目标 %d (其中落在 universe 内 %d); rtl 实现 %d '
              '(对应 golden %d + 内部件 %d)'
              % (len(g1mods), len(A), len(X), len(B), len(covered), len(impl),
@@ -376,19 +416,26 @@ def c6_fingerprint_bound(uni, ev, slotmap, slotwhy, g0, g1, rep):
          还是老名那一份"。
     """
     evrow = dict((f[0], (i, f)) for i, f in ev)
-    recpt = re.compile(r'evidence/[^/\s]+/([A-Za-z_]\w*)/receipt\.json')
+    # R5 要盯的是"note 里引用的证明产物属于谁"。两种产物都要盯：
+    #   evidence/<run>/<target>/receipt.json      老的 untracked receipt（D66 后不再作
+    #                                             状态来源，但历史 note 里可能还有）
+    #   verif/proof_certificates/<target>.json    现在唯一权威的 tracked 证书
+    recpt = re.compile(r'evidence/[^/\s]+/([A-Za-z_]\w*)/receipt\.json'
+                       r'|verif/proof_certificates/([A-Za-z_]\w*)\.json')
 
     for i, f in uni:
-        old, g1n, status = f[0], f[1], (f[4] if len(f) > 4 else '')
-        note = f[5] if len(f) > 5 else ''
+        old, g1n = f[UNI_OLD], f[UNI_NEW]
+        note = f[UNI_NOTE] if len(f) > UNI_NOTE else ''
         claim = '' if g1n == '-' else g1n
 
         # R5 —— 与映射本身无关，gone 行也要查
         m = recpt.search(note)
-        if m and m.group(1) != (claim or '-'):
-            rep.bad('C6', 'g1_universe.tsv:%d %s → %s，但 note 引用的是 %s 的 receipt'
-                          '（%s）★receipt 串位：证明的是另一个模块★'
-                         % (i, old, claim or '(gone)', m.group(1), m.group(0)))
+        if m:
+            who = m.group(1) or m.group(2)
+            if who != (claim or '-'):
+                rep.bad('C6', 'g1_universe.tsv:%d %s → %s，但 note 引用的是 %s 的证明产物'
+                              '（%s）★串位：证明的是另一个模块★'
+                             % (i, old, claim or '(gone)', who, m.group(0)))
         if not claim:
             continue
 
@@ -491,7 +538,7 @@ def main(argv=None):
 
     if args.emit_evidence:
         try:
-            uni0 = read_tsv(d / 'g1_universe.tsv', 5, 'g1_universe.tsv')
+            uni0 = read_tsv(d / 'g1_universe.tsv', UNI_NCOL, 'g1_universe.tsv')
             g0b = Baseline(args.g0, 'G0', include_v=incv)
             g1b = Baseline(args.g1, 'G1', include_v=incv)
         except InputError as e:
@@ -534,11 +581,12 @@ def main(argv=None):
         return 0
 
     try:
-        uni = read_tsv(d / 'g1_universe.tsv', 5, 'g1_universe.tsv')
+        uni = read_tsv(d / 'g1_universe.tsv', UNI_NCOL, 'g1_universe.tsv')
         o2n = read_tsv(d / 'g1_old_to_new_map.tsv', 4, 'g1_old_to_new_map.tsv')
         cfg = read_tsv(d / 'g1_configured_universe.tsv', 3, 'g1_configured_universe.tsv')
         norm = read_tsv(d / 'ledger_normalized.tsv', 3, 'ledger_normalized.tsv')
         impl = rtl_modules(repo)
+        pmap = _PS.status_map(repo)
         g1 = Baseline(args.g1, 'G1', include_v=incv)
         g1mods = set(g1.ports)
         g0 = slotmap = slotwhy = ev = None
@@ -546,7 +594,7 @@ def main(argv=None):
             g0 = Baseline(args.g0, 'G0', include_v=incv)
             slotmap, slotwhy = build_slot_map(g0, g1)
             ev = read_tsv(d / 'g1_slot_map_evidence.tsv', 3, 'g1_slot_map_evidence.tsv')
-    except InputError as e:
+    except (InputError, _PS.PolicyError) as e:
         sys.stderr.write('INPUT/PARSE ERROR (fail-closed): %s\n' % e)
         return 2
 
@@ -557,7 +605,7 @@ def main(argv=None):
     if 'C4' in want:
         c4_no_dangling(uni, o2n, g1mods, rep)
     if 'C2' in want:
-        c2_conservation(uni, cfg, norm, g1mods, impl, rep)
+        c2_conservation(uni, cfg, norm, g1mods, impl, pmap, rep)
     if 'C5' in want:
         c5_slot_consistent(uni, ev, slotmap, slotwhy, g0, g1, rep)
     if 'C6' in want:

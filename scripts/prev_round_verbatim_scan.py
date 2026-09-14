@@ -229,9 +229,13 @@ def load_ledger_status(paths):
             if line.startswith('#') or not line.strip():
                 continue
             c = line.split('\t')
-            # g1_universe.tsv: old_target g1_name resolve delta_class status note
-            # ledger_normalized.tsv: target bucket status note
-            st = c[4] if len(c) >= 6 else (c[2] if len(c) >= 4 else '')
+            # g1_universe.tsv（codex 0153 D66 后 7 列）:
+            #   old_target g1_name resolve delta_class obligation proof_status note
+            # ledger_normalized.tsv（4 列）: target bucket work_state note
+            # ★这里原先取 c[4]★ —— D66 加了 obligation 列之后 c[4] 变成了
+            # REQUIRED/OUT_OF_SCOPE，再当状态用就是读错列（本表只是诊断报告，
+            # 不是闸，所以不会有人发现）。
+            st = c[5] if len(c) >= 7 else (c[2] if len(c) >= 4 else '')
             if c[0] not in out and st:
                 out[c[0]] = st
     return out

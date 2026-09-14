@@ -44,6 +44,66 @@ import unittest
 HERE = pathlib.Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import g1_slotmap as SM                                            # noqa: E402
+import proof_certificate as PC                                     # noqa: E402
+
+#: 夹具 POLICY。freeze_commit 由各测试自己填 —— 为 None 时任何证书都不得放行。
+FIXTURE_FREEZE = 'a' * 40
+
+
+def policy_doc(freeze_commit=FIXTURE_FREEZE):
+    return {
+        'schema': PC.POLICY_SCHEMA,
+        'freeze_commit': freeze_commit,
+        'qualifying_verdicts': ['SUCCEEDED', 'PASS_DEAD_REF'],
+        'tool': {'name': 'fm_shell', 'version': 'V-2023.12-SP3', 'build': '8868332'},
+        'pinned_entry_appvars': {'hdlin_unresolved_modules': 'black_box'},
+        'script_closure_files': ['scripts/fm_eq.tcl'],
+        'g1_canonical_id': 'G1-testcid',
+    }
+
+
+def make_certificate(target, impl_commit=FIXTURE_FREEZE, verdict='SUCCEEDED'):
+    """造一份**能通过 proof_certificate.validate_document 的**证书。
+
+    正控用。没有它，"证书让它变绿"这一条就只能靠"没变绿"来证，
+    而"全都没变绿"同样能让负测通过 —— 那就是典型的假通过。
+    """
+    h = lambda c: c * 64                                          # noqa: E731
+    golden = [{'path': 'G/%s.sv' % target, 'kind': 'golden', 'sha256': h('1')}]
+    impl = [{'path': 'rtl/%s.sv' % target, 'kind': 'repo', 'sha256': h('2')}]
+    script = [{'path': 'scripts/fm_eq.tcl', 'kind': 'repo', 'sha256': h('3')}]
+    cfg = {'fm_mode': 'signoff-strict', 'allowlist': None}
+    native = {'native_verdict': verdict, 'passing': 1, 'failing': 0}
+    doc = {
+        'schema': PC.CERT_SCHEMA, 'target': target, 'variant': target,
+        'ut_dir': target, 'verdict': verdict, 'proof_mode': 'signoff-strict',
+        'provisional': False, 'impl_worktree_dirty': False,
+        'impl_commit': impl_commit, 'proof_commit': impl_commit,
+        'proof_worktree_digest': h('4'), 'g1_canonical_id': 'G1-testcid',
+        'g1_manifest_sha256': h('5'),
+        'tool': {'name': 'fm_shell', 'version': 'V-2023.12-SP3',
+                 'build': '8868332', 'fm_shell_rc': 0},
+        'proof_config': cfg, 'proof_config_sha256': PC.canon_digest(cfg),
+        'input_closure': {'golden': golden, 'impl': impl,
+                          'golden_sha256': PC.closure_digest(golden),
+                          'impl_sha256': PC.closure_digest(impl),
+                          'repo_impl_files': 1},
+        'script_closure': {'entries': script,
+                           'sha256': PC.closure_digest(script)},
+        'native_facts_sha256': h('6'), 'native_result': native,
+        'result_sha256': PC.canon_digest({'verdict': verdict,
+                                          'native_result': native}),
+        'receipt_sha256': h('7'), 'evidence_retention': 'attestation_only',
+        'evidence_archive': None,
+        'reproduce': {'command': 'make -C verif/ut/%s fm-%s' % (target, target)},
+        'generated_at': '2026-01-01T00:00:00Z',
+        'generator': {'script': 'scripts/make_proof_certificate.py', 'version': 1,
+                      'source_evidence_dir': 'evidence/test'},
+        'run_id': 'test-run',
+    }
+    errs = PC.validate_document(doc)
+    assert not errs, '夹具证书自己就不合法，正控无效: %s' % errs[:3]
+    return doc
 
 G0_FILES = {
     'Top.sv': 'module Top(\n  input  clock,\n  input  reset\n);\n'
@@ -95,11 +155,36 @@ def build_fixture(root):
     (root / 'manifest.json').write_text(
         json.dumps({'entries': [{'target': t} for t in TARGETS]}))
     (root / 'cid.txt').write_text('TESTCID\n')
+    # ★证书目录 + git★：proof status 只认 tracked 证书（codex 0153 D66），
+    # 判定 trackedness 要 `git ls-files`，所以夹具必须是个真 git 仓库。
+    certs = root / 'repo' / 'verif' / 'proof_certificates'
+    certs.mkdir(parents=True)
+    (certs / 'POLICY.json').write_text(json.dumps(policy_doc(), indent=1))
+    git_init(root / 'repo')
     # 另一个"主树"哨兵：任何脚本都不许写到它里面
     other = root / 'other_repo' / 'docs'
     other.mkdir(parents=True)
     (other / 'g1_universe.tsv').write_text('SENTINEL\n')
     return root
+
+
+def git_init(repo):
+    env = dict(os.environ, GIT_AUTHOR_NAME='t', GIT_AUTHOR_EMAIL='t@t',
+               GIT_COMMITTER_NAME='t', GIT_COMMITTER_EMAIL='t@t')
+    for args in (['init', '-q'], ['add', '-A'],
+                 ['commit', '-q', '-m', 'fixture']):
+        subprocess.run(['git'] + args, cwd=str(repo), env=env,
+                       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+
+def git_add(repo, *paths):
+    """把文件加进 index 并提交 —— 只有这样 `git ls-files` 才认它。"""
+    env = dict(os.environ, GIT_AUTHOR_NAME='t', GIT_AUTHOR_EMAIL='t@t',
+               GIT_COMMITTER_NAME='t', GIT_COMMITTER_EMAIL='t@t')
+    subprocess.run(['git', 'add', '--'] + list(paths), cwd=str(repo), env=env,
+                   stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    subprocess.run(['git', 'commit', '-q', '-m', 'add'], cwd=str(repo), env=env,
+                   stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 
 class Base(unittest.TestCase):
@@ -117,7 +202,8 @@ class Base(unittest.TestCase):
                '--g1', str(self.root / 'g1'),
                '--manifest', str(self.root / 'manifest.json')] + list(extra)
         if script == 'g1_universe.py':
-            cmd += ['--canonical-id', str(self.root / 'cid.txt')]
+            # --root 现在两边都要：obligation 列按 configured universe 的 scope 判
+            cmd += ['--canonical-id', str(self.root / 'cid.txt'), '--root', 'Top']
         else:
             cmd += ['--root', 'Top', '--alt-root', 'Top']
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -208,37 +294,150 @@ class TestSlotBeatsSameName(Base):
 
 
 # ====================================================================
-# D58-2 禁止 status.get(old) or status.get(new) 串 receipt
+# D58-2 / D66  proof status 只按 g1_name 取，且只认 tracked 证书
 # ====================================================================
-class TestNoReceiptCrossWiring(Base):
+class TestNoCertificateCrossWiring(Base):
+    """串位事故在 D66 之后的形态：证书挂在**老名**下。
 
-    def test_receipt_of_old_name_is_not_inherited_by_the_new_target(self):
-        """★D58 第二条 / 事故本体★
-        receipt 只存在于老名 Leaf_1 名下。映射改判到 Leaf_2 之后，
-        Leaf_2 没有实现、没有 UT、没有 receipt —— 状态必须是 NOT_STARTED。"""
+    老形态是 receipt 串位（`status.get(old) or status.get(new)`）。D66 把状态来源
+    换成 tracked 证书之后，同一个错误会以"老名下的证书被新 target 继承"重现，
+    所以这组负测跟着搬到证书上，并且**保留正控**：证书记在 G1 名下时必须真的变绿。
+    没有正控，"全都没变绿"也能让负测通过 —— 那就是假通过。
+    """
+
+    def _put_cert(self, name, **kw):
+        d = self.root / 'repo' / 'verif' / 'proof_certificates'
+        f = d / ('%s.json' % name)
+        f.write_text(json.dumps(make_certificate(name, **kw), indent=1))
+        return f
+
+    def test_certificate_of_old_name_is_not_inherited_by_the_new_target(self):
+        """★事故本体★ 证书只存在于老名 Leaf_1 名下。映射改判到 Leaf_2 之后，
+        Leaf_2 没有实现、没有 UT、没有证书 —— proof_status 必须是 UNVERIFIED。"""
+        self._put_cert('Leaf_1')
+        git_add(self.root / 'repo', 'verif/proof_certificates/Leaf_1.json')
         rc, out, _ = self.run_gen('g1_universe.py', '--report-dropped')
         self.assertEqual(rc, 0, out)
         r = self.rows()
         self.assertEqual(r['Leaf_1'][1], 'Leaf_2')
-        self.assertEqual(r['Leaf_1'][4], 'NOT_STARTED',
-                         '★Leaf_2 继承了 Leaf_1 的 receipt —— 串位没修好★')
-        self.assertNotIn('/Leaf_1/receipt.json', r['Leaf_1'][5],
-                         'note 里还挂着别人的 receipt 路径')
-        self.assertNotIn('evidence/', r['Leaf_1'][5],
-                         'note 里还引用着 evidence 路径')
-        self.assertIn('Leaf_1 → Leaf_2  老名状态 REVALIDATED_PASS 已丢弃', out,
+        self.assertEqual(r['Leaf_1'][5], 'UNVERIFIED',
+                         '★Leaf_2 继承了 Leaf_1 的证书 —— 串位没修好★')
+        self.assertNotIn('Leaf_1.json', r['Leaf_1'][6],
+                         'note 里还挂着别人的证书路径')
+        self.assertIn('Leaf_1 → Leaf_2  老名证书状态 VERIFIED 已丢弃', out,
                       '丢弃了老名状态却没有逐条报告 —— 静默丢弃同样不可接受')
 
-    def test_receipt_under_the_new_name_is_still_honored(self):
-        """对照组：receipt 记在 G1 名下时必须照常生效。
-        没有这一条，上一条可能只是"所有 receipt 都被忽略了"。"""
-        (self.root / 'repo' / 'docs' / 'receipt_index.tsv').write_text(
-            RECEIPT_INDEX.replace('Leaf_1\tSUCCEEDED', 'Leaf_2\tSUCCEEDED')
-                         .replace('/Leaf_1/', '/Leaf_2/'))
+    def test_certificate_under_the_new_name_is_honored(self):
+        """★正控★ 证书记在 G1 名下时必须真的变 VERIFIED。
+
+        没有这一条，上一条可能只是"所有证书都被忽略了"。"""
+        self._put_cert('Leaf_2')
+        git_add(self.root / 'repo', 'verif/proof_certificates/Leaf_2.json')
         rc, out, _ = self.run_gen('g1_universe.py')
         self.assertEqual(rc, 0, out)
-        self.assertEqual(self.rows()['Leaf_1'][4], 'REVALIDATED_PASS',
-                         'receipt 记在 G1 名下却没生效（假阴性）')
+        r = self.rows()
+        self.assertEqual(r['Leaf_1'][5], 'VERIFIED',
+                         '证书记在 G1 名下却没生效（假阴性：正控失效，负测无意义）')
+        self.assertIn('Leaf_2.json', r['Leaf_1'][6])
+
+    def test_untracked_certificate_does_not_turn_green(self):
+        """往工作树里丢一份证书而不 git add —— 必须仍是 UNVERIFIED。"""
+        self._put_cert('Leaf_2')                       # ★刻意不 git add★
+        rc, out, _ = self.run_gen('g1_universe.py')
+        self.assertEqual(rc, 0, out)
+        self.assertEqual(self.rows()['Leaf_1'][5], 'UNVERIFIED',
+                         '★untracked 证书把它转绿了 —— trackedness 闸没生效★')
+
+    def test_null_freeze_commit_refuses_to_release(self):
+        """POLICY.freeze_commit 为 null 时，合格证书也不得放行（fail-closed）。"""
+        d = self.root / 'repo' / 'verif' / 'proof_certificates'
+        (d / 'POLICY.json').write_text(json.dumps(policy_doc(None), indent=1))
+        self._put_cert('Leaf_2')
+        git_add(self.root / 'repo', 'verif/proof_certificates')
+        rc, out, _ = self.run_gen('g1_universe.py')
+        self.assertEqual(rc, 0, out)
+        self.assertEqual(self.rows()['Leaf_1'][5], 'CERT_REJECTED',
+                         'freeze_commit=null 却放行了')
+
+    def test_impl_commit_not_matching_freeze_commit_is_rejected(self):
+        """证书钉的 impl_commit 不是 freeze_commit —— 拒绝。"""
+        self._put_cert('Leaf_2', impl_commit='b' * 40)
+        git_add(self.root / 'repo', 'verif/proof_certificates/Leaf_2.json')
+        rc, out, _ = self.run_gen('g1_universe.py')
+        self.assertEqual(rc, 0, out)
+        self.assertEqual(self.rows()['Leaf_1'][5], 'CERT_REJECTED')
+
+    def test_corrupt_certificate_is_loud_not_silently_unverified(self):
+        """坏证书必须响成 CERT_INVALID，不能静默塌成"没有证书"。"""
+        d = self.root / 'repo' / 'verif' / 'proof_certificates'
+        (d / 'Leaf_2.json').write_text('{"schema": "wrong"}')
+        git_add(self.root / 'repo', 'verif/proof_certificates/Leaf_2.json')
+        rc, out, _ = self.run_gen('g1_universe.py')
+        self.assertEqual(rc, 0, out)
+        self.assertEqual(self.rows()['Leaf_1'][5], 'CERT_INVALID',
+                         '坏证书被当成了"没有证书" —— 仓库缺陷被静默了')
+
+
+# ====================================================================
+# D66  status 与 universe 解耦：untracked evidence 不得影响冻结字节
+# ====================================================================
+class TestFrozenBytesIndependentOfUntrackedEvidence(Base):
+    """★D66 的验收本体★
+
+    `docs/receipt_index.tsv` 与 `evidence/` 都在 .gitignore 里。冻结表的字节
+    只要依赖它们，clean clone 就复现不出来 —— 实测主树 118 行 REVALIDATED_PASS
+    在 clean worktree 里变 0 行，`--check` 直接幂等 FAIL。
+    """
+
+    def test_receipt_index_does_not_change_a_single_byte(self):
+        rc, out, _ = self.run_gen('g1_universe.py')
+        self.assertEqual(rc, 0, out)
+        with_ri = (self.root / 'repo' / 'docs' / 'g1_universe.tsv').read_bytes()
+        norm_ri = (self.root / 'repo' / 'docs' / 'ledger_normalized.tsv').read_bytes()
+        # 前提：夹具的 receipt_index 里确实有一条"看起来完美"的通过记录
+        self.assertIn('SUCCEEDED',
+                      (self.root / 'repo' / 'docs' / 'receipt_index.tsv').read_text())
+        (self.root / 'repo' / 'docs' / 'receipt_index.tsv').unlink()
+        rc, out, _ = self.run_gen('g1_universe.py')
+        self.assertEqual(rc, 0, out)
+        self.assertEqual(
+            with_ri,
+            (self.root / 'repo' / 'docs' / 'g1_universe.tsv').read_bytes(),
+            '★删掉 untracked 的 receipt_index 改变了冻结表字节 —— 解耦没做到★')
+        self.assertEqual(
+            norm_ri,
+            (self.root / 'repo' / 'docs' / 'ledger_normalized.tsv').read_bytes())
+
+    def test_no_receipt_index_means_unverified_not_error(self):
+        """clean clone 里没有 receipt_index —— 正确结果是 UNVERIFIED，不是报错。"""
+        (self.root / 'repo' / 'docs' / 'receipt_index.tsv').unlink()
+        rc, out, _ = self.run_gen('g1_universe.py')
+        self.assertEqual(rc, 0, out)
+        for k, f in self.rows().items():
+            self.assertEqual(f[5], 'UNVERIFIED', '%s 不是 UNVERIFIED' % k)
+
+    def test_receipt_report_is_opt_in_and_separate(self):
+        """--receipt-report 只写独立报告，冻结字节一个都不许变。"""
+        self.run_gen('g1_universe.py')
+        before = (self.root / 'repo' / 'docs' / 'g1_universe.tsv').read_bytes()
+        rep = self.root / 'hist.tsv'
+        rc, out, _ = self.run_gen('g1_universe.py', '--receipt-report', str(rep))
+        self.assertEqual(rc, 0, out)
+        self.assertTrue(rep.exists(), '--receipt-report 没写出报告')
+        self.assertIn('诊断', rep.read_text())
+        self.assertEqual(before,
+                         (self.root / 'repo' / 'docs' / 'g1_universe.tsv').read_bytes(),
+                         '历史报告改动了冻结表字节')
+
+    def test_obligation_column_is_derived_from_scope(self):
+        """obligation 由 scope 机械推出：Leaf_1 在 G1 里不被 Top 可达 → OUT_OF_SCOPE。"""
+        rc, out, _ = self.run_gen('g1_universe.py')
+        self.assertEqual(rc, 0, out)
+        r = self.rows()
+        self.assertEqual(r['Top'][4], 'REQUIRED')
+        # Leaf_2 的映射目标 Leaf_3 被 Top 例化 ⇒ 在 universe 内
+        self.assertEqual(r['Leaf_2'][4], 'REQUIRED')
+        self.assertIn('REQUIRED', out)
 
 
 # ====================================================================
@@ -286,7 +485,7 @@ class TestRepoIsExplicit(Base):
                '--repo', str(self.root / 'repo'),
                '--g0', str(self.root / 'g0'), '--g1', str(self.root / 'g1'),
                '--manifest', str(self.root / 'manifest.json'),
-               '--canonical-id', str(self.root / 'cid.txt')]
+               '--canonical-id', str(self.root / 'cid.txt'), '--root', 'Top']
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                              universal_newlines=True, env=env)
         out, err = p.communicate()
