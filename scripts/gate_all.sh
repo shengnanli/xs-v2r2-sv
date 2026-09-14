@@ -17,6 +17,11 @@ run "位置依赖闸"       python3 scripts/test_no_location_dependency.py
 # 台账行序闸：我写了这条测试却没接进来（2026-09-14 由 bkperf worker 撞上才发现——
 # 它追加台账行后 L1 从 181/181 掉到 178/181，而当时没有任何闸会响）。
 run "台账行序闸"       python3 scripts/test_ledger_append_only.py
+# FM Tcl 毒字符串闸：fm_shell 把入口 Tcl **逐行回显**进 fm.log（注释也不例外），
+# 而 fm_verdict.py 的 _ELAB147/_DONTVERIFY 是在整份日志上做正则 —— 于是在注释里
+# 完整写出这些串会让**每个目标**的判定中毒。agent/err3 实测撞到过：写全之后
+# MuxBundle 当场从 SUCCEEDED 翻成 elab147=true 的 PARTIAL，而 RTL 一字未动。
+run "FM Tcl 毒字符串闸"  python3 scripts/test_tcl_no_poison.py
 # 家族生成器幂等：tlbuffer worker 发现 gen_tlbuffer_ad_family.py --check 一直报 DRIFT
 # ——negtest 段是手工贴在生成产物后面的，谁跑一次生成器它就被静默删掉，而那正是该家族
 # 唯一病因形态（位宽）的防护。只有挂了 --check 的生成器进这道闸。
