@@ -167,7 +167,10 @@ with Farm() as farm:
           'array_0_ext: registry_mismatch:port_count')
 
 print('=== D. 端到端：假 `_ext` 进 allow 生成必须被拒（真放行点）===')
-SAMPLE = REPO / 'evidence' / '2c433ec3ef07' / 'FoldedSRAMTemplate' / 'black_boxes.rpt'
+# ★必须是**已跟踪**路径★：evidence/ 在 .gitignore 第 21 行，早先这里指向
+# evidence/2c433ec3ef07/... 的未跟踪残留，于是本套在作者机器上通过、clean clone 里
+# 7/8 失败 —— 正是本仓库反复记录的「证明输入未跟踪 = clean clone 不可复现」。
+SAMPLE = REPO / 'verif' / 'testdata' / 'bbox_samples' / 'FoldedSRAMTemplate_black_boxes.rpt'
 if not SAMPLE.is_file():
     FAIL.append(f'D: 样本黑盒报告不存在 {SAMPLE}（测试无法执行，不当作通过）')
     print(f'  FAIL  D: 缺样本 {SAMPLE}')
