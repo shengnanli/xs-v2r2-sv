@@ -76,7 +76,12 @@ switch -- $_verify_matched_unread_compare_points {
   "true" {
     # xs-v2-sv 新战役: vmucp 白名单从空开始, 每个目标须给出对称双射证明后逐个加入
     # (上轮 xs-v2r2-sv 的百余目标白名单不继承——G1 基线下须重新挣)。
-    if {$top ni {DebugModule DuplicatedTagArray FTBBank ICacheCtrlUnit ICacheDataArray LinkMonitor Queue1_RegMapperInput_5 SourceB TXDAT_4 TXREQ TlbStorageWrapper TlbStorageWrapper_1 WritebackQueue}} {
+    # Bku 加入依据(2026-09-14)：strict 首跑 native SUCCEEDED / passing 3371 / failing 0 /
+    # unmatched 0，仅 unread 20 卡住。20 点**全部** matched_nc，ref 侧 20 个唯一点对
+    # impl 侧 20 个唯一点、非 matched_nc 项为 0，即严格双射；内容是 funcReg(功能码寄存器
+    # 副本)里各子模块用不到的位——countModule[3..8] / cryptoModule[0,1,2,3,5,6,7,8] /
+    # 顶层 funcReg_reg ↔ 可读核 func_s1_reg[0,1,4,6,7,8]，两侧同为死位。
+    if {$top ni {Bku DebugModule DuplicatedTagArray FTBBank ICacheCtrlUnit ICacheDataArray LinkMonitor Queue1_RegMapperInput_5 SourceB TXDAT_4 TXREQ TlbStorageWrapper TlbStorageWrapper_1 WritebackQueue}} {
       puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
       exit 3
     }
