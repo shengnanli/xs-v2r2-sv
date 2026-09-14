@@ -13,6 +13,7 @@ run "可读性 A-G"        python3 scripts/readability_audit.py --quiet
 run "端口契约闸"        python3 scripts/port_contract_lint.py --all-impl
 run "重复/分叉闸"       python3 scripts/equality_dup_lint.py
 run "universe 冻结闸"   python3 scripts/check_universe_freeze.py
+run "位置依赖闸"       python3 scripts/test_no_location_dependency.py
 rm -f /tmp/gate_$$.out
 [ $rc -eq 0 ] && echo "=== 全部机器闸 PASS ===" || echo "=== 有闸未过，见上 ==="
 exit $rc

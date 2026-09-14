@@ -25,10 +25,19 @@ import os
 _HERE = pathlib.Path(__file__).resolve().parent
 NEW = pathlib.Path(os.environ.get('XSSV_HOME') or _HERE.parent)
 
+# ★克隆位置不该是承重结构★（2026-09-14）
+# 此前 baseline 取 `NEW.parent / 'G1-canonical' / CANONICAL_ID.txt`，即按**仓库父目录**
+# 解析 golden。于是把仓库克隆到别处（哪怕只是为了在 clean clone 里跑一遍测试）就炸在
+# FileNotFoundError，且 XSSV_HOME 绕不开 —— 它设的是 NEW，代码取的是 NEW.parent。
+# 改成绝对默认 + 可覆盖 flag，与 scripts/boundary_ledger.py 的 --canonical-id 一致。
+DEFAULT_CANONICAL_ID = '/home/eda/xs-env/G1-canonical/CANONICAL_ID.txt'
+
 ap = argparse.ArgumentParser()
 ap.add_argument('top')
 ap.add_argument('--report', required=True)
 ap.add_argument('--class', dest='cls', nargs='*', default=[])
+ap.add_argument('--canonical-id', default=DEFAULT_CANONICAL_ID,
+                help='G1 canonical ID 文件；默认绝对路径，故克隆位置无关。')
 a = ap.parse_args()
 
 # codex 0142 §50：禁止自动批准。自动归类只对**已审定并提交**的厂商边界名单生效
@@ -69,7 +78,7 @@ out.parent.mkdir(parents=True, exist_ok=True)
 out.write_text(json.dumps({
     'schema': 'xs-v2-sv-allow-v1',
     'target': a.top,
-    'baseline': (NEW.parent / 'G1-canonical' / 'CANONICAL_ID.txt').read_text().strip(),
+    'baseline': pathlib.Path(a.canonical_id).read_text().strip(),
     'objects': objs,
 }, ensure_ascii=False, indent=1))
 print(f'{a.top}: 声明 {len(objs)} 个黑盒对象 -> {out.relative_to(NEW)}')
