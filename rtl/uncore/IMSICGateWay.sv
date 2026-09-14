@@ -42,7 +42,8 @@
 //    one-hot 移位宽度 = 16  (golden 的 `wire [15:0] _msi_intf_valids_T_1`)
 //
 //  子模块：MSI 请求经一条 3 级异步复位同步链 (AsyncResetSynchronizerShiftReg_
-//  w1_d3_i0) 进入本时钟域，本核按名例化该链 (UT 编入真实链，FM 视作黑盒)。
+//  w1_d3_i0) 进入本时钟域，本核按名例化该链。该链不是厂商宏也不是独立签核目标，
+//  UT 与 FM 两侧都编入 G1 golden 的同一份定义（非黑盒），链内 3 级 DFF 白盒受验。
 // =============================================================================
 package imsic_pkg;
   // ---- 源头参数：XiangShan SoC.scala IMSICParams (G1 值) ----
@@ -94,7 +95,7 @@ endpackage
 //  与 golden 对照：msi_vld_ack_cpu/msi_data_catch/msi_intf_valids 三个寄存器
 //  语义、复位值、时序逐一对应；one-hot 展开取 16 位左移结果的低 9 位。
 //  3 级同步链按名例化 golden 子模块 AsyncResetSynchronizerShiftReg_w1_d3_i0
-//  (UT 编入真实链，FM 当黑盒)。
+//  (UT 与 FM 两侧同源编入 golden 定义，非黑盒)。
 // =============================================================================
 
 module xs_IMSICGateWay_core
@@ -157,7 +158,8 @@ module xs_IMSICGateWay_core
   end
 
   // ===========================================================================
-  //  3 级异步复位同步链 (跨时钟域)：按名例化 golden 子模块，保持黑盒
+  //  3 级异步复位同步链 (跨时钟域)：按名例化 golden 子模块 (两侧同源 elaborate,
+  //  非黑盒 —— 见 verif/ut/IMSICGateWay/Makefile 的消黑盒说明)
   // ===========================================================================
   logic req_synced;  // golden: _msi_vld_req_cpu_chain_io_q
   AsyncResetSynchronizerShiftReg_w1_d3_i0 msi_vld_req_cpu_chain (
