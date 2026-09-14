@@ -192,3 +192,25 @@ vcs.mk 或用 `EXTRA` 覆盖，未验证）。
 `rtl/backend/RegCache.sv:150` 的 7 条 SIOB（`rcidx_delay[(0-1)][*]`）在**仿真**里
 不像综合那样只是 lint：越界读返回 X。本例中 `(s==0)?:` 的条件是 genvar 常量，
 VCS 会常量折叠，实测无影响；但清理 owner 值得知道仿真语义上的区别。
+
+## nexus-am cputest：33 个小体系结构测试，**33/33 逐周期一致**
+
+coremark 跑不完（~75 cycle/s），所以本轮改用 nexus-am 的 33 个 cputest：每个约
+100~10000 条指令、4300~13800 周期，单次 ~33s，并行 12 路约 6 分钟出全表。
+负载现编（本机只有 `riscv64-none-linux-gnu-` 工具链，nexus-am 默认找
+`riscv64-unknown-linux-gnu-`，必须显式覆盖 `CROSS_COMPILE`）：
+
+```bash
+export AM_HOME=/home/eda/xs-env/nexus-am NOOP_HOME=/home/eda/xs-env/XiangShan
+export PATH=/home/eda/xs-env/XiangShan/riscstar-toolchain-15.2-r1-x86_64-riscv64-none-linux-gnu/bin:$PATH
+cd $AM_HOME/tests/cputest && make ARCH=riscv64-xs CROSS_COMPILE=riscv64-none-linux-gnu-
+verif/sim/run_cputest.sh 12
+```
+
+**结果：33/33 全部 `HIT GOOD TRAP`，golden 与 impl 的 `instrCnt` 与 `cycleCnt`
+逐项完全相同，两侧 difftest 失配数均为 0。** 全表见
+`verif/sim/evidence/cputest_golden_vs_impl.tsv`。覆盖 add/sub/mul/div、longlong、
+移位/位操作、符号扩展、**非对齐访存**、load-store、分支/switch、递归、
+快排/冒泡/选择排序、矩阵乘、字符串与 printf（走 UART MMIO）。
+
+**所以：本轮没有找到任何功能失配。** 不是"没跑到"，是"跑了、比了、一致"。
