@@ -81,7 +81,18 @@ switch -- $_verify_matched_unread_compare_points {
     # impl 侧 20 个唯一点、非 matched_nc 项为 0，即严格双射；内容是 funcReg(功能码寄存器
     # 副本)里各子模块用不到的位——countModule[3..8] / cryptoModule[0,1,2,3,5,6,7,8] /
     # 顶层 funcReg_reg ↔ 可读核 func_s1_reg[0,1,4,6,7,8]，两侧同为死位。
-    if {$top ni {Bku DebugModule DuplicatedTagArray FTBBank ICacheCtrlUnit ICacheDataArray LinkMonitor Queue1_RegMapperInput_5 SourceB TXDAT_4 TXREQ TlbStorageWrapper TlbStorageWrapper_1 WritebackQueue}} {
+    # ITTageTable{,_1,_2,_3,_4} 加入依据(2026-09-14, agent/ittage 实测)：5 个目标 strict
+    # 首跑均 native SUCCEEDED / failing 0 / unmatched 0，只剩 unread 卡住。unread 点
+    # 在各自 verif/ut/*/fm_pins.tcl 钉完后**全部**是 matched_nc，ref 侧唯一点数 ==
+    # impl 侧唯一点数、非 matched_nc 项为 0，严格双射。内容两类，均为两侧同为死位：
+    #  (a) MBIST 地址 9 位——golden MbistPipeIttage* 的 addrReg[7:0](写地址整条)与
+    #      addrRdReg[7]，对可读核的 addr_q[7:0] / addr_rd_q[7]。死因：SRAMTemplate_76/78
+    #      里 mbistBd_addr 定义后全文再无引用，mbistBd_addr_rd 只用 [6:0]（厂商宏
+    #      array_6_ext 的 RW0_addr 仅 7 位 / 深度 128）。
+    #  (b) 每个 SRAM bank 一个 array_6_ext/reg_RW0_ren——两侧同名同路径(同一份 golden
+    #      厂商宏一起 elaborate)，FM 自己就配上了；死因见 array_6_ext.v：reg_RW0_ren
+    #      只在 `ifdef RANDOMIZE_GARBAGE_ASSIGN 分支被读，综合视图走 `else 分支。
+    if {$top ni {Bku DebugModule DuplicatedTagArray FTBBank ICacheCtrlUnit ICacheDataArray ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 LinkMonitor Queue1_RegMapperInput_5 SourceB TXDAT_4 TXREQ TlbStorageWrapper TlbStorageWrapper_1 WritebackQueue}} {
       puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
       exit 3
     }
