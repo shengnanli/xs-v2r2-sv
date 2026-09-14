@@ -214,3 +214,30 @@ verif/sim/run_cputest.sh 12
 快排/冒泡/选择排序、矩阵乘、字符串与 printf（走 UART MMIO）。
 
 **所以：本轮没有找到任何功能失配。** 不是"没跑到"，是"跑了、比了、一致"。
+
+## coremark 定量补充：两侧各跑满 100,000 周期，失配 0
+
+`+max-cycles=100000`，两侧同一负载 `coremark-2-iteration.bin` + NEMU 锁步：
+
+| | golden | impl |
+|---|---|---|
+| 到达周期 | `EXCEEDED MAX CYCLE: 100000` | `EXCEEDED MAX CYCLE: 100000` |
+| difftest 失配 / BAD TRAP | 0 | **0** |
+| 墙钟 | 2273 s | 2329 s |
+
+即：重写整芯片在 coremark 上**连续 10 万周期逐指令与 NEMU 一致**，没有任何架构状态偏差。
+（`copy_and_run.bin` 实为 1 迭代 coremark，两侧都到 `jump to ram_start / Running CoreMark
+for 1 iterations` 后被 1800s 墙钟超时截断，同样零失配，但没有终点结论。）
+
+## 本轮没做到的（如实）
+
+1. **coremark / microbench / linux 没有跑到终点**。瓶颈是仿真速度（~75 cycle/s），
+   不是功能。要跑完得先编一版去掉 `-debug_access+all` + verdi PLI 的快 simv
+   （difftest 的 `vcs.mk` 里写死，需在**本工作区的 difftest 副本**里改，未尝试）。
+2. **impl 侧的性能计数器全灭**（9897 条 perfCnt_bore 接了 '0）。因此"perf 与 golden 一致"
+   这条**完全没有验证**。要验证必须走层次重绑，或改用端口级导出。
+3. **没有跑打过同样补丁的 golden 作对照**。理由：impl（打补丁）与 golden（没打补丁）在
+   33 个 cputest 上逐周期相同，已经反证补丁不影响架构行为；但严格说这是推论不是实测。
+4. 只跑了单核（`NUM_CORES=1`）、只跑了 KunminghuV2Config、没跑带 MMU/中断/多核的负载
+   （cputest 全是 M 模式裸程序；`flash_recursion_test` 碰了一次 double-trap 路径）。
+5. 没测中断/PLIC/CLINT/L2 一致性等需要长跑或多核才触发的路径。
