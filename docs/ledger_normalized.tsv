@@ -47,11 +47,11 @@ ICacheDataArray	MAIN	WORKING_PASS	assembly(vmucp继承); FM SUCCEEDED
 ICacheMetaArray	MAIN	WORKING_PASS	assembly; FM SUCCEEDED
 ICacheReplacer	MAIN	WORKING_PASS	fm_verdicts=1
 IMSICGateWay	MAIN	REWRITE_TODO	G1逻辑改动, FM/UT失配需逐个对照重写
-ITTageTable	MAIN	REWRITE_TODO	依赖FoldedSRAMTemplate_21在G1非纯重编号(内容也变); 待按G1链重做
-ITTageTable_1	MAIN	REWRITE_TODO	同ITTageTable(家族)
-ITTageTable_2	MAIN	REWRITE_TODO	同ITTageTable(家族)
-ITTageTable_3	MAIN	REWRITE_TODO	同ITTageTable(家族)
-ITTageTable_4	MAIN	REWRITE_TODO	同ITTageTable(家族)
+ITTageTable	MAIN	WORKING_PASS	agent/ittage 实测纠正前行: 台账原记「依赖FoldedSRAMTemplate_21在G1非纯重编号(内容也变)」**不成立**——G0 FoldedSRAMTemplate_21 vs G1 _22 逐行只差 module 
+ITTageTable_1	MAIN	WORKING_PASS	agent/ittage 实测纠正前行: 台账原记「依赖FoldedSRAMTemplate_21在G1非纯重编号(内容也变)」**不成立**——G0 FoldedSRAMTemplate_21 vs G1 _22 逐行只差 module 
+ITTageTable_2	MAIN	WORKING_PASS	agent/ittage 实测纠正前行: 台账原记「依赖FoldedSRAMTemplate_21在G1非纯重编号(内容也变)」**不成立**——G0 FoldedSRAMTemplate_21 vs G1 _22 逐行只差 module 
+ITTageTable_3	MAIN	WORKING_PASS	agent/ittage 实测纠正前行: 台账原记「依赖FoldedSRAMTemplate_21在G1非纯重编号(内容也变)」**不成立**——G0 FoldedSRAMTemplate_21 vs G1 _22 逐行只差 module 
+ITTageTable_4	MAIN	WORKING_PASS	agent/ittage 实测纠正前行: 台账原记「依赖FoldedSRAMTemplate_21在G1非纯重编号(内容也变)」**不成立**——G0 FoldedSRAMTemplate_21 vs G1 _22 逐行只差 module 
 ImmExtractor	MAIN	WORKING_PASS	fm_verdicts=2
 ImmExtractor_12	MAIN	WORKING_MERGED_PASS	ImmExtractor家族FM_VARIANTS含_12, 两变体fm.log均SUCCEEDED
 IndexableCAMTemplate	AUX	WORKING_PASS	随WrBypass家族覆盖(base wrapper+核), FM经WrBypass深链两侧elaborate
