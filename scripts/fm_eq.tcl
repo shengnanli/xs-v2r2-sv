@@ -102,7 +102,24 @@ switch -- $_verify_matched_unread_compare_points {
     #  (b) 每个 SRAM bank 一个 array_6_ext/reg_RW0_ren——两侧同名同路径(同一份 golden
     #      厂商宏一起 elaborate)，FM 自己就配上了；死因见 array_6_ext.v：reg_RW0_ren
     #      只在 `ifdef RANDOMIZE_GARBAGE_ASSIGN 分支被读，综合视图走 `else 分支。
-    if {$top ni {Bku DebugModule DuplicatedTagArray FTBBank ICacheCtrlUnit ICacheDataArray ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 LinkMonitor Queue1_RegMapperInput_5 RNXbar SNXbar SourceB TXDAT_4 TXREQ TlbStorageWrapper TlbStorageWrapper_1 WritebackQueue}} {
+    # Ftq 加入依据(2026-09-14, agent/ftq 实测)：本目标的 matched-not-compared unread
+    # 共 3395 点，**全部**是两侧同路径同名的对称死位，严格双射(ref 唯一点 3395 ↔
+    # impl 唯一点 3395，非 matched_nc 项为 0——ref 侧另有 4282 个 unmatched-unread，
+    # 那是 golden-only 的 perf/difftest 仪表寄存器，走 verif/dead_ref/Ftq.json 的
+    # PASS_DEAD_REF 通道，与本加强互不重叠)。3395 点构成：
+    #   update_target_<0..63>_reg[0..49]        3200  每项最新跳转目标
+    #   pred_stage_<0..63>_reg[0..1]             128  该项由 BPU 哪一级产生
+    #   ftq_pd_mem/dataBanks_*/data_*_jalTarget   65  两侧同源 elaborate 的 golden 子模块内部
+    #   last_cycle_bpu_in_stage_reg[0..1]          2
+    # 死因：这三族的**唯一**下游是 golden 里已被 firtool 裁掉的 difftest/XSPerf 消费者
+    # （update_target → diff_commit_target 比较；pred_stage → commit_pred_stage →
+    #  jalr_correct_stage_map 统计；jalTarget 在 KunminghuV2Config 下无人读），
+    # 可读核照抄了同一组存储，于是两侧同为死位、逐点同名配对。
+    # 实开比较的效果(同一份 RTL、同一组 pin，仅切 appvar)：matched_nc 3395 → 0，
+    # 比对点总数 63056 → 66481(=63056+3395+30 个由 pin 新配上的点)，passing 随之
+    # 增加、failing 不因这 3395 点新增(诊断跑 failing_point_limit=0 的完整清单里
+    # 只有 6 个 io_toPrefetch_req_bits_startAddr 位，与本加强无关)。
+    if {$top ni {Bku DebugModule DuplicatedTagArray FTBBank Ftq ICacheCtrlUnit ICacheDataArray ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 LinkMonitor Queue1_RegMapperInput_5 RNXbar SNXbar SourceB TXDAT_4 TXREQ TlbStorageWrapper TlbStorageWrapper_1 WritebackQueue}} {
       puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
       exit 3
     }
