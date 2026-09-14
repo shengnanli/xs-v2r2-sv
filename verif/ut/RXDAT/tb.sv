@@ -1,4 +1,8 @@
-// 自动生成 scripts/gen_chi_channel.py —— 勿手改
+// 原声称「自动生成 scripts/gen_chi_channel.py —— 勿手改」，但**该脚本在本仓库及其
+// 全部 git 历史中都不存在**（22 个 CHI 通道 UT 的 tb 都带这句话）。生成器缺失时
+// 「勿手改」无从执行，照做只会卡死，故本文件目前按手工维护。
+// 本次手改：删去 io_in_respInfo_dataCheckErr 的 5 处引用 —— 该端口是 G0 时代的，
+// G1 golden 已无，tb 却仍在 golden 侧连它，导致 UT 从未编过（台账 RXDAT=COMPILE_FAIL）。
 // RXDAT 双例化逐拍比对: golden RXDAT vs 可读重写 RXDAT_xs。
 `timescale 1ns/1ps
 `define CHK(SIG) begin \
@@ -46,8 +50,6 @@ module tb;
   wire [1:0] i_io_in_respInfo_respErr;
   wire g_io_in_respInfo_traceTag;
   wire i_io_in_respInfo_traceTag;
-  wire g_io_in_respInfo_dataCheckErr;
-  wire i_io_in_respInfo_dataCheckErr;
   wire g_io_refillBufWrite_valid;
   wire i_io_refillBufWrite_valid;
   wire [7:0] g_io_refillBufWrite_bits_id;
@@ -82,7 +84,6 @@ module tb;
     .io_in_respInfo_resp(g_io_in_respInfo_resp),
     .io_in_respInfo_respErr(g_io_in_respInfo_respErr),
     .io_in_respInfo_traceTag(g_io_in_respInfo_traceTag),
-    .io_in_respInfo_dataCheckErr(g_io_in_respInfo_dataCheckErr),
     .io_refillBufWrite_valid(g_io_refillBufWrite_valid),
     .io_refillBufWrite_bits_id(g_io_refillBufWrite_bits_id),
     .io_refillBufWrite_bits_data_data(g_io_refillBufWrite_bits_data_data),
@@ -113,7 +114,6 @@ module tb;
     .io_in_respInfo_resp(i_io_in_respInfo_resp),
     .io_in_respInfo_respErr(i_io_in_respInfo_respErr),
     .io_in_respInfo_traceTag(i_io_in_respInfo_traceTag),
-    .io_in_respInfo_dataCheckErr(i_io_in_respInfo_dataCheckErr),
     .io_refillBufWrite_valid(i_io_refillBufWrite_valid),
     .io_refillBufWrite_bits_id(i_io_refillBufWrite_bits_id),
     .io_refillBufWrite_bits_data_data(i_io_refillBufWrite_bits_data_data),
@@ -146,7 +146,6 @@ module tb;
     `CHK(io_in_respInfo_resp)
     `CHK(io_in_respInfo_respErr)
     `CHK(io_in_respInfo_traceTag)
-    `CHK(io_in_respInfo_dataCheckErr)
     `CHK(io_refillBufWrite_valid)
     `CHK(io_refillBufWrite_bits_id)
     `CHK(io_refillBufWrite_bits_data_data)

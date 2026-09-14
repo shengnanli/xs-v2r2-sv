@@ -17,6 +17,10 @@
 //  ===== 输出 =====
 //    refillBufWrite: 把这一拍 256b 数据复制两份铺满 512b 行槽(beatMask 选写哪拍)
 //    in(RespBundle): first|last 时有效; corrupt = NDERR|DERR|dataCheck|poison
+//    ★注意 dataCheck 只经 corrupt 外露，本模块**不**单独输出 dataCheckErr★：
+//    G0 曾有 io_in_respInfo_dataCheckErr 端口，G1 已删（校验值本身仍是输入，
+//    wire dataCheck 仍算并喂给 corrupt）。上轮迁移时误把 G0 的这个端口带了过来，
+//    导致 tb 在 golden 侧连了 G1 不存在的端口、UT 根本编不过。
 // =============================================================================
 
 module xs_RXDAT_core (
@@ -46,7 +50,6 @@ module xs_RXDAT_core (
   output [2:0]   io_in_respInfo_resp,
   output [1:0]   io_in_respInfo_respErr,
   output         io_in_respInfo_traceTag,
-  output         io_in_respInfo_dataCheckErr,
   // ---- io.refillBufWrite (ValidIO MSHRBufWrite) ----
   output         io_refillBufWrite_valid,
   output [7:0]   io_refillBufWrite_bits_id,
@@ -90,7 +93,6 @@ module xs_RXDAT_core (
   assign io_in_respInfo_resp         = io_out_bits_resp;
   assign io_in_respInfo_respErr      = io_out_bits_respErr;
   assign io_in_respInfo_traceTag     = io_out_bits_traceTag;
-  assign io_in_respInfo_dataCheckErr = dataCheck;
 
 endmodule
 
@@ -125,7 +127,6 @@ module RXDAT(
   output [2:0] io_in_respInfo_resp,
   output [1:0] io_in_respInfo_respErr,
   output io_in_respInfo_traceTag,
-  output io_in_respInfo_dataCheckErr,
   output io_refillBufWrite_valid,
   output [7:0] io_refillBufWrite_bits_id,
   output [511:0] io_refillBufWrite_bits_data_data,
@@ -156,7 +157,6 @@ module RXDAT(
     .io_in_respInfo_resp(io_in_respInfo_resp),
     .io_in_respInfo_respErr(io_in_respInfo_respErr),
     .io_in_respInfo_traceTag(io_in_respInfo_traceTag),
-    .io_in_respInfo_dataCheckErr(io_in_respInfo_dataCheckErr),
     .io_refillBufWrite_valid(io_refillBufWrite_valid),
     .io_refillBufWrite_bits_id(io_refillBufWrite_bits_id),
     .io_refillBufWrite_bits_data_data(io_refillBufWrite_bits_data_data),

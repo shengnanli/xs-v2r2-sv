@@ -239,7 +239,7 @@ ICache	REWRITE_TODO	内部Queue1_RegMapperInput_5在G1重编号+逻辑改动
 ICacheCtrlUnit	REWRITE_TODO	内部Queue1_RegMapperInput_5在G1重编号+逻辑改动
 L2TlbMissQueue	REWRITE_TODO	端口/逻辑改动, _xs例化端口不匹配
 L2TlbPrefetch	REWRITE_TODO	端口/逻辑改动, _xs例化端口不匹配
-RXDAT	REWRITE_TODO	端口改动, tb例化不匹配
+RXDAT	REWRITE_TODO	G0残留端口io_in_respInfo_dataCheckErr已删(G1无此端口);portlint 273/0; UT seed1/7/42各200k拍 checks=2800000 errors=0; ★FM未跑,故不提WORKING_PASS★
 SourceB	REWRITE_TODO	内部FastArbiter_5在G1变
 SubDirectory	REWRITE_TODO	内部array_0_1重编号
 TlbStorageWrapper	REWRITE_TODO	需+define+SYNTHESIS(xs_assert_v2)+逻辑改动

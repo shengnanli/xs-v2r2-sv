@@ -78,7 +78,7 @@ Queue1_RegMapperInput_3	AUX	MERGED	与 ICacheCtrlUnit 家族同 UT 目录, 由�
 RASStack	MAIN	WORKING_PASS	手工验证 fm 3018p 全零 (batch 前打样)
 RNXbar	MAIN	REWRITE_TODO	依赖FastArbiter_44(G1内容变)
 RVCExpander	MAIN	WORKING_PASS	fm_verdicts=1
-RXDAT	MAIN	REWRITE_TODO	端口改动, tb例化不匹配
+RXDAT	MAIN	REWRITE_TODO	G0残留端口io_in_respInfo_dataCheckErr已删(G1无此端口);portlint 273/0; UT seed1/7/42各200k拍 checks=2800000 errors=0; ★FM未跑,故不提WORKIN
 RXDAT_4	MAIN	WORKING_PASS	fm_verdicts=1
 RXREQ	MAIN	WORKING_PASS	fm_verdicts=1
 RXRSP	MAIN	WORKING_PASS	fm_verdicts=1
