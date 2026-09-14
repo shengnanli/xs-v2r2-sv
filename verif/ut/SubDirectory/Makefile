@@ -40,8 +40,10 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/SubDirectory.sv \
 # FM_MODE=assembly：唯一抽象边界 = 厂商 SRAM 宏叶子 array_19_ext / array_20_ext
 # （.v 行为模型，两侧同一文件，FM 不读 ⇒ 对称未解析黑盒）。精确声明见
 # verif/allow/SubDirectory.json（逐对象/逐路径/逐类别，非数字配额）。
+# FM_ALLOWLIST 是**对称 unmatched 比对点**的上限，与黑盒数量无关；本目标实测
+# unmatched=0，所以钉 0（原来的 3 是老战役按"黑盒个数"填的，口径就不对）。
 FM_MODE = assembly
-FM_ALLOWLIST ?= 4
+FM_ALLOWLIST ?= 0
 FM_VARIANTS = SubDirectory
 
 include ../../../scripts/ut_common.mk
