@@ -79,6 +79,9 @@ import subprocess
 import sys
 
 FENCE = re.compile(r'^([ \t]*)(`{3,}|~{3,})(.*)$')
+# 断言「该路径不存在」的标记词 —— 命中即认为这句话是在报告缺失，而非引用它
+ABSENCE_RE = re.compile(r'不存在|已删|已移除|缺失|找不到|从未存在|被\s*gitignore|未跟踪|untracked|missing|does not exist|no longer')
+
 INLINE_CODE = re.compile(r'`([^`\n]+)`')
 HEX_TOKEN = re.compile(r'(?<![0-9a-zA-Z_])([0-9a-f]{7,40})(?![0-9a-zA-Z_])')
 SHA256_LINE = re.compile(r'^\s*([0-9a-f]{64})\s+\*?(\S+)\s*$')
@@ -303,6 +306,14 @@ def lint_file(path, repos, default_repo, run_counts=True,
                 tok_nolineno = re.sub(r':\d+(-\d+)?$', '', tok)
                 if looks_like_path(tok_nolineno, repo_root):
                     if not (pathlib.Path(repo_root) / tok_nolineno).exists():
+                        # ★「我在报告这个路径不存在」不是引用错误★（2026-09-13）
+                        # 报告里经常需要说「X 不存在 / 已删 / 被 gitignore」，那正是结论本身。
+                        # 此前这类句子一律被判 MISSING_FILE，等于逼人**不许如实描述缺失**。
+                        # 同一行或紧邻上下一行出现缺失标记时放行；标记词都是断言"没有"，
+                        # 不是万能豁免（写 `见 foo.py` 引错路径仍会被抓）。
+                        _ctx = ' '.join(lines[max(0, lineno - 2):lineno + 1])
+                        if ABSENCE_RE.search(_ctx):
+                            continue
                         findings.append(Finding(
                             'MISSING_FILE', lineno,
                             '引用的路径在 %s 里不存在: %s'
