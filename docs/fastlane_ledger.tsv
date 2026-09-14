@@ -273,3 +273,14 @@ WrBypass_41	WORKING_PASS	定式打样批(首commit, 补录): UT 250000×3seed 0e
 WrBypass_43	WORKING_PASS	定式打样批(首commit, 补录): UT 250000×3seed 0err; FM strict SUCCEEDED 全零
 IndexableCAMTemplate	WORKING_PASS	随WrBypass家族覆盖(base wrapper+核), FM经WrBypass深链两侧elaborate
 OpenLLC	UNRUNNABLE_RESOURCE_LIMIT_CURRENT_HOST	codex 0153 D68：本机 cgroup-v1、无可信 memory containment，不得在此运行 OpenLLC XL；不得以 watcher 人工抢救替代隔离。 已修的前置条件：verif/ut/OpenLLC/Makefile 原先无 RTL_GOLDEN_DEPS（ref 侧读 69 个依赖、impl 侧只读 rtl/l2/OpenLLC.sv），MMIODiverger/MMIOMerger/RNXbar/SNXbar/RNLinkMonitor/SNLinkMonitor/Slice_4x4/TopDownMonitor_1 单侧黑盒；现 RTL_GOLDEN_DEPS 由 FM_REF_DEPS_OpenLLC 派生，static 复核 SYMMETRIC（两侧黑盒均为空）。 ★该 closure 修改未经 FM 验证★，须转到有 cgroup-v2 memory controller 或更大内存且可独占的主机重跑 make fm-OpenLLC。 复跑静态复核：python3 scripts/check_closure_symmetry.py --only OpenLLC
+
+# --- SRAMTemplate G1 新形态批（agent/sram）：FM 签核落地 + 台账分类更正 ---
+SRAMTemplate_128	WORKING_PASS	G1新形态(NewForm批): 真·掩码复制MASK_REP=3(宏786b/131b=6段 vs 2way,每way掩码复制3份)+分段MBIST bore BORE_NSEG=6(bore口131b=宏1/6,selectedOH选段); UT 200000拍x3seed checks=1791036 errors=0 zhits=0 cov_holes=0; FM assembly SUCCEEDED p2507/f0/u0/nc0 unmatched=0, 唯一黑盒=vendor array_10_ext两侧同名配对
+SRAMTemplate_145	WORKING_PASS	G1新形态(NewForm批): L2 SPP预取PHT, 32字段struct数据口+内置MbistClockGateCell; 掩码2段x74b=每way一位,非掩码复制(台账原TODO_CORE_MASKREPL系误判); UT同上; FM assembly SUCCEEDED p602/f0/u0/nc0 unmatched=0, 唯一黑盒=vendor array_12_ext
+SRAMTemplate_146	WORKING_PASS	G1新形态(NewForm批): L2预取RRT, 单读口+{valid,tag}struct数据口+上电清零; 台账原TODO_CORE_MULTIRD系误判(golden只有1个io_r_req_valid,被struct读口名数成多读口); UT同上; FM assembly SUCCEEDED p75/f0/u0/nc0 unmatched=0, 唯一黑盒=vendor array_13_ext
+SRAMTemplate_152	WORKING_PASS	G1新形态(NewForm批): L2 Directory metaArray, 与_163仅差boreChildrenBd_bore_array位宽(3 vs 5,该口golden侧亦无人读); 掩码8段x13b=每way一位,非掩码复制(台账原TODO_CORE_MASKREPL系误判); UT同上; FM assembly SUCCEEDED p440/f0/u0/nc0 unmatched=0, 唯一黑盒=vendor array_15_ext
+SRAMTemplate_155	WORKING_PASS	G1新形态(NewForm批): L2 Slice数据阵列, 外置时钟门控EXT_CLOCKGATE(导出io_mbistCgCtl_en/rckEn/wckEn,宏RW0_clk取自io_mbistCgCtl_rclk)+多周期宏MCP_HOLD(宏名...s1h1l2b,l2=读延迟2拍,门控使能隔拍脉冲+2深respReg); UT同上; FM assembly SUCCEEDED p569/f0/u0/nc0 unmatched=0, 唯一黑盒=vendor array_18_ext
+SRAMTemplate_163	WORKING_PASS	G1新形态(NewForm批): L2 Directory metaArray, 9字段struct数据口x8way; 掩码8段x13b=每way一位,非掩码复制(台账原TODO_CORE_MASKREPL系误判); UT同上; FM assembly SUCCEEDED p440/f0/u0/nc0 unmatched=0, 唯一黑盒=vendor array_15_ext
+SRAMTemplate_166	WORKING_PASS	G1新形态(NewForm批): 同_155形态(EXT_CLOCKGATE+MCP_HOLD), 仅MBIST分组编号不同; UT同上; FM assembly SUCCEEDED p569/f0/u0/nc0 unmatched=0, 唯一黑盒=vendor array_18_ext
+SRAMTemplate_178	WORKING_PASS	G1新形态(NewForm批): 同_155形态(EXT_CLOCKGATE+MCP_HOLD), 仅MBIST分组编号不同; UT同上; FM assembly SUCCEEDED p569/f0/u0/nc0 unmatched=0, 唯一黑盒=vendor array_18_ext
+SRAMTemplate_185	WORKING_PASS	G1新形态(NewForm批): 同_163形态(9字段struct x8way), 仅MBIST分组编号不同; 非掩码复制(台账原TODO_CORE_MASKREPL系误判); UT同上; FM assembly SUCCEEDED p440/f0/u0/nc0 unmatched=0, 唯一黑盒=vendor array_15_ext

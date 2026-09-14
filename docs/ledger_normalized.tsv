@@ -88,27 +88,27 @@ SRAMTemplate	MAIN	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形
 SRAMTemplate_100	AUX	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子
 SRAMTemplate_116	AUX	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子
 SRAMTemplate_124	AUX	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子
-SRAMTemplate_128	AUX	TODO_CORE_MASKREPL	G1新形态: 宏wmask粒度细于way(每way复制N位掩码), 需xs_SRAMTemplate_core支持掩码复制
+SRAMTemplate_128	AUX	WORKING_PASS	G1新形态(NewForm批): 真·掩码复制MASK_REP=3(宏786b/131b=6段 vs 2way,每way掩码复制3份)+分段MBIST bore BORE_NSEG=6(bore口131b=宏1/6,selectedOH选段
 SRAMTemplate_129	AUX	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子
 SRAMTemplate_143	AUX	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子
-SRAMTemplate_145	AUX	TODO_CORE_MASKREPL	G1新形态: 宏wmask粒度细于way(每way复制N位掩码), 需xs_SRAMTemplate_core支持掩码复制
-SRAMTemplate_146	AUX	TODO_CORE_MULTIRD	G1新形态: 多读口, 核仅支持单读口
+SRAMTemplate_145	AUX	WORKING_PASS	G1新形态(NewForm批): L2 SPP预取PHT, 32字段struct数据口+内置MbistClockGateCell; 掩码2段x74b=每way一位,非掩码复制(台账原TODO_CORE_MASKREPL系误判); UT同上;
+SRAMTemplate_146	AUX	WORKING_PASS	G1新形态(NewForm批): L2预取RRT, 单读口+{valid,tag}struct数据口+上电清零; 台账原TODO_CORE_MULTIRD系误判(golden只有1个io_r_req_valid,被struct读口名数成多读
 SRAMTemplate_148	AUX	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子
 SRAMTemplate_150	AUX	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子
-SRAMTemplate_152	AUX	TODO_CORE_MASKREPL	G1新形态: 宏wmask粒度细于way(每way复制N位掩码), 需xs_SRAMTemplate_core支持掩码复制
+SRAMTemplate_152	AUX	WORKING_PASS	G1新形态(NewForm批): L2 Directory metaArray, 与_163仅差boreChildrenBd_bore_array位宽(3 vs 5,该口golden侧亦无人读); 掩码8段x13b=每way一位,非掩码复制
 SRAMTemplate_153	AUX	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子
 SRAMTemplate_154	AUX	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子
-SRAMTemplate_155	AUX	TODO_CORE_EXTCG	G1新形态: 时钟门控外置(导出mbistCgCtl_en/rckEn/wckEn+取rclk), 需核支持external clockgate
+SRAMTemplate_155	AUX	WORKING_PASS	G1新形态(NewForm批): L2 Slice数据阵列, 外置时钟门控EXT_CLOCKGATE(导出io_mbistCgCtl_en/rckEn/wckEn,宏RW0_clk取自io_mbistCgCtl_rclk)+多周期宏MCP_
 SRAMTemplate_159	AUX	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子
 SRAMTemplate_16	MAIN	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子
 SRAMTemplate_162	AUX	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子
-SRAMTemplate_163	AUX	TODO_CORE_MASKREPL	G1新形态: 宏wmask粒度细于way(每way复制N位掩码), 需xs_SRAMTemplate_core支持掩码复制
+SRAMTemplate_163	AUX	WORKING_PASS	G1新形态(NewForm批): L2 Directory metaArray, 9字段struct数据口x8way; 掩码8段x13b=每way一位,非掩码复制(台账原TODO_CORE_MASKREPL系误判); UT同上; FM as
 SRAMTemplate_164	AUX	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子
 SRAMTemplate_165	AUX	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子
-SRAMTemplate_166	AUX	TODO_CORE_EXTCG	G1新形态: 时钟门控外置(导出mbistCgCtl_en/rckEn/wckEn+取rclk), 需核支持external clockgate
-SRAMTemplate_178	AUX	TODO_CORE_EXTCG	G1新形态: 时钟门控外置(导出mbistCgCtl_en/rckEn/wckEn+取rclk), 需核支持external clockgate
+SRAMTemplate_166	AUX	WORKING_PASS	G1新形态(NewForm批): 同_155形态(EXT_CLOCKGATE+MCP_HOLD), 仅MBIST分组编号不同; UT同上; FM assembly SUCCEEDED p569/f0/u0/nc0 unmatched=0, 
+SRAMTemplate_178	AUX	WORKING_PASS	G1新形态(NewForm批): 同_155形态(EXT_CLOCKGATE+MCP_HOLD), 仅MBIST分组编号不同; UT同上; FM assembly SUCCEEDED p569/f0/u0/nc0 unmatched=0, 
 SRAMTemplate_181	AUX	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子
-SRAMTemplate_185	AUX	TODO_CORE_MASKREPL	G1新形态: 宏wmask粒度细于way(每way复制N位掩码), 需xs_SRAMTemplate_core支持掩码复制
+SRAMTemplate_185	AUX	WORKING_PASS	G1新形态(NewForm批): 同_163形态(9字段struct x8way), 仅MBIST分组编号不同; 非掩码复制(台账原TODO_CORE_MASKREPL系误判); UT同上; FM assembly SUCCEEDED p4
 SRAMTemplate_186	AUX	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子
 SRAMTemplate_187	AUX	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子
 SRAMTemplate_2	MAIN	WORKING_PASS	SRAMTemplate家族33变体: G1驱动重生成(形态检测fail-closed跳过19); UT 1306932×3seed 0err; FM assembly SUCCEEDED(唯一黑盒=vendor array_*_ext叶子
