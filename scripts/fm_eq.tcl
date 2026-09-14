@@ -187,7 +187,49 @@ switch -- $_verify_matched_unread_compare_points {
     #          两侧点数根本对不齐）与可读核里删掉 golden 没有的死寄存器
     #          （EnqEntry 无 blocked、comp 条目无 deqPortIdx，见 xs_iq_entries_core.sv
     #          §2.6a）。打开本项后 passing 应 9776 -> 12196（+2420）。
-    if {$top ni {Bku DebugModule DuplicatedTagArray EntriesVfdivVidiv FAlu FCVT FTBBank ICacheCtrlUnit ICacheDataArray ICacheMetaArray ICacheMissUnit ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 InstrUncache LinkMonitor MulUnit Queue1_RegMapperInput_5 RNXbar SNXbar SourceB TXDAT_4 TXREQ TageBTable TlbStorageWrapper TlbStorageWrapper_1 WritebackQueue}} {
+    #   Composer 加入依据(2026-09-14, agent/composer)：本目标是本轮最大的目标
+    #          (519962 比对点)。strict 首跑 native SUCCEEDED / passing 519962 /
+    #          failing 0 / unverified 0 / aborted 0 / unmatched compare points 0 /
+    #          无黑盒 / 无 qualification，只剩 unread 卡住 —— 6323 点，构成如下，
+    #          两类全部是两侧同为死位、且严格双射：
+    #          (a) 5722 点 matched_nc，ref 与 impl 的**层次路径逐字相同**。
+    #              Composer 的 5 个预测器子模块(FTB/FauFTB/Tage_SC/RAS/ITTage)与
+    #              4 个 DelayN 都不是本目标，按规范两侧同源用 golden(见该 UT
+    #              Makefile 的 RTL_GOLDEN_DEPS)——ref 与 impl 读的是 G1-canonical
+    #              下**同一份文件**、同一实例名，所以这批点的对称性是按构造成立的，
+    #              不是人工配出来的。死因分四类:
+    #                · 48 点 array_N_ext/reg_RW0_ren —— 厂商 SRAM 宏里只在
+    #                  RANDOMIZE_GARBAGE_ASSIGN 分支被读的寄存器,综合视图走 else;
+    #                · 103 点 MbistPipe* 的 addrReg/addrRdReg —— MBIST 写地址整条
+    #                  在本层无读者、读地址最高位超出宏深度(与 ITTageTable /
+    #                  ICacheMetaArray 已签核目标同一形态);
+    #                · 5556 点预测器内部的宽值打拍寄存器切片 —— update_ghist_r /
+    #                  update_pc_r / s1_pc_dup / update_meta_r / s1_unhashed_idx /
+    #                  uftb_write_pc 等,firtool 把整条宽值打了一拍而下游只取其中
+    #                  若干位(折叠历史只用低位、PC 只用对齐后的中间段),其余位零扇出;
+    #                · 15 点 DelayN 的 REG_*_enable —— 每个 DelayN 只用得到 ctrl
+    #                  里自己那一路开关,其余路打了拍没人读。
+    #          (b) 400 点 SegmentedAddrNext 影子 PC 流水(Composer 本层自己的
+    #              寄存器)。这 400 点原本是 400 ref + 400 impl 的**unmatched**
+    #              unread:golden 是 firtool 展平名
+    #              s2_pc_dup_s2_pc_seg_0_value_1_reg[b],可读核是二维数组
+    #              u_core/s2_pc_hi_reg[1][b],词干与维度都对不上,又因是 unread
+    #              不进比对、签名分析不救 ⇒ 名字过滤配不上。
+    #              verif/ut/Composer/fm_pins_pre.tcl 在首次 match 之前按段布局
+    #              (seg_0=pc[49:24] 26 位 <-> hi、seg_1=pc[23:12] 12 位 <-> mid、
+    #              seg_2=pc[11:0] 12 位 <-> lo;value 无后缀 <-> dup0,_1/_2/_3 <->
+    #              dup1/2/3;位下标同号)逐位钉 400 对,对应关系由布局唯一确定、
+    #              无自由度,且生成的 400+400 条路径与实测 unread 点集合**精确
+    #              相等**(无多无缺,校验见该 UT Makefile)。钉不上即 error 退出。
+    #              死因:这条影子流水 cone-dead —— s3 段寄存器拼出的地址无消费者
+    #              (真正送出的 io_out_s1_pc 由链头 uftb 驱动、io_out_s2/s3_pc 由
+    #              链尾 ras 驱动),s2 段唯一读出点是 s3 段(自反馈不算被读)。
+    #              两侧同一结构、同为死位。
+    #          另有 201 点(modified_reset + s1_pc_dup 4x50)本来就已被 FM 配上、
+    #          属于同一条影子流水,一并随 vmucp 受验。
+    #          打开本项后必须复验「passing 恰好 +6323(519962 -> 526285)且 failing
+    #          仍为 0、unread 归 0」—— passing 不增即 FM 没真去比,那是空转,不算过。
+    if {$top ni {Bku Composer DebugModule DuplicatedTagArray EntriesVfdivVidiv FAlu FCVT FTBBank ICacheCtrlUnit ICacheDataArray ICacheMetaArray ICacheMissUnit ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 InstrUncache LinkMonitor MulUnit Queue1_RegMapperInput_5 RNXbar SNXbar SourceB TXDAT_4 TXREQ TageBTable TlbStorageWrapper TlbStorageWrapper_1 WritebackQueue}} {
       puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
       exit 3
     }

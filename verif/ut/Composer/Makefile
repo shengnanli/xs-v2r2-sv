@@ -111,6 +111,33 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/Composer.sv
 FM_VARIANTS = Composer
 FM_REF_DEPS_Composer = ClockGate.sv DelayN.sv DelayNWithValid.sv DelayNWithValid_1.sv DelayN_1.sv FTB.sv FTBBank.sv FauFTB.sv FauFTBWay.sv FoldedSRAMTemplate.sv FoldedSRAMTemplate_1.sv FoldedSRAMTemplate_20.sv FoldedSRAMTemplate_22.sv FoldedSRAMTemplate_24.sv ITTage.sv ITTageTable.sv ITTageTable_1.sv ITTageTable_2.sv ITTageTable_3.sv ITTageTable_4.sv IndexableCAMTemplate.sv IndexableCAMTemplate_32.sv IndexableCAMTemplate_33.sv IndexableCAMTemplate_41.sv IndexableCAMTemplate_43.sv MaxPeriodFibonacciLFSR.sv MbistClockGateCell.sv MbistPipeFtb.sv MbistPipeIttage.sv MbistPipeIttage_1.sv MbistPipeIttage_2.sv MbistPipeIttage_3.sv MbistPipeIttage_4.sv MbistPipeSc.sv MbistPipeSc_1.sv MbistPipeSc_2.sv MbistPipeSc_3.sv MbistPipeTage.sv RAS.sv RASStack.sv RegionWays.sv SCTable.sv SCTable_1.sv SCTable_2.sv SCTable_3.sv SRAMTemplate_36.sv SRAMTemplate_44.sv SRAMTemplate_45.sv SRAMTemplate_64.sv SRAMTemplate_68.sv SRAMTemplate_76.sv SRAMTemplate_78.sv SplittedSRAMTemplate_2.sv SplittedSRAMTemplate_23.sv SplittedSRAMTemplate_25.sv SplittedSRAMTemplate_27.sv SplittedSRAMTemplate_3.sv SplittedSRAMTemplate_4.sv TageBTable.sv TageTable.sv TageTable_1.sv TageTable_2.sv TageTable_3.sv Tage_SC.sv WrBypass.sv WrBypass_32.sv WrBypass_33.sv WrBypass_41.sv WrBypass_43.sv array_1.sv array_2.sv array_3.sv array_4.sv array_5.sv array_6.sv data_mem_0_4x2.sv data_mem_0_8x3.sv data_mem_16x12.sv data_mem_8x4.sv sram_array_1p128x24m6s1h0l1b_bp_sc.sv sram_array_1p128x76m1s1h0l1b_bp_ittage.sv sram_array_1p256x16m1s1h0l1b_bp_tage_us.sv sram_array_1p256x8m2s1h0l1b_bp_tage_bt.sv sram_array_1p512x24m12s1h0l1b_bp_tage.sv sram_array_1p512x40m10s1h0l1b_bp_ftb.sv array_1_ext.v array_2_ext.v array_3_ext.v array_4_ext.v array_5_ext.v array_6_ext.v
 
+# ---------------------------------------------------------------------------
+# matched-unread 加强（FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=true）
+#
+# 这是**加强不是放宽**：默认 FM 把"两侧都配上、但都没有输出锥"的未读点记成
+# Not-Compared 放过；打开后它真的去证这些点等价。本目标的证明因此覆盖全部
+# 519962 + 6323 = 526285 个点。
+#
+# 未读点的构成与逐类死因写在 scripts/fm_eq.tcl 的白名单依据里（Composer 条），
+# 这里只记验收：
+#
+#   钉点前 strict 首跑（evidence/40ec7fc36bb8/Composer，RTL 与本 commit 同字节）
+#     native SUCCEEDED / passing 519962 / failing 0 / unverified 0 / aborted 0
+#     / unmatched compare points 0 / 无黑盒 / 无 qualification
+#     unread = 5923 matched_nc + 400(400) unmatched unread
+#
+#   fm_pins_pre.tcl 把那 400 点按段布局逐位钉成 400 对（seg_0/1/2 <-> hi/mid/lo，
+#   value 无后缀/_1/_2/_3 <-> dup 0/1/2/3，位下标同号）。钉点集合与实测未读点
+#   集合**精确相等**这件事由脚本核对，不是眼看的：
+#       python3 ../../../tools/predictor_composer/check_pin_bijection.py \
+#               <钉点前那次跑的 fm_work/Composer/unread_points.txt>
+#   钉不上任何一条即 error 退出（fail-closed）。
+#
+#   打开本项后应得：passing 519962 -> 526285（恰好 +6323）、failing 仍 0、
+#   unread 归 0。passing 不增 = FM 没真去比，那是空转，不算过。
+# ---------------------------------------------------------------------------
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 include ../../../scripts/ut_common.mk
 
 VCS += +define+SYNTHESIS
