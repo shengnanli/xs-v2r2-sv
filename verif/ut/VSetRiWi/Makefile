@@ -1,7 +1,9 @@
 MODULE = VSetRiWi
 
 RTL_DIR = ../../../rtl
-RTL_SRCS = $(RTL_DIR)/backend/VSetRiWi.sv
+# backend_common_pkg.sv 里的 vset_pkg 由 VSetRiWi/VSetRvfWvf 共用（每个子系统至多一个
+# 公共包文件，见 CONVENTIONS.md）。必须排在使用者之前：package 要先于引用它的模块可见。
+RTL_SRCS = $(RTL_DIR)/backend/backend_common_pkg.sv $(RTL_DIR)/backend/VSetRiWi.sv
 TB_SRCS = tb.sv
 
 G1_CANONICAL ?= /home/eda/xs-env/G1-canonical
