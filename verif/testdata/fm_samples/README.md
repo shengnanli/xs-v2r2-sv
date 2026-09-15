@@ -10,6 +10,8 @@
 | `Predictor_82503e5_mergedup_off_fm.log` | `82503e5`，`FM_MERGE_DUP=false`，`scripts/run_proof.sh Predictor Predictor` | Matching 阶段不终止（见 `docs/predictor_fm_scaling_wall.md`） |
 | `Predictor_82503e5_matching_progress.txt` | 同上，从该 log 抽出的三个进度采样 | 速率 146.5 → 0.950 → 0.021 点/秒 |
 | `Predictor_914ab81_mergedup_on_fm.log` | `914ab81`，merge_dup 默认 true | 合并阶段会跑完，慢约 7 倍（见 `verif/ut/Predictor/Makefile` 注释） |
+| `Predictor_da93a13_ghvpins_fm.log` | `da93a13`（= `021f2e3` + GHV 钉点），`FM_MERGE_DUP=false`，同一条 runner 命令 | GHV 钉点 canary：钉满 256/256 后**仍然不收敛**（见 `docs/predictor_fm_scaling_wall.md` 的 canary 一节） |
+| `Predictor_da93a13_ghvpins_matching_progress.txt` | 同上，从该 log 抽出的三个进度采样 | 速率 0.0079 / 0.0716 点/秒，窗口整体 0.0423 点/秒 |
 
 两份 log 都是**被主动停止时**的快照（按明确 PID，非 `pkill -f`），所以没有
 `Matching Results` 段和最终 verdict —— 这正是结论本身，不是截断事故。
