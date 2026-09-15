@@ -64,7 +64,7 @@
 //   · 预测本身 —— 在 Composer 里(本文件只例化它)；
 //   · 187 个预测包字段的输出 —— Composer 直连顶层输出，wrapper 里连线，不进核。
 // =============================================================================
-// 本文件导航（共 3366 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+// 本文件导航（共 3378 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
 //   L38    它在前端的位置
 //   L52    S0~S3 四级覆盖式流水
 //   L59    五个 PhyPriorityMux：S0 状态从哪来
@@ -73,29 +73,29 @@
 //   L96    可读核不做的事
 //   L218   xs_Predictor_core —— 可读核
 //   L288   PRED_ —— 从 full_pred 派生的预测属性
-//   L406   PIPE_ —— S1/S2/S3 覆盖式流水握手
-//   L506   GHV_ —— ★全局历史向量：一个 256 位环形位缓冲★
-//   L511   怎么用】ghist_ptr 指向"最新一位的下一格"
-//   L517   谁写】四个源，同一套优先级
-//   L554   AFHOB_ —— 折叠历史的"最老位"预读
-//   L580   FH_ —— 折叠历史的增量更新
-//   L649   GHVWR_ —— 把"某一级要往 GHV 写什么"算成 256 位的 wen/wdata
-//   L674   STAGE_ —— S1/S2/S3 的历史状态流水
-//   L772   OVR_ —— 级间覆盖判定
-//   L812   RDR_ —— FTQ 真重定向：锁存一拍，然后把历史整体回滚重算
-//   L885   SEL_ —— S0 五选一
-//   L927   流水寄存器本体
-//   L932   s0_pc_reg 是全模块唯一**不带复位**的流水寄存器
-//   L1033  GHV 写：四个源各自算 wen/wdata
-//   L1050  GHIST_ —— 送 Composer 的"推测历史"
-//   L1078  送 FTQ 的控制输出
-//   L1102  TOPDOWN_ —— 取指气泡归因
-//   L1174  上电复位状态
-//   L1183  predCycle —— 打在预测包上的时间戳
-//   L1219  SEGPC_ —— update pc 的分段打拍
-//   L1239  PERF_ —— Composer 的 7 路性能计数各打 2 拍再送出
-//   L1241  golden 这 14 个寄存器**不带复位**
-//   L1254  Predictor —— golden 同名 wrapper
+//   L415   PIPE_ —— S1/S2/S3 覆盖式流水握手
+//   L515   GHV_ —— ★全局历史向量：一个 256 位环形位缓冲★
+//   L520   怎么用】ghist_ptr 指向"最新一位的下一格"
+//   L526   谁写】四个源，同一套优先级
+//   L563   AFHOB_ —— 折叠历史的"最老位"预读
+//   L589   FH_ —— 折叠历史的增量更新
+//   L658   GHVWR_ —— 把"某一级要往 GHV 写什么"算成 256 位的 wen/wdata
+//   L683   STAGE_ —— S1/S2/S3 的历史状态流水
+//   L781   OVR_ —— 级间覆盖判定
+//   L824   RDR_ —— FTQ 真重定向：锁存一拍，然后把历史整体回滚重算
+//   L897   SEL_ —— S0 五选一
+//   L939   流水寄存器本体
+//   L944   s0_pc_reg 是全模块唯一**不带复位**的流水寄存器
+//   L1045  GHV 写：四个源各自算 wen/wdata
+//   L1062  GHIST_ —— 送 Composer 的"推测历史"
+//   L1090  送 FTQ 的控制输出
+//   L1114  TOPDOWN_ —— 取指气泡归因
+//   L1186  上电复位状态
+//   L1195  predCycle —— 打在预测包上的时间戳
+//   L1231  SEGPC_ —— update pc 的分段打拍
+//   L1251  PERF_ —— Composer 的 7 路性能计数各打 2 拍再送出
+//   L1253  golden 这 14 个寄存器**不带复位**
+//   L1266  Predictor —— golden 同名 wrapper
 //
 
 package predictor_pkg;
@@ -352,13 +352,22 @@ module xs_Predictor_core
 
   // selectByTaken：按"第一个要跳的槽"选目标；都不跳选落空；没命中选 pc+32。
   // hit_eff：S1/S2 直接用 hit；S3 还要求落空地址没算错（S3 才有纠错权）。
+  //
+  // ★写成 Mux1H（或-与）而不是 ? : 优先级链★：四个 sel 互斥且**穷尽**，两种写法在
+  // 二值逻辑下等价，FM 判不出差别。但优先级链必须有个兜底 `else '0`，而那条路在
+  // hit_eff=X 时会被走到 —— 把 X **变成确定的 0**，于是 target_diff 从 X 变成确定的 1，
+  // 凭空触发 S3 覆盖。golden 是 Mux1H，X 进 X 出。本轮 UT 的幽灵 override 就是这么来的。
   function automatic vaddr_t target_sel(full_pred_t p, vaddr_t pc,
                                         logic [TOTAL_SLOT-1:0] tms, logic hit_eff);
-    if      ( tms[0] & hit_eff)                  return p.targets[0];
-    else if (~tms[0] &  tms[1] & hit_eff)        return p.targets[1];
-    else if (~(|tms) & hit_eff)                  return p.fall_through_addr;
-    else if (~hit_eff)                           return vaddr_t'(pc + FETCH_BYTES);
-    else                                         return '0;
+    logic [3:0] sel;
+    sel[0] =   tms[0]            & hit_eff;   // 槽0 跳
+    sel[1] =  ~tms[0] &  tms[1]  & hit_eff;   // 槽0 不跳、槽1 跳
+    sel[2] =  ~(|tms)            & hit_eff;   // 都不跳 → 顺序落空
+    sel[3] =  ~hit_eff;                       // 没命中 FTB → pc+32
+    return ({VADDR_BITS{sel[0]}} & p.targets[0])
+         | ({VADDR_BITS{sel[1]}} & p.targets[1])
+         | ({VADDR_BITS{sel[2]}} & p.fall_through_addr)
+         | ({VADDR_BITS{sel[3]}} & vaddr_t'(pc + FETCH_BYTES));
   endfunction
 
   // ---- 每级预测包的派生属性算一次，全模块共用 ----------------------------
@@ -783,10 +792,13 @@ module xs_Predictor_core
     logic       tgt_diff, pos_diff, tk_diff, off_diff;
     for (genvar i = 0; i < 4; i++)
       assign dvec[i] = (all_target_of(s2_pred[d], s2_pc[d], i) != prev_s1[d].target);
-    assign tgt_diff = ( prev_s1[d].taken_mask[0] & prev_s1[d].hit) ? dvec[0]
-                    : (~prev_s1[d].taken_mask[0] & prev_s1[d].taken_mask[1] & prev_s1[d].hit) ? dvec[1]
-                    : (~(|prev_s1[d].taken_mask) & prev_s1[d].hit) ? dvec[2]
-                    : (~prev_s1[d].hit) ? dvec[3] : 1'b0;
+    // 同样写成 Mux1H，理由见 target_sel 的注释（别用带兜底的优先级链）
+    logic [3:0] tsel;
+    assign tsel[0] =   prev_s1[d].taken_mask[0]                              & prev_s1[d].hit;
+    assign tsel[1] =  ~prev_s1[d].taken_mask[0] & prev_s1[d].taken_mask[1]   & prev_s1[d].hit;
+    assign tsel[2] =  ~(|prev_s1[d].taken_mask)                              & prev_s1[d].hit;
+    assign tsel[3] =  ~prev_s1[d].hit;
+    assign tgt_diff = |(tsel & dvec);
     assign pos_diff = (prev_s1[d].last_br_pos_oh != d_s2[d].last_br_pos_oh);
     assign tk_diff  = (prev_s1[d].taken          != d_s2[d].cfi_valid);
     assign off_diff = prev_s1[d].taken & d_s2[d].cfi_valid
