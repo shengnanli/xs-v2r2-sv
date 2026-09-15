@@ -55,37 +55,96 @@ verif/sim/run_perfbind.sh run   golden <workload.bin> <max-cycles>
 verif/sim/run_perfbind.sh compare <golden assert.log> <impl assert.log>
 ```
 
-生成器是 `scripts/perf_rebind.py`，产物两张表（都进 `gate_all.sh` 的幂等闸）：
+生成器是 `scripts/perf_rebind.py`，分档由 `scripts/perf_tier.py` 另算（都进
+`gate_all.sh` 的幂等闸）：
 
 | 表 | 是什么 |
 |---|---|
 | `docs/perf_bore_map.tsv` | 9897 条 XMR **逐条**的绑定与证据等级 |
-| `docs/perf_bore_unbound.tsv` | **没绑上**的计数器 —— 比对时必须排除，★不许拿 0 冒充相等★ |
+| `docs/perf_bore_unbound.tsv` | 没绑上的 bore（perf_rebind 的口径） |
 | `docs/perf_rep_counters.tsv` | 代表性计数器组（先验这一组，再谈大面积比对） |
+| `docs/perf_tier_ledger.tsv` | **每个计数器一行**的分档（codex 0162 D3），25888 行 |
+| `docs/perf_gap_ledger.tsv` | **测不了**的计数器逐条台账 + 解除条件，599 行 |
+| `docs/perf_mismatch_ledger.tsv` | 实测每一条不等的逐条裁定（WAIVED / BLOCKING） |
 
 绑定分五级，证据强度不同，**不混着报**（判据写在 `perf_rebind.py` 头部）：
 `T0_UNCHANGED`（原样）/ `T1_PATH_REBIND`（只有路径变了，逐位同一根线）/
 `T2_CONE_PORT`、`T2_CONE_PORT_CHILD`（golden 组合锥原样复制，叶子重指到重写层次的
 **端口**——端口是 FM 的比较边界）/ `T3_REG_LEAF`、`T4_OPEN`（**判不准，如实留白**）。
 
-### 实测（CoreMark 2-iteration，两侧同为 20000 拍，2026-09-14）
+### 分档（codex 0162 D3）—— 判据在 `scripts/perf_tier.py`
+
+"绑上了没有"和"这条差异挡不挡里程碑"是两个问题。后者按 D3 分档，判据**从 golden
+RTL 现场算**，不靠名字猜：
+
+| 档 | 判据（机器可判） | 要求 | 条数 |
+|---|---|---|---|
+| `A_FUNC_ASSERT` | golden 的 `[ERROR]` 断言 | 必须相等 | 369 |
+| `B_CONTROL` | 至少一条 bore 观测的线（拆掉 firtool 探针拷贝后）**被本模块可综合逻辑读**、或本身是端口、或喂给子实例的输入端口 | 必须相等 | 13332 |
+| `C_DIAG` | 全部 bore 观测的线都没有读者 —— 把这些计数器整条拿掉网表逐位不变 | 显式归类后允许不同 | 10308 |
+| `D_CONST` | 打印的实参是 golden 字面量（如 `util_underflow` 印的就是 `64'h0`） | 恒等 | 876 |
+| `D_INVARIANT` | 反向闭包里一条 bore 都没有（如 `util_sampled` = 采样拍数） | 同 dump 时刻下恒等 | 1003 |
+| `X_UNRESOLVED` | 上面都判不出来 | ★闸红★ | **0** |
+
+**软件可见的 PMU 自动落进 `B_CONTROL`**：hpm 事件在 golden 里走 `io_perf_*` 输出端口，
+观测它的 bore 必然"被读"。两个实测例子（都可以直接翻 golden 复核）：
+
+```
+StdFreeList.sv:978   wire [7:0] freeRegCntReg_probe = freeRegCntReg;   ← bore 观测点
+StdFreeList.sv:999   io_perf_0_value_REG <= freeRegCntReg < 8'h27;     ← 同一根线喂 hpm
+StdFreeList.sv:979   wire empty = freeRegCntReg == 8'h0;               ← 还喂控制
+```
+
+`FTB.perfEvents_0_2_probe` 同理。所以不需要另写一条按名字认 PMU 的判据，也就不会漏。
+
+三个**踩过的坑**（前两个写进了负测 `scripts/test_perf_tier_gate.py` 第 11/12 条，
+且做过变异验证 —— 把修复各回退一次，对应的负测都当场红）：
+
+* 不剥 `` `ifndef SYNTHESIS `` 段，一根只在断言里出现过的线会被误判成"馈入控制"；
+* 不查**子实例端口方向**，`.io_commits_info_0_debug_pc (_probe)` 这种"子模块**输出**
+  驱动本模块网线"会被当成"有人读"—— `rob: robHeadPC` 因此一度被误判成 B_CONTROL
+  并挡住里程碑，而它其实是 Rob 的 debug 输出、CtrlBlock 里无人读；
+* 直方图的桶只在 `if (perfCnt_bore_N > …)` 的**条件**里提到那条 bore。不跟条件的话，
+  整族桶会被算成"不依赖任何 bore"，该排除的就不会被排除。
+
+另外记一条**不是坑但值得知道**的：15 条断言在 golden 里条件就是
+`wire _GEN_15 = (`PRINTF_COND_) & 1'h0;` —— 恒 0，永远不会响（itlb/dtlb 的
+non-block、LoadUnit 的 merge buffer、l2tlb cache 的 ecc）。台账里这些行的
+criterion 是 `assert_cond_no_bore`，不要读成"漏掉了 bore"。
+
+### 实测（CoreMark 2-iteration，两侧同为 20000 拍，2026-09-14 跑，2026-09-15 重判）
 
 golden 用纯 golden simv，impl 用重绑 SimTop 的 simv，**同一条命令、同一个 workload、
 同一个 max-cycles**。两侧各打出 27921 行 `[PERF ]`，dump 时刻都在 cycle 19999。
 
+复跑（输入 sha256 见 `docs/perf_mismatch_ledger.tsv` 头部）：
+
+```bash
+python3 scripts/perf_compare.py \
+  /home/eda/xs-env/sim-work/perfbind-runs/golden_cm20k/assert.log \
+  /home/eda/xs-env/sim-work-perfbind/impl/run/cm20k/assert.log \
+  --all --emit-mismatch docs/perf_mismatch_ledger.tsv
+```
+
 | | 结果 |
 |---|---|
 | 代表性组（`docs/perf_rep_counters.tsv`，21 条） | MATCH 18 / MISMATCH 0 / EXCLUDED 3 / MISSING 0 |
-| 全量（25427 个计数器） | **MATCH 24811 / MISMATCH 24 / EXCLUDED 592 / MISSING 0** |
-| golden 断言 | 0 条 `[ERROR]`；impl 也是 0 条（439/453 条断言条件已重绑，没有误报） |
+| 全量（25427 个计数器） | **MATCH 24814 / MISMATCH 24 / EXCLUDED 589 / MISSING 0** |
+| MISMATCH 裁定 | **WAIVED 24 / BLOCKING 0**（全部 C_DIAG 且持有模块未重写） |
+| golden 断言 | 0 条 `[ERROR]`；impl 也是 0 条 |
 
-EXCLUDED 592 = 落在 `docs/perf_bore_unbound.tsv` 里的计数器。**它们不是「相等」也不是
-「不等」，是「没测」** —— 生成的 SimTop 给它们接的是 `'0`，那个 0 不是测量值。
+> 与上一版（MATCH 24811 / EXCLUDED 592）的差别是 **3 条**：
+> `ftq: {backend_redirect,bpu_update,ifu_redirect}_latency_sampled`。
+> 旧的 `also_feeds` 按"同族"整片排除，把这三条也扫了进去；而它们是
+> **NSamples 计数器**，由另一条已绑上的 bore 驱动，两侧实测 382/382、2732/2732、
+> 284/284 —— 是真测到的相等，不该排除。`perf_tier.py` 改用 LogPerfEndpoint 内部的
+> **反向数据流闭包**（连 `if` 条件一起跟），所以只排该排的。新排除集合是旧集合的
+> **真子集**（0 条新增），没有把任何假零放回 MATCH。
 
-★ 24 条 MISMATCH 全部是 `T0_UNCHANGED` ★：观测路径与信号名与 golden **一字不差**
-（承载它们的 7 个模块 CtrlBlock / Tage_SC / MainPipe / MissEntry / StoreQueue /
-StreamBitVectorArray / StrideMetaArray 本轮都**没有**被重写）。所以这 24 条是重写件
-真实的行为差异，不是重绑的伪影。集中在三处：
+★ 24 条 MISMATCH 逐条裁定见 `docs/perf_mismatch_ledger.tsv` ★。全部 `C_DIAG`，
+持有它们的 7 个 golden 模块（CtrlBlock / Tage_SC / MainPipe / MissEntry / StoreQueue /
+StreamBitVectorArray / StrideMetaArray）本轮**都没有被重写**，所以按 D3 豁免，
+不挡当前里程碑。集中在三处：
 
   * `bpu.predictors.tage`：6 条，全部恰好 ±1029 —— TAGE 的 provider 选择与 SC 的
     agree/disagree 在 1029 次预测上与 golden 不同（`bank_0_tage_provided_at_pred`
@@ -95,10 +154,51 @@ StreamBitVectorArray / StrideMetaArray 本轮都**没有**被重写）。所以�
     `storeQueue: vaddr_match_failed`（24 vs 11）、
     `missQueue.entries_*: load_miss_penalty_to_use`（±1）、`rob: robHeadPC`。
 
-排除了随机初值这个解释：golden 自己换一个 `+ntb_random_seed` 再跑一遍，
-**25427 个计数器一个都没变**（0/25427）。所以上面的差异不是初值随机化造成的。
-（诚实的保留：本次没有独立验证 `+ntb_random_seed` 在这份 simv 里确实扰动了 `$random`，
-所以这是证据，不是证明。）
+**豁免是有有效期的**：`scripts/check_perf_tier.py` 每次跑闸都用 `rtl/**/*.sv` 现场
+重算 `owner_rewritten`。Tage_SC 一旦被重写，那 6 条当场从 WAIVED 翻成 BLOCKING、
+闸变红（负测 `scripts/test_perf_tier_gate.py` 第 1 条就钉的这个）。
+
+> 这条**比 codex D3 的最后一句更严**，是有意的。D3 说 "identity of an internal
+> provider table need not match unless it affects a control/performance-contract
+> output" —— 按字面，模块重写之后 C_DIAG 仍可不同。这里不照搬，因为本工程的上位
+> 目标是与 golden **bug-for-bug** 一致（"良性差异文档化"这条路线被否决过）。
+> 翻红之后的正确处置不是放宽判据，而是拿出"该差异不影响任何 control/perf-contract
+> 输出"的正面证据，带着证据改 `verdict_of` 并同步改负测 —— 一次有记录的判据变更，
+> 好过一个谁都能随手绕过的开关。
+
+### ★589 条 EXCLUDED 是一本待办台账，不是"通过"★
+
+`docs/perf_gap_ledger.tsv` 逐条记了：属于哪一档、哪几条 bore 没绑上、bore 的
+tier、持有模块、**以及什么条件下能解除排除**。按档拆开看，结论比"EXCLUDED 592"
+难看得多，也诚实得多：
+
+| | 条数 | 意味着 |
+|---|---|---|
+| `B_CONTROL` 且 GAP | **427** | 这些是**必须相等**的计数器，而本轮**根本没测** |
+| `C_DIAG` 且 GAP | 162 | 允许不同的，也没测 |
+| `A_FUNC_ASSERT` 且 GAP | 10 | 断言条件没绑上 = 这 10 条断言在 impl 侧**不会响** |
+
+未绑 bore 的分布：`T3_REG_LEAF` 548 条（golden 组合锥展到内部寄存器，寄存器不是
+FM 的比较边界，机器判不出对应物）、`T4_OPEN` 51 条（perf_rebind 的 firtool 方言
+解析没闭合，是工具的洞）。
+
+持有模块：`Ftq` 296 / `StdFreeList` 168 / `EntriesVfdivVidiv` 50 / `LCredit2Decoupled*` 47 /
+`FTBBank` 16 / `SourceB` 16 / 其余零星。**其中 564 条的持有模块本轮已经重写了**
+（`owner_rewritten=yes`）—— 也就是说这个缺口不是"还没动的模块"，而是
+"动过、但内部观测点绑不回去"。这是下一波要收的口子。
+
+另外，`ftq: commit_num_inst_mean` 在 golden 侧印了、impl 侧没印（`*_mean` 由
+`NSamples != 0` 守着，而 impl 的 NSamples 是假零）。它本来就在 GAP 集合里，
+所以 `MISSING` 仍是 0 —— 但这正说明"接零"会一路传染到**打印与否**。
+
+### 随机初值这个解释已排除（证据强于上一版记的）
+
+golden 自己换一个 `+ntb_random_seed=987654321` 再跑一遍，两份 `assert.log`
+**逐字节相同**（`sha256 6ceb4c0d99a048ad622035f392194dd1212dedff8457a42074e9371ea930ae39`，
+两份一致），不只是"25427 个计数器一个都没变"。VCS 也确认种子被吃了：
+`Note-[VIUNRD] initreg using ntb_random_seed ... +ntb_random_seed=987654321`。
+（诚实的保留仍在：这证明**这份 simv 的输出对 initreg 种子不敏感**，
+不等于证明 `$random` 被扰动过。）
 
 ### perf 打印怎么才会出现
 
