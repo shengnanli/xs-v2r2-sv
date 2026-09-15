@@ -146,7 +146,10 @@ unsigned for while function endfunction task endtask return default'''.split())
         # 临时把 `3'h1` 这种去掉（否则 `h1` 会被当成一个信号名）。
         body = re.sub(r'\s+', ' ', re.sub(r'//[^\n]*', '', t))
         defs, decl = {}, {}
-        for m in re.finditer(r'\bwire\s+(\[[^\]]*\]\s*)?(\w+)\s*=\s*([^;]*);', body):
+        # 多维打包声明要全吃下：firtool 会写 `wire [511:0][2:0] _GEN_9 = …`
+        # （Chisel Vec 展平）。只认一维的话这些名字会变成「解析不出来」，
+        # 于是一条本该归到 NO_SIGNOFF_BOUNDARY 的缺口被误报成工具的洞。
+        for m in re.finditer(r'\bwire\s+((?:\[[^\]]*\]\s*)*)(\w+)\s*=\s*([^;]*);', body):
             if m.group(2) not in defs:
                 defs[m.group(2)] = m.group(3).strip()
                 decl[m.group(2)] = (m.group(1) or '').strip()
@@ -154,7 +157,7 @@ unsigned for while function endfunction task endtask return default'''.split())
             if m.group(1) not in defs:
                 defs[m.group(1)] = m.group(2).strip()
                 decl[m.group(1)] = ''
-        regs = set(re.findall(r'\breg\s+(?:\[[^\]]*\]\s*)?(\w+)\s*[;=]', body))
+        regs = set(re.findall(r'\breg\s+(?:\[[^\]]*\]\s*)*(\w+)\s*[;=]', body))
         # ★内部线若被原样赋给某个输出端口，就当它是那个端口★。
         # 例：golden WrBypass 的 `wire hit = …;  assign io_hit = hit;` —— `hit` 的锥
         # 会一路展到 ever_written_* 这些内部寄存器（非签核边界，判不出对应物），
