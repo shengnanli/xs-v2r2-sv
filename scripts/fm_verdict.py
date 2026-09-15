@@ -17,6 +17,24 @@ verdict ∈ {SUCCEEDED, FAILED, WAIVED, PARTIAL, SHADOW_CHECK, DIAGNOSTIC, UNRUN
  P0-7 只解析**最后一个** "Matched Compare Points" 汇总表(防较早短格式覆盖终态)。
  P0-8 汇总表缺失 → ERROR(不按零处理);表内某类别缺失才视为 0。
  P0-9 freshness:要求 run 元数据(input_hash/baseline)绑定,不匹配 → 标记 stale。
+
+★读 fm.log 判断"这次跑到哪了"时的阶段顺序★(2026-09-15 实测记下,我读错过一次):
+
+    ... Elaborating / Implementing inferred operators
+    Reference design set to 'r:/WORK/<top>'      <- ref 侧 set_top 完成
+    ... (impl 侧同样一遍)
+    Implementation design set to 'i:/WORK/<top>' <- impl 侧 set_top 完成
+    Status:  Checking designs...
+    Status:  Building verification models...     <- ★合并重复寄存器在这之后★
+    Status:  Merging duplicated registers in block ...   <- 逐 block 打印,可能很久
+    Status:  Matching...
+    **** Matching Results ****
+    Verification SUCCEEDED/FAILED/INCONCLUSIVE
+
+所以 "Building verification models" **不是**"已经过了合并阶段",而是"刚到它门口"。
+拿它当终点会把 verification_merge_duplicated_registers 的 A/B 测成噪声:那之前的
+每一秒都与这个开关无关,两次跑的差异只反映机器负载。要测这个开关,观察点只能是
+"有没有出现 Merging duplicated 行、以及在哪个 block 上停多久"。
 """
 import json
 import os
