@@ -64,36 +64,38 @@
 //   · 预测本身 —— 在 Composer 里(本文件只例化它)；
 //   · 187 个预测包字段的输出 —— Composer 直连顶层输出，wrapper 里连线，不进核。
 // =============================================================================
-// 本文件导航（共 3260 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
-//   L36    它在前端的位置
-//   L50    S0~S3 四级覆盖式流水
-//   L57    五个 PhyPriorityMux：S0 状态从哪来
-//   L73    ★本次重写的核心：GHV 从 256 个散装寄存器收回成一个向量★
-//   L82    MBIST 直通：633 端口里 457 个不是功能端口
-//   L87    可读核不做的事
-//   L209   xs_Predictor_core —— 可读核
-//   L279   PRED_ —— 从 full_pred 派生的预测属性
-//   L397   PIPE_ —— S1/S2/S3 覆盖式流水握手
-//   L467   GHV_ —— ★全局历史向量：一个 256 位环形位缓冲★
-//   L472   怎么用】ghist_ptr 指向"最新一位的下一格"
-//   L478   谁写】四个源，同一套优先级
-//   L511   AFHOB_ —— 折叠历史的"最老位"预读
-//   L537   FH_ —— 折叠历史的增量更新
-//   L606   GHVWR_ —— 把"某一级要往 GHV 写什么"算成 256 位的 wen/wdata
-//   L631   STAGE_ —— S1/S2/S3 的历史状态流水
-//   L729   OVR_ —— 级间覆盖判定
-//   L769   RDR_ —— FTQ 真重定向：锁存一拍，然后把历史整体回滚重算
-//   L835   SEL_ —— S0 五选一
-//   L877   流水寄存器本体
-//   L978   GHV 写：四个源各自算 wen/wdata
-//   L995   GHIST_ —— 送 Composer 的"推测历史"
-//   L1021  送 FTQ 的控制输出
-//   L1048  TOPDOWN_ —— 取指气泡归因
-//   L1120  上电复位状态
-//   L1129  predCycle —— 打在预测包上的时间戳
-//   L1160  SEGPC_ —— update pc 的分段打拍
-//   L1180  PERF_ —— Composer 的 7 路性能计数各打 2 拍再送出
-//   L1194  Predictor —— golden 同名 wrapper
+// 本文件导航（共 3320 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+//   L38    它在前端的位置
+//   L52    S0~S3 四级覆盖式流水
+//   L59    五个 PhyPriorityMux：S0 状态从哪来
+//   L82    ★本次重写的核心：GHV 从 256 个散装寄存器收回成一个向量★
+//   L91    MBIST 直通：633 端口里 457 个不是功能端口
+//   L96    可读核不做的事
+//   L218   xs_Predictor_core —— 可读核
+//   L288   PRED_ —— 从 full_pred 派生的预测属性
+//   L406   PIPE_ —— S1/S2/S3 覆盖式流水握手
+//   L476   GHV_ —— ★全局历史向量：一个 256 位环形位缓冲★
+//   L481   怎么用】ghist_ptr 指向"最新一位的下一格"
+//   L487   谁写】四个源，同一套优先级
+//   L521   AFHOB_ —— 折叠历史的"最老位"预读
+//   L547   FH_ —— 折叠历史的增量更新
+//   L616   GHVWR_ —— 把"某一级要往 GHV 写什么"算成 256 位的 wen/wdata
+//   L641   STAGE_ —— S1/S2/S3 的历史状态流水
+//   L739   OVR_ —— 级间覆盖判定
+//   L779   RDR_ —— FTQ 真重定向：锁存一拍，然后把历史整体回滚重算
+//   L848   SEL_ —— S0 五选一
+//   L890   流水寄存器本体
+//   L895   s0_pc_reg 是全模块唯一**不带复位**的流水寄存器
+//   L996   GHV 写：四个源各自算 wen/wdata
+//   L1013  GHIST_ —— 送 Composer 的"推测历史"
+//   L1039  送 FTQ 的控制输出
+//   L1063  TOPDOWN_ —— 取指气泡归因
+//   L1135  上电复位状态
+//   L1144  predCycle —— 打在预测包上的时间戳
+//   L1175  SEGPC_ —— update pc 的分段打拍
+//   L1195  PERF_ —— Composer 的 7 路性能计数各打 2 拍再送出
+//   L1197  golden 这 14 个寄存器**不带复位**
+//   L1210  Predictor —— golden 同名 wrapper
 //
 
 package predictor_pkg;
@@ -395,7 +397,7 @@ module xs_Predictor_core
   //   (G1 相对 G0 把两级 REG 改成单寄存器，脉冲提前了一拍。)
   // ===========================================================================
   logic modified_reset;
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) modified_reset <= 1'b1;
     else       modified_reset <= 1'b0;
   end
@@ -435,7 +437,7 @@ module xs_Predictor_core
   assign s2_fire_w = s2_valid_q & s3_comp_ready & s3_ready;
   assign s3_fire_w = s3_valid_q;                           // S3 是末级，有就发
 
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       s1_valid_q <= 1'b0;
       s2_valid_q <= 1'b0;
@@ -509,7 +511,7 @@ module xs_Predictor_core
                         : s2_ghv_wen[n]  ? s2_ghv_wdata[n]
                         : s1_ghv_wen[n]  ? s1_ghv_wdata[n]
                                          : rdr_ghv_wdata[n];  // 无人写时兜底(同 golden)
-    always_ff @(posedge clock) begin
+    always_ff @(posedge clock or posedge reset) begin
       if (reset)        ghv_q[n] <= 1'b0;
       else if (ghv_wen[n]) ghv_q[n] <= ghv_wdata[n];
     end
@@ -781,14 +783,17 @@ module xs_Predictor_core
   // 注意这里用的是**慢路**：直接从 GHV 现读最老位，而不是用预读好的 AFHOB ——
   // 因为重定向点的历史指针是任意的，没有预读过。
   // ===========================================================================
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) do_redirect_valid <= 1'b0;
     else       do_redirect_valid <= ftq_redirect_valid;
+  end
+  // 包体不带复位（valid 为 0 时没人看它）
+  always_ff @(posedge clock) begin
     if (ftq_redirect_valid) do_redirect_bits <= redirect_in;
   end
 
   logic redirect_from_ifu_r;
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) redirect_from_ifu_r <= 1'b0;
     else       redirect_from_ifu_r <= ftq_redirect_from_ifu;
   end
@@ -887,11 +892,16 @@ module xs_Predictor_core
   //   S1/S2/S3：分别由 s0_fire/s1_fire/s2_fire 打拍（注意 golden 里除 pc 外
   //             统一用 dup1 的 fire 作使能，这里照抄）
   // ===========================================================================
+  // s0_pc_reg 是全模块唯一**不带复位**的流水寄存器（golden 同）：它靠 modified_reset
+  // 那一拍脉冲装复位向量，而不是靠复位端。
   always_ff @(posedge clock) begin
     for (int d = 0; d < NUM_DUP; d++) begin
       if (modified_reset) s0_pc_reg[d] <= vaddr_t'(io_reset_vector);
       else if (~s0_stall) s0_pc_reg[d] <= s0_pc_next[d];
     end
+  end
+
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       for (int d = 0; d < NUM_DUP; d++) begin
         s0_ghist_ptr_reg[d] <= '0;
@@ -940,7 +950,7 @@ module xs_Predictor_core
   end
 
   // 上一拍 S1 / S2 结论的锁存
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       for (int d = 0; d < NUM_DUP; d++) prev_s1[d] <= '0;
     end else if (s1_fire_w) begin
@@ -955,7 +965,7 @@ module xs_Predictor_core
     end
   end
 
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       for (int d = 0; d < NUM_DUP; d++) begin prev_s2[d] <= '0; prev_s2_pc[d] <= '0; end
     end else begin
@@ -1030,13 +1040,10 @@ module xs_Predictor_core
   // ===========================================================================
   logic                    s2_fi_flag, s3_fi_flag;
   logic [FTQ_PTR_BITS-1:0] s2_fi_value, s3_fi_value;
+  // golden 这 4 个也不带复位（复位后第一次 s1_fire 就会装进正确的 ftqIdx）
   always_ff @(posedge clock) begin
-    if (reset) begin
-      s2_fi_flag <= 1'b0; s2_fi_value <= '0; s3_fi_flag <= 1'b0; s3_fi_value <= '0;
-    end else begin
-      if (s1_fire_w) begin s2_fi_flag <= ftq_enq_ptr_flag; s2_fi_value <= ftq_enq_ptr_value; end
-      if (s2_fire_w) begin s3_fi_flag <= s2_fi_flag;       s3_fi_value <= s2_fi_value;       end
-    end
+    if (s1_fire_w) begin s2_fi_flag <= ftq_enq_ptr_flag; s2_fi_value <= ftq_enq_ptr_value; end
+    if (s2_fire_w) begin s3_fi_flag <= s2_fi_flag;       s3_fi_value <= s2_fi_value;       end
   end
   assign s2_ftq_idx_flag  = s2_fi_flag;
   assign s2_ftq_idx_value = s2_fi_value;
@@ -1116,7 +1123,7 @@ module xs_Predictor_core
     if (ftq_full_stall) td_d[0][R_FTQ_FULL] = 1'b1;
   end
 
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) for (int i = 0; i < NUM_STAGE; i++) td_q[i] <= '0;
     else       for (int i = 0; i < NUM_STAGE; i++) td_q[i] <= td_d[i];
   end
@@ -1128,7 +1135,7 @@ module xs_Predictor_core
   // 上电复位状态（golden 里只喂断言，SYNTHESIS 下无扇出，但它是真寄存器）
   // ===========================================================================
   logic power_on_reset_state;
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset)          power_on_reset_state <= 1'b1;
     else if (s0_fire_w) power_on_reset_state <= 1'b0;
   end
@@ -1141,7 +1148,7 @@ module xs_Predictor_core
   // 与 golden 逐一配对（对称死位，FM 用 verify_matched_unread_compare_points 加强证明）。
   // ===========================================================================
   logic [63:0] pred_cycle_q [0:NUM_STAGE-1][0:NUM_DUP-1];
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     for (int s = 0; s < NUM_STAGE; s++)
       for (int d = 0; d < NUM_DUP; d++)
         if (reset) pred_cycle_q[s][d] <= 64'h0;
@@ -1173,7 +1180,7 @@ module xs_Predictor_core
   // ===========================================================================
   logic [25:0] upc_seg0;
   logic [11:0] upc_seg1, upc_seg2;
-  always_ff @(posedge clock) begin
+  always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       upc_seg0 <= '0; upc_seg1 <= '0; upc_seg2 <= '0;
     end else if (ftq_update_valid) begin
@@ -1187,11 +1194,12 @@ module xs_Predictor_core
   // ===========================================================================
   // PERF_ —— Composer 的 7 路性能计数各打 2 拍再送出（与取指流水对齐）
   // ===========================================================================
+  // golden 这 14 个寄存器**不带复位**（性能计数丢一两拍无所谓）
   logic [5:0] perf_q1 [0:6], perf_q2 [0:6];
   always_ff @(posedge clock) begin
     for (int i = 0; i < 7; i++) begin
-      if (reset) begin perf_q1[i] <= '0; perf_q2[i] <= '0; end
-      else       begin perf_q1[i] <= comp_perf[i]; perf_q2[i] <= perf_q1[i]; end
+      perf_q1[i] <= comp_perf[i];
+      perf_q2[i] <= perf_q1[i];
     end
   end
   for (genvar i = 0; i < 7; i++) assign perf_out[i] = perf_q2[i];
