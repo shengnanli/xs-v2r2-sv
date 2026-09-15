@@ -11,7 +11,11 @@
 //   3. ★去掉 $isunknown 门限后真相大白★：真正的首次发散在 n=1047 的
 //      io_in_bits_s0_pc_0，两侧**都是 X**，只是 X 的位型不同：
 //          g=...XXXXX0XXXxxx   i=...XXXXX0XXXxXX
-//      即 UT 的 errors 主要是**启动期 X 悲观**，不是已证实的逻辑错。
+//      首次发散确实是 X 位型差异；但★不要据此认为 errors 全是 X 悲观★——
+//      实测把比较窗口推迟到第 6000 拍之后再比，errors 仍有 165262/3350434 ≈ 4.9%，
+//      且集中在 s2/s3_ftq_idx_value、last_stage_spec_info_ssp、s2_full_pred_3_hit。
+//      ftq_idx 只在 s1_fire/s2_fire 那拍锁存 ⇒ 说明 fire 时序仍与 golden 不一致。
+//      所以：**确有尚未定位的真逻辑差异**，X 悲观只是让首次发散点变得难读。
 //      golden 被 firtool 折叠过(如 s2_ready/s3_ready 已折成常量)，X 传播范围比
 //      未折叠的可读核小；两侧 SRAM 在 +define+SYNTHESIS 下都不随机化、同为 X。
 //      ⇒ 判正确性要靠 FM（二值、不吃 X）；tb 若要转绿需先把设计喂出 X
