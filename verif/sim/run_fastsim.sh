@@ -111,6 +111,21 @@ run() {  # $1=side $2=bin [$3=max-cycles] [$4=tag]
       2>"$rundir/assert.log" | tee "$rundir/sim.log" )
 }
 
+bench() {  # $1=workload.bin $2=tag [$3=max-cycles] —— 两侧并行跑同一负载并出裁定
+  local bin=$1 tag=$2 maxc=${3:-}
+  local t0 t1
+  t0=$(date +%s)
+  ( run golden "$bin" "$maxc" "$tag" >/dev/null 2>&1; echo "golden rc=$?" ) &
+  local gp=$!
+  ( run impl   "$bin" "$maxc" "$tag" >/dev/null 2>&1; echo "impl   rc=$?" ) &
+  local ip=$!
+  wait $gp; wait $ip
+  t1=$(date +%s)
+  log "bench $tag 墙钟 $((t1-t0))s"
+  python3 "$SV_HOME/verif/sim/bench_verdict.py" \
+      "$SIMF/golden/run/$tag/sim.log" "$SIMF/impl/run/$tag/sim.log" "$tag"
+}
+
 flags() {
   for s in golden impl; do
     echo "=== $s ==="
@@ -123,6 +138,7 @@ case "${1:-}" in
   setup) setup_workspace;;
   build) setup_workspace; drive build "${2:?golden|impl}";;
   run)   shift; run "${1:?side}" "${2:?workload.bin}" "${3:-}" "${4:-}";;
+  bench) shift; bench "${1:?workload.bin}" "${2:?tag}" "${3:-}";;
   flags) flags;;
   *) sed -n '2,45p' "$0";;
 esac
