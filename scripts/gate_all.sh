@@ -67,6 +67,13 @@ run "仿真 collateral 闸"    python3 scripts/check_sim_collateral.py
 # 先跑负测（秒级，不扫 golden），再跑真闸（约 60 秒）—— 顺序照 package 闸的先例。
 run "层次重绑闸负测"     python3 scripts/test_hier_map_gate.py
 run "层次重绑表幂等"     python3 scripts/hier_map.py --check
+# perf 观测重绑（codex 0160 P2）：docs/perf_bore_map.tsv 决定整芯片仿真里
+# **哪些 perf 计数器算数、哪些不算数**。它由 golden SimTop 的 XMR 表 + golden
+# LogPerfEndpoint 的打印串 + 重写件例化图机械算出 —— 任何一侧动了，表就该跟着变。
+# 没有这道闸，表会悄悄过期，而过期的后果不是报错，是**印出一串看着像测量值的 0**。
+# 先跑负测（秒级，不扫 golden），再跑真闸（约 90 秒）—— 顺序照层次重绑闸的先例。
+run "perf 重绑闸负测"    python3 scripts/test_perf_rebind_gate.py
+run "perf 重绑表幂等"    python3 scripts/perf_rebind.py --check
 
 rm -f /tmp/gate_$$.out
 [ $rc -eq 0 ] && echo "=== 全部机器闸 PASS ===" || echo "=== 有闸未过，见上 ==="
