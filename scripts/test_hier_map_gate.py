@@ -147,6 +147,18 @@ def test_xlate():
     v, p, mod, _s = HX.translate(['w', 'sig_name'], _G, rows)
     ck(v == 'SIGNAL_TAIL_OK', '未重写模块里的信号末段判错: %r' % (v,))
 
+    # ★报告层★：SIGNAL_TAIL_OK 说的是"信号所在的模块没被重写"，不是"路径没变"。
+    # 上游父模块一被重写就插一层 u_core，原路径在 impl 树里根本不存在。
+    # 这条判定原先埋在 main() 的打印分支里、无测试覆盖，实测把 181 条已改路径
+    # （交叉校验：perf_bore_map 把同样这批判成 T1_PATH_REBIND）报成了"原样可用"。
+    ck(HX.report_verdict('SIGNAL_TAIL_OK', 'A.b.sig', 'A.b.sig') == 'SIGNAL_TAIL_OK',
+       '路径逐字未变时不该改判')
+    ck(HX.report_verdict('SIGNAL_TAIL_OK', 'A.u_core.b.sig', 'A.b.sig')
+       == 'SIGNAL_TAIL_REMAP', '★上游插了 u_core 仍报"原样可用"——就是那个错★')
+    # 控制组：其它判定不得被这条规则误伤
+    for keep in ('OK', 'REMAP', 'INLINED', 'SIGNAL_IN_REWRITTEN', 'BEST_EFFORT'):
+        ck(HX.report_verdict(keep, 'x', 'y') == keep, '%s 被误改判' % keep)
+
 
 def main():
     for f in (test_parser, test_index, test_validate, test_xlate):

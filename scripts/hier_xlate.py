@@ -13,7 +13,12 @@
   REMAP         存在，但路径变了 —— 给出新路径
   INLINED       这一段被吸收进可读核，**不再是一条实例路径**；
                 给出宿主核路径与承载状态的信号名，由消费方自己决定怎么接
-  SIGNAL_TAIL_OK      末段是信号名，且它所在的模块本轮没被重写 —— 原样可用
+  SIGNAL_TAIL_OK      末段是信号名，且它所在的模块本轮没被重写。
+                      ★"模块没被重写"不蕴含"路径没变"★：它的**上游**父模块可能被
+                      重写了（每个重写件都插一层 `u_core`），此时 golden 原路径在
+                      impl 树里根本不存在。所以报告层再分两种：
+  SIGNAL_TAIL_OK      译出路径与输入**逐字相同** —— 这条才真的原样可用
+  SIGNAL_TAIL_REMAP   模块没重写，但上游层次变了 —— 必须换用译出的新路径
   SIGNAL_IN_REWRITTEN 末段是信号名，但它所在的模块**已被重写** —— golden 的扁平
                       信号名（`_T_*`/`io_xxx_0`）在可读核里不存在，必须人工重找
   UNKNOWN_SEG   中间某一段在 golden 例化图里就查不到（输入写错）
@@ -105,6 +110,21 @@ def translate(segs, g1, rows, top='XSTop'):
     return ('OK' if out == segs else 'REMAP', '.'.join(out), '', '')
 
 
+def report_verdict(verdict, full, src):
+    """把 translate() 的判定转成**报告层**判定。
+
+    只有一件事：`SIGNAL_TAIL_OK` 说的是"末段信号所在的模块本轮没被重写"，
+    这**不蕴含**"路径没变"—— 它上游的父模块可能被重写了，而每个重写件都会插
+    一层 `u_core`。判据只能是译出路径与输入是否逐字相同。
+
+    抽成纯函数是为了能被 scripts/test_hier_map_gate.py 直接负测：这条判定原先
+    写在 main() 的打印分支里，没有测试覆盖，错了 242 条也没人发现。
+    """
+    if verdict == 'SIGNAL_TAIL_OK' and full != src:
+        return 'SIGNAL_TAIL_REMAP'
+    return verdict
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('paths', nargs='?', default='-')
@@ -148,10 +168,17 @@ def main():
             newp = '.'.join([newp] + tail) if newp else '.'.join(tail)
         else:
             verdict, newp, where, sig = translate(segs, g1, rows, a.top)
+        full = '.'.join(x for x in [pre, a.top if s.split('.')[0] == a.top or not pre else '', newp] if x)
+        # ★这条判定曾经报错★：SIGNAL_TAIL_OK 一律打印「原样可用」并把 full 丢掉
+        # （full=''）。但 translate() 走到这里时 `out` 已经沿途吃过 REMAP 行——
+        # 末段所在的模块没被重写，不代表**它上面**的父模块没被重写。父模块一被
+        # 重写就插一层 `u_core`，golden 原路径在 impl 树里就不存在了。于是那些
+        # 上游改过的路径被当成"不用改"发给消费方，拿去 force/bind 必然打空。
+        # 判据只能是译出路径与输入是否逐字相同，不能是"模块有没有被重写"。
+        verdict = report_verdict(verdict, full, s)
         stat[verdict] += 1
         if verdict == 'OK' and a.quiet_ok:
             continue
-        full = '.'.join(x for x in [pre, a.top if s.split('.')[0] == a.top or not pre else '', newp] if x)
         extra = ''
         if verdict == 'INLINED':
             extra = '  ←「%s」已内联；宿主核=%s 信号=%s' % (where, full, sig)
@@ -159,8 +186,12 @@ def main():
         elif verdict in ('UNKNOWN_SEG', 'BEST_EFFORT'):
             extra = '  ← 卡在段 `%s`' % where
         elif verdict == 'SIGNAL_TAIL_OK':
-            extra = '  ← 末段是信号名；所在模块 %s 本轮未重写，原样可用' % where
+            extra = '  ← 末段是信号名；所在模块 %s 本轮未重写，且路径逐字未变，原样可用' % where
             full = ''
+        elif verdict == 'SIGNAL_TAIL_REMAP':
+            extra = ('  ★ 末段是信号名、所在模块 %s 本轮未重写，**但上游层次已变**'
+                     '（父模块被重写会插一层 u_core）—— 原路径在 impl 树里不存在，'
+                     '必须改用左边给出的新路径' % where)
         elif verdict == 'SIGNAL_IN_REWRITTEN':
             extra = '  ★ 末段是信号名，而所在模块 %s 已被重写 —— golden 的扁平信号名在可读核里不存在，必须人工重找' % where
             full = ''
