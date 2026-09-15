@@ -40,7 +40,41 @@ perfCnt 只喂性能计数器，不参与 difftest 架构状态比对。所以�
 
 > 代价（如实记）：impl 侧的性能计数器全灭。架构行为与 difftest 判定不受影响，
 > 但「perf 计数与 golden 一致」这条不在本轮验收范围内了。
-> 若要恢复，唯一的正路是让重写件按 golden 的内部信号名保留这些探针（层次重绑泳道）。
+
+## perf 观测重绑（codex 0160 P2）—— 另一条路径，不动上面那条
+
+上面的全接 `'0` 只对**功能 smoke** 成立，对 **perf 验证不成立**（codex 0160 原话：
+「not an acceptable permanent solution for performance validation」）。
+所以另起一条并行路径，**不改 `run_fullchip.sh` 现有行为**：
+
+```bash
+verif/sim/run_perfbind.sh setup            # 生成重绑 SimTop（工作区 /home/eda/xs-env/sim-work-perfbind）
+verif/sim/run_perfbind.sh build impl
+verif/sim/run_perfbind.sh run   impl  <workload.bin> <max-cycles>
+verif/sim/run_perfbind.sh run   golden <workload.bin> <max-cycles>
+verif/sim/run_perfbind.sh compare <golden assert.log> <impl assert.log>
+```
+
+生成器是 `scripts/perf_rebind.py`，产物两张表（都进 `gate_all.sh` 的幂等闸）：
+
+| 表 | 是什么 |
+|---|---|
+| `docs/perf_bore_map.tsv` | 9897 条 XMR **逐条**的绑定与证据等级 |
+| `docs/perf_bore_unbound.tsv` | **没绑上**的计数器 —— 比对时必须排除，★不许拿 0 冒充相等★ |
+| `docs/perf_rep_counters.tsv` | 代表性计数器组（先验这一组，再谈大面积比对） |
+
+绑定分五级，证据强度不同，**不混着报**（判据写在 `perf_rebind.py` 头部）：
+`T0_UNCHANGED`（原样）/ `T1_PATH_REBIND`（只有路径变了，逐位同一根线）/
+`T2_CONE_PORT`、`T2_CONE_PORT_CHILD`（golden 组合锥原样复制，叶子重指到重写层次的
+**端口**——端口是 FM 的比较边界）/ `T3_REG_LEAF`、`T4_OPEN`（**判不准，如实留白**）。
+
+### perf 打印怎么才会出现
+
+`LogPerfEndpoint` 的 `io_logEnable = timer >= logCtrl_begin && timer < logCtrl_end`，
+两个值来自 difftest 的 `+b=` / `+e=`，**默认 begin=end=0，所以一行都不打**。
+必须给 `+e=<大数>`。dump 时刻由 difftest 在 GOODTRAP/EXCEED/FAIL 或 `+max-cycles`
+最后一拍触发。打印走 `$fwrite(32'h80000002)` = **stderr** —— 所以 `[PERF ]` 落在
+`assert.log`，不在 `sim.log`。（这两条都踩过，写在这里省下一次空跑。）
 
 ## 用法
 
