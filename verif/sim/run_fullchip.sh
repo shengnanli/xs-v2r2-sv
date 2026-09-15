@@ -64,8 +64,12 @@ check_dpic() {  # $1=difftest-dpic.cpp；返回 0 表示函数集合与 golden R
 }
 
 setup() {
-  local side=$1 dd=$SIMW/$side
+  local side=$1; local dd=$SIMW/$side
   mkdir -p "$dd/build"
+  # 幂等：impl 侧上一次跑完后 build/rtl 是**真目录**（下面按文件逐个软链），
+  # 此时 `ln -sfn` 不会替换它而是在里面建一个 golden-rtl 链接，接着 `rm -f` 又会
+  # 因为「Is a directory」失败 —— 脚本第二次跑必崩。先按类型清干净再建链接。
+  if [ -d "$dd/build/rtl" ] && [ ! -L "$dd/build/rtl" ]; then rm -rf "$dd/build/rtl"; fi
   ln -sfn "$GOLDEN_RTL" "$dd/build/rtl"
   # ★ 不能用 $XS_HOME/build/generated-src ★：那份是 22:01 那次 --fpga-platform
   # --disable-all 生成覆盖上去的，与 21:40 的 build/rtl(= G1 golden) 不是同一次生成。
@@ -88,7 +92,7 @@ setup() {
     # 重写件内部命名与 golden 不同 → Error-[XMRE] 整芯片仿真编不出来。
     # perfCnt 只喂性能计数器, 不进 difftest 架构比对, 故接常量 '0。
     # 这一步 **不改 golden、不改 rtl/**：只在本工作区生成 SimTop.sv 的打补丁副本。
-    rm -f "$dd/build/rtl"
+    rm -rf "$dd/build/rtl"
     mkdir -p "$dd/build/rtl"
     for f in "$GOLDEN_RTL"/*; do ln -sfn "$f" "$dd/build/rtl/$(basename "$f")"; done
     rm -f "$dd/build/rtl/SimTop.sv"
@@ -107,7 +111,7 @@ $(grep -c "$GOLDEN_RTL" "$dd/files_impl_nosimtop.f") golden 件"
 }
 
 build() {
-  local side=$1 dd=$SIMW/$side extra=""
+  local side=$1; local dd=$SIMW/$side extra=""
   [ "$side" = impl ] && extra="-f $dd/files_impl_nosimtop.f"
   export VCS_ARCH_OVERRIDE=linux
   # 必须 rm -f build/simv：否则 make 认为已最新不重链，替换不进 simv（v2r2 踩过）。
@@ -135,7 +139,7 @@ build() {
 }
 
 run() {
-  local side=$1 dd=$SIMW/$side
+  local side=$1; local dd=$SIMW/$side
   local bin=${2:-$XS_HOME/ready-to-run/coremark-2-iteration.bin}
   local maxc=${3:-}
   [ -x "$dd/build/simv" ] || die "no $dd/build/simv — 先 build"
