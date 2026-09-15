@@ -57,7 +57,6 @@ endpackage
 //  寄存器命名与 golden 保持一致(resetFinish/resetIdx/reqValid_s2/req_s2_*/
 //  reqValid_s3/req_s3_*/metaValidVec_*/tagAll_s3_*) 以利 Formality 配对。
 // =============================================================================
-`timescale 1ns/1ps
 
 
 module xs_SubDirectory_core
