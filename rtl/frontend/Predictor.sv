@@ -64,7 +64,7 @@
 //   · 预测本身 —— 在 Composer 里(本文件只例化它)；
 //   · 187 个预测包字段的输出 —— Composer 直连顶层输出，wrapper 里连线，不进核。
 // =============================================================================
-// 本文件导航（共 3331 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+// 本文件导航（共 3339 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
 //   L38    它在前端的位置
 //   L52    S0~S3 四级覆盖式流水
 //   L59    五个 PhyPriorityMux：S0 状态从哪来
@@ -74,28 +74,28 @@
 //   L218   xs_Predictor_core —— 可读核
 //   L288   PRED_ —— 从 full_pred 派生的预测属性
 //   L406   PIPE_ —— S1/S2/S3 覆盖式流水握手
-//   L476   GHV_ —— ★全局历史向量：一个 256 位环形位缓冲★
-//   L481   怎么用】ghist_ptr 指向"最新一位的下一格"
-//   L487   谁写】四个源，同一套优先级
-//   L521   AFHOB_ —— 折叠历史的"最老位"预读
-//   L547   FH_ —— 折叠历史的增量更新
-//   L616   GHVWR_ —— 把"某一级要往 GHV 写什么"算成 256 位的 wen/wdata
-//   L641   STAGE_ —— S1/S2/S3 的历史状态流水
-//   L739   OVR_ —— 级间覆盖判定
-//   L779   RDR_ —— FTQ 真重定向：锁存一拍，然后把历史整体回滚重算
-//   L852   SEL_ —— S0 五选一
-//   L894   流水寄存器本体
-//   L899   s0_pc_reg 是全模块唯一**不带复位**的流水寄存器
-//   L1000  GHV 写：四个源各自算 wen/wdata
-//   L1017  GHIST_ —— 送 Composer 的"推测历史"
-//   L1045  送 FTQ 的控制输出
-//   L1069  TOPDOWN_ —— 取指气泡归因
-//   L1141  上电复位状态
-//   L1150  predCycle —— 打在预测包上的时间戳
-//   L1186  SEGPC_ —— update pc 的分段打拍
-//   L1206  PERF_ —— Composer 的 7 路性能计数各打 2 拍再送出
-//   L1208  golden 这 14 个寄存器**不带复位**
-//   L1221  Predictor —— golden 同名 wrapper
+//   L484   GHV_ —— ★全局历史向量：一个 256 位环形位缓冲★
+//   L489   怎么用】ghist_ptr 指向"最新一位的下一格"
+//   L495   谁写】四个源，同一套优先级
+//   L529   AFHOB_ —— 折叠历史的"最老位"预读
+//   L555   FH_ —— 折叠历史的增量更新
+//   L624   GHVWR_ —— 把"某一级要往 GHV 写什么"算成 256 位的 wen/wdata
+//   L649   STAGE_ —— S1/S2/S3 的历史状态流水
+//   L747   OVR_ —— 级间覆盖判定
+//   L787   RDR_ —— FTQ 真重定向：锁存一拍，然后把历史整体回滚重算
+//   L860   SEL_ —— S0 五选一
+//   L902   流水寄存器本体
+//   L907   s0_pc_reg 是全模块唯一**不带复位**的流水寄存器
+//   L1008  GHV 写：四个源各自算 wen/wdata
+//   L1025  GHIST_ —— 送 Composer 的"推测历史"
+//   L1053  送 FTQ 的控制输出
+//   L1077  TOPDOWN_ —— 取指气泡归因
+//   L1149  上电复位状态
+//   L1158  predCycle —— 打在预测包上的时间戳
+//   L1194  SEGPC_ —— update pc 的分段打拍
+//   L1214  PERF_ —— Composer 的 7 路性能计数各打 2 拍再送出
+//   L1216  golden 这 14 个寄存器**不带复位**
+//   L1229  Predictor —— golden 同名 wrapper
 //
 
 package predictor_pkg;
@@ -429,8 +429,16 @@ module xs_Predictor_core
   assign s3_comp_ready = comp_s3_ready;
 
   assign s1_ready  = s1_fire_w | ~s1_valid_q;
-  assign s2_ready  = s2_fire_w | ~s2_valid_q;
-  assign s3_ready  = s3_fire_w | ~s3_valid_q;             // = 1（s3_fire 就是 s3_valid）
+  // ★s2_ready / s3_ready 在本配置下恒为 1，这里照 golden 写成常量★
+  //   S3 是末级，s3_fire ≡ s3_valid  ⇒ s3_ready = s3_valid | ~s3_valid ≡ 1
+  //   Composer 的 io_s2_ready/io_s3_ready 端口在 golden 里**根本不存在**
+  //   (BasePredictor 里恒 true.B，被 firtool 整根消掉)，所以 s2/s3_comp_ready ≡ 1
+  //   ⇒ s2_fire ≡ s2_valid ⇒ s2_ready = s2_valid | ~s2_valid ≡ 1。
+  // golden 里 firtool 已经把这两个常量折掉了(见 io_bpu_to_ftq_resp_valid_0 只剩
+  // s1_valid | s2_valid&s2_redirect | s3_valid&s3_redirect)。这里若照抄未折叠的
+  // `x | ~x` 形式，**仿真里会凭空造出 X 悲观**——本轮 UT 实测就是被这个淹掉的。
+  assign s2_ready  = 1'b1;
+  assign s3_ready  = 1'b1;
 
   assign s0_fire_w = s1_comp_ready & s1_ready;
   assign s1_fire_w = s1_valid_q & s2_comp_ready & s2_ready & ftq_resp_ready;
