@@ -115,6 +115,15 @@ RTL_GOLDEN_DEPS = \
   $(GOLDEN_RTL)/sram_array_1p512x24m12s1h0l1b_bp_tage.sv \
   $(GOLDEN_RTL)/sram_array_1p512x40m10s1h0l1b_bp_ftb.sv
 
+# FM_MERGE_DUP=false —— 本目标必须关掉「合并重复寄存器」。
+# 理由（本轮实测）：Predictor 的闭包里 Composer + 5 个预测器 + 全部 SRAM 都要两侧
+# elaborate，重复寄存器极多（12 个内容完全相同的 predCycle 自由计数器、256 位 ghv、
+# 四份取值相同的 dup 线）。开着 merge_dup 时 fm_shell 在
+#   "Merging duplicated registers in block ..." 阶段跑了 47 分钟日志都不再增长。
+# 且已有先例：MulUnit 与 EntriesVfdivVidiv 也因「golden 侧常数/重复位被合并后两侧
+# 点数对不齐」而必须 FM_MERGE_DUP=false（见 scripts/fm_eq.tcl 的证据注释）。
+FM_MERGE_DUP = false
+
 FM_VARIANTS = Predictor
 FM_REF_DEPS_Predictor = ClockGate.sv Composer.sv DelayN.sv DelayNWithValid.sv \
   DelayNWithValid_1.sv DelayN_1.sv FTB.sv FTBBank.sv \
