@@ -64,7 +64,7 @@
 //   · 预测本身 —— 在 Composer 里(本文件只例化它)；
 //   · 187 个预测包字段的输出 —— Composer 直连顶层输出，wrapper 里连线，不进核。
 // =============================================================================
-// 本文件导航（共 3339 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+// 本文件导航（共 3344 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
 //   L38    它在前端的位置
 //   L52    S0~S3 四级覆盖式流水
 //   L59    五个 PhyPriorityMux：S0 状态从哪来
@@ -77,25 +77,25 @@
 //   L484   GHV_ —— ★全局历史向量：一个 256 位环形位缓冲★
 //   L489   怎么用】ghist_ptr 指向"最新一位的下一格"
 //   L495   谁写】四个源，同一套优先级
-//   L529   AFHOB_ —— 折叠历史的"最老位"预读
-//   L555   FH_ —— 折叠历史的增量更新
-//   L624   GHVWR_ —— 把"某一级要往 GHV 写什么"算成 256 位的 wen/wdata
-//   L649   STAGE_ —— S1/S2/S3 的历史状态流水
-//   L747   OVR_ —— 级间覆盖判定
-//   L787   RDR_ —— FTQ 真重定向：锁存一拍，然后把历史整体回滚重算
-//   L860   SEL_ —— S0 五选一
-//   L902   流水寄存器本体
-//   L907   s0_pc_reg 是全模块唯一**不带复位**的流水寄存器
-//   L1008  GHV 写：四个源各自算 wen/wdata
-//   L1025  GHIST_ —— 送 Composer 的"推测历史"
-//   L1053  送 FTQ 的控制输出
-//   L1077  TOPDOWN_ —— 取指气泡归因
-//   L1149  上电复位状态
-//   L1158  predCycle —— 打在预测包上的时间戳
-//   L1194  SEGPC_ —— update pc 的分段打拍
-//   L1214  PERF_ —— Composer 的 7 路性能计数各打 2 拍再送出
-//   L1216  golden 这 14 个寄存器**不带复位**
-//   L1229  Predictor —— golden 同名 wrapper
+//   L532   AFHOB_ —— 折叠历史的"最老位"预读
+//   L558   FH_ —— 折叠历史的增量更新
+//   L627   GHVWR_ —— 把"某一级要往 GHV 写什么"算成 256 位的 wen/wdata
+//   L652   STAGE_ —— S1/S2/S3 的历史状态流水
+//   L750   OVR_ —— 级间覆盖判定
+//   L790   RDR_ —— FTQ 真重定向：锁存一拍，然后把历史整体回滚重算
+//   L863   SEL_ —— S0 五选一
+//   L905   流水寄存器本体
+//   L910   s0_pc_reg 是全模块唯一**不带复位**的流水寄存器
+//   L1011  GHV 写：四个源各自算 wen/wdata
+//   L1028  GHIST_ —— 送 Composer 的"推测历史"
+//   L1056  送 FTQ 的控制输出
+//   L1080  TOPDOWN_ —— 取指气泡归因
+//   L1152  上电复位状态
+//   L1161  predCycle —— 打在预测包上的时间戳
+//   L1197  SEGPC_ —— update pc 的分段打拍
+//   L1217  PERF_ —— Composer 的 7 路性能计数各打 2 拍再送出
+//   L1219  golden 这 14 个寄存器**不带复位**
+//   L1232  Predictor —— golden 同名 wrapper
 //
 
 package predictor_pkg;
@@ -507,8 +507,11 @@ module xs_Predictor_core
 
   // 本模块对外提供的"当前历史"读口（Composer 的 io_in_bits_ghist 要用推测值，
   // 见 GHIST_ 节；这里的 ghv_wire 与 golden 的 ghv_wire 一致 = 未经本拍写入的值）
-  function automatic logic [HIST_LEN-1:0] get_hist(cgh_ptr_t ptr);
-    return HIST_LEN'({ghv_q, ghv_q} >> (ptr.value + 1'b1));
+  // ghv 显式当参数传进来，不在函数体里引用模块级变量 —— Formality 会对
+  // "task/function 里用非局部变量"报 FMR_VLOG-091，而这条是**不可抑制**的，
+  // 直接让 set_top 失败（本轮实测 FM-262 → FM-156）。
+  function automatic logic [HIST_LEN-1:0] get_hist(logic [HIST_LEN-1:0] ghv, cgh_ptr_t ptr);
+    return HIST_LEN'({ghv, ghv} >> (ptr.value + 1'b1));
   endfunction
 
   for (genvar n = 0; n < HIST_LEN; n++) begin : g_ghv
@@ -533,11 +536,11 @@ module xs_Predictor_core
   // 要预读 4 位：ptr+LEN、ptr+LEN-1、ptr+LEN-2、ptr+LEN-3。
   // 6 个不同的 LEN 共 6 组，各 4 位。
   // ===========================================================================
-  function automatic afhob_t afhob_read(cgh_ptr_t ptr);
+  function automatic afhob_t afhob_read(logic [HIST_LEN-1:0] ghv, cgh_ptr_t ptr);
     afhob_t r;
     for (int g = 0; g < NUM_AFHOB; g++)
       for (int i = 0; i < NUM_BR*2; i++)
-        r[g][i] = ghv_q[HIST_PTR_BITS'(ptr.value + HIST_PTR_BITS'(AFHOB_LEN[g] - i))];
+        r[g][i] = ghv[HIST_PTR_BITS'(ptr.value + HIST_PTR_BITS'(AFHOB_LEN[g] - i))];
     return r;
   endfunction
 
@@ -738,9 +741,9 @@ module xs_Predictor_core
     assign s3_pred_fh[k] = ({$bits(folded_hist_t){s3_brpos[D][0]}} & c3[0])
                          | ({$bits(folded_hist_t){s3_brpos[D][1]}} & c3[1])
                          | ({$bits(folded_hist_t){s3_brpos[D][2]}} & c3[2]);
-    assign s1_ob_src[k]  = afhob_read(s1_ghist_ptr[D]);
-    assign s2_ob_src[k]  = afhob_read(s2_ghist_ptr[D]);
-    assign s3_ob_src[k]  = afhob_read(s3_ghist_ptr[D]);
+    assign s1_ob_src[k]  = afhob_read(ghv_q, s1_ghist_ptr[D]);
+    assign s2_ob_src[k]  = afhob_read(ghv_q, s2_ghist_ptr[D]);
+    assign s3_ob_src[k]  = afhob_read(ghv_q, s3_ghist_ptr[D]);
   end
 
   // ===========================================================================
@@ -835,8 +838,8 @@ module xs_Predictor_core
   endfunction
 
   // 慢路最老位：重定向指针处直接读 GHV
-  function automatic afhob_t afhob_slow(cgh_ptr_t ptr);
-    return afhob_read(ptr);
+  function automatic afhob_t afhob_slow(logic [HIST_LEN-1:0] ghv, cgh_ptr_t ptr);
+    return afhob_read(ghv, ptr);
   endfunction
 
   folded_hist_t rdr_old_fh, rdr_updated_fh;
@@ -846,8 +849,8 @@ module xs_Predictor_core
   folded_hist_t rdr_fh_cand [0:3];
   afhob_t       rdr_ahead_ob;
 
-  assign rdr_old_fh   = fh_recompute(get_hist(rdr_old_ptr));
-  assign rdr_ahead_ob = afhob_slow(rdr_old_ptr);
+  assign rdr_old_fh   = fh_recompute(get_hist(ghv_q, rdr_old_ptr));
+  assign rdr_ahead_ob = afhob_slow(ghv_q, rdr_old_ptr);
   for (genvar i = 0; i <= NUM_BR; i++) begin : g_rdr_fh
     // 慢路：ob 直接取 GHV 上 ptr+LEN / ptr+LEN-1（不经 lastBrNumOH 选择）
     assign rdr_fh_cand[i] = fh_update_all(rdr_old_fh, rdr_ahead_ob, 3'b001, i,
@@ -1038,16 +1041,16 @@ module xs_Predictor_core
   endfunction
 
   assign s0_ghist =
-      do_redirect_valid ? patch_low(get_hist(rdr_updated_ptr), rdr_should_shift,
+      do_redirect_valid ? patch_low(get_hist(ghv_q, rdr_updated_ptr), rdr_should_shift,
                                     do_redirect_bits.taken & do_redirect_bits.add_into_hist)
-    : s3_redirect[0]    ? patch_low(get_hist(s3_pred_ptr[0]), d_s3[0].should_shift, d_s3[0].br_taken)
-    : s2_redirect[0]    ? patch_low(get_hist(s2_pred_ptr[0]), d_s2[0].should_shift, d_s2[0].br_taken)
-    : s1_valid_q        ? patch_low(get_hist(s1_pred_ptr[0]), d_s1[0].should_shift, d_s1[0].br_taken)
+    : s3_redirect[0]    ? patch_low(get_hist(ghv_q, s3_pred_ptr[0]), d_s3[0].should_shift, d_s3[0].br_taken)
+    : s2_redirect[0]    ? patch_low(get_hist(ghv_q, s2_pred_ptr[0]), d_s2[0].should_shift, d_s2[0].br_taken)
+    : s1_valid_q        ? patch_low(get_hist(ghv_q, s1_pred_ptr[0]), d_s1[0].should_shift, d_s1[0].br_taken)
     // 兜底不是 0：BPU.scala 在 when 链之前有一句 `s0_ghist := getHist(s0_ghist_ptr_dup(0))`，
     // 即四个源都不动时，送出去的是**S0 选择器选出的那个指针**处的当前历史。
-                        : get_hist(s0_ghist_ptr_next[0]);
+                        : get_hist(ghv_q, s0_ghist_ptr_next[0]);
 
-  assign update_ghist = get_hist(ftq_update_hist_ptr);
+  assign update_ghist = get_hist(ghv_q, ftq_update_hist_ptr);
 
   // ===========================================================================
   // 送 FTQ 的控制输出
@@ -2141,7 +2144,7 @@ module Predictor(
   folded_hist_t s0_fg_w   [0:NUM_DUP-1], s1_fg_w [0:NUM_DUP-1];
   cgh_ptr_t     s0_gp_w   [0:NUM_DUP-1];
   logic [NUM_BR:0] s0_bn_w [0:NUM_DUP-1];
-  logic [HIST_LEN-1:0] s0_ghist_w;
+  // s0_ghist_w 由 GENERATED(glue_decls) 声明（宽度取自 Composer 端口表）
   logic         s0_fire_w [0:NUM_DUP-1], s1_fire_w [0:NUM_DUP-1];
   logic         s2_fire_w [0:NUM_DUP-1], s3_fire_w [0:NUM_DUP-1];
   logic         s2_redirect_w [0:NUM_DUP-1], s3_redirect_w [0:NUM_DUP-1];
