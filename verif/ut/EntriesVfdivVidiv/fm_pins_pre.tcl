@@ -9935,7 +9935,7 @@ if {$top eq "EntriesVfdivVidiv"} {
   puts "EVV_PINS: $_n / 9898 pinned, $_miss missed"
   # 一条都不许钉不上：钉不上说明偏移表/实例名与本次 elaborate 的设计对不上,
   # 那时继续跑出来的 SUCCEEDED 是假的。fail-closed。
-  if {$_miss != 0} { error "EVV_PIN_MISS=$_miss" }
+  if {$_miss != 0 || $_n != 9898} { error "EVV_PIN_MISS=$_miss n=$_n" }
 }
 
 # --- golden 侧不存在、因而未钉的寄存器（firtool 在该条目类型里 DCE 掉了）---

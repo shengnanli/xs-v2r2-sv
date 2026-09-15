@@ -60,6 +60,7 @@ Predictor 的 **1,057,801** 点是：
 ## 直接可动的缺口
 
 **`verif/ut/Predictor/` 没有 `fm_pins_pre.tcl`——一个名字对齐都没有。**
+（★已补，且已实测无效 —— 见文末「GHV canary」一节。下面这段保留的是当时的判断。）
 
 仓里 14 个目标有名字对齐，其中包括 Predictor 自己的子模块 `Composer`：
 
@@ -90,3 +91,88 @@ verif/ut/{Bku,Composer,EntriesVfdivVidiv,FCVT,Ftq,...}/fm_pins_pre.tcl
 `FM_MERGE_DUP=false` 是**另一件事**，量级小得多：实测它只是 7 倍常数
 （2:16 vs 0:19 到 Matching，见 `verif/ut/Predictor/Makefile` 的注释），
 而且开着也会跑完。本文件说的是匹配阶段**不终止**。两者不要混。
+
+---
+
+## GHV canary：路线 1 试过了，**不管用**
+
+**2026-09-15 实测。** codex 0162 D2 定的做法是：先拿一个高扇出族做 canary，钉完
+重测速率，**只有确实以实用速率收敛才继续**。canary 选的是 GHV。做完了，结论是
+否定的 —— 不是"还需要多钉几族"，是这一族钉满之后速率仍然在同一个量级。
+
+### 钉了什么
+
+`verif/ut/Predictor/fm_pins_pre.tcl`，256 点，只 `set_user_match`：
+
+```
+golden  reg ghv_0; … reg ghv_255;   →  r:/WORK/Predictor/ghv_<n>_reg
+可读核  logic [255:0] ghv_q;        →  i:/WORK/Predictor/u_core/ghv_q_reg[<n>]
+```
+
+★产品 RTL 一个字未改★。钉点从**本次 elaborate 出来的设计**里 discover（核设计名、
+核实例路径、两侧的点都是查出来的），再断言"两侧各恰 256、下标 0..255 完整、
+无重复"才配对；钉不满 256 直接 error 退出。
+
+### 钉上了，而且确实是新信息
+
+两条独立证据：
+
+1. 官方 runner 的 fm.log 里 `PREDICTOR_PINS: 256 / 256 pinned, 0 missed`。
+2. **Matching 阶段的总点数从 1,057,801 掉到 1,057,545，正好少 256。** 这说明
+   这 256 个点此前**确实还在待匹配池里**（FM 自己没配上它们），不是"本来就
+   会配上、白钉一场"。
+
+### 速率：没有实质改善
+
+| # | 已匹配 | 总点数 | FM 累计 | 相对上一点 |
+|---|---|---|---|---|
+| 1 | 522,268 | 1,057,545 | 4,143.32 s | — |
+| 2 | 522,287 | 1,057,545 | 6,533.43 s | +19 / 2,390 s = **0.0079 点/秒** |
+| 3 | 522,488 | 1,057,545 | 9,340.46 s | +201 / 2,807 s = **0.0716 点/秒** |
+
+窗口整体：+220 / 5,197 s = **0.0423 点/秒**。剩余 535,057 点 → 约 **146 天**
+（按末段 0.0716 算也要约 86 天）。
+
+对照未钉点那次的同一段（平台期）：522,327@5,866 s → 522,365@7,718 s =
+**0.0205 点/秒**，剩余外推约 302 天。
+
+**钉点把平台期速率从 0.021 抬到 0.042 点/秒 —— 2 倍。** 而"实用"需要的是
+3～4 个数量级。两次都卡在 522.3k 附近这同一个平台，说明**瓶颈不在 GHV**：
+GHV 只占待配池的 0.048%（256 / 535,313），钉掉它不改变剩下 53.5 万点的结构。
+
+### 因此
+
+按 D2 第 2 条：**不继续钉。** 不挂几天去外推一条已知的多月曲线。
+
+路线 1（补名字对齐）在**族的粒度**上是有效的（Composer 601 点、
+EntriesVfdivVidiv 9,898 点都是这么转绿的），但它要求"待配的点能被少数几族覆盖"。
+Predictor 不满足：53.5 万点不是几族向量化差异，是整个可读核**每一处**压缩的
+累积。要靠钉点覆盖，等于把整个核的寄存器映射手写一遍 —— 那和"把向量拆回散装
+寄存器"是同一件事的两种写法，都抵消了重写的意义。
+
+**结论指向路线 2（拆证明边界）**：把 Predictor 拆成若干各自落在 10 万点以下
+（已验证区间）的子边界分别签核，再用 assembly 契约接起来。
+
+### 复跑
+
+```
+# 钉点落不落得上（约 2.5 分钟，不跑证明）
+cd <repo> && XSSV_HOME=$PWD GOLDEN_RTL=<G1-canonical/golden-rtl> \
+  fm_shell -64 -work_path <tmpdir> -file verif/ut/Predictor/fm_pins_smoke.tcl
+# 期望: PREDICTOR_PINS: 256 / 256 pinned, 0 missed  +  SMOKE_OK
+
+# 速率（官方 runner；本节的数就是这么来的，PROOF_COMMIT=da93a13）
+scripts/run_proof.sh Predictor Predictor
+tr '\r' '\n' < <fm.log> | grep -E "Matched\)"
+```
+
+证据：`verif/testdata/fm_samples/Predictor_da93a13_ghvpins_fm.log`
+（sha256 `7e91f5cd8ffd9aa069ae0398bd4cb09405e1c33b3b106ad19d26bd4f153c127a`），
+三个采样另存 `Predictor_da93a13_ghvpins_matching_progress.txt`。
+该次跑在 `da93a13`（= 本 canary 的钉点，RTL 同 `021f2e3`），按明确 PID 停止
+（627020），非 `pkill -f`。
+
+★这组数与后来并进来的 `s2_flush[0]→[3]` 那一行真 bug 修复**无关**★：它只关乎
+GHV 这 256 个点的**名字匹配**，而那一行既不在 GHV 的 cone 里、也不改变任何
+寄存器的名字或数量。最终若要出 SUCCEEDED/收敛结论，仍须跑在带修复的基线上；
+但"名字对齐管不管用"这个问题，这组数已经答完了。
