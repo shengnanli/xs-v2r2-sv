@@ -1,0 +1,11 @@
+--- /home/eda/xs-env/nexus-am/apps/dhrystone/dry.c	2026-05-27 04:09:57.286388131 -0400
++++ /home/eda/xs-env/sim-fast/workloads-src/dhrystone/dry.c	2026-09-14 21:37:28.995368260 -0400
+@@ -362,7 +362,7 @@
+ #if defined(__ARCH_RISCV64_XS_SOUTHLAKE) || defined(__ARCH_RISCV64_XS_SOUTHLAKE_FLASH)
+ #define NUMBER_OF_RUNS		1000 /* Default number of runs, reduced for fast test */
+ #else
+-#define NUMBER_OF_RUNS		500000 /* Default number of runs */
++#define NUMBER_OF_RUNS		1000 /* fastsim: reduced, see run_fastsim README */
+ #endif
+ #define PASS2
+ 
