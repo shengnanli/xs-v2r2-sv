@@ -64,7 +64,7 @@
 //   · 预测本身 —— 在 Composer 里(本文件只例化它)；
 //   · 187 个预测包字段的输出 —— Composer 直连顶层输出，wrapper 里连线，不进核。
 // =============================================================================
-// 本文件导航（共 3378 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+// 本文件导航（共 3384 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
 //   L38    它在前端的位置
 //   L52    S0~S3 四级覆盖式流水
 //   L59    五个 PhyPriorityMux：S0 状态从哪来
@@ -89,13 +89,13 @@
 //   L1045  GHV 写：四个源各自算 wen/wdata
 //   L1062  GHIST_ —— 送 Composer 的"推测历史"
 //   L1090  送 FTQ 的控制输出
-//   L1114  TOPDOWN_ —— 取指气泡归因
-//   L1186  上电复位状态
-//   L1195  predCycle —— 打在预测包上的时间戳
-//   L1231  SEGPC_ —— update pc 的分段打拍
-//   L1251  PERF_ —— Composer 的 7 路性能计数各打 2 拍再送出
-//   L1253  golden 这 14 个寄存器**不带复位**
-//   L1266  Predictor —— golden 同名 wrapper
+//   L1120  TOPDOWN_ —— 取指气泡归因
+//   L1192  上电复位状态
+//   L1201  predCycle —— 打在预测包上的时间戳
+//   L1237  SEGPC_ —— update pc 的分段打拍
+//   L1257  PERF_ —— Composer 的 7 路性能计数各打 2 拍再送出
+//   L1259  golden 这 14 个寄存器**不带复位**
+//   L1272  Predictor —— golden 同名 wrapper
 //
 
 package predictor_pkg;
@@ -1101,7 +1101,13 @@ module xs_Predictor_core
   assign s3_ftq_idx_flag  = s3_fi_flag;
   assign s3_ftq_idx_value = s3_fi_value;
 
-  assign to_ftq_s2_valid = s2_fire_w & ~s2_flush[0];
+  // ★这里的 dup 下标必须是 3，不是 0★：golden 是
+  //     assign io_bpu_to_ftq_resp_bits_s2_valid_3 = s2_valid_dup_3 & ~s2_flush_dup_3;
+  //     (Predictor.sv:44814, 而 s2_flush_dup_3 = redirect | s3_redirect_dup_3)
+  // s2_flush 是**每份 dup 各不相同**的（它含各自 dup 的 s3_redirect），拿 dup0 去
+  // 门 dup3 的输出，在本 UT 里看不出来——Composer 的四份 dup 输出恒等，四个
+  // s3_redirect 也就恒等——但对 FM 来说这四根是独立输入锥，是真差异。
+  assign to_ftq_s2_valid = s2_fire_w & ~s2_flush[3];
   assign to_ftq_s3_valid = s3_fire_w & ~s3_flush;
   assign s3_ghist_ptr_o  = s3_ghist_ptr[2];
 
