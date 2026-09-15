@@ -64,7 +64,7 @@
 //   · 预测本身 —— 在 Composer 里(本文件只例化它)；
 //   · 187 个预测包字段的输出 —— Composer 直连顶层输出，wrapper 里连线，不进核。
 // =============================================================================
-// 本文件导航（共 3320 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+// 本文件导航（共 3331 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
 //   L38    它在前端的位置
 //   L52    S0~S3 四级覆盖式流水
 //   L59    五个 PhyPriorityMux：S0 状态从哪来
@@ -83,19 +83,19 @@
 //   L641   STAGE_ —— S1/S2/S3 的历史状态流水
 //   L739   OVR_ —— 级间覆盖判定
 //   L779   RDR_ —— FTQ 真重定向：锁存一拍，然后把历史整体回滚重算
-//   L848   SEL_ —— S0 五选一
-//   L890   流水寄存器本体
-//   L895   s0_pc_reg 是全模块唯一**不带复位**的流水寄存器
-//   L996   GHV 写：四个源各自算 wen/wdata
-//   L1013  GHIST_ —— 送 Composer 的"推测历史"
-//   L1039  送 FTQ 的控制输出
-//   L1063  TOPDOWN_ —— 取指气泡归因
-//   L1135  上电复位状态
-//   L1144  predCycle —— 打在预测包上的时间戳
-//   L1175  SEGPC_ —— update pc 的分段打拍
-//   L1195  PERF_ —— Composer 的 7 路性能计数各打 2 拍再送出
-//   L1197  golden 这 14 个寄存器**不带复位**
-//   L1210  Predictor —— golden 同名 wrapper
+//   L852   SEL_ —— S0 五选一
+//   L894   流水寄存器本体
+//   L899   s0_pc_reg 是全模块唯一**不带复位**的流水寄存器
+//   L1000  GHV 写：四个源各自算 wen/wdata
+//   L1017  GHIST_ —— 送 Composer 的"推测历史"
+//   L1045  送 FTQ 的控制输出
+//   L1069  TOPDOWN_ —— 取指气泡归因
+//   L1141  上电复位状态
+//   L1150  predCycle —— 打在预测包上的时间戳
+//   L1186  SEGPC_ —— update pc 的分段打拍
+//   L1206  PERF_ —— Composer 的 7 路性能计数各打 2 拍再送出
+//   L1208  golden 这 14 个寄存器**不带复位**
+//   L1221  Predictor —— golden 同名 wrapper
 //
 
 package predictor_pkg;
@@ -832,7 +832,10 @@ module xs_Predictor_core
   endfunction
 
   folded_hist_t rdr_old_fh, rdr_updated_fh;
-  folded_hist_t rdr_fh_cand [0:NUM_BR];
+  // 4 项而不是 3 项：shift 是 2 位，合法值只有 0/1/2，但硬件上还能取到 3。
+  // golden 的四选一把越界的第 3 项**填成第 0 项**（Chisel Vec 越界读的 firtool 展开），
+  // 这里照抄 —— 既消掉 FM 的数组越界告警(FMR_ELAB-147)，也保证 shift=3 时同值。
+  folded_hist_t rdr_fh_cand [0:3];
   afhob_t       rdr_ahead_ob;
 
   assign rdr_old_fh   = fh_recompute(get_hist(rdr_old_ptr));
@@ -842,6 +845,7 @@ module xs_Predictor_core
     assign rdr_fh_cand[i] = fh_update_all(rdr_old_fh, rdr_ahead_ob, 3'b001, i,
                                           do_redirect_bits.taken & do_redirect_bits.add_into_hist);
   end
+  assign rdr_fh_cand[3] = rdr_fh_cand[0];          // 越界项，与 golden 同
   assign rdr_updated_fh = rdr_fh_cand[do_redirect_bits.shift];
 
   // ===========================================================================
@@ -1031,7 +1035,9 @@ module xs_Predictor_core
     : s3_redirect[0]    ? patch_low(get_hist(s3_pred_ptr[0]), d_s3[0].should_shift, d_s3[0].br_taken)
     : s2_redirect[0]    ? patch_low(get_hist(s2_pred_ptr[0]), d_s2[0].should_shift, d_s2[0].br_taken)
     : s1_valid_q        ? patch_low(get_hist(s1_pred_ptr[0]), d_s1[0].should_shift, d_s1[0].br_taken)
-                        : '0;
+    // 兜底不是 0：BPU.scala 在 when 链之前有一句 `s0_ghist := getHist(s0_ghist_ptr_dup(0))`，
+    // 即四个源都不动时，送出去的是**S0 选择器选出的那个指针**处的当前历史。
+                        : get_hist(s0_ghist_ptr_next[0]);
 
   assign update_ghist = get_hist(ftq_update_hist_ptr);
 
@@ -1148,11 +1154,16 @@ module xs_Predictor_core
   // 与 golden 逐一配对（对称死位，FM 用 verify_matched_unread_compare_points 加强证明）。
   // ===========================================================================
   logic [63:0] pred_cycle_q [0:NUM_STAGE-1][0:NUM_DUP-1];
+  // 写成「if (reset) 打头」的形式：Formality 不接受异步复位块里第一条语句不是 if
+  // （FMR_VLOG-144，本轮实测踩到）。
   always_ff @(posedge clock or posedge reset) begin
-    for (int s = 0; s < NUM_STAGE; s++)
-      for (int d = 0; d < NUM_DUP; d++)
-        if (reset) pred_cycle_q[s][d] <= 64'h0;
-        else       pred_cycle_q[s][d] <= pred_cycle_q[s][d] + 64'h1;
+    if (reset) begin
+      for (int s = 0; s < NUM_STAGE; s++)
+        for (int d = 0; d < NUM_DUP; d++) pred_cycle_q[s][d] <= 64'h0;
+    end else begin
+      for (int s = 0; s < NUM_STAGE; s++)
+        for (int d = 0; d < NUM_DUP; d++) pred_cycle_q[s][d] <= pred_cycle_q[s][d] + 64'h1;
+    end
   end
   assign pred_cycle = pred_cycle_q[0][0];
 
