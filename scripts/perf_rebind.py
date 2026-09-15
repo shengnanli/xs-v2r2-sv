@@ -74,7 +74,8 @@ MAP = REPO / 'docs' / 'perf_bore_map.tsv'
 UNBOUND = REPO / 'docs' / 'perf_bore_unbound.tsv'
 
 MAP_COLS = ['port', 'family', 'tier', 'golden_xmr', 'golden_holder', 'golden_signal',
-            'impl_holder', 'impl_bind', 'perf_kind', 'perf_scope', 'perf_name', 'evidence']
+            'impl_holder', 'impl_bind', 'perf_kind', 'perf_scope', 'perf_name',
+            'also_feeds', 'evidence']
 UNBOUND_COLS = ['perf_kind', 'perf_scope', 'perf_name', 'tier', 'gap_class', 'ports',
                 'next_step', 'reason']
 
@@ -255,12 +256,13 @@ def endpoint_semantics(golden_root):
     flat = re.sub(r'\s+', ' ', body)
     ident = re.compile(r'\b[A-Za-z_]\w*\b')
     bore = re.compile(r'\b((?:perfCnt|enable|x1|x2)_bore(?:_\d+)?)\b')
+    stmts = flat.split(';')
 
-    port2stmt = {}
-    for s in flat.split(';'):
-        for b in set(bore.findall(s)):
-            port2stmt.setdefault(b, s.strip())
-
+    # ★一条 bore 可能喂**好几个**计数器★：直方图家族（`xxxSum` / `xxxNSamples` /
+    # `xxxOverflow` / `xxx_0_1` … `xxx_47_48`）全部由同一条 perfCnt_bore 驱动。
+    # 只记第一个名字的话，那条 bore 没绑上时，剩下几十个桶会被当成「绑上了但数值不同」
+    # ——实测 CoreMark 20000 拍里 fpFreeList util_* 与 ftq backend_redirect_latency_*
+    # 一共 ~90 个桶就是这么被误报成 MISMATCH 的。它们不是差异，是**根本没测**。
     writes = re.findall(
         r'\$fwrite\(32\'h80000002, ("(?:[^"\\]|\\.)*"(?:\s*,\s*"(?:[^"\\]|\\.)*")*)\s*,?\s*([^;]*)\)',
         flat)
@@ -275,7 +277,8 @@ def endpoint_semantics(golden_root):
                 continue
             for (scope, name), d in zip(ents, data):
                 for i in ident.findall(d):
-                    id2perf[i].append((scope.strip(), name.strip()))
+                    if (scope.strip(), name.strip()) not in id2perf[i]:
+                        id2perf[i].append((scope.strip(), name.strip()))
         elif '[ERROR]' in fmt:
             mm = re.match(r'\[ERROR\]\[time=%d\] ([^:]+): (.*)', fmt)
             scope, msg = (mm.group(1), mm.group(2)) if mm else ('', fmt)
@@ -283,19 +286,84 @@ def endpoint_semantics(golden_root):
                 for i in ident.findall(a):
                     if i.startswith(('x1_bore', 'x2_bore')):
                         port2assert.setdefault(i, (scope.strip(), msg.strip()[:160]))
+    # ★断言的**条件**不在 $fwrite 的参数表里，在它前面那个 if 里★
+    #   `if ((`PRINTF_COND_) & x1_bore_337 & ~reset) $fwrite(..., io_timer, x2_bore_102);`
+    # 只扫参数表的话，453 条 x1_bore（真正的断言条件）一条也认不出来，全退化成
+    # 「只用作条件，未单独打印」—— 而带消息的反倒只有 109 条打印负载。
+    # 所以按 $fwrite 切段，用**前一段的尾巴**（即那个 if 的条件）来认领。
+    chunks = flat.split("$fwrite(32'h80000002,")
+    for k in range(1, len(chunks)):
+        m = re.match(r'\s*("(?:[^"\\]|\\.)*")', chunks[k])
+        if not m:
+            continue
+        fmt = re.findall(r'"((?:[^"\\]|\\.)*)"', m.group(1))[0]
+        if '[ERROR]' not in fmt:
+            continue
+        mm = re.match(r'\[ERROR\]\[time=%d\] ([^:]+): (.*)', fmt)
+        scope, msg = (mm.group(1), mm.group(2)) if mm else ('', fmt)
+        cond = chunks[k - 1][-300:]
+        cond = cond[cond.rfind('if (') if 'if (' in cond else 0:]
+        for i in set(ident.findall(cond)):
+            if i.startswith(('x1_bore', 'x2_bore')):
+                port2assert.setdefault(i, (scope.strip(), msg.strip()[:160]))
+
+    # 每条语句写的是哪个寄存器/线网（`X <= …` / `wire … X = …`），那个名字被哪几条
+    # [PERF ] 打印用到 —— 语句级算一次就够，别按 port 反复扫（端口有近万个）。
+    _sn = {}
+
+    def stmt_names(k):
+        if k in _sn:
+            return _sn[k]
+        s = stmts[k]
+        # `$fwrite` 那几条是**打印**，不是驱动；而且它的格式串里有近三万个标识符，
+        # 放进来会让去重退化成 O(n^2)（实测整个函数从秒级涨到 4 分钟以上）。
+        if '$fwrite' in s or ('<=' not in s and 'wire ' not in s):
+            _sn[k] = ()
+            return ()
+        tg = set(re.findall(r'\b(\w+)\s*<=', s))
+        tg |= set(re.findall(r'wire\s+(?:\[[^\]]*\]\s*)*(\w+)\s*=', s))
+        out = {}
+        for x in sorted(tg):
+            for nm in id2perf.get(x, ()):
+                out[nm] = None
+        _sn[k] = tuple(out)
+        return _sn[k]
+
+    port2stmt = {}
+    port2sidx = collections.defaultdict(list)     # port -> 它影响到的语句下标
+    ctx = []                       # begin/end 栈：记住块头条件里出现过哪些 bore
+    for k, s in enumerate(stmts):
+        here = set(bore.findall(s))
+        for b in here:
+            port2stmt.setdefault(b, s.strip())
+        # ★只记「这条语句确实写了某个被 [PERF ] 打印的名字」的情况★。
+        # 不加这个过滤，一条 bore 会挂上块内成千上万条无关语句，
+        # 整个 endpoint_semantics 退化成分钟级（实测 >4 分钟还没出结果）。
+        if stmt_names(k):
+            # `if (…bore…) begin A <= …; B <= …; end`：B 那段里没有 bore，但同样被
+            # 那个条件管着。只跟最近 3 层 —— 再深就不是 LogPerfEndpoint 的写法了。
+            for b in here.union(*ctx[-3:]) if ctx else here:
+                port2sidx[b].append(k)
+        nb = len(re.findall(r'\bbegin\b', s))
+        ne = len(re.findall(r'\bend\b', s))
+        for _ in range(nb):
+            ctx.append(here)
+        for _ in range(ne):
+            if ctx:
+                ctx.pop()
 
     sem = {}
     for port, stmt in port2stmt.items():
         if port.startswith(('x1_bore', 'x2_bore')):
-            scope, msg = port2assert.get(port, ('', '(只用作条件，未单独打印)'))
-            sem[port] = ('ASSERT', scope, msg)
+            sem[port] = ('ASSERT', [port2assert.get(port,
+                                                    ('', '(只用作条件，未单独打印)'))])
             continue
-        hit = None
-        for i in dict.fromkeys(ident.findall(stmt)):
-            if i in id2perf:
-                hit = id2perf[i][0]
-                break
-        sem[port] = ('PERF', hit[0], hit[1]) if hit else ('PERF', '', '(未能从打印串定位)')
+        names = []
+        for k in port2sidx.get(port, ()):
+            for nm in stmt_names(k):
+                if nm not in names:
+                    names.append(nm)
+        sem[port] = ('PERF', names) if names else ('PERF', [('', '(未能从打印串定位)')])
     return sem
 
 
@@ -431,16 +499,24 @@ class Rebinder(object):
 # ---------------------------------------------------------------- 主流程
 
 def classify(rb, sem, bores):
-    rows, cones = [], {}
+    rows, cones, port2names = [], {}, {}
     for port, xmr in bores:
         fam = re.sub(r'_\d+$', '', port)
-        kind, scope, name = sem.get(port, ('PERF', '', '(未知)'))
+        kind, names = sem.get(port, ('PERF', [('', '(未知)')]))
+        scope, name = names[0]
+        # ★不要把整族名字塞进 TSV★：一条 bore 能喂 70 个直方图桶，写进去既臃肿又
+        # 必须截断，而一截断就**丢信息**（实测 400 字符的上限把 69 个 ftq_has_entry
+        # 桶截成 3 个，unbound 表因此漏记 66 个计数器）。TSV 里只记条数给人看，
+        # 真正的全集走内存里的 port2names，交给 unbound_rows。
+        extra = ('+%d 个同族计数器（全集见 docs/perf_bore_unbound.tsv）' % len(names[1:])
+                 if len(names) > 1 else '')
+        port2names[port] = names
         ip, gmod, imod, sig, stuck = rb.walk(xmr)
         if ip is None:
             rows.append(dict(port=port, family=fam, tier='T4_OPEN', golden_xmr=xmr,
                              golden_holder=gmod, golden_signal=sig, impl_holder='',
                              impl_bind='', perf_kind=kind, perf_scope=scope,
-                             perf_name=name,
+                             perf_name=name, also_feeds=extra,
                              evidence='层次翻译卡在段 `%s`（%s 下找不到对应例化点）'
                                       % (stuck, imod)))
             continue
@@ -453,7 +529,7 @@ def classify(rb, sem, bores):
             rows.append(dict(port=port, family=fam, tier=tier, golden_xmr=xmr,
                              golden_holder=gmod, golden_signal=sig, impl_holder=imod,
                              impl_bind=implpath, perf_kind=kind, perf_scope=scope,
-                             perf_name=name, evidence=ev))
+                             perf_name=name, also_feeds=extra, evidence=ev))
             continue
         verdict, leaves, order, why = rb.G.cone(gmod, sig)
         if verdict == 'PORT':                    # 端口名本身在 impl 侧丢了：不该发生
@@ -486,7 +562,7 @@ def classify(rb, sem, bores):
                 rows.append(dict(port=port, family=fam, tier='T4_OPEN', golden_xmr=xmr,
                                  golden_holder=gmod, golden_signal=sig, impl_holder=imod,
                                  impl_bind='', perf_kind=kind, perf_scope=scope,
-                                 perf_name=name,
+                                 perf_name=name, also_feeds=extra,
                                  evidence='组合锥的叶子在 impl 侧接不上: '
                                           + ' '.join(sorted(set(bad))[:4])))
                 continue
@@ -496,15 +572,15 @@ def classify(rb, sem, bores):
             rows.append(dict(port=port, family=fam, tier=verdict, golden_xmr=xmr,
                              golden_holder=gmod, golden_signal=sig, impl_holder=imod,
                              impl_bind=wire, perf_kind=kind, perf_scope=scope,
-                             perf_name=name,
+                             perf_name=name, also_feeds=extra,
                              evidence='复制 golden %s 的 %d 行组合锥，叶子重指到 %s'
                                       % (gmod, len(order), base)))
             continue
         rows.append(dict(port=port, family=fam, tier=verdict, golden_xmr=xmr,
                          golden_holder=gmod, golden_signal=sig, impl_holder=imod,
                          impl_bind='', perf_kind=kind, perf_scope=scope, perf_name=name,
-                         evidence=why))
-    return rows, cones
+                         also_feeds=extra, evidence=why))
+    return rows, cones, port2names
 
 
 def hint(rb, imod, perf_name, leafnames):
@@ -531,17 +607,24 @@ def hint(rb, imod, perf_name, leafnames):
     return ' '.join(out[:6])
 
 
-def unbound_rows(rows, rb=None):
+def unbound_rows(rows, rb=None, port2names=None):
     ctr = collections.defaultdict(lambda: dict(tiers=set(), ports=[], why=set()))
+    port2names = port2names or {}
     for r in rows:
-        key = (r['perf_kind'], r['perf_scope'], r['perf_name'])
-        c = ctr[key]
-        c['tiers'].add(r['tier'])
-        if r['tier'] not in BOUND_TIERS:
-            c['ports'].append(r['port'])
-            c['why'].add(r['evidence'])
-            c.setdefault('where', set()).add((r['impl_holder'], r['golden_signal'],
-                                              r['evidence']))
+        # ★同一条 bore 喂到的**每一个**计数器都要记★（直方图的每个桶、Sum、
+        # NSamples、Overflow）。漏掉它们，未绑的 bore 只会让一个计数器进 unbound 表，
+        # 其余几十个桶被当成「数值不同」——那正是「拿假零当数据」的另一种形态。
+        keys = [(r['perf_kind'], s, n)
+                for s, n in port2names.get(r['port'],
+                                           [(r['perf_scope'], r['perf_name'])])]
+        for key in keys:
+            c = ctr[key]
+            c['tiers'].add(r['tier'])
+            if r['tier'] not in BOUND_TIERS:
+                c['ports'].append(r['port'])
+                c['why'].add(r['evidence'])
+                c.setdefault('where', set()).add((r['impl_holder'], r['golden_signal'],
+                                                  r['evidence']))
     out = []
     for (kind, scope, name), c in sorted(ctr.items()):
         if not c['ports']:
@@ -754,8 +837,8 @@ def verify_simtop(rb, path, rows=None):
 def build(golden, filelist):
     rb = Rebinder(golden, filelist)
     sem = endpoint_semantics(golden)
-    rows, cones = classify(rb, sem, simtop_bores(golden))
-    return rb, rows, cones
+    rows, cones, port2names = classify(rb, sem, simtop_bores(golden))
+    return rb, rows, cones, port2names
 
 
 def main():
@@ -784,9 +867,9 @@ def main():
         finally:
             sys.stdout = so
 
-    rb, rows, cones = build(a.golden, fl)
+    rb, rows, cones, p2n = build(a.golden, fl)
     m = render(MAP_HDR, MAP_COLS, rows)
-    u = render(UNBOUND_HDR, UNBOUND_COLS, unbound_rows(rows, rb))
+    u = render(UNBOUND_HDR, UNBOUND_COLS, unbound_rows(rows, rb, p2n))
 
     if a.check:
         bad = 0
@@ -807,7 +890,7 @@ def main():
         print('  %-22s %5d' % (k, n.get(k, 0)))
     bound = sum(n.get(k, 0) for k in BOUND_TIERS)
     print('  绑定率 %d/%d = %.2f%%' % (bound, len(rows), 100.0 * bound / len(rows)))
-    ub = unbound_rows(rows, rb)
+    ub = unbound_rows(rows, rb, p2n)
     ctr = set((r['perf_kind'], r['perf_scope'], r['perf_name']) for r in rows)
     print('计数器/断言 %d 个，其中 %d 个含未绑 bore（进 unbound 表）' % (len(ctr), len(ub)))
     for k, v in sorted(collections.Counter(r['gap_class'] for r in ub).items()):

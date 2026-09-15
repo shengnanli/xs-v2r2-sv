@@ -113,6 +113,10 @@ def main():
     for kk in ('MATCH', 'MISMATCH', 'EXCLUDED', 'MISSING'):
         print('  %-9s %6d' % (kk, st.get(kk, 0)))
     if mism:
+        fam = collections.Counter(re.sub(r'_\d+(_\d+)?$', '_*', nm) for (_s, nm), _g, _i in mism)
+        print('\n--- MISMATCH 按计数器族（同一族往往是同一条 bore 的下游）---')
+        for k, v in fam.most_common(12):
+            print('  %5d  %s' % (v, k))
         print('\n--- MISMATCH（前 %d 条）---' % min(a.show, len(mism)))
         for (sc, nm), gv, iv in mism[:a.show]:
             print('  %-72s golden=%-12d impl=%-12d  Δ=%+d' % (sc.split('.core.')[-1] + ': ' + nm,
@@ -122,6 +126,18 @@ def main():
         for sc, nm in miss[:a.show]:
             print('  %s: %s  (golden=%s impl=%s)'
                   % (sc, nm, (sc, nm) in g, (sc, nm) in i))
+    if st.get('MISMATCH'):
+        print()
+        print('读这些差异之前先排除两件事（它们不是重写引入的差异）：')
+        print('  1. 未绑 bore 的**下游**：一条 perfCnt_bore 常常同时喂 Sum/NSamples/'
+              'Overflow 与几十个直方图桶。该 bore 没绑上时整族都是假零。'
+              'docs/perf_bore_unbound.tsv 的 also_feeds 已经把整族收进来，'
+              '这里还剩下的族说明表有漏 —— 先补表，别急着查 RTL。')
+        print('  2. 寄存器随机初值：两侧都带 `+vcs+initreg+random` 与 RANDOMIZE_*，'
+              '而重写件的寄存器集合与 golden 不同，随机序列落到不同的位上。'
+              '分支预测器这类**无复位大阵列**的计数器会因此天然不同 —— '
+              '判据：拿 golden 自己换一个 `+ntb_random_seed` 再跑，'
+              '若同一条计数器在两个 seed 之间也变，那它对初值敏感，不能当差异证据。')
     return 1 if (st.get('MISMATCH') or st.get('MISSING')) else 0
 
 
