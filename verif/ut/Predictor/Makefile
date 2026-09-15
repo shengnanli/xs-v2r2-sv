@@ -130,15 +130,25 @@ RTL_GOLDEN_DEPS = \
 #
 # ── A/B 实测（2026-09-15，同一 commit 82503e5，只差本文件这一行）───────────────
 #
-#   off : 03:45:09Z 起跑 → 04:04:03Z 进入 "Matching..."（**19 分钟**），
+#   off : 03:45:09Z 起跑 → 04:04:03Z 进入 "Matching..."（**18 分 54 秒**），
 #         全程 `Merging duplicated` 行数 = 0（整个合并阶段被跳过）。
 #   on  : 04:07:09Z 起跑 → 04:27:52Z 进入合并阶段并停在
-#         i:/WORK/Predictor/u_core (/WORK/xs_Predictor_core) ——
-#         截至 04:37:35Z 在这一个 block 上已 ≥10 分钟、总计 ≥30 分钟仍未到 Matching。
+#         i:/WORK/Predictor/u_core (/WORK/xs_Predictor_core)；
+#         到 04:37:35Z 在这一个 block 上已 ≥10 分钟、总计 ≥30 分钟未到 Matching。
+#         （这一路到此为止 —— 结论已够，为省 license/内存主动停掉了。）
 #
-#   旁证（另两个 commit，merge_dup 走默认 true，行为一致、卡点同一个 block）：
-#     914ab81  1:40:34 已跑，55 行 merging，停在 i:/WORK/Predictor/u_core
-#     ee2db10  0:25:11 已跑，32 行 merging，停在 i:/WORK/Predictor/u_core
+# ★它不是挂死，是慢 —— 跑完了★（另一路跑到终点的实测，2026-09-15）：
+#     914ab81 + on : 02:57:00Z 起跑 → 05:13:04Z 进入 "Matching..." = **2 小时 16 分**
+#                    其中合并阶段本身约 1 小时 22 分（03:51Z→05:13Z，57 个 block）
+#   对同一阶段而言 on : off ≈ 2:16 : 0:19 ≈ **7 倍**。
+#   所以本行是**省时间**的工程决定，不是「不关就跑不出来」。早先注释（含我自己）
+#   用过「卡死 / 挂死」，与实测不符，已改。
+#
+#   旁证：ee2db10 + on 跑 0:25:11 时同样停在 i:/WORK/Predictor/u_core
+#   （同样为省资源主动停掉）。三个 commit 一致指向同一个 block。
+#
+#   规模参考（解释为什么这么贵）：本目标 off 侧 Matching 阶段的进度条显示
+#   **1,057,801 个比较点**、42 GB 内存。这不是异常，是这个闭包的体量。
 #
 #   复跑（off 侧就是官方 runner；on 侧只需把本行改成 true）:
 #     scripts/run_proof.sh Predictor Predictor            # PROOF_COMMIT=82503e5
@@ -153,7 +163,7 @@ RTL_GOLDEN_DEPS = \
 # rtl/frontend/Predictor.sv 差 126 行。数字没编，是归属标错了；而且 18:46 那个数
 # 落在合并阶段**之前**，本来就测不到这个开关。上面这组是补做的真·同 commit 对照。
 #
-# 成因（仍是原判断，且三个 commit 一致指向同一个 block）：卡点在 u_core 即可读核
+# 成因（仍是原判断，且三个 commit 一致指向同一个 block）：耗时集中在 u_core 即可读核
 # 本身，不是 Composer、不是任何 golden 子模块。本核有 12 个内容完全相同的 64 位
 # predCycle 自由计数器 + 256 位 ghv 向量，结构同构且数量大，是 merge_dup 的最坏输入。
 # 反证：verif/ut/Composer 用**同一份 90 文件闭包**、merge_dup 开着也能跑完并签核，
