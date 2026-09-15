@@ -664,7 +664,17 @@ def emit_simtop(golden_root, rows, cones, rb, out):
     return n
 
 
-def verify_simtop(rb, path):
+def _skel(s):
+    """表达式的**骨架**：抹掉名字与下标，只留运算符与带位宽的字面量。"""
+    s = re.sub(r'\[[^\]]*\]', '', s)
+    s = re.sub(r"\b\d+'[sS]?[hHdDbBoO][0-9a-fA-FxXzZ_]+", 'K', s)
+    s = re.sub(r'\bSimTop(?:\.\w+)+', 'X', s)
+    s = re.sub(r'\b[A-Za-z_]\w*\b', 'X', s)
+    s = re.sub(r'\bX(\.X)+\b', 'X', s)
+    return re.sub(r'\s+', '', s)
+
+
+def verify_simtop(rb, path, rows=None):
     """独立复核：把生成的 SimTop 里**每一条** XMR 拿回 impl 例化图里走一遍。
 
     生成器自己算出来的绑定和生成器自己写出来的文件，是两件事 —— 中间任何一步
@@ -716,6 +726,24 @@ def verify_simtop(rb, path):
         else:
             if segs[-1] not in rb.impl_words.get(mod, ()):
                 bad.append((x, '末段 `%s` 在模块 %s 里没有声明' % (segs[-1], mod)))
+    # ★复制出来的锥必须与 golden 结构逐行相同★：位宽字面量被改、少一项、多一层括号，
+    # 都不会报编译错，只会让计数器悄悄算出另一个数。名字和下标抹掉后比骨架，
+    # 与「叶子重指到哪」无关，所以它检的正是复制这一步本身。
+    if rows:
+        holder = {r['port']: r['golden_holder'] for r in rows}
+        for ln in text.splitlines():
+            m = re.match(r'\s*wire\s+(?:\[[^\]]*\]\s*)?xs_pb_([A-Za-z0-9_]*?bore(?:_\d+)?)'
+                         r'__([A-Za-z0-9_]+)\s*=\s*(.*);\s*$', ln)
+            if not m:
+                continue
+            port, w, rhs = m.groups()
+            gm = rb.G.mod(holder.get(port, ''))
+            if gm is None or w not in gm['defs']:
+                continue
+            if _skel(rhs) != _skel(gm['defs'][w]):
+                bad.append(('xs_pb_%s__%s' % (port, w),
+                            '复制出来的表达式结构与 golden %s.%s 不同'
+                            % (holder[port], w)))
     return len(xmrs), bad
 
 
@@ -787,9 +815,9 @@ def main():
         print('写出重绑 SimTop: %s' % a.emit_simtop)
     tgt = a.verify_simtop or a.emit_simtop
     if tgt:
-        n, bad = verify_simtop(rb, tgt)
-        print('复核 %s 里的 %d 条 XMR：%s'
-              % (tgt, n, ' 全部在 impl 层次里走得通' if not bad else '★%d 条走不通' % len(bad)))
+        n, bad = verify_simtop(rb, tgt, rows)
+        print('复核 %s：%d 条 XMR 全走得通、锥体与 golden 结构逐行相同'
+              % (tgt, n) if not bad else '复核 %s：★%d 条不过' % (tgt, len(bad)))
         for x, why in bad[:20]:
             print('   %s  ← %s' % (x, why))
         rc = 1 if bad else 0
