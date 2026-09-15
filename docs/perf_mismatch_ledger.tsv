@@ -1,0 +1,54 @@
+# perf_mismatch_ledger.tsv —— 全量 perf 比对里**每一条**不等的逐条裁定。
+#（scripts/perf_compare.py --emit-mismatch 生成；禁止手改）
+# 这是一份**测量记录**，不是可以从 golden 现场重算的东西 —— 所以
+#   复跑命令、输入路径、输入 sha256、台账 sha256、commit 全部钉在下面（D62）。
+# 裁定判据（scripts/perf_compare.py verdict_of）：
+#   WAIVED   ⟺ tier == C_DIAG 且 owner_rewritten == no  (codex 0162 D3)
+#   BLOCKING 其余全部。★一旦持有模块被重写，豁免自动失效，闸会红★
+# 下面两个台账 sha256 是**出表当时**的版本号，不是闸的判据 ——
+#   台账会随 golden/rtl 变，靠比 hash 会在干净 checkout 里死锁（重发这张表
+#   要有那两份 assert.log）。currency 由 scripts/check_perf_tier.py 判据 E
+#   保证：它每次跑闸都拿**当前**台账重算 tier/owner_rewritten/verdict，
+#   与这里记的对不上就红。
+#
+# commit            b6444b8d52d9df0fc0261c3ab3ad2547da5a8bce
+# golden_log        /home/eda/xs-env/sim-work/perfbind-runs/golden_cm20k/assert.log
+# golden_log_sha256 6ceb4c0d99a048ad622035f392194dd1212dedff8457a42074e9371ea930ae39
+# impl_log          /home/eda/xs-env/sim-work-perfbind/impl/run/cm20k/assert.log
+# impl_log_sha256   911ce3934af4fd9fbaab99a28fc21fd09dd95f03dcd744cabb68af84511df0a2
+# tier_ledger_sha256 db8bf791e8a5565c2b32acb29dd2385acb2552e8df8c069b67265652da7c8863
+# gap_ledger_sha256  7d43b96d2814061696a0b54097a26e98daaf6292e9ac91ebdc159e471211014a
+# dump_times_equal  True
+# compared          25427
+# MATCH 24814 / MISMATCH 24 / EXCLUDED 589 / MISSING 0
+# WAIVED 24 / BLOCKING 0
+# 复跑:
+#   python3 scripts/perf_compare.py \
+#     /home/eda/xs-env/sim-work/perfbind-runs/golden_cm20k/assert.log \
+#     /home/eda/xs-env/sim-work-perfbind/impl/run/cm20k/assert.log --all --emit-mismatch docs/perf_mismatch_ledger.tsv
+#
+tier	scope	name	golden	impl	delta	owner_modules	owner_rewritten	verdict	criterion
+C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.rob	robHeadPC	1085605803699317447	4092383732201189658	+3006777928501872211	CtrlBlock	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
+C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu.predictors.tage	bank_0_tage_table_0_provided_at_pred	2304	1275	-1029	Tage_SC	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
+C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu.predictors.tage	bank_0_tage_table_3_provided_at_pred	4	1033	+1029	Tage_SC	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
+C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu.predictors.tage	bank_1_tage_table_2_provided_at_pred	13	1042	+1029	Tage_SC	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
+C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu.predictors.tage	bank_1_tage_table_3_provided_at_pred	1037	8	-1029	Tage_SC	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
+C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu.predictors.tage	sc_agree_at_pred	3950	4979	+1029	Tage_SC	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
+C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu.predictors.tage	sc_disagree_at_pred	1082	53	-1029	Tage_SC	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
+C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dcache.dcache.mainPipe	replace_unused_prefetch	0	4467	+4467	MainPipe	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
+C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dcache.dcache.missQueue.entries_0	load_miss_penalty_to_use	924	925	+1	MissEntry	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
+C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dcache.dcache.missQueue.entries_1	load_miss_penalty_to_use	52	53	+1	MissEntry	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
+C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dcache.dcache.missQueue.entries_2	load_miss_penalty_to_use	1	0	-1	MissEntry	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
+C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stream_bit_vec_array	bit_vector_active_10_11	0	212	+212	StreamBitVectorArray	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
+C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stream_bit_vec_array	bit_vector_active_11_12	0	4425	+4425	StreamBitVectorArray	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
+C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stream_bit_vec_array	bit_vector_active_6_7	3739	0	-3739	StreamBitVectorArray	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
+C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stream_bit_vec_array	bit_vector_active_7_8	4071	0	-4071	StreamBitVectorArray	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
+C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stream_bit_vec_array	bit_vector_active_8_9	7764	3739	-4025	StreamBitVectorArray	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
+C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stream_bit_vec_array	bit_vector_active_9_10	4425	11623	+7198	StreamBitVectorArray	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
+C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stream_bit_vec_array	bit_vector_active_mean	7	9	+2	StreamBitVectorArray	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
+C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stream_bit_vec_array	bit_vector_active_sum	152868	185314	+32446	StreamBitVectorArray	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
+C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stride_meta_array	high_conf_num_0_1	14440	11770	-2670	StrideMetaArray	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
+C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stride_meta_array	high_conf_num_1_2	5559	3804	-1755	StrideMetaArray	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
+C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stride_meta_array	high_conf_num_2_3	0	4425	+4425	StrideMetaArray	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
+C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.l1PrefetcherOpt.stride_meta_array	high_conf_num_sum	5559	12654	+7095	StrideMetaArray	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）
+C_DIAG	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.lsq.storeQueue	vaddr_match_failed	24	11	-13	StoreQueue	no	WAIVED	C_DIAG 且持有模块本轮未重写（codex 0162 D3）

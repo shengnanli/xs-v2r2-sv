@@ -15,6 +15,12 @@
 #                     其余 164 条仍接 `'0` 但**登记在 docs/perf_bore_unbound.tsv**，
 #                     perf 比对时按名字排除，不拿假零冒充「相等」。
 #
+# compare 子命令现在还会**按档裁定**（codex 0162 D3）：排除集合取自
+# docs/perf_gap_ledger.tsv，每条差异按 docs/perf_tier_ledger.tsv 的档位 +
+# 持有模块是否已重写判 WAIVED / BLOCKING。判据见 scripts/perf_tier.py 头部，
+# 闸见 scripts/check_perf_tier.py（在 scripts/gate_all.sh 里）。
+# 加 --emit-mismatch docs/perf_mismatch_ledger.tsv 把逐条裁定落成台账（带输入 sha256）。
+#
 # perf 打印怎么来的：LogPerfEndpoint 的 `io_logEnable = timer>=logCtrl_begin &&
 # timer<logCtrl_end`，difftest 的 `+b=`/`+e=` 给这两个值，**默认 begin=end=0
 # 所以一行都不打**。必须给 `+e=<大数>`。dump 时刻由 difftest 在
