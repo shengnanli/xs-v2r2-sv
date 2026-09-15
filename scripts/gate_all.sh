@@ -48,6 +48,11 @@ for g in scripts/gen_tlbuffer_ad_family.py scripts/gen_mbist_pipe_family.py \
          scripts/gen_sram_wrappers.py; do
   [ -f "$g" ] && run "生成器幂等 $(basename $g .py | sed 's/^gen_//')" python3 "$g" --check
 done
+# 上面三条是**逐个**挂 --check 的 scripts/gen_*.py。verif/ut/*/gen.py 那一层有 9 个，
+# 其中 8 个根本没有 --check（SRAMTemplateNewForm 是最后一个敞口）。与其逐个改生成器，
+# 不如统一验一次：在 HEAD 上开 detached worktree 重跑全部，产物必须逐字不变。
+# 好处是新加的生成器自动进闸，不会因为"忘了挂 --check"再敞一个口。
+run "生成器幂等 verif/ut/*"  python3 scripts/test_gen_idempotent.py
 # 仿真 collateral 闸（codex 0160 §Canonical simulation collateral）：
 # verif/sim/collateral/ 是「干净 checkout 能跑起仿真」所缺的 13 个生成物（207 KiB）——
 # G1-canonical 只冻结 golden-rtl/，不含 generated-src，少了它 VCS 连 golden 侧都编不出来。
