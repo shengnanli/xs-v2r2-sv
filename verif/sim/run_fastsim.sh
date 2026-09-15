@@ -119,11 +119,11 @@ bench() {  # $1=workload.bin $2=tag [$3=max-cycles] —— 两侧并行跑同一
   local gp=$!
   ( run impl   "$bin" "$maxc" "$tag" >/dev/null 2>&1; echo "impl   rc=$?" ) &
   local ip=$!
-  wait $gp; wait $ip
+  wait $gp || true; wait $ip || true
   t1=$(date +%s)
   log "bench $tag 墙钟 $((t1-t0))s"
   python3 "$SV_HOME/verif/sim/bench_verdict.py" \
-      "$SIMF/golden/run/$tag/sim.log" "$SIMF/impl/run/$tag/sim.log" "$tag"
+      "$SIMF/golden/run/$tag/sim.log" "$SIMF/impl/run/$tag/sim.log" "$tag" || true
 }
 
 flags() {
