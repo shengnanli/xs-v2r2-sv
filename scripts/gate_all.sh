@@ -45,6 +45,16 @@ for g in scripts/gen_tlbuffer_ad_family.py scripts/gen_mbist_pipe_family.py \
          scripts/gen_sram_wrappers.py; do
   [ -f "$g" ] && run "生成器幂等 $(basename $g .py | sed 's/^gen_//')" python3 "$g" --check
 done
+# 仿真 collateral 闸（codex 0160 §Canonical simulation collateral）：
+# verif/sim/collateral/ 是「干净 checkout 能跑起仿真」所缺的 13 个生成物（207 KiB）——
+# G1-canonical 只冻结 golden-rtl/，不含 generated-src，少了它 VCS 连 golden 侧都编不出来。
+# 生成物进版本库就会腐烂：RTL 换一版、DPI 接口跟着变，而库里这份不会自己跟着走。
+# 判据 B 把 run_fullchip.sh 的 check_dpic 门禁（dpic 的 v_difftest_* 集合 == golden
+# GatewayEndpoint.sv 例化的 DummyDPICWrapper_* 集合）从「跑仿真才发现」提前到「跑闸就发现」
+# —— 那个形态实测让 **golden 自己**一跑就 Error-[DPI-DIFNF]，而且长得很像 impl 的 bug。
+# 先负测（秒级，不读 golden），再跑真闸，顺序照 package 闸的先例。
+run "仿真 collateral 负测"  python3 scripts/check_sim_collateral.py --selftest
+run "仿真 collateral 闸"    python3 scripts/check_sim_collateral.py
 # 层次重绑映射表幂等（codex 0159 §F-class）：docs/hier_rebind_map.tsv 是
 # difftest 探针/故障注入 scope/DFT 存储路径重绑的唯一依据。它由 golden 例化图 +
 # 重写件例化图 + docs/hier_rebind_decl.tsv 机械算出 —— 任何一侧动了（多吸收一个
