@@ -3,23 +3,32 @@
 // 逐拍比对 golden 侧 dut_g.predictors 与重写侧 dut_i.predictors 的**全部 533 个输入**
 // （76 功能 + 457 MBIST），报第一根发散的线。
 //
-// 本轮靠它拿到的三个结论：
+// 本轮靠它拿到的结论（第 3 条后来被实测推翻了，连同更正一起留着）：
 //   1. 一把定位到 wrapper 漏接了 Composer 的 io_in_bits_ghist（整根悬空成 z）——
 //      elaborate 是 0 error 0 warning，只有这个探针看得见；
 //   2. 修完后带 `!$isunknown(g)` 门限时：533 个输入前 1053 拍全同，而 Composer 输出
-//      io_out_s3_pc_0 在 n=1052 就发散 —— 看着像"同输入不同输出"的悖论；
+//      io_out_s3_pc_0 在 n=1052 就发散 —— 看着像「同输入不同输出」的悖论；
 //   3. ★去掉 $isunknown 门限后真相大白★：真正的首次发散在 n=1047 的
 //      io_in_bits_s0_pc_0，两侧**都是 X**，只是 X 的位型不同：
 //          g=...XXXXX0XXXxxx   i=...XXXXX0XXXxXX
-//      首次发散确实是 X 位型差异；但★不要据此认为 errors 全是 X 悲观★——
-//      实测把比较窗口推迟到第 6000 拍之后再比，errors 仍有 165262/3350434 ≈ 4.9%，
-//      且集中在 s2/s3_ftq_idx_value、last_stage_spec_info_ssp、s2_full_pred_3_hit。
-//      ftq_idx 只在 s1_fire/s2_fire 那拍锁存 ⇒ 说明 fire 时序仍与 golden 不一致。
-//      所以：**确有尚未定位的真逻辑差异**，X 悲观只是让首次发散点变得难读。
-//      golden 被 firtool 折叠过(如 s2_ready/s3_ready 已折成常量)，X 传播范围比
-//      未折叠的可读核小；两侧 SRAM 在 +define+SYNTHESIS 下都不随机化、同为 X。
-//      ⇒ 判正确性要靠 FM（二值、不吃 X）；tb 若要转绿需先把设计喂出 X
-//        （暖机相 / 两侧对称初始化），而不是继续加 $isunknown 门限。
+//      首次发散确实是 X 位型差异。
+//
+// ── ★第 3 条原先的推论是错的，2026-09-15 用 A/B 实测推翻★ ────────────────────
+// 原话是：「实测把比较窗口推迟到第 6000 拍之后再比，errors 仍有 165262/3350434
+// ≈ 4.9% …… 所以确有尚未定位的真逻辑差异」。
+//
+// 它错在**推迟比较窗口治不了这里的 X**：X 的源头是 golden SRAM 行为模型
+// （array_*_ext.v / data_mem_*.sv）在 +define+SYNTHESIS 下完全不初始化，而当时的
+// 激励里 update.pc 是 50 位随机数、查询 pc 由 BPU 自环产生，两者 pc[29:1] 几乎
+// 不可能撞上（FTBBank.sv:1962-1963 的 idx/tag 只看 pc[29:1]）——于是绝大多数
+// SRAM set **从头到尾一次都没被写过**，等多久都还是 X。
+//
+// 对照实测（seed=1，200k 拍，RTL 一字未改，只在 tb 里加 SRAM 零初始化）：
+//     原 tb          : checks=23,718,648  errors=185,370
+//     原 tb + 零初始化: checks=24,941,558  errors=0        ← 失配 100% 是 X 悲观
+// ⇒ 当时并不存在「尚未定位的真逻辑差异」。
+// ⇒ 现在 tb.sv 默认就给两侧 SRAM 做对称零初始化（gen_tb.py 头注释有为什么这是
+//    加强不是放宽），所以本探针现在看到的 X 会少很多，首次发散点直接可读。
 //
 // 用法（两个坑）：
 //   1. probe 是独立 root，`-top tb` 不会 elaborate 它 —— 必须在 tb 里加
