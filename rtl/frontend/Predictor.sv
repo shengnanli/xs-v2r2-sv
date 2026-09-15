@@ -64,7 +64,7 @@
 //   · 预测本身 —— 在 Composer 里(本文件只例化它)；
 //   · 187 个预测包字段的输出 —— Composer 直连顶层输出，wrapper 里连线，不进核。
 // =============================================================================
-// 本文件导航（共 3344 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+// 本文件导航（共 3366 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
 //   L38    它在前端的位置
 //   L52    S0~S3 四级覆盖式流水
 //   L59    五个 PhyPriorityMux：S0 状态从哪来
@@ -74,28 +74,28 @@
 //   L218   xs_Predictor_core —— 可读核
 //   L288   PRED_ —— 从 full_pred 派生的预测属性
 //   L406   PIPE_ —— S1/S2/S3 覆盖式流水握手
-//   L484   GHV_ —— ★全局历史向量：一个 256 位环形位缓冲★
-//   L489   怎么用】ghist_ptr 指向"最新一位的下一格"
-//   L495   谁写】四个源，同一套优先级
-//   L532   AFHOB_ —— 折叠历史的"最老位"预读
-//   L558   FH_ —— 折叠历史的增量更新
-//   L627   GHVWR_ —— 把"某一级要往 GHV 写什么"算成 256 位的 wen/wdata
-//   L652   STAGE_ —— S1/S2/S3 的历史状态流水
-//   L750   OVR_ —— 级间覆盖判定
-//   L790   RDR_ —— FTQ 真重定向：锁存一拍，然后把历史整体回滚重算
-//   L863   SEL_ —— S0 五选一
-//   L905   流水寄存器本体
-//   L910   s0_pc_reg 是全模块唯一**不带复位**的流水寄存器
-//   L1011  GHV 写：四个源各自算 wen/wdata
-//   L1028  GHIST_ —— 送 Composer 的"推测历史"
-//   L1056  送 FTQ 的控制输出
-//   L1080  TOPDOWN_ —— 取指气泡归因
-//   L1152  上电复位状态
-//   L1161  predCycle —— 打在预测包上的时间戳
-//   L1197  SEGPC_ —— update pc 的分段打拍
-//   L1217  PERF_ —— Composer 的 7 路性能计数各打 2 拍再送出
-//   L1219  golden 这 14 个寄存器**不带复位**
-//   L1232  Predictor —— golden 同名 wrapper
+//   L506   GHV_ —— ★全局历史向量：一个 256 位环形位缓冲★
+//   L511   怎么用】ghist_ptr 指向"最新一位的下一格"
+//   L517   谁写】四个源，同一套优先级
+//   L554   AFHOB_ —— 折叠历史的"最老位"预读
+//   L580   FH_ —— 折叠历史的增量更新
+//   L649   GHVWR_ —— 把"某一级要往 GHV 写什么"算成 256 位的 wen/wdata
+//   L674   STAGE_ —— S1/S2/S3 的历史状态流水
+//   L772   OVR_ —— 级间覆盖判定
+//   L812   RDR_ —— FTQ 真重定向：锁存一拍，然后把历史整体回滚重算
+//   L885   SEL_ —— S0 五选一
+//   L927   流水寄存器本体
+//   L932   s0_pc_reg 是全模块唯一**不带复位**的流水寄存器
+//   L1033  GHV 写：四个源各自算 wen/wdata
+//   L1050  GHIST_ —— 送 Composer 的"推测历史"
+//   L1078  送 FTQ 的控制输出
+//   L1102  TOPDOWN_ —— 取指气泡归因
+//   L1174  上电复位状态
+//   L1183  predCycle —— 打在预测包上的时间戳
+//   L1219  SEGPC_ —— update pc 的分段打拍
+//   L1239  PERF_ —— Composer 的 7 路性能计数各打 2 拍再送出
+//   L1241  golden 这 14 个寄存器**不带复位**
+//   L1254  Predictor —— golden 同名 wrapper
 //
 
 package predictor_pkg;
@@ -445,25 +445,47 @@ module xs_Predictor_core
   assign s2_fire_w = s2_valid_q & s3_comp_ready & s3_ready;
   assign s3_fire_w = s3_valid_q;                           // S3 是末级，有就发
 
+  // ★四份 dup 依次写同一个寄存器，后写者胜 —— 不能只按一份 dup 算★
+  //
+  // Chisel 里 `dup_seq(RegInit(false.B))` 是 Seq.tabulate(4)(_ => src)，**四个元素
+  // 是同一个寄存器对象**；随后那个 `for ((s0_fire, s1_flush, s1_fire, s1_valid) <- ...)`
+  // 就变成"四条 when 链依次写同一个寄存器"。某一份 dup 的四个条件全不成立时，
+  // 值**落到上一份 dup 的结果**上，而不是保持原值。golden 里因此是一个四层嵌套
+  //     ~redirect & (s0_fire_3 | ~(s1_flush_3|s1_fire_3|redirect) & (s0_fire_2 | …))
+  // 只按 dup0（或只按 dup3）算都是错的 —— s1_flush/s2_flush 每份 dup 不同
+  // （它们含各自 dup 的 s2_redirect/s3_redirect）。
+  // 下面这个 for 循环就是那条级联的直写形式，比 golden 的嵌套表达式好读得多。
+  logic s1_valid_d, s2_valid_d, s3_valid_d;
+  always_comb begin
+    s1_valid_d = s1_valid_q;
+    s2_valid_d = s2_valid_q;
+    s3_valid_d = s3_valid_q;
+    for (int d = 0; d < NUM_DUP; d++) begin
+      // S1：真重定向最优先清，其次进人，再次冲刷/发走
+      if      (ftq_redirect_valid) s1_valid_d = 1'b0;
+      else if (s0_fire[d])         s1_valid_d = 1'b1;
+      else if (s1_flush[d])        s1_valid_d = 1'b0;
+      else if (s1_fire[d])         s1_valid_d = 1'b0;
+      // S2/S3：进人时若上一级同拍被冲，进来的就是废的，直接不置 valid
+      if      (s2_flush[d])        s2_valid_d = 1'b0;
+      else if (s1_fire[d])         s2_valid_d = ~s1_flush[d];
+      else if (s2_fire[d])         s2_valid_d = 1'b0;
+
+      if      (s3_flush)           s3_valid_d = 1'b0;
+      else if (s2_fire[d])         s3_valid_d = ~s2_flush[d];
+      else if (s3_fire[d])         s3_valid_d = 1'b0;
+    end
+  end
+
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       s1_valid_q <= 1'b0;
       s2_valid_q <= 1'b0;
       s3_valid_q <= 1'b0;
     end else begin
-      // S1：真重定向最优先清，其次进人，再次冲刷/发走
-      if      (ftq_redirect_valid) s1_valid_q <= 1'b0;
-      else if (s0_fire_w)          s1_valid_q <= 1'b1;
-      else if (s1_flush[0])        s1_valid_q <= 1'b0;
-      else if (s1_fire_w)          s1_valid_q <= 1'b0;
-      // S2/S3：进人时若上一级同拍被冲，进来的就是废的，直接不置 valid
-      if      (s2_flush[0])        s2_valid_q <= 1'b0;
-      else if (s1_fire_w)          s2_valid_q <= ~s1_flush[0];
-      else if (s2_fire_w)          s2_valid_q <= 1'b0;
-
-      if      (s3_flush)           s3_valid_q <= 1'b0;
-      else if (s2_fire_w)          s3_valid_q <= ~s2_flush[0];
-      else if (s3_fire_w)          s3_valid_q <= 1'b0;
+      s1_valid_q <= s1_valid_d;
+      s2_valid_q <= s2_valid_d;
+      s3_valid_q <= s3_valid_d;
     end
   end
 
