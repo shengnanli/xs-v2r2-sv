@@ -41,7 +41,13 @@ def golden_ports():
 
 
 def golden_composer_conns():
-    """返回 golden 里 Composer 实例的 [(pin, rhs)]，rhs 已压成一行。"""
+    """返回 golden 里 Composer 实例的 [(pin, rhs)]。
+
+    ★必须用括号深度扫描，不能用正则★：io_in_bits_ghist 这类 pin 的 RHS 是一个
+    嵌套四层的三元表达式，正则匹配会**静默漏掉**这根线（本轮实测：io_in_bits_ghist
+    与 io_in_valid 两根被漏掉，wrapper 里 Composer 的 ghist 输入整根悬空成 z，
+    UT 一跑就是满屏 X）。下面按字符扫，并在 main() 里用 Composer 端口表做完备性校验。
+    """
     lines = GOLDEN.read_text().split("\n")
     start = next(i for i, l in enumerate(lines) if l.strip().startswith("Composer predictors ("))
     depth, body = 0, []
@@ -51,8 +57,33 @@ def golden_composer_conns():
         if i > start and depth == 0:
             break
     txt = "\n".join(body)
-    conns = re.findall(r"\.([A-Za-z_]\w*)\s*\n?\s*\(([^()]*(?:\([^()]*\)[^()]*)*)\)\s*,?", txt, re.S)
-    return [(p, " ".join(r.split())) for p, r in conns]
+    txt = txt[txt.index("(") + 1: txt.rindex(")")]          # 剥掉最外层括号
+
+    conns, i, n = [], 0, len(txt)
+    while i < n:
+        while i < n and txt[i] != ".":
+            i += 1
+        if i >= n:
+            break
+        i += 1
+        j = i
+        while j < n and (txt[j].isalnum() or txt[j] == "_"):
+            j += 1
+        pin = txt[i:j]
+        while j < n and txt[j] != "(":
+            j += 1
+        k, d = j, 0
+        while k < n:                                        # 括号配平找 RHS 结尾
+            if txt[k] == "(":
+                d += 1
+            elif txt[k] == ")":
+                d -= 1
+                if d == 0:
+                    break
+            k += 1
+        conns.append((pin, " ".join(txt[j + 1:k].split())))
+        i = k + 1
+    return conns
 
 
 # ---- 连线规则：pin -> wrapper 侧 RHS -----------------------------------------
@@ -191,8 +222,17 @@ def main():
     assert len(ports) == 633, f"expected 633 golden ports, got {len(ports)}"
     topports = {n for _, _, n in ports}
     conns = golden_composer_conns()
-    assert len(conns) == 827, f"expected 827 Composer connections, got {len(conns)}"
     cw = composer_port_widths()
+    # ★完备性校验★：生成的连线必须**恰好**覆盖 Composer 的全部端口，一根不多一根不少。
+    pins, cpins = {p for p, _ in conns}, set(cw)
+    missing, extra = cpins - pins, pins - cpins
+    if missing or extra:
+        print(f"[gen_predictor] Composer 连线不完备: 少 {sorted(missing)} 多 {sorted(extra)}",
+              file=sys.stderr)
+        return 2
+    if len(conns) != len(pins):
+        print(f"[gen_predictor] Composer 连线有重复 pin", file=sys.stderr)
+        return 2
     comp, unresolved = gen_composer(conns, topports, cw)
     blocks = {"ports": gen_ports(ports),
               "glue_decls": gen_glue_decls(conns, topports, cw),

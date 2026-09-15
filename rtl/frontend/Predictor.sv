@@ -2131,6 +2131,7 @@ module Predictor(
   logic [3:0]   rdr_q_cfiUpdate_ssp;
   logic         rdr_q_level;
   logic         redirect_from_ifu_q_w;
+  logic [255:0] s0_ghist_w;
   logic [255:0] update_ghist_w;
   logic [49:0]  update_pc_seg_w;
   // END GENERATED(glue_decls)
@@ -2535,6 +2536,7 @@ module Predictor(
     .io_in_bits_s1_folded_hist_3_hist_4_folded_hist   (s1_fg_w[3][4][7:0]),
     .io_in_bits_s1_folded_hist_3_hist_3_folded_hist   (s1_fg_w[3][3][7:0]),
     .io_in_bits_s1_folded_hist_3_hist_2_folded_hist   (s1_fg_w[3][2][7:0]),
+    .io_in_bits_ghist                                 (s0_ghist_w),
     .io_out_s1_pc_0                                   (comp_s1_pc_0),
     .io_out_s1_pc_1                                   (comp_s1_pc_1),
     .io_out_s1_pc_2                                   (comp_s1_pc_2),
