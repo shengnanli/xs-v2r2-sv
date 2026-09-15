@@ -1,0 +1,13 @@
+--- /home/eda/xs-env/sim-fast/difftest/src/test/vsrc/vcs/top.v.orig	2026-09-14 21:43:20.323415626 -0400
++++ /home/eda/xs-env/sim-fast/difftest/src/test/vsrc/vcs/top.v	2026-09-14 21:43:20.397417110 -0400
+@@ -58,8 +58,8 @@
+   if ($test$plusargs("dump-wave")) begin
+     $value$plusargs("dump-wave=%s", wave_type);
+     if (wave_type == "vpd") begin
+-      $vcdplusfile("simv.vpd");
+-      $vcdpluson;
++      $display("[fastsim] this simv is built WITHOUT -debug_access; no VPD wave available.");
++      $fatal;
+     end
+ `ifdef CONSIDER_FSDB
+     else if (wave_type == "fsdb") begin

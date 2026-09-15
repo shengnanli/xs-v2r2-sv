@@ -1,0 +1,9 @@
+workload	side	trap	instrCnt	cycleCnt	IPC	workload_done_cycle	difftest_mismatch	assert_log_bytes	sim_cpu_seconds	cycles_per_sec	slow_simv_cpu_seconds	speedup
+coremark	golden	HIT GOOD TRAP at pc = 0x80001ca0	663,692	320,376	2.071603	320383	0	0	3354.850	95.5		
+coremark	impl	HIT GOOD TRAP at pc = 0x80001ca0	663,692	320,376	2.071603	320383	0	0	2558.440	125.2		
+dhrystone	golden	HIT GOOD TRAP at pc = 0x80000da4	429,370	147,946	2.902208	147953	0	0	1747.490	84.7		
+dhrystone	impl	HIT GOOD TRAP at pc = 0x80000da4	429,370	147,946	2.902208	147953	0	0	1261.450	117.3		
+flashrec	golden	HIT GOOD TRAP at pc = 0xe	289	4,642	0.062258	4649	0	0	12.190	380.8	20.820	1.71x
+flashrec	impl	HIT GOOD TRAP at pc = 0xe	289	4,642	0.062258	4649	0	0	8.470	548.1	21.000	2.48x
+coremark_100k	golden	EXCEEDED MAX CYCLE:               100000	100000	100000			0	0	1125.150	88.9	2272.750	2.02x
+coremark_100k	impl	EXCEEDED MAX CYCLE:               100000	100000	100000			0	0	857.410	116.6	2328.720	2.72x
