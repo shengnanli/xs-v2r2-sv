@@ -136,8 +136,15 @@ proc sidecar_pin_source {path} {
         # 命令集 = 全 repo pin 文件实测用到的 fm 动词(四审隔离曾漏 setup/set_dont_verify_points/
         # set_compare_rule/match/verify → 9+ 目标 INFRA)。proof-relaxing 的 dont_verify 由
         # emitter 的 report_dont_verify_points 采集入 qualifications, 不会静默放过。
+        # 只读查询动词(current_design/find_designs/find_cells): 让 pin 文件能对
+        # **本次 elaborate 出来的设计**做断言(两侧各恰 N 个、下标完整、无重复),
+        # 而不是照着记忆里的名字硬猜 —— 猜错时前者响亮失败, 后者静默少钉几个。
+        # 它们不改变任何证明语义(不建/不拆比较点、不放宽比较、不动 appvar),
+        # 严格弱于本表里已有的 set_constant/set_dont_verify_points。
+        # 首个消费者: verif/ut/Predictor/fm_pins_pre.tcl 的 GHV 双射。
         foreach c {set_user_match set_app_var get_app_var puts report_unmatched_points \
                    report_matched_points set_constant remove_constant \
+                   current_design find_designs find_cells \
                    setup set_dont_verify_points set_compare_rule match verify} {
             if {[info commands $c] ne ""} {
                 interp alias $::SIDECAR_PIN_INTERP $c {} $c

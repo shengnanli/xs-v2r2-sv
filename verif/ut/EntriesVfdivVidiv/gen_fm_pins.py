@@ -146,7 +146,9 @@ def emit(v, pins, skipped):
           f'  puts "EVV_PINS: $_n / {len(pins)} pinned, $_miss missed"',
           '  # 一条都不许钉不上：钉不上说明偏移表/实例名与本次 elaborate 的设计对不上,',
           '  # 那时继续跑出来的 SUCCEEDED 是假的。fail-closed。',
-          '  if {$_miss != 0} { error "EVV_PIN_MISS=$_miss" }',
+          # 期望数量也要校验：只查 miss==0 的话，生成器少输出一半 pair
+          # 同样是 miss=0，钉点静默缩水而证明照跑（钉点结构闸 P3）。
+          f'  if {{$_miss != 0 || $_n != {len(pins)}}} {{ error "EVV_PIN_MISS=$_miss n=$_n" }}',
           '}',
           '']
     if skipped:
