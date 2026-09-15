@@ -1,25 +1,32 @@
 // probe.sv —— 调试辅助（**不在验收流程里**，Makefile 默认不编它）。
 //
 // 逐拍比对 golden 侧 dut_g.predictors 与重写侧 dut_i.predictors 的**全部 533 个输入**
-// （76 个功能 + 457 根 MBIST），找最早发散的那一根。
+// （76 功能 + 457 MBIST），报第一根发散的线。
 //
-// 本轮用它拿到的两个结论：
+// 本轮靠它拿到的三个结论：
 //   1. 一把定位到 wrapper 漏接了 Composer 的 io_in_bits_ghist（整根悬空成 z）——
-//      elaborate 是 0 error 0 warning，只有这个探针能看见；
-//   2. 修完之后：**533 个输入在前 1053 拍全同，而 Composer 的输出 io_out_s3_pc_0
-//      在 n=1052 就发散了**（golden 有定义值，impl 侧带 X）。同一份 RTL、同样的输入
-//      却输出不同 ⇒ 两个 Composer 实例的内部初态不同。根因尚未定位，是接手者的起点。
+//      elaborate 是 0 error 0 warning，只有这个探针看得见；
+//   2. 修完后带 `!$isunknown(g)` 门限时：533 个输入前 1053 拍全同，而 Composer 输出
+//      io_out_s3_pc_0 在 n=1052 就发散 —— 看着像"同输入不同输出"的悖论；
+//   3. ★去掉 $isunknown 门限后真相大白★：真正的首次发散在 n=1047 的
+//      io_in_bits_s0_pc_0，两侧**都是 X**，只是 X 的位型不同：
+//          g=...XXXXX0XXXxxx   i=...XXXXX0XXXxXX
+//      即 UT 的 errors 主要是**启动期 X 悲观**，不是已证实的逻辑错。
+//      golden 被 firtool 折叠过(如 s2_ready/s3_ready 已折成常量)，X 传播范围比
+//      未折叠的可读核小；两侧 SRAM 在 +define+SYNTHESIS 下都不随机化、同为 X。
+//      ⇒ 判正确性要靠 FM（二值、不吃 X）；tb 若要转绿需先把设计喂出 X
+//        （暖机相 / 两侧对称初始化），而不是继续加 $isunknown 门限。
 //
 // 用法（两个坑）：
-//   1. probe 是独立 root，`-top tb` 不会 elaborate 它 —— 必须在 tb 里加一句
-//      `probe u_probe();`（拷一份 tb.sv 改成 tb_probe.sv 即可）；
+//   1. probe 是独立 root，`-top tb` 不会 elaborate 它 —— 必须在 tb 里加
+//      `probe u_probe();`（拷一份 tb.sv 成 tb_probe.sv 改即可）；
 //   2. 改了 TB_SRCS 未必触发重编，先 `rm -rf simv simv.daidir csrc`。
 //   make compile TB_SRCS="tb_probe.sv probe.sv" && ./simv +ncycles=1200 -l sim_probe.log
 module probe;
   longint n = 0;
   bit reported = 0;
   task automatic chk(string nm, logic [255:0] g, logic [255:0] i);
-    if (!reported && !$isunknown(g) && g !== i) begin
+    if (!reported && g !== i) begin
       $display("[PROBE %0t n=%0d] FIRST INPUT DIVERGE on %s  g=%h i=%h", $time, n, nm, g, i);
       reported = 1; end
   endtask
