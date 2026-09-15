@@ -28,6 +28,10 @@ golden `SimTop.sv` 用 **9897 条绝对层次引用**把各模块内部信号引
                     重写层次 —— 所以它是「换个地方观测」，不是「近似」。
   T2_CONE_PORT_CHILD 同上，但叶子里还有**子实例的端口**（firtool 把子模块输出记成
                     `_<inst>_<port>` 线网）。子实例端口同样是签核边界，同级证据。
+                    展锥时还认一条：golden 里 `assign io_x = w;` 就把内部线 `w`
+                    当成端口 `io_x`（例 WrBypass 的 `hit`/`io_hit`）。不认这条的话
+                    锥会一路展到 `ever_written_*` 这些内部寄存器，WrBypass 家族
+                    92 条 bore 会被误判成「判不准」。
   T3_REG_LEAF       组合锥展到了 golden 模块的**内部寄存器**。寄存器不是签核边界，
                     重写件的状态编码可以合法地不同 —— 机器**判不出**对应物。
   T4_OPEN           连 golden 侧的锥都没能闭合（本脚本的 firtool 方言解析没覆盖到的
