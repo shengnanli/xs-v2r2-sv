@@ -11,8 +11,8 @@
 #
 # 与 run_fullchip.sh 的唯一实质差别就是 SimTop：
 #   run_fullchip.sh : 9897 条 XMR 全部 -> `'0`（impl 侧 perf 计数器全灭）
-#   本脚本          : 按 docs/perf_bore_map.tsv 重绑 9653 条（97.5%），
-#                     其余 244 条仍接 `'0` 但**登记在 docs/perf_bore_unbound.tsv**，
+#   本脚本          : 按 docs/perf_bore_map.tsv 重绑 9733 条（98.3%），
+#                     其余 164 条仍接 `'0` 但**登记在 docs/perf_bore_unbound.tsv**，
 #                     perf 比对时按名字排除，不拿假零冒充「相等」。
 #
 # perf 打印怎么来的：LogPerfEndpoint 的 `io_logEnable = timer>=logCtrl_begin &&
