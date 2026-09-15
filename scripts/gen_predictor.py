@@ -11,6 +11,7 @@ boreChildrenBd_bore_*)，一根不改地穿到 Composer；Composer 那 827 根�
 生成两个区：
   ports          —— Predictor wrapper 的 633 端口表（与 golden 逐位同名/同宽/同序）
   glue_decls     —— wrapper 里接 Composer 用的中间线声明（宽度取自 Composer 端口表）
+  passthru       —— golden 里 `assign <顶层输出> = _predictors_io_out_*` 那 40 根直通
   composer_inst  —— Composer predictors 的 827 根连线
 
 用法: python3 scripts/gen_predictor.py [--check]
@@ -148,6 +149,18 @@ def gen_pred_pack():
     return rows[:-1]
 
 
+def gen_passthru(topports):
+    """golden 用一条 assign 把 Composer 的输出接到顶层输出的那些线。
+    （另有 63 根是直接写在实例连线里的，由 composer_inst 覆盖，不在这里。）"""
+    src = GOLDEN.read_text()
+    rows = []
+    for m in re.finditer(r"assign\s+([A-Za-z_]\w*)\s*=\s*_predictors_io_out_([A-Za-z_]\w*)\s*;", src):
+        if m.group(1) in topports:
+            rows.append((m.group(1), "comp_" + m.group(2)))
+    nw = max((len(a) for a, _ in rows), default=0)
+    return [f"  assign {a:<{nw}} = {b};" for a, b in sorted(rows)]
+
+
 def gen_ports(ports):
     dw = max(len(d) for d, _, _ in ports)
     ww = max(len(w) for _, w, _ in ports)
@@ -184,6 +197,7 @@ def main():
     blocks = {"ports": gen_ports(ports),
               "glue_decls": gen_glue_decls(conns, topports, cw),
               "pred_pack": gen_pred_pack(),
+              "passthru": gen_passthru(topports),
               "composer_inst": comp}
 
     if unresolved:

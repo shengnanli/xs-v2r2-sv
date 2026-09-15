@@ -27,17 +27,24 @@
 //   S0 要同时选出 5 样东西：pc、折叠历史 FGH、历史指针 GHPtr、最后分支位置 OH、
 //   以及折叠历史的"最老位" AFHOB。五者用**同一套优先级**从 5 个来源里选：
 //
-//     优先级(大者胜)  来源            触发条件
-//       5             s2_target       s2_redirect   S2 覆盖
-//       4             s1_target       s1_valid      S1 正常前进
-//       3             s3_target       s3_redirect   S3 覆盖
-//       2             redirect_target do_redirect   FTQ 送来的真实重定向(后端/IFU)
-//       0             stallPC         (兜底)        S0 停住时保持原值
+//     优先级(高→低)   来源            触发条件
+//       最高          redirect_target do_redirect   FTQ 送来的真实重定向(后端/IFU)
+//                     s3_target       s3_redirect   S3 覆盖
+//                     s2_target       s2_redirect   S2 覆盖
+//                     s1_target       s1_valid      S1 正常前进
+//       兜底          stallPC         (无人要求)    S0 停住时保持原值
 //
-//   注意 s3(3) 优先级低于 s1(4)/s2(5) —— 这不是笔误：s3 的结果**更老**(它对应更早
-//   发射的那个取指块)，新来的 s1/s2 结论才是针对更新的 pc，所以后者优先。
-//   golden 把这套选择器实例化成 PriorityMuxModule 家族(纯组合、0 寄存器)；
-//   本重写把它直接写成一条 `? :` 优先级链（见 SEL_ 节），语义完全一致。
+//   越"晚"越权威：真重定向是已经执行过的事实，压过一切推测；S3 比 S2 准，S2 比 S1 准。
+//
+//   ★读 golden 时的坑★：Chisel 侧 `gen.register(cond, data, name, prio)` 里那个 prio
+//   数字(stall=0/redirect=2/s3=3/s1=4/s2=5)**不是**优先级高低，它只决定生成的
+//   PriorityMuxModule 端口排列顺序；真正的优先级是**注册顺序、后注册者胜**
+//   (BPU.scala 依次注册 stall→s1→s2→s3→redirect)。golden 把它编码在 sel 表达式里
+//   而不是 mux 链里 —— 每一路 sel 都预先与所有更高优先级路取反相与，做成互斥 one-hot：
+//       s2_sel = s2_redirect & ~s3_redirect & ~do_redirect
+//       s1_sel = s1_valid    & ~s2_redirect & ~s3_redirect & ~do_redirect
+//   所以照 PriorityMuxModule 的端口顺序(s2,s1,s3,redirect)去理解优先级会**读反**。
+//   本重写直接写成按真实优先级排的 `? :` 链（见 SEL_ 节），语义等价且不会误读。
 //
 // 【★本次重写的核心：GHV 从 256 个散装寄存器收回成一个向量★】
 //   全局历史 GHV 是一个 256 位的**环形位缓冲**，s0_ghist_ptr 指向它的写入点。
@@ -495,12 +502,13 @@ module xs_Predictor_core
   endfunction
 
   for (genvar n = 0; n < HIST_LEN; n++) begin : g_ghv
-    // 优先级链：S2 > S1 > S3 > redirect（与 S0 选择器同序）
     assign ghv_wen[n]   = s1_ghv_wen[n] | s2_ghv_wen[n] | s3_ghv_wen[n] | rdr_ghv_wen[n];
-    assign ghv_wdata[n] = s2_ghv_wen[n] ? s2_ghv_wdata[n]
-                        : s1_ghv_wen[n] ? s1_ghv_wdata[n]
-                        : s3_ghv_wen[n] ? s3_ghv_wdata[n]
-                                        : rdr_ghv_wdata[n];  // 最低优先级 = 默认值
+    // 优先级 redirect > s3 > s2 > s1（与 S0 选择器同一套，见文件头的"坑"一节）
+    assign ghv_wdata[n] = rdr_ghv_wen[n] ? rdr_ghv_wdata[n]
+                        : s3_ghv_wen[n]  ? s3_ghv_wdata[n]
+                        : s2_ghv_wen[n]  ? s2_ghv_wdata[n]
+                        : s1_ghv_wen[n]  ? s1_ghv_wdata[n]
+                                         : rdr_ghv_wdata[n];  // 无人写时兜底(同 golden)
     always_ff @(posedge clock) begin
       if (reset)        ghv_q[n] <= 1'b0;
       else if (ghv_wen[n]) ghv_q[n] <= ghv_wdata[n];
@@ -840,15 +848,15 @@ module xs_Predictor_core
   // 优先级链，语义完全一致，而 256 个实例塌缩成 GHV_ 节里的 4 行。
   // ===========================================================================
   for (genvar d = 0; d < NUM_DUP; d++) begin : g_sel_pc
-    assign s0_pc_next[d]        = s2_redirect[d]    ? tgt_s2[d]
-                                : s1_valid_q        ? tgt_s1[d]
+    assign s0_pc_next[d]        = do_redirect_valid ? do_redirect_bits.target
                                 : s3_redirect[d]    ? tgt_s3[d]
-                                : do_redirect_valid ? do_redirect_bits.target
+                                : s2_redirect[d]    ? tgt_s2[d]
+                                : s1_valid_q        ? tgt_s1[d]
                                                     : s0_pc_reg[d];
-    assign s0_ghist_ptr_next[d] = s2_redirect[d]    ? s2_pred_ptr[d]
-                                : s1_valid_q        ? s1_pred_ptr[d]
+    assign s0_ghist_ptr_next[d] = do_redirect_valid ? rdr_updated_ptr
                                 : s3_redirect[d]    ? s3_pred_ptr[d]
-                                : do_redirect_valid ? rdr_updated_ptr
+                                : s2_redirect[d]    ? s2_pred_ptr[d]
+                                : s1_valid_q        ? s1_pred_ptr[d]
                                                     : s0_ghist_ptr_reg[d];
     assign s0_pc_sel[d]      = s0_pc_next[d];
     assign s0_ghist_ptr[d]   = s0_ghist_ptr_next[d];
@@ -856,20 +864,20 @@ module xs_Predictor_core
 
   for (genvar k = 0; k < 2; k++) begin : g_sel_fh
     localparam int unsigned D = FH_DUP[k];
-    assign s0_folded_gh_next[k] = s2_redirect[D]    ? s2_pred_fh[k]
-                                : s1_valid_q        ? s1_pred_fh[k]
+    assign s0_folded_gh_next[k] = do_redirect_valid ? rdr_updated_fh
                                 : s3_redirect[D]    ? s3_pred_fh[k]
-                                : do_redirect_valid ? rdr_updated_fh
+                                : s2_redirect[D]    ? s2_pred_fh[k]
+                                : s1_valid_q        ? s1_pred_fh[k]
                                                     : s0_folded_gh_reg[k];
-    assign s0_afhob_next[k]     = s2_redirect[D]    ? s2_ob_src[k]
-                                : s1_valid_q        ? s1_ob_src[k]
+    assign s0_afhob_next[k]     = do_redirect_valid ? rdr_ahead_ob
                                 : s3_redirect[D]    ? s3_ob_src[k]
-                                : do_redirect_valid ? rdr_ahead_ob
+                                : s2_redirect[D]    ? s2_ob_src[k]
+                                : s1_valid_q        ? s1_ob_src[k]
                                                     : s0_afhob_reg[k];
-    assign s0_brnum_next[k]     = s2_redirect[D]    ? s2_brpos[D]
-                                : s1_valid_q        ? s1_brpos[D]
+    assign s0_brnum_next[k]     = do_redirect_valid ? rdr_this_br_num_oh
                                 : s3_redirect[D]    ? s3_brpos[D]
-                                : do_redirect_valid ? rdr_this_br_num_oh
+                                : s2_redirect[D]    ? s2_brpos[D]
+                                : s1_valid_q        ? s1_brpos[D]
                                                     : s0_brnum_reg[k];
   end
 
@@ -2423,6 +2431,50 @@ module Predictor(
   assign io_perf_4_value = perf_out_w[4];
   assign io_perf_5_value = perf_out_w[5];
   assign io_perf_6_value = perf_out_w[6];
+
+  // ---- Composer 预测包直通顶层输出（golden 用 assign 接的那 40 根，脚本生成） ----
+  // BEGIN GENERATED(passthru)
+  assign io_bpu_to_ftq_resp_bits_s1_full_pred_3_br_taken_mask_0 = comp_s1_full_pred_3_br_taken_mask_0;
+  assign io_bpu_to_ftq_resp_bits_s1_full_pred_3_br_taken_mask_1 = comp_s1_full_pred_3_br_taken_mask_1;
+  assign io_bpu_to_ftq_resp_bits_s1_full_pred_3_fallThroughAddr = comp_s1_full_pred_3_fallThroughAddr;
+  assign io_bpu_to_ftq_resp_bits_s1_full_pred_3_fallThroughErr  = comp_s1_full_pred_3_fallThroughErr;
+  assign io_bpu_to_ftq_resp_bits_s1_full_pred_3_hit             = comp_s1_full_pred_3_hit;
+  assign io_bpu_to_ftq_resp_bits_s1_full_pred_3_is_br_sharing   = comp_s1_full_pred_3_is_br_sharing;
+  assign io_bpu_to_ftq_resp_bits_s1_full_pred_3_offsets_0       = comp_s1_full_pred_3_offsets_0;
+  assign io_bpu_to_ftq_resp_bits_s1_full_pred_3_offsets_1       = comp_s1_full_pred_3_offsets_1;
+  assign io_bpu_to_ftq_resp_bits_s1_full_pred_3_slot_valids_0   = comp_s1_full_pred_3_slot_valids_0;
+  assign io_bpu_to_ftq_resp_bits_s1_full_pred_3_slot_valids_1   = comp_s1_full_pred_3_slot_valids_1;
+  assign io_bpu_to_ftq_resp_bits_s1_full_pred_3_targets_0       = comp_s1_full_pred_3_targets_0;
+  assign io_bpu_to_ftq_resp_bits_s1_full_pred_3_targets_1       = comp_s1_full_pred_3_targets_1;
+  assign io_bpu_to_ftq_resp_bits_s1_pc_3                        = comp_s1_pc_3;
+  assign io_bpu_to_ftq_resp_bits_s2_full_pred_3_br_taken_mask_0 = comp_s2_full_pred_3_br_taken_mask_0;
+  assign io_bpu_to_ftq_resp_bits_s2_full_pred_3_br_taken_mask_1 = comp_s2_full_pred_3_br_taken_mask_1;
+  assign io_bpu_to_ftq_resp_bits_s2_full_pred_3_fallThroughAddr = comp_s2_full_pred_3_fallThroughAddr;
+  assign io_bpu_to_ftq_resp_bits_s2_full_pred_3_fallThroughErr  = comp_s2_full_pred_3_fallThroughErr;
+  assign io_bpu_to_ftq_resp_bits_s2_full_pred_3_hit             = comp_s2_full_pred_3_hit;
+  assign io_bpu_to_ftq_resp_bits_s2_full_pred_3_is_br_sharing   = comp_s2_full_pred_3_is_br_sharing;
+  assign io_bpu_to_ftq_resp_bits_s2_full_pred_3_offsets_0       = comp_s2_full_pred_3_offsets_0;
+  assign io_bpu_to_ftq_resp_bits_s2_full_pred_3_offsets_1       = comp_s2_full_pred_3_offsets_1;
+  assign io_bpu_to_ftq_resp_bits_s2_full_pred_3_slot_valids_0   = comp_s2_full_pred_3_slot_valids_0;
+  assign io_bpu_to_ftq_resp_bits_s2_full_pred_3_slot_valids_1   = comp_s2_full_pred_3_slot_valids_1;
+  assign io_bpu_to_ftq_resp_bits_s2_full_pred_3_targets_0       = comp_s2_full_pred_3_targets_0;
+  assign io_bpu_to_ftq_resp_bits_s2_full_pred_3_targets_1       = comp_s2_full_pred_3_targets_1;
+  assign io_bpu_to_ftq_resp_bits_s2_pc_3                        = comp_s2_pc_3;
+  assign io_bpu_to_ftq_resp_bits_s3_full_pred_3_br_taken_mask_0 = comp_s3_full_pred_3_br_taken_mask_0;
+  assign io_bpu_to_ftq_resp_bits_s3_full_pred_3_br_taken_mask_1 = comp_s3_full_pred_3_br_taken_mask_1;
+  assign io_bpu_to_ftq_resp_bits_s3_full_pred_3_fallThroughAddr = comp_s3_full_pred_3_fallThroughAddr;
+  assign io_bpu_to_ftq_resp_bits_s3_full_pred_3_fallThroughErr  = comp_s3_full_pred_3_fallThroughErr;
+  assign io_bpu_to_ftq_resp_bits_s3_full_pred_3_hit             = comp_s3_full_pred_3_hit;
+  assign io_bpu_to_ftq_resp_bits_s3_full_pred_3_is_br_sharing   = comp_s3_full_pred_3_is_br_sharing;
+  assign io_bpu_to_ftq_resp_bits_s3_full_pred_3_offsets_0       = comp_s3_full_pred_3_offsets_0;
+  assign io_bpu_to_ftq_resp_bits_s3_full_pred_3_offsets_1       = comp_s3_full_pred_3_offsets_1;
+  assign io_bpu_to_ftq_resp_bits_s3_full_pred_3_slot_valids_0   = comp_s3_full_pred_3_slot_valids_0;
+  assign io_bpu_to_ftq_resp_bits_s3_full_pred_3_slot_valids_1   = comp_s3_full_pred_3_slot_valids_1;
+  assign io_bpu_to_ftq_resp_bits_s3_full_pred_3_targets_0       = comp_s3_full_pred_3_targets_0;
+  assign io_bpu_to_ftq_resp_bits_s3_full_pred_3_targets_1       = comp_s3_full_pred_3_targets_1;
+  assign io_bpu_to_ftq_resp_bits_s3_pc_0                        = comp_s3_pc_0;
+  assign io_bpu_to_ftq_resp_bits_s3_pc_3                        = comp_s3_pc_3;
+  // END GENERATED(passthru)
 
   // ---- Composer：五个预测器 + 457 根 MBIST 直通（脚本生成） ---------------
   // BEGIN GENERATED(composer_inst)
