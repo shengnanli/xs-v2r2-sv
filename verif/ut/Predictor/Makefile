@@ -116,12 +116,19 @@ RTL_GOLDEN_DEPS = \
   $(GOLDEN_RTL)/sram_array_1p512x40m10s1h0l1b_bp_ftb.sv
 
 # FM_MERGE_DUP=false —— 本目标必须关掉「合并重复寄存器」。
-# 理由（本轮实测）：Predictor 的闭包里 Composer + 5 个预测器 + 全部 SRAM 都要两侧
-# elaborate，重复寄存器极多（12 个内容完全相同的 predCycle 自由计数器、256 位 ghv、
-# 四份取值相同的 dup 线）。开着 merge_dup 时 fm_shell 在
-#   "Merging duplicated registers in block ..." 阶段跑了 47 分钟日志都不再增长。
-# 且已有先例：MulUnit 与 EntriesVfdivVidiv 也因「golden 侧常数/重复位被合并后两侧
-# 点数对不齐」而必须 FM_MERGE_DUP=false（见 scripts/fm_eq.tcl 的证据注释）。
+#
+# A/B 实测（同一 commit、同一依赖表，只切这一个开关）：
+#   merge_dup=on : 1:06:55 仍卡在 "Merging duplicated registers"，而且卡的正是
+#                  i:/WORK/Predictor/u_core (/WORK/xs_Predictor_core) —— 本核本身；
+#   merge_dup=off: 18:46 已过两侧 set_top，进到 "Building verification models"。
+#
+# 成因清楚：本核有 12 个内容完全相同的 64 位 predCycle 自由计数器 + 256 位 ghv
+# 向量，结构同构且数量大，正是 merge_dup 的最坏输入。
+# 反证：verif/ut/Composer 用**同一份 90 文件闭包**、merge_dup 开着也能跑完并签核，
+# 所以与闭包大小无关，是本核的重复寄存器形态触发的。
+#
+# 先例：MulUnit 与 EntriesVfdivVidiv 也因「golden 侧常数/重复位被合并后两侧点数
+# 对不齐」而必须 FM_MERGE_DUP=false（见 scripts/fm_eq.tcl 的证据注释）。
 FM_MERGE_DUP = false
 
 FM_VARIANTS = Predictor
