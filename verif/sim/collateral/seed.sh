@@ -65,5 +65,6 @@ for side in "${SIDES[@]}"; do
   install_dir "$HERE/build"         "$SIMW/$side/build"
 done
 
-log "collateral 已就位：$SIMW/{regen,${SIDES[*]// /,}}/build"
+printf -v _sides '%s,' "${SIDES[@]}"   # ${SIDES[*]// /,} 不行：[*] 是逐元素替换再按空格拼
+log "collateral 已就位：$SIMW/{regen,${_sides%,}}/build"
 log "下一步: verif/sim/run_fullchip.sh build golden   # 不会再触发 29 分钟重生成"
