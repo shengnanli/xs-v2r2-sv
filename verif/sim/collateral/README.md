@@ -111,10 +111,32 @@ done
 
 ```sh
 git clone <repo> xs-v2-sv && cd xs-v2-sv
-verif/sim/collateral/seed.sh golden        # 摊开 collateral（秒级）
-verif/sim/run_fullchip.sh build golden     # VCS 编 simv（~25 分钟）
-verif/sim/run_fullchip.sh run   golden /path/to/workload.bin 20000
+SIMW=<空目录> verif/sim/collateral/seed.sh golden   # 摊开 collateral（秒级）
+SIMW=<同一目录> verif/sim/run_fullchip.sh build golden
+SIMW=<同一目录> verif/sim/run_fullchip.sh run golden <workload.bin> 200000
 ```
+
+**实测跑通一次（2026-09-14，本泳道，全程从 `git clone` 起算）**：
+
+| 步 | 结果 |
+|---|---|
+| `seed.sh golden` | 秒级；**没有触发**那次 29 分钟的重生成（`$SIMW/regen/gen.log` 不存在＝`check_dpic` 早退生效） |
+| `build golden` | 21:47:28 → 22:02:28，**约 15 分钟**，`Error-` 0 条，产出 `simv` 1 975 424 B |
+| `run golden bubble-sort` | `HIT GOOD TRAP at pc = 0x800001d8`，`instrCnt = 3,173, cycleCnt = 7,973`，difftest 全程无失配 |
+
+★ 交叉验证：`cycleCnt = 7,973` 与 `verif/sim/cputest_results.tsv` 第 5 行记的
+`bubble-sort 3,173, 7,973` **逐位相同** —— 说明这份进库的 collateral 复现出的是
+当初那次 golden 的行为，不是「能编过就算」。
+
+另外核对过：这一趟**没有写 `$XS_HOME/build/` 一个字节**（`constantin.cpp` 仍是 13:05、
+`generated-src/difftest-dpic.cpp` 仍是 Sep 9 22:01），且 `$SIMW/<side>/build` 下那 13 个
+文件与库里逐字节相同（13/13）。
+
+⚠ 前提（与本目录无关，记在这里免得下一个人卡住）：`run_fullchip.sh` 在
+`bash 4.4 + set -u` 下有 `local side=$1 dd=$SIMW/$side` 的 unbound-variable bug，
+`setup/build/run` 三处，**照原样一条都跑不起来**。上面这趟是打了那个补丁跑的。
+该 bug 已由 fastsim 泳道在 `agent/fastsim@e39f5e5` 修掉（拆成两条 `local`），
+本目录不重复修。
 
 `seed.sh` **不改 `run_fullchip.sh` 一个字节**，它利用那边已有的两处「已存在就跳过」：
 
@@ -142,8 +164,16 @@ verif/sim/run_fullchip.sh run   golden /path/to/workload.bin 20000
 - **C canonical 绑定**：清单头 `# g1-canonical-id:` 必须等于 `G1-canonical/CANONICAL_ID.txt`。
   换 golden 基线而忘了重出 collateral，当场红。
 
-负测（`--selftest`，种病必须被抓）7 例全 PASS，其中一例种的就是**真实病因形态**：
-把 dpic 换成 `--fpga-platform` 那份（少 12 个函数）。
+负测（`--selftest`，种病必须被抓）：1 个干净样本要求不误报 + **6 个病例**要求逐个被抓，
+实测 7 项全 PASS。6 个病例是：换成 `--fpga-platform` 那份 dpic（少 12 个函数）／
+文件被手工改过／塞进清单外的文件／删掉清单内的文件／golden 换基线而 collateral 没跟着重出／
+**对照物缺失时必须 fail-closed**（找不到 golden `GatewayEndpoint.sv` 不算通过）。
+
+负测用的是合成样本，所以另外拿**真东西**验过一次：把
+`$XS_HOME/build/generated-src`（真的那份 FPGA 产物）当成 collateral 喂给闸，
+判据 A 报 6 条 `HASH_MISMATCH`、判据 B 报
+`DPI_SET_MISMATCH  collateral 提供 21 个 v_difftest_*，golden … 例化 27 种`
+并逐个列出缺的那 12 个名字。闸抓得住的是真病，不只是自己造的病。
 
 换基线后重出：`python3 scripts/check_sim_collateral.py --write-manifest`。
 
@@ -169,7 +199,8 @@ RTL 的 `interfaceF.*.o` 不能动，否则整芯片要重编 ~55 分钟）。
 
 codex：「do not retain the mismatched FPGA DPI objects」。
 
-- 本 collateral **不含**它，闸判据 B 也保证它永远进不来（负测钉死）。
+- 本 collateral **不含**它，闸判据 B 也保证它永远进不来 —— 拿真的那份喂进闸实测当场红
+  （21 vs 27，逐个列出缺的 12 个名字），见第 5 节。
 - `sim-work/golden/build/generated-src.STALE-FPGA-PROFILE/`：上一位 sim worker 已改名隔离，
   现无人引用。可删，但它在并行 worker 的工作区里，本泳道没动。
 - `XiangShan/build/generated-src/`（Sep 9 那份，21 个函数）：**仍在原处**。
