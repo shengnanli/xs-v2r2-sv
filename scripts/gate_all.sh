@@ -26,6 +26,9 @@ run "位置依赖闸"       python3 scripts/test_no_location_dependency.py
 # 台账行序闸：我写了这条测试却没接进来（2026-09-14 由 bkperf worker 撞上才发现——
 # 它追加台账行后 L1 从 181/181 掉到 178/181，而当时没有任何闸会响）。
 run "台账行序闸"       python3 scripts/test_ledger_append_only.py
+# 覆盖率台账幂等（codex 0161）：三个口径必须能从 golden 与 rtl/ 现场重算。
+# 它存在的理由是"253/253"曾被读成"重写完成"，而实测按行数只有 7.4%。
+run "覆盖率台账幂等"   python3 scripts/rewrite_coverage.py --check
 # FM Tcl 毒字符串闸：fm_shell 把入口 Tcl **逐行回显**进 fm.log（注释也不例外），
 # 而 fm_verdict.py 的 _ELAB147/_DONTVERIFY 是在整份日志上做正则 —— 于是在注释里
 # 完整写出这些串会让**每个目标**的判定中毒。agent/err3 实测撞到过：写全之后

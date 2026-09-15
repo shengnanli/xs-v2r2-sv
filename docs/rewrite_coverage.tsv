@@ -1,0 +1,50 @@
+# 重写覆盖率台账（codex 0161）。复算: python3 scripts/rewrite_coverage.py
+# ★三个口径必须分开报，不得互相冒充★：
+#   fm_targets      跑了证明的目标数（含同一设计的 N 个变体）
+#   unique_design   golden 模块名去掉尾部 _<数字> 后的不同基名数
+#   golden_lines    每个 golden 模块定义所在文件的行数之和
+# codex 0161: "Variant FM receipts remain useful but must not inflate
+#              rewrite coverage."
+#
+# 排除项（显式列出，不悄悄扣）：
+#   vendor_macro      139 个   厂商存储宏/行为级RAM：两侧同源黑盒，不是重写对象
+#   mbist_dft          30 个   MBIST/DFT 扫描链基础设施
+#   observation_sink    1 个   9903 端口全 input 的纯观测 sink，19 万行全是端口表
+#
+metric	done	total	percent
+fm_targets_configured	252	273	92.3
+unique_design	105	1191	8.8
+golden_lines	288800	3902283	7.4
+#
+# 剩余最大的 30 个（按 golden 行数）—— 下一波排期的候选
+remaining_design	golden_lines	variants	scope
+Rob	266227	1	REWRITE_L
+LoadQueueReplay	138860	1	REWRITE_L
+NewDispatch	100983	1	REWRITE_L
+TLFIFOFixer	89271	1	-
+TLBFA	88538	4	REWRITE_L
+Backend	79590	1	REWRITE_L
+StoreQueue	77145	1	REWRITE_L
+EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	69994	1	REWRITE_L
+TLToAXI4	68788	2	-
+EntriesAluMulBkuBrhJmp	64348	1	REWRITE_L
+EntriesAluCsrFenceDiv	62428	1	REWRITE_L
+LoadQueueUncache	59051	1	REWRITE_L
+CtrlBlock	57635	1	REWRITE_L
+MemBlock	57550	1	REWRITE_L
+PtwCache	45308	1	REWRITE_L
+DecodeUnitComp	45149	1	-
+Slice	45020	5	REWRITE_L
+Predictor	44908	1	REWRITE_L
+EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	41795	1	REWRITE_L
+NCBTransactionQueue	41240	2	-
+RenameBuffer	40993	1	REWRITE_L
+EntriesVlduVstuVseglduVsegstu	40287	1	REWRITE_L
+OthersEntry	40173	24	-
+EntriesVlduVstu	39935	1	REWRITE_L
+EntriesVfmaVialuFixVfalu	38682	1	REWRITE_L
+EntriesFaluFcvtF2vFmacFdiv	36359	1	REWRITE_L
+NCB200	36161	2	-
+SSIT	35104	1	-
+EntriesFaluFmacFdiv	34614	1	REWRITE_L
+BloomFilter	34563	1	-
