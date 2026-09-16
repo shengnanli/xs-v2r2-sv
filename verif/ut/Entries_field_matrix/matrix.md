@@ -157,3 +157,24 @@ canary `EntriesAluCsrFenceDiv` 在 INT 族。两者在矩阵里几乎没有重�
 这两条等价关系由 `gen_matrix.py --check` 直接断言 —— 哪天新变体破了它，
 闸会先红，而不是等 FM 去发现核里那两处 `generate` 条件写错了。
 
+## 用法示例：canary（EntriesAluCsrFenceDiv）据这张矩阵收窄了什么
+
+「收窄」一律是**给共享核传参数**，不是在核里删代码 —— 这样别的变体传别的参数即可，
+不会被本变体的裁剪连累。逐条对应矩阵的列：
+
+| 收窄 | 依据的列 | canary 取值 | 家族里的取值范围 |
+|---|---|---|---|
+| 源寄存器数 | `nSrcStatus` | 2 | 1 / 2 / 3 / 5 |
+| WB 唤醒路数 | `nWkWB` | 4 | 4 / 6 / 10 / 16 |
+| 条目里只存本变体保留的 FuType 位 | `fuTypeBits` | 4 位（5,6,8,9），不是 35 位 | 1~8 位 |
+| comp 条目只存发射口可见的负载 | `nDeqStatusPorts` + 条目端口 | 586 位（转移包 1362 位） | 逐变体不同 |
+| og0Cancel 只接 4 根稀疏全局下标 | `og0CancelIdx` | {0,2,4,6} | Falu* 只有 {8}；VEC 族一根都没有 |
+| 7 路 IQ 唤醒里 5 路的 `is0Lat` 折成常量 | `wkIQ_is0LatIdx` | 只有 {0,1} 是真信号 | Ldu 族 0..6 全是真信号 |
+| 不生成 og2Resp 那一档 | `nOg2Resp` | 0 | VEC 族是 1 或 2 |
+| 不生成 ignoreOldVd 整条通路 | `vlFromInt`/`vlFromVf` | 0 | VEC 族 5 个变体有 |
+| 不生成 vecMem / status.blocked | `vecMem_*`/`status_blocked` | 0 | 只有 VlduVstu 两个变体有 |
+| `og1Cancel` 一行逻辑都不写 | `og1CancelIdx` | 空 | **14/14 全空**（Chisel 里有，firtool 全删） |
+
+反过来，**查过矩阵之后没敢收窄**的两条，就是前面那两处从 VfdivVidiv 外推出来的错结论
+（comp 的 deqPortIdx 寄存器、comp 入口的 srcLoadDependency）—— 它们在 canary 里都必须**留着**。
+

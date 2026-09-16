@@ -1,13 +1,16 @@
-# EntriesVfdivVidiv FM 匹配前钉点 —— golden 逐字段寄存器 <-> 可读核扁平负载向量
+# EntriesVfdivVidiv FM 匹配前钉点 —— golden 逐字段寄存器 <-> 可读核的扁平负载向量与数组寄存器
 # ============================================================================
-# ★自动生成：verif/ut/EntriesVfdivVidiv/gen_fm_pins.py —— 勿手改★
-# 事实来源：gen.py 的字段偏移表 pl_off（生成 EntriesVfdivVidiv.sv 用的同一张表）
+# ★自动生成：verif/ut/EntriesVfdivVidiv/gen_fm_pins.py
+#   （共享库 verif/ut/Entries_common/gen_fm_pins.py）—— 勿手改★
+# 事实来源：entries_gen.py 的字段偏移表 pl_off（生成 EntriesVfdivVidiv.sv 用的同一张表）
 #          + 逐个 golden 条目模块解析出来的 `reg ... entryReg_*;` 声明。
 #
 # 钉的是三族对应（只消名差，不 dont_verify、不黑盒、不约束 ref）：
 #   entryReg_payload_<field>_reg[b]                     <-> r_payload_reg[off+b]
 #   entryReg_status_deqPortIdx_reg / _blocked_reg       <-> r_deq_port_idx_reg / r_blocked_reg
 #   entryReg_status_srcStatus_<s>_srcLoadDependency_<q>_reg[b] <-> r_ld_dep_reg[s][q][b]
+#   entryReg_status_srcStatus_<s>_{exuSources_value,useRegCache,regCacheIdx}
+#                                                       <-> r_{exu_src,use_rc,rc_idx}_reg[s][..]
 #
 # 放在**首次 match 之前**（fm_pins_pre.tcl）而不是之后：Formality 只在计数非零时
 # 才打印 "N(M) Unmatched ... unread points"，fm_verdict.py 取日志里最后一次出现的
@@ -18,7 +21,7 @@
 #   simp 2..3  <- othersEntriesSimp_* (OthersEntry_164, KEEP_WIDE, 负载 1330 位)
 #   comp 4..9  <- othersEntriesComp_* (OthersEntry_166, 仅 deq 子集 741 位)
 #
-# 本文件钉 9898 对。golden 侧不存在（被 firtool DCE）因而跳过的寄存器共 98 个，逐条列在文件尾，不产生钉点。
+# 本文件钉 9898 对。golden 侧不存在（被 firtool DCE）因而跳过的寄存器共 248 个，逐条列在文件尾，不产生钉点。
 # ============================================================================
 
 if {$top eq "EntriesVfdivVidiv"} {
@@ -9927,113 +9930,263 @@ if {$top eq "EntriesVfdivVidiv"} {
     lassign $_pair _r _i
     if {[catch {set_user_match "r:/WORK/$top/$_r" "i:/WORK/$top/u_core/$_i"} _msg]} {
       incr _miss
-      if {$_miss <= 10} { puts "EVV_PIN_FAIL: $_r <-> $_i ($_msg)" }
+      if {$_miss <= 10} { puts "IQE_PIN_FAIL: $_r <-> $_i ($_msg)" }
     } else {
       incr _n
     }
   }
-  puts "EVV_PINS: $_n / 9898 pinned, $_miss missed"
+  puts "IQE_PINS: $_n / 9898 pinned, $_miss missed"
   # 一条都不许钉不上：钉不上说明偏移表/实例名与本次 elaborate 的设计对不上,
   # 那时继续跑出来的 SUCCEEDED 是假的。fail-closed。
-  if {$_miss != 0} { error "EVV_PIN_MISS=$_miss" }
+  if {$_miss != 0} { error "IQE_PIN_MISS=$_miss" }
 }
 
 # --- golden 侧不存在、因而未钉的寄存器（firtool 在该条目类型里 DCE 掉了）---
 #   enqEntries_0: entryReg_status_blocked
+#   enqEntries_0: entryReg_status_srcStatus_0_exuSources_value
+#   enqEntries_0: entryReg_status_srcStatus_0_useRegCache
+#   enqEntries_0: entryReg_status_srcStatus_0_regCacheIdx
+#   enqEntries_0: entryReg_status_srcStatus_1_exuSources_value
+#   enqEntries_0: entryReg_status_srcStatus_1_useRegCache
+#   enqEntries_0: entryReg_status_srcStatus_1_regCacheIdx
+#   enqEntries_0: entryReg_status_srcStatus_2_exuSources_value
+#   enqEntries_0: entryReg_status_srcStatus_2_useRegCache
+#   enqEntries_0: entryReg_status_srcStatus_2_regCacheIdx
+#   enqEntries_0: entryReg_status_srcStatus_3_exuSources_value
+#   enqEntries_0: entryReg_status_srcStatus_3_useRegCache
+#   enqEntries_0: entryReg_status_srcStatus_3_regCacheIdx
+#   enqEntries_0: entryReg_status_srcStatus_4_exuSources_value
+#   enqEntries_0: entryReg_status_srcStatus_4_useRegCache
+#   enqEntries_0: entryReg_status_srcStatus_4_regCacheIdx
 #   enqEntries_1: entryReg_status_blocked
+#   enqEntries_1: entryReg_status_srcStatus_0_exuSources_value
+#   enqEntries_1: entryReg_status_srcStatus_0_useRegCache
+#   enqEntries_1: entryReg_status_srcStatus_0_regCacheIdx
+#   enqEntries_1: entryReg_status_srcStatus_1_exuSources_value
+#   enqEntries_1: entryReg_status_srcStatus_1_useRegCache
+#   enqEntries_1: entryReg_status_srcStatus_1_regCacheIdx
+#   enqEntries_1: entryReg_status_srcStatus_2_exuSources_value
+#   enqEntries_1: entryReg_status_srcStatus_2_useRegCache
+#   enqEntries_1: entryReg_status_srcStatus_2_regCacheIdx
+#   enqEntries_1: entryReg_status_srcStatus_3_exuSources_value
+#   enqEntries_1: entryReg_status_srcStatus_3_useRegCache
+#   enqEntries_1: entryReg_status_srcStatus_3_regCacheIdx
+#   enqEntries_1: entryReg_status_srcStatus_4_exuSources_value
+#   enqEntries_1: entryReg_status_srcStatus_4_useRegCache
+#   enqEntries_1: entryReg_status_srcStatus_4_regCacheIdx
+#   othersEntriesSimp_0: entryReg_status_srcStatus_0_exuSources_value
+#   othersEntriesSimp_0: entryReg_status_srcStatus_0_useRegCache
+#   othersEntriesSimp_0: entryReg_status_srcStatus_0_regCacheIdx
+#   othersEntriesSimp_0: entryReg_status_srcStatus_1_exuSources_value
+#   othersEntriesSimp_0: entryReg_status_srcStatus_1_useRegCache
+#   othersEntriesSimp_0: entryReg_status_srcStatus_1_regCacheIdx
+#   othersEntriesSimp_0: entryReg_status_srcStatus_2_exuSources_value
+#   othersEntriesSimp_0: entryReg_status_srcStatus_2_useRegCache
+#   othersEntriesSimp_0: entryReg_status_srcStatus_2_regCacheIdx
+#   othersEntriesSimp_0: entryReg_status_srcStatus_3_exuSources_value
+#   othersEntriesSimp_0: entryReg_status_srcStatus_3_useRegCache
+#   othersEntriesSimp_0: entryReg_status_srcStatus_3_regCacheIdx
+#   othersEntriesSimp_0: entryReg_status_srcStatus_4_exuSources_value
+#   othersEntriesSimp_0: entryReg_status_srcStatus_4_useRegCache
+#   othersEntriesSimp_0: entryReg_status_srcStatus_4_regCacheIdx
+#   othersEntriesSimp_1: entryReg_status_srcStatus_0_exuSources_value
+#   othersEntriesSimp_1: entryReg_status_srcStatus_0_useRegCache
+#   othersEntriesSimp_1: entryReg_status_srcStatus_0_regCacheIdx
+#   othersEntriesSimp_1: entryReg_status_srcStatus_1_exuSources_value
+#   othersEntriesSimp_1: entryReg_status_srcStatus_1_useRegCache
+#   othersEntriesSimp_1: entryReg_status_srcStatus_1_regCacheIdx
+#   othersEntriesSimp_1: entryReg_status_srcStatus_2_exuSources_value
+#   othersEntriesSimp_1: entryReg_status_srcStatus_2_useRegCache
+#   othersEntriesSimp_1: entryReg_status_srcStatus_2_regCacheIdx
+#   othersEntriesSimp_1: entryReg_status_srcStatus_3_exuSources_value
+#   othersEntriesSimp_1: entryReg_status_srcStatus_3_useRegCache
+#   othersEntriesSimp_1: entryReg_status_srcStatus_3_regCacheIdx
+#   othersEntriesSimp_1: entryReg_status_srcStatus_4_exuSources_value
+#   othersEntriesSimp_1: entryReg_status_srcStatus_4_useRegCache
+#   othersEntriesSimp_1: entryReg_status_srcStatus_4_regCacheIdx
 #   othersEntriesComp_0: entryReg_status_deqPortIdx
 #   othersEntriesComp_0: entryReg_status_srcStatus_0_srcLoadDependency_0
 #   othersEntriesComp_0: entryReg_status_srcStatus_0_srcLoadDependency_1
 #   othersEntriesComp_0: entryReg_status_srcStatus_0_srcLoadDependency_2
+#   othersEntriesComp_0: entryReg_status_srcStatus_0_exuSources_value
+#   othersEntriesComp_0: entryReg_status_srcStatus_0_useRegCache
+#   othersEntriesComp_0: entryReg_status_srcStatus_0_regCacheIdx
 #   othersEntriesComp_0: entryReg_status_srcStatus_1_srcLoadDependency_0
 #   othersEntriesComp_0: entryReg_status_srcStatus_1_srcLoadDependency_1
 #   othersEntriesComp_0: entryReg_status_srcStatus_1_srcLoadDependency_2
+#   othersEntriesComp_0: entryReg_status_srcStatus_1_exuSources_value
+#   othersEntriesComp_0: entryReg_status_srcStatus_1_useRegCache
+#   othersEntriesComp_0: entryReg_status_srcStatus_1_regCacheIdx
 #   othersEntriesComp_0: entryReg_status_srcStatus_2_srcLoadDependency_0
 #   othersEntriesComp_0: entryReg_status_srcStatus_2_srcLoadDependency_1
 #   othersEntriesComp_0: entryReg_status_srcStatus_2_srcLoadDependency_2
+#   othersEntriesComp_0: entryReg_status_srcStatus_2_exuSources_value
+#   othersEntriesComp_0: entryReg_status_srcStatus_2_useRegCache
+#   othersEntriesComp_0: entryReg_status_srcStatus_2_regCacheIdx
 #   othersEntriesComp_0: entryReg_status_srcStatus_3_srcLoadDependency_0
 #   othersEntriesComp_0: entryReg_status_srcStatus_3_srcLoadDependency_1
 #   othersEntriesComp_0: entryReg_status_srcStatus_3_srcLoadDependency_2
+#   othersEntriesComp_0: entryReg_status_srcStatus_3_exuSources_value
+#   othersEntriesComp_0: entryReg_status_srcStatus_3_useRegCache
+#   othersEntriesComp_0: entryReg_status_srcStatus_3_regCacheIdx
 #   othersEntriesComp_0: entryReg_status_srcStatus_4_srcLoadDependency_0
 #   othersEntriesComp_0: entryReg_status_srcStatus_4_srcLoadDependency_1
 #   othersEntriesComp_0: entryReg_status_srcStatus_4_srcLoadDependency_2
+#   othersEntriesComp_0: entryReg_status_srcStatus_4_exuSources_value
+#   othersEntriesComp_0: entryReg_status_srcStatus_4_useRegCache
+#   othersEntriesComp_0: entryReg_status_srcStatus_4_regCacheIdx
 #   othersEntriesComp_1: entryReg_status_deqPortIdx
 #   othersEntriesComp_1: entryReg_status_srcStatus_0_srcLoadDependency_0
 #   othersEntriesComp_1: entryReg_status_srcStatus_0_srcLoadDependency_1
 #   othersEntriesComp_1: entryReg_status_srcStatus_0_srcLoadDependency_2
+#   othersEntriesComp_1: entryReg_status_srcStatus_0_exuSources_value
+#   othersEntriesComp_1: entryReg_status_srcStatus_0_useRegCache
+#   othersEntriesComp_1: entryReg_status_srcStatus_0_regCacheIdx
 #   othersEntriesComp_1: entryReg_status_srcStatus_1_srcLoadDependency_0
 #   othersEntriesComp_1: entryReg_status_srcStatus_1_srcLoadDependency_1
 #   othersEntriesComp_1: entryReg_status_srcStatus_1_srcLoadDependency_2
+#   othersEntriesComp_1: entryReg_status_srcStatus_1_exuSources_value
+#   othersEntriesComp_1: entryReg_status_srcStatus_1_useRegCache
+#   othersEntriesComp_1: entryReg_status_srcStatus_1_regCacheIdx
 #   othersEntriesComp_1: entryReg_status_srcStatus_2_srcLoadDependency_0
 #   othersEntriesComp_1: entryReg_status_srcStatus_2_srcLoadDependency_1
 #   othersEntriesComp_1: entryReg_status_srcStatus_2_srcLoadDependency_2
+#   othersEntriesComp_1: entryReg_status_srcStatus_2_exuSources_value
+#   othersEntriesComp_1: entryReg_status_srcStatus_2_useRegCache
+#   othersEntriesComp_1: entryReg_status_srcStatus_2_regCacheIdx
 #   othersEntriesComp_1: entryReg_status_srcStatus_3_srcLoadDependency_0
 #   othersEntriesComp_1: entryReg_status_srcStatus_3_srcLoadDependency_1
 #   othersEntriesComp_1: entryReg_status_srcStatus_3_srcLoadDependency_2
+#   othersEntriesComp_1: entryReg_status_srcStatus_3_exuSources_value
+#   othersEntriesComp_1: entryReg_status_srcStatus_3_useRegCache
+#   othersEntriesComp_1: entryReg_status_srcStatus_3_regCacheIdx
 #   othersEntriesComp_1: entryReg_status_srcStatus_4_srcLoadDependency_0
 #   othersEntriesComp_1: entryReg_status_srcStatus_4_srcLoadDependency_1
 #   othersEntriesComp_1: entryReg_status_srcStatus_4_srcLoadDependency_2
+#   othersEntriesComp_1: entryReg_status_srcStatus_4_exuSources_value
+#   othersEntriesComp_1: entryReg_status_srcStatus_4_useRegCache
+#   othersEntriesComp_1: entryReg_status_srcStatus_4_regCacheIdx
 #   othersEntriesComp_2: entryReg_status_deqPortIdx
 #   othersEntriesComp_2: entryReg_status_srcStatus_0_srcLoadDependency_0
 #   othersEntriesComp_2: entryReg_status_srcStatus_0_srcLoadDependency_1
 #   othersEntriesComp_2: entryReg_status_srcStatus_0_srcLoadDependency_2
+#   othersEntriesComp_2: entryReg_status_srcStatus_0_exuSources_value
+#   othersEntriesComp_2: entryReg_status_srcStatus_0_useRegCache
+#   othersEntriesComp_2: entryReg_status_srcStatus_0_regCacheIdx
 #   othersEntriesComp_2: entryReg_status_srcStatus_1_srcLoadDependency_0
 #   othersEntriesComp_2: entryReg_status_srcStatus_1_srcLoadDependency_1
 #   othersEntriesComp_2: entryReg_status_srcStatus_1_srcLoadDependency_2
+#   othersEntriesComp_2: entryReg_status_srcStatus_1_exuSources_value
+#   othersEntriesComp_2: entryReg_status_srcStatus_1_useRegCache
+#   othersEntriesComp_2: entryReg_status_srcStatus_1_regCacheIdx
 #   othersEntriesComp_2: entryReg_status_srcStatus_2_srcLoadDependency_0
 #   othersEntriesComp_2: entryReg_status_srcStatus_2_srcLoadDependency_1
 #   othersEntriesComp_2: entryReg_status_srcStatus_2_srcLoadDependency_2
+#   othersEntriesComp_2: entryReg_status_srcStatus_2_exuSources_value
+#   othersEntriesComp_2: entryReg_status_srcStatus_2_useRegCache
+#   othersEntriesComp_2: entryReg_status_srcStatus_2_regCacheIdx
 #   othersEntriesComp_2: entryReg_status_srcStatus_3_srcLoadDependency_0
 #   othersEntriesComp_2: entryReg_status_srcStatus_3_srcLoadDependency_1
 #   othersEntriesComp_2: entryReg_status_srcStatus_3_srcLoadDependency_2
+#   othersEntriesComp_2: entryReg_status_srcStatus_3_exuSources_value
+#   othersEntriesComp_2: entryReg_status_srcStatus_3_useRegCache
+#   othersEntriesComp_2: entryReg_status_srcStatus_3_regCacheIdx
 #   othersEntriesComp_2: entryReg_status_srcStatus_4_srcLoadDependency_0
 #   othersEntriesComp_2: entryReg_status_srcStatus_4_srcLoadDependency_1
 #   othersEntriesComp_2: entryReg_status_srcStatus_4_srcLoadDependency_2
+#   othersEntriesComp_2: entryReg_status_srcStatus_4_exuSources_value
+#   othersEntriesComp_2: entryReg_status_srcStatus_4_useRegCache
+#   othersEntriesComp_2: entryReg_status_srcStatus_4_regCacheIdx
 #   othersEntriesComp_3: entryReg_status_deqPortIdx
 #   othersEntriesComp_3: entryReg_status_srcStatus_0_srcLoadDependency_0
 #   othersEntriesComp_3: entryReg_status_srcStatus_0_srcLoadDependency_1
 #   othersEntriesComp_3: entryReg_status_srcStatus_0_srcLoadDependency_2
+#   othersEntriesComp_3: entryReg_status_srcStatus_0_exuSources_value
+#   othersEntriesComp_3: entryReg_status_srcStatus_0_useRegCache
+#   othersEntriesComp_3: entryReg_status_srcStatus_0_regCacheIdx
 #   othersEntriesComp_3: entryReg_status_srcStatus_1_srcLoadDependency_0
 #   othersEntriesComp_3: entryReg_status_srcStatus_1_srcLoadDependency_1
 #   othersEntriesComp_3: entryReg_status_srcStatus_1_srcLoadDependency_2
+#   othersEntriesComp_3: entryReg_status_srcStatus_1_exuSources_value
+#   othersEntriesComp_3: entryReg_status_srcStatus_1_useRegCache
+#   othersEntriesComp_3: entryReg_status_srcStatus_1_regCacheIdx
 #   othersEntriesComp_3: entryReg_status_srcStatus_2_srcLoadDependency_0
 #   othersEntriesComp_3: entryReg_status_srcStatus_2_srcLoadDependency_1
 #   othersEntriesComp_3: entryReg_status_srcStatus_2_srcLoadDependency_2
+#   othersEntriesComp_3: entryReg_status_srcStatus_2_exuSources_value
+#   othersEntriesComp_3: entryReg_status_srcStatus_2_useRegCache
+#   othersEntriesComp_3: entryReg_status_srcStatus_2_regCacheIdx
 #   othersEntriesComp_3: entryReg_status_srcStatus_3_srcLoadDependency_0
 #   othersEntriesComp_3: entryReg_status_srcStatus_3_srcLoadDependency_1
 #   othersEntriesComp_3: entryReg_status_srcStatus_3_srcLoadDependency_2
+#   othersEntriesComp_3: entryReg_status_srcStatus_3_exuSources_value
+#   othersEntriesComp_3: entryReg_status_srcStatus_3_useRegCache
+#   othersEntriesComp_3: entryReg_status_srcStatus_3_regCacheIdx
 #   othersEntriesComp_3: entryReg_status_srcStatus_4_srcLoadDependency_0
 #   othersEntriesComp_3: entryReg_status_srcStatus_4_srcLoadDependency_1
 #   othersEntriesComp_3: entryReg_status_srcStatus_4_srcLoadDependency_2
+#   othersEntriesComp_3: entryReg_status_srcStatus_4_exuSources_value
+#   othersEntriesComp_3: entryReg_status_srcStatus_4_useRegCache
+#   othersEntriesComp_3: entryReg_status_srcStatus_4_regCacheIdx
 #   othersEntriesComp_4: entryReg_status_deqPortIdx
 #   othersEntriesComp_4: entryReg_status_srcStatus_0_srcLoadDependency_0
 #   othersEntriesComp_4: entryReg_status_srcStatus_0_srcLoadDependency_1
 #   othersEntriesComp_4: entryReg_status_srcStatus_0_srcLoadDependency_2
+#   othersEntriesComp_4: entryReg_status_srcStatus_0_exuSources_value
+#   othersEntriesComp_4: entryReg_status_srcStatus_0_useRegCache
+#   othersEntriesComp_4: entryReg_status_srcStatus_0_regCacheIdx
 #   othersEntriesComp_4: entryReg_status_srcStatus_1_srcLoadDependency_0
 #   othersEntriesComp_4: entryReg_status_srcStatus_1_srcLoadDependency_1
 #   othersEntriesComp_4: entryReg_status_srcStatus_1_srcLoadDependency_2
+#   othersEntriesComp_4: entryReg_status_srcStatus_1_exuSources_value
+#   othersEntriesComp_4: entryReg_status_srcStatus_1_useRegCache
+#   othersEntriesComp_4: entryReg_status_srcStatus_1_regCacheIdx
 #   othersEntriesComp_4: entryReg_status_srcStatus_2_srcLoadDependency_0
 #   othersEntriesComp_4: entryReg_status_srcStatus_2_srcLoadDependency_1
 #   othersEntriesComp_4: entryReg_status_srcStatus_2_srcLoadDependency_2
+#   othersEntriesComp_4: entryReg_status_srcStatus_2_exuSources_value
+#   othersEntriesComp_4: entryReg_status_srcStatus_2_useRegCache
+#   othersEntriesComp_4: entryReg_status_srcStatus_2_regCacheIdx
 #   othersEntriesComp_4: entryReg_status_srcStatus_3_srcLoadDependency_0
 #   othersEntriesComp_4: entryReg_status_srcStatus_3_srcLoadDependency_1
 #   othersEntriesComp_4: entryReg_status_srcStatus_3_srcLoadDependency_2
+#   othersEntriesComp_4: entryReg_status_srcStatus_3_exuSources_value
+#   othersEntriesComp_4: entryReg_status_srcStatus_3_useRegCache
+#   othersEntriesComp_4: entryReg_status_srcStatus_3_regCacheIdx
 #   othersEntriesComp_4: entryReg_status_srcStatus_4_srcLoadDependency_0
 #   othersEntriesComp_4: entryReg_status_srcStatus_4_srcLoadDependency_1
 #   othersEntriesComp_4: entryReg_status_srcStatus_4_srcLoadDependency_2
+#   othersEntriesComp_4: entryReg_status_srcStatus_4_exuSources_value
+#   othersEntriesComp_4: entryReg_status_srcStatus_4_useRegCache
+#   othersEntriesComp_4: entryReg_status_srcStatus_4_regCacheIdx
 #   othersEntriesComp_5: entryReg_status_deqPortIdx
 #   othersEntriesComp_5: entryReg_status_srcStatus_0_srcLoadDependency_0
 #   othersEntriesComp_5: entryReg_status_srcStatus_0_srcLoadDependency_1
 #   othersEntriesComp_5: entryReg_status_srcStatus_0_srcLoadDependency_2
+#   othersEntriesComp_5: entryReg_status_srcStatus_0_exuSources_value
+#   othersEntriesComp_5: entryReg_status_srcStatus_0_useRegCache
+#   othersEntriesComp_5: entryReg_status_srcStatus_0_regCacheIdx
 #   othersEntriesComp_5: entryReg_status_srcStatus_1_srcLoadDependency_0
 #   othersEntriesComp_5: entryReg_status_srcStatus_1_srcLoadDependency_1
 #   othersEntriesComp_5: entryReg_status_srcStatus_1_srcLoadDependency_2
+#   othersEntriesComp_5: entryReg_status_srcStatus_1_exuSources_value
+#   othersEntriesComp_5: entryReg_status_srcStatus_1_useRegCache
+#   othersEntriesComp_5: entryReg_status_srcStatus_1_regCacheIdx
 #   othersEntriesComp_5: entryReg_status_srcStatus_2_srcLoadDependency_0
 #   othersEntriesComp_5: entryReg_status_srcStatus_2_srcLoadDependency_1
 #   othersEntriesComp_5: entryReg_status_srcStatus_2_srcLoadDependency_2
+#   othersEntriesComp_5: entryReg_status_srcStatus_2_exuSources_value
+#   othersEntriesComp_5: entryReg_status_srcStatus_2_useRegCache
+#   othersEntriesComp_5: entryReg_status_srcStatus_2_regCacheIdx
 #   othersEntriesComp_5: entryReg_status_srcStatus_3_srcLoadDependency_0
 #   othersEntriesComp_5: entryReg_status_srcStatus_3_srcLoadDependency_1
 #   othersEntriesComp_5: entryReg_status_srcStatus_3_srcLoadDependency_2
+#   othersEntriesComp_5: entryReg_status_srcStatus_3_exuSources_value
+#   othersEntriesComp_5: entryReg_status_srcStatus_3_useRegCache
+#   othersEntriesComp_5: entryReg_status_srcStatus_3_regCacheIdx
 #   othersEntriesComp_5: entryReg_status_srcStatus_4_srcLoadDependency_0
 #   othersEntriesComp_5: entryReg_status_srcStatus_4_srcLoadDependency_1
 #   othersEntriesComp_5: entryReg_status_srcStatus_4_srcLoadDependency_2
+#   othersEntriesComp_5: entryReg_status_srcStatus_4_exuSources_value
+#   othersEntriesComp_5: entryReg_status_srcStatus_4_useRegCache
+#   othersEntriesComp_5: entryReg_status_srcStatus_4_regCacheIdx

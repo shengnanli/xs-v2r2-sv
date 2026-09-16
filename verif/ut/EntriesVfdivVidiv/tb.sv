@@ -47,11 +47,21 @@ module tb;
   longint checks = 0;
   always #5 clock = ~clock;
 
-  int cov_enq_fire = 0, cov_wb_wake = 0, cov_can_issue = 0, cov_deq_fire = 0;
-  int cov_deq_clear = 0, cov_first_issue = 0;
-  int cov_resp_succ = 0, cov_resp_block = 0, cov_resp_uncertain = 0;
-  int cov_trans2simp = 0, cov_trans2comp = 0, cov_simp2comp = 0;
-  int cov_ignore_old_vd = 0, cov_full = 0, cov_flush = 0;
+  int cov_enq_fire = 0;
+  int cov_wb_wake = 0;
+  int cov_can_issue = 0;
+  int cov_deq_fire = 0;
+  int cov_deq_clear = 0;
+  int cov_first_issue = 0;
+  int cov_resp_succ = 0;
+  int cov_resp_block = 0;
+  int cov_resp_uncertain = 0;
+  int cov_trans2simp = 0;
+  int cov_trans2comp = 0;
+  int cov_simp2comp = 0;
+  int cov_full = 0;
+  int cov_flush = 0;
+  int cov_ignore_old_vd = 0;
   int cov_fail = 0;
   bit [9:0] ever_valid = '0;   // 哪些条目被写过（裸读输出只在写过后才可比）
   bit warm = 0;              // 全部条目都写过 -> 进入比对
@@ -2768,25 +2778,28 @@ module tb;
   end
 
   // ---- 发射/年龄选择：在输入落定之后、时钟沿之前用阻塞赋值算 ----
+  //   纯随机 one-hot 命中 canIssue 的概率 ~0，所以必须从 golden 当拍已落定的
+  //   canIssue 里挑；多发射口时两个口要挑**不同**的条目，否则第二个口永远空转。
   task automatic drive_deq();
-    logic [9:0] ci;
+    logic [9:0] ci, taken;
     int pick, cnt;
-    ci  = g_io_canIssue;
-    cnt = $countones(ci);
+    ci    = g_io_canIssue;
+    taken = 10'h0;
     io_deqSelOH_0_valid = 1'b0;
     io_deqSelOH_0_bits  = 10'h0;
+    cnt = $countones(ci & ~taken);
     if (cnt > 0 && $urandom_range(0, 99) < 80) begin
       pick = $urandom_range(0, cnt-1);
       for (int k = 0; k < 10; k++)
-        if (ci[k]) begin
-          if (pick == 0) begin io_deqSelOH_0_valid = 1'b1; io_deqSelOH_0_bits = 10'(1) << k; end
+        if (ci[k] && !taken[k]) begin
+          if (pick == 0) begin io_deqSelOH_0_valid = 1'b1; io_deqSelOH_0_bits = 10'(1) << k; taken[k] = 1'b1; end
           pick--;
         end
     end
-    io_deqReady_0          = ($urandom_range(0, 99) < 90);
-    io_og0Resp_0_valid     = ($urandom_range(0, 99) < 15);
-    io_og1Resp_0_valid     = ($urandom_range(0, 99) < 15);
-    io_og2Resp_0_valid     = ($urandom_range(0, 99) < 70);
+    io_deqReady_0 = ($urandom_range(0, 99) < 90);
+    io_og0Resp_0_valid = ($urandom_range(0, 99) < 15);
+    io_og1Resp_0_valid = ($urandom_range(0, 99) < 15);
+    io_og2Resp_0_valid = ($urandom_range(0, 99) < 70);
     io_og2Resp_0_bits_resp = ($urandom_range(0,99) < 65) ? 2'b11 : (($urandom_range(0,1)) ? 2'b00 : 2'b01);
     io_enqEntryOldestSel_0_bits   = 2'(1) << $urandom_range(0, 1);
     io_simpEntryOldestSel_0_valid = |g_io_valid[3:2];
@@ -2802,11 +2815,11 @@ module tb;
   task automatic sample_cov();
     if (|{io_enq_0_valid, io_enq_1_valid}) cov_enq_fire++;
     if (|g_io_canIssue) cov_can_issue++;
-    if (io_deqSelOH_0_valid && io_deqReady_0 && (g_io_canIssue & io_deqSelOH_0_bits)) cov_deq_fire++;
-    if (g_io_isFirstIssue_0) cov_first_issue++;
-    if (io_og2Resp_0_valid && io_og2Resp_0_bits_resp == 2'b11) cov_resp_succ++;
-    if (io_og2Resp_0_valid && io_og2Resp_0_bits_resp == 2'b00) cov_resp_block++;
-    if (io_og2Resp_0_valid && io_og2Resp_0_bits_resp == 2'b01) cov_resp_uncertain++;
+    if ((io_deqSelOH_0_valid && io_deqReady_0 && (g_io_canIssue & io_deqSelOH_0_bits))) cov_deq_fire++;
+    if (|{g_io_isFirstIssue_0}) cov_first_issue++;
+    if ((io_og2Resp_0_valid && io_og2Resp_0_bits_resp == 2'b11)) cov_resp_succ++;
+    if ((io_og2Resp_0_valid && io_og2Resp_0_bits_resp == 2'b00)) cov_resp_block++;
+    if ((io_og2Resp_0_valid && io_og2Resp_0_bits_resp == 2'b01)) cov_resp_uncertain++;
     if (|{g_io_simpEntryEnqSelVec_0, g_io_simpEntryEnqSelVec_1}) cov_trans2simp++;
     if (|{g_io_compEntryEnqSelVec_0, g_io_compEntryEnqSelVec_1}) cov_trans2comp++;
     if (&g_io_valid) cov_full++;
@@ -3358,9 +3371,9 @@ module tb;
     covchk("trans2simp", cov_trans2simp);
     covchk("trans2comp", cov_trans2comp);
     covchk("simp2comp", cov_simp2comp);
-    covchk("ignore_old_vd", cov_ignore_old_vd);
     covchk("full", cov_full);
     covchk("flush", cov_flush);
+    covchk("ignore_old_vd", cov_ignore_old_vd);
     if (errors != 0) begin $display("TEST FAILED"); $fatal(1); end
     if (cov_fail != 0) begin $display("TEST FAILED (覆盖不足)"); $fatal(1); end
     if (checks < 1000 || cyc - warm_cycle < NCYCLES/2) begin
