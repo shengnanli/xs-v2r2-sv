@@ -296,6 +296,33 @@ switch -- $_mergedup {
   }
 }
 
+# ----------------------------------------------------------------------------
+# FM_FAILING_LIMIT —— 失败点上限，**只用于诊断跑**
+#
+# Formality 的 verification_failing_point_limit 默认是 20：撞到第 20 个失败点就
+# 停止验证。后果是 `failing: 20` **几乎总是截断值**，而且它一停，剩下的点全部
+# 计入 `Unverified` —— Predictor 那次终局跑就是 failing=20 / unverified=411955，
+# 两个数其实是同一件事的两面。本仓早先把 failing=20 当成真实数量报过，是错的；
+# 真实数量只能用 limit=0（不限）重跑才拿得到（实测过 262/129/36 这种量级）。
+#
+# ★为什么放开它不是放宽证明★：把上限调高**只会报出更多失败点**，不可能把
+# 不等价变成等价，方向与"放宽"相反。它是**增加信息**，不是降低判据。
+#
+# ★但它仍然只许用于诊断★：limit=0 会让 verify 跑满全部点，代价是墙钟成倍；
+# 且签核的权威判据是 `Unverified compare points` 是否为 0，不是 failing 这个数。
+# 所以用它跑出来的 log **不要**拿去出 receipt，走 --mode diagnostic-full。
+# 未设置时保持 FM 默认（不写 appvar），以免悄悄改变既有 253 个目标的证明语义。
+# ----------------------------------------------------------------------------
+if {[info exists env(FM_FAILING_LIMIT)] && [string trim $env(FM_FAILING_LIMIT)] ne ""} {
+    set _flim [string trim $env(FM_FAILING_LIMIT)]
+    if {![string is integer -strict $_flim] || $_flim < 0} {
+        puts "FM_MODE_ERROR: FM_FAILING_LIMIT 非法值 $_flim（要非负整数，0=不限）"
+        exit 3
+    }
+    set_app_var verification_failing_point_limit $_flim
+    puts "FM_DIAG: verification_failing_point_limit = $_flim（诊断跑，勿用于签核）"
+}
+
 # Reference: Chisel 生成的 golden RTL（SYNTHESIS 关掉随机初始化 initial 块）
 read_sverilog -r -define {SYNTHESIS} $ref_srcs
 # ★ fail-closed：set_top 失败必须立刻终止 ★
