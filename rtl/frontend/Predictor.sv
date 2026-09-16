@@ -507,9 +507,30 @@ module xs_Predictor_core
     assign s3_fire[d] = s3_fire_w;
   end
 
-  // S0 停住：没有任何一个源要求换 pc 时，s0_pc 保持不动
-  logic s0_stall;
-  assign s0_stall = ~(s1_valid_q | s2_redirect[0] | s3_redirect[0] | do_redirect_valid);
+  // S0 停住：没有任何一个源要求换 pc 时，s0_pc 保持不动。
+  //
+  // ★这里必须是四份，不能共用一份★（2026-09-16，FM 抓到的第 9 个静默 bug）
+  //   golden 有四个独立的 s0_stall（Predictor.sv:2828-2839）：
+  //     _s0_stall_dup_d_T_2 = s1_valid_dup_3 | s2_redirect_dup_d | s3_redirect_dup_d
+  //                           | do_redirect_dup_next_valid_last_REG
+  //   注意它的形状是**部分共用、部分分份**：`s1_valid` 四份共用 dup_3、
+  //   `do_redirect` 四份共用，只有 s2/s3_redirect 是 per-dup。这种混合形状最容易
+  //   写错 —— 本文件先前就写成一份、且写死取 dup0。
+  //
+  //   后果：golden 里每份 dup 的 S0 保持寄存器用**自己那份**使能
+  //   （Predictor.sv:25562-25569 四条 if 各用各的），而各 dup 的 s2/s3_redirect
+  //   取值可以不同，于是 dup1/2/3 的 s0_pc / s0_folded_gh / s0_afhob /
+  //   s0_ghist_ptr / s0_brnum 会在那些拍跟错。
+  //
+  //   ★为什么 UT 抓不到★：elaborate 干净、portlint 干净、UT errors=0、
+  //   34 个覆盖点全非零，它照样藏着。FM 一跑，504 个失配点里 376 个 DFF 全部
+  //   落在这五组 S0 寄存器上 —— 它们彼此无关，唯一共同点就是这个使能。
+  //   同一形状的第一次是 to_ftq_s2_valid 误用 s2_flush[0]（golden 是 dup_3）。
+  logic s0_stall [0:NUM_DUP-1];
+  for (genvar d = 0; d < NUM_DUP; d++) begin : g_s0_stall
+    assign s0_stall[d] = ~(s1_valid_q | s2_redirect[d] | s3_redirect[d]
+                           | do_redirect_valid);
+  end
 
   // ===========================================================================
   // GHV_ —— ★全局历史向量：一个 256 位环形位缓冲★
@@ -946,7 +967,7 @@ module xs_Predictor_core
   always_ff @(posedge clock) begin
     for (int d = 0; d < NUM_DUP; d++) begin
       if (modified_reset) s0_pc_reg[d] <= vaddr_t'(io_reset_vector);
-      else if (~s0_stall) s0_pc_reg[d] <= s0_pc_next[d];
+      else if (~s0_stall[d]) s0_pc_reg[d] <= s0_pc_next[d];
     end
   end
 
@@ -968,13 +989,16 @@ module xs_Predictor_core
       end
     end else begin
       for (int d = 0; d < NUM_DUP; d++) begin
-        if (~s0_stall)  s0_ghist_ptr_reg[d] <= s0_ghist_ptr_next[d];
+        if (~s0_stall[d])  s0_ghist_ptr_reg[d] <= s0_ghist_ptr_next[d];
         if (s0_fire_w)  s1_ghist_ptr[d]     <= s0_ghist_ptr_next[d];
         if (s1_fire_w)  s2_ghist_ptr[d]     <= s1_ghist_ptr[d];
         if (s2_fire_w)  s3_ghist_ptr[d]     <= s2_ghist_ptr[d];
       end
       for (int k = 0; k < 2; k++) begin
-        if (~s0_stall) begin
+        // 这三组只活 dup1/dup3（FH_DUP），所以使能取**它自己那份** dup 的 s0_stall：
+        // golden 里 s0_folded_gh_reg_dup_1 由 _s0_stall_dup_1_T_2 门控（:24132）、
+        // dup_3 由 _s0_stall_dup_3_T_2 门控（:24217）。取 dup0 是错的。
+        if (~s0_stall[FH_DUP[k]]) begin
           s0_folded_gh_reg[k] <= s0_folded_gh_next[k];
           s0_afhob_reg[k]     <= s0_afhob_next[k];
           s0_brnum_reg[k]     <= s0_brnum_next[k];
