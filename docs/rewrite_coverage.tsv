@@ -3,6 +3,15 @@
 #   fm_targets      跑了证明的目标数（含同一设计的 N 个变体）
 #   unique_design   golden 模块名去掉尾部 _<数字> 后的不同基名数
 #   golden_lines    每个 golden 模块定义所在文件的行数之和
+#
+# ★written vs proven（2026-09-16 加）★
+#   written  模块名出现在 rtl/ —— **不说明它写完了**，骨架同样算 written
+#   proven   written 且有绿判决证据（fm_round 的 SUCCEEDED/PASS_DEAD_REF
+#            或 fastlane_ledger 的 WORKING_PASS[_DEAD_REF]）
+#   ★头条数字看 proven★。起因：一个 3,149 行、只实现约两成逻辑的
+#   LoadQueueReplay 骨架放进 rtl/，旧口径下覆盖率从 7.4% 跳到 11.0%，
+#   凭空记账 138,860 行 golden。判据改成按证据记，骨架自然记 0，
+#   不依赖任何人记得去声明"这是骨架"。
 # codex 0161: "Variant FM receipts remain useful but must not inflate
 #              rewrite coverage."
 #
@@ -13,8 +22,19 @@
 #
 metric	done	total	percent
 fm_targets_configured	252	273	92.3
-unique_design	105	1191	8.8
-golden_lines	288800	3902283	7.4
+unique_design_written	105	1191	8.8
+unique_design_proven	98	1191	8.2
+golden_lines_written	288800	3902283	7.4
+golden_lines_proven	280573	3902283	7.2
+#
+# written 里没有绿判决证据的设计族（差额都在这儿，逐个列出不藏）：
+#   Arbiter1_InsUncacheResp                           100 行
+#   ICache                                           1754 行
+#   ICacheCtrlUnit                                    335 行
+#   InstrMMIOEntry                                    201 行
+#   OpenLLC                                          4252 行
+#   StorePipe                                          93 行
+#   VSetRvfWvf                                        209 行
 #
 # 剩余最大的 30 个（按 golden 行数）—— 下一波排期的候选
 remaining_design	golden_lines	variants	scope
