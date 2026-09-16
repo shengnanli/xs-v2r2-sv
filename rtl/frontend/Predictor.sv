@@ -74,28 +74,28 @@
 //   L218   xs_Predictor_core —— 可读核
 //   L288   PRED_ —— 从 full_pred 派生的预测属性
 //   L415   PIPE_ —— S1/S2/S3 覆盖式流水握手
-//   L515   GHV_ —— ★全局历史向量：一个 256 位环形位缓冲★
+//   L536   GHV_ —— ★全局历史向量：一个 256 位环形位缓冲★
 //   L520   怎么用】ghist_ptr 指向"最新一位的下一格"
 //   L526   谁写】四个源，同一套优先级
-//   L563   AFHOB_ —— 折叠历史的"最老位"预读
-//   L589   FH_ —— 折叠历史的增量更新
-//   L658   GHVWR_ —— 把"某一级要往 GHV 写什么"算成 256 位的 wen/wdata
-//   L683   STAGE_ —— S1/S2/S3 的历史状态流水
-//   L781   OVR_ —— 级间覆盖判定
-//   L824   RDR_ —— FTQ 真重定向：锁存一拍，然后把历史整体回滚重算
-//   L897   SEL_ —— S0 五选一
-//   L939   流水寄存器本体
-//   L944   s0_pc_reg 是全模块唯一**不带复位**的流水寄存器
-//   L1045  GHV 写：四个源各自算 wen/wdata
-//   L1062  GHIST_ —— 送 Composer 的"推测历史"
+//   L584   AFHOB_ —— 折叠历史的"最老位"预读
+//   L610   FH_ —— 折叠历史的增量更新
+//   L679   GHVWR_ —— 把"某一级要往 GHV 写什么"算成 256 位的 wen/wdata
+//   L704   STAGE_ —— S1/S2/S3 的历史状态流水
+//   L802   OVR_ —— 级间覆盖判定
+//   L845   RDR_ —— FTQ 真重定向：锁存一拍，然后把历史整体回滚重算
+//   L918   SEL_ —— S0 五选一
+//   L960   流水寄存器本体
+//   L965   s0_pc_reg 是全模块唯一**不带复位**的流水寄存器
+//   L1069  GHV 写：四个源各自算 wen/wdata
+//   L1086  GHIST_ —— 送 Composer 的"推测历史"
 //   L1090  送 FTQ 的控制输出
-//   L1120  TOPDOWN_ —— 取指气泡归因
-//   L1192  上电复位状态
-//   L1201  predCycle —— 打在预测包上的时间戳
-//   L1237  SEGPC_ —— update pc 的分段打拍
-//   L1257  PERF_ —— Composer 的 7 路性能计数各打 2 拍再送出
+//   L1144  TOPDOWN_ —— 取指气泡归因
+//   L1216  上电复位状态
+//   L1225  predCycle —— 打在预测包上的时间戳
+//   L1261  SEGPC_ —— update pc 的分段打拍
+//   L1281  PERF_ —— Composer 的 7 路性能计数各打 2 拍再送出
 //   L1259  golden 这 14 个寄存器**不带复位**
-//   L1272  Predictor —— golden 同名 wrapper
+//   L1296  Predictor —— golden 同名 wrapper
 //
 
 package predictor_pkg;
