@@ -217,7 +217,7 @@ VCS += +define+SYNTHESIS
 #       Information: Current design is no longer set (FM-072)
 #   —— 它把 Formality 的当前设计置空了。而冒烟脚本只数钉点、不看 FM 自己报的错，
 #   于是照样打印 SMOKE_OK。判别力缺口就在这里：**工具报的错不进判据，等于没报。**
-#   所以这里同时要求三件事：256/256、SMOKE_OK、且 FM 自报错误行数为 0。
+#   所以这里同时要求三件事：2497/2497、SMOKE_OK、且 FM 自报错误行数为 0。
 # ---------------------------------------------------------------------------
 .PHONY: fm-pins-smoke
 fm-pins-smoke:
@@ -229,8 +229,8 @@ fm-pins-smoke:
 	@grep -E '^PREDICTOR_PINS|^SMOKE_OK|^SMOKE_FAIL' fm_work/pins_smoke.log || true
 	@n=$$(grep -cE '^Error:|^Information: Current design' fm_work/pins_smoke.log); \
 	 ok=$$(grep -c '^SMOKE_OK' fm_work/pins_smoke.log); \
-	 pin=$$(grep -c '^PREDICTOR_PINS: 256 / 256 pinned, 0 missed' fm_work/pins_smoke.log); \
-	 echo "fm-pins-smoke: SMOKE_OK=$$ok  256/256=$$pin  FM自报错误行=$$n"; \
+	 pin=$$(grep -c '^PREDICTOR_PINS: 2497 / 2497 pinned, 0 missed' fm_work/pins_smoke.log); \
+	 echo "fm-pins-smoke: SMOKE_OK=$$ok  2497/2497=$$pin  FM自报错误行=$$n"; \
 	 if [ "$$ok" != 1 ] || [ "$$pin" != 1 ] || [ "$$n" != 0 ]; then \
 	   echo "fm-pins-smoke: FAIL"; exit 1; fi; \
 	 echo "fm-pins-smoke: PASS"
