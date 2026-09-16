@@ -1,14 +1,23 @@
 # Predictor FM 匹配前钉点 —— GHV（256 位全局分支历史）的结构双射
 # ============================================================================
-# 【为什么本目标需要钉点：这是一条实测结论，不是预防性优化】
-#   Predictor 的 FM 匹配阶段**不终止**（docs/predictor_fm_scaling_wall.md）。
-#   实测速率：头 59 分钟靠名字批量配上 52 万点（146.5 点/秒），随后两段各掉约两个
-#   数量级 —— 0.950 点/秒，再到 **0.021 点/秒**（31 分钟只配上 38 个点）。按末段
-#   外推，剩余 53.5 万点要约 302 天。内存 42 GB 稳定、CPU ~98%，既不是内存也不是
-#   死锁：是匹配算法本身在这个规模上不收敛。
+# 【为什么本目标需要钉点】
+#   ★本段原先写的是「匹配不终止、外推 302 天」—— 那是错的，2026-09-15 已撤回。★
+#   成因：把 Formality 的匹配进度条（`NNNM/NNN (49% Matched)`）当成了线性进度。
+#   它的分母约是配对数的两倍（ref+impl 两侧对象合计），**按构造到不了 100%**，
+#   配完时正好停在 49% 附近。我们据此把两次跑提前杀了。
+#   详见 docs/predictor_fm_scaling_wall.md（已整篇重写）与 scripts/fm_verdict.py 的文档。
 #
-#   全工程 14 个目标有 fm_pins_pre.tcl，**规模最大的 Predictor 恰恰一个都没有**。
-#   剩下那 53.5 万点没有任何名字线索，FM 只能逐个试结构签名。
+#   实测的真实情况（带本文件的钉点那次跑）：匹配**收敛**，约 2.6 小时配完，
+#     256    Compare points matched by user            ← 就是本文件钉的
+#     517783 Compare points matched by name
+#     2461   Compare points matched by signature analysis
+#     134(6) Unmatched reference(implementation) compare points
+#     1113(1826) Unmatched reference(implementation) unread points
+#   随后进入 Status: Verifying...
+#
+#   所以钉点要解决的是那 **134+6 个未配比较点**与 **1113/1826 个未配 unread 点**，
+#   与本工程其它目标同一量级（Composer 当年也要处理 6,323 个 unread 才转绿）。
+#   本文件的 GHV 256 点是第一批，不是全部。
 #
 # 【钉的是什么】
 #   GHV = 全局分支历史向量，256 位环形寄存器（HIST_LEN）。
@@ -53,33 +62,60 @@
 if {$top eq "Predictor"} {
   set _expect 256
 
-  # --- 0) 查询动词可用性：缺任何一个都不许退化成硬编码 -----------------------
-  foreach _c {current_design find_cells find_designs} {
-    if {[info commands $_c] eq ""} {
-      error "PREDICTOR_PIN: 只读查询动词 '$_c' 不可用 —— 无法 discover，拒绝硬猜名字"
-    }
+  # --- 0) 查询动词可用性：缺它就不许退化成硬编码 -----------------------------
+  #
+  # ★只用 find_cells 一个动词★（2026-09-15 实测后收窄）。
+  # 原先还用了 current_design 与 find_designs。实测（90 秒探针）表明：
+  #   find_cells 直接吃**全路径 pattern**，根本不需要先切 current_design
+  #     find_cells {r:/WORK/Predictor/ghv_*_reg}          -> 256
+  #     find_cells {i:/WORK/xs_Predictor_core/ghv_q_reg*} -> 256
+  #     find_cells {i:/WORK/Predictor/*}                  -> 21 个顶层实例
+  #   全程 current_design 保持进入时的 '0'（未设置），一次都没碰。
+  # 用不着的权限就不该要：白名单里去掉 current_design 与 find_designs 之后，
+  # codex 0163 给 current_design 附的那四条纪律也就不适用了 —— 没有上下文可改，
+  # 就不会留下上下文副作用。
+  #
+  # ★为什么必须收窄★：current_design 的失败模式与 set_top 一模一样 ——
+  # 名字非法时**不抛异常**，只打 `Error: Unknown name (FM-036)` 并把当前设计置空。
+  # 我照 codex 四条纪律写的第一版就踩了：进入态其实是"未设置"('0')，
+  # 我却拿 current_design "0" 去"恢复"，等于用一条报错凑出不变量，
+  # 还往证明日志里塞了一条 Error。本工程为 set_top 写过 set_top_or_die，
+  # 现在确认这是这套工具的**通用形状**，不是个例。
+  if {[info commands find_cells] eq ""} {
+    error "PREDICTOR_PIN: 只读查询动词 'find_cells' 不可用 —— 无法 discover，拒绝硬猜名字"
   }
 
-  # --- 1) discover 可读核的设计名与实例路径 ---------------------------------
-  set _cores [find_designs "i:/WORK/xs_*_core"]
-  if {[llength $_cores] != 1} {
-    error "PREDICTOR_PIN: 期望恰 1 个 xs_*_core 设计，实得 [llength $_cores]: $_cores"
-  }
-  set _core [lindex $_cores 0]
 
-  current_design "i:/WORK/$top"
-  set _insts [find_cells -of_objectID $_core -type design]
+  # --- 1) discover：两侧的点怎么枚举、钉点用哪条路径 -------------------------
+  #
+  # ★find_cells 的作用域语义（2026-09-15 三轮探针实测，别再猜）★
+  #   F  find_cells {i:/WORK/Predictor/*}                  -> 21 个**顶层实例**
+  #      （C0..C15 / Logic0_ / Logic1 / ctrl_delay / predictors / u_core）
+  #   H  find_cells {i:/WORK/xs_*_core/ghv_q_reg[*]}       -> 256（**设计**作用域）
+  #   G  find_cells {i:/WORK/Predictor/*/ghv_q_reg[*]}     -> 0（pattern **不跨层次**）
+  #   J  find_cells {i:/WORK/Predictor/u_core/ghv_q_reg[*]}-> 0（实例路径下**枚举不到**寄存器）
+  #   结论：find_cells 只在**一个设计自己的作用域内**列 cell。所以
+  #     · 枚举位   用**设计**路径（H）
+  #     · 钉点     必须用**实例**路径（i:/WORK/Predictor/<inst>/ghv_q_reg[n]）
+  #   两者都要，且没有一个白名单动词能把"设计"映射到"实例"。
+  #
+  # 于是实例名用本仓的既有约定 `u_core`（单文件规范：`module xs_<M>_core` 由同名
+  # wrapper 以固定实例名 u_core 例化）。★但约定只是起点，不是判据★：
+  #   · 这里断言该实例**恰好存在 1 个**；
+  #   · 真正的判据是下面第 4 步"256 个必须全部钉上，少一个就 error" ——
+  #     约定一旦变了，set_user_match 会整片失败并响亮退出，不会静默少钉。
+  set _insts [find_cells "i:/WORK/$top/u_core"]
   if {[llength $_insts] != 1} {
-    error "PREDICTOR_PIN: 期望 $_core 在 i:/WORK/$top 下恰 1 个实例，实得 [llength $_insts]: $_insts"
+    error "PREDICTOR_PIN: 期望 i:/WORK/$top/u_core 恰 1 个实例，实得 [llength $_insts]: $_insts"
   }
   set _inst [lindex $_insts 0]
 
   # --- 2) discover 两侧的 GHV 点，逐个提取下标 ------------------------------
   # 提取器：给定 design 前缀与叶名正则，返回 "下标 -> 全路径" 数组（下标重复即报错）。
-  proc _ghv_scan {prefix leafrx label} {
+  proc _ghv_scan {pattern prefix leafrx label} {
     set _n [string length $prefix]
     array set _m {}
-    foreach _c [find_cells] {
+    foreach _c [find_cells $pattern] {
       if {[string range $_c 0 $_n] ne "$prefix/"} continue
       set _leaf [string range $_c [expr {$_n + 1}] end]
       if {![regexp $leafrx $_leaf -> _i]} continue
@@ -94,12 +130,24 @@ if {$top eq "Predictor"} {
   }
 
   # golden: 散装标量，叶名 ghv_<n>_reg，**不带位下标**（1 位 reg）
-  # find_cells 只列 current_design 的 cell，所以每侧扫描前都要先切过去。
-  current_design "r:/WORK/$top"
-  array set _ref [_ghv_scan "r:/WORK/$top" {^ghv_([0-9]+)_reg$} ref]
-  # 可读核: 向量，叶名 ghv_q_reg[<n>]，恰一层位下标（1 位切片）
-  current_design $_core
-  array set _imp [_ghv_scan $_core {^ghv_q_reg\[([0-9]+)\]$} impl]
+  array set _ref [_ghv_scan "r:/WORK/$top/ghv_*_reg" "r:/WORK/$top" \
+                            {^ghv_([0-9]+)_reg$} ref]
+  # 可读核: 向量，叶名 ghv_q_reg[<n>]，恰一层位下标（1 位切片）。
+  # 走**设计**路径枚举（探针 H），顺便断言只有一个 xs_*_core 设计前缀。
+  set _cells [find_cells "i:/WORK/xs_*_core/ghv_q_reg\[*\]"]
+  set _pfx {}
+  foreach _c $_cells {
+    # 受限 safe interp 里**没有 file 命令**（interp create -safe 会摘掉它），
+    # 所以用字符串截到最后一个 "/"，不要写 [file dirname]。
+    set _d [string range $_c 0 [expr {[string last "/" $_c] - 1}]]
+    if {[lsearch -exact $_pfx $_d] < 0} { lappend _pfx $_d }
+  }
+  if {[llength $_pfx] != 1} {
+    error "PREDICTOR_PIN(impl): 期望恰 1 个 xs_*_core 设计带 ghv_q，实得 [llength $_pfx]: $_pfx"
+  }
+  set _core [lindex $_pfx 0]
+  array set _imp [_ghv_scan "$_core/ghv_q_reg\[*\]" $_core \
+                            {^ghv_q_reg\[([0-9]+)\]$} impl]
 
   # --- 3) 断言：两侧各恰 256、下标 0..255 完整、无缺无多 ---------------------
   foreach {_label _arr} [list ref [array names _ref] impl [array names _imp]] {
@@ -117,7 +165,8 @@ if {$top eq "Predictor"} {
   set _miss 0
   for {set _i 0} {$_i < $_expect} {incr _i} {
     set _r $_ref($_i)
-    # 把 "i:/WORK/xs_Predictor_core/ghv_q_reg[3]" 换成 "i:/WORK/Predictor/u_core/ghv_q_reg[3]"
+    # _imp 是**设计**路径（i:/WORK/xs_Predictor_core/ghv_q_reg[n]），
+    # 钉点要**实例**路径：把设计前缀换成实例前缀。
     set _leaf [string range $_imp($_i) [expr {[string length $_core] + 1}] end]
     set _ipath "$_inst/$_leaf"
     if {[catch {set_user_match $_r $_ipath} _msg]} {
@@ -128,9 +177,9 @@ if {$top eq "Predictor"} {
     }
   }
 
-  # 恢复 current_design：进本文件时 fm_eq.tcl 刚 set_top 过 impl 顶层，
-  # 后续步骤按那个上下文继续（本文件不该留下副作用）。
-  current_design "i:/WORK/$top"
+  # 无需"恢复 current_design"：本文件**一次都没碰过** current_design，
+  # 所以 codex 0163 的第 (1)(3)(4) 条不适用；第 (2) 条（拒绝未知/歧义选择）
+  # 由上面"恰 1 个实例 / 两侧各恰 256 / 下标 0..255 完整"三处断言承担。
 
   puts "PREDICTOR_PINS: $_n / $_expect pinned, $_miss missed (ref=$_ref(0) impl=$_inst/...)"
   if {$_miss != 0 || $_n != $_expect} {

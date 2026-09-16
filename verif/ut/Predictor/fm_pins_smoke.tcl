@@ -2,8 +2,12 @@
 # ============================================================================
 # 【为什么要单独有这个】
 #   钉点对不对，唯一的真判据是"两侧 elaborate 出来的名字能不能配上"。拿整条
-#   官方证明去验要约 19 分钟才到 Matching（本目标实测），而且 Matching 本身
-#   不收敛（docs/predictor_fm_scaling_wall.md），不适合当反馈回路。
+#   官方证明去验要约 19 分钟才到 Matching、约 2.6 小时才配完（本目标实测），
+#   不适合当反馈回路。
+#   ★更正（2026-09-15）★：这段原写「Matching 本身不收敛」—— 那是错的，成因是把
+#   Formality 的匹配进度条当成了线性进度（它的分母约是配对数的两倍，按构造到不了
+#   100%）。实测匹配是**收敛的**：520,500 点配上、134(6) 未配、随后进入 Verifying。
+#   详见 docs/predictor_fm_scaling_wall.md（已整篇重写）。
 #   本脚本只做证明的**前半段**：读两侧、set_top、在与 sidecar **同一套白名单**
 #   的受限 safe interp 里执行 fm_pins_pre.tcl，看它自己的 fail-closed 响不响。
 #
@@ -35,7 +39,7 @@ if {[set_top i:/WORK/Predictor] == 0} { error "SMOKE: impl set_top 失败" }
 set ip [interp create -safe]
 foreach c {set_user_match set_app_var get_app_var puts report_unmatched_points \
            report_matched_points set_constant remove_constant \
-           current_design find_designs find_cells \
+           find_cells \
            setup set_dont_verify_points set_compare_rule match verify} {
   if {[info commands $c] ne ""} { interp alias $ip $c {} $c }
 }

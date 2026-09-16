@@ -207,3 +207,30 @@ include ../../../scripts/ut_common.mk
 
 # golden 的 `ifndef SYNTHESIS 段调用未定义的 xs_assert_v2
 VCS += +define+SYNTHESIS
+
+# ---------------------------------------------------------------------------
+# fm-pins-smoke —— 验「钉点落不落得上」，约 90 秒，不跑证明
+#
+# ★为什么判据里必须带 grep -c，而不是只看 SMOKE_OK★（2026-09-15 实测教训）
+#   有一版 fm_pins_pre.tcl 在钉完 256 点之后又打了
+#       Error: Unknown name: '0' (FM-036)
+#       Information: Current design is no longer set (FM-072)
+#   —— 它把 Formality 的当前设计置空了。而冒烟脚本只数钉点、不看 FM 自己报的错，
+#   于是照样打印 SMOKE_OK。判别力缺口就在这里：**工具报的错不进判据，等于没报。**
+#   所以这里同时要求三件事：256/256、SMOKE_OK、且 FM 自报错误行数为 0。
+# ---------------------------------------------------------------------------
+.PHONY: fm-pins-smoke
+fm-pins-smoke:
+	@rm -rf fm_work/pins_smoke && mkdir -p fm_work/pins_smoke
+	@XSSV_HOME=$(abspath $(XSSV_HOME)) GOLDEN_RTL=$(GOLDEN_RTL) \
+	  fm_shell -64 -work_path fm_work/pins_smoke \
+	           -file fm_pins_smoke.tcl > fm_work/pins_smoke.log 2>&1; \
+	 true
+	@grep -E '^PREDICTOR_PINS|^SMOKE_OK|^SMOKE_FAIL' fm_work/pins_smoke.log || true
+	@n=$$(grep -cE '^Error:|^Information: Current design' fm_work/pins_smoke.log); \
+	 ok=$$(grep -c '^SMOKE_OK' fm_work/pins_smoke.log); \
+	 pin=$$(grep -c '^PREDICTOR_PINS: 256 / 256 pinned, 0 missed' fm_work/pins_smoke.log); \
+	 echo "fm-pins-smoke: SMOKE_OK=$$ok  256/256=$$pin  FM自报错误行=$$n"; \
+	 if [ "$$ok" != 1 ] || [ "$$pin" != 1 ] || [ "$$n" != 0 ]; then \
+	   echo "fm-pins-smoke: FAIL"; exit 1; fi; \
+	 echo "fm-pins-smoke: PASS"

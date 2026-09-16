@@ -136,15 +136,26 @@ proc sidecar_pin_source {path} {
         # 命令集 = 全 repo pin 文件实测用到的 fm 动词(四审隔离曾漏 setup/set_dont_verify_points/
         # set_compare_rule/match/verify → 9+ 目标 INFRA)。proof-relaxing 的 dont_verify 由
         # emitter 的 report_dont_verify_points 采集入 qualifications, 不会静默放过。
-        # 只读查询动词(current_design/find_designs/find_cells): 让 pin 文件能对
-        # **本次 elaborate 出来的设计**做断言(两侧各恰 N 个、下标完整、无重复),
-        # 而不是照着记忆里的名字硬猜 —— 猜错时前者响亮失败, 后者静默少钉几个。
-        # 它们不改变任何证明语义(不建/不拆比较点、不放宽比较、不动 appvar),
+        # 只读查询动词 find_cells: 让 pin 文件能对**本次 elaborate 出来的设计**
+        # 做断言(两侧各恰 N 个、下标完整、无重复), 而不是照着记忆里的名字硬猜 ——
+        # 猜错时前者响亮失败, 后者静默少钉几个。
+        # 它不改变任何证明语义(不建/不拆比较点、不放宽比较、不动 appvar),
         # 严格弱于本表里已有的 set_constant/set_dont_verify_points。
         # 首个消费者: verif/ut/Predictor/fm_pins_pre.tcl 的 GHV 双射。
+        #
+        # ★只放 find_cells 一个, 不放 current_design/find_designs★(2026-09-15)
+        # codex 0163 批准过三个, 但实测(90 秒探针)表明 find_cells 直接吃全路径
+        # pattern, 另两个根本用不上:
+        #   find_cells {r:/WORK/Predictor/ghv_*_reg}          -> 256
+        #   find_cells {i:/WORK/xs_Predictor_core/ghv_q_reg*} -> 256
+        #   find_cells {i:/WORK/Predictor/*}                  -> 21 个顶层实例
+        # 用不着的权限就不该要。而且 current_design 有个坑: 名字非法时**不抛异常**,
+        # 只打 `Error: Unknown name (FM-036)` 并把当前设计置空 —— 与 set_top 同一
+        # 失败形状(本仓已为 set_top 写过 set_top_or_die)。不放进来就不用防它,
+        # codex 附的那四条上下文纪律也随之不适用。
         foreach c {set_user_match set_app_var get_app_var puts report_unmatched_points \
                    report_matched_points set_constant remove_constant \
-                   current_design find_designs find_cells \
+                   find_cells \
                    setup set_dont_verify_points set_compare_rule match verify} {
             if {[info commands $c] ne ""} {
                 interp alias $::SIDECAR_PIN_INTERP $c {} $c
