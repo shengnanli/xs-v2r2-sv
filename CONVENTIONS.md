@@ -242,6 +242,31 @@ end
 （`complexNum` 有 state 门控、`out_valid` 没有，**两层都是冗余的**）。
 照抄这份不对称是唯一能过 FM 的写法；把两边"统一"成任何一种都会 failing。
 
+## ★进 fm.log 的字必须是 ASCII★（2026-09-17，两条 lane 各自独立发现）
+
+`Formality` 的 `fm.log` **不是 UTF-8**。钉点脚本里的中文 `puts` 落进日志全成问号：
+
+```
+TLBFA_PINS: ?? 33 ? reqVpn ???ref 33 / impl 33??????
+RENAMEBUFFER_PINS: ?? 51 ??A deqPtr flag 5 / B deqPtr value 40 / ...?
+```
+
+**日志是给 reviewer 看的证据**，自报里说了什么、钉了几族、判据是什么，
+全都看不见了。注释留中文没问题（读的是源文件），但**凡是会进 `fm.log` 的
+`puts` 一律 ASCII**。
+
+一句要说清的：这件事**不影响判定**。判定用的数字（`Unmatched ... 0(0)`、
+`Verification SUCCEEDED`、比较点表）都是 Formality 自己打的 ASCII，
+乱码的只有 lane 自己的自报。但自报正是"给人看的那一半证据"，
+写了等于没写比没写更糟 —— 它让人以为这里有说明。
+
+实测受影响（`git ls-files "verif/ut/*/fm_pins*.tcl"` 里 `puts` 带非 ASCII 的）：
+`Ftq` 1 行 / `IBuffer` 6 行 / `ICacheMissUnit` 1 行 / `SSIT` 1 行 / `TLBFA` 9 行。
+**改这些文件会改变它们的 sha256，而 receipt 里记着 `pin_scripts` 的哈希** ——
+所以不要为了改乱码单独去动已签绿的脚本，**等这些目标下次因为别的原因重跑时一并改**。
+（已核：仓库里没有任何闸拿 receipt 的 `pin_scripts` 哈希去比当前文件，
+所以现在不改也不会让闸变红；这是"何时改"的问题，不是"改不改"。）
+
 ## ★别拿裸错误号当判据★（2026-09-17，我自己写的注释就是祸首）
 
 `fm_shell` 会把 `-file` 载入的入口脚本**逐行回显进 fm.log，注释也不例外**。
