@@ -391,6 +391,7 @@ module tb;
   longint cov_regnum_ill = 0, cov_overlap_ill = 0, cov_vstart_ill = 0;
   longint cov_pool_exact = 0, cov_flip = 0, cov_rand = 0;
   longint cov_hireg_wrap = 0;   // 「vd 区间上界回绕」定向档命中次数
+  logic [4:0] hi_vd, hi_vs1, hi_vs2;   // 该定向档的寄存器号（见下面的 static 坑）
 
   int pidx;
   initial begin
@@ -432,8 +433,13 @@ module tb;
       //   · 不是访存指令（否则 vd 上界走段访存那条路，与这条无关）
       //   · fuType 不含向量位（否则 regNumIllegal 会先把输出拉高，把差别盖掉）
       //   · vs1/vs2 与 vd 挨着（否则「区间不重叠」直接成立，也盖掉差别）
-      // 纯随机撞上这一族的概率约 1e-7，200k 拍必漏 —— 实测：负测 M1 在没有这一档
-      // 时 200k 抓不到，加上之后才抓到。
+      // 纯随机撞上这一族的概率约 1e-7（200k 拍必漏），而在这一档的约束下
+      // 概率是 1.3%（用一份独立的 Python 语义模型在 400k 组输入上量过）。
+      //
+      // ★这里踩过一个典型的 tb 坑，留着当反例★：vd 原先写成
+      //     `logic [4:0] hv = 5'd31 - 5'($urandom_range(0,6));`
+      // —— 在**过程块里**声明的变量默认是 static，它的初始化式只在 0 时刻跑一次，
+      // 于是整场仿真 vd 是同一个常数，这一档等于只测了一个 vd。声明与赋值必须分开写。
       if ($urandom_range(0, 24) == 0) begin
         cov_hireg_wrap++;
         io_vstart             = 8'h0;
@@ -444,12 +450,12 @@ module tb;
         io_decodedInst_srcType_2 = 4'h4;
         io_vtype_illegal = 1'b0;
         io_vtype_vlmul   = 3'($urandom_range(1, 3));    // LMUL 编码 5/6/7（EMUL>1）
-        begin
-          logic [4:0] hv = 5'd31 - 5'($urandom_range(0, 6));
-          io_inst[11:7]  = hv;                          // vd
-          io_inst[19:15] = hv - 5'($urandom_range(0, 1));  // vs1 紧挨着 vd
-          io_inst[24:20] = hv - 5'($urandom_range(0, 1));  // vs2
-        end
+        hi_vd  = 5'd31 - 5'($urandom_range(0, 6));
+        hi_vs1 = hi_vd + 5'($urandom_range(0, 2)) - 5'd1;   // vd-1 / vd / vd+1
+        hi_vs2 = hi_vd + 5'($urandom_range(0, 2)) - 5'd1;
+        io_inst[11:7]  = hi_vd;
+        io_inst[19:15] = hi_vs1;
+        io_inst[24:20] = hi_vs2;
       end
 
       #1;

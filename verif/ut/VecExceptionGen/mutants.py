@@ -47,9 +47,16 @@ RTL = ['VecExceptionGen.sv']
 NCYCLES = '200000'
 
 MUTANTS = [
-    ('M1 vd 上界不做 5 位截断（vd=31 且 EMUL=8 时不再回绕）',
-     "wire [4:0] vd_reg_hi_arith = fld_vd + {1'b0, lmul_to_regnum(vd_emul)} - 5'd1;",
-     "wire [4:0] vd_reg_hi_arith = 5'({3'b0, fld_vd} + {4'b0, lmul_to_regnum(vd_emul)} - 8'd1);"),
+    # ★这条变异本身返工过一次，留个记号★：第一版写成
+    #   `wire [4:0] vd_reg_hi_arith = 5'(...8 位算式...)`
+    # —— 目标线仍是 5 位、外面又套了一层 5'()，等于**什么都没改**，于是「抓不到」。
+    # 真正要动的是 vd_reg_hi 这一侧：让它直接用 8 位算式，绕过 5 位中间量。
+    # 教训：变异必须自己先确认「确实改变了电路」，否则 MISSED 是假的。
+    ('M1 vd 上界不做 5 位截断（vd+2^EMUL-1 ≥ 32 时不再回绕）',
+     "  wire [7:0] vd_reg_hi = (is_ls_stride | is_ls_index) ? (seg_regmax - 8'd1)\n"
+     "                                                     : {3'b0, vd_reg_hi_arith};",
+     "  wire [7:0] vd_reg_hi = (is_ls_stride | is_ls_index) ? (seg_regmax - 8'd1)\n"
+     "                       : ({3'b0, fld_vd} + {4'b0, lmul_to_regnum(vd_emul)} - 8'd1);"),
     ('M2 vsext/vzext.vf4 的 EEW 判据 `SEW<=1` 写成 `SEW==1`',
      "| (is_int_ext4 & (vsew <= 2'd1))",
      "| (is_int_ext4 & (vsew == 2'd1))"),

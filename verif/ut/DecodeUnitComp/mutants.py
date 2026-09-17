@@ -82,9 +82,14 @@ MUTANTS = [
     ('M9 VSET 的 keepVl / setVlmax 两个位搞反',
      "        in_fixed.fuOpType = in_inst.fuOpType | (9'd1 << VSET_KEEPVL_BIT);",
      "        in_fixed.fuOpType = in_inst.fuOpType | (9'd1 << VSET_SETVLMAX_BIT);"),
+    # ★注意：变异必须**真的改变电路**★。这条第一版写成给同一根 3 位线套一层
+    # `3'(…)`，等于什么都没改，跑出来是假的 MISSED（同型错误在 VecExceptionGen
+    # 的负测里也犯过一次）。现在连声明一起加宽，才真的把截断去掉。
     ('M10 vemul 算成 4 位不截断（Chisel 的 `+` 在 3 位上做模运算）',
+     "  logic [2:0] vemul_raw;\n  logic [1:0] simple_lmul, simple_emul;\n"
      "  assign vemul_raw = ({1'b0, width} + vlmul_r) + (~{1'b0, vsew_r} + 3'd1);",
-     "  assign vemul_raw = 3'(({2'b0, width} + {1'b0, vlmul_r}) + (~{2'b0, vsew_r} + 4'd1));"),
+     "  logic [3:0] vemul_raw;\n  logic [1:0] simple_lmul, simple_emul;\n"
+     "  assign vemul_raw = ({2'b0, width} + {1'b0, vlmul_r}) + (~{2'b0, vsew_r} + 4'd1);"),
     ('M11 fixedDecodedInst 的 flushPipe 回收打在第 0 个 uop 而不是最后一个',
      "      if (7'(i) == last_uop_idx) fixed[i].flushPipe = latched_q.flushPipe;",
      "      if (i == 0) fixed[i].flushPipe = latched_q.flushPipe;"),

@@ -391,6 +391,9 @@ TB_STIM = '''
   longint     cov_redir_active = 0;
   longint     cov_numuop_gt6 = 0;
   longint     cov_backpressure = 0;
+  longint     cov_widen_osum = 0;   // VEC_VFREDOSUM 的「加宽」支
+  longint     cov_plain_osum = 0;   // VEC_VFREDOSUM 的「非加宽」支
+  longint     cov_us_seg = 0, cov_ix_seg = 0, cov_sd_seg = 0;  // 三种段访存
 
   initial begin
 %(splitinit)s  end
@@ -520,9 +523,13 @@ TB_BODY = '''
       // vstart：一半为 0（正常），一半非零（VSET 分支靠它改 flushPipe/blockBackward）
       io_in_bits_simpleDecodedInst_vpu_vstart =
           $urandom_range(0, 1) ? 8'($urandom) : 8'h0;
-      // isVset / fuOpType：VSET 分支的四条子路径全靠它们 + rd/rs1 是否为 0
+      // isVset / fuOpType：VSET 分支的四条子路径全靠它们 + rd/rs1 是否为 0。
+      // ★fuOpType 还要定向打 9'h36★：VEC_VFREDOSUM 分支按
+      // `fuOpType == VfaluType.vfwredosum`(=9'h36) 分成「加宽有序归约」与普通两支，
+      // 9 位均匀随机只有 1/512 命中率，200k 拍下来那一支只有个位数次，等于没验。
       io_in_bits_simpleDecodedInst_isVset = ($urandom_range(0, 2) != 0);
-      io_in_bits_simpleDecodedInst_fuOpType = 9'($urandom);
+      io_in_bits_simpleDecodedInst_fuOpType =
+          ($urandom_range(0, 4) == 0) ? 9'h36 : 9'($urandom);
       // instr 的 rd/rs1 域：各 1/3 概率取 0（VSET 的分支条件）
       if ($urandom_range(0, 2) == 0) io_in_bits_simpleDecodedInst_instr[11:7]  = 5'h0;
       if ($urandom_range(0, 2) == 0) io_in_bits_simpleDecodedInst_instr[19:15] = 5'h0;
@@ -543,6 +550,13 @@ TB_BODY = '''
         if (u_gold.latchedUopInfo_numOfUop > 7'd6) cov_numuop_gt6++;
         if (!io_out_complexDecodedInsts_0_ready) cov_backpressure++;
         if (io_redirect) cov_redir_active++;
+        if (u_gold.latchedInst_uopSplitType == 6'h3D) begin
+          if (u_gold.latchedInst_fuOpType == 9'h36) cov_widen_osum++;
+          else                                      cov_plain_osum++;
+        end
+        if (u_gold.isUsSegment) cov_us_seg++;
+        if (u_gold.isIxSegment) cov_ix_seg++;
+        if (u_gold.isSdSegment) cov_sd_seg++;
       end
       cov_state[u_gold.state]++;
       @(negedge clk);
@@ -552,6 +566,8 @@ TB_BODY = '''
     $display("  checks=%0d  state idle=%0d active=%0d", checks, cov_state[0], cov_state[1]);
     $display("  numOfUop>6 while active=%0d  backpressure=%0d  redirect while active=%0d",
              cov_numuop_gt6, cov_backpressure, cov_redir_active);
+    $display("  vfredosum 加宽支=%0d 非加宽支=%0d   段访存 us=%0d ix=%0d sd=%0d",
+             cov_widen_osum, cov_plain_osum, cov_us_seg, cov_ix_seg, cov_sd_seg);
     begin
       int zero_split = 0, zero_count = 0;
       longint minsplit = -1;
@@ -577,6 +593,14 @@ TB_BODY = '''
       end
       if (cov_numuop_gt6 == 0 || cov_backpressure == 0 || cov_redir_active == 0) begin
         $display("COVERAGE INSUFFICIENT: 长序列 / 反压 / 冲刷 有一项没打到");
+        errors++;
+      end
+      // 这五项各自守着一个「整条分支只有一半被验到」的风险：
+      // 加宽/非加宽有序归约是 VEC_VFREDOSUM 的两半，三种段访存各自决定
+      // waitForward/blockBackward 那一对。
+      if (cov_widen_osum == 0 || cov_plain_osum == 0 ||
+          cov_us_seg == 0 || cov_ix_seg == 0 || cov_sd_seg == 0) begin
+        $display("COVERAGE INSUFFICIENT: vfwredosum 两支 / 三种段访存 有一项没打到");
         errors++;
       end
     end
