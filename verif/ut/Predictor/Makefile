@@ -176,6 +176,27 @@ RTL_GOLDEN_DEPS = \
 # 对不齐」而必须 FM_MERGE_DUP=false（见 scripts/fm_eq.tcl 的证据注释）。
 FM_MERGE_DUP = false
 
+# ---------------------------------------------------------------------------
+# matched-unread 加强（vmucp）——**加强，不是放宽**
+# ---------------------------------------------------------------------------
+# 打开后 FM 不再把「两侧都配上了、但两侧都没人读」的点当 Not-Compared 放过，
+# 而是把它们当真比较点去证。Predictor 早已在 scripts/fm_eq.tcl 的精确白名单里。
+#
+# 依据（ecdb741 那轮 evidence/ecdb74167652/Predictor/unread_points.txt）：
+#   8333 个 unread 点**全部**是 matched_nc（两侧对称配上），其中
+#     7169 个在 predictors（golden Composer 实例）子树里 —— TAGE/ITTAGE/FTB 的
+#          io_update_ghist_r / update_meta_r 等更新通路寄存器，两侧是**同一份**
+#          golden Composer.sv，天然逐位同构；
+#     1164 个在 u_core 里：pred_cycle_q 576 / s*_folded_gh 464 / s*_afhob 60 /
+#          s*_ghist_ptr 12 / power_on_reset_state 1（这 1113 个由 fm_pins_pre.tcl
+#          逐位钉死），外加 prev_s2 50 + upc_seg2 1（名字同构，FM 自己按名字配上的）。
+#   impl 侧单边未读 585 个不受本开关影响（它们没有对家，属 PASS_DEAD_IMPL 的范畴）。
+#
+# ★验收判据（不增即空转，按 fail 处理）★
+#   passing 必须从 520634 增到 528967（正好 +8333）；failing 仍为 0；
+#   Not-Compared 的 Unread 必须归 0。passing 不增而 unread 归 0 = 点被吞掉，不算过。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 FM_VARIANTS = Predictor
 FM_REF_DEPS_Predictor = ClockGate.sv Composer.sv DelayN.sv DelayNWithValid.sv \
   DelayNWithValid_1.sv DelayN_1.sv FTB.sv FTBBank.sv \

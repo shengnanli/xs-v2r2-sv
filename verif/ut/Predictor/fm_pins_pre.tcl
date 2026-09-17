@@ -121,7 +121,7 @@
 #
 # ============================================================================
 # 【fail-closed】
-#   2497 个一个都不许钉不上。任何一侧少一个点、多一个点，或 impl 侧独有死位的数目
+#   2581 个一个都不许钉不上。任何一侧少一个点、多一个点，或 impl 侧独有死位的数目
 #   不等于声明的 384，都直接 error 退出 —— 名字/结构一旦漂了，继续跑出来的
 #   SUCCEEDED 是假的。查询动词缺失（沙箱白名单没放行）同样 error：不允许退化成
 #   "照名字硬猜"。
@@ -339,8 +339,32 @@ if {$top eq "Predictor"} {
   # (g) power_on_reset —— 纯大小写/分词差（powerOnResetState vs power_on_reset_state）
   _pair "powerOnResetState_reg" "power_on_reset_state_reg"
 
+  # (h) perf 计数流水 —— 7 路 × 2 拍 × 6 位 = 84 个寄存器
+  #     golden（Predictor.sv:23291-23304 + :25631-25644）是 14 个散装标量 reg：
+  #       io_perf_<N>_value_REG   <= predictors_io_perf_<N>_value   （第 1 拍）
+  #       io_perf_<N>_value_REG_1 <= io_perf_<N>_value_REG          （第 2 拍）
+  #     可读核（rtl/frontend/Predictor.sv:1302-1309）是两个 7 项数组 perf_q1/perf_q2，
+  #     同一个 always_ff 里同样的两拍。两边接的是**同一个** golden Composer 实例
+  #     （golden :27287 / 可读核 :2594 都叫 predictors），所以这是逐位的构造性双射，
+  #     不是按个数硬凑。
+  #
+  #     ★为什么必须钉★：不钉时这一族里有 10 个点配不上（ecdb741 那轮的
+  #     5(5) unmatched，也是当时 verdict=PARTIAL 的唯一原因）：
+  #       ref  io_perf_1_value_REG_reg[1..5]        Constrained 0X
+  #       impl perf_q2_reg[1][1] / perf_q2_reg[2][2..5]  Constant 0
+  #     名字两侧毫无共同点（名字匹配无从下手），而常数寄存器之间签名分析也区分不开，
+  #     于是 74 个被签名分析随机配上、10 个漏在外面。注意这 10 个**连级都对不上**
+  #     （ref 是第 1 拍、impl 是第 2 拍），所以绝不能按"两侧各 5 个"去强配 ——
+  #     正确做法就是把整族 84 个按构造规则全钉死，让配对与常数折叠无关。
+  for {set n 0} {$n <= 6} {incr n} {
+    for {set b 0} {$b <= 5} {incr b} {
+      _pair "io_perf_${n}_value_REG_reg\[$b\]"   "perf_q1_reg\[$n\]\[$b\]"
+      _pair "io_perf_${n}_value_REG_1_reg\[$b\]" "perf_q2_reg\[$n\]\[$b\]"
+    }
+  }
+
   # --- 4) 逐对存在性检查 + 钉点（fail-closed）--------------------------------
-  set _expect 2497
+  set _expect 2581   ;# 2497（七族）+ 84（perf 流水，第八族）
   if {[llength $_pairs] != $_expect} {
     error "PREDICTOR_PIN: 生成了 [llength $_pairs] 对期望，应为 $_expect —— 生成规则写错了"
   }
@@ -382,7 +406,7 @@ if {$top eq "Predictor"} {
   # 缺了这一步，生成规则漏掉一整个子族（比如某级、某个 dup）也不会被发现 ——
   # 这正是 Composer 那边"只钉 400、剩 200 打开加强后才冒出来"的形状。
   #
-  # 判据：本文件覆盖的七族，在两侧各自的**族内总点数**必须等于
+  # 判据：本文件覆盖的八族，在两侧各自的**族内总点数**必须等于
   #   golden : 2497（全部有对家）
   #   impl   : 2497 + 384（可读核独有死位，见文件头声明）
   proc _count {arrname rx} {
@@ -391,10 +415,10 @@ if {$top eq "Predictor"} {
     foreach k [array names A] { if {[regexp $rx $k]} { incr c } }
     return $c
   }
-  # golden 侧七族的叶名形状（与上面 (a)..(g) 的生成规则一一对应）
-  set _rxref {(^ghv_[0-9]+_reg$)|(^s[0-9]_last_br_num_oh(_reg)?_dup_[0-9]+_reg\[[0-9]+\]$)|(^io_bpu_to_ftq_resp_bits_s[123]_full_pred_[0-3]_predCycle_c_reg\[[0-9]+\]$)|(^s[0-9]_folded_gh(_reg)?_dup_[0-9]+_hist_[0-9]+_folded_hist_reg\[[0-9]+\]$)|(^s[0-9]_ahead_fh_oldest_bits(_reg)?_dup_[0-9]+_afhob_[0-9]+_bits_[0-9]+_reg$)|(^s[0-9]_ghist_ptr(_reg)?_dup_[0-9]+_(flag_reg$|value_reg\[[0-9]+\]$))|(^powerOnResetState_reg$)}
+  # golden 侧八族的叶名形状（与上面 (a)..(h) 的生成规则一一对应）
+  set _rxref {(^ghv_[0-9]+_reg$)|(^s[0-9]_last_br_num_oh(_reg)?_dup_[0-9]+_reg\[[0-9]+\]$)|(^io_bpu_to_ftq_resp_bits_s[123]_full_pred_[0-3]_predCycle_c_reg\[[0-9]+\]$)|(^s[0-9]_folded_gh(_reg)?_dup_[0-9]+_hist_[0-9]+_folded_hist_reg\[[0-9]+\]$)|(^s[0-9]_ahead_fh_oldest_bits(_reg)?_dup_[0-9]+_afhob_[0-9]+_bits_[0-9]+_reg$)|(^s[0-9]_ghist_ptr(_reg)?_dup_[0-9]+_(flag_reg$|value_reg\[[0-9]+\]$))|(^powerOnResetState_reg$)|(^io_perf_[0-6]_value_REG(_1)?_reg\[[0-9]+\]$)}
   # 可读核侧同七族
-  set _rximp {(^ghv_q_reg\[[0-9]+\]$)|(^s[0-9]_brnum(_reg)?_reg\[[0-9]+\]\[[0-9]+\]$)|(^pred_cycle_q_reg\[[0-9]+\]\[[0-9]+\]\[[0-9]+\]$)|(^s[0-9]_folded_gh(_reg)?_reg\[[0-9]+\]\[[0-9]+\]\[[0-9]+\]$)|(^s[0-9]_afhob(_reg)?_reg\[[0-9]+\]\[[0-9]+\]\[[0-9]+\]$)|(^s[0-9]_ghist_ptr(_reg)?_reg\[[0-9]+\]\\\[(flag|value)\])|(^power_on_reset_state_reg$)}
+  set _rximp {(^ghv_q_reg\[[0-9]+\]$)|(^s[0-9]_brnum(_reg)?_reg\[[0-9]+\]\[[0-9]+\]$)|(^pred_cycle_q_reg\[[0-9]+\]\[[0-9]+\]\[[0-9]+\]$)|(^s[0-9]_folded_gh(_reg)?_reg\[[0-9]+\]\[[0-9]+\]\[[0-9]+\]$)|(^s[0-9]_afhob(_reg)?_reg\[[0-9]+\]\[[0-9]+\]\[[0-9]+\]$)|(^s[0-9]_ghist_ptr(_reg)?_reg\[[0-9]+\]\\\[(flag|value)\])|(^power_on_reset_state_reg$)|(^perf_q[12]_reg\[[0-9]+\]\[[0-9]+\]$)}
   set _cref [_count _REF $_rxref]
   set _cimp [_count _IMP $_rximp]
   # 满射：族内每一个 golden 叶名都必须被消耗掉；可读核侧同理，只准剩下声明的死位
@@ -407,11 +431,11 @@ if {$top eq "Predictor"} {
     incr _bad
   }
   if {$_cref != $_expect} {
-    puts "PREDICTOR_PIN_AUDIT: golden 侧七族共 $_cref 点，应为 $_expect（差 [expr {$_cref - $_expect}]）"
+    puts "PREDICTOR_PIN_AUDIT: golden 侧八族共 $_cref 点，应为 $_expect（差 [expr {$_cref - $_expect}]）"
     incr _bad
   }
   if {$_cimp != [expr {$_expect + $_implonly}]} {
-    puts "PREDICTOR_PIN_AUDIT: 可读核侧七族共 $_cimp 点，应为 [expr {$_expect + $_implonly}]（= $_expect 有对家 + $_implonly 独有死位，差 [expr {$_cimp - $_expect - $_implonly}]）"
+    puts "PREDICTOR_PIN_AUDIT: 可读核侧八族共 $_cimp 点，应为 [expr {$_expect + $_implonly}]（= $_expect 有对家 + $_implonly 独有死位，差 [expr {$_cimp - $_expect - $_implonly}]）"
     incr _bad
   }
 
