@@ -20,7 +20,7 @@
 //
 // golden 对照：G1-canonical/golden-rtl/NewDispatch.sv（100983 行，单变体）。
 // 机械派生区（端口表 / dyninst_t）由 scripts/gen_newdispatch.py 从 golden 生成。
-// 本文件导航（共 15767 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+// 本文件导航（共 15777 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
 //   L58    节 1】newdispatch_pkg —— 派遣拓扑表与 payload 类型
 //   L74    节 1.1】多队列 FU 组表
 //   L76    每组三件事：
@@ -34,24 +34,24 @@
 //   L406   golden: fuTypeOH_<lane>_<g> = (fuType[b1]|fuType[b2]|...) & rena
 //   L421   节 2.2】compareMatrix / IQSort —— 按占用数给同组 IQ 排名
 //   L423   compareMatrix[g][i][j] = 「第 i 个 exu 比第 j 个空」
-//   L458   节 2.3】minIQSel —— 第 lane 条 uop 在本组里取第 (lane % iqNum) 名
-//   L460   这一步是「同拍内分散」：6 条 lane 若都是 alu，就分别取第 0/1/2/3/0/1 名，
-//   L474   节 2.4】popFuTypeOH —— 本 lane 之前有几条 uop 也要进同一组
-//   L476   golden: popFuTypeOH_<lane>_<g> = PopCount(fuTypeOH[0..lane-1][g]
-//   L490   节 2.5】uopSelIQ —— 不复位的选择寄存器，两个写源，装入优先于清除
-//   L492   golden 展开
-//   L537   节 2.6】uopSelIQMatrix / uopBlockByIQ —— 前缀计数定「第几个入队口」
-//   L539   uopSelIQMatrix[lane][iq] = PopCount(uopSelIQ[0..lane][iq])
-//   L563   节 2.7】IQSelUop —— 把 6 条 lane 按前缀计数投到 34 个入队口
-//   L565   第 q 个入队口属于 IQ q/2，是该 IQ 的第 (q%2) 个口
-//   L606   节 3】NewDispatch —— 与 golden 逐位同名的 wrapper
-//   L608   端口表由 scripts/gen_newdispatch.py 从 golden 原文派生，顺序/方向/位宽逐字一致
-//   L8446  节 3.2】还接不了的位：集中声明，**故意不给驱动**
-//   L8448  BEGIN GENERATED(UNRESOLVED)
-//   L8587  节 3.3】payload 打包：io_fromRename -> rename_uop
-//   L8589  BEGIN GENERATED(PACK)
-//   L9718  节 3.4】payload 拆包：iq_uop -> io_toIssueQueues
-//   L9720  BEGIN GENERATED(UNPACK)
+//   L471   节 2.3】minIQSel —— 第 lane 条 uop 在本组里取第 (lane % iqNum) 名
+//   L473   「同拍内分散」：6 条 lane 若都是 alu，就分别取第 0/1/2/3/0/1 名，而不是全挤到
+//   L478   节 2.4】popFuTypeOH —— 本 lane 之前有几条 uop 也要进同一组
+//   L480   golden: popFuTypeOH_<lane>_<g> = PopCount(fuTypeOH[0..lane-1][g]
+//   L494   节 2.5】uopSelIQ —— 不复位的选择寄存器，两个写源，装入优先于清除
+//   L496   golden 展开
+//   L547   节 2.6】uopSelIQMatrix / uopBlockByIQ —— 前缀计数定「第几个入队口」
+//   L549   uopSelIQMatrix[lane][iq] = PopCount(uopSelIQ[0..lane][iq])
+//   L573   节 2.7】IQSelUop —— 把 6 条 lane 按前缀计数投到 34 个入队口
+//   L575   第 q 个入队口属于 IQ q/2，是该 IQ 的第 (q%2) 个口
+//   L616   节 3】NewDispatch —— 与 golden 逐位同名的 wrapper
+//   L618   端口表由 scripts/gen_newdispatch.py 从 golden 原文派生，顺序/方向/位宽逐字一致
+//   L8456  节 3.2】还接不了的位：集中声明，**故意不给驱动**
+//   L8458  BEGIN GENERATED(UNRESOLVED)
+//   L8597  节 3.3】payload 打包：io_fromRename -> rename_uop
+//   L8599  BEGIN GENERATED(PACK)
+//   L9728  节 3.4】payload 拆包：iq_uop -> io_toIssueQueues
+//   L9730  BEGIN GENERATED(UNPACK)
 //
 
 // ---------------------------------------------------------------------------
@@ -425,50 +425,54 @@ module xs_NewDispatch_core
   // IQSort[g][rank][i] = 「第 i 个 exu 排第 rank 名」，rank 0 = 最空。
   // golden: IQSort_x_<rank>_<i> <= PopCount(compareMatrix[i]) == (iqNum-1-rank)
   // ★IQSort 是不带复位的寄存器★（golden 在 always @(posedge clock) 里，无 reset 分支）。
-  // ★已知 FM 隐患（phase 2 必须处理）★：这里为了写成一个规整的 10×4×4 阵列，
-  // iqNum<4 的组会留下永远不写也不读的 iqSort 位。仿真无害（从不被索引），但 FM
-  // 会把它们算成 impl 侧多出来的死寄存器 → unread 点。真跑 FM 前要么按 G_IQNUM
-  // 拆成每组精确尺寸，要么给出对称双射证明，不能靠 waiver 掩过去。
-  logic [MULTI_G-1:0][3:0][3:0] compareMatrix;
-  logic [MULTI_G-1:0][3:0][3:0] iqSort;
+  // ★尺寸必须逐组精确，不能补齐成规整阵列★
+  // 实测 golden 每组声明的 IQSort 寄存器数恰好是 iqNum²（9/16/4/9/4/9/4/4/4/4，
+  // 合计 67），**一个多余的都没有**。上一版我图整齐写成 10×4×4=160，多出的 93 个
+  // 死位在 FM 里变成 impl-only 未读寄存器，实测害得 55 个 IQSort 比较点配不上名。
+  // 所以这里按 genvar 分组、每组用自己的 N —— 缩到精确是**照抄 golden**，
+  // 不是"优化"。（反过来若 golden 自己超配而我去缩，就会把死位从 impl 侧搬到
+  // golden 侧，问题只是换个方向 —— 先核过 golden 才敢缩。）
+  logic [MULTI_G-1:0][RENAME_W-1:0][IQ_NUM-1:0] minIQSelAll;
 
-  always_comb begin
-    compareMatrix = '0;
-    for (int g = 0; g < MULTI_G; g++)
-      for (int i = 0; i < 4; i++)
-        for (int j = 0; j < 4; j++)
-          if (i < G_IQNUM[g] && j < G_IQNUM[g]) begin
-            if (i == j)      compareMatrix[g][i][j] = 1'b0;
-            else if (i < j)  compareMatrix[g][i][j] =
-                               iqValidNum[G_EXU[g][i]] < iqValidNum[G_EXU[g][j]];
-            else             compareMatrix[g][i][j] =
-                               ~(iqValidNum[G_EXU[g][j]] < iqValidNum[G_EXU[g][i]]);
-          end
-  end
+  for (genvar g = 0; g < MULTI_G; g++) begin : gen_iq_group
+    localparam int N = G_IQNUM[g];
 
-  always_ff @(posedge clock) begin   // 无复位：照抄 golden
-    for (int g = 0; g < MULTI_G; g++)
-      for (int r = 0; r < 4; r++)
-        for (int i = 0; i < 4; i++)
-          if (r < G_IQNUM[g] && i < G_IQNUM[g])
-            iqSort[g][r][i] <= ($countones(compareMatrix[g][i]) == (G_IQNUM[g] - 1 - r));
+    // compareMatrix[i][j] = 「第 i 个 exu 比第 j 个空」。对角线恒 0，
+    // 下三角取上三角取反（golden 就是这么写的，不是重新比一次）。
+    logic [N-1:0][N-1:0] compareMatrix;
+    always_comb
+      for (int i = 0; i < N; i++)
+        for (int j = 0; j < N; j++)
+          if (i == j)     compareMatrix[i][j] = 1'b0;
+          else if (i < j) compareMatrix[i][j] =
+                            iqValidNum[G_EXU[g][i]] < iqValidNum[G_EXU[g][j]];
+          else            compareMatrix[i][j] =
+                            ~(iqValidNum[G_EXU[g][j]] < iqValidNum[G_EXU[g][i]]);
+
+    // iqSort[rank][i] = 「第 i 个 exu 排第 rank 名」，rank 0 = 最空。
+    // ★不带复位★：golden 在 always @(posedge clock) 里没有 reset 分支。
+    logic [N-1:0][N-1:0] iqSort;
+    always_ff @(posedge clock)
+      for (int r = 0; r < N; r++)
+        for (int i = 0; i < N; i++)
+          iqSort[r][i] <= ($countones(compareMatrix[i]) == (N - 1 - r));
+
+    // 本组对 minIQSelAll 的贡献（节 2.3 的「同拍内分散」）：第 lane 条 uop
+    // 取第 (lane % N) 名。genvar g 是 elaboration 常量，所以可以直接写下标。
+    always_comb begin
+      minIQSelAll[g] = '0;
+      for (int l = 0; l < RENAME_W; l++)
+        for (int k = 0; k < N; k++)
+          minIQSelAll[g][l][G_IQ[g][k]] = iqSort[l % N][k];
+    end
   end
 
   // -------------------------------------------------------------------------
   // 【节 2.3】minIQSel —— 第 lane 条 uop 在本组里取第 (lane % iqNum) 名
   // -------------------------------------------------------------------------
-  // 这一步是「同拍内分散」：6 条 lane 若都是 alu，就分别取第 0/1/2/3/0/1 名，
-  // 而不是全挤到最空的那一个。golden: minIQSel_x_<lane>_<iq> = IQSort_x_<lane%iqNum>_<k>
-  logic [MULTI_G-1:0][RENAME_W-1:0][IQ_NUM-1:0] minIQSelAll;
-
-  always_comb begin
-    minIQSelAll = '0;
-    for (int g = 0; g < MULTI_G; g++)
-      for (int l = 0; l < RENAME_W; l++)
-        for (int k = 0; k < 4; k++)
-          if (k < G_IQNUM[g])
-            minIQSelAll[g][l][G_IQ[g][k]] = iqSort[g][l % G_IQNUM[g]][k];
-  end
+  // 「同拍内分散」：6 条 lane 若都是 alu，就分别取第 0/1/2/3/0/1 名，而不是全挤到
+  // 最空的那一个。golden: minIQSel_x_<lane>_<iq> = IQSort_x_<lane%iqNum>_<k>。
+  // 具体赋值在上面的 gen_iq_group 里逐组完成（那里才知道本组的 N）。
 
   // -------------------------------------------------------------------------
   // 【节 2.4】popFuTypeOH —— 本 lane 之前有几条 uop 也要进同一组
@@ -500,37 +504,43 @@ module xs_NewDispatch_core
   // （popFuTypeOH，0..7）读，firtool 把它补成 8 项，第 6、7 项填的是**第 0 项**
   // （不是 0，也不是 mod 6 回绕）。索引实际到不了 6/7（PopCount 最多 5），所以是
   // 无关项；但 FM 证不出不可达，写法不同就会多出失配点，故这里显式照抄 8 项形状。
+  // ★临时量必须放 always_comb，不能放 always_ff★
+  // 上一版我把 lanes/idx/multi/single 写成 always_ff 里的 automatic 变量，
+  // 功能对、UT 全绿，但 FM 把它们**全推成了未读寄存器**：实测 impl 侧多出
+  //   lanes_reg ×102  single_reg ×37  idx_reg ×6  multi_reg ×6
+  // 一共 548 个 unmatched unread 点。仓库早记过这一类（always_ff 组合临时量伪影），
+  // 这里是把次态算在 always_comb、always_ff 只负责打一拍。
   logic [RENAME_W-1:0][IQ_NUM-1:0] uopSelIQ;
+  logic [RENAME_W-1:0][IQ_NUM-1:0] uopSelIQ_next;
+
+  always_comb begin
+    uopSelIQ_next = '0;
+    for (int l = 0; l < RENAME_W; l++)
+      for (int q = 0; q < IQ_NUM; q++) begin
+        automatic logic [7:0] lanes  = '0;  // 8 项：0..5 是真 lane，6/7 复制第 0 项
+        automatic logic [2:0] idx    = '0;
+        automatic logic       multi  = 1'b0;
+        automatic logic       single = 1'b0;
+        for (int g = 0; g < MULTI_G; g++) begin
+          multi |= fuTypeOH[l][g];
+          idx   |= fuTypeOH[l][g] ? popFuTypeOH[l][g] : 3'd0;   // Mux1H
+          for (int p = 0; p < RENAME_W; p++)
+            lanes[p] |= fuTypeOH[l][g] & minIQSelAll[g][p][q];  // Mux1H over groups
+        end
+        lanes[6] = lanes[0];   // ← golden 的补位：第 0 项，不是 0
+        lanes[7] = lanes[0];
+        for (int s = 0; s < SINGLE_G; s++)
+          single |= fuTypeOHSingle[l][s] & (S_IQ[s] == q);
+        uopSelIQ_next[l][q] = renameIn_valid[l] & (multi ? lanes[idx] : single);
+      end
+  end
 
   always_ff @(posedge clock) begin   // 无复位：照抄 golden
-    for (int l = 0; l < RENAME_W; l++) begin
-      if (toRenameAllFire) begin
-        for (int q = 0; q < IQ_NUM; q++) begin
-          automatic logic [7:0] lanes;   // 8 项：0..5 是真 lane，6/7 复制第 0 项
-          automatic logic [2:0] idx;
-          automatic logic       multi;
-          automatic logic       single;
-          lanes = '0;
-          idx   = '0;
-          multi = 1'b0;
-          single = 1'b0;
-          for (int g = 0; g < MULTI_G; g++) begin
-            multi |= fuTypeOH[l][g];
-            idx   |= fuTypeOH[l][g] ? popFuTypeOH[l][g] : 3'd0;   // Mux1H
-            for (int p = 0; p < RENAME_W; p++)
-              lanes[p] |= fuTypeOH[l][g] & minIQSelAll[g][p][q];  // Mux1H over groups
-          end
-          lanes[6] = lanes[0];   // ← golden 的补位：第 0 项，不是 0
-          lanes[7] = lanes[0];
-          for (int s = 0; s < SINGLE_G; s++)
-            single |= fuTypeOHSingle[l][s] & (S_IQ[s] == q);
-          uopSelIQ[l][q] <= renameIn_valid[l] & (multi ? lanes[idx] : single);
-        end
-      end else begin
+    for (int l = 0; l < RENAME_W; l++)
+      if (toRenameAllFire) uopSelIQ[l] <= uopSelIQ_next[l];
+      else
         for (int q = 0; q < IQ_NUM; q++)
           uopSelIQ[l][q] <= ~firedVec[l] & uopSelIQ[l][q];
-      end
-    end
   end
 
   // -------------------------------------------------------------------------

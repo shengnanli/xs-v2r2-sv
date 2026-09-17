@@ -85,13 +85,33 @@ def impl_domains():
         if not m:
             continue
         is_async = m.group(2) is not None
-        depth, j, body = 0, i, []
-        while j < len(lines):
-            body.append(lines[j])
-            depth += lines[j].count('begin') - len(re.findall(r'\bend\b', lines[j]))
-            if j > i and depth <= 0:
-                break
-            j += 1
+        # 块体有两种写法，都要认：
+        #   (a) always_ff ... begin ... end      -> 按 begin/end 配平
+        #   (b) always_ff ... 后面直接跟单条语句（可能套 for），无 begin
+        #       -> 收到第一条以 ';' 结尾的语句为止
+        # 第一版只写了 (a)，改成逐组 generate（里面全是无 begin 的写法）之后
+        # 这道闸立刻报"找不到 always_ff 赋值" —— fail-closed 是对的，
+        # 但漏的是解析器不是设计，所以补 (b)。
+        body, j = [lines[i]], i + 1
+        rest = lines[i]
+        if 'begin' not in rest:
+            while j < len(lines) and 'begin' not in lines[j] and not lines[j].rstrip().endswith(';'):
+                body.append(lines[j]); j += 1
+            if j < len(lines):
+                body.append(lines[j])
+                if 'begin' in lines[j]:
+                    depth = lines[j].count('begin') - len(re.findall(r'\bend\b', lines[j]))
+                    j += 1
+                    while j < len(lines) and depth > 0:
+                        body.append(lines[j])
+                        depth += lines[j].count('begin') - len(re.findall(r'\bend\b', lines[j]))
+                        j += 1
+        else:
+            depth = rest.count('begin') - len(re.findall(r'\bend\b', rest))
+            while j < len(lines) and depth > 0:
+                body.append(lines[j])
+                depth += lines[j].count('begin') - len(re.findall(r'\bend\b', lines[j]))
+                j += 1
         text = '\n'.join(body)
         has_rst = bool(re.search(r'\bif\s*\(\s*reset\s*\)', text))
         names = set(re.findall(r'\s(\w+)\s*(?:\[[^\]]*\])*\s*<=', text))
