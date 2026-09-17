@@ -72,6 +72,11 @@ done
 # 闸的完备性闸：任何 scripts/gen_*.py 要么进上面的列表，要么在
 # check_gen_gate_complete.py 的 NO_CHECK 豁免表里写明理由，没有第三条路。
 run "生成器闸完备性"     python3 scripts/check_gen_gate_complete.py
+# UT initreg 棘轮：147 个 UT 里 68 个的 Makefile 完全没提 initreg（2026-09-17 实测），
+# 也就是说这些目标的 UT 验收是在"寄存器初值由 VCS 默认决定"下过的。
+# 存量一次性补齐要重跑 68 个 UT 且大概率真跑红一批，不在别的工作进行中引爆；
+# 所以只做"可见 + 不许再涨"，新 UT 必须合规。
+run "UT initreg 棘轮"   python3 scripts/check_ut_initreg.py
 # 上面三条是**逐个**挂 --check 的 scripts/gen_*.py。verif/ut/*/gen.py 那一层有 9 个，
 # 其中 8 个根本没有 --check（SRAMTemplateNewForm 是最后一个敞口）。与其逐个改生成器，
 # 不如统一验一次：在 HEAD 上开 detached worktree 重跑全部，产物必须逐字不变。
