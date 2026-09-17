@@ -218,8 +218,12 @@ module xs_TLFIFOFixer_core
   //        flight[i] <= ~(clr & d_source==i) & ((set & a_source==i) | flight[i])
   //    —— 清**包在最外层**, 所以同一拍既置又清时**清赢**。下面写成"先置后清"的
   //    两条 if, 语义与之逐位相同, 但比 96×128 条展平表达式好读得多。
-  logic                    flight [END_SOURCE_ID];
-  logic                    a_track_set, d_track_clr;
+  //  ★ flight 用**压缩**向量而不是 logic flight[12288]: 复位要一次清 12,288 位,
+  //    写成 `for (i) flight[i] <= 0` 会被 Formality 判「循环超过最大展开次数」
+  //    (FMR_ELAB-268 -> set_top 失败 FM-156, 2026-09-17 实测)。压缩向量可以直接
+  //    `flight <= '0`, 既没有循环, 也比逐位赋值好读。
+  logic [END_SOURCE_ID-1:0] flight;
+  logic                     a_track_set, d_track_clr;
 
   // ★ Chisel 写的是 `flight(source) := !a_notFIFO`, 但 golden 里置入的是常数 1:
   //   a_notFIFO = edgeIn.manager.fastProperty(addr, _.fifoId != Some(0)) 在本例化下
@@ -243,9 +247,8 @@ module xs_TLFIFOFixer_core
     stall = 1'b0;
     for (int g = 0; g < NUM_MASTERS; g++) begin
       group_sel[g]  = (in_a_source[SOURCE_W-1:GROUP_W] == MASTER_IDX_W'(g));
-      group_busy[g] = 1'b0;
-      for (int k = 0; k < GROUP_SIZE; k++)
-        group_busy[g] |= flight[g * GROUP_SIZE + k];
+      // 该组占 source id [g*128, g*128+127], 有任意一位在飞就算 busy
+      group_busy[g] = |flight[g * GROUP_SIZE +: GROUP_SIZE];
       // "这组还有在飞请求, 而本拍要打的是另一个域(或压根判不出域)" → 必须等
       group_stall[g] = group_sel[g] & a_first & group_busy[g]
                      & (a_no_domain | (group_domain[g] != a_domain));
@@ -263,7 +266,7 @@ module xs_TLFIFOFixer_core
     if (reset) begin
       a_beats_left <= '0;
       d_beats_left <= '0;
-      for (int i = 0; i < END_SOURCE_ID; i++) flight[i] <= 1'b0;
+      flight       <= '0;
     end
     else begin
       if (a_fire)
