@@ -91,11 +91,11 @@
 //   L1090  送 FTQ 的控制输出
 //   L1144  TOPDOWN_ —— 取指气泡归因
 //   L1216  上电复位状态
-//   L1225  predCycle —— 打在预测包上的时间戳
-//   L1261  SEGPC_ —— update pc 的分段打拍
+//   L1227  predCycle —— 打在预测包上的时间戳
+//   L1279  SEGPC_ —— update pc 的分段打拍
 //   L1281  PERF_ —— Composer 的 7 路性能计数各打 2 拍再送出
 //   L1259  golden 这 14 个寄存器**不带复位**
-//   L1296  Predictor —— golden 同名 wrapper
+//   L1314  Predictor —— golden 同名 wrapper
 //
 
 package predictor_pkg;
@@ -279,7 +279,9 @@ module xs_Predictor_core
   output logic                    s3_ftq_idx_flag,
   output logic [FTQ_PTR_BITS-1:0] s3_ftq_idx_value,
   output logic [NUM_REASON-1:0]   topdown_info_reasons,
-  output logic [63:0]             pred_cycle,
+  // 每级一个：golden 的三个 predCycle 输出各取**自己那一级**的计数器，
+  // 合并成一个会让 FM 在端口比较点上判不等价（详见 predCycle 节的注释）。
+  output logic [63:0]             pred_cycle  [0:NUM_STAGE-1],
   output vaddr_t                  update_pc_seg,       // 分段打拍后的 update pc（送 Composer）
   output logic [5:0]              perf_out    [0:6]
 );
@@ -1240,7 +1242,23 @@ module xs_Predictor_core
         for (int d = 0; d < NUM_DUP; d++) pred_cycle_q[s][d] <= pred_cycle_q[s][d] + 64'h1;
     end
   end
-  assign pred_cycle = pred_cycle_q[0][0];
+  // ★每级取各自的 dup0 计数器，不能三级共用一个★（2026-09-17 FM 实测）
+  //
+  // 这 12 个计数器同在一个 always 块里、同复位、同步 +1、无任何其它赋值
+  // （golden Predictor.sv:23318 起，12 条 <=64'h0 与 12 条 +1，别无它路），
+  // 所以它们的**值恒等** —— 仿真里永远看不出差别，UT 也永远抓不到。
+  //
+  // 但 golden 的三个输出端口各接各级的计数器（:44818 / :44853 等），而本核原先
+  // 三级共用 pred_cycle_q[0][0]（S1 那一级）。FM 按**比较点结构**比：ref 的 s2
+  // 端口由 s2 计数器驱动、impl 由 s1 计数器驱动，是两个不同的寄存器，
+  // FM 无法证明"两个独立寄存器永远相等"，于是 128 个端口比较点判 failing。
+  //
+  // ★所以这条不是功能 bug，是可证性问题★，也不是"为迁就 FM 改可读 RTL"——
+  // 恰恰相反：golden 本来就是每级各取各的，是本核把三个输出合并成了一个。
+  // 展开端口是让实现贴近事实，不是扭曲它。
+  for (genvar s = 0; s < NUM_STAGE; s++) begin : g_pred_cycle_out
+    assign pred_cycle[s] = pred_cycle_q[s][0];
+  end
 
   // 折叠历史送 Composer：s0 的两份 + s1 的一份（Composer 只消费 s1_folded_hist_3）
   for (genvar k = 0; k < 2; k++) begin : g_fh_out
@@ -2217,7 +2235,7 @@ module Predictor(
   vaddr_t       s1_pc_w [0:NUM_DUP-1], s2_pc_w [0:NUM_DUP-1], s3_pc_w [0:NUM_DUP-1];
   redirect_bundle_t rdr_in_w, rdr_q_w;
   logic [NUM_REASON-1:0] topdown_reasons_w;
-  logic [63:0]           pred_cycle_w;
+  logic [63:0]           pred_cycle_w [0:2];   // 每级一个（见核内 predCycle 节）
   cgh_ptr_t     s3_gp_o_w, upd_hp_w;
 
   // Composer 的 io_s2_ready / io_s3_ready 在 golden 里**不存在** —— BasePredictor 里
@@ -2495,7 +2513,7 @@ module Predictor(
     .s3_ftq_idx_flag      (io_bpu_to_ftq_resp_bits_s3_ftq_idx_flag),
     .s3_ftq_idx_value     (io_bpu_to_ftq_resp_bits_s3_ftq_idx_value),
     .topdown_info_reasons (topdown_reasons_w),
-    .pred_cycle           (pred_cycle_w),
+    .pred_cycle           (pred_cycle_w),   // [0]=S1 [1]=S2 [2]=S3
     .update_pc_seg        (update_pc_seg_w),
     .perf_out             (perf_out_w)
   );
@@ -2506,9 +2524,9 @@ module Predictor(
   assign io_bpu_to_ftq_resp_bits_s3_hasRedirect_3 = s3_redirect_w[3];
   assign io_bpu_to_ftq_resp_bits_last_stage_spec_info_histPtr_flag  = s3_gp_o_w.flag;
   assign io_bpu_to_ftq_resp_bits_last_stage_spec_info_histPtr_value = s3_gp_o_w.value;
-  assign io_bpu_to_ftq_resp_bits_s1_full_pred_0_predCycle = pred_cycle_w;
-  assign io_bpu_to_ftq_resp_bits_s2_full_pred_0_predCycle = pred_cycle_w;
-  assign io_bpu_to_ftq_resp_bits_s3_full_pred_0_predCycle = pred_cycle_w;
+  assign io_bpu_to_ftq_resp_bits_s1_full_pred_0_predCycle = pred_cycle_w[0];
+  assign io_bpu_to_ftq_resp_bits_s2_full_pred_0_predCycle = pred_cycle_w[1];
+  assign io_bpu_to_ftq_resp_bits_s3_full_pred_0_predCycle = pred_cycle_w[2];
   assign io_bpu_to_ftq_resp_bits_topdown_info_reasons_1  = topdown_reasons_w[1];
   assign io_bpu_to_ftq_resp_bits_topdown_info_reasons_2  = topdown_reasons_w[2];
   assign io_bpu_to_ftq_resp_bits_topdown_info_reasons_3  = topdown_reasons_w[3];
