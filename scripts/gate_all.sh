@@ -28,6 +28,10 @@ run "位置依赖闸"       python3 scripts/test_no_location_dependency.py
 run "台账行序闸"       python3 scripts/test_ledger_append_only.py
 # 覆盖率台账幂等（codex 0161）：三个口径必须能从 golden 与 rtl/ 现场重算。
 # 它存在的理由是"253/253"曾被读成"重写完成"，而实测按行数只有 7.4%。
+# 空壳不得抬高 proven 覆盖率（2026-09-16）：覆盖率台账原来按「rtl/ 里有同名 module」
+# 记账，于是一个只实现两成逻辑的 LoadQueueReplay 骨架就把覆盖率从 7.4% 抬到 11.0%，
+# 凭空记 138,860 行 golden。判据已改成按绿判决证据记；这道闸把「改好了」变成「改住了」。
+run "覆盖率空壳闸"     python3 scripts/test_coverage_no_shell_inflation.py
 run "覆盖率台账幂等"   python3 scripts/rewrite_coverage.py --check
 # FM Tcl 毒字符串闸：fm_shell 把入口 Tcl **逐行回显**进 fm.log（注释也不例外），
 # 而 fm_verdict.py 的 _ELAB147/_DONTVERIFY 是在整份日志上做正则 —— 于是在注释里
@@ -44,10 +48,18 @@ run "fm_eq 结构闸"     python3 scripts/test_fm_eq_wellformed.py
 # gen_sram_wrappers.py 2026-09-14 进闸：它当时**不是**幂等的——33 个薄文件里的 6 个
 # G1_* 锚点和 UT Makefile 的 negtest 段都是手工补在生成产物上的，谁跑一次生成器
 # 就全没（与 tlbuffer 同一个病）。并回生成器后才挂上 --check。
+# 2026-09-17 补：这个列表原先只有三个，而实测 11 个 scripts/gen_*.py 里有 6 个支持
+# --check —— gen_ndaux / gen_npc_missing3 / gen_splittedsram 三个一直在闸外。
+# 三个都能跑通、都是幂等的，也就是说漏的不是坏文件，是**没人记得加**。
+# 所以除了把它们补进来，下面还加了一道 check_gen_gate_complete.py 专门堵这个形状。
 for g in scripts/gen_tlbuffer_ad_family.py scripts/gen_mbist_pipe_family.py \
-         scripts/gen_sram_wrappers.py; do
+         scripts/gen_sram_wrappers.py scripts/gen_ndaux.py \
+         scripts/gen_npc_missing3.py scripts/gen_splittedsram.py; do
   [ -f "$g" ] && run "生成器幂等 $(basename $g .py | sed 's/^gen_//')" python3 "$g" --check
 done
+# 闸的完备性闸：任何 scripts/gen_*.py 要么进上面的列表，要么在
+# check_gen_gate_complete.py 的 NO_CHECK 豁免表里写明理由，没有第三条路。
+run "生成器闸完备性"     python3 scripts/check_gen_gate_complete.py
 # 上面三条是**逐个**挂 --check 的 scripts/gen_*.py。verif/ut/*/gen.py 那一层有 9 个，
 # 其中 8 个根本没有 --check（SRAMTemplateNewForm 是最后一个敞口）。与其逐个改生成器，
 # 不如统一验一次：在 HEAD 上开 detached worktree 重跑全部，产物必须逐字不变。
