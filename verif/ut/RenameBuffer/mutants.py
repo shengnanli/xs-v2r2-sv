@@ -18,8 +18,7 @@
   M5     s_special_walk 的结束阈值差一（<=6 vs <6）；
   M6     提交/回滚读口选反（s_special_walk 走的是**提交**指针）；
   M7     deqPtrOH 推进量不看状态（s_walk 期间也跟着走）；
-  M8     重定向且 useSnpt 时 vecLoadExcp **应当保持**（golden 是空 then 分支），
-         写成「收输入」就错；
+  M8     robWalkEndReg 没被 redirect 清掉（golden 写的是 ~redirect & (walkEnd | reg)）；
   M9     commitValid 的比较写成 >=（差一）；
   M10    队列占用量同 flag 分支写成 9 位减法（golden 是 8 位减法后零扩展）——
          只有在 tb 把队列灌到 enqPtr 越过 deqPtr 时才看得见；
@@ -27,8 +26,8 @@
          一样（即把 Chisel 那处 zip 笔误「修好」）；
   M12    SnapshotGenerator：valids 的更新优先级翻转（置压过清）。
 
-★ 已知**测不出来**的四类改动（诚实记下，不在 MUTANTS 里凑数）★
-四条都**实测过**：各自注入后跟 20k 拍（SEED=1, initreg=random），
+★ 已知**测不出来**的五类改动（诚实记下，不在 MUTANTS 里凑数）★
+五条都**实测过**：各自注入后跟 20k 拍（SEED=1, initreg=random），
 compared=1666560 errors=0 —— 即 UT 对它们零判别力。
   (a) 把提交读口的 one-hot 影子寄存器 deqPtrOH 换成 buffer_q[deqPtr.value+i]：
       两者在本 tb 里恒等（deqPtrOH 异步复位成 256'h1、deqPtr 复位成 0，此后
@@ -43,6 +42,12 @@ compared=1666560 errors=0 —— 即 UT 对它们零判别力。
       **仿真管不住**，只能靠 FM（多一个复位比对点）。实测依据：把
       `walk_ptr_q <= walk_ptr_next` 改成 `<= reset ? '0 : walk_ptr_next`，
       20k 拍 errors=0。tb 的暖机里仍然把它写成确定值（无害，且不依赖这条结论）。
+  (e) ★redirect 且 useSnpt 时 vecLoadExcp 是「保持」还是「收输入」★：
+      vecLoadExcp_valid 只在 state==s_special_walk 时被读（算 toVecExcpMod 的 valid），
+      而**进 s_special_walk 的唯一路径是 redirect 且 !useSnpt，那一拍它本就被
+      输入覆写**，所以 useSnpt 那条分支留下的差异永远活不到被读的时刻。
+      实测：把空 then 分支改成「无条件收输入」，20k 拍 errors=0。
+      它是 golden 的寄存器，FM 会比到；UT 比不到。
   (d) ★缓冲表写端口优先级★：golden 的 if/else-if 链是 req[5] 优先，但
       allocatePtrVec[w] = enqPtr + popcount(realNeedAlloc[0..w-1])，**两路都真要占格时
       指针不可能相等**，所以冲突压根不存在，优先级怎么排都一样。
@@ -98,9 +103,9 @@ MUTANTS = [
      "      deq_ptr_oh_q <= deq_ptr_oh_rot[deq_ptr_steps];",
      "      deq_ptr_oh_q <= deq_ptr_oh_rot[commit_count];"),
 
-    ('M8 重定向且 useSnpt 时 vecLoadExcp 收输入（golden 是保持）', RB,
-     "      if (~snpt_use) vec_load_excp_valid_q <= rob_vec_load_excp_valid;",
-     "      vec_load_excp_valid_q <= rob_vec_load_excp_valid;"),
+    ('M8 robWalkEndReg 不被 redirect 清掉（golden 是 ~redirect & (…)）', RB,
+     "      rob_walk_end_q <= ~redirect_valid & (rob_walk_end | rob_walk_end_q);",
+     "      rob_walk_end_q <= (rob_walk_end | rob_walk_end_q);"),
 
     ('M9 commitValid 比较差一（> 写成 >=）', RB,
      "      commits_commit_valid[i] = ((state_q == S_IDLE)         & (commit_size_q       > SIZE_W'(i)))",
@@ -148,7 +153,7 @@ def run_ut():
     log = ut / 'sim_1.log'
     if not log.exists():
         return None
-    # 只看 errors：20k 拍下覆盖项（第三次 reset 脉冲等）本来就达不到门限，
+    # 只看 errors：20k 拍下部分覆盖项（门限按 200k 定）本来就达不到，
     # 负测判据是「变异有没有被逐拍比对抓到」，与覆盖门限无关。
     m = re.search(r'compared=(\d+)\s+errors=(\d+)', log.read_text())
     return (int(m.group(1)), int(m.group(2))) if m else None
