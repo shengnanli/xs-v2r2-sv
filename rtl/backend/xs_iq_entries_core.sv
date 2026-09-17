@@ -26,7 +26,7 @@
 //   14 个 G1 变体全部走 hasCompAndSimp,故本核不实现另一分支(见文件尾 §11 待办)。
 //
 // =============================================================================
-// 本文件导航（共 1744 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+// 本文件导航（共 1752 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
 //   L57    §1 与变体无关的编码
 //   L81    §2 xs_iq_entry
 //   L329   §2.1 冲刷判定
@@ -38,18 +38,18 @@
 //   L614   §2.5 entryUpdate
 //   L682   §2.6 时序
 //   L722   §2.6a blocked / deqPortIdx
-//   L767   §2.6b IQ 唤醒子族专属的三组状态
-//   L802   §2.7 组合输出
-//   L901   §3 xs_iq_entries_core
-//   L1074  §3a 阵列层自己持有的两组寄存器(golden Entries.scala:140-142)
-//   L1118  §4 条目例化
-//   L1279  §5 deqSel / deqPortIdxWrite / issueResp
-//   L1322  §6 EnqPolicy
-//   L1353  §7 转移策略
-//   L1430  §8 othersEntryEnq 数据通路
-//   L1581  §9 发射出口
-//   L1649  §10 阵列状态汇聚输出
-//   L1690  §11 本核尚未实现的家族维度(给后续变体 owner 的清单,全部有 golden 依据)
+//   L775   §2.6b IQ 唤醒子族专属的三组状态
+//   L810   §2.7 组合输出
+//   L909   §3 xs_iq_entries_core
+//   L1082  §3a 阵列层自己持有的两组寄存器(golden Entries.scala:140-142)
+//   L1126  §4 条目例化
+//   L1287  §5 deqSel / deqPortIdxWrite / issueResp
+//   L1330  §6 EnqPolicy
+//   L1361  §7 转移策略
+//   L1438  §8 othersEntryEnq 数据通路
+//   L1589  §9 发射出口
+//   L1657  §10 阵列状态汇聚输出
+//   L1698  §11 本核尚未实现的家族维度(给后续变体 owner 的清单,全部有 golden 依据)
 // 导航由 verif/ut/Entries_common/core_nav.py 重算 —— 改完核跑一次，勿手改
 //
 
@@ -728,11 +728,19 @@ module xs_iq_entry
   //                入队条目的 blocked 入口恒 0(dispatch 不会送 blocked 的 uop),
   //                entryUpdate.status.blocked := false.B 又把次态钉死为 0。
   //                两种 OthersEntry(simp/comp)都有该寄存器。
-  //   deqPortIdx : ★ 条件是 **NUM_DEQ_PORTS==2**,不是"有没有 transEntry 出口"。
-  //                单发射口的变体里 deqPortIdx 恒 0 被折掉(VfdivVidiv 就是这样),
-  //                双发射口的变体连 comp 条目都有这个寄存器
-  //                (实测 14/14,见矩阵 comp_deqPortIdxRead 列)。
-  //                早先按 KEEP_WIDE 判是从最小变体外推出来的错结论。
+  //   deqPortIdx : ★ 条件是 **KEEP_WIDE || NUM_DEQ_PORTS > 1**(实测 14/14)。
+  //                enq / simp 两种条目**永远**有这个寄存器 —— 它们要把 deqPortIdx
+  //                随 transEntry 传给下一级,哪怕单发射口时它恒 0。
+  //                comp 是终端、不产 transEntry,所以只有双发射口时才需要它。
+  //                ★ 这一条我连着栽了两次,两次方向相反,记下来:★
+  //                  第一次:按 KEEP_WIDE 判 —— 漏了"双发射口时 comp 也要有",
+  //                          canary 上会少 16 个条目的寄存器。
+  //                  第二次:改成只按 NUM_DEQ_PORTS 判 —— 反过来把 enq/simp 的
+  //                          也删了。UT 完全看不见(单口时 deqPortIdx 恒 0,不影响
+  //                          任何输出),是 FM 的 FM-036 "Unknown name" 把它拽出来的。
+  //                教训:矩阵里只核过 comp 那一列,就把结论套到三种条目上 ——
+  //                      分份维度必须**逐个条目类型**核,别按一列外推(见矩阵
+  //                      deqPortIdxReg_enq/_simp/_comp 三列)。
   // ---------------------------------------------------------------------------
   generate
     if (IS_ENQ) begin : g_no_blocked
@@ -743,7 +751,7 @@ module xs_iq_entry
         r_blocked <= load_now ? enq_blocked : 1'b0;
     end
 
-    if (NUM_DEQ_PORTS > 1) begin : g_deq_port_idx
+    if (KEEP_WIDE || NUM_DEQ_PORTS > 1) begin : g_deq_port_idx
       always_ff @(posedge clock)
         r_deq_port_idx <= load_now ? (IS_ENQ ? 1'b0 : enq_deq_port_idx)
                                    : u_deq_port_idx;

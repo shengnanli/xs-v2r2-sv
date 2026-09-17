@@ -114,11 +114,20 @@ MUTANTS = [
      "        if (wk_iq_oh[s][w]) iq_exu_code[s] |= EXU_W'(w);",
      lambda v: (v.n_wk_iq > 0 and v.out_exu, '没有 exuSources 出口就看不见')),
 
-    ('M10', 'comp 条目的 deqPortIdx 寄存器按「有没有 transEntry 出口」生成 —— '
-            '正是从最小变体 VfdivVidiv 外推出来的那个错结论',
-     "    if (NUM_DEQ_PORTS > 1) begin : g_deq_port_idx",
+    ('M10', 'deqPortIdx 只按「有没有 transEntry 出口」生成 —— 丢掉"双发射口时 '
+            'comp 也要有"这一半，我第一次栽的方向',
+     "    if (KEEP_WIDE || NUM_DEQ_PORTS > 1) begin : g_deq_port_idx",
      "    if (KEEP_WIDE) begin : g_deq_port_idx",
-     lambda v: (v.n_deq == 2, '单发射口变体里 deqPortIdx 本来就恒 0')),
+     lambda v: (v.n_deq == 2, '单发射口变体里 comp 本来就没有这个寄存器')),
+
+    # ★ 结构型：UT 按构造看不见，靶子不拿它判 UT 的判别力 ★
+    ('M13', 'deqPortIdx 只按发射口数生成 —— 反过来把 enq/simp 的也删了，'
+            '我第二次栽的方向（UT 六轮全绿，是 FM 的 FM-036 Unknown name 抓出来的）',
+     "    if (KEEP_WIDE || NUM_DEQ_PORTS > 1) begin : g_deq_port_idx",
+     "    if (NUM_DEQ_PORTS > 1) begin : g_deq_port_idx",
+     lambda v: (v.n_deq == 1,
+                '双发射口变体里这个条件恒真，删掉 KEEP_WIDE 那一半不改变任何东西'),
+     'structural'),
 
     ('M11', 'comp 条目入口的 srcLoadDependency 钉 0 —— '
             '同样是从 VfdivVidiv 外推出来的错结论',
@@ -150,8 +159,9 @@ def main():
     a = ap.parse_args()
 
     if a.list:
-        for mid, desc, _, _, _ in MUTANTS:
-            print(f'{mid}: {desc}')
+        for m in MUTANTS:
+            kind = m[5] if len(m) > 5 else 'behavioral'
+            print(f'{m[0]} [{kind}]: {m[1]}')
         return 0
 
     utdir = REPO / 'verif' / 'ut' / a.top
@@ -167,17 +177,32 @@ def main():
 
     v0 = _gen.Variant(a.top)
     todo, na = [], []
+    # kind: 'behavioral'（默认，UT 必须抓住）/ 'structural'
+    #   ★ structural = 只改结构不改行为（例如删掉一个恒 0 的死寄存器）。
+    #     任何基于仿真的测试**按构造**都看不见它 —— 拿它去判 UT 的判别力是错的。
+    #     它的闸是 FM（FM-036 Unknown name / unmatched point），本轮 Vfdiv 回归
+    #     正是这么抓到的。所以单列一桶，跑但不计入判别力分子分母。
+    todo, na, struct = [], [], []
     for m in MUTANTS:
         if a.only and m[0] != a.only:
             continue
         ok, why = m[4](v0)
-        (todo if ok else na).append((m, why))
-    for (mid, desc, _, _, _), why in na:
-        print(f'[{mid}] N/A（本变体上这条变异是死的）: {why}')
+        kind = m[5] if len(m) > 5 else 'behavioral'
+        if not ok:
+            na.append((m, why))
+        elif kind == 'structural':
+            struct.append((m, why))
+        else:
+            todo.append((m, why))
+    for m, why in na:
+        print(f'[{m[0]}] N/A（本变体上这条变异是死的）: {why}')
+    for m, why in struct:
+        print(f'[{m[0]}] 结构型（UT 按构造看不见，闸在 FM）: {m[1]}')
 
     caught, escaped = [], []
 
-    for (mid, desc, old, new, _), _why in todo:
+    for m, _why in todo:
+        mid, desc, old, new = m[0], m[1], m[2], m[3]
         work = pathlib.Path(tempfile.mkdtemp(prefix=f'xsv2-mut-{mid}-'))
         try:
             # UT 的 Makefile 里写死了 ../../../rtl 与 ../../../scripts，
@@ -216,8 +241,9 @@ def main():
         finally:
             shutil.rmtree(str(work), ignore_errors=True)
 
-    print(f'\n变异判别力: 抓住 {len(caught)}/{len(todo)} 条适用变异'
-          f'（另有 {len(na)} 条在本变体上是死的，记 N/A —— 不算证据，也不算失败）')
+    print(f'\n变异判别力: 抓住 {len(caught)}/{len(todo)} 条适用的行为型变异'
+          f'（{len(na)} 条在本变体上是死的记 N/A；'
+          f'{len(struct)} 条是结构型、UT 按构造看不见，闸在 FM）')
     if escaped:
         print('逃逸清单（UT 在这些通路上没有判别力，必须先补激励/比对）:')
         for mid, desc in escaped:

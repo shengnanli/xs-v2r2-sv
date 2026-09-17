@@ -92,6 +92,9 @@ golden: `/home/eda/xs-env/G1-canonical/golden-rtl`
 | `vecLdIn` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 1 |
 | `vecMemIn` | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 1 | 1 |
 | `compMod` | OthersEntry_50 | OthersEntry_72 | OthersEntry_6 | OthersEntry_90 | OthersEntry_122 | OthersEntry_106 | OthersEntry_202 | OthersEntry_174 | OthersEntry_244 | OthersEntry_166 | OthersEntry_152 | OthersEntry_138 | OthersEntryVecMem_16 | OthersEntryVecMem_2 |
+| `deqPortIdxReg_enq` | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 |
+| `deqPortIdxReg_simp` | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1 |
+| `deqPortIdxReg_comp` | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 0 |
 | `comp_deqPortIdxRead` | 1 | 1 | 1 | 1 | 0 | 1 | 0 | 0 | 0 | 0 | 1 | 1 | 0 | 0 |
 | `comp_in_ldDep` | 1 | 1 | 1 | 0 | 0 | 0 | 1 | 1 | 1 | 0 | 0 | 0 | 0 | 0 |
 | `nPorts` | 848 | 828 | 831 | 651 | 598 | 641 | 705 | 700 | 753 | 638 | 762 | 788 | 870 | 876 |
@@ -144,11 +147,13 @@ canary `EntriesAluCsrFenceDiv` 在 INT 族。两者在矩阵里几乎没有重�
 
 这两条是共享核现在的写法，对 canary 是错的 —— 正是字段矩阵要防的那类错：
 
-* **comp 条目的 `deqPortIdx` 寄存器**。核现在按 `KEEP_WIDE`（= 有 transEntry 出口）
-  决定生不生成，依据是"VfdivVidiv 的 comp 条目没有这个寄存器"。
-  实测 14/14 的真实条件是 **`numDeq == 2`**（列 `comp_deqPortIdxRead`）：
-  VfdivVidiv `numDeq=1` 才被折成常量 0；canary `numDeq=2`，golden `OthersEntry_72`
-  **有** `io_commonOut_deqPortIdxRead`。
+* **`deqPortIdx` 寄存器**。真实条件是 **`KEEP_WIDE || numDeq > 1`**，
+  三列 `deqPortIdxReg_enq/_simp/_comp` 实测 14/14：enq 与 simp **恒有**
+  （要随 transEntry 往下传，哪怕单口时恒 0），comp 只有 `numDeq==2` 才有。
+  ★ 这一条我连着栽了两次，方向相反：先按 `KEEP_WIDE` 判（漏了双口时的 comp），
+    再改成只按 `numDeq` 判（反过来删掉了 enq/simp 的）。第二次 UT 六轮全绿，
+    是 FM 的 `FM-036 Unknown name` 才抓出来的。
+    根因是**只核了 comp 那一列就把结论套到三种条目上** —— 所以现在三列分开核。
 * **comp 条目入口的 `srcLoadDependency`**。核现在把 comp 段的 `x_ld_dep` 钉 0，
   依据是"golden 的 comp 条目入口不带这些位"。实测 14/14 的真实条件是
   **`ldDep_pipes > 0`**（列 `comp_in_ldDep`）：canary 的 `OthersEntry_72`

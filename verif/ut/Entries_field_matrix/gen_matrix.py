@@ -211,6 +211,18 @@ def probe(name, ports, insts, golden):
         comp_mod = max(others_all, key=lambda t: t[1])[0]
         cp, _ = parse_golden(os.path.join(golden, comp_mod + ".sv"))
         d["compMod"] = comp_mod
+
+        # ---- deqPortIdx 寄存器:**逐个条目类型**核 ----
+        # ★ 这一列本来只核了 comp,结果我把结论直接套到三种条目上,
+        #   把 enq/simp 的寄存器也删了 —— UT 看不见(单口时它恒 0),
+        #   是 FM 的 FM-036 "Unknown name" 才把它拽出来的。
+        #   分份维度必须逐个条目类型核,不许按一列外推。
+        simp_mod = min(others_all, key=lambda t: t[1])[0]
+        enq_mod = next((m for m in insts if m.startswith("EnqEntry")), None)
+        reg_rx = re.compile(r'^\s*reg\s+entryReg_status_deqPortIdx\s*;', re.M)
+        for tag, mod in (("enq", enq_mod), ("simp", simp_mod), ("comp", comp_mod)):
+            txt = open(os.path.join(golden, mod + ".sv")).read()
+            d["deqPortIdxReg_" + tag] = 1 if reg_rx.search(txt) else 0
         # comp 条目是否真有 deqPortIdx 寄存器（等价于 numDeq==2）
         d["comp_deqPortIdxRead"] = 1 if "io_commonOut_deqPortIdxRead" in cp else 0
         # comp 条目入口是否带 srcLoadDependency（等价于 ldDep_pipes>0）
@@ -273,11 +285,13 @@ canary `EntriesAluCsrFenceDiv` 在 INT 族。两者在矩阵里几乎没有重�
 
 这两条是共享核现在的写法，对 canary 是错的 —— 正是字段矩阵要防的那类错：
 
-* **comp 条目的 `deqPortIdx` 寄存器**。核现在按 `KEEP_WIDE`（= 有 transEntry 出口）
-  决定生不生成，依据是"VfdivVidiv 的 comp 条目没有这个寄存器"。
-  实测 14/14 的真实条件是 **`numDeq == 2`**（列 `comp_deqPortIdxRead`）：
-  VfdivVidiv `numDeq=1` 才被折成常量 0；canary `numDeq=2`，golden `OthersEntry_72`
-  **有** `io_commonOut_deqPortIdxRead`。
+* **`deqPortIdx` 寄存器**。真实条件是 **`KEEP_WIDE || numDeq > 1`**，
+  三列 `deqPortIdxReg_enq/_simp/_comp` 实测 14/14：enq 与 simp **恒有**
+  （要随 transEntry 往下传，哪怕单口时恒 0），comp 只有 `numDeq==2` 才有。
+  ★ 这一条我连着栽了两次，方向相反：先按 `KEEP_WIDE` 判（漏了双口时的 comp），
+    再改成只按 `numDeq` 判（反过来删掉了 enq/simp 的）。第二次 UT 六轮全绿，
+    是 FM 的 `FM-036 Unknown name` 才抓出来的。
+    根因是**只核了 comp 那一列就把结论套到三种条目上** —— 所以现在三列分开核。
 * **comp 条目入口的 `srcLoadDependency`**。核现在把 comp 段的 `x_ld_dep` 钉 0，
   依据是"golden 的 comp 条目入口不带这些位"。实测 14/14 的真实条件是
   **`ldDep_pipes > 0`**（列 `comp_in_ldDep`）：canary 的 `OthersEntry_72`
@@ -370,8 +384,15 @@ def main():
     # 矩阵自检：下面两条等价关系是共享核里两处 generate 条件的依据。
     # 如果哪天某个变体破了它，核里那两处就必须改 —— 所以让矩阵直接守住。
     for r in rows:
-        assert r["comp_deqPortIdxRead"] == int(r["numDeq"] == 2), (
+        # 共享核里 deqPortIdx 那处 generate 的条件是 KEEP_WIDE || NUM_DEQ_PORTS>1，
+        # 逐个条目类型核死它（enq/simp 恒有；comp 只有双发射口才有）。
+        assert r["deqPortIdxReg_enq"] == 1 and r["deqPortIdxReg_simp"] == 1, (
+            f'{r["variant"]}: enq/simp 的 deqPortIdx 寄存器不再恒存在 —— '
+            '核里 KEEP_WIDE 那一半条件要改')
+        assert r["deqPortIdxReg_comp"] == int(r["numDeq"] == 2), (
             f'{r["variant"]}: comp 的 deqPortIdx 寄存器与 numDeq==2 不再等价')
+        assert r["comp_deqPortIdxRead"] == int(r["numDeq"] == 2), (
+            f'{r["variant"]}: comp 的 deqPortIdxRead 出口与 numDeq==2 不再等价')
         assert r["comp_in_ldDep"] == int(r["ldDep_pipes"] > 0), (
             f'{r["variant"]}: comp 入口的 srcLoadDependency 与 ldDep_pipes>0 不再等价')
     tsv, md = to_tsv(rows), to_md(rows, a.golden)

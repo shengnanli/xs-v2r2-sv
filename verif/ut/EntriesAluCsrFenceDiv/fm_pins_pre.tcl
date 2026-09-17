@@ -12,6 +12,10 @@
 #   entryReg_status_srcStatus_<s>_{exuSources_value,useRegCache,regCacheIdx}
 #                                                       <-> r_{exu_src,use_rc,rc_idx}_reg[s][..]
 #
+# ★ 钉点数不是证据 ★ set_user_match 对不存在的名字不报错（实测），所以本文件
+#   末尾那个计数只说明"没抛异常"。判钉点真的生效，看 fm.log 的三条：
+#   Error: FM-036 行数为 0 / match 后 Unmatched 0(0) / 终判 SUCCEEDED failing=0。
+#
 # 放在**首次 match 之前**（fm_pins_pre.tcl）而不是之后：Formality 只在计数非零时
 # 才打印 "N(M) Unmatched ... unread points"，fm_verdict.py 取日志里最后一次出现的
 # 那行；钉在 match 之后会让第一次 match 的陈旧非零值被当成终态读回。
@@ -20307,10 +20311,17 @@ if {$top eq "EntriesAluCsrFenceDiv"} {
       incr _n
     }
   }
-  puts "IQE_PINS: $_n / 20270 pinned, $_miss missed"
-  # 一条都不许钉不上：钉不上说明偏移表/实例名与本次 elaborate 的设计对不上,
-  # 那时继续跑出来的 SUCCEEDED 是假的。fail-closed。
-  if {$_miss != 0} { error "IQE_PIN_MISS=$_miss" }
+  puts "IQE_PINS: $_n / 20270 tried, $_miss threw"
+  # ★ 这个计数**不是** fail-closed，别拿它当判据 ★
+  #   实测（Lane L 的负向探针）：set_user_match 喂一个完全不存在的路径
+  #   照样返回 0，catch 抓不到 —— 所以"钉满 N 个"只说明没抛 Tcl 异常，
+  #   不说明这 N 对名字在设计里真的存在。
+  #   真正 fail-closed 的判据有三条，都在 fm.log 里：
+  #     (1) FM 打的 "Error: FM-036" 行数为 0（钉了不存在的名字会在这里现形）
+  #     (2) match 之后 Unmatched Points 是 0(0)
+  #     (3) 终判 SUCCEEDED 且 failing=0 / unverified=0 / aborted=0
+  #   下面这条只兜住"Tcl 当场抛异常"这一种情况，聊胜于无。
+  if {$_miss != 0} { error "IQE_PIN_THREW=$_miss" }
 }
 
 # --- golden 侧不存在、因而未钉的寄存器（firtool 在该条目类型里 DCE 掉了）---
