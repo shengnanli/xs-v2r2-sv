@@ -32,9 +32,16 @@ NCYCLES = '20000'
 
 # (说明, 锚点, 替换)
 MUTANTS = [
-    ('M1 给 debug_ssid 补上 golden 没有的复位',
-     "      debug_valid   <= '0;",
-     "      debug_valid   <= '0;\n      debug_ssid    <= '0;"),
+    # ★M1 必须写成「把 §9 那个块改成带异步复位」，不能写成「在 §8 的复位臂里
+    #   多加一行 debug_ssid <= '0」★：后者让同一个变量被两个 always_ff 块驱动，
+    #   VCS 直接 Error-[ICPD] Illegal combination of drivers 拒编 —— 那不是一个
+    #   能跑的变体，只能证明编译器会拦，证明不了 UT 有没有判别力。
+    #   （2026-09-17 实测踩到：拒编之后 make 停在编译步，旧的 sim_1.log 还在，
+    #     harness 把上一次的 errors=0 当成本次结果，报了个假的「逃逸」。
+    #     run_ut() 现在每次先删日志、并检查 make 的返回码，这条路已经堵上。）
+    ('M1 给 debug_ssid 补上 golden 没有的异步复位',
+     "  always_ff @(posedge clock) begin\n    if (s2_valid) begin",
+     "  always_ff @(posedge clock or posedge reset) begin\n    if (reset) debug_ssid <= '0;\n    else if (s2_valid) begin"),
 
     ('M2 去掉 debug_valid 的异步复位（golden 有）',
      "      debug_valid   <= '0;\n      reset_counter <= '0;",
@@ -90,11 +97,19 @@ def restore():
 
 
 def run_ut():
+    """跑一次 UT，返回 (checks, errors)；编译或仿真没跑成返回 None。
+
+    ★先删日志再跑★：变异如果让 VCS 拒编，make 会停在编译步，**上一次的
+    sim_1.log 原样留在那里**，读它就等于把上一次的结果当成这一次的——
+    2026-09-17 实测靠这个假出过一次「逃逸」。
+    """
     ut = BUILD / 'verif' / 'ut' / 'SSIT'
+    log = ut / 'sim_1.log'
+    if log.exists():
+        log.unlink()
     subprocess.run(['make', 'run', 'SEED=1', 'NCYCLES=' + NCYCLES], cwd=str(ut),
                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                    universal_newlines=True)
-    log = ut / 'sim_1.log'
     if not log.exists():
         return None
     m = re.search(r'checks=(\d+) errors=(\d+)', log.read_text())
