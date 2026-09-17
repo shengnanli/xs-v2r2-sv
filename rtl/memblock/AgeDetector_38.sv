@@ -74,10 +74,19 @@ module xs_AgeDetector_38_core
 
   logic age [NUM_AGE];
 
-  // get_age(i,j)：i 是否不晚于 j。下三角由上三角取反得到。
-  function automatic logic get_age(input int i, input int j);
-    return (i <= j) ? age[age_idx(i, j)] : ~age[age_idx(j, i)];
-  endfunction
+  // ageFull[i][j]：完整 24×24 的"条目 i 不晚于条目 j"矩阵（即 Chisel 的 get_age）。
+  //   i <= j 直接取寄存器；i > j 取对称位的反。对角线 ageFull[i][i] = age[i][i]，
+  //   也就是被复用成"条目 i 当前有效"的那一位。
+  // ★ 这里刻意**不写成 function**：函数体若读模块级的 age，Formality 报
+  //   FMR_VLOG-091（Using non-local variable 'age' in task/function），并在
+  //   set_top 处直接失败（FM-262 → FM-156）；本仓 CONVENTIONS 也早有同一条告诫
+  //   （generate/function 捕获模块级信号，仿真会返 X）。age_idx 只吃 int 参数、
+  //   不碰模块信号，可以留作函数。
+  logic ageFull [NUM_ENTRIES][NUM_ENTRIES];
+  always_comb
+    for (int i = 0; i < NUM_ENTRIES; i++)
+      for (int j = 0; j < NUM_ENTRIES; j++)
+        ageFull[i][j] = (i <= j) ? age[age_idx(i, j)] : ~age[age_idx(j, i)];
 
   // ===========================================================================
   // 2. 每个条目的进队/出队/有效
@@ -97,7 +106,7 @@ module xs_AgeDetector_38_core
       anyEnq = 1'b0;
       for (int k = 0; k < NUM_ENQ; k++) anyEnq |= io_enq[k][i];
       isEnqueued[i] = anyEnq & ~io_deq[i];
-      thisValid[i]  = age[age_idx(i, i)] | isEnqueued[i];
+      thisValid[i]  = ageFull[i][i] | isEnqueued[i];
 
       for (int k = 0; k < NUM_ENQ; k++) begin
         logic lower;
@@ -127,8 +136,8 @@ module xs_AgeDetector_38_core
         if (io_deq[i])      nextAge[age_idx(i, j)] = 1'b0;          // (1) i 出队：整行清 0
         else if (io_deq[j]) nextAge[age_idx(i, j)] = thisValid[i];  // (2) j 出队：整列 = i 的有效位
         else if (isEnqueued[i])                                     // (3) i 进队
-          nextAge[age_idx(i, j)] = ~age[age_idx(j, j)] & ~beatenByEarlierPort;
-        else                nextAge[age_idx(i, j)] = get_age(i, j); // (4) 保持
+          nextAge[age_idx(i, j)] = ~ageFull[j][j] & ~beatenByEarlierPort;
+        else                nextAge[age_idx(i, j)] = ageFull[i][j];  // (4) 保持
       end
 
   // ===========================================================================
@@ -139,7 +148,7 @@ module xs_AgeDetector_38_core
       logic oldest;
       oldest = 1'b1;
       for (int j = 0; j < NUM_ENTRIES; j++)
-        if (i != j) oldest &= ~io_ready[j] | get_age(i, j);
+        if (i != j) oldest &= ~io_ready[j] | ageFull[i][j];
       io_out[i] = io_ready[i] & oldest;
     end
 
