@@ -65,8 +65,29 @@ endmodule
 ## 正确性验收（每模块必过，缺一不可）
 1. **UT（VCS 双例化）**：golden `<Module>` 与重写 `<Module>_xs`（脚本从主文件派生改名）
    同激励并跑，逐拍比全部输出。seed 1/7/42 各 ≥100k 拍，errors=0。
-   编译带 `+define+SYNTHESIS +vcs+initreg+random`（另一轮 `+vcs+initreg+0`），
+   ★`+vcs+initreg` 的正确用法（2026-09-17 实测更正）★：
+   - **编译期**只写一次 `+vcs+initreg+random`，它的作用是**打开这套机制**；
+   - **取值在运行期**由 plusarg 选：`./simv +vcs+initreg+0` 或 `+vcs+initreg+random`
+     （本仓即 `make run SIM_ARGS=...`，见 `scripts/ut_common.mk` 的 `SIM_ARGS`）。
+
+   本条原先写成「编译带 …（另一轮 `+vcs+initreg+0`）」，**照字面做会当场拒编**
+   （VCS W-2024.09-SP1 实测）：
+   ```
+   Error-[OBSL_OPT_E] Obsolete option 'vcs+initreg+0' used. Please use
+   +vcs+initreg+random at compile time and choose either 0|1|random|<seed>
+   at runtime using +vcs+initreg.
+   ```
+   仓库里其它 UT 用的一直是运行期写法，只有这行文档是错的。
+
+   所以「两轮」= **同一个 simv 跑两次**，不是编两次。
+   编译带 `+define+SYNTHESIS +vcs+initreg+random`；
    VCS 环境：`VCS_ARCH_OVERRIDE=linux` 必配 `-full64`。
+
+   ★两轮都绿≠复位域正确★：若被测件的可观测行为对上电初值不敏感
+   （不复位寄存器都在比较窗口打开前被写成确定值），两轮必然都绿，
+   **这时它证明不了任何事**。复位域要靠「结构比对 golden 的 always 块分类」
+   + 针对性 mutant（给 golden 没有的寄存器加复位 / 去掉 golden 有的复位）来把关。
+   TLBFA 家族实测就是这种情形：两轮全绿，真正拦住 M9/M10 的是复位域结构闸。
 2. **FM（Formality 等价）**：golden 为 ref，`<Module>`（wrapper）为 impl，
    要求 native `SUCCEEDED`，failing=0、unmatched=0；unread 点须诊断归零或
    给出对称双射证明（vmucp），禁止 dont_verify / relaxed appvar / 假白名单。
