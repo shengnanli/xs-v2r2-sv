@@ -115,6 +115,75 @@ endmodule
   上轮 OOM 事故是 63k 行大模块并发造成的，教训适用于大模块，不适用于小模块。
   禁 `pkill -f`（会误杀其他任务的 simv）。
 - chisel Vec 越界读语义是回绕不是 0（上轮 LoadQueue replay 真 bug 根因）。
+  ★本轮实测更正：G1 的 firtool 把越界项展开成**填第 0 项**，不是回绕。★
+  而且**同一模块里不同信号的越界语义可能各不相同**（BusyTable 实测三种：忙位
+  `table>>req` 得 0、loadDependency 走 256 项表高位填第 0 项、分配旁路全宽比较不看越界）。
+  **按「没查到就是 0」写就是真 bug**，逐个从 golden 读。
+
+## ★Formality elaborate 的四条硬约束（只能改 RTL，不能压消息）★
+
+这四条都会让 `set_top` 直接失败，跑都跑不起来。它们是**工具的解析/展开能力边界**，
+不是 RTL 有 bug，但修法只有一条：**改 RTL 去迁就它**。用
+`set_mismatch_message_filter` 之类把消息压掉，等于把证明做空了。
+
+| 消息 | 触发形状 | 修法 |
+|---|---|---|
+| `FMR_ELAB-147` | `arr[cond ? idx : 0]` —— FM 不传播范围保护，认为下标可能越界 | 把守卫提出来，先算下标再索引 |
+| `FMR_VLOG-091` | function 读模块级信号 | 改成纯函数，需要的信号走形参 |
+| `FMR_VLOG-144` | 异步复位块里第一条语句不是 `if`（FM 认不出这是复位） | 把 `if (reset)` 提到块首 |
+| `FMR_ELAB-268` | **循环超过最大展开次数**，后续报 `FM-156` | 见下 |
+
+`FMR_ELAB-268` 是 2026-09-17 TLFIFOFixer 实测新加的一条：
+
+```systemverilog
+// ✗ 12,288 个标量，复位要逐位写 → 循环展开超限，set_top 失败
+logic flight [END_SOURCE_ID];
+for (int i = 0; i < END_SOURCE_ID; i++) flight[i] <= 1'b0;
+
+// ✓ 压缩向量，复位一句话，没有循环
+logic [END_SOURCE_ID-1:0] flight;
+flight <= '0;
+```
+
+顺带一提这个改法**同时更好读**：分组忙判断也从 128 次 `|=` 循环变成
+`|flight[g*GROUP_SIZE +: GROUP_SIZE]`，"这组有任意一位在飞"一眼可见。
+所以遇到 ELAB-268 先想「是不是本来就该用压缩向量」，而不是想怎么绕开工具。
+
+## ★验证件自身的两个坑（2026-09-17，两条 lane 各自独立踩到）★
+
+### 1. 变异体必须先自证「改变了电路」
+
+本轮有 **3 条 lane** 发现自己的负测是空的，跟了整轮 `errors=0` 差点报成「UT 漏检」：
+
+- **同一变量被两个 `always_ff` 驱动**：把 `x <= '0` 加进另一个复位块，VCS **不报错不警告**，
+  排在后面的块赢，**变异根本没生效**（SSIT / RenameBuffer 各踩一次）。
+  真变异要写在**原块之内**。
+- **把 `N'(…)` 套在同宽度的目标线外面**，等于没改电路（DecodeUnitComp）。改成真正加宽后
+  同一变异抓到 721 个 error。
+- **变异后编译失败而 harness 读到上一轮的 `sim_*.log`**，把上次的 `errors=0` 当本次结果
+  ⇒ 报出假的「逃逸」（SSIT）。harness 每次必须先删日志。
+
+**规矩**：注入后要么确认 RTL 文本真的变了且能编过，要么让 harness 在编译失败时**判 FAIL 而不是继续**。
+另：`CAUGHT` 不是二值——**报出每个变异的 errors 数**。本轮实测 `485` 与 `1,387,450` 都算 CAUGHT，
+但前者换个 seed 就可能漏。余量薄的要点名，不许报成「判别力均匀」。
+
+### 2. 过程块里声明的变量是 **static**，初始化式只在 0 时刻执行一次
+
+```systemverilog
+always @(posedge clk) begin
+  int kind = $urandom_range(0,3);   // ★整场仿真恒定★，不是每拍重掷
+  logic [4:0] hv = 5'd31 - $urandom_range(0,6);
+end
+```
+
+**两条 lane 独立踩到同一个陷阱**：
+
+- TLBFA：`kind` 恒定 ⇒ seed 1/42 抽到「hv&hg 同置」，5906/6049 次 fence 事件 **100% 是同一种**，
+  整轮**只测了 hfence.gvma**，sfence.vma 与 hfence.vvma 一次没发 —— 而三轮都照样 `errors=0`。
+- DecodeUnitComp：`hv` 恒定 ⇒ 整场 vd 是同一个常数。
+
+**规矩**：过程块里凡是带初始化式的声明一律加 `automatic`；tb 里的 function/task 也一律 `automatic`。
+检查手段是**报覆盖计数**——上面两例都是覆盖分桶全压在一个值上才暴露的。
 
 ## 可读性验收（与 FM 同等地位，须常态化跑）
 
