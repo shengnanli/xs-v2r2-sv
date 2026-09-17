@@ -255,7 +255,16 @@ switch -- $_verify_matched_unread_compare_points {
     #          抓不到这两种错)。
     #          打开本项后必须复验「passing 恰好 +6323(519962 -> 526285)、failing
     #          仍为 0、unread 归 0」—— passing 不增即 FM 没真去比，那是空转，不算过。
-    if {$top ni {Bku Composer DebugModule DuplicatedTagArray EntriesVfdivVidiv FAlu FCVT FTBBank Ftq ICacheCtrlUnit ICacheDataArray ICacheMetaArray ICacheMissUnit InstrUncache ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 LinkMonitor MulUnit Queue1_RegMapperInput_5 RNXbar SNXbar SourceB TageBTable TlbStorageWrapper TlbStorageWrapper_1 TXDAT_4 TXREQ WritebackQueue}} {
+    #   SSIT(2026-09-17 加): 本模块**没有任何输出端口**(10 端口全 input)，三组 1024 项
+    #          影子数组(debug_valid/debug_ssid/debug_strict)的扇出只有自己
+    #          (debug_valid_i -> _GEN_4122+i -> _GEN_5146+i -> debug_valid_i)，
+    #          外加 s2_loadStrict(唯一去处是 XSPerfAccumulate，模块内无读者)。
+    #          它们在 golden 侧同样是自环死位，两侧**对称**。预计 3073 个 matched-unread。
+    #          配对靠 auto_match_flattened_arrays 的结构性规则
+    #          (debug_ssid_reg[1023][4] <-> debug_ssid_1023_reg[4])，不是人工强配。
+    #          ★复核判据★: 打开后 passing 必须 +3073、failing 仍 0、unread 归 0；
+    #          passing 不增即空转，不算过。
+    if {$top ni {Bku Composer DebugModule DuplicatedTagArray EntriesVfdivVidiv FAlu FCVT FTBBank Ftq ICacheCtrlUnit ICacheDataArray ICacheMetaArray ICacheMissUnit InstrUncache ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 LinkMonitor MulUnit Queue1_RegMapperInput_5 RNXbar SNXbar SourceB SSIT TageBTable TlbStorageWrapper TlbStorageWrapper_1 TXDAT_4 TXREQ WritebackQueue}} {
       puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
       exit 3
     }
