@@ -883,7 +883,7 @@ module EntriesAluCsrFenceDiv (
     .ROB_W(8), .PSRC_W(8), .PDEST_W(8),
     .PL_DEQ_W(586), .PL_TRANS_W(1362),
     .HAS_LD_DEP(1), .COMP_HAS_LD_DEP(1),
-    .HAS_LD_CANCEL(1),
+    .HAS_LD_CANCEL(1), .HAS_LD1_CANCEL(0),
     .LD_PIPES(3), .LD_DEP_W(2),
     .NUM_WK_IQ(7), .EXU_W(3),
     .IQ_SRC_MASK({7'b1111111, 7'b1111111}),

@@ -508,7 +508,8 @@ def gen_rtl(v):
       f' .COMP_HAS_LD_DEP({int(v.comp_has_ld_dep)}),')
     # ★ 顶层有没有 ldCancel 端口 —— 决定阵列层那两组寄存器生不生成。
     #   与 HAS_LD_DEP 不是一回事：VfdivVidiv 有影子寄存器但没有 ldCancel。
-    A(f'    .HAS_LD_CANCEL({int(v.n_ld_cancel > 0)}),')
+    A(f'    .HAS_LD_CANCEL({int(v.n_ld_cancel > 0)}),'
+      f' .HAS_LD1_CANCEL({int(v.has_ld1)}),')
     A(f'    .LD_PIPES({v.ld_pipes}), .LD_DEP_W({v.ld_dep_w}),')
     # ---- IQ 即时唤醒 / 取消网络 / 寄存器缓存 ----
     A(f'    .NUM_WK_IQ({v.n_wk_iq}), .EXU_W({max(1, v.exu_w)}),')

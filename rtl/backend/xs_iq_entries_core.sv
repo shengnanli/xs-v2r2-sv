@@ -26,30 +26,30 @@
 //   14 个 G1 变体全部走 hasCompAndSimp,故本核不实现另一分支(见文件尾 §11 待办)。
 //
 // =============================================================================
-// 本文件导航（共 1752 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+// 本文件导航（共 1780 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
 //   L57    §1 与变体无关的编码
 //   L81    §2 xs_iq_entry
-//   L329   §2.1 冲刷判定
-//   L341   §2.2 WB 唤醒匹配
-//   L369   §2.2b IQ 即时唤醒匹配 + 投机撤销(LoadShouldCancel)
-//   L481   §2.3 ignoreOldVd(向量专属)
-//   L527   §2.3b currentStatus
-//   L598   §2.4 valid / enqReady / clear
-//   L614   §2.5 entryUpdate
-//   L682   §2.6 时序
-//   L722   §2.6a blocked / deqPortIdx
-//   L775   §2.6b IQ 唤醒子族专属的三组状态
-//   L810   §2.7 组合输出
-//   L909   §3 xs_iq_entries_core
-//   L1082  §3a 阵列层自己持有的两组寄存器(golden Entries.scala:140-142)
-//   L1126  §4 条目例化
-//   L1287  §5 deqSel / deqPortIdxWrite / issueResp
-//   L1330  §6 EnqPolicy
-//   L1361  §7 转移策略
-//   L1438  §8 othersEntryEnq 数据通路
-//   L1589  §9 发射出口
-//   L1657  §10 阵列状态汇聚输出
-//   L1698  §11 本核尚未实现的家族维度(给后续变体 owner 的清单,全部有 golden 依据)
+//   L335   §2.1 冲刷判定
+//   L347   §2.2 WB 唤醒匹配
+//   L375   §2.2b IQ 即时唤醒匹配 + 投机撤销(LoadShouldCancel)
+//   L489   §2.3 ignoreOldVd(向量专属)
+//   L535   §2.3b currentStatus
+//   L606   §2.4 valid / enqReady / clear
+//   L622   §2.5 entryUpdate
+//   L690   §2.6 时序
+//   L730   §2.6a blocked / deqPortIdx
+//   L783   §2.6b IQ 唤醒子族专属的三组状态
+//   L818   §2.7 组合输出
+//   L917   §3 xs_iq_entries_core
+//   L1102  §3a 阵列层自己持有的两组寄存器(golden Entries.scala:140-142)
+//   L1153  §4 条目例化
+//   L1315  §5 deqSel / deqPortIdxWrite / issueResp
+//   L1358  §6 EnqPolicy
+//   L1389  §7 转移策略
+//   L1466  §8 othersEntryEnq 数据通路
+//   L1617  §9 发射出口
+//   L1685  §10 阵列状态汇聚输出
+//   L1726  §11 本核尚未实现的家族维度(给后续变体 owner 的清单,全部有 golden 依据)
 // 导航由 verif/ut/Entries_common/core_nav.py 重算 —— 改完核跑一次，勿手改
 //
 
@@ -123,6 +123,12 @@ module xs_iq_entry
   // ★ 本参数是**按条目类型**给的:没有 ldCancel 的变体(VEC 族)里,comp 条目的
   //   这组寄存器整组是死的,golden 把它 DCE 了,所以阵列会给 comp 传 0。
   parameter bit HAS_LD_DEP = 1'b0,
+  // ★ 本变体的 golden 有没有 ld1Cancel。Alu*/Falu* 只有 ld2Cancel,
+  //   LoadShouldCancel 于是退化成「只看 dep 的 bit1」;若把 ld1 那一项留着
+  //   (哪怕 c1 恒 0),dep 的 **bit0** 就仍然留在锥里 —— golden 的锥里没有它。
+  //   实测:FM 的 analyze_points 把 enqd_self_ld_dep_reg[..][0](正是 bit0)
+  //   报成 "exists in the impl cone but not in the ref cone"。
+  parameter bit HAS_LD1_CANCEL = 1'b0,
   parameter int LD_PIPES   = 1,
   parameter int LD_DEP_W   = 1,
 
@@ -386,7 +392,9 @@ module xs_iq_entry
       input logic [LD_PIPES-1:0]               c2);
     ld_should_cancel = 1'b0;
     for (int q = 0; q < LD_PIPES; q++)
-      ld_should_cancel |= (c1[q] & dep[q][0])
+      // ★ 没有 ld1Cancel 的变体**不生成** c1 那一项:留着会把 dep 的 bit0
+      //   拖进锥里,而 golden 的锥里没有它(见 HAS_LD1_CANCEL 的注释)。
+      ld_should_cancel |= (HAS_LD1_CANCEL & c1[q] & dep[q][0])
                         | ((LD_DEP_W > 1) & c2[q] & dep[q][LD_DEP_W > 1 ? 1 : 0]);
   endfunction
 
@@ -935,6 +943,7 @@ module xs_iq_entries_core
   //   这两组寄存器根本不存在,生成出来就是 66 个 golden 没有的常 0 寄存器
   //   (实测:FM 报 0(66) unmatched,UT 一个都看不见)。
   parameter bit HAS_LD_CANCEL = 1'b0,
+  parameter bit HAS_LD1_CANCEL = 1'b0,
   parameter int LD_PIPES   = 1,
   parameter int LD_DEP_W   = 1,
   parameter int NUM_WK_IQ  = 0,
@@ -1095,6 +1104,14 @@ module xs_iq_entries_core
   //     ldCancel,以及入队那一瞬间 payload 里带的 srcLoadDependency。
   // ---------------------------------------------------------------------------
   logic [LD_PIPES-1:0] ld1_cancel_d, ld2_cancel_d;
+  // 没有 ld1Cancel 的变体不生成这组寄存器(golden 里根本没有),否则又是一批常 0 死寄存器
+  generate
+    if (HAS_LD1_CANCEL) begin : g_ld1_dly
+      always_ff @(posedge clock) ld1_cancel_d <= ld1_cancel;
+    end else begin : g_no_ld1_dly
+      always_comb ld1_cancel_d = '0;
+    end
+  endgenerate
   logic [(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0] og0_cancel_sel_d, iq_cancel, iqd_cancel;
   always_comb begin
     iq_cancel  = og0_cancel_sel   & iq_is0lat;
@@ -1114,10 +1131,7 @@ module xs_iq_entries_core
 
   generate
     if (HAS_LD_CANCEL) begin : g_ld_cancel_dly
-      always_ff @(posedge clock) begin
-        ld1_cancel_d <= ld1_cancel;
-        ld2_cancel_d <= ld2_cancel;
-      end
+      always_ff @(posedge clock) ld2_cancel_d <= ld2_cancel;
       // RegEnable(payload.srcLoadDependency, enq.valid):只有 enq 段用得上,
       // simp/comp 段没有延迟窗口,钉 0(与 golden 一致:那边根本没有这组线)。
       for (genvar i = 0; i < NUM_ENQ; i++) begin : g_enqd_dep
@@ -1129,7 +1143,6 @@ module xs_iq_entries_core
       end
     end else begin : g_no_ld_cancel_dly
       always_comb begin
-        ld1_cancel_d     = '0;
         ld2_cancel_d     = '0;
         enqd_self_ld_dep = '0;
       end
@@ -1212,6 +1225,7 @@ module xs_iq_entries_core
         // comp 段(既非 enq 也非 simp)只有 COMP_HAS_LD_DEP 时才真有这组寄存器
         .HAS_LD_DEP(HAS_LD_DEP && (L_IS_ENQ || L_IS_TRANS || COMP_HAS_LD_DEP)),
         .LD_PIPES(LD_PIPES), .LD_DEP_W(LD_DEP_W),
+        .HAS_LD1_CANCEL(HAS_LD1_CANCEL),
         .NUM_WK_IQ(NUM_WK_IQ), .IQ_SRC_MASK(IQ_SRC_MASK), .IQ_TYPE_BIT(IQ_TYPE_BIT),
         .IQ_IS_LD_PIPE(IQ_IS_LD_PIPE), .EXU_W(EXU_W),
         .HAS_REG_CACHE(HAS_REG_CACHE), .RC_IDX_W(RC_IDX_W),
