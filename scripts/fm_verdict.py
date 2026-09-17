@@ -89,6 +89,26 @@ fm.log 的 mtime 也停在 25 分钟前 —— 看起来像挂了。实测不是
   1. 在哪个阶段?   -> 只认段头标志(`**** Matching Results ****` / `Status:  Verifying...`)
   2. 进度可信吗?   -> 先弄清分母(Matching 的不可信,Verifying 的 P+U 守恒可信)
   3. 还活着吗?     -> **/proc/<pid>/stat 的 CPU 时间在不在涨**,与日志无关
+
+★读 `failing` 之前先看两个前置条件,否则你读的不是 RTL 正确性★(2026-09-17)
+`failing` 这个数只有在下面两条都成立时才是"有多少个点不等价":
+
+  (a) `verification_failing_point_limit` 没有截断
+      默认 20,撞到就停、剩下全进 Unverified。所以 `failing: 20` 几乎总是截断值。
+      实测: Predictor 那次 20/411955、NewDispatch 20/51056。真实数只能 limit=0 重跑。
+  (b) `Unmatched ... compare points` 是 0(0)
+      未配对的比较点在 FM 里是**自由割点**,ref 侧被强制的约束在 impl 侧是自由变量,
+      于是**下游跟着失配**。RenameBuffer 实测: 3 个孤儿点造出 20 个 failing,
+      配对修好(FM_MERGE_DUP=false)之后 failing 20 -> 0、passing 651 -> 5825。
+
+  ★(b) 还有一个更隐蔽的方向:配对没配齐时,**结构修复的收益会被掩盖成接近零**★
+  Entries canary 实测: 按 enq 分份这个结构修复本身值 ~838 个点,但当时两侧名字
+  无共同词干、FM 只能靠签名分析配上 4 个配不上 4 个,于是测出来只掉了 6 个点
+  (1030 -> 1024),据此判"不是根因"。把名字钉齐之后同一个修复测出来是
+  1030 -> 192(消掉 81%)。
+
+  **在一个已知存在配对缺陷的测量上下结论,和"跑之前下结论"是同一个病的两面** ——
+  前者跳过了"先校准仪器"这一步,后者跳过了"先测量"这一步。
 """
 import json
 import os
