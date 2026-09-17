@@ -79,6 +79,11 @@ endmodule
    ```
    仓库里其它 UT 用的一直是运行期写法，只有这行文档是错的。
 
+   ★反过来也有坑：**只在运行期给、编译期不给，VCS 会静默忽略**★
+   （报 `Warning-[VICIU]` 然后当没看见），**那一轮等于没测**。
+   所以两处都要给：`VCS += +vcs+initreg+random`（打开机制）
+   与 `SIM_ARGS += +vcs+initreg+$(INITREG)`（选取值）。
+
    所以「两轮」= **同一个 simv 跑两次**，不是编两次。
    编译带 `+define+SYNTHESIS +vcs+initreg+random`；
    VCS 环境：`VCS_ARCH_OVERRIDE=linux` 必配 `-full64`。
