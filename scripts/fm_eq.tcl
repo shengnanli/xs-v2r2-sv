@@ -33,7 +33,20 @@ if {[info exists env(FM_SIDECAR_OUT)] && [string trim $env(FM_SIDECAR_OUT)] ne "
 # FM_MODE 门控(2026-07 唯一权威入口, 二审): 证明模式决定允许哪些放宽手段。
 #   signoff-strict(默认): 禁 interface_only(assembly 专用手段); 严格判定交 fm_verdict.py。
 #   assembly: 允许**声明的对称黑盒** FM_INTERFACE_ONLY(仅证本层 glue)。
-#   diagnostic-full: 由 fm_eq_full.tcl 承担(ELAB 降级/放宽上限), 永不签核。
+#   diagnostic-full: 诊断跑, **永不签核**。判定端 fm_verdict.py 对这个 mode
+#     无论数字多好看都不给 SUCCEEDED, 所以它才是"诊断"这件事的真正落点。
+#     在本文件这一侧, 它与 signoff-strict 受**完全相同**的约束(同样拒绝
+#     FM_INTERFACE_ONLY): 诊断性来自 FM_FAILING_LIMIT 这类**增加信息**的旋钮,
+#     不来自任何放宽。
+#     ★2026-09-17 修★ 此前这一行写的是"由 fm_eq_full.tcl 承担(ELAB 降级/放宽上限)",
+#     那是从上轮 xs-v2r2-sv 抄过来的陈述 —— 本仓根本没有 fm_eq_full.tcl,
+#     而 diagnostic-full 又不在下面的 switch 里, 于是 FM_MODE=diagnostic-full
+#     会在读到任何旋钮之前 exit 3。也就是说 b24338e 里我写的那条调用方式
+#     跑不通(Entries canary lane 实测后报的)。现在把它补进 switch。
+#     ★注意这里有个同名不同物的坑★: FM_MODE(本文件, 环境变量)与
+#     fm_verdict.py 的 --mode 是**两套东西**, 词表还差一个。诊断跑的正确姿势是
+#     两边都给 diagnostic-full; 只给判定端也行(FM_MODE 留 signoff-strict),
+#     反正拦住签核的是判定端。
 #   shadow: 同 strict(可读核不驱动输出, 判定归 SHADOW_CHECK)。
 # 诊断能力永不进 signoff: strict 下 FM_INTERFACE_ONLY 非空即报错退出(fail-closed)。
 # ----------------------------------------------------------------------------
@@ -45,7 +58,7 @@ switch -- $_fmmode {
       set_app_var hdlin_interface_only $env(FM_INTERFACE_ONLY)
     }
   }
-  "signoff-strict" - "shadow" {
+  "signoff-strict" - "shadow" - "diagnostic-full" {
     if {[info exists env(FM_INTERFACE_ONLY)] && [string trim $env(FM_INTERFACE_ONLY)] ne ""} {
       puts "FM_MODE_ERROR: $_fmmode 拒绝 FM_INTERFACE_ONLY(assembly 专用手段)"
       exit 3
@@ -255,7 +268,88 @@ switch -- $_verify_matched_unread_compare_points {
     #          抓不到这两种错)。
     #          打开本项后必须复验「passing 恰好 +6323(519962 -> 526285)、failing
     #          仍为 0、unread 归 0」—— passing 不增即 FM 没真去比，那是空转，不算过。
-    if {$top ni {Bku Composer DebugModule DuplicatedTagArray EntriesVfdivVidiv FAlu FCVT FTBBank Ftq ICacheCtrlUnit ICacheDataArray ICacheMetaArray ICacheMissUnit InstrUncache ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 LinkMonitor MulUnit Queue1_RegMapperInput_5 RNXbar SNXbar SourceB TageBTable TlbStorageWrapper TlbStorageWrapper_1 TXDAT_4 TXREQ WritebackQueue}} {
+    #   SSIT(2026-09-17 加): 本模块**没有任何输出端口**(10 端口全 input)，三组 1024 项
+    #          影子数组(debug_valid/debug_ssid/debug_strict)的扇出只有自己
+    #          (debug_valid_i -> _GEN_4122+i -> _GEN_5146+i -> debug_valid_i)，
+    #          外加 s2_loadStrict(唯一去处是 XSPerfAccumulate，模块内无读者)。
+    #          它们在 golden 侧同样是自环死位，两侧**对称**。
+    #          配对靠 auto_match_flattened_arrays 的结构性规则
+    #          (debug_ssid_reg[1023][4] <-> debug_ssid_1023_reg[4])，不是人工强配。
+    #          ★复核判据（2026-09-17 按实测改写，原写的 +3073 是错的）★
+    #              实测 passing 0 -> 14525、failing 0、unread 0、unmatched 0(0)，
+    #              14525 全在 DFF 列（evidence/82fe3881c4d9/SSIT，commit 82fe388）。
+    #              下次复跑的判据就是这三个数，不是 +3073。
+    #          ★为什么原来的 3073 会差 4.7 倍：因为它数的不是同一个东西★
+    #              3073 是三组影子数组的**条目数**(1024x3+1)；而本模块 0 个输出端口
+    #              (golden SSIT.sv 实测 10 input / 0 output)，意味着**整个模块的
+    #              每一个寄存器位**在基线里都是未读点 —— 所以基线 passing 是 0，
+    #              打开加强后进来的是全模块 14525 个寄存器位，不止那三组数组。
+    #              这条记在这里是因为它是个方法学教训：影子数组只是"最显眼的那部分"，
+    #              把它的条目数当成加强后的增量，就会写出一个 4.7 倍偏小的预期值。
+    #              判据的价值在于事前承诺、事后对账；对不上就必须查清楚再改写判据，
+    #              不能因为"实测比预期大、方向没错"就放过去。本例查清的结论是
+    #              两个数在数不同的东西，加强本身没有空转(0 -> 14525 是最强的非空转)。
+    #   TLBFA / TLBFA_1 / TLBFA_2 / TLBFA_3(2026-09-17 加):
+    #          unread 全部是 **reqVpn 的高 11 位(bit37..27) x PORTS**，两侧同死：
+    #              ref  r:/WORK/<top>/reqVpn[_N]_reg[27..37]
+    #              impl i:/WORK/<top>/u_core/g_port[N].req_vpn_q_reg[27..37]
+    #          成因是 golden 自己的死位：reqVpn(=RegNext(vpn)) 的**唯一**读出点是
+    #          genPPN，而 genPPN 最高只取 vpn[26:18]（三段 9 位）；golden 对 reqVpn
+    #          的全部切片实测就是 [26:18]/[17:9]/[8:0]/[3:0]/[2:0]，bit37..27 无读者。
+    #          ★反直觉但重要★：把可读核的 req_vpn_q "优化"成 27 位反而更糟 ——
+    #          那 11xPORTS 位会变成 golden-only 死位（不对称，连双射都没有）。
+    #          照抄 golden 的宽度才是对的。四个变体都用脚本核过是精确双射
+    #          （ref 唯一点数 == impl 唯一点数 == 11 x PORTS，键集合完全相同，
+    #          位索引恒为 27..37、端口恒为 0..PORTS-1，非 matched_nc 项为 0）。
+    #          unread 数 33/44/22/22 => PORTS 3/4/2/2。
+    #          ★复核判据★: unread 归 0，**且** passing 恰好
+    #              8149 -> 8182(+33) / 8619 -> 8663(+44) /
+    #              8211 -> 8233(+22) / 8207 -> 8229(+22)；
+    #          passing 不增即空转，不算过。
+    #          ★实测：只开 vmucp 是空转，必须配 verif/ut/TLBFA/fm_pins.tcl★
+    #          白名单落地后先只开 vmucp 跑了一轮（513cda8，官方 runner、receipt 齐全）：
+    #          passing 8149 **一点没增**、unread 仍 33(33)，判定仍 PARTIAL。
+    #          原因是 verify_matched_unread 只作用于 **matched** unread 点，而这 33 个
+    #          FM 自己从没配上过（auto_match_flattened_arrays 读的是
+    #          report_unmatched_points 的**默认**报告，默认报告不含 unread 类）。
+    #          加强没有对象，自然不增。启用 fm_pins.tcl 之后日志里的痕迹是干净的：
+    #          `8149 Compare points matched previously` + `33 Compare points matched by user`。
+    #
+    #   ☆一条通用判断，别只看 TLBFA☆
+    #   申请 vmucp 之前先分清基线里的 unread 点是哪一种：
+    #     · matched_nc（两侧都配上了、都没人读）-> 开 vmucp 就能证，passing 会增
+    #     · unmatched unread（FM 自己配不上）   -> **vmucp 单开必然空转**，
+    #                                             得先用 fm_pins 把它们配起来
+    #   本表里 NCBTransactionQueue{,_1} 与 TLBFA 家族都属于后者，其余多数属于前者。
+    #   分不清就申请，最好的情况是浪费一轮，最坏的情况是把空转读成"加强过了"。
+    #   IBuffer(2026-09-17 加): 6 个 unread 点全是两侧对称 matched_nc。
+    #          ★复核判据★: passing 7902 -> 7908(正好 +6)、failing 仍 0、unread 归 0。
+    #   NCBTransactionQueue{,_1}(2026-09-17 加): 内容是 info.ReturnNID(11 位) +
+    #          info.ReturnTxnID(12 位) = 23 位/槽，两侧同为死位 —— golden 存了这两个
+    #          字段，但四个 infoRead 读口的 ParallelMux 只有 38 位
+    #          {QoS,TgtID,SrcID,TxnID}，可读核照抄同一结构。非 Return* 的 unread 点 0 个。
+    #          ★注意这一族的基线不是 matched_nc 而是 unmatched unread★
+    #          (736(736) / 1472(1472))：FM 自己配不上(既非名字同构、常数间也无签名可比)，
+    #          所以光开本加强不够，必须先配对。配对在模块本地
+    #          verif/ut/NCBTransactionQueue/fm_pins.tcl，按「槽号+字段+位号」三元组从
+    #          report_unmatched_points -status unread -list 两侧现场发现后 1:1 钉：
+    #              ref  regQueue_<i>_bits_info_Return{NID,TxnID}_reg[<b>]
+    #              impl u_core/info_q_reg[<i>]\[return_{nid,txn_id}][<b>]
+    #          钉后实测 unmatched unread 归 0(0)、FM-036 = 0(钉点计数本身不 fail-closed,
+    #          set_user_match 对不存在的名字不报错, 有效判据是这两条 + 终判 SUCCEEDED)。
+    #          ★复核判据★: passing 6007 -> 6743(_1, +736) / 12054 -> 13526(+1472)、
+    #          failing 仍 0、unread 归 0。
+    #   Predictor(2026-09-17 加): 8333 个 unread 点全是两侧对称 matched_nc，其中
+    #          7169 个在 golden Composer 实例 predictors 子树里(两侧是**同一份**
+    #          Composer.sv，TAGE/ITTAGE/FTB 的 io_update_ghist_r / update_meta_r 等
+    #          更新通路寄存器天然逐位同构)，1164 个在 u_core 里
+    #          (pred_cycle_q 576 / s*_folded_gh 464 / s*_afhob 60 / s*_ghist_ptr 12 /
+    #          power_on_reset_state 1 —— 这 1113 个由 verif/ut/Predictor/fm_pins_pre.tcl
+    #          逐位钉死；外加 prev_s2 50 + upc_seg2 1 是 FM 自己按名字配上的)。
+    #          impl 侧单边未读 585 个不受本开关影响(无对家, 属 PASS_DEAD_IMPL 范畴)。
+    #          ★复核判据★: passing 520634 -> 528967(正好 +8333)、failing 仍 0、
+    #          unread 归 0、unmatched 0(0)。passing 不增而 unread 归 0 = 点被吞掉, 不算过。
+    if {$top ni {Bku Composer DebugModule DuplicatedTagArray EntriesVfdivVidiv FAlu FCVT FTBBank Ftq ICacheCtrlUnit ICacheDataArray ICacheMetaArray ICacheMissUnit InstrUncache ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 LinkMonitor MulUnit Queue1_RegMapperInput_5 RNXbar SNXbar SourceB SSIT TageBTable TlbStorageWrapper TlbStorageWrapper_1 TXDAT_4 TXREQ WritebackQueue IBuffer NCBTransactionQueue NCBTransactionQueue_1 Predictor TLBFA TLBFA_1 TLBFA_2 TLBFA_3}} {
       puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
       exit 3
     }
@@ -294,6 +388,33 @@ switch -- $_mergedup {
     puts "FM_MODE_ERROR: FM_MERGE_DUP 非法值 $_mergedup"
     exit 3
   }
+}
+
+# ----------------------------------------------------------------------------
+# FM_FAILING_LIMIT —— 失败点上限，**只用于诊断跑**
+#
+# Formality 的 verification_failing_point_limit 默认是 20：撞到第 20 个失败点就
+# 停止验证。后果是 `failing: 20` **几乎总是截断值**，而且它一停，剩下的点全部
+# 计入 `Unverified` —— Predictor 那次终局跑就是 failing=20 / unverified=411955，
+# 两个数其实是同一件事的两面。本仓早先把 failing=20 当成真实数量报过，是错的；
+# 真实数量只能用 limit=0（不限）重跑才拿得到（实测过 262/129/36 这种量级）。
+#
+# ★为什么放开它不是放宽证明★：把上限调高**只会报出更多失败点**，不可能把
+# 不等价变成等价，方向与"放宽"相反。它是**增加信息**，不是降低判据。
+#
+# ★但它仍然只许用于诊断★：limit=0 会让 verify 跑满全部点，代价是墙钟成倍；
+# 且签核的权威判据是 `Unverified compare points` 是否为 0，不是 failing 这个数。
+# 所以用它跑出来的 log **不要**拿去出 receipt，走 --mode diagnostic-full。
+# 未设置时保持 FM 默认（不写 appvar），以免悄悄改变既有 253 个目标的证明语义。
+# ----------------------------------------------------------------------------
+if {[info exists env(FM_FAILING_LIMIT)] && [string trim $env(FM_FAILING_LIMIT)] ne ""} {
+    set _flim [string trim $env(FM_FAILING_LIMIT)]
+    if {![string is integer -strict $_flim] || $_flim < 0} {
+        puts "FM_MODE_ERROR: FM_FAILING_LIMIT 非法值 $_flim（要非负整数，0=不限）"
+        exit 3
+    }
+    set_app_var verification_failing_point_limit $_flim
+    puts "FM_DIAG: verification_failing_point_limit = $_flim（诊断跑，勿用于签核）"
 }
 
 # Reference: Chisel 生成的 golden RTL（SYNTHESIS 关掉随机初始化 initial 块）

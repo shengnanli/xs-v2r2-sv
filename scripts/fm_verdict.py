@@ -78,7 +78,15 @@ _ROW = {
     "unverified": re.compile(r'^\s*Unverified\s+(?:\d+\s+)*(\d+)\s*$', re.M),
     "aborted":    re.compile(r'^\s*Aborted\s+(?:\d+\s+)*(\d+)\s*$', re.M),
     "unread_nc":  re.compile(r'^\s*Unread\s+(?:\d+\s+)*(\d+)\s*$', re.M),
+    # Not Compared 的另一类：被 FM 判为常数、因而不作比较的寄存器。
+    # 这一行的列数比 Unread 行少（只有 DFF/LAT/TOTAL 三列），所以同样只取末列 TOTAL。
+    "constant_reg": re.compile(r'^\s*Constant reg\s+(?:\d+\s+)*(\d+)\s*$', re.M),
 }
+# FM 对常数寄存器的识别**可能建立在"某些对象会翻转"的假设上**，这时它会打这条 Info。
+# 有它的那轮，Constant reg 的数字就不是无条件事实，而是带前提的结论 —— 必须留痕。
+_CONST_TOGGLE = re.compile(
+    r'^\s*Info:\s+Constant registers have been identified that were initialized by '
+    r'some objects that were assumed to toggle\.', re.M)
 # 未配对报告(在表外),R(I) 两侧任一非 0 即未完全配对。
 _UNMATCH_CP = re.compile(r'(\d+)\((\d+)\)\s+Unmatched \S+ compare points', re.M)
 _UNREAD_UM  = re.compile(r'(\d+)\((\d+)\)\s+Unmatched \S+ unread points', re.M)
@@ -208,6 +216,16 @@ def _fill_stats(q, log_text):
     _scope = log_text[_mblocks[-1].start():] if _mblocks else log_text
     _umr, _umi = _unmatch_pair(_scope, _UNREAD_UM)
     q["unread"]    = max([x for x in (_nc, _umr, _umi) if x is not None], default=None)
+    # ★Not Compared 的第二类：Constant reg★（2026-09-17 补）
+    # 在此之前本文件对它**一个判据都没有**，连解析都没有：SbufData 的 31 个、
+    # IBuffer 的 6 个就这么无声地穿过了判定。现在至少让数字出现在每一份 receipt 里，
+    # 并且把 FM 那句"常数识别依赖 toggle 假设"的 Info 一并留痕。
+    # 注意：这一版**不改变任何判定**。是否该对它设硬闸，是个需要 reviewer 裁定的
+    # 可靠性问题（两侧都被判常数、但常数值不同，且该点没有可观测扇出时，
+    # 差异不会在任何比较点暴露）—— 在裁定下来之前，宁可把数字亮出来，
+    # 也不要自己发明一条会把已签核目标一刀切成红的闸。
+    q["constant_reg"] = _row_int(tbl, "constant_reg")
+    q["constant_reg_toggle_assumed"] = bool(_CONST_TOGGLE.search(log_text))
     umr, umi = _unmatch_pair(log_text, _UNMATCH_CP)
     q["unmatched_ref"], q["unmatched_impl"] = umr, umi
     q["unmatched"] = max([x for x in (umr, umi) if x is not None], default=None)
@@ -456,6 +474,7 @@ def verdict(log_text, make_rc=0, mode="signoff-strict", expected_top=None, allow
     q = {"passing": None, "failing": None, "unverified": None, "unmatched": None, "aborted": None,
          "failing_total": None, "failing_matched": None, "failing_unmatched": None,
          "unread": None, "blackbox_out": None, "markers": 0, "make_rc": make_rc, "mode": mode,
+         "constant_reg": None, "constant_reg_toggle_assumed": False,
          "native": None, "top": None, "dont_verify": bool(_DONTVERIFY.search(log_text)),
          "elab147": bool(_ELAB147.search(log_text)), "reason": None}
 
