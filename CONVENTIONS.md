@@ -120,6 +120,35 @@ endmodule
   `table>>req` 得 0、loadDependency 走 256 项表高位填第 0 项、分配旁路全宽比较不看越界）。
   **按「没查到就是 0」写就是真 bug**，逐个从 golden 读。
 
+## ★Formality elaborate 的四条硬约束（只能改 RTL，不能压消息）★
+
+这四条都会让 `set_top` 直接失败，跑都跑不起来。它们是**工具的解析/展开能力边界**，
+不是 RTL 有 bug，但修法只有一条：**改 RTL 去迁就它**。用
+`set_mismatch_message_filter` 之类把消息压掉，等于把证明做空了。
+
+| 消息 | 触发形状 | 修法 |
+|---|---|---|
+| `FMR_ELAB-147` | `arr[cond ? idx : 0]` —— FM 不传播范围保护，认为下标可能越界 | 把守卫提出来，先算下标再索引 |
+| `FMR_VLOG-091` | function 读模块级信号 | 改成纯函数，需要的信号走形参 |
+| `FMR_VLOG-144` | 异步复位块里第一条语句不是 `if`（FM 认不出这是复位） | 把 `if (reset)` 提到块首 |
+| `FMR_ELAB-268` | **循环超过最大展开次数**，后续报 `FM-156` | 见下 |
+
+`FMR_ELAB-268` 是 2026-09-17 TLFIFOFixer 实测新加的一条：
+
+```systemverilog
+// ✗ 12,288 个标量，复位要逐位写 → 循环展开超限，set_top 失败
+logic flight [END_SOURCE_ID];
+for (int i = 0; i < END_SOURCE_ID; i++) flight[i] <= 1'b0;
+
+// ✓ 压缩向量，复位一句话，没有循环
+logic [END_SOURCE_ID-1:0] flight;
+flight <= '0;
+```
+
+顺带一提这个改法**同时更好读**：分组忙判断也从 128 次 `|=` 循环变成
+`|flight[g*GROUP_SIZE +: GROUP_SIZE]`，"这组有任意一位在飞"一眼可见。
+所以遇到 ELAB-268 先想「是不是本来就该用压缩向量」，而不是想怎么绕开工具。
+
 ## ★验证件自身的两个坑（2026-09-17，两条 lane 各自独立踩到）★
 
 ### 1. 变异体必须先自证「改变了电路」
