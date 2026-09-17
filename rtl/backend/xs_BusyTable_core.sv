@@ -84,8 +84,7 @@ module xs_BusyTable_core
 
   // 派生量,不要在例化时覆盖:SV 不允许 0 宽打包数组,NUM_WAKEUP=0 的变体按 1 路
   // 占位(wrapper 把这些端口全接 0),真正「有没有唤醒逻辑」由 NUM_WAKEUP>0 判。
-  parameter int WK_SLOTS = (NUM_WAKEUP > 0) ? NUM_WAKEUP : 1,
-  parameter int IDX_W    = $clog2(NUM_PREGS)
+  parameter int WK_SLOTS = (NUM_WAKEUP > 0) ? NUM_WAKEUP : 1
 ) (
   input  logic clock,
   input  logic reset,   // 异步高有效;golden 全家族一致,见 §5
@@ -292,11 +291,20 @@ module xs_BusyTable_core
     //   被 firtool 全部填成 **第 0 项** —— 实测 BusyTable.sv 的 _GEN/_GEN_0/_GEN_1
     //   索引 255..224 三十二项全是 loadDependency_0_*。
     //   按「查不到就是 0」写这里就是静默 bug(本轮规范点名的第四个坑)。
+    //   这里照抄 golden 的结构:先摊成 256 项(高位填第 0 项),读口直接按 8 位 req 取。
+    //   不要改回「req < N ? load_dep[req] : load_dep[0]」那种写法 —— 功能一样,但
+    //   索引变量的取值范围超出数组深度,Formality link 会报 FMR_ELAB-147(索引可能
+    //   越界),而那条只能靠 set_mismatch_message_filter 抑制,属于本仓禁止的例外。
+    logic [255:0][LD_PIPE_N-1:0][LD_DEP_W-1:0] dep_by_req;
+    for (genvar q = 0; q < 256; q++) begin : g_dep_pad
+      if (q < NUM_PREGS) begin : g_real
+        assign dep_by_req[q] = load_dep[q];
+      end else begin : g_pad
+        assign dep_by_req[q] = load_dep[0];   // ★越界填第 0 项,不是 0★
+      end
+    end
     for (genvar r = 0; r < NUM_READ; r++) begin : g_dep_out
-      logic [IDX_W-1:0] idx;
-      assign idx = (read_req[r] < PREG_IDX_W'(NUM_PREGS)) ? read_req[r][IDX_W-1:0]
-                                                          : IDX_W'(0);
-      assign read_load_dep[r] = load_dep[idx];
+      assign read_load_dep[r] = dep_by_req[read_req[r]];
     end
   end else begin : g_no_load_dep
     // 其余变体 needLoadCancel=false:Chisel 把 loadCancel 整体换成 0.U,
@@ -311,21 +319,22 @@ module xs_BusyTable_core
   //
   // golden:`(table >> req)[0]` —— req 落在表外时移出 0,读成「不忙」。
   // (注意这与上面 loadDependency 的越界语义**不一样**,两者都照 golden 抄。)
+  // 写法上把表零扩展满整个 8 位索引空间再按 req 直接取:与移位逐位等价,而且索引
+  // 恒在界内(理由见 §5a 里那段 FMR_ELAB-147 注释)。
+  //
   // resp 还带一条本拍旁路:这拍刚被分配的 pdest 直接算忙,不等寄存器更新。
+  // 旁路是**全 8 位比较、不看越界** —— golden 就是这样:越界的 req 撞上越界的
+  // allocPregs.bits 照样算忙。
   // ---------------------------------------------------------------------------
+  logic [255:0] busy_by_req;
+  assign busy_by_req = {{(256 - NUM_PREGS){1'b0}}, busy};   // ★越界填 0 = 就绪★
+
   for (genvar r = 0; r < NUM_READ; r++) begin : g_read
-    logic                 in_range;
-    logic [IDX_W-1:0]     idx;
     logic [NUM_ALLOC-1:0] alloc_bypass;
-
-    assign in_range = (read_req[r] < PREG_IDX_W'(NUM_PREGS));
-    assign idx      = in_range ? read_req[r][IDX_W-1:0] : IDX_W'(0);
-
     for (genvar a = 0; a < NUM_ALLOC; a++) begin : g_bypass
       assign alloc_bypass[a] = alloc_valid[a] & (alloc_preg[a] == read_req[r]);
     end
-
-    assign read_resp[r] = ~((in_range & busy[idx]) | (|alloc_bypass));
+    assign read_resp[r] = ~(busy_by_req[read_req[r]] | (|alloc_bypass));
   end
 
   // ---------------------------------------------------------------------------
@@ -380,14 +389,14 @@ module xs_BusyTable_core
       end
     end
 
-    // 读口与忙位同样的越界语义(移位),但**没有**分配旁路 —— golden 就是这样。
+    // 读口与忙位同样的越界语义(零扩展后按 8 位 req 取),但**没有**分配旁路
+    // —— golden 就是这样。
+    logic [255:0] nonzero_by_req, vlmax_by_req;
+    assign nonzero_by_req = {{(256 - NUM_PREGS){1'b0}}, nonzero_table};
+    assign vlmax_by_req   = {{(256 - NUM_PREGS){1'b0}}, vlmax_table};
     for (genvar r = 0; r < NUM_READ; r++) begin : g_vl_read
-      logic             in_range;
-      logic [IDX_W-1:0] idx;
-      assign in_range = (read_req[r] < PREG_IDX_W'(NUM_PREGS));
-      assign idx      = in_range ? read_req[r][IDX_W-1:0] : IDX_W'(0);
-      assign vl_is_nonzero[r] = ~(in_range & nonzero_table[idx]);
-      assign vl_is_vlmax[r]   = ~(in_range & vlmax_table[idx]);
+      assign vl_is_nonzero[r] = ~nonzero_by_req[read_req[r]];
+      assign vl_is_vlmax[r]   = ~vlmax_by_req[read_req[r]];
     end
   end else begin : g_no_vl
     assign vl_is_nonzero = '0;

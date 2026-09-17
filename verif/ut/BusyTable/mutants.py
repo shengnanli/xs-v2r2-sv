@@ -27,8 +27,8 @@ BUILD = HERE / 'neg_build'
 MUTANTS = [
     ('M1 越界读 loadDependency 返回 0（golden 是返回第 0 项）',
      'xs_BusyTable_core.sv',
-     "      assign read_load_dep[r] = load_dep[idx];",
-     "      assign read_load_dep[r] = (read_req[r] < PREG_IDX_W'(NUM_PREGS)) ? load_dep[idx] : '0;"),
+     "        assign dep_by_req[q] = load_dep[0];   // \u2605\u8d8a\u754c\u586b\u7b2c 0 \u9879,\u4e0d\u662f 0\u2605",
+     "        assign dep_by_req[q] = '0;"),
     ('M2 取消 Int 表 0 号项特判（x0 会被分配置忙）',
      'xs_BusyTable_core.sv',
      "        if (ZERO_ALWAYS_READY && p == 0) begin",
@@ -55,12 +55,12 @@ MUTANTS = [
      "          for (int i = 0; i < 4; i++)"),
     ('M8 忙位越界读成「忙」（golden 的 `table>>req` 越界得 0 = 就绪）',
      'xs_BusyTable_core.sv',
-     "    assign read_resp[r] = ~((in_range & busy[idx]) | (|alloc_bypass));",
-     "    assign read_resp[r] = ~((~in_range | busy[idx]) | (|alloc_bypass));"),
+     "  assign busy_by_req = {{(256 - NUM_PREGS){1'b0}}, busy};",
+     "  assign busy_by_req = {{(256 - NUM_PREGS){1'b1}}, busy};"),
     ('M9 读口分配旁路被限制在表内（golden 的旁路是全 8 位比较，不看越界）',
      'xs_BusyTable_core.sv',
      "      assign alloc_bypass[a] = alloc_valid[a] & (alloc_preg[a] == read_req[r]);",
-     "      assign alloc_bypass[a] = in_range & alloc_valid[a] & (alloc_preg[a] == read_req[r]);"),
+     "      assign alloc_bypass[a] = (read_req[r] < PREG_IDX_W'(NUM_PREGS)) & alloc_valid[a] & (alloc_preg[a] == read_req[r]);"),
 ]
 
 RTL = ['xs_BusyTable_core.sv', 'BusyTable.sv', 'BusyTable_1.sv',
