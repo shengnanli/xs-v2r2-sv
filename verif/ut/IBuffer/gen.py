@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""gen_tb.py —— 生成 IBuffer UT 的 tb.sv。
+"""gen.py —— 生成 IBuffer UT 的 tb.sv。
 
 IBuffer 有 441 个端口（281 输入 / 160 输出）。端口声明、双例化连线、以及
 160 根输出的逐拍比对都是纯机械的，手抄一次必错；而且这种错误**UT 自己测不出来**
@@ -10,7 +10,7 @@ IBuffer 有 441 个端口（281 输入 / 160 输出）。端口声明、双例�
   · 激励（PHASE 状态机，见 tb.sv 里的注释）
   · 覆盖事件统计（用层次引用读 **golden 侧**内部状态，不看重写侧）
 
-用法: python3 gen_tb.py   （Makefile 不自动调用；改了本文件要手动重跑并提交 tb.sv）
+用法: python3 gen.py   （Makefile 不自动调用；改了本文件要手动重跑并提交 tb.sv）
 """
 import pathlib
 import re
@@ -40,7 +40,7 @@ def parse_ports():
 
 HEADER = r'''// =============================================================================
 // IBuffer UT —— golden IBuffer 与重写 IBuffer_xs 双例化同激励，逐拍比对全部
-// 160 根输出端口。★本文件由 gen_tb.py 生成，改激励请改 gen_tb.py 再重跑★
+// 160 根输出端口。★本文件由 gen.py 生成，改激励请改 gen.py 再重跑★
 //
 // ★ 激励为什么不是「每个输入每拍独立均匀随机」★
 // IBuffer 是 48 项的循环队列 + 6 路输出寄存器。它的判别力全在**边界状态**上，
@@ -397,7 +397,7 @@ def main():
     L.append(COVER)
 
     (HERE / 'tb.sv').write_text('\n'.join(L) + '\n')
-    print('gen_tb: 写入 tb.sv （%d 输入 / %d 输出）' % (len(ins), len(outs)))
+    print('gen.py: 写入 tb.sv （%d 输入 / %d 输出）' % (len(ins), len(outs)))
     return 0
 
 

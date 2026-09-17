@@ -26,10 +26,13 @@ VCS      += +define+SYNTHESIS +vcs+initreg+random
 SIM_ARGS += $(INITREG)
 INITREG  ?= +vcs+initreg+random
 
-# tb.sv 由 gen_tb.py 从 G1 golden 端口表生成（端口声明/连线/比对三段）。
+# tb.sv 由 gen.py 从 G1 golden 端口表生成（端口声明/连线/比对三段）。
+# 文件名用 gen.py 而不是 gen_tb.py，是为了被 scripts/test_gen_idempotent.py
+# 收进闸内（那道闸只认 verif/ut/*/gen.py）：重跑生成器后产物必须逐字不变，
+# 防止有人手工改 tb.sv、下次跑生成器被静默覆盖。
 .PHONY: tb mutants
 tb:
-	python3 gen_tb.py
+	python3 gen.py
 
 # 判别力负测：注入真 bug，UT 必须报出来。变异只发生在 neg_build/（已 gitignore），
 # 不进库。见 mutants.py 头部说明。
