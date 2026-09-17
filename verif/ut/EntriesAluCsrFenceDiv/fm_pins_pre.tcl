@@ -27,7 +27,7 @@
 #   simp 2..7  <- othersEntriesSimp_* (OthersEntry_66, KEEP_WIDE, 负载 1362 位)
 #   comp 8..23  <- othersEntriesComp_* (OthersEntry_72, 仅 deq 子集 586 位)
 #
-# 本文件钉 20284 对。golden 侧不存在（被 firtool DCE）因而跳过的寄存器共 26 个，逐条列在文件尾，不产生钉点。
+# 本文件钉 20308 对。golden 侧不存在（被 firtool DCE）因而跳过的寄存器共 26 个，逐条列在文件尾，不产生钉点。
 # ============================================================================
 
 if {$top eq "EntriesAluCsrFenceDiv"} {
@@ -20308,6 +20308,18 @@ if {$top eq "EntriesAluCsrFenceDiv"} {
     {REG_2_reg og0_cancel_sel_d_reg[0][1]}
     {REG_4_reg og0_cancel_sel_d_reg[0][2]}
     {REG_6_reg og0_cancel_sel_d_reg[0][3]}
+    {r_0_0_reg[0] enqd_self_ld_dep_reg[0][0][0][0]}
+    {r_0_0_reg[1] enqd_self_ld_dep_reg[0][0][0][1]}
+    {r_0_1_reg[0] enqd_self_ld_dep_reg[0][0][1][0]}
+    {r_0_1_reg[1] enqd_self_ld_dep_reg[0][0][1][1]}
+    {r_0_2_reg[0] enqd_self_ld_dep_reg[0][0][2][0]}
+    {r_0_2_reg[1] enqd_self_ld_dep_reg[0][0][2][1]}
+    {r_1_0_reg[0] enqd_self_ld_dep_reg[0][1][0][0]}
+    {r_1_0_reg[1] enqd_self_ld_dep_reg[0][1][0][1]}
+    {r_1_1_reg[0] enqd_self_ld_dep_reg[0][1][1][0]}
+    {r_1_1_reg[1] enqd_self_ld_dep_reg[0][1][1][1]}
+    {r_1_2_reg[0] enqd_self_ld_dep_reg[0][1][2][0]}
+    {r_1_2_reg[1] enqd_self_ld_dep_reg[0][1][2][1]}
     {REG_1_0_ld2Cancel_reg ld2_cancel_d_reg[0][0]}
     {REG_1_1_ld2Cancel_reg ld2_cancel_d_reg[0][1]}
     {REG_1_2_ld2Cancel_reg ld2_cancel_d_reg[0][2]}
@@ -20315,6 +20327,18 @@ if {$top eq "EntriesAluCsrFenceDiv"} {
     {REG_2_2_reg og0_cancel_sel_d_reg[1][1]}
     {REG_2_4_reg og0_cancel_sel_d_reg[1][2]}
     {REG_2_6_reg og0_cancel_sel_d_reg[1][3]}
+    {r_1_0_0_reg[0] enqd_self_ld_dep_reg[1][0][0][0]}
+    {r_1_0_0_reg[1] enqd_self_ld_dep_reg[1][0][0][1]}
+    {r_1_0_1_reg[0] enqd_self_ld_dep_reg[1][0][1][0]}
+    {r_1_0_1_reg[1] enqd_self_ld_dep_reg[1][0][1][1]}
+    {r_1_0_2_reg[0] enqd_self_ld_dep_reg[1][0][2][0]}
+    {r_1_0_2_reg[1] enqd_self_ld_dep_reg[1][0][2][1]}
+    {r_1_1_0_reg[0] enqd_self_ld_dep_reg[1][1][0][0]}
+    {r_1_1_0_reg[1] enqd_self_ld_dep_reg[1][1][0][1]}
+    {r_1_1_1_reg[0] enqd_self_ld_dep_reg[1][1][1][0]}
+    {r_1_1_1_reg[1] enqd_self_ld_dep_reg[1][1][1][1]}
+    {r_1_1_2_reg[0] enqd_self_ld_dep_reg[1][1][2][0]}
+    {r_1_1_2_reg[1] enqd_self_ld_dep_reg[1][1][2][1]}
     {REG_3_0_ld2Cancel_reg ld2_cancel_d_reg[1][0]}
     {REG_3_1_ld2Cancel_reg ld2_cancel_d_reg[1][1]}
     {REG_3_2_ld2Cancel_reg ld2_cancel_d_reg[1][2]}
@@ -20327,7 +20351,7 @@ if {$top eq "EntriesAluCsrFenceDiv"} {
       incr _n
     }
   }
-  puts "IQE_PINS: $_n / 20284 tried, $_miss threw"
+  puts "IQE_PINS: $_n / 20308 tried, $_miss threw"
   # ★ 这个计数**不是** fail-closed，别拿它当判据 ★
   #   实测（Lane L 的负向探针）：set_user_match 喂一个完全不存在的路径
   #   照样返回 0，catch 抓不到 —— 所以"钉满 N 个"只说明没抛 Tcl 异常，

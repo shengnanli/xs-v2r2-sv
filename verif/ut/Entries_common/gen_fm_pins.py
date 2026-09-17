@@ -89,6 +89,18 @@ def array_delay_pins(v):
             n = net(f'io_enqDelayIn1_og0Cancel_{idx}')
             assert n, f'{v.top}: enqEntries_{k} 的 og0Cancel_{idx} 连线没解析出来'
             pins.append((f'{n}_reg', f'og0_cancel_sel_d_reg[{k}][{w}]'))
+        # enqDelayIn1.srcLoadDependency 的 RegEnable：golden 叫 r_0_0 / r_1_0_2 这种名字，
+        # 核叫 enqd_self_ld_dep。**死的那一位（本变体是 bit0，因为没有 ld1Cancel）
+        # 不被任何锥读到，FM 不会自动配**，于是留下 12(12) unmatched unread。
+        # 同样按 golden 的实例连线机械提取后逐位钉名。
+        for sx in range(v.n_regsrc):
+            for q in range(v.ld_pipes):
+                n = net(f'io_enqDelayIn1_srcLoadDependency_{sx}_{q}')
+                if n is None:
+                    continue
+                for b in range(v.ld_dep_w):
+                    pins.append((f'{n}_reg[{b}]',
+                                 f'enqd_self_ld_dep_reg[{k}][{sx}][{q}][{b}]'))
         for q in range(v.n_ld_cancel):
             for lvl, sig in ((2, 'ld2_cancel_d'), (1, 'ld1_cancel_d')):
                 if lvl == 1 and not v.has_ld1:
