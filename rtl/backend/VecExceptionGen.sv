@@ -30,7 +30,9 @@
 //       出现**,且落在相邻两行:vs2Emul 的 sel==4'h4 分支是 3 位截断(LMUL=7 → 0),
 //       vs1Emul 的 vrgather16 分支是 4 位。两处都照 golden 写。
 //       ★诚实记录:这两处的差别在**输出上不可观测**★ —— 负测实测抓不到,而且
-//       能证明抓不到,见 §5 的两段论证。也就是说这里照字面统一成一种**不会**
+//       能证明抓不到,见 §5 的两段论证。**Formality 已正面证实**:把这两种写法
+//       各自当 impl 与 golden 跑 signoff-strict,都是 Verification SUCCEEDED
+//       (1 passing / 0 failing / 0 unmatched)。也就是说照字面统一成一种**不会**
 //       让 FM 失配。之所以仍然逐位照抄,是本工程的规矩:「凡 golden 里看起来
 //       冗余的结构,先照抄,别合并」—— 上游 Chisel 一改,不可观测随时变成可观测。
 //   (c) `SEW - 3.U` 被 firtool 折成 `SEW + 1`(2 位模运算),同值;这里按 Chisel 原式

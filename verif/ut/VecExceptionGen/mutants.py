@@ -23,6 +23,13 @@
   - M13 NFtoLmul 取错指令域（vmv<N>r.v 的 nf 在 inst[19:15] 而不是 inst[31:29]）。
 
 **EXPECTED_MISSED —— 预期抓不到，且必须抓不到**（3 条）。
+
+★2026-09-17 补：这三条已被 Formality **正面证实**，不再只是「仿真抓不到」★
+把三个变异体各自当 impl、golden 当 ref 跑一次 signoff-strict FM，
+三个都 `Verification SUCCEEDED`（1 passing / 0 failing / 0 unmatched，各 46 秒、
+峰值 867 MB）。也就是说这三处的差别在**全部输入上**都不可观测，是真冗余，
+而不是「我的激励没打到」。复跑：见本仓 evidence 之外的一次性探针
+（golden=VecExceptionGen.sv，impl=打了 X1/X2/X3 的副本，FM_MODE=signoff-strict）。
 第一轮负测实测发现有三条变异 UT 抓不到。追下去发现不是激励不够，而是它们在
 **输出上不可观测**（论证逐条写在 EXPECTED_MISSED 里）。把它们留在这里，
 是把论证钉成可复跑的断言：哪天被抓到了，说明论证被推翻，脚本报失败。
