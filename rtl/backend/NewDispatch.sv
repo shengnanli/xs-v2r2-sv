@@ -20,38 +20,40 @@
 //
 // golden 对照：G1-canonical/golden-rtl/NewDispatch.sv（100983 行，单变体）。
 // 机械派生区（端口表 / dyninst_t）由 scripts/gen_newdispatch.py 从 golden 生成。
-// 本文件导航（共 15777 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
-//   L58    节 1】newdispatch_pkg —— 派遣拓扑表与 payload 类型
-//   L74    节 1.1】多队列 FU 组表
-//   L76    每组三件事：
-//   L129   节 1.2】单队列 FU 组表
-//   L147   节 1.3】dyninst_t —— 派遣级搬运的 uop payload
-//   L149   180 个 leaf 是 golden 四个 payload bundle 的并集，且**无位宽冲突**：
-//   L162   节 1.4】srcState 逐 IQ 掩码 —— 每个 IQ 只关心自己 FU 真会读的那几个源
-//   L164   golden 实测：IQSelUop_<q>_bits_srcState_<j> 在一部分 IQ 上被折成常量 0
-//   L370   节 2】xs_NewDispatch_core —— 可读核
-//   L404   节 2.1】fuType 归组
-//   L406   golden: fuTypeOH_<lane>_<g> = (fuType[b1]|fuType[b2]|...) & rena
-//   L421   节 2.2】compareMatrix / IQSort —— 按占用数给同组 IQ 排名
-//   L423   compareMatrix[g][i][j] = 「第 i 个 exu 比第 j 个空」
-//   L471   节 2.3】minIQSel —— 第 lane 条 uop 在本组里取第 (lane % iqNum) 名
-//   L473   「同拍内分散」：6 条 lane 若都是 alu，就分别取第 0/1/2/3/0/1 名，而不是全挤到
-//   L478   节 2.4】popFuTypeOH —— 本 lane 之前有几条 uop 也要进同一组
-//   L480   golden: popFuTypeOH_<lane>_<g> = PopCount(fuTypeOH[0..lane-1][g]
-//   L494   节 2.5】uopSelIQ —— 不复位的选择寄存器，两个写源，装入优先于清除
-//   L496   golden 展开
-//   L547   节 2.6】uopSelIQMatrix / uopBlockByIQ —— 前缀计数定「第几个入队口」
-//   L549   uopSelIQMatrix[lane][iq] = PopCount(uopSelIQ[0..lane][iq])
-//   L573   节 2.7】IQSelUop —— 把 6 条 lane 按前缀计数投到 34 个入队口
-//   L575   第 q 个入队口属于 IQ q/2，是该 IQ 的第 (q%2) 个口
-//   L616   节 3】NewDispatch —— 与 golden 逐位同名的 wrapper
-//   L618   端口表由 scripts/gen_newdispatch.py 从 golden 原文派生，顺序/方向/位宽逐字一致
-//   L8456  节 3.2】还接不了的位：集中声明，**故意不给驱动**
-//   L8458  BEGIN GENERATED(UNRESOLVED)
-//   L8597  节 3.3】payload 打包：io_fromRename -> rename_uop
-//   L8599  BEGIN GENERATED(PACK)
-//   L9728  节 3.4】payload 拆包：iq_uop -> io_toIssueQueues
-//   L9730  BEGIN GENERATED(UNPACK)
+// 本文件导航（共 15857 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+//   L60    节 1】newdispatch_pkg —— 派遣拓扑表与 payload 类型
+//   L76    节 1.1】多队列 FU 组表
+//   L78    每组三件事：
+//   L131   节 1.2】单队列 FU 组表
+//   L149   节 1.3】dyninst_t —— 派遣级搬运的 uop payload
+//   L151   180 个 leaf 是 golden 四个 payload bundle 的并集，且**无位宽冲突**：
+//   L164   节 1.4】srcState 逐 IQ 掩码 —— 每个 IQ 只关心自己 FU 真会读的那几个源
+//   L166   golden 实测：IQSelUop_<q>_bits_srcState_<j> 在一部分 IQ 上被折成常量 0
+//   L372   节 1.5】xs_nd_iq_rank —— 「按占用数给同组 IQ 排名」的**唯一一份**逻辑
+//   L374   10 个 FU 组都做同一件事：比占用数 → 排名 → 第 lane 条 uop 取第 (lane%N) 名
+//   L417   节 2】xs_NewDispatch_core —— 可读核
+//   L451   节 2.1】fuType 归组
+//   L453   golden: fuTypeOH_<lane>_<g> = (fuType[b1]|fuType[b2]|...) & rena
+//   L468   节 2.2】compareMatrix / IQSort —— 按占用数给同组 IQ 排名
+//   L470   compareMatrix[g][i][j] = 「第 i 个 exu 比第 j 个空」
+//   L551   节 2.3】minIQSel —— 第 lane 条 uop 在本组里取第 (lane % iqNum) 名
+//   L553   「同拍内分散」：6 条 lane 若都是 alu，就分别取第 0/1/2/3/0/1 名，而不是全挤到
+//   L558   节 2.4】popFuTypeOH —— 本 lane 之前有几条 uop 也要进同一组
+//   L560   golden: popFuTypeOH_<lane>_<g> = PopCount(fuTypeOH[0..lane-1][g]
+//   L574   节 2.5】uopSelIQ —— 不复位的选择寄存器，两个写源，装入优先于清除
+//   L576   golden 展开
+//   L627   节 2.6】uopSelIQMatrix / uopBlockByIQ —— 前缀计数定「第几个入队口」
+//   L629   uopSelIQMatrix[lane][iq] = PopCount(uopSelIQ[0..lane][iq])
+//   L653   节 2.7】IQSelUop —— 把 6 条 lane 按前缀计数投到 34 个入队口
+//   L655   第 q 个入队口属于 IQ q/2，是该 IQ 的第 (q%2) 个口
+//   L696   节 3】NewDispatch —— 与 golden 逐位同名的 wrapper
+//   L698   端口表由 scripts/gen_newdispatch.py 从 golden 原文派生，顺序/方向/位宽逐字一致
+//   L8536  节 3.2】还接不了的位：集中声明，**故意不给驱动**
+//   L8538  BEGIN GENERATED(UNRESOLVED)
+//   L8677  节 3.3】payload 打包：io_fromRename -> rename_uop
+//   L8679  BEGIN GENERATED(PACK)
+//   L9808  节 3.4】payload 拆包：iq_uop -> io_toIssueQueues
+//   L9810  BEGIN GENERATED(UNPACK)
 //
 
 // ---------------------------------------------------------------------------
@@ -367,6 +369,51 @@ typedef struct packed {
 endpackage
 
 // ---------------------------------------------------------------------------
+// 【节 1.5】xs_nd_iq_rank —— 「按占用数给同组 IQ 排名」的**唯一一份**逻辑
+// ---------------------------------------------------------------------------
+// 10 个 FU 组都做同一件事：比占用数 → 排名 → 第 lane 条 uop 取第 (lane%N) 名。
+// 逻辑只写这一份，10 个组各例化一次（薄壳），与本仓「一个参数化核 + 薄壳」同规矩。
+//
+// ★寄存器故意不放在本模块里★：golden 把它们叫 IQSort_<组名>_<rank>_<i>，
+// 放进来就会变成 <实例名>/iqSort，名字对不上、FM 配不上（实测 55 个点）。
+// 所以本模块只算**下一拍的排名**，寄存器由调用方用 golden 的名字声明，
+// 再把寄存后的值从 rank_q 灌回来。
+module xs_nd_iq_rank #(
+  parameter int N         = 2,             // 本组几个 exu（= golden 的 iqNum）
+  parameter int IQ_OF [4] = '{0, 0, 0, 0}  // 本组第 k 名落到哪个全局 IQ 号
+) (
+  input  logic [N-1:0][4:0]   validNum,   // 本组 N 个 exu 当前的占用条目数
+  input  logic [N-1:0][N-1:0] rank_q,     // 已寄存的排名 [rank][i]
+  output logic [N-1:0][N-1:0] rank_d,     // 下一拍排名
+  output logic [5:0][16:0]    minIQSel    // 本组对 minIQSelAll 的贡献
+);
+  // compareMatrix[i][j] =「第 i 个 exu 比第 j 个空」。对角线恒 0，
+  // 下三角取上三角取反 —— golden 就是这么写的，不是重新比一次。
+  logic [N-1:0][N-1:0] compareMatrix;
+  always_comb
+    for (int i = 0; i < N; i++)
+      for (int j = 0; j < N; j++)
+        if (i == j)     compareMatrix[i][j] = 1'b0;
+        else if (i < j) compareMatrix[i][j] = validNum[i] < validNum[j];
+        else            compareMatrix[i][j] = ~(validNum[j] < validNum[i]);
+
+  // rank 0 = 最空。golden: IQSort_x_<rank>_<i> <= PopCount(compareMatrix[i]) == N-1-rank
+  always_comb
+    for (int r = 0; r < N; r++)
+      for (int i = 0; i < N; i++)
+        rank_d[r][i] = ($countones(compareMatrix[i]) == (N - 1 - r));
+
+  // 「同拍内分散」：6 条 lane 若都要本组，分别取第 0/1/../N-1/0/.. 名，
+  // 而不是全挤到最空的那一个。
+  always_comb begin
+    minIQSel = '0;
+    for (int l = 0; l < 6; l++)
+      for (int k = 0; k < N; k++)
+        minIQSel[l][IQ_OF[k]] = rank_q[l % N][k];
+  end
+endmodule
+
+// ---------------------------------------------------------------------------
 // 【节 2】xs_NewDispatch_core —— 可读核（选队列网络 + 全部状态）
 // ---------------------------------------------------------------------------
 module xs_NewDispatch_core
@@ -425,48 +472,81 @@ module xs_NewDispatch_core
   // IQSort[g][rank][i] = 「第 i 个 exu 排第 rank 名」，rank 0 = 最空。
   // golden: IQSort_x_<rank>_<i> <= PopCount(compareMatrix[i]) == (iqNum-1-rank)
   // ★IQSort 是不带复位的寄存器★（golden 在 always @(posedge clock) 里，无 reset 分支）。
-  // ★尺寸必须逐组精确，不能补齐成规整阵列★
-  // 实测 golden 每组声明的 IQSort 寄存器数恰好是 iqNum²（9/16/4/9/4/9/4/4/4/4，
-  // 合计 67），**一个多余的都没有**。上一版我图整齐写成 10×4×4=160，多出的 93 个
-  // 死位在 FM 里变成 impl-only 未读寄存器，实测害得 55 个 IQSort 比较点配不上名。
-  // 所以这里按 genvar 分组、每组用自己的 N —— 缩到精确是**照抄 golden**，
-  // 不是"优化"。（反过来若 golden 自己超配而我去缩，就会把死位从 impl 侧搬到
-  // golden 侧，问题只是换个方向 —— 先核过 golden 才敢缩。）
+  // ★十处只放例化与连线，排名逻辑是上面 xs_nd_iq_rank 那**一份**★
+  // 寄存器在这里用 golden 的名字声明（IQSort_<组名>），尺寸逐组精确：
+  // 实测 golden 每组恰好 iqNum² 个（9/16/4/9/4/9/4/4/4/4 = 67），一个多余都没有。
+  // 都是**不复位**寄存器 —— golden 的 always @(posedge clock) 里没有 reset 分支。
   logic [MULTI_G-1:0][RENAME_W-1:0][IQ_NUM-1:0] minIQSelAll;
 
-  for (genvar g = 0; g < MULTI_G; g++) begin : gen_iq_group
-    localparam int N = G_IQNUM[g];
+  logic [2:0][2:0] IQSort_jmp_brh;
+  logic [2:0][2:0] rankNext_jmp_brh;
+  xs_nd_iq_rank #(.N(3), .IQ_OF('{0, 1, 2, 0})) u_rank_jmp_brh (
+    .validNum({iqValidNum[5], iqValidNum[3], iqValidNum[1]}), .rank_q(IQSort_jmp_brh),
+    .rank_d(rankNext_jmp_brh), .minIQSel(minIQSelAll[0]));
+  always_ff @(posedge clock) IQSort_jmp_brh <= rankNext_jmp_brh;   // 无复位：照抄 golden
 
-    // compareMatrix[i][j] = 「第 i 个 exu 比第 j 个空」。对角线恒 0，
-    // 下三角取上三角取反（golden 就是这么写的，不是重新比一次）。
-    logic [N-1:0][N-1:0] compareMatrix;
-    always_comb
-      for (int i = 0; i < N; i++)
-        for (int j = 0; j < N; j++)
-          if (i == j)     compareMatrix[i][j] = 1'b0;
-          else if (i < j) compareMatrix[i][j] =
-                            iqValidNum[G_EXU[g][i]] < iqValidNum[G_EXU[g][j]];
-          else            compareMatrix[i][j] =
-                            ~(iqValidNum[G_EXU[g][j]] < iqValidNum[G_EXU[g][i]]);
+  logic [3:0][3:0] IQSort_alu;
+  logic [3:0][3:0] rankNext_alu;
+  xs_nd_iq_rank #(.N(4), .IQ_OF('{0, 1, 2, 3})) u_rank_alu (
+    .validNum({iqValidNum[6], iqValidNum[4], iqValidNum[2], iqValidNum[0]}), .rank_q(IQSort_alu),
+    .rank_d(rankNext_alu), .minIQSel(minIQSelAll[1]));
+  always_ff @(posedge clock) IQSort_alu <= rankNext_alu;   // 无复位：照抄 golden
 
-    // iqSort[rank][i] = 「第 i 个 exu 排第 rank 名」，rank 0 = 最空。
-    // ★不带复位★：golden 在 always @(posedge clock) 里没有 reset 分支。
-    logic [N-1:0][N-1:0] iqSort;
-    always_ff @(posedge clock)
-      for (int r = 0; r < N; r++)
-        for (int i = 0; i < N; i++)
-          iqSort[r][i] <= ($countones(compareMatrix[i]) == (N - 1 - r));
+  logic [1:0][1:0] IQSort_mul_bku;
+  logic [1:0][1:0] rankNext_mul_bku;
+  xs_nd_iq_rank #(.N(2), .IQ_OF('{0, 1, 0, 0})) u_rank_mul_bku (
+    .validNum({iqValidNum[2], iqValidNum[0]}), .rank_q(IQSort_mul_bku),
+    .rank_d(rankNext_mul_bku), .minIQSel(minIQSelAll[2]));
+  always_ff @(posedge clock) IQSort_mul_bku <= rankNext_mul_bku;   // 无复位：照抄 golden
 
-    // 本组对 minIQSelAll 的贡献（节 2.3 的「同拍内分散」）：第 lane 条 uop
-    // 取第 (lane % N) 名。genvar g 是 elaboration 常量，所以可以直接写下标。
-    always_comb begin
-      minIQSelAll[g] = '0;
-      for (int l = 0; l < RENAME_W; l++)
-        for (int k = 0; k < N; k++)
-          minIQSelAll[g][l][G_IQ[g][k]] = iqSort[l % N][k];
-    end
-  end
+  logic [2:0][2:0] IQSort_falu_fmac;
+  logic [2:0][2:0] rankNext_falu_fmac;
+  xs_nd_iq_rank #(.N(3), .IQ_OF('{4, 5, 6, 0})) u_rank_falu_fmac (
+    .validNum({iqValidNum[12], iqValidNum[10], iqValidNum[8]}), .rank_q(IQSort_falu_fmac),
+    .rank_d(rankNext_falu_fmac), .minIQSel(minIQSelAll[3]));
+  always_ff @(posedge clock) IQSort_falu_fmac <= rankNext_falu_fmac;   // 无复位：照抄 golden
 
+  logic [1:0][1:0] IQSort_fdiv;
+  logic [1:0][1:0] rankNext_fdiv;
+  xs_nd_iq_rank #(.N(2), .IQ_OF('{4, 5, 0, 0})) u_rank_fdiv (
+    .validNum({iqValidNum[11], iqValidNum[9]}), .rank_q(IQSort_fdiv),
+    .rank_d(rankNext_fdiv), .minIQSel(minIQSelAll[4]));
+  always_ff @(posedge clock) IQSort_fdiv <= rankNext_fdiv;   // 无复位：照抄 golden
+
+  logic [2:0][2:0] IQSort_ldu;
+  logic [2:0][2:0] rankNext_ldu;
+  xs_nd_iq_rank #(.N(3), .IQ_OF('{12, 13, 14, 0})) u_rank_ldu (
+    .validNum({iqValidNum[22], iqValidNum[21], iqValidNum[20]}), .rank_q(IQSort_ldu),
+    .rank_d(rankNext_ldu), .minIQSel(minIQSelAll[5]));
+  always_ff @(posedge clock) IQSort_ldu <= rankNext_ldu;   // 无复位：照抄 golden
+
+  logic [1:0][1:0] IQSort_sta_mou;
+  logic [1:0][1:0] rankNext_sta_mou;
+  xs_nd_iq_rank #(.N(2), .IQ_OF('{10, 11, 0, 0})) u_rank_sta_mou (
+    .validNum({iqValidNum[19], iqValidNum[18]}), .rank_q(IQSort_sta_mou),
+    .rank_d(rankNext_sta_mou), .minIQSel(minIQSelAll[6]));
+  always_ff @(posedge clock) IQSort_sta_mou <= rankNext_sta_mou;   // 无复位：照抄 golden
+
+  logic [1:0][1:0] IQSort_vialuFix_vfma;
+  logic [1:0][1:0] rankNext_vialuFix_vfma;
+  xs_nd_iq_rank #(.N(2), .IQ_OF('{7, 8, 0, 0})) u_rank_vialuFix_vfma (
+    .validNum({iqValidNum[15], iqValidNum[13]}), .rank_q(IQSort_vialuFix_vfma),
+    .rank_d(rankNext_vialuFix_vfma), .minIQSel(minIQSelAll[7]));
+  always_ff @(posedge clock) IQSort_vialuFix_vfma <= rankNext_vialuFix_vfma;   // 无复位：照抄 golden
+
+  logic [1:0][1:0] IQSort_vfalu;
+  logic [1:0][1:0] rankNext_vfalu;
+  xs_nd_iq_rank #(.N(2), .IQ_OF('{7, 8, 0, 0})) u_rank_vfalu (
+    .validNum({iqValidNum[16], iqValidNum[14]}), .rank_q(IQSort_vfalu),
+    .rank_d(rankNext_vfalu), .minIQSel(minIQSelAll[8]));
+  always_ff @(posedge clock) IQSort_vfalu <= rankNext_vfalu;   // 无复位：照抄 golden
+
+  logic [1:0][1:0] IQSort_vldu_vstu;
+  logic [1:0][1:0] rankNext_vldu_vstu;
+  xs_nd_iq_rank #(.N(2), .IQ_OF('{15, 16, 0, 0})) u_rank_vldu_vstu (
+    .validNum({iqValidNum[24], iqValidNum[23]}), .rank_q(IQSort_vldu_vstu),
+    .rank_d(rankNext_vldu_vstu), .minIQSel(minIQSelAll[9]));
+  always_ff @(posedge clock) IQSort_vldu_vstu <= rankNext_vldu_vstu;   // 无复位：照抄 golden
   // -------------------------------------------------------------------------
   // 【节 2.3】minIQSel —— 第 lane 条 uop 在本组里取第 (lane % iqNum) 名
   // -------------------------------------------------------------------------

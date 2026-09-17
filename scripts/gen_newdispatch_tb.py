@@ -16,7 +16,9 @@ Lane H/I 的 9 个子模块还没实现），所以"全绿"在当前状态下反
 
 比较用 `!==`（case 不等），所以 X/Z 一定算失配；悬空位在仿真里是 Z，必然触发 B。
 
-用法: gen_newdispatch_tb.py            # 写 verif/ut/NewDispatch/tb.sv
+用法:
+    gen_newdispatch_tb.py            # 写 verif/ut/NewDispatch/tb.sv
+    gen_newdispatch_tb.py --check    # 只比对不写（幂等闸用；有差异则非零退出）
 """
 import os
 import re
@@ -329,8 +331,16 @@ def main():
     a('    $finish;')
     a('  end')
     a('endmodule')
+    body = '\n'.join(L) + '\n'
+    if '--check' in sys.argv:
+        cur = open(OUT).read() if os.path.exists(OUT) else None
+        if cur != body:
+            print('FAIL: %s 与生成器不同步，请重跑 gen_newdispatch_tb.py' % OUT)
+            return 1
+        print('OK: tb.sv 与生成器同步')
+        return 0
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
-    open(OUT, 'w').write('\n'.join(L) + '\n')
+    open(OUT, 'w').write(body)
     nb = sum(1 for _, _, n in outs if is_blocked(n))
     print('已生成 %s' % OUT)
     print('  输出端口 %d，其中声明为 blocked %d，预期应 clean %d'

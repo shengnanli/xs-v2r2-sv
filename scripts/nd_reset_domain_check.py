@@ -26,7 +26,18 @@ IMPL = os.path.join(REPO, 'rtl', 'backend', 'NewDispatch.sv')
 # 只列**已实现**的；没实现的由判据 4 报出来，不许悄悄省略。
 IMPLEMENTED = {
     'uopSelIQ': 'uopSelIQ',
-    'iqSort': 'IQSort',
+    # IQSort 逐组具名（与 golden 同名），排名逻辑共享 xs_nd_iq_rank 一份。
+    # 这里逐个列出来而不是写个前缀通配：漏掉哪一组要能被判据 3 当场报出来。
+    'IQSort_jmp_brh': 'IQSort_jmp_brh',
+    'IQSort_alu': 'IQSort_alu',
+    'IQSort_mul_bku': 'IQSort_mul_bku',
+    'IQSort_falu_fmac': 'IQSort_falu_fmac',
+    'IQSort_fdiv': 'IQSort_fdiv',
+    'IQSort_ldu': 'IQSort_ldu',
+    'IQSort_sta_mou': 'IQSort_sta_mou',
+    'IQSort_vialuFix_vfma': 'IQSort_vialuFix_vfma',
+    'IQSort_vfalu': 'IQSort_vfalu',
+    'IQSort_vldu_vstu': 'IQSort_vldu_vstu',
 }
 
 
