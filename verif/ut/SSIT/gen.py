@@ -40,8 +40,18 @@ HEAD = r'''// ==================================================================
 //   B 段（1024 拍）：ldpc=stpc=i 逐项扫一遍。两侧都没 valid → 情形 00 → 每项被
 //                    写成 {valid=1, ssid=XORFold(i), strict=0}，data_array 与影子
 //                    数组同时变确定；s1_*/s2_*/REG 也在这段里被写。
+//   C 段（再来 1024 拍同样的扫描）★这一段不是冗余，是实测补上的★：
+//     B 段里每次更新**先读后写**同一项，读到的是那一项**写之前**的内容 —— 也就是
+//     data_array 的上电随机值。于是 B 段跑完，s2_loadOldSSID / s2_storeOldSSID /
+//     s2_loadStrict 这三个寄存器里留着的是「最后一项的随机旧值」，两侧不同。
+//     实测（2026-09-17，本文件上一版）：initreg=0 三个 seed 全绿、initreg=random
+//     的 seed 7 报 9 个、seed 42 报 6 个失配，全部落在打开比对后的头 3 拍、
+//     全部就是这三个寄存器，之后自愈。C 段再扫一遍时读到的已是 B 段写进去的确定值，
+//     这三个寄存器才跟着变确定。
+//     ★这正是 CONVENTIONS 里「两轮 initreg」要抓的东西：只跑 initreg=0 那一轮，
+//       这个暖机漏洞会一直看不见。★
 // 暖机之后才打开比对。**暖机会不会把判别力一起暖没**：由 mutants.py 回答
-// （9 个变异全部在暖机之后的窗口里被抓到）。
+// （10 个变异全部在暖机之后的窗口里被抓到）。
 //
 // ★ 中途再来一次异步复位 ★
 // 这是复位域的针对性检验：golden 复位时 debug_ssid/debug_strict **不动**。若重写
@@ -272,14 +282,19 @@ TAIL = r'''
       raddr_1 = 10'(N - 1 - i);
     end
 
-    // 暖机 B：ldpc=stpc=i 逐项扫一遍，把 data_array 与三组影子数组写成确定值。
+    // 暖机 B + C：ldpc=stpc=i 逐项扫**两遍**。第一遍把 data_array 与三组影子数组
+    // 写成确定值；第二遍让 s2_loadOldSSID/s2_storeOldSSID/s2_loadStrict 这三个
+    // 「读回来的旧值」寄存器也拿到确定值（第一遍里它们读到的是写之前的随机内容，
+    // 见文件头 C 段说明——漏掉这一遍，initreg=random 那轮会在头 3 拍报失配）。
     upd_valid = 1'b1;
-    for (int i = 0; i < N; i++) begin
-      upd_ldpc = 10'(i);
-      upd_stpc = 10'(i);
-      raddr_0 = 10'(i);
-      raddr_1 = 10'(i);
-      @(negedge clk);
+    for (int pass = 0; pass < 2; pass++) begin
+      for (int i = 0; i < N; i++) begin
+        upd_ldpc = 10'(i);
+        upd_stpc = 10'(i);
+        raddr_0 = 10'(i);
+        raddr_1 = 10'(i);
+        @(negedge clk);
+      end
     end
     upd_valid = 1'b0;
     repeat (8) @(negedge clk);
