@@ -1119,8 +1119,18 @@ FM_NOTES = {
 }
 
 
+# 哪些变体已经进了 scripts/fm_eq.tcl 的 matched-unread 加强白名单。
+# ★ 这是 reviewer 的文件、reviewer 的决定：没进白名单的目标把这项设成 true，
+#   fm_eq.tcl 会 FM_MODE_ERROR 直接 exit 3（fail-closed，但白跑一次）。
+#   所以默认 false；要开必须先请示、由 reviewer 把目标加进那张白名单。
+FM_VMUCP_WHITELISTED = {
+    'EntriesVfdivVidiv',
+}
+
+
 def gen_mk(v):
     fm_note = FM_NOTES.get(v.top, '# 本变体的 FM 点数尚未实测。')
+    vmucp = 'true' if v.top in FM_VMUCP_WHITELISTED else 'false'
     extra_golden = ''.join(f' \\\n              $(GOLDEN_RTL)/{m}.sv' for m in v.extra_mods)
     extra_deps = ''.join(f' {m}.sv' for m in v.extra_mods)
     return f"""# {v.top} UT/FM 入口（Entries* 家族 canary）
@@ -1159,7 +1169,7 @@ FM_REF_DEPS_{v.top} = {v.enq_mod}.sv {v.simp_mod}.sv {v.comp_mod}.sv {v.enq_poli
 #   白名单在 scripts/fm_eq.tcl（依据写在那一行紧邻的注释里），两处须同时生效。
 {fm_note}
 FM_MERGE_DUP = false
-FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = {vmucp}
 
 include ../../../scripts/ut_common.mk
 

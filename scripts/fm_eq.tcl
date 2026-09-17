@@ -186,7 +186,21 @@ switch -- $_verify_matched_unread_compare_points {
     #          配套两项：FM_MERGE_DUP=false（否则 golden 侧的常数负载位被合并，
     #          两侧点数根本对不齐）与可读核里删掉 golden 没有的死寄存器
     #          （EnqEntry 无 blocked、comp 条目无 deqPortIdx，见 xs_iq_entries_core.sv
-    #          §2.6a）。打开本项后 passing 应 9776 -> 12196（+2420）。
+    #          §2.6a）。打开本项后 passing 9776 -> 12136（+2360）。
+    #          ★ 2026-09-17 修正：此处原写 12196（+2420），是**预测值**不是实测值。
+    #            实测基线 f8bd195 确为 12196；但共享核修掉一个真 bug 之后降为 12136。
+    #            bug：o_trans_ld_dep 接的是寄存器原值 r_ld_dep，而 golden
+    #            （EnqEntry_18.sv:1949 / OthersEntry_164.sv:1863）接的是
+    #            common_srcLoadDependencyNext —— 即移位后的次态
+    #            （EnqEntry_18.sv:1038 = {…srcLoadDependency_0[0], 1'h0}，只读 bit0）。
+    #            接错时 impl 侧多读了影子的 bit1，把它撑成活的比较点；接对之后
+    #            bit1 两侧同为死位，60 个点（4 条目 × 15 个 [1:0] 影子寄存器 × 1 位）
+    #            从 Passing 落进 Not Compared/Constant reg：
+    #              基线 Passing DFF 10792 + Constant reg 68 = 10860
+    #              修后 Passing DFF 10732 + Constant reg 128 = 10860（匹配点总数不变）
+    #            两轮 unmatched compare points 均 0(0)，即没有任何一侧单边丢点。
+    #            ——数字下降是 bug 修复的结果，不是覆盖退化；**不许**为了保住 12196
+    #              把 RTL 还原成错的接法。
     # Ftq 加入依据(2026-09-14, agent/ftq 实测)：本目标的 matched-not-compared unread
     # 共 3395 点，**全部**是两侧同路径同名的对称死位，严格双射(ref 唯一点 3395 ↔
     # impl 唯一点 3395，非 matched_nc 项为 0——ref 侧另有 4282 个 unmatched-unread，
