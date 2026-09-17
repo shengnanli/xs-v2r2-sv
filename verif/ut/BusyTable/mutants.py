@@ -8,7 +8,8 @@
 做法：把 rtl/ 与本目录复制进 neg_build/（已在 .gitignore 里，**变异不进库**），
 逐个注入一个真 bug，跑 20k 拍，要求每个都被 UT 抓出来（errors > 0）。
 七个变异各对准一条本模块真实容易写错的地方，其中 M1/M2/M5 正是 golden 与 Chisel
-字面不一致的那三处——照 Chisel 写就会变成这三个变异之一。
+字面不一致的那三处——照 Chisel 写就会变成这三个变异之一；M1/M8/M9 三个一起钉住
+「读口越界」这一族语义（忙位得 0、依赖得第 0 项、旁路不看越界，三者各不相同）。
 
 用法: python3 mutants.py      （或 make mutants）
 """
@@ -52,6 +53,14 @@ MUTANTS = [
      'xs_BusyTable_core.sv',
      "          for (int i = 0; i < WK_SLOTS; i++)",
      "          for (int i = 0; i < 4; i++)"),
+    ('M8 忙位越界读成「忙」（golden 的 `table>>req` 越界得 0 = 就绪）',
+     'xs_BusyTable_core.sv',
+     "    assign read_resp[r] = ~((in_range & busy[idx]) | (|alloc_bypass));",
+     "    assign read_resp[r] = ~((~in_range | busy[idx]) | (|alloc_bypass));"),
+    ('M9 读口分配旁路被限制在表内（golden 的旁路是全 8 位比较，不看越界）',
+     'xs_BusyTable_core.sv',
+     "      assign alloc_bypass[a] = alloc_valid[a] & (alloc_preg[a] == read_req[r]);",
+     "      assign alloc_bypass[a] = in_range & alloc_valid[a] & (alloc_preg[a] == read_req[r]);"),
 ]
 
 RTL = ['xs_BusyTable_core.sv', 'BusyTable.sv', 'BusyTable_1.sv',
