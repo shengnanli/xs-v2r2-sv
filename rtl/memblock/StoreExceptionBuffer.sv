@@ -178,9 +178,17 @@ module xs_StoreExceptionBuffer_core
   // ---------------------------------------------------------------------------
   // 一条 uop 要被冲刷 = 重定向有效,且 (它就是触发重定向那条且该重定向"连自己一起冲"
   // || 它比触发点更年轻)。
-  function automatic logic need_flush(input robptr_t p);
-    need_flush = redirect_valid
-                 & ((redirect_level & (p == redirect_robIdx)) | is_after(p, redirect_robIdx));
+  //
+  // ★ redirect 的三个字段必须当**入参**传进来,不许在函数体里直接读模块信号 ★
+  //   读非局部变量的函数会被 Formality 判 FMR_VLOG-091(可能仿真/综合不一致)并
+  //   拒绝 link(FM-262 → set_top 失败 FM-156)。实测踩过一次:第一版写成读
+  //   redirect_valid / redirect_level / redirect_robIdx,FM 直接起不来。
+  //   正确的修法是把函数写成纯函数,不是去抑制那条消息。
+  function automatic logic need_flush(input robptr_t p,
+                                      input logic    rd_valid,
+                                      input logic    rd_level,
+                                      input robptr_t rd_robIdx);
+    need_flush = rd_valid & ((rd_level & (p == rd_robIdx)) | is_after(p, rd_robIdx));
   endfunction
 
   // ---------------------------------------------------------------------------
@@ -191,7 +199,7 @@ module xs_StoreExceptionBuffer_core
   logic s1_valid [NUM_ENQ];
   always_comb
     for (int p = 0; p < NUM_ENQ; p++)
-      s1_valid[p] = in_valid[p] & ~need_flush(in_robIdx[p]) & (|in_excVec[p]);
+      s1_valid[p] = in_valid[p] & ~need_flush(in_robIdx[p], redirect_valid, redirect_level, redirect_robIdx) & (|in_excVec[p]);
 
   // ---------------------------------------------------------------------------
   // §2.3 S2:打一拍(★全部不复位;数组按口数精确开★)
@@ -235,7 +243,7 @@ module xs_StoreExceptionBuffer_core
   always_comb begin
     for (int p = 0; p < NUM_ENQ; p++) begin
       // S2 的寄存值再按当前 redirect 冲一次:它可能是上一拍存下、这一拍才被冲掉的。
-      leaf[p].valid            = s2_valid_r[p] & ~need_flush(s2_robIdx[p]);
+      leaf[p].valid            = s2_valid_r[p] & ~need_flush(s2_robIdx[p], redirect_valid, redirect_level, redirect_robIdx);
       leaf[p].bits.uopIdx      = s2_uopIdx[p];
       leaf[p].bits.robIdx      = s2_robIdx[p];
       leaf[p].bits.fullva      = s2_fullva[p];
@@ -258,7 +266,7 @@ module xs_StoreExceptionBuffer_core
 
     // ★第 8 片叶子 = 当前保持值★,同样先按 redirect 冲一次。
     // 它排在最后,所以与新候选完全平局时新候选赢(见文件头【更新优先级】)。
-    leaf[NUM_ENQ].valid = req_valid & ~need_flush(req.robIdx);
+    leaf[NUM_ENQ].valid = req_valid & ~need_flush(req.robIdx, redirect_valid, redirect_level, redirect_robIdx);
     leaf[NUM_ENQ].bits  = req;
   end
 
