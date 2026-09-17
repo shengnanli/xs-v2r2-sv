@@ -1,0 +1,453 @@
+{
+  "cpu":"XIANGSHAN_KMHV2",
+  "numCores":1,
+  "cmdConfigs":[
+    "--target-dir",
+    "/home/eda/xs-env/sim-work/regen/build/rtl",
+    "--config",
+    "KunminghuV2Config",
+    "--issue",
+    "E.b",
+    "--firtool-opt",
+    "--repl-seq-mem --repl-seq-mem-file=SimTop.sv.conf",
+    "--num-cores",
+    "1",
+    "--target",
+    "systemverilog",
+    "--firtool-opt",
+    "-O=release --disable-annotation-unknown --lowering-options=explicitBitcast,disallowLocalVariables,disallowPortDeclSharing,locationInfoStyle=none",
+    "--split-verilog",
+    "--dump-fir",
+    "--enable-difftest",
+    "--full-stacktrace"
+  ],
+  "bundles":[
+    {
+      "className":"difftest.DiffRefillEvent",
+      "classArgs":{
+        
+      },
+      "delay":0
+    },
+    {
+      "className":"difftest.DiffRefillEvent",
+      "classArgs":{
+        
+      },
+      "delay":0
+    },
+    {
+      "className":"difftest.DiffRefillEvent",
+      "classArgs":{
+        
+      },
+      "delay":0
+    },
+    {
+      "className":"difftest.DiffL1TLBEvent",
+      "classArgs":{
+        
+      },
+      "delay":0
+    },
+    {
+      "className":"difftest.DiffL1TLBEvent",
+      "classArgs":{
+        
+      },
+      "delay":0
+    },
+    {
+      "className":"difftest.DiffL1TLBEvent",
+      "classArgs":{
+        
+      },
+      "delay":0
+    },
+    {
+      "className":"difftest.DiffInstrCommit",
+      "classArgs":{
+        "nPhyRegs":300
+      },
+      "delay":3
+    },
+    {
+      "className":"difftest.DiffLoadEvent",
+      "classArgs":{
+        
+      },
+      "delay":3
+    },
+    {
+      "className":"difftest.DiffInstrCommit",
+      "classArgs":{
+        "nPhyRegs":300
+      },
+      "delay":3
+    },
+    {
+      "className":"difftest.DiffLoadEvent",
+      "classArgs":{
+        
+      },
+      "delay":3
+    },
+    {
+      "className":"difftest.DiffInstrCommit",
+      "classArgs":{
+        "nPhyRegs":300
+      },
+      "delay":3
+    },
+    {
+      "className":"difftest.DiffLoadEvent",
+      "classArgs":{
+        
+      },
+      "delay":3
+    },
+    {
+      "className":"difftest.DiffInstrCommit",
+      "classArgs":{
+        "nPhyRegs":300
+      },
+      "delay":3
+    },
+    {
+      "className":"difftest.DiffLoadEvent",
+      "classArgs":{
+        
+      },
+      "delay":3
+    },
+    {
+      "className":"difftest.DiffInstrCommit",
+      "classArgs":{
+        "nPhyRegs":300
+      },
+      "delay":3
+    },
+    {
+      "className":"difftest.DiffLoadEvent",
+      "classArgs":{
+        
+      },
+      "delay":3
+    },
+    {
+      "className":"difftest.DiffInstrCommit",
+      "classArgs":{
+        "nPhyRegs":300
+      },
+      "delay":3
+    },
+    {
+      "className":"difftest.DiffLoadEvent",
+      "classArgs":{
+        
+      },
+      "delay":3
+    },
+    {
+      "className":"difftest.DiffInstrCommit",
+      "classArgs":{
+        "nPhyRegs":300
+      },
+      "delay":3
+    },
+    {
+      "className":"difftest.DiffLoadEvent",
+      "classArgs":{
+        
+      },
+      "delay":3
+    },
+    {
+      "className":"difftest.DiffInstrCommit",
+      "classArgs":{
+        "nPhyRegs":300
+      },
+      "delay":3
+    },
+    {
+      "className":"difftest.DiffLoadEvent",
+      "classArgs":{
+        
+      },
+      "delay":3
+    },
+    {
+      "className":"difftest.DiffTrapEvent",
+      "classArgs":{
+        
+      },
+      "delay":0
+    },
+    {
+      "className":"difftest.DiffArchIntRenameTable",
+      "classArgs":{
+        "numPhyRegs":224
+      },
+      "delay":2
+    },
+    {
+      "className":"difftest.DiffArchFpRenameTable",
+      "classArgs":{
+        "numPhyRegs":192
+      },
+      "delay":2
+    },
+    {
+      "className":"difftest.DiffArchVecRenameTable",
+      "classArgs":{
+        "numPhyRegs":300
+      },
+      "delay":2
+    },
+    {
+      "className":"difftest.DiffPhyIntRegState",
+      "classArgs":{
+        "numPhyRegs":224
+      },
+      "delay":2
+    },
+    {
+      "className":"difftest.DiffPhyFpRegState",
+      "classArgs":{
+        "numPhyRegs":192
+      },
+      "delay":2
+    },
+    {
+      "className":"difftest.DiffPhyVecRegState",
+      "classArgs":{
+        "numPhyRegs":300
+      },
+      "delay":2
+    },
+    {
+      "className":"difftest.DiffArchEvent",
+      "classArgs":{
+        
+      },
+      "delay":3
+    },
+    {
+      "className":"difftest.DiffCriticalErrorEvent",
+      "classArgs":{
+        
+      },
+      "delay":4
+    },
+    {
+      "className":"difftest.DiffCSRState",
+      "classArgs":{
+        
+      },
+      "delay":0
+    },
+    {
+      "className":"difftest.DiffDebugMode",
+      "classArgs":{
+        
+      },
+      "delay":0
+    },
+    {
+      "className":"difftest.DiffTriggerCSRState",
+      "classArgs":{
+        
+      },
+      "delay":0
+    },
+    {
+      "className":"difftest.DiffVecCSRState",
+      "classArgs":{
+        
+      },
+      "delay":0
+    },
+    {
+      "className":"difftest.DiffFpCSRState",
+      "classArgs":{
+        
+      },
+      "delay":0
+    },
+    {
+      "className":"difftest.DiffHCSRState",
+      "classArgs":{
+        
+      },
+      "delay":0
+    },
+    {
+      "className":"difftest.DiffNonRegInterruptPendingEvent",
+      "classArgs":{
+        
+      },
+      "delay":0
+    },
+    {
+      "className":"difftest.DiffMhpmeventOverflowEvent",
+      "classArgs":{
+        
+      },
+      "delay":0
+    },
+    {
+      "className":"difftest.DiffSyncAIAEvent",
+      "classArgs":{
+        
+      },
+      "delay":0
+    },
+    {
+      "className":"difftest.DiffSyncCustomMflushpwrEvent",
+      "classArgs":{
+        
+      },
+      "delay":0
+    },
+    {
+      "className":"difftest.DiffRefillEvent",
+      "classArgs":{
+        
+      },
+      "delay":0
+    },
+    {
+      "className":"difftest.DiffUncacheMMStoreEvent",
+      "classArgs":{
+        
+      },
+      "delay":1
+    },
+    {
+      "className":"difftest.DiffRefillEvent",
+      "classArgs":{
+        
+      },
+      "delay":0
+    },
+    {
+      "className":"difftest.DiffL2TLBEvent",
+      "classArgs":{
+        
+      },
+      "delay":0
+    },
+    {
+      "className":"difftest.DiffL2TLBEvent",
+      "classArgs":{
+        
+      },
+      "delay":0
+    },
+    {
+      "className":"difftest.DiffAtomicEvent",
+      "classArgs":{
+        
+      },
+      "delay":0
+    },
+    {
+      "className":"difftest.DiffLrScEvent",
+      "classArgs":{
+        
+      },
+      "delay":0
+    },
+    {
+      "className":"difftest.DiffCMOInvalEvent",
+      "classArgs":{
+        
+      },
+      "delay":0
+    },
+    {
+      "className":"difftest.DiffSbufferEvent",
+      "classArgs":{
+        
+      },
+      "delay":1
+    },
+    {
+      "className":"difftest.DiffStoreEvent",
+      "classArgs":{
+        
+      },
+      "delay":2
+    },
+    {
+      "className":"difftest.DiffStoreEvent",
+      "classArgs":{
+        
+      },
+      "delay":2
+    },
+    {
+      "className":"difftest.DiffStoreEvent",
+      "classArgs":{
+        
+      },
+      "delay":2
+    },
+    {
+      "className":"difftest.DiffL1TLBEvent",
+      "classArgs":{
+        
+      },
+      "delay":0
+    },
+    {
+      "className":"difftest.DiffL1TLBEvent",
+      "classArgs":{
+        
+      },
+      "delay":0
+    },
+    {
+      "className":"difftest.DiffL1TLBEvent",
+      "classArgs":{
+        
+      },
+      "delay":0
+    },
+    {
+      "className":"difftest.DiffL1TLBEvent",
+      "classArgs":{
+        
+      },
+      "delay":0
+    },
+    {
+      "className":"difftest.DiffL1TLBEvent",
+      "classArgs":{
+        
+      },
+      "delay":0
+    },
+    {
+      "className":"difftest.DiffL1TLBEvent",
+      "classArgs":{
+        
+      },
+      "delay":0
+    },
+    {
+      "className":"difftest.DiffL1TLBEvent",
+      "classArgs":{
+        
+      },
+      "delay":0
+    },
+    {
+      "className":"difftest.DiffL1TLBEvent",
+      "classArgs":{
+        
+      },
+      "delay":0
+    }
+  ]
+}

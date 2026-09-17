@@ -1,0 +1,37 @@
+Chronologic VCS simulator copyright 1991-2024
+Contains Synopsys proprietary information.
+Compiler version W-2024.09-SP1_Full64; Runtime version W-2024.09-SP1_Full64;  Sep 14 22:20 2026
+Core  x's Commit SHA is: b36a1a2a57, dirty: 1
+ram image:/home/eda/xs-env/sim-fast/workloads/coremark-2-iteration.bin
+ram size: 8589934592
+diff-test ref so:/home/eda/xs-env/XiangShan/ready-to-run/riscv64-nemu-interpreter-so
+set max cycles:             50000000
+simv compiled at Sep 14 2026, 21:59:42
+Using simulated 8192MB RAM
+The image is /home/eda/xs-env/sim-fast/workloads/coremark-2-iteration.bin
+Using simulated 1048576B flash
+The reference model is /home/eda/xs-env/XiangShan/ready-to-run/riscv64-nemu-interpreter-so
+The first instruction of core 0 has commited. Difftest enabled. 
+Running CoreMark for 2 iterations
+2K performance run parameters for coremark.
+CoreMark Size    : 666
+Total time (ms)  : 2542
+Iterations       : 2
+Compiler version : GCC13.2.0
+seedcrc          : 0xe9f5
+[0]crclist       : 0xe714
+[0]crcmatrix     : 0x1fd7
+[0]crcstate      : 0x8e3a
+[0]crcfinal      : 0x72be
+Finished in 2542 ms.
+==================================================
+CoreMark Iterations/Sec 786
+Core 0: HIT GOOD TRAP at pc = 0x80001ca0
+Core-0 instrCnt = 663,692, cycleCnt = 320,376, IPC = 2.071603
+DIFFTEST WORKLOAD DONE at cycle               320383
+$finish called from file "/home/eda/xs-env/sim-fast/difftest/src/test/vsrc/vcs/DifftestEndpoint.sv", line 400.
+$finish at simulation time            640867000
+           V C S   S i m u l a t i o n   R e p o r t 
+Time: 640867000 ps
+CPU Time:   2558.440 seconds;       Data structure size:  62.6Mb
+Mon Sep 14 23:03:50 2026

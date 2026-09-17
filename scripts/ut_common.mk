@@ -90,8 +90,20 @@ compile: simv
 # order-only 依赖：portlint 在 simv 的配方之前**总是**跑（含 -j 并行），但不会因为
 # 它是 .PHONY 就把 simv 判成过期而反复重新链接。`make compile` / `make run` 都会
 # 经过这道闸。
+#
+# GOLDEN_SRCS 与 RTL_GOLDEN_DEPS 会重叠（厂商 SRAM 宏、ClockGate 这类两侧共读的
+# 文件经常两边都列了一遍）。同一个文件在 VCS 命令行上出现两次 = 同一个 module
+# 被声明两次，VCS 报 `Warning-[OPD] Override previous declaration`。
+# 实测 12 个 UT 中招，共 116 处（SRAMTemplate 32、ICacheDataArray 14、
+# SRAMTemplateNewForm/SplittedSRAMTemplate 各 12 …）。这类噪声的害处不是它本身，
+# 而是它把编译日志的信噪比压低到"警告一律略过"，真警告就藏在里面了。
+# ★在这里去重，不去改各 UT 的 Makefile★：其中好几个（SRAMTemplate 家族、
+# TLBuffer 家族）是生成产物，手改会被下一次跑生成器静默删掉——本轮已经踩过两次。
+# 用 filter-out 而不是 $(sort)：sort 会重排，而源文件顺序在 SV 里不是无关紧要的。
+GOLDEN_SRCS_UNIQ = $(filter-out $(RTL_GOLDEN_DEPS),$(GOLDEN_SRCS))
+
 simv: $(UT_SRCS) $(TB_SRCS) $(GOLDEN_SRCS) $(RTL_GOLDEN_DEPS) | portlint derive
-	$(VCS) $(UT_SRCS) $(RTL_GOLDEN_DEPS) $(GOLDEN_SRCS) $(TB_SRCS) -top tb -o simv
+	$(VCS) $(UT_SRCS) $(RTL_GOLDEN_DEPS) $(GOLDEN_SRCS_UNIQ) $(TB_SRCS) -top tb -o simv
 
 run: simv
 	./simv +ntb_random_seed=$(SEED) $(SIM_ARGS) -l sim_$(SEED).log

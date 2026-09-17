@@ -26,6 +26,13 @@ run "位置依赖闸"       python3 scripts/test_no_location_dependency.py
 # 台账行序闸：我写了这条测试却没接进来（2026-09-14 由 bkperf worker 撞上才发现——
 # 它追加台账行后 L1 从 181/181 掉到 178/181，而当时没有任何闸会响）。
 run "台账行序闸"       python3 scripts/test_ledger_append_only.py
+# 覆盖率台账幂等（codex 0161）：三个口径必须能从 golden 与 rtl/ 现场重算。
+# 它存在的理由是"253/253"曾被读成"重写完成"，而实测按行数只有 7.4%。
+# 空壳不得抬高 proven 覆盖率（2026-09-16）：覆盖率台账原来按「rtl/ 里有同名 module」
+# 记账，于是一个只实现两成逻辑的 LoadQueueReplay 骨架就把覆盖率从 7.4% 抬到 11.0%，
+# 凭空记 138,860 行 golden。判据已改成按绿判决证据记；这道闸把「改好了」变成「改住了」。
+run "覆盖率空壳闸"     python3 scripts/test_coverage_no_shell_inflation.py
+run "覆盖率台账幂等"   python3 scripts/rewrite_coverage.py --check
 # FM Tcl 毒字符串闸：fm_shell 把入口 Tcl **逐行回显**进 fm.log（注释也不例外），
 # 而 fm_verdict.py 的 _ELAB147/_DONTVERIFY 是在整份日志上做正则 —— 于是在注释里
 # 完整写出这些串会让**每个目标**的判定中毒。agent/err3 实测撞到过：写全之后
@@ -52,6 +59,21 @@ for g in scripts/gen_tlbuffer_ad_family.py scripts/gen_mbist_pipe_family.py \
          scripts/gen_sram_wrappers.py; do
   [ -f "$g" ] && run "生成器幂等 $(basename $g .py | sed 's/^gen_//')" python3 "$g" --check
 done
+# 上面三条是**逐个**挂 --check 的 scripts/gen_*.py。verif/ut/*/gen.py 那一层有 9 个，
+# 其中 8 个根本没有 --check（SRAMTemplateNewForm 是最后一个敞口）。与其逐个改生成器，
+# 不如统一验一次：在 HEAD 上开 detached worktree 重跑全部，产物必须逐字不变。
+# 好处是新加的生成器自动进闸，不会因为"忘了挂 --check"再敞一个口。
+run "生成器幂等 verif/ut/*"  python3 scripts/test_gen_idempotent.py
+# 仿真 collateral 闸（codex 0160 §Canonical simulation collateral）：
+# verif/sim/collateral/ 是「干净 checkout 能跑起仿真」所缺的 13 个生成物（207 KiB）——
+# G1-canonical 只冻结 golden-rtl/，不含 generated-src，少了它 VCS 连 golden 侧都编不出来。
+# 生成物进版本库就会腐烂：RTL 换一版、DPI 接口跟着变，而库里这份不会自己跟着走。
+# 判据 B 把 run_fullchip.sh 的 check_dpic 门禁（dpic 的 v_difftest_* 集合 == golden
+# GatewayEndpoint.sv 例化的 DummyDPICWrapper_* 集合）从「跑仿真才发现」提前到「跑闸就发现」
+# —— 那个形态实测让 **golden 自己**一跑就 Error-[DPI-DIFNF]，而且长得很像 impl 的 bug。
+# 先负测（秒级，不读 golden），再跑真闸，顺序照 package 闸的先例。
+run "仿真 collateral 负测"  python3 scripts/check_sim_collateral.py --selftest
+run "仿真 collateral 闸"    python3 scripts/check_sim_collateral.py
 # 层次重绑映射表幂等（codex 0159 §F-class）：docs/hier_rebind_map.tsv 是
 # difftest 探针/故障注入 scope/DFT 存储路径重绑的唯一依据。它由 golden 例化图 +
 # 重写件例化图 + docs/hier_rebind_decl.tsv 机械算出 —— 任何一侧动了（多吸收一个
@@ -61,6 +83,21 @@ done
 # 先跑负测（秒级，不扫 golden），再跑真闸（约 60 秒）—— 顺序照 package 闸的先例。
 run "层次重绑闸负测"     python3 scripts/test_hier_map_gate.py
 run "层次重绑表幂等"     python3 scripts/hier_map.py --check
+# perf 观测重绑（codex 0160 P2）：docs/perf_bore_map.tsv 决定整芯片仿真里
+# **哪些 perf 计数器算数、哪些不算数**。它由 golden SimTop 的 XMR 表 + golden
+# LogPerfEndpoint 的打印串 + 重写件例化图机械算出 —— 任何一侧动了，表就该跟着变。
+# 没有这道闸，表会悄悄过期，而过期的后果不是报错，是**印出一串看着像测量值的 0**。
+# 先跑负测（秒级，不扫 golden），再跑真闸（约 90 秒）—— 顺序照层次重绑闸的先例。
+run "perf 重绑闸负测"    python3 scripts/test_perf_rebind_gate.py
+run "perf 重绑表幂等"    python3 scripts/perf_rebind.py --check
+# perf 分档闸（codex 0162 D3）：重绑表只回答"绑上了没有"，不回答"这条差异挡不挡里程碑"。
+# D3 把计数器分成"必须相等"和"显式归类后允许不同"两类，而后者的豁免**有有效期**——
+# 它只在"持有模块本轮未重写"时成立。没有闸的话，Tage_SC 被重写之后那 6 条 tage
+# provider 差异会继续挂着 WAIVED，谁也不会发现豁免早就失效了。
+# 这道闸把三件事钉住：台账能从 golden 现场重算 / 不许有"未分类" / 豁免逐条现算。
+# 先跑负测（秒级，不扫 golden），再跑真闸（约 80 秒）—— 顺序照层次重绑闸的先例。
+run "perf 分档闸负测"    python3 scripts/test_perf_tier_gate.py
+run "perf 分档台账闸"    python3 scripts/check_perf_tier.py
 
 rm -f /tmp/gate_$$.out
 [ $rc -eq 0 ] && echo "=== 全部机器闸 PASS ===" || echo "=== 有闸未过，见上 ==="

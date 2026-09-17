@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""check_pkg_scope.py —— package 作用域防腐闸：重名 / 共享包落点 / `$unit` 作用域 import。
+"""check_pkg_scope.py —— 编译单元作用域防腐闸：重名 / 共享包落点 / `$unit` import / `timescale。
+
+本闸的四条判据是同一个病的四种形态：**写在文件里、作用域却是整个编译单元的东西，
+会跨文件泄漏，且泄漏结果取决于文件顺序**。UT/FM 每次只编一个文件，永远看不见它们；
+只有整芯片一起编时才发作，而那时往往不报错，只是**静默地取了错的值**。
 
 ## 为什么需要这道闸（2026-09-14，codex 0158 §3 实测）
 
@@ -63,6 +67,42 @@ SystemVerilog 的 **package 名是全局的**，而本工程的单目标 UT 每�
 
    参考 `rtl/frontend/PreDecode.sv` / `rtl/frontend/F3Predecoder.sv`。
 
+**D. `timescale`（硬错，无例外）**：`rtl/` 下任何文件出现 `` `timescale `` 即 FAIL。
+
+   `timescale` 是**编译单元作用域的编译器指令**，不是模块属性：它从出现处起一直生效到
+   下一条 `timescale`（或 `` `resetall ``），**跨文件向后传播**。于是「哪些模块拿到哪个
+   时间精度」由**命令行上的文件顺序**决定，而不是由代码决定。
+
+   实测（2026-09-14，本泳道）：G1 golden 的 2061 个文件里带 `timescale` 的是 **0 个**
+   —— golden 整芯片全靠仿真器默认精度。而 `rtl/` 下有 2 个重写件带 `` `timescale 1ns/1ps ``
+   （SubDirectory.sv:60 / SubDirectory_1.sv:61）。整芯片 impl 侧仿真把它们与 golden 件
+   混编时，这两条指令会把**排在它们之后的所有 golden 模块**的精度一并改成 1ns/1ps，
+   而 golden 侧同一批模块是默认精度 —— 两侧时间精度不同，且差异范围随文件顺序漂移。
+   影响面实测（`sim-work/impl/files_impl_nosimtop.f`，2074 个文件）：SubDirectory.sv 排在
+   第 281 位 —— 它后面还有 **1793 个文件**，整芯片 impl 侧编译时全部继承 1ns/1ps；
+   而 golden 侧同一批文件拿的是 VCS 命令行给的 `-timescale=1ns/1ns`。
+
+   ★ 而且这不只是「潜在」隐患 —— 它**已经在两侧之间造成了可观测的差异** ★：
+   difftest 自己的 vsrc（永远排在 VCS 命令行最末，所以必然落在那两条指令之后）有
+   **7 处 `#0.1` 亚纳秒延时**（`src/test/vsrc/common/SimJTAG.v` 6 处、
+   `src/test/vsrc/vcs/DifftestEndpoint.sv:359` 的 `#0.1 -> simv_step_event` 1 处）。
+   golden 侧 1ns/1ns 把 `#0.1` 舍入成 0，impl 侧 1ns/1ps 保住 100 ps。证据在两份编译日志里：
+
+       sim-work/golden/build.log : 1 条 Warning-[DRTZ] Detect delay value roundoff to 0
+       sim-work/impl/build.log   : 0 条
+
+   （G1 golden 的 2061 个文件里亚纳秒延时是 **0 处**，所以舍入差异全部落在 difftest 件上。）
+   cputest 33/33 仍然 cycle-exact SAME —— JTAG 模型没被用到，那个事件触发在同一时刻内
+   定序也没翻 —— 所以没有变成失配。但「两侧不是按同一套时间语义编出来的」这件事本身
+   不该靠运气兜着，而且影响面随清单顺序漂移。删掉之后两侧语义一致。
+
+   规则很简单：重写件与 golden 对照，golden 没有的编译单元级指令，重写件也不许有。
+   时间精度应当由**仿真命令行**统一给（difftest 的 vcs.mk / UT 的 ut_common.mk），
+   那是唯一一个所有文件都看得见同一个值的地方。
+
+   注：本判据只管 `rtl/`。`verif/ut/*/tb.sv` 里的 `timescale` 不在扫描范围内，也不该管
+   —— testbench 是编译的**入口**文件，它给整次编译定一个精度是合法且必要的用法。
+
 ## 环境变量
   XSSV_RTL    覆盖被扫描的 rtl 根目录（负测用；默认 <repo>/rtl）
 
@@ -84,6 +124,7 @@ PKG_USE = re.compile(r'\b(\w+)\s*::')
 SCOPE_OPEN = re.compile(r'^(module|package|interface|program|class|primitive|checker)\b')
 SCOPE_CLOSE = re.compile(r'^end(module|package|interface|program|class|primitive|checker)\b')
 IMPORT_LINE = re.compile(r'^import\s+([\w$]+)\s*::')
+TIMESCALE = re.compile(r'^\s*`timescale\b(.*)$')
 
 # 跨文件共享包的登记例外：包名 -> (定义它的文件, 为什么还没搬)。
 # 2026-09-14 起为空——三处历史例外都已搬进子系统公共包文件。新增一处即 FAIL；
@@ -178,9 +219,30 @@ def main():
                 f'UT/FM 各编各的文件永远看不见。改成模块头 import：'
                 f'`module <M>\\n  import {pkg}::*;\\n(...)`，见 rtl/frontend/PreDecode.sv')
 
+    # --- D `timescale（编译单元作用域指令，跨文件按顺序传播） ---
+    # 单独扫一次：judge A-C 只读 *.sv，而 `timescale 藏在被 `include 的 *.svh 里
+    # 同样致命（它在预处理展开后就是编译单元里的一条指令）。
+    n_ts = 0
+    for p in sorted(list(RTL.rglob('*.sv')) + list(RTL.rglob('*.svh'))):
+        body = texts.get(p)
+        if body is None:
+            body = p.read_text(errors='replace')
+        for i, ln in enumerate(strip_comments(body).splitlines(), 1):
+            m = TIMESCALE.match(ln)
+            if not m:
+                continue
+            n_ts += 1
+            findings.append(
+                f'TIMESCALE_DIRECTIVE  {rel(p)}:{i}  `timescale{m.group(1).rstrip()} —— '
+                f'这是**编译单元作用域**的指令，从这里起一直生效到下一条 `timescale，'
+                f'跨文件向后传播，于是「哪些模块用哪个时间精度」由命令行文件顺序决定。'
+                f'G1 golden 2061 个文件里带 `timescale 的是 0 个；重写件带了，整芯片混编时'
+                f'会把排在其后的 golden 模块精度一并改掉，两侧精度不同且范围随顺序漂移。'
+                f'删掉它，精度统一由仿真命令行给（tb.sv 作为编译入口文件不受本判据管）')
+
     print(f'check_pkg_scope: {RTL} 下 {len(defs)} 个 package，'
           f'{sum(len(v) for v in defs.values())} 处定义，'
-          f'{n_unit} 处 $unit 作用域 import')
+          f'{n_unit} 处 $unit 作用域 import，{n_ts} 处 `timescale')
     if findings:
         for f in findings:
             print('  ★ ' + f)

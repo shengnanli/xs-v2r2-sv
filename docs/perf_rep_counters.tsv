@@ -1,0 +1,38 @@
+# perf_rep_counters.tsv —— **代表性计数器组**（人工挑选；scripts/perf_compare.py 默认用它）
+#
+# codex 0160 P2 的硬要求：「Validate a representative counter set against golden
+# before running a broad perf comparison.」—— 先拿一小组语义明确、覆盖面广的计数器
+# 跟 golden 对上，再谈 8000+ 个计数器的大面积比对。这张表就是那一小组。
+#
+# 挑选判据（每条都写清为什么选它）：
+#   1. 语义单一、能独立解释（不是直方图的某一格、不是某个内部握手的边角）；
+#   2. 覆盖 frontend / backend / memBlock / L2 四个大区；
+#   3. 至少包含一个**分母**（clock_cycle）与一个**吞吐**（commitInstr）——这两条
+#      对不上就说明两侧连执行轨迹都不一样，后面比什么都没意义；
+#   4. 覆盖本轮重绑的每个层级：T0（原样）/T1（换路径）/T2（复制锥）都要有代表，
+#      否则「验过了」只验到最容易的那一档。
+#
+# scope 与 name 直接取自 golden LogPerfEndpoint 的 [PERF ] 打印串，逐字相同。
+# tier 列 = 该计数器所有 bore 里**最弱**的一档（由 docs/perf_bore_map.tsv 得出）。
+# scope	name	tier	why
+SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.rob	clock_cycle	—	全局分母。★它不由任何 bore 驱动★（LogPerfEndpoint 自己数拍），所以不在 perf_bore_map.tsv 里；两侧拍数不同则一切比对无意义
+SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.rob	commitInstr	T0	全局吞吐：提交指令数，IPC 的分子
+SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.rob	commitUop	T0	微操作提交数（与 commitInstr 一起能看出融合/拆分行为）
+SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.rob	commitInstrBranch	T0	提交的分支指令数，与 ftq 的 BpInstr 互为旁证
+SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.rob	commitInstrLoad	T0	提交的 load 数，与 dcache load_req 互为旁证
+SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.rob	commitInstrStore	T0	提交的 store 数
+SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.ftq	BpInstr	UNBOUND	★如实记：这条**没绑上**。golden 的 perfCountsMap_*_probe 锥展到 Ftq 内部 commit_state_*/commit_mispredict_r_* 寄存器阵列（非签核边界）。放在代表组里正是为了让比对结果里明明白白出现一条 EXCLUDED —— 分支预测精度目前不可比
+SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.ftq	BpRight	UNBOUND	同上。线索已找到：impl rtl/frontend/Ftq.sv:1940 有 `perf_rights = perf_cfiCommit & ~commit_mispredict`，语义就是它，只是名字变了 —— 下一步该给它补一条端口/信号别名声明，不是接零
+SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.ftq	BpWrong	UNBOUND	同上。线索：impl rtl/frontend/Ftq.sv:1941 `perf_wrongs = perf_cfiCommit & commit_mispredict`
+SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.metaArray	meta_refill_num	T2	ICache 被重写且 metaArray 下沉进 u_core：走复制锥这一档的代表
+SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.mainPipe	icache_bubble_s2_miss	T1	取指气泡 —— T1 的代表：ICacheMainPipe 本身没被重写，但父模块 ICache 把它收进了 u_core，只有路径变了
+SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.missUnit	enq_prefetch_req	T2	ICache 预取请求入队数 —— T2 的第二个代表（叶子含 MSHR 子实例端口）
+SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.icache.prefetcher	prefetch_req_send_hw	T1	硬件预取发出数
+SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dcache.dcache.ldu_0	load_req	T0	DCache load 请求数
+SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dcache.dcache.ldu_0	load_hit	T0	DCache load 命中数（命中率的分子）
+SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dcache.dcache.ldu_0	load_miss	T0	DCache load 缺失数
+SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dcache.dcache.ldu_0	load_replay	T0	load replay 数（访存流水行为一致性）
+SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.dcache.dcache	miss_queue_fire	T0	MissQueue 发射数
+SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.rename.fpFreeList	allocation_blocked_cycle	T2	Rename FP 空闲表分配受阻拍数 —— T2 复制锥（叶子全是 StdFreeList 端口）的代表
+SimTop.cpu.l_soc.core_with_l2.core.backend.inner.dataPath	mem_stall_l3miss	T0	L3 miss 引起的后端停顿（跨到 uncore/L2 那一侧）
+SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu.predictors.ftb.ftbBank	ftb_hit_way0	T2	FTB way0 命中数 —— T2_CONE_PORT 的第三个代表（FTBBank 被重写，锥叶子全是它的端口）

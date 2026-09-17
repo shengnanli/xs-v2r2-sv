@@ -12,7 +12,10 @@
   - A 包重名   -> 退出 1，且 finding 里含 DUPLICATE_PACKAGE
   - B 跨文件包 -> 退出 1，且 finding 里含 CROSS_FILE_PACKAGE
   - C $unit import -> 退出 1，且 finding 里含 UNIT_SCOPE_IMPORT
+  - D `timescale  -> 退出 1，且 finding 里含 TIMESCALE_DIRECTIVE（.sv 与 .svh 各一例）
 C 类另外钉两个**不该误报**的合法形态（模块头 import 的两种写法），防止闸把正确代码判红。
+D 类同样钉一个不该误报的形态：**被注释掉的** `timescale（讲解用的注释很常见，
+闸若连注释都报，下一个人就会去关掉这道闸）。
 """
 import os
 import pathlib
@@ -39,6 +42,13 @@ CLEAN = {
         '(output logic [IDX-1:0] o);\n  assign o = \'0;\nendmodule\n\n'
         'module Bar import bar_pkg::*; (output logic [IDX-1:0] o);\n'
         '  xs_Bar_core u(.o(o));\nendmodule\n'),
+    # 合法形态 3：注释里提到 `timescale —— 判据 D 不许误报（strip_comments 先去注释）
+    'uncore/Commented.sv': (
+        '// 说明：本模块不写 `timescale 1ns/1ps，精度统一由仿真命令行给。\n'
+        '/* 块注释里的 `timescale 1ns/1ps 同样不算 */\n'
+        'module Commented (output logic o);\n  assign o = \'0;\nendmodule\n'),
+    # 干净 .svh：判据 D 会扫 .svh，这里钉住不误报
+    'uncore/clean_inc.svh': ('// 纯端口片段，无编译单元级指令\n  , output logic spare\n'),
     # 跨文件使用公共包 —— 合法（包住在 *_common_pkg.sv）
     'frontend/Baz.sv': (
         'module Baz\n  import shared_pkg::*;\n(output logic [W-1:0] o);\n'
@@ -69,6 +79,20 @@ CASES = [
         'import unit3_pkg::*;\n\nmodule B3 (output logic [IDX-1:0] o);\n'
         '  assign o = \'0;\nendmodule\n'},
      'UNIT_SCOPE_IMPORT'),
+    # D：本泳道实测的真实形态 —— 模块之前一条 `timescale 1ns/1ps
+    ('D `timescale 写在 .sv 模块之前（SubDirectory.sv:60 的真实形态）', {'uncore/Ts.sv':
+        '// =====\n`timescale 1ns/1ps\n\nmodule xs_Ts_core (output logic o);\n'
+        '  assign o = \'0;\nendmodule\n'},
+     'TIMESCALE_DIRECTIVE'),
+    # D：藏在被 `include 的 .svh 里 —— 判据 A-C 只读 *.sv，这一条必须单独扫到
+    ('D `timescale 藏在 .svh 里（预处理展开后同样是编译单元指令）', {'uncore/bad_inc.svh':
+        '`timescale 1ns/1ps\n  , output logic spare\n'},
+     'TIMESCALE_DIRECTIVE'),
+    # D：缩进不改变它是编译单元指令的事实
+    ('D `timescale 有缩进', {'uncore/Ts2.sv':
+        '   `timescale 10ps/1ps\nmodule xs_Ts2_core (output logic o);\n'
+        '  assign o = \'0;\nendmodule\n'},
+     'TIMESCALE_DIRECTIVE'),
 ]
 
 

@@ -8,6 +8,16 @@
 # ★本表是人工审查记录，不是生成物★：路径翻译本身由 scripts/hier_xlate.py 机械给出，
 #   可随时复跑；本表记的是「这个消费方要不要改、为什么」。
 #
+# ★2026-09-15 更正说明★：本表里那些「SIGNAL_TAIL_OK = 原样可用」的结论，当时是用一份
+#   **报错的** hier_xlate.py 得出的 —— 它把 SIGNAL_TAIL_OK 一律打印成「原样可用」并丢掉
+#   译出路径，而 SIGNAL_TAIL_OK 只说明「末段信号所在的模块没被重写」，不说明「路径没变」
+#   （上游父模块一被重写就插一层 u_core）。修好后重跑：
+#     - 本表涉及的 stl_tb_top.dut.* 路径：SIGNAL_TAIL_REMAP = **0**，本表结论不变；
+#     - 但在 docs/perf_bore_map.tsv 的 9302 条 golden XMR 上，有 **181 条**原先被报成
+#       「原样可用」、实际路径已变（交叉校验：perf_rebind.py 独立把这 181 条判成
+#       T1_PATH_REBIND，给出的新路径与修好后的翻译器逐字一致）。
+#   复跑: python3 scripts/hier_xlate.py --paths <清单> --root-prefix <前缀>
+#
 # verdict:
 #   NO_CHANGE      路径/引用在重写层次里原样成立，无需改动（附为什么）
 #   NOT_A_PATH     它根本不是层次路径（模块名/文件名引用），不在本轮范围内

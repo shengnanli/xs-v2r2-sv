@@ -46,6 +46,8 @@ PriorityMuxModule_8	SIGNED_OFF_TARGET	ABSORBED_DIRECT	Predictor	4	Predictor	rtl/
 Queue1_RegMapperInput	GOLDEN_ONLY	ABSORBED_DIRECT	TLPLIC	1	TLPLIC	$(GOLDEN_RTL)/Queue1_RegMapperInput.sv
 Queue1_RegMapperInput_5	SIGNED_OFF_TARGET	ABSORBED_DIRECT	ICacheCtrlUnit	1	ICacheCtrlUnit	rtl/frontend/Queue1_RegMapperInput_5.sv
 Queue40_L2TlbMQBundle	GOLDEN_ONLY	ABSORBED_DIRECT	L2TlbMissQueue	1	L2TlbMissQueue	$(GOLDEN_RTL)/Queue40_L2TlbMQBundle.sv
+RegCacheTagModule	SIGNED_OFF_TARGET	ABSORBED_DIRECT	RegCacheTagTable	1	RegCacheTagTable	rtl/backend/RegCacheTagModule.sv
+RegCacheTagModule_1	SIGNED_OFF_TARGET	ABSORBED_DIRECT	RegCacheTagTable	1	RegCacheTagTable	rtl/backend/RegCacheTagModule_1.sv
 RightShiftModule	GOLDEN_ONLY	ABSORBED_COLLATERAL	AluDataModule	1	-	$(GOLDEN_RTL)/RightShiftModule.sv
 RightShiftWordModule	GOLDEN_ONLY	ABSORBED_COLLATERAL	AluDataModule	1	-	$(GOLDEN_RTL)/RightShiftWordModule.sv
 ShiftResultSelect	GOLDEN_ONLY	ABSORBED_COLLATERAL	AluDataModule	1	-	$(GOLDEN_RTL)/ShiftResultSelect.sv

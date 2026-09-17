@@ -1,0 +1,13 @@
+--- /home/eda/xs-env/sim-fast/difftest/vcs.mk.orig	2026-09-14 21:37:20.282193481 -0400
++++ /home/eda/xs-env/sim-fast/difftest/vcs.mk	2026-09-14 21:37:20.291193661 -0400
+@@ -73,8 +73,8 @@
+ VCS_FLAGS += --threads $(EMU_THREADS) --threads-dpi all
+ endif
+ else # VCS = verilator
+-VCS_FLAGS += -full64 +v2k -top $(VCS_TOP) -timescale=1ns/1ns -sverilog -debug_access+all +lint=TFIPC-L
+-VCS_FLAGS += -Mdir=$(VCS_BUILD_DIR) -j200
++VCS_FLAGS += -full64 +v2k -top $(VCS_TOP) -timescale=1ns/1ns -sverilog +lint=TFIPC-L
++VCS_FLAGS += -Mdir=$(VCS_BUILD_DIR) -j16
+ VCS_FLAGS += +define+VCS
+ ifeq ($(ENABLE_XPROP),1)
+ VCS_FLAGS += -xprop

@@ -17,6 +17,43 @@ verdict ∈ {SUCCEEDED, FAILED, WAIVED, PARTIAL, SHADOW_CHECK, DIAGNOSTIC, UNRUN
  P0-7 只解析**最后一个** "Matched Compare Points" 汇总表(防较早短格式覆盖终态)。
  P0-8 汇总表缺失 → ERROR(不按零处理);表内某类别缺失才视为 0。
  P0-9 freshness:要求 run 元数据(input_hash/baseline)绑定,不匹配 → 标记 stale。
+
+★读 fm.log 判断"这次跑到哪了"时的阶段顺序★(2026-09-15 实测记下,我读错过一次):
+
+    ... Elaborating / Implementing inferred operators
+    Reference design set to 'r:/WORK/<top>'      <- ref 侧 set_top 完成
+    ... (impl 侧同样一遍)
+    Implementation design set to 'i:/WORK/<top>' <- impl 侧 set_top 完成
+    Status:  Checking designs...
+    Status:  Building verification models...     <- ★合并重复寄存器在这之后★
+    Status:  Merging duplicated registers in block ...   <- 逐 block 打印,可能很久
+    Status:  Matching...
+    **** Matching Results ****
+    Verification SUCCEEDED/FAILED/INCONCLUSIVE
+
+所以 "Building verification models" **不是**"已经过了合并阶段",而是"刚到它门口"。
+拿它当终点会把 verification_merge_duplicated_registers 的 A/B 测成噪声:那之前的
+每一秒都与这个开关无关,两次跑的差异只反映机器负载。要测这个开关,观察点只能是
+"有没有出现 Merging duplicated 行、以及在哪个 block 上停多久"。
+
+★同一类坑的第二次(2026-09-15,代价更大,记在这里免得再犯)★
+
+Matching 阶段会打这样的进度行:
+
+    .............................. 522488M/1057545 (49% Matched) ... 9340.46sec
+
+**分母不是比较点数**。实测:该次跑最终配上 520500 个比较点(256 由 set_user_match、
+517783 靠名字、2461 靠签名分析),而 520500/1057545 = 49.2% —— 分母约是配对数的
+两倍(看起来是 ref+impl 两侧对象合计),**所以配完时进度条正好停在 49% 附近,
+它按构造就到不了 100%**。
+
+我和一个 worker 各自独立地把 "49%" 读成"才走一半",拿尾部速率外推剩下的
+"53.5 万点",得出 302 天 / 146 天,判定"匹配不终止",**并据此把两次跑提前杀了**
+—— 其中一次按现在看再跑约半小时就会出结果。错误结论还发给了 codex(0169)。
+
+**判断匹配有没有走完,唯一可靠的标志是 `**** Matching Results ****` 段头出现,
+以及其后是否出现 `Status:  Verifying...`。永远不要拿一个不知道分母含义的进度条
+当进度。**
 """
 import json
 import os
