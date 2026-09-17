@@ -13,6 +13,37 @@
 
 注入是在**临时拷贝**上做的，仓里的 RTL 一个字节都不动。
 
+## ★ 本轮实测：UT 按构造看不见的那一类差异 ★
+
+canary(`EntriesAluCsrFenceDiv`) 的 FM 从 1030 failing 收到 0，中间修掉的三个缺陷
+**没有一个**是 UT 抓出来的。UT 当时的成绩是 3 seed × 2 initreg × 200k cycle、
+23 条覆盖闸全部非零、`errors=0`。三个缺陷是同一个物种：
+**golden 的不规则，被我抹成了规则。**
+
+| # | 我写的 | golden | 为什么仿真看不见 | 真正的闸 |
+|---|--------|--------|------------------|----------|
+| 1 | 一组共享的 delay 寄存器 | **每个 enq 条目一组**（同源、逐拍逐位相同） | 两者是同一个函数，没有任何输入能把它们分开 | `gen_fm_pins.check_reg_bijection`（两侧 DFF 名单做差集）+ FM |
+| 2 | 保留 `ld1Cancel` 项（`c1` 经寄存器） | 本变体**没有**这个端口 | `c1` 对本变体恒 0，多出来的是一条锥边，不是一个值 | 同上：差集里多出一个 impl-only 寄存器 |
+| 3 | `dataSources` 出口写 `== DS_REG` | **`value[3]` 位测试** | 仅在非法编码 `4'b1001..1111` 上不同，而入队通路造不出这些编码 | FM failing points（实测 192 个）；靶子里记作 M15 |
+
+**关键结论：这不是激励密度不够，加 seed / 加 cycle 一轮都救不回来。**
+三条各自的不可达理由不同，但都不在仿真的输入分布里：
+
+  1. 值恒等。两组寄存器在每一拍每一位都相等，差别只在**结构**（有几组），
+     而结构从端口上观测不到。要区分它们，得观测寄存器的身份而不是它的值。
+  2. ★常 0 的寄存器 ≠ 常量★。FM 不对寄存器做常量折叠：多一个寄存器就是多一条
+     锥边，哪怕它恒 0。仿真只看值，值一样就一样。要让它非 0，需要的是**另一个
+     有 ld1Cancel 端口的变体**，而不是本变体上跑更久。
+  3. 差异集合与可达集合不相交。`dataSources` 的合法编码由入队通路决定，
+     `4'b1001..1111` 永远不会出现；要让 UT 看见，UT 得去驱动一个违反入队契约的
+     输入——那已经不是"测得更狠"，是测一个设计上不存在的场景。
+
+所以这三条的闸**只能是 FM**，把它们记进 UT 的判别力分子分母是错的
+（见下面 MUTANTS 里的 `structural` 桶）。反过来说：UT 的 `errors=0` 在它能看见的
+范围内仍然有效，它证的是"可达行为等价"；FM 证的是"可证等价"。
+★值恒等 ≠ 可证等价★——这一轮的三个缺陷就是这句话的三个实例。
+
+
 ## 用法
 
     python3 mutants.py EntriesAluCsrFenceDiv            # 全跑
@@ -83,7 +114,7 @@ MUTANTS = [
                 '没有哪一路 IQ 唤醒自己是 load 流水时，这一位本来就不是常数 1')),
 
     ('M5', 'LoadShouldCancel 只看 ld2Cancel 配 dep[1]，漏掉 ld1Cancel 配 dep[0]',
-     "      ld_should_cancel |= (c1[q] & dep[q][0])\n"
+     "      ld_should_cancel |= (HAS_LD1_CANCEL & c1[q] & dep[q][0])\n"
      "                        | ((LD_DEP_W > 1) & c2[q] & dep[q][LD_DEP_W > 1 ? 1 : 0]);",
      "      ld_should_cancel |= ((LD_DEP_W > 1) & c2[q] & dep[q][LD_DEP_W > 1 ? 1 : 0]);",
      lambda v: (v.has_ld1,
@@ -129,6 +160,15 @@ MUTANTS = [
                 '双发射口变体里这个条件恒真，删掉 KEEP_WIDE 那一半不改变任何东西'),
      'structural'),
 
+    ('M15', 'dataSources 出口用 `== DS_REG` 相等比较，而不是 golden 的 `value[3]` '
+            '位测试 —— 两者只在非法编码 4\'b1001..1111 上不同，入队通路造不出这些'
+            '编码，所以仿真永远看不出；FM 逐取值比就失配（实测 192 个点 = '
+            '24 条目 × 2 源 × 4 位）',
+     "      use_rc_now = HAS_REG_CACHE & cur_use_rc[s] & cur_data_src[s][3];",
+     "      use_rc_now = HAS_REG_CACHE & cur_use_rc[s] & (cur_data_src[s] == DS_REG);",
+     lambda v: (v.has_rc, '没有 regcache 的变体里 use_rc_now 恒 0，这条是死的'),
+     'structural'),
+
     ('M11', 'comp 条目入口的 srcLoadDependency 钉 0 —— '
             '同样是从 VfdivVidiv 外推出来的错结论',
      "      `IQE_MUX1H(x_ld_dep[e],       final_comp_sel[k][j], c_ld_dep[k],       NUM_ENQ)",
@@ -166,9 +206,72 @@ def main():
     ap.add_argument('--seed', type=int, default=1)
     ap.add_argument('--only')
     ap.add_argument('--list', action='store_true')
+    ap.add_argument('--check', action='store_true',
+                    help='只做静态自检：锚点唯一命中 + 每条适用性判据可求值。'
+                         '便宜，适合进门禁；真跑变异很贵。')
+    ap.add_argument('--selftest-check', action='store_true',
+                    help='负测 --check 本身：注入锚点漂移/判据引用空字段，要求都被抓住。'
+                         '★一道门禁如果注入故障也不报警，它的 rc=0 没有意义★')
     ap.add_argument('--selftest-regcheck', action='store_true',
                     help='只跑寄存器双射核对的负测（证明那道闸会响）')
     a = ap.parse_args()
+
+    if a.selftest_check:
+        # 与 --selftest-regcheck 同一个道理：门禁必须先证明自己会响。
+        import contextlib, io
+        orig = list(MUTANTS)
+        def _run():
+            g = globals()
+            saved, g['_ns'] = None, None
+            sys.argv = ['mutants.py', a.top, '--check']
+            with contextlib.redirect_stderr(io.StringIO()) as e, \
+                 contextlib.redirect_stdout(io.StringIO()):
+                rc = main()
+            return rc, e.getvalue().strip()
+        cases, fails = [], 0
+        g = globals()
+        g['MUTANTS'] = orig
+        cases.append(('baseline 未注入', 0, _run()[0]))
+        b = list(orig[0]); b[2] = b[2] + ' /* drifted */'
+        g['MUTANTS'] = [tuple(b)] + orig[1:]
+        cases.append(('注入 锚点漂走', 1, _run()[0]))
+        b = list(orig[0]); b[4] = lambda v: (v.no_such_field, 'x')
+        g['MUTANTS'] = [tuple(b)] + orig[1:]
+        cases.append(('注入 判据引用空字段', 1, _run()[0]))
+        g['MUTANTS'] = orig
+        cases.append(('还原', 0, _run()[0]))
+        for name, want, got in cases:
+            ok = want == got
+            fails += not ok
+            print(f'  {name:24s} rc={got} 期望 {want}  {"OK" if ok else "★FAIL★"}')
+        print(f'check 负测: {"PASS" if not fails else "FAIL"}')
+        return 1 if fails else 0
+
+    if a.check:
+        # ★为什么单列一个便宜的自检★
+        # 下面那道锚点检查在 --list 的提前 return 之后，只有"真跑变异"才会走到，
+        # 而真跑一轮很贵。结果就是：核一改，锚点可能已经漂走好几天没人知道，
+        # 期间"变异没注进去"会被读成"UT 抓住了"——靶子自己变成空转。
+        # 实测踩到过：修缺陷#2（给 ld1Cancel 项加 HAS_LD1_CANCEL 门）那一刻，
+        # M5 的锚点当场失效，0 命中。所以把它做成 O(ms) 的独立门禁。
+        core_txt = CORE.read_text()
+        bad = [m[0] for m in MUTANTS if core_txt.count(m[2]) != 1]
+        v0 = _gen.Variant(a.top)
+        undef = []
+        for m in MUTANTS:
+            try:
+                m[4](v0)
+            except Exception as e:                       # 判据引用了不存在的字段
+                undef.append(f'{m[0]}:{e}')
+        if bad or undef:
+            if bad:
+                sys.stderr.write(f'[FAIL] 锚点在核里找不到或不唯一: {bad}\n')
+            if undef:
+                sys.stderr.write(f'[FAIL] 适用性判据求值失败: {undef}\n')
+            return 1
+        print(f'mutants --check: {len(MUTANTS)} 条锚点全部唯一命中，'
+              f'适用性判据全部可求值 ({a.top})')
+        return 0
 
     if a.selftest_regcheck:
         return selftest_regcheck()
