@@ -33,7 +33,20 @@ if {[info exists env(FM_SIDECAR_OUT)] && [string trim $env(FM_SIDECAR_OUT)] ne "
 # FM_MODE 门控(2026-07 唯一权威入口, 二审): 证明模式决定允许哪些放宽手段。
 #   signoff-strict(默认): 禁 interface_only(assembly 专用手段); 严格判定交 fm_verdict.py。
 #   assembly: 允许**声明的对称黑盒** FM_INTERFACE_ONLY(仅证本层 glue)。
-#   diagnostic-full: 由 fm_eq_full.tcl 承担(ELAB 降级/放宽上限), 永不签核。
+#   diagnostic-full: 诊断跑, **永不签核**。判定端 fm_verdict.py 对这个 mode
+#     无论数字多好看都不给 SUCCEEDED, 所以它才是"诊断"这件事的真正落点。
+#     在本文件这一侧, 它与 signoff-strict 受**完全相同**的约束(同样拒绝
+#     FM_INTERFACE_ONLY): 诊断性来自 FM_FAILING_LIMIT 这类**增加信息**的旋钮,
+#     不来自任何放宽。
+#     ★2026-09-17 修★ 此前这一行写的是"由 fm_eq_full.tcl 承担(ELAB 降级/放宽上限)",
+#     那是从上轮 xs-v2r2-sv 抄过来的陈述 —— 本仓根本没有 fm_eq_full.tcl,
+#     而 diagnostic-full 又不在下面的 switch 里, 于是 FM_MODE=diagnostic-full
+#     会在读到任何旋钮之前 exit 3。也就是说 b24338e 里我写的那条调用方式
+#     跑不通(Entries canary lane 实测后报的)。现在把它补进 switch。
+#     ★注意这里有个同名不同物的坑★: FM_MODE(本文件, 环境变量)与
+#     fm_verdict.py 的 --mode 是**两套东西**, 词表还差一个。诊断跑的正确姿势是
+#     两边都给 diagnostic-full; 只给判定端也行(FM_MODE 留 signoff-strict),
+#     反正拦住签核的是判定端。
 #   shadow: 同 strict(可读核不驱动输出, 判定归 SHADOW_CHECK)。
 # 诊断能力永不进 signoff: strict 下 FM_INTERFACE_ONLY 非空即报错退出(fail-closed)。
 # ----------------------------------------------------------------------------
@@ -45,7 +58,7 @@ switch -- $_fmmode {
       set_app_var hdlin_interface_only $env(FM_INTERFACE_ONLY)
     }
   }
-  "signoff-strict" - "shadow" {
+  "signoff-strict" - "shadow" - "diagnostic-full" {
     if {[info exists env(FM_INTERFACE_ONLY)] && [string trim $env(FM_INTERFACE_ONLY)] ne ""} {
       puts "FM_MODE_ERROR: $_fmmode 拒绝 FM_INTERFACE_ONLY(assembly 专用手段)"
       exit 3
