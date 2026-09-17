@@ -306,10 +306,22 @@ switch -- $_verify_matched_unread_compare_points {
     #              8149 -> 8182(+33) / 8619 -> 8663(+44) /
     #              8211 -> 8233(+22) / 8207 -> 8229(+22)；
     #          passing 不增即空转，不算过。
-    #          备用配对在 verif/ut/TLBFA/fm_pins.tcl.pending（故意带后缀，
-    #          不会被 $(wildcard fm_pins.tcl) 捡到）——因为 auto_match_flattened_arrays
-    #          读的是 report_unmatched_points 的**默认**报告，而默认报告不含 unread 类，
-    #          万一开了加强 FM 仍不自动配上，就改名启用它。
+    #          ★实测：只开 vmucp 是空转，必须配 verif/ut/TLBFA/fm_pins.tcl★
+    #          白名单落地后先只开 vmucp 跑了一轮（513cda8，官方 runner、receipt 齐全）：
+    #          passing 8149 **一点没增**、unread 仍 33(33)，判定仍 PARTIAL。
+    #          原因是 verify_matched_unread 只作用于 **matched** unread 点，而这 33 个
+    #          FM 自己从没配上过（auto_match_flattened_arrays 读的是
+    #          report_unmatched_points 的**默认**报告，默认报告不含 unread 类）。
+    #          加强没有对象，自然不增。启用 fm_pins.tcl 之后日志里的痕迹是干净的：
+    #          `8149 Compare points matched previously` + `33 Compare points matched by user`。
+    #
+    #   ☆一条通用判断，别只看 TLBFA☆
+    #   申请 vmucp 之前先分清基线里的 unread 点是哪一种：
+    #     · matched_nc（两侧都配上了、都没人读）-> 开 vmucp 就能证，passing 会增
+    #     · unmatched unread（FM 自己配不上）   -> **vmucp 单开必然空转**，
+    #                                             得先用 fm_pins 把它们配起来
+    #   本表里 NCBTransactionQueue{,_1} 与 TLBFA 家族都属于后者，其余多数属于前者。
+    #   分不清就申请，最好的情况是浪费一轮，最坏的情况是把空转读成"加强过了"。
     #   IBuffer(2026-09-17 加): 6 个 unread 点全是两侧对称 matched_nc。
     #          ★复核判据★: passing 7902 -> 7908(正好 +6)、failing 仍 0、unread 归 0。
     #   NCBTransactionQueue{,_1}(2026-09-17 加): 内容是 info.ReturnNID(11 位) +
