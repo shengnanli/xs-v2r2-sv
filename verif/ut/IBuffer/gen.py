@@ -74,6 +74,8 @@ HEADER = r'''// ================================================================
 
 module tb;
 
+  localparam int RESETS = 8;   // 运行中插入的异步复位次数（理由见 initial 块）
+
   int unsigned NCYCLES = 200000;
   bit   clk = 0;
   logic rst;
@@ -283,12 +285,18 @@ COVER = r'''
     rst = 1'b1;
     repeat (6) @(posedge clk);
     @(negedge clk) rst = 1'b0;
-    repeat (NCYCLES / 2) @(posedge clk);
-    // 运行中再来一次异步复位：验证「大块异步复位 + perf 两拍链不复位」这个结构
-    @(negedge clk) rst = 1'b1; cov_reset_mid++;
-    repeat (3) @(posedge clk);
-    @(negedge clk) rst = 1'b0;
-    repeat (NCYCLES / 2) @(posedge clk);
+    // 运行中多次异步复位：验证「大块异步复位 + perf 两拍链不复位」这个结构。
+    // ★ 为什么是多次而不是一次 ★：复位窗口是「perf 链不复位」这条判据**唯一**的
+    // 可观测窗口（perf 寄存器每拍无条件更新，复位一放开两拍就重新收敛）。姊妹模块
+    // BloomFilter 实测：只打一次时同类变异只差出 5 个比对点，离 0 太近。所以打
+    // RESETS 次、每次长度 2/3/4 轮换，让判据有余量。
+    for (int k = 0; k < RESETS; k++) begin
+      repeat (NCYCLES / (RESETS + 1)) @(posedge clk);
+      @(negedge clk) rst = 1'b1; cov_reset_mid++;
+      repeat (2 + (k % 3)) @(posedge clk);
+      @(negedge clk) rst = 1'b0;
+    end
+    repeat (NCYCLES / (RESETS + 1)) @(posedge clk);
 
     $display("--- COVERAGE (标 * 的每项必须 > 0) ---");
     $display("* allowEnq 落 0(满)        : %0d", cov_full);
@@ -321,7 +329,7 @@ COVER = r'''
         cov_enq_wrap > 0 && cov_deq_wrap > 0 && cov_inbank_wrap > 0 &&
         cov_flush_nonempty > 0 && cov_flush_ctrl > 0 && cov_flush_memvio > 0 &&
         cov_flush_other > 0 && cov_stall_frag > 0 && cov_stall_match > 0 &&
-        cov_stall_back > 0 && cov_reset_mid > 0)
+        cov_stall_back > 0 && cov_reset_mid >= RESETS)
       $display("TEST PASSED");
     else
       $display("TEST FAILED (errors=%0d 或覆盖项为 0)", errors);

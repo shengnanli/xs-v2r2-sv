@@ -36,6 +36,7 @@
 module tb;
 
   localparam int WARMUP = 24;   // 暖机拍数：足够把三个 res 都写成确定值
+  localparam int RESETS = 8;    // 运行中插入的异步复位次数（理由见 initial 块）
 
   int unsigned NCYCLES = 200000;
   bit   clk = 0;
@@ -238,13 +239,18 @@ module tb;
     rst = 1'b1;
     repeat (4) @(posedge clk);
     @(negedge clk) rst = 1'b0;
-    repeat (NCYCLES / 2) @(posedge clk);
-    // 运行中再来一次异步复位：验证「data/valid 复位、res 不复位」这个结构。
-    // 若重写件给 res 也加了复位（mutants.py M3），这里立刻炸。
-    @(negedge clk) rst = 1'b1; cov_reset_mid++;
-    repeat (3) @(posedge clk);
-    @(negedge clk) rst = 1'b0;
-    repeat (NCYCLES / 2) @(posedge clk);
+    // 运行中多次异步复位：验证「data/valid 复位、res 不复位」这个结构。
+    // ★ 为什么是多次而不是一次 ★：只打一次时，mutants.py 的 M3（给 res 加复位）
+    // 只差出 5 个比对点 —— 抓到了，但离 0 太近，换个 seed 就可能变成 0。
+    // 复位窗口是这条判据**唯一**的可观测窗口，所以把它打 RESETS 次、且每次长度
+    // 不同（2/3/4 拍轮换），让判据有余量。
+    for (int k = 0; k < RESETS; k++) begin
+      repeat (NCYCLES / (RESETS + 1)) @(posedge clk);
+      @(negedge clk) rst = 1'b1; cov_reset_mid++;
+      repeat (2 + (k % 3)) @(posedge clk);
+      @(negedge clk) rst = 1'b0;
+    end
+    repeat (NCYCLES / (RESETS + 1)) @(posedge clk);
 
     $display("--- COVERAGE (每项必须 > 0) ---");
     $display("  set/clr 同拍同址        : %0d", cov_set_clr_same);
@@ -259,7 +265,7 @@ module tb;
     if (errors == 0 &&
         cov_set_clr_same > 0 && cov_q_hits_set > 0 && cov_q_hits_clr > 0 &&
         cov_q_hits_clr_was1 > 0 && cov_q_idle_res1 > 0 &&
-        cov_res_one > 0 && cov_res_zero > 0 && cov_reset_mid > 0)
+        cov_res_one > 0 && cov_res_zero > 0 && cov_reset_mid >= RESETS)
       $display("TEST PASSED");
     else
       $display("TEST FAILED (errors=%0d 或覆盖项为 0)", errors);
