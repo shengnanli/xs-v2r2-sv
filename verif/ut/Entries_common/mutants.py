@@ -135,6 +135,16 @@ MUTANTS = [
      "      x_ld_dep[e] = '0;",
      lambda v: (v.comp_has_ld_dep, 'comp 段本来就没有这组寄存器时，钉 0 是对的')),
 
+    ('M14', 'transEntry 的 srcLoadDependency 送**寄存器原值**而不是移位后的次态 —— '
+            '这是共享核里真实存在过的 bug（基线 f8bd195 就是这么写的）。'
+            'golden 是 commonOut.transEntry…srcLoadDependency := common_srcLoadDependencyNext，'
+            '基线送的是 r_ld_dep。VfdivVidiv 上整条影子恒 0 所以看不出来，'
+            '有 ldCancel 的变体上就是转移下去的依赖少移一拍。',
+     "  assign o_trans_ld_dep       = u_ld_dep;",
+     "  assign o_trans_ld_dep       = r_ld_dep;",
+     lambda v: (v.n_ld_cancel > 0,
+                '没有 ldCancel 的变体里影子恒 0，寄存器原值与移位后的次态都是 0')),
+
     ('M12', 'issueResp 的 4 档常量表里，timer0 那档从 BLOCK 改成 SUCCESS',
      "        resp_bits_tab[d][k]  = OG_HAS_BITS[k] ? og_resp[k][d] : OG_CONST_RESP[k];",
      "        resp_bits_tab[d][k]  = OG_HAS_BITS[k] ? og_resp[k][d]\n"
