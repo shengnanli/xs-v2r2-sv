@@ -108,12 +108,75 @@ endmodule
 - generate-for 内禁止用 function 捕获模块级信号（仿真返 X），
   路由/选择用显式 assign 或 always_comb-for。
 - FM read_sverilog 不支持函数返回值域选 `f(x).value`，拆成独立函数。
-- FM 并发：**小模块可高并发**（批跑默认 `--jobs 16`）。实测 676 次 FM 峰值内存
+- FM 并发：**小模块可高并发**（批跑默认 `--jobs 16`）。上一轮实测 676 次 FM 峰值内存
   中位 867 MB / 90 分位 869 MB / 最大 1455 MB，16 并发约 24 GB，本机 125 GB 宽裕；
+  ★2026-09-17 复测更正上沿★：`1455 MB` 这个最大值**已被本轮超过**，按 `fm.log` 的
+  `Maximum memory usage` 逐个量（不是 `ps` 的 RSS）：
+  `Predictor 34434` / `Composer 4653` / `Ftq 4047` / `ArrayMulDataModule 1948` /
+  `DecodeUnitComp 4182`（三轮并行跑都是 4182，不是并发挤出来的）/
+  `IBuffer 1660`（三次独立跑 1660/1662/1660，不是抖动）/ `SbufferData 1599` /
+  `TLFIFOFixer 1592`。也就是说"最大 1455 MB"只对**叶子**成立，
+  上了 Composer/Ftq 这一档就是数 GB，Predictor 这种带整棵预测器子树的是 **34 GB**。
+  估并发度前先看目标属于哪一档，别拿叶子的中位数去估大件。
   Formality license 9999 席不是约束。
   **例外**：整芯片级目标（XSTop 全量 elaborate 实测 9.6 GB/实例）必须单独串行——
   上轮 OOM 事故是 63k 行大模块并发造成的，教训适用于大模块，不适用于小模块。
   禁 `pkill -f`（会误杀其他任务的 simv）。
+- ★**共享 scratchpad 里禁止 `rm -rf` 语义名**（2026-09-17 实际发生过一次）★
+  `/tmp/claude-1000/<session>/scratchpad/` 是**整个 fleet 共用**的，不是某条 lane 独占。
+  一条 lane 建诊断目录时写了 `S=.../scratchpad/fmneg; rm -rf $S; mkdir -p $S/...`，
+  把**另一条 lane 正在跑的** `scratchpad/fmneg/verif/ut/RenameBuffer` 整棵树删掉了。
+  进程当时还活着，但它持有的每个 fd 都成了 `(deleted)` —— 还在算，
+  算完写进的是已 unlink 的 inode，**磁盘上不会留下任何证据**。
+  （那一跑的 fm.log 后来从 `/proc/<pid>/fd/1` 捞回来了，但 `receipt.json` /
+  `unread_points.txt` / `sidecar/` 这些收尾时才写的文件救不回来 —— 只能重跑。）
+
+  **规矩**：共享 scratchpad 里只许 `mkdir -p` 自己带**唯一后缀**的目录；
+  要清理，作用域必须由**你自己创建的唯一标识**界定，不能由语义名界定。
+  通用名（`fmneg` / `work` / `tmp` / `out` / `diag`）一律视同他人领地。
+
+  和禁 `pkill -f` 是同一条判据的两面：**破坏性操作的作用域不能由"看起来是我的"来界定。**
+  同一条判据当天撞到**三次**，列在一起才看得清：
+
+  | 场景 | 错误判据 | 正确判据 |
+  |---|---|---|
+  | `pkill -f` | 命令行**看起来**像我的 | PID 确实是我起的 |
+  | `rm -rf <语义名>` | 目录名**看起来**像我的 | 路径带我自己造的唯一标识 |
+  | `/tmp/xsv2-proof-*` | **看起来**像残留垃圾 | `/proc/<pid>/cwd` 有没有进程在用 |
+
+  第三行是真事：一条 lane 报告里写「看起来是同一个脚本留下的垃圾我也不动」，
+  而那两个目录里正跑着 Predictor（已 2 小时 10 分）和 NewDispatch 的证明。
+  它结论对、判据错。
+
+  ★它自己点出的那句最要紧★：「不动」如果是**保守习惯**而不是**结论**，
+  就会被"这次情况不一样"说服 —— 目录再脏一点、手头再赶一点，
+  "看起来像垃圾"随时能翻成"确实是垃圾了"。**判据要能被复核，习惯不能。**
+  查活性的现成写法：
+
+      for p in $(pgrep -x fm_shell_exec); do readlink /proc/$p/cwd; done | grep <路径>
+
+  注意用 `pgrep -x`（按可执行名精确匹配）。`pgrep -f 'simv|fm_shell'` 会匹配到
+  **执行这条命令的 shell 自己**（它的命令行里就含那两个字符串），于是你数的是自己 ——
+  这个自匹配当天也有两处实例。
+
+## ★当 FM 的配对可疑时，换一个独立的观测手段★（RenameBuffer 实测）
+
+FM 报了 20 个 failing、集中在 `buffer_q_reg[255]`，看起来像"最后一项/回绕"的边界 bug。
+但当时**配对本身就是可疑的**（3 个未配对寄存器成了自由割点），
+这时再拿 FM 的结论去判断 RTL 对不对，是用可疑的中间结果做推断。
+
+lane 的做法：写一个探针 tb，把两侧 `enqPtrVec` 的 6 个 value + flag **每拍 force 成
+同一组任意值**，再逐拍比对 256 项缓冲表的**全部内容**；四种压力模式各占 25% 拍
+（全随机 / 全挤 0..3 造指针撞车 / 全挤 250..255 打末项与回绕 / 全挤 172..178 打 175）。
+3 seed × 3000 拍 `buffer_mismatch=0` ⇒ **缓冲表写逻辑与 golden 等价**，
+那 20 个 failing 是配对残缺的下游产物。后来关掉 `FM_MERGE_DUP` 证实了这一点
+（`failing 20 -> 0`）。
+
+★适用边界（lane 自己划的，照抄）★：这个探针能成立，是因为 `buffer_q` 的次态
+**只依赖 `req` 与 `enqPtrVec`**，才能把被测锥体的全部自由输入都 force 到手里。
+换一个次态依赖大半个模块状态的寄存器，force 的代价迅速逼近"重写一遍 golden"，
+那就不如再跑一轮 FM。**判据是「被测锥体的自由输入能不能被我完全控制」，
+不是「FM 可疑就上探针」。**
 - chisel Vec 越界读语义是回绕不是 0（上轮 LoadQueue replay 真 bug 根因）。
   ★本轮实测更正：G1 的 firtool 把越界项展开成**填第 0 项**，不是回绕。★
   而且**同一模块里不同信号的越界语义可能各不相同**（BusyTable 实测三种：忙位
@@ -184,6 +247,149 @@ end
 
 **规矩**：过程块里凡是带初始化式的声明一律加 `automatic`；tb 里的 function/task 也一律 `automatic`。
 检查手段是**报覆盖计数**——上面两例都是覆盖分桶全压在一个值上才暴露的。
+
+### ★上面这条只管 tb，别拿去管 RTL —— 在 `always_ff` 里恰恰相反★
+
+★这两条规矩方向相反，作用域不同，必须一起读★：
+
+| 场景 | 规矩 | 违反的后果 |
+|---|---|---|
+| **tb** 的过程块 | 带初始化式的声明**必须** `automatic` | 静态变量只在 0 时刻初始化一次 ⇒ 激励恒定、覆盖全压一个桶 |
+| **RTL** 的 `always_ff` | **不要**在里面放 `automatic` 临时量 | FM 把它们推成**伪寄存器** ⇒ 成批 impl-only 未读比较点 |
+
+RTL 那一侧的量级实测（NewDispatch，2026-09-17）：
+
+    一个 6x17 的双重循环里 4 个 automatic 临时量
+        -> 493 个 impl-only 未读比较点
+    （lanes_reg 432 / single_reg 37 / idx_reg 18 / multi_reg 6）
+    UT 全绿、elaborate 0 warning、只有 FM 看得见；移进 always_comb 之后 493 -> 0
+
+**4 个临时量换 493 个点**这个比例才是重点 —— 它说明这不是"就这一个图方便"的事。
+写法：把中间计算移到 `always_comb`（或直接写成 `assign`），`always_ff` 里只留寄存器赋值。
+
+★这条本身就是"教训写在错的作用域"的又一例★：原来只有 tb 那一条，
+读的人很自然会把「一律加 `automatic`」带进 RTL。规矩必须自带作用域，
+否则它在别处就是反的。
+
+## ★看起来冗余的重复结构，一份都不许少★（2026-09-17，一天里四例、三个方向）
+
+FM 的配对是**按结构**做的。任何一侧比另一侧「少一份」都会产生孤儿点，
+而未配对的比较点在 FM 里是**自由割点** —— 它不只是自己不被证，还会让下游跟着失配。
+所以"值反正一样、合并掉更好读"这个念头，在本工程里是错的三次里最贵的一次。
+
+同一件事有**三个方向**，今天各撞到了：
+
+**方向一：自己把 golden 的多份合并成一份**（Entries canary，846 failing）
+golden 给**每个 enq 条目各打一拍** `og0Cancel` / `ldCancel`
+（`Entries.scala` 的 `RegNext` 在 `for (entryIdx <- 0 until EnqEntryNum)` 内），
+展平后是两套同源寄存器 `REG_0/2/4/6` ↔ `REG_2_0/2_2/2_4/2_6`，逐位恒等。
+可读核合并成共享的一份 ⇒ FM 把这一份配给了 enq0 那套，**enq1 那套 globally unmatched**。
+四个现象一次解释完：`enqEntries_0` 干净、`enqEntries_1` 起全错、
+846 全错无一对、只在延迟窗口激活时出现。**仿真按构造永远看不见**（值一直相同）。
+
+**方向二：让工具去合并**（RenameBuffer / MulUnit）
+`verification_merge_duplicated_registers=true` 会把函数相同的寄存器合并，
+而**两侧合并结果可能不一致**：
+  · RenameBuffer：`bit1(v+1) == bit1(v+5)`，ref 合了 impl 没合 ⇒ 3 个孤儿 ⇒ 20 failing。
+    关掉之后 `passing 651 -> 5825`、`failing 20 -> 0`、`unverified 5147 -> 0`。
+  · MulUnit：31 个粘滞常数 impl 合了 ref 没合 ⇒ 29 unmatched。关掉后 `unmatched 29 -> 0`。
+  处置都是 `FM_MERGE_DUP = false`（per-UT Makefile 变量）。
+  **这是加强不是放宽**：不黑盒、不跳点、不约束 ref，只是要求逐个而不是合并后比。
+
+**方向三：把 golden 的冗余"优化"掉**（TLBFA / RenameBuffer）
+  · TLBFA：把 `req_vpn_q` 从 38 位收窄到 27 位（高 11 位确实没读者）——
+    那 11×PORTS 位会从**两侧对称死位**变成 **golden-only 死位**，连双射都没有，更难签。
+  · RenameBuffer：把 `deqPtrVec` 收窄成只留 head（1..5 号确实没读者）—— 同上，45 位变 golden-only。
+  照抄 golden 的宽度/份数才是对的。
+
+**一句话**：`golden` 里凡是"看起来没用、看起来重复"的东西 —— 不可达状态的行为、
+不复位的位、没人读的寄存器、值恒等的多份打拍 —— **照抄都比优化掉便宜**。
+理由见上一节：你论证"没用"用的是可达性/可观测性，而 **FM 不做可达性分析**。
+
+★还有一条关于"教训写在哪一层"的教训★
+Entries 那条 lane **早就把「值恒等 ≠ 可证等价、别合并看起来冗余的结构」写进了自己核的
+§11 注释** —— 写在**条目级**；然后在自己新写的**阵列级**上犯了同一个错。
+经验写对了、写在了错的作用域，等于没写。新写一层结构时，
+要把已有的教训**逐条对着新这一层重问一遍**，而不是假定它已经被覆盖。
+
+## ★UT 与 FM 的分工：不可达状态与复位域归 FM 管★（2026-09-17，三个实测实例）
+
+**Formality 把寄存器当自由变量，默认不做可达性分析。** 这一条决定了两件事：
+
+1. **重写必须连不可达状态、连复位域都逐字照抄 golden** —— 不是洁癖，是 FM 判据的
+   直接推论。在死状态上替 golden 补一层门控、或替它化简掉一层冗余门控，
+   **UT 一声不响，FM 当场 failing**。
+2. 变异体表里的 `EXPECTED_MISSED` 应当读作
+   **「UT 观测不到（可达性所限），由 FM 兜底」**，不是「没人管，只能靠照抄自觉」。
+   它标的是**换了一道闸**，不是没有闸。
+
+三个实例都是实测，不是推理：
+
+| 改动 | UT | FM |
+|---|---|---|
+| DecodeUnitComp X1：给 `out_valid` 加 state 门控 | 40k 拍 `errors=0` | **failing 6**（恰好 `io_out_complexDecodedInsts_0..5_valid`） |
+| DecodeUnitComp X2：去掉 `complexNum` 的 state 门控 | 同上 `errors=0` | **failing 3**（恰好 `io_complexNum[0..2]`） |
+| RenameBuffer (c)：给不复位的 `walkPtr` 加复位 | 20k 拍 `errors=0` | **9 个点全 failed** |
+| SnapshotGenerator 同型对照：给 4 个不复位快照槽加复位 | 能抓（`errors=201`） | 基线 SUCCEEDED → 注入后 20 failing 全落在 `snapshots_*` |
+
+★两条做法上的要求★
+
+* **对照组是硬前提**：base（未注入）必须 `failing = 0`，否则注入后的 failing
+  证明不了是注入造成的。上表两组都做了。
+* **比较点守恒可以当交叉验证**：DecodeUnitComp 实测 `3157 = 3151 + 6 = 3154 + 3`，
+  失败点是从 passing 里扣出来的、不是凭空多出来的点。
+  更进一步，穷举出的**反例状态数**（X1 747 / X2 127）与 FM 的**比较点数**（6 / 3）
+  通过"每个输出位是否存在反例"严格对应，逐位闭合 —— 所以不是"大概落在那条通路上"。
+
+一个具体例子说明"照抄不对称"的必要：DecodeUnitComp 的 golden 自己就是不对称的
+（`complexNum` 有 state 门控、`out_valid` 没有，**两层都是冗余的**）。
+照抄这份不对称是唯一能过 FM 的写法；把两边"统一"成任何一种都会 failing。
+
+## ★进 fm.log 的字必须是 ASCII★（2026-09-17，两条 lane 各自独立发现）
+
+`Formality` 的 `fm.log` **不是 UTF-8**。钉点脚本里的中文 `puts` 落进日志全成问号：
+
+```
+TLBFA_PINS: ?? 33 ? reqVpn ???ref 33 / impl 33??????
+RENAMEBUFFER_PINS: ?? 51 ??A deqPtr flag 5 / B deqPtr value 40 / ...?
+```
+
+**日志是给 reviewer 看的证据**，自报里说了什么、钉了几族、判据是什么，
+全都看不见了。注释留中文没问题（读的是源文件），但**凡是会进 `fm.log` 的
+`puts` 一律 ASCII**。
+
+一句要说清的：这件事**不影响判定**。判定用的数字（`Unmatched ... 0(0)`、
+`Verification SUCCEEDED`、比较点表）都是 Formality 自己打的 ASCII，
+乱码的只有 lane 自己的自报。但自报正是"给人看的那一半证据"，
+写了等于没写比没写更糟 —— 它让人以为这里有说明。
+
+实测受影响（`git ls-files "verif/ut/*/fm_pins*.tcl"` 里 `puts` 带非 ASCII 的）：
+`Ftq` 1 行 / `IBuffer` 6 行 / `ICacheMissUnit` 1 行 / `SSIT` 1 行 / `TLBFA` 9 行。
+**改这些文件会改变它们的 sha256，而 receipt 里记着 `pin_scripts` 的哈希** ——
+所以不要为了改乱码单独去动已签绿的脚本，**等这些目标下次因为别的原因重跑时一并改**。
+（已核：仓库里没有任何闸拿 receipt 的 `pin_scripts` 哈希去比当前文件，
+所以现在不改也不会让闸变红；这是"何时改"的问题，不是"改不改"。）
+
+## ★别拿裸错误号当判据★（2026-09-17，我自己写的注释就是祸首）
+
+`fm_shell` 会把 `-file` 载入的入口脚本**逐行回显进 fm.log，注释也不例外**。
+所以只要有人在 `scripts/fm_eq.tcl` 的注释里提一句某个错误号，
+`grep -c "<错误号>" fm.log` 从此对**所有目标**永远 `>= 1`。
+
+实际发生过：我在 vmucp 白名单注释里写了一条判据「`FM-036 = 0`」，
+那行注释自己一进 fm.log，这条判据就永远为假。实测六份 evidence 日志：
+
+    grep -c  "FM-036"      fm.log   ->  1   ← 全是那条注释的回显
+    grep -cE "^ *Error:"   fm.log   ->  0   ← 真实情况
+
+**规矩**：判据必须钉在**行首的 `Error:`** 上（`grep -cE "^ *Error:" fm.log` 为 0），
+不能钉在裸错误号上。同理适用于任何"日志里出现某字符串就算出事"的判据 ——
+**入口脚本的注释会出现在日志里**，所以凡是能被注释命中的模式都不是判据。
+
+这和 `test_tcl_no_poison.py` 防的是同一类事，区别在于那道闸盯的是 `fm_verdict.py`
+的正则，而这次中招的是**人手写的判据**——闸没覆盖到的那一半。
+我今天还因为同一个机制踩过一次：监控脚本匹配到了 `fm_eq.tcl` 里被回显的注释，
+误判成跑完了。**两次同源，一次在工具、一次在判据。**
 
 ## ★继承来的数字与断言，第一次引用时必须重新测量★（2026-09-17，一天里四例）
 

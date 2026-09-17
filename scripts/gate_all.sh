@@ -56,9 +56,17 @@ run "fm_eq 结构闸"     python3 scripts/test_fm_eq_wellformed.py
 # --check —— gen_ndaux / gen_npc_missing3 / gen_splittedsram 三个一直在闸外。
 # 三个都能跑通、都是幂等的，也就是说漏的不是坏文件，是**没人记得加**。
 # 所以除了把它们补进来，下面还加了一道 check_gen_gate_complete.py 专门堵这个形状。
+# 2026-09-17 再补三个：check_gen_gate_complete.py 上线当天就抓到的三条 lane 新生成器
+# （gen_renamebuffer / gen_tlbfa_family / gen_sbufferdata）。三条 lane 各自都写了 --check
+# 却都没人要求它们去登记 —— 正是这道闸设计时说的"忘了加就静默漏"。
+# 这里先把名字放进来：`[ -f "$g" ]` 会跳过尚未合入的文件，所以提前登记无害，
+# 合入当天自动生效，不用再记得回来加一次。
 for g in scripts/gen_tlbuffer_ad_family.py scripts/gen_mbist_pipe_family.py \
          scripts/gen_sram_wrappers.py scripts/gen_ndaux.py \
-         scripts/gen_npc_missing3.py scripts/gen_splittedsram.py; do
+         scripts/gen_npc_missing3.py scripts/gen_splittedsram.py \
+         scripts/gen_renamebuffer.py scripts/gen_tlbfa_family.py \
+         scripts/gen_sbufferdata.py scripts/gen_newdispatch.py \
+         scripts/gen_newdispatch_tb.py; do
   [ -f "$g" ] && run "生成器幂等 $(basename $g .py | sed 's/^gen_//')" python3 "$g" --check
 done
 # 闸的完备性闸：任何 scripts/gen_*.py 要么进上面的列表，要么在
