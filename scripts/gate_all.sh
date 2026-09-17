@@ -48,10 +48,18 @@ run "fm_eq 结构闸"     python3 scripts/test_fm_eq_wellformed.py
 # gen_sram_wrappers.py 2026-09-14 进闸：它当时**不是**幂等的——33 个薄文件里的 6 个
 # G1_* 锚点和 UT Makefile 的 negtest 段都是手工补在生成产物上的，谁跑一次生成器
 # 就全没（与 tlbuffer 同一个病）。并回生成器后才挂上 --check。
+# 2026-09-17 补：这个列表原先只有三个，而实测 11 个 scripts/gen_*.py 里有 6 个支持
+# --check —— gen_ndaux / gen_npc_missing3 / gen_splittedsram 三个一直在闸外。
+# 三个都能跑通、都是幂等的，也就是说漏的不是坏文件，是**没人记得加**。
+# 所以除了把它们补进来，下面还加了一道 check_gen_gate_complete.py 专门堵这个形状。
 for g in scripts/gen_tlbuffer_ad_family.py scripts/gen_mbist_pipe_family.py \
-         scripts/gen_sram_wrappers.py; do
+         scripts/gen_sram_wrappers.py scripts/gen_ndaux.py \
+         scripts/gen_npc_missing3.py scripts/gen_splittedsram.py; do
   [ -f "$g" ] && run "生成器幂等 $(basename $g .py | sed 's/^gen_//')" python3 "$g" --check
 done
+# 闸的完备性闸：任何 scripts/gen_*.py 要么进上面的列表，要么在
+# check_gen_gate_complete.py 的 NO_CHECK 豁免表里写明理由，没有第三条路。
+run "生成器闸完备性"     python3 scripts/check_gen_gate_complete.py
 # 上面三条是**逐个**挂 --check 的 scripts/gen_*.py。verif/ut/*/gen.py 那一层有 9 个，
 # 其中 8 个根本没有 --check（SRAMTemplateNewForm 是最后一个敞口）。与其逐个改生成器，
 # 不如统一验一次：在 HEAD 上开 detached worktree 重跑全部，产物必须逐字不变。
