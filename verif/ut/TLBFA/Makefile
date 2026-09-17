@@ -17,6 +17,17 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/TLBFA.sv $(GOLDEN_RTL)/TLBFA_1.sv \
 # 四个变体都是自足叶子：golden 侧 0 子模块、0 厂商宏，故无 FM_REF_DEPS_*。
 FM_VARIANTS = TLBFA TLBFA_1 TLBFA_2 TLBFA_3
 
+# matched-unread 加强（**是加强不是放宽**：让 FM 把未读点当真比较点去证，passing 必须增）。
+# 依据（strict 首跑实测，四个变体一致）：native SUCCEEDED / failing 0 / unmatched 0 /
+# aborted 0 / unverified 0 / 黑盒输出 0 / 无 dont_verify，唯一卡点是 11×PORTS 个
+# **对称** unread 点：ref reqVpn[_N]_reg[27..37] ↔ impl u_core/g_port[N].req_vpn_q_reg[27..37]，
+# 四个变体都核过是精确双射（键集合完全相同，位恒为 27..37、端口恒为 0..PORTS-1）。
+# 两侧同死的原因：reqVpn(=RegNext(vpn)) 的唯一读出点是 genPPN，而 genPPN 最高只取
+# vpn[26:18]，bit37..27 没有任何读者（golden 对 reqVpn 的全部切片实测就是
+# [26:18]/[17:9]/[8:0]/[3:0]/[2:0]）。
+# 白名单在 scripts/fm_eq.tcl，由集成者维护（main d16efc7 已纳入本家族四个变体）。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 include ../../../scripts/ut_common.mk
 
 # ★必须在 include 之后★：ut_common.mk 用的是 `VCS := vcs ...`（简单赋值），
