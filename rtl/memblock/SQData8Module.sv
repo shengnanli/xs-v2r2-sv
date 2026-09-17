@@ -225,12 +225,22 @@ module xs_SQData8Module_core
     for (int i = 0; i < NUM_READ; i++) rdata_addr_r[i] <= raddr[i];
   end
 
-  function automatic int unsigned clamp_idx(input logic [ADDR_W-1:0] a);
-    clamp_idx = (int'(a) < NUM_ENTRIES) ? int'(a) : 0;
-  endfunction
+  // ★ 不要写成 entries[idx < NUM_ENTRIES ? idx : 0] ★
+  //   那样值是对的,但 Formality 的静态分析不做边界传播,会判 FMR_ELAB-147
+  //   (索引可能越界)→ 拒绝 link(FM-262)→ set_top 失败(FM-156)。实测踩过一次。
+  //   正确修法是**把表补齐到 2**ADDR_W 项**(下面两个 for 都在界内,地址位宽与
+  //   表深度精确相等,按构造不可能越界),不是去抑制那条消息。
+  //   附带好处:这个形状本来就更贴近 golden 的 _GEN / _GEN_0。
+  localparam int READ_SLOTS = 1 << ADDR_W;   // 64
+
+  entry_t entries_rtbl [READ_SLOTS];
+  always_comb begin
+    for (int k = 0;           k < NUM_ENTRIES; k++) entries_rtbl[k] = entries[k];
+    for (int k = NUM_ENTRIES; k < READ_SLOTS;  k++) entries_rtbl[k] = entries[0];  // 越界槽
+  end
 
   always_comb
-    for (int i = 0; i < NUM_READ; i++) rdata[i] = entries[clamp_idx(rdata_addr_r[i])];
+    for (int i = 0; i < NUM_READ; i++) rdata[i] = entries_rtbl[rdata_addr_r[i]];
 
   // ---------------------------------------------------------------------------
   // §2.7 前递数据选择

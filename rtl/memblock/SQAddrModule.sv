@@ -151,15 +151,26 @@ module xs_SQAddrModule_core
   // ---------------------------------------------------------------------------
   // §2.4 同步读(★越界落到条目 0★)
   // ---------------------------------------------------------------------------
-  // raddr 6 bit / 条目 56 个 → 56..63 越界。golden 的 64 深 mux 在越界槽里填的是
-  // **data[0]**(firtool 对 Vec 越界读的展开方式),不是 0。写成 "查不到就是 0"
-  // 与 golden 不等价。
-  function automatic int unsigned clamp_idx(input logic [ADDR_W-1:0] a);
-    clamp_idx = (int'(a) < NUM_ENTRIES) ? int'(a) : 0;
-  endfunction
+  // raddr 6 bit(64 种编码)而条目只有 56 个。golden 把 Vec 读展成一张 **64 项**的
+  // 表,越界的 56..63 这 8 槽填的是 **data[0]**(firtool 对 Vec 越界读的展开方式),
+  // 不是常数 0。这里照抄那张表,再用 6 位地址直接取。
+  //
+  // ★ 不要写成 data[idx < NUM_ENTRIES ? idx : 0] ★
+  //   那样值是对的,但 Formality 的静态分析不做边界传播,会判
+  //   FMR_ELAB-147(索引可能越界)→ 拒绝 link(FM-262)→ set_top 失败(FM-156)。
+  //   实测踩过一次。正确修法是**把表补齐到 2**ADDR_W 项**(下面两个 for 都在界内,
+  //   地址位宽与表深度精确相等,按构造不可能越界),不是去抑制那条消息。
+  //   附带好处:这个形状本来就更贴近 golden 的 _GEN。
+  localparam int READ_SLOTS = 1 << ADDR_W;   // 64
+
+  logic [DATA_WIDTH-1:0] data_rtbl [READ_SLOTS];
+  always_comb begin
+    for (int k = 0;           k < NUM_ENTRIES; k++) data_rtbl[k] = data[k];
+    for (int k = NUM_ENTRIES; k < READ_SLOTS;  k++) data_rtbl[k] = data[0];  // 越界槽
+  end
 
   always_comb
-    for (int i = 0; i < NUM_READ; i++) rdata[i] = data[clamp_idx(rdata_addr_r[i])];
+    for (int i = 0; i < NUM_READ; i++) rdata[i] = data_rtbl[rdata_addr_r[i]];
 
   // ---------------------------------------------------------------------------
   // §2.5 rlineflag 读口(只有 SQAddrModule 变体有)
@@ -179,8 +190,15 @@ module xs_SQAddrModule_core
           if (raddr[i] != rlineflag_addr_r[i]) rlineflag_addr_r[i] <= raddr[i];
     end
 
+    // 同 §2.4:补齐到 64 项再取,越界槽填 lineflag[0]。
+    logic lineflag_rtbl [READ_SLOTS];
+    always_comb begin
+      for (int k = 0;           k < NUM_ENTRIES; k++) lineflag_rtbl[k] = lineflag[k];
+      for (int k = NUM_ENTRIES; k < READ_SLOTS;  k++) lineflag_rtbl[k] = lineflag[0];
+    end
+
     for (genvar i = 0; i < NUM_READ; i++)
-      assign rlineflag[i] = lineflag[clamp_idx(rlineflag_addr_r[i])];
+      assign rlineflag[i] = lineflag_rtbl[rlineflag_addr_r[i]];
   end else begin : g_no_rlineflag
     // 本变体不引出 rlineflag:不生成寄存器,也不生成读通路。
     for (genvar i = 0; i < NUM_READ; i++) assign rlineflag[i] = 1'b0;
