@@ -1,0 +1,78 @@
+
+// =============================================================================
+// xs_ptwcache_pkg —— 几何、类型与编码（全部从 G1 golden 逐根量出）
+// =============================================================================
+package xs_ptwcache_pkg;
+
+  // ---- 地址与标识宽度（KunminghuV2Config: EnableSv48=1, HasHExtension=1）----
+  localparam int VPN_W      = 38;  // vpnLen = gvpnLen（Sv48x4 的 G 阶段最宽）
+  localparam int PPN_W      = 38;
+  localparam int ASID_W     = 16;
+  localparam int VMID_W     = 14;  // ★golden 实测 14 位，不是 hgatp_vmid 的 16 位★
+  localparam int SOURCE_W   = 2;
+  localparam int HPTWID_W   = 3;
+  localparam int SECTOR_N   = 8;   // tlbcontiguous：一条 l1/l0 表项装 8 个相邻 PTE
+  localparam int PTE_W      = 64;
+  localparam int LINE_W     = SECTOR_N * PTE_W;  // 512 = io_refill_bits_ptes 宽度
+
+  // ---- 五级几何（golden 实测：见文件头表）----
+  localparam int L3_N       = 16;  localparam int L3_TAG_W = 11;  // vpn[37:27]
+  localparam int L2_N       = 16;  localparam int L2_TAG_W = 20;  // vpn[37:18]
+  localparam int L1_SETS    = 4;   localparam int L1_WAYS  = 2;   localparam int L1_TAG_W = 24; // vpn[37:14]
+  localparam int L0_SETS    = 64;  localparam int L0_WAYS  = 4;   localparam int L0_TAG_W = 29; // vpn[37:9]
+  localparam int SP_N       = 16;  localparam int SP_TAG_W = VPN_W;
+
+  // ---- 两阶段翻译标记 h（每条表项都带，用来区分 VS 级 / G 级共存的条目）----
+  //  Chisel: noS2xlate=0, allStage=3, onlyStage1=1, onlyStage2=2
+  //  查找时 allStage 用 onlyStage1 去比（h_search），回填时 refill_h 同理折叠。
+  localparam logic [1:0] H_NO_S2XLATE  = 2'd0;
+  localparam logic [1:0] H_ONLY_STAGE1 = 2'd1;
+  localparam logic [1:0] H_ONLY_STAGE2 = 2'd2;
+  localparam logic [1:0] H_ALL_STAGE   = 2'd3;
+
+  // ---- 影子元数据的折叠宽度（sfence 比对用的是 XORFold 哈希，不是原值）----
+  //  代价是 sfence 会**保守多刷**（哈希撞了就多刷几条），这是 golden 的设计选择，
+  //  不是缺陷；重写必须照抄同一个折叠函数，否则刷的条目集合会不一样。
+  localparam int HASH_ASID_W = 3;
+  localparam int HASH_VMID_W = 3;
+  localparam int HASH_VPN_W  = 6;
+
+  // l3 表项（寄存器阵列，16 项全相联，无 pbmt）
+  typedef struct packed {
+    logic [L3_TAG_W-1:0] tag;
+    logic [ASID_W-1:0]   asid;
+    logic [VMID_W-1:0]   vmid;
+    logic [PPN_W-1:0]    ppn;
+    logic                prefetch;
+  } l3_entry_t;
+
+  // l2 表项（寄存器阵列，16 项全相联，比 l3 多一个 pbmt）
+  typedef struct packed {
+    logic [L2_TAG_W-1:0] tag;
+    logic [ASID_W-1:0]   asid;
+    logic [VMID_W-1:0]   vmid;
+    logic [1:0]          pbmt;
+    logic [PPN_W-1:0]    ppn;
+    logic                prefetch;
+  } l2_entry_t;
+
+  // RISC-V 页表项权限位
+  typedef struct packed {
+    logic d, a, g, u, x, w, r;
+  } pte_perm_t;
+
+  // sp（superpage）表项：大页/Svnapot，带完整权限与 level
+  typedef struct packed {
+    logic [SP_TAG_W-1:0] tag;
+    logic [ASID_W-1:0]   asid;
+    logic [VMID_W-1:0]   vmid;
+    logic                n;        // Svnapot
+    logic [1:0]          pbmt;
+    logic [PPN_W-1:0]    ppn;
+    pte_perm_t           perm;
+    logic [1:0]          level;
+    logic                prefetch;
+    logic                v;        // ★注意：sp 条目自带 v 字段，与 spv 位向量是两回事★
+  } sp_entry_t;
+
+endpackage

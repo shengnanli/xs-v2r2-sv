@@ -1,0 +1,103 @@
+// PtwCache.sv —— L2 TLB 页表缓存（Page Table Cache）：把已走过的页表项缓存下来，
+// 让下一次同前缀的地址翻译少走几级 memory walk。
+//
+// 本文件含：xs_ptwcache_pkg（几何与类型）+ xs_PtwCache_core（可读重写核）+
+// PtwCache（golden 同名 wrapper，455 端口透传）。
+// 对应 Chisel: xiangshan.cache.mmu.PtwCache（PageTableCache.scala）；
+// 对照 golden = G1-canonical/golden-rtl/PtwCache.sv（45,308 行，单变体）。
+//
+// ★★★ 本文件当前是【考古骨架】，不是完成的重写 ★★★
+//   已按 golden 逐根量出并写成功能 RTL 的部分，见下面「已追清」各节；
+//   尚未追清方程、当前以占位输出顶着的部分，集中列在「未追清清单」一节。
+//   任何人在「未追清清单」清空之前引用本文件的输出，都会拿到错值。
+//
+// 【它在 MMU 里的位置】
+//   TLB miss ─▶ L2TLB(ptw) ─▶ PtwCache ──命中──▶ 直接回填 TLB
+//                              │
+//                              └─未命中/部分命中─▶ PTW/LLPTW/HPTW 真正走内存
+//                                                        │
+//                                     io.refill ◀────────┘（把走回来的 PTE 写进本缓存）
+//
+// 【五级存储（golden 实测几何，不是从 Chisel 抄的）】
+//   级  载体              组×路   条目内容                          有效位
+//   l3  寄存器阵列  16 项全相联  tag=vpn[37:27]      asid vmid ppn[37:0] prefetch      l3v[15:0]
+//   l2  寄存器阵列  16 项全相联  tag=vpn[37:18]      asid vmid pbmt ppn[37:0] prefetch l2v[15:0]      
+//   l1  SplittedSRAM_1  4组×2路  tag=vpn[37:14]      组=vpn[13:12] 组内 8 项=vpn[11:9] l1v[7:0]
+//   l0  SplittedSRAM_2 64组×4路  tag=vpn[37:9]       组=vpn[8:3]   组内 8 项=vpn[2:0]  l0v[255:0]
+//   sp  寄存器阵列  16 项全相联  tag=vpn[37:0] 全宽   + perm/level/n（大页 superpage）  spv[15:0]
+//   l1 每项装 8 个 PDE（共享同一张 512 项页表页），l0 每项装 8 个 PTE —— 这就是
+//   io.refill.bits.ptes 为什么是 512 位（8×64）。
+//   l1/l0 的 tag/asid/vmid 在 SRAM 里，但**另有一份影子寄存器**（l1asids/l1vmids/l1h、
+//   l0vpns/l0asids/l0vmids/l0h）留在核内 —— sfence 要按 asid/vmid/vpn 逐条比对失效，
+//   而 SRAM 一拍只能读一组，所以比对用的副本必须是 flop。照抄这份冗余，别合并。
+//
+// 【四级流水（golden 实测，PipelineConnect 链）】
+//   stageReq(组合) ─▶ stageDelay(valid)  ─▶ stageCheck(valid_1) ─▶ stageResp(valid_2)
+//       发 SRAM 读        SRAM 数据回来       算命中向量            装配 io.resp
+//   ready 反压：stageResp_ready = ~valid_2 | io_resp_ready
+//              stageCheck_0_ready = ~valid_1 | stageResp_ready
+//              stageDelay_0_ready = ~valid   | stageCheck_0_ready
+//              stageReq_ready     = stageDelay_0_ready & ~(io_refill_valid | wakeupHarzad)
+//   ★最后一条是本模块的入口节流：refill 和 bitmap wakeup 都要占用 SRAM 端口，
+//    所以它们有效的那一拍新请求不许进来。★
+//
+// 【三份 dup 各归谁 —— 照抄，绝不合并】
+//   golden 把 sfence/csr/refill 的关键字段复制成 dup_0/1/2 三份做扇出切割，
+//   而三份的**消费者是分开的**（实测引用计数 777/9/75，各自喂不同的级）：
+//     dup_0 ─▶ l0 与 sp（也门控 l0 的 ClockGate）
+//     dup_1 ─▶ l1     （也门控 l1 的 ClockGate；sfence_dup_1 只带 valid+id）
+//     dup_2 ─▶ l2 与 l3
+//   io_refill_bits_level/sel_pte 只有 dup_0 与 dup_2 两份（dup_1 在 golden 端口表里
+//   根本不存在，被 firtool 裁掉了）。把三份写成一份 = Predictor 那 504 个 FM 失配点。
+//
+// 【复位域 —— golden 实测，别照直觉全复位】
+//   golden 只有**一个** always @(posedge clock or posedge reset)（异步高有效复位），
+//   带复位的寄存器 2143 个；另有一个 always @(posedge clock)，**完全不带复位**的
+//   寄存器 2749 个。两组零交集。分界线是：
+//     复位：各级 valid 位向量（l3v/l2v/l1v/l0v/spv）、l0BitmapReg(2048)、
+//           替换状态（state_reg×3 / state_vec×68）、流水 valid、bypass valid、wakeup valid
+//     不复位：★全部 tag/asid/vmid/ppn/perm 载荷★、★global 位向量 l3g/l2g/l1g/l0g/spg★、
+//           影子元数据（l0h/l0vpns/l0asids/l0vmids/l1h/…）、全部流水载荷、SRAM 回读寄存器
+//   ★g 向量不复位而 v 向量复位★是最容易写错的一处：两者都是同宽位向量，看起来该一起复位。
+//
+// 【子模块（本文件当黑盒例化）】
+//   SplittedSRAM_1  l1         —— l1 级 SRAM（4 组 2 路）。★本仓尚无可读实现★
+//   SplittedSRAM_2  l0         —— l0 级 SRAM（64 组 4 路，内含 16 个 SRAMTemplate）。★本仓尚无可读实现★
+//   MbistPipePtwL1  mbistPlL1  —— MBIST 分发，已在 rtl/dft/MbistPipePtwL1.sv 重写
+//   MbistPipePtwL0  mbistPlL0  —— MBIST 分发，已在 rtl/dft/MbistPipePtwL0.sv 重写
+//   ClockGate ×2               —— l0/l1 SRAM 的时钟门控，golden 复用件
+//
+// 【golden 45,308 行里有多少是真逻辑】
+//   （实测行计数，供排期用，不是借口）
+//   7,125 行 = firtool 的 initial/RANDOM 初始化样板，可读重写完全不产生；
+//   14,336 行提及 l0BitmapReg（一个 64×4×8 的 flop 阵列被展平成 2048 个标量）；
+//   6,364 行提及 l0h/l0vpns/l0asids/l0vmids（四个 64×4 影子阵列同样被展平）；
+//   合计约 61% 是阵列展平样板。真正需要逐条追方程的distinct 逻辑约 1 万行量级。
+//
+// 【差分 UT 方案（还没实现，先把判据钉下来）】
+//   形态照 verif/ut/L2TlbMissQueue：tb 里同时例化 golden PtwCache 与本核的派生副本
+//   PtwCache_xs，同拍同激励，逐拍比 455 根端口里的全部 236 个输出。
+//   seed 1/7/42，每 seed ≥200k 拍，errors=0。
+//   ★本模块有三处必须专门设计激励，否则 errors=0 没有意义★：
+//     1. 不复位寄存器占 2749/4892。`+vcs+initreg+random` 与 `+vcs+initreg+0` 两轮都要跑；
+//        两轮结果必须都 errors=0，且两轮的失配**位置**若不同，说明有 X 依赖。
+//     2. 带 SRAM 阵列：Predictor 那一轮实测 array_*_ext.v 在 `+define+SYNTHESIS` 下
+//        完全不初始化，两侧 X 传播范围不同，报了 18 万个启动期假失配。本模块 l0 下挂
+//        16 个 SRAMTemplate，撞到大批启动期失配时**先查这个，别改 RTL**。
+//     3. 三份 dup 必须**分别**驱动成不同值。若 tb 把 dup_0/1/2 绑成同一根线，
+//        「三份合并成一份」这个错误形态在 UT 里按构造测不出来——Predictor 就是这么漏的。
+//   判别力 mutant（不进库，只用来证明 UT 会响）候选：
+//     M1 把 flush_dup_1 换成 flush_dup_0（dup 归属写错）；
+//     M2 把 l0g 也放进复位块（复位域写错）；
+//     M3 把 stageReq_ready 里的 `~(rw_harzad|wakeup_harzad)` 去掉（入口节流丢失）；
+//     M4 把 l3 回填时污染 l2 PLRU 的那条「golden 真 bug」改成"正确"接线。
+//   ★M4 特别重要★：它是唯一能证明我们**照抄了 golden 的 bug** 而不是照抄了直觉的实验。
+//
+// 【已追清 / 未追清 —— 当前边界】
+//   已追清并写成 RTL：四级流水握手与入口节流、三份 dup 的 flush 与归属、
+//     复位域划分、两个 ClockGate 的开门条件、l1/l0 的 SRAM 读地址与读使能、
+//     l1 的回填使能、l1/l0 写地址/tag/asid/vmid、全部 MBIST/DFT 透传拓扑。
+//   未追清（骨架里以显式钉 0 顶着，见 §8）：各级 hitVec 与命中数据选择、
+//     l3/l2/l0/sp 的回填使能过滤项、受害者选择与 PLRU 方程、sfence/hfence 的
+//     失效掩码（三种 rs1/rs2 组合 × 三种 fence 类型）、bitmap 检查与 wakeup 回写、
+//     io.resp 的 220 根载荷输出、8 个 perf 计数器。

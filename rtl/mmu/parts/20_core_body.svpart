@@ -1,0 +1,211 @@
+
+  import xs_ptwcache_pkg::*;
+
+  // ---------------------------------------------------------------------------
+  // §1 四级流水与反压（已追清：golden PtwCache.sv:3085-3125, 44764-44765）
+  //
+  //   stageReq(组合) → stageDelay(valid) → stageCheck(valid_1) → stageResp(valid_2)
+  // 每一级就是一个 PipelineConnect：下一级空或下下级能收，本级就 ready。
+  logic valid_delay, valid_check, valid_resp;
+
+  logic stage_req_ready, stage_delay_ready, stage_check_ready, stage_resp_ready;
+
+  // refill 与 bitmap wakeup 都要抢 SRAM 的那一个读端口（sramSinglePort=true），
+  // 所以它们有效的那一拍，入口直接不收新请求——这是本模块唯一的入口节流。
+  logic rw_harzad;    // 名字沿用 golden/Chisel 的拼写（rwHarzad），便于对照
+  logic wakeup_harzad;
+  logic wakeup_blocked;
+
+  assign rw_harzad      = io_refill_valid;
+  // refill 抢赢 wakeup：两者同拍有效时 wakeup 不被接受（golden:5909/45294）。
+  // ★按 golden 的表达式形状照抄，不化简成 `valid & ~refill`★：值恒等不等于
+  // 可证等价，合并过的形状在 FM 上要多绕一圈。
+  assign wakeup_blocked = io_bitmap_wakeup_valid & io_refill_valid;
+  assign io_bitmap_wakeup_ready = ~wakeup_blocked;
+  assign wakeup_harzad  = ~wakeup_blocked & io_bitmap_wakeup_valid;
+
+  assign stage_resp_ready  = ~valid_resp  | io_resp_ready;
+  assign stage_check_ready = ~valid_check | stage_resp_ready;
+  assign stage_delay_ready = ~valid_delay | stage_check_ready;
+  assign stage_req_ready   = stage_delay_ready & ~(rw_harzad | wakeup_harzad);
+
+  logic left_fire_req;    // stageReq   → stageDelay
+  logic left_fire_delay;  // stageDelay → stageCheck
+  logic left_fire_check;  // stageCheck → stageResp
+  assign left_fire_req   = io_req_valid & stage_delay_ready & ~(rw_harzad | wakeup_harzad);
+  assign left_fire_delay = valid_delay  & stage_check_ready;
+  assign left_fire_check = valid_check  & stage_resp_ready;
+
+  // SRAM 读请求发出的那一拍（golden `_s2x_info_T_1`）。它与 left_fire_req 展开后
+  // 是同一个值（stageReq_ready 本身就含 stage_delay_ready 与那两个 harzad），
+  // golden 仍保留两个名字；★这里照抄两份而不合并★——"值恒等"不等于"可证等价"，
+  // 合并过的形状在 FM 上要多绕一圈。
+  logic sram_read_fire;
+  assign sram_read_fire = stage_req_ready & io_req_valid;
+
+  assign io_req_ready  = stage_req_ready;
+  assign io_resp_valid = valid_resp;
+
+  // ---------------------------------------------------------------------------
+  // §2 三份 dup 的归属与 flush（已追清：golden:3069-3078, 6647/6785/6831/7418/8289）
+  //
+  //   flush_dup_N = sfence_dup_N.valid | csr_dup_N.{satp,vsatp,hgatp}_changed
+  //                 | csr_dup_N.priv_virt_changed
+  // ★三份必须各写各的，禁止合并★：golden 里 dup_0 管 l0/sp、dup_1 管 l1、
+  // dup_2 管 l2/l3，连时钟门控都分开（见 §5）。Predictor 那一轮把一份共用信号
+  // 写成单份，UT 全绿而 FM 炸出 504 个失配点——同一个形态。
+  logic flush_dup_0, flush_dup_1, flush_dup_2;
+
+  assign flush_dup_0 = io_sfence_dup_0_valid | io_csr_dup_0_satp_changed
+                     | io_csr_dup_0_vsatp_changed | io_csr_dup_0_hgatp_changed
+                     | io_csr_dup_0_priv_virt_changed;
+  assign flush_dup_1 = io_sfence_dup_1_valid | io_csr_dup_1_satp_changed
+                     | io_csr_dup_1_vsatp_changed | io_csr_dup_1_hgatp_changed
+                     | io_csr_dup_1_priv_virt_changed;
+  assign flush_dup_2 = io_sfence_dup_2_valid | io_csr_dup_2_satp_changed
+                     | io_csr_dup_2_vsatp_changed | io_csr_dup_2_hgatp_changed
+                     | io_csr_dup_2_priv_virt_changed;
+
+  // bitmap 检查总开关：BME=1 且 CMODE=0（golden:3066）
+  logic bitmap_enable;
+  assign bitmap_enable = io_csr_dup_0_mbmc_BME & ~io_csr_dup_0_mbmc_CMODE;
+
+  // 查找时把 allStage 折成 onlyStage1（golden `h_search`，:27249-27252）
+  logic [1:0] h_search;
+  assign h_search = (io_req_bits_req_info_s2xlate == H_ONLY_STAGE2)
+                  ? H_ONLY_STAGE2
+                  : {1'b0, (io_req_bits_req_info_s2xlate == H_ONLY_STAGE1)
+                           | (&io_req_bits_req_info_s2xlate)};
+
+  // ---------------------------------------------------------------------------
+  // §3 存储声明（结构已追清，更新方程见 §8 未追清清单）
+  //
+  // 寄存器阵列三级：l3 / l2 / sp。l1 / l0 的数据在 SRAM 里，只有元数据留在核内。
+  l3_entry_t [L3_N-1:0] l3_entry;
+  l2_entry_t [L2_N-1:0] l2_entry;
+  sp_entry_t [SP_N-1:0] sp_entry;
+
+  // 有效位向量（★带复位★）与 global 位向量（★不带复位★）—— 见 §4。
+  logic [L3_N-1:0]            l3v;
+  logic [L2_N-1:0]            l2v;
+  logic [L1_SETS*L1_WAYS-1:0] l1v;
+  logic [L0_SETS*L0_WAYS-1:0] l0v;
+  logic [SP_N-1:0]            spv;
+
+  logic [L3_N-1:0]            l3g;
+  logic [L2_N-1:0]            l2g;
+  logic [L1_SETS*L1_WAYS-1:0] l1g;
+  logic [L0_SETS*L0_WAYS-1:0] l0g;
+  logic [SP_N-1:0]            spg;
+
+  // 每条表项的两阶段标记 h（不复位）
+  logic [1:0] l3h [L3_N];
+  logic [1:0] l2h [L2_N];
+  logic [1:0] l1h [L1_SETS][L1_WAYS];
+  logic [1:0] l0h [L0_SETS][L0_WAYS];
+  logic [1:0] sph [SP_N];
+
+  // l1/l0 的影子元数据：SRAM 一拍只能读一组，而 sfence 要对**全阵列**逐条比对，
+  // 所以比对用的 asid/vmid/vpn 另有一份 flop 副本，且存的是 XORFold 折叠值。
+  // ★照抄这份冗余，不要"优化"成直接读 SRAM★。
+  logic [HASH_ASID_W-1:0] l1asids [L1_SETS][L1_WAYS];
+  logic [HASH_VMID_W-1:0] l1vmids [L1_SETS][L1_WAYS];
+  logic [HASH_ASID_W-1:0] l0asids [L0_SETS][L0_WAYS];
+  logic [HASH_VMID_W-1:0] l0vmids [L0_SETS][L0_WAYS];
+  logic [HASH_VPN_W-1:0]  l0vpns  [L0_SETS][L0_WAYS];
+
+  // 每个 l0 PTE 槽一位「bitmap 已检查通过」标记（★带复位★）。
+  // golden 把它展平成 2048 个标量寄存器，占了整份 golden 三成行数。
+  logic [SECTOR_N-1:0] l0_bitmap [L0_SETS][L0_WAYS];
+
+  // ---------------------------------------------------------------------------
+  // §4 复位域（已追清：golden 只有一个 always@(posedge clock or posedge reset)）
+  //
+  // golden 实测：2143 个寄存器带**异步高有效**复位，2749 个**完全不复位**，两组零交集。
+  //   带复位：l3v/l2v/l1v/l0v/spv、l0_bitmap、替换状态、各级流水 valid、bypass valid
+  //   不复位：全部 tag/asid/vmid/ppn/perm 载荷、★l3g/l2g/l1g/l0g/spg★、
+  //           l0h/l0vpns/l0asids/l0vmids/l1h/... 影子元数据、全部流水载荷
+  // ★把 g 向量也复位掉是真 bug，而 elaborate 与 lint 都不会报★。
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) begin
+      l3v <= '0;  l2v <= '0;  l1v <= '0;  l0v <= '0;  spv <= '0;
+      valid_delay <= 1'b0;  valid_check <= 1'b0;  valid_resp <= 1'b0;
+      for (int s = 0; s < L0_SETS; s++)
+        for (int w = 0; w < L0_WAYS; w++)
+          l0_bitmap[s][w] <= '0;
+    end
+    else begin
+      // PipelineConnect 的 valid 推进（golden:26xxx，与上面复位块同一个 always）。
+      // ★形状必须照抄：不是「下级 ready 时才更新」，而是**每拍无条件赋值**，
+      //  取值 = ~flush_dup_0 & (本级 fire | 下级没收走就保持)。★
+      //  这两种写法在下级 ready 时同值，但在 ~ready 且 flush 的那一拍**不同**：
+      //  golden 会把 valid 清掉，"有条件更新"的写法不会。
+      //  三级 valid 全部只看 flush_dup_0（不是各看各的 dup）——这一点与回填相反。
+      valid_delay <= ~flush_dup_0 & (left_fire_req   | ~stage_check_ready & valid_delay);
+      valid_check <= ~flush_dup_0 & (left_fire_delay | ~stage_resp_ready  & valid_check);
+      valid_resp  <= ~flush_dup_0 & (left_fire_check | ~io_resp_ready     & valid_resp);
+      // ★l3v/l2v/l1v/l0v/spv 与 l0_bitmap 的更新方程尚未追清，见 §8★
+    end
+  end
+
+  // ---------------------------------------------------------------------------
+  // §5 时钟门控与 SRAM 端口仲裁（已追清：golden:44750-44763, 43250/43557）
+  //
+  // l0 与 l1 各挂一个 ClockGate，开门条件**分别**用 flush_dup_0 / flush_dup_1：
+  //   l0.CK 开 = wakeup | 读请求 | (~flush_dup_0 & levelOH.l0) | mbist l0 请求
+  //   l1.CK 开 =          读请求 | (~flush_dup_1 & levelOH.l1) | mbist l1 请求
+  logic te_cgen;
+  assign te_cgen = cg_bore_cgen;
+
+  logic l0_clk, l1_clk;
+  logic l0_cg_en, l1_cg_en;
+  assign l0_cg_en = wakeup_harzad | sram_read_fire
+                  | (~flush_dup_0 & io_refill_bits_levelOH_l0) | boreChildrenBd_bore_1_req;
+  assign l1_cg_en = sram_read_fire
+                  | (~flush_dup_1 & io_refill_bits_levelOH_l1) | boreChildrenBd_bore_req;
+
+  // ★实例名沿用 golden（ClockGate / ClockGate_1），不改成更好听的名字★：
+  // 本层次有**两个**同类型实例，docs/hier_rebind_map.tsv 只能靠实例名把 golden 路径
+  // 映到重写件路径（scripts/hier_map.py 的 auto_deeper 规则）。改名会让这两行变成
+  // UNRESOLVED —— 而 UNRESOLVED 的后果是 DFT/perf 探针**静默探到空**，不会报错。
+  ClockGate ClockGate   (.TE(te_cgen), .E(l0_cg_en), .CK(clock), .Q(l0_clk));
+  ClockGate ClockGate_1 (.TE(te_cgen), .E(l1_cg_en), .CK(clock), .Q(l1_clk));
+
+  // SRAM 读口：l1 只服务正常请求；l0 还要让 bitmap wakeup 插队回读。
+  logic                l1_r_valid, l0_r_valid;
+  logic [1:0]          l1_r_set;
+  logic [5:0]          l0_r_set;
+  assign l1_r_valid = sram_read_fire;
+  assign l1_r_set   = io_req_bits_req_info_vpn[13:12];
+  assign l0_r_valid = wakeup_harzad | sram_read_fire;
+  assign l0_r_set   = wakeup_harzad ? io_bitmap_wakeup_bits_tag[8:3]
+                                    : io_req_bits_req_info_vpn[8:3];
+
+  // ---------------------------------------------------------------------------
+  // §6 各级 refill 使能（l1 已追清；其余只追清了 dup 归属与形状）
+  //
+  // l1 是唯一一条没有 leaf/canRefill 过滤的：只要这一拍 levelOH 指向 l1 且没被冲刷。
+  logic l1_refill;
+  assign l1_refill = ~flush_dup_1 & io_refill_bits_levelOH_l1;
+
+  // l3/l2 用 dup_2、l0/sp 用 dup_0，且各自带 leaf / canRefill / napot 过滤——
+  // 这些过滤项的完整方程还没追清（见 §8），暂不在此下定义。
+
+  // ---------------------------------------------------------------------------
+  // §7 替换策略状态（拓扑已追清，PLRU 方程未追清）
+  //
+  //   l3/l2/sp : PseudoLRU(16)  → 各一个 15 位 state_reg
+  //   l1       : SetAssocLRU(4 组 2 路) → 每组 1 位
+  //   l0       : SetAssocLRU(64 组 4 路) → 每组 3 位
+  //
+  // ★golden 自带一个真 bug，必须照抄（bug-for-bug）★：
+  //   Chisel PageTableCache.scala:908 在 `when (l3Refill)` 里访问的是 **ptwl2replace**
+  //   而不是 ptwl3replace。golden 展开后可验证：
+  //     - l3 的 PLRU（state_reg）  只有**一个**写者：l3 命中（PtwCache.sv:26779）
+  //     - l2 的 PLRU（state_reg_1）有**三个**写者，优先级 l2Refill > l3Refill > l2命中
+  //       （PtwCache.sv:26808 / 26837 / 26866），其中 l3Refill 那一支用的是 l3_refillIdx
+  //   也就是说：l3 回填不更新 l3 的 PLRU，反而污染 l2 的 PLRU。
+  //   影响只在性能（选错受害者），不影响功能正确性。重写必须复现，不许"修好"。
+  logic [14:0] plru_l3, plru_l2, plru_sp;
+  logic        plru_l1 [L1_SETS];
+  logic [2:0]  plru_l0 [L0_SETS];
