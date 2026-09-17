@@ -32,6 +32,10 @@ run "台账行序闸"       python3 scripts/test_ledger_append_only.py
 # 记账，于是一个只实现两成逻辑的 LoadQueueReplay 骨架就把覆盖率从 7.4% 抬到 11.0%，
 # 凭空记 138,860 行 golden。判据已改成按绿判决证据记；这道闸把「改好了」变成「改住了」。
 run "覆盖率空壳闸"     python3 scripts/test_coverage_no_shell_inflation.py
+# round 台账必须与**已提交的 receipt** 逐字节一致。它是 proven 口径的输入之一，
+# 以前是手写的 —— 手写台账必然有两个病：漏记（proven 虚低）与错记（数字与 receipt
+# 对不上，而台账才是被引用的那份）。病根都是台账与证据之间隔着一个人。
+run "round 台账幂等"   python3 scripts/harvest_round_ledger.py --check --out docs/fm_round_20260917.tsv
 run "覆盖率台账幂等"   python3 scripts/rewrite_coverage.py --check
 # FM Tcl 毒字符串闸：fm_shell 把入口 Tcl **逐行回显**进 fm.log（注释也不例外），
 # 而 fm_verdict.py 的 _ELAB147/_DONTVERIFY 是在整份日志上做正则 —— 于是在注释里
