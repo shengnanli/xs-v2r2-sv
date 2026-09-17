@@ -111,14 +111,25 @@ D_AFTER="$(digest_worktree)"
 # 证明钉在某个 commit 的字节上，主线在此期间提交新代码与本次证明无关；
 # 之前误取活动 HEAD，导致批跑中途我一提交就把 6 个已完成目标判成"输入变了"（exit 5）。
 HEAD_AFTER="$(git -C "$WT" rev-parse HEAD)"
+# ★追加而不是覆盖★（2026-09-17，两条 lane 各自独立报的）
+# 原先这里是 `>`。同一个 commit 上分多次调用本脚本（不同 ut_dir、或分批证 target）时，
+# 后一次会把前一次的 `targets` 行**整份覆盖**掉：
+#   SbufferData lane 15 个 target 跨 3 个 ut_dir，RUN_CONTEXT.tsv 只剩最后 9 个；
+#   RenameBuffer lane 先证 SnapshotGenerator 再证 RenameBuffer，只剩后者。
+# 两次都**没有丢证据**（每个 target 的子目录与 receipt 各自独立、各带 run_id），
+# 但只读 RUN_CONTEXT.tsv 的人会以为这个 commit 上只证了最后那一批。
+# 改成追加：每次调用落一段，段间用空行隔开，段首写本次的 run 序号与时间。
+# 首次调用时文件不存在，`>>` 自然建新文件，所以不需要额外分支。
 {
+  if [[ -s "$EVID/RUN_CONTEXT.tsv" ]]; then echo ""; fi
+  echo "# run	$(date -u +%Y-%m-%dT%H:%M:%SZ)	ut_dir=$UT_DIR"
   echo "commit	$COMMIT"
   echo "head_before	$HEAD_BEFORE"
   echo "head_after	$HEAD_AFTER"
   echo "worktree_digest_before	$D_BEFORE"
   echo "worktree_digest_after	$D_AFTER"
   echo "targets	${TARGETS[*]}"
-} > "$EVID/RUN_CONTEXT.tsv"
+} >> "$EVID/RUN_CONTEXT.tsv"
 
 if [[ "$D_BEFORE" != "$D_AFTER" || "$HEAD_BEFORE" != "$HEAD_AFTER" ]]; then
   echo "ERROR: 跑期间输入发生变化（worktree 摘要或 HEAD 变了）—— 证据作废" >&2
