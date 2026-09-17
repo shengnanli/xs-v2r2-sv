@@ -130,8 +130,11 @@ module xs_SQData8Module_core
   // ---------------------------------------------------------------------------
   // §2.2 写 S0:按写地址低 3 位译出 one-hot bank 使能(纯组合)
   // ---------------------------------------------------------------------------
-  logic s0_data_wen [NUM_WRITE][N_BANKS];
-  logic s0_mask_wen [NUM_WRITE][N_BANKS];
+  // ★ 按写口存成 packed 的 8 位 one-hot bank 向量 ★（不是 [NUM_WRITE][N_BANKS]
+  //   的二维非压缩数组）——下面 §2.3 的门控要整条向量比一次，packed 才能直接比，
+  //   不必在时钟块里开临时量拼装。见 §2.3 里那条踩过的坑。
+  logic [N_BANKS-1:0] s0_data_wen [NUM_WRITE];
+  logic [N_BANKS-1:0] s0_mask_wen [NUM_WRITE];
   always_comb begin
     for (int w = 0; w < NUM_WRITE; w++) begin
       for (int b = 0; b < N_BANKS; b++) begin
@@ -148,25 +151,25 @@ module xs_SQData8Module_core
   // 的降级形式:★门控条件比的是**整个 8 位 bank 向量**,不是逐 bank 比★
   // (golden L2422-2447 把 8 位拼起来做一次 == 比较)。值上与无条件打拍等价,
   // 这里照抄 golden 的形状。
-  logic s1_data_wen [NUM_WRITE][N_BANKS];
-  logic s1_mask_wen [NUM_WRITE][N_BANKS];
+  logic [N_BANKS-1:0] s1_data_wen [NUM_WRITE];
+  logic [N_BANKS-1:0] s1_mask_wen [NUM_WRITE];
 
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
-      for (int w = 0; w < NUM_WRITE; w++)
-        for (int b = 0; b < N_BANKS; b++) begin
-          s1_data_wen[w][b] <= 1'b0;
-          s1_mask_wen[w][b] <= 1'b0;
-        end
-    end else begin
       for (int w = 0; w < NUM_WRITE; w++) begin
-        automatic logic [N_BANKS-1:0] s0_d, s1_d, s0_m, s1_m;
-        for (int b = 0; b < N_BANKS; b++) begin
-          s0_d[b] = s0_data_wen[w][b];  s1_d[b] = s1_data_wen[w][b];
-          s0_m[b] = s0_mask_wen[w][b];  s1_m[b] = s1_mask_wen[w][b];
-        end
-        if (s0_d != s1_d) for (int b = 0; b < N_BANKS; b++) s1_data_wen[w][b] <= s0_data_wen[w][b];
-        if (s0_m != s1_m) for (int b = 0; b < N_BANKS; b++) s1_mask_wen[w][b] <= s0_mask_wen[w][b];
+        s1_data_wen[w] <= '0;
+        s1_mask_wen[w] <= '0;
+      end
+    end else begin
+      // ★ 这里一个临时量都不许声明 ★
+      //   在 always_ff 里 declare 的变量会被前端推断成**寄存器**，哪怕它只在本拍
+      //   组合使用。实测踩过一次：为了拼 8 位向量开了 4 个 automatic 变量，
+      //   Formality 推出 4 组 × 2 写口 = 64 个没人读的寄存器（s0_d_reg/s0_m_reg…），
+      //   native SUCCEEDED 但 unread=64 → 判 PARTIAL。
+      //   修法是把 bank 使能本来就存成 packed 向量（见上面的声明），整条直接比。
+      for (int w = 0; w < NUM_WRITE; w++) begin
+        if (s0_data_wen[w] != s1_data_wen[w]) s1_data_wen[w] <= s0_data_wen[w];
+        if (s0_mask_wen[w] != s1_mask_wen[w]) s1_mask_wen[w] <= s0_mask_wen[w];
       end
     end
   end
