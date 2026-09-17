@@ -41,6 +41,9 @@ module tb;
   int errors = 0;
   longint checks = 0;
   int unsigned warm = 0;
+  // 中途异步复位的次数（见 initial 块）。
+  localparam int RESET_PULSES = 20;
+  longint cov_reset_pulses = 0;
 
   always #5 clk = ~clk;
 
@@ -8572,17 +8575,24 @@ module tb;
     warm = 2;
     repeat (2) @(posedge clk);
     @(negedge clk) cmp_en = 1'b1;
-    repeat (NCYCLES / 2) @(posedge clk);
-    // 中途再来一次异步复位：验证「只有 valid 与 op 位在复位域」这个结构结论 ——
-    // 复位后 info/operand/order 必须**保持不变**，两侧一起保持才不会报错。
-    @(negedge clk) begin rst = 1'b1; cmp_en = 1'b0; end
-    repeat (3) @(posedge clk);
-    @(negedge clk) rst = 1'b0;
-    repeat (2) @(posedge clk);
-    @(negedge clk) cmp_en = 1'b1;
-    repeat (NCYCLES / 2) @(posedge clk);
+    // ★中途反复打异步复位★：这是复位域的唯一把关手段。
+    // 暖机之后两轮 initreg 必然都绿（不复位的 20 个寄存器都已写成确定值），
+    // 所以「复位域对不对」只能靠复位事件本身来测：复位后 valid 与 op 位必须归 0、
+    // 而 info/operand/order 必须**保持不变** —— 任何一侧多复位或少复位都会当场失配。
+    // 只打一次的话余量太薄：实测「去掉 op_comp_valid 的复位」这个变异在单次复位下
+    // 只报 16 个 errors，换个 seed 就可能漏。这里打 RESET_PULSES 次。
+    for (int k = 0; k < RESET_PULSES; k++) begin
+      repeat (NCYCLES / RESET_PULSES) @(posedge clk);
+      @(negedge clk) begin rst = 1'b1; cmp_en = 1'b0; end
+      repeat (1 + (k % 3)) @(posedge clk);
+      @(negedge clk) rst = 1'b0;
+      repeat (2) @(posedge clk);
+      @(negedge clk) cmp_en = 1'b1;
+      cov_reset_pulses++;
+    end
 
     $display("--- COVERAGE (每项必须 > 0，否则该机制没被激励到) ---");
+    $display("  %-34s: %0d", "中途异步复位次数（复位域的唯一把关手段）", cov_reset_pulses);
     $display("  %-34s: %0d", "[q64] 分配压过释放(同槽同拍)", cov_q64_alloc_beats_free);
     $display("  %-34s: %0d", "[q64] 占用中的槽又被分配", cov_q64_double_alloc);
     $display("  %-34s: %0d", "[q64] 清除压过分配(同槽同拍)", cov_q64_clear_beats_alloc);
@@ -8621,6 +8631,7 @@ module tb;
     $display("  %-34s: %0d", "[q32] AR 读口读出 Device=1", cov_q32_device_read);
     $display("checks=%0d errors=%0d", checks, errors);
     if (errors == 0 &&
+        cov_reset_pulses > 0 &&
         cov_q64_alloc_beats_free > 0 &&
         cov_q64_double_alloc > 0 &&
         cov_q64_clear_beats_alloc > 0 &&

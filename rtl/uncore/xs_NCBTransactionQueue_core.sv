@@ -526,7 +526,7 @@ module xs_NCBTransactionQueue_core
     for (int i = 0; i < N; i++) begin
       if (alloc_hit[i]) begin
         // ★info 的后两个字段 return_nid / return_txn_id 在 golden 里是只写不读的
-        //   死寄存器（每槽 23 位、全队 64×23=1472 位）。这里照抄结构，不合并也不删：
+        //   死寄存器（每槽 23 位，全队 N×23 位；v0 是 64×23=1472 位）。照抄结构，不合并也不删：
         //   删了 FM 会多出一堆 unmatched；合并了就不是同一个结构。
         info_q[i]           <= alloc_info;
         chi_addr_q[i]       <= alloc_chi_addr;
