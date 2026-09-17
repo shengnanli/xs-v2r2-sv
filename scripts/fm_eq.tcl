@@ -276,6 +276,27 @@ switch -- $_verify_matched_unread_compare_points {
     #              判据的价值在于事前承诺、事后对账；对不上就必须查清楚再改写判据，
     #              不能因为"实测比预期大、方向没错"就放过去。本例查清的结论是
     #              两个数在数不同的东西，加强本身没有空转(0 -> 14525 是最强的非空转)。
+    #   TLBFA / TLBFA_1 / TLBFA_2 / TLBFA_3(2026-09-17 加):
+    #          unread 全部是 **reqVpn 的高 11 位(bit37..27) x PORTS**，两侧同死：
+    #              ref  r:/WORK/<top>/reqVpn[_N]_reg[27..37]
+    #              impl i:/WORK/<top>/u_core/g_port[N].req_vpn_q_reg[27..37]
+    #          成因是 golden 自己的死位：reqVpn(=RegNext(vpn)) 的**唯一**读出点是
+    #          genPPN，而 genPPN 最高只取 vpn[26:18]（三段 9 位）；golden 对 reqVpn
+    #          的全部切片实测就是 [26:18]/[17:9]/[8:0]/[3:0]/[2:0]，bit37..27 无读者。
+    #          ★反直觉但重要★：把可读核的 req_vpn_q "优化"成 27 位反而更糟 ——
+    #          那 11xPORTS 位会变成 golden-only 死位（不对称，连双射都没有）。
+    #          照抄 golden 的宽度才是对的。四个变体都用脚本核过是精确双射
+    #          （ref 唯一点数 == impl 唯一点数 == 11 x PORTS，键集合完全相同，
+    #          位索引恒为 27..37、端口恒为 0..PORTS-1，非 matched_nc 项为 0）。
+    #          unread 数 33/44/22/22 => PORTS 3/4/2/2。
+    #          ★复核判据★: unread 归 0，**且** passing 恰好
+    #              8149 -> 8182(+33) / 8619 -> 8663(+44) /
+    #              8211 -> 8233(+22) / 8207 -> 8229(+22)；
+    #          passing 不增即空转，不算过。
+    #          备用配对在 verif/ut/TLBFA/fm_pins.tcl.pending（故意带后缀，
+    #          不会被 $(wildcard fm_pins.tcl) 捡到）——因为 auto_match_flattened_arrays
+    #          读的是 report_unmatched_points 的**默认**报告，而默认报告不含 unread 类，
+    #          万一开了加强 FM 仍不自动配上，就改名启用它。
     #   IBuffer(2026-09-17 加): 6 个 unread 点全是两侧对称 matched_nc。
     #          ★复核判据★: passing 7902 -> 7908(正好 +6)、failing 仍 0、unread 归 0。
     #   NCBTransactionQueue{,_1}(2026-09-17 加): 内容是 info.ReturnNID(11 位) +
@@ -303,7 +324,7 @@ switch -- $_verify_matched_unread_compare_points {
     #          impl 侧单边未读 585 个不受本开关影响(无对家, 属 PASS_DEAD_IMPL 范畴)。
     #          ★复核判据★: passing 520634 -> 528967(正好 +8333)、failing 仍 0、
     #          unread 归 0、unmatched 0(0)。passing 不增而 unread 归 0 = 点被吞掉, 不算过。
-    if {$top ni {Bku Composer DebugModule DuplicatedTagArray EntriesVfdivVidiv FAlu FCVT FTBBank Ftq ICacheCtrlUnit ICacheDataArray ICacheMetaArray ICacheMissUnit InstrUncache ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 LinkMonitor MulUnit Queue1_RegMapperInput_5 RNXbar SNXbar SourceB SSIT TageBTable TlbStorageWrapper TlbStorageWrapper_1 TXDAT_4 TXREQ WritebackQueue IBuffer NCBTransactionQueue NCBTransactionQueue_1 Predictor}} {
+    if {$top ni {Bku Composer DebugModule DuplicatedTagArray EntriesVfdivVidiv FAlu FCVT FTBBank Ftq ICacheCtrlUnit ICacheDataArray ICacheMetaArray ICacheMissUnit InstrUncache ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 LinkMonitor MulUnit Queue1_RegMapperInput_5 RNXbar SNXbar SourceB SSIT TageBTable TlbStorageWrapper TlbStorageWrapper_1 TXDAT_4 TXREQ WritebackQueue IBuffer NCBTransactionQueue NCBTransactionQueue_1 Predictor TLBFA TLBFA_1 TLBFA_2 TLBFA_3}} {
       puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
       exit 3
     }
