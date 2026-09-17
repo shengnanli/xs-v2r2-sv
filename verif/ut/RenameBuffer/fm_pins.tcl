@@ -54,6 +54,10 @@
 # validator 要求 unread 归 0；而「加强有没有真去比」要看 passing 是否 +51
 # （5825 → 5876）—— 那一步要 vmucp 白名单，归 reviewer 加，不在本文件。
 #
+# ★puts 一律用 ASCII★：Formality 的 fm.log 不是 UTF-8，中文 puts 落进日志会变成一串 ?
+# （本轮实测：钉点自报那四行在 fm.log 里全成了问号）。注释留中文没问题（读的是源文件），
+# 但**进日志的字**必须 ASCII —— 日志是给 reviewer 看的证据。
+#
 # 本文件在受限 safe interp 里执行（sidecar_pin_source），所以不依赖父层变量：
 # 顶层名从未读点路径里现取，不用 $top。
 # =============================================================================
@@ -61,7 +65,7 @@
 proc rab_unread {side} {
     set out {}
     if {[catch {report_unmatched_points -$side -status unread -list} res]} {
-        puts "RENAMEBUFFER_PIN_ERROR: report_unmatched_points -$side -status unread 失败: $res"
+        puts "RENAMEBUFFER_PIN_ERROR: report_unmatched_points -$side -status unread FAILED: $res"
         exit 3
     }
     foreach p [lsort -unique $res] { lappend out $p }
@@ -72,7 +76,7 @@ set _ref  [rab_unread reference]
 set _impl [rab_unread implementation]
 
 if {[llength $_ref] == 0 && [llength $_impl] == 0} {
-    puts "RENAMEBUFFER_PINS: 没有未匹配的未读点，无需钉点"
+    puts "RENAMEBUFFER_PINS: no unmatched unread points, nothing to pin"
 } else {
     set _pinned 0
     set _used   {}
@@ -92,32 +96,32 @@ if {[llength $_ref] == 0 && [llength $_impl] == 0} {
             set i "i:$scope/u_core/vec_excp_preg_q_reg\[$idx\]\[$bit\]"
             incr _nC
         } else {
-            puts "RENAMEBUFFER_PIN_ERROR: 未预期的 ref 未读点 $r"
-            puts "  本脚本只认三族对称死位（deqPtrVec_1..5 的 flag/value、toVecExcpMod preg 的 bit7）。"
-            puts "  出现别的形状说明情况变了，停下来诊断，不要盲钉。"
+            puts "RENAMEBUFFER_PIN_ERROR: unexpected ref unread point $r"
+            puts "  only 3 families accepted: deqPtrVec_1..5 flag/value, toVecExcpMod preg bit7"
+            puts "  a different shape means something changed -- stop and diagnose, do NOT blind-pin"
             exit 3
         }
         if {[lsearch -exact $_impl $i] < 0} {
-            puts "RENAMEBUFFER_PIN_ERROR: ref $r 推出的 impl 路径不在实测未读集合里：$i"
+            puts "RENAMEBUFFER_PIN_ERROR: derived impl path not in measured unread set: ref=$r impl=$i"
             exit 3
         }
         if {[lsearch -exact $_used $i] >= 0} {
-            puts "RENAMEBUFFER_PIN_ERROR: impl 路径被钉两次（多钉抢点）：$i"
+            puts "RENAMEBUFFER_PIN_ERROR: impl path pinned twice (over-pinning): $i"
             exit 3
         }
         if {[catch {set_user_match $r $i} _msg]} {
-            puts "RENAMEBUFFER_PIN_ERROR: set_user_match 失败 $r <-> $i : $_msg"
+            puts "RENAMEBUFFER_PIN_ERROR: set_user_match failed $r <-> $i : $_msg"
             exit 3
         }
         lappend _used $i
         incr _pinned
     }
     if {$_pinned != [llength $_impl]} {
-        puts "RENAMEBUFFER_PIN_ERROR: 钉了 $_pinned 条，impl 侧未读点却有 [llength $_impl] 个 —— 不是双射"
+        puts "RENAMEBUFFER_PIN_ERROR: pinned $_pinned but impl has [llength $_impl] unread points -- not a bijection"
         exit 3
     }
-    puts "RENAMEBUFFER_PINS: 钉了 $_pinned 对（A deqPtr flag $_nA / B deqPtr value $_nB / C vecExcp preg bit7 $_nC）"
-    puts "RENAMEBUFFER_PINS: ref [llength $_ref] / impl [llength $_impl]，双射成立，无重复钉点"
-    puts "RENAMEBUFFER_PINS: 终局判据在外层——最后一次 match 后 unmatched unread 必须归 0；"
-    puts "RENAMEBUFFER_PINS: 这 $_pinned 点要真被比，还需 vmucp 白名单（passing 应 5825 -> 5876）"
+    puts "RENAMEBUFFER_PINS: pinned $_pinned pairs (A deqPtr flag $_nA / B deqPtr value $_nB / C vecExcp preg bit7 $_nC)"
+    puts "RENAMEBUFFER_PINS: ref [llength $_ref] / impl [llength $_impl] -- bijection holds, no duplicate pins"
+    puts "RENAMEBUFFER_PINS: final criterion is external -- unmatched unread must reach 0 after last match;"
+    puts "RENAMEBUFFER_PINS: to actually COMPARE these $_pinned points a vmucp whitelist entry is still needed (passing 5825 -> 5876)"
 }
