@@ -30,3 +30,9 @@ include ../../../scripts/ut_common.mk
 VCS += +define+SYNTHESIS +vcs+initreg+random
 SIM_ARGS += $(INITREG)
 INITREG ?= +vcs+initreg+random
+
+# 判别力负测：注入真 bug，UT 必须报出来。变异只发生在 neg_build/（已 gitignore），
+# 不进库。见 mutants.py 头部说明。
+.PHONY: mutants
+mutants:
+	python3 mutants.py
