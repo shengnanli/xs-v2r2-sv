@@ -96,8 +96,12 @@
 // 【已追清 / 未追清 —— 当前边界】
 //   已追清并写成 RTL：四级流水握手与入口节流、三份 dup 的 flush 与归属、
 //     复位域划分、两个 ClockGate 的开门条件、l1/l0 的 SRAM 读地址与读使能、
-//     l1 的回填使能、l1/l0 写地址/tag/asid/vmid、全部 MBIST/DFT 透传拓扑。
-//   未追清（骨架里以显式钉 0 顶着，见 §8）：各级 hitVec 与命中数据选择、
-//     l3/l2/l0/sp 的回填使能过滤项、受害者选择与 PLRU 方程、sfence/hfence 的
-//     失效掩码（三种 rs1/rs2 组合 × 三种 fence 类型）、bitmap 检查与 wakeup 回写、
-//     io.resp 的 220 根载荷输出、8 个 perf 计数器。
+//     l1/l0 的回填使能、l1/l0 的**全部写数据**（§6.1 的 10 个 PTE 谓词 + §6.2 的
+//     逐项 vs/onlypf/perms/ppn/pbmt/prefetch）、全部 MBIST/DFT 透传拓扑。
+//     ★写数据这一段已有定向差分对照钉住★：verif/study/PtwCache_refill 双例化
+//     golden 与本核，用层次引用比 l1/l0 SRAM 的 430 根写端口，
+//     3 seed × 200k 拍、每轮 8600 万次比较、errors=0（详见该目录 tb.sv 头注释）。
+//   未追清（骨架里以显式钉 0 顶着，见 §8）：l1/l0 的受害者选择与 waymask、
+//     五级 PLRU 方程、l3/l2/sp 的回填使能与 refillIdx、各级 hitVec 与命中数据选择、
+//     sfence/hfence 失效掩码（三种 rs1/rs2 组合 × 三种 fence 类型）、
+//     bitmap 检查与 wakeup 回写、io.resp 的 220 根载荷输出、8 个 perf 计数器。

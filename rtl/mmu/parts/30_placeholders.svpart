@@ -23,13 +23,10 @@
                    ? io_csr_dup_0_vsatp_asid : io_csr_dup_0_satp_asid;
 
   // ---- ★以下全部未追清：占位，值无意义★ ----
-  //  l0_refill  : ~flush_dup_0 & levelOH.l0 & !memPte(0).isNapot(level) —— napot 判定未追
-  //  lX_w_waymask / 受害者选择 : 依赖 PLRU 方程 + "优先选无效项" 的 replaceWrapper
-  //  lX_w_vs_* / onlypf_* / perms_* / prefetch : 依赖 PtwEntries.genEntries 的逐 PTE 合法性判定
-  logic       l0_refill;
+  //  lX_w_waymask / 受害者选择 : 依赖 PLRU 方程 +「优先选无效项」的 replaceWrapper，
+  //  两者都还没追清（PLRU 的 access 优先级尤其要小心，见 §7 记的那个 golden 真 bug）。
   logic [1:0] l1_w_waymask;
   logic [3:0] l0_w_waymask;
 
-  assign l0_refill    = 1'b0;
   assign l1_w_waymask = '0;
   assign l0_w_waymask = '0;

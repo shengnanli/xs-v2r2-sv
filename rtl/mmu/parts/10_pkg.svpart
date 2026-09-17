@@ -12,8 +12,8 @@ package xs_ptwcache_pkg;
   localparam int SOURCE_W   = 2;
   localparam int HPTWID_W   = 3;
   localparam int SECTOR_N   = 8;   // tlbcontiguous：一条 l1/l0 表项装 8 个相邻 PTE
-  localparam int PTE_W      = 64;
-  localparam int LINE_W     = SECTOR_N * PTE_W;  // 512 = io_refill_bits_ptes 宽度
+  localparam int PTE_W_BITS = 64;  // 一个 PTE 的位宽
+  localparam int LINE_W     = SECTOR_N * PTE_W_BITS;  // 512 = io_refill_bits_ptes 宽度
 
   // ---- 五级几何（golden 实测：见文件头表）----
   localparam int L3_N       = 16;  localparam int L3_TAG_W = 11;  // vpn[37:27]

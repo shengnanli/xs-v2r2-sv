@@ -130,9 +130,24 @@ def xlate_sram(level, port, expr, widths):
     m = re.match(r'io_w_req_bits_data_(\d+)_entries_(.+)$', port)
     if m:
         f = m.group(2)
-        if re.fullmatch(r'(ppns|pbmts)_\d', f):
-            return expr                     # io_refill_bits_ptes 的定长切片，直接照抄
-        if f in ('tag', 'asid', 'vmid'):
+        # 一行 512 位里第 i 个 PTE 的定长字段：直接写成 refill_pte[i] 的切片，
+        # 比 golden 的 io_refill_bits_ptes[64i+47:64i+10] 好读，且是同一根线。
+        mm = re.fullmatch(r'ppns_(\d)', f)
+        if mm:
+            return 'refill_pte[%s][47:10]' % mm.group(1)
+        mm = re.fullmatch(r'pbmts_(\d)', f)
+        if mm:
+            return 'refill_pte[%s][62:61]' % mm.group(1)
+        mm = re.fullmatch(r'vs_(\d)', f)
+        if mm:
+            return '%s_w_vs[%s]' % (P, mm.group(1))
+        mm = re.fullmatch(r'onlypf_(\d)', f)
+        if mm:
+            return '%s_w_onlypf[%s]' % (P, mm.group(1))
+        mm = re.fullmatch(r'perms_(\d)_(\w)', f)
+        if mm:
+            return '%s_w_perms[%s].%s' % (P, mm.group(1), mm.group(2))
+        if f in ('tag', 'asid', 'vmid', 'prefetch'):
             return '%s_w_%s' % (P, f)
         UNTRACED.setdefault('%s_w_%s' % (P, f), '')
         return '%s_w_%s' % (P, f)
@@ -214,12 +229,15 @@ def build():
     out += emit_portlist(ports)
     out += [');']
     out += part('20_core_body.svpart')
+    out += part('25_refill_wdata.svpart')
     out += ['', '  // ' + '-' * 75,
             '  // §8 未追清清单 —— ★占位信号，当前值无意义★',
             '  //',
             '  // 下面每一根都还没有从 golden 逐条追出方程。它们现在被恒定值顶着，',
             '  // 只为让本骨架能 elaborate；任何人引用它们都会拿到错值。',
-            '  // 追清的顺序建议：l0/l1 写数据 -> 各级 hitVec -> sfence 失效 -> 响应装配。',
+            '  // 回填写数据（§6.1/§6.2）已从本表毕业，并有 verif/study/PtwCache_refill',
+            '  // 的定向差分对照钉住。剩下的追清顺序：受害者选择/PLRU -> 各级 hitVec',
+            '  // -> sfence 失效 -> 响应装配 -> perf。',
             '']
     out += decl_untraced
     out += ['']

@@ -96,31 +96,37 @@
 // 【已追清 / 未追清 —— 当前边界】
 //   已追清并写成 RTL：四级流水握手与入口节流、三份 dup 的 flush 与归属、
 //     复位域划分、两个 ClockGate 的开门条件、l1/l0 的 SRAM 读地址与读使能、
-//     l1 的回填使能、l1/l0 写地址/tag/asid/vmid、全部 MBIST/DFT 透传拓扑。
-//   未追清（骨架里以显式钉 0 顶着，见 §8）：各级 hitVec 与命中数据选择、
-//     l3/l2/l0/sp 的回填使能过滤项、受害者选择与 PLRU 方程、sfence/hfence 的
-//     失效掩码（三种 rs1/rs2 组合 × 三种 fence 类型）、bitmap 检查与 wakeup 回写、
-//     io.resp 的 220 根载荷输出、8 个 perf 计数器。
-// 本文件导航（共 4198 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
-//   L35    它在 MMU 里的位置
-//   L42    五级存储
-//   L55    四级流水
-//   L65    三份 dup 各归谁 —— 照抄，绝不合并
-//   L74    复位域 —— golden 实测，别照直觉全复位
-//   L84    子模块
-//   L91    golden 45,308 行里有多少是真逻辑
-//   L98    差分 UT 方案
-//   L117   已追清 / 未追清 —— 当前边界
-//   L127   xs_ptwcache_pkg —— 几何、类型与编码
-//   L665   §1 四级流水与反压
-//   L710   §2 三份 dup 的归属与 flush
-//   L741   §3 存储声明
-//   L782   §4 复位域
-//   L812   §5 时钟门控与 SRAM 端口仲裁
-//   L845   §6 各级 refill 使能
-//   L855   §7 替换策略状态
-//   L874   §8 未追清清单 —— ★占位信号，当前值无意义★
-//   L1913  §9 子模块例化
+//     l1/l0 的回填使能、l1/l0 的**全部写数据**（§6.1 的 10 个 PTE 谓词 + §6.2 的
+//     逐项 vs/onlypf/perms/ppn/pbmt/prefetch）、全部 MBIST/DFT 透传拓扑。
+//     ★写数据这一段已有定向差分对照钉住★：verif/study/PtwCache_refill 双例化
+//     golden 与本核，用层次引用比 l1/l0 SRAM 的 430 根写端口，
+//     3 seed × 200k 拍、每轮 8600 万次比较、errors=0（详见该目录 tb.sv 头注释）。
+//   未追清（骨架里以显式钉 0 顶着，见 §8）：l1/l0 的受害者选择与 waymask、
+//     五级 PLRU 方程、l3/l2/sp 的回填使能与 refillIdx、各级 hitVec 与命中数据选择、
+//     sfence/hfence 失效掩码（三种 rs1/rs2 组合 × 三种 fence 类型）、
+//     bitmap 检查与 wakeup 回写、io.resp 的 220 根载荷输出、8 个 perf 计数器。
+// 本文件导航（共 4223 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+//   L37    它在 MMU 里的位置
+//   L44    五级存储
+//   L57    四级流水
+//   L67    三份 dup 各归谁 —— 照抄，绝不合并
+//   L76    复位域 —— golden 实测，别照直觉全复位
+//   L86    子模块
+//   L93    golden 45,308 行里有多少是真逻辑
+//   L100   差分 UT 方案
+//   L119   已追清 / 未追清 —— 当前边界
+//   L133   xs_ptwcache_pkg —— 几何、类型与编码
+//   L671   §1 四级流水与反压
+//   L716   §2 三份 dup 的归属与 flush
+//   L747   §3 存储声明
+//   L788   §4 复位域
+//   L818   §5 时钟门控与 SRAM 端口仲裁
+//   L851   §6 各级 refill 使能
+//   L861   §7 替换策略状态
+//   L880   §6.1 PTE 谓词
+//   L994   §6.2 回填写数据
+//   L1064  §8 未追清清单 —— ★占位信号，当前值无意义★
+//   L1938  §9 子模块例化
 //
 
 // =============================================================================
@@ -136,8 +142,8 @@ package xs_ptwcache_pkg;
   localparam int SOURCE_W   = 2;
   localparam int HPTWID_W   = 3;
   localparam int SECTOR_N   = 8;   // tlbcontiguous：一条 l1/l0 表项装 8 个相邻 PTE
-  localparam int PTE_W      = 64;
-  localparam int LINE_W     = SECTOR_N * PTE_W;  // 512 = io_refill_bits_ptes 宽度
+  localparam int PTE_W_BITS = 64;  // 一个 PTE 的位宽
+  localparam int LINE_W     = SECTOR_N * PTE_W_BITS;  // 512 = io_refill_bits_ptes 宽度
 
   // ---- 五级几何（golden 实测：见文件头表）----
   localparam int L3_N       = 16;  localparam int L3_TAG_W = 11;  // vpn[37:27]
@@ -871,177 +877,199 @@ module xs_PtwCache_core(
   logic [2:0]  plru_l0 [L0_SETS];
 
   // ---------------------------------------------------------------------------
+  // §6.1 PTE 谓词（对照 Chisel PteBundle 的 isLeaf/isPf/isGpf/canRefill/…）
+  //
+  //  PTE 位布局（PteBundle 声明顺序 = MSB→LSB，KunminghuV2 下 PAddrBits=48）：
+  //    [63]     n         Svnapot
+  //    [62:61]  pbmt
+  //    [60:54]  reserved  ★非零即 page fault★
+  //    [53:46]  ppn_high  ★超出 ppnLen 的高位，非零即 access fault★
+  //    [45:10]  ppn
+  //    [9:8]    rsw
+  //    [7:0]    perm = {d, a, g, u, x, w, r, v}
+  //  getPPN() = Cat(ppn_high, ppn) 截到 gvpnLen=38 位 ⇒ 就是 pte[47:10]。
+  //
+  //  这几个谓词在 golden 里被 firtool 按每个 PTE、每个 s2xlate 取值各展开一遍
+  //  （仅 l1 的 8 个 vs 位就占了约 500 行）。这里写成函数，调用点把 level 传成常量。
+  localparam int PTE_V = 0, PTE_R = 1, PTE_W = 2, PTE_X = 3;
+  localparam int PTE_U = 4, PTE_G = 5, PTE_A = 6, PTE_D = 7, PTE_N = 63;
+
+  function automatic logic pte_is_leaf(input logic [PTE_W_BITS-1:0] p);
+    return (p[PTE_R] | p[PTE_X] | p[PTE_W]) & p[PTE_V];
+  endfunction
+
+  // isNext：指向下一级页表的非叶子项
+  function automatic logic pte_is_next(input logic [PTE_W_BITS-1:0] p);
+    return ~(p[PTE_R] | p[PTE_X] | p[PTE_W]) & p[PTE_V];
+  endfunction
+
+  // 大页的 ppn 低位必须对齐到该级页大小；level 0 是 4KB 叶子，恒对齐。
+  function automatic logic pte_unaligned(input logic [PTE_W_BITS-1:0] p,
+                                         input logic [1:0]            level);
+    logic aligned;
+    aligned = (level == 2'd0)
+            | ((level == 2'd1) & (p[18:10] == 9'd0))
+            | ((level == 2'd2) & (p[27:10] == 18'd0))
+            | ((level == 2'd3) & (p[36:10] == 27'd0));
+    return pte_is_leaf(p) & ~aligned;
+  endfunction
+
+  function automatic logic pte_is_af(input logic [PTE_W_BITS-1:0] p);
+    return (|p[53:46]) & p[PTE_V];
+  endfunction
+
+  // 两阶段翻译下，stage-1 的 PTE 指出的 GPA 若超出 hgatp 模式的 GPA 位宽 ⇒ guest page fault
+  function automatic logic pte_is_stage1_gpf(input logic [PTE_W_BITS-1:0] p,
+                                             input logic [3:0]            mode);
+    logic [14:0] hi;
+    hi = (mode == 4'h8) ? p[53:39]              // Sv39x4: GPAddrBits=41 ⇒ 右移 29 位
+       : (mode == 4'h9) ? {9'h0, p[53:48]}      // Sv48x4: GPAddrBits=50 ⇒ 右移 38 位
+       :                  15'h0;
+    return (|hi) & p[PTE_V];
+  endfunction
+
+  // ★if/else-if 链就是 Chisel 的 when/elsewhen 优先级链，不要改写成一串或★
+  function automatic logic pte_is_pf(input logic [PTE_W_BITS-1:0] p,
+                                     input logic [1:0]            level,
+                                     input logic                  pbmte);
+    if (|p[60:54])                                 return 1'b1;
+    else if ((&p[62:61]) | (~pbmte & (|p[62:61]))) return 1'b1;
+    else if (pte_is_next(p))
+      return p[PTE_U] | p[PTE_A] | p[PTE_D] | p[PTE_N] | (|p[62:61]);
+    else if (~p[PTE_V] | (~p[PTE_R] & p[PTE_W]))   return 1'b1;
+    // 只支持 64KB napot（ppn[3:0]==4'b1000），且 napot 只能出现在叶子级。
+    // ★`| (level != 0)` 这一项在 level>0 时其实是冗余的★：ppn[3:0]==8 蕴含
+    // ppn[8:0]!=0，于是下一条 unaligned(level) 对同一批输入也会给 1。实测：
+    // 把这一项删掉，20000 拍 × 430 根写端口的定向对照 errors 仍是 0（见
+    // verif/study/PtwCache_refill）。**仍然照抄不删** —— 值恒等不等于可证等价，
+    // 而且它直接对应 Chisel 的那条 elsewhen，删了就对不上意图了。
+    else if (p[PTE_N] & ((p[13:10] != 4'h8) | (level != 2'd0))) return 1'b1;
+    else                                           return pte_unaligned(p, level);
+  endfunction
+
+  // G 阶段对 VS 阶段而言是 LOAD，只查 A 位；D 位留给 L1 TLB 查。
+  function automatic logic pte_is_gpf(input logic [PTE_W_BITS-1:0] p,
+                                      input logic [1:0]            level,
+                                      input logic                  pbmte);
+    if (|p[60:54])                                 return 1'b1;
+    else if ((&p[62:61]) | (~pbmte & (|p[62:61]))) return 1'b1;
+    else if (pte_is_next(p))
+      return p[PTE_U] | p[PTE_A] | p[PTE_D] | p[PTE_N] | (|p[62:61]);
+    else if (~p[PTE_V] | (~p[PTE_R] & p[PTE_W]))   return 1'b1;
+    else if (~p[PTE_U])                            return 1'b1;
+    else if (p[PTE_N] & (p[13:10] != 4'h8))        return 1'b1;
+    else if (pte_unaligned(p, level))              return 1'b1;
+    else if (~p[PTE_A])                            return 1'b1;
+    else                                           return 1'b0;
+  endfunction
+
+  function automatic logic pte_is_napot(input logic [PTE_W_BITS-1:0] p,
+                                        input logic [1:0]            level);
+    return pte_is_leaf(p) & p[PTE_N] & (p[13:10] == 4'h8) & (level == 2'd0);
+  endfunction
+
+  // 能不能进缓存：四种翻译模式各查各的错
+  function automatic logic pte_can_refill(input logic [PTE_W_BITS-1:0] p,
+                                          input logic [1:0]            level,
+                                          input logic [1:0]            s2xlate,
+                                          input logic                  pbmte,
+                                          input logic [3:0]            mode);
+    case (s2xlate)
+      H_ALL_STAGE:   return ~pte_is_stage1_gpf(p, mode) & ~pte_is_pf(p, level, pbmte);
+      H_ONLY_STAGE2: return ~pte_is_af(p)               & ~pte_is_gpf(p, level, pbmte);
+      default:       return ~pte_is_af(p)               & ~pte_is_pf(p, level, pbmte);
+    endcase
+  endfunction
+
+  // onlyPf：非虚拟化场景下"只是 page fault、不是 access fault"的叶子——
+  // 这种项也进缓存（存 onlypf 位），下次命中直接回 pf，不必再走一遍内存。
+  function automatic logic pte_only_pf(input logic [PTE_W_BITS-1:0] p,
+                                       input logic [1:0]            level,
+                                       input logic [1:0]            s2xlate,
+                                       input logic                  pbmte);
+    return (s2xlate == H_NO_S2XLATE) & pte_is_pf(p, level, pbmte) & ~pte_is_af(p);
+  endfunction
+
+  // ---------------------------------------------------------------------------
+  // §6.2 回填写数据（已追清：golden:6548/6910/7418/7497/43311-43380/43931-44300）
+  //
+  //  io.refill.bits.ptes 是从内存取回来的一整行 512 位 = 8 个相邻 PTE。
+  //  l1 与 l0 各把这一整行写进一条表项（组内 8 项），所以写数据是"整行 + 逐项有效位"。
+  //  ★pbmte 只有一份，用的是 dup_0★——即使在 l1（dup_1）的 canRefill 里也是它。
+  //  golden 就是这么混用的，照抄，别"顺手改成 dup_1"。
+  logic [PTE_W_BITS-1:0] refill_pte [SECTOR_N];
+  logic                  pbmte;
+  logic                  l1_w_prefetch, l0_w_prefetch;
+  logic                  l0_refill;
+
+  assign pbmte = ((io_refill_bits_req_info_dup_0_s2xlate == H_ONLY_STAGE1)
+                  | (&io_refill_bits_req_info_dup_0_s2xlate))
+               ? io_csr_hPBMTE : io_csr_mPBMTE;
+
+  for (genvar i = 0; i < SECTOR_N; i++) begin : g_refill_pte
+    assign refill_pte[i] = io_refill_bits_ptes[PTE_W_BITS*i +: PTE_W_BITS];
+  end
+
+  // prefetch 位：请求来源 == 2 即预取（bSourceWidth 的 prefetchID）。每级用自己那份 dup。
+  assign l1_w_prefetch = (io_refill_bits_req_info_dup_1_source == 2'd2);
+  assign l0_w_prefetch = (io_refill_bits_req_info_dup_0_source == 2'd2);
+
+  // l1（level=1，存 PDE）：某一项有效 ⇔ 能回填 且 **不是**叶子。
+  logic [SECTOR_N-1:0] l1_w_vs;
+  for (genvar i = 0; i < SECTOR_N; i++) begin : g_l1_wdata
+    assign l1_w_vs[i] =
+        pte_can_refill(refill_pte[i], 2'd1,
+                       io_refill_bits_req_info_dup_1_s2xlate, pbmte,
+                       io_csr_dup_1_hgatp_mode)
+      & ~pte_is_leaf(refill_pte[i]);
+  end
+
+  // l0（level=0，存 PTE）：某一项有效 ⇔（能回填 且 **是**叶子）或 onlyPf；
+  // 但整行里若有 napot 项就把该项拒掉（napot 归 sp 存，见 spRefill）。
+  logic      [SECTOR_N-1:0] l0_w_vs;
+  logic      [SECTOR_N-1:0] l0_w_onlypf;
+  pte_perm_t                l0_w_perms [SECTOR_N];
+
+  for (genvar i = 0; i < SECTOR_N; i++) begin : g_l0_wdata
+    logic only_pf, deny_napot;
+    assign only_pf    = pte_only_pf(refill_pte[i], 2'd0,
+                                    io_refill_bits_req_info_dup_0_s2xlate, pbmte);
+    assign deny_napot = pte_is_napot(refill_pte[i], 2'd0);
+
+    assign l0_w_vs[i] =
+        (  pte_can_refill(refill_pte[i], 2'd0,
+                          io_refill_bits_req_info_dup_0_s2xlate, pbmte,
+                          io_csr_dup_0_hgatp_mode) & pte_is_leaf(refill_pte[i])
+         | only_pf) & ~deny_napot;
+    assign l0_w_onlypf[i] = only_pf & ~deny_napot;
+
+    // G 位：onlyStage2（G 阶段）的表项不带 global 语义，写进去恒 0。
+    assign l0_w_perms[i].d = refill_pte[i][PTE_D];
+    assign l0_w_perms[i].a = refill_pte[i][PTE_A];
+    assign l0_w_perms[i].g = (io_refill_bits_req_info_dup_0_s2xlate != H_ONLY_STAGE2)
+                           & refill_pte[i][PTE_G];
+    assign l0_w_perms[i].u = refill_pte[i][PTE_U];
+    assign l0_w_perms[i].x = refill_pte[i][PTE_X];
+    assign l0_w_perms[i].w = refill_pte[i][PTE_W];
+    assign l0_w_perms[i].r = refill_pte[i][PTE_R];
+  end
+
+  // l0 回填使能：napot 的叶子不进 l0（它走 sp），其余只看 flush 与 levelOH。
+  // 判 napot 用的是走回来的**被选中那一个** PTE（sel_pte），不是整行。
+  assign l0_refill = ~flush_dup_0 & io_refill_bits_levelOH_l0
+                   & ~pte_is_napot(io_refill_bits_sel_pte_dup_0,
+                                   io_refill_bits_level_dup_0);
+
+  // ---------------------------------------------------------------------------
   // §8 未追清清单 —— ★占位信号，当前值无意义★
   //
   // 下面每一根都还没有从 golden 逐条追出方程。它们现在被恒定值顶着，
   // 只为让本骨架能 elaborate；任何人引用它们都会拿到错值。
-  // 追清的顺序建议：l0/l1 写数据 -> 各级 hitVec -> sfence 失效 -> 响应装配。
+  // 回填写数据（§6.1/§6.2）已从本表毕业，并有 verif/study/PtwCache_refill
+  // 的定向差分对照钉住。剩下的追清顺序：受害者选择/PLRU -> 各级 hitVec
+  // -> sfence 失效 -> 响应装配 -> perf。
 
-  logic l0_w_onlypf_0;
-  logic l0_w_onlypf_1;
-  logic l0_w_onlypf_2;
-  logic l0_w_onlypf_3;
-  logic l0_w_onlypf_4;
-  logic l0_w_onlypf_5;
-  logic l0_w_onlypf_6;
-  logic l0_w_onlypf_7;
-  logic l0_w_perms_0_a;
-  logic l0_w_perms_0_d;
-  logic l0_w_perms_0_g;
-  logic l0_w_perms_0_r;
-  logic l0_w_perms_0_u;
-  logic l0_w_perms_0_w;
-  logic l0_w_perms_0_x;
-  logic l0_w_perms_1_a;
-  logic l0_w_perms_1_d;
-  logic l0_w_perms_1_g;
-  logic l0_w_perms_1_r;
-  logic l0_w_perms_1_u;
-  logic l0_w_perms_1_w;
-  logic l0_w_perms_1_x;
-  logic l0_w_perms_2_a;
-  logic l0_w_perms_2_d;
-  logic l0_w_perms_2_g;
-  logic l0_w_perms_2_r;
-  logic l0_w_perms_2_u;
-  logic l0_w_perms_2_w;
-  logic l0_w_perms_2_x;
-  logic l0_w_perms_3_a;
-  logic l0_w_perms_3_d;
-  logic l0_w_perms_3_g;
-  logic l0_w_perms_3_r;
-  logic l0_w_perms_3_u;
-  logic l0_w_perms_3_w;
-  logic l0_w_perms_3_x;
-  logic l0_w_perms_4_a;
-  logic l0_w_perms_4_d;
-  logic l0_w_perms_4_g;
-  logic l0_w_perms_4_r;
-  logic l0_w_perms_4_u;
-  logic l0_w_perms_4_w;
-  logic l0_w_perms_4_x;
-  logic l0_w_perms_5_a;
-  logic l0_w_perms_5_d;
-  logic l0_w_perms_5_g;
-  logic l0_w_perms_5_r;
-  logic l0_w_perms_5_u;
-  logic l0_w_perms_5_w;
-  logic l0_w_perms_5_x;
-  logic l0_w_perms_6_a;
-  logic l0_w_perms_6_d;
-  logic l0_w_perms_6_g;
-  logic l0_w_perms_6_r;
-  logic l0_w_perms_6_u;
-  logic l0_w_perms_6_w;
-  logic l0_w_perms_6_x;
-  logic l0_w_perms_7_a;
-  logic l0_w_perms_7_d;
-  logic l0_w_perms_7_g;
-  logic l0_w_perms_7_r;
-  logic l0_w_perms_7_u;
-  logic l0_w_perms_7_w;
-  logic l0_w_perms_7_x;
-  logic l0_w_prefetch;
-  logic l0_w_vs_0;
-  logic l0_w_vs_1;
-  logic l0_w_vs_2;
-  logic l0_w_vs_3;
-  logic l0_w_vs_4;
-  logic l0_w_vs_5;
-  logic l0_w_vs_6;
-  logic l0_w_vs_7;
-  logic l1_w_prefetch;
-  logic l1_w_vs_0;
-  logic l1_w_vs_1;
-  logic l1_w_vs_2;
-  logic l1_w_vs_3;
-  logic l1_w_vs_4;
-  logic l1_w_vs_5;
-  logic l1_w_vs_6;
-  logic l1_w_vs_7;
 
-  assign l0_w_onlypf_0 = '0;
-  assign l0_w_onlypf_1 = '0;
-  assign l0_w_onlypf_2 = '0;
-  assign l0_w_onlypf_3 = '0;
-  assign l0_w_onlypf_4 = '0;
-  assign l0_w_onlypf_5 = '0;
-  assign l0_w_onlypf_6 = '0;
-  assign l0_w_onlypf_7 = '0;
-  assign l0_w_perms_0_a = '0;
-  assign l0_w_perms_0_d = '0;
-  assign l0_w_perms_0_g = '0;
-  assign l0_w_perms_0_r = '0;
-  assign l0_w_perms_0_u = '0;
-  assign l0_w_perms_0_w = '0;
-  assign l0_w_perms_0_x = '0;
-  assign l0_w_perms_1_a = '0;
-  assign l0_w_perms_1_d = '0;
-  assign l0_w_perms_1_g = '0;
-  assign l0_w_perms_1_r = '0;
-  assign l0_w_perms_1_u = '0;
-  assign l0_w_perms_1_w = '0;
-  assign l0_w_perms_1_x = '0;
-  assign l0_w_perms_2_a = '0;
-  assign l0_w_perms_2_d = '0;
-  assign l0_w_perms_2_g = '0;
-  assign l0_w_perms_2_r = '0;
-  assign l0_w_perms_2_u = '0;
-  assign l0_w_perms_2_w = '0;
-  assign l0_w_perms_2_x = '0;
-  assign l0_w_perms_3_a = '0;
-  assign l0_w_perms_3_d = '0;
-  assign l0_w_perms_3_g = '0;
-  assign l0_w_perms_3_r = '0;
-  assign l0_w_perms_3_u = '0;
-  assign l0_w_perms_3_w = '0;
-  assign l0_w_perms_3_x = '0;
-  assign l0_w_perms_4_a = '0;
-  assign l0_w_perms_4_d = '0;
-  assign l0_w_perms_4_g = '0;
-  assign l0_w_perms_4_r = '0;
-  assign l0_w_perms_4_u = '0;
-  assign l0_w_perms_4_w = '0;
-  assign l0_w_perms_4_x = '0;
-  assign l0_w_perms_5_a = '0;
-  assign l0_w_perms_5_d = '0;
-  assign l0_w_perms_5_g = '0;
-  assign l0_w_perms_5_r = '0;
-  assign l0_w_perms_5_u = '0;
-  assign l0_w_perms_5_w = '0;
-  assign l0_w_perms_5_x = '0;
-  assign l0_w_perms_6_a = '0;
-  assign l0_w_perms_6_d = '0;
-  assign l0_w_perms_6_g = '0;
-  assign l0_w_perms_6_r = '0;
-  assign l0_w_perms_6_u = '0;
-  assign l0_w_perms_6_w = '0;
-  assign l0_w_perms_6_x = '0;
-  assign l0_w_perms_7_a = '0;
-  assign l0_w_perms_7_d = '0;
-  assign l0_w_perms_7_g = '0;
-  assign l0_w_perms_7_r = '0;
-  assign l0_w_perms_7_u = '0;
-  assign l0_w_perms_7_w = '0;
-  assign l0_w_perms_7_x = '0;
-  assign l0_w_prefetch = '0;
-  assign l0_w_vs_0 = '0;
-  assign l0_w_vs_1 = '0;
-  assign l0_w_vs_2 = '0;
-  assign l0_w_vs_3 = '0;
-  assign l0_w_vs_4 = '0;
-  assign l0_w_vs_5 = '0;
-  assign l0_w_vs_6 = '0;
-  assign l0_w_vs_7 = '0;
-  assign l1_w_prefetch = '0;
-  assign l1_w_vs_0 = '0;
-  assign l1_w_vs_1 = '0;
-  assign l1_w_vs_2 = '0;
-  assign l1_w_vs_3 = '0;
-  assign l1_w_vs_4 = '0;
-  assign l1_w_vs_5 = '0;
-  assign l1_w_vs_6 = '0;
-  assign l1_w_vs_7 = '0;
 
   // SRAM 读回数据（命中判定在 §8，尚未追清）
   logic [15:0]     l0_rdata_0_asid;
@@ -1666,14 +1694,11 @@ module xs_PtwCache_core(
                    ? io_csr_dup_0_vsatp_asid : io_csr_dup_0_satp_asid;
 
   // ---- ★以下全部未追清：占位，值无意义★ ----
-  //  l0_refill  : ~flush_dup_0 & levelOH.l0 & !memPte(0).isNapot(level) —— napot 判定未追
-  //  lX_w_waymask / 受害者选择 : 依赖 PLRU 方程 + "优先选无效项" 的 replaceWrapper
-  //  lX_w_vs_* / onlypf_* / perms_* / prefetch : 依赖 PtwEntries.genEntries 的逐 PTE 合法性判定
-  logic       l0_refill;
+  //  lX_w_waymask / 受害者选择 : 依赖 PLRU 方程 +「优先选无效项」的 replaceWrapper，
+  //  两者都还没追清（PLRU 的 access 优先级尤其要小心，见 §7 记的那个 golden 真 bug）。
   logic [1:0] l1_w_waymask;
   logic [3:0] l0_w_waymask;
 
-  assign l0_refill    = 1'b0;
   assign l1_w_waymask = '0;
   assign l0_w_waymask = '0;
 
@@ -1979,58 +2004,58 @@ module xs_PtwCache_core(
     .io_w_req_bits_data_0_entries_tag      (l1_w_tag),
     .io_w_req_bits_data_0_entries_asid     (l1_w_asid),
     .io_w_req_bits_data_0_entries_vmid     (l1_w_vmid),
-    .io_w_req_bits_data_0_entries_pbmts_0  (io_refill_bits_ptes[62:61]),
-    .io_w_req_bits_data_0_entries_pbmts_1  (io_refill_bits_ptes[126:125]),
-    .io_w_req_bits_data_0_entries_pbmts_2  (io_refill_bits_ptes[190:189]),
-    .io_w_req_bits_data_0_entries_pbmts_3  (io_refill_bits_ptes[254:253]),
-    .io_w_req_bits_data_0_entries_pbmts_4  (io_refill_bits_ptes[318:317]),
-    .io_w_req_bits_data_0_entries_pbmts_5  (io_refill_bits_ptes[382:381]),
-    .io_w_req_bits_data_0_entries_pbmts_6  (io_refill_bits_ptes[446:445]),
-    .io_w_req_bits_data_0_entries_pbmts_7  (io_refill_bits_ptes[510:509]),
-    .io_w_req_bits_data_0_entries_ppns_0   (io_refill_bits_ptes[47:10]),
-    .io_w_req_bits_data_0_entries_ppns_1   (io_refill_bits_ptes[111:74]),
-    .io_w_req_bits_data_0_entries_ppns_2   (io_refill_bits_ptes[175:138]),
-    .io_w_req_bits_data_0_entries_ppns_3   (io_refill_bits_ptes[239:202]),
-    .io_w_req_bits_data_0_entries_ppns_4   (io_refill_bits_ptes[303:266]),
-    .io_w_req_bits_data_0_entries_ppns_5   (io_refill_bits_ptes[367:330]),
-    .io_w_req_bits_data_0_entries_ppns_6   (io_refill_bits_ptes[431:394]),
-    .io_w_req_bits_data_0_entries_ppns_7   (io_refill_bits_ptes[495:458]),
-    .io_w_req_bits_data_0_entries_vs_0     (l1_w_vs_0),
-    .io_w_req_bits_data_0_entries_vs_1     (l1_w_vs_1),
-    .io_w_req_bits_data_0_entries_vs_2     (l1_w_vs_2),
-    .io_w_req_bits_data_0_entries_vs_3     (l1_w_vs_3),
-    .io_w_req_bits_data_0_entries_vs_4     (l1_w_vs_4),
-    .io_w_req_bits_data_0_entries_vs_5     (l1_w_vs_5),
-    .io_w_req_bits_data_0_entries_vs_6     (l1_w_vs_6),
-    .io_w_req_bits_data_0_entries_vs_7     (l1_w_vs_7),
+    .io_w_req_bits_data_0_entries_pbmts_0  (refill_pte[0][62:61]),
+    .io_w_req_bits_data_0_entries_pbmts_1  (refill_pte[1][62:61]),
+    .io_w_req_bits_data_0_entries_pbmts_2  (refill_pte[2][62:61]),
+    .io_w_req_bits_data_0_entries_pbmts_3  (refill_pte[3][62:61]),
+    .io_w_req_bits_data_0_entries_pbmts_4  (refill_pte[4][62:61]),
+    .io_w_req_bits_data_0_entries_pbmts_5  (refill_pte[5][62:61]),
+    .io_w_req_bits_data_0_entries_pbmts_6  (refill_pte[6][62:61]),
+    .io_w_req_bits_data_0_entries_pbmts_7  (refill_pte[7][62:61]),
+    .io_w_req_bits_data_0_entries_ppns_0   (refill_pte[0][47:10]),
+    .io_w_req_bits_data_0_entries_ppns_1   (refill_pte[1][47:10]),
+    .io_w_req_bits_data_0_entries_ppns_2   (refill_pte[2][47:10]),
+    .io_w_req_bits_data_0_entries_ppns_3   (refill_pte[3][47:10]),
+    .io_w_req_bits_data_0_entries_ppns_4   (refill_pte[4][47:10]),
+    .io_w_req_bits_data_0_entries_ppns_5   (refill_pte[5][47:10]),
+    .io_w_req_bits_data_0_entries_ppns_6   (refill_pte[6][47:10]),
+    .io_w_req_bits_data_0_entries_ppns_7   (refill_pte[7][47:10]),
+    .io_w_req_bits_data_0_entries_vs_0     (l1_w_vs[0]),
+    .io_w_req_bits_data_0_entries_vs_1     (l1_w_vs[1]),
+    .io_w_req_bits_data_0_entries_vs_2     (l1_w_vs[2]),
+    .io_w_req_bits_data_0_entries_vs_3     (l1_w_vs[3]),
+    .io_w_req_bits_data_0_entries_vs_4     (l1_w_vs[4]),
+    .io_w_req_bits_data_0_entries_vs_5     (l1_w_vs[5]),
+    .io_w_req_bits_data_0_entries_vs_6     (l1_w_vs[6]),
+    .io_w_req_bits_data_0_entries_vs_7     (l1_w_vs[7]),
     .io_w_req_bits_data_0_entries_prefetch (l1_w_prefetch),
     .io_w_req_bits_data_1_entries_tag      (l1_w_tag),
     .io_w_req_bits_data_1_entries_asid     (l1_w_asid),
     .io_w_req_bits_data_1_entries_vmid     (l1_w_vmid),
-    .io_w_req_bits_data_1_entries_pbmts_0  (io_refill_bits_ptes[62:61]),
-    .io_w_req_bits_data_1_entries_pbmts_1  (io_refill_bits_ptes[126:125]),
-    .io_w_req_bits_data_1_entries_pbmts_2  (io_refill_bits_ptes[190:189]),
-    .io_w_req_bits_data_1_entries_pbmts_3  (io_refill_bits_ptes[254:253]),
-    .io_w_req_bits_data_1_entries_pbmts_4  (io_refill_bits_ptes[318:317]),
-    .io_w_req_bits_data_1_entries_pbmts_5  (io_refill_bits_ptes[382:381]),
-    .io_w_req_bits_data_1_entries_pbmts_6  (io_refill_bits_ptes[446:445]),
-    .io_w_req_bits_data_1_entries_pbmts_7  (io_refill_bits_ptes[510:509]),
-    .io_w_req_bits_data_1_entries_ppns_0   (io_refill_bits_ptes[47:10]),
-    .io_w_req_bits_data_1_entries_ppns_1   (io_refill_bits_ptes[111:74]),
-    .io_w_req_bits_data_1_entries_ppns_2   (io_refill_bits_ptes[175:138]),
-    .io_w_req_bits_data_1_entries_ppns_3   (io_refill_bits_ptes[239:202]),
-    .io_w_req_bits_data_1_entries_ppns_4   (io_refill_bits_ptes[303:266]),
-    .io_w_req_bits_data_1_entries_ppns_5   (io_refill_bits_ptes[367:330]),
-    .io_w_req_bits_data_1_entries_ppns_6   (io_refill_bits_ptes[431:394]),
-    .io_w_req_bits_data_1_entries_ppns_7   (io_refill_bits_ptes[495:458]),
-    .io_w_req_bits_data_1_entries_vs_0     (l1_w_vs_0),
-    .io_w_req_bits_data_1_entries_vs_1     (l1_w_vs_1),
-    .io_w_req_bits_data_1_entries_vs_2     (l1_w_vs_2),
-    .io_w_req_bits_data_1_entries_vs_3     (l1_w_vs_3),
-    .io_w_req_bits_data_1_entries_vs_4     (l1_w_vs_4),
-    .io_w_req_bits_data_1_entries_vs_5     (l1_w_vs_5),
-    .io_w_req_bits_data_1_entries_vs_6     (l1_w_vs_6),
-    .io_w_req_bits_data_1_entries_vs_7     (l1_w_vs_7),
+    .io_w_req_bits_data_1_entries_pbmts_0  (refill_pte[0][62:61]),
+    .io_w_req_bits_data_1_entries_pbmts_1  (refill_pte[1][62:61]),
+    .io_w_req_bits_data_1_entries_pbmts_2  (refill_pte[2][62:61]),
+    .io_w_req_bits_data_1_entries_pbmts_3  (refill_pte[3][62:61]),
+    .io_w_req_bits_data_1_entries_pbmts_4  (refill_pte[4][62:61]),
+    .io_w_req_bits_data_1_entries_pbmts_5  (refill_pte[5][62:61]),
+    .io_w_req_bits_data_1_entries_pbmts_6  (refill_pte[6][62:61]),
+    .io_w_req_bits_data_1_entries_pbmts_7  (refill_pte[7][62:61]),
+    .io_w_req_bits_data_1_entries_ppns_0   (refill_pte[0][47:10]),
+    .io_w_req_bits_data_1_entries_ppns_1   (refill_pte[1][47:10]),
+    .io_w_req_bits_data_1_entries_ppns_2   (refill_pte[2][47:10]),
+    .io_w_req_bits_data_1_entries_ppns_3   (refill_pte[3][47:10]),
+    .io_w_req_bits_data_1_entries_ppns_4   (refill_pte[4][47:10]),
+    .io_w_req_bits_data_1_entries_ppns_5   (refill_pte[5][47:10]),
+    .io_w_req_bits_data_1_entries_ppns_6   (refill_pte[6][47:10]),
+    .io_w_req_bits_data_1_entries_ppns_7   (refill_pte[7][47:10]),
+    .io_w_req_bits_data_1_entries_vs_0     (l1_w_vs[0]),
+    .io_w_req_bits_data_1_entries_vs_1     (l1_w_vs[1]),
+    .io_w_req_bits_data_1_entries_vs_2     (l1_w_vs[2]),
+    .io_w_req_bits_data_1_entries_vs_3     (l1_w_vs[3]),
+    .io_w_req_bits_data_1_entries_vs_4     (l1_w_vs[4]),
+    .io_w_req_bits_data_1_entries_vs_5     (l1_w_vs[5]),
+    .io_w_req_bits_data_1_entries_vs_6     (l1_w_vs[6]),
+    .io_w_req_bits_data_1_entries_vs_7     (l1_w_vs[7]),
     .io_w_req_bits_data_1_entries_prefetch (l1_w_prefetch),
     .io_w_req_bits_waymask                 (l1_w_waymask),
     .boreChildrenBd_bore_addr              (childBd_addr),
@@ -2458,370 +2483,370 @@ module xs_PtwCache_core(
     .io_w_req_bits_data_0_entries_tag       (l0_w_tag),
     .io_w_req_bits_data_0_entries_asid      (l0_w_asid),
     .io_w_req_bits_data_0_entries_vmid      (l0_w_vmid),
-    .io_w_req_bits_data_0_entries_pbmts_0   (io_refill_bits_ptes[62:61]),
-    .io_w_req_bits_data_0_entries_pbmts_1   (io_refill_bits_ptes[126:125]),
-    .io_w_req_bits_data_0_entries_pbmts_2   (io_refill_bits_ptes[190:189]),
-    .io_w_req_bits_data_0_entries_pbmts_3   (io_refill_bits_ptes[254:253]),
-    .io_w_req_bits_data_0_entries_pbmts_4   (io_refill_bits_ptes[318:317]),
-    .io_w_req_bits_data_0_entries_pbmts_5   (io_refill_bits_ptes[382:381]),
-    .io_w_req_bits_data_0_entries_pbmts_6   (io_refill_bits_ptes[446:445]),
-    .io_w_req_bits_data_0_entries_pbmts_7   (io_refill_bits_ptes[510:509]),
-    .io_w_req_bits_data_0_entries_ppns_0    (io_refill_bits_ptes[47:10]),
-    .io_w_req_bits_data_0_entries_ppns_1    (io_refill_bits_ptes[111:74]),
-    .io_w_req_bits_data_0_entries_ppns_2    (io_refill_bits_ptes[175:138]),
-    .io_w_req_bits_data_0_entries_ppns_3    (io_refill_bits_ptes[239:202]),
-    .io_w_req_bits_data_0_entries_ppns_4    (io_refill_bits_ptes[303:266]),
-    .io_w_req_bits_data_0_entries_ppns_5    (io_refill_bits_ptes[367:330]),
-    .io_w_req_bits_data_0_entries_ppns_6    (io_refill_bits_ptes[431:394]),
-    .io_w_req_bits_data_0_entries_ppns_7    (io_refill_bits_ptes[495:458]),
-    .io_w_req_bits_data_0_entries_vs_0      (l0_w_vs_0),
-    .io_w_req_bits_data_0_entries_vs_1      (l0_w_vs_1),
-    .io_w_req_bits_data_0_entries_vs_2      (l0_w_vs_2),
-    .io_w_req_bits_data_0_entries_vs_3      (l0_w_vs_3),
-    .io_w_req_bits_data_0_entries_vs_4      (l0_w_vs_4),
-    .io_w_req_bits_data_0_entries_vs_5      (l0_w_vs_5),
-    .io_w_req_bits_data_0_entries_vs_6      (l0_w_vs_6),
-    .io_w_req_bits_data_0_entries_vs_7      (l0_w_vs_7),
-    .io_w_req_bits_data_0_entries_onlypf_0  (l0_w_onlypf_0),
-    .io_w_req_bits_data_0_entries_onlypf_1  (l0_w_onlypf_1),
-    .io_w_req_bits_data_0_entries_onlypf_2  (l0_w_onlypf_2),
-    .io_w_req_bits_data_0_entries_onlypf_3  (l0_w_onlypf_3),
-    .io_w_req_bits_data_0_entries_onlypf_4  (l0_w_onlypf_4),
-    .io_w_req_bits_data_0_entries_onlypf_5  (l0_w_onlypf_5),
-    .io_w_req_bits_data_0_entries_onlypf_6  (l0_w_onlypf_6),
-    .io_w_req_bits_data_0_entries_onlypf_7  (l0_w_onlypf_7),
-    .io_w_req_bits_data_0_entries_perms_0_d (l0_w_perms_0_d),
-    .io_w_req_bits_data_0_entries_perms_0_a (l0_w_perms_0_a),
-    .io_w_req_bits_data_0_entries_perms_0_g (l0_w_perms_0_g),
-    .io_w_req_bits_data_0_entries_perms_0_u (l0_w_perms_0_u),
-    .io_w_req_bits_data_0_entries_perms_0_x (l0_w_perms_0_x),
-    .io_w_req_bits_data_0_entries_perms_0_w (l0_w_perms_0_w),
-    .io_w_req_bits_data_0_entries_perms_0_r (l0_w_perms_0_r),
-    .io_w_req_bits_data_0_entries_perms_1_d (l0_w_perms_1_d),
-    .io_w_req_bits_data_0_entries_perms_1_a (l0_w_perms_1_a),
-    .io_w_req_bits_data_0_entries_perms_1_g (l0_w_perms_1_g),
-    .io_w_req_bits_data_0_entries_perms_1_u (l0_w_perms_1_u),
-    .io_w_req_bits_data_0_entries_perms_1_x (l0_w_perms_1_x),
-    .io_w_req_bits_data_0_entries_perms_1_w (l0_w_perms_1_w),
-    .io_w_req_bits_data_0_entries_perms_1_r (l0_w_perms_1_r),
-    .io_w_req_bits_data_0_entries_perms_2_d (l0_w_perms_2_d),
-    .io_w_req_bits_data_0_entries_perms_2_a (l0_w_perms_2_a),
-    .io_w_req_bits_data_0_entries_perms_2_g (l0_w_perms_2_g),
-    .io_w_req_bits_data_0_entries_perms_2_u (l0_w_perms_2_u),
-    .io_w_req_bits_data_0_entries_perms_2_x (l0_w_perms_2_x),
-    .io_w_req_bits_data_0_entries_perms_2_w (l0_w_perms_2_w),
-    .io_w_req_bits_data_0_entries_perms_2_r (l0_w_perms_2_r),
-    .io_w_req_bits_data_0_entries_perms_3_d (l0_w_perms_3_d),
-    .io_w_req_bits_data_0_entries_perms_3_a (l0_w_perms_3_a),
-    .io_w_req_bits_data_0_entries_perms_3_g (l0_w_perms_3_g),
-    .io_w_req_bits_data_0_entries_perms_3_u (l0_w_perms_3_u),
-    .io_w_req_bits_data_0_entries_perms_3_x (l0_w_perms_3_x),
-    .io_w_req_bits_data_0_entries_perms_3_w (l0_w_perms_3_w),
-    .io_w_req_bits_data_0_entries_perms_3_r (l0_w_perms_3_r),
-    .io_w_req_bits_data_0_entries_perms_4_d (l0_w_perms_4_d),
-    .io_w_req_bits_data_0_entries_perms_4_a (l0_w_perms_4_a),
-    .io_w_req_bits_data_0_entries_perms_4_g (l0_w_perms_4_g),
-    .io_w_req_bits_data_0_entries_perms_4_u (l0_w_perms_4_u),
-    .io_w_req_bits_data_0_entries_perms_4_x (l0_w_perms_4_x),
-    .io_w_req_bits_data_0_entries_perms_4_w (l0_w_perms_4_w),
-    .io_w_req_bits_data_0_entries_perms_4_r (l0_w_perms_4_r),
-    .io_w_req_bits_data_0_entries_perms_5_d (l0_w_perms_5_d),
-    .io_w_req_bits_data_0_entries_perms_5_a (l0_w_perms_5_a),
-    .io_w_req_bits_data_0_entries_perms_5_g (l0_w_perms_5_g),
-    .io_w_req_bits_data_0_entries_perms_5_u (l0_w_perms_5_u),
-    .io_w_req_bits_data_0_entries_perms_5_x (l0_w_perms_5_x),
-    .io_w_req_bits_data_0_entries_perms_5_w (l0_w_perms_5_w),
-    .io_w_req_bits_data_0_entries_perms_5_r (l0_w_perms_5_r),
-    .io_w_req_bits_data_0_entries_perms_6_d (l0_w_perms_6_d),
-    .io_w_req_bits_data_0_entries_perms_6_a (l0_w_perms_6_a),
-    .io_w_req_bits_data_0_entries_perms_6_g (l0_w_perms_6_g),
-    .io_w_req_bits_data_0_entries_perms_6_u (l0_w_perms_6_u),
-    .io_w_req_bits_data_0_entries_perms_6_x (l0_w_perms_6_x),
-    .io_w_req_bits_data_0_entries_perms_6_w (l0_w_perms_6_w),
-    .io_w_req_bits_data_0_entries_perms_6_r (l0_w_perms_6_r),
-    .io_w_req_bits_data_0_entries_perms_7_d (l0_w_perms_7_d),
-    .io_w_req_bits_data_0_entries_perms_7_a (l0_w_perms_7_a),
-    .io_w_req_bits_data_0_entries_perms_7_g (l0_w_perms_7_g),
-    .io_w_req_bits_data_0_entries_perms_7_u (l0_w_perms_7_u),
-    .io_w_req_bits_data_0_entries_perms_7_x (l0_w_perms_7_x),
-    .io_w_req_bits_data_0_entries_perms_7_w (l0_w_perms_7_w),
-    .io_w_req_bits_data_0_entries_perms_7_r (l0_w_perms_7_r),
+    .io_w_req_bits_data_0_entries_pbmts_0   (refill_pte[0][62:61]),
+    .io_w_req_bits_data_0_entries_pbmts_1   (refill_pte[1][62:61]),
+    .io_w_req_bits_data_0_entries_pbmts_2   (refill_pte[2][62:61]),
+    .io_w_req_bits_data_0_entries_pbmts_3   (refill_pte[3][62:61]),
+    .io_w_req_bits_data_0_entries_pbmts_4   (refill_pte[4][62:61]),
+    .io_w_req_bits_data_0_entries_pbmts_5   (refill_pte[5][62:61]),
+    .io_w_req_bits_data_0_entries_pbmts_6   (refill_pte[6][62:61]),
+    .io_w_req_bits_data_0_entries_pbmts_7   (refill_pte[7][62:61]),
+    .io_w_req_bits_data_0_entries_ppns_0    (refill_pte[0][47:10]),
+    .io_w_req_bits_data_0_entries_ppns_1    (refill_pte[1][47:10]),
+    .io_w_req_bits_data_0_entries_ppns_2    (refill_pte[2][47:10]),
+    .io_w_req_bits_data_0_entries_ppns_3    (refill_pte[3][47:10]),
+    .io_w_req_bits_data_0_entries_ppns_4    (refill_pte[4][47:10]),
+    .io_w_req_bits_data_0_entries_ppns_5    (refill_pte[5][47:10]),
+    .io_w_req_bits_data_0_entries_ppns_6    (refill_pte[6][47:10]),
+    .io_w_req_bits_data_0_entries_ppns_7    (refill_pte[7][47:10]),
+    .io_w_req_bits_data_0_entries_vs_0      (l0_w_vs[0]),
+    .io_w_req_bits_data_0_entries_vs_1      (l0_w_vs[1]),
+    .io_w_req_bits_data_0_entries_vs_2      (l0_w_vs[2]),
+    .io_w_req_bits_data_0_entries_vs_3      (l0_w_vs[3]),
+    .io_w_req_bits_data_0_entries_vs_4      (l0_w_vs[4]),
+    .io_w_req_bits_data_0_entries_vs_5      (l0_w_vs[5]),
+    .io_w_req_bits_data_0_entries_vs_6      (l0_w_vs[6]),
+    .io_w_req_bits_data_0_entries_vs_7      (l0_w_vs[7]),
+    .io_w_req_bits_data_0_entries_onlypf_0  (l0_w_onlypf[0]),
+    .io_w_req_bits_data_0_entries_onlypf_1  (l0_w_onlypf[1]),
+    .io_w_req_bits_data_0_entries_onlypf_2  (l0_w_onlypf[2]),
+    .io_w_req_bits_data_0_entries_onlypf_3  (l0_w_onlypf[3]),
+    .io_w_req_bits_data_0_entries_onlypf_4  (l0_w_onlypf[4]),
+    .io_w_req_bits_data_0_entries_onlypf_5  (l0_w_onlypf[5]),
+    .io_w_req_bits_data_0_entries_onlypf_6  (l0_w_onlypf[6]),
+    .io_w_req_bits_data_0_entries_onlypf_7  (l0_w_onlypf[7]),
+    .io_w_req_bits_data_0_entries_perms_0_d (l0_w_perms[0].d),
+    .io_w_req_bits_data_0_entries_perms_0_a (l0_w_perms[0].a),
+    .io_w_req_bits_data_0_entries_perms_0_g (l0_w_perms[0].g),
+    .io_w_req_bits_data_0_entries_perms_0_u (l0_w_perms[0].u),
+    .io_w_req_bits_data_0_entries_perms_0_x (l0_w_perms[0].x),
+    .io_w_req_bits_data_0_entries_perms_0_w (l0_w_perms[0].w),
+    .io_w_req_bits_data_0_entries_perms_0_r (l0_w_perms[0].r),
+    .io_w_req_bits_data_0_entries_perms_1_d (l0_w_perms[1].d),
+    .io_w_req_bits_data_0_entries_perms_1_a (l0_w_perms[1].a),
+    .io_w_req_bits_data_0_entries_perms_1_g (l0_w_perms[1].g),
+    .io_w_req_bits_data_0_entries_perms_1_u (l0_w_perms[1].u),
+    .io_w_req_bits_data_0_entries_perms_1_x (l0_w_perms[1].x),
+    .io_w_req_bits_data_0_entries_perms_1_w (l0_w_perms[1].w),
+    .io_w_req_bits_data_0_entries_perms_1_r (l0_w_perms[1].r),
+    .io_w_req_bits_data_0_entries_perms_2_d (l0_w_perms[2].d),
+    .io_w_req_bits_data_0_entries_perms_2_a (l0_w_perms[2].a),
+    .io_w_req_bits_data_0_entries_perms_2_g (l0_w_perms[2].g),
+    .io_w_req_bits_data_0_entries_perms_2_u (l0_w_perms[2].u),
+    .io_w_req_bits_data_0_entries_perms_2_x (l0_w_perms[2].x),
+    .io_w_req_bits_data_0_entries_perms_2_w (l0_w_perms[2].w),
+    .io_w_req_bits_data_0_entries_perms_2_r (l0_w_perms[2].r),
+    .io_w_req_bits_data_0_entries_perms_3_d (l0_w_perms[3].d),
+    .io_w_req_bits_data_0_entries_perms_3_a (l0_w_perms[3].a),
+    .io_w_req_bits_data_0_entries_perms_3_g (l0_w_perms[3].g),
+    .io_w_req_bits_data_0_entries_perms_3_u (l0_w_perms[3].u),
+    .io_w_req_bits_data_0_entries_perms_3_x (l0_w_perms[3].x),
+    .io_w_req_bits_data_0_entries_perms_3_w (l0_w_perms[3].w),
+    .io_w_req_bits_data_0_entries_perms_3_r (l0_w_perms[3].r),
+    .io_w_req_bits_data_0_entries_perms_4_d (l0_w_perms[4].d),
+    .io_w_req_bits_data_0_entries_perms_4_a (l0_w_perms[4].a),
+    .io_w_req_bits_data_0_entries_perms_4_g (l0_w_perms[4].g),
+    .io_w_req_bits_data_0_entries_perms_4_u (l0_w_perms[4].u),
+    .io_w_req_bits_data_0_entries_perms_4_x (l0_w_perms[4].x),
+    .io_w_req_bits_data_0_entries_perms_4_w (l0_w_perms[4].w),
+    .io_w_req_bits_data_0_entries_perms_4_r (l0_w_perms[4].r),
+    .io_w_req_bits_data_0_entries_perms_5_d (l0_w_perms[5].d),
+    .io_w_req_bits_data_0_entries_perms_5_a (l0_w_perms[5].a),
+    .io_w_req_bits_data_0_entries_perms_5_g (l0_w_perms[5].g),
+    .io_w_req_bits_data_0_entries_perms_5_u (l0_w_perms[5].u),
+    .io_w_req_bits_data_0_entries_perms_5_x (l0_w_perms[5].x),
+    .io_w_req_bits_data_0_entries_perms_5_w (l0_w_perms[5].w),
+    .io_w_req_bits_data_0_entries_perms_5_r (l0_w_perms[5].r),
+    .io_w_req_bits_data_0_entries_perms_6_d (l0_w_perms[6].d),
+    .io_w_req_bits_data_0_entries_perms_6_a (l0_w_perms[6].a),
+    .io_w_req_bits_data_0_entries_perms_6_g (l0_w_perms[6].g),
+    .io_w_req_bits_data_0_entries_perms_6_u (l0_w_perms[6].u),
+    .io_w_req_bits_data_0_entries_perms_6_x (l0_w_perms[6].x),
+    .io_w_req_bits_data_0_entries_perms_6_w (l0_w_perms[6].w),
+    .io_w_req_bits_data_0_entries_perms_6_r (l0_w_perms[6].r),
+    .io_w_req_bits_data_0_entries_perms_7_d (l0_w_perms[7].d),
+    .io_w_req_bits_data_0_entries_perms_7_a (l0_w_perms[7].a),
+    .io_w_req_bits_data_0_entries_perms_7_g (l0_w_perms[7].g),
+    .io_w_req_bits_data_0_entries_perms_7_u (l0_w_perms[7].u),
+    .io_w_req_bits_data_0_entries_perms_7_x (l0_w_perms[7].x),
+    .io_w_req_bits_data_0_entries_perms_7_w (l0_w_perms[7].w),
+    .io_w_req_bits_data_0_entries_perms_7_r (l0_w_perms[7].r),
     .io_w_req_bits_data_0_entries_prefetch  (l0_w_prefetch),
     .io_w_req_bits_data_1_entries_tag       (l0_w_tag),
     .io_w_req_bits_data_1_entries_asid      (l0_w_asid),
     .io_w_req_bits_data_1_entries_vmid      (l0_w_vmid),
-    .io_w_req_bits_data_1_entries_pbmts_0   (io_refill_bits_ptes[62:61]),
-    .io_w_req_bits_data_1_entries_pbmts_1   (io_refill_bits_ptes[126:125]),
-    .io_w_req_bits_data_1_entries_pbmts_2   (io_refill_bits_ptes[190:189]),
-    .io_w_req_bits_data_1_entries_pbmts_3   (io_refill_bits_ptes[254:253]),
-    .io_w_req_bits_data_1_entries_pbmts_4   (io_refill_bits_ptes[318:317]),
-    .io_w_req_bits_data_1_entries_pbmts_5   (io_refill_bits_ptes[382:381]),
-    .io_w_req_bits_data_1_entries_pbmts_6   (io_refill_bits_ptes[446:445]),
-    .io_w_req_bits_data_1_entries_pbmts_7   (io_refill_bits_ptes[510:509]),
-    .io_w_req_bits_data_1_entries_ppns_0    (io_refill_bits_ptes[47:10]),
-    .io_w_req_bits_data_1_entries_ppns_1    (io_refill_bits_ptes[111:74]),
-    .io_w_req_bits_data_1_entries_ppns_2    (io_refill_bits_ptes[175:138]),
-    .io_w_req_bits_data_1_entries_ppns_3    (io_refill_bits_ptes[239:202]),
-    .io_w_req_bits_data_1_entries_ppns_4    (io_refill_bits_ptes[303:266]),
-    .io_w_req_bits_data_1_entries_ppns_5    (io_refill_bits_ptes[367:330]),
-    .io_w_req_bits_data_1_entries_ppns_6    (io_refill_bits_ptes[431:394]),
-    .io_w_req_bits_data_1_entries_ppns_7    (io_refill_bits_ptes[495:458]),
-    .io_w_req_bits_data_1_entries_vs_0      (l0_w_vs_0),
-    .io_w_req_bits_data_1_entries_vs_1      (l0_w_vs_1),
-    .io_w_req_bits_data_1_entries_vs_2      (l0_w_vs_2),
-    .io_w_req_bits_data_1_entries_vs_3      (l0_w_vs_3),
-    .io_w_req_bits_data_1_entries_vs_4      (l0_w_vs_4),
-    .io_w_req_bits_data_1_entries_vs_5      (l0_w_vs_5),
-    .io_w_req_bits_data_1_entries_vs_6      (l0_w_vs_6),
-    .io_w_req_bits_data_1_entries_vs_7      (l0_w_vs_7),
-    .io_w_req_bits_data_1_entries_onlypf_0  (l0_w_onlypf_0),
-    .io_w_req_bits_data_1_entries_onlypf_1  (l0_w_onlypf_1),
-    .io_w_req_bits_data_1_entries_onlypf_2  (l0_w_onlypf_2),
-    .io_w_req_bits_data_1_entries_onlypf_3  (l0_w_onlypf_3),
-    .io_w_req_bits_data_1_entries_onlypf_4  (l0_w_onlypf_4),
-    .io_w_req_bits_data_1_entries_onlypf_5  (l0_w_onlypf_5),
-    .io_w_req_bits_data_1_entries_onlypf_6  (l0_w_onlypf_6),
-    .io_w_req_bits_data_1_entries_onlypf_7  (l0_w_onlypf_7),
-    .io_w_req_bits_data_1_entries_perms_0_d (l0_w_perms_0_d),
-    .io_w_req_bits_data_1_entries_perms_0_a (l0_w_perms_0_a),
-    .io_w_req_bits_data_1_entries_perms_0_g (l0_w_perms_0_g),
-    .io_w_req_bits_data_1_entries_perms_0_u (l0_w_perms_0_u),
-    .io_w_req_bits_data_1_entries_perms_0_x (l0_w_perms_0_x),
-    .io_w_req_bits_data_1_entries_perms_0_w (l0_w_perms_0_w),
-    .io_w_req_bits_data_1_entries_perms_0_r (l0_w_perms_0_r),
-    .io_w_req_bits_data_1_entries_perms_1_d (l0_w_perms_1_d),
-    .io_w_req_bits_data_1_entries_perms_1_a (l0_w_perms_1_a),
-    .io_w_req_bits_data_1_entries_perms_1_g (l0_w_perms_1_g),
-    .io_w_req_bits_data_1_entries_perms_1_u (l0_w_perms_1_u),
-    .io_w_req_bits_data_1_entries_perms_1_x (l0_w_perms_1_x),
-    .io_w_req_bits_data_1_entries_perms_1_w (l0_w_perms_1_w),
-    .io_w_req_bits_data_1_entries_perms_1_r (l0_w_perms_1_r),
-    .io_w_req_bits_data_1_entries_perms_2_d (l0_w_perms_2_d),
-    .io_w_req_bits_data_1_entries_perms_2_a (l0_w_perms_2_a),
-    .io_w_req_bits_data_1_entries_perms_2_g (l0_w_perms_2_g),
-    .io_w_req_bits_data_1_entries_perms_2_u (l0_w_perms_2_u),
-    .io_w_req_bits_data_1_entries_perms_2_x (l0_w_perms_2_x),
-    .io_w_req_bits_data_1_entries_perms_2_w (l0_w_perms_2_w),
-    .io_w_req_bits_data_1_entries_perms_2_r (l0_w_perms_2_r),
-    .io_w_req_bits_data_1_entries_perms_3_d (l0_w_perms_3_d),
-    .io_w_req_bits_data_1_entries_perms_3_a (l0_w_perms_3_a),
-    .io_w_req_bits_data_1_entries_perms_3_g (l0_w_perms_3_g),
-    .io_w_req_bits_data_1_entries_perms_3_u (l0_w_perms_3_u),
-    .io_w_req_bits_data_1_entries_perms_3_x (l0_w_perms_3_x),
-    .io_w_req_bits_data_1_entries_perms_3_w (l0_w_perms_3_w),
-    .io_w_req_bits_data_1_entries_perms_3_r (l0_w_perms_3_r),
-    .io_w_req_bits_data_1_entries_perms_4_d (l0_w_perms_4_d),
-    .io_w_req_bits_data_1_entries_perms_4_a (l0_w_perms_4_a),
-    .io_w_req_bits_data_1_entries_perms_4_g (l0_w_perms_4_g),
-    .io_w_req_bits_data_1_entries_perms_4_u (l0_w_perms_4_u),
-    .io_w_req_bits_data_1_entries_perms_4_x (l0_w_perms_4_x),
-    .io_w_req_bits_data_1_entries_perms_4_w (l0_w_perms_4_w),
-    .io_w_req_bits_data_1_entries_perms_4_r (l0_w_perms_4_r),
-    .io_w_req_bits_data_1_entries_perms_5_d (l0_w_perms_5_d),
-    .io_w_req_bits_data_1_entries_perms_5_a (l0_w_perms_5_a),
-    .io_w_req_bits_data_1_entries_perms_5_g (l0_w_perms_5_g),
-    .io_w_req_bits_data_1_entries_perms_5_u (l0_w_perms_5_u),
-    .io_w_req_bits_data_1_entries_perms_5_x (l0_w_perms_5_x),
-    .io_w_req_bits_data_1_entries_perms_5_w (l0_w_perms_5_w),
-    .io_w_req_bits_data_1_entries_perms_5_r (l0_w_perms_5_r),
-    .io_w_req_bits_data_1_entries_perms_6_d (l0_w_perms_6_d),
-    .io_w_req_bits_data_1_entries_perms_6_a (l0_w_perms_6_a),
-    .io_w_req_bits_data_1_entries_perms_6_g (l0_w_perms_6_g),
-    .io_w_req_bits_data_1_entries_perms_6_u (l0_w_perms_6_u),
-    .io_w_req_bits_data_1_entries_perms_6_x (l0_w_perms_6_x),
-    .io_w_req_bits_data_1_entries_perms_6_w (l0_w_perms_6_w),
-    .io_w_req_bits_data_1_entries_perms_6_r (l0_w_perms_6_r),
-    .io_w_req_bits_data_1_entries_perms_7_d (l0_w_perms_7_d),
-    .io_w_req_bits_data_1_entries_perms_7_a (l0_w_perms_7_a),
-    .io_w_req_bits_data_1_entries_perms_7_g (l0_w_perms_7_g),
-    .io_w_req_bits_data_1_entries_perms_7_u (l0_w_perms_7_u),
-    .io_w_req_bits_data_1_entries_perms_7_x (l0_w_perms_7_x),
-    .io_w_req_bits_data_1_entries_perms_7_w (l0_w_perms_7_w),
-    .io_w_req_bits_data_1_entries_perms_7_r (l0_w_perms_7_r),
+    .io_w_req_bits_data_1_entries_pbmts_0   (refill_pte[0][62:61]),
+    .io_w_req_bits_data_1_entries_pbmts_1   (refill_pte[1][62:61]),
+    .io_w_req_bits_data_1_entries_pbmts_2   (refill_pte[2][62:61]),
+    .io_w_req_bits_data_1_entries_pbmts_3   (refill_pte[3][62:61]),
+    .io_w_req_bits_data_1_entries_pbmts_4   (refill_pte[4][62:61]),
+    .io_w_req_bits_data_1_entries_pbmts_5   (refill_pte[5][62:61]),
+    .io_w_req_bits_data_1_entries_pbmts_6   (refill_pte[6][62:61]),
+    .io_w_req_bits_data_1_entries_pbmts_7   (refill_pte[7][62:61]),
+    .io_w_req_bits_data_1_entries_ppns_0    (refill_pte[0][47:10]),
+    .io_w_req_bits_data_1_entries_ppns_1    (refill_pte[1][47:10]),
+    .io_w_req_bits_data_1_entries_ppns_2    (refill_pte[2][47:10]),
+    .io_w_req_bits_data_1_entries_ppns_3    (refill_pte[3][47:10]),
+    .io_w_req_bits_data_1_entries_ppns_4    (refill_pte[4][47:10]),
+    .io_w_req_bits_data_1_entries_ppns_5    (refill_pte[5][47:10]),
+    .io_w_req_bits_data_1_entries_ppns_6    (refill_pte[6][47:10]),
+    .io_w_req_bits_data_1_entries_ppns_7    (refill_pte[7][47:10]),
+    .io_w_req_bits_data_1_entries_vs_0      (l0_w_vs[0]),
+    .io_w_req_bits_data_1_entries_vs_1      (l0_w_vs[1]),
+    .io_w_req_bits_data_1_entries_vs_2      (l0_w_vs[2]),
+    .io_w_req_bits_data_1_entries_vs_3      (l0_w_vs[3]),
+    .io_w_req_bits_data_1_entries_vs_4      (l0_w_vs[4]),
+    .io_w_req_bits_data_1_entries_vs_5      (l0_w_vs[5]),
+    .io_w_req_bits_data_1_entries_vs_6      (l0_w_vs[6]),
+    .io_w_req_bits_data_1_entries_vs_7      (l0_w_vs[7]),
+    .io_w_req_bits_data_1_entries_onlypf_0  (l0_w_onlypf[0]),
+    .io_w_req_bits_data_1_entries_onlypf_1  (l0_w_onlypf[1]),
+    .io_w_req_bits_data_1_entries_onlypf_2  (l0_w_onlypf[2]),
+    .io_w_req_bits_data_1_entries_onlypf_3  (l0_w_onlypf[3]),
+    .io_w_req_bits_data_1_entries_onlypf_4  (l0_w_onlypf[4]),
+    .io_w_req_bits_data_1_entries_onlypf_5  (l0_w_onlypf[5]),
+    .io_w_req_bits_data_1_entries_onlypf_6  (l0_w_onlypf[6]),
+    .io_w_req_bits_data_1_entries_onlypf_7  (l0_w_onlypf[7]),
+    .io_w_req_bits_data_1_entries_perms_0_d (l0_w_perms[0].d),
+    .io_w_req_bits_data_1_entries_perms_0_a (l0_w_perms[0].a),
+    .io_w_req_bits_data_1_entries_perms_0_g (l0_w_perms[0].g),
+    .io_w_req_bits_data_1_entries_perms_0_u (l0_w_perms[0].u),
+    .io_w_req_bits_data_1_entries_perms_0_x (l0_w_perms[0].x),
+    .io_w_req_bits_data_1_entries_perms_0_w (l0_w_perms[0].w),
+    .io_w_req_bits_data_1_entries_perms_0_r (l0_w_perms[0].r),
+    .io_w_req_bits_data_1_entries_perms_1_d (l0_w_perms[1].d),
+    .io_w_req_bits_data_1_entries_perms_1_a (l0_w_perms[1].a),
+    .io_w_req_bits_data_1_entries_perms_1_g (l0_w_perms[1].g),
+    .io_w_req_bits_data_1_entries_perms_1_u (l0_w_perms[1].u),
+    .io_w_req_bits_data_1_entries_perms_1_x (l0_w_perms[1].x),
+    .io_w_req_bits_data_1_entries_perms_1_w (l0_w_perms[1].w),
+    .io_w_req_bits_data_1_entries_perms_1_r (l0_w_perms[1].r),
+    .io_w_req_bits_data_1_entries_perms_2_d (l0_w_perms[2].d),
+    .io_w_req_bits_data_1_entries_perms_2_a (l0_w_perms[2].a),
+    .io_w_req_bits_data_1_entries_perms_2_g (l0_w_perms[2].g),
+    .io_w_req_bits_data_1_entries_perms_2_u (l0_w_perms[2].u),
+    .io_w_req_bits_data_1_entries_perms_2_x (l0_w_perms[2].x),
+    .io_w_req_bits_data_1_entries_perms_2_w (l0_w_perms[2].w),
+    .io_w_req_bits_data_1_entries_perms_2_r (l0_w_perms[2].r),
+    .io_w_req_bits_data_1_entries_perms_3_d (l0_w_perms[3].d),
+    .io_w_req_bits_data_1_entries_perms_3_a (l0_w_perms[3].a),
+    .io_w_req_bits_data_1_entries_perms_3_g (l0_w_perms[3].g),
+    .io_w_req_bits_data_1_entries_perms_3_u (l0_w_perms[3].u),
+    .io_w_req_bits_data_1_entries_perms_3_x (l0_w_perms[3].x),
+    .io_w_req_bits_data_1_entries_perms_3_w (l0_w_perms[3].w),
+    .io_w_req_bits_data_1_entries_perms_3_r (l0_w_perms[3].r),
+    .io_w_req_bits_data_1_entries_perms_4_d (l0_w_perms[4].d),
+    .io_w_req_bits_data_1_entries_perms_4_a (l0_w_perms[4].a),
+    .io_w_req_bits_data_1_entries_perms_4_g (l0_w_perms[4].g),
+    .io_w_req_bits_data_1_entries_perms_4_u (l0_w_perms[4].u),
+    .io_w_req_bits_data_1_entries_perms_4_x (l0_w_perms[4].x),
+    .io_w_req_bits_data_1_entries_perms_4_w (l0_w_perms[4].w),
+    .io_w_req_bits_data_1_entries_perms_4_r (l0_w_perms[4].r),
+    .io_w_req_bits_data_1_entries_perms_5_d (l0_w_perms[5].d),
+    .io_w_req_bits_data_1_entries_perms_5_a (l0_w_perms[5].a),
+    .io_w_req_bits_data_1_entries_perms_5_g (l0_w_perms[5].g),
+    .io_w_req_bits_data_1_entries_perms_5_u (l0_w_perms[5].u),
+    .io_w_req_bits_data_1_entries_perms_5_x (l0_w_perms[5].x),
+    .io_w_req_bits_data_1_entries_perms_5_w (l0_w_perms[5].w),
+    .io_w_req_bits_data_1_entries_perms_5_r (l0_w_perms[5].r),
+    .io_w_req_bits_data_1_entries_perms_6_d (l0_w_perms[6].d),
+    .io_w_req_bits_data_1_entries_perms_6_a (l0_w_perms[6].a),
+    .io_w_req_bits_data_1_entries_perms_6_g (l0_w_perms[6].g),
+    .io_w_req_bits_data_1_entries_perms_6_u (l0_w_perms[6].u),
+    .io_w_req_bits_data_1_entries_perms_6_x (l0_w_perms[6].x),
+    .io_w_req_bits_data_1_entries_perms_6_w (l0_w_perms[6].w),
+    .io_w_req_bits_data_1_entries_perms_6_r (l0_w_perms[6].r),
+    .io_w_req_bits_data_1_entries_perms_7_d (l0_w_perms[7].d),
+    .io_w_req_bits_data_1_entries_perms_7_a (l0_w_perms[7].a),
+    .io_w_req_bits_data_1_entries_perms_7_g (l0_w_perms[7].g),
+    .io_w_req_bits_data_1_entries_perms_7_u (l0_w_perms[7].u),
+    .io_w_req_bits_data_1_entries_perms_7_x (l0_w_perms[7].x),
+    .io_w_req_bits_data_1_entries_perms_7_w (l0_w_perms[7].w),
+    .io_w_req_bits_data_1_entries_perms_7_r (l0_w_perms[7].r),
     .io_w_req_bits_data_1_entries_prefetch  (l0_w_prefetch),
     .io_w_req_bits_data_2_entries_tag       (l0_w_tag),
     .io_w_req_bits_data_2_entries_asid      (l0_w_asid),
     .io_w_req_bits_data_2_entries_vmid      (l0_w_vmid),
-    .io_w_req_bits_data_2_entries_pbmts_0   (io_refill_bits_ptes[62:61]),
-    .io_w_req_bits_data_2_entries_pbmts_1   (io_refill_bits_ptes[126:125]),
-    .io_w_req_bits_data_2_entries_pbmts_2   (io_refill_bits_ptes[190:189]),
-    .io_w_req_bits_data_2_entries_pbmts_3   (io_refill_bits_ptes[254:253]),
-    .io_w_req_bits_data_2_entries_pbmts_4   (io_refill_bits_ptes[318:317]),
-    .io_w_req_bits_data_2_entries_pbmts_5   (io_refill_bits_ptes[382:381]),
-    .io_w_req_bits_data_2_entries_pbmts_6   (io_refill_bits_ptes[446:445]),
-    .io_w_req_bits_data_2_entries_pbmts_7   (io_refill_bits_ptes[510:509]),
-    .io_w_req_bits_data_2_entries_ppns_0    (io_refill_bits_ptes[47:10]),
-    .io_w_req_bits_data_2_entries_ppns_1    (io_refill_bits_ptes[111:74]),
-    .io_w_req_bits_data_2_entries_ppns_2    (io_refill_bits_ptes[175:138]),
-    .io_w_req_bits_data_2_entries_ppns_3    (io_refill_bits_ptes[239:202]),
-    .io_w_req_bits_data_2_entries_ppns_4    (io_refill_bits_ptes[303:266]),
-    .io_w_req_bits_data_2_entries_ppns_5    (io_refill_bits_ptes[367:330]),
-    .io_w_req_bits_data_2_entries_ppns_6    (io_refill_bits_ptes[431:394]),
-    .io_w_req_bits_data_2_entries_ppns_7    (io_refill_bits_ptes[495:458]),
-    .io_w_req_bits_data_2_entries_vs_0      (l0_w_vs_0),
-    .io_w_req_bits_data_2_entries_vs_1      (l0_w_vs_1),
-    .io_w_req_bits_data_2_entries_vs_2      (l0_w_vs_2),
-    .io_w_req_bits_data_2_entries_vs_3      (l0_w_vs_3),
-    .io_w_req_bits_data_2_entries_vs_4      (l0_w_vs_4),
-    .io_w_req_bits_data_2_entries_vs_5      (l0_w_vs_5),
-    .io_w_req_bits_data_2_entries_vs_6      (l0_w_vs_6),
-    .io_w_req_bits_data_2_entries_vs_7      (l0_w_vs_7),
-    .io_w_req_bits_data_2_entries_onlypf_0  (l0_w_onlypf_0),
-    .io_w_req_bits_data_2_entries_onlypf_1  (l0_w_onlypf_1),
-    .io_w_req_bits_data_2_entries_onlypf_2  (l0_w_onlypf_2),
-    .io_w_req_bits_data_2_entries_onlypf_3  (l0_w_onlypf_3),
-    .io_w_req_bits_data_2_entries_onlypf_4  (l0_w_onlypf_4),
-    .io_w_req_bits_data_2_entries_onlypf_5  (l0_w_onlypf_5),
-    .io_w_req_bits_data_2_entries_onlypf_6  (l0_w_onlypf_6),
-    .io_w_req_bits_data_2_entries_onlypf_7  (l0_w_onlypf_7),
-    .io_w_req_bits_data_2_entries_perms_0_d (l0_w_perms_0_d),
-    .io_w_req_bits_data_2_entries_perms_0_a (l0_w_perms_0_a),
-    .io_w_req_bits_data_2_entries_perms_0_g (l0_w_perms_0_g),
-    .io_w_req_bits_data_2_entries_perms_0_u (l0_w_perms_0_u),
-    .io_w_req_bits_data_2_entries_perms_0_x (l0_w_perms_0_x),
-    .io_w_req_bits_data_2_entries_perms_0_w (l0_w_perms_0_w),
-    .io_w_req_bits_data_2_entries_perms_0_r (l0_w_perms_0_r),
-    .io_w_req_bits_data_2_entries_perms_1_d (l0_w_perms_1_d),
-    .io_w_req_bits_data_2_entries_perms_1_a (l0_w_perms_1_a),
-    .io_w_req_bits_data_2_entries_perms_1_g (l0_w_perms_1_g),
-    .io_w_req_bits_data_2_entries_perms_1_u (l0_w_perms_1_u),
-    .io_w_req_bits_data_2_entries_perms_1_x (l0_w_perms_1_x),
-    .io_w_req_bits_data_2_entries_perms_1_w (l0_w_perms_1_w),
-    .io_w_req_bits_data_2_entries_perms_1_r (l0_w_perms_1_r),
-    .io_w_req_bits_data_2_entries_perms_2_d (l0_w_perms_2_d),
-    .io_w_req_bits_data_2_entries_perms_2_a (l0_w_perms_2_a),
-    .io_w_req_bits_data_2_entries_perms_2_g (l0_w_perms_2_g),
-    .io_w_req_bits_data_2_entries_perms_2_u (l0_w_perms_2_u),
-    .io_w_req_bits_data_2_entries_perms_2_x (l0_w_perms_2_x),
-    .io_w_req_bits_data_2_entries_perms_2_w (l0_w_perms_2_w),
-    .io_w_req_bits_data_2_entries_perms_2_r (l0_w_perms_2_r),
-    .io_w_req_bits_data_2_entries_perms_3_d (l0_w_perms_3_d),
-    .io_w_req_bits_data_2_entries_perms_3_a (l0_w_perms_3_a),
-    .io_w_req_bits_data_2_entries_perms_3_g (l0_w_perms_3_g),
-    .io_w_req_bits_data_2_entries_perms_3_u (l0_w_perms_3_u),
-    .io_w_req_bits_data_2_entries_perms_3_x (l0_w_perms_3_x),
-    .io_w_req_bits_data_2_entries_perms_3_w (l0_w_perms_3_w),
-    .io_w_req_bits_data_2_entries_perms_3_r (l0_w_perms_3_r),
-    .io_w_req_bits_data_2_entries_perms_4_d (l0_w_perms_4_d),
-    .io_w_req_bits_data_2_entries_perms_4_a (l0_w_perms_4_a),
-    .io_w_req_bits_data_2_entries_perms_4_g (l0_w_perms_4_g),
-    .io_w_req_bits_data_2_entries_perms_4_u (l0_w_perms_4_u),
-    .io_w_req_bits_data_2_entries_perms_4_x (l0_w_perms_4_x),
-    .io_w_req_bits_data_2_entries_perms_4_w (l0_w_perms_4_w),
-    .io_w_req_bits_data_2_entries_perms_4_r (l0_w_perms_4_r),
-    .io_w_req_bits_data_2_entries_perms_5_d (l0_w_perms_5_d),
-    .io_w_req_bits_data_2_entries_perms_5_a (l0_w_perms_5_a),
-    .io_w_req_bits_data_2_entries_perms_5_g (l0_w_perms_5_g),
-    .io_w_req_bits_data_2_entries_perms_5_u (l0_w_perms_5_u),
-    .io_w_req_bits_data_2_entries_perms_5_x (l0_w_perms_5_x),
-    .io_w_req_bits_data_2_entries_perms_5_w (l0_w_perms_5_w),
-    .io_w_req_bits_data_2_entries_perms_5_r (l0_w_perms_5_r),
-    .io_w_req_bits_data_2_entries_perms_6_d (l0_w_perms_6_d),
-    .io_w_req_bits_data_2_entries_perms_6_a (l0_w_perms_6_a),
-    .io_w_req_bits_data_2_entries_perms_6_g (l0_w_perms_6_g),
-    .io_w_req_bits_data_2_entries_perms_6_u (l0_w_perms_6_u),
-    .io_w_req_bits_data_2_entries_perms_6_x (l0_w_perms_6_x),
-    .io_w_req_bits_data_2_entries_perms_6_w (l0_w_perms_6_w),
-    .io_w_req_bits_data_2_entries_perms_6_r (l0_w_perms_6_r),
-    .io_w_req_bits_data_2_entries_perms_7_d (l0_w_perms_7_d),
-    .io_w_req_bits_data_2_entries_perms_7_a (l0_w_perms_7_a),
-    .io_w_req_bits_data_2_entries_perms_7_g (l0_w_perms_7_g),
-    .io_w_req_bits_data_2_entries_perms_7_u (l0_w_perms_7_u),
-    .io_w_req_bits_data_2_entries_perms_7_x (l0_w_perms_7_x),
-    .io_w_req_bits_data_2_entries_perms_7_w (l0_w_perms_7_w),
-    .io_w_req_bits_data_2_entries_perms_7_r (l0_w_perms_7_r),
+    .io_w_req_bits_data_2_entries_pbmts_0   (refill_pte[0][62:61]),
+    .io_w_req_bits_data_2_entries_pbmts_1   (refill_pte[1][62:61]),
+    .io_w_req_bits_data_2_entries_pbmts_2   (refill_pte[2][62:61]),
+    .io_w_req_bits_data_2_entries_pbmts_3   (refill_pte[3][62:61]),
+    .io_w_req_bits_data_2_entries_pbmts_4   (refill_pte[4][62:61]),
+    .io_w_req_bits_data_2_entries_pbmts_5   (refill_pte[5][62:61]),
+    .io_w_req_bits_data_2_entries_pbmts_6   (refill_pte[6][62:61]),
+    .io_w_req_bits_data_2_entries_pbmts_7   (refill_pte[7][62:61]),
+    .io_w_req_bits_data_2_entries_ppns_0    (refill_pte[0][47:10]),
+    .io_w_req_bits_data_2_entries_ppns_1    (refill_pte[1][47:10]),
+    .io_w_req_bits_data_2_entries_ppns_2    (refill_pte[2][47:10]),
+    .io_w_req_bits_data_2_entries_ppns_3    (refill_pte[3][47:10]),
+    .io_w_req_bits_data_2_entries_ppns_4    (refill_pte[4][47:10]),
+    .io_w_req_bits_data_2_entries_ppns_5    (refill_pte[5][47:10]),
+    .io_w_req_bits_data_2_entries_ppns_6    (refill_pte[6][47:10]),
+    .io_w_req_bits_data_2_entries_ppns_7    (refill_pte[7][47:10]),
+    .io_w_req_bits_data_2_entries_vs_0      (l0_w_vs[0]),
+    .io_w_req_bits_data_2_entries_vs_1      (l0_w_vs[1]),
+    .io_w_req_bits_data_2_entries_vs_2      (l0_w_vs[2]),
+    .io_w_req_bits_data_2_entries_vs_3      (l0_w_vs[3]),
+    .io_w_req_bits_data_2_entries_vs_4      (l0_w_vs[4]),
+    .io_w_req_bits_data_2_entries_vs_5      (l0_w_vs[5]),
+    .io_w_req_bits_data_2_entries_vs_6      (l0_w_vs[6]),
+    .io_w_req_bits_data_2_entries_vs_7      (l0_w_vs[7]),
+    .io_w_req_bits_data_2_entries_onlypf_0  (l0_w_onlypf[0]),
+    .io_w_req_bits_data_2_entries_onlypf_1  (l0_w_onlypf[1]),
+    .io_w_req_bits_data_2_entries_onlypf_2  (l0_w_onlypf[2]),
+    .io_w_req_bits_data_2_entries_onlypf_3  (l0_w_onlypf[3]),
+    .io_w_req_bits_data_2_entries_onlypf_4  (l0_w_onlypf[4]),
+    .io_w_req_bits_data_2_entries_onlypf_5  (l0_w_onlypf[5]),
+    .io_w_req_bits_data_2_entries_onlypf_6  (l0_w_onlypf[6]),
+    .io_w_req_bits_data_2_entries_onlypf_7  (l0_w_onlypf[7]),
+    .io_w_req_bits_data_2_entries_perms_0_d (l0_w_perms[0].d),
+    .io_w_req_bits_data_2_entries_perms_0_a (l0_w_perms[0].a),
+    .io_w_req_bits_data_2_entries_perms_0_g (l0_w_perms[0].g),
+    .io_w_req_bits_data_2_entries_perms_0_u (l0_w_perms[0].u),
+    .io_w_req_bits_data_2_entries_perms_0_x (l0_w_perms[0].x),
+    .io_w_req_bits_data_2_entries_perms_0_w (l0_w_perms[0].w),
+    .io_w_req_bits_data_2_entries_perms_0_r (l0_w_perms[0].r),
+    .io_w_req_bits_data_2_entries_perms_1_d (l0_w_perms[1].d),
+    .io_w_req_bits_data_2_entries_perms_1_a (l0_w_perms[1].a),
+    .io_w_req_bits_data_2_entries_perms_1_g (l0_w_perms[1].g),
+    .io_w_req_bits_data_2_entries_perms_1_u (l0_w_perms[1].u),
+    .io_w_req_bits_data_2_entries_perms_1_x (l0_w_perms[1].x),
+    .io_w_req_bits_data_2_entries_perms_1_w (l0_w_perms[1].w),
+    .io_w_req_bits_data_2_entries_perms_1_r (l0_w_perms[1].r),
+    .io_w_req_bits_data_2_entries_perms_2_d (l0_w_perms[2].d),
+    .io_w_req_bits_data_2_entries_perms_2_a (l0_w_perms[2].a),
+    .io_w_req_bits_data_2_entries_perms_2_g (l0_w_perms[2].g),
+    .io_w_req_bits_data_2_entries_perms_2_u (l0_w_perms[2].u),
+    .io_w_req_bits_data_2_entries_perms_2_x (l0_w_perms[2].x),
+    .io_w_req_bits_data_2_entries_perms_2_w (l0_w_perms[2].w),
+    .io_w_req_bits_data_2_entries_perms_2_r (l0_w_perms[2].r),
+    .io_w_req_bits_data_2_entries_perms_3_d (l0_w_perms[3].d),
+    .io_w_req_bits_data_2_entries_perms_3_a (l0_w_perms[3].a),
+    .io_w_req_bits_data_2_entries_perms_3_g (l0_w_perms[3].g),
+    .io_w_req_bits_data_2_entries_perms_3_u (l0_w_perms[3].u),
+    .io_w_req_bits_data_2_entries_perms_3_x (l0_w_perms[3].x),
+    .io_w_req_bits_data_2_entries_perms_3_w (l0_w_perms[3].w),
+    .io_w_req_bits_data_2_entries_perms_3_r (l0_w_perms[3].r),
+    .io_w_req_bits_data_2_entries_perms_4_d (l0_w_perms[4].d),
+    .io_w_req_bits_data_2_entries_perms_4_a (l0_w_perms[4].a),
+    .io_w_req_bits_data_2_entries_perms_4_g (l0_w_perms[4].g),
+    .io_w_req_bits_data_2_entries_perms_4_u (l0_w_perms[4].u),
+    .io_w_req_bits_data_2_entries_perms_4_x (l0_w_perms[4].x),
+    .io_w_req_bits_data_2_entries_perms_4_w (l0_w_perms[4].w),
+    .io_w_req_bits_data_2_entries_perms_4_r (l0_w_perms[4].r),
+    .io_w_req_bits_data_2_entries_perms_5_d (l0_w_perms[5].d),
+    .io_w_req_bits_data_2_entries_perms_5_a (l0_w_perms[5].a),
+    .io_w_req_bits_data_2_entries_perms_5_g (l0_w_perms[5].g),
+    .io_w_req_bits_data_2_entries_perms_5_u (l0_w_perms[5].u),
+    .io_w_req_bits_data_2_entries_perms_5_x (l0_w_perms[5].x),
+    .io_w_req_bits_data_2_entries_perms_5_w (l0_w_perms[5].w),
+    .io_w_req_bits_data_2_entries_perms_5_r (l0_w_perms[5].r),
+    .io_w_req_bits_data_2_entries_perms_6_d (l0_w_perms[6].d),
+    .io_w_req_bits_data_2_entries_perms_6_a (l0_w_perms[6].a),
+    .io_w_req_bits_data_2_entries_perms_6_g (l0_w_perms[6].g),
+    .io_w_req_bits_data_2_entries_perms_6_u (l0_w_perms[6].u),
+    .io_w_req_bits_data_2_entries_perms_6_x (l0_w_perms[6].x),
+    .io_w_req_bits_data_2_entries_perms_6_w (l0_w_perms[6].w),
+    .io_w_req_bits_data_2_entries_perms_6_r (l0_w_perms[6].r),
+    .io_w_req_bits_data_2_entries_perms_7_d (l0_w_perms[7].d),
+    .io_w_req_bits_data_2_entries_perms_7_a (l0_w_perms[7].a),
+    .io_w_req_bits_data_2_entries_perms_7_g (l0_w_perms[7].g),
+    .io_w_req_bits_data_2_entries_perms_7_u (l0_w_perms[7].u),
+    .io_w_req_bits_data_2_entries_perms_7_x (l0_w_perms[7].x),
+    .io_w_req_bits_data_2_entries_perms_7_w (l0_w_perms[7].w),
+    .io_w_req_bits_data_2_entries_perms_7_r (l0_w_perms[7].r),
     .io_w_req_bits_data_2_entries_prefetch  (l0_w_prefetch),
     .io_w_req_bits_data_3_entries_tag       (l0_w_tag),
     .io_w_req_bits_data_3_entries_asid      (l0_w_asid),
     .io_w_req_bits_data_3_entries_vmid      (l0_w_vmid),
-    .io_w_req_bits_data_3_entries_pbmts_0   (io_refill_bits_ptes[62:61]),
-    .io_w_req_bits_data_3_entries_pbmts_1   (io_refill_bits_ptes[126:125]),
-    .io_w_req_bits_data_3_entries_pbmts_2   (io_refill_bits_ptes[190:189]),
-    .io_w_req_bits_data_3_entries_pbmts_3   (io_refill_bits_ptes[254:253]),
-    .io_w_req_bits_data_3_entries_pbmts_4   (io_refill_bits_ptes[318:317]),
-    .io_w_req_bits_data_3_entries_pbmts_5   (io_refill_bits_ptes[382:381]),
-    .io_w_req_bits_data_3_entries_pbmts_6   (io_refill_bits_ptes[446:445]),
-    .io_w_req_bits_data_3_entries_pbmts_7   (io_refill_bits_ptes[510:509]),
-    .io_w_req_bits_data_3_entries_ppns_0    (io_refill_bits_ptes[47:10]),
-    .io_w_req_bits_data_3_entries_ppns_1    (io_refill_bits_ptes[111:74]),
-    .io_w_req_bits_data_3_entries_ppns_2    (io_refill_bits_ptes[175:138]),
-    .io_w_req_bits_data_3_entries_ppns_3    (io_refill_bits_ptes[239:202]),
-    .io_w_req_bits_data_3_entries_ppns_4    (io_refill_bits_ptes[303:266]),
-    .io_w_req_bits_data_3_entries_ppns_5    (io_refill_bits_ptes[367:330]),
-    .io_w_req_bits_data_3_entries_ppns_6    (io_refill_bits_ptes[431:394]),
-    .io_w_req_bits_data_3_entries_ppns_7    (io_refill_bits_ptes[495:458]),
-    .io_w_req_bits_data_3_entries_vs_0      (l0_w_vs_0),
-    .io_w_req_bits_data_3_entries_vs_1      (l0_w_vs_1),
-    .io_w_req_bits_data_3_entries_vs_2      (l0_w_vs_2),
-    .io_w_req_bits_data_3_entries_vs_3      (l0_w_vs_3),
-    .io_w_req_bits_data_3_entries_vs_4      (l0_w_vs_4),
-    .io_w_req_bits_data_3_entries_vs_5      (l0_w_vs_5),
-    .io_w_req_bits_data_3_entries_vs_6      (l0_w_vs_6),
-    .io_w_req_bits_data_3_entries_vs_7      (l0_w_vs_7),
-    .io_w_req_bits_data_3_entries_onlypf_0  (l0_w_onlypf_0),
-    .io_w_req_bits_data_3_entries_onlypf_1  (l0_w_onlypf_1),
-    .io_w_req_bits_data_3_entries_onlypf_2  (l0_w_onlypf_2),
-    .io_w_req_bits_data_3_entries_onlypf_3  (l0_w_onlypf_3),
-    .io_w_req_bits_data_3_entries_onlypf_4  (l0_w_onlypf_4),
-    .io_w_req_bits_data_3_entries_onlypf_5  (l0_w_onlypf_5),
-    .io_w_req_bits_data_3_entries_onlypf_6  (l0_w_onlypf_6),
-    .io_w_req_bits_data_3_entries_onlypf_7  (l0_w_onlypf_7),
-    .io_w_req_bits_data_3_entries_perms_0_d (l0_w_perms_0_d),
-    .io_w_req_bits_data_3_entries_perms_0_a (l0_w_perms_0_a),
-    .io_w_req_bits_data_3_entries_perms_0_g (l0_w_perms_0_g),
-    .io_w_req_bits_data_3_entries_perms_0_u (l0_w_perms_0_u),
-    .io_w_req_bits_data_3_entries_perms_0_x (l0_w_perms_0_x),
-    .io_w_req_bits_data_3_entries_perms_0_w (l0_w_perms_0_w),
-    .io_w_req_bits_data_3_entries_perms_0_r (l0_w_perms_0_r),
-    .io_w_req_bits_data_3_entries_perms_1_d (l0_w_perms_1_d),
-    .io_w_req_bits_data_3_entries_perms_1_a (l0_w_perms_1_a),
-    .io_w_req_bits_data_3_entries_perms_1_g (l0_w_perms_1_g),
-    .io_w_req_bits_data_3_entries_perms_1_u (l0_w_perms_1_u),
-    .io_w_req_bits_data_3_entries_perms_1_x (l0_w_perms_1_x),
-    .io_w_req_bits_data_3_entries_perms_1_w (l0_w_perms_1_w),
-    .io_w_req_bits_data_3_entries_perms_1_r (l0_w_perms_1_r),
-    .io_w_req_bits_data_3_entries_perms_2_d (l0_w_perms_2_d),
-    .io_w_req_bits_data_3_entries_perms_2_a (l0_w_perms_2_a),
-    .io_w_req_bits_data_3_entries_perms_2_g (l0_w_perms_2_g),
-    .io_w_req_bits_data_3_entries_perms_2_u (l0_w_perms_2_u),
-    .io_w_req_bits_data_3_entries_perms_2_x (l0_w_perms_2_x),
-    .io_w_req_bits_data_3_entries_perms_2_w (l0_w_perms_2_w),
-    .io_w_req_bits_data_3_entries_perms_2_r (l0_w_perms_2_r),
-    .io_w_req_bits_data_3_entries_perms_3_d (l0_w_perms_3_d),
-    .io_w_req_bits_data_3_entries_perms_3_a (l0_w_perms_3_a),
-    .io_w_req_bits_data_3_entries_perms_3_g (l0_w_perms_3_g),
-    .io_w_req_bits_data_3_entries_perms_3_u (l0_w_perms_3_u),
-    .io_w_req_bits_data_3_entries_perms_3_x (l0_w_perms_3_x),
-    .io_w_req_bits_data_3_entries_perms_3_w (l0_w_perms_3_w),
-    .io_w_req_bits_data_3_entries_perms_3_r (l0_w_perms_3_r),
-    .io_w_req_bits_data_3_entries_perms_4_d (l0_w_perms_4_d),
-    .io_w_req_bits_data_3_entries_perms_4_a (l0_w_perms_4_a),
-    .io_w_req_bits_data_3_entries_perms_4_g (l0_w_perms_4_g),
-    .io_w_req_bits_data_3_entries_perms_4_u (l0_w_perms_4_u),
-    .io_w_req_bits_data_3_entries_perms_4_x (l0_w_perms_4_x),
-    .io_w_req_bits_data_3_entries_perms_4_w (l0_w_perms_4_w),
-    .io_w_req_bits_data_3_entries_perms_4_r (l0_w_perms_4_r),
-    .io_w_req_bits_data_3_entries_perms_5_d (l0_w_perms_5_d),
-    .io_w_req_bits_data_3_entries_perms_5_a (l0_w_perms_5_a),
-    .io_w_req_bits_data_3_entries_perms_5_g (l0_w_perms_5_g),
-    .io_w_req_bits_data_3_entries_perms_5_u (l0_w_perms_5_u),
-    .io_w_req_bits_data_3_entries_perms_5_x (l0_w_perms_5_x),
-    .io_w_req_bits_data_3_entries_perms_5_w (l0_w_perms_5_w),
-    .io_w_req_bits_data_3_entries_perms_5_r (l0_w_perms_5_r),
-    .io_w_req_bits_data_3_entries_perms_6_d (l0_w_perms_6_d),
-    .io_w_req_bits_data_3_entries_perms_6_a (l0_w_perms_6_a),
-    .io_w_req_bits_data_3_entries_perms_6_g (l0_w_perms_6_g),
-    .io_w_req_bits_data_3_entries_perms_6_u (l0_w_perms_6_u),
-    .io_w_req_bits_data_3_entries_perms_6_x (l0_w_perms_6_x),
-    .io_w_req_bits_data_3_entries_perms_6_w (l0_w_perms_6_w),
-    .io_w_req_bits_data_3_entries_perms_6_r (l0_w_perms_6_r),
-    .io_w_req_bits_data_3_entries_perms_7_d (l0_w_perms_7_d),
-    .io_w_req_bits_data_3_entries_perms_7_a (l0_w_perms_7_a),
-    .io_w_req_bits_data_3_entries_perms_7_g (l0_w_perms_7_g),
-    .io_w_req_bits_data_3_entries_perms_7_u (l0_w_perms_7_u),
-    .io_w_req_bits_data_3_entries_perms_7_x (l0_w_perms_7_x),
-    .io_w_req_bits_data_3_entries_perms_7_w (l0_w_perms_7_w),
-    .io_w_req_bits_data_3_entries_perms_7_r (l0_w_perms_7_r),
+    .io_w_req_bits_data_3_entries_pbmts_0   (refill_pte[0][62:61]),
+    .io_w_req_bits_data_3_entries_pbmts_1   (refill_pte[1][62:61]),
+    .io_w_req_bits_data_3_entries_pbmts_2   (refill_pte[2][62:61]),
+    .io_w_req_bits_data_3_entries_pbmts_3   (refill_pte[3][62:61]),
+    .io_w_req_bits_data_3_entries_pbmts_4   (refill_pte[4][62:61]),
+    .io_w_req_bits_data_3_entries_pbmts_5   (refill_pte[5][62:61]),
+    .io_w_req_bits_data_3_entries_pbmts_6   (refill_pte[6][62:61]),
+    .io_w_req_bits_data_3_entries_pbmts_7   (refill_pte[7][62:61]),
+    .io_w_req_bits_data_3_entries_ppns_0    (refill_pte[0][47:10]),
+    .io_w_req_bits_data_3_entries_ppns_1    (refill_pte[1][47:10]),
+    .io_w_req_bits_data_3_entries_ppns_2    (refill_pte[2][47:10]),
+    .io_w_req_bits_data_3_entries_ppns_3    (refill_pte[3][47:10]),
+    .io_w_req_bits_data_3_entries_ppns_4    (refill_pte[4][47:10]),
+    .io_w_req_bits_data_3_entries_ppns_5    (refill_pte[5][47:10]),
+    .io_w_req_bits_data_3_entries_ppns_6    (refill_pte[6][47:10]),
+    .io_w_req_bits_data_3_entries_ppns_7    (refill_pte[7][47:10]),
+    .io_w_req_bits_data_3_entries_vs_0      (l0_w_vs[0]),
+    .io_w_req_bits_data_3_entries_vs_1      (l0_w_vs[1]),
+    .io_w_req_bits_data_3_entries_vs_2      (l0_w_vs[2]),
+    .io_w_req_bits_data_3_entries_vs_3      (l0_w_vs[3]),
+    .io_w_req_bits_data_3_entries_vs_4      (l0_w_vs[4]),
+    .io_w_req_bits_data_3_entries_vs_5      (l0_w_vs[5]),
+    .io_w_req_bits_data_3_entries_vs_6      (l0_w_vs[6]),
+    .io_w_req_bits_data_3_entries_vs_7      (l0_w_vs[7]),
+    .io_w_req_bits_data_3_entries_onlypf_0  (l0_w_onlypf[0]),
+    .io_w_req_bits_data_3_entries_onlypf_1  (l0_w_onlypf[1]),
+    .io_w_req_bits_data_3_entries_onlypf_2  (l0_w_onlypf[2]),
+    .io_w_req_bits_data_3_entries_onlypf_3  (l0_w_onlypf[3]),
+    .io_w_req_bits_data_3_entries_onlypf_4  (l0_w_onlypf[4]),
+    .io_w_req_bits_data_3_entries_onlypf_5  (l0_w_onlypf[5]),
+    .io_w_req_bits_data_3_entries_onlypf_6  (l0_w_onlypf[6]),
+    .io_w_req_bits_data_3_entries_onlypf_7  (l0_w_onlypf[7]),
+    .io_w_req_bits_data_3_entries_perms_0_d (l0_w_perms[0].d),
+    .io_w_req_bits_data_3_entries_perms_0_a (l0_w_perms[0].a),
+    .io_w_req_bits_data_3_entries_perms_0_g (l0_w_perms[0].g),
+    .io_w_req_bits_data_3_entries_perms_0_u (l0_w_perms[0].u),
+    .io_w_req_bits_data_3_entries_perms_0_x (l0_w_perms[0].x),
+    .io_w_req_bits_data_3_entries_perms_0_w (l0_w_perms[0].w),
+    .io_w_req_bits_data_3_entries_perms_0_r (l0_w_perms[0].r),
+    .io_w_req_bits_data_3_entries_perms_1_d (l0_w_perms[1].d),
+    .io_w_req_bits_data_3_entries_perms_1_a (l0_w_perms[1].a),
+    .io_w_req_bits_data_3_entries_perms_1_g (l0_w_perms[1].g),
+    .io_w_req_bits_data_3_entries_perms_1_u (l0_w_perms[1].u),
+    .io_w_req_bits_data_3_entries_perms_1_x (l0_w_perms[1].x),
+    .io_w_req_bits_data_3_entries_perms_1_w (l0_w_perms[1].w),
+    .io_w_req_bits_data_3_entries_perms_1_r (l0_w_perms[1].r),
+    .io_w_req_bits_data_3_entries_perms_2_d (l0_w_perms[2].d),
+    .io_w_req_bits_data_3_entries_perms_2_a (l0_w_perms[2].a),
+    .io_w_req_bits_data_3_entries_perms_2_g (l0_w_perms[2].g),
+    .io_w_req_bits_data_3_entries_perms_2_u (l0_w_perms[2].u),
+    .io_w_req_bits_data_3_entries_perms_2_x (l0_w_perms[2].x),
+    .io_w_req_bits_data_3_entries_perms_2_w (l0_w_perms[2].w),
+    .io_w_req_bits_data_3_entries_perms_2_r (l0_w_perms[2].r),
+    .io_w_req_bits_data_3_entries_perms_3_d (l0_w_perms[3].d),
+    .io_w_req_bits_data_3_entries_perms_3_a (l0_w_perms[3].a),
+    .io_w_req_bits_data_3_entries_perms_3_g (l0_w_perms[3].g),
+    .io_w_req_bits_data_3_entries_perms_3_u (l0_w_perms[3].u),
+    .io_w_req_bits_data_3_entries_perms_3_x (l0_w_perms[3].x),
+    .io_w_req_bits_data_3_entries_perms_3_w (l0_w_perms[3].w),
+    .io_w_req_bits_data_3_entries_perms_3_r (l0_w_perms[3].r),
+    .io_w_req_bits_data_3_entries_perms_4_d (l0_w_perms[4].d),
+    .io_w_req_bits_data_3_entries_perms_4_a (l0_w_perms[4].a),
+    .io_w_req_bits_data_3_entries_perms_4_g (l0_w_perms[4].g),
+    .io_w_req_bits_data_3_entries_perms_4_u (l0_w_perms[4].u),
+    .io_w_req_bits_data_3_entries_perms_4_x (l0_w_perms[4].x),
+    .io_w_req_bits_data_3_entries_perms_4_w (l0_w_perms[4].w),
+    .io_w_req_bits_data_3_entries_perms_4_r (l0_w_perms[4].r),
+    .io_w_req_bits_data_3_entries_perms_5_d (l0_w_perms[5].d),
+    .io_w_req_bits_data_3_entries_perms_5_a (l0_w_perms[5].a),
+    .io_w_req_bits_data_3_entries_perms_5_g (l0_w_perms[5].g),
+    .io_w_req_bits_data_3_entries_perms_5_u (l0_w_perms[5].u),
+    .io_w_req_bits_data_3_entries_perms_5_x (l0_w_perms[5].x),
+    .io_w_req_bits_data_3_entries_perms_5_w (l0_w_perms[5].w),
+    .io_w_req_bits_data_3_entries_perms_5_r (l0_w_perms[5].r),
+    .io_w_req_bits_data_3_entries_perms_6_d (l0_w_perms[6].d),
+    .io_w_req_bits_data_3_entries_perms_6_a (l0_w_perms[6].a),
+    .io_w_req_bits_data_3_entries_perms_6_g (l0_w_perms[6].g),
+    .io_w_req_bits_data_3_entries_perms_6_u (l0_w_perms[6].u),
+    .io_w_req_bits_data_3_entries_perms_6_x (l0_w_perms[6].x),
+    .io_w_req_bits_data_3_entries_perms_6_w (l0_w_perms[6].w),
+    .io_w_req_bits_data_3_entries_perms_6_r (l0_w_perms[6].r),
+    .io_w_req_bits_data_3_entries_perms_7_d (l0_w_perms[7].d),
+    .io_w_req_bits_data_3_entries_perms_7_a (l0_w_perms[7].a),
+    .io_w_req_bits_data_3_entries_perms_7_g (l0_w_perms[7].g),
+    .io_w_req_bits_data_3_entries_perms_7_u (l0_w_perms[7].u),
+    .io_w_req_bits_data_3_entries_perms_7_x (l0_w_perms[7].x),
+    .io_w_req_bits_data_3_entries_perms_7_w (l0_w_perms[7].w),
+    .io_w_req_bits_data_3_entries_perms_7_r (l0_w_perms[7].r),
     .io_w_req_bits_data_3_entries_prefetch  (l0_w_prefetch),
     .io_w_req_bits_waymask                  (l0_w_waymask),
     .boreChildrenBd_bore_addr               (childBd_1_addr),
