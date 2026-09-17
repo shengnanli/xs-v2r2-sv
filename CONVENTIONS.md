@@ -108,8 +108,15 @@ endmodule
 - generate-for 内禁止用 function 捕获模块级信号（仿真返 X），
   路由/选择用显式 assign 或 always_comb-for。
 - FM read_sverilog 不支持函数返回值域选 `f(x).value`，拆成独立函数。
-- FM 并发：**小模块可高并发**（批跑默认 `--jobs 16`）。实测 676 次 FM 峰值内存
+- FM 并发：**小模块可高并发**（批跑默认 `--jobs 16`）。上一轮实测 676 次 FM 峰值内存
   中位 867 MB / 90 分位 869 MB / 最大 1455 MB，16 并发约 24 GB，本机 125 GB 宽裕；
+  ★2026-09-17 复测更正上沿★：`1455 MB` 这个最大值**已被本轮超过**，按 `fm.log` 的
+  `Maximum memory usage` 逐个量（不是 `ps` 的 RSS）：
+  `Predictor 34434` / `Composer 4653` / `Ftq 4047` / `ArrayMulDataModule 1948` /
+  `IBuffer 1660`（三次独立跑 1660/1662/1660，不是抖动）/ `SbufferData 1599` /
+  `TLFIFOFixer 1592`。也就是说"最大 1455 MB"只对**叶子**成立，
+  上了 Composer/Ftq 这一档就是数 GB，Predictor 这种带整棵预测器子树的是 **34 GB**。
+  估并发度前先看目标属于哪一档，别拿叶子的中位数去估大件。
   Formality license 9999 席不是约束。
   **例外**：整芯片级目标（XSTop 全量 elaborate 实测 9.6 GB/实例）必须单独串行——
   上轮 OOM 事故是 63k 行大模块并发造成的，教训适用于大模块，不适用于小模块。
