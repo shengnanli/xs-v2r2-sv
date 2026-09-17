@@ -416,6 +416,42 @@ module tb;
     end
   endtask
 
+  // ---- 覆盖率记账（对这种纯接线模块，line/branch 天然 100%，没有判别力；
+  // 真正要证明的是「每一路的每一个 entry 输入位都被驱动过 1 并被读回观察过」、
+  // 「waymask 全组合都出现过」、「每块 SRAM 的 hold/bore 都被单独激励过」。----
+  bit [V1_EW-1:0] cov_bit_v1 [2];     // 每路每位曾被写 1
+  bit [(1<<2)-1:0]       cov_wmask_v1;        // waymask 取值
+  bit [4-1:0]    cov_wset_v1, cov_rset_v1;  // 写/读到过的 set
+  bit [1-1:0]         cov_hold_v1, cov_back_v1;  // 逐块 hold / bore ack
+  int cov_rw_same_v1, cov_rw_diff_v1;          // 同拍读写同址 / 异址
+  always @(posedge clk) if (!rst) begin
+    if (v1_wvalid) begin
+      cov_wmask_v1[v1_waymask] <= 1;
+      cov_wset_v1[v1_wset] <= 1;
+      for (int w = 0; w < 2; w++)
+        if (v1_waymask[w]) cov_bit_v1[w] <= cov_bit_v1[w] | v1_ent[w];
+    end
+    if (v1_rvalid) cov_rset_v1[v1_rset] <= 1;
+    if (v1_rvalid && v1_wvalid)
+      if (v1_rset == v1_wset) cov_rw_same_v1 <= cov_rw_same_v1 + 1;
+      else cov_rw_diff_v1 <= cov_rw_diff_v1 + 1;
+    for (int i = 0; i < 1; i++) begin
+      if (v1_hold[i]) cov_hold_v1[i] <= 1;
+      if (v1_back[i]) cov_back_v1[i] <= 1;
+    end
+  end
+
+  task automatic cov_report_v1();
+    int nb = 0;
+    for (int w = 0; w < 2; w++) nb += $countones(cov_bit_v1[w]);
+    $display("[COV] SplittedSRAM_1: entry 输入位写 1 覆盖 %0d/%0d（%0d 路 × %0d 位）",
+             nb, 2*V1_EW, 2, V1_EW);
+    $display("[COV] SplittedSRAM_1: waymask 取值 %0d/%0d  写 set %0d/4  读 set %0d/4",
+             $countones(cov_wmask_v1), 1<<2, $countones(cov_wset_v1), $countones(cov_rset_v1));
+    $display("[COV] SplittedSRAM_1: 逐块 ram_hold %0d/1  逐块 bore ack %0d/1  同拍读写同址 %0d 次 异址 %0d 次",
+             $countones(cov_hold_v1), $countones(cov_back_v1), cov_rw_same_v1, cov_rw_diff_v1);
+  endtask
+
   // 存储基线：把全部 4 个 set × 2 路写一遍，再整体读一遍。
   // ★为什么必须有这一步★：内层 SRAMTemplate 的 rdataReg 与厂商宏里的存储阵列都**不复位**
   //   （golden SRAMTemplate_129 只有 respReg 带异步复位）。golden 与 _xs 是两个独立实例，
@@ -2659,6 +2695,42 @@ module tb;
     end
   endtask
 
+  // ---- 覆盖率记账（对这种纯接线模块，line/branch 天然 100%，没有判别力；
+  // 真正要证明的是「每一路的每一个 entry 输入位都被驱动过 1 并被读回观察过」、
+  // 「waymask 全组合都出现过」、「每块 SRAM 的 hold/bore 都被单独激励过」。----
+  bit [V2_EW-1:0] cov_bit_v2 [4];     // 每路每位曾被写 1
+  bit [(1<<4)-1:0]       cov_wmask_v2;        // waymask 取值
+  bit [64-1:0]    cov_wset_v2, cov_rset_v2;  // 写/读到过的 set
+  bit [16-1:0]         cov_hold_v2, cov_back_v2;  // 逐块 hold / bore ack
+  int cov_rw_same_v2, cov_rw_diff_v2;          // 同拍读写同址 / 异址
+  always @(posedge clk) if (!rst) begin
+    if (v2_wvalid) begin
+      cov_wmask_v2[v2_waymask] <= 1;
+      cov_wset_v2[v2_wset] <= 1;
+      for (int w = 0; w < 4; w++)
+        if (v2_waymask[w]) cov_bit_v2[w] <= cov_bit_v2[w] | v2_ent[w];
+    end
+    if (v2_rvalid) cov_rset_v2[v2_rset] <= 1;
+    if (v2_rvalid && v2_wvalid)
+      if (v2_rset == v2_wset) cov_rw_same_v2 <= cov_rw_same_v2 + 1;
+      else cov_rw_diff_v2 <= cov_rw_diff_v2 + 1;
+    for (int i = 0; i < 16; i++) begin
+      if (v2_hold[i]) cov_hold_v2[i] <= 1;
+      if (v2_back[i]) cov_back_v2[i] <= 1;
+    end
+  end
+
+  task automatic cov_report_v2();
+    int nb = 0;
+    for (int w = 0; w < 4; w++) nb += $countones(cov_bit_v2[w]);
+    $display("[COV] SplittedSRAM_2: entry 输入位写 1 覆盖 %0d/%0d（%0d 路 × %0d 位）",
+             nb, 4*V2_EW, 4, V2_EW);
+    $display("[COV] SplittedSRAM_2: waymask 取值 %0d/%0d  写 set %0d/64  读 set %0d/64",
+             $countones(cov_wmask_v2), 1<<4, $countones(cov_wset_v2), $countones(cov_rset_v2));
+    $display("[COV] SplittedSRAM_2: 逐块 ram_hold %0d/16  逐块 bore ack %0d/16  同拍读写同址 %0d 次 异址 %0d 次",
+             $countones(cov_hold_v2), $countones(cov_back_v2), cov_rw_same_v2, cov_rw_diff_v2);
+  endtask
+
   // 存储基线：把全部 64 个 set × 4 路写一遍，再整体读一遍。
   // ★为什么必须有这一步★：内层 SRAMTemplate 的 rdataReg 与厂商宏里的存储阵列都**不复位**
   //   （golden SRAMTemplate_129 只有 respReg 带异步复位）。golden 与 _xs 是两个独立实例，
@@ -2778,6 +2850,8 @@ module tb;
       rnd_v2();
       @(negedge clk);
     end
+    cov_report_v1();
+    cov_report_v2();
     $display("=== SplittedSRAM UT: cycles=%0d checks=%0d errors=%0d last_err_cycle=%0d", cycle, checks, errors, last_err_cycle);
     if (errors == 0) $display("TEST PASSED");
     else $display("TEST FAILED");
