@@ -26,7 +26,7 @@
 //   14 个 G1 变体全部走 hasCompAndSimp,故本核不实现另一分支(见文件尾 §11 待办)。
 //
 // =============================================================================
-// 本文件导航（共 1805 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+// 本文件导航（共 1816 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
 //   L57    §1 与变体无关的编码
 //   L81    §2 xs_iq_entry
 //   L335   §2.1 冲刷判定
@@ -40,16 +40,16 @@
 //   L730   §2.6a blocked / deqPortIdx
 //   L783   §2.6b IQ 唤醒子族专属的三组状态
 //   L818   §2.7 组合输出
-//   L917   §3 xs_iq_entries_core
-//   L1102  §3a 阵列层自己持有的两组寄存器(golden Entries.scala:140-142)
-//   L1174  §4 条目例化
-//   L1340  §5 deqSel / deqPortIdxWrite / issueResp
-//   L1383  §6 EnqPolicy
-//   L1414  §7 转移策略
-//   L1491  §8 othersEntryEnq 数据通路
-//   L1642  §9 发射出口
-//   L1710  §10 阵列状态汇聚输出
-//   L1751  §11 本核尚未实现的家族维度(给后续变体 owner 的清单,全部有 golden 依据)
+//   L928   §3 xs_iq_entries_core
+//   L1113  §3a 阵列层自己持有的两组寄存器(golden Entries.scala:140-142)
+//   L1185  §4 条目例化
+//   L1351  §5 deqSel / deqPortIdxWrite / issueResp
+//   L1394  §6 EnqPolicy
+//   L1425  §7 转移策略
+//   L1502  §8 othersEntryEnq 数据通路
+//   L1653  §9 发射出口
+//   L1721  §10 阵列状态汇聚输出
+//   L1762  §11 本核尚未实现的家族维度(给后续变体 owner 的清单,全部有 golden 依据)
 // 导航由 verif/ut/Entries_common/core_nav.py 重算 —— 改完核跑一次，勿手改
 //
 
@@ -850,7 +850,18 @@ module xs_iq_entry
   always_comb
     for (int s = 0; s < NUM_REGSRC; s++) begin
       logic use_rc_now;
-      use_rc_now = HAS_REG_CACHE & cur_use_rc[s] & (cur_data_src[s] == DS_REG);
+      // ★ golden 这里是**位测试**不是等值比较 ★
+      //   io_commonOut_dataSources 用 `useRegCache & dataSources_value[3]`
+      //   （OthersEntry_66.sv / OthersEntry_72.sv 的 assign io_commonOut_dataSources_0_value），
+      //   而**寄存器更新**那边用的是等值 `== 4'h2`（OthersEntry_72.sv:828）。
+      //   两处不对称是 golden 的，照抄。
+      //   ★为什么不能都写成等值★：DataSource 只定义了 0..8 里的 7 个值，
+      //   bit3 只有 reg(4'b1000) 置起——**在合法取值范围内**两种写法等价。
+      //   但 dataSources_value 是 4 位输入端口，FM 会把 4'b1001..4'b1111 也算进去，
+      //   那几个值上 `[3]` 为真而 `== 4'h8` 为假。仿真只喂合法值所以永远看不出，
+      //   FM 逐个取值比就会失配 —— 实测正是这 192 个点
+      //   （24 条目 × 2 源 × 4 位 = 全部 io_dataSources 输出）。
+      use_rc_now = HAS_REG_CACHE & cur_use_rc[s] & cur_data_src[s][3];
       o_data_src[s] = (IS_COMP & (|wakeup_oh[s])) ? DS_FORWARD
                     : use_rc_now                  ? DS_REGCACHE
                                                   : cur_data_src[s];
