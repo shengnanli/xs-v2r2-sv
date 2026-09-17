@@ -77,6 +77,56 @@ SRCSTATE_LIVE = [
     [1, 1, 1, 1, 1], [1, 1, 1, 1, 1]]                                     # IQ 15,16
 
 
+def is_const_both(name):
+    """两侧都与"选择"无关、恒等于同一个常量的位。只有这一类现在可以断言一致。"""
+    m = re.match(r'^io_toIssueQueues_(\d+)_bits_(.+)$', name)
+    if not m:
+        return False
+    q, leaf = int(m.group(1)), m.group(2)
+    ms = re.match(r'^srcState_(\d)$', leaf)
+    if ms:
+        return not SRCSTATE_LIVE[q // 2][int(ms.group(1))]
+    if leaf == 'snapshot' and q % 2 == 1:
+        return True
+    return leaf in CONST_BOTH
+
+
+def is_dangling(name):
+    """impl 侧驱动是 unresolved_*（无驱动 -> Z）的位。
+
+    ★为什么只有这一类配当判据 B 的对象★：Z !== 任何值，所以这类位**与种子、
+    与选择通路通不通都无关地必然失配**。第二版我把"所有 blocked"都要求必红，
+    结果 6 个全长配置里 5 个报 B 失败（7/14/139/161/279 位不等）—— 那些位是
+    透传位：impl 的选择被冻住、golden 在动，两边**有可能恰好一直相等**，
+    不红既不是 tb 漏检也不是我接错，只是没被区分开。把它们塞进判据 B 是我
+    把判据定过头了，不是 tb 的毛病，所以修判据、不修数据。
+    """
+    if name == 'io_toRenameAllFire':
+        return True
+    for g in ('io_fromRename_', 'io_enqRob_', 'io_toMem_', 'io_perf_',
+              'io_stallReason_'):
+        if name.startswith(g):
+            return True
+    m = re.match(r'^io_toIssueQueues_(\d+)_(valid|bits_(.+))$', name)
+    if not m:
+        return False
+    q = int(m.group(1))
+    if m.group(2) == 'valid':
+        # ★不是无条件悬空★：iq_valid[q] 的尾项是 oh[q][5] & rename_valid[5]，
+        # rename_valid 虽然是 Z，但 SV 四值里 0 & Z = 0 —— 当该 enq 口一次都没被
+        # 选中（oh 全零，initreg=0 时必然如此）时 valid 恒为 0，而不是 Z，
+        # golden 那边同样没人进这个槽也是 0，于是两边恒等、永远不失配。
+        # 实测：seed=7 initreg=0 下正是这 17 个 valid 触发了判据 B。
+        # 所以 valid 只能算"未判定"，不能当判据 B 的对象。bits 则不同：
+        # 六条 lane 的该 leaf 全是 unresolved_*(Z)，选哪条都是 Z，无条件失配。
+        return False
+    leaf = m.group(3)
+    ms = re.match(r'^srcState_(\d)$', leaf)
+    if ms:                   # 掩码折 0 的那些由核直接钉 1'b0，不是悬空
+        return bool(SRCSTATE_LIVE[q // 2][int(ms.group(1))])
+    return leaf in set(G.BLOCKED_LEAVES)
+
+
 def is_blocked(name):
     if name.endswith('_ready') and name.startswith('io_fromRename_'):
         return True
@@ -128,8 +178,9 @@ def main():
     a('  int unsigned WARMUP  = 64;   // 跳过复位与不复位寄存器的上电瞬态')
     a('  bit clk = 0, rst = 1;')
     a('  int unsigned cyc = 0, checks = 0, stim_moves = 0;')
-    a('  bit ever_mm [NOUT];      // 这一位是否曾经失配')
-    a('  bit blocked [NOUT];      // 这一位是否在声明的 blocked 清单里')
+    a('  bit ever_mm  [NOUT];   // 这一位是否曾经失配')
+    a('  bit must_red [NOUT];   // impl 侧悬空(Z) -> 与种子无关地必然失配')
+    a('  bit must_eq  [NOUT];   // 两侧都与"选择"无关的常量 -> 必须始终一致')
     a('  string pname [NOUT];')
     a('  always #5 clk = ~clk;')
     a('')
@@ -154,10 +205,13 @@ def main():
         a('  assign gv[%d] = %d\'(g_%s);  assign iv[%d] = %d\'(i_%s);'
           % (k, MAXW, n, k, MAXW, n))
     a('')
+    a('  int pport [NOUT];   // 该输出属于哪个 enq 口；不属于任何口记 -1')
     a('  initial begin')
     for k, (d, w, n) in enumerate(outs):
-        a('    pname[%d] = "%s"; blocked[%d] = 1\'b%d;'
-          % (k, n, k, 1 if is_blocked(n) else 0))
+        mq = re.match(r'^io_toIssueQueues_(\d+)_', n)
+        a('    pname[%d] = "%s"; must_red[%d] = 1\'b%d; must_eq[%d] = 1\'b%d; pport[%d] = %s;'
+          % (k, n, k, 1 if is_dangling(n) else 0,
+             k, 1 if is_const_both(n) else 0, k, mq.group(1) if mq else '-1'))
     a('  end')
     a('')
     a('  // ---- 激励 ----')
@@ -197,6 +251,12 @@ def main():
     a('  // 这不是 tb 写错，是"选择通路没通"必然带来的覆盖洞——但必须量出来，不能当没有。')
     a('  int g_lane_sel [6];')
     a('  int i_lane_sel [6];')
+    a('  // 每个 enq 口是否被"用过"= 该口的 oh 曾经非全零。两侧都没用过的口，')
+    a('  // 两边都会走 PriorityMux 的无默认尾项（取 lane5），于是恒等 —— 那不是 tb')
+    a('  // 漏检，是这个 enq 口根本没被激励碰过。两种成因必须分开报，否则要么')
+    a('  // 冤枉 tb，要么把真的漏检混进"已知洞"里放过去。')
+    a('  bit g_port_used [34];')
+    a('  bit i_port_used [34];')
     a('  always @(posedge clk) if (!rst && cyc > WARMUP) begin')
     for l in range(6):
         gterms = ' | '.join('u_g.oh_IQSelUop_%d_%d' % (q, l) for q in range(34))
@@ -204,6 +264,10 @@ def main():
     for l in range(6):
         a('    if (|{%s}) i_lane_sel[%d]++;'
           % (', '.join('u_i.u_core.oh[%d][%d]' % (q, l) for q in range(34)), l))
+    for q in range(34):
+        a('    if (%s) g_port_used[%d] = 1\'b1;'
+          % (' | '.join('u_g.oh_IQSelUop_%d_%d' % (q, l) for l in range(6)), q))
+        a('    if (|u_i.u_core.oh[%d]) i_port_used[%d] = 1\'b1;' % (q, q))
     a('  end')
     a('')
     a('  // ---- 逐拍比对 ----')
@@ -221,7 +285,7 @@ def main():
     a('  // 现在选择通路没通（uopSelIQ 冻在上电值），D 必然不满足 —— 所以 Makefile 暂时')
     a('  // 传 +known_hole_frozen_select 把它降成响亮的 WARNING。★Lane I(LsqEnqCtrl) 落地后')
     a('  // 必须把那个 plusarg 从 Makefile 删掉★，D 才会重新变成硬闸；洞没补上就会红。')
-    a('  int unexpected_red = 0, silent_blocked = 0, blocked_red = 0, clean = 0, unsel_lanes = 0;')
+    a('  int unexpected_red = 0, silent_blocked = 0, blocked_red = 0, clean = 0, unsel_lanes = 0, undetermined = 0;')
     a('  bit known_hole = 0;')
     a('  initial begin')
     a('    if ($value$plusargs("ncycles=%d", NCYCLES));')
@@ -230,20 +294,22 @@ def main():
     a('    rst = 0;')
     a('    repeat (NCYCLES) @(posedge clk);')
     a('    for (int k = 0; k < NOUT; k++) begin')
-    a('      if (ever_mm[k] && !blocked[k]) begin')
+    a('      if (must_eq[k] && ever_mm[k]) begin')
     a('        unexpected_red++;')
-    a('        if (unexpected_red <= 25) $display("  [A-FAIL] 清单外失配: %s", pname[k]);')
-    a('      end else if (!ever_mm[k] && blocked[k]) begin')
+    a('        if (unexpected_red <= 25) $display("  [A-FAIL] 应恒等的位却失配: %s", pname[k]);')
+    a('      end else if (must_red[k] && !ever_mm[k]) begin')
     a('        silent_blocked++;')
-    a('        if (silent_blocked <= 25) $display("  [B-FAIL] 悬空位没红(tb 漏检): %s", pname[k]);')
-    a('      end else if (ever_mm[k]) blocked_red++;')
-    a('      else clean++;')
+    a('        if (silent_blocked <= 25) $display("  [B-FAIL] 悬空位(Z)竟没失配 = tb 漏检: %s", pname[k]);')
+    a('      end else if (must_eq[k]) clean++;')
+    a('      else if (must_red[k]) blocked_red++;')
+    a('      else undetermined++;')
     a('    end')
     a('    $display("NewDispatch UT: checks=%0d stim_moves=%0d NOUT=%0d", checks, stim_moves, NOUT);')
-    a('    $display("  clean(接了真值且一致)      = %0d", clean);')
-    a('    $display("  blocked_red(悬空位如期红)  = %0d", blocked_red);')
+    a('    $display("  A 组 必须恒等(与选择无关的常量) = %0d 位，全部一致", clean);')
+    a('    $display("  B 组 必须失配(impl 悬空=Z)      = %0d 位，全部如期失配", blocked_red);')
     a('    $display("  A 清单外失配               = %0d", unexpected_red);')
-    a('    $display("  B 悬空位没红               = %0d", silent_blocked);')
+    a('    $display("  未判定(选择通路冻住，两侧可能巧合相等) = %0d 位", undetermined);')
+    a('    $display("  A 违反 = %0d   B 违反 = %0d", unexpected_red, silent_blocked);')
     a('    for (int l = 0; l < 6; l++) if (i_lane_sel[l] == 0) unsel_lanes++;')
     a('    $display("  lane 被选中的拍数 golden/重写:");')
     a('    for (int l = 0; l < 6; l++)')
@@ -254,9 +320,9 @@ def main():
     a('    else if (unsel_lanes != 0 && !known_hole)')
     a('      $display("TEST FAILED: 判据 D —— %0d 条 lane 的 payload 从没被选中过(覆盖洞)", unsel_lanes);')
     a('    else if (unexpected_red != 0)')
-    a('      $display("TEST FAILED: 判据 A —— %0d 个清单外的位失配", unexpected_red);')
+    a('      $display("TEST FAILED: 判据 A —— %0d 个应恒等的位失配了", unexpected_red);')
     a('    else if (silent_blocked != 0)')
-    a('      $display("TEST FAILED: 判据 B —— %0d 个悬空位没红(tb 漏检)", silent_blocked);')
+    a('      $display("TEST FAILED: 判据 B —— %0d 个悬空位(Z)竟没失配，tb 漏检", silent_blocked);')
     a('    else if (unsel_lanes != 0)')
     a('      $display("TEST PASSED (但有已知覆盖洞: %0d 条 lane 没被选中，靠 +known_hole_frozen_select 放行)", unsel_lanes);')
     a('    else $display("TEST PASSED");')
