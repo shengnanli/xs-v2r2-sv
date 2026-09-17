@@ -114,6 +114,71 @@ def build(v):
     return pins, skipped
 
 
+# ---------------------------------------------------------------------------
+# 可读核里**按条件生成**的寄存器清单：名字 -> (生成条件, golden 侧对应的 reg 名)
+#
+# ★ 为什么要有这张表 ★
+# 本轮连着三次踩同一个病：可读核生成了 golden 没有的寄存器。
+#   deqPortIdx   —— 核了矩阵一列就推及三种条目类型
+#   ld1_cancel_d —— c1 恒 0，但走的是**寄存器**不是常量
+#   enqd_self_ld_dep / ld_cancel_d —— 变体没有 ldCancel 却照样生成
+# 共同点：仿真完全看不见（常 0，不影响任何输出），而 FM 看得见 ——
+# **常 0 的寄存器 ≠ 常量**：FM 不做可达性分析，多一个寄存器就多一条扇入边，
+# 于是 golden 的锥里没有的边出现在 impl 的锥里。
+# 而且这类点往往是 **matched** 的，`report_unmatched_points` 里根本看不见，
+# 只能靠 analyze_points 一个一个挖锥——太贵。
+#
+# 所以做成一张机械核对表：每条"条件为真才生成"的寄存器，都要求 golden 侧
+# 真的存在对应物；反之 golden 有而条件为假，也要报。差集是纯文本操作。
+# ---------------------------------------------------------------------------
+def check_reg_bijection(v):
+    """两侧 DFF 名单做差集：核按参数生成的寄存器 <-> golden 的 reg 声明。"""
+    # 独立重读 golden 顶层端口名单（不复用 Variant 上的派生属性，见下面的★）
+    gold_top_ports = {n for _, _, n, _ in _gen.port_decls(v.top)}
+    enq_regs = golden_regs(v.enq_mod)
+    simp_regs = golden_regs(v.simp_mod)
+    comp_regs = golden_regs(v.comp_mod)
+    top_regs = golden_regs(v.top)
+    problems = []
+
+    # (描述, 核里生成该寄存器的条件, golden 侧应当存在的证据)
+    checks = [
+        ('条目 deqPortIdx(enq/simp)', True,
+         'entryReg_status_deqPortIdx' in enq_regs and
+         'entryReg_status_deqPortIdx' in simp_regs),
+        ('条目 deqPortIdx(comp)', v.n_deq > 1,
+         'entryReg_status_deqPortIdx' in comp_regs),
+        ('条目 blocked(simp/comp)', True,
+         'entryReg_status_blocked' in simp_regs and
+         'entryReg_status_blocked' in comp_regs),
+        ('条目 blocked(enq) —— 核**不**生成', False,
+         'entryReg_status_blocked' in enq_regs),
+        ('条目 srcLoadDependency(comp)', v.comp_has_ld_dep,
+         'entryReg_status_srcStatus_0_srcLoadDependency_0' in comp_regs),
+        ('条目 exuSources', v.n_wk_iq > 0,
+         'entryReg_status_srcStatus_0_exuSources_value' in enq_regs),
+        ('条目 useRegCache/regCacheIdx', v.has_rc,
+         'entryReg_status_srcStatus_0_useRegCache' in enq_regs),
+        # 阵列层：这几组只在顶层真有对应端口时才该生成。
+        # ★ golden 侧证据必须**独立地**从 golden 文件里重新读 ★
+        #   不能拿 v 上那个同源属性去比自己——那样写出来的是 (cond, cond)，
+        #   恒真、永远不会响。本文件第一版的 ld1Cancel 与 og0Cancel 两行就是这么写的，
+        #   负测里它们一声不吭，是负测把它们抓出来的。
+        ('阵列 ld2Cancel 打拍(ld2_cancel_d)', v.n_ld_cancel > 0,
+         'io_ldCancel_0_ld2Cancel' in gold_top_ports),
+        ('阵列 ld1Cancel 打拍(ld1_cancel_d)', v.has_ld1,
+         'io_ldCancel_0_ld1Cancel' in gold_top_ports),
+        ('阵列 og0Cancel 打拍', any(i is not None for i in v.og0_idx),
+         any(re.fullmatch(r'io_og0Cancel_\d+', n) for n in gold_top_ports)),
+        ('阵列 入队瞬间 payload 影子(enqd_self_ld_dep)', v.n_ld_cancel > 0,
+         'io_enq_0_bits_payload_srcLoadDependency_0_0' in gold_top_ports),
+    ]
+    for desc, core_makes, golden_has in checks:
+        if bool(core_makes) != bool(golden_has):
+            problems.append(f'{desc}: 核生成={bool(core_makes)} golden存在={bool(golden_has)}')
+    return problems
+
+
 def emit(v, pins, skipped):
     L = ["""# %s FM 匹配前钉点 —— golden 逐字段寄存器 <-> 可读核的扁平负载向量与数组寄存器
 # ============================================================================
@@ -185,6 +250,14 @@ def emit(v, pins, skipped):
 def main(top):
     check = '--check' in sys.argv
     v = _gen.Variant(top)
+    probs = check_reg_bijection(v)
+    if probs:
+        sys.stderr.write('[FAIL] 可读核与 golden 的寄存器名单对不上（多生成/少生成）：\n')
+        for x in probs:
+            sys.stderr.write('  ' + x + '\n')
+        sys.stderr.write('  ★ 常 0 的寄存器不是常量：多一个 golden 没有的寄存器，\n'
+                         '    FM 的锥里就多一条边，而仿真完全看不见。\n')
+        return 1
     pins, skipped = build(v)
     txt = emit(v, pins, skipped)
     out = _gen.outdir(top) / 'fm_pins_pre.tcl'

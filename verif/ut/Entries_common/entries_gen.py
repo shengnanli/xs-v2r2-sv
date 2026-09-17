@@ -333,6 +333,36 @@ class Variant:
                     assert f == {self.iq_wen[w]}, (
                         f'{top}: {other} 的 IQ{w} 写使能字段与 enq 不一致: {f}')
 
+        # ★ og0 取消映射也必须逐条目类型核 ★
+        # 这份映射我只从 enq 条目提取，而 simp/comp 是**另外两个 golden 模块**。
+        # 上一轮 deqPortIdx 的 bug 就是"核了一种就推及三种"，这里不能重犯：
+        # golden 在这一段有三处不规则同时存在（is0Lat 只门控 lane 0/1；
+        # og0Cancel 下标取偶数位 0/2/4/6；lane 4-6 完全无取消），
+        # 只要任一条目类型与 enq 不同，共享核那份参数就是错的。
+        for other in (self.simp_mod, self.comp_mod):
+            otxt = read(other)
+            for w in range(self.n_wk_iq):
+                m = re.search(r'wire\s+hasWakeupIQ_srcWakeupByIQ_\d+_%d = (.*?);\n' % w,
+                              otxt, re.S)
+                if m is None:
+                    assert self.og0_idx[w] is None, (
+                        f'{top}: {other} 的 IQ{w} 无 og0 取消，但 {self.enq_mod} 有')
+                    continue
+                body = m.group(1)
+                cs = re.search(r'~cancelSel_(\d+)\b', body)
+                if cs:
+                    m2 = re.search(r'wire\s+cancelSel_%s =\n(.*?);\n' % cs.group(1),
+                                   otxt, re.S)
+                    og = int(re.search(r'og0Cancel_(\d+)', m2.group(1)).group(1))
+                    kind = 'real' if 'is0Lat' in m2.group(1) else 'const1'
+                else:
+                    og = int(re.search(r'~io_commonIn_og0Cancel_(\d+)', body).group(1))
+                    kind = 'const1'
+                assert og == self.og0_idx[w] and kind == self.is0lat_kind[w], (
+                    f'{top}: {other} 的 IQ{w} 取消映射 (og0Cancel_{og}, {kind}) 与 '
+                    f'{self.enq_mod} 的 (og0Cancel_{self.og0_idx[w]}, '
+                    f'{self.is0lat_kind[w]}) 不一致')
+
         # ---- 寄存器缓存 ----
         self.has_rc   = 'io_enq_0_bits_status_srcStatus_0_useRegCache' in self.pmap
         self.rc_idx_w = self.pmap.get(

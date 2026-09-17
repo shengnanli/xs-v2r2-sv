@@ -160,13 +160,18 @@ def run(cmd, cwd, env=None):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('top')
+    ap.add_argument('top', nargs='?', default='EntriesAluCsrFenceDiv')
     ap.add_argument('--cycles', type=int, default=30000,
                     help='每个变异跑多少拍（默认 30000，足够让所有闸都动起来）')
     ap.add_argument('--seed', type=int, default=1)
     ap.add_argument('--only')
     ap.add_argument('--list', action='store_true')
+    ap.add_argument('--selftest-regcheck', action='store_true',
+                    help='只跑寄存器双射核对的负测（证明那道闸会响）')
     a = ap.parse_args()
+
+    if a.selftest_regcheck:
+        return selftest_regcheck()
 
     if a.list:
         for m in MUTANTS:
@@ -260,6 +265,44 @@ def main():
             print(f'  {mid}: {desc}')
         return 1
     return 0
+
+
+
+
+# ---------------------------------------------------------------------------
+# 寄存器双射核对的负测 —— 闸必须证明它会响
+#
+# 本文件第一版把 ld1Cancel / og0Cancel 两行写成 (cond, cond)：拿同一个派生属性
+# 跟自己比，恒真、永远不会响。跑基线全绿、看起来一切正常，是负测把它抓出来的。
+# 所以这条负测跟着闸一起提交：闸改了必须重跑，它不响就是闸坏了。
+#
+#     python3 mutants.py --selftest-regcheck
+# ---------------------------------------------------------------------------
+def selftest_regcheck():
+    import gen_fm_pins as P
+    bad = []
+    for top in ('EntriesAluCsrFenceDiv', 'EntriesVfdivVidiv'):
+        v = _gen.Variant(top)
+        if P.check_reg_bijection(v):
+            bad.append(f'{top}: 基线就报错，闸本身有问题')
+    v = _gen.Variant('EntriesAluCsrFenceDiv')
+    # (属性, 注入值, 期望报出的关键字)
+    cases = [('has_ld1', True, 'ld1Cancel'),
+             ('n_deq', 1, 'deqPortIdx(comp)'),
+             ('n_ld_cancel', 0, 'ld2Cancel'),
+             ('comp_has_ld_dep', False, 'srcLoadDependency(comp)'),
+             ('has_rc', False, 'useRegCache')]
+    for attr, val, kw in cases:
+        old = getattr(v, attr)
+        setattr(v, attr, val)
+        got = P.check_reg_bijection(v)
+        setattr(v, attr, old)
+        if not any(kw in g for g in got):
+            bad.append(f'注入 {attr}={val} 后闸没响（期望提到 {kw}）—— 该条判据是空的')
+    for b in bad:
+        print('[FAIL] ' + b)
+    print('regcheck 负测:', 'PASS' if not bad else 'FAIL')
+    return 1 if bad else 0
 
 
 if __name__ == '__main__':
