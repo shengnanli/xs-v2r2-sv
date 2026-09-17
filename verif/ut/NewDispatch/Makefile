@@ -36,3 +36,22 @@ VCS += +define+SYNTHESIS +vcs+initreg+random
 # 这是真覆盖洞，不是 tb 写错，所以显式放行而不是假装没有。
 # ★Lane I 落地后必须删掉这一行★，判据 D 会重新变成硬闸。
 SIM_ARGS += +known_hole_frozen_select
+
+# ★FM_MERGE_DUP=false★（第 3 轮 FM 实测后加，依据如下，不是试出来的）
+# 现象：golden 侧 55 个 IQSort_* 是 unmatched **compare point**，
+#       impl 侧 55 个 IQSort_*_reg 是 unmatched **unread** point —— 两者
+#       类别不同，FM 不会跨类别配对。叶名其实早就一模一样：
+#           golden  r:/WORK/NewDispatch/IQSort_alu_0_0_reg
+#           impl    i:/WORK/NewDispatch/u_core/IQSort_alu_reg[0][0]
+#       与**已经配上**的 uopSelIQ（102 点）完全同构，所以不是命名问题。
+# 成因：逐组分解干净得不像巧合 ——
+#           N=2 的 6 组：各 4 个，配上 2、剩 2
+#           N>=3 的 4 组：各 9/16 个，一个都没配上
+#       N=2 时 iqSort[0] 与 iqSort[1] 互补（rank_d[0][i] == ~rank_d[1][i]），
+#       verification_merge_duplicated_registers 把每组 4 个合并成 2 个，
+#       存活的配上、被合并掉的落进 unread；N>=3 没有两两互补，合并不掉。
+# 先例：MulUnit、RenameBuffer 同型（main 40f570f 记了 RenameBuffer 的实测：
+#       配对修好后 failing 20->0、passing 651->5825）。
+# 这不是政策例外：不是 waiver、不是 dont_verify、不放宽 appvar，
+# 只是关掉一个会改变**配对类别**的工具优化。
+FM_MERGE_DUP = false
