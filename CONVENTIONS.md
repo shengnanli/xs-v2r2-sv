@@ -121,6 +121,22 @@ endmodule
   **例外**：整芯片级目标（XSTop 全量 elaborate 实测 9.6 GB/实例）必须单独串行——
   上轮 OOM 事故是 63k 行大模块并发造成的，教训适用于大模块，不适用于小模块。
   禁 `pkill -f`（会误杀其他任务的 simv）。
+- ★**共享 scratchpad 里禁止 `rm -rf` 语义名**（2026-09-17 实际发生过一次）★
+  `/tmp/claude-1000/<session>/scratchpad/` 是**整个 fleet 共用**的，不是某条 lane 独占。
+  一条 lane 建诊断目录时写了 `S=.../scratchpad/fmneg; rm -rf $S; mkdir -p $S/...`，
+  把**另一条 lane 正在跑的** `scratchpad/fmneg/verif/ut/RenameBuffer` 整棵树删掉了。
+  进程当时还活着，但它持有的每个 fd 都成了 `(deleted)` —— 还在算，
+  算完写进的是已 unlink 的 inode，**磁盘上不会留下任何证据**。
+  （那一跑的 fm.log 后来从 `/proc/<pid>/fd/1` 捞回来了，但 `receipt.json` /
+  `unread_points.txt` / `sidecar/` 这些收尾时才写的文件救不回来 —— 只能重跑。）
+
+  **规矩**：共享 scratchpad 里只许 `mkdir -p` 自己带**唯一后缀**的目录；
+  要清理，作用域必须由**你自己创建的唯一标识**界定，不能由语义名界定。
+  通用名（`fmneg` / `work` / `tmp` / `out` / `diag`）一律视同他人领地。
+
+  和禁 `pkill -f` 是同一条判据的两面：**破坏性操作的作用域不能由"看起来是我的"来界定。**
+  `pkill -f` 按命令行模式匹配、`rm -rf <语义名>` 按目录名匹配，两者都是拿
+  "像不像我的"当作用域，而正确的作用域是"是不是我亲手创建的那一个"。
 - chisel Vec 越界读语义是回绕不是 0（上轮 LoadQueue replay 真 bug 根因）。
   ★本轮实测更正：G1 的 firtool 把越界项展开成**填第 0 项**，不是回绕。★
   而且**同一模块里不同信号的越界语义可能各不相同**（BusyTable 实测三种：忙位
