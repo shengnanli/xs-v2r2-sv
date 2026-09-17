@@ -16,7 +16,16 @@
 # errors=0 时会再问一次 reset_domain_check.py（结构闸），两道闸都看不见才算漏 ——
 # 这样"漏了"就不会被粉饰成"过了"。
 #
-# 用法: [CYCLES=8000] bash verif/ut/TLBFA/mutants.sh [工作目录]
+# 三条防"空变异"的构造（对照 CONVENTIONS「变异体必须先自证改变了电路」）：
+#   1) 注入点是**精确唯一**的整行文本，出现次数不等于 1 即 exit —— 保证 RTL 文本真的变了；
+#      且变异一律改在**原 always 块之内**（不新开块），避免"同一变量被两个 always_ff
+#      驱动、VCS 不报错、排后面的块赢、变异根本没生效"那种空变异。
+#   2) 每个变异体在**全新的临时目录**里编译与仿真（先 rm -rf），不可能读到上一轮的
+#      sim.log —— 那会把上次的 errors=0 当成本次结果，报出假的"逃逸"。
+#   3) 编译或运行没产出 sim.log 一律判 FAIL，不继续。
+#   4) CAUGHT 不是二值：逐个报 errors 数，低于 THIN 的点名。
+#
+# 用法: [CYCLES=8000] [THIN=300] bash verif/ut/TLBFA/mutants.sh [工作目录]
 # 退出码 0 = 全部变异体都被抓出来
 # =============================================================================
 set -u
@@ -81,7 +90,9 @@ MUT_NAME+=("M12 asid 比较漏掉 global 页(perm.g)豁免")
 MUT_OLD+=("                                     : ((e.asid == asid) || e.perm.g));")
 MUT_NEW+=("                                     : (e.asid == asid));")
 
-pass=0; fail=0
+# 余量门槛：errors 低于它就点名。本轮实测最薄的是 M8（49）。
+THIN=${THIN:-300}
+pass=0; fail=0; thinlist=""
 for i in "${!MUT_NAME[@]}"; do
   NAME=${MUT_NAME[$i]}
   d=$WORK/m$i
@@ -112,7 +123,10 @@ PY
      python3 "$HERE/reset_domain_check.py" > "$d/reset_check.log" 2>&1
   then struct=ok; else struct=caught; fi
   if [ "${errs:-0}" -gt 0 ]; then
-    echo "[$NAME] UT 抓出：errors=$errs  首次 $(grep -m1 MISMATCH "$d/ut/sim.log" | cut -c1-40)"
+    # CAUGHT 不是二值：报出 errors 数，余量薄的点名（换个 seed 就可能漏）。
+    if [ "$errs" -lt "$THIN" ]; then thin="  ★余量薄(<$THIN)，换 seed 可能漏★"; else thin=""; fi
+    echo "[$NAME] UT 抓出：errors=$errs  首次 $(grep -m1 MISMATCH "$d/ut/sim.log" | cut -c1-40)$thin"
+    [ -n "$thin" ] && thinlist="$thinlist $NAME(errors=$errs)"
     pass=$((pass+1))
   elif [ "$struct" = caught ]; then
     echo "[$NAME] UT 看不见（errors=0），但复位域结构闸拦下了 —— 两道闸互补，算抓出"
@@ -123,4 +137,7 @@ PY
 done
 echo "--------------------------------------------------"
 echo "变异体 $((pass+fail)) 个：抓出 $pass，漏掉 $fail   （工作目录 $WORK）"
+if [ -n "$thinlist" ]; then
+  echo "★余量薄的变异体（errors < $THIN，不许报成\"判别力均匀\"）：$thinlist"
+fi
 [ $fail -eq 0 ]
