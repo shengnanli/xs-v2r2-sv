@@ -36,12 +36,16 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/SplittedSRAM_1.sv \
 FM_REF_DEPS_SplittedSRAM_1 = SRAMTemplate_128.sv sram_array_1p4x786m131s1h0l1b_ptw_l1.sv array_10.sv
 FM_REF_DEPS_SplittedSRAM_2 = SRAMTemplate_129.sv SRAMTemplate_143.sv sram_array_1p64x114m57s1h0l1b_ptw_l0.sv array_11.sv
 
-# FM_MODE=assembly：唯一抽象边界 = 厂商 SRAM 宏叶子 array_10_ext / array_11_ext
-# （.v 行为模型，两侧同一文件，FM 不读 ⇒ 对称未解析黑盒）。内层 SRAMTemplate_128/129/143
-# 是**重写件**，两侧同源 elaborate，不黑盒。★本行的 mode/allowlist 取值照 SRAMTemplate
-# 家族现状，尚未经 reviewer 确认，跑 FM 前请复核。
-FM_MODE = assembly
-FM_ALLOWLIST ?= 8
+# 两侧都完整 elaborate 到**同一层**：内层 SRAMTemplate_128/129/143 是本仓重写件
+# （不是厂商宏），ref 侧读 golden 版、impl 侧读重写版，都不抽象；再下一层的
+# sram_array_*_ptw_l{0,1} 与 array_10/array_11 两侧同源同读。唯一没给任何一侧的是
+# 厂商 SRAM 叶子 array_10_ext / array_11_ext（verif/vendor_boundary.tsv 已审定为
+# vendor_sram_leaf，标注 body_not_read_by_fm ⇒ 只能对称黑盒，不许白盒化）。
+#
+# coordinator 0168 裁定：assembly 是退路不是首选，先按 strict + 零配额跑，
+# 真出 unmatched 黑盒点先上报，不许把 allowlist 往上调。
+FM_MODE = signoff-strict
+FM_ALLOWLIST ?= 0
 FM_VARIANTS = SplittedSRAM_1 SplittedSRAM_2
 
 include ../../../scripts/ut_common.mk
