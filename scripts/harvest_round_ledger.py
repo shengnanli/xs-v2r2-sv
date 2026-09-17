@@ -94,15 +94,29 @@ def harvest():
     return rows, warns
 
 
+def _n(v):
+    """None 一律渲染成 `?`，不要渲染成 `None`。
+
+    ★分不清「0」和「不知道」是本仓栽过的跟头★（见 fm_verdict.py 里
+    test_zero_category_without_table_row 的注释）。这里尤其要紧：
+    constant_reg 这个字段 2026-09-17(c18f091) 才开始解析，在那之前的 receipt
+    里**根本没有这一项**。渲染成 `None` 很容易被读成"没有常数寄存器"，
+    而真相是"这一轮没测量过"。写成 `?` 就没有这个歧义。
+    """
+    return '?' if v is None else v
+
+
 def render(rows):
     out = ['# 机械生成，勿手改：python3 scripts/harvest_round_ledger.py --out <此文件>',
            '# 只收已提交、impl_worktree_dirty=false、verdict ∈ {SUCCEEDED, PASS_DEAD_REF} 的 receipt',
+           '# note 里的 `?` = 该 receipt 里没有这个字段（**不是 0**）。constant_reg 于 c18f091'
+           ' 才开始解析，早于它的 receipt 一律是 `?`，重跑后才会有真数。',
            'target\tverdict\tnote']
     for top in sorted(rows):
         r = rows[top]
         note = ('p%s f%s um%s unread=%s const_reg=%s mode=%s vmucp=%s @%s %s'
-                % (r['passing'], r['failing'], r['unmatched'], r['unread'],
-                   r['constant_reg'], r['mode'], r['vmucp'], r['commit'], r['path']))
+                % (_n(r['passing']), _n(r['failing']), _n(r['unmatched']), _n(r['unread']),
+                   _n(r['constant_reg']), r['mode'], r['vmucp'], r['commit'], r['path']))
         out.append('%s\t%s\t%s' % (top, r['verdict'], note))
     return '\n'.join(out) + '\n'
 
