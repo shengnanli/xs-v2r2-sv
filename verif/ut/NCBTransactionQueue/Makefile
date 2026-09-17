@@ -16,6 +16,18 @@ FM_VARIANTS = NCBTransactionQueue NCBTransactionQueue_1
 
 PORTLINT_ORDER = fail
 
+# ★matched-unread 加强（不是放宽：FM 把未读点当真比较点去证，passing 必须随之增加）★
+# 本家族的 unread 点 = info.ReturnNID(11 位) + info.ReturnTxnID(12 位) = 23 位/槽，
+# 两侧同为死位（golden 存了这两个字段，但四个 infoRead 读口的 ParallelMux 只有 38 位
+# {QoS,TgtID,SrcID,TxnID}，可读核照抄同一结构），非 Return* 的 unread 点 0 个。
+# ★这一族的基线是 unmatched unread 而不是 matched_nc★（736(736) / 1472(1472)），
+# FM 自己配不上，必须先由 fm_pins.tcl 按「槽号+字段+位号」1:1 钉成 matched_nc，
+# 本开关才有东西可证。白名单在 scripts/fm_eq.tcl（归 coordinator 维护）。
+# ★复核判据★：passing 6007 -> 6743（_1，正好 +736）/ 12054 -> 13526（正好 +1472）、
+# failing 仍 0、unread 归 0、unmatched unread 0(0)、FM-036 = 0。
+# passing 不增而 unread 归 0 = 点被吞掉，按 fail 处理。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 
 include ../../../scripts/ut_common.mk
 
