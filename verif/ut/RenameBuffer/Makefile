@@ -49,6 +49,42 @@ PORTLINT_ORDER = fail
 #       passing 649→651 / failing 20 / unverified 5149→5147 / unmatched 1(2) / 1593 MB
 FM_MERGE_DUP = false
 
+# ---------------------------------------------------------------------------
+# FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true —— ★加强证明，不是 waiver★
+# ---------------------------------------------------------------------------
+# ★两处须同时生效★：这里是本 UT 的一半，另一半是 scripts/fm_eq.tcl 的 vmucp 白名单
+# （main 9aa378f 加入 RenameBuffer，依据写在那一行紧邻的注释里）。白名单是 fail-closed 的：
+# 非白名单目标开这一项会直接 FM_MODE_ERROR，所以这一行必须等白名单落地之后才加。
+#
+# ★顺序：先配对，再加强★（main f55397d 写进 fm_eq.tcl 的通用判断）
+# 加强只作用于 **matched** unread 点。RenameBuffer 首跑那 51 个是 **unmatched** unread，
+# 那时单开本项**必然空转**（TLBFA 实测 passing 一点没增）。所以先有 fm_pins.tcl 把
+# 51 对钉上，实测转成 matched_nc 之后，本项才有对象。
+#
+# 加入依据（实测，fm_work/RenameBuffer/sidecar/native_facts.json）：
+#   钉点前：native SUCCEEDED / passing 5825 / failing 0 / unverified 0 / aborted 0 /
+#           unmatched 比较点 0(0)，唯一卡点 unmatched unread 51(51)
+#   钉点后：unmatched **六项全零**（compare 0/0、unread 0/0、bbout 0/0），
+#           matched_unread_notcompared_pairs = 51，
+#           ref 唯一点 51 == impl 唯一点 51，**非 matched_nc 的未读项为 0** ⇒ 严格双射
+#   三族均为**两侧同为死位**（不是哪一侧漏了逻辑）：
+#     A  5 个 deqPtrVec_<i>_flag   / B 40 个 deqPtrVec_<i>_value[<b>]  (i=1..5)
+#        deqPtrVec 只有 head 有读者（numValidEntries / deqPtrNext）；提交读口走 deqPtrOH
+#        影子寄存器。golden 靠 Rab.scala 的 dontTouch(deqPtrVec) 留着 1..5 号，
+#        重写核照抄 golden 的寄存器集合 ⇒ 对称。
+#        ★把核收窄成只留 head 反而制造不对称★：golden 那 45 位会变成 golden-only 死位，
+#        连双射都没有了，更难签（与 TLBFA「不要收窄 reqVpn」同一条结论）。
+#     C  6 个 toVecExcpMod preg 的 bit7 —— 8 位存 pdest、输出端口只有 7 位
+#        （golden 自己写的 [6:0]），bit7 无读出路径，两侧同构 bug-for-bug。
+#   钉点脚本 fail-closed 且**证明过不空转**：diag/fm_pins_selftest.tcl 打桩
+#   report_unmatched_points/set_user_match/exit，喂真实 51 条未读点跑四场景，实测
+#     POSITIVE pinned=51 exit=-1 / NEG1 未知形状 exit=3 / NEG2 impl 少一个 exit=3 /
+#     NEG3 推出路径不在集合 exit=3        （纯 tclsh 可复跑，不需要 Formality）
+#
+# ★开启后的验收判据（不达标就不算过，按本仓"passing 不增即空转"）★
+#   passing 5825 -> 5876（**正好 +51**）、failing 仍 0、unread 归 0、unmatched 保持全零
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 include ../../../scripts/ut_common.mk
 
 # golden 的随机初值 initial 块只在 `ifndef SYNTHESIS 下出现，与 FM 侧口径一致：
