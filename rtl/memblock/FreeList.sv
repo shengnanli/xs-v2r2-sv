@@ -242,13 +242,19 @@ module xs_FreeList_core #(
   //   golden 把 freeList 读展开成 2^IDX_W 项查找表，SIZE..2^IDX_W-1 这些项
   //   **全部填 freeList[0]**（firtool 对 Vec 越界读的填充语义），不是 0。
   //   构造上 deqPtr.value < SIZE，但随机初值下会走到这条路径，必须照抄。
+  //
+  //   写法上这里**不用变量下标**，而是"默认取第 0 项 + 逐项常量比较覆盖"——
+  //   它就是 golden 那张查找表的字面形状。用 freeList[deqPtr[i].value] 写会让
+  //   Formality 报 FMR_ELAB-147（Index may take values outside array bound）：
+  //   FM 不把外面那个 `< SIZE` 守卫传播进下标，于是 set_top 直接失败。
+  //   判据是"改 RTL 让下标可证在界内"，不是拿 set_mismatch_message_filter 压消息。
   logic [IDX_W-1:0] deqSlot   [ALLOC_WIDTH];
   logic [ALLOC_WIDTH-1:0] deqCanAlloc;
   always_comb
     for (int i = 0; i < ALLOC_WIDTH; i++) begin
-      // 用 int' 比较：SIZE 为 2 的幂时 IDX_W'(SIZE) 会截断成 0，不能拿来当界。
-      deqSlot[i]     = (int'(deqPtr[i].value) < SIZE) ? freeList[deqPtr[i].value]
-                                                     : freeList[0];
+      deqSlot[i] = freeList[0];                       // 越界（含 SIZE..2^IDX_W-1）的填充项
+      for (int e = 1; e < SIZE; e++)
+        if (deqPtr[i].value == IDX_W'(e)) deqSlot[i] = freeList[e];
       deqCanAlloc[i] = ptr_before(deqPtr[i], tailPtr);
     end
 

@@ -154,10 +154,17 @@ module xs_LqVAddrModule_core
   //   Vec 读展开成 128 项查找表，其中 72..127 这 56 项**全部填 data[0]**，不是 0。
   //   本设计上游不会给出越界地址，但按"查不到就是 0"写会与 golden 失配。
   // ===========================================================================
+  //   写法上这里**不用变量下标**，而是"默认取第 0 项 + 逐项常量比较覆盖"——
+  //   它就是 golden 那张 128 项查找表的字面形状。用 data[io_raddr[i]] 写会让
+  //   Formality 报 FMR_ELAB-147（Index may take values outside array bound）：
+  //   FM 不把外面那个 `< NUM_ENTRIES` 守卫传播进下标，set_top 直接失败。
   logic [DATA_WIDTH-1:0] readSel [NUM_READ];
   always_comb
-    for (int i = 0; i < NUM_READ; i++)
-      readSel[i] = (io_raddr[i] < ADDR_W'(NUM_ENTRIES)) ? data[io_raddr[i]] : data[0];
+    for (int i = 0; i < NUM_READ; i++) begin
+      readSel[i] = data[0];                           // 越界（72..127）的填充项
+      for (int e = 1; e < NUM_ENTRIES; e++)
+        if (io_raddr[i] == ADDR_W'(e)) readSel[i] = data[e];
+    end
 
   // ===========================================================================
   // 6. 时序（全部无复位）
