@@ -30,6 +30,14 @@
 // 16 位的"前递字节掩码",端口名改叫 io_forwardMask_p_i。名字变了,含义没变。
 // (golden 的例化行正是 `.io_forwardValid_0 (io_forwardMask_0_0)`。)
 //
+// 【★ 16 个子模块为什么是展开写而不是 generate 循环 ★】
+// FM 按**名字**配对层次。golden 的实例名是扁平的 data16_0 … data16_15;
+// generate 循环在 SV 里只能生成 g_byte[i].data16 这种带块名的路径,两边对不上。
+// 实测代价:17984 个 unmatched(ref 与 impl 各 17984)+ 20 failing + 700 unverified,
+// 整个目标判 FAILED。修法是**按 golden 的名字展开写 16 个实例**,不是去加名字
+// 映射文件或放宽判据。下面的实例体由 scratchpad/gen_sqdata.py 机械生成,
+// 16 份只有字节下标不同。
+//
 // 【非综合断言】golden 带 2 条(StoreQueueData.scala:332 / :337):同拍两个写口
 // 不许落在同一地址。注意它和子模块里那两条(:211 / :216)是**各自独立**的两份,
 // 父子都查一遍。这里同样保留。
@@ -167,54 +175,618 @@ module SQDataModule(
   logic       fwd_mask [3][16];
   logic [7:0] fwd_data [3][16];
 
-  // 16 片按字节切开例化。地址/使能/needForward 全片共享,只有数据和掩码切片。
-  for (genvar i = 0; i < 16; i++) begin : g_byte
-    SQData8Module data16 (
-      .clock              (clock),
-      .reset              (reset),
-      .io_raddr_0         (io_raddr_0),
-      .io_raddr_1         (io_raddr_1),
-      .io_rdata_0_valid   (slice_rvalid[i][0]),
-      .io_rdata_0_data    (slice_rdata [i][0]),
-      .io_rdata_1_valid   (slice_rvalid[i][1]),
-      .io_rdata_1_data    (slice_rdata [i][1]),
-      .io_data_wen_0      (io_data_wen_0),
-      .io_data_wen_1      (io_data_wen_1),
-      .io_data_waddr_0    (io_data_waddr_0),
-      .io_data_waddr_1    (io_data_waddr_1),
-      // ★ 按字节切数据:第 i 片只拿第 i 个字节 ★
-      .io_data_wdata_0    (io_data_wdata_0[8*i +: 8]),
-      .io_data_wdata_1    (io_data_wdata_1[8*i +: 8]),
-      .io_mask_wen_0      (io_mask_wen_0),
-      .io_mask_wen_1      (io_mask_wen_1),
-      .io_mask_waddr_0    (io_mask_waddr_0),
-      .io_mask_waddr_1    (io_mask_waddr_1),
-      .io_mask_wdata_0    (io_mask_wdata_0[i]),
-      .io_mask_wdata_1    (io_mask_wdata_1[i]),
-      // 前递候选掩码是"哪些条目比我老",与字节位置无关 → 16 片共享同一份
-      .io_needForward_0_0 (io_needForward_0_0),
-      .io_needForward_0_1 (io_needForward_0_1),
-      .io_needForward_1_0 (io_needForward_1_0),
-      .io_needForward_1_1 (io_needForward_1_1),
-      .io_needForward_2_0 (io_needForward_2_0),
-      .io_needForward_2_1 (io_needForward_2_1),
-      // 子模块叫 forwardValid(单字节命中位),聚到本层叫 forwardMask(16 位掩码)
-      .io_forwardValid_0  (fwd_mask[0][i]),
-      .io_forwardValid_1  (fwd_mask[1][i]),
-      .io_forwardValid_2  (fwd_mask[2][i]),
-      .io_forwardData_0   (fwd_data[0][i]),
-      .io_forwardData_1   (fwd_data[1][i]),
-      .io_forwardData_2   (fwd_data[2][i])
-    );
-  end
+  // 16 片按字节切开例化 —— ★实例名必须与 golden 逐个一致(data16_<i>)★,
+  // 见文件头。地址/使能/needForward 全片共享,只有数据和掩码按位切片。
+  SQData8Module data16_0 (
+    .clock              (clock),
+    .reset              (reset),
+    .io_raddr_0         (io_raddr_0),
+    .io_raddr_1         (io_raddr_1),
+    .io_rdata_0_valid   (slice_rvalid[0][0]),
+    .io_rdata_0_data    (slice_rdata [0][0]),
+    .io_rdata_1_valid   (slice_rvalid[0][1]),
+    .io_rdata_1_data    (slice_rdata [0][1]),
+    .io_data_wen_0      (io_data_wen_0),
+    .io_data_wen_1      (io_data_wen_1),
+    .io_data_waddr_0    (io_data_waddr_0),
+    .io_data_waddr_1    (io_data_waddr_1),
+    .io_data_wdata_0    (io_data_wdata_0[0 +: 8]),   // 第 0 个字节
+    .io_data_wdata_1    (io_data_wdata_1[0 +: 8]),
+    .io_mask_wen_0      (io_mask_wen_0),
+    .io_mask_wen_1      (io_mask_wen_1),
+    .io_mask_waddr_0    (io_mask_waddr_0),
+    .io_mask_waddr_1    (io_mask_waddr_1),
+    .io_mask_wdata_0    (io_mask_wdata_0[0]),
+    .io_mask_wdata_1    (io_mask_wdata_1[0]),
+    .io_needForward_0_0 (io_needForward_0_0),
+    .io_needForward_0_1 (io_needForward_0_1),
+    .io_needForward_1_0 (io_needForward_1_0),
+    .io_needForward_1_1 (io_needForward_1_1),
+    .io_needForward_2_0 (io_needForward_2_0),
+    .io_needForward_2_1 (io_needForward_2_1),
+    .io_forwardValid_0  (fwd_mask[0][0]),
+    .io_forwardValid_1  (fwd_mask[1][0]),
+    .io_forwardValid_2  (fwd_mask[2][0]),
+    .io_forwardData_0   (fwd_data[0][0]),
+    .io_forwardData_1   (fwd_data[1][0]),
+    .io_forwardData_2   (fwd_data[2][0])
+  );
+  SQData8Module data16_1 (
+    .clock              (clock),
+    .reset              (reset),
+    .io_raddr_0         (io_raddr_0),
+    .io_raddr_1         (io_raddr_1),
+    .io_rdata_0_valid   (slice_rvalid[1][0]),
+    .io_rdata_0_data    (slice_rdata [1][0]),
+    .io_rdata_1_valid   (slice_rvalid[1][1]),
+    .io_rdata_1_data    (slice_rdata [1][1]),
+    .io_data_wen_0      (io_data_wen_0),
+    .io_data_wen_1      (io_data_wen_1),
+    .io_data_waddr_0    (io_data_waddr_0),
+    .io_data_waddr_1    (io_data_waddr_1),
+    .io_data_wdata_0    (io_data_wdata_0[8 +: 8]),   // 第 1 个字节
+    .io_data_wdata_1    (io_data_wdata_1[8 +: 8]),
+    .io_mask_wen_0      (io_mask_wen_0),
+    .io_mask_wen_1      (io_mask_wen_1),
+    .io_mask_waddr_0    (io_mask_waddr_0),
+    .io_mask_waddr_1    (io_mask_waddr_1),
+    .io_mask_wdata_0    (io_mask_wdata_0[1]),
+    .io_mask_wdata_1    (io_mask_wdata_1[1]),
+    .io_needForward_0_0 (io_needForward_0_0),
+    .io_needForward_0_1 (io_needForward_0_1),
+    .io_needForward_1_0 (io_needForward_1_0),
+    .io_needForward_1_1 (io_needForward_1_1),
+    .io_needForward_2_0 (io_needForward_2_0),
+    .io_needForward_2_1 (io_needForward_2_1),
+    .io_forwardValid_0  (fwd_mask[0][1]),
+    .io_forwardValid_1  (fwd_mask[1][1]),
+    .io_forwardValid_2  (fwd_mask[2][1]),
+    .io_forwardData_0   (fwd_data[0][1]),
+    .io_forwardData_1   (fwd_data[1][1]),
+    .io_forwardData_2   (fwd_data[2][1])
+  );
+  SQData8Module data16_2 (
+    .clock              (clock),
+    .reset              (reset),
+    .io_raddr_0         (io_raddr_0),
+    .io_raddr_1         (io_raddr_1),
+    .io_rdata_0_valid   (slice_rvalid[2][0]),
+    .io_rdata_0_data    (slice_rdata [2][0]),
+    .io_rdata_1_valid   (slice_rvalid[2][1]),
+    .io_rdata_1_data    (slice_rdata [2][1]),
+    .io_data_wen_0      (io_data_wen_0),
+    .io_data_wen_1      (io_data_wen_1),
+    .io_data_waddr_0    (io_data_waddr_0),
+    .io_data_waddr_1    (io_data_waddr_1),
+    .io_data_wdata_0    (io_data_wdata_0[16 +: 8]),   // 第 2 个字节
+    .io_data_wdata_1    (io_data_wdata_1[16 +: 8]),
+    .io_mask_wen_0      (io_mask_wen_0),
+    .io_mask_wen_1      (io_mask_wen_1),
+    .io_mask_waddr_0    (io_mask_waddr_0),
+    .io_mask_waddr_1    (io_mask_waddr_1),
+    .io_mask_wdata_0    (io_mask_wdata_0[2]),
+    .io_mask_wdata_1    (io_mask_wdata_1[2]),
+    .io_needForward_0_0 (io_needForward_0_0),
+    .io_needForward_0_1 (io_needForward_0_1),
+    .io_needForward_1_0 (io_needForward_1_0),
+    .io_needForward_1_1 (io_needForward_1_1),
+    .io_needForward_2_0 (io_needForward_2_0),
+    .io_needForward_2_1 (io_needForward_2_1),
+    .io_forwardValid_0  (fwd_mask[0][2]),
+    .io_forwardValid_1  (fwd_mask[1][2]),
+    .io_forwardValid_2  (fwd_mask[2][2]),
+    .io_forwardData_0   (fwd_data[0][2]),
+    .io_forwardData_1   (fwd_data[1][2]),
+    .io_forwardData_2   (fwd_data[2][2])
+  );
+  SQData8Module data16_3 (
+    .clock              (clock),
+    .reset              (reset),
+    .io_raddr_0         (io_raddr_0),
+    .io_raddr_1         (io_raddr_1),
+    .io_rdata_0_valid   (slice_rvalid[3][0]),
+    .io_rdata_0_data    (slice_rdata [3][0]),
+    .io_rdata_1_valid   (slice_rvalid[3][1]),
+    .io_rdata_1_data    (slice_rdata [3][1]),
+    .io_data_wen_0      (io_data_wen_0),
+    .io_data_wen_1      (io_data_wen_1),
+    .io_data_waddr_0    (io_data_waddr_0),
+    .io_data_waddr_1    (io_data_waddr_1),
+    .io_data_wdata_0    (io_data_wdata_0[24 +: 8]),   // 第 3 个字节
+    .io_data_wdata_1    (io_data_wdata_1[24 +: 8]),
+    .io_mask_wen_0      (io_mask_wen_0),
+    .io_mask_wen_1      (io_mask_wen_1),
+    .io_mask_waddr_0    (io_mask_waddr_0),
+    .io_mask_waddr_1    (io_mask_waddr_1),
+    .io_mask_wdata_0    (io_mask_wdata_0[3]),
+    .io_mask_wdata_1    (io_mask_wdata_1[3]),
+    .io_needForward_0_0 (io_needForward_0_0),
+    .io_needForward_0_1 (io_needForward_0_1),
+    .io_needForward_1_0 (io_needForward_1_0),
+    .io_needForward_1_1 (io_needForward_1_1),
+    .io_needForward_2_0 (io_needForward_2_0),
+    .io_needForward_2_1 (io_needForward_2_1),
+    .io_forwardValid_0  (fwd_mask[0][3]),
+    .io_forwardValid_1  (fwd_mask[1][3]),
+    .io_forwardValid_2  (fwd_mask[2][3]),
+    .io_forwardData_0   (fwd_data[0][3]),
+    .io_forwardData_1   (fwd_data[1][3]),
+    .io_forwardData_2   (fwd_data[2][3])
+  );
+  SQData8Module data16_4 (
+    .clock              (clock),
+    .reset              (reset),
+    .io_raddr_0         (io_raddr_0),
+    .io_raddr_1         (io_raddr_1),
+    .io_rdata_0_valid   (slice_rvalid[4][0]),
+    .io_rdata_0_data    (slice_rdata [4][0]),
+    .io_rdata_1_valid   (slice_rvalid[4][1]),
+    .io_rdata_1_data    (slice_rdata [4][1]),
+    .io_data_wen_0      (io_data_wen_0),
+    .io_data_wen_1      (io_data_wen_1),
+    .io_data_waddr_0    (io_data_waddr_0),
+    .io_data_waddr_1    (io_data_waddr_1),
+    .io_data_wdata_0    (io_data_wdata_0[32 +: 8]),   // 第 4 个字节
+    .io_data_wdata_1    (io_data_wdata_1[32 +: 8]),
+    .io_mask_wen_0      (io_mask_wen_0),
+    .io_mask_wen_1      (io_mask_wen_1),
+    .io_mask_waddr_0    (io_mask_waddr_0),
+    .io_mask_waddr_1    (io_mask_waddr_1),
+    .io_mask_wdata_0    (io_mask_wdata_0[4]),
+    .io_mask_wdata_1    (io_mask_wdata_1[4]),
+    .io_needForward_0_0 (io_needForward_0_0),
+    .io_needForward_0_1 (io_needForward_0_1),
+    .io_needForward_1_0 (io_needForward_1_0),
+    .io_needForward_1_1 (io_needForward_1_1),
+    .io_needForward_2_0 (io_needForward_2_0),
+    .io_needForward_2_1 (io_needForward_2_1),
+    .io_forwardValid_0  (fwd_mask[0][4]),
+    .io_forwardValid_1  (fwd_mask[1][4]),
+    .io_forwardValid_2  (fwd_mask[2][4]),
+    .io_forwardData_0   (fwd_data[0][4]),
+    .io_forwardData_1   (fwd_data[1][4]),
+    .io_forwardData_2   (fwd_data[2][4])
+  );
+  SQData8Module data16_5 (
+    .clock              (clock),
+    .reset              (reset),
+    .io_raddr_0         (io_raddr_0),
+    .io_raddr_1         (io_raddr_1),
+    .io_rdata_0_valid   (slice_rvalid[5][0]),
+    .io_rdata_0_data    (slice_rdata [5][0]),
+    .io_rdata_1_valid   (slice_rvalid[5][1]),
+    .io_rdata_1_data    (slice_rdata [5][1]),
+    .io_data_wen_0      (io_data_wen_0),
+    .io_data_wen_1      (io_data_wen_1),
+    .io_data_waddr_0    (io_data_waddr_0),
+    .io_data_waddr_1    (io_data_waddr_1),
+    .io_data_wdata_0    (io_data_wdata_0[40 +: 8]),   // 第 5 个字节
+    .io_data_wdata_1    (io_data_wdata_1[40 +: 8]),
+    .io_mask_wen_0      (io_mask_wen_0),
+    .io_mask_wen_1      (io_mask_wen_1),
+    .io_mask_waddr_0    (io_mask_waddr_0),
+    .io_mask_waddr_1    (io_mask_waddr_1),
+    .io_mask_wdata_0    (io_mask_wdata_0[5]),
+    .io_mask_wdata_1    (io_mask_wdata_1[5]),
+    .io_needForward_0_0 (io_needForward_0_0),
+    .io_needForward_0_1 (io_needForward_0_1),
+    .io_needForward_1_0 (io_needForward_1_0),
+    .io_needForward_1_1 (io_needForward_1_1),
+    .io_needForward_2_0 (io_needForward_2_0),
+    .io_needForward_2_1 (io_needForward_2_1),
+    .io_forwardValid_0  (fwd_mask[0][5]),
+    .io_forwardValid_1  (fwd_mask[1][5]),
+    .io_forwardValid_2  (fwd_mask[2][5]),
+    .io_forwardData_0   (fwd_data[0][5]),
+    .io_forwardData_1   (fwd_data[1][5]),
+    .io_forwardData_2   (fwd_data[2][5])
+  );
+  SQData8Module data16_6 (
+    .clock              (clock),
+    .reset              (reset),
+    .io_raddr_0         (io_raddr_0),
+    .io_raddr_1         (io_raddr_1),
+    .io_rdata_0_valid   (slice_rvalid[6][0]),
+    .io_rdata_0_data    (slice_rdata [6][0]),
+    .io_rdata_1_valid   (slice_rvalid[6][1]),
+    .io_rdata_1_data    (slice_rdata [6][1]),
+    .io_data_wen_0      (io_data_wen_0),
+    .io_data_wen_1      (io_data_wen_1),
+    .io_data_waddr_0    (io_data_waddr_0),
+    .io_data_waddr_1    (io_data_waddr_1),
+    .io_data_wdata_0    (io_data_wdata_0[48 +: 8]),   // 第 6 个字节
+    .io_data_wdata_1    (io_data_wdata_1[48 +: 8]),
+    .io_mask_wen_0      (io_mask_wen_0),
+    .io_mask_wen_1      (io_mask_wen_1),
+    .io_mask_waddr_0    (io_mask_waddr_0),
+    .io_mask_waddr_1    (io_mask_waddr_1),
+    .io_mask_wdata_0    (io_mask_wdata_0[6]),
+    .io_mask_wdata_1    (io_mask_wdata_1[6]),
+    .io_needForward_0_0 (io_needForward_0_0),
+    .io_needForward_0_1 (io_needForward_0_1),
+    .io_needForward_1_0 (io_needForward_1_0),
+    .io_needForward_1_1 (io_needForward_1_1),
+    .io_needForward_2_0 (io_needForward_2_0),
+    .io_needForward_2_1 (io_needForward_2_1),
+    .io_forwardValid_0  (fwd_mask[0][6]),
+    .io_forwardValid_1  (fwd_mask[1][6]),
+    .io_forwardValid_2  (fwd_mask[2][6]),
+    .io_forwardData_0   (fwd_data[0][6]),
+    .io_forwardData_1   (fwd_data[1][6]),
+    .io_forwardData_2   (fwd_data[2][6])
+  );
+  SQData8Module data16_7 (
+    .clock              (clock),
+    .reset              (reset),
+    .io_raddr_0         (io_raddr_0),
+    .io_raddr_1         (io_raddr_1),
+    .io_rdata_0_valid   (slice_rvalid[7][0]),
+    .io_rdata_0_data    (slice_rdata [7][0]),
+    .io_rdata_1_valid   (slice_rvalid[7][1]),
+    .io_rdata_1_data    (slice_rdata [7][1]),
+    .io_data_wen_0      (io_data_wen_0),
+    .io_data_wen_1      (io_data_wen_1),
+    .io_data_waddr_0    (io_data_waddr_0),
+    .io_data_waddr_1    (io_data_waddr_1),
+    .io_data_wdata_0    (io_data_wdata_0[56 +: 8]),   // 第 7 个字节
+    .io_data_wdata_1    (io_data_wdata_1[56 +: 8]),
+    .io_mask_wen_0      (io_mask_wen_0),
+    .io_mask_wen_1      (io_mask_wen_1),
+    .io_mask_waddr_0    (io_mask_waddr_0),
+    .io_mask_waddr_1    (io_mask_waddr_1),
+    .io_mask_wdata_0    (io_mask_wdata_0[7]),
+    .io_mask_wdata_1    (io_mask_wdata_1[7]),
+    .io_needForward_0_0 (io_needForward_0_0),
+    .io_needForward_0_1 (io_needForward_0_1),
+    .io_needForward_1_0 (io_needForward_1_0),
+    .io_needForward_1_1 (io_needForward_1_1),
+    .io_needForward_2_0 (io_needForward_2_0),
+    .io_needForward_2_1 (io_needForward_2_1),
+    .io_forwardValid_0  (fwd_mask[0][7]),
+    .io_forwardValid_1  (fwd_mask[1][7]),
+    .io_forwardValid_2  (fwd_mask[2][7]),
+    .io_forwardData_0   (fwd_data[0][7]),
+    .io_forwardData_1   (fwd_data[1][7]),
+    .io_forwardData_2   (fwd_data[2][7])
+  );
+  SQData8Module data16_8 (
+    .clock              (clock),
+    .reset              (reset),
+    .io_raddr_0         (io_raddr_0),
+    .io_raddr_1         (io_raddr_1),
+    .io_rdata_0_valid   (slice_rvalid[8][0]),
+    .io_rdata_0_data    (slice_rdata [8][0]),
+    .io_rdata_1_valid   (slice_rvalid[8][1]),
+    .io_rdata_1_data    (slice_rdata [8][1]),
+    .io_data_wen_0      (io_data_wen_0),
+    .io_data_wen_1      (io_data_wen_1),
+    .io_data_waddr_0    (io_data_waddr_0),
+    .io_data_waddr_1    (io_data_waddr_1),
+    .io_data_wdata_0    (io_data_wdata_0[64 +: 8]),   // 第 8 个字节
+    .io_data_wdata_1    (io_data_wdata_1[64 +: 8]),
+    .io_mask_wen_0      (io_mask_wen_0),
+    .io_mask_wen_1      (io_mask_wen_1),
+    .io_mask_waddr_0    (io_mask_waddr_0),
+    .io_mask_waddr_1    (io_mask_waddr_1),
+    .io_mask_wdata_0    (io_mask_wdata_0[8]),
+    .io_mask_wdata_1    (io_mask_wdata_1[8]),
+    .io_needForward_0_0 (io_needForward_0_0),
+    .io_needForward_0_1 (io_needForward_0_1),
+    .io_needForward_1_0 (io_needForward_1_0),
+    .io_needForward_1_1 (io_needForward_1_1),
+    .io_needForward_2_0 (io_needForward_2_0),
+    .io_needForward_2_1 (io_needForward_2_1),
+    .io_forwardValid_0  (fwd_mask[0][8]),
+    .io_forwardValid_1  (fwd_mask[1][8]),
+    .io_forwardValid_2  (fwd_mask[2][8]),
+    .io_forwardData_0   (fwd_data[0][8]),
+    .io_forwardData_1   (fwd_data[1][8]),
+    .io_forwardData_2   (fwd_data[2][8])
+  );
+  SQData8Module data16_9 (
+    .clock              (clock),
+    .reset              (reset),
+    .io_raddr_0         (io_raddr_0),
+    .io_raddr_1         (io_raddr_1),
+    .io_rdata_0_valid   (slice_rvalid[9][0]),
+    .io_rdata_0_data    (slice_rdata [9][0]),
+    .io_rdata_1_valid   (slice_rvalid[9][1]),
+    .io_rdata_1_data    (slice_rdata [9][1]),
+    .io_data_wen_0      (io_data_wen_0),
+    .io_data_wen_1      (io_data_wen_1),
+    .io_data_waddr_0    (io_data_waddr_0),
+    .io_data_waddr_1    (io_data_waddr_1),
+    .io_data_wdata_0    (io_data_wdata_0[72 +: 8]),   // 第 9 个字节
+    .io_data_wdata_1    (io_data_wdata_1[72 +: 8]),
+    .io_mask_wen_0      (io_mask_wen_0),
+    .io_mask_wen_1      (io_mask_wen_1),
+    .io_mask_waddr_0    (io_mask_waddr_0),
+    .io_mask_waddr_1    (io_mask_waddr_1),
+    .io_mask_wdata_0    (io_mask_wdata_0[9]),
+    .io_mask_wdata_1    (io_mask_wdata_1[9]),
+    .io_needForward_0_0 (io_needForward_0_0),
+    .io_needForward_0_1 (io_needForward_0_1),
+    .io_needForward_1_0 (io_needForward_1_0),
+    .io_needForward_1_1 (io_needForward_1_1),
+    .io_needForward_2_0 (io_needForward_2_0),
+    .io_needForward_2_1 (io_needForward_2_1),
+    .io_forwardValid_0  (fwd_mask[0][9]),
+    .io_forwardValid_1  (fwd_mask[1][9]),
+    .io_forwardValid_2  (fwd_mask[2][9]),
+    .io_forwardData_0   (fwd_data[0][9]),
+    .io_forwardData_1   (fwd_data[1][9]),
+    .io_forwardData_2   (fwd_data[2][9])
+  );
+  SQData8Module data16_10 (
+    .clock              (clock),
+    .reset              (reset),
+    .io_raddr_0         (io_raddr_0),
+    .io_raddr_1         (io_raddr_1),
+    .io_rdata_0_valid   (slice_rvalid[10][0]),
+    .io_rdata_0_data    (slice_rdata [10][0]),
+    .io_rdata_1_valid   (slice_rvalid[10][1]),
+    .io_rdata_1_data    (slice_rdata [10][1]),
+    .io_data_wen_0      (io_data_wen_0),
+    .io_data_wen_1      (io_data_wen_1),
+    .io_data_waddr_0    (io_data_waddr_0),
+    .io_data_waddr_1    (io_data_waddr_1),
+    .io_data_wdata_0    (io_data_wdata_0[80 +: 8]),   // 第 10 个字节
+    .io_data_wdata_1    (io_data_wdata_1[80 +: 8]),
+    .io_mask_wen_0      (io_mask_wen_0),
+    .io_mask_wen_1      (io_mask_wen_1),
+    .io_mask_waddr_0    (io_mask_waddr_0),
+    .io_mask_waddr_1    (io_mask_waddr_1),
+    .io_mask_wdata_0    (io_mask_wdata_0[10]),
+    .io_mask_wdata_1    (io_mask_wdata_1[10]),
+    .io_needForward_0_0 (io_needForward_0_0),
+    .io_needForward_0_1 (io_needForward_0_1),
+    .io_needForward_1_0 (io_needForward_1_0),
+    .io_needForward_1_1 (io_needForward_1_1),
+    .io_needForward_2_0 (io_needForward_2_0),
+    .io_needForward_2_1 (io_needForward_2_1),
+    .io_forwardValid_0  (fwd_mask[0][10]),
+    .io_forwardValid_1  (fwd_mask[1][10]),
+    .io_forwardValid_2  (fwd_mask[2][10]),
+    .io_forwardData_0   (fwd_data[0][10]),
+    .io_forwardData_1   (fwd_data[1][10]),
+    .io_forwardData_2   (fwd_data[2][10])
+  );
+  SQData8Module data16_11 (
+    .clock              (clock),
+    .reset              (reset),
+    .io_raddr_0         (io_raddr_0),
+    .io_raddr_1         (io_raddr_1),
+    .io_rdata_0_valid   (slice_rvalid[11][0]),
+    .io_rdata_0_data    (slice_rdata [11][0]),
+    .io_rdata_1_valid   (slice_rvalid[11][1]),
+    .io_rdata_1_data    (slice_rdata [11][1]),
+    .io_data_wen_0      (io_data_wen_0),
+    .io_data_wen_1      (io_data_wen_1),
+    .io_data_waddr_0    (io_data_waddr_0),
+    .io_data_waddr_1    (io_data_waddr_1),
+    .io_data_wdata_0    (io_data_wdata_0[88 +: 8]),   // 第 11 个字节
+    .io_data_wdata_1    (io_data_wdata_1[88 +: 8]),
+    .io_mask_wen_0      (io_mask_wen_0),
+    .io_mask_wen_1      (io_mask_wen_1),
+    .io_mask_waddr_0    (io_mask_waddr_0),
+    .io_mask_waddr_1    (io_mask_waddr_1),
+    .io_mask_wdata_0    (io_mask_wdata_0[11]),
+    .io_mask_wdata_1    (io_mask_wdata_1[11]),
+    .io_needForward_0_0 (io_needForward_0_0),
+    .io_needForward_0_1 (io_needForward_0_1),
+    .io_needForward_1_0 (io_needForward_1_0),
+    .io_needForward_1_1 (io_needForward_1_1),
+    .io_needForward_2_0 (io_needForward_2_0),
+    .io_needForward_2_1 (io_needForward_2_1),
+    .io_forwardValid_0  (fwd_mask[0][11]),
+    .io_forwardValid_1  (fwd_mask[1][11]),
+    .io_forwardValid_2  (fwd_mask[2][11]),
+    .io_forwardData_0   (fwd_data[0][11]),
+    .io_forwardData_1   (fwd_data[1][11]),
+    .io_forwardData_2   (fwd_data[2][11])
+  );
+  SQData8Module data16_12 (
+    .clock              (clock),
+    .reset              (reset),
+    .io_raddr_0         (io_raddr_0),
+    .io_raddr_1         (io_raddr_1),
+    .io_rdata_0_valid   (slice_rvalid[12][0]),
+    .io_rdata_0_data    (slice_rdata [12][0]),
+    .io_rdata_1_valid   (slice_rvalid[12][1]),
+    .io_rdata_1_data    (slice_rdata [12][1]),
+    .io_data_wen_0      (io_data_wen_0),
+    .io_data_wen_1      (io_data_wen_1),
+    .io_data_waddr_0    (io_data_waddr_0),
+    .io_data_waddr_1    (io_data_waddr_1),
+    .io_data_wdata_0    (io_data_wdata_0[96 +: 8]),   // 第 12 个字节
+    .io_data_wdata_1    (io_data_wdata_1[96 +: 8]),
+    .io_mask_wen_0      (io_mask_wen_0),
+    .io_mask_wen_1      (io_mask_wen_1),
+    .io_mask_waddr_0    (io_mask_waddr_0),
+    .io_mask_waddr_1    (io_mask_waddr_1),
+    .io_mask_wdata_0    (io_mask_wdata_0[12]),
+    .io_mask_wdata_1    (io_mask_wdata_1[12]),
+    .io_needForward_0_0 (io_needForward_0_0),
+    .io_needForward_0_1 (io_needForward_0_1),
+    .io_needForward_1_0 (io_needForward_1_0),
+    .io_needForward_1_1 (io_needForward_1_1),
+    .io_needForward_2_0 (io_needForward_2_0),
+    .io_needForward_2_1 (io_needForward_2_1),
+    .io_forwardValid_0  (fwd_mask[0][12]),
+    .io_forwardValid_1  (fwd_mask[1][12]),
+    .io_forwardValid_2  (fwd_mask[2][12]),
+    .io_forwardData_0   (fwd_data[0][12]),
+    .io_forwardData_1   (fwd_data[1][12]),
+    .io_forwardData_2   (fwd_data[2][12])
+  );
+  SQData8Module data16_13 (
+    .clock              (clock),
+    .reset              (reset),
+    .io_raddr_0         (io_raddr_0),
+    .io_raddr_1         (io_raddr_1),
+    .io_rdata_0_valid   (slice_rvalid[13][0]),
+    .io_rdata_0_data    (slice_rdata [13][0]),
+    .io_rdata_1_valid   (slice_rvalid[13][1]),
+    .io_rdata_1_data    (slice_rdata [13][1]),
+    .io_data_wen_0      (io_data_wen_0),
+    .io_data_wen_1      (io_data_wen_1),
+    .io_data_waddr_0    (io_data_waddr_0),
+    .io_data_waddr_1    (io_data_waddr_1),
+    .io_data_wdata_0    (io_data_wdata_0[104 +: 8]),   // 第 13 个字节
+    .io_data_wdata_1    (io_data_wdata_1[104 +: 8]),
+    .io_mask_wen_0      (io_mask_wen_0),
+    .io_mask_wen_1      (io_mask_wen_1),
+    .io_mask_waddr_0    (io_mask_waddr_0),
+    .io_mask_waddr_1    (io_mask_waddr_1),
+    .io_mask_wdata_0    (io_mask_wdata_0[13]),
+    .io_mask_wdata_1    (io_mask_wdata_1[13]),
+    .io_needForward_0_0 (io_needForward_0_0),
+    .io_needForward_0_1 (io_needForward_0_1),
+    .io_needForward_1_0 (io_needForward_1_0),
+    .io_needForward_1_1 (io_needForward_1_1),
+    .io_needForward_2_0 (io_needForward_2_0),
+    .io_needForward_2_1 (io_needForward_2_1),
+    .io_forwardValid_0  (fwd_mask[0][13]),
+    .io_forwardValid_1  (fwd_mask[1][13]),
+    .io_forwardValid_2  (fwd_mask[2][13]),
+    .io_forwardData_0   (fwd_data[0][13]),
+    .io_forwardData_1   (fwd_data[1][13]),
+    .io_forwardData_2   (fwd_data[2][13])
+  );
+  SQData8Module data16_14 (
+    .clock              (clock),
+    .reset              (reset),
+    .io_raddr_0         (io_raddr_0),
+    .io_raddr_1         (io_raddr_1),
+    .io_rdata_0_valid   (slice_rvalid[14][0]),
+    .io_rdata_0_data    (slice_rdata [14][0]),
+    .io_rdata_1_valid   (slice_rvalid[14][1]),
+    .io_rdata_1_data    (slice_rdata [14][1]),
+    .io_data_wen_0      (io_data_wen_0),
+    .io_data_wen_1      (io_data_wen_1),
+    .io_data_waddr_0    (io_data_waddr_0),
+    .io_data_waddr_1    (io_data_waddr_1),
+    .io_data_wdata_0    (io_data_wdata_0[112 +: 8]),   // 第 14 个字节
+    .io_data_wdata_1    (io_data_wdata_1[112 +: 8]),
+    .io_mask_wen_0      (io_mask_wen_0),
+    .io_mask_wen_1      (io_mask_wen_1),
+    .io_mask_waddr_0    (io_mask_waddr_0),
+    .io_mask_waddr_1    (io_mask_waddr_1),
+    .io_mask_wdata_0    (io_mask_wdata_0[14]),
+    .io_mask_wdata_1    (io_mask_wdata_1[14]),
+    .io_needForward_0_0 (io_needForward_0_0),
+    .io_needForward_0_1 (io_needForward_0_1),
+    .io_needForward_1_0 (io_needForward_1_0),
+    .io_needForward_1_1 (io_needForward_1_1),
+    .io_needForward_2_0 (io_needForward_2_0),
+    .io_needForward_2_1 (io_needForward_2_1),
+    .io_forwardValid_0  (fwd_mask[0][14]),
+    .io_forwardValid_1  (fwd_mask[1][14]),
+    .io_forwardValid_2  (fwd_mask[2][14]),
+    .io_forwardData_0   (fwd_data[0][14]),
+    .io_forwardData_1   (fwd_data[1][14]),
+    .io_forwardData_2   (fwd_data[2][14])
+  );
+  SQData8Module data16_15 (
+    .clock              (clock),
+    .reset              (reset),
+    .io_raddr_0         (io_raddr_0),
+    .io_raddr_1         (io_raddr_1),
+    .io_rdata_0_valid   (slice_rvalid[15][0]),
+    .io_rdata_0_data    (slice_rdata [15][0]),
+    .io_rdata_1_valid   (slice_rvalid[15][1]),
+    .io_rdata_1_data    (slice_rdata [15][1]),
+    .io_data_wen_0      (io_data_wen_0),
+    .io_data_wen_1      (io_data_wen_1),
+    .io_data_waddr_0    (io_data_waddr_0),
+    .io_data_waddr_1    (io_data_waddr_1),
+    .io_data_wdata_0    (io_data_wdata_0[120 +: 8]),   // 第 15 个字节
+    .io_data_wdata_1    (io_data_wdata_1[120 +: 8]),
+    .io_mask_wen_0      (io_mask_wen_0),
+    .io_mask_wen_1      (io_mask_wen_1),
+    .io_mask_waddr_0    (io_mask_waddr_0),
+    .io_mask_waddr_1    (io_mask_waddr_1),
+    .io_mask_wdata_0    (io_mask_wdata_0[15]),
+    .io_mask_wdata_1    (io_mask_wdata_1[15]),
+    .io_needForward_0_0 (io_needForward_0_0),
+    .io_needForward_0_1 (io_needForward_0_1),
+    .io_needForward_1_0 (io_needForward_1_0),
+    .io_needForward_1_1 (io_needForward_1_1),
+    .io_needForward_2_0 (io_needForward_2_0),
+    .io_needForward_2_1 (io_needForward_2_1),
+    .io_forwardValid_0  (fwd_mask[0][15]),
+    .io_forwardValid_1  (fwd_mask[1][15]),
+    .io_forwardValid_2  (fwd_mask[2][15]),
+    .io_forwardData_0   (fwd_data[0][15]),
+    .io_forwardData_1   (fwd_data[1][15]),
+    .io_forwardData_2   (fwd_data[2][15])
+  );
 
   // 读结果重新拼回 128 位数据 + 16 位掩码。
-  for (genvar i = 0; i < 16; i++) begin : g_rdata
-    assign io_rdata_0_mask[i]        = slice_rvalid[i][0];
-    assign io_rdata_0_data[8*i +: 8] = slice_rdata [i][0];
-    assign io_rdata_1_mask[i]        = slice_rvalid[i][1];
-    assign io_rdata_1_data[8*i +: 8] = slice_rdata [i][1];
-  end
+  assign io_rdata_0_mask[0]      = slice_rvalid[0][0];
+  assign io_rdata_0_data[0 +: 8] = slice_rdata [0][0];
+  assign io_rdata_1_mask[0]      = slice_rvalid[0][1];
+  assign io_rdata_1_data[0 +: 8] = slice_rdata [0][1];
+  assign io_rdata_0_mask[1]      = slice_rvalid[1][0];
+  assign io_rdata_0_data[8 +: 8] = slice_rdata [1][0];
+  assign io_rdata_1_mask[1]      = slice_rvalid[1][1];
+  assign io_rdata_1_data[8 +: 8] = slice_rdata [1][1];
+  assign io_rdata_0_mask[2]      = slice_rvalid[2][0];
+  assign io_rdata_0_data[16 +: 8] = slice_rdata [2][0];
+  assign io_rdata_1_mask[2]      = slice_rvalid[2][1];
+  assign io_rdata_1_data[16 +: 8] = slice_rdata [2][1];
+  assign io_rdata_0_mask[3]      = slice_rvalid[3][0];
+  assign io_rdata_0_data[24 +: 8] = slice_rdata [3][0];
+  assign io_rdata_1_mask[3]      = slice_rvalid[3][1];
+  assign io_rdata_1_data[24 +: 8] = slice_rdata [3][1];
+  assign io_rdata_0_mask[4]      = slice_rvalid[4][0];
+  assign io_rdata_0_data[32 +: 8] = slice_rdata [4][0];
+  assign io_rdata_1_mask[4]      = slice_rvalid[4][1];
+  assign io_rdata_1_data[32 +: 8] = slice_rdata [4][1];
+  assign io_rdata_0_mask[5]      = slice_rvalid[5][0];
+  assign io_rdata_0_data[40 +: 8] = slice_rdata [5][0];
+  assign io_rdata_1_mask[5]      = slice_rvalid[5][1];
+  assign io_rdata_1_data[40 +: 8] = slice_rdata [5][1];
+  assign io_rdata_0_mask[6]      = slice_rvalid[6][0];
+  assign io_rdata_0_data[48 +: 8] = slice_rdata [6][0];
+  assign io_rdata_1_mask[6]      = slice_rvalid[6][1];
+  assign io_rdata_1_data[48 +: 8] = slice_rdata [6][1];
+  assign io_rdata_0_mask[7]      = slice_rvalid[7][0];
+  assign io_rdata_0_data[56 +: 8] = slice_rdata [7][0];
+  assign io_rdata_1_mask[7]      = slice_rvalid[7][1];
+  assign io_rdata_1_data[56 +: 8] = slice_rdata [7][1];
+  assign io_rdata_0_mask[8]      = slice_rvalid[8][0];
+  assign io_rdata_0_data[64 +: 8] = slice_rdata [8][0];
+  assign io_rdata_1_mask[8]      = slice_rvalid[8][1];
+  assign io_rdata_1_data[64 +: 8] = slice_rdata [8][1];
+  assign io_rdata_0_mask[9]      = slice_rvalid[9][0];
+  assign io_rdata_0_data[72 +: 8] = slice_rdata [9][0];
+  assign io_rdata_1_mask[9]      = slice_rvalid[9][1];
+  assign io_rdata_1_data[72 +: 8] = slice_rdata [9][1];
+  assign io_rdata_0_mask[10]      = slice_rvalid[10][0];
+  assign io_rdata_0_data[80 +: 8] = slice_rdata [10][0];
+  assign io_rdata_1_mask[10]      = slice_rvalid[10][1];
+  assign io_rdata_1_data[80 +: 8] = slice_rdata [10][1];
+  assign io_rdata_0_mask[11]      = slice_rvalid[11][0];
+  assign io_rdata_0_data[88 +: 8] = slice_rdata [11][0];
+  assign io_rdata_1_mask[11]      = slice_rvalid[11][1];
+  assign io_rdata_1_data[88 +: 8] = slice_rdata [11][1];
+  assign io_rdata_0_mask[12]      = slice_rvalid[12][0];
+  assign io_rdata_0_data[96 +: 8] = slice_rdata [12][0];
+  assign io_rdata_1_mask[12]      = slice_rvalid[12][1];
+  assign io_rdata_1_data[96 +: 8] = slice_rdata [12][1];
+  assign io_rdata_0_mask[13]      = slice_rvalid[13][0];
+  assign io_rdata_0_data[104 +: 8] = slice_rdata [13][0];
+  assign io_rdata_1_mask[13]      = slice_rvalid[13][1];
+  assign io_rdata_1_data[104 +: 8] = slice_rdata [13][1];
+  assign io_rdata_0_mask[14]      = slice_rvalid[14][0];
+  assign io_rdata_0_data[112 +: 8] = slice_rdata [14][0];
+  assign io_rdata_1_mask[14]      = slice_rvalid[14][1];
+  assign io_rdata_1_data[112 +: 8] = slice_rdata [14][1];
+  assign io_rdata_0_mask[15]      = slice_rvalid[15][0];
+  assign io_rdata_0_data[120 +: 8] = slice_rdata [15][0];
+  assign io_rdata_1_mask[15]      = slice_rvalid[15][1];
+  assign io_rdata_1_data[120 +: 8] = slice_rdata [15][1];
 
   // 前递结果摊平成 golden 的扁平端口。
   assign io_forwardMask_0_0 = fwd_mask[0][0];
