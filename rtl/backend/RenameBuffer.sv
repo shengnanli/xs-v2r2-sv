@@ -352,6 +352,13 @@ module xs_RenameBuffer_core
                       ? walk_ptr_next
                       : rab_ptr_t'((PTR_W+1)'(enq_ptr) + (PTR_W+1)'(enq_count));
 
+  // golden 把 8 位的 enqPtrNext_value 抽成**一根共享线**，1..5 号的五个加法器共用它，
+  // 而 head(0 号) 直接取它、**不过加法器**。本核照抄这个形状：写成
+  // 「六个都 + i」在值上一样，但会给 0 号多挂一个 `+0` 的锥体，
+  // 和 golden 的结构不再一一对应。
+  logic [PTR_W-1:0] enq_ptr_next_value;
+  assign enq_ptr_next_value = enq_ptr_next.value;
+
   // ---- deqPtrOH：deqPtr 的 one-hot 影子寄存器，循环左移推进 ----
   // ★越界语义★：golden 的表是 8 项（wire [7:0][255:0] _GEN_110），下标 0..6 是
   //   左移 0..6，**下标 7 是左移 0**（越界 → 取第 0 项）。步数最大 6，第 7 格不可达。
@@ -470,10 +477,11 @@ module xs_RenameBuffer_core
       allow_enq_q          <= 1'b1;                                        // ★复位值 1★
       allow_enq_dispatch_q <= 1'b1;                                        // ★复位值 1★
     end else begin
-      // ---- 队尾指针：6 份 value 各自 = enqPtrNext + i，只有 head 有 flag ----
-      enq_ptr_flag_q <= enq_ptr_next.flag;
-      for (int i = 0; i < RENAME_W; i++)
-        enq_ptr_value_q[i] <= PTR_W'(enq_ptr_next.value + PTR_W'(i));
+      // ---- 队尾指针：head 直接取 enqPtrNext_value，1..5 各加常数；只有 head 有 flag ----
+      enq_ptr_flag_q     <= enq_ptr_next.flag;
+      enq_ptr_value_q[0] <= enq_ptr_next_value;              // ★不过加法器，同 golden★
+      for (int i = 1; i < RENAME_W; i++)
+        enq_ptr_value_q[i] <= PTR_W'(enq_ptr_next_value + PTR_W'(i));
 
       // ---- 队头指针：6 份 value + 6 份 flag（flag 是 dontTouch 保下来的）----
       for (int i = 0; i < COMMIT_W; i++) begin
