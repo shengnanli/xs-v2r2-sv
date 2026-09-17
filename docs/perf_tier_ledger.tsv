@@ -20,8 +20,8 @@
 # tier D_CONST           876
 # tier D_INVARIANT      1003
 # tier X_UNRESOLVED        0
-# status MEASURED       23410
-# status GAP              599
+# status MEASURED       23398
+# status GAP              611
 # status BY_CONSTRUCTION   1879
 # total                25888
 kind	scope	name	tier	status	n_bores	n_ctrl	n_gap	owner_modules	owner_rewritten	criterion	evidence
@@ -772,11 +772,11 @@ PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.dispatch	storese
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.dispatch	storeset_store_wait	D_INVARIANT	BY_CONSTRUCTION	0	0	0		-	no_bore_in_backward_cone	值只由 endpoint 自身计数状态与 io_timer/io_clean/io_dump/reset 决定
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.dispatch	wait_cycle	C_DIAG	MEASURED	1	0	0	NewDispatch	no	FC/no_reader:全部 1 条 bore 都不馈入控制	NewDispatch._GEN_163
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.dispatch	waittable_load_wait	D_INVARIANT	BY_CONSTRUCTION	0	0	0		-	no_bore_in_backward_cone	值只由 endpoint 自身计数状态与 io_timer/io_clean/io_dump/reset 决定
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.dispatch.fpBusyTable	busy_count	C_DIAG	MEASURED	1	0	0	BusyTable_1	no	FC/no_reader:全部 1 条 bore 都不馈入控制	BusyTable_1._GEN
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.dispatch.intBusyTable	busy_count	C_DIAG	MEASURED	1	0	0	BusyTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	BusyTable._GEN_4
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.dispatch.v0BusyTable	busy_count	C_DIAG	MEASURED	1	0	0	BusyTable_3	no	FC/no_reader:全部 1 条 bore 都不馈入控制	BusyTable_3._GEN
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.dispatch.vecBusyTable	busy_count	C_DIAG	MEASURED	1	0	0	BusyTable_2	no	FC/no_reader:全部 1 条 bore 都不馈入控制	BusyTable_2._GEN
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.dispatch.vlBusyTable	busy_count	C_DIAG	MEASURED	1	0	0	VlBusyTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	VlBusyTable._GEN_5
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.dispatch.fpBusyTable	busy_count	C_DIAG	GAP	1	0	1	BusyTable_1	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	BusyTable_1._GEN
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.dispatch.intBusyTable	busy_count	C_DIAG	GAP	1	0	1	BusyTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	BusyTable._GEN_4
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.dispatch.v0BusyTable	busy_count	C_DIAG	GAP	1	0	1	BusyTable_3	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	BusyTable_3._GEN
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.dispatch.vecBusyTable	busy_count	C_DIAG	GAP	1	0	1	BusyTable_2	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	BusyTable_2._GEN
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.dispatch.vlBusyTable	busy_count	C_DIAG	GAP	1	0	1	VlBusyTable	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	VlBusyTable._GEN_5
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_andi1_0	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_24
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_andi1_1	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_57
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	case_addw_andi1_2	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_91
@@ -923,13 +923,13 @@ PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	co
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	conflict_fusion_3	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_132
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	conflict_fusion_4	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_166
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.fusionDecoder	fused_instr	C_DIAG	MEASURED	1	0	0	FusionDecoder	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FusionDecoder._GEN_167
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.memCtrl.ssit	reset_timeout	C_DIAG	MEASURED	1	0	0	SSIT	no	FC/no_reader:全部 1 条 bore 都不馈入控制	SSIT._GEN
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.memCtrl.ssit	ssit_update_lxsx	C_DIAG	MEASURED	1	0	0	SSIT	no	FC/no_reader:全部 1 条 bore 都不馈入控制	SSIT._GEN_4112
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.memCtrl.ssit	ssit_update_lxsy	C_DIAG	MEASURED	1	0	0	SSIT	no	FC/no_reader:全部 1 条 bore 都不馈入控制	SSIT._GEN_4115
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.memCtrl.ssit	ssit_update_lysx	C_DIAG	MEASURED	1	0	0	SSIT	no	FC/no_reader:全部 1 条 bore 都不馈入控制	SSIT._GEN_4114
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.memCtrl.ssit	ssit_update_lysy	C_DIAG	MEASURED	1	0	0	SSIT	no	FC/no_reader:全部 1 条 bore 都不馈入控制	SSIT._GEN_4116
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.memCtrl.ssit	ssit_update_should_strict	C_DIAG	MEASURED	1	0	0	SSIT	no	FC/no_reader:全部 1 条 bore 都不馈入控制	SSIT._GEN_4118
-PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.memCtrl.ssit	ssit_update_strict_failed	C_DIAG	MEASURED	1	0	0	SSIT	no	FC/no_reader:全部 1 条 bore 都不馈入控制	SSIT._GEN_4119
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.memCtrl.ssit	reset_timeout	C_DIAG	GAP	1	0	1	SSIT	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	SSIT._GEN
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.memCtrl.ssit	ssit_update_lxsx	C_DIAG	GAP	1	0	1	SSIT	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	SSIT._GEN_4112
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.memCtrl.ssit	ssit_update_lxsy	C_DIAG	GAP	1	0	1	SSIT	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	SSIT._GEN_4115
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.memCtrl.ssit	ssit_update_lysx	C_DIAG	GAP	1	0	1	SSIT	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	SSIT._GEN_4114
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.memCtrl.ssit	ssit_update_lysy	C_DIAG	GAP	1	0	1	SSIT	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	SSIT._GEN_4116
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.memCtrl.ssit	ssit_update_should_strict	C_DIAG	GAP	1	0	1	SSIT	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	SSIT._GEN_4118
+PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.memCtrl.ssit	ssit_update_strict_failed	C_DIAG	GAP	1	0	1	SSIT	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	SSIT._GEN_4119
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.memCtrl.waittable	wait_table_bit_set	C_DIAG	MEASURED	1	0	0	WaitTable	no	FC/no_reader:全部 1 条 bore 都不馈入控制	WaitTable._GEN_7
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.rename	control_recovery_stall	B_CONTROL	MEASURED	1	1	0	Rename	no	FC/read_by_logic:Rename.ctrlRecStall_probe	sMemVio; wire otherRecStall_probe = recStall_probe & ~(ctrlRecStall_probe | mvioRecStall_probe); wire _multiF…
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.ctrlBlock.rename	fused_lui_load_instr_count	C_DIAG	MEASURED	1	0	0	Rename	no	FC/no_reader:全部 1 条 bore 都不馈入控制	Rename._GEN_47
