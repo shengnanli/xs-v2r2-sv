@@ -55,6 +55,52 @@ def ref_bits(name, width):
     return [(f'{name}_reg[{b}]', b) for b in range(width)]
 
 
+def array_delay_pins(v):
+    """阵列级「打拍」寄存器的钉点：golden REG_* <-> 核的 og0_cancel_sel_d / ld*_cancel_d。
+
+    ★ 为什么必须钉 ★
+    golden 给**每个 enq 条目各打一拍** og0Cancel/ldCancel，展平后叫 REG_0 / REG_2_0 /
+    REG_1_2_ld2Cancel 这种名字；可读核叫 og0_cancel_sel_d / ld2_cancel_d。
+    两侧**没有共同词干**，FM 只能对一堆结构雷同的寄存器做签名分析 ——
+    实测 8 个 og0 寄存器配上 4 个、配不上 4 个（AUTO_MATCH_FAIL: REG_2 / REG_6 /
+    REG_2_2 / REG_2_6），Unmatched 从 0(0) 变 4(4)。
+
+    ★ 映射不写死 ★ firtool 的 REG 编号规则（第 0 个省略序号、向量位号拼在后面）
+    是实现细节，这里改成**从 golden 的实例连线里机械提取**：
+    读 enqEntries_<k> 实例上 .io_enqDelayIn1_og0Cancel_<idx> / _ldCancel_<q>_ld<n>Cancel
+    接的是哪根网，那根网就是该条目该路的打拍寄存器。
+    """
+    if not v.n_wk_iq:
+        return []
+    txt = (GOLDEN / f'{v.top}.sv').read_text()
+    pins = []
+    for k in range(v.n_enq):
+        m = re.search(r'^  \w+ enqEntries_%d \(\n(.*?)^  \);' % k, txt, re.S | re.M)
+        assert m, f'{v.top}: 找不到 enqEntries_{k} 实例'
+        body = m.group(1)
+
+        def net(port):
+            mm = re.search(r'\.%s\s*\n?\s*\(([A-Za-z_]\w*)\)' % re.escape(port), body)
+            return mm.group(1) if mm else None
+
+        for w, idx in enumerate(v.og0_idx):
+            if idx is None:
+                continue
+            n = net(f'io_enqDelayIn1_og0Cancel_{idx}')
+            assert n, f'{v.top}: enqEntries_{k} 的 og0Cancel_{idx} 连线没解析出来'
+            pins.append((f'{n}_reg', f'og0_cancel_sel_d_reg[{k}][{w}]'))
+        for q in range(v.n_ld_cancel):
+            for lvl, sig in ((2, 'ld2_cancel_d'), (1, 'ld1_cancel_d')):
+                if lvl == 1 and not v.has_ld1:
+                    continue
+                if lvl == 2 and not v.has_ld2:
+                    continue
+                n = net(f'io_enqDelayIn1_ldCancel_{q}_ld{lvl}Cancel')
+                assert n, f'{v.top}: enqEntries_{k} 的 ldCancel_{q}_ld{lvl} 连线没解析出来'
+                pins.append((f'{n}_reg', f'{sig}_reg[{k}][{q}]'))
+    return pins
+
+
 def build(v):
     """返回 [(ref_leaf, impl_leaf, entry_index)]，已按条目分段展开。"""
     segs = ([('enqEntries_%d' % i, v.enq_mod, True) for i in range(v.n_enq)] +
@@ -111,6 +157,9 @@ def build(v):
                     for leaf, b in ref_bits(gname, w):
                         pins.append((f'{inst}/{leaf}',
                                      f'g_entry[{k}].u_e/{isig}[{s}][{b}]'))
+    # 阵列级打拍寄存器（两侧无共同词干，签名分析配不齐，必须钉名）
+    for r, i in array_delay_pins(v):
+        pins.append((r, i))
     return pins, skipped
 
 
