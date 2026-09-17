@@ -37,21 +37,14 @@ VCS += +define+SYNTHESIS +vcs+initreg+random
 # ★Lane I 落地后必须删掉这一行★，判据 D 会重新变成硬闸。
 SIM_ARGS += +known_hole_frozen_select
 
-# ★FM_MERGE_DUP=false★（第 3 轮 FM 实测后加，依据如下，不是试出来的）
-# 现象：golden 侧 55 个 IQSort_* 是 unmatched **compare point**，
-#       impl 侧 55 个 IQSort_*_reg 是 unmatched **unread** point —— 两者
-#       类别不同，FM 不会跨类别配对。叶名其实早就一模一样：
-#           golden  r:/WORK/NewDispatch/IQSort_alu_0_0_reg
-#           impl    i:/WORK/NewDispatch/u_core/IQSort_alu_reg[0][0]
-#       与**已经配上**的 uopSelIQ（102 点）完全同构，所以不是命名问题。
-# 成因：逐组分解干净得不像巧合 ——
-#           N=2 的 6 组：各 4 个，配上 2、剩 2
-#           N>=3 的 4 组：各 9/16 个，一个都没配上
-#       N=2 时 iqSort[0] 与 iqSort[1] 互补（rank_d[0][i] == ~rank_d[1][i]），
-#       verification_merge_duplicated_registers 把每组 4 个合并成 2 个，
-#       存活的配上、被合并掉的落进 unread；N>=3 没有两两互补，合并不掉。
-# 先例：MulUnit、RenameBuffer 同型（main 40f570f 记了 RenameBuffer 的实测：
-#       配对修好后 failing 20->0、passing 651->5825）。
-# 这不是政策例外：不是 waiver、不是 dont_verify、不放宽 appvar，
-# 只是关掉一个会改变**配对类别**的工具优化。
-FM_MERGE_DUP = false
+# ★曾经开过 FM_MERGE_DUP=false，已回退（c35c160 -> 本次）★
+# 当时的假设：N=2 的组里 iqSort[0]/iqSort[1] 互补被 merge 掉，导致 55 个点落进
+# unread；关掉合并就该归位。★实测证伪，且方向相反★：
+#     unmatched unread (impl)   55 -> 67   （预期 0）
+#     unmatched compare (ref) 7173 -> 7227 （预期 7118）
+#     passing                  589 -> 589  （预期 >589）
+# 真相是这 67 个**本来就是 unread**，合并只是先前替我消掉了其中 12 个、让分母显小。
+# 「合并掩盖了 12 个」被我误读成「合并制造了 55 个」——排除≠证实。
+# 按 40f570f 判据(b)，unmatched 变大 = 自由割点变多 = 后续测量质量下降，
+# 一个没有依据又让仪器变钝的配置没有留的理由，故回退默认值(true)。
+# 四轮证据都在 evidence/ 里（da07aa52 / cb8a072f / 69a5dfde / c35c1600），证伪过程不丢。
