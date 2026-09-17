@@ -14,7 +14,9 @@
 #
 # ★ 钉点数不是证据 ★ set_user_match 对不存在的名字不报错（实测），所以本文件
 #   末尾那个计数只说明"没抛异常"。判钉点真的生效，看 fm.log 的三条：
-#   Error: FM-036 行数为 0 / match 后 Unmatched 0(0) / 终判 SUCCEEDED failing=0。
+#   grep -cE "^ *Error:" 为 0 / match 后 Unmatched 0(0) / 终判 SUCCEEDED failing=0。
+#   （判据刻意不写具体错误编号：本脚本会被 fm_shell 逐行回显进 fm.log，
+#     写出来就会命中注释自身，判据当场失效。）
 #
 # 放在**首次 match 之前**（fm_pins_pre.tcl）而不是之后：Formality 只在计数非零时
 # 才打印 "N(M) Unmatched ... unread points"，fm_verdict.py 取日志里最后一次出现的
@@ -20317,9 +20319,14 @@ if {$top eq "EntriesAluCsrFenceDiv"} {
   #   照样返回 0，catch 抓不到 —— 所以"钉满 N 个"只说明没抛 Tcl 异常，
   #   不说明这 N 对名字在设计里真的存在。
   #   真正 fail-closed 的判据有三条，都在 fm.log 里：
-  #     (1) FM 打的 "Error: FM-036" 行数为 0（钉了不存在的名字会在这里现形）
+  #     (1) 行首错误行计数为 0：grep -cE "^ *Error:" fm.log
+  #         （钉了不存在的名字会在那里现形）
   #     (2) match 之后 Unmatched Points 是 0(0)
   #     (3) 终判 SUCCEEDED 且 failing=0 / unverified=0 / aborted=0
+  #   ★注意判据不能写成匹配某个错误编号的字面量★：fm_shell 会把本脚本
+  #   逐行回显进 fm.log，注释也不例外 —— 判据里出现的字面量会命中注释
+  #   自身，于是那条判据永远为真/永远为假。所以这里只用行首锚定的形式，
+  #   并且刻意不写出那个编号。
   #   下面这条只兜住"Tcl 当场抛异常"这一种情况，聊胜于无。
   if {$_miss != 0} { error "IQE_PIN_THREW=$_miss" }
 }
