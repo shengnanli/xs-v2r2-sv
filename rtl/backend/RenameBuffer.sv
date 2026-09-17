@@ -299,12 +299,21 @@ module xs_RenameBuffer_core
   assign walk_end_next_cycle   = (rob_walk_end_q | (rob_walk_end & (rob_walk_size == '0)))
                                & (walk_size_q <= SIZE_W'(COMMIT_W));
 
+  // ★2'b11 这个「不可达状态」的行为必须照 golden★
+  // golden 写的是 `(|state) ? (state==1 ? … : state==2&&… ? 0 : state) : 0`：
+  // 判据是 **state≠0**，不是「枚举穷尽」。于是 state=2'b11 时 golden 走进
+  // (|state) 分支、两个 elsif 都不成立 ⇒ **保持 2'b11**。
+  // 本核第一版把最后一路写成 `else state_next = S_IDLE`（"剩下的都当 idle"），
+  // 在 2'b11 上就与 golden 分道扬镳。这条 UT 永远打不到（state 三个合法值之外
+  // 进不去），是 FM 抓出来的 —— 见 verif/ut/RenameBuffer/mutants.py 头注释里
+  // 「UT 零判别力」那一族的实例。所以 s_idle 单列一路，末路是**保持**。
   rab_state_e state_next;
   always_comb begin
-    if (redirect_valid)                state_next = snpt_use ? S_WALK : S_SPECIAL_WALK;
+    if      (redirect_valid)            state_next = snpt_use ? S_WALK : S_SPECIAL_WALK;
+    else if (state_q == S_IDLE)         state_next = S_IDLE;
     else if (state_q == S_SPECIAL_WALK) state_next = special_walk_end_next ? S_WALK : state_q;
     else if (state_q == S_WALK)         state_next = walk_end_next_cycle   ? S_IDLE : state_q;
-    else                                state_next = S_IDLE;
+    else                                state_next = state_q;   // ★2'b11：保持★
   end
 
   // ===========================================================================
