@@ -36,14 +36,28 @@ HERE = pathlib.Path(__file__).resolve().parent
 REPO = HERE.parents[2]
 CORE = REPO / 'rtl' / 'backend' / 'xs_iq_entries_core.sv'
 
-# (id, 说明, 原文, 改成什么)
-# 每一条都对应一个**真实的写错方式**，不是随便翻个比特：
+sys.path.insert(0, str(HERE))
+import entries_gen as _gen                                         # noqa: E402
+
+# (id, 说明, 原文, 改成什么, 适用性判据)
+#
+# 每一条都对应一个**真实的写错方式**，不是随便翻个比特。
+#
+# ★适用性判据是必填项，而且必须是从 golden 量出来的变体字段★
+#   有些变异在某个变体上**根本改不动行为**：例如把 ld1Cancel 那一项删掉，而本变体的
+#   golden 压根没有 ld1Cancel 端口（矩阵 ldCancel_ld1=0），那一项恒 0。这种情况下
+#   "UT 没报错"不是 UT 瞎，而是变异本身是死的。两者必须分开记，否则这道靶子
+#   自己就成了"看起来在验、实际没在验"：
+#     - 不适用 -> 记 N/A，并且用**变体字段**说明它为什么是死的，不许拍脑袋写 True；
+#     - 适用却逃逸 -> 判失败，说明 UT 在那条通路上确实没有判别力。
+#   判据写成 lambda v -> (适用?, 理由)，v 就是 entries_gen.Variant。
 MUTANTS = [
     ('M1', 'Mux1H 写成「最后命中者覆盖」而不是按位或 —— '
            '本轮实际踩到的 bug：两路 IQ 唤醒可以同时命中同一个源，'
            '写成覆盖就丢掉另一路的 loadDependency 贡献',
      "          if (wk_iq_oh[s][w]) u_ld_dep[s] |= shift_iq_dep(iq_ld_dep[w], w);",
-     "          if (wk_iq_oh[s][w]) u_ld_dep[s] = shift_iq_dep(iq_ld_dep[w], w);"),
+     "          if (wk_iq_oh[s][w]) u_ld_dep[s] = shift_iq_dep(iq_ld_dep[w], w);",
+     lambda v: (v.n_wk_iq > 0, '没有 IQ 唤醒的变体里 wk_iq_oh 恒 0，这条是死的')),
 
     ('M2', 'srcLoadTransCancel 的选择向量拿成「去掉 og0 取消之后」的那份 —— '
            '本轮实际踩到的 bug：被 og0 取消的那一路不再参与 load 撤销判定，'
@@ -51,57 +65,72 @@ MUTANTS = [
      "          if (wakeup_oh[s][w])\n"
      "            ld_trans_cancel[s] |= ld_should_cancel(iq_ld_dep[w], ld1_cancel, ld2_cancel);",
      "          if (wk_iq_oh[s][w])\n"
-     "            ld_trans_cancel[s] |= ld_should_cancel(iq_ld_dep[w], ld1_cancel, ld2_cancel);"),
+     "            ld_trans_cancel[s] |= ld_should_cancel(iq_ld_dep[w], ld1_cancel, ld2_cancel);",
+     lambda v: (v.n_wk_iq > 0 and v.n_ld_cancel > 0,
+                '要同时有 IQ 唤醒和 ldCancel 这条才活')),
 
     ('M3', 'replaceRC 拿寄存器里的 regCacheIdx 去比，而不是 currentStatus 的 —— '
            '本轮实际踩到的 bug：enq 条目在入队延迟窗口里两者不同',
      "          rc_replaced[s] |= iq_wen[w] & (iq_rc_dest[w] == cur_rc_idx[s]);",
-     "          rc_replaced[s] |= iq_wen[w] & (iq_rc_dest[w] == r_rc_idx[s]);"),
+     "          rc_replaced[s] |= iq_wen[w] & (iq_rc_dest[w] == r_rc_idx[s]);",
+     lambda v: (v.has_rc, '没有 regcache 的变体里 rc_replaced 够不到任何输出')),
 
     ('M4', 'ShiftLoadDependency 忘了「本路唤醒自己就是某条 load 流水」那一位的常数 1',
      "      shift_iq_dep[q] = IQ_IS_LD_PIPE[w][q] ? LD_DEP_W'(1)\n"
      "                                            : LD_DEP_W'(dep[q] << 1);",
-     "      shift_iq_dep[q] = LD_DEP_W'(dep[q] << 1);"),
+     "      shift_iq_dep[q] = LD_DEP_W'(dep[q] << 1);",
+     lambda v: (any(v.iq_self_pipe),
+                '没有哪一路 IQ 唤醒自己是 load 流水时，这一位本来就不是常数 1')),
 
     ('M5', 'LoadShouldCancel 只看 ld2Cancel 配 dep[1]，漏掉 ld1Cancel 配 dep[0]',
      "      ld_should_cancel |= (c1[q] & dep[q][0])\n"
      "                        | ((LD_DEP_W > 1) & c2[q] & dep[q][LD_DEP_W > 1 ? 1 : 0]);",
-     "      ld_should_cancel |= ((LD_DEP_W > 1) & c2[q] & dep[q][LD_DEP_W > 1 ? 1 : 0]);"),
+     "      ld_should_cancel |= ((LD_DEP_W > 1) & c2[q] & dep[q][LD_DEP_W > 1 ? 1 : 0]);",
+     lambda v: (v.has_ld1,
+                'golden 顶层没有 io_ldCancel_*_ld1Cancel 端口（矩阵 ldCancel_ld1=0），'
+                'c1 恒 0，删掉这一项改不动任何行为 —— 这条要靠 Ldu/StaMou/StdMoud 去证')),
 
     ('M6', 'deqSuccess 忘了被 srcLoadCancel 门控 —— 被撤销的那拍仍当作发射成功清条目',
      "    deq_success    = resp_valid & (resp_bits == RESP_SUCCESS) & ~(|cur_ld_cancel);",
-     "    deq_success    = resp_valid & (resp_bits == RESP_SUCCESS);"),
+     "    deq_success    = resp_valid & (resp_bits == RESP_SUCCESS);",
+     lambda v: (v.n_ld_cancel > 0, '没有 ldCancel 的变体里 cur_ld_cancel 恒 0')),
 
     ('M7', 'comp 条目的 canIssueBypass 没接上 —— 0 周期 IQ 唤醒的 uop 晚一拍才能发射',
      "  assign o_can_issue      = (IS_COMP ? (can_issue_plain | can_issue_bypass)\n"
      "                                     : can_issue_plain) & ~flushed;",
-     "  assign o_can_issue      = can_issue_plain & ~flushed;"),
+     "  assign o_can_issue      = can_issue_plain & ~flushed;",
+     lambda v: (v.n_wk_iq > 0, 'canIssueBypass 只在有 IQ 唤醒时才与 canIssue 不同')),
 
     ('M8', 'commonOut.dataSources 漏掉 forward 那一档（本拍 IQ 唤醒的源仍报寄存器堆）',
      "      o_data_src[s] = (IS_COMP & (|wakeup_oh[s])) ? DS_FORWARD\n"
      "                    : use_rc_now                  ? DS_REGCACHE\n"
      "                                                  : cur_data_src[s];",
-     "      o_data_src[s] = use_rc_now ? DS_REGCACHE : cur_data_src[s];"),
+     "      o_data_src[s] = use_rc_now ? DS_REGCACHE : cur_data_src[s];",
+     lambda v: (v.n_wk_iq > 0, 'forward 档只有 IQ 唤醒子族才出现')),
 
     ('M9', 'exuSources 记成「第几路唤醒」而不是「第几路唤醒 + 1」'
            '（golden 的 0 表示"还没被 IQ 唤醒过"）',
      "        if (wk_iq_oh[s][w]) iq_exu_code[s] |= EXU_W'(w + 1);",
-     "        if (wk_iq_oh[s][w]) iq_exu_code[s] |= EXU_W'(w);"),
+     "        if (wk_iq_oh[s][w]) iq_exu_code[s] |= EXU_W'(w);",
+     lambda v: (v.n_wk_iq > 0 and v.out_exu, '没有 exuSources 出口就看不见')),
 
     ('M10', 'comp 条目的 deqPortIdx 寄存器按「有没有 transEntry 出口」生成 —— '
             '正是从最小变体 VfdivVidiv 外推出来的那个错结论',
      "    if (NUM_DEQ_PORTS > 1) begin : g_deq_port_idx",
-     "    if (KEEP_WIDE) begin : g_deq_port_idx"),
+     "    if (KEEP_WIDE) begin : g_deq_port_idx",
+     lambda v: (v.n_deq == 2, '单发射口变体里 deqPortIdx 本来就恒 0')),
 
     ('M11', 'comp 条目入口的 srcLoadDependency 钉 0 —— '
             '同样是从 VfdivVidiv 外推出来的错结论',
      "      `IQE_MUX1H(x_ld_dep[e],       final_comp_sel[k][j], c_ld_dep[k],       NUM_ENQ)",
-     "      x_ld_dep[e] = '0;"),
+     "      x_ld_dep[e] = '0;",
+     lambda v: (v.comp_has_ld_dep, 'comp 段本来就没有这组寄存器时，钉 0 是对的')),
 
     ('M12', 'issueResp 的 4 档常量表里，timer0 那档从 BLOCK 改成 SUCCESS',
      "        resp_bits_tab[d][k]  = OG_HAS_BITS[k] ? og_resp[k][d] : OG_CONST_RESP[k];",
      "        resp_bits_tab[d][k]  = OG_HAS_BITS[k] ? og_resp[k][d]\n"
-     "                             : ((k == 0) ? RESP_SUCCESS : OG_CONST_RESP[k]);"),
+     "                             : ((k == 0) ? RESP_SUCCESS : OG_CONST_RESP[k]);",
+     lambda v: (True, 'issueResp 的 timer0 档每个变体都用')),
 ]
 
 
@@ -121,7 +150,7 @@ def main():
     a = ap.parse_args()
 
     if a.list:
-        for mid, desc, _, _ in MUTANTS:
+        for mid, desc, _, _, _ in MUTANTS:
             print(f'{mid}: {desc}')
         return 0
 
@@ -136,10 +165,19 @@ def main():
                          f'       核改动后必须同步更新 mutants.py 的锚点。\n')
         return 1
 
-    todo = [m for m in MUTANTS if not a.only or m[0] == a.only]
+    v0 = _gen.Variant(a.top)
+    todo, na = [], []
+    for m in MUTANTS:
+        if a.only and m[0] != a.only:
+            continue
+        ok, why = m[4](v0)
+        (todo if ok else na).append((m, why))
+    for (mid, desc, _, _, _), why in na:
+        print(f'[{mid}] N/A（本变体上这条变异是死的）: {why}')
+
     caught, escaped = [], []
 
-    for mid, desc, old, new in todo:
+    for (mid, desc, old, new, _), _why in todo:
         work = pathlib.Path(tempfile.mkdtemp(prefix=f'xsv2-mut-{mid}-'))
         try:
             # UT 的 Makefile 里写死了 ../../../rtl 与 ../../../scripts，
@@ -178,7 +216,8 @@ def main():
         finally:
             shutil.rmtree(str(work), ignore_errors=True)
 
-    print(f'\n变异判别力: 抓住 {len(caught)}/{len(todo)}')
+    print(f'\n变异判别力: 抓住 {len(caught)}/{len(todo)} 条适用变异'
+          f'（另有 {len(na)} 条在本变体上是死的，记 N/A —— 不算证据，也不算失败）')
     if escaped:
         print('逃逸清单（UT 在这些通路上没有判别力，必须先补激励/比对）:')
         for mid, desc in escaped:

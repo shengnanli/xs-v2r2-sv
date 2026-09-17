@@ -42,6 +42,21 @@ include ../../../scripts/ut_common.mk
 # golden 带 XSError/XSPerf 等非综合断言，随机激励会踩到 $fatal；两侧统一关掉。
 VCS += +define+SYNTHESIS
 
+# ---------------------------------------------------------------------------
+# 复位域：条目寄存器（entryReg_*）在 golden 里**不复位**，只有 validReg /
+# enqDelayValidReg 带复位。可读核照抄了这个复位域。
+# 不开 initreg 时 golden 侧未初始化的寄存器是 X，被 tb 的 $isunknown 跳过 ——
+# 于是"照抄复位域"这件事根本没被验过（把不复位写成全复位，elaborate 和 lint
+# 都不会响）。所以默认就开 +vcs+initreg+random；`make run-initreg0` 再跑一遍
+# 全 0 初值。两轮都要过：只过一轮说明比对结果依赖初值。
+VCS += +vcs+initreg+random
+
+.PHONY: run-initreg0
+run-initreg0:
+	$(VCS) $(UT_SRCS) $(RTL_GOLDEN_DEPS) $(GOLDEN_SRCS_UNIQ) $(TB_SRCS) -top tb -o simv_ir0 -Mdir=csrc_ir0 +vcs+initreg+0
+	./simv_ir0 +ntb_random_seed=$(SEED) $(SIM_ARGS) -l sim_ir0_$(SEED).log
+	@grep -q "TEST PASSED" sim_ir0_$(SEED).log && echo "=== UT PASSED ($(MODULE) initreg=0 seed=$(SEED)) ===" || { echo "=== UT FAILED ($(MODULE) initreg=0 seed=$(SEED)) ==="; exit 1; }
+
 # 变异靶子：往可读核里注入若干个**真实形态**的 bug，要求本 UT 每一个都抓得住。
 # errors=0 只有在 UT 有判别力的前提下才算证据，所以这一步和 make run 同等重要。
 .PHONY: mutants

@@ -26,30 +26,31 @@
 //   14 个 G1 变体全部走 hasCompAndSimp,故本核不实现另一分支(见文件尾 §11 待办)。
 //
 // =============================================================================
-// 本文件导航（共 1711 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
-//   L56    §1 与变体无关的编码
-//   L80    §2 xs_iq_entry —— 单条目
-//   L328   §2.1 冲刷判定
-//   L340   §2.2 WB 唤醒匹配
-//   L368   §2.2b IQ 即时唤醒匹配 + 投机撤销
-//   L480   §2.3 ignoreOldVd(向量专属)
-//   L526   §2.3b currentStatus —— 入队延迟窗口的补丁
-//   L597   §2.4 valid / enqReady / clear
-//   L613   §2.5 entryUpdate —— 不装载时条目的次态
-//   L681   §2.6 时序
-//   L721   §2.6a blocked / deqPortIdx / srcLoadDependency —— 哪些条目类型真有寄存器
-//   L766   §2.6b IQ 唤醒子族专属的三组状态
-//   L801   §2.7 组合输出
-//   L900   §3 xs_iq_entries_core —— 条目阵列顶层
-//   L1062  §3a 阵列层自己持有的寄存器
-//   L1106  §4 条目例化
-//   L1267  §5 deqSel / deqPortIdxWrite / issueResp
-//   L1310  §6 EnqPolicy
-//   L1341  §7 转移策略
-//   L1418  §8 othersEntryEnq 数据通路
-//   L1569  §9 发射出口
-//   L1637  §10 阵列状态汇聚输出
-//   L1678  §11 本核尚未实现的家族维度
+// 本文件导航（共 1744 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+//   L57    §1 与变体无关的编码
+//   L81    §2 xs_iq_entry
+//   L329   §2.1 冲刷判定
+//   L341   §2.2 WB 唤醒匹配
+//   L369   §2.2b IQ 即时唤醒匹配 + 投机撤销(LoadShouldCancel)
+//   L481   §2.3 ignoreOldVd(向量专属)
+//   L527   §2.3b currentStatus
+//   L598   §2.4 valid / enqReady / clear
+//   L614   §2.5 entryUpdate
+//   L682   §2.6 时序
+//   L722   §2.6a blocked / deqPortIdx
+//   L767   §2.6b IQ 唤醒子族专属的三组状态
+//   L802   §2.7 组合输出
+//   L901   §3 xs_iq_entries_core
+//   L1074  §3a 阵列层自己持有的两组寄存器(golden Entries.scala:140-142)
+//   L1118  §4 条目例化
+//   L1279  §5 deqSel / deqPortIdxWrite / issueResp
+//   L1322  §6 EnqPolicy
+//   L1353  §7 转移策略
+//   L1430  §8 othersEntryEnq 数据通路
+//   L1581  §9 发射出口
+//   L1649  §10 阵列状态汇聚输出
+//   L1690  §11 本核尚未实现的家族维度(给后续变体 owner 的清单,全部有 golden 依据)
+// 导航由 verif/ut/Entries_common/core_nav.py 重算 —— 改完核跑一次，勿手改
 //
 
 // -----------------------------------------------------------------------------
@@ -1716,6 +1717,27 @@ module xs_iq_entries_core
   //   否则那些还没写的变体会被悄悄做错,而且没人会发现。
   //   本核里已经有两处是这么栽过的(comp 的 deqPortIdx 寄存器、comp 入口的
   //   srcLoadDependency),都是从最小变体 VfdivVidiv 外推出来的,见 §2.6a。
+  //
+  // ★ 结构照抄,不许"反正值一样就合并" ★
+  //   「值恒等」不等于「可证等价」:FM 比的是结构对应的比较点,golden 里看起来
+  //   冗余的重复结构一旦被合并,仿真绝对看不出来,FM 会直接判一堆端口失配。
+  //   本核逐条对着 golden 保持了分份(改核时别顺手合掉):
+  //     * issueResp 的 4 档常量表:golden **每个发射口各一张**(_GEN_15/16 与
+  //       _GEN_17/18),本核的 resp_valid_tab/resp_bits_tab 也按口分份。
+  //       生成器里有交叉核对,确认两张表形状确实一致才敢共用一份参数。
+  //     * exuSources:golden 每个源、每条通路(当拍 / 延迟窗口 / commonOut)
+  //       各例化一个 UIntCompressor,本核对应三段独立的 always_comb,没有合并。
+  //     * WB / IQ 唤醒命中向量、srcLoadCancel、srcLoadTransCancel:全部按源分份。
+  //     * mergedLoadDependency 是**golden 自己**就按位或过的(Status.mergedLoad-
+  //       Dependency),不是本核合的。
+  //   已知且**有意**的结构差异只有一处:负载。golden 是「每字段一个寄存器」,
+  //   本核是一根扁平向量 —— 这一处靠 verif/ut/<变体>/fm_pins_pre.tcl 逐位钉名,
+  //   不 dont_verify、不黑盒;钉错会让 FM 比失败,不会被掩盖。
+  //
+  // ★ 复位域照抄 ★
+  //   golden 只有 validReg / enqDelayValidReg 带复位,entryReg_* 整批不复位。
+  //   本核一致。把不复位写成全复位是真 bug,而 elaborate/lint 都不会响 ——
+  //   所以 UT 两轮都要跑:`make run` (+vcs+initreg+random) 与 `make run-initreg0`。
   // ---------------------------------------------------------------------------
 
 endmodule : xs_iq_entries_core
