@@ -132,6 +132,169 @@ def report(ports):
         print('  %-14s slots=%d  leaf/slot=%s' % (nm, len(per), sizes))
 
 
+
+# --------------------------------------------------------------------------
+# PACK / UNPACK：从 golden 直接派生「每条 lane 的每个 payload 字段是怎么来的」
+# --------------------------------------------------------------------------
+# golden 的 fromRenameUpdate_<lane>_bits_<leaf> 有四种来源，**逐 lane 不同**
+# （不是整齐的六份），手抄必错，所以在这里机械提取：
+#   PASS   = io_fromRename_<lane>_bits_<leaf>     直接透传
+#   CONST  = 某个字面常量（例：snapshot 只有 lane0 是真的，1~5 被钉成 1'h0）
+#   LOCAL  = 本模块用 io_fromRename 算出来的（例：isDropAmocasSta）
+#   CHILD  = 由未实现子模块的输出端口驱动（BusyTable / LsqEnqCtrl / RegCacheTagTable）
+CHILD_INSTS = {'intBusyTable', 'fpBusyTable', 'vecBusyTable', 'v0BusyTable',
+               'vlBusyTable', 'rcTagTable', 'lsqEnqCtrl'}
+CONST_RE = re.compile(r"^\d+'[hbd][0-9a-fA-F_]+$")
+
+
+def _golden_text():
+    return open(os.path.join(GOLDEN, 'NewDispatch.sv')).read().split('\n')
+
+
+def _rhs_map(lines):
+    """name -> RHS（多行合并）。只收 `wire x = ...` / `assign x = ...`。"""
+    out, decl = {}, re.compile(
+        r'^\s+(?:wire|assign)\s+(?:\[\d+:\d+\]\s+)?([A-Za-z_]\w*)\s*=(.*)$')
+    i = 0
+    while i < len(lines):
+        m = decl.match(lines[i])
+        if m:
+            body, j = m.group(2), i
+            while ';' not in body and j + 1 < len(lines):
+                j += 1
+                body += ' ' + lines[j].strip()
+            out[m.group(1)] = body.split(';')[0].strip()
+            i = j
+        i += 1
+    return out
+
+
+def _inst_driven(lines, rhs):
+    """被子模块实例端口连出去的网 -> 实例名。
+
+    坑：golden 的端口连接经常换行（`.io_x\n      (net),`），按单行正则会整片漏掉，
+    第一版就是这么把 lqIdx/sqIdx 误判成「不依赖子模块」的。故按括号配平累积。
+    """
+    driven = {}
+    for k, l in enumerate(lines):
+        if not re.match(r'^\s+[A-Z][A-Za-z0-9_]*\s+[A-Za-z_]\w*\s*\($', l):
+            continue
+        inst, j, depth, buf = l.split()[1], k + 1, 1, ''
+        while j < len(lines) and depth > 0:
+            depth += lines[j].count('(') - lines[j].count(')')
+            buf += ' ' + lines[j].strip()
+            if buf.count('(') > 0 and buf.count('(') == buf.count(')'):
+                for mm in re.finditer(r'\.(\w+)\s*\(\s*([A-Za-z_]\w*)\s*\)', buf):
+                    net = mm.group(2)
+                    if net not in rhs:
+                        driven.setdefault(net, inst)
+                buf = ''
+            j += 1
+    return driven
+
+
+def pack_spec(ports):
+    """返回 {(lane, leaf): (kind, detail)}，kind ∈ PASS/CONST/LOCAL/CHILD。"""
+    lines = _golden_text()
+    rhs = _rhs_map(lines)
+    driven = _inst_driven(lines, rhs)
+    leaves = [n for n, _ in dyninst_leaves(ports)]
+    spec = {}
+    for lane in range(6):
+        for leaf in leaves:
+            net = 'fromRenameUpdate_%d_bits_%s' % (lane, leaf)
+            if net in driven and driven[net] in CHILD_INSTS:
+                spec[(lane, leaf)] = ('CHILD', driven[net])
+                continue
+            body = rhs.get(net)
+            if body is None:
+                spec[(lane, leaf)] = ('CHILD', 'undriven')
+                continue
+            body = body.strip()
+            if CONST_RE.match(body):
+                spec[(lane, leaf)] = ('CONST', body)
+            elif body == 'io_fromRename_%d_bits_%s' % (lane, leaf):
+                spec[(lane, leaf)] = ('PASS', body)
+            else:
+                spec[(lane, leaf)] = ('LOCAL', body)
+    return spec
+
+
+# 由子模块（本仓未实现）决定、因而现在接不了的 leaf。
+# 判据来自 pack_spec + golden 的 IQSelUop 覆写路径，不是拍脑袋列的：
+#   srcState_*        IQSelUop 用 allSrcState 覆写，源是 5 个 busy table
+#   srcType_2         经 ignoreOldVd，源是 VlBusyTable
+#   srcLoadDependency_0_*/1_*  源是 intBusyTable
+#   lqIdx_*/sqIdx_*   源是 LsqEnqCtrl
+#   useRegCache_*/regCacheIdx_*  源是 RegCacheTagTable
+#   singleStep        组合式已追清，但它读的 3 个异步复位寄存器要 firedVec，
+#                     而 firedVec 依赖 LsqEnqCtrl 的 canAccept
+BLOCKED_LEAVES = (
+    ['srcState_%d' % j for j in range(5)]
+    + ['srcType_2', 'singleStep', 'lqIdx_flag', 'lqIdx_value',
+       'sqIdx_flag', 'sqIdx_value', 'useRegCache_0', 'useRegCache_1',
+       'regCacheIdx_0', 'regCacheIdx_1']
+    + ['srcLoadDependency_%d_%d' % (s, k) for s in (0, 1) for k in range(3)])
+
+
+def gen_pack(ports):
+    spec = pack_spec(ports)
+    leaves = [n for n, _ in dyninst_leaves(ports)]
+    out = ['  // 每条 lane 的 payload：四类来源逐条照抄 golden（见 pack_spec 注释）。',
+           '  // 被 unresolved_* 驱动的位**故意不给驱动源** —— 悬空比钉 0 诚实：',
+           '  // 钉 0 会让 elaborate 和 UT 变绿而掩盖「子模块还没实现」这件事。']
+    for lane in range(6):
+        out.append('')
+        out.append('  // ---- lane %d ----' % lane)
+        for leaf in leaves:
+            kind, detail = spec[(lane, leaf)]
+            tgt = '  assign rename_uop[%d].%s' % (lane, leaf)
+            if leaf in BLOCKED_LEAVES:
+                out.append('%s = unresolved_%s_%d;' % (tgt, leaf, lane))
+            elif kind == 'PASS':
+                out.append('%s = io_fromRename_%d_bits_%s;' % (tgt, lane, leaf))
+            elif kind == 'CONST':
+                out.append('%s = %s;' % (tgt, detail))
+            elif kind == 'LOCAL' and leaf == 'isDropAmocasSta':
+                out.append('%s =' % tgt)
+                out.append('    io_fromRename_%d_bits_fuType[17] '
+                           '& io_fromRename_%d_bits_fuOpType[5:2] == 4\'hB' % (lane, lane))
+                out.append('    & ~io_fromRename_%d_bits_uopIdx[0];' % lane)
+            else:
+                out.append('%s = unresolved_%s_%d;   // %s' % (tgt, leaf, lane, kind))
+    return out
+
+
+def gen_unresolved(ports):
+    """所有还接不了的位，集中声明成 unresolved_*（无驱动 = 仿真出 X/Z，想假绿也假不了）。"""
+    leaves = dict(dyninst_leaves(ports))
+    out = ['  // ★下面这些位现在没有来源★，全部悬空。真跑 UT 时它们是 X/Z，',
+           '  // 所以「UT 没报错」在这个状态下不可能发生 —— 这是故意的。']
+    for leaf in BLOCKED_LEAVES:
+        w = leaves[leaf]
+        ty = 'logic' if w == 1 else 'logic [%d:0]' % (w - 1)
+        for lane in range(6):
+            out.append('  %-14s unresolved_%s_%d;' % (ty, leaf, lane))
+    return out
+
+
+def gen_unpack(ports):
+    per = bundle_leaves(ports, r'io_toIssueQueues_(\d+)_(valid|bits_.+)$')
+    out = ['  // 34 个 IQ 入队口的 payload 拆包。golden 对不同口做过 DCE，',
+           '  // 形状不均匀（8..19 号口没有 srcLoadDependency），这里逐口按 golden 的实际端口发。']
+    for q in sorted(per):
+        names = sorted(n for n, _ in per[q])
+        out.append('')
+        out.append('  // ---- IQ enq 口 %d（IQ %d 的第 %d 个口）----' % (q, q // 2, q % 2))
+        for n in names:
+            if n == 'valid':
+                out.append('  assign io_toIssueQueues_%d_valid = iq_valid[%d];' % (q, q))
+            else:
+                leaf = n[len('bits_'):]
+                out.append('  assign io_toIssueQueues_%d_bits_%s = iq_uop[%d].%s;'
+                           % (q, leaf, q, leaf))
+    return out
+
 BEGIN = '  // BEGIN GENERATED(%s)'
 END = '  // END GENERATED'
 
@@ -161,6 +324,9 @@ def main():
     txt = open(TARGET).read()
     new = splice(txt, 'PORTS', gen_ports(ports))
     new = splice(new, 'DYNINST_T', gen_dyninst(dyninst_leaves(ports)))
+    new = splice(new, 'UNRESOLVED', gen_unresolved(ports))
+    new = splice(new, 'PACK', gen_pack(ports))
+    new = splice(new, 'UNPACK', gen_unpack(ports))
     if a.check:
         if new != txt:
             print('FAIL: 生成区与 golden 不同步，请重跑 scripts/gen_newdispatch.py')
