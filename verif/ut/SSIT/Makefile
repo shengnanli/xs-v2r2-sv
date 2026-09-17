@@ -26,28 +26,46 @@ FM_REF_DEPS_SSIT = $(SSIT_LEAVES)
 PORTLINT_ORDER = fail
 
 # ---------------------------------------------------------------------------
-# ★FM 预判：本目标 signoff-strict 大概率停在 PARTIAL(unread != 0)，需要 owner 裁定★
+# ★matched-unread 加强（vmucp）—— 本目标必须开，理由与实测数字如下★
 # ---------------------------------------------------------------------------
-# 结构性原因（不是写法问题，改写 RTL 也去不掉）：
-#   golden SSIT **没有输出端口**（见 rtl/backend/SSIT.sv 文件头），而三组 1024 项
-#   影子数组 debug_valid/debug_ssid/debug_strict 在 golden 里是 dontTouch 保下来的
-#   3072 个寄存器，它们的扇出**只有自己**：
-#     debug_valid_i -> _GEN_4122+i -> _GEN_5146+i -> debug_valid_i
-#     debug_ssid_i  -> _GEN_7194+i -> debug_ssid_i
-#     debug_strict_i-> _GEN_6170+i -> _GEN_8218+i -> debug_strict_i
-#   （自反馈按 FM 的口径不算“被读”。）另加 s2_loadStrict 一点：它唯一的去处是
-#   golden 的 _GEN_4119，也就是 XSPerfAccumulate("ssit_update_strict_failed")，
-#   模块内无读者。⇒ 预计 **3073 个 matched-unread 比较点**。
+# 结构性事实（不是写法问题，改写 RTL 去不掉）：golden SSIT **没有输出端口**，
+# 闭包里也**没有任何黑盒**（report_black_boxes: FM-249 No black boxes）。于是整个
+# 设计里没有任何可观测点，Formality 把**全部** DFF 判成 unread —— 不只是三组影子
+# 数组。关 vmucp 时它直接 `Error: There are no compare points to verify. (FM-334)`，
+# 连 verify 都不会跑。
 #
-# 这 3073 点是不是可以加强（vmucp）：判据看着全都成立，但**必须用实跑复核**——
-#   * 精确绑定/双射：impl 侧沿用了 golden 的基名 debug_valid/debug_ssid/debug_strict，
-#     scripts/fm_eq.tcl 的 auto_match_flattened_arrays 按 `<名>_<i>[_<j>]_reg` 规则
-#     自动配对（debug_ssid_reg[1023][4] <-> debug_ssid_1023_reg[4]），是结构性规则
-#     不是人工强配；s2_loadStrict 由本目录 fm_pins.tcl 消名差。ref 3073 ↔ impl 3073。
-#   * 加强后 passing 必须**增加** 3073、failing 仍 0、unread 归 0 —— 不增即空转，不算过。
-# 但 vmucp 白名单硬编码在 scripts/fm_eq.tcl 第 258 行，**本 worker 不许改那个文件**
-# （owner 指定的所有权边界）。所以这里只把开关写成注释，由 owner 连同白名单一起决定：
-# FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+# ★我原先预判 3073，实测 14525，差 4.7 倍 —— 记在这里免得下一个人照抄错的推理★
+#   错在哪：我以为两块 SyncDataModuleTemplate 的寄存器算"被读"（SSIT 的 s2_* 读它们、
+#   又写回它们）。实际判据不是"有没有下游寄存器"，而是"够不够得着可观测点"；
+#   一个输出端口都没有 ⇒ 整个锥里没有一个点可观测 ⇒ 全员 unread。
+#   实测分布（fm_work/SSIT/unread_points.txt，14525 行）：
+#       SSIT 本体      7260 = debug_valid 1024 + debug_ssid 5120 + debug_strict 1024
+#                             + resetCounter 20 + resetStepCounter 11 + state 1
+#                             + REG 5 + s1_* 21 + s2_* 34
+#       data_array     6197 = 1024x6 数据 + 53 个地址/旁路副本
+#       valid_array    1068 = 1024x1 数据 + 44 个同上
+#
+# 两轮实测对比（同一份字节，唯一差别就是这个开关；commit 见 evidence/ 下 receipt）：
+#   关 vmucp : Verification NOT RUN / aborted(FM-334)
+#              passing 0 / failing 0 / Not-Compared-Unread 14525
+#   开 vmucp : Verification SUCCEEDED
+#              passing 14525 / failing 0 / unverified 0 / aborted 0 / unread 0
+#              unmatched compare 0(0) / unmatched unread 0(0) / bbox 0
+#   ⇒ passing 0 -> 14525，**不是空转**。
+#
+# 为什么它是"加强"不是"放宽"：`verification_verify_unread_compare_points` 仍是
+# **false**（没放宽），打开的是 `..._matched_unread_...` —— 让 FM 去**多证** 14525 个
+# 本来会被跳过的点。sidecar 的 entry_appvars 原样回读，qualifications 里
+# dont_verify_objects / elab147 / relaxed_appvars 三项皆为空。
+#
+# 双射是结构性的、不是人工强配：基线那一轮 unread_points.txt 的 14525 行**全部**是
+# matched_nc（ref 侧独占 0 行、impl 侧独占 0 行），即 ref 14525 <-> impl 14525。
+# 其中 14434 对由 scripts/fm_eq.tcl 的 auto_match_flattened_arrays 按
+# `<名>_<i>[_<j>]_reg` 规则自动配上（可读核沿用了 golden 的基名），剩下 91 对是
+# 15 个标量寄存器的名差，由本目录 fm_pins.tcl 现场读回点名后逐位钉（FM-036 行数 0）。
+#
+# 白名单：scripts/fm_eq.tcl 的精确白名单已含 SSIT（main commit cf020d5）。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 
 include ../../../scripts/ut_common.mk
 
