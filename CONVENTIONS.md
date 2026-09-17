@@ -113,6 +113,7 @@ endmodule
   ★2026-09-17 复测更正上沿★：`1455 MB` 这个最大值**已被本轮超过**，按 `fm.log` 的
   `Maximum memory usage` 逐个量（不是 `ps` 的 RSS）：
   `Predictor 34434` / `Composer 4653` / `Ftq 4047` / `ArrayMulDataModule 1948` /
+  `DecodeUnitComp 4182`（三轮并行跑都是 4182，不是并发挤出来的）/
   `IBuffer 1660`（三次独立跑 1660/1662/1660，不是抖动）/ `SbufferData 1599` /
   `TLFIFOFixer 1592`。也就是说"最大 1455 MB"只对**叶子**成立，
   上了 Composer/Ftq 这一档就是数 GB，Predictor 这种带整棵预测器子树的是 **34 GB**。
@@ -207,6 +208,60 @@ end
 
 **规矩**：过程块里凡是带初始化式的声明一律加 `automatic`；tb 里的 function/task 也一律 `automatic`。
 检查手段是**报覆盖计数**——上面两例都是覆盖分桶全压在一个值上才暴露的。
+
+## ★UT 与 FM 的分工：不可达状态与复位域归 FM 管★（2026-09-17，三个实测实例）
+
+**Formality 把寄存器当自由变量，默认不做可达性分析。** 这一条决定了两件事：
+
+1. **重写必须连不可达状态、连复位域都逐字照抄 golden** —— 不是洁癖，是 FM 判据的
+   直接推论。在死状态上替 golden 补一层门控、或替它化简掉一层冗余门控，
+   **UT 一声不响，FM 当场 failing**。
+2. 变异体表里的 `EXPECTED_MISSED` 应当读作
+   **「UT 观测不到（可达性所限），由 FM 兜底」**，不是「没人管，只能靠照抄自觉」。
+   它标的是**换了一道闸**，不是没有闸。
+
+三个实例都是实测，不是推理：
+
+| 改动 | UT | FM |
+|---|---|---|
+| DecodeUnitComp X1：给 `out_valid` 加 state 门控 | 40k 拍 `errors=0` | **failing 6**（恰好 `io_out_complexDecodedInsts_0..5_valid`） |
+| DecodeUnitComp X2：去掉 `complexNum` 的 state 门控 | 同上 `errors=0` | **failing 3**（恰好 `io_complexNum[0..2]`） |
+| RenameBuffer (c)：给不复位的 `walkPtr` 加复位 | 20k 拍 `errors=0` | **9 个点全 failed** |
+| SnapshotGenerator 同型对照：给 4 个不复位快照槽加复位 | 能抓（`errors=201`） | 基线 SUCCEEDED → 注入后 20 failing 全落在 `snapshots_*` |
+
+★两条做法上的要求★
+
+* **对照组是硬前提**：base（未注入）必须 `failing = 0`，否则注入后的 failing
+  证明不了是注入造成的。上表两组都做了。
+* **比较点守恒可以当交叉验证**：DecodeUnitComp 实测 `3157 = 3151 + 6 = 3154 + 3`，
+  失败点是从 passing 里扣出来的、不是凭空多出来的点。
+  更进一步，穷举出的**反例状态数**（X1 747 / X2 127）与 FM 的**比较点数**（6 / 3）
+  通过"每个输出位是否存在反例"严格对应，逐位闭合 —— 所以不是"大概落在那条通路上"。
+
+一个具体例子说明"照抄不对称"的必要：DecodeUnitComp 的 golden 自己就是不对称的
+（`complexNum` 有 state 门控、`out_valid` 没有，**两层都是冗余的**）。
+照抄这份不对称是唯一能过 FM 的写法；把两边"统一"成任何一种都会 failing。
+
+## ★别拿裸错误号当判据★（2026-09-17，我自己写的注释就是祸首）
+
+`fm_shell` 会把 `-file` 载入的入口脚本**逐行回显进 fm.log，注释也不例外**。
+所以只要有人在 `scripts/fm_eq.tcl` 的注释里提一句某个错误号，
+`grep -c "<错误号>" fm.log` 从此对**所有目标**永远 `>= 1`。
+
+实际发生过：我在 vmucp 白名单注释里写了一条判据「`FM-036 = 0`」，
+那行注释自己一进 fm.log，这条判据就永远为假。实测六份 evidence 日志：
+
+    grep -c  "FM-036"      fm.log   ->  1   ← 全是那条注释的回显
+    grep -cE "^ *Error:"   fm.log   ->  0   ← 真实情况
+
+**规矩**：判据必须钉在**行首的 `Error:`** 上（`grep -cE "^ *Error:" fm.log` 为 0），
+不能钉在裸错误号上。同理适用于任何"日志里出现某字符串就算出事"的判据 ——
+**入口脚本的注释会出现在日志里**，所以凡是能被注释命中的模式都不是判据。
+
+这和 `test_tcl_no_poison.py` 防的是同一类事，区别在于那道闸盯的是 `fm_verdict.py`
+的正则，而这次中招的是**人手写的判据**——闸没覆盖到的那一半。
+我今天还因为同一个机制踩过一次：监控脚本匹配到了 `fm_eq.tcl` 里被回显的注释，
+误判成跑完了。**两次同源，一次在工具、一次在判据。**
 
 ## ★继承来的数字与断言，第一次引用时必须重新测量★（2026-09-17，一天里四例）
 

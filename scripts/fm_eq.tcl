@@ -335,8 +335,20 @@ switch -- $_verify_matched_unread_compare_points {
     #          report_unmatched_points -status unread -list 两侧现场发现后 1:1 钉：
     #              ref  regQueue_<i>_bits_info_Return{NID,TxnID}_reg[<b>]
     #              impl u_core/info_q_reg[<i>]\[return_{nid,txn_id}][<b>]
-    #          钉后实测 unmatched unread 归 0(0)、FM-036 = 0(钉点计数本身不 fail-closed,
-    #          set_user_match 对不存在的名字不报错, 有效判据是这两条 + 终判 SUCCEEDED)。
+    #          钉后实测 unmatched unread 归 0(0)、日志里没有 `^ *Error:` 行
+    #          (钉点计数本身不 fail-closed, set_user_match 对不存在的名字不报错,
+    #          有效判据是这两条 + 终判 SUCCEEDED)。
+    #
+    #   ★☆别拿裸错误号当判据☆★（2026-09-17，SSIT lane 查出来的，我这条注释就是祸首）
+    #   本条原先写的是 `FM-036 = 0`，指望用 `grep -c "FM-036" fm.log` 来验。
+    #   **那是个假判据**：fm_shell 会把 `-file` 载入的入口脚本**逐行回显进 fm.log，
+    #   注释也不例外**。所以这行注释本身一进 fm.log，任何目标的
+    #   `grep -c "FM-036"` 就永远 >= 1，判据永远为假。实测：
+    #       grep -n "FM-036" <任一 evidence>/fm.log   -> 命中的就是本注释的回显
+    #       grep -cE "^ *Error:" <同一份>             -> 0
+    #   正确写法是钉在**行首的 Error:** 上：`grep -cE "^ *Error:" fm.log` 必须为 0。
+    #   这和 test_tcl_no_poison.py 防的是同一类事，区别是那道闸盯的是
+    #   fm_verdict.py 的正则，而这次中招的是**人手写的判据** —— 闸没覆盖到的那一半。
     #          ★复核判据★: passing 6007 -> 6743(_1, +736) / 12054 -> 13526(+1472)、
     #          failing 仍 0、unread 归 0。
     #   Predictor(2026-09-17 加): 8333 个 unread 点全是两侧对称 matched_nc，其中
