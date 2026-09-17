@@ -264,7 +264,34 @@ switch -- $_verify_matched_unread_compare_points {
     #          (debug_ssid_reg[1023][4] <-> debug_ssid_1023_reg[4])，不是人工强配。
     #          ★复核判据★: 打开后 passing 必须 +3073、failing 仍 0、unread 归 0；
     #          passing 不增即空转，不算过。
-    if {$top ni {Bku Composer DebugModule DuplicatedTagArray EntriesVfdivVidiv FAlu FCVT FTBBank Ftq ICacheCtrlUnit ICacheDataArray ICacheMetaArray ICacheMissUnit InstrUncache ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 LinkMonitor MulUnit Queue1_RegMapperInput_5 RNXbar SNXbar SourceB SSIT TageBTable TlbStorageWrapper TlbStorageWrapper_1 TXDAT_4 TXREQ WritebackQueue}} {
+    #   IBuffer(2026-09-17 加): 6 个 unread 点全是两侧对称 matched_nc。
+    #          ★复核判据★: passing 7902 -> 7908(正好 +6)、failing 仍 0、unread 归 0。
+    #   NCBTransactionQueue{,_1}(2026-09-17 加): 内容是 info.ReturnNID(11 位) +
+    #          info.ReturnTxnID(12 位) = 23 位/槽，两侧同为死位 —— golden 存了这两个
+    #          字段，但四个 infoRead 读口的 ParallelMux 只有 38 位
+    #          {QoS,TgtID,SrcID,TxnID}，可读核照抄同一结构。非 Return* 的 unread 点 0 个。
+    #          ★注意这一族的基线不是 matched_nc 而是 unmatched unread★
+    #          (736(736) / 1472(1472))：FM 自己配不上(既非名字同构、常数间也无签名可比)，
+    #          所以光开本加强不够，必须先配对。配对在模块本地
+    #          verif/ut/NCBTransactionQueue/fm_pins.tcl，按「槽号+字段+位号」三元组从
+    #          report_unmatched_points -status unread -list 两侧现场发现后 1:1 钉：
+    #              ref  regQueue_<i>_bits_info_Return{NID,TxnID}_reg[<b>]
+    #              impl u_core/info_q_reg[<i>]\[return_{nid,txn_id}][<b>]
+    #          钉后实测 unmatched unread 归 0(0)、FM-036 = 0(钉点计数本身不 fail-closed,
+    #          set_user_match 对不存在的名字不报错, 有效判据是这两条 + 终判 SUCCEEDED)。
+    #          ★复核判据★: passing 6007 -> 6743(_1, +736) / 12054 -> 13526(+1472)、
+    #          failing 仍 0、unread 归 0。
+    #   Predictor(2026-09-17 加): 8333 个 unread 点全是两侧对称 matched_nc，其中
+    #          7169 个在 golden Composer 实例 predictors 子树里(两侧是**同一份**
+    #          Composer.sv，TAGE/ITTAGE/FTB 的 io_update_ghist_r / update_meta_r 等
+    #          更新通路寄存器天然逐位同构)，1164 个在 u_core 里
+    #          (pred_cycle_q 576 / s*_folded_gh 464 / s*_afhob 60 / s*_ghist_ptr 12 /
+    #          power_on_reset_state 1 —— 这 1113 个由 verif/ut/Predictor/fm_pins_pre.tcl
+    #          逐位钉死；外加 prev_s2 50 + upc_seg2 1 是 FM 自己按名字配上的)。
+    #          impl 侧单边未读 585 个不受本开关影响(无对家, 属 PASS_DEAD_IMPL 范畴)。
+    #          ★复核判据★: passing 520634 -> 528967(正好 +8333)、failing 仍 0、
+    #          unread 归 0、unmatched 0(0)。passing 不增而 unread 归 0 = 点被吞掉, 不算过。
+    if {$top ni {Bku Composer DebugModule DuplicatedTagArray EntriesVfdivVidiv FAlu FCVT FTBBank Ftq ICacheCtrlUnit ICacheDataArray ICacheMetaArray ICacheMissUnit InstrUncache ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 LinkMonitor MulUnit Queue1_RegMapperInput_5 RNXbar SNXbar SourceB SSIT TageBTable TlbStorageWrapper TlbStorageWrapper_1 TXDAT_4 TXREQ WritebackQueue IBuffer NCBTransactionQueue NCBTransactionQueue_1 Predictor}} {
       puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
       exit 3
     }
