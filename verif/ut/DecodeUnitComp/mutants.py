@@ -16,7 +16,7 @@
   · Vec 越界语义（M3/M4）：count 超出本路实际组数时该取「本路第 0 项」。
     改成取 0 或取最后一项都是真 bug，而且都「看起来更合理」。
   · 拆分表细节（M5~M12）：每条对准一个「照字面抄 Chisel 就会写错」的点。
-  · 状态机与出口（M13~M15）。
+  · 状态机与出口（M13~M14）。
 
 **EXPECTED_MISSED —— 预期抓不到，且必须抓不到**：
   把「我在 RTL 注释里声称等价」的改写钉成可复跑的断言。被抓到 = 注释里的论证
@@ -98,20 +98,31 @@ MUTANTS = [
      "              cs[i].vpu_fpu_isFoldTo1_4 = !is_widen_ordered_red && (i % 4 != 0);",
      "              cs[i].vpu_fpu_isFoldTo1_2 = !is_widen_ordered_red && (i % 4 != 0);\n"
      "              cs[i].vpu_fpu_isFoldTo1_4 =  is_widen_ordered_red && (i % 4 != 0);"),
-    ('M13 complexNum 输出漏掉 state 门控（idle 时应报 0）',
-     "  assign complex_num = state_q ? complex_num_full[2:0] : 3'd0;",
-     "  assign complex_num = complex_num_full[2:0];"),
-    ('M14 uopRes 的更新优先级：把 redirect 降到「本拍吐完」之后',
+    ('M13 uopRes 的更新优先级：把 redirect 降到「本拍吐完」之后',
      "      if (redirect) begin\n        uop_res_q <= 7'd0;\n        count_q   <= 4'd0;\n"
      "      end else if (state_q) begin",
      "      if (state_q && this_all_out) begin\n"
      "        uop_res_q <= in_valid ? in_uop_info.numOfUop : 7'd0;\n        count_q <= 4'd0;\n"
      "      end else if (redirect) begin\n        uop_res_q <= 7'd0;\n        count_q   <= 4'd0;\n"
      "      end else if (state_q) begin"),
-    ('M15 in_ready 漏掉 thisAllOut（active 态永远不收新指令）',
+    ('M14 in_ready 漏掉 thisAllOut（active 态永远不收新指令）',
      "  assign in_ready    = ~state_q | (state_q & this_all_out);",
      "  assign in_ready    = ~state_q;"),
-    ('M16 vrgather.vx 把「先 len=1 再按 vlmul 覆盖」的顺序反过来',
+    # 这一条把「Chisel 的 DontCare 在条件赋值里等于不赋值」从假设变成证据：
+    # 如果改成「赋 0」会被 UT 抓到，说明 golden 确实是「保持默认」那一种。
+    ('M16 vcompress 的「进位」uop 把 DontCare 当成赋 0（应是保持默认）',
+     "              if (j != i + 1) begin\n"
+     "                cs[i * (i + 3) / 2 + j].srcType[0] = ST_VP;\n"
+     "                cs[i * (i + 3) / 2 + j].srcType[2] = ST_VP;\n"
+     "              end",
+     "              if (j != i + 1) begin\n"
+     "                cs[i * (i + 3) / 2 + j].srcType[0] = ST_VP;\n"
+     "                cs[i * (i + 3) / 2 + j].srcType[2] = ST_VP;\n"
+     "              end else begin\n"
+     "                cs[i * (i + 3) / 2 + j].srcType[0] = ST_IMM;\n"
+     "                cs[i * (i + 3) / 2 + j].srcType[2] = ST_IMM;\n"
+     "              end"),
+    ('M15 vrgather.vx 把「先 len=1 再按 vlmul 覆盖」的顺序反过来',
      "        // len = 1（无条件）\n        cs[1].srcType[0] = ST_VP;\n"
      "        cs[1].lsrc[0]    = VTMP;\n        cs[1].lsrc[1]    = src2;\n"
      "        cs[1].lsrc[2]    = vdst;\n        cs[1].ldest      = vdst;\n"
@@ -121,11 +132,24 @@ MUTANTS = [
 
 # 预期抓不到：RTL 注释里声称「行为等价、只是写法照抄 golden」的地方。
 EXPECTED_MISSED = [
+    # X1 与 X2 是同一条不变量的两面：**idle 态下 uopRes 恒为 0**
+    #   （复位清 0；active 且 thisAllOut 且无新指令时写 0；redirect 时写 0；
+    #     idle 且无新指令时保持 0），于是 complexNum = min(uopRes, readyCounter) = 0。
+    # golden 在这上面是**不对称**的：complexNum 有一层 state 门控，out_valid 没有 ——
+    # 而两者其实都是冗余的。本重写逐字照抄 golden 的这份不对称，不替它补齐、也不替它
+    # 化简；这两条变异就是把「照抄」这件事钉成可复跑的断言。
+    # （X2 原本列在「必须抓到」里，实测抓不到，追下去发现是同一条不变量 —— 已改判，
+    #   连同这段论证一起留档。）
     ('X1 给 out_valid 加一层 state 门控',
      "      out_valid[i] = (complex_num_full > 7'(i));",
      "      out_valid[i] = state_q && (complex_num_full > 7'(i));",
      'idle 态下 uopRes 恒为 0（复位清 0，且离开 active 时也写 0），complexNum 因此也是 0，'
      '`0 > i` 恒假 —— 加不加 state 门控输出相同。RTL 里照 golden 不加。'),
+    ('X2 去掉 complexNum 的 state 门控',
+     "  assign complex_num = state_q ? complex_num_full[2:0] : 3'd0;",
+     "  assign complex_num = complex_num_full[2:0];",
+     '同一条不变量：idle 态下 complexNum 本来就是 0，门控去掉与否输出相同。'
+     'RTL 里照 golden **保留**这层门控（golden 有它）。'),
 ]
 
 

@@ -70,7 +70,7 @@
 //   golden 里没有 indexedLSUopTable_0:UOP_IDX=0 的输出恒 (0,0),被 firtool 删掉,
 //   所以第 0 个 uop 的偏移在本核里也写成常数 0。
 // =============================================================================
-// 本文件导航（共 3931 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+// 本文件导航（共 3935 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
 //   L21    设计源:XiangShan src/main/scala/xiangshan/backend/decode/DecodeUnit
 //   L92    §1 decodeunitcomp_pkg —— 本模块私有的类型与编码常量
 //   L307   §2 xs_DecodeUnitComp_core —— 可读核
@@ -85,7 +85,7 @@
 //   L584   这一整段是 golden 那 43,000 行的来源：下面 `case (split)` 的每个分支，firtool
 //   L2298  §7 出口：修正、按路分组、状态机
 //   L2300  Chisel 的 fixedDecodedInst：整体照抄 csBundle，只把**最后一个 uop** 的
-//   L2388  §8 DecodeUnitComp —— golden 同名 wrapper
+//   L2392  §8 DecodeUnitComp —— golden 同名 wrapper
 //
 
 // -----------------------------------------------------------------------------
@@ -2337,9 +2337,13 @@ module xs_DecodeUnitComp_core
 
   assign in_ready    = ~state_q | (state_q & this_all_out);
   assign complex_num = state_q ? complex_num_full[2:0] : 3'd0;
-  // ★out_valid 不看 state★：Chisel 就是 `complexNum > i`，golden 也是。
-  // idle 时 uopRes 为 0，complexNum 因此也是 0，所以行为上等价 —— 但**写法**照抄
-  // golden，不替它加一层 state 门控（那会变成另一份 RTL）。
+  // ★golden 在「要不要 state 门控」上是不对称的，两边都照抄★
+  //   complexNum 有一层 `state ? … : 0`，out_valid 没有（Chisel 就是 `complexNum > i`）。
+  //   而**两层门控其实都是冗余的**：idle 态下 uopRes 恒为 0（复位清 0 / 离开 active
+  //   时写 0 / redirect 时写 0 / idle 无新指令时保持 0），于是 complexNum 也恒为 0。
+  //   负测把这件事钉成了断言：给 out_valid 加门控、或把 complexNum 的门控去掉，
+  //   UT 都抓不到（verif/ut/DecodeUnitComp/mutants.py 的 EXPECTED_MISSED X1/X2）。
+  //   既然抓不到，就更要**逐字照抄 golden**，不替它补齐也不替它化简。
   always_comb
     for (int i = 0; i < RENAME_W; i++)
       out_valid[i] = (complex_num_full > 7'(i));
