@@ -119,30 +119,49 @@ module xs_RegCacheTagTable_core #(
   logic [MEM_ENTRIES-1:0][TAG_WIDTH-1:0]                      memTagVec;
   logic [MEM_ENTRIES-1:0][NUM_LDCANCEL-1:0][LDEP_WIDTH-1:0]   memDepVec;
 
+  // 本半区占哪几个唤醒源：Int = 低 INT_WR 个，Mem = 其余。
+  localparam logic [NUM_WAKEUP-1:0] INT_WR_MASK = NUM_WAKEUP'((1 << INT_WR) - 1);
+  localparam logic [NUM_WAKEUP-1:0] MEM_WR_MASK = ~INT_WR_MASK;
+
   // 同一条作废式子在两个半区各算一遍；写成 function 让两处只维护一份语义。
+  //
+  // ★为什么参数列表这么长：这个 function 必须是"纯"的★
+  //   Formality 的 read_sverilog 对"函数体里直接读模块级信号"报 FMR_VLOG-091
+  //   （simulation/synthesis mismatch），link 阶段再升级成 FM-262，让 set_top
+  //   **直接失败**。本文件第一版就是这么写的（io_allocPregs_* / wakeupWen /
+  //   io_wakeup_pdest / io_ldCancel 全当闭包变量），UT 3 seed × 20 万拍全绿、
+  //   elaborate 0 warning、portlint 干净，FM 却连 set_top 都过不去。
+  //   抑制那条消息是作弊；正解就是把所有依赖搬进参数。
   function automatic logic entryCancel(
-      input logic                                  entryValid,
-      input logic [TAG_WIDTH-1:0]                  entryTag,
+      input logic                                    entryValid,
+      input logic [TAG_WIDTH-1:0]                    entryTag,
       input logic [NUM_LDCANCEL-1:0][LDEP_WIDTH-1:0] entryDep,
-      input int                                    wrLo,   // 本半区写口对应的唤醒源区间
-      input int                                    wrHi);
+      input logic [NUM_WAKEUP-1:0]                   halfWrMask,
+      input logic [NUM_ALLOC-1:0]                    allocValid,
+      input logic [NUM_ALLOC-1:0][TAG_WIDTH-1:0]     allocTag,
+      input logic [NUM_WAKEUP-1:0]                   wrWen,
+      input logic [NUM_WAKEUP-1:0][TAG_WIDTH-1:0]    wrTag,
+      input logic [NUM_LDCANCEL-1:0]                 ldCancel);
     logic hit;
     hit = 1'b0;
-    for (int a = 0; a < int'(NUM_ALLOC); a++)
-      hit |= io_allocPregs_valid[a] & (io_allocPregs_bits[a] == entryTag);
-    for (int w = wrLo; w < wrHi; w++)
-      hit |= wakeupWen[w] & (io_wakeup_pdest[w] == entryTag);
-    for (int k = 0; k < int'(NUM_LDCANCEL); k++)
-      hit |= io_ldCancel[k] & entryDep[k][LDEP_WIDTH-1];
+    for (int a = 0; a < int'(NUM_ALLOC); a++)          // ① 号被重命名重新分配了
+      hit |= allocValid[a] & (allocTag[a] == entryTag);
+    for (int w = 0; w < int'(NUM_WAKEUP); w++)         // ② 同号被本半区某个写口重写
+      hit |= halfWrMask[w] & wrWen[w] & (wrTag[w] == entryTag);
+    for (int k = 0; k < int'(NUM_LDCANCEL); k++)       // ③ 依赖的 load 本拍宣告失败
+      hit |= ldCancel[k] & entryDep[k][LDEP_WIDTH-1];
     return hit & entryValid;
   endfunction
 
   always_comb begin
     for (int e = 0; e < int'(INT_ENTRIES); e++)
-      intCancel[e] = entryCancel(intValidVec[e], intTagVec[e], intDepVec[e], 0, INT_WR);
+      intCancel[e] = entryCancel(intValidVec[e], intTagVec[e], intDepVec[e], INT_WR_MASK,
+                                 io_allocPregs_valid, io_allocPregs_bits,
+                                 wakeupWen, io_wakeup_pdest, io_ldCancel);
     for (int e = 0; e < int'(MEM_ENTRIES); e++)
-      memCancel[e] = entryCancel(memValidVec[e], memTagVec[e], memDepVec[e],
-                                 INT_WR, NUM_WAKEUP);
+      memCancel[e] = entryCancel(memValidVec[e], memTagVec[e], memDepVec[e], MEM_WR_MASK,
+                                 io_allocPregs_valid, io_allocPregs_bits,
+                                 wakeupWen, io_wakeup_pdest, io_ldCancel);
   end
 
   logic [NUM_READ-1:0]                  intHit, memHit;
