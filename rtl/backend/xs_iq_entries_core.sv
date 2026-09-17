@@ -928,6 +928,13 @@ module xs_iq_entries_core
   //   有 ldCancel 的 6 个变体有(影子是活的),VfdivVidiv 那种只有死影子的没有。
   //   由薄层从 golden 的 comp 子模块端口直接量,不从 KEEP_WIDE 推。
   parameter bit COMP_HAS_LD_DEP = 1'b0,
+  // ★ 本变体顶层到底有没有 ldCancel 端口。与 HAS_LD_DEP 不是一回事:
+  //   HAS_LD_DEP 说的是「条目里有没有那组影子寄存器」(VfdivVidiv 有,但整条死);
+  //   HAS_LD_CANCEL 说的是「阵列层要不要 RegNext(ldCancel) 与
+  //   RegEnable(payload.srcLoadDependency)」—— 没有 ldCancel 的变体 golden 里
+  //   这两组寄存器根本不存在,生成出来就是 66 个 golden 没有的常 0 寄存器
+  //   (实测:FM 报 0(66) unmatched,UT 一个都看不见)。
+  parameter bit HAS_LD_CANCEL = 1'b0,
   parameter int LD_PIPES   = 1,
   parameter int LD_DEP_W   = 1,
   parameter int NUM_WK_IQ  = 0,
@@ -935,6 +942,10 @@ module xs_iq_entries_core
   parameter logic [NUM_REGSRC-1:0][2:0]                                 IQ_TYPE_BIT = '0,
   parameter logic [(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0][LD_PIPES-1:0]   IQ_IS_LD_PIPE = '0,
   parameter int EXU_W = 1,
+  // 哪几路 IQ 唤醒真有 og0Cancel 源(golden 的 og0Cancel 是稀疏的,只留用得到的位)。
+  // 阵列层的「延迟一拍 og0Cancel」只给这几路生成寄存器 —— 否则会多出
+  // golden 没有的常 0 寄存器。
+  parameter logic [(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0] OG0_HAS_SRC = '0,
   parameter bit HAS_REG_CACHE = 1'b0,
   parameter int RC_IDX_W      = 1,
   parameter logic [(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0] IQ_WRITE_RC = '0,
@@ -1090,16 +1101,19 @@ module xs_iq_entries_core
     iqd_cancel = og0_cancel_sel_d & iqd_is0lat;
   end
   generate
-    if (NUM_WK_IQ > 0) begin : g_og0_dly
-      always_ff @(posedge clock) og0_cancel_sel_d <= og0_cancel_sel;
-    end else begin : g_no_og0_dly
-      always_comb og0_cancel_sel_d = '0;
+    for (genvar w = 0; w < (NUM_WK_IQ > 0 ? NUM_WK_IQ : 1); w++) begin : g_og0_dly
+      if (NUM_WK_IQ > 0 && OG0_HAS_SRC[w]) begin : g_reg
+        always_ff @(posedge clock) og0_cancel_sel_d[w] <= og0_cancel_sel[w];
+      end else begin : g_none
+        // 这一路没有 og0Cancel 源(golden 把该位删了),恒 0,不生成寄存器
+        assign og0_cancel_sel_d[w] = 1'b0;
+      end
     end
   endgenerate
   logic [NUM_ENTRIES-1:0][NUM_REGSRC-1:0][LD_PIPES-1:0][LD_DEP_W-1:0] enqd_self_ld_dep;
 
   generate
-    if (HAS_LD_DEP) begin : g_ld_cancel_dly
+    if (HAS_LD_CANCEL) begin : g_ld_cancel_dly
       always_ff @(posedge clock) begin
         ld1_cancel_d <= ld1_cancel;
         ld2_cancel_d <= ld2_cancel;

@@ -506,6 +506,9 @@ def gen_rtl(v):
     A(f'    .PL_DEQ_W({v.pl_deq_w}), .PL_TRANS_W({v.pl_trans_w}),')
     A(f'    .HAS_LD_DEP({int(v.has_ld_dep)}),'
       f' .COMP_HAS_LD_DEP({int(v.comp_has_ld_dep)}),')
+    # ★ 顶层有没有 ldCancel 端口 —— 决定阵列层那两组寄存器生不生成。
+    #   与 HAS_LD_DEP 不是一回事：VfdivVidiv 有影子寄存器但没有 ldCancel。
+    A(f'    .HAS_LD_CANCEL({int(v.n_ld_cancel > 0)}),')
     A(f'    .LD_PIPES({v.ld_pipes}), .LD_DEP_W({v.ld_dep_w}),')
     # ---- IQ 即时唤醒 / 取消网络 / 寄存器缓存 ----
     A(f'    .NUM_WK_IQ({v.n_wk_iq}), .EXU_W({max(1, v.exu_w)}),')
@@ -518,6 +521,9 @@ def gen_rtl(v):
         A('    .IQ_IS_LD_PIPE({' + ', '.join(
             bitvec(set(v.iq_self_pipe[w]), v.ld_pipes)
             for w in reversed(range(v.n_wk_iq))) + '}),')
+        # 哪几路 IQ 唤醒真有 og0Cancel 源（golden 的 og0Cancel 是稀疏的）
+        A('    .OG0_HAS_SRC(' + bitvec(
+            {w for w in range(v.n_wk_iq) if v.og0_idx[w] is not None}, v.n_wk_iq) + '),')
         A(f'    .HAS_REG_CACHE({int(v.has_rc)}), .RC_IDX_W({max(1, v.rc_idx_w)}),')
         A('    .IQ_WRITE_RC(' + bitvec(v.rc_lanes, v.n_wk_iq)
           + f'), .RC_TYPE_BIT({v.rc_tbit}),')
