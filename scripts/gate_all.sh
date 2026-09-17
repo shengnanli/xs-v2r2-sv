@@ -28,6 +28,10 @@ run "位置依赖闸"       python3 scripts/test_no_location_dependency.py
 run "台账行序闸"       python3 scripts/test_ledger_append_only.py
 # 覆盖率台账幂等（codex 0161）：三个口径必须能从 golden 与 rtl/ 现场重算。
 # 它存在的理由是"253/253"曾被读成"重写完成"，而实测按行数只有 7.4%。
+# 空壳不得抬高 proven 覆盖率（2026-09-16）：覆盖率台账原来按「rtl/ 里有同名 module」
+# 记账，于是一个只实现两成逻辑的 LoadQueueReplay 骨架就把覆盖率从 7.4% 抬到 11.0%，
+# 凭空记 138,860 行 golden。判据已改成按绿判决证据记；这道闸把「改好了」变成「改住了」。
+run "覆盖率空壳闸"     python3 scripts/test_coverage_no_shell_inflation.py
 run "覆盖率台账幂等"   python3 scripts/rewrite_coverage.py --check
 # FM Tcl 毒字符串闸：fm_shell 把入口 Tcl **逐行回显**进 fm.log（注释也不例外），
 # 而 fm_verdict.py 的 _ELAB147/_DONTVERIFY 是在整份日志上做正则 —— 于是在注释里
