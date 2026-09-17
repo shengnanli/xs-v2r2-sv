@@ -15,8 +15,26 @@ set -uo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO="$(cd "$HERE/.." && pwd)"
-UT_DIR="${1:?用法: run_proof.sh <ut_dir> <target>...}"; shift
+UT_DIR="${1:?用法: run_proof.sh <UT 目录裸名> <target>...  例: run_proof.sh MulUnit MulUnit}"; shift
 TARGETS=("$@")
+
+# 第一个参数是 **verif/ut/ 下的裸目录名**，不是路径。
+# 2026-09-17 实测的坑：DecodeUnitComp lane 照字面读成路径、传了 verif/ut/indexedLSUopTable，
+# 第 79 行拼成 verif/ut/verif/ut/indexedLSUopTable ⇒ make 失败 rc=1，
+# ★但脚本照样打印 "evidence=..." 并建了 evidence 目录（里面没有 receipt）★。
+# 失败不够响：后来者只看 evidence 路径就会以为出了证。这里当场拒绝，
+# 而不是让它走到"有目录没 receipt"那个既像成功又像失败的中间态。
+case "$UT_DIR" in
+  */*|.|..)
+    echo "ERROR: 第一个参数要 **verif/ut/ 下的裸目录名**，不是路径。" >&2
+    echo "       收到: $UT_DIR" >&2
+    echo "       应为: $(basename -- "$UT_DIR")" >&2
+    exit 2 ;;
+esac
+if [[ ! -d "$REPO/verif/ut/$UT_DIR" ]]; then
+  echo "ERROR: verif/ut/$UT_DIR 不存在（第一个参数是 UT 目录裸名，不是 target 名）" >&2
+  exit 2
+fi
 [[ ${#TARGETS[@]} -gt 0 ]] || { echo "ERROR: 未指定 target" >&2; exit 2; }
 
 cd "$REPO"
