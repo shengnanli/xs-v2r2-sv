@@ -173,6 +173,25 @@ def check_reg_bijection(v):
         ('阵列 入队瞬间 payload 影子(enqd_self_ld_dep)', v.n_ld_cancel > 0,
          'io_enq_0_bits_payload_srcLoadDependency_0_0' in gold_top_ports),
     ]
+
+    # ★ 打拍寄存器必须**按 enq 条目分份**，不许合并 ★
+    #   golden 的 RegNext(og0Cancel) / RegNext(ldCancel) 写在
+    #   `for (entryIdx <- 0 until EnqEntryNum)` 里，于是每个 enq 条目各一套
+    #   同源、逐位恒等的寄存器。合并成一份仿真永远看不出（值一样），
+    #   FM 会把这一份配给其中一套、另一套 globally unmatched —— 本轮 canary
+    #   的 1030 个失败点就是这么来的。这里按声明数核份数。
+    top_txt = (GOLDEN / f"{v.top}.sv").read_text()
+    n_og0 = len(set(re.findall(r'^\s*reg\s+(REG(?:_\d+)*)\s*;\s*$', top_txt, re.M)))
+    n_ld2 = len(set(re.findall(r'^\s*reg\s+(REG(?:_\d+)*_ld2Cancel)\s*;', top_txt, re.M)))
+    n_og0_expect = v.n_enq * sum(1 for i in v.og0_idx if i is not None)
+    n_ld2_expect = v.n_enq * v.n_ld_cancel if v.has_ld2 else 0
+    if n_og0 != n_og0_expect:
+        problems.append(f'og0Cancel 打拍寄存器 golden {n_og0} 个，核按 NUM_ENQ 分份应为 '
+                        f'{n_og0_expect} 个（{v.n_enq} 条目 × '
+                        f'{sum(1 for i in v.og0_idx if i is not None)} 路）')
+    if n_ld2 != n_ld2_expect:
+        problems.append(f'ld2Cancel 打拍寄存器 golden {n_ld2} 个，核应为 {n_ld2_expect} 个'
+                        f'（{v.n_enq} 条目 × {v.n_ld_cancel} 条 load 流水）')
     for desc, core_makes, golden_has in checks:
         if bool(core_makes) != bool(golden_has):
             problems.append(f'{desc}: 核生成={bool(core_makes)} golden存在={bool(golden_has)}')

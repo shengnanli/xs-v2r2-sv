@@ -26,7 +26,7 @@
 //   14 个 G1 变体全部走 hasCompAndSimp,故本核不实现另一分支(见文件尾 §11 待办)。
 //
 // =============================================================================
-// 本文件导航（共 1780 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+// 本文件导航（共 1805 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
 //   L57    §1 与变体无关的编码
 //   L81    §2 xs_iq_entry
 //   L335   §2.1 冲刷判定
@@ -42,14 +42,14 @@
 //   L818   §2.7 组合输出
 //   L917   §3 xs_iq_entries_core
 //   L1102  §3a 阵列层自己持有的两组寄存器(golden Entries.scala:140-142)
-//   L1153  §4 条目例化
-//   L1315  §5 deqSel / deqPortIdxWrite / issueResp
-//   L1358  §6 EnqPolicy
-//   L1389  §7 转移策略
-//   L1466  §8 othersEntryEnq 数据通路
-//   L1617  §9 发射出口
-//   L1685  §10 阵列状态汇聚输出
-//   L1726  §11 本核尚未实现的家族维度(给后续变体 owner 的清单,全部有 golden 依据)
+//   L1174  §4 条目例化
+//   L1340  §5 deqSel / deqPortIdxWrite / issueResp
+//   L1383  §6 EnqPolicy
+//   L1414  §7 转移策略
+//   L1491  §8 othersEntryEnq 数据通路
+//   L1642  §9 发射出口
+//   L1710  §10 阵列状态汇聚输出
+//   L1751  §11 本核尚未实现的家族维度(给后续变体 owner 的清单,全部有 golden 依据)
 // 导航由 verif/ut/Entries_common/core_nav.py 重算 —— 改完核跑一次，勿手改
 //
 
@@ -1103,27 +1103,46 @@ module xs_iq_entries_core
   //     它们属于阵列而不是条目:enq 条目的「延迟一拍」窗口要用的是阵列打过拍的
   //     ldCancel,以及入队那一瞬间 payload 里带的 srcLoadDependency。
   // ---------------------------------------------------------------------------
-  logic [LD_PIPES-1:0] ld1_cancel_d, ld2_cancel_d;
+  // 同样按 enq 条目分份(理由见上)
+  logic [NUM_ENQ-1:0][LD_PIPES-1:0] ld1_cancel_d, ld2_cancel_d;
   // 没有 ld1Cancel 的变体不生成这组寄存器(golden 里根本没有),否则又是一批常 0 死寄存器
   generate
-    if (HAS_LD1_CANCEL) begin : g_ld1_dly
-      always_ff @(posedge clock) ld1_cancel_d <= ld1_cancel;
-    end else begin : g_no_ld1_dly
-      always_comb ld1_cancel_d = '0;
+    for (genvar i = 0; i < NUM_ENQ; i++) begin : g_ld1_dly
+      if (HAS_LD1_CANCEL) begin : g_reg
+        always_ff @(posedge clock) ld1_cancel_d[i] <= ld1_cancel;
+      end else begin : g_none
+        always_comb ld1_cancel_d[i] = '0;
+      end
     end
   endgenerate
-  logic [(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0] og0_cancel_sel_d, iq_cancel, iqd_cancel;
+  // ★★ 这三组「打一拍」的寄存器 golden 是**每个 enq 条目各一份**，不是共享一份 ★★
+  //   golden Entries.scala 里 RegNext(io.og0Cancel) / RegNext(io.ldCancel) 写在
+  //   `for (entryIdx <- 0 until EnqEntryNum)` 循环内，于是 firtool 展出两套同源寄存器：
+  //     REG_0/REG_2/REG_4/REG_6      与 REG_2_0/REG_2_2/REG_2_4/REG_2_6   (og0Cancel)
+  //     REG_1_{0,1,2}_ld2Cancel      与 REG_3_{0,1,2}_ld2Cancel           (ld2Cancel)
+  //   两套**同源、逐位恒等**（REG_0 <= io_og0Cancel_0; REG_2_0 <= io_og0Cancel_0;）。
+  //
+  //   ★ 值恒等 ≠ 可证等价 ★ 合并成一份，仿真一辈子看不出来（值一样），
+  //     但 FM 会把我这一份配给其中一套、另一套变成 globally unmatched，
+  //     于是 enq 条目 0 对得上、条目 1 起全错 —— 实测就是这个症状
+  //     （analyze_points: REG_3_*_ld2Cancel / REG_2_0 / REG_2_6 "Is globally unmatched"）。
+  //   所以这里按 NUM_ENQ 分份照抄结构，**不许合并**。
+  logic [NUM_ENQ-1:0][(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0] og0_cancel_sel_d, iqd_cancel;
+  logic [(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0]              iq_cancel;
   always_comb begin
-    iq_cancel  = og0_cancel_sel   & iq_is0lat;
-    iqd_cancel = og0_cancel_sel_d & iqd_is0lat;
+    iq_cancel = og0_cancel_sel & iq_is0lat;
+    for (int i = 0; i < NUM_ENQ; i++)
+      iqd_cancel[i] = og0_cancel_sel_d[i] & iqd_is0lat;
   end
   generate
-    for (genvar w = 0; w < (NUM_WK_IQ > 0 ? NUM_WK_IQ : 1); w++) begin : g_og0_dly
-      if (NUM_WK_IQ > 0 && OG0_HAS_SRC[w]) begin : g_reg
-        always_ff @(posedge clock) og0_cancel_sel_d[w] <= og0_cancel_sel[w];
-      end else begin : g_none
-        // 这一路没有 og0Cancel 源(golden 把该位删了),恒 0,不生成寄存器
-        assign og0_cancel_sel_d[w] = 1'b0;
+    for (genvar i = 0; i < NUM_ENQ; i++) begin : g_og0_dly_enq
+      for (genvar w = 0; w < (NUM_WK_IQ > 0 ? NUM_WK_IQ : 1); w++) begin : g_og0_dly
+        if (NUM_WK_IQ > 0 && OG0_HAS_SRC[w]) begin : g_reg
+          always_ff @(posedge clock) og0_cancel_sel_d[i][w] <= og0_cancel_sel[w];
+        end else begin : g_none
+          // 这一路没有 og0Cancel 源(golden 把该位删了),恒 0,不生成寄存器
+          assign og0_cancel_sel_d[i][w] = 1'b0;
+        end
       end
     end
   endgenerate
@@ -1131,7 +1150,9 @@ module xs_iq_entries_core
 
   generate
     if (HAS_LD_CANCEL) begin : g_ld_cancel_dly
-      always_ff @(posedge clock) ld2_cancel_d <= ld2_cancel;
+      for (genvar i = 0; i < NUM_ENQ; i++) begin : g_ld2_dly
+        always_ff @(posedge clock) ld2_cancel_d[i] <= ld2_cancel;
+      end
       // RegEnable(payload.srcLoadDependency, enq.valid):只有 enq 段用得上,
       // simp/comp 段没有延迟窗口,钉 0(与 golden 一致:那边根本没有这组线)。
       for (genvar i = 0; i < NUM_ENQ; i++) begin : g_enqd_dep
@@ -1260,10 +1281,14 @@ module xs_iq_entries_core
         .enq_rc_idx     (x_rc_idx       [i]),
         .wk_valid, .wk_wen, .wk_pdest, .wkd_valid, .wkd_wen, .wkd_pdest,
         .iq_wen, .iq_pdest, .iq_ld_dep, .iq_rc_dest, .iq_cancel,
-        .iqd_wen, .iqd_pdest, .iqd_ld_dep, .iqd_rc_dest, .iqd_cancel,
+        .iqd_wen, .iqd_pdest, .iqd_ld_dep, .iqd_rc_dest,
+        // ★ 每个 enq 条目吃**自己那一份**打拍寄存器(golden 就是这么分份的)；
+        //   simp/comp 没有延迟窗口(dly 恒 0)，钉 0。
+        .iqd_cancel (L_IS_ENQ ? iqd_cancel [i < NUM_ENQ ? i : 0] : '0),
         .ld1_cancel, .ld2_cancel,
         // 延迟一拍的 ldCancel 是阵列层的寄存器(golden Entries.scala:142 RegNext)
-        .ld1d_cancel(ld1_cancel_d), .ld2d_cancel(ld2_cancel_d),
+        .ld1d_cancel(L_IS_ENQ ? ld1_cancel_d[i < NUM_ENQ ? i : 0] : '0),
+        .ld2d_cancel(L_IS_ENQ ? ld2_cancel_d[i < NUM_ENQ ? i : 0] : '0),
         .enqd_self_ld_dep(enqd_self_ld_dep[i]),
         .vl_int_is_zero, .vl_int_is_vlmax, .vl_vf_is_zero, .vl_vf_is_vlmax,
         .deq_sel           (x_deq_sel       [i]),

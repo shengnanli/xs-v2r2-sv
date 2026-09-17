@@ -291,7 +291,9 @@ def selftest_regcheck():
              ('n_deq', 1, 'deqPortIdx(comp)'),
              ('n_ld_cancel', 0, 'ld2Cancel'),
              ('comp_has_ld_dep', False, 'srcLoadDependency(comp)'),
-             ('has_rc', False, 'useRegCache')]
+             ('has_rc', False, 'useRegCache'),
+             ('n_enq', 1, '打拍'),          # 打拍寄存器份数 != NUM_ENQ
+             ('n_ld_cancel', 2, 'ld2Cancel')]
     for attr, val, kw in cases:
         old = getattr(v, attr)
         setattr(v, attr, val)
