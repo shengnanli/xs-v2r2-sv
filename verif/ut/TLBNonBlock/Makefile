@@ -3,7 +3,10 @@ MODULE = TLBNonBlock
 RTL_DIR = ../../../rtl
 # 一个参数化核 + 三个薄 wrapper（家族规矩：核体全仓只有一份）。
 # 核文件必须排在 wrapper 之前：wrapper 的模块头 import tlbnb_pkg::*。
-RTL_SRCS = $(RTL_DIR)/memblock/xs_TLBNonBlock_core.sv \
+# memblock 公共包必须排在最前：tlbnb_pkg 住在这里（跨文件共享包按 CONVENTIONS.md
+# 放 rtl/<subsys>/<subsys>_common_pkg.sv），三个 wrapper 的模块头 import 它。
+RTL_SRCS = $(RTL_DIR)/memblock/memblock_common_pkg.sv \
+           $(RTL_DIR)/memblock/xs_TLBNonBlock_core.sv \
            $(RTL_DIR)/memblock/TLBNonBlock.sv \
            $(RTL_DIR)/memblock/TLBNonBlock_1.sv \
            $(RTL_DIR)/memblock/TLBNonBlock_2.sv
