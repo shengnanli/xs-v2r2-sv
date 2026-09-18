@@ -1,8 +1,31 @@
 // =============================================================================
-// SnapshotGenerator.sv —— 重命名快照队列（4 个快照槽的环形队列）
+// SnapshotGenerator.sv —— 重命名快照队列（4 个快照槽的环形队列）+ ★家族共享核★
 // 设计源：XiangShan src/main/scala/xiangshan/backend/rename/Snapshot.scala
 //         （class SnapshotGenerator[T], 被 Rab.scala 以 enqPtr 为 dataType 例化）
 // golden 对照：G1-canonical/golden-rtl/SnapshotGenerator.sv（283 行，21 端口，真叶子）
+// ★家族★ golden 里共 11 个单态化实例（SnapshotGenerator 与 _1/_2/_3/_4/_5/_6/
+//   _7/_11/_12/_14）。实测（逐个 diff，去掉 payload 行后的控制逻辑逐字节比对）：
+//   **11 份的控制核完全相同** —— 深度恒为 4、指针恒为 flag+2 位、flushVec 恒为 4 位，
+//   连 §4 那个退化表达式的形状都一样。变的只有两处：
+//     (1) 被快照的 payload 位宽（下表 DATA_W）；
+//     (2) _14 额外把 enqPtr/deqPtr/valids 透出到端口（其余 10 个被 firtool 消掉了）。
+//   所以本核把 payload 当**不透明的 DATA_W 位数据**（核只做搬运，不看内容），
+//   各变体只写一层薄 wrapper 做端口展平。核体只此一份，见各变体文件头的指路。
+//
+//   变体      DATA_W  payload 形状（实测自 golden 端口表）
+//   -------   ------  --------------------------------------------------
+//   (base)       9    {flag, value[7:0]}            RenameBufferPtr, RabSize=256
+//   _1           7    {flag, value[5:0]}
+//   _2           8    {illegal, vma, vta, vsew[1:0], vlmul[2:0]}   VType
+//   _3           9    Vec(1) of {flag, value[7:0]}
+//   _4         256    Vec(32) of UInt(8)
+//   _5         272    Vec(34) of UInt(8)
+//   _6         376    Vec(47) of UInt(8)
+//   _7           8    Vec(1) of UInt(8)
+//   _11          8    {flag, value[6:0]}
+//   _12          6    {flag, value[4:0]}
+//   _14         60    Vec(6) of {flag,value[7:0]} ++ Vec(6) of Bool   (+ptr/valids 输出)
+//
 // 配置：KunminghuV2Config —— RenameSnapshotNum=4；本例化的数据 = RenameBufferPtr
 //      （flag 1 位 + value 8 位，RabSize=256）。两者都从 golden 端口表实测。
 //
@@ -31,9 +54,13 @@
 //      本核照抄该形式（见 §4 的 qualified[1]/[2]），**不做代数化简**：
 //      值恒等不等于可证等价，化简只会给 FM 添麻烦，读者也就看不到这个事实了。
 //      注意 candidate[0] 那一项形状**不同**（是 !valids | flush），不是笔误。
-//  (b) Chisel 的 io 还有 enqPtr / deqPtr / valids 三组输出端口，golden 端口表里
-//      一个都没有 —— 父模块 Rab 只用了 io.snapshots，firtool（-O=release）
+//  (b) Chisel 的 io 还有 enqPtr / deqPtr / valids 三组输出端口，**本变体**的 golden
+//      端口表里一个都没有 —— 父模块 Rab 只用了 io.snapshots，firtool（-O=release）
 //      把没有读者的输出端口连同它的驱动一起消掉了。以 golden 端口表为准。
+//      ★但家族里 SnapshotGenerator_14 的 golden 把这 8 根全留着★（它的父模块读了），
+//      所以本核**无条件**把它们透出；不需要的 wrapper 直接悬空不接。
+//      这不是给本变体加逻辑：snptEnqPtr/snptDeqPtr/snptValids 本来就在，
+//      悬空的子模块输出端口不构成比较点（实测 base 的 FM 仍是 unread 0）。
 //
 // ★ 复位域（golden 两个 always 块逐个分类，实测）★
 //   golden 178-222：always @(posedge clock or posedge reset) —— **异步复位**，
@@ -70,23 +97,34 @@ endpackage
 // -----------------------------------------------------------------------------
 module xs_SnapshotGenerator_core
   import snapshotgenerator_pkg::*;
-(
+#(
+  // 被快照数据的位宽。核**不解释** payload 的内部结构，只按位搬运，
+  // 所以 11 个变体（9/7/8/9/256/272/376/8/8/6/60 位）共用同一份核。
+  // 默认值 = base 变体的 RenameBufferPtr 宽度，各变体 wrapper 显式覆盖。
+  parameter int DATA_W = $bits(rab_ptr_t)
+) (
   input  logic     clock,
   input  logic     reset,        // 异步、高有效（golden: posedge reset）
 
   input  logic     enq,          // 请求存一份快照
-  input  rab_ptr_t enq_data,     // 要存的 RenameBuffer 入队指针
+  input  logic [DATA_W-1:0] enq_data,  // 要存的 payload（不透明）
   input  logic     deq,          // 队头快照作废（分支已确认）
   input  logic     redirect,     // 本拍有重定向：enq/deq 双双失效
   input  logic [SNPT_NUM-1:0] flush_vec,  // 按槽作废（可以是任意子集）
 
-  output rab_ptr_t snapshots [SNPT_NUM]   // 4 个槽的当前内容（无条件透出）
+  output logic [DATA_W-1:0] snapshots [SNPT_NUM],  // 4 个槽的当前内容（无条件透出）
+
+  // ↓ 只有 SnapshotGenerator_14 的 golden 端口表留着这三组；其余 10 个变体的
+  //   wrapper 不接（firtool 在那些变体上把它们消掉了）。见文件头 (b)。
+  output snpt_ptr_t           enq_ptr,
+  output snpt_ptr_t           deq_ptr,
+  output logic [SNPT_NUM-1:0] valids
 );
 
   // ---------------------------------------------------------------------------
   // §1 状态寄存器
   // ---------------------------------------------------------------------------
-  rab_ptr_t             snapshots_q [SNPT_NUM];  // ★不复位★（见文件头复位域）
+  logic [DATA_W-1:0]    snapshots_q [SNPT_NUM];  // ★不复位★（见文件头复位域）
   snpt_ptr_t            snpt_enq_ptr_q;          // 异步复位 → 0
   snpt_ptr_t            snpt_deq_ptr_q;          // 异步复位 → 0
   logic [SNPT_NUM-1:0]  snpt_valids_q;           // 异步复位 → 0
@@ -197,6 +235,11 @@ module xs_SnapshotGenerator_core
     for (int i = 0; i < SNPT_NUM; i++) snapshots[i] = snapshots_q[i];
   end
 
+  // 队列自身的状态。只有 _14 的 wrapper 接它们，其余变体悬空（见文件头 (b)）。
+  assign enq_ptr = snpt_enq_ptr_q;
+  assign deq_ptr = snpt_deq_ptr_q;
+  assign valids  = snpt_valids_q;
+
   // ---------------------------------------------------------------------------
   // §8 设计不变量（仅仿真；与 golden 的 XSError 同义）
   // ---------------------------------------------------------------------------
@@ -235,13 +278,16 @@ module SnapshotGenerator (
   output [7:0] io_snapshots_3_value
 );
 
+  // payload = RenameBufferPtr（rab_ptr_t），打平成 9 位总线交给核。
+  localparam int DW = $bits(snapshotgenerator_pkg::rab_ptr_t);   // = 9
+
   snapshotgenerator_pkg::rab_ptr_t core_enq_data;
-  snapshotgenerator_pkg::rab_ptr_t core_snapshots [snapshotgenerator_pkg::SNPT_NUM];
+  logic [DW-1:0] core_snapshots [snapshotgenerator_pkg::SNPT_NUM];
 
   assign core_enq_data.flag  = io_enqData_flag;
   assign core_enq_data.value = io_enqData_value;
 
-  xs_SnapshotGenerator_core u_core (
+  xs_SnapshotGenerator_core #(.DATA_W(DW)) u_core (
     .clock     (clock),
     .reset     (reset),
     .enq       (io_enq),
@@ -249,16 +295,20 @@ module SnapshotGenerator (
     .deq       (io_deq),
     .redirect  (io_redirect),
     .flush_vec ({io_flushVec_3, io_flushVec_2, io_flushVec_1, io_flushVec_0}),
-    .snapshots (core_snapshots)
+    .snapshots (core_snapshots),
+    .enq_ptr   (),   // 本变体 golden 没有这三组端口（文件头 (b)）
+    .deq_ptr   (),
+    .valids    ()
   );
 
-  assign io_snapshots_0_flag  = core_snapshots[0].flag;
-  assign io_snapshots_0_value = core_snapshots[0].value;
-  assign io_snapshots_1_flag  = core_snapshots[1].flag;
-  assign io_snapshots_1_value = core_snapshots[1].value;
-  assign io_snapshots_2_flag  = core_snapshots[2].flag;
-  assign io_snapshots_2_value = core_snapshots[2].value;
-  assign io_snapshots_3_flag  = core_snapshots[3].flag;
-  assign io_snapshots_3_value = core_snapshots[3].value;
+  // 打平的反向：rab_ptr_t 是 {flag, value}，flag 在高位。
+  assign io_snapshots_0_flag  = core_snapshots[0][DW-1];
+  assign io_snapshots_0_value = core_snapshots[0][DW-2:0];
+  assign io_snapshots_1_flag  = core_snapshots[1][DW-1];
+  assign io_snapshots_1_value = core_snapshots[1][DW-2:0];
+  assign io_snapshots_2_flag  = core_snapshots[2][DW-1];
+  assign io_snapshots_2_value = core_snapshots[2][DW-2:0];
+  assign io_snapshots_3_flag  = core_snapshots[3][DW-1];
+  assign io_snapshots_3_value = core_snapshots[3][DW-2:0];
 
 endmodule
