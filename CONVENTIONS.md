@@ -298,8 +298,21 @@ Rob 的规模探针两侧喂的是**同一份文件**（`Rob_impl.sv` 与 golden
 448 个 `robDeqGroup_<n>_debug_otherPdest_<m>` + 7 个 `deqPtrVec_next_<n>_flag`
 + 5 个 `enqPtrVec_<n>_flag`。
 
-**机理未明**（可能是 FM 对 impl 容器把未驱动逻辑剪得更狠，也可能是悬空信号在两个
-容器里被处理成不同对象；探针分辨不了这两者）。**但实务含义是确定的**：
+**机理不神秘，FM 自己把解释印在日志里**（`probe.log:221`，原文）：
+
+    ATTENTION: 20 failing compare points have unmatched undriven signals in their
+                 reference fan-in.  To report such failing points, use
+                   "report_failing_points -inputs unmatched -inputs undriven".
+               To read about undriven signal handling, use
+                 "man verification_set_undriven_signals".
+
+golden 有 460 个悬空信号 → 两容器间未配对 → 20 个比较点的 **ref 侧 fanin** 里
+有这种信号 → 按 `verification_set_undriven_signals` 的默认值 `binary:X`
+它们是"可取 X 的自由变量" → 取值不定 → failing。
+
+★这一条最初被记成「测到但机理未明」，是**手里有观测结果却没读完**★ —— 见下节。
+
+**实务含义（无论机理）**：
 
 ★这个模块的真证明基线**不是**「0 failing / 0 unmatched」。★
 这 460 点是结构性地板，无论重写写得多好都在。
@@ -322,6 +335,40 @@ vs 核 `robEntries_valid_reg[<i>]`），那时要么靠 pin、要么靠签名匹
 
 所以自比的 1973 s 是「名字全对得上」情形的**地板**，
 和签名匹配口径的外推**量的不是一回事，不能放一起比**。
+
+## ★"机理未明"之前，先把手里的日志读完★（2026-09-18，lane 自抓）
+
+上一节那 20 个 failing，第一版被记成「现象已测、机理未明」，并诚实地写进了证据文件。
+**标注是对的，但结论是错的** —— FM 早就在同一份日志里主动写了 `ATTENTION` 说明原因
+（悬空信号落进 ref 侧 fanin，按 `verification_set_undriven_signals` 的默认
+`binary:X` 当可取 X 的自由变量处理），还顺带给了两条可用的命令。
+
+**没人漏掉观测，是观测拿到手里没读完。**
+
+这和「猜三次错两次就该上观测手段」是同一个毛病的两面：
+- 那一条说的是**该观测时还在猜**
+- 这一条说的是**观测到手了却没看**
+
+**规矩**：写下"机理未明"之前，先把该跑的日志**从头到尾读一遍**，
+尤其是工具主动打的 `ATTENTION` / `Info:` / `Warning:` 段 —— EDA 工具经常
+把最关键的那句话放在这些段里，而它们不在结果表里、容易被跳过。
+
+**为什么这条格外要紧**：把某事标成"未明"会**改变下一步计划**。这次的具体后果是——
+知道机理之后才发现存在 `verification_set_undriven_signals` 这个旋钮，
+于是"先试着把不对称消掉"成了比"直接申请 460 条豁免"更干净的路子。
+**"未明"会让人直接跳到绕过，而不是先去消除。**
+
+## ★证据目录按"它到底绑在什么上"命名，别按仓库 commit★（2026-09-18）
+
+那份自比证据存在 `evidence/rob-selfcompare-<golden sha256 前缀>/`，而不是
+`evidence/<repo commit>/`。理由：**这一跑只读 golden，与仓库状态无关**，
+按 commit 命名是**假绑定** —— 换个仓库 commit 重跑结果一模一样，
+而按 commit 归档会让人以为它随仓库变。
+
+同一处的另一个判断：**故意不放 `receipt.json`**。`build_receipt_index.py` 只走
+`evidence/**/receipt.json`，所以没有它这份材料对台账不可见 ——
+**这是凭据（calibration），不是判决（verdict）**，不该被计进覆盖率。
+区分这两者，台账才不会把"我量了一下地板在哪"当成"我证明了一个目标"。
 
 ## ★标了「工具局限」不等于查过它★（2026-09-18，lane 自抓）
 
