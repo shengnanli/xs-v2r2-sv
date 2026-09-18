@@ -58,7 +58,10 @@ MUTANTS = [
      "                            & ~(tl_d_valid_q[w] & (tl_d_mshrid_q[w] == enq_mshr_id[w]));",
      "                            & ~(tl_d_valid      & (tl_d_mshrid      == enq_mshr_id[w]));"),
 
-    ("M5", "io_replayAllocate 漏掉最后一条 entry", "CAUGHT",
+    # ★M5 余量极薄★：只有「第 71 条是唯一 allocated 的那一条」时才可观测。
+    #  实测 20k 拍 seed 1 只抓到 errors=2 —— 换个种子就可能漏。它真正的兜底在 FM
+    #  （io_replayAllocate 是 allocated 的纯组合归约，FM 全取值域逐点比）。
+    ("M5", "io_replayAllocate 漏掉最后一条 entry（★余量极薄，见注释★）", "CAUGHT",
      "  assign replayAllocate = |allocated_v;",
      "  assign replayAllocate = |allocated_v[LQ_REPLAY_SIZE-2:0];"),
 
@@ -87,9 +90,25 @@ MUTANTS = [
      "    else for (int i = 0; i < LD_PIPE_W; i++)\n"
      "      if (s0_can_go[i]) s1_oldestSel_bits_q[i] <= oh72_to_idx(s0_oldestSel_bits[i]);"),
 
-    ("M11", "topdown 归约树换成左结合 fold（平局时与 ParallelOperation 分叉）", "CAUGHT",
+    # ★M11 换过一次，理由写在这里★
+    # 原来的 M11 是「把 td_n[2] 的两个实参对调」，实测 MISSED。复盘发现那是**近乎空变异**：
+    #   td_merge(a,b) 两者都有效时取 isAfter(a.rob,b.rob) ? b : a，也就是取 robIdx 较老的那个；
+    #   对调实参后是 isAfter(b.rob,a.rob) ? a : b —— 在 a.rob != b.rob 时**逐位相同**
+    #   （isAfter 反对称），只有 a.rob == b.rob 这个平局才分叉。
+    # 也就是说：归约树的**形状/顺序**这件事本身就只在平局时可观测，仿真按构造几乎产生不出
+    # （要两条 allocated entry 同 vaddr、同 robIdx、不同 lqIdx）。所以它归 FM 管，
+    # 标 EXPECTED_MISSED 并保留 —— 剔掉它会让人以为树形无所谓。
+    # 另加 M11b 打同一块逻辑的**真**功能变异：把比较方向翻过来（取最新而不是最老）。
+    ("M11", "topdown 归约树两个实参对调（★平局才分叉，近乎空变异，见代码注释★）",
+     "EXPECTED_MISSED",
      "    td_n[2] = td_merge(td_n[0], td_n[1]);",
      "    td_n[2] = td_merge(td_n[1], td_n[0]);"),
+
+    ("M11b", "topdown 归约取最新而不是最老（td_merge 的比较方向翻转）", "CAUGHT",
+     "    if (a.v & b.v) td_merge = isAfter ? '{v:1'b1, robF:b.robF, robV:b.robV, lqV:b.lqV}\n"
+     "                                      : '{v:1'b1, robF:a.robF, robV:a.robV, lqV:a.lqV};",
+     "    if (a.v & b.v) td_merge = isAfter ? '{v:1'b1, robF:a.robF, robV:a.robV, lqV:a.lqV}\n"
+     "                                      : '{v:1'b1, robF:b.robF, robV:b.robV, lqV:b.lqV};"),
 
     ("M12", "冷却阈值 12 -> 13", "CAUGHT",
      "  localparam logic [COLD_DOWN_W-1:0] COLD_DOWN_THRESHOLD = 4'd12;",
@@ -180,7 +199,9 @@ def main():
     print(f"{'ID':<5} {'期望':<16} {'实测':<10} {'量':<28} 说明")
     bad = 0
     for mid, desc, expect, verdict, detail in rows:
-        ok = (verdict == expect) or (expect == "EXPECTED_MISSED" and verdict == "CAUGHT")
+        # EXPECTED_MISSED 的含义是「UT 观测不到，由 FM 兜底」：收到 MISSED 是符合期望；
+        # 收到 CAUGHT 也算好消息（UT 比预期强），两者都算符合。
+        ok = (verdict == expect) or (expect == "EXPECTED_MISSED" and verdict in ("MISSED", "CAUGHT"))
         if not ok:
             bad += 1
         print(f"{mid:<5} {expect:<16} {verdict:<10} {detail:<28} {desc}")

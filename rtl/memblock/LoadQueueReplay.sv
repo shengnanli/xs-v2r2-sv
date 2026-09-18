@@ -875,14 +875,26 @@ module xs_LoadQueueReplay_core
   logic [MSHR_ST_W-1:0] s2_mshr_q  [LD_PIPE_W];
   logic [N_CAUSES-1:0]  s2_cause_q [LD_PIPE_W];
 
-  // redirect 打一拍（s1_cancel 要用当前拍和上一拍各判一次）
-  logic     redirect_valid_q, redirect_level_q;
-  rob_ptr_t redirect_robIdx_q;
-  always_ff @(posedge clock) begin
-    redirect_valid_q  <= redirect_valid;
-    redirect_robIdx_q <= redirect_robIdx;
-    redirect_level_q  <= redirect_level;
-  end
+  // redirect 打一拍：cancel 判定要拿**当前拍和上一拍**的 redirect 各判一次。
+  // ★golden 为此打了 6 份同源副本：s0_can_go_REG{,_1,_2}（喂 s0_can_go 那条锥）
+  //  与 s1_cancel_REG{,_1,_2}（喂 s1_cancel 那条锥），每路各一份，六份逐位恒等。
+  //  可读核**必须照样声明 6 份**：合并成 1 份在仿真里永远看不出来（值一直相同），
+  //  但 FM 只会把这 1 份配给其中一个 golden 副本，另外 5 份 globally unmatched，
+  //  而未配对的比较点是自由割点 —— 它不只是自己不被证，还会让下游整条锥跟着失配。
+  //  ★本轮实测：先按「合并成一份」写，FM match 报 55 个 unmatched（5 副本 ×11 位），
+  //   全在 reference 侧、impl 侧 0 个。这就是 CONVENTIONS「一份都不许少」的原样复现。★
+  typedef struct packed {
+    logic     valid;
+    rob_ptr_t robIdx;
+    logic     level;
+  } redirect_q_t;
+  redirect_q_t red_q_s0 [LD_PIPE_W];   // golden s0_can_go_REG{,_1,_2}
+  redirect_q_t red_q_s1 [LD_PIPE_W];   // golden s1_cancel_REG{,_1,_2}
+  always_ff @(posedge clock)
+    for (int i = 0; i < LD_PIPE_W; i++) begin
+      red_q_s0[i] <= '{valid: redirect_valid, robIdx: redirect_robIdx, level: redirect_level};
+      red_q_s1[i] <= '{valid: redirect_valid, robIdx: redirect_robIdx, level: redirect_level};
+    end
 
   logic [LD_PIPE_W-1:0] replay_fire;
   assign replay_fire = replay_valid & replay_ready;
@@ -890,17 +902,22 @@ module xs_LoadQueueReplay_core
   // ★golden 直接读 uopR[s1_bits]，**不带 s1_oldestSel_valid 门控**。
   //  加一层 `valid ? uopR[bits] : uop[0]` 会把 s1_oldestSel_valid_q 引进
   //  s0_can_go / scheduled / s1_oldestSel 的次态锥，与 golden 分叉。★
-  logic [LD_PIPE_W-1:0] s1_cancel;
+  //  s0 与 s1 两条锥各算一次「s1 项被刷」，用**各自那份**打拍寄存器（见上）。
+  //  两者函数相同、值也相同，但结构上是 golden 的两套，不合并。
+  logic [LD_PIPE_W-1:0] s0_cancel, s1_cancel;
   always_comb begin
     for (int i = 0; i < LD_PIPE_W; i++) begin
       lqr_uop_t u;
-      logic f1, f2;
-      u  = uopR[s1_oldestSel_bits_q[i]];
-      f1 = rob_need_flush(u.p.robIdx_flag, u.p.robIdx_value, redirect_valid,
-                          redirect_robIdx.flag, redirect_robIdx.value, redirect_level);
-      f2 = rob_need_flush(u.p.robIdx_flag, u.p.robIdx_value, redirect_valid_q,
-                          redirect_robIdx_q.flag, redirect_robIdx_q.value, redirect_level_q);
-      s1_cancel[i] = f1 | f2;
+      logic fnow, f_s0, f_s1;
+      u    = uopR[s1_oldestSel_bits_q[i]];
+      fnow = rob_need_flush(u.p.robIdx_flag, u.p.robIdx_value, redirect_valid,
+                            redirect_robIdx.flag, redirect_robIdx.value, redirect_level);
+      f_s0 = rob_need_flush(u.p.robIdx_flag, u.p.robIdx_value, red_q_s0[i].valid,
+                            red_q_s0[i].robIdx.flag, red_q_s0[i].robIdx.value, red_q_s0[i].level);
+      f_s1 = rob_need_flush(u.p.robIdx_flag, u.p.robIdx_value, red_q_s1[i].valid,
+                            red_q_s1[i].robIdx.flag, red_q_s1[i].robIdx.value, red_q_s1[i].level);
+      s0_cancel[i] = fnow | f_s0;
+      s1_cancel[i] = fnow | f_s1;
     end
   end
 
@@ -910,7 +927,7 @@ module xs_LoadQueueReplay_core
       logic canFire;
       canFire      = coldCounter[i] < COLD_DOWN_THRESHOLD;   // replayCanFire
       s1_can_go[i] = (canFire & (~s2_oldestSel_valid_q[i] | replay_fire[i])) | s2_cancelReplay[i];
-      s0_can_go[i] = s1_can_go[i] | s1_cancel[i];
+      s0_can_go[i] = s1_can_go[i] | s0_cancel[i];
     end
   end
 

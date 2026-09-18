@@ -101,18 +101,27 @@ for {set i 0} {$i < 3} {incr i} {
   }
 }
 
-# ---- redirect 打拍：golden 有 6 份同源副本（s0_can_go_REG/_1/_2 + s1_cancel_REG/_1/_2）
-#      = RegNext(io_redirect_*)，可读核只留一份 redirect_*_q。多对一钉点：
-#      FM 的 merge-duplicated-registers 会把 6 份塌成 1，钉过之后一致。
-#      robIdx 是 packed {flag, value[7:0]} → 位[8]=flag、位[7:0]=value。----
-foreach pfx {s0_can_go_REG s0_can_go_REG_1 s0_can_go_REG_2
-             s1_cancel_REG s1_cancel_REG_1 s1_cancel_REG_2} {
-  catch {set_user_match "r:/WORK/$top/${pfx}_valid_reg"            "i:/WORK/$top/u_core/redirect_valid_q_reg"}
-  catch {set_user_match "r:/WORK/$top/${pfx}_bits_robIdx_flag_reg" "i:/WORK/$top/u_core/redirect_robIdx_q_reg\[8\]"}
-  catch {set_user_match "r:/WORK/$top/${pfx}_bits_level_reg"       "i:/WORK/$top/u_core/redirect_level_q_reg"}
-  for {set b 0} {$b < 8} {incr b} {
-    catch {set_user_match "r:/WORK/$top/${pfx}_bits_robIdx_value_reg\[$b\]" \
-                          "i:/WORK/$top/u_core/redirect_robIdx_q_reg\[$b\]"}
+# ---- redirect 打拍：golden 有 **6 份**同源副本，每路各一份、分两组：
+#      s0_can_go_REG{,_1,_2} 喂 s0_can_go 那条锥，s1_cancel_REG{,_1,_2} 喂 s1_cancel。
+#      六份逐位恒等。可读核也声明 6 份（red_q_s0[3] / red_q_s1[3]），1:1 钉。
+#      ★上一版这里是 6 对 1（指望 merge-dup 把 6 份塌成 1），实测 FM match 报
+#       55 个 unmatched（5 份副本 ×11 位，全在 ref 侧、impl 侧 0 个）。
+#       未配对的比较点是自由割点，下游整条锥会跟着失配 —— 所以改成逐份 1:1。★
+#      impl 的 redirect_q_t 是 packed {valid, robIdx{flag,value[7:0]}, level}
+#      → 位[10]=valid、位[9]=robIdx.flag、位[8:1]=robIdx.value、位[0]=level。
+foreach {gpfx iarr} {s0_can_go_REG red_q_s0  s1_cancel_REG red_q_s1} {
+  for {set i 0} {$i < 3} {incr i} {
+    set gs [expr {$i == 0 ? "" : "_$i"}]
+    catch {set_user_match "r:/WORK/$top/${gpfx}${gs}_valid_reg" \
+                          "i:/WORK/$top/u_core/${iarr}_reg\[$i\]\[10\]"}
+    catch {set_user_match "r:/WORK/$top/${gpfx}${gs}_bits_robIdx_flag_reg" \
+                          "i:/WORK/$top/u_core/${iarr}_reg\[$i\]\[9\]"}
+    catch {set_user_match "r:/WORK/$top/${gpfx}${gs}_bits_level_reg" \
+                          "i:/WORK/$top/u_core/${iarr}_reg\[$i\]\[0\]"}
+    for {set b 0} {$b < 8} {incr b} {
+      catch {set_user_match "r:/WORK/$top/${gpfx}${gs}_bits_robIdx_value_reg\[$b\]" \
+                            "i:/WORK/$top/u_core/${iarr}_reg\[$i\]\[[expr {$b+1}]\]"}
+    }
   }
 }
 
