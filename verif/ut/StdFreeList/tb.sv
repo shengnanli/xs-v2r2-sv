@@ -5,6 +5,20 @@ module tb;
   int unsigned NCYCLES = 200000;
   bit clk = 0, rst;
   int errors = 0, checks = 0;
+
+  // ★暖机窗口★ —— 复位一撤先把 4 个快照槽全写一遍，之后才允许随机读快照。
+  // 为什么必须有：golden SnapshotGenerator.sv:146 那个 always 块**没有 reset 臂**
+  // （:180 那块才带复位，但它只管 snptEnqPtr/snptDeqPtr/snptValids），
+  // 所以 4 个槽的 payload 寄存器一个都不复位。设计契约是"只读有效槽"（由
+  // snptValids 保证），而本 tb 的 snptSelect 是全随机、不看有效位的。
+  // 开跑最初那几拍里还没写过的槽，两侧独立例化在 +vcs+initreg+random 下
+  // 各抽一份互不相同的上电值 ⇒ 读到就必然不等，**这是 tb 违反契约，不是 RTL bug**。
+  // RenameTable 的同一个坑在 seed=42 下真炸过（详见 d381322），本 UT 至今绿
+  // 只是没抽到那个 seed。RenameBuffer/tb.sv 与 SnapshotGenerator/tb.sv 早就
+  // 各自有暖机窗口，这里是补齐同一条定式。
+  localparam int WARM_CYCLES = 8;
+  int cyc = 0;
+  always @(negedge clk) if (!rst) cyc <= cyc + 1;
   always #5 clk = ~clk;
 
   logic io_redirect;
@@ -97,7 +111,7 @@ module tb;
       {io_snpt_flushVec_3,io_snpt_flushVec_2,io_snpt_flushVec_1,io_snpt_flushVec_0}<=0;
     end else begin
       // redirect 偶发(约 3%)，并伴随一段 walk
-      io_redirect <= ($urandom_range(0,99) < 3);
+      io_redirect <= (cyc < WARM_CYCLES) ? 1'b0 : ($urandom_range(0,99) < 3);
       io_walk     <= ($urandom_range(0,99) < 25);
       io_doAllocate <= $urandom_range(0,1);
       io_allocateReq_0<=$urandom_range(0,1); io_allocateReq_1<=$urandom_range(0,1);
@@ -119,8 +133,15 @@ module tb;
       io_commit_info_0_fpWen<=$urandom_range(0,1); io_commit_info_1_fpWen<=$urandom_range(0,1);
       io_commit_info_2_fpWen<=$urandom_range(0,1); io_commit_info_3_fpWen<=$urandom_range(0,1);
       io_commit_info_4_fpWen<=$urandom_range(0,1); io_commit_info_5_fpWen<=$urandom_range(0,1);
-      io_snpt_snptEnq<=($urandom_range(0,99)<15); io_snpt_snptDeq<=($urandom_range(0,99)<15);
-      io_snpt_useSnpt<=$urandom_range(0,1); io_snpt_snptSelect<=$urandom_range(0,3);
+      if (cyc < WARM_CYCLES) begin
+        // 前 8 拍纯入队：队列复位后是空的，前 4 拍依次写满槽 0..3（之后队满自动丢弃）。
+        // 窗口内 useSnpt 恒 0 ⇒ 恢复路径不启动，不会"窗口内读到脏槽"。
+        io_snpt_snptEnq<=1'b1; io_snpt_snptDeq<=1'b0;
+        io_snpt_useSnpt<=1'b0; io_snpt_snptSelect<=2'd0;
+      end else begin
+        io_snpt_snptEnq<=($urandom_range(0,99)<15); io_snpt_snptDeq<=($urandom_range(0,99)<15);
+        io_snpt_useSnpt<=$urandom_range(0,1); io_snpt_snptSelect<=$urandom_range(0,3);
+      end
       io_snpt_flushVec_0<=($urandom_range(0,99)<5); io_snpt_flushVec_1<=($urandom_range(0,99)<5);
       io_snpt_flushVec_2<=($urandom_range(0,99)<5); io_snpt_flushVec_3<=($urandom_range(0,99)<5);
     end

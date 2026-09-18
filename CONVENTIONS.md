@@ -613,6 +613,72 @@ timeout -s KILL 90 fm_shell -64 -work_path wB -file err.tcl < /dev/null > b.log 
 写完闸别忘了拿它扫一遍存量 —— 第 3 例就是这么被翻出来的，
 而 `.gitignore` 里当时还写着一句注释说它"靠没 git add 侥幸没进库"。**那句话是错的。**
 
+## ★`$time` 打出来的是时间不是拍数 —— 单位错会把诊断引向完全错误的嫌疑犯★（2026-09-18）
+
+RenameTable_2 的失配日志写着 `$time=264000`。我转述成"约 26400 拍"，
+于是整个诊断方向被定成"长期累积漂移"。**错了。**
+
+tb 是 `` `timescale 1ns/1ps ``、`%0t` 默认按**精度**（1ps）打印、时钟 `always #5`，
+所以 `264000 ps = 264 ns = 第 26 拍`。UCLI 实测印证：`run 264 ns` 之后
+`senv time` 返回 `264000 ps`。
+
+**差别不是"数字不准"，是嫌疑犯集合完全不同**：
+- "跑了 26400 拍才错" ⇒ 找累积性的东西：计数器回绕、指针漂移、老化状态
+- "刚开跑 26 拍就错" ⇒ 找初始化类的东西：未复位寄存器、暖机不足、上电值
+
+真因是后者，而按前者去找永远找不到。
+
+**规矩**：日志里任何 `$time`，第一次引用前先确认三件事 ——
+`timescale` 的单位/精度、`%0t` 用的是哪个、时钟周期多少。
+要拍数就自己算或者直接在 tb 里打一个拍计数器，别拿时间当拍数用。
+
+## ★"读一个从没写过、而且不复位的寄存器" —— 是 tb 违反契约，不是 RTL bug★（2026-09-18）
+
+golden 里有一整类寄存器是**故意不复位**的，典型是快照 payload：
+
+    SnapshotGenerator.sv:146    always @(posedge clock)              ← 无 reset 臂，写 4×N 个槽
+    SnapshotGenerator.sv:180    always @(posedge clock or posedge reset) ← 只复位 ptr/valids
+    （SnapshotGenerator_6.sv 是 :551 / :765，同构）
+
+设计契约是**只读有效槽**，由 `snptValids` 保证。重写件照抄"不复位"是**对的**。
+
+而 UT 的 tb 常常把 `snptSelect` 写成全随机、不看有效位。于是开跑最初那几拍里
+还没被写过的槽，golden 与重写件两个**独立例化**在 `+vcs+initreg+random` 下
+各抽一份互不相同的上电值 ⇒ 读到就必然不等。
+
+**这时候红的是 tb，不是 RTL。** 判断方法很硬：拿 UCLI 在失配那一拍定点探针，
+两侧同读——**写过的槽全一致、只有没写过的槽不等**，就是这一类。
+
+修法是给 tb 加**暖机窗口**（复位一撤先纯入队若干拍把槽写满，窗口内把
+`useSnpt`/`redirect` 压 0 使恢复路径不启动），不是去改 RTL、更不是加 waiver。
+`verif/ut/SnapshotGenerator/tb.sv`（`WARM_CYCLES=24`）与
+`verif/ut/RenameBuffer/tb.sv`（`warm_drive` 里 `snptEnq = (c < 8)`）早就是这么做的，
+这是**既有定式**，不是临时绕法。
+
+**加了暖机必须证明没削弱判别力**：RenameTable 那次 `make mutants` 仍 11/11
+符合预期，其中 M9「快照恢复源恒取 arch_table」——正是被动过的那条路——
+仍然 CAUGHT（errors=453480）；覆盖闸也不空（四张快照各被选中上万次）。
+**只报"改完还是绿的"不算数，要报"改完仍然抓得住动过的那条路"。**
+
+## ★`INITREG` 这类 Makefile 变量，声明了不等于接上了★（2026-09-18，两个 UT 各一种死法）
+
+两个 UT 的"3 seed × 2 initreg"里，有一轮或两轮**从来没真跑过**：
+
+| UT | 死法 |
+|---|---|
+| `verif/ut/FreeList` | 编译行**根本没有** `+vcs+initreg+random`，`SIM_ARGS` 里也没有任何 initreg 字样 ⇒ `make run INITREG=...` 的 `INITREG` 从来没被用到，**两轮都没跑过** |
+| `verif/ut/FreeList_5` | 运行期**写死** `SIM_ARGS += +vcs+initreg+0`，`INITREG` 改不动它 ⇒ **random 那轮从没跑过** |
+
+★VCS 的初值注入是**编译期**开关★ —— 只在运行期加 `+vcs+initreg+random` 不生效，
+这是第一种死法的根源。
+
+**怎么发现**：不要看 Makefile 写了什么，看**磁盘上有没有对应的日志文件**。
+`ls sim_*_initreg*.log`，两档后缀都得有、且内容不同（同 seed 两档 md5 必须不等）。
+`scripts/ut_common.mk` 的 `INITREG_TAG` 就是为此存在的：它按 `SIM_ARGS` 里真正
+出现的字样给日志加后缀，**接没接上一看文件名就知道**。
+
+这和"`errors=0` 单独不算数"是同一类：**声明的验收和实际跑过的验收要分开核**。
+
 ## ★继承来的数字与断言，第一次引用时必须重新测量★（2026-09-17，一天里四例）
 
 本仓有大量从上一轮 `xs-v2r2-sv` 整段抄过来、或从别处转述而来的注释、判据与说明。
