@@ -30,7 +30,52 @@
 #                     in block i:/WORK/Rob". 0 errors; it was progressing, not
 #                     hung -- just quadratic on the wrong thing.
 #
-#   variant B  ROB_MERGE_DUP=false      <- see the header of this file's log
+#   variant B  ROB_MERGE_DUP=false      ★the one that matters★
+#     ref elaborate    622 s       (variant A: 626 s -- two independent runs agree)
+#     impl elaborate   609 s       (variant A: 696 s)
+#     match           1973 s       ★COMPLETES★ -- A never got here at all
+#     verify          1044 s
+#     peak memory     14,730 MB    end to end ~72 minutes
+#     fm_shell errors 0
+#
+#     108,669 compare points: 108,209 passing / 20 FAILING / 440 unverified
+#     460 unmatched REFERENCE points, 0 unmatched implementation
+#       448  robDeqGroup_<n>_debug_otherPdest_<m>      all `Und` (undriven)
+#         7  deqPtrVec_next_<n>_flag
+#         5  enqPtrVec_<n>_flag
+#     (the full list is written to unmatched.rpt by this script; it is a tool
+#      product, so it is NOT committed -- regenerate it by rerunning.)
+#
+# ★Two things the variant B result establishes, and one it does NOT★
+#
+#   ESTABLISHED 1: monolithic FM on Rob is reachable. Same design, same machine,
+#   one appvar apart: A burned 5674 s of CPU inside register merging without
+#   reaching match; B matched in 33 minutes. Turning merging off is a
+#   STRENGTHENING (compare points only increase), with precedent in this repo
+#   for RenameBuffer and MulUnit.
+#
+#   ESTABLISHED 2: the baseline for a Rob proof is NOT "0 failing, 0 unmatched".
+#   Ref and impl here are the SAME BYTES (both sha256 4aa8838b...e601f130,
+#   checked before and after the run), and FM still reports 20 failing and 460
+#   unmatched reference points. Those 460 are a structural floor that no quality
+#   of rewrite removes; they have to be classified (most likely as dead_ref, the
+#   PASS_DEAD_REF route this repo already uses) before any Rob verdict means
+#   anything. Until then a Rob run showing "20 failing" must NOT be read as
+#   "nearly green".
+#
+#   NOT ESTABLISHED: why two identical files produce 20 failing points at all.
+#   Plausible causes -- FM pruning undriven logic harder in the implementation
+#   container, or golden's dangling signals landing in different object classes
+#   per container -- are guesses. This probe cannot tell them apart and no
+#   explanation is offered here.
+#
+#   ALSO NOT A PREDICTION: 1973 s is the match time when every name is
+#   IDENTICAL (108,669 matched by name, 0 by signature analysis, 0 by topology).
+#   A real rewrite has different names -- golden `robEntries_<i>_valid_reg` vs a
+#   core's `robEntries_valid_reg[<i>]` -- so its match runs on pins or on
+#   signature analysis, a path this run never exercised. Do not compare 1973 s
+#   with the 2.8-3.4 h signature-matching extrapolation in
+#   rob_array_idiom_canary.py: they measure different things.
 #
 # Why variant B is the one that matters: Rob has 11,639 registers and ~79% of
 # its 169,763 register bits are 160-entry debug/difftest arrays whose next-state
