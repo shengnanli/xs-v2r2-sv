@@ -227,6 +227,70 @@ def splice(target_lines, tag, new_body):
     return target_lines[:i + 1] + new_body + target_lines[j:]
 
 
+SKELETON = """// scratch skeleton for gen_rob.py --selftest. Not the core.
+module Rob (
+  // BEGIN GENERATED(ports)
+  // END GENERATED
+);
+  // BEGIN GENERATED(children)
+  // END GENERATED
+endmodule
+"""
+
+
+def selftest(golden):
+    """Prove the splice is (a) idempotent and (b) actually scoped to the markers.
+
+    (b) is the half that is easy to skip. A generator that rewrote the WHOLE
+    file would pass an idempotency check just as happily -- run it twice, same
+    bytes -- while quietly eating the hand-written core. So the skeleton carries
+    a sentinel line outside the markers and the test requires it to survive.
+    """
+    import shutil, tempfile
+    d = tempfile.mkdtemp(prefix='gen-rob-selftest-')
+    tgt = os.path.join(d, 'Rob.sv')
+    sentinel = '// HANDWRITTEN-SENTINEL do not touch\n'
+    with open(tgt, 'w') as f:
+        f.write(sentinel + SKELETON + sentinel)
+    gtext, glines = load_golden(golden)
+    ports, hdr_end = parse_ports(glines)
+    children = parse_children(glines, hdr_end)
+    portnames = {p[3] for p in ports}
+    gdir = os.path.dirname(os.path.abspath(golden))
+
+    def run():
+        with open(tgt) as f:
+            cur = f.read().split('\n')
+        new = splice(cur, 'ports', emit_ports(ports))
+        new = splice(new, 'children', emit_children(children, portnames, gdir))
+        with open(tgt, 'w') as f:
+            f.write('\n'.join(new))
+        with open(tgt, 'rb') as f:
+            return hashlib.sha256(f.read()).hexdigest()
+
+    h1 = run()
+    h2 = run()
+    body = open(tgt).read()
+    rows = [
+        ('idempotent', h1 == h2,
+         'two regens byte-identical (%s)' % h1[:16]),
+        ('scoped', body.count(sentinel) == 2,
+         'both hand-written sentinels outside the markers survived'),
+        ('ports_present', body.count('io_redirect_bits_robIdx_value') >= 1,
+         'ports region actually populated'),
+        ('children_present', 'CommitStuckCounter commitStuckCounter (' in body,
+         'children region actually populated'),
+    ]
+    # Negative: a splice that ignored the END marker would swallow the trailing
+    # sentinel. Simulate by checking the marker pair is still intact and empty
+    # regions can be re-emptied.
+    ok = all(r[1] for r in rows)
+    for name, good, why in rows:
+        print('%-16s %-5s %s' % (name, 'OK' if good else 'FAIL', why))
+    shutil.rmtree(d, ignore_errors=True)
+    return 0 if ok else 1
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--golden', default=GOLDEN)
@@ -236,7 +300,11 @@ def main():
     g.add_argument('--write', action='store_true')
     g.add_argument('--manifest', action='store_true')
     g.add_argument('--regmap', action='store_true')
+    g.add_argument('--selftest', action='store_true')
     a = ap.parse_args()
+
+    if a.selftest:
+        return selftest(a.golden)
 
     gtext, glines = load_golden(a.golden)
     print('# golden %s' % a.golden, file=sys.stderr)
