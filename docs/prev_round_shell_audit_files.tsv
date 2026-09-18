@@ -1,0 +1,1112 @@
+rel	ext	lines	code_lines	gate_a_hits	firtool_hits	gate_a_per100	firtool_per100	included_by_n	is_root	modules_declared	golden_modules	verbatim_code	verbatim_subst	rate_subst	in_n_components	stub_modules_n	unit_scope_import
+backend/Alu.sv	.sv	320	133	0	0	0.00	0.00	0	yes	xs_Alu_core	Alu	0	0	0.0000	1	0	no
+backend/Alu_wrapper.sv	.sv	52	8	0	0	0.00	0.00	0	yes	Alu	Alu	1	0	0.0000	1	0	no
+backend/Backend.sv	.sv	159	37	0	0	0.00	0.00	0	yes	xs_Backend_core	Backend	6	6	0.1622	1	0	yes
+backend/Backend_wrapper.sv	.sv	2468	0	0	0	0.00	0.00	0	yes	Backend	Backend	0	0		1	0	no
+backend/Bku.sv	.sv	627	183	0	0	0.00	0.00	0	yes	xs_bku_count;xs_bku_clmul;xs_bku_misc;xs_bku_hash;xs_bku_cipher;xs_bku_crypto;xs_Bku_core	Bku	1	1	0.0055	1	0	no
+backend/Bku_wrapper.sv	.sv	76	18	0	0	0.00	0.00	0	yes	Bku	Bku	0	0	0.0000	1	0	no
+backend/BranchUnit.sv	.sv	169	53	0	0	0.00	0.00	0	yes	xs_BranchUnit_core	BranchUnit	4	0	0.0000	1	0	no
+backend/BranchUnit_wrapper.sv	.sv	251	76	0	0	0.00	0.00	0	yes	BranchUnit	BranchUnit	76	0	0.0000	1	0	no
+backend/BypassNetwork.sv	.sv	225	66	0	0	0.00	0.00	0	yes	xs_BypassNetwork_core	BypassNetwork	0	0	0.0000	1	0	no
+backend/BypassNetwork_wrapper.sv	.sv	2908	0	0	0	0.00	0.00	0	yes	BypassNetwork	BypassNetwork	0	0		1	0	no
+backend/CSR.sv	.sv	1385	470	0	23	0.00	1.66	0	yes	xs_CSR_core	CSR	432	90	0.1915	1	0	no
+backend/CSR_wrapper.sv	.sv	838	0	0	0	0.00	0.00	0	yes	CSR	CSR	0	0		1	0	no
+backend/CompressUnit.sv	.sv	140	52	0	0	0.00	0.00	0	yes	xs_CompressUnit_core	CompressUnit	0	0	0.0000	1	0	yes
+backend/CompressUnit_wrapper.sv	.sv	297	67	0	0	0.00	0.00	0	yes	CompressUnit	CompressUnit	0	0	0.0000	1	0	yes
+backend/CtrlBlock.sv	.sv	73	16	0	0	0.00	0.00	0	yes	xs_CtrlBlock_core	CtrlBlock	0	0	0.0000	1	0	yes
+backend/CtrlBlock_wrapper.sv	.sv	5052	0	0	0	0.00	0.00	0	yes	CtrlBlock	CtrlBlock	0	0		1	0	no
+backend/DataPath.sv	.sv	24	5	0	0	0.00	0.00	0	yes	xs_DataPath_core	DataPath	0	0	0.0000	1	0	yes
+backend/DataPath_wrapper.sv	.sv	3720	0	0	0	0.00	0.00	0	yes	DataPath	DataPath	0	0		1	0	no
+backend/DecodeStage.sv	.sv	439	161	0	0	0.00	0.00	0	yes	xs_DecodeStage_core	DecodeStage	2	1	0.0062	1	0	no
+backend/DecodeStage_wrapper.sv	.sv	1981	1	0	0	0.00	0.00	0	yes	DecodeStage	DecodeStage	0	0	0.0000	1	0	no
+backend/DecodeUnit.sv	.sv	379	94	0	0	0.00	0.00	0	yes	xs_DecodeUnit_core	DecodeUnit	0	0	0.0000	1	0	no
+backend/DecodeUnit_wrapper.sv	.sv	322	123	0	0	0.00	0.00	0	yes	DecodeUnit	DecodeUnit	24	0	0.0000	1	0	no
+backend/DelayN.sv	.sv	60	5	0	0	0.00	0.00	0	yes	xs_delayn_core;DelayN_1;DelayN_15;DelayN_17	DelayN_1;DelayN_15;DelayN_17;DelayN_210	0	0	0.0000	1	0	no
+backend/DelayN_variants_xs.sv	.sv	30	0	0	0	0.00	0.00	0	yes	DelayN_1_xs;DelayN_15_xs;DelayN_17_xs	-	0	0		1	0	no
+backend/DelayReg.sv	.sv	51	10	0	0	0.00	0.00	0	yes	xs_delay_reg_core	DelayReg	0	0	0.0000	1	0	no
+backend/DelayReg_wrapper.sv	.sv	113	45	0	0	0.00	0.00	0	yes	DelayReg	DelayReg	0	0	0.0000	1	0	no
+backend/DivUnit.sv	.sv	166	35	0	0	0.00	0.00	0	yes	xs_DivUnit_core	DivUnit	3	3	0.0857	1	0	no
+backend/DivUnit_wrapper.sv	.sv	62	0	0	0	0.00	0.00	0	yes	DivUnit	DivUnit	0	0		1	0	no
+backend/EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v.sv	.sv	467	176	0	0	0.00	0.00	0	yes	xs_EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v_core	EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	0	0	0.0000	1	0	no
+backend/EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v_wrapper.sv	.sv	1028	496	0	0	0.00	0.00	0	yes	EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	0	0	0.0000	1	0	no
+backend/EntriesAluCsrFenceDiv.sv	.sv	516	177	0	0	0.00	0.00	0	yes	xs_EntriesAluCsrFenceDiv_core	EntriesAluCsrFenceDiv	0	0	0.0000	1	0	no
+backend/EntriesAluCsrFenceDiv_wrapper.sv	.sv	959	462	0	0	0.00	0.00	0	yes	EntriesAluCsrFenceDiv	EntriesAluCsrFenceDiv	0	0	0.0000	1	0	no
+backend/EntriesAluMulBkuBrhJmp.sv	.sv	459	173	0	0	0.00	0.00	0	yes	xs_EntriesAluMulBkuBrhJmp_core	EntriesAluMulBkuBrhJmp	0	0	0.0000	1	0	no
+backend/EntriesAluMulBkuBrhJmp_wrapper.sv	.sv	973	468	0	0	0.00	0.00	0	yes	EntriesAluMulBkuBrhJmp	EntriesAluMulBkuBrhJmp	0	0	0.0000	1	0	no
+backend/EntriesFaluFcvtF2vFmacFdiv.sv	.sv	437	156	0	0	0.00	0.00	0	yes	xs_EntriesFaluFcvtF2vFmacFdiv_core	EntriesFaluFcvtF2vFmacFdiv	0	0	0.0000	1	0	no
+backend/EntriesFaluFcvtF2vFmacFdiv_wrapper.sv	.sv	672	316	0	0	0.00	0.00	0	yes	EntriesFaluFcvtF2vFmacFdiv	EntriesFaluFcvtF2vFmacFdiv	0	0	0.0000	1	0	no
+backend/EntriesFaluFmac.sv	.sv	441	152	0	0	0.00	0.00	0	yes	xs_EntriesFaluFmac_core	EntriesFaluFmac	0	0	0.0000	1	0	no
+backend/EntriesFaluFmacFdiv.sv	.sv	434	156	0	0	0.00	0.00	0	yes	xs_EntriesFaluFmacFdiv_core	EntriesFaluFmacFdiv	0	0	0.0000	1	0	no
+backend/EntriesFaluFmacFdiv_wrapper.sv	.sv	644	302	0	0	0.00	0.00	0	yes	EntriesFaluFmacFdiv	EntriesFaluFmacFdiv	0	0	0.0000	1	0	no
+backend/EntriesFaluFmac_wrapper.sv	.sv	586	274	0	0	0.00	0.00	0	yes	EntriesFaluFmac	EntriesFaluFmac	0	0	0.0000	1	0	no
+backend/EntriesVfdivVidiv.sv	.sv	398	141	0	0	0.00	0.00	0	yes	xs_EntriesVfdivVidiv_core	EntriesVfdivVidiv	0	0	0.0000	1	0	no
+backend/EntriesVfdivVidiv_wrapper.sv	.sv	651	307	0	0	0.00	0.00	0	yes	EntriesVfdivVidiv	EntriesVfdivVidiv	0	0	0.0000	1	0	no
+backend/EntriesVfmaVialuFixVfalu.sv	.sv	426	151	0	0	0.00	0.00	0	yes	xs_EntriesVfmaVialuFixVfalu_core	EntriesVfmaVialuFixVfalu	0	0	0.0000	1	0	no
+backend/EntriesVfmaVialuFixVfalu_wrapper.sv	.sv	835	401	0	0	0.00	0.00	0	yes	EntriesVfmaVialuFixVfalu	EntriesVfmaVialuFixVfalu	0	0	0.0000	1	0	no
+backend/EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf.sv	.sv	425	153	0	0	0.00	0.00	0	yes	xs_EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf_core	EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	0	0	0.0000	1	0	no
+backend/EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf_wrapper.sv	.sv	899	433	0	0	0.00	0.00	0	yes	EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	0	0	0.0000	1	0	no
+backend/EntriesVlduVstu.sv	.sv	448	156	0	0	0.00	0.00	0	yes	xs_EntriesVlduVstu_core	EntriesVlduVstu	0	0	0.0000	1	0	no
+backend/EntriesVlduVstuSeg.sv	.sv	451	156	0	0	0.00	0.00	0	yes	xs_EntriesVlduVstuSeg_core	-	0	0	0.0000	1	0	no
+backend/EntriesVlduVstuVseglduVsegstu_wrapper.sv	.sv	864	408	0	0	0.00	0.00	0	yes	EntriesVlduVstuVseglduVsegstu	EntriesVlduVstuVseglduVsegstu	0	0	0.0000	1	0	no
+backend/EntriesVlduVstu_wrapper.sv	.sv	852	402	0	0	0.00	0.00	0	yes	EntriesVlduVstu	EntriesVlduVstu	0	0	0.0000	1	0	no
+backend/ExeUnit.sv	.sv	35	5	0	0	0.00	0.00	0	yes	xs_ExeUnit_core	ExeUnit	0	0	0.0000	1	0	no
+backend/ExeUnit_4.sv	.sv	35	5	0	0	0.00	0.00	0	yes	xs_ExeUnit_4_core	ExeUnit_4	0	0	0.0000	1	0	no
+backend/ExeUnit_4_wrapper.sv	.sv	55	0	0	0	0.00	0.00	0	yes	ExeUnit_4	ExeUnit_4	0	0		1	0	no
+backend/ExeUnit_8.sv	.sv	35	5	0	0	0.00	0.00	0	yes	xs_ExeUnit_8_core	ExeUnit_8	0	0	0.0000	1	0	no
+backend/ExeUnit_8_wrapper.sv	.sv	101	0	0	0	0.00	0.00	0	yes	ExeUnit_8	ExeUnit_8	0	0		1	0	no
+backend/ExeUnit_wrapper.sv	.sv	67	0	0	0	0.00	0.00	0	yes	ExeUnit	ExeUnit	0	0		1	0	no
+backend/ExuBlock.sv	.sv	39	5	0	0	0.00	0.00	0	yes	xs_ExuBlock_core	ExuBlock	0	0	0.0000	1	0	no
+backend/ExuBlock_1.sv	.sv	39	5	0	0	0.00	0.00	0	yes	xs_ExuBlock_1_core	ExuBlock_1	0	0	0.0000	1	0	no
+backend/ExuBlock_1_wrapper.sv	.sv	349	0	0	0	0.00	0.00	0	yes	ExuBlock_1	ExuBlock_1	0	0		1	0	no
+backend/ExuBlock_2.sv	.sv	39	5	0	0	0.00	0.00	0	yes	xs_ExuBlock_2_core	ExuBlock_2	0	0	0.0000	1	0	no
+backend/ExuBlock_2_wrapper.sv	.sv	513	0	0	0	0.00	0.00	0	yes	ExuBlock_2	ExuBlock_2	0	0		1	0	no
+backend/ExuBlock_wrapper.sv	.sv	1219	0	0	0	0.00	0.00	0	yes	ExuBlock	ExuBlock	0	0		1	0	no
+backend/FAlu.sv	.sv	136	23	0	0	0.00	0.00	0	yes	xs_FAlu_core	FAlu	4	3	0.1304	1	0	no
+backend/FAlu_wrapper.sv	.sv	68	0	0	0	0.00	0.00	0	yes	FAlu	FAlu	0	0		1	0	no
+backend/FCVT.sv	.sv	209	55	0	0	0.00	0.00	0	yes	xs_FCVT_core	FCVT	5	4	0.0727	1	0	no
+backend/FCVT_wrapper.sv	.sv	68	0	0	0	0.00	0.00	0	yes	FCVT	FCVT	0	0		1	0	no
+backend/FDivSqrt.sv	.sv	172	36	0	0	0.00	0.00	0	yes	xs_FDivSqrt_core	FDivSqrt	1	1	0.0278	1	0	no
+backend/FDivSqrt_wrapper.sv	.sv	74	0	0	0	0.00	0.00	0	yes	FDivSqrt	FDivSqrt	0	0		1	0	no
+backend/FMA.sv	.sv	154	38	0	0	0.00	0.00	0	yes	xs_FMA_core	FMA	5	4	0.1053	1	0	no
+backend/FMA_wrapper.sv	.sv	66	0	0	0	0.00	0.00	0	yes	FMA	FMA	0	0		1	0	no
+backend/FPDecoder.sv	.sv	315	105	0	0	0.00	0.00	0	yes	xs_FPDecoder_core	FPDecoder	0	0	0.0000	1	0	yes
+backend/FPDecoder_wrapper.sv	.sv	25	7	0	0	0.00	0.00	0	yes	FPDecoder	FPDecoder	0	0	0.0000	1	0	yes
+backend/Fence.sv	.sv	171	49	0	0	0.00	0.00	0	yes	xs_Fence_core	Fence	3	3	0.0612	1	0	no
+backend/Fence_wrapper.sv	.sv	94	17	0	0	0.00	0.00	0	yes	Fence	Fence	0	0	0.0000	1	0	no
+backend/FpRegFilePart0_wrapper.sv	.sv	173	45	0	0	0.00	0.00	0	yes	FpRegFilePart0	FpRegFilePart0	0	0	0.0000	1	0	no
+backend/FpRegFilePart1_wrapper.sv	.sv	173	45	0	0	0.00	0.00	0	yes	FpRegFilePart1	FpRegFilePart1	0	0	0.0000	1	0	no
+backend/FpRegFilePart2_wrapper.sv	.sv	173	45	0	0	0.00	0.00	0	yes	FpRegFilePart2	FpRegFilePart2	0	0	0.0000	1	0	no
+backend/FpRegFilePart3_wrapper.sv	.sv	173	45	0	0	0.00	0.00	0	yes	FpRegFilePart3	FpRegFilePart3	0	0	0.0000	1	0	no
+backend/FusionDecoder_core.sv	.sv	218	98	0	4	0.00	1.83	0	yes	xs_FusionDecoder	FusionDecoder	2	2	0.0204	1	0	no
+backend/FusionDecoder_wrapper.sv	.sv	220	77	0	0	0.00	0.00	0	yes	FusionDecoder	FusionDecoder	0	0	0.0000	1	0	no
+backend/GPAMem.sv	.sv	53	5	0	0	0.00	0.00	0	yes	xs_GPAMem_core	GPAMem	3	3	0.6000	1	0	no
+backend/GPAMem_wrapper.sv	.sv	28	0	0	0	0.00	0.00	0	yes	GPAMem	GPAMem	0	0		1	0	no
+backend/Hpmcounter3Module_wrapper.sv	.sv	21	0	0	0	0.00	0.00	0	yes	Hpmcounter3Module	Hpmcounter10Module;Hpmcounter11Module;Hpmcounter12Module;Hpmcounter13Module;Hpmcounter14Module;Hpmcounter15Module;Hpmcounter16Module;Hpmcounter17Module	0	0		1	0	no
+backend/HtimedeltaModule_wrapper.sv	.sv	20	0	0	0	0.00	0.00	0	yes	HtimedeltaModule	HtimedeltaModule;McycleModule;MinstretModule;StimecmpModule;VStimecmpModule;cycleModule;instretModule;timeModule	0	0		1	0	no
+backend/ImmExtractor.sv	.sv	83	27	0	0	0.00	0.00	0	yes	xs_imm_extractor_core	ImmExtractor	0	0	0.0000	1	0	no
+backend/ImmExtractor_12_wrapper.sv	.sv	14	0	0	0	0.00	0.00	0	yes	ImmExtractor_12	ImmExtractor_12	0	0		1	0	no
+backend/ImmExtractor_wrapper.sv	.sv	25	2	0	0	0.00	0.00	0	yes	ImmExtractor	ImmExtractor	0	0	0.0000	1	0	no
+backend/IntRegFilePart0_wrapper.sv	.sv	179	45	0	0	0.00	0.00	0	yes	IntRegFilePart0	IntRegFilePart0	0	0	0.0000	1	0	no
+backend/IntRegFilePart1_wrapper.sv	.sv	179	45	0	0	0.00	0.00	0	yes	IntRegFilePart1	IntRegFilePart1	0	0	0.0000	1	0	no
+backend/IntRegFilePart2_wrapper.sv	.sv	179	45	0	0	0.00	0.00	0	yes	IntRegFilePart2	IntRegFilePart2	0	0	0.0000	1	0	no
+backend/IntRegFilePart3_wrapper.sv	.sv	179	45	0	0	0.00	0.00	0	yes	IntRegFilePart3	IntRegFilePart3	0	0	0.0000	1	0	no
+backend/IntToFP_3.sv	.sv	114	24	0	0	0.00	0.00	0	yes	xs_IntToFP_3_core	IntToFP_3	13	11	0.4583	1	0	no
+backend/IntToFP_3_wrapper.sv	.sv	74	0	0	0	0.00	0.00	0	yes	IntToFP_3	IntToFP_3	0	0		1	0	no
+backend/InterruptFilter.sv	.sv	10797	8342	0	0	0.00	0.00	0	yes	InterruptFilter	InterruptFilter	4461	4091	0.4904	1	0	no
+backend/InterruptFilter_xs.sv	.sv	10800	8342	0	0	0.00	0.00	0	yes	InterruptFilter_xs	-	0	0	0.0000	1	0	no
+backend/Iprio0Module_wrapper.sv	.sv	47	3	0	0	0.00	0.00	0	yes	Iprio0Module	Iprio0Module;Iprio0Module_1;Iprio10Module;Iprio10Module_1;Iprio12Module;Iprio12Module_1;Iprio14Module;Iprio14Module_1	0	0	0.0000	1	0	no
+backend/Iprio2Module_1_wrapper.sv	.sv	87	3	0	0	0.00	0.00	0	yes	Iprio2Module_1	Iprio0Module;Iprio0Module_1;Iprio10Module;Iprio10Module_1;Iprio12Module;Iprio12Module_1;Iprio14Module;Iprio14Module_1	0	0	0.0000	1	0	no
+backend/Iprio8Module_1_wrapper.sv	.sv	84	0	0	0	0.00	0.00	0	yes	Iprio8Module_1	Iprio0Module;Iprio0Module_1;Iprio10Module;Iprio10Module_1;Iprio12Module;Iprio12Module_1;Iprio14Module;Iprio14Module_1	0	0		1	0	no
+backend/Iprio8Module_wrapper.sv	.sv	32	0	0	0	0.00	0.00	0	yes	Iprio8Module	Iprio0Module;Iprio0Module_1;Iprio10Module;Iprio10Module_1;Iprio12Module;Iprio12Module_1;Iprio14Module;Iprio14Module_1	0	0		1	0	no
+backend/IqEntryAbjivvi.sv	.sv	579	259	0	0	0.00	0.00	0	yes	xs_iq_entry_abjivvi	-	0	0	0.0000	1	0	no
+backend/IqEntryAcfd.sv	.sv	669	255	0	0	0.00	0.00	0	yes	xs_iq_entry_acfd	-	0	0	0.0000	1	0	no
+backend/IqEntryAmbb.sv	.sv	564	255	0	0	0.00	0.00	0	yes	xs_iq_entry_ambb	-	0	0	0.0000	1	0	no
+backend/IqEntryFaluFcvtF2vFmacFdiv.sv	.sv	392	148	0	0	0.00	0.00	0	yes	xs_iq_entry_ffcfmacfdiv	-	0	0	0.0000	1	0	no
+backend/IqEntryFfmac.sv	.sv	431	144	0	0	0.00	0.00	0	yes	xs_iq_entry_ffmac	-	0	0	0.0000	1	0	no
+backend/IqEntryFfmacFdiv.sv	.sv	395	148	0	0	0.00	0.00	0	yes	xs_iq_entry_ffmacfdiv	-	0	0	0.0000	1	0	no
+backend/IqEntryVfdiv.sv	.sv	332	128	0	0	0.00	0.00	0	yes	xs_iq_entry_vfdiv	-	0	0	0.0000	1	0	no
+backend/IqEntryVfmaVialuFixVfalu.sv	.sv	327	135	0	0	0.00	0.00	0	yes	xs_iq_entry_vfmavialufixvfalu	-	0	0	0.0000	1	0	no
+backend/IqEntryVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf.sv	.sv	340	146	0	0	0.00	0.00	0	yes	xs_iq_entry_vfmavialufixvimacvppuvfaluvfcvtvipuvsetrvfwvf	-	0	0	0.0000	1	0	no
+backend/IqEntryVlduVstu.sv	.sv	351	134	0	0	0.00	0.00	0	yes	xs_iq_entry_vlduvstu	-	0	0	0.0000	1	0	no
+backend/IqEntryVlduVstuSeg.sv	.sv	358	138	0	0	0.00	0.00	0	yes	xs_iq_entry_vlduvstuseg	-	0	0	0.0000	1	0	no
+backend/IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v.sv	.sv	981	161	0	0	0.00	0.00	0	yes	xs_IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v_core;IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v	IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v	2	1	0.0062	1	0	no
+backend/IssueQueueAluCsrFenceDiv.sv	.sv	1063	131	0	0	0.00	0.00	0	yes	xs_IssueQueueAluCsrFenceDiv_core;IssueQueueAluCsrFenceDiv	IssueQueueAluCsrFenceDiv	2	1	0.0076	1	0	no
+backend/IssueQueueAluMulBkuBrhJmp.sv	.sv	1150	142	0	0	0.00	0.00	0	yes	xs_IssueQueueAluMulBkuBrhJmp_core;IssueQueueAluMulBkuBrhJmp	IssueQueueAluMulBkuBrhJmp	2	1	0.0070	1	0	no
+backend/IssueQueueLdu.sv	.sv	901	124	0	0	0.00	0.00	0	yes	xs_IssueQueueLdu_core;IssueQueueLdu	IssueQueueLdu	5	5	0.0403	1	0	no
+backend/IssueQueueStaMou.sv	.sv	732	77	0	0	0.00	0.00	0	yes	xs_IssueQueueStaMou_core;IssueQueueStaMou	IssueQueueStaMou	1	1	0.0130	1	0	no
+backend/IssueQueueStdMoud.sv	.sv	268	60	0	0	0.00	0.00	0	yes	xs_IssueQueueStdMoud_core;IssueQueueStdMoud	IssueQueueStdMoud	1	1	0.0167	1	0	no
+backend/JumpUnit.sv	.sv	154	49	0	0	0.00	0.00	0	yes	xs_JumpUnit_core	JumpUnit	5	1	0.0204	1	0	no
+backend/JumpUnit_wrapper.sv	.sv	255	76	0	0	0.00	0.00	0	yes	JumpUnit	JumpUnit	76	0	0.0000	1	0	no
+backend/MEFreeList.sv	.sv	338	92	0	0	0.00	0.00	0	yes	xs_MEFreeList_core	MEFreeList	3	3	0.0326	1	0	no
+backend/MEFreeList_wrapper.sv	.sv	137	29	0	0	0.00	0.00	0	yes	MEFreeList	MEFreeList	0	0	0.0000	1	0	no
+backend/McycleModule_wrapper.sv	.sv	21	0	0	0	0.00	0.00	0	yes	McycleModule	HtimedeltaModule;McycleModule;MinstretModule;StimecmpModule;VStimecmpModule;cycleModule;instretModule;timeModule	0	0		1	0	no
+backend/MemCtrl_core.sv	.sv	56	15	0	0	0.00	0.00	0	yes	xs_MemCtrl	MemCtrl	1	1	0.0667	1	0	no
+backend/MemCtrl_wrapper.sv	.sv	59	0	0	0	0.00	0.00	0	yes	MemCtrl	MemCtrl	0	0		1	0	no
+backend/Mhpmcounter3Module_wrapper.sv	.sv	35	0	0	0	0.00	0.00	0	yes	Mhpmcounter3Module	Mhpmcounter10Module;Mhpmcounter11Module;Mhpmcounter12Module;Mhpmcounter13Module;Mhpmcounter14Module;Mhpmcounter15Module;Mhpmcounter16Module;Mhpmcounter17Module	0	0		1	0	no
+backend/MinstretModule_wrapper.sv	.sv	22	0	0	0	0.00	0.00	0	yes	MinstretModule	HtimedeltaModule;McycleModule;MinstretModule;StimecmpModule;VStimecmpModule;cycleModule;instretModule;timeModule	0	0		1	0	no
+backend/MulUnit.sv	.sv	164	38	0	0	0.00	0.00	0	yes	xs_MulUnit_core	MulUnit	6	5	0.1316	1	0	no
+backend/MulUnit_wrapper.sv	.sv	56	0	0	0	0.00	0.00	0	yes	MulUnit	MulUnit	0	0		1	0	no
+backend/NewCSR.sv	.sv	3860	2960	2	2	0.05	0.05	0	yes	xs_NewCSR_core	NewCSR	1592	611	0.2064	1	0	yes
+backend/NewCSR_wrapper.sv	.sv	598	0	0	0	0.00	0.00	0	yes	NewCSR	NewCSR	0	0		1	0	no
+backend/NewDispatch.sv	.sv	22	3	0	0	0.00	0.00	0	yes	xs_NewDispatch_core	NewDispatch	0	0	0.0000	1	0	yes
+backend/NewDispatch_wrapper.sv	.sv	5162	0	0	0	0.00	0.00	0	yes	NewDispatch	NewDispatch	0	0		1	0	no
+backend/Og2ForVector.sv	.sv	1526	643	0	0	0.00	0.00	0	yes	Og2ForVector	Og2ForVector	419	215	0.3344	1	0	no
+backend/PipeGroupConnect_core.sv	.sv	97	16	0	0	0.00	0.00	0	yes	xs_pgc_lane;xs_PipeGroupConnect_core	PipeGroupConnect	0	0	0.0000	1	0	no
+backend/PipeGroupConnect_wrapper.sv	.sv	2031	655	0	0	0.00	0.00	0	yes	PipeGroupConnect	PipeGroupConnect	0	0	0.0000	1	0	no
+backend/PipelineConnectPipe_core.sv	.sv	51	9	0	0	0.00	0.00	0	yes	xs_PipelineConnectPipe	PipelineConnectPipe	2	0	0.0000	1	0	no
+backend/PipelineConnectPipe_wrapper.sv	.sv	323	100	0	0	0.00	0.00	0	yes	PipelineConnectPipe	PipelineConnectPipe	0	0	0.0000	1	0	no
+backend/Pmpaddr0Module_wrapper.sv	.sv	24	0	0	0	0.00	0.00	0	yes	Pmpaddr0Module	Pmpaddr0Module;Pmpaddr10Module;Pmpaddr11Module;Pmpaddr12Module;Pmpaddr13Module;Pmpaddr14Module;Pmpaddr15Module;Pmpaddr1Module	0	0		1	0	no
+backend/Pmpcfg0Module_wrapper.sv	.sv	15	0	0	0	0.00	0.00	0	yes	Pmpcfg0Module	Pmpcfg0Module;Pmpcfg2Module	0	0		1	0	no
+backend/RedirectGenerator.sv	.sv	298	137	0	0	0.00	0.00	0	yes	xs_RedirectGenerator_core	RedirectGenerator	35	35	0.2555	1	0	no
+backend/RedirectGenerator_wrapper.sv	.sv	126	0	0	0	0.00	0.00	0	yes	RedirectGenerator	RedirectGenerator	0	0		1	0	no
+backend/RegCache.sv	.sv	157	41	0	0	0.00	0.00	0	yes	xs_regcache_core	RegCache	1	1	0.0244	1	0	no
+backend/RegCache_wrapper.sv	.sv	208	91	0	0	0.00	0.00	0	yes	RegCache	RegCache	0	0	0.0000	1	0	no
+backend/RegFilePart.sv	.sv	134	23	0	0	0.00	0.00	0	yes	xs_RegFilePart_core	-	0	0	0.0000	1	0	no
+backend/Rename.sv	.sv	1274	447	0	0	0.00	0.00	0	yes	xs_Rename_core	Rename	6	6	0.0134	1	0	no
+backend/RenameBuffer.sv	.sv	505	180	0	0	0.00	0.00	0	yes	xs_RenameBuffer_core	RenameBuffer	3	3	0.0167	1	0	no
+backend/RenameBuffer_wrapper.sv	.sv	4669	2438	0	0	0.00	0.00	0	yes	RenameBuffer	RenameBuffer	0	0	0.0000	1	0	no
+backend/RenameTable.sv	.sv	385	107	0	0	0.00	0.00	0	yes	xs_RenameTable_core	RenameTable	4	4	0.0374	1	0	no
+backend/RenameTableWrapper_core.sv	.sv	7821	1479	54	138	0.69	1.76	0	yes	xs_RenameTableWrapper	RenameTableWrapper	1479	1473	0.9959	1	0	no
+backend/RenameTableWrapper_wrapper.sv	.sv	4956	0	0	0	0.00	0.00	0	yes	RenameTableWrapper	RenameTableWrapper	0	0		1	0	no
+backend/RenameTable_1_wrapper.sv	.sv	2027	897	0	0	0.00	0.00	0	yes	RenameTable_1	RenameTable_1	0	0	0.0000	1	0	no
+backend/RenameTable_2_wrapper.sv	.sv	2090	896	0	0	0.00	0.00	0	yes	RenameTable_2	RenameTable_2	0	0	0.0000	1	0	no
+backend/RenameTable_3_wrapper.sv	.sv	1449	830	0	0	0.00	0.00	0	yes	RenameTable_3	RenameTable_3	0	0	0.0000	1	0	no
+backend/RenameTable_wrapper.sv	.sv	1803	887	0	0	0.00	0.00	0	yes	RenameTable	RenameTable	0	0	0.0000	1	0	no
+backend/Rename_wrapper.sv	.sv	2999	1320	0	0	0.00	0.00	0	yes	Rename	Rename	0	0	0.0000	1	0	no
+backend/Rob.sv	.sv	1055	476	0	0	0.00	0.00	0	yes	xs_Rob_core	Rob	8	8	0.0168	1	0	no
+backend/Rob_blackbox_stubs.sv	.sv	36	4	0	0	0.00	0.00	0	yes	DummyDPICWrapper_stub;DelayReg_stub	-	0	0	0.0000	1	1	no
+backend/Rob_difftest_stubs.sv	.sv	65	0	0	0	0.00	0.00	0	yes	DiffExtInstrCommit;DiffExtTrapEvent	-	0	0		1	2	no
+backend/Rob_wrapper.sv	.sv	3313	0	0	0	0.00	0.00	0	yes	Rob	Rob	0	0		1	1	no
+backend/Scheduler.sv	.sv	864	34	0	0	0.00	0.00	0	yes	Scheduler	Scheduler	0	0	0.0000	1	0	no
+backend/Scheduler_1.sv	.sv	399	25	0	0	0.00	0.00	0	yes	Scheduler_1	Scheduler_1	0	0	0.0000	1	0	no
+backend/Scheduler_2.sv	.sv	646	25	0	0	0.00	0.00	0	yes	Scheduler_2	Scheduler_2	0	0	0.0000	1	0	no
+backend/Scheduler_3.sv	.sv	1330	61	0	0	0.00	0.00	0	yes	Scheduler_3	Scheduler_3	0	0	0.0000	1	0	no
+backend/Sireg2Module_wrapper.sv	.sv	16	0	0	0	0.00	0.00	0	yes	Sireg2Module	Mireg2Module;Mireg3Module;Mireg4Module;Mireg5Module;Mireg6Module;MiregModule;Sireg2Module;Sireg3Module	0	0		1	0	no
+backend/SiregModule_wrapper.sv	.sv	20	0	0	0	0.00	0.00	0	yes	SiregModule	Mireg2Module;Mireg3Module;Mireg4Module;Mireg5Module;Mireg6Module;MiregModule;Sireg2Module;Sireg3Module	0	0		1	0	no
+backend/SnapshotGenerator_14.sv	.sv	279	73	0	0	0.00	0.00	0	yes	xs_SnapshotGenerator_14_core	SnapshotGenerator_14	5	3	0.0411	1	0	no
+backend/SnapshotGenerator_14_wrapper.sv	.sv	220	0	0	0	0.00	0.00	0	yes	SnapshotGenerator_14	SnapshotGenerator_14	0	0		1	0	no
+backend/StdFreeList.sv	.sv	337	92	0	0	0.00	0.00	0	yes	xs_StdFreeList_core	StdFreeList	3	3	0.0326	1	0	no
+backend/StdFreeList_wrapper.sv	.sv	126	26	0	0	0.00	0.00	0	yes	StdFreeList	StdFreeList	0	0	0.0000	1	0	no
+backend/StimecmpModule_wrapper.sv	.sv	20	0	0	0	0.00	0.00	0	yes	StimecmpModule	HtimedeltaModule;McycleModule;MinstretModule;StimecmpModule;VStimecmpModule;cycleModule;instretModule;timeModule	0	0		1	0	no
+backend/Trace.sv	.sv	288	69	0	0	0.00	0.00	0	yes	xs_Trace_core	Trace	1	1	0.0145	1	0	no
+backend/Trace_wrapper.sv	.sv	154	0	0	0	0.00	0.00	0	yes	Trace	Trace	0	0		1	0	no
+backend/UopInfoGen.sv	.sv	239	117	0	0	0.00	0.00	0	yes	xs_UopInfoGen_core	UopInfoGen	0	0	0.0000	1	0	yes
+backend/UopInfoGen_wrapper.sv	.sv	52	19	0	0	0.00	0.00	0	yes	UopInfoGen	UopInfoGen	0	0	0.0000	1	0	yes
+backend/VSetRiWi.sv	.sv	92	26	0	0	0.00	0.00	0	yes	xs_VSetRiWi_core	VSetRiWi	0	0	0.0000	1	0	no
+backend/VSetRiWi_wrapper.sv	.sv	48	8	0	0	0.00	0.00	0	yes	VSetRiWi	VSetRiWi	1	0	0.0000	1	0	no
+backend/VSetRvfWvf.sv	.sv	118	39	0	0	0.00	0.00	0	yes	xs_VSetRvfWvf_core	VSetRvfWvf	0	0	0.0000	1	0	no
+backend/VSetRvfWvf_wrapper.sv	.sv	74	15	0	0	0.00	0.00	0	yes	VSetRvfWvf	VSetRvfWvf	1	0	0.0000	1	0	no
+backend/VecExcpDataMergeModule.sv	.sv	1741	1056	0	0	0.00	0.00	0	yes	VecExcpDataMergeModule	VecExcpDataMergeModule	665	605	0.5729	1	0	no
+backend/WbDataPath.sv	.sv	185	51	0	0	0.00	0.00	0	yes	xs_WbDataPath_core	WbDataPath	0	0	0.0000	1	0	no
+backend/WbDataPath_dpic_stub.sv	.sv	54	0	0	0	0.00	0.00	0	yes	DummyDPICWrapper_24;DummyDPICWrapper_32;DummyDPICWrapper_38;DummyDPICWrapper_44	-	0	0		1	4	no
+backend/WbDataPath_wrapper.sv	.sv	2753	811	3	3	0.11	0.11	0	yes	WbDataPath	WbDataPath	699	599	0.7386	1	0	no
+backend/WbFuBusyTable.sv	.sv	195	55	0	0	0.00	0.00	0	yes	xs_WbFuBusyTable_core	WbFuBusyTable	0	0	0.0000	1	0	no
+backend/WbFuBusyTable_wrapper.sv	.sv	108	0	0	0	0.00	0.00	0	yes	WbFuBusyTable	WbFuBusyTable	0	0		1	0	no
+backend/alu_pkg.sv	.sv	128	82	0	0	0.00	0.00	1	no	-	Alu	0	0	0.0000	1	0	no
+backend/backend_blackbox_stubs.sv	.sv	18355	5915	0	0	0.00	0.00	0	yes	BypassNetwork;CtrlBlock;DataPath;DelayN_1;ExuBlock;ExuBlock_1;ExuBlock_2;HPerfMonitor_2	-	0	0	0.0000	1	31	no
+backend/backend_decls.svh	.svh	5656	0	0	0	0.00	0.00	1	no	-	Backend	0	0		1	0	no
+backend/backend_inst.svh	.svh	12998	0	0	0	0.00	0.00	1	no	-	Backend	0	0		1	0	no
+backend/backend_logic.svh	.svh	215	171	0	0	0.00	0.00	1	no	-	Backend	2	2	0.0117	1	0	no
+backend/backend_outassign.svh	.svh	213	208	0	0	0.00	0.00	1	no	-	Backend	74	1	0.0048	1	0	no
+backend/backend_pkg.sv	.sv	105	0	0	0	0.00	0.00	1	no	-	Backend	0	0		1	0	no
+backend/backend_ports.svh	.svh	1232	0	0	0	0.00	0.00	1	no	-	Backend	0	0		1	0	no
+backend/bku_pkg.sv	.sv	477	347	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+backend/branchunit_pkg.sv	.sv	108	19	0	0	0.00	0.00	1	no	-	BranchUnit	0	0	0.0000	1	0	no
+backend/bypassnetwork_body.svh	.svh	809	767	0	0	0.00	0.00	1	no	-	BypassNetwork	407	0	0.0000	1	0	no
+backend/bypassnetwork_pkg.sv	.sv	81	8	0	0	0.00	0.00	1	no	-	BypassNetwork	0	0	0.0000	1	0	no
+backend/bypassnetwork_ports.svh	.svh	1451	0	0	0	0.00	0.00	1	no	-	BypassNetwork	0	0		1	0	no
+backend/compressunit_pkg.sv	.sv	56	0	0	0	0.00	0.00	2	no	-	CompressUnit	0	0		1	0	no
+backend/ctrlblock_datapath.svh	.svh	298	89	0	0	0.00	0.00	1	no	-	CtrlBlock	2	2	0.0225	1	0	no
+backend/ctrlblock_decls.svh	.svh	174	0	0	0	0.00	0.00	1	no	-	CtrlBlock	0	0		1	0	no
+backend/ctrlblock_enqpack.svh	.svh	732	362	0	0	0.00	0.00	1	no	-	CtrlBlock	0	0	0.0000	1	0	no
+backend/ctrlblock_glue2.svh	.svh	346	177	0	0	0.00	0.00	1	no	-	CtrlBlock	7	7	0.0395	1	0	no
+backend/ctrlblock_glue3.svh	.svh	243	101	0	0	0.00	0.00	1	no	-	CtrlBlock	9	9	0.0891	1	0	no
+backend/ctrlblock_glue4.svh	.svh	366	278	0	0	0.00	0.00	1	no	-	CtrlBlock	0	0	0.0000	1	0	no
+backend/ctrlblock_inst.svh	.svh	19098	0	0	0	0.00	0.00	1	no	-	CtrlBlock	0	0		1	0	no
+backend/ctrlblock_logic.svh	.svh	659	289	0	0	0.00	0.00	1	no	-	CtrlBlock	2	2	0.0069	1	0	no
+backend/ctrlblock_outglue.svh	.svh	451	234	0	0	0.00	0.00	1	no	-	CtrlBlock	28	28	0.1197	1	0	no
+backend/ctrlblock_outglue2.svh	.svh	175	104	0	0	0.00	0.00	1	no	-	CtrlBlock	5	3	0.0288	1	0	no
+backend/ctrlblock_pkg.sv	.sv	259	13	0	0	0.00	0.00	1	no	-	CtrlBlock	0	0	0.0000	1	0	no
+backend/ctrlblock_ports.svh	.svh	2524	0	0	0	0.00	0.00	1	no	-	CtrlBlock	0	0		1	0	no
+backend/ctrlblock_wb_robidx.svh	.svh	49	48	0	0	0.00	0.00	1	no	-	CtrlBlock	0	0	0.0000	1	0	no
+backend/ctrlblock_wbpack.svh	.svh	446	413	0	0	0.00	0.00	1	no	-	CtrlBlock	0	0	0.0000	1	0	no
+backend/cycleModule_wrapper.sv	.sv	18	0	0	0	0.00	0.00	0	yes	cycleModule	HtimedeltaModule;McycleModule;MinstretModule;StimecmpModule;VStimecmpModule;cycleModule;instretModule;timeModule	0	0		1	0	no
+backend/datapath_cfg_pkg.sv	.sv	15	0	0	0	0.00	0.00	1	no	-	DataPath	0	0		1	0	no
+backend/datapath_connect.svh	.svh	3624	220	0	0	0.00	0.00	1	no	-	DataPath	0	0	0.0000	1	0	no
+backend/datapath_ctrl.svh	.svh	1194	576	0	0	0.00	0.00	1	no	-	DataPath	1	1	0.0017	1	0	no
+backend/datapath_decls.svh	.svh	1766	0	0	0	0.00	0.00	1	no	-	DataPath	0	0		1	0	no
+backend/datapath_logic.svh	.svh	2065	1652	0	0	0.00	0.00	1	no	-	DataPath	94	0	0.0000	1	0	no
+backend/datapath_pkg.sv	.sv	189	38	0	0	0.00	0.00	1	no	-	DataPath	0	0	0.0000	1	0	no
+backend/datapath_ports.svh	.svh	1857	0	0	0	0.00	0.00	1	no	-	DataPath	0	0		1	0	no
+backend/decodestage_comp.svh	.svh	691	0	0	0	0.00	0.00	1	no	-	DecodeStage	0	0		1	0	no
+backend/decodestage_core_ports.svh	.svh	988	0	0	0	0.00	0.00	1	no	-	DecodeStage	0	0		1	0	no
+backend/decodestage_decoders.svh	.svh	963	0	0	0	0.00	0.00	1	no	-	DecodeStage	0	0		1	0	no
+backend/decodestage_pkg.sv	.sv	157	0	0	0	0.00	0.00	2	no	-	DecodeStage	0	0		1	0	no
+backend/decodestage_rat.svh	.svh	99	96	0	0	0.00	0.00	1	no	-	DecodeStage	0	0	0.0000	1	0	no
+backend/decodestage_stall.svh	.svh	8	6	0	0	0.00	0.00	1	no	-	DecodeStage	0	0	0.0000	1	0	no
+backend/decodestage_unpack.svh	.svh	604	588	0	0	0.00	0.00	1	no	-	DecodeStage	0	0	0.0000	1	0	no
+backend/decodestage_vtypegen.svh	.svh	43	0	0	0	0.00	0.00	1	no	-	DecodeStage	0	0		1	0	no
+backend/decodeunit_derived.svh	.svh	117	0	0	5	0.00	4.27	1	no	-	DecodeUnit	0	0		1	0	no
+backend/decodeunit_pkg.sv	.sv	2266	2176	0	0	0.00	0.00	1	no	-	DecodeUnit	1	1	0.0005	1	0	no
+backend/decodeunit_svh.svh	.svh	78	3	0	0	0.00	0.00	2	no	-	DecodeUnit	1	1	0.3333	1	0	no
+backend/delayreg_pkg.sv	.sv	50	0	0	0	0.00	0.00	1	no	-	DelayReg	0	0		1	0	no
+backend/divunit_pkg.sv	.sv	98	20	0	0	0.00	0.00	1	no	-	DivUnit	0	0	0.0000	1	0	no
+backend/exeunit_4_connect.svh	.svh	56	3	0	0	0.00	0.00	1	no	-	ExeUnit_4	2	0	0.0000	1	0	no
+backend/exeunit_4_decls.svh	.svh	12	0	0	0	0.00	0.00	1	no	-	ExeUnit_4	0	0		1	0	no
+backend/exeunit_4_logic.svh	.svh	3	0	0	0	0.00	0.00	1	no	-	ExeUnit_4	0	0		1	0	no
+backend/exeunit_4_pkg.sv	.sv	16	0	0	0	0.00	0.00	1	no	-	ExeUnit_4	0	0		1	0	no
+backend/exeunit_4_ports.svh	.svh	24	0	0	0	0.00	0.00	1	no	-	ExeUnit_4	0	0		1	0	no
+backend/exeunit_8_connect.svh	.svh	243	21	0	0	0.00	0.00	1	no	-	ExeUnit_8	4	2	0.0952	1	0	no
+backend/exeunit_8_decls.svh	.svh	106	1	0	0	0.00	0.00	1	no	-	ExeUnit_8	0	0	0.0000	1	0	no
+backend/exeunit_8_logic.svh	.svh	98	42	0	0	0.00	0.00	1	no	-	ExeUnit_8	4	4	0.0952	1	0	no
+backend/exeunit_8_pkg.sv	.sv	47	4	0	0	0.00	0.00	1	no	-	ExeUnit_8	0	0	0.0000	1	0	no
+backend/exeunit_8_ports.svh	.svh	47	0	0	0	0.00	0.00	1	no	-	ExeUnit_8	0	0		1	0	no
+backend/exeunit_connect.svh	.svh	150	12	0	0	0.00	0.00	1	no	-	ExeUnit	1	1	0.0833	1	0	no
+backend/exeunit_decls.svh	.svh	60	1	0	0	0.00	0.00	1	no	-	ExeUnit	0	0	0.0000	1	0	no
+backend/exeunit_logic.svh	.svh	76	31	0	0	0.00	0.00	1	no	-	ExeUnit	3	3	0.0968	1	0	no
+backend/exeunit_pkg.sv	.sv	42	4	0	0	0.00	0.00	1	no	-	ExeUnit	0	0	0.0000	1	0	no
+backend/exeunit_ports.svh	.svh	30	0	0	0	0.00	0.00	1	no	-	ExeUnit	0	0		1	0	no
+backend/exublock_1_connect.svh	.svh	223	2	0	0	0.00	0.00	1	no	-	ExuBlock_1	2	0	0.0000	1	0	no
+backend/exublock_1_decls.svh	.svh	11	1	0	0	0.00	0.00	1	no	-	ExuBlock_1	0	0	0.0000	1	0	no
+backend/exublock_1_logic.svh	.svh	15	3	0	0	0.00	0.00	1	no	-	ExuBlock_1	0	0	0.0000	1	0	no
+backend/exublock_1_pkg.sv	.sv	20	2	0	0	0.00	0.00	1	no	-	ExuBlock_1	0	0	0.0000	1	0	no
+backend/exublock_1_ports.svh	.svh	171	0	0	0	0.00	0.00	1	no	-	ExuBlock_1	0	0		1	0	no
+backend/exublock_2_connect.svh	.svh	305	1	0	0	0.00	0.00	1	no	-	ExuBlock_2	1	0	0.0000	1	0	no
+backend/exublock_2_decls.svh	.svh	10	1	0	0	0.00	0.00	1	no	-	ExuBlock_2	0	0	0.0000	1	0	no
+backend/exublock_2_logic.svh	.svh	15	3	0	0	0.00	0.00	1	no	-	ExuBlock_2	0	0	0.0000	1	0	no
+backend/exublock_2_pkg.sv	.sv	20	2	0	0	0.00	0.00	1	no	-	ExuBlock_2	0	0	0.0000	1	0	no
+backend/exublock_2_ports.svh	.svh	253	0	0	0	0.00	0.00	1	no	-	ExuBlock_2	0	0		1	0	no
+backend/exublock_connect.svh	.svh	684	6	0	0	0.00	0.00	1	no	-	ExuBlock	6	0	0.0000	1	0	no
+backend/exublock_decls.svh	.svh	17	2	0	0	0.00	0.00	1	no	-	ExuBlock	0	0	0.0000	1	0	no
+backend/exublock_logic.svh	.svh	25	6	0	0	0.00	0.00	1	no	-	ExuBlock	0	0	0.0000	1	0	no
+backend/exublock_pkg.sv	.sv	38	6	0	0	0.00	0.00	1	no	-	ExuBlock	0	0	0.0000	1	0	no
+backend/exublock_ports.svh	.svh	606	0	0	0	0.00	0.00	1	no	-	ExuBlock	0	0		1	0	no
+backend/falu_pkg.sv	.sv	61	10	0	0	0.00	0.00	1	no	-	FAlu	0	0	0.0000	1	0	no
+backend/fcvt_pkg.sv	.sv	104	34	0	0	0.00	0.00	1	no	-	FCVT	0	0	0.0000	1	0	no
+backend/fdivsqrt_pkg.sv	.sv	81	20	0	0	0.00	0.00	1	no	-	FDivSqrt	0	0	0.0000	1	0	no
+backend/fence_pkg.sv	.sv	82	12	0	0	0.00	0.00	2	no	-	Fence	0	0	0.0000	1	0	no
+backend/fma_pkg.sv	.sv	51	12	0	0	0.00	0.00	1	no	-	FMA	0	0	0.0000	1	0	no
+backend/fpdecoder_pkg.sv	.sv	65	7	0	0	0.00	0.00	2	no	-	FPDecoder	0	0	0.0000	1	0	no
+backend/immextractor_pkg.sv	.sv	51	15	0	0	0.00	0.00	1	no	-	ImmExtractor	0	0	0.0000	1	0	no
+backend/iq_abjivvi_pkg.sv	.sv	247	38	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+backend/iq_acfd_pkg.sv	.sv	228	37	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+backend/iq_ambb_pkg.sv	.sv	231	38	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+backend/iq_ffcfmacfdiv_pkg.sv	.sv	207	38	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+backend/iq_ffmac_pkg.sv	.sv	196	37	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+backend/iq_ffmacfdiv_pkg.sv	.sv	199	37	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+backend/iq_ldu_pkg.sv	.sv	200	16	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+backend/iq_stamou_pkg.sv	.sv	190	18	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+backend/iq_stdmoud_pkg.sv	.sv	168	18	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+backend/iq_vfdiv_pkg.sv	.sv	197	20	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+backend/iq_vfmavialufixvfalu_pkg.sv	.sv	208	20	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+backend/iq_vfmavialufixvimacvppuvfaluvfcvtvipuvsetrvfwvf_pkg.sv	.sv	224	20	0	0	0.00	0.00	2	no	-	EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	0	0	0.0000	2	0	no
+backend/iq_vlduvstu_pkg.sv	.sv	222	21	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+backend/iq_vlduvstuseg_pkg.sv	.sv	241	21	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+backend/issuequeue_abjivvi_connect.svh	.svh	293	0	0	0	0.00	0.00	1	no	-	IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v	0	0		1	0	no
+backend/issuequeue_abjivvi_ports.svh	.svh	289	0	0	0	0.00	0.00	1	no	-	IssueQueueAluBrhJmpI2fVsetriwiVsetriwvfI2v	0	0		1	0	no
+backend/issuequeue_acfd_connect.svh	.svh	259	0	0	0	0.00	0.00	1	no	-	IssueQueueAluCsrFenceDiv	0	0		1	0	no
+backend/issuequeue_acfd_ports.svh	.svh	255	0	0	0	0.00	0.00	1	no	-	IssueQueueAluCsrFenceDiv	0	0		1	0	no
+backend/issuequeue_ambb_connect.svh	.svh	268	0	0	0	0.00	0.00	1	no	-	IssueQueueAluMulBkuBrhJmp	0	0		1	0	no
+backend/issuequeue_ambb_ports.svh	.svh	264	0	0	0	0.00	0.00	1	no	-	IssueQueueAluMulBkuBrhJmp	0	0		1	0	no
+backend/issuequeue_ldu_connect.svh	.svh	226	0	0	0	0.00	0.00	1	no	-	IssueQueueLdu	0	0		1	0	no
+backend/issuequeue_ldu_ports.svh	.svh	222	0	0	0	0.00	0.00	1	no	-	IssueQueueLdu	0	0		1	0	no
+backend/issuequeue_stamou_connect.svh	.svh	184	0	0	0	0.00	0.00	1	no	-	IssueQueueStaMou	0	0		1	0	no
+backend/issuequeue_stamou_ports.svh	.svh	180	0	0	0	0.00	0.00	1	no	-	IssueQueueStaMou	0	0		1	0	no
+backend/issuequeue_stdmoud_connect.svh	.svh	200	0	0	0	0.00	0.00	1	no	-	IssueQueueStdMoud	0	0		1	0	no
+backend/issuequeue_stdmoud_entries.svh	.svh	315	0	0	0	0.00	0.00	1	no	-	IssueQueueStdMoud	0	0		1	0	no
+backend/issuequeue_stdmoud_ports.svh	.svh	196	0	0	0	0.00	0.00	1	no	-	IssueQueueStdMoud	0	0		1	0	no
+backend/jumpunit_pkg.sv	.sv	84	15	0	0	0.00	0.00	1	no	-	JumpUnit	0	0	0.0000	1	0	no
+backend/mefreelist_pkg.sv	.sv	77	14	0	0	0.00	0.00	1	no	-	MEFreeList	0	0	0.0000	1	0	no
+backend/mulunit_pkg.sv	.sv	123	31	0	0	0.00	0.00	1	no	-	MulUnit	0	0	0.0000	1	0	no
+backend/newcsr_atp_wrappers.sv	.sv	133	49	0	0	0.00	0.00	0	yes	SatpModule;VSatpModule;HgatpModule	HgatpModule;SatpModule;VSatpModule	35	28	0.5714	1	0	no
+backend/newcsr_cause.sv	.sv	51	12	0	0	0.00	0.00	0	yes	xs_cause	-	0	0	0.0000	1	0	no
+backend/newcsr_cause_wrappers.sv	.sv	96	0	0	0	0.00	0.00	0	yes	McauseModule;ScauseModule;VScauseModule;MncauseModule	McauseModule;MncauseModule;ScauseModule;VScauseModule	0	0		1	0	no
+backend/newcsr_const_wrappers.sv	.sv	28	3	0	0	0.00	0.00	0	yes	MvendoridModule;MconfigptrModule;MhartidModule	MhartidModule	1	1	0.3333	1	2	no
+backend/newcsr_context_wrappers.sv	.sv	68	16	0	0	0.00	0.00	0	yes	McontextModule;ScontextModule;HcontextModule	HcontextModule;McontextModule;ScontextModule	10	8	0.5000	1	0	no
+backend/newcsr_counter.sv	.sv	135	30	0	0	0.00	0.00	0	yes	xs_ucounter;xs_mcounter;xs_rwlatch;xs_time	-	0	0	0.0000	1	0	no
+backend/newcsr_counter_wrappers.sv	.sv	162	0	0	0	0.00	0.00	0	yes	cycleModule;instretModule;McycleModule;MinstretModule;HtimedeltaModule;StimecmpModule;VStimecmpModule;timeModule	HtimedeltaModule;McycleModule;MinstretModule;StimecmpModule;VStimecmpModule;cycleModule;instretModule;timeModule	0	0		1	0	no
+backend/newcsr_counteren.sv	.sv	50	15	0	0	0.00	0.00	0	yes	xs_counteren	-	0	0	0.0000	1	0	no
+backend/newcsr_counteren_wrappers.sv	.sv	54	0	0	0	0.00	0.00	0	yes	McounterenModule;ScounterenModule;HcounterenModule	HcounterenModule;McounterenModule;ScounterenModule	0	0		1	0	no
+backend/newcsr_dcsr_hstatus.sv	.sv	233	128	0	0	0.00	0.00	0	yes	DcsrModule;HstatusModule	DcsrModule;HstatusModule	126	79	0.6172	1	0	no
+backend/newcsr_debug.sv	.sv	208	96	0	3	0.00	1.44	0	yes	Debug	Debug	96	81	0.8438	1	0	no
+backend/newcsr_decls.svh	.svh	2703	0	1	1	0.04	0.04	1	no	-	NewCSR	0	0		1	0	no
+backend/newcsr_epc.sv	.sv	43	8	0	0	0.00	0.00	0	yes	xs_epc	-	0	0	0.0000	1	0	no
+backend/newcsr_epc_wrappers.sv	.sv	90	0	0	0	0.00	0.00	0	yes	MepcModule;SepcModule;VSepcModule;MnepcModule;DpcModule	DpcModule;MepcModule;MnepcModule;SepcModule;VSepcModule	0	0		1	0	no
+backend/newcsr_event_batch.sv	.sv	1466	707	0	36	0.00	2.46	0	yes	MretEventModule;SretEventModule;DretEventModule;MNretEventModule;TrapEntryMEventModule;TrapEntryHSEventModule;TrapEntryVSEventModule;TrapEntryDEventModule	DretEventModule;MNretEventModule;MretEventModule;SretEventModule;TrapEntryDEventModule;TrapEntryHSEventModule;TrapEntryMEventModule;TrapEntryMNEventModule	662	311	0.4399	1	0	no
+backend/newcsr_fcsr_mnstatus.sv	.sv	124	49	0	0	0.00	0.00	0	yes	FcsrModule;MnstatusModule	FcsrModule;MnstatusModule	45	40	0.8163	1	0	no
+backend/newcsr_hedeleg.sv	.sv	111	62	0	0	0.00	0.00	0	yes	xs_hedeleg	-	0	0	0.0000	1	0	no
+backend/newcsr_hedeleg_wrappers.sv	.sv	36	0	0	0	0.00	0.00	0	yes	HedelegModule	HedelegModule	0	0		1	0	no
+backend/newcsr_hideleg.sv	.sv	73	22	0	0	0.00	0.00	0	yes	xs_hideleg	-	0	0	0.0000	1	0	no
+backend/newcsr_hideleg_wrappers.sv	.sv	36	0	0	0	0.00	0.00	0	yes	HidelegModule	HidelegModule	0	0		1	0	no
+backend/newcsr_hperfmon.sv	.sv	1751	239	0	0	0.00	0.00	0	yes	HPerfMonitor_1;HPerfCounter_8;HPerfMonitor_2;HPerfCounter_13	HPerfCounter_13;HPerfCounter_8;HPerfMonitor_1;HPerfMonitor_2	140	119	0.4979	1	0	no
+backend/newcsr_hpmcounter.sv	.sv	46	6	0	0	0.00	0.00	0	yes	xs_hpmcounter	-	0	0	0.0000	1	0	no
+backend/newcsr_hpmcounter_wrappers.sv	.sv	528	0	0	0	0.00	0.00	0	yes	Hpmcounter3Module;Hpmcounter4Module;Hpmcounter5Module;Hpmcounter6Module;Hpmcounter7Module;Hpmcounter8Module;Hpmcounter9Module;Hpmcounter10Module	Hpmcounter10Module;Hpmcounter11Module;Hpmcounter12Module;Hpmcounter13Module;Hpmcounter14Module;Hpmcounter15Module;Hpmcounter16Module;Hpmcounter17Module	0	0		1	0	no
+backend/newcsr_ie_ip_batch.sv	.sv	2099	1166	0	0	0.00	0.00	0	yes	MieModule;HipModule;HieModule;MvipModule;MvienModule;HvipModule;HvienModule	HieModule;HipModule;HvienModule;HvipModule;MieModule;MvienModule;MvipModule	1166	716	0.6141	1	0	no
+backend/newcsr_indireg.sv	.sv	66	9	0	0	0.00	0.00	0	yes	xs_indireg;xs_indireg_wo	-	0	0	0.0000	1	0	no
+backend/newcsr_indireg_wrappers.sv	.sv	270	0	0	0	0.00	0.00	0	yes	SiregModule;Sireg2Module;Sireg3Module;Sireg4Module;Sireg5Module;Sireg6Module;MiregModule;Mireg2Module	Mireg2Module;Mireg3Module;Mireg4Module;Mireg5Module;Mireg6Module;MiregModule;Sireg2Module;Sireg3Module	0	0		1	0	no
+backend/newcsr_inst.svh	.svh	7434	0	2	2	0.03	0.03	1	no	-	NewCSR	0	0		1	0	no
+backend/newcsr_intrfilter_prims.sv	.sv	159	46	0	0	0.00	0.00	0	yes	xs_iprio_merge;xs_delay_n;DelayN_17;DelayN_210	DelayN_1;DelayN_15;DelayN_17;DelayN_210	1	1	0.0217	1	0	no
+backend/newcsr_iprio.sv	.sv	118	27	0	0	0.00	0.00	0	yes	xs_iprio_ext;xs_iprio6	-	0	0	0.0000	1	0	no
+backend/newcsr_iprio_wrappers.sv	.sv	903	12	0	0	0.00	0.00	0	yes	Iprio0Module;Iprio0Module_1;Iprio2Module;Iprio2Module_1;Iprio4Module;Iprio4Module_1;Iprio6Module;Iprio6Module_1	Iprio0Module;Iprio0Module_1;Iprio10Module;Iprio10Module_1;Iprio12Module;Iprio12Module_1;Iprio14Module;Iprio14Module_1	0	0	0.0000	1	0	no
+backend/newcsr_iselect.sv	.sv	53	10	0	0	0.00	0.00	0	yes	xs_iselect	-	0	0	0.0000	1	0	no
+backend/newcsr_iselect_wrappers.sv	.sv	49	0	0	0	0.00	0.00	0	yes	MiselectModule;SiselectModule;VSiselectModule	MiselectModule;SiselectModule;VSiselectModule	0	0		1	0	no
+backend/newcsr_medeleg.sv	.sv	142	86	0	0	0.00	0.00	0	yes	xs_medeleg	-	0	0	0.0000	1	0	no
+backend/newcsr_medeleg_wrappers.sv	.sv	45	0	0	0	0.00	0.00	0	yes	MedelegModule	MedelegModule	0	0		1	0	no
+backend/newcsr_mhpmcounter.sv	.sv	69	9	0	0	0.00	0.00	0	yes	xs_mhpmcounter	-	0	0	0.0000	1	0	no
+backend/newcsr_mhpmcounter_wrappers.sv	.sv	876	0	0	0	0.00	0.00	0	yes	Mhpmcounter3Module;Mhpmcounter4Module;Mhpmcounter5Module;Mhpmcounter6Module;Mhpmcounter7Module;Mhpmcounter8Module;Mhpmcounter9Module;Mhpmcounter10Module	Mhpmcounter10Module;Mhpmcounter11Module;Mhpmcounter12Module;Mhpmcounter13Module;Mhpmcounter14Module;Mhpmcounter15Module;Mhpmcounter16Module;Mhpmcounter17Module	0	0		1	0	no
+backend/newcsr_mideleg.sv	.sv	55	15	0	0	0.00	0.00	0	yes	xs_mideleg	-	0	0	0.0000	1	0	no
+backend/newcsr_mideleg_wrappers.sv	.sv	21	0	0	0	0.00	0.00	0	yes	MidelegModule	MidelegModule	0	0		1	0	no
+backend/newcsr_mip.sv	.sv	184	58	0	0	0.00	0.00	0	yes	xs_mip	-	0	0	0.0000	1	0	no
+backend/newcsr_mip_wrappers.sv	.sv	91	0	0	0	0.00	0.00	0	yes	MipModule	MipModule	0	0		1	0	no
+backend/newcsr_mstatus_wrappers.sv	.sv	280	133	0	0	0.00	0.00	0	yes	MStatusModule	MStatusModule	91	87	0.6541	1	0	no
+backend/newcsr_permit_mhpmevent.sv	.sv	325	94	0	3	0.00	0.92	0	yes	CSRPermitModule;MhpmeventModule	CSRPermitModule;MhpmeventModule	94	64	0.6809	1	0	no
+backend/newcsr_pkg.sv	.sv	111	18	0	0	0.00	0.00	1	no	-	NewCSR	0	0	0.0000	1	0	no
+backend/newcsr_pma.sv	.sv	106	28	0	0	0.00	0.00	0	yes	xs_pmacfg_slice;xs_pmaaddr;xs_pmacfg_entry	-	0	0	0.0000	1	0	no
+backend/newcsr_pma_wrappers.sv	.sv	471	18	0	0	0.00	0.00	0	yes	Pmacfg0Module;Pmacfg2Module;Pmaaddr0Module;Pmaaddr1Module;Pmaaddr2Module;Pmaaddr3Module;Pmaaddr4Module;Pmaaddr5Module	Pma0cfgModule;Pma10cfgModule;Pma11cfgModule;Pma12cfgModule;Pma13cfgModule;Pma14cfgModule;Pma15cfgModule;Pma1cfgModule	0	0	0.0000	1	0	no
+backend/newcsr_pmp_pma_entryhandle.sv	.sv	1128	715	0	0	0.00	0.00	0	yes	PMPEntryHandleModule;PMAEntryHandleModule	PMAEntryHandleModule;PMPEntryHandleModule	429	429	0.6000	1	0	no
+backend/newcsr_pmpaddr.sv	.sv	53	7	0	0	0.00	0.00	0	yes	xs_pmpaddr	-	0	0	0.0000	1	0	no
+backend/newcsr_pmpaddr_wrappers.sv	.sv	326	0	0	0	0.00	0.00	0	yes	Pmpaddr0Module;Pmpaddr1Module;Pmpaddr2Module;Pmpaddr3Module;Pmpaddr4Module;Pmpaddr5Module;Pmpaddr6Module;Pmpaddr7Module	Pmpaddr0Module;Pmpaddr10Module;Pmpaddr11Module;Pmpaddr12Module;Pmpaddr13Module;Pmpaddr14Module;Pmpaddr15Module;Pmpaddr1Module	0	0		1	0	no
+backend/newcsr_pmpcfg.sv	.sv	34	3	0	0	0.00	0.00	0	yes	xs_pmpcfg	-	0	0	0.0000	1	0	no
+backend/newcsr_pmpcfg_wrappers.sv	.sv	29	0	0	0	0.00	0.00	0	yes	Pmpcfg0Module;Pmpcfg2Module	Pmpcfg0Module;Pmpcfg2Module	0	0		1	0	no
+backend/newcsr_pmpentrycfg.sv	.sv	66	20	0	0	0.00	0.00	0	yes	xs_pmpentrycfg	-	0	0	0.0000	1	0	no
+backend/newcsr_pmpentrycfg_wrappers.sv	.sv	292	0	0	0	0.00	0.00	0	yes	Pmp0cfgModule;Pmp1cfgModule;Pmp2cfgModule;Pmp3cfgModule;Pmp4cfgModule;Pmp5cfgModule;Pmp6cfgModule;Pmp7cfgModule	Pmp0cfgModule;Pmp10cfgModule;Pmp11cfgModule;Pmp12cfgModule;Pmp13cfgModule;Pmp14cfgModule;Pmp15cfgModule;Pmp1cfgModule	0	0		1	0	no
+backend/newcsr_scratch.sv	.sv	27	5	0	0	0.00	0.00	0	yes	xs_scratch	-	0	0	0.0000	1	0	no
+backend/newcsr_scratch_wrappers.sv	.sv	81	0	0	0	0.00	0.00	0	yes	MscratchModule;SscratchModule;VSscratchModule;Dscratch0Module;Dscratch1Module;MnscratchModule	Dscratch0Module;Dscratch1Module;MnscratchModule;MscratchModule;SscratchModule;VSscratchModule	0	0		1	0	no
+backend/newcsr_simplereg_batch1.sv	.sv	473	198	0	0	0.00	0.00	0	yes	HgeipModule;HgeieModule;ScountovfModule;McorepwrModule;MflushpwrModule;VstartModule;SrnctlModule;McountinhibitModule	HgeieModule;HgeipModule;McorepwrModule;McountinhibitModule;MflushpwrModule;SbpctlModule;ScountovfModule;SlvpredctlModule	195	122	0.6162	1	0	no
+backend/newcsr_simplereg_batch2.sv	.sv	414	170	0	0	0.00	0.00	0	yes	MseccfgModule;SenvcfgModule;MenvcfgModule;HenvcfgModule;TselectModule;VtypeModule;VcsrModule;Hviprio1Module	HenvcfgModule;HvictlModule;Hviprio1Module;Hviprio2Module;MenvcfgModule;MseccfgModule;SenvcfgModule;TselectModule	165	123	0.7235	1	0	no
+backend/newcsr_sip_sie_batch.sv	.sv	3313	1751	0	0	0.00	0.00	0	yes	SieModule;SipModule;VSieModule;VSipModule	SieModule;SipModule;VSieModule;VSipModule	1563	695	0.3969	1	0	no
+backend/newcsr_sstc_delayreg.sv	.sv	228	105	0	0	0.00	0.00	0	yes	SstcInterruptGen;DelayReg_11;DelayReg_12	DelayReg_11;DelayReg_12;SstcInterruptGen	105	91	0.8667	1	0	no
+backend/newcsr_stateen.sv	.sv	266	72	5	5	1.88	1.88	0	yes	xs_stateen0;xs_stateen0_masked;xs_stateen_se;xs_stateen_se_masked;xs_sstateen0	-	0	0	0.0000	1	0	no
+backend/newcsr_stateen_wrappers.sv	.sv	188	12	0	0	0.00	0.00	0	yes	Mstateen0Module;Mstateen1Module;Mstateen2Module;Mstateen3Module;Hstateen0Module;Hstateen1Module;Hstateen2Module;Hstateen3Module	Hstateen0Module;Hstateen1Module;Hstateen2Module;Hstateen3Module;Mstateen0Module;Mstateen1Module;Mstateen2Module;Mstateen3Module	0	0	0.0000	1	3	no
+backend/newcsr_stub.sv	.sv	7785	0	0	0	0.00	0.00	0	yes	MStatusModule;MedelegModule;MidelegModule;MieModule;MtvecModule;McounterenModule;MvienModule;MvipModule	-	0	0		1	313	no
+backend/newcsr_topi.sv	.sv	32	4	0	0	0.00	0.00	0	yes	xs_topi;xs_topei	-	0	0	0.0000	1	0	no
+backend/newcsr_topi_wrappers.sv	.sv	61	6	0	0	0.00	0.00	0	yes	MtopiModule;StopiModule;VStopiModule;MtopeiModule;StopeiModule;VStopeiModule	MtopeiModule;MtopiModule;StopeiModule;StopiModule;VStopeiModule;VStopiModule	0	0	0.0000	1	0	no
+backend/newcsr_traphandle.sv	.sv	435	314	0	0	0.00	0.00	0	yes	TrapHandleModule	TrapHandleModule	309	245	0.7803	1	0	no
+backend/newcsr_trigger.sv	.sv	117	32	0	0	0.00	0.00	0	yes	xs_tdata_read;xs_trigger_tdata1;xs_trigger_tdata2	-	0	0	0.0000	1	0	no
+backend/newcsr_trigger_wrappers.sv	.sv	74	10	0	0	0.00	0.00	0	yes	Tdata1Module;Tdata2Module;Trigger0_Tdata1Module;Trigger1_Tdata1Module;Trigger2_Tdata1Module;Trigger3_Tdata1Module;Trigger0_Tdata2Module;Trigger1_Tdata2Module	Tdata1Module;Tdata2Module;Trigger0_Tdata1Module;Trigger0_Tdata2Module;Trigger1_Tdata1Module;Trigger1_Tdata2Module;Trigger2_Tdata1Module;Trigger2_Tdata2Module	0	0	0.0000	1	0	no
+backend/newcsr_tval.sv	.sv	43	8	0	0	0.00	0.00	0	yes	xs_tval	-	0	0	0.0000	1	0	no
+backend/newcsr_tval_wrappers.sv	.sv	122	0	0	0	0.00	0.00	0	yes	MtvalModule;StvalModule;Mtval2Module;MtinstModule;HtvalModule;HtinstModule;VStvalModule	HtinstModule;HtvalModule;MtinstModule;Mtval2Module;MtvalModule;StvalModule;VStvalModule	0	0		1	0	no
+backend/newcsr_tvec.sv	.sv	47	11	0	0	0.00	0.00	0	yes	xs_tvec	-	0	0	0.0000	1	0	no
+backend/newcsr_tvec_wrappers.sv	.sv	27	3	0	0	0.00	0.00	0	yes	MtvecModule;StvecModule;VStvecModule	MtvecModule;StvecModule;VStvecModule	0	0	0.0000	1	0	no
+backend/newcsr_vsstatus_wrappers.sv	.sv	138	56	0	0	0.00	0.00	0	yes	VSstatusModule	VSstatusModule	40	39	0.6964	1	0	no
+backend/newdispatch_connect.svh	.svh	3003	1783	0	0	0.00	0.00	1	no	-	NewDispatch	547	42	0.0236	1	0	no
+backend/newdispatch_logic.svh	.svh	1026	687	0	0	0.00	0.00	1	no	-	NewDispatch	2	2	0.0029	1	0	yes
+backend/newdispatch_pkg.sv	.sv	123	16	0	0	0.00	0.00	2	no	-	NewDispatch	0	0	0.0000	1	0	no
+backend/newdispatch_ports.svh	.svh	2578	0	0	0	0.00	0.00	1	no	-	NewDispatch	0	0		1	0	no
+backend/pfevent.sv	.sv	293	46	0	0	0.00	0.00	0	yes	PFEvent;perfEventsModule	PFEvent;perfEventsModule	40	29	0.6304	1	0	no
+backend/regcache_blackbox.svh	.svh	329	0	0	0	0.00	0.00	1	no	-	RegCache	0	0		1	0	no
+backend/regcache_pkg.sv	.sv	42	0	0	0	0.00	0.00	2	no	-	RegCache	0	0		1	0	no
+backend/regfile_pkg.sv	.sv	32	0	0	0	0.00	0.00	0	yes	-	-	0	0		1	0	no
+backend/rename_pkg.sv	.sv	188	0	0	0	0.00	0.00	2	no	-	Rename	0	0		1	0	no
+backend/renamebuffer_pkg.sv	.sv	105	16	0	0	0.00	0.00	2	no	-	RenameBuffer	0	0	0.0000	1	0	no
+backend/renametable_pkg.sv	.sv	50	0	0	0	0.00	0.00	6	no	-	RenameTable;RenameTable_1;RenameTable_2;RenameTable_3	0	0		5	0	no
+backend/renametable_var_core.sv	.sv	368	141	0	0	0.00	0.00	0	yes	xs_RenameTable_var_core	-	0	0	0.0000	1	0	no
+backend/rob_pkg.sv	.sv	169	34	0	0	0.00	0.00	1	no	-	Rob	0	0	0.0000	1	0	no
+backend/scheduler_fp_iq_connect.svh	.svh	475	0	0	0	0.00	0.00	1	no	-	Scheduler_1	0	0		1	0	no
+backend/scheduler_fp_pkg.sv	.sv	36	6	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+backend/scheduler_int_iq_connect.svh	.svh	1112	0	0	0	0.00	0.00	1	no	-	Scheduler	0	0		1	0	no
+backend/scheduler_int_pkg.sv	.sv	47	11	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+backend/scheduler_mem_iq_connect.svh	.svh	2082	0	0	0	0.00	0.00	1	no	-	Scheduler_3	0	0		1	0	no
+backend/scheduler_mem_pkg.sv	.sv	42	12	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+backend/scheduler_vf_iq_connect.svh	.svh	854	0	0	0	0.00	0.00	1	no	-	Scheduler_2	0	0		1	0	no
+backend/scheduler_vf_pkg.sv	.sv	36	6	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+backend/stdfreelist_pkg.sv	.sv	67	14	0	0	0.00	0.00	1	no	-	StdFreeList	0	0	0.0000	1	0	no
+backend/timeModule_wrapper.sv	.sv	32	0	0	0	0.00	0.00	0	yes	timeModule	HtimedeltaModule;McycleModule;MinstretModule;StimecmpModule;VStimecmpModule;cycleModule;instretModule;timeModule	0	0		1	0	no
+backend/uopinfogen_pkg.sv	.sv	108	44	0	0	0.00	0.00	2	no	-	UopInfoGen	0	0	0.0000	1	0	no
+backend/vset_pkg.sv	.sv	170	26	0	0	0.00	0.00	3	no	-	VSetRiWi;VSetRvfWvf	0	0	0.0000	2	0	no
+backend/wbdatapath_pkg.sv	.sv	77	9	0	0	0.00	0.00	1	no	-	WbDataPath	0	0	0.0000	1	0	no
+backend/wbfubusytable_pkg.sv	.sv	38	3	0	0	0.00	0.00	1	no	-	WbFuBusyTable	0	0	0.0000	1	0	no
+common/DataModule.sv	.sv	70	22	0	0	0.00	0.00	0	yes	xs_DataModule	-	0	0	0.0000	1	0	no
+common/DataModule_variants.sv	.sv	752	214	0	0	0.00	0.00	0	yes	DataModule_BackendPC_16entry;DataModule_FtqPC_16entry;DataModule__64entry;DataModule__64entry_16;DataModule__16entry;DataModule__16entry_4;DataModule__16entry_8;DataModule__16entry_12	DataModule_BackendPC_16entry;DataModule_FtqPC_16entry;DataModule__16entry;DataModule__16entry_12;DataModule__16entry_16;DataModule__16entry_4;DataModule__16entry_8;DataModule__64entry	0	0	0.0000	1	0	no
+common/FoldedSRAMTemplate_variants.sv	.sv	706	58	0	0	0.00	0.00	0	yes	FoldedSRAMTemplate;FoldedSRAMTemplate_1;FoldedSRAMTemplate_21;FoldedSRAMTemplate_23;FoldedSRAMTemplate_20	FoldedSRAMTemplate;FoldedSRAMTemplate_1;FoldedSRAMTemplate_20;FoldedSRAMTemplate_21;FoldedSRAMTemplate_23	8	8	0.1379	1	0	no
+common/IndexableCAM.sv	.sv	37	6	0	0	0.00	0.00	0	yes	xs_IndexableCAM	-	0	0	0.0000	1	0	no
+common/PipelineConnect.sv	.sv	51	9	0	0	0.00	0.00	0	yes	xs_PipelineConnect	-	0	0	0.0000	1	0	no
+common/PipelineConnect_variants.sv	.sv	1673	413	0	0	0.00	0.00	0	yes	NewPipelineConnectPipe;NewPipelineConnectPipe_1;NewPipelineConnectPipe_5;NewPipelineConnectPipe_7;NewPipelineConnectPipe_8;NewPipelineConnectPipe_9;NewPipelineConnectPipe_10;NewPipelineConnectPipe_13	NewPipelineConnectPipe;NewPipelineConnectPipe_1;NewPipelineConnectPipe_10;NewPipelineConnectPipe_13;NewPipelineConnectPipe_14;NewPipelineConnectPipe_16;NewPipelineConnectPipe_18;NewPipelineConnectPipe_20	0	0	0.0000	1	0	no
+common/PlruReplacer.sv	.sv	72	27	0	0	0.00	0.00	0	yes	xs_PlruReplacer	-	0	0	0.0000	1	0	no
+common/SRAMTemplate_2p_core.sv	.sv	178	46	0	0	0.00	0.00	0	yes	xs_SRAMTemplate_2p_core	-	0	0	0.0000	1	0	no
+common/SRAMTemplate_2p_variants.sv	.sv	134	2	0	0	0.00	0.00	0	yes	SRAMTemplate_66;SRAMTemplate_64	SRAMTemplate_64;SRAMTemplate_66	0	0	0.0000	1	0	no
+common/SRAMTemplate_core.sv	.sv	165	46	0	0	0.00	0.00	0	yes	xs_SRAMTemplate_core	SRAMTemplate;SRAMTemplate_16;SRAMTemplate_2;SRAMTemplate_32;SRAMTemplate_36;SRAMTemplate_4;SRAMTemplate_44;SRAMTemplate_45	2	2	0.0435	1	0	no
+common/SRAMTemplate_variants.sv	.sv	821	22	0	0	0.00	0.00	0	yes	SRAMTemplate;SRAMTemplate_2;SRAMTemplate_4;SRAMTemplate_8;SRAMTemplate_16;SRAMTemplate_32;SRAMTemplate_36;SRAMTemplate_45	SRAMTemplate;SRAMTemplate_16;SRAMTemplate_2;SRAMTemplate_32;SRAMTemplate_36;SRAMTemplate_4;SRAMTemplate_44;SRAMTemplate_45	0	0	0.0000	1	0	no
+common/SplittedSRAMTemplate_variants.sv	.sv	1537	281	0	0	0.00	0.00	0	yes	SplittedSRAMTemplate;SplittedSRAMTemplate_1;SplittedSRAMTemplate_3;SplittedSRAMTemplate_4;SplittedSRAMTemplate_24;SplittedSRAMTemplate_26;SplittedSRAMTemplate_2;SplittedSRAMTemplate_23	SplittedSRAMTemplate;SplittedSRAMTemplate_1;SplittedSRAMTemplate_2;SplittedSRAMTemplate_23;SplittedSRAMTemplate_24;SplittedSRAMTemplate_26;SplittedSRAMTemplate_3;SplittedSRAMTemplate_4	14	0	0.0000	1	0	no
+common/SyncDataModule.sv	.sv	114	31	0	0	0.00	0.00	0	yes	xs_SyncDataModule	-	0	0	0.0000	1	0	no
+common/SyncDataModuleTemplate__1024entry_1.sv	.sv	110	24	0	0	0.00	0.00	0	yes	xs_SyncDataModule_1024e1	SyncDataModuleTemplate_BackendPC_64entry;SyncDataModuleTemplate_FtqPC_64entry;SyncDataModuleTemplate__1024entry;SyncDataModuleTemplate__1024entry_1;SyncDataModuleTemplate__64entry;SyncDataModuleTemplate__64entry_1;SyncDataModuleTemplate__64entry_2;SyncDataModuleTemplate__64entry_3	0	0	0.0000	1	0	no
+common/SyncDataModule_variants.sv	.sv	812	212	0	0	0.00	0.00	0	yes	SyncDataModuleTemplate_BackendPC_64entry;SyncDataModuleTemplate_FtqPC_64entry;SyncDataModuleTemplate__1024entry;SyncDataModuleTemplate__1024entry_1;SyncDataModuleTemplate__64entry;SyncDataModuleTemplate__64entry_1;SyncDataModuleTemplate__64entry_2;SyncDataModuleTemplate__64entry_3	SyncDataModuleTemplate_BackendPC_64entry;SyncDataModuleTemplate_FtqPC_64entry;SyncDataModuleTemplate__1024entry;SyncDataModuleTemplate__1024entry_1;SyncDataModuleTemplate__64entry;SyncDataModuleTemplate__64entry_1;SyncDataModuleTemplate__64entry_2;SyncDataModuleTemplate__64entry_3	0	0	0.0000	1	0	no
+common/xs_Simple1PSRAM_core.sv	.sv	56	11	0	0	0.00	0.00	0	yes	xs_Simple1PSRAM_core	-	0	0	0.0000	1	0	no
+frontend/Composer.sv	.sv	146	24	0	0	0.00	0.00	0	yes	xs_Composer_core	Composer	0	0	0.0000	1	0	no
+frontend/Composer_wrapper.sv	.sv	4157	1199	0	0	0.00	0.00	0	yes	Composer	Composer	1199	4	0.0033	1	0	no
+frontend/F3Predecoder.sv	.sv	24	5	0	0	0.00	0.00	0	yes	xs_F3Predecoder_core	F3Predecoder	0	0	0.0000	1	0	yes
+frontend/F3Predecoder_wrapper.sv	.sv	139	64	0	0	0.00	0.00	0	yes	F3Predecoder	F3Predecoder	0	0	0.0000	1	0	no
+frontend/FTB.sv	.sv	799	288	0	0	0.00	0.00	0	yes	xs_FTB_core	FTB	13	12	0.0417	1	0	no
+frontend/FTBBank.sv	.sv	387	102	0	0	0.00	0.00	0	yes	xs_FTBBank	FTBBank	4	3	0.0294	1	0	no
+frontend/FTBBank_wrapper.sv	.sv	579	70	0	0	0.00	0.00	0	yes	FTBBank	FTBBank	1	0	0.0000	1	0	no
+frontend/FTBEntryGen.sv	.sv	257	104	0	0	0.00	0.00	0	yes	xs_FTBEntryGen	FTBEntryGen	2	2	0.0192	1	0	no
+frontend/FTBEntryGen_wrapper.sv	.sv	156	54	0	0	0.00	0.00	0	yes	FTBEntryGen	FTBEntryGen	0	0	0.0000	1	0	no
+frontend/FTB_wrapper.sv	.sv	737	112	0	0	0.00	0.00	0	yes	FTB	FTB	0	0	0.0000	1	0	no
+frontend/FauFTB.sv	.sv	709	230	0	0	0.00	0.00	0	yes	xs_FauFTB_core	FauFTB	9	5	0.0217	1	0	no
+frontend/FauFTBWay.sv	.sv	49	11	0	0	0.00	0.00	0	yes	xs_FauFTBWay	FauFTBWay	1	1	0.0909	1	0	no
+frontend/FauFTBWay_wrapper.sv	.sv	78	19	0	0	0.00	0.00	0	yes	FauFTBWay	FauFTBWay	0	0	0.0000	1	0	no
+frontend/FauFTB_wrapper.sv	.sv	333	74	0	0	0.00	0.00	0	yes	FauFTB	FauFTB	0	0	0.0000	1	0	no
+frontend/Frontend.sv	.sv	458	125	0	0	0.00	0.00	0	yes	xs_Frontend_core	Frontend	1	1	0.0080	1	0	no
+frontend/Frontend_wrapper.sv	.sv	8883	2093	0	0	0.00	0.00	0	yes	Frontend	Frontend	2076	86	0.0411	1	0	no
+frontend/Ftq.sv	.sv	2465	688	0	0	0.00	0.00	0	yes	xs_Ftq_core	Ftq	23	15	0.0218	1	0	no
+frontend/FtqPcMemWrapper.sv	.sv	226	39	0	0	0.00	0.00	0	yes	xs_FtqPcMemWrapper;FtqPcMemWrapper	FtqPcMemWrapper	0	0	0.0000	1	0	no
+frontend/Ftq_wrapper.sv	.sv	1030	0	0	0	0.00	0.00	0	yes	Ftq	Ftq	0	0		1	0	no
+frontend/IBuffer.sv	.sv	763	269	0	0	0.00	0.00	0	yes	xs_IBuffer_core	IBuffer	3	3	0.0112	1	0	no
+frontend/IBuffer_wrapper.sv	.sv	789	337	0	0	0.00	0.00	0	yes	IBuffer	IBuffer	0	0	0.0000	1	0	no
+frontend/ICache.sv	.sv	1563	30	0	0	0.00	0.00	0	yes	xs_ICache_core	ICache	6	6	0.2000	1	0	no
+frontend/ICacheCtrlUnit.sv	.sv	494	146	0	0	0.00	0.00	0	yes	xs_ICacheCtrlUnit_core;xs_Queue1_RegMapperInput	ICacheCtrlUnit	2	2	0.0137	1	0	no
+frontend/ICacheCtrlUnit_wrapper.sv	.sv	119	6	0	0	0.00	0.00	0	yes	ICacheCtrlUnit	ICacheCtrlUnit	0	0	0.0000	1	0	no
+frontend/ICacheDataArray.sv	.sv	206	41	0	0	0.00	0.00	0	yes	xs_ICacheDataArray	ICacheDataArray	1	1	0.0244	1	0	no
+frontend/ICacheDataArray_wrapper.sv	.sv	2002	44	0	0	0.00	0.00	0	yes	ICacheDataArray	ICacheDataArray	0	0	0.0000	1	0	no
+frontend/ICacheMainPipe.sv	.sv	731	242	0	0	0.00	0.00	0	yes	xs_ICacheMainPipe	ICacheMainPipe	6	6	0.0248	1	0	no
+frontend/ICacheMainPipe_wrapper.sv	.sv	342	114	0	0	0.00	0.00	0	yes	ICacheMainPipe	ICacheMainPipe	0	0	0.0000	1	0	no
+frontend/ICacheMetaArray.sv	.sv	252	58	0	0	0.00	0.00	0	yes	xs_ICacheMetaArray_core	ICacheMetaArray	2	2	0.0345	1	0	no
+frontend/ICacheMetaArray_wrapper.sv	.sv	404	34	0	0	0.00	0.00	0	yes	ICacheMetaArray	ICacheMetaArray	1	0	0.0000	1	0	no
+frontend/ICacheMissUnit.sv	.sv	675	205	0	0	0.00	0.00	0	yes	xs_ICacheMissUnit	ICacheMissUnit	7	5	0.0244	1	0	no
+frontend/ICacheMissUnit_wrapper.sv	.sv	94	0	0	0	0.00	0.00	0	yes	ICacheMissUnit	ICacheMissUnit	0	0		1	0	no
+frontend/ICacheReplacer.sv	.sv	205	50	0	0	0.00	0.00	0	yes	xs_ICacheReplacer_core	ICacheReplacer	2	2	0.0400	1	0	no
+frontend/ICacheReplacer_wrapper.sv	.sv	30	0	0	0	0.00	0.00	0	yes	ICacheReplacer	ICacheReplacer	0	0		1	0	no
+frontend/ICache_wrapper.sv	.sv	890	0	0	0	0.00	0.00	0	yes	ICache	ICache	0	0		1	0	no
+frontend/IPrefetchPipe.sv	.sv	783	277	0	0	0.00	0.00	0	yes	xs_IPrefetchPipe	IPrefetchPipe	12	10	0.0361	1	0	no
+frontend/IPrefetchPipe_wrapper.sv	.sv	227	44	0	0	0.00	0.00	0	yes	IPrefetchPipe	IPrefetchPipe	0	0	0.0000	1	0	no
+frontend/ITTage.sv	.sv	699	205	0	0	0.00	0.00	0	yes	xs_ITTage_core	ITTage	6	6	0.0293	1	0	no
+frontend/ITTageTable.sv	.sv	485	120	0	0	0.00	0.00	0	yes	xs_ITTageTable_core;xs_MbistPipeIttage_core	ITTageTable;ITTageTable_1;ITTageTable_2;ITTageTable_3;ITTageTable_4;MbistPipeIttage	9	9	0.0750	1	0	no
+frontend/ITTageTable_wrapper.sv	.sv	1044	50	0	0	0.00	0.00	0	yes	ITTageTable;ITTageTable_1;ITTageTable_2;ITTageTable_3;ITTageTable_4	ITTageTable;ITTageTable_1;ITTageTable_2;ITTageTable_3;ITTageTable_4;MbistPipeIttage	0	0	0.0000	1	0	no
+frontend/ITTage_wrapper.sv	.sv	1146	170	0	0	0.00	0.00	0	yes	ITTage	ITTage	76	0	0.0000	1	0	no
+frontend/InstrMMIOEntry.sv	.sv	92	30	0	0	0.00	0.00	0	yes	xs_InstrMMIOEntry	Arbiter1_InsUncacheResp;InstrMMIOEntry;InstrUncache	2	2	0.0667	1	0	no
+frontend/InstrUncache_variants.sv	.sv	100	3	0	0	0.00	0.00	0	yes	Arbiter1_InsUncacheResp;InstrMMIOEntry;InstrUncache	Arbiter1_InsUncacheResp;InstrMMIOEntry;InstrUncache	1	0	0.0000	1	0	no
+frontend/NewIFU.sv	.sv	1484	519	0	0	0.00	0.00	0	yes	xs_NewIFU_core	NewIFU	5	5	0.0096	1	0	yes
+frontend/NewIFU_subs.sv	.sv	564	8	0	0	0.00	0.00	0	yes	xs_newifu_rvcexpander;xs_newifu_predecode;xs_newifu_f3predecoder;xs_newifu_predchecker;xs_newifu_frontendtrigger	-	0	0	0.0000	1	0	no
+frontend/NewIFU_wrapper.sv	.sv	1013	353	0	0	0.00	0.00	0	yes	NewIFU	NewIFU	0	0	0.0000	1	0	no
+frontend/PreDecode.sv	.sv	144	55	0	0	0.00	0.00	0	yes	xs_PreDecode_core	PreDecode	0	0	0.0000	1	0	yes
+frontend/PreDecode_wrapper.sv	.sv	302	142	0	0	0.00	0.00	0	yes	PreDecode	PreDecode	0	0	0.0000	1	0	no
+frontend/Predictor.sv	.sv	247	96	0	0	0.00	0.00	0	yes	xs_Predictor_core	Predictor	2	2	0.0208	1	0	no
+frontend/Predictor_wrapper.sv	.sv	44604	36552	617	10715	1.38	24.02	0	yes	Predictor	Predictor	36552	23437	0.6412	1	0	no
+frontend/Queue1_RegMapperInput_3_wrapper.sv	.sv	44	2	0	0	0.00	0.00	0	yes	Queue1_RegMapperInput_3	Queue1_RegMapperInput_3	0	0	0.0000	1	0	no
+frontend/RAS.sv	.sv	641	223	0	0	0.00	0.00	0	yes	xs_RASStack	RAS	5	5	0.0224	1	0	no
+frontend/RAS_wrapper.sv	.sv	116	18	0	0	0.00	0.00	0	yes	RASStack	RASStack	0	0	0.0000	1	0	no
+frontend/RVCExpander.sv	.sv	303	120	0	0	0.00	0.00	0	yes	xs_RVCExpander_core	RVCExpander	0	0	0.0000	1	0	yes
+frontend/RVCExpander_wrapper.sv	.sv	21	0	0	0	0.00	0.00	0	yes	RVCExpander	RVCExpander	0	0		1	0	no
+frontend/SCTable.sv	.sv	472	76	0	6	0.00	1.27	0	yes	xs_SCTable_core;xs_MbistPipeSc_core	MbistPipeSc;SCTable;SCTable_1;SCTable_2;SCTable_3	3	3	0.0395	1	0	no
+frontend/SCTable_wrapper.sv	.sv	339	8	0	0	0.00	0.00	0	yes	SCTable;SCTable_1;SCTable_2;SCTable_3	MbistPipeSc;SCTable;SCTable_1;SCTable_2;SCTable_3	0	0	0.0000	1	0	no
+frontend/TageBTable.sv	.sv	174	13	0	0	0.00	0.00	0	yes	TageBTable	TageBTable	1	1	0.0769	1	0	no
+frontend/TageTable.sv	.sv	550	99	0	0	0.00	0.00	0	yes	xs_TageTable_core	TageTable;TageTable_1;TageTable_2;TageTable_3	1	1	0.0101	1	0	no
+frontend/TageTable_wrapper.sv	.sv	747	112	0	0	0.00	0.00	0	yes	TageTable;TageTable_1;TageTable_2;TageTable_3	TageTable;TageTable_1;TageTable_2;TageTable_3	0	0	0.0000	1	0	no
+frontend/Tage_SC.sv	.sv	1053	384	0	0	0.00	0.00	0	yes	xs_Tage_SC_core	Tage_SC	3	3	0.0078	1	0	no
+frontend/Tage_SC_wrapper.sv	.sv	1650	22	0	0	0.00	0.00	0	yes	Tage_SC	Tage_SC	2	0	0.0000	1	0	no
+frontend/WayLookup.sv	.sv	306	72	0	0	0.00	0.00	0	yes	xs_WayLookup	WayLookup	5	5	0.0694	1	0	no
+frontend/WayLookup_wrapper.sv	.sv	94	33	0	0	0.00	0.00	0	yes	WayLookup	WayLookup	0	0	0.0000	1	0	no
+frontend/WrBypass.sv	.sv	174	41	0	0	0.00	0.00	0	yes	xs_WrBypass	WrBypass;WrBypass_32;WrBypass_33;WrBypass_41;WrBypass_43	3	2	0.0488	1	0	no
+frontend/WrBypass_variants.sv	.sv	152	10	0	0	0.00	0.00	0	yes	WrBypass;WrBypass_32;WrBypass_33;WrBypass_41;WrBypass_43	WrBypass;WrBypass_32;WrBypass_33;WrBypass_41;WrBypass_43	0	0	0.0000	1	0	no
+frontend/ftb_pkg.sv	.sv	106	13	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+frontend/predecode_pkg.sv	.sv	58	22	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+frontend/rvc_expander_pkg.sv	.sv	112	36	0	0	0.00	0.00	1	no	-	RVCExpander	0	0	0.0000	1	0	no
+l2/Arbiter4_L2CacheErrorInfo_wrapper.sv	.sv	44	8	0	0	0.00	0.00	0	yes	Arbiter4_L2CacheErrorInfo	Arbiter4_L2CacheErrorInfo	0	0	0.0000	1	0	no
+l2/Arbiter4_L2ToL1Hint_wrapper.sv	.sv	55	13	0	0	0.00	0.00	0	yes	Arbiter4_L2ToL1Hint	Arbiter4_L2ToL1Hint	0	0	0.0000	1	0	no
+l2/Arbiter8_CHIDAT_wrapper.sv	.sv	152	28	0	0	0.00	0.00	0	yes	Arbiter8_CHIDAT	Arbiter8_CHIDAT	0	0	0.0000	1	0	no
+l2/Arbiter8_TLBundleD_wrapper.sv	.sv	112	24	0	0	0.00	0.00	0	yes	Arbiter8_TLBundleD	Arbiter8_TLBundleD	0	0	0.0000	1	0	no
+l2/L2Cache.sv	.sv	237	78	0	0	0.00	0.00	0	yes	xs_L2Cache_core	L2Cache	20	19	0.2436	1	0	no
+l2/L2Cache_wrapper.sv	.sv	110	0	0	0	0.00	0.00	0	yes	L2Cache	L2Cache	0	0		1	0	no
+l2/L2Top.sv	.sv	66	5	0	0	0.00	0.00	0	yes	xs_L2Top_core	L2Top	0	0	0.0000	1	0	yes
+l2/L2Top_wrapper.sv	.sv	710	0	0	0	0.00	0.00	0	yes	L2Top	L2Top	0	0		1	0	no
+l2/MMIOBridge.sv	.sv	1141	67	0	0	0.00	0.00	0	yes	xs_MMIOBridge_core	MMIOBridge	4	1	0.0149	1	0	no
+l2/MMIOBridgeEntry.sv	.sv	339	150	42	98	12.39	28.91	0	yes	xs_MMIOBridgeEntry_core	MMIOBridgeEntry	88	79	0.5267	1	0	no
+l2/MMIOBridgeEntry_2_wrapper.sv	.sv	136	0	0	0	0.00	0.00	0	yes	MMIOBridgeEntry_2	MMIOBridgeEntry_2	0	0		1	0	no
+l2/MMIOBridgeEntry_4_wrapper.sv	.sv	136	0	0	0	0.00	0.00	0	yes	MMIOBridgeEntry_4	MMIOBridgeEntry_4	0	0		1	0	no
+l2/MMIOBridgeEntry_wrapper.sv	.sv	136	0	0	0	0.00	0.00	0	yes	MMIOBridgeEntry	MMIOBridgeEntry	0	0		1	0	no
+l2/MMIOBridge_wrapper.sv	.sv	307	0	0	0	0.00	0.00	0	yes	MMIOBridge	MMIOBridge	0	0		1	0	no
+l2/MbistIntfL2_wrapper.sv	.sv	48	11	0	0	0.00	0.00	0	yes	MbistIntfL2	MbistIntfL2	3	0	0.0000	1	0	no
+l2/MbistPipeL2Prefetcher.sv	.sv	132	42	0	0	0.00	0.00	0	yes	xs_MbistPipeL2Prefetcher_core	MbistPipeL2Prefetcher	13	13	0.3095	1	0	no
+l2/MbistPipeL2Prefetcher_wrapper.sv	.sv	75	0	0	0	0.00	0.00	0	yes	MbistPipeL2Prefetcher	MbistPipeL2Prefetcher	0	0		1	0	no
+l2/MemUnit.sv	.sv	1070	298	0	0	0.00	0.00	0	yes	xs_MemUnit_core	MemUnit	8	5	0.0168	1	0	no
+l2/MemUnit_wrapper.sv	.sv	590	192	0	0	0.00	0.00	0	yes	MemUnit	MemUnit	0	0	0.0000	1	0	no
+l2/OpenLLC.sv	.sv	77	5	0	0	0.00	0.00	0	yes	xs_OpenLLC_core	OpenLLC	0	0	0.0000	1	0	yes
+l2/OpenLLC_wrapper.sv	.sv	128	0	0	0	0.00	0.00	0	yes	OpenLLC	OpenLLC	0	0		1	0	no
+l2/PBestOffsetPrefetch.sv	.sv	180	21	0	0	0.00	0.00	0	yes	xs_PBestOffsetPrefetch_core	PBestOffsetPrefetch	6	6	0.2857	1	0	no
+l2/PBestOffsetPrefetch_wrapper.sv	.sv	79	0	0	0	0.00	0.00	0	yes	PBestOffsetPrefetch	PBestOffsetPrefetch	0	0		1	0	no
+l2/PBestOffset_children.sv	.sv	450	127	0	0	0.00	0.00	0	yes	xs_DelayQueue_core;xs_OffsetScoreTable_core;xs_SRAMTemplate_135_core;xs_RecentRequestTable_core	DelayQueue;OffsetScoreTable;RecentRequestTable;SRAMTemplate_135	32	29	0.2283	1	0	no
+l2/Pipeline_1.sv	.sv	118	20	0	0	0.00	0.00	0	yes	xs_Pipeline_1_core;xs_Queue1_PrefetchReq_core	Pipeline_1;Queue1_PrefetchReq	12	8	0.4000	1	0	no
+l2/Pipeline_10.sv	.sv	39	0	0	0	0.00	0.00	0	yes	xs_Pipeline_10_core	Pipeline_10	0	0		1	0	no
+l2/Pipeline_10_wrapper.sv	.sv	21	0	0	0	0.00	0.00	0	yes	Pipeline_10	Pipeline_10	0	0		1	0	no
+l2/Pipeline_11.sv	.sv	27	0	0	0	0.00	0.00	0	yes	xs_Pipeline_11_core	Pipeline_11	0	0		1	0	no
+l2/Pipeline_11_wrapper.sv	.sv	21	0	0	0	0.00	0.00	0	yes	Pipeline_11	Pipeline_11	0	0		1	0	no
+l2/Pipeline_1_wrapper.sv	.sv	45	0	0	0	0.00	0.00	0	yes	Pipeline_1	Pipeline_1;Queue1_PrefetchReq	0	0		1	0	no
+l2/Pipeline_2.sv	.sv	63	0	0	0	0.00	0.00	0	yes	xs_Pipeline_2_core	Pipeline_2	0	0		1	0	no
+l2/Pipeline_2_wrapper.sv	.sv	51	0	0	0	0.00	0.00	0	yes	Pipeline_2	Pipeline_2	0	0		1	0	no
+l2/Pipeline_3.sv	.sv	93	13	0	0	0.00	0.00	0	yes	xs_Pipeline_3_core;xs_Queue1_PrefetchResp_core	Pipeline_3;Queue1_PrefetchResp	7	7	0.5385	1	0	no
+l2/Pipeline_3_wrapper.sv	.sv	31	0	0	0	0.00	0.00	0	yes	Pipeline_3	Pipeline_3;Queue1_PrefetchResp	0	0		1	0	no
+l2/PrefetchQueue.sv	.sv	123	35	3	8	2.44	6.50	0	yes	xs_PrefetchQueue_core	PrefetchQueue	8	8	0.2286	1	0	no
+l2/PrefetchQueue_wrapper.sv	.sv	43	0	0	0	0.00	0.00	0	yes	PrefetchQueue	PrefetchQueue	0	0		1	0	no
+l2/PrefetchReceiver.sv	.sv	30	4	0	0	0.00	0.00	0	yes	xs_PrefetchReceiver_core	PrefetchReceiver	1	0	0.0000	1	0	no
+l2/PrefetchReceiver_wrapper.sv	.sv	25	0	0	0	0.00	0.00	0	yes	PrefetchReceiver	PrefetchReceiver	0	0		1	0	no
+l2/PrefetchReqBuffer.sv	.sv	550	125	0	0	0.00	0.00	0	yes	xs_PrefetchReqBuffer_core	PrefetchReqBuffer	11	10	0.0800	1	0	no
+l2/PrefetchReqBuffer_wrapper.sv	.sv	67	0	0	0	0.00	0.00	0	yes	PrefetchReqBuffer	PrefetchReqBuffer	0	0		1	0	no
+l2/Prefetcher.sv	.sv	403	31	0	0	0.00	0.00	0	yes	xs_Prefetcher_core	Prefetcher	5	4	0.1290	1	0	no
+l2/Prefetcher_wrapper.sv	.sv	141	0	0	0	0.00	0.00	0	yes	Prefetcher	Prefetcher	0	0		1	0	no
+l2/Queue1_UInt32.sv	.sv	41	9	0	0	0.00	0.00	0	yes	xs_Queue1_UInt32_core	Queue1_UInt32	8	7	0.7778	1	0	no
+l2/Queue72_CoupledL2Imp_Anon.sv	.sv	85	19	0	0	0.00	0.00	0	yes	xs_Queue72_CoupledL2Imp_Anon_core	Queue72_CoupledL2Imp_Anon	14	14	0.7368	1	0	no
+l2/Queue72_CoupledL2Imp_Anon_wrapper.sv	.sv	29	0	0	0	0.00	0.00	0	yes	Queue72_CoupledL2Imp_Anon	Queue72_CoupledL2Imp_Anon	0	0		1	0	no
+l2/RefillUnit.sv	.sv	461	149	0	0	0.00	0.00	0	yes	xs_RefillUnit_core	RefillUnit	1	1	0.0067	1	0	no
+l2/RefillUnit_wrapper.sv	.sv	279	80	0	0	0.00	0.00	0	yes	RefillUnit	RefillUnit	0	0	0.0000	1	0	no
+l2/ResponseUnit.sv	.sv	1233	252	0	0	0.00	0.00	0	yes	xs_ResponseUnit_core	ResponseUnit	2	2	0.0079	1	0	no
+l2/ResponseUnit_wrapper.sv	.sv	524	148	0	0	0.00	0.00	0	yes	ResponseUnit	ResponseUnit	0	0	0.0000	1	0	no
+l2/Slice.sv	.sv	80	5	0	0	0.00	0.00	0	yes	xs_Slice_core	Slice	0	0	0.0000	1	0	yes
+l2/Slice_wrapper.sv	.sv	938	0	0	0	0.00	0.00	0	yes	Slice	Slice	0	0		1	0	no
+l2/SnoopUnit.sv	.sv	335	91	0	0	0.00	0.00	0	yes	xs_SnoopUnit_core	SnoopUnit	1	1	0.0110	1	0	no
+l2/SnoopUnit_wrapper.sv	.sv	187	29	0	0	0.00	0.00	0	yes	SnoopUnit	SnoopUnit	0	0	0.0000	1	0	no
+l2/TL2CHICoupledL2.sv	.sv	73	5	0	0	0.00	0.00	0	yes	xs_TL2CHICoupledL2_core	TL2CHICoupledL2	0	0	0.0000	1	0	yes
+l2/TL2CHICoupledL2_wrapper.sv	.sv	612	0	0	0	0.00	0.00	0	yes	TL2CHICoupledL2	TL2CHICoupledL2	0	0		1	0	no
+l2/TopDownMonitor_wrapper.sv	.sv	494	65	0	0	0.00	0.00	0	yes	TopDownMonitor	TopDownMonitor	0	0	0.0000	1	0	no
+l2/VBestOffsetPrefetch.sv	.sv	219	14	0	0	0.00	0.00	0	yes	xs_VBestOffsetPrefetch_core	VBestOffsetPrefetch	8	8	0.5714	1	0	no
+l2/VBestOffsetPrefetch_wrapper.sv	.sv	101	0	0	0	0.00	0.00	0	yes	VBestOffsetPrefetch	VBestOffsetPrefetch	0	0		1	0	no
+l2/VBestOffset_children.sv	.sv	326	108	0	0	0.00	0.00	0	yes	xs_DelayQueue_1_core;xs_OffsetScoreTable_1_core;xs_RecentRequestTable_1_core	DelayQueue_1;OffsetScoreTable_1;RecentRequestTable_1	24	21	0.1944	1	0	no
+l2/arbiter4_pkg.sv	.sv	65	14	0	0	0.00	0.00	1	no	xs_arbiter4_core	-	0	0	0.0000	0	0	no
+l2/arbiter8_pkg.sv	.sv	53	13	0	0	0.00	0.00	1	no	xs_arbiter8_core	-	0	0	0.0000	0	0	no
+l2/coupledl2_blackbox_stubs.sv	.sv	4971	1475	0	0	0.00	0.00	0	yes	Arbiter4_L2CacheErrorInfo;Arbiter4_L2ToL1Hint;FastArbiter_1;FastArbiter_2;FastArbiter_27;FastArbiter_28;FastArbiter_29;L2Cache	-	0	0	0.0000	1	23	no
+l2/coupledl2_decls.svh	.svh	1442	0	0	0	0.00	0.00	1	no	-	TL2CHICoupledL2	0	0		1	0	no
+l2/coupledl2_glue.svh	.svh	260	139	0	0	0.00	0.00	1	no	-	TL2CHICoupledL2	26	25	0.1799	1	0	no
+l2/coupledl2_inst.svh	.svh	4019	459	0	0	0.00	0.00	1	no	-	TL2CHICoupledL2	440	292	0.6362	1	0	no
+l2/coupledl2_outassign.svh	.svh	77	70	0	0	0.00	0.00	1	no	-	TL2CHICoupledL2	13	1	0.0143	1	0	no
+l2/coupledl2_pkg.sv	.sv	54	0	0	0	0.00	0.00	1	no	-	TL2CHICoupledL2	0	0		1	0	no
+l2/coupledl2_ports.svh	.svh	309	0	0	0	0.00	0.00	1	no	-	TL2CHICoupledL2	0	0		1	0	no
+l2/l2top_blackbox_stubs.sv	.sv	2653	859	0	0	0.00	0.00	0	yes	BusErrorUnit;BusPerfMonitor;DelayN_334;TL2CHICoupledL2;TLBuffer_13;TLBuffer_15;TLBuffer_20;TLBuffer_22	-	0	0	0.0000	1	15	no
+l2/l2top_decls.svh	.svh	814	0	0	0	0.00	0.00	1	no	-	L2Top	0	0		1	0	no
+l2/l2top_glue.svh	.svh	104	45	0	0	0.00	0.00	1	no	-	L2Top	45	45	1.0000	1	0	no
+l2/l2top_inst.svh	.svh	1945	0	0	0	0.00	0.00	1	no	-	L2Top	0	0		1	0	no
+l2/l2top_outassign.svh	.svh	55	50	0	0	0.00	0.00	1	no	-	L2Top	33	1	0.0200	1	0	no
+l2/l2top_pkg.sv	.sv	55	0	0	0	0.00	0.00	1	no	-	L2Top	0	0		1	0	no
+l2/l2top_ports.svh	.svh	353	0	0	0	0.00	0.00	1	no	-	L2Top	0	0		1	0	no
+l2/openllc_blackbox_stubs.sv	.sv	2677	780	0	0	0.00	0.00	0	yes	MMIODiverger;MMIOMerger;RNLinkMonitor;RNXbar;SNLinkMonitor;SNXbar;Slice_4;TopDownMonitor_1	-	0	0	0.0000	1	8	no
+l2/openllc_decls.svh	.svh	1187	0	0	0	0.00	0.00	1	no	-	OpenLLC	0	0		1	0	no
+l2/openllc_glue.svh	.svh	13	6	0	0	0.00	0.00	1	no	-	OpenLLC	6	4	0.6667	1	0	no
+l2/openllc_inst.svh	.svh	2454	0	0	0	0.00	0.00	1	no	-	OpenLLC	0	0		1	0	no
+l2/openllc_outassign.svh	.svh	10	3	0	0	0.00	0.00	1	no	-	OpenLLC	3	0	0.0000	1	0	no
+l2/openllc_pkg.sv	.sv	63	0	0	0	0.00	0.00	1	no	-	OpenLLC	0	0		1	0	no
+l2/openllc_ports.svh	.svh	66	0	0	0	0.00	0.00	1	no	-	OpenLLC	0	0		1	0	no
+l2/slice_blackbox_stubs.sv	.sv	6981	1886	0	0	0.00	0.00	0	yes	DataStorage;Directory;GrantBuffer;L2Slice;MSHRBuffer;MSHRBuffer_1;MSHRCtl;MainPipe_1	-	0	0	0.0000	1	18	no
+l2/slice_decls.svh	.svh	1558	0	0	0	0.00	0.00	1	no	-	Slice	0	0		1	0	no
+l2/slice_glue.svh	.svh	82	31	0	0	0.00	0.00	1	no	-	Slice	9	9	0.2903	1	0	no
+l2/slice_inst.svh	.svh	5060	0	0	0	0.00	0.00	1	no	-	Slice	0	0		1	0	no
+l2/slice_outassign.svh	.svh	29	24	0	0	0.00	0.00	1	no	-	Slice	13	1	0.0417	1	0	no
+l2/slice_pkg.sv	.sv	66	0	0	0	0.00	0.00	4	no	-	Slice;Slice_1;Slice_2;Slice_3	0	0		4	0	no
+l2/slice_ports.svh	.svh	467	0	0	0	0.00	0.00	1	no	-	Slice	0	0		1	0	no
+l2/slice_variants/Slice_1_core.sv	.sv	83	5	0	0	0.00	0.00	0	yes	xs_Slice_1_core	Slice_1	0	0	0.0000	1	0	yes
+l2/slice_variants/Slice_1_wrapper.sv	.sv	938	0	0	0	0.00	0.00	0	yes	Slice_1	Slice_1	0	0		1	0	no
+l2/slice_variants/Slice_2_core.sv	.sv	83	5	0	0	0.00	0.00	0	yes	xs_Slice_2_core	Slice_2	0	0	0.0000	1	0	yes
+l2/slice_variants/Slice_2_wrapper.sv	.sv	938	0	0	0	0.00	0.00	0	yes	Slice_2	Slice_2	0	0		1	0	no
+l2/slice_variants/Slice_3_core.sv	.sv	83	5	0	0	0.00	0.00	0	yes	xs_Slice_3_core	Slice_3	0	0	0.0000	1	0	yes
+l2/slice_variants/Slice_3_wrapper.sv	.sv	938	0	0	0	0.00	0.00	0	yes	Slice_3	Slice_3	0	0		1	0	no
+l2/slice_variants/slice_1_decls.svh	.svh	1558	0	0	0	0.00	0.00	1	no	-	Slice_1	0	0		1	0	no
+l2/slice_variants/slice_1_glue.svh	.svh	82	31	0	0	0.00	0.00	1	no	-	Slice_1	9	9	0.2903	1	0	no
+l2/slice_variants/slice_1_inst.svh	.svh	5060	0	0	0	0.00	0.00	1	no	-	Slice_1	0	0		1	0	no
+l2/slice_variants/slice_1_outassign.svh	.svh	29	24	0	0	0.00	0.00	1	no	-	Slice_1	13	1	0.0417	1	0	no
+l2/slice_variants/slice_1_ports.svh	.svh	467	0	0	0	0.00	0.00	1	no	-	Slice_1	0	0		1	0	no
+l2/slice_variants/slice_2_decls.svh	.svh	1558	0	0	0	0.00	0.00	1	no	-	Slice_2	0	0		1	0	no
+l2/slice_variants/slice_2_glue.svh	.svh	82	31	0	0	0.00	0.00	1	no	-	Slice_2	9	9	0.2903	1	0	no
+l2/slice_variants/slice_2_inst.svh	.svh	5060	0	0	0	0.00	0.00	1	no	-	Slice_2	0	0		1	0	no
+l2/slice_variants/slice_2_outassign.svh	.svh	29	24	0	0	0.00	0.00	1	no	-	Slice_2	13	1	0.0417	1	0	no
+l2/slice_variants/slice_2_ports.svh	.svh	467	0	0	0	0.00	0.00	1	no	-	Slice_2	0	0		1	0	no
+l2/slice_variants/slice_3_decls.svh	.svh	1558	0	0	0	0.00	0.00	1	no	-	Slice_3	0	0		1	0	no
+l2/slice_variants/slice_3_glue.svh	.svh	82	31	0	0	0.00	0.00	1	no	-	Slice_3	9	9	0.2903	1	0	no
+l2/slice_variants/slice_3_inst.svh	.svh	5060	0	0	0	0.00	0.00	1	no	-	Slice_3	0	0		1	0	no
+l2/slice_variants/slice_3_outassign.svh	.svh	29	24	0	0	0.00	0.00	1	no	-	Slice_3	13	1	0.0417	1	0	no
+l2/slice_variants/slice_3_ports.svh	.svh	467	0	0	0	0.00	0.00	1	no	-	Slice_3	0	0		1	0	no
+memblock/AtomicsUnit.sv	.sv	712	313	0	0	0.00	0.00	0	yes	xs_AtomicsUnit_core	AtomicsUnit	207	176	0.5623	1	0	no
+memblock/AtomicsUnit_wrapper.sv	.sv	222	0	0	0	0.00	0.00	0	yes	AtomicsUnit	AtomicsUnit	0	0		1	0	no
+memblock/BankedDataArray.sv	.sv	509	183	0	0	0.00	0.00	0	yes	xs_BankedDataArray_core	BankedDataArray	2	2	0.0109	1	0	no
+memblock/BankedDataArray_wrapper.sv	.sv	714	93	0	0	0.00	0.00	0	yes	BankedDataArray	BankedDataArray	0	0	0.0000	1	0	no
+memblock/DCache.sv	.sv	132	39	0	0	0.00	0.00	0	yes	xs_DCache_core	DCache	0	0	0.0000	1	0	no
+memblock/DCacheWrapper.sv	.sv	154	32	0	0	0.00	0.00	0	yes	xs_DCacheWrapper_core	DCacheWrapper	0	0	0.0000	1	0	no
+memblock/DCacheWrapper_wrapper.sv	.sv	1212	0	0	0	0.00	0.00	0	yes	DCacheWrapper	DCacheWrapper	0	0		1	0	no
+memblock/DCache_wrapper.sv	.sv	1212	0	0	0	0.00	0.00	0	yes	DCache	DCache	0	0		1	0	no
+memblock/DuplicatedTagArray.sv	.sv	92	13	0	0	0.00	0.00	0	yes	xs_DuplicatedTagArray_core	DuplicatedTagArray	0	0	0.0000	1	0	no
+memblock/DuplicatedTagArray_wrapper.sv	.sv	283	34	0	0	0.00	0.00	0	yes	DuplicatedTagArray	DuplicatedTagArray	0	0	0.0000	1	0	no
+memblock/FreeList.sv	.sv	217	75	0	0	0.00	0.00	0	yes	xs_FreeList_core	FreeList	1	1	0.0133	1	0	no
+memblock/FreeList_3.sv	.sv	247	90	0	0	0.00	0.00	0	yes	FreeList_3	FreeList_3	1	1	0.0111	1	0	no
+memblock/FreeList_4.sv	.sv	224	84	0	0	0.00	0.00	0	yes	FreeList_4	FreeList_4	2	2	0.0238	1	0	no
+memblock/FreeList_wrapper.sv	.sv	30	3	0	0	0.00	0.00	0	yes	FreeList	FreeList	0	0	0.0000	1	0	no
+memblock/HPTW.sv	.sv	309	94	0	0	0.00	0.00	0	yes	xs_HPTW_core	HPTW	1	1	0.0106	1	0	no
+memblock/HPTW_wrapper.sv	.sv	122	33	0	0	0.00	0.00	0	yes	HPTW	HPTW	0	0	0.0000	1	0	no
+memblock/L1CohMetaArray.sv	.sv	154	50	0	0	0.00	0.00	0	yes	xs_L1CohMetaArray_core	L1CohMetaArray	1	1	0.0200	1	0	no
+memblock/L1CohMetaArray_wrapper.sv	.sv	78	31	0	0	0.00	0.00	0	yes	L1CohMetaArray	L1CohMetaArray	0	0	0.0000	1	0	no
+memblock/L1FlagMetaArray.sv	.sv	171	54	0	0	0.00	0.00	0	yes	xs_L1FlagMetaArray_core	L1FlagMetaArray	1	1	0.0185	1	0	no
+memblock/L1FlagMetaArray_1_wrapper.sv	.sv	116	49	0	0	0.00	0.00	0	yes	L1FlagMetaArray_1	L1FlagMetaArray_1	0	0	0.0000	1	0	no
+memblock/L1FlagMetaArray_wrapper.sv	.sv	78	29	0	0	0.00	0.00	0	yes	L1FlagMetaArray	L1FlagMetaArray	0	0	0.0000	1	0	no
+memblock/L1Prefetcher.sv	.sv	122	23	0	0	0.00	0.00	0	yes	xs_L1Prefetcher_core	L1Prefetcher	0	0	0.0000	1	0	no
+memblock/L1Prefetcher_wrapper.sv	.sv	215	0	0	0	0.00	0.00	0	yes	L1Prefetcher	L1Prefetcher	0	0		1	0	no
+memblock/L2TLB.sv	.sv	776	363	0	0	0.00	0.00	0	yes	xs_L2TLB_core	L2TLB	6	6	0.0165	1	0	no
+memblock/L2TLBWrapper.sv	.sv	114	17	0	0	0.00	0.00	0	yes	xs_L2TLBWrapper_core	L2TLBWrapper	0	0	0.0000	1	0	no
+memblock/L2TLBWrapper_wrapper.sv	.sv	590	0	0	0	0.00	0.00	0	yes	L2TLBWrapper	L2TLBWrapper	0	0		1	0	no
+memblock/L2TLB_cache_stage1.svh	.svh	157	153	0	0	0.00	0.00	1	no	-	L2TLB	0	0	0.0000	1	0	no
+memblock/L2TLB_driven.svh	.svh	514	0	0	0	0.00	0.00	1	no	-	L2TLB	0	0		1	0	no
+memblock/L2TLB_inst.svh	.svh	3798	0	0	0	0.00	0.00	1	no	-	L2TLB	0	0		1	0	no
+memblock/L2TLB_marb_out.svh	.svh	309	306	0	0	0.00	0.00	1	no	-	L2TLB	0	0	0.0000	1	0	no
+memblock/L2TLB_merge_in2.svh	.svh	311	308	0	0	0.00	0.00	1	no	-	L2TLB	0	0	0.0000	1	0	no
+memblock/L2TLB_outarb_in.svh	.svh	87	84	0	0	0.00	0.00	1	no	-	L2TLB	0	0	0.0000	1	0	no
+memblock/L2TLB_perf_out.svh	.svh	22	19	0	0	0.00	0.00	1	no	-	L2TLB	0	0	0.0000	1	0	no
+memblock/L2TLB_ports.svh	.svh	294	0	0	0	0.00	0.00	1	no	-	L2TLB	0	0		1	0	no
+memblock/L2TLB_wires.svh	.svh	1277	0	0	0	0.00	0.00	1	no	-	L2TLB	0	0		1	0	no
+memblock/L2TLB_wrapper.sv	.sv	590	0	0	0	0.00	0.00	0	yes	L2TLB	L2TLB	0	0		1	0	no
+memblock/L2TlbMissQueue.sv	.sv	124	28	0	0	0.00	0.00	0	yes	xs_L2TlbMissQueue_core	L2TlbMissQueue	0	0	0.0000	1	0	no
+memblock/L2TlbMissQueue_wrapper.sv	.sv	55	14	0	0	0.00	0.00	0	yes	L2TlbMissQueue	L2TlbMissQueue	0	0	0.0000	1	0	no
+memblock/L2TlbPrefetch.sv	.sv	139	30	0	0	0.00	0.00	0	yes	xs_L2TlbPrefetch_core	L2TlbPrefetch	1	1	0.0333	1	0	no
+memblock/L2TlbPrefetch_wrapper.sv	.sv	42	3	0	0	0.00	0.00	0	yes	L2TlbPrefetch	L2TlbPrefetch	0	0	0.0000	1	0	no
+memblock/LLPTW.sv	.sv	883	254	0	0	0.00	0.00	0	yes	xs_LLPTW_core	LLPTW	2	2	0.0079	1	0	no
+memblock/LLPTW_wrapper.sv	.sv	229	69	0	0	0.00	0.00	0	yes	LLPTW	LLPTW	0	0	0.0000	1	0	no
+memblock/LoadMisalignBuffer.sv	.sv	1085	463	0	0	0.00	0.00	0	yes	xs_LoadMisalignBuffer_core	LoadMisalignBuffer	10	7	0.0151	1	0	no
+memblock/LoadMisalignBuffer_wrapper.sv	.sv	654	0	0	0	0.00	0.00	0	yes	LoadMisalignBuffer	LoadMisalignBuffer	0	0		1	0	no
+memblock/LoadPipe.sv	.sv	595	214	0	0	0.00	0.00	0	yes	xs_LoadPipe_core	LoadPipe	20	16	0.0748	1	0	no
+memblock/LoadPipe_core_body.svh	.svh	461	214	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+memblock/LoadPipe_wrapper.sv	.sv	262	0	0	0	0.00	0.00	0	yes	LoadPipe	LoadPipe	0	0		1	0	no
+memblock/LoadQueue.sv	.sv	215	52	0	0	0.00	0.00	0	yes	xs_LoadQueue_core	LoadQueue	0	0	0.0000	1	0	no
+memblock/LoadQueueRAR.sv	.sv	694	117	0	0	0.00	0.00	0	yes	xs_LoadQueueRAR_core	LoadQueueRAR	2	2	0.0171	1	0	no
+memblock/LoadQueueRAR_wrapper.sv	.sv	106	19	0	0	0.00	0.00	0	yes	LoadQueueRAR	LoadQueueRAR	0	0	0.0000	1	0	no
+memblock/LoadQueueRAW.sv	.sv	826	245	0	0	0.00	0.00	0	yes	xs_LoadQueueRAW_core	LoadQueueRAW	1	1	0.0041	1	0	no
+memblock/LoadQueueRAW_delays.sv	.sv	79	27	0	0	0.00	0.00	0	yes	DelayN_298;DelayNWithValid_148;DelayNWithValid_149	DelayNWithValid_148;DelayNWithValid_149;DelayN_298	9	6	0.2222	1	0	no
+memblock/LoadQueueRAW_wrapper.sv	.sv	188	0	0	0	0.00	0.00	0	yes	LoadQueueRAW	LoadQueueRAW	0	0		1	0	no
+memblock/LoadQueueReplay.sv	.sv	220	52	0	0	0.00	0.00	0	yes	xs_LoadQueueReplay_core	LoadQueueReplay	0	0	0.0000	1	0	no
+memblock/LoadQueueReplay_wrapper.sv	.sv	956	270	0	0	0.00	0.00	0	yes	LoadQueueReplay	LoadQueueReplay	0	0	0.0000	1	0	no
+memblock/LoadQueueUncache.sv	.sv	502	254	0	0	0.00	0.00	0	yes	xs_LoadQueueUncache_core	LoadQueueUncache	1	1	0.0039	1	0	no
+memblock/LoadQueueUncache_wrapper.sv	.sv	1014	0	0	0	0.00	0.00	0	yes	LoadQueueUncache	LoadQueueUncache	0	0		1	0	no
+memblock/LoadQueue_inst.svh	.svh	1493	0	0	0	0.00	0.00	1	no	-	LoadQueue	0	0		1	0	no
+memblock/LoadQueue_perf_out.svh	.svh	32	28	0	0	0.00	0.00	1	no	-	LoadQueue	28	10	0.3571	1	0	no
+memblock/LoadQueue_ports.svh	.svh	1113	0	0	0	0.00	0.00	1	no	-	LoadQueue	0	0		1	0	no
+memblock/LoadQueue_wrapper.sv	.sv	2228	0	0	0	0.00	0.00	0	yes	LoadQueue	LoadQueue	0	0		1	0	no
+memblock/LoadUnit.sv	.sv	3153	1334	0	32	0.00	1.01	0	yes	xs_LoadUnit_core	LoadUnit	105	24	0.0180	1	0	no
+memblock/LoadUnit_core_body.svh	.svh	2095	1312	0	32	0.00	1.53	0	yes	-	-	0	0	0.0000	1	0	no
+memblock/LoadUnit_wrapper.sv	.sv	2024	0	0	0	0.00	0.00	0	yes	LoadUnit	LoadUnit	0	0		1	0	no
+memblock/LqExceptionBuffer.sv	.sv	271	86	0	0	0.00	0.00	0	yes	xs_LqExceptionBuffer_core	LqExceptionBuffer	0	0	0.0000	1	0	no
+memblock/LqExceptionBuffer_wrapper.sv	.sv	185	39	0	0	0.00	0.00	0	yes	LqExceptionBuffer	LqExceptionBuffer	0	0	0.0000	1	0	no
+memblock/LqMaskModule.sv	.sv	144	46	0	0	0.00	0.00	0	yes	LqMaskModule	LqMaskModule	0	0	0.0000	1	0	no
+memblock/LqPAddrModule.sv	.sv	662	300	0	0	0.00	0.00	0	yes	LqPAddrModule	LqPAddrModule	0	0	0.0000	1	0	no
+memblock/LqPAddrModule_1.sv	.sv	166	48	0	0	0.00	0.00	0	yes	LqPAddrModule_1	LqPAddrModule_1	0	0	0.0000	1	0	no
+memblock/LsqWrapper.sv	.sv	243	69	0	0	0.00	0.00	0	yes	xs_LsqWrapper_core	LsqWrapper	9	9	0.1304	1	0	no
+memblock/LsqWrapper_inst.svh	.svh	1942	0	0	0	0.00	0.00	1	no	-	LsqWrapper	0	0		1	0	no
+memblock/LsqWrapper_perf_out.svh	.svh	38	36	0	0	0.00	0.00	1	no	-	LsqWrapper	0	0	0.0000	1	0	no
+memblock/LsqWrapper_ports.svh	.svh	1611	0	0	0	0.00	0.00	1	no	-	LsqWrapper	0	0		1	0	no
+memblock/LsqWrapper_wrapper.sv	.sv	3224	0	0	0	0.00	0.00	0	yes	LsqWrapper	LsqWrapper	0	0		1	0	no
+memblock/MainPipe.sv	.sv	1429	494	0	0	0.00	0.00	0	yes	xs_MainPipe_core	MainPipe	25	11	0.0223	1	0	no
+memblock/MainPipe_wrapper.sv	.sv	894	0	0	0	0.00	0.00	0	yes	MainPipe	MainPipe	0	0		1	0	no
+memblock/MemBlock.sv	.sv	134	14	0	0	0.00	0.00	0	yes	xs_MemBlock_core	MemBlock	0	0	0.0000	1	0	no
+memblock/MemBlock_wrapper.sv	.sv	2698	0	0	0	0.00	0.00	0	yes	MemBlock	MemBlock	0	0		1	0	no
+memblock/MemExeUnit.sv	.sv	58	4	0	0	0.00	0.00	0	yes	xs_MemExeUnit_core	MemExeUnit	1	0	0.0000	1	0	no
+memblock/MemExeUnit_wrapper.sv	.sv	42	0	0	0	0.00	0.00	0	yes	MemExeUnit	MemExeUnit	0	0		1	0	no
+memblock/MissQueue.sv	.sv	561	169	0	0	0.00	0.00	0	yes	xs_MissQueue_core	MissQueue	8	7	0.0414	1	0	yes
+memblock/MissQueue_wrapper.sv	.sv	418	0	0	0	0.00	0.00	0	yes	MissQueue	MissQueue	0	0		1	0	no
+memblock/PMP.sv	.sv	347	127	0	0	0.00	0.00	0	yes	xs_PMP_core	PMP	5	5	0.0394	1	0	no
+memblock/PMPChecker.sv	.sv	207	62	0	0	0.00	0.00	0	yes	xs_PMPChecker_core	PMPChecker;PMPChecker_10	2	2	0.0323	1	0	no
+memblock/PMPChecker_wrapper.sv	.sv	1076	550	0	0	0.00	0.00	0	yes	PMPChecker;PMPChecker_10	PMPChecker;PMPChecker_10	0	0	0.0000	1	0	no
+memblock/PMP_wrapper.sv	.sv	499	242	0	0	0.00	0.00	0	yes	PMP	PMP	0	0	0.0000	1	0	no
+memblock/PTW.sv	.sv	604	294	0	0	0.00	0.00	0	yes	xs_PTW_core	PTW	4	4	0.0136	1	0	no
+memblock/PTWNewFilter.sv	.sv	456	173	0	0	0.00	0.00	0	yes	xs_PTWNewFilter_core	PTWNewFilter	18	3	0.0173	1	0	no
+memblock/PTWNewFilter_wrapper.sv	.sv	412	1	0	0	0.00	0.00	0	yes	PTWNewFilter	PTWNewFilter	0	0	0.0000	1	0	no
+memblock/PTWRepeaterNB.sv	.sv	357	133	0	0	0.00	0.00	0	yes	xs_PTWRepeaterNB_core	PTWRepeaterNB	17	2	0.0150	1	0	no
+memblock/PTWRepeaterNB_wrapper.sv	.sv	276	1	0	0	0.00	0.00	0	yes	PTWRepeaterNB	PTWRepeaterNB	0	0	0.0000	1	0	no
+memblock/PTW_wrapper.sv	.sv	814	374	0	0	0.00	0.00	0	yes	PTW	PTW	0	0	0.0000	1	0	no
+memblock/Pipeline.sv	.sv	114	28	0	0	0.00	0.00	0	yes	xs_Pipeline_core	Pipeline	0	0	0.0000	1	0	no
+memblock/Pipeline_wrapper.sv	.sv	38	0	0	0	0.00	0.00	0	yes	Pipeline	Pipeline	0	0		1	0	no
+memblock/ProbeQueue.sv	.sv	287	53	0	0	0.00	0.00	0	yes	xs_ProbeQueue_core	ProbeQueue	0	0	0.0000	1	0	yes
+memblock/ProbeQueue_wrapper.sv	.sv	52	0	0	0	0.00	0.00	0	yes	ProbeQueue	ProbeQueue	0	0		1	0	no
+memblock/PtwCache.sv	.sv	238	29	0	0	0.00	0.00	0	yes	xs_PtwCache_core	PtwCache	0	0	0.0000	1	0	no
+memblock/PtwCache_wrapper.sv	.sv	2921	676	0	0	0.00	0.00	0	yes	PtwCache	PtwCache	4	0	0.0000	1	0	no
+memblock/SMSPrefetcher.sv	.sv	134	35	0	0	0.00	0.00	0	yes	xs_SMSPrefetcher_core	SMSPrefetcher	0	0	0.0000	1	0	no
+memblock/SMSPrefetcher_wrapper.sv	.sv	242	0	0	0	0.00	0.00	0	yes	SMSPrefetcher	SMSPrefetcher	0	0		1	0	no
+memblock/Sbuffer.sv	.sv	1080	367	0	0	0.00	0.00	0	yes	xs_Sbuffer_core	Sbuffer	5	4	0.0109	1	0	no
+memblock/Sbuffer_wrapper.sv	.sv	334	0	0	0	0.00	0.00	0	yes	Sbuffer	Sbuffer	0	0		1	0	no
+memblock/StoreExceptionBuffer.sv	.sv	233	69	0	0	0.00	0.00	0	yes	xs_StoreExceptionBuffer_core	StoreExceptionBuffer	0	0	0.0000	1	0	no
+memblock/StoreExceptionBuffer_wrapper.sv	.sv	203	49	0	0	0.00	0.00	0	yes	StoreExceptionBuffer	StoreExceptionBuffer	0	0	0.0000	1	0	no
+memblock/StoreMisalignBuffer.sv	.sv	806	336	0	0	0.00	0.00	0	yes	xs_StoreMisalignBuffer_core	StoreMisalignBuffer	10	7	0.0208	1	0	no
+memblock/StoreMisalignBuffer_wrapper.sv	.sv	432	0	0	0	0.00	0.00	0	yes	StoreMisalignBuffer	StoreMisalignBuffer	0	0		1	0	no
+memblock/StorePfWrapper.sv	.sv	68	23	0	0	0.00	0.00	0	yes	xs_StorePfWrapper_core	StorePfWrapper	0	0	0.0000	1	0	no
+memblock/StorePfWrapper_wrapper.sv	.sv	35	3	0	0	0.00	0.00	0	yes	StorePfWrapper	StorePfWrapper	0	0	0.0000	1	0	no
+memblock/StorePipe.sv	.sv	179	49	0	0	0.00	0.00	0	yes	xs_StorePipe_core	StorePipe	0	0	0.0000	1	0	no
+memblock/StorePipe_wrapper.sv	.sv	18	0	0	0	0.00	0.00	0	yes	StorePipe	StorePipe	0	0		1	1	no
+memblock/StoreQueue.sv	.sv	536	199	0	0	0.00	0.00	0	yes	xs_StoreQueue_core	StoreQueue	2	1	0.0050	1	0	no
+memblock/StoreQueue_wrapper.sv	.sv	1650	0	0	0	0.00	0.00	0	yes	StoreQueue	StoreQueue	0	0		1	0	no
+memblock/StoreUnit.sv	.sv	1369	556	0	0	0.00	0.00	0	yes	xs_StoreUnit_core	StoreUnit	24	16	0.0288	1	0	no
+memblock/StoreUnit_wrapper.sv	.sv	664	0	0	0	0.00	0.00	0	yes	StoreUnit	StoreUnit	0	0		1	0	no
+memblock/TLBFA.sv	.sv	376	151	0	0	0.00	0.00	0	yes	xs_TLBFA_core	TLBFA	5	5	0.0331	1	0	no
+memblock/TLBFA_1_wrapper.sv	.sv	417	189	0	0	0.00	0.00	0	yes	TLBFA_1	TLBFA_1	0	0	0.0000	1	0	no
+memblock/TLBFA_wrapper.sv	.sv	302	131	0	0	0.00	0.00	0	yes	TLBFA	TLBFA	0	0	0.0000	1	0	no
+memblock/TLBNonBlock.sv	.sv	1022	359	0	0	0.00	0.00	0	yes	xs_TLBNonBlock_core	TLBNonBlock	5	5	0.0139	1	0	no
+memblock/TLBNonBlock_1.sv	.sv	719	281	0	0	0.00	0.00	0	yes	xs_TLBNonBlock_1_core	TLBNonBlock_1	4	4	0.0142	1	0	no
+memblock/TLBNonBlock_1_wrapper.sv	.sv	402	60	0	0	0.00	0.00	0	yes	TLBNonBlock_1	TLBNonBlock_1	0	0	0.0000	1	0	no
+memblock/TLBNonBlock_2.sv	.sv	647	248	0	0	0.00	0.00	0	yes	xs_TLBNonBlock_2_core	TLBNonBlock_2	4	4	0.0161	1	0	no
+memblock/TLBNonBlock_2_wrapper.sv	.sv	357	35	0	0	0.00	0.00	0	yes	TLBNonBlock_2	TLBNonBlock_2	0	0	0.0000	1	0	no
+memblock/TLBNonBlock_wrapper.sv	.sv	579	103	0	0	0.00	0.00	0	yes	TLBNonBlock	TLBNonBlock	0	0	0.0000	1	0	no
+memblock/TLBuffer.sv	.sv	201	44	0	0	0.00	0.00	0	yes	xs_TLBuffer_core	TLBuffer	0	0	0.0000	1	0	no
+memblock/TLBuffer_13.sv	.sv	786	380	0	0	0.00	0.00	0	yes	xs_TLBuffer_13_core	TLBuffer_13	0	0	0.0000	1	0	no
+memblock/TLBuffer_13_wrapper.sv	.sv	754	0	0	0	0.00	0.00	0	yes	TLBuffer_13	TLBuffer_13	0	0		1	0	no
+memblock/TLBuffer_15.sv	.sv	143	23	0	0	0.00	0.00	0	yes	xs_TLBuffer_15_core	TLBuffer_15	0	0	0.0000	1	0	no
+memblock/TLBuffer_15_wrapper.sv	.sv	90	0	0	0	0.00	0.00	0	yes	TLBuffer_15	TLBuffer_15	0	0		1	0	no
+memblock/TLBuffer_2.sv	.sv	143	23	0	0	0.00	0.00	0	yes	xs_TLBuffer_2_core	TLBuffer_2	0	0	0.0000	1	0	no
+memblock/TLBuffer_20.sv	.sv	143	23	0	0	0.00	0.00	0	yes	xs_TLBuffer_20_core	TLBuffer_20	0	0	0.0000	1	0	no
+memblock/TLBuffer_20_wrapper.sv	.sv	90	0	0	0	0.00	0.00	0	yes	TLBuffer_20	TLBuffer_20	0	0		1	0	no
+memblock/TLBuffer_22.sv	.sv	152	24	0	0	0.00	0.00	0	yes	xs_TLBuffer_22_core	TLBuffer_22	0	0	0.0000	1	0	no
+memblock/TLBuffer_22_wrapper.sv	.sv	98	0	0	0	0.00	0.00	0	yes	TLBuffer_22	TLBuffer_22	0	0		1	0	no
+memblock/TLBuffer_2_wrapper.sv	.sv	90	0	0	0	0.00	0.00	0	yes	TLBuffer_2	TLBuffer_2	0	0		1	0	no
+memblock/TLBuffer_6.sv	.sv	148	24	0	0	0.00	0.00	0	yes	xs_TLBuffer_6_core	TLBuffer_6	0	0	0.0000	1	0	no
+memblock/TLBuffer_6_wrapper.sv	.sv	94	0	0	0	0.00	0.00	0	yes	TLBuffer_6	TLBuffer_6	0	0		1	0	no
+memblock/TLBuffer_7.sv	.sv	319	44	0	0	0.00	0.00	0	yes	xs_TLBuffer_7_core	TLBuffer_7	0	0	0.0000	1	0	no
+memblock/TLBuffer_7_wrapper.sv	.sv	200	0	0	0	0.00	0.00	0	yes	TLBuffer_7	TLBuffer_7	0	0		1	0	no
+memblock/TLBuffer_8.sv	.sv	152	24	0	0	0.00	0.00	0	yes	xs_TLBuffer_8_core	TLBuffer_8	0	0	0.0000	1	0	no
+memblock/TLBuffer_8_wrapper.sv	.sv	98	0	0	0	0.00	0.00	0	yes	TLBuffer_8	TLBuffer_8	0	0		1	0	no
+memblock/TLBuffer_9.sv	.sv	143	23	0	0	0.00	0.00	0	yes	xs_TLBuffer_9_core	TLBuffer_9	0	0	0.0000	1	0	no
+memblock/TLBuffer_9_wrapper.sv	.sv	90	0	0	0	0.00	0.00	0	yes	TLBuffer_9	TLBuffer_9	0	0		1	0	no
+memblock/TLBuffer_wrapper.sv	.sv	118	0	0	0	0.00	0.00	0	yes	TLBuffer	TLBuffer	0	0		1	0	no
+memblock/TlbStorageWrapper.sv	.sv	87	13	0	0	0.00	0.00	0	yes	xs_TlbStorageWrapper_core	TlbStorageWrapper	0	0	0.0000	1	0	no
+memblock/TlbStorageWrapper_1_wrapper.sv	.sv	410	5	0	0	0.00	0.00	0	yes	TlbStorageWrapper_1	TlbStorageWrapper_1	0	0	0.0000	1	0	no
+memblock/TlbStorageWrapper_wrapper.sv	.sv	296	5	0	0	0.00	0.00	0	yes	TlbStorageWrapper	TlbStorageWrapper	0	0	0.0000	1	0	no
+memblock/Uncache.sv	.sv	774	298	0	0	0.00	0.00	0	yes	xs_Uncache_core	Uncache	3	3	0.0101	1	0	no
+memblock/Uncache_wrapper.sv	.sv	314	0	0	0	0.00	0.00	0	yes	Uncache	Uncache	0	0		1	0	no
+memblock/VLMergeBufferImp.sv	.sv	6804	4308	2421	2841	35.58	41.75	0	yes	xs_VLMergeBufferImp_core	VLMergeBufferImp	1780	1659	0.3851	1	0	no
+memblock/VLMergeBufferImp_wrapper.sv	.sv	474	1	0	0	0.00	0.00	0	yes	VLMergeBufferImp	VLMergeBufferImp	0	0	0.0000	1	0	no
+memblock/VLSplitImp.sv	.sv	660	125	0	0	0.00	0.00	0	yes	xs_VLSplitImp_core	VLSplitImp	122	17	0.1360	1	0	no
+memblock/VLSplitImp_wrapper.sv	.sv	240	1	0	0	0.00	0.00	0	yes	VLSplitImp	VLSplitImp	0	0	0.0000	1	0	no
+memblock/VSMergeBufferImp.sv	.sv	538	207	0	0	0.00	0.00	0	yes	xs_VSMergeBufferImp_core	VSMergeBufferImp	14	11	0.0531	1	0	no
+memblock/VSMergeBufferImp_wrapper.sv	.sv	381	1	0	0	0.00	0.00	0	yes	VSMergeBufferImp	VSMergeBufferImp	0	0	0.0000	1	0	no
+memblock/VSSplitImp.sv	.sv	688	135	0	0	0.00	0.00	0	yes	xs_VSSplitImp_core	VSSplitImp	132	12	0.0889	1	0	no
+memblock/VSSplitImp_wrapper.sv	.sv	254	1	0	0	0.00	0.00	0	yes	VSSplitImp	VSSplitImp	0	0	0.0000	1	0	no
+memblock/VSegmentUnit.sv	.sv	1099	499	0	38	0.00	3.46	0	yes	xs_VSegmentUnit_core	VSegmentUnit	105	88	0.1764	1	0	no
+memblock/VSegmentUnit_wrapper.sv	.sv	384	2	0	0	0.00	0.00	0	yes	VSegmentUnit	VSegmentUnit	0	0	0.0000	1	0	no
+memblock/VfofBuffer.sv	.sv	304	97	0	0	0.00	0.00	0	yes	xs_VfofBuffer_core	VfofBuffer	2	2	0.0206	1	0	no
+memblock/VfofBuffer_wrapper.sv	.sv	199	1	0	0	0.00	0.00	0	yes	VfofBuffer	VfofBuffer	0	0	0.0000	1	0	no
+memblock/VirtualLoadQueue.sv	.sv	585	215	0	0	0.00	0.00	0	yes	xs_VirtualLoadQueue_core	VirtualLoadQueue	6	5	0.0233	1	0	no
+memblock/VirtualLoadQueue_wrapper.sv	.sv	218	0	0	0	0.00	0.00	0	yes	VirtualLoadQueue	VirtualLoadQueue	0	0		1	0	no
+memblock/WritebackQueue.sv	.sv	794	124	0	0	0.00	0.00	0	yes	xs_WritebackQueue_core	WritebackQueue	1	1	0.0081	1	0	yes
+memblock/WritebackQueue_wrapper.sv	.sv	90	0	0	0	0.00	0.00	0	yes	WritebackQueue	WritebackQueue	0	0		1	0	no
+memblock/bankeddata_pkg.sv	.sv	97	26	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+memblock/dcache_bb_stub.sv	.sv	1463	0	0	0	0.00	0.00	0	yes	BankedDataArray;L1CohMetaArray;L1FlagMetaArray;L1FlagMetaArray_1;DuplicatedTagArray;LoadPipe;MainPipe;MissQueue	-	0	0		1	10	no
+memblock/dcache_blackbox.sv	.sv	608	0	0	0	0.00	0.00	0	yes	DCache	-	0	0		1	1	no
+memblock/dcache_glue_assign.svh	.svh	61	58	7	10	11.48	16.39	1	no	-	DCache	58	20	0.3448	1	0	no
+memblock/dcache_glue_ff.svh	.svh	106	81	0	8	0.00	7.55	1	no	-	DCache	81	78	0.9630	1	0	no
+memblock/dcache_inst.svh	.svh	2049	0	3	3	0.15	0.15	1	no	-	DCache	0	0		1	0	no
+memblock/dcache_nets.svh	.svh	723	54	29	43	4.01	5.95	1	no	-	DCache	54	48	0.8889	1	0	no
+memblock/dcache_perf_out.svh	.svh	35	32	0	0	0.00	0.00	1	no	-	DCache	0	0	0.0000	1	0	no
+memblock/dcache_perf_src.svh	.svh	35	32	0	0	0.00	0.00	1	no	-	DCache	0	0	0.0000	1	0	no
+memblock/dcache_pkg.sv	.sv	110	16	0	0	0.00	0.00	1	no	-	DCache	0	0	0.0000	1	0	no
+memblock/dcache_ports.svh	.svh	605	0	0	0	0.00	0.00	1	no	-	DCache	0	0		1	0	no
+memblock/dcache_regs.svh	.svh	43	0	0	0	0.00	0.00	1	no	-	DCache	0	0		1	0	no
+memblock/dcache_stub.sv	.sv	1795	0	0	0	0.00	0.00	0	yes	CtrlUnit;BankedDataArray;L1CohMetaArray;L1FlagMetaArray;L1PrefetchSourceArray;L1FlagMetaArray_1;DuplicatedTagArray;PrefetcherMonitor	-	0	0		1	22	no
+memblock/dcachewrapper_inner_conn.svh	.svh	572	0	0	0	0.00	0.00	1	no	-	DCacheWrapper	0	0		1	0	no
+memblock/dcachewrapper_ports.svh	.svh	604	0	0	0	0.00	0.00	1	no	-	DCacheWrapper	0	0		1	0	no
+memblock/dtagarray_pkg.sv	.sv	48	9	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+memblock/exceptionbuffer_pkg.sv	.sv	129	27	0	0	0.00	0.00	4	no	-	LqExceptionBuffer;StoreExceptionBuffer	0	0	0.0000	2	0	no
+memblock/freelist_pkg.sv	.sv	41	6	0	0	0.00	0.00	1	no	-	FreeList	0	0	0.0000	1	0	no
+memblock/hptw_pkg.sv	.sv	159	31	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+memblock/l1metaarray_pkg.sv	.sv	48	4	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+memblock/l2tlb_blackbox.sv	.sv	297	0	0	0	0.00	0.00	0	yes	L2TLB	-	0	0		1	1	no
+memblock/l2tlb_pkg.sv	.sv	251	73	0	0	0.00	0.00	1	no	-	L2TLB	0	0	0.0000	1	0	no
+memblock/l2tlbmissqueue_pkg.sv	.sv	30	0	0	0	0.00	0.00	0	yes	-	-	0	0		1	0	no
+memblock/l2tlbprefetch_pkg.sv	.sv	46	4	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+memblock/l2tlbwrapper_inner_conn.svh	.svh	274	0	0	0	0.00	0.00	1	no	-	L2TLBWrapper	0	0		1	0	no
+memblock/l2tlbwrapper_ports.svh	.svh	293	0	0	0	0.00	0.00	1	no	-	L2TLBWrapper	0	0		1	0	no
+memblock/llptw_pkg.sv	.sv	229	60	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+memblock/loadmisalignbuffer_pkg.sv	.sv	100	31	0	0	0.00	0.00	1	no	-	LoadMisalignBuffer	0	0	0.0000	1	0	no
+memblock/loadpipe_pkg.sv	.sv	146	35	0	0	0.00	0.00	2	no	-	LoadPipe	0	0	0.0000	2	0	no
+memblock/loadqueue_pkg.sv	.sv	82	10	0	0	0.00	0.00	1	no	-	LoadQueue	0	0	0.0000	1	0	no
+memblock/loadqueuerar_pkg.sv	.sv	176	30	0	0	0.00	0.00	4	no	-	FreeList_3;LoadQueueRAR;LqPAddrModule	0	0	0.0000	3	0	no
+memblock/loadqueueraw_pkg.sv	.sv	167	16	0	0	0.00	0.00	1	no	-	LoadQueueRAW	0	0	0.0000	1	0	no
+memblock/loadqueuereplay_block.svh	.svh	92	33	0	0	0.00	0.00	1	no	-	LoadQueueReplay	0	0	0.0000	1	0	no
+memblock/loadqueuereplay_perf.svh	.svh	111	51	0	0	0.00	0.00	1	no	-	LoadQueueReplay	0	0	0.0000	1	0	no
+memblock/loadqueuereplay_pipe.svh	.svh	228	108	0	0	0.00	0.00	1	no	-	LoadQueueReplay	2	2	0.0185	1	0	no
+memblock/loadqueuereplay_pkg.sv	.sv	214	40	0	0	0.00	0.00	2	no	-	LoadQueueReplay	0	0	0.0000	1	0	no
+memblock/loadqueuereplay_ports.svh	.svh	96	0	0	0	0.00	0.00	1	no	-	LoadQueueReplay	0	0		1	0	no
+memblock/loadqueuereplay_regupd.svh	.svh	278	142	0	0	0.00	0.00	1	no	-	LoadQueueReplay	1	1	0.0070	1	0	no
+memblock/loadqueuereplay_s0sel.svh	.svh	144	64	0	0	0.00	0.00	1	no	-	LoadQueueReplay	0	0	0.0000	1	0	no
+memblock/loadqueuereplay_subinst.svh	.svh	66	0	0	0	0.00	0.00	1	no	-	LoadQueueReplay	0	0		1	0	no
+memblock/loadqueuereplay_td_tree.svh	.svh	143	143	0	0	0.00	0.00	1	no	-	LoadQueueReplay	0	0	0.0000	1	0	no
+memblock/loadqueueuncache_connect.svh	.svh	247	241	0	0	0.00	0.00	1	no	-	LoadQueueUncache	0	0	0.0000	1	0	no
+memblock/loadqueueuncache_pkg.sv	.sv	140	53	0	0	0.00	0.00	1	no	-	LoadQueueUncache	0	0	0.0000	1	0	no
+memblock/loadqueueuncache_ports.svh	.svh	505	0	0	0	0.00	0.00	1	no	-	LoadQueueUncache	0	0		1	0	no
+memblock/loadqueueuncache_structs.svh	.svh	224	0	0	0	0.00	0.00	1	no	-	LoadQueueUncache	0	0		1	0	no
+memblock/loadqueueuncache_subinst.svh	.svh	1433	0	0	0	0.00	0.00	1	no	-	LoadQueueUncache	0	0		1	0	no
+memblock/loadunit_pkg.sv	.sv	285	112	0	0	0.00	0.00	2	no	-	LoadUnit	0	0	0.0000	2	0	no
+memblock/lsq_pkg.sv	.sv	81	8	0	0	0.00	0.00	1	no	-	LsqWrapper	0	0	0.0000	1	0	no
+memblock/mainpipe_pkg.sv	.sv	346	80	0	0	0.00	0.00	1	no	-	MainPipe	0	0	0.0000	1	0	no
+memblock/memblock_bb_stub.sv	.sv	7772	0	0	0	0.00	0.00	0	yes	AtomicsUnit;DCacheWrapper;L1Prefetcher;L2TLBWrapper;LoadMisalignBuffer;LoadUnit;LsqWrapper;MemExeUnit	-	0	0		1	34	no
+memblock/memblock_inst.svh	.svh	21567	8342	32	216	0.15	1.00	1	no	-	MemBlock	8342	950	0.1139	1	0	no
+memblock/memblock_logic.svh	.svh	1777	1734	12	78	0.68	4.39	1	no	-	MemBlock	1734	1511	0.8714	1	0	no
+memblock/memblock_nets.svh	.svh	5783	470	36	157	0.62	2.71	1	no	-	MemBlock	470	408	0.8681	1	0	no
+memblock/memblock_perf_out.svh	.svh	10	8	0	0	0.00	0.00	1	no	-	MemBlock	0	0	0.0000	1	0	no
+memblock/memblock_perf_src.svh	.svh	10	8	0	0	0.00	0.00	1	no	-	MemBlock	0	0	0.0000	1	0	no
+memblock/memblock_pkg.sv	.sv	80	7	0	0	0.00	0.00	1	no	-	MemBlock	0	0	0.0000	1	0	no
+memblock/memblock_ports.svh	.svh	1348	0	0	0	0.00	0.00	1	no	-	MemBlock	0	0		1	0	no
+memblock/memblock_stub.sv	.sv	8370	0	0	0	0.00	0.00	0	yes	AtomicsUnit;DCacheWrapper;DelayNWithValid_2;DelayNWithValid_200;DelayNWithValid_202;DelayNWithValid_203;DelayNWithValid_3;DelayN_332	-	0	0		1	49	no
+memblock/missqueue_acq_arb.svh	.svh	63	37	0	0	0.00	0.00	1	no	-	MissQueue	0	0	0.0000	1	0	no
+memblock/missqueue_btot_occupy.svh	.svh	46	19	0	0	0.00	0.00	1	no	-	MissQueue	0	0	0.0000	1	0	no
+memblock/missqueue_entry_inst.svh	.svh	172	1	0	0	0.00	0.00	1	no	-	MissQueue	0	0	0.0000	1	0	no
+memblock/missqueue_forward.svh	.svh	95	51	0	0	0.00	0.00	1	no	-	MissQueue	1	1	0.0196	1	0	no
+memblock/missqueue_pkg.sv	.sv	153	25	0	0	0.00	0.00	1	no	-	MissQueue	0	0	0.0000	1	0	no
+memblock/missqueue_ports.svh	.svh	205	0	0	0	0.00	0.00	1	no	-	MissQueue	0	0		1	0	no
+memblock/missqueue_subinst.svh	.svh	199	0	0	0	0.00	0.00	1	no	-	MissQueue	0	0		1	0	no
+memblock/pipeline_pkg.sv	.sv	20	0	0	0	0.00	0.00	1	no	-	Pipeline	0	0		1	0	no
+memblock/pipeline_queue_blackbox.sv	.sv	22	1	0	0	0.00	0.00	0	yes	Queue1_L1PrefetchReq	-	0	0	0.0000	1	1	no
+memblock/pmp_pkg.sv	.sv	143	22	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+memblock/probequeue_pkg.sv	.sv	83	9	0	0	0.00	0.00	1	no	-	ProbeQueue	0	0	0.0000	1	0	no
+memblock/ptw_pkg.sv	.sv	297	110	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+memblock/ptwcache_perf.svh	.svh	40	15	0	0	0.00	0.00	1	no	-	PtwCache	0	0	0.0000	1	0	no
+memblock/ptwcache_pipe.svh	.svh	131	54	0	0	0.00	0.00	1	no	-	PtwCache	0	0	0.0000	1	0	no
+memblock/ptwcache_pkg.sv	.sv	734	195	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+memblock/ptwcache_query.svh	.svh	352	173	0	0	0.00	0.00	1	no	-	PtwCache	1	1	0.0058	1	0	no
+memblock/ptwcache_refill.svh	.svh	288	125	0	0	0.00	0.00	1	no	-	PtwCache	4	4	0.0320	1	0	no
+memblock/ptwcache_resp.svh	.svh	129	73	0	0	0.00	0.00	1	no	-	PtwCache	0	0	0.0000	1	0	no
+memblock/ptwcache_sfence.svh	.svh	249	113	0	0	0.00	0.00	1	no	-	PtwCache	0	0	0.0000	1	0	no
+memblock/ptwrepeaternb_pkg.sv	.sv	56	0	0	0	0.00	0.00	0	yes	-	-	0	0		1	0	no
+memblock/sbuffer_pkg.sv	.sv	175	33	0	0	0.00	0.00	1	no	-	Sbuffer	0	0	0.0000	1	0	no
+memblock/sq_blackbox.sv	.sv	673	0	0	0	0.00	0.00	0	yes	SQDataModule;SQAddrModule;SQAddrModule_1;DatamoduleResultBuffer;StoreExceptionBuffer	-	0	0		1	5	no
+memblock/storemisalignbuffer_pkg.sv	.sv	85	21	0	0	0.00	0.00	1	no	-	StoreMisalignBuffer	0	0	0.0000	1	0	no
+memblock/storepfwrapper_pkg.sv	.sv	31	2	0	0	0.00	0.00	2	no	-	StorePfWrapper	0	0	0.0000	1	0	no
+memblock/storepipe_pkg.sv	.sv	56	4	0	0	0.00	0.00	1	no	-	StorePipe	0	0	0.0000	1	0	no
+memblock/storequeue_body.svh	.svh	804	308	0	0	0.00	0.00	1	no	-	StoreQueue	4	4	0.0130	1	0	no
+memblock/storequeue_deq.svh	.svh	274	136	0	0	0.00	0.00	1	no	-	StoreQueue	2	2	0.0147	1	0	no
+memblock/storequeue_ebdecl.svh	.svh	96	0	0	0	0.00	0.00	1	no	-	StoreQueue	0	0		1	0	no
+memblock/storequeue_forward_out.svh	.svh	119	117	0	0	0.00	0.00	1	no	-	StoreQueue	0	0	0.0000	1	0	no
+memblock/storequeue_perf.svh	.svh	31	11	0	0	0.00	0.00	1	no	-	StoreQueue	0	0	0.0000	1	0	no
+memblock/storequeue_pkg.sv	.sv	256	69	0	0	0.00	0.00	1	no	-	StoreQueue	0	0	0.0000	1	0	no
+memblock/storequeue_ports.svh	.svh	824	0	0	0	0.00	0.00	1	no	-	StoreQueue	0	0		1	0	no
+memblock/storequeue_rdyvec.svh	.svh	114	112	0	0	0.00	0.00	1	no	-	StoreQueue	0	0	0.0000	1	0	no
+memblock/storequeue_regupd.svh	.svh	232	133	0	0	0.00	0.00	1	no	-	StoreQueue	4	4	0.0301	1	0	no
+memblock/storequeue_subinst.svh	.svh	668	0	0	0	0.00	0.00	1	no	-	StoreQueue	0	0		1	0	no
+memblock/storequeue_vec.svh	.svh	207	132	0	0	0.00	0.00	1	no	-	StoreQueue	1	1	0.0076	1	0	no
+memblock/storeunit_pkg.sv	.sv	217	60	0	0	0.00	0.00	1	no	-	StoreUnit	0	0	0.0000	1	0	no
+memblock/tlbfa_pkg.sv	.sv	288	94	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+memblock/tlbnonblock1_pkg.sv	.sv	62	19	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+memblock/tlbnonblock2_pkg.sv	.sv	53	11	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+memblock/tlbnonblock_pkg.sv	.sv	115	24	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+memblock/tlbstoragewrapper_pkg.sv	.sv	155	39	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+memblock/tlbuffer13_pkg.sv	.sv	119	0	0	0	0.00	0.00	2	no	-	TLBuffer_13	0	0		2	0	no
+memblock/tlbuffer13_queue_blackbox.sv	.sv	129	5	0	0	0.00	0.00	0	yes	Queue2_TLBundleA_19;Queue2_TLBundleB_1;Queue2_TLBundleC_1;Queue2_TLBundleD_20;Queue2_TLBundleE_1	-	0	0	0.0000	1	5	no
+memblock/tlbuffer15_pkg.sv	.sv	48	2	0	0	0.00	0.00	1	no	-	TLBuffer_15	0	0	0.0000	1	0	no
+memblock/tlbuffer15_queue_blackbox.sv	.sv	55	2	0	0	0.00	0.00	0	yes	Queue2_TLBundleA_12;Queue2_TLBundleD_13	-	0	0	0.0000	1	2	no
+memblock/tlbuffer20_pkg.sv	.sv	48	2	0	0	0.00	0.00	1	no	-	TLBuffer_20	0	0	0.0000	1	0	no
+memblock/tlbuffer20_queue_blackbox.sv	.sv	55	2	0	0	0.00	0.00	0	yes	Queue2_TLBundleA_10;Queue2_TLBundleD_11	-	0	0	0.0000	1	2	no
+memblock/tlbuffer22_pkg.sv	.sv	50	2	0	0	0.00	0.00	1	no	-	TLBuffer_22	0	0	0.0000	1	0	no
+memblock/tlbuffer22_queue_blackbox.sv	.sv	59	2	0	0	0.00	0.00	0	yes	Queue2_TLBundleA_31;Queue2_TLBundleD_11	-	0	0	0.0000	1	2	no
+memblock/tlbuffer2_pkg.sv	.sv	45	2	0	0	0.00	0.00	1	no	-	TLBuffer_2	0	0	0.0000	1	0	no
+memblock/tlbuffer2_queue_blackbox.sv	.sv	55	2	0	0	0.00	0.00	0	yes	Queue2_TLBundleA_2;Queue2_TLBundleD_3	-	0	0	0.0000	1	2	no
+memblock/tlbuffer6_pkg.sv	.sv	49	2	0	0	0.00	0.00	1	no	-	TLBuffer_6	0	0	0.0000	1	0	no
+memblock/tlbuffer6_queue_blackbox.sv	.sv	57	2	0	0	0.00	0.00	0	yes	Queue2_TLBundleA_6;Queue2_TLBundleD_7	-	0	0	0.0000	1	2	no
+memblock/tlbuffer7_pkg.sv	.sv	91	5	0	0	0.00	0.00	1	no	-	TLBuffer_7	0	0	0.0000	1	0	no
+memblock/tlbuffer7_queue_blackbox.sv	.sv	131	5	0	0	0.00	0.00	0	yes	Queue2_TLBundleA_7;Queue2_TLBundleD_8;Queue2_TLBundleB;Queue2_TLBundleC;Queue2_TLBundleE	-	0	0	0.0000	1	5	no
+memblock/tlbuffer8_pkg.sv	.sv	50	2	0	0	0.00	0.00	1	no	-	TLBuffer_8	0	0	0.0000	1	0	no
+memblock/tlbuffer8_queue_blackbox.sv	.sv	59	2	0	0	0.00	0.00	0	yes	Queue2_TLBundleA_14;Queue2_TLBundleD_15	-	0	0	0.0000	1	2	no
+memblock/tlbuffer9_pkg.sv	.sv	48	2	0	0	0.00	0.00	1	no	-	TLBuffer_9	0	0	0.0000	1	0	no
+memblock/tlbuffer9_queue_blackbox.sv	.sv	55	2	0	0	0.00	0.00	0	yes	Queue2_TLBundleA_15;Queue2_TLBundleD_15	-	0	0	0.0000	1	2	no
+memblock/tlbuffer_pkg.sv	.sv	53	1	0	0	0.00	0.00	1	no	-	TLBuffer	0	0	0.0000	1	0	no
+memblock/tlbuffer_queue_blackbox.sv	.sv	69	2	0	0	0.00	0.00	0	yes	Queue2_TLBundleA;Queue2_TLBundleD	-	0	0	0.0000	1	2	no
+memblock/uncache_pkg.sv	.sv	197	40	0	0	0.00	0.00	1	no	-	Uncache	0	0	0.0000	1	0	no
+memblock/vfofbuffer_pkg.sv	.sv	11	3	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+memblock/virtualloadqueue_pkg.sv	.sv	158	27	0	0	0.00	0.00	1	no	-	VirtualLoadQueue	0	0	0.0000	1	0	no
+memblock/vlmergebuffer_pkg.sv	.sv	55	3	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+memblock/vlsplitimp_pkg.sv	.sv	7	3	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+memblock/vsegmentunit_pkg.sv	.sv	19	0	0	0	0.00	0.00	0	yes	-	-	0	0		1	0	no
+memblock/vsmergebuffer_pkg.sv	.sv	58	3	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+memblock/vssplitimp_pkg.sv	.sv	7	3	0	0	0.00	0.00	0	yes	-	-	0	0	0.0000	1	0	no
+memblock/writebackqueue_pkg.sv	.sv	146	30	0	0	0.00	0.00	1	no	-	WritebackQueue	0	0	0.0000	1	0	no
+memblock/xs_tlbuffer13_bank.sv	.sv	234	48	0	0	0.00	0.00	0	yes	xs_TLBuffer_13_bank	-	0	0	0.0000	1	0	no
+uncore/AXI4Deinterleaver.sv	.sv	274	79	0	0	0.00	0.00	0	yes	xs_AXI4Deinterleaver_core	AXI4Deinterleaver	8	1	0.0127	1	0	no
+uncore/AXI4Deinterleaver_wrapper.sv	.sv	144	0	0	0	0.00	0.00	0	yes	AXI4Deinterleaver	AXI4Deinterleaver	0	0		1	0	no
+uncore/AXI4IdIndexer.sv	.sv	265	73	0	0	0.00	0.00	0	yes	xs_AXI4IdIndexer_core;xs_AXI4IdIndexer_1_core	AXI4IdIndexer;AXI4IdIndexer_1	11	2	0.0274	1	0	no
+uncore/AXI4IdIndexer_1_wrapper.sv	.sv	162	0	0	0	0.00	0.00	0	yes	AXI4IdIndexer_1	AXI4IdIndexer;AXI4IdIndexer_1	0	0		1	0	no
+uncore/AXI4IdIndexer_wrapper.sv	.sv	142	0	0	0	0.00	0.00	0	yes	AXI4IdIndexer	AXI4IdIndexer;AXI4IdIndexer_1	0	0		1	0	no
+uncore/AXI4Xbar.sv	.sv	540	161	0	0	0.00	0.00	0	yes	xs_AXI4Xbar_core	AXI4Xbar	1	1	0.0062	1	0	no
+uncore/AXI4Xbar_1.sv	.sv	581	162	0	3	0.00	0.52	0	yes	xs_AXI4Xbar_1_core	AXI4Xbar_1	3	1	0.0062	1	0	no
+uncore/AXI4Xbar_1_wrapper.sv	.sv	446	0	0	0	0.00	0.00	0	yes	AXI4Xbar_1	AXI4Xbar_1	0	0		1	0	no
+uncore/AXI4Xbar_wrapper.sv	.sv	246	0	0	0	0.00	0.00	0	yes	AXI4Xbar	AXI4Xbar	0	0		1	0	no
+uncore/CHILogger.sv	.sv	112	32	0	0	0.00	0.00	0	yes	xs_CHILogger_core	CHILogger	32	0	0.0000	1	0	no
+uncore/CHILogger_wrapper.sv	.sv	134	0	0	0	0.00	0.00	0	yes	CHILogger	CHILogger	0	0		1	0	no
+uncore/CLINT.sv	.sv	160	37	0	0	0.00	0.00	0	yes	xs_CLINT_core	CLINT	2	1	0.0270	1	0	no
+uncore/CLINT_wrapper.sv	.sv	48	0	0	0	0.00	0.00	0	yes	CLINT	CLINT	0	0		1	0	no
+uncore/DebugModule.sv	.sv	271	34	0	0	0.00	0.00	0	yes	xs_DebugModule_core	DebugModule	32	1	0.0294	1	0	no
+uncore/DebugModule_wrapper.sv	.sv	104	0	0	0	0.00	0.00	0	yes	DebugModule	DebugModule	0	0		1	0	no
+uncore/Decoupled2LCredit.sv	.sv	141	47	0	0	0.00	0.00	0	yes	xs_Decoupled2LCredit_core	Decoupled2LCredit	34	7	0.1489	1	0	no
+uncore/Decoupled2LCredit_1.sv	.sv	88	31	0	0	0.00	0.00	0	yes	xs_Decoupled2LCredit_1_core	Decoupled2LCredit_1	18	7	0.2258	1	0	no
+uncore/Decoupled2LCredit_1_wrapper.sv	.sv	50	0	0	0	0.00	0.00	0	yes	Decoupled2LCredit_1	Decoupled2LCredit_1	0	0		1	0	no
+uncore/Decoupled2LCredit_2.sv	.sv	106	40	0	0	0.00	0.00	0	yes	xs_Decoupled2LCredit_2_core	Decoupled2LCredit_2	27	7	0.1750	1	0	no
+uncore/Decoupled2LCredit_2_wrapper.sv	.sv	68	0	0	0	0.00	0.00	0	yes	Decoupled2LCredit_2	Decoupled2LCredit_2	0	0		1	0	no
+uncore/Decoupled2LCredit_5.sv	.sv	90	32	0	0	0.00	0.00	0	yes	xs_Decoupled2LCredit_5_core	Decoupled2LCredit_5	19	7	0.2188	1	0	no
+uncore/Decoupled2LCredit_5_wrapper.sv	.sv	52	0	0	0	0.00	0.00	0	yes	Decoupled2LCredit_5	Decoupled2LCredit_5	0	0		1	0	no
+uncore/Decoupled2LCredit_wrapper.sv	.sv	82	0	0	0	0.00	0.00	0	yes	Decoupled2LCredit	Decoupled2LCredit	0	0		1	0	no
+uncore/Directory.sv	.sv	544	219	0	0	0.00	0.00	0	yes	xs_Directory_core	Directory	28	27	0.1233	1	0	no
+uncore/Directory_1_wrapper.sv	.sv	1460	2	0	0	0.00	0.00	0	yes	Directory_1	Directory_1	2	0	0.0000	1	0	no
+uncore/Directory_2_wrapper.sv	.sv	1460	2	0	0	0.00	0.00	0	yes	Directory_2	Directory_2	2	0	0.0000	1	0	no
+uncore/Directory_3_wrapper.sv	.sv	1460	2	0	0	0.00	0.00	0	yes	Directory_3	Directory_3	2	0	0.0000	1	0	no
+uncore/Directory_wrapper.sv	.sv	1460	2	0	0	0.00	0.00	0	yes	Directory	Directory	2	0	0.0000	1	0	no
+uncore/FastArbiter_1.sv	.sv	122	38	0	0	0.00	0.00	0	yes	xs_FastArbiter_1_core	FastArbiter_1	7	7	0.1842	1	0	no
+uncore/FastArbiter_1_wrapper.sv	.sv	90	0	0	0	0.00	0.00	0	yes	FastArbiter_1	FastArbiter_1	0	0		1	0	no
+uncore/FastArbiter_2.sv	.sv	98	29	0	0	0.00	0.00	0	yes	xs_FastArbiter_2_core	FastArbiter_2	7	7	0.2414	1	0	no
+uncore/FastArbiter_27.sv	.sv	176	53	0	0	0.00	0.00	0	yes	xs_FastArbiter_27_core	FastArbiter_27	6	6	0.1132	1	0	no
+uncore/FastArbiter_27_wrapper.sv	.sv	152	0	0	0	0.00	0.00	0	yes	FastArbiter_27	FastArbiter_27	0	0		1	0	no
+uncore/FastArbiter_28.sv	.sv	238	66	0	0	0.00	0.00	0	yes	xs_FastArbiter_28_core	FastArbiter_28	8	8	0.1212	1	0	no
+uncore/FastArbiter_28_wrapper.sv	.sv	238	0	0	0	0.00	0.00	0	yes	FastArbiter_28	FastArbiter_28	0	0		1	0	no
+uncore/FastArbiter_29.sv	.sv	350	160	0	0	0.00	0.00	0	yes	xs_FastArbiter_29_core	FastArbiter_29	146	76	0.4750	1	0	no
+uncore/FastArbiter_29_wrapper.sv	.sv	300	0	0	0	0.00	0.00	0	yes	FastArbiter_29	FastArbiter_29	0	0		1	0	no
+uncore/FastArbiter_2_wrapper.sv	.sv	40	0	0	0	0.00	0.00	0	yes	FastArbiter_2	FastArbiter_2	0	0		1	0	no
+uncore/FastArbiter_30.sv	.sv	151	46	0	0	0.00	0.00	0	yes	xs_FastArbiter_30_core	FastArbiter_30	0	0	0.0000	1	0	no
+uncore/FastArbiter_30_wrapper.sv	.sv	126	0	0	0	0.00	0.00	0	yes	FastArbiter_30	FastArbiter_30	0	0		1	0	no
+uncore/FastArbiter_31.sv	.sv	116	32	0	0	0.00	0.00	0	yes	xs_FastArbiter_31_core	FastArbiter_31	0	0	0.0000	1	0	no
+uncore/FastArbiter_31_wrapper.sv	.sv	98	0	0	0	0.00	0.00	0	yes	FastArbiter_31	FastArbiter_31	0	0		1	0	no
+uncore/FastArbiter_36.sv	.sv	38	8	0	0	0.00	0.00	0	yes	xs_FastArbiter_36_core	FastArbiter_36	0	0	0.0000	1	0	no
+uncore/FastArbiter_36_wrapper.sv	.sv	26	0	0	0	0.00	0.00	0	yes	FastArbiter_36	FastArbiter_36	0	0		1	0	no
+uncore/FastArbiter_44.sv	.sv	125	40	0	0	0.00	0.00	0	yes	xs_FastArbiter_44_core	FastArbiter_44	2	2	0.0500	1	0	no
+uncore/FastArbiter_44_wrapper.sv	.sv	94	0	0	0	0.00	0.00	0	yes	FastArbiter_44	FastArbiter_44	0	0		1	0	no
+uncore/FastArbiter_46.sv	.sv	165	49	0	0	0.00	0.00	0	yes	xs_FastArbiter_46_core	FastArbiter_46	2	2	0.0408	1	0	no
+uncore/FastArbiter_46_wrapper.sv	.sv	144	0	0	0	0.00	0.00	0	yes	FastArbiter_46	FastArbiter_46	0	0		1	0	no
+uncore/FastArbiter_47.sv	.sv	195	60	0	0	0.00	0.00	0	yes	xs_FastArbiter_47_core	FastArbiter_47	2	2	0.0333	1	0	no
+uncore/FastArbiter_47_wrapper.sv	.sv	174	0	0	0	0.00	0.00	0	yes	FastArbiter_47	FastArbiter_47	0	0		1	0	no
+uncore/FastArbiter_77.sv	.sv	134	34	0	0	0.00	0.00	0	yes	xs_FastArbiter_77_core	FastArbiter_77	7	7	0.2059	1	0	no
+uncore/FastArbiter_77_wrapper.sv	.sv	104	0	0	0	0.00	0.00	0	yes	FastArbiter_77	FastArbiter_77	0	0		1	0	no
+uncore/FastArbiter_78.sv	.sv	129	33	0	0	0.00	0.00	0	yes	xs_FastArbiter_78_core	FastArbiter_78	7	7	0.2121	1	0	no
+uncore/FastArbiter_78_wrapper.sv	.sv	98	0	0	0	0.00	0.00	0	yes	FastArbiter_78	FastArbiter_78	0	0		1	0	no
+uncore/FastArbiter_79.sv	.sv	174	42	0	0	0.00	0.00	0	yes	xs_FastArbiter_79_core	FastArbiter_79	7	7	0.1667	1	0	no
+uncore/FastArbiter_79_wrapper.sv	.sv	152	0	0	0	0.00	0.00	0	yes	FastArbiter_79	FastArbiter_79	0	0		1	0	no
+uncore/GrantBuffer.sv	.sv	561	267	0	0	0.00	0.00	0	yes	xs_GrantBuffer_core	GrantBuffer	3	3	0.0112	1	0	no
+uncore/GrantBuffer_wrapper.sv	.sv	544	4	0	0	0.00	0.00	0	yes	GrantBuffer	GrantBuffer	0	0	0.0000	1	0	no
+uncore/IMSIC.sv	.sv	252	43	0	0	0.00	0.00	0	yes	xs_IMSIC_core	IMSIC	6	5	0.1163	1	0	no
+uncore/IMSICGateWay.sv	.sv	86	14	0	0	0.00	0.00	0	yes	xs_IMSICGateWay_core	IMSICGateWay	2	1	0.0714	1	0	no
+uncore/IMSICGateWay_wrapper.sv	.sv	18	0	0	0	0.00	0.00	0	yes	IMSICGateWay	IMSICGateWay	0	0		1	0	no
+uncore/IMSIC_wrapper.sv	.sv	50	0	0	0	0.00	0.00	0	yes	IMSIC	IMSIC	0	0		1	0	no
+uncore/IntBuffer.sv	.sv	44	5	0	0	0.00	0.00	0	yes	xs_IntBuffer_core;IntBuffer	IntBuffer	4	3	0.6000	1	0	no
+uncore/L2DataStorage.sv	.sv	178	53	0	0	0.00	0.00	0	yes	xs_L2DataStorage_core	L2DataStorage	2	1	0.0189	1	0	no
+uncore/L2DataStorage_wrapper.sv	.sv	192	0	0	0	0.00	0.00	0	yes	L2DataStorage	L2DataStorage	0	0		1	0	no
+uncore/L2Directory.sv	.sv	215	74	0	0	0.00	0.00	0	yes	xs_L2Directory_core	L2Directory	2	1	0.0135	1	0	no
+uncore/L2Directory_1_wrapper.sv	.sv	173	0	0	0	0.00	0.00	0	yes	L2Directory_1	L2Directory_1	0	0		1	0	no
+uncore/L2Directory_2_wrapper.sv	.sv	173	0	0	0	0.00	0.00	0	yes	L2Directory_2	L2Directory_2	0	0		1	0	no
+uncore/L2Directory_3_wrapper.sv	.sv	173	0	0	0	0.00	0.00	0	yes	L2Directory_3	L2Directory_3	0	0		1	0	no
+uncore/L2Directory_var_core.sv	.sv	222	82	0	0	0.00	0.00	0	yes	xs_L2Directory_var_core	-	0	0	0.0000	1	0	no
+uncore/L2Directory_wrapper.sv	.sv	172	0	0	0	0.00	0.00	0	yes	L2Directory	L2Directory	0	0		1	0	no
+uncore/L2Slice.sv	.sv	145	28	0	0	0.00	0.00	0	yes	xs_L2Slice_core	L2Slice	3	2	0.0714	1	0	no
+uncore/L2SliceN.sv	.sv	158	29	0	0	0.00	0.00	0	yes	xs_L2SliceN_core	-	0	0	0.0000	1	0	no
+uncore/L2Slice_1_wrapper.sv	.sv	79	2	0	0	0.00	0.00	0	yes	L2Slice_1	L2Slice_1	0	0	0.0000	1	0	no
+uncore/L2Slice_2_wrapper.sv	.sv	79	2	0	0	0.00	0.00	0	yes	L2Slice_2	L2Slice_2	0	0	0.0000	1	0	no
+uncore/L2Slice_3_wrapper.sv	.sv	79	2	0	0	0.00	0.00	0	yes	L2Slice_3	L2Slice_3	0	0	0.0000	1	0	no
+uncore/L2Slice_wrapper.sv	.sv	76	0	0	0	0.00	0.00	0	yes	L2Slice	L2Slice	0	0		1	0	no
+uncore/LCredit2Decoupled.sv	.sv	132	16	0	0	0.00	0.00	0	yes	xs_LCredit2Decoupled_core	LCredit2Decoupled	5	5	0.3125	1	0	no
+uncore/LCredit2Decoupled_1.sv	.sv	96	28	0	0	0.00	0.00	0	yes	xs_LCredit2Decoupled_1_core	LCredit2Decoupled_1	9	9	0.3214	1	0	no
+uncore/LCredit2Decoupled_10.sv	.sv	138	16	0	0	0.00	0.00	0	yes	xs_LCredit2Decoupled_10_core	LCredit2Decoupled_10	5	5	0.3125	1	0	no
+uncore/LCredit2Decoupled_10_wrapper.sv	.sv	68	0	0	0	0.00	0.00	0	yes	LCredit2Decoupled_10	LCredit2Decoupled_10	0	0		1	0	no
+uncore/LCredit2Decoupled_1_wrapper.sv	.sv	50	0	0	0	0.00	0.00	0	yes	LCredit2Decoupled_1	LCredit2Decoupled_1	0	0		1	0	no
+uncore/LCredit2Decoupled_8.sv	.sv	157	16	0	0	0.00	0.00	0	yes	xs_LCredit2Decoupled_8_core	LCredit2Decoupled_8	5	5	0.3125	1	0	no
+uncore/LCredit2Decoupled_8_wrapper.sv	.sv	80	0	0	0	0.00	0.00	0	yes	LCredit2Decoupled_8	LCredit2Decoupled_8	0	0		1	0	no
+uncore/LCredit2Decoupled_wrapper.sv	.sv	52	0	0	0	0.00	0.00	0	yes	LCredit2Decoupled	LCredit2Decoupled	0	0		1	0	no
+uncore/LevelGateway.sv	.sv	44	5	0	0	0.00	0.00	0	yes	xs_LevelGateway_core	LevelGateway	2	2	0.4000	1	0	no
+uncore/LevelGateway_wrapper.sv	.sv	18	0	0	0	0.00	0.00	0	yes	LevelGateway	LevelGateway	0	0		1	0	no
+uncore/LinkMonitor.sv	.sv	482	34	0	0	0.00	0.00	0	yes	xs_LinkMonitor_core	LinkMonitor	1	1	0.0294	1	0	no
+uncore/LinkMonitor_wrapper.sv	.sv	320	0	0	0	0.00	0.00	0	yes	LinkMonitor	LinkMonitor	0	0		1	0	no
+uncore/MSHR.sv	.sv	354	2	0	0	0.00	0.00	0	yes	xs_MSHR_core	MSHR	0	0	0.0000	1	0	no
+uncore/MSHRCtl.sv	.sv	5222	1823	0	0	0.00	0.00	0	yes	xs_MSHRCtl_core	MSHRCtl	12	1	0.0005	1	0	no
+uncore/MSHRCtl_wrapper.sv	.sv	2008	0	0	0	0.00	0.00	0	yes	MSHRCtl	MSHRCtl	0	0		1	0	no
+uncore/MSHRSelector.sv	.sv	71	19	0	0	0.00	0.00	0	yes	xs_MSHRSelector_core	MSHRSelector	0	0	0.0000	1	0	no
+uncore/MSHRSelector_wrapper.sv	.sv	38	0	0	0	0.00	0.00	0	yes	MSHRSelector	MSHRSelector	0	0		1	0	no
+uncore/MSHR_wrapper.sv	.sv	564	0	0	0	0.00	0.00	0	yes	MSHR	MSHR	0	0		1	0	no
+uncore/MainPipe_1.sv	.sv	2425	1267	0	0	0.00	0.00	0	yes	xs_MainPipe_core	MainPipe	1	1	0.0008	1	0	no
+uncore/MainPipe_1_wrapper.sv	.sv	1056	0	0	0	0.00	0.00	0	yes	MainPipe_1	MainPipe_1	0	0		1	0	no
+uncore/MaxPeriodFibonacciLFSR_3.sv	.sv	36	18	0	0	0.00	0.00	0	yes	MaxPeriodFibonacciLFSR_3	MaxPeriodFibonacciLFSR_3	0	0	0.0000	1	0	no
+uncore/PLICFanIn.sv	.sv	98	23	0	0	0.00	0.00	0	yes	xs_PLICFanIn_core	PLICFanIn	0	0	0.0000	1	0	no
+uncore/PLICFanIn_wrapper.sv	.sv	82	1	0	0	0.00	0.00	0	yes	PLICFanIn	PLICFanIn	0	0	0.0000	1	0	no
+uncore/Queue1_PrefetchTrain.sv	.sv	67	23	0	0	0.00	0.00	0	yes	xs_Queue1_PrefetchTrain_core	Queue1_PrefetchTrain	15	8	0.3478	1	0	no
+uncore/RNXbar.sv	.sv	1148	306	0	0	0.00	0.00	0	yes	xs_RNXbar_core	RNXbar	38	38	0.1242	1	0	no
+uncore/RNXbar_wrapper.sv	.sv	704	0	0	0	0.00	0.00	0	yes	RNXbar	RNXbar	0	0		1	0	no
+uncore/RRArbiterInit_11.sv	.sv	179	66	0	0	0.00	0.00	0	yes	xs_RRArbiterInit_11_core	RRArbiterInit_11	2	2	0.0303	1	0	no
+uncore/RRArbiterInit_11_wrapper.sv	.sv	179	0	0	0	0.00	0.00	0	yes	RRArbiterInit_11	RRArbiterInit_11	0	0		1	0	no
+uncore/RRArbiterInit_18.sv	.sv	419	166	0	0	0.00	0.00	0	yes	xs_RRArbiterInit_18_core	RRArbiterInit_18	2	2	0.0120	1	0	no
+uncore/RRArbiterInit_18_wrapper.sv	.sv	356	0	0	0	0.00	0.00	0	yes	RRArbiterInit_18	RRArbiterInit_18	0	0		1	0	no
+uncore/RXDAT.sv	.sv	94	18	0	0	0.00	0.00	0	yes	xs_RXDAT_core	RXDAT	2	1	0.0556	1	0	no
+uncore/RXDAT_4.sv	.sv	40	7	0	0	0.00	0.00	0	yes	xs_RXDAT_4_core	RXDAT_4	1	0	0.0000	1	0	no
+uncore/RXDAT_4_wrapper.sv	.sv	34	0	0	0	0.00	0.00	0	yes	RXDAT_4	RXDAT_4	0	0		1	0	no
+uncore/RXDAT_wrapper.sv	.sv	64	0	0	0	0.00	0.00	0	yes	RXDAT	RXDAT	0	0		1	0	no
+uncore/RXREQ.sv	.sv	104	25	0	0	0.00	0.00	0	yes	xs_RXREQ_core	RXREQ	7	3	0.1200	1	0	no
+uncore/RXREQ_wrapper.sv	.sv	86	0	0	0	0.00	0.00	0	yes	RXREQ	RXREQ	0	0		1	0	no
+uncore/RXRSP.sv	.sv	48	9	0	0	0.00	0.00	0	yes	xs_RXRSP_core	RXRSP	1	1	0.1111	1	0	no
+uncore/RXRSP_4.sv	.sv	34	5	0	0	0.00	0.00	0	yes	xs_RXRSP_4_core	RXRSP_4	1	1	0.2000	1	0	no
+uncore/RXRSP_4_wrapper.sv	.sv	26	0	0	0	0.00	0.00	0	yes	RXRSP_4	RXRSP_4	0	0		1	0	no
+uncore/RXRSP_wrapper.sv	.sv	42	0	0	0	0.00	0.00	0	yes	RXRSP	RXRSP	0	0		1	0	no
+uncore/RXSNP.sv	.sv	756	109	0	0	0.00	0.00	0	yes	xs_RXSNP_core	RXSNP	8	8	0.0734	1	0	no
+uncore/RXSNP_wrapper.sv	.sv	926	0	0	0	0.00	0.00	0	yes	RXSNP	RXSNP	0	0		1	0	no
+uncore/ReceiverLinkMonitor.sv	.sv	391	18	0	0	0.00	0.00	0	yes	xs_ReceiverLinkMonitor_core	ReceiverLinkMonitor	11	7	0.3889	1	0	no
+uncore/ReceiverLinkMonitor_wrapper.sv	.sv	323	0	0	0	0.00	0.00	0	yes	ReceiverLinkMonitor	ReceiverLinkMonitor	0	0		1	0	no
+uncore/RequestArb.sv	.sv	2091	1152	0	0	0.00	0.00	0	yes	xs_RequestArb_core	RequestArb	188	93	0.0807	1	0	no
+uncore/RequestArb_wrapper.sv	.sv	1835	0	0	0	0.00	0.00	0	yes	RequestArb	RequestArb	0	0		1	0	no
+uncore/ResetGen.sv	.sv	45	5	0	0	0.00	0.00	0	yes	xs_ResetGen_core;ResetGen	ResetGen	4	4	0.8000	1	0	no
+uncore/SNXbar.sv	.sv	678	212	0	0	0.00	0.00	0	yes	xs_SNXbar_core	SNXbar	0	0	0.0000	1	0	no
+uncore/SNXbar_wrapper.sv	.sv	444	0	0	0	0.00	0.00	0	yes	SNXbar	SNXbar	0	0		1	0	no
+uncore/SRAMTemplate_197.sv	.sv	66	14	0	0	0.00	0.00	0	yes	SRAMTemplate_197	SRAMTemplate_197	0	0	0.0000	1	0	no
+uncore/SRAMTemplate_198.sv	.sv	64	14	0	0	0.00	0.00	0	yes	SRAMTemplate_198	SRAMTemplate_198	0	0	0.0000	1	0	no
+uncore/SRAMTemplate_199.sv	.sv	77	18	0	0	0.00	0.00	0	yes	SRAMTemplate_199	SRAMTemplate_199	1	1	0.0556	1	0	no
+uncore/SRAMTemplate_200.sv	.sv	77	18	0	0	0.00	0.00	0	yes	SRAMTemplate_200	SRAMTemplate_200	1	1	0.0556	1	0	no
+uncore/SRAMTemplate_201.sv	.sv	41	6	0	0	0.00	0.00	0	yes	SRAMTemplate_201	SRAMTemplate_201	1	1	0.1667	1	0	no
+uncore/SinkA.sv	.sv	98	21	0	0	0.00	0.00	0	yes	xs_SinkA_core	SinkA	7	7	0.3333	1	0	no
+uncore/SinkA_wrapper.sv	.sv	84	0	0	0	0.00	0.00	0	yes	SinkA	SinkA	0	0		1	0	no
+uncore/SinkC.sv	.sv	931	295	0	0	0.00	0.00	0	yes	xs_SinkC_core	SinkC	9	6	0.0203	1	0	no
+uncore/SinkC_wrapper.sv	.sv	382	0	0	0	0.00	0.00	0	yes	SinkC	SinkC	0	0		1	0	no
+uncore/SourceB.sv	.sv	185	72	0	0	0.00	0.00	0	yes	xs_SourceB_core	SourceB	1	1	0.0139	1	0	no
+uncore/SourceB_wrapper.sv	.sv	209	2	0	0	0.00	0.00	0	yes	SourceB	SourceB	0	0	0.0000	1	0	no
+uncore/SubDirectory.sv	.sv	265	93	0	0	0.00	0.00	0	yes	xs_SubDirectory_core	SubDirectory	9	9	0.0968	1	0	no
+uncore/SubDirectory_1.sv	.sv	328	146	0	0	0.00	0.00	0	yes	xs_SubDirectory_1_core	SubDirectory_1	51	42	0.2877	1	0	no
+uncore/SubDirectory_1_wrapper.sv	.sv	303	0	0	0	0.00	0.00	0	yes	SubDirectory_1	SubDirectory_1	0	0		1	0	no
+uncore/SubDirectory_wrapper.sv	.sv	203	0	0	0	0.00	0.00	0	yes	SubDirectory	SubDirectory	0	0		1	0	no
+uncore/TLLogger.sv	.sv	172	53	0	0	0.00	0.00	0	yes	xs_TLLogger_core	TLLogger	53	0	0.0000	1	0	no
+uncore/TLLogger_wrapper.sv	.sv	218	0	0	0	0.00	0.00	0	yes	TLLogger	TLLogger	0	0		1	0	no
+uncore/TLPLIC.sv	.sv	416	109	0	0	0.00	0.00	0	yes	xs_TLPLIC_core	TLPLIC	1	1	0.0092	1	0	no
+uncore/TLPLIC_wrapper.sv	.sv	115	3	0	0	0.00	0.00	0	yes	TLPLIC	TLPLIC	0	0	0.0000	1	0	no
+uncore/TLXbar_1.sv	.sv	521	219	0	0	0.00	0.00	0	yes	xs_TLXbar_1_core	TLXbar_1	6	6	0.0274	1	0	no
+uncore/TLXbar_1_wrapper.sv	.sv	214	0	0	0	0.00	0.00	0	yes	TLXbar_1	TLXbar_1	0	0		1	0	no
+uncore/TLXbar_2.sv	.sv	343	112	0	0	0.00	0.00	0	yes	xs_TLXbar_2_core	TLXbar_2	7	1	0.0089	1	0	no
+uncore/TLXbar_2_wrapper.sv	.sv	202	0	0	0	0.00	0.00	0	yes	TLXbar_2	TLXbar_2	0	0		1	0	no
+uncore/TLXbar_3.sv	.sv	200	57	0	0	0.00	0.00	0	yes	xs_TLXbar_3_core	TLXbar_3	3	1	0.0175	1	0	no
+uncore/TLXbar_3_wrapper.sv	.sv	66	0	0	0	0.00	0.00	0	yes	TLXbar_3	TLXbar_3	0	0		1	0	no
+uncore/TLXbar_4.sv	.sv	264	84	0	0	0.00	0.00	0	yes	xs_TLXbar_4_core	TLXbar_4	7	2	0.0238	1	0	no
+uncore/TLXbar_4_wrapper.sv	.sv	138	0	0	0	0.00	0.00	0	yes	TLXbar_4	TLXbar_4	0	0		1	0	no
+uncore/TLXbar_6.sv	.sv	459	186	0	0	0.00	0.00	0	yes	xs_TLXbar_6_core	TLXbar_6	6	6	0.0323	1	0	no
+uncore/TLXbar_6_wrapper.sv	.sv	216	0	0	0	0.00	0.00	0	yes	TLXbar_6	TLXbar_6	0	0		1	0	no
+uncore/TXDAT.sv	.sv	416	57	0	0	0.00	0.00	0	yes	xs_TXDAT_core	TXDAT	9	3	0.0526	1	0	no
+uncore/TXDAT_4.sv	.sv	139	44	0	0	0.00	0.00	0	yes	xs_TXDAT_4_core	TXDAT_4	5	5	0.1136	1	0	no
+uncore/TXDAT_4_wrapper.sv	.sv	62	0	0	0	0.00	0.00	0	yes	TXDAT_4	TXDAT_4	0	0		1	0	no
+uncore/TXDAT_wrapper.sv	.sv	276	0	0	0	0.00	0.00	0	yes	TXDAT	TXDAT	0	0		1	0	no
+uncore/TXREQ.sv	.sv	185	4	0	0	0.00	0.00	0	yes	xs_TXREQ_core	TXREQ	0	0	0.0000	1	0	no
+uncore/TXREQ_4.sv	.sv	76	17	0	0	0.00	0.00	0	yes	xs_TXREQ_4_core	TXREQ_4	3	0	0.0000	1	0	no
+uncore/TXREQ_4_wrapper.sv	.sv	78	0	0	0	0.00	0.00	0	yes	TXREQ_4	TXREQ_4	0	0		1	0	no
+uncore/TXREQ_wrapper.sv	.sv	154	0	0	0	0.00	0.00	0	yes	TXREQ	TXREQ	0	0		1	0	no
+uncore/TXRSP.sv	.sv	151	8	0	0	0.00	0.00	0	yes	xs_TXRSP_core	TXRSP	0	0	0.0000	1	0	no
+uncore/TXRSP_4.sv	.sv	52	10	0	0	0.00	0.00	0	yes	xs_TXRSP_4_core	TXRSP_4	3	0	0.0000	1	0	no
+uncore/TXRSP_4_wrapper.sv	.sv	46	0	0	0	0.00	0.00	0	yes	TXRSP_4	TXRSP_4	0	0		1	0	no
+uncore/TXRSP_wrapper.sv	.sv	110	0	0	0	0.00	0.00	0	yes	TXRSP	TXRSP	0	0		1	0	no
+uncore/TXSNP.sv	.sv	59	10	0	0	0.00	0.00	0	yes	xs_TXSNP_core	TXSNP	3	0	0.0000	1	0	no
+uncore/TXSNP_wrapper.sv	.sv	50	0	0	0	0.00	0.00	0	yes	TXSNP	TXSNP	0	0		1	0	no
+uncore/TransmitterLinkMonitor.sv	.sv	390	17	0	0	0.00	0.00	0	yes	xs_TransmitterLinkMonitor_core	TransmitterLinkMonitor	10	6	0.3529	1	0	no
+uncore/TransmitterLinkMonitor_wrapper.sv	.sv	325	0	0	0	0.00	0.00	0	yes	TransmitterLinkMonitor	TransmitterLinkMonitor	0	0		1	0	no
+uncore/axi4deint_pkg.sv	.sv	45	0	0	0	0.00	0.00	1	no	-	AXI4Deinterleaver	0	0		1	0	no
+uncore/axi4xbar1_pkg.sv	.sv	121	29	0	0	0.00	0.00	1	no	-	AXI4Xbar_1	0	0	0.0000	1	0	no
+uncore/axi4xbar_pkg.sv	.sv	84	10	0	0	0.00	0.00	1	no	-	AXI4Xbar	0	0	0.0000	1	0	no
+uncore/clint_pkg.sv	.sv	38	0	0	0	0.00	0.00	1	no	-	CLINT	0	0		1	0	no
+uncore/debug_pkg.sv	.sv	56	6	0	0	0.00	0.00	1	no	-	DebugModule	0	0	0.0000	1	0	no
+uncore/directory_pkg.sv	.sv	34	0	0	0	0.00	0.00	1	no	-	Directory	0	0		1	0	no
+uncore/fastarbiter_pkg.sv	.sv	74	13	0	0	0.00	0.00	4	no	-	FastArbiter_27;FastArbiter_44;FastArbiter_46;FastArbiter_47	0	0	0.0000	4	0	no
+uncore/imsic_pkg.sv	.sv	33	0	0	0	0.00	0.00	2	no	-	IMSIC;IMSICGateWay	0	0		2	0	no
+uncore/l2_task_pkg.sv	.sv	108	3	0	0	0.00	0.00	4	no	-	GrantBuffer;MainPipe;RequestArb	1	1	0.3333	3	0	no
+uncore/linkmonitor_pkg.sv	.sv	59	12	0	0	0.00	0.00	3	no	-	LinkMonitor;ReceiverLinkMonitor;TransmitterLinkMonitor	0	0	0.0000	3	0	no
+uncore/mbist_pipe_ctrl.sv	.sv	133	44	0	0	0.00	0.00	0	yes	xs_mbist_pipe_ctrl	-	0	0	0.0000	1	0	no
+uncore/mbist_pipe_pkg.sv	.sv	56	0	0	0	0.00	0.00	6	no	-	L2DataStorage;L2Directory;L2Slice	0	0		6	0	no
+uncore/mshr_core.svh	.svh	324	40	0	0	0.00	0.00	1	no	-	MSHR	5	4	0.1000	1	0	no
+uncore/mshr_mainpipe.svh	.svh	285	222	0	0	0.00	0.00	1	no	-	MSHR	66	60	0.2703	1	0	no
+uncore/mshr_outputs.svh	.svh	104	78	0	0	0.00	0.00	1	no	-	MSHR	17	5	0.0641	1	0	no
+uncore/mshr_pkg.sv	.sv	221	47	0	0	0.00	0.00	1	no	-	MSHR	0	0	0.0000	1	0	no
+uncore/mshr_seq.svh	.svh	537	320	0	0	0.00	0.00	1	no	-	MSHR	26	26	0.0813	1	0	no
+uncore/mshrselector_pkg.sv	.sv	31	0	0	0	0.00	0.00	1	no	-	MSHRSelector	0	0		1	0	no
+uncore/plic_pkg.sv	.sv	68	1	0	0	0.00	0.00	2	no	-	PLICFanIn;TLPLIC	0	0	0.0000	2	0	no
+uncore/rnxbar_pkg.sv	.sv	172	8	0	0	0.00	0.00	1	no	-	RNXbar	0	0	0.0000	1	0	no
+uncore/sinkc_pkg.sv	.sv	40	6	0	0	0.00	0.00	1	no	-	SinkC	0	0	0.0000	1	0	no
+uncore/snxbar_pkg.sv	.sv	105	6	0	0	0.00	0.00	1	no	-	SNXbar	0	0	0.0000	1	0	no
+uncore/subdirectory1_pkg.sv	.sv	40	0	0	0	0.00	0.00	1	no	-	SubDirectory_1	0	0		1	0	no
+uncore/subdirectory_pkg.sv	.sv	39	0	0	0	0.00	0.00	1	no	-	SubDirectory	0	0		1	0	no
+uncore/tlxbar1_pkg.sv	.sv	183	64	0	0	0.00	0.00	1	no	-	TLXbar_1	0	0	0.0000	1	0	no
+uncore/tlxbar2_pkg.sv	.sv	58	7	0	0	0.00	0.00	1	no	-	TLXbar_2	0	0	0.0000	1	0	no
+uncore/tlxbar3_pkg.sv	.sv	51	4	0	0	0.00	0.00	1	no	-	TLXbar_3	0	0	0.0000	1	0	no
+uncore/tlxbar4_pkg.sv	.sv	63	4	0	0	0.00	0.00	1	no	-	TLXbar_4	0	0	0.0000	1	0	no
+uncore/tlxbar6_pkg.sv	.sv	98	5	0	0	0.00	0.00	1	no	-	TLXbar_6	0	0	0.0000	1	0	no
+xscore/XSCore.sv	.sv	73	6	0	0	0.00	0.00	0	yes	xs_XSCore_core	XSCore	1	1	0.1667	1	0	yes
+xscore/XSCore_wrapper.sv	.sv	582	0	0	0	0.00	0.00	0	yes	XSCore	XSCore	0	0		1	0	no
+xscore/xscore_blackbox_stubs.sv	.sv	7456	2469	0	0	0.00	0.00	0	yes	Backend;Frontend;MemBlock	-	0	0	0.0000	1	3	no
+xscore/xscore_decls.svh	.svh	2348	0	0	0	0.00	0.00	1	no	-	XSCore	0	0		1	0	no
+xscore/xscore_inst.svh	.svh	4982	0	0	0	0.00	0.00	1	no	-	XSCore	0	0		1	0	no
+xscore/xscore_outassign.svh	.svh	7	2	0	0	0.00	0.00	1	no	-	XSCore	1	0	0.0000	1	0	no
+xscore/xscore_pkg.sv	.sv	49	0	0	0	0.00	0.00	1	no	-	XSCore	0	0		1	0	no
+xscore/xscore_ports.svh	.svh	289	0	0	0	0.00	0.00	1	no	-	XSCore	0	0		1	0	no
+xstile/XSTile.sv	.sv	62	4	0	0	0.00	0.00	0	yes	xs_XSTile_core	XSTile	0	0	0.0000	1	0	yes
+xstile/XSTile_wrapper.sv	.sv	176	0	0	0	0.00	0.00	0	yes	XSTile	XSTile	0	0		1	0	no
+xstile/xstile_blackbox_stubs.sv	.sv	971	312	0	0	0.00	0.00	0	yes	IntBuffer;L2Top;XSCore	-	0	0	0.0000	1	3	no
+xstile/xstile_decls.svh	.svh	281	0	0	0	0.00	0.00	1	no	-	XSTile	0	0		1	0	no
+xstile/xstile_inst.svh	.svh	654	0	0	0	0.00	0.00	1	no	-	XSTile	0	0		1	0	no
+xstile/xstile_outassign.svh	.svh	6	2	0	0	0.00	0.00	1	no	-	XSTile	2	0	0.0000	1	0	no
+xstile/xstile_pkg.sv	.sv	49	0	0	0	0.00	0.00	1	no	-	XSTile	0	0		1	0	no
+xstile/xstile_ports.svh	.svh	86	0	0	0	0.00	0.00	1	no	-	XSTile	0	0		1	0	no
+xstop/XSTop.sv	.sv	63	5	0	0	0.00	0.00	0	yes	xs_XSTop_core	XSTop	0	0	0.0000	1	0	yes
+xstop/XSTop_wrapper.sv	.sv	264	0	0	0	0.00	0.00	0	yes	XSTop	XSTop	0	0		1	0	no
+xstop/xstop_blackbox_stubs.sv	.sv	1509	469	0	0	0.00	0.00	0	yes	CHILogger;FastArbiter_77;FastArbiter_78;FastArbiter_79;IntBuffer;MemMisc;OpenLLC;OpenNCB	-	0	0	0.0000	1	13	no
+xstop/xstop_decls.svh	.svh	520	0	0	0	0.00	0.00	1	no	-	XSTop	0	0		1	0	no
+xstop/xstop_glue.svh	.svh	31	0	0	0	0.00	0.00	1	no	-	XSTop	0	0		1	0	no
+xstop/xstop_inst.svh	.svh	1313	0	0	0	0.00	0.00	1	no	-	XSTop	0	0		1	0	no
+xstop/xstop_outassign.svh	.svh	9	4	0	0	0.00	0.00	1	no	-	XSTop	0	0	0.0000	1	0	no
+xstop/xstop_pkg.sv	.sv	42	0	0	0	0.00	0.00	1	no	-	XSTop	0	0		1	0	no
+xstop/xstop_ports.svh	.svh	132	0	0	0	0.00	0.00	1	no	-	XSTop	0	0		1	0	no
