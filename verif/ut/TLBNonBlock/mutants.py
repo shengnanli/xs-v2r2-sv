@@ -24,6 +24,12 @@
   · E2 是另一类：**不是逻辑等价**，而是 UT 结构上看不见（复位域），由 FM 兜底。
     tb 的 reset 拉满整拍，异步复位与同步复位在 UT 里同行为。它也不计入抓取率，
     但它有归属：`--fm` 模式把同一条打给 FM，要求 FM 判不等价。
+  · MISS_STIM（M2 / M8 / M9）是第三类：**立项时按 CATCH 写，被实测推翻**。
+    它们既不是等价、也不是"UT 结构上看不见"，而是**这套激励区分不出来**
+    （20k 与 200k 两轮都 errors=0，两个数都在各自条目里记着）。
+    每条都写清了"为什么这套激励碰不到"以及"要抓它得把激励改成什么样"，
+    并在 `--fm` 里有对应的 F3/F4/F5 —— 它们不是等价变异，所以 FM 必须判不等价。
+    ★这一类不许悄悄删掉，也不许改成 EQUIV★：改成 EQUIV 就是把"没测到"说成"不用测"。
 
   三条防"读到上一轮结果"的构造：
   1) 每个变异体在 neg_build/ 里**重新编译**，跑之前先删本轮日志；
@@ -36,6 +42,7 @@
     python3 mutants.py --fm             # FM 侧负测（只有 FM 看得见的复位域变异）
     python3 mutants.py --compile-only   # 只查锚点唯一性与可编译
 """
+import json
 import pathlib
 import re
 import shutil
@@ -67,8 +74,8 @@ MUTANTS = [
      "    tm[0]      = k.s1_n ? (k.s1_tag[VPNN_W-1-SECT_W : NAPOT_W-SECT_W] == vpn[VPNN_W-1:NAPOT_W])",
      "    tm[0]      = k.s1_n ? (k.s1_tag[SECT_W+1:1] == vpn[VPNN_W-1:NAPOT_W])"),
 
-    ('CATCH', VAR_BASE,
-     'M2 level_match 在 level==1 时少比一段 vpnn（超页命中范围被放大）',
+    ('MISS_STIM', VAR_BASE,
+     'M2 level_match 在 level==1 时少比一段 vpnn（超页命中范围被放大）。★立项按 CATCH 写，被实测推翻（20k 与 200k 两轮都 errors=0）★。原因是激励的区分度不够、不是拍数不够：tm[1] 比的是 vpn[17:9]，而 vpn 池是 8 个**互相独立的随机 38 位数**，两条不同的 vpn 在 [37:18] 上相同的概率约 2^-20 —— 也就是说 level==1 时去掉 tm[1]，命中判定的结果几乎永远不变。要抓它得把 vpn 池改成**近邻**（高位段相同、只差某一段低位）。归 FM，见 --fm 的 F3',
      "         : (level == 2'h1) ? (tm[3] & tm[2] & tm[1])",
      "         : (level == 2'h1) ? (tm[3] & tm[2])"),
 
@@ -99,22 +106,18 @@ MUTANTS = [
      "              & ((ptw_just_back[i] | ptw_already_back[i] | need_replay[i])",
      "              & ((ptw_just_back[i] | ptw_already_back[i])"),
 
-    ('CATCH', VAR_BASE,
-     'M8 need_gpa 状态机把 clear_gpa / want_gpa 的优先级对调（golden 是 clear 先）',
+    ('MISS_STIM', VAR_BASE,
+     'M8 need_gpa 状态机把 clear_gpa / want_gpa 的优先级对调（golden 是 clear 先）。★立项按 CATCH 写，被实测推翻（20k 与 200k 两轮都 errors=0）★。clear_gpa 与 want_gpa 同拍为真才有区别：clear_gpa 的三项里，need_gpa_robidx_valid 与 need_gpa 基本同进同出，而 want_gpa 要求 ~need_gpa。唯一的缝是 second_clear 只清 need_gpa 不清 need_gpa_robidx_valid —— 随机激励 200k 拍没撞上。**不是等价**（那条缝真实存在），所以归 FM，见 --fm 的 F4',
      "      if (clear_gpa[i]) begin",
      "      if (clear_gpa[i] & ~want_gpa[i]) begin"),
 
-    ('CATCH', VAR_BASE,
-     'M9 entries 回填去掉 ~need_gpa_wire（本拍刚抢到 need_gpa 的那条也照写不误）',
+    ('MISS_STIM', VAR_BASE,
+     'M9 entries 回填去掉 ~need_gpa_wire（本拍刚抢到 need_gpa 的那条也照写不误）。★立项按 CATCH 写，被实测推翻（20k 与 200k 两轮都 errors=0）★。要 need_gpa_wire 与一次可回填的 ptw_resp 同拍：need_gpa_wire 实测 200k 拍只出现 183 次，还要同时满足 ~get_gpa & ~need_gpa & ~flush_mmu 且这次多写的表项后来真的被查到。**不是等价**，只是概率太低，归 FM，见 --fm 的 F5',
      "  assign stor_w_valid = ptw_resp_valid & ~ptw_resp.get_gpa & ~need_gpa & ~need_gpa_wire\n"
      "                        & ~flush_mmu;",
      "  assign stor_w_valid = ptw_resp_valid & ~ptw_resp.get_gpa & ~need_gpa\n"
      "                        & ~flush_mmu;"),
 
-    ('CATCH', VAR_BASE,
-     'M10 PMP 地址忽略 no_translate（请求方直接给的物理地址被译出来的盖掉）',
-     "    assign pmp_addr[i]  = no_translate_r[i] ? req_pmp_addr[i] : resp_paddr[i][0];",
-     "    assign pmp_addr[i]  = resp_paddr[i][0];"),
 
     ('CATCH', VAR_BASE,
      'M11 PMP 特权模式去掉 is_prefetch 项（预取请求被按 hypervisor 的 spvp 降级）',
@@ -144,13 +147,32 @@ MUTANTS = [
      "      always_comb req_out_hlvx[i] = 1'b0;",
      "      always_comb req_out_hlvx[i] = 1'b1;"),
 
-    ('CATCH', VAR_BASE,
-     'M16 逐 lane mask 用错下标（HAS_PRE_EXCP 取 lane0 那一位当全体）—— 模拟'
-     '"掩码接线接错"这一类错误',
+    ('MISS_FM', VAR_2,
+     'M16 逐 lane mask 用错下标（HAS_PRE_EXCP 取 lane0 那一位当全体）。'
+     '★这条被自己的实测改过两次，过程比结论有用★：'
+     '(1) 一开始放在 base 上按 CATCH 写 —— base 的 HAS_PRE_EXCP 全是 1，[i] 与 [0] 恒等，'
+     '    纯空变异，errors=0；'
+     '(2) 挪到 _2（HAS_PRE_EXCP=2b01，lane1 那一位会翻）后仍然 errors=0。查清楚了：'
+     '    _2 的 lane1 没有 checkfullva 输入（wrapper 灌 0），于是 va_checking[1] 恒 0、'
+     '    pre_fault[1] 恒 0 —— 多出来的那组寄存器**值恒为 0**，对输出没有任何影响。'
+     '所以它不是功能差异，而是 **compare point 集合**的差异：native FM 也看不见'
+     '（failing 恒 0），只有 validator 的 strict unmatched 看得见。'
+     '这正是本轮那 18 个 impl-only 点的形状，归 FM 的 F6。',
      "    if (HAS_PRE_EXCP[i]) begin : g_pre_excp",
      "    if (HAS_PRE_EXCP[0]) begin : g_pre_excp"),
 
-    # ---- 下面两条不计入抓取率，理由见文件头 ----
+    # ---- 下面几条不计入抓取率，理由逐条写在自己身上 ----
+    ('EQUIV', VAR_BASE,
+     'E0 PMP 地址那个 no_translate 三目运算去掉 —— ★立项时按 CATCH 写，被实测推翻，'
+     '查完发现是 golden 自己的恒等冗余★：port_xlate_en 里有 `& ~use_req_s1_paddr`，'
+     '而 use_req_s1_paddr 与 no_translate_r 是 golden 写了两遍的同值寄存器。'
+     '于是 no_translate_r=1 时 port_xlate_en 必为 0，resp_paddr[0] 走 not_xlate_paddr，'
+     '而 not_xlate_paddr 在 use_req_s1_paddr=1 时正好就是 req_pmp_addr —— 两边恒等。'
+     'UT 与 FM 都不该报，实测 UT errors=0。',
+     "    assign pmp_addr[i]  = no_translate_r[i] ? req_pmp_addr[i] : resp_paddr[i][0];",
+     "    assign pmp_addr[i]  = resp_paddr[i][0];"),
+
+
     ('EQUIV', VAR_1,
      'E1 = M7 打在变体 _1 上：_1 的 HAS_TLBREPLAY=0，整条 tlbreplay 锥体被 generate '
      '关掉（golden TLBNonBlock_1 没有 io_tlbreplay_* 端口）—— 文本变了电路没变，'
@@ -169,7 +191,10 @@ MUTANTS = [
      "      need_gpa              <= 1'b0;"),
 ]
 
-# FM 侧负测：(说明, 锚点, 替换, 期望 FM 判不等价)
+# FM 侧负测：(说明, 锚点, 替换, 期望被抓, 判据种类)
+#   判据种类 'failing'   —— FM 必须判不等价（native FAILED 或 failing>0）
+#   判据种类 'unmatched' —— 只改 compare point 集合，native 看不见，
+#                           要看 sidecar 的 unmatched.compare_impl > 0
 FM_MUTANTS = [
     ('F1 need_gpa 复位域：异步改同步（★UT 结构上看不见，归 FM★，对应 UT 表的 E2）',
      "  always_ff @(posedge clock or posedge reset) begin\n"
@@ -178,12 +203,38 @@ FM_MUTANTS = [
      "  always_ff @(posedge clock) begin\n"
      "    if (reset) begin\n"
      "      need_gpa              <= 1'b0;",
-     True),
+     True, 'failing'),
 
     ('F2 s1_hit 的 NAPOT tag 切片少一位（正对照：UT 抓得到的，FM 也必须抓到）',
      "    tm[0]      = k.s1_n ? (k.s1_tag[VPNN_W-1-SECT_W : NAPOT_W-SECT_W] == vpn[VPNN_W-1:NAPOT_W])",
      "    tm[0]      = k.s1_n ? (k.s1_tag[SECT_W+1:1] == vpn[VPNN_W-1:NAPOT_W])",
-     True),
+     True, 'failing'),
+
+    # 下面三条是 UT 表里的 MISS_STIM：UT 的激励区分不出来（已实测到 200k），
+    # 它们不是等价变异，所以**必须**由 FM 兜住。这三条就是那句"归 FM"的兑现。
+    ('F3 = UT 的 M2（level_match 在 level==1 时少比一段 vpnn）',
+     "         : (level == 2'h1) ? (tm[3] & tm[2] & tm[1])",
+     "         : (level == 2'h1) ? (tm[3] & tm[2])",
+     True, 'failing'),
+
+    ('F4 = UT 的 M8（need_gpa 状态机 clear_gpa / want_gpa 优先级对调）',
+     "      if (clear_gpa[i]) begin",
+     "      if (clear_gpa[i] & ~want_gpa[i]) begin",
+     True, 'failing'),
+
+    ('F5 = UT 的 M9（entries 回填去掉 ~need_gpa_wire）',
+     "  assign stor_w_valid = ptw_resp_valid & ~ptw_resp.get_gpa & ~need_gpa & ~need_gpa_wire\n"
+     "                        & ~flush_mmu;",
+     "  assign stor_w_valid = ptw_resp_valid & ~ptw_resp.get_gpa & ~need_gpa\n"
+     "                        & ~flush_mmu;",
+     True, 'failing'),
+
+    # F6 与上面五条不是同一类：它只改 compare point 集合，不改功能。
+    # native FM 的 failing 恒 0，所以判据必须看 unmatched.compare_impl。
+    ('F6 = UT 的 M16（HAS_PRE_EXCP 取错下标，_2 的 lane1 多出一组恒 0 的寄存器）',
+     "    if (HAS_PRE_EXCP[i]) begin : g_pre_excp",
+     "    if (HAS_PRE_EXCP[0]) begin : g_pre_excp",
+     True, 'unmatched'),
 ]
 
 
@@ -233,24 +284,40 @@ def run_ut(variant, ncycles=NCYCLES):
             r.returncode, '')
 
 
-def run_fm():
-    """在 neg_build 里跑一次 FM，返回 (native_verdict, failing 数)。"""
+def run_fm(top=None):
+    """在 neg_build 里跑一次 FM，返回 (native_verdict, failing 数, impl-only 比较点数)。
+
+    ★为什么要第三个数★：有一类变异（M16/F6）只改 **compare point 集合**、不改功能 ——
+    native FM 的 failing 恒 0，看 native 会以为"没抓到"。真正看得见它的是
+    sidecar 里的 unmatched.compare_impl（validator 的 strict 判据就读这个）。
+    """
+    top = top or FM_TOP
     ut = BUILD / 'verif' / 'ut' / MODULE
-    log = ut / 'fm_work' / FM_TOP / 'fm.log'
+    log = ut / 'fm_work' / top / 'fm.log'
+    nf = ut / 'fm_work' / top / 'sidecar' / 'native_facts.json'
     if log.exists():
         log.unlink()
-    subprocess.run(['make', 'fm-' + FM_TOP], cwd=str(ut),
+    if nf.exists():
+        nf.unlink()
+    subprocess.run(['make', 'fm-' + top], cwd=str(ut),
                    stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                    universal_newlines=True)
     if not log.exists():
-        return (None, None)
+        return (None, None, None)
     txt = log.read_text(errors='replace')
     # ★判据钉在行首★：fm_shell 把入口 Tcl 逐行回显进 fm.log，裸子串 "SUCCEEDED" /
     # "FAILED" 在任何一次跑里都能同时命中（脚本自己的 puts 里两种都写着）。
     m = re.search(r'^Verification (SUCCEEDED|FAILED|INCONCLUSIVE)', txt, re.M)
     mf = re.search(r'^Failing \(not equivalent\)((?:\s+\d+){8})\s*$', txt, re.M)
+    unm = None
+    if nf.exists():
+        try:
+            unm = json.load(open(str(nf)))['unmatched']['compare_impl']
+        except Exception:
+            unm = None
     return (m.group(1) if m else None,
-            int(mf.group(1).split()[-1]) if mf else None)
+            int(mf.group(1).split()[-1]) if mf else None,
+            unm)
 
 
 def baseline(variant=VAR_BASE):
@@ -310,23 +377,26 @@ def main():
 
     if '--fm' in args:
         print('=== FM 基线（未变异，top=%s）===' % FM_TOP)
-        v, f = run_fm()
-        print('    native=%s failing=%s' % (v, f))
-        if v != 'SUCCEEDED' or f != 0:
+        v, f, u = run_fm()
+        print('    native=%s failing=%s unmatched_impl=%s' % (v, f, u))
+        if v != 'SUCCEEDED' or f != 0 or u not in (0, None):
             print('FM 基线就不干净，负测无意义')
             return 2
         bad = []
-        for name, old, new, expect_fail in FM_MUTANTS:
+        for name, old, new, expect_fail, kind in FM_MUTANTS:
             restore()
             if not apply_mutant(tgt, base_text, old, new):
-                print('!! %-76s ★锚点不唯一/文本未变★' % name[:76])
+                print('!! %-70s ★锚点不唯一/文本未变★' % name[:70])
                 bad.append(name)
                 continue
-            v, f = run_fm()
-            ok = (v != 'SUCCEEDED' or (f or 0) > 0) if expect_fail else \
-                 (v == 'SUCCEEDED' and f == 0)
-            print('  %-76s native=%-12s failing=%-5s %s'
-                  % (name[:76], v, f, 'OK' if ok else '★不符预期★'))
+            v, f, u = run_fm()
+            if kind == 'unmatched':
+                hit = (u or 0) > 0
+            else:
+                hit = (v != 'SUCCEEDED' or (f or 0) > 0)
+            ok = hit if expect_fail else not hit
+            print('  %-70s native=%-11s failing=%-5s unmatched_impl=%-5s %s'
+                  % (name[:70], v, f, u, 'OK' if ok else '★不符预期★'))
             if not ok:
                 bad.append(name)
         restore()
@@ -357,13 +427,17 @@ def main():
         if expect == 'CATCH':
             ok = res[1] > 0
             tag = 'CAUGHT' if ok else '★MISSED★'
+        elif expect == 'MISS_STIM':
+            ok = res[1] == 0
+            tag = ('MISS_STIM-ok（UT 的激励区分不出来，已实测到 200k；不是等价，归 FM）' if ok
+                   else '★居然报了 —— 说明"UT 抓不到"这条结论过期了，把它改回 CATCH★')
         elif expect == 'EQUIV':
             ok = res[1] == 0
             tag = ('EQUIV-ok（空变异，电路没变，不计抓取率）' if ok
                    else '★居然报了 —— 说明这条"等价"的理由是错的★')
         else:
             ok = res[1] == 0
-            tag = ('MISS_FM-ok（UT 看不见，归 FM；见 --fm 的 F1）' if ok
+            tag = ('MISS_FM-ok（UT 看不见，归 FM；见 --fm 的 F1 / F6）' if ok
                    else '★居然报了 —— 说明这条注释是错的★')
         print('  [%-7s %-5s] %-62s errors=%-9d %s'
               % (expect, MODULE + (('_' + variant) if variant else ''), name[:62],
@@ -377,9 +451,15 @@ def main():
             print('   ', x)
         return 1
     ncatch = sum(1 for e, *_ in MUTANTS if e == 'CATCH')
-    print('=== MUTANTS PASSED：%d/%d 条符合预期（抓取率 %d/%d；另有 %d 条不计入：'
-          'EQUIV 空变异 + MISS_FM 归 FM）==='
-          % (len(MUTANTS), len(MUTANTS), ncatch, ncatch, len(MUTANTS) - ncatch))
+    nstim = sum(1 for e, *_ in MUTANTS if e == 'MISS_STIM')
+    nequiv = sum(1 for e, *_ in MUTANTS if e == 'EQUIV')
+    nfm = sum(1 for e, *_ in MUTANTS if e == 'MISS_FM')
+    print('=== MUTANTS PASSED：%d/%d 条与声明相符 ==='
+          % (len(MUTANTS), len(MUTANTS)))
+    print('    UT 抓取率 %d/%d（CATCH 全部 errors>0）' % (ncatch, ncatch))
+    print('    不计入抓取率：EQUIV %d 条（已证空变异）/ MISS_FM %d 条（UT 结构上看不见）'
+          ' / MISS_STIM %d 条（激励区分不出来，已实测到 200k，归 FM 的 F3/F4/F5）'
+          % (nequiv, nfm, nstim))
     return 0
 
 

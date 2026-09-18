@@ -127,3 +127,50 @@ assign arr[1] = '0;          // ★毒★ 整个 arr 都不再被 +vcs+initreg �
 
 golden 那边是普通标量 `reg`，照常被初始化成 0，于是表现为 `g=0 / x=X`。
 FM 看不见它（无复位寄存器两侧都是自由变量），**这条只有 UT 抓得到**。
+
+## 判别力负测（`make mutants` / `make mutants-cov` / `make mutants-fm`）
+
+18 条变异全部注入三变体共用的核。本轮实测（60k 拍，seed=1）：
+
+```
+=== MUTANTS PASSED：18/18 条与声明相符 ===
+    UT 抓取率 11/11（CATCH 全部 errors>0）
+    不计入抓取率：EQUIV 2 条 / MISS_FM 2 条 / MISS_STIM 3 条
+=== COV-NEG PASSED：errors=0 但覆盖不全（40 拍，bad_cov=3），闸照样判 FAILED ===
+```
+
+四类的界线是**实测划出来的，不是立项时猜的**，其中 5 条是被自己的实测改过口径的：
+
+| 类 | 条 | 含义 |
+|---|---|---|
+| CATCH | 11 | 真 bug，UT 必须红 |
+| EQUIV | E0 / E1 | **已证空变异**：改了文本、电路没变，UT 与 FM 都不该报 |
+| MISS_FM | E2 / M16 | UT 结构上看不见（复位域 / compare point 集合），归 FM |
+| MISS_STIM | M2 / M8 / M9 | **这套激励区分不出来**（20k 与 200k 两轮都 errors=0），不是等价，归 FM |
+
+几条值得记的：
+
+- **E0** 立项按 CATCH 写，实测 errors=0，查下去发现是 golden 自己的恒等冗余：
+  `port_xlate_en` 里有 `& ~use_req_s1_paddr`，而 `use_req_s1_paddr` 与 `no_translate_r`
+  是 golden 写了两遍的同值寄存器，于是 `pmp_addr` 那个三目运算两边恒等。
+- **M16** 被改过两次：先放 base（HAS_PRE_EXCP 全 1，`[i]` 与 `[0]` 恒等 → 空变异），
+  挪到 `_2` 仍然 errors=0 —— 因为 `_2` 的 lane1 没有 checkfullva 输入，多出来的那组
+  寄存器值恒 0。所以它是 **compare point 集合**的差异：native FM 也看不见
+  （failing 恒 0），只有 validator 的 strict unmatched 看得见 —— 正是本轮那 18 个
+  impl-only 点的形状。`--fm` 的 F6 就按 `unmatched.compare_impl > 0` 判。
+- **M2** 是激励的真实短板：`tm[1]` 比的是 `vpn[17:9]`，而 vpn 池是 8 个互相独立的随机
+  38 位数，两条在 `[37:18]` 上相同的概率约 2^-20 —— level==1 时去掉 `tm[1]`，
+  命中判定几乎永远不变。要抓它得把 vpn 池改成**近邻**（高位段相同、只差某一段低位）。
+  这条留着不删，因为它指的是一个**还没补的洞**，不是一个可以关掉的告警。
+
+## 本轮正式矩阵实测（commit 522c3fe 的字节，3 变体 x 3 seed x 2 initreg x 200k）
+
+18/18 TEST PASSED，errors 全 0、bad_cov 全 0，checks 分别是
+base 18,800,000 / _1 10,800,000 / _2 6,400,000（= 200k 拍 x 每拍比较的输出端口数）。
+逐行结果见提交说明；复跑：
+
+```
+for t in "" 1 2; do for s in 1 7 42; do for ir in 0 random; do
+  make run$t SEED=$s INITREG=$ir NCYCLES=200000
+done; done; done
+```
