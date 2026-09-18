@@ -104,6 +104,17 @@ STIMULUS = r'''
   //  同理 s1/s2 的下标与 payload 寄存器在暖机期内也都被写过至少一次。
   localparam int WARM = 400;
 
+  // ★topdown 的地址池★：topdown 要求「某条 allocated entry 的 debug_vaddr 恰好等于
+  //  robHeadVaddr」才会点亮，如果两边都在 50 位空间里随机，命中概率是 72/2^50 ——
+  //  实测把 vaddr 限到 18 位时 5000 拍只命中 1 次，那条 143 节点的归约树等于没测
+  //  （变异体 M11 就是打这棵树的）。把入队 vaddr 与 robHeadVaddr 抽自同一个小池子，
+  //  命中率提到每拍都可能，同时保留高位比特的多样性（池里的值是稀疏撒开的）。
+  localparam int VA_POOL = 24;
+  function automatic logic [49:0] vaddr_pool(input int k);
+    // 稀疏撒开：低位取 k，高位按 k 摆到不同的位段，保证 50 位里各段都被比较到
+    return {k[4:0], 15'h0, k[4:0], 10'h0, k[4:0], 5'h0, k[4:0]};
+  endfunction
+
   int unsigned NCYCLES = 200000;
   int errors = 0, checks = 0, cyc = 0;
 
@@ -184,7 +195,7 @@ STIMULUS = r'''
         io_enq_0_bits_rep_info_data_inv_sq_idx_value = $urandom_range(0, 63);
         io_enq_0_bits_rep_info_addr_inv_sq_idx_flag  = $urandom_range(0, 1);
         io_enq_0_bits_rep_info_addr_inv_sq_idx_value = $urandom_range(0, 63);
-        io_enq_0_bits_vaddr           = {$urandom, $urandom} & 50'h3FFFF;  // 窄地址空间→topdown 易命中
+        io_enq_0_bits_vaddr           = vaddr_pool($urandom_range(0, VA_POOL-1));  // 窄地址空间→topdown 易命中
         io_enq_0_bits_uop_robIdx_flag = $urandom_range(0, 1);
         io_enq_0_bits_uop_robIdx_value= $urandom_range(0, 255);
         io_enq_0_bits_uop_lqIdx_flag  = $urandom_range(0, 1);
@@ -215,7 +226,7 @@ STIMULUS = r'''
         io_enq_1_bits_rep_info_data_inv_sq_idx_value = $urandom_range(0, 63);
         io_enq_1_bits_rep_info_addr_inv_sq_idx_flag  = $urandom_range(0, 1);
         io_enq_1_bits_rep_info_addr_inv_sq_idx_value = $urandom_range(0, 63);
-        io_enq_1_bits_vaddr           = {$urandom, $urandom} & 50'h3FFFF;
+        io_enq_1_bits_vaddr           = vaddr_pool($urandom_range(0, VA_POOL-1));
         io_enq_1_bits_uop_robIdx_flag = $urandom_range(0, 1);
         io_enq_1_bits_uop_robIdx_value= $urandom_range(0, 255);
         io_enq_1_bits_uop_lqIdx_flag  = $urandom_range(0, 1);
@@ -246,7 +257,7 @@ STIMULUS = r'''
         io_enq_2_bits_rep_info_data_inv_sq_idx_value = $urandom_range(0, 63);
         io_enq_2_bits_rep_info_addr_inv_sq_idx_flag  = $urandom_range(0, 1);
         io_enq_2_bits_rep_info_addr_inv_sq_idx_value = $urandom_range(0, 63);
-        io_enq_2_bits_vaddr           = {$urandom, $urandom} & 50'h3FFFF;
+        io_enq_2_bits_vaddr           = vaddr_pool($urandom_range(0, VA_POOL-1));
         io_enq_2_bits_uop_robIdx_flag = $urandom_range(0, 1);
         io_enq_2_bits_uop_robIdx_value= $urandom_range(0, 255);
         io_enq_2_bits_uop_lqIdx_flag  = $urandom_range(0, 1);
@@ -345,7 +356,7 @@ STIMULUS = r'''
 
     // ---- topdown ----
     io_debugTopDown_robHeadVaddr_valid = ($urandom_range(0, 1) == 0);
-    io_debugTopDown_robHeadVaddr_bits  = {$urandom, $urandom} & 50'h3FFFF;
+    io_debugTopDown_robHeadVaddr_bits  = vaddr_pool($urandom_range(0, VA_POOL-1));
     io_debugTopDown_robHeadMissInDTlb  = $urandom_range(0, 1);
   endtask
 '''
