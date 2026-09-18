@@ -14,8 +14,6 @@
 // 本文件只做端口表与例化，端口逐位抄自 G1 golden 同名模块。
 // 自动生成：verif/ut/UncacheEntry/gen.py —— 勿手改
 // ===========================================================================
-// 本文件导航（共 1250 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
-//
 
 // BEGIN GENERATED(uncentry-wrapper)
 module UncacheEntry_12(

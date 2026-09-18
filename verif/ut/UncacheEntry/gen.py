@@ -929,13 +929,19 @@ def main():
         return 0
     print(f'写出 {len(changed)} / {len(outs)} 个文件')
 
-    # 大文件导航（>1500 行必须带，见 CONVENTIONS.md E 类）
+    # 大文件导航（>1500 行必须带，见 CONVENTIONS.md E 类）。
+    # ★必须自己按行数筛★：gen_file_nav.py 只有在**不给文件名**时才按 --min-lines
+    # 自己挑；显式给了文件名它就无条件插。第一版把 18 个文件全传了进去，于是
+    # 16 个 1250 行的薄 wrapper 各得到一个**空导航块**（只有标题、0 条目）——
+    # 可读性审计的 E 类只管 >1500 行的文件，所以它一声不响，但"写着有导航、
+    # 里面什么都没有"比没有导航更误导人。
+    NAV_MIN_LINES = 1500
     nav = REPO / 'scripts' / 'gen_file_nav.py'
-    if nav.exists():
-        subprocess.run([sys.executable, str(nav)] + [str(p) for p, _ in outs
-                                                    if p.suffix == '.sv'
-                                                    and p.parent == OUT],
-                       check=True)
+    big = [str(p) for p, text in outs
+           if p.suffix == '.sv' and p.parent == OUT
+           and text.count('\n') + 1 > NAV_MIN_LINES]
+    if nav.exists() and big:
+        subprocess.run([sys.executable, str(nav)] + big, check=True)
     return 0
 
 
