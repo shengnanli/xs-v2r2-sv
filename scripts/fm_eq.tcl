@@ -33,7 +33,20 @@ if {[info exists env(FM_SIDECAR_OUT)] && [string trim $env(FM_SIDECAR_OUT)] ne "
 # FM_MODE 门控(2026-07 唯一权威入口, 二审): 证明模式决定允许哪些放宽手段。
 #   signoff-strict(默认): 禁 interface_only(assembly 专用手段); 严格判定交 fm_verdict.py。
 #   assembly: 允许**声明的对称黑盒** FM_INTERFACE_ONLY(仅证本层 glue)。
-#   diagnostic-full: 由 fm_eq_full.tcl 承担(ELAB 降级/放宽上限), 永不签核。
+#   diagnostic-full: 诊断跑, **永不签核**。判定端 fm_verdict.py 对这个 mode
+#     无论数字多好看都不给 SUCCEEDED, 所以它才是"诊断"这件事的真正落点。
+#     在本文件这一侧, 它与 signoff-strict 受**完全相同**的约束(同样拒绝
+#     FM_INTERFACE_ONLY): 诊断性来自 FM_FAILING_LIMIT 这类**增加信息**的旋钮,
+#     不来自任何放宽。
+#     ★2026-09-17 修★ 此前这一行写的是"由 fm_eq_full.tcl 承担(ELAB 降级/放宽上限)",
+#     那是从上轮 xs-v2r2-sv 抄过来的陈述 —— 本仓根本没有 fm_eq_full.tcl,
+#     而 diagnostic-full 又不在下面的 switch 里, 于是 FM_MODE=diagnostic-full
+#     会在读到任何旋钮之前 exit 3。也就是说 b24338e 里我写的那条调用方式
+#     跑不通(Entries canary lane 实测后报的)。现在把它补进 switch。
+#     ★注意这里有个同名不同物的坑★: FM_MODE(本文件, 环境变量)与
+#     fm_verdict.py 的 --mode 是**两套东西**, 词表还差一个。诊断跑的正确姿势是
+#     两边都给 diagnostic-full; 只给判定端也行(FM_MODE 留 signoff-strict),
+#     反正拦住签核的是判定端。
 #   shadow: 同 strict(可读核不驱动输出, 判定归 SHADOW_CHECK)。
 # 诊断能力永不进 signoff: strict 下 FM_INTERFACE_ONLY 非空即报错退出(fail-closed)。
 # ----------------------------------------------------------------------------
@@ -45,7 +58,7 @@ switch -- $_fmmode {
       set_app_var hdlin_interface_only $env(FM_INTERFACE_ONLY)
     }
   }
-  "signoff-strict" - "shadow" {
+  "signoff-strict" - "shadow" - "diagnostic-full" {
     if {[info exists env(FM_INTERFACE_ONLY)] && [string trim $env(FM_INTERFACE_ONLY)] ne ""} {
       puts "FM_MODE_ERROR: $_fmmode 拒绝 FM_INTERFACE_ONLY(assembly 专用手段)"
       exit 3
@@ -57,6 +70,22 @@ switch -- $_fmmode {
   }
 }
 
+# ★vmucp 为什么是"加强"而不是走过场（2026-09-17，四个实测实例）★
+# 一条 lane 的总结，值得放在这里：**vmucp 提升的那些点，恰恰是仿真按构造够不着的点。**
+# 本轮四个实例，每个都是"UT 全绿、FM 一开加强就现形"：
+#
+#   缺陷                              为什么仿真看不见
+#   ---------------------------------  ------------------------------
+#   打拍寄存器被合并成一份              两份值逐位恒等
+#   保留了该变体不存在的 ld1Cancel 项    c1 恒 0
+#   dataSources 用等值比较而非位测试     仅在非法编码 4'b1001..1111 上分歧
+#   Predictor 的 _pc_*_reg[0]          bit 0 架构恒 0（PC 二字节对齐）
+#
+# 前三个来自 Entries canary（那轮 failing 1030 -> 0），第四个是 Predictor 开 vmucp
+# 之后才冒出来的 17 个失败点 —— 关着 vmucp 时它们是 matched-unread、根本不比。
+# 所以"开加强没发现问题"与"开加强发现了问题"都是有意义的结果；
+# **不开加强则这一整类差异在两种验证手段下都不可见。**
+#
 # 寄存器无观测路径（如被 firtool 裁剪的输出对应的 valids）时不作为比对点。
 # 十一审: unread 六元组**显式全量设置**(305 统一冻结执行语义, 不让工具默认代替声明;
 # emitter 于全部 pin/custom Tcl 执行后、verify 前逐项 get_app_var 读回有效值)。
@@ -307,10 +336,55 @@ switch -- $_verify_matched_unread_compare_points {
     #              8149 -> 8182(+33) / 8619 -> 8663(+44) /
     #              8211 -> 8233(+22) / 8207 -> 8229(+22)；
     #          passing 不增即空转，不算过。
-    #          备用配对在 verif/ut/TLBFA/fm_pins.tcl.pending（故意带后缀，
-    #          不会被 $(wildcard fm_pins.tcl) 捡到）——因为 auto_match_flattened_arrays
-    #          读的是 report_unmatched_points 的**默认**报告，而默认报告不含 unread 类，
-    #          万一开了加强 FM 仍不自动配上，就改名启用它。
+    #          ★实测：只开 vmucp 是空转，必须配 verif/ut/TLBFA/fm_pins.tcl★
+    #          白名单落地后先只开 vmucp 跑了一轮（513cda8，官方 runner、receipt 齐全）：
+    #          passing 8149 **一点没增**、unread 仍 33(33)，判定仍 PARTIAL。
+    #          原因是 verify_matched_unread 只作用于 **matched** unread 点，而这 33 个
+    #          FM 自己从没配上过（auto_match_flattened_arrays 读的是
+    #          report_unmatched_points 的**默认**报告，默认报告不含 unread 类）。
+    #          加强没有对象，自然不增。启用 fm_pins.tcl 之后日志里的痕迹是干净的：
+    #          `8149 Compare points matched previously` + `33 Compare points matched by user`。
+    #
+    #   ☆一条通用判断，别只看 TLBFA☆
+    #   申请 vmucp 之前先分清基线里的 unread 点是哪一种：
+    #     · matched_nc（两侧都配上了、都没人读）-> 开 vmucp 就能证，passing 会增
+    #     · unmatched unread（FM 自己配不上）   -> **vmucp 单开必然空转**，
+    #                                             得先用 fm_pins 把它们配起来
+    #   本表里 NCBTransactionQueue{,_1} 与 TLBFA 家族都属于后者，其余多数属于前者。
+    #   分不清就申请，最好的情况是浪费一轮，最坏的情况是把空转读成"加强过了"。
+    #   EntriesAluCsrFenceDiv(2026-09-17 加，canary): 6220 个 unread 点**全部是 matched_nc**
+    #          （unread_points.txt 6220 行逐行核过，未配对未读点为 0 —— FM 连那一行都没打印）。
+    #          构成 = 8 条目（2 enq + 6 simp）× 776 位死负载 + 12 个 enqDelay 影子位。
+    #          ★顺序★：钉点在先、加强在后。本轮先补了 24 个 enqDelay srcLoadDependency
+    #          钉点把 12(12) unmatched unread 打成 0(0)，否则按 TLBFA 的实测
+    #          （unmatched unread 单开 vmucp 必然空转）这一轮会白跑。
+    #          配对按构造：6220/6220 全部是 20308 对钉点的子集，**FM 自行猜配 0 对**；
+    #          钉点由 gen_fm_pins.py 从 golden 实例连线机械提取，不是人工列表。
+    #          ☆一个读数陷阱，lane 查清后才敢写期望值☆：结果表里
+    #          `Constant reg 12` 与 `Unread 6220` 是**两行**、合计 6232，而 vmucp 只清 6220；
+    #          那 12 个常量寄存器留着**不拦 verdict**（fm_verdict.py 的 strict PARTIAL 判据
+    #          只看 unverified/unmatched/aborted/unread 四项）。所以期望值是 +6220 不是 +6232。
+    #          ★复核判据★: passing 18781 -> 25001（正好 +6220）、failing 仍 0、unread 归 0、
+    #          unmatched 保持全零。passing 不增即空转，不算过。
+    #          同族先例见上面的 EntriesVfdivVidiv 条目；本条的数字全部是 canary 自己实测的。
+    #   RenameBuffer(2026-09-17 加): 51 个 unread 点，钉点后全部转成 matched_nc
+    #          (verif/ut/RenameBuffer/fm_pins.tcl，钉前 unmatched unread 51(51)、
+    #          钉后六项 unmatched 全零、matched_unread_notcompared_pairs = 51)。
+    #          ★注意本目标同时开着 FM_MERGE_DUP=false★（Makefile 里有完整依据）——
+    #          那一项把 native FAILED 翻成 SUCCEEDED、passing 651 -> 5825、
+    #          failing 20 -> 0、unverified 5147 -> 0，是本轮最大的一次"加强"。
+    #          51 点分三族，两侧同为死位：
+    #            A  5 点  deqPtrVec_1..5 的 flag —— deqPtrVec **只有 head(0 号) 有读者**
+    #            B 40 点  同上的 value[0..7]        (numValidEntries 与 deqPtrNext 都只取 0 号；
+    #                     提交读口走 deqPtrOH 那个 one-hot 影子寄存器，不看 deqPtrVec)。
+    #                     golden 留着 1..5 是因为 Rab.scala 末尾 dontTouch(deqPtrVec)。
+    #            C  6 点  toVecExcpMod preg 的 bit7 —— 打拍寄存器存 8 位 pdest，
+    #                     而输出端口只有 7 位，golden 自己写的就是 preg_r[6:0]，
+    #                     bit7 从来没有读出路径。重写核 bug-for-bug 照抄。
+    #          ★把核收窄成"只留 head"反而制造不对称★：golden 那 45 位会变成
+    #          golden-only 死位，更难签 —— 与 TLBFA 那条"不要收窄 reqVpn"同一结论。
+    #          ★复核判据★: passing 5825 -> 5876(正好 +51)、failing 仍 0、unread 归 0、
+    #          unmatched 保持全零。passing 不增即空转，不算过。
     #   IBuffer(2026-09-17 加): 6 个 unread 点全是两侧对称 matched_nc。
     #          ★复核判据★: passing 7902 -> 7908(正好 +6)、failing 仍 0、unread 归 0。
     #   NCBTransactionQueue{,_1}(2026-09-17 加): 内容是 info.ReturnNID(11 位) +
@@ -324,8 +398,20 @@ switch -- $_verify_matched_unread_compare_points {
     #          report_unmatched_points -status unread -list 两侧现场发现后 1:1 钉：
     #              ref  regQueue_<i>_bits_info_Return{NID,TxnID}_reg[<b>]
     #              impl u_core/info_q_reg[<i>]\[return_{nid,txn_id}][<b>]
-    #          钉后实测 unmatched unread 归 0(0)、FM-036 = 0(钉点计数本身不 fail-closed,
-    #          set_user_match 对不存在的名字不报错, 有效判据是这两条 + 终判 SUCCEEDED)。
+    #          钉后实测 unmatched unread 归 0(0)、日志里没有 `^ *Error:` 行
+    #          (钉点计数本身不 fail-closed, set_user_match 对不存在的名字不报错,
+    #          有效判据是这两条 + 终判 SUCCEEDED)。
+    #
+    #   ★☆别拿裸错误号当判据☆★（2026-09-17，SSIT lane 查出来的，我这条注释就是祸首）
+    #   本条原先写的是 `FM-036 = 0`，指望用 `grep -c "FM-036" fm.log` 来验。
+    #   **那是个假判据**：fm_shell 会把 `-file` 载入的入口脚本**逐行回显进 fm.log，
+    #   注释也不例外**。所以这行注释本身一进 fm.log，任何目标的
+    #   `grep -c "FM-036"` 就永远 >= 1，判据永远为假。实测：
+    #       grep -n "FM-036" <任一 evidence>/fm.log   -> 命中的就是本注释的回显
+    #       grep -cE "^ *Error:" <同一份>             -> 0
+    #   正确写法是钉在**行首的 Error:** 上：`grep -cE "^ *Error:" fm.log` 必须为 0。
+    #   这和 test_tcl_no_poison.py 防的是同一类事，区别是那道闸盯的是
+    #   fm_verdict.py 的正则，而这次中招的是**人手写的判据** —— 闸没覆盖到的那一半。
     #          ★复核判据★: passing 6007 -> 6743(_1, +736) / 12054 -> 13526(+1472)、
     #          failing 仍 0、unread 归 0。
     #   Predictor(2026-09-17 加): 8333 个 unread 点全是两侧对称 matched_nc，其中
@@ -338,7 +424,7 @@ switch -- $_verify_matched_unread_compare_points {
     #          impl 侧单边未读 585 个不受本开关影响(无对家, 属 PASS_DEAD_IMPL 范畴)。
     #          ★复核判据★: passing 520634 -> 528967(正好 +8333)、failing 仍 0、
     #          unread 归 0、unmatched 0(0)。passing 不增而 unread 归 0 = 点被吞掉, 不算过。
-    if {$top ni {Bku Composer DebugModule DuplicatedTagArray EntriesVfdivVidiv FAlu FCVT FTBBank Ftq ICacheCtrlUnit ICacheDataArray ICacheMetaArray ICacheMissUnit InstrUncache ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 LinkMonitor MulUnit Queue1_RegMapperInput_5 RNXbar SNXbar SourceB SSIT TageBTable TlbStorageWrapper TlbStorageWrapper_1 TXDAT_4 TXREQ WritebackQueue IBuffer NCBTransactionQueue NCBTransactionQueue_1 Predictor TLBFA TLBFA_1 TLBFA_2 TLBFA_3}} {
+    if {$top ni {Bku Composer DebugModule DuplicatedTagArray EntriesVfdivVidiv FAlu FCVT FTBBank Ftq ICacheCtrlUnit ICacheDataArray ICacheMetaArray ICacheMissUnit InstrUncache ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 LinkMonitor MulUnit Queue1_RegMapperInput_5 RNXbar SNXbar SourceB SSIT TageBTable TlbStorageWrapper TlbStorageWrapper_1 TXDAT_4 TXREQ WritebackQueue IBuffer EntriesAluCsrFenceDiv NCBTransactionQueue NCBTransactionQueue_1 Predictor RenameBuffer TLBFA TLBFA_1 TLBFA_2 TLBFA_3}} {
       puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
       exit 3
     }

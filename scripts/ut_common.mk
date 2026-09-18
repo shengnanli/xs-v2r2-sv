@@ -114,7 +114,15 @@ simv: $(UT_SRCS) $(TB_SRCS) $(GOLDEN_SRCS) $(RTL_GOLDEN_DEPS) | portlint derive
 # 两轮的证据从此并存。没带 initreg 参数时不产生副本，行为完全不变。
 INITREG_TAG = $(if $(findstring +vcs+initreg+random,$(SIM_ARGS)),_initregrandom,$(if $(findstring +vcs+initreg+0,$(SIM_ARGS)),_initreg0,))
 
+# ★跑之前先删掉两个名字★（2026-09-17，BloomFilter lane 指出的交互）
+# 「多留一份副本」和「每次先删日志」这两条规矩天然打架：留副本是为了让两轮证据并存，
+# 先删是为了让**编译失败时读不到上一轮的日志**（变异 harness 的命门 —— 编不过却读到
+# 上一个变异的 errors，就会记成假 CAUGHT，IBuffer M6 实测栽过）。
+# 只删 sim_$(SEED).log 的话，带 tag 的那份会留着；哪天谁把 harness 改成读带 tag 的名字
+# （"名字更清楚"是很自然的想法），那个洞就原样回来了。所以两个名字一起删，
+# 让"读到陈旧日志"这件事在**任何**读法下都不可能发生。
 run: simv
+	@rm -f sim_$(SEED).log $(if $(INITREG_TAG),sim_$(SEED)$(INITREG_TAG).log,)
 	./simv +ntb_random_seed=$(SEED) $(SIM_ARGS) -l sim_$(SEED).log
 	@$(if $(INITREG_TAG),cp -f sim_$(SEED).log sim_$(SEED)$(INITREG_TAG).log,:)
 	@grep -q "TEST PASSED" sim_$(SEED).log && echo "=== UT PASSED ($(MODULE) seed=$(SEED)) ===" \
