@@ -46,6 +46,13 @@ run "FM Tcl 毒字符串闸"  python3 scripts/test_tcl_no_poison.py
 # 我两次处理错（"两侧都留"留出两条串联 if 互相拒目标；git add -A 提交了带冲突标记的
 # 文件）。两次都修好却没加闸，于是下次合并原样复发。这道闸把"修好"变成"修住"。
 run "fm_eq 结构闸"     python3 scripts/test_fm_eq_wellformed.py
+# FM 钉点文件结构闸：fm_pins_pre.tcl / fm_pins.tcl 是唯一被 source 进 fm_shell 的
+# 「模块本地代码」，语法上什么都干得了（放宽比较、钉常量、加黑盒、改 appvar），
+# 而 sidecar 下被 source 的脚本**不会**逐行回显进 fm.log，判定未必看得见。
+# 第二件事更隐蔽：钉点文件不 fail-closed 就等于没钉 —— 名字一漂，set_user_match 逐条
+# 失败、脚本只 puts 一行 miss=N，证明照跑照绿，而那行 miss 没人会看。
+# 本闸落地时实测：15 个钉点文件里 12 个是 fail-open 的（期望数量只写在 puts 字符串里）。
+run "FM 钉点结构闸"     python3 scripts/test_fm_pins_wellformed.py
 # 家族生成器幂等：tlbuffer worker 发现 gen_tlbuffer_ad_family.py --check 一直报 DRIFT
 # ——negtest 段是手工贴在生成产物后面的，谁跑一次生成器它就被静默删掉，而那正是该家族
 # 唯一病因形态（位宽）的防护。只有挂了 --check 的生成器进这道闸。
@@ -67,7 +74,7 @@ for g in scripts/gen_tlbuffer_ad_family.py scripts/gen_mbist_pipe_family.py \
          scripts/gen_renamebuffer.py scripts/gen_tlbfa_family.py \
          scripts/gen_sbufferdata.py scripts/gen_newdispatch.py \
          scripts/gen_newdispatch_tb.py \
-         scripts/gen_tlbnb_family.py; do
+         scripts/gen_tlbnb_family.py scripts/gen_predictor.py; do
   [ -f "$g" ] && run "生成器幂等 $(basename $g .py | sed 's/^gen_//')" python3 "$g" --check
 done
 # 闸的完备性闸：任何 scripts/gen_*.py 要么进上面的列表，要么在

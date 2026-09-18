@@ -44,6 +44,12 @@ OthersEntry_166	GOLDEN_ONLY	ABSORBED_DIRECT	EntriesVfdivVidiv	6	EntriesVfdivVidi
 OthersEntry_66	GOLDEN_ONLY	ABSORBED_DIRECT	EntriesAluCsrFenceDiv	6	EntriesAluCsrFenceDiv	$(GOLDEN_RTL)/OthersEntry_66.sv
 OthersEntry_72	GOLDEN_ONLY	ABSORBED_DIRECT	EntriesAluCsrFenceDiv	16	EntriesAluCsrFenceDiv	$(GOLDEN_RTL)/OthersEntry_72.sv
 PLICFanIn	SIGNED_OFF_TARGET	ABSORBED_DIRECT	TLPLIC	2	TLPLIC	rtl/uncore/PLICFanIn.sv
+PriorityMuxModule	SIGNED_OFF_TARGET	ABSORBED_DIRECT	Predictor	4	Predictor	rtl/frontend/PriorityMuxModule.sv
+PriorityMuxModule_12	SIGNED_OFF_TARGET	ABSORBED_DIRECT	Predictor	2	Predictor	rtl/frontend/PriorityMuxModule_12.sv
+PriorityMuxModule_16	SIGNED_OFF_TARGET	ABSORBED_DIRECT	Predictor	2	Predictor	rtl/frontend/PriorityMuxModule_16.sv
+PriorityMuxModule_20	SIGNED_OFF_TARGET	ABSORBED_DIRECT	Predictor	256	Predictor	rtl/frontend/PriorityMuxModule_20.sv
+PriorityMuxModule_4	SIGNED_OFF_TARGET	ABSORBED_DIRECT	Predictor	2	Predictor	rtl/frontend/PriorityMuxModule_4.sv
+PriorityMuxModule_8	SIGNED_OFF_TARGET	ABSORBED_DIRECT	Predictor	4	Predictor	rtl/frontend/PriorityMuxModule_8.sv
 Queue1_RegMapperInput	GOLDEN_ONLY	ABSORBED_DIRECT	TLPLIC	1	TLPLIC	$(GOLDEN_RTL)/Queue1_RegMapperInput.sv
 Queue1_RegMapperInput_5	SIGNED_OFF_TARGET	ABSORBED_DIRECT	ICacheCtrlUnit	1	ICacheCtrlUnit	rtl/frontend/Queue1_RegMapperInput_5.sv
 Queue40_L2TlbMQBundle	GOLDEN_ONLY	ABSORBED_DIRECT	L2TlbMissQueue	1	L2TlbMissQueue	$(GOLDEN_RTL)/Queue40_L2TlbMQBundle.sv
