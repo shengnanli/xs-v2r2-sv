@@ -21,17 +21,30 @@ each register's innermost guard, resolves the `_GEN_*` wire behind it, and
 groups the result. What comes out is small and checkable:
 
     robEntries_<i>_<field>              guard = canEnqueue_<p> & (allocatePtr_<p> == i)
-    debug_microOp_debugReg_<i>_<field>  same six enqueue guards
-    dt_exuDebug_<i>_<field>             guard = one of 8 store writeback ports
-    debug_exuData_<i>                   guard = one of 25 exu writeback ports
+    debug_microOp_debugReg_<i>_<field>  the same six enqueue guards
+    dt_exuDebug_<i>_<field>             io_exuWriteback_<p>, p in 18..24
+    debug_exuData_<i>                   io_exuWriteback_<p>, p in 0..24
 
-So the warm-up obligation is not "run N cycles", it is a set of coverage
-vectors the tb can assert are all-ones before the window opens:
+★Correction to an earlier version of this file★: it claimed dt_exuDebug came
+from "8 store writeback ports", implying a family separate from the exu ports,
+and the obligation was written as THREE vectors (enq/wb/st). That was wrong --
+it was inferred from the guard COUNT (8) without resolving what the guards
+actually referenced, and the resolver could not resolve them at the time
+because of the multi-line `wire` bug fixed in this same file. Resolved, they
+are `io_exuWriteback_18..24`, a SUBSET of the 0..24 that drive debug_exuData.
+There is no store-writeback family here, so there is no third vector.
 
-    enq_seen[160]   entry i has been enqueued by some port
-    wb_seen[160]    entry i has been written back by some exu port
-    st_seen[160]    entry i has been written back by some store port
-    plus one bit per single-event scalar register
+debug_lsTopdownInfo and debug_VecOtherPdest are NOT in this list on purpose:
+they live in the async-reset block, so they come out of reset defined and carry
+no warm-up obligation at all.
+
+So the warm-up obligation is not "run N cycles", it is two coverage vectors the
+tb can assert are all-ones before the window opens:
+
+    enq_seen[160]   entry i has been enqueued by some enqueue port
+    wb_seen[160]    entry i has been hit by io_exuWriteback_<p>, p in 0..24
+    plus one bit per single-event scalar register, and commit traffic for the
+    304 commit-driven robDeqGroup registers
 
 Usage
   python3 scripts/rob_warmup_coverage.py            # summary per family
