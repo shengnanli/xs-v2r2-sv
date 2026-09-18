@@ -317,7 +317,7 @@ def main():
     for m, why in struct:
         print(f'[{m[0]}] 结构型（UT 按构造看不见，闸在 FM）: {m[1]}')
 
-    caught, escaped = [], []
+    caught, escaped, infra = [], [], []
 
     for m, _why in todo:
         mid, desc, old, new = m[0], m[1], m[2], m[3]
@@ -338,9 +338,30 @@ def main():
 
             r = run(['make', 'simv'], ut)
             if r.returncode != 0:
-                # 编不过也算"被抓住"——变异确实改变了行为；但要记下来
-                caught.append((mid, 'compile-error'))
-                print(f'[{mid}] 编译失败（算抓住）: {desc}')
+                # ★这里原先是 fail-open★
+                #   原写法把"编不过"一律算作"被抓住"，理由是变异确实改变了行为。
+                #   但**基础设施失败也编不过**：VCS license 抢不到、磁盘满、
+                #   工具排队超时——这些与变异无关，却会被记成一次成功的判别，
+                #   把靶子的分子凭空抬高。实测触发条件很常见：靶子和正跑的 UT
+                #   并行时就在抢同一批 license。
+                #   所以改成三分：真编译错(有 Error-[ 且非 license 类) 才算抓住；
+                #   基础设施失败单列 infra 桶，并让整体 rc 非零（必须重跑），
+                #   绝不静默计入。
+                out = r.stdout.decode('utf-8', 'replace') if r.stdout else ''
+                infra_sig = ('License' in out or 'license' in out
+                             or 'LMGRD' in out or 'Cannot connect' in out
+                             or 'No such feature' in out
+                             or 'queue' in out.lower() and 'lic' in out.lower()
+                             or 'No space left' in out)
+                real_err = 'Error-[' in out
+                if real_err and not infra_sig:
+                    caught.append((mid, 'compile-error'))
+                    print(f'[{mid}] 抓住 (编译失败, 有真编译错): {desc}')
+                else:
+                    infra.append((mid, 'license/基础设施' if infra_sig
+                                  else '编译失败但无 Error-[，无法归因'))
+                    print(f'[{mid}] ★基础设施失败，不计入判别力★ '
+                          f'（{"license" if infra_sig else "无法归因"}）: {desc}')
                 continue
             r = run(['./simv', f'+ntb_random_seed={a.seed}',
                      f'+ncycles={a.cycles}', '-l', 'mut.log'], ut)
@@ -359,15 +380,25 @@ def main():
         finally:
             shutil.rmtree(str(work), ignore_errors=True)
 
-    print(f'\n变异判别力: 抓住 {len(caught)}/{len(todo)} 条适用的行为型变异'
+    scored = len(todo) - len(infra)          # 基础设施失败的不进分母
+    print(f'\n变异判别力: 抓住 {len(caught)}/{scored} 条适用的行为型变异'
           f'（{len(na)} 条在本变体上是死的记 N/A；'
-          f'{len(struct)} 条是结构型、UT 按构造看不见，闸在 FM）')
+          f'{len(struct)} 条是结构型、UT 按构造看不见，闸在 FM；'
+          f'{len(infra)} 条基础设施失败、不计分）')
+    rc = 0
+    if infra:
+        # 不计分不等于可以忽略：没跑成就是没证过，必须重跑，否则"抓住 N/N"
+        # 是在一个被悄悄缩小的分母上得到的。
+        print('★基础设施失败（未证明任何事，必须重跑这几条）:')
+        for mid, why in infra:
+            print(f'  {mid}: {why}')
+        rc = 1
     if escaped:
         print('逃逸清单（UT 在这些通路上没有判别力，必须先补激励/比对）:')
         for mid, desc in escaped:
             print(f'  {mid}: {desc}')
-        return 1
-    return 0
+        rc = 1
+    return rc
 
 
 
