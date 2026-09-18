@@ -55,11 +55,14 @@ include ../../../scripts/ut_common.mk
 #   2) initial 随机化块；关掉后两侧无复位寄存器一致地起 X，再由 +vcs+initreg 统一给值。
 VCS += +define+SYNTHESIS +vcs+initreg+random
 
-# ★上电初值两轮都要跑★：本模块 golden 一条 entry 约 1500 位寄存器里
-# **只有 12 位在复位域**（req_valid / slaveAccept / uncacheState[1:0] / denied /
-# corrupt / needFlushReg / pendingld_last_REG / pendingPtr_next_r_{flag,value[7:0]}），
-# payload 190 个字段、slaveId、uncacheData、flushPipe、replayInst 一个都不复位，
-# 只跑一种初值等于没验复位域。
+# ★上电初值两轮都要跑★：本模块 golden 一条 entry 共 **203 个寄存器 / 1670 位**，
+# 其中只有 **9 个寄存器 / 17 位在复位域**（req_valid 1 / slaveAccept 1 /
+# uncacheState 2 / denied 1 / corrupt 1 / needFlushReg 1 / pendingld_last_REG 1 /
+# pendingPtr_next_r_flag 1 + pendingPtr_next_r_value 8）；另外 **1653 位一个都不复位**
+# （payload 190 个字段、slaveId、uncacheData、flushPipe、replayInst）。
+# 这三个数由 reset_domain_check.py 从 golden 现场数出来并打印（不是抄来的）：
+#     python3 reset_domain_check.py
+# 只跑一种上电初值等于没验复位域。
 #   make run SEED=1            # 随机上电值
 #   make INITREG=0 run SEED=1  # 全 0 上电值
 # initreg 的**取值**是运行期 plusarg，编译行上那个 +vcs+initreg+random 只是打开机制。

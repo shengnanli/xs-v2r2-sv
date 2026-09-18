@@ -79,6 +79,26 @@ def reset_assigned(block):
     return set(re.findall(r'^\s*([A-Za-z_]\w*)\s*<=', m.group(1), re.M))
 
 
+def golden_reg_census(gtext, async_block):
+    """现场清点 golden 的寄存器规模与复位域规模（不许从注释/记忆抄数）。
+
+    返回 (寄存器个数, 总位数, 复位域寄存器个数, 复位域位数)。
+    Makefile 与 tb 头注释里引用的三个数就是它打印的那一行。
+    """
+    body = gtext[gtext.index('module UncacheEntry('):]
+    regs = re.findall(r'^  reg\s+(\[[^\]]*\]\s*)?(\w+);', body, re.M)
+
+    def width(decl):
+        if not decl:
+            return 1
+        hi, lo = decl.strip()[1:-1].split(':')
+        return int(hi) - int(lo) + 1
+
+    wmap = {n: width(d) for d, n in regs}
+    rst = reset_assigned(async_block)
+    return len(regs), sum(wmap.values()), len(rst), sum(wmap[n] for n in rst)
+
+
 def main():
     gtext = (GOLDEN / 'UncacheEntry.sv').read_text()
     ctext = CORE.read_text()
@@ -128,8 +148,11 @@ def main():
         for e in errs:
             print('  ' + e, file=sys.stderr)
         return 1
+    tot_n, tot_b, rst_n, rst_b = golden_reg_census(gtext, gblk[0])
     print(f'reset-domain: OK —— 复位域 {len(reset_assigned(cblk[0]))} 项与 golden 一一对应，'
           f'slaveId / uncacheData / flushPipe / replayInst 两侧同为无复位')
+    print(f'  golden 现场清点：寄存器 {tot_n} 个 / {tot_b} 位；'
+          f'复位域 {rst_n} 个 / {rst_b} 位；不复位 {tot_b - rst_b} 位')
     return 0
 
 

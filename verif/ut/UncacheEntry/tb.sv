@@ -22,10 +22,12 @@
 //   · 收新请求压过在飞请求（golden 的 XSError 条件）：io_req_valid 给 35%。
 //
 // ★暖机（本模块必须有）★
-// golden 一条 entry 的 ~1500 位寄存器里**只有 12 位在复位域**
-// （req_valid / slaveAccept / uncacheState[1:0] / denied / corrupt /
-//  needFlushReg / pendingld_last_REG / pendingPtr_next_r_{flag,value[7:0]}）。
-// payload 190 个字段、slaveId、uncacheData、flushPipe、replayInst 一个都不复位。
+// golden 一条 entry 共 203 个寄存器 / 1670 位，其中**只有 9 个寄存器 / 17 位在
+// 复位域**（req_valid 1 / slaveAccept 1 / uncacheState 2 / denied 1 / corrupt 1 /
+//  needFlushReg 1 / pendingld_last_REG 1 / pendingPtr_next_r_flag 1 +
+//  pendingPtr_next_r_value 8）—— 另外 1653 位一个都不复位（payload 190 个字段、
+// slaveId、uncacheData、flushPipe、replayInst）。这三个数由
+// reset_domain_check.py 从 golden 现场数出来并打印，不是抄来的。
 // +vcs+initreg 给 golden 与重写两个实例**各掷各的随机值**，不暖机第一拍就会
 // 因初值不同而报错。暖机 = 复位撤销后依次：
 //   1 拍 io_req_valid=1（写满 190 个 payload 字段 + 把 flushPipe/replayInst 压 0）
