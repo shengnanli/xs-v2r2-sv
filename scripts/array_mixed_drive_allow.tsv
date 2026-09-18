@@ -1,0 +1,12 @@
+# Arrays adjudicated BY HAND as not subject to the +vcs+initreg mixed-drive
+# hazard. check_array_mixed_drive.py is line-based and cannot see `generate`,
+# so two drivers in MUTUALLY EXCLUSIVE branches look exactly like two live
+# drivers. Every row here is a hit that was read in the source and cleared.
+#
+# ★A row is a claim someone checked, not a waiver.★ Adding one without reading
+# the source turns this file into the thing it exists to prevent.
+#
+# array	file	why it is not the hazard
+need_free	rtl/backend/RenameTable.sv	always_ff at 362-363 vs `assign` at 367 inside `else begin : g_no_need_free` -- exclusive generate branches, only one driver exists per elaboration
+t1_wSpec_addr	rtl/backend/RenameTable.sv	always_ff at 376-378 vs `assign` at 383 inside `else begin : g_addr_const` -- same shape
+t1_raddr	rtl/backend/RenameTable.sv	register in the normal case, continuously-assigned constant when ADDR_W==0, in `else begin : g_addr_const` -- same shape
