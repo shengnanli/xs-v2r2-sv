@@ -335,6 +335,42 @@ FM_VARIANTS = Rob
 # entries --- precisely the input that makes duplicate-register merging blow up.
 FM_MERGE_DUP = false
 
+# ---------------------------------------------------------------------------
+# ★Rob's acceptance criterion is TWO RUNS AGREEING, not one run passing★
+# ---------------------------------------------------------------------------
+# Formality's `verification_set_undriven_signals` decides how dangling nets
+# behave, and golden Rob has 460 of them. Measured on golden vs a byte-identical
+# copy of itself (evidence/rob-selfcompare-4aa8838b/):
+#
+#                          binary:X (default)      0
+#   passing                108,209                 108,669
+#   failing                 20                     0
+#   unmatched ref points   460                     0
+#   verdict                FAILED                  SUCCEEDED
+#
+#   conservation: 108,209 + 20 + 440 unverified = 108,669 exactly, so under `0`
+#   every one of those points is COMPARED AND PASSES -- none is waived.
+#
+# It is tempting to just adopt `0` and enjoy a clean baseline. Do not. The same
+# app var also applies to the IMPLEMENTATION container, and
+# evidence/rob-selfcompare-4aa8838b/undriven_safety/ measures the case where
+# that hides a real defect: if the rewrite leaves a net undriven and golden's
+# driver for it is identically 0, `binary:X` FAILS and `0` reports SUCCEEDED.
+# A golden-vs-self probe cannot expose that, because both sides are identical
+# by construction -- so the clean run above calibrates the floor and says
+# nothing about whether `0` is safe here.
+#
+#   1. run the proof under BOTH settings
+#   2. verdicts agree      -> nothing was hidden
+#   3. verdicts disagree   -> the difference IS the hidden set, and it must be
+#                             examined before either result is used
+#
+# ★NOT YET WIRED★: scripts/fm_eq.tcl has no undriven knob (grep: 0 hits), and it
+# is shared by every lane, so this Rob lane did not add one unilaterally. Until
+# an `FM_UNDRIVEN` variable exists there, the second run has to be done by hand
+# with scripts/rob_fm_scale_probe.tcl (which does take ROB_UNDRIVEN). Whoever
+# adds it should make it fail-closed the way FM_MODE is.
+
 include ../../../scripts/ut_common.mk
 
 # golden's random-init `initial` blocks only exist under `ifndef SYNTHESIS, so
