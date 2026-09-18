@@ -284,6 +284,74 @@ def build(ports, digest):
     return '\n'.join(L) + '\n'
 
 
+
+MAKEFILE = r"""MODULE = Rob
+
+RTL_DIR  = ../../../rtl
+RTL_SRCS = $(RTL_DIR)/backend/Rob.sv
+TB_SRCS  = tb.sv
+
+G1_CANONICAL ?= /home/eda/xs-env/G1-canonical
+GOLDEN_RTL   ?= $(G1_CANONICAL)/golden-rtl
+
+# UT dual-instantiation needs golden Rob AND its whole child closure, because
+# the tb elaborates both sides for real. Note DataModule__16entry_16: it is not
+# a direct child of Rob, it sits under VTypeBuffer -> SyncDataModuleTemplate,
+# and leaving it out fails VCS with CFCILFBI rather than anything that mentions
+# Rob.
+GOLDEN_SRCS = $(GOLDEN_RTL)/Rob.sv \
+              $(GOLDEN_RTL)/RenameBuffer.sv $(GOLDEN_RTL)/VTypeBuffer.sv \
+              $(GOLDEN_RTL)/SnapshotGenerator_3.sv $(GOLDEN_RTL)/ExceptionGen.sv \
+              $(GOLDEN_RTL)/NewRobDeqPtrWrapper.sv $(GOLDEN_RTL)/RobEnqPtrWrapper.sv \
+              $(GOLDEN_RTL)/dt_pcTransType_160x2.sv $(GOLDEN_RTL)/CommitStuckCounter.sv \
+              $(GOLDEN_RTL)/SnapshotGenerator.sv $(GOLDEN_RTL)/SnapshotGenerator_1.sv \
+              $(GOLDEN_RTL)/SnapshotGenerator_2.sv \
+              $(GOLDEN_RTL)/SyncDataModuleTemplate__64entry_4.sv \
+              $(GOLDEN_RTL)/DataModule__16entry_16.sv
+
+# All 8 children are SYMMETRIC BLACKBOXES for FM: neither side is given a body,
+# so Rob is a CONDITIONAL green and its receipt must carry the dependency.
+FM_VARIANTS = Rob
+
+# ---------------------------------------------------------------------------
+# FM_MERGE_DUP = false --- ★a STRENGTHENING, not a relaxation★
+# ---------------------------------------------------------------------------
+# Anyone reading this appvar will reasonably suspect it of weakening the proof,
+# so the reason sits next to it rather than in a report nobody will find.
+#
+# Nothing is blackboxed, no point is skipped, the reference is not constrained.
+# FM is merely required to compare registers ONE BY ONE instead of after merging
+# functionally identical ones, so compare points can only INCREASE. Precedent in
+# this repo: RenameBuffer and MulUnit, both reviewer-approved on this reasoning.
+#
+# Why Rob specifically needs it (measured, not argued --- see
+# evidence/rob-selfcompare-4aa8838b/):
+#   merge_dup = true   5,674 s of CPU inside "Merging duplicated registers in
+#                      block i:/WORK/Rob" and ★match was never reached at all★
+#   merge_dup = false  match 1,973 s, verify 1,044 s, peak 14,730 MB,
+#                      ~72 min end to end
+# Rob has 11,639 registers and ~79% of its 169,763 register bits are 160-entry
+# debug arrays whose next-state functions are structurally identical across
+# entries --- precisely the input that makes duplicate-register merging blow up.
+FM_MERGE_DUP = false
+
+include ../../../scripts/ut_common.mk
+
+# golden's random-init `initial` blocks only exist under `ifndef SYNTHESIS, so
+# both sides define SYNTHESIS and initial values come from +vcs+initreg.
+# ★This module has 9,359 registers with NO reset★ (see
+# scripts/rob_warmup_coverage.py), so the two initreg rounds genuinely differ
+# here --- which is exactly why tb.sv refuses to open its comparison window
+# until its coverage vectors are full, instead of trusting a cycle count.
+VCS      += +define+SYNTHESIS +vcs+initreg+random
+SIM_ARGS += $(INITREG)
+INITREG  ?= +vcs+initreg+random
+
+.PHONY: mutants
+mutants:
+	python3 mutants.py
+"""
+
 def selftest(ports):
     ins = [p for p in ports if p[0] == 'input']
     outs = [p for p in ports if p[0] == 'output']
@@ -312,6 +380,7 @@ def main():
     ap.add_argument('--emit')
     ap.add_argument('--check')
     ap.add_argument('--selftest', action='store_true')
+    ap.add_argument('--emit-makefile', dest='emit_makefile')
     a = ap.parse_args()
     ports, digest = parse(a.golden)
     if a.selftest:
@@ -323,6 +392,12 @@ def main():
         same = cur == body
         print('gen_rob_ut --check: %s' % ('OK' if same else 'DRIFT'))
         return 0 if same else 1
+    if a.emit_makefile:
+        os.makedirs(os.path.dirname(os.path.abspath(a.emit_makefile)), exist_ok=True)
+        with open(a.emit_makefile, 'w') as f:
+            f.write(MAKEFILE)
+        print('wrote %s' % a.emit_makefile, file=sys.stderr)
+        return 0
     if a.emit:
         os.makedirs(os.path.dirname(os.path.abspath(a.emit)), exist_ok=True)
         with open(a.emit, 'w') as f:
