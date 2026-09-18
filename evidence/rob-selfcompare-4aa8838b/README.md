@@ -44,29 +44,67 @@ peak memory   14,730 MB
 end to end     ~72 min,  fm_shell errors = 0
 ```
 
-## Result
+## Result --- both app-var settings, side by side
 
-```
-Verification FAILED
- 108,209 Passing compare points
-      20 Failing compare points (20 matched, 0 unmatched)
-       0 Aborted compare points
-     440 Unverified compare points
-     460 Unmatched REFERENCE compare points, 0 unmatched implementation
-     total 108,209 + 20 + 440 = 108,669   and   20 + 440 = 460
-```
+The same comparison was run twice. Only the treatment of dangling nets differs.
 
-Matching was **108,669 by name, 0 by signature analysis, 0 by topology** —
-inevitable, since both sides are the same file and every name is identical.
+| | `binary:X` (Formality's default) | `0` |
+|---|---|---|
+| passing | 108,209 | **108,669** |
+| failing | **20** (20 matched, 0 unmatched) | **0** |
+| unverified | **440** | **0** |
+| unmatched reference points | **460** | **0** |
+| unmatched implementation points | 0 | 0 |
+| verdict | **FAILED** | **SUCCEEDED** |
+| ref / impl elaborate | 622 s / 609 s | 616 s / 634 s |
+| match / verify | 1973 s / 1044 s | 1991 s / 1024 s |
+| peak memory | 14,730 MB | 14,836 MB |
 
-The 460 unmatched reference points are all `Und` (undriven), listed in full in
-`unmatched_460.rpt`:
+Conservation closes exactly: `108,209 + 20 + 440 = 108,669`. Every point that
+was unmatched, unverified or failing under the default became a **passing**
+point under `0` --- none was dropped or waived.
+
+Cost is effectively identical, so running BOTH is affordable (~2.4 h total) and
+that is the recommendation below.
+
+Matching was **108,669 by name, 0 by signature analysis, 0 by topology** in both
+runs --- inevitable, since both sides are the same file and every name matches.
+
+Under the default, the 460 unmatched reference points are all `Und` (undriven)
+and listed in full in `run_binaryX/unmatched_460.rpt`:
 
 ```
 448  robDeqGroup_<n>_debug_otherPdest_<m>
   7  deqPtrVec_next_<n>_flag
   5  enqPtrVec_<n>_flag
 ```
+
+Under `0` that report is empty (`run_undriven0/unmatched_empty.rpt`).
+
+## ★Do not read the clean run as permission to adopt `0`★
+
+The two runs disagree, and by the rule established in `undriven_safety/` a
+disagreement is exactly the set that the app var has hidden. Here that set is
+the 460 dangling nets, and in THIS run hiding them is harmless --- reference and
+implementation are the same bytes, so there is no implementation-side defect
+that could be hiding among them.
+
+**That reasoning does not carry to the real proof.** `undriven_safety/` measures
+the case where it breaks: if the rewrite leaves a net undriven and golden's
+driver for it is identically 0, `binary:X` fails loudly and `0` reports
+SUCCEEDED. A golden-vs-self probe **cannot** exercise that case, because the two
+sides are identical by construction --- so this calibration establishes the
+floor, and establishes nothing at all about whether `0` is safe to adopt.
+
+The protocol that follows from both directories:
+
+1. run the real Rob proof under **both** settings;
+2. if the verdicts agree, nothing was hidden;
+3. if they disagree, the difference is the hidden set and must be examined
+   before either result is used.
+
+Which is why both runs are archived here rather than only the one that looks
+better.
 
 ## The 460 are not one thing --- they are 56 + 12, and the two behave differently
 
@@ -151,7 +189,10 @@ no reason to suspect a floor exists, would never think to spend it.
 
 ## Files
 
-| file | what |
+| path | what |
 |---|---|
-| `unmatched_460.rpt` | the 460 unmatched reference points, verbatim from `report_unmatched_points` |
-| `fm_summary.txt` | the phase timings and the Formality result block, verbatim |
+| `run_binaryX/unmatched_460.rpt` | the 460 unmatched reference points under the default setting, verbatim |
+| `run_binaryX/fm_summary.txt` | phase timings and the Formality result block, verbatim |
+| `run_undriven0/fm_summary.txt` | the same under `verification_set_undriven_signals 0` |
+| `run_undriven0/unmatched_empty.rpt` | the (empty) unmatched report under `0` |
+| `undriven_safety/` | the four-run measurement showing where `0` MASKS a real defect |
