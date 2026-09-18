@@ -44,7 +44,7 @@ FM_REF_DEPS_EntriesAluCsrFenceDiv = EnqEntry_6.sv OthersEntry_66.sv OthersEntry_
 # ★ 仍缺 vmucp 白名单：加强后期望 passing 18781 -> 25001（恰好 +6220）、
 #   unread 归 0、failing 仍 0；不增即空转，按 fail 处理。
 FM_MERGE_DUP = false
-FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = false
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 
 include ../../../scripts/ut_common.mk
 

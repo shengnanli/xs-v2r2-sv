@@ -1167,6 +1167,10 @@ FM_NOTES = {
 #   所以默认 false；要开必须先请示、由 reviewer 把目标加进那张白名单。
 FM_VMUCP_WHITELISTED = {
     'EntriesVfdivVidiv',
+    # 2026-09-17 reviewer 在 main acda25e 把 canary 加进 fm_eq.tcl 的白名单
+    # （42 项）。两边必须同时生效，且**顺序不能反**：这边先开而白名单没开，
+    # fm_eq.tcl 会 FM_MODE_ERROR exit 3，白跑一次 44 秒（已踩过）。
+    'EntriesAluCsrFenceDiv',
 }
 
 
