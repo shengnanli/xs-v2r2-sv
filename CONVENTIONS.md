@@ -525,6 +525,84 @@ RENAMEBUFFER_PINS: ?? 51 ??A deqPtr flag 5 / B deqPtr value 40 / ...?
 我今天还因为同一个机制踩过一次：监控脚本匹配到了 `fm_eq.tcl` 里被回显的注释，
 误判成跑完了。**两次同源，一次在工具、一次在判据。**
 
+第三例（2026-09-18，Entries lane 独立撞上，与前两例无沟通）：
+想用 `grep FM_MODE_ERROR fm.log` 提前判断 vmucp 白名单有没有生效——
+
+    grep -c   "FM_MODE_ERROR"    fm.log   ->  6   ← 全是脚本自己 puts 的回显
+    grep -cE  "^FM_MODE_ERROR:"  fm.log   ->  0   ← 真实情况
+
+同一个机制在一天之内被三个互不相通的人踩到，说明它不是个人疏忽而是**日志形态的固有陷阱**。
+连带一条更要紧的结论：那次真正想问的是"要不要提前 44 秒放弃这轮"，
+而这个问题**grep 日志根本答不了**——权威读数只有跑完之后 sidecar 里的 appvar 回读。
+拿日志里的字符串去猜配置是否生效，方向本身就是错的。
+
+## ★`fm_shell -file` 脚本报错时**不会退出**，它会挂在交互提示符上占着 license★（2026-09-18 实测）
+
+一个 probe 脚本的第 12 行写错了（`report_unmatched_points -point_type unread`，
+没有 `-point_type unread` 这个选项），`fm_shell` 报完错就**掉进交互提示符一直等 stdin**。
+结果是：报告文件早就写完了，日志停在错误处再也不动，进程却一直活着。
+它就这么占了一个 Formality license **48 分钟**，直到被发现。
+
+### 为什么监控看不出来
+- 看日志 mtime：日志 47 分钟没变 —— 但"跑大件时长时间不写日志"是正常的，区分不出来。
+- 看进程在不在：在。
+- **唯一能区分的是 CPU 增量**：`/proc/<pid>/stat` 第 14+15 域，这个挂死的进程
+  47 分钟里只涨了 **207 tick ≈ 2 秒**，而同时在跑的 Predictor 是 208706 tick（35 分钟满载）。
+  这正是「三层判活」里第三层的用处 —— 别看日志 mtime，看 CPU。
+
+### 修法与双向实测
+在所有 `fm_shell` 调用上加 `< /dev/null`（`scripts/ut_common.mk` 的正式路径已加）。
+同一个必错脚本，两种 stdin 各跑一次：
+
+| stdin | 行为 | rc | 日志结尾 |
+|---|---|---|---|
+| 保持打开（前台/管道） | **永不退出**，90 s 后被 `timeout -s KILL` 杀掉 | 137 | 停在错误处 |
+| `< /dev/null` | 44 秒正常退出 | **1** | `Thank you for using Formality!` |
+
+`< /dev/null` 不只是堵泄漏 —— 它把"无限挂起"变回了**rc 非零的可见失败**。
+挂起是最坏的失败形态：它既不报错也不结束，还伪装成"还在跑"。
+
+复现：
+```
+cat > err.tcl <<'T'
+puts "BEFORE_ERROR"
+report_unmatched_points -point_type unread > /dev/null
+exit
+T
+( sleep 400 | timeout -s KILL 90 fm_shell -64 -work_path wA -file err.tcl > a.log 2>&1 )  # rc=137
+timeout -s KILL 90 fm_shell -64 -work_path wB -file err.tcl < /dev/null > b.log 2>&1      # rc=1, 44s
+```
+
+注意 `scripts/fm_eq.tcl` 全文只有末尾一句 `exit`，中间任何一行出错都走这条挂死路径。
+正式路径此前没炸，只是因为后台跑时 stdin 恰好是 `/dev/null`——**靠的是巧合，不是设计**。
+
+## ★工具派生态（scratch）不许进版本控制，而 `.gitignore` 单独挡不住★（三例，第三例推翻了前两例的修法）
+
+| # | 产物 | 体量 | 为什么没拦住 |
+|---|---|---|---|
+| 1 | 仓库根 `FM_INFO/` | 53 KB / 9 文件 | 规则 `/FM_INFO*/` 是它**进库之后**才加的；ignore 对已跟踪文件完全无效 |
+| 2 | `verif/ut/EntriesAluCsrFenceDiv/fm_diag{,2..7}/` | **994807 行 / 77.8 MB，占该分支插入行数的 86.4%** | 老规则按**固定深度**写死：`verif/ut/*/fm_shell_command.log*` 只管 UT 目录直下，这些文件深了一层 |
+| 3 | `verif/ut/NewPipelineConnectPipe/neg_build/` | 12 文件（含 VCS `.daidir` 二进制库树） | ★**规则早就在了**（`verif/ut/*/neg_build/` 加于 d61c00b，先于提交 5336c49），文件照样进了库★ |
+
+第 1、2 例的教训像是"ignore 规则写得不够全"，于是前两次的修法都是**再加几条规则**。
+第 3 例推翻了这个思路：规则在位、文件仍然进库。`.gitignore` 只拦**未跟踪**的新文件，
+拦不住 `git add -f`；而 `evidence/` 恰恰必须靠 `-f` 提交（它整个目录在 ignore 里），
+所以养成 `-f` 习惯的人会顺手把旁边的 scratch 一起拖进去。
+
+**结论：ignore 是防线，不是闸。必须另有一道对着「已跟踪文件列表」跑的闸。**
+- 闸：`scripts/check_no_tool_scratch.py`（按**名字**判，不按路径深度判；`evidence/` 整棵豁免）
+- 双向负测：`scripts/test_no_tool_scratch_gate.py`，正向 14 例 + 反向 14 例
+- 两者都在 `scripts/gate_all.sh` 里
+
+反向那一半不是凑数：前缀匹配 `fm_diag*` 极易误伤 `fm_diagram/`、`fm_diagnostics_spec.md`。
+边界定在"`fm_diag` 之后紧跟的是数字还是字母"——编号工作目录是 `名字+数字[+任意]`
+（`fm_diag7`、`fm_diag4_sidecar`），正常单词是 `名字+字母`。
+**这道负测第一次跑就抓出闸自己两个漏报**（`fm_diag4_sidecar/` 被后缀剥离规则放过、
+`.daidir` 只在 basename 上判而漏了目录段），两个都是真 bug。
+
+写完闸别忘了拿它扫一遍存量 —— 第 3 例就是这么被翻出来的，
+而 `.gitignore` 里当时还写着一句注释说它"靠没 git add 侥幸没进库"。**那句话是错的。**
+
 ## ★继承来的数字与断言，第一次引用时必须重新测量★（2026-09-17，一天里四例）
 
 本仓有大量从上一轮 `xs-v2r2-sv` 整段抄过来、或从别处转述而来的注释、判据与说明。

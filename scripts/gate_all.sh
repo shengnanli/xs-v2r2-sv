@@ -77,6 +77,16 @@ run "生成器闸完备性"     python3 scripts/check_gen_gate_complete.py
 # 存量一次性补齐要重跑 68 个 UT 且大概率真跑红一批，不在别的工作进行中引爆；
 # 所以只做"可见 + 不许再涨"，新 UT 必须合规。
 run "UT initreg 棘轮"   python3 scripts/check_ut_initreg.py
+# 工具派生态不许进版本控制。.gitignore 单独挡不住，实测三例：
+#   (1) 仓库根 FM_INFO/   —— 规则 `/FM_INFO*/` 是它进库之后才加的，ignore 管不住已跟踪文件
+#   (2) verif/ut/EntriesAluCsrFenceDiv/fm_diag{,2..7}/ —— 994807 行 / 77.8 MB，
+#       占该分支插入行数 86.4%；老规则按**固定深度**写死，深一层就漏
+#   (3) verif/ut/NewPipelineConnectPipe/neg_build/ —— ★规则早就在了，文件照样进库★
+# (3) 说明光有 ignore 不够：它只拦未跟踪的新文件，拦不住 `git add -f`
+# （而 evidence/ 恰恰要靠 -f 提交，养成习惯就会顺手把 scratch 一起拖进来）。
+# 故必须有一道**对着已跟踪文件列表**跑的闸。先负测（含"长得像但不是"的反例）再跑真闸。
+run "工具派生态负测"     python3 scripts/test_no_tool_scratch_gate.py
+run "工具派生态闸"       python3 scripts/check_no_tool_scratch.py
 # 上面三条是**逐个**挂 --check 的 scripts/gen_*.py。verif/ut/*/gen.py 那一层有 9 个，
 # 其中 8 个根本没有 --check（SRAMTemplateNewForm 是最后一个敞口）。与其逐个改生成器，
 # 不如统一验一次：在 HEAD 上开 detached worktree 重跑全部，产物必须逐字不变。
