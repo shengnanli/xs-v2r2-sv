@@ -371,6 +371,38 @@ FM_MERGE_DUP = false
 # with scripts/rob_fm_scale_probe.tcl (which does take ROB_UNDRIVEN). Whoever
 # adds it should make it fail-closed the way FM_MODE is.
 
+# ---------------------------------------------------------------------------
+# The protocol, as commands. ★The reason lives here next to them on purpose★:
+# "run the same proof twice" reads like waste, and a reader who has to go find
+# the justification in another file will not go find it. The justification is
+# four runs in evidence/rob-selfcompare-4aa8838b/undriven_safety/, which measure
+# an implementation with a MISSING DRIVER being caught under binary:X and
+# reported SUCCEEDED under 0 when golden's own driver for that net is
+# identically 0. One run cannot distinguish "equivalent" from "the setting hid
+# the difference". Two runs can.
+.PHONY: fm-two-run
+fm-two-run:
+	@echo "=== run 1/2: Formality default (binary:X) ==="
+	ROB_UNDRIVEN=binary:X ROB_MERGE_DUP=false $(MAKE) fm-Rob-undriven RUNDIR=fm_run_binaryX
+	@echo "=== run 2/2: undriven pinned to 0 ==="
+	ROB_UNDRIVEN=0        ROB_MERGE_DUP=false $(MAKE) fm-Rob-undriven RUNDIR=fm_run_undriven0
+	@echo "=== acceptance: the two verdicts must agree ==="
+	python3 $(XSSV_HOME)/scripts/rob_two_run_gate.py fm_run_binaryX fm_run_undriven0
+
+# Until FM_UNDRIVEN exists in the shared fm_eq.tcl, this target drives the
+# standalone probe rather than the normal fm- flow. It is deliberately NOT
+# called `fm-Rob`: taking a single-setting verdict must stay visibly different
+# from satisfying the acceptance criterion.
+.PHONY: fm-Rob-undriven
+fm-Rob-undriven:
+	mkdir -p $(RUNDIR)
+	cp $(GOLDEN_RTL)/Rob.sv $(RUNDIR)/Rob_impl.sv
+	cd $(RUNDIR) && ROB_UNDRIVEN=$(ROB_UNDRIVEN) ROB_MERGE_DUP=$(ROB_MERGE_DUP) \
+	  fm_shell -64 -work_path fmwork \
+	  -file $(XSSV_HOME)/scripts/rob_fm_scale_probe.tcl < /dev/null > probe.log 2>&1
+	grep -E '^PROBE_|Verification (SUCCEEDED|FAILED)|Passing compare points' \
+	  $(RUNDIR)/probe.log | sed 's/^ *//' > $(RUNDIR)/fm_summary.txt
+
 include ../../../scripts/ut_common.mk
 
 # golden's random-init `initial` blocks only exist under `ifndef SYNTHESIS, so
