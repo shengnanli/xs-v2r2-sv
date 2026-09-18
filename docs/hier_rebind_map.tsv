@@ -1515,6 +1515,32 @@ DuplicatedTagArray	array_1	TagArray	GEN_SITE	g_tarr[1].array_k	TagArray		auto_ge
 DuplicatedTagArray	array_2	TagArray	GEN_SITE	g_tarr[2].array_k	TagArray		auto_gen_site_suffix	
 DuplicatedTagArray	array_3	TagArray	GEN_SITE	g_tarr[3].array_k	TagArray		auto_gen_site_suffix	
 DuplicatedTagArray	mbistPl	MbistPipeDcacheTag	SAME_PATH	mbistPl	MbistPipeDcacheTag		auto_same	
+EntriesAluCsrFenceDiv	compTransPolicy	EnqPolicy	UNRESOLVED				none	
+EntriesAluCsrFenceDiv	enqEntries_0	EnqEntry_6	UNRESOLVED				none	
+EntriesAluCsrFenceDiv	enqEntries_1	EnqEntry_6	UNRESOLVED				none	
+EntriesAluCsrFenceDiv	othersEntriesComp_0	OthersEntry_72	UNRESOLVED				none	
+EntriesAluCsrFenceDiv	othersEntriesComp_1	OthersEntry_72	UNRESOLVED				none	
+EntriesAluCsrFenceDiv	othersEntriesComp_10	OthersEntry_72	UNRESOLVED				none	
+EntriesAluCsrFenceDiv	othersEntriesComp_11	OthersEntry_72	UNRESOLVED				none	
+EntriesAluCsrFenceDiv	othersEntriesComp_12	OthersEntry_72	UNRESOLVED				none	
+EntriesAluCsrFenceDiv	othersEntriesComp_13	OthersEntry_72	UNRESOLVED				none	
+EntriesAluCsrFenceDiv	othersEntriesComp_14	OthersEntry_72	UNRESOLVED				none	
+EntriesAluCsrFenceDiv	othersEntriesComp_15	OthersEntry_72	UNRESOLVED				none	
+EntriesAluCsrFenceDiv	othersEntriesComp_2	OthersEntry_72	UNRESOLVED				none	
+EntriesAluCsrFenceDiv	othersEntriesComp_3	OthersEntry_72	UNRESOLVED				none	
+EntriesAluCsrFenceDiv	othersEntriesComp_4	OthersEntry_72	UNRESOLVED				none	
+EntriesAluCsrFenceDiv	othersEntriesComp_5	OthersEntry_72	UNRESOLVED				none	
+EntriesAluCsrFenceDiv	othersEntriesComp_6	OthersEntry_72	UNRESOLVED				none	
+EntriesAluCsrFenceDiv	othersEntriesComp_7	OthersEntry_72	UNRESOLVED				none	
+EntriesAluCsrFenceDiv	othersEntriesComp_8	OthersEntry_72	UNRESOLVED				none	
+EntriesAluCsrFenceDiv	othersEntriesComp_9	OthersEntry_72	UNRESOLVED				none	
+EntriesAluCsrFenceDiv	othersEntriesSimp_0	OthersEntry_66	UNRESOLVED				none	
+EntriesAluCsrFenceDiv	othersEntriesSimp_1	OthersEntry_66	UNRESOLVED				none	
+EntriesAluCsrFenceDiv	othersEntriesSimp_2	OthersEntry_66	UNRESOLVED				none	
+EntriesAluCsrFenceDiv	othersEntriesSimp_3	OthersEntry_66	UNRESOLVED				none	
+EntriesAluCsrFenceDiv	othersEntriesSimp_4	OthersEntry_66	UNRESOLVED				none	
+EntriesAluCsrFenceDiv	othersEntriesSimp_5	OthersEntry_66	UNRESOLVED				none	
+EntriesAluCsrFenceDiv	simpTransPolicy	EnqPolicy	UNRESOLVED				none	
 EntriesVfdivVidiv	compTransPolicy	EnqPolicy_18	INLINE	u_core	-	simp_sel_v,x_trans_sel,simp_deq_sel_vec,simp_can_trans2comp	declared	rtl/backend/xs_iq_entries_core.sv:792「§6 EnqPolicy —— golden 的 EnqPolicy 模块(SelectOne(\"circ\", …, 2))」整块内联。
 EntriesVfdivVidiv	enqEntries_0	EnqEntry_18	INSTANCE	u_core.g_entry[0].u_e	xs_iq_entry		declared	rtl/backend/xs_iq_entries_core.sv:17-20 条目分段 [0..NUM_ENQ-1]=enq；EntriesVfdivVidiv.sv:679 NUM_ENQ=2/NUM_SIMP=2/NUM_COMP=6。
 EntriesVfdivVidiv	enqEntries_1	EnqEntry_18	INSTANCE	u_core.g_entry[1].u_e	xs_iq_entry		declared	rtl/backend/xs_iq_entries_core.sv:17-20 条目分段 [0..NUM_ENQ-1]=enq；EntriesVfdivVidiv.sv:679 NUM_ENQ=2/NUM_SIMP=2/NUM_COMP=6。

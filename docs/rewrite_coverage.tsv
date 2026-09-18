@@ -21,11 +21,11 @@
 #   observation_sink    1 个   9903 端口全 input 的纯观测 sink，19 万行全是端口表
 #
 metric	done	total	percent
-fm_targets_configured	252	357	70.6
-unique_design_written	132	1191	11.1
-unique_design_proven	102	1191	8.6
-golden_lines_written	806973	3902283	20.7
-golden_lines_proven	407955	3902283	10.5
+fm_targets_configured	252	374	67.4
+unique_design_written	134	1191	11.3
+unique_design_proven	104	1191	8.7
+golden_lines_written	899033	3902283	23.0
+golden_lines_proven	500015	3902283	12.8
 #
 # written 里没有绿判决证据的设计族（差额都在这儿，逐个列出不藏）：
 #   AgeDetector                                     12602 行
@@ -69,7 +69,6 @@ StoreQueue	77145	1	REWRITE_L
 EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	69994	1	REWRITE_L
 TLToAXI4	68788	2	-
 EntriesAluMulBkuBrhJmp	64348	1	REWRITE_L
-EntriesAluCsrFenceDiv	62428	1	REWRITE_L
 LoadQueueUncache	59051	1	REWRITE_L
 CtrlBlock	57635	1	REWRITE_L
 MemBlock	57550	1	REWRITE_L
@@ -87,7 +86,8 @@ EntriesFaluFmacFdiv	34614	1	REWRITE_L
 Scheduler	33927	4	REWRITE_L
 EnqEntry	32174	12	-
 EntriesFaluFmac	31646	1	REWRITE_L
-UncacheEntry	29632	16	-
 EntriesStdMoud	29601	1	-
 EntriesStaMou	29558	1	-
 EntriesLdu	29386	1	-
+Domain	26885	2	-
+DataPath	25618	1	REWRITE_L

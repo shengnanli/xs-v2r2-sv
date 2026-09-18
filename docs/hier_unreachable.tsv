@@ -23,6 +23,7 @@ DataModule__16entry_8	SIGNED_OFF_TARGET	ABSORBED_DIRECT	SyncDataModuleTemplate__
 DataModule__64entry	SIGNED_OFF_TARGET	ABSORBED_DIRECT	SyncDataModuleTemplate__1024entry	16	SyncDataModuleTemplate__1024entry	rtl/common/DataModule__64entry.sv
 DataModule__64entry_16	SIGNED_OFF_TARGET	ABSORBED_DIRECT	SyncDataModuleTemplate__1024entry_1	16	SyncDataModuleTemplate__1024entry_1	rtl/common/DataModule__64entry_16.sv
 EnqEntry_18	GOLDEN_ONLY	ABSORBED_DIRECT	EntriesVfdivVidiv	2	EntriesVfdivVidiv	$(GOLDEN_RTL)/EnqEntry_18.sv
+EnqEntry_6	GOLDEN_ONLY	ABSORBED_DIRECT	EntriesAluCsrFenceDiv	2	EntriesAluCsrFenceDiv	$(GOLDEN_RTL)/EnqEntry_6.sv
 EnqPolicy_18	GOLDEN_ONLY	ABSORBED_DIRECT	EntriesVfdivVidiv	2	EntriesVfdivVidiv	$(GOLDEN_RTL)/EnqPolicy_18.sv
 IndexableCAMTemplate	SIGNED_OFF_TARGET	ABSORBED_DIRECT	WrBypass	1	WrBypass	rtl/common/IndexableCAMTemplate.sv
 IndexableCAMTemplate_32	SIGNED_OFF_TARGET	ABSORBED_DIRECT	WrBypass_32	1	WrBypass_32	rtl/common/IndexableCAMTemplate_32.sv
@@ -40,6 +41,8 @@ MbistPipeIttage_4	SIGNED_OFF_TARGET	ABSORBED_DIRECT	ITTageTable_4	1	ITTageTable_
 MiscResultSelect	GOLDEN_ONLY	ABSORBED_COLLATERAL	AluDataModule	1	-	$(GOLDEN_RTL)/MiscResultSelect.sv
 OthersEntry_164	GOLDEN_ONLY	ABSORBED_DIRECT	EntriesVfdivVidiv	2	EntriesVfdivVidiv	$(GOLDEN_RTL)/OthersEntry_164.sv
 OthersEntry_166	GOLDEN_ONLY	ABSORBED_DIRECT	EntriesVfdivVidiv	6	EntriesVfdivVidiv	$(GOLDEN_RTL)/OthersEntry_166.sv
+OthersEntry_66	GOLDEN_ONLY	ABSORBED_DIRECT	EntriesAluCsrFenceDiv	6	EntriesAluCsrFenceDiv	$(GOLDEN_RTL)/OthersEntry_66.sv
+OthersEntry_72	GOLDEN_ONLY	ABSORBED_DIRECT	EntriesAluCsrFenceDiv	16	EntriesAluCsrFenceDiv	$(GOLDEN_RTL)/OthersEntry_72.sv
 PLICFanIn	SIGNED_OFF_TARGET	ABSORBED_DIRECT	TLPLIC	2	TLPLIC	rtl/uncore/PLICFanIn.sv
 Queue1_RegMapperInput	GOLDEN_ONLY	ABSORBED_DIRECT	TLPLIC	1	TLPLIC	$(GOLDEN_RTL)/Queue1_RegMapperInput.sv
 Queue1_RegMapperInput_5	SIGNED_OFF_TARGET	ABSORBED_DIRECT	ICacheCtrlUnit	1	ICacheCtrlUnit	rtl/frontend/Queue1_RegMapperInput_5.sv
