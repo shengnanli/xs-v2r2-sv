@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/Decoupled2LCredit_2
+Implementation : i:/WORK/Decoupled2LCredit_2
+Version        : V-2023.12-SP3
+Date           : Mon Sep 14 02:18:21 2026
+**************************************************
+
+No aborted compare points.
+
+1

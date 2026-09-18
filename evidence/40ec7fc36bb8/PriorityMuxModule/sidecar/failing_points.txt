@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/PriorityMuxModule
+Implementation : i:/WORK/PriorityMuxModule
+Version        : V-2023.12-SP3
+Date           : Mon Sep 14 02:13:42 2026
+**************************************************
+
+No failing compare points.
+
+1

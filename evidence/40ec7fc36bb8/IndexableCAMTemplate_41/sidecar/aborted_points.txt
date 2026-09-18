@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/IndexableCAMTemplate_41
+Implementation : i:/WORK/IndexableCAMTemplate_41
+Version        : V-2023.12-SP3
+Date           : Mon Sep 14 02:05:39 2026
+**************************************************
+
+No aborted compare points.
+
+1
