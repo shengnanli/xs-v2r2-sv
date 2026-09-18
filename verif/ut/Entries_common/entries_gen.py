@@ -102,7 +102,11 @@ class Variant:
         #   等于假设"两口共用"——这正是本轮 Predictor 上踩到的那类坑（per-dup 信号
         #   部分共用部分分份，可读核写成一份、UT 完全看不见）。所以逐张读出来，
         #   把口号擦掉之后要求完全一致；不一致就必须做成按口分份的参数。
-        gms = re.findall(r"wire \[3:0\]\[1:0\]\s+_GEN_\d+ = \{(.*?)\};", txt, re.S)
+        # ★ `=` 与 `{` 之间可能换行(firtool 按 80 列折行)：Ldu/StaMou/StdMoud/
+        #   VlduVstu* 五个变体正是折行的，原来写死 `" = {"` 会把这张表数成 0 张，
+        #   然后在"表数 != 发射口数"那条断言上失败 —— 看起来像"家族维度不支持"，
+        #   其实只是抽取正则不认折行。用 \s* 两边都放开。
+        gms = re.findall(r"wire \[3:0\]\[1:0\]\s+_GEN_\d+\s*=\s*\{(.*?)\};", txt, re.S)
         assert len(gms) == self.n_deq, (
             f'{top}: issueResp 常量表 {len(gms)} 张，发射口 {self.n_deq} 个 —— 对不上')
         norm = {re.sub(r'Resp_\d+_bits', 'Resp_D_bits', g) for g in gms}
@@ -170,6 +174,18 @@ class Variant:
         self.has_ld_dep = bool(ld)
         self.ld_pipes = len(ld) if ld else 1
         self.ld_dep_w = ld[0][1] if ld else 1
+        # ★ IQ 唤醒总线上的 loadDependency 要**单独量**，不能从 has_ld_dep 推。
+        #   FP 族（FaluFmac / FaluFmacFdiv / FaluFcvtF2vFmacFdiv）有 IQ 即时唤醒
+        #   但整条 load 依赖通路是死的，golden 的 io_wakeUpFromIQ_* 上根本没有
+        #   loadDependency 端口 —— 原来这里按 `if v.n_wk_iq:` 无条件发 ld_dep，
+        #   生成的 tb 引用了不存在的端口，VCS 直接 Identifier-not-declared。
+        #   ★ 曾想写成断言「IQ 总线有 ⟺ 条目有」——**实测是假的**：FP 族的条目
+        #     确实有 srcLoadDependency 寄存器(EnqEntry_12:637 等，3 流水 x 2 位，
+        #     next 正常移位)，只是 IQ 总线不带、Entries 顶层也不露 io_loadDependency。
+        #     所以这条只能独立量，不能从 has_ld_dep 推。
+        #     （字段矩阵 ldDep_pipes 那一行量的是**顶层**，不是条目；两者不同义。）
+        self.iq_has_ld_dep = 'io_wakeUpFromIQ_0_bits_loadDependency_0' in self.pmap
+
 
         # 顶层 deqEntry 露出的负载字段必须是条目存的那一份的**子集**。
         # ★ 不是相等:条目(EnqEntry/OthersEntry 是独立模块,端口固定)存着整份 DEQ 负载,
@@ -395,6 +411,12 @@ class Variant:
         self.has_ld2 = 'io_ldCancel_0_ld2Cancel' in self.pmap
 
         # ---- 顶层出口有没有这几组 ----
+        # 条目子模块的 perf* 观测口：tb 的覆盖闸靠层次引用读它们。
+        # ★ 不能按「有 IQ 唤醒就有 perfLdCancel」推：FP 族(EnqEntry_12 等)有
+        #   perfWakeupByIQ/perfOg0Cancel 但**没有** perfLdCancel（整条 ldCancel
+        #   通路不存在）。照推会让 tb 引用不存在的层次名，VCS 报 XMRE。
+        self.has_perf_ld_cancel = 'io_commonOut_perfLdCancel_0' in {
+            n for _, _, n, _ in port_decls(self.enq_mod)}
         self.out_exu    = 'io_exuSources_0_0_value' in self.pmap
         self.out_lddep  = 'io_loadDependency_0_0' in self.pmap
         self.out_cancel = 'io_cancelDeqVec_0' in self.pmap
@@ -432,7 +454,11 @@ def cov_names(v):
     if v.has_ignore:
         nms.append('ignore_old_vd')
     if v.n_wk_iq:
-        nms += ['iq_wake', 'og0_cancel', 'ld_cancel', 'ds_forward']
+        nms += ['iq_wake', 'og0_cancel']
+        # ld_cancel 闸只在条目真有 perfLdCancel 观测口时才立（见 has_perf_ld_cancel）
+        if v.has_perf_ld_cancel:
+            nms.append('ld_cancel')
+        nms.append('ds_forward')
         if v.has_rc:
             nms += ['rc_wake', 'ds_regcache']
     if v.out_cancel:
@@ -627,10 +653,13 @@ def gen_rtl(v):
                 f'{pfx}_{w}_bits_{v.iq_wen[w]}' for w in reversed(range(v.n_wk_iq)))))
             c.append('.%s_pdest({%s})' % (tag, ', '.join(
                 f'{pfx}_{w}_bits_pdest' for w in reversed(range(v.n_wk_iq)))))
-            c.append('.%s_ld_dep({%s})' % (tag, ', '.join(
-                f'{pfx}_{w}_bits_loadDependency_{q}'
-                for w in reversed(range(v.n_wk_iq))
-                for q in reversed(range(v.ld_pipes)))))
+            if v.iq_has_ld_dep:
+                c.append('.%s_ld_dep({%s})' % (tag, ', '.join(
+                    f'{pfx}_{w}_bits_loadDependency_{q}'
+                    for w in reversed(range(v.n_wk_iq))
+                    for q in reversed(range(v.ld_pipes)))))
+            else:
+                c.append(f".{tag}_ld_dep('0)")
             if v.has_rc:
                 c.append('.%s_rc_dest({%s})' % (tag, ', '.join(
                     f'{pfx}_{w}_bits_rcDest' for w in reversed(range(v.n_wk_iq)))))
@@ -753,8 +782,15 @@ def gen_rtl(v):
         for k, b in enumerate(v.fu_bits):
             A(f'  assign io_deqEntry_{d}_bits_status_fuType_{b} = deq_fu_type[{d}][{k}];')
         for s in range(v.n_regsrc):
-            A(f'  assign io_deqEntry_{d}_bits_status_srcStatus_{s}_psrc    = deq_psrc[{d}][{s}];')
-            A(f'  assign io_deqEntry_{d}_bits_status_srcStatus_{s}_srcType = deq_src_type[{d}][{s}];')
+            # ★ 逐端口判在不在 golden 里，不许按「口 0 有、口 1 也该有」补齐。
+            #   FaluFmacFdiv / FaluFcvtF2vFmacFdiv 实测：发射口 0 露
+            #   srcStatus_0/1/2，发射口 1 只露 0/1 —— 第 2 源在口 1 上没有读者，
+            #   firtool 把那两个端口消掉了。补齐成对称 = 造 golden 没有的端口。
+            for fld, arr in (('psrc   ', 'deq_psrc'), ('srcType', 'deq_src_type')):
+                pn = f'io_deqEntry_{d}_bits_status_srcStatus_{s}_{fld.strip()}'
+                if pn in v.pmap:
+                    A(f'  assign io_deqEntry_{d}_bits_status_srcStatus_{s}_{fld} '
+                      f'= {arr}[{d}][{s}];')
             if v.deq_rc:
                 A(f'  assign io_deqEntry_{d}_bits_status_srcStatus_{s}_regCacheIdx = '
                   f'deq_rc_idx[{d}][{s}];')
@@ -932,9 +968,10 @@ def gen_tb(v):
             A(f"    io_wakeUpFromIQ_{w}_bits_pdest <= {v.pdest_w}'(rnd_reg());")
             if v.has_rc:
                 A(f"    io_wakeUpFromIQ_{w}_bits_rcDest <= {v.rc_idx_w}'(rnd_rc());")
-            for q in range(v.ld_pipes):
-                A(f'    io_wakeUpFromIQ_{w}_bits_loadDependency_{q} <= '
-                  f"{v.ld_dep_w}'($urandom_range(0, {(1 << v.ld_dep_w) - 1}));")
+            if v.iq_has_ld_dep:
+                for q in range(v.ld_pipes):
+                    A(f'    io_wakeUpFromIQ_{w}_bits_loadDependency_{q} <= '
+                      f"{v.ld_dep_w}'($urandom_range(0, {(1 << v.ld_dep_w) - 1}));")
             if v.is0lat_kind[w] == 'real':
                 A(f'    io_wakeUpFromIQ_{w}_bits_is0Lat <= ($urandom_range(0, 99) < 55);')
         A('    // og0Cancel：打太满就没有唤醒能过去，打太稀 cancel 分支测不到')
@@ -955,7 +992,8 @@ def gen_tb(v):
         A(f'    io_wakeUpFromWBDelayed_{w}_bits_pdest <= io_wakeUpFromWB_{w}_bits_pdest;')
     for w in range(v.n_wk_iq):
         for f in ([v.iq_wen[w], 'pdest'] + (['rcDest'] if v.has_rc else [])
-                  + ([f'loadDependency_{q}' for q in range(v.ld_pipes)])
+                  + ([f'loadDependency_{q}' for q in range(v.ld_pipes)]
+                     if v.iq_has_ld_dep else [])
                   + (['is0Lat'] if v.is0lat_kind[w] == 'real' else [])):
             A(f'    io_wakeUpFromIQDelayed_{w}_bits_{f} <= io_wakeUpFromIQ_{w}_bits_{f};')
     A('  end')
@@ -1070,9 +1108,10 @@ def gen_tb(v):
         A('    if (%s) cov_og0_cancel++;' % ' || '.join(
             f"{e}.io_commonOut_perfOg0Cancel_{sx} === 1'b1"
             for e in ents for sx in range(v.n_regsrc)))
-        A('    if (%s) cov_ld_cancel++;' % ' || '.join(
-            f"{e}.io_commonOut_perfLdCancel_{sx} === 1'b1"
-            for e in ents for sx in range(v.n_regsrc)))
+        if v.has_perf_ld_cancel:
+            A('    if (%s) cov_ld_cancel++;' % ' || '.join(
+                f"{e}.io_commonOut_perfLdCancel_{sx} === 1'b1"
+                for e in ents for sx in range(v.n_regsrc)))
         if v.has_rc:
             A('    // wakeupRC：IQ 唤醒把某个源改挂到寄存器缓存上')
             A('    if (%s) cov_rc_wake++;' % ' || '.join(
@@ -1251,13 +1290,73 @@ mutants:
 """
 
 
+def port_gate(v, rtl, tb):
+    """端口闸，**两个方向都要核**（CONVENTIONS「闸的负测必须是双向的」）。
+
+    方向一（漏接）：golden 的每个端口都必须在生成的 wrapper 体里出现。
+        只做这一半时，生成器悄悄漏掉 io_fromMem_* 这种整组端口也不会响。
+    方向二（凭空造）：生成件里出现的每个 io_* 标识符都必须是 golden 真有的端口。
+        ★ 这一半是被 FaluFmac 顶出来的：FP 族的 IQ 唤醒总线上没有
+          loadDependency 端口，而 tb 生成器按 `if n_wk_iq:` 无条件驱动它，
+          方向一照样满分（golden 端口一个没漏），VCS 才在编译期报
+          Identifier-not-declared。只做方向一 = 只验证了"它会响"。
+    返回问题列表，空表示两个方向都干净。
+    """
+    bad = []
+    body = rtl.split(');', 1)[1]           # 去掉端口声明块本身
+    missing = [n for n in v.pmap if not re.search(r'\b%s\b' % re.escape(n), body)]
+    if missing:
+        bad.append(f'wrapper 未接的 golden 端口 {len(missing)} 个: {sorted(missing)[:6]}')
+    # 方向二的作用域要划准，否则就是个**恒报警**的闸（第一版正是：它把
+    # 条目子模块的 io_commonIn_*/io_commonOut_*、以及 firtool 折行折断的
+    # `io_dataSources_` 这种半截名一并报了，两个已签核变体全红）。
+    # 只核**与 golden 顶层端口同族**的名字：族 = 第一个下划线段（io_wakeUpFromIQ、
+    # io_fromMem…）。族在 golden 里根本不存在 ⇒ 那是子模块端口或注释，不归本闸管；
+    # 名字以 `_` 结尾 ⇒ 折行折断的半截标识符，跳过。
+    fams = {n.split('_')[1] for n in v.pmap if '_' in n[3:]}
+    for tag, txt in (('wrapper', rtl), ('tb', tb)):
+        used = {m.group(1) for m in re.finditer(r'\b(?:g_)?(io_[A-Za-z0-9_]+)\b', txt)}
+        alien = sorted(n for n in used
+                       if n not in v.pmap and not n.endswith('_')
+                       and '_' in n[3:] and n.split('_')[1] in fams)
+        if alien:
+            bad.append(f'{tag} 引用了 golden 没有的端口 {len(alien)} 个: {alien[:6]}')
+
+    # 方向三：tb 的覆盖闸靠**层次引用**读 golden 条目子模块内部
+    # （u_g.enqEntries_0.io_commonOut_perfLdCancel_0 之类）。这些名字既不在顶层
+    # 端口表里，也不由本生成器声明，方向一/二都够不着 —— 而 FP 族恰恰没有
+    # perfLdCancel，VCS 要到编译期才以 XMRE 报出来。
+    # 判据：被引用的名字必须在**那个子模块的 golden 源文件**里出现过。
+    inst_mod = {'enqEntries': v.enq_mod, 'othersEntriesSimp': v.simp_mod,
+                'othersEntriesComp': v.comp_mod}
+    cache = {}
+    dangling = []
+    for m in re.finditer(r'u_g\.([A-Za-z]+)_(\d+)\.([A-Za-z_]\w*)', tb):
+        mod = inst_mod.get(m.group(1))
+        if mod is None:
+            dangling.append(f'{m.group(1)}_{m.group(2)}(未知实例)'); continue
+        if mod not in cache:
+            cache[mod] = read(mod)
+        if not re.search(r'\b%s\b' % re.escape(m.group(3)), cache[mod]):
+            dangling.append(f'{mod}.{m.group(3)}')
+    if dangling:
+        uniq = sorted(set(dangling))
+        bad.append(f'tb 层次引用了子模块没有的名字 {len(uniq)} 个: {uniq[:6]}')
+    return bad
+
+
 def main(top):
     check = '--check' in sys.argv
     v = Variant(top)
     here = outdir(top)
+    rtl, tb = gen_rtl(v), gen_tb(v)
+    for msg in port_gate(v, rtl, tb):
+        print(f'PORT-GATE FAIL [{top}]: {msg}')
+    if port_gate(v, rtl, tb):
+        return 1
     files = {
-        REPO / 'rtl' / 'backend' / f'{v.top}.sv': gen_rtl(v),
-        here / 'tb.sv':    gen_tb(v),
+        REPO / 'rtl' / 'backend' / f'{v.top}.sv': rtl,
+        here / 'tb.sv':    tb,
         here / 'Makefile': gen_mk(v),
     }
     bad = 0
