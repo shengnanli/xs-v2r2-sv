@@ -43,10 +43,27 @@
 //   （第二次修正恒不触发）。这里用 ptr_add(ptr_add(...)) 如实保留。
 //
 // 本文件 = 参数化可读核 xs_FreeList_core + golden 同名基础 wrapper FreeList
-// （SIZE=16 / 2 分配口 / 2 释放 bank / 无 preAlloc，给 LoadQueueRAW 用）。
-// 家族其余单态化变体各自一个薄 wrapper 文件：
-//   FreeList_5 : 72 项, 3 分配口, 4 释放 bank, preAlloc（LoadQueueReplay）
-// （golden 还有 FreeList_1/_3/_4/_6 尚未重写，届时同样只加薄文件。）
+// （SIZE=16 / 2 分配口 / 2 释放 bank / 无 preAlloc）。
+//
+// ★使用者对照表（逐个量自 golden：`grep -l '^  FreeList<后缀> ' *.sv` 找例化父模块，
+//   再对回 Chisel 的 `new FreeList(...)` 实参）★——
+//   本表原先把基础变体记成"给 LoadQueueRAW 用"，实测是错的：LoadQueueRAW 例化的是
+//   FreeList_4（32 项 / 3 口 / preAlloc），基础变体的例化者是 VLMergeBufferImp。
+//
+//   golden 模块    例化父模块          Chisel 实参 (size/alloc/free/preAlloc)
+//   FreeList     VLMergeBufferImp    16 / 2 / 2 / false   VLoad MergeBuffer freelist
+//   FreeList_1   VSMergeBufferImp    16 / 1 / 1 / false   VStore MergeBuffer freelist
+//   FreeList_3   LoadQueueRAR        72 / 3 / 4 / false
+//   FreeList_4   LoadQueueRAW        32 / 3 / 4 / true
+//   FreeList_5   LoadQueueReplay     72 / 3 / 4 / true
+//   FreeList_6   LoadQueueUncache    16 / 3 / 4 / true
+//
+//   两个 MergeBuffer 变体不导出 io_canAllocate：VMergeBuffer.scala:155 算出的
+//   `canAccept` 一次也没被用（enq.req.ready 走的是 freeCount 比较），整条锥被
+//   firtool 裁掉；LoadQueue* 那四个变体则真的在用，所以留着。
+//
+// 家族其余单态化变体各自一个薄 wrapper 文件（核体只此一份，绝不复制）：
+//   FreeList_1 / FreeList_3 / FreeList_4 / FreeList_5 / FreeList_6
 // =============================================================================
 
 // -----------------------------------------------------------------------------

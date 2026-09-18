@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/RenameTable_2
+Implementation : i:/WORK/RenameTable_2
+Version        : V-2023.12-SP3
+Date           : Fri Sep 18 06:13:59 2026
+**************************************************
+
+No aborted compare points.
+
+1
