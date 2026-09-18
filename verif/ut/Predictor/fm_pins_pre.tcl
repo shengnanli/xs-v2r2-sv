@@ -1,4 +1,4 @@
-# Predictor FM 匹配前钉点 —— 9 族结构双射，共 2631 个点
+# Predictor FM 匹配前钉点 —— 11 族结构双射，共 2711 个点
 # ============================================================================
 # 【本文件解决什么】
 #   官方 runner 在 commit 9ddf3b9 的实跑（evidence/9ddf3b94c946/Predictor/）里，
@@ -56,16 +56,19 @@
 #   brnum         s<N>_last_br_num_oh[_reg]_dup_<D>_reg[b]   s<N>_brnum[_reg]_reg[k][b]   24
 #   predCycle     io_..._s<S>_full_pred_<D>_predCycle_c_reg[b] pred_cycle_q_reg[S-1][D][b] 768
 #   folded_hist   s<N>_folded_gh[_reg]_dup_<D>_hist_<h>_folded_hist_reg[b]
-#                                                            s<N>_folded_gh[_reg]_reg[k][h][b] 1120
+#                                                            s<N>_folded_gh[_reg]_reg[k]\[h<h>][b] 1120
 #   afhob         s<N>_ahead_fh_oldest_bits[_reg]_dup_<D>_afhob_<j>_bits_<b>_reg
-#                                                            s<N>_afhob[_reg]_reg[k][j][b]  184
+#                                                            s<N>_afhob[_reg]_reg[k]\[g<j>][b] 184
 #   ghist_ptr     s<N>_ghist_ptr[_reg]_dup_<d>_{flag_reg,value_reg[b]}
 #                                                            s<N>_ghist_ptr[_reg]_reg[d]\[flag|value][b] 144
 #   power_on      powerOnResetState_reg                      power_on_reset_state_reg       1
 #   perf          io_perf_<n>_value_REG[_1]_reg[b]           perf_q{1,2}_reg[n][b]         84
 #   segpc         predictors_io_update_bits_pc_predictors_io_update_pc_seg_<g>_value_reg[b]
 #                                                            upc_seg<g>_reg[b]              50
-#                                                                                   合计 2631
+#   jalr_target   previous_s2_pred_full_pred_0_jalr_target_reg[b]
+#                                                            prev_s2_jalr_target_reg[b]     50
+#   topdown       topdown_stages_<s>_reasons_<id>_reg         td_q_reg[s]\[<原因字段名>]      30
+#                                                                                   合计 2711
 #
 #   两处命名细节（两侧各自一致，不是巧合）：
 #     · s0 级的信号在两侧 RTL 里名字本来就带 `_reg` 后缀（它是"S0 保持寄存器"，
@@ -86,55 +89,37 @@
 #   钉错了的后果是 FM 判**不等价**（响亮失败），不是静默放过 —— 方向上是安全的。
 #
 # ============================================================================
-# 【★两族有 impl 侧独有的死位，钉不了，本文件如实声明并计数★】
-#   可读核为了可读性用了**等宽**的字类型 / **完整**的结构，golden 侧 firtool 则把
-#   用不到的位宽和字段 DCE 掉了。于是可读核多出一批"没有 golden 对家"的死寄存器：
+# 【★"impl 侧独有死位" 本轮已清零 —— 改的是 RTL，不是判据★】
+#   到 7b4a825 为止，可读核还多着 585 个"没有 golden 对家"的死寄存器。它们不是
+#   钉点能解决的问题（没有对家可钉），成因全都是**可读核比 golden 多存了东西**：
 #
-#     folded_hist  376 位 = (11 - CLEN[h]) × 2 dup × 4 级 求和
-#                  可读核 `fh_word_t = logic[FH_MAX_W-1:0]` 是**定宽 11 位**（:156），
-#                  这样 `folded_hist_t` 才能是 packed 数组、才能用 genvar 循环写；
-#                  golden 则给每条 hist 按自己的 CLEN[h] 开位宽（4~11 位不等）。
-#     afhob          8 位 = afhob 组 4 的 bits_3，golden 侧只有 bits_0..2。
+#     folded_hist  376 = Σ(11 - CLEN[h]) × 2 dup × 4 级
+#                  可读核早先用定宽 11 位的 fh_word_t 拼 packed 数组，
+#                  golden 则按每条自己的 CLEN[h]（4~11 位）开宽。
+#     afhob          8 = afhob 第 4 组的 bits_3；golden 只有 bits_0..2
+#                  （它只服务 hist_7，而 hist_7 的 WRAP1 为假，第二位最老位用不上）。
+#     prev_s2      190 = jalr_target 的 dup1-3 共 150 + offsets 32
+#                        + fall_through_err 4 + multi_hit 4；golden 整片 DCE。
+#     td_q           9 = reasons 0/10/11 × 3 级；golden 只建 1..9 与 12。
+#     do_redirect    2 = level 的第 1 位、ssp 的第 4 位；golden 位宽更窄。
 #
-#   这 384 位在本次实测里逐条核对过、**零例外**：受影响的 124 个 (级,dup,hist) 组里，
-#   68 组只有 CLEN..10 这几位未配（其余位 FM 自己按名字配上了）、56 组整字未配，
-#   没有第三种形状。核对脚本与口径见本 commit 的 commit message。
+#   本轮（agent/predictor）把这 585 位**从 RTL 里去掉**，让可读核存的东西与 golden
+#   逐个对齐：折叠历史改成按 CLEN 逐条命名的 packed 结构、afhob 第 4 组开 3 位、
+#   prev_s2 换成只含 golden 那几个字段的 prev_s2_t、td_q 换成按原因命名的
+#   td_reason_t、level/ssp 按端口真实宽度声明。判据没有放松一寸：消掉的每一位
+#   都能在 golden 里指出"这里没有这个寄存器"。
 #
-#   本文件对它们**不做任何事**：不钉（没有对家可钉）、更不 dont_verify。它们会留在
-#   FM 的 unmatched-unread-impl 里。要真正收掉只有两条路，都超出"钉点"的权限：
-#     (a) 把 fh_word_t 改成按 h 变宽 —— 违反"Predictor.sv 一个字都不许改"，
-#         而且会毁掉 folded_hist_t 的 packed 数组形式与 genvar 循环，可读性大跌；
-#     (b) 由 reviewer 按"impl 侧 cone-dead 超配"定性裁定（本仓既有"超配 FIFO → 缩
-#         尺寸"的先例，但那是可以改 RTL 的场合）。
-#   ★这是本轮**没有**收口的部分，必须上报，不能让它混在 2631 的"钉满"里当成已解决。★
+#   与此同时，jalr_target 的 **dup0** 那 50 位是反过来的形状：golden 里**有**这个
+#   寄存器（只是它的读者是两条悬空 wire），可读核照建一份并由第 (j) 族整族钉死，
+#   于是它从"两侧各 50 个孤立未配未读点"变成 50 个真比较点。
 #
-#   同源但本文件**未钉**的还有三族（它们 golden 侧当前**零**未配，只有 impl 侧独有
-#   死位，钉点帮不上忙；列在这里是为了下一轮打开加强后若发生匹配塌陷有据可查）：
-#     prev_s2  190 位（jalr_target 的 dup1-3 共 150、offsets 32、
-#                      fall_through_err 4、multi_hit 4 —— golden 侧整片被 DCE）
-#       ★2026-09-17 更正（evidence/8798034cedf7/Predictor）★：上面"golden 侧零未配"
-#       只在加强开关**关着**时成立。8798034 那轮 vmucp=true 打开后，jalr_target 的
-#       **dup0** 在 golden 侧也塌进了未配未读（ref 侧 50 位
-#       previous_s2_pred_full_pred_0_jalr_target_reg[0..49]），impl 侧则是四份 dup
-#       共 200 位 prev_s2_reg[0..3]\[jalr_target]。即这一族当前的形状是
-#       ref 50 <-> impl 50（dup0，构造性双射）+ impl 独有 150（dup1-3）。
-#       本文件仍**未钉**它：钉上会让这 50 位升成真比较点，须先单独确认
-#       可读核 prev_s2_reg[0] 的 jalr_target 更新条件与 golden 逐条一致，
-#       否则是把未配换成新的 failing。这是留给下一轮的待办，不是已解决项。
-#     td_q       9 位（reasons 0/10/11，golden 只留 1..9 与 12）
-#     do_redirect 2 位（level 的第 1 位、ssp 的第 4 位，golden 侧位宽更窄）
-#   加上上面的 384，impl 侧独有死位合计 **585**。
-#
-#   两侧账目对得上（可复核）：
-#     ref  未配 134(比较) + 1113(未读) = 1247
-#     impl 未配   6(比较) + 1826(未读) = 1832 ，减去 585 个 impl 独有 = 1247
-#   —— 正好相等。即：**除了这 585 位，两侧未配点是严格一一对应的**，本文件把其中
-#   落在上述九族里的部分全部钉上。
+#   所以本文件现在声明 impl 侧独有死位 = **0**（下方 _implonly）。这个数是
+#   fail-closed 判据的一部分：可读核里只要再冒出一个没有对家的死位，审计当场 error。
 #
 # ============================================================================
 # 【fail-closed】
-#   2631 个一个都不许钉不上。任何一侧少一个点、多一个点，或 impl 侧独有死位的数目
-#   不等于声明的 384，都直接 error 退出 —— 名字/结构一旦漂了，继续跑出来的
+#   2711 个一个都不许钉不上。任何一侧少一个点、多一个点，或 impl 侧独有死位的数目
+#   不等于声明的 0，都直接 error 退出 —— 名字/结构一旦漂了，继续跑出来的
 #   SUCCEEDED 是假的。查询动词缺失（沙箱白名单没放行）同样 error：不允许退化成
 #   "照名字硬猜"。
 #
@@ -178,7 +163,7 @@ if {$top eq "Predictor"} {
 
   # 核**设计**前缀：从一个必然存在的叶名反推，并断言只有一个 xs_*_core 带它。
   # 实例名 u_core 是本仓单文件规范的既有约定（module xs_<M>_core 由同名 wrapper 以
-  # 固定实例名 u_core 例化），但约定只是起点 —— 真正的判据是下面"2631 个必须全钉上"。
+  # 固定实例名 u_core 例化），但约定只是起点 —— 真正的判据是下面"2711 个必须全钉上"。
   set _pfx {}
   foreach _c [find_cells "i:/WORK/xs_*_core/ghv_q_reg\[*\]"] {
     # 受限 safe interp 里**没有 file 命令**（interp create -safe 会摘掉它），
@@ -297,7 +282,7 @@ if {$top eq "Predictor"} {
         }
         for {set b 0} {$b < $w} {incr b} {
           _pair "[_g $s folded_gh $D]_hist_${h}_folded_hist_reg\[$b\]" \
-                "[_i $s folded_gh]\[$k\]\[$h\]\[$b\]"
+                "[_i $s folded_gh]\[$k\]\\\[h${h}\]\[$b\]"
         }
       }
     }
@@ -329,7 +314,7 @@ if {$top eq "Predictor"} {
         }
         for {set b 0} {$b < $w} {incr b} {
           _pair "[_g $s ahead_fh_oldest_bits $D]_afhob_${j}_bits_${b}_reg" \
-                "[_i $s afhob]\[$k\]\[$j\]\[$b\]"
+                "[_i $s afhob]\[$k\]\\\[g${j}\]\[$b\]"
         }
       }
     }
@@ -400,8 +385,39 @@ if {$top eq "Predictor"} {
     }
   }
 
+  # (j) prev_s2 的 jalr_target —— 只有 dup0 这一份，50 位（第十族）
+  #     golden Predictor.sv:9341 声明 reg [49:0] previous_s2_pred_full_pred_0_jalr_target，
+  #     :24761 在与 br_taken_mask/slot_valids/is_br_sharing/hit **同一个** s2_fire 分支里
+  #     打拍，:24029 同一个复位归零。可读核 rtl/frontend/Predictor.sv 的
+  #     prev_s2_jalr_target 逐条照抄这三件事。位下标同号，没有自由度。
+  #
+  #     ★两侧都是死位，为什么还要钉★：golden 侧它唯一的读者
+  #     s3_redirect_on_jalr_target_dup_0 只喂进 _GEN_45/_GEN_46 两条悬空 wire
+  #     （golden :9655-9658，全文件再无引用），所以 FM 把它划进未读点；可读核侧同样
+  #     没有读者。不钉就是 ref 50 + impl 50 两堆各自孤立的未配未读点（7b4a825 那轮
+  #     实测就是这个形状）；钉上之后，vmucp 加强会把它们升成真比较点，FM 要逐位
+  #     证明"两侧这个死寄存器在每一拍装的值也相同"。这是**加强**，不是放过。
+  for {set b 0} {$b < 50} {incr b} {
+    _pair "previous_s2_pred_full_pred_0_jalr_target_reg\[$b\]" "prev_s2_jalr_target_reg\[$b\]"
+  }
+
+  # (k) topdown 原因寄存器 —— 3 级 × 10 个原因（第十一族）
+  #     golden（Predictor.sv:1346-1375）是 30 个散装标量 reg
+  #       topdown_stages_<级>_reasons_<原因 id>
+  #     可读核（rtl/frontend/Predictor.sv 的 TOPDOWN_ 段）是 td_q[级]，元素为
+  #     td_reason_t —— 按原因**命名**的 10 个字段，不是按 id 编号的位图，
+  #     所以 FM 的名字启发式两侧完全对不上，必须整族钉。
+  #     id ↔ 字段名的唯一对应处在可读核的 reasons_vec()，这里逐条照抄。
+  foreach {_rid _fld} {1 override_bubble 2 ftq_update 3 tage_miss 4 sc_miss
+                       5 ittage_miss 6 ras_miss 7 mem_vio 8 other
+                       9 ftq_full 12 btb_miss} {
+    for {set st 0} {$st <= 2} {incr st} {
+      _pair "topdown_stages_${st}_reasons_${_rid}_reg" "td_q_reg\[$st\]\\\[${_fld}\]"
+    }
+  }
+
   # --- 4) 逐对存在性检查 + 钉点（fail-closed）--------------------------------
-  set _expect 2631   ;# 2497（七族）+ 84（perf 流水，第八族）+ 50（update pc 分段，第九族）
+  set _expect 2711   ;# 2497（七族）+ 84（perf）+ 50（update pc）+ 50（jalr_target）+ 30（topdown）
   if {[llength $_pairs] != $_expect} {
     error "PREDICTOR_PIN: 生成了 [llength $_pairs] 对期望，应为 $_expect —— 生成规则写错了"
   }
@@ -410,7 +426,7 @@ if {$top eq "Predictor"} {
   set _fail {}
   set _dup {}
   # ★单射性：两侧各自的叶名都不许出现第二次★
-  # 光靠"生成 2631 对 + 族内总点数 2631"抓不到"某点钉了两次、另一点漏了"这种形状
+  # 光靠"生成 2711 对 + 族内总点数 2711"抓不到"某点钉了两次、另一点漏了"这种形状
   # （总数仍然对得上）。这两个 _seen 数组把它堵死：加上后面的族内计数审计，
   # 才真的证明了双射 —— 单射由这里保证，满射由"消耗数 == 族内总数"保证。
   array set _seenref {}
@@ -444,8 +460,8 @@ if {$top eq "Predictor"} {
   # 这正是 Composer 那边"只钉 400、剩 200 打开加强后才冒出来"的形状。
   #
   # 判据：本文件覆盖的九族，在两侧各自的**族内总点数**必须等于
-  #   golden : 2631（全部有对家）
-  #   impl   : 2631 + 384（可读核独有死位，见文件头声明）
+  #   golden : 2711（全部有对家）
+  #   impl   : 2711 + 0（可读核已无独有死位，见文件头声明）
   proc _count {arrname rx} {
     upvar 1 $arrname A
     set c 0
@@ -453,15 +469,18 @@ if {$top eq "Predictor"} {
     return $c
   }
   # golden 侧九族的叶名形状（与上面 (a)..(i) 的生成规则一一对应）
-  set _rxref {(^ghv_[0-9]+_reg$)|(^s[0-9]_last_br_num_oh(_reg)?_dup_[0-9]+_reg\[[0-9]+\]$)|(^io_bpu_to_ftq_resp_bits_s[123]_full_pred_[0-3]_predCycle_c_reg\[[0-9]+\]$)|(^s[0-9]_folded_gh(_reg)?_dup_[0-9]+_hist_[0-9]+_folded_hist_reg\[[0-9]+\]$)|(^s[0-9]_ahead_fh_oldest_bits(_reg)?_dup_[0-9]+_afhob_[0-9]+_bits_[0-9]+_reg$)|(^s[0-9]_ghist_ptr(_reg)?_dup_[0-9]+_(flag_reg$|value_reg\[[0-9]+\]$))|(^powerOnResetState_reg$)|(^io_perf_[0-6]_value_REG(_1)?_reg\[[0-9]+\]$)|(^predictors_io_update_bits_pc_predictors_io_update_pc_seg_[012]_value_reg\[[0-9]+\]$)}
+  set _rxref {(^ghv_[0-9]+_reg$)|(^s[0-9]_last_br_num_oh(_reg)?_dup_[0-9]+_reg\[[0-9]+\]$)|(^io_bpu_to_ftq_resp_bits_s[123]_full_pred_[0-3]_predCycle_c_reg\[[0-9]+\]$)|(^s[0-9]_folded_gh(_reg)?_dup_[0-9]+_hist_[0-9]+_folded_hist_reg\[[0-9]+\]$)|(^s[0-9]_ahead_fh_oldest_bits(_reg)?_dup_[0-9]+_afhob_[0-9]+_bits_[0-9]+_reg$)|(^s[0-9]_ghist_ptr(_reg)?_dup_[0-9]+_(flag_reg$|value_reg\[[0-9]+\]$))|(^powerOnResetState_reg$)|(^io_perf_[0-6]_value_REG(_1)?_reg\[[0-9]+\]$)|(^predictors_io_update_bits_pc_predictors_io_update_pc_seg_[012]_value_reg\[[0-9]+\]$)|(^previous_s2_pred_full_pred_0_jalr_target_reg\[[0-9]+\]$)|(^topdown_stages_[0-2]_reasons_[0-9]+_reg$)}
   # 可读核侧同九族
-  set _rximp {(^ghv_q_reg\[[0-9]+\]$)|(^s[0-9]_brnum(_reg)?_reg\[[0-9]+\]\[[0-9]+\]$)|(^pred_cycle_q_reg\[[0-9]+\]\[[0-9]+\]\[[0-9]+\]$)|(^s[0-9]_folded_gh(_reg)?_reg\[[0-9]+\]\[[0-9]+\]\[[0-9]+\]$)|(^s[0-9]_afhob(_reg)?_reg\[[0-9]+\]\[[0-9]+\]\[[0-9]+\]$)|(^s[0-9]_ghist_ptr(_reg)?_reg\[[0-9]+\]\\\[(flag|value)\])|(^power_on_reset_state_reg$)|(^perf_q[12]_reg\[[0-9]+\]\[[0-9]+\]$)|(^upc_seg[012]_reg\[[0-9]+\]$)}
+  set _rximp {(^ghv_q_reg\[[0-9]+\]$)|(^s[0-9]_brnum(_reg)?_reg\[[0-9]+\]\[[0-9]+\]$)|(^pred_cycle_q_reg\[[0-9]+\]\[[0-9]+\]\[[0-9]+\]$)|(^s[0-9]_folded_gh(_reg)?_reg\[[0-9]+\]\\\[h[0-9]+\]\[[0-9]+\]$)|(^s[0-9]_afhob(_reg)?_reg\[[0-9]+\]\\\[g[0-9]+\]\[[0-9]+\]$)|(^s[0-9]_ghist_ptr(_reg)?_reg\[[0-9]+\]\\\[(flag|value)\])|(^power_on_reset_state_reg$)|(^perf_q[12]_reg\[[0-9]+\]\[[0-9]+\]$)|(^upc_seg[012]_reg\[[0-9]+\]$)|(^prev_s2_jalr_target_reg\[[0-9]+\]$)|(^td_q_reg\[[0-2]\]\\\[[a-z_]+\]$)}
   set _cref [_count _REF $_rxref]
   set _cimp [_count _IMP $_rximp]
   # 满射：族内每一个 golden 叶名都必须被消耗掉；可读核侧同理，只准剩下声明的死位
   set _usedref [array size _seenref]
   set _usedimp [array size _seenimp]
-  set _implonly 384   ;# folded_hist 376 + afhob 8，见文件头【impl 侧独有死位】
+  # ★本轮起为 0★：可读核里"没有 golden 对家的死寄存器"已在 RTL 层面消干净
+  # （folded_hist 按 CLEN 逐条开宽、afhob 第 4 组 3 位、prev_s2 只留 golden 有的字段、
+  #  td_q 只开 10 个原因），详见文件头【impl 侧独有死位】一节。
+  set _implonly 0
   set _bad 0
   if {$_usedref != $_expect || $_usedimp != $_expect} {
     puts "PREDICTOR_PIN_AUDIT: 消耗的不重复叶名 golden=$_usedref 可读核=$_usedimp，应各为 $_expect"

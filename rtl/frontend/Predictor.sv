@@ -63,39 +63,53 @@
 // 【可读核不做的事】
 //   · 预测本身 —— 在 Composer 里(本文件只例化它)；
 //   · 187 个预测包字段的输出 —— Composer 直连顶层输出，wrapper 里连线，不进核。
+//
+// 【★本核只建 golden 真有的寄存器：不多一个，也不少一个★】
+//   这条规矩比"看起来整齐"优先。它有两个方向，本文件两个方向都有例子：
+//     少建：折叠历史逐条按自己的 CLEN 开宽（不是等宽 11 位）、AFHOB 第 4 组只开
+//           3 位、prev_s2 只存 S3 覆盖判定真正读的那几个字段、topdown 只开本模块
+//           负责的 10 个原因、redirect 的 level/ssp 按端口真实宽度。
+//           —— 多建出来的位在 golden 里根本不存在，留着既误导读者，也让 FM 多出
+//              一堆"没有对家的未读点"。
+//     多建：prev_s2_jalr_target（只有 dup0）在 golden 里是个**死**寄存器 ——
+//           它唯一的读者是两条悬空 wire。功能上删了没影响，但 golden 有它，
+//           所以本核照建，让 FM 逐位证它等价。
+//   判断依据永远是 golden 源码里"这里到底有没有这个寄存器"，不是对称性直觉。
 // =============================================================================
-// 本文件导航（共 3384 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
-//   L38    它在前端的位置
-//   L52    S0~S3 四级覆盖式流水
-//   L59    五个 PhyPriorityMux：S0 状态从哪来
-//   L82    ★本次重写的核心：GHV 从 256 个散装寄存器收回成一个向量★
-//   L91    MBIST 直通：633 端口里 457 个不是功能端口
-//   L96    可读核不做的事
-//   L218   xs_Predictor_core —— 可读核
-//   L288   PRED_ —— 从 full_pred 派生的预测属性
-//   L415   PIPE_ —— S1/S2/S3 覆盖式流水握手
-//   L536   GHV_ —— ★全局历史向量：一个 256 位环形位缓冲★
-//   L520   怎么用】ghist_ptr 指向"最新一位的下一格"
-//   L526   谁写】四个源，同一套优先级
-//   L584   AFHOB_ —— 折叠历史的"最老位"预读
-//   L610   FH_ —— 折叠历史的增量更新
-//   L679   GHVWR_ —— 把"某一级要往 GHV 写什么"算成 256 位的 wen/wdata
-//   L704   STAGE_ —— S1/S2/S3 的历史状态流水
-//   L802   OVR_ —— 级间覆盖判定
-//   L845   RDR_ —— FTQ 真重定向：锁存一拍，然后把历史整体回滚重算
-//   L918   SEL_ —— S0 五选一
-//   L960   流水寄存器本体
-//   L965   s0_pc_reg 是全模块唯一**不带复位**的流水寄存器
-//   L1069  GHV 写：四个源各自算 wen/wdata
-//   L1086  GHIST_ —— 送 Composer 的"推测历史"
-//   L1090  送 FTQ 的控制输出
-//   L1144  TOPDOWN_ —— 取指气泡归因
-//   L1216  上电复位状态
-//   L1227  predCycle —— 打在预测包上的时间戳
-//   L1279  SEGPC_ —— update pc 的分段打拍
-//   L1281  PERF_ —— Composer 的 7 路性能计数各打 2 拍再送出
-//   L1259  golden 这 14 个寄存器**不带复位**
-//   L1314  Predictor —— golden 同名 wrapper
+// 本文件导航（共 3618 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+//   L40    它在前端的位置
+//   L54    S0~S3 四级覆盖式流水
+//   L61    五个 PhyPriorityMux：S0 状态从哪来
+//   L84    ★本次重写的核心：GHV 从 256 个散装寄存器收回成一个向量★
+//   L93    MBIST 直通：633 端口里 457 个不是功能端口
+//   L98    可读核不做的事
+//   L102   ★本核只建 golden 真有的寄存器：不多一个，也不少一个★
+//   L277   xs_Predictor_core —— 可读核
+//   L349   PRED_ —— 从 full_pred 派生的预测属性
+//   L516   PIPE_ —— S1/S2/S3 覆盖式流水握手
+//   L637   GHV_ —— ★全局历史向量：一个 256 位环形位缓冲★
+//   L642   怎么用】ghist_ptr 指向"最新一位的下一格"
+//   L648   谁写】四个源，同一套优先级
+//   L685   AFHOB_ —— 折叠历史的"最老位"预读
+//   L693   一组：往回数 LEN、LEN-1、LEN-2、LEN-3 这 4 位
+//   L726   FH_ —— 折叠历史的增量更新
+//   L801   GHVWR_ —— 把"某一级要往 GHV 写什么"算成 256 位的 wen/wdata
+//   L826   STAGE_ —— S1/S2/S3 的历史状态流水
+//   L924   OVR_ —— 级间覆盖判定
+//   L967   RDR_ —— FTQ 真重定向：锁存一拍，然后把历史整体回滚重算
+//   L1065  SEL_ —— S0 五选一
+//   L1107  流水寄存器本体
+//   L1112  s0_pc_reg 是全模块唯一**不带复位**的流水寄存器
+//   L1215  GHV 写：四个源各自算 wen/wdata
+//   L1232  GHIST_ —— 送 Composer 的"推测历史"
+//   L1260  送 FTQ 的控制输出
+//   L1290  TOPDOWN_ —— 取指气泡归因
+//   L1398  上电复位状态
+//   L1407  predCycle —— 打在预测包上的时间戳
+//   L1459  SEGPC_ —— update pc 的分段打拍
+//   L1491  PERF_ —— Composer 的 7 路性能计数各打 2 拍再送出
+//   L1493  golden 这 14 个寄存器**不带复位**
+//   L1506  Predictor —— golden 同名 wrapper
 //
 
 package predictor_pkg;
@@ -153,10 +167,50 @@ package predictor_pkg;
 
   // ---- 类型 -------------------------------------------------------------
   typedef logic [VADDR_BITS-1:0]    vaddr_t;
-  typedef logic [FH_MAX_W-1:0]      fh_word_t;              // 折叠历史(按 CLEN 右对齐)
-  typedef fh_word_t [1:NUM_FH]      folded_hist_t;
+
+  // fh_word_t 是折叠历史的**算式中间宽度**（取最宽的那条 CLEN=11），只在
+  // 组合函数内部用；它不是任何寄存器的宽度。
+  typedef logic [FH_MAX_W-1:0]      fh_word_t;
+
+  // 折叠历史的存储形态：★每条按自己的 CLEN 开位宽，一位不多一位不少★
+  //   golden 里 hist_12 就是 4 位、hist_1 就是 11 位（Chisel 的 UInt(CLEN.W)），
+  //   17 条各不相同。本核早先图省事用了等宽 11 位的 packed 数组，多出来的高位
+  //   两侧都没有读者 —— 既是 376 个"impl 独有的死寄存器"（FM 判 unread），也让
+  //   读代码的人误以为 17 条折叠历史一样宽。字段名 h<n> 与 golden 的 hist_<n>
+  //   同号。宽度取自上面的 FH_CLEN 表，不另写一份字面量。
+  typedef struct packed {
+    logic [FH_CLEN[ 1]-1:0] h1;
+    logic [FH_CLEN[ 2]-1:0] h2;
+    logic [FH_CLEN[ 3]-1:0] h3;
+    logic [FH_CLEN[ 4]-1:0] h4;
+    logic [FH_CLEN[ 5]-1:0] h5;
+    logic [FH_CLEN[ 6]-1:0] h6;
+    logic [FH_CLEN[ 7]-1:0] h7;
+    logic [FH_CLEN[ 8]-1:0] h8;
+    logic [FH_CLEN[ 9]-1:0] h9;
+    logic [FH_CLEN[10]-1:0] h10;
+    logic [FH_CLEN[11]-1:0] h11;
+    logic [FH_CLEN[12]-1:0] h12;
+    logic [FH_CLEN[13]-1:0] h13;
+    logic [FH_CLEN[14]-1:0] h14;
+    logic [FH_CLEN[15]-1:0] h15;
+    logic [FH_CLEN[16]-1:0] h16;
+    logic [FH_CLEN[17]-1:0] h17;
+  } folded_hist_t;
+
+  // AFHOB 一组最老位。6 组里 5 组是 4 位，**第 4 组只有 3 位**：它服务的只有
+  // hist_7（LEN=8 / CLEN=7），而 LEN-2=6 < CLEN 意味着"第二条分支的最老位"
+  // 根本不绕回、永远用不上（见 g_fh_def 的 WRAP1），于是 golden 只留了
+  // s0_ahead_fh_oldest_bits_dup_*_afhob_4_bits_0..2。这个不对称是真的，照抄。
   typedef logic [NUM_BR*2-1:0]      afhob_word_t;           // 一组 4 个最老位
-  typedef afhob_word_t [0:NUM_AFHOB-1] afhob_t;
+  typedef struct packed {
+    afhob_word_t          g0;
+    afhob_word_t          g1;
+    afhob_word_t          g2;
+    afhob_word_t          g3;
+    logic [NUM_BR*2-2:0]  g4;    // 只有 3 位（golden 如此）
+    afhob_word_t          g5;
+  } afhob_t;
 
   // 环形历史指针：flag 是绕圈标志，value 是 GHV 下标
   typedef struct packed {
@@ -197,12 +251,17 @@ package predictor_pkg;
     logic         debug_is_mem_vio;
     logic         btb_miss_bubble;
     // —— 仅转发给 Composer ——
-    logic [1:0]   level;
+    // ★宽度按 golden 的寄存器，不按"看起来该多宽"★
+    // level 与 ssp 在顶层端口上就是 1 位 / 4 位（io_ftq_to_bpu_redirect_bits_level、
+    // ..._cfiUpdate_ssp），golden 锁存它们的寄存器也正是 1 位 / 4 位
+    // （Predictor.sv:2522/2528）。早先本核写成 2 位 / 5 位，多出的最高位恒零，
+    // 成了两个没有对家的死寄存器。
+    logic         level;
     vaddr_t       cfi_pc;
     logic         pd_valid;
     logic         pd_is_rvc;
     logic         pd_is_call;
-    logic [4:0]   ssp;
+    logic [3:0]   ssp;
     logic [2:0]   sctr;
     logic         tosw_flag;
     logic [4:0]   tosw_value;
@@ -383,8 +442,47 @@ module xs_Predictor_core
     logic [OFFSET_BITS-1:0] cfi_index;
   } prev_s1_t;
   prev_s1_t   prev_s1    [0:NUM_DUP-1];   // 上一拍 S1 的结论（s1_fire 时锁存）
-  full_pred_t prev_s2    [0:NUM_DUP-1];   // 上一拍 S2 的结论（s2_fire 时锁存）
+
+  // "上一拍 S2 的结论"只需要**下面这几个字段**，不是一整个 full_pred_t：
+  // 它唯一的读者是 S3 覆盖判定（tgt_ps2 / d_ps2），那里只看到跳/不跳、目标、
+  // 落空地址、命中。golden 也正是只留了这几个寄存器（Predictor.sv:9337-9373）；
+  // jalr_target(dup1-3) / offsets / fall_through_err / multi_hit 在 golden 侧
+  // 整片被 DCE —— 它们在这条路上没有任何消费者。
+  typedef struct packed {
+    logic [NUM_BR-1:0]                     br_taken_mask;
+    logic [TOTAL_SLOT-1:0]                 slot_valids;
+    vaddr_t [TOTAL_SLOT-1:0]               targets;
+    vaddr_t                                fall_through_addr;
+    logic                                  is_br_sharing;
+    logic                                  hit;
+  } prev_s2_t;
+  prev_s2_t   prev_s2    [0:NUM_DUP-1];   // 上一拍 S2 的结论（s2_fire 时锁存）
   vaddr_t     prev_s2_pc [0:NUM_DUP-1];
+
+  // ★golden 多出来的一份死寄存器，照抄★
+  // golden 还锁了 dup0 的 jalr_target（Predictor.sv:9341）。它唯一的读者是
+  // s3_redirect_on_jalr_target_dup_0，而那根线只喂进 _GEN_45 / _GEN_46 两条
+  // **悬空**的 wire（:9655-9658，全文件再无引用）—— 是 XSPerf 统计被
+  // `ifndef SYNTHESIS 剥掉后 firtool 没消干净的残留。功能上它是死的，
+  // 但它在 golden 里是真寄存器，所以这里照建、照按 s2_fire 打拍，
+  // 让 FM 逐位证它等价，而不是让两侧各留一堆没有对家的未读点。
+  // ★只有 dup0★：dup1-3 的同名寄存器 golden 里已被 DCE，这里也不建。
+  vaddr_t     prev_s2_jalr_target;
+
+  // prev_s2_t 补齐成 full_pred_t，好复用 derive()/target_sel() 这两个公用函数。
+  // 补的四个字段在 golden 里本就不存在，这里钉零；它们只流向 d_ps2.cfi_index，
+  // 而 d_ps2 只有 .taken_on_slot / .real_br_taken 有读者，补的部分会被消掉。
+  function automatic full_pred_t as_full(prev_s2_t p);
+    full_pred_t f;
+    f = '0;
+    f.br_taken_mask     = p.br_taken_mask;
+    f.slot_valids       = p.slot_valids;
+    f.targets           = p.targets;
+    f.fall_through_addr = p.fall_through_addr;
+    f.is_br_sharing     = p.is_br_sharing;
+    f.hit               = p.hit;
+    return f;
+  endfunction
 
   derived_t d_s1 [0:NUM_DUP-1], d_s2 [0:NUM_DUP-1], d_s3 [0:NUM_DUP-1], d_ps2 [0:NUM_DUP-1];
   vaddr_t   tgt_s1 [0:NUM_DUP-1], tgt_s2 [0:NUM_DUP-1], tgt_s3 [0:NUM_DUP-1], tgt_ps2 [0:NUM_DUP-1];
@@ -393,13 +491,14 @@ module xs_Predictor_core
     assign d_s1[d]  = derive(s1_pred[d]);
     assign d_s2[d]  = derive(s2_pred[d]);
     assign d_s3[d]  = derive(s3_pred[d]);
-    assign d_ps2[d] = derive(prev_s2[d]);
+    assign d_ps2[d] = derive(as_full(prev_s2[d]));
     assign tgt_s1[d]  = target_sel(s1_pred[d],  s1_pc[d],      d_s1[d].taken_on_slot,  s1_pred[d].hit);
     assign tgt_s2[d]  = target_sel(s2_pred[d],  s2_pc[d],      d_s2[d].taken_on_slot,  s2_pred[d].hit);
     // S3 是末级：落空地址算错时不能再信 hit（Chisel 的 isNotS3=false 分支）
     assign tgt_s3[d]  = target_sel(s3_pred[d],  s3_pc[d],      d_s3[d].taken_on_slot,
                                    s3_pred[d].hit & ~s3_pred[d].fall_through_err);
-    assign tgt_ps2[d] = target_sel(prev_s2[d], prev_s2_pc[d], d_ps2[d].taken_on_slot, prev_s2[d].hit);
+    assign tgt_ps2[d] = target_sel(as_full(prev_s2[d]), prev_s2_pc[d],
+                                   d_ps2[d].taken_on_slot, prev_s2[d].hit);
   end
 
   // ===========================================================================
@@ -588,13 +687,28 @@ module xs_Predictor_core
   // 增量更新折叠历史时，要把**即将退出窗口的那一位**从折叠值里 XOR 掉。这一位在
   // GHV 上的下标是 ptr+LEN（往回数第 LEN 位）。一次最多进 2 条分支，所以每个 LEN
   // 要预读 4 位：ptr+LEN、ptr+LEN-1、ptr+LEN-2、ptr+LEN-3。
-  // 6 个不同的 LEN 共 6 组，各 4 位。
+  // 6 个不同的 LEN 共 6 组。★第 4 组只开 3 位★ —— 见 afhob_t 的声明注释：
+  // 它只服务 hist_7，而 hist_7 用不到第二条分支的最老位，golden 里就没有这一位。
   // ===========================================================================
+  // 一组：往回数 LEN、LEN-1、LEN-2、LEN-3 这 4 位
+  function automatic afhob_word_t afhob_group(logic [HIST_LEN-1:0] ghv, cgh_ptr_t ptr,
+                                              int unsigned len);
+    afhob_word_t r;
+    for (int i = 0; i < NUM_BR*2; i++)
+      r[i] = ghv[HIST_PTR_BITS'(ptr.value + HIST_PTR_BITS'(len - i))];
+    return r;
+  endfunction
+
+  // 6 组逐组读。第 4 组截到 3 位 —— 它的第 4 位（往回 LEN-3）没有消费者，golden
+  // 里就不存在这个寄存器，所以这里也不建（见 afhob_t 的注释）。
   function automatic afhob_t afhob_read(logic [HIST_LEN-1:0] ghv, cgh_ptr_t ptr);
     afhob_t r;
-    for (int g = 0; g < NUM_AFHOB; g++)
-      for (int i = 0; i < NUM_BR*2; i++)
-        r[g][i] = ghv[HIST_PTR_BITS'(ptr.value + HIST_PTR_BITS'(AFHOB_LEN[g] - i))];
+    r.g0 = afhob_group(ghv, ptr, AFHOB_LEN[0]);
+    r.g1 = afhob_group(ghv, ptr, AFHOB_LEN[1]);
+    r.g2 = afhob_group(ghv, ptr, AFHOB_LEN[2]);
+    r.g3 = afhob_group(ghv, ptr, AFHOB_LEN[3]);
+    r.g4 = (NUM_BR*2-1)'(afhob_group(ghv, ptr, AFHOB_LEN[4]));
+    r.g5 = afhob_group(ghv, ptr, AFHOB_LEN[5]);
     return r;
   endfunction
 
@@ -657,23 +771,29 @@ module xs_Predictor_core
                                                  logic [NUM_BR:0] br_num_oh,
                                                  int unsigned num, logic taken);
     folded_hist_t r;
-    r[ 1] = g_fh_def[ 1].update(cur[ 1], afhob_real_ob(afh[1], br_num_oh), num, taken);
-    r[ 2] = g_fh_def[ 2].update(cur[ 2], afhob_real_ob(afh[3], br_num_oh), num, taken);
-    r[ 3] = g_fh_def[ 3].update(cur[ 3], afhob_real_ob(afh[2], br_num_oh), num, taken);
-    r[ 4] = g_fh_def[ 4].update(cur[ 4], afhob_real_ob(afh[1], br_num_oh), num, taken);
-    r[ 5] = g_fh_def[ 5].update(cur[ 5], afhob_real_ob(afh[5], br_num_oh), num, taken);
-    r[ 6] = g_fh_def[ 6].update(cur[ 6], afhob_real_ob(afh[3], br_num_oh), num, taken);
-    r[ 7] = g_fh_def[ 7].update(cur[ 7], afhob_real_ob(afh[4], br_num_oh), num, taken);
-    r[ 8] = g_fh_def[ 8].update(cur[ 8], afhob_real_ob(afh[5], br_num_oh), num, taken);
-    r[ 9] = g_fh_def[ 9].update(cur[ 9], afhob_real_ob(afh[2], br_num_oh), num, taken);
-    r[10] = g_fh_def[10].update(cur[10], afhob_real_ob(afh[2], br_num_oh), num, taken);
-    r[11] = g_fh_def[11].update(cur[11], afhob_real_ob(afh[0], br_num_oh), num, taken);
-    r[12] = g_fh_def[12].update(cur[12], '0,                               num, taken);
-    r[13] = g_fh_def[13].update(cur[13], afhob_real_ob(afh[1], br_num_oh), num, taken);
-    r[14] = g_fh_def[14].update(cur[14], '0,                               num, taken);
-    r[15] = g_fh_def[15].update(cur[15], afhob_real_ob(afh[1], br_num_oh), num, taken);
-    r[16] = g_fh_def[16].update(cur[16], afhob_real_ob(afh[5], br_num_oh), num, taken);
-    r[17] = g_fh_def[17].update(cur[17], afhob_real_ob(afh[2], br_num_oh), num, taken);
+    // 每条折叠历史用哪一组最老位由 FH_AFHOB 表定（LEN 相同的共用一组）。
+    // 赋值右边是 fh_word_t（11 位），左边按该条自己的 CLEN 截断 —— update()
+    // 高位本来就补零，截断是无损的。
+    r.h1  = g_fh_def[ 1].update(cur.h1,  afhob_real_ob(afh.g1, br_num_oh), num, taken);
+    r.h2  = g_fh_def[ 2].update(cur.h2,  afhob_real_ob(afh.g3, br_num_oh), num, taken);
+    r.h3  = g_fh_def[ 3].update(cur.h3,  afhob_real_ob(afh.g2, br_num_oh), num, taken);
+    r.h4  = g_fh_def[ 4].update(cur.h4,  afhob_real_ob(afh.g1, br_num_oh), num, taken);
+    r.h5  = g_fh_def[ 5].update(cur.h5,  afhob_real_ob(afh.g5, br_num_oh), num, taken);
+    r.h6  = g_fh_def[ 6].update(cur.h6,  afhob_real_ob(afh.g3, br_num_oh), num, taken);
+    // 第 4 组只有 3 位；补上不存在的第 4 位（恒 0）再走同一个取位函数。
+    // 它只影响 ob[1]，而 hist_7 的 WRAP1 为假、ob[1] 根本不参与运算。
+    r.h7  = g_fh_def[ 7].update(cur.h7,  afhob_real_ob(afhob_word_t'(afh.g4), br_num_oh),
+                                                                            num, taken);
+    r.h8  = g_fh_def[ 8].update(cur.h8,  afhob_real_ob(afh.g5, br_num_oh), num, taken);
+    r.h9  = g_fh_def[ 9].update(cur.h9,  afhob_real_ob(afh.g2, br_num_oh), num, taken);
+    r.h10 = g_fh_def[10].update(cur.h10, afhob_real_ob(afh.g2, br_num_oh), num, taken);
+    r.h11 = g_fh_def[11].update(cur.h11, afhob_real_ob(afh.g0, br_num_oh), num, taken);
+    r.h12 = g_fh_def[12].update(cur.h12, '0,                               num, taken);
+    r.h13 = g_fh_def[13].update(cur.h13, afhob_real_ob(afh.g1, br_num_oh), num, taken);
+    r.h14 = g_fh_def[14].update(cur.h14, '0,                               num, taken);
+    r.h15 = g_fh_def[15].update(cur.h15, afhob_real_ob(afh.g1, br_num_oh), num, taken);
+    r.h16 = g_fh_def[16].update(cur.h16, afhob_real_ob(afh.g5, br_num_oh), num, taken);
+    r.h17 = g_fh_def[17].update(cur.h17, afhob_real_ob(afh.g2, br_num_oh), num, taken);
     return r;
   endfunction
 
@@ -882,15 +1002,40 @@ module xs_Predictor_core
            {rdr_old_ptr.flag, rdr_old_ptr.value} - {1'b0, do_redirect_bits.shift};
   assign rdr_this_br_num_oh = 3'(1) << do_redirect_bits.shift;
 
-  // 重定向点的折叠历史：**按当时的原始历史整段重算**（不是增量），再补上这次的分支
+  // 重定向点的折叠历史：**按当时的原始历史整段重算**（不是增量），再补上这次的分支。
+  // 先是"一条怎么折"，再是"17 条逐条折"。
+  //
+  // 一条：把 hist 的低 LEN 位按 CLEN 分段 XOR 折叠
+  function automatic fh_word_t fh_fold(logic [HIST_LEN-1:0] hist,
+                                       int unsigned len, int unsigned clen);
+    fh_word_t acc;
+    acc = '0;
+    for (int j = 0; j < len; j++)
+      acc[j % clen] = acc[j % clen] ^ hist[j];
+    return acc;
+  endfunction
+
+  // 17 条逐条折叠。折叠历史是 packed 结构（每条宽度不同），不能用下标循环写，
+  // 所以这里与 fh_update_all 一样逐条展开；表在 FH_LEN / FH_CLEN 里，不重复写死。
   function automatic folded_hist_t fh_recompute(logic [HIST_LEN-1:0] hist);
     folded_hist_t r;
-    for (int h = 1; h <= NUM_FH; h++) begin
-      automatic logic [FH_MAX_W-1:0] acc = '0;
-      for (int j = 0; j < FH_LEN[h]; j++)
-        acc[j % FH_CLEN[h]] = acc[j % FH_CLEN[h]] ^ hist[j];
-      r[h] = acc;
-    end
+    r.h1  = fh_fold(hist, FH_LEN[ 1], FH_CLEN[ 1]);
+    r.h2  = fh_fold(hist, FH_LEN[ 2], FH_CLEN[ 2]);
+    r.h3  = fh_fold(hist, FH_LEN[ 3], FH_CLEN[ 3]);
+    r.h4  = fh_fold(hist, FH_LEN[ 4], FH_CLEN[ 4]);
+    r.h5  = fh_fold(hist, FH_LEN[ 5], FH_CLEN[ 5]);
+    r.h6  = fh_fold(hist, FH_LEN[ 6], FH_CLEN[ 6]);
+    r.h7  = fh_fold(hist, FH_LEN[ 7], FH_CLEN[ 7]);
+    r.h8  = fh_fold(hist, FH_LEN[ 8], FH_CLEN[ 8]);
+    r.h9  = fh_fold(hist, FH_LEN[ 9], FH_CLEN[ 9]);
+    r.h10 = fh_fold(hist, FH_LEN[10], FH_CLEN[10]);
+    r.h11 = fh_fold(hist, FH_LEN[11], FH_CLEN[11]);
+    r.h12 = fh_fold(hist, FH_LEN[12], FH_CLEN[12]);
+    r.h13 = fh_fold(hist, FH_LEN[13], FH_CLEN[13]);
+    r.h14 = fh_fold(hist, FH_LEN[14], FH_CLEN[14]);
+    r.h15 = fh_fold(hist, FH_LEN[15], FH_CLEN[15]);
+    r.h16 = fh_fold(hist, FH_LEN[16], FH_CLEN[16]);
+    r.h17 = fh_fold(hist, FH_LEN[17], FH_CLEN[17]);
     return r;
   endfunction
 
@@ -1043,16 +1188,15 @@ module xs_Predictor_core
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       for (int d = 0; d < NUM_DUP; d++) begin prev_s2[d] <= '0; prev_s2_pc[d] <= '0; end
+      prev_s2_jalr_target <= '0;
     end else begin
+      // golden 只留了 dup0 这一份，且是死的（见声明处注释）
+      if (s2_fire_w) prev_s2_jalr_target <= s2_pred[0].jalr_target;
       for (int d = 0; d < NUM_DUP; d++) begin
         if (s2_fire_w) begin
           prev_s2_pc[d]                 <= s2_pc[d];
           prev_s2[d].br_taken_mask      <= s2_pred[d].br_taken_mask;
           prev_s2[d].slot_valids        <= s2_pred[d].slot_valids;
-          prev_s2[d].jalr_target        <= s2_pred[d].jalr_target;
-          prev_s2[d].offsets            <= s2_pred[d].offsets;
-          prev_s2[d].fall_through_err   <= s2_pred[d].fall_through_err;
-          prev_s2[d].multi_hit          <= s2_pred[d].multi_hit;
           prev_s2[d].is_br_sharing      <= s2_pred[d].is_br_sharing;
           prev_s2[d].hit                <= s2_pred[d].hit;
         end
@@ -1152,9 +1296,45 @@ module xs_Predictor_core
   localparam int R_OVERRIDE = 1, R_FTQ_UPD = 2, R_TAGE = 3, R_SC = 4, R_ITTAGE = 5,
                  R_RAS = 6, R_MEMVIO = 7, R_OTHER = 8, R_FTQ_FULL = 9, R_BTB = 12;
 
-  logic [NUM_REASON-1:0] td_q [0:NUM_STAGE-1];   // 三级原因寄存器
-  logic [NUM_REASON-1:0] td_d [0:NUM_STAGE-1];
-  logic [NUM_REASON-1:0] td_out_now;             // 本拍直接叠加到输出上的原因
+  // ★只为本模块负责的那 10 个原因开位★
+  // 输出端口 topdown_info_reasons 是 NUM_REASON 位的位图（id 0..12），但 id 0/10/11
+  // 由 IFU/ICache 负责、本模块永远填不出来。golden 也正是只建了
+  // topdown_stages_<s>_reasons_{1..9,12} 这 10 个寄存器（Predictor.sv:1346-1375），
+  // 没有 0/10/11。早先本核用整条 NUM_REASON 位向量做寄存器，多出的 3 位 × 3 级
+  // 是 9 个恒零的死寄存器。现在按原因命名逐个开，位图只在最后一步拼出来。
+  typedef struct packed {
+    logic override_bubble;   // id 1  后级覆盖前级
+    logic ftq_update;        // id 2  预测器没就绪
+    logic tage_miss;         // id 3
+    logic sc_miss;           // id 4
+    logic ittage_miss;       // id 5
+    logic ras_miss;          // id 6
+    logic mem_vio;           // id 7
+    logic other;             // id 8
+    logic ftq_full;          // id 9  FTQ 收不下
+    logic btb_miss;          // id 12
+  } td_reason_t;
+
+  // 按原因 id 拼成输出位图（这里是 id 与字段唯一的对应处）
+  function automatic logic [NUM_REASON-1:0] reasons_vec(td_reason_t r);
+    logic [NUM_REASON-1:0] v;
+    v = '0;
+    v[R_OVERRIDE]  = r.override_bubble;
+    v[R_FTQ_UPD]   = r.ftq_update;
+    v[R_TAGE]      = r.tage_miss;
+    v[R_SC]        = r.sc_miss;
+    v[R_ITTAGE]    = r.ittage_miss;
+    v[R_RAS]       = r.ras_miss;
+    v[R_MEMVIO]    = r.mem_vio;
+    v[R_OTHER]     = r.other;
+    v[R_FTQ_FULL]  = r.ftq_full;
+    v[R_BTB]       = r.btb_miss;
+    return v;
+  endfunction
+
+  td_reason_t td_q [0:NUM_STAGE-1];   // 三级原因寄存器
+  td_reason_t td_d [0:NUM_STAGE-1];
+  td_reason_t td_out_now;             // 本拍直接叠加到输出上的原因
 
   // 重定向气泡的细分归因（全部来自锁存后的重定向包）
   logic ctrl_bubble, btb_miss_b, tage_miss_b, sc_miss_b, ittage_miss_b, ras_miss_b;
@@ -1185,25 +1365,25 @@ module xs_Predictor_core
 
     // 控制重定向：五选一归因（互斥，按 BTB>TAGE>SC>ITTAGE>RAS 的顺序）
     if (ctrl_bubble) begin
-      if      (btb_miss_b)    begin for (int i=0;i<NUM_STAGE;i++) td_d[i][R_BTB]    = 1'b1; td_out_now[R_BTB]    = 1'b1; end
-      else if (tage_miss_b)   begin for (int i=0;i<NUM_STAGE;i++) td_d[i][R_TAGE]   = 1'b1; td_out_now[R_TAGE]   = 1'b1; end
-      else if (sc_miss_b)     begin for (int i=0;i<NUM_STAGE;i++) td_d[i][R_SC]     = 1'b1; td_out_now[R_SC]     = 1'b1; end
-      else if (ittage_miss_b) begin for (int i=0;i<NUM_STAGE;i++) td_d[i][R_ITTAGE] = 1'b1; td_out_now[R_ITTAGE] = 1'b1; end
-      else if (ras_miss_b)    begin for (int i=0;i<NUM_STAGE;i++) td_d[i][R_RAS]    = 1'b1; td_out_now[R_RAS]    = 1'b1; end
+      if      (btb_miss_b)    begin for (int i=0;i<NUM_STAGE;i++) td_d[i].btb_miss    = 1'b1; td_out_now.btb_miss    = 1'b1; end
+      else if (tage_miss_b)   begin for (int i=0;i<NUM_STAGE;i++) td_d[i].tage_miss   = 1'b1; td_out_now.tage_miss   = 1'b1; end
+      else if (sc_miss_b)     begin for (int i=0;i<NUM_STAGE;i++) td_d[i].sc_miss     = 1'b1; td_out_now.sc_miss     = 1'b1; end
+      else if (ittage_miss_b) begin for (int i=0;i<NUM_STAGE;i++) td_d[i].ittage_miss = 1'b1; td_out_now.ittage_miss = 1'b1; end
+      else if (ras_miss_b)    begin for (int i=0;i<NUM_STAGE;i++) td_d[i].ras_miss    = 1'b1; td_out_now.ras_miss    = 1'b1; end
     end
-    if (memvio_bubble) begin for (int i=0;i<NUM_STAGE;i++) td_d[i][R_MEMVIO] = 1'b1; td_out_now[R_MEMVIO] = 1'b1; end
-    if (other_bubble)  begin for (int i=0;i<NUM_STAGE;i++) td_d[i][R_OTHER]  = 1'b1; td_out_now[R_OTHER]  = 1'b1; end
-    if (btb_bubble)    begin for (int i=0;i<NUM_STAGE;i++) td_d[i][R_BTB]    = 1'b1; td_out_now[R_BTB]    = 1'b1; end
+    if (memvio_bubble) begin for (int i=0;i<NUM_STAGE;i++) td_d[i].mem_vio  = 1'b1; td_out_now.mem_vio  = 1'b1; end
+    if (other_bubble)  begin for (int i=0;i<NUM_STAGE;i++) td_d[i].other    = 1'b1; td_out_now.other    = 1'b1; end
+    if (btb_bubble)    begin for (int i=0;i<NUM_STAGE;i++) td_d[i].btb_miss = 1'b1; td_out_now.btb_miss = 1'b1; end
 
     // 覆盖气泡：S2 覆盖只怪 stage0；S3 覆盖怪 stage0 和 stage1
-    if (s2_redirect[0])  td_d[0][R_OVERRIDE] = 1'b1;
-    if (s3_redirect[0]) begin td_d[0][R_OVERRIDE] = 1'b1; td_d[1][R_OVERRIDE] = 1'b1; end
+    if (s2_redirect[0])  td_d[0].override_bubble = 1'b1;
+    if (s3_redirect[0]) begin td_d[0].override_bubble = 1'b1; td_d[1].override_bubble = 1'b1; end
     // 预测器没就绪：怪对应那一级
-    if (~s1_comp_ready) td_d[0][R_FTQ_UPD] = 1'b1;
-    if (~s2_comp_ready) td_d[1][R_FTQ_UPD] = 1'b1;
-    if (~s3_comp_ready) td_d[2][R_FTQ_UPD] = 1'b1;
+    if (~s1_comp_ready) td_d[0].ftq_update = 1'b1;
+    if (~s2_comp_ready) td_d[1].ftq_update = 1'b1;
+    if (~s3_comp_ready) td_d[2].ftq_update = 1'b1;
     // FTQ 满：只怪 stage0
-    if (ftq_full_stall) td_d[0][R_FTQ_FULL] = 1'b1;
+    if (ftq_full_stall) td_d[0].ftq_full = 1'b1;
   end
 
   always_ff @(posedge clock or posedge reset) begin
@@ -1212,7 +1392,7 @@ module xs_Predictor_core
   end
 
   // 输出 = 末级寄存器 | 本拍直接归因（覆盖/FtqUpdate/FtqFull 只走寄存器路径）
-  assign topdown_info_reasons = td_q[NUM_STAGE-1] | td_out_now;
+  assign topdown_info_reasons = reasons_vec(td_q[NUM_STAGE-1] | td_out_now);
 
   // ===========================================================================
   // 上电复位状态（golden 里只喂断言，SYNTHESIS 下无扇出，但它是真寄存器）
@@ -2611,28 +2791,28 @@ module Predictor(
     .io_in_bits_s0_pc_1                               (s0_pc_w[1]),
     .io_in_bits_s0_pc_2                               (s0_pc_w[2]),
     .io_in_bits_s0_pc_3                               (s0_pc_w[3]),
-    .io_in_bits_folded_hist_1_hist_17_folded_hist     (s0_fg_w[1][17][10:0]),
-    .io_in_bits_folded_hist_1_hist_16_folded_hist     (s0_fg_w[1][16][10:0]),
-    .io_in_bits_folded_hist_1_hist_15_folded_hist     (s0_fg_w[1][15][6:0]),
-    .io_in_bits_folded_hist_1_hist_14_folded_hist     (s0_fg_w[1][14][7:0]),
-    .io_in_bits_folded_hist_1_hist_9_folded_hist      (s0_fg_w[1][9][6:0]),
-    .io_in_bits_folded_hist_1_hist_8_folded_hist      (s0_fg_w[1][8][7:0]),
-    .io_in_bits_folded_hist_1_hist_7_folded_hist      (s0_fg_w[1][7][6:0]),
-    .io_in_bits_folded_hist_1_hist_5_folded_hist      (s0_fg_w[1][5][6:0]),
-    .io_in_bits_folded_hist_1_hist_4_folded_hist      (s0_fg_w[1][4][7:0]),
-    .io_in_bits_folded_hist_1_hist_3_folded_hist      (s0_fg_w[1][3][7:0]),
-    .io_in_bits_folded_hist_1_hist_1_folded_hist      (s0_fg_w[1][1][10:0]),
-    .io_in_bits_folded_hist_3_hist_12_folded_hist     (s0_fg_w[3][12][3:0]),
-    .io_in_bits_folded_hist_3_hist_11_folded_hist     (s0_fg_w[3][11][7:0]),
-    .io_in_bits_folded_hist_3_hist_2_folded_hist      (s0_fg_w[3][2][7:0]),
-    .io_in_bits_s1_folded_hist_3_hist_14_folded_hist  (s1_fg_w[3][14][7:0]),
-    .io_in_bits_s1_folded_hist_3_hist_13_folded_hist  (s1_fg_w[3][13][8:0]),
-    .io_in_bits_s1_folded_hist_3_hist_12_folded_hist  (s1_fg_w[3][12][3:0]),
-    .io_in_bits_s1_folded_hist_3_hist_10_folded_hist  (s1_fg_w[3][10][8:0]),
-    .io_in_bits_s1_folded_hist_3_hist_6_folded_hist   (s1_fg_w[3][6][8:0]),
-    .io_in_bits_s1_folded_hist_3_hist_4_folded_hist   (s1_fg_w[3][4][7:0]),
-    .io_in_bits_s1_folded_hist_3_hist_3_folded_hist   (s1_fg_w[3][3][7:0]),
-    .io_in_bits_s1_folded_hist_3_hist_2_folded_hist   (s1_fg_w[3][2][7:0]),
+    .io_in_bits_folded_hist_1_hist_17_folded_hist     (s0_fg_w[1].h17),
+    .io_in_bits_folded_hist_1_hist_16_folded_hist     (s0_fg_w[1].h16),
+    .io_in_bits_folded_hist_1_hist_15_folded_hist     (s0_fg_w[1].h15),
+    .io_in_bits_folded_hist_1_hist_14_folded_hist     (s0_fg_w[1].h14),
+    .io_in_bits_folded_hist_1_hist_9_folded_hist      (s0_fg_w[1].h9),
+    .io_in_bits_folded_hist_1_hist_8_folded_hist      (s0_fg_w[1].h8),
+    .io_in_bits_folded_hist_1_hist_7_folded_hist      (s0_fg_w[1].h7),
+    .io_in_bits_folded_hist_1_hist_5_folded_hist      (s0_fg_w[1].h5),
+    .io_in_bits_folded_hist_1_hist_4_folded_hist      (s0_fg_w[1].h4),
+    .io_in_bits_folded_hist_1_hist_3_folded_hist      (s0_fg_w[1].h3),
+    .io_in_bits_folded_hist_1_hist_1_folded_hist      (s0_fg_w[1].h1),
+    .io_in_bits_folded_hist_3_hist_12_folded_hist     (s0_fg_w[3].h12),
+    .io_in_bits_folded_hist_3_hist_11_folded_hist     (s0_fg_w[3].h11),
+    .io_in_bits_folded_hist_3_hist_2_folded_hist      (s0_fg_w[3].h2),
+    .io_in_bits_s1_folded_hist_3_hist_14_folded_hist  (s1_fg_w[3].h14),
+    .io_in_bits_s1_folded_hist_3_hist_13_folded_hist  (s1_fg_w[3].h13),
+    .io_in_bits_s1_folded_hist_3_hist_12_folded_hist  (s1_fg_w[3].h12),
+    .io_in_bits_s1_folded_hist_3_hist_10_folded_hist  (s1_fg_w[3].h10),
+    .io_in_bits_s1_folded_hist_3_hist_6_folded_hist   (s1_fg_w[3].h6),
+    .io_in_bits_s1_folded_hist_3_hist_4_folded_hist   (s1_fg_w[3].h4),
+    .io_in_bits_s1_folded_hist_3_hist_3_folded_hist   (s1_fg_w[3].h3),
+    .io_in_bits_s1_folded_hist_3_hist_2_folded_hist   (s1_fg_w[3].h2),
     .io_in_bits_ghist                                 (s0_ghist_w),
     .io_out_s1_pc_0                                   (comp_s1_pc_0),
     .io_out_s1_pc_1                                   (comp_s1_pc_1),

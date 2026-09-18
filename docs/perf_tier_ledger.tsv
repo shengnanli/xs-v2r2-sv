@@ -20,8 +20,8 @@
 # tier D_CONST           876
 # tier D_INVARIANT      1003
 # tier X_UNRESOLVED        0
-# status MEASURED       22425
-# status GAP             1584
+# status MEASURED       22406
+# status GAP             1603
 # status BY_CONSTRUCTION   1879
 # total                25888
 kind	scope	name	tier	status	n_bores	n_ctrl	n_gap	owner_modules	owner_rewritten	criterion	evidence
@@ -147,11 +147,11 @@ ASSERT	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner	not-taken br should hav
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner	not-taken br should have same pc\n	A_FUNC_ASSERT	MEASURED	1	0	0	Frontend	no	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner	taken br should have consecutive ftqPtr\n	A_FUNC_ASSERT	MEASURED	6	0	0	Frontend	no	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner	taken instr should follow target pc\n	A_FUNC_ASSERT	MEASURED	6	0	0	Frontend	no	assert_is_cycle_visible_behavior	
-ASSERT	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	Full prediction difference detected!	A_FUNC_ASSERT	MEASURED	1	0	0	Predictor	no	assert_is_cycle_visible_behavior	
-ASSERT	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	s0_stall but s0_pc is differenct from s0_pc_reg	A_FUNC_ASSERT	MEASURED	1	0	0	Predictor	no	assert_is_cycle_visible_behavior	
-ASSERT	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	s1_ghist_ptr %d:%d exceeds redirect histPtr %d:%d\n	A_FUNC_ASSERT	MEASURED	5	4	0	Predictor	no	assert_is_cycle_visible_behavior	ue; reg s1_ghist_ptr_dup_0_flag; wire data_0_2_probe = s1_ghist_ptr_dup_0_flag; reg [7:0] s1_ghist_ptr_dup_0_…
-ASSERT	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	s2_ghist_ptr %d:%d exceeds redirect histPtr %d:%d\n	A_FUNC_ASSERT	MEASURED	5	4	0	Predictor	no	assert_is_cycle_visible_behavior	ue; reg s2_ghist_ptr_dup_0_flag; wire data_0_1_probe = s2_ghist_ptr_dup_0_flag; reg [7:0] s2_ghist_ptr_dup_0_…
-ASSERT	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	s3_ghist_ptr %d:%d exceeds redirect histPtr %d:%d\n	A_FUNC_ASSERT	MEASURED	5	4	0	Predictor	no	assert_is_cycle_visible_behavior	ext_bits_r_cfiUpdate_histPtr_flag; wire data_2_probe = do_redirect_dup_next_bits_r_cfiUpdate_histPtr_flag; wi…
+ASSERT	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	Full prediction difference detected!	A_FUNC_ASSERT	GAP	1	0	1	Predictor	yes	assert_is_cycle_visible_behavior	
+ASSERT	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	s0_stall but s0_pc is differenct from s0_pc_reg	A_FUNC_ASSERT	GAP	1	0	1	Predictor	yes	assert_is_cycle_visible_behavior	
+ASSERT	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	s1_ghist_ptr %d:%d exceeds redirect histPtr %d:%d\n	A_FUNC_ASSERT	GAP	5	4	5	Predictor	yes	assert_is_cycle_visible_behavior	ue; reg s1_ghist_ptr_dup_0_flag; wire data_0_2_probe = s1_ghist_ptr_dup_0_flag; reg [7:0] s1_ghist_ptr_dup_0_…
+ASSERT	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	s2_ghist_ptr %d:%d exceeds redirect histPtr %d:%d\n	A_FUNC_ASSERT	GAP	5	4	5	Predictor	yes	assert_is_cycle_visible_behavior	ue; reg s2_ghist_ptr_dup_0_flag; wire data_0_1_probe = s2_ghist_ptr_dup_0_flag; reg [7:0] s2_ghist_ptr_dup_0_…
+ASSERT	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	s3_ghist_ptr %d:%d exceeds redirect histPtr %d:%d\n	A_FUNC_ASSERT	GAP	5	4	5	Predictor	yes	assert_is_cycle_visible_behavior	ext_bits_r_cfiUpdate_histPtr_flag; wire data_2_probe = do_redirect_dup_next_bits_r_cfiUpdate_histPtr_flag; wi…
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu.predictors.ftb	FTB read sram entry in s3 fallThrough address error!	A_FUNC_ASSERT	MEASURED	1	0	0	FTB	no	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu.predictors.ittage.rTable	region has multiple hits!\n	A_FUNC_ASSERT	MEASURED	3	0	0	RegionWays	no	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu.predictors.ras.RASStack	The use of inference queue of the RAS module has unexpected situations	A_FUNC_ASSERT	GAP	1	1	1	RASStack	yes	assert_is_cycle_visible_behavior	sp; else nsp <= 4'(io_commit_meta_ssp - 4'h1); end if (_GEN_13) begin BOS_flag <= ~(_BOS_flipped_new_ptr_new_…
@@ -13305,20 +13305,20 @@ PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfScheduler.IssueQueueVfma
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfScheduler.IssueQueueVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf.entries	simpEntry_1_in_cnt	B_CONTROL	MEASURED	1	1	0	EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	no	FC/read_by_logic:EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf.entryInValidVec_3_probe	rsEntriesSimp_0_io_commonOut_entryInValid} + 2'({1'h0, _othersEntriesSimp_1_io_commonOut_entryInValid} + {1'h…
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfScheduler.IssueQueueVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf.entries	simpEntry_1_out_deq_cnt	B_CONTROL	MEASURED	1	1	0	EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	no	FC/read_by_logic:EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf.entryOutDeqValidVec_3_probe	triesSimp_0_io_commonOut_entryOutDeqValid} + 2'({1'h0, _othersEntriesSimp_1_io_commonOut_entryOutDeqValid} + …
 PERF	SimTop.cpu.l_soc.core_with_l2.core.backend.inner.vfScheduler.IssueQueueVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf.entries	simpEntry_1_out_trans_cnt	B_CONTROL	MEASURED	1	1	0	EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	no	FC/read_by_logic:EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf.entryOutTransValidVec_3_probe	DeqValid})}))}); wire [3:0] _GEN_25 = {2'h0, 2'({1'h0, _othersEntriesSimp_1_io_commonOut_entryOutTransValid} …
-PERF	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	s1_not_valid	C_DIAG	MEASURED	1	0	0	Predictor	no	FC/no_reader:全部 1 条 bore 都不馈入控制	Predictor._s0_last_br_num_oh_dup_3_T_probe
-PERF	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	s2_redirect	B_CONTROL	MEASURED	1	1	0	Predictor	no	FC/read_by_logic:Predictor.s2_redirect_dup_0_probe	ed_0_hit); wire _s0_stall_dup_0_T_2 = s1_valid_dup_3 | s2_redirect_dup_0_probe | s3_redirect_dup_0_probe | do…
-PERF	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	s2_redirect_because_branch_num_diff	C_DIAG	MEASURED	1	0	0	Predictor	no	FC/no_reader:全部 1 条 bore 都不馈入控制	Predictor._GEN_33
-PERF	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	s2_redirect_because_cfi_idx_diff	C_DIAG	MEASURED	1	0	0	Predictor	no	FC/no_reader:全部 1 条 bore 都不馈入控制	Predictor._GEN_35
-PERF	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	s2_redirect_because_direction_diff	C_DIAG	MEASURED	1	0	0	Predictor	no	FC/no_reader:全部 1 条 bore 都不馈入控制	Predictor._GEN_34
-PERF	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	s2_redirect_because_fallThroughError	C_DIAG	MEASURED	1	0	0	Predictor	no	FC/no_reader:全部 1 条 bore 都不馈入控制	Predictor._GEN_36
-PERF	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	s2_redirect_because_target_diff	C_DIAG	MEASURED	1	0	0	Predictor	no	FC/no_reader:全部 1 条 bore 都不馈入控制	Predictor._GEN_32
-PERF	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	s2_redirect_when_not_hit	C_DIAG	MEASURED	1	0	0	Predictor	no	FC/no_reader:全部 1 条 bore 都不馈入控制	Predictor._GEN_39
-PERF	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	s2_redirect_when_not_taken	C_DIAG	MEASURED	1	0	0	Predictor	no	FC/no_reader:全部 1 条 bore 都不馈入控制	Predictor._GEN_38
-PERF	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	s2_redirect_when_taken	C_DIAG	MEASURED	1	0	0	Predictor	no	FC/no_reader:全部 1 条 bore 都不馈入控制	Predictor._GEN_37
-PERF	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	s3_redirect	B_CONTROL	MEASURED	1	1	0	Predictor	no	FC/read_by_logic:Predictor.s3_redirect_dup_0_probe	dup_0_T_2 = s1_valid_dup_3 | s2_redirect_dup_0_probe | s3_redirect_dup_0_probe | do_redirect_dup_next_valid_l…
-PERF	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	s3_redirect_on_br_taken	C_DIAG	MEASURED	1	0	0	Predictor	no	FC/no_reader:全部 1 条 bore 都不馈入控制	Predictor._GEN_44
-PERF	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	s3_redirect_on_jalr_target	C_DIAG	MEASURED	1	0	0	Predictor	no	FC/no_reader:全部 1 条 bore 都不馈入控制	Predictor._GEN_45
-PERF	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	s3_redirect_on_others	C_DIAG	MEASURED	1	0	0	Predictor	no	FC/no_reader:全部 1 条 bore 都不馈入控制	Predictor._GEN_46
+PERF	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	s1_not_valid	C_DIAG	GAP	1	0	1	Predictor	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	Predictor._s0_last_br_num_oh_dup_3_T_probe
+PERF	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	s2_redirect	B_CONTROL	GAP	1	1	1	Predictor	yes	FC/read_by_logic:Predictor.s2_redirect_dup_0_probe	ed_0_hit); wire _s0_stall_dup_0_T_2 = s1_valid_dup_3 | s2_redirect_dup_0_probe | s3_redirect_dup_0_probe | do…
+PERF	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	s2_redirect_because_branch_num_diff	C_DIAG	GAP	1	0	1	Predictor	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	Predictor._GEN_33
+PERF	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	s2_redirect_because_cfi_idx_diff	C_DIAG	GAP	1	0	1	Predictor	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	Predictor._GEN_35
+PERF	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	s2_redirect_because_direction_diff	C_DIAG	GAP	1	0	1	Predictor	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	Predictor._GEN_34
+PERF	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	s2_redirect_because_fallThroughError	C_DIAG	GAP	1	0	1	Predictor	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	Predictor._GEN_36
+PERF	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	s2_redirect_because_target_diff	C_DIAG	GAP	1	0	1	Predictor	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	Predictor._GEN_32
+PERF	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	s2_redirect_when_not_hit	C_DIAG	GAP	1	0	1	Predictor	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	Predictor._GEN_39
+PERF	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	s2_redirect_when_not_taken	C_DIAG	GAP	1	0	1	Predictor	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	Predictor._GEN_38
+PERF	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	s2_redirect_when_taken	C_DIAG	GAP	1	0	1	Predictor	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	Predictor._GEN_37
+PERF	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	s3_redirect	B_CONTROL	GAP	1	1	1	Predictor	yes	FC/read_by_logic:Predictor.s3_redirect_dup_0_probe	dup_0_T_2 = s1_valid_dup_3 | s2_redirect_dup_0_probe | s3_redirect_dup_0_probe | do_redirect_dup_next_valid_l…
+PERF	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	s3_redirect_on_br_taken	C_DIAG	GAP	1	0	1	Predictor	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	Predictor._GEN_44
+PERF	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	s3_redirect_on_jalr_target	C_DIAG	GAP	1	0	1	Predictor	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	Predictor._GEN_45
+PERF	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu	s3_redirect_on_others	C_DIAG	GAP	1	0	1	Predictor	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	Predictor._GEN_46
 PERF	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu.predictors.ftb	false_hit_reopen_Counter	C_DIAG	MEASURED	1	0	0	FTB	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FTB.falseHitReopenCounter_probe
 PERF	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu.predictors.ftb	ftb_closing_update_counter	C_DIAG	MEASURED	1	0	0	FTB	no	FC/no_reader:全部 1 条 bore 都不馈入控制	FTB._GEN_8
 PERF	SimTop.cpu.l_soc.core_with_l2.core.frontend.inner.bpu.predictors.ftb	ftb_commit_hits	B_CONTROL	MEASURED	1	1	0	FTB	no	FC/read_by_logic:FTB.perfEvents_0_2_probe	_fire_0; REG_1 <= io_s0_fire_0; io_perf_0_value_REG <= perfEvents_0_2_probe; io_perf_0_value_REG_1 <= io_perf…

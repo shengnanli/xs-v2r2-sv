@@ -95,9 +95,11 @@ def rhs_for(pin, grhs, topports, width=""):
     m = re.fullmatch(r"io_in_bits_s0_pc_(\d)", pin)
     if m: return f"s0_pc_w[{m.group(1)}]"
     m = re.fullmatch(r"io_in_bits_folded_hist_(\d)_hist_(\d+)_folded_hist", pin)
-    if m: return f"s0_fg_w[{m.group(1)}][{m.group(2)}]{width}"
+    # 折叠历史现在是 packed 结构、每条按自己的 CLEN 开宽，端口宽度天然相等，
+    # 不再需要 golden 端口宽度切片（早先的 [10:0]/[3:0] 是等宽存储留下的疤）。
+    if m: return f"s0_fg_w[{m.group(1)}].h{m.group(2)}"
     m = re.fullmatch(r"io_in_bits_s1_folded_hist_(\d)_hist_(\d+)_folded_hist", pin)
-    if m: return f"s1_fg_w[{m.group(1)}][{m.group(2)}]{width}"
+    if m: return f"s1_fg_w[{m.group(1)}].h{m.group(2)}"
     m = re.fullmatch(r"io_in_bits_ghist", pin)
     if m: return "s0_ghist_w"
     m = re.fullmatch(r"io_s([0-3])_fire_(\d)", pin)

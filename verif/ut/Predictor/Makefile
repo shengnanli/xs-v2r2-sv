@@ -227,6 +227,32 @@ FM_MERGE_DUP = false
 #   ★verdict 仍会是 PARTIAL★：signoff-strict 要求 unread 归 0
 #   (scripts/fm_verdict.py 的 strict_unread!=0)，而 impl 侧 585 个独有死位
 #   本轮不动。这是已知残余，不是新问题。
+#   —— 以上实测于 7b4a825（evidence/7b4a8253e457/Predictor/），逐条对上。
+#
+# ── 2026-09-18 本轮（685 个 unread 点收口）的**预登记判据** ──────────────────
+#   处置方式（两条合法路径，一条没用 waiver）：
+#     (1) 改 RTL 去掉可读核比 golden **多存**的 585 位死寄存器
+#         folded_hist 376 / afhob 8 / prev_s2 190 / td_q 9 / do_redirect 2
+#         —— 每一位都能在 golden 里指出"这里没有这个寄存器"，见
+#         verif/ut/Predictor/fm_pins_pre.tcl 文件头。
+#     (2) 把 golden **有**、可读核也照建了的 jalr_target dup0 那 50 位整族钉死
+#         （fm_pins_pre.tcl 第 (j) 族），外加 td_q 换结构后必须整族钉的 30 位
+#         （第 (k) 族）。钉点总数 2631 -> 2711。
+#
+#   跑之前登记，跑完逐条对账，对不上就按 fail 报，不往下推：
+#     P1  failing                = 0
+#     P2  未配比较点              = 0(0)
+#     P3  未配未读点              = 0(0)，且 unread_points.txt 为 **0 字节**
+#     P4  Not-Compared Unread    = 0
+#     P5  passing = 528917 + 50  = **528967**
+#         (+50 恰是 jalr_target dup0：它此前是"ref 50 + impl 50 两堆孤立未配未读点"，
+#          钉成双射后被 vmucp 升成真比较点。585 位死寄存器本来就不是比较点，
+#          删掉它们**不改变** passing —— 所以这里只 +50，一位不多。)
+#     P6  黑盒输出 0 / dont_verify false / FM_MODE 仍是 signoff-strict
+#     P7  官方 verdict 从 PARTIAL 变成**通过**（strict unread 归零后不再有
+#         strict_unread!=0 这条 reason）
+#   ★P5 是最有判别力的一条★：passing 若不是正好 528967 —— 少了说明有点被吞掉、
+#   多了说明多出了本轮没解释的比较点 —— 两种都按 fail 处理，不许事后改判据。
 FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 
 FM_VARIANTS = Predictor
@@ -270,7 +296,7 @@ VCS += +define+SYNTHESIS
 #       Information: Current design is no longer set (FM-072)
 #   —— 它把 Formality 的当前设计置空了。而冒烟脚本只数钉点、不看 FM 自己报的错，
 #   于是照样打印 SMOKE_OK。判别力缺口就在这里：**工具报的错不进判据，等于没报。**
-#   所以这里同时要求三件事：2631/2631、SMOKE_OK、且 FM 自报错误行数为 0。
+#   所以这里同时要求三件事：2711/2711、SMOKE_OK、且 FM 自报错误行数为 0。
 # ---------------------------------------------------------------------------
 .PHONY: fm-pins-smoke
 fm-pins-smoke:
@@ -282,8 +308,8 @@ fm-pins-smoke:
 	@grep -E '^PREDICTOR_PINS|^SMOKE_OK|^SMOKE_FAIL' fm_work/pins_smoke.log || true
 	@n=$$(grep -cE '^Error:|^Information: Current design' fm_work/pins_smoke.log); \
 	 ok=$$(grep -c '^SMOKE_OK' fm_work/pins_smoke.log); \
-	 pin=$$(grep -c '^PREDICTOR_PINS: 2631 / 2631 pinned, 0 missed' fm_work/pins_smoke.log); \
-	 echo "fm-pins-smoke: SMOKE_OK=$$ok  2631/2631=$$pin  FM自报错误行=$$n"; \
+	 pin=$$(grep -c '^PREDICTOR_PINS: 2711 / 2711 pinned, 0 missed' fm_work/pins_smoke.log); \
+	 echo "fm-pins-smoke: SMOKE_OK=$$ok  2711/2711=$$pin  FM自报错误行=$$n"; \
 	 if [ "$$ok" != 1 ] || [ "$$pin" != 1 ] || [ "$$n" != 0 ]; then \
 	   echo "fm-pins-smoke: FAIL"; exit 1; fi; \
 	 echo "fm-pins-smoke: PASS"
