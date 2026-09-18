@@ -1,0 +1,25 @@
+# registers one by one instead of after merging, so compare points only increase.
+PROBE_REF_ELAB_SEC 622
+PROBE_IMPL_ELAB_SEC 609
+108669 Compare points matched by name    
+0 Compare points matched by signature analysis    
+0 Compare points matched by topology    
+460(0) Unmatched reference(implementation) compare points    
+0(0) Unmatched reference(implementation) primary inputs, black-box outputs    
+PROBE_MATCH_SEC 1973
+PROBE_MATCH_DONE
+108669 Compare points matched by name    
+0 Compare points matched by signature analysis    
+0 Compare points matched by topology    
+460(0) Unmatched reference(implementation) compare points    
+0(0) Unmatched reference(implementation) primary inputs, black-box outputs    
+Verification FAILED
+ATTENTION: 20 failing compare points have unmatched undriven signals in their
+108209 Passing compare points
+20 Failing compare points (20 matched, 0 unmatched)
+0 Aborted compare points
+440 Unverified compare points
+Matched Compare Points     BBPin    Loop   BBNet     Cut    Port     DFF     LAT   TOTAL
+PROBE_VERIFY_SEC 1044
+PROBE_DONE
+Maximum memory usage for this session: 14730 MB
