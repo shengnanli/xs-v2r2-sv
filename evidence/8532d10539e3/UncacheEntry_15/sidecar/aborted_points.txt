@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/UncacheEntry_15
+Implementation : i:/WORK/UncacheEntry_15
+Version        : V-2023.12-SP3
+Date           : Thu Sep 17 21:04:24 2026
+**************************************************
+
+No aborted compare points.
+
+1
