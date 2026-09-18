@@ -155,6 +155,44 @@ def emit_inst(mod, gold, read):
     return f"  {mod} {read} (\n" + ",\n".join(body) + "\n  );"
 
 
+# ---------------------------------------------------------------------------
+# struct <-> 扁平网 的机械映射区
+# ---------------------------------------------------------------------------
+# golden 把 PtwMergeResp / PtwSectorResp 这类 bundle 拍成一长串扁平端口名；可读核里它们
+# 是 struct。两边的对应关系是**纯命名规则**，没有逻辑，故整块机械生成：
+#   entry_<i>_perm_<p> -> .entry[i].perm.<p>      entry_<i>_<f> -> .entry[i].<f>
+#   ppn_low_<i>/valididx_<i>/pteidx_<i> -> .<name>[i]          <f> -> .<f>
+
+def flat_to_path(flat):
+    m = re.fullmatch(r"entry_(\d+)_perm_(\w+)", flat)
+    if m: return f".entry[{m.group(1)}].perm.{m.group(2)}"
+    m = re.fullmatch(r"entry_(\d+)_(\w+)", flat)
+    if m: return f".entry[{m.group(1)}].{m.group(2)}"
+    m = re.fullmatch(r"entry_perm_(\w+)", flat)
+    if m: return f".entry.perm.{m.group(1)}"
+    m = re.fullmatch(r"perm_(\w+)", flat)
+    if m: return f".entry.perm.{m.group(1)}"
+    m = re.fullmatch(r"(ppn_low|valididx|pteidx)_(\d+)", flat)
+    if m: return f".{m.group(1)}[{m.group(2)}]"
+    m = re.fullmatch(r"entry_(\w+)", flat)
+    if m: return f".entry.{m.group(1)}"
+    return f".{flat}"
+
+
+def flat_ports(mod, pat):
+    """按 golden 子模块端口表取出匹配 pat 的端口，返回 [(完整端口名, 尾巴)]，保持声明顺序。"""
+    out = []
+    for d, w, n in parse_ports((GOLDEN / f"{mod}.sv").read_text(), mod):
+        m = re.fullmatch(pat, n)
+        if m: out.append((n, m.group(1)))
+    return out
+
+
+def emit_flatmap(pairs):
+    w = max((len(l) for l, _ in pairs), default=0)
+    return "\n".join(f"  assign {l:<{w}} = {r};" for l, r in pairs)
+
+
 def decl(kw, w, name):
     return f"  {kw} {'[%d:0] ' % (w - 1) if w > 1 else ''}{name};"
 
@@ -175,6 +213,41 @@ def build():
     wp = "\n".join(f"  {d} {'[%d:0] ' % (w - 1) if w > 1 else ''}{n}," for d, w, n in TOP_PORTS).rstrip(",")
     conn = ",\n".join(f"    .{n:<40}({n})" for _, _, n in TOP_PORTS)
     secs["wrapper"] = wp + "\n);\n\n  xs_L2TLB_core u_core (\n" + conn + "\n  );"
+
+    # cache.resp.bits.stage1（扁平）-> struct cache_stage1
+    secs["cache_stage1"] = emit_flatmap([
+        (f"cache_stage1{flat_to_path(t)}", f"u_page_cache_resp_bits_stage1_{t}")
+        for _p, t in flat_ports("PtwCache", r"io_resp_bits_stage1_(.+)")])
+
+    # struct mq_s1 -> mergeArb_{0,1}.in_2.bits.s1（扁平 glue 网）
+    # ★只覆盖真正需要本核驱动的网★：golden 有一部分 s1 字段是直接从别的实例连过去的，
+    # 不在 DRIVEN 里；对那些名字再 assign 一次就是多驱动。
+    tails = [t for _p, t in flat_ports("Arbiter3_L2TLBImp_Anon", r"io_in_2_bits_s1_(.+)")]
+    secs["merge_in2"] = emit_flatmap(
+        [(f"u_merge_arb_{k}__in_2_bits_s1_{t}", f"mq_s1{flat_to_path(t)}")
+         for k in (0, 1) for t in tails
+         if f"u_merge_arb_{k}__in_2_bits_s1_{t}" in DRIVEN
+         and t != "not_merge"])   # not_merge 是本层现算的一根线，不是 mq_s1 的字段
+
+    # mergeArb_{0,1}.out.bits.s1（扁平）-> struct marb{k}_out_s1
+    tails = [t for _p, t in flat_ports("Arbiter3_L2TLBImp_Anon", r"io_out_bits_s1_(.+)")]
+    secs["marb_out"] = emit_flatmap(
+        [(f"marb{k}_out_s1{flat_to_path(t)}", f"u_merge_arb_{k}_out_bits_s1_{t}")
+         for k in (0, 1) for t in tails if t != "not_merge"])
+
+    # struct sec{k}（merge_to_sector 结果）-> outArb_{0,1}.in_0.bits.s1（扁平 glue 网）
+    tails = [t for _p, t in flat_ports("Arbiter1_L2TLBImp_Anon", r"io_in_0_bits_s1_(.+)")]
+    secs["outarb_in"] = emit_flatmap(
+        [(f"u_out_arb_{k}__in_0_bits_s1_{t}", f"sec{k}{flat_to_path(t)}")
+         for k in (0, 1) for t in tails
+         if f"u_out_arb_{k}__in_0_bits_s1_{t}" in DRIVEN
+         and not t.startswith("ppn_low_")])   # ppn_low 在 G1 有 napot 改写，手写区处理
+
+    # perf 两级打拍结果 -> io_perf_<i>_value
+    perf_re = re.compile(r"io_perf_(\d+)_value")
+    secs["perf_out"] = emit_flatmap(
+        [(n, "perf_s2[" + perf_re.fullmatch(n).group(1) + "]")
+         for _d, _w, n in TOP_PORTS if perf_re.fullmatch(n)])
     return secs
 
 
