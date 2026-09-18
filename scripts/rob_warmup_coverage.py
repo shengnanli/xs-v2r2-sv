@@ -76,11 +76,29 @@ def declared_regs(lines):
 
 
 def gen_defs(lines):
-    d = {}
-    for l in lines:
-        m = re.match(r'\s*wire\s+(?:\[[^\]]*\])?\s*(\w+)\s*=\s*(.*?);\s*$', l)
+    """Resolve `wire X = <expr>;`, INCLUDING the multi-line form.
+
+    firtool wraps long right-hand sides, so a large fraction of the interesting
+    enables look like
+
+        wire               _GEN_10134 =
+          io_exuWriteback_20_valid & ~(|io_exuWriteback_20_bits_robIdx_value);
+
+    A single-line regex silently misses every one of those. That is what put
+    several families in the `<else>`/`<top>` bucket in the first version of this
+    script -- the enable WAS recoverable, the parser just could not see it.
+    Joining continuations until the terminating `;` fixes it.
+    """
+    d, i = {}, 0
+    while i < len(lines):
+        m = re.match(r'\s*wire\s+(?:\[[^\]]*\])?\s*(\w+)\s*=\s*(.*)$', lines[i])
         if m:
-            d[m.group(1)] = m.group(2)
+            name, rhs = m.group(1), m.group(2)
+            while ';' not in rhs and i + 1 < len(lines):
+                i += 1
+                rhs += ' ' + lines[i].strip()
+            d[name] = rhs.split(';')[0].strip()
+        i += 1
     return d
 
 
