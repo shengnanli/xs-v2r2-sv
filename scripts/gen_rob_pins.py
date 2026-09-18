@@ -29,6 +29,24 @@ which Formality sees as `<prefix>_<field>_reg[<i>][<b>]`. So every pin is:
 Width-1 registers have no `[<b>]` on either side -- golden writes
 `<prefix>_<i>_<field>_reg` and the core `<prefix>_<field>_reg[<i>]`.
 
+Measured (2026-09-18, fm_shell V-2023.12-SP3)
+--------------------------------------------
+The impl half of the contract above was validated on a 160-entry x 8-field
+stand-in shaped exactly like Rob's wrapper -- `module Canary` instantiating
+`xs_Canary_core u_core` -- because the earlier canary only ever proved the path
+at TOP level (`i:/WORK/Canary/ent_<f>_reg[i][b]`), and every pin this file emits
+carries one extra instance hop (`.../Canary/u_core/...`). That hop was an
+assumption until measured. Result:
+
+    PINCONTRACT pinned 4000 of 4000       <- every pin accepted, no FM-036
+    Verification SUCCEEDED, 4025 passing compare points, 0 errors
+
+What is STILL unvalidated: the real Rob core does not exist yet, so the prefix
+and field spellings this file derives from golden have never been checked
+against an actual `xs_Rob_core`. The emitted Tcl is fail-closed precisely so
+that a spelling mismatch shows up as `pinned N of M, N != M` and `exit 3`
+instead of a silently slow match.
+
 Fail-closed
 -----------
 The emitted Tcl counts accepted pins and `exit 3`s unless every pin was taken,
