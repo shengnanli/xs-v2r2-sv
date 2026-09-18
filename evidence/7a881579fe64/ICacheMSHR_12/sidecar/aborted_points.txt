@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/ICacheMSHR_12
+Implementation : i:/WORK/ICacheMSHR_12
+Version        : V-2023.12-SP3
+Date           : Mon Sep 14 01:58:28 2026
+**************************************************
+
+No aborted compare points.
+
+1

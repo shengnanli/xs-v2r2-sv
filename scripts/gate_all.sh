@@ -87,6 +87,16 @@ run "UT initreg 棘轮"   python3 scripts/check_ut_initreg.py
 # 故必须有一道**对着已跟踪文件列表**跑的闸。先负测（含"长得像但不是"的反例）再跑真闸。
 run "工具派生态负测"     python3 scripts/test_no_tool_scratch_gate.py
 run "工具派生态闸"       python3 scripts/check_no_tool_scratch.py
+# 覆盖台账的证据链：docs/coverage_three_axis.tsv 宣称的每条证明都要能从**版本库**复现。
+# 2026-09-18 实测出事状态：轴2 标 PROVEN_DIRECT 133 个，版本库里找得到通过 receipt 的
+# 只有 34 个，★189 个找不到★（重算后缺口扩大到 90）。那些证明并非不存在 —— evidence 全
+# 躺在主 worktree 磁盘上（当时磁盘 1339 份 receipt，tracked 只有 77 份），根子是
+# evidence/ 在 .gitignore 里、必须 git add -f 才进得去，而没人系统地做。
+# 后果：clean clone 复现不了台账宣称的绝大多数证明 —— 不是数字不准，是证据链断了。
+# 出事前全仓 grep 不到任何 Makefile/CI/脚本校验这张表的新鲜度，两张表脱节 6 天没人发现，
+# 因为没有任何机制能发现。先负测（含"universe 之外的目标有 receipt 不算漏记"这个反例）再跑真闸。
+run "覆盖证据链负测"     python3 scripts/test_coverage_provenance_gate.py
+run "覆盖证据链闸"       python3 scripts/check_coverage_provenance.py --strict
 # 上面三条是**逐个**挂 --check 的 scripts/gen_*.py。verif/ut/*/gen.py 那一层有 9 个，
 # 其中 8 个根本没有 --check（SRAMTemplateNewForm 是最后一个敞口）。与其逐个改生成器，
 # 不如统一验一次：在 HEAD 上开 detached worktree 重跑全部，产物必须逐字不变。

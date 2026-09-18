@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/MbistPipeIttage_2
+Implementation : i:/WORK/MbistPipeIttage_2
+Version        : V-2023.12-SP3
+Date           : Mon Sep 14 02:07:17 2026
+**************************************************
+
+No failing compare points.
+
+1
