@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/DelayReg_22
+Implementation : i:/WORK/DelayReg_22
+Version        : V-2023.12-SP3
+Date           : Fri Sep 18 06:02:00 2026
+**************************************************
+
+No aborted compare points.
+
+1

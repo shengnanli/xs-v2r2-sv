@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/DelayReg_26
+Implementation : i:/WORK/DelayReg_26
+Version        : V-2023.12-SP3
+Date           : Fri Sep 18 06:04:23 2026
+**************************************************
+
+No failing compare points.
+
+1

@@ -1,0 +1,15 @@
+=== portlint ===
+=== portlint: DelayReg [DelayReg DelayReg_16 DelayReg_18 DelayReg_19 DelayReg_20 DelayReg_21 DelayReg_22 DelayReg_23 DelayReg_24 DelayReg_25 DelayReg_26] ===
+[PASS] DelayReg
+[PASS] DelayReg_16
+[PASS] DelayReg_18
+[PASS] DelayReg_19
+[PASS] DelayReg_20
+[PASS] DelayReg_21
+[PASS] DelayReg_22
+[PASS] DelayReg_23
+[PASS] DelayReg_24
+[PASS] DelayReg_25
+[PASS] DelayReg_26
+--- portlint: 11 pass, 0 fail, 0 skip ---
+portlint rc=0
