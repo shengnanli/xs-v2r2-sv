@@ -66,7 +66,8 @@ for g in scripts/gen_tlbuffer_ad_family.py scripts/gen_mbist_pipe_family.py \
          scripts/gen_npc_missing3.py scripts/gen_splittedsram.py \
          scripts/gen_renamebuffer.py scripts/gen_tlbfa_family.py \
          scripts/gen_sbufferdata.py scripts/gen_newdispatch.py \
-         scripts/gen_newdispatch_tb.py; do
+         scripts/gen_newdispatch_tb.py \
+         scripts/gen_lqreplay.py scripts/gen_lqreplay_ut.py; do
   [ -f "$g" ] && run "生成器幂等 $(basename $g .py | sed 's/^gen_//')" python3 "$g" --check
 done
 # 闸的完备性闸：任何 scripts/gen_*.py 要么进上面的列表，要么在
