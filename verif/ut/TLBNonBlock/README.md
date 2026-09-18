@@ -169,4 +169,8 @@ FM 看不见它（无复位寄存器两侧都是自由变量），**这条只有
 base 18,800,000 / _1 10,800,000 / _2 6,400,000（= 200k 拍 x 每拍比较的输出端口数）。
 逐行结果见提交说明；复跑：
 
-
+```
+for t in "" 1 2; do for s in 1 7 42; do for ir in 0 random; do
+  make run$t SEED=$s INITREG=$ir NCYCLES=200000
+done; done; done
+```
