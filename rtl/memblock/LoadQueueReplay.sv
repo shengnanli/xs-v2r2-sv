@@ -24,6 +24,26 @@
 //  机械派生区（uop 字段表 / wrapper 端口表 / wrapper 连线 / topdown 归约树）由
 //  scripts/gen_lqreplay.py 从 G1 golden 生成，标在 BEGIN/END GENERATED 之间。
 // =============================================================================
+// 本文件导航（共 4321 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+//   L24    LoadUnit 是流水化的：一条 load 走 s0(发射)→s1(TLB/读 SQ forward)→s2(dcache 命
+//   L468   §0  每 entry 的状态寄存器 + 子模块
+//   L581   §1  入队判定
+//   L583   needEnqueue : 有效 & 未被 redirect 刷 & 确需重放
+//   L637   §2  blocking 解除条件
+//   L639   ⚠ 关键微架构语义：Scala 用一串 `when(cause(i)(C_x)){ blocking(i) := ... }`
+//   L738   §3  s0 选择
+//   L740   选择优先级
+//   L855   §4  s1 / s2 流水 + replay_req 组装
+//   L857   s1：s0 选出的 one-hot(72) 转 7 位下标，按 s0_can_go 打一拍
+//   L1003  §5  entry 寄存器统一更新
+//   L1005  优先级
+//   L1149  §5-comb  入队各字段的「下一拍值 + 写使能」
+//   L1151  ⚠ 多口命中同一 entry 的陷阱：Scala 为每个字段独立生成优先级 mux
+//   L1225  §6  topdown
+//   L1227  在所有 allocated 且 debug_vaddr == robHeadVaddr 的 entry 里，按 robIdx 归
+//   L1406  §7  perf
+//   L1471  wrapper：端口与 golden LoadQueueReplay 逐位同名，内部把扁平 io_* 打包给可读核
+//
 
 package loadqueuereplay_pkg;
 
