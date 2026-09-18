@@ -119,6 +119,38 @@ def classify(net, portnames):
 # --------------------------------------------------------------------------
 # emitters
 # --------------------------------------------------------------------------
+def register_inventory(lines):
+    """Golden's register spec, split into entry-indexed arrays and scalars.
+
+    firtool flattens every array into `<prefix>_<idx>_<field>` scalars. Folding
+    them back is what turns 11,695 register declarations into 13 array families
+    plus 452 loose registers -- and it is also the pin map: each family gives
+    `r:.../<prefix>_<i>_<field>_reg[<b>]` <-> `i:.../<prefix>_<field>_reg[<i>][<b>]`
+    mechanically, so name-pinning is a nested loop rather than a hand-built
+    table. (The previous round needed 16,161 hand-written pins because its
+    packed-struct core had no such correspondence to generate.)
+    """
+    decl = {}
+    for l in lines:
+        m = re.match(r'\s*reg\s*(?:\[\s*(\d+)\s*:\s*(\d+)\s*\])?\s*(\w+)\s*;', l)
+        if m:
+            w = 1 if m.group(1) is None else int(m.group(1)) - int(m.group(2)) + 1
+            decl[m.group(3)] = w
+    fam = collections.defaultdict(dict)
+    scalars = {}
+    for n, w in decl.items():
+        m = re.match(r'^(.*?)_(\d+)_(.+)$', n)
+        if m:
+            fam[(m.group(1), m.group(3))][int(m.group(2))] = w
+        else:
+            scalars[n] = w
+    byprefix = collections.defaultdict(list)
+    for (pre, f), idxs in fam.items():
+        widths = set(idxs.values())
+        byprefix[pre].append((f, len(idxs), sorted(widths)))
+    return byprefix, scalars
+
+
 def emit_ports(ports):
     w = max(len(d) for d, _, _, _ in ports)
     rng = []
@@ -203,6 +235,7 @@ def main():
     g.add_argument('--check', action='store_true')
     g.add_argument('--write', action='store_true')
     g.add_argument('--manifest', action='store_true')
+    g.add_argument('--regmap', action='store_true')
     a = ap.parse_args()
 
     gtext, glines = load_golden(a.golden)
@@ -213,6 +246,27 @@ def main():
     children = parse_children(glines, hdr_end)
     portnames = {p[3] for p in ports}
     golden_dir = os.path.dirname(os.path.abspath(a.golden))
+
+    if a.regmap:
+        byprefix, scalars = register_inventory(glines)
+        tot = 0
+        print('%-32s %7s %6s %10s  %s'
+              % ('array prefix', '#fields', 'depth', 'bits', 'width anomalies'))
+        for pre in sorted(byprefix,
+                          key=lambda x: -sum(c * w[0] for _, c, w in byprefix[x])):
+            flds = byprefix[pre]
+            depth = max(c for _, c, _ in flds)
+            bits = sum(c * w[0] for _, c, w in flds)
+            tot += bits
+            odd = [f for f, c, w in flds if len(w) > 1 or c != depth]
+            print('%-32s %7d %6d %10d  %s'
+                  % (pre, len(flds), depth, bits,
+                     ('%d ragged: %s' % (len(odd), ','.join(odd[:3]))) if odd else '-'))
+        print('# entry-indexed  %d families  %d fields  %d bits'
+              % (len(byprefix), sum(len(v) for v in byprefix.values()), tot))
+        print('# scalar         %d regs  %d bits' % (len(scalars), sum(scalars.values())))
+        print('# grand total    %d bits' % (tot + sum(scalars.values())))
+        return 0
 
     if a.manifest:
         drive, read, routed = wrapper_nets(children, portnames, golden_dir)
