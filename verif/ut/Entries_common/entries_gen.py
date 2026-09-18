@@ -1147,6 +1147,17 @@ FM_NOTES = {
         '# 本变体实测：merge_dup=true 时 ref unread 2250 / impl 2426 对不上；\n'
         '# 置 false 后 ref 2480 / impl 2486，差额 6 个是可读核多出的死寄存器（已修）。\n'
         '# 逐位钉点覆盖 2420 对负载位。',
+    'EntriesAluCsrFenceDiv':
+        '# 本变体实测(2026-09-17, 钉点 20308 对)：native SUCCEEDED /\n'
+        '# passing 18781 / failing 0 / unverified 0 / aborted 0 /\n'
+        '# unmatched 六项全 0 / 黑盒输出 0 / qualifications 三项全空。\n'
+        '# 余 6220 未读点**全部** matched_nc，两侧严格 1:1，且 6220/6220 都来自\n'
+        '# 钉点文件（FM 自行猜配 0 对）——构成 = 8 条目(2 enq + 6 simp) x 776 位\n'
+        '# 死负载 + 12 个 enqDelay 影子位。另有 Constant reg 12，不计入 unread，\n'
+        '# 也不拦 verdict（fm_verdict.py 的 PARTIAL 判据只看\n'
+        '# unverified/unmatched/aborted/unread 四项）。\n'
+        '# ★ 仍缺 vmucp 白名单：加强后期望 passing 18781 -> 25001（恰好 +6220）、\n'
+        '#   unread 归 0、failing 仍 0；不增即空转，按 fail 处理。',
 }
 
 

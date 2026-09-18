@@ -33,7 +33,16 @@ FM_REF_DEPS_EntriesAluCsrFenceDiv = EnqEntry_6.sv OthersEntry_66.sv OthersEntry_
 # FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=true：配合 fm_pins_pre.tcl 的逐位钉点，
 #   让 FM **真去比**那些「本变体里没有输出锥」的负载位，而不是记 Not-Compared。
 #   白名单在 scripts/fm_eq.tcl（依据写在那一行紧邻的注释里），两处须同时生效。
-# 本变体的 FM 点数尚未实测。
+# 本变体实测(2026-09-17, 钉点 20308 对)：native SUCCEEDED /
+# passing 18781 / failing 0 / unverified 0 / aborted 0 /
+# unmatched 六项全 0 / 黑盒输出 0 / qualifications 三项全空。
+# 余 6220 未读点**全部** matched_nc，两侧严格 1:1，且 6220/6220 都来自
+# 钉点文件（FM 自行猜配 0 对）——构成 = 8 条目(2 enq + 6 simp) x 776 位
+# 死负载 + 12 个 enqDelay 影子位。另有 Constant reg 12，不计入 unread，
+# 也不拦 verdict（fm_verdict.py 的 PARTIAL 判据只看
+# unverified/unmatched/aborted/unread 四项）。
+# ★ 仍缺 vmucp 白名单：加强后期望 passing 18781 -> 25001（恰好 +6220）、
+#   unread 归 0、failing 仍 0；不增即空转，按 fail 处理。
 FM_MERGE_DUP = false
 FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = false
 
