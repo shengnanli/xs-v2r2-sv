@@ -495,9 +495,50 @@ module tb;
     .gatewayIn_packed_60_bore (gatewayIn_packed_60_bore_x)
   );
 
-  integer errors = 0;
+  longint errors = 0, checks = 0;
   integer ncycles = 200000;
   integer i;
+
+  // ---- 覆盖闸计数器（全部取 golden 侧，见 gen_tb.py 的 COV_BUCKETS 注释）----
+  longint c_hit = 0;  // lane0 命中（entries 或旁路）
+  longint c_miss = 0;  // lane0 未命中
+  longint c_phit = 0;  // PTW 旁路命中（p_hit 打拍后为真）
+  longint c_ptwreq = 0;  // 向 PTW 发过请求
+  longint c_needgpa = 0;  // 进入过 need_gpa 状态
+  longint c_gparefill = 0;  // 拿回过 gpaddr（resp_gpa_refill）
+  longint c_gpf = 0;  // 出现过 G-stage 故障 hasGpf
+  longint c_napot_sup = 0;  // noS2+NAPOT 的 PTW 响应把本拍 miss 压住（ptw_just_back）
+  longint c_sfence = 0;  // sfence 冲刷
+  longint c_ppnnz = 0;  // 命中且译出非零 ppn
+  longint c_s2x0 = 0;  // resp 拍 s2xlate=00 无两级翻译
+  longint c_s2x1 = 0;  // resp 拍 s2xlate=01 只 VS-stage
+  longint c_s2x2 = 0;  // resp 拍 s2xlate=10 只 G-stage
+  longint c_s2x3 = 0;  // resp 拍 s2xlate=11 两级
+
+  task automatic sample_cov;
+    begin
+      if (dut_g.req_out_v_0 && !dut_g.miss_read_0)  c_hit++;
+      if (dut_g.req_out_v_0 &&  dut_g.miss_read_0)  c_miss++;
+      if (dut_g.readResult_p_hit_last_REG)          c_phit++;
+      if (io_ptw_req_0_valid_g || io_ptw_req_1_valid_g)                                       c_ptwreq++;
+      if (dut_g.need_gpa)                           c_needgpa++;
+      if (dut_g.resp_gpa_refill)                    c_gparefill++;
+      if (dut_g.hasGpf_0)                           c_gpf++;
+      if (io_ptw_resp_valid && io_ptw_resp_bits_s1_entry_n
+          && io_ptw_resp_bits_s2xlate == 2'h0
+          && dut_g.req_out_v_0 && dut_g.miss_read_0
+          && !io_ptw_req_0_valid_g)                                 c_napot_sup++;
+      if (io_sfence_valid)                          c_sfence++;
+      if (dut_g.req_out_v_0 && !dut_g.miss_read_0
+          && io_requestor_0_resp_bits_paddr_0_g[47:12] != 36'h0) c_ppnnz++;
+      if (dut_g.req_out_v_0) begin
+        case (dut_g.req_out_s2xlate_0)
+          2'h0: c_s2x0++;  2'h1: c_s2x1++;
+          2'h2: c_s2x2++;  default: c_s2x3++;
+        endcase
+      end
+    end
+  endtask
 
   task automatic drive_inputs;
     begin
@@ -547,10 +588,10 @@ module tb;
       io_requestor_0_req_bits_hyperinst <= ($urandom() % 100) < 20;
       io_requestor_0_req_bits_hlvx <= ($urandom() % 100) < 20;
       io_requestor_0_req_bits_kill <= ($urandom() % 100) < 20;
-      io_requestor_0_req_bits_isPrefetch <= ($urandom() % 100) < 20;
+      io_requestor_0_req_bits_isPrefetch <= ($urandom() % 100) < 10;
       io_requestor_0_req_bits_no_translate <= ($urandom() % 100) < 20;
       io_requestor_0_req_bits_pmp_addr <= 48'({$urandom(), $urandom()});
-      io_requestor_0_req_bits_frm_mabuf <= ($urandom() % 100) < 20;
+      io_requestor_0_req_bits_frm_mabuf <= ($urandom() % 100) < 50;
       io_requestor_0_req_bits_debug_robIdx_flag <= 1'($urandom());
       io_requestor_0_req_bits_debug_robIdx_value <= 8'($urandom() % 16);
       io_requestor_0_req_bits_debug_isFirstIssue <= 1'($urandom());
@@ -558,9 +599,9 @@ module tb;
       io_requestor_1_req_bits_vaddr <= {vpn_pool[$urandom() % POOL_N], 12'($urandom())};
       io_requestor_1_req_bits_cmd <= cmd_pool[$urandom() % 4];
       io_requestor_1_req_bits_kill <= ($urandom() % 100) < 20;
-      io_requestor_1_req_bits_isPrefetch <= ($urandom() % 100) < 20;
+      io_requestor_1_req_bits_isPrefetch <= ($urandom() % 100) < 10;
       io_requestor_1_req_bits_no_translate <= ($urandom() % 100) < 20;
-      io_redirect_valid <= ($urandom() % 100) < 15;
+      io_redirect_valid <= ($urandom() % 100) < 8;
       io_redirect_bits_robIdx_flag <= 1'($urandom());
       io_redirect_bits_robIdx_value <= 8'($urandom() % 16);
       io_redirect_bits_level <= 1'($urandom());
@@ -571,13 +612,13 @@ module tb;
       io_ptw_resp_bits_s1_entry_vmid <= 14'(vmid_pool[$urandom() % 4]);
       io_ptw_resp_bits_s1_entry_n <= 1'($urandom());
       io_ptw_resp_bits_s1_entry_pbmt <= 2'($urandom());
-      io_ptw_resp_bits_s1_entry_perm_d <= 1'($urandom());
-      io_ptw_resp_bits_s1_entry_perm_a <= 1'($urandom());
+      io_ptw_resp_bits_s1_entry_perm_d <= (($urandom() % 100) < 70);
+      io_ptw_resp_bits_s1_entry_perm_a <= (($urandom() % 100) < 70);
       io_ptw_resp_bits_s1_entry_perm_g <= 1'($urandom());
       io_ptw_resp_bits_s1_entry_perm_u <= 1'($urandom());
-      io_ptw_resp_bits_s1_entry_perm_x <= 1'($urandom());
-      io_ptw_resp_bits_s1_entry_perm_w <= 1'($urandom());
-      io_ptw_resp_bits_s1_entry_perm_r <= 1'($urandom());
+      io_ptw_resp_bits_s1_entry_perm_x <= (($urandom() % 100) < 70);
+      io_ptw_resp_bits_s1_entry_perm_w <= (($urandom() % 100) < 70);
+      io_ptw_resp_bits_s1_entry_perm_r <= (($urandom() % 100) < 70);
       io_ptw_resp_bits_s1_entry_level <= 2'($urandom());
       io_ptw_resp_bits_s1_entry_v <= 1'($urandom());
       io_ptw_resp_bits_s1_entry_ppn <= 41'({$urandom(), $urandom()});
@@ -606,155 +647,199 @@ module tb;
       io_ptw_resp_bits_s1_pteidx_5 <= 1'($urandom());
       io_ptw_resp_bits_s1_pteidx_6 <= 1'($urandom());
       io_ptw_resp_bits_s1_pteidx_7 <= 1'($urandom());
-      io_ptw_resp_bits_s1_pf <= 1'($urandom());
-      io_ptw_resp_bits_s1_af <= 1'($urandom());
+      io_ptw_resp_bits_s1_pf <= (($urandom() % 100) < 15);
+      io_ptw_resp_bits_s1_af <= (($urandom() % 100) < 15);
       io_ptw_resp_bits_s2_entry_tag <= vpn_pool[$urandom() % POOL_N];
       io_ptw_resp_bits_s2_entry_vmid <= 14'(vmid_pool[$urandom() % 4]);
       io_ptw_resp_bits_s2_entry_n <= 1'($urandom());
       io_ptw_resp_bits_s2_entry_pbmt <= 2'($urandom());
       io_ptw_resp_bits_s2_entry_ppn <= 38'({$urandom(), $urandom()});
-      io_ptw_resp_bits_s2_entry_perm_d <= 1'($urandom());
-      io_ptw_resp_bits_s2_entry_perm_a <= 1'($urandom());
+      io_ptw_resp_bits_s2_entry_perm_d <= (($urandom() % 100) < 35);
+      io_ptw_resp_bits_s2_entry_perm_a <= (($urandom() % 100) < 35);
       io_ptw_resp_bits_s2_entry_perm_g <= 1'($urandom());
       io_ptw_resp_bits_s2_entry_perm_u <= 1'($urandom());
-      io_ptw_resp_bits_s2_entry_perm_x <= 1'($urandom());
-      io_ptw_resp_bits_s2_entry_perm_w <= 1'($urandom());
-      io_ptw_resp_bits_s2_entry_perm_r <= 1'($urandom());
+      io_ptw_resp_bits_s2_entry_perm_x <= (($urandom() % 100) < 35);
+      io_ptw_resp_bits_s2_entry_perm_w <= (($urandom() % 100) < 35);
+      io_ptw_resp_bits_s2_entry_perm_r <= (($urandom() % 100) < 35);
       io_ptw_resp_bits_s2_entry_level <= 2'($urandom());
-      io_ptw_resp_bits_s2_gpf <= 1'($urandom());
-      io_ptw_resp_bits_s2_gaf <= 1'($urandom());
+      io_ptw_resp_bits_s2_gpf <= (($urandom() % 100) < 25);
+      io_ptw_resp_bits_s2_gaf <= (($urandom() % 100) < 10);
       io_ptw_resp_bits_getGpa <= 1'($urandom());
       io_robPendingPtr_flag <= 1'($urandom());
       io_robPendingPtr_value <= 8'($urandom() % 16);
+      // ---- 定向激励：走通 need_gpa -> getGpa 往返（见 directed_getgpa 注释）----
+      if (dut_g.need_gpa && ($urandom() % 100) < 60) begin
+        io_ptw_resp_valid               <= 1'b1;
+        io_ptw_resp_bits_getGpa         <= 1'b1;
+        io_ptw_resp_bits_s2xlate        <= dut_g.need_gpa_s2xlate;
+        io_ptw_resp_bits_s1_entry_n     <= 1'b0;
+        io_ptw_resp_bits_s2_entry_n     <= 1'b0;
+        io_ptw_resp_bits_s1_entry_level <= 2'h1;
+        io_ptw_resp_bits_s2_entry_level <= 2'h1;
+        io_ptw_resp_bits_s1_entry_tag   <= dut_g.need_gpa_vpn[37:3];
+        io_ptw_resp_bits_s2_entry_tag   <= dut_g.need_gpa_vpn;
+      end
     end
   endtask
 
   task automatic check_outputs;
     begin
+      checks = checks + 1;
       if (io_requestor_0_resp_valid_g !== io_requestor_0_resp_valid_x) begin
         errors = errors + 1;
         if (errors < 20) $display("MISMATCH @%0t io_requestor_0_resp_valid g=%h x=%h", $time, io_requestor_0_resp_valid_g, io_requestor_0_resp_valid_x);
       end
+      checks = checks + 1;
       if (io_requestor_0_resp_bits_paddr_0_g !== io_requestor_0_resp_bits_paddr_0_x) begin
         errors = errors + 1;
         if (errors < 20) $display("MISMATCH @%0t io_requestor_0_resp_bits_paddr_0 g=%h x=%h", $time, io_requestor_0_resp_bits_paddr_0_g, io_requestor_0_resp_bits_paddr_0_x);
       end
+      checks = checks + 1;
       if (io_requestor_0_resp_bits_pbmt_0_g !== io_requestor_0_resp_bits_pbmt_0_x) begin
         errors = errors + 1;
         if (errors < 20) $display("MISMATCH @%0t io_requestor_0_resp_bits_pbmt_0 g=%h x=%h", $time, io_requestor_0_resp_bits_pbmt_0_g, io_requestor_0_resp_bits_pbmt_0_x);
       end
+      checks = checks + 1;
       if (io_requestor_0_resp_bits_miss_g !== io_requestor_0_resp_bits_miss_x) begin
         errors = errors + 1;
         if (errors < 20) $display("MISMATCH @%0t io_requestor_0_resp_bits_miss g=%h x=%h", $time, io_requestor_0_resp_bits_miss_g, io_requestor_0_resp_bits_miss_x);
       end
+      checks = checks + 1;
       if (io_requestor_0_resp_bits_excp_0_gpf_ld_g !== io_requestor_0_resp_bits_excp_0_gpf_ld_x) begin
         errors = errors + 1;
         if (errors < 20) $display("MISMATCH @%0t io_requestor_0_resp_bits_excp_0_gpf_ld g=%h x=%h", $time, io_requestor_0_resp_bits_excp_0_gpf_ld_g, io_requestor_0_resp_bits_excp_0_gpf_ld_x);
       end
+      checks = checks + 1;
       if (io_requestor_0_resp_bits_excp_0_pf_ld_g !== io_requestor_0_resp_bits_excp_0_pf_ld_x) begin
         errors = errors + 1;
         if (errors < 20) $display("MISMATCH @%0t io_requestor_0_resp_bits_excp_0_pf_ld g=%h x=%h", $time, io_requestor_0_resp_bits_excp_0_pf_ld_g, io_requestor_0_resp_bits_excp_0_pf_ld_x);
       end
+      checks = checks + 1;
       if (io_requestor_0_resp_bits_excp_0_af_ld_g !== io_requestor_0_resp_bits_excp_0_af_ld_x) begin
         errors = errors + 1;
         if (errors < 20) $display("MISMATCH @%0t io_requestor_0_resp_bits_excp_0_af_ld g=%h x=%h", $time, io_requestor_0_resp_bits_excp_0_af_ld_g, io_requestor_0_resp_bits_excp_0_af_ld_x);
       end
+      checks = checks + 1;
       if (io_requestor_1_resp_valid_g !== io_requestor_1_resp_valid_x) begin
         errors = errors + 1;
         if (errors < 20) $display("MISMATCH @%0t io_requestor_1_resp_valid g=%h x=%h", $time, io_requestor_1_resp_valid_g, io_requestor_1_resp_valid_x);
       end
+      checks = checks + 1;
       if (io_requestor_1_resp_bits_paddr_0_g !== io_requestor_1_resp_bits_paddr_0_x) begin
         errors = errors + 1;
         if (errors < 20) $display("MISMATCH @%0t io_requestor_1_resp_bits_paddr_0 g=%h x=%h", $time, io_requestor_1_resp_bits_paddr_0_g, io_requestor_1_resp_bits_paddr_0_x);
       end
+      checks = checks + 1;
       if (io_requestor_1_resp_bits_pbmt_0_g !== io_requestor_1_resp_bits_pbmt_0_x) begin
         errors = errors + 1;
         if (errors < 20) $display("MISMATCH @%0t io_requestor_1_resp_bits_pbmt_0 g=%h x=%h", $time, io_requestor_1_resp_bits_pbmt_0_g, io_requestor_1_resp_bits_pbmt_0_x);
       end
+      checks = checks + 1;
       if (io_requestor_1_resp_bits_miss_g !== io_requestor_1_resp_bits_miss_x) begin
         errors = errors + 1;
         if (errors < 20) $display("MISMATCH @%0t io_requestor_1_resp_bits_miss g=%h x=%h", $time, io_requestor_1_resp_bits_miss_g, io_requestor_1_resp_bits_miss_x);
       end
+      checks = checks + 1;
       if (io_requestor_1_resp_bits_excp_0_gpf_ld_g !== io_requestor_1_resp_bits_excp_0_gpf_ld_x) begin
         errors = errors + 1;
         if (errors < 20) $display("MISMATCH @%0t io_requestor_1_resp_bits_excp_0_gpf_ld g=%h x=%h", $time, io_requestor_1_resp_bits_excp_0_gpf_ld_g, io_requestor_1_resp_bits_excp_0_gpf_ld_x);
       end
+      checks = checks + 1;
       if (io_requestor_1_resp_bits_excp_0_pf_ld_g !== io_requestor_1_resp_bits_excp_0_pf_ld_x) begin
         errors = errors + 1;
         if (errors < 20) $display("MISMATCH @%0t io_requestor_1_resp_bits_excp_0_pf_ld g=%h x=%h", $time, io_requestor_1_resp_bits_excp_0_pf_ld_g, io_requestor_1_resp_bits_excp_0_pf_ld_x);
       end
+      checks = checks + 1;
       if (io_requestor_1_resp_bits_excp_0_af_ld_g !== io_requestor_1_resp_bits_excp_0_af_ld_x) begin
         errors = errors + 1;
         if (errors < 20) $display("MISMATCH @%0t io_requestor_1_resp_bits_excp_0_af_ld g=%h x=%h", $time, io_requestor_1_resp_bits_excp_0_af_ld_g, io_requestor_1_resp_bits_excp_0_af_ld_x);
       end
+      checks = checks + 1;
       if (io_ptw_req_0_valid_g !== io_ptw_req_0_valid_x) begin
         errors = errors + 1;
         if (errors < 20) $display("MISMATCH @%0t io_ptw_req_0_valid g=%h x=%h", $time, io_ptw_req_0_valid_g, io_ptw_req_0_valid_x);
       end
+      checks = checks + 1;
       if (io_ptw_req_0_bits_vpn_g !== io_ptw_req_0_bits_vpn_x) begin
         errors = errors + 1;
         if (errors < 20) $display("MISMATCH @%0t io_ptw_req_0_bits_vpn g=%h x=%h", $time, io_ptw_req_0_bits_vpn_g, io_ptw_req_0_bits_vpn_x);
       end
+      checks = checks + 1;
       if (io_ptw_req_0_bits_s2xlate_g !== io_ptw_req_0_bits_s2xlate_x) begin
         errors = errors + 1;
         if (errors < 20) $display("MISMATCH @%0t io_ptw_req_0_bits_s2xlate g=%h x=%h", $time, io_ptw_req_0_bits_s2xlate_g, io_ptw_req_0_bits_s2xlate_x);
       end
+      checks = checks + 1;
       if (io_ptw_req_0_bits_getGpa_g !== io_ptw_req_0_bits_getGpa_x) begin
         errors = errors + 1;
         if (errors < 20) $display("MISMATCH @%0t io_ptw_req_0_bits_getGpa g=%h x=%h", $time, io_ptw_req_0_bits_getGpa_g, io_ptw_req_0_bits_getGpa_x);
       end
+      checks = checks + 1;
       if (io_ptw_req_1_valid_g !== io_ptw_req_1_valid_x) begin
         errors = errors + 1;
         if (errors < 20) $display("MISMATCH @%0t io_ptw_req_1_valid g=%h x=%h", $time, io_ptw_req_1_valid_g, io_ptw_req_1_valid_x);
       end
+      checks = checks + 1;
       if (io_ptw_req_1_bits_vpn_g !== io_ptw_req_1_bits_vpn_x) begin
         errors = errors + 1;
         if (errors < 20) $display("MISMATCH @%0t io_ptw_req_1_bits_vpn g=%h x=%h", $time, io_ptw_req_1_bits_vpn_g, io_ptw_req_1_bits_vpn_x);
       end
+      checks = checks + 1;
       if (io_ptw_req_1_bits_s2xlate_g !== io_ptw_req_1_bits_s2xlate_x) begin
         errors = errors + 1;
         if (errors < 20) $display("MISMATCH @%0t io_ptw_req_1_bits_s2xlate g=%h x=%h", $time, io_ptw_req_1_bits_s2xlate_g, io_ptw_req_1_bits_s2xlate_x);
       end
+      checks = checks + 1;
       if (io_ptw_req_1_bits_getGpa_g !== io_ptw_req_1_bits_getGpa_x) begin
         errors = errors + 1;
         if (errors < 20) $display("MISMATCH @%0t io_ptw_req_1_bits_getGpa g=%h x=%h", $time, io_ptw_req_1_bits_getGpa_g, io_ptw_req_1_bits_getGpa_x);
       end
+      checks = checks + 1;
       if (io_pmp_0_valid_g !== io_pmp_0_valid_x) begin
         errors = errors + 1;
         if (errors < 20) $display("MISMATCH @%0t io_pmp_0_valid g=%h x=%h", $time, io_pmp_0_valid_g, io_pmp_0_valid_x);
       end
+      checks = checks + 1;
       if (io_pmp_0_bits_addr_g !== io_pmp_0_bits_addr_x) begin
         errors = errors + 1;
         if (errors < 20) $display("MISMATCH @%0t io_pmp_0_bits_addr g=%h x=%h", $time, io_pmp_0_bits_addr_g, io_pmp_0_bits_addr_x);
       end
+      checks = checks + 1;
       if (io_pmp_0_bits_cmd_g !== io_pmp_0_bits_cmd_x) begin
         errors = errors + 1;
         if (errors < 20) $display("MISMATCH @%0t io_pmp_0_bits_cmd g=%h x=%h", $time, io_pmp_0_bits_cmd_g, io_pmp_0_bits_cmd_x);
       end
+      checks = checks + 1;
       if (io_pmp_1_valid_g !== io_pmp_1_valid_x) begin
         errors = errors + 1;
         if (errors < 20) $display("MISMATCH @%0t io_pmp_1_valid g=%h x=%h", $time, io_pmp_1_valid_g, io_pmp_1_valid_x);
       end
+      checks = checks + 1;
       if (io_pmp_1_bits_addr_g !== io_pmp_1_bits_addr_x) begin
         errors = errors + 1;
         if (errors < 20) $display("MISMATCH @%0t io_pmp_1_bits_addr g=%h x=%h", $time, io_pmp_1_bits_addr_g, io_pmp_1_bits_addr_x);
       end
+      checks = checks + 1;
       if (io_pmp_1_bits_cmd_g !== io_pmp_1_bits_cmd_x) begin
         errors = errors + 1;
         if (errors < 20) $display("MISMATCH @%0t io_pmp_1_bits_cmd g=%h x=%h", $time, io_pmp_1_bits_cmd_g, io_pmp_1_bits_cmd_x);
       end
+      checks = checks + 1;
       if (io_pmpMode_0_g !== io_pmpMode_0_x) begin
         errors = errors + 1;
         if (errors < 20) $display("MISMATCH @%0t io_pmpMode_0 g=%h x=%h", $time, io_pmpMode_0_g, io_pmpMode_0_x);
       end
+      checks = checks + 1;
       if (io_pmpMode_1_g !== io_pmpMode_1_x) begin
         errors = errors + 1;
         if (errors < 20) $display("MISMATCH @%0t io_pmpMode_1 g=%h x=%h", $time, io_pmpMode_1_g, io_pmpMode_1_x);
       end
+      checks = checks + 1;
       if (gatewayIn_packed_59_bore_g !== gatewayIn_packed_59_bore_x) begin
         errors = errors + 1;
         if (errors < 20) $display("MISMATCH @%0t gatewayIn_packed_59_bore g=%h x=%h", $time, gatewayIn_packed_59_bore_g, gatewayIn_packed_59_bore_x);
       end
+      checks = checks + 1;
       if (gatewayIn_packed_60_bore_g !== gatewayIn_packed_60_bore_x) begin
         errors = errors + 1;
         if (errors < 20) $display("MISMATCH @%0t gatewayIn_packed_60_bore g=%h x=%h", $time, gatewayIn_packed_60_bore_g, gatewayIn_packed_60_bore_x);
@@ -778,9 +863,50 @@ module tb;
       @(posedge clock);
       drive_inputs();
       #1 check_outputs();
+      sample_cov();
     end
-    if (errors == 0) $display("TEST PASSED (TLBNonBlock_2, %0d cycles)", ncycles);
-    else $display("TEST FAILED (TLBNonBlock_2): errors=%0d", errors);
+    begin : cov_gate
+      int bad_cov = 0;
+      $display("--- coverage (golden 侧状态桶，全部必须 > 0) ---");
+      $display("  c_hit        = %0d   lane0 命中（entries 或旁路）", c_hit);
+      if (c_hit == 0) bad_cov++;
+      $display("  c_miss       = %0d   lane0 未命中", c_miss);
+      if (c_miss == 0) bad_cov++;
+      $display("  c_phit       = %0d   PTW 旁路命中（p_hit 打拍后为真）", c_phit);
+      if (c_phit == 0) bad_cov++;
+      $display("  c_ptwreq     = %0d   向 PTW 发过请求", c_ptwreq);
+      if (c_ptwreq == 0) bad_cov++;
+      $display("  c_needgpa    = %0d   进入过 need_gpa 状态", c_needgpa);
+      if (c_needgpa == 0) bad_cov++;
+      $display("  c_gparefill  = %0d   拿回过 gpaddr（resp_gpa_refill）", c_gparefill);
+      if (c_gparefill == 0) bad_cov++;
+      $display("  c_gpf        = %0d   出现过 G-stage 故障 hasGpf", c_gpf);
+      if (c_gpf == 0) bad_cov++;
+      $display("  c_napot_sup  = %0d   noS2+NAPOT 的 PTW 响应把本拍 miss 压住（ptw_just_back）", c_napot_sup);
+      if (c_napot_sup == 0) bad_cov++;
+      $display("  c_sfence     = %0d   sfence 冲刷", c_sfence);
+      if (c_sfence == 0) bad_cov++;
+      $display("  c_ppnnz      = %0d   命中且译出非零 ppn", c_ppnnz);
+      if (c_ppnnz == 0) bad_cov++;
+      $display("  c_s2x0       = %0d   resp 拍 s2xlate=00 无两级翻译", c_s2x0);
+      if (c_s2x0 == 0) bad_cov++;
+      $display("  c_s2x1       = %0d   resp 拍 s2xlate=01 只 VS-stage", c_s2x1);
+      if (c_s2x1 == 0) bad_cov++;
+      $display("  c_s2x2       = %0d   resp 拍 s2xlate=10 只 G-stage", c_s2x2);
+      if (c_s2x2 == 0) bad_cov++;
+      $display("  c_s2x3       = %0d   resp 拍 s2xlate=11 两级", c_s2x3);
+      if (c_s2x3 == 0) bad_cov++;
+      $display("checks=%0d errors=%0d bad_cov=%0d", checks, errors, bad_cov);
+      if (checks == 0) begin
+        $display("TEST FAILED (TLBNonBlock_2): checks=0 —— tb 一次都没比，判 fail-open");
+      end else if (errors == 0 && bad_cov == 0) begin
+        $display("TEST PASSED (TLBNonBlock_2, %0d cycles)", ncycles);
+      end else if (errors != 0) begin
+        $display("TEST FAILED (TLBNonBlock_2): errors=%0d", errors);
+      end else begin
+        $display("TEST FAILED (TLBNonBlock_2): errors=0 但 %0d 个覆盖桶为空，激励没走到", bad_cov);
+      end
+    end
     $finish;
   end
 endmodule

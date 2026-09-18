@@ -79,3 +79,17 @@ run$(1): simv$(1)
 endef
 $(eval $(call VARIANT_UT,1))
 $(eval $(call VARIANT_UT,2))
+
+# ---------------------------------------------------------------------------
+# 判别力负测（mutation test）。变异只发生在 neg_build/（已 gitignore），不进库。
+# 三个方向：mutants = 注入真 bug 必须红；mutants-cov = 覆盖闸自身必须能独立判红；
+# mutants-fm = 只有 FM 看得见的复位域变异，FM 必须判不等价。
+# 表与判据见 mutants.py 头部说明。
+# ---------------------------------------------------------------------------
+.PHONY: mutants mutants-cov mutants-fm
+mutants:
+	python3 mutants.py
+mutants-cov:
+	python3 mutants.py --cov
+mutants-fm:
+	python3 mutants.py --fm

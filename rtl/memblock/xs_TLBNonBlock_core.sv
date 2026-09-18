@@ -95,21 +95,36 @@
 //       _1   4 个 = 同上 × 2 lane
 //       _2   4 个 = lane0 的 2 个 first_issue + 2 个 result_ok（perf 端口没了）
 //
-// 本文件导航（共 1588 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
-//   L118    package tlbnb_pkg;
-//   L502    module xs_TLBNonBlock_core
-//   L636    §CSR 译码（全部用延迟后的 csr，见 DelayN_7）
-//   L664    §PTW 响应旁路的命中键
-//   L688    §状态声明
-//   L785    §拍 A：请求拍的组合逻辑
-//   L888    §打拍
-//   L1036   §拍 B：响应拍
-//   L1185   §权限检查（Chisel 的 perm_check，每 lane 每 dup 调一次）
-//   L1309   §need_gpa —— 整个模块最绕的一段
-//   L1484   §handle_nonblock：miss 了要么发 PTW 请求，要么叫请求方重来
-//   L1527   §entries 回填：PTW 响应写进全相联表
-//   L1536   §perf 事件：两个计数，各自打两拍出去（generatePerfEvent）
-//   L1562   §difftest：每条 lane 一个 DiffL1TLBEvent，payload 打成 339 位从 bore 端口出去
+// -----------------------------------------------------------------------------
+// ★读这个模块最容易踩的坑：sector tag 的切片上下界要各自减 SECT_W★
+//   s1 的表项 tag 是 **sector tag**（只存 vpn[37:3]，最低 3 位靠 valididx/pteidx 定位），
+//   而 s2 的 tag 是完整 gvpn。于是同一句"比最低一级 vpnn"在两边的写法不一样：
+//     s2：  tag[8:4] == gvpn[8:4]          （下标与 vpn 同）
+//     s1：  tag[5:1] == vpn[8:4]           （上下界各减 SECT_W=3）
+//   第一版把 s1 的上界跟着下界一起减，写成 tag[4:1]（4 位）去比 vpn[8:4]（5 位）——
+//   SV 会把窄的一侧零扩展，**编译不报、lint 不报**，只有 s1.entry.n=1（Svnapot）
+//   且 noS2 的那条路会错。它的外在症状离病灶很远：impl 侧变成"没命中"→ 多发一次
+//   PTW 请求 → paddr/gpaddr 只剩页内偏移、pbmt=0、miss=1、tlbreplay 相位差。
+//   实测：seed=1 / 50k 拍下 TLBNonBlock 58 个 + TLBNonBlock_1 61 个失配点（_2 当时未跑完），
+//   全部由这一行引起；改对之后三个变体 3 seed x 2 initreg x 200k 全绿。
+//   覆盖闸里的 c_napot_sup 桶就是为这条路留的（见 verif/ut/TLBNonBlock/gen_tb.py）。
+// -----------------------------------------------------------------------------
+//
+// 本文件导航（共 1607 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+//   L133    package tlbnb_pkg;
+//   L522    module xs_TLBNonBlock_core
+//   L656    §CSR 译码（全部用延迟后的 csr，见 DelayN_7）
+//   L684    §PTW 响应旁路的命中键
+//   L708    §状态声明
+//   L805    §拍 A：请求拍的组合逻辑
+//   L908    §打拍
+//   L1056   §拍 B：响应拍
+//   L1205   §权限检查（Chisel 的 perm_check，每 lane 每 dup 调一次）
+//   L1329   §need_gpa —— 整个模块最绕的一段
+//   L1504   §handle_nonblock：miss 了要么发 PTW 请求，要么叫请求方重来
+//   L1547   §entries 回填：PTW 响应写进全相联表
+//   L1556   §perf 事件：两个计数，各自打两拍出去（generatePerfEvent）
+//   L1582   §difftest：每条 lane 一个 DiffL1TLBEvent，payload 打成 339 位从 bore 端口出去
 //
 // 判据是 golden RTL（G1-canonical/golden-rtl/TLBNonBlock{,_1,_2}.sv）；Chisel
 // （XiangShan src/main/scala/xiangshan/cache/mmu/TLB.scala + MMUBundle.scala）
@@ -313,8 +328,13 @@ package tlbnb_pkg;
     logic [LEVEL:0] tm;
     logic asid_hit, super_page;
     asid_hit   = (k.s1_asid == asid) | k.s1_perm_g;
-    tm[0]      = k.s1_n ? (k.s1_tag[SECT_W+1:1] == vpn[VPNN_W-1:NAPOT_W])
-                        : (k.s1_tag[SECT_W+2:0] == vpn[VPNN_W-1:SECT_W]);
+    // ★tag 是 sector tag：tag[k] 对应 vpn[k+SECT_W]★，所以两条分支的 tag 切片
+    // 上下界要各自减 SECT_W，**上界不随下界一起减**：
+    //   n=1（Svnapot 64KB）比 vpn[8:NAPOT_W] -> tag[8-SECT_W : NAPOT_W-SECT_W] = tag[5:1]
+    //   n=0             比 vpn[8:SECT_W]     -> tag[8-SECT_W : 0]              = tag[5:0]
+    // 判据 golden TLBNonBlock_1.sv:1337-1339（noS2 分支）/ TLBNonBlock.sv 同形。
+    tm[0]      = k.s1_n ? (k.s1_tag[VPNN_W-1-SECT_W : NAPOT_W-SECT_W] == vpn[VPNN_W-1:NAPOT_W])
+                        : (k.s1_tag[VPNN_W-1-SECT_W : 0]             == vpn[VPNN_W-1:SECT_W]);
     tm[1]      = k.s1_tag[VPNN_W*2-SECT_W-1 : VPNN_W-SECT_W]   == vpn[VPNN_W*2-1 : VPNN_W];
     tm[2]      = k.s1_tag[VPNN_W*3-SECT_W-1 : VPNN_W*2-SECT_W] == vpn[VPNN_W*3-1 : VPNN_W*2];
     tm[3]      = k.s1_tag[SVPN_W-1 : VPNN_W*3-SECT_W]          == vpn[VPN_W-1 : VPNN_W*3];
