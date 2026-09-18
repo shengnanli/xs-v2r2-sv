@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/EntriesVfdivVidiv
+Implementation : i:/WORK/EntriesVfdivVidiv
+Version        : V-2023.12-SP3
+Date           : Thu Sep 17 19:46:09 2026
+**************************************************
+
+No unverified compare points.
+
+1
