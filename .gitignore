@@ -2,6 +2,8 @@ verif/ut/*/ut_gen/
 verif/ut/*/simv*
 verif/ut/*/csrc/
 verif/ut/*/fm_work/
+# 变异体 harness 的逐个变异构建目录（VCS 产物，工具派生态，不进版本库）
+verif/ut/*/mut_work/
 verif/ut/*/*.log
 verif/ut/*/*.fsdb
 verif/ut/*/verdiLog/

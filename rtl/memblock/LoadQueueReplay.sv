@@ -1397,8 +1397,10 @@ module xs_LoadQueueReplay_core
     for (int w = 0; w < LD_PIPE_W; w++) if (fire[w] & hasc[w]) n += 1'b1;
     return n;
   endfunction
+  // 第二个形参用 replay_cause_e 而不是 int：传进来的就是 cause 枚举，
+  //  用 int 会触发 FM 的 FMR_VLOG-057「无符号赋给有符号」警告 ×9。
   function automatic logic [LD_PIPE_W-1:0] cause_bits(
-      input logic [LD_PIPE_W-1:0][N_CAUSES-1:0] cv, input int c);
+      input logic [LD_PIPE_W-1:0][N_CAUSES-1:0] cv, input replay_cause_e c);
     logic [LD_PIPE_W-1:0] r;
     for (int w = 0; w < LD_PIPE_W; w++) r[w] = cv[w][c];
     return r;
@@ -1449,7 +1451,9 @@ endmodule
 //  wrapper：端口与 golden LoadQueueReplay 逐位同名，内部把扁平 io_* 打包给可读核。
 //  端口表与连线全部由 scripts/gen_lqreplay.py 从 G1 golden 生成。
 // =============================================================================
-module LoadQueueReplay(
+module LoadQueueReplay
+  import loadqueuereplay_pkg::*;
+(
   // BEGIN GENERATED(wrapper_ports)
   input            clock,
   input            reset,
@@ -2844,7 +2848,6 @@ module LoadQueueReplay(
   output [5:0]     io_perf_12_value
   // END GENERATED
 );
-  import loadqueuereplay_pkg::*;
 
   // BEGIN GENERATED(wrapper_body)
   // ---- 核侧信号（struct/数组）----
