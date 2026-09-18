@@ -109,6 +109,20 @@ if {[info exists env(ROB_MERGE_DUP)]} { set mergedup $env(ROB_MERGE_DUP) }
 set_app_var verification_merge_duplicated_registers $mergedup
 puts "PROBE_MERGE_DUP $mergedup"
 
+# ROB_UNDRIVEN selects how dangling nets are treated. Formality accepts
+# '0', '1', 'binary', 'binary:X' (the DEFAULT), '0:X' and 'synthesis'.
+# Why this knob is here: golden Rob has 460 undriven signals, and under the
+# default 'binary:X' they behave as free variables that may take X. They are
+# unmatched between the two containers, and 20 compare points have one in their
+# REFERENCE fan-in, which is why comparing golden against a byte-identical copy
+# of itself still reports 20 failing points. Formality says so itself
+# (probe.log ATTENTION line: "20 failing compare points have unmatched undriven
+# signals in their reference fan-in ... man verification_set_undriven_signals").
+set undriven ""
+if {[info exists env(ROB_UNDRIVEN)]} { set undriven $env(ROB_UNDRIVEN) }
+if {$undriven ne ""} { set_app_var verification_set_undriven_signals $undriven }
+puts "PROBE_UNDRIVEN [get_app_var verification_set_undriven_signals]"
+
 set G /home/eda/xs-env/G1-canonical/golden-rtl
 
 set t0 [clock seconds]
