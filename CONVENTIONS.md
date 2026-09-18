@@ -550,6 +550,16 @@ RENAMEBUFFER_PINS: ?? 51 ??A deqPtr flag 5 / B deqPtr value 40 / ...?
   47 分钟里只涨了 **207 tick ≈ 2 秒**，而同时在跑的 Predictor 是 208706 tick（35 分钟满载）。
   这正是「三层判活」里第三层的用处 —— 别看日志 mtime，看 CPU。
 
+### ★量哪个进程：必须量 `fm_shell_exec` 子进程，不是 `fm_shell` 父进程★
+`fm_shell` 是个 `/bin/sh` 壳，它把活全交给 `fm_shell_exec` 子进程，**父进程的 CPU 增量恒为 0**。
+拿父进程判活会把正在满载计算的 run 判成挂死。DelayReg lane 实测同一时刻的 Predictor：
+
+    fm_shell      pid 688875   20 秒增量 0          ← 父壳，永远是 0
+    fm_shell_exec pid 688916   20 秒增量 1992 tick  ← ≈100%，这才是真状态
+
+所以定式是 `pgrep -x fm_shell_exec`，再对它读 `/proc/<pid>/stat`。
+（上面那个挂死的 207 tick 量的正是 exec 子进程，所以那次判断成立。）
+
 ### 修法与双向实测
 在所有 `fm_shell` 调用上加 `< /dev/null`（`scripts/ut_common.mk` 的正式路径已加）。
 同一个必错脚本，两种 stdin 各跑一次：
