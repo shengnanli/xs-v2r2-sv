@@ -32,6 +32,10 @@ run "台账行序闸"       python3 scripts/test_ledger_append_only.py
 # 记账，于是一个只实现两成逻辑的 LoadQueueReplay 骨架就把覆盖率从 7.4% 抬到 11.0%，
 # 凭空记 138,860 行 golden。判据已改成按绿判决证据记；这道闸把「改好了」变成「改住了」。
 run "覆盖率空壳闸"     python3 scripts/test_coverage_no_shell_inflation.py
+# round 台账必须与**已提交的 receipt** 逐字节一致。它是 proven 口径的输入之一，
+# 以前是手写的 —— 手写台账必然有两个病：漏记（proven 虚低）与错记（数字与 receipt
+# 对不上，而台账才是被引用的那份）。病根都是台账与证据之间隔着一个人。
+run "round 台账幂等"   python3 scripts/harvest_round_ledger.py --check --out docs/fm_round_20260917.tsv
 run "覆盖率台账幂等"   python3 scripts/rewrite_coverage.py --check
 # FM Tcl 毒字符串闸：fm_shell 把入口 Tcl **逐行回显**进 fm.log（注释也不例外），
 # 而 fm_verdict.py 的 _ELAB147/_DONTVERIFY 是在整份日志上做正则 —— 于是在注释里
@@ -55,10 +59,41 @@ run "FM 钉点结构闸"     python3 scripts/test_fm_pins_wellformed.py
 # gen_sram_wrappers.py 2026-09-14 进闸：它当时**不是**幂等的——33 个薄文件里的 6 个
 # G1_* 锚点和 UT Makefile 的 negtest 段都是手工补在生成产物上的，谁跑一次生成器
 # 就全没（与 tlbuffer 同一个病）。并回生成器后才挂上 --check。
+# 2026-09-17 补：这个列表原先只有三个，而实测 11 个 scripts/gen_*.py 里有 6 个支持
+# --check —— gen_ndaux / gen_npc_missing3 / gen_splittedsram 三个一直在闸外。
+# 三个都能跑通、都是幂等的，也就是说漏的不是坏文件，是**没人记得加**。
+# 所以除了把它们补进来，下面还加了一道 check_gen_gate_complete.py 专门堵这个形状。
+# 2026-09-17 再补三个：check_gen_gate_complete.py 上线当天就抓到的三条 lane 新生成器
+# （gen_renamebuffer / gen_tlbfa_family / gen_sbufferdata）。三条 lane 各自都写了 --check
+# 却都没人要求它们去登记 —— 正是这道闸设计时说的"忘了加就静默漏"。
+# 这里先把名字放进来：`[ -f "$g" ]` 会跳过尚未合入的文件，所以提前登记无害，
+# 合入当天自动生效，不用再记得回来加一次。
 for g in scripts/gen_tlbuffer_ad_family.py scripts/gen_mbist_pipe_family.py \
-         scripts/gen_sram_wrappers.py; do
+         scripts/gen_sram_wrappers.py scripts/gen_ndaux.py \
+         scripts/gen_npc_missing3.py scripts/gen_splittedsram.py \
+         scripts/gen_renamebuffer.py scripts/gen_tlbfa_family.py \
+         scripts/gen_sbufferdata.py scripts/gen_newdispatch.py \
+         scripts/gen_newdispatch_tb.py; do
   [ -f "$g" ] && run "生成器幂等 $(basename $g .py | sed 's/^gen_//')" python3 "$g" --check
 done
+# 闸的完备性闸：任何 scripts/gen_*.py 要么进上面的列表，要么在
+# check_gen_gate_complete.py 的 NO_CHECK 豁免表里写明理由，没有第三条路。
+run "生成器闸完备性"     python3 scripts/check_gen_gate_complete.py
+# UT initreg 棘轮：147 个 UT 里 68 个的 Makefile 完全没提 initreg（2026-09-17 实测），
+# 也就是说这些目标的 UT 验收是在"寄存器初值由 VCS 默认决定"下过的。
+# 存量一次性补齐要重跑 68 个 UT 且大概率真跑红一批，不在别的工作进行中引爆；
+# 所以只做"可见 + 不许再涨"，新 UT 必须合规。
+run "UT initreg 棘轮"   python3 scripts/check_ut_initreg.py
+# 工具派生态不许进版本控制。.gitignore 单独挡不住，实测三例：
+#   (1) 仓库根 FM_INFO/   —— 规则 `/FM_INFO*/` 是它进库之后才加的，ignore 管不住已跟踪文件
+#   (2) verif/ut/EntriesAluCsrFenceDiv/fm_diag{,2..7}/ —— 994807 行 / 77.8 MB，
+#       占该分支插入行数 86.4%；老规则按**固定深度**写死，深一层就漏
+#   (3) verif/ut/NewPipelineConnectPipe/neg_build/ —— ★规则早就在了，文件照样进库★
+# (3) 说明光有 ignore 不够：它只拦未跟踪的新文件，拦不住 `git add -f`
+# （而 evidence/ 恰恰要靠 -f 提交，养成习惯就会顺手把 scratch 一起拖进来）。
+# 故必须有一道**对着已跟踪文件列表**跑的闸。先负测（含"长得像但不是"的反例）再跑真闸。
+run "工具派生态负测"     python3 scripts/test_no_tool_scratch_gate.py
+run "工具派生态闸"       python3 scripts/check_no_tool_scratch.py
 # 上面三条是**逐个**挂 --check 的 scripts/gen_*.py。verif/ut/*/gen.py 那一层有 9 个，
 # 其中 8 个根本没有 --check（SRAMTemplateNewForm 是最后一个敞口）。与其逐个改生成器，
 # 不如统一验一次：在 HEAD 上开 detached worktree 重跑全部，产物必须逐字不变。

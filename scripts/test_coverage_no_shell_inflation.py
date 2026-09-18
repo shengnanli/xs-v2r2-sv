@@ -84,5 +84,55 @@ def main():
     return 0
 
 
+def test_new_round_ledger_counts():
+    """新落一份 docs/fm_round_<日期>.tsv，proven 必须自动计入。
+
+    ★这道闸堵的是反方向的错★：上面那条防"空壳抬高 proven"，这条防
+    "真签核了却记不上"。2026-09-17 之前 proven_modules() 把 round 台账**写死**成
+    fm_round_20260914.tsv 一份，于是新开一轮签核 proven 原地不动 ——
+    written 在涨、proven 不涨，看上去像"写了一堆没证"，实际是记账口径漏了新台账。
+    虚低和虚高一样是记错账：前者会让人以为还有大片没证，把力气花在已经证过的地方。
+    """
+    import importlib.util
+    import pathlib
+
+    def _proven():
+        spec = importlib.util.spec_from_file_location("_rc", str(REPO / "scripts" / "rewrite_coverage.py"))
+        m = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(m)
+        return m.proven_modules()
+
+    base = _proven()
+    probe = REPO / "docs" / "fm_round_ZZPROBE.tsv"
+    if probe.exists():
+        print('test_new_round_ledger_counts: 探针文件已存在，拒绝覆盖: %s' % probe)
+        return 1
+    probe.write_text('target\tverdict\tnote\n__probe_module__\tSUCCEEDED\t负测用\n',
+                     encoding='utf-8')
+    try:
+        got = _proven()
+    finally:
+        probe.unlink()
+    back = _proven()
+
+    fails = []
+    if '__probe_module__' not in got:
+        fails.append('★新台账没被计入 —— round 台账不是 glob 的★')
+    if len(got) != len(base) + 1:
+        fails.append('proven 涨了 %d 个，应正好 +1（%d -> %d）'
+                     % (len(got) - len(base), len(base), len(got)))
+    if len(back) != len(base):
+        fails.append('撤掉探针后没回落：%d -> %d' % (len(base), len(back)))
+
+    if fails:
+        print('test_new_round_ledger_counts: %d 条不过：' % len(fails))
+        for f in fails:
+            print('  - ' + f)
+        return 1
+    print('test_new_round_ledger_counts: 新增一份 round 台账 -> proven %d -> %d，撤掉回落 ✓'
+          % (len(base), len(got)))
+    return 0
+
+
 if __name__ == '__main__':
-    sys.exit(main())
+    sys.exit(main() or test_new_round_ledger_counts())

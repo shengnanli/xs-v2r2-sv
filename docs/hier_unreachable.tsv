@@ -8,6 +8,10 @@
 AddModule	GOLDEN_ONLY	ABSORBED_COLLATERAL	AluDataModule	1	-	$(GOLDEN_RTL)/AddModule.sv
 AluDataModule	GOLDEN_ONLY	ABSORBED_DIRECT	Alu	1	Alu	$(GOLDEN_RTL)/AluDataModule.sv
 AluResSel	GOLDEN_ONLY	ABSORBED_COLLATERAL	AluDataModule	1	-	$(GOLDEN_RTL)/AluResSel.sv
+C22	SIGNED_OFF_TARGET	ABSORBED_DIRECT	ArrayMulDataModule	293	ArrayMulDataModule	rtl/backend/C22.sv
+C32	SIGNED_OFF_TARGET	ABSORBED_DIRECT	ArrayMulDataModule	84	ArrayMulDataModule	rtl/backend/C32.sv
+C53	SIGNED_OFF_TARGET	ABSORBED_DIRECT	ArrayMulDataModule	989	ArrayMulDataModule	rtl/backend/C53.sv
+CSA3_2	SIGNED_OFF_TARGET	ABSORBED_COLLATERAL	C53	2	-	rtl/backend/CSA3_2.sv
 ConditionalZeroModule	GOLDEN_ONLY	ABSORBED_COLLATERAL	AluDataModule	1	-	$(GOLDEN_RTL)/ConditionalZeroModule.sv
 DataModule_BackendPC_16entry	SIGNED_OFF_TARGET	ABSORBED_DIRECT	SyncDataModuleTemplate_BackendPC_64entry	4	SyncDataModuleTemplate_BackendPC_64entry	rtl/common/DataModule_BackendPC_16entry.sv
 DataModule_FtqPC_16entry	SIGNED_OFF_TARGET	ABSORBED_COLLATERAL	SyncDataModuleTemplate_FtqPC_64entry	4	-	rtl/common/DataModule_FtqPC_16entry.sv
@@ -19,6 +23,7 @@ DataModule__16entry_8	SIGNED_OFF_TARGET	ABSORBED_DIRECT	SyncDataModuleTemplate__
 DataModule__64entry	SIGNED_OFF_TARGET	ABSORBED_DIRECT	SyncDataModuleTemplate__1024entry	16	SyncDataModuleTemplate__1024entry	rtl/common/DataModule__64entry.sv
 DataModule__64entry_16	SIGNED_OFF_TARGET	ABSORBED_DIRECT	SyncDataModuleTemplate__1024entry_1	16	SyncDataModuleTemplate__1024entry_1	rtl/common/DataModule__64entry_16.sv
 EnqEntry_18	GOLDEN_ONLY	ABSORBED_DIRECT	EntriesVfdivVidiv	2	EntriesVfdivVidiv	$(GOLDEN_RTL)/EnqEntry_18.sv
+EnqEntry_6	GOLDEN_ONLY	ABSORBED_DIRECT	EntriesAluCsrFenceDiv	2	EntriesAluCsrFenceDiv	$(GOLDEN_RTL)/EnqEntry_6.sv
 EnqPolicy_18	GOLDEN_ONLY	ABSORBED_DIRECT	EntriesVfdivVidiv	2	EntriesVfdivVidiv	$(GOLDEN_RTL)/EnqPolicy_18.sv
 IndexableCAMTemplate	SIGNED_OFF_TARGET	ABSORBED_DIRECT	WrBypass	1	WrBypass	rtl/common/IndexableCAMTemplate.sv
 IndexableCAMTemplate_32	SIGNED_OFF_TARGET	ABSORBED_DIRECT	WrBypass_32	1	WrBypass_32	rtl/common/IndexableCAMTemplate_32.sv
@@ -36,6 +41,8 @@ MbistPipeIttage_4	SIGNED_OFF_TARGET	ABSORBED_DIRECT	ITTageTable_4	1	ITTageTable_
 MiscResultSelect	GOLDEN_ONLY	ABSORBED_COLLATERAL	AluDataModule	1	-	$(GOLDEN_RTL)/MiscResultSelect.sv
 OthersEntry_164	GOLDEN_ONLY	ABSORBED_DIRECT	EntriesVfdivVidiv	2	EntriesVfdivVidiv	$(GOLDEN_RTL)/OthersEntry_164.sv
 OthersEntry_166	GOLDEN_ONLY	ABSORBED_DIRECT	EntriesVfdivVidiv	6	EntriesVfdivVidiv	$(GOLDEN_RTL)/OthersEntry_166.sv
+OthersEntry_66	GOLDEN_ONLY	ABSORBED_DIRECT	EntriesAluCsrFenceDiv	6	EntriesAluCsrFenceDiv	$(GOLDEN_RTL)/OthersEntry_66.sv
+OthersEntry_72	GOLDEN_ONLY	ABSORBED_DIRECT	EntriesAluCsrFenceDiv	16	EntriesAluCsrFenceDiv	$(GOLDEN_RTL)/OthersEntry_72.sv
 PLICFanIn	SIGNED_OFF_TARGET	ABSORBED_DIRECT	TLPLIC	2	TLPLIC	rtl/uncore/PLICFanIn.sv
 PriorityMuxModule	SIGNED_OFF_TARGET	ABSORBED_DIRECT	Predictor	4	Predictor	rtl/frontend/PriorityMuxModule.sv
 PriorityMuxModule_12	SIGNED_OFF_TARGET	ABSORBED_DIRECT	Predictor	2	Predictor	rtl/frontend/PriorityMuxModule_12.sv
@@ -58,4 +65,11 @@ data_mem_0_8x3	GOLDEN_ONLY	ABSORBED_DIRECT	WrBypass	1	WrBypass	$(GOLDEN_RTL)/dat
 data_mem_16x12	GOLDEN_ONLY	ABSORBED_DIRECT	WrBypass_33	1	WrBypass_33	$(GOLDEN_RTL)/data_mem_16x12.sv
 data_mem_8x4	GOLDEN_ONLY	ABSORBED_DIRECT	WrBypass_32	1	WrBypass_32	$(GOLDEN_RTL)/data_mem_8x4.sv
 indexedLSNumOfUopTable	GOLDEN_ONLY	ABSORBED_DIRECT	UopInfoGen	1	UopInfoGen	$(GOLDEN_RTL)/indexedLSNumOfUopTable.sv
+indexedLSUopTable_1	SIGNED_OFF_TARGET	ABSORBED_DIRECT	DecodeUnitComp	1	DecodeUnitComp	rtl/backend/indexedLSUopTable_1.sv
+indexedLSUopTable_2	SIGNED_OFF_TARGET	ABSORBED_DIRECT	DecodeUnitComp	1	DecodeUnitComp	rtl/backend/indexedLSUopTable_2.sv
+indexedLSUopTable_3	SIGNED_OFF_TARGET	ABSORBED_DIRECT	DecodeUnitComp	1	DecodeUnitComp	rtl/backend/indexedLSUopTable_3.sv
+indexedLSUopTable_4	SIGNED_OFF_TARGET	ABSORBED_DIRECT	DecodeUnitComp	1	DecodeUnitComp	rtl/backend/indexedLSUopTable_4.sv
+indexedLSUopTable_5	SIGNED_OFF_TARGET	ABSORBED_DIRECT	DecodeUnitComp	1	DecodeUnitComp	rtl/backend/indexedLSUopTable_5.sv
+indexedLSUopTable_6	SIGNED_OFF_TARGET	ABSORBED_DIRECT	DecodeUnitComp	1	DecodeUnitComp	rtl/backend/indexedLSUopTable_6.sv
+indexedLSUopTable_7	SIGNED_OFF_TARGET	ABSORBED_DIRECT	DecodeUnitComp	1	DecodeUnitComp	rtl/backend/indexedLSUopTable_7.sv
 strdiedLSNumOfUopTable	GOLDEN_ONLY	ABSORBED_DIRECT	UopInfoGen	1	UopInfoGen	$(GOLDEN_RTL)/strdiedLSNumOfUopTable.sv
