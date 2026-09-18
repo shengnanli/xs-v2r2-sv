@@ -1,0 +1,9 @@
+# DelayReg UT 正式矩阵 3 seed × 2 initreg × 200000 拍，commit b1d8de9ca9f33be43a2841dbc683f2af0e476554
+# 复跑: cd verif/ut/DelayReg && make run SEED=<s> NCYCLES=200000 INITREG=+vcs+initreg+<random|0>
+log	checks	errors	cov_fail	verdict	sha256
+sim_seed1_initreg0.log	2200000	0	0	TEST PASSED	123742334c30d40cf18de31bb3f06816b49e3a48d031f808c9e0402974f9bc17
+sim_seed1_initregrandom.log	2200000	0	0	TEST PASSED	1d0d5ee43a242e642662e45591642c43158cc1663348eaf5ba7cc20d1a7ab6a2
+sim_seed42_initreg0.log	2200000	0	0	TEST PASSED	f8896676081d548fb50a1e1c55f22063149bc1c5369bf15441c184004bd5e779
+sim_seed42_initregrandom.log	2200000	0	0	TEST PASSED	a2f2c9cc376209c10511f809c303d17f80e0fbe77722741e49f680d148bd495a
+sim_seed7_initreg0.log	2200000	0	0	TEST PASSED	4096ec1ea2bc8bcf143b1f7bf2335394ad9e1b63001d37c11c77095819e8c987
+sim_seed7_initregrandom.log	2200000	0	0	TEST PASSED	4199892306bf02aa1b1e6a12bdf1c605599abbcf7b5848ea5b73cc391cb9f5ab

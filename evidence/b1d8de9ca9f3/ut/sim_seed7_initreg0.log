@@ -1,0 +1,24 @@
+Command: /home/eda/xs-env/wt-delayreg/verif/ut/DelayReg/./simv +ntb_random_seed=7 +ncycles=200000 +vcs+initreg+0 -l sim_7.log
+Chronologic VCS simulator copyright 1991-2024
+Contains Synopsys proprietary information.
+Compiler version W-2024.09-SP1_Full64; Runtime version W-2024.09-SP1_Full64;  Sep 18 05:57 2026
+DelayReg family checks=2200000 errors=0
+  DelayReg: checks=200000 moves=97737 ones=322/322 zeros=322/322
+  DelayReg_16: checks=200000 moves=98501 ones=256/256 zeros=256/256
+  DelayReg_18: checks=200000 moves=98501 ones=576/576 zeros=576/576
+  DelayReg_19: checks=200000 moves=98501 ones=14344/14344 zeros=14344/14344
+  DelayReg_20: checks=200000 moves=98501 ones=12296/12296 zeros=12296/12296
+  DelayReg_21: checks=200000 moves=98501 ones=19208/19208 zeros=19208/19208
+  DelayReg_22: checks=200000 moves=97737 ones=173/173 zeros=173/173
+  DelayReg_23: checks=200000 moves=96890 ones=10/10 zeros=10/10
+  DelayReg_24: checks=200000 moves=99255 ones=153/153 zeros=153/153
+  DelayReg_25: checks=200000 moves=99255 ones=657/657 zeros=657/657
+  DelayReg_26: checks=200000 moves=98501 ones=325/325 zeros=325/325
+  CTRL: en0=96919 runs=13965 rst=1384 rst&en1=1188 rst&en0=196
+TEST PASSED
+$finish called from file "tb.sv", line 4524.
+$finish at simulation time           2000050000
+           V C S   S i m u l a t i o n   R e p o r t 
+Time: 2000050000 ps
+CPU Time:    203.450 seconds;       Data structure size:   0.7Mb
+Fri Sep 18 06:01:17 2026
