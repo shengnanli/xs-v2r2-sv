@@ -32,6 +32,13 @@ step() {  # step <说明> <命令...>
 # ---- 第一层：无 docs/ 输入，可以最先跑 ----
 step "round 台账（rewrite_coverage 的证据源）" python3 scripts/harvest_round_ledger.py --out docs/fm_round_20260917.tsv
 step "层次重绑映射（perf 链的输入）"           python3 scripts/hier_map.py
+# ★2026-09-18 补：这一条本来漏了★
+# 漏的后果是真发生过的：d15abdb 那次重算之后 check_coverage_provenance 判据 C 红了
+# （9 个 top 有通过 receipt 但 coverage 表里没记 PROVEN_DIRECT），而那次的 commit message
+# 写的是"六条闸全绿"—— 那是**本脚本复核清单的六条**，不是 gate_all 的全套。
+# 子集口径被当成全套口径，正是本轮反复在补的那个洞，这次发生在闸的计数上。
+# coverage_three_axis 只读 universe 与 evidence/，不依赖其他台账的产物，故放第一层。
+step "三轴覆盖（证据链闸守的那张表）"          python3 scripts/coverage_three_axis.py
 
 # ---- 第二层：依赖第一层 ----
 step "perf bore 重绑（读 hier_rebind_map）"    python3 scripts/perf_rebind.py
@@ -41,12 +48,21 @@ step "重写覆盖（读 fm_round_*）"               python3 scripts/rewrite_co
 step "perf 分档台账（读 perf_bore_map）"       python3 scripts/perf_tier.py
 
 echo
+# ★复核清单必须与 gate_all.sh 里的台账类闸保持同步★
+# 注意 coverage_three_axis.py **没有 --check 参数**（只有 --universe）——
+# 我第一版照着另外五个生成器的接口想当然加了一行 `coverage_three_axis.py --check`，
+# 那行永远 FAIL（argparse 直接报 unrecognized arguments）。
+# 那张表的新鲜度由 check_coverage_provenance 的判据 B（表头分母 == universe 的
+# in_universe=yes）与判据 C（有通过 receipt 的必须已记账）共同守着，够用，
+# 所以这里只列它，不列一个不存在的 --check。
+# 少列一条，就会出现"本脚本全绿但 gate_all 红"——d15abdb 就是这么发生的。
 echo "=== 逐条复核 ==="
 for c in "harvest_round_ledger.py --check --out docs/fm_round_20260917.tsv" \
          "hier_map.py --check" \
          "perf_rebind.py --check" \
          "rewrite_coverage.py --check" \
          "perf_tier.py --check" \
+         "check_coverage_provenance.py --strict" \
          "check_perf_tier.py"; do
   printf "  %-58s " "$c"
   # shellcheck disable=SC2086

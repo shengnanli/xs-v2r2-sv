@@ -1788,6 +1788,10 @@ RegCache	MemRegCacheRepRCIdx_age	RegCacheAgeDetector_1	ONE_SITE	u_core.MemRegCac
 RegCacheTagTable	IntRCTagTable	RegCacheTagModule	DEEPER	u_core.IntRCTagTable	xs_RegCacheTagModule_core		auto_deeper	
 RegCacheTagTable	MemRCTagTable	RegCacheTagModule_1	DEEPER	u_core.MemRCTagTable	xs_RegCacheTagModule_core		auto_deeper	
 RenameBuffer	walkPtrSnapshots_snapshotGen	SnapshotGenerator	SAME_PATH	walkPtrSnapshots_snapshotGen	SnapshotGenerator		auto_same	
+RenameTable	snapshots_snapshotGen	SnapshotGenerator_4	SAME_PATH	snapshots_snapshotGen	SnapshotGenerator_4		auto_same	
+RenameTable_1	snapshots_snapshotGen	SnapshotGenerator_5	SAME_PATH	snapshots_snapshotGen	SnapshotGenerator_5		auto_same	
+RenameTable_2	snapshots_snapshotGen	SnapshotGenerator_6	SAME_PATH	snapshots_snapshotGen	SnapshotGenerator_6		auto_same	
+RenameTable_3	snapshots_snapshotGen	SnapshotGenerator_7	SAME_PATH	snapshots_snapshotGen	SnapshotGenerator_7		auto_same	
 SNXbar	txdatArb	FastArbiter_45	DEEPER	u_core.txdatArb	FastArbiter_45		auto_deeper	
 SNXbar	txreqArb	FastArbiter_46	DEEPER	u_core.txreqArb	FastArbiter_46		auto_deeper	
 SRAMTemplate	array	sram_array_1p128x74m37s1h0l1b_icsh_tag	SAME_PATH	array	sram_array_1p128x74m37s1h0l1b_icsh_tag		auto_same	
@@ -1950,6 +1954,15 @@ SyncDataModuleTemplate__64entry_4	dataBanks_0	DataModule__16entry_16	INSTANCE	u_
 SyncDataModuleTemplate__64entry_4	dataBanks_1	DataModule__16entry_16	INSTANCE	u_core.g_bank[1].dataBank	xs_DataModule		declared	同上
 SyncDataModuleTemplate__64entry_4	dataBanks_2	DataModule__16entry_16	INSTANCE	u_core.g_bank[2].dataBank	xs_DataModule		declared	同上
 SyncDataModuleTemplate__64entry_4	dataBanks_3	DataModule__16entry_16	INSTANCE	u_core.g_bank[3].dataBank	xs_DataModule		declared	同上
+TLBNonBlock	csr_delay	DelayN_7	SAME_PATH	csr_delay	DelayN_7		auto_same	
+TLBNonBlock	entries	TlbStorageWrapper_1	SAME_PATH	entries	TlbStorageWrapper_1		auto_same	
+TLBNonBlock	sfence_delay	DelayN_9	SAME_PATH	sfence_delay	DelayN_9		auto_same	
+TLBNonBlock_1	csr_delay	DelayN_7	SAME_PATH	csr_delay	DelayN_7		auto_same	
+TLBNonBlock_1	entries	TlbStorageWrapper_2	SAME_PATH	entries	TlbStorageWrapper_2		auto_same	
+TLBNonBlock_1	sfence_delay	DelayN_9	SAME_PATH	sfence_delay	DelayN_9		auto_same	
+TLBNonBlock_2	csr_delay	DelayN_7	SAME_PATH	csr_delay	DelayN_7		auto_same	
+TLBNonBlock_2	entries	TlbStorageWrapper_3	SAME_PATH	entries	TlbStorageWrapper_3		auto_same	
+TLBNonBlock_2	sfence_delay	DelayN_9	SAME_PATH	sfence_delay	DelayN_9		auto_same	
 TLBuffer	nodeIn_d_q	Queue2_TLBundleD	ONE_SITE	u_core.response_queue	Queue2_TLBundleD		auto_one_site	
 TLBuffer	nodeOut_a_q	Queue2_TLBundleA	ONE_SITE	u_core.request_queue	Queue2_TLBundleA		auto_one_site	
 TLBuffer_13	nodeIn_b_q	Queue2_TLBundleB_1	DEEPER	u_core.g_bank[b].u_bank.nodeIn_b_q	Queue2_TLBundleB_1		auto_deeper	
