@@ -338,6 +338,21 @@ switch -- $_verify_matched_unread_compare_points {
     #                                             得先用 fm_pins 把它们配起来
     #   本表里 NCBTransactionQueue{,_1} 与 TLBFA 家族都属于后者，其余多数属于前者。
     #   分不清就申请，最好的情况是浪费一轮，最坏的情况是把空转读成"加强过了"。
+    #   EntriesAluCsrFenceDiv(2026-09-17 加，canary): 6220 个 unread 点**全部是 matched_nc**
+    #          （unread_points.txt 6220 行逐行核过，未配对未读点为 0 —— FM 连那一行都没打印）。
+    #          构成 = 8 条目（2 enq + 6 simp）× 776 位死负载 + 12 个 enqDelay 影子位。
+    #          ★顺序★：钉点在先、加强在后。本轮先补了 24 个 enqDelay srcLoadDependency
+    #          钉点把 12(12) unmatched unread 打成 0(0)，否则按 TLBFA 的实测
+    #          （unmatched unread 单开 vmucp 必然空转）这一轮会白跑。
+    #          配对按构造：6220/6220 全部是 20308 对钉点的子集，**FM 自行猜配 0 对**；
+    #          钉点由 gen_fm_pins.py 从 golden 实例连线机械提取，不是人工列表。
+    #          ☆一个读数陷阱，lane 查清后才敢写期望值☆：结果表里
+    #          `Constant reg 12` 与 `Unread 6220` 是**两行**、合计 6232，而 vmucp 只清 6220；
+    #          那 12 个常量寄存器留着**不拦 verdict**（fm_verdict.py 的 strict PARTIAL 判据
+    #          只看 unverified/unmatched/aborted/unread 四项）。所以期望值是 +6220 不是 +6232。
+    #          ★复核判据★: passing 18781 -> 25001（正好 +6220）、failing 仍 0、unread 归 0、
+    #          unmatched 保持全零。passing 不增即空转，不算过。
+    #          同族先例见上面的 EntriesVfdivVidiv 条目；本条的数字全部是 canary 自己实测的。
     #   RenameBuffer(2026-09-17 加): 51 个 unread 点，钉点后全部转成 matched_nc
     #          (verif/ut/RenameBuffer/fm_pins.tcl，钉前 unmatched unread 51(51)、
     #          钉后六项 unmatched 全零、matched_unread_notcompared_pairs = 51)。
@@ -395,7 +410,7 @@ switch -- $_verify_matched_unread_compare_points {
     #          impl 侧单边未读 585 个不受本开关影响(无对家, 属 PASS_DEAD_IMPL 范畴)。
     #          ★复核判据★: passing 520634 -> 528967(正好 +8333)、failing 仍 0、
     #          unread 归 0、unmatched 0(0)。passing 不增而 unread 归 0 = 点被吞掉, 不算过。
-    if {$top ni {Bku Composer DebugModule DuplicatedTagArray EntriesVfdivVidiv FAlu FCVT FTBBank Ftq ICacheCtrlUnit ICacheDataArray ICacheMetaArray ICacheMissUnit InstrUncache ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 LinkMonitor MulUnit Queue1_RegMapperInput_5 RNXbar SNXbar SourceB SSIT TageBTable TlbStorageWrapper TlbStorageWrapper_1 TXDAT_4 TXREQ WritebackQueue IBuffer NCBTransactionQueue NCBTransactionQueue_1 Predictor RenameBuffer TLBFA TLBFA_1 TLBFA_2 TLBFA_3}} {
+    if {$top ni {Bku Composer DebugModule DuplicatedTagArray EntriesVfdivVidiv FAlu FCVT FTBBank Ftq ICacheCtrlUnit ICacheDataArray ICacheMetaArray ICacheMissUnit InstrUncache ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 LinkMonitor MulUnit Queue1_RegMapperInput_5 RNXbar SNXbar SourceB SSIT TageBTable TlbStorageWrapper TlbStorageWrapper_1 TXDAT_4 TXREQ WritebackQueue IBuffer EntriesAluCsrFenceDiv NCBTransactionQueue NCBTransactionQueue_1 Predictor RenameBuffer TLBFA TLBFA_1 TLBFA_2 TLBFA_3}} {
       puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
       exit 3
     }
