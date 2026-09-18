@@ -745,6 +745,14 @@ module TLBNonBlock import tlbnb_pkg::*; (
     .HAS_MEMIDX      (4'b0000),  // resp.memidx 端口在的 lane
     .HAS_ST_EXCP     (4'b0001),  // excp(0).{pf,af}.st 端口在的 lane
     .HAS_REQ_KILL    (4'b0111),  // requestor.req_kill 端口在的 lane
+    .HAS_FIRST_ISSUE (4'b1111),  // golden 有 debug_isFirstIssue 端口的 lane
+    .HAS_ROBIDX      (4'b1111),  // golden 有 reg req_out_<i>_debug_robIdx_flag
+    .HAS_FRM_MABUF   (4'b1111),  // golden 有 reg req_out_<i>_frm_mabuf
+    .HAS_HYPERINST   (4'b1111),  // golden 有 reg req_out_<i>_hyperinst
+    .HAS_HLVX        (4'b1111),  // golden 有 reg req_out_<i>_hlvx
+    .HAS_NO_TRANSLATE(4'b1111),  // golden 有 reg useReqS1Paddr_<i>
+    .HAS_IS_PREFETCH (4'b1111),  // golden 有 reg req_out_<i>_isPrefetch
+    .HAS_PRE_EXCP    (4'b1111),  // golden 有 reg ..._excp_0_pf_ld_REG
     .HAS_TLBREPLAY   (1'b1),
     .HAS_PERF        (1'b1),
     .DIFFTEST_EN     (1'b1),

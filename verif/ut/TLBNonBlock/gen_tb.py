@@ -218,12 +218,15 @@ def cov_decls(mod, outs):
     return L
 
 
-def cov_report(mod, outs):
+def cov_report(mod, outs, has_gpa=True):
     L = ["    begin : cov_gate", "      int bad_cov = 0;"]
     L.append('      $display("--- coverage (golden 侧状态桶，全部必须 > 0) ---");')
     for name, why in COV_BUCKETS:
         L.append('      $display("  %-12s = %%0d   %s", %s);' % (name, why, name))
         L.append("      if (%s == 0) bad_cov++;" % name)
+    L.append('      $display("warmup_phase2=%%0d cycles (%s)", wu);'
+             % ("waited for golden resp_gpa_refill" if has_gpa
+                else "skipped: this variant has no resp.gpaddr -> no resp_gpa_gvpn"))
     L.append('      $display("checks=%0d errors=%0d bad_cov=%0d", checks, errors, bad_cov);')
     L.append("      if (checks == 0) begin")
     L.append('        $display("TEST FAILED (%s): checks=0 —— tb 一次都没比，判 fail-open");' % mod)
@@ -277,10 +280,42 @@ def directed_getgpa(ins):
     ]
 
 
+def warmup_drive(ins):
+    """复位后的热身窗口：把所有 req_valid / ptw_resp_valid 强拉 1。
+
+    ★为什么必须有（实测，不是保险起见）★
+    golden 与重写核里有一批**无复位**的寄存器（RegEnable：req_out_* / resp_fullva_r /
+    ptw_resp_bits_reg_* / p_* ...）。`+vcs+initreg+random` 给两侧的是**各自独立的
+    随机初值**，在第一次被写之前逐拍比它们，比的是模拟器的初值、不是电路 ——
+    实测 seed=7/42 的 initreg=random 那一轮能报出上万个这种"失配"。
+    `+vcs+initreg+0` 那一轮两侧都是 0，看不出来，所以这条坑只有 random 那轮现形。
+
+    无复位寄存器的初值本来就归 FM 管（FM 把它们当自由变量，两侧配对后逐点证等价），
+    UT 这边的正确做法是**先把它们写一遍再开始比**，而不是把差异当 bug 报。
+    热身期间不计 checks、不采覆盖桶；正式比较从热身之后开始。
+
+    深度只有 1 拍的 RegEnable 其实 1 拍就够，取 8 拍是留余量（跨越 DelayN_7/_9 的
+    两级流水 + p_hit 的一拍旁路）。
+    """
+    have = {n for _, _, _, n in ins}
+    vs = sorted(n for n in have if re.match(r'io_requestor_\d+_req_valid$', n))
+    if not vs or "io_ptw_resp_valid" not in have:
+        sys.exit("ERROR: 热身窗口找不到 req_valid / ptw_resp_valid")
+    L = ["      // ---- 热身窗口：所有 enable 拉满（见 gen_tb.py 的 warmup_drive）----",
+         "      if (warmup) begin"]
+    for n in vs:
+        L.append("        %s <= 1'b1;" % n)
+    L.append("        io_ptw_resp_valid <= 1'b1;")
+    L.append("      end")
+    return L
+
+
 def gen(mod):
     ports = read_ports(mod)
     ins = [p for p in ports if p[0] == "input" and p[3] not in ("clock", "reset")]
     outs = [p for p in ports if p[0] == "output"]
+    # 本变体有没有 resp.gpaddr(0) 端口 —— 决定阶段二热身有没有对象（见 warmup 注释）
+    has_gpa = any(re.match(r'io_requestor_\d+_resp_bits_gpaddr_0$', p[3]) for p in outs)
     L = []
     L.append("// 由 verif/ut/TLBNonBlock/gen_tb.py 生成，勿手改。golden %s 与重写 %s_xs"
              % (mod, mod))
@@ -319,6 +354,18 @@ def gen(mod):
         L.append("  );")
     L.append("")
     L.append("  longint errors = 0, checks = 0;")
+    L.append("  // 复位后的热身窗口，见 gen_tb.py 的 warmup_drive() 与 warmup_seq()")
+    L.append("  localparam int WARMUP_CYCLES = 8;      // 阶段一：所有 enable 拉满")
+    L.append("  localparam int WARMUP_MAX    = 20000;  // 阶段二：等自保持寄存器被写，超时判失败")
+    L.append("  reg warmup = 1'b1;")
+    L.append("  reg seen_refill = 1'b%d;" % (0 if has_gpa else 1))
+    L.append("  integer wu = 0;")
+    if has_gpa:
+        L.append("  // golden 的 resp_gpa_refill 为 1 的那一拍，正是 resp_gpa_gvpn 被写的拍")
+        L.append("  always @(posedge clock) if (!reset && dut_g.resp_gpa_refill) seen_refill <= 1'b1;")
+    else:
+        L.append("  // 本变体没有 resp.gpaddr 端口 -> golden 里根本没有 resp_gpa_gvpn 这个")
+        L.append("  // 自保持寄存器（判据：golden %s 的 reg 清单里没有它），阶段二无对象，直接跳过。" % mod)
     L.append("  integer ncycles = 200000;")
     L.append("  integer i;")
     L.extend(cov_decls(mod, outs))
@@ -328,6 +375,7 @@ def gen(mod):
     for d, msb, lsb, n in ins:
         L.append("      %s;" % drive(n, msb, lsb))
     L.extend(directed_getgpa(ins))
+    L.extend(warmup_drive(ins))
     L.append("    end")
     L.append("  endtask")
     L.append("")
@@ -355,13 +403,35 @@ def gen(mod):
     L.append("    reset = 1'b1;")
     L.append("    repeat (5) @(posedge clock);")
     L.append("    reset = 1'b0;")
+    L.append("    // ---- 热身：把所有 enable 拉满，让两侧每个无复位寄存器都被写过一次 ----")
+    L.append("    for (i = 0; i < WARMUP_CYCLES; i = i + 1) begin")
+    L.append("      @(posedge clock);")
+    L.append("      drive_inputs();")
+    L.append("    end")
+    L.append("    warmup = 1'b0;")
+    L.append("    // ---- 阶段二：等**自保持**的无复位寄存器被写过一次 ----")
+    L.append("    // resp_gpa_gvpn / need_gpa_vpn / need_gpa_robidx_* 的次态默认是它们自己，")
+    L.append("    // 拉 enable 没用，只有一次真的 getGpa 往返才会写它们。两侧的随机初值不同，")
+    L.append("    // 写之前比 gpaddr 就是在比模拟器初值（实测 seed=7 那轮 832 个失配全是这个）。")
+    L.append("    while (!seen_refill && wu < WARMUP_MAX) begin")
+    L.append("      @(posedge clock);")
+    L.append("      drive_inputs();")
+    L.append("      wu = wu + 1;")
+    L.append("    end")
+    L.append("    if (!seen_refill) begin")
+    L.append("      $display(\"TEST FAILED (%s): 热身 %%0d 拍内 golden 的 resp_gpa_refill "
+             "没出现过 —— 自保持寄存器没被写，后面的比较没有意义\", wu);" % mod)
+    L.append("      $finish;")
+    L.append("    end")
+    L.append("    @(posedge clock);")
+    L.append("    drive_inputs();")
     L.append("    for (i = 0; i < ncycles; i = i + 1) begin")
     L.append("      @(posedge clock);")
     L.append("      drive_inputs();")
     L.append("      #1 check_outputs();")
     L.append("      sample_cov();")
     L.append("    end")
-    L.extend(cov_report(mod, outs))
+    L.extend(cov_report(mod, outs, has_gpa))
     L.append("  end")
     L.append("endmodule")
     return "\n".join(L) + "\n"

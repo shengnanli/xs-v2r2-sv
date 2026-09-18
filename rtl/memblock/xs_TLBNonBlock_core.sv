@@ -72,6 +72,22 @@
 //     resp.bits.paddr(1)          Y  Y  Y  .  |  .    .   |  .    .
 //     resp.bits.ptwBack           Y  Y  Y  .  |  Y    Y   |  .    .
 //     resp.bits.memidx.idx        .  .  .  .  |  Y    Y   |  .    .
+//     req.bits.debug_isFirstIssue Y  Y  Y  Y  |  Y    Y   |  Y    .
+//     req.bits.debug_robIdx       Y  Y  Y  Y  |  Y    Y   |  Y    .
+//     req.bits.frm_mabuf          Y  Y  Y  Y  |  Y    Y   |  Y    .
+//     req.bits.hyperinst          Y  Y  Y  Y  |  Y    Y   |  Y    .
+//     req.bits.fullva/checkfullva Y  Y  Y  Y  |  Y    Y   |  Y    .
+//
+//   ★缺输入端口也会消寄存器 —— 这一半第一轮漏了，FM 直接判 PARTIAL★
+//   上面矩阵后半截那五行是**输入**。它们缺的时候，golden 里对应的打拍寄存器
+//   （req_out_<i>_{hlvx,hyperinst,frm_mabuf,debug_robIdx_*}、useReqS1Paddr_<i>、
+//   r/r_<n>、..._excp_0_*_REG、REG/REG_1）整组不存在。重写核照样生成，
+//   就成了 impl-only 的 compare point：TLBNonBlock_2 实测 18 个，
+//   signoff-strict 判 PARTIAL(reason=strict_unmatched!=0)，native 却是 SUCCEEDED
+//   —— 因为这些点不参与任何匹配比较，failing 恒 0，**只看 native 会漏掉**。
+//   现在由 HAS_FIRST_ISSUE / HAS_ROBIDX / HAS_FRM_MABUF / HAS_HYPERINST /
+//   HAS_HLVX / HAS_NO_TRANSLATE / HAS_PRE_EXCP 七个掩码逐 lane 重现，
+//   掩码值由 scripts/gen_tlbnb_family.py 从 **golden 的 reg 清单**现读。
 //   模块级：
 //     tlbreplay                   有          |  无       |  无
 //     perf                        有          |  有       |  无
@@ -110,21 +126,21 @@
 //   覆盖闸里的 c_napot_sup 桶就是为这条路留的（见 verif/ut/TLBNonBlock/gen_tb.py）。
 // -----------------------------------------------------------------------------
 //
-// 本文件导航（共 1607 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
-//   L133    package tlbnb_pkg;
-//   L522    module xs_TLBNonBlock_core
-//   L656    §CSR 译码（全部用延迟后的 csr，见 DelayN_7）
-//   L684    §PTW 响应旁路的命中键
-//   L708    §状态声明
-//   L805    §拍 A：请求拍的组合逻辑
-//   L908    §打拍
-//   L1056   §拍 B：响应拍
-//   L1205   §权限检查（Chisel 的 perm_check，每 lane 每 dup 调一次）
-//   L1329   §need_gpa —— 整个模块最绕的一段
-//   L1504   §handle_nonblock：miss 了要么发 PTW 请求，要么叫请求方重来
-//   L1547   §entries 回填：PTW 响应写进全相联表
-//   L1556   §perf 事件：两个计数，各自打两拍出去（generatePerfEvent）
-//   L1582   §difftest：每条 lane 一个 DiffL1TLBEvent，payload 打成 339 位从 bore 端口出去
+// 本文件导航（共 1716 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+//   L149    package tlbnb_pkg;
+//   L538    module xs_TLBNonBlock_core
+//   L709    §CSR 译码（全部用延迟后的 csr，见 DelayN_7）
+//   L737    §PTW 响应旁路的命中键
+//   L761    §状态声明
+//   L858    §拍 A：请求拍的组合逻辑
+//   L961    §打拍
+//   L1165   §拍 B：响应拍
+//   L1314   §权限检查（Chisel 的 perm_check，每 lane 每 dup 调一次）
+//   L1438   §need_gpa —— 整个模块最绕的一段
+//   L1613   §handle_nonblock：miss 了要么发 PTW 请求，要么叫请求方重来
+//   L1656   §entries 回填：PTW 响应写进全相联表
+//   L1665   §perf 事件：两个计数，各自打两拍出去（generatePerfEvent）
+//   L1691   §difftest：每条 lane 一个 DiffL1TLBEvent，payload 打成 339 位从 bore 端口出去
 //
 // 判据是 golden RTL（G1-canonical/golden-rtl/TLBNonBlock{,_1,_2}.sv）；Chisel
 // （XiangShan src/main/scala/xiangshan/cache/mmu/TLB.scala + MMUBundle.scala）
@@ -541,6 +557,43 @@ module xs_TLBNonBlock_core
   parameter logic [W-1:0] HAS_ST_EXCP     = {W{1'b1}},
   // requestor.req_kill 端口存在的 lane。为 0 的 lane 不生成 last_req_fire。
   parameter logic [W-1:0] HAS_REQ_KILL    = {W{1'b1}},
+
+  // ---- 缺**输入**端口造成的逐 lane 消寄存器（判据是 golden 的寄存器清单本身）----
+  // 之前只按"缺输出端口"做了 gate，漏了这一半：某条 lane 的输入被父级折成常量时，
+  // firtool 连它的打拍寄存器一起消掉，而重写核照样生成 —— 那就是 impl-only 的
+  // compare point，signoff-strict 直接判 PARTIAL（TLBNonBlock_2 实测 18 个）。
+  // 每个 mask 的判据都是"golden 该变体里有没有这个名字的 reg"，机械可复核，
+  // 由 scripts/gen_tlbnb_family.py 从 golden 源文件现读，不是手抄。
+  //   HAS_FIRST_ISSUE  <- golden 有 io_requestor_<i>_req_bits_debug_isFirstIssue 端口
+  //   HAS_ROBIDX       <- golden 有 reg req_out_<i>_debug_robIdx_flag
+  //   HAS_FRM_MABUF    <- golden 有 reg req_out_<i>_frm_mabuf
+  //   HAS_HYPERINST    <- golden 有 reg req_out_<i>_hyperinst
+  //   HAS_HLVX         <- golden 有 reg req_out_<i>_hlvx
+  //   HAS_NO_TRANSLATE <- golden 有 reg useReqS1Paddr_<i>
+  //   HAS_PRE_EXCP     <- golden 有 reg io_requestor_<i>_resp_bits_excp_0_pf_ld_REG
+  //   HAS_IS_PREFETCH  <- golden 有 reg req_out_<i>_isPrefetch
+  // ★被 gate 掉的那半边一律用 `always_comb x[i] = 0;`，**不许用 `assign`**★
+  //   —— 这是实测踩出来的坑，不是风格偏好：同一个 unpacked 数组里，只要有一个元素
+  //   由连续赋值驱动，VCS 的 `+vcs+initreg` 就**整个数组都不初始化**，剩下那些
+  //   always_ff 元素在复位后第一次被写之前保持 X。最小复现（scratchpad 的 t2/t3）：
+  //       logic [63:0] a [2];  always_ff ... a[0] <= d;  assign a[1] = 0;
+  //         -> +vcs+initreg+0 下 a[0] 仍是 X
+  //       同样的代码把 assign 换成 always_comb -> a[0] = 0（random 时是随机值）
+  //   本轮 seed=7/initreg=0 的 io_requestor_1_resp_bits_fullva 与 gpaddr 两个失配
+  //   就是这个（golden 那边是普通标量 reg，照常被初始化成 0，于是 0 vs X）。
+  //   FM 看不见它（无复位寄存器两侧都是自由变量），所以这条**只有 UT 能抓**。
+  //
+  // ★被 gate 掉的一律接常量 0，而不是"少一个寄存器"★：这些 lane 的对应输入本来
+  // 就被 wrapper 灌了 0，寄存器复位后恒 0，所以接常量与保留寄存器功能等价；
+  // 区别只在 FM 的 compare point 集合（以及 +vcs+initreg+random 的第一拍）。
+  parameter logic [W-1:0] HAS_FIRST_ISSUE  = {W{1'b1}},
+  parameter logic [W-1:0] HAS_ROBIDX       = {W{1'b1}},
+  parameter logic [W-1:0] HAS_FRM_MABUF    = {W{1'b1}},
+  parameter logic [W-1:0] HAS_HYPERINST    = {W{1'b1}},
+  parameter logic [W-1:0] HAS_HLVX         = {W{1'b1}},
+  parameter logic [W-1:0] HAS_NO_TRANSLATE = {W{1'b1}},
+  parameter logic [W-1:0] HAS_PRE_EXCP     = {W{1'b1}},
+  parameter logic [W-1:0] HAS_IS_PREFETCH  = {W{1'b1}},
   // tlbreplay 端口存在（dtlb_ld 才有）
   parameter bit  HAS_TLBREPLAY = 1'b1,
   // perf 端口存在（dtlb_pf 没有）
@@ -915,56 +968,108 @@ module xs_TLBNonBlock_core
       if (req_valid[i]) begin
         req_out_vaddr[i]        <= req_vaddr[i];
         req_out_cmd[i]          <= req_cmd[i];
-        req_out_hyperinst[i]    <= req_hyperinst[i];
-        req_out_hlvx[i]         <= req_hlvx[i];
-        req_out_is_prefetch[i]  <= req_is_prefetch[i];
-        req_out_frm_mabuf[i]    <= req_frm_mabuf[i];
-        req_out_robidx_flag[i]  <= req_robidx_flag[i];
-        req_out_robidx_value[i] <= req_robidx_value[i];
         virt_out[i]             <= csr.priv_virt;
-        first_issue_r[i]        <= req_first_issue[i];
-        first_issue_r2[i]       <= req_first_issue[i];
         difftest_vpn_r[i]       <= req_vaddr[i][VADDR_W-1:OFF_W];
       end
+    end
+    // 下面这几组各自带一个 mask：父级没接这个输入的 lane，golden 里连寄存器都没有。
+    if (HAS_IS_PREFETCH[i]) begin : g_is_prefetch
+      always_ff @(posedge clock) if (req_valid[i]) req_out_is_prefetch[i] <= req_is_prefetch[i];
+    end else begin : g_no_is_prefetch
+      always_comb req_out_is_prefetch[i] = 1'b0;
+    end
+    if (HAS_HYPERINST[i]) begin : g_hyperinst
+      always_ff @(posedge clock) if (req_valid[i]) req_out_hyperinst[i] <= req_hyperinst[i];
+    end else begin : g_no_hyperinst
+      always_comb req_out_hyperinst[i] = 1'b0;
+    end
+    if (HAS_HLVX[i]) begin : g_hlvx
+      always_ff @(posedge clock) if (req_valid[i]) req_out_hlvx[i] <= req_hlvx[i];
+    end else begin : g_no_hlvx
+      always_comb req_out_hlvx[i] = 1'b0;
+    end
+    if (HAS_FRM_MABUF[i]) begin : g_frm_mabuf
+      always_ff @(posedge clock) if (req_valid[i]) req_out_frm_mabuf[i] <= req_frm_mabuf[i];
+    end else begin : g_no_frm_mabuf
+      always_comb req_out_frm_mabuf[i] = 1'b0;
+    end
+    if (HAS_ROBIDX[i]) begin : g_robidx
+      always_ff @(posedge clock) if (req_valid[i]) begin
+        req_out_robidx_flag[i]  <= req_robidx_flag[i];
+        req_out_robidx_value[i] <= req_robidx_value[i];
+      end
+    end else begin : g_no_robidx
+      always_comb req_out_robidx_flag[i] = 1'b0;
+      always_comb req_out_robidx_value[i] = '0;
+    end
+    // first_issue 只喂 XSPerfAccumulate，firtool 把统计消掉之后剩下两个没人读的
+    // 打拍寄存器。★golden 留着它们，所以不许删★；但父级没接
+    // debug_isFirstIssue 的 lane，golden 自己也没有。
+    if (HAS_FIRST_ISSUE[i]) begin : g_first_issue
+      always_ff @(posedge clock) if (req_valid[i]) begin
+        first_issue_r[i]  <= req_first_issue[i];
+        first_issue_r2[i] <= req_first_issue[i];
+      end
+    end else begin : g_no_first_issue
+      always_comb first_issue_r[i] = 1'b0;
+      always_comb first_issue_r2[i] = 1'b0;
     end
     // req_out.fullva 存的是 EffectiveVa（Chisel 里 `req_out(i).fullva := EffectiveVa(i)`
     // 紧跟在 `req_out(i) := req(i).bits` 后面覆盖掉原值）。
     if (HAS_GPADDR[i]) begin : g_req_fullva
       always_ff @(posedge clock) if (req_valid[i]) req_out_fullva[i] <= eff_va[i];
     end else begin : g_no_req_fullva
-      assign req_out_fullva[i] = '0;
+      always_comb req_out_fullva[i] = '0;
     end
     if (HAS_RESP_FULLVA[i]) begin : g_resp_fullva
       always_ff @(posedge clock) if (req_valid[i]) resp_fullva_r[i] <= eff_va[i];
     end else begin : g_no_resp_fullva
-      assign resp_fullva_r[i] = '0;
+      always_comb resp_fullva_r[i] = '0;
     end
     if (HAS_MEMIDX[i]) begin : g_resp_memidx
       always_ff @(posedge clock) if (req_valid[i]) resp_memidx_r[i] <= req_memidx[i];
     end else begin : g_no_resp_memidx
-      assign resp_memidx_r[i] = '0;
+      always_comb resp_memidx_r[i] = '0;
     end
 
     // --- 无 enable 的一拍延迟 ---
     always_ff @(posedge clock) begin
-      use_req_s1_paddr[i]     <= req_no_translate[i];
-      no_translate_r[i]       <= req_no_translate[i];
       redirect_last_valid[i]  <= redirect_valid;
       redirect_last_flag[i]   <= redirect_robidx_flag;
       redirect_last_value[i]  <= redirect_robidx_value;
       redirect_last_level[i]  <= redirect_level;
       difftest_s2x_r[i]       <= virt_or_hyp_in[i];
-      pre_pf_ld_r[i]          <= prepf[i];
-      pre_gpf_ld_r[i]         <= pregpf[i];
-      pre_gpf_st_r[i]         <= pregpf[i];
-      pre_af_ld_r[i]          <= preaf[i];
+    end
+    // useReqS1Paddr / noTranslateReg 是 golden 写了两遍的**同值重复寄存器**
+    // （见 §状态声明的注释），要么两个都有、要么两个都没有。
+    if (HAS_NO_TRANSLATE[i]) begin : g_no_translate_r
+      always_ff @(posedge clock) begin
+        use_req_s1_paddr[i] <= req_no_translate[i];
+        no_translate_r[i]   <= req_no_translate[i];
+      end
+    end else begin : g_no_no_translate_r
+      always_comb use_req_s1_paddr[i] = 1'b0;
+      always_comb no_translate_r[i] = 1'b0;
+    end
+    if (HAS_PRE_EXCP[i]) begin : g_pre_excp
+      always_ff @(posedge clock) begin
+        pre_pf_ld_r[i]  <= prepf[i];
+        pre_gpf_ld_r[i] <= pregpf[i];
+        pre_gpf_st_r[i] <= pregpf[i];
+        pre_af_ld_r[i]  <= preaf[i];
+      end
+    end else begin : g_no_pre_excp
+      always_comb pre_pf_ld_r[i] = 1'b0;
+      always_comb pre_gpf_ld_r[i] = 1'b0;
+      always_comb pre_gpf_st_r[i] = 1'b0;
+      always_comb pre_af_ld_r[i] = 1'b0;
     end
     // difftest.valid 被关掉的变体（pftlb）里这个寄存器没人读，golden 把它消掉了。
     // difftest_vpn_r / req_s2xlate_REG 不受影响 —— payload 的其余字段还在接出去。
     if (DIFFTEST_EN) begin : g_difftest_valid
       always_ff @(posedge clock) difftest_valid_r[i] <= req_valid[i];
     end else begin : g_no_difftest_valid
-      assign difftest_valid_r[i] = 1'b0;
+      always_comb difftest_valid_r[i] = 1'b0;
     end
     if (KEEP_ST_PRE[i]) begin : g_st_pre
       always_ff @(posedge clock) begin
@@ -972,12 +1077,16 @@ module xs_TLBNonBlock_core
         pre_af_st_r[i] <= preaf[i];
       end
     end else begin : g_no_st_pre
-      assign pre_pf_st_r[i] = 1'b0;
-      assign pre_af_st_r[i] = 1'b0;
+      always_comb pre_pf_st_r[i] = 1'b0;
+      always_comb pre_af_st_r[i] = 1'b0;
     end
     // N_DUPS 个**值恒等**的拷贝：Chisel 的 perm_check 每个 dup 调一次，每次都写一个
     // RegNext(prepf||pregpf||preaf)。合并成一个是"抹平 golden 的冗余结构"，不许。
-    always_ff @(posedge clock) pre_fault_r[i] <= {N_DUPS{pre_fault[i]}};
+    if (HAS_PRE_EXCP[i]) begin : g_pre_fault
+      always_ff @(posedge clock) pre_fault_r[i] <= {N_DUPS{pre_fault[i]}};
+    end else begin : g_no_pre_fault
+      always_comb pre_fault_r[i] = '0;
+    end
 
     // --- 带异步复位的一拍延迟（Chisel 的 GatedValidRegNext / RegInit）---
     always_ff @(posedge clock or posedge reset) begin
@@ -1001,7 +1110,7 @@ module xs_TLBNonBlock_core
         else       last_req_fire[i] <= req_valid[i];
       end
     end else begin : g_no_last_fire
-      assign last_req_fire[i] = 1'b0;
+      always_comb last_req_fire[i] = 1'b0;
     end
 
     // --- PTW 响应旁路寄存器（ptw_resp_bypass 里那一串 RegEnable）---
@@ -1041,11 +1150,11 @@ module xs_TLBNonBlock_core
         end
       end
     end else begin : g_no_bypass_gpa
-      assign p_gvpn[i]           = '0;
-      assign p_s2xlate[i]        = '0;
-      assign p_s1_level[i]       = '0;
-      assign p_s1_is_leaf[i]     = 1'b0;
-      assign p_s1_is_fake_pte[i] = 1'b0;
+      always_comb p_gvpn[i] = '0;
+      always_comb p_s2xlate[i] = '0;
+      always_comb p_s1_level[i] = '0;
+      always_comb p_s1_is_leaf[i] = 1'b0;
+      always_comb p_s1_is_fake_pte[i] = 1'b0;
     end
 
     // --- handle_nonblock 的 "上一拍 PTW 响应" ---

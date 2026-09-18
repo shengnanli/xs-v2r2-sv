@@ -138,6 +138,18 @@ MUTANTS = [
      "    tm[0]      = k.s1_n ? (k.s1_tag[VPNN_W-1-SECT_W : NAPOT_W-SECT_W] == vpn[VPNN_W-1:NAPOT_W])",
      "    tm[0]      = k.s1_n ? (k.s1_tag[SECT_W+1:1] == vpn[VPNN_W-1:NAPOT_W])"),
 
+    ('CATCH', VAR_1,
+     'M15 被 gate 掉的 hlvx 常量写成 1（考的是"缺输入端口"那一族 mask 的下游影响：'
+     '_1 两条 lane 都没有 hlvx 输入，常量一改 pmp_cmd 就会变成 CMD_RX）',
+     "      always_comb req_out_hlvx[i] = 1'b0;",
+     "      always_comb req_out_hlvx[i] = 1'b1;"),
+
+    ('CATCH', VAR_BASE,
+     'M16 逐 lane mask 用错下标（HAS_PRE_EXCP 取 lane0 那一位当全体）—— 模拟'
+     '"掩码接线接错"这一类错误',
+     "    if (HAS_PRE_EXCP[i]) begin : g_pre_excp",
+     "    if (HAS_PRE_EXCP[0]) begin : g_pre_excp"),
+
     # ---- 下面两条不计入抓取率，理由见文件头 ----
     ('EQUIV', VAR_1,
      'E1 = M7 打在变体 _1 上：_1 的 HAS_TLBREPLAY=0，整条 tlbreplay 锥体被 generate '

@@ -496,6 +496,14 @@ module tb;
   );
 
   longint errors = 0, checks = 0;
+  // 复位后的热身窗口，见 gen_tb.py 的 warmup_drive() 与 warmup_seq()
+  localparam int WARMUP_CYCLES = 8;      // 阶段一：所有 enable 拉满
+  localparam int WARMUP_MAX    = 20000;  // 阶段二：等自保持寄存器被写，超时判失败
+  reg warmup = 1'b1;
+  reg seen_refill = 1'b1;
+  integer wu = 0;
+  // 本变体没有 resp.gpaddr 端口 -> golden 里根本没有 resp_gpa_gvpn 这个
+  // 自保持寄存器（判据：golden TLBNonBlock_2 的 reg 清单里没有它），阶段二无对象，直接跳过。
   integer ncycles = 200000;
   integer i;
 
@@ -679,6 +687,12 @@ module tb;
         io_ptw_resp_bits_s1_entry_tag   <= dut_g.need_gpa_vpn[37:3];
         io_ptw_resp_bits_s2_entry_tag   <= dut_g.need_gpa_vpn;
       end
+      // ---- 热身窗口：所有 enable 拉满（见 gen_tb.py 的 warmup_drive）----
+      if (warmup) begin
+        io_requestor_0_req_valid <= 1'b1;
+        io_requestor_1_req_valid <= 1'b1;
+        io_ptw_resp_valid <= 1'b1;
+      end
     end
   endtask
 
@@ -859,6 +873,27 @@ module tb;
     reset = 1'b1;
     repeat (5) @(posedge clock);
     reset = 1'b0;
+    // ---- 热身：把所有 enable 拉满，让两侧每个无复位寄存器都被写过一次 ----
+    for (i = 0; i < WARMUP_CYCLES; i = i + 1) begin
+      @(posedge clock);
+      drive_inputs();
+    end
+    warmup = 1'b0;
+    // ---- 阶段二：等**自保持**的无复位寄存器被写过一次 ----
+    // resp_gpa_gvpn / need_gpa_vpn / need_gpa_robidx_* 的次态默认是它们自己，
+    // 拉 enable 没用，只有一次真的 getGpa 往返才会写它们。两侧的随机初值不同，
+    // 写之前比 gpaddr 就是在比模拟器初值（实测 seed=7 那轮 832 个失配全是这个）。
+    while (!seen_refill && wu < WARMUP_MAX) begin
+      @(posedge clock);
+      drive_inputs();
+      wu = wu + 1;
+    end
+    if (!seen_refill) begin
+      $display("TEST FAILED (TLBNonBlock_2): 热身 %0d 拍内 golden 的 resp_gpa_refill 没出现过 —— 自保持寄存器没被写，后面的比较没有意义", wu);
+      $finish;
+    end
+    @(posedge clock);
+    drive_inputs();
     for (i = 0; i < ncycles; i = i + 1) begin
       @(posedge clock);
       drive_inputs();
@@ -896,6 +931,7 @@ module tb;
       if (c_s2x2 == 0) bad_cov++;
       $display("  c_s2x3       = %0d   resp 拍 s2xlate=11 两级", c_s2x3);
       if (c_s2x3 == 0) bad_cov++;
+      $display("warmup_phase2=%0d cycles (skipped: this variant has no resp.gpaddr -> no resp_gpa_gvpn)", wu);
       $display("checks=%0d errors=%0d bad_cov=%0d", checks, errors, bad_cov);
       if (checks == 0) begin
         $display("TEST FAILED (TLBNonBlock_2): checks=0 —— tb 一次都没比，判 fail-open");

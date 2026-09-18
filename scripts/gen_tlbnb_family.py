@@ -178,6 +178,24 @@ def difftest_en(mod):
     return 0 if re.search(r"wire\s+difftest_l1tlb_valid = 1'h0;", body(mod)) else 1
 
 
+def has_reg(mod, name):
+    """golden 该变体里有没有这个名字的 `reg`。gate 掉"缺输入端口造成的消寄存器"
+    用的就是这一条判据 —— 直接读 golden 的寄存器清单，不靠人抄矩阵。"""
+    return re.search(r'^\s+reg\s+(?:\[\d+:\d+\]\s+)?%s\s*;' % re.escape(name),
+                     body(mod), re.M) is not None
+
+
+def reg_mask(mod, width, fmt):
+    """fmt 里 {i} 代表 lane 号；lane0 的 golden 名字通常没有下标后缀，
+    所以 fmt 允许写成 'noTranslateReg{sfx}'，{sfx} = '' / '_1' / '_2' ...
+    两种写法都试，只要有一个在就算这条 lane 有。"""
+    bits = []
+    for i in range(width):
+        cands = {fmt.format(i=i, sfx=("" if i == 0 else "_%d" % i))}
+        bits.append(any(has_reg(mod, c) for c in cands))
+    return "%d'b%s" % (width, "".join("1" if b else "0" for b in reversed(bits)))
+
+
 def mask(width, pred):
     return "%d'b%s" % (width, "".join("1" if pred(i) else "0"
                                       for i in reversed(range(width))))
@@ -349,6 +367,24 @@ def gen(mod, stor_mod, inst_name, blurb):
              % mask(width, lambda i: has(i, "resp_bits_excp_0_pf_st")))
     L.append("    .HAS_REQ_KILL    (%s),  // requestor.req_kill 端口在的 lane"
              % mask(width, lambda i: has(i, "req_kill")))
+    # ---- 缺**输入**端口造成的逐 lane 消寄存器（判据 = golden 的 reg 清单）----
+    L.append("    .HAS_FIRST_ISSUE (%s),  // golden 有 debug_isFirstIssue 端口的 lane"
+             % mask(width, lambda i: has(i, "req_bits_debug_isFirstIssue")))
+    L.append("    .HAS_ROBIDX      (%s),  // golden 有 reg req_out_<i>_debug_robIdx_flag"
+             % reg_mask(mod, width, "req_out_{i}_debug_robIdx_flag"))
+    L.append("    .HAS_FRM_MABUF   (%s),  // golden 有 reg req_out_<i>_frm_mabuf"
+             % reg_mask(mod, width, "req_out_{i}_frm_mabuf"))
+    L.append("    .HAS_HYPERINST   (%s),  // golden 有 reg req_out_<i>_hyperinst"
+             % reg_mask(mod, width, "req_out_{i}_hyperinst"))
+    L.append("    .HAS_HLVX        (%s),  // golden 有 reg req_out_<i>_hlvx"
+             % reg_mask(mod, width, "req_out_{i}_hlvx"))
+    L.append("    .HAS_NO_TRANSLATE(%s),  // golden 有 reg useReqS1Paddr_<i>"
+             % reg_mask(mod, width, "useReqS1Paddr_{i}"))
+    L.append("    .HAS_IS_PREFETCH (%s),  // golden 有 reg req_out_<i>_isPrefetch"
+             % reg_mask(mod, width, "req_out_{i}_isPrefetch"))
+    L.append("    .HAS_PRE_EXCP    (%s),  // golden 有 reg ..._excp_0_pf_ld_REG"
+             % reg_mask(mod, width,
+                        "io_requestor_{i}_resp_bits_excp_0_pf_ld_REG"))
     L.append("    .HAS_TLBREPLAY   (1'b%d)," % (1 if "io_tlbreplay_0" in names else 0))
     L.append("    .HAS_PERF        (1'b%d)," % (1 if "io_perf_0_value" in names else 0))
     L.append("    .DIFFTEST_EN     (1'b%d)," % dten)
