@@ -253,6 +253,45 @@ FM_MERGE_DUP = false
 #         strict_unread!=0 这条 reason）
 #   ★P5 是最有判别力的一条★：passing 若不是正好 528967 —— 少了说明有点被吞掉、
 #   多了说明多出了本轮没解释的比较点 —— 两种都按 fail 处理，不许事后改判据。
+#
+# ── 实跑结果（bfd1afc，evidence/bfd1afc7451e/Predictor/）：七条判据全中 ──────
+#   scripts/run_proof.sh Predictor Predictor
+#   run_id=Predictor-20260918T105307Z-bfd1afc   dirty=False   fm_shell_rc=0
+#
+#     判据                    预登记              实测                 对账
+#     ----------------------  ------------------  -------------------  ----
+#     P1 failing              0                   0                    对
+#     P2 未配比较点           0(0)                0(0)                 对
+#     P3 未配未读点           0(0)/文件 0 字节     0(0)/0 字节           对
+#     P4 Not-Compared Unread  0                   0                    对
+#     P5 passing              528967              528967               对
+#     P6 黑盒/dont_verify     0 / false           0 / false            对
+#     P7 verdict              由 PARTIAL 转通过    SUCCEEDED            对
+#
+#   native_facts: passing 528967 / failing 0 / unverified 0 / aborted 0 /
+#                 unread_notcompared 0；unmatched 六项(compare_ref, compare_impl,
+#                 unread_ref, unread_impl, bbout_ref, bbout_impl)全 0。
+#   fm.log 的 Matching Results 是 P5 的另一条独立来路：
+#     2647 by user + 524888 by name + 1432 by signature + 0 by topology = 528967。
+#     ★"Unmatched ... unread points" 那一行整行消失★（7b4a825 那轮是 50(635)）。
+#   PREDICTOR_PINS: 2711 / 2711 pinned, 0 missed; audit ref=2711 imp=2711
+#     (impl-only dead=0)；fm.log 里 `^ *Error:` 计数 0。
+#   产物 sha256（完整 64 位）:
+#     receipt.json      abb3e3b4332bccf5fbff65a59de1d50aa835cafa6a8eefbf4afb44afb4a97702
+#     fm.log            35d4c44f407e209c9b37460893da6a4da6dd2894f48e3017ae5c91c430b0596c
+#     unread_points.txt e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+#                       （= 空文件的 sha256；0 字节本身就是 P3）
+#     unmatched.rpt     8d3a8aafa355be82a8c3c4d69314700f1b7c26007986126b8be20939a911f24d
+#     black_boxes.rpt   2cd7895ceb97d3956f5deff49490daf321f5d72fd5dcb05cece3e0a6e4376922
+#   证明输入 sha256:
+#     rtl/frontend/Predictor.sv         34617ee9da8c0661af56ded9d7b965e283e22e50a57f9e543a9266a0de977180
+#     verif/ut/Predictor/fm_pins_pre.tcl 222d458783bd3308eabc34ac7d3a2c4cf87bd05fbf6c3de323c5f7e38de78506
+#
+#   ★等"跑完"的锚点别钉裸字符串★（本轮又踩了一次，记在这里）：
+#     `grep -qE "Verification (SUCCEEDED|FAILED)" fm.log` 在 verify 刚开始就命中 ——
+#     fm_shell 把入口 Tcl 逐行回显进 fm.log，而 scripts/fm_eq.tcl 里正好有
+#     `puts "FM_RESULT: Verification SUCCEEDED for $top"` 这行源码。
+#     正确锚点是行首：`^FM_RESULT:` 或 `^Verification `。
 FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 
 FM_VARIANTS = Predictor
