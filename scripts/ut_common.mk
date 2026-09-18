@@ -174,7 +174,7 @@ fm-%:
 	FM_SIDECAR_OUT=$(abspath fm_work/$*/sidecar) \
 	FM_RUN_ID=$(FM_RUN_ID) \
 	fm_shell -64 -work_path fm_work/$* -file $(XSSV_HOME)/scripts/fm_eq.tcl \
-	    > fm_work/$*/fm.log 2>&1; \
+	    < /dev/null > fm_work/$*/fm.log 2>&1; \
 	rc=$$?; \
 	v=$$(XSSV_HOME=$(XSSV_HOME) python3 $(XSSV_HOME)/scripts/fm_verdict.py fm_work/$*/fm.log --rc $$rc --mode $(FM_MODE) --top $* --allowlist $(FM_ALLOWLIST) \
 	    $(if $(wildcard $(XSSV_HOME)/verif/dead_ref/$*.json),--dead-ref $(XSSV_HOME)/verif/dead_ref/$*.json --unread-points fm_work/$*/unread_points.txt,) \

@@ -39,7 +39,7 @@ DelayN_7	SUCCEEDED	"passing": 657 "failing": 0 "unmatched": 0 "unread":
 DelayN_8	SUCCEEDED	"passing": 822 "failing": 0 "unmatched": 0 "unread":
 DelayN_9	SUCCEEDED	"passing": 216 "failing": 0 "unmatched": 0 "unread":
 DuplicatedTagArray	SUCCEEDED	p2460 f0; 16 声明黑盒(agent/partial)
-EntriesVfdivVidiv	SUCCEEDED	p12196 f0; 9776->12196(+2420), 9898 对钉点(agent/partial)
+EntriesVfdivVidiv	SUCCEEDED	p12136 f0 um0; 9776->12136(+2360), 9898 对钉点; 2026-09-17 由 12196 降为 12136 —— 共享核修掉 o_trans_ld_dep 接寄存器原值的真 bug 后, 影子 bit1 两侧同为死位, 60 点由 Passing 转入 Not Compared/Constant reg (10792+68 = 10732+128 = 10860, 匹配点总数不变, unmatched 两轮均 0(0))
 F3Predecoder	SUCCEEDED	"passing": 64 "failing": 0 "unmatched": 0 "unread":
 FAlu	SUCCEEDED	p2466 f0; fudian 端位死位(+4)(agent/partial)
 FCVT	SUCCEEDED	p2514 f0; fcvtmodTrueExpReg[4:0] 死位(+5)(agent/partial)
