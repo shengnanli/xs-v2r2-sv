@@ -536,11 +536,38 @@ def gen(mod, stor_mod, inst_name, blurb):
     return "\n".join(head) + "\n".join(L) + "\n"
 
 
-if __name__ == "__main__":
+def _main(argv):
+    """--check：只重算、逐字节比对，不写盘（scripts/check_gen_gate_complete.py 要求）。
+
+    ★这个 --check 是 2026-09-18 补的★：本生成器产出的是**进证明闭包的 RTL**
+    （三个 TLBNonBlock 变体），按「生成器闸完备性」的规矩必须挂 --check 进闸，
+    不能走 NO_CHECK 豁免那条路（豁免只给不进闭包的脚手架/快照类）。
+    它合入 main 时我漏了这一步，被 gate_all 抓到。
+    """
+    check = "--check" in argv
+    drift = []
     for mod, stor, inst, blurb in VARIANTS:
         txt = gen(mod, stor, inst, blurb)
         path = os.path.join(OUT_DIR, mod + ".sv")
-        old = open(path).read() if os.path.exists(path) else None
-        if old != txt:
-            open(path, "w").write(txt)
-        print("%-16s -> %s (%d 行)" % (mod, path, txt.count("\n")))
+        cur = open(path).read() if os.path.exists(path) else None
+        if check:
+            if cur != txt:
+                drift.append(path)
+        else:
+            if cur != txt:
+                open(path, "w").write(txt)
+            print("%-16s -> %s (%d 行)" % (mod, path, txt.count("\n")))
+    if check:
+        if drift:
+            sys.stderr.write("gen_tlbnb_family --check: 失败 —— %d 个产物与重算结果不一致\n"
+                             % len(drift))
+            for d in drift:
+                sys.stderr.write("    %s\n" % d)
+            sys.stderr.write("  修法：python3 scripts/gen_tlbnb_family.py 重跑并提交产物。\n")
+            return 1
+        print("gen_tlbnb_family --check: 逐字节一致（%d 个变体）" % len(VARIANTS))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(_main(sys.argv[1:]))
