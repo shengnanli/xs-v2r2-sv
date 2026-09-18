@@ -20,8 +20,8 @@
 #
 # 【跑法】
 #   cd <repo> && fm_shell -64 -work_path <tmpdir> -file verif/ut/Predictor/fm_pins_smoke.tcl
-#   期望输出：PREDICTOR_PINS: 2497 / 2497 pinned, 0 missed   后跟  SMOKE_OK
-#   任何 SMOKE_FAIL / 少于 2497 都表示名字或结构已经漂了。
+#   期望输出：PREDICTOR_PINS: 2631 / 2631 pinned, 0 missed   后跟  SMOKE_OK
+#   任何 SMOKE_FAIL / 少于 2631 都表示名字或结构已经漂了。
 # ============================================================================
 if {![info exists env(XSSV_HOME)]} { error "SMOKE: 需要 XSSV_HOME=<repo>" }
 if {![info exists env(GOLDEN_RTL)]} { error "SMOKE: 需要 GOLDEN_RTL=<G1-canonical/golden-rtl>" }

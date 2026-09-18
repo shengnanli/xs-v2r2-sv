@@ -195,6 +195,38 @@ FM_MERGE_DUP = false
 # ★验收判据（不增即空转，按 fail 处理）★
 #   passing 必须从 520634 增到 528967（正好 +8333）；failing 仍为 0；
 #   Not-Compared 的 Unread 必须归 0。passing 不增而 unread 归 0 = 点被吞掉，不算过。
+#
+# ── 2026-09-17 实测更正（evidence/8798034cedf7/Predictor）────────────────────
+#   上面那条判据**没对上**，实测是：
+#     passing 528899 / failing 17 / Not-Compared Unread 0 / 未配比较点 0(1)
+#     / 未配未读点 51(635)
+#   比较点总数 528899+17 = 528916 = 528967 - 51。即 8333 个 matched_nc 里有 51 个
+#   不是"升成比较点"而是**掉出了配对**，落进未配未读：
+#     · upc_seg2  1 位 —— 见下，已由 RTL + 第九族钉点修掉；
+#     · prev_s2 jalr_target dup0 50 位 —— 仍未收，见 fm_pins_pre.tcl 文件头的
+#       2026-09-17 更正段（待办，不是已解决项）。
+#   所以上面括号里"prev_s2 50 + upc_seg2 1（FM 自己按名字配上的）"这句只在
+#   vmucp 关着时成立：加强一打开，这 51 位的配对就掉了。
+#
+#   17 个 failing 的来历（全部是 Composer 里的 ..._io_update_pc_..._reg[0]）：
+#   两侧读的是**同一份** golden Composer.sv，差异只可能来自喂进去的 50 位
+#   io_update_bits_pc。它的 bit0 来自最低段寄存器；golden 侧
+#   seg_2_value_reg[0] 落在未读类、可读核侧 upc_seg2_reg[0] 落在比较类，
+#   两类之间 FM 不互配 —— 一个未配的寄存器在下游锥里就是两个互不相干的自由
+#   变量，于是下游 17 个 bit0 寄存器全判不等价。
+#   处置两条一起做：
+#     (1) rtl/frontend/Predictor.sv 的 SEGPC_ 段去掉最低段那个 golden 没有的
+#         比较器（golden `..._modified_2 = 1'h1`，源头 utility
+#         SegmentedAddrNext 的 `modified.last := true.B`）；
+#     (2) fm_pins_pre.tcl 加第九族，把 3 段共 50 位整族钉死，让配对与
+#         读/未读分类无关（形状同第 (c) 族 predCycle）。
+#
+#   ★本轮复核判据★：failing 归 0；未配比较点 0(0)；比较点总数
+#   528916 + 1 = 528917（+1 = seg_2[0] 由"两侧分属不同类、谁也没比"变成真比较点）；
+#   未配未读点 50(635)（剩下的就是 jalr_target dup0 那 50 位 + impl 独有 585 位）。
+#   ★verdict 仍会是 PARTIAL★：signoff-strict 要求 unread 归 0
+#   (scripts/fm_verdict.py 的 strict_unread!=0)，而 impl 侧 585 个独有死位
+#   本轮不动。这是已知残余，不是新问题。
 FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 
 FM_VARIANTS = Predictor
@@ -238,7 +270,7 @@ VCS += +define+SYNTHESIS
 #       Information: Current design is no longer set (FM-072)
 #   —— 它把 Formality 的当前设计置空了。而冒烟脚本只数钉点、不看 FM 自己报的错，
 #   于是照样打印 SMOKE_OK。判别力缺口就在这里：**工具报的错不进判据，等于没报。**
-#   所以这里同时要求三件事：2497/2497、SMOKE_OK、且 FM 自报错误行数为 0。
+#   所以这里同时要求三件事：2631/2631、SMOKE_OK、且 FM 自报错误行数为 0。
 # ---------------------------------------------------------------------------
 .PHONY: fm-pins-smoke
 fm-pins-smoke:
@@ -250,8 +282,8 @@ fm-pins-smoke:
 	@grep -E '^PREDICTOR_PINS|^SMOKE_OK|^SMOKE_FAIL' fm_work/pins_smoke.log || true
 	@n=$$(grep -cE '^Error:|^Information: Current design' fm_work/pins_smoke.log); \
 	 ok=$$(grep -c '^SMOKE_OK' fm_work/pins_smoke.log); \
-	 pin=$$(grep -c '^PREDICTOR_PINS: 2497 / 2497 pinned, 0 missed' fm_work/pins_smoke.log); \
-	 echo "fm-pins-smoke: SMOKE_OK=$$ok  2497/2497=$$pin  FM自报错误行=$$n"; \
+	 pin=$$(grep -c '^PREDICTOR_PINS: 2631 / 2631 pinned, 0 missed' fm_work/pins_smoke.log); \
+	 echo "fm-pins-smoke: SMOKE_OK=$$ok  2631/2631=$$pin  FM自报错误行=$$n"; \
 	 if [ "$$ok" != 1 ] || [ "$$pin" != 1 ] || [ "$$n" != 0 ]; then \
 	   echo "fm-pins-smoke: FAIL"; exit 1; fi; \
 	 echo "fm-pins-smoke: PASS"

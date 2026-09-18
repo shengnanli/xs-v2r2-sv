@@ -1278,9 +1278,21 @@ module xs_Predictor_core
   // ===========================================================================
   // SEGPC_ —— update pc 的分段打拍（utility.SegmentedAddrNext）
   //
-  // 把 50 位 pc 切成 [49:24]/[23:12]/[11:0] 三段，**每段只在值真的变了时才打拍**。
-  // 高位段变化稀疏，这样能省掉大量无谓翻转（低功耗手法）。读出时再拼回整地址。
-  // 这条流水是给 Composer 的 update 口用的，Predictor 自己不看。
+  // 把 50 位 pc 切成 [49:24]/[23:12]/[11:0] 三段。高两段**只在值真的变了时才打拍**
+  // （高位变化稀疏，省掉大量无谓翻转，低功耗手法）；**最低段无条件打拍** ——
+  // utility.SegmentedAddrNext 里写死了 `modified.last := true.B`
+  // （utility/src/main/scala/utility/ClockGatedReg.scala:210，注释 "Assume lower
+  // part often changes"），firtool 把它折成
+  //   wire ..._modified_2 = 1'h1;   (golden Predictor.sv:1342-1344)
+  // 所以最低段**没有**比较器。这里照抄这个不对称，不要"顺手补齐"成三段一致。
+  // 本文件此处原先给最低段也加了比较器（功能等价，但 golden 没有）；那一版
+  // evidence/8798034cedf7/Predictor 里 golden 侧 seg_2_value_reg[0] 落在未读点、
+  // 可读核侧 upc_seg2_reg[0] 落在比较点，两类配不上 —— 一个未配的寄存器在下游
+  // 锥里就是两个互不相干的自由变量，于是 Composer 那 17 个
+  // ..._io_update_pc_..._reg[0] 全判不等价。配对由 fm_pins_pre.tcl 第九族兜底，
+  // 但**首先**这里不该有 golden 没有的比较器。
+  //
+  // 读出时再拼回整地址。这条流水是给 Composer 的 update 口用的，Predictor 自己不看。
   // ===========================================================================
   logic [25:0] upc_seg0;
   logic [11:0] upc_seg1, upc_seg2;
@@ -1290,7 +1302,7 @@ module xs_Predictor_core
     end else if (ftq_update_valid) begin
       if (upc_seg0 != ftq_update_pc[49:24]) upc_seg0 <= ftq_update_pc[49:24];
       if (upc_seg1 != ftq_update_pc[23:12]) upc_seg1 <= ftq_update_pc[23:12];
-      if (upc_seg2 != ftq_update_pc[11:0])  upc_seg2 <= ftq_update_pc[11:0];
+      upc_seg2 <= ftq_update_pc[11:0];
     end
   end
   assign update_pc_seg = {upc_seg0, upc_seg1, upc_seg2};
