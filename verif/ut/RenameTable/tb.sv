@@ -14,6 +14,32 @@ module tb;
   int errors = 0, checks = 0;
   always #5 clk = ~clk;
 
+  // ==========================================================================
+  // 复位后的"暖机窗口"—— 为什么必须有
+  // ==========================================================================
+  // 4 个快照槽是**无复位存储器**：golden SnapshotGenerator_6.sv 里写它们的那个
+  // always @(posedge clock) 块没有 reset 臂（rtl/backend/SnapshotGenerator.sv §6
+  // 照抄了这一点，这是对的）。于是：
+  //   · golden 与重写件是**两个独立例化**（RenameTable_2 / RenameTable_2_xs），
+  //     +vcs+initreg+random 给它们各自抽一份**互不相同**的上电值；
+  //   · 一个"还没被写过"的槽，两侧的内容天然不等 —— 这不是 RTL 差异，
+  //     是 tb 在比一个还没有定义的东西。
+  // 设计契约本来就是"只读有效槽"（snptValids 保证），而本 tb 的 snptSelect 是
+  // 全随机的，不看有效位。实测（seed=42 +vcs+initreg+random）：第 26 拍就有一次
+  // useSnpt 恢复选中了**从未被写过的**槽 3，整张 spec_table 当场分叉。
+  //
+  // 修法：复位一撤，先做 WARMUP 拍**纯入队**——redirect/useSnpt/deq/flushVec 全压 0、
+  // snptEnq 恒 1。enq_fire = ~redirect & ~full & enq，队列复位后是空的，
+  // 所以前 4 拍依次写满槽 0/1/2/3（第 5 拍起队满、静默丢弃）。槽只会被覆盖、
+  // 不会被"擦回未写"，因此窗口之后整段仿真里任何槽的内容都是**输入的函数**。
+  // 窗口内 redirect 恒 0 ⇒ spec_redirect_q 恒 0 ⇒ 恢复路径根本不会启动，
+  // 不存在"窗口内读到脏槽"的残留。读写口照常随机，暖机不降低激励强度。
+  int unsigned WARMUP = 8;
+  int cyc = 0;
+  always @(posedge clk) if (!rst) cyc <= cyc + 1;
+  // 在 posedge 更新、在 negedge 使用，差半拍，没有竞争。
+  wire warmup = (cyc < WARMUP);
+
   `define CHK(nm, g, i) \
     if (!$isunknown(g) && (g) !== (i)) begin errors++; \
       if (errors <= 80) $display("[%0t] %s g=%h i=%h", $time, nm, g, i); end
@@ -398,12 +424,18 @@ module tb;
       // 相位 0/1：把地址挤进一个很窄的窗口（lo..lo+3），制造同址撞车与旁路命中；
       // 相位 2：全域随机。窗口起点每拍重掷，保证扫遍整张表。
       lo = (renametable_phase == 2) ? 0 : $urandom_range(0, 28);
-      renametable_redirect = ($urandom_range(0, 99) < 4);
-      renametable_snpt_enq = ($urandom_range(0, 99) < 12);
-      renametable_snpt_deq = ($urandom_range(0, 99) < 10);
-      renametable_snpt_use = ($urandom_range(0, 99) < 25);
-      renametable_snpt_sel = 2'($urandom_range(0, 3));
-      renametable_snpt_flush = 4'($urandom_range(0, 15));
+      // 暖机窗口：纯入队，把 4 个快照槽写成两侧相同的确定值（见文件头说明）。
+      if (warmup) begin
+        renametable_redirect = 1'b0;   renametable_snpt_enq = 1'b1;  renametable_snpt_deq = 1'b0;
+        renametable_snpt_use = 1'b0;   renametable_snpt_sel = 2'h0;  renametable_snpt_flush = 4'h0;
+      end else begin
+        renametable_redirect = ($urandom_range(0, 99) < 4);
+        renametable_snpt_enq = ($urandom_range(0, 99) < 12);
+        renametable_snpt_deq = ($urandom_range(0, 99) < 10);
+        renametable_snpt_use = ($urandom_range(0, 99) < 25);
+        renametable_snpt_sel = 2'($urandom_range(0, 3));
+        renametable_snpt_flush = 4'($urandom_range(0, 15));
+      end
       for (int r = 0; r < 12; r++) begin
         renametable_rd_hold[r] = ($urandom_range(0, 99) < 30);
         renametable_rd_addr[r] = 5'((renametable_phase == 2) ? $urandom_range(0, 31)
@@ -871,12 +903,18 @@ module tb;
       // 相位 0/1：把地址挤进一个很窄的窗口（lo..lo+3），制造同址撞车与旁路命中；
       // 相位 2：全域随机。窗口起点每拍重掷，保证扫遍整张表。
       lo = (renametable_1_phase == 2) ? 0 : $urandom_range(0, 30);
-      renametable_1_redirect = ($urandom_range(0, 99) < 4);
-      renametable_1_snpt_enq = ($urandom_range(0, 99) < 12);
-      renametable_1_snpt_deq = ($urandom_range(0, 99) < 10);
-      renametable_1_snpt_use = ($urandom_range(0, 99) < 25);
-      renametable_1_snpt_sel = 2'($urandom_range(0, 3));
-      renametable_1_snpt_flush = 4'($urandom_range(0, 15));
+      // 暖机窗口：纯入队，把 4 个快照槽写成两侧相同的确定值（见文件头说明）。
+      if (warmup) begin
+        renametable_1_redirect = 1'b0;   renametable_1_snpt_enq = 1'b1;  renametable_1_snpt_deq = 1'b0;
+        renametable_1_snpt_use = 1'b0;   renametable_1_snpt_sel = 2'h0;  renametable_1_snpt_flush = 4'h0;
+      end else begin
+        renametable_1_redirect = ($urandom_range(0, 99) < 4);
+        renametable_1_snpt_enq = ($urandom_range(0, 99) < 12);
+        renametable_1_snpt_deq = ($urandom_range(0, 99) < 10);
+        renametable_1_snpt_use = ($urandom_range(0, 99) < 25);
+        renametable_1_snpt_sel = 2'($urandom_range(0, 3));
+        renametable_1_snpt_flush = 4'($urandom_range(0, 15));
+      end
       for (int r = 0; r < 18; r++) begin
         renametable_1_rd_hold[r] = ($urandom_range(0, 99) < 30);
         renametable_1_rd_addr[r] = 6'((renametable_1_phase == 2) ? $urandom_range(0, 63)
@@ -1418,12 +1456,18 @@ module tb;
       // 相位 0/1：把地址挤进一个很窄的窗口（lo..lo+3），制造同址撞车与旁路命中；
       // 相位 2：全域随机。窗口起点每拍重掷，保证扫遍整张表。
       lo = (renametable_2_phase == 2) ? 0 : $urandom_range(0, 43);
-      renametable_2_redirect = ($urandom_range(0, 99) < 4);
-      renametable_2_snpt_enq = ($urandom_range(0, 99) < 12);
-      renametable_2_snpt_deq = ($urandom_range(0, 99) < 10);
-      renametable_2_snpt_use = ($urandom_range(0, 99) < 25);
-      renametable_2_snpt_sel = 2'($urandom_range(0, 3));
-      renametable_2_snpt_flush = 4'($urandom_range(0, 15));
+      // 暖机窗口：纯入队，把 4 个快照槽写成两侧相同的确定值（见文件头说明）。
+      if (warmup) begin
+        renametable_2_redirect = 1'b0;   renametable_2_snpt_enq = 1'b1;  renametable_2_snpt_deq = 1'b0;
+        renametable_2_snpt_use = 1'b0;   renametable_2_snpt_sel = 2'h0;  renametable_2_snpt_flush = 4'h0;
+      end else begin
+        renametable_2_redirect = ($urandom_range(0, 99) < 4);
+        renametable_2_snpt_enq = ($urandom_range(0, 99) < 12);
+        renametable_2_snpt_deq = ($urandom_range(0, 99) < 10);
+        renametable_2_snpt_use = ($urandom_range(0, 99) < 25);
+        renametable_2_snpt_sel = 2'($urandom_range(0, 3));
+        renametable_2_snpt_flush = 4'($urandom_range(0, 15));
+      end
       for (int r = 0; r < 18; r++) begin
         renametable_2_rd_hold[r] = ($urandom_range(0, 99) < 30);
         renametable_2_rd_addr[r] = 6'((renametable_2_phase == 2) ? $urandom_range(0, 63)
@@ -1745,12 +1789,18 @@ module tb;
       // 相位 0/1：把地址挤进一个很窄的窗口（lo..lo+3），制造同址撞车与旁路命中；
       // 相位 2：全域随机。窗口起点每拍重掷，保证扫遍整张表。
       lo = (renametable_3_phase == 2) ? 0 : $urandom_range(0, 0);
-      renametable_3_redirect = ($urandom_range(0, 99) < 4);
-      renametable_3_snpt_enq = ($urandom_range(0, 99) < 12);
-      renametable_3_snpt_deq = ($urandom_range(0, 99) < 10);
-      renametable_3_snpt_use = ($urandom_range(0, 99) < 25);
-      renametable_3_snpt_sel = 2'($urandom_range(0, 3));
-      renametable_3_snpt_flush = 4'($urandom_range(0, 15));
+      // 暖机窗口：纯入队，把 4 个快照槽写成两侧相同的确定值（见文件头说明）。
+      if (warmup) begin
+        renametable_3_redirect = 1'b0;   renametable_3_snpt_enq = 1'b1;  renametable_3_snpt_deq = 1'b0;
+        renametable_3_snpt_use = 1'b0;   renametable_3_snpt_sel = 2'h0;  renametable_3_snpt_flush = 4'h0;
+      end else begin
+        renametable_3_redirect = ($urandom_range(0, 99) < 4);
+        renametable_3_snpt_enq = ($urandom_range(0, 99) < 12);
+        renametable_3_snpt_deq = ($urandom_range(0, 99) < 10);
+        renametable_3_snpt_use = ($urandom_range(0, 99) < 25);
+        renametable_3_snpt_sel = 2'($urandom_range(0, 3));
+        renametable_3_snpt_flush = 4'($urandom_range(0, 15));
+      end
       for (int r = 0; r < 6; r++) begin
         renametable_3_rd_hold[r] = ($urandom_range(0, 99) < 30);
       end
