@@ -87,6 +87,18 @@ run "UT initreg 棘轮"   python3 scripts/check_ut_initreg.py
 # 故必须有一道**对着已跟踪文件列表**跑的闸。先负测（含"长得像但不是"的反例）再跑真闸。
 run "工具派生态负测"     python3 scripts/test_no_tool_scratch_gate.py
 run "工具派生态闸"       python3 scripts/check_no_tool_scratch.py
+# rtl/ 下不许有 .svh、不许有 `include。CONVENTIONS「单文件规范」早有此禁令，
+# 但一直没有闸 —— 靠的是"没人加过"。2026-09-18 审计上一轮时量出真正的危险，
+# 而且和当初设想的不是同一回事：
+#   上一轮 202 个 .svh / 199,801 非注释行，逐字抄 golden 的**实质逻辑行只有 1.83%**，
+#   而 .sv 同口径 8.19% —— ★.svh 的照抄密度只有 .sv 的一半，"svh 是藏赃点"这个假设是错的★。
+#   真问题更隐蔽：那 204,373 行（占上轮 rtl 的 29%）**整体绕过了可读性闸**，
+#   因为 readability_audit.py 和 prev_round_verbatim_scan.py 都只 rglob('*.sv')。
+#   ★是审计盲点，不是藏赃点。★
+# 本轮 readability_audit.py 至今仍只扫 *.sv（第 81、313 行），同一个盲点机制原样存在。
+# 与其改那个大脚本（风险高），不如在源头堵死：rtl/ 下根本没有 .svh，"只扫 .sv"就等于扫全了。
+run "rtl 无 svh 负测"    python3 scripts/test_no_svh_gate.py
+run "rtl 无 svh 闸"      python3 scripts/check_no_svh_in_rtl.py
 # 覆盖台账的证据链：docs/coverage_three_axis.tsv 宣称的每条证明都要能从**版本库**复现。
 # 2026-09-18 实测出事状态：轴2 标 PROVEN_DIRECT 133 个，版本库里找得到通过 receipt 的
 # 只有 34 个，★189 个找不到★（重算后缺口扩大到 90）。那些证明并非不存在 —— evidence 全
