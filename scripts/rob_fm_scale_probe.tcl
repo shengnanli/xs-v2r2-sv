@@ -144,5 +144,15 @@ puts "PROBE_MATCH_DONE"
 
 verify
 puts "PROBE_VERIFY_SEC [expr {[clock seconds]-$t3}]"
+
+# Dump the failing points BY NAME, with the two -inputs switches Formality
+# itself names in its ATTENTION message. The first run of this probe did not do
+# this, and that was a real gap: it reported "20 failing" with no way to say
+# WHICH 20 without spending another 72 minutes. A number you cannot attribute is
+# most of the way to a number you cannot act on.
+redirect -file failing_points.rpt { report_failing_points }
+redirect -file failing_points_undriven.rpt {
+  report_failing_points -inputs unmatched -inputs undriven
+}
 puts "PROBE_DONE"
 exit 0
