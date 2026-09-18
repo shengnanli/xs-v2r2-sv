@@ -156,26 +156,34 @@ def build(ports, digest):
     A('  // is exactly what writes all 160 entries once. Writebacks sweep robIdx')
     A('  // so the exu/store debug arrays get written too.')
     A('  int unsigned wb_sweep = 0;')
+    A('')
+    A('  // Warm-up runs in TWO phases, because the two obligations fight each')
+    A('  // other if you try to satisfy them at once. Diagnosed by watching the')
+    A('  // DUT (+diag), not by reasoning about it -- the first two guesses were')
+    A('  // both wrong:')
+    A('  //   A: fill enq_seen. enqPtr must pass 156, which needs entries to')
+    A('  //      RETIRE (allowEnqueue deasserts with RenameWidth of headroom).')
+    A('  //      An entry retires at uopNum == 0, and uopNum is loaded from the')
+    A('  //      input io_enq_req_<p>_bits_numWB (golden Rob.sv:115386). So')
+    A('  //      phase A drives numWB = 0 and keeps ALL writebacks invalid:')
+    A('  //      entries are born committable, the queue drains, the pointer')
+    A('  //      wraps, and every one of the 160 entries gets written.')
+    A('  //      ★Why numWB=1 + writebacks did NOT work★: uopNum -= (number of')
+    A('  //      writebacks matching this robIdx). Driving all 25 exu ports at')
+    A('  //      the same robIdx decrements a uopNum of 1 by 25, and the 7-bit')
+    A('  //      field WRAPS to 104 instead of reaching 0 -- so the entry never')
+    A('  //      became committable and deqPtr froze at 1. Observed as')
+    A('  //      enqPtr=156 deqPtr=1 allowEnq=0 held for thousands of cycles.')
+    A('  //   B: fill wb_seen. Sweep (port, robIdx) over all 25x160 pairs, one')
+    A('  //      port at a time so uopNum cannot underflow.')
+    A('  wire phase_b = &enq_seen;   // continuous: a `bit` cannot take assign')
+    A('')
     A('  task automatic drive_warmup();')
     A('    drive_random();')
-    for p in range(6):
-        A('    io_enq_req_%d_valid         <= 1\'b1;' % p)
-        A('    io_enq_req_%d_bits_firstUop <= 1\'b1;' % p)
-    A('    io_redirect_valid <= 1\'b0;')
-    # Every flush/exception source held low, DERIVED from the port table
-    # rather than hand-listed. Found by running the harness: driving all 25
-    # writeback ports with random redirect bits flushes the ROB into walk, so
-    # enqueue is refused and enq_seen stalls at 0x3f (the first six entries) --
-    # the warm-up could never complete and the tb correctly went FATAL instead
-    # of quietly reporting checks=0 as a pass.
-    # golden Rob.sv:16447 states the acceptance gate exactly:
-    #   io_enq_canAccept_0 = allowEnqueue & ~hasBlockBackward & _rab_io_canEnq
-    #                        & _vtypeBuffer_io_canEnq & ~io_fromVecExcpMod_busy
-    # Two of those five are INPUTS the first draft randomised, which is why
-    # enq_seen stalled at 0x3f: one random blockBackward on the very first
-    # enqueue latches hasBlockBackward, and a random io_fromVecExcpMod_busy
-    # closes the gate outright. Read the gate, then quiet exactly its terms --
-    # do not guess which signals "look like" they block enqueue.
+    for p_ in range(6):
+        A("    io_enq_req_%d_valid         <= 1'b1;" % p_)
+        A("    io_enq_req_%d_bits_firstUop <= 1'b1;" % p_)
+    A("    io_redirect_valid <= 1'b0;")
     QUIET = [n for _, _, _, n in ins if
              n.endswith('_redirect_valid') or n.endswith('_flushPipe')
              or n.startswith('io_writebackNeedFlush_')
@@ -186,15 +194,22 @@ def build(ports, digest):
              or n.endswith('_bits_isXSTrap')
              or n == 'io_fromVecExcpMod_busy']
     for n in QUIET:
-        A('    %-42s <= 1\'b0;' % n)
-    A('    // Sweep every exu writeback port across every robIdx. A random')
-    A('    // 8-bit robIdx would reach all 160 of 256 values only by')
-    A('    // coupon-collector luck, and "it passed on three seeds" is exactly')
-    A('    // the evidence this warm-up exists to stop relying on.')
-    for p in range(25):
-        A('    io_exuWriteback_%d_valid             <= 1\'b1;' % p)
-        A('    io_exuWriteback_%d_bits_robIdx_value <= 8\'(wb_sweep);' % p)
-    A('    wb_sweep <= (wb_sweep + 1) % 160;')
+        A("    %-42s <= 1'b0;" % n)
+    A('    if (!phase_b) begin')
+    A('      // phase A: entries born committable, no writebacks at all')
+    for p_ in range(6):
+        A("      io_enq_req_%d_bits_numWB <= 7'd0;" % p_)
+    for p_ in range(25):
+        A("      io_exuWriteback_%d_valid <= 1'b0;" % p_)
+    A('    end else begin')
+    A('      // phase B: one port at a time, sweeping every robIdx')
+    for p_ in range(6):
+        A("      io_enq_req_%d_valid <= 1'b0;" % p_)
+    for p_ in range(25):
+        A("      io_exuWriteback_%d_valid             <= (wb_sweep / 160) %% 25 == %d;" % (p_, p_))
+        A("      io_exuWriteback_%d_bits_robIdx_value <= 8'(wb_sweep %% 160);" % p_)
+    A('      wb_sweep <= wb_sweep + 1;')
+    A('    end')
     A('  endtask')
     A('')
     A('  initial begin')
@@ -218,6 +233,19 @@ def build(ports, digest):
           ' wb_seen[io_exuWriteback_%d_bits_robIdx_value] <= 1\'b1;' % (p, p))
     A('  end')
     A('  // END GENERATED')
+    A('')
+    A('  // ---- diagnostic (+diag) -------------------------------------------')
+    A('  // Warm-up stalls are diagnosed by LOOKING, not by guessing which input')
+    A('  // might be blocking. Two stalls were already found this way; the third')
+    A('  // guess (numWB) was wrong and this block is what settles it.')
+    A('  bit diag_on;')
+    A('  initial diag_on = $test$plusargs("diag");')
+    A('  always @(posedge clock) if (!reset && diag_on && (cyc % 200 == 0))')
+    A('    $display("[diag] cyc=%0d state=%0d allowEnq=%b canAccept=%b'
+      ' enqPtr=%0d deqPtr=%0d enq_pop=%0d",')
+    A('             cyc, dut_g.state, dut_g.allowEnqueue, g_io_enq_canAccept,')
+    A('             dut_g.enqPtrVec_0_value, dut_g.deqPtrVec_0_value,')
+    A('             $countones(enq_seen));')
     A('')
     A('  // ---- compare -------------------------------------------------------')
     A('  always @(posedge clock) if (!reset) begin')
