@@ -10,6 +10,10 @@
 #   · M9  把 pendingPtr 打拍的"值变了才写"使能去掉 —— 写同一个值和不写完全等价，
 #         这是 golden 的**功能恒等冗余**，UT 与 FM 都抓不到，也都不该抓到。
 #         它在这里的作用是反过来验证：本 harness 不会把"改了文本"当成"抓到了"。
+#   · M15 req_valid 的 (slaveAck | ~writeback) 项 —— **立项时按 CAUGHT 写，被实测推翻**：
+#         UT 两轮 errors=0，再拿 FM 复核得 native SUCCEEDED / passing 5020 / failing 0，
+#         即逻辑等价。见该条自己的注释（含一句话的手算理由）。
+#         这一条是本表里唯一一个"声明被证据改掉"的，留着它的过程比留结论有用。
 #   · M6  把 flushPipe 的自与衰减改成保持 —— 见该条自己的注释，**依赖 initreg**：
 #         +vcs+initreg+random 能抓，+vcs+initreg+0 抓不到（两侧都恒 0）。
 #         这一条实测下来同一个变异在两轮里一红一绿，正是"两轮 initreg 各验各的"
@@ -28,6 +32,8 @@
 # reset_domain_check.py（它自己的双向负测在 test_reset_domain_gate.py）。
 #
 # 用法: [CYCLES=8000] [THIN=200] bash verif/ut/UncacheEntry/mutants.sh [工作目录]
+# 本轮实测（CYCLES=8000, seed=1）：15/15 与声明相符，13 个 CAUGHT + M6 只在
+# initreg=random 下可见 + M9/M15 两个逻辑等价对照两道闸都不报。
 # 退出码 0 = 每个变异体的实际结果都与表里声明的期望一致
 # =============================================================================
 set -u
@@ -113,10 +119,23 @@ MUT_OLD+=("  assign enq = ~flush & io_req_valid;")
 MUT_NEW+=("  assign enq = io_req_valid;")
 MUT_EXPECT+=("CAUGHT")
 
-MUT_NAME+=("M15 req_valid 丢掉 slaveAck 的保持项")
+# ★不该报警的对照之二 —— 这一条是**先当成 CAUGHT 写进来、被实测推翻的**★
+# 立项时以为「slaveAck 那一拍必须保住 req_valid」是条真逻辑，声明成 CAUGHT；
+# 实测 UT 两轮都 errors=0。按 CONVENTIONS「UT 看不见时先问 FM，别急着说 UT 漏了」，
+# 把这个变异注进核的副本再跑一次 Formality：
+#     signoff-strict native SUCCEEDED / passing 5020 / failing 0 / unmatched 0
+#     （与未注入的基线逐个数字相同）
+# ⇒ 它是**逻辑等价**的改动，UT 抓不到是对的。
+# 手算复核（FM 的结论有一个一句话的理由）：writeback 只可能在 S_WAIT 抬起
+# （nc_out_valid / mmio_out_valid 都带 state==S_WAIT），而 S_WAIT 下
+# flush = need_flush | writeback ⇒ writeback=1 必然 flush=1 ⇒ 外面那个 ~flush
+# 已经把 req_valid 清零了，里面 (slave_ack | ~writeback) 与 (~writeback) 取值不同的
+# 那一格根本到不了。golden 这一项是 firtool 从 Chisel 的 elsewhen 链展开出来的**冗余**。
+# ★照抄它仍然是对的★：冗余归冗余，照抄零成本，而"化简掉"要靠这段推理背书。
+MUT_NAME+=("M15 req_valid 丢掉 slaveAck 的保持项（实测为逻辑等价冗余）")
 MUT_OLD+=("      req_valid    <= ~flush & (io_req_valid | (slave_ack | ~writeback) & req_valid);")
 MUT_NEW+=("      req_valid    <= ~flush & (io_req_valid | (~writeback) & req_valid);")
-MUT_EXPECT+=("CAUGHT")
+MUT_EXPECT+=("EXPECTED_MISSED")
 
 THIN=${THIN:-200}
 pass=0; fail=0; thinlist=""
