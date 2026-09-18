@@ -68,6 +68,35 @@ The 460 unmatched reference points are all `Und` (undriven), listed in full in
   5  enqPtrVec_<n>_flag
 ```
 
+## The 460 are not one thing --- they are 56 + 12, and the two behave differently
+
+460 compare points resolve to **68 distinct base signals** (56 signals x 8 bits,
+plus 12 single-bit). Checking each against the golden source --- independently of
+FM's own `Und` label --- splits them cleanly:
+
+| | count | what golden actually says |
+|---|---|---|
+| `robDeqGroup_<n>_debug_otherPdest_<m>` | 56 signals = **448 points** | declared and **never driven by anything**; intrinsically dangling |
+| `deqPtrVec_next_<1..7>_flag`, `enqPtrVec_<1..5>_flag` | 12 signals = **12 points** | declared as a bare `wire` whose ONLY other occurrence is a child instance output pin |
+
+The second group is the interesting one. For example:
+
+```
+Rob.sv:2301     wire               deqPtrVec_next_1_flag;
+Rob.sv:264972     .io_next_out_1_flag   (deqPtrVec_next_1_flag),   // NewRobDeqPtrWrapper
+```
+
+★These 12 are undriven **because the 8 children are blackboxed**, not because
+golden leaves them dangling.★ With the children elaborated they would be driven
+by `NewRobDeqPtrWrapper` / `RobEnqPtrWrapper` outputs. So they are an artifact of
+the proof BOUNDARY and would move if the boundary moved; the 448 would not.
+
+A first pass at this check wrongly reported 448-with-no-driver and
+12-with-a-driver, because it compared names like `foo[3]` (carrying FM's bit
+index) against driver names that never carry one. Stripping the index first is
+what produced the table above --- worth noting because the wrong version looked
+perfectly plausible.
+
 ## Why this matters
 
 **The baseline for a Rob proof is not "0 failing, 0 unmatched".** Both sides
