@@ -1,0 +1,12 @@
+MUT   VERDICT   ERRORS       说明
+M1    CAUGHT    327090       PLRU 逐层下标位置参数 nsub 从 1 改成 0（quad 层选边位压到子下标上）
+M2    CAUGHT    5287         coh 超时比较 >= 改成 >（G1 新增的 CSR 门限边界）
+M3    CAUGHT    170199       prio_enc16_deflast 的「全 0 默认末项 15」改成默认 0
+M4    CAUGHT    28215        cohCount 的优先级翻转：merge/alloc 清 0 抢在 +1 之前
+M5    CAUGHT    110377       forwardData 被 forwardMask 门控为 0（"看起来更合理"、实际 golden 不这么做）
+M6    CAUGHT    411          io_sbFull 用 ActiveCount==16 而不是 ValidCount==16
+M7    CAUGHT    59078        difftest bore 50/51 的 index 字段两路对调
+M8    CAUGHT    157466       alloc 时 ptag/vtag 的覆盖优先级从 port1 改成 port0（sameTag 同拍双写）
+M9    CAUGHT    7888         mask 清除的 wvec 只比 id 的低 4 位（漏掉 id>=16 时应全 0 的边界）
+M10   CAUGHT    677675       out_s1_valid 的两条更新语句互换（fire 清零与 s0 推进的覆盖次序）
+（已还原原文件并重编）
