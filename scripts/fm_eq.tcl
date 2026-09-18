@@ -215,7 +215,21 @@ switch -- $_verify_matched_unread_compare_points {
     #          配套两项：FM_MERGE_DUP=false（否则 golden 侧的常数负载位被合并，
     #          两侧点数根本对不齐）与可读核里删掉 golden 没有的死寄存器
     #          （EnqEntry 无 blocked、comp 条目无 deqPortIdx，见 xs_iq_entries_core.sv
-    #          §2.6a）。打开本项后 passing 应 9776 -> 12196（+2420）。
+    #          §2.6a）。打开本项后 passing 9776 -> 12136（+2360）。
+    #          ★ 2026-09-17 修正：此处原写 12196（+2420），是**预测值**不是实测值。
+    #            实测基线 f8bd195 确为 12196；但共享核修掉一个真 bug 之后降为 12136。
+    #            bug：o_trans_ld_dep 接的是寄存器原值 r_ld_dep，而 golden
+    #            （EnqEntry_18.sv:1949 / OthersEntry_164.sv:1863）接的是
+    #            common_srcLoadDependencyNext —— 即移位后的次态
+    #            （EnqEntry_18.sv:1038 = {…srcLoadDependency_0[0], 1'h0}，只读 bit0）。
+    #            接错时 impl 侧多读了影子的 bit1，把它撑成活的比较点；接对之后
+    #            bit1 两侧同为死位，60 个点（4 条目 × 15 个 [1:0] 影子寄存器 × 1 位）
+    #            从 Passing 落进 Not Compared/Constant reg：
+    #              基线 Passing DFF 10792 + Constant reg 68 = 10860
+    #              修后 Passing DFF 10732 + Constant reg 128 = 10860（匹配点总数不变）
+    #            两轮 unmatched compare points 均 0(0)，即没有任何一侧单边丢点。
+    #            ——数字下降是 bug 修复的结果，不是覆盖退化；**不许**为了保住 12196
+    #              把 RTL 还原成错的接法。
     # Ftq 加入依据(2026-09-14, agent/ftq 实测)：本目标的 matched-not-compared unread
     # 共 3395 点，**全部**是两侧同路径同名的对称死位，严格双射(ref 唯一点 3395 ↔
     # impl 唯一点 3395，非 matched_nc 项为 0——ref 侧另有 4282 个 unmatched-unread，
@@ -338,6 +352,21 @@ switch -- $_verify_matched_unread_compare_points {
     #                                             得先用 fm_pins 把它们配起来
     #   本表里 NCBTransactionQueue{,_1} 与 TLBFA 家族都属于后者，其余多数属于前者。
     #   分不清就申请，最好的情况是浪费一轮，最坏的情况是把空转读成"加强过了"。
+    #   EntriesAluCsrFenceDiv(2026-09-17 加，canary): 6220 个 unread 点**全部是 matched_nc**
+    #          （unread_points.txt 6220 行逐行核过，未配对未读点为 0 —— FM 连那一行都没打印）。
+    #          构成 = 8 条目（2 enq + 6 simp）× 776 位死负载 + 12 个 enqDelay 影子位。
+    #          ★顺序★：钉点在先、加强在后。本轮先补了 24 个 enqDelay srcLoadDependency
+    #          钉点把 12(12) unmatched unread 打成 0(0)，否则按 TLBFA 的实测
+    #          （unmatched unread 单开 vmucp 必然空转）这一轮会白跑。
+    #          配对按构造：6220/6220 全部是 20308 对钉点的子集，**FM 自行猜配 0 对**；
+    #          钉点由 gen_fm_pins.py 从 golden 实例连线机械提取，不是人工列表。
+    #          ☆一个读数陷阱，lane 查清后才敢写期望值☆：结果表里
+    #          `Constant reg 12` 与 `Unread 6220` 是**两行**、合计 6232，而 vmucp 只清 6220；
+    #          那 12 个常量寄存器留着**不拦 verdict**（fm_verdict.py 的 strict PARTIAL 判据
+    #          只看 unverified/unmatched/aborted/unread 四项）。所以期望值是 +6220 不是 +6232。
+    #          ★复核判据★: passing 18781 -> 25001（正好 +6220）、failing 仍 0、unread 归 0、
+    #          unmatched 保持全零。passing 不增即空转，不算过。
+    #          同族先例见上面的 EntriesVfdivVidiv 条目；本条的数字全部是 canary 自己实测的。
     #   RenameBuffer(2026-09-17 加): 51 个 unread 点，钉点后全部转成 matched_nc
     #          (verif/ut/RenameBuffer/fm_pins.tcl，钉前 unmatched unread 51(51)、
     #          钉后六项 unmatched 全零、matched_unread_notcompared_pairs = 51)。
@@ -395,7 +424,7 @@ switch -- $_verify_matched_unread_compare_points {
     #          impl 侧单边未读 585 个不受本开关影响(无对家, 属 PASS_DEAD_IMPL 范畴)。
     #          ★复核判据★: passing 520634 -> 528967(正好 +8333)、failing 仍 0、
     #          unread 归 0、unmatched 0(0)。passing 不增而 unread 归 0 = 点被吞掉, 不算过。
-    if {$top ni {Bku Composer DebugModule DuplicatedTagArray EntriesVfdivVidiv FAlu FCVT FTBBank Ftq ICacheCtrlUnit ICacheDataArray ICacheMetaArray ICacheMissUnit InstrUncache ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 LinkMonitor MulUnit Queue1_RegMapperInput_5 RNXbar SNXbar SourceB SSIT TageBTable TlbStorageWrapper TlbStorageWrapper_1 TXDAT_4 TXREQ WritebackQueue IBuffer NCBTransactionQueue NCBTransactionQueue_1 Predictor RenameBuffer TLBFA TLBFA_1 TLBFA_2 TLBFA_3}} {
+    if {$top ni {Bku Composer DebugModule DuplicatedTagArray EntriesVfdivVidiv FAlu FCVT FTBBank Ftq ICacheCtrlUnit ICacheDataArray ICacheMetaArray ICacheMissUnit InstrUncache ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 LinkMonitor MulUnit Queue1_RegMapperInput_5 RNXbar SNXbar SourceB SSIT TageBTable TlbStorageWrapper TlbStorageWrapper_1 TXDAT_4 TXREQ WritebackQueue IBuffer EntriesAluCsrFenceDiv NCBTransactionQueue NCBTransactionQueue_1 Predictor RenameBuffer TLBFA TLBFA_1 TLBFA_2 TLBFA_3}} {
       puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
       exit 3
     }
