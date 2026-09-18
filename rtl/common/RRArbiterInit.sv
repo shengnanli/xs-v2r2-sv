@@ -56,8 +56,14 @@ module xs_RRArbiterInit_core #(
   output logic [IDX_W-1:0]        chosen
 );
   // N 不是 2 的幂时，chosen 的取值域（2^IDX_W）比请求方多。golden 的选择表把多出来
-  // 的那几项**填第 0 路**（实测 N=3/5/6 三个变体都是这样），这里照抄：填法本身
-  // 不可达（chosen 由下面的逻辑产生，永远 < N），但 FM 不做可达性分析，照抄最省事。
+  // 的那几项**填第 0 路**（实测 N=3/5/6 三个变体都是这样），这里照抄。
+  // ★这里**不要**套用"FM 不做可达性分析所以必须照抄"那条★ —— 实测不成立：
+  //   verif/ut/RRArbiterInitVariants/mutants.py 的 F3 把填法改成填 0，
+  //   FM 照样 native SUCCEEDED / failing 0。原因是 chosen **不是自由变量**，
+  //   它的取值域由下面的逻辑本身决定（只会被赋 0..N-1），所以这些表项在任何
+  //   输入组合下都选不中，两种填法的输出函数逐位相同。
+  //   照抄因此是**零成本的忠实**，不是 FM 逼出来的。那条规矩真正管的是
+  //   lastGrant —— 它是自由寄存器，见下一段。
   localparam int SEL_N = 1 << IDX_W;
 
   logic [IDX_W-1:0] last_grant_q;

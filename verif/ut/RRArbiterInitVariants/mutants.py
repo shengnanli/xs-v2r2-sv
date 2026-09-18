@@ -14,12 +14,13 @@
 要求它**判 TEST FAILED**。一个永远绿的覆盖闸能通过"注入被抓到"这一半负测，
 只有这一项能把它逼出来。
 
-★两个故意不放进 UT 变异表的改动（列出来说明挑选口径）★
-  (a) 把选择表里 `k >= N` 的补位从「填第 0 路」改成「填 0」——
-      chosen 由构造恒 < N，这些表项**不可达**，UT 与 FM 都判等价。
-      照抄 golden 的填法仍然是对的（零成本），但它不构成判别力缺口。
-  (b) 把异步复位改成同步复位 —— 本 tb 的 rst 覆盖整拍，两种写法行为相同，
-      **UT 结构上看不见**。它归 FM 管，所以放进 `--fm` 那一组，在 FM 侧实证。
+★一个故意不放进 UT 变异表的改动（列出来说明挑选口径）★
+  把选择表里 `k >= N` 的补位从「填第 0 路」改成「填 0」—— chosen 由构造恒 < N，
+  这些表项在任何输入组合下都选不中，**UT 与 FM 都判等价**（FM 侧的 F3 实测了这一半）。
+  照抄 golden 的填法仍然是对的（零成本的忠实），但它不构成判别力缺口。
+  ★顺带纠正一条容易套错的规矩★：这里**不能**说"FM 不做可达性分析所以必须照抄"。
+  F3 实测 FM 判等价 —— 因为 chosen 不是自由变量。那条规矩管的是**自由寄存器**，
+  本模块里就是 lastGrant：M7 / F1 这一对把它量了出来（UT errors=0，FM failing=2）。
 
 用法:
     python3 mutants.py                  # UT 判别力（默认 20k 拍）
@@ -45,29 +46,42 @@ FM_TOP = 'RRArbiterInit_12'           # FM 负测用家族最小的一个（N=3�
 RTL_FILES = [MUTFILE] + ['RRArbiterInit_%d.sv' % i for i in
                          [1, 4, 5, 6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 20]]
 
-# (说明, 锚点, 替换) —— 全部注入核，UT 必须抓到
+# (期望, 说明, 锚点, 替换) —— 全部注入核。期望两种：
+#   CATCH   真 bug，UT 必须报（errors > 0）
+#   MISS_FM UT **结构上看不见**、由 FM 兜底的改动，UT 必须 errors == 0
+#           （CONVENTIONS：EXPECTED_MISSED 读作"换了一道闸"，不是"没人管"。
+#            所以它在这里是**被测量的**，而且 FM 那一侧有对应条目 F1 实证兜住了。）
 MUTANTS = [
-    ('M1 轮转边界 off-by-one：after_last 用 >= 而不是 >（上次赢的那一路还算"优先"）',
+    ('CATCH', 'M1 轮转边界 off-by-one：after_last 用 >= 而不是 >（上次赢的那一路还算"优先"）',
      "      after_last[i]  = (i > int'(last_grant_q));",
      "      after_last[i]  = (i >= int'(last_grant_q));"),
 
-    ('M2 轮转失效：第二轮覆写用 in_valid 而不是 valid_after（退化成固定优先级）',
+    ('CATCH', 'M2 轮转失效：第二轮覆写用 in_valid 而不是 valid_after（退化成固定优先级）',
      "      if (valid_after[i]) chosen = IDX_W'(i);",
      "      if (in_valid[i]) chosen = IDX_W'(i);"),
 
-    ('M3 授权少一项：in_ready 丢掉 no_higher[N+i]（轮转段全空时不再回落到固定优先级）',
+    ('CATCH', 'M3 授权少一项：in_ready 丢掉 no_higher[N+i]（轮转段全空时不再回落到固定优先级）',
      "      in_ready[i] = ((no_higher[i] & after_last[i]) | no_higher[N+i]) & out_ready;",
      "      in_ready[i] = (no_higher[i] & after_last[i]) & out_ready;"),
 
-    ('M4 复位值改成 N-1（golden 一律复位到 0）',
+    ('CATCH', 'M4 复位值改成 N-1（golden 一律复位到 0）',
      "      last_grant_q <= '0;",
      "      last_grant_q <= IDX_W'(N - 1);"),
 
-    ('M5 指针使能去掉 out_ready：只要 out_valid 就前进（out_ready=0 时也换人）',
+    ('CATCH', 'M5 指针使能去掉 out_ready：只要 out_valid 就前进（out_ready=0 时也换人）',
      "    else if (out_valid & out_ready)",
      "    else if (out_valid)"),
 
-    ('M6 前缀链错位：no_higher[k] 少看一项（把 request[k-1] 写成 request[k]）',
+    ('MISS_FM', 'M7 异步复位改同步复位 —— ★UT 结构上看不见（tb 的 rst 覆盖整拍，两种'
+     '写法行为相同），由 FM 的 F1 兜底★',
+     "  always_ff @(posedge clock or posedge reset) begin\n"
+     "    if (reset)\n"
+     "      last_grant_q <= '0;",
+     "  always_ff @(posedge clock) begin\n"
+     "    if (reset)\n"
+     "      last_grant_q <= '0;"),
+
+    ('CATCH', 'M6 前缀链错位：no_higher[k] 少看一项（把 request[k-1] 写成 request[k]）',
      "      no_higher[k] = no_higher[k-1] & ~request[k-1];",
      "      no_higher[k] = no_higher[k-1] & ~request[k];"),
 ]
@@ -186,7 +200,7 @@ def main():
 
     if '--compile-only' in args:
         bad = []
-        for name, old, new in MUTANTS:
+        for _expect, name, old, new in MUTANTS:
             restore()
             if not apply_mutant(tgt, base_text, old, new):
                 print('  %-78s ★锚点失效/文本未变★' % name)
@@ -255,29 +269,37 @@ def main():
 
     if baseline() is None:
         return 2
-    missed = []
-    for name, old, new in MUTANTS:
+    bad = []
+    for expect, name, old, new in MUTANTS:
         restore()
         if not apply_mutant(tgt, base_text, old, new):
             print('!! %-78s ★锚点失效/文本未变★' % name)
-            missed.append(name)
+            bad.append(name)
             continue
         res, rc, tail = run_ut()
         if res is None:
             print('!! %-74s ★没有本轮日志（编译/运行失败 rc=%s），判 FAIL★' % (name, rc))
-            missed.append(name)
+            bad.append(name)
             continue
-        caught = res[1] > 0
-        print('  %-74s errors=%-10d %s' % (name, res[1], 'CAUGHT' if caught else '★MISSED★'))
-        if not caught:
-            missed.append(name)
+        if expect == 'CATCH':
+            ok = res[1] > 0
+            tag = 'CAUGHT' if ok else '★MISSED★'
+        else:
+            ok = res[1] == 0
+            tag = ('MISS_FM-ok（UT 看不见，符合预期；FM 侧 F1 兜住）' if ok
+                   else '★居然报了 —— 期望是 UT 看不见，说明这条注释是错的★')
+        print('  %-74s errors=%-10d %s' % (name, res[1], tag))
+        if not ok:
+            bad.append(name)
     restore()
-    if missed:
-        print('=== MUTANTS FAILED：以下变异没被 UT 抓到（或根本没生效）===')
-        for x in missed:
+    if bad:
+        print('=== MUTANTS FAILED：以下条目与预期不符（或根本没生效）===')
+        for x in bad:
             print('   ', x)
         return 1
-    print('=== MUTANTS PASSED：%d/%d 个变异全部被 UT 抓到 ===' % (len(MUTANTS), len(MUTANTS)))
+    ncatch = sum(1 for e, *_ in MUTANTS if e == 'CATCH')
+    print('=== MUTANTS PASSED：%d/%d 条符合预期（%d CATCH + %d MISS_FM）==='
+          % (len(MUTANTS), len(MUTANTS), ncatch, len(MUTANTS) - ncatch))
     return 0
 
 
