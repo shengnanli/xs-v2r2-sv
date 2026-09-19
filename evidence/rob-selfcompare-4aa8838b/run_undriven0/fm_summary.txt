@@ -1,0 +1,22 @@
+PROBE_MERGE_DUP false
+PROBE_UNDRIVEN 0
+PROBE_REF_ELAB_SEC 616
+PROBE_IMPL_ELAB_SEC 634
+108669 Compare points matched by name    
+0 Compare points matched by signature analysis    
+0 Compare points matched by topology    
+0(0) Unmatched reference(implementation) compare points    
+0(0) Unmatched reference(implementation) primary inputs, black-box outputs    
+PROBE_MATCH_SEC 1991
+PROBE_MATCH_DONE
+108669 Compare points matched by name    
+0 Compare points matched by signature analysis    
+0 Compare points matched by topology    
+0(0) Unmatched reference(implementation) compare points    
+0(0) Unmatched reference(implementation) primary inputs, black-box outputs    
+Verification SUCCEEDED
+108669 Passing compare points
+Matched Compare Points     BBPin    Loop   BBNet     Cut    Port     DFF     LAT   TOTAL
+PROBE_VERIFY_SEC 1024
+PROBE_DONE
+Maximum memory usage for this session: 14836 MB

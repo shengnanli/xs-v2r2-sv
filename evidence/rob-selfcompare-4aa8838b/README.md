@@ -1,0 +1,198 @@
+# Rob golden-vs-self FM diagnostic — the structural floor for any Rob proof
+
+**This is NOT a receipt and carries NO verdict.** There is no `receipt.json`
+here on purpose: `build_receipt_index.py` walks `evidence/**/receipt.json`, so
+this directory is invisible to the ledger. It is kept in version control because
+it is a **signoff credential** — it defines what "clean" can even mean for Rob —
+not because anything was signed off.
+
+## What was run
+
+Golden Rob compared against a **byte-identical copy of itself**, with Rob's 8
+child instances left as symmetric unresolved blackboxes.
+
+| | |
+|---|---|
+| ref | `/home/eda/xs-env/G1-canonical/golden-rtl/Rob.sv` |
+| impl | a copy of that same file |
+| **both sha256** | `4aa8838b95283d5aa1f46161e4abf96de764a6c6cbaff09f189a829ae601f130` |
+| lines / ports / registers | 266,227 / 2,200 / 11,639 |
+| appvars | `hdlin_unresolved_modules = black_box`, **`verification_merge_duplicated_registers = false`** |
+| tool | `fm_shell` V-2023.12-SP3 |
+| script | `scripts/rob_fm_scale_probe.tcl` with `ROB_MERGE_DUP=false` |
+
+The two sha256 were checked before the run and again after it.
+
+Why `merge_dup=false`: with the tool default (`true`) the same comparison burned
+**5,674 s of CPU** inside "Merging duplicated registers in block i:/WORK/Rob" and
+**never reached `match` at all**. Rob has 11,639 registers of which ~79% of the
+bits are 160-entry debug arrays with structurally identical next-state
+functions — the worst case for duplicate-register merging. Turning merging off
+is a **strengthening, not a relaxation**: nothing is blackboxed, no point is
+skipped, the reference is not constrained; FM is only required to compare
+registers one by one instead of after merging, so compare points can only
+increase. Precedent in this repo: RenameBuffer and MulUnit.
+
+## Cost (this is the whole point of running it before writing the core)
+
+```
+ref elaborate    622 s
+impl elaborate   609 s
+match           1973 s    (32.9 min)
+verify          1044 s    (17.4 min)
+peak memory   14,730 MB
+end to end     ~72 min,  fm_shell errors = 0
+```
+
+## Result --- both app-var settings, side by side
+
+The same comparison was run twice. Only the treatment of dangling nets differs.
+
+| | `binary:X` (Formality's default) | `0` |
+|---|---|---|
+| passing | 108,209 | **108,669** |
+| failing | **20** (20 matched, 0 unmatched) | **0** |
+| unverified | **440** | **0** |
+| unmatched reference points | **460** | **0** |
+| unmatched implementation points | 0 | 0 |
+| verdict | **FAILED** | **SUCCEEDED** |
+| ref / impl elaborate | 622 s / 609 s | 616 s / 634 s |
+| match / verify | 1973 s / 1044 s | 1991 s / 1024 s |
+| peak memory | 14,730 MB | 14,836 MB |
+
+Conservation closes exactly: `108,209 + 20 + 440 = 108,669`. Every point that
+was unmatched, unverified or failing under the default became a **passing**
+point under `0` --- none was dropped or waived.
+
+Cost is effectively identical, so running BOTH is affordable (~2.4 h total) and
+that is the recommendation below.
+
+Matching was **108,669 by name, 0 by signature analysis, 0 by topology** in both
+runs --- inevitable, since both sides are the same file and every name matches.
+
+Under the default, the 460 unmatched reference points are all `Und` (undriven)
+and listed in full in `run_binaryX/unmatched_460.rpt`:
+
+```
+448  robDeqGroup_<n>_debug_otherPdest_<m>
+  7  deqPtrVec_next_<n>_flag
+  5  enqPtrVec_<n>_flag
+```
+
+Under `0` that report is empty (`run_undriven0/unmatched_empty.rpt`).
+
+## ★Do not read the clean run as permission to adopt `0`★
+
+The two runs disagree, and by the rule established in `undriven_safety/` a
+disagreement is exactly the set that the app var has hidden. Here that set is
+the 460 dangling nets, and in THIS run hiding them is harmless --- reference and
+implementation are the same bytes, so there is no implementation-side defect
+that could be hiding among them.
+
+**That reasoning does not carry to the real proof.** `undriven_safety/` measures
+the case where it breaks: if the rewrite leaves a net undriven and golden's
+driver for it is identically 0, `binary:X` fails loudly and `0` reports
+SUCCEEDED. A golden-vs-self probe **cannot** exercise that case, because the two
+sides are identical by construction --- so this calibration establishes the
+floor, and establishes nothing at all about whether `0` is safe to adopt.
+
+The protocol that follows from both directories:
+
+1. run the real Rob proof under **both** settings;
+2. if the verdicts agree, nothing was hidden;
+3. if they disagree, the difference is the hidden set and must be examined
+   before either result is used.
+
+Which is why both runs are archived here rather than only the one that looks
+better.
+
+## The 460 are not one thing --- they are 56 + 12, and the two behave differently
+
+460 compare points resolve to **68 distinct base signals** (56 signals x 8 bits,
+plus 12 single-bit). Checking each against the golden source --- independently of
+FM's own `Und` label --- splits them cleanly:
+
+| | count | what golden actually says |
+|---|---|---|
+| `robDeqGroup_<n>_debug_otherPdest_<m>` | 56 signals = **448 points** | declared and **never driven by anything**; intrinsically dangling |
+| `deqPtrVec_next_<1..7>_flag`, `enqPtrVec_<1..5>_flag` | 12 signals = **12 points** | declared as a bare `wire` whose ONLY other occurrence is a child instance output pin |
+
+The second group is the interesting one. For example:
+
+```
+Rob.sv:2301     wire               deqPtrVec_next_1_flag;
+Rob.sv:264972     .io_next_out_1_flag   (deqPtrVec_next_1_flag),   // NewRobDeqPtrWrapper
+```
+
+★These 12 are undriven **because the 8 children are blackboxed**, not because
+golden leaves them dangling.★ With the children elaborated they would be driven
+by `NewRobDeqPtrWrapper` / `RobEnqPtrWrapper` outputs. So they are an artifact of
+the proof BOUNDARY and would move if the boundary moved; the 448 would not.
+
+A first pass at this check wrongly reported 448-with-no-driver and
+12-with-a-driver, because it compared names like `foo[3]` (carrying FM's bit
+index) against driver names that never carry one. Stripping the index first is
+what produced the table above --- worth noting because the wrong version looked
+perfectly plausible.
+
+## Why this matters
+
+**The baseline for a Rob proof is not "0 failing, 0 unmatched".** Both sides
+here are the same bytes, so none of these 20 failing points can be a design
+difference. They are a structural floor that no quality of rewrite removes.
+
+> **Until these 460 are classified, a Rob run showing "20 failing" must NOT be
+> read as "nearly green".** Someone who does not know this floor exists will see
+> 20 failing points and go hunting for a bug in the core.
+
+## Mechanism — FM states it, and an earlier version of this note was wrong
+
+An earlier draft of this note recorded the 20 failing points as
+"measured but mechanism unknown". **That was wrong, and the reason is worth
+keeping: the explanation was printed in the log and I had not read it.**
+`probe.log:221`:
+
+```
+ATTENTION: 20 failing compare points have unmatched undriven signals in their
+             reference fan-in.  To report such failing points, use
+               "report_failing_points -inputs unmatched -inputs undriven".
+           To read about undriven signal handling, use
+             "man verification_set_undriven_signals".
+```
+
+So: golden has 460 dangling (undriven) signals; they are unmatched between the
+two containers; 20 compare points have such a signal in their **reference
+fan-in**, which leaves those points indeterminate, so they fail. Nothing exotic.
+
+**What is still untested:** whether `verification_set_undriven_signals` (which
+FM names above) makes those 20 pass by pinning undriven signals to a fixed value
+on both sides. That is a one-appvar experiment and it has NOT been run. Do not
+assume it works; equally, do not reach for a dead_ref allowlist before trying
+it — an appvar that removes the asymmetry is a cleaner answer than an allowlist
+that waives it.
+
+## Reproducing
+
+```
+D=<scratch dir with a unique suffix>
+cp /home/eda/xs-env/G1-canonical/golden-rtl/Rob.sv $D/Rob_impl.sv
+cd $D && ROB_MERGE_DUP=false fm_shell -64 -work_path $D/fmwork \
+    -file <repo>/scripts/rob_fm_scale_probe.tcl < /dev/null > $D/probe.log 2>&1
+```
+
+The `< /dev/null` is mandatory: on a script error `fm_shell` drops to an
+interactive prompt and sits there holding a license with the log frozen.
+
+Budget ~72 minutes and ~15 GB. **That cost is exactly why this list is committed
+rather than left to "rerun to regenerate"** — and why the next person, who has
+no reason to suspect a floor exists, would never think to spend it.
+
+## Files
+
+| path | what |
+|---|---|
+| `run_binaryX/unmatched_460.rpt` | the 460 unmatched reference points under the default setting, verbatim |
+| `run_binaryX/fm_summary.txt` | phase timings and the Formality result block, verbatim |
+| `run_undriven0/fm_summary.txt` | the same under `verification_set_undriven_signals 0` |
+| `run_undriven0/unmatched_empty.rpt` | the (empty) unmatched report under `0` |
+| `undriven_safety/` | the four-run measurement showing where `0` MASKS a real defect |
