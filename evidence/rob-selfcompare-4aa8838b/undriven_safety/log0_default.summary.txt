@@ -1,0 +1,4 @@
+SAFETY_UNDRIVEN binary:X
+Verification FAILED
+ 2 Passing compare points
+ 1 Failing compare points (1 matched, 0 unmatched)
