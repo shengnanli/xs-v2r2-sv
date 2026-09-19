@@ -492,6 +492,23 @@ if {[info exists env(FM_MERGE_DUP)] && [string trim $env(FM_MERGE_DUP)] ne ""} {
     set _mergedup [string trim $env(FM_MERGE_DUP)]
 }
 switch -- $_mergedup {
+# ===== verification_merge_duplicated_registers 的经验注记（codex 0168 裁定） =====
+# ★不翻全局默认★。下面是可复核的经验，不是规则：
+#
+# 症状：出现"合并导致的不对称孤儿点"，或 match 阶段长时间不收敛时，
+#       可以 target-scoped 地试 FM_MERGE_DUP=false 并重跑，**对比比较点数与结果**。
+#       关掉它是**加强不是放宽**：不黑盒、不跳点、不约束 ref，只是要求逐个而非
+#       合并后比，比较点只增不减。
+#
+# 实测（2026-09-18，Rob，golden 44,908 行 / 11,639 个寄存器；同设计同机器只差这一个 appvar）：
+#       true   烧掉 5674 s CPU 卡在 "Merging duplicated registers"，★从未到达 match★
+#       false  match 1973 s + verify 1044 s，峰值 14.7 GB，端到端约 72 分钟
+#       证据 evidence/rob-selfcompare-<golden sha256 前缀>/
+# 另有先例：RenameBuffer（failing 20->0、unverified 5147->0、passing 651->5825）、MulUnit。
+#
+# ★不要写成因果★：本仓曾出现过"u_core 这种写法必然导致需要关掉它"这类说法，
+# 已被 0179 的判别性实验证伪（NewDispatch 因此从支持集里移出）。
+# 目前能说的只有上面这些 target-scoped 的观测，没有已确立的普遍机制。
   "true" - "false" { set_app_var verification_merge_duplicated_registers $_mergedup }
   default {
     puts "FM_MODE_ERROR: FM_MERGE_DUP 非法值 $_mergedup"
