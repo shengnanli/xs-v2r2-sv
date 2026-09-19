@@ -62,6 +62,7 @@ import collections
 import os
 import pathlib
 import re
+import io
 import sys
 
 G0_DEFAULT = '/home/eda/xs-env/G0-canonical/golden-rtl'
@@ -87,6 +88,30 @@ UNI_NCOL = 7
 
 #: 合法的 proof obligation / proof status 取值。冻结表里出现别的值一律 FAIL
 #: （fail-closed：拼错一个状态名不该悄悄变成"没人认识所以放过"）。
+OUT_OF_UNIVERSE_TSV = 'docs/impl_out_of_universe.tsv'
+
+
+def _declared_out_of_universe():
+    """读 docs/impl_out_of_universe.tsv，返回被显式声明的模块名集合。
+
+    格式：module <TAB> exclusion_class <TAB> proven <TAB> reason，`#` 开头是注释。
+    四列缺一不可 —— 只写模块名不写理由的不算声明。
+    """
+    out = set()
+    try:
+        f = io.open(OUT_OF_UNIVERSE_TSV, encoding='utf-8')
+    except IOError:
+        return out
+    with f:
+        for line in f:
+            if line.startswith('#'):
+                continue
+            parts = line.rstrip('\n').split('\t')
+            if len(parts) >= 4 and parts[0].strip() and parts[3].strip():
+                out.add(parts[0].strip())
+    return out
+
+
 OBLIGATIONS = ('REQUIRED', 'OUT_OF_SCOPE', 'NONE')
 
 
@@ -268,13 +293,21 @@ def c2_conservation(uni, cfg, norm, g1mods, impl, pmap, rep):
             rep.bad('C2', 'g1_configured_universe.tsv: %s 的 source=%s，但按台账映射应为 %s'
                          % (n, src.get(n), want))
 
-    # (d) rtl/ 实现集合：要么对应 universe 里的目标，要么是符合命名约定的内部件
+    # (d) rtl/ 实现集合：要么对应 universe 里的目标，要么是符合命名约定的内部件，
+    #     要么在 docs/impl_out_of_universe.tsv 里被**显式声明**。
+    #
+    # ★第三条路是 2026-09-18 补的★：出现了「实现并证明了 universe 之外的模块」
+    # 这种情况（DelayReg x11，excluded:simtop_only，本轮 11/11 FM SUCCEEDED）。
+    # 那不是错误，但必须留痕，否则 C2 只能报"无法归类"。声明式豁免，不是静默放过：
+    # 少写一行就照样红，而且那张表里每一行都写明**不计入覆盖率分母**。
+    declared = _declared_out_of_universe()
     resid_impl = set()
     for m in sorted(impl):
         if m in g1mods:
-            if m not in A:
+            if m not in A and m not in declared:
                 rep.bad('C2', 'rtl/ 实现了 %s，它在 G1 golden 里但不在 universe（属排除类），'
-                              '无法归类' % m)
+                              '无法归类。若确实有意为之，去 docs/impl_out_of_universe.tsv '
+                              '写一行声明（含排除类别、签核状态、理由）' % m)
         elif not INTERNAL_CORE_RE.search(m):
             resid_impl.add(m)
     if resid_impl:
