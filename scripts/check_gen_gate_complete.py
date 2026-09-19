@@ -35,6 +35,7 @@ GATE = REPO / 'scripts' / 'gate_all.sh'
 # 不支持 --check 的生成器，逐个写明为什么不需要幂等闸。
 # 理由必须是"产物不进证明闭包"或"本来就不是幂等生成"，不能是"还没来得及做"。
 NO_CHECK = {
+    'gen_rob_pins.py':     '产出的是 FM 钉点 Tcl（set_user_match），不是进证明闭包的 RTL；它的正确性由 --selftest 的五个 case 把守（含 meta_blanket：把生成器自己变异成无条件拒绝、要求正例转红），比字节幂等更强',
     'gen_dm_wrappers.py':  '一次性脚手架：DebugModule 薄 wrapper 已落库并手工改过，生成器不再是产物的真来源',
     'gen_file_nav.py':     '写的是源文件头部导航注释（行号），不产出任何进证明闭包的字节',
     'gen_g1_manifest.py':  '产物是 golden 清单快照，输入是只读的 G1-canonical，幂等性由 G1 的 chmod a-w 保证',
