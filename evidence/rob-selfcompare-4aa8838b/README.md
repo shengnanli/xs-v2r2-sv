@@ -106,6 +106,21 @@ The protocol that follows from both directories:
 Which is why both runs are archived here rather than only the one that looks
 better.
 
+## Label: `ROB_SELF_COMPARE_FLOOR` --- a diagnostic tag, NOT a PASS class
+
+codex 0168: this floor is a tool/modelling baseline artefact. It must **not** be
+folded into `PASS_DEAD_REF` and **nothing about Rob may be promoted on the
+strength of it**. It is reported under its own non-PASS tag,
+`ROB_SELF_COMPARE_FLOOR`, with the two groups below kept separate. The 12
+boundary artefacts in particular are **not a permanent waiver**: they must be
+re-examined whenever the child blackbox boundary changes.
+
+The formal sign-off still runs under Formality's default (`binary:X`) and still
+requires no unexplained residue. "Both undriven settings agreed" is a
+consistency report, not an acceptance condition.
+
+## Localisation: where the 460 come from, and whether they are observable
+
 ## The 460 are not one thing --- they are 56 + 12, and the two behave differently
 
 460 compare points resolve to **68 distinct base signals** (56 signals x 8 bits,
@@ -128,6 +143,59 @@ Rob.sv:264972     .io_next_out_1_flag   (deqPtrVec_next_1_flag),   // NewRobDeqP
 golden leaves them dangling.★ With the children elaborated they would be driven
 by `NewRobDeqPtrWrapper` / `RobEnqPtrWrapper` outputs. So they are an artifact of
 the proof BOUNDARY and would move if the boundary moved; the 448 would not.
+
+### Group A --- 56 signals / 448 points: undriven registers that REACH OUTPUTS
+
+Every occurrence of one of them in golden, e.g.
+`robDeqGroup_0_debug_otherPdest_0`:
+
+```
+ 29948:  reg  [7:0]  robDeqGroup_0_debug_otherPdest_0;      declaration
+ 30696:     {robDeqGroup_0_debug_otherPdest_0}};            a READER
+253750:  robDeqGroup_0_debug_otherPdest_0 = _RANDOM[...];   ← inside RANDOMIZE_REG_INIT
+```
+
+The only assignment is in the simulation-only random-init block. Both UT and FM
+compile with `+define+SYNTHESIS`, so **in the synthesised design these 56
+registers have no driver at all** -- declared, read, never written.
+
+★They are NOT dead.★ The reader chain runs all the way to the port boundary:
+
+```
+robDeqGroup_<bank>_debug_otherPdest_<m>
+  -> _GEN_41 / _GEN_42 / ...            (8x8 packed bus, one per otherPdest index)
+  -> assign io_commits_info_<p>_debug_otherPdest_<m> = _GEN_4x[deqPtrVec_<p>_value[2:0]]
+  -> OUTPUT PORT
+```
+
+So golden's own `io_commits_info_<p>_debug_otherPdest_<m>` outputs are
+**undefined in the synthesised design**. That is a property of golden, and it is
+the single most important thing on this page for whoever writes the core:
+
+> ★A rewrite that drives those outputs with anything definite will DIFFER from
+> golden, and that difference is real, not floor.★ It must be a deliberate,
+> argued decision -- not something absorbed by "the self-compare fails here too".
+
+That is exactly the trap codex 0168 names: the floor must not become a pocket
+that swallows genuine rewrite differences.
+
+### Group B --- 12 signals / 12 points: boundary artefacts with NO reader
+
+`deqPtrVec_next_<1..7>_flag`, `enqPtrVec_<1..5>_flag`. Two occurrences each: a
+bare `wire` declaration, and one child-instance output pin. **Nothing in Rob
+reads them**, so they cannot reach any compare point. They are undriven only
+because the 8 children are blackboxed; elaborate the children and they are
+driven. ★Re-review required whenever the child boundary moves --- not a permanent
+waiver.★
+
+### What is still NOT localised
+
+The exact partition of the 460 into FM's **20 failing** and **440 unverified**
+is not established here. The two archived runs predate the
+`report_failing_points` call added to the probe (commit 46edc8f), so the failing
+points were never named. 56+12 does not line up with 20+440, so the split does
+not follow the two groups above and must not be assumed to. Recovering it costs
+one re-run with the current probe, and that has NOT been done.
 
 A first pass at this check wrongly reported 448-with-no-driver and
 12-with-a-driver, because it compared names like `foo[3]` (carrying FM's bit
