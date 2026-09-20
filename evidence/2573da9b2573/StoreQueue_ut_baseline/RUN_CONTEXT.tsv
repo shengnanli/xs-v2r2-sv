@@ -1,0 +1,9 @@
+commit	
+kind	UT_BASELINE_ONLY
+targets	StoreQueue
+proof	NONE (未跑 FM，本轮无任何等价性主张)
+impl_drives_outputs	0/399
+child_deps	UNCHANGED_GOLDEN_DEP (UT 用 G1 golden 的 6 个子模块)
+seed1	VERIFIED = 0/399 (零失配 AND 被 toggle 到)
+seed7	VERIFIED = 0/399 (零失配 AND 被 toggle 到)
+seed42	VERIFIED = 0/399 (零失配 AND 被 toggle 到)
