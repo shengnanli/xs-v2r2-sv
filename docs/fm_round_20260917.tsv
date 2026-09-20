@@ -109,6 +109,7 @@ LCredit2Decoupled	SUCCEEDED	p590 f0 um0 unread=? const_reg=? mode=signoff-strict
 LCredit2Decoupled_10	SUCCEEDED	p2125 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/LCredit2Decoupled_10/receipt.json
 LCredit2Decoupled_8	SUCCEEDED	p770 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/LCredit2Decoupled_8/receipt.json
 LevelGateway	SUCCEEDED	p2 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/LevelGateway/receipt.json
+LoadQueueReplay	SUCCEEDED	p114160 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=true @75e1d8be8148 evidence/75e1d8be8148/LoadQueueReplay/receipt.json
 MSHRSelector	SUCCEEDED	p16 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/MSHRSelector/receipt.json
 MbistPipeDCacheData	SUCCEEDED	p3343 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/MbistPipeDCacheData/receipt.json
 MbistPipeDcacheTag	SUCCEEDED	p1131 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/MbistPipeDcacheTag/receipt.json
