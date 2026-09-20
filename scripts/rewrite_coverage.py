@@ -115,17 +115,23 @@ def rewritten_modules():
 def proven_modules():
     """有**绿判决证据**的模块名集合（proven 口径，头条数字用它）。
 
-    证据只认两处已提交的台账，都是机器产物、可复算：
-      docs/fm_round_20260914.tsv   SUCCEEDED / PASS_DEAD_REF
+    证据只认已提交的台账，都是机器产物、可复算：
+      docs/fm_round_*.tsv          SUCCEEDED / PASS_DEAD_REF
       docs/fastlane_ledger.tsv     WORKING_PASS / WORKING_PASS_DEAD_REF（UT+FM 都过）
+
+    ★2026-09-17 修：round 台账原先**写死**成 fm_round_20260914.tsv 一份★
+    后果是每开一轮新的签核，proven 就原地不动 —— written 在涨、proven 不涨，
+    看上去像"写了一堆没证"，实际是记账口径漏了新台账。改成 glob 之后，
+    新增一轮只要落一份 docs/fm_round_<日期>.tsv 就自动计入，不需要改代码
+    （"不需要任何人记得做什么"这条原则，对台账本身也得成立）。
 
     ★为什么不接受"声明自己写完了"★：声明是 fail-open 的 —— 忘了写、写错、过期，
     都会让覆盖率虚高，而虚高的覆盖率正是本仓在防的那类假绿。证据式记账不需要
     任何人记得做什么：没跑出绿判决，就不计分。
     """
     ok = set()
-    rnd = REPO / 'docs' / 'fm_round_20260914.tsv'
-    if rnd.exists():
+    rounds = sorted((REPO / 'docs').glob('fm_round_*.tsv'))
+    for rnd in rounds:
         for l in rnd.read_text(errors='replace').splitlines():
             if l.startswith('#') or l.startswith('target'):
                 continue
@@ -141,7 +147,8 @@ def proven_modules():
             if len(c) > 1 and c[1] in ('WORKING_PASS', 'WORKING_PASS_DEAD_REF'):
                 ok.add(c[0])
     if not ok:
-        raise SystemExit('proven_modules: 两张台账都读不出绿判决 —— 拒绝按 0 继续')
+        raise SystemExit('proven_modules: %d 份 round 台账 + fastlane 台账都读不出绿判决'
+                         ' —— 拒绝按 0 继续' % len(rounds))
     return ok
 
 
@@ -219,9 +226,15 @@ def build():
     # 没进汇总表的（TLBuffer/SRAMTemplate 变体），另有 OpenLLC 资源阻塞、
     # StorePipe 是已文档化的 EXPLICITLY_UNPROVABLE。把 253 当分母会让这一栏
     # 永远是 100%，那就失去意义了。
+    # ★2026-09-20 修：这里原先也**写死**成 fm_round_20260914.tsv★
+    # 上面 proven 那条在 2026-09-17 已经从写死改成 glob，★但这一处漏了★ ——
+    # 同一个 bug 的第二处，修了一个没修另一个。
+    # 后果是分子永远停在旧台账那批（252），而分母随每轮新目标增长，于是
+    # fm_targets_configured 一路往下掉：252/397=63.5% -> 252/419 -> 252/425…
+    # 看上去像覆盖退步，实际是记账口径漏了新台账。
+    # 由 agent/fubusy-wbarb 发现并如实记账（它没擅自改这个共享口径，做得对）。
     ran = set()
-    rnd = REPO / 'docs' / 'fm_round_20260914.tsv'
-    if rnd.exists():
+    for rnd in sorted((REPO / 'docs').glob('fm_round_*.tsv')):
         for l in rnd.read_text(errors='replace').splitlines():
             if l and not l.startswith('#') and not l.startswith('target'):
                 ran.add(l.split('\t')[0])

@@ -1,0 +1,122 @@
+**************************************************
+Report         : black_boxes
+
+Reference      : r:/WORK/TageTable_3
+Implementation : i:/WORK/TageTable_3
+Version        : V-2023.12-SP3
+Date           : Sat Sep 12 03:36:38 2026
+**************************************************
+Information: Reporting black boxes for current reference and implementation designs. (FM-184)
+
+ ___________________________________________________
+|                                                   |
+|  Legend:                                          |
+|           Black Box Attributes                    |
+|              s = Set with set_black_box command   |
+|              i = Module read with -interface_only |
+|              u = Unresolved design module         |
+|              e = Empty design module              |
+|              * = Unlinked design module           |
+|             ut = Unread tech cells pins           |
+|              L = Linked to non-black box design   |
+|             cp = Cutpoint blackbox                |
+|             ir = Internal rounded blackbox        |
+|              f = Formality Power Model            |
+|              m = Technology Macro cell (.db)      |
+|___________________________________________________|
+
+
+##################################################################
+####    TECH LIBRARY - i:/FM_BBOX
+##################################################################
+Type  Design Name
+----  ----------
+u      FoldedSRAMTemplate
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/TageTable_3/u_core/us
+
+u      FoldedSRAMTemplate_1
+
+       Instances : 4 of 4
+       ------------------------
+       i:/WORK/TageTable_3/u_core/g_bank[3].table_bank
+       i:/WORK/TageTable_3/u_core/g_bank[2].table_bank
+       i:/WORK/TageTable_3/u_core/g_bank[1].table_bank
+       i:/WORK/TageTable_3/u_core/g_bank[0].table_bank
+
+u      WrBypass
+
+       Instances : 8 of 8
+       ------------------------
+       i:/WORK/TageTable_3/u_core/g_wb_bank[3].g_wb_br[1].bank_wrbypass
+       i:/WORK/TageTable_3/u_core/g_wb_bank[3].g_wb_br[0].bank_wrbypass
+       i:/WORK/TageTable_3/u_core/g_wb_bank[2].g_wb_br[1].bank_wrbypass
+       i:/WORK/TageTable_3/u_core/g_wb_bank[2].g_wb_br[0].bank_wrbypass
+       i:/WORK/TageTable_3/u_core/g_wb_bank[1].g_wb_br[1].bank_wrbypass
+       i:/WORK/TageTable_3/u_core/g_wb_bank[1].g_wb_br[0].bank_wrbypass
+       i:/WORK/TageTable_3/u_core/g_wb_bank[0].g_wb_br[1].bank_wrbypass
+       i:/WORK/TageTable_3/u_core/g_wb_bank[0].g_wb_br[0].bank_wrbypass
+
+
+
+##################################################################
+####    DESIGN LIBRARY - i:/WORK
+##################################################################
+Type  Design Name
+----  ----------
+e *    TageTable
+
+       Instances : 0
+
+e *    TageTable_1
+
+       Instances : 0
+
+e *    TageTable_2
+
+       Instances : 0
+
+e *    xs_TageTable_core
+
+       Instances : 0
+
+
+
+##################################################################
+####    TECH LIBRARY - r:/FM_BBOX
+##################################################################
+Type  Design Name
+----  ----------
+u      FoldedSRAMTemplate
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/TageTable_3/us
+
+u      FoldedSRAMTemplate_1
+
+       Instances : 4 of 4
+       ------------------------
+       r:/WORK/TageTable_3/table_banks_0
+       r:/WORK/TageTable_3/table_banks_1
+       r:/WORK/TageTable_3/table_banks_2
+       r:/WORK/TageTable_3/table_banks_3
+
+u      WrBypass
+
+       Instances : 8 of 8
+       ------------------------
+       r:/WORK/TageTable_3/bank_wrbypasses_0_0
+       r:/WORK/TageTable_3/bank_wrbypasses_0_1
+       r:/WORK/TageTable_3/bank_wrbypasses_1_0
+       r:/WORK/TageTable_3/bank_wrbypasses_1_1
+       r:/WORK/TageTable_3/bank_wrbypasses_2_0
+       r:/WORK/TageTable_3/bank_wrbypasses_2_1
+       r:/WORK/TageTable_3/bank_wrbypasses_3_0
+       r:/WORK/TageTable_3/bank_wrbypasses_3_1
+
+
+1
+

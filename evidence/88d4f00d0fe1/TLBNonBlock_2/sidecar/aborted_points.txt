@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/TLBNonBlock_2
+Implementation : i:/WORK/TLBNonBlock_2
+Version        : V-2023.12-SP3
+Date           : Fri Sep 18 07:52:56 2026
+**************************************************
+
+No aborted compare points.
+
+1

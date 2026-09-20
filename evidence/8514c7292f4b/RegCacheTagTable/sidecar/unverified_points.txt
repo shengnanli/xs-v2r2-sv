@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/RegCacheTagTable
+Implementation : i:/WORK/RegCacheTagTable
+Version        : V-2023.12-SP3
+Date           : Thu Sep 17 08:49:11 2026
+**************************************************
+
+No unverified compare points.
+
+1

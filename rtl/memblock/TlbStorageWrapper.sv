@@ -1,101 +1,21 @@
-// =============================================================================
-// xs_TlbStorageWrapper_core —— TLB 存储 + 替换 包装层（可读重写）
+// TlbStorageWrapper —— itlb（取指 TLB）的 TLB 存储 + 替换包装层（家族薄 wrapper）
 //
-// 对应 Chisel: xiangshan.cache.mmu.TLBStorage.scala  class TlbStorageWrapper
+// 本变体参数：PORTS=3（查询端口数） nWays=48。golden TlbStorageWrapper.sv = 913 行 / 133 端口。
 //
-// 在访存/取指流水中的位置：每个 TLB（ITLB / DTLB-load / DTLB-store）顶层 TLB.scala
-//   例化一个 TlbStorageWrapper 作为它的“页表项缓存 + 替换器”。本模块对外暴露：
-//     r.req/r.resp   ：ports 路并行查询（vpn → hit/ppn/perm/pbmt…）
-//     w              ：refill 写（PTW 回填一条页表项）
-//     sfence/csr     ：刷新与 CSR 现场
-//   对内例化一个全相联存储 TLBFA（nWays=48），并自带一套 Tree-PLRU 替换器。
+// 替换器（Tree-PLRU）不在本文件：家族四个变体共用参数化核
+//   rtl/memblock/xs_TlbStorageWrapper_core.sv（2026-09-20 从本文件原样搬出，
+//   模块正文一字未改）。搬出的理由是 CONVENTIONS.md「变体家族 = 一个参数化核文件
+//   + 每变体一个薄文件」：核原先住在变体 0 的文件里，于是新加的 _2/_3 只能依赖
+//   变体 0 的文件才能编译 —— 那既不是"核文件"也不是"薄文件"。
+//   同家族的 TLBFA（xs_TLBFA_core.sv）/ TLBNonBlock / TLBuffer 都已经是这个形状，
+//   本家族是唯一的例外，这次一并收齐。
 //
-// ------------------------------------------------------------------------------
-// 本层做的事情其实很少（绝大部分是透明路由）：
-//   1) r.req / r.resp / sfence / csr / w.bits.data 原样接到内层 TLBFA —— 纯连线，
-//      没有任何变换（Scala 里那一大段 rp.bits.xxx := p.bits.xxx 就是逐字段直连）。
-//   2) **唯一的有状态逻辑 = Tree-PLRU 替换器**：
-//      - 内层 TLBFA 每拍通过 io_access[i].touch_ways 反馈“本拍命中/刚 refill 的 way”；
-//      - 替换器把各端口的 touch_ways 依次（foldLeft）喂进 PLRU 树，更新 47 位状态；
-//      - 组合地从当前状态算出 victim way（refillIdx），驱动 TLBFA 的 io_w_bits_wayIdx。
-//      （q.outReplace=false，故替换器在本层内部，不外引到 TLB 顶。）
+// 本文件只做端口展平与连线：golden 的扁平 io_* 端口透传给内层阵列 TLBFA，阵列反馈的
+//   touch_ways 收成向量喂给核，核算出的 victim way 接回阵列的 io_w_bits_wayIdx。
 //
-// 替换算法细节见 xs_tlbsw_pkg（plru_replace_way / plru_next_state）。变体 _1 也用它，
-// 故该包住在 rtl/memblock/memblock_common_pkg.sv（编译/FM 时须排在本文件之前）。
-//
-// 内层 TLBFA：UT/FM 阶段按要求用 **golden TLBFA 黑盒**例化（同名模块 TLBFA / TLBFA_1），
-//   因此本核只写“替换器 + wayIdx 选择”这一份真正属于 wrapper 的逻辑，存储/匹配由
-//   黑盒 TLBFA 完成。读/响应/sfence/csr/wdata 端口全部直通到黑盒。
-//
-// 参数化覆盖两个 golden 变体（差别仅在查询/access 端口数）：
-//   TlbStorageWrapper   : PORTS=3  NWAYS=48 （itlb）
-//   TlbStorageWrapper_1 : PORTS=4  NWAYS=48 （dtlb）
-// =============================================================================
-
-module xs_TlbStorageWrapper_core import xs_tlbsw_pkg::*; #(
-  parameter int PORTS = 3,
-  parameter int WAYS  = NWAYS,          // 48
-  parameter int WW    = WAY_W           // 6
-)(
-  input  logic                clock,
-  input  logic                reset,
-
-  // ---- 内层 TLBFA 反馈的替换访问信息（每端口 touch_ways，聚合成 Valid bundle）----
-  // 平时：命中端口报告命中 way；refill 后一拍：所有端口报告刚写入的 way。
-  input  tlb_access_t         io_access [PORTS],
-
-  // ---- 替换器输出：下次 refill 的 victim way ----
-  output logic [WW-1:0]       io_w_bits_wayIdx
-);
-
-  // =========================================================================
-  // Tree-PLRU 替换器状态（n-1 = 47 位）。复位清 0（与 golden RegInit(0) 一致，
-  //   异步复位对齐 golden posedge reset）。
-  // =========================================================================
-  // 命名与 golden 顶层一致（refill_idx_state_reg），便于 FM 跨层次配对。
-  logic [PLRU_W-1:0] refill_idx_state_reg;
-
-  // ---- 组合：把各端口 touch_ways 依次 foldLeft 进 PLRU，得到本拍“更新后状态” ----
-  // 语义同 Scala：get_next_state(state, touch_ways) =
-  //   touch_ways.foldLeft(state)((s,t) => t.valid ? get_next_state(s, t.bits) : s)
-  // 端口顺序 0→1→…→PORTS-1 串联（与 golden 逐端口叠加的更新链一致）。
-  logic [PLRU_W-1:0] plru_next;
-  logic              any_touch;
-  always_comb begin
-    plru_next = refill_idx_state_reg;
-    any_touch = 1'b0;
-    for (int i = 0; i < PORTS; i++) begin
-      if (io_access[i].valid) begin
-        plru_next = plru_next_state(plru_next, io_access[i].way,
-                                    /*state_lo*/0, /*tree_nways*/WAYS);
-        any_touch = 1'b1;
-      end
-    end
-  end
-
-  // ---- 状态寄存：仅当有任一端口 touch 时才更新（同 Scala when(touch_ways.valid.orR)）----
-  always_ff @(posedge clock or posedge reset) begin
-    if (reset)          refill_idx_state_reg <= '0;
-    else if (any_touch) refill_idx_state_reg <= plru_next;
-  end
-
-  // =========================================================================
-  // 组合：从当前 PLRU 状态求 victim way → 驱动内层 TLBFA 的 refill wayIdx。
-  //   （Scala: page.w_apply(wayIdx = re.way)；re.way = get_replace_way(state_reg)）
-  // =========================================================================
-  always_comb
-    io_w_bits_wayIdx = plru_replace_way(refill_idx_state_reg, /*state_lo*/0, /*tree_nways*/WAYS);
-
-endmodule
-
-// 自动生成：xs-v2r2-sv/scripts/gen_tlbstoragewrapper.py —— 该脚本未移植到本轮(它按上一轮规范产出独立 _wrapper.sv)，本文件手工维护
-// TlbStorageWrapper golden 同名 / xs 变体包装：
-//   例化 golden 黑盒 TLBFA 做存储匹配 + 可读 PLRU 核 xs_TlbStorageWrapper_core 做替换。
-//   wayIdx 内部产生（PLRU），其余端口对 TLBFA 全透传。
-// 自动生成：xs-v2r2-sv/scripts/gen_tlbstoragewrapper.py —— 该脚本未移植到本轮(它按上一轮规范产出独立 _wrapper.sv)，本文件手工维护
-// TlbStorageWrapper golden 同名 / xs 变体包装：
-//   例化 golden 黑盒 TLBFA 做存储匹配 + 可读 PLRU 核 xs_TlbStorageWrapper_core 做替换。
-//   wayIdx 内部产生（PLRU），其余端口对 TLBFA 全透传。
+// ★本变体（与 _1）的内层 TLBFA 在 FM/UT 里用的是 **golden** TLBFA.sv★ —— 那是
+//   f40deba 那轮的闭包，按现行判据属于 golden 逻辑复用，本轮未改（不在本 lane 目标内）。
+//   新加的 _2/_3 用的是重写件 TLBFA_2/_3。闭包见 verif/ut/TlbStorageWrapper/Makefile。
 
 // ---------------------------------------------------------------------------
 // golden 同名 wrapper

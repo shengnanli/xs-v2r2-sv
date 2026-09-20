@@ -1,0 +1,323 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "FoldedSRAMTemplate_1",
+ "run_id": "FoldedSRAMTemplate-20260914T163300Z-62fccb9",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/FoldedSRAMTemplate_1.sv",
+   "kind": "golden",
+   "sha256": "840cdf4b8512fe989452586d79ff162fea28a8a093d0cdf582e33f987e6c1898"
+  },
+  {
+   "path": "golden-rtl/SplittedSRAMTemplate_4.sv",
+   "kind": "golden",
+   "sha256": "938d6938943b599ac91c03008cca03a3a58ced8a05a1d2f5931be84fb9fb82ae"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_45.sv",
+   "kind": "golden",
+   "sha256": "c1ff40f62556143751b607f46bce381e71b0c2ef2954ca8735a59be70ca030c5"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p512x24m12s1h0l1b_bp_tage.sv",
+   "kind": "golden",
+   "sha256": "5c0a94587436757dec6582bb4f779471a14b61d99d1c0546e38f8a92e733e602"
+  },
+  {
+   "path": "golden-rtl/array_3.sv",
+   "kind": "golden",
+   "sha256": "a428051fe6762e835677debc5b021a7a894baa9d2cc14c972b101f1361aa2d39"
+  },
+  {
+   "path": "golden-rtl/MbistClockGateCell.sv",
+   "kind": "golden",
+   "sha256": "e362031af5358bb570a59d5eeeae5d1306cd9fbacf6f7af885111eee76c970e1"
+  },
+  {
+   "path": "golden-rtl/ClockGate.sv",
+   "kind": "golden",
+   "sha256": "3a59c31230b388514521e3cb8c7e8140ada1b56ebbb0bb0dadf7962d6624dbc1"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/common/xs_SRAMTemplate_core.sv",
+   "kind": "repo",
+   "sha256": "55b51e13e6f58d98385d6fff52b16956e81da22d75b7cbda50279e8efe48d97e"
+  },
+  {
+   "path": "rtl/common/SplittedSRAMTemplate_3.sv",
+   "kind": "repo",
+   "sha256": "63564e38b27efed05e80f8daec1105685f9cf82d0001aeb144f8efba9f3414c4"
+  },
+  {
+   "path": "rtl/common/SRAMTemplate_44.sv",
+   "kind": "repo",
+   "sha256": "adcf976160fdf8968088d002c1a91568daca9329b4942f23cc2e99c6a430a53b"
+  },
+  {
+   "path": "rtl/common/FoldedSRAMTemplate.sv",
+   "kind": "repo",
+   "sha256": "15c056fd46dc4e09bc5240c6d80329871254d04ff08407dc9a0897966d24ff48"
+  },
+  {
+   "path": "rtl/common/SplittedSRAMTemplate_4.sv",
+   "kind": "repo",
+   "sha256": "b60d2bf824e94e93dae4987f59cd0bd2ab33c2d6a6f39cabc395575db91c54b8"
+  },
+  {
+   "path": "rtl/common/SRAMTemplate_45.sv",
+   "kind": "repo",
+   "sha256": "8b3bf7627622bbe9d379e8a1a68e70538b26d974d9488cc28472b98fd581427e"
+  },
+  {
+   "path": "rtl/common/FoldedSRAMTemplate_1.sv",
+   "kind": "repo",
+   "sha256": "72acd6cee83707261c63d3b3cd648695443b5b1cf577ae80d8a73e7bba8ec06d"
+  },
+  {
+   "path": "rtl/common/SplittedSRAMTemplate_25.sv",
+   "kind": "repo",
+   "sha256": "bceff7d08a48722f2e7653215cfb7a42b132467bcf53ee5f0f9415823039c697"
+  },
+  {
+   "path": "rtl/common/SRAMTemplate_76.sv",
+   "kind": "repo",
+   "sha256": "ad1e9e2ea553485903ba525db039ea1da69968435e34de8656748f066277e6ed"
+  },
+  {
+   "path": "rtl/common/FoldedSRAMTemplate_22.sv",
+   "kind": "repo",
+   "sha256": "31b810d567de3717c6883081599f94bf07aba0d76b6cf87819c4c96d3b357a23"
+  },
+  {
+   "path": "rtl/common/SplittedSRAMTemplate_27.sv",
+   "kind": "repo",
+   "sha256": "8f05725777f35bf56df96eff2ae0a4faafedca32b5b007a3abf10c67ddb0a6b3"
+  },
+  {
+   "path": "rtl/common/SRAMTemplate_78.sv",
+   "kind": "repo",
+   "sha256": "0eaf96bd515672491f6428b6ab0ddbfb571861e73cd4548c46fba89dc5e40bb4"
+  },
+  {
+   "path": "rtl/common/FoldedSRAMTemplate_24.sv",
+   "kind": "repo",
+   "sha256": "5916225af79bcb6164be79e4faef1981d4e8032ce4e1fe19a8f5987dd1255d07"
+  },
+  {
+   "path": "rtl/common/SplittedSRAMTemplate_23.sv",
+   "kind": "repo",
+   "sha256": "8c2981a21a2ecf9c4a42eb0e448c32e611eb870488fabf1ad5dfefdbfbf79893"
+  },
+  {
+   "path": "rtl/common/SRAMTemplate_64.sv",
+   "kind": "repo",
+   "sha256": "e1b9b8417fe1c5358577147a6c9aa38b0969fca0967a4a96b2bd896e99f260f8"
+  },
+  {
+   "path": "rtl/common/FoldedSRAMTemplate_20.sv",
+   "kind": "repo",
+   "sha256": "6e5d8cadac88084af1eb1e0861299d92dc0b68d39c322c47af2a0d90c3d5c03e"
+  },
+  {
+   "path": "golden-rtl/array_4.sv",
+   "kind": "golden",
+   "sha256": "4b9e6d5526099063ba418e5ba67c3bd612e1550078b7846f958abbcaddb3b32e"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p256x8m2s1h0l1b_bp_tage_bt.sv",
+   "kind": "golden",
+   "sha256": "ab0a784001a44cf0c865064eddba456c276a987cb3a74b70edba86a18ed64b80"
+  },
+  {
+   "path": "golden-rtl/ClockGate.sv",
+   "kind": "golden",
+   "sha256": "3a59c31230b388514521e3cb8c7e8140ada1b56ebbb0bb0dadf7962d6624dbc1"
+  },
+  {
+   "path": "golden-rtl/MbistClockGateCell.sv",
+   "kind": "golden",
+   "sha256": "e362031af5358bb570a59d5eeeae5d1306cd9fbacf6f7af885111eee76c970e1"
+  },
+  {
+   "path": "golden-rtl/array_2.sv",
+   "kind": "golden",
+   "sha256": "9fffa1bbf796cd2c726de8aa6bd72795d2846f719e14ada37c9509d074a5faa2"
+  },
+  {
+   "path": "golden-rtl/array_3.sv",
+   "kind": "golden",
+   "sha256": "a428051fe6762e835677debc5b021a7a894baa9d2cc14c972b101f1361aa2d39"
+  },
+  {
+   "path": "golden-rtl/array_6.sv",
+   "kind": "golden",
+   "sha256": "47665407744eb72f49c2e358104beb14c2cfb14b1bc6ae62c4480ffd5732dd22"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p128x76m1s1h0l1b_bp_ittage.sv",
+   "kind": "golden",
+   "sha256": "f631a551530a4d0f9ba278bb96086edb7c4da338e0ce915141c7b371f92a9439"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p256x16m1s1h0l1b_bp_tage_us.sv",
+   "kind": "golden",
+   "sha256": "789bff7724dfe1f76ebf9286bd4bb7b9f8eef8aa0a311cc8e834a00df766f244"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p512x24m12s1h0l1b_bp_tage.sv",
+   "kind": "golden",
+   "sha256": "5c0a94587436757dec6582bb4f779471a14b61d99d1c0546e38f8a92e733e602"
+  }
+ ],
+ "impl_commit": "62fccb92c825e7b56406a55aaa65991c2ae5aa73",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "assembly",
+  "fm_allowlist_numeric_prefilter": "8",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {},
+  "declarations": {
+   "allow": {
+    "path": "verif/allow/FoldedSRAMTemplate_1.json",
+    "sha256": "d8038f20eae9dc543edb8b7a67354012620980fccda08f456e173c89bc36c898"
+   }
+  },
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "FoldedSRAMTemplate-20260914T163300Z-62fccb9",
+  "top": "FoldedSRAMTemplate_1",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 148,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [
+    {
+     "ref_path": "r:/WORK/FoldedSRAMTemplate_1/array/array_0_0_0/array/array/array_3_ext",
+     "impl_path": "i:/WORK/FoldedSRAMTemplate_1/array/array_0_0_0/array/array/array_3_ext"
+    }
+   ],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [
+    "r:/WORK/FoldedSRAMTemplate_1/array/array_0_0_0/array/array/array_3_ext"
+   ],
+   "unresolved_blackbox_impl": [
+    "i:/WORK/FoldedSRAMTemplate_1/array/array_0_0_0/array/array/array_3_ext"
+   ],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 148,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "assembly",
+  "native": "SUCCEEDED",
+  "top": "FoldedSRAMTemplate_1",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0,
+  "bbox_objects": 2
+ }
+}

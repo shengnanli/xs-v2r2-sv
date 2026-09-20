@@ -1,0 +1,18 @@
+[M1] N/A（本变体上这条变异是死的）: 没有 IQ 唤醒的变体里 wk_iq_oh 恒 0，这条是死的
+[M2] N/A（本变体上这条变异是死的）: 要同时有 IQ 唤醒和 ldCancel 这条才活
+[M3] N/A（本变体上这条变异是死的）: 没有 regcache 的变体里 rc_replaced 够不到任何输出
+[M4] N/A（本变体上这条变异是死的）: 没有哪一路 IQ 唤醒自己是 load 流水时，这一位本来就不是常数 1
+[M5] N/A（本变体上这条变异是死的）: golden 顶层没有 io_ldCancel_*_ld1Cancel 端口（矩阵 ldCancel_ld1=0），c1 恒 0，删掉这一项改不动任何行为 —— 这条要靠 Ldu/StaMou/StdMoud 去证
+[M6] N/A（本变体上这条变异是死的）: 没有 ldCancel 的变体里 cur_ld_cancel 恒 0
+[M7] N/A（本变体上这条变异是死的）: canIssueBypass 只在有 IQ 唤醒时才与 canIssue 不同
+[M8] N/A（本变体上这条变异是死的）: forward 档只有 IQ 唤醒子族才出现
+[M9] N/A（本变体上这条变异是死的）: 没有 exuSources 出口就看不见
+[M13] N/A（本变体上这条变异是死的）: 双发射口变体里这个条件恒真，删掉 KEEP_WIDE 那一半不改变任何东西
+[M15] N/A（本变体上这条变异是死的）: 没有 regcache 的变体里 use_rc_now 恒 0，这条是死的
+[M11] N/A（本变体上这条变异是死的）: comp 段本来就没有这组寄存器时，钉 0 是对的
+[M14] N/A（本变体上这条变异是死的）: 没有 ldCancel 的变体里影子恒 0，寄存器原值与移位后的次态都是 0
+[M10] 抓住 (errors=3026019): deqPortIdx 只按「有没有 transEntry 出口」生成 —— 丢掉"双发射口时 comp 也要有"这一半，我第一次栽的方向
+[M12] 抓住 (errors=2843323): issueResp 的 4 档常量表里，timer0 那档从 BLOCK 改成 SUCCESS
+
+变异判别力: 抓住 2/2 条适用的行为型变异（13 条在本变体上是死的记 N/A；0 条是结构型、UT 按构造看不见，闸在 FM；0 条基础设施失败、不计分）
+无效变异体（编不过，未产生电路）: 0

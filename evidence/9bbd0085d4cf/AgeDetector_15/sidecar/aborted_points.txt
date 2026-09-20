@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/AgeDetector_15
+Implementation : i:/WORK/AgeDetector_15
+Version        : V-2023.12-SP3
+Date           : Thu Sep 17 20:54:20 2026
+**************************************************
+
+No aborted compare points.
+
+1

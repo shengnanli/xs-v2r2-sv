@@ -53,3 +53,9 @@ TageTable	WrBypass	bank_wrbypasses_(\d+)_(\d+)	u_core.g_wb_bank[{i}].g_wb_br[{j}
 TageTable_1	WrBypass	bank_wrbypasses_(\d+)_(\d+)	u_core.g_wb_bank[{i}].g_wb_br[{j}].bank_wrbypass	WrBypass	INSTANCE		同 TageTable（家族共用 xs_TageTable_core 的同一段 generate）
 TageTable_2	WrBypass	bank_wrbypasses_(\d+)_(\d+)	u_core.g_wb_bank[{i}].g_wb_br[{j}].bank_wrbypass	WrBypass	INSTANCE		同 TageTable
 TageTable_3	WrBypass	bank_wrbypasses_(\d+)_(\d+)	u_core.g_wb_bank[{i}].g_wb_br[{j}].bank_wrbypass	WrBypass	INSTANCE		同 TageTable
+Predictor	PriorityMuxModule	s0_pc_dup_(\d+)_ppm	u_core	-	INLINE	s0_pc_next	golden Predictor.sv:28486+ 四个 s0_pc_dup_N_ppm 是 S0 取指地址的五选一优先选择器(纯组合/0 寄存器)；impl rtl/frontend/Predictor.sv 的 SEL_ 节 g_sel_pc 里写成一条 `? :` 优先级链 s0_pc_next[d]，模块整体消失。
+Predictor	PriorityMuxModule_4	s0_folded_gh_dup_(\d+)_ppm	u_core	-	INLINE	s0_folded_gh_next	golden 里两个(dup1/dup3)折叠历史五选一；impl SEL_ 节 g_sel_fh 的 s0_folded_gh_next[k]，k=0/1 对应 dup1/dup3。
+Predictor	PriorityMuxModule_8	s0_ghist_ptr_dup_(\d+)_ppm	u_core	-	INLINE	s0_ghist_ptr_next	golden 四个历史指针五选一；impl SEL_ 节 g_sel_pc 的 s0_ghist_ptr_next[d]。
+Predictor	PriorityMuxModule_12	s0_ahead_fh_oldest_bits_dup_(\d+)_ppm	u_core	-	INLINE	s0_afhob_next	golden 两个(dup1/dup3) AFHOB 五选一；impl SEL_ 节 g_sel_fh 的 s0_afhob_next[k]。
+Predictor	PriorityMuxModule_16	s0_last_br_num_oh_dup_(\d+)_ppm	u_core	-	INLINE	s0_brnum_next	golden 两个(dup1/dup3)"上一块进了几条分支"五选一；impl SEL_ 节 g_sel_fh 的 s0_brnum_next[k]。
+Predictor	PriorityMuxModule_20	ghv_write_datas_(\d+)_ppm	u_core	-	INLINE	ghv_wdata,ghv_wen	★本次重写的核心★ golden 给 256 位全局历史的**每一位**配一个写数据优先选择器(256 个实例, 纯组合 0 寄存器)；impl rtl/frontend/Predictor.sv 的 GHV_ 节把 ghv 收成一个 256 位向量 + 一个 generate 循环，256 个实例塌缩成 4 行优先级链 ghv_wdata[n]/ghv_wen[n]。

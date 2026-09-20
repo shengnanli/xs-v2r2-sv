@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/SnapshotGenerator_5
+Implementation : i:/WORK/SnapshotGenerator_5
+Version        : V-2023.12-SP3
+Date           : Thu Sep 17 20:39:54 2026
+**************************************************
+
+No aborted compare points.
+
+1

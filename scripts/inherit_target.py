@@ -397,7 +397,7 @@ def main():
     old_flat = re.sub(r'\\\n', ' ', old_mk.read_text())
     keep_fm = []
     for ln in old_flat.splitlines():
-        m = re.match(r'^(FM_(?!VARIANTS)\w+)\s*[:+?]?=\s*(.*)$', ln)
+        m = re.match(r'^(FM_(?!VARIANTS)\w+)[^\S\n]*[:+?]?=[^\S\n]*(.*)$', ln)
         if m:
             val = expand_make(m.group(2), vals).replace('@GOLDEN@', '$(GOLDEN_RTL)')
             toks = []

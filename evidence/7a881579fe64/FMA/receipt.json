@@ -1,0 +1,203 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "FMA",
+ "run_id": "FMA-20260914T055554Z-7a88157",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/FMA.sv",
+   "kind": "golden",
+   "sha256": "f5121fd02c55a6bf4710610ea231c9419efa3b480f76e4065c2a17a61f971db5"
+  },
+  {
+   "path": "golden-rtl/FloatFMA.sv",
+   "kind": "golden",
+   "sha256": "ae4ca34c25aa3a7b77210555897e5e1f3b9ddda2e0fe27d485b3ba76d91816a8"
+  },
+  {
+   "path": "golden-rtl/BoothEncoderF64F32F16.sv",
+   "kind": "golden",
+   "sha256": "68b79226da6b1ccba59bcb461e1ecf9d48dc2436bec7f6f80ed32b96af77fa0d"
+  },
+  {
+   "path": "golden-rtl/CSA_Nto2With3to2MainPipeline.sv",
+   "kind": "golden",
+   "sha256": "fc10bc925b86db4d1ec39378ad02670d76970ed321c3e9f89cb7b0063b98e77d"
+  },
+  {
+   "path": "golden-rtl/CSA4to2.sv",
+   "kind": "golden",
+   "sha256": "2ebc194f17859f5dd933030046de941e6a37919325f2e840168fa4306f08bee9"
+  },
+  {
+   "path": "golden-rtl/CSA3to2.sv",
+   "kind": "golden",
+   "sha256": "06430d4dc1721c9c4c8974540d6546b0080e9d5934f21b687b4a964deecb9162"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/backend/FMA.sv",
+   "kind": "repo",
+   "sha256": "9561135e9a4c980ecce1bcae81aae4da2dd3ee485c244d52aa81888fa925156a"
+  },
+  {
+   "path": "golden-rtl/FloatFMA.sv",
+   "kind": "golden",
+   "sha256": "ae4ca34c25aa3a7b77210555897e5e1f3b9ddda2e0fe27d485b3ba76d91816a8"
+  },
+  {
+   "path": "golden-rtl/BoothEncoderF64F32F16.sv",
+   "kind": "golden",
+   "sha256": "68b79226da6b1ccba59bcb461e1ecf9d48dc2436bec7f6f80ed32b96af77fa0d"
+  },
+  {
+   "path": "golden-rtl/CSA_Nto2With3to2MainPipeline.sv",
+   "kind": "golden",
+   "sha256": "fc10bc925b86db4d1ec39378ad02670d76970ed321c3e9f89cb7b0063b98e77d"
+  },
+  {
+   "path": "golden-rtl/CSA4to2.sv",
+   "kind": "golden",
+   "sha256": "2ebc194f17859f5dd933030046de941e6a37919325f2e840168fa4306f08bee9"
+  },
+  {
+   "path": "golden-rtl/CSA3to2.sv",
+   "kind": "golden",
+   "sha256": "06430d4dc1721c9c4c8974540d6546b0080e9d5934f21b687b4a964deecb9162"
+  }
+ ],
+ "impl_commit": "7a881579fe64eed5a83d200c507ec1aa4ec6f5b3",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {},
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "FMA-20260914T055554Z-7a88157",
+  "top": "FMA",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 4101,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 4101,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "native": "SUCCEEDED",
+  "top": "FMA",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}

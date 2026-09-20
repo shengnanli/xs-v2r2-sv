@@ -1,0 +1,12 @@
+variant	pin_file	old_calls	new_calls	old_sha256_16	new_sha256_16	call_seq	inject_probe	verdict
+RenameBuffer	verif/ut/RenameBuffer/fm_pins.tcl	51	51	826824bd925d7861	826824bd925d7861	SAME	OK	GUARD_ONLY
+TLBFA	verif/ut/TLBFA/fm_pins.tcl	33	33	e4888a0db5d49ff2	e4888a0db5d49ff2	SAME	OK	GUARD_ONLY
+TLBFA_1	verif/ut/TLBFA/fm_pins.tcl	44	44	95d4f948afe49a29	95d4f948afe49a29	SAME	OK	GUARD_ONLY
+TLBFA_2	verif/ut/TLBFA/fm_pins.tcl	22	22	d70ea05efb36999a	d70ea05efb36999a	SAME	OK	GUARD_ONLY
+TLBFA_3	verif/ut/TLBFA/fm_pins.tcl	22	22	27e8594f37dc41e4	27e8594f37dc41e4	SAME	OK	GUARD_ONLY
+TLBNonBlock	verif/ut/TLBNonBlock/fm_pins.tcl	8	8	d7e074e2e32b6bee	d7e074e2e32b6bee	SAME	OK	GUARD_ONLY
+TLBNonBlock_1	verif/ut/TLBNonBlock/fm_pins.tcl	4	4	f661478a21871e65	f661478a21871e65	SAME	OK	GUARD_ONLY
+TLBNonBlock_2	verif/ut/TLBNonBlock/fm_pins.tcl	3	3	25eaa21b2829a196	25eaa21b2829a196	SAME	OK	GUARD_ONLY
+NCBTransactionQueue	verif/ut/NCBTransactionQueue/fm_pins.tcl	1472	1472	ee20d210319c9ceb	ee20d210319c9ceb	SAME	OK	GUARD_ONLY
+NCBTransactionQueue_1	verif/ut/NCBTransactionQueue/fm_pins.tcl	736	736	359e835e766c77e8	359e835e766c77e8	SAME	OK	GUARD_ONLY
+SSIT	verif/ut/SSIT/fm_pins.tcl	91	91	80b225deb5231f7a	80b225deb5231f7a	SAME	OK	GUARD_ONLY

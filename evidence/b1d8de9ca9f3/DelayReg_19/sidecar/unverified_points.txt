@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/DelayReg_19
+Implementation : i:/WORK/DelayReg_19
+Version        : V-2023.12-SP3
+Date           : Fri Sep 18 05:52:02 2026
+**************************************************
+
+No unverified compare points.
+
+1

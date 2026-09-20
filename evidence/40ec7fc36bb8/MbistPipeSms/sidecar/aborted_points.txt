@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/MbistPipeSms
+Implementation : i:/WORK/MbistPipeSms
+Version        : V-2023.12-SP3
+Date           : Mon Sep 14 02:09:12 2026
+**************************************************
+
+No aborted compare points.
+
+1

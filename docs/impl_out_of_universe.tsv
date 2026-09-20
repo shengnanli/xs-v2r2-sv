@@ -1,0 +1,24 @@
+# 已实现但落在 universe 之外的模块 —— 必须逐个声明，不许静默放过
+#
+# 背景：check_universe_freeze 的 C2（全集守恒）要求 rtl/ 里每个实现件要么对应
+# universe 里的目标，要么符合内部件命名约定。2026-09-18 出现了第三种情况：
+# 我们**实现并证明了 universe 之外的模块**。那不是错误，但必须留痕，
+# 否则 C2 只能报"无法归类"。
+#
+# ★纪律★：进这张表的每一行都不计入覆盖率分母（docs/coverage_three_axis.tsv 的
+# in_universe=yes 那 1814 个）。它们是**分母之外的额外证据**，不是覆盖率。
+# 声明本身不是批准继续做——用户 2026-09-18 已明确指示「核外面的文件不要重写」，
+# 这张表只为已经做完的存量留痕。
+#
+# 列：module <TAB> exclusion_class <TAB> proven <TAB> reason
+DelayReg	excluded:simtop_only	SUCCEEDED	difftest 的 Delayer 单态化；golden 里只被 GatewayEndpoint 例化，而 GatewayEndpoint 只被 SimTop 例化，在 XSTop 根之外。本轮已 FM 签核（evidence/b1d8de9ca9f3/），合计 passing 144665、failing 0。属分母之外的额外证据。
+DelayReg_16	excluded:simtop_only	SUCCEEDED	difftest 的 Delayer 单态化；golden 里只被 GatewayEndpoint 例化，而 GatewayEndpoint 只被 SimTop 例化，在 XSTop 根之外。本轮已 FM 签核（evidence/b1d8de9ca9f3/），合计 passing 144665、failing 0。属分母之外的额外证据。
+DelayReg_18	excluded:simtop_only	SUCCEEDED	difftest 的 Delayer 单态化；golden 里只被 GatewayEndpoint 例化，而 GatewayEndpoint 只被 SimTop 例化，在 XSTop 根之外。本轮已 FM 签核（evidence/b1d8de9ca9f3/），合计 passing 144665、failing 0。属分母之外的额外证据。
+DelayReg_19	excluded:simtop_only	SUCCEEDED	difftest 的 Delayer 单态化；golden 里只被 GatewayEndpoint 例化，而 GatewayEndpoint 只被 SimTop 例化，在 XSTop 根之外。本轮已 FM 签核（evidence/b1d8de9ca9f3/），合计 passing 144665、failing 0。属分母之外的额外证据。
+DelayReg_20	excluded:simtop_only	SUCCEEDED	difftest 的 Delayer 单态化；golden 里只被 GatewayEndpoint 例化，而 GatewayEndpoint 只被 SimTop 例化，在 XSTop 根之外。本轮已 FM 签核（evidence/b1d8de9ca9f3/），合计 passing 144665、failing 0。属分母之外的额外证据。
+DelayReg_21	excluded:simtop_only	SUCCEEDED	difftest 的 Delayer 单态化；golden 里只被 GatewayEndpoint 例化，而 GatewayEndpoint 只被 SimTop 例化，在 XSTop 根之外。本轮已 FM 签核（evidence/b1d8de9ca9f3/），合计 passing 144665、failing 0。属分母之外的额外证据。
+DelayReg_22	excluded:simtop_only	SUCCEEDED	difftest 的 Delayer 单态化；golden 里只被 GatewayEndpoint 例化，而 GatewayEndpoint 只被 SimTop 例化，在 XSTop 根之外。本轮已 FM 签核（evidence/b1d8de9ca9f3/），合计 passing 144665、failing 0。属分母之外的额外证据。
+DelayReg_23	excluded:simtop_only	SUCCEEDED	difftest 的 Delayer 单态化；golden 里只被 GatewayEndpoint 例化，而 GatewayEndpoint 只被 SimTop 例化，在 XSTop 根之外。本轮已 FM 签核（evidence/b1d8de9ca9f3/），合计 passing 144665、failing 0。属分母之外的额外证据。
+DelayReg_24	excluded:simtop_only	SUCCEEDED	difftest 的 Delayer 单态化；golden 里只被 GatewayEndpoint 例化，而 GatewayEndpoint 只被 SimTop 例化，在 XSTop 根之外。本轮已 FM 签核（evidence/b1d8de9ca9f3/），合计 passing 144665、failing 0。属分母之外的额外证据。
+DelayReg_25	excluded:simtop_only	SUCCEEDED	difftest 的 Delayer 单态化；golden 里只被 GatewayEndpoint 例化，而 GatewayEndpoint 只被 SimTop 例化，在 XSTop 根之外。本轮已 FM 签核（evidence/b1d8de9ca9f3/），合计 passing 144665、failing 0。属分母之外的额外证据。
+DelayReg_26	excluded:simtop_only	SUCCEEDED	difftest 的 Delayer 单态化；golden 里只被 GatewayEndpoint 例化，而 GatewayEndpoint 只被 SimTop 例化，在 XSTop 根之外。本轮已 FM 签核（evidence/b1d8de9ca9f3/），合计 passing 144665、failing 0。属分母之外的额外证据。

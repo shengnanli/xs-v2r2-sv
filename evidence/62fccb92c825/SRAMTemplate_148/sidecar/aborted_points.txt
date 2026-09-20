@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/SRAMTemplate_148
+Implementation : i:/WORK/SRAMTemplate_148
+Version        : V-2023.12-SP3
+Date           : Mon Sep 14 12:36:55 2026
+**************************************************
+
+No aborted compare points.
+
+1

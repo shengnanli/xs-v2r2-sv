@@ -1,0 +1,61 @@
+// ============================================================================
+// RealWBArbiter_14.sv —— RealWBArbiter 家族薄 wrapper：N=2，payload {vecWen:1, pdest:7, data:128}（共 136 位）
+// 例化者：RealWBCollideChecker_2.sv
+//
+// 本文件只做参数设定与端口对位，核体见 rtl/common/xs_PriorityArbSelect.sv，全家族共一份。
+// 由 scripts/gen_fubusy_wbarb.py 生成，勿手改；差异维度矩阵见
+// verif/ut/RealWBArbiterVariants/README.md。
+// golden 对照：G1-canonical/golden-rtl/RealWBArbiter_14.sv
+// ============================================================================
+package realwbarbiter_14_pkg;
+  // payload 字段表：顺序 = golden io_out_bits_* 的端口顺序，靠前者占高位。
+  typedef struct packed {
+    logic          vecWen;
+    logic [6:0]    pdest;
+    logic [127:0]  data;
+  } payload_t;
+endpackage
+
+module RealWBArbiter_14 import realwbarbiter_14_pkg::*; (
+  output         io_in_0_ready,
+  input          io_in_0_valid,
+  input          io_in_0_bits_vecWen,
+  input  [6:0]   io_in_0_bits_pdest,
+  input  [127:0] io_in_0_bits_data,
+  output         io_in_1_ready,
+  input          io_in_1_valid,
+  input          io_in_1_bits_vecWen,
+  input  [6:0]   io_in_1_bits_pdest,
+  input  [127:0] io_in_1_bits_data,
+  output         io_out_valid,
+  output         io_out_bits_vecWen,
+  output [6:0]   io_out_bits_pdest,
+  output [127:0] io_out_bits_data
+);
+  localparam int N  = 2;
+  localparam int PW = $bits(payload_t);
+
+  payload_t [N-1:0] in_payload;
+  assign in_payload[0] = {io_in_0_bits_vecWen, io_in_0_bits_pdest, io_in_0_bits_data};
+  assign in_payload[1] = {io_in_1_bits_vecWen, io_in_1_bits_pdest, io_in_1_bits_data};
+
+  payload_t     out_payload;
+  logic [N-1:0] in_ready;
+  logic [N-1:0] in_valid;
+  assign in_valid = {io_in_1_valid, io_in_0_valid};
+
+  xs_PriorityArbSelect #(.N(N), .PW(PW)) u_sel (
+    .in_valid  (in_valid),
+    .eff_valid (in_valid),    // 本族没有反饥饿级，原始 valid 直接参与竞争
+    .in_bits   (in_payload),
+    .in_ready  (in_ready),
+    .out_valid (io_out_valid),
+    .out_bits  (out_payload)
+  );
+
+  assign io_in_0_ready     = in_ready[0];
+  assign io_in_1_ready     = in_ready[1];
+  assign io_out_bits_vecWen   = out_payload.vecWen;
+  assign io_out_bits_pdest    = out_payload.pdest;
+  assign io_out_bits_data     = out_payload.data;
+endmodule

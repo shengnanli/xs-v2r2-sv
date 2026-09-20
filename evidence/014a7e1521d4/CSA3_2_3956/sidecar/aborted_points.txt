@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/CSA3_2_3956
+Implementation : i:/WORK/CSA3_2_3956
+Version        : V-2023.12-SP3
+Date           : Thu Sep 17 16:17:33 2026
+**************************************************
+
+No aborted compare points.
+
+1

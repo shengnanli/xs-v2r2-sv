@@ -1,0 +1,494 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "ICacheDataArray",
+ "run_id": "ICacheDataArray-20260914T061934Z-40ec7fc",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/ICacheDataArray.sv",
+   "kind": "golden",
+   "sha256": "ac606822a419502402e283390e00ca38dee8daddfecd099626e82f72a138aa72"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplateWithFixedWidth.sv",
+   "kind": "golden",
+   "sha256": "414d210f14834e62161b00d4d937bf12bd54c6b3df41b04b128bf4ead88ce931"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplateWithFixedWidth_4.sv",
+   "kind": "golden",
+   "sha256": "093a2ded68a7e49af1f7fe91b7a3009f52da43c4eec9ab1ca8677ba58a3d104b"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplateWithFixedWidth_12.sv",
+   "kind": "golden",
+   "sha256": "19737f4ec433921174f901ed599fa95214d685b32856f338db46ea925919bb16"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplateWithFixedWidth_28.sv",
+   "kind": "golden",
+   "sha256": "dca1e53e1dc4385d53411b25d526fbe15f3feab1c24e4de72a60665301113016"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_4.sv",
+   "kind": "golden",
+   "sha256": "18af90d47186e4c1782fce302643e45d68b8453d22b5dfaa4370fcfb60079d01"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_8.sv",
+   "kind": "golden",
+   "sha256": "a9f0ebc0816d29cd186c2f4a36be9ac157e3c79b9145a06631c75be3feecea80"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_16.sv",
+   "kind": "golden",
+   "sha256": "a06495d8ab2c67ca38f3df1084f4ecc7e13329c3aa499792391f32225e641ea9"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_32.sv",
+   "kind": "golden",
+   "sha256": "35fbd13eaef6668be6daceaef651bf71c690924d37274bf4d3d3d59e7168004f"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p256x66m66s1h0l1b_icsh_dat.sv",
+   "kind": "golden",
+   "sha256": "1f25ac82c0233189fa4a6b93f0668334cdd9ad840f622f3c229aefff222f1b95"
+  },
+  {
+   "path": "golden-rtl/array_0.sv",
+   "kind": "golden",
+   "sha256": "bb8ff854f91d431b6049a1c31360b1c6e91ab8d9593cd03db52ef31e72f36918"
+  },
+  {
+   "path": "golden-rtl/MbistPipeIcacheDataWay0.sv",
+   "kind": "golden",
+   "sha256": "e3e351b394a355d21c61d2aab72f7461275baf131ac8ba218d169b75c5a0ad9c"
+  },
+  {
+   "path": "golden-rtl/MbistPipeIcacheDataWay1.sv",
+   "kind": "golden",
+   "sha256": "f1ddaa9f8ddbff85fa8357f7ae714d2e891fd4ccbdc114da5fba128cdd6add1c"
+  },
+  {
+   "path": "golden-rtl/MbistPipeIcacheDataWay2.sv",
+   "kind": "golden",
+   "sha256": "a66ed5706376453c7ce96b46a0f7839071273deef210d264c9b0f9e1191f364e"
+  },
+  {
+   "path": "golden-rtl/MbistPipeIcacheDataWay3.sv",
+   "kind": "golden",
+   "sha256": "c31565bd0a64665c31bd19ce6a6a013ed507a2743817fdbea19fdaa451df28b1"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/frontend/ICacheDataArray.sv",
+   "kind": "repo",
+   "sha256": "74293241bcb21536c80b307aaa46d3d36da7f544745af752392bf1c177fd865f"
+  },
+  {
+   "path": "golden-rtl/MbistPipeIcacheDataWay0.sv",
+   "kind": "golden",
+   "sha256": "e3e351b394a355d21c61d2aab72f7461275baf131ac8ba218d169b75c5a0ad9c"
+  },
+  {
+   "path": "golden-rtl/MbistPipeIcacheDataWay1.sv",
+   "kind": "golden",
+   "sha256": "f1ddaa9f8ddbff85fa8357f7ae714d2e891fd4ccbdc114da5fba128cdd6add1c"
+  },
+  {
+   "path": "golden-rtl/MbistPipeIcacheDataWay2.sv",
+   "kind": "golden",
+   "sha256": "a66ed5706376453c7ce96b46a0f7839071273deef210d264c9b0f9e1191f364e"
+  },
+  {
+   "path": "golden-rtl/MbistPipeIcacheDataWay3.sv",
+   "kind": "golden",
+   "sha256": "c31565bd0a64665c31bd19ce6a6a013ed507a2743817fdbea19fdaa451df28b1"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplateWithFixedWidth.sv",
+   "kind": "golden",
+   "sha256": "414d210f14834e62161b00d4d937bf12bd54c6b3df41b04b128bf4ead88ce931"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplateWithFixedWidth_12.sv",
+   "kind": "golden",
+   "sha256": "19737f4ec433921174f901ed599fa95214d685b32856f338db46ea925919bb16"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplateWithFixedWidth_28.sv",
+   "kind": "golden",
+   "sha256": "dca1e53e1dc4385d53411b25d526fbe15f3feab1c24e4de72a60665301113016"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplateWithFixedWidth_4.sv",
+   "kind": "golden",
+   "sha256": "093a2ded68a7e49af1f7fe91b7a3009f52da43c4eec9ab1ca8677ba58a3d104b"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_16.sv",
+   "kind": "golden",
+   "sha256": "a06495d8ab2c67ca38f3df1084f4ecc7e13329c3aa499792391f32225e641ea9"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_32.sv",
+   "kind": "golden",
+   "sha256": "35fbd13eaef6668be6daceaef651bf71c690924d37274bf4d3d3d59e7168004f"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_4.sv",
+   "kind": "golden",
+   "sha256": "18af90d47186e4c1782fce302643e45d68b8453d22b5dfaa4370fcfb60079d01"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_8.sv",
+   "kind": "golden",
+   "sha256": "a9f0ebc0816d29cd186c2f4a36be9ac157e3c79b9145a06631c75be3feecea80"
+  },
+  {
+   "path": "golden-rtl/array_0.sv",
+   "kind": "golden",
+   "sha256": "bb8ff854f91d431b6049a1c31360b1c6e91ab8d9593cd03db52ef31e72f36918"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p256x66m66s1h0l1b_icsh_dat.sv",
+   "kind": "golden",
+   "sha256": "1f25ac82c0233189fa4a6b93f0668334cdd9ad840f622f3c229aefff222f1b95"
+  }
+ ],
+ "impl_commit": "40ec7fc36bb87b9a55cc208a1e21eee9ee128a6d",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "assembly",
+  "fm_allowlist_numeric_prefilter": "32",
+  "verify_matched_unread_compare_points": "true",
+  "pin_scripts": {},
+  "declarations": {
+   "allow": {
+    "path": "verif/allow/ICacheDataArray.json",
+    "sha256": "64705b88849f027abb04d5fc1519c1bc59ca72341a8908de81dfa1fcabc6b285"
+   }
+  },
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "ICacheDataArray-20260914T061934Z-40ec7fc",
+  "top": "ICacheDataArray",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 8237,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [
+    {
+     "ref_path": "r:/WORK/ICacheDataArray/dataArrays_0_0/srams_0/array/array/array_0_ext",
+     "impl_path": "i:/WORK/ICacheDataArray/dataArrays_0_0/srams_0/array/array/array_0_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ICacheDataArray/dataArrays_0_1/srams_0/array/array/array_0_ext",
+     "impl_path": "i:/WORK/ICacheDataArray/dataArrays_0_1/srams_0/array/array/array_0_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ICacheDataArray/dataArrays_0_2/srams_0/array/array/array_0_ext",
+     "impl_path": "i:/WORK/ICacheDataArray/dataArrays_0_2/srams_0/array/array/array_0_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ICacheDataArray/dataArrays_0_3/srams_0/array/array/array_0_ext",
+     "impl_path": "i:/WORK/ICacheDataArray/dataArrays_0_3/srams_0/array/array/array_0_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ICacheDataArray/dataArrays_0_4/srams_0/array/array/array_0_ext",
+     "impl_path": "i:/WORK/ICacheDataArray/dataArrays_0_4/srams_0/array/array/array_0_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ICacheDataArray/dataArrays_0_5/srams_0/array/array/array_0_ext",
+     "impl_path": "i:/WORK/ICacheDataArray/dataArrays_0_5/srams_0/array/array/array_0_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ICacheDataArray/dataArrays_0_6/srams_0/array/array/array_0_ext",
+     "impl_path": "i:/WORK/ICacheDataArray/dataArrays_0_6/srams_0/array/array/array_0_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ICacheDataArray/dataArrays_0_7/srams_0/array/array/array_0_ext",
+     "impl_path": "i:/WORK/ICacheDataArray/dataArrays_0_7/srams_0/array/array/array_0_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ICacheDataArray/dataArrays_1_0/srams_0/array/array/array_0_ext",
+     "impl_path": "i:/WORK/ICacheDataArray/dataArrays_1_0/srams_0/array/array/array_0_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ICacheDataArray/dataArrays_1_1/srams_0/array/array/array_0_ext",
+     "impl_path": "i:/WORK/ICacheDataArray/dataArrays_1_1/srams_0/array/array/array_0_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ICacheDataArray/dataArrays_1_2/srams_0/array/array/array_0_ext",
+     "impl_path": "i:/WORK/ICacheDataArray/dataArrays_1_2/srams_0/array/array/array_0_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ICacheDataArray/dataArrays_1_3/srams_0/array/array/array_0_ext",
+     "impl_path": "i:/WORK/ICacheDataArray/dataArrays_1_3/srams_0/array/array/array_0_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ICacheDataArray/dataArrays_1_4/srams_0/array/array/array_0_ext",
+     "impl_path": "i:/WORK/ICacheDataArray/dataArrays_1_4/srams_0/array/array/array_0_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ICacheDataArray/dataArrays_1_5/srams_0/array/array/array_0_ext",
+     "impl_path": "i:/WORK/ICacheDataArray/dataArrays_1_5/srams_0/array/array/array_0_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ICacheDataArray/dataArrays_1_6/srams_0/array/array/array_0_ext",
+     "impl_path": "i:/WORK/ICacheDataArray/dataArrays_1_6/srams_0/array/array/array_0_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ICacheDataArray/dataArrays_1_7/srams_0/array/array/array_0_ext",
+     "impl_path": "i:/WORK/ICacheDataArray/dataArrays_1_7/srams_0/array/array/array_0_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ICacheDataArray/dataArrays_2_0/srams_0/array/array/array_0_ext",
+     "impl_path": "i:/WORK/ICacheDataArray/dataArrays_2_0/srams_0/array/array/array_0_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ICacheDataArray/dataArrays_2_1/srams_0/array/array/array_0_ext",
+     "impl_path": "i:/WORK/ICacheDataArray/dataArrays_2_1/srams_0/array/array/array_0_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ICacheDataArray/dataArrays_2_2/srams_0/array/array/array_0_ext",
+     "impl_path": "i:/WORK/ICacheDataArray/dataArrays_2_2/srams_0/array/array/array_0_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ICacheDataArray/dataArrays_2_3/srams_0/array/array/array_0_ext",
+     "impl_path": "i:/WORK/ICacheDataArray/dataArrays_2_3/srams_0/array/array/array_0_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ICacheDataArray/dataArrays_2_4/srams_0/array/array/array_0_ext",
+     "impl_path": "i:/WORK/ICacheDataArray/dataArrays_2_4/srams_0/array/array/array_0_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ICacheDataArray/dataArrays_2_5/srams_0/array/array/array_0_ext",
+     "impl_path": "i:/WORK/ICacheDataArray/dataArrays_2_5/srams_0/array/array/array_0_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ICacheDataArray/dataArrays_2_6/srams_0/array/array/array_0_ext",
+     "impl_path": "i:/WORK/ICacheDataArray/dataArrays_2_6/srams_0/array/array/array_0_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ICacheDataArray/dataArrays_2_7/srams_0/array/array/array_0_ext",
+     "impl_path": "i:/WORK/ICacheDataArray/dataArrays_2_7/srams_0/array/array/array_0_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ICacheDataArray/dataArrays_3_0/srams_0/array/array/array_0_ext",
+     "impl_path": "i:/WORK/ICacheDataArray/dataArrays_3_0/srams_0/array/array/array_0_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ICacheDataArray/dataArrays_3_1/srams_0/array/array/array_0_ext",
+     "impl_path": "i:/WORK/ICacheDataArray/dataArrays_3_1/srams_0/array/array/array_0_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ICacheDataArray/dataArrays_3_2/srams_0/array/array/array_0_ext",
+     "impl_path": "i:/WORK/ICacheDataArray/dataArrays_3_2/srams_0/array/array/array_0_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ICacheDataArray/dataArrays_3_3/srams_0/array/array/array_0_ext",
+     "impl_path": "i:/WORK/ICacheDataArray/dataArrays_3_3/srams_0/array/array/array_0_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ICacheDataArray/dataArrays_3_4/srams_0/array/array/array_0_ext",
+     "impl_path": "i:/WORK/ICacheDataArray/dataArrays_3_4/srams_0/array/array/array_0_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ICacheDataArray/dataArrays_3_5/srams_0/array/array/array_0_ext",
+     "impl_path": "i:/WORK/ICacheDataArray/dataArrays_3_5/srams_0/array/array/array_0_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ICacheDataArray/dataArrays_3_6/srams_0/array/array/array_0_ext",
+     "impl_path": "i:/WORK/ICacheDataArray/dataArrays_3_6/srams_0/array/array/array_0_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ICacheDataArray/dataArrays_3_7/srams_0/array/array/array_0_ext",
+     "impl_path": "i:/WORK/ICacheDataArray/dataArrays_3_7/srams_0/array/array/array_0_ext"
+    }
+   ],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [
+    "r:/WORK/ICacheDataArray/dataArrays_0_0/srams_0/array/array/array_0_ext",
+    "r:/WORK/ICacheDataArray/dataArrays_0_1/srams_0/array/array/array_0_ext",
+    "r:/WORK/ICacheDataArray/dataArrays_0_2/srams_0/array/array/array_0_ext",
+    "r:/WORK/ICacheDataArray/dataArrays_0_3/srams_0/array/array/array_0_ext",
+    "r:/WORK/ICacheDataArray/dataArrays_0_4/srams_0/array/array/array_0_ext",
+    "r:/WORK/ICacheDataArray/dataArrays_0_5/srams_0/array/array/array_0_ext",
+    "r:/WORK/ICacheDataArray/dataArrays_0_6/srams_0/array/array/array_0_ext",
+    "r:/WORK/ICacheDataArray/dataArrays_0_7/srams_0/array/array/array_0_ext",
+    "r:/WORK/ICacheDataArray/dataArrays_1_0/srams_0/array/array/array_0_ext",
+    "r:/WORK/ICacheDataArray/dataArrays_1_1/srams_0/array/array/array_0_ext",
+    "r:/WORK/ICacheDataArray/dataArrays_1_2/srams_0/array/array/array_0_ext",
+    "r:/WORK/ICacheDataArray/dataArrays_1_3/srams_0/array/array/array_0_ext",
+    "r:/WORK/ICacheDataArray/dataArrays_1_4/srams_0/array/array/array_0_ext",
+    "r:/WORK/ICacheDataArray/dataArrays_1_5/srams_0/array/array/array_0_ext",
+    "r:/WORK/ICacheDataArray/dataArrays_1_6/srams_0/array/array/array_0_ext",
+    "r:/WORK/ICacheDataArray/dataArrays_1_7/srams_0/array/array/array_0_ext",
+    "r:/WORK/ICacheDataArray/dataArrays_2_0/srams_0/array/array/array_0_ext",
+    "r:/WORK/ICacheDataArray/dataArrays_2_1/srams_0/array/array/array_0_ext",
+    "r:/WORK/ICacheDataArray/dataArrays_2_2/srams_0/array/array/array_0_ext",
+    "r:/WORK/ICacheDataArray/dataArrays_2_3/srams_0/array/array/array_0_ext",
+    "r:/WORK/ICacheDataArray/dataArrays_2_4/srams_0/array/array/array_0_ext",
+    "r:/WORK/ICacheDataArray/dataArrays_2_5/srams_0/array/array/array_0_ext",
+    "r:/WORK/ICacheDataArray/dataArrays_2_6/srams_0/array/array/array_0_ext",
+    "r:/WORK/ICacheDataArray/dataArrays_2_7/srams_0/array/array/array_0_ext",
+    "r:/WORK/ICacheDataArray/dataArrays_3_0/srams_0/array/array/array_0_ext",
+    "r:/WORK/ICacheDataArray/dataArrays_3_1/srams_0/array/array/array_0_ext",
+    "r:/WORK/ICacheDataArray/dataArrays_3_2/srams_0/array/array/array_0_ext",
+    "r:/WORK/ICacheDataArray/dataArrays_3_3/srams_0/array/array/array_0_ext",
+    "r:/WORK/ICacheDataArray/dataArrays_3_4/srams_0/array/array/array_0_ext",
+    "r:/WORK/ICacheDataArray/dataArrays_3_5/srams_0/array/array/array_0_ext",
+    "r:/WORK/ICacheDataArray/dataArrays_3_6/srams_0/array/array/array_0_ext",
+    "r:/WORK/ICacheDataArray/dataArrays_3_7/srams_0/array/array/array_0_ext"
+   ],
+   "unresolved_blackbox_impl": [
+    "i:/WORK/ICacheDataArray/dataArrays_0_0/srams_0/array/array/array_0_ext",
+    "i:/WORK/ICacheDataArray/dataArrays_0_1/srams_0/array/array/array_0_ext",
+    "i:/WORK/ICacheDataArray/dataArrays_0_2/srams_0/array/array/array_0_ext",
+    "i:/WORK/ICacheDataArray/dataArrays_0_3/srams_0/array/array/array_0_ext",
+    "i:/WORK/ICacheDataArray/dataArrays_0_4/srams_0/array/array/array_0_ext",
+    "i:/WORK/ICacheDataArray/dataArrays_0_5/srams_0/array/array/array_0_ext",
+    "i:/WORK/ICacheDataArray/dataArrays_0_6/srams_0/array/array/array_0_ext",
+    "i:/WORK/ICacheDataArray/dataArrays_0_7/srams_0/array/array/array_0_ext",
+    "i:/WORK/ICacheDataArray/dataArrays_1_0/srams_0/array/array/array_0_ext",
+    "i:/WORK/ICacheDataArray/dataArrays_1_1/srams_0/array/array/array_0_ext",
+    "i:/WORK/ICacheDataArray/dataArrays_1_2/srams_0/array/array/array_0_ext",
+    "i:/WORK/ICacheDataArray/dataArrays_1_3/srams_0/array/array/array_0_ext",
+    "i:/WORK/ICacheDataArray/dataArrays_1_4/srams_0/array/array/array_0_ext",
+    "i:/WORK/ICacheDataArray/dataArrays_1_5/srams_0/array/array/array_0_ext",
+    "i:/WORK/ICacheDataArray/dataArrays_1_6/srams_0/array/array/array_0_ext",
+    "i:/WORK/ICacheDataArray/dataArrays_1_7/srams_0/array/array/array_0_ext",
+    "i:/WORK/ICacheDataArray/dataArrays_2_0/srams_0/array/array/array_0_ext",
+    "i:/WORK/ICacheDataArray/dataArrays_2_1/srams_0/array/array/array_0_ext",
+    "i:/WORK/ICacheDataArray/dataArrays_2_2/srams_0/array/array/array_0_ext",
+    "i:/WORK/ICacheDataArray/dataArrays_2_3/srams_0/array/array/array_0_ext",
+    "i:/WORK/ICacheDataArray/dataArrays_2_4/srams_0/array/array/array_0_ext",
+    "i:/WORK/ICacheDataArray/dataArrays_2_5/srams_0/array/array/array_0_ext",
+    "i:/WORK/ICacheDataArray/dataArrays_2_6/srams_0/array/array/array_0_ext",
+    "i:/WORK/ICacheDataArray/dataArrays_2_7/srams_0/array/array/array_0_ext",
+    "i:/WORK/ICacheDataArray/dataArrays_3_0/srams_0/array/array/array_0_ext",
+    "i:/WORK/ICacheDataArray/dataArrays_3_1/srams_0/array/array/array_0_ext",
+    "i:/WORK/ICacheDataArray/dataArrays_3_2/srams_0/array/array/array_0_ext",
+    "i:/WORK/ICacheDataArray/dataArrays_3_3/srams_0/array/array/array_0_ext",
+    "i:/WORK/ICacheDataArray/dataArrays_3_4/srams_0/array/array/array_0_ext",
+    "i:/WORK/ICacheDataArray/dataArrays_3_5/srams_0/array/array/array_0_ext",
+    "i:/WORK/ICacheDataArray/dataArrays_3_6/srams_0/array/array/array_0_ext",
+    "i:/WORK/ICacheDataArray/dataArrays_3_7/srams_0/array/array/array_0_ext"
+   ],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 8237,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "assembly",
+  "native": "SUCCEEDED",
+  "top": "ICacheDataArray",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0,
+  "bbox_objects": 64
+ }
+}

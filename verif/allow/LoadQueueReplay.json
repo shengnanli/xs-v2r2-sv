@@ -1,0 +1,88 @@
+{
+ "baseline": "7e8081ff298cdb7f8b99a4d81b397c41e6d16211",
+ "note": "strict + matched blackbox 的 child 闭包声明。fm_verdict 在 signoff-strict 下**不读本文件**（allow_decl 只在 assembly 分支被消费），所以它不改变判定；它唯一的作用是让 make_receipt.py 复算 green_child 闭包并写进 receipt.green_child_closure_checks —— 把原先只能人工核对的依赖变成机器守着的。",
+ "objects": [
+  {
+   "certificate_sha256": "7df86b34e0f975d44e6a0363efc72bce39503673e888c6875cc7817c8e052026",
+   "child_target": "AgeDetector_38",
+   "class": "green_child",
+   "design": "AgeDetector_38",
+   "path": "r:/WORK/LoadQueueReplay/ageOldest_age",
+   "side": "r"
+  },
+  {
+   "certificate_sha256": "7df86b34e0f975d44e6a0363efc72bce39503673e888c6875cc7817c8e052026",
+   "child_target": "AgeDetector_38",
+   "class": "green_child",
+   "design": "AgeDetector_38",
+   "path": "i:/WORK/LoadQueueReplay/u_core/ageOldest_age",
+   "side": "i"
+  },
+  {
+   "certificate_sha256": "7df86b34e0f975d44e6a0363efc72bce39503673e888c6875cc7817c8e052026",
+   "child_target": "AgeDetector_38",
+   "class": "green_child",
+   "design": "AgeDetector_38",
+   "path": "r:/WORK/LoadQueueReplay/ageOldest_age_1",
+   "side": "r"
+  },
+  {
+   "certificate_sha256": "7df86b34e0f975d44e6a0363efc72bce39503673e888c6875cc7817c8e052026",
+   "child_target": "AgeDetector_38",
+   "class": "green_child",
+   "design": "AgeDetector_38",
+   "path": "i:/WORK/LoadQueueReplay/u_core/ageOldest_age_1",
+   "side": "i"
+  },
+  {
+   "certificate_sha256": "7df86b34e0f975d44e6a0363efc72bce39503673e888c6875cc7817c8e052026",
+   "child_target": "AgeDetector_38",
+   "class": "green_child",
+   "design": "AgeDetector_38",
+   "path": "r:/WORK/LoadQueueReplay/ageOldest_age_2",
+   "side": "r"
+  },
+  {
+   "certificate_sha256": "7df86b34e0f975d44e6a0363efc72bce39503673e888c6875cc7817c8e052026",
+   "child_target": "AgeDetector_38",
+   "class": "green_child",
+   "design": "AgeDetector_38",
+   "path": "i:/WORK/LoadQueueReplay/u_core/ageOldest_age_2",
+   "side": "i"
+  },
+  {
+   "certificate_sha256": "3e987bcb84422733064b05126eeb4fd75a5313bac6bdd7b6b94389db95dfeac4",
+   "child_target": "FreeList_5",
+   "class": "green_child",
+   "design": "FreeList_5",
+   "path": "r:/WORK/LoadQueueReplay/freeList",
+   "side": "r"
+  },
+  {
+   "certificate_sha256": "3e987bcb84422733064b05126eeb4fd75a5313bac6bdd7b6b94389db95dfeac4",
+   "child_target": "FreeList_5",
+   "class": "green_child",
+   "design": "FreeList_5",
+   "path": "i:/WORK/LoadQueueReplay/u_core/freeList",
+   "side": "i"
+  },
+  {
+   "certificate_sha256": "833ac5662353c7503b44337f1bd65a3ee44245bafd8a5bc8e7319cbf992caa70",
+   "child_target": "LqVAddrModule",
+   "class": "green_child",
+   "design": "LqVAddrModule",
+   "path": "r:/WORK/LoadQueueReplay/vaddrModule",
+   "side": "r"
+  },
+  {
+   "certificate_sha256": "833ac5662353c7503b44337f1bd65a3ee44245bafd8a5bc8e7319cbf992caa70",
+   "child_target": "LqVAddrModule",
+   "class": "green_child",
+   "design": "LqVAddrModule",
+   "path": "i:/WORK/LoadQueueReplay/u_core/vaddrModule",
+   "side": "i"
+  }
+ ],
+ "schema": "xs-v2-sv-allow-v1",
+ "target": "LoadQueueReplay"
+}

@@ -1,0 +1,240 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "FuBusyTableRead_23",
+ "run_id": "FuBusyTableReadVariants-20260920T072208Z-201cb5db",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/FuBusyTableRead_23.sv",
+   "kind": "golden",
+   "sha256": "ba64f2b79c582cb678fb3ab0953b7f02b030f18c658d5cfa3a0f1ac6b5daa064"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/backend/FuBusyTableRead.sv",
+   "kind": "repo",
+   "sha256": "a3538bd2886f6981f5515e1e21779fdcbcdcaa4c589c849b43edc665079724e4"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableRead_2.sv",
+   "kind": "repo",
+   "sha256": "216b664f479a042b0e59b679ab232a555be4b6e8cd5244dd8fd4eb81d2939eb2"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableRead_22.sv",
+   "kind": "repo",
+   "sha256": "d7ec96e2bf55b97183bab0f2dbb7dc59014723124c9752494266e7a181494422"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableRead_23.sv",
+   "kind": "repo",
+   "sha256": "b442e146afebf5789fd3767eb240775c9ed9b1733f4d1d8cd47b05237d8101b6"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableRead_26.sv",
+   "kind": "repo",
+   "sha256": "fd8d80acd66b297687aa8e499c8373c14d38c5df5d7fa3f7197a6634776e46f6"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableRead_28.sv",
+   "kind": "repo",
+   "sha256": "a0e4ca79d35cafa3b66fce628d15b91f654cb8975eec2514ba7d3516cfbcb490"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableRead_42.sv",
+   "kind": "repo",
+   "sha256": "f755b965eb022111a2703ac211783358bc96ac357bf90953bcddf95637fd6e6c"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableRead_43.sv",
+   "kind": "repo",
+   "sha256": "63c229c840fb3b0d63523c509940725d25d906d73af2db13d2fa40c4716343fb"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableRead_52.sv",
+   "kind": "repo",
+   "sha256": "c8b179889165ae34566cc6c9e2da558c0ea7d3af0a39319922acfdc2760a14ff"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableRead_53.sv",
+   "kind": "repo",
+   "sha256": "4de662d8a931f30bf7480194c21147e6db29d364841218a35d98e8ff09a2ddb3"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableRead_68.sv",
+   "kind": "repo",
+   "sha256": "2cbd003ec6281f48339414a739accf99dfce24fc64a0338fe81ba8d05502bb53"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableRead_69.sv",
+   "kind": "repo",
+   "sha256": "0a64ed401a0ef84348fb1db260930dd81945c4b118e3e6aa6f64c1ad5642a23c"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableRead_71.sv",
+   "kind": "repo",
+   "sha256": "79589c54b1d8c8bb0d4bc36ea5e859cbc906b04d6411e7f2aae32c960dbac0b2"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableRead_73.sv",
+   "kind": "repo",
+   "sha256": "a9e3e5e36b0c46a862216209ef377b5958a2e68620dfa0edcecfaa677af1d22d"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableRead_75.sv",
+   "kind": "repo",
+   "sha256": "3f250abaa2d24ceae598228888e58c9ebd3da9132f910792014c4091637a3a48"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableRead_79.sv",
+   "kind": "repo",
+   "sha256": "a510a6fd08e6940f3a74f8f36e8c733304622f8251258a1aa96ede79284198ce"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableRead_80.sv",
+   "kind": "repo",
+   "sha256": "00381078bf9a1ea98f5d610a6ba029b0b1efe1b5f5be2d2ba4a6d375dc99887b"
+  },
+  {
+   "path": "rtl/backend/FuBusyTableRead_105.sv",
+   "kind": "repo",
+   "sha256": "f2faf026d491abad0284ef3307a825708d55708f662d05d92a4715a1162f0348"
+  }
+ ],
+ "impl_commit": "201cb5db74deb868c9fb1cb6da3104763efe8749",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {},
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "FuBusyTableReadVariants-20260920T072208Z-201cb5db",
+  "top": "FuBusyTableRead_23",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 24,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 24,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "FuBusyTableRead_23",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}
