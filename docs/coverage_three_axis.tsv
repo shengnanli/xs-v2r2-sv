@@ -639,7 +639,7 @@ JtagTapController	GOLDEN_REUSE	PROVEN_IN_CONE	-
 JumpDataModule	MISSING	UNPROVEN	-
 JumpUnit	MISSING	UNPROVEN	-
 L1CohMetaArray	REWRITTEN	PROVEN_DIRECT	rtl/memblock/L1CohMetaArray.sv
-L1ErrorMetaArray	MISSING	UNPROVEN	-
+L1ErrorMetaArray	REWRITTEN	PROVEN_DIRECT	rtl/memblock/L1ErrorMetaArray.sv
 L1FlagMetaArray	MISSING	UNPROVEN	-
 L1PrefetchSourceArray	MISSING	UNPROVEN	-
 L1Prefetcher	MISSING	UNPROVEN	-
