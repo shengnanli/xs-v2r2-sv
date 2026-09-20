@@ -2692,7 +2692,13 @@ module xs_Rob_core
   // ==========================================================================
   // ★这里的加法全是 8 位回绕★（Chisel 的 `+` 同宽截断）：
   //   numValidEntries = flag 相同 ? enq-deq : 160+enq-deq，两者都在 8 位里算。
-  //   golden 把后者折成 `(enq - 8'h60) - deq`（160 mod 256 = -96），等价。
+  //   golden 把后者折成 `(enq - 8'h60) - deq`：**-96 ≡ +160 (mod 256)**，
+  //   所以 `enq - 96` 就是 `enq + 160`。
+  // ★真 bug（UT 首跑抓到，2026-09-20）★：这里原先照着注释写成 `enq - 160`。
+  //   注释把 "160 mod 256 = -96" 这句话读反了 —— 该减的是 **96**，不是 160。
+  //   反例（enq=0x20, deq=0xF0）：golden 208 / 原写法 144。
+  //   征状是 io_enq_canAccept / canAcceptForDispatch / io_perf_12..15 齐错。
+  //   写成 `+ ROB_SIZE` 而不是 `- 8'h60`，是因为前者一眼可读且在 8 位里完全等价。
   logic [PTR_W-1:0] numValidEntries;
   logic [2:0]       dispatchNum;
   logic [PTR_W-1:0] enqCountSum;
@@ -2706,7 +2712,7 @@ module xs_Rob_core
 
   assign numValidEntries = (enqPtrVec_0_flag == deqPtrVec_0_flag)
       ? (enqPtrVec_0_value - deqPtrVec_0_value)
-      : ((enqPtrVec_0_value - PTR_W'(ROB_SIZE)) - deqPtrVec_0_value);
+      : ((enqPtrVec_0_value + PTR_W'(ROB_SIZE)) - deqPtrVec_0_value);
   assign enqCountSum = numValidEntries + {5'h0, dispatchNum};
 
   always_ff @(posedge clock or posedge reset) begin
@@ -4942,7 +4948,10 @@ module xs_Rob_core
   // 被常数折掉了 —— golden 里这一项整个不见了，不是漏写。
   logic deqIsMmio;
   always_comb begin
-    deqIsMmio = 1'b0;
+    // ★越界回绕到条目 0★（见 §9 头上的「越界读」总说明）：
+    // golden 是 `_GEN_2631[deqPtr] & _GEN_2641[deqPtr]`，两张表的 160..255 格
+    // 填的都是条目 0。
+    deqIsMmio = robEntries_valid[0] & robEntries_mmio[0];
     for (int i = 0; i < ROB_SIZE; i++)
       if (deqPtrValue[0] == PTR_W'(i))
         deqIsMmio = robEntries_valid[i] & robEntries_mmio[i];
@@ -5896,16 +5905,26 @@ module xs_Rob_core
   logic [PADDR_W-1:0] headS2Paddr;
   logic [VADDR_W-1:0] storeDbgPc [2];
 
+  // ★★ 越界读：Chisel 的 Vec(160) 用 8 位下标读，firtool 展成 **256 格**的查找表，
+  //    160..255 这 96 格全部填**条目 0** —— 本模块 40 张这样的表**无一例外**
+  //    （scripts/ 里那段一次性普查：total 256-wide _GEN decls: 40 / pad==elem0: 40）。
+  //    所以「没命中」时的默认值不是 0，是**条目 0 的值**。★★
+  //    UT 首跑就是靠 io_storeDebugInfo_0_pc（robidx 是 tb 直驱的输入，必然会 >=160）
+  //    抓到的：golden 给 pc[0]，原写法给 0。
   always_comb begin
-    deqHeadInstr     = 32'h0;
-    deqHeadDbgFuType = {FUTYPE_W{1'b0}};
-    headLsIssued     = 1'b0;
-    headS1Valid      = 1'b0;
-    headS1Vaddr      = {VADDR_W{1'b0}};
-    headS2Valid      = 1'b0;
-    headS2Paddr      = {PADDR_W{1'b0}};
-    storeDbgPc[0]    = {VADDR_W{1'b0}};
-    storeDbgPc[1]    = {VADDR_W{1'b0}};
+    deqHeadInstr     = debug_microOp_debugReg_instr[0];              // _GEN_211
+    deqHeadDbgFuType = debug_microOp_debugReg_debug_fuType[0];       // _GEN_224
+    headS1Valid      = debug_lsTopdownInfo_s1_vaddr_valid[0];        // _GEN_3534
+    headS1Vaddr      = debug_lsTopdownInfo_s1_vaddr_bits[0];         // _GEN_3535
+    headS2Valid      = debug_lsTopdownInfo_s2_paddr_valid[0];        // _GEN_3536
+    headS2Paddr      = debug_lsTopdownInfo_s2_paddr_bits[0];         // _GEN_3537
+    storeDbgPc[0]    = debug_microOp_debugReg_pc[0];                 // _GEN_212
+    storeDbgPc[1]    = debug_microOp_debugReg_pc[0];                 // _GEN_212
+    // ★headLsIssued 的越界值不是 debug_lsIssued[0] 那么直白★：golden 是
+    //   debug_lsIssue_0 = (|deqPtr) ? debug_lsIssued_0 : io_debugHeadLsIssue
+    // 而 _GEN_51 的 160..255 格填的正是 debug_lsIssue_0。下标 >=160 时 |deqPtr 恒真
+    // ⇒ 越界值 = debug_lsIssued[0]。
+    headLsIssued     = debug_lsIssued[0];
     for (int i = 0; i < ROB_SIZE; i++) begin
       if (deqPtrValue[0] == PTR_W'(i)) begin
         deqHeadInstr     = debug_microOp_debugReg_instr[i];
@@ -5914,8 +5933,13 @@ module xs_Rob_core
         headS1Vaddr      = debug_lsTopdownInfo_s1_vaddr_bits[i];
         headS2Valid      = debug_lsTopdownInfo_s2_paddr_valid[i];
         headS2Paddr      = debug_lsTopdownInfo_s2_paddr_bits[i];
-        // debug_lsIssue 是 WireDefault(debug_lsIssued) 再就地覆盖队头那一条
-        headLsIssued     = debug_lsIssued[i] | io_debugHeadLsIssue;
+        // ★真 bug（UT 首跑抓到）★：debug_lsIssue 是 WireDefault(debug_lsIssued)
+        // 之后把队头那一条**整个覆盖**成 io_debugHeadLsIssue，**不是或上去**。
+        // golden：debug_lsIssue_k = (deqPtr==k) ? io_debugHeadLsIssue : debug_lsIssued_k，
+        // 而输出就在 deqPtr 处取值 ⇒ 命中时结果**只**取决于 io_debugHeadLsIssue。
+        // 原写法 `debug_lsIssued[i] | io_debugHeadLsIssue` 在
+        // lsIssued=1 / head=0 时给 1，golden 给 0（首跑征状正是 g=0 x=1）。
+        headLsIssued     = io_debugHeadLsIssue;
       end
       if (io_storeDebugInfo_0_robidx_value == PTR_W'(i))
         storeDbgPc[0] = debug_microOp_debugReg_pc[i];
@@ -6160,16 +6184,27 @@ module xs_Rob_core
 
   always_comb begin
     for (int s = 0; s < COMMIT_W; s++) begin
-      dbgInstr[s]    = 32'h0;
-      dbgPc[s]       = {VADDR_W{1'b0}};
-      dbgFuType[s]   = {FUTYPE_W{1'b0}};
-      dbgFuOpType[s] = {FUOPTYPE_W{1'b0}};
-      dbgLqIdx[s]    = {LQ_PTR_W{1'b0}};
-      dbgSqIdx[s]    = {SQ_PTR_W{1'b0}};
-      dbgExuData[s]  = {XLEN{1'b0}};
-      dbgSkipDiff[s] = 1'b0;
-      dbgPaddr[s]    = {PADDR_W{1'b0}};
-      for (int k = 0; k < 8; k++) dbgOtherPdest[s][k] = {PREG_W{1'b0}};
+      // ★越界回绕到条目 0★（见 §21 头上的「越界读」总说明）：这一组的 golden
+      // 查找表分别是 _GEN_211/212/213/214/222/223/3538/3540|3541|3542/3543/3544..3551，
+      // 每一张的 160..255 格填的都是条目 0。
+      dbgInstr[s]    = debug_microOp_debugReg_instr[0];
+      dbgPc[s]       = debug_microOp_debugReg_pc[0];
+      dbgFuType[s]   = debug_microOp_debugReg_fuType[0];
+      dbgFuOpType[s] = debug_microOp_debugReg_fuOpType[0];
+      dbgLqIdx[s]    = debug_microOp_debugReg_lqIdx_value[0];
+      dbgSqIdx[s]    = debug_microOp_debugReg_sqIdx_value[0];
+      dbgExuData[s]  = debug_exuData[0];
+      dbgSkipDiff[s] = dt_exuDebug_isMMIO[0] | dt_exuDebug_isNCIO[0]
+                     | dt_exuDebug_isPerfCnt[0];
+      dbgPaddr[s]    = dt_exuDebug_paddr[0];
+      dbgOtherPdest[s][0] = debug_VecOtherPdest_0[0];
+      dbgOtherPdest[s][1] = debug_VecOtherPdest_1[0];
+      dbgOtherPdest[s][2] = debug_VecOtherPdest_2[0];
+      dbgOtherPdest[s][3] = debug_VecOtherPdest_3[0];
+      dbgOtherPdest[s][4] = debug_VecOtherPdest_4[0];
+      dbgOtherPdest[s][5] = debug_VecOtherPdest_5[0];
+      dbgOtherPdest[s][6] = debug_VecOtherPdest_6[0];
+      dbgOtherPdest[s][7] = debug_VecOtherPdest_7[0];
       for (int i = 0; i < ROB_SIZE; i++)
         if (deqPtrValue[s] == PTR_W'(i)) begin
           dbgInstr[s]    = debug_microOp_debugReg_instr[i];
