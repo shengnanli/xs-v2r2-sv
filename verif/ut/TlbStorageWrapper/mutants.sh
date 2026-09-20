@@ -28,9 +28,11 @@
 #   判据现在抽成 parse_sim_errors.sh，并带**四向自测**（真错要读出来 / 无错不误报 /
 #   日志不完整要报错不许返 0 / 文件不存在要报错），自测不过本脚本直接退出。
 #
-# ★复位域这一类（C3/C4）UT 按构造可能看不见★：比较窗口在复位之后打开，
-#   两侧都被写成确定值。所以这两个变异体若 UT 报 errors=0，**不算抓出**，
-#   如实记成漏 —— 它们由 FM（逐个寄存器比，含复位语义）兜底，而不是由 UT。
+# ★复位域这一类 UT 按构造可能看不见★：比较窗口在复位之后打开，两侧都被写成确定值。
+#   这类变异体若 UT 报 errors=0，**不算抓出**，如实记成"按构造不可见"，由 FM
+#   （逐个寄存器比，含复位语义）兜底。
+#   ——但"哪些属于这一类"取决于激励：2026-09-20 加池化激励之后 **C3 变成可见了**
+#   （errors=52889），只剩 C4（异步复位改同步）仍然只能靠 FM。别把旧名单当常量。
 #
 # 用法: [CYCLES=8000] [THIN=200] bash verif/ut/TlbStorageWrapper/mutants.sh [工作目录]
 # 退出码 0 = 全部 UT 可见的变异体都被抓出来
@@ -73,9 +75,14 @@ add "C2 多端口 foldLeft 顺序反过来(端口 0 不再先叠)" xs_TlbStorage
     "    for (int i = 0; i < PORTS; i++) begin" \
     "    for (int i = PORTS-1; i >= 0; i--) begin" 2 yes
 
+# ★C3 的声明 2026-09-20 从 no 改成 yes：加了池化激励之后它变得 UT 可见了★
+#   原因：PLRU 复位值直接决定**头几次 refill 挑中哪一路**，而池化激励让驻留与命中
+#   真的发生 ⇒ 挑错路会把别的 tag 顶掉 ⇒ 后续查询两侧结果不同。
+#   实测 errors=52889（60000 拍）。改激励之前它确实只能靠 FM，那条老结论是
+#   **绑在旧激励上的**，激励一变就不成立 —— 正是"结论会传下去、限定条件不会"那条。
 add "C3 复位值由全 0 改成全 1(复位域)" xs_TlbStorageWrapper_core.sv \
     "    if (reset)          refill_idx_state_reg <= '0;" \
-    "    if (reset)          refill_idx_state_reg <= '1;" 2 no
+    "    if (reset)          refill_idx_state_reg <= '1;" 2 yes
 
 add "C4 异步复位被写成同步复位(复位域)" xs_TlbStorageWrapper_core.sv \
     "  always_ff @(posedge clock or posedge reset) begin" \
