@@ -60,9 +60,36 @@ verdict=SUCCEEDED。差任何一个（高或低）都按 fail 上报并查清机
 
 ## 对账（★上面那张表原样保留，不改；这里只填实测★）
 
-- 证明 commit：_待填_
-- 实测一列从 `evidence/<commit>/<top>/receipt.json` 机械读，非手抄。
+- 证明 commit：`f0bcd42e8a8168e1dbba9f5cfd8530fa1ba15bd2`（evidence/f0bcd42e8a81/）
+- 复算：`cd verif/ut/DelayN && python3 reconcile.py f0bcd42e`
+  —— 实测各列从 `evidence/f0bcd42e8a81/<top>/receipt.json` 机械读，非手抄；非零退出 = 对不上。
+- 跑法：`scripts/run_proof.sh DelayN <18 个 top>`（detached clean worktree，
+  `RUN_PROOF_RC=0`，脚本自报「输入前后一致」）。
 
-| 变体 | 模型 passing | 实测 passing | 差 | failing | unmatched | verdict |
-|---|---|---|---|---|---|---|
-| _待填_ | | | | | | |
+| 变体 | 模型 passing | 实测 passing | 差 | failing | unmatched | unread | verdict |
+|---|---|---|---|---|---|---|---|
+| `DelayN` | 10 | **10** | +0 | 0 | 0 | 0 | SUCCEEDED |
+| `DelayN_1` | 3 | **3** | +0 | 0 | 0 | 0 | SUCCEEDED |
+| `DelayN_7` | 657 | **657** | +0 | 0 | 0 | 0 | SUCCEEDED |
+| `DelayN_8` | 822 | **822** | +0 | 0 | 0 | 0 | SUCCEEDED |
+| `DelayN_9` | 216 | **216** | +0 | 0 | 0 | 0 | SUCCEEDED |
+| `DelayN_13` | 2 | **2** | +0 | 0 | 0 | 0 | SUCCEEDED |
+| `DelayN_15` | 5 | **5** | +0 | 0 | 0 | 0 | SUCCEEDED |
+| `DelayN_17` | 6 | **6** | +0 | 0 | 0 | 0 | SUCCEEDED |
+| `DelayN_208` | 48 | **48** | +0 | 0 | 0 | 0 | SUCCEEDED |
+| `DelayN_214` | 549 | **549** | +0 | 0 | 0 | 0 | SUCCEEDED |
+| `DelayN_215` | 27 | **27** | +0 | 0 | 0 | 0 | SUCCEEDED |
+| `DelayN_220` | 142 | **142** | +0 | 0 | 0 | 0 | SUCCEEDED |
+| `DelayN_221` | 522 | **522** | +0 | 0 | 0 | 0 | SUCCEEDED |
+| `DelayN_225` | 1 | **1** | +0 | 0 | 0 | 0 | SUCCEEDED |
+| `DelayN_297` | 4 | **4** | +0 | 0 | 0 | 0 | SUCCEEDED |
+| `DelayN_331` | 11 | **11** | +0 | 0 | 0 | 0 | SUCCEEDED |
+| `DelayN_333` | 42 | **42** | +0 | 0 | 0 | 0 | SUCCEEDED |
+| `DelayN_334` | 288 | **288** | +0 | 0 | 0 | 0 | SUCCEEDED |
+
+**18/18 verdict=SUCCEEDED，passing 逐个恰好等于模型，差全 +0。**
+
+★其中 `DelayN_7` = 657、`DelayN_9` = 216★ —— 与上一轮已签核的数字逐位相同，
+即 3523ac09 对共享核 `xs_DelayN_core.sv` 的改动（把打拍链包进 generate、
+新增 0 级旁路支路与 GOLDEN_HAS_CLOCK 不变式）**对已签核变体零影响**。
+同批重跑的另外 4 个已签核变体也一个数没动：DelayN 10 / _1 3 / _8 822 / _13 2。
