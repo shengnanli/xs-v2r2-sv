@@ -25,30 +25,97 @@ EnqPolicy、发射选择、issueTimer 响应窗、ignoreOldVd、负载扁平化�
 
 ## 需要扩的 6 处（每条都配 golden 行号）
 
-### E1 唤醒匹配要从「单对 (srcTypeBit, wen)」改成「一串对的按位或」★5 个全要★
+### E1 唤醒匹配：★**按源分份**的对表，每份是「一串对按位或」★（5 个全要）
 
-核现在的写法（`xs_iq_entries_core.sv` §2.2）是每源一个 `SRC_TYPE_BIT[s]`、
-每路一根 `wk_wen[w]`：
+> **本条 2026-09-20 被集成者改过一次措辞，原因见文末「修订」。旧措辞
+> 「从单对变成一串对按位或」会被读成**全源共用一张对表**，那是错的。**
 
-    wk_valid[w] & wk_wen[w] & r_src_type[s][SRC_TYPE_BIT[s]] & (pdest==psrc)
+#### golden 的真实结构：三个函数、三张对表，**按源分工**
 
-golden 在访存族里是**三对相或**（`EnqEntry_24.sv:965-969`，Ldu 的 enq 条目）：
+`/home/eda/xs-env/XiangShan` @ `kunminghu-v2`（`133d7dc4b`），
+`src/main/scala/xiangshan/backend/Bundles.scala:325-348` —— 逐字：
 
-    pdest == psrc
-      & ( srcType[1] & fpWen
-        | srcType[0] & rfWen
-        | srcType[2] & vecWen ) & valid
+```scala
+def wakeUp(successor: Seq[(UInt,UInt)], valid) = successor.map { case (thatPsrc, srcType) =>
+  pdest === thatPsrc && ( SrcType.isFp(srcType) && this.fpWen
+                        || SrcType.isXp(srcType) && this.rfWen
+                        || SrcType.isVp(srcType) && this.vecWen ) && valid }
+def wakeUpV0(successor, valid) = pdest === thatPsrc && ( SrcType.isV0(srcType) && this.v0Wen ) && valid
+def wakeUpVl(successor, valid) = pdest === thatPsrc && ( SrcType.isVp(srcType) && this.vlWen ) && valid
+```
 
-VEC 访存族同形，而且**同一个变体里不同源用不同的对**
-（`EnqEntryVecMem_2.sv`：src0/1/2 见 :1198-1203 三对相或；
-src3 见 :1425 只有 `srcType[3] & v0Wen`；src4 见 :1472 只有 `srcType[2] & vlWen`）。
+`issue/EntryBundles.scala:185-193` 决定哪个源用哪个函数，**且只在 numRegSrc==5 时分**：
 
-已签核变体是这张表退化到 1 对的特例（`EnqEntry_6.sv:993` 只有 `srcType[0] & rfWen`），
-所以改造要求是：**新参数在 1 对时必须生成与今天逐字相同的表达式**，否则
-已签核的 9 个变体锥体会变，FM 会红。
+```scala
+if (params.numRegSrc == 5) {
+  bundle.bits.wakeUp(psrcSrcTypeVec.take(3), bundle.valid) :+   // 源 0..2
+  bundle.bits.wakeUpV0(psrcSrcTypeVec(3),   bundle.valid) :+    // 源 3  ★判据是 isV0 不是 isVp★
+  bundle.bits.wakeUpVl(psrcSrcTypeVec(4),   bundle.valid)       // 源 4
+} else
+  bundle.bits.wakeUp(psrcSrcTypeVec, bundle.valid)              // 全源同一张
+```
 
-> 形状建议：`wk_wen` 从 `[NUM_WK_WB]` 变成 `[NUM_WK_WB][N_WEN_KIND]`，
-> 每源给一张 `SRC_WEN_PAIRS[s]` = {(typeBit, wenKind)…}。薄层照旧只搬线。
+★把三张表并成一张再按位或，会把 v0/vl 唤醒串到源 0..2★。UT 未必打得到
+（要构造特定 srcType 组合），FM 会炸。
+
+#### 从 golden RTL 实测出来的对表（复跑见本节末）
+
+| golden enq 条目（变体） | numRegSrc | src0..2 | src3 | src4 |
+|---|---|---|---|---|
+| `EnqEntry_6`（AluCsrFenceDiv，**已签核**） | 2 | `[0]&rfWen` | — | — |
+| `EnqEntry_12`（FaluFmac） | 3 | `[1]&fpWen` | — | — |
+| `EnqEntry_24`（Ldu） | 1 | `[0]&rfWen \| [1]&fpWen \| [2]&vecWen` | — | — |
+| `EnqEntry_18`（VfdivVidiv，**已签核**） | 5 | `[2]&vecWen` | `[3]&v0Wen` | `[2]&vlWen` |
+| `EnqEntryVecMem_2`（VlduVstu） | 5 | `[0]&rfWen \| [1]&fpWen \| [2]&vecWen` | `[3]&v0Wen` | `[2]&vlWen` |
+
+★**共享核今天已经是"按源分份"了**★（`SRC_WB_MASK[s]` + `SRC_TYPE_BIT[s]` 都带 `[s]`），
+这正是 `EnqEntry_18` 那一行 src3 走 `[3]&v0Wen`、src4 走 `[2]&vlWen` 能过 FM 的原因。
+**核缺的不是"分份"，是每份只能放 1 对。** 所以 E1 的准确表述是：
+
+> 把每个源的对表从**定长 1 对**放宽成**变长一串对（按位或）**，
+> 分份维度保持不动。
+
+#### ★还有一条两边都没写的：每份留几对是 DCE 决定的，不是族常量★
+
+`wakeUp()` 在 Chisel 里恒是 3 对，firtool 只保留**那个变体的 WB 总线上真有的
+wen 字段**：`EnqEntry_18` 只剩 `vecWen`（VfdivVidiv 的 WB 没有 rfWen/fpWen 端口），
+`EnqEntryVecMem_2` 三对全留（VlduVstu 的 WB 五个 wen 都有）。
+所以**不能按"VEC 族 = 1 对 / MEM 族 = 3 对"写死**，必须逐变体从 golden 量。
+好消息：`entries_gen.py` 本来就是从 golden 的 srcState 表达式机械提取这张表的
+（文件头「唤醒路由表 <- golden EnqEntry_N.sv 的 currentStatus_srcStatus_<s>_srcState
+表达式里出现的 WB 下标 / wen 字段 / srcType 位」），E1 是把它的**输出从 1 对放宽成
+一串**，不是新写一张人工表。
+
+#### 约束（不变）
+
+**新参数在"每源 1 对"时必须生成与今天逐字相同的表达式** —— 这是 9 个已签核变体
+不红的前提。`numRegSrc != 5` 时全源同一张的退化也正好落在这条约束里。
+
+复跑（whitespace 归一后逐源提取，避免 golden 的换行把 `srcType[2] & vecWen`
+劈成两行而漏数 —— 我第一版就是这么漏掉一对的）：
+
+```bash
+cd /home/eda/xs-env/G1-canonical/golden-rtl
+python3 - EnqEntryVecMem_2 <<'EOF'
+import re,sys
+t=re.sub(r'\s+',' ',open(sys.argv[1]+'.sv').read())
+for s in range(5):
+    p=sorted(set(re.findall(r'srcStatus_%d_srcType\[(\d)\] & io_commonIn_wakeUpFromWB_\d+_bits_(\w+Wen)'%s,t)))
+    if p: print('src%d: '%s+' | '.join(f'srcType[{b}]&{w}' for b,w in p))
+EOF
+```
+
+#### 修订
+
+- 2026-09-20 集成者转 `agent/othersentry` 的发现指出原措辞会被读成"全源共用一张对表"，
+  并给了 Chisel 出处。本 lane 独立复核 `Bundles.scala:325-348` 与
+  `EntryBundles.scala:185-193`（`XiangShan@133d7dc4b`）**逐字成立**，据此重写本节。
+- ★一处数字更正★：集成者说"`nSrc=5` 的正是那 **6** 个向量变体"。实测是 **5** 个 ——
+  按 golden enq 条目的 `entryReg_status_srcStatus_<n>_psrc` 寄存器个数点名：
+  `EnqEntry_18`(V09 VfdivVidiv) / `EnqEntry_16`(V10) / `EnqEntry_14`(V11) /
+  `EnqEntryVecMem_2`(V12) / `EnqEntryVecMem`(V13)。其余 9 个是 1/2/3。
+  复跑：`for m in …; do grep -cE '^  reg .*srcStatus_[0-9]+_psrc' $m.sv; done`。
+  结论方向不受影响（这 5 个里有 2 个正是本判断要做的访存变体），只是别按 6 排期。
 
 ### E2 ★同一变体的「当拍窗口」和「入队延迟窗口」可以用不同的对表★（StdMoud 实测）
 
