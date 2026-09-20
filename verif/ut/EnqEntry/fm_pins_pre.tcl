@@ -14,9 +14,15 @@
 #   entryReg_status_srcStatus_<s>_<f>                      <-> r_<f>_reg[s][..]
 #   enqDelayValidReg_last_REG                              <-> enqd_valid_reg
 #
-# ★ 钉点数不是证据 ★ set_user_match 对不存在的名字不抛异常，所以下面那个计数
-#   只说明"没抛"。判钉点真的生效看 fm.log 三条：行首 Error 计数为 0 /
-#   match 后 Unmatched 0(0) / 终判 SUCCEEDED 且 failing=0。
+# ★ 计数用的是 set_user_match 的**返回值**，不是 catch ★
+#   set_user_match 从不抛 Tcl 异常：名字存在返回 1，不存在返回 0 并往 fm.log 写
+#   `Error: Unknown name: ... (FM-036)`。所以 `if {[catch {set_user_match ...}]==0}`
+#   那种计数恒等于目标数，后面挂多少道 `if {$_n != <期望>} {error}` 都是空的
+#   —— 空守卫继承自它的输入（CONVENTIONS「新判据建立在旧判据的中间量上」一节）。
+#   本文件按返回值分 accepted / refused 两路，refused 非零或 accepted 不等于
+#   生成时算出的期望数量，一律 error 中止证明。
+#   钉点真的生效另看 fm.log 三条：行首 Error 计数为 0 / 匹配后 Unmatched 0(0) /
+#   终判 SUCCEEDED 且 failing=0。
 #
 # 本文件钉 1432 对；golden 侧不存在（被 firtool DCE）因而跳过的 1 个列在文件尾。
 # ============================================================================
@@ -1459,20 +1465,19 @@ if {$top eq "EnqEntry"} {
     {enqDelayValidReg_last_REG_reg enqd_valid_reg_reg}
   } {
     lassign $_pair _r _i
-    if {[catch {set_user_match "r:/WORK/$top/$_r" "i:/WORK/$top/u_entry/$_i"} _msg]} {
-      incr _miss
-      if {$_miss <= 10} { puts "EE_PIN_FAIL: $_r <-> $_i ($_msg)" }
-    } else {
+    if {[set_user_match "r:/WORK/$top/$_r" "i:/WORK/$top/u_entry/$_i"]} {
       incr _n
+    } else {
+      incr _miss
+      if {$_miss <= 10} { puts "EE_PIN_FAIL: $_r <-> $_i" }
     }
   }
-  puts "EE_PINS: $_n / 1432 tried, $_miss threw"
-  # fail-closed 两道，都在最后一次 set_user_match **之后**：
-  #   (1) 一次都不许抛；
-  #   (2) 成功条数必须**恰好**等于生成时算出来的期望数量 —— set_user_match 对不存在的
-  #       名字不抛异常（实测），所以只看"没抛"证明不了钉点真的都下去了；
-  #       把期望数量写成字面整数钉死，少一条就 error。
-  if {$_miss != 0} { error "EE_PIN_THREW=$_miss" }
+  puts "EE_PINS: $_n accepted / 1432 expected, $_miss refused"
+  # fail-closed 两道，都在最后一次 set_user_match **之后**，且都建立在**返回值**上：
+  #   (1) 一条都不许被拒（返回 0 = FM-036 Unknown name）；
+  #   (2) 接受条数必须**恰好**等于生成时算出来的期望数量，写成字面整数钉死。
+  # ★这两道以前是挂在 `catch` 上的，而 set_user_match 不抛异常 —— 那时两道都是空的。★
+  if {$_miss != 0} { error "EE_PIN_REFUSED=$_miss" }
   if {$_n != 1432} { error "EE_PIN_COUNT=$_n expected 1432" }
 }
 
