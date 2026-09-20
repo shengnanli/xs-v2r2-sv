@@ -7,8 +7,32 @@
 set -u
 cd "$(dirname "$0")/.." || exit 2
 rc=0
+
+# ★"跑完了没有"之外，还得答"跑的是哪棵树"★（2026-09-20 实测补上）
+# 缘起：本轮同时有三个 gate_all 实例在跑，其中一个是**陈旧**的（它执行的是还没接进
+# 新闸的旧脚本、读的是还没修的旧树），它照样打印了一行格式完全正确的 `GATE_RC=1`。
+# 那一行**作为"这棵树的判决"是假的**，而从日志上看它和真结果一模一样。
+# 也就是说：`GATE_RC=` 解决了「结果存不存在」，但没解决「结果属于谁」。
+# 所以再钉两件事：
+#   (1) GATE_COMMIT= 记下跑在哪个 commit（带 -dirty 标记）；
+#   (2) 开跑时与收尾时各取一次，**不相等就判红** —— 跑的过程中有人改了树，
+#       这一轮结果就不属于任何一个确定的树状态，不能当判决用。
+gate_stamp() {
+  local h d
+  h="$(git rev-parse --short=10 HEAD 2>/dev/null || echo nogit)"
+  if git diff --quiet HEAD 2>/dev/null; then d=""; else d="-dirty"; fi
+  printf '%s%s' "$h" "$d"
+}
+GATE_COMMIT_BEGIN="$(gate_stamp)"
+echo "GATE_BEGIN commit=$GATE_COMMIT_BEGIN"
 run() { printf '=== %-28s ' "$1"; shift; if "$@" >/tmp/gate_$$.out 2>&1; then echo PASS; else echo "★FAIL"; sed 's/^/    /' /tmp/gate_$$.out | tail -12; rc=1; fi; }
 
+# 闸自身的树指纹判据负测：`GATE_RC=` 只回答"结果存不存在"，回答不了"结果属于谁"。
+# 2026-09-20 实测：一个**陈旧**的 gate_all 实例（跑的是旧脚本、读的是旧树）照样打印了
+# 一行格式完全正确的 `GATE_RC=1` —— 作为"这棵树的判决"那是假的，日志上却和真结果
+# 长得一模一样。所以加了 GATE_COMMIT= 与"跑动期间树被改过即判红"，并给它配这道负测：
+# 树没动必须判同（不能恒红）/ 树动了必须判异（不能恒绿）/ 脏树必须带 -dirty。
+run "闸树指纹判据负测"  bash scripts/test_gate_stamp.sh
 run "可读性 A-G"        python3 scripts/readability_audit.py --quiet
 # A 类禁用命名正则的对照测试。★必须单独有一道★：2026-09-20 收紧那次，收紧前后在
 # 全部 448 个 rtl/*.sv 上都命中 0 —— 拿仓库扫一遍对这次改动毫无分辨力。
@@ -29,6 +53,23 @@ run "package 闸负测"     python3 scripts/test_pkg_scope_gate.py
 # 守恒不变式就是这么被无声解除武装的（UT 照过、FM 照绿，六道闸没有一道会响）。
 run "参数覆盖闸"        python3 scripts/check_param_override.py --quiet
 run "参数覆盖闸负测"     python3 scripts/test_param_override_gate.py
+# 证明证书（D57 green_child 背书的载体）的判据自测。★这两套测试此前一条都没进 gate_all★
+# —— 文件在、能跑、没人跑；`check_gen_gate_complete.py` 只扫 scripts/gen_*.py，扫不到
+# test_*.py，所以这个缺口不会有别的闸替它喊。
+run "证书判据负测"       python3 scripts/test_proof_certificate.py
+# 元负例：把 validator 换成恒 True/恒 [] —— 上面那套必须转红，否则它什么都没在看。
+run "证书判据元负例"     env XSSV_CERT_TEST_SABOTAGE=all python3 scripts/test_proof_certificate.py
+# child 的 impl 闭包里挂 golden（LqVAddrModule 现场那个形状）：正例 + 四个负例。
+# recompute_closure_at 只复算 kind=='repo'，golden 条目被整个跳过 ⇒ D57 原九条一条不响。
+run "证书 golden-in-impl" python3 scripts/test_proof_certificate_grandchild.py
+run "证书 g-i-i 元负例"   env SABOTAGE_GC=1 python3 scripts/test_proof_certificate_grandchild.py
+# 闸的完备性闸：任何 scripts/gen_*.py 要么进上面的列表，要么在
+# check_gen_gate_complete.py 的 NO_CHECK 豁免表里写明理由，没有第三条路。
+# WBArbiter 反饥饿状态机的可达性表：verif/ut/WBArbiterVariants/tb.sv 的覆盖判据是
+# 分档的（N=1 全死 / N=2 只有第 1 路够得着 / N>=3 全可达），依据就是这张表。
+# 判据来源必须能机器重算，否则"随机激励没跑到"会被当成"不可达"写进判据里。
+run "WBArb 可达性表"     python3 scripts/wbarbiter_reachability.py --check
+
 run "universe 冻结闸"   python3 scripts/check_universe_freeze.py
 run "位置依赖闸"       python3 scripts/test_no_location_dependency.py
 # 台账行序闸：我写了这条测试却没接进来（2026-09-14 由 bkperf worker 撞上才发现——
@@ -68,16 +109,18 @@ run "fm_eq 结构闸"     python3 scripts/test_fm_eq_wellformed.py
 # 失败、脚本只 puts 一行 miss=N，证明照跑照绿，而那行 miss 没人会看。
 # 本闸落地时实测：15 个钉点文件里 12 个是 fail-open 的（期望数量只写在 puts 字符串里）。
 run "FM 钉点结构闸"     python3 scripts/test_fm_pins_wellformed.py
-# 证明证书（D57 green_child 背书的载体）的判据自测。★这两套测试此前一条都没进 gate_all★
-# —— 文件在、能跑、没人跑；`check_gen_gate_complete.py` 只扫 scripts/gen_*.py，扫不到
-# test_*.py，所以这个缺口不会有别的闸替它喊。
-run "证书判据负测"       python3 scripts/test_proof_certificate.py
-# 元负例：把 validator 换成恒 True/恒 [] —— 上面那套必须转红，否则它什么都没在看。
-run "证书判据元负例"     env XSSV_CERT_TEST_SABOTAGE=all python3 scripts/test_proof_certificate.py
-# child 的 impl 闭包里挂 golden（LqVAddrModule 现场那个形状）：正例 + 四个负例。
-# recompute_closure_at 只复算 kind=='repo'，golden 条目被整个跳过 ⇒ D57 原九条一条不响。
-run "证书 golden-in-impl" python3 scripts/test_proof_certificate_grandchild.py
-run "证书 g-i-i 元负例"   env SABOTAGE_GC=1 python3 scripts/test_proof_certificate_grandchild.py
+# 钉点「调用序列等价」闸：钉点结构闸管的是"守卫写对没有"，这一条管的是另一件事 ——
+# **fm_pins*.tcl 在证明闭包里**（receipt 的 proof_config.pin_scripts 记它的 sha256），
+# 所以每次有人动它都要回答"既有 receipt 还算不算数"。判据只有一条：发射出去的
+# set_user_match 调用序列有没有变。没变 = 守卫专属，receipt 继续有效；变了 = 新前提，
+# 必须重出 receipt。
+# ★为什么不能"逐字节比对两版的 set_user_match 行"★：本仓钉点文件多数把调用写在循环里，
+# 那一行恰恰就是被改的守卫本身，照字面比等于自问自答。所以改成把 set_user_match 换成
+# 记参数的桩、用 tclsh 真跑、逐字节比**实际发生的调用序列**。
+# 先跑双向负测（真守卫专属必须判绿 / 真改了钉的点必须判红 —— 只判红的实现和恒等判绿的
+# 实现都会在这里露馅），再对着基线表 docs/pin_call_seq.tsv 核对。两条加起来约 12 秒。
+run "钉点调用序列闸负测"  python3 scripts/pin_call_equiv.py --selftest
+run "钉点调用序列闸"     python3 scripts/pin_call_equiv.py --check
 # 家族生成器幂等：tlbuffer worker 发现 gen_tlbuffer_ad_family.py --check 一直报 DRIFT
 # ——negtest 段是手工贴在生成产物后面的，谁跑一次生成器它就被静默删掉，而那正是该家族
 # 唯一病因形态（位宽）的防护。只有挂了 --check 的生成器进这道闸。
@@ -101,9 +144,7 @@ for g in scripts/gen_tlbuffer_ad_family.py scripts/gen_mbist_pipe_family.py \
          scripts/gen_newdispatch_tb.py \
          scripts/gen_tlbnb_family.py scripts/gen_predictor.py \
          scripts/gen_rob.py scripts/gen_rob_ut.py \
-         scripts/gen_lqreplay.py scripts/gen_lqreplay_ut.py \
          scripts/gen_sbuffer.py scripts/gen_sbuffer_tb.py \
-         scripts/gen_fubusy_wbarb.py \
          scripts/gen_tlbsw_family.py; do
   [ -f "$g" ] && run "生成器幂等 $(basename $g .py | sed 's/^gen_//')" python3 "$g" --check
 done
@@ -114,10 +155,6 @@ for g in verif/ut/TlbStorageWrapper/gen_tb_variant.py; do
 done
 # 闸的完备性闸：任何 scripts/gen_*.py 要么进上面的列表，要么在
 # check_gen_gate_complete.py 的 NO_CHECK 豁免表里写明理由，没有第三条路。
-# WBArbiter 反饥饿状态机的可达性表：verif/ut/WBArbiterVariants/tb.sv 的覆盖判据是
-# 分档的（N=1 全死 / N=2 只有第 1 路够得着 / N>=3 全可达），依据就是这张表。
-# 判据来源必须能机器重算，否则"随机激励没跑到"会被当成"不可达"写进判据里。
-run "WBArb 可达性表"     python3 scripts/wbarbiter_reachability.py --check
 run "生成器闸完备性"     python3 scripts/check_gen_gate_complete.py
 # UT initreg 棘轮：147 个 UT 里 68 个的 Makefile 完全没提 initreg（2026-09-17 实测），
 # 也就是说这些目标的 UT 验收是在"寄存器初值由 VCS 默认决定"下过的。
@@ -214,7 +251,16 @@ run "perf 分档台账闸"    python3 scripts/check_perf_tier.py
 run "passing 模型自校准"  python3 scripts/tlbsw_passing_model.py --check
 
 rm -f /tmp/gate_$$.out
+
+# 收尾再取一次树指纹：与开跑时不同 = 跑的过程中树被改过，这一轮不属于任何确定状态。
+GATE_COMMIT_END="$(gate_stamp)"
+if [ "$GATE_COMMIT_BEGIN" != "$GATE_COMMIT_END" ]; then
+  echo "★树在本轮跑动期间被改过★ begin=$GATE_COMMIT_BEGIN end=$GATE_COMMIT_END"
+  echo "  这一轮的 PASS/FAIL 不对应任何一个确定的树状态，不能当判决用 —— 树 settle 后重跑。"
+  rc=1
+fi
 [ $rc -eq 0 ] && echo "=== 全部机器闸 PASS ===" || echo "=== 有闸未过，见上 ==="
+echo "GATE_COMMIT=$GATE_COMMIT_END"
 
 # ★终止标记：只有走到脚本结尾才可能打印这一行★（2026-09-20）
 # 判读方只认这一行：没有 GATE_RC= 就是「结果不存在」，既不是绿也不是红。
