@@ -3658,49 +3658,59 @@ module xs_Rob_core
   rob_entry_t bankRdThisLine [BANK_N];
   rob_entry_t bankRdNextLine [BANK_N];
 
-  // 把一条条目装进组合用的结构体（存储本身仍是每字段一个数组）
-  function automatic rob_entry_t packEntry(input int idx);
-    rob_entry_t e;
-    begin
-      e.valid                      = robEntries_valid[idx];
-      e.vls                        = robEntries_vls[idx];
-      e.interrupt_safe             = robEntries_interrupt_safe[idx];
-      e.fpWen                      = robEntries_fpWen[idx];
-      e.rfWen                      = robEntries_rfWen[idx];
-      e.wflags                     = robEntries_wflags[idx];
-      e.dirtyVs                    = robEntries_dirtyVs[idx];
-      e.commitType                 = robEntries_commitType[idx];
-      e.ftqIdx_flag                = robEntries_ftqIdx_flag[idx];
-      e.ftqIdx_value               = robEntries_ftqIdx_value[idx];
-      e.ftqOffset                  = robEntries_ftqOffset[idx];
-      e.isRVC                      = robEntries_isRVC[idx];
-      e.isVset                     = robEntries_isVset[idx];
-      e.isHls                      = robEntries_isHls[idx];
-      e.instrSize                  = robEntries_instrSize[idx];
-      e.traceBlockInPipe_itype     = robEntries_traceBlockInPipe_itype[idx];
-      e.traceBlockInPipe_iretire   = robEntries_traceBlockInPipe_iretire[idx];
-      e.traceBlockInPipe_ilastsize = robEntries_traceBlockInPipe_ilastsize[idx];
-      e.fflags                     = robEntries_fflags[idx];
-      e.mmio                       = robEntries_mmio[idx];
-      e.stdWritebacked             = robEntries_stdWritebacked[idx];
-      e.vxsat                      = robEntries_vxsat[idx];
-      e.realDestSize               = robEntries_realDestSize[idx];
-      e.uopNum                     = robEntries_uopNum[idx];
-      e.needFlush                  = robEntries_needFlush[idx];
-      e.debug_pc                   = robEntries_debug_pc[idx];
-      e.debug_instr                = robEntries_debug_instr[idx];
-      e.basicDebug_ldest           = robEntries_basicDebug_ldest[idx];
-      e.basicDebug_pdest           = robEntries_basicDebug_pdest[idx];
-      e.basicDebug_vd              = robEntries_basicDebug_vd[idx];
-      e.basicDebug_fpWen           = robEntries_basicDebug_fpWen[idx];
-      e.basicDebug_vecWen          = robEntries_basicDebug_vecWen[idx];
-      e.basicDebug_v0Wen           = robEntries_basicDebug_v0Wen[idx];
-      e.basicDebug_eliminatedMove  = robEntries_basicDebug_eliminatedMove[idx];
-      e.basicDebug_isXSTrap        = robEntries_basicDebug_isXSTrap[idx];
-      e.debug_fuType               = robEntries_debug_fuType[idx];
-      packEntry = e;
+  // 把一条条目装进组合用的结构体（存储本身仍是每字段一个数组）。
+  // ★原先这里是 `function automatic rob_entry_t packEntry(input int idx)`，
+  //   已改成预打包数组 + always_comb。不是风格问题，是**Formality 直接拒绝 elaborate**★：
+  //   函数体读的全是模块级变量（非 local），FM 对每一处报 FMR_VLOG-091
+  //   "Using non-local variable ... in task/function ... may cause a simulation and
+  //   synthesis mismatch"，本模块两个函数合计 81 条；link 阶段汇总成
+  //     Error: Unsuppressed RTL interpretation message(s): FMR_VLOG-091 FMR_ELAB-117 (FM-262)
+  //     Error: Failed to set top design to 'i:/WORK/Rob' (FM-156)
+  //   —— set_top impl 失败，**整个证明一个比较点都跑不到**。
+  //   ★VCS 全程零 error 零 warning 也照样过不了 FM★：这两个工具的可接受集合不一样，
+  //   "VCS elaborate 干净" 不蕴含 "FM elaborate 干净"。
+  //   （压制消息不是选项：那几条消息说的正是"结果可能与仿真不一致"。）
+  rob_entry_t robEntryPacked [ROB_SIZE];
+  always_comb begin
+    for (int idx = 0; idx < ROB_SIZE; idx++) begin
+        robEntryPacked[idx].valid                      = robEntries_valid[idx];
+        robEntryPacked[idx].vls                        = robEntries_vls[idx];
+        robEntryPacked[idx].interrupt_safe             = robEntries_interrupt_safe[idx];
+        robEntryPacked[idx].fpWen                      = robEntries_fpWen[idx];
+        robEntryPacked[idx].rfWen                      = robEntries_rfWen[idx];
+        robEntryPacked[idx].wflags                     = robEntries_wflags[idx];
+        robEntryPacked[idx].dirtyVs                    = robEntries_dirtyVs[idx];
+        robEntryPacked[idx].commitType                 = robEntries_commitType[idx];
+        robEntryPacked[idx].ftqIdx_flag                = robEntries_ftqIdx_flag[idx];
+        robEntryPacked[idx].ftqIdx_value               = robEntries_ftqIdx_value[idx];
+        robEntryPacked[idx].ftqOffset                  = robEntries_ftqOffset[idx];
+        robEntryPacked[idx].isRVC                      = robEntries_isRVC[idx];
+        robEntryPacked[idx].isVset                     = robEntries_isVset[idx];
+        robEntryPacked[idx].isHls                      = robEntries_isHls[idx];
+        robEntryPacked[idx].instrSize                  = robEntries_instrSize[idx];
+        robEntryPacked[idx].traceBlockInPipe_itype     = robEntries_traceBlockInPipe_itype[idx];
+        robEntryPacked[idx].traceBlockInPipe_iretire   = robEntries_traceBlockInPipe_iretire[idx];
+        robEntryPacked[idx].traceBlockInPipe_ilastsize = robEntries_traceBlockInPipe_ilastsize[idx];
+        robEntryPacked[idx].fflags                     = robEntries_fflags[idx];
+        robEntryPacked[idx].mmio                       = robEntries_mmio[idx];
+        robEntryPacked[idx].stdWritebacked             = robEntries_stdWritebacked[idx];
+        robEntryPacked[idx].vxsat                      = robEntries_vxsat[idx];
+        robEntryPacked[idx].realDestSize               = robEntries_realDestSize[idx];
+        robEntryPacked[idx].uopNum                     = robEntries_uopNum[idx];
+        robEntryPacked[idx].needFlush                  = robEntries_needFlush[idx];
+        robEntryPacked[idx].debug_pc                   = robEntries_debug_pc[idx];
+        robEntryPacked[idx].debug_instr                = robEntries_debug_instr[idx];
+        robEntryPacked[idx].basicDebug_ldest           = robEntries_basicDebug_ldest[idx];
+        robEntryPacked[idx].basicDebug_pdest           = robEntries_basicDebug_pdest[idx];
+        robEntryPacked[idx].basicDebug_vd              = robEntries_basicDebug_vd[idx];
+        robEntryPacked[idx].basicDebug_fpWen           = robEntries_basicDebug_fpWen[idx];
+        robEntryPacked[idx].basicDebug_vecWen          = robEntries_basicDebug_vecWen[idx];
+        robEntryPacked[idx].basicDebug_v0Wen           = robEntries_basicDebug_v0Wen[idx];
+        robEntryPacked[idx].basicDebug_eliminatedMove  = robEntries_basicDebug_eliminatedMove[idx];
+        robEntryPacked[idx].basicDebug_isXSTrap        = robEntries_basicDebug_isXSTrap[idx];
+        robEntryPacked[idx].debug_fuType               = robEntries_debug_fuType[idx];
     end
-  endfunction
+  end
 
   always_comb begin
     for (int b = 0; b < BANK_N; b++) begin
@@ -3709,9 +3719,9 @@ module xs_Rob_core
       // ★Mux1H：按位或★（非 one-hot 时与优先级选择不等价，golden 是或）
       for (int r = 0; r < BANK_ROWS; r++) begin
         if (robBanksRaddrThisLine[r]) begin
-          bankRdThisLine[b] = bankRdThisLine[b] | packEntry(r * BANK_N + b);
+          bankRdThisLine[b] = bankRdThisLine[b] | robEntryPacked[r * BANK_N + b];
           bankRdNextLine[b] = bankRdNextLine[b]
-                            | packEntry(((r + 1) % BANK_ROWS) * BANK_N + b);
+                            | robEntryPacked[((r + 1) % BANK_ROWS) * BANK_N + b];
         end
       end
     end
@@ -3949,72 +3959,79 @@ module xs_Rob_core
   rob_commit_t commitInfo[COMMIT_W];
   rob_commit_t walkInfo  [COMMIT_W];
 
-  function automatic rob_commit_t packDeqGroup(input int b);
-    rob_commit_t c;
-    begin
-      c.walk_v                     = robDeqGroup_walk_v[b];
-      c.commit_v                   = robDeqGroup_commit_v[b];
-      c.commit_w                   = robDeqGroup_commit_w[b];
-      c.realDestSize               = robDeqGroup_realDestSize[b];
-      c.interrupt_safe             = robDeqGroup_interrupt_safe[b];
-      c.wflags                     = robDeqGroup_wflags[b];
-      c.fflags                     = robDeqGroup_fflags[b];
-      c.vxsat                      = robDeqGroup_vxsat[b];
-      c.isRVC                      = robDeqGroup_isRVC[b];
-      c.isVset                     = robDeqGroup_isVset[b];
-      c.isHls                      = robDeqGroup_isHls[b];
-      c.isVls                      = robDeqGroup_isVls[b];
-      c.vls                        = robDeqGroup_vls[b];
-      c.mmio                       = robDeqGroup_mmio[b];
-      c.commitType                 = robDeqGroup_commitType[b];
-      c.ftqIdx_flag                = robDeqGroup_ftqIdx_flag[b];
-      c.ftqIdx_value               = robDeqGroup_ftqIdx_value[b];
-      c.ftqOffset                  = robDeqGroup_ftqOffset[b];
-      c.instrSize                  = robDeqGroup_instrSize[b];
-      c.fpWen                      = robDeqGroup_fpWen[b];
-      c.rfWen                      = robDeqGroup_rfWen[b];
-      c.needFlush                  = robDeqGroup_needFlush[b];
-      c.traceBlockInPipe_itype     = robDeqGroup_traceBlockInPipe_itype[b];
-      c.traceBlockInPipe_iretire   = robDeqGroup_traceBlockInPipe_iretire[b];
-      c.traceBlockInPipe_ilastsize = robDeqGroup_traceBlockInPipe_ilastsize[b];
-      c.debug_pc                   = robDeqGroup_debug_pc[b];
-      c.debug_instr                = robDeqGroup_debug_instr[b];
-      c.basicDebug_ldest           = robDeqGroup_basicDebug_ldest[b];
-      c.basicDebug_pdest           = robDeqGroup_basicDebug_pdest[b];
-      c.basicDebug_vd              = robDeqGroup_basicDebug_vd[b];
-      c.basicDebug_fpWen           = robDeqGroup_basicDebug_fpWen[b];
-      c.basicDebug_vecWen          = robDeqGroup_basicDebug_vecWen[b];
-      c.basicDebug_v0Wen           = robDeqGroup_basicDebug_v0Wen[b];
-      c.basicDebug_eliminatedMove  = robDeqGroup_basicDebug_eliminatedMove[b];
-      c.basicDebug_isXSTrap        = robDeqGroup_basicDebug_isXSTrap[b];
-      c.debug_fuType               = robDeqGroup_debug_fuType[b];
-      c.dirtyFs                    = robDeqGroup_dirtyFs[b];
-      c.dirtyVs                    = robDeqGroup_dirtyVs[b];
-      // ★这 7 个是全核唯一不驱动的字段★（见文件头「已知残留」）：
-      //   RobEntryBundle 没有这个成员，connectCommitEntry 没得可拷；
-      //   golden 里这 56 个寄存器同样只在 RANDOMIZE_REG_INIT 里被写。
-      //   ★仍然照 golden 的结构从寄存器上读出来送到端口★ —— 这样两侧形状一致，
-      //   残留是"两侧各 56 个从不写的寄存器"，而不是"impl 少驱动 56 个输出"。
-      c.debug_otherPdest_0         = robDeqGroup_debug_otherPdest_0[b];
-      c.debug_otherPdest_1         = robDeqGroup_debug_otherPdest_1[b];
-      c.debug_otherPdest_2         = robDeqGroup_debug_otherPdest_2[b];
-      c.debug_otherPdest_3         = robDeqGroup_debug_otherPdest_3[b];
-      c.debug_otherPdest_4         = robDeqGroup_debug_otherPdest_4[b];
-      c.debug_otherPdest_5         = robDeqGroup_debug_otherPdest_5[b];
-      c.debug_otherPdest_6         = robDeqGroup_debug_otherPdest_6[b];
-      packDeqGroup = c;
+  // 与 packEntry 同一处理：原先是 `function automatic rob_commit_t packDeqGroup(input int b)`，
+  // 改成预打包数组 + always_comb。除了 FMR_VLOG-091（非 local 变量）之外，
+  // 这个函数还额外触发 7 条 **FMR_ELAB-117**
+  //   "variable 'robDeqGroup_debug_otherPdest_N' read before write"
+  // —— 正是那 56 个按裁定留空、两侧都不驱动的寄存器：在函数里读一个从不被写的
+  // 模块级变量，FM 视为 read-before-write。这 7 条与 91 那批一起进了 FM-262 的
+  // 汇总错误，是 set_top impl 失败的另一半原因。
+  // ★留空的裁定不变★（不驱动、不 dont_verify、不黑盒），改的只是"从哪里读它"。
+  rob_commit_t deqGroupPacked [BANK_N];
+  always_comb begin
+    for (int b = 0; b < BANK_N; b++) begin
+        deqGroupPacked[b].walk_v                     = robDeqGroup_walk_v[b];
+        deqGroupPacked[b].commit_v                   = robDeqGroup_commit_v[b];
+        deqGroupPacked[b].commit_w                   = robDeqGroup_commit_w[b];
+        deqGroupPacked[b].realDestSize               = robDeqGroup_realDestSize[b];
+        deqGroupPacked[b].interrupt_safe             = robDeqGroup_interrupt_safe[b];
+        deqGroupPacked[b].wflags                     = robDeqGroup_wflags[b];
+        deqGroupPacked[b].fflags                     = robDeqGroup_fflags[b];
+        deqGroupPacked[b].vxsat                      = robDeqGroup_vxsat[b];
+        deqGroupPacked[b].isRVC                      = robDeqGroup_isRVC[b];
+        deqGroupPacked[b].isVset                     = robDeqGroup_isVset[b];
+        deqGroupPacked[b].isHls                      = robDeqGroup_isHls[b];
+        deqGroupPacked[b].isVls                      = robDeqGroup_isVls[b];
+        deqGroupPacked[b].vls                        = robDeqGroup_vls[b];
+        deqGroupPacked[b].mmio                       = robDeqGroup_mmio[b];
+        deqGroupPacked[b].commitType                 = robDeqGroup_commitType[b];
+        deqGroupPacked[b].ftqIdx_flag                = robDeqGroup_ftqIdx_flag[b];
+        deqGroupPacked[b].ftqIdx_value               = robDeqGroup_ftqIdx_value[b];
+        deqGroupPacked[b].ftqOffset                  = robDeqGroup_ftqOffset[b];
+        deqGroupPacked[b].instrSize                  = robDeqGroup_instrSize[b];
+        deqGroupPacked[b].fpWen                      = robDeqGroup_fpWen[b];
+        deqGroupPacked[b].rfWen                      = robDeqGroup_rfWen[b];
+        deqGroupPacked[b].needFlush                  = robDeqGroup_needFlush[b];
+        deqGroupPacked[b].traceBlockInPipe_itype     = robDeqGroup_traceBlockInPipe_itype[b];
+        deqGroupPacked[b].traceBlockInPipe_iretire   = robDeqGroup_traceBlockInPipe_iretire[b];
+        deqGroupPacked[b].traceBlockInPipe_ilastsize = robDeqGroup_traceBlockInPipe_ilastsize[b];
+        deqGroupPacked[b].debug_pc                   = robDeqGroup_debug_pc[b];
+        deqGroupPacked[b].debug_instr                = robDeqGroup_debug_instr[b];
+        deqGroupPacked[b].basicDebug_ldest           = robDeqGroup_basicDebug_ldest[b];
+        deqGroupPacked[b].basicDebug_pdest           = robDeqGroup_basicDebug_pdest[b];
+        deqGroupPacked[b].basicDebug_vd              = robDeqGroup_basicDebug_vd[b];
+        deqGroupPacked[b].basicDebug_fpWen           = robDeqGroup_basicDebug_fpWen[b];
+        deqGroupPacked[b].basicDebug_vecWen          = robDeqGroup_basicDebug_vecWen[b];
+        deqGroupPacked[b].basicDebug_v0Wen           = robDeqGroup_basicDebug_v0Wen[b];
+        deqGroupPacked[b].basicDebug_eliminatedMove  = robDeqGroup_basicDebug_eliminatedMove[b];
+        deqGroupPacked[b].basicDebug_isXSTrap        = robDeqGroup_basicDebug_isXSTrap[b];
+        deqGroupPacked[b].debug_fuType               = robDeqGroup_debug_fuType[b];
+        deqGroupPacked[b].dirtyFs                    = robDeqGroup_dirtyFs[b];
+        deqGroupPacked[b].dirtyVs                    = robDeqGroup_dirtyVs[b];
+        // ★这 7 个是全核唯一不驱动的字段★（见文件头「已知残留」）：
+        //   RobEntryBundle 没有这个成员，connectCommitEntry 没得可拷；
+        //   golden 里这 56 个寄存器同样只在 RANDOMIZE_REG_INIT 里被写。
+        //   ★仍然照 golden 的结构从寄存器上读出来送到端口★ —— 这样两侧形状一致，
+        //   残留是"两侧各 56 个从不写的寄存器"，而不是"impl 少驱动 56 个输出"。
+        deqGroupPacked[b].debug_otherPdest_0         = robDeqGroup_debug_otherPdest_0[b];
+        deqGroupPacked[b].debug_otherPdest_1         = robDeqGroup_debug_otherPdest_1[b];
+        deqGroupPacked[b].debug_otherPdest_2         = robDeqGroup_debug_otherPdest_2[b];
+        deqGroupPacked[b].debug_otherPdest_3         = robDeqGroup_debug_otherPdest_3[b];
+        deqGroupPacked[b].debug_otherPdest_4         = robDeqGroup_debug_otherPdest_4[b];
+        deqGroupPacked[b].debug_otherPdest_5         = robDeqGroup_debug_otherPdest_5[b];
+        deqGroupPacked[b].debug_otherPdest_6         = robDeqGroup_debug_otherPdest_6[b];
     end
-  endfunction
+  end
 
   always_comb begin
     for (int i = 0; i < COMMIT_W; i++) begin
-      rawInfo[i]  = packDeqGroup(0);
-      walkInfo[i] = packDeqGroup(0);
+      rawInfo[i]  = deqGroupPacked[0];
+      walkInfo[i] = deqGroupPacked[0];
       // 下标只有 3 位、深度正好 8（2^3=8，不越界），但仍按本文件的通例
       // 用循环+比较，不用信号直接索引。
       for (int b = 0; b < BANK_N; b++) begin
-        if (deqBankIdx[i]  == BANK_ADDR_W'(b)) rawInfo[i]  = packDeqGroup(b);
-        if (walkBankIdx[i] == BANK_ADDR_W'(b)) walkInfo[i] = packDeqGroup(b);
+        if (deqBankIdx[i]  == BANK_ADDR_W'(b)) rawInfo[i]  = deqGroupPacked[b];
+        if (walkBankIdx[i] == BANK_ADDR_W'(b)) walkInfo[i] = deqGroupPacked[b];
       end
       // commitInfo 与 rawInfo 只差一个 ftqOffset：
       // 多条指令被压缩进同一条 RobEntry 时，条目里存的 ftqIdx/ftqOffset 属于

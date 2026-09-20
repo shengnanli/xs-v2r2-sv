@@ -11332,9 +11332,19 @@ module tb;
         $display("  enq_seen=%h", enq_seen);
         $display("  wb_seen =%h", wb_seen);
         $display("checks=0 errors=1  (warm-up failure counts as an error)");
+        $display("TEST FAILED");
         $finish;
       end
       $display("checks=%0d errors=%0d", checks, errors);
+      // ★判绿字符串必须由 tb 打出来★：ut_common.mk 的 `run` 靠
+      // `grep -q "TEST PASSED"` 判定。实测(2026-09-20)本 tb 从来不打这个
+      // 字符串，于是三轮 errors=0 / checks=1.33e8 的干净跑全被判成
+      // RESULT=FAIL —— 方向是安全的(假阴性)，但判据与 tb 对不上就是没判据。
+      // ★三个条件同时满足才打★，任何一个不满足都只打 TEST FAILED：
+      //   errors==0、比对窗口真的开过、checks>0(比过东西)。
+      // 少任何一条都会让"什么都没比"长得像通过 —— 那正是 +random 那轮的形状。
+      if (errors == 0 && compare_open && checks > 0) $display("TEST PASSED");
+      else $display("TEST FAILED");
       $finish;
     end
   end
