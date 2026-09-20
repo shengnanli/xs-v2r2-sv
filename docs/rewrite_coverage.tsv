@@ -21,10 +21,10 @@
 #   observation_sink    1 个   9903 端口全 input 的纯观测 sink，19 万行全是端口表
 #
 metric	done	total	percent
-fm_targets_configured	252	396	63.6
-unique_design_written	137	1191	11.5
+fm_targets_configured	252	409	61.6
+unique_design_written	139	1191	11.7
 unique_design_proven	108	1191	9.1
-golden_lines_written	938013	3902283	24.0
+golden_lines_written	1005037	3902283	25.8
 golden_lines_proven	542028	3902283	13.9
 #
 # written 里没有绿判决证据的设计族（差额都在这儿，逐个列出不藏）：
@@ -46,6 +46,8 @@ golden_lines_proven	542028	3902283	13.9
 #   LsqEnqCtrl                                       2595 行
 #   NCBTransactionQueue                             41240 行
 #   OpenLLC                                          4252 行
+#   OthersEntry                                     20650 行
+#   Predictor                                       44908 行
 #   RRArbiterInit                                    7318 行
 #   RegCacheTagModule                                3372 行
 #   RegCacheTagTable                                 1391 行
@@ -73,10 +75,8 @@ CtrlBlock	57635	1	REWRITE_L
 MemBlock	57550	1	REWRITE_L
 PtwCache	45308	1	REWRITE_L
 Slice	45020	5	REWRITE_L
-Predictor	44908	1	REWRITE_L
 EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	41795	1	REWRITE_L
 EntriesVlduVstuVseglduVsegstu	40287	1	REWRITE_L
-OthersEntry	40173	24	-
 EntriesVlduVstu	39935	1	REWRITE_L
 EntriesVfmaVialuFixVfalu	38682	1	REWRITE_L
 EntriesFaluFcvtF2vFmacFdiv	36359	1	REWRITE_L
@@ -90,3 +90,5 @@ EntriesStaMou	29558	1	-
 EntriesLdu	29386	1	-
 Domain	26885	2	-
 DataPath	25618	1	REWRITE_L
+DCache	23854	1	REWRITE_L
+NCBTransactionPayload	23532	2	-
