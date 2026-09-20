@@ -299,12 +299,42 @@ A("")
 A("  initial begin")
 A("    if (!$value$plusargs(\"ncycles=%d\", NVEC)) NVEC = 200000;")
 A("    void'($value$plusargs(\"covtrace=%d\", COVTRACE));")
+# ★initreg 有效性探针★（默认关，+initreg_probe 打开）
+# 回答两个问题，都必须**量**出来、不能靠"我加了参数所以它生效了"：
+#   1. `+vcs+initreg+<档>` 到底改没改待测状态 —— 打一个**确实没有复位**的寄存器
+#      （PTW.sv:769 hptw_resp_entry_tag，只在 io_hptw_resp_valid 时条件装载，
+#       复位块里没有它；firtool 的 _RANDOM 初始化在 `ifndef SYNTHESIS 里，
+#       本 UT 两侧都定义了 SYNTHESIS，所以初值完全由 +vcs+initreg 决定）。
+#   2. 两个实例的初值是否**对称** —— 双例化 UT 的前提是"同激励 + 同初态"。
+#      +0 / +1 是常量档，两侧必然相同；+random 是**每个实例各摇各的**，
+#      u_g.ptw 与 u_i.u_core.u_ptw 拿到不同值 —— 这时两侧不是同一个初态，
+#      比对出来的差异不说明重写有问题。
 A("    drive_dft_zero();")
 A("    tl_reset();")
 A("    drive_random();")
 A("    reset = 1'b1;")
 A("    repeat (8) @(posedge clock);")
 A("    #1 reset = 1'b0;")
+# ★悬空位探针★（默认关，+xprobe 打开）
+# 起因：FM 的 analyze_points 报 "Found 1 X Source i:/WORK/L2TLB/u_core/C5098
+# Propagates 'X' to the impl compare point ... 20 compare points"，但仿真里
+# errors=0 —— 因为那几位在功能路径上被丢掉了，**只有形式工具看得见**。
+# 判法：`+vcs+initreg+0` 下所有寄存器都是 0，于是 $isunknown 只可能来自
+# **没人驱动的线**。实测当时 cache_stage1.entry[0..7] 全 x=1（af 字段没驱动，
+# 因为 PtwCache 的 stage1 输出根本没有 af 端口），改成 noaf 类型后归 0。
+# 这条探针留着：下次谁再声明一个"比对应端口多一个字段"的结构体，一跑就现形。
+A("""    if ($test$plusargs("xprobe")) begin
+      #200;
+      $display("xprobe(initreg+0 下 $isunknown，1 = 有悬空位) sec0=%b sec1=%b mq_s1=%b marb0=%b marb1=%b cache_stage1=%b llptw_stage1_sel=%b",
+               $isunknown(u_i.u_core.sec0), $isunknown(u_i.u_core.sec1),
+               $isunknown(u_i.u_core.mq_s1), $isunknown(u_i.u_core.marb0_out_s1),
+               $isunknown(u_i.u_core.marb1_out_s1), $isunknown(u_i.u_core.cache_stage1),
+               $isunknown(u_i.u_core.llptw_stage1_sel));
+    end""")
+A("""    if ($test$plusargs("initreg_probe"))
+      $display("initreg_probe(复位刚撤，暖机之前) g.tag=%h i.tag=%h g.ppn=%h i.ppn=%h",
+               u_g.ptw.hptw_resp_entry_tag, u_i.u_core.u_ptw.hptw_resp_entry_tag,
+               u_g.ptw.hptw_resp_entry_ppn, u_i.u_core.u_ptw.hptw_resp_entry_ppn);""")
 A("")
 A("""    // ------------------------------------------------------------------
     // 暖机窗口（不比较）：把两侧推到确定状态，并把 PMP 配成"放行"。

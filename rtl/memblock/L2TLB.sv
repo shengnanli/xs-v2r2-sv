@@ -255,20 +255,6 @@ package l2tlb_pkg;
     logic                               not_super;
   } ptw_merge_resp_noaf_t;
 
-  function automatic ptw_merge_resp_noaf_t mrg_to_noaf(input ptw_merge_resp_t m);
-    ptw_merge_resp_noaf_t r;
-    r.pteidx = m.pteidx;  r.not_super = m.not_super;
-    for (int k = 0; k < CONTIG; k++) begin
-      r.entry[k].tag  = m.entry[k].tag;   r.entry[k].asid    = m.entry[k].asid;
-      r.entry[k].vmid = m.entry[k].vmid;  r.entry[k].n       = m.entry[k].n;
-      r.entry[k].pbmt = m.entry[k].pbmt;  r.entry[k].perm    = m.entry[k].perm;
-      r.entry[k].level= m.entry[k].level; r.entry[k].v       = m.entry[k].v;
-      r.entry[k].ppn  = m.entry[k].ppn;   r.entry[k].ppn_low = m.entry[k].ppn_low;
-      r.entry[k].pf   = m.entry[k].pf;    r.entry[k].cf      = m.entry[k].cf;
-    end
-    return r;
-  endfunction
-
   function automatic ptw_merge_resp_t mrg_from_noaf(input ptw_merge_resp_noaf_t m);
     ptw_merge_resp_t r;
     r.pteidx = m.pteidx;  r.not_super = m.not_super;
@@ -423,7 +409,14 @@ package l2tlb_pkg;
       e.ppn_low = full_ppn[SECTOR_BITS-1:0];
       e.level   = 2'h0;
       e.pbmt    = pte_in.pbmt;
-      e.n       = pte_in.n;
+      // ★n（napot）不是 PTE 第 63 位原样抄★：golden 这里带 ppn[3:0]==8 的门控
+      //   golden L2TLB.sv:3676  wire ptw_resp_n = x1[63] & x1[13:10] == 4'h8;
+      //   （x1 是这 8 条 PTE 的原文，x1[13:10] 就是本条 PTE 的 ppn[3:0]）
+      // Svnapot 规定只有 ppn[3:0]==8 才是合法的 64KB napot 编码，不合法的
+      // n 位当作没有。这一位会顺着 r.not_super = ~entry[sel].n 一路走到
+      // valididx 的"同段"判据，漏了门控 ⇒ FM 报 io_tlb_0_resp_bits_s1_valididx_*
+      // 不等价（2026-09-20 首跑：failing 20，全在 valididx 与它的 difftest 打包位）。
+      e.n       = pte_in.n & (full_ppn[3:0] == 4'h8);
       e.perm    = '{d: pte_in.perm.d, a: pte_in.perm.a, g: pte_in.perm.g,
                     u: pte_in.perm.u, x: pte_in.perm.x, w: pte_in.perm.w,
                     r: pte_in.perm.r};
@@ -3832,7 +3825,15 @@ module xs_L2TLB_core
   // ==========================================================================
   // -- llptw_stage1：LLPTW 入队那拍按 enq_ptr 锁存 cache.resp.stage1，供
   //    first_s2xlate_fault 时回放。golden 无复位（纯 enable 锁存），照搬。
-  ptw_merge_resp_t cache_stage1;
+  // ★类型用 noaf 版★：PtwCache 的 stage1 输出**没有 af 端口**（golden 里这条路的 af
+  // 恒 0，firtool 把端口消掉了，Arbiter3 的 io_in_0_bits_s1_entry_*_af 也不存在）。
+  // 用带 af 的 ptw_merge_resp_t 声明会留下 8 个**没人驱动**的位 —— 仿真里被
+  // 丢 af 的转换里看不出来，但 Formality 会把它认成 X 源：
+  //   analyze_points: "Found 1 X Source  i:/WORK/L2TLB/u_core/C5098
+  //                    Propagates 'X' to the impl compare point ... 20 compare points"
+  // 实测（+vcs+initreg+0 下 $isunknown，寄存器全 0，X 只可能来自悬空线）：
+  //   XPROBE cs1=1  cs1.entry[0..7] x=1   而 sec0/mq_s1/marb0/ls1q 全是 0
+  ptw_merge_resp_noaf_t cache_stage1;
   // BEGIN GENERATED(cache_stage1)
   assign cache_stage1.entry[0].tag     = u_page_cache_resp_bits_stage1_entry_0_tag;
   assign cache_stage1.entry[0].asid    = u_page_cache_resp_bits_stage1_entry_0_asid;
@@ -3998,7 +3999,7 @@ module xs_L2TLB_core
     always_ff @(posedge clock)
       if ((u_llptw_in_ready & u_llptw__in_valid)
           && (u_llptw_mem_enq_ptr == SECTOR_BITS'(i)))
-        llptw_stage1_q[i] <= mrg_to_noaf(cache_stage1);
+        llptw_stage1_q[i] <= cache_stage1;   // 类型已是 noaf，无需再转
   end
 
   // -- mergeArb 三路 valid --

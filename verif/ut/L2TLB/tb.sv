@@ -1951,6 +1951,18 @@ module tb;
     reset = 1'b1;
     repeat (8) @(posedge clock);
     #1 reset = 1'b0;
+    if ($test$plusargs("xprobe")) begin
+      #200;
+      $display("xprobe(initreg+0 下 $isunknown，1 = 有悬空位) sec0=%b sec1=%b mq_s1=%b marb0=%b marb1=%b cache_stage1=%b llptw_stage1_sel=%b",
+               $isunknown(u_i.u_core.sec0), $isunknown(u_i.u_core.sec1),
+               $isunknown(u_i.u_core.mq_s1), $isunknown(u_i.u_core.marb0_out_s1),
+               $isunknown(u_i.u_core.marb1_out_s1), $isunknown(u_i.u_core.cache_stage1),
+               $isunknown(u_i.u_core.llptw_stage1_sel));
+    end
+    if ($test$plusargs("initreg_probe"))
+      $display("initreg_probe(复位刚撤，暖机之前) g.tag=%h i.tag=%h g.ppn=%h i.ppn=%h",
+               u_g.ptw.hptw_resp_entry_tag, u_i.u_core.u_ptw.hptw_resp_entry_tag,
+               u_g.ptw.hptw_resp_entry_ppn, u_i.u_core.u_ptw.hptw_resp_entry_ppn);
 
     // ------------------------------------------------------------------
     // 暖机窗口（不比较）：把两侧推到确定状态，并把 PMP 配成"放行"。

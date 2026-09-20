@@ -112,7 +112,13 @@ simv: $(UT_SRCS) $(TB_SRCS) $(GOLDEN_SRCS) $(RTL_GOLDEN_DEPS) | portlint derive
 # ★做法是"多留一份"而不是"改名"★：原名保持不变（各 lane 的脚本还在 grep 它，
 # 而且现在有 5 条 lane 正在跑，改名会凭空制造失败），额外按轮次存一份副本，
 # 两轮的证据从此并存。没带 initreg 参数时不产生副本，行为完全不变。
-INITREG_TAG = $(if $(findstring +vcs+initreg+random,$(SIM_ARGS)),_initregrandom,$(if $(findstring +vcs+initreg+0,$(SIM_ARGS)),_initreg0,))
+# 2026-09-20 追加 `+vcs+initreg+1` 一档（L2TLB lane）：**双例化**的 UT 里
+# `+vcs+initreg+random` 给两个实例各摇各的初值，DUT 含未复位寄存器时两侧初态
+# 就不同，比出来的差异跟重写无关（L2TLB 实测 PTW.hptw_resp_entry_tag
+# g=0dc7f7ee8f / i=26ff00d6fe，正好是 UT 报的那条失配）。+0 与 +1 都是常量档，
+# 两侧必然同初态、又互不相同，是双例化 UT 能用的两档。没有 tag 的话两轮日志
+# 会互相覆盖——那正是本段注释一开始要防的事。
+INITREG_TAG = $(if $(findstring +vcs+initreg+random,$(SIM_ARGS)),_initregrandom,$(if $(findstring +vcs+initreg+0,$(SIM_ARGS)),_initreg0,$(if $(findstring +vcs+initreg+1,$(SIM_ARGS)),_initreg1,)))
 
 # ★跑之前先删掉两个名字★（2026-09-17，BloomFilter lane 指出的交互）
 # 「多留一份副本」和「每次先删日志」这两条规矩天然打架：留副本是为了让两轮证据并存，

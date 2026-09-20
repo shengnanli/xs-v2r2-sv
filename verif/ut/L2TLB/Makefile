@@ -109,4 +109,26 @@ include ../../../scripts/ut_common.mk
 # UT 两侧统一定义 SYNTHESIS 关掉，否则随机激励会触发 $fatal。
 VCS += +define+SYNTHESIS +vcs+initreg+random
 SIM_ARGS += +vcs+initreg+$(INITREG)
-INITREG ?= random
+
+# ★本 UT 的两档 initreg 是 0 与 1，**不是** 0 与 random★（2026-09-20 实测定的）
+#
+# 双例化比对的前提是"同激励 + **同初态**"。`+vcs+initreg+random` 是
+# **按实例**各摇各的：u_g.ptw 与 u_i.u_core.u_ptw 是两个不同实例，未复位寄存器
+# 拿到不同随机值，于是两侧从一开始就不在同一个状态上。实测（seed=2）：
+#     P2 g.tag=0dc7f7ee8f i.tag=26ff00d6fe      <- 复位刚撤、暖机之前
+#     vec 12 io_tlb_0_resp_bits_s2_entry_tag g=0dc7f7ee8f i=26ff00d6fe
+# 一模一样的两个数——失配就是这个未复位寄存器直通到输出：
+#     PTW.sv:769  reg [37:0] hptw_resp_entry_tag;   （复位块里没有它）
+#     PTW.sv:1991 assign io_resp_bits_h_resp_entry_tag = gvpn_gpf ? gpaddr[49:12]
+#                                                      : hptw_resp_entry_tag;
+# ★而 PTW 是 **golden 子模块**，两侧例化的是同一份定义★——差异与重写无关，
+# 是 harness 的性质。40 seed × 50k 实测：+random 有 21/32 报错，
+# 同样这些 seed 在 +0 和 +1 下 errors 全是 0。
+#
+# +0 / +1 都是常量档：两侧必然同初态，且两档确实不同（实测
+#     +0: g.tag=0000000000 i.tag=0000000000
+#     +1: g.tag=3fffffffff i.tag=3fffffffff ）
+# 用 `make run INITREG=1` / `INITREG=0`，日志分别存成 sim_<seed>_initreg1.log
+# 与 sim_<seed>_initreg0.log（ut_common.mk 的 INITREG_TAG 已加 +1 这一档）。
+# 探针可复跑：./simv +ntb_random_seed=<n> +ncycles=100 +vcs+initreg+<档> +initreg_probe
+INITREG ?= 0
