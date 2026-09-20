@@ -158,18 +158,12 @@ CATCH_COUNT_LEDGER = {
     # -- 下面 12 个与上面同一批存量，只是随 main f034da5f（OthersEntry 12 变体）
     #    在我落这张表**之后**才合进来。★分界线是 0920 那条裁定，不是我写表的时刻★；
     #    照裁定它们属于「存量、下次改动/晋升时顺带修」，不是「新长出来的违规」。
-    'verif/ut/OthersEntry/fm_pins_pre.tcl',
-    'verif/ut/OthersEntry_104/fm_pins_pre.tcl',
-    'verif/ut/OthersEntry_106/fm_pins_pre.tcl',
-    'verif/ut/OthersEntry_120/fm_pins_pre.tcl',
-    'verif/ut/OthersEntry_122/fm_pins_pre.tcl',
-    'verif/ut/OthersEntry_44/fm_pins_pre.tcl',
-    'verif/ut/OthersEntry_50/fm_pins_pre.tcl',
-    'verif/ut/OthersEntry_6/fm_pins_pre.tcl',
-    'verif/ut/OthersEntry_66/fm_pins_pre.tcl',
-    'verif/ut/OthersEntry_72/fm_pins_pre.tcl',
-    'verif/ut/OthersEntry_88/fm_pins_pre.tcl',
-    'verif/ut/OthersEntry_90/fm_pins_pre.tcl',
+    # ★2026-09-20 缩表 12 条（agent/othersentry）★：12 个 OthersEntry_* 的钉点
+    #   文件已由 verif/ut/OthersEntry_common/gen_fm_pins.py 改成用**返回值**计数，
+    #   不再用 catch。真 fm_shell 实测的前后对照（同一个注入 typo）：
+    #     旧: `OE_PINS: 822 / 822 tried, 0 threw` —— 完全没响
+    #     新: `OE_PIN_FAIL` + `n=821 miss=1` + error 真的抛出
+    #   台账只许缩，这里按闸 G2b 的要求把它们摘掉。
 }
 
 PASS, FAIL = [], []
