@@ -113,7 +113,16 @@ MUTANTS = [
            '写成覆盖就丢掉另一路的 loadDependency 贡献',
      "          if (wk_iq_oh[s][w]) u_ld_dep[s] |= shift_iq_dep(iq_ld_dep[w], w);",
      "          if (wk_iq_oh[s][w]) u_ld_dep[s] = shift_iq_dep(iq_ld_dep[w], w);",
-     lambda v: (v.n_wk_iq > 0, '没有 IQ 唤醒的变体里 wk_iq_oh 恒 0，这条是死的')),
+     lambda v: (v.n_wk_iq > 0 and v.iq_has_ld_dep,
+                '要有 IQ 唤醒**而且** IQ 唤醒总线真的带 loadDependency，这条才活。'
+                '★2026-09-20 实测更正★：原判据只写 v.n_wk_iq > 0，于是三个 Falu* 变体'
+                '（n_wk_iq=3 但 iq_has_ld_dep=False）被判成"适用"，跑出来是"逃逸"。'
+                '查下去是**空变异**：薄层把 .enq_ld_dep/.iq_ld_dep/.iqd_ld_dep 全接 \'0，'
+                'golden Entries 顶层连一个 srcLoadDependency/loadDependency 端口都没有，'
+                '所以 `x |= 0` 与 `x = 0` 在累加器本来就是 0 时完全一样。'
+                '★不是推理，是 FM 证的★：把 M1 注进核跑 FM，'
+                'passing 15934 / failing 0 / unread 0，与未变异逐个相同 ⇒ 电路没变。'
+                '同源判据见 M2（它一开始就要求 n_wk_iq>0 and n_ld_cancel>0）。')),
 
     ('M2', 'srcLoadTransCancel 的选择向量拿成「去掉 og0 取消之后」的那份 —— '
            '本轮实际踩到的 bug：被 og0 取消的那一路不再参与 load 撤销判定，'
@@ -487,7 +496,15 @@ def main():
             print(f'  {mid}: {why}')
         rc = 1
     if escaped:
-        print('逃逸清单（UT 在这些通路上没有判别力，必须先补激励/比对）:')
+        print('逃逸清单 —— ★先别急着说"UT 瞎了"★:')
+        print('  本仓规矩是「变异体必须先自证改变了电路」。逃逸有两种，处置完全相反：')
+        print('   (a) 变异真的改了电路、UT 没看见 ⇒ UT 在那条通路上没判别力，补激励/比对；')
+        print('   (b) ★变异根本没改电路（空变异）⇒ 是 applicability 判据写松了，改判据★。')
+        print('  判别方法（便宜且可复核）：把该变异注进核跑一次 FM。')
+        print('    FM 与未变异**逐个相同**（passing/failing/unread）⇒ 电路没变 ⇒ (b)；')
+        print('    FM 出现 failing/点数变化                        ⇒ 电路变了 ⇒ (a)。')
+        print('  2026-09-20 实测过一次 (b)：M1 在三个 Falu* 上"逃逸"，FM 证明是空变异，')
+        print('  修的是 M1 的判据（加 iq_has_ld_dep），不是 UT。')
         for mid, desc in escaped:
             print(f'  {mid}: {desc}')
         rc = 1
