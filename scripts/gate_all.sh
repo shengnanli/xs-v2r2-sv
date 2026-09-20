@@ -42,6 +42,13 @@ run "覆盖率台账幂等"   python3 scripts/rewrite_coverage.py --check
 # 完整写出这些串会让**每个目标**的判定中毒。agent/err3 实测撞到过：写全之后
 # MuxBundle 当场从 SUCCEEDED 翻成 elab147=true 的 PARTIAL，而 RTL 一字未动。
 run "FM Tcl 毒字符串闸"  python3 scripts/test_tcl_no_poison.py
+# FM Tcl 输出字符闸：毒字符串闸管的是"注释里写全关键词会污染正则"，
+# 这一条管的是另一个机制 —— `puts`/`error` 里的 U+0080..U+00FF（× § · 这类）
+# 会原样落成单字节进 fm.log，让 fm_verdict.py 的严格 utf-8 读日志当场崩，
+# 于是 verdict 变空、MAKE_RC=2，却照样留下一个看起来齐全的 evidence 目录。
+# 2026-09-20 实测踩到（TlbStorageWrapper_2/_3），判据自带双向自测。
+run "FM Tcl 输出字符闸"  python3 scripts/test_tcl_output_ascii.py
+run "FM Tcl 输出闸负测"  python3 scripts/test_tcl_output_ascii.py --selftest
 # fm_eq.tcl 结构闸：该文件是多 worker 并行改的共享件，冲突全集中在 vmucp 白名单那行。
 # 我两次处理错（"两侧都留"留出两条串联 if 互相拒目标；git add -A 提交了带冲突标记的
 # 文件）。两次都修好却没加闸，于是下次合并原样复发。这道闸把"修好"变成"修住"。

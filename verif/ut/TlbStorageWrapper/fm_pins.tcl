@@ -26,6 +26,13 @@
 # 变体 0 / _1 也会 source 到本文件：它们两侧用的都是 golden TLBFA（f40deba 那轮的闭包），
 # reqVpn 按名字就配上了，未读集合为空 ⇒ 本脚本打印"无需钉点"后什么也不做。
 #
+# ★输出字符必须是 ASCII★
+# `puts`/`error` 里的 U+0080..U+00FF 字符（× § · 这类）会被 fm_shell
+# 原样写成单字节进 fm.log，而 fm_verdict.py 是严格 utf-8 读日志 ⇒ 当场崩。
+# 本文件 2026-09-20 就因为一个 `×` 让 make fm-TlbStorageWrapper_2 以 rc=2 结束、
+# receipt 的 verdict 字段变空（见 scripts/test_tcl_output_ascii.py 的文件头）。
+# 注释里写中文是安全的（入口回显保留 utf-8），只有**输出**要守这条。
+#
 # ★fail-closed★
 # set_user_match 对**不存在的名字不报错**（本仓实测），所以"钉了 N 条"本身什么都不证明。
 # 判据三层：
@@ -76,10 +83,10 @@ if {[llength $_ref] == 0 && [llength $_impl] == 0} {
     # 实测到的端口下标集合取，所以"少了一个端口"会被下面这条当场判红，
     # 而不是顺着实际条数把期望调低——那样等于没有期望。
     if {$_pinned != 11 * $_nports || $_pinned != [llength $_impl]} {
-        error "TLBSW_PIN_ERROR: 钉了 $_pinned 条，期望 11×$_nports 位、impl 侧未读点\
-               [llength $_impl] 个 —— 三者必须相等，不相等就不是双射"
+        error "TLBSW_PIN_ERROR: 钉了 $_pinned 条，期望 11 x $_nports 位、impl 侧未读点\
+               [llength $_impl] 个 -- 三者必须相等，不相等就不是双射"
     }
-    puts "TLBSW_PINS: 钉了 $_pinned 对 reqVpn 死位 = 11 位 × $_nports 端口\
-（ref [llength $_ref] / impl [llength $_impl]），双射成立"
+    puts "TLBSW_PINS: 钉了 $_pinned 对 reqVpn 死位 = 11 位 x $_nports 端口\
+(ref [llength $_ref] / impl [llength $_impl])，双射成立"
     puts "TLBSW_PINS: 终局判据在外层——最后一次 match 后 unread 必须归 0，且 passing 必须增加 $_pinned"
 }
