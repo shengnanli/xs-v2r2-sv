@@ -91,6 +91,27 @@ B 单独作为一行新鲜度提示打印出来（"lane 里另有 N 份未列入
 不按本次扫描范围算 —— 否则同一行在全量扫描与逐行重算下会得出两个数。
 
 本闸**不进 gate_all.sh**：它的输入在仓外，进了就是一条"别人干活就会红"的闸。
+
+## ★那它什么时候必须手工跑？★
+
+不进 gate_all 的代价是**没有任何东西会提醒你跑它**，于是它会慢慢变成一张没人跑、
+然后没人信、最后没人看的表 —— 本仓已经吃过一模一样的亏（round 台账被写死成一份，
+新一轮签核记不上账，written 在涨 proven 不涨）。所以把触发条件写死在这里：
+
+  1. ★收录任何 evidence 之后★（`git add -f evidence/...`）—— 收进去的那些行
+     `in_vcs` 要翻成 yes，不重跑表就还在说"待收"。
+  2. ★动了 `scripts/fm_eq.tcl` 之后★，尤其是动了 vmucp 白名单。白名单在**每个目标
+     的证明闭包里**，加一个名字就可能让某份 receipt 从"换到 main 下会 exit 3"
+     变成"能过"（或者反过来）。这是这张表存在的头号理由，改完必须重判。
+  3. ★动了 `scripts/sidecar/fm_native_emit.tcl`、任何 `verif/ut/*/fm_pins*.tcl`、
+     `verif/allow/*.json`、`verif/dead_ref/*.json` 之后★ —— 都在关二的逐项闭包里。
+  4. ★合 main / rebase 之后★：别的 lane 合进来的 rtl/ 会同时改变关一（实现在不在
+     main）与关二第 (2) 项（impl 闭包字节）。实测一次合并就能让几十份 receipt
+     从 NEEDS_RTL_MERGE 翻成可收，或者从可收翻成 NEEDS_RERUN。
+  5. ★准备再做一轮收录之前★ —— 先跑一次 `--check` 看新鲜度那一行有多少份未列入。
+
+跑法：`python3 scripts/gen_receipt_harvest.py` 重生成，然后 `--check` 应为绿。
+只想知道"表还对不对、不想重生成"就单跑 `--check`。
 """
 # ★本机是 Python 3.6：subprocess.run 没有 capture_output（3.7 才有）。★
 import argparse
