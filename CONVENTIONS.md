@@ -1560,3 +1560,63 @@ elaborate 期不变式被解除武装。电路本身没变（新参数的默认�
    而本仓的参数声明里有 `parameter logic [(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0] X = '0`
    这种**维度表达式里带括号**的写法，于是它在 `xs_iq_entries_core` 上报了 30 多个
    假阳性。闸的第一次运行结果对不上，先怀疑闸，不要先怀疑代码。
+
+## ★golden 的寄存器**字段集合**必须逐字照搬，不能按「哪些恒常量」推断★（2026-09-20，InterruptFilter 实测）
+
+`Reg(Vec(N, Bundle))` 被 firtool 展平成 `name_<i>_<field>` 一堆标量寄存器时，
+**有些字段在 golden 里根本不存在**。很自然的推断是「恒为常量的字段被折掉了」——
+**这个推断是错的**，照它写会多一批或少一批寄存器，FM 里立刻变成配不上的比较点。
+
+InterruptFilter 的三族 `Reg(Vec(8, IpriosSort))`（字段 idx/enable/isZero/greaterThan255/prioNum）
+在 golden 里长这样（现读 golden，不是推的）：
+
+| 族 | idx | enable | isZero | greaterThan255 | prioNum |
+|---|---|---|---|---|---|
+| `mipriosReg[0..7]` | 8 个 | 8 个 | 8 个 | **只有第 3 组** | 8 个 |
+| `hsipriosReg[0..7]` | 8 个 | 8 个 | 8 个 | **只有第 3 组** | 8 个 |
+| `hvipriosReg[0..7]` | 8 个 | 8 个 | 8 个 | **一个都没有** | **只有 0..6 组** |
+
+### 判据不是「恒常量」，是「在寄存器折叠那一趟**已经**是字面常量」
+
+被折掉的那些，在 **Chisel 源里就是字面量**：
+`greaterThan255 := false.B`（除了外部中断那一条）、VS 第 7 组的槽位 56..60 对应
+中断 51/25/50/49/24/48，没有任何 hviprio 字节，`prioNum := 0.U` 是字面写死的。
+
+而 `mipriosReg_0_enable` **同样恒为 0**（`mip` 只有中断号 1..13 的端口，
+第 0 组的 8 个槽位全是 ≥14 的中断号，`enable` 不可能为 1），golden 里却**留着**：
+
+```verilog
+  reg         mipriosReg_0_enable;        // golden 里有
+  ...
+  mipriosReg_0_enable <= 1'h0;            // 次态是常量 0
+```
+
+区别在于：`enable` 的那个 0 要先把 64 位向量的**位提取**折掉
+（`mtopigather[63] = mip[63] & ...`，而 `mip[63]` 恒 0）才看得见，
+**这趟折叠晚于寄存器常量折叠**。也就是说，留不留是 **firtool 的 pass 顺序**决定的，
+**不是设计语义决定的** —— 你从 Chisel 或从"这一位逻辑上恒不恒定"**推不出来**。
+
+### 规矩
+
+1. 重写件的寄存器**字段集合**从 golden 的 `reg` 声明**现数**，逐字对齐；
+   拿不准就 `grep -E '^\s*reg\s' golden/<Mod>.sv` 数一遍，别从 Chisel 反推。
+2. 多一位 golden 没有的常零寄存器 = 一个**没有对家**的比较点，
+   `signoff-strict` 直接判 `strict_unmatched!=0`；少一位同理（方向相反）。
+3. 这条和 ★看起来冗余的重复结构，一份都不许少★ 是同一条判据的两面：
+   那条说"别删 golden 有的"，这条说"也别补 golden 没有的"，
+   **两边都不许按'逻辑上应该怎样'来改**。
+4. 实现上想保持可读性，就把被折掉的那一列在**读出侧**补常量，
+   而不是真的开一个寄存器：
+
+   ```systemverilog
+   // golden 只给第 EI_GROUP 组留了这一位，其余组的读出侧补 0
+   mipriosRegQ[g].greaterThan255 = (g == EI_GROUP) ? mipriosReg_greaterThan255 : 1'b0;
+   ```
+
+### 连带：这批常零寄存器在 FM 里的归宿是 `Not Compared / Constant reg`，不是 `passing`
+
+InterruptFilter 实测（`FM_MERGE_DUP=false`）：比较点全集 578 =
+`440 passing`（74 Port + 366 DFF）+ `138 Not Compared / Constant reg`。
+那 138 位就是两侧都恒为常量的寄存器 —— **两侧都有、都是 0、都不产生比较内容**。
+所以做 passing 预测时它们要算进「可指认的缺口」（`scripts/fm_predict.py` 的
+`constant_reg` 项），**不能指望它们变成 passing**。
