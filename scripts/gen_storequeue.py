@@ -514,8 +514,43 @@ def emit(chans, scalars):
                                           ',' if i != len(allp) - 1 else ''))
     out.append(');')
     out.append('')
-    out.append('  // TODO(§9-G) 扁平端口 <-> 结构体数组的接线，以及 u_core 例化。')
-    out.append('  // 例化名按本仓规范固定为 u_core。')
+    # §9-G 扁平端口 <-> 结构体数组接线 + u_core 例化（机械生成，不手写）
+    out.append('  // 扁平 golden 端口 <-> 可读核结构体数组的接线。')
+    out.append('  // ★本段全部由 gen_storequeue.py 机械生成★：字段顺序直接取自')
+    out.append('  //   emit_pkg_structs 用的同一张 chans 表，所以 packed struct 的位序')
+    out.append('  //   与这里的赋值**按构造**一致，不存在手写错位的可能。')
+    out.append('')
+    for prefix, info in chans.items():
+        base = prefix.replace('io_', '')
+        n = info['n']
+        for d, suffix in (('input', 'in'), ('output', 'out')):
+            fl = [(w, f) for dd, w, f in info['fields'] if dd == d]
+            if not fl:
+                continue
+            tn = struct_name(prefix) + '_' + suffix
+            out.append('  %s %s_%s [%d];' % (tn, base, suffix, n))
+            for i in range(n):
+                for w, f in fl:
+                    flat = '%s_%d_%s' % (prefix, i, f)
+                    if d == 'input':
+                        out.append('  assign %s_%s[%d].%s = %s;' % (base, suffix, i, f, flat))
+                    else:
+                        out.append('  assign %s = %s_%s[%d].%s;' % (flat, base, suffix, i, f))
+            out.append('')
+    out.append('  xs_StoreQueue_core u_core (')
+    conn = ['    .clock(clock)', '    .reset(reset)']
+    for prefix, info in chans.items():
+        base = prefix.replace('io_', '')
+        for d, suffix in (('input', 'in'), ('output', 'out')):
+            if not [1 for dd, w, f in info['fields'] if dd == d]:
+                continue
+            conn.append('    .%s_%s(%s_%s)' % (base, suffix, base, suffix))
+    for d, w, n in scalars:
+        if n in ('clock', 'reset'):
+            continue
+        conn.append('    .%s(%s)' % (n, n))
+    out.append(',\n'.join(conn))
+    out.append('  );')
     out.append('')
     out.append('endmodule')
 

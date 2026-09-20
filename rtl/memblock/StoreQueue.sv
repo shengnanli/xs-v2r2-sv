@@ -1869,7 +1869,1054 @@ module StoreQueue(
   output [72:0]     gatewayIn_packed_48_bore
 );
 
-  // TODO(§9-G) 扁平端口 <-> 结构体数组的接线，以及 u_core 例化。
-  // 例化名按本仓规范固定为 u_core。
+  // 扁平 golden 端口 <-> 可读核结构体数组的接线。
+  // ★本段全部由 gen_storequeue.py 机械生成★：字段顺序直接取自
+  //   emit_pkg_structs 用的同一张 chans 表，所以 packed struct 的位序
+  //   与这里的赋值**按构造**一致，不存在手写错位的可能。
+
+  sq_enq_req_t_in enq_req_in [6];
+  assign enq_req_in[0].valid = io_enq_req_0_valid;
+  assign enq_req_in[0].bits_exceptionVec_0 = io_enq_req_0_bits_exceptionVec_0;
+  assign enq_req_in[0].bits_exceptionVec_1 = io_enq_req_0_bits_exceptionVec_1;
+  assign enq_req_in[0].bits_exceptionVec_2 = io_enq_req_0_bits_exceptionVec_2;
+  assign enq_req_in[0].bits_exceptionVec_3 = io_enq_req_0_bits_exceptionVec_3;
+  assign enq_req_in[0].bits_exceptionVec_4 = io_enq_req_0_bits_exceptionVec_4;
+  assign enq_req_in[0].bits_exceptionVec_5 = io_enq_req_0_bits_exceptionVec_5;
+  assign enq_req_in[0].bits_exceptionVec_6 = io_enq_req_0_bits_exceptionVec_6;
+  assign enq_req_in[0].bits_exceptionVec_7 = io_enq_req_0_bits_exceptionVec_7;
+  assign enq_req_in[0].bits_exceptionVec_8 = io_enq_req_0_bits_exceptionVec_8;
+  assign enq_req_in[0].bits_exceptionVec_9 = io_enq_req_0_bits_exceptionVec_9;
+  assign enq_req_in[0].bits_exceptionVec_10 = io_enq_req_0_bits_exceptionVec_10;
+  assign enq_req_in[0].bits_exceptionVec_11 = io_enq_req_0_bits_exceptionVec_11;
+  assign enq_req_in[0].bits_exceptionVec_12 = io_enq_req_0_bits_exceptionVec_12;
+  assign enq_req_in[0].bits_exceptionVec_13 = io_enq_req_0_bits_exceptionVec_13;
+  assign enq_req_in[0].bits_exceptionVec_14 = io_enq_req_0_bits_exceptionVec_14;
+  assign enq_req_in[0].bits_exceptionVec_15 = io_enq_req_0_bits_exceptionVec_15;
+  assign enq_req_in[0].bits_exceptionVec_16 = io_enq_req_0_bits_exceptionVec_16;
+  assign enq_req_in[0].bits_exceptionVec_17 = io_enq_req_0_bits_exceptionVec_17;
+  assign enq_req_in[0].bits_exceptionVec_18 = io_enq_req_0_bits_exceptionVec_18;
+  assign enq_req_in[0].bits_exceptionVec_19 = io_enq_req_0_bits_exceptionVec_19;
+  assign enq_req_in[0].bits_exceptionVec_20 = io_enq_req_0_bits_exceptionVec_20;
+  assign enq_req_in[0].bits_exceptionVec_21 = io_enq_req_0_bits_exceptionVec_21;
+  assign enq_req_in[0].bits_exceptionVec_22 = io_enq_req_0_bits_exceptionVec_22;
+  assign enq_req_in[0].bits_exceptionVec_23 = io_enq_req_0_bits_exceptionVec_23;
+  assign enq_req_in[0].bits_trigger = io_enq_req_0_bits_trigger;
+  assign enq_req_in[0].bits_fuType = io_enq_req_0_bits_fuType;
+  assign enq_req_in[0].bits_fuOpType = io_enq_req_0_bits_fuOpType;
+  assign enq_req_in[0].bits_rfWen = io_enq_req_0_bits_rfWen;
+  assign enq_req_in[0].bits_flushPipe = io_enq_req_0_bits_flushPipe;
+  assign enq_req_in[0].bits_vpu_nf = io_enq_req_0_bits_vpu_nf;
+  assign enq_req_in[0].bits_vpu_veew = io_enq_req_0_bits_vpu_veew;
+  assign enq_req_in[0].bits_uopIdx = io_enq_req_0_bits_uopIdx;
+  assign enq_req_in[0].bits_lastUop = io_enq_req_0_bits_lastUop;
+  assign enq_req_in[0].bits_pdest = io_enq_req_0_bits_pdest;
+  assign enq_req_in[0].bits_robIdx_flag = io_enq_req_0_bits_robIdx_flag;
+  assign enq_req_in[0].bits_robIdx_value = io_enq_req_0_bits_robIdx_value;
+  assign enq_req_in[0].bits_debugInfo_eliminatedMove = io_enq_req_0_bits_debugInfo_eliminatedMove;
+  assign enq_req_in[0].bits_debugInfo_renameTime = io_enq_req_0_bits_debugInfo_renameTime;
+  assign enq_req_in[0].bits_debugInfo_dispatchTime = io_enq_req_0_bits_debugInfo_dispatchTime;
+  assign enq_req_in[0].bits_debugInfo_enqRsTime = io_enq_req_0_bits_debugInfo_enqRsTime;
+  assign enq_req_in[0].bits_debugInfo_selectTime = io_enq_req_0_bits_debugInfo_selectTime;
+  assign enq_req_in[0].bits_debugInfo_issueTime = io_enq_req_0_bits_debugInfo_issueTime;
+  assign enq_req_in[0].bits_debugInfo_writebackTime = io_enq_req_0_bits_debugInfo_writebackTime;
+  assign enq_req_in[0].bits_debugInfo_runahead_checkpoint_id = io_enq_req_0_bits_debugInfo_runahead_checkpoint_id;
+  assign enq_req_in[0].bits_debugInfo_tlbFirstReqTime = io_enq_req_0_bits_debugInfo_tlbFirstReqTime;
+  assign enq_req_in[0].bits_debugInfo_tlbRespTime = io_enq_req_0_bits_debugInfo_tlbRespTime;
+  assign enq_req_in[0].bits_debug_seqNum_seqNum = io_enq_req_0_bits_debug_seqNum_seqNum;
+  assign enq_req_in[0].bits_debug_seqNum_uopIdx = io_enq_req_0_bits_debug_seqNum_uopIdx;
+  assign enq_req_in[0].bits_sqIdx_flag = io_enq_req_0_bits_sqIdx_flag;
+  assign enq_req_in[0].bits_sqIdx_value = io_enq_req_0_bits_sqIdx_value;
+  assign enq_req_in[0].bits_numLsElem = io_enq_req_0_bits_numLsElem;
+  assign enq_req_in[1].valid = io_enq_req_1_valid;
+  assign enq_req_in[1].bits_exceptionVec_0 = io_enq_req_1_bits_exceptionVec_0;
+  assign enq_req_in[1].bits_exceptionVec_1 = io_enq_req_1_bits_exceptionVec_1;
+  assign enq_req_in[1].bits_exceptionVec_2 = io_enq_req_1_bits_exceptionVec_2;
+  assign enq_req_in[1].bits_exceptionVec_3 = io_enq_req_1_bits_exceptionVec_3;
+  assign enq_req_in[1].bits_exceptionVec_4 = io_enq_req_1_bits_exceptionVec_4;
+  assign enq_req_in[1].bits_exceptionVec_5 = io_enq_req_1_bits_exceptionVec_5;
+  assign enq_req_in[1].bits_exceptionVec_6 = io_enq_req_1_bits_exceptionVec_6;
+  assign enq_req_in[1].bits_exceptionVec_7 = io_enq_req_1_bits_exceptionVec_7;
+  assign enq_req_in[1].bits_exceptionVec_8 = io_enq_req_1_bits_exceptionVec_8;
+  assign enq_req_in[1].bits_exceptionVec_9 = io_enq_req_1_bits_exceptionVec_9;
+  assign enq_req_in[1].bits_exceptionVec_10 = io_enq_req_1_bits_exceptionVec_10;
+  assign enq_req_in[1].bits_exceptionVec_11 = io_enq_req_1_bits_exceptionVec_11;
+  assign enq_req_in[1].bits_exceptionVec_12 = io_enq_req_1_bits_exceptionVec_12;
+  assign enq_req_in[1].bits_exceptionVec_13 = io_enq_req_1_bits_exceptionVec_13;
+  assign enq_req_in[1].bits_exceptionVec_14 = io_enq_req_1_bits_exceptionVec_14;
+  assign enq_req_in[1].bits_exceptionVec_15 = io_enq_req_1_bits_exceptionVec_15;
+  assign enq_req_in[1].bits_exceptionVec_16 = io_enq_req_1_bits_exceptionVec_16;
+  assign enq_req_in[1].bits_exceptionVec_17 = io_enq_req_1_bits_exceptionVec_17;
+  assign enq_req_in[1].bits_exceptionVec_18 = io_enq_req_1_bits_exceptionVec_18;
+  assign enq_req_in[1].bits_exceptionVec_19 = io_enq_req_1_bits_exceptionVec_19;
+  assign enq_req_in[1].bits_exceptionVec_20 = io_enq_req_1_bits_exceptionVec_20;
+  assign enq_req_in[1].bits_exceptionVec_21 = io_enq_req_1_bits_exceptionVec_21;
+  assign enq_req_in[1].bits_exceptionVec_22 = io_enq_req_1_bits_exceptionVec_22;
+  assign enq_req_in[1].bits_exceptionVec_23 = io_enq_req_1_bits_exceptionVec_23;
+  assign enq_req_in[1].bits_trigger = io_enq_req_1_bits_trigger;
+  assign enq_req_in[1].bits_fuType = io_enq_req_1_bits_fuType;
+  assign enq_req_in[1].bits_fuOpType = io_enq_req_1_bits_fuOpType;
+  assign enq_req_in[1].bits_rfWen = io_enq_req_1_bits_rfWen;
+  assign enq_req_in[1].bits_flushPipe = io_enq_req_1_bits_flushPipe;
+  assign enq_req_in[1].bits_vpu_nf = io_enq_req_1_bits_vpu_nf;
+  assign enq_req_in[1].bits_vpu_veew = io_enq_req_1_bits_vpu_veew;
+  assign enq_req_in[1].bits_uopIdx = io_enq_req_1_bits_uopIdx;
+  assign enq_req_in[1].bits_lastUop = io_enq_req_1_bits_lastUop;
+  assign enq_req_in[1].bits_pdest = io_enq_req_1_bits_pdest;
+  assign enq_req_in[1].bits_robIdx_flag = io_enq_req_1_bits_robIdx_flag;
+  assign enq_req_in[1].bits_robIdx_value = io_enq_req_1_bits_robIdx_value;
+  assign enq_req_in[1].bits_debugInfo_eliminatedMove = io_enq_req_1_bits_debugInfo_eliminatedMove;
+  assign enq_req_in[1].bits_debugInfo_renameTime = io_enq_req_1_bits_debugInfo_renameTime;
+  assign enq_req_in[1].bits_debugInfo_dispatchTime = io_enq_req_1_bits_debugInfo_dispatchTime;
+  assign enq_req_in[1].bits_debugInfo_enqRsTime = io_enq_req_1_bits_debugInfo_enqRsTime;
+  assign enq_req_in[1].bits_debugInfo_selectTime = io_enq_req_1_bits_debugInfo_selectTime;
+  assign enq_req_in[1].bits_debugInfo_issueTime = io_enq_req_1_bits_debugInfo_issueTime;
+  assign enq_req_in[1].bits_debugInfo_writebackTime = io_enq_req_1_bits_debugInfo_writebackTime;
+  assign enq_req_in[1].bits_debugInfo_runahead_checkpoint_id = io_enq_req_1_bits_debugInfo_runahead_checkpoint_id;
+  assign enq_req_in[1].bits_debugInfo_tlbFirstReqTime = io_enq_req_1_bits_debugInfo_tlbFirstReqTime;
+  assign enq_req_in[1].bits_debugInfo_tlbRespTime = io_enq_req_1_bits_debugInfo_tlbRespTime;
+  assign enq_req_in[1].bits_debug_seqNum_seqNum = io_enq_req_1_bits_debug_seqNum_seqNum;
+  assign enq_req_in[1].bits_debug_seqNum_uopIdx = io_enq_req_1_bits_debug_seqNum_uopIdx;
+  assign enq_req_in[1].bits_sqIdx_flag = io_enq_req_1_bits_sqIdx_flag;
+  assign enq_req_in[1].bits_sqIdx_value = io_enq_req_1_bits_sqIdx_value;
+  assign enq_req_in[1].bits_numLsElem = io_enq_req_1_bits_numLsElem;
+  assign enq_req_in[2].valid = io_enq_req_2_valid;
+  assign enq_req_in[2].bits_exceptionVec_0 = io_enq_req_2_bits_exceptionVec_0;
+  assign enq_req_in[2].bits_exceptionVec_1 = io_enq_req_2_bits_exceptionVec_1;
+  assign enq_req_in[2].bits_exceptionVec_2 = io_enq_req_2_bits_exceptionVec_2;
+  assign enq_req_in[2].bits_exceptionVec_3 = io_enq_req_2_bits_exceptionVec_3;
+  assign enq_req_in[2].bits_exceptionVec_4 = io_enq_req_2_bits_exceptionVec_4;
+  assign enq_req_in[2].bits_exceptionVec_5 = io_enq_req_2_bits_exceptionVec_5;
+  assign enq_req_in[2].bits_exceptionVec_6 = io_enq_req_2_bits_exceptionVec_6;
+  assign enq_req_in[2].bits_exceptionVec_7 = io_enq_req_2_bits_exceptionVec_7;
+  assign enq_req_in[2].bits_exceptionVec_8 = io_enq_req_2_bits_exceptionVec_8;
+  assign enq_req_in[2].bits_exceptionVec_9 = io_enq_req_2_bits_exceptionVec_9;
+  assign enq_req_in[2].bits_exceptionVec_10 = io_enq_req_2_bits_exceptionVec_10;
+  assign enq_req_in[2].bits_exceptionVec_11 = io_enq_req_2_bits_exceptionVec_11;
+  assign enq_req_in[2].bits_exceptionVec_12 = io_enq_req_2_bits_exceptionVec_12;
+  assign enq_req_in[2].bits_exceptionVec_13 = io_enq_req_2_bits_exceptionVec_13;
+  assign enq_req_in[2].bits_exceptionVec_14 = io_enq_req_2_bits_exceptionVec_14;
+  assign enq_req_in[2].bits_exceptionVec_15 = io_enq_req_2_bits_exceptionVec_15;
+  assign enq_req_in[2].bits_exceptionVec_16 = io_enq_req_2_bits_exceptionVec_16;
+  assign enq_req_in[2].bits_exceptionVec_17 = io_enq_req_2_bits_exceptionVec_17;
+  assign enq_req_in[2].bits_exceptionVec_18 = io_enq_req_2_bits_exceptionVec_18;
+  assign enq_req_in[2].bits_exceptionVec_19 = io_enq_req_2_bits_exceptionVec_19;
+  assign enq_req_in[2].bits_exceptionVec_20 = io_enq_req_2_bits_exceptionVec_20;
+  assign enq_req_in[2].bits_exceptionVec_21 = io_enq_req_2_bits_exceptionVec_21;
+  assign enq_req_in[2].bits_exceptionVec_22 = io_enq_req_2_bits_exceptionVec_22;
+  assign enq_req_in[2].bits_exceptionVec_23 = io_enq_req_2_bits_exceptionVec_23;
+  assign enq_req_in[2].bits_trigger = io_enq_req_2_bits_trigger;
+  assign enq_req_in[2].bits_fuType = io_enq_req_2_bits_fuType;
+  assign enq_req_in[2].bits_fuOpType = io_enq_req_2_bits_fuOpType;
+  assign enq_req_in[2].bits_rfWen = io_enq_req_2_bits_rfWen;
+  assign enq_req_in[2].bits_flushPipe = io_enq_req_2_bits_flushPipe;
+  assign enq_req_in[2].bits_vpu_nf = io_enq_req_2_bits_vpu_nf;
+  assign enq_req_in[2].bits_vpu_veew = io_enq_req_2_bits_vpu_veew;
+  assign enq_req_in[2].bits_uopIdx = io_enq_req_2_bits_uopIdx;
+  assign enq_req_in[2].bits_lastUop = io_enq_req_2_bits_lastUop;
+  assign enq_req_in[2].bits_pdest = io_enq_req_2_bits_pdest;
+  assign enq_req_in[2].bits_robIdx_flag = io_enq_req_2_bits_robIdx_flag;
+  assign enq_req_in[2].bits_robIdx_value = io_enq_req_2_bits_robIdx_value;
+  assign enq_req_in[2].bits_debugInfo_eliminatedMove = io_enq_req_2_bits_debugInfo_eliminatedMove;
+  assign enq_req_in[2].bits_debugInfo_renameTime = io_enq_req_2_bits_debugInfo_renameTime;
+  assign enq_req_in[2].bits_debugInfo_dispatchTime = io_enq_req_2_bits_debugInfo_dispatchTime;
+  assign enq_req_in[2].bits_debugInfo_enqRsTime = io_enq_req_2_bits_debugInfo_enqRsTime;
+  assign enq_req_in[2].bits_debugInfo_selectTime = io_enq_req_2_bits_debugInfo_selectTime;
+  assign enq_req_in[2].bits_debugInfo_issueTime = io_enq_req_2_bits_debugInfo_issueTime;
+  assign enq_req_in[2].bits_debugInfo_writebackTime = io_enq_req_2_bits_debugInfo_writebackTime;
+  assign enq_req_in[2].bits_debugInfo_runahead_checkpoint_id = io_enq_req_2_bits_debugInfo_runahead_checkpoint_id;
+  assign enq_req_in[2].bits_debugInfo_tlbFirstReqTime = io_enq_req_2_bits_debugInfo_tlbFirstReqTime;
+  assign enq_req_in[2].bits_debugInfo_tlbRespTime = io_enq_req_2_bits_debugInfo_tlbRespTime;
+  assign enq_req_in[2].bits_debug_seqNum_seqNum = io_enq_req_2_bits_debug_seqNum_seqNum;
+  assign enq_req_in[2].bits_debug_seqNum_uopIdx = io_enq_req_2_bits_debug_seqNum_uopIdx;
+  assign enq_req_in[2].bits_sqIdx_flag = io_enq_req_2_bits_sqIdx_flag;
+  assign enq_req_in[2].bits_sqIdx_value = io_enq_req_2_bits_sqIdx_value;
+  assign enq_req_in[2].bits_numLsElem = io_enq_req_2_bits_numLsElem;
+  assign enq_req_in[3].valid = io_enq_req_3_valid;
+  assign enq_req_in[3].bits_exceptionVec_0 = io_enq_req_3_bits_exceptionVec_0;
+  assign enq_req_in[3].bits_exceptionVec_1 = io_enq_req_3_bits_exceptionVec_1;
+  assign enq_req_in[3].bits_exceptionVec_2 = io_enq_req_3_bits_exceptionVec_2;
+  assign enq_req_in[3].bits_exceptionVec_3 = io_enq_req_3_bits_exceptionVec_3;
+  assign enq_req_in[3].bits_exceptionVec_4 = io_enq_req_3_bits_exceptionVec_4;
+  assign enq_req_in[3].bits_exceptionVec_5 = io_enq_req_3_bits_exceptionVec_5;
+  assign enq_req_in[3].bits_exceptionVec_6 = io_enq_req_3_bits_exceptionVec_6;
+  assign enq_req_in[3].bits_exceptionVec_7 = io_enq_req_3_bits_exceptionVec_7;
+  assign enq_req_in[3].bits_exceptionVec_8 = io_enq_req_3_bits_exceptionVec_8;
+  assign enq_req_in[3].bits_exceptionVec_9 = io_enq_req_3_bits_exceptionVec_9;
+  assign enq_req_in[3].bits_exceptionVec_10 = io_enq_req_3_bits_exceptionVec_10;
+  assign enq_req_in[3].bits_exceptionVec_11 = io_enq_req_3_bits_exceptionVec_11;
+  assign enq_req_in[3].bits_exceptionVec_12 = io_enq_req_3_bits_exceptionVec_12;
+  assign enq_req_in[3].bits_exceptionVec_13 = io_enq_req_3_bits_exceptionVec_13;
+  assign enq_req_in[3].bits_exceptionVec_14 = io_enq_req_3_bits_exceptionVec_14;
+  assign enq_req_in[3].bits_exceptionVec_15 = io_enq_req_3_bits_exceptionVec_15;
+  assign enq_req_in[3].bits_exceptionVec_16 = io_enq_req_3_bits_exceptionVec_16;
+  assign enq_req_in[3].bits_exceptionVec_17 = io_enq_req_3_bits_exceptionVec_17;
+  assign enq_req_in[3].bits_exceptionVec_18 = io_enq_req_3_bits_exceptionVec_18;
+  assign enq_req_in[3].bits_exceptionVec_19 = io_enq_req_3_bits_exceptionVec_19;
+  assign enq_req_in[3].bits_exceptionVec_20 = io_enq_req_3_bits_exceptionVec_20;
+  assign enq_req_in[3].bits_exceptionVec_21 = io_enq_req_3_bits_exceptionVec_21;
+  assign enq_req_in[3].bits_exceptionVec_22 = io_enq_req_3_bits_exceptionVec_22;
+  assign enq_req_in[3].bits_exceptionVec_23 = io_enq_req_3_bits_exceptionVec_23;
+  assign enq_req_in[3].bits_trigger = io_enq_req_3_bits_trigger;
+  assign enq_req_in[3].bits_fuType = io_enq_req_3_bits_fuType;
+  assign enq_req_in[3].bits_fuOpType = io_enq_req_3_bits_fuOpType;
+  assign enq_req_in[3].bits_rfWen = io_enq_req_3_bits_rfWen;
+  assign enq_req_in[3].bits_flushPipe = io_enq_req_3_bits_flushPipe;
+  assign enq_req_in[3].bits_vpu_nf = io_enq_req_3_bits_vpu_nf;
+  assign enq_req_in[3].bits_vpu_veew = io_enq_req_3_bits_vpu_veew;
+  assign enq_req_in[3].bits_uopIdx = io_enq_req_3_bits_uopIdx;
+  assign enq_req_in[3].bits_lastUop = io_enq_req_3_bits_lastUop;
+  assign enq_req_in[3].bits_pdest = io_enq_req_3_bits_pdest;
+  assign enq_req_in[3].bits_robIdx_flag = io_enq_req_3_bits_robIdx_flag;
+  assign enq_req_in[3].bits_robIdx_value = io_enq_req_3_bits_robIdx_value;
+  assign enq_req_in[3].bits_debugInfo_eliminatedMove = io_enq_req_3_bits_debugInfo_eliminatedMove;
+  assign enq_req_in[3].bits_debugInfo_renameTime = io_enq_req_3_bits_debugInfo_renameTime;
+  assign enq_req_in[3].bits_debugInfo_dispatchTime = io_enq_req_3_bits_debugInfo_dispatchTime;
+  assign enq_req_in[3].bits_debugInfo_enqRsTime = io_enq_req_3_bits_debugInfo_enqRsTime;
+  assign enq_req_in[3].bits_debugInfo_selectTime = io_enq_req_3_bits_debugInfo_selectTime;
+  assign enq_req_in[3].bits_debugInfo_issueTime = io_enq_req_3_bits_debugInfo_issueTime;
+  assign enq_req_in[3].bits_debugInfo_writebackTime = io_enq_req_3_bits_debugInfo_writebackTime;
+  assign enq_req_in[3].bits_debugInfo_runahead_checkpoint_id = io_enq_req_3_bits_debugInfo_runahead_checkpoint_id;
+  assign enq_req_in[3].bits_debugInfo_tlbFirstReqTime = io_enq_req_3_bits_debugInfo_tlbFirstReqTime;
+  assign enq_req_in[3].bits_debugInfo_tlbRespTime = io_enq_req_3_bits_debugInfo_tlbRespTime;
+  assign enq_req_in[3].bits_debug_seqNum_seqNum = io_enq_req_3_bits_debug_seqNum_seqNum;
+  assign enq_req_in[3].bits_debug_seqNum_uopIdx = io_enq_req_3_bits_debug_seqNum_uopIdx;
+  assign enq_req_in[3].bits_sqIdx_flag = io_enq_req_3_bits_sqIdx_flag;
+  assign enq_req_in[3].bits_sqIdx_value = io_enq_req_3_bits_sqIdx_value;
+  assign enq_req_in[3].bits_numLsElem = io_enq_req_3_bits_numLsElem;
+  assign enq_req_in[4].valid = io_enq_req_4_valid;
+  assign enq_req_in[4].bits_exceptionVec_0 = io_enq_req_4_bits_exceptionVec_0;
+  assign enq_req_in[4].bits_exceptionVec_1 = io_enq_req_4_bits_exceptionVec_1;
+  assign enq_req_in[4].bits_exceptionVec_2 = io_enq_req_4_bits_exceptionVec_2;
+  assign enq_req_in[4].bits_exceptionVec_3 = io_enq_req_4_bits_exceptionVec_3;
+  assign enq_req_in[4].bits_exceptionVec_4 = io_enq_req_4_bits_exceptionVec_4;
+  assign enq_req_in[4].bits_exceptionVec_5 = io_enq_req_4_bits_exceptionVec_5;
+  assign enq_req_in[4].bits_exceptionVec_6 = io_enq_req_4_bits_exceptionVec_6;
+  assign enq_req_in[4].bits_exceptionVec_7 = io_enq_req_4_bits_exceptionVec_7;
+  assign enq_req_in[4].bits_exceptionVec_8 = io_enq_req_4_bits_exceptionVec_8;
+  assign enq_req_in[4].bits_exceptionVec_9 = io_enq_req_4_bits_exceptionVec_9;
+  assign enq_req_in[4].bits_exceptionVec_10 = io_enq_req_4_bits_exceptionVec_10;
+  assign enq_req_in[4].bits_exceptionVec_11 = io_enq_req_4_bits_exceptionVec_11;
+  assign enq_req_in[4].bits_exceptionVec_12 = io_enq_req_4_bits_exceptionVec_12;
+  assign enq_req_in[4].bits_exceptionVec_13 = io_enq_req_4_bits_exceptionVec_13;
+  assign enq_req_in[4].bits_exceptionVec_14 = io_enq_req_4_bits_exceptionVec_14;
+  assign enq_req_in[4].bits_exceptionVec_15 = io_enq_req_4_bits_exceptionVec_15;
+  assign enq_req_in[4].bits_exceptionVec_16 = io_enq_req_4_bits_exceptionVec_16;
+  assign enq_req_in[4].bits_exceptionVec_17 = io_enq_req_4_bits_exceptionVec_17;
+  assign enq_req_in[4].bits_exceptionVec_18 = io_enq_req_4_bits_exceptionVec_18;
+  assign enq_req_in[4].bits_exceptionVec_19 = io_enq_req_4_bits_exceptionVec_19;
+  assign enq_req_in[4].bits_exceptionVec_20 = io_enq_req_4_bits_exceptionVec_20;
+  assign enq_req_in[4].bits_exceptionVec_21 = io_enq_req_4_bits_exceptionVec_21;
+  assign enq_req_in[4].bits_exceptionVec_22 = io_enq_req_4_bits_exceptionVec_22;
+  assign enq_req_in[4].bits_exceptionVec_23 = io_enq_req_4_bits_exceptionVec_23;
+  assign enq_req_in[4].bits_trigger = io_enq_req_4_bits_trigger;
+  assign enq_req_in[4].bits_fuType = io_enq_req_4_bits_fuType;
+  assign enq_req_in[4].bits_fuOpType = io_enq_req_4_bits_fuOpType;
+  assign enq_req_in[4].bits_rfWen = io_enq_req_4_bits_rfWen;
+  assign enq_req_in[4].bits_flushPipe = io_enq_req_4_bits_flushPipe;
+  assign enq_req_in[4].bits_vpu_nf = io_enq_req_4_bits_vpu_nf;
+  assign enq_req_in[4].bits_vpu_veew = io_enq_req_4_bits_vpu_veew;
+  assign enq_req_in[4].bits_uopIdx = io_enq_req_4_bits_uopIdx;
+  assign enq_req_in[4].bits_lastUop = io_enq_req_4_bits_lastUop;
+  assign enq_req_in[4].bits_pdest = io_enq_req_4_bits_pdest;
+  assign enq_req_in[4].bits_robIdx_flag = io_enq_req_4_bits_robIdx_flag;
+  assign enq_req_in[4].bits_robIdx_value = io_enq_req_4_bits_robIdx_value;
+  assign enq_req_in[4].bits_debugInfo_eliminatedMove = io_enq_req_4_bits_debugInfo_eliminatedMove;
+  assign enq_req_in[4].bits_debugInfo_renameTime = io_enq_req_4_bits_debugInfo_renameTime;
+  assign enq_req_in[4].bits_debugInfo_dispatchTime = io_enq_req_4_bits_debugInfo_dispatchTime;
+  assign enq_req_in[4].bits_debugInfo_enqRsTime = io_enq_req_4_bits_debugInfo_enqRsTime;
+  assign enq_req_in[4].bits_debugInfo_selectTime = io_enq_req_4_bits_debugInfo_selectTime;
+  assign enq_req_in[4].bits_debugInfo_issueTime = io_enq_req_4_bits_debugInfo_issueTime;
+  assign enq_req_in[4].bits_debugInfo_writebackTime = io_enq_req_4_bits_debugInfo_writebackTime;
+  assign enq_req_in[4].bits_debugInfo_runahead_checkpoint_id = io_enq_req_4_bits_debugInfo_runahead_checkpoint_id;
+  assign enq_req_in[4].bits_debugInfo_tlbFirstReqTime = io_enq_req_4_bits_debugInfo_tlbFirstReqTime;
+  assign enq_req_in[4].bits_debugInfo_tlbRespTime = io_enq_req_4_bits_debugInfo_tlbRespTime;
+  assign enq_req_in[4].bits_debug_seqNum_seqNum = io_enq_req_4_bits_debug_seqNum_seqNum;
+  assign enq_req_in[4].bits_debug_seqNum_uopIdx = io_enq_req_4_bits_debug_seqNum_uopIdx;
+  assign enq_req_in[4].bits_sqIdx_flag = io_enq_req_4_bits_sqIdx_flag;
+  assign enq_req_in[4].bits_sqIdx_value = io_enq_req_4_bits_sqIdx_value;
+  assign enq_req_in[4].bits_numLsElem = io_enq_req_4_bits_numLsElem;
+  assign enq_req_in[5].valid = io_enq_req_5_valid;
+  assign enq_req_in[5].bits_exceptionVec_0 = io_enq_req_5_bits_exceptionVec_0;
+  assign enq_req_in[5].bits_exceptionVec_1 = io_enq_req_5_bits_exceptionVec_1;
+  assign enq_req_in[5].bits_exceptionVec_2 = io_enq_req_5_bits_exceptionVec_2;
+  assign enq_req_in[5].bits_exceptionVec_3 = io_enq_req_5_bits_exceptionVec_3;
+  assign enq_req_in[5].bits_exceptionVec_4 = io_enq_req_5_bits_exceptionVec_4;
+  assign enq_req_in[5].bits_exceptionVec_5 = io_enq_req_5_bits_exceptionVec_5;
+  assign enq_req_in[5].bits_exceptionVec_6 = io_enq_req_5_bits_exceptionVec_6;
+  assign enq_req_in[5].bits_exceptionVec_7 = io_enq_req_5_bits_exceptionVec_7;
+  assign enq_req_in[5].bits_exceptionVec_8 = io_enq_req_5_bits_exceptionVec_8;
+  assign enq_req_in[5].bits_exceptionVec_9 = io_enq_req_5_bits_exceptionVec_9;
+  assign enq_req_in[5].bits_exceptionVec_10 = io_enq_req_5_bits_exceptionVec_10;
+  assign enq_req_in[5].bits_exceptionVec_11 = io_enq_req_5_bits_exceptionVec_11;
+  assign enq_req_in[5].bits_exceptionVec_12 = io_enq_req_5_bits_exceptionVec_12;
+  assign enq_req_in[5].bits_exceptionVec_13 = io_enq_req_5_bits_exceptionVec_13;
+  assign enq_req_in[5].bits_exceptionVec_14 = io_enq_req_5_bits_exceptionVec_14;
+  assign enq_req_in[5].bits_exceptionVec_15 = io_enq_req_5_bits_exceptionVec_15;
+  assign enq_req_in[5].bits_exceptionVec_16 = io_enq_req_5_bits_exceptionVec_16;
+  assign enq_req_in[5].bits_exceptionVec_17 = io_enq_req_5_bits_exceptionVec_17;
+  assign enq_req_in[5].bits_exceptionVec_18 = io_enq_req_5_bits_exceptionVec_18;
+  assign enq_req_in[5].bits_exceptionVec_19 = io_enq_req_5_bits_exceptionVec_19;
+  assign enq_req_in[5].bits_exceptionVec_20 = io_enq_req_5_bits_exceptionVec_20;
+  assign enq_req_in[5].bits_exceptionVec_21 = io_enq_req_5_bits_exceptionVec_21;
+  assign enq_req_in[5].bits_exceptionVec_22 = io_enq_req_5_bits_exceptionVec_22;
+  assign enq_req_in[5].bits_exceptionVec_23 = io_enq_req_5_bits_exceptionVec_23;
+  assign enq_req_in[5].bits_trigger = io_enq_req_5_bits_trigger;
+  assign enq_req_in[5].bits_fuType = io_enq_req_5_bits_fuType;
+  assign enq_req_in[5].bits_fuOpType = io_enq_req_5_bits_fuOpType;
+  assign enq_req_in[5].bits_rfWen = io_enq_req_5_bits_rfWen;
+  assign enq_req_in[5].bits_flushPipe = io_enq_req_5_bits_flushPipe;
+  assign enq_req_in[5].bits_vpu_nf = io_enq_req_5_bits_vpu_nf;
+  assign enq_req_in[5].bits_vpu_veew = io_enq_req_5_bits_vpu_veew;
+  assign enq_req_in[5].bits_uopIdx = io_enq_req_5_bits_uopIdx;
+  assign enq_req_in[5].bits_lastUop = io_enq_req_5_bits_lastUop;
+  assign enq_req_in[5].bits_pdest = io_enq_req_5_bits_pdest;
+  assign enq_req_in[5].bits_robIdx_flag = io_enq_req_5_bits_robIdx_flag;
+  assign enq_req_in[5].bits_robIdx_value = io_enq_req_5_bits_robIdx_value;
+  assign enq_req_in[5].bits_debugInfo_eliminatedMove = io_enq_req_5_bits_debugInfo_eliminatedMove;
+  assign enq_req_in[5].bits_debugInfo_renameTime = io_enq_req_5_bits_debugInfo_renameTime;
+  assign enq_req_in[5].bits_debugInfo_dispatchTime = io_enq_req_5_bits_debugInfo_dispatchTime;
+  assign enq_req_in[5].bits_debugInfo_enqRsTime = io_enq_req_5_bits_debugInfo_enqRsTime;
+  assign enq_req_in[5].bits_debugInfo_selectTime = io_enq_req_5_bits_debugInfo_selectTime;
+  assign enq_req_in[5].bits_debugInfo_issueTime = io_enq_req_5_bits_debugInfo_issueTime;
+  assign enq_req_in[5].bits_debugInfo_writebackTime = io_enq_req_5_bits_debugInfo_writebackTime;
+  assign enq_req_in[5].bits_debugInfo_runahead_checkpoint_id = io_enq_req_5_bits_debugInfo_runahead_checkpoint_id;
+  assign enq_req_in[5].bits_debugInfo_tlbFirstReqTime = io_enq_req_5_bits_debugInfo_tlbFirstReqTime;
+  assign enq_req_in[5].bits_debugInfo_tlbRespTime = io_enq_req_5_bits_debugInfo_tlbRespTime;
+  assign enq_req_in[5].bits_debug_seqNum_seqNum = io_enq_req_5_bits_debug_seqNum_seqNum;
+  assign enq_req_in[5].bits_debug_seqNum_uopIdx = io_enq_req_5_bits_debug_seqNum_uopIdx;
+  assign enq_req_in[5].bits_sqIdx_flag = io_enq_req_5_bits_sqIdx_flag;
+  assign enq_req_in[5].bits_sqIdx_value = io_enq_req_5_bits_sqIdx_value;
+  assign enq_req_in[5].bits_numLsElem = io_enq_req_5_bits_numLsElem;
+
+  sq_storeAddrIn_t_in storeAddrIn_in [2];
+  assign storeAddrIn_in[0].valid = io_storeAddrIn_0_valid;
+  assign storeAddrIn_in[0].bits_uop_exceptionVec_0 = io_storeAddrIn_0_bits_uop_exceptionVec_0;
+  assign storeAddrIn_in[0].bits_uop_exceptionVec_1 = io_storeAddrIn_0_bits_uop_exceptionVec_1;
+  assign storeAddrIn_in[0].bits_uop_exceptionVec_2 = io_storeAddrIn_0_bits_uop_exceptionVec_2;
+  assign storeAddrIn_in[0].bits_uop_exceptionVec_3 = io_storeAddrIn_0_bits_uop_exceptionVec_3;
+  assign storeAddrIn_in[0].bits_uop_exceptionVec_4 = io_storeAddrIn_0_bits_uop_exceptionVec_4;
+  assign storeAddrIn_in[0].bits_uop_exceptionVec_5 = io_storeAddrIn_0_bits_uop_exceptionVec_5;
+  assign storeAddrIn_in[0].bits_uop_exceptionVec_6 = io_storeAddrIn_0_bits_uop_exceptionVec_6;
+  assign storeAddrIn_in[0].bits_uop_exceptionVec_7 = io_storeAddrIn_0_bits_uop_exceptionVec_7;
+  assign storeAddrIn_in[0].bits_uop_exceptionVec_8 = io_storeAddrIn_0_bits_uop_exceptionVec_8;
+  assign storeAddrIn_in[0].bits_uop_exceptionVec_9 = io_storeAddrIn_0_bits_uop_exceptionVec_9;
+  assign storeAddrIn_in[0].bits_uop_exceptionVec_10 = io_storeAddrIn_0_bits_uop_exceptionVec_10;
+  assign storeAddrIn_in[0].bits_uop_exceptionVec_11 = io_storeAddrIn_0_bits_uop_exceptionVec_11;
+  assign storeAddrIn_in[0].bits_uop_exceptionVec_12 = io_storeAddrIn_0_bits_uop_exceptionVec_12;
+  assign storeAddrIn_in[0].bits_uop_exceptionVec_13 = io_storeAddrIn_0_bits_uop_exceptionVec_13;
+  assign storeAddrIn_in[0].bits_uop_exceptionVec_14 = io_storeAddrIn_0_bits_uop_exceptionVec_14;
+  assign storeAddrIn_in[0].bits_uop_exceptionVec_15 = io_storeAddrIn_0_bits_uop_exceptionVec_15;
+  assign storeAddrIn_in[0].bits_uop_exceptionVec_16 = io_storeAddrIn_0_bits_uop_exceptionVec_16;
+  assign storeAddrIn_in[0].bits_uop_exceptionVec_17 = io_storeAddrIn_0_bits_uop_exceptionVec_17;
+  assign storeAddrIn_in[0].bits_uop_exceptionVec_18 = io_storeAddrIn_0_bits_uop_exceptionVec_18;
+  assign storeAddrIn_in[0].bits_uop_exceptionVec_19 = io_storeAddrIn_0_bits_uop_exceptionVec_19;
+  assign storeAddrIn_in[0].bits_uop_exceptionVec_20 = io_storeAddrIn_0_bits_uop_exceptionVec_20;
+  assign storeAddrIn_in[0].bits_uop_exceptionVec_21 = io_storeAddrIn_0_bits_uop_exceptionVec_21;
+  assign storeAddrIn_in[0].bits_uop_exceptionVec_22 = io_storeAddrIn_0_bits_uop_exceptionVec_22;
+  assign storeAddrIn_in[0].bits_uop_exceptionVec_23 = io_storeAddrIn_0_bits_uop_exceptionVec_23;
+  assign storeAddrIn_in[0].bits_uop_trigger = io_storeAddrIn_0_bits_uop_trigger;
+  assign storeAddrIn_in[0].bits_uop_fuType = io_storeAddrIn_0_bits_uop_fuType;
+  assign storeAddrIn_in[0].bits_uop_fuOpType = io_storeAddrIn_0_bits_uop_fuOpType;
+  assign storeAddrIn_in[0].bits_uop_rfWen = io_storeAddrIn_0_bits_uop_rfWen;
+  assign storeAddrIn_in[0].bits_uop_vpu_nf = io_storeAddrIn_0_bits_uop_vpu_nf;
+  assign storeAddrIn_in[0].bits_uop_vpu_veew = io_storeAddrIn_0_bits_uop_vpu_veew;
+  assign storeAddrIn_in[0].bits_uop_uopIdx = io_storeAddrIn_0_bits_uop_uopIdx;
+  assign storeAddrIn_in[0].bits_uop_pdest = io_storeAddrIn_0_bits_uop_pdest;
+  assign storeAddrIn_in[0].bits_uop_robIdx_flag = io_storeAddrIn_0_bits_uop_robIdx_flag;
+  assign storeAddrIn_in[0].bits_uop_robIdx_value = io_storeAddrIn_0_bits_uop_robIdx_value;
+  assign storeAddrIn_in[0].bits_uop_debugInfo_eliminatedMove = io_storeAddrIn_0_bits_uop_debugInfo_eliminatedMove;
+  assign storeAddrIn_in[0].bits_uop_debugInfo_renameTime = io_storeAddrIn_0_bits_uop_debugInfo_renameTime;
+  assign storeAddrIn_in[0].bits_uop_debugInfo_dispatchTime = io_storeAddrIn_0_bits_uop_debugInfo_dispatchTime;
+  assign storeAddrIn_in[0].bits_uop_debugInfo_enqRsTime = io_storeAddrIn_0_bits_uop_debugInfo_enqRsTime;
+  assign storeAddrIn_in[0].bits_uop_debugInfo_selectTime = io_storeAddrIn_0_bits_uop_debugInfo_selectTime;
+  assign storeAddrIn_in[0].bits_uop_debugInfo_issueTime = io_storeAddrIn_0_bits_uop_debugInfo_issueTime;
+  assign storeAddrIn_in[0].bits_uop_debugInfo_writebackTime = io_storeAddrIn_0_bits_uop_debugInfo_writebackTime;
+  assign storeAddrIn_in[0].bits_uop_debugInfo_runahead_checkpoint_id = io_storeAddrIn_0_bits_uop_debugInfo_runahead_checkpoint_id;
+  assign storeAddrIn_in[0].bits_uop_debugInfo_tlbFirstReqTime = io_storeAddrIn_0_bits_uop_debugInfo_tlbFirstReqTime;
+  assign storeAddrIn_in[0].bits_uop_debugInfo_tlbRespTime = io_storeAddrIn_0_bits_uop_debugInfo_tlbRespTime;
+  assign storeAddrIn_in[0].bits_uop_debug_seqNum_seqNum = io_storeAddrIn_0_bits_uop_debug_seqNum_seqNum;
+  assign storeAddrIn_in[0].bits_uop_debug_seqNum_uopIdx = io_storeAddrIn_0_bits_uop_debug_seqNum_uopIdx;
+  assign storeAddrIn_in[0].bits_uop_sqIdx_value = io_storeAddrIn_0_bits_uop_sqIdx_value;
+  assign storeAddrIn_in[0].bits_vaddr = io_storeAddrIn_0_bits_vaddr;
+  assign storeAddrIn_in[0].bits_fullva = io_storeAddrIn_0_bits_fullva;
+  assign storeAddrIn_in[0].bits_vaNeedExt = io_storeAddrIn_0_bits_vaNeedExt;
+  assign storeAddrIn_in[0].bits_paddr = io_storeAddrIn_0_bits_paddr;
+  assign storeAddrIn_in[0].bits_gpaddr = io_storeAddrIn_0_bits_gpaddr;
+  assign storeAddrIn_in[0].bits_mask = io_storeAddrIn_0_bits_mask;
+  assign storeAddrIn_in[0].bits_wlineflag = io_storeAddrIn_0_bits_wlineflag;
+  assign storeAddrIn_in[0].bits_miss = io_storeAddrIn_0_bits_miss;
+  assign storeAddrIn_in[0].bits_nc = io_storeAddrIn_0_bits_nc;
+  assign storeAddrIn_in[0].bits_isHyper = io_storeAddrIn_0_bits_isHyper;
+  assign storeAddrIn_in[0].bits_isForVSnonLeafPTE = io_storeAddrIn_0_bits_isForVSnonLeafPTE;
+  assign storeAddrIn_in[0].bits_isvec = io_storeAddrIn_0_bits_isvec;
+  assign storeAddrIn_in[0].bits_isFrmMisAlignBuf = io_storeAddrIn_0_bits_isFrmMisAlignBuf;
+  assign storeAddrIn_in[0].bits_isMisalign = io_storeAddrIn_0_bits_isMisalign;
+  assign storeAddrIn_in[0].bits_misalignWith16Byte = io_storeAddrIn_0_bits_misalignWith16Byte;
+  assign storeAddrIn_in[0].bits_updateAddrValid = io_storeAddrIn_0_bits_updateAddrValid;
+  assign storeAddrIn_in[1].valid = io_storeAddrIn_1_valid;
+  assign storeAddrIn_in[1].bits_uop_exceptionVec_0 = io_storeAddrIn_1_bits_uop_exceptionVec_0;
+  assign storeAddrIn_in[1].bits_uop_exceptionVec_1 = io_storeAddrIn_1_bits_uop_exceptionVec_1;
+  assign storeAddrIn_in[1].bits_uop_exceptionVec_2 = io_storeAddrIn_1_bits_uop_exceptionVec_2;
+  assign storeAddrIn_in[1].bits_uop_exceptionVec_3 = io_storeAddrIn_1_bits_uop_exceptionVec_3;
+  assign storeAddrIn_in[1].bits_uop_exceptionVec_4 = io_storeAddrIn_1_bits_uop_exceptionVec_4;
+  assign storeAddrIn_in[1].bits_uop_exceptionVec_5 = io_storeAddrIn_1_bits_uop_exceptionVec_5;
+  assign storeAddrIn_in[1].bits_uop_exceptionVec_6 = io_storeAddrIn_1_bits_uop_exceptionVec_6;
+  assign storeAddrIn_in[1].bits_uop_exceptionVec_7 = io_storeAddrIn_1_bits_uop_exceptionVec_7;
+  assign storeAddrIn_in[1].bits_uop_exceptionVec_8 = io_storeAddrIn_1_bits_uop_exceptionVec_8;
+  assign storeAddrIn_in[1].bits_uop_exceptionVec_9 = io_storeAddrIn_1_bits_uop_exceptionVec_9;
+  assign storeAddrIn_in[1].bits_uop_exceptionVec_10 = io_storeAddrIn_1_bits_uop_exceptionVec_10;
+  assign storeAddrIn_in[1].bits_uop_exceptionVec_11 = io_storeAddrIn_1_bits_uop_exceptionVec_11;
+  assign storeAddrIn_in[1].bits_uop_exceptionVec_12 = io_storeAddrIn_1_bits_uop_exceptionVec_12;
+  assign storeAddrIn_in[1].bits_uop_exceptionVec_13 = io_storeAddrIn_1_bits_uop_exceptionVec_13;
+  assign storeAddrIn_in[1].bits_uop_exceptionVec_14 = io_storeAddrIn_1_bits_uop_exceptionVec_14;
+  assign storeAddrIn_in[1].bits_uop_exceptionVec_15 = io_storeAddrIn_1_bits_uop_exceptionVec_15;
+  assign storeAddrIn_in[1].bits_uop_exceptionVec_16 = io_storeAddrIn_1_bits_uop_exceptionVec_16;
+  assign storeAddrIn_in[1].bits_uop_exceptionVec_17 = io_storeAddrIn_1_bits_uop_exceptionVec_17;
+  assign storeAddrIn_in[1].bits_uop_exceptionVec_18 = io_storeAddrIn_1_bits_uop_exceptionVec_18;
+  assign storeAddrIn_in[1].bits_uop_exceptionVec_19 = io_storeAddrIn_1_bits_uop_exceptionVec_19;
+  assign storeAddrIn_in[1].bits_uop_exceptionVec_20 = io_storeAddrIn_1_bits_uop_exceptionVec_20;
+  assign storeAddrIn_in[1].bits_uop_exceptionVec_21 = io_storeAddrIn_1_bits_uop_exceptionVec_21;
+  assign storeAddrIn_in[1].bits_uop_exceptionVec_22 = io_storeAddrIn_1_bits_uop_exceptionVec_22;
+  assign storeAddrIn_in[1].bits_uop_exceptionVec_23 = io_storeAddrIn_1_bits_uop_exceptionVec_23;
+  assign storeAddrIn_in[1].bits_uop_trigger = io_storeAddrIn_1_bits_uop_trigger;
+  assign storeAddrIn_in[1].bits_uop_fuType = io_storeAddrIn_1_bits_uop_fuType;
+  assign storeAddrIn_in[1].bits_uop_fuOpType = io_storeAddrIn_1_bits_uop_fuOpType;
+  assign storeAddrIn_in[1].bits_uop_rfWen = io_storeAddrIn_1_bits_uop_rfWen;
+  assign storeAddrIn_in[1].bits_uop_vpu_nf = io_storeAddrIn_1_bits_uop_vpu_nf;
+  assign storeAddrIn_in[1].bits_uop_vpu_veew = io_storeAddrIn_1_bits_uop_vpu_veew;
+  assign storeAddrIn_in[1].bits_uop_uopIdx = io_storeAddrIn_1_bits_uop_uopIdx;
+  assign storeAddrIn_in[1].bits_uop_pdest = io_storeAddrIn_1_bits_uop_pdest;
+  assign storeAddrIn_in[1].bits_uop_robIdx_flag = io_storeAddrIn_1_bits_uop_robIdx_flag;
+  assign storeAddrIn_in[1].bits_uop_robIdx_value = io_storeAddrIn_1_bits_uop_robIdx_value;
+  assign storeAddrIn_in[1].bits_uop_debugInfo_eliminatedMove = io_storeAddrIn_1_bits_uop_debugInfo_eliminatedMove;
+  assign storeAddrIn_in[1].bits_uop_debugInfo_renameTime = io_storeAddrIn_1_bits_uop_debugInfo_renameTime;
+  assign storeAddrIn_in[1].bits_uop_debugInfo_dispatchTime = io_storeAddrIn_1_bits_uop_debugInfo_dispatchTime;
+  assign storeAddrIn_in[1].bits_uop_debugInfo_enqRsTime = io_storeAddrIn_1_bits_uop_debugInfo_enqRsTime;
+  assign storeAddrIn_in[1].bits_uop_debugInfo_selectTime = io_storeAddrIn_1_bits_uop_debugInfo_selectTime;
+  assign storeAddrIn_in[1].bits_uop_debugInfo_issueTime = io_storeAddrIn_1_bits_uop_debugInfo_issueTime;
+  assign storeAddrIn_in[1].bits_uop_debugInfo_writebackTime = io_storeAddrIn_1_bits_uop_debugInfo_writebackTime;
+  assign storeAddrIn_in[1].bits_uop_debugInfo_runahead_checkpoint_id = io_storeAddrIn_1_bits_uop_debugInfo_runahead_checkpoint_id;
+  assign storeAddrIn_in[1].bits_uop_debugInfo_tlbFirstReqTime = io_storeAddrIn_1_bits_uop_debugInfo_tlbFirstReqTime;
+  assign storeAddrIn_in[1].bits_uop_debugInfo_tlbRespTime = io_storeAddrIn_1_bits_uop_debugInfo_tlbRespTime;
+  assign storeAddrIn_in[1].bits_uop_debug_seqNum_seqNum = io_storeAddrIn_1_bits_uop_debug_seqNum_seqNum;
+  assign storeAddrIn_in[1].bits_uop_debug_seqNum_uopIdx = io_storeAddrIn_1_bits_uop_debug_seqNum_uopIdx;
+  assign storeAddrIn_in[1].bits_uop_sqIdx_value = io_storeAddrIn_1_bits_uop_sqIdx_value;
+  assign storeAddrIn_in[1].bits_vaddr = io_storeAddrIn_1_bits_vaddr;
+  assign storeAddrIn_in[1].bits_fullva = io_storeAddrIn_1_bits_fullva;
+  assign storeAddrIn_in[1].bits_vaNeedExt = io_storeAddrIn_1_bits_vaNeedExt;
+  assign storeAddrIn_in[1].bits_paddr = io_storeAddrIn_1_bits_paddr;
+  assign storeAddrIn_in[1].bits_gpaddr = io_storeAddrIn_1_bits_gpaddr;
+  assign storeAddrIn_in[1].bits_mask = io_storeAddrIn_1_bits_mask;
+  assign storeAddrIn_in[1].bits_wlineflag = io_storeAddrIn_1_bits_wlineflag;
+  assign storeAddrIn_in[1].bits_miss = io_storeAddrIn_1_bits_miss;
+  assign storeAddrIn_in[1].bits_nc = io_storeAddrIn_1_bits_nc;
+  assign storeAddrIn_in[1].bits_isHyper = io_storeAddrIn_1_bits_isHyper;
+  assign storeAddrIn_in[1].bits_isForVSnonLeafPTE = io_storeAddrIn_1_bits_isForVSnonLeafPTE;
+  assign storeAddrIn_in[1].bits_isvec = io_storeAddrIn_1_bits_isvec;
+  assign storeAddrIn_in[1].bits_isFrmMisAlignBuf = io_storeAddrIn_1_bits_isFrmMisAlignBuf;
+  assign storeAddrIn_in[1].bits_isMisalign = io_storeAddrIn_1_bits_isMisalign;
+  assign storeAddrIn_in[1].bits_misalignWith16Byte = io_storeAddrIn_1_bits_misalignWith16Byte;
+  assign storeAddrIn_in[1].bits_updateAddrValid = io_storeAddrIn_1_bits_updateAddrValid;
+
+  sq_storeAddrInRe_t_in storeAddrInRe_in [2];
+  assign storeAddrInRe_in[0].uop_exceptionVec_3 = io_storeAddrInRe_0_uop_exceptionVec_3;
+  assign storeAddrInRe_in[0].uop_exceptionVec_6 = io_storeAddrInRe_0_uop_exceptionVec_6;
+  assign storeAddrInRe_in[0].uop_exceptionVec_15 = io_storeAddrInRe_0_uop_exceptionVec_15;
+  assign storeAddrInRe_in[0].uop_exceptionVec_19 = io_storeAddrInRe_0_uop_exceptionVec_19;
+  assign storeAddrInRe_in[0].uop_exceptionVec_23 = io_storeAddrInRe_0_uop_exceptionVec_23;
+  assign storeAddrInRe_in[0].uop_uopIdx = io_storeAddrInRe_0_uop_uopIdx;
+  assign storeAddrInRe_in[0].uop_robIdx_flag = io_storeAddrInRe_0_uop_robIdx_flag;
+  assign storeAddrInRe_in[0].uop_robIdx_value = io_storeAddrInRe_0_uop_robIdx_value;
+  assign storeAddrInRe_in[0].fullva = io_storeAddrInRe_0_fullva;
+  assign storeAddrInRe_in[0].vaNeedExt = io_storeAddrInRe_0_vaNeedExt;
+  assign storeAddrInRe_in[0].gpaddr = io_storeAddrInRe_0_gpaddr;
+  assign storeAddrInRe_in[0].af = io_storeAddrInRe_0_af;
+  assign storeAddrInRe_in[0].mmio = io_storeAddrInRe_0_mmio;
+  assign storeAddrInRe_in[0].memBackTypeMM = io_storeAddrInRe_0_memBackTypeMM;
+  assign storeAddrInRe_in[0].hasException = io_storeAddrInRe_0_hasException;
+  assign storeAddrInRe_in[0].isHyper = io_storeAddrInRe_0_isHyper;
+  assign storeAddrInRe_in[0].isForVSnonLeafPTE = io_storeAddrInRe_0_isForVSnonLeafPTE;
+  assign storeAddrInRe_in[0].isvec = io_storeAddrInRe_0_isvec;
+  assign storeAddrInRe_in[0].updateAddrValid = io_storeAddrInRe_0_updateAddrValid;
+  assign storeAddrInRe_in[1].uop_exceptionVec_3 = io_storeAddrInRe_1_uop_exceptionVec_3;
+  assign storeAddrInRe_in[1].uop_exceptionVec_6 = io_storeAddrInRe_1_uop_exceptionVec_6;
+  assign storeAddrInRe_in[1].uop_exceptionVec_15 = io_storeAddrInRe_1_uop_exceptionVec_15;
+  assign storeAddrInRe_in[1].uop_exceptionVec_19 = io_storeAddrInRe_1_uop_exceptionVec_19;
+  assign storeAddrInRe_in[1].uop_exceptionVec_23 = io_storeAddrInRe_1_uop_exceptionVec_23;
+  assign storeAddrInRe_in[1].uop_uopIdx = io_storeAddrInRe_1_uop_uopIdx;
+  assign storeAddrInRe_in[1].uop_robIdx_flag = io_storeAddrInRe_1_uop_robIdx_flag;
+  assign storeAddrInRe_in[1].uop_robIdx_value = io_storeAddrInRe_1_uop_robIdx_value;
+  assign storeAddrInRe_in[1].fullva = io_storeAddrInRe_1_fullva;
+  assign storeAddrInRe_in[1].vaNeedExt = io_storeAddrInRe_1_vaNeedExt;
+  assign storeAddrInRe_in[1].gpaddr = io_storeAddrInRe_1_gpaddr;
+  assign storeAddrInRe_in[1].af = io_storeAddrInRe_1_af;
+  assign storeAddrInRe_in[1].mmio = io_storeAddrInRe_1_mmio;
+  assign storeAddrInRe_in[1].memBackTypeMM = io_storeAddrInRe_1_memBackTypeMM;
+  assign storeAddrInRe_in[1].hasException = io_storeAddrInRe_1_hasException;
+  assign storeAddrInRe_in[1].isHyper = io_storeAddrInRe_1_isHyper;
+  assign storeAddrInRe_in[1].isForVSnonLeafPTE = io_storeAddrInRe_1_isForVSnonLeafPTE;
+  assign storeAddrInRe_in[1].isvec = io_storeAddrInRe_1_isvec;
+  assign storeAddrInRe_in[1].updateAddrValid = io_storeAddrInRe_1_updateAddrValid;
+
+  sq_storeDataIn_t_in storeDataIn_in [2];
+  assign storeDataIn_in[0].valid = io_storeDataIn_0_valid;
+  assign storeDataIn_in[0].bits_uop_fuType = io_storeDataIn_0_bits_uop_fuType;
+  assign storeDataIn_in[0].bits_uop_fuOpType = io_storeDataIn_0_bits_uop_fuOpType;
+  assign storeDataIn_in[0].bits_uop_sqIdx_value = io_storeDataIn_0_bits_uop_sqIdx_value;
+  assign storeDataIn_in[0].bits_data = io_storeDataIn_0_bits_data;
+  assign storeDataIn_in[0].bits_vecDebug_offset = io_storeDataIn_0_bits_vecDebug_offset;
+  assign storeDataIn_in[1].valid = io_storeDataIn_1_valid;
+  assign storeDataIn_in[1].bits_uop_fuType = io_storeDataIn_1_bits_uop_fuType;
+  assign storeDataIn_in[1].bits_uop_fuOpType = io_storeDataIn_1_bits_uop_fuOpType;
+  assign storeDataIn_in[1].bits_uop_sqIdx_value = io_storeDataIn_1_bits_uop_sqIdx_value;
+  assign storeDataIn_in[1].bits_data = io_storeDataIn_1_bits_data;
+  assign storeDataIn_in[1].bits_vecDebug_offset = io_storeDataIn_1_bits_vecDebug_offset;
+
+  sq_storeMaskIn_t_in storeMaskIn_in [2];
+  assign storeMaskIn_in[0].valid = io_storeMaskIn_0_valid;
+  assign storeMaskIn_in[0].bits_sqIdx_value = io_storeMaskIn_0_bits_sqIdx_value;
+  assign storeMaskIn_in[0].bits_mask = io_storeMaskIn_0_bits_mask;
+  assign storeMaskIn_in[1].valid = io_storeMaskIn_1_valid;
+  assign storeMaskIn_in[1].bits_sqIdx_value = io_storeMaskIn_1_bits_sqIdx_value;
+  assign storeMaskIn_in[1].bits_mask = io_storeMaskIn_1_bits_mask;
+
+  sq_forward_t_in forward_in [3];
+  assign forward_in[0].vaddr = io_forward_0_vaddr;
+  assign forward_in[0].paddr = io_forward_0_paddr;
+  assign forward_in[0].mask = io_forward_0_mask;
+  assign forward_in[0].uop_waitForRobIdx_flag = io_forward_0_uop_waitForRobIdx_flag;
+  assign forward_in[0].uop_waitForRobIdx_value = io_forward_0_uop_waitForRobIdx_value;
+  assign forward_in[0].uop_loadWaitBit = io_forward_0_uop_loadWaitBit;
+  assign forward_in[0].uop_loadWaitStrict = io_forward_0_uop_loadWaitStrict;
+  assign forward_in[0].uop_sqIdx_flag = io_forward_0_uop_sqIdx_flag;
+  assign forward_in[0].uop_sqIdx_value = io_forward_0_uop_sqIdx_value;
+  assign forward_in[0].valid = io_forward_0_valid;
+  assign forward_in[0].sqIdx_flag = io_forward_0_sqIdx_flag;
+  assign forward_in[0].sqIdxMask = io_forward_0_sqIdxMask;
+  assign forward_in[1].vaddr = io_forward_1_vaddr;
+  assign forward_in[1].paddr = io_forward_1_paddr;
+  assign forward_in[1].mask = io_forward_1_mask;
+  assign forward_in[1].uop_waitForRobIdx_flag = io_forward_1_uop_waitForRobIdx_flag;
+  assign forward_in[1].uop_waitForRobIdx_value = io_forward_1_uop_waitForRobIdx_value;
+  assign forward_in[1].uop_loadWaitBit = io_forward_1_uop_loadWaitBit;
+  assign forward_in[1].uop_loadWaitStrict = io_forward_1_uop_loadWaitStrict;
+  assign forward_in[1].uop_sqIdx_flag = io_forward_1_uop_sqIdx_flag;
+  assign forward_in[1].uop_sqIdx_value = io_forward_1_uop_sqIdx_value;
+  assign forward_in[1].valid = io_forward_1_valid;
+  assign forward_in[1].sqIdx_flag = io_forward_1_sqIdx_flag;
+  assign forward_in[1].sqIdxMask = io_forward_1_sqIdxMask;
+  assign forward_in[2].vaddr = io_forward_2_vaddr;
+  assign forward_in[2].paddr = io_forward_2_paddr;
+  assign forward_in[2].mask = io_forward_2_mask;
+  assign forward_in[2].uop_waitForRobIdx_flag = io_forward_2_uop_waitForRobIdx_flag;
+  assign forward_in[2].uop_waitForRobIdx_value = io_forward_2_uop_waitForRobIdx_value;
+  assign forward_in[2].uop_loadWaitBit = io_forward_2_uop_loadWaitBit;
+  assign forward_in[2].uop_loadWaitStrict = io_forward_2_uop_loadWaitStrict;
+  assign forward_in[2].uop_sqIdx_flag = io_forward_2_uop_sqIdx_flag;
+  assign forward_in[2].uop_sqIdx_value = io_forward_2_uop_sqIdx_value;
+  assign forward_in[2].valid = io_forward_2_valid;
+  assign forward_in[2].sqIdx_flag = io_forward_2_sqIdx_flag;
+  assign forward_in[2].sqIdxMask = io_forward_2_sqIdxMask;
+
+  sq_forward_t_out forward_out [3];
+  assign io_forward_0_forwardMask_0 = forward_out[0].forwardMask_0;
+  assign io_forward_0_forwardMask_1 = forward_out[0].forwardMask_1;
+  assign io_forward_0_forwardMask_2 = forward_out[0].forwardMask_2;
+  assign io_forward_0_forwardMask_3 = forward_out[0].forwardMask_3;
+  assign io_forward_0_forwardMask_4 = forward_out[0].forwardMask_4;
+  assign io_forward_0_forwardMask_5 = forward_out[0].forwardMask_5;
+  assign io_forward_0_forwardMask_6 = forward_out[0].forwardMask_6;
+  assign io_forward_0_forwardMask_7 = forward_out[0].forwardMask_7;
+  assign io_forward_0_forwardMask_8 = forward_out[0].forwardMask_8;
+  assign io_forward_0_forwardMask_9 = forward_out[0].forwardMask_9;
+  assign io_forward_0_forwardMask_10 = forward_out[0].forwardMask_10;
+  assign io_forward_0_forwardMask_11 = forward_out[0].forwardMask_11;
+  assign io_forward_0_forwardMask_12 = forward_out[0].forwardMask_12;
+  assign io_forward_0_forwardMask_13 = forward_out[0].forwardMask_13;
+  assign io_forward_0_forwardMask_14 = forward_out[0].forwardMask_14;
+  assign io_forward_0_forwardMask_15 = forward_out[0].forwardMask_15;
+  assign io_forward_0_forwardData_0 = forward_out[0].forwardData_0;
+  assign io_forward_0_forwardData_1 = forward_out[0].forwardData_1;
+  assign io_forward_0_forwardData_2 = forward_out[0].forwardData_2;
+  assign io_forward_0_forwardData_3 = forward_out[0].forwardData_3;
+  assign io_forward_0_forwardData_4 = forward_out[0].forwardData_4;
+  assign io_forward_0_forwardData_5 = forward_out[0].forwardData_5;
+  assign io_forward_0_forwardData_6 = forward_out[0].forwardData_6;
+  assign io_forward_0_forwardData_7 = forward_out[0].forwardData_7;
+  assign io_forward_0_forwardData_8 = forward_out[0].forwardData_8;
+  assign io_forward_0_forwardData_9 = forward_out[0].forwardData_9;
+  assign io_forward_0_forwardData_10 = forward_out[0].forwardData_10;
+  assign io_forward_0_forwardData_11 = forward_out[0].forwardData_11;
+  assign io_forward_0_forwardData_12 = forward_out[0].forwardData_12;
+  assign io_forward_0_forwardData_13 = forward_out[0].forwardData_13;
+  assign io_forward_0_forwardData_14 = forward_out[0].forwardData_14;
+  assign io_forward_0_forwardData_15 = forward_out[0].forwardData_15;
+  assign io_forward_0_dataInvalid = forward_out[0].dataInvalid;
+  assign io_forward_0_matchInvalid = forward_out[0].matchInvalid;
+  assign io_forward_0_addrInvalid = forward_out[0].addrInvalid;
+  assign io_forward_0_dataInvalidSqIdx_flag = forward_out[0].dataInvalidSqIdx_flag;
+  assign io_forward_0_dataInvalidSqIdx_value = forward_out[0].dataInvalidSqIdx_value;
+  assign io_forward_0_addrInvalidSqIdx_flag = forward_out[0].addrInvalidSqIdx_flag;
+  assign io_forward_0_addrInvalidSqIdx_value = forward_out[0].addrInvalidSqIdx_value;
+  assign io_forward_1_forwardMask_0 = forward_out[1].forwardMask_0;
+  assign io_forward_1_forwardMask_1 = forward_out[1].forwardMask_1;
+  assign io_forward_1_forwardMask_2 = forward_out[1].forwardMask_2;
+  assign io_forward_1_forwardMask_3 = forward_out[1].forwardMask_3;
+  assign io_forward_1_forwardMask_4 = forward_out[1].forwardMask_4;
+  assign io_forward_1_forwardMask_5 = forward_out[1].forwardMask_5;
+  assign io_forward_1_forwardMask_6 = forward_out[1].forwardMask_6;
+  assign io_forward_1_forwardMask_7 = forward_out[1].forwardMask_7;
+  assign io_forward_1_forwardMask_8 = forward_out[1].forwardMask_8;
+  assign io_forward_1_forwardMask_9 = forward_out[1].forwardMask_9;
+  assign io_forward_1_forwardMask_10 = forward_out[1].forwardMask_10;
+  assign io_forward_1_forwardMask_11 = forward_out[1].forwardMask_11;
+  assign io_forward_1_forwardMask_12 = forward_out[1].forwardMask_12;
+  assign io_forward_1_forwardMask_13 = forward_out[1].forwardMask_13;
+  assign io_forward_1_forwardMask_14 = forward_out[1].forwardMask_14;
+  assign io_forward_1_forwardMask_15 = forward_out[1].forwardMask_15;
+  assign io_forward_1_forwardData_0 = forward_out[1].forwardData_0;
+  assign io_forward_1_forwardData_1 = forward_out[1].forwardData_1;
+  assign io_forward_1_forwardData_2 = forward_out[1].forwardData_2;
+  assign io_forward_1_forwardData_3 = forward_out[1].forwardData_3;
+  assign io_forward_1_forwardData_4 = forward_out[1].forwardData_4;
+  assign io_forward_1_forwardData_5 = forward_out[1].forwardData_5;
+  assign io_forward_1_forwardData_6 = forward_out[1].forwardData_6;
+  assign io_forward_1_forwardData_7 = forward_out[1].forwardData_7;
+  assign io_forward_1_forwardData_8 = forward_out[1].forwardData_8;
+  assign io_forward_1_forwardData_9 = forward_out[1].forwardData_9;
+  assign io_forward_1_forwardData_10 = forward_out[1].forwardData_10;
+  assign io_forward_1_forwardData_11 = forward_out[1].forwardData_11;
+  assign io_forward_1_forwardData_12 = forward_out[1].forwardData_12;
+  assign io_forward_1_forwardData_13 = forward_out[1].forwardData_13;
+  assign io_forward_1_forwardData_14 = forward_out[1].forwardData_14;
+  assign io_forward_1_forwardData_15 = forward_out[1].forwardData_15;
+  assign io_forward_1_dataInvalid = forward_out[1].dataInvalid;
+  assign io_forward_1_matchInvalid = forward_out[1].matchInvalid;
+  assign io_forward_1_addrInvalid = forward_out[1].addrInvalid;
+  assign io_forward_1_dataInvalidSqIdx_flag = forward_out[1].dataInvalidSqIdx_flag;
+  assign io_forward_1_dataInvalidSqIdx_value = forward_out[1].dataInvalidSqIdx_value;
+  assign io_forward_1_addrInvalidSqIdx_flag = forward_out[1].addrInvalidSqIdx_flag;
+  assign io_forward_1_addrInvalidSqIdx_value = forward_out[1].addrInvalidSqIdx_value;
+  assign io_forward_2_forwardMask_0 = forward_out[2].forwardMask_0;
+  assign io_forward_2_forwardMask_1 = forward_out[2].forwardMask_1;
+  assign io_forward_2_forwardMask_2 = forward_out[2].forwardMask_2;
+  assign io_forward_2_forwardMask_3 = forward_out[2].forwardMask_3;
+  assign io_forward_2_forwardMask_4 = forward_out[2].forwardMask_4;
+  assign io_forward_2_forwardMask_5 = forward_out[2].forwardMask_5;
+  assign io_forward_2_forwardMask_6 = forward_out[2].forwardMask_6;
+  assign io_forward_2_forwardMask_7 = forward_out[2].forwardMask_7;
+  assign io_forward_2_forwardMask_8 = forward_out[2].forwardMask_8;
+  assign io_forward_2_forwardMask_9 = forward_out[2].forwardMask_9;
+  assign io_forward_2_forwardMask_10 = forward_out[2].forwardMask_10;
+  assign io_forward_2_forwardMask_11 = forward_out[2].forwardMask_11;
+  assign io_forward_2_forwardMask_12 = forward_out[2].forwardMask_12;
+  assign io_forward_2_forwardMask_13 = forward_out[2].forwardMask_13;
+  assign io_forward_2_forwardMask_14 = forward_out[2].forwardMask_14;
+  assign io_forward_2_forwardMask_15 = forward_out[2].forwardMask_15;
+  assign io_forward_2_forwardData_0 = forward_out[2].forwardData_0;
+  assign io_forward_2_forwardData_1 = forward_out[2].forwardData_1;
+  assign io_forward_2_forwardData_2 = forward_out[2].forwardData_2;
+  assign io_forward_2_forwardData_3 = forward_out[2].forwardData_3;
+  assign io_forward_2_forwardData_4 = forward_out[2].forwardData_4;
+  assign io_forward_2_forwardData_5 = forward_out[2].forwardData_5;
+  assign io_forward_2_forwardData_6 = forward_out[2].forwardData_6;
+  assign io_forward_2_forwardData_7 = forward_out[2].forwardData_7;
+  assign io_forward_2_forwardData_8 = forward_out[2].forwardData_8;
+  assign io_forward_2_forwardData_9 = forward_out[2].forwardData_9;
+  assign io_forward_2_forwardData_10 = forward_out[2].forwardData_10;
+  assign io_forward_2_forwardData_11 = forward_out[2].forwardData_11;
+  assign io_forward_2_forwardData_12 = forward_out[2].forwardData_12;
+  assign io_forward_2_forwardData_13 = forward_out[2].forwardData_13;
+  assign io_forward_2_forwardData_14 = forward_out[2].forwardData_14;
+  assign io_forward_2_forwardData_15 = forward_out[2].forwardData_15;
+  assign io_forward_2_dataInvalid = forward_out[2].dataInvalid;
+  assign io_forward_2_matchInvalid = forward_out[2].matchInvalid;
+  assign io_forward_2_addrInvalid = forward_out[2].addrInvalid;
+  assign io_forward_2_dataInvalidSqIdx_flag = forward_out[2].dataInvalidSqIdx_flag;
+  assign io_forward_2_dataInvalidSqIdx_value = forward_out[2].dataInvalidSqIdx_value;
+  assign io_forward_2_addrInvalidSqIdx_flag = forward_out[2].addrInvalidSqIdx_flag;
+  assign io_forward_2_addrInvalidSqIdx_value = forward_out[2].addrInvalidSqIdx_value;
+
+  sq_sbuffer_t_in sbuffer_in [2];
+  assign sbuffer_in[0].ready = io_sbuffer_0_ready;
+  assign sbuffer_in[1].ready = io_sbuffer_1_ready;
+
+  sq_sbuffer_t_out sbuffer_out [2];
+  assign io_sbuffer_0_valid = sbuffer_out[0].valid;
+  assign io_sbuffer_0_bits_vaddr = sbuffer_out[0].bits_vaddr;
+  assign io_sbuffer_0_bits_data = sbuffer_out[0].bits_data;
+  assign io_sbuffer_0_bits_mask = sbuffer_out[0].bits_mask;
+  assign io_sbuffer_0_bits_addr = sbuffer_out[0].bits_addr;
+  assign io_sbuffer_0_bits_wline = sbuffer_out[0].bits_wline;
+  assign io_sbuffer_0_bits_vecValid = sbuffer_out[0].bits_vecValid;
+  assign io_sbuffer_1_valid = sbuffer_out[1].valid;
+  assign io_sbuffer_1_bits_vaddr = sbuffer_out[1].bits_vaddr;
+  assign io_sbuffer_1_bits_data = sbuffer_out[1].bits_data;
+  assign io_sbuffer_1_bits_mask = sbuffer_out[1].bits_mask;
+  assign io_sbuffer_1_bits_addr = sbuffer_out[1].bits_addr;
+  assign io_sbuffer_1_bits_wline = sbuffer_out[1].bits_wline;
+  assign io_sbuffer_1_bits_vecValid = sbuffer_out[1].bits_vecValid;
+
+  sq_vecFeedback_t_in vecFeedback_in [2];
+  assign vecFeedback_in[0].valid = io_vecFeedback_0_valid;
+  assign vecFeedback_in[0].bits_robidx_flag = io_vecFeedback_0_bits_robidx_flag;
+  assign vecFeedback_in[0].bits_robidx_value = io_vecFeedback_0_bits_robidx_value;
+  assign vecFeedback_in[0].bits_uopidx = io_vecFeedback_0_bits_uopidx;
+  assign vecFeedback_in[0].bits_vaddr = io_vecFeedback_0_bits_vaddr;
+  assign vecFeedback_in[0].bits_vaNeedExt = io_vecFeedback_0_bits_vaNeedExt;
+  assign vecFeedback_in[0].bits_gpaddr = io_vecFeedback_0_bits_gpaddr;
+  assign vecFeedback_in[0].bits_isForVSnonLeafPTE = io_vecFeedback_0_bits_isForVSnonLeafPTE;
+  assign vecFeedback_in[0].bits_feedback_0 = io_vecFeedback_0_bits_feedback_0;
+  assign vecFeedback_in[0].bits_feedback_1 = io_vecFeedback_0_bits_feedback_1;
+  assign vecFeedback_in[0].bits_exceptionVec_3 = io_vecFeedback_0_bits_exceptionVec_3;
+  assign vecFeedback_in[0].bits_exceptionVec_6 = io_vecFeedback_0_bits_exceptionVec_6;
+  assign vecFeedback_in[0].bits_exceptionVec_7 = io_vecFeedback_0_bits_exceptionVec_7;
+  assign vecFeedback_in[0].bits_exceptionVec_15 = io_vecFeedback_0_bits_exceptionVec_15;
+  assign vecFeedback_in[0].bits_exceptionVec_19 = io_vecFeedback_0_bits_exceptionVec_19;
+  assign vecFeedback_in[0].bits_exceptionVec_23 = io_vecFeedback_0_bits_exceptionVec_23;
+  assign vecFeedback_in[1].valid = io_vecFeedback_1_valid;
+  assign vecFeedback_in[1].bits_robidx_flag = io_vecFeedback_1_bits_robidx_flag;
+  assign vecFeedback_in[1].bits_robidx_value = io_vecFeedback_1_bits_robidx_value;
+  assign vecFeedback_in[1].bits_uopidx = io_vecFeedback_1_bits_uopidx;
+  assign vecFeedback_in[1].bits_vaddr = io_vecFeedback_1_bits_vaddr;
+  assign vecFeedback_in[1].bits_vaNeedExt = io_vecFeedback_1_bits_vaNeedExt;
+  assign vecFeedback_in[1].bits_gpaddr = io_vecFeedback_1_bits_gpaddr;
+  assign vecFeedback_in[1].bits_isForVSnonLeafPTE = io_vecFeedback_1_bits_isForVSnonLeafPTE;
+  assign vecFeedback_in[1].bits_feedback_0 = io_vecFeedback_1_bits_feedback_0;
+  assign vecFeedback_in[1].bits_feedback_1 = io_vecFeedback_1_bits_feedback_1;
+  assign vecFeedback_in[1].bits_exceptionVec_3 = io_vecFeedback_1_bits_exceptionVec_3;
+  assign vecFeedback_in[1].bits_exceptionVec_6 = io_vecFeedback_1_bits_exceptionVec_6;
+  assign vecFeedback_in[1].bits_exceptionVec_7 = io_vecFeedback_1_bits_exceptionVec_7;
+  assign vecFeedback_in[1].bits_exceptionVec_15 = io_vecFeedback_1_bits_exceptionVec_15;
+  assign vecFeedback_in[1].bits_exceptionVec_19 = io_vecFeedback_1_bits_exceptionVec_19;
+  assign vecFeedback_in[1].bits_exceptionVec_23 = io_vecFeedback_1_bits_exceptionVec_23;
+
+  sq_perf_t_out perf_out [8];
+  assign io_perf_0_value = perf_out[0].value;
+  assign io_perf_1_value = perf_out[1].value;
+  assign io_perf_2_value = perf_out[2].value;
+  assign io_perf_3_value = perf_out[3].value;
+  assign io_perf_4_value = perf_out[4].value;
+  assign io_perf_5_value = perf_out[5].value;
+  assign io_perf_6_value = perf_out[6].value;
+  assign io_perf_7_value = perf_out[7].value;
+
+  sq_diffStore_diffInfo_t_out diffStore_diffInfo_out [2];
+  assign io_diffStore_diffInfo_0_uop_fuType = diffStore_diffInfo_out[0].uop_fuType;
+  assign io_diffStore_diffInfo_0_uop_fuOpType = diffStore_diffInfo_out[0].uop_fuOpType;
+  assign io_diffStore_diffInfo_0_uop_vpu_nf = diffStore_diffInfo_out[0].uop_vpu_nf;
+  assign io_diffStore_diffInfo_0_uop_vpu_veew = diffStore_diffInfo_out[0].uop_vpu_veew;
+  assign io_diffStore_diffInfo_0_uop_robIdx_value = diffStore_diffInfo_out[0].uop_robIdx_value;
+  assign io_diffStore_diffInfo_0_offset = diffStore_diffInfo_out[0].offset;
+  assign io_diffStore_diffInfo_1_uop_fuType = diffStore_diffInfo_out[1].uop_fuType;
+  assign io_diffStore_diffInfo_1_uop_fuOpType = diffStore_diffInfo_out[1].uop_fuOpType;
+  assign io_diffStore_diffInfo_1_uop_vpu_nf = diffStore_diffInfo_out[1].uop_vpu_nf;
+  assign io_diffStore_diffInfo_1_uop_vpu_veew = diffStore_diffInfo_out[1].uop_vpu_veew;
+  assign io_diffStore_diffInfo_1_uop_robIdx_value = diffStore_diffInfo_out[1].uop_robIdx_value;
+  assign io_diffStore_diffInfo_1_offset = diffStore_diffInfo_out[1].offset;
+
+  sq_diffStore_pmaStore_t_out diffStore_pmaStore_out [2];
+  assign io_diffStore_pmaStore_0_valid = diffStore_pmaStore_out[0].valid;
+  assign io_diffStore_pmaStore_0_bits_data = diffStore_pmaStore_out[0].bits_data;
+  assign io_diffStore_pmaStore_0_bits_mask = diffStore_pmaStore_out[0].bits_mask;
+  assign io_diffStore_pmaStore_0_bits_addr = diffStore_pmaStore_out[0].bits_addr;
+  assign io_diffStore_pmaStore_0_bits_wline = diffStore_pmaStore_out[0].bits_wline;
+  assign io_diffStore_pmaStore_0_bits_vecValid = diffStore_pmaStore_out[0].bits_vecValid;
+  assign io_diffStore_pmaStore_1_valid = diffStore_pmaStore_out[1].valid;
+  assign io_diffStore_pmaStore_1_bits_data = diffStore_pmaStore_out[1].bits_data;
+  assign io_diffStore_pmaStore_1_bits_mask = diffStore_pmaStore_out[1].bits_mask;
+  assign io_diffStore_pmaStore_1_bits_addr = diffStore_pmaStore_out[1].bits_addr;
+  assign io_diffStore_pmaStore_1_bits_wline = diffStore_pmaStore_out[1].bits_wline;
+  assign io_diffStore_pmaStore_1_bits_vecValid = diffStore_pmaStore_out[1].bits_vecValid;
+
+  xs_StoreQueue_core u_core (
+    .clock(clock),
+    .reset(reset),
+    .enq_req_in(enq_req_in),
+    .storeAddrIn_in(storeAddrIn_in),
+    .storeAddrInRe_in(storeAddrInRe_in),
+    .storeDataIn_in(storeDataIn_in),
+    .storeMaskIn_in(storeMaskIn_in),
+    .forward_in(forward_in),
+    .forward_out(forward_out),
+    .sbuffer_in(sbuffer_in),
+    .sbuffer_out(sbuffer_out),
+    .vecFeedback_in(vecFeedback_in),
+    .perf_out(perf_out),
+    .diffStore_diffInfo_out(diffStore_diffInfo_out),
+    .diffStore_pmaStore_out(diffStore_pmaStore_out),
+    .io_hartId(io_hartId),
+    .io_enq_canAccept(io_enq_canAccept),
+    .io_enq_lqCanAccept(io_enq_lqCanAccept),
+    .io_enq_needAlloc_0(io_enq_needAlloc_0),
+    .io_enq_needAlloc_1(io_enq_needAlloc_1),
+    .io_enq_needAlloc_2(io_enq_needAlloc_2),
+    .io_enq_needAlloc_3(io_enq_needAlloc_3),
+    .io_enq_needAlloc_4(io_enq_needAlloc_4),
+    .io_brqRedirect_valid(io_brqRedirect_valid),
+    .io_brqRedirect_bits_robIdx_flag(io_brqRedirect_bits_robIdx_flag),
+    .io_brqRedirect_bits_robIdx_value(io_brqRedirect_bits_robIdx_value),
+    .io_brqRedirect_bits_level(io_brqRedirect_bits_level),
+    .io_uncacheOutstanding(io_uncacheOutstanding),
+    .io_cmoOpReq_ready(io_cmoOpReq_ready),
+    .io_cmoOpReq_valid(io_cmoOpReq_valid),
+    .io_cmoOpReq_bits_opcode(io_cmoOpReq_bits_opcode),
+    .io_cmoOpReq_bits_address(io_cmoOpReq_bits_address),
+    .io_cmoOpResp_ready(io_cmoOpResp_ready),
+    .io_cmoOpResp_valid(io_cmoOpResp_valid),
+    .io_cmoOpResp_bits_denied(io_cmoOpResp_bits_denied),
+    .io_cmoOpResp_bits_corrupt(io_cmoOpResp_bits_corrupt),
+    .io_cboZeroStout_ready(io_cboZeroStout_ready),
+    .io_cboZeroStout_valid(io_cboZeroStout_valid),
+    .io_cboZeroStout_bits_uop_exceptionVec_0(io_cboZeroStout_bits_uop_exceptionVec_0),
+    .io_cboZeroStout_bits_uop_exceptionVec_1(io_cboZeroStout_bits_uop_exceptionVec_1),
+    .io_cboZeroStout_bits_uop_exceptionVec_2(io_cboZeroStout_bits_uop_exceptionVec_2),
+    .io_cboZeroStout_bits_uop_exceptionVec_3(io_cboZeroStout_bits_uop_exceptionVec_3),
+    .io_cboZeroStout_bits_uop_exceptionVec_4(io_cboZeroStout_bits_uop_exceptionVec_4),
+    .io_cboZeroStout_bits_uop_exceptionVec_5(io_cboZeroStout_bits_uop_exceptionVec_5),
+    .io_cboZeroStout_bits_uop_exceptionVec_6(io_cboZeroStout_bits_uop_exceptionVec_6),
+    .io_cboZeroStout_bits_uop_exceptionVec_7(io_cboZeroStout_bits_uop_exceptionVec_7),
+    .io_cboZeroStout_bits_uop_exceptionVec_8(io_cboZeroStout_bits_uop_exceptionVec_8),
+    .io_cboZeroStout_bits_uop_exceptionVec_9(io_cboZeroStout_bits_uop_exceptionVec_9),
+    .io_cboZeroStout_bits_uop_exceptionVec_10(io_cboZeroStout_bits_uop_exceptionVec_10),
+    .io_cboZeroStout_bits_uop_exceptionVec_11(io_cboZeroStout_bits_uop_exceptionVec_11),
+    .io_cboZeroStout_bits_uop_exceptionVec_12(io_cboZeroStout_bits_uop_exceptionVec_12),
+    .io_cboZeroStout_bits_uop_exceptionVec_13(io_cboZeroStout_bits_uop_exceptionVec_13),
+    .io_cboZeroStout_bits_uop_exceptionVec_14(io_cboZeroStout_bits_uop_exceptionVec_14),
+    .io_cboZeroStout_bits_uop_exceptionVec_15(io_cboZeroStout_bits_uop_exceptionVec_15),
+    .io_cboZeroStout_bits_uop_exceptionVec_16(io_cboZeroStout_bits_uop_exceptionVec_16),
+    .io_cboZeroStout_bits_uop_exceptionVec_17(io_cboZeroStout_bits_uop_exceptionVec_17),
+    .io_cboZeroStout_bits_uop_exceptionVec_18(io_cboZeroStout_bits_uop_exceptionVec_18),
+    .io_cboZeroStout_bits_uop_exceptionVec_19(io_cboZeroStout_bits_uop_exceptionVec_19),
+    .io_cboZeroStout_bits_uop_exceptionVec_20(io_cboZeroStout_bits_uop_exceptionVec_20),
+    .io_cboZeroStout_bits_uop_exceptionVec_21(io_cboZeroStout_bits_uop_exceptionVec_21),
+    .io_cboZeroStout_bits_uop_exceptionVec_22(io_cboZeroStout_bits_uop_exceptionVec_22),
+    .io_cboZeroStout_bits_uop_exceptionVec_23(io_cboZeroStout_bits_uop_exceptionVec_23),
+    .io_cboZeroStout_bits_uop_trigger(io_cboZeroStout_bits_uop_trigger),
+    .io_cboZeroStout_bits_uop_rfWen(io_cboZeroStout_bits_uop_rfWen),
+    .io_cboZeroStout_bits_uop_flushPipe(io_cboZeroStout_bits_uop_flushPipe),
+    .io_cboZeroStout_bits_uop_pdest(io_cboZeroStout_bits_uop_pdest),
+    .io_cboZeroStout_bits_uop_robIdx_flag(io_cboZeroStout_bits_uop_robIdx_flag),
+    .io_cboZeroStout_bits_uop_robIdx_value(io_cboZeroStout_bits_uop_robIdx_value),
+    .io_cboZeroStout_bits_uop_debugInfo_eliminatedMove(io_cboZeroStout_bits_uop_debugInfo_eliminatedMove),
+    .io_cboZeroStout_bits_uop_debugInfo_renameTime(io_cboZeroStout_bits_uop_debugInfo_renameTime),
+    .io_cboZeroStout_bits_uop_debugInfo_dispatchTime(io_cboZeroStout_bits_uop_debugInfo_dispatchTime),
+    .io_cboZeroStout_bits_uop_debugInfo_enqRsTime(io_cboZeroStout_bits_uop_debugInfo_enqRsTime),
+    .io_cboZeroStout_bits_uop_debugInfo_selectTime(io_cboZeroStout_bits_uop_debugInfo_selectTime),
+    .io_cboZeroStout_bits_uop_debugInfo_issueTime(io_cboZeroStout_bits_uop_debugInfo_issueTime),
+    .io_cboZeroStout_bits_uop_debugInfo_writebackTime(io_cboZeroStout_bits_uop_debugInfo_writebackTime),
+    .io_cboZeroStout_bits_uop_debugInfo_runahead_checkpoint_id(io_cboZeroStout_bits_uop_debugInfo_runahead_checkpoint_id),
+    .io_cboZeroStout_bits_uop_debugInfo_tlbFirstReqTime(io_cboZeroStout_bits_uop_debugInfo_tlbFirstReqTime),
+    .io_cboZeroStout_bits_uop_debugInfo_tlbRespTime(io_cboZeroStout_bits_uop_debugInfo_tlbRespTime),
+    .io_cboZeroStout_bits_uop_debug_seqNum_seqNum(io_cboZeroStout_bits_uop_debug_seqNum_seqNum),
+    .io_cboZeroStout_bits_uop_debug_seqNum_uopIdx(io_cboZeroStout_bits_uop_debug_seqNum_uopIdx),
+    .io_cboZeroStout_bits_uop_sqIdx_flag(io_cboZeroStout_bits_uop_sqIdx_flag),
+    .io_cboZeroStout_bits_uop_sqIdx_value(io_cboZeroStout_bits_uop_sqIdx_value),
+    .io_mmioStout_ready(io_mmioStout_ready),
+    .io_mmioStout_valid(io_mmioStout_valid),
+    .io_mmioStout_bits_uop_exceptionVec_7(io_mmioStout_bits_uop_exceptionVec_7),
+    .io_mmioStout_bits_uop_exceptionVec_19(io_mmioStout_bits_uop_exceptionVec_19),
+    .io_mmioStout_bits_uop_rfWen(io_mmioStout_bits_uop_rfWen),
+    .io_mmioStout_bits_uop_flushPipe(io_mmioStout_bits_uop_flushPipe),
+    .io_mmioStout_bits_uop_pdest(io_mmioStout_bits_uop_pdest),
+    .io_mmioStout_bits_uop_robIdx_flag(io_mmioStout_bits_uop_robIdx_flag),
+    .io_mmioStout_bits_uop_robIdx_value(io_mmioStout_bits_uop_robIdx_value),
+    .io_mmioStout_bits_uop_debugInfo_eliminatedMove(io_mmioStout_bits_uop_debugInfo_eliminatedMove),
+    .io_mmioStout_bits_uop_debugInfo_renameTime(io_mmioStout_bits_uop_debugInfo_renameTime),
+    .io_mmioStout_bits_uop_debugInfo_dispatchTime(io_mmioStout_bits_uop_debugInfo_dispatchTime),
+    .io_mmioStout_bits_uop_debugInfo_enqRsTime(io_mmioStout_bits_uop_debugInfo_enqRsTime),
+    .io_mmioStout_bits_uop_debugInfo_selectTime(io_mmioStout_bits_uop_debugInfo_selectTime),
+    .io_mmioStout_bits_uop_debugInfo_issueTime(io_mmioStout_bits_uop_debugInfo_issueTime),
+    .io_mmioStout_bits_uop_debugInfo_writebackTime(io_mmioStout_bits_uop_debugInfo_writebackTime),
+    .io_mmioStout_bits_uop_debugInfo_runahead_checkpoint_id(io_mmioStout_bits_uop_debugInfo_runahead_checkpoint_id),
+    .io_mmioStout_bits_uop_debugInfo_tlbFirstReqTime(io_mmioStout_bits_uop_debugInfo_tlbFirstReqTime),
+    .io_mmioStout_bits_uop_debugInfo_tlbRespTime(io_mmioStout_bits_uop_debugInfo_tlbRespTime),
+    .io_mmioStout_bits_uop_debug_seqNum_seqNum(io_mmioStout_bits_uop_debug_seqNum_seqNum),
+    .io_mmioStout_bits_uop_debug_seqNum_uopIdx(io_mmioStout_bits_uop_debug_seqNum_uopIdx),
+    .io_mmioStout_bits_uop_sqIdx_flag(io_mmioStout_bits_uop_sqIdx_flag),
+    .io_mmioStout_bits_uop_sqIdx_value(io_mmioStout_bits_uop_sqIdx_value),
+    .io_mmioStout_bits_data(io_mmioStout_bits_data),
+    .io_mmioStout_bits_debug_isMMIO(io_mmioStout_bits_debug_isMMIO),
+    .io_rob_scommit(io_rob_scommit),
+    .io_rob_pendingst(io_rob_pendingst),
+    .io_rob_pendingPtr_flag(io_rob_pendingPtr_flag),
+    .io_rob_pendingPtr_value(io_rob_pendingPtr_value),
+    .io_rob_storeMmio(io_rob_storeMmio),
+    .io_rob_storeMmioUop_robIdx_value(io_rob_storeMmioUop_robIdx_value),
+    .io_uncache_req_ready(io_uncache_req_ready),
+    .io_uncache_req_valid(io_uncache_req_valid),
+    .io_uncache_req_bits_robIdx_flag(io_uncache_req_bits_robIdx_flag),
+    .io_uncache_req_bits_robIdx_value(io_uncache_req_bits_robIdx_value),
+    .io_uncache_req_bits_addr(io_uncache_req_bits_addr),
+    .io_uncache_req_bits_vaddr(io_uncache_req_bits_vaddr),
+    .io_uncache_req_bits_data(io_uncache_req_bits_data),
+    .io_uncache_req_bits_mask(io_uncache_req_bits_mask),
+    .io_uncache_req_bits_id(io_uncache_req_bits_id),
+    .io_uncache_req_bits_nc(io_uncache_req_bits_nc),
+    .io_uncache_req_bits_memBackTypeMM(io_uncache_req_bits_memBackTypeMM),
+    .io_uncache_idResp_valid(io_uncache_idResp_valid),
+    .io_uncache_idResp_bits_mid(io_uncache_idResp_bits_mid),
+    .io_uncache_idResp_bits_nc(io_uncache_idResp_bits_nc),
+    .io_uncache_resp_valid(io_uncache_resp_valid),
+    .io_uncache_resp_bits_nc(io_uncache_resp_bits_nc),
+    .io_uncache_resp_bits_denied(io_uncache_resp_bits_denied),
+    .io_uncache_resp_bits_corrupt(io_uncache_resp_bits_corrupt),
+    .io_exceptionAddr_vaddr(io_exceptionAddr_vaddr),
+    .io_exceptionAddr_vaNeedExt(io_exceptionAddr_vaNeedExt),
+    .io_exceptionAddr_isHyper(io_exceptionAddr_isHyper),
+    .io_exceptionAddr_gpaddr(io_exceptionAddr_gpaddr),
+    .io_exceptionAddr_isForVSnonLeafPTE(io_exceptionAddr_isForVSnonLeafPTE),
+    .io_flushSbuffer_valid(io_flushSbuffer_valid),
+    .io_flushSbuffer_empty(io_flushSbuffer_empty),
+    .io_sqEmpty(io_sqEmpty),
+    .io_stAddrReadySqPtr_flag(io_stAddrReadySqPtr_flag),
+    .io_stAddrReadySqPtr_value(io_stAddrReadySqPtr_value),
+    .io_stAddrReadyVec_0(io_stAddrReadyVec_0),
+    .io_stAddrReadyVec_1(io_stAddrReadyVec_1),
+    .io_stAddrReadyVec_2(io_stAddrReadyVec_2),
+    .io_stAddrReadyVec_3(io_stAddrReadyVec_3),
+    .io_stAddrReadyVec_4(io_stAddrReadyVec_4),
+    .io_stAddrReadyVec_5(io_stAddrReadyVec_5),
+    .io_stAddrReadyVec_6(io_stAddrReadyVec_6),
+    .io_stAddrReadyVec_7(io_stAddrReadyVec_7),
+    .io_stAddrReadyVec_8(io_stAddrReadyVec_8),
+    .io_stAddrReadyVec_9(io_stAddrReadyVec_9),
+    .io_stAddrReadyVec_10(io_stAddrReadyVec_10),
+    .io_stAddrReadyVec_11(io_stAddrReadyVec_11),
+    .io_stAddrReadyVec_12(io_stAddrReadyVec_12),
+    .io_stAddrReadyVec_13(io_stAddrReadyVec_13),
+    .io_stAddrReadyVec_14(io_stAddrReadyVec_14),
+    .io_stAddrReadyVec_15(io_stAddrReadyVec_15),
+    .io_stAddrReadyVec_16(io_stAddrReadyVec_16),
+    .io_stAddrReadyVec_17(io_stAddrReadyVec_17),
+    .io_stAddrReadyVec_18(io_stAddrReadyVec_18),
+    .io_stAddrReadyVec_19(io_stAddrReadyVec_19),
+    .io_stAddrReadyVec_20(io_stAddrReadyVec_20),
+    .io_stAddrReadyVec_21(io_stAddrReadyVec_21),
+    .io_stAddrReadyVec_22(io_stAddrReadyVec_22),
+    .io_stAddrReadyVec_23(io_stAddrReadyVec_23),
+    .io_stAddrReadyVec_24(io_stAddrReadyVec_24),
+    .io_stAddrReadyVec_25(io_stAddrReadyVec_25),
+    .io_stAddrReadyVec_26(io_stAddrReadyVec_26),
+    .io_stAddrReadyVec_27(io_stAddrReadyVec_27),
+    .io_stAddrReadyVec_28(io_stAddrReadyVec_28),
+    .io_stAddrReadyVec_29(io_stAddrReadyVec_29),
+    .io_stAddrReadyVec_30(io_stAddrReadyVec_30),
+    .io_stAddrReadyVec_31(io_stAddrReadyVec_31),
+    .io_stAddrReadyVec_32(io_stAddrReadyVec_32),
+    .io_stAddrReadyVec_33(io_stAddrReadyVec_33),
+    .io_stAddrReadyVec_34(io_stAddrReadyVec_34),
+    .io_stAddrReadyVec_35(io_stAddrReadyVec_35),
+    .io_stAddrReadyVec_36(io_stAddrReadyVec_36),
+    .io_stAddrReadyVec_37(io_stAddrReadyVec_37),
+    .io_stAddrReadyVec_38(io_stAddrReadyVec_38),
+    .io_stAddrReadyVec_39(io_stAddrReadyVec_39),
+    .io_stAddrReadyVec_40(io_stAddrReadyVec_40),
+    .io_stAddrReadyVec_41(io_stAddrReadyVec_41),
+    .io_stAddrReadyVec_42(io_stAddrReadyVec_42),
+    .io_stAddrReadyVec_43(io_stAddrReadyVec_43),
+    .io_stAddrReadyVec_44(io_stAddrReadyVec_44),
+    .io_stAddrReadyVec_45(io_stAddrReadyVec_45),
+    .io_stAddrReadyVec_46(io_stAddrReadyVec_46),
+    .io_stAddrReadyVec_47(io_stAddrReadyVec_47),
+    .io_stAddrReadyVec_48(io_stAddrReadyVec_48),
+    .io_stAddrReadyVec_49(io_stAddrReadyVec_49),
+    .io_stAddrReadyVec_50(io_stAddrReadyVec_50),
+    .io_stAddrReadyVec_51(io_stAddrReadyVec_51),
+    .io_stAddrReadyVec_52(io_stAddrReadyVec_52),
+    .io_stAddrReadyVec_53(io_stAddrReadyVec_53),
+    .io_stAddrReadyVec_54(io_stAddrReadyVec_54),
+    .io_stAddrReadyVec_55(io_stAddrReadyVec_55),
+    .io_stDataReadySqPtr_flag(io_stDataReadySqPtr_flag),
+    .io_stDataReadySqPtr_value(io_stDataReadySqPtr_value),
+    .io_stDataReadyVec_0(io_stDataReadyVec_0),
+    .io_stDataReadyVec_1(io_stDataReadyVec_1),
+    .io_stDataReadyVec_2(io_stDataReadyVec_2),
+    .io_stDataReadyVec_3(io_stDataReadyVec_3),
+    .io_stDataReadyVec_4(io_stDataReadyVec_4),
+    .io_stDataReadyVec_5(io_stDataReadyVec_5),
+    .io_stDataReadyVec_6(io_stDataReadyVec_6),
+    .io_stDataReadyVec_7(io_stDataReadyVec_7),
+    .io_stDataReadyVec_8(io_stDataReadyVec_8),
+    .io_stDataReadyVec_9(io_stDataReadyVec_9),
+    .io_stDataReadyVec_10(io_stDataReadyVec_10),
+    .io_stDataReadyVec_11(io_stDataReadyVec_11),
+    .io_stDataReadyVec_12(io_stDataReadyVec_12),
+    .io_stDataReadyVec_13(io_stDataReadyVec_13),
+    .io_stDataReadyVec_14(io_stDataReadyVec_14),
+    .io_stDataReadyVec_15(io_stDataReadyVec_15),
+    .io_stDataReadyVec_16(io_stDataReadyVec_16),
+    .io_stDataReadyVec_17(io_stDataReadyVec_17),
+    .io_stDataReadyVec_18(io_stDataReadyVec_18),
+    .io_stDataReadyVec_19(io_stDataReadyVec_19),
+    .io_stDataReadyVec_20(io_stDataReadyVec_20),
+    .io_stDataReadyVec_21(io_stDataReadyVec_21),
+    .io_stDataReadyVec_22(io_stDataReadyVec_22),
+    .io_stDataReadyVec_23(io_stDataReadyVec_23),
+    .io_stDataReadyVec_24(io_stDataReadyVec_24),
+    .io_stDataReadyVec_25(io_stDataReadyVec_25),
+    .io_stDataReadyVec_26(io_stDataReadyVec_26),
+    .io_stDataReadyVec_27(io_stDataReadyVec_27),
+    .io_stDataReadyVec_28(io_stDataReadyVec_28),
+    .io_stDataReadyVec_29(io_stDataReadyVec_29),
+    .io_stDataReadyVec_30(io_stDataReadyVec_30),
+    .io_stDataReadyVec_31(io_stDataReadyVec_31),
+    .io_stDataReadyVec_32(io_stDataReadyVec_32),
+    .io_stDataReadyVec_33(io_stDataReadyVec_33),
+    .io_stDataReadyVec_34(io_stDataReadyVec_34),
+    .io_stDataReadyVec_35(io_stDataReadyVec_35),
+    .io_stDataReadyVec_36(io_stDataReadyVec_36),
+    .io_stDataReadyVec_37(io_stDataReadyVec_37),
+    .io_stDataReadyVec_38(io_stDataReadyVec_38),
+    .io_stDataReadyVec_39(io_stDataReadyVec_39),
+    .io_stDataReadyVec_40(io_stDataReadyVec_40),
+    .io_stDataReadyVec_41(io_stDataReadyVec_41),
+    .io_stDataReadyVec_42(io_stDataReadyVec_42),
+    .io_stDataReadyVec_43(io_stDataReadyVec_43),
+    .io_stDataReadyVec_44(io_stDataReadyVec_44),
+    .io_stDataReadyVec_45(io_stDataReadyVec_45),
+    .io_stDataReadyVec_46(io_stDataReadyVec_46),
+    .io_stDataReadyVec_47(io_stDataReadyVec_47),
+    .io_stDataReadyVec_48(io_stDataReadyVec_48),
+    .io_stDataReadyVec_49(io_stDataReadyVec_49),
+    .io_stDataReadyVec_50(io_stDataReadyVec_50),
+    .io_stDataReadyVec_51(io_stDataReadyVec_51),
+    .io_stDataReadyVec_52(io_stDataReadyVec_52),
+    .io_stDataReadyVec_53(io_stDataReadyVec_53),
+    .io_stDataReadyVec_54(io_stDataReadyVec_54),
+    .io_stDataReadyVec_55(io_stDataReadyVec_55),
+    .io_stIssuePtr_flag(io_stIssuePtr_flag),
+    .io_stIssuePtr_value(io_stIssuePtr_value),
+    .io_sqDeqPtr_flag(io_sqDeqPtr_flag),
+    .io_sqDeqPtr_value(io_sqDeqPtr_value),
+    .io_sqCommitPtr_flag(io_sqCommitPtr_flag),
+    .io_sqCommitPtr_value(io_sqCommitPtr_value),
+    .io_sqCommitUopIdx(io_sqCommitUopIdx),
+    .io_sqCommitRobIdx_flag(io_sqCommitRobIdx_flag),
+    .io_sqCommitRobIdx_value(io_sqCommitRobIdx_value),
+    .io_sqFull(io_sqFull),
+    .io_sqCancelCnt(io_sqCancelCnt),
+    .io_sqDeq(io_sqDeq),
+    .io_sqDeqIsVec(io_sqDeqIsVec),
+    .io_force_write(io_force_write),
+    .io_maControl_toStoreQueue_crossPageWithHit(io_maControl_toStoreQueue_crossPageWithHit),
+    .io_maControl_toStoreQueue_crossPageCanDeq(io_maControl_toStoreQueue_crossPageCanDeq),
+    .io_maControl_toStoreQueue_paddr(io_maControl_toStoreQueue_paddr),
+    .io_maControl_toStoreQueue_withSamePtr(io_maControl_toStoreQueue_withSamePtr),
+    .io_maControl_toStoreMisalignBuffer_sqPtr_flag(io_maControl_toStoreMisalignBuffer_sqPtr_flag),
+    .io_maControl_toStoreMisalignBuffer_sqPtr_value(io_maControl_toStoreMisalignBuffer_sqPtr_value),
+    .io_maControl_toStoreMisalignBuffer_doDeq(io_maControl_toStoreMisalignBuffer_doDeq),
+    .io_maControl_toStoreMisalignBuffer_uop_uopIdx(io_maControl_toStoreMisalignBuffer_uop_uopIdx),
+    .io_maControl_toStoreMisalignBuffer_uop_robIdx_flag(io_maControl_toStoreMisalignBuffer_uop_robIdx_flag),
+    .io_maControl_toStoreMisalignBuffer_uop_robIdx_value(io_maControl_toStoreMisalignBuffer_uop_robIdx_value),
+    .io_wfi_wfiReq(io_wfi_wfiReq),
+    .io_wfi_wfiSafe(io_wfi_wfiSafe),
+    .io_diffStore_ncStore_valid(io_diffStore_ncStore_valid),
+    .io_diffStore_ncStore_bits_addr(io_diffStore_ncStore_bits_addr),
+    .io_diffStore_ncStore_bits_data(io_diffStore_ncStore_bits_data),
+    .io_diffStore_ncStore_bits_mask(io_diffStore_ncStore_bits_mask),
+    .io_diffStore_ncStore_bits_memBackTypeMM(io_diffStore_ncStore_bits_memBackTypeMM),
+    .gatewayIn_packed_48_bore(gatewayIn_packed_48_bore)
+  );
 
 endmodule
