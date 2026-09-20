@@ -23,13 +23,21 @@
 // 替换算法细节见 xs_tlbsw_pkg（plru_replace_way / plru_next_state）。变体 _1 也用它，
 // 故该包住在 rtl/memblock/memblock_common_pkg.sv（编译/FM 时须排在本文件之前）。
 //
-// 内层 TLBFA：UT/FM 阶段按要求用 **golden TLBFA 黑盒**例化（同名模块 TLBFA / TLBFA_1），
-//   因此本核只写“替换器 + wayIdx 选择”这一份真正属于 wrapper 的逻辑，存储/匹配由
-//   黑盒 TLBFA 完成。读/响应/sfence/csr/wdata 端口全部直通到黑盒。
+// 内层 TLBFA 不在本核里：它由**各变体的薄 wrapper** 直接例化，本核只写
+//   “替换器 + wayIdx 选择”这一份真正属于 wrapper 的逻辑。读/响应/sfence/csr/wdata
+//   在薄 wrapper 里直通到阵列，不经过本核。
+//   ★两组变体的阵列来源不同，报告时别混为一谈★：
+//     - 变体 0 / _1：阵列用 **golden** TLBFA / TLBFA_1（f40deba 留下的闭包，本轮未动）
+//     - 变体 _2 / _3：阵列用 **重写件** TLBFA_2 / TLBFA_3（已独立签核），impl 侧
+//       一个 golden 字节都没有
 //
-// 参数化覆盖两个 golden 变体（差别仅在查询/access 端口数）：
+// 参数化覆盖四个 golden 变体（差别仅在查询/access 端口数）：
 //   TlbStorageWrapper   : PORTS=3  NWAYS=48 （itlb）
-//   TlbStorageWrapper_1 : PORTS=4  NWAYS=48 （dtlb）
+//   TlbStorageWrapper_1 : PORTS=4  NWAYS=48 （dtlb-load）
+//   TlbStorageWrapper_2 : PORTS=2  NWAYS=48 （dtlb-store）
+//   TlbStorageWrapper_3 : PORTS=2  NWAYS=48 （dtlb-prefetch）
+//   ★PORTS 的默认值仍是 3★：变体 0 的薄 wrapper 不传 PORTS 也照旧拿到 3，
+//   所以加 _2/_3 没有改变任何既有变体的展开结果。
 // =============================================================================
 
 module xs_TlbStorageWrapper_core import xs_tlbsw_pkg::*; #(
