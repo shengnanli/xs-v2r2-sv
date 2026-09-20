@@ -32,6 +32,10 @@ HERE = pathlib.Path(__file__).resolve().parent
 REPO = HERE.parent.parent.parent
 BUILD = HERE / 'neg_build'
 RTL_REL = pathlib.Path('rtl') / 'backend' / 'InterruptFilter.sv'
+# 子依赖闭合升级后 Makefile 还要这三份（DelayN 重写件），neg_build 里必须一并拷，
+# 否则基线就编不过 —— 那会让每个变异都"编译/运行失败"，看着像全被抓到，实则空转。
+DEP_REL = [pathlib.Path('rtl') / 'common' / f
+           for f in ('xs_DelayN_core.sv', 'DelayN_17.sv', 'DelayN_208.sv')]
 NCYCLES = '20000'
 
 # (说明, 锚点, 替换)
@@ -73,6 +77,8 @@ def prepare():
     if BUILD.exists():
         shutil.rmtree(BUILD)
     (BUILD / RTL_REL.parent).mkdir(parents=True)
+    for d in DEP_REL:
+        (BUILD / d.parent).mkdir(parents=True, exist_ok=True)
     (BUILD / 'verif' / 'ut' / 'InterruptFilter').mkdir(parents=True)
     (BUILD / 'scripts').symlink_to(REPO / 'scripts')
     restore()
@@ -82,6 +88,8 @@ def prepare():
 
 def restore():
     shutil.copy(REPO / RTL_REL, BUILD / RTL_REL)
+    for d in DEP_REL:
+        shutil.copy(REPO / d, BUILD / d)
 
 
 def run_ut():
