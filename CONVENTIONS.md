@@ -1269,6 +1269,65 @@ TypeError: __init__() got an unexpected keyword argument 'capture_output'
 汇报里的错句子如果没人撤，它会被下一个读者当成事实继承下去
 （见 ★结论会传下去，限定条件不会★ 与 ★继承来的数字与断言，第一次引用时必须重新测量★）。
 
+## ★参数改名后覆盖被静默忽略 —— 断言被解除武装，六道闸一条没响★（2026-09-20）
+
+`agent/delayn-clz` 把共享核 `xs_DelayNWithValid_core.sv` 从"固定两级"泛化成"n 级"，
+参数 `GOLDEN_DATA_REG_BITS` 改名为 `GOLDEN_REG_BITS`，
+**但两个已签核的薄文件没跟着改**。实测：
+
+```
+make compile      -> COMPILE_RC=0            ← 编过了
+compile.log       -> Warning-[AOUP] Attempt to override undefined parameter
+                     "GOLDEN_DATA_REG_BITS", will be ignored
+make run SEED=1   -> UT PASSED               ← UT 也绿
+```
+
+### 为什么六道闸一条没响
+
+1. VCS 对"覆盖一个不存在的参数"**只给一条 Warning 就静默忽略**，不是 error。
+2. 于是 `GOLDEN_REG_BITS` 取默认值 `VALID_CHAIN + STAGES*WIDTH`，
+   ★而那**恰好**就是核自己算出来的值★。
+3. 于是核里 `initial` 的守恒等式变成**恒真**，
+   「位宽/级数抄错就 time 0 `$fatal`」这条 elaborate 期不变式**被解除武装**。
+4. 电路碰巧没变（新参数默认值 2/1 正好是真值）⇒ UT 绿、FM 也绿。
+
+**没有任何一道闸会响，因为电路是对的。坏掉的是"下次抄错时会喊的那个人"。**
+
+### 这一族的特征
+
+前面几条讲的是**判据永远不响**或**判据必然响**。这一条更隐蔽：
+**判据被拆掉了，而拆除动作本身没有产物。**
+
+| | 症状 | 何时暴露 |
+|---|---|---|
+| 空守卫 | 判据永远不响 | 有人去查它的语义时 |
+| 必然响的判据 | 判据永远为假 | 第一次跑就红，反而好发现 |
+| ★本条★ | 判据**不存在了**，而当下一切正常 | ★下一次真出错时才发现没人喊★ |
+
+「当下一切正常」是它最危险的地方：默认值恰好等于真值，是**巧合**，
+而巧合被当成了"没问题"。
+
+### 修法与闸
+
+- 事实来源唯一化：薄文件由 `gen_facts.facts()` 生成，不手写参数。
+- 新闸 `scripts/check_param_override.py` + 双向负测 `scripts/test_param_override_gate.py`。
+- ★闸先自证"看得见改变"★：把**事故当时的真实字节**放回一棵临时 rtl 树，
+  闸 rc=1、两处都点名 `GOLDEN_DATA_REG_BITS`。
+  （不是构造一个假例子，是拿真实的坏字节验的。）
+- 写闸时第一版正则在 `xs_iq_entries_core` 上报了 **30+ 假阳性**
+  （参数声明里有带括号的维度表达式），已修并钉成用例 P2 ——
+  ★又一次「守卫也会有假阳性」★。
+
+### 推论：编译期 Warning 不是噪声
+
+`Warning-[AOUP]` 这一条就是全部线索，而它混在编译日志里。
+**凡是"本该生效却被忽略"的 Warning，都要当 error 对待**：
+`AOUP`（覆盖未定义参数）、未连接端口、位宽截断。
+本仓已有同类前科：★`INITREG` 这类 Makefile 变量，声明了不等于接上了★、
+★非打包数组混合驱动会静默关掉 `+vcs+initreg`★（0 error 0 warning，更狠）。
+
+**共同点：工具认为"你可能是故意的"，于是放行。而我们从来不是故意的。**
+
 ## ★receipt 由 lane 自己 `git add -f`，不由集成者事后补★（2026-09-20，量到 485 份的漏）
 
 `evidence/` 被 `.gitignore` 忽略是**设计如此**（codex D66：证据不进 git）。
