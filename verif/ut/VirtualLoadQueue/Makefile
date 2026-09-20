@@ -78,7 +78,20 @@ INITREG ?= +vcs+initreg+random
 #   Passing  Port 37 / DFF 1483 = **1520**   Failing 0
 #   unmatched 0(0) / unread 0 / 黑盒 0 / 无 dont_verify / 无 ELAB 降级
 #   verdict(signoff-strict) = SUCCEEDED
-#   ★实测 1520 == 预登记 1520，且 Port 37 / DFF 1483 **逐列**对上，差全为 +0。★
+#
+# ★★关于"预测 1520 对上了"这句话，必须加一条前提（集成者 0920 更正）★★
+#   passing = 闭包触发器位 + 顶层输出端口位 这个模型
+#   **只在 verification_merge_duplicated_registers = false 时成立**。
+#   merge 打开时 FM 会把重复寄存器合并成一个比较点，比较点数低于寄存器位数，
+#   低多少取决于设计里有多少重复结构 —— 不是能从 golden 静态算出来的量。
+#   ★本目标这两跑用的是 merge_dup = **true**（ut_common.mk 的默认值，我没设
+#   FM_MERGE_DUP）★，所以按判据口径它是 **MODEL_NA（模型不适用）**：
+#   实测 1520 与预登记 1520 逐列相等是个**事后观测**，不是模型给出的绿灯。
+#   （sidecar/native_facts.json 的 entry_appvars 里
+#     verification_merge_duplicated_registers = true，可复核。）
+#   为什么这里仍然相等：1520 = 1483 DFF + 37 Port，DFF 位一个没少，
+#   说明这个设计**根本没有被合并掉的重复寄存器**——见下面的 merge_dup=false 对照跑。
+#
 #   官方 receipt: scripts/run_proof.sh 在 detached clean worktree 上重跑一次,
 #   verdict=SUCCEEDED / dirty=False / MAKE_RC=0, 证据 evidence/2844576edd7a/VirtualLoadQueue/。
 #
