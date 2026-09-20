@@ -604,7 +604,7 @@ IntToFP_postnorm	MISSING	UNPROVEN	-
 IntToFP_postnorm_1	MISSING	UNPROVEN	-
 IntToFP_postnorm_2	MISSING	UNPROVEN	-
 IntToFP_prenorm	MISSING	UNPROVEN	-
-InterruptFilter	REWRITTEN	UNPROVEN	rtl/backend/InterruptFilter.sv
+InterruptFilter	REWRITTEN	PROVEN_DIRECT	rtl/backend/InterruptFilter.sv
 Iprio0Module	MISSING	UNPROVEN	-
 Iprio0Module_1	MISSING	UNPROVEN	-
 Iprio10Module_1	MISSING	UNPROVEN	-
