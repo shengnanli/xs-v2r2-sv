@@ -557,7 +557,190 @@ module EnqEntry_12 (
   // 入队负载按 Variant 的偏移表拼成一根 1330 位向量（transEntry 整包：
   // KEEP_WIDE = IS_ENQ | IS_TRANS，enq 条目要把整包交给下一级）
   logic [1329:0] enq_payload;
-  assign enq_payload = {io_commonIn_enq_bits_payload_numLsElem, io_commonIn_enq_bits_payload_debug_sim_trig, io_commonIn_enq_bits_payload_debug_fuType, io_commonIn_enq_bits_payload_replayInst, io_commonIn_enq_bits_payload_singleStep, io_commonIn_enq_bits_payload_sqIdx_value, io_commonIn_enq_bits_payload_sqIdx_flag, io_commonIn_enq_bits_payload_lqIdx_value, io_commonIn_enq_bits_payload_lqIdx_flag, io_commonIn_enq_bits_payload_ssid, io_commonIn_enq_bits_payload_loadWaitStrict, io_commonIn_enq_bits_payload_loadWaitBit, io_commonIn_enq_bits_payload_waitForRobIdx_value, io_commonIn_enq_bits_payload_waitForRobIdx_flag, io_commonIn_enq_bits_payload_storeSetHit, io_commonIn_enq_bits_payload_debugInfo_issueTime, io_commonIn_enq_bits_payload_debugInfo_selectTime, io_commonIn_enq_bits_payload_snapshot, io_commonIn_enq_bits_payload_eliminatedMove, io_commonIn_enq_bits_payload_traceBlockInPipe_ilastsize, io_commonIn_enq_bits_payload_traceBlockInPipe_iretire, io_commonIn_enq_bits_payload_traceBlockInPipe_itype, io_commonIn_enq_bits_payload_dirtyVs, io_commonIn_enq_bits_payload_dirtyFs, io_commonIn_enq_bits_payload_instrSize, io_commonIn_enq_bits_payload_robIdx_value, io_commonIn_enq_bits_payload_robIdx_flag, io_commonIn_enq_bits_payload_regCacheIdx_1, io_commonIn_enq_bits_payload_regCacheIdx_0, io_commonIn_enq_bits_payload_useRegCache_1, io_commonIn_enq_bits_payload_useRegCache_0, io_commonIn_enq_bits_payload_psrc_4, io_commonIn_enq_bits_payload_psrc_3, io_commonIn_enq_bits_payload_psrc_2, io_commonIn_enq_bits_payload_psrc_1, io_commonIn_enq_bits_payload_psrc_0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, 2'h0, io_commonIn_enq_bits_payload_srcState_4, io_commonIn_enq_bits_payload_srcState_3, io_commonIn_enq_bits_payload_srcState_2, io_commonIn_enq_bits_payload_srcState_1, io_commonIn_enq_bits_payload_srcState_0, io_commonIn_enq_bits_payload_commitType, io_commonIn_enq_bits_payload_numWB, io_commonIn_enq_bits_payload_numUops, io_commonIn_enq_bits_payload_lastUop, io_commonIn_enq_bits_payload_firstUop, io_commonIn_enq_bits_payload_isVset, io_commonIn_enq_bits_payload_uopIdx, io_commonIn_enq_bits_payload_isDropAmocasSta, io_commonIn_enq_bits_payload_isMove, io_commonIn_enq_bits_payload_wfflags, io_commonIn_enq_bits_payload_vlsInstr, io_commonIn_enq_bits_payload_vpu_isVleff, io_commonIn_enq_bits_payload_vpu_isWritePartVd, io_commonIn_enq_bits_payload_vpu_isDependOldVd, io_commonIn_enq_bits_payload_vpu_isMove, io_commonIn_enq_bits_payload_vpu_isOpMask, io_commonIn_enq_bits_payload_vpu_isDstMask, io_commonIn_enq_bits_payload_vpu_isNarrow, io_commonIn_enq_bits_payload_vpu_isExt, io_commonIn_enq_bits_payload_vpu_isReverse, io_commonIn_enq_bits_payload_vpu_veew, io_commonIn_enq_bits_payload_vpu_nf, io_commonIn_enq_bits_payload_vpu_vl, io_commonIn_enq_bits_payload_vpu_vmask, io_commonIn_enq_bits_payload_vpu_lastUop, io_commonIn_enq_bits_payload_vpu_vuopIdx, io_commonIn_enq_bits_payload_vpu_vxrm, io_commonIn_enq_bits_payload_vpu_fpu_isFoldTo1_8, io_commonIn_enq_bits_payload_vpu_fpu_isFoldTo1_4, io_commonIn_enq_bits_payload_vpu_fpu_isFoldTo1_2, io_commonIn_enq_bits_payload_vpu_fpu_isReduction, io_commonIn_enq_bits_payload_vpu_fpu_isFP64Instr, io_commonIn_enq_bits_payload_vpu_fpu_isFP32Instr, io_commonIn_enq_bits_payload_vpu_fpu_isFpToVecInst, io_commonIn_enq_bits_payload_vpu_frm, io_commonIn_enq_bits_payload_vpu_vstart, io_commonIn_enq_bits_payload_vpu_vm, io_commonIn_enq_bits_payload_vpu_specVlmul, io_commonIn_enq_bits_payload_vpu_specVsew, io_commonIn_enq_bits_payload_vpu_specVta, io_commonIn_enq_bits_payload_vpu_specVma, io_commonIn_enq_bits_payload_vpu_specVill, io_commonIn_enq_bits_payload_vpu_vlmul, io_commonIn_enq_bits_payload_vpu_vsew, io_commonIn_enq_bits_payload_vpu_vta, io_commonIn_enq_bits_payload_vpu_vma, io_commonIn_enq_bits_payload_vpu_vill, io_commonIn_enq_bits_payload_imm, io_commonIn_enq_bits_payload_canRobCompress, io_commonIn_enq_bits_payload_flushPipe, io_commonIn_enq_bits_payload_blockBackward, io_commonIn_enq_bits_payload_waitForward, io_commonIn_enq_bits_payload_isXSTrap, io_commonIn_enq_bits_payload_vlWen, io_commonIn_enq_bits_payload_v0Wen, io_commonIn_enq_bits_payload_vecWen, io_commonIn_enq_bits_payload_fuType, io_commonIn_enq_bits_payload_ldest, io_commonIn_enq_bits_payload_srcType_4, io_commonIn_enq_bits_payload_srcType_3, io_commonIn_enq_bits_payload_srcType_2, io_commonIn_enq_bits_payload_srcType_1, io_commonIn_enq_bits_payload_srcType_0, io_commonIn_enq_bits_payload_satpFlushFirstFetchFault, io_commonIn_enq_bits_payload_ftqOffset, io_commonIn_enq_bits_payload_ftqPtr_value, io_commonIn_enq_bits_payload_ftqPtr_flag, io_commonIn_enq_bits_payload_crossPageIPFFix, io_commonIn_enq_bits_payload_pred_taken, io_commonIn_enq_bits_payload_preDecodeInfo_isRet, io_commonIn_enq_bits_payload_preDecodeInfo_isCall, io_commonIn_enq_bits_payload_preDecodeInfo_brType, io_commonIn_enq_bits_payload_preDecodeInfo_isRVC, io_commonIn_enq_bits_payload_preDecodeInfo_valid, io_commonIn_enq_bits_payload_trigger, io_commonIn_enq_bits_payload_hasException, io_commonIn_enq_bits_payload_isFetchMalAddr, io_commonIn_enq_bits_payload_exceptionVec_23, io_commonIn_enq_bits_payload_exceptionVec_22, io_commonIn_enq_bits_payload_exceptionVec_21, io_commonIn_enq_bits_payload_exceptionVec_20, io_commonIn_enq_bits_payload_exceptionVec_19, io_commonIn_enq_bits_payload_exceptionVec_18, io_commonIn_enq_bits_payload_exceptionVec_17, io_commonIn_enq_bits_payload_exceptionVec_16, io_commonIn_enq_bits_payload_exceptionVec_15, io_commonIn_enq_bits_payload_exceptionVec_14, io_commonIn_enq_bits_payload_exceptionVec_13, io_commonIn_enq_bits_payload_exceptionVec_12, io_commonIn_enq_bits_payload_exceptionVec_11, io_commonIn_enq_bits_payload_exceptionVec_10, io_commonIn_enq_bits_payload_exceptionVec_9, io_commonIn_enq_bits_payload_exceptionVec_8, io_commonIn_enq_bits_payload_exceptionVec_7, io_commonIn_enq_bits_payload_exceptionVec_6, io_commonIn_enq_bits_payload_exceptionVec_5, io_commonIn_enq_bits_payload_exceptionVec_4, io_commonIn_enq_bits_payload_exceptionVec_3, io_commonIn_enq_bits_payload_exceptionVec_2, io_commonIn_enq_bits_payload_exceptionVec_1, io_commonIn_enq_bits_payload_exceptionVec_0, io_commonIn_enq_bits_payload_foldpc, io_commonIn_enq_bits_payload_pc, io_commonIn_enq_bits_payload_instr, io_commonIn_enq_bits_payload_debug_seqNum_uopIdx, io_commonIn_enq_bits_payload_debug_seqNum_seqNum, io_commonIn_enq_bits_payload_debugInfo_tlbRespTime, io_commonIn_enq_bits_payload_debugInfo_tlbFirstReqTime, io_commonIn_enq_bits_payload_debugInfo_runahead_checkpoint_id, io_commonIn_enq_bits_payload_debugInfo_writebackTime, io_commonIn_enq_bits_payload_debugInfo_enqRsTime, io_commonIn_enq_bits_payload_debugInfo_dispatchTime, io_commonIn_enq_bits_payload_debugInfo_renameTime, io_commonIn_enq_bits_payload_debugInfo_eliminatedMove, io_commonIn_enq_bits_payload_pdest, io_commonIn_enq_bits_payload_fpu_rm, io_commonIn_enq_bits_payload_fpu_fmt, io_commonIn_enq_bits_payload_fpu_typ, io_commonIn_enq_bits_payload_fpu_wflags, io_commonIn_enq_bits_payload_fpu_typeTagOut, io_commonIn_enq_bits_payload_selImm, io_commonIn_enq_bits_payload_fpWen, io_commonIn_enq_bits_payload_rfWen, io_commonIn_enq_bits_payload_fuOpType};
+  // 一字段一行 + 比特区间 —— 这张表就是「负载字段 -> 比特位置」的地图，
+  // fm_pins_pre.tcl 的钉点用的是同一张 Variant.pl_off，两边不会各算各的。
+  assign enq_payload = {
+    io_commonIn_enq_bits_payload_numLsElem,                       // [1329:1325] numLsElem
+    io_commonIn_enq_bits_payload_debug_sim_trig,                  // [1324] debug_sim_trig
+    io_commonIn_enq_bits_payload_debug_fuType,                    // [1323:1289] debug_fuType
+    io_commonIn_enq_bits_payload_replayInst,                      // [1288] replayInst
+    io_commonIn_enq_bits_payload_singleStep,                      // [1287] singleStep
+    io_commonIn_enq_bits_payload_sqIdx_value,                     // [1286:1281] sqIdx_value
+    io_commonIn_enq_bits_payload_sqIdx_flag,                      // [1280] sqIdx_flag
+    io_commonIn_enq_bits_payload_lqIdx_value,                     // [1279:1273] lqIdx_value
+    io_commonIn_enq_bits_payload_lqIdx_flag,                      // [1272] lqIdx_flag
+    io_commonIn_enq_bits_payload_ssid,                            // [1271:1267] ssid
+    io_commonIn_enq_bits_payload_loadWaitStrict,                  // [1266] loadWaitStrict
+    io_commonIn_enq_bits_payload_loadWaitBit,                     // [1265] loadWaitBit
+    io_commonIn_enq_bits_payload_waitForRobIdx_value,             // [1264:1257] waitForRobIdx_value
+    io_commonIn_enq_bits_payload_waitForRobIdx_flag,              // [1256] waitForRobIdx_flag
+    io_commonIn_enq_bits_payload_storeSetHit,                     // [1255] storeSetHit
+    io_commonIn_enq_bits_payload_debugInfo_issueTime,             // [1254:1191] debugInfo_issueTime
+    io_commonIn_enq_bits_payload_debugInfo_selectTime,            // [1190:1127] debugInfo_selectTime
+    io_commonIn_enq_bits_payload_snapshot,                        // [1126] snapshot
+    io_commonIn_enq_bits_payload_eliminatedMove,                  // [1125] eliminatedMove
+    io_commonIn_enq_bits_payload_traceBlockInPipe_ilastsize,      // [1124] traceBlockInPipe_ilastsize
+    io_commonIn_enq_bits_payload_traceBlockInPipe_iretire,        // [1123:1120] traceBlockInPipe_iretire
+    io_commonIn_enq_bits_payload_traceBlockInPipe_itype,          // [1119:1116] traceBlockInPipe_itype
+    io_commonIn_enq_bits_payload_dirtyVs,                         // [1115] dirtyVs
+    io_commonIn_enq_bits_payload_dirtyFs,                         // [1114] dirtyFs
+    io_commonIn_enq_bits_payload_instrSize,                       // [1113:1111] instrSize
+    io_commonIn_enq_bits_payload_robIdx_value,                    // [1110:1103] robIdx_value
+    io_commonIn_enq_bits_payload_robIdx_flag,                     // [1102] robIdx_flag
+    io_commonIn_enq_bits_payload_regCacheIdx_1,                   // [1101:1097] regCacheIdx_1
+    io_commonIn_enq_bits_payload_regCacheIdx_0,                   // [1096:1092] regCacheIdx_0
+    io_commonIn_enq_bits_payload_useRegCache_1,                   // [1091] useRegCache_1
+    io_commonIn_enq_bits_payload_useRegCache_0,                   // [1090] useRegCache_0
+    io_commonIn_enq_bits_payload_psrc_4,                          // [1089:1082] psrc_4
+    io_commonIn_enq_bits_payload_psrc_3,                          // [1081:1074] psrc_3
+    io_commonIn_enq_bits_payload_psrc_2,                          // [1073:1066] psrc_2
+    io_commonIn_enq_bits_payload_psrc_1,                          // [1065:1058] psrc_1
+    io_commonIn_enq_bits_payload_psrc_0,                          // [1057:1050] psrc_0
+    2'h0,                                                         // [1049:1048] srcLoadDependency_4_2
+    2'h0,                                                         // [1047:1046] srcLoadDependency_4_1
+    2'h0,                                                         // [1045:1044] srcLoadDependency_4_0
+    2'h0,                                                         // [1043:1042] srcLoadDependency_3_2
+    2'h0,                                                         // [1041:1040] srcLoadDependency_3_1
+    2'h0,                                                         // [1039:1038] srcLoadDependency_3_0
+    2'h0,                                                         // [1037:1036] srcLoadDependency_2_2
+    2'h0,                                                         // [1035:1034] srcLoadDependency_2_1
+    2'h0,                                                         // [1033:1032] srcLoadDependency_2_0
+    2'h0,                                                         // [1031:1030] srcLoadDependency_1_2
+    2'h0,                                                         // [1029:1028] srcLoadDependency_1_1
+    2'h0,                                                         // [1027:1026] srcLoadDependency_1_0
+    2'h0,                                                         // [1025:1024] srcLoadDependency_0_2
+    2'h0,                                                         // [1023:1022] srcLoadDependency_0_1
+    2'h0,                                                         // [1021:1020] srcLoadDependency_0_0
+    io_commonIn_enq_bits_payload_srcState_4,                      // [1019] srcState_4
+    io_commonIn_enq_bits_payload_srcState_3,                      // [1018] srcState_3
+    io_commonIn_enq_bits_payload_srcState_2,                      // [1017] srcState_2
+    io_commonIn_enq_bits_payload_srcState_1,                      // [1016] srcState_1
+    io_commonIn_enq_bits_payload_srcState_0,                      // [1015] srcState_0
+    io_commonIn_enq_bits_payload_commitType,                      // [1014:1012] commitType
+    io_commonIn_enq_bits_payload_numWB,                           // [1011:1005] numWB
+    io_commonIn_enq_bits_payload_numUops,                         // [1004:998] numUops
+    io_commonIn_enq_bits_payload_lastUop,                         // [997] lastUop
+    io_commonIn_enq_bits_payload_firstUop,                        // [996] firstUop
+    io_commonIn_enq_bits_payload_isVset,                          // [995] isVset
+    io_commonIn_enq_bits_payload_uopIdx,                          // [994:988] uopIdx
+    io_commonIn_enq_bits_payload_isDropAmocasSta,                 // [987] isDropAmocasSta
+    io_commonIn_enq_bits_payload_isMove,                          // [986] isMove
+    io_commonIn_enq_bits_payload_wfflags,                         // [985] wfflags
+    io_commonIn_enq_bits_payload_vlsInstr,                        // [984] vlsInstr
+    io_commonIn_enq_bits_payload_vpu_isVleff,                     // [983] vpu_isVleff
+    io_commonIn_enq_bits_payload_vpu_isWritePartVd,               // [982] vpu_isWritePartVd
+    io_commonIn_enq_bits_payload_vpu_isDependOldVd,               // [981] vpu_isDependOldVd
+    io_commonIn_enq_bits_payload_vpu_isMove,                      // [980] vpu_isMove
+    io_commonIn_enq_bits_payload_vpu_isOpMask,                    // [979] vpu_isOpMask
+    io_commonIn_enq_bits_payload_vpu_isDstMask,                   // [978] vpu_isDstMask
+    io_commonIn_enq_bits_payload_vpu_isNarrow,                    // [977] vpu_isNarrow
+    io_commonIn_enq_bits_payload_vpu_isExt,                       // [976] vpu_isExt
+    io_commonIn_enq_bits_payload_vpu_isReverse,                   // [975] vpu_isReverse
+    io_commonIn_enq_bits_payload_vpu_veew,                        // [974:973] vpu_veew
+    io_commonIn_enq_bits_payload_vpu_nf,                          // [972:970] vpu_nf
+    io_commonIn_enq_bits_payload_vpu_vl,                          // [969:962] vpu_vl
+    io_commonIn_enq_bits_payload_vpu_vmask,                       // [961:834] vpu_vmask
+    io_commonIn_enq_bits_payload_vpu_lastUop,                     // [833] vpu_lastUop
+    io_commonIn_enq_bits_payload_vpu_vuopIdx,                     // [832:826] vpu_vuopIdx
+    io_commonIn_enq_bits_payload_vpu_vxrm,                        // [825:824] vpu_vxrm
+    io_commonIn_enq_bits_payload_vpu_fpu_isFoldTo1_8,             // [823] vpu_fpu_isFoldTo1_8
+    io_commonIn_enq_bits_payload_vpu_fpu_isFoldTo1_4,             // [822] vpu_fpu_isFoldTo1_4
+    io_commonIn_enq_bits_payload_vpu_fpu_isFoldTo1_2,             // [821] vpu_fpu_isFoldTo1_2
+    io_commonIn_enq_bits_payload_vpu_fpu_isReduction,             // [820] vpu_fpu_isReduction
+    io_commonIn_enq_bits_payload_vpu_fpu_isFP64Instr,             // [819] vpu_fpu_isFP64Instr
+    io_commonIn_enq_bits_payload_vpu_fpu_isFP32Instr,             // [818] vpu_fpu_isFP32Instr
+    io_commonIn_enq_bits_payload_vpu_fpu_isFpToVecInst,           // [817] vpu_fpu_isFpToVecInst
+    io_commonIn_enq_bits_payload_vpu_frm,                         // [816:814] vpu_frm
+    io_commonIn_enq_bits_payload_vpu_vstart,                      // [813:806] vpu_vstart
+    io_commonIn_enq_bits_payload_vpu_vm,                          // [805] vpu_vm
+    io_commonIn_enq_bits_payload_vpu_specVlmul,                   // [804:802] vpu_specVlmul
+    io_commonIn_enq_bits_payload_vpu_specVsew,                    // [801:800] vpu_specVsew
+    io_commonIn_enq_bits_payload_vpu_specVta,                     // [799] vpu_specVta
+    io_commonIn_enq_bits_payload_vpu_specVma,                     // [798] vpu_specVma
+    io_commonIn_enq_bits_payload_vpu_specVill,                    // [797] vpu_specVill
+    io_commonIn_enq_bits_payload_vpu_vlmul,                       // [796:794] vpu_vlmul
+    io_commonIn_enq_bits_payload_vpu_vsew,                        // [793:792] vpu_vsew
+    io_commonIn_enq_bits_payload_vpu_vta,                         // [791] vpu_vta
+    io_commonIn_enq_bits_payload_vpu_vma,                         // [790] vpu_vma
+    io_commonIn_enq_bits_payload_vpu_vill,                        // [789] vpu_vill
+    io_commonIn_enq_bits_payload_imm,                             // [788:757] imm
+    io_commonIn_enq_bits_payload_canRobCompress,                  // [756] canRobCompress
+    io_commonIn_enq_bits_payload_flushPipe,                       // [755] flushPipe
+    io_commonIn_enq_bits_payload_blockBackward,                   // [754] blockBackward
+    io_commonIn_enq_bits_payload_waitForward,                     // [753] waitForward
+    io_commonIn_enq_bits_payload_isXSTrap,                        // [752] isXSTrap
+    io_commonIn_enq_bits_payload_vlWen,                           // [751] vlWen
+    io_commonIn_enq_bits_payload_v0Wen,                           // [750] v0Wen
+    io_commonIn_enq_bits_payload_vecWen,                          // [749] vecWen
+    io_commonIn_enq_bits_payload_fuType,                          // [748:714] fuType
+    io_commonIn_enq_bits_payload_ldest,                           // [713:708] ldest
+    io_commonIn_enq_bits_payload_srcType_4,                       // [707:704] srcType_4
+    io_commonIn_enq_bits_payload_srcType_3,                       // [703:700] srcType_3
+    io_commonIn_enq_bits_payload_srcType_2,                       // [699:696] srcType_2
+    io_commonIn_enq_bits_payload_srcType_1,                       // [695:692] srcType_1
+    io_commonIn_enq_bits_payload_srcType_0,                       // [691:688] srcType_0
+    io_commonIn_enq_bits_payload_satpFlushFirstFetchFault,        // [687] satpFlushFirstFetchFault
+    io_commonIn_enq_bits_payload_ftqOffset,                       // [686:683] ftqOffset
+    io_commonIn_enq_bits_payload_ftqPtr_value,                    // [682:677] ftqPtr_value
+    io_commonIn_enq_bits_payload_ftqPtr_flag,                     // [676] ftqPtr_flag
+    io_commonIn_enq_bits_payload_crossPageIPFFix,                 // [675] crossPageIPFFix
+    io_commonIn_enq_bits_payload_pred_taken,                      // [674] pred_taken
+    io_commonIn_enq_bits_payload_preDecodeInfo_isRet,             // [673] preDecodeInfo_isRet
+    io_commonIn_enq_bits_payload_preDecodeInfo_isCall,            // [672] preDecodeInfo_isCall
+    io_commonIn_enq_bits_payload_preDecodeInfo_brType,            // [671:670] preDecodeInfo_brType
+    io_commonIn_enq_bits_payload_preDecodeInfo_isRVC,             // [669] preDecodeInfo_isRVC
+    io_commonIn_enq_bits_payload_preDecodeInfo_valid,             // [668] preDecodeInfo_valid
+    io_commonIn_enq_bits_payload_trigger,                         // [667:664] trigger
+    io_commonIn_enq_bits_payload_hasException,                    // [663] hasException
+    io_commonIn_enq_bits_payload_isFetchMalAddr,                  // [662] isFetchMalAddr
+    io_commonIn_enq_bits_payload_exceptionVec_23,                 // [661] exceptionVec_23
+    io_commonIn_enq_bits_payload_exceptionVec_22,                 // [660] exceptionVec_22
+    io_commonIn_enq_bits_payload_exceptionVec_21,                 // [659] exceptionVec_21
+    io_commonIn_enq_bits_payload_exceptionVec_20,                 // [658] exceptionVec_20
+    io_commonIn_enq_bits_payload_exceptionVec_19,                 // [657] exceptionVec_19
+    io_commonIn_enq_bits_payload_exceptionVec_18,                 // [656] exceptionVec_18
+    io_commonIn_enq_bits_payload_exceptionVec_17,                 // [655] exceptionVec_17
+    io_commonIn_enq_bits_payload_exceptionVec_16,                 // [654] exceptionVec_16
+    io_commonIn_enq_bits_payload_exceptionVec_15,                 // [653] exceptionVec_15
+    io_commonIn_enq_bits_payload_exceptionVec_14,                 // [652] exceptionVec_14
+    io_commonIn_enq_bits_payload_exceptionVec_13,                 // [651] exceptionVec_13
+    io_commonIn_enq_bits_payload_exceptionVec_12,                 // [650] exceptionVec_12
+    io_commonIn_enq_bits_payload_exceptionVec_11,                 // [649] exceptionVec_11
+    io_commonIn_enq_bits_payload_exceptionVec_10,                 // [648] exceptionVec_10
+    io_commonIn_enq_bits_payload_exceptionVec_9,                  // [647] exceptionVec_9
+    io_commonIn_enq_bits_payload_exceptionVec_8,                  // [646] exceptionVec_8
+    io_commonIn_enq_bits_payload_exceptionVec_7,                  // [645] exceptionVec_7
+    io_commonIn_enq_bits_payload_exceptionVec_6,                  // [644] exceptionVec_6
+    io_commonIn_enq_bits_payload_exceptionVec_5,                  // [643] exceptionVec_5
+    io_commonIn_enq_bits_payload_exceptionVec_4,                  // [642] exceptionVec_4
+    io_commonIn_enq_bits_payload_exceptionVec_3,                  // [641] exceptionVec_3
+    io_commonIn_enq_bits_payload_exceptionVec_2,                  // [640] exceptionVec_2
+    io_commonIn_enq_bits_payload_exceptionVec_1,                  // [639] exceptionVec_1
+    io_commonIn_enq_bits_payload_exceptionVec_0,                  // [638] exceptionVec_0
+    io_commonIn_enq_bits_payload_foldpc,                          // [637:628] foldpc
+    io_commonIn_enq_bits_payload_pc,                              // [627:578] pc
+    io_commonIn_enq_bits_payload_instr,                           // [577:546] instr
+    io_commonIn_enq_bits_payload_debug_seqNum_uopIdx,             // [545:538] debug_seqNum_uopIdx
+    io_commonIn_enq_bits_payload_debug_seqNum_seqNum,             // [537:482] debug_seqNum_seqNum
+    io_commonIn_enq_bits_payload_debugInfo_tlbRespTime,           // [481:418] debugInfo_tlbRespTime
+    io_commonIn_enq_bits_payload_debugInfo_tlbFirstReqTime,       // [417:354] debugInfo_tlbFirstReqTime
+    io_commonIn_enq_bits_payload_debugInfo_runahead_checkpoint_id,// [353:290] debugInfo_runahead_checkpoint_id
+    io_commonIn_enq_bits_payload_debugInfo_writebackTime,         // [289:226] debugInfo_writebackTime
+    io_commonIn_enq_bits_payload_debugInfo_enqRsTime,             // [225:162] debugInfo_enqRsTime
+    io_commonIn_enq_bits_payload_debugInfo_dispatchTime,          // [161:98] debugInfo_dispatchTime
+    io_commonIn_enq_bits_payload_debugInfo_renameTime,            // [97:34] debugInfo_renameTime
+    io_commonIn_enq_bits_payload_debugInfo_eliminatedMove,        // [33] debugInfo_eliminatedMove
+    io_commonIn_enq_bits_payload_pdest,                           // [32:25] pdest
+    io_commonIn_enq_bits_payload_fpu_rm,                          // [24:22] fpu_rm
+    io_commonIn_enq_bits_payload_fpu_fmt,                         // [21:20] fpu_fmt
+    io_commonIn_enq_bits_payload_fpu_typ,                         // [19:18] fpu_typ
+    io_commonIn_enq_bits_payload_fpu_wflags,                      // [17] fpu_wflags
+    io_commonIn_enq_bits_payload_fpu_typeTagOut,                  // [16:15] fpu_typeTagOut
+    io_commonIn_enq_bits_payload_selImm,                          // [14:11] selImm
+    io_commonIn_enq_bits_payload_fpWen,                           // [10] fpWen
+    io_commonIn_enq_bits_payload_rfWen,                           // [9] rfWen
+    io_commonIn_enq_bits_payload_fuOpType                         // [8:0] fuOpType
+  };
 
   logic [1:0] fu_type_narrow;
   logic [2:0][3:0] data_src;
@@ -619,11 +802,20 @@ module EnqEntry_12 (
     .enq_valid(io_commonIn_enq_valid),
     .enq_rob_flag(io_commonIn_enq_bits_status_robIdx_flag),
     .enq_rob_value(io_commonIn_enq_bits_status_robIdx_value),
-    .enq_fu_type({io_commonIn_enq_bits_status_fuType_12, io_commonIn_enq_bits_status_fuType_11}),
-    .enq_psrc({io_commonIn_enq_bits_status_srcStatus_2_psrc, io_commonIn_enq_bits_status_srcStatus_1_psrc, io_commonIn_enq_bits_status_srcStatus_0_psrc}),
-    .enq_src_type({io_commonIn_enq_bits_status_srcStatus_2_srcType, io_commonIn_enq_bits_status_srcStatus_1_srcType, io_commonIn_enq_bits_status_srcStatus_0_srcType}),
-    .enq_src_state({io_commonIn_enq_bits_status_srcStatus_2_srcState, io_commonIn_enq_bits_status_srcStatus_1_srcState, io_commonIn_enq_bits_status_srcStatus_0_srcState}),
-    .enq_data_src({io_commonIn_enq_bits_status_srcStatus_2_dataSources_value, io_commonIn_enq_bits_status_srcStatus_1_dataSources_value, io_commonIn_enq_bits_status_srcStatus_0_dataSources_value}),
+    .enq_fu_type({io_commonIn_enq_bits_status_fuType_12,
+        io_commonIn_enq_bits_status_fuType_11}),
+    .enq_psrc({io_commonIn_enq_bits_status_srcStatus_2_psrc,
+        io_commonIn_enq_bits_status_srcStatus_1_psrc,
+        io_commonIn_enq_bits_status_srcStatus_0_psrc}),
+    .enq_src_type({io_commonIn_enq_bits_status_srcStatus_2_srcType,
+        io_commonIn_enq_bits_status_srcStatus_1_srcType,
+        io_commonIn_enq_bits_status_srcStatus_0_srcType}),
+    .enq_src_state({io_commonIn_enq_bits_status_srcStatus_2_srcState,
+        io_commonIn_enq_bits_status_srcStatus_1_srcState,
+        io_commonIn_enq_bits_status_srcStatus_0_srcState}),
+    .enq_data_src({io_commonIn_enq_bits_status_srcStatus_2_dataSources_value,
+        io_commonIn_enq_bits_status_srcStatus_1_dataSources_value,
+        io_commonIn_enq_bits_status_srcStatus_0_dataSources_value}),
     // ★ IS_ENQ 装载时这五个由核强制（issued=0/firstIssue=0/issueTimer=3，
     //   blocked 无寄存器、deqPortIdx 清 0），golden 也正因此没有这几个输入
     .enq_blocked('0), .enq_issued('0), .enq_first_issue('0),
@@ -635,27 +827,47 @@ module EnqEntry_12 (
     .enq_exu_src('0),
     .enq_use_rc('0),
     .enq_rc_idx('0),
-    .wk_valid({io_commonIn_wakeUpFromWB_5_valid, io_commonIn_wakeUpFromWB_4_valid, io_commonIn_wakeUpFromWB_3_valid, io_commonIn_wakeUpFromWB_2_valid, io_commonIn_wakeUpFromWB_1_valid, io_commonIn_wakeUpFromWB_0_valid}),
-    .wk_wen({io_commonIn_wakeUpFromWB_5_bits_fpWen, io_commonIn_wakeUpFromWB_4_bits_fpWen, io_commonIn_wakeUpFromWB_3_bits_fpWen, io_commonIn_wakeUpFromWB_2_bits_fpWen, io_commonIn_wakeUpFromWB_1_bits_fpWen, io_commonIn_wakeUpFromWB_0_bits_fpWen}),
-    .wk_pdest({io_commonIn_wakeUpFromWB_5_bits_pdest, io_commonIn_wakeUpFromWB_4_bits_pdest, io_commonIn_wakeUpFromWB_3_bits_pdest, io_commonIn_wakeUpFromWB_2_bits_pdest, io_commonIn_wakeUpFromWB_1_bits_pdest, io_commonIn_wakeUpFromWB_0_bits_pdest}),
+    .wk_valid({io_commonIn_wakeUpFromWB_5_valid, io_commonIn_wakeUpFromWB_4_valid,
+        io_commonIn_wakeUpFromWB_3_valid, io_commonIn_wakeUpFromWB_2_valid,
+        io_commonIn_wakeUpFromWB_1_valid, io_commonIn_wakeUpFromWB_0_valid}),
+    .wk_wen({io_commonIn_wakeUpFromWB_5_bits_fpWen, io_commonIn_wakeUpFromWB_4_bits_fpWen,
+        io_commonIn_wakeUpFromWB_3_bits_fpWen, io_commonIn_wakeUpFromWB_2_bits_fpWen,
+        io_commonIn_wakeUpFromWB_1_bits_fpWen, io_commonIn_wakeUpFromWB_0_bits_fpWen}),
+    .wk_pdest({io_commonIn_wakeUpFromWB_5_bits_pdest, io_commonIn_wakeUpFromWB_4_bits_pdest,
+        io_commonIn_wakeUpFromWB_3_bits_pdest, io_commonIn_wakeUpFromWB_2_bits_pdest,
+        io_commonIn_wakeUpFromWB_1_bits_pdest, io_commonIn_wakeUpFromWB_0_bits_pdest}),
     // ★ 入队延迟窗口（IS_ENQ 专属）：派遣与唤醒总线差一拍，入队后的下一拍
     //   用这组延迟总线再匹配一次，否则那一拍的唤醒会被整个漏掉。
-    .wkd_valid({io_enqDelayIn1_wakeUpFromWB_5_valid, io_enqDelayIn1_wakeUpFromWB_4_valid, io_enqDelayIn1_wakeUpFromWB_3_valid, io_enqDelayIn1_wakeUpFromWB_2_valid, io_enqDelayIn1_wakeUpFromWB_1_valid, io_enqDelayIn1_wakeUpFromWB_0_valid}),
-    .wkd_wen({io_enqDelayIn1_wakeUpFromWB_5_bits_fpWen, io_enqDelayIn1_wakeUpFromWB_4_bits_fpWen, io_enqDelayIn1_wakeUpFromWB_3_bits_fpWen, io_enqDelayIn1_wakeUpFromWB_2_bits_fpWen, io_enqDelayIn1_wakeUpFromWB_1_bits_fpWen, io_enqDelayIn1_wakeUpFromWB_0_bits_fpWen}),
-    .wkd_pdest({io_enqDelayIn1_wakeUpFromWB_5_bits_pdest, io_enqDelayIn1_wakeUpFromWB_4_bits_pdest, io_enqDelayIn1_wakeUpFromWB_3_bits_pdest, io_enqDelayIn1_wakeUpFromWB_2_bits_pdest, io_enqDelayIn1_wakeUpFromWB_1_bits_pdest, io_enqDelayIn1_wakeUpFromWB_0_bits_pdest}),
+    .wkd_valid({io_enqDelayIn1_wakeUpFromWB_5_valid, io_enqDelayIn1_wakeUpFromWB_4_valid,
+        io_enqDelayIn1_wakeUpFromWB_3_valid, io_enqDelayIn1_wakeUpFromWB_2_valid,
+        io_enqDelayIn1_wakeUpFromWB_1_valid, io_enqDelayIn1_wakeUpFromWB_0_valid}),
+    .wkd_wen({io_enqDelayIn1_wakeUpFromWB_5_bits_fpWen,
+        io_enqDelayIn1_wakeUpFromWB_4_bits_fpWen, io_enqDelayIn1_wakeUpFromWB_3_bits_fpWen,
+        io_enqDelayIn1_wakeUpFromWB_2_bits_fpWen, io_enqDelayIn1_wakeUpFromWB_1_bits_fpWen,
+        io_enqDelayIn1_wakeUpFromWB_0_bits_fpWen}),
+    .wkd_pdest({io_enqDelayIn1_wakeUpFromWB_5_bits_pdest,
+        io_enqDelayIn1_wakeUpFromWB_4_bits_pdest, io_enqDelayIn1_wakeUpFromWB_3_bits_pdest,
+        io_enqDelayIn1_wakeUpFromWB_2_bits_pdest, io_enqDelayIn1_wakeUpFromWB_1_bits_pdest,
+        io_enqDelayIn1_wakeUpFromWB_0_bits_pdest}),
     // iq_cancel[w] = og0Cancel[第 w 路的全局 exu 下标] & is0Lat[w]；
     // og0Cancel 的下标是稀疏的，is0Lat 有的路被 firtool 折成常量。
-    .iq_wen({io_commonIn_wakeUpFromIQ_2_bits_fpWen, io_commonIn_wakeUpFromIQ_1_bits_fpWen, io_commonIn_wakeUpFromIQ_0_bits_fpWen}),
-    .iq_pdest({io_commonIn_wakeUpFromIQ_2_bits_pdest, io_commonIn_wakeUpFromIQ_1_bits_pdest, io_commonIn_wakeUpFromIQ_0_bits_pdest}),
+    .iq_wen({io_commonIn_wakeUpFromIQ_2_bits_fpWen, io_commonIn_wakeUpFromIQ_1_bits_fpWen,
+        io_commonIn_wakeUpFromIQ_0_bits_fpWen}),
+    .iq_pdest({io_commonIn_wakeUpFromIQ_2_bits_pdest, io_commonIn_wakeUpFromIQ_1_bits_pdest,
+        io_commonIn_wakeUpFromIQ_0_bits_pdest}),
     .iq_ld_dep('0),
     .iq_rc_dest('0),
-    .iq_cancel({1'b0, 1'b0, (io_commonIn_og0Cancel_8 & io_commonIn_wakeUpFromIQ_0_bits_is0Lat)}),
+    .iq_cancel({1'b0, 1'b0,
+        (io_commonIn_og0Cancel_8 & io_commonIn_wakeUpFromIQ_0_bits_is0Lat)}),
     // 延迟窗口的 IQ 总线：路数/下标映射与当拍侧同（构造时已断言）
-    .iqd_wen({io_enqDelayIn1_wakeUpFromIQ_2_bits_fpWen, io_enqDelayIn1_wakeUpFromIQ_1_bits_fpWen, io_enqDelayIn1_wakeUpFromIQ_0_bits_fpWen}),
-    .iqd_pdest({io_enqDelayIn1_wakeUpFromIQ_2_bits_pdest, io_enqDelayIn1_wakeUpFromIQ_1_bits_pdest, io_enqDelayIn1_wakeUpFromIQ_0_bits_pdest}),
+    .iqd_wen({io_enqDelayIn1_wakeUpFromIQ_2_bits_fpWen,
+        io_enqDelayIn1_wakeUpFromIQ_1_bits_fpWen, io_enqDelayIn1_wakeUpFromIQ_0_bits_fpWen}),
+    .iqd_pdest({io_enqDelayIn1_wakeUpFromIQ_2_bits_pdest,
+        io_enqDelayIn1_wakeUpFromIQ_1_bits_pdest, io_enqDelayIn1_wakeUpFromIQ_0_bits_pdest}),
     .iqd_ld_dep('0),
     .iqd_rc_dest('0),
-    .iqd_cancel({1'b0, 1'b0, (io_enqDelayIn1_og0Cancel_8 & io_enqDelayIn1_wakeUpFromIQ_0_bits_is0Lat)}),
+    .iqd_cancel({1'b0, 1'b0,
+        (io_enqDelayIn1_og0Cancel_8 & io_enqDelayIn1_wakeUpFromIQ_0_bits_is0Lat)}),
     .ld1_cancel('0),
     .ld2_cancel('0),
     .ld1d_cancel('0),
@@ -709,9 +921,15 @@ module EnqEntry_12 (
     .o_dbg_entry_out_deq_valid(io_commonOut_entryOutDeqValid),
     .o_dbg_entry_out_trans_valid(io_commonOut_entryOutTransValid),
     .o_dbg_perf_ld_cancel(unused_dbg_ld_cancel),
-    .o_dbg_perf_og0_cancel({io_commonOut_perfOg0Cancel_2, io_commonOut_perfOg0Cancel_1, io_commonOut_perfOg0Cancel_0}),
-    .o_dbg_perf_wakeup_by_wb({io_commonOut_perfWakeupByWB_2, io_commonOut_perfWakeupByWB_1, io_commonOut_perfWakeupByWB_0}),
-    .o_dbg_perf_wakeup_by_iq({io_commonOut_perfWakeupByIQ_2_2, io_commonOut_perfWakeupByIQ_2_1, io_commonOut_perfWakeupByIQ_2_0, io_commonOut_perfWakeupByIQ_1_2, io_commonOut_perfWakeupByIQ_1_1, io_commonOut_perfWakeupByIQ_1_0, io_commonOut_perfWakeupByIQ_0_2, io_commonOut_perfWakeupByIQ_0_1, io_commonOut_perfWakeupByIQ_0_0})
+    .o_dbg_perf_og0_cancel({io_commonOut_perfOg0Cancel_2, io_commonOut_perfOg0Cancel_1,
+        io_commonOut_perfOg0Cancel_0}),
+    .o_dbg_perf_wakeup_by_wb({io_commonOut_perfWakeupByWB_2, io_commonOut_perfWakeupByWB_1,
+        io_commonOut_perfWakeupByWB_0}),
+    .o_dbg_perf_wakeup_by_iq({io_commonOut_perfWakeupByIQ_2_2, io_commonOut_perfWakeupByIQ_2_1,
+        io_commonOut_perfWakeupByIQ_2_0, io_commonOut_perfWakeupByIQ_1_2,
+        io_commonOut_perfWakeupByIQ_1_1, io_commonOut_perfWakeupByIQ_1_0,
+        io_commonOut_perfWakeupByIQ_0_2, io_commonOut_perfWakeupByIQ_0_1,
+        io_commonOut_perfWakeupByIQ_0_0})
   );
 
   // fuType 出口：核只存本变体保留的 2 位，这里放回 35 位 one-hot 的原位置

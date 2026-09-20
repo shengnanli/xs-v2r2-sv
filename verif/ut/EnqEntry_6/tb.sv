@@ -85,6 +85,14 @@ module tb;
   int MINCOV[string];   // 逐桶下限（见 enqentry_gen.py 的 COV_MIN_200K）
   bit warm = 0;              // 条目被写过 -> 进入比对
   longint warm_cycle = -1;
+  // 下限按拍数缩放：**64 位中间量**。NCYCLES 是 int unsigned(32 位)，
+  // 下限一旦超过 2^32/200000 ≈ 21474，32 位乘法会静默回绕（实测 rc_hit
+  // 31939 被印成 10464）。longint 中间量把这条路堵死。
+  function automatic int scale_min(int unsigned n, int base);
+    longint v;
+    v = (longint'(n) * base) / 200000;
+    return (v > 0) ? int'(v) : 1;
+  endfunction
   task automatic covchk(string nm, int c);
     int lo = MINCOV[nm];
     $display("  cov %-20s = %0d  (min %0d)", nm, c, lo);
@@ -3052,23 +3060,23 @@ module tb;
   initial begin
     if (!$value$plusargs("ncycles=%d", NCYCLES)) NCYCLES = 200000;
     nopool = $test$plusargs("nopool");
-    MINCOV["enq_fire"] = ((NCYCLES * 1) / 200000) > 0 ? ((NCYCLES * 1) / 200000) : 1;
-    MINCOV["wb_wake"] = ((NCYCLES * 1) / 200000) > 0 ? ((NCYCLES * 1) / 200000) : 1;
-    MINCOV["can_issue"] = ((NCYCLES * 1) / 200000) > 0 ? ((NCYCLES * 1) / 200000) : 1;
-    MINCOV["deq_fire"] = ((NCYCLES * 1) / 200000) > 0 ? ((NCYCLES * 1) / 200000) : 1;
-    MINCOV["resp_succ"] = ((NCYCLES * 1) / 200000) > 0 ? ((NCYCLES * 1) / 200000) : 1;
-    MINCOV["resp_block"] = ((NCYCLES * 1) / 200000) > 0 ? ((NCYCLES * 1) / 200000) : 1;
-    MINCOV["resp_uncertain"] = ((NCYCLES * 1) / 200000) > 0 ? ((NCYCLES * 1) / 200000) : 1;
-    MINCOV["deq_clear"] = ((NCYCLES * 1) / 200000) > 0 ? ((NCYCLES * 1) / 200000) : 1;
-    MINCOV["flush_hit"] = ((NCYCLES * 1) / 200000) > 0 ? ((NCYCLES * 1) / 200000) : 1;
-    MINCOV["trans_fire"] = ((NCYCLES * 1) / 200000) > 0 ? ((NCYCLES * 1) / 200000) : 1;
-    MINCOV["enq_while_valid"] = ((NCYCLES * 1) / 200000) > 0 ? ((NCYCLES * 1) / 200000) : 1;
-    MINCOV["enq_delay_win"] = ((NCYCLES * 1) / 200000) > 0 ? ((NCYCLES * 1) / 200000) : 1;
-    MINCOV["enq_delay_wake"] = ((NCYCLES * 1) / 200000) > 0 ? ((NCYCLES * 1) / 200000) : 1;
-    MINCOV["iq_wake"] = ((NCYCLES * 1) / 200000) > 0 ? ((NCYCLES * 1) / 200000) : 1;
-    MINCOV["og0_cancel_hit"] = ((NCYCLES * 1) / 200000) > 0 ? ((NCYCLES * 1) / 200000) : 1;
-    MINCOV["ld_cancel_hit"] = ((NCYCLES * 1) / 200000) > 0 ? ((NCYCLES * 1) / 200000) : 1;
-    MINCOV["rc_hit"] = ((NCYCLES * 1) / 200000) > 0 ? ((NCYCLES * 1) / 200000) : 1;
+    MINCOV["enq_fire"] = scale_min(NCYCLES, 17403);
+    MINCOV["wb_wake"] = scale_min(NCYCLES, 2527);
+    MINCOV["can_issue"] = scale_min(NCYCLES, 5129);
+    MINCOV["deq_fire"] = scale_min(NCYCLES, 3609);
+    MINCOV["resp_succ"] = scale_min(NCYCLES, 5787);
+    MINCOV["resp_block"] = scale_min(NCYCLES, 5742);
+    MINCOV["resp_uncertain"] = scale_min(NCYCLES, 5744);
+    MINCOV["deq_clear"] = scale_min(NCYCLES, 3055);
+    MINCOV["flush_hit"] = scale_min(NCYCLES, 106);
+    MINCOV["trans_fire"] = scale_min(NCYCLES, 2200);
+    MINCOV["enq_while_valid"] = scale_min(NCYCLES, 10116);
+    MINCOV["enq_delay_win"] = scale_min(NCYCLES, 9641);
+    MINCOV["enq_delay_wake"] = scale_min(NCYCLES, 5658);
+    MINCOV["iq_wake"] = scale_min(NCYCLES, 7111);
+    MINCOV["og0_cancel_hit"] = scale_min(NCYCLES, 301);
+    MINCOV["ld_cancel_hit"] = scale_min(NCYCLES, 5246);
+    MINCOV["rc_hit"] = scale_min(NCYCLES, 31939);
     if (nopool) $display("*** +nopool: 覆盖闸负测模式（激励退化，闸必须红）***");
     reset = 1;
     drive();

@@ -676,16 +676,45 @@ def gen_rtl_body(ov, L, ctx):
 #   逐桶记的实测值）。标定跑法：9 变体 × 3 seed × 2 initreg × 200k 拍。
 #   ★在标定完成之前这张表是 1（= 只判非零），那种状态下**不许提交**★
 #   —— 只判非零的闸抓不到"激励塌了一个数量级"，正是 CONVENTIONS 要抓的形态。
-# ★标定状态★：下面这张表**尚未标定**，所有下限都是 1（= 只判非零）。
-#   只判非零的闸抓不到「激励塌了一个数量级」这种形态，所以 COV_CALIBRATED=False
-#   时 main() 拒绝生成，必须显式 --uncalibrated 才能跑标定用的那一版产物，
-#   而标定版**不许提交**。标定完成 = 用实跑最小值/4 填表并把开关翻 True。
-COV_CALIBRATED = False
-COV_MIN_200K = {k: 1 for k in (
-    'enq_fire', 'wb_wake', 'can_issue', 'deq_fire', 'resp_succ', 'resp_block',
-    'resp_uncertain', 'deq_clear', 'flush_hit', 'trans_fire', 'enq_while_valid',
-    'iq_wake', 'og0_cancel_hit', 'ld_cancel_hit', 'rc_hit', 'ignore_old_vd',
-    'enq_delay_win', 'enq_delay_wake')}
+# ★标定状态★：**已标定**（2026-09-20）。下面每一条的来源逐个记在行尾注释里：
+#   跑法 = 9 变体 x 3 seed(1/7/42) x 2 initreg(random/0) x 200k 拍 = 54 次跑，
+#   取该桶在**所有跑到它的那些次**里的最小值，再 // 4（留余量：下限是要抓
+#   "塌一个数量级"，不是卡在实测值上让正常波动变红）。
+#   行尾的「N 次跑」小于 54 的桶是**变体相关**的（cov_names 按变体给桶）：
+#     ld_cancel_hit / rc_hit 只有 INT 那 3 个有，ignore_old_vd 只有向量那 3 个有，
+#     iq_wake / og0_cancel_hit 只有有 IQ 唤醒的 6 个有。
+#   表由 verif/ut/EnqEntry_common/calibrate_cov.py 从实跑日志机械算出，勿手改。
+#
+# ★标定数据是在"共享核那一行还没修"的仓库现状上跑的，这不影响标定★：
+#   覆盖桶数的是激励打到的事件，而 perfWakeupByWB 那个错掉的 perf 输出不回灌
+#   任何状态。已实测对照：同一 seed 下仓库现状与打了核补丁的一次性副本，
+#   两份日志的 cov 行**逐字节相同**（见 CORE_BLOCKER.md）。
+#
+# ★标定前这张表是"只判非零"，实测它**不响**★（+nopool 负测，EnqEntry seed=1）：
+#   wb_wake 10111->788 / iq_wake 41213->1569 / og0_cancel_hit 4810->168 /
+#   enq_delay_wake 22633->1117（塌 13~29 倍），而闸报 cov_fail=0 —— 一条都没抓到。
+#   标定后这四条的下限分别是 2527 / 7111 / 301 / 5658，都高于退化值。
+COV_CALIBRATED = True
+COV_MIN_200K = {
+    'can_issue': 5129,         # 实测最小 20518 @ EnqEntry_16 seed=7 initreg=random（54 次跑）
+    'deq_clear': 3055,         # 实测最小 12222 @ EnqEntry_4 seed=42 initreg=random（54 次跑）
+    'deq_fire': 3609,          # 实测最小 14436 @ EnqEntry_16 seed=7 initreg=random（54 次跑）
+    'enq_delay_wake': 5658,    # 实测最小 22633 @ EnqEntry_4 seed=1 initreg=random（54 次跑）
+    'enq_delay_win': 9641,     # 实测最小 38566 @ EnqEntry_4 seed=1 initreg=random（54 次跑）
+    'enq_fire': 17403,         # 实测最小 69615 @ EnqEntry_6 seed=1 initreg=random（54 次跑）
+    'enq_while_valid': 10116,  # 实测最小 40466 @ EnqEntry_18 seed=42 initreg=random（54 次跑）
+    'flush_hit': 106,          # 实测最小 427 @ EnqEntry_8 seed=42 initreg=random（54 次跑）
+    'ignore_old_vd': 28780,    # 实测最小 115123 @ EnqEntry_18 seed=1 initreg=random（18 次跑）
+    'iq_wake': 7111,           # 实测最小 28446 @ EnqEntry_12 seed=42 initreg=random（36 次跑）
+    'ld_cancel_hit': 5246,     # 实测最小 20987 @ EnqEntry seed=1 initreg=random（18 次跑）
+    'og0_cancel_hit': 301,     # 实测最小 1206 @ EnqEntry_10 seed=1 initreg=random（36 次跑）
+    'rc_hit': 31939,           # 实测最小 127756 @ EnqEntry seed=7 initreg=random（18 次跑）
+    'resp_block': 5742,        # 实测最小 22971 @ EnqEntry_14 seed=1 initreg=random（54 次跑）
+    'resp_succ': 5787,         # 实测最小 23148 @ EnqEntry_4 seed=42 initreg=random（54 次跑）
+    'resp_uncertain': 5744,    # 实测最小 22977 @ EnqEntry_6 seed=42 initreg=random（54 次跑）
+    'trans_fire': 2200,        # 实测最小 8802 @ EnqEntry_10 seed=42 initreg=random（54 次跑）
+    'wb_wake': 2527,           # 实测最小 10111 @ EnqEntry seed=1 initreg=random（54 次跑）
+}
 
 
 def cov_names(ov):
@@ -782,6 +811,21 @@ def gen_tb(ov):
     A('  int MINCOV[string];   // 逐桶下限（见 enqentry_gen.py 的 COV_MIN_200K）')
     A('  bit warm = 0;              // 条目被写过 -> 进入比对')
     A('  longint warm_cycle = -1;')
+    # ★下限按拍数缩放必须走 64 位★（2026-09-20 实测，agent/enqentry）
+    # 原先是 18 份逐条展开的 `((NCYCLES * <下限>) / 200000) > 0 ? ... : 1`，
+    # 而 NCYCLES 是 `int unsigned`（32 位）——> 下限一超过 2^32/200000 ≈ 21474，
+    # 乘法**静默回绕**。实测 rc_hit 下限 31939：200000*31939 = 6,387,800,000
+    # 回绕成 2,092,832,704，除回来变 10464，日志里印的就是 "(min 10464)"。
+    # ★标定之前这张表全是 1，乘法永远不会溢出，所以这个 bug 一直看不见★ ——
+    # 是标定把它暴露出来的。这里换成一个 64 位中间量的函数，18 处共用一份。
+    A('  // 下限按拍数缩放：**64 位中间量**。NCYCLES 是 int unsigned(32 位)，')
+    A('  // 下限一旦超过 2^32/200000 ≈ 21474，32 位乘法会静默回绕（实测 rc_hit')
+    A('  // 31939 被印成 10464）。longint 中间量把这条路堵死。')
+    A('  function automatic int scale_min(int unsigned n, int base);')
+    A('    longint v;')
+    A('    v = (longint\'(n) * base) / 200000;')
+    A('    return (v > 0) ? int\'(v) : 1;')
+    A('  endfunction')
     A('  task automatic covchk(string nm, int c);')
     A('    int lo = MINCOV[nm];')
     A('    $display("  cov %-20s = %0d  (min %0d)", nm, c, lo);')
@@ -1019,9 +1063,7 @@ def gen_tb_tail(ov, L):
     A('    if (!$value$plusargs("ncycles=%d", NCYCLES)) NCYCLES = 200000;')
     A('    nopool = $test$plusargs("nopool");')
     for nm in cov_names(ov):
-        A("    MINCOV[\"%s\"] = ((NCYCLES * %d) / 200000) > 0 ? "
-          "((NCYCLES * %d) / 200000) : 1;"
-          % (nm, COV_MIN_200K[nm], COV_MIN_200K[nm]))
+        A('    MINCOV["%s"] = scale_min(NCYCLES, %d);' % (nm, COV_MIN_200K[nm]))
     A('    if (nopool) $display("*** +nopool: 覆盖闸负测模式（激励退化，闸必须红）***");')
     A('    reset = 1;')
     A('    drive();')
