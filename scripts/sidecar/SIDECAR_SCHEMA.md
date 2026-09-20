@@ -130,6 +130,46 @@ JSON 层拒:NaN/Infinity(递归)、duplicate key(object_pairs_hook)。
 | `verification_failing_point_limit` | 规范化十进制(`0`=不限, 无前导零) | 工具默认 20 | **仅 diagnostic** |
 
 放宽值**未声明**进 `qualifications.relaxed_appvars` → ERROR(observed facts 不自洽);
+
+#### 带证据的例外条目（★一刀切规则保留，本条只改"读的人怎么理解这条申报"，不改判定★）
+
+上表"非默认=放宽"是一条 **fail-safe 一刀切**：把未测过的一律当放宽，错的方向是"多申报"
+而不是"漏申报"。★一条保守规则有一个反例，不等于该换成逐个判断★ ——
+换成逐个判断之后，没测过的那些会从"保守申报"掉进"没人管"。
+所以下面的例外**只记录、不放行**。
+
+**EX-1 `verification_assume_reg_init = none`（target: `LoadQueueReplay`）**
+
+| 项 | 值 |
+|---|---|
+| appvar | `verification_assume_reg_init` |
+| 工具默认 | `Auto` |
+| 本目标设定值 | `none`（readback 作 `None`） |
+| 上表裁定 | 非默认 = 放宽 → 须入 `relaxed_appvars` |
+| **整跑差分实测** | 设 `none`：`passing 114160 / failing 0 / Constant reg 0 / constant_reg_toggle_assumed false`<br>不设（回默认 `Auto`）：`passing 114010 / failing 3 / Constant reg 147 / constant_reg_toggle_assumed true` |
+| **守恒式** | `114010 + 3(failing) + 147(Constant reg) = 114160` ★逐位对得上★ |
+| evidence | 设：`evidence/7e8081ff298c/LoadQueueReplay/`（另 `evidence/75e1d8be8148/` 同结果）<br>不设：`evidence/14cf2a808442/LoadQueueReplay/` |
+| 机理（FM 自报） | `Auto` 那一跑打出 `^ *Info: *Constant registers have been identified that were initialized by some objects that were assumed to toggle`（该行在设 `none` 的两跑里出现 **0** 次，在 `Auto` 那跑出现 **2** 次；★计数必须行首锚定★，裸子串会被本仓注释里的引用污染） |
+| **方向** | ★实测是**加强**★：`Auto` **基于一个 toggle 假设**把 147 个寄存器判成常数、移出比较集合；设 `none` 取消该假设，这 147 个点**真的被比**。比较点只增不减。 |
+
+★**不许据此自动转绿**★。本条改变的是"读 `relaxed_appvars` 的人怎么理解这一项"，
+**不改变任何判定**：`LoadQueueReplay` 的 receipt 里这一项**继续列在 `relaxed_appvars`**，
+`agent/harvest` 对它**继续红**。透明度不因为"我们知道它是加强"而降低。
+
+将来若要让判定区分方向，正确做法是**新增 `measured_direction` 字段**
+（值域 `strengthening` / `relaxing` / `unmeasured`，默认 `unmeasured`），
+每一项都要配整跑差分证据才能填前两者 —— **那是独立一件事，不在本条里做。**
+
+**EX-2（反面）`verification_set_undriven_signals = BINARY`（同一 target）：不构成例外，是 `EXPLICIT_GAP`。**
+同一次差分里，不设它会多出 3 个 ref 侧 `Und` 类 unmatched
+（`_freeList_io_canAllocate_0/1/2`）并导致 3 个 BBPin 比较点 failing。
+★"它让 3 个 failing 消失"与"它遮住了 3 个真失配"是同一个观测，分不开★；
+而 `BINARY` 相对默认 `BINARY:X` 是**收窄**（把 X 移出自由变量域），
+Rob 实测过同一 appvar 的收窄（设 `0`）会遮住"impl 漏驱动"的缺陷
+（`evidence/rob-selfcompare-4aa8838b/undriven_safety/`）。
+⇒ **只证明了"拿掉会红"，没有证明它安全。** 解除条件：按 Rob 的四跑格式，
+对「**ref 侧悬空网线配对**」这个机制造判别性探针（已有的三档探针对该机制**没有分辨力**）。
+
 声明后 strict/assembly 经 quals_any 判 PARTIAL——**不能仅靠 expectation 绑定升级 clean
 success**。三方一致只证"说法一致", 值域闭环证"值合法且符合签核政策"。
 

@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/FoldedSRAMTemplate
+Implementation : i:/WORK/FoldedSRAMTemplate
+Version        : V-2023.12-SP3
+Date           : Mon Sep 14 12:32:59 2026
+**************************************************
+
+No aborted compare points.
+
+1

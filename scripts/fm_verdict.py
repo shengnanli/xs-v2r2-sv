@@ -54,6 +54,82 @@ Matching 阶段会打这样的进度行:
 **判断匹配有没有走完,唯一可靠的标志是 `**** Matching Results ****` 段头出现,
 以及其后是否出现 `Status:  Verifying...`。永远不要拿一个不知道分母含义的进度条
 当进度。**
+
+★但别把这条推广成"所有进度条都没用"★(2026-09-17 补)
+Verifying 阶段的进度行**分母是真的**,可以当进度看:
+
+    .............................. 0F/0A/134445P/394471U (25% Ve...)
+
+字段是 Failing / Aborted / Passing / Unverified(还没验的)。实测 Predictor 那轮:
+134445 + 394471 = 528916,而该轮期望的比较点总数是 528967(差 51,是过程中还在
+流动的点),134445/528916 = 25.4% 与打出来的 25% 吻合。**P+U 就是总数,
+所以这个百分比是线性的、可以外推。**
+
+两条进度行的区别在于分母:Matching 的分母是"两侧对象合计"(约配对数的两倍,
+按构造到不了 100%),Verifying 的分母是"比较点总数"(P+U 守恒)。
+**所以判据不是"进度条一律不可信",而是"先把分母弄清楚再决定信不信"** ——
+弄不清楚就只认段头标志。
+
+★第三层:"进度行停住" != "卡住"★(2026-09-17 实测)
+Predictor 那轮的进度行 `134445P/394471U (25%)` **25 分钟一字未变**,
+fm.log 的 mtime 也停在 25 分钟前 —— 看起来像挂了。实测不是:
+
+    P=<fm_shell_exec 的 pid>
+    t1=$(awk '{print $14+$15}' /proc/$P/stat); sleep 20
+    t2=$(awk '{print $14+$15}' /proc/$P/stat)
+    # (t2-t1) 是 jiffies(1/100 秒); 除以 100 再除以墙钟秒数 = CPU 占用率
+    -> 增量 1991 / 20 秒 = **99.6% CPU**,在算
+
+**日志的刷新频率不是计算的进度频率。** Formality 在一个长阶段内可以很久不写一行。
+所以"是不是还活着"这个问题**只能用 CPU 时间回答**,不能用日志回答 ——
+这正是本文件开头那次误杀(把 49% 读成一半、外推 302 天、杀了两次快跑完的跑)
+的同一个坑的另一面:那次错在**读**日志,这次的诱惑是错在**没读到**日志。
+
+判断一轮 FM 的状态,三层依次问:
+  1. 在哪个阶段?   -> 只认段头标志(`**** Matching Results ****` / `Status:  Verifying...`)
+  2. 进度可信吗?   -> 先弄清分母(Matching 的不可信,Verifying 的 P+U 守恒可信)
+  3. 还活着吗?     -> **/proc/<pid>/stat 的 CPU 时间在不在涨**,与日志无关
+
+★读 `failing` 之前先看两个前置条件,否则你读的不是 RTL 正确性★(2026-09-17)
+`failing` 这个数只有在下面两条都成立时才是"有多少个点不等价":
+
+  (a) `verification_failing_point_limit` 没有截断
+      默认 20,撞到就停、剩下全进 Unverified。所以 `failing: 20` 几乎总是截断值。
+      实测: Predictor 那次 20/411955、NewDispatch 20/51056。真实数只能 limit=0 重跑。
+  (b) `Unmatched ... compare points` 是 0(0)
+      未配对的比较点在 FM 里是**自由割点**,ref 侧被强制的约束在 impl 侧是自由变量,
+      于是**下游跟着失配**。RenameBuffer 实测: 3 个孤儿点造出 20 个 failing,
+      配对修好(FM_MERGE_DUP=false)之后 failing 20 -> 0、passing 651 -> 5825。
+
+  ★(b) 还有一个更隐蔽的方向:配对没配齐时,**结构修复的收益会被掩盖成接近零**★
+  Entries canary 实测: 按 enq 分份这个结构修复本身值 ~838 个点,但当时两侧名字
+  无共同词干、FM 只能靠签名分析配上 4 个配不上 4 个,于是测出来只掉了 6 个点
+  (1030 -> 1024),据此判"不是根因"。把名字钉齐之后同一个修复测出来是
+  1030 -> 192(消掉 81%)。
+
+  **在一个已知存在配对缺陷的测量上下结论,和"跑之前下结论"是同一个病的两面** ——
+  前者跳过了"先校准仪器"这一步,后者跳过了"先测量"这一步。
+
+  (c) **impl 侧没有被常量把锥切断**（2026-09-17 NewDispatch 实测,判据 (b) 的镜像）
+      (a)(b) 说的是 `failing` 什么时候不可读;这一条说的是 **`passing` 什么时候不可读**。
+      NewDispatch 把一个握手输入 `toRenameAllFire` 钉成常量 `1'b0`(因为它的真来源
+      在另一条 lane 未落地),于是 `if (toRenameAllFire)` 门控的整条次态锥永远用不到,
+      下游寄存器**全部成为真 unread**——不是配对问题,是**根本没进 verify**。
+      一行诊断改动(把该输入改成真主输入)实测:
+
+          unmatched unread (impl)    55 -> 0
+          unmatched compare  (ref) 7173 -> 7118   （恰好 -55）
+          passing                   589 -> 18603
+          unverified              51056 -> 33097
+
+      ★那个 18603 **不能**读成"18603 个点是对的"★：诊断里那根线被驱成了功能上
+      错的值,在故意接错的设计上得到的 passing 不是真设计的正确性陈述。
+      它只支持一句更弱的话:**那个常量把仪器弄瞎到 97% 的比较点进不了 verify**。
+
+      ☆推论(比数字重要)☆:**在依赖落地前,这类目标的配对功课全部无效。**
+      该 lane 为此白跑了三轮(改名 / 改尺寸 / 关合并),三种互不相干的手段效果全为零——
+      **"多种互不相干的手段效果都为零"本身就是"目标当前不可证"的信号**,
+      不要再找第四种手段。
 """
 import json
 import os
@@ -78,7 +154,15 @@ _ROW = {
     "unverified": re.compile(r'^\s*Unverified\s+(?:\d+\s+)*(\d+)\s*$', re.M),
     "aborted":    re.compile(r'^\s*Aborted\s+(?:\d+\s+)*(\d+)\s*$', re.M),
     "unread_nc":  re.compile(r'^\s*Unread\s+(?:\d+\s+)*(\d+)\s*$', re.M),
+    # Not Compared 的另一类：被 FM 判为常数、因而不作比较的寄存器。
+    # 这一行的列数比 Unread 行少（只有 DFF/LAT/TOTAL 三列），所以同样只取末列 TOTAL。
+    "constant_reg": re.compile(r'^\s*Constant reg\s+(?:\d+\s+)*(\d+)\s*$', re.M),
 }
+# FM 对常数寄存器的识别**可能建立在"某些对象会翻转"的假设上**，这时它会打这条 Info。
+# 有它的那轮，Constant reg 的数字就不是无条件事实，而是带前提的结论 —— 必须留痕。
+_CONST_TOGGLE = re.compile(
+    r'^\s*Info:\s+Constant registers have been identified that were initialized by '
+    r'some objects that were assumed to toggle\.', re.M)
 # 未配对报告(在表外),R(I) 两侧任一非 0 即未完全配对。
 _UNMATCH_CP = re.compile(r'(\d+)\((\d+)\)\s+Unmatched \S+ compare points', re.M)
 _UNREAD_UM  = re.compile(r'(\d+)\((\d+)\)\s+Unmatched \S+ unread points', re.M)
@@ -208,6 +292,16 @@ def _fill_stats(q, log_text):
     _scope = log_text[_mblocks[-1].start():] if _mblocks else log_text
     _umr, _umi = _unmatch_pair(_scope, _UNREAD_UM)
     q["unread"]    = max([x for x in (_nc, _umr, _umi) if x is not None], default=None)
+    # ★Not Compared 的第二类：Constant reg★（2026-09-17 补）
+    # 在此之前本文件对它**一个判据都没有**，连解析都没有：SbufData 的 31 个、
+    # IBuffer 的 6 个就这么无声地穿过了判定。现在至少让数字出现在每一份 receipt 里，
+    # 并且把 FM 那句"常数识别依赖 toggle 假设"的 Info 一并留痕。
+    # 注意：这一版**不改变任何判定**。是否该对它设硬闸，是个需要 reviewer 裁定的
+    # 可靠性问题（两侧都被判常数、但常数值不同，且该点没有可观测扇出时，
+    # 差异不会在任何比较点暴露）—— 在裁定下来之前，宁可把数字亮出来，
+    # 也不要自己发明一条会把已签核目标一刀切成红的闸。
+    q["constant_reg"] = _row_int(tbl, "constant_reg")
+    q["constant_reg_toggle_assumed"] = bool(_CONST_TOGGLE.search(log_text))
     umr, umi = _unmatch_pair(log_text, _UNMATCH_CP)
     q["unmatched_ref"], q["unmatched_impl"] = umr, umi
     q["unmatched"] = max([x for x in (umr, umi) if x is not None], default=None)
@@ -456,6 +550,7 @@ def verdict(log_text, make_rc=0, mode="signoff-strict", expected_top=None, allow
     q = {"passing": None, "failing": None, "unverified": None, "unmatched": None, "aborted": None,
          "failing_total": None, "failing_matched": None, "failing_unmatched": None,
          "unread": None, "blackbox_out": None, "markers": 0, "make_rc": make_rc, "mode": mode,
+         "constant_reg": None, "constant_reg_toggle_assumed": False,
          "native": None, "top": None, "dont_verify": bool(_DONTVERIFY.search(log_text)),
          "elab147": bool(_ELAB147.search(log_text)), "reason": None}
 

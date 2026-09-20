@@ -58,8 +58,8 @@ import subprocess
 import sys
 import tempfile
 
-_VARLINE = re.compile(r'^FM_VARIANTS\s*[:+?]?=\s*(.*)$', re.M)
-_ASSIGN = re.compile(r'^([A-Za-z_][A-Za-z0-9_]*)\s*[:+?]?=\s*(.*)$', re.M)
+_VARLINE = re.compile(r'^FM_VARIANTS[^\S\n]*[:+?]?=[^\S\n]*(.*)$', re.M)
+_ASSIGN = re.compile(r'^([A-Za-z_][A-Za-z0-9_]*)[^\S\n]*[:+?]?=[^\S\n]*(.*)$', re.M)
 _REF = re.compile(r'\$[({]([A-Za-z_][A-Za-z0-9_]*)[)}]')
 _CONT = re.compile(r'\\\n')
 _MAX_EXPAND = 8
@@ -313,7 +313,7 @@ def targets_at(repo, commit, engine='both'):
 # --------------------------------------------------------------------------
 #: ★这是一份**故意保留的坏解析器**★，不是给人用的，是给回归用的 oracle。
 #: 它逐字复刻 scripts/bulk_revalidate.py 在 292fbb8 之前的那份解析：
-#:     m = re.search(r'^FM_VARIANTS\s*=\s*(.*)$', txt, re.M)
+#:     m = re.search(r'^FM_VARIANTS[^\S\n]*=[^\S\n]*(.*)$', txt, re.M)
 #: 三处不到位，每一处都能独立造成假阴性：
 #:   1. `\s*=` 匹配不上 `:=` → verif/ut/MbistPipe/Makefile:31
 #:      `FM_VARIANTS := $(VARIANTS)` 整份文件被跳过（24 个变体凭空消失）；
@@ -321,7 +321,7 @@ def targets_at(repo, commit, engine='both'):
 #:   3. `re.search` 只取第一处赋值（本仓暂无多次赋值，但这是同类事故的下一步）。
 #: 后果实测：248 vs 272。`MbistPipeIcacheTag` 因此被 verif/allow_gen/
 #: classification.tsv 记成"根本不是任何 UT 的 FM target ⇒ 永远无法变绿"。
-_DEFECT_VARLINE = re.compile(r'^FM_VARIANTS\s*=\s*(.*)$', re.M)
+_DEFECT_VARLINE = re.compile(r'^FM_VARIANTS[^\S\n]*=[^\S\n]*(.*)$', re.M)
 DEFECT_MODEL_SOURCE = 'scripts/bulk_revalidate.py:34 (pre-fix)'
 
 

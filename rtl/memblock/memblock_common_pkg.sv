@@ -21,6 +21,7 @@
 //
 // 当前收录：
 //   xs_tlbsw_pkg —— TLB 替换策略 Tree-PLRU 的类型与纯函数（TlbStorageWrapper / TlbStorageWrapper_1 共用）
+//   tlbnb_pkg    —— 非阻塞 dtlb 的常量/类型/纯函数（TLBNonBlock{,_1,_2} 三个薄 wrapper 的模块头 import）
 // 新增共享包时追加到本文件，不要再开第二个 memblock 公共包文件。
 // =============================================================================
 // xs_tlbsw_pkg —— TlbStorageWrapper 的替换策略（Tree-PLRU）类型与纯函数
@@ -174,6 +175,389 @@ package xs_tlbsw_pkg;
       end
       return ns;
     end
+  endfunction
+
+endpackage
+
+package tlbnb_pkg;
+
+  // ---- KunminghuV2Config 下的地址/页表常量 ----
+  // 每个值都和 golden 的端口位宽对过账，注释里写的是对账依据。
+  localparam int XLEN       = 64;
+  localparam int VADDR_W    = 50;  // VAddrBits；req.bits.vaddr 宽度
+  localparam int PADDR_W    = 48;  // PAddrBits；resp.bits.paddr 宽度
+  localparam int OFF_W      = 12;  // 页内偏移
+  localparam int VPN_W      = 38;  // vpnLen = VADDR_W - OFF_W；ptw.req.bits.vpn 宽度
+  localparam int VPNN_W     = 9;   // 每级页表索引位数
+  localparam int LEVEL      = 3;   // Sv48：level ∈ 0..3，最高级下标就是 3
+  localparam int SECT_W     = 3;   // sectortlbwidth
+  localparam int SVPN_W     = 35;  // sectorvpnLen = VPN_W - SECT_W；s1.entry.tag 宽度
+  localparam int PPN_W      = 36;  // ppnLen = PADDR_W - OFF_W；resp ppn 宽度
+  localparam int SPPN_W     = 41;  // sectorptePPNLen = 44 - 3；s1.entry.ppn 宽度
+  localparam int PTE_PPN_W  = 44;  // ptePPNLen；gvpn 宽度
+  localparam int GVPN_W     = 38;  // gvpnLen = GPAddrBits(50) - OFF_W；s2.entry.tag/ppn 宽度
+  localparam int NAPOT_W    = 4;   // pteNapotBits：Svnapot 64KB = 16 页
+  localparam int ASID_W     = 16;
+  localparam int VMID_W     = 14;  // s1/s2.entry.vmid 宽度（注意比 hgatp.vmid 窄 2 位）
+  localparam int ROB_IDX_W  = 8;   // RobPtr.value
+  localparam int MEMIDX_W   = 7;   // MemBlockidxBundle.idx
+  localparam int SECT_N     = 8;   // tlbcontiguous
+
+  // ---- s2xlate 编码（MMUConst）----
+  localparam logic [1:0] NO_S2XLATE = 2'h0;
+  localparam logic [1:0] ONLY_S1    = 2'h1;
+  localparam logic [1:0] ONLY_S2    = 2'h2;
+  localparam logic [1:0] ALL_STAGE  = 2'h3;
+
+  // ---- satp/vsatp/hgatp.mode ----
+  localparam logic [3:0] SV39 = 4'h8;
+  localparam logic [3:0] SV48 = 4'h9;
+
+  // ---- 特权级 ----
+  localparam logic [1:0] MODE_U = 2'h0;
+  localparam logic [1:0] MODE_S = 2'h1;
+  localparam logic [1:0] MODE_M = 2'h3;
+
+  // ---- PMM（指针掩码）----
+  localparam logic [1:0] PMLEN7  = 2'b10;
+  localparam logic [1:0] PMLEN16 = 2'b11;
+
+  // ---- TlbCmd：低 2 位区分读/写/取指，cmd==5 是 amo（算写）----
+  localparam logic [1:0] CMD_READ  = 2'h0;
+  localparam logic [1:0] CMD_WRITE = 2'h1;
+  localparam logic [1:0] CMD_EXEC  = 2'h2;
+  localparam logic [2:0] CMD_AMO   = 3'h5;  // atom_write（sc/amo）
+  localparam logic [2:0] CMD_RX    = 3'h7;  // read_exec，HLVX 的 PMP 检查用
+
+  // TLB 表项权限（TlbPermBundle）。g 位本核用不到（entries 不给），故不进 struct。
+  typedef struct packed {
+    logic pf;   // stage-1 页故障
+    logic af;   // 访问故障
+    logic v;    // 表项 valid
+    logic d;    // dirty
+    logic a;    // accessed
+    logic u;    // user
+    logic x;
+    logic w;
+    logic r;
+  } tlb_perm_t;
+
+  // G-stage（s2）权限只用得到这 7 位：Chisel 的 hptwresp_to_tlbperm 把 v 置成
+  // DontCare、u 虽然赋了值但 perm_check 的 G-stage 分支从不读它，于是 golden 里
+  // p_g_perm 只留下 7 个寄存器（entries 的 g_perm 输出端口也正好是这 7 个）。
+  // ★不要图省事复用 tlb_perm_t★：那会凭空多出 v/u 两个 golden 没有的寄存器。
+  typedef struct packed {
+    logic pf;   // G-stage 页故障（HptwResp.gpf）
+    logic af;   // G-stage 访问故障（HptwResp.gaf）
+    logic d;
+    logic a;
+    logic x;
+    logic w;
+    logic r;
+  } tlb_gperm_t;
+
+  // PTW 响应里 VS-stage（s1）那一半。字段名与 golden 端口一一对应。
+  typedef struct packed {
+    logic [SVPN_W-1:0]  entry_tag;
+    logic [ASID_W-1:0]  entry_asid;
+    logic [VMID_W-1:0]  entry_vmid;
+    logic               entry_n;      // Svnapot 64KB
+    logic [1:0]         entry_pbmt;
+    logic               entry_perm_d;
+    logic               entry_perm_a;
+    logic               entry_perm_g;  // global：命中时不看 asid
+    logic               entry_perm_u;
+    logic               entry_perm_x;
+    logic               entry_perm_w;
+    logic               entry_perm_r;
+    logic [1:0]         entry_level;
+    logic               entry_v;
+    logic [SPPN_W-1:0]  entry_ppn;
+    logic [SECT_W-1:0]  addr_low;
+    logic [SECT_N-1:0][SECT_W-1:0] ppn_low;
+    logic [SECT_N-1:0]  valididx;
+    logic [SECT_N-1:0]  pteidx;
+    logic               pf;
+    logic               af;
+  } ptw_s1_t;
+
+  // PTW 响应里 G-stage（s2）那一半。
+  typedef struct packed {
+    logic [GVPN_W-1:0] entry_tag;
+    logic [VMID_W-1:0] entry_vmid;
+    logic              entry_n;
+    logic [1:0]        entry_pbmt;
+    logic [GVPN_W-1:0] entry_ppn;
+    logic              entry_perm_d;
+    logic              entry_perm_a;
+    logic              entry_perm_g;
+    logic              entry_perm_u;
+    logic              entry_perm_x;
+    logic              entry_perm_w;
+    logic              entry_perm_r;
+    logic [1:0]        entry_level;
+    logic              gpf;
+    logic              gaf;
+  } ptw_s2_t;
+
+  typedef struct packed {
+    logic [1:0] s2xlate;
+    ptw_s1_t    s1;
+    ptw_s2_t    s2;
+    logic       get_gpa;
+  } ptw_resp_t;
+
+  // 延迟 fenceDelay(=2) 拍之后的 CSR 现场（wrapper 里的 DelayN_7 出来的）。
+  // priv.debug 本核用不到（golden 里 DelayN_7 的 io_out_priv_debug 就是接
+  // /* unused */ 的），故不在这里出现。
+  typedef struct packed {
+    // changed 位只服务 refill 的 flush_mmu 门控（见 §refill）
+    logic              satp_changed;
+    logic              vsatp_changed;
+    logic              hgatp_changed;
+    logic              priv_virt_changed;
+    logic [3:0]        satp_mode;
+    logic [ASID_W-1:0] satp_asid;
+    logic [PTE_PPN_W-1:0] satp_ppn;    // 仅 difftest 打包用
+    logic [3:0]        vsatp_mode;
+    logic [ASID_W-1:0] vsatp_asid;
+    logic [PTE_PPN_W-1:0] vsatp_ppn;   // 仅 difftest
+    logic [3:0]        hgatp_mode;
+    logic [ASID_W-1:0] hgatp_vmid;     // 注意：CSR 侧 16 位，表项里只存低 14 位
+    logic [PTE_PPN_W-1:0] hgatp_ppn;   // 仅 difftest
+    logic              priv_mxr;
+    logic              priv_sum;
+    logic              priv_vmxr;
+    logic              priv_vsum;
+    logic              priv_virt;
+    logic              priv_spvp;
+    logic [1:0]        priv_imode;
+    logic [1:0]        priv_dmode;
+    logic [1:0]        pmm_mseccfg;
+    logic [1:0]        pmm_menvcfg;
+    logic [1:0]        pmm_henvcfg;
+    logic [1:0]        pmm_hstatus;
+    logic [1:0]        pmm_senvcfg;
+  } tlb_csr_t;
+
+  // PtwRespS2.hit() / PtwSectorResp.hit() / HptwResp.hit() 三个命中比较**只用到**
+  // 下面这些字段。golden 里 handle_nonblock 为每条 lane 存了一份"上一拍的 PTW 响应"
+  // （ptw_resp_bits_reg），存的恰好就是这几项 —— 其余字段没人读，firtool 消掉了。
+  // 所以这个 struct 不是"为了好看抽出来的子集"，它就是 golden 那组寄存器的字段表。
+  typedef struct packed {
+    logic [1:0]         s2xlate;
+    logic [SVPN_W-1:0]  s1_tag;
+    logic [ASID_W-1:0]  s1_asid;
+    logic [VMID_W-1:0]  s1_vmid;
+    logic               s1_n;
+    logic [1:0]         s1_level;
+    logic               s1_perm_g;
+    logic [SECT_W-1:0]  s1_addr_low;
+    logic [SECT_N-1:0]  s1_valididx;
+    logic [GVPN_W-1:0]  s2_tag;
+    logic [VMID_W-1:0]  s2_vmid;
+    logic               s2_n;
+    logic [1:0]         s2_level;
+  } hit_key_t;
+
+  // 超页/NAPOT 的 tag 比较阶梯：level=0 比到最低一级，level=3 只比最高一级。
+  // tm[k] = 第 k 级 vpnn 段相等。
+  function automatic logic level_match(input logic [1:0] level, input logic [LEVEL:0] tm);
+    return (level == 2'h0) ? (tm[3] & tm[2] & tm[1] & tm[0])
+         : (level == 2'h1) ? (tm[3] & tm[2] & tm[1])
+         : (level == 2'h2) ? (tm[3] & tm[2])
+                           :  tm[3];
+  endfunction
+
+  // PtwSectorResp.hit(vpn, satp.asid)：无两级翻译时的命中判据。
+  // sector 表项：tag 只存 vpn[37:3]，最低 3 位靠 valididx 逐页标记。
+  function automatic logic s1_hit(input hit_key_t k,
+                                  input logic [VPN_W-1:0] vpn,
+                                  input logic [ASID_W-1:0] asid);
+    logic [LEVEL:0] tm;
+    logic asid_hit, super_page;
+    asid_hit   = (k.s1_asid == asid) | k.s1_perm_g;
+    // ★tag 是 sector tag：tag[k] 对应 vpn[k+SECT_W]★，所以两条分支的 tag 切片
+    // 上下界要各自减 SECT_W，**上界不随下界一起减**：
+    //   n=1（Svnapot 64KB）比 vpn[8:NAPOT_W] -> tag[8-SECT_W : NAPOT_W-SECT_W] = tag[5:1]
+    //   n=0             比 vpn[8:SECT_W]     -> tag[8-SECT_W : 0]              = tag[5:0]
+    // 判据 golden TLBNonBlock_1.sv:1337-1339（noS2 分支）/ TLBNonBlock.sv 同形。
+    tm[0]      = k.s1_n ? (k.s1_tag[VPNN_W-1-SECT_W : NAPOT_W-SECT_W] == vpn[VPNN_W-1:NAPOT_W])
+                        : (k.s1_tag[VPNN_W-1-SECT_W : 0]             == vpn[VPNN_W-1:SECT_W]);
+    tm[1]      = k.s1_tag[VPNN_W*2-SECT_W-1 : VPNN_W-SECT_W]   == vpn[VPNN_W*2-1 : VPNN_W];
+    tm[2]      = k.s1_tag[VPNN_W*3-SECT_W-1 : VPNN_W*2-SECT_W] == vpn[VPNN_W*3-1 : VPNN_W*2];
+    tm[3]      = k.s1_tag[SVPN_W-1 : VPNN_W*3-SECT_W]          == vpn[VPN_W-1 : VPNN_W*3];
+    super_page = (|k.s1_level) | k.s1_n;
+    return asid_hit & level_match(k.s1_level, tm)
+           & (super_page | k.s1_valididx[vpn[SECT_W-1:0]]);
+  endfunction
+
+  // HptwResp.hit(gvpn, hgatp.vmid)：只有 G-stage 时的命中判据。
+  // s2 表项不是 sector 的，tag 就是完整 gvpn，所以没有 valididx 那一项。
+  function automatic logic s2_hit(input hit_key_t k,
+                                  input logic [VPN_W-1:0] gvpn,
+                                  input logic [ASID_W-1:0] vmid);
+    logic [LEVEL:0] tm;
+    tm[0] = k.s2_n ? (k.s2_tag[VPNN_W-1:NAPOT_W] == gvpn[VPNN_W-1:NAPOT_W])
+                   : (k.s2_tag[VPNN_W-1:0]       == gvpn[VPNN_W-1:0]);
+    tm[1] = k.s2_tag[VPNN_W*2-1 : VPNN_W]   == gvpn[VPNN_W*2-1 : VPNN_W];
+    tm[2] = k.s2_tag[VPNN_W*3-1 : VPNN_W*2] == gvpn[VPNN_W*3-1 : VPNN_W*2];
+    tm[3] = k.s2_tag[GVPN_W-1 : VPNN_W*3]   == gvpn[VPN_W-1 : VPNN_W*3];
+    // vmid：表项只存 14 位，CSR 侧 16 位，golden 是把表项零扩展后全宽比较。
+    return ({2'h0, k.s2_vmid} == vmid) & level_match(k.s2_level, tm);
+  endfunction
+
+  // 两级都有（onlyStage1 / allStage）时：命中看的是 s1 的 {tag, addr_low} 拼出来的
+  // 完整 vpn，且 level / n 取两级里"更小的那个页"（页大小以小的为准）。
+  function automatic logic all_s1_hit(input hit_key_t k,
+                                      input logic [VPN_W-1:0] vpn,
+                                      input logic [ASID_W-1:0] vsatp_asid,
+                                      input logic [ASID_W-1:0] hgatp_vmid);
+    logic [VPN_W-1:0] s1vpn;
+    logic [LEVEL:0]   tm;
+    logic [1:0]       level;
+    logic             n, all_stage_n, vasid_hit;
+    s1vpn       = {k.s1_tag, k.s1_addr_low};
+    all_stage_n = (k.s1_n & (|k.s2_level)) | (k.s2_n & (|k.s1_level)) | (k.s1_n & k.s2_n);
+    level       = ((k.s2xlate == ONLY_S1) | (k.s1_level < k.s2_level)) ? k.s1_level : k.s2_level;
+    n           = (k.s2xlate == ONLY_S1) ? k.s1_n : all_stage_n;
+    tm[0] = n ? (vpn[VPNN_W-1:NAPOT_W] == s1vpn[VPNN_W-1:NAPOT_W])
+              : (vpn[VPNN_W-1:0]       == s1vpn[VPNN_W-1:0]);
+    tm[1] = vpn[VPNN_W*2-1 : VPNN_W]   == s1vpn[VPNN_W*2-1 : VPNN_W];
+    tm[2] = vpn[VPNN_W*3-1 : VPNN_W*2] == s1vpn[VPNN_W*3-1 : VPNN_W*2];
+    tm[3] = vpn[VPN_W-1 : VPNN_W*3]    == s1vpn[VPN_W-1 : VPNN_W*3];
+    vasid_hit = (k.s1_asid == vsatp_asid) | k.s1_perm_g;
+    return level_match(level, tm) & ({2'h0, k.s1_vmid} == hgatp_vmid) & vasid_hit;
+  endfunction
+
+  // PtwRespS2.hit：按 s2xlate 选上面三条中的一条。
+  function automatic logic ptw_hit(input hit_key_t k,
+                                   input logic [VPN_W-1:0] vpn,
+                                   input logic [ASID_W-1:0] satp_asid,
+                                   input logic [ASID_W-1:0] vsatp_asid,
+                                   input logic [ASID_W-1:0] hgatp_vmid);
+    return (k.s2xlate == NO_S2XLATE) ? s1_hit(k, vpn, satp_asid)
+         : (k.s2xlate == ONLY_S2)    ? s2_hit(k, vpn, hgatp_vmid)
+                                     : all_s1_hit(k, vpn, vsatp_asid, hgatp_vmid);
+  endfunction
+
+  // 取 vpn 的第 idx 段（每段 VPNN_W 位）。idx 越界（>3）时 golden 取第 0 段 —— 这是
+  // firtool 展开 Chisel Vec 越界读的结果，不是回绕，见 CONVENTIONS.md。
+  function automatic logic [VPNN_W-1:0] get_vpnn(input logic [VPN_W-1:0] vpn,
+                                                 input logic [1:0] idx);
+    return (idx == 2'h1) ? vpn[VPNN_W*2-1 : VPNN_W]
+         : (idx == 2'h2) ? vpn[VPNN_W*3-1 : VPNN_W*2]
+         : (idx == 2'h3) ? vpn[VPNN_W*4-1 : VPNN_W*3]
+                         : vpn[VPNN_W-1 : 0];
+  endfunction
+
+
+  // ---------------------------------------------------------------------------
+  // 下面这组函数**必须把 ptw_resp 当参数传进来**，不许在模块里捕获模块级信号：
+  // CONVENTIONS.md 记着的坑 —— generate-for 里调用捕获模块级信号的 function，
+  // VCS 仿真会返 X。所以它们住在 package 里，只看参数。
+  // ---------------------------------------------------------------------------
+
+  // PtwSectorResp 的三个形态判据
+  function automatic logic s1_is_leaf(input ptw_resp_t p);
+    return (p.s1.entry_perm_r | p.s1.entry_perm_x | p.s1.entry_perm_w) & p.s1.entry_v;
+  endfunction
+  function automatic logic s1_is_fake_pte(input ptw_resp_t p);
+    return ~p.s1.pf & ~p.s1.entry_v & ~p.s1.af;
+  endfunction
+  // 非叶子：r/w/x 全 0 但表项有效且没故障 —— PTW 停在了中间级页表
+  function automatic logic s1_is_non_leaf(input ptw_resp_t p);
+    return ~(p.s1.entry_perm_r | p.s1.entry_perm_w | p.s1.entry_perm_x)
+           & p.s1.entry_v & ~p.s1.pf & ~p.s1.af;
+  endfunction
+
+  // PtwSectorResp.genPPN(vpn)：按 level 把表项 ppn 的高位和 vpn 的低位拼起来。
+  // level=0 且非 NAPOT 时最低 3 位来自 ppn_low[vpn[2:0]]（sector 表项每页各存一份）。
+  function automatic logic [PTE_PPN_W-1:0] s1_gen_ppn(input ptw_resp_t p,
+                                                      input logic [VPN_W-1:0] vpn);
+    case (p.s1.entry_level)
+      2'h3: return {p.s1.entry_ppn[SPPN_W-1 : VPNN_W*3-SECT_W], vpn[VPNN_W*3-1:0]};
+      2'h2: return {p.s1.entry_ppn[SPPN_W-1 : VPNN_W*2-SECT_W], vpn[VPNN_W*2-1:0]};
+      2'h1: return {p.s1.entry_ppn[SPPN_W-1 : VPNN_W-SECT_W],   vpn[VPNN_W-1:0]};
+      default: return p.s1.entry_n
+                      ? {p.s1.entry_ppn[SPPN_W-1 : NAPOT_W-SECT_W], vpn[NAPOT_W-1:0]}
+                      : {p.s1.entry_ppn, p.s1.ppn_low[vpn[SECT_W-1:0]]};
+    endcase
+  endfunction
+
+  // PtwSectorResp.genGVPN(vpn)：非叶子时 gvpn 就是"表项里那一页"，否则同 genPPN。
+  function automatic logic [PTE_PPN_W-1:0] s1_gen_gvpn(input ptw_resp_t p,
+                                                       input logic [VPN_W-1:0] vpn);
+    return s1_is_non_leaf(p) ? {p.s1.entry_ppn, p.s1.ppn_low[vpn[SECT_W-1:0]]}
+                             : s1_gen_ppn(p, vpn);
+  endfunction
+
+  // HptwResp.genPPNS2(gvpn)：G-stage 的同一件事，表项不是 sector 的所以没有 ppn_low。
+  function automatic logic [GVPN_W-1:0] s2_gen_ppn(input ptw_resp_t p,
+                                                   input logic [VPN_W-1:0] gvpn);
+    case (p.s2.entry_level)
+      2'h3: return {p.s2.entry_ppn[GVPN_W-1 : VPNN_W*3], gvpn[VPNN_W*3-1:0]};
+      2'h2: return {p.s2.entry_ppn[GVPN_W-1 : VPNN_W*2], gvpn[VPNN_W*2-1:0]};
+      2'h1: return {p.s2.entry_ppn[GVPN_W-1 : VPNN_W],   gvpn[VPNN_W-1:0]};
+      default: return p.s2.entry_n
+                      ? {p.s2.entry_ppn[GVPN_W-1 : NAPOT_W], gvpn[NAPOT_W-1:0]}
+                      : p.s2.entry_ppn;
+    endcase
+  endfunction
+
+  // OHToUInt：pteidx 是 one-hot，转成 3 位下标。★是按位或，不是优先编码★
+  function automatic logic [SECT_W-1:0] oh_to_uint8(input logic [SECT_N-1:0] oh);
+    return {|oh[7:4], |{oh[7:6], oh[3:2]}, |{oh[7], oh[5], oh[3], oh[1]}};
+  endfunction
+
+  // PtwRespS2.getVpn(vpn)：把响应还原成它覆盖的那条 vpn，need_gpa 用它对账。
+  // level / n 在两级都有时取"更小的页"，与 hit() 里的规则一致。
+  function automatic logic [VPN_W-1:0] ptw_get_vpn(input ptw_resp_t p,
+                                                   input logic [VPN_W-1:0] vpn);
+    logic [1:0]       lvl;
+    logic             nn, all_stage_n;
+    logic [VPN_W-1:0] s1_vpn, s2_vpn;
+    all_stage_n = (p.s1.entry_n & (|p.s2.entry_level))
+                | (p.s2.entry_n & (|p.s1.entry_level))
+                | (p.s1.entry_n &   p.s2.entry_n);
+    lvl = (|p.s2xlate)
+          ? ((&p.s2xlate) ? ((p.s1.entry_level < p.s2.entry_level) ? p.s1.entry_level
+                                                                   : p.s2.entry_level)
+                          : ((p.s2xlate == ONLY_S2) ? p.s2.entry_level : p.s1.entry_level))
+          : p.s1.entry_level;
+    nn  = (|p.s2xlate)
+          ? ((&p.s2xlate) ? all_stage_n
+                          : ((p.s2xlate == ONLY_S2) ? p.s2.entry_n : p.s1.entry_n))
+          : p.s1.entry_n;
+    case (lvl)
+      2'h3: s1_vpn = {p.s1.entry_tag[SVPN_W-1 : VPNN_W*3-SECT_W], vpn[VPNN_W*3-1:0]};
+      2'h2: s1_vpn = {p.s1.entry_tag[SVPN_W-1 : VPNN_W*2-SECT_W], vpn[VPNN_W*2-1:0]};
+      2'h1: s1_vpn = {p.s1.entry_tag[SVPN_W-1 : VPNN_W-SECT_W],   vpn[VPNN_W-1:0]};
+      default: s1_vpn = nn ? {p.s1.entry_tag[SVPN_W-1 : NAPOT_W-SECT_W], vpn[NAPOT_W-1:0]}
+                           : {p.s1.entry_tag, oh_to_uint8(p.s1.pteidx)};
+    endcase
+    case (lvl)
+      2'h3: s2_vpn = {p.s2.entry_tag[GVPN_W-1 : VPNN_W*3], vpn[VPNN_W*3-1:0]};
+      2'h2: s2_vpn = {p.s2.entry_tag[GVPN_W-1 : VPNN_W*2], vpn[VPNN_W*2-1:0]};
+      2'h1: s2_vpn = {p.s2.entry_tag[GVPN_W-1 : VPNN_W],   vpn[VPNN_W-1:0]};
+      default: s2_vpn = nn ? {p.s2.entry_tag[GVPN_W-1 : NAPOT_W], vpn[NAPOT_W-1:0]}
+                           : p.s2.entry_tag;
+    endcase
+    return (p.s2xlate == ONLY_S2) ? s2_vpn : s1_vpn;
+  endfunction
+
+  // RobPtr 比较：{flag, value} 的环形序。needFlush = 本条在 redirect 指向的条目之后。
+  // golden 展开成 `flag ^ r_flag ^ (value > r_value)`（异或链，不是减法），照抄。
+  function automatic logic rob_need_flush(
+      input logic        r_valid,
+      input logic        r_level,
+      input logic        r_flag,
+      input logic [ROB_IDX_W-1:0] r_value,
+      input logic        flag,
+      input logic [ROB_IDX_W-1:0] value);
+    logic flush_itself;
+    flush_itself = r_level & ({flag, value} == {r_flag, r_value});
+    return r_valid & (flush_itself | (flag ^ r_flag ^ (value > r_value)));
   endfunction
 
 endpackage

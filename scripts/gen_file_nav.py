@@ -95,12 +95,19 @@ def main():
     ap.add_argument('files', nargs='*')
     ap.add_argument('--min-lines', type=int, default=1500)
     a = ap.parse_args()
-    targets = [pathlib.Path(f) for f in a.files] if a.files else [
+    # ★相对路径也要能用★：原来直接 pathlib.Path(f)，命令行给相对路径时
+    # 下面的 p.relative_to(REPO) 会抛 ValueError —— 导航**已经写进文件了**才崩，
+    # 看上去像"工具失败"，实际是成功后在打印那一步挂掉（2026-09-20 实测踩到）。
+    targets = [pathlib.Path(f).resolve() for f in a.files] if a.files else [
         p for p in sorted((REPO / 'rtl').rglob('*.sv'))
         if p.read_text().count('\n') + 1 > a.min_lines]
     for p in targets:
         n = apply(p)
-        print(f'{p.relative_to(REPO)}: 导航 {n} 条')
+        try:
+            shown = p.relative_to(REPO)
+        except ValueError:      # 目标在仓库外（别的 worktree / 临时树）时照样打印
+            shown = p
+        print(f'{shown}: 导航 {n} 条')
     return 0
 
 

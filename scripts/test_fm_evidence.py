@@ -104,6 +104,107 @@ def test_real_success_log():
     check('real_success:reason_is_none', q['reason'] is None, f"reason={q['reason']!r}")
 
 
+def test_constant_reg_is_parsed_not_swallowed():
+    """(2026-09-17) Not Compared 的 `Constant reg` 一行必须被解析出来。
+
+    在此之前 fm_verdict.py 对这一类**一个字都没有**——连正则都没有：
+        grep -c "Constant reg" scripts/fm_verdict.py  -> 0
+    于是 SbufData 的 31 个、IBuffer 的 6 个常数寄存器就这么无声地穿过了判定。
+    「数字根本没出现在 receipt 里」和「数字出现了、判定说它没问题」是两回事，
+    前者是连事实都没留下，后者才是可以被复核的裁定。本测试锁住前者不再发生。
+
+    注意这一行的**列数比 Unread 行少**（只有 DFF/LAT/TOTAL），所以正则必须取末列，
+    不能按固定列数去数——写死列数会在 Unread 行上对、在 Constant reg 行上错。
+
+    本测试不断言任何判定结果：是否该对 Constant reg 设硬闸还没裁定，
+    这里只锁"数字必须出现"。
+    """
+    # 合成样本：照抄 Predictor 实测那轮的形状（evidence/ecdb74167652/Predictor/fm.log）
+    txt = """
+**** Verification Results ****
+Verification SUCCEEDED
+----------------------
+ Reference design: r:/WORK/T
+ Implementation design: i:/WORK/T
+ 520634 Passing compare points
+ 0 Failing compare points (0 matched, 0 unmatched)
+ 0 Unverified compare points
+ 0 Aborted compare points
+------------------------------------------------------------------------
+Matched Compare Points     BBPin    Loop   BBNet     Cut    Port     DFF     LAT   TOTAL
+------------------------------------------------------------------------
+Passing (equivalent)           0       0       0       0    2172  518414      48  520634
+Failing (not equivalent)       0       0       0       0       0       0       0       0
+Not Compared
+  Constant reg                                                       722       0     722
+  Unread                       0       0       0       0       0    8333       0    8333
+************************************************************************
+FM_RESULT: Verification SUCCEEDED for T
+"""
+    tbl = V._last_table(txt)
+    check('const_reg:row_parsed', V._row_int(tbl, 'constant_reg') == 722,
+          f"got {V._row_int(tbl, 'constant_reg')}")
+    # 同一张表里 Unread 行列数不同，两行都得对——这是"取末列"写法的关键回归点
+    check('const_reg:unread_row_still_right', V._row_int(tbl, 'unread_nc') == 8333,
+          f"got {V._row_int(tbl, 'unread_nc')}")
+    _, q = V.verdict(txt, 0, 'signoff-strict', 'T')
+    check('const_reg:in_verdict_dict', q.get('constant_reg') == 722,
+          f"got {q.get('constant_reg')}")
+
+
+def test_constant_reg_absent_row_is_none_not_zero():
+    """没有 Constant reg 行时必须是 None，不能填 0。
+
+    FM 省略全零类别的表行，所以"没有这一行"通常确实意味着 0。但 unread/aborted
+    那两类之所以敢用散文兜底填 0，是因为散文段里**有**对应的计数行可以交叉验证；
+    Constant reg 在散文段里没有对应行，没有第二来源。这时候把 None 写成 0
+    就是在"不知道"和"确实是零"之间做了没有依据的替换 —— 本工程栽过这个跟头
+    （见 test_zero_category_without_table_row 的注释）。宁可是 None。
+    """
+    txt = """
+**** Verification Results ****
+Verification SUCCEEDED
+----------------------
+ 4101 Passing compare points
+ 0 Failing compare points (0 matched, 0 unmatched)
+ 0 Unverified compare points
+ 0 Aborted compare points
+------------------------------------------------------------------------
+Matched Compare Points     BBPin    Loop   BBNet     Cut    Port     DFF     LAT   TOTAL
+------------------------------------------------------------------------
+Passing (equivalent)           0       0       0       0     100    4001       0    4101
+Failing (not equivalent)       0       0       0       0       0       0       0       0
+************************************************************************
+FM_RESULT: Verification SUCCEEDED for T
+"""
+    tbl = V._last_table(txt)
+    check('const_reg_absent:fixture_has_no_row', V._row_int(tbl, 'constant_reg') is None,
+          'fixture 前提不成立: 合成日志里居然有 Constant reg 行')
+    _, q = V.verdict(txt, 0, 'signoff-strict', 'T')
+    check('const_reg_absent:is_none', q.get('constant_reg') is None,
+          f"got {q.get('constant_reg')!r} —— 不能把'没这一行'替换成 0")
+
+
+def test_constant_reg_toggle_assumption_is_recorded():
+    """FM 那句"常数识别依赖 toggle 假设"的 Info 必须留痕。
+
+    有它的那一轮，Constant reg 的数字不是无条件事实，而是带前提的结论。
+    ★实测发现这条 Info 很普遍★：连 FMA 这种早就签绿的叶子目标日志里也有三处，
+    并且它的表里 Constant reg = 1。所以这条 Info 不是异常信号，只是一个必须留痕的
+    前提 —— 也正因为普遍，才更不能凭它去给 Constant reg 设硬闸，那会把一大批
+    已签核目标一刀切成红。
+    """
+    with_info = ('    Info:  Constant registers have been identified that were '
+                 'initialized by some objects that were assumed to toggle.\n')
+    check('const_toggle:detected', bool(V._CONST_TOGGLE.search(with_info)), 'Info 行没识别出来')
+    check('const_toggle:not_false_positive',
+          not V._CONST_TOGGLE.search('Info: Constant registers have been identified.\n'),
+          '半句话也被当成命中了')
+    check('const_toggle:real_log_has_it',
+          V._CONST_TOGGLE.search(FMA_LOG.read_text()) is not None,
+          'FMA 实测日志里应当有这条 Info（正则若漂了这里会响）')
+
+
 def test_zero_category_without_table_row():
     """(reviewer ④) FM 对全零类别不出表行；散文 "0 Aborted compare points" 必须兜底。
 

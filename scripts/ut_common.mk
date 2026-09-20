@@ -105,8 +105,32 @@ GOLDEN_SRCS_UNIQ = $(filter-out $(RTL_GOLDEN_DEPS),$(GOLDEN_SRCS))
 simv: $(UT_SRCS) $(TB_SRCS) $(GOLDEN_SRCS) $(RTL_GOLDEN_DEPS) | portlint derive
 	$(VCS) $(UT_SRCS) $(RTL_GOLDEN_DEPS) $(GOLDEN_SRCS_UNIQ) $(TB_SRCS) -top tb -o simv
 
+# 两轮 initreg 的日志原先同名 sim_$(SEED).log —— 后跑的那轮把前一轮**静默覆盖**，
+# 于是"两轮都绿"这件事在磁盘上永远只剩一轮的证据，事后没法复核。
+# 2026-09-17 实测：NCBTransactionQueue 目录里三个 sim_<seed>.log 全是 +vcs+initreg+0
+# 那轮的，+random 那轮的日志已经不在了。
+# ★做法是"多留一份"而不是"改名"★：原名保持不变（各 lane 的脚本还在 grep 它，
+# 而且现在有 5 条 lane 正在跑，改名会凭空制造失败），额外按轮次存一份副本，
+# 两轮的证据从此并存。没带 initreg 参数时不产生副本，行为完全不变。
+# 2026-09-20 追加 `+vcs+initreg+1` 一档（L2TLB lane）：**双例化**的 UT 里
+# `+vcs+initreg+random` 给两个实例各摇各的初值，DUT 含未复位寄存器时两侧初态
+# 就不同，比出来的差异跟重写无关（L2TLB 实测 PTW.hptw_resp_entry_tag
+# g=0dc7f7ee8f / i=26ff00d6fe，正好是 UT 报的那条失配）。+0 与 +1 都是常量档，
+# 两侧必然同初态、又互不相同，是双例化 UT 能用的两档。没有 tag 的话两轮日志
+# 会互相覆盖——那正是本段注释一开始要防的事。
+INITREG_TAG = $(if $(findstring +vcs+initreg+random,$(SIM_ARGS)),_initregrandom,$(if $(findstring +vcs+initreg+0,$(SIM_ARGS)),_initreg0,$(if $(findstring +vcs+initreg+1,$(SIM_ARGS)),_initreg1,)))
+
+# ★跑之前先删掉两个名字★（2026-09-17，BloomFilter lane 指出的交互）
+# 「多留一份副本」和「每次先删日志」这两条规矩天然打架：留副本是为了让两轮证据并存，
+# 先删是为了让**编译失败时读不到上一轮的日志**（变异 harness 的命门 —— 编不过却读到
+# 上一个变异的 errors，就会记成假 CAUGHT，IBuffer M6 实测栽过）。
+# 只删 sim_$(SEED).log 的话，带 tag 的那份会留着；哪天谁把 harness 改成读带 tag 的名字
+# （"名字更清楚"是很自然的想法），那个洞就原样回来了。所以两个名字一起删，
+# 让"读到陈旧日志"这件事在**任何**读法下都不可能发生。
 run: simv
+	@rm -f sim_$(SEED).log $(if $(INITREG_TAG),sim_$(SEED)$(INITREG_TAG).log,)
 	./simv +ntb_random_seed=$(SEED) $(SIM_ARGS) -l sim_$(SEED).log
+	@$(if $(INITREG_TAG),cp -f sim_$(SEED).log sim_$(SEED)$(INITREG_TAG).log,:)
 	@grep -q "TEST PASSED" sim_$(SEED).log && echo "=== UT PASSED ($(MODULE) seed=$(SEED)) ===" \
 		|| { echo "=== UT FAILED ($(MODULE) seed=$(SEED)) ==="; exit 1; }
 
@@ -156,7 +180,7 @@ fm-%:
 	FM_SIDECAR_OUT=$(abspath fm_work/$*/sidecar) \
 	FM_RUN_ID=$(FM_RUN_ID) \
 	fm_shell -64 -work_path fm_work/$* -file $(XSSV_HOME)/scripts/fm_eq.tcl \
-	    > fm_work/$*/fm.log 2>&1; \
+	    < /dev/null > fm_work/$*/fm.log 2>&1; \
 	rc=$$?; \
 	v=$$(XSSV_HOME=$(XSSV_HOME) python3 $(XSSV_HOME)/scripts/fm_verdict.py fm_work/$*/fm.log --rc $$rc --mode $(FM_MODE) --top $* --allowlist $(FM_ALLOWLIST) \
 	    $(if $(wildcard $(XSSV_HOME)/verif/dead_ref/$*.json),--dead-ref $(XSSV_HOME)/verif/dead_ref/$*.json --unread-points fm_work/$*/unread_points.txt,) \

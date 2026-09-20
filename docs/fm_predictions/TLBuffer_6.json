@@ -1,0 +1,12 @@
+{
+  "target": "TLBuffer_6",
+  "ut": "TLBuffer_6",
+  "regs": 6,
+  "outs": 641,
+  "expected": 647,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "prior_receipt": "evidence/bb2f134fee0c/TLBuffer_6",
+  "prior_receipt_passing": 1921,
+  "prior_receipt_note": "drift re-proof: 旧 receipt 的 impl 闭包与当前字节不同源；本轮预期 = 旧 receipt passing 逐位相等，若不等必须逐位指认"
+}

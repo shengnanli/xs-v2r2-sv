@@ -1,0 +1,83 @@
+**************************************************
+Report         : black_boxes
+
+Reference      : r:/WORK/LoadQueueReplay
+Implementation : i:/WORK/LoadQueueReplay
+Version        : V-2023.12-SP3
+Date           : Sun Sep 20 07:27:41 2026
+**************************************************
+Information: Reporting black boxes for current reference and implementation designs. (FM-184)
+
+ ___________________________________________________
+|                                                   |
+|  Legend:                                          |
+|           Black Box Attributes                    |
+|              s = Set with set_black_box command   |
+|              i = Module read with -interface_only |
+|              u = Unresolved design module         |
+|              e = Empty design module              |
+|              * = Unlinked design module           |
+|             ut = Unread tech cells pins           |
+|              L = Linked to non-black box design   |
+|             cp = Cutpoint blackbox                |
+|             ir = Internal rounded blackbox        |
+|              f = Formality Power Model            |
+|              m = Technology Macro cell (.db)      |
+|___________________________________________________|
+
+
+##################################################################
+####    TECH LIBRARY - i:/FM_BBOX
+##################################################################
+Type  Design Name
+----  ----------
+u      AgeDetector_38
+
+       Instances : 3 of 3
+       ------------------------
+       i:/WORK/LoadQueueReplay/u_core/ageOldest_age
+       i:/WORK/LoadQueueReplay/u_core/ageOldest_age_1
+       i:/WORK/LoadQueueReplay/u_core/ageOldest_age_2
+
+u      FreeList_5
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/LoadQueueReplay/u_core/freeList
+
+u      LqVAddrModule
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/LoadQueueReplay/u_core/vaddrModule
+
+
+
+##################################################################
+####    TECH LIBRARY - r:/FM_BBOX
+##################################################################
+Type  Design Name
+----  ----------
+u      AgeDetector_38
+
+       Instances : 3 of 3
+       ------------------------
+       r:/WORK/LoadQueueReplay/ageOldest_age
+       r:/WORK/LoadQueueReplay/ageOldest_age_1
+       r:/WORK/LoadQueueReplay/ageOldest_age_2
+
+u      FreeList_5
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/LoadQueueReplay/freeList
+
+u      LqVAddrModule
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/LoadQueueReplay/vaddrModule
+
+
+1
+

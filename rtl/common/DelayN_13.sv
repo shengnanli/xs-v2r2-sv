@@ -43,7 +43,8 @@ module DelayN_13(
     .STAGES         (STAGES),
     .GOLDEN_REG_BITS(GOLDEN_REG_BITS),
     .PORT_BITS_IN   (PORT_BITS_IN),
-    .PORT_BITS_OUT  (PORT_BITS_OUT)
+    .PORT_BITS_OUT  (PORT_BITS_OUT),
+    .GOLDEN_HAS_CLOCK(1)
   ) u_core (
     .clock(clock),
     .d_in (payload_in),

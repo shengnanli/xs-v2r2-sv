@@ -1,0 +1,143 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-09-20T13:27:54Z",
+ "generator": {
+  "run_context_worktree_digest": "cc222f4709340c440f62ecda43e1628794515d0c030201f4d63ab295c2fba341",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/b84bf4ee4ead/LqVAddrModule",
+  "version": 1
+ },
+ "impl_commit": "b84bf4ee4eadf1f5b9791ab2c74a8b63954bdde4",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/LqVAddrModule.sv",
+    "sha256": "a37b88d5d99ed4f4f7f546e7e9036b25f1014bffd2f0aae29c55e7a9eca28587"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DelayN_13.sv",
+    "sha256": "b09d6e57c14d5dc9eb188e426e6cdf66d58027d5112a622e7ec2e69215227515"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DelayNWithValid_152.sv",
+    "sha256": "9ed6573dc4402e19861cc543d97d9937a2cf2d965c495525419fb9cc6dd6ea7f"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DelayNWithValid_155.sv",
+    "sha256": "2a3f4da3299f3bdd44b80163eedce9345ac6f4ce679bd869ee6d58adde82d481"
+   }
+  ],
+  "golden_sha256": "4cc689a2d53ce5b28db1616f705ffdae5edf96c51d6c3b4c1b64eb9805b9c677",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/LqVAddrModule.sv",
+    "sha256": "cc084edba873860ca3161348d16b6b91286706e8bd894ba367cc54328c1a8411"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DelayN_13.sv",
+    "sha256": "b09d6e57c14d5dc9eb188e426e6cdf66d58027d5112a622e7ec2e69215227515"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DelayNWithValid_152.sv",
+    "sha256": "9ed6573dc4402e19861cc543d97d9937a2cf2d965c495525419fb9cc6dd6ea7f"
+   },
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DelayNWithValid_155.sv",
+    "sha256": "2a3f4da3299f3bdd44b80163eedce9345ac6f4ce679bd869ee6d58adde82d481"
+   }
+  ],
+  "impl_sha256": "ac427761e2b0456982738cd5d4afce53af290f50c6c58d49010df20de1be2dbb",
+  "repo_impl_files": 1
+ },
+ "native_facts_sha256": "7d34aa3c4ffc577b35f4e3da9c3df0eb02f7a86bc426aac459ae3841cf224bdf",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 5340,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "b84bf4ee4eadf1f5b9791ab2c74a8b63954bdde4",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "ca902cb19e924d8ef81a0f9a2c36e6282c862b122f8b5c3845966595883c8c90",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "cc222f4709340c440f62ecda43e1628794515d0c030201f4d63ab295c2fba341",
+ "provisional": false,
+ "receipt_sha256": "603c03442b6a952f17860c4e9d551bd996404bcb3d06db4c44f1ed1ead57537a",
+ "reproduce": {
+  "command": "PROOF_COMMIT=b84bf4ee4eadf1f5b9791ab2c74a8b63954bdde4 scripts/run_proof.sh LqVAddrModule LqVAddrModule",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "4c0f2bf8d9e875ee6ae422cf7f2639b8628a06628a36282c222e2fae611486b9",
+ "run_id": "LqVAddrModule-20260917T130533Z-b84bf4e",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "8e6f23372719135d1721b900fbb840d323bf4f006dddb12a966ed1c385e3cc17"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "87ea31973b3e45a4c12a77d91b6b4d0bb8533cd2d25a96f617fb511801702d01"
+   }
+  ],
+  "sha256": "dac24fbc28748e38e288734b93e94cb6ffcd6fc58f3e92d1911d68b178db9868"
+ },
+ "target": "LqVAddrModule",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "LqVAddrModule",
+ "variant": "LqVAddrModule",
+ "verdict": "SUCCEEDED"
+}

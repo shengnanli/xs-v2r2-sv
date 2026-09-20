@@ -71,7 +71,7 @@ def golden_reuse_set():
     out = set()
     for mk in (REPO / 'verif' / 'ut').glob('*/Makefile'):
         txt = re.sub(r'\\\n', ' ', mk.read_text())
-        m = re.search(r'^RTL_GOLDEN_DEPS\s*=\s*(.*)$', txt, re.M)
+        m = re.search(r'^RTL_GOLDEN_DEPS[^\S\n]*=[^\S\n]*(.*)$', txt, re.M)
         if m:
             for tok in m.group(1).split():
                 base = tok.split('/')[-1]
@@ -146,7 +146,15 @@ def main():
 
     out = REPO / 'docs' / 'coverage_three_axis.tsv'
     with out.open('w') as f:
-        f.write(f'# 三轴覆盖（分母 = {a.universe} 的 in_universe=yes，共 {len(uni)}）\n')
+        # ★写相对路径★：这里原先写 a.universe 的**绝对**路径，于是同一份表在不同
+        #  worktree 里重算出来的字节不同（我在 /home/eda/xs-env/wt-lqr3 重算，
+        #  表头就从 .../xs-v2-sv/docs/... 变成 .../wt-lqr3/docs/...），
+        #  「幂等闸」于是变成「只有在某台机器的某个目录下才绿」。
+        try:
+            _uni_disp = os.path.relpath(a.universe, REPO)
+        except ValueError:
+            _uni_disp = a.universe
+        f.write(f'# 三轴覆盖（分母 = {_uni_disp} 的 in_universe=yes，共 {len(uni)}）\n')
         f.write('# module\trewrite_coverage\tformal_coverage\timpl_file\n')
         for r in rows:
             f.write('\t'.join(r) + '\n')

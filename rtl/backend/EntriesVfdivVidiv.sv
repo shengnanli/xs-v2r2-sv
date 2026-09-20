@@ -5,20 +5,21 @@
 //
 // 本变体规模（全部从 G1 golden EntriesVfdivVidiv.sv 机械量得）：
 //   条目 10 = enq 2 + simp 2 + comp 6，发射口 1，源寄存器 5 个
-//   WB 唤醒 16 路（无 IQ 唤醒、无 og0/og1Cancel、无 ldCancel —— 本变体是全家族最简的一个）
-//   保留的 FuType one-hot 位：FuType[22], FuType[26]（VFDIV 向量浮点除/开方、VIDIV 向量整数除）
-//   srcLoadDependency 影子：每源 3 条 load 流水 × 2 位（本变体无 ldCancel，恒 0，只为与 golden 寄存器结构对齐）
+//   WB 唤醒 16 路（无 IQ 唤醒、无 og0Cancel、无 ldCancel）
+//   保留的 FuType one-hot 位：FuType[22], FuType[26]
+//   srcLoadDependency 影子：每源 3 条 load 流水 × 2 位（comp 段没有：整条通路是死的）
+//   issueResp 4 档（按 issueTimer）：timer0=常量 2'h0, timer1=常量 2'h1, timer2=真 resp, timer3=常量 2'h0
 //   负载：发射口可见 56 个字段 / 741 位；转移包另带 124 个字段，共 1330 位
-//   golden 层次：EnqEntry_18 ×2 + OthersEntry_164 ×2 + OthersEntry_166 ×6 + EnqPolicy ×2，本文件把它们一并扁平化。
+//   golden 层次：EnqEntry_18 ×2 + OthersEntry_164 ×2 + OthersEntry_166 ×6 + EnqPolicy_18 ×2，本文件把它们一并扁平化。
 //
 // 唤醒路由（从 golden currentStatus_srcStatus_<s>_srcState 表达式机械提取）：
-//   src0: WB[0..5]（vecWen），门控 srcType[2]
-//   src1: WB[0..5]（vecWen），门控 srcType[2]
-//   src2: WB[0..5]（vecWen），门控 srcType[2]
-//   src3: WB[6..11]（v0Wen），门控 srcType[3]
-//   src4: WB[12..15]（vlWen），门控 srcType[2]
+//   src0: WB[0..5]，匹配 srcType[2]&vecWen
+//   src1: WB[0..5]，匹配 srcType[2]&vecWen
+//   src2: WB[0..5]，匹配 srcType[2]&vecWen
+//   src3: WB[6..11]，匹配 srcType[3]&v0Wen
+//   src4: WB[12..15]，匹配 srcType[2]&vlWen
 //
-// 自动生成：verif/ut/EntriesVfdivVidiv/gen.py —— 勿手改
+// 自动生成：verif/ut/EntriesVfdivVidiv/gen.py（共享库 verif/ut/Entries_common/entries_gen.py）—— 勿手改
 // =============================================================================
 module EntriesVfdivVidiv (
   input          clock,
@@ -674,15 +675,26 @@ module EntriesVfdivVidiv (
   logic [0:0] deq_rob_flag;
   logic [0:0][7:0] deq_rob_value;
   logic [9:0][4:0][3:0] data_src;
+  // 核的这几个出口：顶层有对应端口的接有名线（后面展开），没有的接悬空线
+  logic [9:0][4:0][0:0] unused_exu_src;
+  logic [9:0][2:0][1:0] unused_ld_dep;
+  logic [0:0][4:0][2:0][1:0] unused_deq_ld_dep;
+  logic [0:0][4:0][0:0] unused_deq_rc_idx;
+  logic [0:0] unused_cancel_deq;
 
   xs_iq_entries_core #(
     .NUM_ENQ(2), .NUM_SIMP(2), .NUM_COMP(6), .NUM_DEQ(1),
     .NUM_REGSRC(5), .NUM_WK_WB(16), .NUM_FU_BIT(2),
     .ROB_W(8), .PSRC_W(7), .PDEST_W(8),
     .PL_DEQ_W(741), .PL_TRANS_W(1330),
-    .HAS_LD_DEP(1), .LD_PIPES(3), .LD_DEP_W(2),
+    .HAS_LD_DEP(1), .COMP_HAS_LD_DEP(0),
+    .HAS_LD_CANCEL(0), .HAS_LD1_CANCEL(0),
+    .LD_PIPES(3), .LD_DEP_W(2),
+    .NUM_WK_IQ(0), .EXU_W(1),
     .SRC_WB_MASK({16'b1111000000000000, 16'b0000111111000000, 16'b0000000000111111, 16'b0000000000111111, 16'b0000000000111111}),
-    .SRC_TYPE_BIT({3'd2, 3'd3, 3'd2, 3'd2, 3'd2}),
+    .SRC_MATCH_KIND({2'd2, 2'd1, 2'd0, 2'd0, 2'd0}),
+    .WB_WEN_PRESENT(5'b11100),
+    .WBD_WEN_PRESENT(5'b11100),
     .HAS_IGNORE_OLD_VD(1),
     .VD_SRC(2), .VL_SRC(4), .WB_VL_INT(12), .WB_VL_VF(13),
     .PLB_VM(41),
@@ -690,7 +702,8 @@ module EntriesVfdivVidiv (
     .PLB_VTA(27),
     .PLB_IS_DEPEND_OLDVD(209),
     .PLB_IS_WRITE_PARTVD(210),
-    .NEED_OG2_RESP(1)
+    .OG_HAS_BITS(4'b0100),
+    .OG_CONST_RESP({2'h0, 2'h0, 2'h1, 2'h0})
   ) u_core (
     .clock(clock), .reset(reset),
     .flush_valid(io_flush_valid), .flush_rob_flag(io_flush_bits_robIdx_flag),
@@ -704,19 +717,23 @@ module EntriesVfdivVidiv (
     .enq_src_state({io_enq_1_bits_status_srcStatus_4_srcState, io_enq_1_bits_status_srcStatus_3_srcState, io_enq_1_bits_status_srcStatus_2_srcState, io_enq_1_bits_status_srcStatus_1_srcState, io_enq_1_bits_status_srcStatus_0_srcState, io_enq_0_bits_status_srcStatus_4_srcState, io_enq_0_bits_status_srcStatus_3_srcState, io_enq_0_bits_status_srcStatus_2_srcState, io_enq_0_bits_status_srcStatus_1_srcState, io_enq_0_bits_status_srcStatus_0_srcState}),
     .enq_data_src({io_enq_1_bits_status_srcStatus_4_dataSources_value, io_enq_1_bits_status_srcStatus_3_dataSources_value, io_enq_1_bits_status_srcStatus_2_dataSources_value, io_enq_1_bits_status_srcStatus_1_dataSources_value, io_enq_1_bits_status_srcStatus_0_dataSources_value, io_enq_0_bits_status_srcStatus_4_dataSources_value, io_enq_0_bits_status_srcStatus_3_dataSources_value, io_enq_0_bits_status_srcStatus_2_dataSources_value, io_enq_0_bits_status_srcStatus_1_dataSources_value, io_enq_0_bits_status_srcStatus_0_dataSources_value}),
     .enq_payload(enq_payload),
-    .enq_ld_dep('0),
+    .enq_ld_dep('0), .enq_pl_ld_dep('0),
+    .enq_use_rc('0), .enq_rc_idx('0),
+    .iq_wen('0), .iq_pdest('0), .iq_ld_dep('0), .iq_rc_dest('0),
+    .og0_cancel_sel('0), .iq_is0lat('0), .iqd_is0lat('0),
+    .iqd_wen('0), .iqd_pdest('0), .iqd_ld_dep('0), .iqd_rc_dest('0),
+    .ld1_cancel('0),
+    .ld2_cancel('0),
     .wk_valid({io_wakeUpFromWB_15_valid, io_wakeUpFromWB_14_valid, io_wakeUpFromWB_13_valid, io_wakeUpFromWB_12_valid, io_wakeUpFromWB_11_valid, io_wakeUpFromWB_10_valid, io_wakeUpFromWB_9_valid, io_wakeUpFromWB_8_valid, io_wakeUpFromWB_7_valid, io_wakeUpFromWB_6_valid, io_wakeUpFromWB_5_valid, io_wakeUpFromWB_4_valid, io_wakeUpFromWB_3_valid, io_wakeUpFromWB_2_valid, io_wakeUpFromWB_1_valid, io_wakeUpFromWB_0_valid}),
-    .wk_wen({io_wakeUpFromWB_15_bits_vlWen, io_wakeUpFromWB_14_bits_vlWen, io_wakeUpFromWB_13_bits_vlWen, io_wakeUpFromWB_12_bits_vlWen, io_wakeUpFromWB_11_bits_v0Wen, io_wakeUpFromWB_10_bits_v0Wen, io_wakeUpFromWB_9_bits_v0Wen, io_wakeUpFromWB_8_bits_v0Wen, io_wakeUpFromWB_7_bits_v0Wen, io_wakeUpFromWB_6_bits_v0Wen, io_wakeUpFromWB_5_bits_vecWen, io_wakeUpFromWB_4_bits_vecWen, io_wakeUpFromWB_3_bits_vecWen, io_wakeUpFromWB_2_bits_vecWen, io_wakeUpFromWB_1_bits_vecWen, io_wakeUpFromWB_0_bits_vecWen}),
+    .wk_wen({{io_wakeUpFromWB_15_bits_vlWen, 1'b0, 1'b0, 1'b0, 1'b0}, {io_wakeUpFromWB_14_bits_vlWen, 1'b0, 1'b0, 1'b0, 1'b0}, {io_wakeUpFromWB_13_bits_vlWen, 1'b0, 1'b0, 1'b0, 1'b0}, {io_wakeUpFromWB_12_bits_vlWen, 1'b0, 1'b0, 1'b0, 1'b0}, {1'b0, io_wakeUpFromWB_11_bits_v0Wen, 1'b0, 1'b0, 1'b0}, {1'b0, io_wakeUpFromWB_10_bits_v0Wen, 1'b0, 1'b0, 1'b0}, {1'b0, io_wakeUpFromWB_9_bits_v0Wen, 1'b0, 1'b0, 1'b0}, {1'b0, io_wakeUpFromWB_8_bits_v0Wen, 1'b0, 1'b0, 1'b0}, {1'b0, io_wakeUpFromWB_7_bits_v0Wen, 1'b0, 1'b0, 1'b0}, {1'b0, io_wakeUpFromWB_6_bits_v0Wen, 1'b0, 1'b0, 1'b0}, {1'b0, 1'b0, io_wakeUpFromWB_5_bits_vecWen, 1'b0, 1'b0}, {1'b0, 1'b0, io_wakeUpFromWB_4_bits_vecWen, 1'b0, 1'b0}, {1'b0, 1'b0, io_wakeUpFromWB_3_bits_vecWen, 1'b0, 1'b0}, {1'b0, 1'b0, io_wakeUpFromWB_2_bits_vecWen, 1'b0, 1'b0}, {1'b0, 1'b0, io_wakeUpFromWB_1_bits_vecWen, 1'b0, 1'b0}, {1'b0, 1'b0, io_wakeUpFromWB_0_bits_vecWen, 1'b0, 1'b0}}),
     .wk_pdest({io_wakeUpFromWB_15_bits_pdest, io_wakeUpFromWB_14_bits_pdest, io_wakeUpFromWB_13_bits_pdest, io_wakeUpFromWB_12_bits_pdest, io_wakeUpFromWB_11_bits_pdest, io_wakeUpFromWB_10_bits_pdest, io_wakeUpFromWB_9_bits_pdest, io_wakeUpFromWB_8_bits_pdest, io_wakeUpFromWB_7_bits_pdest, io_wakeUpFromWB_6_bits_pdest, io_wakeUpFromWB_5_bits_pdest, io_wakeUpFromWB_4_bits_pdest, io_wakeUpFromWB_3_bits_pdest, io_wakeUpFromWB_2_bits_pdest, io_wakeUpFromWB_1_bits_pdest, io_wakeUpFromWB_0_bits_pdest}),
     .wkd_valid({io_wakeUpFromWBDelayed_15_valid, io_wakeUpFromWBDelayed_14_valid, io_wakeUpFromWBDelayed_13_valid, io_wakeUpFromWBDelayed_12_valid, io_wakeUpFromWBDelayed_11_valid, io_wakeUpFromWBDelayed_10_valid, io_wakeUpFromWBDelayed_9_valid, io_wakeUpFromWBDelayed_8_valid, io_wakeUpFromWBDelayed_7_valid, io_wakeUpFromWBDelayed_6_valid, io_wakeUpFromWBDelayed_5_valid, io_wakeUpFromWBDelayed_4_valid, io_wakeUpFromWBDelayed_3_valid, io_wakeUpFromWBDelayed_2_valid, io_wakeUpFromWBDelayed_1_valid, io_wakeUpFromWBDelayed_0_valid}),
-    .wkd_wen({io_wakeUpFromWBDelayed_15_bits_vlWen, io_wakeUpFromWBDelayed_14_bits_vlWen, io_wakeUpFromWBDelayed_13_bits_vlWen, io_wakeUpFromWBDelayed_12_bits_vlWen, io_wakeUpFromWBDelayed_11_bits_v0Wen, io_wakeUpFromWBDelayed_10_bits_v0Wen, io_wakeUpFromWBDelayed_9_bits_v0Wen, io_wakeUpFromWBDelayed_8_bits_v0Wen, io_wakeUpFromWBDelayed_7_bits_v0Wen, io_wakeUpFromWBDelayed_6_bits_v0Wen, io_wakeUpFromWBDelayed_5_bits_vecWen, io_wakeUpFromWBDelayed_4_bits_vecWen, io_wakeUpFromWBDelayed_3_bits_vecWen, io_wakeUpFromWBDelayed_2_bits_vecWen, io_wakeUpFromWBDelayed_1_bits_vecWen, io_wakeUpFromWBDelayed_0_bits_vecWen}),
+    .wkd_wen({{io_wakeUpFromWBDelayed_15_bits_vlWen, 1'b0, 1'b0, 1'b0, 1'b0}, {io_wakeUpFromWBDelayed_14_bits_vlWen, 1'b0, 1'b0, 1'b0, 1'b0}, {io_wakeUpFromWBDelayed_13_bits_vlWen, 1'b0, 1'b0, 1'b0, 1'b0}, {io_wakeUpFromWBDelayed_12_bits_vlWen, 1'b0, 1'b0, 1'b0, 1'b0}, {1'b0, io_wakeUpFromWBDelayed_11_bits_v0Wen, 1'b0, 1'b0, 1'b0}, {1'b0, io_wakeUpFromWBDelayed_10_bits_v0Wen, 1'b0, 1'b0, 1'b0}, {1'b0, io_wakeUpFromWBDelayed_9_bits_v0Wen, 1'b0, 1'b0, 1'b0}, {1'b0, io_wakeUpFromWBDelayed_8_bits_v0Wen, 1'b0, 1'b0, 1'b0}, {1'b0, io_wakeUpFromWBDelayed_7_bits_v0Wen, 1'b0, 1'b0, 1'b0}, {1'b0, io_wakeUpFromWBDelayed_6_bits_v0Wen, 1'b0, 1'b0, 1'b0}, {1'b0, 1'b0, io_wakeUpFromWBDelayed_5_bits_vecWen, 1'b0, 1'b0}, {1'b0, 1'b0, io_wakeUpFromWBDelayed_4_bits_vecWen, 1'b0, 1'b0}, {1'b0, 1'b0, io_wakeUpFromWBDelayed_3_bits_vecWen, 1'b0, 1'b0}, {1'b0, 1'b0, io_wakeUpFromWBDelayed_2_bits_vecWen, 1'b0, 1'b0}, {1'b0, 1'b0, io_wakeUpFromWBDelayed_1_bits_vecWen, 1'b0, 1'b0}, {1'b0, 1'b0, io_wakeUpFromWBDelayed_0_bits_vecWen, 1'b0, 1'b0}}),
     .wkd_pdest({io_wakeUpFromWBDelayed_15_bits_pdest, io_wakeUpFromWBDelayed_14_bits_pdest, io_wakeUpFromWBDelayed_13_bits_pdest, io_wakeUpFromWBDelayed_12_bits_pdest, io_wakeUpFromWBDelayed_11_bits_pdest, io_wakeUpFromWBDelayed_10_bits_pdest, io_wakeUpFromWBDelayed_9_bits_pdest, io_wakeUpFromWBDelayed_8_bits_pdest, io_wakeUpFromWBDelayed_7_bits_pdest, io_wakeUpFromWBDelayed_6_bits_pdest, io_wakeUpFromWBDelayed_5_bits_pdest, io_wakeUpFromWBDelayed_4_bits_pdest, io_wakeUpFromWBDelayed_3_bits_pdest, io_wakeUpFromWBDelayed_2_bits_pdest, io_wakeUpFromWBDelayed_1_bits_pdest, io_wakeUpFromWBDelayed_0_bits_pdest}),
     .vl_int_is_zero(io_vlFromIntIsZero), .vl_int_is_vlmax(io_vlFromIntIsVlmax),
     .vl_vf_is_zero(io_vlFromVfIsZero), .vl_vf_is_vlmax(io_vlFromVfIsVlmax),
-    .og0_valid({io_og0Resp_0_valid}),
-    .og1_valid({io_og1Resp_0_valid}),
-    .og2_valid({io_og2Resp_0_valid}),
-    .og2_resp({io_og2Resp_0_bits_resp}),
+    .og_valid({{io_og2Resp_0_valid}, {io_og1Resp_0_valid}, {io_og0Resp_0_valid}}),
+    .og_resp({{io_og2Resp_0_bits_resp}, 2'h0, 2'h0}),
     .deq_ready({io_deqReady_0}),
     .deq_sel_oh_valid({io_deqSelOH_0_valid}),
     .deq_sel_oh({io_deqSelOH_0_bits}),
@@ -727,6 +744,9 @@ module EntriesVfdivVidiv (
     .comp_oldest_sel({io_compEntryOldestSel_0_bits}),
     .simp_deq_sel_vec({io_simpEntryDeqSelVec_1, io_simpEntryDeqSelVec_0}),
     .o_valid(io_valid), .o_issued(io_issued), .o_can_issue(io_canIssue),
+    .o_exu_src(unused_exu_src), .o_ld_dep(unused_ld_dep),
+    .o_deq_ld_dep(unused_deq_ld_dep), .o_deq_rc_idx(unused_deq_rc_idx),
+    .o_cancel_deq(unused_cancel_deq),
     .o_fu_type(fu_type_narrow), .o_data_src(data_src),
     .o_is_first_issue({io_isFirstIssue_0}),
     .o_deq_rob_flag(deq_rob_flag), .o_deq_rob_value(deq_rob_value),

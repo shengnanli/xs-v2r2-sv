@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/CHILogger
+Implementation : i:/WORK/CHILogger
+Version        : V-2023.12-SP3
+Date           : Mon Sep 14 02:17:10 2026
+**************************************************
+
+No unverified compare points.
+
+1

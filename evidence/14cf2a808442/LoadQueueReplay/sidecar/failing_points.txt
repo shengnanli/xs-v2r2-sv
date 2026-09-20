@@ -1,0 +1,49 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/LoadQueueReplay
+Implementation : i:/WORK/LoadQueueReplay
+Version        : V-2023.12-SP3
+Date           : Sun Sep 20 07:53:50 2026
+**************************************************
+
+3 Failing compare points (3 matched, 0 unmatched):
+
+ *Ref  BBPin      r:/WORK/LoadQueueReplay/freeList/io_canAllocate_0
+  Impl BBPin      i:/WORK/LoadQueueReplay/u_core/freeList/io_canAllocate_0
+
+ *Ref  BBPin      r:/WORK/LoadQueueReplay/freeList/io_canAllocate_1
+  Impl BBPin      i:/WORK/LoadQueueReplay/u_core/freeList/io_canAllocate_1
+
+ *Ref  BBPin      r:/WORK/LoadQueueReplay/freeList/io_canAllocate_2
+  Impl BBPin      i:/WORK/LoadQueueReplay/u_core/freeList/io_canAllocate_2
+
+ *This failure may be due to an undriven signal in the reference design;
+  use "report_unmatched_points <compare-point> -status undriven" to see
+  a report of unmatched undriven points in the fan-in of a given compare point.
+
+ [BBNet: multiply-driven net
+  BBPin: black-box pin
+  Cut:   cut-point
+  DFF:   non-constant DFF register
+  DFF0:  constant 0 DFF register
+  DFF1:  constant 1 DFF register
+  DFFX:  constant X DFF register
+  DFF0X: constrained 0X DFF register
+  DFF1X: constrained 1X DFF register
+  LAT:   non-constant latch register
+  LAT0:  constant 0 latch register
+  LAT1:  constant 1 latch register
+  LATX:  constant X latch register
+  LAT0X: constrained 0X latch register
+  LAT1X: constrained 1X latch register
+  LATCG: clock-gating latch register
+  TLA:   transparent latch register
+  TLA0X: transparent constrained 0X latch register
+  TLA1X: transparent constrained 1X latch register
+  Loop:  cycle break point
+  Port:  primary (top-level) port
+  Und:   undriven signal cut-point
+  Unk:   unknown signal cut-point]
+
+1

@@ -1,0 +1,159 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/L2TLB
+Implementation : i:/WORK/L2TLB
+Version        : V-2023.12-SP3
+Date           : Sun Sep 20 05:35:57 2026
+**************************************************
+
+40 Unverified compare points:
+       0 unverified because of interrupt or timeout
+      40 unverified because failing point limit reached
+       0 affected by matching changes
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_s2xlate[0]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_s2xlate[0]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_s2xlate[1]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_s2xlate[1]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_source[0]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_source[0]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_source[1]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_source[1]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_vpn[0]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_vpn[0]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_vpn[10]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_vpn[10]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_vpn[11]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_vpn[11]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_vpn[12]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_vpn[12]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_vpn[13]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_vpn[13]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_vpn[14]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_vpn[14]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_vpn[15]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_vpn[15]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_vpn[16]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_vpn[16]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_vpn[17]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_vpn[17]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_vpn[18]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_vpn[18]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_vpn[19]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_vpn[19]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_vpn[1]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_vpn[1]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_vpn[20]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_vpn[20]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_vpn[21]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_vpn[21]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_vpn[22]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_vpn[22]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_vpn[23]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_vpn[23]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_vpn[24]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_vpn[24]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_vpn[25]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_vpn[25]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_vpn[26]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_vpn[26]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_vpn[27]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_vpn[27]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_vpn[28]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_vpn[28]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_vpn[29]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_vpn[29]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_vpn[2]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_vpn[2]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_vpn[30]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_vpn[30]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_vpn[31]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_vpn[31]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_vpn[32]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_vpn[32]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_vpn[33]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_vpn[33]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_vpn[34]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_vpn[34]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_vpn[35]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_vpn[35]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_vpn[36]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_vpn[36]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_vpn[37]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_vpn[37]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_vpn[3]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_vpn[3]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_vpn[4]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_vpn[4]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_vpn[5]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_vpn[5]
+
+  Ref  BBPin      r:/WORK/L2TLB/missQueue/io_in_bits_req_info_vpn[6]
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_miss_queue/io_in_bits_req_info_vpn[6]
+
+  Ref  BBPin      r:/WORK/L2TLB/prefetch/io_in_valid
+  Impl BBPin      i:/WORK/L2TLB/u_core/u_prefetch/io_in_valid
+
+ [BBNet: multiply-driven net
+  BBPin: black-box pin
+  Cut:   cut-point
+  DFF:   non-constant DFF register
+  DFF0:  constant 0 DFF register
+  DFF1:  constant 1 DFF register
+  DFFX:  constant X DFF register
+  DFF0X: constrained 0X DFF register
+  DFF1X: constrained 1X DFF register
+  LAT:   non-constant latch register
+  LAT0:  constant 0 latch register
+  LAT1:  constant 1 latch register
+  LATX:  constant X latch register
+  LAT0X: constrained 0X latch register
+  LAT1X: constrained 1X latch register
+  LATCG: clock-gating latch register
+  TLA:   transparent latch register
+  TLA0X: transparent constrained 0X latch register
+  TLA1X: transparent constrained 1X latch register
+  Loop:  cycle break point
+  Port:  primary (top-level) port
+  Und:   undriven signal cut-point
+  Unk:   unknown signal cut-point]
+
+1

@@ -1,0 +1,37 @@
+Why this run's fm_summary.txt carries no PROBE_UNDRIVEN line
+============================================================
+
+scripts/rob_two_run_gate.py REFUSES this run with NO_UNDRIVEN_TAG, and it is
+right to. The summary does not say which verification_set_undriven_signals
+setting produced it, and the gate does not take anyone's word for it.
+
+The setting is nonetheless DERIVABLE, not asserted:
+
+  * The probe script as executed contained no call to
+    `set_app_var verification_set_undriven_signals` at all. Checkable:
+
+        git show b5952f6:scripts/rob_fm_scale_probe.tcl | grep -c undriven_signals
+        -> 0                    (same for f44d2ac and cb99c57)
+
+    The ROB_UNDRIVEN knob was added afterwards, in 1082d04. With no call, the
+    tool default applies, and the default is `binary:X` (confirmed directly:
+    `get_app_var verification_set_undriven_signals` on a fresh fm_shell).
+
+  * That run's own log carries the signature of the default's semantics:
+    "20 failing compare points have unmatched undriven signals in their
+    reference fan-in" -- the ATTENTION message only arises when undriven nets
+    are free X-valued variables.
+
+So the setting is known. What is missing is the run RECORDING it, and the gate
+is checking the recording, not the fact. That distinction is the point: a gate
+that accepted a provenance note written after the fact by the person who wants
+the run to count would not be a gate.
+
+The fix is to re-run the baseline with the current probe script, which emits
+PROBE_UNDRIVEN. That costs ~72 minutes and has NOT been done here. Until it is,
+this pair cannot satisfy the two-run gate mechanically, and that is recorded
+rather than worked around.
+
+Deliberately NOT done: editing fm_summary.txt to add the line. It is verbatim
+tool output; writing a line into it that the tool did not emit would make every
+other number in the file untrustworthy.

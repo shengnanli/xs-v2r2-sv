@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/SRAMTemplate_124
+Implementation : i:/WORK/SRAMTemplate_124
+Version        : V-2023.12-SP3
+Date           : Mon Sep 14 12:34:34 2026
+**************************************************
+
+No failing compare points.
+
+1

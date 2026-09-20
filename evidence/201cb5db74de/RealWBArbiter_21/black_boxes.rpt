@@ -1,0 +1,72 @@
+**************************************************
+Report         : black_boxes
+
+Reference      : r:/WORK/RealWBArbiter_21
+Implementation : i:/WORK/RealWBArbiter_21
+Version        : V-2023.12-SP3
+Date           : Sun Sep 20 03:27:20 2026
+**************************************************
+Information: Reporting black boxes for current reference and implementation designs. (FM-184)
+
+ ___________________________________________________
+|                                                   |
+|  Legend:                                          |
+|           Black Box Attributes                    |
+|              s = Set with set_black_box command   |
+|              i = Module read with -interface_only |
+|              u = Unresolved design module         |
+|              e = Empty design module              |
+|              * = Unlinked design module           |
+|             ut = Unread tech cells pins           |
+|              L = Linked to non-black box design   |
+|             cp = Cutpoint blackbox                |
+|             ir = Internal rounded blackbox        |
+|              f = Formality Power Model            |
+|              m = Technology Macro cell (.db)      |
+|___________________________________________________|
+
+
+##################################################################
+####    DESIGN LIBRARY - i:/WORK
+##################################################################
+Type  Design Name
+----  ----------
+e *    RealWBArbiter
+
+       Instances : 0
+
+e *    RealWBArbiter_1
+
+       Instances : 0
+
+e *    RealWBArbiter_14
+
+       Instances : 0
+
+e *    RealWBArbiter_15
+
+       Instances : 0
+
+e *    RealWBArbiter_2
+
+       Instances : 0
+
+e *    RealWBArbiter_20
+
+       Instances : 0
+
+e *    RealWBArbiter_26
+
+       Instances : 0
+
+e *    RealWBArbiter_3
+
+       Instances : 0
+
+e *    xs_PriorityArbSelect
+
+       Instances : 0
+
+
+1
+
