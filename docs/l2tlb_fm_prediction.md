@@ -221,3 +221,27 @@ G0 标定数也逐个核过（`xs-v2r2-sv/scripts/sidecar/signoff-evidence-delta
 `53fdd531` 的 `unread_notcompared` 仍是 809、`constant_reg` 33、`unmatched` 全 0、
 `matched_blackbox_pairs` 8、无 `dont_verify`。
 验收判定仍是 PARTIAL，理由是 8 个黑盒 child 一个都没签核（见 `verif/allow/L2TLB.json`）。
+
+## 4. 合 main 之后在 tip 上重测一遍（HEAD `cc02fb0c`，不是引用旧数）
+
+FM（`evidence/bff5fab57d56/L2TLB/`）：
+`native SUCCEEDED / passing 28263 / failing 0 / unverified 0 / aborted 0 /
+unread_notcompared 809 / constant_reg 33 / unmatched 全 0（unread_ref/impl 各 128）/
+dont_verify 空 / elab147 空 / relaxed_appvars 空`，
+`grep -cE "^ *Error:" fm.log` = 0（行首锚定）。
+verdict `PARTIAL`，reason `assembly_green_child_not_fm_target:Bitmap`，
+`make_receipt.py` 拒绝出 receipt（fail-closed）。
+
+UT（86 跑，全绿，errors 全 0）：
+
+| 口径 | 规模 | 结果 |
+|---|---|---|
+| 正式矩阵 | 3 seed(1/7/42) × 2 档(initreg 0/1) × 200k 拍 | 6/6 TEST PASSED |
+| 扩展扫种 | 40 seed(1..40) × 2 档 × 50k 拍 | 80/80 TEST PASSED |
+
+正式矩阵逐条：
+```
+seed 1  ir0/ir1  checks=200000 errors=0 a_fire=4961  (前半 2471 / 后半 2490)
+seed 7  ir0/ir1  checks=200000 errors=0 a_fire=5056  (前半 2571 / 后半 2485)
+seed 42 ir0/ir1  checks=200000 errors=0 a_fire=4886  (前半 2488 / 后半 2398)
+```
