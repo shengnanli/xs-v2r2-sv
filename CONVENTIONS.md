@@ -1231,3 +1231,40 @@ echo "GATE_RC=${rc}"     # ← lane 事后补的这一行
 48 个文件头只有一行（生成器只发"自动生成"字样，等于没说）、6 个变体文件整段复制了家族头
 （读者打开 `_1` 会看到一串本文件根本没有的模块清单）。两类都已修，且生成器本身已改，
 不会再产出这种文件。**结论：可读性必须和 FM 一样有可机器复跑的闸，否则一定会被工程压力挤掉。**
+
+## ★改共享核的参数名，VCS 只给一条 Warning —— 不变式就此静默失效★（2026-09-20，DelayN lane 实测）
+
+`rtl/common/xs_DelayNWithValid_core.sv` 从「固定两级」泛化成「n 级」时，参数
+`GOLDEN_DATA_REG_BITS` 改名成 `GOLDEN_REG_BITS`。两个**已签核**的薄文件没跟着改，
+仍按旧名字覆盖。实测：
+
+```
+make compile        -> COMPILE_RC=0
+compile.log         -> Warning-[AOUP] Attempt to override undefined parameter
+                       Attempting to override undefined parameter
+                       "GOLDEN_DATA_REG_BITS", will be ignored
+make run SEED=1     -> UT PASSED
+```
+
+VCS **只给 Warning 就静默忽略**，于是 `GOLDEN_REG_BITS` 取默认值
+`VALID_CHAIN + STAGES*WIDTH` —— 那恰好是核自己算出来的值，核里
+`initial` 的守恒等式变成**恒真**，「位宽/级数抄错就 time 0 `$fatal`」这条
+elaborate 期不变式被解除武装。电路本身没变（新参数的默认值 2/1 碰巧就是这两个
+变体的真值），所以 UT 绿、FM 也绿。**六道闸没有一道会响。**
+
+这类事故的形态值得单独记，因为它与「判据写错」不同：判据一个字没改，
+**它只是不再判任何东西了**。同一形态的其它入口：
+端口按名连接打错名（VCS 会报 `Error-[MPD]`，这个还好）、
+`defparam` 指到不存在的层次、宏名拼错后 `` `ifdef `` 静默取 else 支。
+
+**规矩**：
+1. 改任何被别处例化的模块的**参数名或端口名**时，同一个提交里必须把所有
+   例化点一起改，并且**跑一次编译看 `compile.log` 里的 AOUP 计数是不是 0**
+   ——「编过了」不等于「接对了」。
+2. 这道账由 `scripts/check_param_override.py` 静态把守（接在 `gate_all.sh` 里），
+   双向负测 `scripts/test_param_override_gate.py`（9 用例）。闸自己先自证
+   「看得见改变」：把事故当时的真实字节放回一棵临时 rtl 树，闸必须红。
+3. ★写这道闸时第一版正则就栽在同一类事上★：`[^;,()]*?(\w+)\s*=` 排除了 `(`，
+   而本仓的参数声明里有 `parameter logic [(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0] X = '0`
+   这种**维度表达式里带括号**的写法，于是它在 `xs_iq_entries_core` 上报了 30 多个
+   假阳性。闸的第一次运行结果对不上，先怀疑闸，不要先怀疑代码。
