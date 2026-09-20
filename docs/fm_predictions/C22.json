@@ -1,0 +1,9 @@
+{
+  "target": "C22",
+  "ut": "ArrayMulDataModule",
+  "regs": 0,
+  "outs": 2,
+  "expected": 2,
+  "merge_dup": "false",
+  "model_applicable": true
+}
