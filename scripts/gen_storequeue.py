@@ -282,6 +282,15 @@ HEAD = r'''// ==================================================================
 #   assign_direct assign io_x = <单个标识符>;  —— firtool 把逻辑提到具名 wire 了，
 #                 真正的逻辑在那根 wire 上，不在这条 assign 上
 #   assign_expr   assign 右边是真表达式（按标识符个数分档）
+#
+# cone 列 = 该输出的**组合扇入锥**里不同叶子网的个数（叶子 = 没有组合定义的网，
+# 即寄存器/输入端口/子模块输出）。这才是真实工作量的度量，比行数可靠。
+#
+# ★踩过的坑，写在这里免得下一个人再踩★：
+#   firtool 极少用 `assign`，绝大多数组合逻辑写成 **`wire [W] name = expr;`**
+#   （声明带初值）。只正则 `assign` 去建依赖图的话，本模块只能找到 357 条定义，
+#   而真实是 357 + 4788 = 5145 条 —— **漏掉 93%**，算出来的锥全是 1，
+#   会得出"这模块没有组合逻辑"的错误结论。本函数两种形式都收。
 # ---------------------------------------------------------------------------
 def outmap(path=GOLDEN):
     txt = path.read_text()
@@ -290,10 +299,17 @@ def outmap(path=GOLDEN):
     onames = set(n for d, w, n in outs)
     body = txt[txt.index(');', txt.index('module StoreQueue')):]
     drv = {}
+    dep = {}
     for s in body.split(';'):
-        m = re.search(r'assign\s+([A-Za-z_][A-Za-z0-9_]*)\s*=', s)
-        if m and m.group(1) in onames:
-            drv[m.group(1)] = ' '.join(s[m.end():].split())
+        m = re.search(r'\bassign\s+([A-Za-z_][A-Za-z0-9_]*)\s*=', s)
+        if not m:
+            m = re.search(r'\bwire\s+(?:\[[^\]]*\]\s*)?([A-Za-z_][A-Za-z0-9_]*)\s*=', s)
+        if not m:
+            continue
+        rhs = s[m.end():]
+        dep[m.group(1)] = set(re.findall(r'[A-Za-z_][A-Za-z0-9_]*', rhs))
+        if m.group(1) in onames and 'assign' in s[:m.start() + 8]:
+            drv[m.group(1)] = ' '.join(rhs.split())
     # 子模块实例的端口直连：.someport(io_xxx)
     inst = {}
     for im in re.finditer(r'^\s{2}([A-Z][A-Za-z0-9_]*)\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(',
@@ -310,8 +326,24 @@ def outmap(path=GOLDEN):
                               body[start:i]):
             if pm.group(2) in onames:
                 inst[pm.group(2)] = '%s.%s' % (im.group(1), pm.group(1))
+    memo = {}
+
+    def cone(n, stack):
+        if n in memo:
+            return memo[n]
+        if n not in dep or n in stack:
+            return {n}
+        stack.add(n)
+        acc = set()
+        for c in dep[n]:
+            acc |= cone(c, stack)
+        stack.discard(n)
+        memo[n] = acc
+        return acc
+
     rows = ['# 由 scripts/gen_storequeue.py --outmap 从 G1 golden 机械生成，勿手改',
-            '# output\twidth\tdriver_kind\tdriver_detail']
+            '# cone = 组合扇入锥的叶子网个数（叶子=寄存器/输入/子模块输出）',
+            '# output\twidth\tdriver_kind\tcone\tdriver_detail']
     for d, w, n in outs:
         if n in inst:
             kind, det = 'submodule', inst[n]
@@ -324,7 +356,8 @@ def outmap(path=GOLDEN):
                 kind, det = 'assign_expr%d' % ntok, (e[:120] + ('...' if len(e) > 120 else ''))
         else:
             kind, det = 'UNDRIVEN', ''
-        rows.append('%s\t%s\t%s\t%s' % (n, w if w else '[0:0]', kind, det))
+        cn = len(cone(n, set())) if n in dep else 0
+        rows.append('%s\t%s\t%s\t%d\t%s' % (n, w if w else '[0:0]', kind, cn, det))
     return '\n'.join(rows) + '\n'
 
 def emit(chans, scalars):

@@ -1,401 +1,402 @@
 # 由 scripts/gen_storequeue.py --outmap 从 G1 golden 机械生成，勿手改
-# output	width	driver_kind	driver_detail
-io_enq_canAccept	[0:0]	assign_direct	allowEnqueue
-io_sbuffer_0_valid	[0:0]	assign_direct	_dataBuffer_io_deq_0_valid
-io_sbuffer_0_bits_vaddr	[49:0]	submodule	DatamoduleResultBuffer.io_deq_0_bits_vaddr
-io_sbuffer_0_bits_data	[127:0]	submodule	DatamoduleResultBuffer.io_deq_0_bits_data
-io_sbuffer_0_bits_mask	[15:0]	submodule	DatamoduleResultBuffer.io_deq_0_bits_mask
-io_sbuffer_0_bits_addr	[47:0]	submodule	DatamoduleResultBuffer.io_deq_0_bits_addr
-io_sbuffer_0_bits_wline	[0:0]	assign_direct	io_sbuffer_0_bits_wline_0
-io_sbuffer_0_bits_vecValid	[0:0]	assign_direct	_dataBuffer_io_deq_0_bits_vecValid
-io_sbuffer_1_valid	[0:0]	assign_direct	_dataBuffer_io_deq_1_valid
-io_sbuffer_1_bits_vaddr	[49:0]	submodule	DatamoduleResultBuffer.io_deq_1_bits_vaddr
-io_sbuffer_1_bits_data	[127:0]	submodule	DatamoduleResultBuffer.io_deq_1_bits_data
-io_sbuffer_1_bits_mask	[15:0]	submodule	DatamoduleResultBuffer.io_deq_1_bits_mask
-io_sbuffer_1_bits_addr	[47:0]	submodule	DatamoduleResultBuffer.io_deq_1_bits_addr
-io_sbuffer_1_bits_wline	[0:0]	assign_direct	io_sbuffer_1_bits_wline_0
-io_sbuffer_1_bits_vecValid	[0:0]	assign_direct	_dataBuffer_io_deq_1_bits_vecValid
-io_cmoOpReq_valid	[0:0]	assign_direct	io_cmoOpReq_valid_0
-io_cmoOpReq_bits_opcode	[2:0]	assign_expr2	{1'h0, uncacheUop_fuOpType[1:0]}
-io_cmoOpReq_bits_address	[63:0]	assign_direct	cmoInvalEvent_cmo_inval_addr
-io_cmoOpResp_ready	[0:0]	assign_direct	io_cmoOpResp_ready_0
-io_cboZeroStout_valid	[0:0]	assign_direct	io_cboZeroStout_valid_0
-io_cboZeroStout_bits_uop_exceptionVec_0	[0:0]	assign_direct	cboZeroUop_exceptionVec_0
-io_cboZeroStout_bits_uop_exceptionVec_1	[0:0]	assign_direct	cboZeroUop_exceptionVec_1
-io_cboZeroStout_bits_uop_exceptionVec_2	[0:0]	assign_direct	cboZeroUop_exceptionVec_2
-io_cboZeroStout_bits_uop_exceptionVec_3	[0:0]	assign_direct	cboZeroUop_exceptionVec_3
-io_cboZeroStout_bits_uop_exceptionVec_4	[0:0]	assign_direct	cboZeroUop_exceptionVec_4
-io_cboZeroStout_bits_uop_exceptionVec_5	[0:0]	assign_direct	cboZeroUop_exceptionVec_5
-io_cboZeroStout_bits_uop_exceptionVec_6	[0:0]	assign_direct	cboZeroUop_exceptionVec_6
-io_cboZeroStout_bits_uop_exceptionVec_7	[0:0]	assign_direct	cboZeroUop_exceptionVec_7
-io_cboZeroStout_bits_uop_exceptionVec_8	[0:0]	assign_direct	cboZeroUop_exceptionVec_8
-io_cboZeroStout_bits_uop_exceptionVec_9	[0:0]	assign_direct	cboZeroUop_exceptionVec_9
-io_cboZeroStout_bits_uop_exceptionVec_10	[0:0]	assign_direct	cboZeroUop_exceptionVec_10
-io_cboZeroStout_bits_uop_exceptionVec_11	[0:0]	assign_direct	cboZeroUop_exceptionVec_11
-io_cboZeroStout_bits_uop_exceptionVec_12	[0:0]	assign_direct	cboZeroUop_exceptionVec_12
-io_cboZeroStout_bits_uop_exceptionVec_13	[0:0]	assign_direct	cboZeroUop_exceptionVec_13
-io_cboZeroStout_bits_uop_exceptionVec_14	[0:0]	assign_direct	cboZeroUop_exceptionVec_14
-io_cboZeroStout_bits_uop_exceptionVec_15	[0:0]	assign_direct	cboZeroUop_exceptionVec_15
-io_cboZeroStout_bits_uop_exceptionVec_16	[0:0]	assign_direct	cboZeroUop_exceptionVec_16
-io_cboZeroStout_bits_uop_exceptionVec_17	[0:0]	assign_direct	cboZeroUop_exceptionVec_17
-io_cboZeroStout_bits_uop_exceptionVec_18	[0:0]	assign_direct	cboZeroUop_exceptionVec_18
-io_cboZeroStout_bits_uop_exceptionVec_19	[0:0]	assign_direct	cboZeroUop_exceptionVec_19
-io_cboZeroStout_bits_uop_exceptionVec_20	[0:0]	assign_direct	cboZeroUop_exceptionVec_20
-io_cboZeroStout_bits_uop_exceptionVec_21	[0:0]	assign_direct	cboZeroUop_exceptionVec_21
-io_cboZeroStout_bits_uop_exceptionVec_22	[0:0]	assign_direct	cboZeroUop_exceptionVec_22
-io_cboZeroStout_bits_uop_exceptionVec_23	[0:0]	assign_direct	cboZeroUop_exceptionVec_23
-io_cboZeroStout_bits_uop_trigger	[3:0]	assign_direct	cboZeroUop_trigger
-io_cboZeroStout_bits_uop_rfWen	[0:0]	assign_direct	cboZeroUop_rfWen
-io_cboZeroStout_bits_uop_flushPipe	[0:0]	assign_direct	cboZeroUop_flushPipe
-io_cboZeroStout_bits_uop_pdest	[7:0]	assign_direct	cboZeroUop_pdest
-io_cboZeroStout_bits_uop_robIdx_flag	[0:0]	assign_direct	cboZeroUop_robIdx_flag
-io_cboZeroStout_bits_uop_robIdx_value	[7:0]	assign_direct	cboZeroUop_robIdx_value
-io_cboZeroStout_bits_uop_debugInfo_eliminatedMove	[0:0]	assign_direct	cboZeroUop_debugInfo_eliminatedMove
-io_cboZeroStout_bits_uop_debugInfo_renameTime	[63:0]	assign_direct	cboZeroUop_debugInfo_renameTime
-io_cboZeroStout_bits_uop_debugInfo_dispatchTime	[63:0]	assign_direct	cboZeroUop_debugInfo_dispatchTime
-io_cboZeroStout_bits_uop_debugInfo_enqRsTime	[63:0]	assign_direct	cboZeroUop_debugInfo_enqRsTime
-io_cboZeroStout_bits_uop_debugInfo_selectTime	[63:0]	assign_direct	cboZeroUop_debugInfo_selectTime
-io_cboZeroStout_bits_uop_debugInfo_issueTime	[63:0]	assign_direct	cboZeroUop_debugInfo_issueTime
-io_cboZeroStout_bits_uop_debugInfo_writebackTime	[63:0]	assign_direct	cboZeroUop_debugInfo_writebackTime
-io_cboZeroStout_bits_uop_debugInfo_runahead_checkpoint_id	[63:0]	assign_direct	cboZeroUop_debugInfo_runahead_checkpoint_id
-io_cboZeroStout_bits_uop_debugInfo_tlbFirstReqTime	[63:0]	assign_direct	cboZeroUop_debugInfo_tlbFirstReqTime
-io_cboZeroStout_bits_uop_debugInfo_tlbRespTime	[63:0]	assign_direct	cboZeroUop_debugInfo_tlbRespTime
-io_cboZeroStout_bits_uop_debug_seqNum_seqNum	[55:0]	assign_direct	cboZeroUop_debug_seqNum_seqNum
-io_cboZeroStout_bits_uop_debug_seqNum_uopIdx	[7:0]	assign_direct	cboZeroUop_debug_seqNum_uopIdx
-io_cboZeroStout_bits_uop_sqIdx_flag	[0:0]	assign_direct	cboZeroSqIdx_flag
-io_cboZeroStout_bits_uop_sqIdx_value	[5:0]	assign_direct	cboZeroSqIdx_value
-io_mmioStout_valid	[0:0]	assign_direct	io_mmioStout_valid_0
-io_mmioStout_bits_uop_exceptionVec_7	[0:0]	assign_direct	uncacheUop_exceptionVec_7
-io_mmioStout_bits_uop_exceptionVec_19	[0:0]	assign_direct	uncacheUop_exceptionVec_19
-io_mmioStout_bits_uop_rfWen	[0:0]	assign_direct	uncacheUop_rfWen
-io_mmioStout_bits_uop_flushPipe	[0:0]	assign_direct	deqCanDoCbo
-io_mmioStout_bits_uop_pdest	[7:0]	assign_direct	uncacheUop_pdest
-io_mmioStout_bits_uop_robIdx_flag	[0:0]	assign_direct	uncacheUop_robIdx_flag
-io_mmioStout_bits_uop_robIdx_value	[7:0]	assign_direct	uncacheUop_robIdx_value
-io_mmioStout_bits_uop_debugInfo_eliminatedMove	[0:0]	assign_direct	uncacheUop_debugInfo_eliminatedMove
-io_mmioStout_bits_uop_debugInfo_renameTime	[63:0]	assign_direct	uncacheUop_debugInfo_renameTime
-io_mmioStout_bits_uop_debugInfo_dispatchTime	[63:0]	assign_direct	uncacheUop_debugInfo_dispatchTime
-io_mmioStout_bits_uop_debugInfo_enqRsTime	[63:0]	assign_direct	uncacheUop_debugInfo_enqRsTime
-io_mmioStout_bits_uop_debugInfo_selectTime	[63:0]	assign_direct	uncacheUop_debugInfo_selectTime
-io_mmioStout_bits_uop_debugInfo_issueTime	[63:0]	assign_direct	uncacheUop_debugInfo_issueTime
-io_mmioStout_bits_uop_debugInfo_writebackTime	[63:0]	assign_direct	uncacheUop_debugInfo_writebackTime
-io_mmioStout_bits_uop_debugInfo_runahead_checkpoint_id	[63:0]	assign_direct	uncacheUop_debugInfo_runahead_checkpoint_id
-io_mmioStout_bits_uop_debugInfo_tlbFirstReqTime	[63:0]	assign_direct	uncacheUop_debugInfo_tlbFirstReqTime
-io_mmioStout_bits_uop_debugInfo_tlbRespTime	[63:0]	assign_direct	uncacheUop_debugInfo_tlbRespTime
-io_mmioStout_bits_uop_debug_seqNum_seqNum	[55:0]	assign_direct	uncacheUop_debug_seqNum_seqNum
-io_mmioStout_bits_uop_debug_seqNum_uopIdx	[7:0]	assign_direct	uncacheUop_debug_seqNum_uopIdx
-io_mmioStout_bits_uop_sqIdx_flag	[0:0]	assign_direct	deqPtrExt_0_flag
-io_mmioStout_bits_uop_sqIdx_value	[5:0]	assign_direct	deqPtrExt_0_value
-io_mmioStout_bits_data	[63:0]	assign_expr3	_paddrModule_io_rdata_0[3] ? _dataModule_io_rdata_0_data[127:64] : _dataModule_io_rdata_0_data[63:0]
-io_mmioStout_bits_debug_isMMIO	[0:0]	assign_direct	~_GEN_405
-io_forward_0_forwardMask_0	[0:0]	submodule	SQDataModule.io_forwardMask_0_0
-io_forward_0_forwardMask_1	[0:0]	submodule	SQDataModule.io_forwardMask_0_1
-io_forward_0_forwardMask_2	[0:0]	submodule	SQDataModule.io_forwardMask_0_2
-io_forward_0_forwardMask_3	[0:0]	submodule	SQDataModule.io_forwardMask_0_3
-io_forward_0_forwardMask_4	[0:0]	submodule	SQDataModule.io_forwardMask_0_4
-io_forward_0_forwardMask_5	[0:0]	submodule	SQDataModule.io_forwardMask_0_5
-io_forward_0_forwardMask_6	[0:0]	submodule	SQDataModule.io_forwardMask_0_6
-io_forward_0_forwardMask_7	[0:0]	submodule	SQDataModule.io_forwardMask_0_7
-io_forward_0_forwardMask_8	[0:0]	submodule	SQDataModule.io_forwardMask_0_8
-io_forward_0_forwardMask_9	[0:0]	submodule	SQDataModule.io_forwardMask_0_9
-io_forward_0_forwardMask_10	[0:0]	submodule	SQDataModule.io_forwardMask_0_10
-io_forward_0_forwardMask_11	[0:0]	submodule	SQDataModule.io_forwardMask_0_11
-io_forward_0_forwardMask_12	[0:0]	submodule	SQDataModule.io_forwardMask_0_12
-io_forward_0_forwardMask_13	[0:0]	submodule	SQDataModule.io_forwardMask_0_13
-io_forward_0_forwardMask_14	[0:0]	submodule	SQDataModule.io_forwardMask_0_14
-io_forward_0_forwardMask_15	[0:0]	submodule	SQDataModule.io_forwardMask_0_15
-io_forward_0_forwardData_0	[7:0]	submodule	SQDataModule.io_forwardData_0_0
-io_forward_0_forwardData_1	[7:0]	submodule	SQDataModule.io_forwardData_0_1
-io_forward_0_forwardData_2	[7:0]	submodule	SQDataModule.io_forwardData_0_2
-io_forward_0_forwardData_3	[7:0]	submodule	SQDataModule.io_forwardData_0_3
-io_forward_0_forwardData_4	[7:0]	submodule	SQDataModule.io_forwardData_0_4
-io_forward_0_forwardData_5	[7:0]	submodule	SQDataModule.io_forwardData_0_5
-io_forward_0_forwardData_6	[7:0]	submodule	SQDataModule.io_forwardData_0_6
-io_forward_0_forwardData_7	[7:0]	submodule	SQDataModule.io_forwardData_0_7
-io_forward_0_forwardData_8	[7:0]	submodule	SQDataModule.io_forwardData_0_8
-io_forward_0_forwardData_9	[7:0]	submodule	SQDataModule.io_forwardData_0_9
-io_forward_0_forwardData_10	[7:0]	submodule	SQDataModule.io_forwardData_0_10
-io_forward_0_forwardData_11	[7:0]	submodule	SQDataModule.io_forwardData_0_11
-io_forward_0_forwardData_12	[7:0]	submodule	SQDataModule.io_forwardData_0_12
-io_forward_0_forwardData_13	[7:0]	submodule	SQDataModule.io_forwardData_0_13
-io_forward_0_forwardData_14	[7:0]	submodule	SQDataModule.io_forwardData_0_14
-io_forward_0_forwardData_15	[7:0]	submodule	SQDataModule.io_forwardData_0_15
-io_forward_0_dataInvalid	[0:0]	assign_direct	io_forward_0_dataInvalid_REG
-io_forward_0_matchInvalid	[0:0]	assign_direct	vaddrMatchFailed_probe
-io_forward_0_addrInvalid	[0:0]	assign_expr3	io_forward_0_addrInvalid_r ? io_forward_0_addrInvalid_REG : (|addrInvalidMaskReg)
-io_forward_0_dataInvalidSqIdx_flag	[0:0]	assign_expr7	(|dataInvalidMaskReg) ? (~s2_differentFlag | dataInvalidSqIdx >= s2_deqPtrExt_value ? s2_deqPtrExt_flag : s2_enqPtrExt_f...
-io_forward_0_dataInvalidSqIdx_value	[5:0]	assign_expr3	(|dataInvalidMaskReg) ? dataInvalidSqIdx : io_forward_0_dataInvalidSqIdx_r_value
-io_forward_0_addrInvalidSqIdx_flag	[0:0]	assign_expr9	r_5_0 ? io_forward_0_addrInvalidSqIdx_r_flag : (|addrInvalidMaskReg) ? (~s2_differentFlag | addrInvalidSqIdx >= s2_deqPt...
-io_forward_0_addrInvalidSqIdx_value	[5:0]	assign_expr5	r_5_0 ? io_forward_0_addrInvalidSqIdx_r_value : (|addrInvalidMaskReg) ? addrInvalidSqIdx : io_forward_0_addrInvalidSqIdx...
-io_forward_1_forwardMask_0	[0:0]	submodule	SQDataModule.io_forwardMask_1_0
-io_forward_1_forwardMask_1	[0:0]	submodule	SQDataModule.io_forwardMask_1_1
-io_forward_1_forwardMask_2	[0:0]	submodule	SQDataModule.io_forwardMask_1_2
-io_forward_1_forwardMask_3	[0:0]	submodule	SQDataModule.io_forwardMask_1_3
-io_forward_1_forwardMask_4	[0:0]	submodule	SQDataModule.io_forwardMask_1_4
-io_forward_1_forwardMask_5	[0:0]	submodule	SQDataModule.io_forwardMask_1_5
-io_forward_1_forwardMask_6	[0:0]	submodule	SQDataModule.io_forwardMask_1_6
-io_forward_1_forwardMask_7	[0:0]	submodule	SQDataModule.io_forwardMask_1_7
-io_forward_1_forwardMask_8	[0:0]	submodule	SQDataModule.io_forwardMask_1_8
-io_forward_1_forwardMask_9	[0:0]	submodule	SQDataModule.io_forwardMask_1_9
-io_forward_1_forwardMask_10	[0:0]	submodule	SQDataModule.io_forwardMask_1_10
-io_forward_1_forwardMask_11	[0:0]	submodule	SQDataModule.io_forwardMask_1_11
-io_forward_1_forwardMask_12	[0:0]	submodule	SQDataModule.io_forwardMask_1_12
-io_forward_1_forwardMask_13	[0:0]	submodule	SQDataModule.io_forwardMask_1_13
-io_forward_1_forwardMask_14	[0:0]	submodule	SQDataModule.io_forwardMask_1_14
-io_forward_1_forwardMask_15	[0:0]	submodule	SQDataModule.io_forwardMask_1_15
-io_forward_1_forwardData_0	[7:0]	submodule	SQDataModule.io_forwardData_1_0
-io_forward_1_forwardData_1	[7:0]	submodule	SQDataModule.io_forwardData_1_1
-io_forward_1_forwardData_2	[7:0]	submodule	SQDataModule.io_forwardData_1_2
-io_forward_1_forwardData_3	[7:0]	submodule	SQDataModule.io_forwardData_1_3
-io_forward_1_forwardData_4	[7:0]	submodule	SQDataModule.io_forwardData_1_4
-io_forward_1_forwardData_5	[7:0]	submodule	SQDataModule.io_forwardData_1_5
-io_forward_1_forwardData_6	[7:0]	submodule	SQDataModule.io_forwardData_1_6
-io_forward_1_forwardData_7	[7:0]	submodule	SQDataModule.io_forwardData_1_7
-io_forward_1_forwardData_8	[7:0]	submodule	SQDataModule.io_forwardData_1_8
-io_forward_1_forwardData_9	[7:0]	submodule	SQDataModule.io_forwardData_1_9
-io_forward_1_forwardData_10	[7:0]	submodule	SQDataModule.io_forwardData_1_10
-io_forward_1_forwardData_11	[7:0]	submodule	SQDataModule.io_forwardData_1_11
-io_forward_1_forwardData_12	[7:0]	submodule	SQDataModule.io_forwardData_1_12
-io_forward_1_forwardData_13	[7:0]	submodule	SQDataModule.io_forwardData_1_13
-io_forward_1_forwardData_14	[7:0]	submodule	SQDataModule.io_forwardData_1_14
-io_forward_1_forwardData_15	[7:0]	submodule	SQDataModule.io_forwardData_1_15
-io_forward_1_dataInvalid	[0:0]	assign_direct	io_forward_1_dataInvalid_REG
-io_forward_1_matchInvalid	[0:0]	assign_direct	vaddrMatchFailed_1_probe
-io_forward_1_addrInvalid	[0:0]	assign_expr3	io_forward_1_addrInvalid_r ? io_forward_1_addrInvalid_REG : (|addrInvalidMaskReg_1)
-io_forward_1_dataInvalidSqIdx_flag	[0:0]	assign_expr7	(|dataInvalidMaskReg_1) ? (~s2_differentFlag_1 | dataInvalidSqIdx_1 >= s2_deqPtrExt_1_value ? s2_deqPtrExt_1_flag : s2_e...
-io_forward_1_dataInvalidSqIdx_value	[5:0]	assign_expr3	(|dataInvalidMaskReg_1) ? dataInvalidSqIdx_1 : io_forward_1_dataInvalidSqIdx_r_value
-io_forward_1_addrInvalidSqIdx_flag	[0:0]	assign_expr9	r_9_0 ? io_forward_1_addrInvalidSqIdx_r_flag : (|addrInvalidMaskReg_1) ? (~s2_differentFlag_1 | addrInvalidSqIdx_1 >= s2...
-io_forward_1_addrInvalidSqIdx_value	[5:0]	assign_expr5	r_9_0 ? io_forward_1_addrInvalidSqIdx_r_value : (|addrInvalidMaskReg_1) ? addrInvalidSqIdx_1 : io_forward_1_addrInvalidS...
-io_forward_2_forwardMask_0	[0:0]	submodule	SQDataModule.io_forwardMask_2_0
-io_forward_2_forwardMask_1	[0:0]	submodule	SQDataModule.io_forwardMask_2_1
-io_forward_2_forwardMask_2	[0:0]	submodule	SQDataModule.io_forwardMask_2_2
-io_forward_2_forwardMask_3	[0:0]	submodule	SQDataModule.io_forwardMask_2_3
-io_forward_2_forwardMask_4	[0:0]	submodule	SQDataModule.io_forwardMask_2_4
-io_forward_2_forwardMask_5	[0:0]	submodule	SQDataModule.io_forwardMask_2_5
-io_forward_2_forwardMask_6	[0:0]	submodule	SQDataModule.io_forwardMask_2_6
-io_forward_2_forwardMask_7	[0:0]	submodule	SQDataModule.io_forwardMask_2_7
-io_forward_2_forwardMask_8	[0:0]	submodule	SQDataModule.io_forwardMask_2_8
-io_forward_2_forwardMask_9	[0:0]	submodule	SQDataModule.io_forwardMask_2_9
-io_forward_2_forwardMask_10	[0:0]	submodule	SQDataModule.io_forwardMask_2_10
-io_forward_2_forwardMask_11	[0:0]	submodule	SQDataModule.io_forwardMask_2_11
-io_forward_2_forwardMask_12	[0:0]	submodule	SQDataModule.io_forwardMask_2_12
-io_forward_2_forwardMask_13	[0:0]	submodule	SQDataModule.io_forwardMask_2_13
-io_forward_2_forwardMask_14	[0:0]	submodule	SQDataModule.io_forwardMask_2_14
-io_forward_2_forwardMask_15	[0:0]	submodule	SQDataModule.io_forwardMask_2_15
-io_forward_2_forwardData_0	[7:0]	submodule	SQDataModule.io_forwardData_2_0
-io_forward_2_forwardData_1	[7:0]	submodule	SQDataModule.io_forwardData_2_1
-io_forward_2_forwardData_2	[7:0]	submodule	SQDataModule.io_forwardData_2_2
-io_forward_2_forwardData_3	[7:0]	submodule	SQDataModule.io_forwardData_2_3
-io_forward_2_forwardData_4	[7:0]	submodule	SQDataModule.io_forwardData_2_4
-io_forward_2_forwardData_5	[7:0]	submodule	SQDataModule.io_forwardData_2_5
-io_forward_2_forwardData_6	[7:0]	submodule	SQDataModule.io_forwardData_2_6
-io_forward_2_forwardData_7	[7:0]	submodule	SQDataModule.io_forwardData_2_7
-io_forward_2_forwardData_8	[7:0]	submodule	SQDataModule.io_forwardData_2_8
-io_forward_2_forwardData_9	[7:0]	submodule	SQDataModule.io_forwardData_2_9
-io_forward_2_forwardData_10	[7:0]	submodule	SQDataModule.io_forwardData_2_10
-io_forward_2_forwardData_11	[7:0]	submodule	SQDataModule.io_forwardData_2_11
-io_forward_2_forwardData_12	[7:0]	submodule	SQDataModule.io_forwardData_2_12
-io_forward_2_forwardData_13	[7:0]	submodule	SQDataModule.io_forwardData_2_13
-io_forward_2_forwardData_14	[7:0]	submodule	SQDataModule.io_forwardData_2_14
-io_forward_2_forwardData_15	[7:0]	submodule	SQDataModule.io_forwardData_2_15
-io_forward_2_dataInvalid	[0:0]	assign_direct	io_forward_2_dataInvalid_REG
-io_forward_2_matchInvalid	[0:0]	assign_direct	vaddrMatchFailed_2_probe
-io_forward_2_addrInvalid	[0:0]	assign_expr3	io_forward_2_addrInvalid_r ? io_forward_2_addrInvalid_REG : (|addrInvalidMaskReg_2)
-io_forward_2_dataInvalidSqIdx_flag	[0:0]	assign_expr7	(|dataInvalidMaskReg_2) ? (~s2_differentFlag_2 | dataInvalidSqIdx_2 >= s2_deqPtrExt_2_value ? s2_deqPtrExt_2_flag : s2_e...
-io_forward_2_dataInvalidSqIdx_value	[5:0]	assign_expr3	(|dataInvalidMaskReg_2) ? dataInvalidSqIdx_2 : io_forward_2_dataInvalidSqIdx_r_value
-io_forward_2_addrInvalidSqIdx_flag	[0:0]	assign_expr9	r_13_0 ? io_forward_2_addrInvalidSqIdx_r_flag : (|addrInvalidMaskReg_2) ? (~s2_differentFlag_2 | addrInvalidSqIdx_2 >= s...
-io_forward_2_addrInvalidSqIdx_value	[5:0]	assign_expr5	r_13_0 ? io_forward_2_addrInvalidSqIdx_r_value : (|addrInvalidMaskReg_2) ? addrInvalidSqIdx_2 : io_forward_2_addrInvalid...
-io_rob_storeMmio	[0:0]	assign_direct	mmioReq_valid
-io_rob_storeMmioUop_robIdx_value	[7:0]	assign_direct	uncacheUop_robIdx_value
-io_uncache_req_valid	[0:0]	assign_direct	io_uncache_req_valid_0
-io_uncache_req_bits_robIdx_flag	[0:0]	assign_expr5	mmioReq_valid ? _GEN_382[mmioReq_bits_robIdx_next_r_value] : _GEN_382[ncReq_bits_robIdx_next_r_value]
-io_uncache_req_bits_robIdx_value	[7:0]	assign_expr5	mmioReq_valid ? _GEN_383[mmioReq_bits_robIdx_next_r_value] : _GEN_383[ncReq_bits_robIdx_next_r_value]
-io_uncache_req_bits_addr	[47:0]	assign_expr3	_GEN_404 ? _mmioReq_bits_addr_T_1 : _paddrModule_io_rdata_0
-io_uncache_req_bits_vaddr	[49:0]	assign_expr7	_GEN_404 ? 50'({_vaddrModule_io_rdata_0[49:6], 6'h0} + {44'h0, cboZeroOffset, 3'h0}) : _vaddrModule_io_rdata_0
-io_uncache_req_bits_data	[63:0]	assign_expr3	mmioReq_valid ? _mmioReq_bits_data_T_3 : _ncReq_bits_data_T_2
-io_uncache_req_bits_mask	[7:0]	assign_expr3	mmioReq_valid ? _mmioReq_bits_mask_T_3 : _ncReq_bits_mask_T_2
-io_uncache_req_bits_id	[6:0]	assign_expr3	mmioReq_valid ? mmioReq_bits_id : ncWaitRespPtrReg
-io_uncache_req_bits_nc	[0:0]	assign_direct	~mmioReq_valid
-io_uncache_req_bits_memBackTypeMM	[0:0]	assign_expr3	mmioReq_valid ? mmioReq_bits_memBackTypeMM : ncReq_bits_memBackTypeMM
-io_exceptionAddr_vaddr	[63:0]	submodule	StoreExceptionBuffer.io_exceptionAddr_vaddr
-io_exceptionAddr_vaNeedExt	[0:0]	submodule	StoreExceptionBuffer.io_exceptionAddr_vaNeedExt
-io_exceptionAddr_isHyper	[0:0]	submodule	StoreExceptionBuffer.io_exceptionAddr_isHyper
-io_exceptionAddr_gpaddr	[63:0]	submodule	StoreExceptionBuffer.io_exceptionAddr_gpaddr
-io_exceptionAddr_isForVSnonLeafPTE	[0:0]	submodule	StoreExceptionBuffer.io_exceptionAddr_isForVSnonLeafPTE
-io_flushSbuffer_valid	[0:0]	assign_expr5	deqCanDoCbo & ~cboFlushedSb & _io_flushSbuffer_valid_T_2 & ~io_flushSbuffer_empty | cboZeroFlushSb_next_r
-io_sqEmpty	[0:0]	assign_direct	io_sqEmpty_REG
-io_stAddrReadySqPtr_flag	[0:0]	assign_direct	addrReadyPtrExt_flag
-io_stAddrReadySqPtr_value	[5:0]	assign_direct	addrReadyPtrExt_value
-io_stAddrReadyVec_0	[0:0]	assign_direct	r_0
-io_stAddrReadyVec_1	[0:0]	assign_direct	r_1
-io_stAddrReadyVec_2	[0:0]	assign_direct	r_2
-io_stAddrReadyVec_3	[0:0]	assign_direct	r_3
-io_stAddrReadyVec_4	[0:0]	assign_direct	r_4
-io_stAddrReadyVec_5	[0:0]	assign_direct	r_5
-io_stAddrReadyVec_6	[0:0]	assign_direct	r_6
-io_stAddrReadyVec_7	[0:0]	assign_direct	r_7
-io_stAddrReadyVec_8	[0:0]	assign_direct	r_8
-io_stAddrReadyVec_9	[0:0]	assign_direct	r_9
-io_stAddrReadyVec_10	[0:0]	assign_direct	r_10
-io_stAddrReadyVec_11	[0:0]	assign_direct	r_11
-io_stAddrReadyVec_12	[0:0]	assign_direct	r_12
-io_stAddrReadyVec_13	[0:0]	assign_direct	r_13
-io_stAddrReadyVec_14	[0:0]	assign_direct	r_14
-io_stAddrReadyVec_15	[0:0]	assign_direct	r_15
-io_stAddrReadyVec_16	[0:0]	assign_direct	r_16
-io_stAddrReadyVec_17	[0:0]	assign_direct	r_17
-io_stAddrReadyVec_18	[0:0]	assign_direct	r_18
-io_stAddrReadyVec_19	[0:0]	assign_direct	r_19
-io_stAddrReadyVec_20	[0:0]	assign_direct	r_20
-io_stAddrReadyVec_21	[0:0]	assign_direct	r_21
-io_stAddrReadyVec_22	[0:0]	assign_direct	r_22
-io_stAddrReadyVec_23	[0:0]	assign_direct	r_23
-io_stAddrReadyVec_24	[0:0]	assign_direct	r_24
-io_stAddrReadyVec_25	[0:0]	assign_direct	r_25
-io_stAddrReadyVec_26	[0:0]	assign_direct	r_26
-io_stAddrReadyVec_27	[0:0]	assign_direct	r_27
-io_stAddrReadyVec_28	[0:0]	assign_direct	r_28
-io_stAddrReadyVec_29	[0:0]	assign_direct	r_29
-io_stAddrReadyVec_30	[0:0]	assign_direct	r_30
-io_stAddrReadyVec_31	[0:0]	assign_direct	r_31
-io_stAddrReadyVec_32	[0:0]	assign_direct	r_32
-io_stAddrReadyVec_33	[0:0]	assign_direct	r_33
-io_stAddrReadyVec_34	[0:0]	assign_direct	r_34
-io_stAddrReadyVec_35	[0:0]	assign_direct	r_35
-io_stAddrReadyVec_36	[0:0]	assign_direct	r_36
-io_stAddrReadyVec_37	[0:0]	assign_direct	r_37
-io_stAddrReadyVec_38	[0:0]	assign_direct	r_38
-io_stAddrReadyVec_39	[0:0]	assign_direct	r_39
-io_stAddrReadyVec_40	[0:0]	assign_direct	r_40
-io_stAddrReadyVec_41	[0:0]	assign_direct	r_41
-io_stAddrReadyVec_42	[0:0]	assign_direct	r_42
-io_stAddrReadyVec_43	[0:0]	assign_direct	r_43
-io_stAddrReadyVec_44	[0:0]	assign_direct	r_44
-io_stAddrReadyVec_45	[0:0]	assign_direct	r_45
-io_stAddrReadyVec_46	[0:0]	assign_direct	r_46
-io_stAddrReadyVec_47	[0:0]	assign_direct	r_47
-io_stAddrReadyVec_48	[0:0]	assign_direct	r_48
-io_stAddrReadyVec_49	[0:0]	assign_direct	r_49
-io_stAddrReadyVec_50	[0:0]	assign_direct	r_50
-io_stAddrReadyVec_51	[0:0]	assign_direct	r_51
-io_stAddrReadyVec_52	[0:0]	assign_direct	r_52
-io_stAddrReadyVec_53	[0:0]	assign_direct	r_53
-io_stAddrReadyVec_54	[0:0]	assign_direct	r_54
-io_stAddrReadyVec_55	[0:0]	assign_direct	r_55
-io_stDataReadySqPtr_flag	[0:0]	assign_direct	dataReadyPtrExt_flag
-io_stDataReadySqPtr_value	[5:0]	assign_direct	dataReadyPtrExt_value
-io_stDataReadyVec_0	[0:0]	assign_direct	r_1_0
-io_stDataReadyVec_1	[0:0]	assign_direct	r_1_1
-io_stDataReadyVec_2	[0:0]	assign_direct	r_1_2
-io_stDataReadyVec_3	[0:0]	assign_direct	r_1_3
-io_stDataReadyVec_4	[0:0]	assign_direct	r_1_4
-io_stDataReadyVec_5	[0:0]	assign_direct	r_1_5
-io_stDataReadyVec_6	[0:0]	assign_direct	r_1_6
-io_stDataReadyVec_7	[0:0]	assign_direct	r_1_7
-io_stDataReadyVec_8	[0:0]	assign_direct	r_1_8
-io_stDataReadyVec_9	[0:0]	assign_direct	r_1_9
-io_stDataReadyVec_10	[0:0]	assign_direct	r_1_10
-io_stDataReadyVec_11	[0:0]	assign_direct	r_1_11
-io_stDataReadyVec_12	[0:0]	assign_direct	r_1_12
-io_stDataReadyVec_13	[0:0]	assign_direct	r_1_13
-io_stDataReadyVec_14	[0:0]	assign_direct	r_1_14
-io_stDataReadyVec_15	[0:0]	assign_direct	r_1_15
-io_stDataReadyVec_16	[0:0]	assign_direct	r_1_16
-io_stDataReadyVec_17	[0:0]	assign_direct	r_1_17
-io_stDataReadyVec_18	[0:0]	assign_direct	r_1_18
-io_stDataReadyVec_19	[0:0]	assign_direct	r_1_19
-io_stDataReadyVec_20	[0:0]	assign_direct	r_1_20
-io_stDataReadyVec_21	[0:0]	assign_direct	r_1_21
-io_stDataReadyVec_22	[0:0]	assign_direct	r_1_22
-io_stDataReadyVec_23	[0:0]	assign_direct	r_1_23
-io_stDataReadyVec_24	[0:0]	assign_direct	r_1_24
-io_stDataReadyVec_25	[0:0]	assign_direct	r_1_25
-io_stDataReadyVec_26	[0:0]	assign_direct	r_1_26
-io_stDataReadyVec_27	[0:0]	assign_direct	r_1_27
-io_stDataReadyVec_28	[0:0]	assign_direct	r_1_28
-io_stDataReadyVec_29	[0:0]	assign_direct	r_1_29
-io_stDataReadyVec_30	[0:0]	assign_direct	r_1_30
-io_stDataReadyVec_31	[0:0]	assign_direct	r_1_31
-io_stDataReadyVec_32	[0:0]	assign_direct	r_1_32
-io_stDataReadyVec_33	[0:0]	assign_direct	r_1_33
-io_stDataReadyVec_34	[0:0]	assign_direct	r_1_34
-io_stDataReadyVec_35	[0:0]	assign_direct	r_1_35
-io_stDataReadyVec_36	[0:0]	assign_direct	r_1_36
-io_stDataReadyVec_37	[0:0]	assign_direct	r_1_37
-io_stDataReadyVec_38	[0:0]	assign_direct	r_1_38
-io_stDataReadyVec_39	[0:0]	assign_direct	r_1_39
-io_stDataReadyVec_40	[0:0]	assign_direct	r_1_40
-io_stDataReadyVec_41	[0:0]	assign_direct	r_1_41
-io_stDataReadyVec_42	[0:0]	assign_direct	r_1_42
-io_stDataReadyVec_43	[0:0]	assign_direct	r_1_43
-io_stDataReadyVec_44	[0:0]	assign_direct	r_1_44
-io_stDataReadyVec_45	[0:0]	assign_direct	r_1_45
-io_stDataReadyVec_46	[0:0]	assign_direct	r_1_46
-io_stDataReadyVec_47	[0:0]	assign_direct	r_1_47
-io_stDataReadyVec_48	[0:0]	assign_direct	r_1_48
-io_stDataReadyVec_49	[0:0]	assign_direct	r_1_49
-io_stDataReadyVec_50	[0:0]	assign_direct	r_1_50
-io_stDataReadyVec_51	[0:0]	assign_direct	r_1_51
-io_stDataReadyVec_52	[0:0]	assign_direct	r_1_52
-io_stDataReadyVec_53	[0:0]	assign_direct	r_1_53
-io_stDataReadyVec_54	[0:0]	assign_direct	r_1_54
-io_stDataReadyVec_55	[0:0]	assign_direct	r_1_55
-io_stIssuePtr_flag	[0:0]	assign_direct	enqPtrExt_0_flag
-io_stIssuePtr_value	[5:0]	assign_direct	enqPtrExt_0_value
-io_sqDeqPtr_flag	[0:0]	assign_direct	deqPtrExt_0_flag
-io_sqDeqPtr_value	[5:0]	assign_direct	deqPtrExt_0_value
-io_sqCommitPtr_flag	[0:0]	assign_direct	cmtPtrExt_0_flag
-io_sqCommitPtr_value	[5:0]	assign_direct	cmtPtrExt_0_value
-io_sqCommitUopIdx	[6:0]	assign_expr2	_GEN_381[cmtPtrExt_0_value]
-io_sqCommitRobIdx_flag	[0:0]	assign_direct	io_sqCommitRobIdx_flag_0
-io_sqCommitRobIdx_value	[7:0]	assign_direct	io_sqCommitRobIdx_value_0
-io_sqFull	[0:0]	assign_direct	~allowEnqueue
-io_sqCancelCnt	[5:0]	assign_direct	redirectCancelCount[5:0]
-io_sqDeq	[1:0]	assign_direct	io_sqDeq_REG
-io_sqDeqIsVec	[0:0]	assign_direct	io_sqDeqIsVec_0
-io_force_write	[0:0]	assign_direct	io_force_write_REG
-io_maControl_toStoreMisalignBuffer_sqPtr_flag	[0:0]	assign_direct	rdataPtrExt_0_flag
-io_maControl_toStoreMisalignBuffer_sqPtr_value	[5:0]	assign_direct	rdataPtrExt_0_value
-io_maControl_toStoreMisalignBuffer_doDeq	[0:0]	assign_expr2	_io_maControl_toStoreMisalignBuffer_doDeq_T & io_diffStore_pmaStore_0_valid_0
-io_maControl_toStoreMisalignBuffer_uop_uopIdx	[6:0]	assign_expr2	_GEN_381[rdataPtrExt_0_value]
-io_maControl_toStoreMisalignBuffer_uop_robIdx_flag	[0:0]	assign_direct	io_maControl_toStoreMisalignBuffer_uop_robIdx_flag_0
-io_maControl_toStoreMisalignBuffer_uop_robIdx_value	[7:0]	assign_direct	io_maControl_toStoreMisalignBuffer_uop_robIdx_value_0
-io_wfi_wfiSafe	[0:0]	assign_direct	io_wfi_wfiSafe_last_REG
-io_diffStore_diffInfo_0_uop_fuType	[34:0]	assign_expr2	_GEN_461[rdataPtrExt_0_value]
-io_diffStore_diffInfo_0_uop_fuOpType	[8:0]	assign_expr2	_GEN_379[rdataPtrExt_0_value]
-io_diffStore_diffInfo_0_uop_vpu_nf	[2:0]	assign_expr2	_GEN_462[rdataPtrExt_0_value]
-io_diffStore_diffInfo_0_uop_vpu_veew	[1:0]	assign_expr2	_GEN_463[rdataPtrExt_0_value]
-io_diffStore_diffInfo_0_uop_robIdx_value	[7:0]	assign_direct	io_diffStore_diffInfo_0_uop_robIdx_value_0
-io_diffStore_diffInfo_0_offset	[5:0]	assign_expr2	_GEN_464[rdataPtrExt_0_value]
-io_diffStore_diffInfo_1_uop_fuType	[34:0]	assign_expr2	_GEN_461[_GEN_460]
-io_diffStore_diffInfo_1_uop_fuOpType	[8:0]	assign_expr2	_GEN_379[_GEN_460]
-io_diffStore_diffInfo_1_uop_vpu_nf	[2:0]	assign_expr2	_GEN_462[_GEN_460]
-io_diffStore_diffInfo_1_uop_vpu_veew	[1:0]	assign_expr2	_GEN_463[_GEN_460]
-io_diffStore_diffInfo_1_uop_robIdx_value	[7:0]	assign_expr2	_GEN_383[_GEN_460]
-io_diffStore_diffInfo_1_offset	[5:0]	assign_expr2	_GEN_464[_GEN_460]
-io_diffStore_pmaStore_0_valid	[0:0]	assign_direct	io_diffStore_pmaStore_0_valid_0
-io_diffStore_pmaStore_0_bits_data	[127:0]	assign_direct	io_diffStore_pmaStore_0_bits_data_0
-io_diffStore_pmaStore_0_bits_mask	[15:0]	assign_direct	io_diffStore_pmaStore_0_bits_mask_0
-io_diffStore_pmaStore_0_bits_addr	[47:0]	assign_direct	io_diffStore_pmaStore_0_bits_addr_0
-io_diffStore_pmaStore_0_bits_wline	[0:0]	assign_expr2	_GEN_451 & toSbufferVecValid
-io_diffStore_pmaStore_0_bits_vecValid	[0:0]	assign_direct	toSbufferVecValid
-io_diffStore_pmaStore_1_valid	[0:0]	assign_direct	io_diffStore_pmaStore_1_valid_0
-io_diffStore_pmaStore_1_bits_data	[127:0]	assign_direct	io_diffStore_pmaStore_1_bits_data_0
-io_diffStore_pmaStore_1_bits_mask	[15:0]	assign_direct	io_diffStore_pmaStore_1_bits_mask_0
-io_diffStore_pmaStore_1_bits_addr	[47:0]	assign_direct	io_diffStore_pmaStore_1_bits_addr_0
-io_diffStore_pmaStore_1_bits_wline	[0:0]	assign_expr2	_GEN_459 & io_diffStore_pmaStore_1_bits_vecValid_0
-io_diffStore_pmaStore_1_bits_vecValid	[0:0]	assign_direct	io_diffStore_pmaStore_1_bits_vecValid_0
-io_diffStore_ncStore_valid	[0:0]	assign_expr5	_io_diffStore_ncStore_bits_T_1_nc & ncReq_bits_memBackTypeMM | io_uncache_req_ready & mmioReq_valid & mmioReq_bits_memBa...
-io_diffStore_ncStore_bits_addr	[47:0]	assign_expr4	_io_diffStore_ncStore_bits_T_1_nc | ~mmioIsCboZero ? _paddrModule_io_rdata_0 : _mmioReq_bits_addr_T_1
-io_diffStore_ncStore_bits_data	[63:0]	assign_expr3	_io_diffStore_ncStore_bits_T_1_nc ? _ncReq_bits_data_T_2 : _mmioReq_bits_data_T_3
-io_diffStore_ncStore_bits_mask	[7:0]	assign_expr3	_io_diffStore_ncStore_bits_T_1_nc ? _ncReq_bits_mask_T_2 : _mmioReq_bits_mask_T_3
-io_diffStore_ncStore_bits_memBackTypeMM	[0:0]	assign_expr3	_io_diffStore_ncStore_bits_T_1_nc ? ncReq_bits_memBackTypeMM : mmioReq_bits_memBackTypeMM
-io_perf_0_value	[5:0]	assign_expr2	{5'h0, io_perf_0_value_REG_1}
-io_perf_1_value	[5:0]	assign_expr2	{5'h0, io_perf_1_value_REG_1}
-io_perf_2_value	[5:0]	assign_expr2	{5'h0, io_perf_2_value_REG_1}
-io_perf_3_value	[5:0]	assign_expr2	{5'h0, io_perf_3_value_REG_1}
-io_perf_4_value	[5:0]	assign_expr2	{5'h0, io_perf_4_value_REG_1}
-io_perf_5_value	[5:0]	assign_expr2	{5'h0, io_perf_5_value_REG_1}
-io_perf_6_value	[5:0]	assign_expr2	{5'h0, io_perf_6_value_REG_1}
-io_perf_7_value	[5:0]	assign_expr2	{5'h0, io_perf_7_value_REG_1}
-gatewayIn_packed_48_bore	[72:0]	assign_expr3	{cmoInvalEvent_cmo_inval_valid, cmoInvalEvent_cmo_inval_addr, cmoInvalEvent_cmo_inval_coreid}
+# cone = 组合扇入锥的叶子网个数（叶子=寄存器/输入/子模块输出）
+# output	width	driver_kind	cone	driver_detail
+io_enq_canAccept	[0:0]	assign_direct	6	allowEnqueue
+io_sbuffer_0_valid	[0:0]	assign_direct	1	_dataBuffer_io_deq_0_valid
+io_sbuffer_0_bits_vaddr	[49:0]	submodule	0	DatamoduleResultBuffer.io_deq_0_bits_vaddr
+io_sbuffer_0_bits_data	[127:0]	submodule	0	DatamoduleResultBuffer.io_deq_0_bits_data
+io_sbuffer_0_bits_mask	[15:0]	submodule	0	DatamoduleResultBuffer.io_deq_0_bits_mask
+io_sbuffer_0_bits_addr	[47:0]	submodule	0	DatamoduleResultBuffer.io_deq_0_bits_addr
+io_sbuffer_0_bits_wline	[0:0]	assign_direct	2	io_sbuffer_0_bits_wline_0
+io_sbuffer_0_bits_vecValid	[0:0]	assign_direct	1	_dataBuffer_io_deq_0_bits_vecValid
+io_sbuffer_1_valid	[0:0]	assign_direct	1	_dataBuffer_io_deq_1_valid
+io_sbuffer_1_bits_vaddr	[49:0]	submodule	0	DatamoduleResultBuffer.io_deq_1_bits_vaddr
+io_sbuffer_1_bits_data	[127:0]	submodule	0	DatamoduleResultBuffer.io_deq_1_bits_data
+io_sbuffer_1_bits_mask	[15:0]	submodule	0	DatamoduleResultBuffer.io_deq_1_bits_mask
+io_sbuffer_1_bits_addr	[47:0]	submodule	0	DatamoduleResultBuffer.io_deq_1_bits_addr
+io_sbuffer_1_bits_wline	[0:0]	assign_direct	2	io_sbuffer_1_bits_wline_0
+io_sbuffer_1_bits_vecValid	[0:0]	assign_direct	1	_dataBuffer_io_deq_1_bits_vecValid
+io_cmoOpReq_valid	[0:0]	assign_direct	62	io_cmoOpReq_valid_0
+io_cmoOpReq_bits_opcode	[2:0]	assign_expr2	2	{1'h0, uncacheUop_fuOpType[1:0]}
+io_cmoOpReq_bits_address	[63:0]	assign_direct	2	cmoInvalEvent_cmo_inval_addr
+io_cmoOpResp_ready	[0:0]	assign_direct	60	io_cmoOpResp_ready_0
+io_cboZeroStout_valid	[0:0]	assign_direct	2	io_cboZeroStout_valid_0
+io_cboZeroStout_bits_uop_exceptionVec_0	[0:0]	assign_direct	1	cboZeroUop_exceptionVec_0
+io_cboZeroStout_bits_uop_exceptionVec_1	[0:0]	assign_direct	1	cboZeroUop_exceptionVec_1
+io_cboZeroStout_bits_uop_exceptionVec_2	[0:0]	assign_direct	1	cboZeroUop_exceptionVec_2
+io_cboZeroStout_bits_uop_exceptionVec_3	[0:0]	assign_direct	1	cboZeroUop_exceptionVec_3
+io_cboZeroStout_bits_uop_exceptionVec_4	[0:0]	assign_direct	1	cboZeroUop_exceptionVec_4
+io_cboZeroStout_bits_uop_exceptionVec_5	[0:0]	assign_direct	1	cboZeroUop_exceptionVec_5
+io_cboZeroStout_bits_uop_exceptionVec_6	[0:0]	assign_direct	1	cboZeroUop_exceptionVec_6
+io_cboZeroStout_bits_uop_exceptionVec_7	[0:0]	assign_direct	1	cboZeroUop_exceptionVec_7
+io_cboZeroStout_bits_uop_exceptionVec_8	[0:0]	assign_direct	1	cboZeroUop_exceptionVec_8
+io_cboZeroStout_bits_uop_exceptionVec_9	[0:0]	assign_direct	1	cboZeroUop_exceptionVec_9
+io_cboZeroStout_bits_uop_exceptionVec_10	[0:0]	assign_direct	1	cboZeroUop_exceptionVec_10
+io_cboZeroStout_bits_uop_exceptionVec_11	[0:0]	assign_direct	1	cboZeroUop_exceptionVec_11
+io_cboZeroStout_bits_uop_exceptionVec_12	[0:0]	assign_direct	1	cboZeroUop_exceptionVec_12
+io_cboZeroStout_bits_uop_exceptionVec_13	[0:0]	assign_direct	1	cboZeroUop_exceptionVec_13
+io_cboZeroStout_bits_uop_exceptionVec_14	[0:0]	assign_direct	1	cboZeroUop_exceptionVec_14
+io_cboZeroStout_bits_uop_exceptionVec_15	[0:0]	assign_direct	1	cboZeroUop_exceptionVec_15
+io_cboZeroStout_bits_uop_exceptionVec_16	[0:0]	assign_direct	1	cboZeroUop_exceptionVec_16
+io_cboZeroStout_bits_uop_exceptionVec_17	[0:0]	assign_direct	1	cboZeroUop_exceptionVec_17
+io_cboZeroStout_bits_uop_exceptionVec_18	[0:0]	assign_direct	1	cboZeroUop_exceptionVec_18
+io_cboZeroStout_bits_uop_exceptionVec_19	[0:0]	assign_direct	1	cboZeroUop_exceptionVec_19
+io_cboZeroStout_bits_uop_exceptionVec_20	[0:0]	assign_direct	1	cboZeroUop_exceptionVec_20
+io_cboZeroStout_bits_uop_exceptionVec_21	[0:0]	assign_direct	1	cboZeroUop_exceptionVec_21
+io_cboZeroStout_bits_uop_exceptionVec_22	[0:0]	assign_direct	1	cboZeroUop_exceptionVec_22
+io_cboZeroStout_bits_uop_exceptionVec_23	[0:0]	assign_direct	1	cboZeroUop_exceptionVec_23
+io_cboZeroStout_bits_uop_trigger	[3:0]	assign_direct	1	cboZeroUop_trigger
+io_cboZeroStout_bits_uop_rfWen	[0:0]	assign_direct	1	cboZeroUop_rfWen
+io_cboZeroStout_bits_uop_flushPipe	[0:0]	assign_direct	1	cboZeroUop_flushPipe
+io_cboZeroStout_bits_uop_pdest	[7:0]	assign_direct	1	cboZeroUop_pdest
+io_cboZeroStout_bits_uop_robIdx_flag	[0:0]	assign_direct	1	cboZeroUop_robIdx_flag
+io_cboZeroStout_bits_uop_robIdx_value	[7:0]	assign_direct	1	cboZeroUop_robIdx_value
+io_cboZeroStout_bits_uop_debugInfo_eliminatedMove	[0:0]	assign_direct	1	cboZeroUop_debugInfo_eliminatedMove
+io_cboZeroStout_bits_uop_debugInfo_renameTime	[63:0]	assign_direct	1	cboZeroUop_debugInfo_renameTime
+io_cboZeroStout_bits_uop_debugInfo_dispatchTime	[63:0]	assign_direct	1	cboZeroUop_debugInfo_dispatchTime
+io_cboZeroStout_bits_uop_debugInfo_enqRsTime	[63:0]	assign_direct	1	cboZeroUop_debugInfo_enqRsTime
+io_cboZeroStout_bits_uop_debugInfo_selectTime	[63:0]	assign_direct	1	cboZeroUop_debugInfo_selectTime
+io_cboZeroStout_bits_uop_debugInfo_issueTime	[63:0]	assign_direct	1	cboZeroUop_debugInfo_issueTime
+io_cboZeroStout_bits_uop_debugInfo_writebackTime	[63:0]	assign_direct	1	cboZeroUop_debugInfo_writebackTime
+io_cboZeroStout_bits_uop_debugInfo_runahead_checkpoint_id	[63:0]	assign_direct	1	cboZeroUop_debugInfo_runahead_checkpoint_id
+io_cboZeroStout_bits_uop_debugInfo_tlbFirstReqTime	[63:0]	assign_direct	1	cboZeroUop_debugInfo_tlbFirstReqTime
+io_cboZeroStout_bits_uop_debugInfo_tlbRespTime	[63:0]	assign_direct	1	cboZeroUop_debugInfo_tlbRespTime
+io_cboZeroStout_bits_uop_debug_seqNum_seqNum	[55:0]	assign_direct	1	cboZeroUop_debug_seqNum_seqNum
+io_cboZeroStout_bits_uop_debug_seqNum_uopIdx	[7:0]	assign_direct	1	cboZeroUop_debug_seqNum_uopIdx
+io_cboZeroStout_bits_uop_sqIdx_flag	[0:0]	assign_direct	1	cboZeroSqIdx_flag
+io_cboZeroStout_bits_uop_sqIdx_value	[5:0]	assign_direct	1	cboZeroSqIdx_value
+io_mmioStout_valid	[0:0]	assign_direct	59	io_mmioStout_valid_0
+io_mmioStout_bits_uop_exceptionVec_7	[0:0]	assign_direct	1	uncacheUop_exceptionVec_7
+io_mmioStout_bits_uop_exceptionVec_19	[0:0]	assign_direct	1	uncacheUop_exceptionVec_19
+io_mmioStout_bits_uop_rfWen	[0:0]	assign_direct	1	uncacheUop_rfWen
+io_mmioStout_bits_uop_flushPipe	[0:0]	assign_direct	58	deqCanDoCbo
+io_mmioStout_bits_uop_pdest	[7:0]	assign_direct	1	uncacheUop_pdest
+io_mmioStout_bits_uop_robIdx_flag	[0:0]	assign_direct	1	uncacheUop_robIdx_flag
+io_mmioStout_bits_uop_robIdx_value	[7:0]	assign_direct	1	uncacheUop_robIdx_value
+io_mmioStout_bits_uop_debugInfo_eliminatedMove	[0:0]	assign_direct	1	uncacheUop_debugInfo_eliminatedMove
+io_mmioStout_bits_uop_debugInfo_renameTime	[63:0]	assign_direct	1	uncacheUop_debugInfo_renameTime
+io_mmioStout_bits_uop_debugInfo_dispatchTime	[63:0]	assign_direct	1	uncacheUop_debugInfo_dispatchTime
+io_mmioStout_bits_uop_debugInfo_enqRsTime	[63:0]	assign_direct	1	uncacheUop_debugInfo_enqRsTime
+io_mmioStout_bits_uop_debugInfo_selectTime	[63:0]	assign_direct	1	uncacheUop_debugInfo_selectTime
+io_mmioStout_bits_uop_debugInfo_issueTime	[63:0]	assign_direct	1	uncacheUop_debugInfo_issueTime
+io_mmioStout_bits_uop_debugInfo_writebackTime	[63:0]	assign_direct	1	uncacheUop_debugInfo_writebackTime
+io_mmioStout_bits_uop_debugInfo_runahead_checkpoint_id	[63:0]	assign_direct	1	uncacheUop_debugInfo_runahead_checkpoint_id
+io_mmioStout_bits_uop_debugInfo_tlbFirstReqTime	[63:0]	assign_direct	1	uncacheUop_debugInfo_tlbFirstReqTime
+io_mmioStout_bits_uop_debugInfo_tlbRespTime	[63:0]	assign_direct	1	uncacheUop_debugInfo_tlbRespTime
+io_mmioStout_bits_uop_debug_seqNum_seqNum	[55:0]	assign_direct	1	uncacheUop_debug_seqNum_seqNum
+io_mmioStout_bits_uop_debug_seqNum_uopIdx	[7:0]	assign_direct	1	uncacheUop_debug_seqNum_uopIdx
+io_mmioStout_bits_uop_sqIdx_flag	[0:0]	assign_direct	1	deqPtrExt_0_flag
+io_mmioStout_bits_uop_sqIdx_value	[5:0]	assign_direct	1	deqPtrExt_0_value
+io_mmioStout_bits_data	[63:0]	assign_expr3	2	_paddrModule_io_rdata_0[3] ? _dataModule_io_rdata_0_data[127:64] : _dataModule_io_rdata_0_data[63:0]
+io_mmioStout_bits_debug_isMMIO	[0:0]	assign_direct	57	~_GEN_405
+io_forward_0_forwardMask_0	[0:0]	submodule	0	SQDataModule.io_forwardMask_0_0
+io_forward_0_forwardMask_1	[0:0]	submodule	0	SQDataModule.io_forwardMask_0_1
+io_forward_0_forwardMask_2	[0:0]	submodule	0	SQDataModule.io_forwardMask_0_2
+io_forward_0_forwardMask_3	[0:0]	submodule	0	SQDataModule.io_forwardMask_0_3
+io_forward_0_forwardMask_4	[0:0]	submodule	0	SQDataModule.io_forwardMask_0_4
+io_forward_0_forwardMask_5	[0:0]	submodule	0	SQDataModule.io_forwardMask_0_5
+io_forward_0_forwardMask_6	[0:0]	submodule	0	SQDataModule.io_forwardMask_0_6
+io_forward_0_forwardMask_7	[0:0]	submodule	0	SQDataModule.io_forwardMask_0_7
+io_forward_0_forwardMask_8	[0:0]	submodule	0	SQDataModule.io_forwardMask_0_8
+io_forward_0_forwardMask_9	[0:0]	submodule	0	SQDataModule.io_forwardMask_0_9
+io_forward_0_forwardMask_10	[0:0]	submodule	0	SQDataModule.io_forwardMask_0_10
+io_forward_0_forwardMask_11	[0:0]	submodule	0	SQDataModule.io_forwardMask_0_11
+io_forward_0_forwardMask_12	[0:0]	submodule	0	SQDataModule.io_forwardMask_0_12
+io_forward_0_forwardMask_13	[0:0]	submodule	0	SQDataModule.io_forwardMask_0_13
+io_forward_0_forwardMask_14	[0:0]	submodule	0	SQDataModule.io_forwardMask_0_14
+io_forward_0_forwardMask_15	[0:0]	submodule	0	SQDataModule.io_forwardMask_0_15
+io_forward_0_forwardData_0	[7:0]	submodule	0	SQDataModule.io_forwardData_0_0
+io_forward_0_forwardData_1	[7:0]	submodule	0	SQDataModule.io_forwardData_0_1
+io_forward_0_forwardData_2	[7:0]	submodule	0	SQDataModule.io_forwardData_0_2
+io_forward_0_forwardData_3	[7:0]	submodule	0	SQDataModule.io_forwardData_0_3
+io_forward_0_forwardData_4	[7:0]	submodule	0	SQDataModule.io_forwardData_0_4
+io_forward_0_forwardData_5	[7:0]	submodule	0	SQDataModule.io_forwardData_0_5
+io_forward_0_forwardData_6	[7:0]	submodule	0	SQDataModule.io_forwardData_0_6
+io_forward_0_forwardData_7	[7:0]	submodule	0	SQDataModule.io_forwardData_0_7
+io_forward_0_forwardData_8	[7:0]	submodule	0	SQDataModule.io_forwardData_0_8
+io_forward_0_forwardData_9	[7:0]	submodule	0	SQDataModule.io_forwardData_0_9
+io_forward_0_forwardData_10	[7:0]	submodule	0	SQDataModule.io_forwardData_0_10
+io_forward_0_forwardData_11	[7:0]	submodule	0	SQDataModule.io_forwardData_0_11
+io_forward_0_forwardData_12	[7:0]	submodule	0	SQDataModule.io_forwardData_0_12
+io_forward_0_forwardData_13	[7:0]	submodule	0	SQDataModule.io_forwardData_0_13
+io_forward_0_forwardData_14	[7:0]	submodule	0	SQDataModule.io_forwardData_0_14
+io_forward_0_forwardData_15	[7:0]	submodule	0	SQDataModule.io_forwardData_0_15
+io_forward_0_dataInvalid	[0:0]	assign_direct	1	io_forward_0_dataInvalid_REG
+io_forward_0_matchInvalid	[0:0]	assign_direct	5	vaddrMatchFailed_probe
+io_forward_0_addrInvalid	[0:0]	assign_expr3	4	io_forward_0_addrInvalid_r ? io_forward_0_addrInvalid_REG : (|addrInvalidMaskReg)
+io_forward_0_dataInvalidSqIdx_flag	[0:0]	assign_expr7	67	(|dataInvalidMaskReg) ? (~s2_differentFlag | dataInvalidSqIdx >= s2_deqPtrExt_value ? s2_deqPtrExt_flag : s2_enqPtrExt_f...
+io_forward_0_dataInvalidSqIdx_value	[5:0]	assign_expr3	63	(|dataInvalidMaskReg) ? dataInvalidSqIdx : io_forward_0_dataInvalidSqIdx_r_value
+io_forward_0_addrInvalidSqIdx_flag	[0:0]	assign_expr9	69	r_5_0 ? io_forward_0_addrInvalidSqIdx_r_flag : (|addrInvalidMaskReg) ? (~s2_differentFlag | addrInvalidSqIdx >= s2_deqPt...
+io_forward_0_addrInvalidSqIdx_value	[5:0]	assign_expr5	65	r_5_0 ? io_forward_0_addrInvalidSqIdx_r_value : (|addrInvalidMaskReg) ? addrInvalidSqIdx : io_forward_0_addrInvalidSqIdx...
+io_forward_1_forwardMask_0	[0:0]	submodule	0	SQDataModule.io_forwardMask_1_0
+io_forward_1_forwardMask_1	[0:0]	submodule	0	SQDataModule.io_forwardMask_1_1
+io_forward_1_forwardMask_2	[0:0]	submodule	0	SQDataModule.io_forwardMask_1_2
+io_forward_1_forwardMask_3	[0:0]	submodule	0	SQDataModule.io_forwardMask_1_3
+io_forward_1_forwardMask_4	[0:0]	submodule	0	SQDataModule.io_forwardMask_1_4
+io_forward_1_forwardMask_5	[0:0]	submodule	0	SQDataModule.io_forwardMask_1_5
+io_forward_1_forwardMask_6	[0:0]	submodule	0	SQDataModule.io_forwardMask_1_6
+io_forward_1_forwardMask_7	[0:0]	submodule	0	SQDataModule.io_forwardMask_1_7
+io_forward_1_forwardMask_8	[0:0]	submodule	0	SQDataModule.io_forwardMask_1_8
+io_forward_1_forwardMask_9	[0:0]	submodule	0	SQDataModule.io_forwardMask_1_9
+io_forward_1_forwardMask_10	[0:0]	submodule	0	SQDataModule.io_forwardMask_1_10
+io_forward_1_forwardMask_11	[0:0]	submodule	0	SQDataModule.io_forwardMask_1_11
+io_forward_1_forwardMask_12	[0:0]	submodule	0	SQDataModule.io_forwardMask_1_12
+io_forward_1_forwardMask_13	[0:0]	submodule	0	SQDataModule.io_forwardMask_1_13
+io_forward_1_forwardMask_14	[0:0]	submodule	0	SQDataModule.io_forwardMask_1_14
+io_forward_1_forwardMask_15	[0:0]	submodule	0	SQDataModule.io_forwardMask_1_15
+io_forward_1_forwardData_0	[7:0]	submodule	0	SQDataModule.io_forwardData_1_0
+io_forward_1_forwardData_1	[7:0]	submodule	0	SQDataModule.io_forwardData_1_1
+io_forward_1_forwardData_2	[7:0]	submodule	0	SQDataModule.io_forwardData_1_2
+io_forward_1_forwardData_3	[7:0]	submodule	0	SQDataModule.io_forwardData_1_3
+io_forward_1_forwardData_4	[7:0]	submodule	0	SQDataModule.io_forwardData_1_4
+io_forward_1_forwardData_5	[7:0]	submodule	0	SQDataModule.io_forwardData_1_5
+io_forward_1_forwardData_6	[7:0]	submodule	0	SQDataModule.io_forwardData_1_6
+io_forward_1_forwardData_7	[7:0]	submodule	0	SQDataModule.io_forwardData_1_7
+io_forward_1_forwardData_8	[7:0]	submodule	0	SQDataModule.io_forwardData_1_8
+io_forward_1_forwardData_9	[7:0]	submodule	0	SQDataModule.io_forwardData_1_9
+io_forward_1_forwardData_10	[7:0]	submodule	0	SQDataModule.io_forwardData_1_10
+io_forward_1_forwardData_11	[7:0]	submodule	0	SQDataModule.io_forwardData_1_11
+io_forward_1_forwardData_12	[7:0]	submodule	0	SQDataModule.io_forwardData_1_12
+io_forward_1_forwardData_13	[7:0]	submodule	0	SQDataModule.io_forwardData_1_13
+io_forward_1_forwardData_14	[7:0]	submodule	0	SQDataModule.io_forwardData_1_14
+io_forward_1_forwardData_15	[7:0]	submodule	0	SQDataModule.io_forwardData_1_15
+io_forward_1_dataInvalid	[0:0]	assign_direct	1	io_forward_1_dataInvalid_REG
+io_forward_1_matchInvalid	[0:0]	assign_direct	5	vaddrMatchFailed_1_probe
+io_forward_1_addrInvalid	[0:0]	assign_expr3	4	io_forward_1_addrInvalid_r ? io_forward_1_addrInvalid_REG : (|addrInvalidMaskReg_1)
+io_forward_1_dataInvalidSqIdx_flag	[0:0]	assign_expr7	67	(|dataInvalidMaskReg_1) ? (~s2_differentFlag_1 | dataInvalidSqIdx_1 >= s2_deqPtrExt_1_value ? s2_deqPtrExt_1_flag : s2_e...
+io_forward_1_dataInvalidSqIdx_value	[5:0]	assign_expr3	63	(|dataInvalidMaskReg_1) ? dataInvalidSqIdx_1 : io_forward_1_dataInvalidSqIdx_r_value
+io_forward_1_addrInvalidSqIdx_flag	[0:0]	assign_expr9	69	r_9_0 ? io_forward_1_addrInvalidSqIdx_r_flag : (|addrInvalidMaskReg_1) ? (~s2_differentFlag_1 | addrInvalidSqIdx_1 >= s2...
+io_forward_1_addrInvalidSqIdx_value	[5:0]	assign_expr5	65	r_9_0 ? io_forward_1_addrInvalidSqIdx_r_value : (|addrInvalidMaskReg_1) ? addrInvalidSqIdx_1 : io_forward_1_addrInvalidS...
+io_forward_2_forwardMask_0	[0:0]	submodule	0	SQDataModule.io_forwardMask_2_0
+io_forward_2_forwardMask_1	[0:0]	submodule	0	SQDataModule.io_forwardMask_2_1
+io_forward_2_forwardMask_2	[0:0]	submodule	0	SQDataModule.io_forwardMask_2_2
+io_forward_2_forwardMask_3	[0:0]	submodule	0	SQDataModule.io_forwardMask_2_3
+io_forward_2_forwardMask_4	[0:0]	submodule	0	SQDataModule.io_forwardMask_2_4
+io_forward_2_forwardMask_5	[0:0]	submodule	0	SQDataModule.io_forwardMask_2_5
+io_forward_2_forwardMask_6	[0:0]	submodule	0	SQDataModule.io_forwardMask_2_6
+io_forward_2_forwardMask_7	[0:0]	submodule	0	SQDataModule.io_forwardMask_2_7
+io_forward_2_forwardMask_8	[0:0]	submodule	0	SQDataModule.io_forwardMask_2_8
+io_forward_2_forwardMask_9	[0:0]	submodule	0	SQDataModule.io_forwardMask_2_9
+io_forward_2_forwardMask_10	[0:0]	submodule	0	SQDataModule.io_forwardMask_2_10
+io_forward_2_forwardMask_11	[0:0]	submodule	0	SQDataModule.io_forwardMask_2_11
+io_forward_2_forwardMask_12	[0:0]	submodule	0	SQDataModule.io_forwardMask_2_12
+io_forward_2_forwardMask_13	[0:0]	submodule	0	SQDataModule.io_forwardMask_2_13
+io_forward_2_forwardMask_14	[0:0]	submodule	0	SQDataModule.io_forwardMask_2_14
+io_forward_2_forwardMask_15	[0:0]	submodule	0	SQDataModule.io_forwardMask_2_15
+io_forward_2_forwardData_0	[7:0]	submodule	0	SQDataModule.io_forwardData_2_0
+io_forward_2_forwardData_1	[7:0]	submodule	0	SQDataModule.io_forwardData_2_1
+io_forward_2_forwardData_2	[7:0]	submodule	0	SQDataModule.io_forwardData_2_2
+io_forward_2_forwardData_3	[7:0]	submodule	0	SQDataModule.io_forwardData_2_3
+io_forward_2_forwardData_4	[7:0]	submodule	0	SQDataModule.io_forwardData_2_4
+io_forward_2_forwardData_5	[7:0]	submodule	0	SQDataModule.io_forwardData_2_5
+io_forward_2_forwardData_6	[7:0]	submodule	0	SQDataModule.io_forwardData_2_6
+io_forward_2_forwardData_7	[7:0]	submodule	0	SQDataModule.io_forwardData_2_7
+io_forward_2_forwardData_8	[7:0]	submodule	0	SQDataModule.io_forwardData_2_8
+io_forward_2_forwardData_9	[7:0]	submodule	0	SQDataModule.io_forwardData_2_9
+io_forward_2_forwardData_10	[7:0]	submodule	0	SQDataModule.io_forwardData_2_10
+io_forward_2_forwardData_11	[7:0]	submodule	0	SQDataModule.io_forwardData_2_11
+io_forward_2_forwardData_12	[7:0]	submodule	0	SQDataModule.io_forwardData_2_12
+io_forward_2_forwardData_13	[7:0]	submodule	0	SQDataModule.io_forwardData_2_13
+io_forward_2_forwardData_14	[7:0]	submodule	0	SQDataModule.io_forwardData_2_14
+io_forward_2_forwardData_15	[7:0]	submodule	0	SQDataModule.io_forwardData_2_15
+io_forward_2_dataInvalid	[0:0]	assign_direct	1	io_forward_2_dataInvalid_REG
+io_forward_2_matchInvalid	[0:0]	assign_direct	5	vaddrMatchFailed_2_probe
+io_forward_2_addrInvalid	[0:0]	assign_expr3	4	io_forward_2_addrInvalid_r ? io_forward_2_addrInvalid_REG : (|addrInvalidMaskReg_2)
+io_forward_2_dataInvalidSqIdx_flag	[0:0]	assign_expr7	67	(|dataInvalidMaskReg_2) ? (~s2_differentFlag_2 | dataInvalidSqIdx_2 >= s2_deqPtrExt_2_value ? s2_deqPtrExt_2_flag : s2_e...
+io_forward_2_dataInvalidSqIdx_value	[5:0]	assign_expr3	63	(|dataInvalidMaskReg_2) ? dataInvalidSqIdx_2 : io_forward_2_dataInvalidSqIdx_r_value
+io_forward_2_addrInvalidSqIdx_flag	[0:0]	assign_expr9	69	r_13_0 ? io_forward_2_addrInvalidSqIdx_r_flag : (|addrInvalidMaskReg_2) ? (~s2_differentFlag_2 | addrInvalidSqIdx_2 >= s...
+io_forward_2_addrInvalidSqIdx_value	[5:0]	assign_expr5	65	r_13_0 ? io_forward_2_addrInvalidSqIdx_r_value : (|addrInvalidMaskReg_2) ? addrInvalidSqIdx_2 : io_forward_2_addrInvalid...
+io_rob_storeMmio	[0:0]	assign_direct	5	mmioReq_valid
+io_rob_storeMmioUop_robIdx_value	[7:0]	assign_direct	1	uncacheUop_robIdx_value
+io_uncache_req_valid	[0:0]	assign_direct	63	io_uncache_req_valid_0
+io_uncache_req_bits_robIdx_flag	[0:0]	assign_expr5	63	mmioReq_valid ? _GEN_382[mmioReq_bits_robIdx_next_r_value] : _GEN_382[ncReq_bits_robIdx_next_r_value]
+io_uncache_req_bits_robIdx_value	[7:0]	assign_expr5	8	mmioReq_valid ? _GEN_383[mmioReq_bits_robIdx_next_r_value] : _GEN_383[ncReq_bits_robIdx_next_r_value]
+io_uncache_req_bits_addr	[47:0]	assign_expr3	10	_GEN_404 ? _mmioReq_bits_addr_T_1 : _paddrModule_io_rdata_0
+io_uncache_req_bits_vaddr	[49:0]	assign_expr7	9	_GEN_404 ? 50'({_vaddrModule_io_rdata_0[49:6], 6'h0} + {44'h0, cboZeroOffset, 3'h0}) : _vaddrModule_io_rdata_0
+io_uncache_req_bits_data	[63:0]	assign_expr3	9	mmioReq_valid ? _mmioReq_bits_data_T_3 : _ncReq_bits_data_T_2
+io_uncache_req_bits_mask	[7:0]	assign_expr3	9	mmioReq_valid ? _mmioReq_bits_mask_T_3 : _ncReq_bits_mask_T_2
+io_uncache_req_bits_id	[6:0]	assign_expr3	8	mmioReq_valid ? mmioReq_bits_id : ncWaitRespPtrReg
+io_uncache_req_bits_nc	[0:0]	assign_direct	5	~mmioReq_valid
+io_uncache_req_bits_memBackTypeMM	[0:0]	assign_expr3	63	mmioReq_valid ? mmioReq_bits_memBackTypeMM : ncReq_bits_memBackTypeMM
+io_exceptionAddr_vaddr	[63:0]	submodule	0	StoreExceptionBuffer.io_exceptionAddr_vaddr
+io_exceptionAddr_vaNeedExt	[0:0]	submodule	0	StoreExceptionBuffer.io_exceptionAddr_vaNeedExt
+io_exceptionAddr_isHyper	[0:0]	submodule	0	StoreExceptionBuffer.io_exceptionAddr_isHyper
+io_exceptionAddr_gpaddr	[63:0]	submodule	0	StoreExceptionBuffer.io_exceptionAddr_gpaddr
+io_exceptionAddr_isForVSnonLeafPTE	[0:0]	submodule	0	StoreExceptionBuffer.io_exceptionAddr_isForVSnonLeafPTE
+io_flushSbuffer_valid	[0:0]	assign_expr5	63	deqCanDoCbo & ~cboFlushedSb & _io_flushSbuffer_valid_T_2 & ~io_flushSbuffer_empty | cboZeroFlushSb_next_r
+io_sqEmpty	[0:0]	assign_direct	1	io_sqEmpty_REG
+io_stAddrReadySqPtr_flag	[0:0]	assign_direct	1	addrReadyPtrExt_flag
+io_stAddrReadySqPtr_value	[5:0]	assign_direct	1	addrReadyPtrExt_value
+io_stAddrReadyVec_0	[0:0]	assign_direct	1	r_0
+io_stAddrReadyVec_1	[0:0]	assign_direct	1	r_1
+io_stAddrReadyVec_2	[0:0]	assign_direct	1	r_2
+io_stAddrReadyVec_3	[0:0]	assign_direct	1	r_3
+io_stAddrReadyVec_4	[0:0]	assign_direct	1	r_4
+io_stAddrReadyVec_5	[0:0]	assign_direct	1	r_5
+io_stAddrReadyVec_6	[0:0]	assign_direct	1	r_6
+io_stAddrReadyVec_7	[0:0]	assign_direct	1	r_7
+io_stAddrReadyVec_8	[0:0]	assign_direct	1	r_8
+io_stAddrReadyVec_9	[0:0]	assign_direct	1	r_9
+io_stAddrReadyVec_10	[0:0]	assign_direct	1	r_10
+io_stAddrReadyVec_11	[0:0]	assign_direct	1	r_11
+io_stAddrReadyVec_12	[0:0]	assign_direct	1	r_12
+io_stAddrReadyVec_13	[0:0]	assign_direct	1	r_13
+io_stAddrReadyVec_14	[0:0]	assign_direct	1	r_14
+io_stAddrReadyVec_15	[0:0]	assign_direct	1	r_15
+io_stAddrReadyVec_16	[0:0]	assign_direct	1	r_16
+io_stAddrReadyVec_17	[0:0]	assign_direct	1	r_17
+io_stAddrReadyVec_18	[0:0]	assign_direct	1	r_18
+io_stAddrReadyVec_19	[0:0]	assign_direct	1	r_19
+io_stAddrReadyVec_20	[0:0]	assign_direct	1	r_20
+io_stAddrReadyVec_21	[0:0]	assign_direct	1	r_21
+io_stAddrReadyVec_22	[0:0]	assign_direct	1	r_22
+io_stAddrReadyVec_23	[0:0]	assign_direct	1	r_23
+io_stAddrReadyVec_24	[0:0]	assign_direct	1	r_24
+io_stAddrReadyVec_25	[0:0]	assign_direct	1	r_25
+io_stAddrReadyVec_26	[0:0]	assign_direct	1	r_26
+io_stAddrReadyVec_27	[0:0]	assign_direct	1	r_27
+io_stAddrReadyVec_28	[0:0]	assign_direct	1	r_28
+io_stAddrReadyVec_29	[0:0]	assign_direct	1	r_29
+io_stAddrReadyVec_30	[0:0]	assign_direct	1	r_30
+io_stAddrReadyVec_31	[0:0]	assign_direct	1	r_31
+io_stAddrReadyVec_32	[0:0]	assign_direct	1	r_32
+io_stAddrReadyVec_33	[0:0]	assign_direct	1	r_33
+io_stAddrReadyVec_34	[0:0]	assign_direct	1	r_34
+io_stAddrReadyVec_35	[0:0]	assign_direct	1	r_35
+io_stAddrReadyVec_36	[0:0]	assign_direct	1	r_36
+io_stAddrReadyVec_37	[0:0]	assign_direct	1	r_37
+io_stAddrReadyVec_38	[0:0]	assign_direct	1	r_38
+io_stAddrReadyVec_39	[0:0]	assign_direct	1	r_39
+io_stAddrReadyVec_40	[0:0]	assign_direct	1	r_40
+io_stAddrReadyVec_41	[0:0]	assign_direct	1	r_41
+io_stAddrReadyVec_42	[0:0]	assign_direct	1	r_42
+io_stAddrReadyVec_43	[0:0]	assign_direct	1	r_43
+io_stAddrReadyVec_44	[0:0]	assign_direct	1	r_44
+io_stAddrReadyVec_45	[0:0]	assign_direct	1	r_45
+io_stAddrReadyVec_46	[0:0]	assign_direct	1	r_46
+io_stAddrReadyVec_47	[0:0]	assign_direct	1	r_47
+io_stAddrReadyVec_48	[0:0]	assign_direct	1	r_48
+io_stAddrReadyVec_49	[0:0]	assign_direct	1	r_49
+io_stAddrReadyVec_50	[0:0]	assign_direct	1	r_50
+io_stAddrReadyVec_51	[0:0]	assign_direct	1	r_51
+io_stAddrReadyVec_52	[0:0]	assign_direct	1	r_52
+io_stAddrReadyVec_53	[0:0]	assign_direct	1	r_53
+io_stAddrReadyVec_54	[0:0]	assign_direct	1	r_54
+io_stAddrReadyVec_55	[0:0]	assign_direct	1	r_55
+io_stDataReadySqPtr_flag	[0:0]	assign_direct	1	dataReadyPtrExt_flag
+io_stDataReadySqPtr_value	[5:0]	assign_direct	1	dataReadyPtrExt_value
+io_stDataReadyVec_0	[0:0]	assign_direct	1	r_1_0
+io_stDataReadyVec_1	[0:0]	assign_direct	1	r_1_1
+io_stDataReadyVec_2	[0:0]	assign_direct	1	r_1_2
+io_stDataReadyVec_3	[0:0]	assign_direct	1	r_1_3
+io_stDataReadyVec_4	[0:0]	assign_direct	1	r_1_4
+io_stDataReadyVec_5	[0:0]	assign_direct	1	r_1_5
+io_stDataReadyVec_6	[0:0]	assign_direct	1	r_1_6
+io_stDataReadyVec_7	[0:0]	assign_direct	1	r_1_7
+io_stDataReadyVec_8	[0:0]	assign_direct	1	r_1_8
+io_stDataReadyVec_9	[0:0]	assign_direct	1	r_1_9
+io_stDataReadyVec_10	[0:0]	assign_direct	1	r_1_10
+io_stDataReadyVec_11	[0:0]	assign_direct	1	r_1_11
+io_stDataReadyVec_12	[0:0]	assign_direct	1	r_1_12
+io_stDataReadyVec_13	[0:0]	assign_direct	1	r_1_13
+io_stDataReadyVec_14	[0:0]	assign_direct	1	r_1_14
+io_stDataReadyVec_15	[0:0]	assign_direct	1	r_1_15
+io_stDataReadyVec_16	[0:0]	assign_direct	1	r_1_16
+io_stDataReadyVec_17	[0:0]	assign_direct	1	r_1_17
+io_stDataReadyVec_18	[0:0]	assign_direct	1	r_1_18
+io_stDataReadyVec_19	[0:0]	assign_direct	1	r_1_19
+io_stDataReadyVec_20	[0:0]	assign_direct	1	r_1_20
+io_stDataReadyVec_21	[0:0]	assign_direct	1	r_1_21
+io_stDataReadyVec_22	[0:0]	assign_direct	1	r_1_22
+io_stDataReadyVec_23	[0:0]	assign_direct	1	r_1_23
+io_stDataReadyVec_24	[0:0]	assign_direct	1	r_1_24
+io_stDataReadyVec_25	[0:0]	assign_direct	1	r_1_25
+io_stDataReadyVec_26	[0:0]	assign_direct	1	r_1_26
+io_stDataReadyVec_27	[0:0]	assign_direct	1	r_1_27
+io_stDataReadyVec_28	[0:0]	assign_direct	1	r_1_28
+io_stDataReadyVec_29	[0:0]	assign_direct	1	r_1_29
+io_stDataReadyVec_30	[0:0]	assign_direct	1	r_1_30
+io_stDataReadyVec_31	[0:0]	assign_direct	1	r_1_31
+io_stDataReadyVec_32	[0:0]	assign_direct	1	r_1_32
+io_stDataReadyVec_33	[0:0]	assign_direct	1	r_1_33
+io_stDataReadyVec_34	[0:0]	assign_direct	1	r_1_34
+io_stDataReadyVec_35	[0:0]	assign_direct	1	r_1_35
+io_stDataReadyVec_36	[0:0]	assign_direct	1	r_1_36
+io_stDataReadyVec_37	[0:0]	assign_direct	1	r_1_37
+io_stDataReadyVec_38	[0:0]	assign_direct	1	r_1_38
+io_stDataReadyVec_39	[0:0]	assign_direct	1	r_1_39
+io_stDataReadyVec_40	[0:0]	assign_direct	1	r_1_40
+io_stDataReadyVec_41	[0:0]	assign_direct	1	r_1_41
+io_stDataReadyVec_42	[0:0]	assign_direct	1	r_1_42
+io_stDataReadyVec_43	[0:0]	assign_direct	1	r_1_43
+io_stDataReadyVec_44	[0:0]	assign_direct	1	r_1_44
+io_stDataReadyVec_45	[0:0]	assign_direct	1	r_1_45
+io_stDataReadyVec_46	[0:0]	assign_direct	1	r_1_46
+io_stDataReadyVec_47	[0:0]	assign_direct	1	r_1_47
+io_stDataReadyVec_48	[0:0]	assign_direct	1	r_1_48
+io_stDataReadyVec_49	[0:0]	assign_direct	1	r_1_49
+io_stDataReadyVec_50	[0:0]	assign_direct	1	r_1_50
+io_stDataReadyVec_51	[0:0]	assign_direct	1	r_1_51
+io_stDataReadyVec_52	[0:0]	assign_direct	1	r_1_52
+io_stDataReadyVec_53	[0:0]	assign_direct	1	r_1_53
+io_stDataReadyVec_54	[0:0]	assign_direct	1	r_1_54
+io_stDataReadyVec_55	[0:0]	assign_direct	1	r_1_55
+io_stIssuePtr_flag	[0:0]	assign_direct	1	enqPtrExt_0_flag
+io_stIssuePtr_value	[5:0]	assign_direct	1	enqPtrExt_0_value
+io_sqDeqPtr_flag	[0:0]	assign_direct	1	deqPtrExt_0_flag
+io_sqDeqPtr_value	[5:0]	assign_direct	1	deqPtrExt_0_value
+io_sqCommitPtr_flag	[0:0]	assign_direct	1	cmtPtrExt_0_flag
+io_sqCommitPtr_value	[5:0]	assign_direct	1	cmtPtrExt_0_value
+io_sqCommitUopIdx	[6:0]	assign_expr2	2	_GEN_381[cmtPtrExt_0_value]
+io_sqCommitRobIdx_flag	[0:0]	assign_direct	57	io_sqCommitRobIdx_flag_0
+io_sqCommitRobIdx_value	[7:0]	assign_direct	2	io_sqCommitRobIdx_value_0
+io_sqFull	[0:0]	assign_direct	6	~allowEnqueue
+io_sqCancelCnt	[5:0]	assign_direct	1	redirectCancelCount[5:0]
+io_sqDeq	[1:0]	assign_direct	1	io_sqDeq_REG
+io_sqDeqIsVec	[0:0]	assign_direct	57	io_sqDeqIsVec_0
+io_force_write	[0:0]	assign_direct	1	io_force_write_REG
+io_maControl_toStoreMisalignBuffer_sqPtr_flag	[0:0]	assign_direct	1	rdataPtrExt_0_flag
+io_maControl_toStoreMisalignBuffer_sqPtr_value	[5:0]	assign_direct	1	rdataPtrExt_0_value
+io_maControl_toStoreMisalignBuffer_doDeq	[0:0]	assign_expr2	621	_io_maControl_toStoreMisalignBuffer_doDeq_T & io_diffStore_pmaStore_0_valid_0
+io_maControl_toStoreMisalignBuffer_uop_uopIdx	[6:0]	assign_expr2	2	_GEN_381[rdataPtrExt_0_value]
+io_maControl_toStoreMisalignBuffer_uop_robIdx_flag	[0:0]	assign_direct	57	io_maControl_toStoreMisalignBuffer_uop_robIdx_flag_0
+io_maControl_toStoreMisalignBuffer_uop_robIdx_value	[7:0]	assign_direct	2	io_maControl_toStoreMisalignBuffer_uop_robIdx_value_0
+io_wfi_wfiSafe	[0:0]	assign_direct	1	io_wfi_wfiSafe_last_REG
+io_diffStore_diffInfo_0_uop_fuType	[34:0]	assign_expr2	2	_GEN_461[rdataPtrExt_0_value]
+io_diffStore_diffInfo_0_uop_fuOpType	[8:0]	assign_expr2	2	_GEN_379[rdataPtrExt_0_value]
+io_diffStore_diffInfo_0_uop_vpu_nf	[2:0]	assign_expr2	2	_GEN_462[rdataPtrExt_0_value]
+io_diffStore_diffInfo_0_uop_vpu_veew	[1:0]	assign_expr2	2	_GEN_463[rdataPtrExt_0_value]
+io_diffStore_diffInfo_0_uop_robIdx_value	[7:0]	assign_direct	2	io_diffStore_diffInfo_0_uop_robIdx_value_0
+io_diffStore_diffInfo_0_offset	[5:0]	assign_expr2	2	_GEN_464[rdataPtrExt_0_value]
+io_diffStore_diffInfo_1_uop_fuType	[34:0]	assign_expr2	117	_GEN_461[_GEN_460]
+io_diffStore_diffInfo_1_uop_fuOpType	[8:0]	assign_expr2	117	_GEN_379[_GEN_460]
+io_diffStore_diffInfo_1_uop_vpu_nf	[2:0]	assign_expr2	117	_GEN_462[_GEN_460]
+io_diffStore_diffInfo_1_uop_vpu_veew	[1:0]	assign_expr2	117	_GEN_463[_GEN_460]
+io_diffStore_diffInfo_1_uop_robIdx_value	[7:0]	assign_expr2	117	_GEN_383[_GEN_460]
+io_diffStore_diffInfo_1_offset	[5:0]	assign_expr2	117	_GEN_464[_GEN_460]
+io_diffStore_pmaStore_0_valid	[0:0]	assign_direct	621	io_diffStore_pmaStore_0_valid_0
+io_diffStore_pmaStore_0_bits_data	[127:0]	assign_direct	118	io_diffStore_pmaStore_0_bits_data_0
+io_diffStore_pmaStore_0_bits_mask	[15:0]	assign_direct	118	io_diffStore_pmaStore_0_bits_mask_0
+io_diffStore_pmaStore_0_bits_addr	[47:0]	assign_direct	117	io_diffStore_pmaStore_0_bits_addr_0
+io_diffStore_pmaStore_0_bits_wline	[0:0]	assign_expr2	457	_GEN_451 & toSbufferVecValid
+io_diffStore_pmaStore_0_bits_vecValid	[0:0]	assign_direct	342	toSbufferVecValid
+io_diffStore_pmaStore_1_valid	[0:0]	assign_direct	622	io_diffStore_pmaStore_1_valid_0
+io_diffStore_pmaStore_1_bits_data	[127:0]	assign_direct	121	io_diffStore_pmaStore_1_bits_data_0
+io_diffStore_pmaStore_1_bits_mask	[15:0]	assign_direct	119	io_diffStore_pmaStore_1_bits_mask_0
+io_diffStore_pmaStore_1_bits_addr	[47:0]	assign_direct	123	io_diffStore_pmaStore_1_bits_addr_0
+io_diffStore_pmaStore_1_bits_wline	[0:0]	assign_expr2	459	_GEN_459 & io_diffStore_pmaStore_1_bits_vecValid_0
+io_diffStore_pmaStore_1_bits_vecValid	[0:0]	assign_direct	458	io_diffStore_pmaStore_1_bits_vecValid_0
+io_diffStore_ncStore_valid	[0:0]	assign_expr5	65	_io_diffStore_ncStore_bits_T_1_nc & ncReq_bits_memBackTypeMM | io_uncache_req_ready & mmioReq_valid & mmioReq_bits_memBa...
+io_diffStore_ncStore_bits_addr	[47:0]	assign_expr4	12	_io_diffStore_ncStore_bits_T_1_nc | ~mmioIsCboZero ? _paddrModule_io_rdata_0 : _mmioReq_bits_addr_T_1
+io_diffStore_ncStore_bits_data	[63:0]	assign_expr3	11	_io_diffStore_ncStore_bits_T_1_nc ? _ncReq_bits_data_T_2 : _mmioReq_bits_data_T_3
+io_diffStore_ncStore_bits_mask	[7:0]	assign_expr3	11	_io_diffStore_ncStore_bits_T_1_nc ? _ncReq_bits_mask_T_2 : _mmioReq_bits_mask_T_3
+io_diffStore_ncStore_bits_memBackTypeMM	[0:0]	assign_expr3	65	_io_diffStore_ncStore_bits_T_1_nc ? ncReq_bits_memBackTypeMM : mmioReq_bits_memBackTypeMM
+io_perf_0_value	[5:0]	assign_expr2	2	{5'h0, io_perf_0_value_REG_1}
+io_perf_1_value	[5:0]	assign_expr2	2	{5'h0, io_perf_1_value_REG_1}
+io_perf_2_value	[5:0]	assign_expr2	2	{5'h0, io_perf_2_value_REG_1}
+io_perf_3_value	[5:0]	assign_expr2	2	{5'h0, io_perf_3_value_REG_1}
+io_perf_4_value	[5:0]	assign_expr2	2	{5'h0, io_perf_4_value_REG_1}
+io_perf_5_value	[5:0]	assign_expr2	2	{5'h0, io_perf_5_value_REG_1}
+io_perf_6_value	[5:0]	assign_expr2	2	{5'h0, io_perf_6_value_REG_1}
+io_perf_7_value	[5:0]	assign_expr2	2	{5'h0, io_perf_7_value_REG_1}
+gatewayIn_packed_48_bore	[72:0]	assign_expr3	122	{cmoInvalEvent_cmo_inval_valid, cmoInvalEvent_cmo_inval_addr, cmoInvalEvent_cmo_inval_coreid}
