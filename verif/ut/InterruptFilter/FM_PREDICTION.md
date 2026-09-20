@@ -576,3 +576,95 @@ localparam 里的 `$bits(端口拼接)`**，而 DelayN 家族的薄 wrapper 正�
 1. `scripts/check_closure_symmetry.py` **不在 `gate_all.sh` 里**（grep 计数 0），不会把闸判红；
 2. 对称性的**权威判据**是 FM 实跑导出的 `black_boxes.rpt`（`fm_verdict.py` 用它判
    `assembly_bbox_not_symmetric`）。第 5 跑跑完会把 `blackbox_out` 与该文件一并核对。
+
+---
+
+## 14. 第五跑（子依赖闭合后的签核跑）实测 —— `UNCHANGED_GOLDEN_DEP` 摘除
+
+★口径说明★：本 lane 被 HTTP 403 打断过一次。打断前曾有一跑落在
+`evidence/e8d0f728dda2/`，但「那一跑有没有出结果、结果是什么」在版本库里没有依据，
+**按集成者要求全部重跑，下面的数字一律来自打断后的重跑，不引用打断前的任何数字**。
+
+证据 `evidence/5254ac5bde44/InterruptFilter/`，`run_proof.sh` rc=0：
+
+```
+verdict: SUCCEEDED          impl_commit 5254ac5bde44
+{"passing": 440, "failing": 0, "unverified": null, "unmatched": 0,
+ "unread": null, "blackbox_out": 0, "dont_verify": false, "elab147": false,
+ "constant_reg": 138, "native": "SUCCEEDED", "unmatched_ref": 0, "unmatched_impl": 0}
+Passing (equivalent)   Port 74   DFF 366   TOTAL 440
+Failing                                     TOTAL   0
+Not Compared  Constant reg      DFF 138
+IF_PIN: pinned 85 pair(s); orphans 85; structural inventory upper bound 378
+grep -cE "^ *Error:" fm.log = 0
+```
+
+impl 闭包（从 fm.log 现读，确认 golden 的 DelayN **不在 impl 侧**）：
+
+```
+.../rtl/backend/InterruptFilter.sv
+.../rtl/common/xs_DelayN_core.sv
+.../rtl/common/DelayN_17.sv
+.../rtl/common/DelayN_208.sv
+```
+
+| 项 | §13.1 预测 | 实测 | 差 |
+|---|---|---|---|
+| passing | 440 | **440** | 0 |
+| Constant reg | 138 | **138** | 0 |
+| failing / unverified / unmatched / 黑盒 / unread / dont_verify | 0 | **0** | 0 |
+| 比较点全集 | 578 | **578** | 0 |
+
+`python3 scripts/fm_predict.py check InterruptFilter` → rc=0：
+`预期 578 / 实测 440 / 差 138 / 可指认 138（constant_reg 138 + unread 0）→ 差额被指认`。
+
+§13.2 担心的风险**没有发生**：DelayN 链那 65 位寄存器叶名虽然从 golden 的
+`REG_<k>` 变成重写核的 `u_core/stage_reg[<k>]`，FM 自己就把它们配上了，
+`unmatched` 仍是 0(0)，不需要为它们扩钉点。
+
+### 14.1 ★自证「没有任何东西被黑盒掉」★
+
+`black_boxes.rpt` 里有一条 `e *  xs_DelayN_core  Instances : 0`。
+这条**不是**真黑盒，两条独立证据：
+
+1. **闭包触发器位逐位对上**：`scripts/fm_predict.py model InterruptFilter` 算出
+   `regs 504`（= InterruptFilter 439 + DelayN_17×5 的 25 + DelayN_208 的 40）。
+   实测 `366 passing DFF + 138 Constant reg DFF = 504`。
+   ★若 `xs_DelayN_core` 真被黑盒，它那 65 位就会从比较点里消失，只剩 439。★
+2. **同形态出现在别人已签核的证据里**（这条我按要求**自己复核了一遍**，不是引用）：
+   `/home/eda/xs-env/xs-v2-sv/evidence/eee60602a12f/DelayN_17/` 是 DelayN lane
+   自己的 `signoff-strict` receipt，`verdict SUCCEEDED / blackbox_out 0`，
+   而它的 `black_boxes.rpt` 里有 **18 条 entry、每一条都是 `Instances : 0`**
+   （逐条解析过，没有一条 `Instances > 0`）。
+   这些是被读进库但在该顶层没有实例的设计条目，Formality 照例列出来。
+
+### 14.2 结论：条件性证明升级为完整签核
+
+| | 升级前（跑 1~4） | 升级后（本跑） |
+|---|---|---|
+| `DelayN_17` / `DelayN_208` 在 impl 侧 | golden 字节 | **重写件** |
+| 本 target 对这两个 child 的信息量 | 零 | **真比对** |
+| 台账 | 条件性证明 · `UNCHANGED_GOLDEN_DEP` / 子依赖未闭合 | ★`UNCHANGED_GOLDEN_DEP` **摘除**★ |
+
+§2 那一节的结论边界**到此失效**，保留在文件里是为了留下当时的前提，
+**不要再引用它来描述当前状态**。
+
+### 14.3 同一 commit 上的另外两项验收（也都是打断后重跑的）
+
+- **UT**：3 seed × {`+vcs+initreg+0`,`+random`} 共 **6/6 轮全过**，
+  每轮 200k 拍 / 2.6M 次比较 / `errors=0`（升级后的闭包，golden 的 DelayN 只在对照侧）。
+- **变异负测**：`mutants.py` **10/10 全被抓到**，基线 `checks=260000 errors=0`。
+
+### 14.4 ★一次自己造成的事故：两跑 mutants 共用固定名目录，互相拆台★
+
+升级后第一次跑变异负测时，基线就报失配（`io_out_irToVS`），一度像是真缺陷。
+查下来是**我自己**在上一跑还活着的时候又起了一跑，两者共用固定名的
+`neg_build/`：一边 `prepare()` 的 `rmtree` 把另一边跑到一半的树删掉
+（那边因此报「M6 编译/运行失败」），另一边 `restore()` 还没跑完，
+这边就把**对方注入的 M10 变异**当成自己的基线量了 —— 失配签名正是 M10 的。
+
+★那两次跑的结论都不作数★，已重跑（见 §14.3）。
+`mutants.py` 已改成 `BUILD = neg_build/run-<pid>`，只删自己那一跑的目录、
+绝不碰 `neg_build` 本身 —— 与 CONVENTIONS ★共享 scratchpad 里禁止 `rm -rf` 语义名★
+是同一条判据：破坏性操作的作用域必须由**自己造的唯一标识**界定。
+（仍放在 `neg_build/` 之下，`.gitignore` 的 `verif/ut/*/neg_build/` 继续覆盖，已实测。）
