@@ -17,7 +17,24 @@ vmucp 白名单 `if {$top ni {...}}`。合并冲突时我两次处理错：
 两次都是我修好了却**没有加闸**，于是下一次合并原样复发。这道闸把"修好"变成
 "修住"。
 
-正确的合并方式：**取两侧白名单的并集，合成一条 if，两组依据注释都保留**。
+正确的合并方式（★2026-09-20 起作废★）：取两侧白名单的并集，合成一条 if。
+
+## ★2026-09-20：白名单搬走了，这条判据跟着换★
+
+per-target 数据（白名单 65 个名字 + 各自依据 + LoadQueueReplay 的 appvar 块）已拆进
+`verif/fm_target_config/<top>.tcl`（理由与实测见那里的 README）。于是：
+
+  · 旧 W1 断言「`top ni {` **恰 1 条**」 —— 现在必须是 **0 条**：白名单一旦"回家"，
+    就又把全仓 child 证书打翻一遍，所以这里从"要求它在"翻成"要求它不在"。
+  · 新增两条同类不变式，防的是**同一种合并事故**换了个位置复发：
+      per-target 配置的**载入器**必须恰 1 份（合并时留下两条 `source
+      $::FM_TARGET_CONFIG` 会把同一份文件 source 两遍，appvar 声明翻倍）；
+      `fm_target_apply_appvars` 的**调用**必须恰 1 处（丢了它，per-target appvar
+      静默不生效 —— 没有任何人会报错，证明语义悄悄变了）。
+  · "白名单里的名字合法" 这条改成查 `verif/fm_target_config/` 的**文件名**。
+
+★改判据和改被判对象是两件事★：所以下面的对照用例也整套换过，
+`W3` 现在种的是"白名单搬回 fm_eq.tcl"，`W8/W9` 种的是新增那两条。
 """
 import pathlib
 import re
@@ -26,6 +43,7 @@ import sys
 
 HERE = pathlib.Path(__file__).resolve().parent
 TCL = HERE / 'fm_eq.tcl'
+CFG_DIR = HERE.parent / 'verif' / 'fm_target_config'
 PASS, FAIL = [], []
 
 
@@ -43,8 +61,17 @@ def check(text):
         if n:
             probs.append(f'残留合并冲突标记 {mk} × {n}')
     n_if = len(re.findall(r'top ni \{', text))
-    if n_if != 1:
-        probs.append(f'vmucp 白名单 if 有 {n_if} 条（必须恰 1 —— 多条会串联互拒）')
+    if n_if != 0:
+        probs.append(f'vmucp 白名单 if 有 {n_if} 条（必须 0 —— 白名单在 '
+                     f'verif/fm_target_config/<top>.tcl，搬回来就又打翻全仓证书）')
+    n_src = len(re.findall(r'^\s*source \$::FM_TARGET_CONFIG\s*$', text, re.M))
+    if n_src != 1:
+        probs.append(f'per-target 配置载入器有 {n_src} 条（必须恰 1 —— '
+                     f'两条会把同一份配置 source 两遍，appvar 声明翻倍）')
+    n_apply = len(re.findall(r'^\s*fm_target_apply_appvars\s*$', text, re.M))
+    if n_apply != 1:
+        probs.append(f'fm_target_apply_appvars 调用有 {n_apply} 处（必须恰 1 —— '
+                     f'丢了它 per-target appvar 静默不生效，没人会报错）')
     if text.count('{') != text.count('}'):
         probs.append(f'花括号不配平：{{ {text.count("{")} vs }} {text.count("}")}')
     probs += switch_body_problems(text)
@@ -118,14 +145,14 @@ def switch_body_problems(text):
 print('=== scripts/fm_eq.tcl 结构不变式 ===')
 txt = TCL.read_text(errors='replace')
 probs = check(txt)
-ck('W1 无冲突标记 / 恰一条白名单 if / 括号配平', not probs)
+ck('W1 无冲突标记 / 白名单已搬走(0 条) / 载入器与 apply 各恰 1 / 括号配平', not probs)
 for p in probs:
     print(f'          {p}')
 
 if not probs:
-    names = set(re.search(r'ni \{([^}]*)\}', txt).group(1).split())
-    ck('W2 白名单非空且都是合法模块名', bool(names) and all(
-        re.match(r'^[A-Za-z_]\w*$', n) for n in names), f'{len(names)} 个目标')
+    names = {p.stem for p in CFG_DIR.glob('*.tcl')} if CFG_DIR.is_dir() else set()
+    ck('W2 per-target 配置非空且文件名都是合法模块名', bool(names) and all(
+        re.match(r'^[A-Za-z_]\w*$', n) for n in names), f'{len(names)} 份配置')
 
 def inject_into_switch(text, line):
     """把 line 插进**第一条真正的** `switch ... {` 语句体（行首匹配，跳过注释里的同形字样）。"""
@@ -139,8 +166,15 @@ def inject_into_switch(text, line):
 # 任何把判据变成"无条件报警"的改动（例如 switch_body_problems 直接 return ['x']）
 # 都会让 W1 转红，所以下面这几条对照不会退化成"只要出声就算过"。
 cases = [
-    ('两条 if',
-     txt.replace('if {$top ni {', 'if {$top ni {A B} } ;# dup\n    if {$top ni {', 1)),
+    # ★换判据之后的头号对照★：白名单"回家"必须被抓（旧版判据在这里是反的）。
+    ('白名单搬回 fm_eq.tcl',
+     txt.replace('\nfm_target_apply_appvars',
+                 '\nif {$top ni {A B}} { exit 3 }\nfm_target_apply_appvars', 1)),
+    ('载入器被合并成两份',
+     txt.replace('\n    source $::FM_TARGET_CONFIG',
+                 '\n    source $::FM_TARGET_CONFIG\n    source $::FM_TARGET_CONFIG', 1)),
+    ('apply 调用被合并掉',
+     txt.replace('\nfm_target_apply_appvars', '\n# fm_target_apply_appvars', 1)),
     ('残留冲突标记', '<<<<<<< HEAD\n' + txt + '\n>>>>>>> other\n'),
     ('括号不配平', txt + '\nif {1} {\n'),
     # ★本轮真事故的复现★：注记搬回 switch body 里，必须被抓。

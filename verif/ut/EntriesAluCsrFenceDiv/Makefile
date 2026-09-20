@@ -32,7 +32,7 @@ FM_REF_DEPS_EntriesAluCsrFenceDiv = EnqEntry_6.sv OthersEntry_66.sv OthersEntry_
 #   这是要求 FM 逐个而不是合并后比 —— 更严，不跳点、不黑盒、不约束 ref。
 # FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=true：配合 fm_pins_pre.tcl 的逐位钉点，
 #   让 FM **真去比**那些「本变体里没有输出锥」的负载位，而不是记 Not-Compared。
-#   白名单在 scripts/fm_eq.tcl（依据写在那一行紧邻的注释里），两处须同时生效。
+#   白名单在 verif/fm_target_config/<top>.tcl（依据就写在那份文件里），两处须同时生效。
 # 本变体实测(2026-09-17, 钉点 20308 对)：native SUCCEEDED /
 # passing 18781 / failing 0 / unverified 0 / aborted 0 /
 # unmatched 六项全 0 / 黑盒输出 0 / qualifications 三项全空。
