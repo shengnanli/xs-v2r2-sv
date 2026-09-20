@@ -639,7 +639,16 @@ def judge(r, rtl_mods, cur_id, workdir):
     if r['provisional']:
         why.append('receipt 标了 provisional')
     if r['packed']:
-        why.append('用了 FM_FIELD_MAP（packed payload 钉点），该数据文件不在字节快照里')
+        # ★证据 schema 的一个洞，不是这份 receipt 的错★
+        # match_packed_payload 用 `open` 读 $env(FM_FIELD_MAP)，而 sidecar 的字节快照
+        # 是挂在 `source` 上的（sidecar_register_script / sidecar_pin_source），
+        # 于是这个文件**一个字节都没进 script_closure.list，也没进 receipt**。
+        # 实测 NewPipelineConnectPipe_29：fm.log 里 `PACKED_MATCH: 1023 points pinned`，
+        # 1023 个 set_user_match 来自一份字节没留档的文件。
+        # 那 1023 个钉点是不是还和今天的 field map 一样，**从 receipt 里看不出来**，
+        # 所以这类一律判不可收；要收得先把 FM_FIELD_MAP 纳入字节快照再重出。
+        why.append('用了 FM_FIELD_MAP（packed payload 钉点）：它经 open 读入而非 source，'
+                   '不在 sidecar 字节快照里，闭包缺这一项无法复核')
 
     checks['chk_golden'], w = chk_golden(r, cur_id)
     if w:
