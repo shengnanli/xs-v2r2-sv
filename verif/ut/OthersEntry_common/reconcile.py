@@ -16,7 +16,7 @@ import json, pathlib, sys
 HERE = pathlib.Path(__file__).resolve().parent
 REPO = HERE.parents[2]
 sys.path.insert(0, str(HERE))
-from predict import predict, DONE12                            # noqa: E402
+from predict import predict, DONE18                            # noqa: E402
 
 
 def load(commit, top):
@@ -30,7 +30,7 @@ def main(argv):
     commit = argv[0]
     md = '--md' in argv
     rows, bad = [], 0
-    for top in DONE12:
+    for top in DONE18:
         p = predict(top)
         r = load(commit, top)
         if r is None:
