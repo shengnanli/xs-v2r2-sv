@@ -119,8 +119,46 @@ TMP_PREFIX_RE = re.compile(r'^/tmp/xsv2-proof-[^/]+/')
 PACKED_RE = re.compile(r'^PACKED_MATCH: \d+ points pinned', re.M)
 
 COLUMNS = ['target', 'golden_lines', 'impl_in_main', 'in_vcs', 'merge_dup',
-           'chk_golden', 'chk_impl', 'chk_fm_eq', 'chk_pins', 'chk_emitter',
-           'chk_decl', 'chk_tool', 'chk_facts', 'verdict', 'evidence', 'why']
+           'mdup_band', 'chk_golden', 'chk_impl', 'chk_fm_eq', 'chk_pins',
+           'chk_emitter', 'chk_decl', 'chk_tool', 'chk_facts', 'verdict',
+           'evidence', 'rounds', 'other_rounds', 'why']
+
+# 一个目标一行时，结论取**最强**的那一个。
+VERDICT_RANK = {'COLLECTED': 0, 'SUPERSEDED': 1, 'NEEDS_RERUN': 2,
+                'NEEDS_RTL_MERGE': 3, 'OK': 0}
+
+_band_cache = {}
+
+
+def mdup_band(target):
+    """merge_dup=true 时，passing 模型的**不确定带宽**有多宽。
+
+    ★这一列不参与任何判决★，本表八项判据全是 sha256 与差分调用序列，与 passing
+    数无关。它在这里是给读表的人用的：merge 只合并**寄存器**导出的比较点，
+    顶层 output 端口一个不少，所以 merge_dup=true 时模型的偏差上界就是 regs，
+    带宽 = regs / (regs + outs)。
+
+      NewDispatch  regs 358  / outs 51563 -> 0.7%   模型仍然很有用
+      IBuffer      regs 7079 / outs 1213  -> 85%    这条带近乎无信息
+
+    "merge_dup=true 就一律模型不适用"太钝：带窄的时候模型照样是最便宜的探针，
+    只有带宽的那些才真判不了。>30% 标 wide。
+    """
+    if target in _band_cache:
+        return _band_cache[target]
+    v = 'n/a'
+    try:
+        sys.path.insert(0, os.path.join(REPO, 'scripts'))
+        from fm_passing_model import model as _model
+        r = _model(target, [])
+        tot = (r['regs'] or 0) + (r['outs'] or 0)
+        if tot:
+            pct = 100.0 * r['regs'] / tot
+            v = '%.1f%%%s' % (pct, '/wide' if pct > 30 else '')
+    except Exception:
+        v = 'n/a'
+    _band_cache[target] = v
+    return v
 
 
 def tcl_exec_text(path):
@@ -742,16 +780,29 @@ def build(only=None):
                                         batch_size(winner)))
             elif tgt in led and v != 'NEEDS_RTL_MERGE':
                 r['_why'].append('注：台账里这个目标已有绿判决')
-            rows.append([
-                tgt, str(gl.get(tgt, 0)), r['_impl_in_main'],
-                'yes' if r['in_vcs'] else 'no', r['merge_dup'],
-                r['_checks']['chk_golden'], r['_checks']['chk_impl'],
-                r['_checks']['chk_fm_eq'], r['_checks']['chk_pins'],
-                r['_checks']['chk_emitter'], r['_checks']['chk_decl'],
-                r['_checks']['chk_tool'], r['_checks']['chk_facts'], v,
-                r['ev_id'], '; '.join(r['_why']) or '-',
-            ])
-    rows.sort(key=lambda x: (x[0], x[14]))
+            r['_v'] = v
+
+        # ---- 一个目标一行 ----
+        # 结论取**最强**的那一个：有 COLLECTED 就是 COLLECTED，不因为同一目标还有
+        # 几份陈旧轮次而降级。但陈旧轮次必须在同一行里看得见（other_rounds 列），
+        # 否则下一个人会以为那些证据根本不存在、跑去重做。
+        lead = sorted(cands, key=lambda r: (VERDICT_RANK[r['_v']],
+                                            -batch_size(r), -r['mtime'],
+                                            r['wt'], r['run']))[0]
+        others = [r for r in cands if r is not lead]
+        others.sort(key=lambda r: (r['ev_id'],))
+        rows.append([
+            tgt, str(gl.get(tgt, 0)), lead['_impl_in_main'],
+            'yes' if lead['in_vcs'] else 'no', lead['merge_dup'], mdup_band(tgt),
+            lead['_checks']['chk_golden'], lead['_checks']['chk_impl'],
+            lead['_checks']['chk_fm_eq'], lead['_checks']['chk_pins'],
+            lead['_checks']['chk_emitter'], lead['_checks']['chk_decl'],
+            lead['_checks']['chk_tool'], lead['_checks']['chk_facts'], lead['_v'],
+            lead['ev_id'], str(len(cands)),
+            ' '.join('%s(%s)' % (r['ev_id'], r['_v']) for r in others) or '-',
+            '; '.join(lead['_why']) or '-',
+        ])
+    rows.sort(key=lambda x: x[0])
     return rows, led
 
 
@@ -763,7 +814,11 @@ def render(rows, led):
     out.append('#   "lane 里又冒出新证据没列进来"是另一个问题，单独打一行提示，不影响退出码')
     out.append('#   （被扫的 evidence/ 在仓外、十几条 lane 在活跃产出，实测几分钟就能从 471 涨到 517）。')
     out.append('#')
-    out.append('# 每行 = lane worktree 里一份绿 FM receipt，逐份过三关。')
+    out.append('# ★一个目标一行★（不是一份 receipt 一行）。同一目标的多轮 receipt 里，')
+    out.append('#   verdict 取**最强**的那一个 —— 有 COLLECTED 就是 COLLECTED，不因为它')
+    out.append('#   还有几份陈旧轮次而降级；但陈旧轮次在 rounds / other_rounds 两列里**看得见**，')
+    out.append('#   否则下一个人会以为那些证据不存在、跑去重做。')
+    out.append('#   chk_* 与 evidence 列描述的是被选中的那一份（关三的权威），why 说清为什么是它。')
     out.append('# 关一 impl_in_main  实现在不在 main（不在 -> 只收 receipt 不进 proven 口径）')
     out.append('# 关二 chk_*         证明闭包与 main 当前逐项是否一致')
     out.append('#      chk_fm_eq 的 `trace_equal` **不是**比 sha：是用 receipt 自己记的入口环境')
@@ -771,18 +826,20 @@ def render(rows, led):
     out.append('#      （scripts/fm_eq_trace.tcl，判据的输入独立于被判断的 diff 文本）。')
     out.append('# 关三 同一目标多份只收一份，其余 SUPERSEDED，why 里写清为什么是这一份。')
     out.append('#')
-    out.append('# merge_dup 单列一列，因为它决定"passing 模型能不能当一致性探针"：')
+    out.append('# merge_dup / mdup_band 两列，说的是"passing 模型能不能当一致性探针"：')
     out.append('#   模型 passing = 闭包触发器位 + 顶层输出端口位，**只在 merge_dup=false 时成立**；')
     out.append('#   merge_dup=true 时 FM 把重复寄存器合并成一个比较点，比较点数低于寄存器位数，')
     out.append('#   低多少取决于设计里有多少重复结构 —— 不是能从 golden 静态算出来的量')
     out.append('#   （实测 IBuffer merge_dup=true：模型 8292 / 实测 7902，差 390 里只有 12 可指认）。')
-    out.append('#   ★所以本表一项判据都没用模型★：上面七项全是 sha256 逐项比对 + fm_eq 差分调用序列，')
-    out.append('#   与 passing 数无关。这一列在这里是给读表的人用的：merge_dup=true 的行，')
-    out.append('#   "模型对不上"不是闭包变了的证据，别拿它当红灯。')
+    out.append('#   但"merge_dup=true 就一律模型不适用"太钝：merge 只合并**寄存器**导出的比较点，')
+    out.append('#   顶层 output 端口一个不少，所以偏差上界就是 regs，mdup_band = regs/(regs+outs)。')
+    out.append('#   带窄（如 NewDispatch 0.7%）模型照样好用，带宽（IBuffer 85%）才真判不了，>30% 标 wide。')
+    out.append('#   ★本表一项判据都没用模型★：八项全是 sha256 逐项比对 + fm_eq 差分调用序列，')
+    out.append('#   与 passing 数无关。这两列是给读表的人防误读用的，不是红灯。')
     out.append('#')
     out.append('# 结论: COLLECTED / NEEDS_RERUN / NEEDS_RTL_MERGE / SUPERSEDED')
     out.append('#')
-    cnt = collections.Counter(r[13] for r in rows)
+    cnt = collections.Counter(r[14] for r in rows)
     out.append('# 本次统计: 受检 receipt %d 份 / 不同目标 %d 个 / %s'
                % (len(rows), len({r[0] for r in rows}),
                   ' '.join('%s=%d' % kv for kv in sorted(cnt.items()))))
@@ -793,7 +850,12 @@ def render(rows, led):
 
 
 def listed_rows(path):
-    """表里已列出的 (evidence, target) —— --check 的扫描范围。"""
+    """表里已列出的 (evidence, target) —— --check 的扫描范围。
+
+    ★必须把 other_rounds 也算进来★：一个目标一行之后，那一行的 rounds / other_rounds
+    两列是由**该目标全部轮次**算出来的。只把主 evidence 放进扫描范围，重算时
+    别的轮次不在场，other_rounds 会缩成空、--check 必然假红。
+    """
     out = set()
     with open(path, errors='replace') as f:
         for l in f:
@@ -802,7 +864,10 @@ def listed_rows(path):
             c = l.rstrip('\n').split('\t')
             if len(c) != len(COLUMNS) or c[0] == 'target':
                 continue
-            out.add((c[14], c[0]))
+            out.add((c[15], c[0]))
+            if c[17] != '-':
+                for tok in c[17].split():
+                    out.add((tok.rsplit('(', 1)[0], c[0]))
     return out
 
 
@@ -856,7 +921,7 @@ def main(argv):
     txt = render(rows, led)
     with open(a.out, 'w') as f:
         f.write(txt)
-    cnt = collections.Counter(r[13] for r in rows)
+    cnt = collections.Counter(r[14] for r in rows)
     print('写出 %s' % a.out)
     print('  受检 receipt %d 份，不同目标 %d 个' % (len(rows), len({r[0] for r in rows})))
     for k in ('COLLECTED', 'NEEDS_RERUN', 'NEEDS_RTL_MERGE', 'SUPERSEDED'):
