@@ -1,0 +1,55 @@
+# Rob 的 8 个 child 实例：性质逐个核实（2026-09-20，本轮实测，不转述）
+#
+# 缘起：rtl/backend/Rob.sv 的文件头写着「子模块：8 个全是对称黑盒，所以本目标是
+# 条件绿」。★这句话本轮被验证了，但它的含义比字面窄★：
+#   · 「对称黑盒」作为 **FM 处置** 对 8 个全都成立（CONVENTIONS §3：非本目标的
+#     子模块两侧同名黑盒配对）——这一半是对的；
+#   · 但「条件绿」的那个**条件能不能兑现**，8 个分成三类，**不是一回事**。
+#     6 个当前根本没有 FM target ⇒ 条件挂在一个不存在的目标上，
+#     按 codex 0153 D70 的口径那是**结构性不闭合**，不是「等别人签完就好」。
+# 所以本表的结论是：**Rob 不得报 PROVEN_DIRECT**；最好的可得终态是
+# 条件性证明 + 6 条 UNCHANGED_GOLDEN_DEP（外加 2 条 HAS_TARGET_UNVERIFIED）。
+#
+# 每列的判据（全部可复算，命令写在列说明里）：
+#   child          golden 模块名（Rob.sv 里的实例类型）
+#   inst           Rob 里的实例名
+#   pins           该实例的引脚数（gen_rob.py 的 parse_children 口径；8 个合计 868）
+#   golden_lines   wc -l $G1/<child>.sv
+#   golden_sha256  sha256sum（**性质随 golden 变**，换 golden 必须重算本表）
+#   is_fm_target   python3 scripts/fm_target_universe.py --check <child>（engine=both）
+#   ut_dir         同上命令给出的 ut= 字段
+#   in_306         grep -P "^<child>\t" docs/g1_universe.tsv
+#   impl           ls rtl/*/<child>.sv
+#   certificate    ls verif/proof_certificates/  ← ★本仓当前一张都没有★（只有
+#                  POLICY.json + schema-v1.json），所以两个 FM target 的 child
+#                  也只能记 HAS_TARGET_UNVERIFIED，不能记「已绿」
+#   verdict        见下
+#   note           限定条件（CONVENTIONS「限定条件必须和结论写在同一行」）
+#
+# verdict 取值：
+#   DEP_DISCHARGEABLE   有自己的 FM target + 有重写实现 ⇒ 它自己签核即可解掉这条依赖
+#   DEP_UNCLOSED        没有 FM target ⇒ 结构性不闭合。出路只有两条（D70）：
+#                       两侧 inline elaborate 白盒化，或新建 AUX leaf target
+#   DEP_UNCLOSED_MEM    同上，但它是 firtool 行为级存储叶子，走的是
+#                       codex 0158 §1 那条 APPROVED_MEMORY_MACRO_MODEL 的路
+#
+# ★不在本表的三个反面结论，也一并钉住，省得下轮再查一遍★
+#   1. 8 个 child **没有一个是厂商硬宏**（A1）。verif/vendor_boundary.tsv 的 27 行
+#      名单里一个都没有；A1 的形状是 SRAM 编译器产出的 array_*_ext，这 8 个
+#      全是 firtool 从 Chisel 生成的。⇒ 谁都不能拿「厂商宏无条件黑盒」免检。
+#   2. 8 个 child **只有 Rob 一个父**（grep -lP "^\s{0,4}<child>\s+\w+\s*\($ 遍历
+#      $G1/*.sv，结果全是 Rob.sv 一个）。⇒ 别处不会替我们把它们证掉。
+#   3. ExceptionGen 在**别的仓**（xs-signoff / G0 基线）那条 AUX 签核 **不适用于本仓**：
+#      G0 的 ExceptionGen.sv 是 2366 行 sha=9ab4a22a3b67d01a，
+#      G1 的是 **2636 行 446 端口 sha=0f50cbf7bbde12b8** —— 不是同一个设计。
+#      （本轮直接量的，不是听说的。）
+#
+child	inst	pins	golden_lines	golden_sha256	is_fm_target	ut_dir	in_306	impl	certificate	verdict	note
+RenameBuffer	rab	140	40993	482f15632578955333091a48c81782a5bd4eceee69d8cb7c253280f57dd961aa	YES	RenameBuffer	YES	rtl/backend/RenameBuffer.sv	NONE	DEP_DISCHARGEABLE	八个里唯一进 306 universe 的；universe 里状态仍是 UNVERIFIED/no tracked certificate，所以现在只能算 HAS_TARGET_UNVERIFIED。它自己还带一个 SnapshotGenerator child（见其 Makefile 的 FM_REF_DEPS）
+SnapshotGenerator_3	snapshots_snapshotGen	19	283	537d25133857bdcce632f299bf99b4a178342a37f699d9d5f5f2b24a56ded258	YES	SnapshotGenerator	NO	rtl/backend/SnapshotGenerator_3.sv	NONE	DEP_DISCHARGEABLE	★不在 306 universe，但确实是 FM target★：它是 verif/ut/SnapshotGenerator 的 FM_VARIANTS 11 个变体之一（AUX 覆盖）。同样无证书 ⇒ HAS_TARGET_UNVERIFIED
+VTypeBuffer	vtypeBuffer	112	1288	3c156ced542cf8ded8a1129b9f7f9a5646814a8a1dd271705df975ff795d6e58	NO	-	NO	none	NONE	DEP_UNCLOSED	自己还嵌 3 个 child（SyncDataModuleTemplate__64entry_4 / SnapshotGenerator_1 / SnapshotGenerator_2）⇒ 即便建 AUX target 也不是叶子，要连带处理
+ExceptionGen	exceptionGen	433	2636	0f50cbf7bbde12b88731b4347f4671707bc3391fae1f7e7f8c4bb12ab455e1c6	NO	-	NO	none	NONE	DEP_UNCLOSED	八个里引脚最多的（433/868 的一半）。★别拿 G0 那条 AUX 签核当数★，见表头反面结论 3
+NewRobDeqPtrWrapper	deqPtrGenModule	80	886	03a69b65a94c69f0337b12750d0ea9aa321bdf09ce299a2a52ab585556af0bf5	NO	-	NO	none	NONE	DEP_UNCLOSED	无自有 child，是真叶子 ⇒ 建 AUX leaf target 的代价最小的一档
+RobEnqPtrWrapper	enqPtrGenModule	25	368	3874e460d979b61f3cba71d29348bfba37e10404392ca0eaf0b54f3e23c45435	NO	-	NO	none	NONE	DEP_UNCLOSED	同上，真叶子
+CommitStuckCounter	commitStuckCounter	3	125	e421a99d306f2f239b06cae697472961810c414537293a29e9239944c7c238b0	NO	-	NO	none	NONE	DEP_UNCLOSED	真叶子，整个模块就是 21 位饱和计数器 + `assign io_overflow = &count`（3 个引脚）。代价最小
+dt_pcTransType_160x2	dt_pcTransType_ext	56	183	a47be472a7ebd4721e65ee6e9807c3389f712675f2afeed80ecf400d8adc80f9	NO	-	NO	none	NONE	DEP_UNCLOSED_MEM	firtool 行为级存储叶子：`reg [1:0] Memory[0:159]` + 8 读口/6 写口。★不能照 TLBuffer_13 那样直接两侧 inline★：addr 8 位、深度 160，2^8=256>160，白盒化必触发 FMR_ELAB-147 —— 与 ram_40x47 完全同形。出路是 codex 0158 §1 的 APPROVED_MEMORY_MACRO_MODEL：按精确模块名+golden hash 入 verif/vendor_boundary.tsv，并做三项功能审查。0158 原话「其余只在各自 parent 被实际验证时再加」，Rob 就是那个 parent ⇒ 这条要等 Rob 真跑 FM 时办，且入表≠转绿

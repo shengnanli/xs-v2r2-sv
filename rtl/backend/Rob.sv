@@ -15,10 +15,28 @@
 //   3. **robDeqGroup 是提交读口的寄存器级**：commitInfo / rawInfo / deqPtrEntry
 //      全从它出来，io_commits_info_* 的 360 个输出直接由它驱动。
 //
-// 子模块：8 个全是**对称黑盒**（ref 与 impl 两侧都不给体），所以本目标是
-// **条件绿** —— 依赖 rab / vtypeBuffer / exceptionGen / enqPtrGenModule /
-// deqPtrGenModule / snapshots_snapshotGen / commitStuckCounter / dt_pcTransType_ext
-// 各自独立签核。receipt 必须带这条依赖，Rob 不得报成无条件通过。
+// 子模块：8 个的 FM 处置都是**对称黑盒**（ref 与 impl 两侧都不给体，
+// CONVENTIONS §3）。★但「条件绿」的那个条件，8 个分成三类，不是一回事★
+// —— 本轮逐个核实过，见 docs/rob_child_ledger.tsv（判据命令写在表头，可复算）：
+//   · 2 个 **DEP_DISCHARGEABLE**：RenameBuffer(rab) / SnapshotGenerator_3
+//     (snapshots_snapshotGen) 有自己的 FM target 也有重写实现，它们自己签核
+//     就能解掉这条依赖。但本仓 verif/proof_certificates/ 当前**一张证书都没有**，
+//     所以现在只能记 HAS_TARGET_UNVERIFIED，不是「已绿」。
+//   · 5 个 **DEP_UNCLOSED**：VTypeBuffer / ExceptionGen / NewRobDeqPtrWrapper /
+//     RobEnqPtrWrapper / CommitStuckCounter —— **都不是 FM target**
+//     （scripts/fm_target_universe.py --check，engine=both）。条件挂在一个
+//     不存在的目标上，按 codex 0153 D70 是**结构性不闭合**，
+//     出路只有两条：两侧 inline elaborate 白盒化，或新建 AUX leaf target。
+//   · 1 个 **DEP_UNCLOSED_MEM**：dt_pcTransType_160x2 是 firtool 行为级存储叶子
+//     （reg [1:0] Memory[0:159]，8 读口/6 写口）。深度 160 / addr 8 位，
+//     2^8>160 ⇒ 两侧 inline 必触发 FMR_ELAB-147，与 ram_40x47 同形；
+//     要走 codex 0158 §1 的 APPROVED_MEMORY_MACRO_MODEL 逐条入表。
+// ⇒ **Rob 不得记 PROVEN_DIRECT**（codex 0168 §1）。最好的可得终态是
+//   条件性证明 + 6 条 UNCHANGED_GOLDEN_DEP + 2 条 HAS_TARGET_UNVERIFIED。
+//   receipt 必须逐条带上，不得报成无条件通过。
+// 另外三条反面结论也已钉住（见台账表头）：8 个**无一是厂商硬宏**（不得免检）；
+// 8 个**只有 Rob 一个父**（别处不会替我们证掉）；ExceptionGen 在 G0/xs-signoff
+// 那条 AUX 签核**不适用于本仓**（G0 2366 行 vs G1 2636 行 446 端口，不是同一设计）。
 //
 // 三张契约表是本文件"一位不少"的定义，改这个文件前先读：
 //   docs/rob_core_contract.tsv   寄存器：13 族 161 字段 + 452 散寄存器
