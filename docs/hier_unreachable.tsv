@@ -28,6 +28,8 @@ EnqEntry_12	SIGNED_OFF_TARGET	ABSORBED_DIRECT	EntriesFaluFmac	2	EntriesFaluFmac	
 EnqEntry_14	SIGNED_OFF_TARGET	ABSORBED_DIRECT	EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	2	EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	rtl/backend/EnqEntry_14.sv
 EnqEntry_16	SIGNED_OFF_TARGET	ABSORBED_DIRECT	EntriesVfmaVialuFixVfalu	2	EntriesVfmaVialuFixVfalu	rtl/backend/EnqEntry_16.sv
 EnqEntry_18	SIGNED_OFF_TARGET	ABSORBED_DIRECT	EntriesVfdivVidiv	2	EntriesVfdivVidiv	rtl/backend/EnqEntry_18.sv
+EnqEntry_24	GOLDEN_ONLY	ABSORBED_DIRECT	EntriesLdu	2	EntriesLdu	$(GOLDEN_RTL)/EnqEntry_24.sv
+EnqEntry_30	GOLDEN_ONLY	ABSORBED_DIRECT	EntriesStdMoud	2	EntriesStdMoud	$(GOLDEN_RTL)/EnqEntry_30.sv
 EnqEntry_4	SIGNED_OFF_TARGET	ABSORBED_DIRECT	EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	2	EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	rtl/backend/EnqEntry_4.sv
 EnqEntry_6	SIGNED_OFF_TARGET	ABSORBED_DIRECT	EntriesAluCsrFenceDiv	2	EntriesAluCsrFenceDiv	rtl/backend/EnqEntry_6.sv
 EnqEntry_8	SIGNED_OFF_TARGET	ABSORBED_DIRECT	EntriesFaluFcvtF2vFmacFdiv	2	EntriesFaluFcvtF2vFmacFdiv	rtl/backend/EnqEntry_8.sv
@@ -59,6 +61,10 @@ OthersEntry_150	SIGNED_OFF_TARGET	ABSORBED_DIRECT	EntriesVfmaVialuFixVfalu	2	Ent
 OthersEntry_152	SIGNED_OFF_TARGET	ABSORBED_DIRECT	EntriesVfmaVialuFixVfalu	12	EntriesVfmaVialuFixVfalu	rtl/backend/OthersEntry_152.sv
 OthersEntry_164	SIGNED_OFF_TARGET	ABSORBED_DIRECT	EntriesVfdivVidiv	2	EntriesVfdivVidiv	rtl/backend/OthersEntry_164.sv
 OthersEntry_166	SIGNED_OFF_TARGET	ABSORBED_DIRECT	EntriesVfdivVidiv	6	EntriesVfdivVidiv	rtl/backend/OthersEntry_166.sv
+OthersEntry_200	GOLDEN_ONLY	ABSORBED_DIRECT	EntriesLdu	2	EntriesLdu	$(GOLDEN_RTL)/OthersEntry_200.sv
+OthersEntry_202	GOLDEN_ONLY	ABSORBED_DIRECT	EntriesLdu	12	EntriesLdu	$(GOLDEN_RTL)/OthersEntry_202.sv
+OthersEntry_242	GOLDEN_ONLY	ABSORBED_DIRECT	EntriesStdMoud	2	EntriesStdMoud	$(GOLDEN_RTL)/OthersEntry_242.sv
+OthersEntry_244	GOLDEN_ONLY	ABSORBED_DIRECT	EntriesStdMoud	12	EntriesStdMoud	$(GOLDEN_RTL)/OthersEntry_244.sv
 OthersEntry_44	SIGNED_OFF_TARGET	ABSORBED_DIRECT	EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	6	EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	rtl/backend/OthersEntry_44.sv
 OthersEntry_50	SIGNED_OFF_TARGET	ABSORBED_DIRECT	EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	16	EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	rtl/backend/OthersEntry_50.sv
 OthersEntry_6	SIGNED_OFF_TARGET	ABSORBED_DIRECT	EntriesAluMulBkuBrhJmp	16	EntriesAluMulBkuBrhJmp	rtl/backend/OthersEntry_6.sv

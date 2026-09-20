@@ -1653,6 +1653,42 @@ EntriesFaluFmacFdiv	othersEntriesComp_9	OthersEntry_106	UNRESOLVED				none
 EntriesFaluFmacFdiv	othersEntriesSimp_0	OthersEntry_104	UNRESOLVED				none	
 EntriesFaluFmacFdiv	othersEntriesSimp_1	OthersEntry_104	UNRESOLVED				none	
 EntriesFaluFmacFdiv	simpTransPolicy	EnqPolicy_8	UNRESOLVED				none	
+EntriesLdu	compTransPolicy	EnqPolicy_14	UNRESOLVED				none	
+EntriesLdu	enqEntries_0	EnqEntry_24	UNRESOLVED				none	
+EntriesLdu	enqEntries_1	EnqEntry_24	UNRESOLVED				none	
+EntriesLdu	othersEntriesComp_0	OthersEntry_202	UNRESOLVED				none	
+EntriesLdu	othersEntriesComp_1	OthersEntry_202	UNRESOLVED				none	
+EntriesLdu	othersEntriesComp_10	OthersEntry_202	UNRESOLVED				none	
+EntriesLdu	othersEntriesComp_11	OthersEntry_202	UNRESOLVED				none	
+EntriesLdu	othersEntriesComp_2	OthersEntry_202	UNRESOLVED				none	
+EntriesLdu	othersEntriesComp_3	OthersEntry_202	UNRESOLVED				none	
+EntriesLdu	othersEntriesComp_4	OthersEntry_202	UNRESOLVED				none	
+EntriesLdu	othersEntriesComp_5	OthersEntry_202	UNRESOLVED				none	
+EntriesLdu	othersEntriesComp_6	OthersEntry_202	UNRESOLVED				none	
+EntriesLdu	othersEntriesComp_7	OthersEntry_202	UNRESOLVED				none	
+EntriesLdu	othersEntriesComp_8	OthersEntry_202	UNRESOLVED				none	
+EntriesLdu	othersEntriesComp_9	OthersEntry_202	UNRESOLVED				none	
+EntriesLdu	othersEntriesSimp_0	OthersEntry_200	UNRESOLVED				none	
+EntriesLdu	othersEntriesSimp_1	OthersEntry_200	UNRESOLVED				none	
+EntriesLdu	simpTransPolicy	EnqPolicy_14	UNRESOLVED				none	
+EntriesStdMoud	compTransPolicy	EnqPolicy_14	UNRESOLVED				none	
+EntriesStdMoud	enqEntries_0	EnqEntry_30	UNRESOLVED				none	
+EntriesStdMoud	enqEntries_1	EnqEntry_30	UNRESOLVED				none	
+EntriesStdMoud	othersEntriesComp_0	OthersEntry_244	UNRESOLVED				none	
+EntriesStdMoud	othersEntriesComp_1	OthersEntry_244	UNRESOLVED				none	
+EntriesStdMoud	othersEntriesComp_10	OthersEntry_244	UNRESOLVED				none	
+EntriesStdMoud	othersEntriesComp_11	OthersEntry_244	UNRESOLVED				none	
+EntriesStdMoud	othersEntriesComp_2	OthersEntry_244	UNRESOLVED				none	
+EntriesStdMoud	othersEntriesComp_3	OthersEntry_244	UNRESOLVED				none	
+EntriesStdMoud	othersEntriesComp_4	OthersEntry_244	UNRESOLVED				none	
+EntriesStdMoud	othersEntriesComp_5	OthersEntry_244	UNRESOLVED				none	
+EntriesStdMoud	othersEntriesComp_6	OthersEntry_244	UNRESOLVED				none	
+EntriesStdMoud	othersEntriesComp_7	OthersEntry_244	UNRESOLVED				none	
+EntriesStdMoud	othersEntriesComp_8	OthersEntry_244	UNRESOLVED				none	
+EntriesStdMoud	othersEntriesComp_9	OthersEntry_244	UNRESOLVED				none	
+EntriesStdMoud	othersEntriesSimp_0	OthersEntry_242	UNRESOLVED				none	
+EntriesStdMoud	othersEntriesSimp_1	OthersEntry_242	UNRESOLVED				none	
+EntriesStdMoud	simpTransPolicy	EnqPolicy_14	UNRESOLVED				none	
 EntriesVfdivVidiv	compTransPolicy	EnqPolicy_18	INLINE	u_core	-	simp_sel_v,x_trans_sel,simp_deq_sel_vec,simp_can_trans2comp	declared	rtl/backend/xs_iq_entries_core.sv:792「§6 EnqPolicy —— golden 的 EnqPolicy 模块(SelectOne(\"circ\", …, 2))」整块内联。
 EntriesVfdivVidiv	enqEntries_0	EnqEntry_18	INSTANCE	u_core.g_entry[0].u_e	xs_iq_entry		declared	rtl/backend/xs_iq_entries_core.sv:17-20 条目分段 [0..NUM_ENQ-1]=enq；EntriesVfdivVidiv.sv:679 NUM_ENQ=2/NUM_SIMP=2/NUM_COMP=6。
 EntriesVfdivVidiv	enqEntries_1	EnqEntry_18	INSTANCE	u_core.g_entry[1].u_e	xs_iq_entry		declared	rtl/backend/xs_iq_entries_core.sv:17-20 条目分段 [0..NUM_ENQ-1]=enq；EntriesVfdivVidiv.sv:679 NUM_ENQ=2/NUM_SIMP=2/NUM_COMP=6。
@@ -1931,6 +1967,13 @@ LqVAddrModule	sx_writeData_resp_pipMod_7	DelayNWithValid_155	GEN_SITE_UNINDEXED	
 LqVAddrModule	sx_writeData_resp_pipMod_8	DelayNWithValid_155	GEN_SITE_UNINDEXED	u_core.g_bank[b].g_wport[w].sx_writeData_resp_pipMod	DelayNWithValid_155		auto_gen_site	
 LqVAddrModule	sx_writeData_resp_pipMod_9	DelayNWithValid_155	GEN_SITE_UNINDEXED	u_core.g_bank[b].g_wport[w].sx_writeData_resp_pipMod	DelayNWithValid_155		auto_gen_site	
 MulUnit	mulDataModule	ArrayMulDataModule	DEEPER	u_core.mulDataModule	ArrayMulDataModule		auto_deeper	
+NewDispatch	fpBusyTable	BusyTable_1	SAME_PATH	fpBusyTable	BusyTable_1		auto_same	
+NewDispatch	intBusyTable	BusyTable	SAME_PATH	intBusyTable	BusyTable		auto_same	
+NewDispatch	lsqEnqCtrl	LsqEnqCtrl	SAME_PATH	lsqEnqCtrl	LsqEnqCtrl		auto_same	
+NewDispatch	rcTagTable	RegCacheTagTable	SAME_PATH	rcTagTable	RegCacheTagTable		auto_same	
+NewDispatch	v0BusyTable	BusyTable_3	SAME_PATH	v0BusyTable	BusyTable_3		auto_same	
+NewDispatch	vecBusyTable	BusyTable_2	SAME_PATH	vecBusyTable	BusyTable_2		auto_same	
+NewDispatch	vlBusyTable	VlBusyTable	SAME_PATH	vlBusyTable	VlBusyTable		auto_same	
 OpenLLC	mmioDiverger	MMIODiverger	DEEPER	u_core.mmioDiverger	MMIODiverger		auto_deeper	
 OpenLLC	mmioMerger	MMIOMerger	DEEPER	u_core.mmioMerger	MMIOMerger		auto_deeper	
 OpenLLC	rnLinkMonitor	RNLinkMonitor	DEEPER	u_core.rnLinkMonitor	RNLinkMonitor		auto_deeper	
@@ -2252,6 +2295,14 @@ RenameTable	snapshots_snapshotGen	SnapshotGenerator_4	SAME_PATH	snapshots_snapsh
 RenameTable_1	snapshots_snapshotGen	SnapshotGenerator_5	SAME_PATH	snapshots_snapshotGen	SnapshotGenerator_5		auto_same	
 RenameTable_2	snapshots_snapshotGen	SnapshotGenerator_6	SAME_PATH	snapshots_snapshotGen	SnapshotGenerator_6		auto_same	
 RenameTable_3	snapshots_snapshotGen	SnapshotGenerator_7	SAME_PATH	snapshots_snapshotGen	SnapshotGenerator_7		auto_same	
+Rob	commitStuckCounter	CommitStuckCounter	SAME_PATH	commitStuckCounter	CommitStuckCounter		auto_same	
+Rob	deqPtrGenModule	NewRobDeqPtrWrapper	SAME_PATH	deqPtrGenModule	NewRobDeqPtrWrapper		auto_same	
+Rob	dt_pcTransType_ext	dt_pcTransType_160x2	SAME_PATH	dt_pcTransType_ext	dt_pcTransType_160x2		auto_same	
+Rob	enqPtrGenModule	RobEnqPtrWrapper	SAME_PATH	enqPtrGenModule	RobEnqPtrWrapper		auto_same	
+Rob	exceptionGen	ExceptionGen	SAME_PATH	exceptionGen	ExceptionGen		auto_same	
+Rob	rab	RenameBuffer	SAME_PATH	rab	RenameBuffer		auto_same	
+Rob	snapshots_snapshotGen	SnapshotGenerator_3	SAME_PATH	snapshots_snapshotGen	SnapshotGenerator_3		auto_same	
+Rob	vtypeBuffer	VTypeBuffer	SAME_PATH	vtypeBuffer	VTypeBuffer		auto_same	
 SNXbar	txdatArb	FastArbiter_45	DEEPER	u_core.txdatArb	FastArbiter_45		auto_deeper	
 SNXbar	txreqArb	FastArbiter_46	DEEPER	u_core.txreqArb	FastArbiter_46		auto_deeper	
 SRAMTemplate	array	sram_array_1p128x74m37s1h0l1b_icsh_tag	SAME_PATH	array	sram_array_1p128x74m37s1h0l1b_icsh_tag		auto_same	
