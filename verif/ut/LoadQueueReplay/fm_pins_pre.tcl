@@ -8,7 +8,6 @@
 # 子模块 vaddrModule / freeList / ageOldest_age* 两侧同为未解析黑盒
 # （Makefile 的 FM_REF_DEPS_LoadQueueReplay 为空，UT 侧的定义走 GOLDEN_SRCS，
 #  不进 FM_IMPL_SRCS），配成 matched blackbox pair。
-setup
 
 # ---------------------------------------------------------------------------
 # 钉点必须 fail-closed（2026-09-20 实测；改法与 gen_rob_pins.py 同源）
@@ -33,21 +32,52 @@ setup
 #
 # ★进 fm.log 的 puts 一律 ASCII★（CONVENTIONS：fm.log 不是 UTF-8，中文全成问号）。
 # ---------------------------------------------------------------------------
+# ★set_user_match 从不抛 Tcl 异常★（2026-09-20 用两容器最小设计实测）：
+#     名字都在   -> 返回 1
+#     名字不存在 -> 返回 0，并往 fm.log 写行首 `Error: Unknown name: ... (FM-036)`
+#     catch {...} 恒为 0，msg 就是那个返回值本身
+#   所以上一版写的 `if {[catch {set_user_match ...}]} {incr BAD} else {incr OK}`
+#   里 BAD **恒为 0**、末尾那条 `exit 3` **一行都执行不到** ——
+#   日志上那个 `rejected=0` 是恒真的，不是测出来的。
+#   ★我当时还为它做过"双向负测"，但桩是 `error ...`，模拟的是一个不存在的行为，
+#    于是那个负测只证明了"如果它抛异常我就能抓到"，而它不抛。★
+#   判据的负测必须照着**真命令的真行为**建模，否则负测本身就是空的。
+set ::LQR_PIN_EXPECT 6290
 set ::LQR_PIN_OK 0
 set ::LQR_PIN_BAD 0
 set ::LQR_PIN_FIRSTBAD ""
 proc pin {r i} {
-  if {[catch {set_user_match $r $i} m]} {
-    incr ::LQR_PIN_BAD
-    if {$::LQR_PIN_FIRSTBAD eq ""} { set ::LQR_PIN_FIRSTBAD "$r <-> $i ($m)" }
-  } else {
+  if {[set_user_match $r $i]} {
     incr ::LQR_PIN_OK
+  } else {
+    incr ::LQR_PIN_BAD
+    if {$::LQR_PIN_BAD <= 10} { puts "LQR_PIN_FAIL: $r <-> $i" }
+    if {$::LQR_PIN_FIRSTBAD eq ""} { set ::LQR_PIN_FIRSTBAD "$r <-> $i" }
   }
 }
+# ★标记★：fm.log 里 LQR_PIN_BEGIN 与 LQR_PIN_END 之间的 `Error:` 行才归本文件，
+#  供 scripts/check_pin_errors.py --marker LQR_PIN 按区间归因。
+puts "LQR_PIN_BEGIN LoadQueueReplay expect=$::LQR_PIN_EXPECT"
 
-# FM 的寄存器初值推断（Auto）会把一侧的部分寄存器约束成常量，两侧不对称就成锥失配。关掉。
-if {[catch {set_app_var verification_assume_reg_init none} msg]} { puts "PINS: assume_reg_init failed: $msg" }
-if {[catch {set_app_var verification_set_undriven_signals BINARY} msg]} { puts "PINS: undriven failed: $msg" }
+# ★2026-09-20 删掉了这里原有的两行 set_app_var，理由是实测的★
+#   原文：set_app_var verification_assume_reg_init      none    （默认 Auto）
+#         set_app_var verification_set_undriven_signals BINARY  （默认 binary:X）
+#   核过 scripts/fm_eq.tcl：它自己一个都不设 ⇒ 这两行是唯一来源，
+#   receipt 的 entry_appvars_readback 读回 None / BINARY 与之一致。
+#   ★appvar 是判据的一部分，改它必须双向负测（CONVENTIONS）。这两行没有。★
+#   我补测的结果（evidence 见 docs/loadqueuereplay_fm_prereg.md）：
+#     · verification_set_undriven_signals：BINARY **不等于**默认 binary:X
+#       （get_app_var 读回逐字不同）。用 Rob 那套四跑探针扩到三档实测：
+#         ref 真逻辑 / ref 死驱动 x {binary:X, BINARY, 0}
+#       binary:X 与 BINARY 两档**行为完全相同**（都抓到 impl 漏驱动），
+#       只有 0 那档把死驱动那格遮住（复现 Rob 的结论）。
+#       ⇒ 没有证据说 BINARY 是放宽，也没有证据说它有用。
+#     · verification_assume_reg_init：我造了两个探针（初值不同的从不写寄存器、
+#       ref 寄存器 vs impl 折成常量），**两个都分辨不出 Auto 与 None**
+#       ⇒ 我手上没有任何证明 `none` 是加强的证据。我先前报告里说它"方向上是加强"
+#       是**没有测量支撑的推断**，这里更正。
+#   两个知识都指向同一处置：**去掉**，回到工具默认，并**重跑出证**
+#   （删了不重跑 = 改了证明输入而证据没动）。run #4 就是那次重跑。
 
 # ---- entry 控制位（1 位 × 72 × 4 个字段）----
 foreach {gf if} {
@@ -208,11 +238,19 @@ for {set k 0} {$k < 13} {incr k} {
   }
 }
 
-puts "LQR_PINS: accepted=$::LQR_PIN_OK rejected=$::LQR_PIN_BAD"
-if {$::LQR_PIN_BAD > 0} {
-  puts "FM_PINS_ERROR: $::LQR_PIN_BAD set_user_match calls were rejected (FM-036 etc)."
-  puts "FM_PINS_ERROR: first rejected pair = $::LQR_PIN_FIRSTBAD"
-  puts "FM_PINS_ERROR: a rejected pin silently falls back to automatic matching;"
-  puts "FM_PINS_ERROR: aborting instead of pretending the pins applied."
-  exit 3
+puts "LQR_PIN_END LoadQueueReplay n=$::LQR_PIN_OK miss=$::LQR_PIN_BAD expect=$::LQR_PIN_EXPECT"
+# fail-closed 两道，都在最后一次 set_user_match **之后**，且都用 `error` 不用 `exit`：
+#   `exit` 在正式签核里走 `interp create -safe`，会抛 "invalid command name exit"
+#   而宿主还活着（本地 make fm-X 走顶层 source 时才真退出）—— 两个上下文行为不同，
+#   所以守卫只能用 error。
+#   (1) 一条都不许被拒；
+#   (2) 成功条数必须**恰好**等于期望数量（字面整数，钉死）。
+#       6290 是分析式手算出来的：288 + 72 + 72 + 720 + 792 + 3600 + 504
+#                              + 48 + 15 + 66 + 15 + 48 + 50 = 6290
+#       （逐组明细见 docs/loadqueuereplay_fm_prereg.md；与桩执行计数两法一致）
+if {$::LQR_PIN_BAD != 0} {
+  error "LQR_PIN_MISS=LoadQueueReplay miss=$::LQR_PIN_BAD first=$::LQR_PIN_FIRSTBAD"
+}
+if {$::LQR_PIN_OK != 6290} {
+  error "LQR_PIN_COUNT=LoadQueueReplay n=$::LQR_PIN_OK expect=$::LQR_PIN_EXPECT"
 }
