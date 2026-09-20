@@ -11,6 +11,17 @@
 // 逻辑一模一样（逐条 REG_k <= REG_{k-1}，输出取最后一级）。这里把载荷压成
 // 一根扁平向量，位宽与级数进参数，变体薄文件只做端口拼包/拆包。
 //
+// ★为什么本族不复用另外两个长得很像的核（上一位 lane 留的问题，本轮量过才答）★
+//   · `xs_DelayNWithValid_core`（utility.DelayNWithValid）：数据级是 RegEnable，
+//     另有一条**带异步复位**的 valid 打拍链既做使能又做输出有效标志。
+//     DelayN 的 golden 端口表上**既没有 reset 也没有 valid**，两者不是同一个电路。
+//   · `xs_DelayReg_core`（difftest.util.Delayer 的私有 DelayReg）：有 `enable`
+//     和**同步复位**（复位优先于使能，清每一级）。拿它来套 DelayN 就得把
+//     reset/enable 钉死在 0/1 —— 那是给读者凭空添两个 golden 根本没有的端口。
+//     而且它来自 difftest 子仓、干的是"对齐参考模型的拍号"，与 utility.DelayN
+//     的"切长走线组合路径"根本不是一件事。
+//   结论：三个核各自独立是对的，不是没想到要合并。
+//
 // 复位语义照搬 golden：寄存器**无复位**，上电为 X，要等载荷灌满 STAGES 拍
 // 才有定值。上层若在意上电值，必须自己屏蔽。
 //
