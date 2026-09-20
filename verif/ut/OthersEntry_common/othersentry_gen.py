@@ -952,7 +952,14 @@ def check_port_refs(ov, rtl):
 #   ★预登记★：打开后期望 passing 恰好 +9（3519->3528 / 3511->3520 / 3507->3516，
 #   三个都正好等于 predict.py 的模型上界）、unread 归 0、failing 仍 0。
 #   passing 不增而 unread 归 0 = 点被吞掉，按 fail 处理。
-VMUCP = {'OthersEntry_88', 'OthersEntry_104', 'OthersEntry_120'}
+# VEC 族的 simp（OthersEntry_164）同因同型：nLdCancel/ld1/ld2/ldDep_pipes 四行全 0，
+# 影子 bit[1] 无读出点；15 点 = 5 源 × 3 pipe，全部 matched_nc 严格双射。
+# 预登记：打开后 passing 恰好 3777 -> 3792（+15，= predict.py 模型上界）。
+# VEC 族 3 个 simp（_164/_150/_136）与 FP 族 3 个 simp 同因同型，只是源数 3 -> 5，
+# 死位 9 -> 15（5 源 x 3 pipe）。预登记：打开后 passing 各自恰好 +15
+#   _164 3777->3792 / _150 3782->3797 / _136 3844->3859（全等于模型上界）。
+VMUCP = {'OthersEntry_88', 'OthersEntry_104', 'OthersEntry_120',
+         'OthersEntry_164', 'OthersEntry_150', 'OthersEntry_136'}
 
 
 # =============================================================================

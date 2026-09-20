@@ -26,31 +26,31 @@
 //   14 个 G1 变体全部走 hasCompAndSimp,故本核不实现另一分支(见文件尾 §11 待办)。
 //
 // =============================================================================
-// 本文件导航（共 1892 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+// 本文件导航（共 1909 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
 //   L58    §1 与变体无关的编码
 //   L82    §2 xs_iq_entry
-//   L358   §2.1 冲刷判定
-//   L370   §2.2 WB 唤醒匹配
-//   L398   §2.2b IQ 即时唤醒匹配 + 投机撤销(LoadShouldCancel)
-//   L512   §2.3 ignoreOldVd(向量专属)
-//   L558   §2.3b currentStatus
-//   L629   §2.4 valid / enqReady / clear
-//   L645   §2.5 entryUpdate
-//   L713   §2.6 时序
-//   L753   §2.6a blocked / deqPortIdx
-//   L806   §2.6b IQ 唤醒子族专属的三组状态
-//   L841   §2.7 组合输出
-//   L949   §2.8 debug / perf 出口
-//   L1004  §3 xs_iq_entries_core
-//   L1189  §3a 阵列层自己持有的两组寄存器(golden Entries.scala:140-142)
-//   L1261  §4 条目例化
-//   L1427  §5 deqSel / deqPortIdxWrite / issueResp
-//   L1470  §6 EnqPolicy
-//   L1501  §7 转移策略
-//   L1578  §8 othersEntryEnq 数据通路
-//   L1729  §9 发射出口
-//   L1797  §10 阵列状态汇聚输出
-//   L1838  §11 本核尚未实现的家族维度(给后续变体 owner 的清单,全部有 golden 依据)
+//   L360   §2.1 冲刷判定
+//   L372   §2.2 WB 唤醒匹配
+//   L400   §2.2b IQ 即时唤醒匹配 + 投机撤销(LoadShouldCancel)
+//   L514   §2.3 ignoreOldVd(向量专属)
+//   L560   §2.3b currentStatus
+//   L631   §2.4 valid / enqReady / clear
+//   L647   §2.5 entryUpdate
+//   L715   §2.6 时序
+//   L755   §2.6a blocked / deqPortIdx
+//   L823   §2.6b IQ 唤醒子族专属的三组状态
+//   L858   §2.7 组合输出
+//   L966   §2.8 debug / perf 出口
+//   L1021  §3 xs_iq_entries_core
+//   L1206  §3a 阵列层自己持有的两组寄存器(golden Entries.scala:140-142)
+//   L1278  §4 条目例化
+//   L1444  §5 deqSel / deqPortIdxWrite / issueResp
+//   L1487  §6 EnqPolicy
+//   L1518  §7 转移策略
+//   L1595  §8 othersEntryEnq 数据通路
+//   L1746  §9 发射出口
+//   L1814  §10 阵列状态汇聚输出
+//   L1855  §11 本核尚未实现的家族维度(给后续变体 owner 的清单,全部有 golden 依据)
 // 导航由 verif/ut/Entries_common/core_nav.py 重算 —— 改完核跑一次，勿手改
 //
 
@@ -103,10 +103,12 @@ module xs_iq_entry
   // 所以 IS_COMP = ~IS_TRANS(enq 与 comp 都是 true),这里仍显式给参数,便于读。
   parameter bit IS_COMP  = 1'b1,
 
-  // 本变体的发射口数。★ deqPortIdx 到底有没有寄存器由它决定(实测 14/14:
-  //   comp 条目有 deqPortIdx 寄存器 ⟺ NUM_DEQ_PORTS==2),不是由「有没有
-  //   transEntry 出口」决定 —— 后者是从 VfdivVidiv(numDeq=1)外推出来的错结论。
-  //   见 verif/ut/Entries_field_matrix/matrix.md 的 comp_deqPortIdxRead 列。
+  // 本变体的发射口数。deqPortIdx 的完整条件见 §2.6a：
+  //   **寄存器** r_deq_port_idx 存在 ⟺ KEEP_WIDE || NUM_DEQ_PORTS > 1
+  //   （即 enq/simp 恒有；comp 只在双发射口时有）。
+  // ★ 这里原先只写了 comp 那一半，容易被读成"只看 NUM_DEQ_PORTS"，补全。★
+  //   见 verif/ut/Entries_field_matrix/matrix.md 的 comp_deqPortIdxRead 列，
+  //   以及 verif/ut/OthersEntry_field_matrix/matrix.md 的 o_deqPortIdxRd 行。
   parameter int NUM_DEQ_PORTS = 1,
 
   parameter int NUM_REGSRC = 5,   // 每 uop 的源寄存器数
@@ -772,6 +774,21 @@ module xs_iq_entry
   //                教训:矩阵里只核过 comp 那一列,就把结论套到三种条目上 ——
   //                      分份维度必须**逐个条目类型**核,别按一列外推(见矩阵
   //                      deqPortIdxReg_enq/_simp/_comp 三列)。
+  //
+  //   ★ 第三次的坑:「有寄存器」与「有出口端口」是**两个不同的条件** ★
+  //   (2026-09-20, agent/othersentry 在 24 个 OthersEntry 上逐个实测)
+  //     寄存器 entryReg_status_deqPortIdx 存在 ⟺ KEEP_WIDE || numDeq > 1
+  //     出口   commonOut.deqPortIdxRead 存在  ⟺ numDeq == 2  (**与角色无关**)
+  //   两者在 numDeq==1 的 simp 上**分叉**:OthersEntry_120/_200/_172/_242/_164
+  //   这 5 个 simp **有寄存器、没有 deqPortIdxRead 端口** —— 它们的 deqPortIdx
+  //   只从 transEntry.status 走给下一级,不往发射口回读。
+  //   ★我自己先把这两件事混成一件★:曾据此报「§2.6a 记错了、应改成只看 numDeq」,
+  //   拿 24 个变体重量之后才发现 §2.6a 讲的是**寄存器**、一直是对的,
+  //   错的是我那句"更正"。所以这里不是改结论,是把被我混掉的那条**边界**写清楚:
+  //   往下游传(寄存器/transEntry) 与 往发射口回读(deqPortIdxRead) 是两条路,
+  //   条件不同,不能用其中一条推另一条。
+  //   作用域声明:以上数字是**这 24 个 OthersEntry 变体 + 14 个 Entries 变体**
+  //   的实测,OthersEntryVecMem* 那 4 个没量,别当成全家族不变量。
   // ---------------------------------------------------------------------------
   generate
     if (IS_ENQ) begin : g_no_blocked
