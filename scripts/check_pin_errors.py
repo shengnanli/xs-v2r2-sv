@@ -54,7 +54,13 @@ import os
 import re
 import sys
 
-FM036 = re.compile(r"^Error: Unknown name:\s*'([^']*)'\s*\(FM-036\)")
+# ★行首锚定，且只认 set_user_match 真正的失败消息形状★
+# 坑（集成者 0920 转来的实测）：fm_shell 会把入口 Tcl **逐行回显，注释也回显**，
+# 而 scripts/fm_eq.tcl:437-441 那段注释本身就在讲这个坑、里面就写着 `FM-036`。
+# 所以 `grep -c "FM-036" fm.log` 恒 >= 1，「FM-036 行数必须为 0」那条判据
+# 不是"没抓住"，是**必然响**。本正则行首锚定（容前导空白）+ 认全消息形状，
+# 回显进来的注释行一律不计。自测 M11 就是这条。
+FM036 = re.compile(r"^\s*Error: Unknown name:\s*'([^']*)'\s*\(FM-036\)")
 
 # fm_eq.tcl 回显出来的区间锚点。★只认代码行，不认注释行★：
 # 注释里也写着 FM_PIN_TCL，但不含 `sidecar_pin_source $env(...)` 这段字面量。
@@ -325,6 +331,13 @@ def selftest():
          _log(), os.path.join(d, 'nope.tcl'), 2, '判据不成立'),
         ('M9  fm.log 不存在必须 fail-closed',
          None, clean, 2, '判据不成立'),
+        # ★M11：fm_shell 回显的**注释行**里写着 FM-036，不许被算成错误★
+        ('M11 回显的 Tcl 注释里提到 FM-036，不许计数',
+         _log().replace('Verification SUCCEEDED',
+                        '    #   `grep -c "FM-036" fm.log` 就永远 >= 1\n'
+                        '    #   Error: Unknown name (FM-036) <- 这也是注释\n'
+                        'Verification SUCCEEDED'),
+         clean, 0, 'PIN_ERRORS_RC=0'),
     ]
     ok = True
     for name, logtext, pins, want_rc, want_txt in cases:

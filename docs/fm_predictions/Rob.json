@@ -1,0 +1,9 @@
+{
+  "target": "Rob",
+  "ut": "Rob",
+  "regs": 169823,
+  "outs": 6758,
+  "expected": 176581,
+  "merge_dup": "false",
+  "model_applicable": true
+}
