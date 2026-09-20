@@ -20,40 +20,43 @@
 //
 // golden 对照：G1-canonical/golden-rtl/NewDispatch.sv（100983 行，单变体）。
 // 机械派生区（端口表 / dyninst_t）由 scripts/gen_newdispatch.py 从 golden 生成。
-// 本文件导航（共 15857 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
-//   L60    节 1】newdispatch_pkg —— 派遣拓扑表与 payload 类型
-//   L76    节 1.1】多队列 FU 组表
-//   L78    每组三件事：
-//   L131   节 1.2】单队列 FU 组表
-//   L149   节 1.3】dyninst_t —— 派遣级搬运的 uop payload
-//   L151   180 个 leaf 是 golden 四个 payload bundle 的并集，且**无位宽冲突**：
-//   L164   节 1.4】srcState 逐 IQ 掩码 —— 每个 IQ 只关心自己 FU 真会读的那几个源
-//   L166   golden 实测：IQSelUop_<q>_bits_srcState_<j> 在一部分 IQ 上被折成常量 0
-//   L372   节 1.5】xs_nd_iq_rank —— 「按占用数给同组 IQ 排名」的**唯一一份**逻辑
-//   L374   10 个 FU 组都做同一件事：比占用数 → 排名 → 第 lane 条 uop 取第 (lane%N) 名
-//   L417   节 2】xs_NewDispatch_core —— 可读核
-//   L451   节 2.1】fuType 归组
-//   L453   golden: fuTypeOH_<lane>_<g> = (fuType[b1]|fuType[b2]|...) & rena
-//   L468   节 2.2】compareMatrix / IQSort —— 按占用数给同组 IQ 排名
-//   L470   compareMatrix[g][i][j] = 「第 i 个 exu 比第 j 个空」
-//   L551   节 2.3】minIQSel —— 第 lane 条 uop 在本组里取第 (lane % iqNum) 名
-//   L553   「同拍内分散」：6 条 lane 若都是 alu，就分别取第 0/1/2/3/0/1 名，而不是全挤到
-//   L558   节 2.4】popFuTypeOH —— 本 lane 之前有几条 uop 也要进同一组
-//   L560   golden: popFuTypeOH_<lane>_<g> = PopCount(fuTypeOH[0..lane-1][g]
-//   L574   节 2.5】uopSelIQ —— 不复位的选择寄存器，两个写源，装入优先于清除
-//   L576   golden 展开
-//   L627   节 2.6】uopSelIQMatrix / uopBlockByIQ —— 前缀计数定「第几个入队口」
-//   L629   uopSelIQMatrix[lane][iq] = PopCount(uopSelIQ[0..lane][iq])
-//   L653   节 2.7】IQSelUop —— 把 6 条 lane 按前缀计数投到 34 个入队口
-//   L655   第 q 个入队口属于 IQ q/2，是该 IQ 的第 (q%2) 个口
-//   L696   节 3】NewDispatch —— 与 golden 逐位同名的 wrapper
-//   L698   端口表由 scripts/gen_newdispatch.py 从 golden 原文派生，顺序/方向/位宽逐字一致
-//   L8536  节 3.2】还接不了的位：集中声明，**故意不给驱动**
-//   L8538  BEGIN GENERATED(UNRESOLVED)
-//   L8677  节 3.3】payload 打包：io_fromRename -> rename_uop
-//   L8679  BEGIN GENERATED(PACK)
-//   L9808  节 3.4】payload 拆包：iq_uop -> io_toIssueQueues
-//   L9810  BEGIN GENERATED(UNPACK)
+// 本文件导航（共 17626 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+//   L63    节 1】newdispatch_pkg —— 派遣拓扑表与 payload 类型
+//   L79    节 1.1】多队列 FU 组表
+//   L81    每组三件事：
+//   L134   节 1.2】单队列 FU 组表
+//   L152   节 1.3】dyninst_t —— 派遣级搬运的 uop payload
+//   L154   180 个 leaf 是 golden 四个 payload bundle 的并集，且**无位宽冲突**：
+//   L167   节 1.4】srcState 逐 IQ 掩码 —— 每个 IQ 只关心自己 FU 真会读的那几个源
+//   L169   golden 实测：IQSelUop_<q>_bits_srcState_<j> 在一部分 IQ 上被折成常量 0
+//   L375   节 1.5】xs_nd_iq_rank —— 「按占用数给同组 IQ 排名」的**唯一一份**逻辑
+//   L377   10 个 FU 组都做同一件事：比占用数 → 排名 → 第 lane 条 uop 取第 (lane%N) 名
+//   L420   节 2】xs_NewDispatch_core —— 可读核
+//   L454   节 2.1】fuType 归组
+//   L456   golden: fuTypeOH_<lane>_<g> = (fuType[b1]|fuType[b2]|...) & rena
+//   L471   节 2.2】compareMatrix / IQSort —— 按占用数给同组 IQ 排名
+//   L473   compareMatrix[g][i][j] = 「第 i 个 exu 比第 j 个空」
+//   L554   节 2.3】minIQSel —— 第 lane 条 uop 在本组里取第 (lane % iqNum) 名
+//   L556   「同拍内分散」：6 条 lane 若都是 alu，就分别取第 0/1/2/3/0/1 名，而不是全挤到
+//   L561   节 2.4】popFuTypeOH —— 本 lane 之前有几条 uop 也要进同一组
+//   L563   golden: popFuTypeOH_<lane>_<g> = PopCount(fuTypeOH[0..lane-1][g]
+//   L577   节 2.5】uopSelIQ —— 不复位的选择寄存器，两个写源，装入优先于清除
+//   L579   golden 展开
+//   L630   节 2.6】uopSelIQMatrix / uopBlockByIQ —— 前缀计数定「第几个入队口」
+//   L632   uopSelIQMatrix[lane][iq] = PopCount(uopSelIQ[0..lane][iq])
+//   L656   节 2.7】IQSelUop —— 把 6 条 lane 按前缀计数投到 34 个入队口
+//   L658   第 q 个入队口属于 IQ q/2，是该 IQ 的第 (q%2) 个口
+//   L699   节 3】NewDispatch —— 与 golden 逐位同名的 wrapper
+//   L701   端口表由 scripts/gen_newdispatch.py 从 golden 原文派生，顺序/方向/位宽逐字一致
+//   L8551  节 3.2】还接不了的位：集中声明，**故意不给驱动**
+//   L8553  BEGIN GENERATED(UNRESOLVED)
+//   L8692  节 3.3】payload 打包：io_fromRename -> rename_uop
+//   L8694  BEGIN GENERATED(PACK)
+//   L9823  节 3.4】payload 拆包：iq_uop -> io_toIssueQueues
+//   L9825  BEGIN GENERATED(UNPACK)
+//   L15873 步骤 1：7 个 child 的实例化
+//   L15875 依据：docs/lanes/newdispatch_step1_prereg.md
+//   L15880 BEGIN GENERATED(CHILDINST)
 //
 
 // ---------------------------------------------------------------------------
