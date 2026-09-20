@@ -16,7 +16,7 @@
 //  由 wrapper 例化 `dataModule`；本核只出写请求、收全体读出（见 §7/§8）。
 //  该子模块在 UT/FM 的 impl 侧用的是重写件 rtl/memblock/SbufferData.sv。
 // =============================================================================
-// 本文件导航（共 3843 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+// 本文件导航（共 3850 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
 //   L37    位置：StoreQueue 提交的 store
 //   L54    sbuffer_pkg —— Sbuffer 私有的位宽常量 / entry 类型 / 纯函数
 //   L56    设计意图来源
@@ -41,13 +41,13 @@
 //   L832   §9 Resp：hit_resp 释放 entry / replay_resp 挂超时重发；entry 时序统一更新
 //   L947   §10 Forward：把还没写回 DCache 的 store 字节前递给 load
 //   L949   f0：用 forward.vaddr 做 vtag CAM，分「active 候选」与「inflight 候选」两类；
-//   L1155  §11 PLRU touch：三个 touch 口在同一拍**依次叠加**
-//   L1157  ValidPseudoLRU.access(Seq(t0,t1,t2)) 的语义是后一个基于前一个的结果再更新
-//   L1176  §12 perf 事件
-//   L1224  §13 difftest gateway
-//   L1226  四根打包总线被 XSTop 里的 difftest gateway「bore」走，内容是纯组合的观测量：
-//   L1332  Sbuffer —— golden 同名 wrapper
-//   L1334  端口与 golden Sbuffer 逐位同名同序；内部例化：
+//   L1162  §11 PLRU touch：三个 touch 口在同一拍**依次叠加**
+//   L1164  ValidPseudoLRU.access(Seq(t0,t1,t2)) 的语义是后一个基于前一个的结果再更新
+//   L1183  §12 perf 事件
+//   L1231  §13 difftest gateway
+//   L1233  四根打包总线被 XSTop 里的 difftest gateway「bore」走，内容是纯组合的观测量：
+//   L1339  Sbuffer —— golden 同名 wrapper
+//   L1341  端口与 golden Sbuffer 逐位同名同序；内部例化：
 //
 
 // =============================================================================
@@ -976,9 +976,13 @@ module xs_Sbuffer_core
       logic [PTAG_W-1:0]  ptag_q [SB_SIZE];
       logic [PTAG_W-1:0]  fwd_ptag_q;
       logic [SB_SIZE-1:0] valid_tag_match_q, inflight_tag_match_q;
-      // 无使能、异步复位 0（↔ golden tag_mismatch_REG / tag_mismatch_last_REG_*）
-      logic               fwd_valid_q;
+      // 无使能、异步复位 0（↔ golden tag_mismatch_last_REG_*，共 96 个：3 口 × 16 项 × 2 组）
       logic [SB_SIZE-1:0] vtag_match_q, act_or_infl_q;
+      // ★无使能、**无复位**★（↔ golden tag_mismatch_REG / _1 / _2）
+      //   golden 把这 3 个放在 `always @(posedge clock)`（Sbuffer.sv:11707），
+      //   而 tag_mismatch_last_REG_* 在 `always @(posedge clock or posedge reset)`
+      //   （Sbuffer.sv:14218）。两组复位域**不同**，必须分成两个 always_ff。
+      logic               fwd_valid_q;
 
       always_ff @(posedge clock) begin
         if (fwd_valid[gf]) begin
@@ -992,13 +996,16 @@ module xs_Sbuffer_core
           end
         end
       end
+      // ↔ golden tag_mismatch_REG / _1 / _2：无复位，逐拍无条件打一拍
+      always_ff @(posedge clock)
+        fwd_valid_q <= fwd_valid[gf];
+
+      // ↔ golden tag_mismatch_last_REG_*：异步复位 0
       always_ff @(posedge clock or posedge reset) begin
         if (reset) begin
-          fwd_valid_q   <= 1'b0;
           vtag_match_q  <= '0;
           act_or_infl_q <= '0;
         end else begin
-          fwd_valid_q  <= fwd_valid[gf];
           vtag_match_q <= vtag_match;
           for (int w = 0; w < SB_SIZE; w++)
             act_or_infl_q[w] <= activeMask[w] | stateVec[w].state_inflight;

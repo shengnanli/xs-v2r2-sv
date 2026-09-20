@@ -251,3 +251,112 @@ done; done
 各自抽到不同的上电值 ⇒ 必然不等」。**在 seed=1 下不成立**（两侧同为全 1）。
 暖机窗口在 seed 7/42 下才是真正必需的。注释本身的结论（要暖机）没错，
 理由只对 2/3 的种子成立。
+
+---
+
+# §6 对账：第一次真跑（FAILED，抓到真 bug）
+
+跑法与产物：
+
+```
+PROOF_COMMIT=5c55add9ee20b50896595502345f718edaf00a69 \
+  scripts/run_proof.sh Sbuffer Sbuffer
+证据: evidence/5c55add9ee20/Sbuffer/{receipt.json,fm.log,unmatched.rpt,black_boxes.rpt,sidecar/}
+run_id: Sbuffer-20260920T062127Z-5c55add     make rc=2（verdict FAILED）
+Maximum memory usage 1777 MB / CPU 593.35 s / Elapsed 640 s
+```
+
+★注意 commit：`5c55add`（= 本 lane 自己修 `fm_eq.tcl` 之后）。在那之前用
+`4648b23` 跑过一次，44 秒死在 `fm_eq.tcl` setup，**0 个比较点**，
+那次不是"失败"是"根本没跑"（见 `evidence/4648b236a440/`，留档作反例）。★
+
+## 逐条对账
+
+| # | 预测 | 实测 | 判 |
+|---|---|---|---|
+| P1 | native `SUCCEEDED` | **`FAILED`** | **不符** |
+| P2 | failing = 0 | **3** | **不符** |
+| P3 | unverified = 0 | 0 | 符 |
+| P4 | unmatched 六类全 0（**登记为最高风险**） | 六类全 0（`compare_ref/impl`、`unread_ref/impl`、`bbout_ref/impl` 皆 0） | 符 |
+| P5 | 黑盒对数 0、`unresolved_blackbox` 0 | `black_boxes.rpt` = FM-249「No black boxes」；`matched_blackbox_pairs` / `unresolved_blackbox_*` 全空 | 符 |
+| P6 | `unread_notcompared` = 0 | 0（`unread_points.txt` 空文件） | 符 |
+| P7 | 无 dont_verify / 无 relaxed appvar / allowlist 0 | `dont_verify_objects` `elab147` `relaxed_appvars` 全空；`fm_allowlist_numeric_prefilter="0"` | 符 |
+| P8 | passing ∈ [27,000, 30,400] | **28,326**（比较点总数 28,329） | 符 |
+| P9 | `impl_closure` 恰 4 条、**无 golden `SbufferData.sv`** | 恰 4 条：`rtl/memblock/Sbuffer.sv`(repo) `rtl/memblock/SbufferData.sv`(repo) `golden-rtl/StorePfWrapper.sv`(golden) `golden-rtl/Serializer.sv`(golden) | **符 —— 假绿已消掉，机器可核** |
+| P10 | `dirty=false`、canonical 对得上 | `impl_worktree_dirty=false`，`G1-a4ea…7afcf0` | 符 |
+| P11 | 峰值内存 > 1599 MB | 1777 MB | 符（仅参考） |
+
+**9 符 2 不符。** 两条不符是同一件事：**重写核里有一个真 bug**。
+
+### P4 值得单独记一笔（预登记的最高风险项没有出事）
+
+预测里写的是「impl 的 `SbufferData` 寄存器改名换层，按名匹配必然失效，
+必须靠签名/拓扑匹配兜住约 14k bit」。实测：
+
+```
+14283 Compare points matched by name
+14046 Compare points matched by signature analysis
+    0 Compare points matched by topology
+ 1444 Matched primary inputs, black-box outputs
+```
+
+14,046 正好是签名匹配扛下来的那一半 —— 与「约 14k」的估算吻合。
+**一条 `set_user_match` 都不需要**，`fm_pins.tcl` 没建、也不需要建。
+
+## 3 个 failing 点：真 bug，不是配对伪影
+
+```
+r:/WORK/Sbuffer/tag_mismatch_REG_reg    <-> i:/WORK/Sbuffer/u_core/g_fwd[0].fwd_valid_q_reg
+r:/WORK/Sbuffer/tag_mismatch_REG_1_reg  <-> i:/WORK/Sbuffer/u_core/g_fwd[1].fwd_valid_q_reg
+r:/WORK/Sbuffer/tag_mismatch_REG_2_reg  <-> i:/WORK/Sbuffer/u_core/g_fwd[2].fwd_valid_q_reg
+```
+
+配对是**对的**（两侧都是 `io_forward_<i>_valid` 打一拍），差的是**复位域**：
+
+| | golden | 改前的重写核 |
+|---|---|---|
+| `tag_mismatch_REG{,_1,_2}` ↔ `fwd_valid_q` | `always @(posedge clock)` —— **无复位**（golden `Sbuffer.sv:11707`，驱动在 12763/13342/13921） | `always_ff @(posedge clock or posedge reset)`，`if (reset) fwd_valid_q <= 1'b0` |
+| `tag_mismatch_last_REG_*`（96 个）↔ `vtag_match_q` / `act_or_infl_q` | `always @(posedge clock or posedge reset)`（golden `Sbuffer.sv:14218`），复位到 0 | 同 —— 这组是**对的** |
+
+golden 整个文件只有 3 个 `always @`：两个 `posedge clock`、一个
+`posedge clock or posedge reset`。`tag_mismatch_REG` 那 3 个落在**无复位**那类，
+而重写核把它们和 `tag_mismatch_last_REG_*` 一起塞进了带复位的块。
+核里原来的注释写的就是错的：「无使能、异步复位 0（↔ golden tag_mismatch_REG /
+tag_mismatch_last_REG_*）」—— 把两组不同复位域的寄存器并列成一组。
+
+**修法**：拆成两个 `always_ff`，`fwd_valid_q` 进无复位那个。
+
+### ★这条 bug 说明了什么（以及说明不了什么）★
+
+- **UT 六轮全绿没抓到它**，10 个变异体也没抓到（变异全打在别处）。
+  原因直白：`fwd_valid_q` 是**逐拍无条件覆写**的，复位释放后一拍就同步了，
+  而 tb 的比较窗口在暖机之后（`fill_cycle` 28~59 拍）才打开。
+  **差异只存在于复位期与复位后第一拍，正好在比较窗口之外。**
+  这是"两轮 initreg 都绿 ≠ 复位域正确"（CONVENTIONS 正确性验收第 1 条）
+  的一个新实例，而且这次是 FM 抓的、不是复位域结构闸抓的。
+- **它不能算"假绿配置盖住的东西"**：`tag_mismatch_REG` 在 `Sbuffer` 自己里，
+  不在 `SbufferData` 里，改指与否都会被 FM 看到。诚实的说法是：
+  **这个目标此前一次真 FM 都没跑过**（第一版预测自己写着"本轮 FM 一次都还没跑"），
+  所以它是"第一次真跑"抓到的，不是"拆掉假绿"抓到的。两件事都真，别混着说。
+
+---
+
+# §7 修 bug 后的再登记（第二次真跑，跑之前写）
+
+改动只有一处：`rtl/memblock/Sbuffer.sv` 里把 `fwd_valid_q` 从带复位的
+`always_ff` 拆到无复位的 `always_ff`。`SbufferData.sv` / `Makefile` / `tb.sv`
+一个字节没动。
+
+| # | 预测 | 依据 |
+|---|---|---|
+| Q1 | native verdict = `SUCCEEDED` | 3 个 failing 的机理已定位到唯一一处复位域差异，且该差异**只**影响这 3 个点 |
+| Q2 | failing = 0 | 同上 |
+| Q3 | passing = **28,329**（= 28,326 + 3），unverified/aborted = 0 | 比较点集合不变：拆 always_ff 不增删寄存器，只改复位；总数 28,329 由上一跑实测钉死 |
+| Q4 | unmatched 六类仍全 0；`matched by name` 仍 14,283、`by signature` 仍 14,046 | 寄存器名字与层次都没改 |
+| Q5 | `unread_notcompared` = 0、黑盒 0、无 dont_verify / relaxed appvar | 同上一跑 |
+| Q6 | `impl_closure` 仍恰 4 条、仍无 golden `SbufferData.sv` | Makefile 未动 |
+| Q7 | UT 六轮仍全绿（errors=0） | 差异在比较窗口之外；且 `fwd_valid_q` 逐拍无条件覆写 |
+| Q8 | 变异体仍 10/10 CAUGHT | 变异点与本次改动不相交 |
+
+★Q3 是这次最硬的一条★：如果 passing ≠ 28,329，说明"拆 always_ff 不改变比较点
+集合"这个理解错了，必须查清楚，不许事后放宽。
