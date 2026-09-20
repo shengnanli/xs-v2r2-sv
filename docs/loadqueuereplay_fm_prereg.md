@@ -973,3 +973,109 @@ impl_closure 列的是 `golden-rtl/DelayN_*.sv`。
    本目标走 strict + matched blackbox 走不到）。
    所以上面这张表**没有任何闸在守**：child 哪天换一份实现、哈希变了，
    没有东西会把本目标重新判红。**这是工具侧缺口，不是可以不挂的理由。**
+
+---
+---
+
+# 给「拆 fm_eq.tcl」接手者的输入
+
+集成者裁定：不重证 child、不 freeze、不放宽绑定口径，而是把 `fm_eq.tcl` 里
+**每条 lane 都在改的那部分**拆出去。下面是我这轮量到的、支撑这个裁定的数据。
+
+## 1. 阻塞一：证书被"别的目标的那一行"绑死（实测五个哈希）
+
+D57 第 3b 条把 `script_closure_files`（`scripts/fm_eq.tcl` +
+`scripts/sidecar/fm_native_emit.tcl`）算作证明输入，父 commit 上必须仍是证书记的字节。
+本轮生成的 6 份证书实测：
+
+| 证书 | impl_commit | `fm_eq.tcl` | vs HEAD | `fm_native_emit.tcl` | vs HEAD |
+|---|---|---|---|---|---|
+| HEAD | — | `bdae6a885e21203e` | — | `55fb97b12ac55618` | — |
+| `AgeDetector_38` | `b84bf4ee4ead` | `8e6f23372719135d` | **DIFF** | `87ea31973b3e45a4` | DIFF |
+| `FreeList_5` | `aad807db4fb6` | `22890dd4ccc693b9` | **DIFF** | `55fb97b12ac55618` | SAME |
+| `LqVAddrModule` | `b84bf4ee4ead` | `8e6f23372719135d` | **DIFF** | `87ea31973b3e45a4` | DIFF |
+| `DelayN_13` | `eee60602a12f` | `1875d08a3b83c91c` | **DIFF** | `55fb97b12ac55618` | SAME |
+| `DelayNWithValid_152` | `1f82ef7a6c7a` | `64823607b0ecd722` | **DIFF** | `55fb97b12ac55618` | SAME |
+| `DelayNWithValid_155` | `1f82ef7a6c7a` | `64823607b0ecd722` | **DIFF** | `55fb97b12ac55618` | SAME |
+
+★两条读得出来的结论★：
+
+1. **6 份证书里出现 5 个互不相同的 `fm_eq.tcl` 哈希，没有一个等于 HEAD。**
+2. **churn 是局部的，不是"共享脚本都这样"**：同为 `script_closure_files` 的
+   `fm_native_emit.tcl`，6 份里有 **4 份已经等于 HEAD**。
+   ⇒ 问题不在"绑定共享脚本"这个做法，而在 **`fm_eq.tcl` 这一个文件变得太频繁**。
+
+## 2. 为什么它变得太频繁：10% 的行驱动了一多半的改动
+
+`scripts/fm_eq.tcl` = **980 行**，其中 per-target 数据约 **104 行（≈10.6%）**：
+
+    vmucp 白名单条目        ≈ 66 行（一行一个目标名）
+    per-target appvar 块    ≈ 38 行（本轮我挪进去的 LoadQueueReplay 那两项 + 论证注释）
+
+而最近 9 次非 merge 改动里，**至少 5 次只碰了这 104 行**。抽三个逐行核过
+（改动行数 vs 落在白名单/注释里的行数）：
+
+    2e593a57   14+/1-   全部 15 行都是白名单条目或其论证注释
+    36000097    6+/3-   全部  9 行同上
+    75e1d8be   26+/2-   全部 26 行同上（我自己那次：LoadQueueReplay 进白名单）
+
+⇒ ★**约 10% 的行驱动了一多半的 churn**，而这 10% 与"证明逻辑"无关。★
+`AgeDetector_38` 的证明与白名单里有没有 `WBArbiter_58` 毫无关系，
+但今天它们绑在同一个 sha256 上。**这不是绑定太严，是绑错了对象。**
+
+## 3. 阻塞二：`POLICY.json` 的 `freeze_commit = None`
+
+`validate_child_certificate` 第 5 条要求
+`doc['impl_commit'] == policy['freeze_commit']`，而当前 `freeze_commit` 是 `None`
+（`git cat-file -t None` → `Not a valid object name`）。
+⇒ 即使阻塞一被解决，green_child 仍会停在 `green_child_policy_no_freeze_commit`。
+**这两条要一起解决，否则拆完还是走不通。**
+
+## 4. ★秒级预校验：别再用一小时的 FM 跑去发现这类事★
+
+`make_receipt.py` 的 green_child 校验发生在 **FM 跑完之后**，所以配置不对的代价
+默认是"烧一小时再失败"。本轮没有这么付：跑前直接按 `make_receipt` 的同一套上下文
+调一次判据，**秒级**拿到同样的结论，然后按 PID 停掉已经起来的 run #6。
+
+```bash
+cd <repo> && python3 - <<'PY'
+import json, sys, pathlib
+sys.path.insert(0, 'scripts')
+import proof_certificate as PC, fm_target_universe as FTU
+repo = PC.Repo(pathlib.Path('.')); commit = repo.rev_parse('HEAD')
+pol, perr = PC.load_policy(repo, commit); assert not perr, perr
+tmap, unres = FTU.targets_at('.', commit)
+cid = open('/home/eda/xs-env/G1-canonical/CANONICAL_ID.txt').read().strip()
+allow = json.load(open('verif/allow/<TOP>.json'))
+seen = set()
+for o in allow['objects']:
+    if o.get('class') != 'green_child': continue
+    k = (o['child_target'], o['certificate_sha256'])
+    if k in seen: continue
+    seen.add(k)
+    print(o['child_target'], '->', PC.validate_child_certificate(
+        repo, commit, o['child_target'], o['certificate_sha256'],
+        expect_canonical=cid, policy=pol, fm_targets=tmap,
+        fm_targets_unresolved=unres, g1_root='/home/eda/xs-env/G1-canonical'))
+PY
+```
+
+拆分做完之后，**这段脚本就是那次拆分的验收之一**：同一组 child 应当从
+`green_child_script_closure_changed` 变成 `OK`（若 `freeze_commit` 也已就位）。
+
+## 5. 拆分本身怎么证明没改行为（集成者已指定，抄在这里免得丢）
+
+用 `scripts/fm_eq_trace.tcl` 对一组代表性 top 比对拆分前后**发出的 FM 命令序列逐字节相同**，
+并带判别性自证（**表内 vs 表外**的 trace 必须不同，否则这个比对没有分辨力）。
+★已知盲区★：tracer 不设 `FM_FIELD_MAP`，对走 packed 路径的目标要么显式设上、
+要么如实记 `NOT_MODELLED` —— **不许把"我没测到"说成"我测了，相同"**。
+
+## 6. 本目标的状态：维持条件绿
+
+闸已经存在，而它现在的回答**不是**"闭包是闭的"，是
+★"child 是在别的工具脚本下证的"★。这比我手核的结论更严，而且严得有道理：
+我手核只回答了"此刻 RTL 字节对不对"，闸还追问了"它们是不是在同一套工具下证的"，
+答案是**不是**。
+
+★这是「"查过"和"绿"是两件事」的第二层：我手核时**根本没想到要查工具脚本是否同源**，闸想到了。
+这就是为什么要先有闸、再动状态。★
