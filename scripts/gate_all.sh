@@ -10,6 +10,9 @@ rc=0
 run() { printf '=== %-28s ' "$1"; shift; if "$@" >/tmp/gate_$$.out 2>&1; then echo PASS; else echo "★FAIL"; sed 's/^/    /' /tmp/gate_$$.out | tail -12; rc=1; fi; }
 
 run "可读性 A-G"        python3 scripts/readability_audit.py --quiet
+# A 类禁用命名正则的对照测试。★必须单独有一道★：2026-09-20 收紧那次，收紧前后在
+# 全部 448 个 rtl/*.sv 上都命中 0 —— 拿仓库扫一遍对这次改动毫无分辨力。
+run "可读性 A 类正则对照"  python3 scripts/test_readability_forbidden.py
 run "端口契约闸"        python3 scripts/port_contract_lint.py --all-impl
 run "重复/分叉闸"       python3 scripts/equality_dup_lint.py
 # package 作用域闸（codex 0158 §3）：重复/分叉闸只认**模块**重名，看不见 **package**
@@ -21,6 +24,11 @@ run "package 作用域闸"   python3 scripts/check_pkg_scope.py
 # 这里在临时 rtl 树里逐条判据各种一个病（包重名 / 跨文件共享包 / $unit 作用域 import），
 # 要求闸每次都红；同时钉住两种合法的模块头 import 写法不许被误报。
 run "package 闸负测"     python3 scripts/test_pkg_scope_gate.py
+# 参数覆盖闸（2026-09-20，DelayN lane 实测）：把共享核的参数改个名、例化不跟着改，
+# VCS 只给 Warning-[AOUP] 就静默取默认值 —— DelayNWithValid 家族的 elaborate 期
+# 守恒不变式就是这么被无声解除武装的（UT 照过、FM 照绿，六道闸没有一道会响）。
+run "参数覆盖闸"        python3 scripts/check_param_override.py --quiet
+run "参数覆盖闸负测"     python3 scripts/test_param_override_gate.py
 run "universe 冻结闸"   python3 scripts/check_universe_freeze.py
 run "位置依赖闸"       python3 scripts/test_no_location_dependency.py
 # 台账行序闸：我写了这条测试却没接进来（2026-09-14 由 bkperf worker 撞上才发现——
@@ -42,10 +50,24 @@ run "覆盖率台账幂等"   python3 scripts/rewrite_coverage.py --check
 # 完整写出这些串会让**每个目标**的判定中毒。agent/err3 实测撞到过：写全之后
 # MuxBundle 当场从 SUCCEEDED 翻成 elab147=true 的 PARTIAL，而 RTL 一字未动。
 run "FM Tcl 毒字符串闸"  python3 scripts/test_tcl_no_poison.py
+# FM Tcl 输出字符闸：毒字符串闸管的是"注释里写全关键词会污染正则"，
+# 这一条管的是另一个机制 —— `puts`/`error` 里的 U+0080..U+00FF（× § · 这类）
+# 会原样落成单字节进 fm.log，让 fm_verdict.py 的严格 utf-8 读日志当场崩，
+# 于是 verdict 变空、MAKE_RC=2，却照样留下一个看起来齐全的 evidence 目录。
+# 2026-09-20 实测踩到（TlbStorageWrapper_2/_3），判据自带双向自测。
+run "FM Tcl 输出字符闸"  python3 scripts/test_tcl_output_ascii.py
+run "FM Tcl 输出闸负测"  python3 scripts/test_tcl_output_ascii.py --selftest
 # fm_eq.tcl 结构闸：该文件是多 worker 并行改的共享件，冲突全集中在 vmucp 白名单那行。
 # 我两次处理错（"两侧都留"留出两条串联 if 互相拒目标；git add -A 提交了带冲突标记的
 # 文件）。两次都修好却没加闸，于是下次合并原样复发。这道闸把"修好"变成"修住"。
 run "fm_eq 结构闸"     python3 scripts/test_fm_eq_wellformed.py
+# FM 钉点文件结构闸：fm_pins_pre.tcl / fm_pins.tcl 是唯一被 source 进 fm_shell 的
+# 「模块本地代码」，语法上什么都干得了（放宽比较、钉常量、加黑盒、改 appvar），
+# 而 sidecar 下被 source 的脚本**不会**逐行回显进 fm.log，判定未必看得见。
+# 第二件事更隐蔽：钉点文件不 fail-closed 就等于没钉 —— 名字一漂，set_user_match 逐条
+# 失败、脚本只 puts 一行 miss=N，证明照跑照绿，而那行 miss 没人会看。
+# 本闸落地时实测：15 个钉点文件里 12 个是 fail-open 的（期望数量只写在 puts 字符串里）。
+run "FM 钉点结构闸"     python3 scripts/test_fm_pins_wellformed.py
 # 家族生成器幂等：tlbuffer worker 发现 gen_tlbuffer_ad_family.py --check 一直报 DRIFT
 # ——negtest 段是手工贴在生成产物后面的，谁跑一次生成器它就被静默删掉，而那正是该家族
 # 唯一病因形态（位宽）的防护。只有挂了 --check 的生成器进这道闸。
@@ -66,12 +88,75 @@ for g in scripts/gen_tlbuffer_ad_family.py scripts/gen_mbist_pipe_family.py \
          scripts/gen_npc_missing3.py scripts/gen_splittedsram.py \
          scripts/gen_renamebuffer.py scripts/gen_tlbfa_family.py \
          scripts/gen_sbufferdata.py scripts/gen_newdispatch.py \
-         scripts/gen_newdispatch_tb.py; do
+         scripts/gen_newdispatch_tb.py \
+         scripts/gen_tlbnb_family.py scripts/gen_predictor.py \
+         scripts/gen_rob.py scripts/gen_rob_ut.py \
+         scripts/gen_sbuffer.py scripts/gen_sbuffer_tb.py \
+         scripts/gen_fubusy_wbarb.py \
+         scripts/gen_tlbsw_family.py; do
   [ -f "$g" ] && run "生成器幂等 $(basename $g .py | sed 's/^gen_//')" python3 "$g" --check
+done
+# UT 目录下的生成器不在 check_gen_gate_complete.py 的扫描范围（它只扫 scripts/gen_*.py），
+# 所以挂了 --check 的要手动登记。gen_tb_variant.py 生成 tb_1/tb_2/tb_3.sv 三份 tb。
+for g in verif/ut/TlbStorageWrapper/gen_tb_variant.py; do
+  [ -f "$g" ] && run "UT tb 生成器幂等 $(basename $(dirname $g))" bash -c "cd $(dirname $g) && python3 $(basename $g) --check"
 done
 # 闸的完备性闸：任何 scripts/gen_*.py 要么进上面的列表，要么在
 # check_gen_gate_complete.py 的 NO_CHECK 豁免表里写明理由，没有第三条路。
+# WBArbiter 反饥饿状态机的可达性表：verif/ut/WBArbiterVariants/tb.sv 的覆盖判据是
+# 分档的（N=1 全死 / N=2 只有第 1 路够得着 / N>=3 全可达），依据就是这张表。
+# 判据来源必须能机器重算，否则"随机激励没跑到"会被当成"不可达"写进判据里。
+run "WBArb 可达性表"     python3 scripts/wbarbiter_reachability.py --check
 run "生成器闸完备性"     python3 scripts/check_gen_gate_complete.py
+# UT initreg 棘轮：147 个 UT 里 68 个的 Makefile 完全没提 initreg（2026-09-17 实测），
+# 也就是说这些目标的 UT 验收是在"寄存器初值由 VCS 默认决定"下过的。
+# 存量一次性补齐要重跑 68 个 UT 且大概率真跑红一批，不在别的工作进行中引爆；
+# 所以只做"可见 + 不许再涨"，新 UT 必须合规。
+run "UT initreg 棘轮"   python3 scripts/check_ut_initreg.py
+# 工具派生态不许进版本控制。.gitignore 单独挡不住，实测三例：
+#   (1) 仓库根 FM_INFO/   —— 规则 `/FM_INFO*/` 是它进库之后才加的，ignore 管不住已跟踪文件
+#   (2) verif/ut/EntriesAluCsrFenceDiv/fm_diag{,2..7}/ —— 994807 行 / 77.8 MB，
+#       占该分支插入行数 86.4%；老规则按**固定深度**写死，深一层就漏
+#   (3) verif/ut/NewPipelineConnectPipe/neg_build/ —— ★规则早就在了，文件照样进库★
+# (3) 说明光有 ignore 不够：它只拦未跟踪的新文件，拦不住 `git add -f`
+# （而 evidence/ 恰恰要靠 -f 提交，养成习惯就会顺手把 scratch 一起拖进来）。
+# 故必须有一道**对着已跟踪文件列表**跑的闸。先负测（含"长得像但不是"的反例）再跑真闸。
+run "工具派生态负测"     python3 scripts/test_no_tool_scratch_gate.py
+run "工具派生态闸"       python3 scripts/check_no_tool_scratch.py
+# rtl/ 下不许有 .svh、不许有 `include。CONVENTIONS「单文件规范」早有此禁令，
+# 但一直没有闸 —— 靠的是"没人加过"。2026-09-18 审计上一轮时量出真正的危险，
+# 而且和当初设想的不是同一回事：
+#   上一轮 202 个 .svh / 199,801 非注释行，逐字抄 golden 的**实质逻辑行只有 1.83%**，
+#   而 .sv 同口径 8.19% —— ★.svh 的照抄密度只有 .sv 的一半，"svh 是藏赃点"这个假设是错的★。
+#   真问题更隐蔽：那 204,373 行（占上轮 rtl 的 29%）**整体绕过了可读性闸**，
+#   因为 readability_audit.py 和 prev_round_verbatim_scan.py 都只 rglob('*.sv')。
+#   ★是审计盲点，不是藏赃点。★
+# 本轮 readability_audit.py 至今仍只扫 *.sv（第 81、313 行），同一个盲点机制原样存在。
+# 与其改那个大脚本（风险高），不如在源头堵死：rtl/ 下根本没有 .svh，"只扫 .sv"就等于扫全了。
+run "rtl 无 svh 负测"    python3 scripts/test_no_svh_gate.py
+run "rtl 无 svh 闸"      python3 scripts/check_no_svh_in_rtl.py
+# fm_eq.tcl 的 switch 块必须 tclsh 可解析（2026-09-20，Entries lane 踩到）：
+# 一段加错位置的注释（落进 switch 的花括号里）让**本仓每一次 FM 都在 setup 阶段死掉**，
+# 而没有任何现成的闸会响。这道闸不需要 Formality，跑一次几十毫秒。
+run "fm_eq.tcl 语法负测" python3 scripts/check_fm_eq_tcl_syntax.py --selftest
+run "fm_eq.tcl 语法闸"   python3 scripts/check_fm_eq_tcl_syntax.py
+# initreg 判据的负测（真跑探针要 VCS，不进 gate_all；这里只把判据本身守住）：
+# ★"两轮 initreg 都绿"证明不了复位域★，而"两轮日志 md5 不等"是 fail-open 的
+# （命令行里就带着 +vcs+initreg+0/random）。判据见脚本文件头。
+run "initreg 判据负测"  python3 scripts/check_initreg_effective.py --selftest
+# 变异体计分规则的负测（0920 裁定：编不过是"无效变异体"，分子分母同时剔除）：
+# 计分规则出错不会报警，只会让 "抓住 N/M" 里的 M 悄悄变小、成绩悄悄变好看。
+run "变异计分负测"      python3 verif/ut/Entries_common/mutants.py --selftest-classify
+# 覆盖台账的证据链：docs/coverage_three_axis.tsv 宣称的每条证明都要能从**版本库**复现。
+# 2026-09-18 实测出事状态：轴2 标 PROVEN_DIRECT 133 个，版本库里找得到通过 receipt 的
+# 只有 34 个，★189 个找不到★（重算后缺口扩大到 90）。那些证明并非不存在 —— evidence 全
+# 躺在主 worktree 磁盘上（当时磁盘 1339 份 receipt，tracked 只有 77 份），根子是
+# evidence/ 在 .gitignore 里、必须 git add -f 才进得去，而没人系统地做。
+# 后果：clean clone 复现不了台账宣称的绝大多数证明 —— 不是数字不准，是证据链断了。
+# 出事前全仓 grep 不到任何 Makefile/CI/脚本校验这张表的新鲜度，两张表脱节 6 天没人发现，
+# 因为没有任何机制能发现。先负测（含"universe 之外的目标有 receipt 不算漏记"这个反例）再跑真闸。
+run "覆盖证据链负测"     python3 scripts/test_coverage_provenance_gate.py
+run "覆盖证据链闸"       python3 scripts/check_coverage_provenance.py --strict
 # 上面三条是**逐个**挂 --check 的 scripts/gen_*.py。verif/ut/*/gen.py 那一层有 9 个，
 # 其中 8 个根本没有 --check（SRAMTemplateNewForm 是最后一个敞口）。与其逐个改生成器，
 # 不如统一验一次：在 HEAD 上开 detached worktree 重跑全部，产物必须逐字不变。
@@ -112,6 +197,18 @@ run "perf 重绑表幂等"    python3 scripts/perf_rebind.py --check
 run "perf 分档闸负测"    python3 scripts/test_perf_tier_gate.py
 run "perf 分档台账闸"    python3 scripts/check_perf_tier.py
 
+# passing 预测模型自校准（docs/tlbsw23_passing_prediction.md）：
+# 模型 = 闭包触发器位数 + 顶层 output 位数。6 个已签核点必须逐位命中，
+# 命不中说明量法或模型有问题 —— 那时它做出的预测就不该被引用。
+run "passing 模型自校准"  python3 scripts/tlbsw_passing_model.py --check
+
 rm -f /tmp/gate_$$.out
 [ $rc -eq 0 ] && echo "=== 全部机器闸 PASS ===" || echo "=== 有闸未过，见上 ==="
+
+# ★终止标记：只有走到脚本结尾才可能打印这一行★（2026-09-20）
+# 判读方只认这一行：没有 GATE_RC= 就是「结果不存在」，既不是绿也不是红。
+# 缘起：一条 lane 拿还在跑的 stdout 前几行当成了结果，写下「其余闸全 PASS」，
+# 跑完实际红三条。「没看见 FAIL」与「还没跑到那一条」在流式输出里长得一模一样。
+# 详见 CONVENTIONS.md ★"闸跑完了没有"本身也要有判据★
+echo "GATE_RC=$rc"
 exit $rc

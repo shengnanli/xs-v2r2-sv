@@ -2,9 +2,11 @@
 // DelayNWithValid_1 —— 带 valid 使能的两级打拍链（xs_DelayNWithValid_core 家族的一个变体）
 //
 // 本变体的参数与规模（按 G1 golden 现读，不从上一轮继承）：
-//   载荷 WIDTH = 60 位，分 19 个字段；级数固定 2 级；
-//   golden 模块体 = 1 个异步复位的 valid 寄存器 + 120 个无复位数据 reg 位
-//     （2 级 × 60 位），无子模块；
+//   载荷 WIDTH = 60 位，分 19 个字段；数据级数 STAGES = 2；
+//   valid 链保留 1 个寄存器（golden 没有 io_out_valid 端口，
+//     按家族公式 V = STAGES - 1）；
+//   golden 模块体 = 121 个 reg 位 = 1 个 valid 位（异步复位）
+//     + 2 级 × 60 位数据（无复位），无子模块；
 //   端口 41 个 = clock + reset + io_in_valid + 19 入 + 19 出。
 //   载荷字段：isCall=1b, isRet=1b, isJalr=1b, valid=1b, brSlots_0_offset=4b …共 19 个字段，明细见端口表。
 //   使用者：FTB —— FTBEntry（分支槽 / 尾槽 / 预取地址 / strong_bias）打两拍。
@@ -60,8 +62,10 @@ module DelayNWithValid_1(
   output        io_out_bits_strong_bias_1
 );
 
-  localparam int unsigned GOLDEN_DATA_REG_BITS = 120;  // golden 两级数据 reg 位数
-  localparam int unsigned PAYLOAD_W            = GOLDEN_DATA_REG_BITS / 2;
+  localparam int unsigned STAGES          = 2;   // 数据级数 n
+  localparam int unsigned VALID_CHAIN     = 1;   // 保留下来的 valid 寄存器个数
+  localparam int unsigned GOLDEN_REG_BITS = 121; // golden 里 reg 位数总和（含 valid 链）
+  localparam int unsigned PAYLOAD_W       = (GOLDEN_REG_BITS - VALID_CHAIN) / STAGES;
 
   // 端口表事实：$bits 只认端口声明，抄错位宽这些常量立刻跟着变
   localparam int unsigned PORT_BITS_IN = $bits(
@@ -95,16 +99,22 @@ module DelayNWithValid_1(
      io_in_bits_strong_bias_1};
 
   xs_DelayNWithValid_core #(
-    .WIDTH               (PAYLOAD_W),
-    .GOLDEN_DATA_REG_BITS(GOLDEN_DATA_REG_BITS),
-    .PORT_BITS_IN        (PORT_BITS_IN),
-    .PORT_BITS_OUT       (PORT_BITS_OUT)
+    .WIDTH          (PAYLOAD_W),
+    .STAGES         (STAGES),
+    .VALID_CHAIN    (VALID_CHAIN),
+    .GOLDEN_REG_BITS(GOLDEN_REG_BITS),
+    .PORT_BITS_IN   (PORT_BITS_IN),
+    .PORT_BITS_OUT  (PORT_BITS_OUT)
   ) u_core (
     .clock   (clock),
     .reset   (reset),
     .in_valid(io_in_valid),
     .d_in    (payload_in),
-    .d_out   (payload_out)
+    .d_out   (payload_out),
+    // 本变体的 golden 没有 io_out_valid 端口（valid 链最后一级没人读，被 firtool
+    // 消掉，故 VALID_CHAIN = STAGES-1）。核的 out_valid 在这种参数下没有意义，
+    // 悬空 —— 照抄 golden 的端口表，不凭空补一个 golden 没有的输出。
+    .out_valid()
   );
 
   assign

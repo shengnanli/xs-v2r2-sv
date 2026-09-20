@@ -1,0 +1,322 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "TageTable_1",
+ "run_id": "TageTable-20260912T073529Z-8edb193",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/TageTable_1.sv",
+   "kind": "golden",
+   "sha256": "c16c5e9df6f47cd22d180a184fc0c65dd2cb6bda10097221078d73f7f8897b5e"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/frontend/TageTable.sv",
+   "kind": "repo",
+   "sha256": "32662859b8412ce97effb7ca5d3801b98e385eca97f457b0898ae25fa1b700c0"
+  },
+  {
+   "path": "rtl/frontend/TageTable_1.sv",
+   "kind": "repo",
+   "sha256": "d420c66185499c77d3d0185946603ec98aeb7cf0b8bdb809b9cc5ca5ffd36a88"
+  },
+  {
+   "path": "rtl/frontend/TageTable_2.sv",
+   "kind": "repo",
+   "sha256": "d86c98805c80df766012682594fa8f89e4d94f0198d88ee4f97ce0691adeee13"
+  },
+  {
+   "path": "rtl/frontend/TageTable_3.sv",
+   "kind": "repo",
+   "sha256": "2e1d92d951dc62f5ad822aa60cd187a7e728b2e554606bc9c33f789134066a10"
+  }
+ ],
+ "impl_commit": "8edb193e2e5027159f18bab9d9fc4a9dbc0e9b1b",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "assembly",
+  "fm_allowlist_numeric_prefilter": "13",
+  "verify_matched_unread_compare_points": "false",
+  "pin_scripts": {},
+  "declarations": {
+   "allow": {
+    "path": "verif/allow/TageTable_1.json",
+    "sha256": "1b69bbe273a61d5852eb5673e00615b397ecce5e865460fea85e7f64b62dc181"
+   },
+   "dead_ref": {
+    "path": "verif/dead_ref/TageTable_1.json",
+    "sha256": "f21989a485a9923ece01aa8aeb52f031ea6590f2ae86d900fcf33848816585b9"
+   }
+  },
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [
+  {
+   "child_target": "FoldedSRAMTemplate",
+   "child_impl_commit": "ba7e4c59d3373ea7d5ee951ef215557d56f93c46",
+   "child_verdict": "SUCCEEDED",
+   "child_receipt_sha256": "a5833e4809dc970285793dd4b422de0e49c912b9b8f9d31ed1fd2503392e4636",
+   "child_semantic_digest": "09982a442fda51b9e21ee75512218be26251d8704724ea4ea3bc5be2a2e8049d",
+   "child_impl_files_verified_at_parent_commit": 16,
+   "parent_commit_used": "8edb193e2e5027159f18bab9d9fc4a9dbc0e9b1b",
+   "child_golden_file": "FoldedSRAMTemplate.sv",
+   "child_golden_sha256": "86079a74f5573cbebe8c5a1e69e9d35b82582298ebef8c0b064f2a74654e001f",
+   "child_golden_matches_g1_manifest": true,
+   "parent_impl_closure_overlap": 0
+  },
+  {
+   "child_target": "FoldedSRAMTemplate_1",
+   "child_impl_commit": "ba7e4c59d3373ea7d5ee951ef215557d56f93c46",
+   "child_verdict": "SUCCEEDED",
+   "child_receipt_sha256": "4c627ed7bcb85c4c8c4d1c08bbad79ba03fd1e7cf078987e64d54eb585b6f116",
+   "child_semantic_digest": "2eae2b30c47ebe40604118b5df9035de3d5d8fe8fbb91959581fcaa85ffe11d3",
+   "child_impl_files_verified_at_parent_commit": 16,
+   "parent_commit_used": "8edb193e2e5027159f18bab9d9fc4a9dbc0e9b1b",
+   "child_golden_file": "FoldedSRAMTemplate_1.sv",
+   "child_golden_sha256": "840cdf4b8512fe989452586d79ff162fea28a8a093d0cdf582e33f987e6c1898",
+   "child_golden_matches_g1_manifest": true,
+   "parent_impl_closure_overlap": 0
+  },
+  {
+   "child_target": "WrBypass",
+   "child_impl_commit": "ba7e4c59d3373ea7d5ee951ef215557d56f93c46",
+   "child_verdict": "SUCCEEDED",
+   "child_receipt_sha256": "0b5abea2252d9fea848a9385b4938c399a29d337d366df3f3e6ecaef456273f4",
+   "child_semantic_digest": "dc0643cd4f65973c335ae82e27dc7aa2caa1720253a4167757048e594c3fffb9",
+   "child_impl_files_verified_at_parent_commit": 7,
+   "parent_commit_used": "8edb193e2e5027159f18bab9d9fc4a9dbc0e9b1b",
+   "child_golden_file": "WrBypass.sv",
+   "child_golden_sha256": "d9d8ed174441b3e221d5c78b5e49e9e06ded09b8c64e6c952321470a2ea6b8ff",
+   "child_golden_matches_g1_manifest": true,
+   "parent_impl_closure_overlap": 0
+  }
+ ],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "TageTable-20260912T073529Z-8edb193",
+  "top": "TageTable_1",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 797,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 48,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [
+    {
+     "ref_path": "r:/WORK/TageTable_1/bank_wrbypasses_0_0",
+     "impl_path": "i:/WORK/TageTable_1/u_core/g_wb_bank[0].g_wb_br[0].bank_wrbypass"
+    },
+    {
+     "ref_path": "r:/WORK/TageTable_1/bank_wrbypasses_0_1",
+     "impl_path": "i:/WORK/TageTable_1/u_core/g_wb_bank[0].g_wb_br[1].bank_wrbypass"
+    },
+    {
+     "ref_path": "r:/WORK/TageTable_1/bank_wrbypasses_1_0",
+     "impl_path": "i:/WORK/TageTable_1/u_core/g_wb_bank[1].g_wb_br[0].bank_wrbypass"
+    },
+    {
+     "ref_path": "r:/WORK/TageTable_1/bank_wrbypasses_1_1",
+     "impl_path": "i:/WORK/TageTable_1/u_core/g_wb_bank[1].g_wb_br[1].bank_wrbypass"
+    },
+    {
+     "ref_path": "r:/WORK/TageTable_1/bank_wrbypasses_2_0",
+     "impl_path": "i:/WORK/TageTable_1/u_core/g_wb_bank[2].g_wb_br[0].bank_wrbypass"
+    },
+    {
+     "ref_path": "r:/WORK/TageTable_1/bank_wrbypasses_2_1",
+     "impl_path": "i:/WORK/TageTable_1/u_core/g_wb_bank[2].g_wb_br[1].bank_wrbypass"
+    },
+    {
+     "ref_path": "r:/WORK/TageTable_1/bank_wrbypasses_3_0",
+     "impl_path": "i:/WORK/TageTable_1/u_core/g_wb_bank[3].g_wb_br[0].bank_wrbypass"
+    },
+    {
+     "ref_path": "r:/WORK/TageTable_1/bank_wrbypasses_3_1",
+     "impl_path": "i:/WORK/TageTable_1/u_core/g_wb_bank[3].g_wb_br[1].bank_wrbypass"
+    },
+    {
+     "ref_path": "r:/WORK/TageTable_1/table_banks_0",
+     "impl_path": "i:/WORK/TageTable_1/u_core/g_bank[0].table_bank"
+    },
+    {
+     "ref_path": "r:/WORK/TageTable_1/table_banks_1",
+     "impl_path": "i:/WORK/TageTable_1/u_core/g_bank[1].table_bank"
+    },
+    {
+     "ref_path": "r:/WORK/TageTable_1/table_banks_2",
+     "impl_path": "i:/WORK/TageTable_1/u_core/g_bank[2].table_bank"
+    },
+    {
+     "ref_path": "r:/WORK/TageTable_1/table_banks_3",
+     "impl_path": "i:/WORK/TageTable_1/u_core/g_bank[3].table_bank"
+    },
+    {
+     "ref_path": "r:/WORK/TageTable_1/us",
+     "impl_path": "i:/WORK/TageTable_1/u_core/us"
+    }
+   ],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [
+    "r:/WORK/TageTable_1/bank_wrbypasses_0_0",
+    "r:/WORK/TageTable_1/bank_wrbypasses_0_1",
+    "r:/WORK/TageTable_1/bank_wrbypasses_1_0",
+    "r:/WORK/TageTable_1/bank_wrbypasses_1_1",
+    "r:/WORK/TageTable_1/bank_wrbypasses_2_0",
+    "r:/WORK/TageTable_1/bank_wrbypasses_2_1",
+    "r:/WORK/TageTable_1/bank_wrbypasses_3_0",
+    "r:/WORK/TageTable_1/bank_wrbypasses_3_1",
+    "r:/WORK/TageTable_1/table_banks_0",
+    "r:/WORK/TageTable_1/table_banks_1",
+    "r:/WORK/TageTable_1/table_banks_2",
+    "r:/WORK/TageTable_1/table_banks_3",
+    "r:/WORK/TageTable_1/us"
+   ],
+   "unresolved_blackbox_impl": [
+    "i:/WORK/TageTable_1/u_core/g_bank[0].table_bank",
+    "i:/WORK/TageTable_1/u_core/g_bank[1].table_bank",
+    "i:/WORK/TageTable_1/u_core/g_bank[2].table_bank",
+    "i:/WORK/TageTable_1/u_core/g_bank[3].table_bank",
+    "i:/WORK/TageTable_1/u_core/g_wb_bank[0].g_wb_br[0].bank_wrbypass",
+    "i:/WORK/TageTable_1/u_core/g_wb_bank[0].g_wb_br[1].bank_wrbypass",
+    "i:/WORK/TageTable_1/u_core/g_wb_bank[1].g_wb_br[0].bank_wrbypass",
+    "i:/WORK/TageTable_1/u_core/g_wb_bank[1].g_wb_br[1].bank_wrbypass",
+    "i:/WORK/TageTable_1/u_core/g_wb_bank[2].g_wb_br[0].bank_wrbypass",
+    "i:/WORK/TageTable_1/u_core/g_wb_bank[2].g_wb_br[1].bank_wrbypass",
+    "i:/WORK/TageTable_1/u_core/g_wb_bank[3].g_wb_br[0].bank_wrbypass",
+    "i:/WORK/TageTable_1/u_core/g_wb_bank[3].g_wb_br[1].bank_wrbypass",
+    "i:/WORK/TageTable_1/u_core/us"
+   ],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[10]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[11]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[12]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[13]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[14]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[15]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[16]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[17]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[18]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[19]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[1]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[20]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[21]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[22]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[23]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[24]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[25]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[26]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[27]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[28]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[29]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[2]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[30]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[31]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[32]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[33]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[34]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[35]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[36]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[37]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[38]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[39]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[3]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[40]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[41]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[42]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[43]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[44]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[45]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[46]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[47]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[48]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[4]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[5]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[6]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[7]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[8]",
+    "r:/WORK/TageTable_1/s1_unhashed_idx_reg[9]"
+   ],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "verdict": "PASS_DEAD_REF",
+ "verdict_detail": {
+  "passing": 797,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "unread": 48,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "assembly",
+  "native": "SUCCEEDED",
+  "top": "TageTable_1",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0,
+  "bbox_objects": 26,
+  "dead_ref_points": 48
+ }
+}

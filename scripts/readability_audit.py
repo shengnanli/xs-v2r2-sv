@@ -27,7 +27,16 @@ import sys
 REPO = pathlib.Path(__file__).resolve().parent.parent
 RTL = pathlib.Path(os.environ['XSSV_RTL']) if os.environ.get('XSSV_RTL') else REPO / 'rtl'
 
-FORBIDDEN = re.compile(r'\b_(GEN|T)(_\d+)?\b')
+# ★2026-09-20 收紧★ 旧式 r'\b_(GEN|T)(_\d+)?\b' 有个前导 \b，于是**只要给展平中间名
+# 加个前缀就能从这道闸底下走过去**：`n__GEN_3539` 里 `n`/`_`/`_`/`G` 全是词字符，
+# `_GEN` 前面根本没有词边界，不命中；同理裸名 `GEN_3539` 和无数字的 `dispatchNum_T` 也不命中。
+# 这是 Rob lane 在生成器里实测出来的——它的核端口名正会长成这两种形状。
+# 新式分两支：带数字后缀的中间名（可带任意前缀、0~2 个前导下划线），或 `_GEN`/`_T` 结尾。
+# 负测钉在 scripts/test_readability_forbidden.py：4 个原先能溜过去的必须抓住，
+# 9 个正常名字（GENERIC / my_GENERATOR / io_T0 / ENTRY_GEN_CFG …）一个都不许误报。
+# ★收紧前后在当时全部 448 个 rtl/*.sv 上都命中 0 —— 两边都是 0 恰恰什么都没证明，
+#   所以判据不是"跑一遍没红"，是上面那 4+9 条对照。★
+FORBIDDEN = re.compile(r'(?<![A-Za-z0-9])_{0,2}(GEN|T)_\d+\b|_(GEN|T)(?![A-Za-z0-9_])')
 MOD_RE = re.compile(r'^(package|module)\s+(\w+)', re.MULTILINE)
 COVER_LIST = re.compile(r'^//\s{2,}(\w+)\s*[:：]', re.MULTILINE)
 # 注释里形如 scripts/foo.py、verif/ut/X/Makefile 的仓库相对路径引用

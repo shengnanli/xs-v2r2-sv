@@ -1,0 +1,9 @@
+{
+  "target": "L1PrefetchSourceArray",
+  "ut": "L1PrefetchSourceArray",
+  "regs": 3468,
+  "outs": 60,
+  "expected": 3528,
+  "merge_dup": "false",
+  "model_applicable": true
+}

@@ -1,0 +1,9 @@
+{
+  "target": "IBuffer",
+  "ut": "IBuffer",
+  "regs": 7079,
+  "outs": 1213,
+  "expected": 8292,
+  "merge_dup": "true",
+  "model_applicable": false
+}

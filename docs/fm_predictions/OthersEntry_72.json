@@ -1,0 +1,9 @@
+{
+  "target": "OthersEntry_72",
+  "ut": "OthersEntry_72",
+  "regs": 670,
+  "outs": 724,
+  "expected": 1394,
+  "merge_dup": "false",
+  "model_applicable": true
+}

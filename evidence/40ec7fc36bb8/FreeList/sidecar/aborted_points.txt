@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/FreeList
+Implementation : i:/WORK/FreeList
+Version        : V-2023.12-SP3
+Date           : Mon Sep 14 02:20:24 2026
+**************************************************
+
+No aborted compare points.
+
+1

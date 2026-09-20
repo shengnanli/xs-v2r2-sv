@@ -32,6 +32,23 @@ docs/receipt_index.tsv
 /formality*.log
 /fm_shell_command*.log
 /default.svf
+
+# ★递归按名匹配 —— 上面那些按"固定深度"枚举的规则挡不住换个深度的同类产物★
+# 教训（2026-09-18）：agent/entries-v2 分支往 verif/ut/EntriesAluCsrFenceDiv/ 下
+# 建了 fm_diag / fm_diag2..7 八个随手起的 FM 诊断工作目录，`git add -A` 全扫了进来：
+# **994807 行 / 77.8 MB，占该分支插入行数的 86.4%**（量法见 scripts/check_no_tool_scratch.py）。
+# 现有规则一条都没拦住：`verif/ut/*/fm_shell_command.log*` 只管 UT 目录**直下**，
+# 而这些文件在 fm_diag/ 里深了一层；`/FM_INFO*/` 只锚在仓库根。
+# 同一个根因此前已经犯过一次：仓库根的 FM_INFO/ 是在 `/FM_INFO*/` 规则加上去**之前**
+# 就已跟踪的，ignore 管不住已跟踪文件（本次一并 git rm --cached 清掉）。
+# 所以这里改成**不带路径锚、按名字递归**，新目录、新深度一律覆盖。
+FM_INFO/
+FM_WORK*/
+fm_work/
+fm_diag*/
+fm_shell_command*.log*
+formality*.log
+*.daidir/
 verif/study/*/verdiLog/
 verif/study/*/novas.*
 verif/study/*/*.fsdb
@@ -58,3 +75,8 @@ verif/ut/*/ut_compile.out
 verif/ut/*/ut_run_*.out
 # scripts/full_elab.sh 的整芯片 elaborate 产物（VCS 中间文件 + simv，数百 MB）
 /build_full_elab/
+
+# 变异 harness 的原件快照（mutants.sh 的 cp "$SRC" "$BAK"）——派生态，不进库。
+# 2026-09-20 实测它曾被一次 WIP 抢救提交连带 git add 进来；scripts/check_no_tool_scratch.py
+# 已补上 *.orig.sv 这条判据，这里同时补 ignore，两道一起才拦得住。
+verif/ut/*/.mutants.orig.sv

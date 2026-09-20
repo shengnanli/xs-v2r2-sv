@@ -1,0 +1,16 @@
+=== 基线（未变异，20000 拍）===
+    checks=220000 errors=0
+  M1 ★复位覆盖★ 只清第一级，其余级保持                                checks=220000   errors=3047     CAUGHT
+  M2 ★复位/使能优先级翻转★ 使能压过复位                               checks=220000   errors=3909     CAUGHT
+  M3 ★使能门控丢失★ 无条件移位                                    checks=220000   errors=118107   CAUGHT
+  M4 ★取错级★ 输出取倒数第二级                                    checks=220000   errors=170695   CAUGHT
+  M5 ★链方向反了★ stage[s] <= stage[s+1]                    checks=220000   errors=154608   CAUGHT
+  M6 ★复位值★ 清成全 1                                       checks=220000   errors=5843     CAUGHT
+  M7 ★首级来源错★ 第一级收末级（自环）                                checks=220000   errors=188668   CAUGHT
+  M8 _26 打包时 i_mask 与 i_offset 对调（都是 16 位）             checks=220000   errors=8387     CAUGHT
+  M9 base 打包时 i_wpdest 与 i_otherwpdest_0 对调（都是 9 位）    checks=220000   errors=1177     CAUGHT
+  M10 _19 拆包时 o_value_0 与 o_value_1 对调（都是 64 位）        checks=220000   errors=20       CAUGHT
+  N1 _26 打包约定整体翻转（pack+unpack 同时反序，电路不变）               checks=220000   errors=0        CLEAN(预期)
+  N2 核里 assign d_out 改写成 always_comb（同一个组合赋值）          checks=220000   errors=0        CLEAN(预期)
+=== MUTANTS PASSED：10/10 个变异全部被抓到，2/2 个等价改写全部未误报 ===
+mutants rc=0
