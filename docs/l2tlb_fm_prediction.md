@@ -157,3 +157,67 @@ G0 标定数也逐个核过（`xs-v2r2-sv/scripts/sidecar/signoff-evidence-delta
 （`make.out` 可查），换值就换了标定口径，预测会失效。
 ★诚实记着：`false` 那一轮**本轮没跑**，所以"没有东西被 merge_dup 遮住"这句话
 本 lane 没有证据。★ 留作后续。
+
+---
+
+# ★跑完对账（2026-09-20，本节是**事后**追加，上面的预测一个字没改）★
+
+预测登记于 commit `9471497e`，本文件在登记时刻的 sha256 是
+`8f810d7d46d14f8ec8c348656374901b2dd56ed51062661e99cac48f76bfefdf`，
+到追加本节之前一直未变（`sha256sum docs/l2tlb_fm_prediction.md` 可复验历史版本：
+`git show 9471497e:docs/l2tlb_fm_prediction.md | sha256sum`）。
+
+预测针对的是 `rtl/memblock/L2TLB.sv` 的这一份字节：
+`66b264267941f96d118da7c4cc1ae592777e64b1ccc6ce500032bdb21e27c6e5`。
+**首跑 `ab36a881` 用的正是这一份**（`git show ab36a881:rtl/memblock/L2TLB.sv | sha256sum`
+与上面一致；`ab36a881` 只动了 `verif/ut/L2TLB/`）。所以下表是"同一份被预测的字节"
+的对账，不是拿改过的代码去对预测。
+
+## 1. 逐条对账（对象 = 首跑 `ab36a881`，证据 `evidence/ab36a881f5ba/L2TLB/`）
+
+| 量 | 预测 | 区间 | 实测 | 判 |
+|---|---|---|---|---|
+| `native_verdict` | `SUCCEEDED` | 硬要求 | **FAILED** | ✗ **不符** |
+| `failing` | 0 | 硬要求 | **20** | ✗ **不符** |
+| `unverified` | 0 | 硬要求 | **1464** | ✗ **不符** |
+| `aborted` | 0 | 硬要求 | 0 | ✓ |
+| 比较点合计 | 29580 | 26000–33000 | 29105（26779+20+1464+809+33） | ✓ 在区间内 |
+| `passing` | 28500 | 25000–32000 | 26779 | ✓ 在区间内 |
+| `unread_notcompared` | 1074 | 700–1600 | 809 | ✓ 在区间内 |
+| `matched_blackbox_pairs` | 8 | 硬要求 | 8 | ✓ |
+| `unmatched.compare_impl` | 8 | 允许 ≤ 黑盒数 | 0 | ✓（比预测更好） |
+| `unmatched` 其余各项 | 0 | 硬要求 | `unread_ref=128` / `unread_impl=128`，其余 0 | ✗ **不符** |
+| `dont_verify` / relaxed appvar / 假白名单 | 无 | 硬要求 | 无 | ✓ |
+
+**结论：预测在"能不能过"这件最重要的事上错了**（预测 SUCCEEDED，实测 FAILED），
+在"规模"上对（三个数量级量全部落在预区间内）。
+另有一处口径漏算：预测把 `unmatched` 其余各项钉成 0，但实际有 128/128 条
+**unmatched unread** 点 —— 登记时只想到了 `unread_notcompared` 这一类，
+没考虑 unread 还会以 unmatched 的形式出现。
+
+## 2. 预测错在哪（不是运气，是三个具体缺陷）
+
+首跑的 20 个 failing 全在 `io_tlb_0_resp_bits_s1_valididx_*` 与它的 difftest 打包位。
+按 `analyze_points` 与后续两轮逐个定位，一共三处：
+
+1. `contiguous_pte_to_merge` 的 `e.n` 漏了 `ppn[3:0]==8` 门控
+   （golden `L2TLB.sv:3676 ptw_resp_n = x1[63] & x1[13:10]==4'h8`）。
+2. `cache_stage1` 声明成带 `af` 的类型，而 PtwCache 的 stage1 输出没有 `af` 端口
+   ⇒ 一族**悬空位**，`analyze_points` 报 `Found 1 X Source ... u_core/C5098`。
+3. `toFsm_toPTW`（G1 新增的 bitmap 跳转"回 PTW"）在本层 6 处引用里漏了 4 处。
+
+★这三处 UT 全都抓不到★：(1)(3) 要 bitmap 路真的走到（本 tb 200k 拍 bitmap 只握手 5 次），
+(2) 在功能路径上被丢弃、只有形式工具看得见。**这正是 FM 存在的理由**，
+也说明"UT 全绿"绝不等于"可以预测 FM 会过"。
+
+## 3. 修完之后（对账对象已不是被预测的字节，单列，不与上表混）
+
+| commit | passing | failing | unverified | native |
+|---|---|---|---|---|
+| `ab36a881`（被预测的字节） | 26779 | 20 | 1464 | FAILED |
+| `2eb3d25b` | 28203 | 20 | 40 | FAILED |
+| `53fdd531` | **28263** | **0** | **0** | **SUCCEEDED** |
+
+`53fdd531` 的 `unread_notcompared` 仍是 809、`constant_reg` 33、`unmatched` 全 0、
+`matched_blackbox_pairs` 8、无 `dont_verify`。
+验收判定仍是 PARTIAL，理由是 8 个黑盒 child 一个都没签核（见 `verif/allow/L2TLB.json`）。
