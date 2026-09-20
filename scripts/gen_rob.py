@@ -405,9 +405,16 @@ def analyse_core(target_lines, ports, children, golden_dir, netw):
             'gen_rob: 这些核端口名还是 golden 的展平中间名，往 RENAME 里补语义名：\n  '
             + '\n  '.join(flat))
 
+    # ★核里**自己声明**的信号不算"像端口的名字"★（2026-09-20 实测踩到）：
+    # golden 有一族寄存器就叫 io_rabCommits_REG_info_<i>_<field>（RegNext(rab.io.commits)
+    # 的流水级），pin 契约要求核里原样叫 io_rabCommits_REG_info_<field>。
+    # 只看前缀会把它们当成"打错的端口名"判红 —— 判据自己看错了，不是核写错了。
+    declared = set(re.findall(
+        r'^\s*(?:logic|reg|wire|bit)\b[^;]*?([A-Za-z_]\w*)\s*(?:\[[^\]]*\]\s*)*;',
+        body, re.M))
     bogus = sorted(i for i in idents
                    if (i.startswith('io_') or i.startswith('gatewayIn_'))
-                   and i not in pmap)
+                   and i not in pmap and i not in declared)
     if bogus:
         raise SystemExit(
             'gen_rob: 核体里这些名字长得像顶层端口，但 golden 里没有（打错名字）：\n  '

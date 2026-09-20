@@ -248,13 +248,68 @@ def emit(arrays, digest, top='Rob', inst='u_core'):
 DECL = re.compile(
     r'^\s*(?:logic|reg|bit)\s*'
     r'(?:signed\s+)?'
-    r'(?:\[\s*(\d+)\s*:\s*(\d+)\s*\]\s*)?'
+    r'(?:\[([^\]:]+)\s*:\s*([^\]]+)\]\s*)?'
     r'([A-Za-z_]\w*)\s*'
     r'((?:\[[^\]]*\]\s*)*);', re.M)
 
+# ★可读核里位宽和深度都是具名常量★（ROB_SIZE / COMMITTYPE_W-1:0 ...），
+# 不是字面量。判据必须能把它们解开，否则"读不懂"会被报成"名字缺失/深度不符" ——
+# 那是判据自己看不见，不是核写错了（2026-09-20 实测：126 条全报 mismatched）。
+# 这里只解 `localparam int NAME = <整数或简单算式>;` 这一种形态，解不动就如实
+# 报 UNPARSED_*，不猜。
+_LOCALPARAM = re.compile(
+    r'^\s*localparam\s+(?:int\s+)?(?:unsigned\s+)?([A-Za-z_]\w*)\s*=\s*([^;,]+)[;,]',
+    re.M)
 
-def _unpacked_depth(text):
-    """把 `[160]` / `[0:159]` / `[159:0]` 解析成深度；不是数组返回 None。"""
+
+def localparams(text):
+    """包/模块里的 localparam 常量表；能算出整数的才收。"""
+    env = {}
+    for _ in range(4):          # 允许互相引用，迭代几轮即可收敛
+        changed = False
+        for m in _LOCALPARAM.finditer(text):
+            name, expr = m.group(1), m.group(2).strip()
+            if name in env:
+                continue
+            v = _eval_int(expr, env)
+            if v is not None:
+                env[name] = v
+                changed = True
+        # 同一行多个赋值（`localparam int A = 0, B = 1;`）
+        for m in re.finditer(r'(?:^\s*localparam[^;]*?|,)\s*([A-Za-z_]\w*)\s*=\s*([^;,]+)',
+                             text, re.M):
+            name, expr = m.group(1), m.group(2).strip()
+            if name in env:
+                continue
+            v = _eval_int(expr, env)
+            if v is not None:
+                env[name] = v
+                changed = True
+        if not changed:
+            break
+    return env
+
+
+def _eval_int(expr, env):
+    """只允许 整数 / 已知常量 / + - * / ( )；其它一律返回 None（不猜）。"""
+    e = expr.strip()
+    if not re.fullmatch(r'[0-9A-Za-z_+\-*/() \t]+', e):
+        return None
+    for name in sorted(env, key=len, reverse=True):
+        e = re.sub(r'(?<![A-Za-z_0-9])%s(?![A-Za-z_0-9])' % re.escape(name),
+                   str(env[name]), e)
+    if re.search(r'[A-Za-z_]', e):
+        return None
+    try:
+        v = eval(e, {'__builtins__': {}}, {})       # 上面已限死字符集
+    except Exception:
+        return None
+    return int(v) if isinstance(v, (int, float)) else None
+
+
+def _unpacked_depth(text, env=None):
+    """把 `[160]` / `[0:159]` / `[159:0]` / `[ROB_SIZE]` 解析成深度；不是数组返回 None。"""
+    env = env or {}
     text = text.strip()
     if not text:
         return None
@@ -262,6 +317,14 @@ def _unpacked_depth(text):
     if len(dims) != 1:
         return ('MULTI', len(dims))
     d = dims[0].strip()
+    v = _eval_int(d, env)
+    if v is not None and ':' not in d:
+        return v
+    if ':' in d:
+        lo_hi = [x.strip() for x in d.split(':', 1)]
+        a, b = _eval_int(lo_hi[0], env), _eval_int(lo_hi[1], env)
+        if a is not None and b is not None:
+            return abs(a - b) + 1
     m = re.match(r'^(\d+)$', d)
     if m:
         return int(m.group(1))
@@ -279,11 +342,16 @@ def core_arrays(path_or_text, is_text=False):
         return None
     j = text.find('\nendmodule', i)
     body = text[i:] if j < 0 else text[i:j]
+    env = localparams(text)          # 常量表取自整份文件（package + module）
     out = {}
     for m in DECL.finditer(body):
         hi, lo, name, unp = m.group(1), m.group(2), m.group(3), m.group(4)
-        w = 1 if hi is None else abs(int(hi) - int(lo)) + 1
-        out[name] = (w, _unpacked_depth(unp))
+        if hi is None:
+            w = 1
+        else:
+            a, b = _eval_int(hi, env), _eval_int(lo, env)
+            w = None if (a is None or b is None) else abs(a - b) + 1
+        out[name] = (w, _unpacked_depth(unp, env))
     return out
 
 
@@ -429,6 +497,18 @@ def selftest():
   logic [63:0] flat       [4];
 endmodule
 """
+    # 同一个正例，改用具名常量写（可读核就是这么写的）
+    GOOD_PARAM = """package p;
+  localparam int ROB_N = 4;
+  localparam int PREG_W = 8;
+  localparam int XLEN = 64;
+endpackage
+module xs_Rob_core import p::*; (input logic clock);
+  logic                ent_valid  [ROB_N];
+  logic [PREG_W-1:0]   ent_pdest  [ROB_N];
+  logic [XLEN-1:0]     flat       [ROB_N];
+endmodule
+"""
     core_cases = [
         ('cc_ok', GOOD, [], 'positive: every required array present and shaped right'),
         ('cc_missing', GOOD.replace('  logic [7:0]  ent_pdest  [4];\n', ''),
@@ -439,6 +519,10 @@ endmodule
          ['DEPTH'], 'wrong depth fires DEPTH (and only DEPTH)'),
         ('cc_scalar', GOOD.replace('ent_pdest  [4];', 'ent_pdest;'),
          ['NOT_AN_ARRAY'], 'declared as a scalar is its own failure, not MISSING'),
+        # ★可读核里位宽/深度是具名常量★：核对器必须能解 localparam，
+        #   否则它读不懂就报"缺失/深度不符"，而那是判据自己瞎，不是核写错了。
+        ('cc_localparam', GOOD_PARAM, [],
+         'named localparams ([PREG_W-1:0] / [ROB_N]) resolve, not reported as MISSING'),
     ]
     for name, text, want_tags, why in core_cases:
         core = core_arrays(text, is_text=True)
@@ -476,6 +560,19 @@ endmodule
     results['cc_meta_paranoid'] = (
         not para_pos_ok, 0, ['-'],
         'MUTATED the checker to always fail -- the positive MUST go red')
+
+    # meta：把 localparam 解析关掉，具名常量的正例必须转红 ——
+    # 证明那段解析是承重的，不是加了个永远返回空表的摆设。
+    _real_lp = globals()['localparams']
+    globals()['localparams'] = lambda text: {}
+    try:
+        _w4, b4 = check_core(tiny2, core_arrays(GOOD_PARAM, is_text=True))
+        lp_blind_clean = (len(b4) == 0)
+    finally:
+        globals()['localparams'] = _real_lp
+    results['cc_meta_localparam'] = (
+        not lp_blind_clean, 0, ['-'],
+        'MUTATED localparam resolution to empty -- the named-param positive MUST go red')
 
     print('%-18s %-6s %-4s %s' % ('case', 'verdict', 'rc', 'what it proves'))
     allok = True
