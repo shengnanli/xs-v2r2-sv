@@ -1,0 +1,31 @@
+# Rob FM run: commit 4422a780 core + 587460f4 refactor; FM_RUN_ID from fm_make.log
+# merge_duplicated_registers=false, mode=signoff-strict, 169168 pins
+
+ROB_PINS pinned 168720 of 169168
+ROB_PINS_FAIL not every pin was accepted
+Error: invalid command name "exit"
+invalid command name "exit"
+Maximum memory usage for this session: 19433 MB
+CPU usage for this session: 8120.72 seconds ( 2.26 hours )
+Elapsed time: 8226 seconds ( 2.29 hours )
+
+# compare-point scale (first match progress line):
+.............................. 33146M/348907 (9% Matched) 09/20/26 08:55 19433MB/6703.83sec
+
+# FM-036 total (line-anchored):
+896
+# FM-036 distinct register families:
+     64 i:/WORK/Rob/u_core/robDeqGroup_debug_otherPdest_0_reg
+     64 i:/WORK/Rob/u_core/robDeqGroup_debug_otherPdest_1_reg
+     64 i:/WORK/Rob/u_core/robDeqGroup_debug_otherPdest_2_reg
+     64 i:/WORK/Rob/u_core/robDeqGroup_debug_otherPdest_3_reg
+     64 i:/WORK/Rob/u_core/robDeqGroup_debug_otherPdest_4_reg
+     64 i:/WORK/Rob/u_core/robDeqGroup_debug_otherPdest_5_reg
+     64 i:/WORK/Rob/u_core/robDeqGroup_debug_otherPdest_6_reg
+     64 r:/WORK/Rob/robDeqGroup_N_debug_otherPdest_0_reg
+     64 r:/WORK/Rob/robDeqGroup_N_debug_otherPdest_1_reg
+     64 r:/WORK/Rob/robDeqGroup_N_debug_otherPdest_2_reg
+     64 r:/WORK/Rob/robDeqGroup_N_debug_otherPdest_3_reg
+     64 r:/WORK/Rob/robDeqGroup_N_debug_otherPdest_4_reg
+     64 r:/WORK/Rob/robDeqGroup_N_debug_otherPdest_5_reg
+     64 r:/WORK/Rob/robDeqGroup_N_debug_otherPdest_6_reg
