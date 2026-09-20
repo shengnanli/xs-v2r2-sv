@@ -24,6 +24,11 @@ run "package 作用域闸"   python3 scripts/check_pkg_scope.py
 # 这里在临时 rtl 树里逐条判据各种一个病（包重名 / 跨文件共享包 / $unit 作用域 import），
 # 要求闸每次都红；同时钉住两种合法的模块头 import 写法不许被误报。
 run "package 闸负测"     python3 scripts/test_pkg_scope_gate.py
+# 参数覆盖闸（2026-09-20，DelayN lane 实测）：把共享核的参数改个名、例化不跟着改，
+# VCS 只给 Warning-[AOUP] 就静默取默认值 —— DelayNWithValid 家族的 elaborate 期
+# 守恒不变式就是这么被无声解除武装的（UT 照过、FM 照绿，六道闸没有一道会响）。
+run "参数覆盖闸"        python3 scripts/check_param_override.py --quiet
+run "参数覆盖闸负测"     python3 scripts/test_param_override_gate.py
 run "universe 冻结闸"   python3 scripts/check_universe_freeze.py
 run "位置依赖闸"       python3 scripts/test_no_location_dependency.py
 # 台账行序闸：我写了这条测试却没接进来（2026-09-14 由 bkperf worker 撞上才发现——
