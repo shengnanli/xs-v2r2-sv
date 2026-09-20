@@ -189,6 +189,13 @@ run "rtl 无 svh 闸"      python3 scripts/check_no_svh_in_rtl.py
 # 而没有任何现成的闸会响。这道闸不需要 Formality，跑一次几十毫秒。
 run "fm_eq.tcl 语法负测" python3 scripts/check_fm_eq_tcl_syntax.py --selftest
 run "fm_eq.tcl 语法闸"   python3 scripts/check_fm_eq_tcl_syntax.py
+# per-target 数据不许回到 fm_eq.tcl（2026-09-20 拆分之后的守门人）：
+# 那个文件是每条 lane 都在改的共享件，而 child 证书绑着它的 sha256 ——
+# 实测 6 份证书里 4 个互不相同的 fm_eq.tcl 哈希、**没有一个**等于 HEAD，
+# 而同样被绑的 fm_native_emit.tcl 6 份里有 4 份等于 HEAD。白名单与目标专属 appvar
+# 因此搬进 verif/fm_target_config/<top>.tcl；这道闸盯的是"别搬回来"。
+run "fm_eq 无目标数据负测" python3 scripts/check_fm_eq_no_target_data.py --selftest
+run "fm_eq 无目标数据闸"   python3 scripts/check_fm_eq_no_target_data.py
 # 唤醒匹配的判别轴表（E1 作用域的依据）：改共享核的唤醒匹配前必须复跑核对。
 # ★判别轴不是"族"，是「每 lane 带几个 wen × 掩码有没有把 kind 不同的源隔开」★
 # —— 按族切会漏掉 D 档的 EntriesVlduVstu（VEC 族却要多对+按源分 kind）。
