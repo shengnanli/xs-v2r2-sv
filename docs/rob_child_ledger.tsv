@@ -44,6 +44,31 @@
 #      G1 的是 **2636 行 446 端口 sha=0f50cbf7bbde12b8** —— 不是同一个设计。
 #      （本轮直接量的，不是听说的。）
 #
+# ============================================================================
+# 【第二位 lane 的独立复核，2026-09-20 —— 本仓规矩：继承来的数字第一次引用必须重测】
+# 上一位写这张表时我不在场，所以本轮把每一列**重新量了一遍**，不是照抄：
+#   A 行数+sha256（8 个 golden child）      -> 逐个与表里 **完全一致**
+#   B verif/vendor_boundary.tsv 命中数       -> 8 个**全为 0**（确认无一是厂商硬宏）
+#   C ls verif/proof_certificates/           -> 只有 POLICY.json + schema-v1.json，
+#                                               ★仍然一张证书都没有★
+#   D 遍历 $G1/*.sv 找父实例                 -> 8 个的父**都只有 Rob.sv 一个**
+#   E G0 ExceptionGen.sv                     -> 2366 行 sha=9ab4a22a3b67d01a…，
+#     G1 ExceptionGen.sv                        2636 行 sha=0f50cbf7bbde12b8…
+#     ⇒ 别的仓那条 ExceptionGen AUX 签核**确实不适用于本仓**（结论复现）
+#   F fm_target_universe.py --check（逐个跑） -> RenameBuffer=FM_TARGET(ut=RenameBuffer)
+#     SnapshotGenerator_3=FM_TARGET(ut=SnapshotGenerator)，其余 6 个=NOT_FM_TARGET
+#     （与表里 YES/YES/NO×6 完全一致）
+# ⇒ 结论原样成立：**Rob 不得记 PROVEN_DIRECT**；
+#   最好的可得终态 = 条件性证明 + 6 条 UNCHANGED_GOLDEN_DEP + 2 条 HAS_TARGET_UNVERIFIED。
+#
+# 【本轮新增的一条实测，是上一位没有的】
+# `fm_target_universe.py --check Rob` 现在返回 **FM_TARGET(ut=Rob)** ——
+# 上一轮它还是 NOT_FM_TARGET，因为那时 verif/ut/Rob/Makefile 不存在。
+# 本轮 Makefile 由 gen_rob_ut.py --emit-makefile 落地后它才成为 target。
+# ★这说明「是不是 FM target」是**随 Makefile 变**的量，任何引用它的结论
+#   都必须写明是哪一次测的。★
+# ============================================================================
+#
 child	inst	pins	golden_lines	golden_sha256	is_fm_target	ut_dir	in_306	impl	certificate	verdict	note
 RenameBuffer	rab	140	40993	482f15632578955333091a48c81782a5bd4eceee69d8cb7c253280f57dd961aa	YES	RenameBuffer	YES	rtl/backend/RenameBuffer.sv	NONE	DEP_DISCHARGEABLE	八个里唯一进 306 universe 的；universe 里状态仍是 UNVERIFIED/no tracked certificate，所以现在只能算 HAS_TARGET_UNVERIFIED。它自己还带一个 SnapshotGenerator child（见其 Makefile 的 FM_REF_DEPS）
 SnapshotGenerator_3	snapshots_snapshotGen	19	283	537d25133857bdcce632f299bf99b4a178342a37f699d9d5f5f2b24a56ded258	YES	SnapshotGenerator	NO	rtl/backend/SnapshotGenerator_3.sv	NONE	DEP_DISCHARGEABLE	★不在 306 universe，但确实是 FM target★：它是 verif/ut/SnapshotGenerator 的 FM_VARIANTS 11 个变体之一（AUX 覆盖）。同样无证书 ⇒ HAS_TARGET_UNVERIFIED
