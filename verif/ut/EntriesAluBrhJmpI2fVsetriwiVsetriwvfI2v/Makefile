@@ -35,7 +35,7 @@ FM_REF_DEPS_EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v = EnqEntry_4.sv OthersEntry_
 #   白名单在 scripts/fm_eq.tcl（依据写在那一行紧邻的注释里），两处须同时生效。
 # 本变体的 FM 点数尚未实测。
 FM_MERGE_DUP = false
-FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = false
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 
 include ../../../scripts/ut_common.mk
 

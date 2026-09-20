@@ -1210,6 +1210,16 @@ FM_VMUCP_WHITELISTED = {
     # （42 项）。两边必须同时生效，且**顺序不能反**：这边先开而白名单没开，
     # fm_eq.tcl 会 FM_MODE_ERROR exit 3，白跑一次 44 秒（已踩过）。
     'EntriesAluCsrFenceDiv',
+    # 2026-09-20 本轮一次性加 7 个：六条证据由 vmucp_evidence.py 逐个采齐
+    # （七个都打印"申请条件齐备"），依据与实测数字写在 scripts/fm_eq.tcl
+    # 白名单旁边那段注释里。★两边必须同时生效，顺序不能反★。
+    'EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v',
+    'EntriesAluMulBkuBrhJmp',
+    'EntriesFaluFcvtF2vFmacFdiv',
+    'EntriesFaluFmac',
+    'EntriesFaluFmacFdiv',
+    'EntriesVfmaVialuFixVfalu',
+    'EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf',
 }
 
 
