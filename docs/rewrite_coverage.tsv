@@ -23,20 +23,13 @@
 metric	done	total	percent
 fm_targets_configured	252	425	59.3
 unique_design_written	147	1191	12.3
-unique_design_proven	117	1191	9.8
+unique_design_proven	128	1191	10.7
 golden_lines_written	1354483	3902283	34.7
-golden_lines_proven	913590	3902283	23.4
+golden_lines_proven	1026923	3902283	26.3
 #
 # written 里没有绿判决证据的设计族（差额都在这儿，逐个列出不藏）：
-#   AgeDetector                                     12602 行
-#   ArrayMulDataModule                              24372 行
 #   BloomFilter                                     34563 行
 #   BusyTable                                       26415 行
-#   C22                                                97 行
-#   C32                                                99 行
-#   C53                                               114 行
-#   CSA3                                               99 行
-#   CSA3_2                                           1629 行
 #   DecodeUnitComp                                  45149 行
 #   IBuffer                                         23766 行
 #   ICache                                           1754 行
@@ -47,12 +40,8 @@ golden_lines_proven	913590	3902283	23.4
 #   NCBTransactionQueue                             41240 行
 #   OpenLLC                                          4252 行
 #   Predictor                                       44908 行
-#   RRArbiterInit                                    7318 行
 #   RegCacheTagModule                                3372 行
 #   RegCacheTagTable                                 1391 行
-#   RenameBuffer                                    40993 行
-#   SbufferData                                     24872 行
-#   SnapshotGenerator                                5750 行
 #   StorePipe                                          93 行
 #   TLBFA                                           88538 行
 #   VecExceptionGen                                   340 行
