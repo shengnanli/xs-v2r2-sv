@@ -75,4 +75,59 @@ package xs_ptwcache_pkg;
     logic                v;        // ★注意：sp 条目自带 v 字段，与 spv 位向量是两回事★
   } sp_entry_t;
 
+  // l1 / l0 的一条表项（SRAM 里的一行）：整行 8 个 PTE 共享 tag/asid/vmid/prefetch，
+  // 每个 PTE 自己带 pbmt/ppn/vs（有效）。l0 还多一份 onlypf 与完整 perm（它存叶子）。
+  // ★vs 是"本条 PTE 有效"，与 l1v/l0v 的"本路表项有效"是两回事，命中要同时满足★
+  typedef struct packed {
+    logic [L1_TAG_W-1:0]            tag;
+    logic [ASID_W-1:0]              asid;
+    logic [VMID_W-1:0]              vmid;
+    logic [SECTOR_N-1:0][1:0]       pbmts;
+    logic [SECTOR_N-1:0][PPN_W-1:0] ppns;
+    logic [SECTOR_N-1:0]            vs;
+    logic                           prefetch;
+  } l1_line_t;
+
+  // l1/l0 在 stageCheck 级留下的那一份（ramDatas）：★只留下游真用得到的字段★。
+  // golden 里 l1 的 ramDatas 没有 tag/asid/vmid/vs —— 命中判定在上一级就做完了，
+  // 这一级只需要选数用的 ppn/pbmt/prefetch（l0 还多 onlypf 与 perm）。
+  // 把整行都留下来会凭空多出一批永远没人读的寄存器，FM 上就是 unread 点。
+  typedef struct packed {
+    logic [SECTOR_N-1:0][1:0]       pbmts;
+    logic [SECTOR_N-1:0][PPN_W-1:0] ppns;
+    logic                           prefetch;
+  } l1_ram_t;
+
+  typedef struct packed {
+    logic [SECTOR_N-1:0][1:0]       pbmts;
+    logic [SECTOR_N-1:0][PPN_W-1:0] ppns;
+    logic [SECTOR_N-1:0]            onlypf;
+    pte_perm_t [SECTOR_N-1:0]       perms;
+    logic                           prefetch;
+  } l0_ram_t;
+
+  // sp 命中后真正被下游用到的字段（★没有 tag/asid/vmid★：它们在 golden 里
+  // 从来到不了输出，firtool 把那三个寄存器消掉了，这里照抄"不存"）。
+  typedef struct packed {
+    logic            n;
+    logic [1:0]      pbmt;
+    logic [PPN_W-1:0] ppn;
+    pte_perm_t       perm;
+    logic [1:0]      level;
+    logic            v;
+    logic            prefetch;
+  } sp_hit_t;
+
+  typedef struct packed {
+    logic [L0_TAG_W-1:0]            tag;
+    logic [ASID_W-1:0]              asid;
+    logic [VMID_W-1:0]              vmid;
+    logic [SECTOR_N-1:0][1:0]       pbmts;
+    logic [SECTOR_N-1:0][PPN_W-1:0] ppns;
+    logic [SECTOR_N-1:0]            vs;
+    logic [SECTOR_N-1:0]            onlypf;
+    pte_perm_t [SECTOR_N-1:0]       perms;
+    logic                           prefetch;
+  } l0_line_t;
+
 endpackage

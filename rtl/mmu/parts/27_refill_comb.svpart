@@ -1,0 +1,85 @@
+
+  // ---------------------------------------------------------------------------
+  // §9 各级回填使能与回填载荷（已追清：golden:6647 / 6785 / 7418 / 8289）
+  //
+  //  五级各有各的门控，且**各用各的 dup**：l3/l2 看 dup_2，l1 看 dup_1，l0/sp 看 dup_0。
+  //  过滤条件的语义：
+  //    l3/l2 存的是**非叶子** PDE  ⇒ 要求 ~isLeaf 且 canRefill；
+  //    l1    没有任何过滤          ⇒ 只看 flush 与 levelOH（整行里逐项自己带 vs 位）；
+  //    l0    存 4KB 叶子           ⇒ 把 napot 的那一条踢给 sp；
+  //    sp    存大页/napot          ⇒ levelOH.sp，或 levelOH.l0 但选中的 PTE 是 napot；
+  //          载荷有效性用 (isLeaf & canRefill) | onlyPf。
+  logic l3_refill, l2_refill, sp_refill;
+
+  assign l3_refill = ~flush_dup_2 & io_refill_bits_levelOH_l3
+                   & ~pte_is_leaf(io_refill_bits_sel_pte_dup_2)
+                   & pte_can_refill(io_refill_bits_sel_pte_dup_2,
+                                    io_refill_bits_level_dup_2,
+                                    io_refill_bits_req_info_dup_2_s2xlate,
+                                    pbmte, io_csr_dup_2_hgatp_mode);
+
+  assign l2_refill = ~flush_dup_2 & io_refill_bits_levelOH_l2
+                   & ~pte_is_leaf(io_refill_bits_sel_pte_dup_2)
+                   & pte_can_refill(io_refill_bits_sel_pte_dup_2,
+                                    io_refill_bits_level_dup_2,
+                                    io_refill_bits_req_info_dup_2_s2xlate,
+                                    pbmte, io_csr_dup_2_hgatp_mode);
+
+  logic sp_from_l0_napot, sp_payload_ok, sp_only_pf;
+  assign sp_from_l0_napot = io_refill_bits_levelOH_l0
+                          & pte_is_napot(io_refill_bits_sel_pte_dup_0,
+                                         io_refill_bits_level_dup_0);
+  assign sp_only_pf       = pte_only_pf(io_refill_bits_sel_pte_dup_0,
+                                        io_refill_bits_level_dup_0,
+                                        io_refill_bits_req_info_dup_0_s2xlate, pbmte);
+  assign sp_payload_ok    = (pte_is_leaf(io_refill_bits_sel_pte_dup_0)
+                             & pte_can_refill(io_refill_bits_sel_pte_dup_0,
+                                              io_refill_bits_level_dup_0,
+                                              io_refill_bits_req_info_dup_0_s2xlate,
+                                              pbmte, io_csr_dup_0_hgatp_mode))
+                          | sp_only_pf;
+  assign sp_refill = ~flush_dup_0
+                   & (io_refill_bits_levelOH_sp | sp_from_l0_napot)
+                   & sp_payload_ok;
+
+  // 回填时把 allStage 折成 onlyStage1（与查找侧的 h_search 同一个折法），每 dup 一份。
+  logic [1:0] refill_h_0, refill_h_1, refill_h_2;
+  assign refill_h_0 = (&io_refill_bits_req_info_dup_0_s2xlate)
+                    ? H_ONLY_STAGE1 : io_refill_bits_req_info_dup_0_s2xlate;
+  assign refill_h_1 = (&io_refill_bits_req_info_dup_1_s2xlate)
+                    ? H_ONLY_STAGE1 : io_refill_bits_req_info_dup_1_s2xlate;
+  assign refill_h_2 = (&io_refill_bits_req_info_dup_2_s2xlate)
+                    ? H_ONLY_STAGE1 : io_refill_bits_req_info_dup_2_s2xlate;
+
+  logic refill_prefetch_0, refill_prefetch_2;
+  assign refill_prefetch_0 = (io_refill_bits_req_info_dup_0_source == 2'd2);
+  assign refill_prefetch_2 = (io_refill_bits_req_info_dup_2_source == 2'd2);
+
+  // l3/l2 用 dup_2 的 asid，sp 用 dup_0 的（l1/l0 的在 §6 已有）。
+  logic [ASID_W-1:0] l23_w_asid, sp_w_asid;
+  assign l23_w_asid = (|io_refill_bits_req_info_dup_2_s2xlate)
+                    ? io_csr_dup_2_vsatp_asid : io_csr_dup_2_satp_asid;
+  assign sp_w_asid  = (|io_refill_bits_req_info_dup_0_s2xlate)
+                    ? io_csr_dup_0_vsatp_asid : io_csr_dup_0_satp_asid;
+
+  // 整行 8 个 PTE 的 g 位全为 1，这条 l1/l0 表项才算 global（golden:31541-31550）。
+  logic refill_line_all_g;
+  always_comb begin
+    refill_line_all_g = 1'b1;
+    for (int i = 0; i < SECTOR_N; i++)
+      refill_line_all_g &= refill_pte[i][PTE_G];
+  end
+
+  // ---------------------------------------------------------------------------
+  // §9.1 XORFold —— 影子元数据存的是折叠哈希，不是原值（已追清：golden:30522/30538）
+  //
+  //  XORFold(x, w)：把 x 按 w 位一段切开，逐段异或；最后不足一段的高位零扩展。
+  //  代价是 sfence 会保守多刷（哈希撞了就多刷几条），这是 golden 的设计选择。
+  function automatic logic [HASH_ASID_W-1:0] xorfold3(input logic [15:0] x);
+    return x[2:0] ^ x[5:3] ^ x[8:6] ^ x[11:9] ^ x[14:12] ^ {2'h0, x[15]};
+  endfunction
+
+  function automatic logic [HASH_VPN_W-1:0] xorfold6_tag(input logic [L0_TAG_W-1:0] t);
+    // t = vpn[37:9]（29 位）：5 段 6 位，最后一段只有 5 位。
+    return t[5:0] ^ t[11:6] ^ t[17:12] ^ t[23:18] ^ {1'h0, t[28:24]};
+  endfunction

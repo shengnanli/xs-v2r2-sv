@@ -94,54 +94,63 @@
 //   ★M4 特别重要★：它是唯一能证明我们**照抄了 golden 的 bug** 而不是照抄了直觉的实验。
 //
 // 【已追清 / 未追清 —— 当前边界】
-//   已追清并写成 RTL：四级流水握手与入口节流、三份 dup 的 flush 与归属、
-//     复位域划分、两个 ClockGate 的开门条件、l1/l0 的 SRAM 读地址与读使能、
-//     l1/l0 的**全部写数据**（§6.1 的 10 个 PTE 谓词 + §6.2 的逐项 vs/onlypf/
-//     perms/ppn/pbmt/prefetch）、全部 MBIST/DFT 透传拓扑、
-//     ★五级替换策略与受害者选择（§7：PseudoLRU 取路/更新 + replaceWrapper，
-//     含 golden 那个"l3 回填污染 l2 PLRU"的真 bug）★、
-//     ★各级回填使能与回填侧状态更新（§9/§11：l3/l2/sp 表项载荷、
-//     l3v..spv 的置位、l3g..spg、五级 h、l1/l0 的 XORFold 影子哈希）★。
-//   上述两段有 verif/study/PtwCache_refill 的定向差分对照钉住：双例化比
-//     430 根 SRAM 写端口 + 1615 根核内回填侧状态，3 seed × 200k 拍，errors=0；
-//     注入 4 个 mutant（含"把 golden 真 bug 修好"）全部被抓到，详见该目录 tb.sv 头注释。
-//   未追清（骨架里以显式钉 0 顶着，见 §8）：
-//     · 各级 hitVec 与命中数据选择、命中侧的 PLRU access（plru_l3 目前**没有任何写者**）；
+//   已追清并写成 RTL：
+//     · 四级流水握手与入口节流、三份 dup 的 flush 与归属、复位域划分、
+//       两个 ClockGate 的开门条件、l1/l0 的 SRAM 读地址与读使能、全部 MBIST/DFT 拓扑；
+//     · l1/l0 的**全部写数据**（§6.1 的 10 个 PTE 谓词 + §6.2 的逐项字段）；
+//     · 五级替换策略与受害者选择（§7：PseudoLRU 取路/更新 + replaceWrapper，
+//       含 golden 那个"l3 回填污染 l2 PLRU"的真 bug）；
+//     · 各级回填使能与回填侧状态更新（§9/§11：l3/l2/sp 表项载荷、l3v..spv 置位、
+//       l3g..spg、五级 h、l1/l0 的 XORFold 影子哈希）；
+//     · 流水载荷三级打拍与两个 1 拍脉冲（§12）；
+//     · ★五级命中判定（§14/§15/§16）★——l3/l2 的 hitVec + DataHoldBypass，
+//       sp 的 allType 比较（level_match + napot）与 bitmap 门，
+//       l1/l0 的 SRAM 两拍命中（v/h/g 向量在发读那一拍锁存、数据 DataHoldBypass），
+//       以及命中侧的 PLRU access。
+//   验证：verif/study/PtwCache_refill 双例化逐拍比 430 根 SRAM 写端口 +
+//     约 2500 根核内状态/命中寄存器，3 seed × 200k 拍 errors=0；
+//     tb 自己判"五级回填与五级命中的 fire 次数都必须 > 0"，注入的 mutant 记在其头注释里。
+//   未追清（以显式钉 0 顶着，见 §8）：
 //     · sfence/hfence 失效掩码（三种 rs1/rs2 组合 × 三种 fence 类型）；
 //     · l1/l0 的 ecc flush；
-//     · bitmap 检查（l0_bitmap 的写）与 wakeup 回写；
-//     · io.resp 的 220 根载荷输出；
+//     · l0_bitmap 的**写**侧与 bitmap wakeup 回读（读路径形状已照抄，见 §16）；
+//     · io.resp 的 220 根载荷输出与 refill_bypass；
 //     · 8 个 perf 计数器。
-//   ★也就是说：当前这份核只在"从不发请求、从不发 sfence、从不 ecc 出错"的激励下
-//    与 golden 同态。任何人在上面那张清单清空之前引用它的输出，都会拿到错值。★
-// 本文件导航（共 4554 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
-//   L43    它在 MMU 里的位置
-//   L50    五级存储
-//   L63    四级流水
-//   L73    三份 dup 各归谁 —— 照抄，绝不合并
-//   L82    复位域 —— golden 实测，别照直觉全复位
-//   L92    子模块
-//   L99    golden 45,308 行里有多少是真逻辑
-//   L106   差分 UT 方案
-//   L125   已追清 / 未追清 —— 当前边界
-//   L148   xs_ptwcache_pkg —— 几何、类型与编码
-//   L686   §1 四级流水与反压
-//   L731   §2 三份 dup 的归属与 flush
-//   L762   §3 存储声明
-//   L803   §4 复位域
-//   L814   §5 时钟门控与 SRAM 端口仲裁
-//   L847   §6 各级 refill 使能
-//   L857   §7 替换策略状态
-//   L876   §6.1 PTE 谓词
-//   L990   §6.2 回填写数据
-//   L1084  §7.1 PseudoLRU —— 位布局与两个方程
-//   L1141  §7.2 replaceWrapper —— 「有空位先填空位，满了才问 PLRU」
-//   L1170  §7.3 受害者选择
-//   L1213  §9 各级回填使能与回填载荷
-//   L1284  §9.1 XORFold —— 影子元数据存的是折叠哈希，不是原值
-//   L1298  §11 时序：两个 always_ff，复位域划分照抄 golden
-//   L1428  §8 未追清清单 —— ★占位信号，当前值无意义★
-//   L2269  §9 子模块例化
+//   ★所以当前这份核只在"从不发 sfence、从不 ecc 出错、BME=0"的激励下与 golden 同态，
+//    而且它的 io.resp 仍然全是 0 —— 任何人现在引用它的输出都会拿到错值。★
+// 本文件导航（共 6045 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+//   L48    它在 MMU 里的位置
+//   L55    五级存储
+//   L68    四级流水
+//   L78    三份 dup 各归谁 —— 照抄，绝不合并
+//   L87    复位域 —— golden 实测，别照直觉全复位
+//   L97    子模块
+//   L104   golden 45,308 行里有多少是真逻辑
+//   L111   差分 UT 方案
+//   L130   已追清 / 未追清 —— 当前边界
+//   L157   xs_ptwcache_pkg —— 几何、类型与编码
+//   L750   §1 四级流水与反压
+//   L795   §2 三份 dup 的归属与 flush
+//   L826   §3 存储声明
+//   L867   §4 复位域
+//   L878   §5 时钟门控与 SRAM 端口仲裁
+//   L911   §6 各级 refill 使能
+//   L921   §7 替换策略状态
+//   L940   §6.1 PTE 谓词
+//   L1054  §6.2 回填写数据
+//   L1148  §7.1 PseudoLRU —— 位布局与两个方程
+//   L1205  §7.2 replaceWrapper —— 「有空位先填空位，满了才问 PLRU」
+//   L1234  §7.3 受害者选择
+//   L1277  §9 各级回填使能与回填载荷
+//   L1348  §9.1 XORFold —— 影子元数据存的是折叠哈希，不是原值
+//   L1961  §12 流水载荷与两个 1 拍脉冲
+//   L2008  §13 命中判定的两个公共写法
+//   L2026  §14 l3 / l2 命中
+//   L2149  §15 sp 命中的取数
+//   L2201  §16 l1 / l0 命中
+//   L2760  §11 时序：两个 always_ff，复位域划分照抄 golden
+//   L2917  §8 未追清清单 —— ★占位信号，当前值无意义★
+//   L3760  §9 子模块例化
 //
 
 // =============================================================================
@@ -219,6 +228,61 @@ package xs_ptwcache_pkg;
     logic                prefetch;
     logic                v;        // ★注意：sp 条目自带 v 字段，与 spv 位向量是两回事★
   } sp_entry_t;
+
+  // l1 / l0 的一条表项（SRAM 里的一行）：整行 8 个 PTE 共享 tag/asid/vmid/prefetch，
+  // 每个 PTE 自己带 pbmt/ppn/vs（有效）。l0 还多一份 onlypf 与完整 perm（它存叶子）。
+  // ★vs 是"本条 PTE 有效"，与 l1v/l0v 的"本路表项有效"是两回事，命中要同时满足★
+  typedef struct packed {
+    logic [L1_TAG_W-1:0]            tag;
+    logic [ASID_W-1:0]              asid;
+    logic [VMID_W-1:0]              vmid;
+    logic [SECTOR_N-1:0][1:0]       pbmts;
+    logic [SECTOR_N-1:0][PPN_W-1:0] ppns;
+    logic [SECTOR_N-1:0]            vs;
+    logic                           prefetch;
+  } l1_line_t;
+
+  // l1/l0 在 stageCheck 级留下的那一份（ramDatas）：★只留下游真用得到的字段★。
+  // golden 里 l1 的 ramDatas 没有 tag/asid/vmid/vs —— 命中判定在上一级就做完了，
+  // 这一级只需要选数用的 ppn/pbmt/prefetch（l0 还多 onlypf 与 perm）。
+  // 把整行都留下来会凭空多出一批永远没人读的寄存器，FM 上就是 unread 点。
+  typedef struct packed {
+    logic [SECTOR_N-1:0][1:0]       pbmts;
+    logic [SECTOR_N-1:0][PPN_W-1:0] ppns;
+    logic                           prefetch;
+  } l1_ram_t;
+
+  typedef struct packed {
+    logic [SECTOR_N-1:0][1:0]       pbmts;
+    logic [SECTOR_N-1:0][PPN_W-1:0] ppns;
+    logic [SECTOR_N-1:0]            onlypf;
+    pte_perm_t [SECTOR_N-1:0]       perms;
+    logic                           prefetch;
+  } l0_ram_t;
+
+  // sp 命中后真正被下游用到的字段（★没有 tag/asid/vmid★：它们在 golden 里
+  // 从来到不了输出，firtool 把那三个寄存器消掉了，这里照抄"不存"）。
+  typedef struct packed {
+    logic            n;
+    logic [1:0]      pbmt;
+    logic [PPN_W-1:0] ppn;
+    pte_perm_t       perm;
+    logic [1:0]      level;
+    logic            v;
+    logic            prefetch;
+  } sp_hit_t;
+
+  typedef struct packed {
+    logic [L0_TAG_W-1:0]            tag;
+    logic [ASID_W-1:0]              asid;
+    logic [VMID_W-1:0]              vmid;
+    logic [SECTOR_N-1:0][1:0]       pbmts;
+    logic [SECTOR_N-1:0][PPN_W-1:0] ppns;
+    logic [SECTOR_N-1:0]            vs;
+    logic [SECTOR_N-1:0]            onlypf;
+    pte_perm_t [SECTOR_N-1:0]       perms;
+    logic                           prefetch;
+  } l0_line_t;
 
 endpackage
 
@@ -1294,16 +1358,1415 @@ module xs_PtwCache_core(
     return t[5:0] ^ t[11:6] ^ t[17:12] ^ t[23:18] ^ {1'h0, t[28:24]};
   endfunction
 
+  // SRAM 读回的扁平线（golden 的端口名，逐根抄）——
+  // 命中判定读的是下面 §16 打包出来的 l1_line_t / l0_line_t。
+  logic [15:0]     l0_rdata_0_asid;
+  logic            l0_rdata_0_onlypf_0;
+  logic            l0_rdata_0_onlypf_1;
+  logic            l0_rdata_0_onlypf_2;
+  logic            l0_rdata_0_onlypf_3;
+  logic            l0_rdata_0_onlypf_4;
+  logic            l0_rdata_0_onlypf_5;
+  logic            l0_rdata_0_onlypf_6;
+  logic            l0_rdata_0_onlypf_7;
+  logic [1:0]      l0_rdata_0_pbmts_0;
+  logic [1:0]      l0_rdata_0_pbmts_1;
+  logic [1:0]      l0_rdata_0_pbmts_2;
+  logic [1:0]      l0_rdata_0_pbmts_3;
+  logic [1:0]      l0_rdata_0_pbmts_4;
+  logic [1:0]      l0_rdata_0_pbmts_5;
+  logic [1:0]      l0_rdata_0_pbmts_6;
+  logic [1:0]      l0_rdata_0_pbmts_7;
+  logic            l0_rdata_0_perms_0_a;
+  logic            l0_rdata_0_perms_0_d;
+  logic            l0_rdata_0_perms_0_g;
+  logic            l0_rdata_0_perms_0_r;
+  logic            l0_rdata_0_perms_0_u;
+  logic            l0_rdata_0_perms_0_w;
+  logic            l0_rdata_0_perms_0_x;
+  logic            l0_rdata_0_perms_1_a;
+  logic            l0_rdata_0_perms_1_d;
+  logic            l0_rdata_0_perms_1_g;
+  logic            l0_rdata_0_perms_1_r;
+  logic            l0_rdata_0_perms_1_u;
+  logic            l0_rdata_0_perms_1_w;
+  logic            l0_rdata_0_perms_1_x;
+  logic            l0_rdata_0_perms_2_a;
+  logic            l0_rdata_0_perms_2_d;
+  logic            l0_rdata_0_perms_2_g;
+  logic            l0_rdata_0_perms_2_r;
+  logic            l0_rdata_0_perms_2_u;
+  logic            l0_rdata_0_perms_2_w;
+  logic            l0_rdata_0_perms_2_x;
+  logic            l0_rdata_0_perms_3_a;
+  logic            l0_rdata_0_perms_3_d;
+  logic            l0_rdata_0_perms_3_g;
+  logic            l0_rdata_0_perms_3_r;
+  logic            l0_rdata_0_perms_3_u;
+  logic            l0_rdata_0_perms_3_w;
+  logic            l0_rdata_0_perms_3_x;
+  logic            l0_rdata_0_perms_4_a;
+  logic            l0_rdata_0_perms_4_d;
+  logic            l0_rdata_0_perms_4_g;
+  logic            l0_rdata_0_perms_4_r;
+  logic            l0_rdata_0_perms_4_u;
+  logic            l0_rdata_0_perms_4_w;
+  logic            l0_rdata_0_perms_4_x;
+  logic            l0_rdata_0_perms_5_a;
+  logic            l0_rdata_0_perms_5_d;
+  logic            l0_rdata_0_perms_5_g;
+  logic            l0_rdata_0_perms_5_r;
+  logic            l0_rdata_0_perms_5_u;
+  logic            l0_rdata_0_perms_5_w;
+  logic            l0_rdata_0_perms_5_x;
+  logic            l0_rdata_0_perms_6_a;
+  logic            l0_rdata_0_perms_6_d;
+  logic            l0_rdata_0_perms_6_g;
+  logic            l0_rdata_0_perms_6_r;
+  logic            l0_rdata_0_perms_6_u;
+  logic            l0_rdata_0_perms_6_w;
+  logic            l0_rdata_0_perms_6_x;
+  logic            l0_rdata_0_perms_7_a;
+  logic            l0_rdata_0_perms_7_d;
+  logic            l0_rdata_0_perms_7_g;
+  logic            l0_rdata_0_perms_7_r;
+  logic            l0_rdata_0_perms_7_u;
+  logic            l0_rdata_0_perms_7_w;
+  logic            l0_rdata_0_perms_7_x;
+  logic [37:0]     l0_rdata_0_ppns_0;
+  logic [37:0]     l0_rdata_0_ppns_1;
+  logic [37:0]     l0_rdata_0_ppns_2;
+  logic [37:0]     l0_rdata_0_ppns_3;
+  logic [37:0]     l0_rdata_0_ppns_4;
+  logic [37:0]     l0_rdata_0_ppns_5;
+  logic [37:0]     l0_rdata_0_ppns_6;
+  logic [37:0]     l0_rdata_0_ppns_7;
+  logic            l0_rdata_0_prefetch;
+  logic [28:0]     l0_rdata_0_tag;
+  logic [13:0]     l0_rdata_0_vmid;
+  logic            l0_rdata_0_vs_0;
+  logic            l0_rdata_0_vs_1;
+  logic            l0_rdata_0_vs_2;
+  logic            l0_rdata_0_vs_3;
+  logic            l0_rdata_0_vs_4;
+  logic            l0_rdata_0_vs_5;
+  logic            l0_rdata_0_vs_6;
+  logic            l0_rdata_0_vs_7;
+  logic [15:0]     l0_rdata_1_asid;
+  logic            l0_rdata_1_onlypf_0;
+  logic            l0_rdata_1_onlypf_1;
+  logic            l0_rdata_1_onlypf_2;
+  logic            l0_rdata_1_onlypf_3;
+  logic            l0_rdata_1_onlypf_4;
+  logic            l0_rdata_1_onlypf_5;
+  logic            l0_rdata_1_onlypf_6;
+  logic            l0_rdata_1_onlypf_7;
+  logic [1:0]      l0_rdata_1_pbmts_0;
+  logic [1:0]      l0_rdata_1_pbmts_1;
+  logic [1:0]      l0_rdata_1_pbmts_2;
+  logic [1:0]      l0_rdata_1_pbmts_3;
+  logic [1:0]      l0_rdata_1_pbmts_4;
+  logic [1:0]      l0_rdata_1_pbmts_5;
+  logic [1:0]      l0_rdata_1_pbmts_6;
+  logic [1:0]      l0_rdata_1_pbmts_7;
+  logic            l0_rdata_1_perms_0_a;
+  logic            l0_rdata_1_perms_0_d;
+  logic            l0_rdata_1_perms_0_g;
+  logic            l0_rdata_1_perms_0_r;
+  logic            l0_rdata_1_perms_0_u;
+  logic            l0_rdata_1_perms_0_w;
+  logic            l0_rdata_1_perms_0_x;
+  logic            l0_rdata_1_perms_1_a;
+  logic            l0_rdata_1_perms_1_d;
+  logic            l0_rdata_1_perms_1_g;
+  logic            l0_rdata_1_perms_1_r;
+  logic            l0_rdata_1_perms_1_u;
+  logic            l0_rdata_1_perms_1_w;
+  logic            l0_rdata_1_perms_1_x;
+  logic            l0_rdata_1_perms_2_a;
+  logic            l0_rdata_1_perms_2_d;
+  logic            l0_rdata_1_perms_2_g;
+  logic            l0_rdata_1_perms_2_r;
+  logic            l0_rdata_1_perms_2_u;
+  logic            l0_rdata_1_perms_2_w;
+  logic            l0_rdata_1_perms_2_x;
+  logic            l0_rdata_1_perms_3_a;
+  logic            l0_rdata_1_perms_3_d;
+  logic            l0_rdata_1_perms_3_g;
+  logic            l0_rdata_1_perms_3_r;
+  logic            l0_rdata_1_perms_3_u;
+  logic            l0_rdata_1_perms_3_w;
+  logic            l0_rdata_1_perms_3_x;
+  logic            l0_rdata_1_perms_4_a;
+  logic            l0_rdata_1_perms_4_d;
+  logic            l0_rdata_1_perms_4_g;
+  logic            l0_rdata_1_perms_4_r;
+  logic            l0_rdata_1_perms_4_u;
+  logic            l0_rdata_1_perms_4_w;
+  logic            l0_rdata_1_perms_4_x;
+  logic            l0_rdata_1_perms_5_a;
+  logic            l0_rdata_1_perms_5_d;
+  logic            l0_rdata_1_perms_5_g;
+  logic            l0_rdata_1_perms_5_r;
+  logic            l0_rdata_1_perms_5_u;
+  logic            l0_rdata_1_perms_5_w;
+  logic            l0_rdata_1_perms_5_x;
+  logic            l0_rdata_1_perms_6_a;
+  logic            l0_rdata_1_perms_6_d;
+  logic            l0_rdata_1_perms_6_g;
+  logic            l0_rdata_1_perms_6_r;
+  logic            l0_rdata_1_perms_6_u;
+  logic            l0_rdata_1_perms_6_w;
+  logic            l0_rdata_1_perms_6_x;
+  logic            l0_rdata_1_perms_7_a;
+  logic            l0_rdata_1_perms_7_d;
+  logic            l0_rdata_1_perms_7_g;
+  logic            l0_rdata_1_perms_7_r;
+  logic            l0_rdata_1_perms_7_u;
+  logic            l0_rdata_1_perms_7_w;
+  logic            l0_rdata_1_perms_7_x;
+  logic [37:0]     l0_rdata_1_ppns_0;
+  logic [37:0]     l0_rdata_1_ppns_1;
+  logic [37:0]     l0_rdata_1_ppns_2;
+  logic [37:0]     l0_rdata_1_ppns_3;
+  logic [37:0]     l0_rdata_1_ppns_4;
+  logic [37:0]     l0_rdata_1_ppns_5;
+  logic [37:0]     l0_rdata_1_ppns_6;
+  logic [37:0]     l0_rdata_1_ppns_7;
+  logic            l0_rdata_1_prefetch;
+  logic [28:0]     l0_rdata_1_tag;
+  logic [13:0]     l0_rdata_1_vmid;
+  logic            l0_rdata_1_vs_0;
+  logic            l0_rdata_1_vs_1;
+  logic            l0_rdata_1_vs_2;
+  logic            l0_rdata_1_vs_3;
+  logic            l0_rdata_1_vs_4;
+  logic            l0_rdata_1_vs_5;
+  logic            l0_rdata_1_vs_6;
+  logic            l0_rdata_1_vs_7;
+  logic [15:0]     l0_rdata_2_asid;
+  logic            l0_rdata_2_onlypf_0;
+  logic            l0_rdata_2_onlypf_1;
+  logic            l0_rdata_2_onlypf_2;
+  logic            l0_rdata_2_onlypf_3;
+  logic            l0_rdata_2_onlypf_4;
+  logic            l0_rdata_2_onlypf_5;
+  logic            l0_rdata_2_onlypf_6;
+  logic            l0_rdata_2_onlypf_7;
+  logic [1:0]      l0_rdata_2_pbmts_0;
+  logic [1:0]      l0_rdata_2_pbmts_1;
+  logic [1:0]      l0_rdata_2_pbmts_2;
+  logic [1:0]      l0_rdata_2_pbmts_3;
+  logic [1:0]      l0_rdata_2_pbmts_4;
+  logic [1:0]      l0_rdata_2_pbmts_5;
+  logic [1:0]      l0_rdata_2_pbmts_6;
+  logic [1:0]      l0_rdata_2_pbmts_7;
+  logic            l0_rdata_2_perms_0_a;
+  logic            l0_rdata_2_perms_0_d;
+  logic            l0_rdata_2_perms_0_g;
+  logic            l0_rdata_2_perms_0_r;
+  logic            l0_rdata_2_perms_0_u;
+  logic            l0_rdata_2_perms_0_w;
+  logic            l0_rdata_2_perms_0_x;
+  logic            l0_rdata_2_perms_1_a;
+  logic            l0_rdata_2_perms_1_d;
+  logic            l0_rdata_2_perms_1_g;
+  logic            l0_rdata_2_perms_1_r;
+  logic            l0_rdata_2_perms_1_u;
+  logic            l0_rdata_2_perms_1_w;
+  logic            l0_rdata_2_perms_1_x;
+  logic            l0_rdata_2_perms_2_a;
+  logic            l0_rdata_2_perms_2_d;
+  logic            l0_rdata_2_perms_2_g;
+  logic            l0_rdata_2_perms_2_r;
+  logic            l0_rdata_2_perms_2_u;
+  logic            l0_rdata_2_perms_2_w;
+  logic            l0_rdata_2_perms_2_x;
+  logic            l0_rdata_2_perms_3_a;
+  logic            l0_rdata_2_perms_3_d;
+  logic            l0_rdata_2_perms_3_g;
+  logic            l0_rdata_2_perms_3_r;
+  logic            l0_rdata_2_perms_3_u;
+  logic            l0_rdata_2_perms_3_w;
+  logic            l0_rdata_2_perms_3_x;
+  logic            l0_rdata_2_perms_4_a;
+  logic            l0_rdata_2_perms_4_d;
+  logic            l0_rdata_2_perms_4_g;
+  logic            l0_rdata_2_perms_4_r;
+  logic            l0_rdata_2_perms_4_u;
+  logic            l0_rdata_2_perms_4_w;
+  logic            l0_rdata_2_perms_4_x;
+  logic            l0_rdata_2_perms_5_a;
+  logic            l0_rdata_2_perms_5_d;
+  logic            l0_rdata_2_perms_5_g;
+  logic            l0_rdata_2_perms_5_r;
+  logic            l0_rdata_2_perms_5_u;
+  logic            l0_rdata_2_perms_5_w;
+  logic            l0_rdata_2_perms_5_x;
+  logic            l0_rdata_2_perms_6_a;
+  logic            l0_rdata_2_perms_6_d;
+  logic            l0_rdata_2_perms_6_g;
+  logic            l0_rdata_2_perms_6_r;
+  logic            l0_rdata_2_perms_6_u;
+  logic            l0_rdata_2_perms_6_w;
+  logic            l0_rdata_2_perms_6_x;
+  logic            l0_rdata_2_perms_7_a;
+  logic            l0_rdata_2_perms_7_d;
+  logic            l0_rdata_2_perms_7_g;
+  logic            l0_rdata_2_perms_7_r;
+  logic            l0_rdata_2_perms_7_u;
+  logic            l0_rdata_2_perms_7_w;
+  logic            l0_rdata_2_perms_7_x;
+  logic [37:0]     l0_rdata_2_ppns_0;
+  logic [37:0]     l0_rdata_2_ppns_1;
+  logic [37:0]     l0_rdata_2_ppns_2;
+  logic [37:0]     l0_rdata_2_ppns_3;
+  logic [37:0]     l0_rdata_2_ppns_4;
+  logic [37:0]     l0_rdata_2_ppns_5;
+  logic [37:0]     l0_rdata_2_ppns_6;
+  logic [37:0]     l0_rdata_2_ppns_7;
+  logic            l0_rdata_2_prefetch;
+  logic [28:0]     l0_rdata_2_tag;
+  logic [13:0]     l0_rdata_2_vmid;
+  logic            l0_rdata_2_vs_0;
+  logic            l0_rdata_2_vs_1;
+  logic            l0_rdata_2_vs_2;
+  logic            l0_rdata_2_vs_3;
+  logic            l0_rdata_2_vs_4;
+  logic            l0_rdata_2_vs_5;
+  logic            l0_rdata_2_vs_6;
+  logic            l0_rdata_2_vs_7;
+  logic [15:0]     l0_rdata_3_asid;
+  logic            l0_rdata_3_onlypf_0;
+  logic            l0_rdata_3_onlypf_1;
+  logic            l0_rdata_3_onlypf_2;
+  logic            l0_rdata_3_onlypf_3;
+  logic            l0_rdata_3_onlypf_4;
+  logic            l0_rdata_3_onlypf_5;
+  logic            l0_rdata_3_onlypf_6;
+  logic            l0_rdata_3_onlypf_7;
+  logic [1:0]      l0_rdata_3_pbmts_0;
+  logic [1:0]      l0_rdata_3_pbmts_1;
+  logic [1:0]      l0_rdata_3_pbmts_2;
+  logic [1:0]      l0_rdata_3_pbmts_3;
+  logic [1:0]      l0_rdata_3_pbmts_4;
+  logic [1:0]      l0_rdata_3_pbmts_5;
+  logic [1:0]      l0_rdata_3_pbmts_6;
+  logic [1:0]      l0_rdata_3_pbmts_7;
+  logic            l0_rdata_3_perms_0_a;
+  logic            l0_rdata_3_perms_0_d;
+  logic            l0_rdata_3_perms_0_g;
+  logic            l0_rdata_3_perms_0_r;
+  logic            l0_rdata_3_perms_0_u;
+  logic            l0_rdata_3_perms_0_w;
+  logic            l0_rdata_3_perms_0_x;
+  logic            l0_rdata_3_perms_1_a;
+  logic            l0_rdata_3_perms_1_d;
+  logic            l0_rdata_3_perms_1_g;
+  logic            l0_rdata_3_perms_1_r;
+  logic            l0_rdata_3_perms_1_u;
+  logic            l0_rdata_3_perms_1_w;
+  logic            l0_rdata_3_perms_1_x;
+  logic            l0_rdata_3_perms_2_a;
+  logic            l0_rdata_3_perms_2_d;
+  logic            l0_rdata_3_perms_2_g;
+  logic            l0_rdata_3_perms_2_r;
+  logic            l0_rdata_3_perms_2_u;
+  logic            l0_rdata_3_perms_2_w;
+  logic            l0_rdata_3_perms_2_x;
+  logic            l0_rdata_3_perms_3_a;
+  logic            l0_rdata_3_perms_3_d;
+  logic            l0_rdata_3_perms_3_g;
+  logic            l0_rdata_3_perms_3_r;
+  logic            l0_rdata_3_perms_3_u;
+  logic            l0_rdata_3_perms_3_w;
+  logic            l0_rdata_3_perms_3_x;
+  logic            l0_rdata_3_perms_4_a;
+  logic            l0_rdata_3_perms_4_d;
+  logic            l0_rdata_3_perms_4_g;
+  logic            l0_rdata_3_perms_4_r;
+  logic            l0_rdata_3_perms_4_u;
+  logic            l0_rdata_3_perms_4_w;
+  logic            l0_rdata_3_perms_4_x;
+  logic            l0_rdata_3_perms_5_a;
+  logic            l0_rdata_3_perms_5_d;
+  logic            l0_rdata_3_perms_5_g;
+  logic            l0_rdata_3_perms_5_r;
+  logic            l0_rdata_3_perms_5_u;
+  logic            l0_rdata_3_perms_5_w;
+  logic            l0_rdata_3_perms_5_x;
+  logic            l0_rdata_3_perms_6_a;
+  logic            l0_rdata_3_perms_6_d;
+  logic            l0_rdata_3_perms_6_g;
+  logic            l0_rdata_3_perms_6_r;
+  logic            l0_rdata_3_perms_6_u;
+  logic            l0_rdata_3_perms_6_w;
+  logic            l0_rdata_3_perms_6_x;
+  logic            l0_rdata_3_perms_7_a;
+  logic            l0_rdata_3_perms_7_d;
+  logic            l0_rdata_3_perms_7_g;
+  logic            l0_rdata_3_perms_7_r;
+  logic            l0_rdata_3_perms_7_u;
+  logic            l0_rdata_3_perms_7_w;
+  logic            l0_rdata_3_perms_7_x;
+  logic [37:0]     l0_rdata_3_ppns_0;
+  logic [37:0]     l0_rdata_3_ppns_1;
+  logic [37:0]     l0_rdata_3_ppns_2;
+  logic [37:0]     l0_rdata_3_ppns_3;
+  logic [37:0]     l0_rdata_3_ppns_4;
+  logic [37:0]     l0_rdata_3_ppns_5;
+  logic [37:0]     l0_rdata_3_ppns_6;
+  logic [37:0]     l0_rdata_3_ppns_7;
+  logic            l0_rdata_3_prefetch;
+  logic [28:0]     l0_rdata_3_tag;
+  logic [13:0]     l0_rdata_3_vmid;
+  logic            l0_rdata_3_vs_0;
+  logic            l0_rdata_3_vs_1;
+  logic            l0_rdata_3_vs_2;
+  logic            l0_rdata_3_vs_3;
+  logic            l0_rdata_3_vs_4;
+  logic            l0_rdata_3_vs_5;
+  logic            l0_rdata_3_vs_6;
+  logic            l0_rdata_3_vs_7;
+  logic [15:0]     l1_rdata_0_asid;
+  logic [1:0]      l1_rdata_0_pbmts_0;
+  logic [1:0]      l1_rdata_0_pbmts_1;
+  logic [1:0]      l1_rdata_0_pbmts_2;
+  logic [1:0]      l1_rdata_0_pbmts_3;
+  logic [1:0]      l1_rdata_0_pbmts_4;
+  logic [1:0]      l1_rdata_0_pbmts_5;
+  logic [1:0]      l1_rdata_0_pbmts_6;
+  logic [1:0]      l1_rdata_0_pbmts_7;
+  logic [37:0]     l1_rdata_0_ppns_0;
+  logic [37:0]     l1_rdata_0_ppns_1;
+  logic [37:0]     l1_rdata_0_ppns_2;
+  logic [37:0]     l1_rdata_0_ppns_3;
+  logic [37:0]     l1_rdata_0_ppns_4;
+  logic [37:0]     l1_rdata_0_ppns_5;
+  logic [37:0]     l1_rdata_0_ppns_6;
+  logic [37:0]     l1_rdata_0_ppns_7;
+  logic            l1_rdata_0_prefetch;
+  logic [23:0]     l1_rdata_0_tag;
+  logic [13:0]     l1_rdata_0_vmid;
+  logic            l1_rdata_0_vs_0;
+  logic            l1_rdata_0_vs_1;
+  logic            l1_rdata_0_vs_2;
+  logic            l1_rdata_0_vs_3;
+  logic            l1_rdata_0_vs_4;
+  logic            l1_rdata_0_vs_5;
+  logic            l1_rdata_0_vs_6;
+  logic            l1_rdata_0_vs_7;
+  logic [15:0]     l1_rdata_1_asid;
+  logic [1:0]      l1_rdata_1_pbmts_0;
+  logic [1:0]      l1_rdata_1_pbmts_1;
+  logic [1:0]      l1_rdata_1_pbmts_2;
+  logic [1:0]      l1_rdata_1_pbmts_3;
+  logic [1:0]      l1_rdata_1_pbmts_4;
+  logic [1:0]      l1_rdata_1_pbmts_5;
+  logic [1:0]      l1_rdata_1_pbmts_6;
+  logic [1:0]      l1_rdata_1_pbmts_7;
+  logic [37:0]     l1_rdata_1_ppns_0;
+  logic [37:0]     l1_rdata_1_ppns_1;
+  logic [37:0]     l1_rdata_1_ppns_2;
+  logic [37:0]     l1_rdata_1_ppns_3;
+  logic [37:0]     l1_rdata_1_ppns_4;
+  logic [37:0]     l1_rdata_1_ppns_5;
+  logic [37:0]     l1_rdata_1_ppns_6;
+  logic [37:0]     l1_rdata_1_ppns_7;
+  logic            l1_rdata_1_prefetch;
+  logic [23:0]     l1_rdata_1_tag;
+  logic [13:0]     l1_rdata_1_vmid;
+  logic            l1_rdata_1_vs_0;
+  logic            l1_rdata_1_vs_1;
+  logic            l1_rdata_1_vs_2;
+  logic            l1_rdata_1_vs_3;
+  logic            l1_rdata_1_vs_4;
+  logic            l1_rdata_1_vs_5;
+  logic            l1_rdata_1_vs_6;
+  logic            l1_rdata_1_vs_7;
+
+  // MBIST 分发级到 SRAM 的线束（宽度逐根抄自 golden）
+  logic            childBd_re;
+  logic            childBd_we;
+  logic            childBd_ack;
+  logic            childBd_1_re;
+  logic            childBd_1_we;
+  logic            childBd_2_re;
+  logic            childBd_2_we;
+  logic            childBd_3_re;
+  logic            childBd_3_we;
+  logic            childBd_4_re;
+  logic            childBd_4_we;
+  logic            childBd_5_re;
+  logic            childBd_5_we;
+  logic            childBd_6_re;
+  logic            childBd_6_we;
+  logic            childBd_7_re;
+  logic            childBd_7_we;
+  logic            childBd_8_re;
+  logic            childBd_8_we;
+  logic            childBd_9_re;
+  logic            childBd_9_we;
+  logic [2:0]      childBd_addr;
+  logic            childBd_10_re;
+  logic            childBd_10_we;
+  logic            childBd_11_re;
+  logic            childBd_11_we;
+  logic            childBd_12_re;
+  logic            childBd_12_we;
+  logic            childBd_13_re;
+  logic            childBd_13_we;
+  logic            childBd_14_re;
+  logic            childBd_14_we;
+  logic            childBd_15_re;
+  logic            childBd_15_we;
+  logic            childBd_16_re;
+  logic            childBd_16_we;
+  logic            childBd_1_ack;
+  logic            childBd_2_ack;
+  logic            childBd_3_ack;
+  logic            childBd_4_ack;
+  logic            childBd_5_ack;
+  logic            childBd_6_ack;
+  logic            childBd_7_ack;
+  logic            childBd_8_ack;
+  logic            childBd_9_ack;
+  logic [5:0]      childBd_array;
+  logic [130:0]    childBd_rdata;
+  logic [130:0]    childBd_wdata;
+  logic            childBd_wmask;
+  logic            childBd_10_ack;
+  logic            childBd_11_ack;
+  logic            childBd_12_ack;
+  logic            childBd_13_ack;
+  logic            childBd_14_ack;
+  logic            childBd_15_ack;
+  logic            childBd_16_ack;
+  logic [6:0]      childBd_1_addr;
+  logic [6:0]      childBd_2_addr;
+  logic [6:0]      childBd_3_addr;
+  logic [6:0]      childBd_4_addr;
+  logic [6:0]      childBd_5_addr;
+  logic [6:0]      childBd_6_addr;
+  logic [6:0]      childBd_7_addr;
+  logic [6:0]      childBd_8_addr;
+  logic [6:0]      childBd_9_addr;
+  logic [6:0]      childBd_10_addr;
+  logic [6:0]      childBd_11_addr;
+  logic [6:0]      childBd_12_addr;
+  logic [6:0]      childBd_13_addr;
+  logic [6:0]      childBd_14_addr;
+  logic [6:0]      childBd_15_addr;
+  logic [6:0]      childBd_16_addr;
+  logic [5:0]      childBd_1_array;
+  logic [113:0]    childBd_1_rdata;
+  logic [113:0]    childBd_1_wdata;
+  logic [1:0]      childBd_1_wmask;
+  logic [5:0]      childBd_2_array;
+  logic [113:0]    childBd_2_rdata;
+  logic [113:0]    childBd_2_wdata;
+  logic [1:0]      childBd_2_wmask;
+  logic [5:0]      childBd_3_array;
+  logic [113:0]    childBd_3_rdata;
+  logic [113:0]    childBd_3_wdata;
+  logic [1:0]      childBd_3_wmask;
+  logic [5:0]      childBd_4_array;
+  logic [113:0]    childBd_4_rdata;
+  logic [113:0]    childBd_4_wdata;
+  logic [1:0]      childBd_4_wmask;
+  logic [5:0]      childBd_5_array;
+  logic [113:0]    childBd_5_rdata;
+  logic [113:0]    childBd_5_wdata;
+  logic [1:0]      childBd_5_wmask;
+  logic [5:0]      childBd_6_array;
+  logic [113:0]    childBd_6_rdata;
+  logic [113:0]    childBd_6_wdata;
+  logic [1:0]      childBd_6_wmask;
+  logic [5:0]      childBd_7_array;
+  logic [113:0]    childBd_7_rdata;
+  logic [113:0]    childBd_7_wdata;
+  logic [1:0]      childBd_7_wmask;
+  logic [5:0]      childBd_8_array;
+  logic [113:0]    childBd_8_rdata;
+  logic [113:0]    childBd_8_wdata;
+  logic [1:0]      childBd_8_wmask;
+  logic [5:0]      childBd_9_array;
+  logic [113:0]    childBd_9_rdata;
+  logic [113:0]    childBd_9_wdata;
+  logic [1:0]      childBd_9_wmask;
+  logic [2:0]      childBd_addr_rd;
+  logic [5:0]      childBd_10_array;
+  logic [113:0]    childBd_10_rdata;
+  logic [113:0]    childBd_10_wdata;
+  logic [1:0]      childBd_10_wmask;
+  logic [5:0]      childBd_11_array;
+  logic [113:0]    childBd_11_rdata;
+  logic [113:0]    childBd_11_wdata;
+  logic [1:0]      childBd_11_wmask;
+  logic [5:0]      childBd_12_array;
+  logic [113:0]    childBd_12_rdata;
+  logic [113:0]    childBd_12_wdata;
+  logic [1:0]      childBd_12_wmask;
+  logic [5:0]      childBd_13_array;
+  logic [113:0]    childBd_13_rdata;
+  logic [113:0]    childBd_13_wdata;
+  logic [1:0]      childBd_13_wmask;
+  logic [5:0]      childBd_14_array;
+  logic [113:0]    childBd_14_rdata;
+  logic [113:0]    childBd_14_wdata;
+  logic [1:0]      childBd_14_wmask;
+  logic [6:0]      childBd_15_array;
+  logic [113:0]    childBd_15_rdata;
+  logic [113:0]    childBd_15_wdata;
+  logic [1:0]      childBd_15_wmask;
+  logic [6:0]      childBd_16_array;
+  logic [113:0]    childBd_16_rdata;
+  logic [113:0]    childBd_16_wdata;
+  logic [1:0]      childBd_16_wmask;
+  logic [6:0]      childBd_1_addr_rd;
+  logic [6:0]      childBd_2_addr_rd;
+  logic [6:0]      childBd_3_addr_rd;
+  logic [6:0]      childBd_4_addr_rd;
+  logic [6:0]      childBd_5_addr_rd;
+  logic [6:0]      childBd_6_addr_rd;
+  logic [6:0]      childBd_7_addr_rd;
+  logic [6:0]      childBd_8_addr_rd;
+  logic [6:0]      childBd_9_addr_rd;
+  logic [6:0]      childBd_10_addr_rd;
+  logic [6:0]      childBd_11_addr_rd;
+  logic [6:0]      childBd_12_addr_rd;
+  logic [6:0]      childBd_13_addr_rd;
+  logic [6:0]      childBd_14_addr_rd;
+  logic [6:0]      childBd_15_addr_rd;
+  logic [6:0]      childBd_16_addr_rd;
+  logic [5:0]      childBd_selectedOH;
+  logic            childBd_1_selectedOH;
+  logic            childBd_2_selectedOH;
+  logic            childBd_3_selectedOH;
+  logic            childBd_4_selectedOH;
+  logic            childBd_5_selectedOH;
+  logic            childBd_6_selectedOH;
+  logic            childBd_7_selectedOH;
+  logic            childBd_8_selectedOH;
+  logic            childBd_9_selectedOH;
+  logic            childBd_10_selectedOH;
+  logic            childBd_11_selectedOH;
+  logic            childBd_12_selectedOH;
+  logic            childBd_13_selectedOH;
+  logic            childBd_14_selectedOH;
+  logic            childBd_15_selectedOH;
+  logic            childBd_16_selectedOH;
+
+  // ---------------------------------------------------------------------------
+  // §12 流水载荷与两个 1 拍脉冲（已追清：golden:3087-3129 / 30764-30771 / 31216 / 31240）
+  //
+  //  §1 只搬了三级 valid；载荷（vpn / s2xlate / source / isFirst / isHptwReq / hptwId）
+  //  另有三套寄存器，各在自己那一级的 fire 上打拍：
+  //     stageDelay 级载荷 delay_*  <= io.req.bits   @ left_fire_req
+  //     stageCheck 级载荷 check_*  <= delay_*       @ left_fire_delay
+  //     stageResp  级载荷 resp_*   <= check_*       @ left_fire_check
+  //  ★两个 1 拍脉冲不是 valid★：它们是"这一拍有新数据进到该级"的选通，
+  //  给 DataHoldBypass / RegEnable 当使能，且各自都被 flush_dup_0 清掉。
+  logic [VPN_W-1:0]    delay_vpn,  check_vpn,  resp_vpn;
+  logic [1:0]          delay_s2x,  check_s2x,  resp_s2x;
+  logic [1:0]          delay_src,  check_src,  resp_src;
+  logic                delay_isfirst, check_isfirst, resp_isfirst;
+  logic                delay_ishptw,  check_ishptw,  resp_ishptw;
+  logic [HPTWID_W-1:0] delay_hptwid,  check_hptwid,  resp_hptwid;
+
+  logic stage_delay_valid_1cycle;   // golden stageDelay_valid_1cycle
+  logic stage_check_valid_1cycle;   // golden stageCheck_valid_1cycle
+
+  always_ff @(posedge clock) begin
+    if (left_fire_req) begin
+      delay_vpn     <= io_req_bits_req_info_vpn;
+      delay_s2x     <= io_req_bits_req_info_s2xlate;
+      delay_src     <= io_req_bits_req_info_source;
+      delay_isfirst <= io_req_bits_isFirst;
+      delay_ishptw  <= io_req_bits_isHptwReq;
+      delay_hptwid  <= io_req_bits_hptwId;
+    end
+    if (left_fire_delay) begin
+      check_vpn     <= delay_vpn;
+      check_s2x     <= delay_s2x;
+      check_src     <= delay_src;
+      check_isfirst <= delay_isfirst;
+      check_ishptw  <= delay_ishptw;
+      check_hptwid  <= delay_hptwid;
+    end
+    if (left_fire_check) begin
+      resp_vpn     <= check_vpn;
+      resp_s2x     <= check_s2x;
+      resp_src     <= check_src;
+      resp_isfirst <= check_isfirst;
+      resp_ishptw  <= check_ishptw;
+      resp_hptwid  <= check_hptwid;
+    end
+  end
+
+  // ---------------------------------------------------------------------------
+  // §13 命中判定的两个公共写法（已追清：golden:13205-13218 / _hitPPN_T_29）
+  //
+  //  ParallelOR / ParallelPriorityMux / OHToUInt 在 golden 里被展成平衡树，
+  //  这里写成循环。★两条 tie-break 必须照抄★：
+  //    · ParallelPriorityMux 一个都不命中时返回**最后一项**（不是 0）；
+  //    · l3/l2/sp 的 PLRU access 用 OHToUInt（按位或），
+  //      l1/l0 用 ParallelPriorityMux（最低命中位优先）—— 两者只在非 one-hot 时不同。
+  function automatic logic [3:0] oh_to_uint16(input logic [15:0] oh);
+    logic [3:0] r;
+    for (int b = 0; b < 4; b++) begin
+      r[b] = 1'b0;
+      for (int i = 0; i < 16; i++)
+        if (i[b]) r[b] |= oh[i];
+    end
+    return r;
+  endfunction
+
+  // ---------------------------------------------------------------------------
+  // §14 l3 / l2 命中（寄存器阵列，stageReq 发起、stageDelay 定型）
+  //
+  //  PtwEntry.hit 展开（golden:33485 / 33565）：
+  //    asid_hit = ~(~g[i] & ~onlyS2) | (asid[i] == asid_value)   // g 位 ⇒ 忽略 asid
+  //    vmid_hit = ~(|h_search)      | ({2'h0, vmid[i]} == hgatp_vmid)
+  //    ★vmid 比较是 16 位零扩展★：存的是 14 位，但要求 hgatp_vmid[15:14]==0 才算命中。
+  //    再与 tag 相等、v[i]、h[i]==h_search 相与。
+  //  三个"取数"信号走 DataHoldBypass（stage_delay_valid_1cycle 时取新值，否则保持），
+  //  再在 stageDelay 出口 RegEnable 一次，与 l1/l0 对齐到 stageCheck。
+  //
+  //  ★l3 没有 pbmt★：golden 里 l3 表项根本没有 pbmt 寄存器 —— 响应侧的 pbmt
+  //  在 l1 不命中时直接取 l2 的，l3 那一路的 pbmt 从来到不了输出，被 firtool 消掉了。
+  //  这里照抄"不存"，不要补一个出来。
+  logic [ASID_W-1:0] search_asid_dup2, search_asid_dup0;
+  assign search_asid_dup2 = (|h_search) ? io_csr_dup_2_vsatp_asid : io_csr_dup_2_satp_asid;
+  assign search_asid_dup0 = (|h_search) ? io_csr_dup_0_vsatp_asid : io_csr_dup_0_satp_asid;
+
+  logic onlyS2;
+  assign onlyS2 = (h_search == H_ONLY_STAGE2);
+
+  logic [L3_N-1:0] l3_hitvec;      // 在 stageReq fire 那一拍锁存
+  logic [L2_N-1:0] l2_hitvec;
+  logic [SP_N-1:0] sp_hitvec;
+
+  always_ff @(posedge clock) begin
+    if (sram_read_fire) begin
+      for (int i = 0; i < L3_N; i++)
+        l3_hitvec[i] <=
+            (~(~l3g[i] & ~onlyS2) | (l3_entry[i].asid == search_asid_dup2))
+          & (~(|h_search) | ({2'h0, l3_entry[i].vmid} == io_csr_dup_2_hgatp_vmid))
+          & (l3_entry[i].tag == io_req_bits_req_info_vpn[37:27])
+          & l3v[i] & (h_search == l3h[i]);
+      for (int i = 0; i < L2_N; i++)
+        l2_hitvec[i] <=
+            (~(~l2g[i] & ~onlyS2) | (l2_entry[i].asid == search_asid_dup2))
+          & (~(|h_search) | ({2'h0, l2_entry[i].vmid} == io_csr_dup_2_hgatp_vmid))
+          & (l2_entry[i].tag == io_req_bits_req_info_vpn[37:18])
+          & l2v[i] & (h_search == l2h[i]);
+      // sp 是 allType 比较：先按 level 决定要比到第几段 tag，napot 再改写最低那段。
+      for (int i = 0; i < SP_N; i++) begin
+        automatic logic tm0, tm1, tm2, tm3, lvl_match;
+        tm0 = sp_entry[i].n ? (sp_entry[i].tag[8:4]  == io_req_bits_req_info_vpn[8:4])
+                            : (sp_entry[i].tag[8:0]  == io_req_bits_req_info_vpn[8:0]);
+        tm1 =                  sp_entry[i].tag[17:9]  == io_req_bits_req_info_vpn[17:9];
+        tm2 =                  sp_entry[i].tag[26:18] == io_req_bits_req_info_vpn[26:18];
+        tm3 =                  sp_entry[i].tag[37:27] == io_req_bits_req_info_vpn[37:27];
+        lvl_match = (sp_entry[i].level == 2'd0) ? (tm3 & tm2 & tm1 & tm0)
+                  : (sp_entry[i].level == 2'd1) ? (tm3 & tm2 & tm1)
+                  : (((sp_entry[i].level != 2'd2) | tm2) & tm3);
+        sp_hitvec[i] <=
+            (onlyS2 | (sp_entry[i].asid == search_asid_dup0) | sp_entry[i].perm.g)
+          & (~(|h_search) | ({2'h0, sp_entry[i].vmid} == io_csr_dup_0_hgatp_vmid))
+          & lvl_match & spv[i] & (sph[i] == h_search);
+      end
+    end
+  end
+
+  // 三级的取数（组合）+ DataHoldBypass 的保持寄存器
+  logic             l3_hit_c,  l2_hit_c,  sp_hit_c;
+  logic [PPN_W-1:0] l3_ppn_c,  l2_ppn_c;
+  logic [1:0]       l2_pbmt_c;
+  logic             l3_pre_c,  l2_pre_c,  sp_pre_c;
+
+  always_comb begin
+    l3_hit_c = |l3_hitvec;
+    l2_hit_c = |l2_hitvec;
+    // ★一个都不命中时取最后一项★（ParallelPriorityMux 的 tie-break，照抄）
+    l3_ppn_c = l3_entry[L3_N-1].ppn;
+    l3_pre_c = l3_entry[L3_N-1].prefetch;
+    for (int i = L3_N-1; i >= 0; i--)
+      if (l3_hitvec[i]) begin
+        l3_ppn_c = l3_entry[i].ppn;
+        l3_pre_c = l3_entry[i].prefetch;
+      end
+    l2_ppn_c  = l2_entry[L2_N-1].ppn;
+    l2_pbmt_c = l2_entry[L2_N-1].pbmt;
+    l2_pre_c  = l2_entry[L2_N-1].prefetch;
+    for (int i = L2_N-1; i >= 0; i--)
+      if (l2_hitvec[i]) begin
+        l2_ppn_c  = l2_entry[i].ppn;
+        l2_pbmt_c = l2_entry[i].pbmt;
+        l2_pre_c  = l2_entry[i].prefetch;
+      end
+  end
+
+  logic             l3_hit_r,  l2_hit_r;
+  logic [PPN_W-1:0] l3_ppn_r,  l2_ppn_r;
+  logic [1:0]       l2_pbmt_r;
+  logic             l3_pre_r,  l2_pre_r;
+
+  logic             l3_hit_h,  l2_hit_h;
+  logic [PPN_W-1:0] l3_ppn_h,  l2_ppn_h;
+  logic [1:0]       l2_pbmt_h;
+  logic             l3_pre_h,  l2_pre_h;
+
+  assign l3_hit_h  = stage_delay_valid_1cycle ? l3_hit_c  : l3_hit_r;
+  assign l3_ppn_h  = stage_delay_valid_1cycle ? l3_ppn_c  : l3_ppn_r;
+  assign l3_pre_h  = stage_delay_valid_1cycle ? l3_pre_c  : l3_pre_r;
+  assign l2_hit_h  = stage_delay_valid_1cycle ? l2_hit_c  : l2_hit_r;
+  assign l2_ppn_h  = stage_delay_valid_1cycle ? l2_ppn_c  : l2_ppn_r;
+  assign l2_pbmt_h = stage_delay_valid_1cycle ? l2_pbmt_c : l2_pbmt_r;
+  assign l2_pre_h  = stage_delay_valid_1cycle ? l2_pre_c  : l2_pre_r;
+
+  // 与 l1/l0 对齐到 stageCheck 的一拍（golden l3Hit_r / l2Hit / …）
+  logic             l3_hit_ck, l2_hit_ck;
+  logic [PPN_W-1:0] l3_ppn_ck, l2_ppn_ck;
+  logic [1:0]       l2_pbmt_ck;
+  logic             l3_pre_ck, l2_pre_ck;
+
+  always_ff @(posedge clock) begin
+    if (stage_delay_valid_1cycle) begin
+      l3_hit_r <= l3_hit_c;  l3_ppn_r <= l3_ppn_c;  l3_pre_r <= l3_pre_c;
+      l2_hit_r <= l2_hit_c;  l2_ppn_r <= l2_ppn_c;  l2_pre_r <= l2_pre_c;
+      l2_pbmt_r <= l2_pbmt_c;
+    end
+    if (left_fire_delay) begin
+      l3_hit_ck <= l3_hit_h;  l3_ppn_ck <= l3_ppn_h;  l3_pre_ck <= l3_pre_h;
+      l2_hit_ck <= l2_hit_h;  l2_ppn_ck <= l2_ppn_h;  l2_pre_ck <= l2_pre_h;
+      l2_pbmt_ck <= l2_pbmt_h;
+    end
+  end
+
+  // ---------------------------------------------------------------------------
+  // §15 sp 命中的取数（golden:6141-6155）
+  //
+  //  ★sp 与 l3/l2 的形状不同：它**没有** DataHoldBypass★——hitVec 锁存之后，
+  //  取数与 hit 都是纯组合，直接在 stageDelay 出口 RegEnable 一次。
+  //  照抄这个差别：多补一级保持寄存器在仿真里大多数拍同值，但 FM 上是两棵不同的锥。
+  //
+  //  sp 的 hit 还带 bitmap 门：BME 打开、不是 allStage 的非 hptw 请求、且命中项 v=1 时，
+  //  hit 直接判 0，改走 jmp_bitmap_check 让上层去查 bitmap。
+  sp_hit_t sp_hitdata_c, sp_hitdata_ck;
+  logic    sp_hit_or, sp_jmp_bitmap_c, sp_bitmap_gate;
+  logic    sp_hit_ck, sp_pre_ck, sp_valid_ck, sp_jmp_bitmap_ck;
+  logic    sp_ishptw_delay;
+  logic [1:0] sp_s2x_delay;
+
+  always_comb begin
+    sp_hitdata_c = '0;
+    // ★一个都不命中时取最后一项★（ParallelPriorityMux 的 tie-break）
+    for (int i = SP_N-1; i >= 0; i--) begin
+      if (sp_hitvec[i] || i == SP_N-1) begin
+        sp_hitdata_c.n        = sp_entry[i].n;
+        sp_hitdata_c.pbmt     = sp_entry[i].pbmt;
+        sp_hitdata_c.ppn      = sp_entry[i].ppn;
+        sp_hitdata_c.perm     = sp_entry[i].perm;
+        sp_hitdata_c.level    = sp_entry[i].level;
+        sp_hitdata_c.v        = sp_entry[i].v;
+        sp_hitdata_c.prefetch = sp_entry[i].prefetch;
+      end
+    end
+  end
+
+  assign sp_hit_or       = |sp_hitvec;
+  assign sp_bitmap_gate  = bitmap_enable & ((sp_s2x_delay != H_ALL_STAGE) | sp_ishptw_delay)
+                         & sp_hitdata_c.v;
+  assign sp_hit_c        = sp_bitmap_gate ? 1'b0 : sp_hit_or;
+  assign sp_jmp_bitmap_c = sp_bitmap_gate & sp_hit_or;
+  assign sp_pre_c        = sp_hitdata_c.prefetch;
+
+  always_ff @(posedge clock) begin
+    if (sram_read_fire) begin
+      sp_ishptw_delay <= io_req_bits_isHptwReq;
+      sp_s2x_delay    <= io_req_bits_req_info_s2xlate;
+    end
+    if (left_fire_delay) begin
+      sp_hit_ck        <= sp_hit_c;
+      sp_hitdata_ck    <= sp_hitdata_c;
+      sp_pre_ck        <= sp_hitdata_c.prefetch;
+      sp_valid_ck      <= sp_hitdata_c.v;
+      sp_jmp_bitmap_ck <= sp_jmp_bitmap_c;
+    end
+  end
+
+  // ---------------------------------------------------------------------------
+  // §16 l1 / l0 命中（SRAM 两拍：stageDelay 组合判、stageCheck 锁存）
+  //
+  //  与 l3/l2 的关键差别：载荷在 SRAM 里，一拍才回来，所以
+  //    · 比较用的 v/h/g 向量在**发读请求**那一拍就得锁下来（vVec_delay 等）；
+  //    · SRAM 回读数据走 DataHoldBypass（stage_delay_valid_1cycle 取新值，否则保持）；
+  //    · hitVec 在 stageDelay 出口锁存，命中选数在 stageCheck 用。
+  //  PtwEntries.hit 与 PtwEntry.hit 不是同一个函数（golden:34041 / 35369）：
+  //    asid_hit = ignoreID | (delay_h == onlyStage2) | (asid == asid_value) | is_global
+  //      ★l1 的 ignoreID 是本路的 g 位，l0 没有 ignoreID，改用**本条 PTE 的 perm.g**★
+  //    vmid_hit = ~(|delay_h) | ({2'h0, vmid} == hgatp_vmid)
+  //    再与 tag 相等、以及**本条 PTE 的 vs 位**（不是整条表项的 v）相与。
+  l1_line_t l1_sram_rdata [L1_WAYS];
+  l0_line_t l0_sram_rdata [L0_WAYS];
+
+  logic [L1_WAYS-1:0] l1_vvec_delay, l1_gvec_delay;
+  logic [L0_WAYS-1:0] l0_vvec_delay;
+  logic [1:0]         l1_hvec_delay [L1_WAYS];
+  logic [1:0]         l0_hvec_delay [L0_WAYS];
+
+  // bitmap 读路径的两级寄存器（与 SRAM 数据同步；写侧未追清，见 §8）
+  logic [SECTOR_N-1:0] l0_bitmap_delay [L0_WAYS];
+  logic [SECTOR_N-1:0] l0_bitmap_ck    [L0_WAYS];
+
+  l1_line_t l1_resp_r [L1_WAYS];
+  l0_line_t l0_resp_r [L0_WAYS];
+  l1_line_t l1_resp_h [L1_WAYS];
+  l0_line_t l0_resp_h [L0_WAYS];
+  l1_ram_t  l1_ramdata [L1_WAYS];
+  l0_ram_t  l0_ramdata [L0_WAYS];
+
+  logic [1:0] delay_h;    // 查找 h，用 stageDelay 级的 s2xlate 折叠
+  assign delay_h = (delay_s2x == H_ONLY_STAGE2)
+                 ? H_ONLY_STAGE2
+                 : {1'b0, (delay_s2x == H_ONLY_STAGE1) | (&delay_s2x)};
+
+  for (genvar w = 0; w < L1_WAYS; w++) begin : g_l1_hold
+    assign l1_resp_h[w] = stage_delay_valid_1cycle ? l1_sram_rdata[w] : l1_resp_r[w];
+  end
+  for (genvar w = 0; w < L0_WAYS; w++) begin : g_l0_hold
+    assign l0_resp_h[w] = stage_delay_valid_1cycle ? l0_sram_rdata[w] : l0_resp_r[w];
+  end
+
+  logic [L1_WAYS-1:0] l1_hitvec_delay, l1_hitvec;
+  logic [L0_WAYS-1:0] l0_hitvec_delay, l0_hitvec;
+
+  always_comb begin
+    for (int w = 0; w < L1_WAYS; w++) begin
+      l1_hitvec_delay[w] =
+          (l1_gvec_delay[w] | (delay_h == H_ONLY_STAGE2)
+           | (l1_resp_h[w].asid == ((|delay_h) ? io_csr_dup_1_vsatp_asid
+                                               : io_csr_dup_1_satp_asid)))
+        & (~(|delay_h) | ({2'h0, l1_resp_h[w].vmid} == io_csr_dup_1_hgatp_vmid))
+        & (l1_resp_h[w].tag == delay_vpn[37:14])
+        & l1_resp_h[w].vs[delay_vpn[11:9]]
+        & l1_vvec_delay[w] & (delay_h == l1_hvec_delay[w]);
+    end
+    for (int w = 0; w < L0_WAYS; w++) begin
+      l0_hitvec_delay[w] =
+          ((delay_h == H_ONLY_STAGE2)
+           | (l0_resp_h[w].asid == ((|delay_h) ? io_csr_dup_0_vsatp_asid
+                                               : io_csr_dup_0_satp_asid))
+           | l0_resp_h[w].perms[delay_vpn[2:0]].g)
+        & (~(|delay_h) | ({2'h0, l0_resp_h[w].vmid} == io_csr_dup_0_hgatp_vmid))
+        & (l0_resp_h[w].tag == delay_vpn[37:9])
+        & l0_resp_h[w].vs[delay_vpn[2:0]]
+        & l0_vvec_delay[w] & (delay_h == l0_hvec_delay[w]);
+    end
+  end
+
+  always_ff @(posedge clock) begin
+    if (sram_read_fire) begin
+      for (int w = 0; w < L1_WAYS; w++) begin
+        l1_vvec_delay[w] <= l1v[2*io_req_bits_req_info_vpn[13:12] + w];
+        l1_gvec_delay[w] <= l1g[2*io_req_bits_req_info_vpn[13:12] + w];
+        l1_hvec_delay[w] <= l1h[io_req_bits_req_info_vpn[13:12]][w];
+      end
+      for (int w = 0; w < L0_WAYS; w++) begin
+        l0_vvec_delay[w] <= l0v[4*io_req_bits_req_info_vpn[8:3] + w];
+        l0_hvec_delay[w] <= l0h[io_req_bits_req_info_vpn[8:3]][w];
+      end
+      for (int w = 0; w < L0_WAYS; w++)
+        l0_bitmap_delay[w] <= l0_bitmap[io_req_bits_req_info_vpn[8:3]][w];
+    end
+    if (stage_delay_valid_1cycle) begin
+      for (int w = 0; w < L1_WAYS; w++) l1_resp_r[w] <= l1_sram_rdata[w];
+      for (int w = 0; w < L0_WAYS; w++) l0_resp_r[w] <= l0_sram_rdata[w];
+    end
+    if (left_fire_delay) begin
+      for (int w = 0; w < L1_WAYS; w++) begin
+        l1_ramdata[w].pbmts    <= l1_resp_h[w].pbmts;
+        l1_ramdata[w].ppns     <= l1_resp_h[w].ppns;
+        l1_ramdata[w].prefetch <= l1_resp_h[w].prefetch;
+      end
+      for (int w = 0; w < L0_WAYS; w++) begin
+        l0_ramdata[w].pbmts    <= l0_resp_h[w].pbmts;
+        l0_ramdata[w].ppns     <= l0_resp_h[w].ppns;
+        l0_ramdata[w].onlypf   <= l0_resp_h[w].onlypf;
+        l0_ramdata[w].perms    <= l0_resp_h[w].perms;
+        l0_ramdata[w].prefetch <= l0_resp_h[w].prefetch;
+      end
+      l1_hitvec <= l1_hitvec_delay;
+      l0_hitvec <= l0_hitvec_delay;
+      for (int w = 0; w < L0_WAYS; w++) l0_bitmap_ck[w] <= l0_bitmap_delay[w];
+    end
+  end
+
+  // 命中路号：★l1/l0 用 ParallelPriorityMux（最低命中位优先），一个不中时取最后一路★
+  logic       l1_hit, l0_hit_raw, l0_hit;
+  logic [1:0] l0_hitway;
+  assign l1_hit     = |l1_hitvec;
+  assign l0_hit_raw = |l0_hitvec;
+  assign l0_hitway  = (l0_hitvec[0] | l0_hitvec[1]) ? {1'b0, ~l0_hitvec[0]}
+                                                    : {1'b1, ~l0_hitvec[2]};
+
+  // l0 命中还要过 bitmap：BME 打开、且不是 allStage 的非 hptw 请求、且这条不是 onlypf 时，
+  // 必须本条 PTE 的 bitmap 已检查通过才算命中。
+  // ★l0_bitmap 的写侧还没追清（§8）★——所以 l0_hit 只在 BME=0 时可信。
+  l0_ram_t  l0_hitdata;
+  logic     l0_hit_onlypf, l0_bitmap_ok;
+  always_comb begin
+    l0_hitdata = l0_ramdata[L0_WAYS-1];
+    for (int w = L0_WAYS-1; w >= 0; w--)
+      if (l0_hitvec[w]) l0_hitdata = l0_ramdata[w];
+  end
+  assign l0_hit_onlypf = l0_hitdata.onlypf[check_vpn[2:0]];
+  assign l0_bitmap_ok  = l0_bitmap_ck[l0_hitway][check_vpn[2:0]];
+  assign l0_hit = (bitmap_enable & ((check_s2x != H_ALL_STAGE) | check_ishptw)
+                   & ~l0_hit_onlypf)
+                ? (l0_hit_raw & l0_bitmap_ok)
+                : l0_hit_raw;
+
+  // BEGIN GENERATED(sram_rdata_pack)
+  // 把 SRAM 回读的扁平线打包成 §16 用的 struct（纯改名，无逻辑）。
+  assign l0_sram_rdata[0].asid                    = l0_rdata_0_asid;
+  assign l0_sram_rdata[0].onlypf[0]               = l0_rdata_0_onlypf_0;
+  assign l0_sram_rdata[0].onlypf[1]               = l0_rdata_0_onlypf_1;
+  assign l0_sram_rdata[0].onlypf[2]               = l0_rdata_0_onlypf_2;
+  assign l0_sram_rdata[0].onlypf[3]               = l0_rdata_0_onlypf_3;
+  assign l0_sram_rdata[0].onlypf[4]               = l0_rdata_0_onlypf_4;
+  assign l0_sram_rdata[0].onlypf[5]               = l0_rdata_0_onlypf_5;
+  assign l0_sram_rdata[0].onlypf[6]               = l0_rdata_0_onlypf_6;
+  assign l0_sram_rdata[0].onlypf[7]               = l0_rdata_0_onlypf_7;
+  assign l0_sram_rdata[0].pbmts[0]                = l0_rdata_0_pbmts_0;
+  assign l0_sram_rdata[0].pbmts[1]                = l0_rdata_0_pbmts_1;
+  assign l0_sram_rdata[0].pbmts[2]                = l0_rdata_0_pbmts_2;
+  assign l0_sram_rdata[0].pbmts[3]                = l0_rdata_0_pbmts_3;
+  assign l0_sram_rdata[0].pbmts[4]                = l0_rdata_0_pbmts_4;
+  assign l0_sram_rdata[0].pbmts[5]                = l0_rdata_0_pbmts_5;
+  assign l0_sram_rdata[0].pbmts[6]                = l0_rdata_0_pbmts_6;
+  assign l0_sram_rdata[0].pbmts[7]                = l0_rdata_0_pbmts_7;
+  assign l0_sram_rdata[0].perms[0].a              = l0_rdata_0_perms_0_a;
+  assign l0_sram_rdata[0].perms[0].d              = l0_rdata_0_perms_0_d;
+  assign l0_sram_rdata[0].perms[0].g              = l0_rdata_0_perms_0_g;
+  assign l0_sram_rdata[0].perms[0].r              = l0_rdata_0_perms_0_r;
+  assign l0_sram_rdata[0].perms[0].u              = l0_rdata_0_perms_0_u;
+  assign l0_sram_rdata[0].perms[0].w              = l0_rdata_0_perms_0_w;
+  assign l0_sram_rdata[0].perms[0].x              = l0_rdata_0_perms_0_x;
+  assign l0_sram_rdata[0].perms[1].a              = l0_rdata_0_perms_1_a;
+  assign l0_sram_rdata[0].perms[1].d              = l0_rdata_0_perms_1_d;
+  assign l0_sram_rdata[0].perms[1].g              = l0_rdata_0_perms_1_g;
+  assign l0_sram_rdata[0].perms[1].r              = l0_rdata_0_perms_1_r;
+  assign l0_sram_rdata[0].perms[1].u              = l0_rdata_0_perms_1_u;
+  assign l0_sram_rdata[0].perms[1].w              = l0_rdata_0_perms_1_w;
+  assign l0_sram_rdata[0].perms[1].x              = l0_rdata_0_perms_1_x;
+  assign l0_sram_rdata[0].perms[2].a              = l0_rdata_0_perms_2_a;
+  assign l0_sram_rdata[0].perms[2].d              = l0_rdata_0_perms_2_d;
+  assign l0_sram_rdata[0].perms[2].g              = l0_rdata_0_perms_2_g;
+  assign l0_sram_rdata[0].perms[2].r              = l0_rdata_0_perms_2_r;
+  assign l0_sram_rdata[0].perms[2].u              = l0_rdata_0_perms_2_u;
+  assign l0_sram_rdata[0].perms[2].w              = l0_rdata_0_perms_2_w;
+  assign l0_sram_rdata[0].perms[2].x              = l0_rdata_0_perms_2_x;
+  assign l0_sram_rdata[0].perms[3].a              = l0_rdata_0_perms_3_a;
+  assign l0_sram_rdata[0].perms[3].d              = l0_rdata_0_perms_3_d;
+  assign l0_sram_rdata[0].perms[3].g              = l0_rdata_0_perms_3_g;
+  assign l0_sram_rdata[0].perms[3].r              = l0_rdata_0_perms_3_r;
+  assign l0_sram_rdata[0].perms[3].u              = l0_rdata_0_perms_3_u;
+  assign l0_sram_rdata[0].perms[3].w              = l0_rdata_0_perms_3_w;
+  assign l0_sram_rdata[0].perms[3].x              = l0_rdata_0_perms_3_x;
+  assign l0_sram_rdata[0].perms[4].a              = l0_rdata_0_perms_4_a;
+  assign l0_sram_rdata[0].perms[4].d              = l0_rdata_0_perms_4_d;
+  assign l0_sram_rdata[0].perms[4].g              = l0_rdata_0_perms_4_g;
+  assign l0_sram_rdata[0].perms[4].r              = l0_rdata_0_perms_4_r;
+  assign l0_sram_rdata[0].perms[4].u              = l0_rdata_0_perms_4_u;
+  assign l0_sram_rdata[0].perms[4].w              = l0_rdata_0_perms_4_w;
+  assign l0_sram_rdata[0].perms[4].x              = l0_rdata_0_perms_4_x;
+  assign l0_sram_rdata[0].perms[5].a              = l0_rdata_0_perms_5_a;
+  assign l0_sram_rdata[0].perms[5].d              = l0_rdata_0_perms_5_d;
+  assign l0_sram_rdata[0].perms[5].g              = l0_rdata_0_perms_5_g;
+  assign l0_sram_rdata[0].perms[5].r              = l0_rdata_0_perms_5_r;
+  assign l0_sram_rdata[0].perms[5].u              = l0_rdata_0_perms_5_u;
+  assign l0_sram_rdata[0].perms[5].w              = l0_rdata_0_perms_5_w;
+  assign l0_sram_rdata[0].perms[5].x              = l0_rdata_0_perms_5_x;
+  assign l0_sram_rdata[0].perms[6].a              = l0_rdata_0_perms_6_a;
+  assign l0_sram_rdata[0].perms[6].d              = l0_rdata_0_perms_6_d;
+  assign l0_sram_rdata[0].perms[6].g              = l0_rdata_0_perms_6_g;
+  assign l0_sram_rdata[0].perms[6].r              = l0_rdata_0_perms_6_r;
+  assign l0_sram_rdata[0].perms[6].u              = l0_rdata_0_perms_6_u;
+  assign l0_sram_rdata[0].perms[6].w              = l0_rdata_0_perms_6_w;
+  assign l0_sram_rdata[0].perms[6].x              = l0_rdata_0_perms_6_x;
+  assign l0_sram_rdata[0].perms[7].a              = l0_rdata_0_perms_7_a;
+  assign l0_sram_rdata[0].perms[7].d              = l0_rdata_0_perms_7_d;
+  assign l0_sram_rdata[0].perms[7].g              = l0_rdata_0_perms_7_g;
+  assign l0_sram_rdata[0].perms[7].r              = l0_rdata_0_perms_7_r;
+  assign l0_sram_rdata[0].perms[7].u              = l0_rdata_0_perms_7_u;
+  assign l0_sram_rdata[0].perms[7].w              = l0_rdata_0_perms_7_w;
+  assign l0_sram_rdata[0].perms[7].x              = l0_rdata_0_perms_7_x;
+  assign l0_sram_rdata[0].ppns[0]                 = l0_rdata_0_ppns_0;
+  assign l0_sram_rdata[0].ppns[1]                 = l0_rdata_0_ppns_1;
+  assign l0_sram_rdata[0].ppns[2]                 = l0_rdata_0_ppns_2;
+  assign l0_sram_rdata[0].ppns[3]                 = l0_rdata_0_ppns_3;
+  assign l0_sram_rdata[0].ppns[4]                 = l0_rdata_0_ppns_4;
+  assign l0_sram_rdata[0].ppns[5]                 = l0_rdata_0_ppns_5;
+  assign l0_sram_rdata[0].ppns[6]                 = l0_rdata_0_ppns_6;
+  assign l0_sram_rdata[0].ppns[7]                 = l0_rdata_0_ppns_7;
+  assign l0_sram_rdata[0].prefetch                = l0_rdata_0_prefetch;
+  assign l0_sram_rdata[0].tag                     = l0_rdata_0_tag;
+  assign l0_sram_rdata[0].vmid                    = l0_rdata_0_vmid;
+  assign l0_sram_rdata[0].vs[0]                   = l0_rdata_0_vs_0;
+  assign l0_sram_rdata[0].vs[1]                   = l0_rdata_0_vs_1;
+  assign l0_sram_rdata[0].vs[2]                   = l0_rdata_0_vs_2;
+  assign l0_sram_rdata[0].vs[3]                   = l0_rdata_0_vs_3;
+  assign l0_sram_rdata[0].vs[4]                   = l0_rdata_0_vs_4;
+  assign l0_sram_rdata[0].vs[5]                   = l0_rdata_0_vs_5;
+  assign l0_sram_rdata[0].vs[6]                   = l0_rdata_0_vs_6;
+  assign l0_sram_rdata[0].vs[7]                   = l0_rdata_0_vs_7;
+  assign l0_sram_rdata[1].asid                    = l0_rdata_1_asid;
+  assign l0_sram_rdata[1].onlypf[0]               = l0_rdata_1_onlypf_0;
+  assign l0_sram_rdata[1].onlypf[1]               = l0_rdata_1_onlypf_1;
+  assign l0_sram_rdata[1].onlypf[2]               = l0_rdata_1_onlypf_2;
+  assign l0_sram_rdata[1].onlypf[3]               = l0_rdata_1_onlypf_3;
+  assign l0_sram_rdata[1].onlypf[4]               = l0_rdata_1_onlypf_4;
+  assign l0_sram_rdata[1].onlypf[5]               = l0_rdata_1_onlypf_5;
+  assign l0_sram_rdata[1].onlypf[6]               = l0_rdata_1_onlypf_6;
+  assign l0_sram_rdata[1].onlypf[7]               = l0_rdata_1_onlypf_7;
+  assign l0_sram_rdata[1].pbmts[0]                = l0_rdata_1_pbmts_0;
+  assign l0_sram_rdata[1].pbmts[1]                = l0_rdata_1_pbmts_1;
+  assign l0_sram_rdata[1].pbmts[2]                = l0_rdata_1_pbmts_2;
+  assign l0_sram_rdata[1].pbmts[3]                = l0_rdata_1_pbmts_3;
+  assign l0_sram_rdata[1].pbmts[4]                = l0_rdata_1_pbmts_4;
+  assign l0_sram_rdata[1].pbmts[5]                = l0_rdata_1_pbmts_5;
+  assign l0_sram_rdata[1].pbmts[6]                = l0_rdata_1_pbmts_6;
+  assign l0_sram_rdata[1].pbmts[7]                = l0_rdata_1_pbmts_7;
+  assign l0_sram_rdata[1].perms[0].a              = l0_rdata_1_perms_0_a;
+  assign l0_sram_rdata[1].perms[0].d              = l0_rdata_1_perms_0_d;
+  assign l0_sram_rdata[1].perms[0].g              = l0_rdata_1_perms_0_g;
+  assign l0_sram_rdata[1].perms[0].r              = l0_rdata_1_perms_0_r;
+  assign l0_sram_rdata[1].perms[0].u              = l0_rdata_1_perms_0_u;
+  assign l0_sram_rdata[1].perms[0].w              = l0_rdata_1_perms_0_w;
+  assign l0_sram_rdata[1].perms[0].x              = l0_rdata_1_perms_0_x;
+  assign l0_sram_rdata[1].perms[1].a              = l0_rdata_1_perms_1_a;
+  assign l0_sram_rdata[1].perms[1].d              = l0_rdata_1_perms_1_d;
+  assign l0_sram_rdata[1].perms[1].g              = l0_rdata_1_perms_1_g;
+  assign l0_sram_rdata[1].perms[1].r              = l0_rdata_1_perms_1_r;
+  assign l0_sram_rdata[1].perms[1].u              = l0_rdata_1_perms_1_u;
+  assign l0_sram_rdata[1].perms[1].w              = l0_rdata_1_perms_1_w;
+  assign l0_sram_rdata[1].perms[1].x              = l0_rdata_1_perms_1_x;
+  assign l0_sram_rdata[1].perms[2].a              = l0_rdata_1_perms_2_a;
+  assign l0_sram_rdata[1].perms[2].d              = l0_rdata_1_perms_2_d;
+  assign l0_sram_rdata[1].perms[2].g              = l0_rdata_1_perms_2_g;
+  assign l0_sram_rdata[1].perms[2].r              = l0_rdata_1_perms_2_r;
+  assign l0_sram_rdata[1].perms[2].u              = l0_rdata_1_perms_2_u;
+  assign l0_sram_rdata[1].perms[2].w              = l0_rdata_1_perms_2_w;
+  assign l0_sram_rdata[1].perms[2].x              = l0_rdata_1_perms_2_x;
+  assign l0_sram_rdata[1].perms[3].a              = l0_rdata_1_perms_3_a;
+  assign l0_sram_rdata[1].perms[3].d              = l0_rdata_1_perms_3_d;
+  assign l0_sram_rdata[1].perms[3].g              = l0_rdata_1_perms_3_g;
+  assign l0_sram_rdata[1].perms[3].r              = l0_rdata_1_perms_3_r;
+  assign l0_sram_rdata[1].perms[3].u              = l0_rdata_1_perms_3_u;
+  assign l0_sram_rdata[1].perms[3].w              = l0_rdata_1_perms_3_w;
+  assign l0_sram_rdata[1].perms[3].x              = l0_rdata_1_perms_3_x;
+  assign l0_sram_rdata[1].perms[4].a              = l0_rdata_1_perms_4_a;
+  assign l0_sram_rdata[1].perms[4].d              = l0_rdata_1_perms_4_d;
+  assign l0_sram_rdata[1].perms[4].g              = l0_rdata_1_perms_4_g;
+  assign l0_sram_rdata[1].perms[4].r              = l0_rdata_1_perms_4_r;
+  assign l0_sram_rdata[1].perms[4].u              = l0_rdata_1_perms_4_u;
+  assign l0_sram_rdata[1].perms[4].w              = l0_rdata_1_perms_4_w;
+  assign l0_sram_rdata[1].perms[4].x              = l0_rdata_1_perms_4_x;
+  assign l0_sram_rdata[1].perms[5].a              = l0_rdata_1_perms_5_a;
+  assign l0_sram_rdata[1].perms[5].d              = l0_rdata_1_perms_5_d;
+  assign l0_sram_rdata[1].perms[5].g              = l0_rdata_1_perms_5_g;
+  assign l0_sram_rdata[1].perms[5].r              = l0_rdata_1_perms_5_r;
+  assign l0_sram_rdata[1].perms[5].u              = l0_rdata_1_perms_5_u;
+  assign l0_sram_rdata[1].perms[5].w              = l0_rdata_1_perms_5_w;
+  assign l0_sram_rdata[1].perms[5].x              = l0_rdata_1_perms_5_x;
+  assign l0_sram_rdata[1].perms[6].a              = l0_rdata_1_perms_6_a;
+  assign l0_sram_rdata[1].perms[6].d              = l0_rdata_1_perms_6_d;
+  assign l0_sram_rdata[1].perms[6].g              = l0_rdata_1_perms_6_g;
+  assign l0_sram_rdata[1].perms[6].r              = l0_rdata_1_perms_6_r;
+  assign l0_sram_rdata[1].perms[6].u              = l0_rdata_1_perms_6_u;
+  assign l0_sram_rdata[1].perms[6].w              = l0_rdata_1_perms_6_w;
+  assign l0_sram_rdata[1].perms[6].x              = l0_rdata_1_perms_6_x;
+  assign l0_sram_rdata[1].perms[7].a              = l0_rdata_1_perms_7_a;
+  assign l0_sram_rdata[1].perms[7].d              = l0_rdata_1_perms_7_d;
+  assign l0_sram_rdata[1].perms[7].g              = l0_rdata_1_perms_7_g;
+  assign l0_sram_rdata[1].perms[7].r              = l0_rdata_1_perms_7_r;
+  assign l0_sram_rdata[1].perms[7].u              = l0_rdata_1_perms_7_u;
+  assign l0_sram_rdata[1].perms[7].w              = l0_rdata_1_perms_7_w;
+  assign l0_sram_rdata[1].perms[7].x              = l0_rdata_1_perms_7_x;
+  assign l0_sram_rdata[1].ppns[0]                 = l0_rdata_1_ppns_0;
+  assign l0_sram_rdata[1].ppns[1]                 = l0_rdata_1_ppns_1;
+  assign l0_sram_rdata[1].ppns[2]                 = l0_rdata_1_ppns_2;
+  assign l0_sram_rdata[1].ppns[3]                 = l0_rdata_1_ppns_3;
+  assign l0_sram_rdata[1].ppns[4]                 = l0_rdata_1_ppns_4;
+  assign l0_sram_rdata[1].ppns[5]                 = l0_rdata_1_ppns_5;
+  assign l0_sram_rdata[1].ppns[6]                 = l0_rdata_1_ppns_6;
+  assign l0_sram_rdata[1].ppns[7]                 = l0_rdata_1_ppns_7;
+  assign l0_sram_rdata[1].prefetch                = l0_rdata_1_prefetch;
+  assign l0_sram_rdata[1].tag                     = l0_rdata_1_tag;
+  assign l0_sram_rdata[1].vmid                    = l0_rdata_1_vmid;
+  assign l0_sram_rdata[1].vs[0]                   = l0_rdata_1_vs_0;
+  assign l0_sram_rdata[1].vs[1]                   = l0_rdata_1_vs_1;
+  assign l0_sram_rdata[1].vs[2]                   = l0_rdata_1_vs_2;
+  assign l0_sram_rdata[1].vs[3]                   = l0_rdata_1_vs_3;
+  assign l0_sram_rdata[1].vs[4]                   = l0_rdata_1_vs_4;
+  assign l0_sram_rdata[1].vs[5]                   = l0_rdata_1_vs_5;
+  assign l0_sram_rdata[1].vs[6]                   = l0_rdata_1_vs_6;
+  assign l0_sram_rdata[1].vs[7]                   = l0_rdata_1_vs_7;
+  assign l0_sram_rdata[2].asid                    = l0_rdata_2_asid;
+  assign l0_sram_rdata[2].onlypf[0]               = l0_rdata_2_onlypf_0;
+  assign l0_sram_rdata[2].onlypf[1]               = l0_rdata_2_onlypf_1;
+  assign l0_sram_rdata[2].onlypf[2]               = l0_rdata_2_onlypf_2;
+  assign l0_sram_rdata[2].onlypf[3]               = l0_rdata_2_onlypf_3;
+  assign l0_sram_rdata[2].onlypf[4]               = l0_rdata_2_onlypf_4;
+  assign l0_sram_rdata[2].onlypf[5]               = l0_rdata_2_onlypf_5;
+  assign l0_sram_rdata[2].onlypf[6]               = l0_rdata_2_onlypf_6;
+  assign l0_sram_rdata[2].onlypf[7]               = l0_rdata_2_onlypf_7;
+  assign l0_sram_rdata[2].pbmts[0]                = l0_rdata_2_pbmts_0;
+  assign l0_sram_rdata[2].pbmts[1]                = l0_rdata_2_pbmts_1;
+  assign l0_sram_rdata[2].pbmts[2]                = l0_rdata_2_pbmts_2;
+  assign l0_sram_rdata[2].pbmts[3]                = l0_rdata_2_pbmts_3;
+  assign l0_sram_rdata[2].pbmts[4]                = l0_rdata_2_pbmts_4;
+  assign l0_sram_rdata[2].pbmts[5]                = l0_rdata_2_pbmts_5;
+  assign l0_sram_rdata[2].pbmts[6]                = l0_rdata_2_pbmts_6;
+  assign l0_sram_rdata[2].pbmts[7]                = l0_rdata_2_pbmts_7;
+  assign l0_sram_rdata[2].perms[0].a              = l0_rdata_2_perms_0_a;
+  assign l0_sram_rdata[2].perms[0].d              = l0_rdata_2_perms_0_d;
+  assign l0_sram_rdata[2].perms[0].g              = l0_rdata_2_perms_0_g;
+  assign l0_sram_rdata[2].perms[0].r              = l0_rdata_2_perms_0_r;
+  assign l0_sram_rdata[2].perms[0].u              = l0_rdata_2_perms_0_u;
+  assign l0_sram_rdata[2].perms[0].w              = l0_rdata_2_perms_0_w;
+  assign l0_sram_rdata[2].perms[0].x              = l0_rdata_2_perms_0_x;
+  assign l0_sram_rdata[2].perms[1].a              = l0_rdata_2_perms_1_a;
+  assign l0_sram_rdata[2].perms[1].d              = l0_rdata_2_perms_1_d;
+  assign l0_sram_rdata[2].perms[1].g              = l0_rdata_2_perms_1_g;
+  assign l0_sram_rdata[2].perms[1].r              = l0_rdata_2_perms_1_r;
+  assign l0_sram_rdata[2].perms[1].u              = l0_rdata_2_perms_1_u;
+  assign l0_sram_rdata[2].perms[1].w              = l0_rdata_2_perms_1_w;
+  assign l0_sram_rdata[2].perms[1].x              = l0_rdata_2_perms_1_x;
+  assign l0_sram_rdata[2].perms[2].a              = l0_rdata_2_perms_2_a;
+  assign l0_sram_rdata[2].perms[2].d              = l0_rdata_2_perms_2_d;
+  assign l0_sram_rdata[2].perms[2].g              = l0_rdata_2_perms_2_g;
+  assign l0_sram_rdata[2].perms[2].r              = l0_rdata_2_perms_2_r;
+  assign l0_sram_rdata[2].perms[2].u              = l0_rdata_2_perms_2_u;
+  assign l0_sram_rdata[2].perms[2].w              = l0_rdata_2_perms_2_w;
+  assign l0_sram_rdata[2].perms[2].x              = l0_rdata_2_perms_2_x;
+  assign l0_sram_rdata[2].perms[3].a              = l0_rdata_2_perms_3_a;
+  assign l0_sram_rdata[2].perms[3].d              = l0_rdata_2_perms_3_d;
+  assign l0_sram_rdata[2].perms[3].g              = l0_rdata_2_perms_3_g;
+  assign l0_sram_rdata[2].perms[3].r              = l0_rdata_2_perms_3_r;
+  assign l0_sram_rdata[2].perms[3].u              = l0_rdata_2_perms_3_u;
+  assign l0_sram_rdata[2].perms[3].w              = l0_rdata_2_perms_3_w;
+  assign l0_sram_rdata[2].perms[3].x              = l0_rdata_2_perms_3_x;
+  assign l0_sram_rdata[2].perms[4].a              = l0_rdata_2_perms_4_a;
+  assign l0_sram_rdata[2].perms[4].d              = l0_rdata_2_perms_4_d;
+  assign l0_sram_rdata[2].perms[4].g              = l0_rdata_2_perms_4_g;
+  assign l0_sram_rdata[2].perms[4].r              = l0_rdata_2_perms_4_r;
+  assign l0_sram_rdata[2].perms[4].u              = l0_rdata_2_perms_4_u;
+  assign l0_sram_rdata[2].perms[4].w              = l0_rdata_2_perms_4_w;
+  assign l0_sram_rdata[2].perms[4].x              = l0_rdata_2_perms_4_x;
+  assign l0_sram_rdata[2].perms[5].a              = l0_rdata_2_perms_5_a;
+  assign l0_sram_rdata[2].perms[5].d              = l0_rdata_2_perms_5_d;
+  assign l0_sram_rdata[2].perms[5].g              = l0_rdata_2_perms_5_g;
+  assign l0_sram_rdata[2].perms[5].r              = l0_rdata_2_perms_5_r;
+  assign l0_sram_rdata[2].perms[5].u              = l0_rdata_2_perms_5_u;
+  assign l0_sram_rdata[2].perms[5].w              = l0_rdata_2_perms_5_w;
+  assign l0_sram_rdata[2].perms[5].x              = l0_rdata_2_perms_5_x;
+  assign l0_sram_rdata[2].perms[6].a              = l0_rdata_2_perms_6_a;
+  assign l0_sram_rdata[2].perms[6].d              = l0_rdata_2_perms_6_d;
+  assign l0_sram_rdata[2].perms[6].g              = l0_rdata_2_perms_6_g;
+  assign l0_sram_rdata[2].perms[6].r              = l0_rdata_2_perms_6_r;
+  assign l0_sram_rdata[2].perms[6].u              = l0_rdata_2_perms_6_u;
+  assign l0_sram_rdata[2].perms[6].w              = l0_rdata_2_perms_6_w;
+  assign l0_sram_rdata[2].perms[6].x              = l0_rdata_2_perms_6_x;
+  assign l0_sram_rdata[2].perms[7].a              = l0_rdata_2_perms_7_a;
+  assign l0_sram_rdata[2].perms[7].d              = l0_rdata_2_perms_7_d;
+  assign l0_sram_rdata[2].perms[7].g              = l0_rdata_2_perms_7_g;
+  assign l0_sram_rdata[2].perms[7].r              = l0_rdata_2_perms_7_r;
+  assign l0_sram_rdata[2].perms[7].u              = l0_rdata_2_perms_7_u;
+  assign l0_sram_rdata[2].perms[7].w              = l0_rdata_2_perms_7_w;
+  assign l0_sram_rdata[2].perms[7].x              = l0_rdata_2_perms_7_x;
+  assign l0_sram_rdata[2].ppns[0]                 = l0_rdata_2_ppns_0;
+  assign l0_sram_rdata[2].ppns[1]                 = l0_rdata_2_ppns_1;
+  assign l0_sram_rdata[2].ppns[2]                 = l0_rdata_2_ppns_2;
+  assign l0_sram_rdata[2].ppns[3]                 = l0_rdata_2_ppns_3;
+  assign l0_sram_rdata[2].ppns[4]                 = l0_rdata_2_ppns_4;
+  assign l0_sram_rdata[2].ppns[5]                 = l0_rdata_2_ppns_5;
+  assign l0_sram_rdata[2].ppns[6]                 = l0_rdata_2_ppns_6;
+  assign l0_sram_rdata[2].ppns[7]                 = l0_rdata_2_ppns_7;
+  assign l0_sram_rdata[2].prefetch                = l0_rdata_2_prefetch;
+  assign l0_sram_rdata[2].tag                     = l0_rdata_2_tag;
+  assign l0_sram_rdata[2].vmid                    = l0_rdata_2_vmid;
+  assign l0_sram_rdata[2].vs[0]                   = l0_rdata_2_vs_0;
+  assign l0_sram_rdata[2].vs[1]                   = l0_rdata_2_vs_1;
+  assign l0_sram_rdata[2].vs[2]                   = l0_rdata_2_vs_2;
+  assign l0_sram_rdata[2].vs[3]                   = l0_rdata_2_vs_3;
+  assign l0_sram_rdata[2].vs[4]                   = l0_rdata_2_vs_4;
+  assign l0_sram_rdata[2].vs[5]                   = l0_rdata_2_vs_5;
+  assign l0_sram_rdata[2].vs[6]                   = l0_rdata_2_vs_6;
+  assign l0_sram_rdata[2].vs[7]                   = l0_rdata_2_vs_7;
+  assign l0_sram_rdata[3].asid                    = l0_rdata_3_asid;
+  assign l0_sram_rdata[3].onlypf[0]               = l0_rdata_3_onlypf_0;
+  assign l0_sram_rdata[3].onlypf[1]               = l0_rdata_3_onlypf_1;
+  assign l0_sram_rdata[3].onlypf[2]               = l0_rdata_3_onlypf_2;
+  assign l0_sram_rdata[3].onlypf[3]               = l0_rdata_3_onlypf_3;
+  assign l0_sram_rdata[3].onlypf[4]               = l0_rdata_3_onlypf_4;
+  assign l0_sram_rdata[3].onlypf[5]               = l0_rdata_3_onlypf_5;
+  assign l0_sram_rdata[3].onlypf[6]               = l0_rdata_3_onlypf_6;
+  assign l0_sram_rdata[3].onlypf[7]               = l0_rdata_3_onlypf_7;
+  assign l0_sram_rdata[3].pbmts[0]                = l0_rdata_3_pbmts_0;
+  assign l0_sram_rdata[3].pbmts[1]                = l0_rdata_3_pbmts_1;
+  assign l0_sram_rdata[3].pbmts[2]                = l0_rdata_3_pbmts_2;
+  assign l0_sram_rdata[3].pbmts[3]                = l0_rdata_3_pbmts_3;
+  assign l0_sram_rdata[3].pbmts[4]                = l0_rdata_3_pbmts_4;
+  assign l0_sram_rdata[3].pbmts[5]                = l0_rdata_3_pbmts_5;
+  assign l0_sram_rdata[3].pbmts[6]                = l0_rdata_3_pbmts_6;
+  assign l0_sram_rdata[3].pbmts[7]                = l0_rdata_3_pbmts_7;
+  assign l0_sram_rdata[3].perms[0].a              = l0_rdata_3_perms_0_a;
+  assign l0_sram_rdata[3].perms[0].d              = l0_rdata_3_perms_0_d;
+  assign l0_sram_rdata[3].perms[0].g              = l0_rdata_3_perms_0_g;
+  assign l0_sram_rdata[3].perms[0].r              = l0_rdata_3_perms_0_r;
+  assign l0_sram_rdata[3].perms[0].u              = l0_rdata_3_perms_0_u;
+  assign l0_sram_rdata[3].perms[0].w              = l0_rdata_3_perms_0_w;
+  assign l0_sram_rdata[3].perms[0].x              = l0_rdata_3_perms_0_x;
+  assign l0_sram_rdata[3].perms[1].a              = l0_rdata_3_perms_1_a;
+  assign l0_sram_rdata[3].perms[1].d              = l0_rdata_3_perms_1_d;
+  assign l0_sram_rdata[3].perms[1].g              = l0_rdata_3_perms_1_g;
+  assign l0_sram_rdata[3].perms[1].r              = l0_rdata_3_perms_1_r;
+  assign l0_sram_rdata[3].perms[1].u              = l0_rdata_3_perms_1_u;
+  assign l0_sram_rdata[3].perms[1].w              = l0_rdata_3_perms_1_w;
+  assign l0_sram_rdata[3].perms[1].x              = l0_rdata_3_perms_1_x;
+  assign l0_sram_rdata[3].perms[2].a              = l0_rdata_3_perms_2_a;
+  assign l0_sram_rdata[3].perms[2].d              = l0_rdata_3_perms_2_d;
+  assign l0_sram_rdata[3].perms[2].g              = l0_rdata_3_perms_2_g;
+  assign l0_sram_rdata[3].perms[2].r              = l0_rdata_3_perms_2_r;
+  assign l0_sram_rdata[3].perms[2].u              = l0_rdata_3_perms_2_u;
+  assign l0_sram_rdata[3].perms[2].w              = l0_rdata_3_perms_2_w;
+  assign l0_sram_rdata[3].perms[2].x              = l0_rdata_3_perms_2_x;
+  assign l0_sram_rdata[3].perms[3].a              = l0_rdata_3_perms_3_a;
+  assign l0_sram_rdata[3].perms[3].d              = l0_rdata_3_perms_3_d;
+  assign l0_sram_rdata[3].perms[3].g              = l0_rdata_3_perms_3_g;
+  assign l0_sram_rdata[3].perms[3].r              = l0_rdata_3_perms_3_r;
+  assign l0_sram_rdata[3].perms[3].u              = l0_rdata_3_perms_3_u;
+  assign l0_sram_rdata[3].perms[3].w              = l0_rdata_3_perms_3_w;
+  assign l0_sram_rdata[3].perms[3].x              = l0_rdata_3_perms_3_x;
+  assign l0_sram_rdata[3].perms[4].a              = l0_rdata_3_perms_4_a;
+  assign l0_sram_rdata[3].perms[4].d              = l0_rdata_3_perms_4_d;
+  assign l0_sram_rdata[3].perms[4].g              = l0_rdata_3_perms_4_g;
+  assign l0_sram_rdata[3].perms[4].r              = l0_rdata_3_perms_4_r;
+  assign l0_sram_rdata[3].perms[4].u              = l0_rdata_3_perms_4_u;
+  assign l0_sram_rdata[3].perms[4].w              = l0_rdata_3_perms_4_w;
+  assign l0_sram_rdata[3].perms[4].x              = l0_rdata_3_perms_4_x;
+  assign l0_sram_rdata[3].perms[5].a              = l0_rdata_3_perms_5_a;
+  assign l0_sram_rdata[3].perms[5].d              = l0_rdata_3_perms_5_d;
+  assign l0_sram_rdata[3].perms[5].g              = l0_rdata_3_perms_5_g;
+  assign l0_sram_rdata[3].perms[5].r              = l0_rdata_3_perms_5_r;
+  assign l0_sram_rdata[3].perms[5].u              = l0_rdata_3_perms_5_u;
+  assign l0_sram_rdata[3].perms[5].w              = l0_rdata_3_perms_5_w;
+  assign l0_sram_rdata[3].perms[5].x              = l0_rdata_3_perms_5_x;
+  assign l0_sram_rdata[3].perms[6].a              = l0_rdata_3_perms_6_a;
+  assign l0_sram_rdata[3].perms[6].d              = l0_rdata_3_perms_6_d;
+  assign l0_sram_rdata[3].perms[6].g              = l0_rdata_3_perms_6_g;
+  assign l0_sram_rdata[3].perms[6].r              = l0_rdata_3_perms_6_r;
+  assign l0_sram_rdata[3].perms[6].u              = l0_rdata_3_perms_6_u;
+  assign l0_sram_rdata[3].perms[6].w              = l0_rdata_3_perms_6_w;
+  assign l0_sram_rdata[3].perms[6].x              = l0_rdata_3_perms_6_x;
+  assign l0_sram_rdata[3].perms[7].a              = l0_rdata_3_perms_7_a;
+  assign l0_sram_rdata[3].perms[7].d              = l0_rdata_3_perms_7_d;
+  assign l0_sram_rdata[3].perms[7].g              = l0_rdata_3_perms_7_g;
+  assign l0_sram_rdata[3].perms[7].r              = l0_rdata_3_perms_7_r;
+  assign l0_sram_rdata[3].perms[7].u              = l0_rdata_3_perms_7_u;
+  assign l0_sram_rdata[3].perms[7].w              = l0_rdata_3_perms_7_w;
+  assign l0_sram_rdata[3].perms[7].x              = l0_rdata_3_perms_7_x;
+  assign l0_sram_rdata[3].ppns[0]                 = l0_rdata_3_ppns_0;
+  assign l0_sram_rdata[3].ppns[1]                 = l0_rdata_3_ppns_1;
+  assign l0_sram_rdata[3].ppns[2]                 = l0_rdata_3_ppns_2;
+  assign l0_sram_rdata[3].ppns[3]                 = l0_rdata_3_ppns_3;
+  assign l0_sram_rdata[3].ppns[4]                 = l0_rdata_3_ppns_4;
+  assign l0_sram_rdata[3].ppns[5]                 = l0_rdata_3_ppns_5;
+  assign l0_sram_rdata[3].ppns[6]                 = l0_rdata_3_ppns_6;
+  assign l0_sram_rdata[3].ppns[7]                 = l0_rdata_3_ppns_7;
+  assign l0_sram_rdata[3].prefetch                = l0_rdata_3_prefetch;
+  assign l0_sram_rdata[3].tag                     = l0_rdata_3_tag;
+  assign l0_sram_rdata[3].vmid                    = l0_rdata_3_vmid;
+  assign l0_sram_rdata[3].vs[0]                   = l0_rdata_3_vs_0;
+  assign l0_sram_rdata[3].vs[1]                   = l0_rdata_3_vs_1;
+  assign l0_sram_rdata[3].vs[2]                   = l0_rdata_3_vs_2;
+  assign l0_sram_rdata[3].vs[3]                   = l0_rdata_3_vs_3;
+  assign l0_sram_rdata[3].vs[4]                   = l0_rdata_3_vs_4;
+  assign l0_sram_rdata[3].vs[5]                   = l0_rdata_3_vs_5;
+  assign l0_sram_rdata[3].vs[6]                   = l0_rdata_3_vs_6;
+  assign l0_sram_rdata[3].vs[7]                   = l0_rdata_3_vs_7;
+  assign l1_sram_rdata[0].asid                    = l1_rdata_0_asid;
+  assign l1_sram_rdata[0].pbmts[0]                = l1_rdata_0_pbmts_0;
+  assign l1_sram_rdata[0].pbmts[1]                = l1_rdata_0_pbmts_1;
+  assign l1_sram_rdata[0].pbmts[2]                = l1_rdata_0_pbmts_2;
+  assign l1_sram_rdata[0].pbmts[3]                = l1_rdata_0_pbmts_3;
+  assign l1_sram_rdata[0].pbmts[4]                = l1_rdata_0_pbmts_4;
+  assign l1_sram_rdata[0].pbmts[5]                = l1_rdata_0_pbmts_5;
+  assign l1_sram_rdata[0].pbmts[6]                = l1_rdata_0_pbmts_6;
+  assign l1_sram_rdata[0].pbmts[7]                = l1_rdata_0_pbmts_7;
+  assign l1_sram_rdata[0].ppns[0]                 = l1_rdata_0_ppns_0;
+  assign l1_sram_rdata[0].ppns[1]                 = l1_rdata_0_ppns_1;
+  assign l1_sram_rdata[0].ppns[2]                 = l1_rdata_0_ppns_2;
+  assign l1_sram_rdata[0].ppns[3]                 = l1_rdata_0_ppns_3;
+  assign l1_sram_rdata[0].ppns[4]                 = l1_rdata_0_ppns_4;
+  assign l1_sram_rdata[0].ppns[5]                 = l1_rdata_0_ppns_5;
+  assign l1_sram_rdata[0].ppns[6]                 = l1_rdata_0_ppns_6;
+  assign l1_sram_rdata[0].ppns[7]                 = l1_rdata_0_ppns_7;
+  assign l1_sram_rdata[0].prefetch                = l1_rdata_0_prefetch;
+  assign l1_sram_rdata[0].tag                     = l1_rdata_0_tag;
+  assign l1_sram_rdata[0].vmid                    = l1_rdata_0_vmid;
+  assign l1_sram_rdata[0].vs[0]                   = l1_rdata_0_vs_0;
+  assign l1_sram_rdata[0].vs[1]                   = l1_rdata_0_vs_1;
+  assign l1_sram_rdata[0].vs[2]                   = l1_rdata_0_vs_2;
+  assign l1_sram_rdata[0].vs[3]                   = l1_rdata_0_vs_3;
+  assign l1_sram_rdata[0].vs[4]                   = l1_rdata_0_vs_4;
+  assign l1_sram_rdata[0].vs[5]                   = l1_rdata_0_vs_5;
+  assign l1_sram_rdata[0].vs[6]                   = l1_rdata_0_vs_6;
+  assign l1_sram_rdata[0].vs[7]                   = l1_rdata_0_vs_7;
+  assign l1_sram_rdata[1].asid                    = l1_rdata_1_asid;
+  assign l1_sram_rdata[1].pbmts[0]                = l1_rdata_1_pbmts_0;
+  assign l1_sram_rdata[1].pbmts[1]                = l1_rdata_1_pbmts_1;
+  assign l1_sram_rdata[1].pbmts[2]                = l1_rdata_1_pbmts_2;
+  assign l1_sram_rdata[1].pbmts[3]                = l1_rdata_1_pbmts_3;
+  assign l1_sram_rdata[1].pbmts[4]                = l1_rdata_1_pbmts_4;
+  assign l1_sram_rdata[1].pbmts[5]                = l1_rdata_1_pbmts_5;
+  assign l1_sram_rdata[1].pbmts[6]                = l1_rdata_1_pbmts_6;
+  assign l1_sram_rdata[1].pbmts[7]                = l1_rdata_1_pbmts_7;
+  assign l1_sram_rdata[1].ppns[0]                 = l1_rdata_1_ppns_0;
+  assign l1_sram_rdata[1].ppns[1]                 = l1_rdata_1_ppns_1;
+  assign l1_sram_rdata[1].ppns[2]                 = l1_rdata_1_ppns_2;
+  assign l1_sram_rdata[1].ppns[3]                 = l1_rdata_1_ppns_3;
+  assign l1_sram_rdata[1].ppns[4]                 = l1_rdata_1_ppns_4;
+  assign l1_sram_rdata[1].ppns[5]                 = l1_rdata_1_ppns_5;
+  assign l1_sram_rdata[1].ppns[6]                 = l1_rdata_1_ppns_6;
+  assign l1_sram_rdata[1].ppns[7]                 = l1_rdata_1_ppns_7;
+  assign l1_sram_rdata[1].prefetch                = l1_rdata_1_prefetch;
+  assign l1_sram_rdata[1].tag                     = l1_rdata_1_tag;
+  assign l1_sram_rdata[1].vmid                    = l1_rdata_1_vmid;
+  assign l1_sram_rdata[1].vs[0]                   = l1_rdata_1_vs_0;
+  assign l1_sram_rdata[1].vs[1]                   = l1_rdata_1_vs_1;
+  assign l1_sram_rdata[1].vs[2]                   = l1_rdata_1_vs_2;
+  assign l1_sram_rdata[1].vs[3]                   = l1_rdata_1_vs_3;
+  assign l1_sram_rdata[1].vs[4]                   = l1_rdata_1_vs_4;
+  assign l1_sram_rdata[1].vs[5]                   = l1_rdata_1_vs_5;
+  assign l1_sram_rdata[1].vs[6]                   = l1_rdata_1_vs_6;
+  assign l1_sram_rdata[1].vs[7]                   = l1_rdata_1_vs_7;
+  // END GENERATED(sram_rdata_pack)
   // ---------------------------------------------------------------------------
   // §11 时序：两个 always_ff，复位域划分照抄 golden（见 §4 的说明）
   //
-  //  ★这一版只追清了**回填侧**的状态更新★：sfence/hfence 的失效掩码、
+  //  ★这一版追清了**回填侧 + 命中侧**的状态更新★：sfence/hfence 的失效掩码、
   //  ecc flush、l0_bitmap 的写，都还没追清，见 §8。
-  //  所以当前这份核只在"从不发 sfence、从不 ecc 出错"的激励下与 golden 同态。
+  //  所以当前这份核只在"从不发 sfence、从不 ecc 出错、BME=0"的激励下与 golden 同态。
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       l3v <= '0;  l2v <= '0;  l1v <= '0;  l0v <= '0;  spv <= '0;
       valid_delay <= 1'b0;  valid_check <= 1'b0;  valid_resp <= 1'b0;
+      stage_delay_valid_1cycle <= 1'b0;  stage_check_valid_1cycle <= 1'b0;
       plru_l3 <= '0;  plru_l2 <= '0;  plru_sp <= '0;
       for (int s = 0; s < L1_SETS; s++) plru_l1[s] <= 1'b0;
       for (int s = 0; s < L0_SETS; s++) plru_l0[s] <= '0;
@@ -1320,6 +2783,9 @@ module xs_PtwCache_core(
       valid_delay <= ~flush_dup_0 & (left_fire_req   | ~stage_check_ready & valid_delay);
       valid_check <= ~flush_dup_0 & (left_fire_delay | ~stage_resp_ready  & valid_check);
       valid_resp  <= ~flush_dup_0 & (left_fire_check | ~io_resp_ready     & valid_resp);
+      // 两个 1 拍脉冲：本级这一拍收到了新数据（用作 DataHoldBypass / RegEnable 的使能）
+      stage_delay_valid_1cycle <= ~flush_dup_0 & sram_read_fire;
+      stage_check_valid_1cycle <= ~flush_dup_0 & left_fire_delay;
 
       // 有效位：回填把被选中的那一位置 1。★sfence 的清零支路未追清（§8）★
       if (l3_refill) l3v <= l3v | l3_rf_oh;
@@ -1329,16 +2795,39 @@ module xs_PtwCache_core(
       if (sp_refill) spv <= spv | sp_rf_oh;
 
       // 替换状态。★这里就是 §7 记的那个 golden 真 bug 的落点★：
-      //   plru_l3 只有"l3 命中"一个写者（未追清，见 §8）；
-      //   plru_l2 有三个写者，优先级 l2 回填 > **l3 回填** > l2 命中。
-      // l3 回填喂给 plru_l2 的是 l3_refill_idx —— 照抄，不许"修好"。
+      //   plru_l3 只有"l3 命中"**一个**写者（l3 回填根本不碰它）；
+      //   plru_l2 有三个写者，优先级 l2 回填 > **l3 回填** > l2 命中，
+      //   而 l3 回填那一支喂进去的是 l3_refill_idx —— 照抄，不许"修好"。
+      if (l3_hit_h & stage_delay_valid_1cycle)
+        plru_l3 <= plru16_access(plru_l3, oh_to_uint16(l3_hitvec));
+
       if (l2_refill)      plru_l2 <= plru16_access(plru_l2, l2_refill_idx);
       else if (l3_refill) plru_l2 <= plru16_access(plru_l2, l3_refill_idx);
+      else if (l2_hit_h & stage_delay_valid_1cycle)
+        plru_l2 <= plru16_access(plru_l2, oh_to_uint16(l2_hitvec));
 
       if (sp_refill) plru_sp <= plru16_access(plru_sp, sp_refill_idx);
+      else if (sp_hit_c & stage_delay_valid_1cycle)
+        plru_sp <= plru16_access(plru_sp, oh_to_uint16(sp_hitvec));
 
-      if (l1_refill) plru_l1[l1_w_set] <= ~l1_victim_way;
-      if (l0_refill) plru_l0[l0_w_set] <= plru4_access(plru_l0[l0_w_set], l0_victim_way);
+      // l1/l0 是每组一份状态：回填与命中可能落在**不同的组**，两边都要更新；
+      // 落在同一组时回填优先。所以按组写，不能写成两条互不相干的 if。
+      for (int s = 0; s < L1_SETS; s++) begin
+        if (l1_refill & (l1_w_set == s[$clog2(L1_SETS)-1:0]))
+          plru_l1[s] <= ~l1_victim_way;
+        else if (l1_hit & stage_check_valid_1cycle
+                 & (check_vpn[13:12] == s[$clog2(L1_SETS)-1:0]))
+          // 2 路的 access(way) = ~way，而 hitWay 是 ParallelPriorityMux ⇒ ~hitVec[0]，
+          // 两个取反抵消，golden 直接写的就是 hitVec[0]。照抄这个形状。
+          plru_l1[s] <= l1_hitvec[0];
+      end
+      for (int s = 0; s < L0_SETS; s++) begin
+        if (l0_refill & (l0_w_set == s[$clog2(L0_SETS)-1:0]))
+          plru_l0[s] <= plru4_access(plru_l0[s], l0_victim_way);
+        else if (l0_hit & stage_check_valid_1cycle
+                 & (check_vpn[8:3] == s[$clog2(L0_SETS)-1:0]))
+          plru_l0[s] <= plru4_access(plru_l0[s], l0_hitway);
+      end
     end
   end
 
@@ -1429,14 +2918,16 @@ module xs_PtwCache_core(
   //
   // 下面每一根都还没有从 golden 逐条追出方程。它们现在被恒定值顶着，
   // 只为让本骨架能 elaborate；任何人引用它们都会拿到错值。
-  // 回填写数据（§6.1/§6.2）、替换策略与受害者选择（§7）、回填侧状态更新
-  // （§9/§11）已从本表毕业，各有 verif/study/PtwCache_refill 的定向差分
-  // 对照钉住。剩下的追清顺序：各级 hitVec -> sfence/hfence 失效 ->
-  // ecc flush -> l0_bitmap 与 wakeup -> 响应装配 -> perf。
+  // 回填写数据（§6）、替换与受害者选择（§7）、回填侧状态（§9/§11）、
+  // 流水载荷（§12）与五级命中（§14-§16）已从本表毕业，都有
+  // verif/study/PtwCache_refill 的定向差分对照钉住。剩下的追清顺序：
+  // sfence/hfence 失效 -> ecc flush -> l0_bitmap 写侧与 wakeup ->
+  // 响应装配（io.resp 的 220 根）-> perf。
 
 
 
-  // SRAM 读回数据（命中判定在 §8，尚未追清）
+  // SRAM 读回的扁平线（golden 的端口名，逐根抄）——
+  // 命中判定读的是下面 §16 打包出来的 l1_line_t / l0_line_t。
   logic [15:0]     l0_rdata_0_asid;
   logic            l0_rdata_0_onlypf_0;
   logic            l0_rdata_0_onlypf_1;

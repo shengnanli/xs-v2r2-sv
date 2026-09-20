@@ -1,31 +1,39 @@
-// tb.sv —— PtwCache **回填侧锥体**的定向差分对照（verif/study，不是验收 UT）。
+// tb.sv —— PtwCache **回填侧 + 命中侧**锥体的定向差分对照（verif/study，不是验收 UT）。
 //
-// 双例化 golden PtwCache 与派生的 PtwCache_xs，只驱动 refill 与 csr 相关输入
-// （io_req_valid / io_sfence_dup_*_valid / *_changed / io_bitmap_wakeup_valid 全程钉 0），
+// 双例化 golden PtwCache 与派生的 PtwCache_xs，驱动 req / refill / csr
+// （io_sfence_dup_*_valid / *_changed / io_bitmap_wakeup_valid / mbmc_* 全程钉 0），
 // 用层次引用逐拍比两侧：
-//   A  l1/l0 SRAM 的**全部写端口**（59 + 371 = 430 根，含 waymask）；
-//   B  核内**回填侧状态**（1615 根，由 gen_state_cmp.py 生成对照表）：
-//      l3v/l2v/l1v/l0v/spv、l3g/l2g/l1g/l0g/spg、五级的 h、
-//      l1asids/l1vmids/l0asids/l0vmids/l0vpns 影子哈希、
-//      三个 15 位 PLRU state_reg + 4 个 l1 组状态 + 64 个 l0 组状态、
-//      l3/l2/sp 的全部表项字段。
+//   A  l1/l0 SRAM 的**全部写端口**（430 根，含 waymask）；
+//   B  核内**回填侧状态**：l3v/l2v/l1v/l0v/spv、l3g..spg、五级 h、
+//      l1asids/l1vmids/l0asids/l0vmids/l0vpns 影子哈希、三个 15 位 PLRU state_reg
+//      + 4 个 l1 组状态 + 64 个 l0 组状态、l3/l2/sp 的全部表项字段；
+//   C  核内**命中侧**：三级流水载荷与两个 1 拍脉冲、五级 hitVec、
+//      l3/l2 的 DataHoldBypass 保持寄存器与 stageCheck 对齐寄存器、
+//      sp 的 spHit/spHitData/spPre/spValid/spJmpBitmapCheck、
+//      l1/l0 的 v/h/g 延迟向量与 data_resp_r / ramDatas 两级寄存器。
+//   B+C 的两侧层次路径表由 gen_state_cmp.py 生成（支持 --check，已进 gate_all）。
 //
 // ★它不能替代验收 UT★：
-//   · 只覆盖回填锥体，**不含**流水/命中/sfence/响应/perf；
-//   · 激励里 sfence 与请求恒为 0，所以"sfence 失效掩码没写"在这里按构造测不出来
-//     —— 那一段仍在 rtl/mmu/PtwCache.sv 的 §8 未追清清单里。
+//   · 覆盖到回填与命中，**不含** sfence/hfence 失效、ecc flush、l0_bitmap 写侧、
+//     io.resp 装配、perf；
+//   · 激励里 sfence 与 mbmc 恒 0，所以"sfence 掩码没写""bitmap 门写错"在这里
+//     按构造测不出来 —— 那几段仍在 rtl/mmu/PtwCache.sv 的 §8 未追清清单里。
+//
+// 【激励为什么长这样（两条都是实测逼出来的，别"简化"回去）】
+//   1. vpn 从一个 4 项的池子里取（四分之一仍全随机），csr 每 512 拍才换一次。
+//      全随机时回填进去的条目下一拍就再也匹配不上，五级命中 fire 全是 0。
+//   2. rand_pte 三分之一造一条**干净的** next 型 PTE（r/w/x=0,v=1，且 d/a/u/n/pbmt/
+//      reserved/ppn_high 全清）。只清 r/w/x 不够：非叶子的 isPf 还查 u/a/d/n/pbmt，
+//      随机值下九成判 pf，canRefill 过不去，l1 的 vs 位几乎恒 0 ——
+//      实测 3000 拍里 l1 命中只有 2 次，补了这条之后是 51 次。
+//   三份 dup 仍各取各的（各自独立但各自稳定），"dup 归属写错"的判别力保住了。
 //
 // 【判别力自证】
-//   常态自证：五级回填的 fire 次数必须都 > 0（上一版用的 untraced_diff>0 在
-//   waymask 毕业后失效，已换成这个）。tb 自己判 FAIL。
-//   注入过的 mutant（都不进库，结果记在这儿，3000 拍 seed=1）：
-//     M1 把 §7 那个"l3 回填污染 l2 PLRU"的 golden 真 bug「修好」
-//        （plru_l2 那一支改成写 plru_l3）           -> errors=3081，抓到。
-//        ★这条是本轮唯一能证明我们照抄了 golden 的 bug、而不是照抄了直觉的实验★
-//     M2 sp_refillIdx 也套上 replaceWrapper（空位优先）-> errors=21928，抓到。
-//     M3 l1vmids 存 dup_0 的 vmid（dup 归属写错）      -> errors=21146，抓到。
-//     M4 l0vpns 不做 XORFold，直接存 tag 低 6 位       -> errors=679809，抓到。
-//   历史（上一版只比写端口时记的，保留备查）：
+//   常态自证：五级回填的 fire 次数与五级命中的 fire 次数**都必须 > 0**，
+//   否则那一段等于什么都没比，tb 自己判 FAIL。
+//   注入过的 mutant（都不进库，结果记在这儿）：
+// MUTANT_TABLE_PLACEHOLDER
+//   历史（更早只比写端口那一版记的，保留备查）：
 //     A  pte_is_pf 的 napot 分支去掉 `| (level != 0)`  -> errors=0，**没抓到**。
 //        查清了原因：level>0 时 ppn[3:0]==8 蕴含 ppn[8:0]!=0，紧接着的
 //        unaligned(level) 对同一批输入也给 1，两者**值恒等**。所以这不是本对照的
@@ -33,9 +41,8 @@
 //     B  pbmte 改用 dup_1                             -> errors=6164 / 20000 拍，抓到。
 //     C  pte_only_pf 去掉 `& ~pte_is_af(p)`           -> errors=28536 / 20000 拍，抓到。
 //
-// 【实测（commit 见 git log，产物 sha256 见 rtl/mmu/PtwCache.sv）】
-//   make run NCYCLES=200000 SEED=1|7|42
-//   -> 见本目录 run_seed{1,7,42}.log 的 "study:" 与 "fire:" 两行。
+// 【实测（commit 见 git log，产物 sha256 见 evidence/）】
+//   make run NCYCLES=200000 SEED=1|7|42 -> 见 evidence/ 下的 run_seed{1,7,42}.log。
 `timescale 1ns/1ps
 module tb;
   int errors = 0;          // 已追清信号的失配 —— 一个都不许有
@@ -1420,6 +1427,7 @@ module tb;
   //   五级回填各自的 fire 次数必须都 > 0，否则这一轮里某一级根本没被触发，
   //   它那一段 errors=0 就是"什么都没比"。
   int fire_l3 = 0, fire_l2 = 0, fire_l1 = 0, fire_l0 = 0, fire_sp = 0;
+  int fire_hit_l3 = 0, fire_hit_l2 = 0, fire_hit_l1 = 0, fire_hit_l0 = 0, fire_hit_sp = 0;
 
   task automatic chk(input string nm, input logic [63:0] a, input logic [63:0] b);
     checks++;
@@ -1444,14 +1452,62 @@ module tb;
     // ★2026-09-20 补★：l3/l2 只收**非叶子**且 canRefill 的 PTE，纯随机下 5000 拍
     // 只触发 5/6 次（实测），那两级的状态等于没比。这里三分之一强制成
     // "v=1 且 r=w=x=0" 的 next 型 PTE，把 l3Refill/l2Refill 的触发率抬上来。
+    // ★2026-09-20 再补★：光把 r/w/x 清零还不够 —— 非叶子 PTE 的 isPf 还会查
+    // u/a/d/n/pbmt，随机值下九成会被判 pf，canRefill 一样过不去，于是 l1 的 vs 位
+    // 几乎恒 0，l1 命中在 3000 拍里只触发 2 次（实测）。这里三分之一造一条**干净的**
+    // next 型 PTE，把 l1 命中率抬上来。
     if ($urandom_range(0,2) == 0) begin
-      p[3:1] = 3'b000;
-      p[0]   = 1'b1;
+      p[3:1]   = 3'b000;   // r/w/x = 0 ⇒ 非叶子
+      p[0]     = 1'b1;     // v = 1
+      p[7:6]   = 2'b00;    // d/a = 0
+      p[4]     = 1'b0;     // u   = 0
+      p[63]    = 1'b0;     // n   = 0
+      p[62:61] = 2'b00;    // pbmt
+      p[60:54] = 7'h0;     // reserved
+      p[53:46] = 8'h0;     // ppn_high
     end
     return p;
   endfunction
 
+  // 命中锥体要走得到，激励就不能"每拍全随机"：vpn 必须从一个小池子里取，
+  // csr 必须在一段时间里保持不变，否则回填进去的条目下一拍就再也匹配不上了。
+  // ★三份 dup 仍然各取各的★（各自独立但各自稳定）—— 命中靠的是"同一份 dup
+  // 在回填与查找时一致"，不是三份相等，所以这样既能命中又保留 dup 判别力。
+  logic [37:0] vpn_pool [0:7];
+
+  task automatic refresh_csr();
+    io_csr_mPBMTE = $urandom_range(0,1);
+    io_csr_hPBMTE = $urandom_range(0,1);
+    io_csr_dup_0_satp_asid  = $urandom_range(0,3);
+    io_csr_dup_0_vsatp_asid = $urandom_range(0,3);
+    io_csr_dup_0_hgatp_vmid = $urandom_range(0,3);
+    io_csr_dup_0_hgatp_mode = $urandom_range(0,1) ? 4'h8 : 4'h9;
+    io_csr_dup_1_satp_asid  = $urandom_range(0,3);
+    io_csr_dup_1_vsatp_asid = $urandom_range(0,3);
+    io_csr_dup_1_hgatp_vmid = $urandom_range(0,3);
+    io_csr_dup_1_hgatp_mode = $urandom_range(0,1) ? 4'h8 : 4'h9;
+    io_csr_dup_2_satp_asid  = $urandom_range(0,3);
+    io_csr_dup_2_vsatp_asid = $urandom_range(0,3);
+    io_csr_dup_2_hgatp_vmid = $urandom_range(0,3);
+    io_csr_dup_2_hgatp_mode = $urandom_range(0,1) ? 4'h8 : 4'h9;
+  endtask
+
+  function automatic logic [37:0] pick_vpn();
+    // 四分之一全随机，保住"vpn 写错位"这类错误的判别力；其余从池子里取，保命中率。
+    if ($urandom_range(0,3) == 0) return {$urandom(), $urandom()};
+    return vpn_pool[$urandom_range(0,3)];
+  endfunction
+
   task automatic drive_random();
+    io_req_valid                     = $urandom_range(0,1);
+    io_resp_ready                    = $urandom_range(0,1);
+    io_req_bits_req_info_vpn         = pick_vpn();
+    io_req_bits_req_info_s2xlate     = $urandom_range(0,3);
+    io_req_bits_req_info_source      = $urandom_range(0,3);
+    io_req_bits_isFirst              = $urandom_range(0,1);
+    io_req_bits_isHptwReq            = $urandom_range(0,1);
+    io_req_bits_hptwId               = $urandom_range(0,7);
+
     for (int k = 0; k < 8; k++) io_refill_bits_ptes[64*k +: 64] = rand_pte();
     io_refill_bits_sel_pte_dup_0 = rand_pte();
     io_refill_bits_sel_pte_dup_2 = rand_pte();
@@ -1463,31 +1519,17 @@ module tb;
     io_refill_bits_levelOH_l3     = $urandom_range(0,1);
     io_refill_bits_level_dup_0    = $urandom_range(0,3);
     io_refill_bits_level_dup_2    = $urandom_range(0,3);
-    io_csr_mPBMTE = $urandom_range(0,1);
-    io_csr_hPBMTE = $urandom_range(0,1);
-    // ★三份 dup 必须各自独立随机★：绑成一根线的话，"dup 归属写错"这类
-    // 错误在本对照里按构造测不出来。
-    io_refill_bits_req_info_dup_0_vpn     = {$urandom(), $urandom()};
+    // ★三份 dup 的 vpn/s2xlate/source 各自独立随机★：绑成一根线的话，
+    // "dup 归属写错"这类错误在本对照里按构造测不出来。
+    io_refill_bits_req_info_dup_0_vpn     = pick_vpn();
     io_refill_bits_req_info_dup_0_s2xlate = $urandom_range(0,3);
     io_refill_bits_req_info_dup_0_source  = $urandom_range(0,3);
-    io_csr_dup_0_satp_asid  = $urandom();
-    io_csr_dup_0_vsatp_asid = $urandom();
-    io_csr_dup_0_hgatp_vmid = $urandom();
-    io_csr_dup_0_hgatp_mode = $urandom_range(0,1) ? ($urandom_range(0,1) ? 4'h8 : 4'h9) : $urandom_range(0,15);
-    io_refill_bits_req_info_dup_1_vpn     = {$urandom(), $urandom()};
+    io_refill_bits_req_info_dup_1_vpn     = pick_vpn();
     io_refill_bits_req_info_dup_1_s2xlate = $urandom_range(0,3);
     io_refill_bits_req_info_dup_1_source  = $urandom_range(0,3);
-    io_csr_dup_1_satp_asid  = $urandom();
-    io_csr_dup_1_vsatp_asid = $urandom();
-    io_csr_dup_1_hgatp_vmid = $urandom();
-    io_csr_dup_1_hgatp_mode = $urandom_range(0,1) ? ($urandom_range(0,1) ? 4'h8 : 4'h9) : $urandom_range(0,15);
-    io_refill_bits_req_info_dup_2_vpn     = {$urandom(), $urandom()};
+    io_refill_bits_req_info_dup_2_vpn     = pick_vpn();
     io_refill_bits_req_info_dup_2_s2xlate = $urandom_range(0,3);
     io_refill_bits_req_info_dup_2_source  = $urandom_range(0,3);
-    io_csr_dup_2_satp_asid  = $urandom();
-    io_csr_dup_2_vsatp_asid = $urandom();
-    io_csr_dup_2_hgatp_vmid = $urandom();
-    io_csr_dup_2_hgatp_mode = $urandom_range(0,1) ? ($urandom_range(0,1) ? 4'h8 : 4'h9) : $urandom_range(0,15);
   endtask
 
   // BEGIN GENERATED(state_cmp)
@@ -3110,6 +3152,910 @@ module tb;
     chk("l0vmids[63][3]", dut_g.l0vmids_63_3, dut_i.u_core.l0vmids[63][3]);
     chk("l0vpns[63][3]", dut_g.l0vpns_63_3, dut_i.u_core.l0vpns[63][3]);
   endtask
+
+  // 命中侧（stageReq -> stageDelay -> stageCheck 三级）
+  task automatic compare_hit();
+    chk("delay_req_info_vpn", dut_g.data_req_info_vpn, dut_i.u_core.delay_vpn);
+    chk("delay_req_info_s2xlate", dut_g.data_req_info_s2xlate, dut_i.u_core.delay_s2x);
+    chk("delay_req_info_source", dut_g.data_req_info_source, dut_i.u_core.delay_src);
+    chk("delay_isFirst", dut_g.data_isFirst, dut_i.u_core.delay_isfirst);
+    chk("delay_isHptwReq", dut_g.data_isHptwReq, dut_i.u_core.delay_ishptw);
+    chk("delay_hptwId", dut_g.data_hptwId, dut_i.u_core.delay_hptwid);
+    chk("check_req_info_vpn", dut_g.data_1_req_info_vpn, dut_i.u_core.check_vpn);
+    chk("check_req_info_s2xlate", dut_g.data_1_req_info_s2xlate, dut_i.u_core.check_s2x);
+    chk("check_req_info_source", dut_g.data_1_req_info_source, dut_i.u_core.check_src);
+    chk("check_isFirst", dut_g.data_1_isFirst, dut_i.u_core.check_isfirst);
+    chk("check_isHptwReq", dut_g.data_1_isHptwReq, dut_i.u_core.check_ishptw);
+    chk("check_hptwId", dut_g.data_1_hptwId, dut_i.u_core.check_hptwid);
+    chk("resp_req_info_vpn", dut_g.data_2_req_info_vpn, dut_i.u_core.resp_vpn);
+    chk("resp_req_info_s2xlate", dut_g.data_2_req_info_s2xlate, dut_i.u_core.resp_s2x);
+    chk("resp_req_info_source", dut_g.data_2_req_info_source, dut_i.u_core.resp_src);
+    chk("resp_isFirst", dut_g.data_2_isFirst, dut_i.u_core.resp_isfirst);
+    chk("resp_isHptwReq", dut_g.data_2_isHptwReq, dut_i.u_core.resp_ishptw);
+    chk("resp_hptwId", dut_g.data_2_hptwId, dut_i.u_core.resp_hptwid);
+    chk("stageDelay_valid_1cycle", dut_g.stageDelay_valid_1cycle, dut_i.u_core.stage_delay_valid_1cycle);
+    chk("stageCheck_valid_1cycle", dut_g.stageCheck_valid_1cycle, dut_i.u_core.stage_check_valid_1cycle);
+    chk("valid_delay", dut_g.valid, dut_i.u_core.valid_delay);
+    chk("valid_check", dut_g.valid_1, dut_i.u_core.valid_check);
+    chk("valid_resp", dut_g.valid_2, dut_i.u_core.valid_resp);
+    chk("l3_hitvec[0]", dut_g.hitVec_0, dut_i.u_core.l3_hitvec[0]);
+    chk("l3_hitvec[1]", dut_g.hitVec_1, dut_i.u_core.l3_hitvec[1]);
+    chk("l3_hitvec[2]", dut_g.hitVec_2, dut_i.u_core.l3_hitvec[2]);
+    chk("l3_hitvec[3]", dut_g.hitVec_3, dut_i.u_core.l3_hitvec[3]);
+    chk("l3_hitvec[4]", dut_g.hitVec_4, dut_i.u_core.l3_hitvec[4]);
+    chk("l3_hitvec[5]", dut_g.hitVec_5, dut_i.u_core.l3_hitvec[5]);
+    chk("l3_hitvec[6]", dut_g.hitVec_6, dut_i.u_core.l3_hitvec[6]);
+    chk("l3_hitvec[7]", dut_g.hitVec_7, dut_i.u_core.l3_hitvec[7]);
+    chk("l3_hitvec[8]", dut_g.hitVec_8, dut_i.u_core.l3_hitvec[8]);
+    chk("l3_hitvec[9]", dut_g.hitVec_9, dut_i.u_core.l3_hitvec[9]);
+    chk("l3_hitvec[10]", dut_g.hitVec_10, dut_i.u_core.l3_hitvec[10]);
+    chk("l3_hitvec[11]", dut_g.hitVec_11, dut_i.u_core.l3_hitvec[11]);
+    chk("l3_hitvec[12]", dut_g.hitVec_12, dut_i.u_core.l3_hitvec[12]);
+    chk("l3_hitvec[13]", dut_g.hitVec_13, dut_i.u_core.l3_hitvec[13]);
+    chk("l3_hitvec[14]", dut_g.hitVec_14, dut_i.u_core.l3_hitvec[14]);
+    chk("l3_hitvec[15]", dut_g.hitVec_15, dut_i.u_core.l3_hitvec[15]);
+    chk("l2_hitvec[0]", dut_g.hitVec_0_1, dut_i.u_core.l2_hitvec[0]);
+    chk("l2_hitvec[1]", dut_g.hitVec_1_1, dut_i.u_core.l2_hitvec[1]);
+    chk("l2_hitvec[2]", dut_g.hitVec_2_1, dut_i.u_core.l2_hitvec[2]);
+    chk("l2_hitvec[3]", dut_g.hitVec_3_1, dut_i.u_core.l2_hitvec[3]);
+    chk("l2_hitvec[4]", dut_g.hitVec_4_1, dut_i.u_core.l2_hitvec[4]);
+    chk("l2_hitvec[5]", dut_g.hitVec_5_1, dut_i.u_core.l2_hitvec[5]);
+    chk("l2_hitvec[6]", dut_g.hitVec_6_1, dut_i.u_core.l2_hitvec[6]);
+    chk("l2_hitvec[7]", dut_g.hitVec_7_1, dut_i.u_core.l2_hitvec[7]);
+    chk("l2_hitvec[8]", dut_g.hitVec_8_1, dut_i.u_core.l2_hitvec[8]);
+    chk("l2_hitvec[9]", dut_g.hitVec_9_1, dut_i.u_core.l2_hitvec[9]);
+    chk("l2_hitvec[10]", dut_g.hitVec_10_1, dut_i.u_core.l2_hitvec[10]);
+    chk("l2_hitvec[11]", dut_g.hitVec_11_1, dut_i.u_core.l2_hitvec[11]);
+    chk("l2_hitvec[12]", dut_g.hitVec_12_1, dut_i.u_core.l2_hitvec[12]);
+    chk("l2_hitvec[13]", dut_g.hitVec_13_1, dut_i.u_core.l2_hitvec[13]);
+    chk("l2_hitvec[14]", dut_g.hitVec_14_1, dut_i.u_core.l2_hitvec[14]);
+    chk("l2_hitvec[15]", dut_g.hitVec_15_1, dut_i.u_core.l2_hitvec[15]);
+    chk("sp_hitvec[0]", dut_g.hitVec_0_2, dut_i.u_core.sp_hitvec[0]);
+    chk("sp_hitvec[1]", dut_g.hitVec_1_2, dut_i.u_core.sp_hitvec[1]);
+    chk("sp_hitvec[2]", dut_g.hitVec_2_2, dut_i.u_core.sp_hitvec[2]);
+    chk("sp_hitvec[3]", dut_g.hitVec_3_2, dut_i.u_core.sp_hitvec[3]);
+    chk("sp_hitvec[4]", dut_g.hitVec_4_2, dut_i.u_core.sp_hitvec[4]);
+    chk("sp_hitvec[5]", dut_g.hitVec_5_2, dut_i.u_core.sp_hitvec[5]);
+    chk("sp_hitvec[6]", dut_g.hitVec_6_2, dut_i.u_core.sp_hitvec[6]);
+    chk("sp_hitvec[7]", dut_g.hitVec_7_2, dut_i.u_core.sp_hitvec[7]);
+    chk("sp_hitvec[8]", dut_g.hitVec_8_2, dut_i.u_core.sp_hitvec[8]);
+    chk("sp_hitvec[9]", dut_g.hitVec_9_2, dut_i.u_core.sp_hitvec[9]);
+    chk("sp_hitvec[10]", dut_g.hitVec_10_2, dut_i.u_core.sp_hitvec[10]);
+    chk("sp_hitvec[11]", dut_g.hitVec_11_2, dut_i.u_core.sp_hitvec[11]);
+    chk("sp_hitvec[12]", dut_g.hitVec_12_2, dut_i.u_core.sp_hitvec[12]);
+    chk("sp_hitvec[13]", dut_g.hitVec_13_2, dut_i.u_core.sp_hitvec[13]);
+    chk("sp_hitvec[14]", dut_g.hitVec_14_2, dut_i.u_core.sp_hitvec[14]);
+    chk("sp_hitvec[15]", dut_g.hitVec_15_2, dut_i.u_core.sp_hitvec[15]);
+    chk("l3_hit_r", dut_g.hit_r, dut_i.u_core.l3_hit_r);
+    chk("l3_ppn_r", dut_g.hitPPN_r, dut_i.u_core.l3_ppn_r);
+    chk("l3_pre_r", dut_g.hitPre_r, dut_i.u_core.l3_pre_r);
+    chk("l2_hit_r", dut_g.hit_r_1, dut_i.u_core.l2_hit_r);
+    chk("l2_ppn_r", dut_g.hitPPN_r_1, dut_i.u_core.l2_ppn_r);
+    chk("l2_pbmt_r", dut_g.hitPbmt_r_1, dut_i.u_core.l2_pbmt_r);
+    chk("l2_pre_r", dut_g.hitPre_r_1, dut_i.u_core.l2_pre_r);
+    chk("l3_hit_ck", dut_g.l3Hit_r, dut_i.u_core.l3_hit_ck);
+    chk("l3_ppn_ck", dut_g.l3HitPPN_r, dut_i.u_core.l3_ppn_ck);
+    chk("l3_pre_ck", dut_g.l3Pre_r, dut_i.u_core.l3_pre_ck);
+    chk("l2_hit_ck", dut_g.l2Hit, dut_i.u_core.l2_hit_ck);
+    chk("l2_ppn_ck", dut_g.l2HitPPN, dut_i.u_core.l2_ppn_ck);
+    chk("l2_pbmt_ck", dut_g.l2HitPbmt, dut_i.u_core.l2_pbmt_ck);
+    chk("l2_pre_ck", dut_g.l2Pre, dut_i.u_core.l2_pre_ck);
+    chk("sp_ishptw_delay", dut_g.ishptw_1, dut_i.u_core.sp_ishptw_delay);
+    chk("sp_s2x_delay", dut_g.s2x_info_1, dut_i.u_core.sp_s2x_delay);
+    chk("sp_hit_ck", dut_g.spHit, dut_i.u_core.sp_hit_ck);
+    chk("sp_pre_ck", dut_g.spPre, dut_i.u_core.sp_pre_ck);
+    chk("sp_valid_ck", dut_g.spValid, dut_i.u_core.sp_valid_ck);
+    chk("sp_jmp_bitmap_ck", dut_g.spJmpBitmapCheck, dut_i.u_core.sp_jmp_bitmap_ck);
+    chk("sp_hitdata_ck.n", dut_g.spHitData_n, dut_i.u_core.sp_hitdata_ck.n);
+    chk("sp_hitdata_ck.pbmt", dut_g.spHitData_pbmt, dut_i.u_core.sp_hitdata_ck.pbmt);
+    chk("sp_hitdata_ck.ppn", dut_g.spHitData_ppn, dut_i.u_core.sp_hitdata_ck.ppn);
+    chk("sp_hitdata_ck.level", dut_g.spHitData_level, dut_i.u_core.sp_hitdata_ck.level);
+    chk("sp_hitdata_ck.v", dut_g.spHitData_v, dut_i.u_core.sp_hitdata_ck.v);
+    chk("sp_hitdata_ck.perm.d", dut_g.spHitData_perm_d, dut_i.u_core.sp_hitdata_ck.perm.d);
+    chk("sp_hitdata_ck.perm.a", dut_g.spHitData_perm_a, dut_i.u_core.sp_hitdata_ck.perm.a);
+    chk("sp_hitdata_ck.perm.g", dut_g.spHitData_perm_g, dut_i.u_core.sp_hitdata_ck.perm.g);
+    chk("sp_hitdata_ck.perm.u", dut_g.spHitData_perm_u, dut_i.u_core.sp_hitdata_ck.perm.u);
+    chk("sp_hitdata_ck.perm.x", dut_g.spHitData_perm_x, dut_i.u_core.sp_hitdata_ck.perm.x);
+    chk("sp_hitdata_ck.perm.w", dut_g.spHitData_perm_w, dut_i.u_core.sp_hitdata_ck.perm.w);
+    chk("sp_hitdata_ck.perm.r", dut_g.spHitData_perm_r, dut_i.u_core.sp_hitdata_ck.perm.r);
+    chk("l1_vvec_delay", dut_g.vVec_delay, dut_i.u_core.l1_vvec_delay);
+    chk("l1_gvec_delay", dut_g.gVec_delay, dut_i.u_core.l1_gvec_delay);
+    chk("l1_hvec_delay[0]", dut_g.hVec_delay_0, dut_i.u_core.l1_hvec_delay[0]);
+    chk("l1_hitvec[0]", dut_g.l1_hitVec_0, dut_i.u_core.l1_hitvec[0]);
+    chk("l1_hvec_delay[1]", dut_g.hVec_delay_1, dut_i.u_core.l1_hvec_delay[1]);
+    chk("l1_hitvec[1]", dut_g.l1_hitVec_1, dut_i.u_core.l1_hitvec[1]);
+    chk("l0_vvec_delay", dut_g.vVec_delay_1, dut_i.u_core.l0_vvec_delay);
+    chk("l0_hvec_delay[0]", dut_g.hVec_delay_1_0, dut_i.u_core.l0_hvec_delay[0]);
+    chk("l0_hitvec[0]", dut_g.l0_hitVec_0, dut_i.u_core.l0_hitvec[0]);
+    chk("l0_hvec_delay[1]", dut_g.hVec_delay_1_1, dut_i.u_core.l0_hvec_delay[1]);
+    chk("l0_hitvec[1]", dut_g.l0_hitVec_1, dut_i.u_core.l0_hitvec[1]);
+    chk("l0_hvec_delay[2]", dut_g.hVec_delay_1_2, dut_i.u_core.l0_hvec_delay[2]);
+    chk("l0_hitvec[2]", dut_g.l0_hitVec_2, dut_i.u_core.l0_hitvec[2]);
+    chk("l0_hvec_delay[3]", dut_g.hVec_delay_1_3, dut_i.u_core.l0_hvec_delay[3]);
+    chk("l0_hitvec[3]", dut_g.l0_hitVec_3, dut_i.u_core.l0_hitvec[3]);
+    chk("l1_resp_r[0].tag", dut_g.data_resp_r_0_entries_tag, dut_i.u_core.l1_resp_r[0].tag);
+    chk("l1_resp_r[0].asid", dut_g.data_resp_r_0_entries_asid, dut_i.u_core.l1_resp_r[0].asid);
+    chk("l1_resp_r[0].vmid", dut_g.data_resp_r_0_entries_vmid, dut_i.u_core.l1_resp_r[0].vmid);
+    chk("l1_resp_r[0].prefetch", dut_g.data_resp_r_0_entries_prefetch, dut_i.u_core.l1_resp_r[0].prefetch);
+    chk("l1_resp_r[0].pbmts[0]", dut_g.data_resp_r_0_entries_pbmts_0, dut_i.u_core.l1_resp_r[0].pbmts[0]);
+    chk("l1_resp_r[0].ppns[0]", dut_g.data_resp_r_0_entries_ppns_0, dut_i.u_core.l1_resp_r[0].ppns[0]);
+    chk("l1_resp_r[0].vs[0]", dut_g.data_resp_r_0_entries_vs_0, dut_i.u_core.l1_resp_r[0].vs[0]);
+    chk("l1_resp_r[0].pbmts[1]", dut_g.data_resp_r_0_entries_pbmts_1, dut_i.u_core.l1_resp_r[0].pbmts[1]);
+    chk("l1_resp_r[0].ppns[1]", dut_g.data_resp_r_0_entries_ppns_1, dut_i.u_core.l1_resp_r[0].ppns[1]);
+    chk("l1_resp_r[0].vs[1]", dut_g.data_resp_r_0_entries_vs_1, dut_i.u_core.l1_resp_r[0].vs[1]);
+    chk("l1_resp_r[0].pbmts[2]", dut_g.data_resp_r_0_entries_pbmts_2, dut_i.u_core.l1_resp_r[0].pbmts[2]);
+    chk("l1_resp_r[0].ppns[2]", dut_g.data_resp_r_0_entries_ppns_2, dut_i.u_core.l1_resp_r[0].ppns[2]);
+    chk("l1_resp_r[0].vs[2]", dut_g.data_resp_r_0_entries_vs_2, dut_i.u_core.l1_resp_r[0].vs[2]);
+    chk("l1_resp_r[0].pbmts[3]", dut_g.data_resp_r_0_entries_pbmts_3, dut_i.u_core.l1_resp_r[0].pbmts[3]);
+    chk("l1_resp_r[0].ppns[3]", dut_g.data_resp_r_0_entries_ppns_3, dut_i.u_core.l1_resp_r[0].ppns[3]);
+    chk("l1_resp_r[0].vs[3]", dut_g.data_resp_r_0_entries_vs_3, dut_i.u_core.l1_resp_r[0].vs[3]);
+    chk("l1_resp_r[0].pbmts[4]", dut_g.data_resp_r_0_entries_pbmts_4, dut_i.u_core.l1_resp_r[0].pbmts[4]);
+    chk("l1_resp_r[0].ppns[4]", dut_g.data_resp_r_0_entries_ppns_4, dut_i.u_core.l1_resp_r[0].ppns[4]);
+    chk("l1_resp_r[0].vs[4]", dut_g.data_resp_r_0_entries_vs_4, dut_i.u_core.l1_resp_r[0].vs[4]);
+    chk("l1_resp_r[0].pbmts[5]", dut_g.data_resp_r_0_entries_pbmts_5, dut_i.u_core.l1_resp_r[0].pbmts[5]);
+    chk("l1_resp_r[0].ppns[5]", dut_g.data_resp_r_0_entries_ppns_5, dut_i.u_core.l1_resp_r[0].ppns[5]);
+    chk("l1_resp_r[0].vs[5]", dut_g.data_resp_r_0_entries_vs_5, dut_i.u_core.l1_resp_r[0].vs[5]);
+    chk("l1_resp_r[0].pbmts[6]", dut_g.data_resp_r_0_entries_pbmts_6, dut_i.u_core.l1_resp_r[0].pbmts[6]);
+    chk("l1_resp_r[0].ppns[6]", dut_g.data_resp_r_0_entries_ppns_6, dut_i.u_core.l1_resp_r[0].ppns[6]);
+    chk("l1_resp_r[0].vs[6]", dut_g.data_resp_r_0_entries_vs_6, dut_i.u_core.l1_resp_r[0].vs[6]);
+    chk("l1_resp_r[0].pbmts[7]", dut_g.data_resp_r_0_entries_pbmts_7, dut_i.u_core.l1_resp_r[0].pbmts[7]);
+    chk("l1_resp_r[0].ppns[7]", dut_g.data_resp_r_0_entries_ppns_7, dut_i.u_core.l1_resp_r[0].ppns[7]);
+    chk("l1_resp_r[0].vs[7]", dut_g.data_resp_r_0_entries_vs_7, dut_i.u_core.l1_resp_r[0].vs[7]);
+    chk("l1_ramdata[0].prefetch", dut_g.l1_ramDatas_0_entries_prefetch, dut_i.u_core.l1_ramdata[0].prefetch);
+    chk("l1_ramdata[0].pbmts[0]", dut_g.l1_ramDatas_0_entries_pbmts_0, dut_i.u_core.l1_ramdata[0].pbmts[0]);
+    chk("l1_ramdata[0].ppns[0]", dut_g.l1_ramDatas_0_entries_ppns_0, dut_i.u_core.l1_ramdata[0].ppns[0]);
+    chk("l1_ramdata[0].pbmts[1]", dut_g.l1_ramDatas_0_entries_pbmts_1, dut_i.u_core.l1_ramdata[0].pbmts[1]);
+    chk("l1_ramdata[0].ppns[1]", dut_g.l1_ramDatas_0_entries_ppns_1, dut_i.u_core.l1_ramdata[0].ppns[1]);
+    chk("l1_ramdata[0].pbmts[2]", dut_g.l1_ramDatas_0_entries_pbmts_2, dut_i.u_core.l1_ramdata[0].pbmts[2]);
+    chk("l1_ramdata[0].ppns[2]", dut_g.l1_ramDatas_0_entries_ppns_2, dut_i.u_core.l1_ramdata[0].ppns[2]);
+    chk("l1_ramdata[0].pbmts[3]", dut_g.l1_ramDatas_0_entries_pbmts_3, dut_i.u_core.l1_ramdata[0].pbmts[3]);
+    chk("l1_ramdata[0].ppns[3]", dut_g.l1_ramDatas_0_entries_ppns_3, dut_i.u_core.l1_ramdata[0].ppns[3]);
+    chk("l1_ramdata[0].pbmts[4]", dut_g.l1_ramDatas_0_entries_pbmts_4, dut_i.u_core.l1_ramdata[0].pbmts[4]);
+    chk("l1_ramdata[0].ppns[4]", dut_g.l1_ramDatas_0_entries_ppns_4, dut_i.u_core.l1_ramdata[0].ppns[4]);
+    chk("l1_ramdata[0].pbmts[5]", dut_g.l1_ramDatas_0_entries_pbmts_5, dut_i.u_core.l1_ramdata[0].pbmts[5]);
+    chk("l1_ramdata[0].ppns[5]", dut_g.l1_ramDatas_0_entries_ppns_5, dut_i.u_core.l1_ramdata[0].ppns[5]);
+    chk("l1_ramdata[0].pbmts[6]", dut_g.l1_ramDatas_0_entries_pbmts_6, dut_i.u_core.l1_ramdata[0].pbmts[6]);
+    chk("l1_ramdata[0].ppns[6]", dut_g.l1_ramDatas_0_entries_ppns_6, dut_i.u_core.l1_ramdata[0].ppns[6]);
+    chk("l1_ramdata[0].pbmts[7]", dut_g.l1_ramDatas_0_entries_pbmts_7, dut_i.u_core.l1_ramdata[0].pbmts[7]);
+    chk("l1_ramdata[0].ppns[7]", dut_g.l1_ramDatas_0_entries_ppns_7, dut_i.u_core.l1_ramdata[0].ppns[7]);
+    chk("l1_resp_r[1].tag", dut_g.data_resp_r_1_entries_tag, dut_i.u_core.l1_resp_r[1].tag);
+    chk("l1_resp_r[1].asid", dut_g.data_resp_r_1_entries_asid, dut_i.u_core.l1_resp_r[1].asid);
+    chk("l1_resp_r[1].vmid", dut_g.data_resp_r_1_entries_vmid, dut_i.u_core.l1_resp_r[1].vmid);
+    chk("l1_resp_r[1].prefetch", dut_g.data_resp_r_1_entries_prefetch, dut_i.u_core.l1_resp_r[1].prefetch);
+    chk("l1_resp_r[1].pbmts[0]", dut_g.data_resp_r_1_entries_pbmts_0, dut_i.u_core.l1_resp_r[1].pbmts[0]);
+    chk("l1_resp_r[1].ppns[0]", dut_g.data_resp_r_1_entries_ppns_0, dut_i.u_core.l1_resp_r[1].ppns[0]);
+    chk("l1_resp_r[1].vs[0]", dut_g.data_resp_r_1_entries_vs_0, dut_i.u_core.l1_resp_r[1].vs[0]);
+    chk("l1_resp_r[1].pbmts[1]", dut_g.data_resp_r_1_entries_pbmts_1, dut_i.u_core.l1_resp_r[1].pbmts[1]);
+    chk("l1_resp_r[1].ppns[1]", dut_g.data_resp_r_1_entries_ppns_1, dut_i.u_core.l1_resp_r[1].ppns[1]);
+    chk("l1_resp_r[1].vs[1]", dut_g.data_resp_r_1_entries_vs_1, dut_i.u_core.l1_resp_r[1].vs[1]);
+    chk("l1_resp_r[1].pbmts[2]", dut_g.data_resp_r_1_entries_pbmts_2, dut_i.u_core.l1_resp_r[1].pbmts[2]);
+    chk("l1_resp_r[1].ppns[2]", dut_g.data_resp_r_1_entries_ppns_2, dut_i.u_core.l1_resp_r[1].ppns[2]);
+    chk("l1_resp_r[1].vs[2]", dut_g.data_resp_r_1_entries_vs_2, dut_i.u_core.l1_resp_r[1].vs[2]);
+    chk("l1_resp_r[1].pbmts[3]", dut_g.data_resp_r_1_entries_pbmts_3, dut_i.u_core.l1_resp_r[1].pbmts[3]);
+    chk("l1_resp_r[1].ppns[3]", dut_g.data_resp_r_1_entries_ppns_3, dut_i.u_core.l1_resp_r[1].ppns[3]);
+    chk("l1_resp_r[1].vs[3]", dut_g.data_resp_r_1_entries_vs_3, dut_i.u_core.l1_resp_r[1].vs[3]);
+    chk("l1_resp_r[1].pbmts[4]", dut_g.data_resp_r_1_entries_pbmts_4, dut_i.u_core.l1_resp_r[1].pbmts[4]);
+    chk("l1_resp_r[1].ppns[4]", dut_g.data_resp_r_1_entries_ppns_4, dut_i.u_core.l1_resp_r[1].ppns[4]);
+    chk("l1_resp_r[1].vs[4]", dut_g.data_resp_r_1_entries_vs_4, dut_i.u_core.l1_resp_r[1].vs[4]);
+    chk("l1_resp_r[1].pbmts[5]", dut_g.data_resp_r_1_entries_pbmts_5, dut_i.u_core.l1_resp_r[1].pbmts[5]);
+    chk("l1_resp_r[1].ppns[5]", dut_g.data_resp_r_1_entries_ppns_5, dut_i.u_core.l1_resp_r[1].ppns[5]);
+    chk("l1_resp_r[1].vs[5]", dut_g.data_resp_r_1_entries_vs_5, dut_i.u_core.l1_resp_r[1].vs[5]);
+    chk("l1_resp_r[1].pbmts[6]", dut_g.data_resp_r_1_entries_pbmts_6, dut_i.u_core.l1_resp_r[1].pbmts[6]);
+    chk("l1_resp_r[1].ppns[6]", dut_g.data_resp_r_1_entries_ppns_6, dut_i.u_core.l1_resp_r[1].ppns[6]);
+    chk("l1_resp_r[1].vs[6]", dut_g.data_resp_r_1_entries_vs_6, dut_i.u_core.l1_resp_r[1].vs[6]);
+    chk("l1_resp_r[1].pbmts[7]", dut_g.data_resp_r_1_entries_pbmts_7, dut_i.u_core.l1_resp_r[1].pbmts[7]);
+    chk("l1_resp_r[1].ppns[7]", dut_g.data_resp_r_1_entries_ppns_7, dut_i.u_core.l1_resp_r[1].ppns[7]);
+    chk("l1_resp_r[1].vs[7]", dut_g.data_resp_r_1_entries_vs_7, dut_i.u_core.l1_resp_r[1].vs[7]);
+    chk("l1_ramdata[1].prefetch", dut_g.l1_ramDatas_1_entries_prefetch, dut_i.u_core.l1_ramdata[1].prefetch);
+    chk("l1_ramdata[1].pbmts[0]", dut_g.l1_ramDatas_1_entries_pbmts_0, dut_i.u_core.l1_ramdata[1].pbmts[0]);
+    chk("l1_ramdata[1].ppns[0]", dut_g.l1_ramDatas_1_entries_ppns_0, dut_i.u_core.l1_ramdata[1].ppns[0]);
+    chk("l1_ramdata[1].pbmts[1]", dut_g.l1_ramDatas_1_entries_pbmts_1, dut_i.u_core.l1_ramdata[1].pbmts[1]);
+    chk("l1_ramdata[1].ppns[1]", dut_g.l1_ramDatas_1_entries_ppns_1, dut_i.u_core.l1_ramdata[1].ppns[1]);
+    chk("l1_ramdata[1].pbmts[2]", dut_g.l1_ramDatas_1_entries_pbmts_2, dut_i.u_core.l1_ramdata[1].pbmts[2]);
+    chk("l1_ramdata[1].ppns[2]", dut_g.l1_ramDatas_1_entries_ppns_2, dut_i.u_core.l1_ramdata[1].ppns[2]);
+    chk("l1_ramdata[1].pbmts[3]", dut_g.l1_ramDatas_1_entries_pbmts_3, dut_i.u_core.l1_ramdata[1].pbmts[3]);
+    chk("l1_ramdata[1].ppns[3]", dut_g.l1_ramDatas_1_entries_ppns_3, dut_i.u_core.l1_ramdata[1].ppns[3]);
+    chk("l1_ramdata[1].pbmts[4]", dut_g.l1_ramDatas_1_entries_pbmts_4, dut_i.u_core.l1_ramdata[1].pbmts[4]);
+    chk("l1_ramdata[1].ppns[4]", dut_g.l1_ramDatas_1_entries_ppns_4, dut_i.u_core.l1_ramdata[1].ppns[4]);
+    chk("l1_ramdata[1].pbmts[5]", dut_g.l1_ramDatas_1_entries_pbmts_5, dut_i.u_core.l1_ramdata[1].pbmts[5]);
+    chk("l1_ramdata[1].ppns[5]", dut_g.l1_ramDatas_1_entries_ppns_5, dut_i.u_core.l1_ramdata[1].ppns[5]);
+    chk("l1_ramdata[1].pbmts[6]", dut_g.l1_ramDatas_1_entries_pbmts_6, dut_i.u_core.l1_ramdata[1].pbmts[6]);
+    chk("l1_ramdata[1].ppns[6]", dut_g.l1_ramDatas_1_entries_ppns_6, dut_i.u_core.l1_ramdata[1].ppns[6]);
+    chk("l1_ramdata[1].pbmts[7]", dut_g.l1_ramDatas_1_entries_pbmts_7, dut_i.u_core.l1_ramdata[1].pbmts[7]);
+    chk("l1_ramdata[1].ppns[7]", dut_g.l1_ramDatas_1_entries_ppns_7, dut_i.u_core.l1_ramdata[1].ppns[7]);
+    chk("l0_resp_r[0].tag", dut_g.data_resp_r_1_0_entries_tag, dut_i.u_core.l0_resp_r[0].tag);
+    chk("l0_resp_r[0].asid", dut_g.data_resp_r_1_0_entries_asid, dut_i.u_core.l0_resp_r[0].asid);
+    chk("l0_resp_r[0].vmid", dut_g.data_resp_r_1_0_entries_vmid, dut_i.u_core.l0_resp_r[0].vmid);
+    chk("l0_resp_r[0].prefetch", dut_g.data_resp_r_1_0_entries_prefetch, dut_i.u_core.l0_resp_r[0].prefetch);
+    chk("l0_resp_r[0].pbmts[0]", dut_g.data_resp_r_1_0_entries_pbmts_0, dut_i.u_core.l0_resp_r[0].pbmts[0]);
+    chk("l0_resp_r[0].ppns[0]", dut_g.data_resp_r_1_0_entries_ppns_0, dut_i.u_core.l0_resp_r[0].ppns[0]);
+    chk("l0_resp_r[0].vs[0]", dut_g.data_resp_r_1_0_entries_vs_0, dut_i.u_core.l0_resp_r[0].vs[0]);
+    chk("l0_resp_r[0].onlypf[0]", dut_g.data_resp_r_1_0_entries_onlypf_0, dut_i.u_core.l0_resp_r[0].onlypf[0]);
+    chk("l0_resp_r[0].perms[0].d", dut_g.data_resp_r_1_0_entries_perms_0_d, dut_i.u_core.l0_resp_r[0].perms[0].d);
+    chk("l0_resp_r[0].perms[0].a", dut_g.data_resp_r_1_0_entries_perms_0_a, dut_i.u_core.l0_resp_r[0].perms[0].a);
+    chk("l0_resp_r[0].perms[0].g", dut_g.data_resp_r_1_0_entries_perms_0_g, dut_i.u_core.l0_resp_r[0].perms[0].g);
+    chk("l0_resp_r[0].perms[0].u", dut_g.data_resp_r_1_0_entries_perms_0_u, dut_i.u_core.l0_resp_r[0].perms[0].u);
+    chk("l0_resp_r[0].perms[0].x", dut_g.data_resp_r_1_0_entries_perms_0_x, dut_i.u_core.l0_resp_r[0].perms[0].x);
+    chk("l0_resp_r[0].perms[0].w", dut_g.data_resp_r_1_0_entries_perms_0_w, dut_i.u_core.l0_resp_r[0].perms[0].w);
+    chk("l0_resp_r[0].perms[0].r", dut_g.data_resp_r_1_0_entries_perms_0_r, dut_i.u_core.l0_resp_r[0].perms[0].r);
+    chk("l0_resp_r[0].pbmts[1]", dut_g.data_resp_r_1_0_entries_pbmts_1, dut_i.u_core.l0_resp_r[0].pbmts[1]);
+    chk("l0_resp_r[0].ppns[1]", dut_g.data_resp_r_1_0_entries_ppns_1, dut_i.u_core.l0_resp_r[0].ppns[1]);
+    chk("l0_resp_r[0].vs[1]", dut_g.data_resp_r_1_0_entries_vs_1, dut_i.u_core.l0_resp_r[0].vs[1]);
+    chk("l0_resp_r[0].onlypf[1]", dut_g.data_resp_r_1_0_entries_onlypf_1, dut_i.u_core.l0_resp_r[0].onlypf[1]);
+    chk("l0_resp_r[0].perms[1].d", dut_g.data_resp_r_1_0_entries_perms_1_d, dut_i.u_core.l0_resp_r[0].perms[1].d);
+    chk("l0_resp_r[0].perms[1].a", dut_g.data_resp_r_1_0_entries_perms_1_a, dut_i.u_core.l0_resp_r[0].perms[1].a);
+    chk("l0_resp_r[0].perms[1].g", dut_g.data_resp_r_1_0_entries_perms_1_g, dut_i.u_core.l0_resp_r[0].perms[1].g);
+    chk("l0_resp_r[0].perms[1].u", dut_g.data_resp_r_1_0_entries_perms_1_u, dut_i.u_core.l0_resp_r[0].perms[1].u);
+    chk("l0_resp_r[0].perms[1].x", dut_g.data_resp_r_1_0_entries_perms_1_x, dut_i.u_core.l0_resp_r[0].perms[1].x);
+    chk("l0_resp_r[0].perms[1].w", dut_g.data_resp_r_1_0_entries_perms_1_w, dut_i.u_core.l0_resp_r[0].perms[1].w);
+    chk("l0_resp_r[0].perms[1].r", dut_g.data_resp_r_1_0_entries_perms_1_r, dut_i.u_core.l0_resp_r[0].perms[1].r);
+    chk("l0_resp_r[0].pbmts[2]", dut_g.data_resp_r_1_0_entries_pbmts_2, dut_i.u_core.l0_resp_r[0].pbmts[2]);
+    chk("l0_resp_r[0].ppns[2]", dut_g.data_resp_r_1_0_entries_ppns_2, dut_i.u_core.l0_resp_r[0].ppns[2]);
+    chk("l0_resp_r[0].vs[2]", dut_g.data_resp_r_1_0_entries_vs_2, dut_i.u_core.l0_resp_r[0].vs[2]);
+    chk("l0_resp_r[0].onlypf[2]", dut_g.data_resp_r_1_0_entries_onlypf_2, dut_i.u_core.l0_resp_r[0].onlypf[2]);
+    chk("l0_resp_r[0].perms[2].d", dut_g.data_resp_r_1_0_entries_perms_2_d, dut_i.u_core.l0_resp_r[0].perms[2].d);
+    chk("l0_resp_r[0].perms[2].a", dut_g.data_resp_r_1_0_entries_perms_2_a, dut_i.u_core.l0_resp_r[0].perms[2].a);
+    chk("l0_resp_r[0].perms[2].g", dut_g.data_resp_r_1_0_entries_perms_2_g, dut_i.u_core.l0_resp_r[0].perms[2].g);
+    chk("l0_resp_r[0].perms[2].u", dut_g.data_resp_r_1_0_entries_perms_2_u, dut_i.u_core.l0_resp_r[0].perms[2].u);
+    chk("l0_resp_r[0].perms[2].x", dut_g.data_resp_r_1_0_entries_perms_2_x, dut_i.u_core.l0_resp_r[0].perms[2].x);
+    chk("l0_resp_r[0].perms[2].w", dut_g.data_resp_r_1_0_entries_perms_2_w, dut_i.u_core.l0_resp_r[0].perms[2].w);
+    chk("l0_resp_r[0].perms[2].r", dut_g.data_resp_r_1_0_entries_perms_2_r, dut_i.u_core.l0_resp_r[0].perms[2].r);
+    chk("l0_resp_r[0].pbmts[3]", dut_g.data_resp_r_1_0_entries_pbmts_3, dut_i.u_core.l0_resp_r[0].pbmts[3]);
+    chk("l0_resp_r[0].ppns[3]", dut_g.data_resp_r_1_0_entries_ppns_3, dut_i.u_core.l0_resp_r[0].ppns[3]);
+    chk("l0_resp_r[0].vs[3]", dut_g.data_resp_r_1_0_entries_vs_3, dut_i.u_core.l0_resp_r[0].vs[3]);
+    chk("l0_resp_r[0].onlypf[3]", dut_g.data_resp_r_1_0_entries_onlypf_3, dut_i.u_core.l0_resp_r[0].onlypf[3]);
+    chk("l0_resp_r[0].perms[3].d", dut_g.data_resp_r_1_0_entries_perms_3_d, dut_i.u_core.l0_resp_r[0].perms[3].d);
+    chk("l0_resp_r[0].perms[3].a", dut_g.data_resp_r_1_0_entries_perms_3_a, dut_i.u_core.l0_resp_r[0].perms[3].a);
+    chk("l0_resp_r[0].perms[3].g", dut_g.data_resp_r_1_0_entries_perms_3_g, dut_i.u_core.l0_resp_r[0].perms[3].g);
+    chk("l0_resp_r[0].perms[3].u", dut_g.data_resp_r_1_0_entries_perms_3_u, dut_i.u_core.l0_resp_r[0].perms[3].u);
+    chk("l0_resp_r[0].perms[3].x", dut_g.data_resp_r_1_0_entries_perms_3_x, dut_i.u_core.l0_resp_r[0].perms[3].x);
+    chk("l0_resp_r[0].perms[3].w", dut_g.data_resp_r_1_0_entries_perms_3_w, dut_i.u_core.l0_resp_r[0].perms[3].w);
+    chk("l0_resp_r[0].perms[3].r", dut_g.data_resp_r_1_0_entries_perms_3_r, dut_i.u_core.l0_resp_r[0].perms[3].r);
+    chk("l0_resp_r[0].pbmts[4]", dut_g.data_resp_r_1_0_entries_pbmts_4, dut_i.u_core.l0_resp_r[0].pbmts[4]);
+    chk("l0_resp_r[0].ppns[4]", dut_g.data_resp_r_1_0_entries_ppns_4, dut_i.u_core.l0_resp_r[0].ppns[4]);
+    chk("l0_resp_r[0].vs[4]", dut_g.data_resp_r_1_0_entries_vs_4, dut_i.u_core.l0_resp_r[0].vs[4]);
+    chk("l0_resp_r[0].onlypf[4]", dut_g.data_resp_r_1_0_entries_onlypf_4, dut_i.u_core.l0_resp_r[0].onlypf[4]);
+    chk("l0_resp_r[0].perms[4].d", dut_g.data_resp_r_1_0_entries_perms_4_d, dut_i.u_core.l0_resp_r[0].perms[4].d);
+    chk("l0_resp_r[0].perms[4].a", dut_g.data_resp_r_1_0_entries_perms_4_a, dut_i.u_core.l0_resp_r[0].perms[4].a);
+    chk("l0_resp_r[0].perms[4].g", dut_g.data_resp_r_1_0_entries_perms_4_g, dut_i.u_core.l0_resp_r[0].perms[4].g);
+    chk("l0_resp_r[0].perms[4].u", dut_g.data_resp_r_1_0_entries_perms_4_u, dut_i.u_core.l0_resp_r[0].perms[4].u);
+    chk("l0_resp_r[0].perms[4].x", dut_g.data_resp_r_1_0_entries_perms_4_x, dut_i.u_core.l0_resp_r[0].perms[4].x);
+    chk("l0_resp_r[0].perms[4].w", dut_g.data_resp_r_1_0_entries_perms_4_w, dut_i.u_core.l0_resp_r[0].perms[4].w);
+    chk("l0_resp_r[0].perms[4].r", dut_g.data_resp_r_1_0_entries_perms_4_r, dut_i.u_core.l0_resp_r[0].perms[4].r);
+    chk("l0_resp_r[0].pbmts[5]", dut_g.data_resp_r_1_0_entries_pbmts_5, dut_i.u_core.l0_resp_r[0].pbmts[5]);
+    chk("l0_resp_r[0].ppns[5]", dut_g.data_resp_r_1_0_entries_ppns_5, dut_i.u_core.l0_resp_r[0].ppns[5]);
+    chk("l0_resp_r[0].vs[5]", dut_g.data_resp_r_1_0_entries_vs_5, dut_i.u_core.l0_resp_r[0].vs[5]);
+    chk("l0_resp_r[0].onlypf[5]", dut_g.data_resp_r_1_0_entries_onlypf_5, dut_i.u_core.l0_resp_r[0].onlypf[5]);
+    chk("l0_resp_r[0].perms[5].d", dut_g.data_resp_r_1_0_entries_perms_5_d, dut_i.u_core.l0_resp_r[0].perms[5].d);
+    chk("l0_resp_r[0].perms[5].a", dut_g.data_resp_r_1_0_entries_perms_5_a, dut_i.u_core.l0_resp_r[0].perms[5].a);
+    chk("l0_resp_r[0].perms[5].g", dut_g.data_resp_r_1_0_entries_perms_5_g, dut_i.u_core.l0_resp_r[0].perms[5].g);
+    chk("l0_resp_r[0].perms[5].u", dut_g.data_resp_r_1_0_entries_perms_5_u, dut_i.u_core.l0_resp_r[0].perms[5].u);
+    chk("l0_resp_r[0].perms[5].x", dut_g.data_resp_r_1_0_entries_perms_5_x, dut_i.u_core.l0_resp_r[0].perms[5].x);
+    chk("l0_resp_r[0].perms[5].w", dut_g.data_resp_r_1_0_entries_perms_5_w, dut_i.u_core.l0_resp_r[0].perms[5].w);
+    chk("l0_resp_r[0].perms[5].r", dut_g.data_resp_r_1_0_entries_perms_5_r, dut_i.u_core.l0_resp_r[0].perms[5].r);
+    chk("l0_resp_r[0].pbmts[6]", dut_g.data_resp_r_1_0_entries_pbmts_6, dut_i.u_core.l0_resp_r[0].pbmts[6]);
+    chk("l0_resp_r[0].ppns[6]", dut_g.data_resp_r_1_0_entries_ppns_6, dut_i.u_core.l0_resp_r[0].ppns[6]);
+    chk("l0_resp_r[0].vs[6]", dut_g.data_resp_r_1_0_entries_vs_6, dut_i.u_core.l0_resp_r[0].vs[6]);
+    chk("l0_resp_r[0].onlypf[6]", dut_g.data_resp_r_1_0_entries_onlypf_6, dut_i.u_core.l0_resp_r[0].onlypf[6]);
+    chk("l0_resp_r[0].perms[6].d", dut_g.data_resp_r_1_0_entries_perms_6_d, dut_i.u_core.l0_resp_r[0].perms[6].d);
+    chk("l0_resp_r[0].perms[6].a", dut_g.data_resp_r_1_0_entries_perms_6_a, dut_i.u_core.l0_resp_r[0].perms[6].a);
+    chk("l0_resp_r[0].perms[6].g", dut_g.data_resp_r_1_0_entries_perms_6_g, dut_i.u_core.l0_resp_r[0].perms[6].g);
+    chk("l0_resp_r[0].perms[6].u", dut_g.data_resp_r_1_0_entries_perms_6_u, dut_i.u_core.l0_resp_r[0].perms[6].u);
+    chk("l0_resp_r[0].perms[6].x", dut_g.data_resp_r_1_0_entries_perms_6_x, dut_i.u_core.l0_resp_r[0].perms[6].x);
+    chk("l0_resp_r[0].perms[6].w", dut_g.data_resp_r_1_0_entries_perms_6_w, dut_i.u_core.l0_resp_r[0].perms[6].w);
+    chk("l0_resp_r[0].perms[6].r", dut_g.data_resp_r_1_0_entries_perms_6_r, dut_i.u_core.l0_resp_r[0].perms[6].r);
+    chk("l0_resp_r[0].pbmts[7]", dut_g.data_resp_r_1_0_entries_pbmts_7, dut_i.u_core.l0_resp_r[0].pbmts[7]);
+    chk("l0_resp_r[0].ppns[7]", dut_g.data_resp_r_1_0_entries_ppns_7, dut_i.u_core.l0_resp_r[0].ppns[7]);
+    chk("l0_resp_r[0].vs[7]", dut_g.data_resp_r_1_0_entries_vs_7, dut_i.u_core.l0_resp_r[0].vs[7]);
+    chk("l0_resp_r[0].onlypf[7]", dut_g.data_resp_r_1_0_entries_onlypf_7, dut_i.u_core.l0_resp_r[0].onlypf[7]);
+    chk("l0_resp_r[0].perms[7].d", dut_g.data_resp_r_1_0_entries_perms_7_d, dut_i.u_core.l0_resp_r[0].perms[7].d);
+    chk("l0_resp_r[0].perms[7].a", dut_g.data_resp_r_1_0_entries_perms_7_a, dut_i.u_core.l0_resp_r[0].perms[7].a);
+    chk("l0_resp_r[0].perms[7].g", dut_g.data_resp_r_1_0_entries_perms_7_g, dut_i.u_core.l0_resp_r[0].perms[7].g);
+    chk("l0_resp_r[0].perms[7].u", dut_g.data_resp_r_1_0_entries_perms_7_u, dut_i.u_core.l0_resp_r[0].perms[7].u);
+    chk("l0_resp_r[0].perms[7].x", dut_g.data_resp_r_1_0_entries_perms_7_x, dut_i.u_core.l0_resp_r[0].perms[7].x);
+    chk("l0_resp_r[0].perms[7].w", dut_g.data_resp_r_1_0_entries_perms_7_w, dut_i.u_core.l0_resp_r[0].perms[7].w);
+    chk("l0_resp_r[0].perms[7].r", dut_g.data_resp_r_1_0_entries_perms_7_r, dut_i.u_core.l0_resp_r[0].perms[7].r);
+    chk("l0_ramdata[0].prefetch", dut_g.l0_ramDatas_0_entries_prefetch, dut_i.u_core.l0_ramdata[0].prefetch);
+    chk("l0_ramdata[0].pbmts[0]", dut_g.l0_ramDatas_0_entries_pbmts_0, dut_i.u_core.l0_ramdata[0].pbmts[0]);
+    chk("l0_ramdata[0].ppns[0]", dut_g.l0_ramDatas_0_entries_ppns_0, dut_i.u_core.l0_ramdata[0].ppns[0]);
+    chk("l0_ramdata[0].onlypf[0]", dut_g.l0_ramDatas_0_entries_onlypf_0, dut_i.u_core.l0_ramdata[0].onlypf[0]);
+    chk("l0_ramdata[0].perms[0].d", dut_g.l0_ramDatas_0_entries_perms_0_d, dut_i.u_core.l0_ramdata[0].perms[0].d);
+    chk("l0_ramdata[0].perms[0].a", dut_g.l0_ramDatas_0_entries_perms_0_a, dut_i.u_core.l0_ramdata[0].perms[0].a);
+    chk("l0_ramdata[0].perms[0].g", dut_g.l0_ramDatas_0_entries_perms_0_g, dut_i.u_core.l0_ramdata[0].perms[0].g);
+    chk("l0_ramdata[0].perms[0].u", dut_g.l0_ramDatas_0_entries_perms_0_u, dut_i.u_core.l0_ramdata[0].perms[0].u);
+    chk("l0_ramdata[0].perms[0].x", dut_g.l0_ramDatas_0_entries_perms_0_x, dut_i.u_core.l0_ramdata[0].perms[0].x);
+    chk("l0_ramdata[0].perms[0].w", dut_g.l0_ramDatas_0_entries_perms_0_w, dut_i.u_core.l0_ramdata[0].perms[0].w);
+    chk("l0_ramdata[0].perms[0].r", dut_g.l0_ramDatas_0_entries_perms_0_r, dut_i.u_core.l0_ramdata[0].perms[0].r);
+    chk("l0_ramdata[0].pbmts[1]", dut_g.l0_ramDatas_0_entries_pbmts_1, dut_i.u_core.l0_ramdata[0].pbmts[1]);
+    chk("l0_ramdata[0].ppns[1]", dut_g.l0_ramDatas_0_entries_ppns_1, dut_i.u_core.l0_ramdata[0].ppns[1]);
+    chk("l0_ramdata[0].onlypf[1]", dut_g.l0_ramDatas_0_entries_onlypf_1, dut_i.u_core.l0_ramdata[0].onlypf[1]);
+    chk("l0_ramdata[0].perms[1].d", dut_g.l0_ramDatas_0_entries_perms_1_d, dut_i.u_core.l0_ramdata[0].perms[1].d);
+    chk("l0_ramdata[0].perms[1].a", dut_g.l0_ramDatas_0_entries_perms_1_a, dut_i.u_core.l0_ramdata[0].perms[1].a);
+    chk("l0_ramdata[0].perms[1].g", dut_g.l0_ramDatas_0_entries_perms_1_g, dut_i.u_core.l0_ramdata[0].perms[1].g);
+    chk("l0_ramdata[0].perms[1].u", dut_g.l0_ramDatas_0_entries_perms_1_u, dut_i.u_core.l0_ramdata[0].perms[1].u);
+    chk("l0_ramdata[0].perms[1].x", dut_g.l0_ramDatas_0_entries_perms_1_x, dut_i.u_core.l0_ramdata[0].perms[1].x);
+    chk("l0_ramdata[0].perms[1].w", dut_g.l0_ramDatas_0_entries_perms_1_w, dut_i.u_core.l0_ramdata[0].perms[1].w);
+    chk("l0_ramdata[0].perms[1].r", dut_g.l0_ramDatas_0_entries_perms_1_r, dut_i.u_core.l0_ramdata[0].perms[1].r);
+    chk("l0_ramdata[0].pbmts[2]", dut_g.l0_ramDatas_0_entries_pbmts_2, dut_i.u_core.l0_ramdata[0].pbmts[2]);
+    chk("l0_ramdata[0].ppns[2]", dut_g.l0_ramDatas_0_entries_ppns_2, dut_i.u_core.l0_ramdata[0].ppns[2]);
+    chk("l0_ramdata[0].onlypf[2]", dut_g.l0_ramDatas_0_entries_onlypf_2, dut_i.u_core.l0_ramdata[0].onlypf[2]);
+    chk("l0_ramdata[0].perms[2].d", dut_g.l0_ramDatas_0_entries_perms_2_d, dut_i.u_core.l0_ramdata[0].perms[2].d);
+    chk("l0_ramdata[0].perms[2].a", dut_g.l0_ramDatas_0_entries_perms_2_a, dut_i.u_core.l0_ramdata[0].perms[2].a);
+    chk("l0_ramdata[0].perms[2].g", dut_g.l0_ramDatas_0_entries_perms_2_g, dut_i.u_core.l0_ramdata[0].perms[2].g);
+    chk("l0_ramdata[0].perms[2].u", dut_g.l0_ramDatas_0_entries_perms_2_u, dut_i.u_core.l0_ramdata[0].perms[2].u);
+    chk("l0_ramdata[0].perms[2].x", dut_g.l0_ramDatas_0_entries_perms_2_x, dut_i.u_core.l0_ramdata[0].perms[2].x);
+    chk("l0_ramdata[0].perms[2].w", dut_g.l0_ramDatas_0_entries_perms_2_w, dut_i.u_core.l0_ramdata[0].perms[2].w);
+    chk("l0_ramdata[0].perms[2].r", dut_g.l0_ramDatas_0_entries_perms_2_r, dut_i.u_core.l0_ramdata[0].perms[2].r);
+    chk("l0_ramdata[0].pbmts[3]", dut_g.l0_ramDatas_0_entries_pbmts_3, dut_i.u_core.l0_ramdata[0].pbmts[3]);
+    chk("l0_ramdata[0].ppns[3]", dut_g.l0_ramDatas_0_entries_ppns_3, dut_i.u_core.l0_ramdata[0].ppns[3]);
+    chk("l0_ramdata[0].onlypf[3]", dut_g.l0_ramDatas_0_entries_onlypf_3, dut_i.u_core.l0_ramdata[0].onlypf[3]);
+    chk("l0_ramdata[0].perms[3].d", dut_g.l0_ramDatas_0_entries_perms_3_d, dut_i.u_core.l0_ramdata[0].perms[3].d);
+    chk("l0_ramdata[0].perms[3].a", dut_g.l0_ramDatas_0_entries_perms_3_a, dut_i.u_core.l0_ramdata[0].perms[3].a);
+    chk("l0_ramdata[0].perms[3].g", dut_g.l0_ramDatas_0_entries_perms_3_g, dut_i.u_core.l0_ramdata[0].perms[3].g);
+    chk("l0_ramdata[0].perms[3].u", dut_g.l0_ramDatas_0_entries_perms_3_u, dut_i.u_core.l0_ramdata[0].perms[3].u);
+    chk("l0_ramdata[0].perms[3].x", dut_g.l0_ramDatas_0_entries_perms_3_x, dut_i.u_core.l0_ramdata[0].perms[3].x);
+    chk("l0_ramdata[0].perms[3].w", dut_g.l0_ramDatas_0_entries_perms_3_w, dut_i.u_core.l0_ramdata[0].perms[3].w);
+    chk("l0_ramdata[0].perms[3].r", dut_g.l0_ramDatas_0_entries_perms_3_r, dut_i.u_core.l0_ramdata[0].perms[3].r);
+    chk("l0_ramdata[0].pbmts[4]", dut_g.l0_ramDatas_0_entries_pbmts_4, dut_i.u_core.l0_ramdata[0].pbmts[4]);
+    chk("l0_ramdata[0].ppns[4]", dut_g.l0_ramDatas_0_entries_ppns_4, dut_i.u_core.l0_ramdata[0].ppns[4]);
+    chk("l0_ramdata[0].onlypf[4]", dut_g.l0_ramDatas_0_entries_onlypf_4, dut_i.u_core.l0_ramdata[0].onlypf[4]);
+    chk("l0_ramdata[0].perms[4].d", dut_g.l0_ramDatas_0_entries_perms_4_d, dut_i.u_core.l0_ramdata[0].perms[4].d);
+    chk("l0_ramdata[0].perms[4].a", dut_g.l0_ramDatas_0_entries_perms_4_a, dut_i.u_core.l0_ramdata[0].perms[4].a);
+    chk("l0_ramdata[0].perms[4].g", dut_g.l0_ramDatas_0_entries_perms_4_g, dut_i.u_core.l0_ramdata[0].perms[4].g);
+    chk("l0_ramdata[0].perms[4].u", dut_g.l0_ramDatas_0_entries_perms_4_u, dut_i.u_core.l0_ramdata[0].perms[4].u);
+    chk("l0_ramdata[0].perms[4].x", dut_g.l0_ramDatas_0_entries_perms_4_x, dut_i.u_core.l0_ramdata[0].perms[4].x);
+    chk("l0_ramdata[0].perms[4].w", dut_g.l0_ramDatas_0_entries_perms_4_w, dut_i.u_core.l0_ramdata[0].perms[4].w);
+    chk("l0_ramdata[0].perms[4].r", dut_g.l0_ramDatas_0_entries_perms_4_r, dut_i.u_core.l0_ramdata[0].perms[4].r);
+    chk("l0_ramdata[0].pbmts[5]", dut_g.l0_ramDatas_0_entries_pbmts_5, dut_i.u_core.l0_ramdata[0].pbmts[5]);
+    chk("l0_ramdata[0].ppns[5]", dut_g.l0_ramDatas_0_entries_ppns_5, dut_i.u_core.l0_ramdata[0].ppns[5]);
+    chk("l0_ramdata[0].onlypf[5]", dut_g.l0_ramDatas_0_entries_onlypf_5, dut_i.u_core.l0_ramdata[0].onlypf[5]);
+    chk("l0_ramdata[0].perms[5].d", dut_g.l0_ramDatas_0_entries_perms_5_d, dut_i.u_core.l0_ramdata[0].perms[5].d);
+    chk("l0_ramdata[0].perms[5].a", dut_g.l0_ramDatas_0_entries_perms_5_a, dut_i.u_core.l0_ramdata[0].perms[5].a);
+    chk("l0_ramdata[0].perms[5].g", dut_g.l0_ramDatas_0_entries_perms_5_g, dut_i.u_core.l0_ramdata[0].perms[5].g);
+    chk("l0_ramdata[0].perms[5].u", dut_g.l0_ramDatas_0_entries_perms_5_u, dut_i.u_core.l0_ramdata[0].perms[5].u);
+    chk("l0_ramdata[0].perms[5].x", dut_g.l0_ramDatas_0_entries_perms_5_x, dut_i.u_core.l0_ramdata[0].perms[5].x);
+    chk("l0_ramdata[0].perms[5].w", dut_g.l0_ramDatas_0_entries_perms_5_w, dut_i.u_core.l0_ramdata[0].perms[5].w);
+    chk("l0_ramdata[0].perms[5].r", dut_g.l0_ramDatas_0_entries_perms_5_r, dut_i.u_core.l0_ramdata[0].perms[5].r);
+    chk("l0_ramdata[0].pbmts[6]", dut_g.l0_ramDatas_0_entries_pbmts_6, dut_i.u_core.l0_ramdata[0].pbmts[6]);
+    chk("l0_ramdata[0].ppns[6]", dut_g.l0_ramDatas_0_entries_ppns_6, dut_i.u_core.l0_ramdata[0].ppns[6]);
+    chk("l0_ramdata[0].onlypf[6]", dut_g.l0_ramDatas_0_entries_onlypf_6, dut_i.u_core.l0_ramdata[0].onlypf[6]);
+    chk("l0_ramdata[0].perms[6].d", dut_g.l0_ramDatas_0_entries_perms_6_d, dut_i.u_core.l0_ramdata[0].perms[6].d);
+    chk("l0_ramdata[0].perms[6].a", dut_g.l0_ramDatas_0_entries_perms_6_a, dut_i.u_core.l0_ramdata[0].perms[6].a);
+    chk("l0_ramdata[0].perms[6].g", dut_g.l0_ramDatas_0_entries_perms_6_g, dut_i.u_core.l0_ramdata[0].perms[6].g);
+    chk("l0_ramdata[0].perms[6].u", dut_g.l0_ramDatas_0_entries_perms_6_u, dut_i.u_core.l0_ramdata[0].perms[6].u);
+    chk("l0_ramdata[0].perms[6].x", dut_g.l0_ramDatas_0_entries_perms_6_x, dut_i.u_core.l0_ramdata[0].perms[6].x);
+    chk("l0_ramdata[0].perms[6].w", dut_g.l0_ramDatas_0_entries_perms_6_w, dut_i.u_core.l0_ramdata[0].perms[6].w);
+    chk("l0_ramdata[0].perms[6].r", dut_g.l0_ramDatas_0_entries_perms_6_r, dut_i.u_core.l0_ramdata[0].perms[6].r);
+    chk("l0_ramdata[0].pbmts[7]", dut_g.l0_ramDatas_0_entries_pbmts_7, dut_i.u_core.l0_ramdata[0].pbmts[7]);
+    chk("l0_ramdata[0].ppns[7]", dut_g.l0_ramDatas_0_entries_ppns_7, dut_i.u_core.l0_ramdata[0].ppns[7]);
+    chk("l0_ramdata[0].onlypf[7]", dut_g.l0_ramDatas_0_entries_onlypf_7, dut_i.u_core.l0_ramdata[0].onlypf[7]);
+    chk("l0_ramdata[0].perms[7].d", dut_g.l0_ramDatas_0_entries_perms_7_d, dut_i.u_core.l0_ramdata[0].perms[7].d);
+    chk("l0_ramdata[0].perms[7].a", dut_g.l0_ramDatas_0_entries_perms_7_a, dut_i.u_core.l0_ramdata[0].perms[7].a);
+    chk("l0_ramdata[0].perms[7].g", dut_g.l0_ramDatas_0_entries_perms_7_g, dut_i.u_core.l0_ramdata[0].perms[7].g);
+    chk("l0_ramdata[0].perms[7].u", dut_g.l0_ramDatas_0_entries_perms_7_u, dut_i.u_core.l0_ramdata[0].perms[7].u);
+    chk("l0_ramdata[0].perms[7].x", dut_g.l0_ramDatas_0_entries_perms_7_x, dut_i.u_core.l0_ramdata[0].perms[7].x);
+    chk("l0_ramdata[0].perms[7].w", dut_g.l0_ramDatas_0_entries_perms_7_w, dut_i.u_core.l0_ramdata[0].perms[7].w);
+    chk("l0_ramdata[0].perms[7].r", dut_g.l0_ramDatas_0_entries_perms_7_r, dut_i.u_core.l0_ramdata[0].perms[7].r);
+    chk("l0_resp_r[1].tag", dut_g.data_resp_r_1_1_entries_tag, dut_i.u_core.l0_resp_r[1].tag);
+    chk("l0_resp_r[1].asid", dut_g.data_resp_r_1_1_entries_asid, dut_i.u_core.l0_resp_r[1].asid);
+    chk("l0_resp_r[1].vmid", dut_g.data_resp_r_1_1_entries_vmid, dut_i.u_core.l0_resp_r[1].vmid);
+    chk("l0_resp_r[1].prefetch", dut_g.data_resp_r_1_1_entries_prefetch, dut_i.u_core.l0_resp_r[1].prefetch);
+    chk("l0_resp_r[1].pbmts[0]", dut_g.data_resp_r_1_1_entries_pbmts_0, dut_i.u_core.l0_resp_r[1].pbmts[0]);
+    chk("l0_resp_r[1].ppns[0]", dut_g.data_resp_r_1_1_entries_ppns_0, dut_i.u_core.l0_resp_r[1].ppns[0]);
+    chk("l0_resp_r[1].vs[0]", dut_g.data_resp_r_1_1_entries_vs_0, dut_i.u_core.l0_resp_r[1].vs[0]);
+    chk("l0_resp_r[1].onlypf[0]", dut_g.data_resp_r_1_1_entries_onlypf_0, dut_i.u_core.l0_resp_r[1].onlypf[0]);
+    chk("l0_resp_r[1].perms[0].d", dut_g.data_resp_r_1_1_entries_perms_0_d, dut_i.u_core.l0_resp_r[1].perms[0].d);
+    chk("l0_resp_r[1].perms[0].a", dut_g.data_resp_r_1_1_entries_perms_0_a, dut_i.u_core.l0_resp_r[1].perms[0].a);
+    chk("l0_resp_r[1].perms[0].g", dut_g.data_resp_r_1_1_entries_perms_0_g, dut_i.u_core.l0_resp_r[1].perms[0].g);
+    chk("l0_resp_r[1].perms[0].u", dut_g.data_resp_r_1_1_entries_perms_0_u, dut_i.u_core.l0_resp_r[1].perms[0].u);
+    chk("l0_resp_r[1].perms[0].x", dut_g.data_resp_r_1_1_entries_perms_0_x, dut_i.u_core.l0_resp_r[1].perms[0].x);
+    chk("l0_resp_r[1].perms[0].w", dut_g.data_resp_r_1_1_entries_perms_0_w, dut_i.u_core.l0_resp_r[1].perms[0].w);
+    chk("l0_resp_r[1].perms[0].r", dut_g.data_resp_r_1_1_entries_perms_0_r, dut_i.u_core.l0_resp_r[1].perms[0].r);
+    chk("l0_resp_r[1].pbmts[1]", dut_g.data_resp_r_1_1_entries_pbmts_1, dut_i.u_core.l0_resp_r[1].pbmts[1]);
+    chk("l0_resp_r[1].ppns[1]", dut_g.data_resp_r_1_1_entries_ppns_1, dut_i.u_core.l0_resp_r[1].ppns[1]);
+    chk("l0_resp_r[1].vs[1]", dut_g.data_resp_r_1_1_entries_vs_1, dut_i.u_core.l0_resp_r[1].vs[1]);
+    chk("l0_resp_r[1].onlypf[1]", dut_g.data_resp_r_1_1_entries_onlypf_1, dut_i.u_core.l0_resp_r[1].onlypf[1]);
+    chk("l0_resp_r[1].perms[1].d", dut_g.data_resp_r_1_1_entries_perms_1_d, dut_i.u_core.l0_resp_r[1].perms[1].d);
+    chk("l0_resp_r[1].perms[1].a", dut_g.data_resp_r_1_1_entries_perms_1_a, dut_i.u_core.l0_resp_r[1].perms[1].a);
+    chk("l0_resp_r[1].perms[1].g", dut_g.data_resp_r_1_1_entries_perms_1_g, dut_i.u_core.l0_resp_r[1].perms[1].g);
+    chk("l0_resp_r[1].perms[1].u", dut_g.data_resp_r_1_1_entries_perms_1_u, dut_i.u_core.l0_resp_r[1].perms[1].u);
+    chk("l0_resp_r[1].perms[1].x", dut_g.data_resp_r_1_1_entries_perms_1_x, dut_i.u_core.l0_resp_r[1].perms[1].x);
+    chk("l0_resp_r[1].perms[1].w", dut_g.data_resp_r_1_1_entries_perms_1_w, dut_i.u_core.l0_resp_r[1].perms[1].w);
+    chk("l0_resp_r[1].perms[1].r", dut_g.data_resp_r_1_1_entries_perms_1_r, dut_i.u_core.l0_resp_r[1].perms[1].r);
+    chk("l0_resp_r[1].pbmts[2]", dut_g.data_resp_r_1_1_entries_pbmts_2, dut_i.u_core.l0_resp_r[1].pbmts[2]);
+    chk("l0_resp_r[1].ppns[2]", dut_g.data_resp_r_1_1_entries_ppns_2, dut_i.u_core.l0_resp_r[1].ppns[2]);
+    chk("l0_resp_r[1].vs[2]", dut_g.data_resp_r_1_1_entries_vs_2, dut_i.u_core.l0_resp_r[1].vs[2]);
+    chk("l0_resp_r[1].onlypf[2]", dut_g.data_resp_r_1_1_entries_onlypf_2, dut_i.u_core.l0_resp_r[1].onlypf[2]);
+    chk("l0_resp_r[1].perms[2].d", dut_g.data_resp_r_1_1_entries_perms_2_d, dut_i.u_core.l0_resp_r[1].perms[2].d);
+    chk("l0_resp_r[1].perms[2].a", dut_g.data_resp_r_1_1_entries_perms_2_a, dut_i.u_core.l0_resp_r[1].perms[2].a);
+    chk("l0_resp_r[1].perms[2].g", dut_g.data_resp_r_1_1_entries_perms_2_g, dut_i.u_core.l0_resp_r[1].perms[2].g);
+    chk("l0_resp_r[1].perms[2].u", dut_g.data_resp_r_1_1_entries_perms_2_u, dut_i.u_core.l0_resp_r[1].perms[2].u);
+    chk("l0_resp_r[1].perms[2].x", dut_g.data_resp_r_1_1_entries_perms_2_x, dut_i.u_core.l0_resp_r[1].perms[2].x);
+    chk("l0_resp_r[1].perms[2].w", dut_g.data_resp_r_1_1_entries_perms_2_w, dut_i.u_core.l0_resp_r[1].perms[2].w);
+    chk("l0_resp_r[1].perms[2].r", dut_g.data_resp_r_1_1_entries_perms_2_r, dut_i.u_core.l0_resp_r[1].perms[2].r);
+    chk("l0_resp_r[1].pbmts[3]", dut_g.data_resp_r_1_1_entries_pbmts_3, dut_i.u_core.l0_resp_r[1].pbmts[3]);
+    chk("l0_resp_r[1].ppns[3]", dut_g.data_resp_r_1_1_entries_ppns_3, dut_i.u_core.l0_resp_r[1].ppns[3]);
+    chk("l0_resp_r[1].vs[3]", dut_g.data_resp_r_1_1_entries_vs_3, dut_i.u_core.l0_resp_r[1].vs[3]);
+    chk("l0_resp_r[1].onlypf[3]", dut_g.data_resp_r_1_1_entries_onlypf_3, dut_i.u_core.l0_resp_r[1].onlypf[3]);
+    chk("l0_resp_r[1].perms[3].d", dut_g.data_resp_r_1_1_entries_perms_3_d, dut_i.u_core.l0_resp_r[1].perms[3].d);
+    chk("l0_resp_r[1].perms[3].a", dut_g.data_resp_r_1_1_entries_perms_3_a, dut_i.u_core.l0_resp_r[1].perms[3].a);
+    chk("l0_resp_r[1].perms[3].g", dut_g.data_resp_r_1_1_entries_perms_3_g, dut_i.u_core.l0_resp_r[1].perms[3].g);
+    chk("l0_resp_r[1].perms[3].u", dut_g.data_resp_r_1_1_entries_perms_3_u, dut_i.u_core.l0_resp_r[1].perms[3].u);
+    chk("l0_resp_r[1].perms[3].x", dut_g.data_resp_r_1_1_entries_perms_3_x, dut_i.u_core.l0_resp_r[1].perms[3].x);
+    chk("l0_resp_r[1].perms[3].w", dut_g.data_resp_r_1_1_entries_perms_3_w, dut_i.u_core.l0_resp_r[1].perms[3].w);
+    chk("l0_resp_r[1].perms[3].r", dut_g.data_resp_r_1_1_entries_perms_3_r, dut_i.u_core.l0_resp_r[1].perms[3].r);
+    chk("l0_resp_r[1].pbmts[4]", dut_g.data_resp_r_1_1_entries_pbmts_4, dut_i.u_core.l0_resp_r[1].pbmts[4]);
+    chk("l0_resp_r[1].ppns[4]", dut_g.data_resp_r_1_1_entries_ppns_4, dut_i.u_core.l0_resp_r[1].ppns[4]);
+    chk("l0_resp_r[1].vs[4]", dut_g.data_resp_r_1_1_entries_vs_4, dut_i.u_core.l0_resp_r[1].vs[4]);
+    chk("l0_resp_r[1].onlypf[4]", dut_g.data_resp_r_1_1_entries_onlypf_4, dut_i.u_core.l0_resp_r[1].onlypf[4]);
+    chk("l0_resp_r[1].perms[4].d", dut_g.data_resp_r_1_1_entries_perms_4_d, dut_i.u_core.l0_resp_r[1].perms[4].d);
+    chk("l0_resp_r[1].perms[4].a", dut_g.data_resp_r_1_1_entries_perms_4_a, dut_i.u_core.l0_resp_r[1].perms[4].a);
+    chk("l0_resp_r[1].perms[4].g", dut_g.data_resp_r_1_1_entries_perms_4_g, dut_i.u_core.l0_resp_r[1].perms[4].g);
+    chk("l0_resp_r[1].perms[4].u", dut_g.data_resp_r_1_1_entries_perms_4_u, dut_i.u_core.l0_resp_r[1].perms[4].u);
+    chk("l0_resp_r[1].perms[4].x", dut_g.data_resp_r_1_1_entries_perms_4_x, dut_i.u_core.l0_resp_r[1].perms[4].x);
+    chk("l0_resp_r[1].perms[4].w", dut_g.data_resp_r_1_1_entries_perms_4_w, dut_i.u_core.l0_resp_r[1].perms[4].w);
+    chk("l0_resp_r[1].perms[4].r", dut_g.data_resp_r_1_1_entries_perms_4_r, dut_i.u_core.l0_resp_r[1].perms[4].r);
+    chk("l0_resp_r[1].pbmts[5]", dut_g.data_resp_r_1_1_entries_pbmts_5, dut_i.u_core.l0_resp_r[1].pbmts[5]);
+    chk("l0_resp_r[1].ppns[5]", dut_g.data_resp_r_1_1_entries_ppns_5, dut_i.u_core.l0_resp_r[1].ppns[5]);
+    chk("l0_resp_r[1].vs[5]", dut_g.data_resp_r_1_1_entries_vs_5, dut_i.u_core.l0_resp_r[1].vs[5]);
+    chk("l0_resp_r[1].onlypf[5]", dut_g.data_resp_r_1_1_entries_onlypf_5, dut_i.u_core.l0_resp_r[1].onlypf[5]);
+    chk("l0_resp_r[1].perms[5].d", dut_g.data_resp_r_1_1_entries_perms_5_d, dut_i.u_core.l0_resp_r[1].perms[5].d);
+    chk("l0_resp_r[1].perms[5].a", dut_g.data_resp_r_1_1_entries_perms_5_a, dut_i.u_core.l0_resp_r[1].perms[5].a);
+    chk("l0_resp_r[1].perms[5].g", dut_g.data_resp_r_1_1_entries_perms_5_g, dut_i.u_core.l0_resp_r[1].perms[5].g);
+    chk("l0_resp_r[1].perms[5].u", dut_g.data_resp_r_1_1_entries_perms_5_u, dut_i.u_core.l0_resp_r[1].perms[5].u);
+    chk("l0_resp_r[1].perms[5].x", dut_g.data_resp_r_1_1_entries_perms_5_x, dut_i.u_core.l0_resp_r[1].perms[5].x);
+    chk("l0_resp_r[1].perms[5].w", dut_g.data_resp_r_1_1_entries_perms_5_w, dut_i.u_core.l0_resp_r[1].perms[5].w);
+    chk("l0_resp_r[1].perms[5].r", dut_g.data_resp_r_1_1_entries_perms_5_r, dut_i.u_core.l0_resp_r[1].perms[5].r);
+    chk("l0_resp_r[1].pbmts[6]", dut_g.data_resp_r_1_1_entries_pbmts_6, dut_i.u_core.l0_resp_r[1].pbmts[6]);
+    chk("l0_resp_r[1].ppns[6]", dut_g.data_resp_r_1_1_entries_ppns_6, dut_i.u_core.l0_resp_r[1].ppns[6]);
+    chk("l0_resp_r[1].vs[6]", dut_g.data_resp_r_1_1_entries_vs_6, dut_i.u_core.l0_resp_r[1].vs[6]);
+    chk("l0_resp_r[1].onlypf[6]", dut_g.data_resp_r_1_1_entries_onlypf_6, dut_i.u_core.l0_resp_r[1].onlypf[6]);
+    chk("l0_resp_r[1].perms[6].d", dut_g.data_resp_r_1_1_entries_perms_6_d, dut_i.u_core.l0_resp_r[1].perms[6].d);
+    chk("l0_resp_r[1].perms[6].a", dut_g.data_resp_r_1_1_entries_perms_6_a, dut_i.u_core.l0_resp_r[1].perms[6].a);
+    chk("l0_resp_r[1].perms[6].g", dut_g.data_resp_r_1_1_entries_perms_6_g, dut_i.u_core.l0_resp_r[1].perms[6].g);
+    chk("l0_resp_r[1].perms[6].u", dut_g.data_resp_r_1_1_entries_perms_6_u, dut_i.u_core.l0_resp_r[1].perms[6].u);
+    chk("l0_resp_r[1].perms[6].x", dut_g.data_resp_r_1_1_entries_perms_6_x, dut_i.u_core.l0_resp_r[1].perms[6].x);
+    chk("l0_resp_r[1].perms[6].w", dut_g.data_resp_r_1_1_entries_perms_6_w, dut_i.u_core.l0_resp_r[1].perms[6].w);
+    chk("l0_resp_r[1].perms[6].r", dut_g.data_resp_r_1_1_entries_perms_6_r, dut_i.u_core.l0_resp_r[1].perms[6].r);
+    chk("l0_resp_r[1].pbmts[7]", dut_g.data_resp_r_1_1_entries_pbmts_7, dut_i.u_core.l0_resp_r[1].pbmts[7]);
+    chk("l0_resp_r[1].ppns[7]", dut_g.data_resp_r_1_1_entries_ppns_7, dut_i.u_core.l0_resp_r[1].ppns[7]);
+    chk("l0_resp_r[1].vs[7]", dut_g.data_resp_r_1_1_entries_vs_7, dut_i.u_core.l0_resp_r[1].vs[7]);
+    chk("l0_resp_r[1].onlypf[7]", dut_g.data_resp_r_1_1_entries_onlypf_7, dut_i.u_core.l0_resp_r[1].onlypf[7]);
+    chk("l0_resp_r[1].perms[7].d", dut_g.data_resp_r_1_1_entries_perms_7_d, dut_i.u_core.l0_resp_r[1].perms[7].d);
+    chk("l0_resp_r[1].perms[7].a", dut_g.data_resp_r_1_1_entries_perms_7_a, dut_i.u_core.l0_resp_r[1].perms[7].a);
+    chk("l0_resp_r[1].perms[7].g", dut_g.data_resp_r_1_1_entries_perms_7_g, dut_i.u_core.l0_resp_r[1].perms[7].g);
+    chk("l0_resp_r[1].perms[7].u", dut_g.data_resp_r_1_1_entries_perms_7_u, dut_i.u_core.l0_resp_r[1].perms[7].u);
+    chk("l0_resp_r[1].perms[7].x", dut_g.data_resp_r_1_1_entries_perms_7_x, dut_i.u_core.l0_resp_r[1].perms[7].x);
+    chk("l0_resp_r[1].perms[7].w", dut_g.data_resp_r_1_1_entries_perms_7_w, dut_i.u_core.l0_resp_r[1].perms[7].w);
+    chk("l0_resp_r[1].perms[7].r", dut_g.data_resp_r_1_1_entries_perms_7_r, dut_i.u_core.l0_resp_r[1].perms[7].r);
+    chk("l0_ramdata[1].prefetch", dut_g.l0_ramDatas_1_entries_prefetch, dut_i.u_core.l0_ramdata[1].prefetch);
+    chk("l0_ramdata[1].pbmts[0]", dut_g.l0_ramDatas_1_entries_pbmts_0, dut_i.u_core.l0_ramdata[1].pbmts[0]);
+    chk("l0_ramdata[1].ppns[0]", dut_g.l0_ramDatas_1_entries_ppns_0, dut_i.u_core.l0_ramdata[1].ppns[0]);
+    chk("l0_ramdata[1].onlypf[0]", dut_g.l0_ramDatas_1_entries_onlypf_0, dut_i.u_core.l0_ramdata[1].onlypf[0]);
+    chk("l0_ramdata[1].perms[0].d", dut_g.l0_ramDatas_1_entries_perms_0_d, dut_i.u_core.l0_ramdata[1].perms[0].d);
+    chk("l0_ramdata[1].perms[0].a", dut_g.l0_ramDatas_1_entries_perms_0_a, dut_i.u_core.l0_ramdata[1].perms[0].a);
+    chk("l0_ramdata[1].perms[0].g", dut_g.l0_ramDatas_1_entries_perms_0_g, dut_i.u_core.l0_ramdata[1].perms[0].g);
+    chk("l0_ramdata[1].perms[0].u", dut_g.l0_ramDatas_1_entries_perms_0_u, dut_i.u_core.l0_ramdata[1].perms[0].u);
+    chk("l0_ramdata[1].perms[0].x", dut_g.l0_ramDatas_1_entries_perms_0_x, dut_i.u_core.l0_ramdata[1].perms[0].x);
+    chk("l0_ramdata[1].perms[0].w", dut_g.l0_ramDatas_1_entries_perms_0_w, dut_i.u_core.l0_ramdata[1].perms[0].w);
+    chk("l0_ramdata[1].perms[0].r", dut_g.l0_ramDatas_1_entries_perms_0_r, dut_i.u_core.l0_ramdata[1].perms[0].r);
+    chk("l0_ramdata[1].pbmts[1]", dut_g.l0_ramDatas_1_entries_pbmts_1, dut_i.u_core.l0_ramdata[1].pbmts[1]);
+    chk("l0_ramdata[1].ppns[1]", dut_g.l0_ramDatas_1_entries_ppns_1, dut_i.u_core.l0_ramdata[1].ppns[1]);
+    chk("l0_ramdata[1].onlypf[1]", dut_g.l0_ramDatas_1_entries_onlypf_1, dut_i.u_core.l0_ramdata[1].onlypf[1]);
+    chk("l0_ramdata[1].perms[1].d", dut_g.l0_ramDatas_1_entries_perms_1_d, dut_i.u_core.l0_ramdata[1].perms[1].d);
+    chk("l0_ramdata[1].perms[1].a", dut_g.l0_ramDatas_1_entries_perms_1_a, dut_i.u_core.l0_ramdata[1].perms[1].a);
+    chk("l0_ramdata[1].perms[1].g", dut_g.l0_ramDatas_1_entries_perms_1_g, dut_i.u_core.l0_ramdata[1].perms[1].g);
+    chk("l0_ramdata[1].perms[1].u", dut_g.l0_ramDatas_1_entries_perms_1_u, dut_i.u_core.l0_ramdata[1].perms[1].u);
+    chk("l0_ramdata[1].perms[1].x", dut_g.l0_ramDatas_1_entries_perms_1_x, dut_i.u_core.l0_ramdata[1].perms[1].x);
+    chk("l0_ramdata[1].perms[1].w", dut_g.l0_ramDatas_1_entries_perms_1_w, dut_i.u_core.l0_ramdata[1].perms[1].w);
+    chk("l0_ramdata[1].perms[1].r", dut_g.l0_ramDatas_1_entries_perms_1_r, dut_i.u_core.l0_ramdata[1].perms[1].r);
+    chk("l0_ramdata[1].pbmts[2]", dut_g.l0_ramDatas_1_entries_pbmts_2, dut_i.u_core.l0_ramdata[1].pbmts[2]);
+    chk("l0_ramdata[1].ppns[2]", dut_g.l0_ramDatas_1_entries_ppns_2, dut_i.u_core.l0_ramdata[1].ppns[2]);
+    chk("l0_ramdata[1].onlypf[2]", dut_g.l0_ramDatas_1_entries_onlypf_2, dut_i.u_core.l0_ramdata[1].onlypf[2]);
+    chk("l0_ramdata[1].perms[2].d", dut_g.l0_ramDatas_1_entries_perms_2_d, dut_i.u_core.l0_ramdata[1].perms[2].d);
+    chk("l0_ramdata[1].perms[2].a", dut_g.l0_ramDatas_1_entries_perms_2_a, dut_i.u_core.l0_ramdata[1].perms[2].a);
+    chk("l0_ramdata[1].perms[2].g", dut_g.l0_ramDatas_1_entries_perms_2_g, dut_i.u_core.l0_ramdata[1].perms[2].g);
+    chk("l0_ramdata[1].perms[2].u", dut_g.l0_ramDatas_1_entries_perms_2_u, dut_i.u_core.l0_ramdata[1].perms[2].u);
+    chk("l0_ramdata[1].perms[2].x", dut_g.l0_ramDatas_1_entries_perms_2_x, dut_i.u_core.l0_ramdata[1].perms[2].x);
+    chk("l0_ramdata[1].perms[2].w", dut_g.l0_ramDatas_1_entries_perms_2_w, dut_i.u_core.l0_ramdata[1].perms[2].w);
+    chk("l0_ramdata[1].perms[2].r", dut_g.l0_ramDatas_1_entries_perms_2_r, dut_i.u_core.l0_ramdata[1].perms[2].r);
+    chk("l0_ramdata[1].pbmts[3]", dut_g.l0_ramDatas_1_entries_pbmts_3, dut_i.u_core.l0_ramdata[1].pbmts[3]);
+    chk("l0_ramdata[1].ppns[3]", dut_g.l0_ramDatas_1_entries_ppns_3, dut_i.u_core.l0_ramdata[1].ppns[3]);
+    chk("l0_ramdata[1].onlypf[3]", dut_g.l0_ramDatas_1_entries_onlypf_3, dut_i.u_core.l0_ramdata[1].onlypf[3]);
+    chk("l0_ramdata[1].perms[3].d", dut_g.l0_ramDatas_1_entries_perms_3_d, dut_i.u_core.l0_ramdata[1].perms[3].d);
+    chk("l0_ramdata[1].perms[3].a", dut_g.l0_ramDatas_1_entries_perms_3_a, dut_i.u_core.l0_ramdata[1].perms[3].a);
+    chk("l0_ramdata[1].perms[3].g", dut_g.l0_ramDatas_1_entries_perms_3_g, dut_i.u_core.l0_ramdata[1].perms[3].g);
+    chk("l0_ramdata[1].perms[3].u", dut_g.l0_ramDatas_1_entries_perms_3_u, dut_i.u_core.l0_ramdata[1].perms[3].u);
+    chk("l0_ramdata[1].perms[3].x", dut_g.l0_ramDatas_1_entries_perms_3_x, dut_i.u_core.l0_ramdata[1].perms[3].x);
+    chk("l0_ramdata[1].perms[3].w", dut_g.l0_ramDatas_1_entries_perms_3_w, dut_i.u_core.l0_ramdata[1].perms[3].w);
+    chk("l0_ramdata[1].perms[3].r", dut_g.l0_ramDatas_1_entries_perms_3_r, dut_i.u_core.l0_ramdata[1].perms[3].r);
+    chk("l0_ramdata[1].pbmts[4]", dut_g.l0_ramDatas_1_entries_pbmts_4, dut_i.u_core.l0_ramdata[1].pbmts[4]);
+    chk("l0_ramdata[1].ppns[4]", dut_g.l0_ramDatas_1_entries_ppns_4, dut_i.u_core.l0_ramdata[1].ppns[4]);
+    chk("l0_ramdata[1].onlypf[4]", dut_g.l0_ramDatas_1_entries_onlypf_4, dut_i.u_core.l0_ramdata[1].onlypf[4]);
+    chk("l0_ramdata[1].perms[4].d", dut_g.l0_ramDatas_1_entries_perms_4_d, dut_i.u_core.l0_ramdata[1].perms[4].d);
+    chk("l0_ramdata[1].perms[4].a", dut_g.l0_ramDatas_1_entries_perms_4_a, dut_i.u_core.l0_ramdata[1].perms[4].a);
+    chk("l0_ramdata[1].perms[4].g", dut_g.l0_ramDatas_1_entries_perms_4_g, dut_i.u_core.l0_ramdata[1].perms[4].g);
+    chk("l0_ramdata[1].perms[4].u", dut_g.l0_ramDatas_1_entries_perms_4_u, dut_i.u_core.l0_ramdata[1].perms[4].u);
+    chk("l0_ramdata[1].perms[4].x", dut_g.l0_ramDatas_1_entries_perms_4_x, dut_i.u_core.l0_ramdata[1].perms[4].x);
+    chk("l0_ramdata[1].perms[4].w", dut_g.l0_ramDatas_1_entries_perms_4_w, dut_i.u_core.l0_ramdata[1].perms[4].w);
+    chk("l0_ramdata[1].perms[4].r", dut_g.l0_ramDatas_1_entries_perms_4_r, dut_i.u_core.l0_ramdata[1].perms[4].r);
+    chk("l0_ramdata[1].pbmts[5]", dut_g.l0_ramDatas_1_entries_pbmts_5, dut_i.u_core.l0_ramdata[1].pbmts[5]);
+    chk("l0_ramdata[1].ppns[5]", dut_g.l0_ramDatas_1_entries_ppns_5, dut_i.u_core.l0_ramdata[1].ppns[5]);
+    chk("l0_ramdata[1].onlypf[5]", dut_g.l0_ramDatas_1_entries_onlypf_5, dut_i.u_core.l0_ramdata[1].onlypf[5]);
+    chk("l0_ramdata[1].perms[5].d", dut_g.l0_ramDatas_1_entries_perms_5_d, dut_i.u_core.l0_ramdata[1].perms[5].d);
+    chk("l0_ramdata[1].perms[5].a", dut_g.l0_ramDatas_1_entries_perms_5_a, dut_i.u_core.l0_ramdata[1].perms[5].a);
+    chk("l0_ramdata[1].perms[5].g", dut_g.l0_ramDatas_1_entries_perms_5_g, dut_i.u_core.l0_ramdata[1].perms[5].g);
+    chk("l0_ramdata[1].perms[5].u", dut_g.l0_ramDatas_1_entries_perms_5_u, dut_i.u_core.l0_ramdata[1].perms[5].u);
+    chk("l0_ramdata[1].perms[5].x", dut_g.l0_ramDatas_1_entries_perms_5_x, dut_i.u_core.l0_ramdata[1].perms[5].x);
+    chk("l0_ramdata[1].perms[5].w", dut_g.l0_ramDatas_1_entries_perms_5_w, dut_i.u_core.l0_ramdata[1].perms[5].w);
+    chk("l0_ramdata[1].perms[5].r", dut_g.l0_ramDatas_1_entries_perms_5_r, dut_i.u_core.l0_ramdata[1].perms[5].r);
+    chk("l0_ramdata[1].pbmts[6]", dut_g.l0_ramDatas_1_entries_pbmts_6, dut_i.u_core.l0_ramdata[1].pbmts[6]);
+    chk("l0_ramdata[1].ppns[6]", dut_g.l0_ramDatas_1_entries_ppns_6, dut_i.u_core.l0_ramdata[1].ppns[6]);
+    chk("l0_ramdata[1].onlypf[6]", dut_g.l0_ramDatas_1_entries_onlypf_6, dut_i.u_core.l0_ramdata[1].onlypf[6]);
+    chk("l0_ramdata[1].perms[6].d", dut_g.l0_ramDatas_1_entries_perms_6_d, dut_i.u_core.l0_ramdata[1].perms[6].d);
+    chk("l0_ramdata[1].perms[6].a", dut_g.l0_ramDatas_1_entries_perms_6_a, dut_i.u_core.l0_ramdata[1].perms[6].a);
+    chk("l0_ramdata[1].perms[6].g", dut_g.l0_ramDatas_1_entries_perms_6_g, dut_i.u_core.l0_ramdata[1].perms[6].g);
+    chk("l0_ramdata[1].perms[6].u", dut_g.l0_ramDatas_1_entries_perms_6_u, dut_i.u_core.l0_ramdata[1].perms[6].u);
+    chk("l0_ramdata[1].perms[6].x", dut_g.l0_ramDatas_1_entries_perms_6_x, dut_i.u_core.l0_ramdata[1].perms[6].x);
+    chk("l0_ramdata[1].perms[6].w", dut_g.l0_ramDatas_1_entries_perms_6_w, dut_i.u_core.l0_ramdata[1].perms[6].w);
+    chk("l0_ramdata[1].perms[6].r", dut_g.l0_ramDatas_1_entries_perms_6_r, dut_i.u_core.l0_ramdata[1].perms[6].r);
+    chk("l0_ramdata[1].pbmts[7]", dut_g.l0_ramDatas_1_entries_pbmts_7, dut_i.u_core.l0_ramdata[1].pbmts[7]);
+    chk("l0_ramdata[1].ppns[7]", dut_g.l0_ramDatas_1_entries_ppns_7, dut_i.u_core.l0_ramdata[1].ppns[7]);
+    chk("l0_ramdata[1].onlypf[7]", dut_g.l0_ramDatas_1_entries_onlypf_7, dut_i.u_core.l0_ramdata[1].onlypf[7]);
+    chk("l0_ramdata[1].perms[7].d", dut_g.l0_ramDatas_1_entries_perms_7_d, dut_i.u_core.l0_ramdata[1].perms[7].d);
+    chk("l0_ramdata[1].perms[7].a", dut_g.l0_ramDatas_1_entries_perms_7_a, dut_i.u_core.l0_ramdata[1].perms[7].a);
+    chk("l0_ramdata[1].perms[7].g", dut_g.l0_ramDatas_1_entries_perms_7_g, dut_i.u_core.l0_ramdata[1].perms[7].g);
+    chk("l0_ramdata[1].perms[7].u", dut_g.l0_ramDatas_1_entries_perms_7_u, dut_i.u_core.l0_ramdata[1].perms[7].u);
+    chk("l0_ramdata[1].perms[7].x", dut_g.l0_ramDatas_1_entries_perms_7_x, dut_i.u_core.l0_ramdata[1].perms[7].x);
+    chk("l0_ramdata[1].perms[7].w", dut_g.l0_ramDatas_1_entries_perms_7_w, dut_i.u_core.l0_ramdata[1].perms[7].w);
+    chk("l0_ramdata[1].perms[7].r", dut_g.l0_ramDatas_1_entries_perms_7_r, dut_i.u_core.l0_ramdata[1].perms[7].r);
+    chk("l0_resp_r[2].tag", dut_g.data_resp_r_1_2_entries_tag, dut_i.u_core.l0_resp_r[2].tag);
+    chk("l0_resp_r[2].asid", dut_g.data_resp_r_1_2_entries_asid, dut_i.u_core.l0_resp_r[2].asid);
+    chk("l0_resp_r[2].vmid", dut_g.data_resp_r_1_2_entries_vmid, dut_i.u_core.l0_resp_r[2].vmid);
+    chk("l0_resp_r[2].prefetch", dut_g.data_resp_r_1_2_entries_prefetch, dut_i.u_core.l0_resp_r[2].prefetch);
+    chk("l0_resp_r[2].pbmts[0]", dut_g.data_resp_r_1_2_entries_pbmts_0, dut_i.u_core.l0_resp_r[2].pbmts[0]);
+    chk("l0_resp_r[2].ppns[0]", dut_g.data_resp_r_1_2_entries_ppns_0, dut_i.u_core.l0_resp_r[2].ppns[0]);
+    chk("l0_resp_r[2].vs[0]", dut_g.data_resp_r_1_2_entries_vs_0, dut_i.u_core.l0_resp_r[2].vs[0]);
+    chk("l0_resp_r[2].onlypf[0]", dut_g.data_resp_r_1_2_entries_onlypf_0, dut_i.u_core.l0_resp_r[2].onlypf[0]);
+    chk("l0_resp_r[2].perms[0].d", dut_g.data_resp_r_1_2_entries_perms_0_d, dut_i.u_core.l0_resp_r[2].perms[0].d);
+    chk("l0_resp_r[2].perms[0].a", dut_g.data_resp_r_1_2_entries_perms_0_a, dut_i.u_core.l0_resp_r[2].perms[0].a);
+    chk("l0_resp_r[2].perms[0].g", dut_g.data_resp_r_1_2_entries_perms_0_g, dut_i.u_core.l0_resp_r[2].perms[0].g);
+    chk("l0_resp_r[2].perms[0].u", dut_g.data_resp_r_1_2_entries_perms_0_u, dut_i.u_core.l0_resp_r[2].perms[0].u);
+    chk("l0_resp_r[2].perms[0].x", dut_g.data_resp_r_1_2_entries_perms_0_x, dut_i.u_core.l0_resp_r[2].perms[0].x);
+    chk("l0_resp_r[2].perms[0].w", dut_g.data_resp_r_1_2_entries_perms_0_w, dut_i.u_core.l0_resp_r[2].perms[0].w);
+    chk("l0_resp_r[2].perms[0].r", dut_g.data_resp_r_1_2_entries_perms_0_r, dut_i.u_core.l0_resp_r[2].perms[0].r);
+    chk("l0_resp_r[2].pbmts[1]", dut_g.data_resp_r_1_2_entries_pbmts_1, dut_i.u_core.l0_resp_r[2].pbmts[1]);
+    chk("l0_resp_r[2].ppns[1]", dut_g.data_resp_r_1_2_entries_ppns_1, dut_i.u_core.l0_resp_r[2].ppns[1]);
+    chk("l0_resp_r[2].vs[1]", dut_g.data_resp_r_1_2_entries_vs_1, dut_i.u_core.l0_resp_r[2].vs[1]);
+    chk("l0_resp_r[2].onlypf[1]", dut_g.data_resp_r_1_2_entries_onlypf_1, dut_i.u_core.l0_resp_r[2].onlypf[1]);
+    chk("l0_resp_r[2].perms[1].d", dut_g.data_resp_r_1_2_entries_perms_1_d, dut_i.u_core.l0_resp_r[2].perms[1].d);
+    chk("l0_resp_r[2].perms[1].a", dut_g.data_resp_r_1_2_entries_perms_1_a, dut_i.u_core.l0_resp_r[2].perms[1].a);
+    chk("l0_resp_r[2].perms[1].g", dut_g.data_resp_r_1_2_entries_perms_1_g, dut_i.u_core.l0_resp_r[2].perms[1].g);
+    chk("l0_resp_r[2].perms[1].u", dut_g.data_resp_r_1_2_entries_perms_1_u, dut_i.u_core.l0_resp_r[2].perms[1].u);
+    chk("l0_resp_r[2].perms[1].x", dut_g.data_resp_r_1_2_entries_perms_1_x, dut_i.u_core.l0_resp_r[2].perms[1].x);
+    chk("l0_resp_r[2].perms[1].w", dut_g.data_resp_r_1_2_entries_perms_1_w, dut_i.u_core.l0_resp_r[2].perms[1].w);
+    chk("l0_resp_r[2].perms[1].r", dut_g.data_resp_r_1_2_entries_perms_1_r, dut_i.u_core.l0_resp_r[2].perms[1].r);
+    chk("l0_resp_r[2].pbmts[2]", dut_g.data_resp_r_1_2_entries_pbmts_2, dut_i.u_core.l0_resp_r[2].pbmts[2]);
+    chk("l0_resp_r[2].ppns[2]", dut_g.data_resp_r_1_2_entries_ppns_2, dut_i.u_core.l0_resp_r[2].ppns[2]);
+    chk("l0_resp_r[2].vs[2]", dut_g.data_resp_r_1_2_entries_vs_2, dut_i.u_core.l0_resp_r[2].vs[2]);
+    chk("l0_resp_r[2].onlypf[2]", dut_g.data_resp_r_1_2_entries_onlypf_2, dut_i.u_core.l0_resp_r[2].onlypf[2]);
+    chk("l0_resp_r[2].perms[2].d", dut_g.data_resp_r_1_2_entries_perms_2_d, dut_i.u_core.l0_resp_r[2].perms[2].d);
+    chk("l0_resp_r[2].perms[2].a", dut_g.data_resp_r_1_2_entries_perms_2_a, dut_i.u_core.l0_resp_r[2].perms[2].a);
+    chk("l0_resp_r[2].perms[2].g", dut_g.data_resp_r_1_2_entries_perms_2_g, dut_i.u_core.l0_resp_r[2].perms[2].g);
+    chk("l0_resp_r[2].perms[2].u", dut_g.data_resp_r_1_2_entries_perms_2_u, dut_i.u_core.l0_resp_r[2].perms[2].u);
+    chk("l0_resp_r[2].perms[2].x", dut_g.data_resp_r_1_2_entries_perms_2_x, dut_i.u_core.l0_resp_r[2].perms[2].x);
+    chk("l0_resp_r[2].perms[2].w", dut_g.data_resp_r_1_2_entries_perms_2_w, dut_i.u_core.l0_resp_r[2].perms[2].w);
+    chk("l0_resp_r[2].perms[2].r", dut_g.data_resp_r_1_2_entries_perms_2_r, dut_i.u_core.l0_resp_r[2].perms[2].r);
+    chk("l0_resp_r[2].pbmts[3]", dut_g.data_resp_r_1_2_entries_pbmts_3, dut_i.u_core.l0_resp_r[2].pbmts[3]);
+    chk("l0_resp_r[2].ppns[3]", dut_g.data_resp_r_1_2_entries_ppns_3, dut_i.u_core.l0_resp_r[2].ppns[3]);
+    chk("l0_resp_r[2].vs[3]", dut_g.data_resp_r_1_2_entries_vs_3, dut_i.u_core.l0_resp_r[2].vs[3]);
+    chk("l0_resp_r[2].onlypf[3]", dut_g.data_resp_r_1_2_entries_onlypf_3, dut_i.u_core.l0_resp_r[2].onlypf[3]);
+    chk("l0_resp_r[2].perms[3].d", dut_g.data_resp_r_1_2_entries_perms_3_d, dut_i.u_core.l0_resp_r[2].perms[3].d);
+    chk("l0_resp_r[2].perms[3].a", dut_g.data_resp_r_1_2_entries_perms_3_a, dut_i.u_core.l0_resp_r[2].perms[3].a);
+    chk("l0_resp_r[2].perms[3].g", dut_g.data_resp_r_1_2_entries_perms_3_g, dut_i.u_core.l0_resp_r[2].perms[3].g);
+    chk("l0_resp_r[2].perms[3].u", dut_g.data_resp_r_1_2_entries_perms_3_u, dut_i.u_core.l0_resp_r[2].perms[3].u);
+    chk("l0_resp_r[2].perms[3].x", dut_g.data_resp_r_1_2_entries_perms_3_x, dut_i.u_core.l0_resp_r[2].perms[3].x);
+    chk("l0_resp_r[2].perms[3].w", dut_g.data_resp_r_1_2_entries_perms_3_w, dut_i.u_core.l0_resp_r[2].perms[3].w);
+    chk("l0_resp_r[2].perms[3].r", dut_g.data_resp_r_1_2_entries_perms_3_r, dut_i.u_core.l0_resp_r[2].perms[3].r);
+    chk("l0_resp_r[2].pbmts[4]", dut_g.data_resp_r_1_2_entries_pbmts_4, dut_i.u_core.l0_resp_r[2].pbmts[4]);
+    chk("l0_resp_r[2].ppns[4]", dut_g.data_resp_r_1_2_entries_ppns_4, dut_i.u_core.l0_resp_r[2].ppns[4]);
+    chk("l0_resp_r[2].vs[4]", dut_g.data_resp_r_1_2_entries_vs_4, dut_i.u_core.l0_resp_r[2].vs[4]);
+    chk("l0_resp_r[2].onlypf[4]", dut_g.data_resp_r_1_2_entries_onlypf_4, dut_i.u_core.l0_resp_r[2].onlypf[4]);
+    chk("l0_resp_r[2].perms[4].d", dut_g.data_resp_r_1_2_entries_perms_4_d, dut_i.u_core.l0_resp_r[2].perms[4].d);
+    chk("l0_resp_r[2].perms[4].a", dut_g.data_resp_r_1_2_entries_perms_4_a, dut_i.u_core.l0_resp_r[2].perms[4].a);
+    chk("l0_resp_r[2].perms[4].g", dut_g.data_resp_r_1_2_entries_perms_4_g, dut_i.u_core.l0_resp_r[2].perms[4].g);
+    chk("l0_resp_r[2].perms[4].u", dut_g.data_resp_r_1_2_entries_perms_4_u, dut_i.u_core.l0_resp_r[2].perms[4].u);
+    chk("l0_resp_r[2].perms[4].x", dut_g.data_resp_r_1_2_entries_perms_4_x, dut_i.u_core.l0_resp_r[2].perms[4].x);
+    chk("l0_resp_r[2].perms[4].w", dut_g.data_resp_r_1_2_entries_perms_4_w, dut_i.u_core.l0_resp_r[2].perms[4].w);
+    chk("l0_resp_r[2].perms[4].r", dut_g.data_resp_r_1_2_entries_perms_4_r, dut_i.u_core.l0_resp_r[2].perms[4].r);
+    chk("l0_resp_r[2].pbmts[5]", dut_g.data_resp_r_1_2_entries_pbmts_5, dut_i.u_core.l0_resp_r[2].pbmts[5]);
+    chk("l0_resp_r[2].ppns[5]", dut_g.data_resp_r_1_2_entries_ppns_5, dut_i.u_core.l0_resp_r[2].ppns[5]);
+    chk("l0_resp_r[2].vs[5]", dut_g.data_resp_r_1_2_entries_vs_5, dut_i.u_core.l0_resp_r[2].vs[5]);
+    chk("l0_resp_r[2].onlypf[5]", dut_g.data_resp_r_1_2_entries_onlypf_5, dut_i.u_core.l0_resp_r[2].onlypf[5]);
+    chk("l0_resp_r[2].perms[5].d", dut_g.data_resp_r_1_2_entries_perms_5_d, dut_i.u_core.l0_resp_r[2].perms[5].d);
+    chk("l0_resp_r[2].perms[5].a", dut_g.data_resp_r_1_2_entries_perms_5_a, dut_i.u_core.l0_resp_r[2].perms[5].a);
+    chk("l0_resp_r[2].perms[5].g", dut_g.data_resp_r_1_2_entries_perms_5_g, dut_i.u_core.l0_resp_r[2].perms[5].g);
+    chk("l0_resp_r[2].perms[5].u", dut_g.data_resp_r_1_2_entries_perms_5_u, dut_i.u_core.l0_resp_r[2].perms[5].u);
+    chk("l0_resp_r[2].perms[5].x", dut_g.data_resp_r_1_2_entries_perms_5_x, dut_i.u_core.l0_resp_r[2].perms[5].x);
+    chk("l0_resp_r[2].perms[5].w", dut_g.data_resp_r_1_2_entries_perms_5_w, dut_i.u_core.l0_resp_r[2].perms[5].w);
+    chk("l0_resp_r[2].perms[5].r", dut_g.data_resp_r_1_2_entries_perms_5_r, dut_i.u_core.l0_resp_r[2].perms[5].r);
+    chk("l0_resp_r[2].pbmts[6]", dut_g.data_resp_r_1_2_entries_pbmts_6, dut_i.u_core.l0_resp_r[2].pbmts[6]);
+    chk("l0_resp_r[2].ppns[6]", dut_g.data_resp_r_1_2_entries_ppns_6, dut_i.u_core.l0_resp_r[2].ppns[6]);
+    chk("l0_resp_r[2].vs[6]", dut_g.data_resp_r_1_2_entries_vs_6, dut_i.u_core.l0_resp_r[2].vs[6]);
+    chk("l0_resp_r[2].onlypf[6]", dut_g.data_resp_r_1_2_entries_onlypf_6, dut_i.u_core.l0_resp_r[2].onlypf[6]);
+    chk("l0_resp_r[2].perms[6].d", dut_g.data_resp_r_1_2_entries_perms_6_d, dut_i.u_core.l0_resp_r[2].perms[6].d);
+    chk("l0_resp_r[2].perms[6].a", dut_g.data_resp_r_1_2_entries_perms_6_a, dut_i.u_core.l0_resp_r[2].perms[6].a);
+    chk("l0_resp_r[2].perms[6].g", dut_g.data_resp_r_1_2_entries_perms_6_g, dut_i.u_core.l0_resp_r[2].perms[6].g);
+    chk("l0_resp_r[2].perms[6].u", dut_g.data_resp_r_1_2_entries_perms_6_u, dut_i.u_core.l0_resp_r[2].perms[6].u);
+    chk("l0_resp_r[2].perms[6].x", dut_g.data_resp_r_1_2_entries_perms_6_x, dut_i.u_core.l0_resp_r[2].perms[6].x);
+    chk("l0_resp_r[2].perms[6].w", dut_g.data_resp_r_1_2_entries_perms_6_w, dut_i.u_core.l0_resp_r[2].perms[6].w);
+    chk("l0_resp_r[2].perms[6].r", dut_g.data_resp_r_1_2_entries_perms_6_r, dut_i.u_core.l0_resp_r[2].perms[6].r);
+    chk("l0_resp_r[2].pbmts[7]", dut_g.data_resp_r_1_2_entries_pbmts_7, dut_i.u_core.l0_resp_r[2].pbmts[7]);
+    chk("l0_resp_r[2].ppns[7]", dut_g.data_resp_r_1_2_entries_ppns_7, dut_i.u_core.l0_resp_r[2].ppns[7]);
+    chk("l0_resp_r[2].vs[7]", dut_g.data_resp_r_1_2_entries_vs_7, dut_i.u_core.l0_resp_r[2].vs[7]);
+    chk("l0_resp_r[2].onlypf[7]", dut_g.data_resp_r_1_2_entries_onlypf_7, dut_i.u_core.l0_resp_r[2].onlypf[7]);
+    chk("l0_resp_r[2].perms[7].d", dut_g.data_resp_r_1_2_entries_perms_7_d, dut_i.u_core.l0_resp_r[2].perms[7].d);
+    chk("l0_resp_r[2].perms[7].a", dut_g.data_resp_r_1_2_entries_perms_7_a, dut_i.u_core.l0_resp_r[2].perms[7].a);
+    chk("l0_resp_r[2].perms[7].g", dut_g.data_resp_r_1_2_entries_perms_7_g, dut_i.u_core.l0_resp_r[2].perms[7].g);
+    chk("l0_resp_r[2].perms[7].u", dut_g.data_resp_r_1_2_entries_perms_7_u, dut_i.u_core.l0_resp_r[2].perms[7].u);
+    chk("l0_resp_r[2].perms[7].x", dut_g.data_resp_r_1_2_entries_perms_7_x, dut_i.u_core.l0_resp_r[2].perms[7].x);
+    chk("l0_resp_r[2].perms[7].w", dut_g.data_resp_r_1_2_entries_perms_7_w, dut_i.u_core.l0_resp_r[2].perms[7].w);
+    chk("l0_resp_r[2].perms[7].r", dut_g.data_resp_r_1_2_entries_perms_7_r, dut_i.u_core.l0_resp_r[2].perms[7].r);
+    chk("l0_ramdata[2].prefetch", dut_g.l0_ramDatas_2_entries_prefetch, dut_i.u_core.l0_ramdata[2].prefetch);
+    chk("l0_ramdata[2].pbmts[0]", dut_g.l0_ramDatas_2_entries_pbmts_0, dut_i.u_core.l0_ramdata[2].pbmts[0]);
+    chk("l0_ramdata[2].ppns[0]", dut_g.l0_ramDatas_2_entries_ppns_0, dut_i.u_core.l0_ramdata[2].ppns[0]);
+    chk("l0_ramdata[2].onlypf[0]", dut_g.l0_ramDatas_2_entries_onlypf_0, dut_i.u_core.l0_ramdata[2].onlypf[0]);
+    chk("l0_ramdata[2].perms[0].d", dut_g.l0_ramDatas_2_entries_perms_0_d, dut_i.u_core.l0_ramdata[2].perms[0].d);
+    chk("l0_ramdata[2].perms[0].a", dut_g.l0_ramDatas_2_entries_perms_0_a, dut_i.u_core.l0_ramdata[2].perms[0].a);
+    chk("l0_ramdata[2].perms[0].g", dut_g.l0_ramDatas_2_entries_perms_0_g, dut_i.u_core.l0_ramdata[2].perms[0].g);
+    chk("l0_ramdata[2].perms[0].u", dut_g.l0_ramDatas_2_entries_perms_0_u, dut_i.u_core.l0_ramdata[2].perms[0].u);
+    chk("l0_ramdata[2].perms[0].x", dut_g.l0_ramDatas_2_entries_perms_0_x, dut_i.u_core.l0_ramdata[2].perms[0].x);
+    chk("l0_ramdata[2].perms[0].w", dut_g.l0_ramDatas_2_entries_perms_0_w, dut_i.u_core.l0_ramdata[2].perms[0].w);
+    chk("l0_ramdata[2].perms[0].r", dut_g.l0_ramDatas_2_entries_perms_0_r, dut_i.u_core.l0_ramdata[2].perms[0].r);
+    chk("l0_ramdata[2].pbmts[1]", dut_g.l0_ramDatas_2_entries_pbmts_1, dut_i.u_core.l0_ramdata[2].pbmts[1]);
+    chk("l0_ramdata[2].ppns[1]", dut_g.l0_ramDatas_2_entries_ppns_1, dut_i.u_core.l0_ramdata[2].ppns[1]);
+    chk("l0_ramdata[2].onlypf[1]", dut_g.l0_ramDatas_2_entries_onlypf_1, dut_i.u_core.l0_ramdata[2].onlypf[1]);
+    chk("l0_ramdata[2].perms[1].d", dut_g.l0_ramDatas_2_entries_perms_1_d, dut_i.u_core.l0_ramdata[2].perms[1].d);
+    chk("l0_ramdata[2].perms[1].a", dut_g.l0_ramDatas_2_entries_perms_1_a, dut_i.u_core.l0_ramdata[2].perms[1].a);
+    chk("l0_ramdata[2].perms[1].g", dut_g.l0_ramDatas_2_entries_perms_1_g, dut_i.u_core.l0_ramdata[2].perms[1].g);
+    chk("l0_ramdata[2].perms[1].u", dut_g.l0_ramDatas_2_entries_perms_1_u, dut_i.u_core.l0_ramdata[2].perms[1].u);
+    chk("l0_ramdata[2].perms[1].x", dut_g.l0_ramDatas_2_entries_perms_1_x, dut_i.u_core.l0_ramdata[2].perms[1].x);
+    chk("l0_ramdata[2].perms[1].w", dut_g.l0_ramDatas_2_entries_perms_1_w, dut_i.u_core.l0_ramdata[2].perms[1].w);
+    chk("l0_ramdata[2].perms[1].r", dut_g.l0_ramDatas_2_entries_perms_1_r, dut_i.u_core.l0_ramdata[2].perms[1].r);
+    chk("l0_ramdata[2].pbmts[2]", dut_g.l0_ramDatas_2_entries_pbmts_2, dut_i.u_core.l0_ramdata[2].pbmts[2]);
+    chk("l0_ramdata[2].ppns[2]", dut_g.l0_ramDatas_2_entries_ppns_2, dut_i.u_core.l0_ramdata[2].ppns[2]);
+    chk("l0_ramdata[2].onlypf[2]", dut_g.l0_ramDatas_2_entries_onlypf_2, dut_i.u_core.l0_ramdata[2].onlypf[2]);
+    chk("l0_ramdata[2].perms[2].d", dut_g.l0_ramDatas_2_entries_perms_2_d, dut_i.u_core.l0_ramdata[2].perms[2].d);
+    chk("l0_ramdata[2].perms[2].a", dut_g.l0_ramDatas_2_entries_perms_2_a, dut_i.u_core.l0_ramdata[2].perms[2].a);
+    chk("l0_ramdata[2].perms[2].g", dut_g.l0_ramDatas_2_entries_perms_2_g, dut_i.u_core.l0_ramdata[2].perms[2].g);
+    chk("l0_ramdata[2].perms[2].u", dut_g.l0_ramDatas_2_entries_perms_2_u, dut_i.u_core.l0_ramdata[2].perms[2].u);
+    chk("l0_ramdata[2].perms[2].x", dut_g.l0_ramDatas_2_entries_perms_2_x, dut_i.u_core.l0_ramdata[2].perms[2].x);
+    chk("l0_ramdata[2].perms[2].w", dut_g.l0_ramDatas_2_entries_perms_2_w, dut_i.u_core.l0_ramdata[2].perms[2].w);
+    chk("l0_ramdata[2].perms[2].r", dut_g.l0_ramDatas_2_entries_perms_2_r, dut_i.u_core.l0_ramdata[2].perms[2].r);
+    chk("l0_ramdata[2].pbmts[3]", dut_g.l0_ramDatas_2_entries_pbmts_3, dut_i.u_core.l0_ramdata[2].pbmts[3]);
+    chk("l0_ramdata[2].ppns[3]", dut_g.l0_ramDatas_2_entries_ppns_3, dut_i.u_core.l0_ramdata[2].ppns[3]);
+    chk("l0_ramdata[2].onlypf[3]", dut_g.l0_ramDatas_2_entries_onlypf_3, dut_i.u_core.l0_ramdata[2].onlypf[3]);
+    chk("l0_ramdata[2].perms[3].d", dut_g.l0_ramDatas_2_entries_perms_3_d, dut_i.u_core.l0_ramdata[2].perms[3].d);
+    chk("l0_ramdata[2].perms[3].a", dut_g.l0_ramDatas_2_entries_perms_3_a, dut_i.u_core.l0_ramdata[2].perms[3].a);
+    chk("l0_ramdata[2].perms[3].g", dut_g.l0_ramDatas_2_entries_perms_3_g, dut_i.u_core.l0_ramdata[2].perms[3].g);
+    chk("l0_ramdata[2].perms[3].u", dut_g.l0_ramDatas_2_entries_perms_3_u, dut_i.u_core.l0_ramdata[2].perms[3].u);
+    chk("l0_ramdata[2].perms[3].x", dut_g.l0_ramDatas_2_entries_perms_3_x, dut_i.u_core.l0_ramdata[2].perms[3].x);
+    chk("l0_ramdata[2].perms[3].w", dut_g.l0_ramDatas_2_entries_perms_3_w, dut_i.u_core.l0_ramdata[2].perms[3].w);
+    chk("l0_ramdata[2].perms[3].r", dut_g.l0_ramDatas_2_entries_perms_3_r, dut_i.u_core.l0_ramdata[2].perms[3].r);
+    chk("l0_ramdata[2].pbmts[4]", dut_g.l0_ramDatas_2_entries_pbmts_4, dut_i.u_core.l0_ramdata[2].pbmts[4]);
+    chk("l0_ramdata[2].ppns[4]", dut_g.l0_ramDatas_2_entries_ppns_4, dut_i.u_core.l0_ramdata[2].ppns[4]);
+    chk("l0_ramdata[2].onlypf[4]", dut_g.l0_ramDatas_2_entries_onlypf_4, dut_i.u_core.l0_ramdata[2].onlypf[4]);
+    chk("l0_ramdata[2].perms[4].d", dut_g.l0_ramDatas_2_entries_perms_4_d, dut_i.u_core.l0_ramdata[2].perms[4].d);
+    chk("l0_ramdata[2].perms[4].a", dut_g.l0_ramDatas_2_entries_perms_4_a, dut_i.u_core.l0_ramdata[2].perms[4].a);
+    chk("l0_ramdata[2].perms[4].g", dut_g.l0_ramDatas_2_entries_perms_4_g, dut_i.u_core.l0_ramdata[2].perms[4].g);
+    chk("l0_ramdata[2].perms[4].u", dut_g.l0_ramDatas_2_entries_perms_4_u, dut_i.u_core.l0_ramdata[2].perms[4].u);
+    chk("l0_ramdata[2].perms[4].x", dut_g.l0_ramDatas_2_entries_perms_4_x, dut_i.u_core.l0_ramdata[2].perms[4].x);
+    chk("l0_ramdata[2].perms[4].w", dut_g.l0_ramDatas_2_entries_perms_4_w, dut_i.u_core.l0_ramdata[2].perms[4].w);
+    chk("l0_ramdata[2].perms[4].r", dut_g.l0_ramDatas_2_entries_perms_4_r, dut_i.u_core.l0_ramdata[2].perms[4].r);
+    chk("l0_ramdata[2].pbmts[5]", dut_g.l0_ramDatas_2_entries_pbmts_5, dut_i.u_core.l0_ramdata[2].pbmts[5]);
+    chk("l0_ramdata[2].ppns[5]", dut_g.l0_ramDatas_2_entries_ppns_5, dut_i.u_core.l0_ramdata[2].ppns[5]);
+    chk("l0_ramdata[2].onlypf[5]", dut_g.l0_ramDatas_2_entries_onlypf_5, dut_i.u_core.l0_ramdata[2].onlypf[5]);
+    chk("l0_ramdata[2].perms[5].d", dut_g.l0_ramDatas_2_entries_perms_5_d, dut_i.u_core.l0_ramdata[2].perms[5].d);
+    chk("l0_ramdata[2].perms[5].a", dut_g.l0_ramDatas_2_entries_perms_5_a, dut_i.u_core.l0_ramdata[2].perms[5].a);
+    chk("l0_ramdata[2].perms[5].g", dut_g.l0_ramDatas_2_entries_perms_5_g, dut_i.u_core.l0_ramdata[2].perms[5].g);
+    chk("l0_ramdata[2].perms[5].u", dut_g.l0_ramDatas_2_entries_perms_5_u, dut_i.u_core.l0_ramdata[2].perms[5].u);
+    chk("l0_ramdata[2].perms[5].x", dut_g.l0_ramDatas_2_entries_perms_5_x, dut_i.u_core.l0_ramdata[2].perms[5].x);
+    chk("l0_ramdata[2].perms[5].w", dut_g.l0_ramDatas_2_entries_perms_5_w, dut_i.u_core.l0_ramdata[2].perms[5].w);
+    chk("l0_ramdata[2].perms[5].r", dut_g.l0_ramDatas_2_entries_perms_5_r, dut_i.u_core.l0_ramdata[2].perms[5].r);
+    chk("l0_ramdata[2].pbmts[6]", dut_g.l0_ramDatas_2_entries_pbmts_6, dut_i.u_core.l0_ramdata[2].pbmts[6]);
+    chk("l0_ramdata[2].ppns[6]", dut_g.l0_ramDatas_2_entries_ppns_6, dut_i.u_core.l0_ramdata[2].ppns[6]);
+    chk("l0_ramdata[2].onlypf[6]", dut_g.l0_ramDatas_2_entries_onlypf_6, dut_i.u_core.l0_ramdata[2].onlypf[6]);
+    chk("l0_ramdata[2].perms[6].d", dut_g.l0_ramDatas_2_entries_perms_6_d, dut_i.u_core.l0_ramdata[2].perms[6].d);
+    chk("l0_ramdata[2].perms[6].a", dut_g.l0_ramDatas_2_entries_perms_6_a, dut_i.u_core.l0_ramdata[2].perms[6].a);
+    chk("l0_ramdata[2].perms[6].g", dut_g.l0_ramDatas_2_entries_perms_6_g, dut_i.u_core.l0_ramdata[2].perms[6].g);
+    chk("l0_ramdata[2].perms[6].u", dut_g.l0_ramDatas_2_entries_perms_6_u, dut_i.u_core.l0_ramdata[2].perms[6].u);
+    chk("l0_ramdata[2].perms[6].x", dut_g.l0_ramDatas_2_entries_perms_6_x, dut_i.u_core.l0_ramdata[2].perms[6].x);
+    chk("l0_ramdata[2].perms[6].w", dut_g.l0_ramDatas_2_entries_perms_6_w, dut_i.u_core.l0_ramdata[2].perms[6].w);
+    chk("l0_ramdata[2].perms[6].r", dut_g.l0_ramDatas_2_entries_perms_6_r, dut_i.u_core.l0_ramdata[2].perms[6].r);
+    chk("l0_ramdata[2].pbmts[7]", dut_g.l0_ramDatas_2_entries_pbmts_7, dut_i.u_core.l0_ramdata[2].pbmts[7]);
+    chk("l0_ramdata[2].ppns[7]", dut_g.l0_ramDatas_2_entries_ppns_7, dut_i.u_core.l0_ramdata[2].ppns[7]);
+    chk("l0_ramdata[2].onlypf[7]", dut_g.l0_ramDatas_2_entries_onlypf_7, dut_i.u_core.l0_ramdata[2].onlypf[7]);
+    chk("l0_ramdata[2].perms[7].d", dut_g.l0_ramDatas_2_entries_perms_7_d, dut_i.u_core.l0_ramdata[2].perms[7].d);
+    chk("l0_ramdata[2].perms[7].a", dut_g.l0_ramDatas_2_entries_perms_7_a, dut_i.u_core.l0_ramdata[2].perms[7].a);
+    chk("l0_ramdata[2].perms[7].g", dut_g.l0_ramDatas_2_entries_perms_7_g, dut_i.u_core.l0_ramdata[2].perms[7].g);
+    chk("l0_ramdata[2].perms[7].u", dut_g.l0_ramDatas_2_entries_perms_7_u, dut_i.u_core.l0_ramdata[2].perms[7].u);
+    chk("l0_ramdata[2].perms[7].x", dut_g.l0_ramDatas_2_entries_perms_7_x, dut_i.u_core.l0_ramdata[2].perms[7].x);
+    chk("l0_ramdata[2].perms[7].w", dut_g.l0_ramDatas_2_entries_perms_7_w, dut_i.u_core.l0_ramdata[2].perms[7].w);
+    chk("l0_ramdata[2].perms[7].r", dut_g.l0_ramDatas_2_entries_perms_7_r, dut_i.u_core.l0_ramdata[2].perms[7].r);
+    chk("l0_resp_r[3].tag", dut_g.data_resp_r_1_3_entries_tag, dut_i.u_core.l0_resp_r[3].tag);
+    chk("l0_resp_r[3].asid", dut_g.data_resp_r_1_3_entries_asid, dut_i.u_core.l0_resp_r[3].asid);
+    chk("l0_resp_r[3].vmid", dut_g.data_resp_r_1_3_entries_vmid, dut_i.u_core.l0_resp_r[3].vmid);
+    chk("l0_resp_r[3].prefetch", dut_g.data_resp_r_1_3_entries_prefetch, dut_i.u_core.l0_resp_r[3].prefetch);
+    chk("l0_resp_r[3].pbmts[0]", dut_g.data_resp_r_1_3_entries_pbmts_0, dut_i.u_core.l0_resp_r[3].pbmts[0]);
+    chk("l0_resp_r[3].ppns[0]", dut_g.data_resp_r_1_3_entries_ppns_0, dut_i.u_core.l0_resp_r[3].ppns[0]);
+    chk("l0_resp_r[3].vs[0]", dut_g.data_resp_r_1_3_entries_vs_0, dut_i.u_core.l0_resp_r[3].vs[0]);
+    chk("l0_resp_r[3].onlypf[0]", dut_g.data_resp_r_1_3_entries_onlypf_0, dut_i.u_core.l0_resp_r[3].onlypf[0]);
+    chk("l0_resp_r[3].perms[0].d", dut_g.data_resp_r_1_3_entries_perms_0_d, dut_i.u_core.l0_resp_r[3].perms[0].d);
+    chk("l0_resp_r[3].perms[0].a", dut_g.data_resp_r_1_3_entries_perms_0_a, dut_i.u_core.l0_resp_r[3].perms[0].a);
+    chk("l0_resp_r[3].perms[0].g", dut_g.data_resp_r_1_3_entries_perms_0_g, dut_i.u_core.l0_resp_r[3].perms[0].g);
+    chk("l0_resp_r[3].perms[0].u", dut_g.data_resp_r_1_3_entries_perms_0_u, dut_i.u_core.l0_resp_r[3].perms[0].u);
+    chk("l0_resp_r[3].perms[0].x", dut_g.data_resp_r_1_3_entries_perms_0_x, dut_i.u_core.l0_resp_r[3].perms[0].x);
+    chk("l0_resp_r[3].perms[0].w", dut_g.data_resp_r_1_3_entries_perms_0_w, dut_i.u_core.l0_resp_r[3].perms[0].w);
+    chk("l0_resp_r[3].perms[0].r", dut_g.data_resp_r_1_3_entries_perms_0_r, dut_i.u_core.l0_resp_r[3].perms[0].r);
+    chk("l0_resp_r[3].pbmts[1]", dut_g.data_resp_r_1_3_entries_pbmts_1, dut_i.u_core.l0_resp_r[3].pbmts[1]);
+    chk("l0_resp_r[3].ppns[1]", dut_g.data_resp_r_1_3_entries_ppns_1, dut_i.u_core.l0_resp_r[3].ppns[1]);
+    chk("l0_resp_r[3].vs[1]", dut_g.data_resp_r_1_3_entries_vs_1, dut_i.u_core.l0_resp_r[3].vs[1]);
+    chk("l0_resp_r[3].onlypf[1]", dut_g.data_resp_r_1_3_entries_onlypf_1, dut_i.u_core.l0_resp_r[3].onlypf[1]);
+    chk("l0_resp_r[3].perms[1].d", dut_g.data_resp_r_1_3_entries_perms_1_d, dut_i.u_core.l0_resp_r[3].perms[1].d);
+    chk("l0_resp_r[3].perms[1].a", dut_g.data_resp_r_1_3_entries_perms_1_a, dut_i.u_core.l0_resp_r[3].perms[1].a);
+    chk("l0_resp_r[3].perms[1].g", dut_g.data_resp_r_1_3_entries_perms_1_g, dut_i.u_core.l0_resp_r[3].perms[1].g);
+    chk("l0_resp_r[3].perms[1].u", dut_g.data_resp_r_1_3_entries_perms_1_u, dut_i.u_core.l0_resp_r[3].perms[1].u);
+    chk("l0_resp_r[3].perms[1].x", dut_g.data_resp_r_1_3_entries_perms_1_x, dut_i.u_core.l0_resp_r[3].perms[1].x);
+    chk("l0_resp_r[3].perms[1].w", dut_g.data_resp_r_1_3_entries_perms_1_w, dut_i.u_core.l0_resp_r[3].perms[1].w);
+    chk("l0_resp_r[3].perms[1].r", dut_g.data_resp_r_1_3_entries_perms_1_r, dut_i.u_core.l0_resp_r[3].perms[1].r);
+    chk("l0_resp_r[3].pbmts[2]", dut_g.data_resp_r_1_3_entries_pbmts_2, dut_i.u_core.l0_resp_r[3].pbmts[2]);
+    chk("l0_resp_r[3].ppns[2]", dut_g.data_resp_r_1_3_entries_ppns_2, dut_i.u_core.l0_resp_r[3].ppns[2]);
+    chk("l0_resp_r[3].vs[2]", dut_g.data_resp_r_1_3_entries_vs_2, dut_i.u_core.l0_resp_r[3].vs[2]);
+    chk("l0_resp_r[3].onlypf[2]", dut_g.data_resp_r_1_3_entries_onlypf_2, dut_i.u_core.l0_resp_r[3].onlypf[2]);
+    chk("l0_resp_r[3].perms[2].d", dut_g.data_resp_r_1_3_entries_perms_2_d, dut_i.u_core.l0_resp_r[3].perms[2].d);
+    chk("l0_resp_r[3].perms[2].a", dut_g.data_resp_r_1_3_entries_perms_2_a, dut_i.u_core.l0_resp_r[3].perms[2].a);
+    chk("l0_resp_r[3].perms[2].g", dut_g.data_resp_r_1_3_entries_perms_2_g, dut_i.u_core.l0_resp_r[3].perms[2].g);
+    chk("l0_resp_r[3].perms[2].u", dut_g.data_resp_r_1_3_entries_perms_2_u, dut_i.u_core.l0_resp_r[3].perms[2].u);
+    chk("l0_resp_r[3].perms[2].x", dut_g.data_resp_r_1_3_entries_perms_2_x, dut_i.u_core.l0_resp_r[3].perms[2].x);
+    chk("l0_resp_r[3].perms[2].w", dut_g.data_resp_r_1_3_entries_perms_2_w, dut_i.u_core.l0_resp_r[3].perms[2].w);
+    chk("l0_resp_r[3].perms[2].r", dut_g.data_resp_r_1_3_entries_perms_2_r, dut_i.u_core.l0_resp_r[3].perms[2].r);
+    chk("l0_resp_r[3].pbmts[3]", dut_g.data_resp_r_1_3_entries_pbmts_3, dut_i.u_core.l0_resp_r[3].pbmts[3]);
+    chk("l0_resp_r[3].ppns[3]", dut_g.data_resp_r_1_3_entries_ppns_3, dut_i.u_core.l0_resp_r[3].ppns[3]);
+    chk("l0_resp_r[3].vs[3]", dut_g.data_resp_r_1_3_entries_vs_3, dut_i.u_core.l0_resp_r[3].vs[3]);
+    chk("l0_resp_r[3].onlypf[3]", dut_g.data_resp_r_1_3_entries_onlypf_3, dut_i.u_core.l0_resp_r[3].onlypf[3]);
+    chk("l0_resp_r[3].perms[3].d", dut_g.data_resp_r_1_3_entries_perms_3_d, dut_i.u_core.l0_resp_r[3].perms[3].d);
+    chk("l0_resp_r[3].perms[3].a", dut_g.data_resp_r_1_3_entries_perms_3_a, dut_i.u_core.l0_resp_r[3].perms[3].a);
+    chk("l0_resp_r[3].perms[3].g", dut_g.data_resp_r_1_3_entries_perms_3_g, dut_i.u_core.l0_resp_r[3].perms[3].g);
+    chk("l0_resp_r[3].perms[3].u", dut_g.data_resp_r_1_3_entries_perms_3_u, dut_i.u_core.l0_resp_r[3].perms[3].u);
+    chk("l0_resp_r[3].perms[3].x", dut_g.data_resp_r_1_3_entries_perms_3_x, dut_i.u_core.l0_resp_r[3].perms[3].x);
+    chk("l0_resp_r[3].perms[3].w", dut_g.data_resp_r_1_3_entries_perms_3_w, dut_i.u_core.l0_resp_r[3].perms[3].w);
+    chk("l0_resp_r[3].perms[3].r", dut_g.data_resp_r_1_3_entries_perms_3_r, dut_i.u_core.l0_resp_r[3].perms[3].r);
+    chk("l0_resp_r[3].pbmts[4]", dut_g.data_resp_r_1_3_entries_pbmts_4, dut_i.u_core.l0_resp_r[3].pbmts[4]);
+    chk("l0_resp_r[3].ppns[4]", dut_g.data_resp_r_1_3_entries_ppns_4, dut_i.u_core.l0_resp_r[3].ppns[4]);
+    chk("l0_resp_r[3].vs[4]", dut_g.data_resp_r_1_3_entries_vs_4, dut_i.u_core.l0_resp_r[3].vs[4]);
+    chk("l0_resp_r[3].onlypf[4]", dut_g.data_resp_r_1_3_entries_onlypf_4, dut_i.u_core.l0_resp_r[3].onlypf[4]);
+    chk("l0_resp_r[3].perms[4].d", dut_g.data_resp_r_1_3_entries_perms_4_d, dut_i.u_core.l0_resp_r[3].perms[4].d);
+    chk("l0_resp_r[3].perms[4].a", dut_g.data_resp_r_1_3_entries_perms_4_a, dut_i.u_core.l0_resp_r[3].perms[4].a);
+    chk("l0_resp_r[3].perms[4].g", dut_g.data_resp_r_1_3_entries_perms_4_g, dut_i.u_core.l0_resp_r[3].perms[4].g);
+    chk("l0_resp_r[3].perms[4].u", dut_g.data_resp_r_1_3_entries_perms_4_u, dut_i.u_core.l0_resp_r[3].perms[4].u);
+    chk("l0_resp_r[3].perms[4].x", dut_g.data_resp_r_1_3_entries_perms_4_x, dut_i.u_core.l0_resp_r[3].perms[4].x);
+    chk("l0_resp_r[3].perms[4].w", dut_g.data_resp_r_1_3_entries_perms_4_w, dut_i.u_core.l0_resp_r[3].perms[4].w);
+    chk("l0_resp_r[3].perms[4].r", dut_g.data_resp_r_1_3_entries_perms_4_r, dut_i.u_core.l0_resp_r[3].perms[4].r);
+    chk("l0_resp_r[3].pbmts[5]", dut_g.data_resp_r_1_3_entries_pbmts_5, dut_i.u_core.l0_resp_r[3].pbmts[5]);
+    chk("l0_resp_r[3].ppns[5]", dut_g.data_resp_r_1_3_entries_ppns_5, dut_i.u_core.l0_resp_r[3].ppns[5]);
+    chk("l0_resp_r[3].vs[5]", dut_g.data_resp_r_1_3_entries_vs_5, dut_i.u_core.l0_resp_r[3].vs[5]);
+    chk("l0_resp_r[3].onlypf[5]", dut_g.data_resp_r_1_3_entries_onlypf_5, dut_i.u_core.l0_resp_r[3].onlypf[5]);
+    chk("l0_resp_r[3].perms[5].d", dut_g.data_resp_r_1_3_entries_perms_5_d, dut_i.u_core.l0_resp_r[3].perms[5].d);
+    chk("l0_resp_r[3].perms[5].a", dut_g.data_resp_r_1_3_entries_perms_5_a, dut_i.u_core.l0_resp_r[3].perms[5].a);
+    chk("l0_resp_r[3].perms[5].g", dut_g.data_resp_r_1_3_entries_perms_5_g, dut_i.u_core.l0_resp_r[3].perms[5].g);
+    chk("l0_resp_r[3].perms[5].u", dut_g.data_resp_r_1_3_entries_perms_5_u, dut_i.u_core.l0_resp_r[3].perms[5].u);
+    chk("l0_resp_r[3].perms[5].x", dut_g.data_resp_r_1_3_entries_perms_5_x, dut_i.u_core.l0_resp_r[3].perms[5].x);
+    chk("l0_resp_r[3].perms[5].w", dut_g.data_resp_r_1_3_entries_perms_5_w, dut_i.u_core.l0_resp_r[3].perms[5].w);
+    chk("l0_resp_r[3].perms[5].r", dut_g.data_resp_r_1_3_entries_perms_5_r, dut_i.u_core.l0_resp_r[3].perms[5].r);
+    chk("l0_resp_r[3].pbmts[6]", dut_g.data_resp_r_1_3_entries_pbmts_6, dut_i.u_core.l0_resp_r[3].pbmts[6]);
+    chk("l0_resp_r[3].ppns[6]", dut_g.data_resp_r_1_3_entries_ppns_6, dut_i.u_core.l0_resp_r[3].ppns[6]);
+    chk("l0_resp_r[3].vs[6]", dut_g.data_resp_r_1_3_entries_vs_6, dut_i.u_core.l0_resp_r[3].vs[6]);
+    chk("l0_resp_r[3].onlypf[6]", dut_g.data_resp_r_1_3_entries_onlypf_6, dut_i.u_core.l0_resp_r[3].onlypf[6]);
+    chk("l0_resp_r[3].perms[6].d", dut_g.data_resp_r_1_3_entries_perms_6_d, dut_i.u_core.l0_resp_r[3].perms[6].d);
+    chk("l0_resp_r[3].perms[6].a", dut_g.data_resp_r_1_3_entries_perms_6_a, dut_i.u_core.l0_resp_r[3].perms[6].a);
+    chk("l0_resp_r[3].perms[6].g", dut_g.data_resp_r_1_3_entries_perms_6_g, dut_i.u_core.l0_resp_r[3].perms[6].g);
+    chk("l0_resp_r[3].perms[6].u", dut_g.data_resp_r_1_3_entries_perms_6_u, dut_i.u_core.l0_resp_r[3].perms[6].u);
+    chk("l0_resp_r[3].perms[6].x", dut_g.data_resp_r_1_3_entries_perms_6_x, dut_i.u_core.l0_resp_r[3].perms[6].x);
+    chk("l0_resp_r[3].perms[6].w", dut_g.data_resp_r_1_3_entries_perms_6_w, dut_i.u_core.l0_resp_r[3].perms[6].w);
+    chk("l0_resp_r[3].perms[6].r", dut_g.data_resp_r_1_3_entries_perms_6_r, dut_i.u_core.l0_resp_r[3].perms[6].r);
+    chk("l0_resp_r[3].pbmts[7]", dut_g.data_resp_r_1_3_entries_pbmts_7, dut_i.u_core.l0_resp_r[3].pbmts[7]);
+    chk("l0_resp_r[3].ppns[7]", dut_g.data_resp_r_1_3_entries_ppns_7, dut_i.u_core.l0_resp_r[3].ppns[7]);
+    chk("l0_resp_r[3].vs[7]", dut_g.data_resp_r_1_3_entries_vs_7, dut_i.u_core.l0_resp_r[3].vs[7]);
+    chk("l0_resp_r[3].onlypf[7]", dut_g.data_resp_r_1_3_entries_onlypf_7, dut_i.u_core.l0_resp_r[3].onlypf[7]);
+    chk("l0_resp_r[3].perms[7].d", dut_g.data_resp_r_1_3_entries_perms_7_d, dut_i.u_core.l0_resp_r[3].perms[7].d);
+    chk("l0_resp_r[3].perms[7].a", dut_g.data_resp_r_1_3_entries_perms_7_a, dut_i.u_core.l0_resp_r[3].perms[7].a);
+    chk("l0_resp_r[3].perms[7].g", dut_g.data_resp_r_1_3_entries_perms_7_g, dut_i.u_core.l0_resp_r[3].perms[7].g);
+    chk("l0_resp_r[3].perms[7].u", dut_g.data_resp_r_1_3_entries_perms_7_u, dut_i.u_core.l0_resp_r[3].perms[7].u);
+    chk("l0_resp_r[3].perms[7].x", dut_g.data_resp_r_1_3_entries_perms_7_x, dut_i.u_core.l0_resp_r[3].perms[7].x);
+    chk("l0_resp_r[3].perms[7].w", dut_g.data_resp_r_1_3_entries_perms_7_w, dut_i.u_core.l0_resp_r[3].perms[7].w);
+    chk("l0_resp_r[3].perms[7].r", dut_g.data_resp_r_1_3_entries_perms_7_r, dut_i.u_core.l0_resp_r[3].perms[7].r);
+    chk("l0_ramdata[3].prefetch", dut_g.l0_ramDatas_3_entries_prefetch, dut_i.u_core.l0_ramdata[3].prefetch);
+    chk("l0_ramdata[3].pbmts[0]", dut_g.l0_ramDatas_3_entries_pbmts_0, dut_i.u_core.l0_ramdata[3].pbmts[0]);
+    chk("l0_ramdata[3].ppns[0]", dut_g.l0_ramDatas_3_entries_ppns_0, dut_i.u_core.l0_ramdata[3].ppns[0]);
+    chk("l0_ramdata[3].onlypf[0]", dut_g.l0_ramDatas_3_entries_onlypf_0, dut_i.u_core.l0_ramdata[3].onlypf[0]);
+    chk("l0_ramdata[3].perms[0].d", dut_g.l0_ramDatas_3_entries_perms_0_d, dut_i.u_core.l0_ramdata[3].perms[0].d);
+    chk("l0_ramdata[3].perms[0].a", dut_g.l0_ramDatas_3_entries_perms_0_a, dut_i.u_core.l0_ramdata[3].perms[0].a);
+    chk("l0_ramdata[3].perms[0].g", dut_g.l0_ramDatas_3_entries_perms_0_g, dut_i.u_core.l0_ramdata[3].perms[0].g);
+    chk("l0_ramdata[3].perms[0].u", dut_g.l0_ramDatas_3_entries_perms_0_u, dut_i.u_core.l0_ramdata[3].perms[0].u);
+    chk("l0_ramdata[3].perms[0].x", dut_g.l0_ramDatas_3_entries_perms_0_x, dut_i.u_core.l0_ramdata[3].perms[0].x);
+    chk("l0_ramdata[3].perms[0].w", dut_g.l0_ramDatas_3_entries_perms_0_w, dut_i.u_core.l0_ramdata[3].perms[0].w);
+    chk("l0_ramdata[3].perms[0].r", dut_g.l0_ramDatas_3_entries_perms_0_r, dut_i.u_core.l0_ramdata[3].perms[0].r);
+    chk("l0_ramdata[3].pbmts[1]", dut_g.l0_ramDatas_3_entries_pbmts_1, dut_i.u_core.l0_ramdata[3].pbmts[1]);
+    chk("l0_ramdata[3].ppns[1]", dut_g.l0_ramDatas_3_entries_ppns_1, dut_i.u_core.l0_ramdata[3].ppns[1]);
+    chk("l0_ramdata[3].onlypf[1]", dut_g.l0_ramDatas_3_entries_onlypf_1, dut_i.u_core.l0_ramdata[3].onlypf[1]);
+    chk("l0_ramdata[3].perms[1].d", dut_g.l0_ramDatas_3_entries_perms_1_d, dut_i.u_core.l0_ramdata[3].perms[1].d);
+    chk("l0_ramdata[3].perms[1].a", dut_g.l0_ramDatas_3_entries_perms_1_a, dut_i.u_core.l0_ramdata[3].perms[1].a);
+    chk("l0_ramdata[3].perms[1].g", dut_g.l0_ramDatas_3_entries_perms_1_g, dut_i.u_core.l0_ramdata[3].perms[1].g);
+    chk("l0_ramdata[3].perms[1].u", dut_g.l0_ramDatas_3_entries_perms_1_u, dut_i.u_core.l0_ramdata[3].perms[1].u);
+    chk("l0_ramdata[3].perms[1].x", dut_g.l0_ramDatas_3_entries_perms_1_x, dut_i.u_core.l0_ramdata[3].perms[1].x);
+    chk("l0_ramdata[3].perms[1].w", dut_g.l0_ramDatas_3_entries_perms_1_w, dut_i.u_core.l0_ramdata[3].perms[1].w);
+    chk("l0_ramdata[3].perms[1].r", dut_g.l0_ramDatas_3_entries_perms_1_r, dut_i.u_core.l0_ramdata[3].perms[1].r);
+    chk("l0_ramdata[3].pbmts[2]", dut_g.l0_ramDatas_3_entries_pbmts_2, dut_i.u_core.l0_ramdata[3].pbmts[2]);
+    chk("l0_ramdata[3].ppns[2]", dut_g.l0_ramDatas_3_entries_ppns_2, dut_i.u_core.l0_ramdata[3].ppns[2]);
+    chk("l0_ramdata[3].onlypf[2]", dut_g.l0_ramDatas_3_entries_onlypf_2, dut_i.u_core.l0_ramdata[3].onlypf[2]);
+    chk("l0_ramdata[3].perms[2].d", dut_g.l0_ramDatas_3_entries_perms_2_d, dut_i.u_core.l0_ramdata[3].perms[2].d);
+    chk("l0_ramdata[3].perms[2].a", dut_g.l0_ramDatas_3_entries_perms_2_a, dut_i.u_core.l0_ramdata[3].perms[2].a);
+    chk("l0_ramdata[3].perms[2].g", dut_g.l0_ramDatas_3_entries_perms_2_g, dut_i.u_core.l0_ramdata[3].perms[2].g);
+    chk("l0_ramdata[3].perms[2].u", dut_g.l0_ramDatas_3_entries_perms_2_u, dut_i.u_core.l0_ramdata[3].perms[2].u);
+    chk("l0_ramdata[3].perms[2].x", dut_g.l0_ramDatas_3_entries_perms_2_x, dut_i.u_core.l0_ramdata[3].perms[2].x);
+    chk("l0_ramdata[3].perms[2].w", dut_g.l0_ramDatas_3_entries_perms_2_w, dut_i.u_core.l0_ramdata[3].perms[2].w);
+    chk("l0_ramdata[3].perms[2].r", dut_g.l0_ramDatas_3_entries_perms_2_r, dut_i.u_core.l0_ramdata[3].perms[2].r);
+    chk("l0_ramdata[3].pbmts[3]", dut_g.l0_ramDatas_3_entries_pbmts_3, dut_i.u_core.l0_ramdata[3].pbmts[3]);
+    chk("l0_ramdata[3].ppns[3]", dut_g.l0_ramDatas_3_entries_ppns_3, dut_i.u_core.l0_ramdata[3].ppns[3]);
+    chk("l0_ramdata[3].onlypf[3]", dut_g.l0_ramDatas_3_entries_onlypf_3, dut_i.u_core.l0_ramdata[3].onlypf[3]);
+    chk("l0_ramdata[3].perms[3].d", dut_g.l0_ramDatas_3_entries_perms_3_d, dut_i.u_core.l0_ramdata[3].perms[3].d);
+    chk("l0_ramdata[3].perms[3].a", dut_g.l0_ramDatas_3_entries_perms_3_a, dut_i.u_core.l0_ramdata[3].perms[3].a);
+    chk("l0_ramdata[3].perms[3].g", dut_g.l0_ramDatas_3_entries_perms_3_g, dut_i.u_core.l0_ramdata[3].perms[3].g);
+    chk("l0_ramdata[3].perms[3].u", dut_g.l0_ramDatas_3_entries_perms_3_u, dut_i.u_core.l0_ramdata[3].perms[3].u);
+    chk("l0_ramdata[3].perms[3].x", dut_g.l0_ramDatas_3_entries_perms_3_x, dut_i.u_core.l0_ramdata[3].perms[3].x);
+    chk("l0_ramdata[3].perms[3].w", dut_g.l0_ramDatas_3_entries_perms_3_w, dut_i.u_core.l0_ramdata[3].perms[3].w);
+    chk("l0_ramdata[3].perms[3].r", dut_g.l0_ramDatas_3_entries_perms_3_r, dut_i.u_core.l0_ramdata[3].perms[3].r);
+    chk("l0_ramdata[3].pbmts[4]", dut_g.l0_ramDatas_3_entries_pbmts_4, dut_i.u_core.l0_ramdata[3].pbmts[4]);
+    chk("l0_ramdata[3].ppns[4]", dut_g.l0_ramDatas_3_entries_ppns_4, dut_i.u_core.l0_ramdata[3].ppns[4]);
+    chk("l0_ramdata[3].onlypf[4]", dut_g.l0_ramDatas_3_entries_onlypf_4, dut_i.u_core.l0_ramdata[3].onlypf[4]);
+    chk("l0_ramdata[3].perms[4].d", dut_g.l0_ramDatas_3_entries_perms_4_d, dut_i.u_core.l0_ramdata[3].perms[4].d);
+    chk("l0_ramdata[3].perms[4].a", dut_g.l0_ramDatas_3_entries_perms_4_a, dut_i.u_core.l0_ramdata[3].perms[4].a);
+    chk("l0_ramdata[3].perms[4].g", dut_g.l0_ramDatas_3_entries_perms_4_g, dut_i.u_core.l0_ramdata[3].perms[4].g);
+    chk("l0_ramdata[3].perms[4].u", dut_g.l0_ramDatas_3_entries_perms_4_u, dut_i.u_core.l0_ramdata[3].perms[4].u);
+    chk("l0_ramdata[3].perms[4].x", dut_g.l0_ramDatas_3_entries_perms_4_x, dut_i.u_core.l0_ramdata[3].perms[4].x);
+    chk("l0_ramdata[3].perms[4].w", dut_g.l0_ramDatas_3_entries_perms_4_w, dut_i.u_core.l0_ramdata[3].perms[4].w);
+    chk("l0_ramdata[3].perms[4].r", dut_g.l0_ramDatas_3_entries_perms_4_r, dut_i.u_core.l0_ramdata[3].perms[4].r);
+    chk("l0_ramdata[3].pbmts[5]", dut_g.l0_ramDatas_3_entries_pbmts_5, dut_i.u_core.l0_ramdata[3].pbmts[5]);
+    chk("l0_ramdata[3].ppns[5]", dut_g.l0_ramDatas_3_entries_ppns_5, dut_i.u_core.l0_ramdata[3].ppns[5]);
+    chk("l0_ramdata[3].onlypf[5]", dut_g.l0_ramDatas_3_entries_onlypf_5, dut_i.u_core.l0_ramdata[3].onlypf[5]);
+    chk("l0_ramdata[3].perms[5].d", dut_g.l0_ramDatas_3_entries_perms_5_d, dut_i.u_core.l0_ramdata[3].perms[5].d);
+    chk("l0_ramdata[3].perms[5].a", dut_g.l0_ramDatas_3_entries_perms_5_a, dut_i.u_core.l0_ramdata[3].perms[5].a);
+    chk("l0_ramdata[3].perms[5].g", dut_g.l0_ramDatas_3_entries_perms_5_g, dut_i.u_core.l0_ramdata[3].perms[5].g);
+    chk("l0_ramdata[3].perms[5].u", dut_g.l0_ramDatas_3_entries_perms_5_u, dut_i.u_core.l0_ramdata[3].perms[5].u);
+    chk("l0_ramdata[3].perms[5].x", dut_g.l0_ramDatas_3_entries_perms_5_x, dut_i.u_core.l0_ramdata[3].perms[5].x);
+    chk("l0_ramdata[3].perms[5].w", dut_g.l0_ramDatas_3_entries_perms_5_w, dut_i.u_core.l0_ramdata[3].perms[5].w);
+    chk("l0_ramdata[3].perms[5].r", dut_g.l0_ramDatas_3_entries_perms_5_r, dut_i.u_core.l0_ramdata[3].perms[5].r);
+    chk("l0_ramdata[3].pbmts[6]", dut_g.l0_ramDatas_3_entries_pbmts_6, dut_i.u_core.l0_ramdata[3].pbmts[6]);
+    chk("l0_ramdata[3].ppns[6]", dut_g.l0_ramDatas_3_entries_ppns_6, dut_i.u_core.l0_ramdata[3].ppns[6]);
+    chk("l0_ramdata[3].onlypf[6]", dut_g.l0_ramDatas_3_entries_onlypf_6, dut_i.u_core.l0_ramdata[3].onlypf[6]);
+    chk("l0_ramdata[3].perms[6].d", dut_g.l0_ramDatas_3_entries_perms_6_d, dut_i.u_core.l0_ramdata[3].perms[6].d);
+    chk("l0_ramdata[3].perms[6].a", dut_g.l0_ramDatas_3_entries_perms_6_a, dut_i.u_core.l0_ramdata[3].perms[6].a);
+    chk("l0_ramdata[3].perms[6].g", dut_g.l0_ramDatas_3_entries_perms_6_g, dut_i.u_core.l0_ramdata[3].perms[6].g);
+    chk("l0_ramdata[3].perms[6].u", dut_g.l0_ramDatas_3_entries_perms_6_u, dut_i.u_core.l0_ramdata[3].perms[6].u);
+    chk("l0_ramdata[3].perms[6].x", dut_g.l0_ramDatas_3_entries_perms_6_x, dut_i.u_core.l0_ramdata[3].perms[6].x);
+    chk("l0_ramdata[3].perms[6].w", dut_g.l0_ramDatas_3_entries_perms_6_w, dut_i.u_core.l0_ramdata[3].perms[6].w);
+    chk("l0_ramdata[3].perms[6].r", dut_g.l0_ramDatas_3_entries_perms_6_r, dut_i.u_core.l0_ramdata[3].perms[6].r);
+    chk("l0_ramdata[3].pbmts[7]", dut_g.l0_ramDatas_3_entries_pbmts_7, dut_i.u_core.l0_ramdata[3].pbmts[7]);
+    chk("l0_ramdata[3].ppns[7]", dut_g.l0_ramDatas_3_entries_ppns_7, dut_i.u_core.l0_ramdata[3].ppns[7]);
+    chk("l0_ramdata[3].onlypf[7]", dut_g.l0_ramDatas_3_entries_onlypf_7, dut_i.u_core.l0_ramdata[3].onlypf[7]);
+    chk("l0_ramdata[3].perms[7].d", dut_g.l0_ramDatas_3_entries_perms_7_d, dut_i.u_core.l0_ramdata[3].perms[7].d);
+    chk("l0_ramdata[3].perms[7].a", dut_g.l0_ramDatas_3_entries_perms_7_a, dut_i.u_core.l0_ramdata[3].perms[7].a);
+    chk("l0_ramdata[3].perms[7].g", dut_g.l0_ramDatas_3_entries_perms_7_g, dut_i.u_core.l0_ramdata[3].perms[7].g);
+    chk("l0_ramdata[3].perms[7].u", dut_g.l0_ramDatas_3_entries_perms_7_u, dut_i.u_core.l0_ramdata[3].perms[7].u);
+    chk("l0_ramdata[3].perms[7].x", dut_g.l0_ramDatas_3_entries_perms_7_x, dut_i.u_core.l0_ramdata[3].perms[7].x);
+    chk("l0_ramdata[3].perms[7].w", dut_g.l0_ramDatas_3_entries_perms_7_w, dut_i.u_core.l0_ramdata[3].perms[7].w);
+    chk("l0_ramdata[3].perms[7].r", dut_g.l0_ramDatas_3_entries_perms_7_r, dut_i.u_core.l0_ramdata[3].perms[7].r);
+  endtask
   // END GENERATED(state_cmp)
 
   task automatic compare_write_ports();
@@ -3767,12 +4713,25 @@ module tb;
     cg_bore_cgen = '0;
     repeat (4) @(posedge clock);
     reset = 1'b0;
+    for (int i = 0; i < 8; i++)
+      vpn_pool[i] = {$urandom_range(0,3), $urandom_range(0,15),
+                     $urandom_range(0,255), $urandom_range(0,255),
+                     $urandom_range(0,63)};
+    refresh_csr();
     for (int c = 0; c < ncycles; c++) begin
       @(negedge clock);
+      // csr 每 512 拍才换一次；换得太勤，回填进去的条目根本等不到被查一次。
+      if (c % 512 == 0) refresh_csr();
       drive_random();
       #1;
       compare_write_ports();
       compare_state();
+      compare_hit();
+      if (dut_g.hit)   fire_hit_l3++;
+      if (dut_g.hit_1) fire_hit_l2++;
+      if (dut_g.hit_2) fire_hit_sp++;
+      if (dut_g.l1Hit) fire_hit_l1++;
+      if (dut_g.l0Hit) fire_hit_l0++;
       if (dut_g.l3Refill) fire_l3++;
       if (dut_g.l2Refill) fire_l2++;
       if (dut_g.l1Refill) fire_l1++;
@@ -3783,10 +4742,15 @@ module tb;
              ncycles, checks, errors);
     $display("PtwCache_refill fire: l3=%0d l2=%0d l1=%0d l0=%0d sp=%0d",
              fire_l3, fire_l2, fire_l1, fire_l0, fire_sp);
+    $display("PtwCache_refill hit:  l3=%0d l2=%0d l1=%0d l0=%0d sp=%0d",
+             fire_hit_l3, fire_hit_l2, fire_hit_l1, fire_hit_l0, fire_hit_sp);
     if (errors != 0)
       $display("STUDY FAIL (已追清信号失配)");
     else if (fire_l3 == 0 || fire_l2 == 0 || fire_l1 == 0 || fire_l0 == 0 || fire_sp == 0)
       $display("STUDY FAIL (有一级回填一次都没触发 —— 那一段等于什么都没比)");
+    else if (fire_hit_l3 == 0 || fire_hit_l2 == 0 || fire_hit_l1 == 0
+             || fire_hit_l0 == 0 || fire_hit_sp == 0)
+      $display("STUDY FAIL (有一级命中一次都没触发 —— 那一段等于什么都没比)");
     else
       $display("STUDY PASS");
     $finish;

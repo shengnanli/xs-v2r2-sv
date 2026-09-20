@@ -206,9 +206,32 @@ def build():
     for n in childbd:
         decl_childbd.append('  logic %-10s %s;' % (widths.get(n, ''), n))
 
-    decl_rdata = ['  // SRAM 读回数据（命中判定在 §8，尚未追清）']
+    decl_rdata = ['  // SRAM 读回的扁平线（golden 的端口名，逐根抄）——',
+                  '  // 命中判定读的是下面 §16 打包出来的 l1_line_t / l0_line_t。']
     for n in sorted(RDATA):
         decl_rdata.append('  logic %-10s %s;' % (RDATA[n], n))
+
+    decl_pack = ['', '  // BEGIN GENERATED(sram_rdata_pack)',
+                 '  // 把 SRAM 回读的扁平线打包成 §16 用的 struct（纯改名，无逻辑）。']
+    for n in sorted(RDATA):
+        m = re.match(r'(l[01])_rdata_(\d+)_(.+)$', n)
+        if not m:
+            raise SystemExit('rdata 名字解析不了（fail-closed）: %s' % n)
+        lvl, way, f = m.group(1), m.group(2), m.group(3)
+        dst = '%s_sram_rdata[%s]' % (lvl, way)
+        mm = re.fullmatch(r'(pbmts|ppns|vs|onlypf)_(\d+)', f)
+        if mm:
+            tgt = '%s.%s[%s]' % (dst, mm.group(1), mm.group(2))
+        else:
+            mm = re.fullmatch(r'perms_(\d+)_(\w)', f)
+            if mm:
+                tgt = '%s.perms[%s].%s' % (dst, mm.group(1), mm.group(2))
+            elif f in ('tag', 'asid', 'vmid', 'prefetch'):
+                tgt = '%s.%s' % (dst, f)
+            else:
+                raise SystemExit('rdata 字段没分类（fail-closed）: %s' % n)
+        decl_pack.append('  assign %-40s = %s;' % (tgt, n))
+    decl_pack.append('  // END GENERATED(sram_rdata_pack)')
 
     # 未追清的写载荷：统一声明并**显式钉 0**。钉 0 不是"默认值"，是"还没做"的标记；
     # 任何一根被真正追清后，就从这张表里消失。
@@ -231,16 +254,24 @@ def build():
     out += part('20_core_body.svpart')
     out += part('25_refill_wdata.svpart')
     out += part('26_replace.svpart')
-    out += part('27_refill_state.svpart')
+    out += part('27_refill_comb.svpart')
+    out += ['']
+    out += decl_rdata
+    out += ['']
+    out += decl_childbd
+    out += part('28_hit.svpart')
+    out += decl_pack
+    out += part('29_state_ff.svpart')
     out += ['', '  // ' + '-' * 75,
             '  // §8 未追清清单 —— ★占位信号，当前值无意义★',
             '  //',
             '  // 下面每一根都还没有从 golden 逐条追出方程。它们现在被恒定值顶着，',
             '  // 只为让本骨架能 elaborate；任何人引用它们都会拿到错值。',
-            '  // 回填写数据（§6.1/§6.2）、替换策略与受害者选择（§7）、回填侧状态更新',
-            '  // （§9/§11）已从本表毕业，各有 verif/study/PtwCache_refill 的定向差分',
-            '  // 对照钉住。剩下的追清顺序：各级 hitVec -> sfence/hfence 失效 ->',
-            '  // ecc flush -> l0_bitmap 与 wakeup -> 响应装配 -> perf。',
+            '  // 回填写数据（§6）、替换与受害者选择（§7）、回填侧状态（§9/§11）、',
+            '  // 流水载荷（§12）与五级命中（§14-§16）已从本表毕业，都有',
+            '  // verif/study/PtwCache_refill 的定向差分对照钉住。剩下的追清顺序：',
+            '  // sfence/hfence 失效 -> ecc flush -> l0_bitmap 写侧与 wakeup ->',
+            '  // 响应装配（io.resp 的 220 根）-> perf。',
             '']
     out += decl_untraced
     out += ['']

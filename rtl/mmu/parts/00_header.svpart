@@ -94,23 +94,27 @@
 //   ★M4 特别重要★：它是唯一能证明我们**照抄了 golden 的 bug** 而不是照抄了直觉的实验。
 //
 // 【已追清 / 未追清 —— 当前边界】
-//   已追清并写成 RTL：四级流水握手与入口节流、三份 dup 的 flush 与归属、
-//     复位域划分、两个 ClockGate 的开门条件、l1/l0 的 SRAM 读地址与读使能、
-//     l1/l0 的**全部写数据**（§6.1 的 10 个 PTE 谓词 + §6.2 的逐项 vs/onlypf/
-//     perms/ppn/pbmt/prefetch）、全部 MBIST/DFT 透传拓扑、
-//     ★五级替换策略与受害者选择（§7：PseudoLRU 取路/更新 + replaceWrapper，
-//     含 golden 那个"l3 回填污染 l2 PLRU"的真 bug）★、
-//     ★各级回填使能与回填侧状态更新（§9/§11：l3/l2/sp 表项载荷、
-//     l3v..spv 的置位、l3g..spg、五级 h、l1/l0 的 XORFold 影子哈希）★。
-//   上述两段有 verif/study/PtwCache_refill 的定向差分对照钉住：双例化比
-//     430 根 SRAM 写端口 + 1615 根核内回填侧状态，3 seed × 200k 拍，errors=0；
-//     注入 4 个 mutant（含"把 golden 真 bug 修好"）全部被抓到，详见该目录 tb.sv 头注释。
-//   未追清（骨架里以显式钉 0 顶着，见 §8）：
-//     · 各级 hitVec 与命中数据选择、命中侧的 PLRU access（plru_l3 目前**没有任何写者**）；
+//   已追清并写成 RTL：
+//     · 四级流水握手与入口节流、三份 dup 的 flush 与归属、复位域划分、
+//       两个 ClockGate 的开门条件、l1/l0 的 SRAM 读地址与读使能、全部 MBIST/DFT 拓扑；
+//     · l1/l0 的**全部写数据**（§6.1 的 10 个 PTE 谓词 + §6.2 的逐项字段）；
+//     · 五级替换策略与受害者选择（§7：PseudoLRU 取路/更新 + replaceWrapper，
+//       含 golden 那个"l3 回填污染 l2 PLRU"的真 bug）；
+//     · 各级回填使能与回填侧状态更新（§9/§11：l3/l2/sp 表项载荷、l3v..spv 置位、
+//       l3g..spg、五级 h、l1/l0 的 XORFold 影子哈希）；
+//     · 流水载荷三级打拍与两个 1 拍脉冲（§12）；
+//     · ★五级命中判定（§14/§15/§16）★——l3/l2 的 hitVec + DataHoldBypass，
+//       sp 的 allType 比较（level_match + napot）与 bitmap 门，
+//       l1/l0 的 SRAM 两拍命中（v/h/g 向量在发读那一拍锁存、数据 DataHoldBypass），
+//       以及命中侧的 PLRU access。
+//   验证：verif/study/PtwCache_refill 双例化逐拍比 430 根 SRAM 写端口 +
+//     约 2500 根核内状态/命中寄存器，3 seed × 200k 拍 errors=0；
+//     tb 自己判"五级回填与五级命中的 fire 次数都必须 > 0"，注入的 mutant 记在其头注释里。
+//   未追清（以显式钉 0 顶着，见 §8）：
 //     · sfence/hfence 失效掩码（三种 rs1/rs2 组合 × 三种 fence 类型）；
 //     · l1/l0 的 ecc flush；
-//     · bitmap 检查（l0_bitmap 的写）与 wakeup 回写；
-//     · io.resp 的 220 根载荷输出；
+//     · l0_bitmap 的**写**侧与 bitmap wakeup 回读（读路径形状已照抄，见 §16）；
+//     · io.resp 的 220 根载荷输出与 refill_bypass；
 //     · 8 个 perf 计数器。
-//   ★也就是说：当前这份核只在"从不发请求、从不发 sfence、从不 ecc 出错"的激励下
-//    与 golden 同态。任何人在上面那张清单清空之前引用它的输出，都会拿到错值。★
+//   ★所以当前这份核只在"从不发 sfence、从不 ecc 出错、BME=0"的激励下与 golden 同态，
+//    而且它的 io.resp 仍然全是 0 —— 任何人现在引用它的输出都会拿到错值。★
