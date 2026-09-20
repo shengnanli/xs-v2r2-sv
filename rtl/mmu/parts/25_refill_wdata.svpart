@@ -182,3 +182,27 @@
   assign l0_refill = ~flush_dup_0 & io_refill_bits_levelOH_l0
                    & ~pte_is_napot(io_refill_bits_sel_pte_dup_0,
                                    io_refill_bits_level_dup_0);
+
+
+  // ---- 写端口里**已追清**的部分（golden:6839 / 7497 / 43311-43313 / 43931-43935）----
+  //  dup 归属再强调一次：l1 写用 dup_1，l0 写用 dup_0。写反了 UT 多半测不出来。
+  logic [1:0]  l1_w_set;
+  logic [23:0] l1_w_tag;
+  logic [15:0] l1_w_asid;
+  logic [13:0] l1_w_vmid;
+  logic [5:0]  l0_w_set;
+  logic [28:0] l0_w_tag;
+  logic [15:0] l0_w_asid;
+  logic [13:0] l0_w_vmid;
+
+  assign l1_w_set  = io_refill_bits_req_info_dup_1_vpn[13:12];
+  assign l1_w_tag  = io_refill_bits_req_info_dup_1_vpn[37:14];
+  assign l1_w_vmid = io_csr_dup_1_hgatp_vmid[13:0];
+  assign l1_w_asid = (|io_refill_bits_req_info_dup_1_s2xlate)
+                   ? io_csr_dup_1_vsatp_asid : io_csr_dup_1_satp_asid;
+
+  assign l0_w_set  = io_refill_bits_req_info_dup_0_vpn[8:3];
+  assign l0_w_tag  = io_refill_bits_req_info_dup_0_vpn[37:9];
+  assign l0_w_vmid = io_csr_dup_0_hgatp_vmid[13:0];
+  assign l0_w_asid = (|io_refill_bits_req_info_dup_0_s2xlate)
+                   ? io_csr_dup_0_vsatp_asid : io_csr_dup_0_satp_asid;

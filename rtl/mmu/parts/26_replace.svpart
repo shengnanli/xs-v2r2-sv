@@ -1,0 +1,129 @@
+
+  // ---------------------------------------------------------------------------
+  // §7.1 PseudoLRU —— 位布局与两个方程（已追清）
+  //
+  //  rocket-chip `PseudoLRU(n)` 用 n-1 位状态表示一棵满二叉树。**位序容易读反**，
+  //  这里按 golden 实测把约定钉死（G1 PtwCache.sv:6657 取路 / 26808 更新）：
+  //
+  //    · 一棵覆盖 bits[hi:lo] 的子树，**根在最高位 hi**；
+  //    · 根为 1 ⇒ "上半边(索引大的那半)更旧" ⇒ 取路时往**上半边**走，
+  //      而上半边的状态位是 bits[hi-1 : lo+(sz-1)/2]（紧挨着根的那一段），
+  //      下半边是 bits[lo+(sz-1)/2-1 : lo]。
+  //    · 访问某一路后，路径上每个节点都被置成**指向另一边**（root <= ~idx[lvl]），
+  //      且只有被走到的那一侧子树继续递归，另一侧原样保留。
+  //
+  //  16 路展开后就是 golden 那一串嵌套三目：bit14 是根，bits[13:7] 是上半(way 8-15)，
+  //  bits[6:0] 是下半(way 0-7)；4 路是 bit2 根 / bit1 上半 / bit0 下半；
+  //  2 路只有一位，取路 = 该位，访问后 = ~way。
+  //
+  //  ★不要把这两个函数"优化"成查表★：它们的形状就是 golden 的形状，
+  //  改形状不影响仿真却会让 FM 多绕一圈。
+  function automatic logic [3:0] plru16_way(input logic [14:0] s);
+    int lo, sz, root;
+    logic [3:0] w;
+    lo = 0; sz = 15;
+    for (int lvl = 3; lvl >= 0; lvl--) begin
+      root   = lo + sz - 1;
+      w[lvl] = s[root];
+      sz     = (sz - 1) / 2;
+      if (s[root]) lo = lo + sz;     // 走上半边；下半边 lo 不动
+    end
+    return w;
+  endfunction
+
+  function automatic logic [14:0] plru16_access(input logic [14:0] s,
+                                                input logic [3:0]  idx);
+    logic [14:0] n;
+    int lo, sz, root;
+    n = s; lo = 0; sz = 15;
+    for (int lvl = 3; lvl >= 0; lvl--) begin
+      root    = lo + sz - 1;
+      n[root] = ~idx[lvl];
+      sz      = (sz - 1) / 2;
+      if (idx[lvl]) lo = lo + sz;
+    end
+    return n;
+  endfunction
+
+  function automatic logic [1:0] plru4_way(input logic [2:0] s);
+    return {s[2], s[2] ? s[1] : s[0]};
+  endfunction
+
+  function automatic logic [2:0] plru4_access(input logic [2:0] s,
+                                              input logic [1:0] way);
+    return {~way[1],
+            way[1] ? ~way[0] : s[1],
+            way[1] ? s[0]    : ~way[0]};
+  endfunction
+
+  // ---------------------------------------------------------------------------
+  // §7.2 replaceWrapper —— 「有空位先填空位，满了才问 PLRU」（已追清）
+  //
+  //  Chisel MMUConst.replaceWrapper(v, lru) = Mux(&v, lru, PriorityEncoder(~v))。
+  //  golden 把 PriorityEncoder 展成了一棵"哪个子块有空位"的树（:6652-6675），
+  //  值与最低无效位下标相同。这里写成朴素的优先查找，可读性优先。
+  //  ★注意 l3/l2 用 16 项全局向量，l1/l0 用的是**本组**的那几位★。
+  function automatic logic [3:0] replace_wrapper16(input logic [15:0] v,
+                                                   input logic [3:0]  lru);
+    if (&v) return lru;
+    for (int i = 0; i < 16; i++)
+      if (!v[i]) return i[3:0];
+    return lru;                       // 到不了：&v 已在上面拦掉
+  endfunction
+
+  function automatic logic replace_wrapper_l1(input logic [1:0] v,
+                                              input logic       lru);
+    if (&v) return lru;
+    return v[0];                      // v[0]=1 ⇒ 空的是 way1；否则 way0
+  endfunction
+
+  function automatic logic [1:0] replace_wrapper_l0(input logic [3:0] v,
+                                                    input logic [1:0] lru);
+    if (&v) return lru;
+    for (int i = 0; i < 4; i++)
+      if (!v[i]) return i[1:0];
+    return lru;
+  endfunction
+
+  // ---------------------------------------------------------------------------
+  // §7.3 受害者选择（已追清：golden:6657 / 6795 / 6835 / 7490 / 8329）
+  //
+  //  l3/l2/l0/l1 走 replaceWrapper（空位优先）；★sp 例外，直接用 PLRU★——
+  //  Chisel 那行就是 `spreplace.way`，没套 replaceWrapper（PageTableCache.scala
+  //  写着 "TODO: may be LRU"）。照抄，别顺手补上。
+  logic [3:0] l3_refill_idx, l2_refill_idx, sp_refill_idx;
+  logic       l1_victim_way;
+  logic [1:0] l0_victim_way;
+  logic [1:0] l1_w_set_v;      // 本组的 2 个 valid 位
+  logic [3:0] l0_w_set_v;      // 本组的 4 个 valid 位
+
+  assign l3_refill_idx = replace_wrapper16(l3v, plru16_way(plru_l3));
+  assign l2_refill_idx = replace_wrapper16(l2v, plru16_way(plru_l2));
+  assign sp_refill_idx = plru16_way(plru_sp);
+
+  assign l1_w_set_v    = l1v[2*l1_w_set +: 2];
+  assign l0_w_set_v    = l0v[4*l0_w_set +: 4];
+  assign l1_victim_way = replace_wrapper_l1(l1_w_set_v, plru_l1[l1_w_set]);
+  assign l0_victim_way = replace_wrapper_l0(l0_w_set_v, plru4_way(plru_l0[l0_w_set]));
+
+  // SRAM 写掩码（golden:43369 / 44301）—— §8 占位表里的两根从这里毕业。
+  logic [1:0] l1_w_waymask;
+  logic [3:0] l0_w_waymask;
+  assign l1_w_waymask = 2'h1 << l1_victim_way;
+  assign l0_w_waymask = 4'h1 << l0_victim_way;
+
+  // 整个 l1v/l0v 里被这次回填点中的那一位（golden l1_rfvOH / l0_rfvOH）。
+  logic [L1_SETS*L1_WAYS-1:0] l1_rfv_oh;
+  logic [L0_SETS*L0_WAYS-1:0] l0_rfv_oh;
+  logic [L3_N-1:0]            l3_rf_oh;
+  logic [L2_N-1:0]            l2_rf_oh;
+  logic [SP_N-1:0]            sp_rf_oh;
+
+  assign l1_rfv_oh = {{(L1_SETS*L1_WAYS-1){1'b0}}, 1'b1} << {l1_w_set, l1_victim_way};
+  assign l0_rfv_oh = {{(L0_SETS*L0_WAYS-1){1'b0}}, 1'b1} << {l0_w_set, l0_victim_way};
+  assign l3_rf_oh  = {{(L3_N-1){1'b0}}, 1'b1} << l3_refill_idx;
+  assign l2_rf_oh  = {{(L2_N-1){1'b0}}, 1'b1} << l2_refill_idx;
+  assign sp_rf_oh  = {{(SP_N-1){1'b0}}, 1'b1} << sp_refill_idx;
+
+  // l0 的受害者路号要送出去：bitmap 迟到唤醒时靠它找回写的是哪一路（golden:44301）。
+  assign io_l0_way_info = l0_w_waymask;

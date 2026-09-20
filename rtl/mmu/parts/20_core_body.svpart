@@ -126,27 +126,8 @@
   //   不复位：全部 tag/asid/vmid/ppn/perm 载荷、★l3g/l2g/l1g/l0g/spg★、
   //           l0h/l0vpns/l0asids/l0vmids/l1h/... 影子元数据、全部流水载荷
   // ★把 g 向量也复位掉是真 bug，而 elaborate 与 lint 都不会报★。
-  always_ff @(posedge clock or posedge reset) begin
-    if (reset) begin
-      l3v <= '0;  l2v <= '0;  l1v <= '0;  l0v <= '0;  spv <= '0;
-      valid_delay <= 1'b0;  valid_check <= 1'b0;  valid_resp <= 1'b0;
-      for (int s = 0; s < L0_SETS; s++)
-        for (int w = 0; w < L0_WAYS; w++)
-          l0_bitmap[s][w] <= '0;
-    end
-    else begin
-      // PipelineConnect 的 valid 推进（golden:26xxx，与上面复位块同一个 always）。
-      // ★形状必须照抄：不是「下级 ready 时才更新」，而是**每拍无条件赋值**，
-      //  取值 = ~flush_dup_0 & (本级 fire | 下级没收走就保持)。★
-      //  这两种写法在下级 ready 时同值，但在 ~ready 且 flush 的那一拍**不同**：
-      //  golden 会把 valid 清掉，"有条件更新"的写法不会。
-      //  三级 valid 全部只看 flush_dup_0（不是各看各的 dup）——这一点与回填相反。
-      valid_delay <= ~flush_dup_0 & (left_fire_req   | ~stage_check_ready & valid_delay);
-      valid_check <= ~flush_dup_0 & (left_fire_delay | ~stage_resp_ready  & valid_check);
-      valid_resp  <= ~flush_dup_0 & (left_fire_check | ~io_resp_ready     & valid_resp);
-      // ★l3v/l2v/l1v/l0v/spv 与 l0_bitmap 的更新方程尚未追清，见 §8★
-    end
-  end
+  // ★本文件的两个 always_ff（复位域 / 非复位域）统一写在 §11，不在这儿——
+  //  l3v/l2v/l1v/l0v/spv 既被复位也被回填/sfence 改写，必须在同一个 always_ff 里。★
 
   // ---------------------------------------------------------------------------
   // §5 时钟门控与 SRAM 端口仲裁（已追清：golden:44750-44763, 43250/43557）

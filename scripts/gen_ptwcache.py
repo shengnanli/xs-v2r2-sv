@@ -230,23 +230,25 @@ def build():
     out += [');']
     out += part('20_core_body.svpart')
     out += part('25_refill_wdata.svpart')
+    out += part('26_replace.svpart')
+    out += part('27_refill_state.svpart')
     out += ['', '  // ' + '-' * 75,
             '  // §8 未追清清单 —— ★占位信号，当前值无意义★',
             '  //',
             '  // 下面每一根都还没有从 golden 逐条追出方程。它们现在被恒定值顶着，',
             '  // 只为让本骨架能 elaborate；任何人引用它们都会拿到错值。',
-            '  // 回填写数据（§6.1/§6.2）已从本表毕业，并有 verif/study/PtwCache_refill',
-            '  // 的定向差分对照钉住。剩下的追清顺序：受害者选择/PLRU -> 各级 hitVec',
-            '  // -> sfence 失效 -> 响应装配 -> perf。',
+            '  // 回填写数据（§6.1/§6.2）、替换策略与受害者选择（§7）、回填侧状态更新',
+            '  // （§9/§11）已从本表毕业，各有 verif/study/PtwCache_refill 的定向差分',
+            '  // 对照钉住。剩下的追清顺序：各级 hitVec -> sfence/hfence 失效 ->',
+            '  // ecc flush -> l0_bitmap 与 wakeup -> 响应装配 -> perf。',
             '']
     out += decl_untraced
     out += ['']
     out += decl_rdata
     out += ['']
     out += decl_childbd
-    out += ['']
-    out += part('30_placeholders.svpart')
     driven = {'io_req_ready', 'io_resp_valid', 'io_bitmap_wakeup_ready',
+              'io_l0_way_info',
               'boreChildrenBd_bore_ack', 'boreChildrenBd_bore_outdata',
               'boreChildrenBd_bore_1_ack', 'boreChildrenBd_bore_1_outdata'}
     undriven = [n for d, _, n in ports if d == 'output' and n not in driven]

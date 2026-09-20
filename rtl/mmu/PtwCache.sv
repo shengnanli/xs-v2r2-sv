@@ -96,37 +96,52 @@
 // 【已追清 / 未追清 —— 当前边界】
 //   已追清并写成 RTL：四级流水握手与入口节流、三份 dup 的 flush 与归属、
 //     复位域划分、两个 ClockGate 的开门条件、l1/l0 的 SRAM 读地址与读使能、
-//     l1/l0 的回填使能、l1/l0 的**全部写数据**（§6.1 的 10 个 PTE 谓词 + §6.2 的
-//     逐项 vs/onlypf/perms/ppn/pbmt/prefetch）、全部 MBIST/DFT 透传拓扑。
-//     ★写数据这一段已有定向差分对照钉住★：verif/study/PtwCache_refill 双例化
-//     golden 与本核，用层次引用比 l1/l0 SRAM 的 430 根写端口，
-//     3 seed × 200k 拍、每轮 8600 万次比较、errors=0（详见该目录 tb.sv 头注释）。
-//   未追清（骨架里以显式钉 0 顶着，见 §8）：l1/l0 的受害者选择与 waymask、
-//     五级 PLRU 方程、l3/l2/sp 的回填使能与 refillIdx、各级 hitVec 与命中数据选择、
-//     sfence/hfence 失效掩码（三种 rs1/rs2 组合 × 三种 fence 类型）、
-//     bitmap 检查与 wakeup 回写、io.resp 的 220 根载荷输出、8 个 perf 计数器。
-// 本文件导航（共 4223 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
-//   L37    它在 MMU 里的位置
-//   L44    五级存储
-//   L57    四级流水
-//   L67    三份 dup 各归谁 —— 照抄，绝不合并
-//   L76    复位域 —— golden 实测，别照直觉全复位
-//   L86    子模块
-//   L93    golden 45,308 行里有多少是真逻辑
-//   L100   差分 UT 方案
-//   L119   已追清 / 未追清 —— 当前边界
-//   L133   xs_ptwcache_pkg —— 几何、类型与编码
-//   L671   §1 四级流水与反压
-//   L716   §2 三份 dup 的归属与 flush
-//   L747   §3 存储声明
-//   L788   §4 复位域
-//   L818   §5 时钟门控与 SRAM 端口仲裁
-//   L851   §6 各级 refill 使能
-//   L861   §7 替换策略状态
-//   L880   §6.1 PTE 谓词
-//   L994   §6.2 回填写数据
-//   L1064  §8 未追清清单 —— ★占位信号，当前值无意义★
-//   L1938  §9 子模块例化
+//     l1/l0 的**全部写数据**（§6.1 的 10 个 PTE 谓词 + §6.2 的逐项 vs/onlypf/
+//     perms/ppn/pbmt/prefetch）、全部 MBIST/DFT 透传拓扑、
+//     ★五级替换策略与受害者选择（§7：PseudoLRU 取路/更新 + replaceWrapper，
+//     含 golden 那个"l3 回填污染 l2 PLRU"的真 bug）★、
+//     ★各级回填使能与回填侧状态更新（§9/§11：l3/l2/sp 表项载荷、
+//     l3v..spv 的置位、l3g..spg、五级 h、l1/l0 的 XORFold 影子哈希）★。
+//   上述两段有 verif/study/PtwCache_refill 的定向差分对照钉住：双例化比
+//     430 根 SRAM 写端口 + 1615 根核内回填侧状态，3 seed × 200k 拍，errors=0；
+//     注入 4 个 mutant（含"把 golden 真 bug 修好"）全部被抓到，详见该目录 tb.sv 头注释。
+//   未追清（骨架里以显式钉 0 顶着，见 §8）：
+//     · 各级 hitVec 与命中数据选择、命中侧的 PLRU access（plru_l3 目前**没有任何写者**）；
+//     · sfence/hfence 失效掩码（三种 rs1/rs2 组合 × 三种 fence 类型）；
+//     · l1/l0 的 ecc flush；
+//     · bitmap 检查（l0_bitmap 的写）与 wakeup 回写；
+//     · io.resp 的 220 根载荷输出；
+//     · 8 个 perf 计数器。
+//   ★也就是说：当前这份核只在"从不发请求、从不发 sfence、从不 ecc 出错"的激励下
+//    与 golden 同态。任何人在上面那张清单清空之前引用它的输出，都会拿到错值。★
+// 本文件导航（共 4554 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+//   L43    它在 MMU 里的位置
+//   L50    五级存储
+//   L63    四级流水
+//   L73    三份 dup 各归谁 —— 照抄，绝不合并
+//   L82    复位域 —— golden 实测，别照直觉全复位
+//   L92    子模块
+//   L99    golden 45,308 行里有多少是真逻辑
+//   L106   差分 UT 方案
+//   L125   已追清 / 未追清 —— 当前边界
+//   L148   xs_ptwcache_pkg —— 几何、类型与编码
+//   L686   §1 四级流水与反压
+//   L731   §2 三份 dup 的归属与 flush
+//   L762   §3 存储声明
+//   L803   §4 复位域
+//   L814   §5 时钟门控与 SRAM 端口仲裁
+//   L847   §6 各级 refill 使能
+//   L857   §7 替换策略状态
+//   L876   §6.1 PTE 谓词
+//   L990   §6.2 回填写数据
+//   L1084  §7.1 PseudoLRU —— 位布局与两个方程
+//   L1141  §7.2 replaceWrapper —— 「有空位先填空位，满了才问 PLRU」
+//   L1170  §7.3 受害者选择
+//   L1213  §9 各级回填使能与回填载荷
+//   L1284  §9.1 XORFold —— 影子元数据存的是折叠哈希，不是原值
+//   L1298  §11 时序：两个 always_ff，复位域划分照抄 golden
+//   L1428  §8 未追清清单 —— ★占位信号，当前值无意义★
+//   L2269  §9 子模块例化
 //
 
 // =============================================================================
@@ -792,27 +807,8 @@ module xs_PtwCache_core(
   //   不复位：全部 tag/asid/vmid/ppn/perm 载荷、★l3g/l2g/l1g/l0g/spg★、
   //           l0h/l0vpns/l0asids/l0vmids/l1h/... 影子元数据、全部流水载荷
   // ★把 g 向量也复位掉是真 bug，而 elaborate 与 lint 都不会报★。
-  always_ff @(posedge clock or posedge reset) begin
-    if (reset) begin
-      l3v <= '0;  l2v <= '0;  l1v <= '0;  l0v <= '0;  spv <= '0;
-      valid_delay <= 1'b0;  valid_check <= 1'b0;  valid_resp <= 1'b0;
-      for (int s = 0; s < L0_SETS; s++)
-        for (int w = 0; w < L0_WAYS; w++)
-          l0_bitmap[s][w] <= '0;
-    end
-    else begin
-      // PipelineConnect 的 valid 推进（golden:26xxx，与上面复位块同一个 always）。
-      // ★形状必须照抄：不是「下级 ready 时才更新」，而是**每拍无条件赋值**，
-      //  取值 = ~flush_dup_0 & (本级 fire | 下级没收走就保持)。★
-      //  这两种写法在下级 ready 时同值，但在 ~ready 且 flush 的那一拍**不同**：
-      //  golden 会把 valid 清掉，"有条件更新"的写法不会。
-      //  三级 valid 全部只看 flush_dup_0（不是各看各的 dup）——这一点与回填相反。
-      valid_delay <= ~flush_dup_0 & (left_fire_req   | ~stage_check_ready & valid_delay);
-      valid_check <= ~flush_dup_0 & (left_fire_delay | ~stage_resp_ready  & valid_check);
-      valid_resp  <= ~flush_dup_0 & (left_fire_check | ~io_resp_ready     & valid_resp);
-      // ★l3v/l2v/l1v/l0v/spv 与 l0_bitmap 的更新方程尚未追清，见 §8★
-    end
-  end
+  // ★本文件的两个 always_ff（复位域 / 非复位域）统一写在 §11，不在这儿——
+  //  l3v/l2v/l1v/l0v/spv 既被复位也被回填/sfence 改写，必须在同一个 always_ff 里。★
 
   // ---------------------------------------------------------------------------
   // §5 时钟门控与 SRAM 端口仲裁（已追清：golden:44750-44763, 43250/43557）
@@ -1060,14 +1056,383 @@ module xs_PtwCache_core(
                    & ~pte_is_napot(io_refill_bits_sel_pte_dup_0,
                                    io_refill_bits_level_dup_0);
 
+
+  // ---- 写端口里**已追清**的部分（golden:6839 / 7497 / 43311-43313 / 43931-43935）----
+  //  dup 归属再强调一次：l1 写用 dup_1，l0 写用 dup_0。写反了 UT 多半测不出来。
+  logic [1:0]  l1_w_set;
+  logic [23:0] l1_w_tag;
+  logic [15:0] l1_w_asid;
+  logic [13:0] l1_w_vmid;
+  logic [5:0]  l0_w_set;
+  logic [28:0] l0_w_tag;
+  logic [15:0] l0_w_asid;
+  logic [13:0] l0_w_vmid;
+
+  assign l1_w_set  = io_refill_bits_req_info_dup_1_vpn[13:12];
+  assign l1_w_tag  = io_refill_bits_req_info_dup_1_vpn[37:14];
+  assign l1_w_vmid = io_csr_dup_1_hgatp_vmid[13:0];
+  assign l1_w_asid = (|io_refill_bits_req_info_dup_1_s2xlate)
+                   ? io_csr_dup_1_vsatp_asid : io_csr_dup_1_satp_asid;
+
+  assign l0_w_set  = io_refill_bits_req_info_dup_0_vpn[8:3];
+  assign l0_w_tag  = io_refill_bits_req_info_dup_0_vpn[37:9];
+  assign l0_w_vmid = io_csr_dup_0_hgatp_vmid[13:0];
+  assign l0_w_asid = (|io_refill_bits_req_info_dup_0_s2xlate)
+                   ? io_csr_dup_0_vsatp_asid : io_csr_dup_0_satp_asid;
+
+  // ---------------------------------------------------------------------------
+  // §7.1 PseudoLRU —— 位布局与两个方程（已追清）
+  //
+  //  rocket-chip `PseudoLRU(n)` 用 n-1 位状态表示一棵满二叉树。**位序容易读反**，
+  //  这里按 golden 实测把约定钉死（G1 PtwCache.sv:6657 取路 / 26808 更新）：
+  //
+  //    · 一棵覆盖 bits[hi:lo] 的子树，**根在最高位 hi**；
+  //    · 根为 1 ⇒ "上半边(索引大的那半)更旧" ⇒ 取路时往**上半边**走，
+  //      而上半边的状态位是 bits[hi-1 : lo+(sz-1)/2]（紧挨着根的那一段），
+  //      下半边是 bits[lo+(sz-1)/2-1 : lo]。
+  //    · 访问某一路后，路径上每个节点都被置成**指向另一边**（root <= ~idx[lvl]），
+  //      且只有被走到的那一侧子树继续递归，另一侧原样保留。
+  //
+  //  16 路展开后就是 golden 那一串嵌套三目：bit14 是根，bits[13:7] 是上半(way 8-15)，
+  //  bits[6:0] 是下半(way 0-7)；4 路是 bit2 根 / bit1 上半 / bit0 下半；
+  //  2 路只有一位，取路 = 该位，访问后 = ~way。
+  //
+  //  ★不要把这两个函数"优化"成查表★：它们的形状就是 golden 的形状，
+  //  改形状不影响仿真却会让 FM 多绕一圈。
+  function automatic logic [3:0] plru16_way(input logic [14:0] s);
+    int lo, sz, root;
+    logic [3:0] w;
+    lo = 0; sz = 15;
+    for (int lvl = 3; lvl >= 0; lvl--) begin
+      root   = lo + sz - 1;
+      w[lvl] = s[root];
+      sz     = (sz - 1) / 2;
+      if (s[root]) lo = lo + sz;     // 走上半边；下半边 lo 不动
+    end
+    return w;
+  endfunction
+
+  function automatic logic [14:0] plru16_access(input logic [14:0] s,
+                                                input logic [3:0]  idx);
+    logic [14:0] n;
+    int lo, sz, root;
+    n = s; lo = 0; sz = 15;
+    for (int lvl = 3; lvl >= 0; lvl--) begin
+      root    = lo + sz - 1;
+      n[root] = ~idx[lvl];
+      sz      = (sz - 1) / 2;
+      if (idx[lvl]) lo = lo + sz;
+    end
+    return n;
+  endfunction
+
+  function automatic logic [1:0] plru4_way(input logic [2:0] s);
+    return {s[2], s[2] ? s[1] : s[0]};
+  endfunction
+
+  function automatic logic [2:0] plru4_access(input logic [2:0] s,
+                                              input logic [1:0] way);
+    return {~way[1],
+            way[1] ? ~way[0] : s[1],
+            way[1] ? s[0]    : ~way[0]};
+  endfunction
+
+  // ---------------------------------------------------------------------------
+  // §7.2 replaceWrapper —— 「有空位先填空位，满了才问 PLRU」（已追清）
+  //
+  //  Chisel MMUConst.replaceWrapper(v, lru) = Mux(&v, lru, PriorityEncoder(~v))。
+  //  golden 把 PriorityEncoder 展成了一棵"哪个子块有空位"的树（:6652-6675），
+  //  值与最低无效位下标相同。这里写成朴素的优先查找，可读性优先。
+  //  ★注意 l3/l2 用 16 项全局向量，l1/l0 用的是**本组**的那几位★。
+  function automatic logic [3:0] replace_wrapper16(input logic [15:0] v,
+                                                   input logic [3:0]  lru);
+    if (&v) return lru;
+    for (int i = 0; i < 16; i++)
+      if (!v[i]) return i[3:0];
+    return lru;                       // 到不了：&v 已在上面拦掉
+  endfunction
+
+  function automatic logic replace_wrapper_l1(input logic [1:0] v,
+                                              input logic       lru);
+    if (&v) return lru;
+    return v[0];                      // v[0]=1 ⇒ 空的是 way1；否则 way0
+  endfunction
+
+  function automatic logic [1:0] replace_wrapper_l0(input logic [3:0] v,
+                                                    input logic [1:0] lru);
+    if (&v) return lru;
+    for (int i = 0; i < 4; i++)
+      if (!v[i]) return i[1:0];
+    return lru;
+  endfunction
+
+  // ---------------------------------------------------------------------------
+  // §7.3 受害者选择（已追清：golden:6657 / 6795 / 6835 / 7490 / 8329）
+  //
+  //  l3/l2/l0/l1 走 replaceWrapper（空位优先）；★sp 例外，直接用 PLRU★——
+  //  Chisel 那行就是 `spreplace.way`，没套 replaceWrapper（PageTableCache.scala
+  //  写着 "TODO: may be LRU"）。照抄，别顺手补上。
+  logic [3:0] l3_refill_idx, l2_refill_idx, sp_refill_idx;
+  logic       l1_victim_way;
+  logic [1:0] l0_victim_way;
+  logic [1:0] l1_w_set_v;      // 本组的 2 个 valid 位
+  logic [3:0] l0_w_set_v;      // 本组的 4 个 valid 位
+
+  assign l3_refill_idx = replace_wrapper16(l3v, plru16_way(plru_l3));
+  assign l2_refill_idx = replace_wrapper16(l2v, plru16_way(plru_l2));
+  assign sp_refill_idx = plru16_way(plru_sp);
+
+  assign l1_w_set_v    = l1v[2*l1_w_set +: 2];
+  assign l0_w_set_v    = l0v[4*l0_w_set +: 4];
+  assign l1_victim_way = replace_wrapper_l1(l1_w_set_v, plru_l1[l1_w_set]);
+  assign l0_victim_way = replace_wrapper_l0(l0_w_set_v, plru4_way(plru_l0[l0_w_set]));
+
+  // SRAM 写掩码（golden:43369 / 44301）—— §8 占位表里的两根从这里毕业。
+  logic [1:0] l1_w_waymask;
+  logic [3:0] l0_w_waymask;
+  assign l1_w_waymask = 2'h1 << l1_victim_way;
+  assign l0_w_waymask = 4'h1 << l0_victim_way;
+
+  // 整个 l1v/l0v 里被这次回填点中的那一位（golden l1_rfvOH / l0_rfvOH）。
+  logic [L1_SETS*L1_WAYS-1:0] l1_rfv_oh;
+  logic [L0_SETS*L0_WAYS-1:0] l0_rfv_oh;
+  logic [L3_N-1:0]            l3_rf_oh;
+  logic [L2_N-1:0]            l2_rf_oh;
+  logic [SP_N-1:0]            sp_rf_oh;
+
+  assign l1_rfv_oh = {{(L1_SETS*L1_WAYS-1){1'b0}}, 1'b1} << {l1_w_set, l1_victim_way};
+  assign l0_rfv_oh = {{(L0_SETS*L0_WAYS-1){1'b0}}, 1'b1} << {l0_w_set, l0_victim_way};
+  assign l3_rf_oh  = {{(L3_N-1){1'b0}}, 1'b1} << l3_refill_idx;
+  assign l2_rf_oh  = {{(L2_N-1){1'b0}}, 1'b1} << l2_refill_idx;
+  assign sp_rf_oh  = {{(SP_N-1){1'b0}}, 1'b1} << sp_refill_idx;
+
+  // l0 的受害者路号要送出去：bitmap 迟到唤醒时靠它找回写的是哪一路（golden:44301）。
+  assign io_l0_way_info = l0_w_waymask;
+
+  // ---------------------------------------------------------------------------
+  // §9 各级回填使能与回填载荷（已追清：golden:6647 / 6785 / 7418 / 8289）
+  //
+  //  五级各有各的门控，且**各用各的 dup**：l3/l2 看 dup_2，l1 看 dup_1，l0/sp 看 dup_0。
+  //  过滤条件的语义：
+  //    l3/l2 存的是**非叶子** PDE  ⇒ 要求 ~isLeaf 且 canRefill；
+  //    l1    没有任何过滤          ⇒ 只看 flush 与 levelOH（整行里逐项自己带 vs 位）；
+  //    l0    存 4KB 叶子           ⇒ 把 napot 的那一条踢给 sp；
+  //    sp    存大页/napot          ⇒ levelOH.sp，或 levelOH.l0 但选中的 PTE 是 napot；
+  //          载荷有效性用 (isLeaf & canRefill) | onlyPf。
+  logic l3_refill, l2_refill, sp_refill;
+
+  assign l3_refill = ~flush_dup_2 & io_refill_bits_levelOH_l3
+                   & ~pte_is_leaf(io_refill_bits_sel_pte_dup_2)
+                   & pte_can_refill(io_refill_bits_sel_pte_dup_2,
+                                    io_refill_bits_level_dup_2,
+                                    io_refill_bits_req_info_dup_2_s2xlate,
+                                    pbmte, io_csr_dup_2_hgatp_mode);
+
+  assign l2_refill = ~flush_dup_2 & io_refill_bits_levelOH_l2
+                   & ~pte_is_leaf(io_refill_bits_sel_pte_dup_2)
+                   & pte_can_refill(io_refill_bits_sel_pte_dup_2,
+                                    io_refill_bits_level_dup_2,
+                                    io_refill_bits_req_info_dup_2_s2xlate,
+                                    pbmte, io_csr_dup_2_hgatp_mode);
+
+  logic sp_from_l0_napot, sp_payload_ok, sp_only_pf;
+  assign sp_from_l0_napot = io_refill_bits_levelOH_l0
+                          & pte_is_napot(io_refill_bits_sel_pte_dup_0,
+                                         io_refill_bits_level_dup_0);
+  assign sp_only_pf       = pte_only_pf(io_refill_bits_sel_pte_dup_0,
+                                        io_refill_bits_level_dup_0,
+                                        io_refill_bits_req_info_dup_0_s2xlate, pbmte);
+  assign sp_payload_ok    = (pte_is_leaf(io_refill_bits_sel_pte_dup_0)
+                             & pte_can_refill(io_refill_bits_sel_pte_dup_0,
+                                              io_refill_bits_level_dup_0,
+                                              io_refill_bits_req_info_dup_0_s2xlate,
+                                              pbmte, io_csr_dup_0_hgatp_mode))
+                          | sp_only_pf;
+  assign sp_refill = ~flush_dup_0
+                   & (io_refill_bits_levelOH_sp | sp_from_l0_napot)
+                   & sp_payload_ok;
+
+  // 回填时把 allStage 折成 onlyStage1（与查找侧的 h_search 同一个折法），每 dup 一份。
+  logic [1:0] refill_h_0, refill_h_1, refill_h_2;
+  assign refill_h_0 = (&io_refill_bits_req_info_dup_0_s2xlate)
+                    ? H_ONLY_STAGE1 : io_refill_bits_req_info_dup_0_s2xlate;
+  assign refill_h_1 = (&io_refill_bits_req_info_dup_1_s2xlate)
+                    ? H_ONLY_STAGE1 : io_refill_bits_req_info_dup_1_s2xlate;
+  assign refill_h_2 = (&io_refill_bits_req_info_dup_2_s2xlate)
+                    ? H_ONLY_STAGE1 : io_refill_bits_req_info_dup_2_s2xlate;
+
+  logic refill_prefetch_0, refill_prefetch_2;
+  assign refill_prefetch_0 = (io_refill_bits_req_info_dup_0_source == 2'd2);
+  assign refill_prefetch_2 = (io_refill_bits_req_info_dup_2_source == 2'd2);
+
+  // l3/l2 用 dup_2 的 asid，sp 用 dup_0 的（l1/l0 的在 §6 已有）。
+  logic [ASID_W-1:0] l23_w_asid, sp_w_asid;
+  assign l23_w_asid = (|io_refill_bits_req_info_dup_2_s2xlate)
+                    ? io_csr_dup_2_vsatp_asid : io_csr_dup_2_satp_asid;
+  assign sp_w_asid  = (|io_refill_bits_req_info_dup_0_s2xlate)
+                    ? io_csr_dup_0_vsatp_asid : io_csr_dup_0_satp_asid;
+
+  // 整行 8 个 PTE 的 g 位全为 1，这条 l1/l0 表项才算 global（golden:31541-31550）。
+  logic refill_line_all_g;
+  always_comb begin
+    refill_line_all_g = 1'b1;
+    for (int i = 0; i < SECTOR_N; i++)
+      refill_line_all_g &= refill_pte[i][PTE_G];
+  end
+
+  // ---------------------------------------------------------------------------
+  // §9.1 XORFold —— 影子元数据存的是折叠哈希，不是原值（已追清：golden:30522/30538）
+  //
+  //  XORFold(x, w)：把 x 按 w 位一段切开，逐段异或；最后不足一段的高位零扩展。
+  //  代价是 sfence 会保守多刷（哈希撞了就多刷几条），这是 golden 的设计选择。
+  function automatic logic [HASH_ASID_W-1:0] xorfold3(input logic [15:0] x);
+    return x[2:0] ^ x[5:3] ^ x[8:6] ^ x[11:9] ^ x[14:12] ^ {2'h0, x[15]};
+  endfunction
+
+  function automatic logic [HASH_VPN_W-1:0] xorfold6_tag(input logic [L0_TAG_W-1:0] t);
+    // t = vpn[37:9]（29 位）：5 段 6 位，最后一段只有 5 位。
+    return t[5:0] ^ t[11:6] ^ t[17:12] ^ t[23:18] ^ {1'h0, t[28:24]};
+  endfunction
+
+  // ---------------------------------------------------------------------------
+  // §11 时序：两个 always_ff，复位域划分照抄 golden（见 §4 的说明）
+  //
+  //  ★这一版只追清了**回填侧**的状态更新★：sfence/hfence 的失效掩码、
+  //  ecc flush、l0_bitmap 的写，都还没追清，见 §8。
+  //  所以当前这份核只在"从不发 sfence、从不 ecc 出错"的激励下与 golden 同态。
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) begin
+      l3v <= '0;  l2v <= '0;  l1v <= '0;  l0v <= '0;  spv <= '0;
+      valid_delay <= 1'b0;  valid_check <= 1'b0;  valid_resp <= 1'b0;
+      plru_l3 <= '0;  plru_l2 <= '0;  plru_sp <= '0;
+      for (int s = 0; s < L1_SETS; s++) plru_l1[s] <= 1'b0;
+      for (int s = 0; s < L0_SETS; s++) plru_l0[s] <= '0;
+      for (int s = 0; s < L0_SETS; s++)
+        for (int w = 0; w < L0_WAYS; w++)
+          l0_bitmap[s][w] <= '0;
+    end
+    else begin
+      // PipelineConnect 的 valid 推进。★形状必须照抄：不是「下级 ready 时才更新」，
+      // 而是**每拍无条件赋值**，取值 = ~flush_dup_0 & (本级 fire | 下级没收走就保持)。★
+      // 这两种写法在下级 ready 时同值，但在 ~ready 且 flush 的那一拍**不同**：
+      // golden 会把 valid 清掉，"有条件更新"的写法不会。
+      // 三级 valid 全部只看 flush_dup_0（不是各看各的 dup）——这一点与回填相反。
+      valid_delay <= ~flush_dup_0 & (left_fire_req   | ~stage_check_ready & valid_delay);
+      valid_check <= ~flush_dup_0 & (left_fire_delay | ~stage_resp_ready  & valid_check);
+      valid_resp  <= ~flush_dup_0 & (left_fire_check | ~io_resp_ready     & valid_resp);
+
+      // 有效位：回填把被选中的那一位置 1。★sfence 的清零支路未追清（§8）★
+      if (l3_refill) l3v <= l3v | l3_rf_oh;
+      if (l2_refill) l2v <= l2v | l2_rf_oh;
+      if (l1_refill) l1v <= l1v | l1_rfv_oh;
+      if (l0_refill) l0v <= l0v | l0_rfv_oh;
+      if (sp_refill) spv <= spv | sp_rf_oh;
+
+      // 替换状态。★这里就是 §7 记的那个 golden 真 bug 的落点★：
+      //   plru_l3 只有"l3 命中"一个写者（未追清，见 §8）；
+      //   plru_l2 有三个写者，优先级 l2 回填 > **l3 回填** > l2 命中。
+      // l3 回填喂给 plru_l2 的是 l3_refill_idx —— 照抄，不许"修好"。
+      if (l2_refill)      plru_l2 <= plru16_access(plru_l2, l2_refill_idx);
+      else if (l3_refill) plru_l2 <= plru16_access(plru_l2, l3_refill_idx);
+
+      if (sp_refill) plru_sp <= plru16_access(plru_sp, sp_refill_idx);
+
+      if (l1_refill) plru_l1[l1_w_set] <= ~l1_victim_way;
+      if (l0_refill) plru_l0[l0_w_set] <= plru4_access(plru_l0[l0_w_set], l0_victim_way);
+    end
+  end
+
+  // ---- 非复位域：全部载荷与影子元数据（golden 的第二个 always，:30763）----
+  always_ff @(posedge clock) begin
+    // l3 表项（无 pbmt —— l3 级 PDE 不带 pbmt）
+    if (l3_refill) begin
+      l3_entry[l3_refill_idx].tag      <= io_refill_bits_req_info_dup_2_vpn[37:27];
+      l3_entry[l3_refill_idx].asid     <= l23_w_asid;
+      l3_entry[l3_refill_idx].vmid     <= io_csr_dup_2_hgatp_vmid[13:0];
+      l3_entry[l3_refill_idx].ppn      <= io_refill_bits_sel_pte_dup_2[47:10];
+      l3_entry[l3_refill_idx].prefetch <= refill_prefetch_2;
+      l3h[l3_refill_idx]               <= refill_h_2;
+      // g 位：G 阶段（onlyStage2）的 PTE 其 g 位硬件要忽略，写 0。
+      l3g <= (l3g & ~l3_rf_oh)
+           | ((io_refill_bits_sel_pte_dup_2[PTE_G]
+               & (io_refill_bits_req_info_dup_2_s2xlate != H_ONLY_STAGE2))
+              ? l3_rf_oh : '0);
+    end
+
+    if (l2_refill) begin
+      l2_entry[l2_refill_idx].tag      <= io_refill_bits_req_info_dup_2_vpn[37:18];
+      l2_entry[l2_refill_idx].asid     <= l23_w_asid;
+      l2_entry[l2_refill_idx].vmid     <= io_csr_dup_2_hgatp_vmid[13:0];
+      l2_entry[l2_refill_idx].pbmt     <= io_refill_bits_sel_pte_dup_2[62:61];
+      l2_entry[l2_refill_idx].ppn      <= io_refill_bits_sel_pte_dup_2[47:10];
+      l2_entry[l2_refill_idx].prefetch <= refill_prefetch_2;
+      l2h[l2_refill_idx]               <= refill_h_2;
+      l2g <= (l2g & ~l2_rf_oh)
+           | ((io_refill_bits_sel_pte_dup_2[PTE_G]
+               & (io_refill_bits_req_info_dup_2_s2xlate != H_ONLY_STAGE2))
+              ? l2_rf_oh : '0);
+    end
+
+    // sp 表项：大页/napot，带完整 perm、level 与 v。
+    // ★v 字段 = ~onlyPf★：onlyPf 的条目也进 sp，但存的是"这条注定 pf"，v=0。
+    if (sp_refill) begin
+      sp_entry[sp_refill_idx].tag      <= io_refill_bits_req_info_dup_0_vpn;
+      sp_entry[sp_refill_idx].asid     <= sp_w_asid;
+      sp_entry[sp_refill_idx].vmid     <= io_csr_dup_0_hgatp_vmid[13:0];
+      sp_entry[sp_refill_idx].n        <= io_refill_bits_sel_pte_dup_0[PTE_N];
+      sp_entry[sp_refill_idx].pbmt     <= io_refill_bits_sel_pte_dup_0[62:61];
+      sp_entry[sp_refill_idx].ppn      <= io_refill_bits_sel_pte_dup_0[47:10];
+      sp_entry[sp_refill_idx].perm.d   <= io_refill_bits_sel_pte_dup_0[PTE_D];
+      sp_entry[sp_refill_idx].perm.a   <= io_refill_bits_sel_pte_dup_0[PTE_A];
+      sp_entry[sp_refill_idx].perm.g   <= io_refill_bits_sel_pte_dup_0[PTE_G]
+                                        & (io_refill_bits_req_info_dup_0_s2xlate
+                                           != H_ONLY_STAGE2);
+      sp_entry[sp_refill_idx].perm.u   <= io_refill_bits_sel_pte_dup_0[PTE_U];
+      sp_entry[sp_refill_idx].perm.x   <= io_refill_bits_sel_pte_dup_0[PTE_X];
+      sp_entry[sp_refill_idx].perm.w   <= io_refill_bits_sel_pte_dup_0[PTE_W];
+      sp_entry[sp_refill_idx].perm.r   <= io_refill_bits_sel_pte_dup_0[PTE_R];
+      sp_entry[sp_refill_idx].level    <= io_refill_bits_level_dup_0;
+      sp_entry[sp_refill_idx].prefetch <= refill_prefetch_0;
+      sp_entry[sp_refill_idx].v        <= ~sp_only_pf;
+      sph[sp_refill_idx]               <= refill_h_0;
+      spg <= (spg & ~sp_rf_oh)
+           | ((io_refill_bits_sel_pte_dup_0[PTE_G]
+               & (io_refill_bits_req_info_dup_0_s2xlate != H_ONLY_STAGE2))
+              ? sp_rf_oh : '0);
+    end
+
+    // l1/l0：载荷在 SRAM 里（写端口见 §6.2），核内只留 g / h / 影子哈希。
+    if (l1_refill) begin
+      l1g <= (l1g & ~l1_rfv_oh)
+           | ((refill_line_all_g
+               & (io_refill_bits_req_info_dup_1_s2xlate != H_ONLY_STAGE2))
+              ? l1_rfv_oh : '0);
+      l1h    [l1_w_set][l1_victim_way] <= refill_h_1;
+      l1asids[l1_w_set][l1_victim_way] <= xorfold3(l1_w_asid);
+      l1vmids[l1_w_set][l1_victim_way] <= xorfold3(io_csr_dup_1_hgatp_vmid);
+    end
+
+    if (l0_refill) begin
+      l0g <= (l0g & ~l0_rfv_oh)
+           | ((refill_line_all_g
+               & (io_refill_bits_req_info_dup_0_s2xlate != H_ONLY_STAGE2))
+              ? l0_rfv_oh : '0);
+      l0h    [l0_w_set][l0_victim_way] <= refill_h_0;
+      l0asids[l0_w_set][l0_victim_way] <= xorfold3(l0_w_asid);
+      l0vmids[l0_w_set][l0_victim_way] <= xorfold3(io_csr_dup_0_hgatp_vmid);
+      l0vpns [l0_w_set][l0_victim_way] <= xorfold6_tag(l0_w_tag);
+    end
+  end
+
   // ---------------------------------------------------------------------------
   // §8 未追清清单 —— ★占位信号，当前值无意义★
   //
   // 下面每一根都还没有从 golden 逐条追出方程。它们现在被恒定值顶着，
   // 只为让本骨架能 elaborate；任何人引用它们都会拿到错值。
-  // 回填写数据（§6.1/§6.2）已从本表毕业，并有 verif/study/PtwCache_refill
-  // 的定向差分对照钉住。剩下的追清顺序：受害者选择/PLRU -> 各级 hitVec
-  // -> sfence 失效 -> 响应装配 -> perf。
+  // 回填写数据（§6.1/§6.2）、替换策略与受害者选择（§7）、回填侧状态更新
+  // （§9/§11）已从本表毕业，各有 verif/study/PtwCache_refill 的定向差分
+  // 对照钉住。剩下的追清顺序：各级 hitVec -> sfence/hfence 失效 ->
+  // ecc flush -> l0_bitmap 与 wakeup -> 响应装配 -> perf。
 
 
 
@@ -1669,40 +2034,7 @@ module xs_PtwCache_core(
   logic            childBd_15_selectedOH;
   logic            childBd_16_selectedOH;
 
-
-  // ---- 写端口里**已追清**的部分（golden:6839 / 7497 / 43311-43313 / 43931-43935）----
-  //  dup 归属再强调一次：l1 写用 dup_1，l0 写用 dup_0。写反了 UT 多半测不出来。
-  logic [1:0]  l1_w_set;
-  logic [23:0] l1_w_tag;
-  logic [15:0] l1_w_asid;
-  logic [13:0] l1_w_vmid;
-  logic [5:0]  l0_w_set;
-  logic [28:0] l0_w_tag;
-  logic [15:0] l0_w_asid;
-  logic [13:0] l0_w_vmid;
-
-  assign l1_w_set  = io_refill_bits_req_info_dup_1_vpn[13:12];
-  assign l1_w_tag  = io_refill_bits_req_info_dup_1_vpn[37:14];
-  assign l1_w_vmid = io_csr_dup_1_hgatp_vmid[13:0];
-  assign l1_w_asid = (|io_refill_bits_req_info_dup_1_s2xlate)
-                   ? io_csr_dup_1_vsatp_asid : io_csr_dup_1_satp_asid;
-
-  assign l0_w_set  = io_refill_bits_req_info_dup_0_vpn[8:3];
-  assign l0_w_tag  = io_refill_bits_req_info_dup_0_vpn[37:9];
-  assign l0_w_vmid = io_csr_dup_0_hgatp_vmid[13:0];
-  assign l0_w_asid = (|io_refill_bits_req_info_dup_0_s2xlate)
-                   ? io_csr_dup_0_vsatp_asid : io_csr_dup_0_satp_asid;
-
-  // ---- ★以下全部未追清：占位，值无意义★ ----
-  //  lX_w_waymask / 受害者选择 : 依赖 PLRU 方程 +「优先选无效项」的 replaceWrapper，
-  //  两者都还没追清（PLRU 的 access 优先级尤其要小心，见 §7 记的那个 golden 真 bug）。
-  logic [1:0] l1_w_waymask;
-  logic [3:0] l0_w_waymask;
-
-  assign l1_w_waymask = '0;
-  assign l0_w_waymask = '0;
-
-  // ★以下 229 个输出还没有真实驱动★——命中判定、响应装配、perf 计数
+  // ★以下 228 个输出还没有真实驱动★——命中判定、响应装配、perf 计数
   // 都还没追清（见 §8）。钉 0 只为让骨架能 elaborate，不是它们的正确值。
   assign io_resp_bits_req_info_vpn = '0;
   assign io_resp_bits_req_info_s2xlate = '0;
@@ -1924,7 +2256,6 @@ module xs_PtwCache_core(
   assign io_resp_bits_toHptw_bitmapCheck_ptes_7 = '0;
   assign io_resp_bits_toHptw_bitmapCheck_fromSP = '0;
   assign io_resp_bits_toHptw_bitmapCheck_SPlevel = '0;
-  assign io_l0_way_info = '0;
   assign io_perf_0_value = '0;
   assign io_perf_1_value = '0;
   assign io_perf_2_value = '0;
