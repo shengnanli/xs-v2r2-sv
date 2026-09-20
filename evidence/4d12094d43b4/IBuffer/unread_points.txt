@@ -1,0 +1,6 @@
+matched_nc	r:/WORK/IBuffer/deqInBankPtr_0_flag_reg {i:/WORK/IBuffer/u_core/deq_inbank_flag_q_reg[0]}
+matched_nc	r:/WORK/IBuffer/deqInBankPtr_1_flag_reg {i:/WORK/IBuffer/u_core/deq_inbank_flag_q_reg[1]}
+matched_nc	r:/WORK/IBuffer/deqInBankPtr_2_flag_reg {i:/WORK/IBuffer/u_core/deq_inbank_flag_q_reg[2]}
+matched_nc	r:/WORK/IBuffer/deqInBankPtr_3_flag_reg {i:/WORK/IBuffer/u_core/deq_inbank_flag_q_reg[3]}
+matched_nc	r:/WORK/IBuffer/deqInBankPtr_4_flag_reg {i:/WORK/IBuffer/u_core/deq_inbank_flag_q_reg[4]}
+matched_nc	r:/WORK/IBuffer/deqInBankPtr_5_flag_reg {i:/WORK/IBuffer/u_core/deq_inbank_flag_q_reg[5]}
