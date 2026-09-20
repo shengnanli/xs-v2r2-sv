@@ -104,9 +104,15 @@ def child_output_pins(golden_dir, ctype):
 
 
 LITERAL = re.compile(r"^\d*'[hbdHBD][0-9a-fA-FxzXZ_]+$")
+# firtool writes an unconnected child output as `.pin (/* unused */)`.
+# ★这不是一个网名★：不识别它，9 个 deqPtrGenModule 的 io_canCommitPriorityCond_*
+# 会被折成同一个"网" `n_/*`（既不是合法标识符，又把 9 个悬空口连成一根线）。
+UNUSED = re.compile(r'^/\*\s*unused\s*\*/$')
 
 
 def classify(net, portnames):
+    if UNUSED.match(net):
+        return 'unused', ''
     if net in portnames:
         return 'port', net
     if net in ('clock', 'reset'):
@@ -280,6 +286,13 @@ def selftest(golden):
          'ports region actually populated'),
         ('children_present', 'CommitStuckCounter commitStuckCounter (' in body,
          'children region actually populated'),
+        # ★2026-09-20 抓到的真缺陷★：firtool 把悬空的子模块输出写成
+        # `.pin (/* unused */)`。不识别它，9 个 io_canCommitPriorityCond_* 会折成
+        # 同一个"网" `n_/*` —— 既不是合法标识符，又把 9 个悬空口短接成一根线。
+        ('unused_pins_open',
+         'n_/*' not in body
+         and re.search(r'\.io_canCommitPriorityCond_0\s*\(\)', body) is not None,
+         '悬空子模块输出写成 `()`，没有变成名为 `n_/*` 的假网'),
     ]
     # Negative: a splice that ignored the END marker would swallow the trailing
     # sentinel. Simulate by checking the marker pair is still intact and empty
