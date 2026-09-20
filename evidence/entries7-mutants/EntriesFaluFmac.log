@@ -1,0 +1,18 @@
+[M1] N/A（本变体上这条变异是死的）: 要有 IQ 唤醒**而且** IQ 唤醒总线真的带 loadDependency，这条才活。★2026-09-20 实测更正★：原判据只写 v.n_wk_iq > 0，于是三个 Falu* 变体（n_wk_iq=3 但 iq_has_ld_dep=False）被判成"适用"，跑出来是"逃逸"。查下去是**空变异**：薄层把 .enq_ld_dep/.iq_ld_dep/.iqd_ld_dep 全接 '0，golden Entries 顶层连一个 srcLoadDependency/loadDependency 端口都没有，所以 `x |= 0` 与 `x = 0` 在累加器本来就是 0 时完全一样。★不是推理，是 FM 证的★：把 M1 注进核跑 FM，passing 15934 / failing 0 / unread 0，与未变异逐个相同 ⇒ 电路没变。同源判据见 M2（它一开始就要求 n_wk_iq>0 and n_ld_cancel>0）。
+[M2] N/A（本变体上这条变异是死的）: 要同时有 IQ 唤醒和 ldCancel 这条才活
+[M3] N/A（本变体上这条变异是死的）: 没有 regcache 的变体里 rc_replaced 够不到任何输出
+[M4] N/A（本变体上这条变异是死的）: 没有哪一路 IQ 唤醒自己是 load 流水时，这一位本来就不是常数 1
+[M5] N/A（本变体上这条变异是死的）: golden 顶层没有 io_ldCancel_*_ld1Cancel 端口（矩阵 ldCancel_ld1=0），c1 恒 0，删掉这一项改不动任何行为 —— 这条要靠 Ldu/StaMou/StdMoud 去证
+[M6] N/A（本变体上这条变异是死的）: 没有 ldCancel 的变体里 cur_ld_cancel 恒 0
+[M10] N/A（本变体上这条变异是死的）: 单发射口变体里 comp 本来就没有这个寄存器
+[M15] N/A（本变体上这条变异是死的）: 没有 regcache 的变体里 use_rc_now 恒 0，这条是死的
+[M11] N/A（本变体上这条变异是死的）: comp 段本来就没有这组寄存器时，钉 0 是对的
+[M14] N/A（本变体上这条变异是死的）: 没有 ldCancel 的变体里影子恒 0，寄存器原值与移位后的次态都是 0
+[M13] 结构型（UT 按构造看不见，闸在 FM）: deqPortIdx 只按发射口数生成 —— 反过来把 enq/simp 的也删了，我第二次栽的方向（UT 六轮全绿，是 FM 的 FM-036 Unknown name 抓出来的）
+[M7] 抓住 (errors=1): comp 条目的 canIssueBypass 没接上 —— 0 周期 IQ 唤醒的 uop 晚一拍才能发射
+[M8] 抓住 (errors=142515): commonOut.dataSources 漏掉 forward 那一档（本拍 IQ 唤醒的源仍报寄存器堆）
+[M9] 抓住 (errors=1289716): exuSources 记成「第几路唤醒」而不是「第几路唤醒 + 1」（golden 的 0 表示"还没被 IQ 唤醒过"）
+[M12] 抓住 (errors=1690876): issueResp 的 4 档常量表里，timer0 那档从 BLOCK 改成 SUCCESS
+
+变异判别力: 抓住 4/4 条适用的行为型变异（10 条在本变体上是死的记 N/A；1 条是结构型、UT 按构造看不见，闸在 FM；0 条基础设施失败、不计分）
+无效变异体（编不过，未产生电路）: 0
