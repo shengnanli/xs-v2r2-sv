@@ -63,6 +63,18 @@ run "fm_eq 结构闸"     python3 scripts/test_fm_eq_wellformed.py
 # 失败、脚本只 puts 一行 miss=N，证明照跑照绿，而那行 miss 没人会看。
 # 本闸落地时实测：15 个钉点文件里 12 个是 fail-open 的（期望数量只写在 puts 字符串里）。
 run "FM 钉点结构闸"     python3 scripts/test_fm_pins_wellformed.py
+# 钉点「调用序列等价」闸：钉点结构闸管的是"守卫写对没有"，这一条管的是另一件事 ——
+# **fm_pins*.tcl 在证明闭包里**（receipt 的 proof_config.pin_scripts 记它的 sha256），
+# 所以每次有人动它都要回答"既有 receipt 还算不算数"。判据只有一条：发射出去的
+# set_user_match 调用序列有没有变。没变 = 守卫专属，receipt 继续有效；变了 = 新前提，
+# 必须重出 receipt。
+# ★为什么不能"逐字节比对两版的 set_user_match 行"★：本仓钉点文件多数把调用写在循环里，
+# 那一行恰恰就是被改的守卫本身，照字面比等于自问自答。所以改成把 set_user_match 换成
+# 记参数的桩、用 tclsh 真跑、逐字节比**实际发生的调用序列**。
+# 先跑双向负测（真守卫专属必须判绿 / 真改了钉的点必须判红 —— 只判红的实现和恒等判绿的
+# 实现都会在这里露馅），再对着基线表 docs/pin_call_seq.tsv 核对。两条加起来约 12 秒。
+run "钉点调用序列闸负测"  python3 scripts/pin_call_equiv.py --selftest
+run "钉点调用序列闸"     python3 scripts/pin_call_equiv.py --check
 # 家族生成器幂等：tlbuffer worker 发现 gen_tlbuffer_ad_family.py --check 一直报 DRIFT
 # ——negtest 段是手工贴在生成产物后面的，谁跑一次生成器它就被静默删掉，而那正是该家族
 # 唯一病因形态（位宽）的防护。只有挂了 --check 的生成器进这道闸。

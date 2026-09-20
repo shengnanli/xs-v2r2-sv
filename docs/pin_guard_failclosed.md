@@ -34,29 +34,50 @@ if {$_miss != 0} { error "..." }      ;# 永远走不到
 
 ---
 
-## 二、中止一律用 `error`，不用 `exit`（本轮实测更正）
+## 二、中止一律用 `error`，不用 `exit`
 
-钉点代码在 sidecar 模式下由 `scripts/sidecar/fm_native_emit.tcl:133` 的
-`interp create -safe` 放进**受限子解释器**里执行，而 **Tcl 的 safe interp 隐藏 `exit`**：
+### 2.1 ★`exit` 在钉点文件里有两种行为，取决于是不是正式签核★
+
+`scripts/fm_eq.tcl:735/:814` 按 `SIDECAR_ON` 分叉，而 `SIDECAR_ON` 由环境变量
+`FM_SIDECAR_OUT` 决定（`fm_eq.tcl:16-21`）——
+**正式签核的 `run_proof.sh` 会设它，本地 `make fm-X` 不设**：
+
+```tcl
+if {$SIDECAR_ON} { sidecar_pin_source $env(FM_PIN_TCL) } else { source $env(FM_PIN_TCL) }
+```
+
+本 lane 在 tclsh 上把两条路都跑过（两段探针，各自独立可复跑）：
+
+| 上下文 | `exit 3` | `error "..."` |
+|---|---|---|
+| 本地调试（顶层 `source`） | **宿主进程真退出，退出码 3**（`HOST STILL ALIVE` 那行不再打印） | 抛异常 |
+| 正式签核（`interp create -safe`） | 抛 `invalid command name "exit"`，**宿主还活着** | 抛异常，**作者写的失败原因原样保留** |
+
+safe interp 隐藏 `exit` 的直接证据：
 
 ```tcl
 set i [interp create -safe]
 $i eval {info commands exit}    ;# -> ★空（命令不存在）★
 $i eval {info commands error}   ;# -> error
-$i eval {exit 3}                ;# -> 抛出: invalid command name "exit"
-$i eval {error "PIN_MISS"}      ;# -> 抛出: PIN_MISS
 ```
 
-所以存量里那些 `exit 3` **确实会中止**，但**是靠"这个命令不存在"中止的，
-不是靠写的人表达的那个意思** —— 与本轮要修的病是同一族：
-*代码看起来表达了意图，实际起作用的是别的机制*。它今天恰好 fail-closed，
-但一旦有人把它包进 `catch`、或哪天 sidecar 换成非 safe interp，行为就变，
-而没有任何判据会提醒。
+### 2.2 为什么这是最坏的一种排列
 
-⇒ 本轮把 14 个文件里所有中止路径**统一改成 `error "<可读原因>"`**。
+**同一行代码在调试时和出证时走不同机制。** 而且签核那条路上的 fail-closed
+是**副作用不是设计**：它靠"这个命令在 safe interp 里不存在"生效，
+日志里留下的是 `invalid command name "exit"` —— 读的人会以为脚本有语法错，
+而**作者写的失败原因一个字都没留下**。
+
+这正是本轮反复在修的那一族：*代码看起来表达了意图，实际起作用的是别的机制*。
+它今天恰好 fail-closed，但一旦有人把它包进 `catch`、或哪天 sidecar 换成非 safe interp，
+行为就变，而没有任何判据会提醒。
+
+⇒ 结论（已进 `CONVENTIONS.md`）：**一律 `error`，任何值的 `exit` 都不许用。**
+本轮把这 14 个文件里所有中止路径统一改成 `error "<可读原因>"`。
 
 （附带一条别读错：负测 `M10「exit 0 装成中止」`判的是**文本形态**，不是运行时行为 ——
-在真实 safe interp 里 `exit 0` 也会抛。它作为"别这么写"的静态约定仍然合理。）
+在 safe interp 里 `exit 0` 也会抛，在顶层 `source` 下它会让宿主以 0 退出。
+它作为"别这么写"的静态约定仍然合理。）
 
 ---
 
@@ -194,3 +215,60 @@ python3 scripts/prove_pin_calls_equal_dyn.py                                    
 同一轮一并补成 fail-closed。
 
 缩表后 `python3 scripts/test_fm_pins_wellformed.py` **rc=0**（21 项全过，含 M0b..M14 负测）。
+
+---
+
+## 七、把这件事做成一道**可复跑的闸**：`scripts/pin_call_equiv.py`
+
+§4/§5 那两张表是**一次性产物**。但「动了钉点文件，既有 receipt 还算不算数」这个问题
+**还会反复发生** —— 只要有人改名、改期望、加规则就要回答一次。
+这个能力如果只留在一次性脚本里，下一个人会重新发明一遍，
+或者更糟：**直接声称"只是守卫改动"而不证明**。
+
+所以做成闸：
+
+```
+python3 scripts/pin_call_equiv.py               # 闸：对着基线表核对（gate_all 已接）
+python3 scripts/pin_call_equiv.py --selftest    # ★双向负测★（gate_all 已接，跑在闸之前）
+python3 scripts/pin_call_equiv.py --list        # 覆盖情况
+python3 scripts/pin_call_equiv.py --compare-rev <git-rev> [--tsv out.tsv]
+                                                # 工作树 vs 某版本，直接回答"要不要重跑"
+python3 scripts/pin_call_equiv.py --update      # 重建基线（★只在重出 receipt 之后★）
+```
+
+### 7.1 何时**必须**跑
+
+* 改了任何 `verif/ut/*/fm_pins*.tcl` —— 提交前跑 `--compare-rev <改动前的 rev>`，
+  把结论写进 commit message。`GUARD_ONLY` 才可以说"receipt 继续有效"。
+* 判 `NEEDS_RERUN` 时 **不要**自己去 `--update` 把表改绿 ——
+  那等于给旧 receipt 背书。先重出 receipt，再更新表。
+
+### 7.2 覆盖面
+
+| 类型 | 判别 | 怎么跑 | 数量 |
+|---|---|---|---|
+| 静态 | 钉点表写死，只依赖 `$top` | 把 `$top` 设成文件里声明的变体，**不需要夹具** | 40 文件 / 49 变体 |
+| 动态 | 用 `report_unmatched_points` / `find_cells` 现场发现点名 | 需 `verif/ut/<目标>/fm_pins_fixture.tcl` 把查询输出固定住 | 7 文件 / 14 变体 |
+| 缺夹具 | 动态但夹具还没写 | 进 `NO_FIXTURE` 棘轮，逐条写明原因 | 1（`Predictor`） |
+
+两条棘轮双向约束：`NO_FIXTURE` **只许缩**（新动态文件没夹具一律判红），
+`COVERED_DYNAMIC` **只许涨**（已覆盖的不许悄悄退回无夹具）。
+基线表 `docs/pin_call_seq.tsv` 63 条，全跑一遍约 11 秒。
+
+### 7.3 双向负测（`--selftest`）
+
+**只判红的实现和恒等判绿的实现都必须露馅**，所以两侧都种病：
+
+* **A 组：真守卫专属 → 必须判绿**（改错误消息文本 / 加一行 `puts` /
+  返回值计数↔catch 计数互换 / 期望值从字面量改成变量）—— 静态动态各 4 条
+* **B 组：真改了钉的点 → 必须判红**（改一个 ref 名字 / 少钉一对 / 多钉一对 /
+  换两对的顺序 / 改 impl 侧路径模板）—— 静态动态各 5 条
+* **C 组**：跑不起来时必须 `rc != 0` 且调用序列为空 ——
+  ★"跑不起来"不能读成"没有差异"★
+
+### 7.4 一次独立交叉核对
+
+本工具测出的 18 个 `OthersEntry_*` 调用数，与**另一条 lane 独立写的**
+`verif/ut/OthersEntry_common/PIN_GUARD_FIX.md` 那张表 **18/18 逐个相同**。
+两个互不知情的量法给出同一组数 —— 这是对量法本身的一次外部验证，
+比我自己说"我的桩是对的"强。
