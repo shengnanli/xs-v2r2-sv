@@ -35,7 +35,7 @@
 //     · LLPTW 的 PMP 口由 1 个变 2 个（故 PMPChecker 由 3 个变 5 个）
 //     · G0 里被常量折叠掉的 toFsm_toLLPTW / toFsm_toPTW 在 G1 是真信号
 // ============================================================================
-// 本文件导航（共 11544 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+// 本文件导航（共 11565 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
 //   L59    设计意图来源：src/main/scala/xiangshan/cache/mmu/L2TLB.scala
 //   L95    l2tlb_pkg —— 本模块私有的参数 / 类型 / 纯函数
 //   L97    参数值由本配置
@@ -63,32 +63,32 @@
 //   L3446  ★G1★ toFsm_toLLPTW / toFsm_toPTW 在 G0 里被常量折叠成 0
 //   L3466  3. page cache 入口仲裁(arb2) 输入装配 + miss queue 仲裁(mq_arb)
 //   L3468  arb2 五路：HPTW(0) / PTW(1) / MissQueue(2) / TLB(3) / Prefetch(4)
-//   L3498  4. PTW / LLPTW / HPTW 请求分发
-//   L3500  按 cache.resp 的命中深度把 miss 请求送往三个遍历器：
-//   L3517  5. page cache resp.ready 多路选择
-//   L3519  MuxCase：按 hit / isHptwReq / toLLPTW / bypassed 决定 cache 这拍能否被消费
-//   L3532  6. 访存数据通路
-//   L3534  mem_arb 四路
-//   L3713  6b. cache.refill 装配
-//   L3715  访存回来且不丢弃时置 refill_valid，打一拍给 cache.refill.valid；bits 在
-//   L3820  7. HPTW 响应分发
-//   L3822  hptw_resp_arb：in(0)=page cache 命中的 hptw 响应，in(1)=HPTW 自己的响应
-//   L3832  8. 输出合并：mergeArb 三路 + outArb → ITLB/DTLB resp
-//   L3834  每条 PtwWidth(ITLB/DTLB) 各一组 mergeArb(3 路)+outArb(1 路)：
-//   L3839  -- llptw_stage1：LLPTW 入队那拍按 enq_ptr 锁存 cache.resp.stage1，供
-//   L4876  9. PMP checker 请求装配 + prefetch 触发
-//   L4878  ★G1★ 5 个 PMPChecker：ptw / llptw 口0 / llptw 口1 / hptw / bitmap
-//   L4882  mode(ModeS=2'h1) 与 cmd(read) 在 golden 里就是写死的常量，实例区已直接给；
-//   L4894  12. Bitmap 检查引擎接线
-//   L4896  Bitmap 引擎按 PTE 的物理页号去查一张位图，判断该页是否可用
-//   L4912  10. 顶层输出直驱
-//   L5028  10b. difftest 探针
-//   L5030  这三条只给 difftest gateway 看，不进功能通路，但它们是**实打实的顶层输出**
-//   L5160  11. 性能事件两级打拍
-//   L5162  19 路：0..3 ← LLPTW，4..11 ← PtwCache，12..18 ← PTW
-//   L5214  子模块实例
-//   L5216  BEGIN GENERATED(inst)
-//   L10782 L2TLB —— 与 golden 端口逐位同名的外壳，直通到可读核
+//   L3517  4. PTW / LLPTW / HPTW 请求分发
+//   L3519  按 cache.resp 的命中深度把 miss 请求送往三个遍历器：
+//   L3537  5. page cache resp.ready 多路选择
+//   L3539  MuxCase：按 hit / isHptwReq / toLLPTW / bypassed 决定 cache 这拍能否被消费
+//   L3553  6. 访存数据通路
+//   L3555  mem_arb 四路
+//   L3734  6b. cache.refill 装配
+//   L3736  访存回来且不丢弃时置 refill_valid，打一拍给 cache.refill.valid；bits 在
+//   L3841  7. HPTW 响应分发
+//   L3843  hptw_resp_arb：in(0)=page cache 命中的 hptw 响应，in(1)=HPTW 自己的响应
+//   L3853  8. 输出合并：mergeArb 三路 + outArb → ITLB/DTLB resp
+//   L3855  每条 PtwWidth(ITLB/DTLB) 各一组 mergeArb(3 路)+outArb(1 路)：
+//   L3860  -- llptw_stage1：LLPTW 入队那拍按 enq_ptr 锁存 cache.resp.stage1，供
+//   L4897  9. PMP checker 请求装配 + prefetch 触发
+//   L4899  ★G1★ 5 个 PMPChecker：ptw / llptw 口0 / llptw 口1 / hptw / bitmap
+//   L4903  mode(ModeS=2'h1) 与 cmd(read) 在 golden 里就是写死的常量，实例区已直接给；
+//   L4915  12. Bitmap 检查引擎接线
+//   L4917  Bitmap 引擎按 PTE 的物理页号去查一张位图，判断该页是否可用
+//   L4933  10. 顶层输出直驱
+//   L5049  10b. difftest 探针
+//   L5051  这三条只给 difftest gateway 看，不进功能通路，但它们是**实打实的顶层输出**
+//   L5181  11. 性能事件两级打拍
+//   L5183  19 路：0..3 ← LLPTW，4..11 ← PtwCache，12..18 ← PTW
+//   L5235  子模块实例
+//   L5237  BEGIN GENERATED(inst)
+//   L10803 L2TLB —— 与 golden 端口逐位同名的外壳，直通到可读核
 //
 
 // ============================================================================
@@ -3482,13 +3482,32 @@ module xs_L2TLB_core
       (u_arb_cache_in_chosen != IN_ARB_MQ[2:0]) & ~u_arb_cache_in_out_bits_isHptwReq;
 
   // mq_arb.in(0)：cache miss、非预取来源、非 hptwReq，且（被旁路 或 该去的遍历器忙）。
-  wire mq0_cond_ptw   = ((~cr_l1Hit & ~toFsm_toLLPTW) | cr_stage1Hit)
+  // ★四处都要带 toFsm_toPTW★（2026-09-20 FM 第二轮逼出来的，见本节末尾的注记）
+  wire mq0_cond_ptw   = ((~cr_l1Hit & ~toFsm_toLLPTW) | toFsm_toPTW | cr_stage1Hit)
                         & ~cr_isHptwReq & (cr_isFirst | ~u_ptw_req_ready);
-  wire mq0_cond_llptw = (cr_l1Hit | toFsm_toLLPTW) & ~u_llptw_in_ready;
+  wire mq0_cond_llptw = ((cr_l1Hit & ~toFsm_toPTW) | toFsm_toLLPTW) & ~u_llptw_in_ready;
   assign u_arb_mq__in_0_valid = cr_valid & ~cr_hit & ~from_pre & ~cr_isHptwReq
                               & (cr_bypassed | mq0_cond_ptw | mq0_cond_llptw);
   // ★G1★ isLLptw：l1Hit 且不是 bitmap 跳转回 PTW，或 bitmap 跳转指明回 LLPTW。
   assign u_arb_mq__in_0_bits_isLLptw = (cr_l1Hit & ~toFsm_toPTW) | toFsm_toLLPTW;
+
+  // ★注记：toFsm_toPTW 在本层一共出现 4 处，一处都不能少★
+  // golden L2TLB.sv 里 toFsm_toPTW 除定义外被读 6 次（grep 得 7 行），对应本层 4 个式子
+  // （其中两个 golden 写了两遍，是 out/in 各一份）：
+  //   golden:13140 ptw.io_req_valid       (~l1Hit & ~toLLPTW | **toPTW**)
+  //   golden:19694 mq_arb.in_0_valid      (~l1Hit & ~toLLPTW | **toPTW** | stage1Hit)
+  //   golden:19697 mq_arb.in_0_valid      (l1Hit & **~toPTW** | toLLPTW) & ~llptw_in_ready
+  //   golden:19703 mq_arb.in_0_isLLptw    (l1Hit & **~toPTW** | toLLPTW)
+  //   golden:2144  llptw.io_in_valid      (toLLPTW | l1Hit & **~toPTW**)
+  //   golden:3074  cache.io_resp_ready    (toLLPTW | l1Hit & **~toPTW**)
+  // 本核起初只在后两处带了它，另外四处按"l1Hit 决定去 LLPTW"写 —— 于是
+  // bitmap 跳转指明"回 PTW"（jmp_bitmap_check & ~toLLPTW）且恰好 l1Hit 时，
+  // 请求被派给 LLPTW、cache.resp.ready 也跟着错。
+  // FM 第二轮（evidence/2eb3d25b6e3e）报的就是这一簇：
+  //   cache/io_resp_ready, llptw/io_cache_ready, ptw/io_req_valid,
+  //   missQueue/io_in_valid, missQueue/io_in_bits_req_info_vpn[...]
+  // ★UT 抓不到★：toFsm_toPTW 要 bitmap 引擎真的发起过跳转检查，而本 tb 里
+  // bitmap 路 200k 拍只握手 5 次（a_fire_by_id bitmap=5），如实记在覆盖洞里。
 
   // hptw_req_arb：in(0)=PTW.hptw.req，in(1)=LLPTW.hptw.req
   assign u_arb_hptw_req__in_0_bits_gvpn = u_ptw_hptw_req_bits_gvpn;
@@ -3507,8 +3526,9 @@ module xs_L2TLB_core
                            & ~cr_bypassed & ~cr_isHptwReq;
   assign u_llptw__in_bits_ppn = {6'h0, u_page_cache_resp_bits_toFsm_ppn};
 
-  assign u_ptw__req_valid = cr_valid & ~cr_hit & ~cr_l1Hit & ~cr_bypassed
-                          & ~cr_isFirst & ~cr_isHptwReq & ~toFsm_toLLPTW;
+  assign u_ptw__req_valid = cr_valid & ~cr_hit
+                          & ((~cr_l1Hit & ~toFsm_toLLPTW) | toFsm_toPTW)
+                          & ~cr_bypassed & ~cr_isFirst & ~cr_isHptwReq;
   assign u_ptw__req_bits_ppn = {6'h0, u_page_cache_resp_bits_toFsm_ppn};
 
   assign u_hptw__req_valid = cr_valid & ~cr_hit & cr_isHptwReq;
@@ -3525,7 +3545,8 @@ module xs_L2TLB_core
       (~cr_hit & cr_isHptwReq) ? u_hptw_req_ready :
       (cr_hit & cr_isHptwReq)  ? 1'b1 :
       cr_hit                   ? out_ready_cache_s :
-      (((toFsm_toLLPTW | cr_l1Hit) & ~cr_bypassed) & u_llptw_in_ready) ? u_llptw_in_ready :
+      (((toFsm_toLLPTW | (cr_l1Hit & ~toFsm_toPTW)) & ~cr_bypassed) & u_llptw_in_ready)
+                               ? u_llptw_in_ready :
       (~(cr_bypassed | cr_isFirst) & u_ptw_req_ready) | u_arb_mq_in_0_ready;
 
   // ==========================================================================
