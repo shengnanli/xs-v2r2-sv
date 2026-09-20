@@ -559,6 +559,17 @@ def emit(chans, scalars):
         '   addrReady/dataReadyPtr 的 stride<=4 推进与冲刷时的强制值）',
         'F. ★rdataPtr 与 deqPtr 是两个独立计数器★，RAM 读地址用的是 rdataPtrExtNext（提前一拍），',
         '   模块内部再寄存一次。这条极易写错，必须在 UT 里单独钉。',
+        'G. ★读锁存值还是读 live 值★ —— 上一轮在这里出过一个真 bug：',
+        '   io_cmoOpReq_bits_opcode 取了 uop[deqPtr].fuOpType 的**当前值**。',
+        '   本轮已在 G1 golden 上复核（不是凭记忆），钉死如下：',
+        '     StoreQueue.sv:76759  assign io_cmoOpReq_bits_opcode = {1\'h0, uncacheUop_fuOpType[1:0]};',
+        '     StoreQueue.sv:12951  reg  [8:0] uncacheUop_fuOpType;      <- 是**寄存器**',
+        '     StoreQueue.sv:58436  uncacheUop_fuOpType <= _GEN_380;     <- 在不复位块里锁存',
+        '                          （always @(posedge clock) 自 L20336 起，条件 _GEN_388）',
+        '   即 golden 读的是**锁存的那一拍**，不是 uop[deqPtr] 的 live 值。',
+        '   uncacheUop_* 这一整族（fuOpType/rfWen/uopIdx/pdest/robIdx_* ...）都是同一个',
+        '   锁存组，写 uncache/CBO 通路时一律读锁存值。这类错只在特定时序下暴露，',
+        '   随机 UT 不保证抓得到，必须**按构造**写对。',
     ]:
         out.append('//   ' + t)
     out.append('')
