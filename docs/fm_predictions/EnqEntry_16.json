@@ -1,0 +1,9 @@
+{
+  "target": "EnqEntry_16",
+  "ut": "EnqEntry_16",
+  "regs": 1459,
+  "outs": 2337,
+  "expected": 3796,
+  "merge_dup": "false",
+  "model_applicable": true
+}

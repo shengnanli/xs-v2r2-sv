@@ -77,6 +77,12 @@ CLAIM_THIN = re.compile(r'只做参数化与端口展平|只做端口适配|不�
 CLAIM_CORE = re.compile(r'核体见\s+(\S+?\.sv)')
 # 端口展平 = 给端口赋一个不含运算符的表达式（切片/拼接/常量都算）
 FLATTEN_RHS = re.compile(r'^[\w\[\]:{},\s\']+$')
+# ★判 RHS 有没有运算符之前必须先去掉注释★（2026-09-20，agent/enqentry 撞到）
+# 一条几百位的拼接，逐行标上 `// [1361:1357] numLsElem` 之后，RHS 里就有了 `/`，
+# FLATTEN_RHS 判不过 -> 判据 F 报「注释在说假话」。可它说的假话恰恰是注释本身带来的：
+# 那条 assign 仍然是纯拼接，一个运算符都没有。9 个 EnqEntry* 薄包装层全中招。
+# 去注释不会放过真运算符：`a /* c */ + b` 去完还是 `a  + b`，照样判不过。
+RHS_COMMENT = re.compile(r'//[^\n]*|/\*.*?\*/', re.S)
 # 例化：覆盖 `Name inst (`、`Name #( ... ) inst (`、`Name #(` 三种写法
 # 例化写法三种都要认：`Name inst (`、`Name #(...) inst (`、以及参数表换行的 `Name #(`
 INST_ANY = re.compile(
@@ -112,6 +118,7 @@ def claim_problems(p, text, hdr, modidx, repo):
     n_logic = 0
     for a in re.findall(r'^\s*assign\b.*?;', text, re.M | re.S):
         rhs = a.split('=', 1)[1].rstrip(';').strip() if '=' in a else ''
+        rhs = RHS_COMMENT.sub('', rhs).strip()
         if rhs and not FLATTEN_RHS.match(rhs):
             n_logic += 1
     insts = [m.group(1) for m in INST_ANY.finditer(text) if m.group(1) in modidx]
