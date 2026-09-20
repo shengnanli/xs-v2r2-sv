@@ -155,6 +155,21 @@ CATCH_COUNT_LEDGER = {
     'verif/ut/TLBFA/fm_pins.tcl',
     'verif/ut/TLBNonBlock/fm_pins.tcl',
     'verif/ut/TlbStorageWrapper/fm_pins.tcl',
+    # -- 下面 12 个与上面同一批存量，只是随 main f034da5f（OthersEntry 12 变体）
+    #    在我落这张表**之后**才合进来。★分界线是 0920 那条裁定，不是我写表的时刻★；
+    #    照裁定它们属于「存量、下次改动/晋升时顺带修」，不是「新长出来的违规」。
+    'verif/ut/OthersEntry/fm_pins_pre.tcl',
+    'verif/ut/OthersEntry_104/fm_pins_pre.tcl',
+    'verif/ut/OthersEntry_106/fm_pins_pre.tcl',
+    'verif/ut/OthersEntry_120/fm_pins_pre.tcl',
+    'verif/ut/OthersEntry_122/fm_pins_pre.tcl',
+    'verif/ut/OthersEntry_44/fm_pins_pre.tcl',
+    'verif/ut/OthersEntry_50/fm_pins_pre.tcl',
+    'verif/ut/OthersEntry_6/fm_pins_pre.tcl',
+    'verif/ut/OthersEntry_66/fm_pins_pre.tcl',
+    'verif/ut/OthersEntry_72/fm_pins_pre.tcl',
+    'verif/ut/OthersEntry_88/fm_pins_pre.tcl',
+    'verif/ut/OthersEntry_90/fm_pins_pre.tcl',
 }
 
 PASS, FAIL = [], []
