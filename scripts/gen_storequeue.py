@@ -541,6 +541,9 @@ def main():
     ap.add_argument('--dump-ports', action='store_true')
     ap.add_argument('--reset-audit', action='store_true')
     ap.add_argument('--emit', action='store_true')
+    ap.add_argument('--check', action='store_true',
+                    help='幂等校验：重新生成并与仓库内 rtl/memblock/StoreQueue.sv 比对，'
+                         '不一致则退出码 1（供 gate_all.sh 调用）')
     ap.add_argument('-o', '--out')
     a = ap.parse_args()
     ports = parse_ports()
@@ -551,6 +554,26 @@ def main():
     if a.reset_audit:
         reset_audit()
         return
+    if a.check:
+        chans, scalars = split_channels(ports)
+        want = emit(chans, scalars)
+        tgt = pathlib.Path(__file__).resolve().parent.parent / 'rtl' / 'memblock' / 'StoreQueue.sv'
+        if not tgt.exists():
+            print('FAIL gen_storequeue --check: %s 不存在' % tgt)
+            return 1
+        got = tgt.read_text()
+        if got != want:
+            import difflib
+            d = list(difflib.unified_diff(got.splitlines(), want.splitlines(),
+                                          'repo', 'regen', lineterm=''))
+            print('FAIL gen_storequeue --check: %s 与生成器输出不一致 (%d 行差异)'
+                  % (tgt, len(d)))
+            for line in d[:40]:
+                print(line)
+            return 1
+        print('PASS gen_storequeue --check: %s 与生成器输出一致 (%d 行)'
+              % (tgt, want.count(chr(10))))
+        return 0
     if a.emit:
         chans, scalars = split_channels(ports)
         t = emit(chans, scalars)
@@ -564,4 +587,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main() or 0)

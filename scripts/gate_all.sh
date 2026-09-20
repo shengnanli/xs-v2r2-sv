@@ -241,6 +241,7 @@ run "层次重绑表幂等"     python3 scripts/hier_map.py --check
 # 先跑负测（秒级，不扫 golden），再跑真闸（约 90 秒）—— 顺序照层次重绑闸的先例。
 run "perf 重绑闸负测"    python3 scripts/test_perf_rebind_gate.py
 run "perf 重绑表幂等"    python3 scripts/perf_rebind.py --check
+run "StoreQueue 骨架幂等" python3 scripts/gen_storequeue.py --check
 # perf 分档闸（codex 0162 D3）：重绑表只回答"绑上了没有"，不回答"这条差异挡不挡里程碑"。
 # D3 把计数器分成"必须相等"和"显式归类后允许不同"两类，而后者的豁免**有有效期**——
 # 它只在"持有模块本轮未重写"时成立。没有闸的话，Tage_SC 被重写之后那 6 条 tage
