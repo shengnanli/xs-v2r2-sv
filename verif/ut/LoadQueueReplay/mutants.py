@@ -18,6 +18,11 @@
 环境:
   MUT_CYCLES  每个变异体跑多少拍（默认 20000）
   MUT_SEED    种子（默认 1）
+  MUT_WORK    构建目录名（默认 mut_work）。分组并行跑时必须各组不同，
+              否则几个进程会同时 rmtree/重建同一个 base/ 目录。
+退出码:
+  0 = 全部符合期望；1 = baseline 异常；★2 = 有变异体不符合期望（fail-closed）★
+  ——原先无论多少条不符合期望都 return 0，只把计数打在屏幕上。闸不出声就不是闸。
 """
 import os
 import pathlib
@@ -30,7 +35,7 @@ HERE = pathlib.Path(__file__).resolve().parent
 REPO = HERE.parent.parent.parent
 RTL = REPO / "rtl" / "memblock" / "LoadQueueReplay.sv"
 GOLDEN = pathlib.Path("/home/eda/xs-env/G1-canonical/golden-rtl")
-WORK = HERE / "mut_work"
+WORK = HERE / os.environ.get("MUT_WORK", "mut_work")   # ★分组并行时各组给不同的 MUT_WORK，避免抢 base/★
 
 CYCLES = int(os.environ.get("MUT_CYCLES", "20000"))
 SEED = os.environ.get("MUT_SEED", "1")
@@ -206,7 +211,7 @@ def main():
             bad += 1
         print(f"{mid:<5} {expect:<16} {verdict:<10} {detail:<28} {desc}")
     print(f"\n不符合期望: {bad}")
-    return 0
+    return 2 if bad else 0
 
 
 if __name__ == "__main__":

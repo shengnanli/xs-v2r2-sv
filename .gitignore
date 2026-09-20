@@ -2,8 +2,10 @@ verif/ut/*/ut_gen/
 verif/ut/*/simv*
 verif/ut/*/csrc/
 verif/ut/*/fm_work/
-# 变异体 harness 的逐个变异构建目录（VCS 产物，工具派生态，不进版本库）
-verif/ut/*/mut_work/
+# 变异体 harness 的逐个变异构建目录（VCS 产物，工具派生态，不进版本库）。
+# ★带 `*` 尾缀★：分组并行跑变异体时各组要不同的工作目录（mutants.py 的 MUT_WORK），
+#  写死 `mut_work/` 只挡住默认那一个名字 —— 和 fm_diag 那次是同一个洞（按固定名字判）。
+verif/ut/*/mut_work*/
 verif/ut/*/*.log
 verif/ut/*/*.fsdb
 verif/ut/*/verdiLog/
