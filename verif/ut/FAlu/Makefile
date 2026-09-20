@@ -37,7 +37,7 @@ FM_REF_DEPS_FAlu = $(FALU_LEAVES)
 # (上面 RTL_GOLDEN_DEPS 与 FM_REF_DEPS_FAlu 是同一个列表)，两侧路径除 u_core 外
 # 逐字相同，FM 自己就把它们配成了 matched_nc：ref 4 ↔ impl 4，严格双射，
 # 非 matched_nc 的未读项为 0。打开本项是让 FM **多证 4 个点**。
-# 白名单在 scripts/fm_eq.tcl（依据写在那一行紧邻的注释里），两处须同时生效。
+# 白名单在 verif/fm_target_config/<top>.tcl（依据就写在那份文件里），两处须同时生效。
 FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 
 include ../../../scripts/ut_common.mk

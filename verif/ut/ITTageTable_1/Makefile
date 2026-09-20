@@ -46,7 +46,7 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/ITTageTable_1.sv \
 # 非 matched_nc 项为 0，即严格双射。内容是 MBIST 地址死位（addrReg[7:0] 整条写
 # 地址 + addrRdReg[7]，SRAMTemplate 侧无读者/RW0_addr 只有 7 位）与厂商 SRAM 宏
 # array_6_ext 的 reg_RW0_ren（非 RANDOMIZE_GARBAGE_ASSIGN 视图下无读者），两侧同
-# 为死位。逐行依据见本目录 fm_pins.tcl。白名单见 scripts/fm_eq.tcl。
+# 为死位。逐行依据见本目录 fm_pins.tcl。白名单见 verif/fm_target_config/<top>.tcl。
 FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 FM_VARIANTS = ITTageTable_1
 FM_REF_DEPS_ITTageTable_1 = ClockGate.sv FoldedSRAMTemplate_22.sv IndexableCAMTemplate_41.sv MbistClockGateCell.sv MbistPipeIttage_1.sv SRAMTemplate_76.sv SplittedSRAMTemplate_25.sv WrBypass_41.sv array_6.sv array_6_ext.v data_mem_0_4x2.sv sram_array_1p128x76m1s1h0l1b_bp_ittage.sv

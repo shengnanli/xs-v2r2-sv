@@ -52,7 +52,7 @@ FM_MERGE_DUP = false
 # ref 与 impl 读的是**同一份 golden 文件**（RTL_GOLDEN_DEPS == FM_REF_DEPS_MulUnit），
 # 两侧路径除 u_core 外逐字相同 —— FM 自己配成 matched_nc，ref 7 ↔ impl 7，
 # 严格双射，非 matched_nc 的未读项为 0。打开本项让 FM **多证 7 个点**。
-# 白名单在 scripts/fm_eq.tcl（依据写在那一行紧邻的注释里），两处须同时生效。
+# 白名单在 verif/fm_target_config/<top>.tcl（依据就写在那份文件里），两处须同时生效。
 FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 
 include ../../../scripts/ut_common.mk

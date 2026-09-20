@@ -46,7 +46,7 @@ FM_ALLOWLIST ?= 0
 # 文件、路径逐字相同，ref 9 ↔ impl 9 严格双射）：MBIST 写地址 addrReg[7:0] 在
 # SplittedSRAMTemplate 里无人使用，读地址 addrRdReg[7] 超出 128 深宏的 7 位地址。
 # 本项让 FM **真去比这 9 位**，而不是记作 Not-Compared。
-# 白名单在 scripts/fm_eq.tcl（依据写在那一行紧邻的注释里），两处须同时生效。
+# 白名单在 verif/fm_target_config/<top>.tcl（依据就写在那份文件里），两处须同时生效。
 FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 FM_VARIANTS = ICacheMetaArray
 
