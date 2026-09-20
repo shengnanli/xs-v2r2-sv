@@ -35,60 +35,60 @@
 //     · LLPTW 的 PMP 口由 1 个变 2 个（故 PMPChecker 由 3 个变 5 个）
 //     · G0 里被常量折叠掉的 toFsm_toLLPTW / toFsm_toPTW 在 G1 是真信号
 // ============================================================================
-// 本文件导航（共 11530 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+// 本文件导航（共 11531 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
 //   L59    设计意图来源：src/main/scala/xiangshan/cache/mmu/L2TLB.scala
 //   L95    l2tlb_pkg —— 本模块私有的参数 / 类型 / 纯函数
 //   L97    参数值由本配置
 //   L145   CSR / sfence 副本
 //   L147   io.csr.tlb / io.sfence 先过 DelayN(1)，再 RegNext 一拍得到多份**同值**副本，
 //   L187   PTE 与合并响应类型
-//   L288   顶层输出给 ITLB/DTLB 的 sector PtwResp
-//   L314   访存数据通路小函数
-//   L316   512bit 块切成 8 个 64bit PTE，取第 index 个
-//   L340   PTE 判定
-//   L384   contiguous_pte_to_merge —— 8 个连续 PTE → PtwMergeResp
-//   L386   顶层调用处 af_first / not_super 都固定为 true，故：
-//   L446   merge_to_sector —— PtwMergeResp → PtwSectorResp
-//   L448   选中条目 sel = OHToUInt(pteidx)
-//   L453   ★G1 新增：bitmap 开启且本次翻译没有 G-stage 时，S1 就是**最终一级**★
-//   L513   difftest 探针打包
-//   L515   L2TLB 往 difftest gateway 送三条探针，每条是一长串定宽字段的拼接：
-//   L578   xs_L2TLB_core —— 可读核
-//   L580   端口与 golden L2TLB 逐位同名
-//   L3259  1. CSR / sfence 复制扇出
-//   L3261  io.csr.tlb / io.sfence 先过 DelayN(1) 得到 csr_tmp / sfence_tmp，再各 R
-//   L3430  2. ITLB/DTLB 请求计数与节流
-//   L3432  每拍 进入(req fire) - 离开(resp fire)；flush 清零
-//   L3451  page cache 响应的常用字段
-//   L3453  ★G1★ toFsm_toLLPTW / toFsm_toPTW 在 G0 里被常量折叠成 0
-//   L3473  3. page cache 入口仲裁(arb2) 输入装配 + miss queue 仲裁(mq_arb)
-//   L3475  arb2 五路：HPTW(0) / PTW(1) / MissQueue(2) / TLB(3) / Prefetch(4)
-//   L3505  4. PTW / LLPTW / HPTW 请求分发
-//   L3507  按 cache.resp 的命中深度把 miss 请求送往三个遍历器：
-//   L3524  5. page cache resp.ready 多路选择
-//   L3526  MuxCase：按 hit / isHptwReq / toLLPTW / bypassed 决定 cache 这拍能否被消费
-//   L3539  6. 访存数据通路
-//   L3541  mem_arb 四路
-//   L3720  6b. cache.refill 装配
-//   L3722  访存回来且不丢弃时置 refill_valid，打一拍给 cache.refill.valid；bits 在
-//   L3814  7. HPTW 响应分发
-//   L3816  hptw_resp_arb：in(0)=page cache 命中的 hptw 响应，in(1)=HPTW 自己的响应
-//   L3826  8. 输出合并：mergeArb 三路 + outArb → ITLB/DTLB resp
-//   L3828  每条 PtwWidth(ITLB/DTLB) 各一组 mergeArb(3 路)+outArb(1 路)：
-//   L3833  -- llptw_stage1：LLPTW 入队那拍按 enq_ptr 锁存 cache.resp.stage1，供
-//   L4862  9. PMP checker 请求装配 + prefetch 触发
-//   L4864  ★G1★ 5 个 PMPChecker：ptw / llptw 口0 / llptw 口1 / hptw / bitmap
-//   L4868  mode(ModeS=2'h1) 与 cmd(read) 在 golden 里就是写死的常量，实例区已直接给；
-//   L4880  12. Bitmap 检查引擎接线
-//   L4882  Bitmap 引擎按 PTE 的物理页号去查一张位图，判断该页是否可用
-//   L4898  10. 顶层输出直驱
-//   L5014  10b. difftest 探针
-//   L5016  这三条只给 difftest gateway 看，不进功能通路，但它们是**实打实的顶层输出**
-//   L5146  11. 性能事件两级打拍
-//   L5148  19 路：0..3 ← LLPTW，4..11 ← PtwCache，12..18 ← PTW
-//   L5200  子模块实例
-//   L5202  BEGIN GENERATED(inst)
-//   L10768 L2TLB —— 与 golden 端口逐位同名的外壳，直通到可读核
+//   L274   顶层输出给 ITLB/DTLB 的 sector PtwResp
+//   L300   访存数据通路小函数
+//   L302   512bit 块切成 8 个 64bit PTE，取第 index 个
+//   L326   PTE 判定
+//   L370   contiguous_pte_to_merge —— 8 个连续 PTE → PtwMergeResp
+//   L372   顶层调用处 af_first / not_super 都固定为 true，故：
+//   L439   merge_to_sector —— PtwMergeResp → PtwSectorResp
+//   L441   选中条目 sel = OHToUInt(pteidx)
+//   L446   ★G1 新增：bitmap 开启且本次翻译没有 G-stage 时，S1 就是**最终一级**★
+//   L506   difftest 探针打包
+//   L508   L2TLB 往 difftest gateway 送三条探针，每条是一长串定宽字段的拼接：
+//   L571   xs_L2TLB_core —— 可读核
+//   L573   端口与 golden L2TLB 逐位同名
+//   L3252  1. CSR / sfence 复制扇出
+//   L3254  io.csr.tlb / io.sfence 先过 DelayN(1) 得到 csr_tmp / sfence_tmp，再各 R
+//   L3423  2. ITLB/DTLB 请求计数与节流
+//   L3425  每拍 进入(req fire) - 离开(resp fire)；flush 清零
+//   L3444  page cache 响应的常用字段
+//   L3446  ★G1★ toFsm_toLLPTW / toFsm_toPTW 在 G0 里被常量折叠成 0
+//   L3466  3. page cache 入口仲裁(arb2) 输入装配 + miss queue 仲裁(mq_arb)
+//   L3468  arb2 五路：HPTW(0) / PTW(1) / MissQueue(2) / TLB(3) / Prefetch(4)
+//   L3498  4. PTW / LLPTW / HPTW 请求分发
+//   L3500  按 cache.resp 的命中深度把 miss 请求送往三个遍历器：
+//   L3517  5. page cache resp.ready 多路选择
+//   L3519  MuxCase：按 hit / isHptwReq / toLLPTW / bypassed 决定 cache 这拍能否被消费
+//   L3532  6. 访存数据通路
+//   L3534  mem_arb 四路
+//   L3713  6b. cache.refill 装配
+//   L3715  访存回来且不丢弃时置 refill_valid，打一拍给 cache.refill.valid；bits 在
+//   L3807  7. HPTW 响应分发
+//   L3809  hptw_resp_arb：in(0)=page cache 命中的 hptw 响应，in(1)=HPTW 自己的响应
+//   L3819  8. 输出合并：mergeArb 三路 + outArb → ITLB/DTLB resp
+//   L3821  每条 PtwWidth(ITLB/DTLB) 各一组 mergeArb(3 路)+outArb(1 路)：
+//   L3826  -- llptw_stage1：LLPTW 入队那拍按 enq_ptr 锁存 cache.resp.stage1，供
+//   L4863  9. PMP checker 请求装配 + prefetch 触发
+//   L4865  ★G1★ 5 个 PMPChecker：ptw / llptw 口0 / llptw 口1 / hptw / bitmap
+//   L4869  mode(ModeS=2'h1) 与 cmd(read) 在 golden 里就是写死的常量，实例区已直接给；
+//   L4881  12. Bitmap 检查引擎接线
+//   L4883  Bitmap 引擎按 PTE 的物理页号去查一张位图，判断该页是否可用
+//   L4899  10. 顶层输出直驱
+//   L5015  10b. difftest 探针
+//   L5017  这三条只给 difftest gateway 看，不进功能通路，但它们是**实打实的顶层输出**
+//   L5147  11. 性能事件两级打拍
+//   L5149  19 路：0..3 ← LLPTW，4..11 ← PtwCache，12..18 ← PTW
+//   L5201  子模块实例
+//   L5203  BEGIN GENERATED(inst)
+//   L10769 L2TLB —— 与 golden 端口逐位同名的外壳，直通到可读核
 //
 
 // ============================================================================
