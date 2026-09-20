@@ -304,6 +304,9 @@ def cmd_compare_rev(rev, tsv):
     """工作树 vs <rev>：回答"这次改动要不要重跑 receipt"。"""
     tmp = pathlib.Path(tempfile.mkdtemp(prefix='pinrev_'))
     rows_new, skipped = measure_all()
+    # ★夹具表只建一次★：原来在循环里对每一行重新 discover()（重读全部 49 个钉点文件），
+    # 63 行就是 63 次全量重读 —— O(n^2)，实测把这条路从秒级拖到分钟级。
+    fx_by_rel = {rel: fx for rel, _dyn, _tops, fx in discover()}
     out_rows = []
     rc_all = 0
     print('%-40s %-28s %8s %8s  %s' % ('钉点文件', '变体', '旧调用', '新调用', '结论'))
@@ -319,11 +322,7 @@ def cmd_compare_rev(rev, tsv):
             continue
         old = tmp / r['rel'].replace('/', '__')
         old.write_bytes(blob)
-        _, _, fixture = None, None, None
-        for rel2, dyn2, tops2, fx2 in discover():
-            if rel2 == r['rel']:
-                fixture = fx2
-                break
+        fixture = fx_by_rel.get(r['rel'])
         a, rca, _ = run_one(old, fixture, r['variant'])
         same = (a == r['calls']) and rca == 0
         print('%-40s %-28s %8d %8d  %s'
