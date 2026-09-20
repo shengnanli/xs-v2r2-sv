@@ -21,44 +21,18 @@
 #   observation_sink    1 个   9903 端口全 input 的纯观测 sink，19 万行全是端口表
 #
 metric	done	total	percent
-fm_targets_configured	404	498	81.1
+fm_targets_configured	485	498	97.4
 unique_design_written	157	1191	13.2
-unique_design_proven	126	1191	10.6
+unique_design_proven	152	1191	12.8
 golden_lines_written	1570611	3902283	40.2
-golden_lines_proven	1116577	3902283	28.6
+golden_lines_proven	1563796	3902283	40.1
 #
 # written 里没有绿判决证据的设计族（差额都在这儿，逐个列出不藏）：
-#   AgeDetector                                     12602 行
-#   ArrayMulDataModule                              24372 行
-#   BloomFilter                                     34563 行
-#   BusyTable                                       26415 行
-#   C22                                                97 行
-#   C32                                                99 行
-#   C53                                               114 行
-#   CSA3                                               99 行
-#   CSA3_2                                           1629 行
-#   DecodeUnitComp                                  45149 行
-#   IBuffer                                         23766 行
 #   ICache                                           1754 行
 #   ICacheCtrlUnit                                    335 行
 #   InstrMMIOEntry                                    201 行
-#   InterruptFilter                                 13141 行
-#   LqVAddrModule                                    1717 行
-#   LsqEnqCtrl                                       2595 行
-#   NCBTransactionQueue                             41240 行
 #   OpenLLC                                          4252 行
-#   Predictor                                       44908 行
-#   RRArbiterInit                                    7318 行
-#   RegCacheTagModule                                3372 行
-#   RegCacheTagTable                                 1391 行
-#   RenameBuffer                                    40993 行
-#   SbufferData                                     24872 行
-#   SnapshotGenerator                                5750 行
 #   StorePipe                                          93 行
-#   TLBFA                                           88538 行
-#   VecExceptionGen                                   340 行
-#   VlBusyTable                                      1401 行
-#   indexedLSUopTable                                 738 行
 #
 # 剩余最大的 30 个（按 golden 行数）—— 下一波排期的候选
 remaining_design	golden_lines	variants	scope

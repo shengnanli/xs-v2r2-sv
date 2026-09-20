@@ -38,6 +38,12 @@ $(if $(wildcard fm_pins.tcl),FM_PIN_TCL=$(abspath fm_pins.tcl),)
 
 ## 实测（2026-09-20，扫全部 worktree 的 evidence/）
 
+> 本节的数在**合 main（84 个 commit）之后逐条复核过一遍**，结论未变：
+> 已进版本库的 receipt 里用了 field map 的仍然只有 `FauFTBWay` 一份（60 点）；
+> `NewPipelineConnectPipe_35` 台账已绿但它**已收的那一份没用 field map**
+> （`grep -acE '^PACKED_MATCH'` = 0），干净。
+> 写这类"目前只影响 N 个"的话必须复核，因为 N 会随别人合并而变。
+
 受影响 **14 份 receipt**（按 run+target 去重），两个家族：
 
 | top | 钉了多少点 | `script_closure.list` 实际内容 |
