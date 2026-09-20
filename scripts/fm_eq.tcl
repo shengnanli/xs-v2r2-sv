@@ -458,7 +458,29 @@ switch -- $_verify_matched_unread_compare_points {
     #              passing = golden 闭包的触发器**位数** + 顶层 output 端口**位数**;
     #              该模型在 TlbStorageWrapper_1 8682 / TLBFA_1 8663 / TLBFA_2 8233 /
     #              TLBFA_3 8229 / DelayN_7 657 / DelayN_9 216 上逐位命中过, 本轮三个也逐位命中。
-    if {$top ni {Bku Composer DebugModule DuplicatedTagArray EntriesVfdivVidiv FAlu FCVT FTBBank Ftq ICacheCtrlUnit ICacheDataArray ICacheMetaArray ICacheMissUnit InstrUncache ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 LinkMonitor MulUnit Queue1_RegMapperInput_5 RNXbar SNXbar SourceB SSIT TageBTable TlbStorageWrapper TlbStorageWrapper_1 TXDAT_4 TXREQ WritebackQueue IBuffer EntriesAluCsrFenceDiv NCBTransactionQueue NCBTransactionQueue_1 Predictor RenameBuffer TLBFA TLBFA_1 TLBFA_2 TLBFA_3 TLBNonBlock TLBNonBlock_1 TLBNonBlock_2}} {
+    # WBArbiter_3 / _38 / _58 / _66 加入依据(2026-09-20, agent/fubusy-wbarb 实测)：
+    # 这四个**恰好是 WBArbiter 家族里 N=1 的全部变体**，其余 9 个(N>=2)本来就
+    # native+strict 双 SUCCEEDED / unread 0，不在白名单里也不需要。
+    # 加入前基线(evidence/201cb5db74de/，55 目标一轮跑完)：四个都是
+    #   native SUCCEEDED / failing 0 / unverified 0 / aborted 0 / 比较点 unmatched 0(0)，
+    #   唯一卡点是 **2(2) 个 unmatched unread**，四份 unread_points.txt 形状逐字相同：
+    #     ref  cancelCounter_0_reg[0]        <-> impl u_core/cancel_cnt_q_reg[0][0]
+    #     ref  hasFull_reg                   <-> impl u_core/has_full_q_reg
+    #   ref 侧 2 个唯一点对 impl 侧 2 个唯一点，非该形状的项为 0，严格双射。
+    # 死因两侧同源、且**在签核之前就已定论**：scripts/wbarbiter_reachability.py
+    #   把 golden 的次态方程原样搬进脚本穷举可达状态，N=1 时可达状态只有 1 个(全 0)
+    #   —— 只有一路请求 ⇒ 它恒为最高优先级 ⇒ in_ready 恒 1 ⇒ stalled 恒 0 ⇒
+    #   cancelCounter 永不自增、isFull/hasFull 永不置位。这 5 位是 golden 自己的
+    #   死逻辑，重写核照抄(xs_WBArbiter_core 不因 N=1 裁剪)，于是对称死。
+    #   ★不许"把它们删掉图干净"★：删了就从对称死位变成 golden-only 死位，连双射
+    #   都没有 —— 与 TLBFA 不收窄 reqVpn、RenameBuffer 不只留 head 同一个结论。
+    #   5 位里另外 3 位(cancelCounter bit1/bit2、isFull)被 FM 常量折叠吃掉，
+    #   两侧一起消失，既不是比较点也不是未读点。
+    # 配对在 verif/ut/WBArbiterVariants/fm_pins.tcl(四层 fail-closed，钉不上即 exit 3)；
+    # unmatched unread 单开 vmucp 必然空转，所以顺序是**先配对、再加强**。
+    # ★复核判据★：加强后 passing 必须各 +2（2→4 / 10→12 / 9→11 / 7→9），
+    #   failing 0 / unread 0 / unmatched 六项全零。passing 不增而 unread 归 0 = 点被吞掉，不算过。
+    if {$top ni {Bku Composer DebugModule DuplicatedTagArray EntriesVfdivVidiv FAlu FCVT FTBBank Ftq ICacheCtrlUnit ICacheDataArray ICacheMetaArray ICacheMissUnit InstrUncache ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 LinkMonitor MulUnit Queue1_RegMapperInput_5 RNXbar SNXbar SourceB SSIT TageBTable TlbStorageWrapper TlbStorageWrapper_1 TXDAT_4 TXREQ WritebackQueue IBuffer EntriesAluCsrFenceDiv NCBTransactionQueue NCBTransactionQueue_1 Predictor RenameBuffer TLBFA TLBFA_1 TLBFA_2 TLBFA_3 TLBNonBlock TLBNonBlock_1 TLBNonBlock_2 WBArbiter_3 WBArbiter_38 WBArbiter_58 WBArbiter_66}} {
       puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
       exit 3
     }
