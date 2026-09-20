@@ -2752,18 +2752,34 @@ module xs_Rob_core
         (canEnqueue[5] & io_enq_req_5_bits_waitForward);
   end
 
-  // hasBlockBackward：进队时置位，ROB 空了就清（Scala 里 isEmpty 分支在后，优先级更高）
+  // ★★ 这两位的形状是 `置位 | (~清除 & 保持)` —— **置位压过清除**，不是
+  //    「先清后置」的优先级链。★★
+  // 真 bug（UT 探针 2026-09-20 抓到，首处内部分歧就是 hasBlockBackward，cyc=10362 g=1 x=0）：
+  //   原先写成 `if (isEmpty) <= 0; else if (置位条件) <= 1;`，让**清除压过置位**。
+  //   于是「ROB 空着、同一拍进来一条 blockBackward 指令」时 golden 置 1、本核清 0。
+  //   它是全局第一处分歧：hasBlockBackward 一错，io_enq_canAccept 跟着错，
+  //   入队被错误放行，指针/条目/几乎所有输出随后全线崩开
+  //   （20k 拍那轮 errors=898651 —— 一个根因，不是九十万个）。
+  // golden 原文：
+  //   hasBlockBackward <= |(enq_req_i_valid & blockBackward & canAccept)
+  //                       | ~isEmpty & hasBlockBackward;
+  //   hasWaitForward   <= |(canEnqueue_i & waitForward)
+  //                       | ~((state & |shouldWalkVec) | (isCommit & |commitValid))
+  //                         & hasWaitForward;      （golden 的 _GEN_13485）
+  // 同族的 hasWFI 本来就写对了（`io_wfi_enable & (setWFI | (~clearWFI & hasWFI))`），
+  // 这两位没跟上——所以这三位现在统一成同一个形状，别再分叉。
   always_ff @(posedge clock or posedge reset) begin
-    if (reset)                                    hasBlockBackward <= 1'b0;
-    else if (isEmpty)                             hasBlockBackward <= 1'b0;
-    else if (anyBlockBackward & io_enq_canAccept) hasBlockBackward <= 1'b1;
+    if (reset) hasBlockBackward <= 1'b0;
+    else       hasBlockBackward <= (anyBlockBackward & io_enq_canAccept)
+                                 | (~isEmpty & hasBlockBackward);
   end
   assign hasBlockBackwardOut = hasBlockBackward;
 
   always_ff @(posedge clock or posedge reset) begin
-    if (reset)                       hasWaitForward <= 1'b0;
-    else if (commitsHasWalkInstr | commitsHasCommitInstr) hasWaitForward <= 1'b0;
-    else if (anyWaitForward)         hasWaitForward <= 1'b1;
+    if (reset) hasWaitForward <= 1'b0;
+    else       hasWaitForward <= anyWaitForward
+                               | (~(commitsHasWalkInstr | commitsHasCommitInstr)
+                                  & hasWaitForward);
   end
   assign hasWaitForwardOut = hasWaitForward;
 
