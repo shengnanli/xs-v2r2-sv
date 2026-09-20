@@ -25,3 +25,15 @@ ifneq ($(INITREG),)
 VCS      += +vcs+initreg+random
 SIM_ARGS += +vcs+initreg+$(INITREG)
 endif
+
+# ★FM_MERGE_DUP = false★ —— target-scoped，**加强不是放宽**
+#   （fm_eq.tcl L728 的裁定注记：关掉它不黑盒、不跳点、不约束 ref，
+#     只是要求逐个而非合并后比，比较点只增不减。）
+# 本目标为什么需要它，两条具体理由：
+#   1. 结构上有 16 个**完全同构**的 bank（data16_0..data16_15）。merge_dup=true
+#      正是在这种同构重复上把寄存器合并成一个比较点，而本目标的 17984 点钉点
+#      是**逐 bank 的结构双射**——合并后两侧点数不对称，钉点会变成孤儿点。
+#   2. 只有 merge_dup=false 时 scripts/fm_predict.py 的 passing 模型才精确
+#      （expected = Σ 寄存器位 + 顶层 output 位）。留 true 就只能记 MODEL_NA，
+#      等于跑前无法登记预期、跑后无法对账。
+FM_MERGE_DUP = false

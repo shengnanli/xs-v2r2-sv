@@ -1,0 +1,9 @@
+{
+  "target": "SQDataModule",
+  "ut": "SQDataModule",
+  "regs": 17984,
+  "outs": 720,
+  "expected": 18704,
+  "merge_dup": "false",
+  "model_applicable": true
+}
