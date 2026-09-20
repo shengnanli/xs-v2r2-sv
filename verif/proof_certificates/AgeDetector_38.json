@@ -1,0 +1,113 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-09-20T13:27:50Z",
+ "generator": {
+  "run_context_worktree_digest": "cc222f4709340c440f62ecda43e1628794515d0c030201f4d63ab295c2fba341",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/b84bf4ee4ead/AgeDetector_38",
+  "version": 1
+ },
+ "impl_commit": "b84bf4ee4eadf1f5b9791ab2c74a8b63954bdde4",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/AgeDetector_38.sv",
+    "sha256": "d1d862e80cfa37beca49e9db637af624567208996bdaa59910e3d0ba4b1c8165"
+   }
+  ],
+  "golden_sha256": "e2cf1067b5a5d0de394a822e5cc03807835967300856445de305c4e91fd2d3ad",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/memblock/AgeDetector_38.sv",
+    "sha256": "cb6524113070d6c063cb66ff068b6c34c839db53037cf90630ed13a2e6eb0feb"
+   }
+  ],
+  "impl_sha256": "aafd7415c714e4298e8e5c82712455de5f8010dafbc56cd3c117f6dc66e6d52b",
+  "repo_impl_files": 1
+ },
+ "native_facts_sha256": "4ecbe213b08e996ff9793b083623db9da52248f912766196d949e71daa291643",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 324,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "b84bf4ee4eadf1f5b9791ab2c74a8b63954bdde4",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "ca902cb19e924d8ef81a0f9a2c36e6282c862b122f8b5c3845966595883c8c90",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "cc222f4709340c440f62ecda43e1628794515d0c030201f4d63ab295c2fba341",
+ "provisional": false,
+ "receipt_sha256": "85052976c87302152c481b18dfe261c1049d8834d83c2c0bcafcb9af42347d32",
+ "reproduce": {
+  "command": "PROOF_COMMIT=b84bf4ee4eadf1f5b9791ab2c74a8b63954bdde4 scripts/run_proof.sh AgeDetector_38 AgeDetector_38",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "df24c9e79b33e154b1018e90e6bf0947e32464a8b903af57c2aa387e471e10e6",
+ "run_id": "AgeDetector_38-20260917T125840Z-b84bf4e",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "8e6f23372719135d1721b900fbb840d323bf4f006dddb12a966ed1c385e3cc17"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "87ea31973b3e45a4c12a77d91b6b4d0bb8533cd2d25a96f617fb511801702d01"
+   }
+  ],
+  "sha256": "dac24fbc28748e38e288734b93e94cb6ffcd6fc58f3e92d1911d68b178db9868"
+ },
+ "target": "AgeDetector_38",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "AgeDetector_38",
+ "variant": "AgeDetector_38",
+ "verdict": "SUCCEEDED"
+}

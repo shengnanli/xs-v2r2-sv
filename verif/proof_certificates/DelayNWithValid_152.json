@@ -1,0 +1,193 @@
+{
+ "evidence_archive": null,
+ "evidence_retention": "attestation_only",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "g1_manifest_sha256": "a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "generated_at": "2026-09-20T13:28:24Z",
+ "generator": {
+  "run_context_worktree_digest": "1ece1c1d37eecb518df1cfb2d7843149634edf206f8b2f166cf57ae0325ab77e",
+  "script": "scripts/make_proof_certificate.py",
+  "source_evidence_dir": "evidence/1f82ef7a6c7a/DelayNWithValid_152",
+  "version": 1
+ },
+ "impl_commit": "1f82ef7a6c7a93e2f68ca6657faabcca5d80d5f1",
+ "impl_worktree_dirty": false,
+ "input_closure": {
+  "golden": [
+   {
+    "kind": "golden",
+    "path": "golden-rtl/DelayNWithValid_152.sv",
+    "sha256": "9ed6573dc4402e19861cc543d97d9937a2cf2d965c495525419fb9cc6dd6ea7f"
+   }
+  ],
+  "golden_sha256": "1429ff1e563ca117aa93d553ff49c4dc0d2b80f20a520459911b02eb85a24fdd",
+  "impl": [
+   {
+    "kind": "repo",
+    "path": "rtl/common/xs_DelayNWithValid_core.sv",
+    "sha256": "f072929ebfd5e9f177ffce4fb971ababefc4fa8f61b8eeb83843d5a74386cd88"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/DelayNWithValid.sv",
+    "sha256": "0e730e38388105602280ef53cd12b928f131457fd9a1b9c0e48ec6bf9e3a7e57"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/DelayNWithValid_1.sv",
+    "sha256": "01776dfb8ecdf2b1707b9f99206e740c0ef69881c961c385468251122dce7cee"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/DelayNWithValid_2.sv",
+    "sha256": "50006245c586037efe76fb00735f4c57d2f283cdaf502ea14064878589d27ea1"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/DelayNWithValid_3.sv",
+    "sha256": "9f2a88922ef67ccaa3d1f0dd9482f7d2d34179c576b47412b9c8c44882665a76"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/DelayNWithValid_4.sv",
+    "sha256": "4ebbc3b3c875b5df7420e5d9037e7393c1ddc7228b444a9ce39467ce99de0ded"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/DelayNWithValid_7.sv",
+    "sha256": "52ff8f8f4b9aaecd5bc68ab811021be804522c4a29533d81e24e551ad7fbc26f"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/DelayNWithValid_52.sv",
+    "sha256": "d68eebdb551d969281338f6404f7b28202b9f3bb8461d65b87092fdb4fb77b20"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/DelayNWithValid_55.sv",
+    "sha256": "15660f2728857431fd130b6f8104e1253f223ffcaa067224312253844b9ca07c"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/DelayNWithValid_103.sv",
+    "sha256": "19e53001d4a768c3dcb28f2f0cf93aea60391b8bb74316b142bba6ff7adfd237"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/DelayNWithValid_148.sv",
+    "sha256": "ccdd0d0a58f1cffc0d354ff6a42c86efbf7dfe40525576bab3ffb69b5e40a201"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/DelayNWithValid_149.sv",
+    "sha256": "2aa38db05bd5cd1691f082943fdfe8e7b42645a4d5ae3b2f8627084cd650f13c"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/DelayNWithValid_152.sv",
+    "sha256": "416ee313af001d0123eb0021a98849629da653c0a69ecd6e22222792e999e0bc"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/DelayNWithValid_155.sv",
+    "sha256": "943605ce4cf18a109fa6b4f70999aaf44f194769862a55924e6dbfdf4fc3d00a"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/DelayNWithValid_200.sv",
+    "sha256": "21e66a90a92f411736684e25f87a6c05e85c297a78a60651f8691e449fd215f6"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/DelayNWithValid_202.sv",
+    "sha256": "4c95ddac95d61ac9dcc9f37e4c6669d508b9590ea1d0a38e6589dc7728a0ddec"
+   },
+   {
+    "kind": "repo",
+    "path": "rtl/common/DelayNWithValid_203.sv",
+    "sha256": "1ac567e21ec07867f844ab2c33abbcf98120bab016394d38f5160c2c92ab9fe9"
+   }
+  ],
+  "impl_sha256": "f2f78cb8ee80c82907dca37a6f380913e44f950d69c3845ad27f6fb689f4df3d",
+  "repo_impl_files": 17
+ },
+ "native_facts_sha256": "97d33ea19bc78be6d8966641b55b2bdd2d389a22a651243510e58c7c3d99d670",
+ "native_result": {
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "aborted": 0,
+   "failing": 0,
+   "passing": 18,
+   "unread_notcompared": 0,
+   "unverified": 0
+  },
+  "unmatched": {
+   "bbout_impl": 0,
+   "bbout_ref": 0,
+   "compare_impl": 0,
+   "compare_ref": 0,
+   "unread_impl": 0,
+   "unread_ref": 0
+  }
+ },
+ "proof_commit": "1f82ef7a6c7a93e2f68ca6657faabcca5d80d5f1",
+ "proof_config": {
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "false",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "fm_allowlist_numeric_prefilter": "0",
+  "fm_mode": "signoff-strict",
+  "pin_scripts": {},
+  "verify_matched_unread_compare_points": "false"
+ },
+ "proof_config_sha256": "745edd0257febccb899515e96f1ef6b3a9c9d4756f22d5f770fec3180fa4084b",
+ "proof_mode": "signoff-strict",
+ "proof_worktree_digest": "1ece1c1d37eecb518df1cfb2d7843149634edf206f8b2f166cf57ae0325ab77e",
+ "provisional": false,
+ "receipt_sha256": "c84a10466b54bf9cc03ccc31896e96d199f51850ddbad2c1180c03cd793eb823",
+ "reproduce": {
+  "command": "PROOF_COMMIT=1f82ef7a6c7a93e2f68ca6657faabcca5d80d5f1 scripts/run_proof.sh DelayNWithValid DelayNWithValid_152",
+  "env": {
+   "G1_CANONICAL": "/home/eda/xs-env/G1-canonical",
+   "note": "需 G1 golden 与 g1_canonical_id/g1_manifest_sha256 相符"
+  }
+ },
+ "result_sha256": "f720dc0d18f15c57dcdd64fd242dc35c474e1d625a222f436f17f200288ab7b8",
+ "run_id": "DelayNWithValid-20260920T104130Z-1f82ef7a",
+ "schema": "xs-v2-sv-proof-certificate-v1",
+ "script_closure": {
+  "entries": [
+   {
+    "kind": "repo",
+    "path": "scripts/fm_eq.tcl",
+    "sha256": "64823607b0ecd72236d6bb591e23dd049344e6e0e8759a72c5ed6491d63cfe49"
+   },
+   {
+    "kind": "repo",
+    "path": "scripts/sidecar/fm_native_emit.tcl",
+    "sha256": "55fb97b12ac556187c638dd26f9326412849fc5a0905394b72d8b07818914abe"
+   }
+  ],
+  "sha256": "734f7e6f9328527970022e04bd0d664eb3c5c38b95f09b45e1af261f8c8b5d73"
+ },
+ "target": "DelayNWithValid_152",
+ "tool": {
+  "build": "8868332",
+  "fm_shell_rc": 0,
+  "name": "fm_shell",
+  "platform": "linux64",
+  "version": "V-2023.12-SP3"
+ },
+ "ut_dir": "DelayNWithValid",
+ "variant": "DelayNWithValid_152",
+ "verdict": "SUCCEEDED"
+}

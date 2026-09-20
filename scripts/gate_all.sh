@@ -68,6 +68,16 @@ run "fm_eq 结构闸"     python3 scripts/test_fm_eq_wellformed.py
 # 失败、脚本只 puts 一行 miss=N，证明照跑照绿，而那行 miss 没人会看。
 # 本闸落地时实测：15 个钉点文件里 12 个是 fail-open 的（期望数量只写在 puts 字符串里）。
 run "FM 钉点结构闸"     python3 scripts/test_fm_pins_wellformed.py
+# 证明证书（D57 green_child 背书的载体）的判据自测。★这两套测试此前一条都没进 gate_all★
+# —— 文件在、能跑、没人跑；`check_gen_gate_complete.py` 只扫 scripts/gen_*.py，扫不到
+# test_*.py，所以这个缺口不会有别的闸替它喊。
+run "证书判据负测"       python3 scripts/test_proof_certificate.py
+# 元负例：把 validator 换成恒 True/恒 [] —— 上面那套必须转红，否则它什么都没在看。
+run "证书判据元负例"     env XSSV_CERT_TEST_SABOTAGE=all python3 scripts/test_proof_certificate.py
+# child 的 impl 闭包里挂 golden（LqVAddrModule 现场那个形状）：正例 + 四个负例。
+# recompute_closure_at 只复算 kind=='repo'，golden 条目被整个跳过 ⇒ D57 原九条一条不响。
+run "证书 golden-in-impl" python3 scripts/test_proof_certificate_grandchild.py
+run "证书 g-i-i 元负例"   env SABOTAGE_GC=1 python3 scripts/test_proof_certificate_grandchild.py
 # 家族生成器幂等：tlbuffer worker 发现 gen_tlbuffer_ad_family.py --check 一直报 DRIFT
 # ——negtest 段是手工贴在生成产物后面的，谁跑一次生成器它就被静默删掉，而那正是该家族
 # 唯一病因形态（位宽）的防护。只有挂了 --check 的生成器进这道闸。

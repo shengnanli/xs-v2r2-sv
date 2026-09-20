@@ -429,6 +429,93 @@ def _g1_manifest(g1_root):
     return man
 
 
+def impl_golden_entries(doc):
+    """证书的 **impl 侧**闭包里 kind=='golden' 的条目。
+
+    为什么单独拎出来：`recompute_closure_at` 只复算 kind=='repo'，
+    **golden 条目被整个跳过**（它按设计只管"仓库里的字节有没有变"）。
+    于是一个 child 可以把 golden 文件当作自己 impl 的一部分带进来，
+    而 green_child 校验一个字都不会说。
+    """
+    return [e for e in (doc.get('input_closure', {}).get('impl') or [])
+            if e.get('kind') == 'golden']
+
+
+def validate_impl_golden_certified(repo, parent_commit, child, doc,
+                                   policy=None, fm_targets=None,
+                                   fm_targets_unresolved=None, g1_root=None,
+                                   _seen=None, _depth=0):
+    """★递归★：child 的 impl 闭包里若挂着 golden 文件，那些文件必须**自身**有合格证书，
+    且该证书证的 golden 与这里挂的**逐字节同一份**。返回 True 或失败原因串。
+
+    # 为什么必须有这一条（2026-09-20，LoadQueueReplay 手核时发现）
+
+    `LqVAddrModule` 的 receipt 里 impl_closure 挂着三份 **golden** 文件
+    （`golden-rtl/DelayN_13.sv` / `DelayNWithValid_152` / `_155`）——
+    那一跑把 golden DelayN **两侧 elaborate、不黑盒**。它的 verdict 是干净的 SUCCEEDED。
+
+    ★只看 verdict、不看 impl_closure 里挂着 golden，就会把一个**还带着 golden 依赖**的绿
+     当成无条件绿。★ 而 `recompute_closure_at` 跳过 golden 条目，所以原来的九条一条都不响。
+
+    本例最后是闭的（三个 DelayN 各有独立 clean 证明，且证的 golden 与这里挂的逐字节同一份），
+    但★"查过"和"绿"是两件事★：一次人工核对回答"此刻对不对"，
+    一道闸回答"以后变了会不会有人喊"。这个函数是后者。
+
+    递归：golden-in-impl 的那个模块的证书，自己也可能再挂 golden，故继续往下查；
+    `_seen` 防环，`_depth` 兜底（证书链不该深过这个数，深了就是出了别的问题）。
+    """
+    MAX_DEPTH = 8
+    if _depth > MAX_DEPTH:
+        return 'green_child_impl_golden_chain_too_deep:%s' % child
+    if _seen is None:
+        _seen = set()
+    gold = impl_golden_entries(doc)
+    for e in gold:
+        base = os.path.basename(e.get('path') or '')
+        if not base.endswith('.sv'):
+            return 'green_child_impl_golden_unexpected_path:%s:%s' % (child, base or '?')
+        mod = base[:-3]
+        if mod in _seen:
+            continue
+        _seen.add(mod)
+        # (i) 那个模块必须自身是 FM target —— 与 D57 尾条同一条判据，不许在这里放松
+        if fm_targets is None:
+            return 'green_child_impl_golden_universe_unavailable:%s' % child
+        if mod not in fm_targets:
+            if fm_targets_unresolved:
+                return 'green_child_impl_golden_universe_unresolved:%s:%s' % (child, mod)
+            return 'green_child_impl_golden_not_fm_target:%s:%s' % (child, mod)
+        # (ii) 必须有 tracked 证书（只走 git show，工作树放一份不算）
+        gdoc, _gsha, gerr = load_certificate(repo, parent_commit, mod)
+        if gerr:
+            return 'green_child_impl_golden_uncertified:%s:%s:%s' % (child, mod, gerr)
+        derrs = validate_document(gdoc)
+        if derrs:
+            return 'green_child_impl_golden_cert_invalid:%s:%s:%s' % (child, mod, derrs[0])
+        # (iii) 合格 verdict
+        if gdoc.get('verdict') not in QUALIFYING_VERDICTS:
+            return ('green_child_impl_golden_verdict_not_qualifying:%s:%s=%s'
+                    % (child, mod, gdoc.get('verdict')))
+        # (iv) ★字节对齐★：它证的 golden 必须就是这里 impl 侧挂着的那一份
+        want = e.get('sha256')
+        got = [g for g in (gdoc.get('input_closure', {}).get('golden') or [])
+               if os.path.basename(g.get('path') or '') == base]
+        if not got:
+            return ('green_child_impl_golden_cert_lacks_that_golden:%s:%s:%s'
+                    % (child, mod, base))
+        if got[0].get('sha256') != want:
+            return ('green_child_impl_golden_bytes_mismatch:%s:%s:cert=%s,impl=%s'
+                    % (child, mod, (got[0].get('sha256') or '?')[:12], (want or '?')[:12]))
+        # (v) 它的 impl 若又挂 golden，继续往下（递归）
+        r = validate_impl_golden_certified(
+            repo, parent_commit, mod, gdoc, policy=policy, fm_targets=fm_targets,
+            fm_targets_unresolved=fm_targets_unresolved, g1_root=g1_root,
+            _seen=_seen, _depth=_depth + 1)
+        if r is not True:
+            return r
+    return True
+
+
 def validate_child_certificate(repo, parent_commit, child, declared_sha,
                                expect_canonical=None, policy=None,
                                fm_targets=None, fm_targets_unresolved=None,
@@ -543,6 +630,15 @@ def validate_child_certificate(repo, parent_commit, child, declared_sha,
                 base = e['path'].split('/')[-1]
                 if base in man and man[base] != e['sha256']:
                     return 'green_child_golden_changed:%s:%s' % (child, base)
+
+    # 3d) ★递归★ child 的 **impl** 闭包里若挂着 golden 文件，那些必须自身有合格证书，
+    #     且证的 golden 与这里挂的逐字节同一份。原来的九条一条都不管这个：
+    #     `recompute_closure_at` 只复算 kind=='repo'，golden 条目被整个跳过。
+    r = validate_impl_golden_certified(
+        repo, parent_commit, child, doc, policy=policy, fm_targets=fm_targets,
+        fm_targets_unresolved=fm_targets_unresolved, g1_root=g1_root)
+    if r is not True:
+        return r
 
     # 5) child 必须在 freeze commit 上 clean 重跑过；且其 commit 在父之前（或同一个）
     if not repo.is_ancestor(doc['impl_commit'], parent_commit):
