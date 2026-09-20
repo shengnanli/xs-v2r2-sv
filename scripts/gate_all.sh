@@ -127,6 +127,12 @@ run "Rob 射程量具负测"   python3 scripts/rob_deqgroup_blast.py --selftest
 # PIN 分布必须变）。它挡的是"判定字段名打错 -> 安静地得到一个空子集"——
 # 空子集和真结论在表里长得一模一样。
 run "Rob 接口契约负测"   python3 scripts/gen_rob_iface.py --selftest
+# debug_otherPdest 射程：四条从 golden/Scala 现算的事实（56 输出 / 56 寄存器从不被赋值 /
+# ★父层 CtrlBlock 把 56 个全接成 `/* unused */`★ / Scala 源树里只出现 1 次）。
+# 它挡的是"金标准变了而结论没跟着变"——这四条是那个待裁设计选择的全部依据。
+# 先跑负测（三条种病），再跑真闸。
+run "otherPdest 射程负测"  python3 scripts/rob_otherpdest_scope.py --selftest
+run "otherPdest 射程闸"    python3 scripts/rob_otherpdest_scope.py --check
 run "fm_eq.tcl 语法负测" python3 scripts/check_fm_eq_tcl_syntax.py --selftest
 run "fm_eq.tcl 语法闸"   python3 scripts/check_fm_eq_tcl_syntax.py
 # 覆盖台账的证据链：docs/coverage_three_axis.tsv 宣称的每条证明都要能从**版本库**复现。
