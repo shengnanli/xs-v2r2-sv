@@ -510,3 +510,69 @@ InterruptFilter              578     440    138     138  差额被指认（const
 
 第 1、3 两跑的预测都没对上，原因分别写在 §5.2/§6.2 与 §10.1。
 第 2 跑正好是集成者那条更正（模型只在 merge_dup=false 时成立）的一个独立实测。
+
+---
+
+## 13. 子依赖闭合升级：impl 侧换成 main 上的 DelayN 重写件（第五跑预登记）
+
+集成者裁定 3：DelayN lane 已合入 main（`80617800`），18 个变体里**包含
+`DelayN_17` 与 `DelayN_208`**。于是 impl 闭包升级：
+
+| 侧 | 升级前（第 1~4 跑） | 升级后（第 5 跑） |
+|---|---|---|
+| ref | golden `InterruptFilter.sv` + golden `DelayN_17.sv` + golden `DelayN_208.sv` | **不变** |
+| impl | 重写 `InterruptFilter.sv` + **golden** `DelayN_17.sv` + **golden** `DelayN_208.sv` | 重写 `InterruptFilter.sv` + **重写** `rtl/common/DelayN_17.sv` + **重写** `rtl/common/DelayN_208.sv` + `xs_DelayN_core.sv` |
+
+两侧从此是**两套不同的字节**，这两个 child 对本 target 不再零信息量，
+`UNCHANGED_GOLDEN_DEP` / 条件性证明随之摘掉 —— **但只有第 5 跑真过了才摘**，
+不许只改台账不重跑。
+
+### 13.1 预测（跑之前写死）
+
+ref 侧一个字节没动，所以**比较点全集不变**：模型仍是
+`504（闭包触发器位）+ 74（顶层 output 位）= 578`，
+`docs/fm_predictions/InterruptFilter.json` 里的 `expected=578` **不需要改**
+（它是从 golden 闭包算的），登记 commit `38b51ce2` 仍是新 `impl_commit` 的祖先。
+
+| 项 | 预测值 |
+|---|---|
+| passing | **440** |
+| Not Compared / Constant reg | **138** |
+| failing / unverified / unmatched / 黑盒 / unread / dont_verify | 全 0 |
+| 比较点全集 | 440 + 138 = **578** |
+| `fm_predict.py check` | 差 138 = 可指认 138 → 绿 |
+| verdict | `SUCCEEDED`，且这次是**子依赖闭合的完整签核**，不再是条件性证明 |
+
+### 13.2 ★这一跑新增的风险：DelayN 链的寄存器叶名变了★
+
+升级前两侧的延迟链是同一份 golden 字节，逐字同名必然配上。升级后：
+
+```
+ref   r:/WORK/InterruptFilter/delayedDebugIntr_delay/REG_reg      (golden 的 REG / REG_1..REG_4)
+impl  i:/WORK/InterruptFilter/u_core/delayedDebugIntr_delay/u_core/stage_reg[0]   (重写核的 stage[0..4])
+```
+
+这 5 实例 × 5 位 + 1 实例 × 5×8 位 = **65 位**名字对不上。
+和 §6.3 那 85 点不同的是：**这些是非常量寄存器**（真载荷在流动），
+签名分析对移位链有区分度，**预期 FM 自己能配上**。
+若配不上会表现为 `unmatched != 0`（不是 failing），那时的处置与 §7 同：
+按 `REG_<k>` ↔ `u_core/stage_reg[<k>]` 的结构规则扩 `fm_pins.tcl`，另立一次预登记。
+
+### 13.3 一条如实记录：`check_closure_symmetry.py` 对本 target 报 ERROR，且**不是**本 target 的问题
+
+升级后 `python3 scripts/check_closure_symmetry.py --only InterruptFilter` 报
+
+```
+[ERROR] InterruptFilter (signoff-strict)  elab_error:未知标识符 io_in in '$bits( {io_in})'
+```
+
+原因是那个轻量静态 elaborator（`verif/allow_gen/sv_elab.py`）**算不了
+localparam 里的 `$bits(端口拼接)`**，而 DelayN 家族的薄 wrapper 正是用它做位宽自检的。
+现查：`--only DelayN` 下 **18 个 DelayN 目标全部报同一个 elab_error**，
+包括 DelayN lane 已签核的那些。也就是说这是**检查器的既有局限**，不是闭包不对称，
+也不是我引入的新缺陷 —— 我只是把 DelayN 拉进了自己的闭包才碰到它。
+
+两点补充：
+1. `scripts/check_closure_symmetry.py` **不在 `gate_all.sh` 里**（grep 计数 0），不会把闸判红；
+2. 对称性的**权威判据**是 FM 实跑导出的 `black_boxes.rpt`（`fm_verdict.py` 用它判
+   `assembly_bbox_not_symmetric`）。第 5 跑跑完会把 `blackbox_out` 与该文件一并核对。
