@@ -20,8 +20,26 @@ ASSIGN = re.compile(r'^([\w\[\]:\.]+)\s*<=\s*(.*);$')
 
 
 def tokenize(lines, start, end):
-    """合并续行，产出 [(indent, text)]，text 是一条完整语句/关键字行。"""
-    toks, buf, ind = [], None, 0
+    """合并续行，产出 [(indent, text)]，text 是一条完整语句/关键字行。
+
+    ★这里有一个真踩过的坑★：firtool 会把长的 `if (...)` 条件折行，
+    而且条件下一行就是它的单条语句体（没有 begin）。若按“累到分号为止”
+    合并，条件头和语句体会被粘成一个 token，之后整棵树都错位——
+    症状是把并列的 160 个 `if (isFirstEnq_i)` 解成一条 160 层的 else 链。
+    所以 if 头以**括号配平**为终止，剩下的文本另起一个 token。
+    """
+    toks = []
+    buf, ind = None, 0
+
+    def flush():
+        nonlocal buf
+        if buf is not None and buf.strip():
+            toks.append((ind, buf.strip()))
+        buf = None
+
+    def balanced(t):
+        return t.count('(') > 0 and t.count('(') == t.count(')')
+
     for ln in lines[start:end]:
         s = ln.rstrip()
         if not s.strip():
@@ -32,12 +50,37 @@ def tokenize(lines, start, end):
             buf = t
         else:
             buf += ' ' + t
-        if buf.endswith(';') or buf.endswith('begin') or \
-           buf in ('end', 'else') or buf.startswith('end'):
-            toks.append((ind, buf))
-            buf = None
-    if buf is not None:
-        toks.append((ind, buf))
+        while True:
+            b = buf
+            if re.match(r'^(if|else if)\s*\(', b) and balanced(b):
+                i = b.index('(')
+                d, j = 0, i
+                while j < len(b):
+                    if b[j] == '(':
+                        d += 1
+                    elif b[j] == ')':
+                        d -= 1
+                        if d == 0:
+                            break
+                    j += 1
+                head, rest = b[:j + 1], b[j + 1:].strip()
+                if rest == 'begin':
+                    toks.append((ind, head + ' begin'))
+                    buf = None
+                    break
+                toks.append((ind, head))
+                buf = rest if rest else None
+                if buf is None:
+                    break
+                continue
+            if b in ('end', 'else', 'else begin') or b.startswith('end'):
+                flush()
+                break
+            if b.endswith(';') or b.endswith('begin'):
+                flush()
+                break
+            break
+    flush()
     return toks
 
 

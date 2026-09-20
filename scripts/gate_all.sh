@@ -111,6 +111,11 @@ run "rtl 无 svh 闸"      python3 scripts/check_no_svh_in_rtl.py
 # fm_eq.tcl 的 switch 块必须 tclsh 可解析（2026-09-20，Entries lane 踩到）：
 # 一段加错位置的注释（落进 switch 的花括号里）让**本仓每一次 FM 都在 setup 阶段死掉**，
 # 而没有任何现成的闸会响。这道闸不需要 Formality，跑一次几十毫秒。
+# Rob 折叠探针的分词器负测（秒级，不扫 golden）。这把探针的输出被当成"golden 的
+# 每条目逻辑能不能折成一个 for 循环"的证据，而它一旦分词错，**不报错、不为空**，
+# 只是给出一份形状看着很合理的假语句树（实测：把 160 个并列 if 解成 160 层 else 链）。
+# 假证据比没证据更贵，所以它自带负测，负测自带"把修复退回去必须变红"的反测。
+run "Rob 折叠探针负测"   python3 scripts/test_rob_fold_probe.py
 run "fm_eq.tcl 语法负测" python3 scripts/check_fm_eq_tcl_syntax.py --selftest
 run "fm_eq.tcl 语法闸"   python3 scripts/check_fm_eq_tcl_syntax.py
 # 覆盖台账的证据链：docs/coverage_three_axis.tsv 宣称的每条证明都要能从**版本库**复现。
