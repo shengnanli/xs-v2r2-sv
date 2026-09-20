@@ -47,9 +47,12 @@
     (7) tool     fm.log 里的 fm_shell 版本对基准版本。
     (8) facts    ★不信 receipt 的 verdict 字符串，直接看 native_facts 的数★：
                  passing>0、failing/unverified/aborted/unread_notcompared 全 0、
-                 六项 unmatched 全 0、无 dont_verify、无 relaxed appvar。
+                 unmatched 六项全 0、无 dont_verify、无 relaxed appvar。
                  verdict 是别的脚本在别的时候算出来的**一个词**，而本表的整个用途
                  就是"别把不同前提下的结论并列"——一个词不带前提，数带。
+                 PASS_DEAD_REF 例外，但换的是**更紧**的一条而不是放宽：unread 点必须
+                 有 verif/dead_ref/<top>.json 声明，且**逐点路径集合**与实测相等
+                 （不是比个数——个数相同而点不同正是该拦的东西）。声明文件的字节由 (6) 把守。
 
 关三 同一目标多轮 receipt，哪一份是权威
     只收一份。优先**同一个 run 目录里成批重出**的那一份（同一 commit 上的批量
@@ -342,6 +345,7 @@ def collect(only=None):
                     'quals': nf.get('qualifications') or {},
                     'const_reg': vd.get('constant_reg'),
                     'const_toggle': bool(vd.get('constant_reg_toggle_assumed')),
+                    'objects': nf.get('objects') or {},
                 })
     return recs
 
@@ -363,9 +367,52 @@ def chk_facts(r):
     for k in ('failing', 'unverified', 'aborted', 'unread_notcompared'):
         if s.get(k):
             bad.append('%s=%s' % (k, s[k]))
+
+    # ★PASS_DEAD_REF 的 unread_ref 不是脏，是被声明过的 golden-only cone-dead 位★
+    # 第一版这里一刀切"六项 unmatched 全 0"，把 Fence / Ftq / RegCache / SourceB /
+    # FTBBank / TageTable_* 全判成 native_facts 不干净 —— 而这些目标**已经在版本库里、
+    # 台账里也已经绿**。判据与全仓已接受的裁定冲突时，先怀疑判据：
+    # PASS_DEAD_REF 的判定依据本就是"观测集合与 verif/dead_ref/<top>.json 精确相等"。
+    # 所以这里不是放宽成"允许 unread"，而是换成**更紧**的一条：必须有声明文件，
+    # 且声明里的 observed_points 与本次实测逐数相等。声明文件的字节由 chk_decl 把守。
+    dead_ok = False
+    if r['verdict'] == 'PASS_DEAD_REF':
+        decl = (r['declarations'] or {}).get('dead_ref')
+        obs = sorted(set((r['objects'].get('unmatched_unread_ref') or []) +
+                         (r['objects'].get('unmatched_unread_impl') or [])))
+        if not decl:
+            bad.append('PASS_DEAD_REF 却没有 dead_ref 声明')
+        else:
+            want = None
+            try:
+                with open(os.path.join(REPO, decl['path'])) as f:
+                    dj = json.load(f)
+                want = sorted({e.get('ref_path') or e.get('impl_path')
+                               for e in dj.get('entries') or []})
+                # observed_points 是可选字段（实测 FTBBank / L2TlbPrefetch 就没有），
+                # 有就一并对上，别让"缺字段"和"对不上"长成一个样。
+                op = dj.get('observed_points')
+                if op is not None and op != len(want):
+                    bad.append('dead_ref 声明自相矛盾: observed_points=%s 但 entries=%d'
+                               % (op, len(want)))
+            except Exception as e:
+                bad.append('dead_ref 声明读不出: %s' % e)
+            if want is None:
+                pass
+            elif want != obs:
+                # ★逐点比集合，不是比个数★：个数相同但点不同，正是这条判据该拦的东西。
+                extra = [p for p in obs if p not in set(want)]
+                miss = [p for p in want if p not in set(obs)]
+                bad.append('dead_ref 观测集合与声明不等（实测多 %d / 声明多 %d，如 %s）'
+                           % (len(extra), len(miss), (extra or miss)[:1]))
+            elif not bad:
+                dead_ok = True
     for k, v in sorted(u.items()):
-        if v:
-            bad.append('unmatched.%s=%s' % (k, v))
+        if not v:
+            continue
+        if dead_ok and k in ('unread_ref', 'unread_impl'):
+            continue
+        bad.append('unmatched.%s=%s' % (k, v))
     if q.get('dont_verify_objects'):
         bad.append('dont_verify=%d' % len(q['dont_verify_objects']))
     if q.get('relaxed_appvars'):
