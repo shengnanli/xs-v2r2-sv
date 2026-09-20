@@ -7,28 +7,45 @@ firtool flattened. Those are generated here and marked
 `// BEGIN GENERATED(<tag>)` / `// END GENERATED`; everything outside the markers
 is hand-written and this script must not touch it (CONVENTIONS 单文件规范).
 
-Generated regions
-  ports     the `module Rob` port declarations, name-for-name and width-for-width
-            with golden, in golden's order.
-  children  the 8 child instantiations. All 8 are SYMMETRIC BLACKBOXES: neither
-            the ref nor the impl side is given a body for them (CONVENTIONS
-            §子模块处理). That makes Rob a CONDITIONAL green -- it depends on all
-            8 children being signed off independently. The receipt must carry
-            that dependency; Rob must never be reported as an unconditional pass.
+Generated regions（五个，文件骨架就长这样）
+  core_ports    `module xs_Rob_core` 的端口表。★不是手写的、也不是照 golden 抄的★：
+                它从**核体实际引用到的名字**反推出来（见 analyse_core），
+                所以端口表不可能与用法漂移。
+  ports         `module Rob` 的端口表，逐名逐位宽与 golden 一致、顺序也一致。
+  wrapper_nets  wrapper 局部网的声明（核端口与子模块引脚在这里接头）。
+  core_inst     `xs_Rob_core u_core (...)` 的实例。
+  children      8 个子模块实例。八个全是**对称黑盒**：ref 与 impl 两侧都不给体
+                （CONVENTIONS §子模块处理）。所以 Rob 是**条件绿** —— 依赖这 8 个
+                各自独立签核。receipt 必须带上这条依赖，Rob 永远不得报成无条件通过。
 
-Child pin nets are rewritten as:
-  * a top-level `io_*` port            -> used directly (576 of 868 pins)
-  * `clock` / `reset`                  -> used directly (28)
-  * a literal                          -> kept verbatim (8)
-  * anything else                      -> `n_<golden net name>`, a wrapper-local
-                                          net (256). Each such net is either
-                                          driven by `xs_Rob_core` (child input)
-                                          or by another child's output pin.
+写核的顺序（给下一轮）
+  1. 读三张已入库的契约表，它们是"一位不少"的定义：
+       docs/rob_core_contract.tsv   寄存器：13 族 161 字段 + 452 散寄存器，
+                                    逐条给出位宽/深度/复位域/复位值/名字是否被 pin 锁死
+       docs/rob_iface_contract.tsv  接口：647 个 output 是核的义务、20 个由子模块直接驱动；
+                                    868 个引脚各自接什么；27 个写回口的子集下标
+       docs/rob_pin_failclosed.tsv  钉点判据的地基（set_user_match 不抛异常）
+  2. 在 core_ports 区之后手写核体，驱动 647 个顶层 output + 61 根子模块输入网。
+  3. `python3 scripts/gen_rob.py --write` 填五个生成区。
+     ★它会拒绝一个没驱动全的核★：缺一个 output 或一根网就报
+     "这正是 SCAFFOLD 的形状"并列出缺口（自测里钉着 646/61 这两个数）。
+     核体里出现 golden 端口表里没有的 io_* 名字（打错名字）同样直接报错。
+
+Child pin nets are rewritten as（实测分布，两次修过：见 classify）：
+  * a top-level `io_*` port  -> used directly                     576
+  * `clock` / `reset`        -> used directly                      28
+  * a literal                -> kept verbatim                       8
+  * `/* unused */`           -> `.pin ()` 显式悬空（**不是网**）     9
+  * 一个表达式               -> `n_<inst>_<pin>`，由核驱动（**不是网**）4
+  * 其余                     -> `n_<net>`，wrapper 局部网          271
+  firtool 的展平中间名（_GEN_/_dispatchNum_T）在核端口与线名上都按 RENAME 换成语义名。
 
 Usage
   python3 scripts/gen_rob.py --check        # regenerate into memory, diff, rc=1 on drift
   python3 scripts/gen_rob.py --write        # rewrite the GENERATED regions in place
   python3 scripts/gen_rob.py --manifest     # print the core<->wrapper net interface
+  python3 scripts/gen_rob.py --regmap       # 寄存器族/位数汇总
+  python3 scripts/gen_rob.py --selftest     # 生成器自测（含"必须看得见 SCAFFOLD"）
 """
 import argparse, collections, hashlib, os, re, sys
 
