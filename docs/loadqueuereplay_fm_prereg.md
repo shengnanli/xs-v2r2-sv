@@ -303,3 +303,239 @@ CONVENTIONS 里写过这条判据的反面 ——「passing 不增而 unread 归
 加得比 177 多也一样要查：那说明有别的点的状态跟着变了。
 
 Q7/Q8 检验的是钉点 fail-closed 改动本身：run #2 死在钉点之前，这两条一次都没验过。
+
+---
+
+# UT 正式矩阵与变异体（与 FM 并列的另一半验收）
+
+## 1. UT 正式矩阵 3 seed × 2 initreg × 200k
+
+```bash
+cd verif/ut/LoadQueueReplay
+for s in 1 7 42; do make run SEED=$s INITREG=random; done
+for s in 1 7 42; do make run SEED=$s INITREG=0;      done
+```
+
+6/6 全部 `TEST PASSED`，每轮 `cycles=200000 checks=117564400 errors=0`。
+`TEST PASSED` 本身就带覆盖闸：26 个桶（11 个 cause + 15 个场景）任一为 0 就判 FAILED
+（tb.sv 的 `cov_ok`），所以「errors=0」和「覆盖非零」是一条判据不是两条。
+
+两档日志在磁盘上并存（CONVENTIONS 要求的那条「看文件名就知道接没接上」）：
+
+    sim_{1,7,42}_initreg0.log  与  sim_{1,7,42}_initregrandom.log  各 3 份
+
+## 2. ★initreg 确实改变了待测状态★（codex 0168 要求的那条自证）
+
+「两档日志都在」只能证明**跑过两轮**，证明不了**注入生效**。
+CONVENTIONS 记过两种死法（编译期没给 / 运行期写死），本仓还有第三种更隐蔽的：
+非打包数组混合驱动会让 VCS 静默关掉整族的初始化，0 error 0 warning。
+所以直接测：
+
+```bash
+# 探针 tb 只连 clock/reset，其余端口悬空，t=1ns 打两侧不复位寄存器的签名
+S=<scratch>; cd $S
+VCS_ARCH_OVERRIDE=linux vcs -full64 -sverilog -timescale=1ns/1ps -lca \
+  +define+SYNTHESIS +vcs+initreg+random \
+  <repo>/verif/ut/LoadQueueReplay/ut_gen/LoadQueueReplay.sv \
+  <G1>/LoadQueueReplay.sv <G1>/LqVAddrModule.sv <G1>/FreeList_5.sv \
+  <G1>/AgeDetector_38.sv <G1>/DelayN_13.sv <G1>/DelayNWithValid_152.sv \
+  <G1>/DelayNWithValid_155.sv probe_tb.sv -top tb -o probe_simv
+./probe_simv +ntb_random_seed=7 +vcs+initreg+0
+./probe_simv +ntb_random_seed=7 +vcs+initreg+random
+```
+
+实测：
+
+| 运行参数 | impl 侧 uop/vec/blockSqIdx 签名 | golden 侧 uop_0_pc / uop_37_pc / uop_71_pc |
+|---|---|---|
+| `+vcs+initreg+0` seed 1 / 7 | `0000000000000000` ×3（两 seed 相同） | 全 0 |
+| `+vcs+initreg+random` seed 1 | `00000001ffffffb8` / `…ffb8` / `…00b8` | 全 1 |
+| `+vcs+initreg+random` seed 7 | `a054a5ca` / `8df26d55` / `1b` | `1a257ac7e2458` / `34cd770355de0` / `25b9e3195ff63` |
+
+**两侧的不复位寄存器都被真的改写了**，而且 impl 侧那三族正是非打包数组
+（`lqr_uop_t uop[72]` / `lqr_vec_t vecReplay[72]` / `sq_ptr_t blockSqIdx[72]`），
+即那条静默失效的坑在本目标上**不存在**。
+
+★顺带一条值得记的★：`+vcs+initreg+random` 配 `+ntb_random_seed=1` 给出的是
+**全 1** 这种退化图样（不是杂乱值）；换 seed 7 才是真随机。
+用单个 seed 判断"random 档有没有生效"会看到一个很可疑的全 1，容易误判。
+
+★还有一条踩过的★：探针**在 `#0` 采样读到的全是 x**，`#1` 才看得到注入值。
+按 `#0` 的结果会得出"initreg 根本没生效"这个错结论。
+
+## 3. 「3 seed 全绿不足以说明没有上电值问题」——补 40 seed 扫
+
+72 条 entry 的 `uop` / `vecReplay` / `blockSqIdx` 不复位，两侧独立例化，
+在 `initreg=random` 下各抽各的上电值。tb 靠 `WARM=400` 拍只灌入队不释放
+（freelist 每拍分 3 个槽，24 拍填满 72 条）把比较窗口推到全部 entry 都被写过之后。
+CONVENTIONS 记过 `StdFreeList` 那次要扫 40 个 seed 才命中 3 个，常用的 1/7/42 全绿。
+所以补扫：
+
+```bash
+cd verif/ut/LoadQueueReplay
+seq 1 40 | xargs -P 10 -I{} ./simv +ntb_random_seed={} +ncycles=20000 \
+  +vcs+initreg+random -l <scratch>/sw_{}.log
+```
+
+**40/40 `errors=0` 且 40/40 `TEST PASSED`**（覆盖闸在 20k 拍下也全非零）。
+
+## 4. 变异体矩阵（13 个，50k 拍 / seed 1）
+
+```bash
+cd verif/ut/LoadQueueReplay
+python3 mutants.py --check                                  # 毫秒级：表没和 RTL 脱钩
+MUT_CYCLES=50000 MUT_SEED=1 python3 mutants.py              # 全跑（分组见 MUT_WORK）
+```
+
+baseline `errors=0 checks=29214400`。**13/13 符合期望，无 COMPILE_FAIL / PATCH_MISS。**
+
+| ID | 期望 | 实测 | errors | 打的是什么 |
+|---|---|---|---|---|
+| M1 | CAUGHT | CAUGHT | 1,785,437 | C_MF 解除条件退回 G0（lqIdx vs ldWbPtr） |
+| M2 | CAUGHT | CAUGHT | 17,696,272 | 把 G0 的 hasExceptions 门控补回 needEnqueue |
+| M3 | EXPECTED_MISSED | MISSED | 0 | 三份 D-channel 打拍合并成一份（功能等价、结构不等价） |
+| M4 | CAUGHT | CAUGHT | 39,207 | 去掉 G1 新增的「上一拍 D-channel」 |
+| M5 | CAUGHT | CAUGHT | **2** | replayAllocate 漏掉最后一条 entry |
+| M6 | CAUGHT | CAUGHT | 1,857,461 | 入队存 exceptionVec 而不是清 0 |
+| M7 | CAUGHT | CAUGHT | 127,791 | SQ 就绪向量越界读返回 0 而不是第 0 项 |
+| M8 | CAUGHT | CAUGHT | 3,932 | topdown 的 robHeadLoadMSHR 取 C_DM 而不是 C_DR |
+| M9 | EXPECTED_MISSED | MISSED | 0 | s1_cancel 读 uop 时加 valid 门控 |
+| M10 | EXPECTED_MISSED | MISSED | 0 | 给 golden 无复位的 s1_oldestSel_bits 加复位 |
+| M11 | EXPECTED_MISSED | MISSED | 0 | topdown 归约树两个实参对调（平局才分叉） |
+| M11b | CAUGHT | CAUGHT | 4,111 | topdown 归约取最新而不是最老 |
+| M12 | CAUGHT | CAUGHT | 40,164 | 冷却阈值 12 → 13 |
+
+★M5 要点名★：50k 拍也只抓到 **errors=2**，余量极薄（只有"第 71 条是唯一 allocated"
+那一拍可观测）。20k 拍时同样是 2，**加拍数并不加余量** —— 它真正的兜底在 FM
+（`io_replayAllocate` 是 `allocated` 的纯组合归约，FM 全取值域逐点比）。
+这条留着不删，但**不能算 UT 的判别力证据**。
+
+4 个 `EXPECTED_MISSED` 都不是"没人管"：M3/M10 归 FM（结构/复位域），
+M9 是 golden 无条件读、加门控会把 valid 引进次态锥（FM 看得见），
+M11 是归约树形状只在 robIdx 平局时分叉（仿真按构造几乎产生不出）。
+★M11 曾经被前人当成"真功能变异"，复盘发现它近乎空变异（isAfter 反对称 ⇒ 逐位相同），
+理由与替代的 M11b 一起写在 mutants.py 里 —— 剔掉它会让人以为树形无所谓。★
+
+---
+
+# 附：交接里两条「支柱测量」我自己复现了一遍
+
+CONVENTIONS「继承来的数字与断言，第一次引用时必须重新测量」。两条都逐字复现：
+
+**(1) 端口 610 → 1391，新增 789 里 786 个是 `_uop_` payload。**
+
+```bash
+cd /home/eda/xs-env && python3 - <<'PY'
+import re
+def ports(p):
+    t=open(p).read()
+    b=re.search(r'module\s+LoadQueueReplay\s*\((.*?)\);', t, re.S).group(1)
+    return set(re.findall(r'(?:input|output)\s*(?:\[\s*\d+\s*:\s*\d+\s*\])?\s+(\w+)', b))
+g0=ports('G0-canonical/golden-rtl/LoadQueueReplay.sv')
+g1=ports('G1-canonical/golden-rtl/LoadQueueReplay.sv')
+new=g1-g0
+print(len(g0), len(g1), len(new), sum('_uop_' in n for n in new), sorted(n for n in new if '_uop_' not in n))
+PY
+# -> 610 1391 789 786 ['io_replayAllocate', 'io_robDeqPtr_flag', 'io_robDeqPtr_value']
+```
+
+**(2) 具名 wire 根 G0 654 / G1 648，新增 0 个。**
+
+```bash
+cd /home/eda/xs-env && python3 - <<'PY'
+import re
+def roots(p):
+    t=open(p).read()
+    return {re.sub(r'_\d+$','',n)
+            for n in re.findall(r'^\s*wire\s*(?:\[[^\]]*\])?\s*(\w+)\s*(?:=|;)', t, re.M)
+            if not re.match(r'^_(GEN|T)', n)}
+g0=roots('G0-canonical/golden-rtl/LoadQueueReplay.sv')
+g1=roots('G1-canonical/golden-rtl/LoadQueueReplay.sv')
+print(len(g0), len(g1), "new:", len(g1-g0), "gone:", sorted(g0-g1))
+PY
+# -> 654 648 new: 0 gone: ['data_0','data_0_6_probe','data_0_7_probe','data_0_8_probe','debug_robIdx','hasExceptions']
+```
+
+两条都对上了。第二条顺带给出一个有用的细节：G1 消掉的 6 个根里有 `hasExceptions` ——
+正是变异体 M2「把 G0 的 hasExceptions 门控补回 needEnqueue」打的那个点
+（M2 抓到 errors=17,696,272）。golden 的行数翻 2.5 倍确实几乎全是 payload 复制：
+wire 声明 4275 → 9222，而**具名根一个没多**。
+
+---
+
+# run #3 逐条对账：**9/9 全中，verdict = SUCCEEDED**
+
+commit `75e1d8be8148...`，run_id `LoadQueueReplay-20260920T075542Z-75e1d8be`，
+证据 `evidence/75e1d8be8148/LoadQueueReplay/`。
+
+    verdict        = SUCCEEDED     (official gate, mode=signoff-strict, allowlist=0)
+    native         = SUCCEEDED
+    passing 114160 / failing 0 / unverified 0 / aborted 0 / unread_notcompared 0
+    unmatched: compare_ref 0  compare_impl 0  unread_ref 0  unread_impl 0
+               bbout_ref 0    bbout_impl 0
+    matched blackbox pairs = 5
+    vmucp = true, dont_verify = false, elab147 = false, markers = 1
+    Maximum memory usage 3960 MB
+    grep -cE "^ *Error:" fm.log  ->  0        (run #1 是 570)
+    LQR_PINS: accepted=6290 rejected=0
+    matched: 6213 user / 106471 name / 1476 signature / 0 topology  = 114160
+    golden sha256 ccdcf9d3dc28c7b07ae489ea0e892685807535a33a831a378cc49d80c5a3400a
+    impl   sha256 b3f0aac04ad7aa4faa4dd3f79647fb892a350f3c6da646896ca1aa156794a35e
+    fm_pins_pre.tcl sha256 42a194a6d0249e7cc03e68ce2f840763dd5b7bd6fd2428fb5587b94953133bcb
+    impl_worktree_dirty = False
+
+| # | 预测 | 实测 | 判 |
+|---|---|---|---|
+| Q1 | passing **114,160**（= 113983 + 177，一个不多一个不少） | **114,160** | **HIT** |
+| Q2 | unread_notcompared 0 | 0 | **HIT** |
+| Q3 | failing / unverified / aborted 全 0 | 全 0 | **HIT** |
+| Q4 | unmatched 六项全 0 | 六项全 0 | **HIT** |
+| Q5 | native SUCCEEDED | SUCCEEDED | **HIT** |
+| Q6 | validator 判 SIGNOFF_PASS | `verdict = SUCCEEDED`（reason=null） | **HIT** |
+| Q7 | `accepted=6290 rejected=0` | `accepted=6290 rejected=0` | **HIT** |
+| Q8 | `grep -cE "^ *Error:" fm.log` = 0 | 0 | **HIT** |
+| Q9 | matched by user > 5,532 | 6,213 | **HIT** |
+
+两轮预登记合计 **18 条里中 17 条**，唯一落空的是 run #1 的 P9 峰值内存
+（押 4,000–15,000 MB，实测 3,959 / 3,960 MB）。
+
+## ★钉点「被接受」不等于「生效」——fail-closed 只挡住了前一半★
+
+run #3 的 fm.log 里有 **24 条 Warning**（不是 Error，所以 Q8 仍是 0）：
+
+    12  Ignoring user match: no implementation object     (r:.../s0_can_go_REG_1_* 等)
+    12  Ignoring user match: no reference object
+
+机理：钉点发生在 **match 之前**，那时 impl 的 `red_q_s0_reg[1]` / `[2]`、
+`tl_d_valid_q_reg[1]` 都还在，所以 `set_user_match` **被接受**（6290/0）；
+但随后 `verification_merge_duplicated_registers = true` 把 impl 那几份完全相同的
+副本合并掉了，指向被合并对象的 user match 就被 FM 丢弃 —— 于是
+6290 条钉点只有 **6213** 条变成 `Compare points matched by user`。
+
+**所以本轮加的 fail-closed 判据有明确的上限，写在这里免得被读成更强的东西**：
+
+    它保证的是  ——  钉点名字在 elaborate 之后的设计里存在（拒一条就 exit 3）
+    它不保证的是 ——  钉点最终被 match 采纳
+
+后半段要另外一条判据（比如把 `Ignoring user match` 计数与预期数对账）。
+本轮没做，**记为缺口**。当前之所以仍然安全，是因为
+`Unmatched reference(implementation) compare points = 0(0)` ——
+被丢弃的那些点全被 FM 自己按名字/函数配上了，一个点都没漏。
+★但那还是「结果对」而不是「判据管住了」。★
+
+## 结论
+
+`LoadQueueReplay` 在 G1-canonical 基线上 **FM 等价证明通过**（signoff-strict，
+allowlist=0，无 dont_verify、无 relaxed appvar、无假白名单），
+唯一的加强项 vmucp 是**让 FM 多比 177 个点**，方向与放宽相反。
+
+★但这是**条件绿**★：5 个 matched blackbox 里，`LqVAddrModule` 与 `AgeDetector_38`
+本轮**尚未签核**（`FreeList_5` 据交接已签核 passing 724，我未独立复核）。
+三者都是 `docs/g1_configured_universe.tsv` 里的独立 FM target（各自 `yes / new_target`），
+属于"独立签核目标条件可黑盒"那一档，不是 golden 逻辑复用。
+
+**receipt 本身没有字段承载这个依赖**：`green_child_closure_checks` 是空的，
+因为那套机制只在 assembly 模式 + `verif/allow/<top>.json` 的 `class: green_child`
+下才起作用，而本目标走的是 strict + matched blackbox。
+依赖声明因此只存在于 `verif/ut/LoadQueueReplay/Makefile` 的注释和本文件里 ——
+**这是工具侧的缺口，不是我判断它可以不挂**。集成者接手时请按条件绿处理。
