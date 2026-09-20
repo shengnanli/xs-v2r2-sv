@@ -256,3 +256,50 @@ PY
 `tl_d_valid_q` 同理 —— 这是 `verification_merge_duplicated_registers = true`
 把 impl 的三份合并之后的结果。**六份副本仍然必须写**（不写就有 55 个 ref 侧
 unmatched，上一版实测过），合并是 FM 的事，不是可以省掉副本的理由。
+
+---
+
+# run #2：44 秒死在 vmucp 白名单（不是 FM 跑出来的结果，是没跑）
+
+commit `4192b2c1`，证据 `evidence/4192b2c1faa0/LoadQueueReplay/`（只有 fm.log + MAKE_RC，
+**没有 receipt.json、没有 native_facts.json** —— 这正是"根本没跑"的形态，
+和集成者提醒的那种 44 秒 setup 死法长得一模一样，但根因不同）。
+
+    FM_MODE_ERROR: matched-unread strengthening ????????, ?? LoadQueueReplay
+    Maximum memory usage for this session: 867 MB      <- 即 Formality 启动地板
+    Elapsed time: 44 seconds
+    make_rc = 3
+
+根因：`scripts/fm_eq.tcl` 对 vmucp 有一张**精确白名单**，LoadQueueReplay 不在上面。
+这是设计如此（vmucp 必须逐个论证，不是打开就能用），不是缺陷。
+
+顺带抓到的：★那条错误消息是中文的，进了 fm.log 全成问号★。
+"是什么问题"的那半句全丢了，只有目标名侥幸是 ASCII 才看得见。
+CONVENTIONS 早写过"进 fm.log 的字必须 ASCII"，这条漏网。本轮一并改成 ASCII。
+
+**这一跑不产生任何可用于对账的数字**，除了一条：我的钉点 fail-closed 改动
+**没有**在这一跑里被检验（脚本死在钉点之前）。留给 run #3。
+
+---
+
+# run #3 预登记（★写在 run #3 之前；与 run #1 的预登记同等约束★）
+
+打开 vmucp 之后，177 个 matched-unread 会被 FM **真的比一遍**。所以：
+
+| # | 量 | 预测 | 判 miss 的条件 |
+|---|---|---|---|
+| Q1 | `stats.passing` | **114,160**，即 `113983 + 177`，★一个不多一个不少★ | 任何别的值 |
+| Q2 | `stats.unread_notcompared` | **0** | ≠ 0 |
+| Q3 | `stats.failing` / `unverified` / `aborted` | 全 **0** | 任一 > 0 |
+| Q4 | `unmatched` 六项 | 全 **0** | 任一 ≠ 0 |
+| Q5 | native verdict | `SUCCEEDED` | 别的值 |
+| Q6 | validator 判决 | **SIGNOFF_PASS**（条件绿，依赖见第 3 节） | 别的值 |
+| Q7 | `LQR_PINS: accepted=... rejected=...` | **accepted=6290 rejected=0**（钉点全被接受） | rejected > 0，或这一行根本没出现 |
+| Q8 | `grep -cE "^ *Error:" fm.log` | **0**（run #1 是 570） | > 0 |
+| Q9 | `Compare points matched by user` | **> 5,532**（run #1 的值；6,290 条钉点全生效后应显著高于它） | ≤ 5532 |
+
+★Q1 是这次最要紧的一条★：`passing` 必须**正好**加 177。
+CONVENTIONS 里写过这条判据的反面 ——「passing 不增而 unread 归 0 = 点被吞掉，不算过」。
+加得比 177 多也一样要查：那说明有别的点的状态跟着变了。
+
+Q7/Q8 检验的是钉点 fail-closed 改动本身：run #2 死在钉点之前，这两条一次都没验过。

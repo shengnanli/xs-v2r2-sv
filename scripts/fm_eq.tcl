@@ -458,8 +458,32 @@ switch -- $_verify_matched_unread_compare_points {
     #              passing = golden 闭包的触发器**位数** + 顶层 output 端口**位数**;
     #              该模型在 TlbStorageWrapper_1 8682 / TLBFA_1 8663 / TLBFA_2 8233 /
     #              TLBFA_3 8229 / DelayN_7 657 / DelayN_9 216 上逐位命中过, 本轮三个也逐位命中。
-    if {$top ni {Bku Composer DebugModule DuplicatedTagArray EntriesVfdivVidiv FAlu FCVT FTBBank Ftq ICacheCtrlUnit ICacheDataArray ICacheMetaArray ICacheMissUnit InstrUncache ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 LinkMonitor MulUnit Queue1_RegMapperInput_5 RNXbar SNXbar SourceB SSIT TageBTable TlbStorageWrapper TlbStorageWrapper_1 TXDAT_4 TXREQ WritebackQueue IBuffer EntriesAluCsrFenceDiv NCBTransactionQueue NCBTransactionQueue_1 Predictor RenameBuffer TLBFA TLBFA_1 TLBFA_2 TLBFA_3 TLBNonBlock TLBNonBlock_1 TLBNonBlock_2}} {
-      puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
+    #   LoadQueueReplay(2026-09-20 加): 177 个 matched-unread，全部 `matched_nc`，
+    #          ref 与 impl 各 177 个互不重复的名字，逐点下标对下标机械核对 **0 违例**
+    #          (复跑脚本在 docs/loadqueuereplay_fm_prereg.md)：
+    #            144  cause_<n>_reg[5] / [6]        <-> u_core/cause_reg[<n>][5] / [6]
+    #                 72 条 entry 的 cause 位 5、6：两侧都存、两侧都不读。
+    #            30   s2_replayCauses{,_1,_2}_reg[b] (b!=4)
+    #                                               <-> u_core/s2_cause_q_reg[<p>][b]
+    #                 s2 流水的 cause 拷贝，下游只读 bit4(forward_tlDchannel)。
+    #            3    s2_replayMSHRId{,_1,_2}_reg[4] <-> u_core/s2_mshr_q_reg[<p>][4]
+    #                 Chisel 按 log2Up(nMissEntries+1)=5 分配，输出只取 [3:0]。
+    #          三族都是**两侧同死**：golden 存了不读，可读核照写也不读。删掉它们会
+    #          把"对称死位"变成 golden-only 死位，连双射都没有 —— 与 TLBFA 那条
+    #          "不要收窄 reqVpn"同一个结论。
+    #          ★复核判据(跑之前预登记，写在同一份文档里)★：
+    #            不加强(vmucp=false, run #1 @71138d60, evidence/71138d605681):
+    #              native SUCCEEDED / passing **113983** / failing 0 / unverified 0 /
+    #              aborted 0 / matched_unread 177 / unmatched 六项全零。
+    #            加强后应当: passing **114160**(= 113983 + 177, 一个不多一个不少)、
+    #              failing 0、unread 0、unmatched 六项仍全零。
+    #              passing 不增而 unread 归 0 = 点被吞掉, 不算过。
+    if {$top ni {Bku Composer DebugModule DuplicatedTagArray EntriesVfdivVidiv FAlu FCVT FTBBank Ftq ICacheCtrlUnit ICacheDataArray ICacheMetaArray ICacheMissUnit InstrUncache ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 LinkMonitor LoadQueueReplay MulUnit Queue1_RegMapperInput_5 RNXbar SNXbar SourceB SSIT TageBTable TlbStorageWrapper TlbStorageWrapper_1 TXDAT_4 TXREQ WritebackQueue IBuffer EntriesAluCsrFenceDiv NCBTransactionQueue NCBTransactionQueue_1 Predictor RenameBuffer TLBFA TLBFA_1 TLBFA_2 TLBFA_3 TLBNonBlock TLBNonBlock_1 TLBNonBlock_2}} {
+      # ASCII only: fm.log is not UTF-8 (CONVENTIONS). 2026-09-20 实测：
+      # 这行原来是中文，LoadQueueReplay 撞上白名单时 fm.log 里打出来的是
+      #   "FM_MODE_ERROR: matched-unread strengthening ????????, ?? LoadQueueReplay"
+      # —— 目标名侥幸是 ASCII 才看得见，说明"是什么问题"的那半句全丢了。
+      puts "FM_MODE_ERROR: matched-unread strengthening needs an explicit whitelist entry; $top is not on it"
       exit 3
     }
   }
