@@ -8185,6 +8185,19 @@ module tb;
   // so the exu/store debug arrays get written too.
   int unsigned wb_sweep = 0;
 
+  // ---- phase 0：开跑先来一次 redirect，把随机初值冲掉 ----------------
+  // ★为什么需要它（实测，不是推测）★：+vcs+initreg+random 那三轮
+  // (seed 1/7/42, 200k 拍) 全部 checks=0 —— 热身从未完成，
+  // enq_seen 只填到约 59/160，wb_seen 全 0(phase B 压根没启动)。
+  // 原因是 phase A 的前提在随机初值下不成立：条目的 uopNum/valid 随机，
+  // 已在队里的"垃圾条目"永远不满足 uopNum==0，deqPtr 冻住、队列排不空，
+  // enqPtr 走不满一圈。+vcs+initreg+0 时这些寄存器起始为 0，所以看不到。
+  // 修法：复位刚放开就发一拍 redirect(level=1, robIdx=0)，让 ROB 自己
+  // 走回/作废掉那些垃圾条目，进入一个确定的空队列，再开始 phase A。
+  // redirect 是**输入**，两侧收到的完全一样，不构成"用 golden 的状态造激励"。
+  int unsigned flush_cyc = 0;
+  wire phase_0 = flush_cyc < 400;
+
   // Warm-up runs in TWO phases, because the two obligations fight each
   // other if you try to satisfy them at once. Diagnosed by watching the
   // DUT (+diag), not by reasoning about it -- the first two guesses were
@@ -8204,7 +8217,7 @@ module tb;
   //      enqPtr=156 deqPtr=1 allowEnq=0 held for thousands of cycles.
   //   B: fill wb_seen. Sweep (port, robIdx) over all 25x160 pairs, one
   //      port at a time so uopNum cannot underflow.
-  wire phase_b = &enq_seen;   // continuous: a `bit` cannot take assign
+  wire phase_b = (&enq_seen) & ~phase_0;   // continuous: a `bit` cannot take assign
 
   task automatic drive_warmup();
     drive_random();
@@ -8493,8 +8506,47 @@ module tb;
     io_writebackNeedFlush_10                   <= 1'b0;
     io_writebackNeedFlush_11                   <= 1'b0;
     io_writebackNeedFlush_12                   <= 1'b0;
+    io_trace_blockCommit                       <= 1'b0;
+    io_wfi_enable                              <= 1'b0;
     io_fromVecExcpMod_busy                     <= 1'b0;
-    if (!phase_b) begin
+    flush_cyc <= flush_cyc + 1;
+    if (phase_0) begin
+      io_redirect_valid            <= (flush_cyc < 8);
+      io_redirect_bits_level       <= 1'b1;
+      io_redirect_bits_robIdx_value<= 8'd0;
+      io_redirect_bits_robIdx_flag <= 1'b0;
+      io_enq_req_0_valid <= 1'b0;
+      io_enq_req_1_valid <= 1'b0;
+      io_enq_req_2_valid <= 1'b0;
+      io_enq_req_3_valid <= 1'b0;
+      io_enq_req_4_valid <= 1'b0;
+      io_enq_req_5_valid <= 1'b0;
+      io_exuWriteback_0_valid <= 1'b0;
+      io_exuWriteback_1_valid <= 1'b0;
+      io_exuWriteback_2_valid <= 1'b0;
+      io_exuWriteback_3_valid <= 1'b0;
+      io_exuWriteback_4_valid <= 1'b0;
+      io_exuWriteback_5_valid <= 1'b0;
+      io_exuWriteback_6_valid <= 1'b0;
+      io_exuWriteback_7_valid <= 1'b0;
+      io_exuWriteback_8_valid <= 1'b0;
+      io_exuWriteback_9_valid <= 1'b0;
+      io_exuWriteback_10_valid <= 1'b0;
+      io_exuWriteback_11_valid <= 1'b0;
+      io_exuWriteback_12_valid <= 1'b0;
+      io_exuWriteback_13_valid <= 1'b0;
+      io_exuWriteback_14_valid <= 1'b0;
+      io_exuWriteback_15_valid <= 1'b0;
+      io_exuWriteback_16_valid <= 1'b0;
+      io_exuWriteback_17_valid <= 1'b0;
+      io_exuWriteback_18_valid <= 1'b0;
+      io_exuWriteback_19_valid <= 1'b0;
+      io_exuWriteback_20_valid <= 1'b0;
+      io_exuWriteback_21_valid <= 1'b0;
+      io_exuWriteback_22_valid <= 1'b0;
+      io_exuWriteback_23_valid <= 1'b0;
+      io_exuWriteback_24_valid <= 1'b0;
+    end else if (!phase_b) begin
       // phase A: entries born committable, no writebacks at all
       io_enq_req_0_bits_numWB <= 7'd0;
       io_enq_req_1_bits_numWB <= 7'd0;
