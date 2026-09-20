@@ -619,6 +619,11 @@ def emit(chans, scalars):
     out.append(');')
     out.append('')
     # §9-G 扁平端口 <-> 结构体数组接线 + u_core 例化（机械生成，不手写）
+    # ★wrapper 也要 import★：下面的接线声明用了 storequeue_pkg 里的 struct 类型。
+    # 漏了这一行 VCS 报的是 "memory of unknown type"（把未知类型当成存储器声明），
+    # 错误信息一个字都不提 import，很容易看岔。
+    out.append('  import storequeue_pkg::*;')
+    out.append('')
     out.append('  // 扁平 golden 端口 <-> 可读核结构体数组的接线。')
     out.append('  // ★本段全部由 gen_storequeue.py 机械生成★：字段顺序直接取自')
     out.append('  //   emit_pkg_structs 用的同一张 chans 表，所以 packed struct 的位序')

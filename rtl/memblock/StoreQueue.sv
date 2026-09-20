@@ -1880,6 +1880,8 @@ module StoreQueue(
   output [72:0]     gatewayIn_packed_48_bore
 );
 
+  import storequeue_pkg::*;
+
   // 扁平 golden 端口 <-> 可读核结构体数组的接线。
   // ★本段全部由 gen_storequeue.py 机械生成★：字段顺序直接取自
   //   emit_pkg_structs 用的同一张 chans 表，所以 packed struct 的位序
