@@ -64,6 +64,7 @@ A("  int unsigned NVEC = 200000;")
 A("  localparam int WARMUP = 64;   // 暖机拍数（不比较），见 initial 块里的说明")
 A("  int errors = 0, checks = 0;")
 A("  int unsigned n_a_fire = 0, n_d_fire = 0, n_resp_fire = 0, n_req_fire = 0;")
+A("  int unsigned n_a_llptw = 0, n_a_ptw = 0, n_a_hptw = 0, n_a_bitmap = 0;")
 A("  logic clock = 0, reset;")
 A("  always #5 clock = ~clock;")
 A("")
@@ -167,25 +168,43 @@ A("""  // ----------------------------------------------------------------------
   logic [3:0]  d_cur_src;
 
   // 一拍 D 通道 = 256 bit = 4 条 PTE。按 Sv48 的位域**造合法 PTE**，不要全随机：
-  //   [53:10] ppn  [9:8] rsw  [7]D [6]A [5]G [4]U [3]X [2]W [1]R [0]V
-  // ★ppn 必须落在 DRAM 区★，否则下一级地址一出 PMA 就是 accessFault，
-  // 遍历走一层就断，refill 只发生一次。这里 ppn = 0x80000 + 随机低位。
-  // R/X 随机决定这条是叶子还是中间级：中间级(R=X=0,V=1)会让遍历继续往下走，
-  // 于是一次请求能打出多拍访存 —— 这正是 refill / sector 合并要的激励。
+  //   [63]n [62:61]pbmt [60:54]rsv [53:10]ppn [9:8]rsw [7]D [6]A [5]G [4]U [3]X [2]W [1]R [0]V
+  //
+  // 三条约束都是**实测逼出来的**，不是照抄手册：
+  // 1. ★ppn 必须落在 DRAM 区★，否则下一级地址一出 PMA 就是 accessFault，
+  //    遍历走一层就断（实测 a_fire=0）。
+  // 2. ★superpage 必须按级对齐★：golden 的 pte_page_fault 里有"superpage 未对齐
+  //    ⇒ page fault"。ppn 取 0x80000+rand(0..255) 时低位必非 0 ⇒ **任何 superpage
+  //    都直接 fault**，sector 合并里 level 1/2/3 那几条路一次都走不到。
+  //    实测后果：变异 M5（把 1GB 的切点写错一位）**UT 抓不到**。
+  //    这里按级把低位清零：2MB 清低 9 位、1GB 清低 18 位。
+  // 3. ★napot 要真的出现★：n 是 pte[63]，且 golden 要求 ppn[3:0]==8 才合法。
+  //    原来 [63:54] 恒 0 ⇒ n 恒 0 ⇒ 变异 M2（entry_n 不归零）**UT 抓不到**。
+  //
+  // 非叶级带 u/a/d/n/pbmt 会被判 page fault，所以这些位只给叶子。
   function automatic logic [255:0] make_ptes();
     logic [255:0] blk;
     logic [43:0]  ppn;
-    logic         leaf;
+    logic         leaf, napot;
+    logic [1:0]   pbmt, cls;
     for (int k = 0; k < 4; k++) begin
-      ppn  = 44'h80000 + 44'($urandom_range(0, 255));
-      leaf = ($urandom_range(0, 2) != 0);          // 2/3 概率是叶子
-      blk[k*64 +: 64] = {10'h0, ppn, 2'h0,
-                         1'b1, 1'b1,               // D, A
-                         1'b0, 1'b1,               // G, U
+      leaf  = ($urandom_range(0, 2) != 0);         // 2/3 概率是叶子
+      cls   = 2'($urandom_range(0, 3));            // 页大小类别
+      napot = leaf & (cls == 2'h3);
+      case (cls)
+        2'h1:    ppn = 44'h80000 + (44'($urandom_range(0, 7)) << 9);   // 2MB 对齐
+        2'h2:    ppn = 44'h80000 + (44'($urandom_range(0, 3)) << 18);  // 1GB 对齐
+        2'h3:    ppn = 44'h80000 + (44'($urandom_range(0, 15)) << 4) + 44'h8; // napot: ppn[3:0]=8
+        default: ppn = 44'h80000 + 44'($urandom_range(0, 255));        // 4KB
+      endcase
+      pbmt = leaf ? 2'($urandom_range(0, 2)) : 2'h0;   // 3 是保留值，会 page fault
+      blk[k*64 +: 64] = {napot, pbmt, 7'h0, ppn, 2'h0,
+                         leaf, leaf,                 // D, A（非叶级带 A/D 会 fault）
+                         1'b0, leaf,                 // G, U
                          leaf & $urandom_range(0,1), // X
                          leaf & $urandom_range(0,1), // W
-                         leaf,                      // R
-                         1'b1};                     // V
+                         leaf,                       // R
+                         1'b1};                      // V
     end
     return blk;
   endfunction
@@ -208,6 +227,12 @@ A("""  // ----------------------------------------------------------------------
     if (g_auto_out_a_valid && auto_out_a_ready) begin
       outstanding[g_auto_out_a_bits_source] = 1'b1;
       n_a_fire++;
+      // 按 mem id 分类计数：0..5 LLPTW / 6 PTW / 7 HPTW / 8..15 Bitmap。
+      // 只看端口，不用层次引用，所以 golden 和重写侧都适用。
+      if (g_auto_out_a_bits_source[3])            n_a_bitmap++;
+      else if (g_auto_out_a_bits_source == 4'h7)  n_a_hptw++;
+      else if (g_auto_out_a_bits_source == 4'h6)  n_a_ptw++;
+      else                                        n_a_llptw++;
     end
     // D 通道
     if (auto_out_d_valid) begin
@@ -285,8 +310,27 @@ A("      if (g_io_tlb_0_resp_valid || g_io_tlb_1_resp_valid) n_resp_fire++;")
 A("      if (io_tlb_0_req_0_valid && g_io_tlb_0_req_0_ready) n_req_fire++;")
 A("      drive_random();")
 A("      drive_dft_zero();")
+A("""      // ★周期性把 PMP 重新配成放行★（2026-09-20 实测加的）
+      // 随机 CSR 写口有 72 个地址会打到 PMP/PMA 配置上（PMP.sv 里 72 处
+      // `distribute_csr_w_bits_addr == 12'h…`）。按 1/256 的写频率，期望
+      // 约 1.4 万拍就会命中一次，把暖机时配好的表项冲掉。实测正是如此：
+      //     t=10000 a_fire=264 | t=20000 a_fire=379 | t=30000..190000 a_fire=379
+      //     （t>=20000 起 PMPChecker 的 io_resp_ld 恒为"拒绝"）
+      // 也就是说后 18 万拍访存通道是**死的**，"200k 拍"名不副实。
+      // 每 1024 拍重配一次：随机 CSR 写仍然被覆盖，主路径也不会一去不回。
+      if (t % 1024 == 0) begin
+        io_csr_distribute_csr_w_valid     = 1'b1;
+        io_csr_distribute_csr_w_bits_addr = 12'h3B0;
+        io_csr_distribute_csr_w_bits_data = {64{1'b1}};
+      end else if (t % 1024 == 1) begin
+        io_csr_distribute_csr_w_valid     = 1'b1;
+        io_csr_distribute_csr_w_bits_addr = 12'h3A0;
+        io_csr_distribute_csr_w_bits_data = 64'h1F;
+      end""")
 A("      tl_step();")
 A("    end")
+A("    $display(\"a_fire_by_id: llptw=%0d ptw=%0d hptw=%0d bitmap=%0d\",")
+A("             n_a_llptw, n_a_ptw, n_a_hptw, n_a_bitmap);")
 A("    $display(\"checks=%0d errors=%0d  a_fire=%0d d_fire=%0d tlb_req_fire=%0d tlb_resp=%0d\",")
 A("             checks, errors, n_a_fire, n_d_fire, n_req_fire, n_resp_fire);")
 A("    // 覆盖闸：光 errors=0 不算数 —— 比较点、访存握手、TLB 请求都必须真的发生过。")
