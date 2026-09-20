@@ -53,6 +53,17 @@ GOLDEN = os.environ.get(
 # random every cycle -- Rob must be bit-exact under arbitrary input, and
 # restricting the stimulus to "sensible" traffic is how a UT ends up only
 # exercising the shapes its author already believed in.
+# ★这 6 个入队 robIdx 走**连续赋值**，不走时钟块★
+# 为什么不能像别的输入那样在 always @(posedge) 里用 NBA 驱动：
+#   NBA 在边沿 N-1 排程 -> 边沿 N 生效，所以输入拿到的是**两个边沿以前**的指针值；
+#   而 DUT 在边沿 N 用的是它自己**边沿前**的 allocatePtr。指针一走就对不上。
+#   实测症状：条目 0 退休了、deqPtr 前进到 1，然后**又卡住**（换条目 1 卡），
+#   因为下一拍的 robIdx 已经陈旧。
+# 连续赋值则让两者在同一个边沿看到同一个值（寄存器都在边沿后才更新）。
+ENQ_ROBIDX = ['io_enq_req_%d_bits_robIdx_value' % j for j in range(6)]
+ENQ_ROBIDX_SRC = ['dut_g.enqPtrVec_0_value'] + [
+    'dut_g.allocatePtrVec_%d_value' % j for j in range(1, 6)]
+
 STRUCTURAL = ('clock', 'reset')
 
 
@@ -119,7 +130,14 @@ def build(ports, digest):
     A('')
     A('  // BEGIN GENERATED(nets)')
     for d, hi, lo, n in ins:
+        if n in ENQ_ROBIDX:
+            # 随机值放影子变量；端口本身是 wire，由下面的连续赋值驱动
+            A('  logic %srnd_%s;' % (rng(hi, lo), n))
+            continue
         A('  logic %s%s;' % (rng(hi, lo), n))
+    for j, n in enumerate(ENQ_ROBIDX):
+        A('  wire [7:0] %s = compare_open ? rnd_%s : %s;'
+          % (n, n, ENQ_ROBIDX_SRC[j]))
     for d, hi, lo, n in outs:
         A('  logic %sg_%s, x_%s;' % (rng(hi, lo), n, n))
     A('  // END GENERATED')
@@ -144,6 +162,9 @@ def build(ports, digest):
     A('  task automatic drive_random();')
     for d, hi, lo, n in ins:
         w = width(hi, lo)
+        if n in ENQ_ROBIDX:
+            A('    rnd_%s <= %d\'($urandom());' % (n, w))
+            continue
         if w <= 32:
             A('    %s <= %d\'($urandom());' % (n, w))
         else:
@@ -259,6 +280,19 @@ def build(ports, digest):
     A("      io_exuWriteback_23_valid <= 1'b0;")
     A("      io_exuWriteback_24_valid <= 1'b0;")
     A('    end else if (!phase_b) begin')
+    A('      // ★入队请求里的 robIdx 必须等于 Rob 自己的分配指针★')
+    A('      // 这条不是"方便热身"，是**还原真实接线**：实机里 io_enq_req_*_bits_robIdx')
+    A('      // 来自 Rename，而 Rename 的这个值正是 Rob 给它的 enqPtr/allocatePtr。')
+    A('      // 随机驱动它反而是不现实的激励。')
+    A('      // 后果（实测定位到的 +random 热身真根因）：golden 里')
+    A('      //   valid   由 enqOH 置位     <- 用**内部**分配指针 allocatePtrVec_<j>')
+    A('      //   uopNum  由 instCanEnq 写  <- 用**输入** io_enq_req_<j>_bits_robIdx_value')
+    A('      // 两者用的不是同一个下标。robIdx 随机时，条目在分配指针处变 valid，')
+    A('      // 它的 uopNum 却没人写，于是保留 +vcs+initreg+random 塞进去的随机值')
+    A('      // （实测条目 0 是 127），永远不为 0 ⇒ 退不了休 ⇒ deqPtr 冻死。')
+    A('      // ★这解释了为什么 init_inputs / 压 blockCommit 都没用★：问题不在那一拍，')
+    A('      // 在"valid 和 uopNum 用了两个不同的下标"。两侧收到同一个输入值，')
+    A('      // 不构成"拿 golden 的状态造激励"意义上的作弊。')
     A('      // phase A: entries born committable, no writebacks at all')
     for p_ in range(6):
         A("      io_enq_req_%d_bits_numWB <= 7'd0;" % p_)
@@ -275,8 +309,36 @@ def build(ports, digest):
     A('    end')
     A('  endtask')
     A('')
+    A('  // ★复位期间输入必须是**确定值**，不能让它们带着随机/X 进设计★')
+    A('  // 实测（2026-09-20）：+vcs+initreg+random 下 tb 自己的输入寄存器也被随机化，')
+    A('  // 而驱动语句是 NBA、要到下一拍才生效 —— 于是复位刚放开的那一两拍，')
+    A('  // io_enq_req_*_valid 可能就是随机的 1、numWB 也是随机值。')
+    A('  // 后果不是"多一次无害的入队"：golden 的入队分支是')
+    A('  //     else if (~robEntries_<i>_valid & <enq 命中该条目>)  uopNum <= numWB')
+    A('  // ★只在条目**无效**时才重置 uopNum★。那一拍把条目 0 置成 valid=1、')
+    A('  // uopNum=<随机>（实测 127），之后 phase A 再怎么"入队"到条目 0 都不会')
+    A('  // 重置它（因为它已经 valid），uopNum 永不为 0 ⇒ 条目退不了休 ⇒')
+    A('  // deqPtr 冻在 0 ⇒ 队列排不空 ⇒ enq_seen 卡在 156/160，热身永远完不成。')
+    A('  // 这就是 +random 三个 seed 全 checks=0 的**最终根因**，')
+    A('  // ★两侧一致（golden 侧读到的也是 127），是激励缺口，不是 golden-vs-impl 分歧★。')
+    A('  task automatic init_inputs();')
+    for d, hi, lo, n in ins:
+        A('    %s = \'0;' % ('rnd_' + n if n in ENQ_ROBIDX else n))
+    A('  endtask')
+    A('')
+    A('  // 同一件事的**时钟域**版本：只靠 initial 里那一次阻塞赋值是不够的 ——')
+    A('  // `+vcs+initreg+random` 在时刻 0 给所有 reg 塞随机值，它与 initial 块的')
+    A('  // 先后**不保证**；实测加了 init_inputs() 之后 e0uopNum 仍是 127，说明')
+    A('  // initreg 跑在后面、把刚清好的输入又随机了回去。')
+    A('  // 所以复位期间**每拍**都把输入按 NBA 压成 0，与 initreg 的时刻 0 无关。')
+    A('  task automatic init_inputs_nb();')
+    for d, hi, lo, n in ins:
+        A('    %s <= \'0;' % ('rnd_' + n if n in ENQ_ROBIDX else n))
+    A('  endtask')
+    A('')
     A('  initial begin')
     A('    if (!$value$plusargs("ncycles=%d", ncycles)) ncycles = 200000;')
+    A('    init_inputs();          // ★时刻 0，阻塞赋值：复位期间输入就是确定的 0')
     A('    repeat (4) @(posedge clock);')
     A('    reset <= 1\'b0;')
     A('  end')
@@ -350,8 +412,10 @@ def build(ports, digest):
     A('    end')
     A('  end')
     A('')
-    A('  always @(posedge clock) if (!reset) begin')
-    A('    if (!compare_open) drive_warmup(); else drive_random();')
+    A('  always @(posedge clock) begin')
+    A('    if (reset) init_inputs_nb();')
+    A('    else if (!compare_open) drive_warmup();')
+    A('    else drive_random();')
     A('  end')
     A('endmodule')
     return '\n'.join(L) + '\n'
