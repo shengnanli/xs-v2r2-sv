@@ -90,7 +90,18 @@ INITREG ?= +vcs+initreg+random
 #   （sidecar/native_facts.json 的 entry_appvars 里
 #     verification_merge_duplicated_registers = true，可复核。）
 #   为什么这里仍然相等：1520 = 1483 DFF + 37 Port，DFF 位一个没少，
-#   说明这个设计**根本没有被合并掉的重复寄存器**——见下面的 merge_dup=false 对照跑。
+#   说明这个设计**根本没有被合并掉的重复寄存器**。这不是推断，是跑出来的：
+#
+#   ★merge_dup=false 对照跑（模型在这个条件下才成立）★
+#   commit 46bca5d516ea，evidence/46bca5d516ea/VirtualLoadQueue/：
+#     FM_MERGE_DUP=false（sidecar entry_appvars 里
+#     verification_merge_duplicated_registers = false，可复核）
+#     Passing Port 37 / DFF 1483 = **1520**，failing 0 / unmatched 0(0) / unread 0
+#     verdict=SUCCEEDED，MAKE_RC=0，dirty=False
+#   两跑逐列完全相同 ⇒ merge 开关对本目标不改变任何比较点，
+#   即「没有可合并的重复寄存器」是**实测**而非假设；
+#   于是在模型成立的那个条件下，**预登记 1520 == 实测 1520，差 +0**。
+#   关掉 merge 是加强不是放宽：比较点只增不减，不黑盒、不跳点、不约束 ref。
 #
 #   官方 receipt: scripts/run_proof.sh 在 detached clean worktree 上重跑一次,
 #   verdict=SUCCEEDED / dirty=False / MAKE_RC=0, 证据 evidence/2844576edd7a/VirtualLoadQueue/。
