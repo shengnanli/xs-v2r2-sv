@@ -129,7 +129,7 @@ bash ../../../scripts/run_proof.sh WBArbiterVariants <变体名>...
 | `WBArbiter_65` | SUCCEEDED | 22 | 22 | MATCH |
 | `WBArbiter_66` | SUCCEEDED | 8 | 12 | MISS(-4) |
 
-★4 个 N=1 变体（_3/_38/_58/_66）预登记没命中，各差 -5★，且首轮因 2 个 unmatched unread
+★4 个 N=1 变体（_3/_38/_58/_66）预登记没命中：首轮各差 -5、最终各差 -4★，且首轮因 2 个 unmatched unread
 判 PARTIAL。那 5 位反饥饿寄存器在 N=1 时整体不可达（README 上面那张可达性表早就写了），
 FM 折掉 3 位、留 2 位未读，一个都没进比较点。加 `fm_pins.tcl` 钉点 + vmucp 之后 unread 归 0、
 四个都转 SUCCEEDED；其中 1 点（hasFull）进 passing，另 1 点（cancelCounter_0[0]）被 FM 判成

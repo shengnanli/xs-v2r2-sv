@@ -478,8 +478,18 @@ switch -- $_verify_matched_unread_compare_points {
     #   两侧一起消失，既不是比较点也不是未读点。
     # 配对在 verif/ut/WBArbiterVariants/fm_pins.tcl(四层 fail-closed，钉不上即 exit 3)；
     # unmatched unread 单开 vmucp 必然空转，所以顺序是**先配对、再加强**。
-    # ★复核判据★：加强后 passing 必须各 +2（2→4 / 10→12 / 9→11 / 7→9），
-    #   failing 0 / unread 0 / unmatched 六项全零。passing 不增而 unread 归 0 = 点被吞掉，不算过。
+    # ★复核判据与实测（判据先写、实测后填，两个数都留着）★
+    #   写在跑之前的判据是"passing 各 +2"（2→4 / 10→12 / 9→11 / 7→9）——按"钉了 2 点
+    #   就该多比 2 点"推的。**实测是各 +1**：2→3 / 10→11 / 9→10 / 7→8，
+    #   另有 `Constant reg 1` 一行。两个点都没有被吞掉，去向是分开的：
+    #     hasFull_reg ↔ u_core/has_full_q_reg        进 matched DFF，passing +1
+    #     cancelCounter_0_reg[0] ↔ cancel_cnt_q_reg[0][0]
+    #                                                FM 判成常量寄存器，落进 Not Compared
+    #   守恒成立：2 钉点 = 1 passing + 1 Constant reg；unread 0、unmatched 六项全零、failing 0。
+    #   "Not Compared" 那一个不是盲区，有负控实证：verif/ut/WBArbiterVariants/mutants.py
+    #   的 F5 把 cancelCounter 的复位值 0 改成 1，它不再是常量，FM 当场报 failing 1
+    #   （`python3 mutants.py --fm`，该条目指定跑在 WBArbiter_3 上）。
+    #   一般判据仍然是：passing 不增而 unread 归 0 = 点被吞掉，不算过。
     if {$top ni {Bku Composer DebugModule DuplicatedTagArray EntriesVfdivVidiv FAlu FCVT FTBBank Ftq ICacheCtrlUnit ICacheDataArray ICacheMetaArray ICacheMissUnit InstrUncache ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 LinkMonitor MulUnit Queue1_RegMapperInput_5 RNXbar SNXbar SourceB SSIT TageBTable TlbStorageWrapper TlbStorageWrapper_1 TXDAT_4 TXREQ WritebackQueue IBuffer EntriesAluCsrFenceDiv NCBTransactionQueue NCBTransactionQueue_1 Predictor RenameBuffer TLBFA TLBFA_1 TLBFA_2 TLBFA_3 TLBNonBlock TLBNonBlock_1 TLBNonBlock_2 WBArbiter_3 WBArbiter_38 WBArbiter_58 WBArbiter_66}} {
       puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
       exit 3

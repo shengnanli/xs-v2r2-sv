@@ -7,14 +7,19 @@
 #   (a) FuBusyTableWrite 全族 15 个，一律 -1。模型把"触发器位数"算成 W，
 #       但 golden 最高位槽是 Chisel Vec 顶端、从没有写入源，firtool 没给它留触发器，
 #       真实 ff 位数是 W-1。
-#   (b) WBArbiter 的 N=1 变体 4 个，一律 -5。那 2N+1=5 位反饥饿寄存器在 N=1 时
+#   (b) WBArbiter 的 N=1 变体 4 个：首轮（无钉点）一律 -5，最终（钉点+vmucp）一律 -4。
+#       那 2N+1=5 位反饥饿寄存器在 N=1 时
 #       整体不可达（scripts/wbarbiter_reachability.py 早就穷举出可达状态只有全 0 一个），
 #       FM 把其中 3 位常量折掉、2 位留成未读点，一个都没进比较点。
 # 两条都说明这个 passing 模型的边界：它数的是**源码里写了几位触发器**，而 FM 数的是
 # **优化之后还剩几个比较点**。死逻辑越多，模型越偏高。
 #
 # run1  = 201cb5db74de（合 main 之后一轮跑完 55 个，配置：strict / 无钉点 / vmucp=false）
-# final = 8cf00b449a3d（只重跑 4 个 N=1 变体：fm_pins.tcl 钉点 + vmucp=true）
+# final = 8f51e44d74e5（只重跑 4 个 N=1 变体：fm_pins.tcl 钉点 + vmucp=true；
+#         8cf00b44 上先跑过一版、数字一致，钉点脚本改成 error 之后在这个 commit 上重证）
+#         ★钉了 2 点、passing 只 +1★：hasFull 那一对进 matched DFF，cancelCounter 那一对
+#         被 FM 判成常量寄存器落进 Not Compared（constreg 列 = 1）。2 = 1 + 1，没有被吞掉；
+#         那一个有负控（mutants.py --fm 的 F5，改复位值就报 failing 1）。
 #         其余 51 个 final 列原样复制 run1（同一份 receipt，没有重跑）。
 # 重跑命令：scripts/run_proof.sh WBArbiterVariants WBArbiter_3 WBArbiter_38 WBArbiter_58 WBArbiter_66
 target	family	ff_bits	out_bits	predicted_passing	run1_commit	run1_verdict	run1_passing	run1_unread	run1_constreg	final_commit	final_verdict	final_passing	final_unread	final_constreg	predicted_vs_final	note
@@ -54,16 +59,16 @@ FuBusyTableWrite_105	FuBusyTableWrite	4	4	8	201cb5db74de	SUCCEEDED	7	0	1	201cb5d
 WBArbiter	WBArbiter	13	4	17	201cb5db74de	SUCCEEDED	17	0	0	201cb5db74de	SUCCEEDED	17	0	0	MATCH	
 WBArbiter_1	WBArbiter	17	5	22	201cb5db74de	SUCCEEDED	22	0	0	201cb5db74de	SUCCEEDED	22	0	0	MATCH	
 WBArbiter_2	WBArbiter	9	3	12	201cb5db74de	SUCCEEDED	12	0	0	201cb5db74de	SUCCEEDED	12	0	0	MATCH	
-WBArbiter_3	WBArbiter	5	2	7	201cb5db74de	PARTIAL	2	2	0	8cf00b449a3d	SUCCEEDED	3	0	1	MISS(-4)	model_off_by_5: N=1 的 2N+1=5 位反饥饿寄存器在 golden 里不可达, FM 折/判未读, 非比较点
+WBArbiter_3	WBArbiter	5	2	7	201cb5db74de	PARTIAL	2	2	0	8f51e44d74e5	SUCCEEDED	3	0	1	MISS(-4)	model_off_by_5: N=1 的 2N+1=5 位反饥饿寄存器在 golden 里不可达, FM 折/判未读, 非比较点
 WBArbiter_30	WBArbiter	9	11	20	201cb5db74de	SUCCEEDED	20	0	0	201cb5db74de	SUCCEEDED	20	0	0	MATCH	
 WBArbiter_33	WBArbiter	13	12	25	201cb5db74de	SUCCEEDED	25	0	0	201cb5db74de	SUCCEEDED	25	0	0	MATCH	
-WBArbiter_38	WBArbiter	5	10	15	201cb5db74de	PARTIAL	10	2	0	8cf00b449a3d	SUCCEEDED	11	0	1	MISS(-4)	model_off_by_5: N=1 的 2N+1=5 位反饥饿寄存器在 golden 里不可达, FM 折/判未读, 非比较点
+WBArbiter_38	WBArbiter	5	10	15	201cb5db74de	PARTIAL	10	2	0	8f51e44d74e5	SUCCEEDED	11	0	1	MISS(-4)	model_off_by_5: N=1 的 2N+1=5 位反饥饿寄存器在 golden 里不可达, FM 折/判未读, 非比较点
 WBArbiter_52	WBArbiter	9	10	19	201cb5db74de	SUCCEEDED	19	0	0	201cb5db74de	SUCCEEDED	19	0	0	MATCH	
 WBArbiter_55	WBArbiter	13	11	24	201cb5db74de	SUCCEEDED	24	0	0	201cb5db74de	SUCCEEDED	24	0	0	MATCH	
-WBArbiter_58	WBArbiter	5	9	14	201cb5db74de	PARTIAL	9	2	0	8cf00b449a3d	SUCCEEDED	10	0	1	MISS(-4)	model_off_by_5: N=1 的 2N+1=5 位反饥饿寄存器在 golden 里不可达, FM 折/判未读, 非比较点
+WBArbiter_58	WBArbiter	5	9	14	201cb5db74de	PARTIAL	9	2	0	8f51e44d74e5	SUCCEEDED	10	0	1	MISS(-4)	model_off_by_5: N=1 的 2N+1=5 位反饥饿寄存器在 golden 里不可达, FM 折/判未读, 非比较点
 WBArbiter_64	WBArbiter	9	8	17	201cb5db74de	SUCCEEDED	17	0	0	201cb5db74de	SUCCEEDED	17	0	0	MATCH	
 WBArbiter_65	WBArbiter	13	9	22	201cb5db74de	SUCCEEDED	22	0	0	201cb5db74de	SUCCEEDED	22	0	0	MATCH	
-WBArbiter_66	WBArbiter	5	7	12	201cb5db74de	PARTIAL	7	2	0	8cf00b449a3d	SUCCEEDED	8	0	1	MISS(-4)	model_off_by_5: N=1 的 2N+1=5 位反饥饿寄存器在 golden 里不可达, FM 折/判未读, 非比较点
+WBArbiter_66	WBArbiter	5	7	12	201cb5db74de	PARTIAL	7	2	0	8f51e44d74e5	SUCCEEDED	8	0	1	MISS(-4)	model_off_by_5: N=1 的 2N+1=5 位反饥饿寄存器在 golden 里不可达, FM 折/判未读, 非比较点
 RealWBArbiter	RealWBArbiter	0	77	77	201cb5db74de	SUCCEEDED	77	0	0	201cb5db74de	SUCCEEDED	77	0	0	MATCH	
 RealWBArbiter_1	RealWBArbiter	0	78	78	201cb5db74de	SUCCEEDED	78	0	0	201cb5db74de	SUCCEEDED	78	0	0	MATCH	
 RealWBArbiter_2	RealWBArbiter	0	77	77	201cb5db74de	SUCCEEDED	77	0	0	201cb5db74de	SUCCEEDED	77	0	0	MATCH	

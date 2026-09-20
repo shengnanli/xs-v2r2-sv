@@ -58,8 +58,12 @@
 # 用 error 抛出：fm_shell 停在这里、不 verify、make rc!=0、verdict=ERROR、不出 receipt，
 # 这才是真正的 fail-closed，也才满足 scripts/test_fm_pins_wellformed.py 的 P2/P3。
 # 终局判据在外层：fm_eq.tcl 最后一次 match 之后重新导出 unread_points.txt，
-# validator 要求 unread 归 0；而「加强有没有真去比」要看 passing 是否 +2
-# （2→4 / 10→12 / 9→11 / 7→9），那一步要 vmucp 白名单。
+# validator 要求 unread 归 0；而「加强有没有真去比」要看 passing 增没增（那一步要
+# vmucp 白名单）。★跑之前写的判据是 +2，实测是 +1★：hasFull 那一对进了 matched DFF、
+# passing +1；cancelCounter 那一对被 FM 判成常量寄存器、落进 Not Compared。
+# 两点都没被吞掉（2 = 1 passing + 1 Constant reg，unread 0、unmatched 六项全零），
+# 而"Not Compared"不是盲区 —— mutants.py 的 F5 负控把它的复位值改成 1，
+# 它不再是常量，FM 当场报 failing 1。
 #
 # N>=2 的 9 个变体在这里**没有未读点**，走 "nothing to pin" 分支原样通过 ——
 # 同一个 UT 目录一份 fm_pins.tcl 服务 13 个 target，不能假设一定有活干。
