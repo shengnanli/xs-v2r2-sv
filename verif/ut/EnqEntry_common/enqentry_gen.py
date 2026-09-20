@@ -58,6 +58,43 @@
     要做必须先补核 —— 而补核要跨 lane 协调，不能在这里顺手改。
 
 ===============================================================================
+★ 唯一的拦路石：核里有一行对 IS_ENQ 是错的（本 lane 不许改那个文件，已上报）★
+===============================================================================
+
+现象（本 lane 实测，EnqEntry 变体，seed=1，200k 拍）：
+  逐拍比对 58,199,418 次，errors=2682，**全部集中在 io_commonOut_perfWakeupByWB_0/1
+  这一组**，其余 640 个输出一个错都没有。
+
+根因（逐字对着 golden）：
+  golden EnqEntry.sv:3258
+    assign io_commonOut_perfWakeupByWB_0 =
+      (|_GEN) & ~currentStatus_srcStatus_0_srcState & validReg_last_REG;
+                 ^^^^^^^^^^^^^ 用的是 **currentStatus**（入队延迟窗口打过补丁的那份）
+  xs_iq_entries_core.sv §2.8
+    assign o_dbg_perf_wakeup_by_wb[s] = wk_hit[s]
+                                      & (r_src_state[s] == SRC_BUSY)   <- 裸寄存器
+                                      & valid_reg;
+  `(|_GEN)` 与核的 `wk_hit[s]` 同义（都是**当拍** WB 总线的命中向量，实测一致）；
+  差别只在门控用的是 currentStatus 还是 entryReg。
+  OthersEntry / Entries 上两者恒等（没有延迟窗口），所以这条错到今天才暴露。
+
+需要的改动（一行）：
+    -                                      & (r_src_state[s] == SRC_BUSY)
+    +                                      & (cur_src_state[s] == SRC_BUSY)
+
+对另外两条 lane 是 no-op，两重证据：
+  (1) 结构上：core 里 `dly = IS_ENQ & enqd_valid_reg`，而 IS_ENQ=0 时
+      `assign enqd_valid_reg = 1'b0`（g_no_enq_delay 支），故
+      `cur_src_state[s] = dly ? (...) : r_src_state[s]` 常量折叠成 r_src_state[s]。
+  (2) 实测：把补丁打在 scratch 副本上（仓库文件未动）重跑另外两条 lane 的既有 UT，
+      OthersEntry / OthersEntry_6 / EntriesVfdivVidiv seed=1 全部 TEST PASSED。
+  打上补丁后 EnqEntry 的 errors 2682 -> 0。
+
+★ 本 lane 没有改 rtl/backend/xs_iq_entries_core.sv（它同时被 agent/othersentry 与
+  agent/entries-rest3 在动）。这一行由谁来改、改在哪条分支上，需要上层协调。
+  在它落地之前，本族 9 个变体的 UT/FM 都会且只会在 perfWakeupByWB 上红。★
+
+===============================================================================
 
 用法：
   python3 gen.py            # 生成
@@ -248,11 +285,20 @@ def gen_rtl(ov):
     A(f'  // 入队负载按 Variant 的偏移表拼成一根 {v.pl_trans_w} 位向量（transEntry 整包：')
     A('  // KEEP_WIDE = IS_ENQ | IS_TRANS，enq 条目要把整包交给下一级）')
     A(f'  logic [{v.pl_trans_w-1}:0] enq_payload;')
-    terms = []
+    A('  // 一字段一行 + 比特区间 —— 这张表就是「负载字段 -> 比特位置」的地图，')
+    A('  // fm_pins_pre.tcl 的钉点用的是同一张 Variant.pl_off，两边不会各算各的。')
+    A('  assign enq_payload = {')
+    rows = []
     for n, w in reversed(v.pl_all):
-        p = ov.ipl(n)
-        terms.append(p if ov.has(p) else f"{w}'h0")
-    A('  assign enq_payload = {' + ', '.join(terms) + '};')
+        off, _ = v.pl_off[n]
+        rng = f'[{off+w-1}:{off}]' if w > 1 else f'[{off}]'
+        pn = ov.ipl(n)
+        rows.append(((pn if ov.has(pn) else f"{w}'h0"), rng, n))
+    wid = max(len(r[0]) for r in rows)
+    for i, (expr, rng, nm) in enumerate(rows):
+        comma = '' if i == len(rows) - 1 else ','
+        A(f'    {expr}{comma}'.ljust(wid + 5) + f'// {rng} {nm}')
+    A('  };')
     A('')
     ew, rw = max(1, v.exu_w), max(1, v.rc_idx_w)
     A(f'  logic [{nfu-1}:0] fu_type_narrow;')
@@ -291,6 +337,31 @@ def gen_rtl(ov):
         A(f'  logic [{n_src-1}:0][{max(1,n_iq)-1}:0] unused_dbg_wakeup_by_iq;')
     A('')
     return L, (v, n_src, n_wk, n_iq, nfu, ew, rw)
+
+
+def wrap_long(text, width=96):
+    """把生成结果里过长的行按 ", " 折行（纯格式化：SystemVerilog 里空白不敏感）。
+
+    ★为什么非折不可★：本轮的目的是「让人能读」。不折的话向量族的
+    `.wk_pdest({...16 路...})` 和负载拼接会变成几百到两万字符的一行 ——
+    在编辑器里根本没法读，diff 也没法看。
+    """
+    out = []
+    for line in text.split('\n'):
+        if len(line) <= width or '//' in line:
+            out.append(line)
+            continue
+        ind = len(line) - len(line.lstrip())
+        pad = ' ' * (ind + 4)
+        cur = ''
+        for tok in re.split(r'(?<=,) ', line):
+            if cur and len(cur) + 1 + len(tok) > width:
+                out.append(cur)
+                cur = pad + tok
+            else:
+                cur = tok if not cur else cur + ' ' + tok
+        out.append(cur)
+    return '\n'.join(out)
 
 
 def gen_rtl_body(ov, L, ctx):
@@ -591,7 +662,7 @@ def gen_rtl_body(ov, L, ctx):
     A('  // END GENERATED(core-inst)')
     A('')
     A('endmodule')
-    return '\n'.join(L) + '\n'
+    return wrap_long('\n'.join(L)) + '\n'
 
 
 # ---------------------------------------------------------------------------
