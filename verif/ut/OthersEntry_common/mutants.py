@@ -106,6 +106,27 @@ DBG_MUTANTS = [
      "      assign o_dbg_entry_in_valid        = enq_valid;",
      "      assign o_dbg_entry_in_valid        = enq_valid & ~valid_reg;",
      lambda ov: (True, '每个变体都有这个端口')),
+
+    # ---- 向量专属：ignoreOldVd（§2.3 / §2.5）----
+    # ★ 这条通路在 INT/FP 那 12 个变体上整条是死的（HAS_IGNORE_OLD_VD=0），
+    #   也就是说前 12 个变体的 14/14 与 13/13 **一个字都没覆盖到它**。
+    #   VEC 族是本核里第一次真正走这条路的，必须给它自己的靶子，
+    #   否则「6 个向量变体全绿」里有一段没被验过判别力。
+    ('V1', 'ignoreOldVd 少了「vl 不为 0」那一项 —— golden 要求 vl 被写回唤醒**且** '
+           'vl 非 0；写成只看唤醒，vl==0 时会错误地把旧 vd 判成可忽略',
+     "        & ((~vl_int_is_zero & vl_wk_int) | (~vl_vf_is_zero & vl_wk_vf))",
+     "        & (vl_wk_int | vl_wk_vf)",
+     lambda ov: (ov.v.has_ignore, '非向量变体 HAS_IGNORE_OLD_VD=0，整条通路是死的')),
+
+    ('V2', 'ignoreOldVd 忘了 ~isDependOldVd 门控 —— 明确依赖旧 vd 的指令也被判成可忽略',
+     "        & ~pl_depend_oldvd",
+     "        & 1'b1",
+     lambda ov: (ov.v.has_ignore, '非向量变体这条通路是死的')),
+
+    ('V3', 'ignoreOldVd 后忘了把 srcType 清 0（golden：旧 vd 不再算源）',
+     "      u_src_type[s]  = is_vd ? 4'h0 : r_src_type[s];",
+     "      u_src_type[s]  = r_src_type[s];",
+     lambda ov: (ov.v.has_ignore, '非向量变体 is_vd 恒 0，改了等于没改')),
 ]
 
 

@@ -10,6 +10,9 @@ rc=0
 run() { printf '=== %-28s ' "$1"; shift; if "$@" >/tmp/gate_$$.out 2>&1; then echo PASS; else echo "★FAIL"; sed 's/^/    /' /tmp/gate_$$.out | tail -12; rc=1; fi; }
 
 run "可读性 A-G"        python3 scripts/readability_audit.py --quiet
+# A 类禁用命名正则的对照测试。★必须单独有一道★：2026-09-20 收紧那次，收紧前后在
+# 全部 448 个 rtl/*.sv 上都命中 0 —— 拿仓库扫一遍对这次改动毫无分辨力。
+run "可读性 A 类正则对照"  python3 scripts/test_readability_forbidden.py
 run "端口契约闸"        python3 scripts/port_contract_lint.py --all-impl
 run "重复/分叉闸"       python3 scripts/equality_dup_lint.py
 # package 作用域闸（codex 0158 §3）：重复/分叉闸只认**模块**重名，看不见 **package**
@@ -83,6 +86,7 @@ for g in scripts/gen_tlbuffer_ad_family.py scripts/gen_mbist_pipe_family.py \
          scripts/gen_newdispatch_tb.py \
          scripts/gen_tlbnb_family.py scripts/gen_predictor.py \
          scripts/gen_rob.py scripts/gen_rob_ut.py \
+         scripts/gen_sbuffer.py scripts/gen_sbuffer_tb.py \
          scripts/gen_tlbsw_family.py; do
   [ -f "$g" ] && run "生成器幂等 $(basename $g .py | sed 's/^gen_//')" python3 "$g" --check
 done

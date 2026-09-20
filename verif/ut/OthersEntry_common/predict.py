@@ -53,6 +53,12 @@ DONE12 = ['OthersEntry_44', 'OthersEntry_50', 'OthersEntry_66', 'OthersEntry_72'
           'OthersEntry', 'OthersEntry_6', 'OthersEntry_88', 'OthersEntry_90',
           'OthersEntry_104', 'OthersEntry_106', 'OthersEntry_120', 'OthersEntry_122']
 
+# 第二批：VEC 族 6 个（不需要等 E1，依据见 VEC_PROBE_PREREG.md）
+DONE_VEC = ['OthersEntry_164', 'OthersEntry_166', 'OthersEntry_150',
+            'OthersEntry_152', 'OthersEntry_136', 'OthersEntry_138']
+
+DONE18 = DONE12 + DONE_VEC
+
 
 def reg_bits(mod):
     n = 0
@@ -84,7 +90,7 @@ def main(argv):
     mods = [a for a in argv if not a.startswith('-')]
     if not mods:
         mods = (sorted(p.stem for p in GOLDEN.glob('OthersEntry*.sv')
-                       if 'VecMem' not in p.stem) if '--all' in argv else DONE12)
+                       if 'VecMem' not in p.stem) if '--all' in argv else DONE18)
     print(f'{"变体":<18}{"regs":>7}{"子实例regs":>11}{"outs":>7}'
           f'{"模型(上界)":>12}{"可接受下界":>12}')
     for m in mods:
