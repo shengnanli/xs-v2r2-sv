@@ -93,10 +93,25 @@ FAIL_OPEN_LEDGER = {
 # 永远走不到 —— 一个 pin 都没配上也会打印 "pinned N of N"。
 # 正确写法是用**返回值**：`if {[set_user_match $r $i]} {incr _pinned}`。
 #
-# 落地时仓里 32 个钉点文件有 28 个是这个形态，且它们对应的目标**都已签核**。
-# 每个文件的修法只有一行，但改完必须重跑 FM 才知道那些点当年是不是真配上了 ——
-# 那是 license 与机时的事，不是本 lane 能替它们决定的。所以照 FAIL_OPEN_LEDGER
-# 的先例：逐条记账，**只许缩不许长**，新文件一律判红。
+# 落地时仓里 32 个钉点文件有 28 个是这个形态，涉及 28 个 top。
+#
+# ★这里有一句我先写错了的话，留在这里★：commit 43d9cc8b 的说明里写的是
+# "它们对应的目标都已签核"。**没有核对就写了**。照 docs/coverage_three_axis.tsv
+# 现查，28 个 top 里只有 12 个是 PROVEN*（Bku / Composer / EntriesAluCsrFenceDiv /
+# EntriesVfdivVidiv / ITTageTable{,_1..4} / TLBFA / TLBNonBlock / TlbStorageWrapper），
+# 其余 16 个是 UNPROVEN 或 MISSING。
+#
+# ★但也不能反过来照这个分类办事★：那张覆盖台账**自己就是漂的**（本轮实测
+# rewrite_coverage.py --check 在 main 上 rc=1，coverage_three_axis 也漏记了
+# 刚签核的目标）。也就是说"哪些已签核"这件事此刻没有可信的机读来源 ——
+# 例如 main 刚合入的 Entries* 7 个变体日志里写着 SIGNOFF_PASS，台账里却还是 MISSING。
+#
+# 所以取保守做法：28 个全部记账，**不**据一张已知会漂的表去单方面打红谁。
+# 台账性质不变：只许缩不许长，新文件一律判红；改成用返回值的文件必须从表里删掉
+# （G2b 判据）。哪些该优先修、要不要按签核状态分批，留给集成者裁。
+#
+# 每个文件的修法只有一行（catch 形 -> 返回值形），真正的代价在改完要重跑 FM
+# 才知道那些点当年是不是真配上了。
 CATCH_COUNT_LEDGER = {
     'verif/ut/Bku/fm_pins_pre.tcl',
     'verif/ut/Composer/fm_pins_pre.tcl',
