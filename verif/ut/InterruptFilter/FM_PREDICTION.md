@@ -462,3 +462,51 @@ expected 578 - passing 440 = 138
 
 ★登记文件 `docs/fm_predictions/InterruptFilter.json` 里的 `expected=578` 自始至终
 没有动过，也不会动 —— 工具对账的是它，不是我这段叙述。★
+
+---
+
+## 12. 第四跑（签核跑）实测 —— 与 §11 逐项相符
+
+证据 `evidence/3e3ea3700d11/InterruptFilter/`，`run_proof.sh` rc=0：
+
+```
+verdict: SUCCEEDED          impl_commit 3e3ea3700d11
+{"passing": 440, "failing": 0, "unverified": null, "unmatched": 0,
+ "unread": null, "blackbox_out": 0, "dont_verify": false, "elab147": false,
+ "constant_reg": 138, "native": "SUCCEEDED", "unmatched_ref": 0, "unmatched_impl": 0}
+Passing (equivalent)   Port 74   DFF 366   TOTAL 440
+Failing                                     TOTAL   0
+Not Compared  Constant reg      DFF 138
+IF_PIN: pinned 85 pair(s); orphans 85; structural inventory upper bound 378
+fm.log 行首锚定错误行数  grep -cE "^ *Error:"  = 0
+```
+
+| 项 | §11 预测 | 实测 | 差 |
+|---|---|---|---|
+| passing | 440 | **440** | 0 |
+| Constant reg | 138 | **138** | 0 |
+| failing / unverified / unmatched / 黑盒 / unread / dont_verify | 0 | **0** | 0 |
+| 比较点全集 | 578 | **578** | 0 |
+
+工具对账（`python3 scripts/fm_predict.py check InterruptFilter`，rc=0）：
+
+```
+target                        预期      实测      差     可指认  判决
+InterruptFilter              578     440    138     138  差额被指认（constant_reg 138 + unread 0）
+结论：全部对上
+```
+
+登记 commit `38b51ce2` 是 `impl_commit 3e3ea370` 的祖先（工具已校验），
+即预期是在这次证明**之前**进的库。
+
+### 12.1 四跑一览（把"预测对不上"的两次也留在表里）
+
+| 跑 | commit | 配置 | 结果 | 预测 vs 实测 |
+|---|---|---|---|---|
+| 1 | `08a85f26` | merge_dup=true（默认） | **FAILED** 20F/258U/10(7)unmatched | 预测 578 passing，实测已配对点 423 —— ★差 -155，静态指认不了★ |
+| 2 | `55468572` | merge_dup=false | native SUCCEEDED / failing 0，但 PARTIAL（85(85) unmatched） | 预测 578 passing，实测 440 —— ★模型算的是比较点全集，不是 passing★ |
+| 3 | `71476fde` | + fm_pins.tcl | SUCCEEDED（unmatched 归 0） | 预测 passing 440→525，★没达成★：85 点变成 matched-constant，passing 不变 |
+| 4 | `3e3ea370` | + 钉点文案改 ASCII | **SUCCEEDED** | §11 修正后的预测逐项相符，差全为 0 |
+
+第 1、3 两跑的预测都没对上，原因分别写在 §5.2/§6.2 与 §10.1。
+第 2 跑正好是集成者那条更正（模型只在 merge_dup=false 时成立）的一个独立实测。
