@@ -104,6 +104,33 @@ endmodule
 - G0-canonical 与 xs-v2r2-sv 是上一轮成果，可参考其可读核的写法，
   但**逐字复制前必须对照 G1 golden 确认该模块在 422 个 commit 里没变**。
 
+### ★Chisel 源就在本机，且与 golden 同源（2026-09-20 核实）★
+`/home/eda/xs-env/XiangShan/src/main/scala/` 是生成 golden 的那棵源码树。
+核实方式（在该仓里跑，输出为空即未变）：
+
+```
+git -C /home/eda/xs-env/XiangShan log --oneline b36a1a2a5..HEAD -- src/main/scala/xiangshan/
+```
+
+（`b36a1a2a5` 就是 golden 的 commit；该仓 HEAD 之后的提交都在 `stl/`。）
+
+这件事改变的是**写核的方法**，不是判据：
+- 可读核应当照着**设计意图**写（Chisel 的 Bundle / for / when 结构本身就是
+  "人可以读懂"的那一份），而不是去给 firtool 的展平输出改名。
+  本仓禁 `_GEN_*`/`_T_*` 的那条规矩，正面说法就是这个。
+- ★但 golden 仍是唯一判据★。两点不可替代：
+  (1) **配置**。`KunminghuV2Config` 决定 `OptionWrapper`/`Option.when` 的字段
+      到底存不存在、各 MixedVec 的端口子集是哪几个下标（例如 Rob 里
+      `exuWBs`=0..24 / `stdWBs`={25,26} / `fflagsWBs`={5,8..17}），Scala 源
+      本身看不出来，只有 golden 的端口表能告诉你。
+  (2) **firtool 的实际结果**。DCE 会删掉整条未被使用的输出（Rob 的
+      `io.enq.resp` / `io.robFull` / `io.lsq.lcommit` 在 golden 里根本没有端口）；
+      常数折叠会让每个条目的等式长得不一样。照 Scala 写完必须回对 golden 的
+      端口表与寄存器表。
+- 子模块来源不同：`utility` / `rocket-chip` / `difftest` 不在
+  `src/main/scala/xiangshan/` 下，上面那条核实命令**管不到它们**，
+  要单独确认。
+
 ## 已知环境坑（从上轮继承）
 - generate-for 内禁止用 function 捕获模块级信号（仿真返 X），
   路由/选择用显式 assign 或 always_comb-for。
