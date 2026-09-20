@@ -51,7 +51,32 @@ canary(`EntriesAluCsrFenceDiv`) 的 FM 从 1030 failing 收到 0，中间修掉�
     python3 mutants.py EntriesAluCsrFenceDiv --only M3  # 只跑一个
     python3 mutants.py EntriesAluCsrFenceDiv --cycles 40000
 
-退出码 0 = 每个变异都被抓住；非零 = 有变异逃逸（UT 在那条路上没有判别力）。
+退出码 0 = 每个**计分的**变异都被抓住；非零 = 有变异逃逸，或出现了不计分但必须
+有人处理的样本（基础设施失败 / 无效变异体）。
+
+## 四个桶（0920 裁定后）
+
+| 桶 | 什么情况 | 计分？ | rc |
+|---|---|---|---|
+| `caught`  | UT 报错/覆盖闸红；或**声明**了 COMPILE_FAIL 期望且确实编不过 | 分子+分母 | 0 |
+| `escaped` | 变异注进去了、UT 没反应 —— UT 在那条路上是瞎的 | 分母 | ★非零★ |
+| `infra`   | license / 磁盘 / 排队，或编不过却无 `Error-[` 无法归因 | **都不进** | ★非零★ |
+| `invalid` | 真编译错但**没有**声明期望 ⇒ 没产生电路 | **都不进** | ★非零★ |
+
+★`invalid` 是 0920 裁定新加的第三类，别把它并进 `caught`★：
+变异体矩阵量的是 **UT 的判别力**。编不过意味着 UT 根本没跑，它对"UT 能不能抓住"
+一个字都没证明；记成 caught 等于拿**工具链的能力**冒充 UT 的能力 —— 与 infra
+灌水是同一个病，只是水源不同。它也和本仓既有规矩同源：「变异体必须先自证改变
+了电路」——一个编不过的变异体**根本没有产生电路**，连自证的前提都不成立，
+和逻辑等价的空变异一样，应当剔除并附理由（这里附的是**完整编译错误原文**，
+那就是"靶子写错了"的直接证据）。
+**不判 FAIL**：FAIL 留给"harness 本身坏了"；靶子写错了修靶子即可。
+
+边界：某个靶子如果**故意**要测"这种写法会不会被工具链拦下"，给它第 7 元
+`'compile_fail'`，它就走 `caught` —— 那是**声明了期望**的正常路径。
+
+计分规则不会自己报警（分母悄悄变小只会让成绩变好看），所以它自带负测：
+`python3 mutants.py --selftest-classify`（毫秒级，不占 VCS/license，含元负例）。
 """
 
 import argparse
@@ -193,6 +218,34 @@ MUTANTS = [
 ]
 
 
+# ---------------------------------------------------------------------------
+# 编译失败的三分类（0920 裁定）—— 抽成**纯函数**，这样它的负测不用占 VCS/license
+#
+#   'caught'  仅当本靶子**声明**了 expect_compile_fail：编不过是它的正常路径
+#   'invalid' 真编译错但没声明期望 ⇒ ★无效变异体：没产生电路，分子分母同时剔除★
+#   'infra'   license / 磁盘 / 排队等与变异无关的失败，或编不过却无 Error-[ 无法归因
+#
+# 为什么 'invalid' 不是 caught：变异体矩阵量的是 **UT 的判别力**；编不过意味着
+# UT 根本没跑，它对"UT 能不能抓住"一个字都没证明。记成 caught 是拿工具链的能力
+# 冒充 UT 的能力 —— 与 infra 灌水同病，只是水源不同。
+# 为什么 'invalid' 不判 FAIL：FAIL 留给"harness 本身坏了"；靶子写错了修靶子即可。
+# ---------------------------------------------------------------------------
+INFRA_SIGS = ('License', 'license', 'LMGRD', 'Cannot connect',
+              'No such feature', 'No space left')
+
+
+def classify_compile_failure(out, expect_compile_fail=False):
+    infra_sig = any(s in out for s in INFRA_SIGS) or (
+        'queue' in out.lower() and 'lic' in out.lower())
+    real_err = 'Error-[' in out
+    if infra_sig or not real_err:
+        return ('infra', 'license/基础设施' if infra_sig
+                else '编译失败但无 Error-[，无法归因')
+    if expect_compile_fail:
+        return ('caught', 'compile-fail(符合声明的期望)')
+    return ('invalid', '编不过，未产生电路')
+
+
 def run(cmd, cwd, env=None):
     return subprocess.run(cmd, cwd=str(cwd), env=env, shell=isinstance(cmd, str),
                           stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
@@ -214,6 +267,9 @@ def main():
                          '★一道门禁如果注入故障也不报警，它的 rc=0 没有意义★')
     ap.add_argument('--selftest-regcheck', action='store_true',
                     help='只跑寄存器双射核对的负测（证明那道闸会响）')
+    ap.add_argument('--selftest-classify', action='store_true',
+                    help='负测编译失败三分类（0920 裁定）。不占 VCS/license，毫秒级。'
+                         '★"无效变异体不计分"这条规矩本身也要能证明自己在工作★')
     a = ap.parse_args()
 
     if a.selftest_check:
@@ -273,6 +329,9 @@ def main():
               f'适用性判据全部可求值 ({a.top})')
         return 0
 
+    if a.selftest_classify:
+        return selftest_classify()
+
     if a.selftest_regcheck:
         return selftest_regcheck()
 
@@ -317,10 +376,14 @@ def main():
     for m, why in struct:
         print(f'[{m[0]}] 结构型（UT 按构造看不见，闸在 FM）: {m[1]}')
 
-    caught, escaped, infra = [], [], []
+    # caught/escaped 计分；infra（基础设施失败）与 invalid（编不过、未产生电路）
+    # 都**不计分**，但都让整体 rc 非零 —— 不计分不等于可以忽略。
+    caught, escaped, infra, invalid = [], [], [], []
 
     for m, _why in todo:
         mid, desc, old, new = m[0], m[1], m[2], m[3]
+        # 第 7 元（可选）= 'compile_fail'：本靶子**声明**它期望编不过。
+        expect_compile_fail = (len(m) > 6 and m[6] == 'compile_fail')
         work = pathlib.Path(tempfile.mkdtemp(prefix=f'xsv2-mut-{mid}-'))
         try:
             # UT 的 Makefile 里写死了 ../../../rtl 与 ../../../scripts，
@@ -348,20 +411,32 @@ def main():
                 #   基础设施失败单列 infra 桶，并让整体 rc 非零（必须重跑），
                 #   绝不静默计入。
                 out = r.stdout.decode('utf-8', 'replace') if r.stdout else ''
-                infra_sig = ('License' in out or 'license' in out
-                             or 'LMGRD' in out or 'Cannot connect' in out
-                             or 'No such feature' in out
-                             or 'queue' in out.lower() and 'lic' in out.lower()
-                             or 'No space left' in out)
-                real_err = 'Error-[' in out
-                if real_err and not infra_sig:
-                    caught.append((mid, 'compile-error'))
-                    print(f'[{mid}] 抓住 (编译失败, 有真编译错): {desc}')
+                kind, why_c = classify_compile_failure(out, expect_compile_fail)
+                if kind == 'caught':
+                    # ★边界（0920 裁定）★：**声明了** COMPILE_FAIL 期望的靶子——
+                    # 它测的就是"这种写法会不会被工具链拦下"（如 elaborate 期位宽
+                    # 不变式），编不过是它的正常路径，照常计分。
+                    caught.append((mid, why_c))
+                    print(f'[{mid}] 抓住 (编译失败, 正是本靶子声明的期望): {desc}')
+                elif kind == 'invalid':
+                    # ★0920 裁定：真编译错**不算 caught**，也不判 FAIL，而是第三类
+                    #   「无效变异体」——分子分母同时剔除。★
+                    #   理由：变异体矩阵量的是 **UT 的判别力**。编不过意味着 UT
+                    #   根本没跑，它对"UT 能不能抓住"一个字都没证明；记成 caught
+                    #   是拿**工具链的能力**去冒充 UT 的能力，与 infra 灌水同病，
+                    #   只是水源不同。
+                    #   而且它与本仓既有规矩同源：「变异体必须先自证改变了电路」——
+                    #   一个编不过的变异体**根本没有产生电路**，连自证的前提都不成立,
+                    #   和逻辑等价的空变异一样，应当剔除并附理由。
+                    errs = [l for l in out.split('\n') if 'Error-[' in l]
+                    invalid.append((mid, desc, errs, out))
+                    print(f'[{mid}] ★无效变异体（编不过，未产生电路）—— '
+                          f'分子分母同时剔除★: {desc}')
+                    for l in errs[:3]:
+                        print(f'        {l.strip()}')
                 else:
-                    infra.append((mid, 'license/基础设施' if infra_sig
-                                  else '编译失败但无 Error-[，无法归因'))
-                    print(f'[{mid}] ★基础设施失败，不计入判别力★ '
-                          f'（{"license" if infra_sig else "无法归因"}）: {desc}')
+                    infra.append((mid, why_c))
+                    print(f'[{mid}] ★基础设施失败，不计入判别力★（{why_c}）: {desc}')
                 continue
             r = run(['./simv', f'+ntb_random_seed={a.seed}',
                      f'+ncycles={a.cycles}', '-l', 'mut.log'], ut)
@@ -380,12 +455,30 @@ def main():
         finally:
             shutil.rmtree(str(work), ignore_errors=True)
 
-    scored = len(todo) - len(infra)          # 基础设施失败的不进分母
+    # ★分母★：适用的行为型变异，减去两类"根本没证过任何事"的
+    #   —— infra（没跑成）与 invalid（没产生电路）。两者都不许留在分母里，
+    #   否则 "抓住 N/M" 里的 M 是虚的。
+    scored = len(todo) - len(infra) - len(invalid)
     print(f'\n变异判别力: 抓住 {len(caught)}/{scored} 条适用的行为型变异'
           f'（{len(na)} 条在本变体上是死的记 N/A；'
           f'{len(struct)} 条是结构型、UT 按构造看不见，闸在 FM；'
           f'{len(infra)} 条基础设施失败、不计分）')
+    print(f'无效变异体（编不过，未产生电路）: {len(invalid)}'
+          + ('  ← 分子分母同时剔除，须修靶子后重跑' if invalid else ''))
     rc = 0
+    if invalid:
+        # 0920 裁定：不判 FAIL（FAIL 留给"harness 本身坏了"），但 rc 非零 ——
+        # 靶子写错了要有人去修，不能静默。这里**记录完整编译错误原文**，
+        # 因为它就是"这个靶子写错了"的直接证据。
+        print('★无效变异体明细（编译错误原文；这是靶子写错了的直接证据）:')
+        for mid, desc, errs, out in invalid:
+            print(f'  {mid}: {desc}')
+            for l in errs:
+                print(f'      {l.rstrip()}')
+            if not errs:
+                print('      （无 Error-[ 行，见下方原始输出尾部）')
+                print('      ' + out.strip()[-500:].replace('\n', '\n      '))
+        rc = 1
     if infra:
         # 不计分不等于可以忽略：没跑成就是没证过，必须重跑，否则"抓住 N/N"
         # 是在一个被悄悄缩小的分母上得到的。
@@ -401,6 +494,56 @@ def main():
     return rc
 
 
+
+
+# ---------------------------------------------------------------------------
+# 编译失败三分类的负测（0920 裁定配套）
+#
+# 这条规矩改的是**计分**——分子分母同时剔除一类样本。计分规则出错不会报警，
+# 只会让"抓住 N/M"悄悄变好看，所以它必须自带负测，而且要有元负例：
+# 把判据变成"什么都算 caught"，正例必须转红。
+#
+#     python3 mutants.py --selftest-classify
+# ---------------------------------------------------------------------------
+def selftest_classify():
+    VCS_ERR = "Error-[SE] Syntax error\n  Following verilog source has syntax error :\n"
+    LIC_ERR = "Error-[LIC] License checkout failed\n  Cannot connect to License Server\n"
+    QUIET   = "make: *** [simv] Error 1\n"        # 编不过但没有 Error-[
+
+    cases = [
+        # (名字, out, 声明期望编不过?, 期望分类, 这一例证明了什么)
+        ('真编译错/未声明期望', VCS_ERR, False, 'invalid',
+         '★裁定的正例：不许记成 caught★'),
+        ('真编译错/声明了期望', VCS_ERR, True,  'caught',
+         '边界：声明了 COMPILE_FAIL 的靶子照常计分'),
+        ('license 失败',        LIC_ERR, False, 'infra',
+         'license 里也含 Error-[，不许被当成无效变异体'),
+        ('license 失败/声明期望', LIC_ERR, True, 'infra',
+         '★声明了期望也不能把 license 失败洗成 caught★'),
+        ('编不过但无 Error-[',  QUIET,   False, 'infra',
+         '无法归因的一律进 infra，不许猜'),
+    ]
+    rc = 0
+    print('mutants --selftest-classify:')
+    for name, out, exp_cf, want, why in cases:
+        got, _ = classify_compile_failure(out, exp_cf)
+        ok = got == want
+        rc |= 0 if ok else 1
+        print(f'  {name:22s} -> {got:8s} 期望 {want:8s} {"OK" if ok else "★FAIL★"}   {why}')
+
+    # ★元负例★：把判据换成"什么都算 caught"，上面第一行必须转红。
+    # 没有这一行，前五行在一个 `return ("caught", ...)` 的假判据上**同样可能全绿**。
+    g = globals()
+    real = g['classify_compile_failure']
+    g['classify_compile_failure'] = lambda out, e=False: ('caught', 'blanket')
+    got, _ = classify_compile_failure(VCS_ERR, False)
+    g['classify_compile_failure'] = real
+    meta_ok = (got != 'invalid')
+    rc |= 0 if meta_ok else 1
+    print(f'  {"meta_blanket":22s} -> {got:8s} '
+          f'{"PASS（判据被换掉后正例确实转红）" if meta_ok else "★FAIL：判据恒绿，上面五行什么也不证明★"}')
+    print('classify 负测:', 'PASS' if rc == 0 else 'FAIL')
+    return rc
 
 
 # ---------------------------------------------------------------------------
