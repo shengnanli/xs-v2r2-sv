@@ -5786,7 +5786,20 @@ module xs_Rob_core
           debug_microOp_debugReg_debugInfo_issueTime[i]     <= timer;
           debug_microOp_debugReg_debugInfo_writebackTime[i] <= timer;
         end
+      // ★LSQ 入队回来的 lqIdx 必须写在写回**前面**★（UT 首轮修完后剩下的唯一一条，
+      //   征状：gatewayIn_packed_8_bore 的 lqIdx 字段 g=0x34 x=0x56，其余 322 位全同）
+      //   golden 的优先级链（if / else if，先者胜）是
+      //     exuWriteback(24..19) > debugEnqLsq(req_5..req_0) > enq(req_5..req_0)
+      //   —— 即**写回压过 LSQ 入队**。本文件用「后写的赢」表达优先级，所以
+      //   debugEnqLsq 这一圈要放在 exuWriteback 那一圈**之前**。
+      //   原先它排在最后（注释还写着"优先级更高"），把这两级整个倒过来了。
+      for (int j = 0; j < RENAME_W; j++)
+        if (dbgEnqLsqAlloc[j] & (dbgEnqLsqRobIdx[j] == PTR_W'(i)))
+          debug_microOp_debugReg_lqIdx_value[i] <= dbgEnqLsqLqIdx[j];
       // 写回：第 24 路优先（同样循环递增 => 后写的赢）
+      // lqIdx 只有第 20/21/22 路带真值，其余各路都写 0 —— 这不是漏写：
+      // golden 把「都写 0」的相邻分支合并成了两条（24|23 一条、19..0 一条），
+      // 合并前后优先级不变，展开就是「除 20/21/22 外一律写 0」。
       for (int k = 0; k < EXU_N; k++)
         if (exuWbValid[k] & (exuWbRobIdx[k] == PTR_W'(i))) begin
           debug_microOp_debugReg_debugInfo_enqRsTime[i]     <= wbEnqRsTime[k];
@@ -5801,10 +5814,6 @@ module xs_Rob_core
           dt_exuDebug_isPerfCnt[i]<= wbIsPerfCnt[k];
           dt_exuDebug_paddr[i]    <= wbPaddr[k];
         end
-      // LSQ 入队回来的 lqIdx（比写回更靠后，优先级更高）
-      for (int j = 0; j < RENAME_W; j++)
-        if (dbgEnqLsqAlloc[j] & (dbgEnqLsqRobIdx[j] == PTR_W'(i)))
-          debug_microOp_debugReg_lqIdx_value[i] <= dbgEnqLsqLqIdx[j];
     end
   end
 
