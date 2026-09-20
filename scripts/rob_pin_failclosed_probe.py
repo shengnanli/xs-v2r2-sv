@@ -115,16 +115,20 @@ def run(d):
         rows[m.group(1)] = (int(m.group(2)), m.group(3).strip())
     err_lines = len(re.findall(r'^ *Error:', txt, re.M))
     done = 'PROBE_DONE' in txt
-    return rc, rows, err_lines, done, log
+    # ★这一跑必须自己写下它是哪个工具跑的★（CONVENTIONS：证据的自描述由产生它的
+    # 那一次写下，事后补写不算）。工具版本换了，"不抛异常"这个结论就得重新量。
+    mv = re.search(r'Version\s+(\S+)\s+for\s+(\S+)', txt)
+    ver = mv.group(1) + ' ' + mv.group(2) if mv else '(未从 fm.log 里读到版本)'
+    return rc, rows, err_lines, done, log, ver
 
 
-def render(rc, rows, err_lines, done):
+def render(rc, rows, err_lines, done, ver):
     out = ['# rob_pin_failclosed_probe.py 生成，勿手改。'
            '重跑：python3 scripts/rob_pin_failclosed_probe.py --run --write',
            '# 问题：set_user_match 钉一个不存在的名字，catch 抓不抓得到？',
            '# 这是 verif/ut/Rob/fm_pins.tcl 整个 fail-closed 性质的地基。',
-           '# fm_shell rc=%d  脚本跑完=%s  fm.log 里行首 `Error:` 行数=%d'
-           % (rc, done, err_lines),
+           '# fm_shell %s  rc=%d  脚本跑完=%s  fm.log 里行首 `Error:` 行数=%d'
+           % (ver, rc, done, err_lines),
            'tag\tcatch\tmsg']
     for t in TAGS:
         c, m = rows.get(t, (-1, '(没跑到)'))
@@ -154,8 +158,8 @@ def main():
         ap.error('pick --run or --check')
     d = a.dir or tempfile.mkdtemp(prefix='rob-pin-failclosed-')
     os.makedirs(d, exist_ok=True)
-    rc, rows, err_lines, done, log = run(d)
-    text = render(rc, rows, err_lines, done)
+    rc, rows, err_lines, done, log, ver = run(d)
+    text = render(rc, rows, err_lines, done, ver)
     print(text, end='')
     print('# log %s' % log, file=sys.stderr)
     if not done:

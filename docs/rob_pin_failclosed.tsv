@@ -1,7 +1,7 @@
 # rob_pin_failclosed_probe.py 生成，勿手改。重跑：python3 scripts/rob_pin_failclosed_probe.py --run --write
 # 问题：set_user_match 钉一个不存在的名字，catch 抓不抓得到？
 # 这是 verif/ut/Rob/fm_pins.tcl 整个 fail-closed 性质的地基。
-# fm_shell rc=0  脚本跑完=True  fm.log 里行首 `Error:` 行数=4
+# fm_shell V-2023.12-SP3 linux64  rc=0  脚本跑完=True  fm.log 里行首 `Error:` 行数=4
 tag	catch	msg
 GOOD	0	1
 GOOD_W	0	1
