@@ -75,8 +75,14 @@ for g in scripts/gen_tlbuffer_ad_family.py scripts/gen_mbist_pipe_family.py \
          scripts/gen_sbufferdata.py scripts/gen_newdispatch.py \
          scripts/gen_newdispatch_tb.py \
          scripts/gen_tlbnb_family.py scripts/gen_predictor.py \
-         scripts/gen_rob.py scripts/gen_rob_ut.py; do
+         scripts/gen_rob.py scripts/gen_rob_ut.py \
+         scripts/gen_tlbsw_family.py; do
   [ -f "$g" ] && run "生成器幂等 $(basename $g .py | sed 's/^gen_//')" python3 "$g" --check
+done
+# UT 目录下的生成器不在 check_gen_gate_complete.py 的扫描范围（它只扫 scripts/gen_*.py），
+# 所以挂了 --check 的要手动登记。gen_tb_variant.py 生成 tb_1/tb_2/tb_3.sv 三份 tb。
+for g in verif/ut/TlbStorageWrapper/gen_tb_variant.py; do
+  [ -f "$g" ] && run "UT tb 生成器幂等 $(basename $(dirname $g))" bash -c "cd $(dirname $g) && python3 $(basename $g) --check"
 done
 # 闸的完备性闸：任何 scripts/gen_*.py 要么进上面的列表，要么在
 # check_gen_gate_complete.py 的 NO_CHECK 豁免表里写明理由，没有第三条路。
@@ -157,6 +163,11 @@ run "perf 重绑表幂等"    python3 scripts/perf_rebind.py --check
 # 先跑负测（秒级，不扫 golden），再跑真闸（约 80 秒）—— 顺序照层次重绑闸的先例。
 run "perf 分档闸负测"    python3 scripts/test_perf_tier_gate.py
 run "perf 分档台账闸"    python3 scripts/check_perf_tier.py
+
+# passing 预测模型自校准（docs/tlbsw23_passing_prediction.md）：
+# 模型 = 闭包触发器位数 + 顶层 output 位数。6 个已签核点必须逐位命中，
+# 命不中说明量法或模型有问题 —— 那时它做出的预测就不该被引用。
+run "passing 模型自校准"  python3 scripts/tlbsw_passing_model.py --check
 
 rm -f /tmp/gate_$$.out
 [ $rc -eq 0 ] && echo "=== 全部机器闸 PASS ===" || echo "=== 有闸未过，见上 ==="

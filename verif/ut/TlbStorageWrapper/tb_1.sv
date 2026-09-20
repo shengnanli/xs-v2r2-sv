@@ -1,5 +1,5 @@
-// 自动生成：verif/ut/TlbStorageWrapper/gen_tb_1.py —— 勿手改（改生成器后重跑）
-// TlbStorageWrapper_1（dtlb, 4 读端口 / 48 路全相联）双例化逐拍比对:
+// 自动生成：verif/ut/TlbStorageWrapper/gen_tb_variant.py —— 勿手改（改生成器后重跑）
+// TlbStorageWrapper_1（4 读端口 / 48 路全相联）双例化逐拍比对:
 //   golden TlbStorageWrapper_1  vs  可读重写 TlbStorageWrapper_1_xs。
 // 含 directed_mbmc_sfence(): 钉 io_csr_mbmc_BME/CMODE 必须透传给内层 TLBFA_1。
 `timescale 1ns/1ps
@@ -603,7 +603,7 @@ module tb;
   endtask
 
   // ---------------------------------------------------------------------------
-  // 定向激励: sfence 的失效范围要看 mbmc.BME/CMODE（golden TLBFA_1.sv:14716-14717）
+  // 定向激励: sfence 的失效范围要看 mbmc.BME/CMODE（golden TLBFA_1.sv）
   //   else if (io_sfence_valid & ~hg & ~hv)
   //     if (rs1 | priv_virt | io_csr_mbmc_BME & ~io_csr_mbmc_CMODE)
   //   本层只透传这两根线。透传漏了 ⇒ 内层输入悬空 ⇒ if(x) 判假 ⇒ 掉进按地址失效的
