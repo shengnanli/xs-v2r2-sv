@@ -272,3 +272,63 @@ python3 scripts/pin_call_equiv.py --update      # 重建基线（★只在重出
 `verif/ut/OthersEntry_common/PIN_GUARD_FIX.md` 那张表 **18/18 逐个相同**。
 两个互不知情的量法给出同一组数 —— 这是对量法本身的一次外部验证，
 比我自己说"我的桩是对的"强。
+
+---
+
+## 八、`LoadQueueReplay`（`agent/lqreplay-fm`）—— 第一个真客户，以及三条比 `exit` 更重的发现
+
+集成者派这道闸去处理 `agent/lqreplay-fm` 的 `LoadQueueReplay/fm_pins_pre.tcl`
+（它用 `exit 3`，并且明确拒绝为了让闸变绿去动已出证的文件 —— **它拒得对**）。
+本 lane 只从 `git show agent/lqreplay-fm:<path>` 读了 git object，**没有碰它的 worktree**，
+也**没有改它的文件**（等它回话）。读出来的事比双方原先以为的都多：
+
+### 8.1 ★那个 `exit 3` 不可达★
+
+```tcl
+proc pin {r i} {
+  if {[catch {set_user_match $r $i} m]} { incr ::LQR_PIN_BAD ... } else { incr ::LQR_PIN_OK }
+}
+...
+if {$::LQR_PIN_BAD > 0} { ... exit 3 }
+```
+
+`set_user_match` 从不抛 ⇒ `LQR_PIN_BAD` 恒 0 ⇒ **`exit 3` 一次都不会执行**。
+日志里 `LQR_PINS: accepted=N rejected=0` 的那个 0 是恒真的，不是测出来的。
+
+⇒「要么闸认 `exit`，要么改文件并重跑」是个**假两难**：认不认都不影响，因为那条路不可达。
+真正要改的是发射端（`catch` → 返回值），而那**正好**是调用序列等价能担保的守卫改动。
+
+### 8.2 ★它一合进来，钉点结构闸会因 **P1** 变红，与 P2 无关★
+
+拿 `test_fm_pins_wellformed.py` 的 `check()` 跑它的文件，报 5 项：
+
+```
+P1 第 49 行 `set_app_var`
+P1 第 50 行 `set_app_var`
+P1 第 11 行 `setup`
+P4 用 catch 数钉点
+P3 期望数量没声明 / 校验没在最后一次 set_user_match 之后
+```
+
+★`P1` 对谁都不豁免★：`FAIL_OPEN_LEDGER` 只豁免 P2/P3，`CATCH_COUNT_LEDGER` 只豁免 P4。
+所以「合入 → 收紧 P2」这个顺序里藏着一个谁都没算到的红：**它在 P1 上就红了。**
+
+### 8.3 钉点数是**量出来的 6290**，不是算出来的 1990
+
+本 lane 第一次是按它的循环**心算**出 1990，写进给对方的消息时自己标了
+"请你独立复核，别信我的算术"。随后用桩真跑了一遍：**6290**（无重复对）。
+★算术错了 3 倍★ —— 这就是为什么期望值必须**量**，不能**推**
+（`debug_vaddr` 一族单独就是 72×50 = 3600，心算时整族漏掉了）。
+
+复算：把它的 `fm_pins_pre.tcl` 喂给本文件 §7 那个桩（另需 `setup` / `set_app_var` 空桩），
+数 `CALL` 行。
+
+### 8.4 待办（不归本 lane 单方面决定）
+
+- 改法提案（`catch` → 返回值 + `error` + `$OK != 6290` 一道 + `LQR_PIN_BEGIN/END` 标记）
+  已发给 `agent/lqreplay-fm`，**但 SendMessage 两次都报 "No agent reachable"**，
+  需要集成者转达。在它回话之前不动它的文件。
+- P1 那三项（`setup` / 两个 `set_app_var`）**不在调用序列等价的担保范围内** ——
+  它们改的是**证明输入**不是守卫，改了必须重跑。本 lane 不碰。
+- ★P2 收紧到只认 `error` 暂缓★：顺序是「先修 LoadQueueReplay，再收紧」，
+  而 LoadQueueReplay 还没对齐。先收紧会把它打红，而那个红会被读成"收紧收坏了"。
