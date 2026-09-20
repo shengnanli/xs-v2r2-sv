@@ -490,12 +490,28 @@ def analyse_core(target_lines, ports, children, golden_dir, netw):
     # golden 有一族寄存器就叫 io_rabCommits_REG_info_<i>_<field>（RegNext(rab.io.commits)
     # 的流水级），pin 契约要求核里原样叫 io_rabCommits_REG_info_<field>。
     # 只看前缀会把它们当成"打错的端口名"判红 —— 判据自己看错了，不是核写错了。
-    declared = set(re.findall(
-        r'^\s*(?:logic|reg|wire|bit)\b[^;]*?([A-Za-z_]\w*)\s*(?:\[[^\]]*\]\s*)*;',
-        body, re.M))
+    # ★"核里自己声明的信号"要连**逗号分隔的多个**一起认★（2026-09-20 实测）：
+    # 原来的正则 `logic ... ([A-Za-z_]\w*)\s*;` 只抓分号前的**最后一个**名字，
+    # 于是 `logic io_perf_0_value_REG, io_perf_0_value_REG_1;` 里的前一个
+    # 被当成"打错的端口名"判红 —— 判据自己看错了，不是核写错了。
+    # （同一类坑上一轮已经踩过一次：io_rabCommits_REG_info_* 那族。）
+    declared = set()
+    for line in body.split('\n'):
+        m = re.match(r'\s*(?:logic|reg|wire|bit)\b([^;]*);', line)
+        if not m:
+            continue
+        for piece in m.group(1).split(','):
+            piece = re.sub(r'\[[^\]]*\]', ' ', piece)
+            ids = re.findall(r'[A-Za-z_]\w*', piece)
+            if ids:
+                declared.add(ids[-1])
+    # ★核与 wrapper 之间那些网的端口名也可能以 io_ 开头★：
+    # `n_io_flushOut_valid_0` 的核端口名就是 `io_flushOut_valid_0`，它是**核的
+    # 合法端口**（送 exceptionGen.io_flush），只是顶层没有同名 output。
+    netnames = set(drives) | set(reads)
     bogus = sorted(i for i in idents
                    if (i.startswith('io_') or i.startswith('gatewayIn_'))
-                   and i not in pmap and i not in declared)
+                   and i not in pmap and i not in declared and i not in netnames)
     if bogus:
         raise SystemExit(
             'gen_rob: 核体里这些名字长得像顶层端口，但 golden 里没有（打错名字）：\n  '
