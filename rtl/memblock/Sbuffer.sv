@@ -14,39 +14,40 @@
 //  文件结构（单文件规范）：sbuffer_pkg → xs_Sbuffer_core（可读核）→ Sbuffer（wrapper）。
 //  数据体（每 entry 4×16B 的 data/mask 阵列）在**独立目标 SbufferData** 里，
 //  由 wrapper 例化 `dataModule`；本核只出写请求、收全体读出（见 §7/§8）。
+//  该子模块在 UT/FM 的 impl 侧用的是重写件 rtl/memblock/SbufferData.sv。
 // =============================================================================
-// 本文件导航（共 3837 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+// 本文件导航（共 3843 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
 //   L37    位置：StoreQueue 提交的 store
-//   L53    sbuffer_pkg —— Sbuffer 私有的位宽常量 / entry 类型 / 纯函数
-//   L55    设计意图来源
-//   L145   纯函数：tag / 行内字偏移 / 对齐 / entry 状态判定
-//   L201   ValidPseudoLRU(16)：15 位树状态上的「取最旧的有效候选」与「touch 更新」
-//   L203   树叶布局
-//   L210   一级合并：左子
-//   L250   xs_Sbuffer_core —— Sbuffer 可读核
-//   L476   §1 入口聚合：两路 store 端口打成数组，后面一律用 for/genvar 统一处理
-//   L487   §2 entry 存储
-//   L489   golden 顶层是一组独立的 vtag_<i>/ptag_<i> 寄存器
-//   L516   §3 全局 4 态状态机
-//   L522   §4 PLRU：在「DCache 写候选」里选最旧的一条
-//   L524   Scala 是 plru.way(candidateVec.reverse)：候选序反着喂进 ValidPseudoLRU
-//   L553   §5 两个超时：coh
-//   L555   ★G1 相对 G0 的真逻辑变化★：coh 超时阈值从固定的 cohCount[20] 位测试，
-//   L588   §6 Enq
-//   L681   §7 写数据请求：merge 打到 mergeVec，alloc 打到 insertVec；数据体在 dataModule
-//   L710   §3' 逐出触发 / 空满标志 / 状态机转移
-//   L759   §8 Deq：out_s0 选 victim，out_s1 组 DCache 整行写请求
-//   L761   优先级：missqReplay 超时 > drain
-//   L831   §9 Resp：hit_resp 释放 entry / replay_resp 挂超时重发；entry 时序统一更新
-//   L946   §10 Forward：把还没写回 DCache 的 store 字节前递给 load
-//   L948   f0：用 forward.vaddr 做 vtag CAM，分「active 候选」与「inflight 候选」两类；
-//   L1154  §11 PLRU touch：三个 touch 口在同一拍**依次叠加**
-//   L1156  ValidPseudoLRU.access(Seq(t0,t1,t2)) 的语义是后一个基于前一个的结果再更新
-//   L1175  §12 perf 事件
-//   L1223  §13 difftest gateway
-//   L1225  四根打包总线被 XSTop 里的 difftest gateway「bore」走，内容是纯组合的观测量：
-//   L1331  Sbuffer —— golden 同名 wrapper
-//   L1333  端口与 golden Sbuffer 逐位同名同序；内部例化：
+//   L54    sbuffer_pkg —— Sbuffer 私有的位宽常量 / entry 类型 / 纯函数
+//   L56    设计意图来源
+//   L146   纯函数：tag / 行内字偏移 / 对齐 / entry 状态判定
+//   L202   ValidPseudoLRU(16)：15 位树状态上的「取最旧的有效候选」与「touch 更新」
+//   L204   树叶布局
+//   L211   一级合并：左子
+//   L251   xs_Sbuffer_core —— Sbuffer 可读核
+//   L477   §1 入口聚合：两路 store 端口打成数组，后面一律用 for/genvar 统一处理
+//   L488   §2 entry 存储
+//   L490   golden 顶层是一组独立的 vtag_<i>/ptag_<i> 寄存器
+//   L517   §3 全局 4 态状态机
+//   L523   §4 PLRU：在「DCache 写候选」里选最旧的一条
+//   L525   Scala 是 plru.way(candidateVec.reverse)：候选序反着喂进 ValidPseudoLRU
+//   L554   §5 两个超时：coh
+//   L556   ★G1 相对 G0 的真逻辑变化★：coh 超时阈值从固定的 cohCount[20] 位测试，
+//   L589   §6 Enq
+//   L682   §7 写数据请求：merge 打到 mergeVec，alloc 打到 insertVec；数据体在 dataModule
+//   L711   §3' 逐出触发 / 空满标志 / 状态机转移
+//   L760   §8 Deq：out_s0 选 victim，out_s1 组 DCache 整行写请求
+//   L762   优先级：missqReplay 超时 > drain
+//   L832   §9 Resp：hit_resp 释放 entry / replay_resp 挂超时重发；entry 时序统一更新
+//   L947   §10 Forward：把还没写回 DCache 的 store 字节前递给 load
+//   L949   f0：用 forward.vaddr 做 vtag CAM，分「active 候选」与「inflight 候选」两类；
+//   L1155  §11 PLRU touch：三个 touch 口在同一拍**依次叠加**
+//   L1157  ValidPseudoLRU.access(Seq(t0,t1,t2)) 的语义是后一个基于前一个的结果再更新
+//   L1176  §12 perf 事件
+//   L1224  §13 difftest gateway
+//   L1226  四根打包总线被 XSTop 里的 difftest gateway「bore」走，内容是纯组合的观测量：
+//   L1332  Sbuffer —— golden 同名 wrapper
+//   L1334  端口与 golden Sbuffer 逐位同名同序；内部例化：
 //
 
 // =============================================================================
@@ -1332,8 +1333,13 @@ endmodule
 // -----------------------------------------------------------------------------
 //  端口与 golden Sbuffer 逐位同名同序；内部例化：
 //    u_core      可读核（本文件上方）
-//    dataModule  SbufferData —— 独立签核目标，两侧同名黑盒配对
-//    prefetcher  StorePfWrapper —— 本配置下 golden 已 DCE 成只剩 clock/reset 的空壳
+//    dataModule  SbufferData —— 独立签核目标；FM 的 impl 侧接的是**重写件**
+//                rtl/memblock/SbufferData.sv（2026-09-20 起，codex 0168 裁定）。
+//                ★不是黑盒，也不再是"两侧同一份 golden"★——后者等于白送，已改掉。
+//    prefetcher  StorePfWrapper —— 本配置下 golden 已 DCE 成只剩 clock/reset 的空壳。
+//                它与其内部的 Serializer **尚无重写件**，FM 两侧仍喂同一份 golden
+//                （UNCHANGED_GOLDEN_DEP，见 verif/ut/Sbuffer/Makefile 的说明）：
+//                本 target 对这两个模块**零信息量**，不构成对它们的证明。
 // =============================================================================
 module Sbuffer
   import sbuffer_pkg::*;
