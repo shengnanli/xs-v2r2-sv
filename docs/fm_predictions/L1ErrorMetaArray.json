@@ -1,0 +1,9 @@
+{
+  "target": "L1ErrorMetaArray",
+  "ut": "L1ErrorMetaArray",
+  "regs": 2268,
+  "outs": 32,
+  "expected": 2300,
+  "merge_dup": "false",
+  "model_applicable": true
+}
