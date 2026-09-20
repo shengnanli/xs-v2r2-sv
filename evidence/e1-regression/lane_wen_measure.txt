@@ -1,0 +1,63 @@
+=== EntriesVfdivVidiv (EnqEntry_18) ===
+  lane 分组: 0-5→vecWen; 6-11→v0Wen; 12-15→vlWen
+  src0: lanes 0-5 (6 条)  对表 ['2:vec']
+  src1: lanes 0-5 (6 条)  对表 ['2:vec']
+  src2: lanes 0-5 (6 条)  对表 ['2:vec']
+  src3: lanes 6-11 (6 条)  对表 ['3:v0']
+  src4: lanes 12-15 (4 条)  对表 ['2:vl']
+  ⇒ lane 掩码 ★分不开：各源 lane 集合重叠，区分它们的只剩每源的匹配 kind★
+=== EntriesVfmaVialuFixVfalu (EnqEntry_16) ===
+  lane 分组: 0-5→vecWen; 6-11→v0Wen; 12-15→vlWen
+  src0: lanes 0-5 (6 条)  对表 ['2:vec']
+  src1: lanes 0-5 (6 条)  对表 ['2:vec']
+  src2: lanes 0-5 (6 条)  对表 ['2:vec']
+  src3: lanes 6-11 (6 条)  对表 ['3:v0']
+  src4: lanes 12-15 (4 条)  对表 ['2:vl']
+  ⇒ lane 掩码 ★分不开：各源 lane 集合重叠，区分它们的只剩每源的匹配 kind★
+=== EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf (EnqEntry_14) ===
+  lane 分组: 0-5→vecWen; 6-11→v0Wen; 12-15→vlWen
+  src0: lanes 0-5 (6 条)  对表 ['2:vec']
+  src1: lanes 0-5 (6 条)  对表 ['2:vec']
+  src2: lanes 0-5 (6 条)  对表 ['2:vec']
+  src3: lanes 6-11 (6 条)  对表 ['3:v0']
+  src4: lanes 12-15 (4 条)  对表 ['2:vl']
+  ⇒ lane 掩码 ★分不开：各源 lane 集合重叠，区分它们的只剩每源的匹配 kind★
+=== EntriesVlduVstu (EnqEntryVecMem_2) ===
+  lane 分组: 0-15→fpWen+rfWen+v0Wen+vecWen+vlWen
+  src0: lanes 0-15 (16 条)  对表 ['0:rf', '1:fp', '2:vec']
+  src1: lanes 0-15 (16 条)  对表 ['0:rf', '1:fp', '2:vec']
+  src2: lanes 0-15 (16 条)  对表 ['0:rf', '1:fp', '2:vec']
+  src3: lanes 0-15 (16 条)  对表 ['3:v0']
+  src4: lanes 0-15 (16 条)  对表 ['2:vl']
+  ⇒ lane 掩码 ★分不开：各源 lane 集合重叠，区分它们的只剩每源的匹配 kind★
+=== EntriesVlduVstuVseglduVsegstu (EnqEntryVecMem) ===
+  lane 分组: 0-15→fpWen+rfWen+v0Wen+vecWen+vlWen
+  src0: lanes 0-15 (16 条)  对表 ['0:rf', '1:fp', '2:vec']
+  src1: lanes 0-15 (16 条)  对表 ['0:rf', '1:fp', '2:vec']
+  src2: lanes 0-15 (16 条)  对表 ['0:rf', '1:fp', '2:vec']
+  src3: lanes 0-15 (16 条)  对表 ['3:v0']
+  src4: lanes 0-15 (16 条)  对表 ['2:vl']
+  ⇒ lane 掩码 ★分不开：各源 lane 集合重叠，区分它们的只剩每源的匹配 kind★
+=== EntriesLdu (EnqEntry_24) ===
+  lane 分组: 0-3→fpWen+rfWen+vecWen
+  src0: lanes 0-3 (4 条)  对表 ['0:rf', '1:fp', '2:vec']
+  ⇒ lane 掩码把各源分开了，老机制够用
+=== EntriesStaMou (EnqEntry_20) ===
+  lane 分组: 0-3→fpWen+rfWen+vecWen
+  src0: lanes 0-3 (4 条)  对表 ['0:rf', '1:fp', '2:vec']
+  ⇒ lane 掩码把各源分开了，老机制够用
+=== EntriesStdMoud (EnqEntry_30) ===
+  lane 分组: 0-9→fpWen+rfWen+vecWen
+  src0: lanes 0-9 (10 条)  对表 ['0:rf', '1:fp', '2:vec']
+  ⇒ lane 掩码把各源分开了，老机制够用
+=== EntriesAluCsrFenceDiv (EnqEntry_6) ===
+  lane 分组: 0-3→rfWen
+  src0: lanes 0-3 (4 条)  对表 ['0:rf']
+  src1: lanes 0-3 (4 条)  对表 ['0:rf']
+  ⇒ lane 掩码 ★分不开：各源 lane 集合重叠，区分它们的只剩每源的匹配 kind★
+=== EntriesFaluFmac (EnqEntry_12) ===
+  lane 分组: 0-5→fpWen
+  src0: lanes 0-5 (6 条)  对表 ['1:fp']
+  src1: lanes 0-5 (6 条)  对表 ['1:fp']
+  src2: lanes 0-5 (6 条)  对表 ['1:fp']
+  ⇒ lane 掩码 ★分不开：各源 lane 集合重叠，区分它们的只剩每源的匹配 kind★

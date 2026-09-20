@@ -13,11 +13,11 @@
 //   golden 层次：EnqEntry_16 ×2 + OthersEntry_150 ×2 + OthersEntry_152 ×12 + EnqPolicy_14 ×2，本文件把它们一并扁平化。
 //
 // 唤醒路由（从 golden currentStatus_srcStatus_<s>_srcState 表达式机械提取）：
-//   src0: WB[0..5]（vecWen），门控 srcType[2]
-//   src1: WB[0..5]（vecWen），门控 srcType[2]
-//   src2: WB[0..5]（vecWen），门控 srcType[2]
-//   src3: WB[6..11]（v0Wen），门控 srcType[3]
-//   src4: WB[12..15]（vlWen），门控 srcType[2]
+//   src0: WB[0..5]，匹配 srcType[2]&vecWen
+//   src1: WB[0..5]，匹配 srcType[2]&vecWen
+//   src2: WB[0..5]，匹配 srcType[2]&vecWen
+//   src3: WB[6..11]，匹配 srcType[3]&v0Wen
+//   src4: WB[12..15]，匹配 srcType[2]&vlWen
 //
 // 自动生成：verif/ut/EntriesVfmaVialuFixVfalu/gen.py（共享库 verif/ut/Entries_common/entries_gen.py）—— 勿手改
 // =============================================================================
@@ -816,7 +816,9 @@ module EntriesVfmaVialuFixVfalu (
     .LD_PIPES(3), .LD_DEP_W(2),
     .NUM_WK_IQ(0), .EXU_W(1),
     .SRC_WB_MASK({16'b1111000000000000, 16'b0000111111000000, 16'b0000000000111111, 16'b0000000000111111, 16'b0000000000111111}),
-    .SRC_TYPE_BIT({3'd2, 3'd3, 3'd2, 3'd2, 3'd2}),
+    .SRC_MATCH_KIND({2'd2, 2'd1, 2'd0, 2'd0, 2'd0}),
+    .WB_WEN_PRESENT(5'b11100),
+    .WBD_WEN_PRESENT(5'b11100),
     .HAS_IGNORE_OLD_VD(1),
     .VD_SRC(2), .VL_SRC(4), .WB_VL_INT(12), .WB_VL_VF(13),
     .PLB_VM(42),
@@ -847,10 +849,10 @@ module EntriesVfmaVialuFixVfalu (
     .ld1_cancel('0),
     .ld2_cancel('0),
     .wk_valid({io_wakeUpFromWB_15_valid, io_wakeUpFromWB_14_valid, io_wakeUpFromWB_13_valid, io_wakeUpFromWB_12_valid, io_wakeUpFromWB_11_valid, io_wakeUpFromWB_10_valid, io_wakeUpFromWB_9_valid, io_wakeUpFromWB_8_valid, io_wakeUpFromWB_7_valid, io_wakeUpFromWB_6_valid, io_wakeUpFromWB_5_valid, io_wakeUpFromWB_4_valid, io_wakeUpFromWB_3_valid, io_wakeUpFromWB_2_valid, io_wakeUpFromWB_1_valid, io_wakeUpFromWB_0_valid}),
-    .wk_wen({io_wakeUpFromWB_15_bits_vlWen, io_wakeUpFromWB_14_bits_vlWen, io_wakeUpFromWB_13_bits_vlWen, io_wakeUpFromWB_12_bits_vlWen, io_wakeUpFromWB_11_bits_v0Wen, io_wakeUpFromWB_10_bits_v0Wen, io_wakeUpFromWB_9_bits_v0Wen, io_wakeUpFromWB_8_bits_v0Wen, io_wakeUpFromWB_7_bits_v0Wen, io_wakeUpFromWB_6_bits_v0Wen, io_wakeUpFromWB_5_bits_vecWen, io_wakeUpFromWB_4_bits_vecWen, io_wakeUpFromWB_3_bits_vecWen, io_wakeUpFromWB_2_bits_vecWen, io_wakeUpFromWB_1_bits_vecWen, io_wakeUpFromWB_0_bits_vecWen}),
+    .wk_wen({{io_wakeUpFromWB_15_bits_vlWen, 1'b0, 1'b0, 1'b0, 1'b0}, {io_wakeUpFromWB_14_bits_vlWen, 1'b0, 1'b0, 1'b0, 1'b0}, {io_wakeUpFromWB_13_bits_vlWen, 1'b0, 1'b0, 1'b0, 1'b0}, {io_wakeUpFromWB_12_bits_vlWen, 1'b0, 1'b0, 1'b0, 1'b0}, {1'b0, io_wakeUpFromWB_11_bits_v0Wen, 1'b0, 1'b0, 1'b0}, {1'b0, io_wakeUpFromWB_10_bits_v0Wen, 1'b0, 1'b0, 1'b0}, {1'b0, io_wakeUpFromWB_9_bits_v0Wen, 1'b0, 1'b0, 1'b0}, {1'b0, io_wakeUpFromWB_8_bits_v0Wen, 1'b0, 1'b0, 1'b0}, {1'b0, io_wakeUpFromWB_7_bits_v0Wen, 1'b0, 1'b0, 1'b0}, {1'b0, io_wakeUpFromWB_6_bits_v0Wen, 1'b0, 1'b0, 1'b0}, {1'b0, 1'b0, io_wakeUpFromWB_5_bits_vecWen, 1'b0, 1'b0}, {1'b0, 1'b0, io_wakeUpFromWB_4_bits_vecWen, 1'b0, 1'b0}, {1'b0, 1'b0, io_wakeUpFromWB_3_bits_vecWen, 1'b0, 1'b0}, {1'b0, 1'b0, io_wakeUpFromWB_2_bits_vecWen, 1'b0, 1'b0}, {1'b0, 1'b0, io_wakeUpFromWB_1_bits_vecWen, 1'b0, 1'b0}, {1'b0, 1'b0, io_wakeUpFromWB_0_bits_vecWen, 1'b0, 1'b0}}),
     .wk_pdest({io_wakeUpFromWB_15_bits_pdest, io_wakeUpFromWB_14_bits_pdest, io_wakeUpFromWB_13_bits_pdest, io_wakeUpFromWB_12_bits_pdest, io_wakeUpFromWB_11_bits_pdest, io_wakeUpFromWB_10_bits_pdest, io_wakeUpFromWB_9_bits_pdest, io_wakeUpFromWB_8_bits_pdest, io_wakeUpFromWB_7_bits_pdest, io_wakeUpFromWB_6_bits_pdest, io_wakeUpFromWB_5_bits_pdest, io_wakeUpFromWB_4_bits_pdest, io_wakeUpFromWB_3_bits_pdest, io_wakeUpFromWB_2_bits_pdest, io_wakeUpFromWB_1_bits_pdest, io_wakeUpFromWB_0_bits_pdest}),
     .wkd_valid({io_wakeUpFromWBDelayed_15_valid, io_wakeUpFromWBDelayed_14_valid, io_wakeUpFromWBDelayed_13_valid, io_wakeUpFromWBDelayed_12_valid, io_wakeUpFromWBDelayed_11_valid, io_wakeUpFromWBDelayed_10_valid, io_wakeUpFromWBDelayed_9_valid, io_wakeUpFromWBDelayed_8_valid, io_wakeUpFromWBDelayed_7_valid, io_wakeUpFromWBDelayed_6_valid, io_wakeUpFromWBDelayed_5_valid, io_wakeUpFromWBDelayed_4_valid, io_wakeUpFromWBDelayed_3_valid, io_wakeUpFromWBDelayed_2_valid, io_wakeUpFromWBDelayed_1_valid, io_wakeUpFromWBDelayed_0_valid}),
-    .wkd_wen({io_wakeUpFromWBDelayed_15_bits_vlWen, io_wakeUpFromWBDelayed_14_bits_vlWen, io_wakeUpFromWBDelayed_13_bits_vlWen, io_wakeUpFromWBDelayed_12_bits_vlWen, io_wakeUpFromWBDelayed_11_bits_v0Wen, io_wakeUpFromWBDelayed_10_bits_v0Wen, io_wakeUpFromWBDelayed_9_bits_v0Wen, io_wakeUpFromWBDelayed_8_bits_v0Wen, io_wakeUpFromWBDelayed_7_bits_v0Wen, io_wakeUpFromWBDelayed_6_bits_v0Wen, io_wakeUpFromWBDelayed_5_bits_vecWen, io_wakeUpFromWBDelayed_4_bits_vecWen, io_wakeUpFromWBDelayed_3_bits_vecWen, io_wakeUpFromWBDelayed_2_bits_vecWen, io_wakeUpFromWBDelayed_1_bits_vecWen, io_wakeUpFromWBDelayed_0_bits_vecWen}),
+    .wkd_wen({{io_wakeUpFromWBDelayed_15_bits_vlWen, 1'b0, 1'b0, 1'b0, 1'b0}, {io_wakeUpFromWBDelayed_14_bits_vlWen, 1'b0, 1'b0, 1'b0, 1'b0}, {io_wakeUpFromWBDelayed_13_bits_vlWen, 1'b0, 1'b0, 1'b0, 1'b0}, {io_wakeUpFromWBDelayed_12_bits_vlWen, 1'b0, 1'b0, 1'b0, 1'b0}, {1'b0, io_wakeUpFromWBDelayed_11_bits_v0Wen, 1'b0, 1'b0, 1'b0}, {1'b0, io_wakeUpFromWBDelayed_10_bits_v0Wen, 1'b0, 1'b0, 1'b0}, {1'b0, io_wakeUpFromWBDelayed_9_bits_v0Wen, 1'b0, 1'b0, 1'b0}, {1'b0, io_wakeUpFromWBDelayed_8_bits_v0Wen, 1'b0, 1'b0, 1'b0}, {1'b0, io_wakeUpFromWBDelayed_7_bits_v0Wen, 1'b0, 1'b0, 1'b0}, {1'b0, io_wakeUpFromWBDelayed_6_bits_v0Wen, 1'b0, 1'b0, 1'b0}, {1'b0, 1'b0, io_wakeUpFromWBDelayed_5_bits_vecWen, 1'b0, 1'b0}, {1'b0, 1'b0, io_wakeUpFromWBDelayed_4_bits_vecWen, 1'b0, 1'b0}, {1'b0, 1'b0, io_wakeUpFromWBDelayed_3_bits_vecWen, 1'b0, 1'b0}, {1'b0, 1'b0, io_wakeUpFromWBDelayed_2_bits_vecWen, 1'b0, 1'b0}, {1'b0, 1'b0, io_wakeUpFromWBDelayed_1_bits_vecWen, 1'b0, 1'b0}, {1'b0, 1'b0, io_wakeUpFromWBDelayed_0_bits_vecWen, 1'b0, 1'b0}}),
     .wkd_pdest({io_wakeUpFromWBDelayed_15_bits_pdest, io_wakeUpFromWBDelayed_14_bits_pdest, io_wakeUpFromWBDelayed_13_bits_pdest, io_wakeUpFromWBDelayed_12_bits_pdest, io_wakeUpFromWBDelayed_11_bits_pdest, io_wakeUpFromWBDelayed_10_bits_pdest, io_wakeUpFromWBDelayed_9_bits_pdest, io_wakeUpFromWBDelayed_8_bits_pdest, io_wakeUpFromWBDelayed_7_bits_pdest, io_wakeUpFromWBDelayed_6_bits_pdest, io_wakeUpFromWBDelayed_5_bits_pdest, io_wakeUpFromWBDelayed_4_bits_pdest, io_wakeUpFromWBDelayed_3_bits_pdest, io_wakeUpFromWBDelayed_2_bits_pdest, io_wakeUpFromWBDelayed_1_bits_pdest, io_wakeUpFromWBDelayed_0_bits_pdest}),
     .vl_int_is_zero(io_vlFromIntIsZero), .vl_int_is_vlmax(io_vlFromIntIsVlmax),
     .vl_vf_is_zero(io_vlFromVfIsZero), .vl_vf_is_vlmax(io_vlFromVfIsVlmax),

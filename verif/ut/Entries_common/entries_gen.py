@@ -22,6 +22,28 @@ import re, sys, pathlib, collections
 
 HERE   = pathlib.Path(__file__).resolve().parent
 REPO   = HERE.parents[2]
+WEN_ORDER = ['rfWen', 'fpWen', 'vecWen', 'v0Wen', 'vlWen']   # 与核里 WEN_* 编号一致
+
+
+def wenpack(pfx, w, present):
+    """把第 w 路唤醒的 wen 字段按核里的 WEN_* 顺序打成一根 5 位向量。
+
+    该窗口没有的字段填 1'b0 —— ★但核**不会**去读它★：核按 *_WEN_PRESENT 参数
+    在 elaborate 期就把整项连同它的 srcType 位一起剪掉，所以锥里不会多出常 0 的边
+    （喂 0 与剪掉不等价，同型教训见核里 HAS_LD1_CANCEL 的注释）。
+    这里填 0 只是为了让向量位宽对齐，不承担任何逻辑含义。
+    """
+    return '{' + ', '.join(
+        (f'{pfx}_{w}_bits_{f}' if f in present else "1'b0")
+        for f in reversed(WEN_ORDER)) + '}'
+
+
+def wenvec(present):
+    """把「这条总线这个窗口有哪些 wen 字段」编成核认的 5 位常量。"""
+    bits = ''.join('1' if w in present else '0' for w in reversed(WEN_ORDER))
+    return f"5'b{bits}"
+
+
 def outdir(top):
     return REPO / 'verif' / 'ut' / top
 GOLDEN = pathlib.Path('/home/eda/xs-env/G1-canonical/golden-rtl')
@@ -52,7 +74,33 @@ def port_decls(mod):
     return out
 
 
+
+# kind 展开成 (srcType 位, wen 字段) 对表 —— 逐字照搬 Bundles.scala:325-348
+KIND_PAIRS = {
+    0: [(1, 'fpWen'), (0, 'rfWen'), (2, 'vecWen')],   # MK_GP : wakeUp
+    1: [(3, 'v0Wen')],                                 # MK_V0 : wakeUpV0 ★isV0★
+    2: [(2, 'vlWen')],                                 # MK_VL : wakeUpVl
+}
+
+
 class Variant:
+    def _check_pairs(self, s, body, bus, wenkey):
+        """核对「模型展开的对表」== 「golden 里实测的对表」，对不上当场失败。
+
+        ★这是 E1 的安全带★：模型（kind × 该窗口存在哪些 wen）一旦与某个新变体的
+        golden 不符，这里当场红，而不是悄悄生成一份错的 RTL 等 FM 去发现。
+        """
+        want = sorted((b, w) for b, w in KIND_PAIRS[self.src_kind[s]]
+                      if w in self.wen_present[wenkey])
+        got = sorted({(int(b), w) for b, w in re.findall(
+            r'srcStatus_%d_srcType\[(\d)\] & io_%s_\d+_bits_(\w+Wen)'
+            % (s, bus), re.sub(r'\s+', ' ', body))})
+        if got and got != want:
+            sys.exit(f'{self.top} src{s} @{bus}: 唤醒对表与模型不符\n'
+                     f'  模型={want}\n  实测={got}\n'
+                     f'  该窗口存在的 wen={sorted(self.wen_present[wenkey])}\n'
+                     f'  —— 模型见 Bundles.scala:325-348 / EntryBundles.scala:185,241')
+
     def __init__(self, top):
         self.top = top
         self.ports = port_decls(top)
@@ -136,13 +184,21 @@ class Variant:
                               (re.fullmatch(r'io_enq_0_bits_status_fuType_(\d+)', n)
                                for n in self.pmap) if m)
 
-        # ---- 每路 WB 的写使能字段名 ----
-        self.wk_wen = []
+        # ---- 每路 WB 的写使能字段名（★逐路一个**列表**，不是一个名字★） ----
+        # 旧写法断言"每路只有一个写使能字段"。那是从单 wen 变体外推出来的假设：
+        # MEM 族一条 lane 同时带 rfWen/fpWen/vecWen，VlduVstu 更是五个全带
+        # （判别轴见 verif/ut/Entries_field_matrix/wakeup_axis.md）。
+        # 断言留着会让那 5 个访存变体连 Variant() 都构造不出来。
+        self.wk_wen_lanes = []
         for w in range(self.n_wk):
-            f = [n for n in self.pmap
-                 if n.startswith(f'io_wakeUpFromWB_{w}_bits_') and not n.endswith('_pdest')]
-            assert len(f) == 1, f'WB{w} 的写使能字段不唯一: {f}'
-            self.wk_wen.append(f[0].split('_bits_')[1])
+            f = sorted(n.split('_bits_')[1] for n in self.pmap
+                       if n.startswith(f'io_wakeUpFromWB_{w}_bits_')
+                       and n.endswith('Wen'))
+            assert f, f'WB{w} 一个写使能字段都没有'
+            self.wk_wen_lanes.append(f)
+        # 兼容旧引用：单 wen 时就是那一个名字；多 wen 时取第一个**只用于注释/激励**，
+        # 逻辑一律走 wen_lane（逐路集合）与 *_WEN_PRESENT（剪项）。
+        self.wk_wen = [f[0] for f in self.wk_wen_lanes]
 
         # ---- 负载字段：DEQ 子集在前，TRANS 独有在后 ----
         ep = port_decls(self.enq_mod)
@@ -195,6 +251,41 @@ class Variant:
                    if n.startswith('io_deqEntry_0_bits_payload_')}
         assert top_deq <= dnames, f'顶层 deq 负载多出条目没有的字段: {top_deq - dnames}'
 
+        # ---- 唤醒匹配的 kind 与每条总线每个窗口的 wen 字段（E1/E2） ----
+        # 模型逐字照搬 Chisel：
+        #   Bundles.scala:325-348   wakeUp / wakeUpV0 / wakeUpVl 三个函数、三张对表
+        #   EntryBundles.scala:185-193(WB) 与 :241-249(IQ)  按源分工，
+        #                           且**只在 numRegSrc==5 时分**
+        # 这里只量两样东西，其余由核按模型展开：
+        #   (a) 每个源用哪种 kind —— 完全由 n_regsrc 决定，不用从 RTL 猜
+        #   (b) 每条总线**每个窗口**上存在哪些 wen 端口 —— 逐个从 golden 端口表量
+        # ★(b) 必须按窗口分开量★：firtool 对当拍/延迟两条总线独立 DCE，
+        #   实测 EnqEntry_30(StdMoud) 的 IQ 当拍只有 rfWen、延迟窗口还有 fpWen。
+        # 模型与 14 个变体逐源逐窗口的实测对表完全一致，
+        # 复跑 evidence/e1-wakeup-pair-tables/extract_probe.py
+        # ★wen 字段是**逐路**的,不是整条总线一样★(向量变体实测):
+        #   WB[0..5] 只有 vecWen、WB[6..11] 只有 v0Wen、WB[12..15] 只有 vlWen。
+        #   所以:
+        #     连线(wenpack)  用**逐路**的集合 —— 引用不存在的端口会被端口闸当场抓住
+        #     剪项(*_WEN_PRESENT) 用**整条总线的并集** —— 它只跟 kind 求交,
+        #       而 SRC_WB_MASK 已经把每个源限制在带它那个字段的那几路上,
+        #       所以并集与逐路在匹配结果上等价(并集∩kind 给出的项集是对的)。
+        _etxt_ws = re.sub(r'\s+', ' ', read(self.enq_mod))
+        def _wen_by_lane(bus):
+            d = {}
+            for w, f in re.findall(r'input +io_%s_(\d+)_bits_(\w+Wen)' % bus, _etxt_ws):
+                if f in WEN_ORDER:
+                    d.setdefault(int(w), set()).add(f)
+            return d
+        self.wen_lane = {k: _wen_by_lane(b) for k, b in (
+            ('wb',  'commonIn_wakeUpFromWB'),  ('wbd', 'enqDelayIn1_wakeUpFromWB'),
+            ('iq',  'commonIn_wakeUpFromIQ'),  ('iqd', 'enqDelayIn1_wakeUpFromIQ'))}
+        self.wen_present = {k: set().union(*v.values()) if v else set()
+                            for k, v in self.wen_lane.items()}
+        # 每源的 kind：0=MK_GP 1=MK_V0 2=MK_VL
+        self.src_kind = ([0, 0, 0, 1, 2] if self.n_regsrc == 5
+                         else [0] * self.n_regsrc)
+
         # ---- 唤醒路由：从 golden 的 currentStatus_srcStatus_<s>_srcState 里提 ----
         etxt = read(self.enq_mod)
         self.src_wb, self.src_tbit = [], []
@@ -205,10 +296,13 @@ class Variant:
             body = m.group(1)
             self.src_wb.append(sorted({int(x) for x in re.findall(
                 r'io_enqDelayIn1_wakeUpFromWB_(\d+)_valid', body)}))
+            # ★不再要求"门控位唯一"★：访存族一个源要三对(fp|rf|vec)，
+            #   多位是**正常**的。改成核对「实测对表 == 模型展开」，
+            #   对不上就当场失败——比"唯一"这个旧假设强，也不会放行错模型。
+            self._check_pairs(s, body, 'enqDelayIn1_wakeUpFromWB', 'wbd')
             tb = {int(x) for x in re.findall(
                 r'entryReg_status_srcStatus_%d_srcType\[(\d+)\]' % s, body)}
-            assert len(tb) == 1, f'src{s} 的 srcType 门控位不唯一: {tb}'
-            self.src_tbit.append(tb.pop())
+            self.src_tbit.append(sorted(tb)[0] if tb else 0)
         # ignoreOldVd 用的两路 vl 写回
         ig = re.search(r'wire\s+ignoreOldVd_(\d+) =\n(.*?);\n', etxt, re.S)
         self.has_ignore = ig is not None
@@ -240,13 +334,12 @@ class Variant:
                 body = m.group(1)
                 tb = {int(x) for x in re.findall(
                     r'srcStatus_%d_srcType\[(\d+)\]' % s, body)}
-                assert len(tb) == 1, f'IQ{w}/src{s} 的 srcType 门控位不唯一: {tb}'
                 if self.iq_tbit[s] is None:
-                    self.iq_tbit[s] = tb.pop()
+                    self.iq_tbit[s] = sorted(tb)[0] if tb else 0
                 f = {x for x in re.findall(r'wakeUpFromIQ_%d_bits_(\w+)\b' % w, body)
                      if x not in ('pdest', 'is0Lat')}
-                assert len(f) == 1, f'IQ{w} 写使能字段不唯一: {f}'
-                wen = f.pop()
+                # 同上：一个源可以有多个 wen 项，不再要求唯一
+                wen = sorted(f)[0] if f else None
                 self.iq_mask[s].add(w)
             if wen is not None:
                 self.iq_wen.append(wen)
@@ -339,15 +432,18 @@ class Variant:
                         f'{top}: {other} 的 IQ{w}->src{sx} 路由与 {self.enq_mod} 不一致')
                     if not m:
                         continue
-                    tb = {int(x) for x in re.findall(
-                        r'srcStatus_%d_srcType\[(\d+)\]' % sx, m.group(1))}
-                    assert tb == {self.iq_tbit[sx]}, (
-                        f'{top}: {other} 的 IQ{w}->src{sx} srcType 门控位与 enq 不一致')
-                    f = {x for x in re.findall(
-                        r'wakeUpFromIQ_%d_bits_(\w+)\b' % w, m.group(1))
-                        if x not in ('pdest', 'is0Lat')}
-                    assert f == {self.iq_wen[w]}, (
-                        f'{top}: {other} 的 IQ{w} 写使能字段与 enq 不一致: {f}')
+                    # ★改成比「对表集合」，不是比"那一个门控位/那一个 wen"★：
+                    #   多 wen 的变体上一个源本来就有多对，旧写法会把它判成不一致。
+                    #   这里仍然是**逐条目类型核对**（simp/comp 是另外两个 golden
+                    #   模块），只是把判据从"唯一值相等"换成"对表相等"。
+                    pair_here = {(int(b), wn) for b, wn in re.findall(
+                        r'srcStatus_%d_srcType\[(\d)\] & io_\w+_\d+_bits_(\w+Wen)' % sx,
+                        re.sub(r'\s+', ' ', m.group(1)))}
+                    pair_enq = {(b, wn) for b, wn in KIND_PAIRS[self.src_kind[sx]]
+                                if wn in self.wen_present['iq']}
+                    assert not pair_here or pair_here == pair_enq, (
+                        f'{top}: {other} 的 IQ{w}->src{sx} 唤醒对表与 enq 不一致: '
+                        f'{sorted(pair_here)} vs {sorted(pair_enq)}')
 
         # ★ og0 取消映射也必须逐条目类型核 ★
         # 这份映射我只从 enq 条目提取，而 simp/comp 是**另外两个 golden 模块**。
@@ -511,8 +607,10 @@ def gen_rtl(v):
     A('// 唤醒路由（从 golden currentStatus_srcStatus_<s>_srcState 表达式机械提取）：')
     for s in range(v.n_regsrc):
         lanes = v.src_wb[s]
-        A(f'//   src{s}: WB[{lanes[0]}..{lanes[-1]}]（{v.wk_wen[lanes[0]]}），'
-          f'门控 srcType[{v.src_tbit[s]}]')
+        _pairs = sorted((b, wn) for b, wn in KIND_PAIRS[v.src_kind[s]]
+                        if wn in v.wen_present['wb'])
+        A(f'//   src{s}: WB[{lanes[0]}..{lanes[-1]}]，匹配 '
+          + ' | '.join(f'srcType[{b}]&{wn}' for b, wn in _pairs))
     A('//')
     A(f'// 自动生成：verif/ut/{v.top}/gen.py（共享库 verif/ut/Entries_common/'
       'entries_gen.py）—— 勿手改')
@@ -572,8 +670,8 @@ def gen_rtl(v):
     if v.n_wk_iq:
         A('    .IQ_SRC_MASK({' + ', '.join(bitvec(v.iq_mask[s], v.n_wk_iq)
                                            for s in reversed(range(v.n_regsrc))) + '}),')
-        A("    .IQ_TYPE_BIT({" + ', '.join(f"3'd{v.iq_tbit[s]}"
-                                           for s in reversed(range(v.n_regsrc))) + '}),')
+        A('    .IQ_WEN_PRESENT(' + wenvec(v.wen_present['iq']) + '),')
+        A('    .IQD_WEN_PRESENT(' + wenvec(v.wen_present['iqd']) + '),')
         # 第 w 路 IQ 唤醒自己就是第几条 load 流水(那一位常数 1,不左移)
         A('    .IQ_IS_LD_PIPE({' + ', '.join(
             bitvec(set(v.iq_self_pipe[w]), v.ld_pipes)
@@ -586,8 +684,10 @@ def gen_rtl(v):
           + f'), .RC_TYPE_BIT({v.rc_tbit}),')
     A('    .SRC_WB_MASK({' + ', '.join(bitvec(set(v.src_wb[s]), v.n_wk)
                                        for s in reversed(range(v.n_regsrc))) + '}),')
-    A("    .SRC_TYPE_BIT({" + ', '.join(f"3'd{v.src_tbit[s]}"
+    A("    .SRC_MATCH_KIND({" + ', '.join(f"2'd{v.src_kind[s]}"
                                         for s in reversed(range(v.n_regsrc))) + '}),')
+    A('    .WB_WEN_PRESENT(' + wenvec(v.wen_present['wb']) + '),')
+    A('    .WBD_WEN_PRESENT(' + wenvec(v.wen_present['wbd']) + '),')
     A(f'    .HAS_IGNORE_OLD_VD({int(v.has_ignore)}),')
     A(f'    .VD_SRC({v.vd_src}), .VL_SRC({v.vl_src}),'
       f' .WB_VL_INT({v.wb_vl_int}), .WB_VL_VF({v.wb_vl_vf}),')
@@ -650,7 +750,8 @@ def gen_rtl(v):
     if v.n_wk_iq:
         for pfx, tag in (('io_wakeUpFromIQ', 'iq'), ('io_wakeUpFromIQDelayed', 'iqd')):
             c.append('.%s_wen({%s})' % (tag, ', '.join(
-                f'{pfx}_{w}_bits_{v.iq_wen[w]}' for w in reversed(range(v.n_wk_iq)))))
+                wenpack(pfx, w, v.wen_lane['iq' if tag == 'iq' else 'iqd'].get(w, set()))
+                for w in reversed(range(v.n_wk_iq)))))
             c.append('.%s_pdest({%s})' % (tag, ', '.join(
                 f'{pfx}_{w}_bits_pdest' for w in reversed(range(v.n_wk_iq)))))
             if v.iq_has_ld_dep:
@@ -690,7 +791,8 @@ def gen_rtl(v):
         c.append('.%s_valid({%s})' % (tag, ', '.join(
             f'{pfx}_{w}_valid' for w in reversed(range(v.n_wk)))))
         c.append('.%s_wen({%s})' % (tag, ', '.join(
-            f'{pfx}_{w}_bits_{v.wk_wen[w]}' for w in reversed(range(v.n_wk)))))
+            wenpack(pfx, w, v.wen_lane['wb' if tag == 'wk' else 'wbd'].get(w, set()))
+            for w in reversed(range(v.n_wk)))))
         c.append('.%s_pdest({%s})' % (tag, ', '.join(
             f'{pfx}_{w}_bits_pdest' for w in reversed(range(v.n_wk)))))
     # vl 的零/满长信息只有向量子族有；没有的变体整组钉 0（顶层没有这些端口）
@@ -953,7 +1055,8 @@ def gen_tb(v):
     A('    // 唤醒总线：pdest 取自小池，写使能高概率有效')
     for w in range(v.n_wk):
         A(f'    io_wakeUpFromWB_{w}_valid <= ($urandom_range(0, 99) < 35);')
-        A(f'    io_wakeUpFromWB_{w}_bits_{v.wk_wen[w]} <= ($urandom_range(0, 99) < 85);')
+        for _f in v.wk_wen_lanes[w]:
+            A(f'    io_wakeUpFromWB_{w}_bits_{_f} <= ($urandom_range(0, 99) < 85);')
         A(f"    io_wakeUpFromWB_{w}_bits_pdest <= {v.pdest_w}'(rnd_reg());")
     if v.has_ignore:
         A('    io_vlFromIntIsZero  <= ($urandom_range(0, 99) < 15);')
@@ -988,7 +1091,8 @@ def gen_tb(v):
     A('  always @(posedge clock) begin')
     for w in range(v.n_wk):
         A(f'    io_wakeUpFromWBDelayed_{w}_valid <= io_wakeUpFromWB_{w}_valid;')
-        A(f'    io_wakeUpFromWBDelayed_{w}_bits_{v.wk_wen[w]} <= io_wakeUpFromWB_{w}_bits_{v.wk_wen[w]};')
+        for _f in v.wk_wen_lanes[w]:
+            A(f'    io_wakeUpFromWBDelayed_{w}_bits_{_f} <= io_wakeUpFromWB_{w}_bits_{_f};')
         A(f'    io_wakeUpFromWBDelayed_{w}_bits_pdest <= io_wakeUpFromWB_{w}_bits_pdest;')
     for w in range(v.n_wk_iq):
         for f in ([v.iq_wen[w], 'pdest'] + (['rcDest'] if v.has_rc else [])
