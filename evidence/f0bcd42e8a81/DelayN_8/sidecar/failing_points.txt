@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/DelayN_8
+Implementation : i:/WORK/DelayN_8
+Version        : V-2023.12-SP3
+Date           : Sun Sep 20 04:44:03 2026
+**************************************************
+
+No failing compare points.
+
+1

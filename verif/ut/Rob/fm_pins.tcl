@@ -19,6 +19,7 @@
 #   hand-written constant -- see EXCLUDED_NOT_COMPARE_POINTS.
 set _pinned 0
 set _want 0
+puts "OE_PIN_BEGIN Rob expect=168720"
 
 # debug_VecOtherPdest: 8 fields x 160 entries = 10240 register bits
 for {set i 0} {$i < 160} {incr i} {
@@ -636,6 +637,7 @@ for {set i 0} {$i < 8} {incr i} {
   }
 }
 
+puts "OE_PIN_END Rob n=$_pinned miss=[expr {$_want - $_pinned}] expect=168720"
 puts "ROB_PINS pinned $_pinned of $_want"
 if {$_pinned != $_want} {
   error "ROB_PINS_FAIL not every pin was accepted"

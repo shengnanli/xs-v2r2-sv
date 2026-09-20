@@ -226,9 +226,15 @@ def build():
     # 没进汇总表的（TLBuffer/SRAMTemplate 变体），另有 OpenLLC 资源阻塞、
     # StorePipe 是已文档化的 EXPLICITLY_UNPROVABLE。把 253 当分母会让这一栏
     # 永远是 100%，那就失去意义了。
+    # ★2026-09-20 修：这里原先也**写死**成 fm_round_20260914.tsv★
+    # 上面 proven 那条在 2026-09-17 已经从写死改成 glob，★但这一处漏了★ ——
+    # 同一个 bug 的第二处，修了一个没修另一个。
+    # 后果是分子永远停在旧台账那批（252），而分母随每轮新目标增长，于是
+    # fm_targets_configured 一路往下掉：252/397=63.5% -> 252/419 -> 252/425…
+    # 看上去像覆盖退步，实际是记账口径漏了新台账。
+    # 由 agent/fubusy-wbarb 发现并如实记账（它没擅自改这个共享口径，做得对）。
     ran = set()
-    rnd = REPO / 'docs' / 'fm_round_20260914.tsv'
-    if rnd.exists():
+    for rnd in sorted((REPO / 'docs').glob('fm_round_*.tsv')):
         for l in rnd.read_text(errors='replace').splitlines():
             if l and not l.startswith('#') and not l.startswith('target'):
                 ran.add(l.split('\t')[0])

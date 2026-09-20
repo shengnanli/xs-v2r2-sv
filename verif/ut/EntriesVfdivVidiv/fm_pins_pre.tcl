@@ -12,9 +12,21 @@
 #   entryReg_status_srcStatus_<s>_{exuSources_value,useRegCache,regCacheIdx}
 #                                                       <-> r_{exu_src,use_rc,rc_idx}_reg[s][..]
 #
-# ★ 钉点数不是证据 ★ set_user_match 对不存在的名字不报错（实测），所以本文件
-#   末尾那个计数只说明"没抛异常"。判钉点真的生效，看 fm.log 的三条：
-#   grep -cE "^ *Error:" 为 0 / match 后 Unmatched 0(0) / 终判 SUCCEEDED failing=0。
+# ★ 钉点计数怎么数才算数 ★（2026-09-20 真 fm_shell 实测，见 docs/rob_pin_failclosed.tsv）
+#   set_user_match **从不抛 Tcl 异常**：名字存在返回 1；名字不存在返回 0 并往 fm.log
+#   写一行行首 `Error:`。所以本文件旧版那个 `catch {...}` 计数恒等于总数、
+#   `if {$_miss != 0}` 永远走不到 —— 那是一个**空守卫**。
+#   现在改成用**返回值**计数，并在最后一次 set_user_match 之后加两道 fail-closed：
+#     (1) 一条都不许失败（$_miss != 0 -> error）
+#     (2) 成功条数必须恰好等于生成时算出来的期望数量（字面整数，钉死）
+#   ★中止用 `error` 不用 `exit`★：本文件在 sidecar 模式下由
+#   scripts/sidecar/fm_native_emit.tcl 的 sidecar_pin_source 放进
+#   `interp create -safe` 里执行，而 **safe interp 把 `exit` 隐藏掉了**
+#   （本 lane 实测：`interp eval $safe {exit 3}` -> `invalid command name "exit"`）。
+#   `error` 在两种模式下都能正常抛出并传播。
+#   这两道守卫只管"本文件自己钉的名字对不对"。终局判据仍在下游、也仍然更强：
+#   fm.log 行首 `Error:` 计数（按 IQE_PIN_BEGIN/END 区间归因，见 scripts/check_pin_errors.py）
+#   / match 后 Unmatched 0(0) / 终判 SUCCEEDED failing=0。
 #   （判据刻意不写具体错误编号：本脚本会被 fm_shell 逐行回显进 fm.log，
 #     写出来就会命中注释自身，判据当场失效。）
 #
@@ -33,6 +45,10 @@
 if {$top eq "EntriesVfdivVidiv"} {
   set _n 0
   set _miss 0
+  # ★标记★：fm.log 里 IQE_PIN_BEGIN 与 IQE_PIN_END 之间的行首 `Error:` 行
+  #   才是**本文件**钉点失败；区间外的多半来自别处的投机性试名。
+  #   判据见 scripts/check_pin_errors.py --marker IQE_PIN。
+  puts "IQE_PIN_BEGIN EntriesVfdivVidiv expect=9898"
   foreach _pair {
     {enqEntries_0/entryReg_payload_fuOpType_reg[0] g_entry[0].u_e/r_payload_reg[0]}
     {enqEntries_0/entryReg_payload_fuOpType_reg[1] g_entry[0].u_e/r_payload_reg[1]}
@@ -9934,29 +9950,36 @@ if {$top eq "EntriesVfdivVidiv"} {
     {othersEntriesComp_5/entryReg_status_blocked_reg g_entry[9].u_e/r_blocked_reg}
   } {
     lassign $_pair _r _i
-    if {[catch {set_user_match "r:/WORK/$top/$_r" "i:/WORK/$top/u_core/$_i"} _msg]} {
-      incr _miss
-      if {$_miss <= 10} { puts "IQE_PIN_FAIL: $_r <-> $_i ($_msg)" }
-    } else {
+    # ★用**返回值**判成败，不用 catch★（2026-09-20 真 fm_shell 实测）：
+    #   名字存在   -> 返回 1
+    #   名字不存在 -> 返回 0，并往 fm.log 写一行行首 `Error:`
+    #   catch {...} -> 恒为 0（**从不抛异常**）
+    # 旧写法 `if {[catch {set_user_match ...} _msg]}` 的 else 支恒成立，
+    # _miss 恒 0、_n 恒等于总数 —— 守卫是空的。
+    if {[set_user_match "r:/WORK/$top/$_r" "i:/WORK/$top/u_core/$_i"]} {
       incr _n
+    } else {
+      incr _miss
+      if {$_miss <= 10} { puts "IQE_PIN_FAIL: $_r <-> $_i" }
     }
   }
-  puts "IQE_PINS: $_n / 9898 tried, $_miss threw"
-  # ★ 这个计数**不是** fail-closed，别拿它当判据 ★
-  #   实测（Lane L 的负向探针）：set_user_match 喂一个完全不存在的路径
-  #   照样返回 0，catch 抓不到 —— 所以"钉满 N 个"只说明没抛 Tcl 异常，
-  #   不说明这 N 对名字在设计里真的存在。
-  #   真正 fail-closed 的判据有三条，都在 fm.log 里：
+  puts "IQE_PIN_END EntriesVfdivVidiv n=$_n miss=$_miss expect=9898"
+  # fail-closed 两道，都在最后一次 set_user_match **之后**：
+  #   (1) 一条都不许失败；
+  #   (2) 成功条数必须**恰好**等于生成时算出来的期望数量（字面整数，钉死）。
+  # 中止用 `error` 不用 `exit`：sidecar 的 safe interp 里 `exit` 是隐藏命令
+  # （实测 `invalid command name "exit"`），`error` 两种模式下都能传播。
+  #   这两道只管"本文件钉的名字对不对"；终局判据仍在下游、也仍然更强：
   #     (1) 行首错误行计数为 0：grep -cE "^ *Error:" fm.log
-  #         （钉了不存在的名字会在那里现形）
+  #         （按上面那对标记归因到本文件）
   #     (2) match 之后 Unmatched Points 是 0(0)
   #     (3) 终判 SUCCEEDED 且 failing=0 / unverified=0 / aborted=0
   #   ★注意判据不能写成匹配某个错误编号的字面量★：fm_shell 会把本脚本
   #   逐行回显进 fm.log，注释也不例外 —— 判据里出现的字面量会命中注释
   #   自身，于是那条判据永远为真/永远为假。所以这里只用行首锚定的形式，
   #   并且刻意不写出那个编号。
-  #   下面这条只兜住"Tcl 当场抛异常"这一种情况，聊胜于无。
-  if {$_miss != 0} { error "IQE_PIN_THREW=$_miss" }
+  if {$_miss != 0} { error "IQE_PIN_MISS=EntriesVfdivVidiv miss=$_miss" }
+  if {$_n != 9898} { error "IQE_PIN_COUNT=EntriesVfdivVidiv n=$_n expect=9898" }
 }
 
 # --- golden 侧不存在、因而未钉的寄存器（firtool 在该条目类型里 DCE 掉了）---

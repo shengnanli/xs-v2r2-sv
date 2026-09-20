@@ -26,31 +26,32 @@
 //   14 个 G1 变体全部走 hasCompAndSimp,故本核不实现另一分支(见文件尾 §11 待办)。
 //
 // =============================================================================
-// 本文件导航（共 1892 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
-//   L58    §1 与变体无关的编码
-//   L82    §2 xs_iq_entry
-//   L358   §2.1 冲刷判定
-//   L370   §2.2 WB 唤醒匹配
-//   L398   §2.2b IQ 即时唤醒匹配 + 投机撤销(LoadShouldCancel)
-//   L512   §2.3 ignoreOldVd(向量专属)
-//   L558   §2.3b currentStatus
-//   L629   §2.4 valid / enqReady / clear
-//   L645   §2.5 entryUpdate
-//   L713   §2.6 时序
-//   L753   §2.6a blocked / deqPortIdx
-//   L806   §2.6b IQ 唤醒子族专属的三组状态
-//   L841   §2.7 组合输出
-//   L949   §2.8 debug / perf 出口
-//   L1004  §3 xs_iq_entries_core
-//   L1189  §3a 阵列层自己持有的两组寄存器(golden Entries.scala:140-142)
-//   L1261  §4 条目例化
-//   L1427  §5 deqSel / deqPortIdxWrite / issueResp
-//   L1470  §6 EnqPolicy
-//   L1501  §7 转移策略
-//   L1578  §8 othersEntryEnq 数据通路
-//   L1729  §9 发射出口
-//   L1797  §10 阵列状态汇聚输出
-//   L1838  §11 本核尚未实现的家族维度(给后续变体 owner 的清单,全部有 golden 依据)
+// 本文件导航（共 1999 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+//   L59    §1 与变体无关的编码
+//   L109   §2 xs_iq_entry
+//   L399   §2.1 冲刷判定
+//   L411   §2.2 唤醒的「类型匹配」
+//   L441   §2.2a WB 唤醒匹配
+//   L471   §2.2b IQ 即时唤醒匹配 + 投机撤销(LoadShouldCancel)
+//   L588   §2.3 ignoreOldVd(向量专属)
+//   L639   §2.3b currentStatus
+//   L710   §2.4 valid / enqReady / clear
+//   L726   §2.5 entryUpdate
+//   L794   §2.6 时序
+//   L834   §2.6a blocked / deqPortIdx
+//   L902   §2.6b IQ 唤醒子族专属的三组状态
+//   L937   §2.7 组合输出
+//   L1045  §2.8 debug / perf 出口
+//   L1106  §3 xs_iq_entries_core
+//   L1294  §3a 阵列层自己持有的两组寄存器(golden Entries.scala:140-142)
+//   L1366  §4 条目例化
+//   L1534  §5 deqSel / deqPortIdxWrite / issueResp
+//   L1577  §6 EnqPolicy
+//   L1608  §7 转移策略
+//   L1685  §8 othersEntryEnq 数据通路
+//   L1836  §9 发射出口
+//   L1904  §10 阵列状态汇聚输出
+//   L1945  §11 本核尚未实现的家族维度(给后续变体 owner 的清单,全部有 golden 依据)
 // 导航由 verif/ut/Entries_common/core_nav.py 重算 —— 改完核跑一次，勿手改
 //
 
@@ -70,6 +71,32 @@ package iq_entries_pkg;
   localparam logic [3:0] DS_IMM      = 4'd4;  // 无源/立即(ignoreOldVd 后的旧 vd)
   localparam logic [3:0] DS_REGCACHE = 4'd6;  // 从寄存器缓存读(needReadRegCache 变体)
   localparam logic [3:0] DS_REG      = 4'd8;  // 物理寄存器堆
+
+  // ---------------------------------------------------------------------------
+  // 唤醒总线上的写使能字段(IssueQueueWakeUpBundle 的 rfWen/fpWen/vecWen/v0Wen/vlWen)。
+  // 核里统一按这个顺序打包成一根 NUM_WEN 位向量;某个变体的某条总线上没有的字段,
+  // 由 *_WEN_PRESENT 参数在**详细化时**把整项剪掉 —— 不是喂 0。
+  // ★喂 0 与剪掉不等价★:喂 0 会把那一项的 srcType 位留在锥里,而 golden 的锥里没有它
+  //   (同型教训见 HAS_LD1_CANCEL 的注释:多一条锥边,FM 的 analyze_points 会报
+  //    "exists in the impl cone but not in the ref cone")。
+  localparam int WEN_RF = 0, WEN_FP = 1, WEN_VEC = 2, WEN_V0 = 3, WEN_VL = 4;
+  localparam int NUM_WEN = 5;
+  // 寄存器缓存的「这一路唤醒会不会改写 rcDest」判的是 **rfWen**,不是本源的
+  // 匹配种类 —— golden 逐字如此(EnqEntry_6.sv / EnqEntry_24.sv 的
+  // `…wakeUpFromIQ_<w>_bits_rfWen`)。regCache 只有 INT/MEM 子族有,全是整数域。
+  localparam int RC_WEN = WEN_RF;
+
+  // 唤醒匹配的三种「种类」,逐字照搬 Bundles.scala:325-348 的三个函数:
+  //   MK_GP : wakeUp   = isFp(srcType[1])&fpWen | isXp(srcType[0])&rfWen
+  //                    | isVp(srcType[2])&vecWen        (三项按位或,不是优先选择)
+  //   MK_V0 : wakeUpV0 = isV0(srcType[3])&v0Wen         ★判据是 isV0,不是 isVp★
+  //   MK_VL : wakeUpVl = isVp(srcType[2])&vlWen
+  // 哪个源用哪种由 EntryBundles.scala:185-193(WB) 与 :241-249(IQ) 决定,两处同形,
+  // 且**只在 numRegSrc==5 时分工**:src0..2=MK_GP、src3=MK_V0、src4=MK_VL;
+  // 否则全源 MK_GP。★把三张表并成一张再按位或,会把 v0/vl 唤醒串到源 0..2。★
+  // 14 个变体 × 每源 × 四个窗口的实测对表与本模型逐字一致,
+  // 复跑 evidence/e1-wakeup-pair-tables/extract_probe.py。
+  localparam logic [1:0] MK_GP = 2'd0, MK_V0 = 2'd1, MK_VL = 2'd2;
 
   // 发射响应 RespType(object RespType)
   localparam logic [1:0] RESP_BLOCK     = 2'b00; // 被阻塞:退回未发射
@@ -103,10 +130,12 @@ module xs_iq_entry
   // 所以 IS_COMP = ~IS_TRANS(enq 与 comp 都是 true),这里仍显式给参数,便于读。
   parameter bit IS_COMP  = 1'b1,
 
-  // 本变体的发射口数。★ deqPortIdx 到底有没有寄存器由它决定(实测 14/14:
-  //   comp 条目有 deqPortIdx 寄存器 ⟺ NUM_DEQ_PORTS==2),不是由「有没有
-  //   transEntry 出口」决定 —— 后者是从 VfdivVidiv(numDeq=1)外推出来的错结论。
-  //   见 verif/ut/Entries_field_matrix/matrix.md 的 comp_deqPortIdxRead 列。
+  // 本变体的发射口数。deqPortIdx 的完整条件见 §2.6a：
+  //   **寄存器** r_deq_port_idx 存在 ⟺ KEEP_WIDE || NUM_DEQ_PORTS > 1
+  //   （即 enq/simp 恒有；comp 只在双发射口时有）。
+  // ★ 这里原先只写了 comp 那一半，容易被读成"只看 NUM_DEQ_PORTS"，补全。★
+  //   见 verif/ut/Entries_field_matrix/matrix.md 的 comp_deqPortIdxRead 列，
+  //   以及 verif/ut/OthersEntry_field_matrix/matrix.md 的 o_deqPortIdxRd 行。
   parameter int NUM_DEQ_PORTS = 1,
 
   parameter int NUM_REGSRC = 5,   // 每 uop 的源寄存器数
@@ -147,9 +176,17 @@ module xs_iq_entry
   //   这份下标映射属于变体薄层,核只收一根已经算好的 iq_cancel[w]。
   // ---------------------------------------------------------------------------
   parameter int NUM_WK_IQ = 0,
-  // src s 只听 IQ_SRC_MASK[s] 里置 1 的那几路,且要求 srcType[IQ_TYPE_BIT[s]]。
+  // src s 只听 IQ_SRC_MASK[s] 里置 1 的那几路;匹配条件 = SRC_MATCH_KIND[s] 那种,
+  // 再按本总线**这个窗口**上存在哪些 wen 字段剪项(见 §1 的 MK_* / WEN_*)。
   parameter logic [NUM_REGSRC-1:0][(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0] IQ_SRC_MASK = '0,
-  parameter logic [NUM_REGSRC-1:0][2:0]                                 IQ_TYPE_BIT = '0,
+  // ★当拍窗口与入队延迟窗口各一份★:firtool 对两条总线**独立** DCE。
+  //   实测 EntriesStdMoud 的 src0/IQ 就是当拍只有 rfWen、延迟窗口多一个 fpWen
+  //   (EnqEntry_30.sv:1198 一对 vs :1242 两对)。共用一份参数会把延迟窗口做错,
+  //   而两个窗口同时命中同一个源的机会极低 —— UT 按构造看不见,必须分份。
+  //   (14 变体里只有这一处两窗口不同;WB 侧 14/14 全相同。仍分份,免得下一个
+  //    变体破了那条"恒相同"又没人发现。)
+  parameter logic [NUM_WEN-1:0] IQ_WEN_PRESENT  = '0,
+  parameter logic [NUM_WEN-1:0] IQD_WEN_PRESENT = '0,
   // ShiftLoadDependency:第 w 路 IQ 唤醒若自己就是第 q 条 load 流水,
   // 它给出的影子在 pipe q 上是常数 1(表示"就是我"),其余 pipe 才是左移。
   parameter logic [(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0][LD_PIPES-1:0] IQ_IS_LD_PIPE = '0,
@@ -164,10 +201,14 @@ module xs_iq_entry
   parameter logic [(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0] IQ_WRITE_RC = '0,
   parameter int RC_TYPE_BIT = 0,
 
-  // 唤醒路由表:src s 只监听 SRC_WB_MASK[s] 里置 1 的那几路 WB,
-  // 且要求 srcType[SRC_TYPE_BIT[s]] 为 1(源类型匹配)。
+  // 唤醒路由表:src s 只监听 SRC_WB_MASK[s] 里置 1 的那几路 WB。
   parameter logic [NUM_REGSRC-1:0][NUM_WK_WB-1:0] SRC_WB_MASK  = '0,
-  parameter logic [NUM_REGSRC-1:0][2:0]           SRC_TYPE_BIT = '0,
+  // 每个源用哪种匹配(MK_GP / MK_V0 / MK_VL)。WB 与 IQ **共用这一份** ——
+  // Chisel 里两处分工同形(EntryBundles.scala:185 与 :241)。
+  parameter logic [NUM_REGSRC-1:0][1:0] SRC_MATCH_KIND = '0,
+  // 本变体 WB 总线上存在哪些 wen 字段,当拍/延迟各一份(理由同 IQ_WEN_PRESENT)。
+  parameter logic [NUM_WEN-1:0] WB_WEN_PRESENT  = '0,
+  parameter logic [NUM_WEN-1:0] WBD_WEN_PRESENT = '0,
 
   // 向量 ignoreOldVd(§2.3)。非向量变体置 0。
   parameter bit HAS_IGNORE_OLD_VD = 1'b0,
@@ -225,20 +266,20 @@ module xs_iq_entry
 
   // 唤醒总线:当拍 + 入队延迟 1 拍(后者只有 IS_ENQ 用)
   input  logic [NUM_WK_WB-1:0]              wk_valid,
-  input  logic [NUM_WK_WB-1:0]              wk_wen,
+  input  logic [NUM_WK_WB-1:0][NUM_WEN-1:0] wk_wen,
   input  logic [NUM_WK_WB-1:0][PDEST_W-1:0] wk_pdest,
   input  logic [NUM_WK_WB-1:0]              wkd_valid,
-  input  logic [NUM_WK_WB-1:0]              wkd_wen,
+  input  logic [NUM_WK_WB-1:0][NUM_WEN-1:0] wkd_wen,
   input  logic [NUM_WK_WB-1:0][PDEST_W-1:0] wkd_pdest,
 
   // IQ 即时唤醒总线:当拍 + 入队延迟 1 拍。NUM_WK_IQ==0 时整组悬空不用。
   // iq_cancel[w] 已由薄层算好(= og0Cancel[该路的全局 exu 下标] & is0Lat[w])。
-  input  logic [(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0]                          iq_wen,
+  input  logic [(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0][NUM_WEN-1:0]             iq_wen,
   input  logic [(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0][PDEST_W-1:0]             iq_pdest,
   input  logic [(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0][LD_PIPES-1:0][LD_DEP_W-1:0] iq_ld_dep,
   input  logic [(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0][RC_IDX_W-1:0]            iq_rc_dest,
   input  logic [(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0]                          iq_cancel,
-  input  logic [(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0]                          iqd_wen,
+  input  logic [(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0][NUM_WEN-1:0]             iqd_wen,
   input  logic [(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0][PDEST_W-1:0]             iqd_pdest,
   input  logic [(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0][LD_PIPES-1:0][LD_DEP_W-1:0] iqd_ld_dep,
   input  logic [(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0][RC_IDX_W-1:0]            iqd_rc_dest,
@@ -367,12 +408,42 @@ module xs_iq_entry
   end
 
   // ---------------------------------------------------------------------------
-  // §2.2 WB 唤醒匹配。一路 WB 唤醒源 s 的条件:
-  //        该路 valid & 该路写使能 & 该路 pdest == 本源 psrc & 源类型位匹配
+  // §2.2 唤醒的「类型匹配」—— WB 与 IQ 共用这一个函数。
+  //
+  //   Bundles.scala:325-348 是**三个不同的函数、三张不同的对表**,不是一张:
+  //     wakeUp   : isFp&fpWen | isXp&rfWen | isVp&vecWen   (三项按位或)
+  //     wakeUpV0 : isV0&v0Wen        ★判据是 isV0(bit3),不是 isVp(bit2)★
+  //     wakeUpVl : isVp&vlWen
+  //   EntryBundles.scala:185-193 / 241-249 按源分工,且**只在 numRegSrc==5 时分**。
+  //   ★把三张并成一张再按位或,会把 v0/vl 唤醒串到源 0..2 —— UT 未必打得到,FM 会炸。★
+  //
+  //   `present` 是「这条总线**这个窗口**上存在哪些 wen 字段」,由参数给。
+  //   它是 elaborate 期常量,所以不存在的那一项连同它的 srcType 位一起被剪掉,
+  //   不会在锥里留下常 0 的边(见 §1 里 *_WEN_PRESENT 的说明)。
+  // ---------------------------------------------------------------------------
+  function automatic logic type_match(input logic [3:0]         stype,
+                                      input logic [NUM_WEN-1:0] wen,
+                                      input logic [1:0]         kind,
+                                      input logic [NUM_WEN-1:0] present);
+    type_match = 1'b0;
+    case (kind)
+      MK_V0:   if (present[WEN_V0])  type_match = stype[3] & wen[WEN_V0];
+      MK_VL:   if (present[WEN_VL])  type_match = stype[2] & wen[WEN_VL];
+      default: begin   // MK_GP,项的顺序照 golden 写:fp | rf | vec
+        if (present[WEN_FP])  type_match |= stype[1] & wen[WEN_FP];
+        if (present[WEN_RF])  type_match |= stype[0] & wen[WEN_RF];
+        if (present[WEN_VEC]) type_match |= stype[2] & wen[WEN_VEC];
+      end
+    endcase
+  endfunction
+
+  // ---------------------------------------------------------------------------
+  // §2.2a WB 唤醒匹配。一路 WB 唤醒源 s 的条件:
+  //        该路 valid & 类型匹配(见上) & 该路 pdest == 本源 psrc
   //      「哪几路能唤醒哪个源」由 SRC_WB_MASK 参数给,例如向量变体:
-  //        src0/1/2(vs1/vs2/vd)听 WB[0:5](vecWen),srcType[2]
-  //        src3    (v0 掩码)   听 WB[6:11](v0Wen), srcType[3]
-  //        src4    (vl)        听 WB[12:15](vlWen),srcType[2]
+  //        src0/1/2(vs1/vs2/vd)听 WB[0:5](vecWen),MK_GP
+  //        src3    (v0 掩码)   听 WB[6:11](v0Wen), MK_V0
+  //        src4    (vl)        听 WB[12:15](vlWen),MK_VL
   //      psrc 比 pdest 窄,golden 是零扩后比较,这里照搬。
   // ---------------------------------------------------------------------------
   logic [NUM_REGSRC-1:0] wk_hit;   // 当拍总线命中
@@ -383,10 +454,12 @@ module xs_iq_entry
     for (int s = 0; s < NUM_REGSRC; s++) begin
       for (int w = 0; w < NUM_WK_WB; w++) begin
         if (SRC_WB_MASK[s][w]) begin
-          if (wk_valid[w] & wk_wen[w] & r_src_type[s][SRC_TYPE_BIT[s]]
+          if (wk_valid[w]
+              & type_match(r_src_type[s], wk_wen[w], SRC_MATCH_KIND[s], WB_WEN_PRESENT)
               & (wk_pdest[w] == PDEST_W'(r_psrc[s])))
             wk_hit[s] = 1'b1;
-          if (wkd_valid[w] & wkd_wen[w] & r_src_type[s][SRC_TYPE_BIT[s]]
+          if (wkd_valid[w]
+              & type_match(r_src_type[s], wkd_wen[w], SRC_MATCH_KIND[s], WBD_WEN_PRESENT)
               & (wkd_pdest[w] == PDEST_W'(r_psrc[s])))
             wkd_hit[s] = 1'b1;
         end
@@ -452,10 +525,13 @@ module xs_iq_entry
                                                           ld1d_cancel, ld2d_cancel);
       for (int w = 0; w < NUM_WK_IQ; w++) begin
         if (IQ_SRC_MASK[s][w]) begin
-          wakeup_oh[s][w] = iq_wen[w] & r_src_type[s][IQ_TYPE_BIT[s]]
+          // ★两个窗口各用自己的 *_WEN_PRESENT★ —— StdMoud 的 src0 上它们真的不同。
+          wakeup_oh[s][w] = type_match(r_src_type[s], iq_wen[w],
+                                       SRC_MATCH_KIND[s], IQ_WEN_PRESENT)
                           & (iq_pdest[w] == PDEST_W'(r_psrc[s]));
           wk_iq_oh[s][w]  = wakeup_oh[s][w] & ~iq_cancel[w];
-          wakeup_oh_d[s][w] = iqd_wen[w] & r_src_type[s][IQ_TYPE_BIT[s]]
+          wakeup_oh_d[s][w] = type_match(r_src_type[s], iqd_wen[w],
+                                         SRC_MATCH_KIND[s], IQD_WEN_PRESENT)
                             & (iqd_pdest[w] == PDEST_W'(r_psrc[s]))
                             & ~iqd_cancel[w];
           // Mux1H:唤醒源自己那条 load 依赖该不该撤。
@@ -501,7 +577,7 @@ module xs_iq_entry
           iq_rc_hit_d[s] |= wakeup_oh_d[s][w];
           // replaceRC:延迟窗口这一段 golden 比的是**寄存器**里的 regCacheIdx
           // (EnqEntry.scala 的 enqDelay1ReplaceRC 用 entryReg…regCacheIdx)。
-          rc_replaced_d[s] |= iqd_wen[w] & (iqd_rc_dest[w] == r_rc_idx[s]);
+          rc_replaced_d[s] |= iqd_wen[w][RC_WEN] & (iqd_rc_dest[w] == r_rc_idx[s]);
         end
       end
       iq_rc_hit_d[s] &= r_src_type[s][RC_TYPE_BIT];
@@ -538,14 +614,19 @@ module xs_iq_entry
     vl_wk_vf  = 1'b0;
     ignore_old_vd = 1'b0;
     if (HAS_IGNORE_OLD_VD) begin
-      vl_wk_int = wk_valid[WB_VL_INT] & wk_wen[WB_VL_INT]
-                  & r_src_type[VL_SRC][SRC_TYPE_BIT[VL_SRC]]
+      // vl 源走 MK_VL(isVp & vlWen);vd 的门控 golden 写死 isVp(srcType[2]),
+      // 它不是唤醒匹配,是 ignoreOldVd 自己的条件(golden EnqEntry_18.sv 的
+      // `entryReg_status_srcStatus_2_srcType[2]`),所以这里直接写 [2]。
+      vl_wk_int = wk_valid[WB_VL_INT]
+                  & type_match(r_src_type[VL_SRC], wk_wen[WB_VL_INT],
+                               SRC_MATCH_KIND[VL_SRC], WB_WEN_PRESENT)
                   & (wk_pdest[WB_VL_INT] == PDEST_W'(r_psrc[VL_SRC]));
-      vl_wk_vf  = wk_valid[WB_VL_VF]  & wk_wen[WB_VL_VF]
-                  & r_src_type[VL_SRC][SRC_TYPE_BIT[VL_SRC]]
+      vl_wk_vf  = wk_valid[WB_VL_VF]
+                  & type_match(r_src_type[VL_SRC], wk_wen[WB_VL_VF],
+                               SRC_MATCH_KIND[VL_SRC], WB_WEN_PRESENT)
                   & (wk_pdest[WB_VL_VF]  == PDEST_W'(r_psrc[VL_SRC]));
       ignore_old_vd =
-          r_src_type[VD_SRC][SRC_TYPE_BIT[VD_SRC]]
+          r_src_type[VD_SRC][2]
         & ((~vl_int_is_zero & vl_wk_int) | (~vl_vf_is_zero & vl_wk_vf))
         & ~pl_depend_oldvd
         & ( (((vl_int_is_vlmax & vl_wk_int) | (vl_vf_is_vlmax & vl_wk_vf))
@@ -618,7 +699,7 @@ module xs_iq_entry
         if (IQ_WRITE_RC[w]) begin
           if (wk_iq_oh[s][w]) iq_rc_hit_idx[s] |= iq_rc_dest[w];
           iq_rc_hit[s]   |= wk_iq_oh[s][w];
-          rc_replaced[s] |= iq_wen[w] & (iq_rc_dest[w] == cur_rc_idx[s]);
+          rc_replaced[s] |= iq_wen[w][RC_WEN] & (iq_rc_dest[w] == cur_rc_idx[s]);
         end
       end
       iq_rc_hit[s] &= r_src_type[s][RC_TYPE_BIT];
@@ -772,6 +853,21 @@ module xs_iq_entry
   //                教训:矩阵里只核过 comp 那一列,就把结论套到三种条目上 ——
   //                      分份维度必须**逐个条目类型**核,别按一列外推(见矩阵
   //                      deqPortIdxReg_enq/_simp/_comp 三列)。
+  //
+  //   ★ 第三次的坑:「有寄存器」与「有出口端口」是**两个不同的条件** ★
+  //   (2026-09-20, agent/othersentry 在 24 个 OthersEntry 上逐个实测)
+  //     寄存器 entryReg_status_deqPortIdx 存在 ⟺ KEEP_WIDE || numDeq > 1
+  //     出口   commonOut.deqPortIdxRead 存在  ⟺ numDeq == 2  (**与角色无关**)
+  //   两者在 numDeq==1 的 simp 上**分叉**:OthersEntry_120/_200/_172/_242/_164
+  //   这 5 个 simp **有寄存器、没有 deqPortIdxRead 端口** —— 它们的 deqPortIdx
+  //   只从 transEntry.status 走给下一级,不往发射口回读。
+  //   ★我自己先把这两件事混成一件★:曾据此报「§2.6a 记错了、应改成只看 numDeq」,
+  //   拿 24 个变体重量之后才发现 §2.6a 讲的是**寄存器**、一直是对的,
+  //   错的是我那句"更正"。所以这里不是改结论,是把被我混掉的那条**边界**写清楚:
+  //   往下游传(寄存器/transEntry) 与 往发射口回读(deqPortIdxRead) 是两条路,
+  //   条件不同,不能用其中一条推另一条。
+  //   作用域声明:以上数字是**这 24 个 OthersEntry 变体 + 14 个 Entries 变体**
+  //   的实测,OthersEntryVecMem* 那 4 个没量,别当成全家族不变量。
   // ---------------------------------------------------------------------------
   generate
     if (IS_ENQ) begin : g_no_blocked
@@ -978,8 +1074,14 @@ module xs_iq_entry
       assign o_dbg_entry_out_trans_valid = valid_reg & trans_sel
                                          & ~(flushed | deq_success);
       for (genvar s = 0; s < NUM_REGSRC; s++) begin : g_dbg_src
+        // ★门控用 currentStatus 而不是裸寄存器★(golden 逐字如此,本 lane 复核过):
+        //   EnqEntry_6.sv:  …& ~currentStatus_srcStatus_0_srcState & validReg_last_REG
+        //   OthersEntry_72.sv: …& ~entryReg_status_srcStatus_0_srcState & …
+        //   两者只在「入队延迟窗口」那一拍分叉,所以**只有 EnqEntry 族暴露**;
+        //   非 enq 条目里 dly = IS_ENQ & … 是常量 0,cur_src_state 恒等于 r_src_state,
+        //   这一改对 OthersEntry 是详细化期的 no-op(但 no-op 要靠回归证,不靠这句话)。
         assign o_dbg_perf_wakeup_by_wb[s] = wk_hit[s]
-                                          & (r_src_state[s] == SRC_BUSY)
+                                          & (cur_src_state[s] == SRC_BUSY)
                                           & valid_reg;
         assign o_dbg_perf_ld_cancel[s]    = (ld_trans_cancel[s] | cur_ld_cancel[s])
                                           & valid_reg;
@@ -1035,7 +1137,8 @@ module xs_iq_entries_core
   parameter int LD_DEP_W   = 1,
   parameter int NUM_WK_IQ  = 0,
   parameter logic [NUM_REGSRC-1:0][(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0] IQ_SRC_MASK = '0,
-  parameter logic [NUM_REGSRC-1:0][2:0]                                 IQ_TYPE_BIT = '0,
+  parameter logic [NUM_WEN-1:0] IQ_WEN_PRESENT  = '0,
+  parameter logic [NUM_WEN-1:0] IQD_WEN_PRESENT = '0,
   parameter logic [(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0][LD_PIPES-1:0]   IQ_IS_LD_PIPE = '0,
   parameter int EXU_W = 1,
   // 哪几路 IQ 唤醒真有 og0Cancel 源(golden 的 og0Cancel 是稀疏的,只留用得到的位)。
@@ -1047,7 +1150,9 @@ module xs_iq_entries_core
   parameter logic [(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0] IQ_WRITE_RC = '0,
   parameter int RC_TYPE_BIT = 0,
   parameter logic [NUM_REGSRC-1:0][NUM_WK_WB-1:0] SRC_WB_MASK  = '0,
-  parameter logic [NUM_REGSRC-1:0][2:0]           SRC_TYPE_BIT = '0,
+  parameter logic [NUM_REGSRC-1:0][1:0] SRC_MATCH_KIND = '0,
+  parameter logic [NUM_WEN-1:0] WB_WEN_PRESENT  = '0,
+  parameter logic [NUM_WEN-1:0] WBD_WEN_PRESENT = '0,
   parameter bit HAS_IGNORE_OLD_VD = 1'b0,
   parameter int VD_SRC    = 2,
   parameter int VL_SRC    = 4,
@@ -1094,15 +1199,15 @@ module xs_iq_entries_core
 
   // 写回唤醒总线:当拍 + 延迟 1 拍
   input  logic [NUM_WK_WB-1:0]              wk_valid,
-  input  logic [NUM_WK_WB-1:0]              wk_wen,
+  input  logic [NUM_WK_WB-1:0][NUM_WEN-1:0] wk_wen,
   input  logic [NUM_WK_WB-1:0][PDEST_W-1:0] wk_pdest,
   input  logic [NUM_WK_WB-1:0]              wkd_valid,
-  input  logic [NUM_WK_WB-1:0]              wkd_wen,
+  input  logic [NUM_WK_WB-1:0][NUM_WEN-1:0] wkd_wen,
   input  logic [NUM_WK_WB-1:0][PDEST_W-1:0] wkd_pdest,
 
   // IQ 即时唤醒总线(当拍 + 延迟一拍)与取消网络。
   // iq_cancel[w] 由薄层按 og0Cancel 的稀疏全局下标算好后送进来。
-  input  logic [(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0]                            iq_wen,
+  input  logic [(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0][NUM_WEN-1:0]               iq_wen,
   input  logic [(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0][PDEST_W-1:0]               iq_pdest,
   input  logic [(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0][LD_PIPES-1:0][LD_DEP_W-1:0] iq_ld_dep,
   input  logic [(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0][RC_IDX_W-1:0]              iq_rc_dest,
@@ -1112,7 +1217,7 @@ module xs_iq_entries_core
   input  logic [(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0]                            og0_cancel_sel,
   input  logic [(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0]                            iq_is0lat,
   input  logic [(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0]                            iqd_is0lat,
-  input  logic [(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0]                            iqd_wen,
+  input  logic [(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0][NUM_WEN-1:0]               iqd_wen,
   input  logic [(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0][PDEST_W-1:0]               iqd_pdest,
   input  logic [(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0][LD_PIPES-1:0][LD_DEP_W-1:0] iqd_ld_dep,
   input  logic [(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0][RC_IDX_W-1:0]              iqd_rc_dest,
@@ -1334,11 +1439,13 @@ module xs_iq_entries_core
         .HAS_LD_DEP(HAS_LD_DEP && (L_IS_ENQ || L_IS_TRANS || COMP_HAS_LD_DEP)),
         .LD_PIPES(LD_PIPES), .LD_DEP_W(LD_DEP_W),
         .HAS_LD1_CANCEL(HAS_LD1_CANCEL),
-        .NUM_WK_IQ(NUM_WK_IQ), .IQ_SRC_MASK(IQ_SRC_MASK), .IQ_TYPE_BIT(IQ_TYPE_BIT),
+        .NUM_WK_IQ(NUM_WK_IQ), .IQ_SRC_MASK(IQ_SRC_MASK),
+        .IQ_WEN_PRESENT(IQ_WEN_PRESENT), .IQD_WEN_PRESENT(IQD_WEN_PRESENT),
         .IQ_IS_LD_PIPE(IQ_IS_LD_PIPE), .EXU_W(EXU_W),
         .HAS_REG_CACHE(HAS_REG_CACHE), .RC_IDX_W(RC_IDX_W),
         .IQ_WRITE_RC(IQ_WRITE_RC), .RC_TYPE_BIT(RC_TYPE_BIT),
-        .SRC_WB_MASK(SRC_WB_MASK), .SRC_TYPE_BIT(SRC_TYPE_BIT),
+        .SRC_WB_MASK(SRC_WB_MASK), .SRC_MATCH_KIND(SRC_MATCH_KIND),
+        .WB_WEN_PRESENT(WB_WEN_PRESENT), .WBD_WEN_PRESENT(WBD_WEN_PRESENT),
         .HAS_IGNORE_OLD_VD(HAS_IGNORE_OLD_VD),
         .VD_SRC(VD_SRC), .VL_SRC(VL_SRC),
         .WB_VL_INT(WB_VL_INT), .WB_VL_VF(WB_VL_VF),

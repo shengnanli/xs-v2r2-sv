@@ -237,6 +237,12 @@ def emit(arrays, digest, top='Rob', inst='u_core', excluded=None):
         L.append('#   hand-written constant -- see EXCLUDED_NOT_COMPARE_POINTS.')
     L.append('set _pinned 0')
     L.append('set _want 0')
+    # ★全仓约定的归因标记（scripts/check_pin_errors.py 认的就是这一对）★
+    # 合 main 时发现该闸已按 OE_PIN_BEGIN/END 做成跨目标的机制：
+    # **区间内**的 `^\s*Error:` 才算本文件钉点失败，区间外的（match_packed_payload
+    # 那类投机性试名）只报数不判红。Rob 以前靠"从 fm_eq.tcl 回显的源码行推区间"，
+    # 显式标记比推断强，且让 Rob 并进全仓同一套判据，所以改成发射标记。
+    L.append('puts "OE_PIN_BEGIN %s expect=__TOTAL__"' % top)
     total = 0
     for pre in sorted(arrays):
         flds = arrays[pre]
@@ -296,6 +302,11 @@ def emit(arrays, digest, top='Rob', inst='u_core', excluded=None):
     #   Error: invalid command name "exit"
     # 仍然 fail-closed（fm_eq.tcl 没 catch，错误一路抛上去终止脚本），
     # 但操作者看到的理由**不是**"钉点没配全"。`error` 在白名单里，消息如实。
+    # ★END 必须打在 error 之前★：先把可归因的数字落到日志里，再中止。
+    # （即便 END 没打出来也仍是红——check_pin_errors 把"有 BEGIN 没 END"判成
+    #   "钉点中途中止"——但那样就少了 n/miss 这两个数，诊断会变难。）
+    L.append('puts "OE_PIN_END %s n=$_pinned miss=[expr {$_want - $_pinned}] '
+             'expect=__TOTAL__"' % top)
     L.append('puts "ROB_PINS pinned $_pinned of $_want"')
     L.append('if {$_pinned != $_want} {')
     L.append('  error "ROB_PINS_FAIL not every pin was accepted"')
@@ -303,7 +314,9 @@ def emit(arrays, digest, top='Rob', inst='u_core', excluded=None):
     L.append('if {$_want != %d} {' % total)
     L.append('  error "ROB_PINS_FAIL expected %d pins, built $_want"' % total)
     L.append('}')
-    return '\n'.join(L) + '\n', total
+    # __TOTAL__ 占位符在这里替换成**结构导出**的 total（不是写死的常数）
+    out = '\n'.join(L).replace('__TOTAL__', str(total))
+    return out + '\n', total
 
 
 

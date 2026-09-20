@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/TLBFA
+Implementation : i:/WORK/TLBFA
+Version        : V-2023.12-SP3
+Date           : Thu Sep 17 16:04:57 2026
+**************************************************
+
+No aborted compare points.
+
+1

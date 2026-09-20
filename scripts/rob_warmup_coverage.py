@@ -104,7 +104,7 @@ def gen_defs(lines):
     """
     d, i = {}, 0
     while i < len(lines):
-        m = re.match(r'\s*wire\s+(?:\[[^\]]*\])?\s*(\w+)\s*=\s*(.*)$', lines[i])
+        m = re.match(r'\s*wire\s+(?:\[[^\]]*\])?\s*(\w+)[^\S\n]*=[^\S\n]*(.*)$', lines[i])
         if m:
             name, rhs = m.group(1), m.group(2)
             while ';' not in rhs and i + 1 < len(lines):

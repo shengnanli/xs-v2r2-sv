@@ -1,0 +1,311 @@
+# L2TLB FM 预测（★跑 FM 之前登记，跑完逐条对账★）
+
+登记时间：本文件进入 git 的那个 commit 即为登记时刻。此时 **FM 一次都还没跑过**。
+
+## 预测怎么来的（不是拍脑袋）
+
+用上一轮 G0 的 L2TLB assembly 证明做标定。G0 实测（证据：
+`xs-v2r2-sv/scripts/sidecar/signoff-evidence-delta2/L2TLB/verdict.sidecar.json`，
+`run_id=SGN-L2TLB-1784603356`，`native_verdict=SUCCEEDED`）：
+
+    passing 19975 / failing 0 / unverified 0 / aborted 0 / unread_notcompared 537
+    matched_blackbox_pairs 6, unmatched.compare_impl 6
+
+比较点预算模型（四项相加）：
+
+| 项 | G0 | G1 |
+|---|---|---|
+| 顶层寄存器位 | 12332 | 13795 |
+| 一级输出位   | 1141  | 3589  |
+| 黑盒输入位   | 4151(6 个) | 6286(8 个) |
+| 展开子模块寄存器位 | 3635 | 6997 |
+| **模型合计** | **21259** | **30667** |
+
+G0 实际比较点 = passing 19975 + unread 537 = **20512**，模型高估 3.6%
+（`FM_MERGE_DUP=true` 把 csr/sfence 的多份同值副本归一，模型没扣这部分）。
+把这个 0.9649 的标定系数套到 G1：
+
+## 预测值
+
+| 量 | 预测 | 区间 |
+|---|---|---|
+| 比较点合计 | ~29600 | 26500 – 33000 |
+| **passing** | **~28500** | **26000 – 32000** |
+| failing | **0** | 硬要求，非 0 即失败 |
+| unverified | 0 | |
+| aborted | 0 | |
+| unread_notcompared | ~1000 | 400 – 1600（G0 的 537 全在 PMP 的 pmaMapping 死寄存器上；G1 的 PMP 由 2269 行涨到 4408 行，按比例外推 537×1.94≈1043） |
+| unmatched（各项） | 0 | compare_impl 允许 = 黑盒数（G0 是 6，G1 预期 8） |
+| matched_blackbox_pairs | **8** | PtwCache/PTW/LLPTW/HPTW/L2TlbMissQueue/L2TlbPrefetch/Bitmap/BitmapCache |
+
+## 预测里明确不确定的地方
+
+1. **unread 的外推最弱**。G0 的 537 个 unread 是 PMP 内部 cone-dead 的 pmaMapping
+   寄存器，按行数外推只是数量级估计，不是推导。真实值落在区间外我不会去圆它。
+2. **黑盒输入位**算的是 golden 子模块声明的输入位宽合计，FM 实际建的 BBPin 比较点
+   可能按位合并或按 bus 计，两者不一定 1:1。
+3. PMP / PMPChecker / 各 Arbiter / DelayN 是**两侧 elaborate**（不黑盒），
+   这是照搬 G0 那次成功证明的配置；PMP 若改成黑盒，passing 会显著变小。
+
+## 验收判据（与预测无关的硬线）
+
+- `native_verdict = SUCCEEDED`
+- `failing = 0`，`unverified = 0`，`aborted = 0`
+- 不得出现 `dont_verify` / relaxed appvar / 假白名单
+- ★条件绿★：8 个黑盒 child 在本轮台账里**都还是 MISSING**（没有独立签核）。
+  所以本目标即使 native SUCCEEDED，也只能记 **PASS_PENDING_CHILDREN**，
+  不得计入闭包，直到这 8 个各自 SIGNOFF_PASS。
+
+---
+
+# 附：2026-09-20 复核 + 重新预登记（★这一段写完就 commit，之后才跑 FM★）
+
+上面那份预测是 `822a7ea` 落地时登记的，**FM 一次都还没跑过**（`evidence/` 下
+`find evidence -iname '*L2TLB*'` 为空可验）。本段做三件事：把上面的数字**自己重量一遍**、
+**修正一处内部矛盾**、把跑前状态用 sha256 钉死。
+
+## 1. 上面那份预测的数字，我独立重算了一遍
+
+不复用 `scripts/gen_l2tlb.py`，另写解析器直接从 G1 golden 数：
+
+| 项 | 上面登记的 | 我独立重算 | 差 |
+|---|---|---|---|
+| 顶层寄存器位 | 13795 | **13795** | 0 |
+| 一级输出位 | 3589 | **3589** | 0 |
+| 黑盒输入位 | 6286 | **6270** | 16 |
+| 展开子模块寄存器位 | 6997 | **6998** | 1 |
+| 模型合计 | 30667 | **30652** | 15 (0.05%) |
+
+也重核了端口/实例：`376 端口（224 入 / 152 出）/ 29 顶层实例`，以及本轮的
+`598 条 glue`（独立解析器同样得 598）。**结论：上面那份预测的模型是可复算的，不是拍脑袋。**
+
+G0 标定数也逐个核过（`xs-v2r2-sv/scripts/sidecar/signoff-evidence-delta2/L2TLB/native_facts.json`）：
+`passing 19975 / failing 0 / unverified 0 / aborted 0 / unread_notcompared 537`，
+`unmatched.compare_impl 6`，`matched_blackbox_pairs 6` —— 与上面引用的完全一致。
+★但 G0 那一侧的模型（21259）我**没有**独立重算★（要另开 G0 解析），
+所以 0.9649 这个标定系数是**继承的**，不是我验的。下面的区间按这一点放宽。
+
+## 2. ★修正一处内部矛盾：PMP 到底黑不黑盒★
+
+`verif/ut/L2TLB/Makefile` 落地时 `FM_INTERFACE_ONLY` 写了 **9** 项（含 PMP），
+而上面这份预测写的是 **8 个黑盒**，并明说「PMP / PMPChecker / 各 Arbiter / DelayN
+是两侧 elaborate（不黑盒），这是照搬 G0 那次成功证明的配置」，
+预测里 ~1000 条 unread 也全部外推自**被展开的** PMP 的死寄存器。两者互斥。
+
+查 G0 原始配置（可复跑）：
+
+    grep FM_INTERFACE_ONLY .../signoff-evidence-delta2/L2TLB/make.out
+    -> FM_INTERFACE_ONLY="PtwCache PTW LLPTW HPTW L2TlbMissQueue L2TlbPrefetch"   (6 项，无 PMP)
+
+同目录 `native_facts.json` 的 537 条 unread 全是
+`r:/WORK/L2TLB/pmp/pmaMapping_*_reg[*]` ↔ `i:/…/u_pmp/pmaMapping_*_reg[*]` 的**配对**点 ——
+能配上对，正说明 PMP 当时是两侧展开的。
+
+**按预测 + G0 实证取 8 项，Makefile 已改**。方向也对：黑盒少一个 = 证明强一分。
+
+## 3. unread 改用**寄存器位数**外推，不用行数
+
+上面按 PMP 行数 2269→4408 外推 537×1.94≈1043。行数是弱信号。直接数寄存器：
+
+    G0 PMP.sv  pmpMapping/pmaMapping 寄存器  68 个 / 3264 bit
+    G1 PMP.sv  同上                         136 个 / 6528 bit      比值 = 2.0000
+
+**unread 预测 = 537 × 2 = 1074。**（和行数外推的 1043 落在同一处，互为旁证。）
+
+## 4. ★预测值（跑前登记，跑完逐条对账，对不上按 fail 报）★
+
+| 量 | 预测 | 可接受区间 |
+|---|---|---|
+| `native_verdict` | `SUCCEEDED` | 硬要求 |
+| `failing` | **0** | 硬要求 |
+| `unverified` | **0** | 硬要求 |
+| `aborted` | **0** | 硬要求 |
+| 比较点合计 | **29580** | 26000 – 33000 |
+| `passing` | **28500** | 25000 – 32000 |
+| `unread_notcompared` | **1074** | 700 – 1600 |
+| `matched_blackbox_pairs` | **8** | 硬要求（就是下面那 8 个） |
+| `unmatched.compare_impl` | **8** | 允许 = 黑盒数 |
+| `unmatched` 其余各项 | **0** | 硬要求 |
+| `dont_verify` / relaxed appvar / 假白名单 | **无** | 硬要求 |
+
+## 5. 跑前状态（sha256 钉死；跑完用同样的命令复验）
+
+    66b264267941f96d118da7c4cc1ae592777e64b1ccc6ce500032bdb21e27c6e5  rtl/memblock/L2TLB.sv
+    df4b803f193cadd4703e424cdd3d005702932178b2281fd55bed5fc5ddd6e157  verif/ut/L2TLB/Makefile
+    03eba6145e863c0eff181e316e015f7c076de7e529c0fe85335e408ea7ac1e00  verif/ut/L2TLB/tb.sv
+    53395a462d83d533a4b4c87352bcfdd908b714ffffffff14acf28e8c31922f1b  scripts/fm_eq.tcl
+    cd32f268b479a12ce47537652f7e0306f0624a80e65396e5b2cc59091f648529  scripts/gen_l2tlb.py
+    d247762508746190bd608b8f792c53be8fb2f3fd6c6604b9378e149a0e60f7f7  /home/eda/xs-env/G1-canonical/golden-rtl/L2TLB.sv  (ref, 20101 行)
+
+## 6. ★条件绿依赖（8 个黑盒 child，本轮台账里全是 MISSING）★
+
+    PtwCache  PTW  LLPTW  HPTW  L2TlbMissQueue  L2TlbPrefetch  Bitmap  BitmapCache
+
+前 6 个在 `docs/g1_universe.tsv`（306 目标）里是 `REWRITE_*/REQUIRED/UNVERIFIED`；
+`Bitmap` / `BitmapCache` **不在**那 306 里，在 `docs/g1_configured_universe.tsv` 里是
+`new_target`（G1 新增）。两类都不是厂商 SRAM 宏，所以按黑盒边界审核判据只能算
+**独立目标条件绿**，不能当无条件绿。
+
+本目标即使 native `SUCCEEDED`，也只记 **PASS_PENDING_CHILDREN**，不计入闭包，
+直到这 8 个各自 `SIGNOFF_PASS`。
+
+## 7. 一处**没有**改的地方，连同理由
+
+`FM_MERGE_DUP=true` 保持不变。它是**放宽**（把同值重复寄存器合并后比，比较点只减不增），
+按 CONVENTIONS「appvar 也是判据，改它之前必须双向负测」本该两个取值各跑一次。
+这里保留 `true` 的理由是：G0 那次成功证明用的就是 `FM_MERGE_DUP=true`
+（`make.out` 可查），换值就换了标定口径，预测会失效。
+★诚实记着：`false` 那一轮**本轮没跑**，所以"没有东西被 merge_dup 遮住"这句话
+本 lane 没有证据。★ 留作后续。
+
+---
+
+# ★跑完对账（2026-09-20，本节是**事后**追加，上面的预测一个字没改）★
+
+预测登记于 commit `9471497e`，本文件在登记时刻的 sha256 是
+`8f810d7d46d14f8ec8c348656374901b2dd56ed51062661e99cac48f76bfefdf`，
+到追加本节之前一直未变（`sha256sum docs/l2tlb_fm_prediction.md` 可复验历史版本：
+`git show 9471497e:docs/l2tlb_fm_prediction.md | sha256sum`）。
+
+预测针对的是 `rtl/memblock/L2TLB.sv` 的这一份字节：
+`66b264267941f96d118da7c4cc1ae592777e64b1ccc6ce500032bdb21e27c6e5`。
+**首跑 `ab36a881` 用的正是这一份**（`git show ab36a881:rtl/memblock/L2TLB.sv | sha256sum`
+与上面一致；`ab36a881` 只动了 `verif/ut/L2TLB/`）。所以下表是"同一份被预测的字节"
+的对账，不是拿改过的代码去对预测。
+
+## 1. 逐条对账（对象 = 首跑 `ab36a881`，证据 `evidence/ab36a881f5ba/L2TLB/`）
+
+| 量 | 预测 | 区间 | 实测 | 判 |
+|---|---|---|---|---|
+| `native_verdict` | `SUCCEEDED` | 硬要求 | **FAILED** | ✗ **不符** |
+| `failing` | 0 | 硬要求 | **20** | ✗ **不符** |
+| `unverified` | 0 | 硬要求 | **1464** | ✗ **不符** |
+| `aborted` | 0 | 硬要求 | 0 | ✓ |
+| 比较点合计 | 29580 | 26000–33000 | 29105（26779+20+1464+809+33） | ✓ 在区间内 |
+| `passing` | 28500 | 25000–32000 | 26779 | ✓ 在区间内 |
+| `unread_notcompared` | 1074 | 700–1600 | 809 | ✓ 在区间内 |
+| `matched_blackbox_pairs` | 8 | 硬要求 | 8 | ✓ |
+| `unmatched.compare_impl` | 8 | 允许 ≤ 黑盒数 | 0 | ✓（比预测更好） |
+| `unmatched` 其余各项 | 0 | 硬要求 | `unread_ref=128` / `unread_impl=128`，其余 0 | ✗ **不符** |
+| `dont_verify` / relaxed appvar / 假白名单 | 无 | 硬要求 | 无 | ✓ |
+
+**结论：预测在"能不能过"这件最重要的事上错了**（预测 SUCCEEDED，实测 FAILED），
+在"规模"上对（三个数量级量全部落在预区间内）。
+另有一处口径漏算：预测把 `unmatched` 其余各项钉成 0，但实际有 128/128 条
+**unmatched unread** 点 —— 登记时只想到了 `unread_notcompared` 这一类，
+没考虑 unread 还会以 unmatched 的形式出现。
+
+## 2. 预测错在哪（不是运气，是三个具体缺陷）
+
+首跑的 20 个 failing 全在 `io_tlb_0_resp_bits_s1_valididx_*` 与它的 difftest 打包位。
+按 `analyze_points` 与后续两轮逐个定位，一共三处：
+
+1. `contiguous_pte_to_merge` 的 `e.n` 漏了 `ppn[3:0]==8` 门控
+   （golden `L2TLB.sv:3676 ptw_resp_n = x1[63] & x1[13:10]==4'h8`）。
+2. `cache_stage1` 声明成带 `af` 的类型，而 PtwCache 的 stage1 输出没有 `af` 端口
+   ⇒ 一族**悬空位**，`analyze_points` 报 `Found 1 X Source ... u_core/C5098`。
+3. `toFsm_toPTW`（G1 新增的 bitmap 跳转"回 PTW"）在本层 6 处引用里漏了 4 处。
+
+★这三处 UT 全都抓不到★：(1)(3) 要 bitmap 路真的走到（本 tb 200k 拍 bitmap 只握手 5 次），
+(2) 在功能路径上被丢弃、只有形式工具看得见。**这正是 FM 存在的理由**，
+也说明"UT 全绿"绝不等于"可以预测 FM 会过"。
+
+## 3. 修完之后（对账对象已不是被预测的字节，单列，不与上表混）
+
+| commit | passing | failing | unverified | native |
+|---|---|---|---|---|
+| `ab36a881`（被预测的字节） | 26779 | 20 | 1464 | FAILED |
+| `2eb3d25b` | 28203 | 20 | 40 | FAILED |
+| `53fdd531` | **28263** | **0** | **0** | **SUCCEEDED** |
+
+`53fdd531` 的 `unread_notcompared` 仍是 809、`constant_reg` 33、`unmatched` 全 0、
+`matched_blackbox_pairs` 8、无 `dont_verify`。
+验收判定仍是 PARTIAL，理由是 8 个黑盒 child 一个都没签核（见 `verif/allow/L2TLB.json`）。
+
+## 4. 合 main 之后在 tip 上重测一遍（HEAD `cc02fb0c`，不是引用旧数）
+
+FM（`evidence/bff5fab57d56/L2TLB/`）：
+`native SUCCEEDED / passing 28263 / failing 0 / unverified 0 / aborted 0 /
+unread_notcompared 809 / constant_reg 33 / unmatched 全 0（unread_ref/impl 各 128）/
+dont_verify 空 / elab147 空 / relaxed_appvars 空`，
+`grep -cE "^ *Error:" fm.log` = 0（行首锚定）。
+verdict `PARTIAL`，reason `assembly_green_child_not_fm_target:Bitmap`，
+`make_receipt.py` 拒绝出 receipt（fail-closed）。
+
+UT（86 跑，全绿，errors 全 0）：
+
+| 口径 | 规模 | 结果 |
+|---|---|---|
+| 正式矩阵 | 3 seed(1/7/42) × 2 档(initreg 0/1) × 200k 拍 | 6/6 TEST PASSED |
+| 扩展扫种 | 40 seed(1..40) × 2 档 × 50k 拍 | 80/80 TEST PASSED |
+
+正式矩阵逐条：
+```
+seed 1  ir0/ir1  checks=200000 errors=0 a_fire=4961  (前半 2471 / 后半 2490)
+seed 7  ir0/ir1  checks=200000 errors=0 a_fire=5056  (前半 2571 / 后半 2485)
+seed 42 ir0/ir1  checks=200000 errors=0 a_fire=4886  (前半 2488 / 后半 2398)
+```
+
+## 5. ★更正：把"结构性阻塞"这句话推翻★（2026-09-20，集成者指出，我自己复算确认）
+
+本 lane 之前在 commit `121085c4` 的说明与汇报里写过一句：
+
+> ★Bitmap / BitmapCache 根本不在 FM target 全集里★ —— 即使将来它们各自证明通过，
+> 只要不进 target 全集，L2TLB 的 assembly 闭包就永远合不上。
+
+**这句话是错的。** 它不是"结构性阻塞"，就是**普通工作量**。
+
+### 依据（自己读实现 + 自己重算，不是转述）
+
+`proof_certificate.py:458` 的 `green_child_not_fm_target` 比对的是
+`fm_target_universe.targets_at(parent_commit)`，而 `targets_at` 的定义是
+（`scripts/fm_target_universe.py:101-120`）：
+
+```
+makefile_paths()    -> git ls-tree -r --name-only <commit> verif/ut/  取所有 */Makefile
+targets_at_regex()  -> 这些 Makefile 里 ★FM_VARIANTS 的并集★
+```
+
+也就是说 **「是不是 FM target」＝「有没有人给它建过证明配置」**，不是某张封闭名单。
+同一个文件 `proof_certificate.py:450-451` 的注释本来就写明了正路：
+
+> 不是 FM target 的 child 只能走两侧 inline elaborate 或 **新建 AUX leaf target**，
+> 不得用 allow 绕过。
+
+自测复算（HEAD 上跑的，不是引用）：
+
+```
+XSSV_HOME=$PWD python3 -c "import sys;sys.path.insert(0,'scripts');
+import fm_target_universe as F; t,u = F.targets_at('$PWD','$(git rev-parse HEAD)')
+print(len(t), [k in t for k in ['Bitmap','BitmapCache','PtwCache','PTW','LLPTW','HPTW',
+                                'L2TlbMissQueue','L2TlbPrefetch']])"
+-> 499 [False, False, False, False, False, False, True, True]   (unresolved = 0)
+```
+
+### 顺带纠正一个更细的错：卡着的不止那两个，是 **6 个**
+
+| 分档 | child | 要做的事 |
+|---|---|---|
+| 还不是 FM target | `Bitmap` `BitmapCache` `PtwCache` `PTW` `LLPTW` `HPTW` | 先建 `verif/ut/<name>/Makefile`（`FM_VARIANTS = <name>`），**建了当场就是 target** |
+| 已是 FM target，只差证书 | `L2TlbMissQueue` `L2TlbPrefetch` | 出证 + 填 `certificate_sha256` |
+
+verdict 只报了 `Bitmap`，是因为 `_assembly_bbox_check` 按声明顺序遍历、撞到第一条就返回 ——
+**不等于只有它一个卡着**。这一点我之前也没说清。
+
+另外：8 个在 `docs/g1_configured_universe.tsv` 里 `in_universe` **全是 yes**
+（`Bitmap`/`BitmapCache` 标 `new_target`，其余 6 个 `from_old_306`）。
+我之前引的"不在那 306 里"是**另一个更窄的历史集合**，不是这条判据用的那个。
+
+### 关门步骤（写清楚，省得下一个人重新查一遍）
+
+1. 给 6 个尚无证明配置的 child 各建 `verif/ut/<name>/Makefile`，写 `FM_VARIANTS = <name>`；
+2. 8 个 child 各自出证，提交 `verif/proof_certificates/<name>.json`；
+3. 把各自 `certificate_sha256` 填回 `verif/allow/L2TLB.json` 对应 objects 条目；
+4. **重跑** `scripts/run_proof.sh L2TLB L2TLB`（★不许只改台账★）。
+
+### 为什么专门留这一节
+
+★一个错误的"此路不通"比一个错误的数字贵得多，因为没人会去验证一条坏消息。★
+本仓刚记过同型教训：过期的"未实现/别碰"注释让下一个人主动放弃了一条已经能走的路。
+所以这句推翻不是藏进 commit message，而是留在这里和 `verif/allow/L2TLB.json` 的
+`closure_path` 字段里，谁读到那个 verdict 都能顺手读到正路。

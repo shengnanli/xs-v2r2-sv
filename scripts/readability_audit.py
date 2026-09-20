@@ -27,7 +27,16 @@ import sys
 REPO = pathlib.Path(__file__).resolve().parent.parent
 RTL = pathlib.Path(os.environ['XSSV_RTL']) if os.environ.get('XSSV_RTL') else REPO / 'rtl'
 
-FORBIDDEN = re.compile(r'\b_(GEN|T)(_\d+)?\b')
+# ★2026-09-20 收紧★ 旧式 r'\b_(GEN|T)(_\d+)?\b' 有个前导 \b，于是**只要给展平中间名
+# 加个前缀就能从这道闸底下走过去**：`n__GEN_3539` 里 `n`/`_`/`_`/`G` 全是词字符，
+# `_GEN` 前面根本没有词边界，不命中；同理裸名 `GEN_3539` 和无数字的 `dispatchNum_T` 也不命中。
+# 这是 Rob lane 在生成器里实测出来的——它的核端口名正会长成这两种形状。
+# 新式分两支：带数字后缀的中间名（可带任意前缀、0~2 个前导下划线），或 `_GEN`/`_T` 结尾。
+# 负测钉在 scripts/test_readability_forbidden.py：4 个原先能溜过去的必须抓住，
+# 9 个正常名字（GENERIC / my_GENERATOR / io_T0 / ENTRY_GEN_CFG …）一个都不许误报。
+# ★收紧前后在当时全部 448 个 rtl/*.sv 上都命中 0 —— 两边都是 0 恰恰什么都没证明，
+#   所以判据不是"跑一遍没红"，是上面那 4+9 条对照。★
+FORBIDDEN = re.compile(r'(?<![A-Za-z0-9])_{0,2}(GEN|T)_\d+\b|_(GEN|T)(?![A-Za-z0-9_])')
 MOD_RE = re.compile(r'^(package|module)\s+(\w+)', re.MULTILINE)
 COVER_LIST = re.compile(r'^//\s{2,}(\w+)\s*[:：]', re.MULTILINE)
 # 注释里形如 scripts/foo.py、verif/ut/X/Makefile 的仓库相对路径引用
@@ -68,6 +77,12 @@ CLAIM_THIN = re.compile(r'只做参数化与端口展平|只做端口适配|不�
 CLAIM_CORE = re.compile(r'核体见\s+(\S+?\.sv)')
 # 端口展平 = 给端口赋一个不含运算符的表达式（切片/拼接/常量都算）
 FLATTEN_RHS = re.compile(r'^[\w\[\]:{},\s\']+$')
+# ★判 RHS 有没有运算符之前必须先去掉注释★（2026-09-20，agent/enqentry 撞到）
+# 一条几百位的拼接，逐行标上 `// [1361:1357] numLsElem` 之后，RHS 里就有了 `/`，
+# FLATTEN_RHS 判不过 -> 判据 F 报「注释在说假话」。可它说的假话恰恰是注释本身带来的：
+# 那条 assign 仍然是纯拼接，一个运算符都没有。9 个 EnqEntry* 薄包装层全中招。
+# 去注释不会放过真运算符：`a /* c */ + b` 去完还是 `a  + b`，照样判不过。
+RHS_COMMENT = re.compile(r'//[^\n]*|/\*.*?\*/', re.S)
 # 例化：覆盖 `Name inst (`、`Name #( ... ) inst (`、`Name #(` 三种写法
 # 例化写法三种都要认：`Name inst (`、`Name #(...) inst (`、以及参数表换行的 `Name #(`
 INST_ANY = re.compile(
@@ -103,6 +118,7 @@ def claim_problems(p, text, hdr, modidx, repo):
     n_logic = 0
     for a in re.findall(r'^\s*assign\b.*?;', text, re.M | re.S):
         rhs = a.split('=', 1)[1].rstrip(';').strip() if '=' in a else ''
+        rhs = RHS_COMMENT.sub('', rhs).strip()
         if rhs and not FLATTEN_RHS.match(rhs):
             n_logic += 1
     insts = [m.group(1) for m in INST_ANY.finditer(text) if m.group(1) in modidx]

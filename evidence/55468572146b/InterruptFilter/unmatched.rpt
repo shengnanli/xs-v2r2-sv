@@ -1,0 +1,380 @@
+**************************************************
+Report         : unmatched_points
+
+Reference      : r:/WORK/InterruptFilter
+Implementation : i:/WORK/InterruptFilter
+Version        : V-2023.12-SP3
+Date           : Sun Sep 20 05:13:57 2026
+**************************************************
+
+170 Unmatched points (85 reference, 85 implementation):
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_0_enable_reg
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_0_idx_reg[0]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_0_idx_reg[1]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_0_idx_reg[2]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_0_idx_reg[3]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_0_idx_reg[4]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_0_idx_reg[5]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_0_isZero_reg
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_0_prioNum_reg[0]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_0_prioNum_reg[1]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_0_prioNum_reg[2]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_0_prioNum_reg[3]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_0_prioNum_reg[4]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_0_prioNum_reg[5]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_1_enable_reg
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_1_idx_reg[0]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_1_idx_reg[1]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_1_idx_reg[2]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_1_idx_reg[3]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_1_idx_reg[4]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_1_idx_reg[5]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_1_isZero_reg
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_1_prioNum_reg[0]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_1_prioNum_reg[1]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_1_prioNum_reg[2]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_1_prioNum_reg[3]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_1_prioNum_reg[4]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_1_prioNum_reg[5]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_2_enable_reg
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_2_idx_reg[0]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_2_idx_reg[1]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_2_idx_reg[2]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_2_idx_reg[3]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_2_idx_reg[4]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_2_idx_reg[5]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_2_isZero_reg
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_2_prioNum_reg[0]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_2_prioNum_reg[1]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_2_prioNum_reg[2]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_2_prioNum_reg[3]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_2_prioNum_reg[4]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_2_prioNum_reg[5]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_4_idx_reg[4]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_5_enable_reg
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_5_idx_reg[0]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_5_idx_reg[1]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_5_idx_reg[2]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_5_idx_reg[3]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_5_idx_reg[4]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_5_idx_reg[5]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_5_isZero_reg
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_5_prioNum_reg[0]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_5_prioNum_reg[1]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_5_prioNum_reg[2]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_5_prioNum_reg[3]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_5_prioNum_reg[4]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_5_prioNum_reg[5]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_6_enable_reg
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_6_idx_reg[0]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_6_idx_reg[1]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_6_idx_reg[2]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_6_idx_reg[3]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_6_idx_reg[4]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_6_idx_reg[5]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_6_isZero_reg
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_6_prioNum_reg[0]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_6_prioNum_reg[1]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_6_prioNum_reg[2]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_6_prioNum_reg[3]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_6_prioNum_reg[4]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_6_prioNum_reg[5]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_7_enable_reg
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_7_idx_reg[0]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_7_idx_reg[1]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_7_idx_reg[2]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_7_idx_reg[3]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_7_idx_reg[4]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_7_idx_reg[5]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_7_isZero_reg
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_7_prioNum_reg[0]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_7_prioNum_reg[1]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_7_prioNum_reg[2]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_7_prioNum_reg[3]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_7_prioNum_reg[4]
+
+  Ref  DFF0X      r:/WORK/InterruptFilter/mipriosReg_7_prioNum_reg[5]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_enable_reg[0]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_enable_reg[1]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_enable_reg[2]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_enable_reg[5]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_enable_reg[6]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_enable_reg[7]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[0][0]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[0][1]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[0][2]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[0][3]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[0][4]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[0][5]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[1][0]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[1][1]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[1][2]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[1][3]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[1][4]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[1][5]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[2][0]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[2][1]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[2][2]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[2][3]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[2][4]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[2][5]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[4][4]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[5][0]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[5][1]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[5][2]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[5][3]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[5][4]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[5][5]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[6][0]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[6][1]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[6][2]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[6][3]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[6][4]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[6][5]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[7][0]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[7][1]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[7][2]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[7][3]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[7][4]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[7][5]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_isZero_reg[0]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_isZero_reg[1]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_isZero_reg[2]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_isZero_reg[5]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_isZero_reg[6]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_isZero_reg[7]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_prioNum_reg[0][0]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_prioNum_reg[0][1]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_prioNum_reg[0][2]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_prioNum_reg[0][3]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_prioNum_reg[0][4]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_prioNum_reg[0][5]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_prioNum_reg[1][0]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_prioNum_reg[1][1]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_prioNum_reg[1][2]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_prioNum_reg[1][3]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_prioNum_reg[1][4]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_prioNum_reg[1][5]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_prioNum_reg[2][0]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_prioNum_reg[2][1]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_prioNum_reg[2][2]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_prioNum_reg[2][3]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_prioNum_reg[2][4]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_prioNum_reg[2][5]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_prioNum_reg[5][0]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_prioNum_reg[5][1]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_prioNum_reg[5][2]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_prioNum_reg[5][3]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_prioNum_reg[5][4]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_prioNum_reg[5][5]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_prioNum_reg[6][0]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_prioNum_reg[6][1]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_prioNum_reg[6][2]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_prioNum_reg[6][3]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_prioNum_reg[6][4]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_prioNum_reg[6][5]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_prioNum_reg[7][0]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_prioNum_reg[7][1]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_prioNum_reg[7][2]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_prioNum_reg[7][3]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_prioNum_reg[7][4]
+
+  Impl DFF0       i:/WORK/InterruptFilter/u_core/mipriosReg_prioNum_reg[7][5]
+
+ [BBNet: multiply-driven net
+  BBox:  black-box
+  BBPin: black-box pin
+  Block: hierarchical block
+  BlPin: hierarchical block pin
+  Cut:   cut-point
+  DFF:   non-constant DFF register
+  DFF0:  constant 0 DFF register
+  DFF1:  constant 1 DFF register
+  DFFX:  constant X DFF register
+  DFF0X: constrained 0X DFF register
+  DFF1X: constrained 1X DFF register
+  LAT:   non-constant latch register
+  LAT0:  constant 0 latch register
+  LAT1:  constant 1 latch register
+  LATX:  constant X latch register
+  LAT0X: constrained 0X latch register
+  LAT1X: constrained 1X latch register
+  LATCG: clock-gating latch register
+  TLA:   transparent latch register
+  TLA0X: transparent constrained 0X latch register
+  TLA1X: transparent constrained 1X latch register
+  Loop:  cycle break point
+  Net:   matchable net
+  Port:  primary (top-level) port
+  Und:   undriven signal cut-point
+  Unk:   unknown signal cut-point]
+
+1

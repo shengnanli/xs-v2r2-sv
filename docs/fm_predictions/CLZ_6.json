@@ -1,0 +1,9 @@
+{
+  "target": "CLZ_6",
+  "ut": "CLZ",
+  "regs": 0,
+  "outs": 7,
+  "expected": 7,
+  "merge_dup": "false",
+  "model_applicable": true
+}

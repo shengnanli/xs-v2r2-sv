@@ -98,13 +98,13 @@ def model(top, deps):
 def from_ut(ut):
     mk = (REPO / 'verif' / 'ut' / ut / 'Makefile').read_text(errors='replace')
     mk = re.sub(r'\\\n', ' ', mk)          # 续行拼起来
-    mv = re.search(r'^FM_VARIANTS\s*=\s*(.*)$', mk, re.M)
+    mv = re.search(r'^FM_VARIANTS[^\S\n]*=[^\S\n]*(.*)$', mk, re.M)
     if not mv:
         sys.exit(f'{ut}: Makefile 里没有 FM_VARIANTS')
     tops = mv.group(1).split()
     out = []
     for t in tops:
-        d = re.search(r'^FM_REF_DEPS_%s\s*=\s*(.*)$' % re.escape(t), mk, re.M)
+        d = re.search(r'^FM_REF_DEPS_%s[^\S\n]*=[^\S\n]*(.*)$' % re.escape(t), mk, re.M)
         deps = [x[:-3] for x in d.group(1).split() if x.endswith('.sv')] if d else []
         out.append(model(t, deps))
     return out

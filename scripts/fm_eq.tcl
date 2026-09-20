@@ -423,7 +423,15 @@ switch -- $_verify_matched_unread_compare_points {
     #          字段，但四个 infoRead 读口的 ParallelMux 只有 38 位
     #          {QoS,TgtID,SrcID,TxnID}，可读核照抄同一结构。非 Return* 的 unread 点 0 个。
     #          ★注意这一族的基线不是 matched_nc 而是 unmatched unread★
-    #          (736(736) / 1472(1472))：FM 自己配不上(既非名字同构、常数间也无签名可比)，
+    #          ★逐个变体点名，不许按行文顺序推★：
+    #              NCBTransactionQueue    槽号 0..63 = 64 槽 x 23 位 = **1472**(1472)
+    #              NCBTransactionQueue_1  槽号 0..31 = 32 槽 x 23 位 = ** 736**( 736)
+    #          （本行原先写作 "(736(736) / 1472(1472))"，照行文顺序会以为无后缀是 32 槽，
+    #            ★现数是反的★。agent/pindebt 在重算期望值时发现，集成者自己数
+    #            golden 的 regQueue_<i>_bits_info_ReturnNID 槽号最大值复核：63 / 31。
+    #            照抄那个顺序会把两个变体的期望值装反，而装反之后**两边都是正数、
+    #            都"有个期望值"，闸不会响** —— 只有真去数槽位才暴露。）
+    #          FM 自己配不上(既非名字同构、常数间也无签名可比)，
     #          所以光开本加强不够，必须先配对。配对在模块本地
     #          verif/ut/NCBTransactionQueue/fm_pins.tcl，按「槽号+字段+位号」三元组从
     #          report_unmatched_points -status unread -list 两侧现场发现后 1:1 钉：
@@ -506,8 +514,122 @@ switch -- $_verify_matched_unread_compare_points {
     #   OthersEntry_88  3519 -> 3528 / _104 3511 -> 3520 / _120 3507 -> 3516，
     #   三个都正好等于 predict.py 的模型上界；unread 归 0、failing 仍 0、unmatched 全 0。
     #   passing 不增而 unread 归 0 = 点被吞掉，不算过。
-    if {$top ni {Bku Composer DebugModule DuplicatedTagArray EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v EntriesAluCsrFenceDiv EntriesAluMulBkuBrhJmp EntriesFaluFcvtF2vFmacFdiv EntriesFaluFmac EntriesFaluFmacFdiv EntriesVfdivVidiv EntriesVfmaVialuFixVfalu EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf FAlu FCVT FTBBank Ftq IBuffer ICacheCtrlUnit ICacheDataArray ICacheMetaArray ICacheMissUnit ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 InstrUncache LinkMonitor MulUnit NCBTransactionQueue NCBTransactionQueue_1 OthersEntry_104 OthersEntry_120 OthersEntry_88 Predictor Queue1_RegMapperInput_5 RNXbar RenameBuffer SNXbar SSIT SourceB TLBFA TLBFA_1 TLBFA_2 TLBFA_3 TLBNonBlock TLBNonBlock_1 TLBNonBlock_2 TXDAT_4 TXREQ TageBTable TlbStorageWrapper TlbStorageWrapper_1 TlbStorageWrapper_2 TlbStorageWrapper_3 WritebackQueue}} {
-      puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
+    # OthersEntry_164 加入依据(2026-09-20, 同一 lane 实测)：与上面三个 FP simp
+    # **同因同型**，只是源数 3 -> 5，于是死位 9 个 -> 15 个(5 源 x 3 pipe)。
+    # 钉点后 strict 跑 native SUCCEEDED / failing 0 / unmatched 六项全 0，只剩 unread 15；
+    # 15 点**全部** matched_nc、ref 15 <-> impl 15 严格双射，且都是钉点文件自己钉上的：
+    #   ref  entryReg_status_srcStatus_<s>_srcLoadDependency_<q>_reg[1]
+    #   impl u_entry/r_ld_dep_reg[s][q][1]            (s in 0..4, q in 0..2)
+    # 死因两侧同源、结构性的：VEC 族 golden 同样**一个 ldCancel 端口都没有**
+    # (verif/ut/OthersEntry_field_matrix/matrix.tsv 的 nLdCancel / ld1Cancel /
+    #  ld2Cancel / ldDep_pipes 在 _164/_166 两列全 0)，LoadShouldCancel 整条不生成，
+    # 影子 bit[1] 没有读出点；次态左移(bit1'=bit0)，transEntry 露的是次态不是寄存器
+    # ⇒ 寄存器 bit1 是纯写入位。
+    # OthersEntry_150 / _136 与 _164 **同因同型**(都是 VEC 族 simp，5 源 x 3 pipe = 15 死位，
+    # 同样 nLdCancel/ld1Cancel/ld2Cancel/ldDep_pipes 四行全 0)，一并加入。
+    # ★复核判据(跑前预登记)★ 加强后 passing 必须**恰好 +15**：
+    #   _164 3777 -> 3792 / _150 3782 -> 3797 / _136 3844 -> 3859，
+    # 三个都正好等于 predict.py 的模型上界；unread 归 0、failing 仍 0、unmatched 全 0。
+        # WBArbiter_3 / _38 / _58 / _66 加入依据(2026-09-20, agent/fubusy-wbarb 实测)：
+    # 这四个**恰好是 WBArbiter 家族里 N=1 的全部变体**，其余 9 个(N>=2)本来就
+    # native+strict 双 SUCCEEDED / unread 0，不在白名单里也不需要。
+    # 加入前基线(evidence/201cb5db74de/，55 目标一轮跑完)：四个都是
+    #   native SUCCEEDED / failing 0 / unverified 0 / aborted 0 / 比较点 unmatched 0(0)，
+    #   唯一卡点是 **2(2) 个 unmatched unread**，四份 unread_points.txt 形状逐字相同：
+    #     ref  cancelCounter_0_reg[0]        <-> impl u_core/cancel_cnt_q_reg[0][0]
+    #     ref  hasFull_reg                   <-> impl u_core/has_full_q_reg
+    #   ref 侧 2 个唯一点对 impl 侧 2 个唯一点，非该形状的项为 0，严格双射。
+    # 死因两侧同源、且**在签核之前就已定论**：scripts/wbarbiter_reachability.py
+    #   把 golden 的次态方程原样搬进脚本穷举可达状态，N=1 时可达状态只有 1 个(全 0)
+    #   —— 只有一路请求 ⇒ 它恒为最高优先级 ⇒ in_ready 恒 1 ⇒ stalled 恒 0 ⇒
+    #   cancelCounter 永不自增、isFull/hasFull 永不置位。这 5 位是 golden 自己的
+    #   死逻辑，重写核照抄(xs_WBArbiter_core 不因 N=1 裁剪)，于是对称死。
+    #   ★不许"把它们删掉图干净"★：删了就从对称死位变成 golden-only 死位，连双射
+    #   都没有 —— 与 TLBFA 不收窄 reqVpn、RenameBuffer 不只留 head 同一个结论。
+    #   5 位里另外 3 位(cancelCounter bit1/bit2、isFull)被 FM 常量折叠吃掉，
+    #   两侧一起消失，既不是比较点也不是未读点。
+    # 配对在 verif/ut/WBArbiterVariants/fm_pins.tcl(四层 fail-closed，钉不上即 exit 3)；
+    # unmatched unread 单开 vmucp 必然空转，所以顺序是**先配对、再加强**。
+    # ★复核判据与实测（判据先写、实测后填，两个数都留着）★
+    #   写在跑之前的判据是"passing 各 +2"（2→4 / 10→12 / 9→11 / 7→9）——按"钉了 2 点
+    #   就该多比 2 点"推的。**实测是各 +1**：2→3 / 10→11 / 9→10 / 7→8，
+    #   另有 `Constant reg 1` 一行。两个点都没有被吞掉，去向是分开的：
+    #     hasFull_reg ↔ u_core/has_full_q_reg        进 matched DFF，passing +1
+    #     cancelCounter_0_reg[0] ↔ cancel_cnt_q_reg[0][0]
+    #                                                FM 判成常量寄存器，落进 Not Compared
+    #   守恒成立：2 钉点 = 1 passing + 1 Constant reg；unread 0、unmatched 六项全零、failing 0。
+    #   "Not Compared" 那一个不是盲区，有负控实证：verif/ut/WBArbiterVariants/mutants.py
+    #   的 F5 把 cancelCounter 的复位值 0 改成 1，它不再是常量，FM 当场报 failing 1
+    #   （`python3 mutants.py --fm`，该条目指定跑在 WBArbiter_3 上）。
+    #   一般判据仍然是：passing 不增而 unread 归 0 = 点被吞掉，不算过。
+        if {$top ni {
+            Bku
+            Composer
+            DebugModule
+            DuplicatedTagArray
+            EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v
+            EntriesAluCsrFenceDiv
+            EntriesAluMulBkuBrhJmp
+            EntriesFaluFcvtF2vFmacFdiv
+            EntriesFaluFmac
+            EntriesFaluFmacFdiv
+            EntriesVfdivVidiv
+            EntriesVfmaVialuFixVfalu
+            EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf
+            FAlu
+            FCVT
+            FTBBank
+            Ftq
+            IBuffer
+            ICacheCtrlUnit
+            ICacheDataArray
+            ICacheMetaArray
+            ICacheMissUnit
+            ITTageTable
+            ITTageTable_1
+            ITTageTable_2
+            ITTageTable_3
+            ITTageTable_4
+            InstrUncache
+            LinkMonitor
+            LoadQueueReplay
+            MulUnit
+            NCBTransactionQueue
+            NCBTransactionQueue_1
+            OthersEntry_104
+            OthersEntry_120
+            OthersEntry_136
+            OthersEntry_150
+            OthersEntry_164
+            OthersEntry_88
+            Predictor
+            Queue1_RegMapperInput_5
+            RNXbar
+            RenameBuffer
+            SNXbar
+            SSIT
+            SourceB
+            TLBFA
+            TLBFA_1
+            TLBFA_2
+            TLBFA_3
+            TLBNonBlock
+            TLBNonBlock_1
+            TLBNonBlock_2
+            TXDAT_4
+            TXREQ
+            TageBTable
+            TlbStorageWrapper
+            TlbStorageWrapper_1
+            TlbStorageWrapper_2
+            TlbStorageWrapper_3
+            WBArbiter_3
+            WBArbiter_38
+            WBArbiter_58
+            WBArbiter_66
+            WritebackQueue
+        }} {
+      puts "FM_MODE_ERROR: matched-unread strengthening needs an explicit whitelist entry; $top is not on it"
       exit 3
     }
   }
@@ -523,6 +645,46 @@ set_app_var verification_verify_unread_bbox_inputs false
 set_app_var verification_verify_matched_unread_bbox_inputs true
 set_app_var verification_verify_unread_tech_cell_pins true
 set_app_var verification_verify_unread_tech_cell_pg_pins true
+
+# ---------------------------------------------------------------------------
+# ★目标专属 appvar：LoadQueueReplay★（2026-09-20，由一次受控重跑定下来的）
+#
+# 这两项原先藏在 verif/ut/LoadQueueReplay/fm_pins_pre.tcl 里。放在钉点文件里是错的
+# （钉点文件只许消名差，`test_fm_pins_wellformed.py` 的 P1 判据就是这条），
+# 而且藏在那里没人会去 review 它改了什么。挪到这里，并附上实测依据。
+#
+# ★依据是一次把它们拿掉的整跑，不是推断★：
+#   run #3 @75e1d8be（两项都设，evidence/75e1d8be8148）
+#       verdict SUCCEEDED / passing 114160 / failing 0 / unmatched 六项全 0 /
+#       Constant reg 0 / constant_reg_toggle_assumed=false
+#   run #4 @14cf2a80（两项都不设 = 工具默认，evidence/14cf2a808442）
+#       verdict FAILED  / passing 114010 / failing 3 / unmatched.compare_ref 3 /
+#       Constant reg 147 / constant_reg_toggle_assumed=true
+#   守恒逐位对得上：114010 + 3(failing) + 147(Constant reg) = 114160
+#   —— 离开 passing 的 150 个点，147 个落进「不比较」的 Constant reg，3 个变成 failing。
+#
+# 逐项归因（按 FM 自己打的类别标签，不是猜的）：
+#   · verification_assume_reg_init none（默认 Auto）
+#     Auto 那一跑 FM 打出 "Constant registers have been identified that were
+#     initialized by some objects that were assumed to toggle"，并给出 Constant reg 147。
+#     也就是说 Auto 会**基于一个 toggle 假设**把 147 个寄存器判成常数、移出比较集合。
+#     设成 none 取消该假设 ⇒ 这 147 个点**真的被比**。★方向是加强：比较点只增不减。★
+#   · verification_set_undriven_signals BINARY（默认 binary:X）
+#     默认那一跑多出 3 个 ref 侧 unmatched（类别 Und）
+#     `_freeList_io_canAllocate_0/1/2`，并直接导致 3 个 BBPin 比较点 failing
+#     （`freeList/io_canAllocate_0..2`）。它们是黑盒 FreeList_5 边界上的网线。
+#     ☆这一项我只证明了"拿掉会红"，**没有**证明它安全☆：Rob 那次实测过
+#     把本 appvar 收窄（设成 0）会遮住"impl 漏驱动"的缺陷；BINARY 同样是收窄
+#     （从 binary:X 去掉 X）。我做的三档探针（binary:X / BINARY / 0 × 两种 ref）
+#     只显示 BINARY 与 binary:X 在**那个**机制上同行为，
+#     **对这里这个"未驱动网线配对"机制没有分辨力** —— 所以遮蔽风险未排除。
+#     ★留作缺口：这一项值得一条专门的 appvar lane 按 Rob 的四跑格式重做双向负测。★
+# ---------------------------------------------------------------------------
+if {$top eq "LoadQueueReplay"} {
+    set_app_var verification_assume_reg_init none
+    set_app_var verification_set_undriven_signals BINARY
+    puts "FM_TARGET_APPVAR: LoadQueueReplay assume_reg_init=none undriven=BINARY (see comment above)"
+}
 
 # 未解析模块（厂商 SRAM 叶子 array_ext 等外部宏）自动当黑盒——两侧一致即可，
 # SRAM 内部存储不参与 wrapper 逻辑等价比对。
@@ -663,9 +825,22 @@ set_top_or_die impl i:/WORK/$top
 # ----------------------------------------------------------------------------
 proc match_packed_payload { top } {
     if {![info exists ::env(FM_FIELD_MAP)] || ![file exists $::env(FM_FIELD_MAP)]} return
-    set fh [open $::env(FM_FIELD_MAP) r]
+    # ★2026-09-20 补：把 field map 纳入字节快照★
+    # agent/harvest 在核对 receipt 闭包时发现的洞：sidecar 的字节快照挂在 `source`
+    # 上（sidecar_source_trace / sidecar_pin_source），而这里用 **open** 读 field map，
+    # 于是这个文件一个字节都没进 script_closure.list、也没进 receipt。
+    # 实测 NewPipelineConnectPipe_29 的 fm.log 写着 `PACKED_MATCH: 1023 points pinned`
+    # —— ★1023 个 set_user_match 来自一份字节没留档的文件；换掉它 receipt 的 sha256
+    #    一个都不变★。那不是记账问题，是证据完整性的洞：receipt 声称
+    #    「证明输入的字节都在这里」，而实际少记了一个输入。
+    # 这也是 harvest 那批里仅剩 2 个 NEEDS_RERUN 的全部原因（八项检查其余全过）。
+    set _fmpath $::env(FM_FIELD_MAP)
+    set fh [open $_fmpath rb]
+    set _fmraw [read $fh]
+    close $fh
+    if {$::SIDECAR_ON} { sidecar_snapshot_buffer $_fmpath $_fmraw }
     set n 0
-    foreach ln [split [read $fh] "\n"] {
+    foreach ln [split [encoding convertfrom utf-8 $_fmraw] "\n"] {
         if {![regexp {^(\S+)\s+(\d+)\s+(\d+)$} $ln -> suf lo w]} continue
         for {set b 0} {$b < $w} {incr b} {
             set ipath "i:/WORK/$top/u_core/data_reg\[[expr {$lo + $b}]\]"
@@ -677,7 +852,6 @@ proc match_packed_payload { top } {
             }
         }
     }
-    close $fh
     if {$n > 0} { puts "PACKED_MATCH: $n points pinned" }
 }
 # 模块本地「匹配前」钉点(FM_PIN_PRE_TCL, 可选): 首次 match 前需 set_user_match 的对象。

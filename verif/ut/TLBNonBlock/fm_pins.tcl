@@ -33,7 +33,20 @@
 # impl 词干是 `first_issue_r{,2}`，没有任何公共结构可依。
 #
 # ★fail-closed★
-# set_user_match 对**不存在的名字不报错**，所以「钉了 N 条」本身什么都不证明。
+# set_user_match **从不抛 Tcl 异常**（名字存在返回 1，不存在返回 0 并往 fm.log 写
+# 一行行首 `Error:`）。所以旧版那句 `if {[catch {set_user_match ...}]} {... 中止 ...}`
+# 是一个**空守卫**：catch 恒为 0，中止路径永远走不到，_pinned 无条件自增 ——
+# 连带把后面那道 `$_pinned != [llength $_impl]` 一起架空。
+# ★新判据不能建立在旧判据的中间量上★，所以现在改用**返回值**，并另加一道
+# 「钉点数 == 声明出来的字面整数」。
+#
+# ★中止一律用 `error`，不用 `exit`★（本 lane 实测）：本文件在 sidecar 下跑在
+# `interp create -safe` 的受限子解释器里，而 **Tcl safe interp 隐藏 `exit`**：
+#     $i eval {info commands exit}  -> ★空（命令不存在）★
+#     $i eval {exit 3}              -> 抛出: invalid command name "exit"
+#     $i eval {error "PIN_MISS"}    -> 抛出: PIN_MISS
+# 旧版那些 `exit 3` 确实会中止，但是靠"这个命令不存在"中止的，不是靠写的人
+# 表达的那个意思 —— 与上面那个空守卫是同一族缺陷。
 # 本脚本判据四层（与 verif/ut/RenameBuffer/fm_pins.tcl 同形）：
 #   1. 每条 ref 未读点必须能被上面两族之一解析；形状不符即 exit 3
 #      （情况变了就停下来诊断，不要盲钉）；
@@ -50,7 +63,7 @@ proc tlbnb_unread {side} {
     set out {}
     if {[catch {report_unmatched_points -$side -status unread -list} res]} {
         puts "TLBNONBLOCK_PIN_ERROR: report_unmatched_points -$side -status unread FAILED: $res"
-        exit 3
+        error "TLBNONBLOCK_PIN_REPORT_FAILED=$side"
     }
     foreach p [lsort -unique $res] { lappend out $p }
     return $out
@@ -59,57 +72,102 @@ proc tlbnb_unread {side} {
 set _ref  [tlbnb_unread reference]
 set _impl [tlbnb_unread implementation]
 
-if {[llength $_ref] == 0 && [llength $_impl] == 0} {
-    puts "TLBNONBLOCK_PINS: no unmatched unread points, nothing to pin"
-} else {
-    set _pinned 0
-    set _used   {}
-    set _nA 0 ; set _nB 0
-    foreach r $_ref {
-        set i ""
-        # A. r_reg / r_<n>_reg  ->  first_issue_r[n/2] (n even) / first_issue_r2[n/2] (n odd)
-        if {[regexp {^r:(/WORK/[^/]+)/r_reg$} $r -> scope]} {
-            set i "i:$scope/u_core/first_issue_r_reg\[0\]"
-            incr _nA
-        } elseif {[regexp {^r:(/WORK/[^/]+)/r_(\d+)_reg$} $r -> scope n]} {
-            set lane [expr {$n / 2}]
-            if {[expr {$n % 2}] == 0} {
-                set i "i:$scope/u_core/first_issue_r_reg\[$lane\]"
-            } else {
-                set i "i:$scope/u_core/first_issue_r2_reg\[$lane\]"
-            }
-            incr _nA
-        # B. result_ok_last_REG_reg (no suffix = lane 0) -> result_ok_last_reg[0]
-        } elseif {[regexp {^r:(/WORK/[^/]+)/result_ok_last_REG_reg$} $r -> scope]} {
-            set i "i:$scope/u_core/result_ok_last_reg\[0\]"
-            incr _nB
-        } else {
-            puts "TLBNONBLOCK_PIN_ERROR: unexpected ref unread point $r"
-            puts "  only 2 families accepted: first_issue RegNext (r / r_<n>), result_ok_last_REG (lane 0)"
-            puts "  a different shape means something changed -- stop and diagnose, do NOT blind-pin"
-            exit 3
-        }
-        if {[lsearch -exact $_impl $i] < 0} {
-            puts "TLBNONBLOCK_PIN_ERROR: derived impl path not in measured unread set: ref=$r impl=$i"
-            exit 3
-        }
-        if {[lsearch -exact $_used $i] >= 0} {
-            puts "TLBNONBLOCK_PIN_ERROR: impl path pinned twice (over-pinning): $i"
-            exit 3
-        }
-        if {[catch {set_user_match $r $i} _msg]} {
-            puts "TLBNONBLOCK_PIN_ERROR: set_user_match failed $r <-> $i : $_msg"
-            exit 3
-        }
-        lappend _used $i
-        incr _pinned
-    }
-    if {$_pinned != [llength $_impl]} {
-        puts "TLBNONBLOCK_PIN_ERROR: pinned $_pinned but impl has [llength $_impl] unread points -- not a bijection"
-        exit 3
-    }
-    puts "TLBNONBLOCK_PINS: pinned $_pinned pairs (A first_issue $_nA / B result_ok_last lane0 $_nB)"
-    puts "TLBNONBLOCK_PINS: ref [llength $_ref] / impl [llength $_impl] -- bijection holds, no duplicate pins"
-    puts "TLBNONBLOCK_PINS: final criterion is external -- unmatched unread must reach 0 after last match;"
-    puts "TLBNONBLOCK_PINS: to actually COMPARE these points a vmucp whitelist entry is still needed"
+# ★期望钉点数的出处（两族分开记，来源不同，别混成一个"总数"）★
+#   A 族（first_issue 的匿名 RegNext）：**机械推导自 G1 golden 的寄存器声明**，
+#     每 lane 两个（r / r_<n>），复算：
+#       grep -cE '^\s*reg\s+r(_[0-9]+)?;' <变体>.sv
+#         TLBNonBlock 8 / TLBNonBlock_1 4 / TLBNonBlock_2 2
+#   B 族（result_ok_last_REG 无后缀那个 0 号）：**不能只靠数寄存器** ——
+#     三个变体 golden 里都有无后缀的 result_ok_last_REG，但它是不是"未匹配未读点"
+#     取决于该变体里它有没有读者，数声明看不出来。这里取**已提交 evidence 的实测值**
+#     （两个互相独立的 evidence 目录一致）：
+#       evidence/88d4f00d0fe1/TLBNonBlock{,_1,_2}/fm.log
+#       evidence/522c3fe3d5dd/TLBNonBlock{,_1,_2}/fm.log
+#         "pinned 8 pairs (A first_issue 8 / B result_ok_last lane0 0)"   -> B 0
+#         "pinned 4 pairs (A first_issue 4 / B result_ok_last lane0 0)"   -> B 0
+#         "pinned 3 pairs (A first_issue 2 / B result_ok_last lane0 1)"   -> B 1
+#   ⇒ 期望总数 = A + B = 8 / 4 / 3。
+#   ★这就是这道守卫的意义★：哪天 B 族变了，这里当场红，而不是无声地少钉一个。
+# 变体名从未读点路径里现取（本文件不依赖父层 $top，见文件头）。
+if {[llength $_ref] == 0} {
+    puts "TLBNONBLOCK_PIN_ERROR: no reference unread points at all -- expected first_issue RegNext dead bits"
+    error "TLBNONBLOCK_PIN_NO_REF"
 }
+if {![regexp {^r:/WORK/([^/]+)/} [lindex $_ref 0] -> _design]} {
+    puts "TLBNONBLOCK_PIN_ERROR: cannot read design name out of [lindex $_ref 0]"
+    error "TLBNONBLOCK_PIN_NO_DESIGN"
+}
+switch -exact -- $_design {
+    TLBNonBlock   { set _expect 8 }
+    TLBNonBlock_1 { set _expect 4 }
+    TLBNonBlock_2 { set _expect 3 }
+    default       { set _expect -1 }
+}
+if {$_expect < 0} {
+    puts "TLBNONBLOCK_PIN_ERROR: unknown variant $_design -- record its expected pin count first"
+    error "TLBNONBLOCK_PIN_UNKNOWN_VARIANT=$_design"
+}
+# ★标记★：fm.log 里 TLBNONBLOCK_PIN_BEGIN 与 _END 之间的行首 `Error:` 才是本文件
+#   钉点失败（scripts/check_pin_errors.py --marker TLBNONBLOCK_PIN）。
+puts "TLBNONBLOCK_PIN_BEGIN $_design expect=$_expect"
+set _pinned 0
+set _used   {}
+set _nA 0 ; set _nB 0
+foreach r $_ref {
+    set i ""
+    # A. r_reg / r_<n>_reg  ->  first_issue_r[n/2] (n even) / first_issue_r2[n/2] (n odd)
+    if {[regexp {^r:(/WORK/[^/]+)/r_reg$} $r -> scope]} {
+        set i "i:$scope/u_core/first_issue_r_reg\[0\]"
+        incr _nA
+    } elseif {[regexp {^r:(/WORK/[^/]+)/r_(\d+)_reg$} $r -> scope n]} {
+        set lane [expr {$n / 2}]
+        if {[expr {$n % 2}] == 0} {
+            set i "i:$scope/u_core/first_issue_r_reg\[$lane\]"
+        } else {
+            set i "i:$scope/u_core/first_issue_r2_reg\[$lane\]"
+        }
+        incr _nA
+    # B. result_ok_last_REG_reg (no suffix = lane 0) -> result_ok_last_reg[0]
+    } elseif {[regexp {^r:(/WORK/[^/]+)/result_ok_last_REG_reg$} $r -> scope]} {
+        set i "i:$scope/u_core/result_ok_last_reg\[0\]"
+        incr _nB
+    } else {
+        puts "TLBNONBLOCK_PIN_ERROR: unexpected ref unread point $r"
+        puts "  only 2 families accepted: first_issue RegNext (r / r_<n>), result_ok_last_REG (lane 0)"
+        puts "  a different shape means something changed -- stop and diagnose, do NOT blind-pin"
+        error "TLBNONBLOCK_PIN_SHAPE=$r"
+    }
+    if {[lsearch -exact $_impl $i] < 0} {
+        puts "TLBNONBLOCK_PIN_ERROR: derived impl path not in measured unread set: ref=$r impl=$i"
+        error "TLBNONBLOCK_PIN_NOT_MEASURED=$i"
+    }
+    if {[lsearch -exact $_used $i] >= 0} {
+        puts "TLBNONBLOCK_PIN_ERROR: impl path pinned twice (over-pinning): $i"
+        error "TLBNONBLOCK_PIN_DUP=$i"
+    }
+    # ★用返回值判成败，不用 catch★：set_user_match 从不抛 Tcl 异常（见文件头），
+    # 旧版的中止路径永远走不到，_pinned 无条件自增，连带把下面那道双射守卫一起架空。
+    if {![set_user_match $r $i]} {
+        puts "TLBNONBLOCK_PIN_FAIL: set_user_match returned 0 for $r <-> $i"
+        error "TLBNONBLOCK_PIN_MISS=$r"
+    }
+    lappend _used $i
+    incr _pinned
+}
+puts "TLBNONBLOCK_PIN_END $_design n=$_pinned miss=0 expect=$_expect"
+# fail-closed 三道，全在最后一次 set_user_match **之后**：
+#   (1) 每次调用的返回值必须是 1（在循环里）
+#   (2) 双射：钉点数 == impl 侧未读点数（防漏钉）
+#   (3) 期望数量：钉点数 == 上面声明出来的字面整数（防"两侧一起漂"）
+if {$_pinned != [llength $_impl]} {
+    puts "TLBNONBLOCK_PIN_ERROR: pinned $_pinned but impl has [llength $_impl] unread points -- not a bijection"
+    error "TLBNONBLOCK_PIN_BIJECTION=$_pinned"
+}
+if {$_pinned != $_expect} {
+    puts "TLBNONBLOCK_PIN_ERROR: pinned $_pinned but expected $_expect (A first_issue + B result_ok_last lane0)"
+    error "TLBNONBLOCK_PIN_COUNT=$_pinned"
+}
+puts "TLBNONBLOCK_PINS: pinned $_pinned pairs (A first_issue $_nA / B result_ok_last lane0 $_nB)"
+puts "TLBNONBLOCK_PINS: ref [llength $_ref] / impl [llength $_impl] -- bijection holds, no duplicate pins"
+puts "TLBNONBLOCK_PINS: final criterion is external -- unmatched unread must reach 0 after last match;"
+puts "TLBNONBLOCK_PINS: to actually COMPARE these points a vmucp whitelist entry is still needed"
