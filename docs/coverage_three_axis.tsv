@@ -640,8 +640,8 @@ JumpDataModule	MISSING	UNPROVEN	-
 JumpUnit	MISSING	UNPROVEN	-
 L1CohMetaArray	REWRITTEN	PROVEN_DIRECT	rtl/memblock/L1CohMetaArray.sv
 L1ErrorMetaArray	REWRITTEN	PROVEN_DIRECT	rtl/memblock/L1ErrorMetaArray.sv
-L1FlagMetaArray	MISSING	UNPROVEN	-
-L1PrefetchSourceArray	MISSING	UNPROVEN	-
+L1FlagMetaArray	REWRITTEN	PROVEN_DIRECT	rtl/memblock/L1FlagMetaArray.sv
+L1PrefetchSourceArray	REWRITTEN	PROVEN_DIRECT	rtl/memblock/L1PrefetchSourceArray.sv
 L1Prefetcher	MISSING	UNPROVEN	-
 L2Cache	MISSING	UNPROVEN	-
 L2DataStorage	MISSING	UNPROVEN	-

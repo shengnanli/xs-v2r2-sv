@@ -58,7 +58,9 @@ IndexableCAMTemplate	AUX	WORKING_PASS	随WrBypass家族覆盖(base wrapper+核),
 InstrMMIOEntry	MAIN	REWRITE_TODO	与Arbiter1_InsUncacheResp同UT目录模块重名冲突, 需拆分目标
 InstrUncache	MAIN	MERGED	与 InstrUncache 家族同 UT 目录, 由代表目标覆盖
 L1CohMetaArray	MAIN	WORKING_PASS	fm_verdicts=1
-L1ErrorMetaArray	MAIN	WORKING_PASS	clean strict signoff: FM native SUCCEEDED passing2300(port32+DFF2268)/failing0/unmatched6项全0/unread0; 0 黑盒(两侧 native_fac
+L1ErrorMetaArray	MAIN	WORKING_PASS	★重构为家族共享核后重新出证★(旧证 fbafa76a 绑的是自带核的旧闭包, 不继承): clean strict SUCCEEDED passing2300(=预登记值, 差+0)/failing0/unmatched6项全0/unre
+L1FlagMetaArray	MAIN	WORKING_PASS	DCache accessArray(「这条线被访问过」标志阵列, 喂预取器算命中率): clean strict SUCCEEDED passing1352(=预登记值, 差+0)/failing0/unmatched6项全0/unrea
+L1PrefetchSourceArray	AUX	WORKING_PASS	DCache prefetchArray(每路存3位L1PfSource=这条线最初由哪个预取器引入): clean strict SUCCEEDED passing3528(=预登记值, 差+0)/failing0/unmatched6项
 L2Directory	MAIN	WORKING_PASS	fm_verdicts=1
 L2TlbMissQueue	MAIN	REWRITE_TODO	端口/逻辑改动, _xs例化端口不匹配
 L2TlbPrefetch	MAIN	REWRITE_TODO	端口/逻辑改动, _xs例化端口不匹配
