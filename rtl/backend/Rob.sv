@@ -180,6 +180,57 @@ package rob_pkg;
     logic [FUTYPE_W-1:0]       debug_fuType;
   } rob_entry_t;
 
+  // 提交读口那一级（robDeqGroup）的组合视图。字段表 = RobCommitEntryBundle，
+  // 比 rob_entry_t 多出 walk_v/commit_v/commit_w/isVls/dirtyFs 和
+  // debug_otherPdest_0..6（见文件头「已知残留」）。同样**只用于组合路径**。
+  typedef struct packed {
+    logic                      walk_v;
+    logic                      commit_v;
+    logic                      commit_w;
+    logic [UOPNUM_W-1:0]       realDestSize;
+    logic                      interrupt_safe;
+    logic                      wflags;
+    logic [FFLAGS_W-1:0]       fflags;
+    logic                      vxsat;
+    logic                      isRVC;
+    logic                      isVset;
+    logic                      isHls;
+    logic                      isVls;
+    logic                      vls;
+    logic                      mmio;
+    logic [COMMITTYPE_W-1:0]   commitType;
+    logic                      ftqIdx_flag;
+    logic [FTQ_PTR_W-1:0]      ftqIdx_value;
+    logic [FTQ_OFF_W-1:0]      ftqOffset;
+    logic [INSTRSIZE_W-1:0]    instrSize;
+    logic                      fpWen;
+    logic                      rfWen;
+    logic                      needFlush;
+    logic [ITYPE_W-1:0]        traceBlockInPipe_itype;
+    logic [IRETIRE_W-1:0]      traceBlockInPipe_iretire;
+    logic                      traceBlockInPipe_ilastsize;
+    logic [VADDR_W-1:0]        debug_pc;
+    logic [31:0]               debug_instr;
+    logic [LREG_W-1:0]         basicDebug_ldest;
+    logic [PREG_W-1:0]         basicDebug_pdest;
+    logic [LREG_W-1:0]         basicDebug_vd;
+    logic                      basicDebug_fpWen;
+    logic                      basicDebug_vecWen;
+    logic                      basicDebug_v0Wen;
+    logic                      basicDebug_eliminatedMove;
+    logic                      basicDebug_isXSTrap;
+    logic [FUTYPE_W-1:0]       debug_fuType;
+    logic                      dirtyFs;
+    logic                      dirtyVs;
+    logic [PREG_W-1:0]         debug_otherPdest_0;
+    logic [PREG_W-1:0]         debug_otherPdest_1;
+    logic [PREG_W-1:0]         debug_otherPdest_2;
+    logic [PREG_W-1:0]         debug_otherPdest_3;
+    logic [PREG_W-1:0]         debug_otherPdest_4;
+    logic [PREG_W-1:0]         debug_otherPdest_5;
+    logic [PREG_W-1:0]         debug_otherPdest_6;
+  } rob_commit_t;
+
 endpackage
 
 module xs_Rob_core
@@ -342,6 +393,157 @@ module xs_Rob_core
   logic [PTR_W-1:0]          walkPtrVec_value    [COMMIT_W];
   logic                      walkingPtrVec_flag  [COMMIT_W];
   logic [PTR_W-1:0]          walkingPtrVec_value [COMMIT_W];
+
+
+  // ---- 跨段前置声明 ----
+  // 本文件按"机制"分段（入队 / 读口 / 提交 / 异常），但 SystemVerilog 要求
+  // 变量先声明后使用，而这几根信号被更靠前的段引用。集中放在这里，
+  // 免得为了迁就语法把机制顺序打乱。
+  logic [PTR_W-1:0]       deqPtrValue [COMMIT_W];
+  logic                   deqPtrFlag  [COMMIT_W];
+  logic                   commitValidOut [COMMIT_W];
+  logic                   commitsHasWalkInstr;
+  logic                   commitsHasCommitInstr;
+
+  // ---- 散寄存器（docs/rob_core_contract.tsv 的 SCALAR 段，132 条）----
+  // ★名字照 golden 起★：这些在契约表里是 name_lock=free —— fm_pins.tcl **不钉**
+  // 它们，也就是说它们只能靠 FM 自己按名字/结构配对。改名等于把唯一的线索扔掉。
+  // 语义在各自使用处的注释里；`REG*` / `r_*` 这类 firtool 起的名字，
+  // 用到的地方都写明了它是谁的 RegNext/RegEnable。
+  // 复位域按表分两类：async 的进 `always_ff @(posedge clock or posedge reset)`，
+  // none 的进 `always_ff @(posedge clock)`（表里两块不相交）。
+  logic          REG;
+  logic          REG_1;
+  logic          REG_2;
+  logic          REG_3;
+  logic          REG_4;
+  logic          REG_5;
+  logic          REG_6;
+  logic          REG_7;
+  logic          REG_8;
+  logic          allowEnqueue;   // async reset 1'h1
+  logic          allowEnqueueForDispatch;   // async reset 1'h1
+  logic          commit_w_delay;
+  logic [2:0]    deqFlushBlockCounter;
+  logic          deqHasFlushed;   // async reset 1'h0
+  logic          deqHitRedirectReg_REG;
+  logic          deqHitRedirectReg_REG_1;
+  logic          deqHitRedirectReg_REG_2;
+  logic          deqVlsCanCommit;   // async reset 1'h0
+  logic          deqVlsCanCommit_REG;
+  logic          deqVlsCanCommit_REG_1;
+  logic [6:0]    deqVlsExceptionCommitSize;   // async reset 7'h0
+  logic          deqVlsExceptionNeedCommit;   // async reset 1'h0
+  logic          deqVlsExcpLock;   // async reset 1'h0
+  logic          donotNeedWalk_0;   // async reset 1'h0
+  logic          donotNeedWalk_1;   // async reset 1'h0
+  logic          donotNeedWalk_2;   // async reset 1'h0
+  logic          donotNeedWalk_3;   // async reset 1'h0
+  logic          donotNeedWalk_4;   // async reset 1'h0
+  logic          donotNeedWalk_5;   // async reset 1'h0
+  logic          donotNeedWalk_6;   // async reset 1'h0
+  logic          donotNeedWalk_7;   // async reset 1'h0
+  logic          fuseCommitCnt_r;
+  logic          fuseCommitCnt_r_1;
+  logic          fuseCommitCnt_r_2;
+  logic          fuseCommitCnt_r_3;
+  logic          fuseCommitCnt_r_4;
+  logic          fuseCommitCnt_r_5;
+  logic          fuseCommitCnt_r_6;
+  logic          fuseCommitCnt_r_7;
+  logic          hasBlockBackward;   // async reset 1'h0
+  logic          hasCommitted_0;   // async reset 1'h0
+  logic          hasCommitted_1;   // async reset 1'h0
+  logic          hasCommitted_2;   // async reset 1'h0
+  logic          hasCommitted_3;   // async reset 1'h0
+  logic          hasCommitted_4;   // async reset 1'h0
+  logic          hasCommitted_5;   // async reset 1'h0
+  logic          hasCommitted_6;   // async reset 1'h0
+  logic          hasCommitted_7;   // async reset 1'h0
+  logic          hasWFI;   // async reset 1'h0
+  logic          hasWaitForward;   // async reset 1'h0
+  logic [63:0]   instrCntReg;   // async reset 64'h0
+  logic          intrBitSetReg;
+  logic          io_csr_dirty_fs_last_REG;   // async reset 1'h0
+  logic          io_csr_dirty_vs_last_REG;   // async reset 1'h0
+  logic [4:0]    io_csr_fflags_next_bits_r;
+  logic          io_csr_fflags_next_valid_last_REG;   // async reset 1'h0
+  logic [63:0]   io_csr_vstart_bits_REG;
+  logic          io_csr_vstart_valid_REG;
+  logic          io_csr_vxsat_next_bits_r;
+  logic          io_csr_vxsat_next_valid_last_REG;   // async reset 1'h0
+  logic          io_enq_isEmpty_REG;
+  logic [2:0]    io_exception_bits_commitType_r;
+  logic          io_exception_bits_crossPageIPFFix_r;
+  logic [31:0]   io_exception_bits_instr_r;
+  logic          io_exception_bits_isFetchMalAddr_r;
+  logic          io_exception_bits_isHls_r;
+  logic          io_exception_bits_isInterrupt_r;
+  logic          io_exception_bits_isPcBkpt_r;
+  logic          io_exception_bits_satpFlushFirstFetchFault_r;
+  logic          io_exception_bits_singleStep_r;
+  logic [3:0]    io_exception_bits_trigger_r;
+  logic          io_exception_valid_REG;
+  logic          io_lsq_pendingMMIOld_REG;
+  logic          io_lsq_pendingPtr_REG_flag;
+  logic [7:0]    io_lsq_pendingPtr_REG_value;
+  logic          io_lsq_pendingst_REG;
+  logic [3:0]    io_lsq_scommit_REG;
+  logic          io_rabCommits_REG_commitValid_0;
+  logic          io_rabCommits_REG_commitValid_1;
+  logic          io_rabCommits_REG_commitValid_2;
+  logic          io_rabCommits_REG_commitValid_3;
+  logic          io_rabCommits_REG_commitValid_4;
+  logic          io_rabCommits_REG_commitValid_5;
+  logic          io_rabCommits_REG_isCommit;
+  logic          io_rabCommits_REG_isWalk;
+  logic          io_rabCommits_REG_walkValid_0;
+  logic          io_rabCommits_REG_walkValid_1;
+  logic          io_rabCommits_REG_walkValid_2;
+  logic          io_rabCommits_REG_walkValid_3;
+  logic          io_rabCommits_REG_walkValid_4;
+  logic          io_rabCommits_REG_walkValid_5;
+  logic          isCommitReg_last_REG;   // async reset 1'h0
+  logic          isVsetFlushPipeReg;
+  logic          lastCycleFlush;
+  logic          lastWalkPtr_flag;
+  logic [7:0]    lastWalkPtr_value;
+  logic [2:0]    misPredBlockCounter;
+  logic          perfEvents_r_0;
+  logic          perfEvents_r_1;
+  logic          perfEvents_r_2;
+  logic          perfEvents_r_3;
+  logic          perfEvents_r_4;
+  logic          perfEvents_r_5;
+  logic          perfEvents_r_6;
+  logic          perfEvents_r_7;
+  logic [7:0]    r_value;
+  logic          rab_io_fromRob_vecLoadExcp_valid_REG;
+  logic          redirectAll;   // async reset 1'h0
+  logic [7:0]    redirectBegin;
+  logic [7:0]    redirectEnd;
+  logic          redirectValidReg;
+  logic [19:0]   robBanksRaddrThisLine;   // async reset 20'h1
+  logic          state;   // async reset 1'h0
+  logic          state_next_REG;
+  logic [63:0]   timer;   // async reset 64'h0
+  logic [9:0]    trueCommitCnt_r;
+  logic          vecExcpInfo_bits_isIndexed;
+  logic          vecExcpInfo_bits_isStride;
+  logic          vecExcpInfo_bits_isVlm;
+  logic          vecExcpInfo_bits_isWhole;
+  logic [2:0]    vecExcpInfo_bits_nf;
+  logic [1:0]    vecExcpInfo_bits_veew;
+  logic [2:0]    vecExcpInfo_bits_vlmul;
+  logic [1:0]    vecExcpInfo_bits_vsew;
+  logic [6:0]    vecExcpInfo_bits_vstart;
+  logic          vecExcpInfo_valid;   // async reset 1'h0
+  logic [7:0]    waitRabWalkCycle;   // async reset 8'h0
+  logic [7:0]    walkCycle;   // async reset 8'h0
+  logic [2:0]    walkPtrLowBits;
+  logic          walkPtrTrue_flag;
+  logic [7:0]    walkPtrTrue_value;
+  logic [19:0]   wfi_cycles;   // async reset 20'h0
 
   // ==========================================================================
   // §2 RobPtr 算术（循环队列指针）
@@ -655,16 +857,41 @@ module xs_Rob_core
                                         : deqPtrVec_next_0_value[BANK_ADDR_W-1:0];
   end
 
+  // ★这八个写成八个独立寄存器、名字照 golden★（donotNeedWalk_0..7）：
+  //   契约表里它们是 name_lock=free —— fm_pins.tcl 不钉它们，只能靠 FM 按名字配。
+  //   写成 `logic donotNeedWalk[8]` 会让 impl 侧的比较点叫 `donotNeedWalk_reg[3]`，
+  //   与 golden 的 `donotNeedWalk_3_reg` 配不上。八行的代价换一个确定的配对。
+  logic [COMMIT_W-1:0] donotNeedWalkNext;
+  logic                donotNeedWalkVec [COMMIT_W];
+  always_comb begin
+    donotNeedWalkVec[0] = donotNeedWalk_0;  donotNeedWalkVec[1] = donotNeedWalk_1;
+    donotNeedWalkVec[2] = donotNeedWalk_2;  donotNeedWalkVec[3] = donotNeedWalk_3;
+    donotNeedWalkVec[4] = donotNeedWalk_4;  donotNeedWalkVec[5] = donotNeedWalk_5;
+    donotNeedWalkVec[6] = donotNeedWalk_6;  donotNeedWalkVec[7] = donotNeedWalk_7;
+  end
+  always_comb begin
+    if (io_redirect_valid)    donotNeedWalkNext = {COMMIT_W{1'b1}};
+    else if (state_next_REG)
+      for (int i = 0; i < COMMIT_W; i++)
+        donotNeedWalkNext[i] = (BANK_ADDR_W'(i) < walkPtrLowBits);
+    else                      donotNeedWalkNext = {COMMIT_W{1'b0}};
+  end
+
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
-      for (int i = 0; i < COMMIT_W; i++) donotNeedWalk[i] <= 1'b0;
-    end else if (io_redirect_valid) begin
-      for (int i = 0; i < COMMIT_W; i++) donotNeedWalk[i] <= 1'b1;
-    end else if (state_next_REG) begin
-      for (int i = 0; i < COMMIT_W; i++)
-        donotNeedWalk[i] <= (3'(i) < walkPtrLowBits);
+      donotNeedWalk_0 <= 1'b0;  donotNeedWalk_1 <= 1'b0;
+      donotNeedWalk_2 <= 1'b0;  donotNeedWalk_3 <= 1'b0;
+      donotNeedWalk_4 <= 1'b0;  donotNeedWalk_5 <= 1'b0;
+      donotNeedWalk_6 <= 1'b0;  donotNeedWalk_7 <= 1'b0;
     end else begin
-      for (int i = 0; i < COMMIT_W; i++) donotNeedWalk[i] <= 1'b0;
+      donotNeedWalk_0 <= donotNeedWalkNext[0];
+      donotNeedWalk_1 <= donotNeedWalkNext[1];
+      donotNeedWalk_2 <= donotNeedWalkNext[2];
+      donotNeedWalk_3 <= donotNeedWalkNext[3];
+      donotNeedWalk_4 <= donotNeedWalkNext[4];
+      donotNeedWalk_5 <= donotNeedWalkNext[5];
+      donotNeedWalk_6 <= donotNeedWalkNext[6];
+      donotNeedWalk_7 <= donotNeedWalkNext[7];
     end
   end
 
@@ -741,6 +968,1963 @@ module xs_Rob_core
     else if (anyWaitForward)         hasWaitForward <= 1'b1;
   end
   assign hasWaitForwardOut = hasWaitForward;
+
+
+
+  // ==========================================================================
+  // §8 写回口的整理
+  // ==========================================================================
+  // ★写回口的下标是稀疏的，而且每个子集的下标集合只有 golden 能告诉你★
+  //   （KunminghuV2Config 决定的，Scala 源里看不出来；见 rob_pkg 里的
+  //    EXU_WB_N/FFLAGS_WB_N/... 和 docs/rob_iface_contract.tsv 的 WBSUBSET 段）。
+  //   照下标当稠密数组写会**整体错位**，而且错得很安静。
+  // 这里先把每个子集摊成紧凑数组，后面 160 个条目的逻辑就只对数组循环。
+
+  // ---- exuWBs：io_exuWriteback 去掉 std 两路，0..24 ----
+  logic             exuWbValid  [EXU_N];
+  logic [PTR_W-1:0] exuWbRobIdx [EXU_N];
+  logic [4:0]       exuWbNum    [EXU_N];   // io_writebackNums_<i>_bits
+  always_comb begin
+    exuWbValid[0] = io_exuWriteback_0_valid;
+    exuWbValid[1] = io_exuWriteback_1_valid;
+    exuWbValid[2] = io_exuWriteback_2_valid;
+    exuWbValid[3] = io_exuWriteback_3_valid;
+    exuWbValid[4] = io_exuWriteback_4_valid;
+    exuWbValid[5] = io_exuWriteback_5_valid;
+    exuWbValid[6] = io_exuWriteback_6_valid;
+    exuWbValid[7] = io_exuWriteback_7_valid;
+    exuWbValid[8] = io_exuWriteback_8_valid;
+    exuWbValid[9] = io_exuWriteback_9_valid;
+    exuWbValid[10] = io_exuWriteback_10_valid;
+    exuWbValid[11] = io_exuWriteback_11_valid;
+    exuWbValid[12] = io_exuWriteback_12_valid;
+    exuWbValid[13] = io_exuWriteback_13_valid;
+    exuWbValid[14] = io_exuWriteback_14_valid;
+    exuWbValid[15] = io_exuWriteback_15_valid;
+    exuWbValid[16] = io_exuWriteback_16_valid;
+    exuWbValid[17] = io_exuWriteback_17_valid;
+    exuWbValid[18] = io_exuWriteback_18_valid;
+    exuWbValid[19] = io_exuWriteback_19_valid;
+    exuWbValid[20] = io_exuWriteback_20_valid;
+    exuWbValid[21] = io_exuWriteback_21_valid;
+    exuWbValid[22] = io_exuWriteback_22_valid;
+    exuWbValid[23] = io_exuWriteback_23_valid;
+    exuWbValid[24] = io_exuWriteback_24_valid;
+    exuWbRobIdx[0] = io_exuWriteback_0_bits_robIdx_value;
+    exuWbRobIdx[1] = io_exuWriteback_1_bits_robIdx_value;
+    exuWbRobIdx[2] = io_exuWriteback_2_bits_robIdx_value;
+    exuWbRobIdx[3] = io_exuWriteback_3_bits_robIdx_value;
+    exuWbRobIdx[4] = io_exuWriteback_4_bits_robIdx_value;
+    exuWbRobIdx[5] = io_exuWriteback_5_bits_robIdx_value;
+    exuWbRobIdx[6] = io_exuWriteback_6_bits_robIdx_value;
+    exuWbRobIdx[7] = io_exuWriteback_7_bits_robIdx_value;
+    exuWbRobIdx[8] = io_exuWriteback_8_bits_robIdx_value;
+    exuWbRobIdx[9] = io_exuWriteback_9_bits_robIdx_value;
+    exuWbRobIdx[10] = io_exuWriteback_10_bits_robIdx_value;
+    exuWbRobIdx[11] = io_exuWriteback_11_bits_robIdx_value;
+    exuWbRobIdx[12] = io_exuWriteback_12_bits_robIdx_value;
+    exuWbRobIdx[13] = io_exuWriteback_13_bits_robIdx_value;
+    exuWbRobIdx[14] = io_exuWriteback_14_bits_robIdx_value;
+    exuWbRobIdx[15] = io_exuWriteback_15_bits_robIdx_value;
+    exuWbRobIdx[16] = io_exuWriteback_16_bits_robIdx_value;
+    exuWbRobIdx[17] = io_exuWriteback_17_bits_robIdx_value;
+    exuWbRobIdx[18] = io_exuWriteback_18_bits_robIdx_value;
+    exuWbRobIdx[19] = io_exuWriteback_19_bits_robIdx_value;
+    exuWbRobIdx[20] = io_exuWriteback_20_bits_robIdx_value;
+    exuWbRobIdx[21] = io_exuWriteback_21_bits_robIdx_value;
+    exuWbRobIdx[22] = io_exuWriteback_22_bits_robIdx_value;
+    exuWbRobIdx[23] = io_exuWriteback_23_bits_robIdx_value;
+    exuWbRobIdx[24] = io_exuWriteback_24_bits_robIdx_value;
+    exuWbNum[0] = io_writebackNums_0_bits;
+    exuWbNum[1] = io_writebackNums_1_bits;
+    exuWbNum[2] = io_writebackNums_2_bits;
+    exuWbNum[3] = io_writebackNums_3_bits;
+    exuWbNum[4] = io_writebackNums_4_bits;
+    exuWbNum[5] = io_writebackNums_5_bits;
+    exuWbNum[6] = io_writebackNums_6_bits;
+    exuWbNum[7] = io_writebackNums_7_bits;
+    exuWbNum[8] = io_writebackNums_8_bits;
+    exuWbNum[9] = io_writebackNums_9_bits;
+    exuWbNum[10] = io_writebackNums_10_bits;
+    exuWbNum[11] = io_writebackNums_11_bits;
+    exuWbNum[12] = io_writebackNums_12_bits;
+    exuWbNum[13] = io_writebackNums_13_bits;
+    exuWbNum[14] = io_writebackNums_14_bits;
+    exuWbNum[15] = io_writebackNums_15_bits;
+    exuWbNum[16] = io_writebackNums_16_bits;
+    exuWbNum[17] = io_writebackNums_17_bits;
+    exuWbNum[18] = io_writebackNums_18_bits;
+    exuWbNum[19] = io_writebackNums_19_bits;
+    exuWbNum[20] = io_writebackNums_20_bits;
+    exuWbNum[21] = io_writebackNums_21_bits;
+    exuWbNum[22] = io_writebackNums_22_bits;
+    exuWbNum[23] = io_writebackNums_23_bits;
+    exuWbNum[24] = io_writebackNums_24_bits;
+  end
+
+  // ---- stdWBs：{25,26}，只用来放 stdWritebacked ----
+  logic             stdWbValid  [STD_N];
+  logic [PTR_W-1:0] stdWbRobIdx [STD_N];
+  always_comb begin
+    stdWbValid[0]  = io_exuWriteback_25_valid;
+    stdWbRobIdx[0] = io_exuWriteback_25_bits_robIdx_value;
+    stdWbValid[1]  = io_exuWriteback_26_valid;
+    stdWbRobIdx[1] = io_exuWriteback_26_bits_robIdx_value;
+  end
+
+  // ---- fflagsWBs：{5,8,9,10,11,12,13,14,15,16,17} ----
+  logic             fflagsWbValid  [FFLAGS_WB_N];
+  logic [PTR_W-1:0] fflagsWbRobIdx [FFLAGS_WB_N];
+  logic             fflagsWbWflags [FFLAGS_WB_N];
+  logic [FFLAGS_W-1:0] fflagsWbData [FFLAGS_WB_N];
+  always_comb begin
+    fflagsWbValid[0]  = io_exuWriteback_5_valid;
+    fflagsWbRobIdx[0] = io_exuWriteback_5_bits_robIdx_value;
+    fflagsWbWflags[0] = io_exuWriteback_5_bits_wflags;
+    fflagsWbData[0]   = io_exuWriteback_5_bits_fflags;
+    fflagsWbValid[1]  = io_exuWriteback_8_valid;
+    fflagsWbRobIdx[1] = io_exuWriteback_8_bits_robIdx_value;
+    fflagsWbWflags[1] = io_exuWriteback_8_bits_wflags;
+    fflagsWbData[1]   = io_exuWriteback_8_bits_fflags;
+    fflagsWbValid[2]  = io_exuWriteback_9_valid;
+    fflagsWbRobIdx[2] = io_exuWriteback_9_bits_robIdx_value;
+    fflagsWbWflags[2] = io_exuWriteback_9_bits_wflags;
+    fflagsWbData[2]   = io_exuWriteback_9_bits_fflags;
+    fflagsWbValid[3]  = io_exuWriteback_10_valid;
+    fflagsWbRobIdx[3] = io_exuWriteback_10_bits_robIdx_value;
+    fflagsWbWflags[3] = io_exuWriteback_10_bits_wflags;
+    fflagsWbData[3]   = io_exuWriteback_10_bits_fflags;
+    fflagsWbValid[4]  = io_exuWriteback_11_valid;
+    fflagsWbRobIdx[4] = io_exuWriteback_11_bits_robIdx_value;
+    fflagsWbWflags[4] = io_exuWriteback_11_bits_wflags;
+    fflagsWbData[4]   = io_exuWriteback_11_bits_fflags;
+    fflagsWbValid[5]  = io_exuWriteback_12_valid;
+    fflagsWbRobIdx[5] = io_exuWriteback_12_bits_robIdx_value;
+    fflagsWbWflags[5] = io_exuWriteback_12_bits_wflags;
+    fflagsWbData[5]   = io_exuWriteback_12_bits_fflags;
+    fflagsWbValid[6]  = io_exuWriteback_13_valid;
+    fflagsWbRobIdx[6] = io_exuWriteback_13_bits_robIdx_value;
+    fflagsWbWflags[6] = io_exuWriteback_13_bits_wflags;
+    fflagsWbData[6]   = io_exuWriteback_13_bits_fflags;
+    fflagsWbValid[7]  = io_exuWriteback_14_valid;
+    fflagsWbRobIdx[7] = io_exuWriteback_14_bits_robIdx_value;
+    fflagsWbWflags[7] = io_exuWriteback_14_bits_wflags;
+    fflagsWbData[7]   = io_exuWriteback_14_bits_fflags;
+    fflagsWbValid[8]  = io_exuWriteback_15_valid;
+    fflagsWbRobIdx[8] = io_exuWriteback_15_bits_robIdx_value;
+    fflagsWbWflags[8] = io_exuWriteback_15_bits_wflags;
+    fflagsWbData[8]   = io_exuWriteback_15_bits_fflags;
+    fflagsWbValid[9]  = io_exuWriteback_16_valid;
+    fflagsWbRobIdx[9] = io_exuWriteback_16_bits_robIdx_value;
+    fflagsWbWflags[9] = io_exuWriteback_16_bits_wflags;
+    fflagsWbData[9]   = io_exuWriteback_16_bits_fflags;
+    fflagsWbValid[10]  = io_exuWriteback_17_valid;
+    fflagsWbRobIdx[10] = io_exuWriteback_17_bits_robIdx_value;
+    fflagsWbWflags[10] = io_exuWriteback_17_bits_wflags;
+    fflagsWbData[10]   = io_exuWriteback_17_bits_fflags;
+  end
+
+  // ---- vxsatWBs：{13,15} ----
+  logic             vxsatWbValid  [VXSAT_WB_N];
+  logic [PTR_W-1:0] vxsatWbRobIdx [VXSAT_WB_N];
+  logic             vxsatWbData   [VXSAT_WB_N];
+  always_comb begin
+    vxsatWbValid[0]  = io_exuWriteback_13_valid;
+    vxsatWbRobIdx[0] = io_exuWriteback_13_bits_robIdx_value;
+    vxsatWbData[0]   = io_exuWriteback_13_bits_vxsat;
+    vxsatWbValid[1]  = io_exuWriteback_15_valid;
+    vxsatWbRobIdx[1] = io_exuWriteback_15_bits_robIdx_value;
+    vxsatWbData[1]   = io_exuWriteback_15_bits_vxsat;
+  end
+
+  // ---- branchWBs：{1,3,5}，只取 taken（trace 的 itype 要改写成 Taken）----
+  logic             brhWbValid  [BRH_WB_N];
+  logic [PTR_W-1:0] brhWbRobIdx [BRH_WB_N];
+  logic             brhWbTaken  [BRH_WB_N];
+  always_comb begin
+    brhWbValid[0]  = io_exuWriteback_1_valid;
+    brhWbRobIdx[0] = io_exuWriteback_1_bits_robIdx_value;
+    brhWbTaken[0]  = io_exuWriteback_1_bits_redirect_bits_cfiUpdate_taken;
+    brhWbValid[1]  = io_exuWriteback_3_valid;
+    brhWbRobIdx[1] = io_exuWriteback_3_bits_robIdx_value;
+    brhWbTaken[1]  = io_exuWriteback_3_bits_redirect_bits_cfiUpdate_taken;
+    brhWbValid[2]  = io_exuWriteback_5_valid;
+    brhWbRobIdx[2] = io_exuWriteback_5_bits_robIdx_value;
+    brhWbTaken[2]  = io_exuWriteback_5_bits_redirect_bits_cfiUpdate_taken;
+  end
+
+  // ---- exceptionWBs：io_writeback 的 {7,13,14,18..24}，与
+  //      io_writebackNeedFlush 的 {0,1,2,6,7,8,9,10,11,12} **靠位置对齐**
+  //      （不是靠名字/下标！见 docs/rob_iface_contract.tsv 的 EXCPWB 段）。
+  logic             excpWbValid     [EXCP_WB_N];
+  logic [PTR_W-1:0] excpWbRobIdx    [EXCP_WB_N];
+  logic             excpWbNeedFlush [EXCP_WB_N];
+  always_comb begin
+    excpWbValid[0]     = io_writeback_7_valid;
+    excpWbRobIdx[0]    = io_writeback_7_bits_robIdx_value;
+    excpWbNeedFlush[0] = io_writebackNeedFlush_0;
+    excpWbValid[1]     = io_writeback_13_valid;
+    excpWbRobIdx[1]    = io_writeback_13_bits_robIdx_value;
+    excpWbNeedFlush[1] = io_writebackNeedFlush_1;
+    excpWbValid[2]     = io_writeback_14_valid;
+    excpWbRobIdx[2]    = io_writeback_14_bits_robIdx_value;
+    excpWbNeedFlush[2] = io_writebackNeedFlush_2;
+    excpWbValid[3]     = io_writeback_18_valid;
+    excpWbRobIdx[3]    = io_writeback_18_bits_robIdx_value;
+    excpWbNeedFlush[3] = io_writebackNeedFlush_6;
+    excpWbValid[4]     = io_writeback_19_valid;
+    excpWbRobIdx[4]    = io_writeback_19_bits_robIdx_value;
+    excpWbNeedFlush[4] = io_writebackNeedFlush_7;
+    excpWbValid[5]     = io_writeback_20_valid;
+    excpWbRobIdx[5]    = io_writeback_20_bits_robIdx_value;
+    excpWbNeedFlush[5] = io_writebackNeedFlush_8;
+    excpWbValid[6]     = io_writeback_21_valid;
+    excpWbRobIdx[6]    = io_writeback_21_bits_robIdx_value;
+    excpWbNeedFlush[6] = io_writebackNeedFlush_9;
+    excpWbValid[7]     = io_writeback_22_valid;
+    excpWbRobIdx[7]    = io_writeback_22_bits_robIdx_value;
+    excpWbNeedFlush[7] = io_writebackNeedFlush_10;
+    excpWbValid[8]     = io_writeback_23_valid;
+    excpWbRobIdx[8]    = io_writeback_23_bits_robIdx_value;
+    excpWbNeedFlush[8] = io_writebackNeedFlush_11;
+    excpWbValid[9]     = io_writeback_24_valid;
+    excpWbRobIdx[9]    = io_writeback_24_bits_robIdx_value;
+    excpWbNeedFlush[9] = io_writebackNeedFlush_12;
+  end
+
+  // ---- redirectWBs：io_writeback 的 {1,3,5,7}，用于 misPredBlock ----
+  logic misPredWb;
+  assign misPredWb =
+      (io_writeback_1_valid & io_writeback_1_bits_redirect_valid & io_writeback_1_bits_redirect_bits_cfiUpdate_isMisPred) |
+      (io_writeback_3_valid & io_writeback_3_bits_redirect_valid & io_writeback_3_bits_redirect_bits_cfiUpdate_isMisPred) |
+      (io_writeback_5_valid & io_writeback_5_bits_redirect_valid & io_writeback_5_bits_redirect_bits_cfiUpdate_isMisPred) |
+      (io_writeback_7_valid & io_writeback_7_bits_redirect_valid & io_writeback_7_bits_redirect_bits_cfiUpdate_isMisPred);
+
+
+
+  // ==========================================================================
+  // §9 入队：条目存储的写入
+  // ==========================================================================
+  // 这里有**两种完全不同的选择结构**，弄混就是真 bug：
+  //
+  //   (A) `connectEnq` 那一族字段：Scala 是 `for (i <- 0 until RobSize)` +
+  //       `Mux1H(enqOH, ...)` —— ★Mux1H 在 golden 里展开成"按位或"，不是优先级选择★。
+  //       非 one-hot 时两者**不等价**（或 vs 取最后一个命中），FM 一定会抓到。
+  //       所以下面一律写成 `|= 掩码 & 值` 的或形式。
+  //   (B) `vls` / `mmio` / `interrupt_safe` / `debug_microOp` 那一族：Scala 是
+  //       `for (i <- 0 until RenameWidth)` + `when(canEnqueue(i))` 写
+  //       `allocatePtrVec(i).value` 那一条 —— 后写的赢，也就是
+  //       ★第 5 路优先级最高★的优先链（golden 里就是 `if (canEnq_5) ... else if (canEnq_4)`）。
+  //
+  // 条目下标一律 `for` + 比较，没有一处信号直接索引（FMR_ELAB-147）。
+
+  // ---- 六路 enq 的派生量 ----
+  logic enqIsHls        [RENAME_W];   // DynInst.isHls：hlv(ldu) / hsv(stu)
+  logic enqNeedWriteRf  [RENAME_W];   // rfWen|fpWen|vecWen|v0Wen|vlWen
+  logic enqAllowIntr    [RENAME_W];   // 允许中断：非访存/非 fence/非 csr/非 vset/非 amo
+  logic enqNeedFlush    [RENAME_W];   // hasException | flushPipe
+
+  always_comb begin
+    enqIsHls[0] = ((io_enq_req_0_bits_fuType == FUTYPE_W'(1) << FU_LDU)
+                   | (io_enq_req_0_bits_fuType == FUTYPE_W'(1) << FU_STU))
+                  & io_enq_req_0_bits_fuOpType[4]
+                  & ~io_enq_req_0_bits_fuOpType[5]
+                  & ~(|io_enq_req_0_bits_fuOpType[8:7]);
+    enqIsHls[1] = ((io_enq_req_1_bits_fuType == FUTYPE_W'(1) << FU_LDU)
+                   | (io_enq_req_1_bits_fuType == FUTYPE_W'(1) << FU_STU))
+                  & io_enq_req_1_bits_fuOpType[4]
+                  & ~io_enq_req_1_bits_fuOpType[5]
+                  & ~(|io_enq_req_1_bits_fuOpType[8:7]);
+    enqIsHls[2] = ((io_enq_req_2_bits_fuType == FUTYPE_W'(1) << FU_LDU)
+                   | (io_enq_req_2_bits_fuType == FUTYPE_W'(1) << FU_STU))
+                  & io_enq_req_2_bits_fuOpType[4]
+                  & ~io_enq_req_2_bits_fuOpType[5]
+                  & ~(|io_enq_req_2_bits_fuOpType[8:7]);
+    enqIsHls[3] = ((io_enq_req_3_bits_fuType == FUTYPE_W'(1) << FU_LDU)
+                   | (io_enq_req_3_bits_fuType == FUTYPE_W'(1) << FU_STU))
+                  & io_enq_req_3_bits_fuOpType[4]
+                  & ~io_enq_req_3_bits_fuOpType[5]
+                  & ~(|io_enq_req_3_bits_fuOpType[8:7]);
+    enqIsHls[4] = ((io_enq_req_4_bits_fuType == FUTYPE_W'(1) << FU_LDU)
+                   | (io_enq_req_4_bits_fuType == FUTYPE_W'(1) << FU_STU))
+                  & io_enq_req_4_bits_fuOpType[4]
+                  & ~io_enq_req_4_bits_fuOpType[5]
+                  & ~(|io_enq_req_4_bits_fuOpType[8:7]);
+    enqIsHls[5] = ((io_enq_req_5_bits_fuType == FUTYPE_W'(1) << FU_LDU)
+                   | (io_enq_req_5_bits_fuType == FUTYPE_W'(1) << FU_STU))
+                  & io_enq_req_5_bits_fuOpType[4]
+                  & ~io_enq_req_5_bits_fuOpType[5]
+                  & ~(|io_enq_req_5_bits_fuOpType[8:7]);
+  end
+
+  always_comb begin
+    enqNeedWriteRf[0] = io_enq_req_0_bits_rfWen | io_enq_req_0_bits_fpWen
+                       | io_enq_req_0_bits_vecWen | io_enq_req_0_bits_v0Wen
+                       | io_enq_req_0_bits_vlWen;
+    enqNeedWriteRf[1] = io_enq_req_1_bits_rfWen | io_enq_req_1_bits_fpWen
+                       | io_enq_req_1_bits_vecWen | io_enq_req_1_bits_v0Wen
+                       | io_enq_req_1_bits_vlWen;
+    enqNeedWriteRf[2] = io_enq_req_2_bits_rfWen | io_enq_req_2_bits_fpWen
+                       | io_enq_req_2_bits_vecWen | io_enq_req_2_bits_v0Wen
+                       | io_enq_req_2_bits_vlWen;
+    enqNeedWriteRf[3] = io_enq_req_3_bits_rfWen | io_enq_req_3_bits_fpWen
+                       | io_enq_req_3_bits_vecWen | io_enq_req_3_bits_v0Wen
+                       | io_enq_req_3_bits_vlWen;
+    enqNeedWriteRf[4] = io_enq_req_4_bits_rfWen | io_enq_req_4_bits_fpWen
+                       | io_enq_req_4_bits_vecWen | io_enq_req_4_bits_v0Wen
+                       | io_enq_req_4_bits_vlWen;
+    enqNeedWriteRf[5] = io_enq_req_5_bits_rfWen | io_enq_req_5_bits_fpWen
+                       | io_enq_req_5_bits_vecWen | io_enq_req_5_bits_v0Wen
+                       | io_enq_req_5_bits_vlWen;
+  end
+
+  always_comb begin
+    enqAllowIntr[0] = ~(~io_enq_req_0_bits_commitType[2] & io_enq_req_0_bits_commitType[1])
+                     & ~io_enq_req_0_bits_fuType[FU_FENCE]
+                     & ~io_enq_req_0_bits_fuType[FU_CSR]
+                     & ~io_enq_req_0_bits_isVset
+                     & ~io_enq_req_0_bits_fuType[FU_MOU];
+    enqAllowIntr[1] = ~(~io_enq_req_1_bits_commitType[2] & io_enq_req_1_bits_commitType[1])
+                     & ~io_enq_req_1_bits_fuType[FU_FENCE]
+                     & ~io_enq_req_1_bits_fuType[FU_CSR]
+                     & ~io_enq_req_1_bits_isVset
+                     & ~io_enq_req_1_bits_fuType[FU_MOU];
+    enqAllowIntr[2] = ~(~io_enq_req_2_bits_commitType[2] & io_enq_req_2_bits_commitType[1])
+                     & ~io_enq_req_2_bits_fuType[FU_FENCE]
+                     & ~io_enq_req_2_bits_fuType[FU_CSR]
+                     & ~io_enq_req_2_bits_isVset
+                     & ~io_enq_req_2_bits_fuType[FU_MOU];
+    enqAllowIntr[3] = ~(~io_enq_req_3_bits_commitType[2] & io_enq_req_3_bits_commitType[1])
+                     & ~io_enq_req_3_bits_fuType[FU_FENCE]
+                     & ~io_enq_req_3_bits_fuType[FU_CSR]
+                     & ~io_enq_req_3_bits_isVset
+                     & ~io_enq_req_3_bits_fuType[FU_MOU];
+    enqAllowIntr[4] = ~(~io_enq_req_4_bits_commitType[2] & io_enq_req_4_bits_commitType[1])
+                     & ~io_enq_req_4_bits_fuType[FU_FENCE]
+                     & ~io_enq_req_4_bits_fuType[FU_CSR]
+                     & ~io_enq_req_4_bits_isVset
+                     & ~io_enq_req_4_bits_fuType[FU_MOU];
+    enqAllowIntr[5] = ~(~io_enq_req_5_bits_commitType[2] & io_enq_req_5_bits_commitType[1])
+                     & ~io_enq_req_5_bits_fuType[FU_FENCE]
+                     & ~io_enq_req_5_bits_fuType[FU_CSR]
+                     & ~io_enq_req_5_bits_isVset
+                     & ~io_enq_req_5_bits_fuType[FU_MOU];
+  end
+
+  always_comb begin
+    enqNeedFlush[0] = io_enq_req_0_bits_hasException | io_enq_req_0_bits_flushPipe;
+    enqNeedFlush[1] = io_enq_req_1_bits_hasException | io_enq_req_1_bits_flushPipe;
+    enqNeedFlush[2] = io_enq_req_2_bits_hasException | io_enq_req_2_bits_flushPipe;
+    enqNeedFlush[3] = io_enq_req_3_bits_hasException | io_enq_req_3_bits_flushPipe;
+    enqNeedFlush[4] = io_enq_req_4_bits_hasException | io_enq_req_4_bits_flushPipe;
+    enqNeedFlush[5] = io_enq_req_5_bits_hasException | io_enq_req_5_bits_flushPipe;
+  end
+
+  // ---- enqOH[i][j]：第 j 路分配到第 i 条 ----
+  // ★Scala 断言 PopCount(enqOH) < 2★，但**下面的或形式不依赖这条断言**
+  //   —— golden 就是或，照 one-hot 优化成优先级选择会在非 one-hot 时不等价。
+  logic enqOH        [ROB_SIZE][RENAME_W];
+  logic enqOHAny     [ROB_SIZE];
+  logic uopCanEnq    [ROB_SIZE][RENAME_W];   // 按 req 自带的 robIdx 匹配（不是 allocatePtr）
+  logic instCanEnq   [ROB_SIZE][RENAME_W];
+  logic instCanEnqAny[ROB_SIZE];
+
+  always_comb begin
+    for (int i = 0; i < ROB_SIZE; i++) begin
+      enqOHAny[i]      = 1'b0;
+      instCanEnqAny[i] = 1'b0;
+      for (int j = 0; j < RENAME_W; j++) begin
+        enqOH[i][j]      = canEnqueue[j]   & (allocatePtrValue[j] == PTR_W'(i));
+        uopCanEnq[i][j]  = canEnqueueEG[j] & (enqRobIdx[j]        == PTR_W'(i));
+        instCanEnq[i][j] = canEnqueue[j]   & (enqRobIdx[j]        == PTR_W'(i));
+        enqOHAny[i]      = enqOHAny[i]      | enqOH[i][j];
+        instCanEnqAny[i] = instCanEnqAny[i] | instCanEnq[i][j];
+      end
+    end
+  end
+
+  // ---- (A) connectEnq 的 payload：先把六路摊成同构的结构体，再按位或 ----
+  // ★结构体只用在组合路径上★：存储仍是"每字段一个非打包数组"（见 §1 的说明），
+  //   打包成结构体存储会让 FM 只看到一根位串，169,168 个 pin 全部配不上。
+  typedef struct packed {
+    logic                        wflags;
+    logic [COMMITTYPE_W-1:0]     commitType;
+    logic                        ftqIdx_flag;
+    logic [FTQ_PTR_W-1:0]        ftqIdx_value;
+    logic [FTQ_OFF_W-1:0]        ftqOffset;
+    logic                        isRVC;
+    logic                        isVset;
+    logic [INSTRSIZE_W-1:0]      instrSize;
+    logic                        rfWen;
+    logic                        fpWen;
+    logic                        dirtyVs;
+    logic [ITYPE_W-1:0]          traceBlockInPipe_itype;
+    logic [IRETIRE_W-1:0]        traceBlockInPipe_iretire;
+    logic                        traceBlockInPipe_ilastsize;
+    logic [VADDR_W-1:0]          debug_pc;
+    logic [31:0]                 debug_instr;
+    logic [LREG_W-1:0]           basicDebug_ldest;
+    logic [PREG_W-1:0]           basicDebug_pdest;
+    logic                        basicDebug_fpWen;
+    logic                        basicDebug_vecWen;
+    logic                        basicDebug_v0Wen;
+    logic                        basicDebug_eliminatedMove;
+    logic                        basicDebug_isXSTrap;
+    logic [FUTYPE_W-1:0]         debug_fuType;
+    logic                        isHls;
+    logic                        needFlush;
+    logic [LREG_W-1:0]           basicDebug_vd;   // instr[11:7]（XSInstBitFields.VD）
+  } rob_enq_sel_t;
+
+  rob_enq_sel_t enqBits [RENAME_W];
+  rob_enq_sel_t enqSel  [ROB_SIZE];
+
+  always_comb begin
+    enqBits[0].wflags                     = io_enq_req_0_bits_wfflags;
+    enqBits[0].commitType                 = io_enq_req_0_bits_commitType;
+    enqBits[0].ftqIdx_flag                = io_enq_req_0_bits_ftqPtr_flag;
+    enqBits[0].ftqIdx_value               = io_enq_req_0_bits_ftqPtr_value;
+    enqBits[0].ftqOffset                  = io_enq_req_0_bits_ftqOffset;
+    enqBits[0].isRVC                      = io_enq_req_0_bits_preDecodeInfo_isRVC;
+    enqBits[0].isVset                     = io_enq_req_0_bits_isVset;
+    enqBits[0].instrSize                  = io_enq_req_0_bits_instrSize;
+    enqBits[0].rfWen                      = io_enq_req_0_bits_rfWen;
+    enqBits[0].fpWen                      = io_enq_req_0_bits_dirtyFs;
+    enqBits[0].dirtyVs                    = io_enq_req_0_bits_dirtyVs;
+    enqBits[0].traceBlockInPipe_itype     = io_enq_req_0_bits_traceBlockInPipe_itype;
+    enqBits[0].traceBlockInPipe_iretire   = io_enq_req_0_bits_traceBlockInPipe_iretire;
+    enqBits[0].traceBlockInPipe_ilastsize = io_enq_req_0_bits_traceBlockInPipe_ilastsize;
+    enqBits[0].debug_pc                   = io_enq_req_0_bits_pc;
+    enqBits[0].debug_instr                = io_enq_req_0_bits_instr;
+    enqBits[0].basicDebug_ldest           = io_enq_req_0_bits_ldest;
+    enqBits[0].basicDebug_pdest           = io_enq_req_0_bits_pdest;
+    enqBits[0].basicDebug_fpWen           = io_enq_req_0_bits_fpWen;
+    enqBits[0].basicDebug_vecWen          = io_enq_req_0_bits_vecWen;
+    enqBits[0].basicDebug_v0Wen           = io_enq_req_0_bits_v0Wen;
+    enqBits[0].basicDebug_eliminatedMove  = io_enq_req_0_bits_eliminatedMove;
+    enqBits[0].basicDebug_isXSTrap        = io_enq_req_0_bits_isXSTrap;
+    enqBits[0].debug_fuType               = io_enq_req_0_bits_fuType;
+    enqBits[0].isHls                      = enqIsHls[0];
+    enqBits[0].needFlush                  = enqNeedFlush[0];
+    enqBits[0].basicDebug_vd              = io_enq_req_0_bits_instr[11:7];
+
+    enqBits[1].wflags                     = io_enq_req_1_bits_wfflags;
+    enqBits[1].commitType                 = io_enq_req_1_bits_commitType;
+    enqBits[1].ftqIdx_flag                = io_enq_req_1_bits_ftqPtr_flag;
+    enqBits[1].ftqIdx_value               = io_enq_req_1_bits_ftqPtr_value;
+    enqBits[1].ftqOffset                  = io_enq_req_1_bits_ftqOffset;
+    enqBits[1].isRVC                      = io_enq_req_1_bits_preDecodeInfo_isRVC;
+    enqBits[1].isVset                     = io_enq_req_1_bits_isVset;
+    enqBits[1].instrSize                  = io_enq_req_1_bits_instrSize;
+    enqBits[1].rfWen                      = io_enq_req_1_bits_rfWen;
+    enqBits[1].fpWen                      = io_enq_req_1_bits_dirtyFs;
+    enqBits[1].dirtyVs                    = io_enq_req_1_bits_dirtyVs;
+    enqBits[1].traceBlockInPipe_itype     = io_enq_req_1_bits_traceBlockInPipe_itype;
+    enqBits[1].traceBlockInPipe_iretire   = io_enq_req_1_bits_traceBlockInPipe_iretire;
+    enqBits[1].traceBlockInPipe_ilastsize = io_enq_req_1_bits_traceBlockInPipe_ilastsize;
+    enqBits[1].debug_pc                   = io_enq_req_1_bits_pc;
+    enqBits[1].debug_instr                = io_enq_req_1_bits_instr;
+    enqBits[1].basicDebug_ldest           = io_enq_req_1_bits_ldest;
+    enqBits[1].basicDebug_pdest           = io_enq_req_1_bits_pdest;
+    enqBits[1].basicDebug_fpWen           = io_enq_req_1_bits_fpWen;
+    enqBits[1].basicDebug_vecWen          = io_enq_req_1_bits_vecWen;
+    enqBits[1].basicDebug_v0Wen           = io_enq_req_1_bits_v0Wen;
+    enqBits[1].basicDebug_eliminatedMove  = io_enq_req_1_bits_eliminatedMove;
+    enqBits[1].basicDebug_isXSTrap        = io_enq_req_1_bits_isXSTrap;
+    enqBits[1].debug_fuType               = io_enq_req_1_bits_fuType;
+    enqBits[1].isHls                      = enqIsHls[1];
+    enqBits[1].needFlush                  = enqNeedFlush[1];
+    enqBits[1].basicDebug_vd              = io_enq_req_1_bits_instr[11:7];
+
+    enqBits[2].wflags                     = io_enq_req_2_bits_wfflags;
+    enqBits[2].commitType                 = io_enq_req_2_bits_commitType;
+    enqBits[2].ftqIdx_flag                = io_enq_req_2_bits_ftqPtr_flag;
+    enqBits[2].ftqIdx_value               = io_enq_req_2_bits_ftqPtr_value;
+    enqBits[2].ftqOffset                  = io_enq_req_2_bits_ftqOffset;
+    enqBits[2].isRVC                      = io_enq_req_2_bits_preDecodeInfo_isRVC;
+    enqBits[2].isVset                     = io_enq_req_2_bits_isVset;
+    enqBits[2].instrSize                  = io_enq_req_2_bits_instrSize;
+    enqBits[2].rfWen                      = io_enq_req_2_bits_rfWen;
+    enqBits[2].fpWen                      = io_enq_req_2_bits_dirtyFs;
+    enqBits[2].dirtyVs                    = io_enq_req_2_bits_dirtyVs;
+    enqBits[2].traceBlockInPipe_itype     = io_enq_req_2_bits_traceBlockInPipe_itype;
+    enqBits[2].traceBlockInPipe_iretire   = io_enq_req_2_bits_traceBlockInPipe_iretire;
+    enqBits[2].traceBlockInPipe_ilastsize = io_enq_req_2_bits_traceBlockInPipe_ilastsize;
+    enqBits[2].debug_pc                   = io_enq_req_2_bits_pc;
+    enqBits[2].debug_instr                = io_enq_req_2_bits_instr;
+    enqBits[2].basicDebug_ldest           = io_enq_req_2_bits_ldest;
+    enqBits[2].basicDebug_pdest           = io_enq_req_2_bits_pdest;
+    enqBits[2].basicDebug_fpWen           = io_enq_req_2_bits_fpWen;
+    enqBits[2].basicDebug_vecWen          = io_enq_req_2_bits_vecWen;
+    enqBits[2].basicDebug_v0Wen           = io_enq_req_2_bits_v0Wen;
+    enqBits[2].basicDebug_eliminatedMove  = io_enq_req_2_bits_eliminatedMove;
+    enqBits[2].basicDebug_isXSTrap        = io_enq_req_2_bits_isXSTrap;
+    enqBits[2].debug_fuType               = io_enq_req_2_bits_fuType;
+    enqBits[2].isHls                      = enqIsHls[2];
+    enqBits[2].needFlush                  = enqNeedFlush[2];
+    enqBits[2].basicDebug_vd              = io_enq_req_2_bits_instr[11:7];
+
+    enqBits[3].wflags                     = io_enq_req_3_bits_wfflags;
+    enqBits[3].commitType                 = io_enq_req_3_bits_commitType;
+    enqBits[3].ftqIdx_flag                = io_enq_req_3_bits_ftqPtr_flag;
+    enqBits[3].ftqIdx_value               = io_enq_req_3_bits_ftqPtr_value;
+    enqBits[3].ftqOffset                  = io_enq_req_3_bits_ftqOffset;
+    enqBits[3].isRVC                      = io_enq_req_3_bits_preDecodeInfo_isRVC;
+    enqBits[3].isVset                     = io_enq_req_3_bits_isVset;
+    enqBits[3].instrSize                  = io_enq_req_3_bits_instrSize;
+    enqBits[3].rfWen                      = io_enq_req_3_bits_rfWen;
+    enqBits[3].fpWen                      = io_enq_req_3_bits_dirtyFs;
+    enqBits[3].dirtyVs                    = io_enq_req_3_bits_dirtyVs;
+    enqBits[3].traceBlockInPipe_itype     = io_enq_req_3_bits_traceBlockInPipe_itype;
+    enqBits[3].traceBlockInPipe_iretire   = io_enq_req_3_bits_traceBlockInPipe_iretire;
+    enqBits[3].traceBlockInPipe_ilastsize = io_enq_req_3_bits_traceBlockInPipe_ilastsize;
+    enqBits[3].debug_pc                   = io_enq_req_3_bits_pc;
+    enqBits[3].debug_instr                = io_enq_req_3_bits_instr;
+    enqBits[3].basicDebug_ldest           = io_enq_req_3_bits_ldest;
+    enqBits[3].basicDebug_pdest           = io_enq_req_3_bits_pdest;
+    enqBits[3].basicDebug_fpWen           = io_enq_req_3_bits_fpWen;
+    enqBits[3].basicDebug_vecWen          = io_enq_req_3_bits_vecWen;
+    enqBits[3].basicDebug_v0Wen           = io_enq_req_3_bits_v0Wen;
+    enqBits[3].basicDebug_eliminatedMove  = io_enq_req_3_bits_eliminatedMove;
+    enqBits[3].basicDebug_isXSTrap        = io_enq_req_3_bits_isXSTrap;
+    enqBits[3].debug_fuType               = io_enq_req_3_bits_fuType;
+    enqBits[3].isHls                      = enqIsHls[3];
+    enqBits[3].needFlush                  = enqNeedFlush[3];
+    enqBits[3].basicDebug_vd              = io_enq_req_3_bits_instr[11:7];
+
+    enqBits[4].wflags                     = io_enq_req_4_bits_wfflags;
+    enqBits[4].commitType                 = io_enq_req_4_bits_commitType;
+    enqBits[4].ftqIdx_flag                = io_enq_req_4_bits_ftqPtr_flag;
+    enqBits[4].ftqIdx_value               = io_enq_req_4_bits_ftqPtr_value;
+    enqBits[4].ftqOffset                  = io_enq_req_4_bits_ftqOffset;
+    enqBits[4].isRVC                      = io_enq_req_4_bits_preDecodeInfo_isRVC;
+    enqBits[4].isVset                     = io_enq_req_4_bits_isVset;
+    enqBits[4].instrSize                  = io_enq_req_4_bits_instrSize;
+    enqBits[4].rfWen                      = io_enq_req_4_bits_rfWen;
+    enqBits[4].fpWen                      = io_enq_req_4_bits_dirtyFs;
+    enqBits[4].dirtyVs                    = io_enq_req_4_bits_dirtyVs;
+    enqBits[4].traceBlockInPipe_itype     = io_enq_req_4_bits_traceBlockInPipe_itype;
+    enqBits[4].traceBlockInPipe_iretire   = io_enq_req_4_bits_traceBlockInPipe_iretire;
+    enqBits[4].traceBlockInPipe_ilastsize = io_enq_req_4_bits_traceBlockInPipe_ilastsize;
+    enqBits[4].debug_pc                   = io_enq_req_4_bits_pc;
+    enqBits[4].debug_instr                = io_enq_req_4_bits_instr;
+    enqBits[4].basicDebug_ldest           = io_enq_req_4_bits_ldest;
+    enqBits[4].basicDebug_pdest           = io_enq_req_4_bits_pdest;
+    enqBits[4].basicDebug_fpWen           = io_enq_req_4_bits_fpWen;
+    enqBits[4].basicDebug_vecWen          = io_enq_req_4_bits_vecWen;
+    enqBits[4].basicDebug_v0Wen           = io_enq_req_4_bits_v0Wen;
+    enqBits[4].basicDebug_eliminatedMove  = io_enq_req_4_bits_eliminatedMove;
+    enqBits[4].basicDebug_isXSTrap        = io_enq_req_4_bits_isXSTrap;
+    enqBits[4].debug_fuType               = io_enq_req_4_bits_fuType;
+    enqBits[4].isHls                      = enqIsHls[4];
+    enqBits[4].needFlush                  = enqNeedFlush[4];
+    enqBits[4].basicDebug_vd              = io_enq_req_4_bits_instr[11:7];
+
+    enqBits[5].wflags                     = io_enq_req_5_bits_wfflags;
+    enqBits[5].commitType                 = io_enq_req_5_bits_commitType;
+    enqBits[5].ftqIdx_flag                = io_enq_req_5_bits_ftqPtr_flag;
+    enqBits[5].ftqIdx_value               = io_enq_req_5_bits_ftqPtr_value;
+    enqBits[5].ftqOffset                  = io_enq_req_5_bits_ftqOffset;
+    enqBits[5].isRVC                      = io_enq_req_5_bits_preDecodeInfo_isRVC;
+    enqBits[5].isVset                     = io_enq_req_5_bits_isVset;
+    enqBits[5].instrSize                  = io_enq_req_5_bits_instrSize;
+    enqBits[5].rfWen                      = io_enq_req_5_bits_rfWen;
+    enqBits[5].fpWen                      = io_enq_req_5_bits_dirtyFs;
+    enqBits[5].dirtyVs                    = io_enq_req_5_bits_dirtyVs;
+    enqBits[5].traceBlockInPipe_itype     = io_enq_req_5_bits_traceBlockInPipe_itype;
+    enqBits[5].traceBlockInPipe_iretire   = io_enq_req_5_bits_traceBlockInPipe_iretire;
+    enqBits[5].traceBlockInPipe_ilastsize = io_enq_req_5_bits_traceBlockInPipe_ilastsize;
+    enqBits[5].debug_pc                   = io_enq_req_5_bits_pc;
+    enqBits[5].debug_instr                = io_enq_req_5_bits_instr;
+    enqBits[5].basicDebug_ldest           = io_enq_req_5_bits_ldest;
+    enqBits[5].basicDebug_pdest           = io_enq_req_5_bits_pdest;
+    enqBits[5].basicDebug_fpWen           = io_enq_req_5_bits_fpWen;
+    enqBits[5].basicDebug_vecWen          = io_enq_req_5_bits_vecWen;
+    enqBits[5].basicDebug_v0Wen           = io_enq_req_5_bits_v0Wen;
+    enqBits[5].basicDebug_eliminatedMove  = io_enq_req_5_bits_eliminatedMove;
+    enqBits[5].basicDebug_isXSTrap        = io_enq_req_5_bits_isXSTrap;
+    enqBits[5].debug_fuType               = io_enq_req_5_bits_fuType;
+    enqBits[5].isHls                      = enqIsHls[5];
+    enqBits[5].needFlush                  = enqNeedFlush[5];
+    enqBits[5].basicDebug_vd              = io_enq_req_5_bits_instr[11:7];
+
+  end
+
+  always_comb begin
+    for (int i = 0; i < ROB_SIZE; i++) begin
+      enqSel[i] = '0;
+      for (int j = 0; j < RENAME_W; j++) begin
+        enqSel[i].wflags                     |= enqOH[i][j] & enqBits[j].wflags;
+        enqSel[i].commitType                 |= {COMMITTYPE_W{enqOH[i][j]}} & enqBits[j].commitType;
+        enqSel[i].ftqIdx_flag                |= enqOH[i][j] & enqBits[j].ftqIdx_flag;
+        enqSel[i].ftqIdx_value               |= {FTQ_PTR_W{enqOH[i][j]}} & enqBits[j].ftqIdx_value;
+        enqSel[i].ftqOffset                  |= {FTQ_OFF_W{enqOH[i][j]}} & enqBits[j].ftqOffset;
+        enqSel[i].isRVC                      |= enqOH[i][j] & enqBits[j].isRVC;
+        enqSel[i].isVset                     |= enqOH[i][j] & enqBits[j].isVset;
+        enqSel[i].instrSize                  |= {INSTRSIZE_W{enqOH[i][j]}} & enqBits[j].instrSize;
+        enqSel[i].rfWen                      |= enqOH[i][j] & enqBits[j].rfWen;
+        enqSel[i].fpWen                      |= enqOH[i][j] & enqBits[j].fpWen;
+        enqSel[i].dirtyVs                    |= enqOH[i][j] & enqBits[j].dirtyVs;
+        enqSel[i].traceBlockInPipe_itype     |= {ITYPE_W{enqOH[i][j]}} & enqBits[j].traceBlockInPipe_itype;
+        enqSel[i].traceBlockInPipe_iretire   |= {IRETIRE_W{enqOH[i][j]}} & enqBits[j].traceBlockInPipe_iretire;
+        enqSel[i].traceBlockInPipe_ilastsize |= enqOH[i][j] & enqBits[j].traceBlockInPipe_ilastsize;
+        enqSel[i].debug_pc                   |= {VADDR_W{enqOH[i][j]}} & enqBits[j].debug_pc;
+        enqSel[i].debug_instr                |= {32{enqOH[i][j]}} & enqBits[j].debug_instr;
+        enqSel[i].basicDebug_ldest           |= {LREG_W{enqOH[i][j]}} & enqBits[j].basicDebug_ldest;
+        enqSel[i].basicDebug_pdest           |= {PREG_W{enqOH[i][j]}} & enqBits[j].basicDebug_pdest;
+        enqSel[i].basicDebug_fpWen           |= enqOH[i][j] & enqBits[j].basicDebug_fpWen;
+        enqSel[i].basicDebug_vecWen          |= enqOH[i][j] & enqBits[j].basicDebug_vecWen;
+        enqSel[i].basicDebug_v0Wen           |= enqOH[i][j] & enqBits[j].basicDebug_v0Wen;
+        enqSel[i].basicDebug_eliminatedMove  |= enqOH[i][j] & enqBits[j].basicDebug_eliminatedMove;
+        enqSel[i].basicDebug_isXSTrap        |= enqOH[i][j] & enqBits[j].basicDebug_isXSTrap;
+        enqSel[i].debug_fuType               |= {FUTYPE_W{enqOH[i][j]}} & enqBits[j].debug_fuType;
+        enqSel[i].isHls                      |= enqOH[i][j] & enqBits[j].isHls;
+        enqSel[i].needFlush                  |= enqOH[i][j] & enqBits[j].needFlush;
+        enqSel[i].basicDebug_vd              |= {LREG_W{enqOH[i][j]}} & enqBits[j].basicDebug_vd;
+      end
+    end
+  end
+  // ---- (B) 优先链那一族的 payload（vls / interrupt_safe / debug_microOp）----
+  logic enqVlsInstr [RENAME_W];
+  always_comb begin
+    enqVlsInstr[0] = io_enq_req_0_bits_vlsInstr;
+    enqVlsInstr[1] = io_enq_req_1_bits_vlsInstr;
+    enqVlsInstr[2] = io_enq_req_2_bits_vlsInstr;
+    enqVlsInstr[3] = io_enq_req_3_bits_vlsInstr;
+    enqVlsInstr[4] = io_enq_req_4_bits_vlsInstr;
+    enqVlsInstr[5] = io_enq_req_5_bits_vlsInstr;
+  end
+
+  // ---- 每条目的写回聚合 ----
+  // 全部按 Mux1H=**按位或**写（golden 的形状），不按 one-hot 优化成优先级。
+  logic [UOPNUM_W-1:0] enqWBNumVec    [RENAME_W];
+  logic                enqWriteStdVec [RENAME_W];
+  logic [4:0]          wbCnt        [ROB_SIZE];   // 本拍这条被写回了几个 uop
+  logic                needFlushWb  [ROB_SIZE];
+  logic                anyStdWb     [ROB_SIZE];
+  logic                anyUopEnq    [ROB_SIZE];
+  logic [FFLAGS_W-1:0] fflagsRes    [ROB_SIZE];
+  logic                vxsatRes     [ROB_SIZE];
+  logic                takenWb      [ROB_SIZE];
+  logic [UOPNUM_W-1:0] realDestEnqNum [ROB_SIZE];
+  logic [UOPNUM_W-1:0] enqWBNum     [ROB_SIZE];
+  logic                enqWriteStd  [ROB_SIZE];
+  logic                isFirstEnq   [ROB_SIZE];
+
+  always_comb begin
+    for (int i = 0; i < ROB_SIZE; i++) begin
+      wbCnt[i]       = 5'h0;
+      needFlushWb[i] = 1'b0;
+      anyStdWb[i]    = 1'b0;
+      anyUopEnq[i]   = 1'b0;
+      fflagsRes[i]   = {FFLAGS_W{1'b0}};
+      vxsatRes[i]    = 1'b0;
+      takenWb[i]     = 1'b0;
+      realDestEnqNum[i] = {UOPNUM_W{1'b0}};
+
+      for (int k = 0; k < EXU_N; k++)
+        wbCnt[i] |= {5{exuWbValid[k] & (exuWbRobIdx[k] == PTR_W'(i))}} & exuWbNum[k];
+      for (int k = 0; k < EXCP_WB_N; k++)
+        needFlushWb[i] |= excpWbValid[k] & (excpWbRobIdx[k] == PTR_W'(i))
+                          & excpWbNeedFlush[k];
+      for (int k = 0; k < STD_N; k++)
+        anyStdWb[i] |= stdWbValid[k] & (stdWbRobIdx[k] == PTR_W'(i));
+      for (int k = 0; k < FFLAGS_WB_N; k++)
+        fflagsRes[i] |= {FFLAGS_W{fflagsWbValid[k] & (fflagsWbRobIdx[k] == PTR_W'(i))
+                                  & fflagsWbWflags[k]}} & fflagsWbData[k];
+      for (int k = 0; k < VXSAT_WB_N; k++)
+        vxsatRes[i] |= vxsatWbValid[k] & (vxsatWbRobIdx[k] == PTR_W'(i)) & vxsatWbData[k];
+      for (int k = 0; k < BRH_WB_N; k++)
+        takenWb[i] |= brhWbValid[k] & (brhWbRobIdx[k] == PTR_W'(i)) & brhWbTaken[k];
+
+      for (int j = 0; j < RENAME_W; j++) begin
+        anyUopEnq[i] = anyUopEnq[i] | uopCanEnq[i][j];
+        realDestEnqNum[i] = realDestEnqNum[i]
+                          + UOPNUM_W'(enqNeedWriteRf[j] & uopCanEnq[i][j]);
+      end
+
+      // ★PriorityMux：第 0 路优先级最高★（与 (B) 的优先链方向相反，别弄反）
+      enqWBNum[i]    = {UOPNUM_W{1'b0}};
+      enqWriteStd[i] = 1'b0;
+      for (int j = RENAME_W - 1; j >= 0; j--)
+        if (instCanEnq[i][j]) begin
+          enqWBNum[i]    = enqWBNumVec[j];
+          enqWriteStd[i] = enqWriteStdVec[j];
+        end
+
+      isFirstEnq[i] = ~robEntries_valid[i] & instCanEnqAny[i];
+    end
+  end
+
+  always_comb begin
+    enqWBNumVec[0] = io_enq_req_0_bits_numWB;
+    enqWBNumVec[1] = io_enq_req_1_bits_numWB;
+    enqWBNumVec[2] = io_enq_req_2_bits_numWB;
+    enqWBNumVec[3] = io_enq_req_3_bits_numWB;
+    enqWBNumVec[4] = io_enq_req_4_bits_numWB;
+    enqWBNumVec[5] = io_enq_req_5_bits_numWB;
+    // FuType.isStore(fuType) = fuType[stu]
+    enqWriteStdVec[0] = io_enq_req_0_bits_fuType[FU_STU];
+    enqWriteStdVec[1] = io_enq_req_1_bits_fuType[FU_STU];
+    enqWriteStdVec[2] = io_enq_req_2_bits_fuType[FU_STU];
+    enqWriteStdVec[3] = io_enq_req_3_bits_fuType[FU_STU];
+    enqWriteStdVec[4] = io_enq_req_4_bits_fuType[FU_STU];
+    enqWriteStdVec[5] = io_enq_req_5_bits_fuType[FU_STU];
+  end
+
+  // ---- lsq 回来的 mmio 标记：打一拍再写 ----
+  logic             loadMmioReg    [3];
+  logic [PTR_W-1:0] loadMmioIdxReg [3];
+  logic             storeMmioReg;
+  logic [PTR_W-1:0] storeMmioIdxReg;
+  always_ff @(posedge clock) begin
+    loadMmioReg[0] <= io_lsq_loadMmio_0;
+    loadMmioReg[1] <= io_lsq_loadMmio_1;
+    loadMmioReg[2] <= io_lsq_loadMmio_2;
+    storeMmioReg   <= io_lsq_storeMmio;
+    if (io_lsq_loadMmio_0) loadMmioIdxReg[0] <= io_lsq_loadMmioUop_0_robIdx_value;
+    if (io_lsq_loadMmio_1) loadMmioIdxReg[1] <= io_lsq_loadMmioUop_1_robIdx_value;
+    if (io_lsq_loadMmio_2) loadMmioIdxReg[2] <= io_lsq_loadMmioUop_2_robIdx_value;
+    if (io_lsq_storeMmio)  storeMmioIdxReg   <= io_lsq_storeMmioUop_robIdx_value;
+  end
+
+  // ---- redirect 的冲刷窗口 ----
+  logic entryNeedFlush [ROB_SIZE];
+  always_comb begin
+    for (int i = 0; i < ROB_SIZE; i++)
+      entryNeedFlush[i] = redirectValidReg
+        & (((redirectEnd > redirectBegin)
+              ? ((PTR_W'(i) > redirectBegin) & (PTR_W'(i) < redirectEnd))
+              : ((PTR_W'(i) > redirectBegin) | (PTR_W'(i) < redirectEnd)))
+           | redirectAll);
+  end
+
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) redirectAll <= 1'b0;
+    else if (io_redirect_valid)
+      redirectAll <= io_redirect_bits_level
+                   & (io_redirect_bits_robIdx_value == enqPtrVec_0_value)
+                   & (io_redirect_bits_robIdx_flag ^ enqPtrVec_0_flag);
+  end
+  always_ff @(posedge clock) begin
+    redirectValidReg <= io_redirect_valid;
+    if (io_redirect_valid) begin
+      redirectBegin <= io_redirect_bits_level
+                     ? PTR_W'(io_redirect_bits_robIdx_value - PTR_W'(1))
+                     : io_redirect_bits_robIdx_value;
+      redirectEnd   <= enqPtrVec_0_value;
+    end
+  end
+
+  // ---- 提交清 valid 的条件 ----
+  logic commitCond [ROB_SIZE];
+  always_comb begin
+    for (int i = 0; i < ROB_SIZE; i++) begin
+      commitCond[i] = 1'b0;
+      for (int k = 0; k < COMMIT_W; k++)
+        commitCond[i] = commitCond[i]
+          | (commitValidOut[k] & (deqPtrValue[k] == PTR_W'(i)));
+      commitCond[i] = commitCond[i] & io_commits_isCommit;
+    end
+  end
+
+  // ==========================================================================
+  // §10 条目存储的时序写入
+  // ==========================================================================
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) begin
+      for (int i = 0; i < ROB_SIZE; i++) robEntries_valid[i] <= 1'b0;
+    end else begin
+      for (int i = 0; i < ROB_SIZE; i++) begin
+        if (commitCond[i])                          robEntries_valid[i] <= 1'b0;
+        else if (enqOHAny[i] & ~io_redirect_valid)  robEntries_valid[i] <= 1'b1;
+        else if (entryNeedFlush[i])                 robEntries_valid[i] <= 1'b0;
+      end
+    end
+  end
+
+  always_ff @(posedge clock) begin
+    for (int i = 0; i < ROB_SIZE; i++) begin
+      // (A) connectEnq：Mux1H 选出来的 payload，redirect 那一拍不写
+      if (enqOHAny[i] & ~io_redirect_valid) begin
+        robEntries_wflags[i]                     <= enqSel[i].wflags;
+        robEntries_commitType[i]                 <= enqSel[i].commitType;
+        robEntries_ftqIdx_flag[i]                <= enqSel[i].ftqIdx_flag;
+        robEntries_ftqIdx_value[i]               <= enqSel[i].ftqIdx_value;
+        robEntries_ftqOffset[i]                  <= enqSel[i].ftqOffset;
+        robEntries_isRVC[i]                      <= enqSel[i].isRVC;
+        robEntries_isVset[i]                     <= enqSel[i].isVset;
+        robEntries_isHls[i]                      <= enqSel[i].isHls;
+        robEntries_instrSize[i]                  <= enqSel[i].instrSize;
+        robEntries_rfWen[i]                      <= enqSel[i].rfWen;
+        robEntries_fpWen[i]                      <= enqSel[i].fpWen;
+        robEntries_dirtyVs[i]                    <= enqSel[i].dirtyVs;
+        robEntries_traceBlockInPipe_iretire[i]   <= enqSel[i].traceBlockInPipe_iretire;
+        robEntries_traceBlockInPipe_ilastsize[i] <= enqSel[i].traceBlockInPipe_ilastsize;
+        robEntries_debug_pc[i]                   <= enqSel[i].debug_pc;
+        robEntries_debug_instr[i]                <= enqSel[i].debug_instr;
+        robEntries_basicDebug_ldest[i]           <= enqSel[i].basicDebug_ldest;
+        robEntries_basicDebug_pdest[i]           <= enqSel[i].basicDebug_pdest;
+        robEntries_basicDebug_vd[i]              <= enqSel[i].basicDebug_vd;
+        robEntries_basicDebug_fpWen[i]           <= enqSel[i].basicDebug_fpWen;
+        robEntries_basicDebug_vecWen[i]          <= enqSel[i].basicDebug_vecWen;
+        robEntries_basicDebug_v0Wen[i]           <= enqSel[i].basicDebug_v0Wen;
+        robEntries_basicDebug_eliminatedMove[i]  <= enqSel[i].basicDebug_eliminatedMove;
+        robEntries_basicDebug_isXSTrap[i]        <= enqSel[i].basicDebug_isXSTrap;
+        robEntries_debug_fuType[i]               <= enqSel[i].debug_fuType;
+      end
+
+      // trace 的 itype：入队先写 Branch(=NonTaken)，写回发现 taken 再改写成 Taken。
+      // ★改写那一条在 Scala 里更靠后，优先级更高★。
+      if (robEntries_valid[i]
+          & (robEntries_traceBlockInPipe_itype[i] == IT_BRANCH) & takenWb[i])
+        robEntries_traceBlockInPipe_itype[i] <= IT_TAKEN;
+      else if (enqOHAny[i] & ~io_redirect_valid)
+        robEntries_traceBlockInPipe_itype[i] <= enqSel[i].traceBlockInPipe_itype;
+
+      // needFlush：同理，写回聚合那一条优先级更高
+      if (robEntries_valid[i])
+        robEntries_needFlush[i] <= robEntries_needFlush[i] | needFlushWb[i];
+      else if (enqOHAny[i] & ~io_redirect_valid)
+        robEntries_needFlush[i] <= enqSel[i].needFlush;
+
+      // (B) 优先链：第 5 路最后写 => 第 5 路优先级最高
+      for (int j = 0; j < RENAME_W; j++)
+        if (enqOH[i][j]) begin
+          robEntries_vls[i]            <= enqVlsInstr[j];
+          robEntries_mmio[i]           <= 1'b0;
+          robEntries_interrupt_safe[i] <= enqAllowIntr[j];
+        end
+      // lsq 回来的 mmio 比入队清零更靠后，优先级更高
+      for (int k = 0; k < 3; k++)
+        if (loadMmioReg[k] & (loadMmioIdxReg[k] == PTR_W'(i)))
+          robEntries_mmio[i] <= 1'b1;
+      if (storeMmioReg & (storeMmioIdxReg == PTR_W'(i)))
+        robEntries_mmio[i] <= 1'b1;
+
+      // realDestSize：首次入队置数，之后同一条指令的后续 uop 累加
+      if (isFirstEnq[i])
+        robEntries_realDestSize[i] <= realDestEnqNum[i];
+      else if (robEntries_valid[i] & anyUopEnq[i])
+        robEntries_realDestSize[i] <= robEntries_realDestSize[i] + realDestEnqNum[i];
+
+      // uopNum / stdWritebacked
+      if (robEntries_valid[i] & (robEntries_needFlush[i] | needFlushWb[i])) begin
+        robEntries_uopNum[i]         <= robEntries_uopNum[i] - UOPNUM_W'(wbCnt[i]);
+        robEntries_stdWritebacked[i] <= 1'b1;
+      end else if (~robEntries_valid[i] & instCanEnqAny[i]) begin
+        robEntries_uopNum[i]         <= enqWBNum[i];
+        robEntries_stdWritebacked[i] <= ~enqWriteStd[i];
+      end else if (robEntries_valid[i]) begin
+        robEntries_uopNum[i] <= robEntries_uopNum[i] - UOPNUM_W'(wbCnt[i]);
+        if (anyStdWb[i]) robEntries_stdWritebacked[i] <= 1'b1;
+      end
+
+      // fflags / vxsat：入队清零，之后按位或累积
+      if (isFirstEnq[i])           robEntries_fflags[i] <= {FFLAGS_W{1'b0}};
+      else if (|fflagsRes[i])      robEntries_fflags[i] <= robEntries_fflags[i] | fflagsRes[i];
+      if (isFirstEnq[i])           robEntries_vxsat[i]  <= 1'b0;
+      else if (vxsatRes[i])        robEntries_vxsat[i]  <= robEntries_vxsat[i] | vxsatRes[i];
+    end
+  end
+
+
+  // ==========================================================================
+  // §11 提交读口：8 bank x 20 行的 one-hot 读
+  // ==========================================================================
+  // robBanks(b) 装 robidx%8==b 的 20 个条目；八个 bank **共用**一个 one-hot 行地址
+  // robBanksRaddrThisLine。"下一行"不另设地址，而是把同一个 one-hot 读到
+  // **移位过的 bank**（第 r 行取第 (r+1)%20 个条目）——省掉第二套地址。
+
+  localparam int BANK_ROWS = BANK_DEPTH;   // 20
+
+  rob_entry_t bankRdThisLine [BANK_N];
+  rob_entry_t bankRdNextLine [BANK_N];
+
+  // 把一条条目装进组合用的结构体（存储本身仍是每字段一个数组）
+  function automatic rob_entry_t packEntry(input int idx);
+    rob_entry_t e;
+    begin
+      e.valid                      = robEntries_valid[idx];
+      e.vls                        = robEntries_vls[idx];
+      e.interrupt_safe             = robEntries_interrupt_safe[idx];
+      e.fpWen                      = robEntries_fpWen[idx];
+      e.rfWen                      = robEntries_rfWen[idx];
+      e.wflags                     = robEntries_wflags[idx];
+      e.dirtyVs                    = robEntries_dirtyVs[idx];
+      e.commitType                 = robEntries_commitType[idx];
+      e.ftqIdx_flag                = robEntries_ftqIdx_flag[idx];
+      e.ftqIdx_value               = robEntries_ftqIdx_value[idx];
+      e.ftqOffset                  = robEntries_ftqOffset[idx];
+      e.isRVC                      = robEntries_isRVC[idx];
+      e.isVset                     = robEntries_isVset[idx];
+      e.isHls                      = robEntries_isHls[idx];
+      e.instrSize                  = robEntries_instrSize[idx];
+      e.traceBlockInPipe_itype     = robEntries_traceBlockInPipe_itype[idx];
+      e.traceBlockInPipe_iretire   = robEntries_traceBlockInPipe_iretire[idx];
+      e.traceBlockInPipe_ilastsize = robEntries_traceBlockInPipe_ilastsize[idx];
+      e.fflags                     = robEntries_fflags[idx];
+      e.mmio                       = robEntries_mmio[idx];
+      e.stdWritebacked             = robEntries_stdWritebacked[idx];
+      e.vxsat                      = robEntries_vxsat[idx];
+      e.realDestSize               = robEntries_realDestSize[idx];
+      e.uopNum                     = robEntries_uopNum[idx];
+      e.needFlush                  = robEntries_needFlush[idx];
+      e.debug_pc                   = robEntries_debug_pc[idx];
+      e.debug_instr                = robEntries_debug_instr[idx];
+      e.basicDebug_ldest           = robEntries_basicDebug_ldest[idx];
+      e.basicDebug_pdest           = robEntries_basicDebug_pdest[idx];
+      e.basicDebug_vd              = robEntries_basicDebug_vd[idx];
+      e.basicDebug_fpWen           = robEntries_basicDebug_fpWen[idx];
+      e.basicDebug_vecWen          = robEntries_basicDebug_vecWen[idx];
+      e.basicDebug_v0Wen           = robEntries_basicDebug_v0Wen[idx];
+      e.basicDebug_eliminatedMove  = robEntries_basicDebug_eliminatedMove[idx];
+      e.basicDebug_isXSTrap        = robEntries_basicDebug_isXSTrap[idx];
+      e.debug_fuType               = robEntries_debug_fuType[idx];
+      packEntry = e;
+    end
+  endfunction
+
+  always_comb begin
+    for (int b = 0; b < BANK_N; b++) begin
+      bankRdThisLine[b] = '0;
+      bankRdNextLine[b] = '0;
+      // ★Mux1H：按位或★（非 one-hot 时与优先级选择不等价，golden 是或）
+      for (int r = 0; r < BANK_ROWS; r++) begin
+        if (robBanksRaddrThisLine[r]) begin
+          bankRdThisLine[b] = bankRdThisLine[b] | packEntry(r * BANK_N + b);
+          bankRdNextLine[b] = bankRdNextLine[b]
+                            | packEntry(((r + 1) % BANK_ROWS) * BANK_N + b);
+        end
+      end
+    end
+  end
+
+  // ---- 读地址的下一拍 ----
+  logic [BANK_ROWS-1:0] robBanksRaddrNextLine;
+  logic [PTR_W-1:BANK_ADDR_W] highDeqPtrThisLine;
+  logic [PTR_W-1:BANK_ADDR_W] highDeqPtrNextLine;
+  logic                 changeBankAddrToDeqPtr;
+  logic                 allCommitted;
+  logic [PTR_W-1:0]     walkPtrHeadValue;
+
+  assign highDeqPtrThisLine = deqPtrVec_0_value[PTR_W-1:BANK_ADDR_W];
+  assign highDeqPtrNextLine =
+      (highDeqPtrThisLine == (PTR_W-BANK_ADDR_W)'(BANK_ROWS - 1))
+        ? (PTR_W-BANK_ADDR_W)'(0)
+        : (PTR_W-BANK_ADDR_W)'(highDeqPtrThisLine + 1'b1);
+
+  assign walkPtrHeadValue = walkPtrVec_next_value[0];
+  // (walkPtrVec.head + CommitWidth) > lastWalkPtr
+  assign changeBankAddrToDeqPtr =
+      ptrGt(ptrAddFlag(walkPtrVec_flag[0], walkPtrVec_value[0], (PTR_W+1)'(COMMIT_W)),
+            ptrAddValue(walkPtrVec_value[0], (PTR_W+1)'(COMMIT_W)),
+            lastWalkPtr_flag, lastWalkPtr_value);
+
+  always_comb begin
+    if (io_redirect_valid)
+      robBanksRaddrNextLine = BANK_ROWS'(1) << walkPtrHeadValue[PTR_W-1:BANK_ADDR_W];
+    else if (allCommitted | (io_commits_isWalk & ~changeBankAddrToDeqPtr))
+      robBanksRaddrNextLine = robBanksRaddrThisLine[BANK_ROWS-1]
+                            ? BANK_ROWS'(1) : (robBanksRaddrThisLine << 1);
+    else if (io_commits_isWalk & changeBankAddrToDeqPtr)
+      robBanksRaddrNextLine = BANK_ROWS'(1) << highDeqPtrThisLine;
+    else
+      robBanksRaddrNextLine = robBanksRaddrThisLine;
+  end
+
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) robBanksRaddrThisLine <= BANK_ROWS'(1);
+    else       robBanksRaddrThisLine <= robBanksRaddrNextLine;
+  end
+
+  // ---- 读出来的 16 个槽（本行 8 + 下一行 8）要就地打补丁 ----
+  // 条目存储是时序的，而本拍的入队/写回还没写进去；提交要看的是"打完补丁的值"。
+  // 所以这 16 个槽各自重做一遍 §9/§10 里那套聚合，只是匹配的下标换成槽自己的 robidx。
+  localparam int SLOT_N = 2 * COMMIT_W;    // 16
+
+  logic [PTR_W-1:0] slotRobIdx [SLOT_N];
+  rob_entry_t       slotRd     [SLOT_N];
+  rob_entry_t       needUpdate [SLOT_N];
+
+  always_comb begin
+    for (int b = 0; b < BANK_N; b++) begin
+      slotRobIdx[b]           = {highDeqPtrThisLine, BANK_ADDR_W'(b)};
+      slotRobIdx[BANK_N + b]  = {highDeqPtrNextLine, BANK_ADDR_W'(b)};
+      slotRd[b]               = bankRdThisLine[b];
+      slotRd[BANK_N + b]      = bankRdNextLine[b];
+    end
+  end
+
+  logic [4:0]          slotWbCnt       [SLOT_N];
+  logic                slotNeedFlushWb [SLOT_N];
+  logic                slotAnyStdWb    [SLOT_N];
+  logic [FFLAGS_W-1:0] slotFflagsRes   [SLOT_N];
+  logic                slotVxsatRes    [SLOT_N];
+  logic                slotTakenWb     [SLOT_N];
+  logic [UOPNUM_W-1:0] slotRealDestEnq [SLOT_N];
+  logic [UOPNUM_W-1:0] slotEnqWBNum    [SLOT_N];
+  logic                slotEnqWriteStd [SLOT_N];
+  logic                slotInstCanEnq  [SLOT_N];
+
+  always_comb begin
+    for (int s = 0; s < SLOT_N; s++) begin
+      slotWbCnt[s]       = 5'h0;
+      slotNeedFlushWb[s] = 1'b0;
+      slotAnyStdWb[s]    = 1'b0;
+      slotFflagsRes[s]   = {FFLAGS_W{1'b0}};
+      slotVxsatRes[s]    = 1'b0;
+      slotTakenWb[s]     = 1'b0;
+      slotRealDestEnq[s] = {UOPNUM_W{1'b0}};
+      slotInstCanEnq[s]  = 1'b0;
+
+      for (int k = 0; k < EXU_N; k++)
+        slotWbCnt[s] |= {5{exuWbValid[k] & (exuWbRobIdx[k] == slotRobIdx[s])}}
+                        & exuWbNum[k];
+      for (int k = 0; k < EXCP_WB_N; k++)
+        slotNeedFlushWb[s] |= excpWbValid[k] & (excpWbRobIdx[k] == slotRobIdx[s])
+                              & excpWbNeedFlush[k];
+      for (int k = 0; k < STD_N; k++)
+        slotAnyStdWb[s] |= stdWbValid[k] & (stdWbRobIdx[k] == slotRobIdx[s]);
+      for (int k = 0; k < FFLAGS_WB_N; k++)
+        slotFflagsRes[s] |= {FFLAGS_W{fflagsWbValid[k]
+                                      & (fflagsWbRobIdx[k] == slotRobIdx[s])
+                                      & fflagsWbWflags[k]}} & fflagsWbData[k];
+      for (int k = 0; k < VXSAT_WB_N; k++)
+        slotVxsatRes[s] |= vxsatWbValid[k] & (vxsatWbRobIdx[k] == slotRobIdx[s])
+                           & vxsatWbData[k];
+      for (int k = 0; k < BRH_WB_N; k++)
+        slotTakenWb[s] |= brhWbValid[k] & (brhWbRobIdx[k] == slotRobIdx[s])
+                          & brhWbTaken[k];
+
+      for (int j = 0; j < RENAME_W; j++) begin
+        slotRealDestEnq[s] = slotRealDestEnq[s]
+          + UOPNUM_W'(enqNeedWriteRf[j] & canEnqueueEG[j]
+                      & (enqRobIdx[j] == slotRobIdx[s]));
+        slotInstCanEnq[s] = slotInstCanEnq[s]
+          | (canEnqueue[j] & (enqRobIdx[j] == slotRobIdx[s]));
+      end
+
+      // PriorityMux：第 0 路优先
+      slotEnqWBNum[s]    = {UOPNUM_W{1'b0}};
+      slotEnqWriteStd[s] = 1'b0;
+      for (int j = RENAME_W - 1; j >= 0; j--)
+        if (canEnqueue[j] & (enqRobIdx[j] == slotRobIdx[s])) begin
+          slotEnqWBNum[s]    = enqWBNumVec[j];
+          slotEnqWriteStd[s] = enqWriteStdVec[j];
+        end
+    end
+  end
+
+  always_comb begin
+    for (int s = 0; s < SLOT_N; s++) begin
+      needUpdate[s] = slotRd[s];      // 默认就是读出来的原值
+
+      if (~slotRd[s].valid & slotInstCanEnq[s])
+        needUpdate[s].realDestSize = slotRealDestEnq[s];
+      else if (slotRd[s].valid & slotInstCanEnq[s])
+        needUpdate[s].realDestSize = slotRd[s].realDestSize + slotRealDestEnq[s];
+
+      if (slotRd[s].valid)
+        needUpdate[s].needFlush = slotRd[s].needFlush | slotNeedFlushWb[s];
+
+      if (slotRd[s].valid & (slotRd[s].needFlush | slotNeedFlushWb[s])) begin
+        needUpdate[s].uopNum         = slotRd[s].uopNum - UOPNUM_W'(slotWbCnt[s]);
+        needUpdate[s].stdWritebacked = 1'b1;
+      end else if (~slotRd[s].valid & slotInstCanEnq[s]) begin
+        needUpdate[s].uopNum         = slotEnqWBNum[s];
+        needUpdate[s].stdWritebacked = ~slotEnqWriteStd[s];
+      end else if (slotRd[s].valid) begin
+        needUpdate[s].uopNum = slotRd[s].uopNum - UOPNUM_W'(slotWbCnt[s]);
+        if (slotAnyStdWb[s]) needUpdate[s].stdWritebacked = 1'b1;
+      end
+
+      needUpdate[s].fflags = (~slotRd[s].valid & slotInstCanEnq[s])
+          ? {FFLAGS_W{1'b0}} : (slotRd[s].fflags | slotFflagsRes[s]);
+      needUpdate[s].vxsat  = (~slotRd[s].valid & slotInstCanEnq[s])
+          ? 1'b0 : (slotRd[s].vxsat | slotVxsatRes[s]);
+
+      if (slotRd[s].valid & (slotRd[s].traceBlockInPipe_itype == IT_BRANCH)
+          & slotTakenWb[s])
+        needUpdate[s].traceBlockInPipe_itype = IT_TAKEN;
+    end
+  end
+
+  // ==========================================================================
+  // §12 robDeqGroup：提交读口的寄存器级
+  // ==========================================================================
+  // connectCommitEntry 的逐字段拷贝。★debug_otherPdest 不在这份拷贝里★——
+  // RobEntryBundle 根本没有这个成员，没得可拷；见文件头「已知残留」。
+  always_ff @(posedge clock) begin
+    for (int i = 0; i < COMMIT_W; i++) begin
+      // 默认取本行，allCommitted 时直接取下一行（提前一拍把下一行搬进来）
+      automatic int s = allCommitted ? (BANK_N + i) : i;
+      robDeqGroup_walk_v[i]                      <= needUpdate[s].valid;
+      robDeqGroup_commit_v[i]                    <= needUpdate[s].valid;
+      robDeqGroup_commit_w[i]                    <= (needUpdate[s].uopNum == {UOPNUM_W{1'b0}})
+                                                  & needUpdate[s].stdWritebacked;
+      robDeqGroup_realDestSize[i]                <= needUpdate[s].realDestSize;
+      robDeqGroup_interrupt_safe[i]              <= needUpdate[s].interrupt_safe;
+      robDeqGroup_rfWen[i]                       <= needUpdate[s].rfWen;
+      robDeqGroup_fpWen[i]                       <= needUpdate[s].fpWen;
+      robDeqGroup_fflags[i]                      <= needUpdate[s].fflags;
+      robDeqGroup_wflags[i]                      <= needUpdate[s].wflags;
+      robDeqGroup_vxsat[i]                       <= needUpdate[s].vxsat;
+      robDeqGroup_isRVC[i]                       <= needUpdate[s].isRVC;
+      robDeqGroup_isVset[i]                      <= needUpdate[s].isVset;
+      robDeqGroup_isHls[i]                       <= needUpdate[s].isHls;
+      robDeqGroup_isVls[i]                       <= needUpdate[s].vls;
+      robDeqGroup_vls[i]                         <= needUpdate[s].vls;
+      robDeqGroup_mmio[i]                        <= needUpdate[s].mmio;
+      robDeqGroup_ftqIdx_flag[i]                 <= needUpdate[s].ftqIdx_flag;
+      robDeqGroup_ftqIdx_value[i]                <= needUpdate[s].ftqIdx_value;
+      robDeqGroup_ftqOffset[i]                   <= needUpdate[s].ftqOffset;
+      robDeqGroup_commitType[i]                  <= needUpdate[s].commitType;
+      robDeqGroup_instrSize[i]                   <= needUpdate[s].instrSize;
+      robDeqGroup_dirtyFs[i]                     <= needUpdate[s].fpWen | needUpdate[s].wflags;
+      robDeqGroup_dirtyVs[i]                     <= needUpdate[s].dirtyVs;
+      robDeqGroup_needFlush[i]                   <= needUpdate[s].needFlush;
+      robDeqGroup_traceBlockInPipe_itype[i]      <= needUpdate[s].traceBlockInPipe_itype;
+      robDeqGroup_traceBlockInPipe_iretire[i]    <= needUpdate[s].traceBlockInPipe_iretire;
+      robDeqGroup_traceBlockInPipe_ilastsize[i]  <= needUpdate[s].traceBlockInPipe_ilastsize;
+      robDeqGroup_debug_pc[i]                    <= needUpdate[s].debug_pc;
+      robDeqGroup_debug_instr[i]                 <= needUpdate[s].debug_instr;
+      robDeqGroup_basicDebug_ldest[i]            <= needUpdate[s].basicDebug_ldest;
+      robDeqGroup_basicDebug_pdest[i]            <= needUpdate[s].basicDebug_pdest;
+      robDeqGroup_basicDebug_vd[i]               <= needUpdate[s].basicDebug_vd;
+      robDeqGroup_basicDebug_fpWen[i]            <= needUpdate[s].basicDebug_fpWen;
+      robDeqGroup_basicDebug_vecWen[i]           <= needUpdate[s].basicDebug_vecWen;
+      robDeqGroup_basicDebug_v0Wen[i]            <= needUpdate[s].basicDebug_v0Wen;
+      robDeqGroup_basicDebug_eliminatedMove[i]   <= needUpdate[s].basicDebug_eliminatedMove;
+      robDeqGroup_basicDebug_isXSTrap[i]         <= needUpdate[s].basicDebug_isXSTrap;
+      robDeqGroup_debug_fuType[i]                <= needUpdate[s].debug_fuType;
+    end
+  end
+
+
+  // ==========================================================================
+  // §13 队头读口（rawInfo / commitInfo / walkInfo）
+  // ==========================================================================
+  // 三个名字在 Scala 里是**同一个表达式**（robDeqGroup 按 bank 低位选），
+  // golden 也生成三套同值的线。这里保留三个名字，因为读代码时它们的角色不同：
+  //   rawInfo   —— 未修正的原值（ftqOffset 的修正就是拿它算的）
+  //   commitInfo—— 送给 io_commits_info 的值（只有 ftqOffset 与 rawInfo 不同）
+  //   walkInfo  —— 走回时按 walkPtr 选的那一份
+  logic [BANK_ADDR_W-1:0] deqBankIdx [COMMIT_W];
+  logic [BANK_ADDR_W-1:0] walkBankIdx[COMMIT_W];
+
+  always_comb begin
+    deqPtrValue[0] = deqPtrVec_0_value; deqPtrFlag[0] = deqPtrVec_0_flag;
+    deqPtrValue[1] = deqPtrVec_1_value; deqPtrFlag[1] = deqPtrVec_1_flag;
+    deqPtrValue[2] = deqPtrVec_2_value; deqPtrFlag[2] = deqPtrVec_2_flag;
+    deqPtrValue[3] = deqPtrVec_3_value; deqPtrFlag[3] = deqPtrVec_3_flag;
+    deqPtrValue[4] = deqPtrVec_4_value; deqPtrFlag[4] = deqPtrVec_4_flag;
+    deqPtrValue[5] = deqPtrVec_5_value; deqPtrFlag[5] = deqPtrVec_5_flag;
+    deqPtrValue[6] = deqPtrVec_6_value; deqPtrFlag[6] = deqPtrVec_6_flag;
+    deqPtrValue[7] = deqPtrVec_7_value; deqPtrFlag[7] = deqPtrVec_7_flag;
+    for (int i = 0; i < COMMIT_W; i++) begin
+      deqBankIdx[i]  = deqPtrValue[i][BANK_ADDR_W-1:0];
+      walkBankIdx[i] = walkPtrVec_value[i][BANK_ADDR_W-1:0];
+    end
+  end
+
+  rob_commit_t rawInfo   [COMMIT_W];
+  rob_commit_t commitInfo[COMMIT_W];
+  rob_commit_t walkInfo  [COMMIT_W];
+
+  function automatic rob_commit_t packDeqGroup(input int b);
+    rob_commit_t c;
+    begin
+      c.walk_v                     = robDeqGroup_walk_v[b];
+      c.commit_v                   = robDeqGroup_commit_v[b];
+      c.commit_w                   = robDeqGroup_commit_w[b];
+      c.realDestSize               = robDeqGroup_realDestSize[b];
+      c.interrupt_safe             = robDeqGroup_interrupt_safe[b];
+      c.wflags                     = robDeqGroup_wflags[b];
+      c.fflags                     = robDeqGroup_fflags[b];
+      c.vxsat                      = robDeqGroup_vxsat[b];
+      c.isRVC                      = robDeqGroup_isRVC[b];
+      c.isVset                     = robDeqGroup_isVset[b];
+      c.isHls                      = robDeqGroup_isHls[b];
+      c.isVls                      = robDeqGroup_isVls[b];
+      c.vls                        = robDeqGroup_vls[b];
+      c.mmio                       = robDeqGroup_mmio[b];
+      c.commitType                 = robDeqGroup_commitType[b];
+      c.ftqIdx_flag                = robDeqGroup_ftqIdx_flag[b];
+      c.ftqIdx_value               = robDeqGroup_ftqIdx_value[b];
+      c.ftqOffset                  = robDeqGroup_ftqOffset[b];
+      c.instrSize                  = robDeqGroup_instrSize[b];
+      c.fpWen                      = robDeqGroup_fpWen[b];
+      c.rfWen                      = robDeqGroup_rfWen[b];
+      c.needFlush                  = robDeqGroup_needFlush[b];
+      c.traceBlockInPipe_itype     = robDeqGroup_traceBlockInPipe_itype[b];
+      c.traceBlockInPipe_iretire   = robDeqGroup_traceBlockInPipe_iretire[b];
+      c.traceBlockInPipe_ilastsize = robDeqGroup_traceBlockInPipe_ilastsize[b];
+      c.debug_pc                   = robDeqGroup_debug_pc[b];
+      c.debug_instr                = robDeqGroup_debug_instr[b];
+      c.basicDebug_ldest           = robDeqGroup_basicDebug_ldest[b];
+      c.basicDebug_pdest           = robDeqGroup_basicDebug_pdest[b];
+      c.basicDebug_vd              = robDeqGroup_basicDebug_vd[b];
+      c.basicDebug_fpWen           = robDeqGroup_basicDebug_fpWen[b];
+      c.basicDebug_vecWen          = robDeqGroup_basicDebug_vecWen[b];
+      c.basicDebug_v0Wen           = robDeqGroup_basicDebug_v0Wen[b];
+      c.basicDebug_eliminatedMove  = robDeqGroup_basicDebug_eliminatedMove[b];
+      c.basicDebug_isXSTrap        = robDeqGroup_basicDebug_isXSTrap[b];
+      c.debug_fuType               = robDeqGroup_debug_fuType[b];
+      c.dirtyFs                    = robDeqGroup_dirtyFs[b];
+      c.dirtyVs                    = robDeqGroup_dirtyVs[b];
+      // ★这 7 个是全核唯一不驱动的字段★（见文件头「已知残留」）：
+      //   RobEntryBundle 没有这个成员，connectCommitEntry 没得可拷；
+      //   golden 里这 56 个寄存器同样只在 RANDOMIZE_REG_INIT 里被写。
+      //   ★仍然照 golden 的结构从寄存器上读出来送到端口★ —— 这样两侧形状一致，
+      //   残留是"两侧各 56 个从不写的寄存器"，而不是"impl 少驱动 56 个输出"。
+      c.debug_otherPdest_0         = robDeqGroup_debug_otherPdest_0[b];
+      c.debug_otherPdest_1         = robDeqGroup_debug_otherPdest_1[b];
+      c.debug_otherPdest_2         = robDeqGroup_debug_otherPdest_2[b];
+      c.debug_otherPdest_3         = robDeqGroup_debug_otherPdest_3[b];
+      c.debug_otherPdest_4         = robDeqGroup_debug_otherPdest_4[b];
+      c.debug_otherPdest_5         = robDeqGroup_debug_otherPdest_5[b];
+      c.debug_otherPdest_6         = robDeqGroup_debug_otherPdest_6[b];
+      packDeqGroup = c;
+    end
+  endfunction
+
+  always_comb begin
+    for (int i = 0; i < COMMIT_W; i++) begin
+      rawInfo[i]  = packDeqGroup(0);
+      walkInfo[i] = packDeqGroup(0);
+      // 下标只有 3 位、深度正好 8（2^3=8，不越界），但仍按本文件的通例
+      // 用循环+比较，不用信号直接索引。
+      for (int b = 0; b < BANK_N; b++) begin
+        if (deqBankIdx[i]  == BANK_ADDR_W'(b)) rawInfo[i]  = packDeqGroup(b);
+        if (walkBankIdx[i] == BANK_ADDR_W'(b)) walkInfo[i] = packDeqGroup(b);
+      end
+      // commitInfo 与 rawInfo 只差一个 ftqOffset：
+      // 多条指令被压缩进同一条 RobEntry 时，条目里存的 ftqIdx/ftqOffset 属于
+      // **被压缩的第一条**；提交要告诉前端的是**最后一条**的 offset。
+      commitInfo[i] = rawInfo[i];
+      commitInfo[i].ftqOffset = rawInfo[i].commitType[2]   // CommitType.isFused
+          ? rawInfo[i].ftqOffset
+          : FTQ_OFF_W'(FTQ_OFF_W'(rawInfo[i].traceBlockInPipe_iretire
+                                  - {2'h0, 2'h1 << rawInfo[i].traceBlockInPipe_ilastsize})
+                       + rawInfo[i].ftqOffset);
+    end
+  end
+
+  assign rawInfo_0_interrupt_safe = rawInfo[0].interrupt_safe;
+
+  // ==========================================================================
+  // §14 队头的异常/中断/冲刷判定
+  // ==========================================================================
+  logic deqPtrEntryValid, deqNeedFlush, deqHitExceptionGenState;
+  logic deqNeedFlushAndHitExceptionGenState, exceptionGenStateIsException;
+  logic deqHasException, deqHasFlushPipe, deqHasReplayInst;
+  logic deqIsVlsException, deqIsVlsFlushPipe, deqCanException, deqCanFlushPipe;
+  logic intrEnable, isFlushPipe, isVsetFlushPipe, exceptionHappen;
+  logic handleVlsExcp, blockCommitInt, misPredBlock, deqFlushBlock;
+  logic deqHitRedirectReg, deqHasCommitted, criticalErrorState;
+  logic [EXCP_N-1:0] excpVec;
+
+  always_comb begin
+    excpVec = {exceptionGen_io_state_bits_exceptionVec_23,
+               exceptionGen_io_state_bits_exceptionVec_22,
+               exceptionGen_io_state_bits_exceptionVec_21,
+               exceptionGen_io_state_bits_exceptionVec_20,
+               exceptionGen_io_state_bits_exceptionVec_19,
+               exceptionGen_io_state_bits_exceptionVec_18,
+               exceptionGen_io_state_bits_exceptionVec_17,
+               exceptionGen_io_state_bits_exceptionVec_16,
+               exceptionGen_io_state_bits_exceptionVec_15,
+               exceptionGen_io_state_bits_exceptionVec_14,
+               exceptionGen_io_state_bits_exceptionVec_13,
+               exceptionGen_io_state_bits_exceptionVec_12,
+               exceptionGen_io_state_bits_exceptionVec_11,
+               exceptionGen_io_state_bits_exceptionVec_10,
+               exceptionGen_io_state_bits_exceptionVec_9,
+               exceptionGen_io_state_bits_exceptionVec_8,
+               exceptionGen_io_state_bits_exceptionVec_7,
+               exceptionGen_io_state_bits_exceptionVec_6,
+               exceptionGen_io_state_bits_exceptionVec_5,
+               exceptionGen_io_state_bits_exceptionVec_4,
+               exceptionGen_io_state_bits_exceptionVec_3,
+               exceptionGen_io_state_bits_exceptionVec_2,
+               exceptionGen_io_state_bits_exceptionVec_1,
+               exceptionGen_io_state_bits_exceptionVec_0};
+  end
+
+  always_ff @(posedge clock) intrBitSetReg <= io_csr_intrBitSet;
+  assign intrBitSetRegOut = intrBitSetReg;
+  assign criticalErrorState = io_csr_criticalErrorState;
+
+  assign deqPtrEntryValid = rawInfo[0].commit_v;
+  assign intrEnable = intrBitSetReg & ~hasWaitForward & rawInfo[0].interrupt_safe
+                    & ~deqHasFlushed;
+  assign deqNeedFlush = rawInfo[0].needFlush & rawInfo[0].commit_v & rawInfo[0].commit_w;
+  assign deqHitExceptionGenState = exceptionGen_io_state_valid
+      & (exceptionGen_io_state_bits_robIdx_value == deqPtrValue[0])
+      & (exceptionGen_io_state_bits_robIdx_flag  == deqPtrFlag[0]);
+  assign deqNeedFlushAndHitExceptionGenState = deqNeedFlush & deqHitExceptionGenState;
+  assign exceptionGenStateIsException = (|excpVec)
+      | exceptionGen_io_state_bits_singleStep
+      | (exceptionGen_io_state_bits_trigger == TA_DMODE);
+
+  always_ff @(posedge clock) commit_w_delay <= rawInfo[0].commit_w;
+
+  assign deqHasException   = deqNeedFlushAndHitExceptionGenState
+                           & exceptionGenStateIsException & commit_w_delay;
+  assign deqHasFlushPipe   = deqNeedFlushAndHitExceptionGenState
+                           & exceptionGen_io_state_bits_flushPipe
+                           & ~deqHasException & commit_w_delay;
+  assign deqHasReplayInst  = deqNeedFlushAndHitExceptionGenState
+                           & exceptionGen_io_state_bits_replayInst;
+  assign deqIsVlsException = deqHasException & rawInfo[0].isVls
+                           & ~exceptionGen_io_state_bits_isEnqExcp;
+  assign deqIsVlsFlushPipe = deqHasFlushPipe & rawInfo[0].isVls;
+  assign deqCanException   = deqHasException & (~deqIsVlsException | deqVlsCanCommit);
+  assign deqCanFlushPipe   = deqHasFlushPipe & (~deqIsVlsFlushPipe | deqVlsCanCommit);
+
+  // 向量访存的异常只有等 RAB 把它那几对寄存器全提交完才算数，所以要等两拍 + commitEnd
+  always_ff @(posedge clock) begin
+    deqVlsCanCommit_REG   <= (deqIsVlsException | deqIsVlsFlushPipe) & rawInfo[0].commit_w;
+    deqVlsCanCommit_REG_1 <= deqVlsCanCommit_REG;
+  end
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) deqVlsCanCommit <= 1'b0;
+    else       deqVlsCanCommit <= deqVlsCanCommit_REG_1 & rab_io_status_commitEnd;
+  end
+
+  assign handleVlsExcp = deqIsVlsException & deqVlsCanCommit & ~deqVlsExcpLock
+                       & (state == S_IDLE);
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) deqVlsExcpLock <= 1'b0;
+    else if (handleVlsExcp) deqVlsExcpLock <= 1'b1;
+    else if ((deqPtrValue[0] != deqPtrVec_next_0_value)
+             | (deqPtrFlag[0] != deqPtrVec_next_0_flag)) deqVlsExcpLock <= 1'b0;
+  end
+
+  // 只在 deqVlsExcp 发生时向 RAB 发一次，免得重复报
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) begin
+      deqVlsExceptionNeedCommit <= 1'b0;
+      deqVlsExceptionCommitSize <= {UOPNUM_W{1'b0}};
+    end else if (deqVlsExceptionNeedCommit) begin
+      deqVlsExceptionNeedCommit <= 1'b0;
+    end else if (handleVlsExcp) begin
+      deqVlsExceptionCommitSize <= rawInfo[0].realDestSize;
+      deqVlsExceptionNeedCommit <= 1'b1;
+    end
+  end
+
+  assign isFlushPipe = rawInfo[0].commit_w & (deqHasFlushPipe | deqHasReplayInst);
+  assign isVsetFlushPipe = rawInfo[0].commit_w & deqHasFlushed
+                         & exceptionGen_io_state_bits_isVset;
+  always_ff @(posedge clock) isVsetFlushPipeReg <= isVsetFlushPipe;
+  assign io_isVsetFlushPipe = isVsetFlushPipe;
+  assign io_toDecode_isResumeVType = vtypeBuffer_io_toDecode_isResumeVType
+                                   | isVsetFlushPipeReg;
+
+  always_ff @(posedge clock) lastCycleFlush <= io_flushOut_valid;
+
+  assign io_flushOut_valid = (state == S_IDLE) & deqPtrEntryValid
+      & (intrEnable | deqCanException | deqCanFlushPipe) & ~lastCycleFlush;
+  assign io_flushOut_valid_0 = io_flushOut_valid;   // 同一根，送 exceptionGen.io_flush
+
+  // io.flushOut.bits := DontCare 之后逐字段赋值；needModifyFtqIdxOffset 恒假
+  // （Scala 里写死 `val needModifyFtqIdxOffset = false.B`），所以 Mux 全被折掉。
+  assign io_flushOut_bits_isRVC        = rawInfo[0].isRVC;
+  assign io_flushOut_bits_robIdx_flag  = deqPtrFlag[0];
+  assign io_flushOut_bits_robIdx_value = deqPtrValue[0];
+  assign io_flushOut_bits_ftqIdx_flag  = rawInfo[0].ftqIdx_flag;
+  assign io_flushOut_bits_ftqIdx_value = rawInfo[0].ftqIdx_value;
+  assign io_flushOut_bits_ftqOffset    = rawInfo[0].ftqOffset;
+  assign io_flushOut_bits_level        = (deqHasReplayInst | intrEnable | deqHasException)
+                                       ? RL_FLUSH : RL_FLUSH_AFTER;
+  assign io_flushOut_bits_satpFlush    = isFlushPipe
+                                       & exceptionGen_io_state_bits_satpFlushPipe;
+  assign io_flushOut_bits_isVlsException = deqHasException & deqIsVlsException;
+
+  assign exceptionHappen = (state == S_IDLE) & deqPtrEntryValid
+      & (intrEnable | deqCanException) & ~lastCycleFlush;
+
+  // ---- 提交阻塞 ----
+  always_ff @(posedge clock) begin
+    misPredBlockCounter <= misPredWb ? 3'b111 : (misPredBlockCounter >> 1);
+    deqHitRedirectReg_REG <= io_redirect_valid
+                           & (io_redirect_bits_robIdx_value == deqPtrValue[0])
+                           & (io_redirect_bits_robIdx_flag  == deqPtrFlag[0]);
+    deqHitRedirectReg_REG_1 <= io_redirect_valid
+                             & (io_redirect_bits_robIdx_value == deqPtrValue[0])
+                             & (io_redirect_bits_robIdx_flag  == deqPtrFlag[0]);
+    deqHitRedirectReg_REG_2 <= deqHitRedirectReg_REG_1;
+    deqFlushBlockCounter <= (deqNeedFlush & deqHitRedirectReg)
+                          ? 3'b111 : (deqFlushBlockCounter >> 1);
+  end
+  assign deqHitRedirectReg = deqHitRedirectReg_REG | deqHitRedirectReg_REG_2;
+  assign misPredBlock  = misPredBlockCounter[0];
+  assign deqFlushBlock = deqFlushBlockCounter[0];
+  assign deqHasCommitted = io_commits_isCommit & io_commits_commitValid_0;
+
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) deqHasFlushed <= 1'b0;
+    else if (deqHasCommitted) deqHasFlushed <= 1'b0;
+    else if (deqNeedFlush & io_flushOut_valid & ~io_flushOut_bits_level)
+      deqHasFlushed <= 1'b1;
+  end
+
+  assign blockCommitInt = misPredBlock | lastCycleFlush | hasWFI | io_redirect_valid
+      | (deqNeedFlush & ~deqHasFlushed) | deqFlushBlock | criticalErrorState
+      | io_trace_blockCommit;
+  assign blockCommit = blockCommitInt;
+
+  assign io_commits_isWalk   = (state == S_WALK);
+  assign io_commits_isCommit = (state == S_IDLE) & ~blockCommitInt;
+
+
+  // ==========================================================================
+  // §15 提交 / 走回的对外输出
+  // ==========================================================================
+  // ★commit_vDeqGroup / commit_wDeqGroup 是**按 bank 直接取**的★（robDeqGroup(b)），
+  //   不是按 deqPtrVec 选出来的那一份 —— 送给 deqPtrGenModule 的就是这八个原值。
+  logic commit_block       [COMMIT_W];
+  logic commitValidThisLine[COMMIT_W];
+  logic shouldWalkVec      [COMMIT_W];
+  logic hasCommittedVec    [COMMIT_W];
+  logic isBlocked, allowOnlyOneCommitInt;
+
+  assign commit_vDeqGroup_0 = robDeqGroup_commit_v[0];
+  assign commit_vDeqGroup_1 = robDeqGroup_commit_v[1];
+  assign commit_vDeqGroup_2 = robDeqGroup_commit_v[2];
+  assign commit_vDeqGroup_3 = robDeqGroup_commit_v[3];
+  assign commit_vDeqGroup_4 = robDeqGroup_commit_v[4];
+  assign commit_vDeqGroup_5 = robDeqGroup_commit_v[5];
+  assign commit_vDeqGroup_6 = robDeqGroup_commit_v[6];
+  assign commit_vDeqGroup_7 = robDeqGroup_commit_v[7];
+  assign commit_wDeqGroup_0 = robDeqGroup_commit_w[0];
+  assign commit_wDeqGroup_1 = robDeqGroup_commit_w[1];
+  assign commit_wDeqGroup_2 = robDeqGroup_commit_w[2];
+  assign commit_wDeqGroup_3 = robDeqGroup_commit_w[3];
+  assign commit_wDeqGroup_4 = robDeqGroup_commit_w[4];
+  assign commit_wDeqGroup_5 = robDeqGroup_commit_w[5];
+  assign commit_wDeqGroup_6 = robDeqGroup_commit_w[6];
+  assign commit_wDeqGroup_7 = robDeqGroup_commit_w[7];
+
+  // hasCommitted_0..7 同样按 golden 起名（见 donotNeedWalk 那段的理由）
+  always_comb begin
+    hasCommittedVec[0] = hasCommitted_0;  hasCommittedVec[1] = hasCommitted_1;
+    hasCommittedVec[2] = hasCommitted_2;  hasCommittedVec[3] = hasCommitted_3;
+    hasCommittedVec[4] = hasCommitted_4;  hasCommittedVec[5] = hasCommitted_5;
+    hasCommittedVec[6] = hasCommitted_6;  hasCommittedVec[7] = hasCommitted_7;
+  end
+  assign hasCommittedOut_0 = hasCommitted_0;
+  assign hasCommittedOut_1 = hasCommitted_1;
+  assign hasCommittedOut_2 = hasCommitted_2;
+  assign hasCommittedOut_3 = hasCommitted_3;
+  assign hasCommittedOut_4 = hasCommitted_4;
+  assign hasCommittedOut_5 = hasCommitted_5;
+  assign hasCommittedOut_6 = hasCommitted_6;
+  assign hasCommittedOut_7 = hasCommitted_7;
+
+  // 队头有"要冲刷"的条目、或者中断挂着时，一拍只准提交一条
+  always_comb begin
+    allowOnlyOneCommitInt = intrBitSetReg;
+    for (int b = 0; b < BANK_N; b++)
+      allowOnlyOneCommitInt = allowOnlyOneCommitInt
+                            | (robDeqGroup_commit_v[b] & robDeqGroup_needFlush[b]);
+  end
+  assign allowOnlyOneCommit = allowOnlyOneCommitInt;
+
+  assign isBlocked = intrEnable | (deqNeedFlush & ~deqHasFlushed);
+
+  always_comb begin
+    for (int i = 0; i < COMMIT_W; i++)
+      commit_block[i] = ~robDeqGroup_commit_w[i] & ~hasCommittedVec[i];
+  end
+
+  always_comb begin
+    for (int i = 0; i < COMMIT_W; i++) begin
+      automatic logic blockedByOlder;
+      automatic logic allOlderCommitted;
+      blockedByOlder    = 1'b0;
+      allOlderCommitted = 1'b1;
+      for (int k = 0; k < COMMIT_W; k++) begin
+        if (k <= i)     blockedByOlder    = blockedByOlder    | commit_block[k];
+        if (k <  i)     allOlderCommitted = allOlderCommitted & hasCommittedVec[k];
+      end
+      if (i == 0) begin
+        blockedByOlder    = 1'b0;         // 第 0 条没有更老的
+        allOlderCommitted = 1'b1;
+      end else begin
+        blockedByOlder = blockedByOlder
+                       | (allowOnlyOneCommitInt & ~allOlderCommitted);
+      end
+      commitValidThisLine[i] = robDeqGroup_commit_v[i] & robDeqGroup_commit_w[i]
+                             & ~isBlocked & ~blockedByOlder & ~hasCommittedVec[i];
+    end
+  end
+
+  assign allCommitted = io_commits_isCommit & commitValidThisLine[COMMIT_W-1];
+
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) begin
+      hasCommitted_0 <= 1'b0;  hasCommitted_1 <= 1'b0;
+      hasCommitted_2 <= 1'b0;  hasCommitted_3 <= 1'b0;
+      hasCommitted_4 <= 1'b0;  hasCommitted_5 <= 1'b0;
+      hasCommitted_6 <= 1'b0;  hasCommitted_7 <= 1'b0;
+    end else if (allCommitted) begin
+      hasCommitted_0 <= 1'b0;  hasCommitted_1 <= 1'b0;
+      hasCommitted_2 <= 1'b0;  hasCommitted_3 <= 1'b0;
+      hasCommitted_4 <= 1'b0;  hasCommitted_5 <= 1'b0;
+      hasCommitted_6 <= 1'b0;  hasCommitted_7 <= 1'b0;
+    end else if (io_commits_isCommit) begin
+      hasCommitted_0 <= commitValidThisLine[0] | hasCommitted_0;
+      hasCommitted_1 <= commitValidThisLine[1] | hasCommitted_1;
+      hasCommitted_2 <= commitValidThisLine[2] | hasCommitted_2;
+      hasCommitted_3 <= commitValidThisLine[3] | hasCommitted_3;
+      hasCommitted_4 <= commitValidThisLine[4] | hasCommitted_4;
+      hasCommitted_5 <= commitValidThisLine[5] | hasCommitted_5;
+      hasCommitted_6 <= commitValidThisLine[6] | hasCommitted_6;
+      hasCommitted_7 <= commitValidThisLine[7] | hasCommitted_7;
+    end
+  end
+
+  // ★io.commits.commitValid 不是 commitValidThisLine 本身★：
+  //   Scala 是 PriorityMux(commitValidThisLine, 各种右移过的它自己) ——
+  //   找到第一个为真的位 i，输出整条右移 i 位。没有任何一位为真时，
+  //   PriorityMux 落到最后一项，也就是右移 7 位。
+  always_comb begin
+    automatic logic [COMMIT_W-1:0] cvtl;
+    for (int i = 0; i < COMMIT_W; i++) cvtl[i] = commitValidThisLine[i];
+    for (int i = 0; i < COMMIT_W; i++) commitValidOut[i] = cvtl[COMMIT_W-1];
+    for (int s = COMMIT_W - 1; s >= 0; s--)
+      if (cvtl[s] | (s == COMMIT_W - 1))
+        for (int i = 0; i < COMMIT_W; i++)
+          commitValidOut[i] = ((s + i) < COMMIT_W) ? cvtl[s + i] : 1'b0;
+  end
+
+  // 走回：T redirect.valid，T+1 用 walkPtrVec 读条目，T+2 才真正走
+  always_comb begin
+    for (int i = 0; i < COMMIT_W; i++) begin
+      if (io_redirect_valid | state_next_REG)      shouldWalkVec[i] = 1'b0;
+      else if (state == S_WALK)
+        shouldWalkVec[i] = ptrLe(walkingPtrVec_flag[i], walkingPtrVec_value[i],
+                                 lastWalkPtr_flag, lastWalkPtr_value)
+                         & ~donotNeedWalkVec[i];
+      else                                         shouldWalkVec[i] = 1'b0;
+    end
+  end
+
+  assign io_commits_commitValid_0 = commitValidOut[0];
+  assign io_commits_commitValid_1 = commitValidOut[1];
+  assign io_commits_commitValid_2 = commitValidOut[2];
+  assign io_commits_commitValid_3 = commitValidOut[3];
+  assign io_commits_commitValid_4 = commitValidOut[4];
+  assign io_commits_commitValid_5 = commitValidOut[5];
+  assign io_commits_commitValid_6 = commitValidOut[6];
+  assign io_commits_commitValid_7 = commitValidOut[7];
+  assign io_commits_walkValid_0   = shouldWalkVec[0];
+  assign io_commits_walkValid_1   = shouldWalkVec[1];
+  assign io_commits_walkValid_2   = shouldWalkVec[2];
+  assign io_commits_walkValid_3   = shouldWalkVec[3];
+  assign io_commits_walkValid_4   = shouldWalkVec[4];
+  assign io_commits_walkValid_5   = shouldWalkVec[5];
+  assign io_commits_walkValid_6   = shouldWalkVec[6];
+  assign io_commits_walkValid_7   = shouldWalkVec[7];
+  assign io_commits_robIdx_0_flag  = deqPtrFlag[0];
+  assign io_commits_robIdx_0_value = deqPtrValue[0];
+  assign io_commits_robIdx_1_flag  = deqPtrFlag[1];
+  assign io_commits_robIdx_1_value = deqPtrValue[1];
+  assign io_commits_robIdx_2_flag  = deqPtrFlag[2];
+  assign io_commits_robIdx_2_value = deqPtrValue[2];
+  assign io_commits_robIdx_3_flag  = deqPtrFlag[3];
+  assign io_commits_robIdx_3_value = deqPtrValue[3];
+  assign io_commits_robIdx_4_flag  = deqPtrFlag[4];
+  assign io_commits_robIdx_4_value = deqPtrValue[4];
+  assign io_commits_robIdx_5_flag  = deqPtrFlag[5];
+  assign io_commits_robIdx_5_value = deqPtrValue[5];
+  assign io_commits_robIdx_6_flag  = deqPtrFlag[6];
+  assign io_commits_robIdx_6_value = deqPtrValue[6];
+  assign io_commits_robIdx_7_flag  = deqPtrFlag[7];
+  assign io_commits_robIdx_7_value = deqPtrValue[7];
+
+  always_comb begin
+    commitsHasWalkInstr   = 1'b0;
+    commitsHasCommitInstr = 1'b0;
+    for (int i = 0; i < COMMIT_W; i++) begin
+      commitsHasWalkInstr   = commitsHasWalkInstr   | shouldWalkVec[i];
+      commitsHasCommitInstr = commitsHasCommitInstr | commitValidOut[i];
+    end
+    commitsHasWalkInstr   = commitsHasWalkInstr   & io_commits_isWalk;
+    commitsHasCommitInstr = commitsHasCommitInstr & io_commits_isCommit;
+  end
+
+  // ---- io_commits_info_<i>_<field>：360 根，全部来自 commitInfo ----
+  assign io_commits_info_0_walk_v                       = commitInfo[0].walk_v;
+  assign io_commits_info_0_commit_v                     = commitInfo[0].commit_v;
+  assign io_commits_info_0_commit_w                     = commitInfo[0].commit_w;
+  assign io_commits_info_0_realDestSize                 = commitInfo[0].realDestSize;
+  assign io_commits_info_0_interrupt_safe               = commitInfo[0].interrupt_safe;
+  assign io_commits_info_0_wflags                       = commitInfo[0].wflags;
+  assign io_commits_info_0_fflags                       = commitInfo[0].fflags;
+  assign io_commits_info_0_vxsat                        = commitInfo[0].vxsat;
+  assign io_commits_info_0_isRVC                        = commitInfo[0].isRVC;
+  assign io_commits_info_0_isVset                       = commitInfo[0].isVset;
+  assign io_commits_info_0_isHls                        = commitInfo[0].isHls;
+  assign io_commits_info_0_isVls                        = commitInfo[0].isVls;
+  assign io_commits_info_0_vls                          = commitInfo[0].vls;
+  assign io_commits_info_0_mmio                         = commitInfo[0].mmio;
+  assign io_commits_info_0_commitType                   = commitInfo[0].commitType;
+  assign io_commits_info_0_ftqIdx_flag                  = commitInfo[0].ftqIdx_flag;
+  assign io_commits_info_0_ftqIdx_value                 = commitInfo[0].ftqIdx_value;
+  assign io_commits_info_0_ftqOffset                    = commitInfo[0].ftqOffset;
+  assign io_commits_info_0_instrSize                    = commitInfo[0].instrSize;
+  assign io_commits_info_0_fpWen                        = commitInfo[0].fpWen;
+  assign io_commits_info_0_rfWen                        = commitInfo[0].rfWen;
+  assign io_commits_info_0_needFlush                    = commitInfo[0].needFlush;
+  assign io_commits_info_0_traceBlockInPipe_itype       = commitInfo[0].traceBlockInPipe_itype;
+  assign io_commits_info_0_traceBlockInPipe_iretire     = commitInfo[0].traceBlockInPipe_iretire;
+  assign io_commits_info_0_traceBlockInPipe_ilastsize   = commitInfo[0].traceBlockInPipe_ilastsize;
+  assign io_commits_info_0_debug_pc                     = commitInfo[0].debug_pc;
+  assign io_commits_info_0_debug_instr                  = commitInfo[0].debug_instr;
+  assign io_commits_info_0_basicDebug_ldest             = commitInfo[0].basicDebug_ldest;
+  assign io_commits_info_0_basicDebug_pdest             = commitInfo[0].basicDebug_pdest;
+  assign io_commits_info_0_basicDebug_vd                = commitInfo[0].basicDebug_vd;
+  assign io_commits_info_0_basicDebug_fpWen             = commitInfo[0].basicDebug_fpWen;
+  assign io_commits_info_0_basicDebug_vecWen            = commitInfo[0].basicDebug_vecWen;
+  assign io_commits_info_0_basicDebug_v0Wen             = commitInfo[0].basicDebug_v0Wen;
+  assign io_commits_info_0_basicDebug_eliminatedMove    = commitInfo[0].basicDebug_eliminatedMove;
+  assign io_commits_info_0_basicDebug_isXSTrap          = commitInfo[0].basicDebug_isXSTrap;
+  assign io_commits_info_0_debug_fuType                 = commitInfo[0].debug_fuType;
+  assign io_commits_info_0_dirtyFs                      = commitInfo[0].dirtyFs;
+  assign io_commits_info_0_dirtyVs                      = commitInfo[0].dirtyVs;
+  assign io_commits_info_0_debug_otherPdest_0           = commitInfo[0].debug_otherPdest_0;
+  assign io_commits_info_0_debug_otherPdest_1           = commitInfo[0].debug_otherPdest_1;
+  assign io_commits_info_0_debug_otherPdest_2           = commitInfo[0].debug_otherPdest_2;
+  assign io_commits_info_0_debug_otherPdest_3           = commitInfo[0].debug_otherPdest_3;
+  assign io_commits_info_0_debug_otherPdest_4           = commitInfo[0].debug_otherPdest_4;
+  assign io_commits_info_0_debug_otherPdest_5           = commitInfo[0].debug_otherPdest_5;
+  assign io_commits_info_0_debug_otherPdest_6           = commitInfo[0].debug_otherPdest_6;
+
+  assign io_commits_info_1_walk_v                       = commitInfo[1].walk_v;
+  assign io_commits_info_1_commit_v                     = commitInfo[1].commit_v;
+  assign io_commits_info_1_commit_w                     = commitInfo[1].commit_w;
+  assign io_commits_info_1_realDestSize                 = commitInfo[1].realDestSize;
+  assign io_commits_info_1_interrupt_safe               = commitInfo[1].interrupt_safe;
+  assign io_commits_info_1_wflags                       = commitInfo[1].wflags;
+  assign io_commits_info_1_fflags                       = commitInfo[1].fflags;
+  assign io_commits_info_1_vxsat                        = commitInfo[1].vxsat;
+  assign io_commits_info_1_isRVC                        = commitInfo[1].isRVC;
+  assign io_commits_info_1_isVset                       = commitInfo[1].isVset;
+  assign io_commits_info_1_isHls                        = commitInfo[1].isHls;
+  assign io_commits_info_1_isVls                        = commitInfo[1].isVls;
+  assign io_commits_info_1_vls                          = commitInfo[1].vls;
+  assign io_commits_info_1_mmio                         = commitInfo[1].mmio;
+  assign io_commits_info_1_commitType                   = commitInfo[1].commitType;
+  assign io_commits_info_1_ftqIdx_flag                  = commitInfo[1].ftqIdx_flag;
+  assign io_commits_info_1_ftqIdx_value                 = commitInfo[1].ftqIdx_value;
+  assign io_commits_info_1_ftqOffset                    = commitInfo[1].ftqOffset;
+  assign io_commits_info_1_instrSize                    = commitInfo[1].instrSize;
+  assign io_commits_info_1_fpWen                        = commitInfo[1].fpWen;
+  assign io_commits_info_1_rfWen                        = commitInfo[1].rfWen;
+  assign io_commits_info_1_needFlush                    = commitInfo[1].needFlush;
+  assign io_commits_info_1_traceBlockInPipe_itype       = commitInfo[1].traceBlockInPipe_itype;
+  assign io_commits_info_1_traceBlockInPipe_iretire     = commitInfo[1].traceBlockInPipe_iretire;
+  assign io_commits_info_1_traceBlockInPipe_ilastsize   = commitInfo[1].traceBlockInPipe_ilastsize;
+  assign io_commits_info_1_debug_pc                     = commitInfo[1].debug_pc;
+  assign io_commits_info_1_debug_instr                  = commitInfo[1].debug_instr;
+  assign io_commits_info_1_basicDebug_ldest             = commitInfo[1].basicDebug_ldest;
+  assign io_commits_info_1_basicDebug_pdest             = commitInfo[1].basicDebug_pdest;
+  assign io_commits_info_1_basicDebug_vd                = commitInfo[1].basicDebug_vd;
+  assign io_commits_info_1_basicDebug_fpWen             = commitInfo[1].basicDebug_fpWen;
+  assign io_commits_info_1_basicDebug_vecWen            = commitInfo[1].basicDebug_vecWen;
+  assign io_commits_info_1_basicDebug_v0Wen             = commitInfo[1].basicDebug_v0Wen;
+  assign io_commits_info_1_basicDebug_eliminatedMove    = commitInfo[1].basicDebug_eliminatedMove;
+  assign io_commits_info_1_basicDebug_isXSTrap          = commitInfo[1].basicDebug_isXSTrap;
+  assign io_commits_info_1_debug_fuType                 = commitInfo[1].debug_fuType;
+  assign io_commits_info_1_dirtyFs                      = commitInfo[1].dirtyFs;
+  assign io_commits_info_1_dirtyVs                      = commitInfo[1].dirtyVs;
+  assign io_commits_info_1_debug_otherPdest_0           = commitInfo[1].debug_otherPdest_0;
+  assign io_commits_info_1_debug_otherPdest_1           = commitInfo[1].debug_otherPdest_1;
+  assign io_commits_info_1_debug_otherPdest_2           = commitInfo[1].debug_otherPdest_2;
+  assign io_commits_info_1_debug_otherPdest_3           = commitInfo[1].debug_otherPdest_3;
+  assign io_commits_info_1_debug_otherPdest_4           = commitInfo[1].debug_otherPdest_4;
+  assign io_commits_info_1_debug_otherPdest_5           = commitInfo[1].debug_otherPdest_5;
+  assign io_commits_info_1_debug_otherPdest_6           = commitInfo[1].debug_otherPdest_6;
+
+  assign io_commits_info_2_walk_v                       = commitInfo[2].walk_v;
+  assign io_commits_info_2_commit_v                     = commitInfo[2].commit_v;
+  assign io_commits_info_2_commit_w                     = commitInfo[2].commit_w;
+  assign io_commits_info_2_realDestSize                 = commitInfo[2].realDestSize;
+  assign io_commits_info_2_interrupt_safe               = commitInfo[2].interrupt_safe;
+  assign io_commits_info_2_wflags                       = commitInfo[2].wflags;
+  assign io_commits_info_2_fflags                       = commitInfo[2].fflags;
+  assign io_commits_info_2_vxsat                        = commitInfo[2].vxsat;
+  assign io_commits_info_2_isRVC                        = commitInfo[2].isRVC;
+  assign io_commits_info_2_isVset                       = commitInfo[2].isVset;
+  assign io_commits_info_2_isHls                        = commitInfo[2].isHls;
+  assign io_commits_info_2_isVls                        = commitInfo[2].isVls;
+  assign io_commits_info_2_vls                          = commitInfo[2].vls;
+  assign io_commits_info_2_mmio                         = commitInfo[2].mmio;
+  assign io_commits_info_2_commitType                   = commitInfo[2].commitType;
+  assign io_commits_info_2_ftqIdx_flag                  = commitInfo[2].ftqIdx_flag;
+  assign io_commits_info_2_ftqIdx_value                 = commitInfo[2].ftqIdx_value;
+  assign io_commits_info_2_ftqOffset                    = commitInfo[2].ftqOffset;
+  assign io_commits_info_2_instrSize                    = commitInfo[2].instrSize;
+  assign io_commits_info_2_fpWen                        = commitInfo[2].fpWen;
+  assign io_commits_info_2_rfWen                        = commitInfo[2].rfWen;
+  assign io_commits_info_2_needFlush                    = commitInfo[2].needFlush;
+  assign io_commits_info_2_traceBlockInPipe_itype       = commitInfo[2].traceBlockInPipe_itype;
+  assign io_commits_info_2_traceBlockInPipe_iretire     = commitInfo[2].traceBlockInPipe_iretire;
+  assign io_commits_info_2_traceBlockInPipe_ilastsize   = commitInfo[2].traceBlockInPipe_ilastsize;
+  assign io_commits_info_2_debug_pc                     = commitInfo[2].debug_pc;
+  assign io_commits_info_2_debug_instr                  = commitInfo[2].debug_instr;
+  assign io_commits_info_2_basicDebug_ldest             = commitInfo[2].basicDebug_ldest;
+  assign io_commits_info_2_basicDebug_pdest             = commitInfo[2].basicDebug_pdest;
+  assign io_commits_info_2_basicDebug_vd                = commitInfo[2].basicDebug_vd;
+  assign io_commits_info_2_basicDebug_fpWen             = commitInfo[2].basicDebug_fpWen;
+  assign io_commits_info_2_basicDebug_vecWen            = commitInfo[2].basicDebug_vecWen;
+  assign io_commits_info_2_basicDebug_v0Wen             = commitInfo[2].basicDebug_v0Wen;
+  assign io_commits_info_2_basicDebug_eliminatedMove    = commitInfo[2].basicDebug_eliminatedMove;
+  assign io_commits_info_2_basicDebug_isXSTrap          = commitInfo[2].basicDebug_isXSTrap;
+  assign io_commits_info_2_debug_fuType                 = commitInfo[2].debug_fuType;
+  assign io_commits_info_2_dirtyFs                      = commitInfo[2].dirtyFs;
+  assign io_commits_info_2_dirtyVs                      = commitInfo[2].dirtyVs;
+  assign io_commits_info_2_debug_otherPdest_0           = commitInfo[2].debug_otherPdest_0;
+  assign io_commits_info_2_debug_otherPdest_1           = commitInfo[2].debug_otherPdest_1;
+  assign io_commits_info_2_debug_otherPdest_2           = commitInfo[2].debug_otherPdest_2;
+  assign io_commits_info_2_debug_otherPdest_3           = commitInfo[2].debug_otherPdest_3;
+  assign io_commits_info_2_debug_otherPdest_4           = commitInfo[2].debug_otherPdest_4;
+  assign io_commits_info_2_debug_otherPdest_5           = commitInfo[2].debug_otherPdest_5;
+  assign io_commits_info_2_debug_otherPdest_6           = commitInfo[2].debug_otherPdest_6;
+
+  assign io_commits_info_3_walk_v                       = commitInfo[3].walk_v;
+  assign io_commits_info_3_commit_v                     = commitInfo[3].commit_v;
+  assign io_commits_info_3_commit_w                     = commitInfo[3].commit_w;
+  assign io_commits_info_3_realDestSize                 = commitInfo[3].realDestSize;
+  assign io_commits_info_3_interrupt_safe               = commitInfo[3].interrupt_safe;
+  assign io_commits_info_3_wflags                       = commitInfo[3].wflags;
+  assign io_commits_info_3_fflags                       = commitInfo[3].fflags;
+  assign io_commits_info_3_vxsat                        = commitInfo[3].vxsat;
+  assign io_commits_info_3_isRVC                        = commitInfo[3].isRVC;
+  assign io_commits_info_3_isVset                       = commitInfo[3].isVset;
+  assign io_commits_info_3_isHls                        = commitInfo[3].isHls;
+  assign io_commits_info_3_isVls                        = commitInfo[3].isVls;
+  assign io_commits_info_3_vls                          = commitInfo[3].vls;
+  assign io_commits_info_3_mmio                         = commitInfo[3].mmio;
+  assign io_commits_info_3_commitType                   = commitInfo[3].commitType;
+  assign io_commits_info_3_ftqIdx_flag                  = commitInfo[3].ftqIdx_flag;
+  assign io_commits_info_3_ftqIdx_value                 = commitInfo[3].ftqIdx_value;
+  assign io_commits_info_3_ftqOffset                    = commitInfo[3].ftqOffset;
+  assign io_commits_info_3_instrSize                    = commitInfo[3].instrSize;
+  assign io_commits_info_3_fpWen                        = commitInfo[3].fpWen;
+  assign io_commits_info_3_rfWen                        = commitInfo[3].rfWen;
+  assign io_commits_info_3_needFlush                    = commitInfo[3].needFlush;
+  assign io_commits_info_3_traceBlockInPipe_itype       = commitInfo[3].traceBlockInPipe_itype;
+  assign io_commits_info_3_traceBlockInPipe_iretire     = commitInfo[3].traceBlockInPipe_iretire;
+  assign io_commits_info_3_traceBlockInPipe_ilastsize   = commitInfo[3].traceBlockInPipe_ilastsize;
+  assign io_commits_info_3_debug_pc                     = commitInfo[3].debug_pc;
+  assign io_commits_info_3_debug_instr                  = commitInfo[3].debug_instr;
+  assign io_commits_info_3_basicDebug_ldest             = commitInfo[3].basicDebug_ldest;
+  assign io_commits_info_3_basicDebug_pdest             = commitInfo[3].basicDebug_pdest;
+  assign io_commits_info_3_basicDebug_vd                = commitInfo[3].basicDebug_vd;
+  assign io_commits_info_3_basicDebug_fpWen             = commitInfo[3].basicDebug_fpWen;
+  assign io_commits_info_3_basicDebug_vecWen            = commitInfo[3].basicDebug_vecWen;
+  assign io_commits_info_3_basicDebug_v0Wen             = commitInfo[3].basicDebug_v0Wen;
+  assign io_commits_info_3_basicDebug_eliminatedMove    = commitInfo[3].basicDebug_eliminatedMove;
+  assign io_commits_info_3_basicDebug_isXSTrap          = commitInfo[3].basicDebug_isXSTrap;
+  assign io_commits_info_3_debug_fuType                 = commitInfo[3].debug_fuType;
+  assign io_commits_info_3_dirtyFs                      = commitInfo[3].dirtyFs;
+  assign io_commits_info_3_dirtyVs                      = commitInfo[3].dirtyVs;
+  assign io_commits_info_3_debug_otherPdest_0           = commitInfo[3].debug_otherPdest_0;
+  assign io_commits_info_3_debug_otherPdest_1           = commitInfo[3].debug_otherPdest_1;
+  assign io_commits_info_3_debug_otherPdest_2           = commitInfo[3].debug_otherPdest_2;
+  assign io_commits_info_3_debug_otherPdest_3           = commitInfo[3].debug_otherPdest_3;
+  assign io_commits_info_3_debug_otherPdest_4           = commitInfo[3].debug_otherPdest_4;
+  assign io_commits_info_3_debug_otherPdest_5           = commitInfo[3].debug_otherPdest_5;
+  assign io_commits_info_3_debug_otherPdest_6           = commitInfo[3].debug_otherPdest_6;
+
+  assign io_commits_info_4_walk_v                       = commitInfo[4].walk_v;
+  assign io_commits_info_4_commit_v                     = commitInfo[4].commit_v;
+  assign io_commits_info_4_commit_w                     = commitInfo[4].commit_w;
+  assign io_commits_info_4_realDestSize                 = commitInfo[4].realDestSize;
+  assign io_commits_info_4_interrupt_safe               = commitInfo[4].interrupt_safe;
+  assign io_commits_info_4_wflags                       = commitInfo[4].wflags;
+  assign io_commits_info_4_fflags                       = commitInfo[4].fflags;
+  assign io_commits_info_4_vxsat                        = commitInfo[4].vxsat;
+  assign io_commits_info_4_isRVC                        = commitInfo[4].isRVC;
+  assign io_commits_info_4_isVset                       = commitInfo[4].isVset;
+  assign io_commits_info_4_isHls                        = commitInfo[4].isHls;
+  assign io_commits_info_4_isVls                        = commitInfo[4].isVls;
+  assign io_commits_info_4_vls                          = commitInfo[4].vls;
+  assign io_commits_info_4_mmio                         = commitInfo[4].mmio;
+  assign io_commits_info_4_commitType                   = commitInfo[4].commitType;
+  assign io_commits_info_4_ftqIdx_flag                  = commitInfo[4].ftqIdx_flag;
+  assign io_commits_info_4_ftqIdx_value                 = commitInfo[4].ftqIdx_value;
+  assign io_commits_info_4_ftqOffset                    = commitInfo[4].ftqOffset;
+  assign io_commits_info_4_instrSize                    = commitInfo[4].instrSize;
+  assign io_commits_info_4_fpWen                        = commitInfo[4].fpWen;
+  assign io_commits_info_4_rfWen                        = commitInfo[4].rfWen;
+  assign io_commits_info_4_needFlush                    = commitInfo[4].needFlush;
+  assign io_commits_info_4_traceBlockInPipe_itype       = commitInfo[4].traceBlockInPipe_itype;
+  assign io_commits_info_4_traceBlockInPipe_iretire     = commitInfo[4].traceBlockInPipe_iretire;
+  assign io_commits_info_4_traceBlockInPipe_ilastsize   = commitInfo[4].traceBlockInPipe_ilastsize;
+  assign io_commits_info_4_debug_pc                     = commitInfo[4].debug_pc;
+  assign io_commits_info_4_debug_instr                  = commitInfo[4].debug_instr;
+  assign io_commits_info_4_basicDebug_ldest             = commitInfo[4].basicDebug_ldest;
+  assign io_commits_info_4_basicDebug_pdest             = commitInfo[4].basicDebug_pdest;
+  assign io_commits_info_4_basicDebug_vd                = commitInfo[4].basicDebug_vd;
+  assign io_commits_info_4_basicDebug_fpWen             = commitInfo[4].basicDebug_fpWen;
+  assign io_commits_info_4_basicDebug_vecWen            = commitInfo[4].basicDebug_vecWen;
+  assign io_commits_info_4_basicDebug_v0Wen             = commitInfo[4].basicDebug_v0Wen;
+  assign io_commits_info_4_basicDebug_eliminatedMove    = commitInfo[4].basicDebug_eliminatedMove;
+  assign io_commits_info_4_basicDebug_isXSTrap          = commitInfo[4].basicDebug_isXSTrap;
+  assign io_commits_info_4_debug_fuType                 = commitInfo[4].debug_fuType;
+  assign io_commits_info_4_dirtyFs                      = commitInfo[4].dirtyFs;
+  assign io_commits_info_4_dirtyVs                      = commitInfo[4].dirtyVs;
+  assign io_commits_info_4_debug_otherPdest_0           = commitInfo[4].debug_otherPdest_0;
+  assign io_commits_info_4_debug_otherPdest_1           = commitInfo[4].debug_otherPdest_1;
+  assign io_commits_info_4_debug_otherPdest_2           = commitInfo[4].debug_otherPdest_2;
+  assign io_commits_info_4_debug_otherPdest_3           = commitInfo[4].debug_otherPdest_3;
+  assign io_commits_info_4_debug_otherPdest_4           = commitInfo[4].debug_otherPdest_4;
+  assign io_commits_info_4_debug_otherPdest_5           = commitInfo[4].debug_otherPdest_5;
+  assign io_commits_info_4_debug_otherPdest_6           = commitInfo[4].debug_otherPdest_6;
+
+  assign io_commits_info_5_walk_v                       = commitInfo[5].walk_v;
+  assign io_commits_info_5_commit_v                     = commitInfo[5].commit_v;
+  assign io_commits_info_5_commit_w                     = commitInfo[5].commit_w;
+  assign io_commits_info_5_realDestSize                 = commitInfo[5].realDestSize;
+  assign io_commits_info_5_interrupt_safe               = commitInfo[5].interrupt_safe;
+  assign io_commits_info_5_wflags                       = commitInfo[5].wflags;
+  assign io_commits_info_5_fflags                       = commitInfo[5].fflags;
+  assign io_commits_info_5_vxsat                        = commitInfo[5].vxsat;
+  assign io_commits_info_5_isRVC                        = commitInfo[5].isRVC;
+  assign io_commits_info_5_isVset                       = commitInfo[5].isVset;
+  assign io_commits_info_5_isHls                        = commitInfo[5].isHls;
+  assign io_commits_info_5_isVls                        = commitInfo[5].isVls;
+  assign io_commits_info_5_vls                          = commitInfo[5].vls;
+  assign io_commits_info_5_mmio                         = commitInfo[5].mmio;
+  assign io_commits_info_5_commitType                   = commitInfo[5].commitType;
+  assign io_commits_info_5_ftqIdx_flag                  = commitInfo[5].ftqIdx_flag;
+  assign io_commits_info_5_ftqIdx_value                 = commitInfo[5].ftqIdx_value;
+  assign io_commits_info_5_ftqOffset                    = commitInfo[5].ftqOffset;
+  assign io_commits_info_5_instrSize                    = commitInfo[5].instrSize;
+  assign io_commits_info_5_fpWen                        = commitInfo[5].fpWen;
+  assign io_commits_info_5_rfWen                        = commitInfo[5].rfWen;
+  assign io_commits_info_5_needFlush                    = commitInfo[5].needFlush;
+  assign io_commits_info_5_traceBlockInPipe_itype       = commitInfo[5].traceBlockInPipe_itype;
+  assign io_commits_info_5_traceBlockInPipe_iretire     = commitInfo[5].traceBlockInPipe_iretire;
+  assign io_commits_info_5_traceBlockInPipe_ilastsize   = commitInfo[5].traceBlockInPipe_ilastsize;
+  assign io_commits_info_5_debug_pc                     = commitInfo[5].debug_pc;
+  assign io_commits_info_5_debug_instr                  = commitInfo[5].debug_instr;
+  assign io_commits_info_5_basicDebug_ldest             = commitInfo[5].basicDebug_ldest;
+  assign io_commits_info_5_basicDebug_pdest             = commitInfo[5].basicDebug_pdest;
+  assign io_commits_info_5_basicDebug_vd                = commitInfo[5].basicDebug_vd;
+  assign io_commits_info_5_basicDebug_fpWen             = commitInfo[5].basicDebug_fpWen;
+  assign io_commits_info_5_basicDebug_vecWen            = commitInfo[5].basicDebug_vecWen;
+  assign io_commits_info_5_basicDebug_v0Wen             = commitInfo[5].basicDebug_v0Wen;
+  assign io_commits_info_5_basicDebug_eliminatedMove    = commitInfo[5].basicDebug_eliminatedMove;
+  assign io_commits_info_5_basicDebug_isXSTrap          = commitInfo[5].basicDebug_isXSTrap;
+  assign io_commits_info_5_debug_fuType                 = commitInfo[5].debug_fuType;
+  assign io_commits_info_5_dirtyFs                      = commitInfo[5].dirtyFs;
+  assign io_commits_info_5_dirtyVs                      = commitInfo[5].dirtyVs;
+  assign io_commits_info_5_debug_otherPdest_0           = commitInfo[5].debug_otherPdest_0;
+  assign io_commits_info_5_debug_otherPdest_1           = commitInfo[5].debug_otherPdest_1;
+  assign io_commits_info_5_debug_otherPdest_2           = commitInfo[5].debug_otherPdest_2;
+  assign io_commits_info_5_debug_otherPdest_3           = commitInfo[5].debug_otherPdest_3;
+  assign io_commits_info_5_debug_otherPdest_4           = commitInfo[5].debug_otherPdest_4;
+  assign io_commits_info_5_debug_otherPdest_5           = commitInfo[5].debug_otherPdest_5;
+  assign io_commits_info_5_debug_otherPdest_6           = commitInfo[5].debug_otherPdest_6;
+
+  assign io_commits_info_6_walk_v                       = commitInfo[6].walk_v;
+  assign io_commits_info_6_commit_v                     = commitInfo[6].commit_v;
+  assign io_commits_info_6_commit_w                     = commitInfo[6].commit_w;
+  assign io_commits_info_6_realDestSize                 = commitInfo[6].realDestSize;
+  assign io_commits_info_6_interrupt_safe               = commitInfo[6].interrupt_safe;
+  assign io_commits_info_6_wflags                       = commitInfo[6].wflags;
+  assign io_commits_info_6_fflags                       = commitInfo[6].fflags;
+  assign io_commits_info_6_vxsat                        = commitInfo[6].vxsat;
+  assign io_commits_info_6_isRVC                        = commitInfo[6].isRVC;
+  assign io_commits_info_6_isVset                       = commitInfo[6].isVset;
+  assign io_commits_info_6_isHls                        = commitInfo[6].isHls;
+  assign io_commits_info_6_isVls                        = commitInfo[6].isVls;
+  assign io_commits_info_6_vls                          = commitInfo[6].vls;
+  assign io_commits_info_6_mmio                         = commitInfo[6].mmio;
+  assign io_commits_info_6_commitType                   = commitInfo[6].commitType;
+  assign io_commits_info_6_ftqIdx_flag                  = commitInfo[6].ftqIdx_flag;
+  assign io_commits_info_6_ftqIdx_value                 = commitInfo[6].ftqIdx_value;
+  assign io_commits_info_6_ftqOffset                    = commitInfo[6].ftqOffset;
+  assign io_commits_info_6_instrSize                    = commitInfo[6].instrSize;
+  assign io_commits_info_6_fpWen                        = commitInfo[6].fpWen;
+  assign io_commits_info_6_rfWen                        = commitInfo[6].rfWen;
+  assign io_commits_info_6_needFlush                    = commitInfo[6].needFlush;
+  assign io_commits_info_6_traceBlockInPipe_itype       = commitInfo[6].traceBlockInPipe_itype;
+  assign io_commits_info_6_traceBlockInPipe_iretire     = commitInfo[6].traceBlockInPipe_iretire;
+  assign io_commits_info_6_traceBlockInPipe_ilastsize   = commitInfo[6].traceBlockInPipe_ilastsize;
+  assign io_commits_info_6_debug_pc                     = commitInfo[6].debug_pc;
+  assign io_commits_info_6_debug_instr                  = commitInfo[6].debug_instr;
+  assign io_commits_info_6_basicDebug_ldest             = commitInfo[6].basicDebug_ldest;
+  assign io_commits_info_6_basicDebug_pdest             = commitInfo[6].basicDebug_pdest;
+  assign io_commits_info_6_basicDebug_vd                = commitInfo[6].basicDebug_vd;
+  assign io_commits_info_6_basicDebug_fpWen             = commitInfo[6].basicDebug_fpWen;
+  assign io_commits_info_6_basicDebug_vecWen            = commitInfo[6].basicDebug_vecWen;
+  assign io_commits_info_6_basicDebug_v0Wen             = commitInfo[6].basicDebug_v0Wen;
+  assign io_commits_info_6_basicDebug_eliminatedMove    = commitInfo[6].basicDebug_eliminatedMove;
+  assign io_commits_info_6_basicDebug_isXSTrap          = commitInfo[6].basicDebug_isXSTrap;
+  assign io_commits_info_6_debug_fuType                 = commitInfo[6].debug_fuType;
+  assign io_commits_info_6_dirtyFs                      = commitInfo[6].dirtyFs;
+  assign io_commits_info_6_dirtyVs                      = commitInfo[6].dirtyVs;
+  assign io_commits_info_6_debug_otherPdest_0           = commitInfo[6].debug_otherPdest_0;
+  assign io_commits_info_6_debug_otherPdest_1           = commitInfo[6].debug_otherPdest_1;
+  assign io_commits_info_6_debug_otherPdest_2           = commitInfo[6].debug_otherPdest_2;
+  assign io_commits_info_6_debug_otherPdest_3           = commitInfo[6].debug_otherPdest_3;
+  assign io_commits_info_6_debug_otherPdest_4           = commitInfo[6].debug_otherPdest_4;
+  assign io_commits_info_6_debug_otherPdest_5           = commitInfo[6].debug_otherPdest_5;
+  assign io_commits_info_6_debug_otherPdest_6           = commitInfo[6].debug_otherPdest_6;
+
+  assign io_commits_info_7_walk_v                       = commitInfo[7].walk_v;
+  assign io_commits_info_7_commit_v                     = commitInfo[7].commit_v;
+  assign io_commits_info_7_commit_w                     = commitInfo[7].commit_w;
+  assign io_commits_info_7_realDestSize                 = commitInfo[7].realDestSize;
+  assign io_commits_info_7_interrupt_safe               = commitInfo[7].interrupt_safe;
+  assign io_commits_info_7_wflags                       = commitInfo[7].wflags;
+  assign io_commits_info_7_fflags                       = commitInfo[7].fflags;
+  assign io_commits_info_7_vxsat                        = commitInfo[7].vxsat;
+  assign io_commits_info_7_isRVC                        = commitInfo[7].isRVC;
+  assign io_commits_info_7_isVset                       = commitInfo[7].isVset;
+  assign io_commits_info_7_isHls                        = commitInfo[7].isHls;
+  assign io_commits_info_7_isVls                        = commitInfo[7].isVls;
+  assign io_commits_info_7_vls                          = commitInfo[7].vls;
+  assign io_commits_info_7_mmio                         = commitInfo[7].mmio;
+  assign io_commits_info_7_commitType                   = commitInfo[7].commitType;
+  assign io_commits_info_7_ftqIdx_flag                  = commitInfo[7].ftqIdx_flag;
+  assign io_commits_info_7_ftqIdx_value                 = commitInfo[7].ftqIdx_value;
+  assign io_commits_info_7_ftqOffset                    = commitInfo[7].ftqOffset;
+  assign io_commits_info_7_instrSize                    = commitInfo[7].instrSize;
+  assign io_commits_info_7_fpWen                        = commitInfo[7].fpWen;
+  assign io_commits_info_7_rfWen                        = commitInfo[7].rfWen;
+  assign io_commits_info_7_needFlush                    = commitInfo[7].needFlush;
+  assign io_commits_info_7_traceBlockInPipe_itype       = commitInfo[7].traceBlockInPipe_itype;
+  assign io_commits_info_7_traceBlockInPipe_iretire     = commitInfo[7].traceBlockInPipe_iretire;
+  assign io_commits_info_7_traceBlockInPipe_ilastsize   = commitInfo[7].traceBlockInPipe_ilastsize;
+  assign io_commits_info_7_debug_pc                     = commitInfo[7].debug_pc;
+  assign io_commits_info_7_debug_instr                  = commitInfo[7].debug_instr;
+  assign io_commits_info_7_basicDebug_ldest             = commitInfo[7].basicDebug_ldest;
+  assign io_commits_info_7_basicDebug_pdest             = commitInfo[7].basicDebug_pdest;
+  assign io_commits_info_7_basicDebug_vd                = commitInfo[7].basicDebug_vd;
+  assign io_commits_info_7_basicDebug_fpWen             = commitInfo[7].basicDebug_fpWen;
+  assign io_commits_info_7_basicDebug_vecWen            = commitInfo[7].basicDebug_vecWen;
+  assign io_commits_info_7_basicDebug_v0Wen             = commitInfo[7].basicDebug_v0Wen;
+  assign io_commits_info_7_basicDebug_eliminatedMove    = commitInfo[7].basicDebug_eliminatedMove;
+  assign io_commits_info_7_basicDebug_isXSTrap          = commitInfo[7].basicDebug_isXSTrap;
+  assign io_commits_info_7_debug_fuType                 = commitInfo[7].debug_fuType;
+  assign io_commits_info_7_dirtyFs                      = commitInfo[7].dirtyFs;
+  assign io_commits_info_7_dirtyVs                      = commitInfo[7].dirtyVs;
+  assign io_commits_info_7_debug_otherPdest_0           = commitInfo[7].debug_otherPdest_0;
+  assign io_commits_info_7_debug_otherPdest_1           = commitInfo[7].debug_otherPdest_1;
+  assign io_commits_info_7_debug_otherPdest_2           = commitInfo[7].debug_otherPdest_2;
+  assign io_commits_info_7_debug_otherPdest_3           = commitInfo[7].debug_otherPdest_3;
+  assign io_commits_info_7_debug_otherPdest_4           = commitInfo[7].debug_otherPdest_4;
+  assign io_commits_info_7_debug_otherPdest_5           = commitInfo[7].debug_otherPdest_5;
+  assign io_commits_info_7_debug_otherPdest_6           = commitInfo[7].debug_otherPdest_6;
 
 
 endmodule
