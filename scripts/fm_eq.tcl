@@ -458,7 +458,24 @@ switch -- $_verify_matched_unread_compare_points {
     #              passing = golden 闭包的触发器**位数** + 顶层 output 端口**位数**;
     #              该模型在 TlbStorageWrapper_1 8682 / TLBFA_1 8663 / TLBFA_2 8233 /
     #              TLBFA_3 8229 / DelayN_7 657 / DelayN_9 216 上逐位命中过, 本轮三个也逐位命中。
-    if {$top ni {Bku Composer DebugModule DuplicatedTagArray EntriesVfdivVidiv FAlu FCVT FTBBank Ftq ICacheCtrlUnit ICacheDataArray ICacheMetaArray ICacheMissUnit InstrUncache ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 LinkMonitor MulUnit Queue1_RegMapperInput_5 RNXbar SNXbar SourceB SSIT TageBTable TlbStorageWrapper TlbStorageWrapper_1 TXDAT_4 TXREQ WritebackQueue IBuffer EntriesAluCsrFenceDiv NCBTransactionQueue NCBTransactionQueue_1 Predictor RenameBuffer TLBFA TLBFA_1 TLBFA_2 TLBFA_3 TLBNonBlock TLBNonBlock_1 TLBNonBlock_2}} {
+    # OthersEntry_88 / _104 / _120 加入依据(2026-09-20, agent/othersentry 实测)：
+    # 三个都是 FP 族的 simp 条目。钉点后(verif/ut/<变体>/fm_pins_pre.tcl，1407 对)
+    # strict 跑 native SUCCEEDED / failing 0 / unmatched 六项全 0，只剩 unread 9 卡住。
+    # 9 点**全部** matched_nc，ref 侧 9 个唯一点 ↔ impl 侧 9 个唯一点、非 matched_nc
+    # 项为 0，严格双射；而且这 9 对正是钉点文件自己钉上去的，不是 FM 猜配：
+    #   ref  entryReg_status_srcStatus_<s>_srcLoadDependency_<q>_reg[1]
+    #   impl u_entry/r_ld_dep_reg[s][q][1]            (s,q in 0..2, 共 9 对)
+    # 死因两侧同源、结构性的：FP 族 golden **一个 ldCancel 端口都没有**
+    # (verif/ut/OthersEntry_field_matrix/matrix.tsv 的 nLdCancel / ld1Cancel /
+    #  ld2Cancel / ldDep_pipes 四行在这几列全 0，可 gen_matrix.py --check 复算)，
+    # 于是 LoadShouldCancel 整条不生成，srcLoadDependency 影子的 bit[1] 没有读出点；
+    # 次态是左移(bit1' = bit0)，而 transEntry 露的是**次态**不是寄存器，
+    # 所以寄存器 bit1 是纯写入位 —— golden 与可读核同为死位，不是人工强配。
+    # ★复核判据(跑前预登记)★ 加强后 passing 必须**恰好 +9**：
+    #   OthersEntry_88  3519 -> 3528 / _104 3511 -> 3520 / _120 3507 -> 3516，
+    #   三个都正好等于 predict.py 的模型上界；unread 归 0、failing 仍 0、unmatched 全 0。
+    #   passing 不增而 unread 归 0 = 点被吞掉，不算过。
+    if {$top ni {OthersEntry_88 OthersEntry_104 OthersEntry_120 Bku Composer DebugModule DuplicatedTagArray EntriesVfdivVidiv FAlu FCVT FTBBank Ftq ICacheCtrlUnit ICacheDataArray ICacheMetaArray ICacheMissUnit InstrUncache ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 LinkMonitor MulUnit Queue1_RegMapperInput_5 RNXbar SNXbar SourceB SSIT TageBTable TlbStorageWrapper TlbStorageWrapper_1 TXDAT_4 TXREQ WritebackQueue IBuffer EntriesAluCsrFenceDiv NCBTransactionQueue NCBTransactionQueue_1 Predictor RenameBuffer TLBFA TLBFA_1 TLBFA_2 TLBFA_3 TLBNonBlock TLBNonBlock_1 TLBNonBlock_2}} {
       puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
       exit 3
     }

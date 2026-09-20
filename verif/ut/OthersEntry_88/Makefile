@@ -26,8 +26,11 @@ FM_REF_DEPS_OthersEntry_88 = UIntCompressor_27_000000000000001010100000000.sv
 #   把这些同值寄存器合并掉，而可读核把同一份负载存在一根向量里、按位不合并，
 #   于是两侧点数对不上。置 false 后两侧都逐个保留 —— 要求逐个比而不是合并后比。
 FM_MERGE_DUP = false
-# 本变体的 FM 点数尚未实测；预测登记在 verif/ut/OthersEntry_88/PREDICT.txt。
-FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = false
+# ★vmucp=true（加强，不是放宽）★：本变体首跑仅剩 9 个 matched_nc unread
+#   （srcLoadDependency 的 bit[1]，两侧同为死位、ref 9 <-> impl 9 严格双射、
+#    由本目录 fm_pins_pre.tcl 钉上）。依据与预登记数字见
+#   verif/ut/OthersEntry_common/othersentry_gen.py 的 VMUCP 表。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 
 include ../../../scripts/ut_common.mk
 

@@ -109,6 +109,38 @@ DBG_MUTANTS = [
 ]
 
 
+# ---------------------------------------------------------------------------
+# ★ 空变异（逻辑等价）清单 —— 从分子分母**同时**剔除，并注明理由 ★
+#
+# 有一类变异在本族上「改了源码但没改电路」：改掉的两个表达式在 OthersEntry 的参数
+# 组合下是**同一根网**。这种变异逃逸不说明 UT 瞎，它根本没造出可观测差异。
+# 按规矩：既不计 caught 也不进分母，但理由必须是**从代码里读得出来的**，
+# 不许拿"我觉得等价"搪塞。每条都带一个 `proof` 闭包，跑的时候真去核对源码。
+#
+# ★为什么不干脆删掉这两条★ 它们在 Entries 家族（enq 条目 / simp 条目）上是活的，
+# 共享靶子表必须原样导入；在这里逐条标注，比在那边删掉安全。
+# ---------------------------------------------------------------------------
+def _null_m3(ov, core):
+    """M3: replaceRC 比 cur_rc_idx vs r_rc_idx。
+    核里 cur_rc_idx[s] 先无条件赋成 r_rc_idx[s]，只在 `if (dly)` 里被改写，
+    而 dly = IS_ENQ & enqd_valid_reg。OthersEntry 一律 IS_ENQ=0 ⇒ dly 恒 0
+    ⇒ 两者是同一根网，改了等于没改。"""
+    ok = ('      dly = IS_ENQ & enqd_valid_reg;' in core
+          and '      cur_rc_idx[s]  = r_rc_idx[s];' in core)
+    return ok, ('IS_ENQ=0 ⇒ dly 恒 0 ⇒ cur_rc_idx ≡ r_rc_idx'
+                if ok else '源码里找不到 dly/cur_rc_idx 的那两行，空变异判定失效')
+
+
+def _null_m14(ov, core):
+    """M14: o_trans_ld_dep 送 u_ld_dep vs r_ld_dep。
+    comp 条目（IS_TRANS=0）的 wrapper 根本不接 o_trans_*（golden 也没有
+    transEntry 端口），这根输出悬空，改它改不动任何可观测量。simp 上是活的。"""
+    return (not ov.is_trans), 'comp 不接 o_trans_ld_dep（golden 无 transEntry 端口），输出悬空'
+
+
+NULL_MUTANTS = {'M3': _null_m3, 'M14': _null_m14}
+
+
 def run(cmd, cwd):
     return subprocess.run(cmd, cwd=str(cwd), stdout=subprocess.PIPE,
                           stderr=subprocess.STDOUT)
@@ -153,10 +185,15 @@ def main():
         i = core_txt.index(anchor)
         return ent_lo < i < ent_hi
 
-    todo, na, struct = [], [], []
+    todo, na, struct, null = [], [], [], []
     for m in allm:
         if a.only and m[0] != a.only:
             continue
+        if m[0] in NULL_MUTANTS:
+            is_null, why = NULL_MUTANTS[m[0]](ov, core_txt)
+            if is_null:
+                null.append((m, why))
+                continue
         if not in_entry(m[2]):
             na.append((m, '锚点在阵列层 xs_iq_entries_core 里，'
                           'OthersEntry 的 wrapper 只例化 xs_iq_entry，注进去等于没注'))
@@ -172,6 +209,8 @@ def main():
         print(f'[{m[0]}] N/A（本变体上这条变异是死的）: {why}')
     for m, why in struct:
         print(f'[{m[0]}] 结构型（UT 按构造看不见，闸在 FM）: {m[1]}')
+    for m, why in null:
+        print(f'[{m[0]}] ★空变异（逻辑等价，分子分母同时剔除）★: {why}')
     if a.list:
         for m, _ in todo:
             print(f'[{m[0]}] 待跑: {m[1]}')
@@ -226,7 +265,8 @@ def main():
 
     scored = len(todo) - len(infra) - len(invalid)
     print(f'\n[{a.top}] 变异判别力: 抓住 {len(caught)}/{scored} 条适用的行为型变异'
-          f'（N/A {len(na)}；结构型 {len(struct)} 条闸在 FM；'
+          f'（N/A {len(na)}；空变异 {len(null)} 条已从分子分母剔除；'
+          f'结构型 {len(struct)} 条闸在 FM；'
           f'无效变异体 {len(invalid)} 条；基础设施失败 {len(infra)} 条）')
     rc = 0
     if infra:

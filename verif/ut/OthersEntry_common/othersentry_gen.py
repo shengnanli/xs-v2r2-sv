@@ -866,6 +866,30 @@ def check_port_refs(ov, rtl):
     return len(used)
 
 
+# ---------------------------------------------------------------------------
+# vmucp（verify_matched_unread_compare_points）已挣到的变体。
+#
+# ★这是加强不是放宽★：true 让 FM **真去比**那些「本变体里没有输出锥」的点，
+# 而不是记 Not-Compared。加入依据按 standing rule 的六条逐条落实，写在
+# scripts/fm_eq.tcl 白名单那一行紧邻的注释里；数字见下。
+#
+# FP 族的 3 个 simp 变体（实测 commit 6e3b15fc，钉点之后）：
+#   passing 3519/3511/3507，failing 0，unmatched 0，仅 unread 9 卡成 PARTIAL。
+#   9 点**全部** matched_nc、ref 9 ↔ impl 9 严格双射，且这 9 对正是本 lane 自己
+#   fm_pins_pre.tcl 钉上去的，不是 FM 猜配：
+#     entryReg_status_srcStatus_<s>_srcLoadDependency_<q>_reg[1]
+#       <-> u_entry/r_ld_dep_reg[s][q][1]                    （s,q ∈ 0..2）
+#   死因两侧同源：FP 族 golden **一个 ldCancel 端口都没有**
+#   （矩阵 nLdCancel/ld1Cancel/ld2Cancel/ldDep_pipes 六列全 0，可 --check 复算），
+#   于是 LoadShouldCancel 整条不生成，影子的 bit[1] 没有任何读出点；
+#   而次态是左移（bit1' = bit0），transEntry 露的又是**次态**不是寄存器，
+#   所以寄存器的 bit1 是纯写入位。golden 与可读核同为死位。
+#   ★预登记★：打开后期望 passing 恰好 +9（3519->3528 / 3511->3520 / 3507->3516，
+#   三个都正好等于 predict.py 的模型上界）、unread 归 0、failing 仍 0。
+#   passing 不增而 unread 归 0 = 点被吞掉，按 fail 处理。
+VMUCP = {'OthersEntry_88', 'OthersEntry_104', 'OthersEntry_120'}
+
+
 # =============================================================================
 def gen_mk(ov):
     v = ov.v
@@ -875,6 +899,14 @@ def gen_mk(ov):
         r'^  ([A-Z][A-Za-z0-9_]*) [a-zA-Z_]\w*\s*\($', read(ov.mod), re.M)})
     extra_golden = ''.join(f' \\\n              $(GOLDEN_RTL)/{m}.sv' for m in sub)
     extra_deps = ' '.join(f'{m}.sv' for m in sub)
+    vmucp = 'true' if ov.mod in VMUCP else 'false'
+    vmucp_note = (
+        '# ★vmucp=true（加强，不是放宽）★：本变体首跑仅剩 9 个 matched_nc unread\n'
+        '#   （srcLoadDependency 的 bit[1]，两侧同为死位、ref 9 <-> impl 9 严格双射、\n'
+        '#    由本目录 fm_pins_pre.tcl 钉上）。依据与预登记数字见\n'
+        '#   verif/ut/OthersEntry_common/othersentry_gen.py 的 VMUCP 表。'
+        if vmucp == 'true' else
+        '# 本变体未用 vmucp：首跑 unread 即为 0。')
     return f"""# {ov.mod} UT/FM 入口（OthersEntry* 家族：{ov.parent[len('Entries'):]} 的 {ov.role}）
 # 重写件只有两个：三族共享的参数化单条目核 + 本变体薄文件。
 # 核体是 xs_iq_entries_core.sv 里的 xs_iq_entry —— 与 Entries* 家族**同一份**，
@@ -902,8 +934,8 @@ FM_REF_DEPS_{ov.mod} = {extra_deps}
 #   把这些同值寄存器合并掉，而可读核把同一份负载存在一根向量里、按位不合并，
 #   于是两侧点数对不上。置 false 后两侧都逐个保留 —— 要求逐个比而不是合并后比。
 FM_MERGE_DUP = false
-# 本变体的 FM 点数尚未实测；预测登记在 verif/ut/{ov.mod}/PREDICT.txt。
-FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = false
+{vmucp_note}
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = {vmucp}
 
 include ../../../scripts/ut_common.mk
 
