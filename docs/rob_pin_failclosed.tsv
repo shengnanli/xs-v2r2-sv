@@ -1,0 +1,17 @@
+# rob_pin_failclosed_probe.py 生成，勿手改。重跑：python3 scripts/rob_pin_failclosed_probe.py --run --write
+# 问题：set_user_match 钉一个不存在的名字，catch 抓不抓得到？
+# 这是 verif/ut/Rob/fm_pins.tcl 整个 fail-closed 性质的地基。
+# fm_shell rc=0  脚本跑完=True  fm.log 里行首 `Error:` 行数=4
+tag	catch	msg
+GOOD	0	1
+GOOD_W	0	1
+X_IMPL	0	0
+X_REF	0	0
+X_BOTH	0	0
+# 读法（列 msg 就是 set_user_match 的**返回值**，因为 catch 没抛）：
+#   catch 全是 0  -> ★set_user_match 从不抛 Tcl 异常★，`if {[catch ...]}` 计数法是空的，
+#                    "pinned N of N" 恒成立，exit 3 永远走不到。
+#   返回值有分辨力 -> 钉上了返回 1，钉不上返回 0。所以正确的写法是 `if {[set_user_match $r $i]} {incr _pinned}`，
+#                    ★不是★ `if {[catch {set_user_match $r $i}] == 0}`。
+#   行首 Error 行数 -> 每个不存在的名字一行 FM-036；3 个坏 pin 里有 4 个坏名字，正好 4 行。
+#                    这是第二条独立判据（不依赖返回值），两条都该用。

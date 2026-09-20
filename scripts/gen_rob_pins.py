@@ -47,10 +47,27 @@ against an actual `xs_Rob_core`. The emitted Tcl is fail-closed precisely so
 that a spelling mismatch shows up as `pinned N of M, N != M` and `exit 3`
 instead of a silently slow match.
 
-Fail-closed
------------
-The emitted Tcl counts accepted pins and `exit 3`s unless every pin was taken,
-so a silently-unpinned register can never masquerade as a fast match.
+Fail-closed —— ★2026-09-20 实测推翻了原来的写法，这里记下原委★
+------------------------------------------------------------------
+产出的 Tcl 数"钉上了几个"，不足数就 `exit 3`。**但"怎么数"以前是错的**：
+
+    旧： if {[catch {set_user_match $r $i}] == 0} {incr _pinned}      ← 空的
+    新： if {[set_user_match $r $i]} {incr _pinned}                   ← 有分辨力
+
+实测（scripts/rob_pin_failclosed_probe.py，证据 docs/rob_pin_failclosed.tsv，
+两次独立跑一致）：`set_user_match` **从不抛 Tcl 异常**。五例里 catch 全是 0 ——
+包括两侧名字都不存在那一例。区别只在**返回值**：钉上了 1，钉不上 0；
+同时 fm.log 里每个不存在的名字写一行 `Error: Unknown name: ... (FM-036)`。
+
+所以旧写法下 `_pinned` 恒等于 `_want`，那行 `exit 3` 永远走不到 ——
+169,168 个 pin 一个都没配上也会打印 "pinned 169168 of 169168"。
+
+这条错误没被 `--selftest` 发现，因为**桩里让 refuse 模式 `error`** ——
+桩的行为正是待验的那个假设。用桩去验桩自己的假设是个闭环。
+桩已按实测改成"返回 0/1、从不抛"。
+
+第二条独立判据（不依赖返回值）：fm.log 里行首锚定的 `Error:` 行数必须为 0。
+两条都该用；只用一条时，任一条的失效方式都是**安静的**。
 
 Self-test (`--selftest`) runs in pure tclsh with `set_user_match` stubbed -- no
 Formality, no license. It is DISCRIMINATING, not merely reactive: each check
@@ -171,16 +188,16 @@ def emit(arrays, digest, top='Rob', inst='u_core'):
                 L.append('for {set i 0} {$i < %d} {incr i} {' % depth)
                 if w == 1:
                     L.append('  incr _want')
-                    L.append('  if {[catch {set_user_match '
+                    L.append('  if {[set_user_match '
                              'r:/WORK/%s/%s_${i}_reg '
-                             'i:/WORK/%s/%s/%s_reg\\[$i\\]}] == 0} {incr _pinned}'
+                             'i:/WORK/%s/%s/%s_reg\\[$i\\]]} {incr _pinned}'
                              % (top, pre, top, inst, pre))
                 else:
                     L.append('  for {set b 0} {$b < %d} {incr b} {' % w)
                     L.append('    incr _want')
-                    L.append('    if {[catch {set_user_match '
+                    L.append('    if {[set_user_match '
                              'r:/WORK/%s/%s_${i}_reg\\[$b\\] '
-                             'i:/WORK/%s/%s/%s_reg\\[$i\\]\\[$b\\]}] == 0} '
+                             'i:/WORK/%s/%s/%s_reg\\[$i\\]\\[$b\\]]} '
                              '{incr _pinned}'
                              % (top, pre, top, inst, pre))
                     L.append('  }')
@@ -189,16 +206,16 @@ def emit(arrays, digest, top='Rob', inst='u_core'):
             L.append('for {set i 0} {$i < %d} {incr i} {' % depth)
             if w == 1:
                 L.append('  incr _want')
-                L.append('  if {[catch {set_user_match '
+                L.append('  if {[set_user_match '
                          'r:/WORK/%s/%s_${i}_%s_reg '
-                         'i:/WORK/%s/%s/%s_%s_reg\\[$i\\]}] == 0} {incr _pinned}'
+                         'i:/WORK/%s/%s/%s_%s_reg\\[$i\\]]} {incr _pinned}'
                          % (top, pre, fld, top, inst, pre, fld))
             else:
                 L.append('  for {set b 0} {$b < %d} {incr b} {' % w)
                 L.append('    incr _want')
-                L.append('    if {[catch {set_user_match '
+                L.append('    if {[set_user_match '
                          'r:/WORK/%s/%s_${i}_%s_reg\\[$b\\] '
-                         'i:/WORK/%s/%s/%s_%s_reg\\[$i\\]\\[$b\\]}] == 0} {incr _pinned}'
+                         'i:/WORK/%s/%s/%s_%s_reg\\[$i\\]\\[$b\\]]} {incr _pinned}'
                          % (top, pre, fld, top, inst, pre, fld))
                 L.append('  }')
             L.append('}')
@@ -300,17 +317,25 @@ def check_core(arrays, core):
 
 SELFTEST_HARNESS = r'''
 # Stubs: no Formality, no license. MODE decides how set_user_match behaves.
-set ::MODE $env(PIN_TEST_MODE)
-set ::calls 0
+#
+# ★这个桩过去是错的，2026-09-20 用真 fm_shell 量过才改对★
+# （证据 docs/rob_pin_failclosed.tsv，探针 scripts/rob_pin_failclosed_probe.py）：
+#   set_user_match **从不抛 Tcl 异常**。名字不存在时它照样返回，只是
+#   返回 0 而不是 1，并往 fm.log 里写一行 `Error: Unknown name: ... (FM-036)`。
+#   实测五例 catch 全 0：真名字返回 1，假名字（impl 侧/ref 侧/两侧）返回 0。
+# 老桩让 refuse 模式 `error`，于是它验的是"如果 FM 会抛，判据就成立"——
+# 而 FM 不抛。**用桩去验桩自己的假设，是一个闭环**。
 proc set_user_match {a b} {
     incr ::calls
     switch -- $::MODE {
-        ok       { return 0 }
-        refuse1  { if {$::calls == 7} { error "FM-036 unknown name $b" } ; return 0 }
-        refuseall { error "FM-036 unknown name $b" }
+        ok       { return 1 }
+        refuse1  { if {$::calls == 7} { return 0 } ; return 1 }
+        refuseall { return 0 }
     }
-    return 0
+    return 1
 }
+set ::MODE $env(PIN_TEST_MODE)
+set ::calls 0
 proc exit_tag {t} { puts "TAG $t" ; exit 3 }
 '''
 
