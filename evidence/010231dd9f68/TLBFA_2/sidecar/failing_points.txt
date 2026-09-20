@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/TLBFA_2
+Implementation : i:/WORK/TLBFA_2
+Version        : V-2023.12-SP3
+Date           : Thu Sep 17 16:21:11 2026
+**************************************************
+
+No failing compare points.
+
+1

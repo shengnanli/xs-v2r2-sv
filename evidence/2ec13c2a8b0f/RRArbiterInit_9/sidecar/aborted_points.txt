@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/RRArbiterInit_9
+Implementation : i:/WORK/RRArbiterInit_9
+Version        : V-2023.12-SP3
+Date           : Thu Sep 17 21:05:05 2026
+**************************************************
+
+No aborted compare points.
+
+1

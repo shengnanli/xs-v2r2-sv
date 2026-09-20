@@ -1,0 +1,9 @@
+{
+  "target": "InterruptFilter",
+  "ut": "InterruptFilter",
+  "regs": 504,
+  "outs": 74,
+  "expected": 578,
+  "merge_dup": "false",
+  "model_applicable": true
+}

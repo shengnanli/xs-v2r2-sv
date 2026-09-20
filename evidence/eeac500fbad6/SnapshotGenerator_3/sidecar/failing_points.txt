@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/SnapshotGenerator_3
+Implementation : i:/WORK/SnapshotGenerator_3
+Version        : V-2023.12-SP3
+Date           : Thu Sep 17 20:38:16 2026
+**************************************************
+
+No failing compare points.
+
+1

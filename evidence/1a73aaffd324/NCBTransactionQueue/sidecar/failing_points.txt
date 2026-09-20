@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/NCBTransactionQueue
+Implementation : i:/WORK/NCBTransactionQueue
+Version        : V-2023.12-SP3
+Date           : Thu Sep 17 15:57:29 2026
+**************************************************
+
+No failing compare points.
+
+1

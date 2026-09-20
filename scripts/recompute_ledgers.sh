@@ -69,4 +69,18 @@ for c in "harvest_round_ledger.py --check --out docs/fm_round_20260917.tsv" \
   if python3 scripts/$c >/dev/null 2>&1; then echo PASS; else echo FAIL; rc=1; fi
 done
 
+# ★终止标记：只有走到脚本结尾才可能打印这一行★（2026-09-20）
+# 判读方只认这一行；没有 LEDGER_RC= 就是「结果不存在」，既不是绿也不是红。
+# 与 scripts/gate_all.sh 的 GATE_RC= 同源，见 CONVENTIONS.md
+# ★"闸跑完了没有"本身也要有判据★
+#
+# ★补记两个坑，都是加这一行时现踩的★
+# 1) 上次想加没加成：当时这个脚本正在执行，而 bash 按**字节偏移**边读边执行脚本文件，
+#    改运行中的脚本会让它从错误的位置继续。这类编辑必须先确认它没在跑。
+# 2) 于是写了道 `pgrep -f recompute_ledgers.sh` 的守卫，它**匹配到了自己**：
+#    检查命令自己的 cmdline 里就含这个字符串，于是永远报「在跑」、永远不敢改。
+#    换 `$$` 排除也没用——外层 bash -c 包装是另一个 PID，cmdline 里同样含那串字。
+#    最后按 **argv 精确匹配**（argv[0] 是 bash/sh 且 basename(argv[1]) 等于脚本名）
+#    并排除自身进程链才对。★守卫也会有假阳性；加守卫时要连它自己一起验一遍。★
+echo "LEDGER_RC=$rc"
 exit $rc

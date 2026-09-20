@@ -26,31 +26,32 @@
 //   14 个 G1 变体全部走 hasCompAndSimp,故本核不实现另一分支(见文件尾 §11 待办)。
 //
 // =============================================================================
-// 本文件导航（共 1900 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
-//   L58    §1 与变体无关的编码
-//   L108   §2 xs_iq_entry
-//   L374   §2.1 冲刷判定
-//   L386   §2.2 唤醒的「类型匹配」
-//   L416   §2.2a WB 唤醒匹配
-//   L446   §2.2b IQ 即时唤醒匹配 + 投机撤销(LoadShouldCancel)
-//   L563   §2.3 ignoreOldVd(向量专属)
-//   L614   §2.3b currentStatus
-//   L685   §2.4 valid / enqReady / clear
-//   L701   §2.5 entryUpdate
-//   L769   §2.6 时序
-//   L809   §2.6a blocked / deqPortIdx
-//   L862   §2.6b IQ 唤醒子族专属的三组状态
-//   L897   §2.7 组合输出
-//   L1007  §3 xs_iq_entries_core
-//   L1195  §3a 阵列层自己持有的两组寄存器(golden Entries.scala:140-142)
-//   L1267  §4 条目例化
-//   L1435  §5 deqSel / deqPortIdxWrite / issueResp
-//   L1478  §6 EnqPolicy
-//   L1509  §7 转移策略
-//   L1586  §8 othersEntryEnq 数据通路
-//   L1737  §9 发射出口
-//   L1805  §10 阵列状态汇聚输出
-//   L1846  §11 本核尚未实现的家族维度(给后续变体 owner 的清单,全部有 golden 依据)
+// 本文件导航（共 1999 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+//   L59    §1 与变体无关的编码
+//   L109   §2 xs_iq_entry
+//   L399   §2.1 冲刷判定
+//   L411   §2.2 唤醒的「类型匹配」
+//   L441   §2.2a WB 唤醒匹配
+//   L471   §2.2b IQ 即时唤醒匹配 + 投机撤销(LoadShouldCancel)
+//   L588   §2.3 ignoreOldVd(向量专属)
+//   L639   §2.3b currentStatus
+//   L710   §2.4 valid / enqReady / clear
+//   L726   §2.5 entryUpdate
+//   L794   §2.6 时序
+//   L834   §2.6a blocked / deqPortIdx
+//   L902   §2.6b IQ 唤醒子族专属的三组状态
+//   L937   §2.7 组合输出
+//   L1045  §2.8 debug / perf 出口
+//   L1106  §3 xs_iq_entries_core
+//   L1294  §3a 阵列层自己持有的两组寄存器(golden Entries.scala:140-142)
+//   L1366  §4 条目例化
+//   L1534  §5 deqSel / deqPortIdxWrite / issueResp
+//   L1577  §6 EnqPolicy
+//   L1608  §7 转移策略
+//   L1685  §8 othersEntryEnq 数据通路
+//   L1836  §9 发射出口
+//   L1904  §10 阵列状态汇聚输出
+//   L1945  §11 本核尚未实现的家族维度(给后续变体 owner 的清单,全部有 golden 依据)
 // 导航由 verif/ut/Entries_common/core_nav.py 重算 —— 改完核跑一次，勿手改
 //
 
@@ -129,10 +130,12 @@ module xs_iq_entry
   // 所以 IS_COMP = ~IS_TRANS(enq 与 comp 都是 true),这里仍显式给参数,便于读。
   parameter bit IS_COMP  = 1'b1,
 
-  // 本变体的发射口数。★ deqPortIdx 到底有没有寄存器由它决定(实测 14/14:
-  //   comp 条目有 deqPortIdx 寄存器 ⟺ NUM_DEQ_PORTS==2),不是由「有没有
-  //   transEntry 出口」决定 —— 后者是从 VfdivVidiv(numDeq=1)外推出来的错结论。
-  //   见 verif/ut/Entries_field_matrix/matrix.md 的 comp_deqPortIdxRead 列。
+  // 本变体的发射口数。deqPortIdx 的完整条件见 §2.6a：
+  //   **寄存器** r_deq_port_idx 存在 ⟺ KEEP_WIDE || NUM_DEQ_PORTS > 1
+  //   （即 enq/simp 恒有；comp 只在双发射口时有）。
+  // ★ 这里原先只写了 comp 那一半，容易被读成"只看 NUM_DEQ_PORTS"，补全。★
+  //   见 verif/ut/Entries_field_matrix/matrix.md 的 comp_deqPortIdxRead 列，
+  //   以及 verif/ut/OthersEntry_field_matrix/matrix.md 的 o_deqPortIdxRd 行。
   parameter int NUM_DEQ_PORTS = 1,
 
   parameter int NUM_REGSRC = 5,   // 每 uop 的源寄存器数
@@ -218,7 +221,19 @@ module xs_iq_entry
   parameter int PLB_VMA             = 0,
   parameter int PLB_VTA             = 0,
   parameter int PLB_IS_DEPEND_OLDVD = 0,
-  parameter int PLB_IS_WRITE_PARTVD = 0
+  parameter int PLB_IS_WRITE_PARTVD = 0,
+
+  // ★ debug/perf 出口开关。默认 0 = 一个门都不产出 ★
+  //   golden 的 CommonOutBundle 里有 7 组 debug/perf 输出
+  //   (EntryBundles.scala:155-161,赋值在 :476-483)。它们在 Entries<变体> 这一层
+  //   无人读,被 firtool 整组消掉,所以阵列例化条目时不要它们(HAS_DBG_OUT=0,
+  //   下面 generate 的 else 支把它们钉成常数 0,常数传播后与「没有」等价 ——
+  //   已签核的 EntriesAluCsrFenceDiv / EntriesVfdivVidiv 的 FM 点数不受影响,
+  //   改完当场复跑过,见 verif/ut/OthersEntry_field_matrix/regression.md)。
+  //   而 golden 的 OthersEntry<变体> / EnqEntry<变体> **单独成模块**时,
+  //   这 7 组是货真价实的输出端口(24/24 个 OthersEntry 都有),所以
+  //   OthersEntry* 的薄 wrapper 例化本核时给 HAS_DBG_OUT=1。
+  parameter bit HAS_DBG_OUT = 1'b0
 ) (
   input  logic clock,
   input  logic reset,
@@ -340,7 +355,17 @@ module xs_iq_entry
   output logic [NUM_REGSRC-1:0][LD_PIPES-1:0][LD_DEP_W-1:0] o_trans_ld_dep,
   output logic [NUM_REGSRC-1:0][EXU_W-1:0]                  o_trans_exu_src,
   output logic [NUM_REGSRC-1:0]                             o_trans_use_rc,
-  output logic [NUM_REGSRC-1:0][RC_IDX_W-1:0]               o_trans_rc_idx
+  output logic [NUM_REGSRC-1:0][RC_IDX_W-1:0]               o_trans_rc_idx,
+
+  // -------- debug / perf 出口(HAS_DBG_OUT=0 时全为常数 0,见 §2.8)--------
+  output logic                            o_dbg_entry_in_valid,
+  output logic                            o_dbg_entry_out_deq_valid,
+  output logic                            o_dbg_entry_out_trans_valid,
+  output logic [NUM_REGSRC-1:0]           o_dbg_perf_ld_cancel,
+  output logic [NUM_REGSRC-1:0]           o_dbg_perf_og0_cancel,
+  output logic [NUM_REGSRC-1:0]           o_dbg_perf_wakeup_by_wb,
+  output logic [NUM_REGSRC-1:0][(NUM_WK_IQ > 0 ? NUM_WK_IQ : 1)-1:0]
+                                          o_dbg_perf_wakeup_by_iq
 );
 
   localparam bit KEEP_WIDE = IS_ENQ | IS_TRANS;         // 是否要产出 transEntry
@@ -828,6 +853,21 @@ module xs_iq_entry
   //                教训:矩阵里只核过 comp 那一列,就把结论套到三种条目上 ——
   //                      分份维度必须**逐个条目类型**核,别按一列外推(见矩阵
   //                      deqPortIdxReg_enq/_simp/_comp 三列)。
+  //
+  //   ★ 第三次的坑:「有寄存器」与「有出口端口」是**两个不同的条件** ★
+  //   (2026-09-20, agent/othersentry 在 24 个 OthersEntry 上逐个实测)
+  //     寄存器 entryReg_status_deqPortIdx 存在 ⟺ KEEP_WIDE || numDeq > 1
+  //     出口   commonOut.deqPortIdxRead 存在  ⟺ numDeq == 2  (**与角色无关**)
+  //   两者在 numDeq==1 的 simp 上**分叉**:OthersEntry_120/_200/_172/_242/_164
+  //   这 5 个 simp **有寄存器、没有 deqPortIdxRead 端口** —— 它们的 deqPortIdx
+  //   只从 transEntry.status 走给下一级,不往发射口回读。
+  //   ★我自己先把这两件事混成一件★:曾据此报「§2.6a 记错了、应改成只看 numDeq」,
+  //   拿 24 个变体重量之后才发现 §2.6a 讲的是**寄存器**、一直是对的,
+  //   错的是我那句"更正"。所以这里不是改结论,是把被我混掉的那条**边界**写清楚:
+  //   往下游传(寄存器/transEntry) 与 往发射口回读(deqPortIdxRead) 是两条路,
+  //   条件不同,不能用其中一条推另一条。
+  //   作用域声明:以上数字是**这 24 个 OthersEntry 变体 + 14 个 Entries 变体**
+  //   的实测,OthersEntryVecMem* 那 4 个没量,别当成全家族不变量。
   // ---------------------------------------------------------------------------
   generate
     if (IS_ENQ) begin : g_no_blocked
@@ -999,6 +1039,65 @@ module xs_iq_entry
   generate
     if (KEEP_WIDE) assign o_trans_payload = r_payload;
     else           assign o_trans_payload = PL_TRANS_W'(r_payload);
+  endgenerate
+
+  // ---------------------------------------------------------------------------
+  // §2.8 debug / perf 出口。golden EntryBundles.scala:476-483,逐句对照:
+  //   entryInValid         := commonIn.enq.valid
+  //   entryOutDeqValid     := validReg && (flushed || deqSuccess)
+  //   entryOutTransValid   := validReg && commonIn.transSel && !(flushed || deqSuccess)
+  //   perfWakeupByWB[s]    := srcWakeupByWB[s] && SrcState.isBusy(srcState[s]) && validReg
+  //   perfLdCancel[s]      := srcCancelVec[s] && validReg
+  //                           srcCancelVec[s] = srcLoadTransCancelVec[s] | srcLoadCancelVec[s]
+  //                                           = ld_trans_cancel[s]        | cur_ld_cancel[s]
+  //                           (EntryBundles.scala:198-202)
+  //   perfOg0Cancel[s]     := srcWakeupByIQButCancel[s].orR && validReg
+  //                           ButCancel[s][w] = wakeup_oh[s][w] & iq_cancel[w]  (:254)
+  //   perfWakeupByIQ[s][w] := srcWakeupByIQ[s][w] && validReg
+  //                           = wk_iq_oh[s][w] & valid_reg                      (:253)
+  //
+  // ★ 这里一个新信号都没引进来:7 组全是既有信号的与门 ★
+  //   —— 所以 HAS_DBG_OUT=0 的那一支钉常数 0 之后,综合/FM 常数传播会把整段抹平。
+  //
+  // ★ 后 4 组是 golden 的 Option.when(params.hasIQWakeUp) ★
+  //   没有 IQ 唤醒的变体(本族 6 个向量变体,nWkIQ=0)golden 里根本没有
+  //   perfLdCancel / perfOg0Cancel / perfWakeupByIQ 这三组端口;
+  //   本核在 NUM_WK_IQ==0 时它们自然恒 0(wk_iq_oh/wakeup_oh/ld_trans_cancel 全 0),
+  //   由那几个变体的 wrapper 不接出去即可,不需要再开一个参数。
+  //   ★注意 perfLdCancel 不能顺手写成「只看 cur_ld_cancel」★:
+  //   golden 的 srcCancelVec 是两项的或,有 IQ 唤醒的变体两项都活。
+  // ---------------------------------------------------------------------------
+  generate
+    if (HAS_DBG_OUT) begin : g_dbg_out
+      assign o_dbg_entry_in_valid        = enq_valid;
+      assign o_dbg_entry_out_deq_valid   = valid_reg & (flushed | deq_success);
+      assign o_dbg_entry_out_trans_valid = valid_reg & trans_sel
+                                         & ~(flushed | deq_success);
+      for (genvar s = 0; s < NUM_REGSRC; s++) begin : g_dbg_src
+        // ★门控用 currentStatus 而不是裸寄存器★(golden 逐字如此,本 lane 复核过):
+        //   EnqEntry_6.sv:  …& ~currentStatus_srcStatus_0_srcState & validReg_last_REG
+        //   OthersEntry_72.sv: …& ~entryReg_status_srcStatus_0_srcState & …
+        //   两者只在「入队延迟窗口」那一拍分叉,所以**只有 EnqEntry 族暴露**;
+        //   非 enq 条目里 dly = IS_ENQ & … 是常量 0,cur_src_state 恒等于 r_src_state,
+        //   这一改对 OthersEntry 是详细化期的 no-op(但 no-op 要靠回归证,不靠这句话)。
+        assign o_dbg_perf_wakeup_by_wb[s] = wk_hit[s]
+                                          & (cur_src_state[s] == SRC_BUSY)
+                                          & valid_reg;
+        assign o_dbg_perf_ld_cancel[s]    = (ld_trans_cancel[s] | cur_ld_cancel[s])
+                                          & valid_reg;
+        assign o_dbg_perf_og0_cancel[s]   = (|(wakeup_oh[s] & iq_cancel)) & valid_reg;
+        assign o_dbg_perf_wakeup_by_iq[s] = wk_iq_oh[s] & {IQW{valid_reg}};
+      end
+    end
+    else begin : g_no_dbg_out
+      assign o_dbg_entry_in_valid        = 1'b0;
+      assign o_dbg_entry_out_deq_valid   = 1'b0;
+      assign o_dbg_entry_out_trans_valid = 1'b0;
+      assign o_dbg_perf_ld_cancel        = '0;
+      assign o_dbg_perf_og0_cancel       = '0;
+      assign o_dbg_perf_wakeup_by_wb     = '0;
+      assign o_dbg_perf_wakeup_by_iq     = '0;
+    end
   endgenerate
 
 endmodule : xs_iq_entry

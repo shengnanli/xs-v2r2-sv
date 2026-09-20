@@ -1,0 +1,63 @@
+# fubusy_wbarb_passing_prediction.tsv —— FM passing 预测（跑 FM **之前**登记）
+# 由 scripts/gen_fubusy_wbarb.py 从 golden 机械算出，gate_all.sh 的幂等闸校验。
+# 模型：passing = golden 闭包触发器位数 + 顶层 output 端口位数。
+# 纯组合家族（FuBusyTableRead / RealWBArbiter）触发器项为 0 —— 这是本族对该
+# 模型的形态校准点：它们的预测完全由 output 位数决定。
+#
+# 对账规矩：实测与预测不符**按 fail 报**，不许事后改预测。
+target	family	ff_bits	out_bits	predicted_passing
+FuBusyTableRead	FuBusyTableRead	0	24	24
+FuBusyTableRead_2	FuBusyTableRead	0	24	24
+FuBusyTableRead_22	FuBusyTableRead	0	24	24
+FuBusyTableRead_23	FuBusyTableRead	0	24	24
+FuBusyTableRead_26	FuBusyTableRead	0	24	24
+FuBusyTableRead_28	FuBusyTableRead	0	24	24
+FuBusyTableRead_42	FuBusyTableRead	0	18	18
+FuBusyTableRead_43	FuBusyTableRead	0	18	18
+FuBusyTableRead_52	FuBusyTableRead	0	18	18
+FuBusyTableRead_53	FuBusyTableRead	0	18	18
+FuBusyTableRead_68	FuBusyTableRead	0	16	16
+FuBusyTableRead_69	FuBusyTableRead	0	16	16
+FuBusyTableRead_71	FuBusyTableRead	0	16	16
+FuBusyTableRead_73	FuBusyTableRead	0	16	16
+FuBusyTableRead_75	FuBusyTableRead	0	16	16
+FuBusyTableRead_79	FuBusyTableRead	0	16	16
+FuBusyTableRead_80	FuBusyTableRead	0	16	16
+FuBusyTableRead_105	FuBusyTableRead	0	16	16
+FuBusyTableWrite	FuBusyTableWrite	3	3	6
+FuBusyTableWrite_22	FuBusyTableWrite	3	3	6
+FuBusyTableWrite_26	FuBusyTableWrite	3	3	6
+FuBusyTableWrite_42	FuBusyTableWrite	4	4	8
+FuBusyTableWrite_43	FuBusyTableWrite	3	3	6
+FuBusyTableWrite_52	FuBusyTableWrite	4	4	8
+FuBusyTableWrite_53	FuBusyTableWrite	2	2	4
+FuBusyTableWrite_68	FuBusyTableWrite	5	5	10
+FuBusyTableWrite_69	FuBusyTableWrite	4	4	8
+FuBusyTableWrite_71	FuBusyTableWrite	5	5	10
+FuBusyTableWrite_73	FuBusyTableWrite	3	3	6
+FuBusyTableWrite_75	FuBusyTableWrite	4	4	8
+FuBusyTableWrite_79	FuBusyTableWrite	2	2	4
+FuBusyTableWrite_80	FuBusyTableWrite	5	5	10
+FuBusyTableWrite_105	FuBusyTableWrite	4	4	8
+WBArbiter	WBArbiter	13	4	17
+WBArbiter_1	WBArbiter	17	5	22
+WBArbiter_2	WBArbiter	9	3	12
+WBArbiter_3	WBArbiter	5	2	7
+WBArbiter_30	WBArbiter	9	11	20
+WBArbiter_33	WBArbiter	13	12	25
+WBArbiter_38	WBArbiter	5	10	15
+WBArbiter_52	WBArbiter	9	10	19
+WBArbiter_55	WBArbiter	13	11	24
+WBArbiter_58	WBArbiter	5	9	14
+WBArbiter_64	WBArbiter	9	8	17
+WBArbiter_65	WBArbiter	13	9	22
+WBArbiter_66	WBArbiter	5	7	12
+RealWBArbiter	RealWBArbiter	0	77	77
+RealWBArbiter_1	RealWBArbiter	0	78	78
+RealWBArbiter_2	RealWBArbiter	0	77	77
+RealWBArbiter_3	RealWBArbiter	0	75	75
+RealWBArbiter_14	RealWBArbiter	0	139	139
+RealWBArbiter_15	RealWBArbiter	0	137	137
+RealWBArbiter_20	RealWBArbiter	0	137	137
+RealWBArbiter_21	RealWBArbiter	0	135	135
+RealWBArbiter_26	RealWBArbiter	0	15	15

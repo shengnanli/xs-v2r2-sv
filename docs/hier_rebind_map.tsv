@@ -1515,6 +1515,32 @@ DuplicatedTagArray	array_1	TagArray	GEN_SITE	g_tarr[1].array_k	TagArray		auto_ge
 DuplicatedTagArray	array_2	TagArray	GEN_SITE	g_tarr[2].array_k	TagArray		auto_gen_site_suffix	
 DuplicatedTagArray	array_3	TagArray	GEN_SITE	g_tarr[3].array_k	TagArray		auto_gen_site_suffix	
 DuplicatedTagArray	mbistPl	MbistPipeDcacheTag	SAME_PATH	mbistPl	MbistPipeDcacheTag		auto_same	
+EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	compTransPolicy	EnqPolicy	UNRESOLVED				none	
+EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	enqEntries_0	EnqEntry_4	UNRESOLVED				none	
+EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	enqEntries_1	EnqEntry_4	UNRESOLVED				none	
+EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	othersEntriesComp_0	OthersEntry_50	UNRESOLVED				none	
+EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	othersEntriesComp_1	OthersEntry_50	UNRESOLVED				none	
+EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	othersEntriesComp_10	OthersEntry_50	UNRESOLVED				none	
+EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	othersEntriesComp_11	OthersEntry_50	UNRESOLVED				none	
+EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	othersEntriesComp_12	OthersEntry_50	UNRESOLVED				none	
+EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	othersEntriesComp_13	OthersEntry_50	UNRESOLVED				none	
+EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	othersEntriesComp_14	OthersEntry_50	UNRESOLVED				none	
+EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	othersEntriesComp_15	OthersEntry_50	UNRESOLVED				none	
+EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	othersEntriesComp_2	OthersEntry_50	UNRESOLVED				none	
+EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	othersEntriesComp_3	OthersEntry_50	UNRESOLVED				none	
+EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	othersEntriesComp_4	OthersEntry_50	UNRESOLVED				none	
+EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	othersEntriesComp_5	OthersEntry_50	UNRESOLVED				none	
+EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	othersEntriesComp_6	OthersEntry_50	UNRESOLVED				none	
+EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	othersEntriesComp_7	OthersEntry_50	UNRESOLVED				none	
+EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	othersEntriesComp_8	OthersEntry_50	UNRESOLVED				none	
+EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	othersEntriesComp_9	OthersEntry_50	UNRESOLVED				none	
+EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	othersEntriesSimp_0	OthersEntry_44	UNRESOLVED				none	
+EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	othersEntriesSimp_1	OthersEntry_44	UNRESOLVED				none	
+EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	othersEntriesSimp_2	OthersEntry_44	UNRESOLVED				none	
+EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	othersEntriesSimp_3	OthersEntry_44	UNRESOLVED				none	
+EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	othersEntriesSimp_4	OthersEntry_44	UNRESOLVED				none	
+EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	othersEntriesSimp_5	OthersEntry_44	UNRESOLVED				none	
+EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	simpTransPolicy	EnqPolicy	UNRESOLVED				none	
 EntriesAluCsrFenceDiv	compTransPolicy	EnqPolicy	UNRESOLVED				none	
 EntriesAluCsrFenceDiv	enqEntries_0	EnqEntry_6	UNRESOLVED				none	
 EntriesAluCsrFenceDiv	enqEntries_1	EnqEntry_6	UNRESOLVED				none	
@@ -1541,6 +1567,92 @@ EntriesAluCsrFenceDiv	othersEntriesSimp_3	OthersEntry_66	UNRESOLVED				none
 EntriesAluCsrFenceDiv	othersEntriesSimp_4	OthersEntry_66	UNRESOLVED				none	
 EntriesAluCsrFenceDiv	othersEntriesSimp_5	OthersEntry_66	UNRESOLVED				none	
 EntriesAluCsrFenceDiv	simpTransPolicy	EnqPolicy	UNRESOLVED				none	
+EntriesAluMulBkuBrhJmp	compTransPolicy	EnqPolicy	UNRESOLVED				none	
+EntriesAluMulBkuBrhJmp	enqEntries_0	EnqEntry	UNRESOLVED				none	
+EntriesAluMulBkuBrhJmp	enqEntries_1	EnqEntry	UNRESOLVED				none	
+EntriesAluMulBkuBrhJmp	othersEntriesComp_0	OthersEntry_6	UNRESOLVED				none	
+EntriesAluMulBkuBrhJmp	othersEntriesComp_1	OthersEntry_6	UNRESOLVED				none	
+EntriesAluMulBkuBrhJmp	othersEntriesComp_10	OthersEntry_6	UNRESOLVED				none	
+EntriesAluMulBkuBrhJmp	othersEntriesComp_11	OthersEntry_6	UNRESOLVED				none	
+EntriesAluMulBkuBrhJmp	othersEntriesComp_12	OthersEntry_6	UNRESOLVED				none	
+EntriesAluMulBkuBrhJmp	othersEntriesComp_13	OthersEntry_6	UNRESOLVED				none	
+EntriesAluMulBkuBrhJmp	othersEntriesComp_14	OthersEntry_6	UNRESOLVED				none	
+EntriesAluMulBkuBrhJmp	othersEntriesComp_15	OthersEntry_6	UNRESOLVED				none	
+EntriesAluMulBkuBrhJmp	othersEntriesComp_2	OthersEntry_6	UNRESOLVED				none	
+EntriesAluMulBkuBrhJmp	othersEntriesComp_3	OthersEntry_6	UNRESOLVED				none	
+EntriesAluMulBkuBrhJmp	othersEntriesComp_4	OthersEntry_6	UNRESOLVED				none	
+EntriesAluMulBkuBrhJmp	othersEntriesComp_5	OthersEntry_6	UNRESOLVED				none	
+EntriesAluMulBkuBrhJmp	othersEntriesComp_6	OthersEntry_6	UNRESOLVED				none	
+EntriesAluMulBkuBrhJmp	othersEntriesComp_7	OthersEntry_6	UNRESOLVED				none	
+EntriesAluMulBkuBrhJmp	othersEntriesComp_8	OthersEntry_6	UNRESOLVED				none	
+EntriesAluMulBkuBrhJmp	othersEntriesComp_9	OthersEntry_6	UNRESOLVED				none	
+EntriesAluMulBkuBrhJmp	othersEntriesSimp_0	OthersEntry	UNRESOLVED				none	
+EntriesAluMulBkuBrhJmp	othersEntriesSimp_1	OthersEntry	UNRESOLVED				none	
+EntriesAluMulBkuBrhJmp	othersEntriesSimp_2	OthersEntry	UNRESOLVED				none	
+EntriesAluMulBkuBrhJmp	othersEntriesSimp_3	OthersEntry	UNRESOLVED				none	
+EntriesAluMulBkuBrhJmp	othersEntriesSimp_4	OthersEntry	UNRESOLVED				none	
+EntriesAluMulBkuBrhJmp	othersEntriesSimp_5	OthersEntry	UNRESOLVED				none	
+EntriesAluMulBkuBrhJmp	simpTransPolicy	EnqPolicy	UNRESOLVED				none	
+EntriesFaluFcvtF2vFmacFdiv	compTransPolicy	EnqPolicy_8	UNRESOLVED				none	
+EntriesFaluFcvtF2vFmacFdiv	enqEntries_0	EnqEntry_8	UNRESOLVED				none	
+EntriesFaluFcvtF2vFmacFdiv	enqEntries_1	EnqEntry_8	UNRESOLVED				none	
+EntriesFaluFcvtF2vFmacFdiv	othersEntriesComp_0	OthersEntry_90	UNRESOLVED				none	
+EntriesFaluFcvtF2vFmacFdiv	othersEntriesComp_1	OthersEntry_90	UNRESOLVED				none	
+EntriesFaluFcvtF2vFmacFdiv	othersEntriesComp_10	OthersEntry_90	UNRESOLVED				none	
+EntriesFaluFcvtF2vFmacFdiv	othersEntriesComp_11	OthersEntry_90	UNRESOLVED				none	
+EntriesFaluFcvtF2vFmacFdiv	othersEntriesComp_12	OthersEntry_90	UNRESOLVED				none	
+EntriesFaluFcvtF2vFmacFdiv	othersEntriesComp_13	OthersEntry_90	UNRESOLVED				none	
+EntriesFaluFcvtF2vFmacFdiv	othersEntriesComp_2	OthersEntry_90	UNRESOLVED				none	
+EntriesFaluFcvtF2vFmacFdiv	othersEntriesComp_3	OthersEntry_90	UNRESOLVED				none	
+EntriesFaluFcvtF2vFmacFdiv	othersEntriesComp_4	OthersEntry_90	UNRESOLVED				none	
+EntriesFaluFcvtF2vFmacFdiv	othersEntriesComp_5	OthersEntry_90	UNRESOLVED				none	
+EntriesFaluFcvtF2vFmacFdiv	othersEntriesComp_6	OthersEntry_90	UNRESOLVED				none	
+EntriesFaluFcvtF2vFmacFdiv	othersEntriesComp_7	OthersEntry_90	UNRESOLVED				none	
+EntriesFaluFcvtF2vFmacFdiv	othersEntriesComp_8	OthersEntry_90	UNRESOLVED				none	
+EntriesFaluFcvtF2vFmacFdiv	othersEntriesComp_9	OthersEntry_90	UNRESOLVED				none	
+EntriesFaluFcvtF2vFmacFdiv	othersEntriesSimp_0	OthersEntry_88	UNRESOLVED				none	
+EntriesFaluFcvtF2vFmacFdiv	othersEntriesSimp_1	OthersEntry_88	UNRESOLVED				none	
+EntriesFaluFcvtF2vFmacFdiv	simpTransPolicy	EnqPolicy_8	UNRESOLVED				none	
+EntriesFaluFmac	compTransPolicy	EnqPolicy_8	UNRESOLVED				none	
+EntriesFaluFmac	enqEntries_0	EnqEntry_12	UNRESOLVED				none	
+EntriesFaluFmac	enqEntries_1	EnqEntry_12	UNRESOLVED				none	
+EntriesFaluFmac	othersEntriesComp_0	OthersEntry_122	UNRESOLVED				none	
+EntriesFaluFmac	othersEntriesComp_1	OthersEntry_122	UNRESOLVED				none	
+EntriesFaluFmac	othersEntriesComp_10	OthersEntry_122	UNRESOLVED				none	
+EntriesFaluFmac	othersEntriesComp_11	OthersEntry_122	UNRESOLVED				none	
+EntriesFaluFmac	othersEntriesComp_12	OthersEntry_122	UNRESOLVED				none	
+EntriesFaluFmac	othersEntriesComp_13	OthersEntry_122	UNRESOLVED				none	
+EntriesFaluFmac	othersEntriesComp_2	OthersEntry_122	UNRESOLVED				none	
+EntriesFaluFmac	othersEntriesComp_3	OthersEntry_122	UNRESOLVED				none	
+EntriesFaluFmac	othersEntriesComp_4	OthersEntry_122	UNRESOLVED				none	
+EntriesFaluFmac	othersEntriesComp_5	OthersEntry_122	UNRESOLVED				none	
+EntriesFaluFmac	othersEntriesComp_6	OthersEntry_122	UNRESOLVED				none	
+EntriesFaluFmac	othersEntriesComp_7	OthersEntry_122	UNRESOLVED				none	
+EntriesFaluFmac	othersEntriesComp_8	OthersEntry_122	UNRESOLVED				none	
+EntriesFaluFmac	othersEntriesComp_9	OthersEntry_122	UNRESOLVED				none	
+EntriesFaluFmac	othersEntriesSimp_0	OthersEntry_120	UNRESOLVED				none	
+EntriesFaluFmac	othersEntriesSimp_1	OthersEntry_120	UNRESOLVED				none	
+EntriesFaluFmac	simpTransPolicy	EnqPolicy_8	UNRESOLVED				none	
+EntriesFaluFmacFdiv	compTransPolicy	EnqPolicy_8	UNRESOLVED				none	
+EntriesFaluFmacFdiv	enqEntries_0	EnqEntry_10	UNRESOLVED				none	
+EntriesFaluFmacFdiv	enqEntries_1	EnqEntry_10	UNRESOLVED				none	
+EntriesFaluFmacFdiv	othersEntriesComp_0	OthersEntry_106	UNRESOLVED				none	
+EntriesFaluFmacFdiv	othersEntriesComp_1	OthersEntry_106	UNRESOLVED				none	
+EntriesFaluFmacFdiv	othersEntriesComp_10	OthersEntry_106	UNRESOLVED				none	
+EntriesFaluFmacFdiv	othersEntriesComp_11	OthersEntry_106	UNRESOLVED				none	
+EntriesFaluFmacFdiv	othersEntriesComp_12	OthersEntry_106	UNRESOLVED				none	
+EntriesFaluFmacFdiv	othersEntriesComp_13	OthersEntry_106	UNRESOLVED				none	
+EntriesFaluFmacFdiv	othersEntriesComp_2	OthersEntry_106	UNRESOLVED				none	
+EntriesFaluFmacFdiv	othersEntriesComp_3	OthersEntry_106	UNRESOLVED				none	
+EntriesFaluFmacFdiv	othersEntriesComp_4	OthersEntry_106	UNRESOLVED				none	
+EntriesFaluFmacFdiv	othersEntriesComp_5	OthersEntry_106	UNRESOLVED				none	
+EntriesFaluFmacFdiv	othersEntriesComp_6	OthersEntry_106	UNRESOLVED				none	
+EntriesFaluFmacFdiv	othersEntriesComp_7	OthersEntry_106	UNRESOLVED				none	
+EntriesFaluFmacFdiv	othersEntriesComp_8	OthersEntry_106	UNRESOLVED				none	
+EntriesFaluFmacFdiv	othersEntriesComp_9	OthersEntry_106	UNRESOLVED				none	
+EntriesFaluFmacFdiv	othersEntriesSimp_0	OthersEntry_104	UNRESOLVED				none	
+EntriesFaluFmacFdiv	othersEntriesSimp_1	OthersEntry_104	UNRESOLVED				none	
+EntriesFaluFmacFdiv	simpTransPolicy	EnqPolicy_8	UNRESOLVED				none	
 EntriesVfdivVidiv	compTransPolicy	EnqPolicy_18	INLINE	u_core	-	simp_sel_v,x_trans_sel,simp_deq_sel_vec,simp_can_trans2comp	declared	rtl/backend/xs_iq_entries_core.sv:792「§6 EnqPolicy —— golden 的 EnqPolicy 模块(SelectOne(\"circ\", …, 2))」整块内联。
 EntriesVfdivVidiv	enqEntries_0	EnqEntry_18	INSTANCE	u_core.g_entry[0].u_e	xs_iq_entry		declared	rtl/backend/xs_iq_entries_core.sv:17-20 条目分段 [0..NUM_ENQ-1]=enq；EntriesVfdivVidiv.sv:679 NUM_ENQ=2/NUM_SIMP=2/NUM_COMP=6。
 EntriesVfdivVidiv	enqEntries_1	EnqEntry_18	INSTANCE	u_core.g_entry[1].u_e	xs_iq_entry		declared	rtl/backend/xs_iq_entries_core.sv:17-20 条目分段 [0..NUM_ENQ-1]=enq；EntriesVfdivVidiv.sv:679 NUM_ENQ=2/NUM_SIMP=2/NUM_COMP=6。
@@ -1553,6 +1665,42 @@ EntriesVfdivVidiv	othersEntriesComp_5	OthersEntry_166	INSTANCE	u_core.g_entry[9]
 EntriesVfdivVidiv	othersEntriesSimp_0	OthersEntry_164	INSTANCE	u_core.g_entry[2].u_e	xs_iq_entry		declared	同上：simp 段起点 = NUM_ENQ = 2。
 EntriesVfdivVidiv	othersEntriesSimp_1	OthersEntry_164	INSTANCE	u_core.g_entry[3].u_e	xs_iq_entry		declared	同上：simp 段起点 = NUM_ENQ = 2。
 EntriesVfdivVidiv	simpTransPolicy	EnqPolicy_18	INLINE	u_core	-	simp_sel_v,x_trans_sel,simp_deq_sel_vec,simp_can_trans2comp	declared	rtl/backend/xs_iq_entries_core.sv:792「§6 EnqPolicy —— golden 的 EnqPolicy 模块(SelectOne(\"circ\", …, 2))」整块内联。
+EntriesVfmaVialuFixVfalu	compTransPolicy	EnqPolicy_14	UNRESOLVED				none	
+EntriesVfmaVialuFixVfalu	enqEntries_0	EnqEntry_16	UNRESOLVED				none	
+EntriesVfmaVialuFixVfalu	enqEntries_1	EnqEntry_16	UNRESOLVED				none	
+EntriesVfmaVialuFixVfalu	othersEntriesComp_0	OthersEntry_152	UNRESOLVED				none	
+EntriesVfmaVialuFixVfalu	othersEntriesComp_1	OthersEntry_152	UNRESOLVED				none	
+EntriesVfmaVialuFixVfalu	othersEntriesComp_10	OthersEntry_152	UNRESOLVED				none	
+EntriesVfmaVialuFixVfalu	othersEntriesComp_11	OthersEntry_152	UNRESOLVED				none	
+EntriesVfmaVialuFixVfalu	othersEntriesComp_2	OthersEntry_152	UNRESOLVED				none	
+EntriesVfmaVialuFixVfalu	othersEntriesComp_3	OthersEntry_152	UNRESOLVED				none	
+EntriesVfmaVialuFixVfalu	othersEntriesComp_4	OthersEntry_152	UNRESOLVED				none	
+EntriesVfmaVialuFixVfalu	othersEntriesComp_5	OthersEntry_152	UNRESOLVED				none	
+EntriesVfmaVialuFixVfalu	othersEntriesComp_6	OthersEntry_152	UNRESOLVED				none	
+EntriesVfmaVialuFixVfalu	othersEntriesComp_7	OthersEntry_152	UNRESOLVED				none	
+EntriesVfmaVialuFixVfalu	othersEntriesComp_8	OthersEntry_152	UNRESOLVED				none	
+EntriesVfmaVialuFixVfalu	othersEntriesComp_9	OthersEntry_152	UNRESOLVED				none	
+EntriesVfmaVialuFixVfalu	othersEntriesSimp_0	OthersEntry_150	UNRESOLVED				none	
+EntriesVfmaVialuFixVfalu	othersEntriesSimp_1	OthersEntry_150	UNRESOLVED				none	
+EntriesVfmaVialuFixVfalu	simpTransPolicy	EnqPolicy_14	UNRESOLVED				none	
+EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	compTransPolicy	EnqPolicy_14	UNRESOLVED				none	
+EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	enqEntries_0	EnqEntry_14	UNRESOLVED				none	
+EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	enqEntries_1	EnqEntry_14	UNRESOLVED				none	
+EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	othersEntriesComp_0	OthersEntry_138	UNRESOLVED				none	
+EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	othersEntriesComp_1	OthersEntry_138	UNRESOLVED				none	
+EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	othersEntriesComp_10	OthersEntry_138	UNRESOLVED				none	
+EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	othersEntriesComp_11	OthersEntry_138	UNRESOLVED				none	
+EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	othersEntriesComp_2	OthersEntry_138	UNRESOLVED				none	
+EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	othersEntriesComp_3	OthersEntry_138	UNRESOLVED				none	
+EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	othersEntriesComp_4	OthersEntry_138	UNRESOLVED				none	
+EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	othersEntriesComp_5	OthersEntry_138	UNRESOLVED				none	
+EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	othersEntriesComp_6	OthersEntry_138	UNRESOLVED				none	
+EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	othersEntriesComp_7	OthersEntry_138	UNRESOLVED				none	
+EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	othersEntriesComp_8	OthersEntry_138	UNRESOLVED				none	
+EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	othersEntriesComp_9	OthersEntry_138	UNRESOLVED				none	
+EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	othersEntriesSimp_0	OthersEntry_136	UNRESOLVED				none	
+EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	othersEntriesSimp_1	OthersEntry_136	UNRESOLVED				none	
+EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	simpTransPolicy	EnqPolicy_14	UNRESOLVED				none	
 FAlu	falu	FloatAdder	DEEPER	u_core.falu	FloatAdder		auto_deeper	
 FCVT	fcvt	FPCVT	DEEPER	u_core.fcvt	FPCVT		auto_deeper	
 FMA	fma	FloatFMA	DEEPER	u_core.fma	FloatFMA		auto_deeper	
@@ -1659,6 +1807,12 @@ ITTageTable_4	table_0	FoldedSRAMTemplate_24	SAME_PATH	table_0	FoldedSRAMTemplate
 ITTageTable_4	wrbypass	WrBypass_43	SAME_PATH	wrbypass	WrBypass_43		auto_same	
 InstrUncache	entries_0	InstrMMIOEntry	SAME_PATH	entries_0	InstrMMIOEntry		auto_same	
 InstrUncache	resp_arb	Arbiter1_InsUncacheResp	SAME_PATH	resp_arb	Arbiter1_InsUncacheResp		auto_same	
+InterruptFilter	delayedDebugIntr_delay	DelayN_17	DEEPER	u_core.delayedDebugIntr_delay	DelayN_17		auto_deeper	
+InterruptFilter	delayedIRToHS_delay	DelayN_17	DEEPER	u_core.delayedIRToHS_delay	DelayN_17		auto_deeper	
+InterruptFilter	delayedIRToVS_delay	DelayN_17	DEEPER	u_core.delayedIRToVS_delay	DelayN_17		auto_deeper	
+InterruptFilter	delayedIntrVec_delay	DelayN_208	DEEPER	u_core.delayedIntrVec_delay	DelayN_208		auto_deeper	
+InterruptFilter	delayedNMI_delay	DelayN_17	DEEPER	u_core.delayedNMI_delay	DelayN_17		auto_deeper	
+InterruptFilter	delayedVIIsHvictlInjectReg_delay	DelayN_17	DEEPER	u_core.delayedVIIsHvictlInjectReg_delay	DelayN_17		auto_deeper	
 L2TlbMissQueue	io_out_q	Queue40_L2TlbMQBundle	INLINE	u_core	-	enq_ptr,deq_ptr,maybe_full	declared	rtl/memblock/L2TlbMissQueue.sv:48,69-114「实例化与 golden 完全相同的 ram_40x47」——队列控制内联，存储叶子仍是 ram_40x47（见 collateral 行）。
 L2TlbMissQueue	io_out_q/ram_ext	ram_40x47	ONE_SITE	u_core.mem_ext	ram_40x47		auto_one_site	父层次已内联，但本层在宿主核里仍是独立实例
 LCredit2Decoupled	queue	Queue4_CHISNP	DEEPER	u_core.queue	Queue4_CHISNP		auto_deeper	
@@ -1670,6 +1824,11 @@ LinkMonitor	Decoupled2LCredit_txrspLink	Decoupled2LCredit_1	ONE_SITE	u_core.Deco
 LinkMonitor	LCredit2Decoupled_rxdat	LCredit2Decoupled_2	DEEPER	u_core.LCredit2Decoupled_rxdat	LCredit2Decoupled_2		auto_deeper	
 LinkMonitor	LCredit2Decoupled_rxrsp	LCredit2Decoupled_1	DEEPER	u_core.LCredit2Decoupled_rxrsp	LCredit2Decoupled_1		auto_deeper	
 LinkMonitor	LCredit2Decoupled_rxsnp	LCredit2Decoupled	DEEPER	u_core.LCredit2Decoupled_rxsnp	LCredit2Decoupled		auto_deeper	
+LoadQueueReplay	ageOldest_age	AgeDetector_38	DEEPER	u_core.ageOldest_age	AgeDetector_38		auto_deeper	
+LoadQueueReplay	ageOldest_age_1	AgeDetector_38	DEEPER	u_core.ageOldest_age_1	AgeDetector_38		auto_deeper	
+LoadQueueReplay	ageOldest_age_2	AgeDetector_38	DEEPER	u_core.ageOldest_age_2	AgeDetector_38		auto_deeper	
+LoadQueueReplay	freeList	FreeList_5	DEEPER	u_core.freeList	FreeList_5		auto_deeper	
+LoadQueueReplay	vaddrModule	LqVAddrModule	DEEPER	u_core.vaddrModule	LqVAddrModule		auto_deeper	
 LqVAddrModule	sx_bankWriteAddrDec_resp_pipMod	DelayNWithValid_152	DEEPER	u_core.g_bank[b].g_wport[w].sx_bankWriteAddrDec_resp_pipMod	DelayNWithValid_152		auto_deeper	
 LqVAddrModule	sx_bankWriteAddrDec_resp_pipMod_1	DelayNWithValid_152	GEN_SITE_UNINDEXED	u_core.g_bank[b].g_wport[w].sx_bankWriteAddrDec_resp_pipMod	DelayNWithValid_152		auto_gen_site	
 LqVAddrModule	sx_bankWriteAddrDec_resp_pipMod_10	DelayNWithValid_152	GEN_SITE_UNINDEXED	u_core.g_bank[b].g_wport[w].sx_bankWriteAddrDec_resp_pipMod	DelayNWithValid_152		auto_gen_site	
@@ -2126,6 +2285,8 @@ SRAMTemplate_92	array	sram_array_1p256x72m72s1h0l1b_dcsh_dat	SAME_PATH	array	sra
 SRAMTemplate_92	rcg	MbistClockGateCell	DEEPER	u_core.g_extcg.rcg	MbistClockGateCell		auto_deeper	
 SSIT	data_array	SyncDataModuleTemplate__1024entry_1	DEEPER	u_core.data_array	SyncDataModuleTemplate__1024entry_1		auto_deeper	
 SSIT	valid_array	SyncDataModuleTemplate__1024entry	DEEPER	u_core.valid_array	SyncDataModuleTemplate__1024entry		auto_deeper	
+Sbuffer	dataModule	SbufferData	SAME_PATH	dataModule	SbufferData		auto_same	
+Sbuffer	prefetcher	StorePfWrapper	SAME_PATH	prefetcher	StorePfWrapper		auto_same	
 SourceB	issueArb	FastArbiter_5	SAME_PATH	issueArb	FastArbiter_5		auto_same	
 SplittedSRAMTemplate	array_0_0_0	SRAMTemplate	SAME_PATH	array_0_0_0	SRAMTemplate		auto_same	
 SplittedSRAMTemplate	array_0_1_0	SRAMTemplate	SAME_PATH	array_0_1_0	SRAMTemplate		auto_same	

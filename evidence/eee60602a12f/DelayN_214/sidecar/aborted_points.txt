@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/DelayN_214
+Implementation : i:/WORK/DelayN_214
+Version        : V-2023.12-SP3
+Date           : Sun Sep 20 05:08:29 2026
+**************************************************
+
+No aborted compare points.
+
+1
