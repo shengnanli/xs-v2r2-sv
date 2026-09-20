@@ -65,6 +65,15 @@ A("  localparam int WARMUP = 64;   // 暖机拍数（不比较），见 initial 
 A("  int errors = 0, checks = 0;")
 A("  int unsigned n_a_fire = 0, n_d_fire = 0, n_resp_fire = 0, n_req_fire = 0;")
 A("  int unsigned n_a_llptw = 0, n_a_ptw = 0, n_a_hptw = 0, n_a_bitmap = 0;")
+# ★诊断用时间序列★（默认关）：+covtrace=<周期> 每 N 拍打一行计数快照。
+# 用途是回答"活动是不是在某一拍之后就停了"——只看总数看不出来（a_fire 总数一样，
+# 可能是前 2 万拍跑满、后 18 万拍全死）。不带 plusarg 时一行都不打，不影响正式跑。
+A("  int unsigned COVTRACE = 0;")
+# ★"后半程活着"闸★（2026-09-20 加）：本模块**两次**踩到同一种失效——
+# 访存通道在前几万拍还动，之后永久归零，而总数闸（a_fire != 0）照样绿。
+# 第一次是随机 CSR 写冲掉 PMP，第二次是冲掉 PMA（PMA 没法靠周期性重写救回来）。
+# 总数闸看不见"死在中途"，所以这里额外要求后半程的握手数不低于前半程的 1/4。
+A("  int unsigned a_fire_half = 0;")
 A("  logic clock = 0, reset;")
 A("  always #5 clock = ~clock;")
 A("")
@@ -134,6 +143,32 @@ for w, n in FUNC:
         # CSR 分发写口：**稀疏**（1/256）。每拍随机写会把暖机时配好的 PMP 冲掉，
         # 于是 PTW 又变回"每次 pmp_check 都 accessFault、一次访存都不发"。
         A(f"    {n} = ($urandom_range(0, 255) == 0);")
+    elif n == "io_csr_distribute_csr_w_bits_addr":
+        # ★随机 CSR 写必须避开 PMP(0x3A0-0x3CF) / PMA(0x7C0-0x7E7)★
+        # （2026-09-20 实测，覆盖 +covtrace 时间序列证据，不是推断）
+        #
+        # 症状：a_fire 在 t≈41000 之后**永久归零**，后 16 万拍访存通道是死的：
+        #   covtrace t=40000 a=992 ... | t=50000..200000 a=1040（一次不涨）
+        #   probe   t=40000 pld=0     | t=60000 pld=868  t=100000 pld=17805
+        #   probe2  t=40000 ptwreq=638 hpreq=618 | t=50000 起冻结在 665 / 644
+        # 也就是 PTW/HPTW 自己就不再发 io_mem_req_valid 了。
+        #
+        # 根因：PMP.sv 里有 72 个 `distribute_csr_w_bits_addr == 12'h…` 判据，
+        # 其中 0x3A0-0x3CF 是 pmpcfg/pmpaddr，0x7C0-0x7E7 是 **PMA** 表
+        # （复位默认把 [0x8000_0000, 0x8000_0000_0000) 标成可缓存内存，
+        #  entry30 cfg=0x6F）。随机 64bit 数据写进去就把 DRAM 区打成
+        # 非内存/MMIO ⇒ PTW 每次 pmp_check 直接 accessFault。
+        # **PMA 没有任何"周期性重配"能救**：上一版只补写 pmpaddr0/pmpcfg0，
+        # 修不了被冲掉的 PMA，所以死了就再也活不过来。
+        #
+        # 这里让随机地址整体避开这两段（翻 bit11 挪出去），PMP/PMA 的配置路径
+        # 改由暖机窗口里的定向写覆盖。代价是 PMP/PMA 的**随机**配置不再被 UT
+        # 扫到；那部分等价性由 FM 负责（PMP 在本目标里是两侧 elaborate 的白盒，
+        # pmpMapping/pmaMapping 逐位比对），不是没人管。
+        A(f"    {n} = 12'($urandom);")
+        A(f"    if (({n} >= 12'h3A0 && {n} <= 12'h3CF)")
+        A(f"     || ({n} >= 12'h7C0 && {n} <= 12'h7E7))")
+        A(f"      {n}[11] = ~{n}[11];")
     elif n == "io_wfi_wfiReq":
         # wfi 拉高会掐掉 nodeOut_a_valid。原来是每拍 50% 随机，等于把访存通道的
         # 一半拍直接关掉；这里降到 1/32，wfi 路径仍被覆盖，但不再压住主路径。
@@ -263,6 +298,7 @@ A("""  // ----------------------------------------------------------------------
 A("")
 A("  initial begin")
 A("    if (!$value$plusargs(\"ncycles=%d\", NVEC)) NVEC = 200000;")
+A("    void'($value$plusargs(\"covtrace=%d\", COVTRACE));")
 A("    drive_dft_zero();")
 A("    tl_reset();")
 A("    drive_random();")
@@ -310,23 +346,11 @@ A("      if (g_io_tlb_0_resp_valid || g_io_tlb_1_resp_valid) n_resp_fire++;")
 A("      if (io_tlb_0_req_0_valid && g_io_tlb_0_req_0_ready) n_req_fire++;")
 A("      drive_random();")
 A("      drive_dft_zero();")
-A("""      // ★周期性把 PMP 重新配成放行★（2026-09-20 实测加的）
-      // 随机 CSR 写口有 72 个地址会打到 PMP/PMA 配置上（PMP.sv 里 72 处
-      // `distribute_csr_w_bits_addr == 12'h…`）。按 1/256 的写频率，期望
-      // 约 1.4 万拍就会命中一次，把暖机时配好的表项冲掉。实测正是如此：
-      //     t=10000 a_fire=264 | t=20000 a_fire=379 | t=30000..190000 a_fire=379
-      //     （t>=20000 起 PMPChecker 的 io_resp_ld 恒为"拒绝"）
-      // 也就是说后 18 万拍访存通道是**死的**，"200k 拍"名不副实。
-      // 每 1024 拍重配一次：随机 CSR 写仍然被覆盖，主路径也不会一去不回。
-      if (t % 1024 == 0) begin
-        io_csr_distribute_csr_w_valid     = 1'b1;
-        io_csr_distribute_csr_w_bits_addr = 12'h3B0;
-        io_csr_distribute_csr_w_bits_data = {64{1'b1}};
-      end else if (t % 1024 == 1) begin
-        io_csr_distribute_csr_w_valid     = 1'b1;
-        io_csr_distribute_csr_w_bits_addr = 12'h3A0;
-        io_csr_distribute_csr_w_bits_data = 64'h1F;
-      end""")
+A("      if (t == NVEC/2) a_fire_half = n_a_fire;")
+A("""      if (COVTRACE != 0 && (t % COVTRACE) == COVTRACE - 1)
+        $display("covtrace t=%0d a=%0d(ll=%0d ptw=%0d hptw=%0d bm=%0d) d=%0d req=%0d resp=%0d chk=%0d err=%0d",
+                 t + 1, n_a_fire, n_a_llptw, n_a_ptw, n_a_hptw, n_a_bitmap,
+                 n_d_fire, n_req_fire, n_resp_fire, checks, errors);""")
 A("      tl_step();")
 A("    end")
 A("    $display(\"a_fire_by_id: llptw=%0d ptw=%0d hptw=%0d bitmap=%0d\",")
@@ -338,6 +362,11 @@ A("    if (checks == 0)      begin $display(\"TEST FAILED: checks=0\"); $finish;
 A("    if (n_a_fire == 0)    begin $display(\"TEST FAILED: 访存通道一次都没握手\"); $finish; end")
 A("    if (n_d_fire == 0)    begin $display(\"TEST FAILED: D 通道一次都没应答\"); $finish; end")
 A("    if (n_req_fire == 0)  begin $display(\"TEST FAILED: TLB 请求一次都没被接受\"); $finish; end")
+A("""    $display("a_fire_half=%0d a_fire_2nd=%0d", a_fire_half, n_a_fire - a_fire_half);
+    if (4 * (n_a_fire - a_fire_half) < a_fire_half) begin
+      $display("TEST FAILED: 访存通道后半程几乎停摆（前半 %0d / 后半 %0d）",
+               a_fire_half, n_a_fire - a_fire_half); $finish;
+    end""")
 A("    if (errors == 0) $display(\"TEST PASSED\"); else $display(\"TEST FAILED\");")
 A("    $finish;")
 A("  end")

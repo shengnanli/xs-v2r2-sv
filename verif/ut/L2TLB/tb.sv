@@ -8,6 +8,8 @@ module tb;
   int errors = 0, checks = 0;
   int unsigned n_a_fire = 0, n_d_fire = 0, n_resp_fire = 0, n_req_fire = 0;
   int unsigned n_a_llptw = 0, n_a_ptw = 0, n_a_hptw = 0, n_a_bitmap = 0;
+  int unsigned COVTRACE = 0;
+  int unsigned a_fire_half = 0;
   logic clock = 0, reset;
   always #5 clock = ~clock;
 
@@ -1827,6 +1829,9 @@ module tb;
     io_csr_tlb_hPBMTE = $urandom_range(0, 1);
     io_csr_distribute_csr_w_valid = ($urandom_range(0, 255) == 0);
     io_csr_distribute_csr_w_bits_addr = 12'($urandom);
+    if ((io_csr_distribute_csr_w_bits_addr >= 12'h3A0 && io_csr_distribute_csr_w_bits_addr <= 12'h3CF)
+     || (io_csr_distribute_csr_w_bits_addr >= 12'h7C0 && io_csr_distribute_csr_w_bits_addr <= 12'h7E7))
+      io_csr_distribute_csr_w_bits_addr[11] = ~io_csr_distribute_csr_w_bits_addr[11];
     io_csr_distribute_csr_w_bits_data = {$urandom, $urandom};
   endtask
 
@@ -1939,6 +1944,7 @@ module tb;
 
   initial begin
     if (!$value$plusargs("ncycles=%d", NVEC)) NVEC = 200000;
+    void'($value$plusargs("covtrace=%d", COVTRACE));
     drive_dft_zero();
     tl_reset();
     drive_random();
@@ -1986,23 +1992,11 @@ module tb;
       if (io_tlb_0_req_0_valid && g_io_tlb_0_req_0_ready) n_req_fire++;
       drive_random();
       drive_dft_zero();
-      // ★周期性把 PMP 重新配成放行★（2026-09-20 实测加的）
-      // 随机 CSR 写口有 72 个地址会打到 PMP/PMA 配置上（PMP.sv 里 72 处
-      // `distribute_csr_w_bits_addr == 12'h…`）。按 1/256 的写频率，期望
-      // 约 1.4 万拍就会命中一次，把暖机时配好的表项冲掉。实测正是如此：
-      //     t=10000 a_fire=264 | t=20000 a_fire=379 | t=30000..190000 a_fire=379
-      //     （t>=20000 起 PMPChecker 的 io_resp_ld 恒为"拒绝"）
-      // 也就是说后 18 万拍访存通道是**死的**，"200k 拍"名不副实。
-      // 每 1024 拍重配一次：随机 CSR 写仍然被覆盖，主路径也不会一去不回。
-      if (t % 1024 == 0) begin
-        io_csr_distribute_csr_w_valid     = 1'b1;
-        io_csr_distribute_csr_w_bits_addr = 12'h3B0;
-        io_csr_distribute_csr_w_bits_data = {64{1'b1}};
-      end else if (t % 1024 == 1) begin
-        io_csr_distribute_csr_w_valid     = 1'b1;
-        io_csr_distribute_csr_w_bits_addr = 12'h3A0;
-        io_csr_distribute_csr_w_bits_data = 64'h1F;
-      end
+      if (t == NVEC/2) a_fire_half = n_a_fire;
+      if (COVTRACE != 0 && (t % COVTRACE) == COVTRACE - 1)
+        $display("covtrace t=%0d a=%0d(ll=%0d ptw=%0d hptw=%0d bm=%0d) d=%0d req=%0d resp=%0d chk=%0d err=%0d",
+                 t + 1, n_a_fire, n_a_llptw, n_a_ptw, n_a_hptw, n_a_bitmap,
+                 n_d_fire, n_req_fire, n_resp_fire, checks, errors);
       tl_step();
     end
     $display("a_fire_by_id: llptw=%0d ptw=%0d hptw=%0d bitmap=%0d",
@@ -2014,6 +2008,11 @@ module tb;
     if (n_a_fire == 0)    begin $display("TEST FAILED: 访存通道一次都没握手"); $finish; end
     if (n_d_fire == 0)    begin $display("TEST FAILED: D 通道一次都没应答"); $finish; end
     if (n_req_fire == 0)  begin $display("TEST FAILED: TLB 请求一次都没被接受"); $finish; end
+    $display("a_fire_half=%0d a_fire_2nd=%0d", a_fire_half, n_a_fire - a_fire_half);
+    if (4 * (n_a_fire - a_fire_half) < a_fire_half) begin
+      $display("TEST FAILED: 访存通道后半程几乎停摆（前半 %0d / 后半 %0d）",
+               a_fire_half, n_a_fire - a_fire_half); $finish;
+    end
     if (errors == 0) $display("TEST PASSED"); else $display("TEST FAILED");
     $finish;
   end
