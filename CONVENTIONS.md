@@ -1322,6 +1322,61 @@ TypeError: __init__() got an unexpected keyword argument 'capture_output'
 汇报里的错句子如果没人撤，它会被下一个读者当成事实继承下去
 （见 ★结论会传下去，限定条件不会★ 与 ★继承来的数字与断言，第一次引用时必须重新测量★）。
 
+## ★钉点消名差，不修错配；判决只报一条，不等于只卡一条★（2026-09-20，agent/l2tlb-fm）
+
+### 一、钉点的正当用途是**消名差**，不是**修错配**
+
+L2TLB 的核里把第三个信号也叫 `refill_level_r[2]`，而 golden 有
+`refill_level_r`(PTW) 与 `refill_level_r_1`(HPTW)。Formality 于是把
+`refill_level_r_1_reg[b]` ↔ `refill_level_r_reg[1][b]` **配成一对**，
+整条 refill level 通路（4 BBPin + 5 levelOH）全线报假不等价。
+
+那条 lane 选择**改名**（`cache_level_dup_r`）而不是 `set_user_match`，理由是：
+
+> ★**钉点是把错配掩盖成对，改名是让它本来就不会配错。**★
+
+**两者在日志上都表现为"配上了"**，但：
+
+| | 做了什么 | 下一个人看到 |
+|---|---|---|
+| 钉点 | 强行宣布 A 对应 B | "这两个是一对"——而它们本来不是 |
+| 改名 | 让名字不再冲突 | 什么都看不到，因为问题不存在了 |
+
+规矩：**钉点前先问"这两个东西本来该不该配成一对"。**
+该配而名字不同 → 钉点（消名差，正当）。
+★不该配而被配上了 → 改名/改结构，不许钉★ —— 钉了就把一个真错配永久固化成"已知对应关系"。
+
+### 二、判决报一条，不等于只卡一条
+
+同一个目标的 `assembly` 判决报的是 `green_child_not_fm_target:Bitmap`。
+那条 lane 一开始据此认为"卡着的是 Bitmap/BitmapCache 两个"。实际复算：
+
+```
+targets_at -> 499 个 target，unresolved = 0
+[Bitmap, BitmapCache, PtwCache, PTW, LLPTW, HPTW]  全 False   <- ★6 个都卡着★
+[L2TlbMissQueue, L2TlbPrefetch]                    全 True
+```
+
+**`_assembly_bbox_check` 按声明顺序遍历，撞到第一条就 `return`。**
+判决里那个名字是**第一个**不合格的 child，不是**唯一**一个。
+
+★"报出来的问题数"与"实际的问题数"是两个量★，短路求值的判据尤其如此。
+看到单点报错时，先问"这个判据会不会在第一条就停"。
+
+### 三、更正要落在**会被读到的地方**
+
+那条 lane 更正时没有只改 commit message，它的原话：
+
+> ★不是只改 commit message —— 那种地方没人会读到。★
+
+它把更正写进 `verif/allow/L2TLB.json` 的 `closure_path` 字段：
+依据（实现的两处行号）+ 自测复算命令与结果 + 6/2 分档 + 关门四步。
+★**谁撞到那个 verdict，就能顺手读到正路。**★
+
+同时保留了原始预测一字未改（`git show <commit>:<file> | sha256sum` 未变、
+本次 diff 删除行数 = 0），更正以**追加**形式写在后面 ——
+与 ★预测对不上时改的是对账，不是预测★ 一致。
+
 ## ★别把没发生的后果写成发生了★（2026-09-20，agent/harvest 同一天两个方向各栽一次）
 
 同一条 lane、同一天、同一件事上摔了两次，**方向相反**：
