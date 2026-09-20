@@ -468,6 +468,61 @@ endmodule
 """
 
 
+CORE_SKELETON = """module xs_Rob_core (
+  // BEGIN GENERATED(core_ports)
+  // END GENERATED
+);
+%s
+endmodule
+module Rob(
+  // BEGIN GENERATED(ports)
+  // END GENERATED
+);
+  // BEGIN GENERATED(wrapper_nets)
+  // END GENERATED
+  // BEGIN GENERATED(core_inst)
+  // END GENERATED
+  // BEGIN GENERATED(children)
+  // END GENERATED
+endmodule
+"""
+
+
+def _core_assert_rows(d, ports, children, gdir, netw):
+    """★证明那两条硬断言看得见改变★（CONVENTIONS：判据也要自证）。
+
+    只声明端口、不驱动输出的文件正是上一轮那个 SCAFFOLD 的形状。
+    这里用两个最小样本证明 analyse_core 会对它判红：
+      · 核体里出现一个 golden 里没有的 io_* 名字 -> 报"打错名字"
+      · 核体只驱动 1 个输出          -> 报"这正是 SCAFFOLD 的形状"，
+                                        且缺口计数必须是 647-1 与 61
+    """
+    def probe(body):
+        tgt = os.path.join(d, 'core_probe.sv')
+        with open(tgt, 'w') as f:
+            f.write(CORE_SKELETON % body)
+        with open(tgt) as f:
+            lines = f.read().split('\n')
+        try:
+            analyse_core(lines, ports, children, gdir, netw)
+            return None
+        except SystemExit as e:
+            return str(e)
+
+    typo = probe('  assign io_commits_isCommit = 1\'b0;\n'
+                 '  assign io_typo_that_is_not_a_golden_port = 1\'b0;')
+    scaffold = probe('  assign io_commits_isCommit = 1\'b0;')
+    return [
+        ('core_typo_caught', typo is not None and '打错名字' in typo,
+         '核体里假的 io_* 名字被抓（%s）' % (typo or '★没抓到★').splitlines()[0][:44]),
+        ('core_scaffold_caught',
+         scaffold is not None and 'SCAFFOLD' in scaffold
+         and '缺 646 个' in scaffold and '缺 61 个' in scaffold,
+         '只驱动 1 个输出的核被判红，缺口计数 646/61'
+         if scaffold else '★没抓到：SCAFFOLD 能过★'),
+    ]
+
+
 def selftest(golden):
     """Prove the splice is (a) idempotent and (b) actually scoped to the markers.
 
@@ -517,7 +572,7 @@ def selftest(golden):
          'n_/*' not in body
          and re.search(r'\.io_canCommitPriorityCond_0\s*\(\)', body) is not None,
          '悬空子模块输出写成 `()`，没有变成名为 `n_/*` 的假网'),
-    ]
+    ] + _core_assert_rows(d, ports, children, gdir, net_widths(glines))
     # Negative: a splice that ignored the END marker would swallow the trailing
     # sentinel. Simulate by checking the marker pair is still intact and empty
     # regions can be re-emptied.
