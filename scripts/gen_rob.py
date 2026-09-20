@@ -28,7 +28,9 @@ Generated regions（五个，文件骨架就长这样）
   2. 在 core_ports 区之后手写核体，驱动 647 个顶层 output + 61 根子模块输入网。
   3. `python3 scripts/gen_rob.py --write` 填五个生成区。
      ★它会拒绝一个没驱动全的核★：缺一个 output 或一根网就报
-     "这正是 SCAFFOLD 的形状"并列出缺口（自测里钉着 646/61 这两个数）。
+     "这正是 SCAFFOLD 的形状"并列出缺口（自测里钉着 632/78 这两个数）。
+                ★632/78 是 2026-09-20 修好"跨行引脚"解析之后的数★：修之前钉的是
+                646/61，那是漏掉 32 个折行引脚算出来的（详见 parse_children）。
      核体里出现 golden 端口表里没有的 io_* 名字（打错名字）同样直接报错。
 
 Child pin nets are rewritten as（实测分布，两次修过：见 classify）：
@@ -84,16 +86,53 @@ def parse_ports(lines):
 
 
 def parse_children(lines, body_start):
-    """The 8 child instances. -> [(type, inst, [(pin, net)])]"""
+    """The 8 child instances. -> [(type, inst, [(pin, net)])]
+
+    ★引脚**不一定写在一行里**★（2026-09-20 实测）：firtool 按 80 列折行，
+    引脚名长了就折成
+        .io_toVecExcpMod_logicPhyRegMap_0_bits_lreg
+          (io_toVecExcpMod_logicPhyRegMap_0_bits_lreg),
+    只认单行的正则会**静默漏掉** 32 个引脚（rab 13 / vtypeBuffer 4 /
+    exceptionGen 13 / enqPtrGenModule 1 / commitStuckCounter 1），
+    真实引脚数是 900 而不是 868。漏掉的后果有三种，全都不报错：
+      · 14 个**直通端口**引脚（rab 的 12 个 logicPhyRegMap lreg/preg +
+        vtypeBuffer 的 2 个 commitVType）会被错判成"核必须驱动"——
+        核真去驱动就与 child 双驱动；
+      · 17 个**表达式引脚**（rab/vtypeBuffer 的 commitSize/walkSize、
+        exceptionGen 的 10 根 hasException/vstartEn/vstart、
+        enqPtrGenModule.io_allowEnqueue、commitStuckCounter.io_stuck）
+        会整根从核的义务表里消失 —— 核少驱动 17 根网而闸不报；
+      · 1 个 child 输出（exceptionGen.io_state_bits_satpFlushFirstFetchFault）
+        的网会悬空。
+    所以这里按**括号配平**扫，不按行扫。
+    """
     out, i = [], body_start
     while i < len(lines):
         m = re.match(r'^\s{0,4}([A-Za-z_]\w*)\s+(\w+)\s*\(\s*$', lines[i])
         if m:
             j, pins = i + 1, []
             while j < len(lines) and not re.match(r'^\s*\);', lines[j]):
-                pm = re.match(r'\s*\.(\w+)\s*\((.*?)\)\s*,?\s*$', lines[j])
+                pm = re.match(r'\s*\.(\w+)\s*(.*)$', lines[j])
                 if pm:
-                    pins.append((pm.group(1), pm.group(2).strip()))
+                    pin, rest, depth, buf, k = pm.group(1), pm.group(2), 0, [], j
+                    started = False
+                    while k < len(lines):
+                        chunk = rest if k == j else lines[k].strip()
+                        buf.append(chunk)
+                        for ch in chunk:
+                            if ch == '(':
+                                depth += 1
+                                started = True
+                            elif ch == ')':
+                                depth -= 1
+                        if started and depth == 0:
+                            break
+                        k += 1
+                    txt = ' '.join(x for x in buf if x)
+                    nm = re.match(r'\((.*)\)\s*,?\s*$', txt)
+                    if nm:
+                        pins.append((pin, ' '.join(nm.group(1).split())))
+                        j = k
                 j += 1
             out.append((m.group(1), m.group(2), pins))
             i = j
@@ -661,8 +700,8 @@ def _core_assert_rows(d, ports, children, gdir, netw):
          '核体里假的 io_* 名字被抓（%s）' % (typo or '★没抓到★').splitlines()[0][:44]),
         ('core_scaffold_caught',
          scaffold is not None and 'SCAFFOLD' in scaffold
-         and '缺 646 个' in scaffold and '缺 61 个' in scaffold,
-         '只驱动 1 个输出的核被判红，缺口计数 646/61'
+         and '缺 632 个' in scaffold and '缺 78 个' in scaffold,
+         '只驱动 1 个输出的核被判红，缺口计数 632/78'
          if scaffold else '★没抓到：SCAFFOLD 能过★'),
     ]
 
