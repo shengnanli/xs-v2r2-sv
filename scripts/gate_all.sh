@@ -126,6 +126,13 @@ run "rtl 无 svh 闸"      python3 scripts/check_no_svh_in_rtl.py
 # 而没有任何现成的闸会响。这道闸不需要 Formality，跑一次几十毫秒。
 run "fm_eq.tcl 语法负测" python3 scripts/check_fm_eq_tcl_syntax.py --selftest
 run "fm_eq.tcl 语法闸"   python3 scripts/check_fm_eq_tcl_syntax.py
+# initreg 判据的负测（真跑探针要 VCS，不进 gate_all；这里只把判据本身守住）：
+# ★"两轮 initreg 都绿"证明不了复位域★，而"两轮日志 md5 不等"是 fail-open 的
+# （命令行里就带着 +vcs+initreg+0/random）。判据见脚本文件头。
+run "initreg 判据负测"  python3 scripts/check_initreg_effective.py --selftest
+# 变异体计分规则的负测（0920 裁定：编不过是"无效变异体"，分子分母同时剔除）：
+# 计分规则出错不会报警，只会让 "抓住 N/M" 里的 M 悄悄变小、成绩悄悄变好看。
+run "变异计分负测"      python3 verif/ut/Entries_common/mutants.py --selftest-classify
 # 覆盖台账的证据链：docs/coverage_three_axis.tsv 宣称的每条证明都要能从**版本库**复现。
 # 2026-09-18 实测出事状态：轴2 标 PROVEN_DIRECT 133 个，版本库里找得到通过 receipt 的
 # 只有 34 个，★189 个找不到★（重算后缺口扩大到 90）。那些证明并非不存在 —— evidence 全

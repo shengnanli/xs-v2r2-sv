@@ -367,6 +367,37 @@ switch -- $_verify_matched_unread_compare_points {
     #          ★复核判据★: passing 18781 -> 25001（正好 +6220）、failing 仍 0、unread 归 0、
     #          unmatched 保持全零。passing 不增即空转，不算过。
     #          同族先例见上面的 EntriesVfdivVidiv 条目；本条的数字全部是 canary 自己实测的。
+    #   ★Entries* 家族其余 7 个变体(2026-09-20 加，本轮一次性 7 个)★
+    #          与上面 EntriesAluCsrFenceDiv / EntriesVfdivVidiv **同一物种、同一份生成器**：
+    #          golden 把条目负载展平成逐字段寄存器，其中"只为 transEntry 存、本变体发射口
+    #          看不见"的那一段在 Entries 这一层没有任何输出锥 ⇒ 两侧都没人读 ⇒ matched_nc。
+    #          钉点由 verif/ut/<变体>/gen_fm_pins.py 从 golden 实例连线**机械提取**
+    #          （与生成 RTL 用的是同一张 Variant.pl_off 偏移表），不是人工列表。
+    #
+    #          七个变体的六条证据逐个采齐（verif/ut/Entries_common/vmucp_evidence.py，
+    #          每个都打印"申请条件齐备"），加强前的实测如下：
+    #
+    #            变体                                  passing  unread  期望 passing
+    #            EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v  19184    6116  -> 25300
+    #            EntriesAluMulBkuBrhJmp                   18782    6228  -> 25010
+    #            EntriesFaluFcvtF2vFmacFdiv               13491    3128  -> 16619
+    #            EntriesFaluFmacFdiv                      13413    3136  -> 16549
+    #            EntriesFaluFmac                          12794    3140  -> 15934
+    #            EntriesVfmaVialuFixVfalu                 16017    2352  -> 18369
+    #            EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf
+    #                                                     16411    2344  -> 18755
+    #
+    #          七个都满足：unmatched unread **ref/impl 双 0**（不是"先配对再加强"那类，
+    #          本来就全是 matched_nc）；ref/impl 双射严格 1:1；配对**全部**是钉点文件的
+    #          子集、FM 自行猜配 **0 对**；`^ *Error:` 行数 0；unmatched 六项全零；
+    #          dont_verify / elab147 / relaxed_appvars 三项全空；黑盒输出 0；native SUCCEEDED。
+    #
+    #          ★复核判据（事前写死，passing 不增即空转、按 fail 处理）★：
+    #          passing 恰好 +unread、failing 仍 0、unread 归 0、unmatched 六项保持全零。
+    #
+    #          ☆同一个"两行"读数陷阱☆：结果表里 `Constant reg` 与 `Unread` 是两行
+    #          （Alu* 各 12 / Falu* 各 74 / Vfma* 各 134），vmucp 只清 unread 那一行，
+    #          常量寄存器留着**不拦 verdict**。所以期望值是 +unread，不是 +两行之和。
     #   RenameBuffer(2026-09-17 加): 51 个 unread 点，钉点后全部转成 matched_nc
     #          (verif/ut/RenameBuffer/fm_pins.tcl，钉前 unmatched unread 51(51)、
     #          钉后六项 unmatched 全零、matched_unread_notcompared_pairs = 51)。
@@ -458,7 +489,7 @@ switch -- $_verify_matched_unread_compare_points {
     #              passing = golden 闭包的触发器**位数** + 顶层 output 端口**位数**;
     #              该模型在 TlbStorageWrapper_1 8682 / TLBFA_1 8663 / TLBFA_2 8233 /
     #              TLBFA_3 8229 / DelayN_7 657 / DelayN_9 216 上逐位命中过, 本轮三个也逐位命中。
-    if {$top ni {Bku Composer DebugModule DuplicatedTagArray EntriesVfdivVidiv FAlu FCVT FTBBank Ftq ICacheCtrlUnit ICacheDataArray ICacheMetaArray ICacheMissUnit InstrUncache ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 LinkMonitor MulUnit Queue1_RegMapperInput_5 RNXbar SNXbar SourceB SSIT TageBTable TlbStorageWrapper TlbStorageWrapper_1 TlbStorageWrapper_2 TlbStorageWrapper_3 TXDAT_4 TXREQ WritebackQueue IBuffer EntriesAluCsrFenceDiv NCBTransactionQueue NCBTransactionQueue_1 Predictor RenameBuffer TLBFA TLBFA_1 TLBFA_2 TLBFA_3 TLBNonBlock TLBNonBlock_1 TLBNonBlock_2}} {
+    if {$top ni {Bku Composer DebugModule DuplicatedTagArray EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v EntriesAluCsrFenceDiv EntriesAluMulBkuBrhJmp EntriesFaluFcvtF2vFmacFdiv EntriesFaluFmac EntriesFaluFmacFdiv EntriesVfdivVidiv EntriesVfmaVialuFixVfalu EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf FAlu FCVT FTBBank Ftq IBuffer ICacheCtrlUnit ICacheDataArray ICacheMetaArray ICacheMissUnit ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 InstrUncache LinkMonitor MulUnit NCBTransactionQueue NCBTransactionQueue_1 Predictor Queue1_RegMapperInput_5 RNXbar RenameBuffer SNXbar SSIT SourceB TLBFA TLBFA_1 TLBFA_2 TLBFA_3 TLBNonBlock TLBNonBlock_1 TLBNonBlock_2 TXDAT_4 TXREQ TageBTable TlbStorageWrapper TlbStorageWrapper_1 TlbStorageWrapper_2 TlbStorageWrapper_3 WritebackQueue}} {
       puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
       exit 3
     }
