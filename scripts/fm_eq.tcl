@@ -517,9 +517,12 @@ switch -- $_verify_matched_unread_compare_points {
     #  ld2Cancel / ldDep_pipes 在 _164/_166 两列全 0)，LoadShouldCancel 整条不生成，
     # 影子 bit[1] 没有读出点；次态左移(bit1'=bit0)，transEntry 露的是次态不是寄存器
     # ⇒ 寄存器 bit1 是纯写入位。
-    # ★复核判据(跑前预登记)★ 加强后 passing 必须**恰好 +15**：3777 -> 3792，
-    # 正好等于 predict.py 的模型上界；unread 归 0、failing 仍 0、unmatched 全 0。
-    if {$top ni {Bku Composer DebugModule DuplicatedTagArray EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v EntriesAluCsrFenceDiv EntriesAluMulBkuBrhJmp EntriesFaluFcvtF2vFmacFdiv EntriesFaluFmac EntriesFaluFmacFdiv EntriesVfdivVidiv EntriesVfmaVialuFixVfalu EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf FAlu FCVT FTBBank Ftq IBuffer ICacheCtrlUnit ICacheDataArray ICacheMetaArray ICacheMissUnit ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 InstrUncache LinkMonitor MulUnit NCBTransactionQueue NCBTransactionQueue_1 OthersEntry_104 OthersEntry_120 OthersEntry_164 OthersEntry_88 Predictor Queue1_RegMapperInput_5 RNXbar RenameBuffer SNXbar SSIT SourceB TLBFA TLBFA_1 TLBFA_2 TLBFA_3 TLBNonBlock TLBNonBlock_1 TLBNonBlock_2 TXDAT_4 TXREQ TageBTable TlbStorageWrapper TlbStorageWrapper_1 TlbStorageWrapper_2 TlbStorageWrapper_3 WritebackQueue}} {
+    # OthersEntry_150 / _136 与 _164 **同因同型**(都是 VEC 族 simp，5 源 x 3 pipe = 15 死位，
+    # 同样 nLdCancel/ld1Cancel/ld2Cancel/ldDep_pipes 四行全 0)，一并加入。
+    # ★复核判据(跑前预登记)★ 加强后 passing 必须**恰好 +15**：
+    #   _164 3777 -> 3792 / _150 3782 -> 3797 / _136 3844 -> 3859，
+    # 三个都正好等于 predict.py 的模型上界；unread 归 0、failing 仍 0、unmatched 全 0。
+    if {$top ni {Bku Composer DebugModule DuplicatedTagArray EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v EntriesAluCsrFenceDiv EntriesAluMulBkuBrhJmp EntriesFaluFcvtF2vFmacFdiv EntriesFaluFmac EntriesFaluFmacFdiv EntriesVfdivVidiv EntriesVfmaVialuFixVfalu EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf FAlu FCVT FTBBank Ftq IBuffer ICacheCtrlUnit ICacheDataArray ICacheMetaArray ICacheMissUnit ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 InstrUncache LinkMonitor MulUnit NCBTransactionQueue NCBTransactionQueue_1 OthersEntry_104 OthersEntry_120 OthersEntry_136 OthersEntry_150 OthersEntry_164 OthersEntry_88 Predictor Queue1_RegMapperInput_5 RNXbar RenameBuffer SNXbar SSIT SourceB TLBFA TLBFA_1 TLBFA_2 TLBFA_3 TLBNonBlock TLBNonBlock_1 TLBNonBlock_2 TXDAT_4 TXREQ TageBTable TlbStorageWrapper TlbStorageWrapper_1 TlbStorageWrapper_2 TlbStorageWrapper_3 WritebackQueue}} {
       puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
       exit 3
     }
