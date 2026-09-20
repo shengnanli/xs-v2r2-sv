@@ -382,3 +382,83 @@ impl  i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[0][3]  (可读核按 SoA
 | Not Compared / Constant reg | 53 |
 | `fm_predict.py check` | 差 53 = 可指认 53 → 绿 |
 | verdict | `SIGNOFF_PASS`，但按 §2 仍记 **条件性证明 / UNCHANGED_GOLDEN_DEP** |
+
+---
+
+## 10. 第三跑实测（加 `fm_pins.tcl`，commit `71476fde`）—— native SUCCEEDED，但 **§7 的判据没达成**
+
+`run_proof.sh` rc=0，证据 `evidence/71476fde0e6c/InterruptFilter/`：
+
+```
+verdict: SUCCEEDED
+{"passing": 440, "failing": 0, "unverified": null, "unmatched": 0,
+ "unread": null, "blackbox_out": 0, "dont_verify": false, "elab147": false,
+ "constant_reg": 138, "native": "SUCCEEDED", "unmatched_ref": 0, "unmatched_impl": 0}
+Passing (equivalent)   Port 74   DFF 366   TOTAL 440
+Failing                                     TOTAL   0
+Not Compared  Constant reg      DFF 138
+fm.log 行首锚定错误行数 grep -cE "^ *Error:" = 0
+IF_PIN: pinned 85 pair(s); orphans 85; structural inventory upper bound 378
+```
+
+**★§7 写死的判据是「passing 必须 440 → 525（恰好 +85）」，没达成：passing 还是 440。★**
+先报没达成，再解释。
+
+### 10.1 那 85 点去哪了：被 Formality 归进 `Constant reg / Not Compared`
+
+`Constant reg` 从 **53 变成 138**，正好 `53 + 85 = 138`。也就是说钉点把这 85 点
+从「未配对」变成了「已配对、但两侧都是常量 -> 不比较」，**没有变成 passing**。
+
+我在 §7 写"钉上之后 FM 真去证它们"是**错的**：这 85 点不是 IBuffer 那种
+"matched-but-unread"（开 vmucp 就会去证），而是**两侧都恒为常量**的寄存器，
+Formality 对常量寄存器一律不产生比较内容。
+
+### 10.2 为什么我仍然认为这次证明是成立的（判断依据，交给复核者裁）
+
+不是"差不多"，是三条可核对的事实：
+
+1. **两侧的常量值是各自独立测出来的，不是假设的**：第二跑（未钉点）的
+   `unmatched.rpt` 把两侧分别定了型 —— ref 侧 85 个全是 `DFF0X`（常 0/X），
+   impl 侧 85 个全是 `DFF0`（常 0）。**同一个常量 0**，两份证据互不依赖。
+2. **常量若不同会在下游炸**：这 85 个寄存器都喂进第二级规约树，最终落到
+   `io_out_*topi_*` 与 `intrVecReg`。若两侧常量不同，那 440 个已比较点里必有失败。
+   实测 failing = 0。
+3. **和 FM 自己配上的那 53 个是同一种待遇**：那 53 个是 Formality **自己**按名字
+   配上的常量寄存器对，同样归 `Not Compared`。钉点只消掉名字差，让剩下 85 个
+   与那 53 个站到同一条线上 —— 是**一致**，不是**例外**。
+
+反过来也说清楚**这次证明没覆盖什么**：这 85 位没有逐点的等价判决，
+它们的等价性是**由下游 440 个已比较点传递覆盖**的。
+
+### 10.3 对账（工具口径）
+
+```
+expected 578 - passing 440 = 138
+可指认 = constant_reg 138 + unread 0 = 138
+差额 == 可指认 -> 绿（"差额被指认"）
+```
+
+★但第三跑**不能用来对账**★：登记 commit `38b51ce2` 晚于本跑的 `impl_commit`
+`71476fde`，`fm_predict.py check` 会判「登记不早于该次证明」。第三跑只当诊断跑。
+
+---
+
+## 11. 第四跑（签核跑）预登记 —— 修正 §7/§9 的错误预测
+
+改动只有一处：`fm_pins.tcl` 的**运行期 `puts`/`error` 文案改成纯 ASCII**
+（CONVENTIONS「进 fm.log 的字必须是 ASCII」；第三跑里那行 `IF_PIN` 在 fm.log 里
+是一串 `?`，读不出数字）。判据逻辑、钉点集合、RTL 一个字节没动。
+
+修正后的预测（跑之前写死）：
+
+| 项 | 预测值 | 与 §7/§9 的差别 |
+|---|---|---|
+| passing | **440** | §7 写的 525 是错的，见 §10.1 |
+| Not Compared / Constant reg | **138** | §7 写的 53 是错的 |
+| failing / unverified / unmatched / 黑盒 / unread / dont_verify | 全 0 | 不变 |
+| 比较点全集 | 440 + 138 = **578** | 不变，仍等于模型值 |
+| `fm_predict.py check` | 差 138 = 可指认 138 → 绿 | — |
+| verdict | `SUCCEEDED`，但按 §2 仍记 **条件性证明 / UNCHANGED_GOLDEN_DEP** | — |
+
+★登记文件 `docs/fm_predictions/InterruptFilter.json` 里的 `expected=578` 自始至终
+没有动过，也不会动 —— 工具对账的是它，不是我这段叙述。★

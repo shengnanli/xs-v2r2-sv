@@ -48,7 +48,7 @@
 if {$top eq "InterruptFilter"} {
 
   if {[info commands report_unmatched_points] eq ""} {
-    error "IF_PIN: 只读查询动词 'report_unmatched_points' 不可用 —— 拒绝硬猜名字"
+    error "IF_PIN: query verb report_unmatched_points unavailable - refuse to guess names"
   }
 
   # 结构清单上界：三族 iprios 条目数组寄存器的总位数（从 golden 的寄存器普查来）
@@ -93,25 +93,25 @@ if {$top eq "InterruptFilter"} {
 
   set _bad 0
   if {[llength $_oddref] != 0} {
-    puts "IF_PIN_FAIL(golden 侧出现三族之外的孤儿点): [llength $_oddref] 个"
+    puts "IF_PIN_FAIL: ref side has [llength $_oddref] orphan point(s) outside the 3 iprios families"
     foreach _x $_oddref { puts "    $_x" }
     incr _bad
   }
   if {[llength $_oddimp] != 0} {
-    puts "IF_PIN_FAIL(可读核侧出现三族之外的孤儿点): [llength $_oddimp] 个"
+    puts "IF_PIN_FAIL: impl side has [llength $_oddimp] orphan point(s) outside the 3 iprios families"
     foreach _x $_oddimp { puts "    $_x" }
     incr _bad
   }
   set _kr [lsort [array names _R]]
   set _ki [lsort [array names _I]]
   if {$_kr ne $_ki} {
-    puts "IF_PIN_AUDIT: 两侧 (族,组,字段,位) key 集合不相等"
-    foreach _k $_kr { if {![info exists _I($_k)]} { puts "    golden 独有: $_k -> $_R($_k)" } }
-    foreach _k $_ki { if {![info exists _R($_k)]} { puts "    可读核独有: $_k -> $_I($_k)" } }
+    puts "IF_PIN_AUDIT: key sets (family,group,field,bit) differ between the two sides"
+    foreach _k $_kr { if {![info exists _I($_k)]} { puts "    ref only : $_k -> $_R($_k)" } }
+    foreach _k $_ki { if {![info exists _R($_k)]} { puts "    impl only: $_k -> $_I($_k)" } }
     incr _bad
   }
   if {$_bad != 0} {
-    error "IF_PIN_SHAPE: 孤儿点集合与三族声明不符，拒绝钉点（bad=$_bad）"
+    error "IF_PIN_SHAPE: orphan set does not match the declared 3 families, refuse to pin (bad=$_bad)"
   }
 
   set _want [array size _R]
@@ -125,19 +125,19 @@ if {$top eq "InterruptFilter"} {
       lappend _fail "$_k : $_R($_k) <-> $_I($_k)"
     }
   }
-  puts "IF_PIN: 钉点 $_n 对（孤儿点 $_want 对，结构清单上界 $_inventory）"
+  puts "IF_PIN: pinned $_n pair(s); orphans $_want; structural inventory upper bound $_inventory"
 
   if {[llength $_fail] != 0} {
     foreach _x $_fail { puts "IF_PIN_MISS: $_x" }
-    error "IF_PIN_MISS: [llength $_fail] 条 set_user_match 返回 0（名字漂了？），拒绝带伤继续"
+    error "IF_PIN_MISS: [llength $_fail] set_user_match call(s) returned 0 (names drifted?), refuse to continue"
   }
   if {$_want < 1} {
-    error "IF_PIN_EMPTY: 孤儿点为 0 —— 本文件在空转，钉点判据失去意义"
+    error "IF_PIN_EMPTY: zero orphans - this pin file is a no-op, the criterion is meaningless"
   }
   if {$_want > $_inventory} {
-    error "IF_PIN_OVERRUN: 孤儿点 $_want 超出结构清单上界 $_inventory —— 形状变了"
+    error "IF_PIN_OVERRUN: orphans $_want exceed structural inventory $_inventory - shape changed"
   }
   if {$_n != $_want} {
-    error "IF_PIN_COUNT: 钉上 $_n != 孤儿点 $_want"
+    error "IF_PIN_COUNT: pinned $_n != orphans $_want"
   }
 }
