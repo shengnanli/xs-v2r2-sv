@@ -55,3 +55,28 @@ INITREG ?= +vcs+initreg+random
 #
 # 实测结果见本目录 FM_RESULT 注记（签核后补写在下面）。
 # ===========================================================================
+
+# ===========================================================================
+# ★FM 实测（agent/vlq）★
+#
+# 首跑（commit 68d818fb+117b47dd）: native **FAILED**
+#   匹配 1520 个比较点 = 765 按名 + 755 按签名，两侧 unmatched 0(0)
+#   Passing  Port 21 / DFF 1483 = 1504
+#   Failing  Port 16 / DFF    0 =   16
+#   ★比较点总数 1520 与跑前登记的模型 **完全一致（差 +0）**，失败的是逻辑不是模型。★
+#   16 个失败点 = io_lqDeqRobIdx_flag(1) + io_lqDeqRobIdx_value(8) + io_lqDeqUopIdx(7)。
+#   根因（真 bug，UT 三 seed 两轮全绿也看不见）：
+#     deqPtr.value 是 7 位寄存器，可表示 0..127，而队列只有 72 个条目。
+#     golden 把 robIdx_flag / robIdx_value / uopIdx 摊成 **128 项** 读向量
+#     （VirtualLoadQueue.sv:1731 / 1860 / 1989），下标 72..127 那 56 项**全部填条目 0**
+#     —— 这是 firtool 对越界常量下标的填法。可读核的 for 循环把默认值写成了 '0。
+#     仿真按构造够不着：deqPtr 只经环形加法更新，实际取值恒 <= 71；
+#     Formality 会枚举这些不可达取值，一开就现形。
+#   修法见 commit 97ce6679：默认值改成条目 0（bug-for-bug，不是"顺手修好"）。
+#
+# 重跑（commit 97ce6679）: native **SUCCEEDED**
+#   Passing  Port 37 / DFF 1483 = **1520**   Failing 0
+#   unmatched 0(0) / unread 0 / 黑盒 0 / 无 dont_verify / 无 ELAB 降级
+#   verdict(signoff-strict) = SUCCEEDED
+#   ★实测 1520 == 预登记 1520，且 Port 37 / DFF 1483 **逐列**对上，差全为 +0。★
+# ===========================================================================
