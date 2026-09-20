@@ -109,3 +109,45 @@ golden `EnqEntry.sv:3258`
 UT/FM 来证实这一点，上一位报过的那组 no-op 对照数（OthersEntry 3619/3619、
 EntriesVfdivVidiv 12136/12136）本 lane 也没有复核，所以这里不引用、不背书。
 落地前请让持有那两条 lane 的人自己跑一遍回归。
+
+## FM 侧：缺口被**逐位**指认掉了（比 UT 更干净的证据）
+
+`make fm-EnqEntry`（signoff-strict，仓库现状，未改核）：
+
+```
+FAILED  {"passing": 3616, "failing": 2, "unmatched": 0, "unread": null,
+         "blackbox_out": 0, "dont_verify": false, "constant_reg": null, ...}
+    Compare point io_commonOut_perfWakeupByWB_0 failed (is not equivalent)
+    Compare point io_commonOut_perfWakeupByWB_1 failed (is not equivalent)
+```
+
+**`passing 3616 + failing 2 = 3618 = PREDICTIONS.md 里跑前写死的模型值。**
+也就是说：预登记的 passing 模型在本族**一位不差**，跑出来比模型少的那 2 点
+不是模型不准，而是**恰好**是那两个已知错掉的输出 —— 缺口被逐位指认干净，
+没有第三个来源。
+
+钉点同时第一次经真 fm_shell 验过：
+
+```
+EE_PINS: 1432 accepted / 1432 expected, 0 refused
+```
+
+（fm.log 里 `grep -c FM-036` 命中 3 条，逐条看**全是 fm_eq.tcl 里那段注释的回显**
+（L472/475/476），真的 Unknown name 一条也没有 —— 正是 CONVENTIONS 记过的那个
+「`grep -c FM-036` 判据永远为假」的坑。）
+
+## 打上那一行之后的 FM（★干跑，不是签核★）
+
+同一次性副本、同一 mode、同一钉点文件：
+
+```
+SUCCEEDED  {"passing": 3618, "failing": 0, "unmatched": 0, "unread": null,
+            "blackbox_out": 0, "dont_verify": false, ...}
+EE_PINS: 1432 accepted / 1432 expected, 0 refused
+```
+
+`passing = 3618 = 模型`，差 **+0**，与 OthersEntry 18/18 的形态一致。
+
+★这**不是**签核★：核补丁不在仓库里，`make_receipt.py` 也按规矩拒绝了出 receipt
+（"impl 工作树 dirty —— 拒绝出 receipt"，fail-closed 正确动作）。
+这一节只回答一个问题：**卡点是不是只有这一行。** 对 EnqEntry 而言，是。
