@@ -352,6 +352,7 @@ UncacheEntry_9	SUCCEEDED	p5020 f0 um0 unread=? const_reg=2 mode=signoff-strict v
 UopInfoGen	SUCCEEDED	p19 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @f40deba9439d evidence/f40deba9439d/UopInfoGen/receipt.json
 VSetRiWi	SUCCEEDED	p725 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @b5084fb3e0ed evidence/b5084fb3e0ed/VSetRiWi/receipt.json
 VSetRvfWvf	SUCCEEDED	p737 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @b5084fb3e0ed evidence/b5084fb3e0ed/VSetRvfWvf/receipt.json
+VirtualLoadQueue	SUCCEEDED	p1520 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @46bca5d516ea evidence/46bca5d516ea/VirtualLoadQueue/receipt.json
 WBArbiter	SUCCEEDED	p17 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @201cb5db74de evidence/201cb5db74de/WBArbiter/receipt.json
 WBArbiter_1	SUCCEEDED	p22 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @201cb5db74de evidence/201cb5db74de/WBArbiter_1/receipt.json
 WBArbiter_2	SUCCEEDED	p12 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @201cb5db74de evidence/201cb5db74de/WBArbiter_2/receipt.json

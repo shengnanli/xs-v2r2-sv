@@ -21,11 +21,11 @@
 #   observation_sink    1 个   9903 端口全 input 的纯观测 sink，19 万行全是端口表
 #
 metric	done	total	percent
-fm_targets_configured	402	496	81.0
-unique_design_written	155	1191	13.0
-unique_design_proven	124	1191	10.4
-golden_lines_written	1417494	3902283	36.3
-golden_lines_proven	963460	3902283	24.7
+fm_targets_configured	403	497	81.1
+unique_design_written	156	1191	13.1
+unique_design_proven	125	1191	10.5
+golden_lines_written	1431751	3902283	36.7
+golden_lines_proven	977717	3902283	25.1
 #
 # written 里没有绿判决证据的设计族（差额都在这儿，逐个列出不藏）：
 #   AgeDetector                                     12602 行

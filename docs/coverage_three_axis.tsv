@@ -1733,7 +1733,7 @@ VfRegFilePart2	MISSING	UNPROVEN	-
 VfRegFilePart3	MISSING	UNPROVEN	-
 VfofBuffer	MISSING	UNPROVEN	-
 VirtualLevelPermitModule	MISSING	UNPROVEN	-
-VirtualLoadQueue	MISSING	UNPROVEN	-
+VirtualLoadQueue	REWRITTEN	PROVEN_DIRECT	rtl/memblock/VirtualLoadQueue.sv
 VlBusyTable	REWRITTEN	UNPROVEN	rtl/backend/VlBusyTable.sv
 VlRFReadArbiter	MISSING	UNPROVEN	-
 VlRFWBCollideChecker	MISSING	UNPROVEN	-
