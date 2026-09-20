@@ -118,13 +118,108 @@ def main():
     if trace(FM_EQ, sorted(main_wl)[0], 'true', a) != trace(FM_EQ, sorted(main_wl)[0], 'true', b):
         fails.append('POS-2: main 的 fm_eq.tcl 对自己都判不同（判据不稳定）')
 
+    fails += pins_cases(wd)
+
     shutil.rmtree(wd, ignore_errors=True)
     for f in fails:
         print('FAIL %s' % f)
     if fails:
         return 1
-    print('test_fm_eq_trace: 4/4 通过（2 负测会红、2 正测绿）')
+    print('test_fm_eq_trace: 7/7 通过（fm_eq 4 + fm_pins 3；其中 3 条负测会红）')
     return 0
+
+
+PINS_TRACER = os.path.join(REPO, 'scripts', 'fm_pins_trace.tcl')
+
+
+def pins_trace(pins, top, wd):
+    out = os.path.join(wd, 'pins.txt')
+    if os.path.exists(out):
+        os.remove(out)
+    env = dict(os.environ)
+    env['FM_PINS_TRACE_OUT'] = out
+    env['FM_TOP'] = top
+    subprocess.run(['tclsh', PINS_TRACER, pins], cwd=wd, env=env,
+                   stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    with open(out, errors='replace') as f:
+        return f.read()
+
+
+def pins_cases(wd):
+    """scripts/fm_pins_trace.tcl 的负测。
+
+    这套差分是用来把"钉点文件字节变了"从红改判成 bridged 的 —— 也就是说它有
+    **放行**的权力。一条永远说相同的判据会把所有钉点改动放行，那比只比 sha256
+    更糟（sha256 至少是保守的）。所以先证明它会红。
+    """
+    fails = []
+    # 找一份真实的、够长的钉点文件当样本
+    sample = None
+    for root, _d, files in os.walk(os.path.join(REPO, 'verif', 'ut')):
+        for fn in files:
+            if fn.startswith('fm_pins') and fn.endswith('.tcl'):
+                p = os.path.join(root, fn)
+                if os.path.getsize(p) > 2000:
+                    sample = p
+                    break
+        if sample:
+            break
+    if sample is None:
+        fails.append('PINS setup: 仓里找不到够大的 fm_pins*.tcl 样本')
+        return fails
+    top = os.path.basename(os.path.dirname(sample))
+
+    base = pins_trace(sample, top, wd)
+    if not base.strip():
+        fails.append('PINS setup: 样本 %s 跑不出任何调用（判据无分辨力）' % sample)
+        return fails
+
+    # POS：同一份文件对自己必须相同
+    if pins_trace(sample, top, wd) != base:
+        fails.append('PINS-POS: 同一份钉点文件两次跑出不同序列（判据不稳定）')
+
+    with open(sample, errors='replace') as f:
+        txt = f.read()
+
+    # NEG-1 ★多钉一个点★ -> 必须判不同
+    added = os.path.join(wd, 'pins_added.tcl')
+    with open(added, 'w') as f:
+        f.write(txt + '\nset_user_match r:/WORK/ZZ/extra_reg i:/WORK/ZZ/extra_q_reg\n')
+    if pins_trace(added, top, wd) == base:
+        fails.append('PINS NEG-1: 多钉了一个点，判据却说调用序列相同')
+
+    # NEG-2 ★少钉一个点★ -> 必须判不同（少钉是最典型的静默退化）
+    #
+    # 钉点文件是 foreach 扫数据表生成调用的，参数来自表里的行、不是写死在调用处，
+    # 所以"改一行调用"这种文本变异对真文件不适用（第一版就是这么写的，
+    # 在 verif/ut/*/fm_pins_pre.tcl 上直接 setup 失败）。
+    # ★改成由 trace 反推★：从实际发生的调用里取一个参数，去文件里找承载它的那一行删掉。
+    # 判据的输入（真实调用参数）因此独立于我对文件长什么样的猜测。
+    arg = None
+    for line in base.splitlines():
+        p = line.split('\t')
+        if p[0] == 'set_user_match' and len(p) > 1 and p[1].strip():
+            cand = p[1].split()[0].strip('{}"')
+            cand = re.sub(r'^[ri]:/WORK/[^/]+/', '', cand)      # 去掉运行期拼的前缀
+            if len(cand) >= 6:
+                arg = cand
+                break
+    if arg is None:
+        fails.append('PINS NEG-2 setup: 从 trace 里取不到可定位的钉点参数')
+    else:
+        lines = txt.splitlines(True)
+        stem = re.split(r'[\[\]]', arg)[0]                      # 去掉 [3] 之类的下标
+        idx = next((i for i, l in enumerate(lines)
+                    if stem in l and not l.strip().startswith('#')), None)
+        if idx is None:
+            fails.append('PINS NEG-2 setup: 文件里找不到承载 %r 的行' % stem)
+        else:
+            dropped = os.path.join(wd, 'pins_dropped.tcl')
+            with open(dropped, 'w') as f:
+                f.write(''.join(lines[:idx] + lines[idx + 1:]))
+            if pins_trace(dropped, top, wd) == base:
+                fails.append('PINS NEG-2: 删掉承载钉点的那一行，判据却说调用序列相同')
+    return fails
 
 
 if __name__ == '__main__':

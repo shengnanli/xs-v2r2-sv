@@ -192,6 +192,37 @@ def _mdup_band_pct(target):
     return v
 
 
+def read_fm_log(d):
+    """读这份 receipt 的 fm.log —— ★压缩过的也要读★。
+
+    2026-09-20 实测踩到：仓里有 416 份 receipt 的日志是 `fm.log.gz`（收录时压过），
+    而第一版只 open('fm.log')。后果有两个，方向相反，都不好：
+
+      · chk_tool 取不到版本行 -> 判 DIFFER。SyncDataModuleTemplate 三兄弟就是这么被
+        误判成"工具版本不符"的 —— **假红**。
+      · ★更糟的是 packed 的那一侧是假绿★：用没用 FM_FIELD_MAP 是从 fm.log 里
+        认 `^PACKED_MATCH` 认出来的，日志读不到就一律当"没用过"，
+        于是一份真的走了 field map 路径的 receipt 会被判成闭包完整。
+        **fail-open**，正是本表存在的理由所反对的那种。
+
+    读不到日志时返回 None，让调用方把"没有日志"与"日志里没有"区分开 ——
+    缺失和否定又一次不能长成一个样。
+    """
+    plain = os.path.join(d, 'fm.log')
+    if os.path.isfile(plain):
+        with open(plain, errors='replace') as f:
+            return f.read()
+    gz = plain + '.gz'
+    if os.path.isfile(gz):
+        import gzip
+        try:
+            with gzip.open(gz, 'rt', errors='replace') as f:
+                return f.read()
+        except Exception:
+            return None
+    return None
+
+
 def tcl_exec_text(path):
     """去掉 Tcl 整行注释与 `;#` 行尾注释，只留**可执行文本**。
 
@@ -379,11 +410,10 @@ def collect(only=None):
                             p = l.rstrip('\n').split('\t')
                             if len(p) >= 3:
                                 closure.append({'src': p[0], 'arch': p[1], 'sha': p[2]})
-                ver, packed = None, False
-                fl = os.path.join(d, 'fm.log')
-                if os.path.isfile(fl):
-                    with open(fl, errors='replace') as f:
-                        txt = f.read()
+                ver, packed, logged = None, False, False
+                txt = read_fm_log(d)
+                if txt is not None:
+                    logged = True
                     m = re.search(r'Version (\S+) for linux64', txt)
                     ver = m.group(1) if m else None
                     packed = bool(PACKED_RE.search(txt))
@@ -408,7 +438,7 @@ def collect(only=None):
                     'merge_dup': str(av.get('verification_merge_duplicated_registers') or 'true'),
                     'interface_only': str(av.get('hdlin_interface_only') or ''),
                     'script_closure': closure,
-                    'fm_ver': ver, 'packed': packed,
+                    'fm_ver': ver, 'packed': packed, 'logged': logged,
                     'stats': nf.get('stats') or {},
                     'unmatched': nf.get('unmatched') or {},
                     'quals': nf.get('qualifications') or {},
@@ -546,8 +576,15 @@ def chk_decl(r):
 
 
 def chk_tool(r):
+    # ★没有日志 != 版本不符★：前者是"我查不了"，后者是"我查了且不对"。
+    # 压缩日志由 read_fm_log 处理；连 .gz 都没有才是真的查不了，那也不能放过 ——
+    # packed（用没用 field map）同样只能从日志认，没日志就等于闭包有一块看不见。
+    if not r['logged']:
+        return 'UNKNOWN', 'receipt 没有 fm.log(.gz)，工具版本与 field map 使用情况都查不了'
     if r['fm_ver'] == FM_SHELL_BASELINE:
         return 'same', ''
+    if r['fm_ver'] is None:
+        return 'UNKNOWN', 'fm.log 里没有版本行，查不到 fm_shell 版本'
     return 'DIFFER', 'fm_shell %s != 基准 %s' % (r['fm_ver'], FM_SHELL_BASELINE)
 
 
@@ -579,22 +616,60 @@ def chk_emitter(r):
     return 'inert', 'emitter 仅差 find_cells alias；本次钉点可执行文本里没有它'
 
 
-def chk_pins(r):
+def _pins_trace(path, top, workdir):
+    out = os.path.join(workdir, 'pins.txt')
+    if os.path.exists(out):
+        os.remove(out)
+    env = dict(os.environ)
+    env['FM_PINS_TRACE_OUT'] = out
+    env['FM_TOP'] = top
+    run(['tclsh', os.path.join(REPO, 'scripts', 'fm_pins_trace.tcl'), path],
+        cwd=workdir, env=env)
+    try:
+        with open(out, errors='replace') as f:
+            return f.read()
+    except Exception:
+        return '<NO TRACE>'
+
+
+def chk_pins(r, workdir):
+    """关二 (4)：钉点文件。
+
+    ★字节不同 != 钉的点不同★。本仓真发生过一次"字节变了但钉的点一个没变"的改动
+    （OthersEntry 家族的空守卫修复，见 verif/ut/OthersEntry_common/PIN_GUARD_FIX.md），
+    当时那条 lane 用"把 set_user_match 换成记参数的桩、真跑两版比调用序列"证明了
+    18/18 相同。第一版这里只比 sha256，等于把那份已经做完的论证当没看见，
+    对 18 个**已经收进版本库、已计进 proven** 的目标报假红。
+
+    所以：字节相同 -> same；字节不同 -> 用同一套差分手法跑一遍
+    （scripts/fm_pins_trace.tcl），调用序列逐字节相同 -> bridged，否则 DIFFER。
+    """
     pins = _arch(r, 'fm_pins')
     if not pins:
         return 'none', ''
-    missing, differ = [], []
+    missing, differ, bridged = [], [], []
     for e in pins:
         rel = repo_rel(e['src'])
-        p = os.path.join(REPO, rel)
-        if not os.path.exists(p):
+        cur = os.path.join(REPO, rel)
+        if not os.path.exists(cur):
             missing.append(rel)
-        elif sha_file(p) != e['sha']:
+            continue
+        if sha_file(cur) == e['sha']:
+            continue
+        old = os.path.join(r['dir'], 'sidecar', e['arch'])
+        a = _pins_trace(cur, r['target'], os.path.join(workdir, 'a'))
+        b = _pins_trace(old, r['target'], os.path.join(workdir, 'b'))
+        if a != '<NO TRACE>' and a == b:
+            bridged.append(rel)
+        else:
             differ.append(rel)
     if missing:
         return 'MISSING', 'main 里没有钉点文件: %s' % ','.join(missing[:2])
     if differ:
-        return 'DIFFER', '钉点文件已变: %s' % ','.join(differ[:2])
+        return 'DIFFER', '钉点文件已变且调用序列也变了: %s' % ','.join(differ[:2])
+    if bridged:
+        return 'bridged', ('钉点文件字节已变但**调用序列逐字节相同**'
+                           '（scripts/fm_pins_trace.tcl 差分跑）: %s' % ','.join(bridged[:2]))
     return 'same', ''
 
 
@@ -636,13 +711,30 @@ def _trace(fm_eq_path, r, workdir):
 
 
 def chk_fm_eq(r, workdir):
-    """★本关重点★ 不比 sha、不读 diff，跑两版比实际发出的 FM 命令序列。"""
+    """★本关重点★ 不比 sha、不读 diff，跑两版比实际发出的 FM 命令序列。
+
+    ★本判据说不了话的地方，要自己说出来★（2026-09-20）：
+    tracer 跑的时候 FM_FIELD_MAP 是**不设**的（见 _trace() 里 env.pop），
+    于是 `match_packed_payload` 在第一行就 return，**整条 field map 路径没被走到**。
+    main 在 cb2c646d 修那个洞时改的正是这条路径里的代码。也就是说，对一份
+    真的用了 field map 的 receipt，这套差分跑出来的 `trace_equal`
+    **不覆盖它实际走过的那一段**。
+
+    这类 receipt 目前也会被 judge() 里的 `packed` 分支判成不可收，所以结论上
+    没出错 —— 但那是**靠另一条判据兜住**。判据之间这种隐式依赖正是会烂掉的东西：
+    哪天 packed 那条被放宽，这里就会开始静默放行。所以这里自己 fail-closed，
+    不把"我没测到"说成"我测了，相同"。
+    """
     es = _arch(r, 'fm_eq.tcl')
     if not es:
         return 'UNKNOWN', 'receipt 没有 fm_eq 字节快照'
     cur = os.path.join(REPO, 'scripts', 'fm_eq.tcl')
     if es[0]['sha'] == sha_file(cur):
         return 'same', ''
+    if r['packed']:
+        return 'NOT_MODELLED', ('fm_eq 差分跑不覆盖 field map 路径'
+                               '（tracer 不设 FM_FIELD_MAP，match_packed_payload 首行即 return），'
+                               '而本次证明真的走了那条路径')
     old = os.path.join(r['dir'], 'sidecar', es[0]['arch'])
     a = _trace(cur, r, os.path.join(workdir, 'a'))
     b = _trace(old, r, os.path.join(workdir, 'b'))
@@ -690,7 +782,7 @@ def judge(r, rtl_mods, cur_id, workdir):
     checks['chk_fm_eq'], w = chk_fm_eq(r, workdir)
     if w:
         why.append(w)
-    checks['chk_pins'], w = chk_pins(r)
+    checks['chk_pins'], w = chk_pins(r, workdir)
     if w:
         why.append(w)
     checks['chk_emitter'], w = chk_emitter(r)
@@ -719,7 +811,8 @@ def judge(r, rtl_mods, cur_id, workdir):
         if impl_in_main == 'no' and checks['chk_impl'] != 'MISSING':
             why.append('rtl/ 里没有 module %s，收了也不进 proven 口径' % r['target'])
     elif (r['dirty'] or r['provisional'] or r['packed']
-          or any(v in ('DIFFER', 'MISSING', 'UNKNOWN') for v in checks.values())):
+          or any(v in ('DIFFER', 'MISSING', 'UNKNOWN', 'NOT_MODELLED')
+                 for v in checks.values())):
         verdict = 'NEEDS_RERUN'
     else:
         verdict = 'OK'          # 待关三定夺：COLLECTED 还是 SUPERSEDED
@@ -800,8 +893,20 @@ def build(only=None):
         for r in cands:
             v = r['_verdict']
             if r['in_vcs']:
-                v = 'COLLECTED'
-                r['_why'].append('已在版本库里（evidence/%s 已被 git 跟踪）' % r['run'])
+                # ★"已经收进来了"不等于"它现在还成立"★（2026-09-20）
+                # 第一版这里无条件判 COLLECTED，于是 FauFTBWay 这种**已进版本库、
+                # 台账已绿、正在计进 proven**、但闭包缺了 field map 那一环的行，
+                # 在表里显示成一个干干净净的 COLLECTED —— 表对已经收进来的东西
+                # 讲了个让人安心的故事。而这张表的全部意义就是不讲这种故事。
+                # 现在：in_vcs 只决定"它在不在库里"，八项判据照跑；判据红就是红，
+                # why 里说明它是**已收但需重出证**，而不是待收。
+                if r['_verdict'] == 'OK':
+                    v = 'COLLECTED'
+                    r['_why'].append('已在版本库里（evidence/%s 已被 git 跟踪）' % r['run'])
+                else:
+                    v = r['_verdict'] if r['_verdict'] != 'NEEDS_RTL_MERGE' else 'NEEDS_RERUN'
+                    r['_why'].append('★已在版本库里（evidence/%s）且已计进 proven，'
+                                     '但上面的判据没过 —— 需要重出证，不是待收★' % r['run'])
             elif v == 'OK':
                 if already:
                     v = 'SUPERSEDED'
