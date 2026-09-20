@@ -1,0 +1,75 @@
+# fubusy_wbarb_passing_actual.tsv —— 55 个目标的 FM 实测，与跑前登记的
+# docs/fubusy_wbarb_passing_prediction.tsv 逐条对账。
+# ★预测一个字都没改★：对不上就记 MISS 与差值，理由写在 note 列。
+#
+# 对账结果：55 个里 36 个命中、19 个没命中，全部落在两个**系统性**的模型缺陷上，
+# 没有一个是随机偏差，也没有一个指向 RTL 缺陷（19 个的 failing 全是 0）：
+#   (a) FuBusyTableWrite 全族 15 个，一律 -1。模型把"触发器位数"算成 W，
+#       但 golden 最高位槽是 Chisel Vec 顶端、从没有写入源，firtool 没给它留触发器，
+#       真实 ff 位数是 W-1。
+#   (b) WBArbiter 的 N=1 变体 4 个，一律 -5。那 2N+1=5 位反饥饿寄存器在 N=1 时
+#       整体不可达（scripts/wbarbiter_reachability.py 早就穷举出可达状态只有全 0 一个），
+#       FM 把其中 3 位常量折掉、2 位留成未读点，一个都没进比较点。
+# 两条都说明这个 passing 模型的边界：它数的是**源码里写了几位触发器**，而 FM 数的是
+# **优化之后还剩几个比较点**。死逻辑越多，模型越偏高。
+#
+# run1  = 201cb5db74de（合 main 之后一轮跑完 55 个，配置：strict / 无钉点 / vmucp=false）
+# final = 8cf00b449a3d（只重跑 4 个 N=1 变体：fm_pins.tcl 钉点 + vmucp=true）
+#         其余 51 个 final 列原样复制 run1（同一份 receipt，没有重跑）。
+# 重跑命令：scripts/run_proof.sh WBArbiterVariants WBArbiter_3 WBArbiter_38 WBArbiter_58 WBArbiter_66
+target	family	ff_bits	out_bits	predicted_passing	run1_commit	run1_verdict	run1_passing	run1_unread	run1_constreg	final_commit	final_verdict	final_passing	final_unread	final_constreg	predicted_vs_final	note
+FuBusyTableRead	FuBusyTableRead	0	24	24	201cb5db74de	SUCCEEDED	24	0	0	201cb5db74de	SUCCEEDED	24	0	0	MATCH	
+FuBusyTableRead_2	FuBusyTableRead	0	24	24	201cb5db74de	SUCCEEDED	24	0	0	201cb5db74de	SUCCEEDED	24	0	0	MATCH	
+FuBusyTableRead_22	FuBusyTableRead	0	24	24	201cb5db74de	SUCCEEDED	24	0	0	201cb5db74de	SUCCEEDED	24	0	0	MATCH	
+FuBusyTableRead_23	FuBusyTableRead	0	24	24	201cb5db74de	SUCCEEDED	24	0	0	201cb5db74de	SUCCEEDED	24	0	0	MATCH	
+FuBusyTableRead_26	FuBusyTableRead	0	24	24	201cb5db74de	SUCCEEDED	24	0	0	201cb5db74de	SUCCEEDED	24	0	0	MATCH	
+FuBusyTableRead_28	FuBusyTableRead	0	24	24	201cb5db74de	SUCCEEDED	24	0	0	201cb5db74de	SUCCEEDED	24	0	0	MATCH	
+FuBusyTableRead_42	FuBusyTableRead	0	18	18	201cb5db74de	SUCCEEDED	18	0	0	201cb5db74de	SUCCEEDED	18	0	0	MATCH	
+FuBusyTableRead_43	FuBusyTableRead	0	18	18	201cb5db74de	SUCCEEDED	18	0	0	201cb5db74de	SUCCEEDED	18	0	0	MATCH	
+FuBusyTableRead_52	FuBusyTableRead	0	18	18	201cb5db74de	SUCCEEDED	18	0	0	201cb5db74de	SUCCEEDED	18	0	0	MATCH	
+FuBusyTableRead_53	FuBusyTableRead	0	18	18	201cb5db74de	SUCCEEDED	18	0	0	201cb5db74de	SUCCEEDED	18	0	0	MATCH	
+FuBusyTableRead_68	FuBusyTableRead	0	16	16	201cb5db74de	SUCCEEDED	16	0	0	201cb5db74de	SUCCEEDED	16	0	0	MATCH	
+FuBusyTableRead_69	FuBusyTableRead	0	16	16	201cb5db74de	SUCCEEDED	16	0	0	201cb5db74de	SUCCEEDED	16	0	0	MATCH	
+FuBusyTableRead_71	FuBusyTableRead	0	16	16	201cb5db74de	SUCCEEDED	16	0	0	201cb5db74de	SUCCEEDED	16	0	0	MATCH	
+FuBusyTableRead_73	FuBusyTableRead	0	16	16	201cb5db74de	SUCCEEDED	16	0	0	201cb5db74de	SUCCEEDED	16	0	0	MATCH	
+FuBusyTableRead_75	FuBusyTableRead	0	16	16	201cb5db74de	SUCCEEDED	16	0	0	201cb5db74de	SUCCEEDED	16	0	0	MATCH	
+FuBusyTableRead_79	FuBusyTableRead	0	16	16	201cb5db74de	SUCCEEDED	16	0	0	201cb5db74de	SUCCEEDED	16	0	0	MATCH	
+FuBusyTableRead_80	FuBusyTableRead	0	16	16	201cb5db74de	SUCCEEDED	16	0	0	201cb5db74de	SUCCEEDED	16	0	0	MATCH	
+FuBusyTableRead_105	FuBusyTableRead	0	16	16	201cb5db74de	SUCCEEDED	16	0	0	201cb5db74de	SUCCEEDED	16	0	0	MATCH	
+FuBusyTableWrite	FuBusyTableWrite	3	3	6	201cb5db74de	SUCCEEDED	5	0	1	201cb5db74de	SUCCEEDED	5	0	1	MISS(-1)	model_off_by_1: golden 最高位槽无触发器(Chisel Vec 顶端死线), ff_bits 多算 1
+FuBusyTableWrite_22	FuBusyTableWrite	3	3	6	201cb5db74de	SUCCEEDED	5	0	1	201cb5db74de	SUCCEEDED	5	0	1	MISS(-1)	model_off_by_1: golden 最高位槽无触发器(Chisel Vec 顶端死线), ff_bits 多算 1
+FuBusyTableWrite_26	FuBusyTableWrite	3	3	6	201cb5db74de	SUCCEEDED	5	0	1	201cb5db74de	SUCCEEDED	5	0	1	MISS(-1)	model_off_by_1: golden 最高位槽无触发器(Chisel Vec 顶端死线), ff_bits 多算 1
+FuBusyTableWrite_42	FuBusyTableWrite	4	4	8	201cb5db74de	SUCCEEDED	7	0	1	201cb5db74de	SUCCEEDED	7	0	1	MISS(-1)	model_off_by_1: golden 最高位槽无触发器(Chisel Vec 顶端死线), ff_bits 多算 1
+FuBusyTableWrite_43	FuBusyTableWrite	3	3	6	201cb5db74de	SUCCEEDED	5	0	1	201cb5db74de	SUCCEEDED	5	0	1	MISS(-1)	model_off_by_1: golden 最高位槽无触发器(Chisel Vec 顶端死线), ff_bits 多算 1
+FuBusyTableWrite_52	FuBusyTableWrite	4	4	8	201cb5db74de	SUCCEEDED	7	0	1	201cb5db74de	SUCCEEDED	7	0	1	MISS(-1)	model_off_by_1: golden 最高位槽无触发器(Chisel Vec 顶端死线), ff_bits 多算 1
+FuBusyTableWrite_53	FuBusyTableWrite	2	2	4	201cb5db74de	SUCCEEDED	3	0	1	201cb5db74de	SUCCEEDED	3	0	1	MISS(-1)	model_off_by_1: golden 最高位槽无触发器(Chisel Vec 顶端死线), ff_bits 多算 1
+FuBusyTableWrite_68	FuBusyTableWrite	5	5	10	201cb5db74de	SUCCEEDED	9	0	1	201cb5db74de	SUCCEEDED	9	0	1	MISS(-1)	model_off_by_1: golden 最高位槽无触发器(Chisel Vec 顶端死线), ff_bits 多算 1
+FuBusyTableWrite_69	FuBusyTableWrite	4	4	8	201cb5db74de	SUCCEEDED	7	0	1	201cb5db74de	SUCCEEDED	7	0	1	MISS(-1)	model_off_by_1: golden 最高位槽无触发器(Chisel Vec 顶端死线), ff_bits 多算 1
+FuBusyTableWrite_71	FuBusyTableWrite	5	5	10	201cb5db74de	SUCCEEDED	9	0	1	201cb5db74de	SUCCEEDED	9	0	1	MISS(-1)	model_off_by_1: golden 最高位槽无触发器(Chisel Vec 顶端死线), ff_bits 多算 1
+FuBusyTableWrite_73	FuBusyTableWrite	3	3	6	201cb5db74de	SUCCEEDED	5	0	1	201cb5db74de	SUCCEEDED	5	0	1	MISS(-1)	model_off_by_1: golden 最高位槽无触发器(Chisel Vec 顶端死线), ff_bits 多算 1
+FuBusyTableWrite_75	FuBusyTableWrite	4	4	8	201cb5db74de	SUCCEEDED	7	0	1	201cb5db74de	SUCCEEDED	7	0	1	MISS(-1)	model_off_by_1: golden 最高位槽无触发器(Chisel Vec 顶端死线), ff_bits 多算 1
+FuBusyTableWrite_79	FuBusyTableWrite	2	2	4	201cb5db74de	SUCCEEDED	3	0	1	201cb5db74de	SUCCEEDED	3	0	1	MISS(-1)	model_off_by_1: golden 最高位槽无触发器(Chisel Vec 顶端死线), ff_bits 多算 1
+FuBusyTableWrite_80	FuBusyTableWrite	5	5	10	201cb5db74de	SUCCEEDED	9	0	1	201cb5db74de	SUCCEEDED	9	0	1	MISS(-1)	model_off_by_1: golden 最高位槽无触发器(Chisel Vec 顶端死线), ff_bits 多算 1
+FuBusyTableWrite_105	FuBusyTableWrite	4	4	8	201cb5db74de	SUCCEEDED	7	0	1	201cb5db74de	SUCCEEDED	7	0	1	MISS(-1)	model_off_by_1: golden 最高位槽无触发器(Chisel Vec 顶端死线), ff_bits 多算 1
+WBArbiter	WBArbiter	13	4	17	201cb5db74de	SUCCEEDED	17	0	0	201cb5db74de	SUCCEEDED	17	0	0	MATCH	
+WBArbiter_1	WBArbiter	17	5	22	201cb5db74de	SUCCEEDED	22	0	0	201cb5db74de	SUCCEEDED	22	0	0	MATCH	
+WBArbiter_2	WBArbiter	9	3	12	201cb5db74de	SUCCEEDED	12	0	0	201cb5db74de	SUCCEEDED	12	0	0	MATCH	
+WBArbiter_3	WBArbiter	5	2	7	201cb5db74de	PARTIAL	2	2	0	8cf00b449a3d	SUCCEEDED	3	0	1	MISS(-4)	model_off_by_5: N=1 的 2N+1=5 位反饥饿寄存器在 golden 里不可达, FM 折/判未读, 非比较点
+WBArbiter_30	WBArbiter	9	11	20	201cb5db74de	SUCCEEDED	20	0	0	201cb5db74de	SUCCEEDED	20	0	0	MATCH	
+WBArbiter_33	WBArbiter	13	12	25	201cb5db74de	SUCCEEDED	25	0	0	201cb5db74de	SUCCEEDED	25	0	0	MATCH	
+WBArbiter_38	WBArbiter	5	10	15	201cb5db74de	PARTIAL	10	2	0	8cf00b449a3d	SUCCEEDED	11	0	1	MISS(-4)	model_off_by_5: N=1 的 2N+1=5 位反饥饿寄存器在 golden 里不可达, FM 折/判未读, 非比较点
+WBArbiter_52	WBArbiter	9	10	19	201cb5db74de	SUCCEEDED	19	0	0	201cb5db74de	SUCCEEDED	19	0	0	MATCH	
+WBArbiter_55	WBArbiter	13	11	24	201cb5db74de	SUCCEEDED	24	0	0	201cb5db74de	SUCCEEDED	24	0	0	MATCH	
+WBArbiter_58	WBArbiter	5	9	14	201cb5db74de	PARTIAL	9	2	0	8cf00b449a3d	SUCCEEDED	10	0	1	MISS(-4)	model_off_by_5: N=1 的 2N+1=5 位反饥饿寄存器在 golden 里不可达, FM 折/判未读, 非比较点
+WBArbiter_64	WBArbiter	9	8	17	201cb5db74de	SUCCEEDED	17	0	0	201cb5db74de	SUCCEEDED	17	0	0	MATCH	
+WBArbiter_65	WBArbiter	13	9	22	201cb5db74de	SUCCEEDED	22	0	0	201cb5db74de	SUCCEEDED	22	0	0	MATCH	
+WBArbiter_66	WBArbiter	5	7	12	201cb5db74de	PARTIAL	7	2	0	8cf00b449a3d	SUCCEEDED	8	0	1	MISS(-4)	model_off_by_5: N=1 的 2N+1=5 位反饥饿寄存器在 golden 里不可达, FM 折/判未读, 非比较点
+RealWBArbiter	RealWBArbiter	0	77	77	201cb5db74de	SUCCEEDED	77	0	0	201cb5db74de	SUCCEEDED	77	0	0	MATCH	
+RealWBArbiter_1	RealWBArbiter	0	78	78	201cb5db74de	SUCCEEDED	78	0	0	201cb5db74de	SUCCEEDED	78	0	0	MATCH	
+RealWBArbiter_2	RealWBArbiter	0	77	77	201cb5db74de	SUCCEEDED	77	0	0	201cb5db74de	SUCCEEDED	77	0	0	MATCH	
+RealWBArbiter_3	RealWBArbiter	0	75	75	201cb5db74de	SUCCEEDED	75	0	0	201cb5db74de	SUCCEEDED	75	0	0	MATCH	
+RealWBArbiter_14	RealWBArbiter	0	139	139	201cb5db74de	SUCCEEDED	139	0	0	201cb5db74de	SUCCEEDED	139	0	0	MATCH	
+RealWBArbiter_15	RealWBArbiter	0	137	137	201cb5db74de	SUCCEEDED	137	0	0	201cb5db74de	SUCCEEDED	137	0	0	MATCH	
+RealWBArbiter_20	RealWBArbiter	0	137	137	201cb5db74de	SUCCEEDED	137	0	0	201cb5db74de	SUCCEEDED	137	0	0	MATCH	
+RealWBArbiter_21	RealWBArbiter	0	135	135	201cb5db74de	SUCCEEDED	135	0	0	201cb5db74de	SUCCEEDED	135	0	0	MATCH	
+RealWBArbiter_26	RealWBArbiter	0	15	15	201cb5db74de	SUCCEEDED	15	0	0	201cb5db74de	SUCCEEDED	15	0	0	MATCH	

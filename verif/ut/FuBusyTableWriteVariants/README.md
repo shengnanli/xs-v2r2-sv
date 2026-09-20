@@ -74,3 +74,64 @@ make fm
 make mutants ; python3 mutants.py --fm
 bash ../../../scripts/run_proof.sh FuBusyTableWriteVariants <变体名>...
 ```
+
+## FM 签核（本轮跑完，逐条对账见 docs/fubusy_wbarb_passing_actual.tsv）
+
+| 目标 | verdict | passing | 预登记 | 对账 |
+|---|---|---|---|---|
+| `FuBusyTableWrite` | SUCCEEDED | 5 | 6 | MISS(-1) |
+| `FuBusyTableWrite_22` | SUCCEEDED | 5 | 6 | MISS(-1) |
+| `FuBusyTableWrite_26` | SUCCEEDED | 5 | 6 | MISS(-1) |
+| `FuBusyTableWrite_42` | SUCCEEDED | 7 | 8 | MISS(-1) |
+| `FuBusyTableWrite_43` | SUCCEEDED | 5 | 6 | MISS(-1) |
+| `FuBusyTableWrite_52` | SUCCEEDED | 7 | 8 | MISS(-1) |
+| `FuBusyTableWrite_53` | SUCCEEDED | 3 | 4 | MISS(-1) |
+| `FuBusyTableWrite_68` | SUCCEEDED | 9 | 10 | MISS(-1) |
+| `FuBusyTableWrite_69` | SUCCEEDED | 7 | 8 | MISS(-1) |
+| `FuBusyTableWrite_71` | SUCCEEDED | 9 | 10 | MISS(-1) |
+| `FuBusyTableWrite_73` | SUCCEEDED | 5 | 6 | MISS(-1) |
+| `FuBusyTableWrite_75` | SUCCEEDED | 7 | 8 | MISS(-1) |
+| `FuBusyTableWrite_79` | SUCCEEDED | 3 | 4 | MISS(-1) |
+| `FuBusyTableWrite_80` | SUCCEEDED | 9 | 10 | MISS(-1) |
+| `FuBusyTableWrite_105` | SUCCEEDED | 7 | 8 | MISS(-1) |
+
+★15/15 **全部差 -1**，预登记没命中★。不是 RTL 问题（failing 全 0、unread 全 0），
+是 passing 模型的系统性偏差：模型把触发器位数算成 W，但 golden 的最高位槽是 Chisel Vec
+顶端、没有任何写入源，firtool 根本没给它留触发器，真实是 W-1。预测不改，记 MISS。
+
+复跑：
+```
+bash ../../../scripts/run_proof.sh FuBusyTableWriteVariants FuBusyTableWrite FuBusyTableWrite_22 FuBusyTableWrite_26 FuBusyTableWrite_42 FuBusyTableWrite_43 FuBusyTableWrite_52 FuBusyTableWrite_53 FuBusyTableWrite_68 FuBusyTableWrite_69 FuBusyTableWrite_71 FuBusyTableWrite_73 FuBusyTableWrite_75 FuBusyTableWrite_79 FuBusyTableWrite_80 FuBusyTableWrite_105
+```
+
+## `+vcs+initreg` 两档：★本族按构造等价，不是"跑了两轮有效验证"★
+
+codex 0168 要求证明 `+vcs+initreg` **确实改变了待测状态**，而不是只看命令行里有那个词。
+本族的诚实答案是：**两档在本族上按构造等价**，理由是全部状态异步复位 + tb 的复位窗口
+覆盖了它们，所以"跑了两轮"这件事本身在本族证明不了复位域。三条证据分开摆：
+
+1. **两档日志去掉非 DUT 行之后逐字相同**（3 seed × 2 档，6 份）。
+   裸 md5 是**不**相等的，但差异只在 4 类与 DUT 无关的行上：`Command:` 回显、
+   `Compiler version ... <时间戳>`、`CPU Time:`、结束墙钟时间。
+   ★所以"裸 md5 不等"不能当成"initreg 生效了"的证据——本轮实测它每次都不等。★
+   去掉这 4 类行后 3 个 seed × 2 档共 6 份的归一化 md5 **全部相同**：`4289fad5`。
+2. **结构证据：本族状态量全部异步复位，且复位窗口覆盖。**
+   四族 RTL 全量搜非阻塞赋值，状态量一共只有 4 个
+   （`fu_busy_table_q` / `cancel_cnt_q` / `is_full_q` / `has_full_q`），
+   全部写在 `always_ff @(posedge clock or posedge reset)` 的 `if (reset)` 分支里；
+   tb 起手 `rst = 1'b1;` 保持 **8 个 posedge** 才放开，第一次 `check()` 在其后。
+   本族唯一的状态是 `fu_busy_table_q`（`rtl/backend/FuBusyTableWrite.sv:83-86`）。
+3. **正控：`+vcs+initreg` 在本机这套 VCS 构建里确实是活的**（免得把"没差别"读成"开关没接上"）。
+   用与本族同样的 VCS 旗标（`+define+SYNTHESIS +vcs+initreg+random` 编译、
+   `+vcs+initreg+<档>` 运行）编一个只有两个寄存器的对照：一个异步复位（与本族同形）、
+   一个故意不复位。放开复位后采样：
+
+   | seed | 档 | 异步复位那个 | 不复位那个 |
+   |---|---|---|---|
+   | 1 | 0 / random | 0 / 0 | 8 / 7 |
+   | 7 | 0 / random | 0 / 0 | 8 / **148** |
+   | 42 | 0 / random | 0 / 0 | 8 / **85** |
+
+   不复位的那个逐档逐 seed 都不同 ⇒ 机制是活的、而且吃 seed；异步复位的那个恒为同值
+   ⇒ 本族"两档等价"是复位造成的，不是开关没生效。
+   （正控是一次性诊断，按「工具派生态不进版本库」跑完即弃，不在仓库里。）

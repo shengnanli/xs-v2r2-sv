@@ -73,6 +73,19 @@ def prepare(cfg):
     restore(cfg)
     for f in ('Makefile', 'tb.sv'):
         shutil.copy(cfg.here / f, _ut(cfg) / f)
+    # ★沙箱必须复现真实签核的 FM 配置（2026-09-20, agent/fubusy-wbarb 实测）★
+    # 此前沙箱只复制 Makefile + tb.sv。Makefile 里的钉点是
+    # `$(if $(wildcard fm_pins.tcl),FM_PIN_TCL=...)` —— 文件没跟过来，wildcard 就是空，
+    # 于是 --fm 负测在**没有钉点**的配置下跑，而真实签核是带钉点跑的：两者不是同一个
+    # 被测对象。本轮实测撞上过：WBArbiter_3 的常量寄存器负控在沙箱里跑成
+    # "SUCCEEDED / unread 2 / PARTIAL"（钉点没生效），补上 fm_pins.tcl 之后才复现出
+    # 真实配置下的 "FAILED / failing 1"，负控这才有意义。
+    # 没有这些文件的家族不受影响（照旧什么都不拷）。
+    for f in ('fm_pins.tcl', 'fm_pins_pre.tcl'):
+        if (cfg.here / f).exists():
+            shutil.copy(cfg.here / f, _ut(cfg) / f)
+    if (cfg.here / 'fm_map').is_dir():
+        shutil.copytree(str(cfg.here / 'fm_map'), str(_ut(cfg) / 'fm_map'))
 
 
 def restore(cfg):
@@ -127,23 +140,27 @@ def run_ut(cfg, ncycles=None):
              'TEST PASSED' in txt), r.returncode, '')
 
 
-def run_fm(cfg):
+def run_fm(cfg, fm_top=None):
+    """fm_top 可按条目覆盖：同一家族里不同变体的配置可以不同（例如 WBArbiter 只有
+    N=1 的四个变体走钉点 + vmucp），负控必须跑在**它要考的那个变体**上。"""
+    fm_top = fm_top or cfg.fm_top
     ut = _ut(cfg)
-    log = ut / 'fm_work' / cfg.fm_top / 'fm.log'
+    log = ut / 'fm_work' / fm_top / 'fm.log'
     if log.exists():
         log.unlink()
-    subprocess.run(['make', 'fm-' + cfg.fm_top], cwd=str(ut),
-                   stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                   universal_newlines=True)
+    r = subprocess.run(['make', 'fm-' + fm_top], cwd=str(ut),
+                       stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                       universal_newlines=True)
     if not log.exists():
-        return (None, None)
+        return (None, None, '', r.returncode)
     txt = log.read_text(errors='replace')
     # ★判据钉在行首★：fm_shell 把入口 Tcl 逐行回显进 fm.log，里面同时有
     # SUCCEEDED 与 FAILED 两个字面量，裸子串判会两边都"命中"。
     m = re.search(r'^Verification (SUCCEEDED|FAILED|INCONCLUSIVE)', txt, re.M)
     mf = re.search(r'^Failing \(not equivalent\)((?:\s+\d+){8})\s*$', txt, re.M)
     return (m.group(1) if m else None,
-            int(mf.group(1).split()[-1]) if mf else None)
+            int(mf.group(1).split()[-1]) if mf else None,
+            txt, r.returncode)
 
 
 def baseline(cfg):
@@ -200,7 +217,7 @@ def run(cfg):
         if not cfg.fm_mutants:
             print('本家族未声明 FM 变异表'); return 2
         print('=== FM 基线（未变异，top=%s）===' % cfg.fm_top)
-        v, f = run_fm(cfg)
+        v, f, _txt, _rc = run_fm(cfg)
         print('    native=%s failing=%s' % (v, f))
         if v != 'SUCCEEDED' or f != 0:
             print('FM 基线就不干净，负测无意义'); return 2
@@ -208,15 +225,48 @@ def run(cfg):
         for fm in cfg.fm_mutants:
             name, old, new, expect_fail = fm[0], fm[1], fm[2], fm[3]
             where = fm[4] if len(fm) > 4 else None
+            this_top = fm[5] if len(fm) > 5 else None   # 可选：按条目换 fm_top
             restore(cfg)
             if not apply_mutant(cfg, old, new, where):
                 print('!! %-72s ★锚点失效/文本未变 ⇒ INVALID★' % name)
                 bad.append(name); continue
-            v, f = run_fm(cfg)
+            v, f, txt, mrc = run_fm(cfg, this_top)
+            # ★expect_fail 允许第三种取值 'GATE:<marker>'（2026-09-20 实测逼出来的）★
+            # 有些变异在**真实签核配置**下根本走不到 verify：WBArbiter 的 F2 把
+            # has_full_q 变成无人读，于是 impl 侧多出一个 golden 没有的 unread 点，
+            # fm_pins.tcl 的双射自检当场拒绝（WBARBITER_PIN_ERROR），fm_shell 停在那里，
+            # 日志里没有任何 Verification 行。这**是被抓到了**，只是抓它的是钉点闸
+            # 不是 verify。但"没有 Verification 行"同样是 license 挂了、top 名写错的
+            # 症状，所以不许笼统地当成抓到 —— 必须点名是哪道闸：
+            #   GATE:<marker> 要求同时满足 (a) 日志里出现 <marker> 行，
+            #   (b) make rc != 0，(c) 日志里没有 `Verification SUCCEEDED`。
+            # 三条缺一即判不符预期。
+            if isinstance(expect_fail, str) and expect_fail.startswith('GATE:'):
+                marker = expect_fail[5:]
+                hit = re.search(r'^\s*' + re.escape(marker), txt, re.M) is not None
+                ok = hit and mrc != 0 and v != 'SUCCEEDED'
+                print('  %-72s gate=%-5s make_rc=%-3s native=%-10s %s'
+                      % (name + (' [top=%s]' % this_top if this_top else ''),
+                         'hit' if hit else 'MISS', mrc, v, 'OK' if ok else '★不符预期★'))
+                if not ok:
+                    bad.append(name)
+                continue
+            # ★fail-open 修复（2026-09-20 实测抓到）★
+            # 原判据是 `expect_fail and v != 'SUCCEEDED'`。run_fm 在**没产生 fm.log**
+            # （FM 根本没跑起来、license 拿不到、日志被删、top 名写错……）时返回
+            # (None, None)，而 None != 'SUCCEEDED' 为真 ⇒ 这一条被记成 OK。
+            # 本轮实测撞上：WBArbiter 的 F2 有一次跑出 native=None failing=None，
+            # 照样印 OK、整批照样 PASSED 5/5 —— "FM 没跑"被读成了"FM 抓到了"。
+            # 现在：拿不到 verdict 一律判 INVALID（既不算 OK 也不算抓到），当场停下来看。
+            if v is None:
+                print('!! %-72s ★没有产生 FM 判决（native=None）⇒ INVALID，'
+                      'FM 没跑起来不等于抓到了★' % name)
+                bad.append(name); continue
             ok = (v != 'SUCCEEDED' or (f or 0) > 0) if expect_fail else \
                  (v == 'SUCCEEDED' and f == 0)
             print('  %-72s native=%-12s failing=%-5s %s'
-                  % (name, v, f, 'OK' if ok else '★不符预期★'))
+                  % (name + (' [top=%s]' % this_top if this_top else ''), v, f,
+                     'OK' if ok else '★不符预期★'))
             if not ok:
                 bad.append(name)
         restore(cfg)

@@ -46,11 +46,17 @@
 # ★fail-closed★
 # set_user_match 对**不存在的名字不报错**（本仓实测），所以「钉了 N 条」本身
 # 什么都不证明。判据四层，与 verif/ut/RenameBuffer/fm_pins.tcl 同一套：
-#   1. 每条 ref 未读点必须命中**两条结构规则之一**；形状不符即 exit 3
+#   1. 每条 ref 未读点必须命中**两条结构规则之一**；形状不符即 error
 #      （别的未读点不许被这段代码顺手吞掉 —— 情况变了就停下来诊断，不要盲钉）；
 #   2. 由 ref 推出的 impl 路径必须**确实出现在实测 impl 未读集合里**（防凭空造点）；
 #   3. 同一条 impl 路径不许被钉两次（防多钉抢点）；
-#   4. 钉点条数必须等于 impl 侧未读点数（防漏钉）。
+#   4. 钉点条数必须等于 impl 侧未读点数（防漏钉）；
+#   5. 钉完再数：总数只允许 0（N>=2）或声明出来的 2（N=1），且这 2 点必须是
+#      1 个 cancelCounter + 1 个 hasFull —— 任何第三种形态都是"情况变了"。
+# ★用 `error` 不用 `exit`★：本文件在 sidecar 的受限 safe interp 里跑，
+# **`exit` 这个命令在那里不存在**（实测日志里是 `Error: invalid command name "exit"`）。
+# 用 error 抛出：fm_shell 停在这里、不 verify、make rc!=0、verdict=ERROR、不出 receipt，
+# 这才是真正的 fail-closed，也才满足 scripts/test_fm_pins_wellformed.py 的 P2/P3。
 # 终局判据在外层：fm_eq.tcl 最后一次 match 之后重新导出 unread_points.txt，
 # validator 要求 unread 归 0；而「加强有没有真去比」要看 passing 是否 +2
 # （2→4 / 10→12 / 9→11 / 7→9），那一步要 vmucp 白名单。
@@ -68,56 +74,63 @@
 proc wbarb_unread {side} {
     set out {}
     if {[catch {report_unmatched_points -$side -status unread -list} res]} {
-        puts "WBARBITER_PIN_ERROR: report_unmatched_points -$side -status unread FAILED: $res"
-        exit 3
+        error "WBARBITER_PIN_ERROR: report_unmatched_points -$side -status unread FAILED: $res"
     }
     foreach p [lsort -unique $res] { lappend out $p }
     return $out
 }
 
+# 期望钉点数：N=1 变体恰 2 点（cancelCounter_0[0] 与 hasFull），N>=2 变体 0 点。
+# 写成声明出来的整数，好让 scripts/test_fm_pins_wellformed.py 的 P3 能看见
+# 「期望数量是声明的，且校验发生在最后一次 set_user_match 之后」。
+set _expect_n1 2
+
 set _ref  [wbarb_unread reference]
 set _impl [wbarb_unread implementation]
 
-if {[llength $_ref] == 0 && [llength $_impl] == 0} {
+set _pinned 0
+set _used   {}
+set _nA 0 ; set _nB 0
+foreach r $_ref {
+    set i ""
+    # A. cancelCounter_<k>_reg[<b>]  <->  u_core/cancel_cnt_q_reg[<k>][<b>]
+    if {[regexp {^r:(/WORK/[^/]+)/cancelCounter_(\d+)_reg\[(\d+)\]$} $r -> scope idx bit]} {
+        set i "i:$scope/u_core/cancel_cnt_q_reg\[$idx\]\[$bit\]"
+        incr _nA
+    # B. hasFull_reg  <->  u_core/has_full_q_reg
+    } elseif {[regexp {^r:(/WORK/[^/]+)/hasFull_reg$} $r -> scope]} {
+        set i "i:$scope/u_core/has_full_q_reg"
+        incr _nB
+    } else {
+        error "WBARBITER_PIN_ERROR: unexpected ref unread point $r -- only cancelCounter_<k>_reg\[<b>\] and hasFull_reg are accepted; a different shape means something changed, stop and diagnose, do NOT blind-pin"
+    }
+    if {[lsearch -exact $_impl $i] < 0} {
+        error "WBARBITER_PIN_ERROR: derived impl path not in measured unread set: ref=$r impl=$i"
+    }
+    if {[lsearch -exact $_used $i] >= 0} {
+        error "WBARBITER_PIN_ERROR: impl path pinned twice (over-pinning): $i"
+    }
+    if {[catch {set_user_match $r $i} _msg]} {
+        error "WBARBITER_PIN_ERROR: set_user_match failed $r <-> $i : $_msg"
+    }
+    lappend _used $i
+    incr _pinned
+}
+
+# ★钉完再数★（P3）：两侧必须一一对上，且只允许两种形态 ——
+#   N=1 变体：恰 $_expect_n1(=2) 点；  N>=2 变体：两侧都是 0 点。
+# 任何第三种形态（例如只有一侧有未读点）都是"情况变了"，当场 error。
+if {$_pinned != [llength $_impl]} {
+    error "WBARBITER_PIN_ERROR: pinned $_pinned but impl has [llength $_impl] unread points -- not a bijection"
+}
+if {$_pinned != 0 && $_pinned != $_expect_n1} {
+    error "WBARBITER_PIN_ERROR: pinned $_pinned points, expected 0 (N>=2) or $_expect_n1 (N=1)"
+}
+if {$_pinned == $_expect_n1 && ($_nA != 1 || $_nB != 1)} {
+    error "WBARBITER_PIN_ERROR: expected exactly 1 cancelCounter + 1 hasFull, got $_nA + $_nB"
+}
+if {$_pinned == 0} {
     puts "WBARBITER_PINS: no unmatched unread points, nothing to pin"
 } else {
-    set _pinned 0
-    set _used   {}
-    set _nA 0 ; set _nB 0
-    foreach r $_ref {
-        set i ""
-        # A. cancelCounter_<k>_reg[<b>]  <->  u_core/cancel_cnt_q_reg[<k>][<b>]
-        if {[regexp {^r:(/WORK/[^/]+)/cancelCounter_(\d+)_reg\[(\d+)\]$} $r -> scope idx bit]} {
-            set i "i:$scope/u_core/cancel_cnt_q_reg\[$idx\]\[$bit\]"
-            incr _nA
-        # B. hasFull_reg  <->  u_core/has_full_q_reg
-        } elseif {[regexp {^r:(/WORK/[^/]+)/hasFull_reg$} $r -> scope]} {
-            set i "i:$scope/u_core/has_full_q_reg"
-            incr _nB
-        } else {
-            puts "WBARBITER_PIN_ERROR: unexpected ref unread point $r"
-            puts "  only 2 families accepted: cancelCounter_<k>_reg\[<b>\], hasFull_reg"
-            puts "  a different shape means something changed -- stop and diagnose, do NOT blind-pin"
-            exit 3
-        }
-        if {[lsearch -exact $_impl $i] < 0} {
-            puts "WBARBITER_PIN_ERROR: derived impl path not in measured unread set: ref=$r impl=$i"
-            exit 3
-        }
-        if {[lsearch -exact $_used $i] >= 0} {
-            puts "WBARBITER_PIN_ERROR: impl path pinned twice (over-pinning): $i"
-            exit 3
-        }
-        if {[catch {set_user_match $r $i} _msg]} {
-            puts "WBARBITER_PIN_ERROR: set_user_match failed $r <-> $i : $_msg"
-            exit 3
-        }
-        lappend _used $i
-        incr _pinned
-    }
-    if {$_pinned != [llength $_impl]} {
-        puts "WBARBITER_PIN_ERROR: pinned $_pinned but impl has [llength $_impl] unread points -- not a bijection"
-        exit 3
-    }
     puts "WBARBITER_PINS: pinned $_pinned points (cancelCounter $_nA, hasFull $_nB); bijection ok"
 }

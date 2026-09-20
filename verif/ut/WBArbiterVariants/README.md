@@ -110,3 +110,65 @@ make fm                              # 13 个变体逐个 FM
 make mutants ; python3 mutants.py --fm
 bash ../../../scripts/run_proof.sh WBArbiterVariants <变体名>...
 ```
+
+## FM 签核（本轮跑完，逐条对账见 docs/fubusy_wbarb_passing_actual.tsv）
+
+| 目标 | verdict | passing | 预登记 | 对账 |
+|---|---|---|---|---|
+| `WBArbiter` | SUCCEEDED | 17 | 17 | MATCH |
+| `WBArbiter_1` | SUCCEEDED | 22 | 22 | MATCH |
+| `WBArbiter_2` | SUCCEEDED | 12 | 12 | MATCH |
+| `WBArbiter_3` | SUCCEEDED | 3 | 7 | MISS(-4) |
+| `WBArbiter_30` | SUCCEEDED | 20 | 20 | MATCH |
+| `WBArbiter_33` | SUCCEEDED | 25 | 25 | MATCH |
+| `WBArbiter_38` | SUCCEEDED | 11 | 15 | MISS(-4) |
+| `WBArbiter_52` | SUCCEEDED | 19 | 19 | MATCH |
+| `WBArbiter_55` | SUCCEEDED | 24 | 24 | MATCH |
+| `WBArbiter_58` | SUCCEEDED | 10 | 14 | MISS(-4) |
+| `WBArbiter_64` | SUCCEEDED | 17 | 17 | MATCH |
+| `WBArbiter_65` | SUCCEEDED | 22 | 22 | MATCH |
+| `WBArbiter_66` | SUCCEEDED | 8 | 12 | MISS(-4) |
+
+★4 个 N=1 变体（_3/_38/_58/_66）预登记没命中，各差 -5★，且首轮因 2 个 unmatched unread
+判 PARTIAL。那 5 位反饥饿寄存器在 N=1 时整体不可达（README 上面那张可达性表早就写了），
+FM 折掉 3 位、留 2 位未读，一个都没进比较点。加 `fm_pins.tcl` 钉点 + vmucp 之后 unread 归 0、
+四个都转 SUCCEEDED；其中 1 点（hasFull）进 passing，另 1 点（cancelCounter_0[0]）被 FM 判成
+Constant reg 落进 Not Compared —— `mutants.py --fm` 的 F5 专门给这一点做了负控：
+把它的复位值改成 1 它就不再是常量，FM 当场报 failing 1。预测不改，记 MISS。
+
+复跑：
+```
+bash ../../../scripts/run_proof.sh WBArbiterVariants WBArbiter WBArbiter_1 WBArbiter_2 WBArbiter_3 WBArbiter_30 WBArbiter_33 WBArbiter_38 WBArbiter_52 WBArbiter_55 WBArbiter_58 WBArbiter_64 WBArbiter_65 WBArbiter_66
+```
+
+## `+vcs+initreg` 两档：★本族按构造等价，不是"跑了两轮有效验证"★
+
+codex 0168 要求证明 `+vcs+initreg` **确实改变了待测状态**，而不是只看命令行里有那个词。
+本族的诚实答案是：**两档在本族上按构造等价**，理由是全部状态异步复位 + tb 的复位窗口
+覆盖了它们，所以"跑了两轮"这件事本身在本族证明不了复位域。三条证据分开摆：
+
+1. **两档日志去掉非 DUT 行之后逐字相同**（3 seed × 2 档，6 份）。
+   裸 md5 是**不**相等的，但差异只在 4 类与 DUT 无关的行上：`Command:` 回显、
+   `Compiler version ... <时间戳>`、`CPU Time:`、结束墙钟时间。
+   ★所以"裸 md5 不等"不能当成"initreg 生效了"的证据——本轮实测它每次都不等。★
+   去掉这 4 类行后 3 个 seed × 2 档共 6 份的归一化 md5 **全部相同**：`245d0d2d`。
+2. **结构证据：本族状态量全部异步复位，且复位窗口覆盖。**
+   四族 RTL 全量搜非阻塞赋值，状态量一共只有 4 个
+   （`fu_busy_table_q` / `cancel_cnt_q` / `is_full_q` / `has_full_q`），
+   全部写在 `always_ff @(posedge clock or posedge reset)` 的 `if (reset)` 分支里；
+   tb 起手 `rst = 1'b1;` 保持 **8 个 posedge** 才放开，第一次 `check()` 在其后。
+   本族的状态是 `cancel_cnt_q` / `is_full_q` / `has_full_q`（`rtl/backend/WBArbiter.sv:84-98`）。
+3. **正控：`+vcs+initreg` 在本机这套 VCS 构建里确实是活的**（免得把"没差别"读成"开关没接上"）。
+   用与本族同样的 VCS 旗标（`+define+SYNTHESIS +vcs+initreg+random` 编译、
+   `+vcs+initreg+<档>` 运行）编一个只有两个寄存器的对照：一个异步复位（与本族同形）、
+   一个故意不复位。放开复位后采样：
+
+   | seed | 档 | 异步复位那个 | 不复位那个 |
+   |---|---|---|---|
+   | 1 | 0 / random | 0 / 0 | 8 / 7 |
+   | 7 | 0 / random | 0 / 0 | 8 / **148** |
+   | 42 | 0 / random | 0 / 0 | 8 / **85** |
+
+   不复位的那个逐档逐 seed 都不同 ⇒ 机制是活的、而且吃 seed；异步复位的那个恒为同值
+   ⇒ 本族"两档等价"是复位造成的，不是开关没生效。
+   （正控是一次性诊断，按「工具派生态不进版本库」跑完即弃，不在仓库里。）
