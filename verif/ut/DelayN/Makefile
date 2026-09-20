@@ -107,3 +107,10 @@ negtest: $(UT_SRCS)
 	   echo "=== NEGTEST PASSED（编译期就拦下）==="; \
 	   grep -m2 -E 'Error|xs_DelayN_core' negtest_compile.log || true; \
 	 fi
+
+# 变异靶子：往家族核 / 薄文件里注入若干个**真实形态**的 bug，要求本 UT 每一个都
+# 抓得住；另有两条逻辑等价空变异要求**不**误报。本轮 tb 新加了 WARMUP 热身窗口
+# （判据的放宽），这道负测就是它的凭据 —— 变异表与口径见 mutants.py 顶部。
+.PHONY: mutants
+mutants:
+	python3 mutants.py $(MUTANT_ARGS)
