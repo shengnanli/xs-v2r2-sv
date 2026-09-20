@@ -47,10 +47,51 @@ def sh(args, cwd, env=None):
 
 
 def main():
-    gens = sorted(REPO.glob('verif/ut/*/gen.py'))
+    # ★2026-09-20 扩范围：原先只 glob 'gen.py'★
+    # 实测：verif/ut 下 97 个 gen*.py 里只有 53 个恰好叫 gen.py，
+    # ★另外 44 个一直在这道闸之外★ —— 其中包括全部 gen_fm_pins.py，
+    # 也就是整个签核依赖的钉点文件的生成器。
+    # check_gen_gate_complete.py 的注释里写着「verif/ut/*/gen.py 那一层是统一重跑验的」，
+    # 那句话只对**恰好叫 gen.py** 的那 53 个成立，其余按文件名静默漏掉。
+    gens = sorted(REPO.glob('verif/ut/*/gen*.py'))
     if not gens:
-        print('test_gen_idempotent: 一个 gen.py 都没找到——闸空转，按失败处理')
+        print('test_gen_idempotent: 一个 gen*.py 都没找到——闸空转，按失败处理')
         return 1
+
+    # 需要必选参数、但自带 --check 的：用 --check 代替"重跑+比字节"
+    # ★判定只看"支不支持 --check"，不看 argv 风格★
+    # 第一版加了 'sys.argv[1]' in text 这个条件，结果 argparse 风格的
+    # TlbStorageWrapper/gen_tb_variant.py 没被认出来，空手调用当场 rc=2。
+    # 判据在回答另一个问题（"它是不是用 sys.argv[1] 取参数"），而我要问的是
+    # "它能不能自检"——★条件多一个不是更严，是判错对象★。
+    # ★verif/ut/*_common/ 下的是**库**，不是可独立运行的生成器★
+    # 它们由各变体目录里的薄壳调用（薄壳供模块名），单独跑会把 `--check`
+    # 当成模块名：FileNotFoundError: .../golden-rtl/--check.sv / KeyError: '--check'。
+    # ★排除必须配一条正面断言，否则排除本身就是新的洞★：
+    # 每个被排除的库至少要有一个薄壳调用者在本次清扫里，且那些薄壳是真跑过的。
+    libs = {g for g in gens if g.parent.name.endswith('_common')}
+    gens = [g for g in gens if g not in libs]
+    for lib in sorted(libs):
+        callers = [g for g in gens
+                   if lib.parent.name in g.read_text(errors='replace')
+                   and g.name == lib.name]
+        if not callers:
+            print('test_gen_idempotent: 库 %s 被排除但★一个调用者都没有★——'
+                  '排除会变成覆盖漏洞' % lib.relative_to(REPO))
+            return 1
+
+    # ★判定"支不支持 --check"不能只看文件里有没有这串字★（2026-09-20 实测踩过）
+    # Entries_common / OthersEntry_common 的 docstring 里写着 `gen_fm_pins.py --check`，
+    # 字符串在、行为不在——它们仍要模块名。「文件里有 --check」在回答另一个问题。
+    # 这里只对**非库**的生成器启用 --check，且要求它是 argparse 注册或与 argv 比较的形态。
+    import re as _re
+    _CHECK_DECL = _re.compile(r"""add_argument\(\s*['"]--check['"]|['"]--check['"]\s*(?:in\s+sys\.argv|==)""")
+    check_mode = {g for g in gens
+                  if g.name != 'gen.py' and _CHECK_DECL.search(g.read_text(errors='replace'))}
+    # 需要参数且**不支持** --check 的：显式登记，不许隐式跳过
+    # ★只许缩不许长★：新加的生成器要么能空跑、要么挂 --check，不许往这张表里加。
+    NEEDS_ARGS_NO_CHECK = {'verif/ut/Ftq/gen_tb.py'}
+    gens = [g for g in gens if str(g.relative_to(REPO)) not in NEEDS_ARGS_NO_CHECK]
 
     wt = pathlib.Path(tempfile.mkdtemp(prefix='xsv2-genidem-'))
     shutil.rmtree(str(wt))                       # worktree add 要求目录不存在
@@ -65,7 +106,20 @@ def main():
     try:
         for g in gens:
             d = wt / g.relative_to(REPO).parent
-            r = sh([sys.executable, 'gen.py'], d, env)
+            # ★有些生成器需要必选参数（sys.argv[1]），空手调用会 IndexError★
+            # 那不是"不幂等"，是调用方式不对。实测扩范围后 97 个里恰好 4 个属此类：
+            #   Entries_common/gen_fm_pins.py / OthersEntry_common/gen_fm_pins.py
+            #   TlbStorageWrapper/gen_tb_variant.py   -> 三个都支持 --check，改用它
+            #   Ftq/gen_tb.py                         -> 不支持，登记在 NEEDS_ARGS 里
+            # ★把"调用方式不对"记成"不幂等"会让这道闸常红，而常红的闸等于没信号。★
+            if g in check_mode:
+                r = sh([sys.executable, g.name, '--check'], d, env)
+                if r.returncode != 0:
+                    bad.append('%s --check 非零退出 (rc=%d)：%s'
+                               % (g.relative_to(REPO), r.returncode,
+                                  r.stdout.decode('utf-8', 'replace').strip()[:400]))
+                continue
+            r = sh([sys.executable, g.name], d, env)
             if r.returncode != 0:
                 bad.append('%s 跑挂了 (rc=%d)：%s'
                            % (g.relative_to(REPO), r.returncode,
@@ -86,7 +140,16 @@ def main():
         for b in bad:
             print('  - ' + b)
         return 1
-    print('test_gen_idempotent: %d 个 verif/ut/*/gen.py 重跑后产物逐字不变' % len(gens))
+    # ★结论行必须如实描述这一轮到底验了什么★
+    # 原文写的是 "verif/ut/*/gen.py 重跑后产物逐字不变"，但扩范围后实际是
+    # gen*.py、排除了库、且其中一部分走的是 --check 而不是"重跑+比字节"。
+    # 留着那句话，这道闸的输出本身就成了一条误导性断言。
+    n_rerun = len(gens) - len(check_mode)
+    print('test_gen_idempotent: %d 个 verif/ut/*/gen*.py 通过'
+          '（%d 个重跑后产物逐字不变 / %d 个走自带 --check）；'
+          '另排除 %d 个 *_common 库（各有薄壳调用者在内）'
+          '与 %d 个需参数且无 --check 的'
+          % (len(gens), n_rerun, len(check_mode), len(libs), len(NEEDS_ARGS_NO_CHECK)))
     return 0
 
 
