@@ -523,9 +523,11 @@ if {[info exists env(FM_MERGE_DUP)] && [string trim $env(FM_MERGE_DUP)] ne ""} {
     set _mergedup [string trim $env(FM_MERGE_DUP)]
 }
 # ★这段注记必须留在 switch **外面**★（2026-09-20 实测，Entries lane 踩到）
-#   它原先写在 `switch -- $_mergedup` 的花括号**里面**。Tcl 的 switch 体是一张
-#   （这行原文带一个裸的左花括号，把本仓既有的「括号配平」判据打红了 ——
-#    Tcl 注释里的花括号并非总是无害，所以这里改成不写出那个字符。）
+#   它原先写在 `switch -- $_mergedup { ... }` 的花括号里。Tcl 的 switch 体是一张
+#   （★这行的花括号必须成对写★：本文件的结构闸 test_fm_eq_wellformed.py 是**全文**
+#     数左右花括号的，注释里落单一个左花括号就会把它判红。判据粗，但粗得有道理 ——
+#     注释若落在某个 **braced body 里面**，Tcl 收词时照样数它的花括号，那时落单的
+#     花括号是真会炸的。所以宁可让注释配平，不要放宽判据。）
 #   **pattern/body 列表**，不是脚本体 —— `#` 在那里不是注释，整块要按列表语法解析。
 #   下面第 8 行里的 ASCII 双引号 "Merging duplicated registers" 后面紧跟中文逗号，
 #   于是 Tcl 报 `list element in quotes followed by "，★从未到达" instead of space`
@@ -536,6 +538,14 @@ if {[info exists env(FM_MERGE_DUP)] && [string trim $env(FM_MERGE_DUP)] ne ""} {
 #   引入于 ee3aa24（"fm_eq.tcl 加 merge_dup 经验注记"），随 main 合进各 lane。
 #   判据教训：**Tcl 里"加一段注释"不是无副作用操作**，加在哪要看它落进了谁的
 #   花括号；而这类改动没有任何 lint 会响，只有真跑一次 FM 才看得见。
+#   ★独立复现（2026-09-20，Sbuffer lane，同一天另一条 lane）★：
+#   现象与上面逐字一致 —— evidence/4648b236a440/Sbuffer/fm.log:557 存着那次的
+#   `Error: list element in quotes ...` 与 `stopped at line 494`，44 秒、0 比较点、
+#   run_proof rc=2、sidecar/native_facts.json 根本没生成。两条 lane 各自撞到又各自
+#   修好，说明这不是某个人手滑的偶发，而是"Tcl 注释位置"这件事在本仓没有守卫。
+#   两道闸现在都在：scripts/check_fm_eq_tcl_syntax.py（本条的权威判据，带元负例）
+#   与 scripts/test_fm_eq_wellformed.py（另补一条：body **顶层** `#` 即使能解析
+#   也要拒 —— 那种情况 Tcl 把 `#` 当成 pattern，是静默错，上面那道解析闸不会响）。
 # ===== verification_merge_duplicated_registers 的经验注记（codex 0168 裁定） =====
 # ★不翻全局默认★。下面是可复核的经验，不是规则：
 #

@@ -62,6 +62,15 @@ SCRATCH_FILE_PREFIXES = (
     'default.svf',
 )
 SCRATCH_SUFFIXES = ('.daidir', '.fsdb', '.pyc')
+# 备份副本：变异 harness / 手工改 RTL 前 `cp` 出来的原件快照。
+# 第 3 例（2026-09-20，Sbuffer lane）：verif/ut/Sbuffer/.mutants.orig.sv 被
+# 一次 WIP 抢救提交（cf002ce8）连带 `git add` 进库 —— 它是 mutants.sh 的
+# `cp "$SRC" "$BAK"` 产物，是 rtl/memblock/Sbuffer.sv 的**逐字节副本**（3843 行）。
+# 危害不是体积，是它**会和源文件分叉**：源文件一改它就成了过期的第二份真相，
+# 而它的名字看起来像"原件"，grep 到它的人会以为读的是当前 RTL。
+# 上面两条前缀/后缀名单都没覆盖它（不是 fm_*、不是 *.log、不是 *.daidir），
+# 所以补这一条。判据按**文件名后缀**而不是路径，与本闸其余部分一致。
+SCRATCH_BACKUP_SUFFIXES = ('.orig.sv', '.orig.v', '.bak', '.sv.bak', '.orig')
 
 # 有意提交、不算 scratch 的前缀
 EXEMPT_PREFIXES = ('evidence/',)
@@ -92,6 +101,9 @@ def is_scratch(path):
     for s in SCRATCH_SUFFIXES:
         if base.endswith(s):
             return 'scratch 后缀 %s' % s
+    for s in SCRATCH_BACKUP_SUFFIXES:
+        if base.endswith(s):
+            return 'scratch 备份副本 %s（工具/手工 cp 出来的原件快照，会与源文件分叉）' % s
     return None
 
 
