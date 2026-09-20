@@ -321,3 +321,50 @@ output bits --- is **still unresolved and still needs a ruling**. This addendum
 only removes one hypothesis (firtool artefact) and pins the exact width. Until
 the ruling lands, the `robDeqGroup` family is the one family deliberately left
 unwritten in the core.
+
+---
+
+## Addendum 2026-09-20 (2) --- 留空整个 `robDeqGroup` 族的射程，量出来了
+
+拆活时的说法是"先写 12 族，`robDeqGroup` 等裁定"。那要先知道这一刀切下去有多深，
+因为 `robDeqGroup` 不是一个普通的数据族，它是**提交读口**：
+
+```scala
+val robDeqGroup = Reg(Vec(bankNum, new RobCommitEntryBundle))
+val rawInfo    = VecInit((0 until CommitWidth).map(i => robDeqGroup(deqPtrVec(i).value(2,0))))
+val commitInfo = ... 同上 ...
+```
+
+`io.commits.info` / `deqPtrEntry`（= `rawInfo(0)`，异常、冲刷、`blockCommit`、
+`io.lsq.*` 全从它出发）/ `io.trace` 都挂在它下游。
+
+`scripts/rob_deqgroup_blast.py` 从 golden 做传导染色（组合网 + 寄存器次态），
+结果：
+
+| 留空范围 | 核能驱动的输出 |
+|---|---|
+| **整个 `robDeqGroup` 族（45 字段）** | **116 / 633（18%）** |
+| 只留空 `debug_otherPdest_0..6`（7 字段 / 56 寄存器） | **577 / 633（91%）** |
+| 差距 | **461 个输出端口** |
+
+（667 个输出里 34 个由子模块引脚直接驱动，不是核的义务，故分母取 633。
+按 667 计，`robDeqGroup` 下游是 517 个，78%。）
+
+★结论：留空整族会得到一个只驱动 18% 输出的文件 —— 正是本轮明令要避免的
+SCAFFOLD，只是更大一号。★ 而未定的设计选择实际只覆盖 56 个输出端口。
+
+所以在裁定之前，`rtl/backend/Rob.sv` **没有建**。需要的裁定是把留空范围从
+"`robDeqGroup` 整族"收窄到"`robDeqGroup.debug_otherPdest_0..6`"；其余 38 个字段
+由 `connectCommitEntry` 逐字段完整给出，没有任何待定之处。
+
+### 量具自己的两个坑（都踩过，都配了反测）
+
+1. **多维 packed wire**：firtool 写 `wire [7:0][6:0] _GEN_8 = {...};`。
+   只允许一个方括号的驱动式正则会静默漏掉它，染色在那里断掉 ——
+   实测 517/667 变成 325/667，**两个数看上去都合理**。
+2. **折行的 `if` 头**：寄存器次态要从 always 语句树里取，而 firtool 会把长
+   `if` 条件折行、下一行就是它的无 `begin` 单语句体。按"累到分号"合并续行会把
+   条件头和语句体粘成一个 token，整棵树错位（把 160 个并列 `if` 解成 160 层
+   else 链）。见 `scripts/test_rob_fold_probe.py`。
+
+两条都进了 `gate_all.sh` 的负测。

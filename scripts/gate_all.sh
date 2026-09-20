@@ -116,6 +116,11 @@ run "rtl 无 svh 闸"      python3 scripts/check_no_svh_in_rtl.py
 # 只是给出一份形状看着很合理的假语句树（实测：把 160 个并列 if 解成 160 层 else 链）。
 # 假证据比没证据更贵，所以它自带负测，负测自带"把修复退回去必须变红"的反测。
 run "Rob 折叠探针负测"   python3 scripts/test_rob_fold_probe.py
+# Rob robDeqGroup 射程量具的负测（秒级）。它给出的 116/633 与 577/633 两个数是
+# 一条工程决定（这一族留不留空）的唯一依据，而让它**偏小且不报错**的那个坑
+# ——多维 packed wire `wire [7:0][6:0] X = ...` 被单方括号正则漏掉——实测会把
+# 517/667 变成 325/667，两个数看着都合理。所以正则本身要有反测钉住。
+run "Rob 射程量具负测"   python3 scripts/rob_deqgroup_blast.py --selftest
 run "fm_eq.tcl 语法负测" python3 scripts/check_fm_eq_tcl_syntax.py --selftest
 run "fm_eq.tcl 语法闸"   python3 scripts/check_fm_eq_tcl_syntax.py
 # 覆盖台账的证据链：docs/coverage_three_axis.tsv 宣称的每条证明都要能从**版本库**复现。
