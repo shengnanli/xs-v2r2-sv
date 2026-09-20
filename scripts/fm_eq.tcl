@@ -491,7 +491,14 @@ set _mergedup "true"
 if {[info exists env(FM_MERGE_DUP)] && [string trim $env(FM_MERGE_DUP)] ne ""} {
     set _mergedup [string trim $env(FM_MERGE_DUP)]
 }
-switch -- $_mergedup {
+# ===== 下面这段注记必须留在 switch **之外** =====
+# ★Tcl 的 switch 体里没有注释★：body 是按**列表**解析的，`#` 开头的行会被当成
+#   pattern/body 元素，而不是注释。本仓 2026-09-20 实测踩过：ee3aa24 把这段注记
+#   贴进 switch 体，其中一行含 `"Merging duplicated registers"，` —— 引号元素后面
+#   紧跟非空格字符，Tcl 列表解析当场报
+#     list element in quotes followed by "，★从未到达" instead of space
+#   于是 **每一个** FM 目标都在 setup 阶段死掉（fm_shell rc=2、无 native_facts.json）。
+#   最小复现 3 行，见 scripts/test_fm_eq_wellformed.py 的 tcl 语法判据。
 # ===== verification_merge_duplicated_registers 的经验注记（codex 0168 裁定） =====
 # ★不翻全局默认★。下面是可复核的经验，不是规则：
 #
@@ -509,6 +516,7 @@ switch -- $_mergedup {
 # ★不要写成因果★：本仓曾出现过"u_core 这种写法必然导致需要关掉它"这类说法，
 # 已被 0179 的判别性实验证伪（NewDispatch 因此从支持集里移出）。
 # 目前能说的只有上面这些 target-scoped 的观测，没有已确立的普遍机制。
+switch -- $_mergedup {
   "true" - "false" { set_app_var verification_merge_duplicated_registers $_mergedup }
   default {
     puts "FM_MODE_ERROR: FM_MERGE_DUP 非法值 $_mergedup"
