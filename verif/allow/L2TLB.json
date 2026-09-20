@@ -1,0 +1,136 @@
+{
+ "schema": "xs-v2-sv-allow-v1",
+ "target": "L2TLB",
+ "baseline": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "note": "assembly 边界声明：8 个带内部状态的大子模块在两侧对称黑盒。8 个 child 目前**全部没有已签核证书**（docs/g1_universe.tsv 里 PtwCache/PTW/LLPTW/HPTW/L2TlbMissQueue/L2TlbPrefetch 都是 REQUIRED/UNVERIFIED；Bitmap/BitmapCache 是 g1_configured_universe.tsv 的 new_target），所以这里**故意不填 certificate_sha256** —— fm_verdict 的 green_child 校验会按缺证书判红，这就是本目标的条件绿依赖，写在这里是为了让 receipt 指名道姓地挂着它们，而不是让判定停在含糊的 assembly_no_allow_decl。★不许把 class 改成 vendor_macro 绕过★：这 8 个都不是厂商宏。",
+ "objects": [
+  {
+   "side": "r",
+   "design": "Bitmap",
+   "path": "r:/WORK/L2TLB/bitmap",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "Bitmap"
+  },
+  {
+   "side": "i",
+   "design": "Bitmap",
+   "path": "i:/WORK/L2TLB/u_core/u_bitmap",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "Bitmap"
+  },
+  {
+   "side": "r",
+   "design": "BitmapCache",
+   "path": "r:/WORK/L2TLB/bitmapcache",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "BitmapCache"
+  },
+  {
+   "side": "i",
+   "design": "BitmapCache",
+   "path": "i:/WORK/L2TLB/u_core/u_bitmap_cache",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "BitmapCache"
+  },
+  {
+   "side": "r",
+   "design": "HPTW",
+   "path": "r:/WORK/L2TLB/hptw",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "HPTW"
+  },
+  {
+   "side": "i",
+   "design": "HPTW",
+   "path": "i:/WORK/L2TLB/u_core/u_hptw",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "HPTW"
+  },
+  {
+   "side": "r",
+   "design": "L2TlbMissQueue",
+   "path": "r:/WORK/L2TLB/missQueue",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "L2TlbMissQueue"
+  },
+  {
+   "side": "i",
+   "design": "L2TlbMissQueue",
+   "path": "i:/WORK/L2TLB/u_core/u_miss_queue",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "L2TlbMissQueue"
+  },
+  {
+   "side": "r",
+   "design": "L2TlbPrefetch",
+   "path": "r:/WORK/L2TLB/prefetch",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "L2TlbPrefetch"
+  },
+  {
+   "side": "i",
+   "design": "L2TlbPrefetch",
+   "path": "i:/WORK/L2TLB/u_core/u_prefetch",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "L2TlbPrefetch"
+  },
+  {
+   "side": "r",
+   "design": "LLPTW",
+   "path": "r:/WORK/L2TLB/llptw",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "LLPTW"
+  },
+  {
+   "side": "i",
+   "design": "LLPTW",
+   "path": "i:/WORK/L2TLB/u_core/u_llptw",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "LLPTW"
+  },
+  {
+   "side": "r",
+   "design": "PTW",
+   "path": "r:/WORK/L2TLB/ptw",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "PTW"
+  },
+  {
+   "side": "i",
+   "design": "PTW",
+   "path": "i:/WORK/L2TLB/u_core/u_ptw",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "PTW"
+  },
+  {
+   "side": "r",
+   "design": "PtwCache",
+   "path": "r:/WORK/L2TLB/cache",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "PtwCache"
+  },
+  {
+   "side": "i",
+   "design": "PtwCache",
+   "path": "i:/WORK/L2TLB/u_core/u_page_cache",
+   "attrs": "i",
+   "class": "green_child",
+   "child_target": "PtwCache"
+  }
+ ]
+}
