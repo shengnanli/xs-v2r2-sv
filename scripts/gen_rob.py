@@ -322,6 +322,25 @@ for _i in range(1, 6):
     RENAME['_dispatchNum_T_%d' % _i] = 'enqFirstUopValid_%d' % _i
 
 
+# ★第二类改名：与核内寄存器撞名★（2026-09-20 写核时实测）
+#
+# golden 里这些名字**同时**是一个 Rob 层的寄存器和一根喂给 child 的线
+# （`reg hasBlockBackward;` ... `.io_hasBlockBackward (hasBlockBackward)`）。
+# 核/wrapper 一拆，这根线就变成核的一个 **output 端口**，而那个寄存器要留在核里。
+# 同一个模块里不能既有端口 `hasBlockBackward` 又有变量 `hasBlockBackward`。
+#
+# ★为什么改端口名而不是改寄存器名★：寄存器名是 FM 自动配对的抓手。
+# docs/rob_core_contract.tsv 里这些是 name_lock=free（fm_pins.tcl 不钉它们），
+# 也就是说它们**只能**靠 FM 自己按名字/结构配。把 golden 的 `hasBlockBackward`
+# 对到一个叫 `hasBlockBackward_r` 的 impl 寄存器上，是主动把最强的那条线索扔掉。
+# 端口名反过来无所谓：端口两侧由 wrapper 接线，FM 看到的是同一根网。
+for _n in ('hasBlockBackward', 'hasWaitForward', 'intrBitSetReg',
+           'rab_io_fromRob_vecLoadExcp_valid_REG'):
+    RENAME[_n] = _n + 'Out'
+for _i in range(8):
+    RENAME['hasCommitted_%d' % _i] = 'hasCommittedOut_%d' % _i
+
+
 def core_port_name(net):
     """wrapper 网名 -> 核上的端口名。
 
@@ -332,12 +351,35 @@ def core_port_name(net):
     return net.lstrip('_')
 
 
+def expr_pin_widths(children, portnames, golden_dir):
+    """表达式引脚的位宽 -> {核端口名: width}。
+
+    ★这几根线 golden 里根本没有声明★（它们在实例的引脚上就地写成表达式），
+    所以位宽只能从**被连的那个子模块引脚**上取。少了这一步，核端口表在
+    `rab_io_fromRob_walkSize` 这种 8 位线上会拿到 None 并直接报"找不到声明"。
+    """
+    w = {}
+    for ctype, inst, pins in children:
+        cw = None
+        for pin, net in pins:
+            kind, nm = classify(net, portnames, inst, pin)
+            if kind != 'expr':
+                continue
+            if cw is None:
+                cw = child_pin_widths(golden_dir, ctype)
+            if pin not in cw:
+                raise SystemExit('gen_rob: %s 的引脚 %r 在它自己的 golden 里找不到'
+                                 % (ctype, pin))
+            w[nm[2:]] = cw[pin]
+    return w
+
+
 def core_iface(children, ports, golden_dir):
     """核必须驱动 / 必须读的那两组网，键是**核端口名**。"""
     portnames = {p[3] for p in ports}
     drives, reads, routed, golden_of = wrapper_nets(children, portnames, golden_dir)
     # 核端口名 = 线名去掉 'n_'（线名已在 classify 里改过名）；值留 golden 原名取位宽。
-    # 表达式引脚没有 golden 线，位宽另取（见 expr_pin_widths）。
+    # 表达式引脚没有 golden 线，位宽由 expr_pin_widths 从子模块引脚上取。
     d = {n[2:]: golden_of.get(n) for n in drives}
     r = {n[2:]: golden_of.get(n) for n in list(reads) + list(routed)}
     if len(d) != len(drives) or len(r) != len(reads) + len(routed):
@@ -439,19 +481,20 @@ def analyse_core(target_lines, ports, children, golden_dir, netw):
         if p[0] == 'output' and p[3] in childout:
             raise SystemExit('gen_rob: 核体提到了由子模块驱动的顶层 output %r' % p[3])
         rows.append(p)
+    exprw = expr_pin_widths(children, set(pmap), golden_dir)
     for nm in sorted(drives):
-        w = netw.get(drives[nm])
+        w = netw.get(drives[nm]) if drives[nm] is not None else exprw.get(nm)
         if w is None:
             raise SystemExit('gen_rob: golden 里找不到网 %r 的声明，位宽无处可取'
-                             % drives[nm])
+                             % (drives[nm] or nm))
         rows.append(('output', w - 1, 0, nm) if w > 1 else ('output', None, None, nm))
     for nm in sorted(reads):
         if nm not in idents:
             continue
-        w = netw.get(reads[nm])
+        w = netw.get(reads[nm]) if reads[nm] is not None else exprw.get(nm)
         if w is None:
             raise SystemExit('gen_rob: golden 里找不到网 %r 的声明，位宽无处可取'
-                             % reads[nm])
+                             % (reads[nm] or nm))
         rows.append(('input', w - 1, 0, nm) if w > 1 else ('input', None, None, nm))
     return rows, drives, reads
 
@@ -471,10 +514,11 @@ def emit_core_inst(rows, drives, reads):
     pw = max(len(n) for _, _, _, n in rows)
     out = ['  xs_Rob_core u_core (']
     for k, (d, hi, lo, n) in enumerate(rows):
-        if n in drives:
-            net = 'n_' + drives[n]
-        elif n in reads:
-            net = 'n_' + reads[n]
+        if n in drives or n in reads:
+            # ★线名 = 'n_' + **核端口名**★，不是 'n_' + golden 名：
+            # classify 在造线名时已经过 RENAME，emit_wrapper_nets 也按那个名字
+            # 声明。照 golden 名拼会长出 `n__dispatchNum_T` 这种没人声明的线。
+            net = 'n_' + n
         else:
             net = n
         out.append('    .%-*s (%s)%s' % (pw, n, net, ',' if k != len(rows) - 1 else ''))
