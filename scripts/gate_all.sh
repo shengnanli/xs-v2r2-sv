@@ -126,6 +126,10 @@ run "rtl 无 svh 闸"      python3 scripts/check_no_svh_in_rtl.py
 # 而没有任何现成的闸会响。这道闸不需要 Formality，跑一次几十毫秒。
 run "fm_eq.tcl 语法负测" python3 scripts/check_fm_eq_tcl_syntax.py --selftest
 run "fm_eq.tcl 语法闸"   python3 scripts/check_fm_eq_tcl_syntax.py
+# 唤醒匹配的判别轴表（E1 作用域的依据）：改共享核的唤醒匹配前必须复跑核对。
+# ★判别轴不是"族"，是「每 lane 带几个 wen × 掩码有没有把 kind 不同的源隔开」★
+# —— 按族切会漏掉 D 档的 EntriesVlduVstu（VEC 族却要多对+按源分 kind）。
+run "唤醒判别轴表"      python3 verif/ut/Entries_field_matrix/wakeup_axis.py --check
 # initreg 判据的负测（真跑探针要 VCS，不进 gate_all；这里只把判据本身守住）：
 # ★"两轮 initreg 都绿"证明不了复位域★，而"两轮日志 md5 不等"是 fail-open 的
 # （命令行里就带着 +vcs+initreg+0/random）。判据见脚本文件头。
