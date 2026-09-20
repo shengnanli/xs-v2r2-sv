@@ -491,7 +491,14 @@ set _mergedup "true"
 if {[info exists env(FM_MERGE_DUP)] && [string trim $env(FM_MERGE_DUP)] ne ""} {
     set _mergedup [string trim $env(FM_MERGE_DUP)]
 }
-switch -- $_mergedup {
+# ★下面这段注记必须留在 switch **外面**★（2026-09-20 实测，Sbuffer lane）
+# Tcl 的 switch 把 body 当成**一个 list** 解析，`#` 在 list 里不是注释、是一个元素，
+# 于是注记里的中文引号 "Merging duplicated registers" 会让 list 解析当场炸：
+#     Error: list element in quotes followed by "，★从未到达" instead of space
+#     ... stopped at line 494 due to error. (CMD-081)
+# ★这是全仓级别的：fm_eq.tcl 被每个 FM 目标共用，ee3aa24 之后 main 上任何
+#   `make fm-<target>` 都在 44 秒内死在这里、一个比较点都没跑。★
+# 注记本身（ee3aa24 加的）内容没问题，问题只是位置。
 # ===== verification_merge_duplicated_registers 的经验注记（codex 0168 裁定） =====
 # ★不翻全局默认★。下面是可复核的经验，不是规则：
 #
@@ -509,6 +516,8 @@ switch -- $_mergedup {
 # ★不要写成因果★：本仓曾出现过"u_core 这种写法必然导致需要关掉它"这类说法，
 # 已被 0179 的判别性实验证伪（NewDispatch 因此从支持集里移出）。
 # 目前能说的只有上面这些 target-scoped 的观测，没有已确立的普遍机制。
+
+switch -- $_mergedup {
   "true" - "false" { set_app_var verification_merge_duplicated_registers $_mergedup }
   default {
     puts "FM_MODE_ERROR: FM_MERGE_DUP 非法值 $_mergedup"

@@ -21,6 +21,7 @@ vmucp 白名单 `if {$top ni {...}}`。合并冲突时我两次处理错：
 """
 import pathlib
 import re
+import subprocess
 import sys
 
 HERE = pathlib.Path(__file__).resolve().parent
@@ -46,6 +47,71 @@ def check(text):
         probs.append(f'vmucp 白名单 if 有 {n_if} 条（必须恰 1 —— 多条会串联互拒）')
     if text.count('{') != text.count('}'):
         probs.append(f'花括号不配平：{{ {text.count("{")} vs }} {text.count("}")}')
+    probs += switch_body_problems(text)
+    return probs
+
+
+# ---------------------------------------------------------------------------
+# ★switch 的 body 是一个 **Tcl list**，`#` 在 list 里不是注释★（2026-09-20 实测）
+#
+# 括号配平 + 无冲突标记都过，脚本照样可以在运行期炸：ee3aa24 把一段中文注记写进了
+# `switch -- $_mergedup { ... }` 的 body 里，注记中含引号
+# `"Merging duplicated registers"`，于是 Tcl 解析 body 这个 list 时报
+#     Error: list element in quotes followed by "，★从未到达" instead of space
+#     ... stopped at line 494 due to error. (CMD-081)
+# ★fm_eq.tcl 是每个 FM 目标共用的入口★：从 ee3aa24 起，main 上任何
+# `make fm-<target>` 都在 44 秒内死在这里、一个比较点都跑不到。
+#
+# 上面那三条不变式（冲突标记 / 白名单条数 / 括号配平）**全都没抓到**它 ——
+# 括号是配平的，冲突标记也没有。所以这里补一条**真解析**：把每个 switch 的 body
+# 交给 tclsh 当 list 解析（`llength`），解析不了就报。用 tclsh 而不是自己写解析器，
+# 判据才和运行时的那一个是同一个。
+# ---------------------------------------------------------------------------
+def _switch_bodies(text):
+    """返回 [(行号, body 原文)]：每个 `switch ...{` 到配对 `}` 之间的内容。"""
+    out = []
+    for m in re.finditer(r'^[ \t]*switch\b[^\n{]*\{', text, re.M):
+        start = m.end()          # 紧跟在开括号之后
+        depth, i = 1, start
+        while i < len(text) and depth:
+            if text[i] == '{':
+                depth += 1
+            elif text[i] == '}':
+                depth -= 1
+            i += 1
+        if depth == 0:
+            out.append((text.count('\n', 0, m.start()) + 1, text[start:i - 1]))
+    return out
+
+
+def switch_body_problems(text):
+    probs = []
+    bodies = _switch_bodies(text)
+    if not bodies:
+        return ['找不到任何 switch —— 解析器与文件对不上，按 fail-closed 报']
+    for ln, body in bodies:
+        # 交给真正的 Tcl 解析器判：body 能不能当 list 读
+        # 不用 capture_output / text=：本机是 python3.6，两者都不支持。
+        r = subprocess.run(['tclsh'], input=('llength {' + body + '}\n').encode(),
+                           stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if r.returncode != 0:
+            err = r.stderr.decode('utf-8', 'replace')
+            first = (err.strip().splitlines() or [''])[0]
+            probs.append(f'第 {ln} 行的 switch body 不是合法 Tcl list：{first}')
+            continue
+        # 即使能解析，body 的**顶层**出现 `#` 开头的元素也是**静默错**：它会被当成一个
+        # pattern，把紧跟其后的那一段当成它的 script。所以一并拒。
+        # ★只看顶层★：`"true" { ... }` 里面是**脚本**不是 list，那里的 `#` 是正常注释
+        #   （fm_eq.tcl 的 vmucp 白名单依据就写在那儿，几十行，完全合法）。
+        #   第一版判据没分层，把那几十行也报了 —— 判据比坑还宽就会被当噪音关掉。
+        depth = 0
+        for bl in body.splitlines():
+            s = bl.lstrip()
+            if depth == 0 and s.startswith('#'):
+                probs.append(f'第 {ln} 行的 switch body 顶层有 `#` 行 —— '
+                             f'Tcl 会把它当 pattern 而不是注释：{s[:40]}')
+                break
+            depth += bl.count('{') - bl.count('}')
     return probs
 
 
@@ -62,11 +128,23 @@ if not probs:
         re.match(r'^[A-Za-z_]\w*$', n) for n in names), f'{len(names)} 个目标')
 
 # ★对照★：种入每种坏形态都必须被抓，否则 W1 可能是空转。
+# 元负例在这里是**结构自带**的：W1 断言的是真文件上 check() 返回**空**。
+# 任何把判据变成"无条件报警"的改动（例如 switch_body_problems 直接 return ['x']）
+# 都会让 W1 转红，所以下面这几条对照不会退化成"只要出声就算过"。
 cases = [
     ('两条 if',
      txt.replace('if {$top ni {', 'if {$top ni {A B} } ;# dup\n    if {$top ni {', 1)),
     ('残留冲突标记', '<<<<<<< HEAD\n' + txt + '\n>>>>>>> other\n'),
     ('括号不配平', txt + '\nif {1} {\n'),
+    # ★本轮真事故的复现★：注记搬回 switch body 里，必须被抓。
+    ('注记写进 switch body（含引号）',
+     txt.replace('switch -- $_mergedup {',
+                 'switch -- $_mergedup {\n# 卡在 "Merging duplicated registers"，★从未到达 match★',
+                 1)),
+    # 引号即使配平、list 能解析，`#` 行照样是静默错（被当 pattern）。
+    ('注记写进 switch body（不含引号）',
+     txt.replace('switch -- $_mergedup {',
+                 'switch -- $_mergedup {\n# 纯中文注记没有引号也不行', 1)),
 ]
 for i, (label, bad) in enumerate(cases, start=3):
     got = check(bad)
