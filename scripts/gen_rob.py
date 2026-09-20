@@ -152,7 +152,10 @@ def classify(net, portnames, inst=None, pin=None):
         if inst is None or pin is None:
             raise SystemExit('gen_rob: 表达式引脚 %r 缺少 inst/pin 上下文' % net)
         return 'expr', 'n_%s_%s' % (inst, pin)
-    return 'net', 'n_' + net
+    # ★线名也走改名表★：wrapper 是可读文件的一部分，`logic n__GEN_3539;` 这种
+    # golden 展平中间名不该出现在代码区（本仓既有写法是把 golden 名放**注释**里
+    # 做交叉引用，信号本身起语义名 —— 见 rtl/backend/SSIT.sv:245）。
+    return 'net', 'n_' + core_port_name(net)
 
 
 # --------------------------------------------------------------------------
@@ -233,6 +236,7 @@ def wrapper_nets(children, portnames, golden_dir):
     """
     driven_by_child = {}
     consumed = collections.defaultdict(list)
+    golden_of = {}          # wrapper 线名 -> golden 原名（取位宽要用，改名后不能丢）
     for ctype, inst, pins in children:
         outs = child_output_pins(golden_dir, ctype)
         for pin, net in pins:
@@ -243,6 +247,7 @@ def wrapper_nets(children, portnames, golden_dir):
                 continue
             if kind != 'net':
                 continue
+            golden_of[name] = net
             if pin in outs:
                 driven_by_child[name] = (ctype, inst, pin)
             else:
@@ -253,7 +258,7 @@ def wrapper_nets(children, portnames, golden_dir):
                   if n not in consumed}
     routed = {n: (driven_by_child[n], consumed[n]) for n in driven_by_child
               if n in consumed}
-    return core_drives, core_reads, routed
+    return core_drives, core_reads, routed, golden_of
 
 
 # --------------------------------------------------------------------------
@@ -275,19 +280,51 @@ def net_widths(lines):
     return w
 
 
+# firtool 临时名 -> 核上的语义端口名。
+#
+# ★为什么非改不可★：去掉前导下划线之后，`_GEN_3539` 会变成核的一个端口
+# `GEN_3539`，`_dispatchNum_T` 变成 `dispatchNum_T`。它们是 golden 展平的中间名，
+# 放进一个"可读核"的端口表上说不过去。
+# ★而且本仓的可读性 A 类判据抓不到它们★（实测）：
+#     FORBIDDEN = r'\b_(GEN|T)(_\d+)?\b'
+#     '_GEN_3539'    -> 命中
+#     'n__GEN_3539'  -> **不命中**（`n` 与 `_` 都是词字符，中间没有 \b）
+#     'GEN_3539'     -> **不命中**（前导下划线已经没了）
+# 也就是说靠那道闸兜不住，必须在这里就改名。每条都写出 golden 的原式，
+# 好让人能自己去复核语义，而不是信这张表。
+RENAME = {
+    # wire [1:0] _GEN_3539 = {io_debugInstrAddrTransType_sv48,
+    #                         io_debugInstrAddrTransType_sv39};
+    #   -> 写进 difftest pcTransType 存储的 2 位 AddrTransType
+    '_GEN_3539': 'dtPcTransTypeWdata',
+}
+# wire _dispatchNum_T_<i> = io_enq_req_<i>_valid & io_enq_req_<i>_bits_firstUop;
+#   -> enqPtrGenModule.io_enq_<i>，即"第 i 路 enq 请求是一条指令的首个 uop 且有效"
+RENAME['_dispatchNum_T'] = 'enqFirstUopValid_0'
+for _i in range(1, 6):
+    RENAME['_dispatchNum_T_%d' % _i] = 'enqFirstUopValid_%d' % _i
+
+
 def core_port_name(net):
-    """wrapper 网名 -> 核上的端口名。只去掉 firtool 留下的前导下划线。"""
+    """wrapper 网名 -> 核上的端口名。
+
+    先查改名表（firtool 临时名必须换成语义名），否则只去掉前导下划线。
+    """
+    if net in RENAME:
+        return RENAME[net]
     return net.lstrip('_')
 
 
 def core_iface(children, ports, golden_dir):
     """核必须驱动 / 必须读的那两组网，键是**核端口名**。"""
     portnames = {p[3] for p in ports}
-    drives, reads, routed = wrapper_nets(children, portnames, golden_dir)
-    d = {core_port_name(n[2:]): n[2:] for n in drives}      # 去掉 'n_'
-    r = {core_port_name(n[2:]): n[2:] for n in list(reads) + list(routed)}
+    drives, reads, routed, golden_of = wrapper_nets(children, portnames, golden_dir)
+    # 核端口名 = 线名去掉 'n_'（线名已在 classify 里改过名）；值留 golden 原名取位宽。
+    # 表达式引脚没有 golden 线，位宽另取（见 expr_pin_widths）。
+    d = {n[2:]: golden_of.get(n) for n in drives}
+    r = {n[2:]: golden_of.get(n) for n in list(reads) + list(routed)}
     if len(d) != len(drives) or len(r) != len(reads) + len(routed):
-        raise SystemExit('gen_rob: 去前导下划线后核端口名撞车，需要改名表')
+        raise SystemExit('gen_rob: 核端口名撞车，需要扩充 RENAME 表')
     return d, r
 
 
@@ -304,6 +341,8 @@ def child_driven_outputs(children, ports, golden_dir):
 
 
 _IDENT = re.compile(r'[A-Za-z_][A-Za-z_0-9$]*')
+# golden 展平中间名的形状：整体以 GEN/T 起头或以 _GEN/_T 结尾（可带下标）。
+FLAT_NAME = re.compile(r'(?:^|_)(GEN|T)(_\d+)?$')
 
 
 def strip_sv_comments(text):
@@ -337,6 +376,17 @@ def analyse_core(target_lines, ports, children, golden_dir, netw):
     pmap = {p[3]: p for p in ports}
     drives, reads = core_iface(children, ports, golden_dir)
     childout = child_driven_outputs(children, ports, golden_dir)
+
+    # ★反向断言：核端口上不许留 firtool 的展平中间名★
+    # 本仓可读性 A 类的正则是 `\b_(GEN|T)(_\d+)?\b`，它**抓不到**
+    # `GEN_3539`（前导下划线已去掉）和 `n__GEN_3539`（`n` 与 `_` 之间没有 \b）。
+    # 所以这条断言必须自己有：漏掉一个就得往 RENAME 里补一条，而不是靠那道闸兜。
+    flat = sorted(n for n in list(drives) + list(reads)
+                  if FLAT_NAME.search(n))
+    if flat:
+        raise SystemExit(
+            'gen_rob: 这些核端口名还是 golden 的展平中间名，往 RENAME 里补语义名：\n  '
+            + '\n  '.join(flat))
 
     bogus = sorted(i for i in idents
                    if (i.startswith('io_') or i.startswith('gatewayIn_'))
@@ -414,6 +464,8 @@ def emit_wrapper_nets(children, ports, golden_dir, netw):
     位宽来源分两种，都不是猜的：
       · 普通网  -> golden 里那条 wire/reg 声明；
       · 表达式引脚 -> **被连的那个子模块引脚**自己的位宽（golden 里没有这根线）。
+    改过名的线在行尾注明 golden 原名（本仓既有写法：golden 的展平中间名只出现在
+    注释里做交叉引用，信号本身起语义名）。
     """
     portnames = {p[3] for p in ports}
     plain, expr = {}, {}
@@ -422,7 +474,7 @@ def emit_wrapper_nets(children, ports, golden_dir, netw):
         for pin, net in pins:
             kind, nm = classify(net, portnames, inst, pin)
             if kind == 'net':
-                plain[nm] = nm[2:]
+                plain[nm] = net
             elif kind == 'expr':
                 if cw is None:
                     cw = child_pin_widths(golden_dir, ctype)
@@ -432,10 +484,13 @@ def emit_wrapper_nets(children, ports, golden_dir, netw):
                 expr[nm] = (cw[pin], ctype, inst, pin, net)
     out = []
     for nm in sorted(plain):
-        w = netw.get(plain[nm])
+        gold = plain[nm]
+        w = netw.get(gold)
         if w is None:
-            raise SystemExit('gen_rob: golden 里找不到网 %r 的声明' % plain[nm])
-        out.append('  logic %s%s;' % ('[%d:0] ' % (w - 1) if w > 1 else '', nm))
+            raise SystemExit('gen_rob: golden 里找不到网 %r 的声明' % gold)
+        tag = '' if nm == 'n_' + gold.lstrip('_') else '   // golden: %s' % gold
+        out.append('  logic %s%s;%s'
+                   % ('[%d:0] ' % (w - 1) if w > 1 else '', nm, tag))
     for nm in sorted(expr):
         w, ctype, inst, pin, net = expr[nm]
         out.append('  logic %s%s;   // golden: %s.%s (%s)'
@@ -512,7 +567,28 @@ def _core_assert_rows(d, ports, children, gdir, netw):
     typo = probe('  assign io_commits_isCommit = 1\'b0;\n'
                  '  assign io_typo_that_is_not_a_golden_port = 1\'b0;')
     scaffold = probe('  assign io_commits_isCommit = 1\'b0;')
+    # 直接看核端口表本身，不看报错文本（报错只列前 20 条，按字典序看不到这几个）
+    _d, _r = core_iface(children, ports, gdir)
+    allnames = set(_d) | set(_r)
+    # 负测：撤掉 RENAME 表，FLAT_NAME 断言必须把 7 个临时名抓出来
+    _saved = dict(RENAME)
+    try:
+        RENAME.clear()
+        _neg = probe('  assign io_commits_isCommit = 1\'b0;')
+    finally:
+        RENAME.clear()
+        RENAME.update(_saved)
+    renamed = ('dtPcTransTypeWdata' in allnames
+               and all('enqFirstUopValid_%d' % i in allnames for i in range(6))
+               and not any(FLAT_NAME.search(n) for n in allnames))
     return [
+        ('core_rename_negtest',
+         _neg is not None and '展平中间名' in _neg and 'GEN_3539' in _neg,
+         '撤掉 RENAME 表后 7 个 firtool 临时名被抓出来（断言不是空转）'
+         if _neg else '★没抓到：没有改名表也照过★'),
+        ('core_rename_applied', renamed,
+         'firtool 临时名在核端口上已换成语义名（dtPcTransTypeWdata / '
+         'enqFirstUopValid_0），GEN_3539 / dispatchNum_T 不再出现'),
         ('core_typo_caught', typo is not None and '打错名字' in typo,
          '核体里假的 io_* 名字被抓（%s）' % (typo or '★没抓到★').splitlines()[0][:44]),
         ('core_scaffold_caught',
@@ -667,7 +743,7 @@ def main():
         return 0
 
     if a.manifest:
-        drive, read, routed = wrapper_nets(children, portnames, golden_dir)
+        drive, read, routed, _gold = wrapper_nets(children, portnames, golden_dir)
         print('# ports %d  children %d  child pins %d'
               % (len(ports), len(children),
                  sum(len(p) for _, _, p in children)))
