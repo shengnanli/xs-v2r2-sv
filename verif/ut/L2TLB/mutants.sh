@@ -40,24 +40,33 @@ rm -rf "$WORK/verif/ut/L2TLB/simv"* "$WORK/verif/ut/L2TLB/csrc" \
 SV="$WORK/rtl/memblock/L2TLB.sv"
 cp "$SV" "$WORK/L2TLB.sv.pristine"
 
-# 每个变异一行: 名字 | 原文 | 替换文
+# 每个变异一行: 名字 @@ 原文 @@ 替换文
 # 原文必须在文件里**唯一**出现，否则 apply 会拒绝（防"以为改了其实没改"）。
+# ★分隔符不能用 `|`★（2026-09-20 实测踩到）：SV 里 `|` 太常见，只要**原文**那一段
+# 含 `|`，`old="${rest%%|*}"` 就在半截处切断，替换出来的是语法垃圾 —— 表现是
+# 「编不过」，看上去像"这个变异本来就编不过"，真实原因却是 harness 自己把它切坏了。
+# 换成 `@@`：SV 里没有这个记号（`@` 只以单个出现在 `@(posedge ...)`）。
 mutants=(
-"M1_level_not_flattened|    s.entry.level = bm_final ? 2'h0 : es.level;|    s.entry.level = es.level;"
-"M2_n_not_cleared|    s.entry.n     = bm_final ? 1'b0 : es.n;|    s.entry.n     = es.n;"
-"M3_ppn_not_flattened|    s.entry.ppn   = bm_final ? sector_gen_ppn(es.ppn, es.tag, es.level, es.n) : es.ppn;|    s.entry.ppn   = es.ppn;"
-"M4_validx_wrong_rule|      s.valididx[i] = bm_final ? (mr.not_super \& eq \& ~not_merge)|      s.valididx[i] = bm_final ? ((eq | ~mr.not_super) \& ~not_merge)"
-"M5_gen_ppn_cut_off_by_one|      2'h2:    return {ppn[SECTOR_PTE_PPN_W-1:15], tag[14:0]};   // 1GB|      2'h2:    return {ppn[SECTOR_PTE_PPN_W-1:16], tag[15:0]};   // 1GB"
-"M6_probe_index_swapped|    .index   (8'h0));|    .index   (8'h1));"
-"M7_difftest_addr_r_gets_reset|  always_ff @(posedge clock)\n    if (d_valid) difftest_addr_r <= d_src;|  always_ff @(posedge clock or posedge reset)\n    if (reset) difftest_addr_r <= 4'h0;\n    else if (d_valid) difftest_addr_r <= d_src;"
-"M8_probe_valid_port0_drops_ready|    .valid   (tlb0_resp_fire \& ~io_tlb_0_resp_bits_s1_af \& ~io_tlb_0_resp_bits_s2_gaf),|    .valid   (io_tlb_0_resp_valid \& ~io_tlb_0_resp_bits_s1_af \& ~io_tlb_0_resp_bits_s2_gaf),"
-"M9_bm_final_ignores_bitmap_enable|  wire       bm_final_0  = bitmap_enable \& marb0_nos2;|  wire       bm_final_0  = marb0_nos2;"
+"M1_level_not_flattened@@    s.entry.level = bm_final ? 2'h0 : es.level;@@    s.entry.level = es.level;"
+"M2_n_not_cleared@@    s.entry.n     = bm_final ? 1'b0 : es.n;@@    s.entry.n     = es.n;"
+"M3_ppn_not_flattened@@    s.entry.ppn   = bm_final ? sector_gen_ppn(es.ppn, es.tag, es.level, es.n) : es.ppn;@@    s.entry.ppn   = es.ppn;"
+"M4_validx_wrong_rule@@      s.valididx[i] = bm_final ? (mr.not_super \& eq \& ~not_merge)@@      s.valididx[i] = bm_final ? ((eq | ~mr.not_super) \& ~not_merge)"
+"M5_gen_ppn_cut_off_by_one@@      2'h2:    return {ppn[SECTOR_PTE_PPN_W-1:15], tag[14:0]};   // 1GB@@      2'h2:    return {ppn[SECTOR_PTE_PPN_W-1:16], tag[15:0]};   // 1GB"
+"M6_probe_index_swapped@@    .index   (8'h0));@@    .index   (8'h1));"
+"M7_difftest_addr_r_gets_reset@@  always_ff @(posedge clock)\n    if (d_valid) difftest_addr_r <= d_src;@@  always_ff @(posedge clock or posedge reset)\n    if (reset) difftest_addr_r <= 4'h0;\n    else if (d_valid) difftest_addr_r <= d_src;"
+"M8_probe_valid_port0_drops_ready@@    .valid   (tlb0_resp_fire \& ~io_tlb_0_resp_bits_s1_af \& ~io_tlb_0_resp_bits_s2_gaf),@@    .valid   (io_tlb_0_resp_valid \& ~io_tlb_0_resp_bits_s1_af \& ~io_tlb_0_resp_bits_s2_gaf),"
+"M9_bm_final_ignores_bitmap_enable@@  wire       bm_final_0  = bitmap_enable \& marb0_nos2;@@  wire       bm_final_0  = marb0_nos2;"
+# M10/M11 是把**本轮 FM 抓到的两个真 bug 原样退回去**。留着不是为了刷分，
+# 而是把「这两条 UT 走不到、只有 FM 拦得住」这句话变成可复跑的结论：
+# 它们应当 MISSED，哪天变成 CAUGHT 说明激励终于覆盖到了，是好事，记下来即可。
+"M10_napot_n_drops_ppn_gate@@      e.n       = pte_in.n \& (full_ppn[3:0] == 4'h8);@@      e.n       = pte_in.n;"
+"M11_ptw_req_drops_toPTW@@                          \& ((~cr_l1Hit \& ~toFsm_toLLPTW) | toFsm_toPTW)@@                          \& (~cr_l1Hit \& ~toFsm_toLLPTW)"
 )
 
 printf '%-38s %-8s %s\n' "MUTANT" "VERDICT" "DETAIL"
 n_caught=0; n_missed=0; n_invalid=0; n_null=0; n_infra=0
 for m in "${mutants[@]}"; do
-  name="${m%%|*}"; rest="${m#*|}"; old="${rest%%|*}"; new="${rest#*|}"
+  name="${m%%@@*}"; rest="${m#*@@}"; old="${rest%%@@*}"; new="${rest#*@@}"
   cp "$WORK/L2TLB.sv.pristine" "$SV"
   # 唯一性 + 应用（用 python 做定点替换，避免 sed 的转义地狱）
   if ! MUT_OLD="$old" MUT_NEW="$new" python3 "$HERE/apply_mutant.py" "$SV"; then
@@ -74,7 +83,10 @@ for m in "${mutants[@]}"; do
   ( cd "$WORK/verif/ut/L2TLB" && rm -f sim_$SEED.log && make compile ) > "$WORK/$name.compile.log" 2>&1
   crc=$?
   if [[ $crc -ne 0 ]]; then
-    if grep -qiE "license|Licensed|No space left|cannot create|Cannot allocate" "$WORK/$name.compile.log"; then
+    # ★INFRA 判据必须精确★（2026-09-20 实测踩到）：原来 grep -qi "license|Licensed"，
+    # 而 VCS 每次启动都打一段版权声明，里面就有 "Licensed Products" —— 于是**任何**
+    # 编译失败都被记成 INFRA，真正的"编不过"被藏了起来。这里只认真正的环境错。
+    if grep -qE "Error-\\[LIC|License checkout|Licensed number of users|Failed to checkout|No space left on device|Cannot allocate memory|Resource temporarily unavailable" "$WORK/$name.compile.log"; then
       printf '%-38s %-8s %s\n' "$name" "INFRA" "工具/环境类失败（见 $name.compile.log）"
       n_infra=$((n_infra+1)); continue
     fi
