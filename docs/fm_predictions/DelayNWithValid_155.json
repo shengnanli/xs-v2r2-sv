@@ -1,0 +1,9 @@
+{
+  "target": "DelayNWithValid_155",
+  "ut": "DelayNWithValid",
+  "regs": 50,
+  "outs": 50,
+  "expected": 100,
+  "merge_dup": "false",
+  "model_applicable": true
+}
