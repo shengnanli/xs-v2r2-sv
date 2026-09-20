@@ -733,3 +733,83 @@ CONVENTIONS 要求"闸的负测必须双向"，这里补一条：**负测的桩�
 
 ★R1 是这次的主判据★：如果 passing 变了，说明那两个 appvar 对本目标**不是**惰性的，
 run #3 的绿就建立在一个没论证过的旋钮上 —— 那样的话这一跑才是真正重要的发现。
+
+---
+
+# run #4 对账：★R1 落空，而且是彻底落空 —— verdict = FAILED★
+
+commit `14cf2a80`，证据 `evidence/14cf2a808442/LoadQueueReplay/`。
+
+| # | 预测 | 实测 | 判 |
+|---|---|---|---|
+| R1 | passing 与 run #3 逐位不变 = 114,160 | **114,010**（−150） | ★**MISS**★ |
+| R2 | unread/failing/unverified/aborted 全 0 | unread 0、unverified 0、aborted 0，但 **failing 3** | ★**MISS**★ |
+| R3 | unmatched 六项全 0 | **compare_ref 3**，其余 0 | ★**MISS**★ |
+| R4 | verdict SUCCEEDED | **FAILED**（`reason=failed:failing=3,unmatched=3`） | ★**MISS**★ |
+| R5 | `grep -cE "^ *Error:"` = 0 | 0 | HIT |
+| R6 | `LQR_PIN_END ... n=6290 miss=0 expect=6290` | 逐字相同 | HIT |
+| R7 | 钉点闸对本文件 ok | ok | HIT |
+
+**3 中 4 落空。我"删掉那两个 appvar 无害"的判断是错的，而上一条 lane 写在钉点文件里的
+那句注释是对的。**
+
+## 守恒：离开 passing 的 150 个点，一个不少地找到了去向
+
+    run #3（两项都设）  passing 114160  failing 0  Constant reg   0
+    run #4（都不设）    passing 114010  failing 3  Constant reg 147
+                        114010 + 3 + 147 = 114160   ★逐位守恒★
+
+## 逐项归因（按 FM 自己打的类别标签）
+
+**(1) `verification_assume_reg_init`（默认 `Auto` ← 原设 `none`）→ 147 个点**
+
+run #4 的 fm.log 里出现了 run #3 **一次都没有**的一句（`grep -c` 实测 run #3 = 0）：
+
+    Info: Constant registers have been identified that were initialized by some
+          objects that were assumed to toggle.
+
+`Auto` 会**基于一个 toggle 假设**把 147 个寄存器判成常数、移出比较集合
+（`Constant reg 147`，receipt 里 `constant_reg_toggle_assumed: true`）。
+设成 `none` 取消该假设，这 147 个点**真的被比**。★方向是加强：比较点只增不减。★
+
+★我先前把它降格成"未确定"是对的（我那两个探针确实没分辨力），
+但"没有保留理由"这个后续判断是错的 —— 缺的不是理由，是**够强的探针**。★
+真正够强的探针就是整跑本身。
+
+**(2) `verification_set_undriven_signals`（默认 `binary:X` ← 原设 `BINARY`）→ 3 个点**
+
+默认那一跑多出 3 个 ref 侧 unmatched（类别 `Und`）：
+
+    Ref Und  r:/WORK/LoadQueueReplay/_freeList_io_canAllocate_0 / _1 / _2
+
+并直接导致 3 个 BBPin 比较点 failing（`freeList/io_canAllocate_0..2`，
+黑盒 `FreeList_5` 边界上的网线）。这与 Rob 那条"未配对的悬空信号落进 ref 侧 fanin
+⇒ failing"是同一个机理。
+
+☆**这一项我只证明了"拿掉会红"，没有证明它安全**☆：Rob 实测过把本 appvar 收窄
+（设成 `0`）会遮住"impl 漏驱动"的缺陷；`BINARY` 同样是收窄（从 `binary:X` 去掉 X）。
+我做的三档探针对**这个**机制没有分辨力。**遮蔽风险未排除，记为缺口。**
+
+## 我的三个探针为什么都没抓到
+
+| 探针 | 测的机制 | 对本案有无分辨力 |
+|---|---|---|
+| 三档 undriven（Rob 四跑扩展） | impl **漏驱动** 被不被遮 | **无** —— 本案是 ref 侧悬空网线**配不上对** |
+| assume_reg_init 探针 A/B | 从不写的寄存器初值差异 | **无** —— 本案是 Auto 把寄存器**判成常数移出比较集** |
+| 桩执行 + 调用序列比对 | 钉点调用序列是否变了 | 有，但只覆盖守卫，管不着 appvar |
+
+★共同的毛病：探针都是照着**我以为的机制**造的，而真机制是另一个。★
+这跟"负测的桩要照真命令的真行为建模"是同一族的下一层：
+**探针要照真被测系统的机制建模；照着假想机制造出来的探针，
+"自证有分辨力"只证明了它对那个假想机制有分辨力。**
+在本案里，唯一够强的探针就是**把变量拿掉整跑一次** —— 而那正是我做的，
+所以结论仍然是可靠的，只是方向和我预期的相反。
+
+## 处置：两项都恢复，但挪出钉点文件
+
+放回 `fm_pins_pre.tcl` 会重新踩 P1（钉点文件只许消名差）。所以挪进
+`scripts/fm_eq.tcl` 的集中 appvar 段，用 `if {$top eq "LoadQueueReplay"}` 限定作用域，
+把上面这份 run #3 / run #4 对照原样写在旁边，并打一行
+`FM_TARGET_APPVAR:` 进 fm.log，让"这个目标动了哪两个旋钮"在日志里看得见。
+
+run #5 = 恢复之后的重跑，预期逐位回到 run #3。
