@@ -84,6 +84,25 @@ def parse_children(lines, body_start):
     return out
 
 
+def child_pin_widths(golden_dir, ctype):
+    """子模块自己的端口位宽 -> {pin: width}。
+
+    表达式引脚的线宽只能从**被连的那个引脚**上取（golden 里没有这根线的声明）。
+    """
+    path = os.path.join(golden_dir, ctype + '.sv')
+    w = {}
+    with open(path) as f:
+        for l in f:
+            m = re.match(r'\s*(?:input|output)\s+(?:wire\s+)?'
+                         r'(?:\[\s*(\d+)\s*:\s*(\d+)\s*\])?\s*(\w+)', l)
+            if m:
+                w[m.group(3)] = (1 if m.group(1) is None
+                                 else int(m.group(1)) - int(m.group(2)) + 1)
+            if re.match(r'\s*\);', l) and w:
+                break
+    return w
+
+
 def child_output_pins(golden_dir, ctype):
     """Read the child's own golden file to learn which pins are outputs.
 
@@ -110,7 +129,10 @@ LITERAL = re.compile(r"^\d*'[hbdHBD][0-9a-fA-FxzXZ_]+$")
 UNUSED = re.compile(r'^/\*\s*unused\s*\*/$')
 
 
-def classify(net, portnames):
+IDENT_ONLY = re.compile(r'^[A-Za-z_][A-Za-z_0-9$]*$')
+
+
+def classify(net, portnames, inst=None, pin=None):
     if UNUSED.match(net):
         return 'unused', ''
     if net in portnames:
@@ -119,6 +141,17 @@ def classify(net, portnames):
         return 'clk', net
     if LITERAL.match(net):
         return 'const', net
+    if not IDENT_ONLY.match(net):
+        # ★4 个引脚接的是**表达式**不是网★（实测）：
+        #   rab.io_fromRob_walkSize   (walkSizeSum[7:0])     位选
+        #   rab/vtypeBuffer.io_fromRob_walkEnd (state & walkFinished)
+        #   deqPtrGenModule.io_state  ({1'h0, state})        拼接
+        # 不认出来就会 'n_' + 表达式，长出 `n_walkSizeSum[7:0]` /
+        # `n_state &` / `n_{1'h0, state}` 这种既非标识符、又把表达式截断的假网。
+        # 处置：给它一根以**引脚**命名的线，由核驱动（表达式属于核的逻辑）。
+        if inst is None or pin is None:
+            raise SystemExit('gen_rob: 表达式引脚 %r 缺少 inst/pin 上下文' % net)
+        return 'expr', 'n_%s_%s' % (inst, pin)
     return 'net', 'n_' + net
 
 
@@ -179,7 +212,7 @@ def emit_children(children, portnames, golden_dir):
         lines.append('  %s %s (' % (ctype, inst))
         pw = max(len(p) for p, _ in pins)
         for k, (pin, net) in enumerate(pins):
-            kind, name = classify(net, portnames)
+            kind, name = classify(net, portnames, inst, pin)
             tail = ',' if k != len(pins) - 1 else ''
             tag = '' if kind != 'net' else ('   // <- core' if pin not in outs
                                             else '   // -> core')
@@ -203,7 +236,11 @@ def wrapper_nets(children, portnames, golden_dir):
     for ctype, inst, pins in children:
         outs = child_output_pins(golden_dir, ctype)
         for pin, net in pins:
-            kind, name = classify(net, portnames)
+            kind, name = classify(net, portnames, inst, pin)
+            if kind == 'expr':
+                # 表达式引脚永远是"核驱动"：它就是核里那段逻辑的出口。
+                consumed[name].append((ctype, inst, pin))
+                continue
             if kind != 'net':
                 continue
             if pin in outs:
@@ -217,6 +254,193 @@ def wrapper_nets(children, portnames, golden_dir):
     routed = {n: (driven_by_child[n], consumed[n]) for n in driven_by_child
               if n in consumed}
     return core_drives, core_reads, routed
+
+
+# --------------------------------------------------------------------------
+# core <-> wrapper interface
+# --------------------------------------------------------------------------
+def net_widths(lines):
+    """golden 里每个网/寄存器的位宽 -> {name: width}。
+
+    wrapper 局部网 `n_<golden net>` 的位宽只能从 golden 的声明拿。猜不得：
+    错一位，子模块引脚宽度对不上，VCS 只给 warning 而不是 error。
+    """
+    w = {}
+    pat = re.compile(r'^\s*(?:wire|reg)\s*(?:\[\s*(\d+)\s*:\s*(\d+)\s*\])?\s*(\w+)\s*[;=]')
+    for l in lines:
+        m = pat.match(l)
+        if m:
+            w[m.group(3)] = (1 if m.group(1) is None
+                             else int(m.group(1)) - int(m.group(2)) + 1)
+    return w
+
+
+def core_port_name(net):
+    """wrapper 网名 -> 核上的端口名。只去掉 firtool 留下的前导下划线。"""
+    return net.lstrip('_')
+
+
+def core_iface(children, ports, golden_dir):
+    """核必须驱动 / 必须读的那两组网，键是**核端口名**。"""
+    portnames = {p[3] for p in ports}
+    drives, reads, routed = wrapper_nets(children, portnames, golden_dir)
+    d = {core_port_name(n[2:]): n[2:] for n in drives}      # 去掉 'n_'
+    r = {core_port_name(n[2:]): n[2:] for n in list(reads) + list(routed)}
+    if len(d) != len(drives) or len(r) != len(reads) + len(routed):
+        raise SystemExit('gen_rob: 去前导下划线后核端口名撞车，需要改名表')
+    return d, r
+
+
+def child_driven_outputs(children, ports, golden_dir):
+    """直接由某个子模块输出脚驱动的顶层 output —— 这些**不是**核的义务。"""
+    portnames = {p[3] for p in ports}
+    out = set()
+    for ctype, inst, pins in children:
+        co = child_output_pins(golden_dir, ctype)
+        for pin, net in pins:
+            if net in portnames and pin in co:
+                out.add(net)
+    return out
+
+
+_IDENT = re.compile(r'[A-Za-z_][A-Za-z_0-9$]*')
+
+
+def strip_sv_comments(text):
+    text = re.sub(r'/\*.*?\*/', ' ', text, flags=re.S)
+    return re.sub(r'//[^\n]*', ' ', text)
+
+
+def core_body(target_lines):
+    """核的手写体：core_ports 区结束标记之后，到核的 endmodule 为止。"""
+    b = BEGIN % 'core_ports'
+    i = next(k for k, l in enumerate(target_lines) if l.strip() == b)
+    j = next(k for k in range(i + 1, len(target_lines))
+             if target_lines[k].strip() == END)
+    k = next(k for k in range(j + 1, len(target_lines))
+             if target_lines[k].strip() == 'endmodule')
+    return '\n'.join(target_lines[j + 1:k])
+
+
+def analyse_core(target_lines, ports, children, golden_dir, netw):
+    """从**核体实际引用的名字**推出核的端口表，并做双向断言。
+
+    正向：核体里提到的每个 golden 端口名，按 golden 的方向/位宽出现在核端口上。
+    ★反向★（CONVENTIONS 第五条）：核体里任何形如 io_* / gatewayIn_* 的标识符
+    如果不是 golden 的端口，就是打错了名字 —— 这种错的失败模式不是报错，
+    是这个名字在 golden 里一次都不出现、于是安静地变成一个悬空网。
+    另外两条硬断言：核必须驱动的顶层 output 一个都不许漏；
+    必须驱动的 wrapper 网一个都不许漏。
+    """
+    body = strip_sv_comments(core_body(target_lines))
+    idents = set(_IDENT.findall(body))
+    pmap = {p[3]: p for p in ports}
+    drives, reads = core_iface(children, ports, golden_dir)
+    childout = child_driven_outputs(children, ports, golden_dir)
+
+    bogus = sorted(i for i in idents
+                   if (i.startswith('io_') or i.startswith('gatewayIn_'))
+                   and i not in pmap)
+    if bogus:
+        raise SystemExit(
+            'gen_rob: 核体里这些名字长得像顶层端口，但 golden 里没有（打错名字）：\n  '
+            + '\n  '.join(bogus[:40]))
+
+    must_drive = sorted(p[3] for p in ports
+                        if p[0] == 'output' and p[3] not in childout)
+    missing_out = [n for n in must_drive if n not in idents]
+    missing_net = sorted(n for n in drives if n not in idents)
+    if missing_out or missing_net:
+        raise SystemExit(
+            'gen_rob: 核体没有提到这些它必须驱动的东西 —— 这正是 SCAFFOLD 的形状：\n'
+            '  顶层 output 缺 %d 个，前 20：%s\n'
+            '  子模块输入网缺 %d 个，前 20：%s'
+            % (len(missing_out), missing_out[:20],
+               len(missing_net), missing_net[:20]))
+
+    rows = [('input', None, None, 'clock'), ('input', None, None, 'reset')]
+    for p in ports:
+        if p[3] in ('clock', 'reset') or p[3] not in idents:
+            continue
+        if p[0] == 'output' and p[3] in childout:
+            raise SystemExit('gen_rob: 核体提到了由子模块驱动的顶层 output %r' % p[3])
+        rows.append(p)
+    for nm in sorted(drives):
+        w = netw.get(drives[nm])
+        if w is None:
+            raise SystemExit('gen_rob: golden 里找不到网 %r 的声明，位宽无处可取'
+                             % drives[nm])
+        rows.append(('output', w - 1, 0, nm) if w > 1 else ('output', None, None, nm))
+    for nm in sorted(reads):
+        if nm not in idents:
+            continue
+        w = netw.get(reads[nm])
+        if w is None:
+            raise SystemExit('gen_rob: golden 里找不到网 %r 的声明，位宽无处可取'
+                             % reads[nm])
+        rows.append(('input', w - 1, 0, nm) if w > 1 else ('input', None, None, nm))
+    return rows, drives, reads
+
+
+def emit_core_ports(rows):
+    rng = ['' if hi is None else '[%d:%d]' % (hi, lo) for _, hi, lo, _ in rows]
+    dw = max(len(d) for d, _, _, _ in rows)
+    rw = max(len(r) for r in rng)
+    out = []
+    for k, ((d, hi, lo, n), r) in enumerate(zip(rows, rng)):
+        out.append('  %-*s logic %-*s %s%s'
+                   % (dw, d, rw, r, n, ',' if k != len(rows) - 1 else ''))
+    return out
+
+
+def emit_core_inst(rows, drives, reads):
+    pw = max(len(n) for _, _, _, n in rows)
+    out = ['  xs_Rob_core u_core (']
+    for k, (d, hi, lo, n) in enumerate(rows):
+        if n in drives:
+            net = 'n_' + drives[n]
+        elif n in reads:
+            net = 'n_' + reads[n]
+        else:
+            net = n
+        out.append('    .%-*s (%s)%s' % (pw, n, net, ',' if k != len(rows) - 1 else ''))
+    out.append('  );')
+    return out
+
+
+def emit_wrapper_nets(children, ports, golden_dir, netw):
+    """wrapper 局部网的声明 —— 核的端口和子模块引脚在这里接头。
+
+    位宽来源分两种，都不是猜的：
+      · 普通网  -> golden 里那条 wire/reg 声明；
+      · 表达式引脚 -> **被连的那个子模块引脚**自己的位宽（golden 里没有这根线）。
+    """
+    portnames = {p[3] for p in ports}
+    plain, expr = {}, {}
+    for ctype, inst, pins in children:
+        cw = None
+        for pin, net in pins:
+            kind, nm = classify(net, portnames, inst, pin)
+            if kind == 'net':
+                plain[nm] = nm[2:]
+            elif kind == 'expr':
+                if cw is None:
+                    cw = child_pin_widths(golden_dir, ctype)
+                if pin not in cw:
+                    raise SystemExit('gen_rob: %s 的引脚 %r 在它自己的 golden 里找不到'
+                                     % (ctype, pin))
+                expr[nm] = (cw[pin], ctype, inst, pin, net)
+    out = []
+    for nm in sorted(plain):
+        w = netw.get(plain[nm])
+        if w is None:
+            raise SystemExit('gen_rob: golden 里找不到网 %r 的声明' % plain[nm])
+        out.append('  logic %s%s;' % ('[%d:0] ' % (w - 1) if w > 1 else '', nm))
+    for nm in sorted(expr):
+        w, ctype, inst, pin, net = expr[nm]
+        out.append('  logic %s%s;   // golden: %s.%s (%s)'
+                   % ('[%d:0] ' % (w - 1) if w > 1 else '', nm, inst, pin, net))
+    return out
 
 
 # --------------------------------------------------------------------------
@@ -393,9 +617,9 @@ def main():
               % (len(ports), len(children),
                  sum(len(p) for _, _, p in children)))
         kinds = collections.Counter()
-        for _, _, pins in children:
+        for _, _inst, pins in children:
             for pin, net in pins:
-                kinds[classify(net, portnames)[0]] += 1
+                kinds[classify(net, portnames, _inst, pin)[0]] += 1
         print('# child pin sources: %s' % dict(kinds))
         print('# NOTE: this lists CHILD PIN nets only. The core may also read'
               ' a `route` net; what it may not do is drive one.')
@@ -418,7 +642,13 @@ def main():
         return _target_absent_is_expected(a.target, 'Rob')
     with open(a.target) as f:
         tgt = f.read().split('\n')
-    new = splice(tgt, 'ports', emit_ports(ports))
+    netw = net_widths(glines)
+    rows, drives, reads = analyse_core(tgt, ports, children, golden_dir, netw)
+    new = splice(tgt, 'core_ports', emit_core_ports(rows))
+    new = splice(new, 'ports', emit_ports(ports))
+    new = splice(new, 'wrapper_nets',
+                 emit_wrapper_nets(children, ports, golden_dir, netw))
+    new = splice(new, 'core_inst', emit_core_inst(rows, drives, reads))
     new = splice(new, 'children',
                  emit_children(children, portnames, golden_dir))
     out = '\n'.join(new)
