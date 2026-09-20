@@ -1,7 +1,14 @@
 MODULE = NewDispatch
 
 RTL_DIR = ../../../rtl
-RTL_SRCS = $(RTL_DIR)/backend/NewDispatch.sv
+# ★步骤 1 起，重写侧真的例化 7 个 child（外加 RegCacheTagTable 的两个孙子）★
+#   它们都是 main 的 rtl/ 里已有的**重写件**，不是 golden ——
+#   impl_closure 里因此全是 rtl/ 路径，不污染「是否复用 golden 逻辑」这条审计线索。
+ND_CHILD_RTL = xs_BusyTable_core.sv BusyTable.sv BusyTable_1.sv BusyTable_2.sv BusyTable_3.sv \
+               VlBusyTable.sv RegCacheTagTable.sv RegCacheTagModule.sv \
+               RegCacheTagModule_1.sv LsqEnqCtrl.sv
+RTL_SRCS = $(addprefix $(RTL_DIR)/backend/,$(ND_CHILD_RTL)) \
+           $(RTL_DIR)/backend/NewDispatch.sv
 TB_SRCS = tb.sv
 
 G1_CANONICAL ?= /home/eda/xs-env/G1-canonical

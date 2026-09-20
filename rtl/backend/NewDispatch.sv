@@ -15866,4 +15866,1758 @@ module NewDispatch
   assign io_toIssueQueues_33_valid = iq_valid[33];
   // END GENERATED
 
+  // ===========================================================================
+  // 步骤 1：7 个 child 的实例化
+  // ---------------------------------------------------------------------------
+  // 依据：docs/lanes/newdispatch_step1_prereg.md（跑前登记）。
+  // ★只做例化，不写派遣控制逻辑★ —— allowDispatch / uopBlockByIQ /
+  //   thisCanActualOut 仍然没有，那是步骤 2。
+  // 本块由 scripts/gen_newdispatch.py 的 gen_childinst() 生成，勿手改。
+  // ===========================================================================
+  // BEGIN GENERATED(CHILDINST)
+  // 7 个 child 的实例（实例名与 golden 一致）。连线分类：
+  //   只引顶层端口 590 条 / 只引 child 输出 0 条 / 待步骤 2 的 37 条
+  // child 输出线：
+  logic [1:0] _intBusyTable_io_read_0_loadDependency_0;
+  logic [1:0] _intBusyTable_io_read_0_loadDependency_1;
+  logic [1:0] _intBusyTable_io_read_0_loadDependency_2;
+  logic [1:0] _intBusyTable_io_read_10_loadDependency_0;
+  logic [1:0] _intBusyTable_io_read_10_loadDependency_1;
+  logic [1:0] _intBusyTable_io_read_10_loadDependency_2;
+  logic [1:0] _intBusyTable_io_read_11_loadDependency_0;
+  logic [1:0] _intBusyTable_io_read_11_loadDependency_1;
+  logic [1:0] _intBusyTable_io_read_11_loadDependency_2;
+  logic [1:0] _intBusyTable_io_read_1_loadDependency_0;
+  logic [1:0] _intBusyTable_io_read_1_loadDependency_1;
+  logic [1:0] _intBusyTable_io_read_1_loadDependency_2;
+  logic [1:0] _intBusyTable_io_read_2_loadDependency_0;
+  logic [1:0] _intBusyTable_io_read_2_loadDependency_1;
+  logic [1:0] _intBusyTable_io_read_2_loadDependency_2;
+  logic [1:0] _intBusyTable_io_read_3_loadDependency_0;
+  logic [1:0] _intBusyTable_io_read_3_loadDependency_1;
+  logic [1:0] _intBusyTable_io_read_3_loadDependency_2;
+  logic [1:0] _intBusyTable_io_read_4_loadDependency_0;
+  logic [1:0] _intBusyTable_io_read_4_loadDependency_1;
+  logic [1:0] _intBusyTable_io_read_4_loadDependency_2;
+  logic [1:0] _intBusyTable_io_read_5_loadDependency_0;
+  logic [1:0] _intBusyTable_io_read_5_loadDependency_1;
+  logic [1:0] _intBusyTable_io_read_5_loadDependency_2;
+  logic [1:0] _intBusyTable_io_read_6_loadDependency_0;
+  logic [1:0] _intBusyTable_io_read_6_loadDependency_1;
+  logic [1:0] _intBusyTable_io_read_6_loadDependency_2;
+  logic [1:0] _intBusyTable_io_read_7_loadDependency_0;
+  logic [1:0] _intBusyTable_io_read_7_loadDependency_1;
+  logic [1:0] _intBusyTable_io_read_7_loadDependency_2;
+  logic [1:0] _intBusyTable_io_read_8_loadDependency_0;
+  logic [1:0] _intBusyTable_io_read_8_loadDependency_1;
+  logic [1:0] _intBusyTable_io_read_8_loadDependency_2;
+  logic [1:0] _intBusyTable_io_read_9_loadDependency_0;
+  logic [1:0] _intBusyTable_io_read_9_loadDependency_1;
+  logic [1:0] _intBusyTable_io_read_9_loadDependency_2;
+  logic [1:0] _lsqEnqCtrl_io_enqLsq_needAlloc_0;
+  logic [1:0] _lsqEnqCtrl_io_enqLsq_needAlloc_1;
+  logic [1:0] _lsqEnqCtrl_io_enqLsq_needAlloc_2;
+  logic [1:0] _lsqEnqCtrl_io_enqLsq_needAlloc_3;
+  logic [1:0] _lsqEnqCtrl_io_enqLsq_needAlloc_4;
+  logic [1:0] _lsqEnqCtrl_io_enqLsq_needAlloc_5;
+  logic [1:0] _lsqEnqCtrl_io_enqLsq_req_0_bits_vpu_veew;
+  logic [1:0] _lsqEnqCtrl_io_enqLsq_req_1_bits_vpu_veew;
+  logic [1:0] _lsqEnqCtrl_io_enqLsq_req_2_bits_vpu_veew;
+  logic [1:0] _lsqEnqCtrl_io_enqLsq_req_3_bits_vpu_veew;
+  logic [1:0] _lsqEnqCtrl_io_enqLsq_req_4_bits_vpu_veew;
+  logic [1:0] _lsqEnqCtrl_io_enqLsq_req_5_bits_vpu_veew;
+  logic [2:0] _lsqEnqCtrl_io_enqLsq_req_0_bits_vpu_nf;
+  logic [2:0] _lsqEnqCtrl_io_enqLsq_req_1_bits_vpu_nf;
+  logic [2:0] _lsqEnqCtrl_io_enqLsq_req_2_bits_vpu_nf;
+  logic [2:0] _lsqEnqCtrl_io_enqLsq_req_3_bits_vpu_nf;
+  logic [2:0] _lsqEnqCtrl_io_enqLsq_req_4_bits_vpu_nf;
+  logic [2:0] _lsqEnqCtrl_io_enqLsq_req_5_bits_vpu_nf;
+  logic [34:0] _lsqEnqCtrl_io_enqLsq_req_0_bits_fuType;
+  logic [34:0] _lsqEnqCtrl_io_enqLsq_req_1_bits_fuType;
+  logic [34:0] _lsqEnqCtrl_io_enqLsq_req_2_bits_fuType;
+  logic [34:0] _lsqEnqCtrl_io_enqLsq_req_3_bits_fuType;
+  logic [34:0] _lsqEnqCtrl_io_enqLsq_req_4_bits_fuType;
+  logic [34:0] _lsqEnqCtrl_io_enqLsq_req_5_bits_fuType;
+  logic [3:0] _lsqEnqCtrl_io_enqLsq_req_0_bits_trigger;
+  logic [3:0] _lsqEnqCtrl_io_enqLsq_req_1_bits_trigger;
+  logic [3:0] _lsqEnqCtrl_io_enqLsq_req_2_bits_trigger;
+  logic [3:0] _lsqEnqCtrl_io_enqLsq_req_3_bits_trigger;
+  logic [3:0] _lsqEnqCtrl_io_enqLsq_req_4_bits_trigger;
+  logic [3:0] _lsqEnqCtrl_io_enqLsq_req_5_bits_trigger;
+  logic [4:0] _lsqEnqCtrl_io_enqLsq_req_0_bits_numLsElem;
+  logic [4:0] _lsqEnqCtrl_io_enqLsq_req_1_bits_numLsElem;
+  logic [4:0] _lsqEnqCtrl_io_enqLsq_req_2_bits_numLsElem;
+  logic [4:0] _lsqEnqCtrl_io_enqLsq_req_3_bits_numLsElem;
+  logic [4:0] _lsqEnqCtrl_io_enqLsq_req_4_bits_numLsElem;
+  logic [4:0] _lsqEnqCtrl_io_enqLsq_req_5_bits_numLsElem;
+  logic [4:0] _rcTagTable_io_readPorts_0_addr;
+  logic [4:0] _rcTagTable_io_readPorts_10_addr;
+  logic [4:0] _rcTagTable_io_readPorts_11_addr;
+  logic [4:0] _rcTagTable_io_readPorts_1_addr;
+  logic [4:0] _rcTagTable_io_readPorts_2_addr;
+  logic [4:0] _rcTagTable_io_readPorts_3_addr;
+  logic [4:0] _rcTagTable_io_readPorts_4_addr;
+  logic [4:0] _rcTagTable_io_readPorts_5_addr;
+  logic [4:0] _rcTagTable_io_readPorts_6_addr;
+  logic [4:0] _rcTagTable_io_readPorts_7_addr;
+  logic [4:0] _rcTagTable_io_readPorts_8_addr;
+  logic [4:0] _rcTagTable_io_readPorts_9_addr;
+  logic [55:0] _lsqEnqCtrl_io_enqLsq_req_0_bits_debug_seqNum_seqNum;
+  logic [55:0] _lsqEnqCtrl_io_enqLsq_req_1_bits_debug_seqNum_seqNum;
+  logic [55:0] _lsqEnqCtrl_io_enqLsq_req_2_bits_debug_seqNum_seqNum;
+  logic [55:0] _lsqEnqCtrl_io_enqLsq_req_3_bits_debug_seqNum_seqNum;
+  logic [55:0] _lsqEnqCtrl_io_enqLsq_req_4_bits_debug_seqNum_seqNum;
+  logic [55:0] _lsqEnqCtrl_io_enqLsq_req_5_bits_debug_seqNum_seqNum;
+  logic [5:0] _lsqEnqCtrl_io_enqLsq_req_0_bits_sqIdx_value;
+  logic [5:0] _lsqEnqCtrl_io_enqLsq_req_1_bits_sqIdx_value;
+  logic [5:0] _lsqEnqCtrl_io_enqLsq_req_2_bits_sqIdx_value;
+  logic [5:0] _lsqEnqCtrl_io_enqLsq_req_3_bits_sqIdx_value;
+  logic [5:0] _lsqEnqCtrl_io_enqLsq_req_4_bits_sqIdx_value;
+  logic [5:0] _lsqEnqCtrl_io_enqLsq_req_5_bits_sqIdx_value;
+  logic [5:0] _lsqEnqCtrl_io_enq_resp_0_sqIdx_value;
+  logic [5:0] _lsqEnqCtrl_io_enq_resp_1_sqIdx_value;
+  logic [5:0] _lsqEnqCtrl_io_enq_resp_2_sqIdx_value;
+  logic [5:0] _lsqEnqCtrl_io_enq_resp_3_sqIdx_value;
+  logic [5:0] _lsqEnqCtrl_io_enq_resp_4_sqIdx_value;
+  logic [5:0] _lsqEnqCtrl_io_enq_resp_5_sqIdx_value;
+  logic [5:0] _lsqEnqCtrl_io_sqFreeCount;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_0_bits_debugInfo_dispatchTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_0_bits_debugInfo_enqRsTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_0_bits_debugInfo_issueTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_0_bits_debugInfo_renameTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_0_bits_debugInfo_runahead_checkpoint_id;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_0_bits_debugInfo_selectTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_0_bits_debugInfo_tlbFirstReqTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_0_bits_debugInfo_tlbRespTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_0_bits_debugInfo_writebackTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_1_bits_debugInfo_dispatchTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_1_bits_debugInfo_enqRsTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_1_bits_debugInfo_issueTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_1_bits_debugInfo_renameTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_1_bits_debugInfo_runahead_checkpoint_id;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_1_bits_debugInfo_selectTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_1_bits_debugInfo_tlbFirstReqTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_1_bits_debugInfo_tlbRespTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_1_bits_debugInfo_writebackTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_2_bits_debugInfo_dispatchTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_2_bits_debugInfo_enqRsTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_2_bits_debugInfo_issueTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_2_bits_debugInfo_renameTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_2_bits_debugInfo_runahead_checkpoint_id;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_2_bits_debugInfo_selectTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_2_bits_debugInfo_tlbFirstReqTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_2_bits_debugInfo_tlbRespTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_2_bits_debugInfo_writebackTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_3_bits_debugInfo_dispatchTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_3_bits_debugInfo_enqRsTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_3_bits_debugInfo_issueTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_3_bits_debugInfo_renameTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_3_bits_debugInfo_runahead_checkpoint_id;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_3_bits_debugInfo_selectTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_3_bits_debugInfo_tlbFirstReqTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_3_bits_debugInfo_tlbRespTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_3_bits_debugInfo_writebackTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_4_bits_debugInfo_dispatchTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_4_bits_debugInfo_enqRsTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_4_bits_debugInfo_issueTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_4_bits_debugInfo_renameTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_4_bits_debugInfo_runahead_checkpoint_id;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_4_bits_debugInfo_selectTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_4_bits_debugInfo_tlbFirstReqTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_4_bits_debugInfo_tlbRespTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_4_bits_debugInfo_writebackTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_5_bits_debugInfo_dispatchTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_5_bits_debugInfo_enqRsTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_5_bits_debugInfo_issueTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_5_bits_debugInfo_renameTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_5_bits_debugInfo_runahead_checkpoint_id;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_5_bits_debugInfo_selectTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_5_bits_debugInfo_tlbFirstReqTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_5_bits_debugInfo_tlbRespTime;
+  logic [63:0] _lsqEnqCtrl_io_enqLsq_req_5_bits_debugInfo_writebackTime;
+  logic [6:0] _lsqEnqCtrl_io_enqLsq_req_0_bits_lqIdx_value;
+  logic [6:0] _lsqEnqCtrl_io_enqLsq_req_0_bits_uopIdx;
+  logic [6:0] _lsqEnqCtrl_io_enqLsq_req_1_bits_lqIdx_value;
+  logic [6:0] _lsqEnqCtrl_io_enqLsq_req_1_bits_uopIdx;
+  logic [6:0] _lsqEnqCtrl_io_enqLsq_req_2_bits_lqIdx_value;
+  logic [6:0] _lsqEnqCtrl_io_enqLsq_req_2_bits_uopIdx;
+  logic [6:0] _lsqEnqCtrl_io_enqLsq_req_3_bits_lqIdx_value;
+  logic [6:0] _lsqEnqCtrl_io_enqLsq_req_3_bits_uopIdx;
+  logic [6:0] _lsqEnqCtrl_io_enqLsq_req_4_bits_lqIdx_value;
+  logic [6:0] _lsqEnqCtrl_io_enqLsq_req_4_bits_uopIdx;
+  logic [6:0] _lsqEnqCtrl_io_enqLsq_req_5_bits_lqIdx_value;
+  logic [6:0] _lsqEnqCtrl_io_enqLsq_req_5_bits_uopIdx;
+  logic [6:0] _lsqEnqCtrl_io_enq_resp_0_lqIdx_value;
+  logic [6:0] _lsqEnqCtrl_io_enq_resp_1_lqIdx_value;
+  logic [6:0] _lsqEnqCtrl_io_enq_resp_2_lqIdx_value;
+  logic [6:0] _lsqEnqCtrl_io_enq_resp_3_lqIdx_value;
+  logic [6:0] _lsqEnqCtrl_io_enq_resp_4_lqIdx_value;
+  logic [6:0] _lsqEnqCtrl_io_enq_resp_5_lqIdx_value;
+  logic [6:0] _lsqEnqCtrl_io_lqFreeCount;
+  logic [7:0] _lsqEnqCtrl_io_enqLsq_req_0_bits_debug_seqNum_uopIdx;
+  logic [7:0] _lsqEnqCtrl_io_enqLsq_req_0_bits_pdest;
+  logic [7:0] _lsqEnqCtrl_io_enqLsq_req_0_bits_robIdx_value;
+  logic [7:0] _lsqEnqCtrl_io_enqLsq_req_1_bits_debug_seqNum_uopIdx;
+  logic [7:0] _lsqEnqCtrl_io_enqLsq_req_1_bits_pdest;
+  logic [7:0] _lsqEnqCtrl_io_enqLsq_req_1_bits_robIdx_value;
+  logic [7:0] _lsqEnqCtrl_io_enqLsq_req_2_bits_debug_seqNum_uopIdx;
+  logic [7:0] _lsqEnqCtrl_io_enqLsq_req_2_bits_pdest;
+  logic [7:0] _lsqEnqCtrl_io_enqLsq_req_2_bits_robIdx_value;
+  logic [7:0] _lsqEnqCtrl_io_enqLsq_req_3_bits_debug_seqNum_uopIdx;
+  logic [7:0] _lsqEnqCtrl_io_enqLsq_req_3_bits_pdest;
+  logic [7:0] _lsqEnqCtrl_io_enqLsq_req_3_bits_robIdx_value;
+  logic [7:0] _lsqEnqCtrl_io_enqLsq_req_4_bits_debug_seqNum_uopIdx;
+  logic [7:0] _lsqEnqCtrl_io_enqLsq_req_4_bits_pdest;
+  logic [7:0] _lsqEnqCtrl_io_enqLsq_req_4_bits_robIdx_value;
+  logic [7:0] _lsqEnqCtrl_io_enqLsq_req_5_bits_debug_seqNum_uopIdx;
+  logic [7:0] _lsqEnqCtrl_io_enqLsq_req_5_bits_pdest;
+  logic [7:0] _lsqEnqCtrl_io_enqLsq_req_5_bits_robIdx_value;
+  logic [8:0] _lsqEnqCtrl_io_enqLsq_req_0_bits_fuOpType;
+  logic [8:0] _lsqEnqCtrl_io_enqLsq_req_1_bits_fuOpType;
+  logic [8:0] _lsqEnqCtrl_io_enqLsq_req_2_bits_fuOpType;
+  logic [8:0] _lsqEnqCtrl_io_enqLsq_req_3_bits_fuOpType;
+  logic [8:0] _lsqEnqCtrl_io_enqLsq_req_4_bits_fuOpType;
+  logic [8:0] _lsqEnqCtrl_io_enqLsq_req_5_bits_fuOpType;
+  logic _fpBusyTable_io_read_0_resp;
+  logic _fpBusyTable_io_read_10_resp;
+  logic _fpBusyTable_io_read_11_resp;
+  logic _fpBusyTable_io_read_12_resp;
+  logic _fpBusyTable_io_read_13_resp;
+  logic _fpBusyTable_io_read_14_resp;
+  logic _fpBusyTable_io_read_15_resp;
+  logic _fpBusyTable_io_read_16_resp;
+  logic _fpBusyTable_io_read_17_resp;
+  logic _fpBusyTable_io_read_1_resp;
+  logic _fpBusyTable_io_read_2_resp;
+  logic _fpBusyTable_io_read_3_resp;
+  logic _fpBusyTable_io_read_4_resp;
+  logic _fpBusyTable_io_read_5_resp;
+  logic _fpBusyTable_io_read_6_resp;
+  logic _fpBusyTable_io_read_7_resp;
+  logic _fpBusyTable_io_read_8_resp;
+  logic _fpBusyTable_io_read_9_resp;
+  logic _intBusyTable_io_read_0_resp;
+  logic _intBusyTable_io_read_10_resp;
+  logic _intBusyTable_io_read_11_resp;
+  logic _intBusyTable_io_read_1_resp;
+  logic _intBusyTable_io_read_2_resp;
+  logic _intBusyTable_io_read_3_resp;
+  logic _intBusyTable_io_read_4_resp;
+  logic _intBusyTable_io_read_5_resp;
+  logic _intBusyTable_io_read_6_resp;
+  logic _intBusyTable_io_read_7_resp;
+  logic _intBusyTable_io_read_8_resp;
+  logic _intBusyTable_io_read_9_resp;
+  logic _lsqEnqCtrl_io_enqLsq_req_0_bits_debugInfo_eliminatedMove;
+  logic _lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_0;
+  logic _lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_10;
+  logic _lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_11;
+  logic _lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_12;
+  logic _lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_13;
+  logic _lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_14;
+  logic _lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_15;
+  logic _lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_16;
+  logic _lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_17;
+  logic _lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_18;
+  logic _lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_19;
+  logic _lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_1;
+  logic _lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_20;
+  logic _lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_21;
+  logic _lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_22;
+  logic _lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_23;
+  logic _lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_2;
+  logic _lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_3;
+  logic _lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_4;
+  logic _lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_5;
+  logic _lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_6;
+  logic _lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_7;
+  logic _lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_8;
+  logic _lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_9;
+  logic _lsqEnqCtrl_io_enqLsq_req_0_bits_flushPipe;
+  logic _lsqEnqCtrl_io_enqLsq_req_0_bits_lastUop;
+  logic _lsqEnqCtrl_io_enqLsq_req_0_bits_lqIdx_flag;
+  logic _lsqEnqCtrl_io_enqLsq_req_0_bits_rfWen;
+  logic _lsqEnqCtrl_io_enqLsq_req_0_bits_robIdx_flag;
+  logic _lsqEnqCtrl_io_enqLsq_req_0_bits_sqIdx_flag;
+  logic _lsqEnqCtrl_io_enqLsq_req_0_valid;
+  logic _lsqEnqCtrl_io_enqLsq_req_1_bits_debugInfo_eliminatedMove;
+  logic _lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_0;
+  logic _lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_10;
+  logic _lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_11;
+  logic _lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_12;
+  logic _lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_13;
+  logic _lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_14;
+  logic _lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_15;
+  logic _lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_16;
+  logic _lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_17;
+  logic _lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_18;
+  logic _lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_19;
+  logic _lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_1;
+  logic _lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_20;
+  logic _lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_21;
+  logic _lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_22;
+  logic _lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_23;
+  logic _lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_2;
+  logic _lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_3;
+  logic _lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_4;
+  logic _lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_5;
+  logic _lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_6;
+  logic _lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_7;
+  logic _lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_8;
+  logic _lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_9;
+  logic _lsqEnqCtrl_io_enqLsq_req_1_bits_flushPipe;
+  logic _lsqEnqCtrl_io_enqLsq_req_1_bits_lastUop;
+  logic _lsqEnqCtrl_io_enqLsq_req_1_bits_lqIdx_flag;
+  logic _lsqEnqCtrl_io_enqLsq_req_1_bits_rfWen;
+  logic _lsqEnqCtrl_io_enqLsq_req_1_bits_robIdx_flag;
+  logic _lsqEnqCtrl_io_enqLsq_req_1_bits_sqIdx_flag;
+  logic _lsqEnqCtrl_io_enqLsq_req_1_valid;
+  logic _lsqEnqCtrl_io_enqLsq_req_2_bits_debugInfo_eliminatedMove;
+  logic _lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_0;
+  logic _lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_10;
+  logic _lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_11;
+  logic _lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_12;
+  logic _lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_13;
+  logic _lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_14;
+  logic _lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_15;
+  logic _lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_16;
+  logic _lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_17;
+  logic _lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_18;
+  logic _lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_19;
+  logic _lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_1;
+  logic _lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_20;
+  logic _lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_21;
+  logic _lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_22;
+  logic _lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_23;
+  logic _lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_2;
+  logic _lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_3;
+  logic _lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_4;
+  logic _lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_5;
+  logic _lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_6;
+  logic _lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_7;
+  logic _lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_8;
+  logic _lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_9;
+  logic _lsqEnqCtrl_io_enqLsq_req_2_bits_flushPipe;
+  logic _lsqEnqCtrl_io_enqLsq_req_2_bits_lastUop;
+  logic _lsqEnqCtrl_io_enqLsq_req_2_bits_lqIdx_flag;
+  logic _lsqEnqCtrl_io_enqLsq_req_2_bits_rfWen;
+  logic _lsqEnqCtrl_io_enqLsq_req_2_bits_robIdx_flag;
+  logic _lsqEnqCtrl_io_enqLsq_req_2_bits_sqIdx_flag;
+  logic _lsqEnqCtrl_io_enqLsq_req_2_valid;
+  logic _lsqEnqCtrl_io_enqLsq_req_3_bits_debugInfo_eliminatedMove;
+  logic _lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_0;
+  logic _lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_10;
+  logic _lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_11;
+  logic _lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_12;
+  logic _lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_13;
+  logic _lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_14;
+  logic _lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_15;
+  logic _lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_16;
+  logic _lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_17;
+  logic _lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_18;
+  logic _lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_19;
+  logic _lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_1;
+  logic _lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_20;
+  logic _lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_21;
+  logic _lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_22;
+  logic _lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_23;
+  logic _lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_2;
+  logic _lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_3;
+  logic _lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_4;
+  logic _lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_5;
+  logic _lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_6;
+  logic _lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_7;
+  logic _lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_8;
+  logic _lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_9;
+  logic _lsqEnqCtrl_io_enqLsq_req_3_bits_flushPipe;
+  logic _lsqEnqCtrl_io_enqLsq_req_3_bits_lastUop;
+  logic _lsqEnqCtrl_io_enqLsq_req_3_bits_lqIdx_flag;
+  logic _lsqEnqCtrl_io_enqLsq_req_3_bits_rfWen;
+  logic _lsqEnqCtrl_io_enqLsq_req_3_bits_robIdx_flag;
+  logic _lsqEnqCtrl_io_enqLsq_req_3_bits_sqIdx_flag;
+  logic _lsqEnqCtrl_io_enqLsq_req_3_valid;
+  logic _lsqEnqCtrl_io_enqLsq_req_4_bits_debugInfo_eliminatedMove;
+  logic _lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_0;
+  logic _lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_10;
+  logic _lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_11;
+  logic _lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_12;
+  logic _lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_13;
+  logic _lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_14;
+  logic _lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_15;
+  logic _lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_16;
+  logic _lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_17;
+  logic _lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_18;
+  logic _lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_19;
+  logic _lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_1;
+  logic _lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_20;
+  logic _lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_21;
+  logic _lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_22;
+  logic _lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_23;
+  logic _lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_2;
+  logic _lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_3;
+  logic _lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_4;
+  logic _lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_5;
+  logic _lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_6;
+  logic _lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_7;
+  logic _lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_8;
+  logic _lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_9;
+  logic _lsqEnqCtrl_io_enqLsq_req_4_bits_flushPipe;
+  logic _lsqEnqCtrl_io_enqLsq_req_4_bits_lastUop;
+  logic _lsqEnqCtrl_io_enqLsq_req_4_bits_lqIdx_flag;
+  logic _lsqEnqCtrl_io_enqLsq_req_4_bits_rfWen;
+  logic _lsqEnqCtrl_io_enqLsq_req_4_bits_robIdx_flag;
+  logic _lsqEnqCtrl_io_enqLsq_req_4_bits_sqIdx_flag;
+  logic _lsqEnqCtrl_io_enqLsq_req_4_valid;
+  logic _lsqEnqCtrl_io_enqLsq_req_5_bits_debugInfo_eliminatedMove;
+  logic _lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_0;
+  logic _lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_10;
+  logic _lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_11;
+  logic _lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_12;
+  logic _lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_13;
+  logic _lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_14;
+  logic _lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_15;
+  logic _lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_16;
+  logic _lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_17;
+  logic _lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_18;
+  logic _lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_19;
+  logic _lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_1;
+  logic _lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_20;
+  logic _lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_21;
+  logic _lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_22;
+  logic _lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_23;
+  logic _lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_2;
+  logic _lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_3;
+  logic _lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_4;
+  logic _lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_5;
+  logic _lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_6;
+  logic _lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_7;
+  logic _lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_8;
+  logic _lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_9;
+  logic _lsqEnqCtrl_io_enqLsq_req_5_bits_flushPipe;
+  logic _lsqEnqCtrl_io_enqLsq_req_5_bits_lastUop;
+  logic _lsqEnqCtrl_io_enqLsq_req_5_bits_lqIdx_flag;
+  logic _lsqEnqCtrl_io_enqLsq_req_5_bits_rfWen;
+  logic _lsqEnqCtrl_io_enqLsq_req_5_bits_robIdx_flag;
+  logic _lsqEnqCtrl_io_enqLsq_req_5_bits_sqIdx_flag;
+  logic _lsqEnqCtrl_io_enqLsq_req_5_valid;
+  logic _lsqEnqCtrl_io_enq_canAccept;
+  logic _lsqEnqCtrl_io_enq_resp_0_lqIdx_flag;
+  logic _lsqEnqCtrl_io_enq_resp_0_sqIdx_flag;
+  logic _lsqEnqCtrl_io_enq_resp_1_lqIdx_flag;
+  logic _lsqEnqCtrl_io_enq_resp_1_sqIdx_flag;
+  logic _lsqEnqCtrl_io_enq_resp_2_lqIdx_flag;
+  logic _lsqEnqCtrl_io_enq_resp_2_sqIdx_flag;
+  logic _lsqEnqCtrl_io_enq_resp_3_lqIdx_flag;
+  logic _lsqEnqCtrl_io_enq_resp_3_sqIdx_flag;
+  logic _lsqEnqCtrl_io_enq_resp_4_lqIdx_flag;
+  logic _lsqEnqCtrl_io_enq_resp_4_sqIdx_flag;
+  logic _lsqEnqCtrl_io_enq_resp_5_lqIdx_flag;
+  logic _lsqEnqCtrl_io_enq_resp_5_sqIdx_flag;
+  logic _rcTagTable_io_readPorts_0_valid;
+  logic _rcTagTable_io_readPorts_10_valid;
+  logic _rcTagTable_io_readPorts_11_valid;
+  logic _rcTagTable_io_readPorts_1_valid;
+  logic _rcTagTable_io_readPorts_2_valid;
+  logic _rcTagTable_io_readPorts_3_valid;
+  logic _rcTagTable_io_readPorts_4_valid;
+  logic _rcTagTable_io_readPorts_5_valid;
+  logic _rcTagTable_io_readPorts_6_valid;
+  logic _rcTagTable_io_readPorts_7_valid;
+  logic _rcTagTable_io_readPorts_8_valid;
+  logic _rcTagTable_io_readPorts_9_valid;
+  logic _v0BusyTable_io_read_0_resp;
+  logic _v0BusyTable_io_read_1_resp;
+  logic _v0BusyTable_io_read_2_resp;
+  logic _v0BusyTable_io_read_3_resp;
+  logic _v0BusyTable_io_read_4_resp;
+  logic _v0BusyTable_io_read_5_resp;
+  logic _vecBusyTable_io_read_0_resp;
+  logic _vecBusyTable_io_read_10_resp;
+  logic _vecBusyTable_io_read_11_resp;
+  logic _vecBusyTable_io_read_12_resp;
+  logic _vecBusyTable_io_read_13_resp;
+  logic _vecBusyTable_io_read_14_resp;
+  logic _vecBusyTable_io_read_15_resp;
+  logic _vecBusyTable_io_read_16_resp;
+  logic _vecBusyTable_io_read_17_resp;
+  logic _vecBusyTable_io_read_1_resp;
+  logic _vecBusyTable_io_read_2_resp;
+  logic _vecBusyTable_io_read_3_resp;
+  logic _vecBusyTable_io_read_4_resp;
+  logic _vecBusyTable_io_read_5_resp;
+  logic _vecBusyTable_io_read_6_resp;
+  logic _vecBusyTable_io_read_7_resp;
+  logic _vecBusyTable_io_read_8_resp;
+  logic _vecBusyTable_io_read_9_resp;
+  logic _vlBusyTable_io_read_0_resp;
+  logic _vlBusyTable_io_read_1_resp;
+  logic _vlBusyTable_io_read_2_resp;
+  logic _vlBusyTable_io_read_3_resp;
+  logic _vlBusyTable_io_read_4_resp;
+  logic _vlBusyTable_io_read_5_resp;
+  logic _vlBusyTable_io_vl_read_vlReadInfo_0_is_nonzero;
+  logic _vlBusyTable_io_vl_read_vlReadInfo_0_is_vlmax;
+  logic _vlBusyTable_io_vl_read_vlReadInfo_1_is_nonzero;
+  logic _vlBusyTable_io_vl_read_vlReadInfo_1_is_vlmax;
+  logic _vlBusyTable_io_vl_read_vlReadInfo_2_is_nonzero;
+  logic _vlBusyTable_io_vl_read_vlReadInfo_2_is_vlmax;
+  logic _vlBusyTable_io_vl_read_vlReadInfo_3_is_nonzero;
+  logic _vlBusyTable_io_vl_read_vlReadInfo_3_is_vlmax;
+  logic _vlBusyTable_io_vl_read_vlReadInfo_4_is_nonzero;
+  logic _vlBusyTable_io_vl_read_vlReadInfo_4_is_vlmax;
+  logic _vlBusyTable_io_vl_read_vlReadInfo_5_is_nonzero;
+  logic _vlBusyTable_io_vl_read_vlReadInfo_5_is_vlmax;
+  // 步骤 2 才有真来源的输入，先接 unresolved_ci_*（钉 0，与本文件既有
+  // unresolved_* 的做法一致；命名带 ci_ 前缀便于 grep 出这一批缺口）：
+  logic unresolved_ci_intBusyTable_io_allocPregs_0_valid;
+  assign unresolved_ci_intBusyTable_io_allocPregs_0_valid = '0;
+  logic unresolved_ci_intBusyTable_io_allocPregs_1_valid;
+  assign unresolved_ci_intBusyTable_io_allocPregs_1_valid = '0;
+  logic unresolved_ci_intBusyTable_io_allocPregs_2_valid;
+  assign unresolved_ci_intBusyTable_io_allocPregs_2_valid = '0;
+  logic unresolved_ci_intBusyTable_io_allocPregs_3_valid;
+  assign unresolved_ci_intBusyTable_io_allocPregs_3_valid = '0;
+  logic unresolved_ci_intBusyTable_io_allocPregs_4_valid;
+  assign unresolved_ci_intBusyTable_io_allocPregs_4_valid = '0;
+  logic unresolved_ci_intBusyTable_io_allocPregs_5_valid;
+  assign unresolved_ci_intBusyTable_io_allocPregs_5_valid = '0;
+  logic unresolved_ci_lsqEnqCtrl_io_enq_iqAccept_0;
+  assign unresolved_ci_lsqEnqCtrl_io_enq_iqAccept_0 = '0;
+  logic unresolved_ci_lsqEnqCtrl_io_enq_iqAccept_1;
+  assign unresolved_ci_lsqEnqCtrl_io_enq_iqAccept_1 = '0;
+  logic unresolved_ci_lsqEnqCtrl_io_enq_iqAccept_2;
+  assign unresolved_ci_lsqEnqCtrl_io_enq_iqAccept_2 = '0;
+  logic unresolved_ci_lsqEnqCtrl_io_enq_iqAccept_3;
+  assign unresolved_ci_lsqEnqCtrl_io_enq_iqAccept_3 = '0;
+  logic unresolved_ci_lsqEnqCtrl_io_enq_iqAccept_4;
+  assign unresolved_ci_lsqEnqCtrl_io_enq_iqAccept_4 = '0;
+  logic unresolved_ci_lsqEnqCtrl_io_enq_iqAccept_5;
+  assign unresolved_ci_lsqEnqCtrl_io_enq_iqAccept_5 = '0;
+  logic [1:0] unresolved_ci_lsqEnqCtrl_io_enq_needAlloc_0;
+  assign unresolved_ci_lsqEnqCtrl_io_enq_needAlloc_0 = '0;
+  logic [1:0] unresolved_ci_lsqEnqCtrl_io_enq_needAlloc_1;
+  assign unresolved_ci_lsqEnqCtrl_io_enq_needAlloc_1 = '0;
+  logic [1:0] unresolved_ci_lsqEnqCtrl_io_enq_needAlloc_2;
+  assign unresolved_ci_lsqEnqCtrl_io_enq_needAlloc_2 = '0;
+  logic [1:0] unresolved_ci_lsqEnqCtrl_io_enq_needAlloc_3;
+  assign unresolved_ci_lsqEnqCtrl_io_enq_needAlloc_3 = '0;
+  logic [1:0] unresolved_ci_lsqEnqCtrl_io_enq_needAlloc_4;
+  assign unresolved_ci_lsqEnqCtrl_io_enq_needAlloc_4 = '0;
+  logic [1:0] unresolved_ci_lsqEnqCtrl_io_enq_needAlloc_5;
+  assign unresolved_ci_lsqEnqCtrl_io_enq_needAlloc_5 = '0;
+  logic [4:0] unresolved_ci_lsqEnqCtrl_io_enq_req_0_bits_numLsElem;
+  assign unresolved_ci_lsqEnqCtrl_io_enq_req_0_bits_numLsElem = '0;
+  logic unresolved_ci_lsqEnqCtrl_io_enq_req_0_valid;
+  assign unresolved_ci_lsqEnqCtrl_io_enq_req_0_valid = '0;
+  logic [4:0] unresolved_ci_lsqEnqCtrl_io_enq_req_1_bits_numLsElem;
+  assign unresolved_ci_lsqEnqCtrl_io_enq_req_1_bits_numLsElem = '0;
+  logic unresolved_ci_lsqEnqCtrl_io_enq_req_1_valid;
+  assign unresolved_ci_lsqEnqCtrl_io_enq_req_1_valid = '0;
+  logic [4:0] unresolved_ci_lsqEnqCtrl_io_enq_req_2_bits_numLsElem;
+  assign unresolved_ci_lsqEnqCtrl_io_enq_req_2_bits_numLsElem = '0;
+  logic unresolved_ci_lsqEnqCtrl_io_enq_req_2_valid;
+  assign unresolved_ci_lsqEnqCtrl_io_enq_req_2_valid = '0;
+  logic [4:0] unresolved_ci_lsqEnqCtrl_io_enq_req_3_bits_numLsElem;
+  assign unresolved_ci_lsqEnqCtrl_io_enq_req_3_bits_numLsElem = '0;
+  logic unresolved_ci_lsqEnqCtrl_io_enq_req_3_valid;
+  assign unresolved_ci_lsqEnqCtrl_io_enq_req_3_valid = '0;
+  logic [4:0] unresolved_ci_lsqEnqCtrl_io_enq_req_4_bits_numLsElem;
+  assign unresolved_ci_lsqEnqCtrl_io_enq_req_4_bits_numLsElem = '0;
+  logic unresolved_ci_lsqEnqCtrl_io_enq_req_4_valid;
+  assign unresolved_ci_lsqEnqCtrl_io_enq_req_4_valid = '0;
+  logic [4:0] unresolved_ci_lsqEnqCtrl_io_enq_req_5_bits_numLsElem;
+  assign unresolved_ci_lsqEnqCtrl_io_enq_req_5_bits_numLsElem = '0;
+  logic unresolved_ci_lsqEnqCtrl_io_enq_req_5_valid;
+  assign unresolved_ci_lsqEnqCtrl_io_enq_req_5_valid = '0;
+  logic unresolved_ci_lsqEnqCtrl_io_redirect_valid;
+  assign unresolved_ci_lsqEnqCtrl_io_redirect_valid = '0;
+  logic unresolved_ci_rcTagTable_io_allocPregs_0_valid;
+  assign unresolved_ci_rcTagTable_io_allocPregs_0_valid = '0;
+  logic unresolved_ci_rcTagTable_io_allocPregs_1_valid;
+  assign unresolved_ci_rcTagTable_io_allocPregs_1_valid = '0;
+  logic unresolved_ci_rcTagTable_io_allocPregs_2_valid;
+  assign unresolved_ci_rcTagTable_io_allocPregs_2_valid = '0;
+  logic unresolved_ci_rcTagTable_io_allocPregs_3_valid;
+  assign unresolved_ci_rcTagTable_io_allocPregs_3_valid = '0;
+  logic unresolved_ci_rcTagTable_io_allocPregs_4_valid;
+  assign unresolved_ci_rcTagTable_io_allocPregs_4_valid = '0;
+  logic unresolved_ci_rcTagTable_io_allocPregs_5_valid;
+  assign unresolved_ci_rcTagTable_io_allocPregs_5_valid = '0;
+
+  BusyTable intBusyTable (
+    .clock                                      (clock),
+    .reset                                      (reset),
+    // TODO(步骤2): golden = allocPregsValid_0_0
+    .io_allocPregs_0_valid                      (unresolved_ci_intBusyTable_io_allocPregs_0_valid),
+    .io_allocPregs_0_bits                       (io_fromRename_0_bits_pdest),
+    // TODO(步骤2): golden = allocPregsValid_0_1
+    .io_allocPregs_1_valid                      (unresolved_ci_intBusyTable_io_allocPregs_1_valid),
+    .io_allocPregs_1_bits                       (io_fromRename_1_bits_pdest),
+    // TODO(步骤2): golden = allocPregsValid_0_2
+    .io_allocPregs_2_valid                      (unresolved_ci_intBusyTable_io_allocPregs_2_valid),
+    .io_allocPregs_2_bits                       (io_fromRename_2_bits_pdest),
+    // TODO(步骤2): golden = allocPregsValid_0_3
+    .io_allocPregs_3_valid                      (unresolved_ci_intBusyTable_io_allocPregs_3_valid),
+    .io_allocPregs_3_bits                       (io_fromRename_3_bits_pdest),
+    // TODO(步骤2): golden = allocPregsValid_0_4
+    .io_allocPregs_4_valid                      (unresolved_ci_intBusyTable_io_allocPregs_4_valid),
+    .io_allocPregs_4_bits                       (io_fromRename_4_bits_pdest),
+    // TODO(步骤2): golden = allocPregsValid_0_5
+    .io_allocPregs_5_valid                      (unresolved_ci_intBusyTable_io_allocPregs_5_valid),
+    .io_allocPregs_5_bits                       (io_fromRename_5_bits_pdest),
+    .io_wbPregs_0_valid                         (io_wbPregsInt_0_valid),
+    .io_wbPregs_0_bits                          (io_wbPregsInt_0_bits),
+    .io_wbPregs_1_valid                         (io_wbPregsInt_1_valid),
+    .io_wbPregs_1_bits                          (io_wbPregsInt_1_bits),
+    .io_wbPregs_2_valid                         (io_wbPregsInt_2_valid),
+    .io_wbPregs_2_bits                          (io_wbPregsInt_2_bits),
+    .io_wbPregs_3_valid                         (io_wbPregsInt_3_valid),
+    .io_wbPregs_3_bits                          (io_wbPregsInt_3_bits),
+    .io_wbPregs_4_valid                         (io_wbPregsInt_4_valid),
+    .io_wbPregs_4_bits                          (io_wbPregsInt_4_bits),
+    .io_wbPregs_5_valid                         (io_wbPregsInt_5_valid),
+    .io_wbPregs_5_bits                          (io_wbPregsInt_5_bits),
+    .io_wbPregs_6_valid                         (io_wbPregsInt_6_valid),
+    .io_wbPregs_6_bits                          (io_wbPregsInt_6_bits),
+    .io_wbPregs_7_valid                         (io_wbPregsInt_7_valid),
+    .io_wbPregs_7_bits                          (io_wbPregsInt_7_bits),
+    .io_wakeUpInt_3_valid                       (io_wakeUpAll_wakeUpInt_3_valid),
+    .io_wakeUpInt_3_bits_rfWen                  (io_wakeUpAll_wakeUpInt_3_bits_rfWen),
+    .io_wakeUpInt_3_bits_pdest                  (io_wakeUpAll_wakeUpInt_3_bits_pdest),
+    .io_wakeUpInt_3_bits_loadDependency_0       (io_wakeUpAll_wakeUpInt_3_bits_loadDependency_0),
+    .io_wakeUpInt_3_bits_loadDependency_1       (io_wakeUpAll_wakeUpInt_3_bits_loadDependency_1),
+    .io_wakeUpInt_3_bits_loadDependency_2       (io_wakeUpAll_wakeUpInt_3_bits_loadDependency_2),
+    .io_wakeUpInt_2_valid                       (io_wakeUpAll_wakeUpInt_2_valid),
+    .io_wakeUpInt_2_bits_rfWen                  (io_wakeUpAll_wakeUpInt_2_bits_rfWen),
+    .io_wakeUpInt_2_bits_pdest                  (io_wakeUpAll_wakeUpInt_2_bits_pdest),
+    .io_wakeUpInt_2_bits_loadDependency_0       (io_wakeUpAll_wakeUpInt_2_bits_loadDependency_0),
+    .io_wakeUpInt_2_bits_loadDependency_1       (io_wakeUpAll_wakeUpInt_2_bits_loadDependency_1),
+    .io_wakeUpInt_2_bits_loadDependency_2       (io_wakeUpAll_wakeUpInt_2_bits_loadDependency_2),
+    .io_wakeUpInt_1_valid                       (io_wakeUpAll_wakeUpInt_1_valid),
+    .io_wakeUpInt_1_bits_rfWen                  (io_wakeUpAll_wakeUpInt_1_bits_rfWen),
+    .io_wakeUpInt_1_bits_pdest                  (io_wakeUpAll_wakeUpInt_1_bits_pdest),
+    .io_wakeUpInt_1_bits_loadDependency_0       (io_wakeUpAll_wakeUpInt_1_bits_loadDependency_0),
+    .io_wakeUpInt_1_bits_loadDependency_1       (io_wakeUpAll_wakeUpInt_1_bits_loadDependency_1),
+    .io_wakeUpInt_1_bits_loadDependency_2       (io_wakeUpAll_wakeUpInt_1_bits_loadDependency_2),
+    .io_wakeUpInt_1_bits_is0Lat                 (io_wakeUpAll_wakeUpInt_1_bits_is0Lat),
+    .io_wakeUpInt_0_valid                       (io_wakeUpAll_wakeUpInt_0_valid),
+    .io_wakeUpInt_0_bits_rfWen                  (io_wakeUpAll_wakeUpInt_0_bits_rfWen),
+    .io_wakeUpInt_0_bits_pdest                  (io_wakeUpAll_wakeUpInt_0_bits_pdest),
+    .io_wakeUpInt_0_bits_loadDependency_0       (io_wakeUpAll_wakeUpInt_0_bits_loadDependency_0),
+    .io_wakeUpInt_0_bits_loadDependency_1       (io_wakeUpAll_wakeUpInt_0_bits_loadDependency_1),
+    .io_wakeUpInt_0_bits_loadDependency_2       (io_wakeUpAll_wakeUpInt_0_bits_loadDependency_2),
+    .io_wakeUpInt_0_bits_is0Lat                 (io_wakeUpAll_wakeUpInt_0_bits_is0Lat),
+    .io_wakeUpMem_2_valid                       (io_wakeUpAll_wakeUpMem_2_valid),
+    .io_wakeUpMem_2_bits_rfWen                  (io_wakeUpAll_wakeUpMem_2_bits_rfWen),
+    .io_wakeUpMem_2_bits_pdest                  (io_wakeUpAll_wakeUpMem_2_bits_pdest),
+    .io_wakeUpMem_2_bits_loadDependency_0       (io_wakeUpAll_wakeUpMem_2_bits_loadDependency_0),
+    .io_wakeUpMem_2_bits_loadDependency_1       (io_wakeUpAll_wakeUpMem_2_bits_loadDependency_1),
+    .io_wakeUpMem_2_bits_loadDependency_2       (io_wakeUpAll_wakeUpMem_2_bits_loadDependency_2),
+    .io_wakeUpMem_1_valid                       (io_wakeUpAll_wakeUpMem_1_valid),
+    .io_wakeUpMem_1_bits_rfWen                  (io_wakeUpAll_wakeUpMem_1_bits_rfWen),
+    .io_wakeUpMem_1_bits_pdest                  (io_wakeUpAll_wakeUpMem_1_bits_pdest),
+    .io_wakeUpMem_1_bits_loadDependency_0       (io_wakeUpAll_wakeUpMem_1_bits_loadDependency_0),
+    .io_wakeUpMem_1_bits_loadDependency_1       (io_wakeUpAll_wakeUpMem_1_bits_loadDependency_1),
+    .io_wakeUpMem_1_bits_loadDependency_2       (io_wakeUpAll_wakeUpMem_1_bits_loadDependency_2),
+    .io_wakeUpMem_0_valid                       (io_wakeUpAll_wakeUpMem_0_valid),
+    .io_wakeUpMem_0_bits_rfWen                  (io_wakeUpAll_wakeUpMem_0_bits_rfWen),
+    .io_wakeUpMem_0_bits_pdest                  (io_wakeUpAll_wakeUpMem_0_bits_pdest),
+    .io_wakeUpMem_0_bits_loadDependency_0       (io_wakeUpAll_wakeUpMem_0_bits_loadDependency_0),
+    .io_wakeUpMem_0_bits_loadDependency_1       (io_wakeUpAll_wakeUpMem_0_bits_loadDependency_1),
+    .io_wakeUpMem_0_bits_loadDependency_2       (io_wakeUpAll_wakeUpMem_0_bits_loadDependency_2),
+    .io_og0Cancel_0                             (io_og0Cancel_0),
+    .io_og0Cancel_2                             (io_og0Cancel_2),
+    .io_og0Cancel_4                             (io_og0Cancel_4),
+    .io_og0Cancel_6                             (io_og0Cancel_6),
+    .io_ldCancel_0_ld2Cancel                    (io_ldCancel_0_ld2Cancel),
+    .io_ldCancel_1_ld2Cancel                    (io_ldCancel_1_ld2Cancel),
+    .io_ldCancel_2_ld2Cancel                    (io_ldCancel_2_ld2Cancel),
+    .io_read_0_req                              (io_fromRename_0_bits_psrc_0),
+    .io_read_0_resp                             (_intBusyTable_io_read_0_resp),
+    .io_read_0_loadDependency_0                 (_intBusyTable_io_read_0_loadDependency_0),
+    .io_read_0_loadDependency_1                 (_intBusyTable_io_read_0_loadDependency_1),
+    .io_read_0_loadDependency_2                 (_intBusyTable_io_read_0_loadDependency_2),
+    .io_read_1_req                              (io_fromRename_0_bits_psrc_1),
+    .io_read_1_resp                             (_intBusyTable_io_read_1_resp),
+    .io_read_1_loadDependency_0                 (_intBusyTable_io_read_1_loadDependency_0),
+    .io_read_1_loadDependency_1                 (_intBusyTable_io_read_1_loadDependency_1),
+    .io_read_1_loadDependency_2                 (_intBusyTable_io_read_1_loadDependency_2),
+    .io_read_2_req                              (io_fromRename_1_bits_psrc_0),
+    .io_read_2_resp                             (_intBusyTable_io_read_2_resp),
+    .io_read_2_loadDependency_0                 (_intBusyTable_io_read_2_loadDependency_0),
+    .io_read_2_loadDependency_1                 (_intBusyTable_io_read_2_loadDependency_1),
+    .io_read_2_loadDependency_2                 (_intBusyTable_io_read_2_loadDependency_2),
+    .io_read_3_req                              (io_fromRename_1_bits_psrc_1),
+    .io_read_3_resp                             (_intBusyTable_io_read_3_resp),
+    .io_read_3_loadDependency_0                 (_intBusyTable_io_read_3_loadDependency_0),
+    .io_read_3_loadDependency_1                 (_intBusyTable_io_read_3_loadDependency_1),
+    .io_read_3_loadDependency_2                 (_intBusyTable_io_read_3_loadDependency_2),
+    .io_read_4_req                              (io_fromRename_2_bits_psrc_0),
+    .io_read_4_resp                             (_intBusyTable_io_read_4_resp),
+    .io_read_4_loadDependency_0                 (_intBusyTable_io_read_4_loadDependency_0),
+    .io_read_4_loadDependency_1                 (_intBusyTable_io_read_4_loadDependency_1),
+    .io_read_4_loadDependency_2                 (_intBusyTable_io_read_4_loadDependency_2),
+    .io_read_5_req                              (io_fromRename_2_bits_psrc_1),
+    .io_read_5_resp                             (_intBusyTable_io_read_5_resp),
+    .io_read_5_loadDependency_0                 (_intBusyTable_io_read_5_loadDependency_0),
+    .io_read_5_loadDependency_1                 (_intBusyTable_io_read_5_loadDependency_1),
+    .io_read_5_loadDependency_2                 (_intBusyTable_io_read_5_loadDependency_2),
+    .io_read_6_req                              (io_fromRename_3_bits_psrc_0),
+    .io_read_6_resp                             (_intBusyTable_io_read_6_resp),
+    .io_read_6_loadDependency_0                 (_intBusyTable_io_read_6_loadDependency_0),
+    .io_read_6_loadDependency_1                 (_intBusyTable_io_read_6_loadDependency_1),
+    .io_read_6_loadDependency_2                 (_intBusyTable_io_read_6_loadDependency_2),
+    .io_read_7_req                              (io_fromRename_3_bits_psrc_1),
+    .io_read_7_resp                             (_intBusyTable_io_read_7_resp),
+    .io_read_7_loadDependency_0                 (_intBusyTable_io_read_7_loadDependency_0),
+    .io_read_7_loadDependency_1                 (_intBusyTable_io_read_7_loadDependency_1),
+    .io_read_7_loadDependency_2                 (_intBusyTable_io_read_7_loadDependency_2),
+    .io_read_8_req                              (io_fromRename_4_bits_psrc_0),
+    .io_read_8_resp                             (_intBusyTable_io_read_8_resp),
+    .io_read_8_loadDependency_0                 (_intBusyTable_io_read_8_loadDependency_0),
+    .io_read_8_loadDependency_1                 (_intBusyTable_io_read_8_loadDependency_1),
+    .io_read_8_loadDependency_2                 (_intBusyTable_io_read_8_loadDependency_2),
+    .io_read_9_req                              (io_fromRename_4_bits_psrc_1),
+    .io_read_9_resp                             (_intBusyTable_io_read_9_resp),
+    .io_read_9_loadDependency_0                 (_intBusyTable_io_read_9_loadDependency_0),
+    .io_read_9_loadDependency_1                 (_intBusyTable_io_read_9_loadDependency_1),
+    .io_read_9_loadDependency_2                 (_intBusyTable_io_read_9_loadDependency_2),
+    .io_read_10_req                             (io_fromRename_5_bits_psrc_0),
+    .io_read_10_resp                            (_intBusyTable_io_read_10_resp),
+    .io_read_10_loadDependency_0                (_intBusyTable_io_read_10_loadDependency_0),
+    .io_read_10_loadDependency_1                (_intBusyTable_io_read_10_loadDependency_1),
+    .io_read_10_loadDependency_2                (_intBusyTable_io_read_10_loadDependency_2),
+    .io_read_11_req                             (io_fromRename_5_bits_psrc_1),
+    .io_read_11_resp                            (_intBusyTable_io_read_11_resp),
+    .io_read_11_loadDependency_0                (_intBusyTable_io_read_11_loadDependency_0),
+    .io_read_11_loadDependency_1                (_intBusyTable_io_read_11_loadDependency_1),
+    .io_read_11_loadDependency_2                (_intBusyTable_io_read_11_loadDependency_2)
+  );
+
+  BusyTable_1 fpBusyTable (
+    .clock                                      (clock),
+    .reset                                      (reset),
+    .io_allocPregs_0_valid                      (io_fromRename_0_valid & io_fromRename_0_bits_fpWen),
+    .io_allocPregs_0_bits                       (io_fromRename_0_bits_pdest),
+    .io_allocPregs_1_valid                      (io_fromRename_1_valid & io_fromRename_1_bits_fpWen),
+    .io_allocPregs_1_bits                       (io_fromRename_1_bits_pdest),
+    .io_allocPregs_2_valid                      (io_fromRename_2_valid & io_fromRename_2_bits_fpWen),
+    .io_allocPregs_2_bits                       (io_fromRename_2_bits_pdest),
+    .io_allocPregs_3_valid                      (io_fromRename_3_valid & io_fromRename_3_bits_fpWen),
+    .io_allocPregs_3_bits                       (io_fromRename_3_bits_pdest),
+    .io_allocPregs_4_valid                      (io_fromRename_4_valid & io_fromRename_4_bits_fpWen),
+    .io_allocPregs_4_bits                       (io_fromRename_4_bits_pdest),
+    .io_allocPregs_5_valid                      (io_fromRename_5_valid & io_fromRename_5_bits_fpWen),
+    .io_allocPregs_5_bits                       (io_fromRename_5_bits_pdest),
+    .io_wbPregs_0_valid                         (io_wbPregsFp_0_valid),
+    .io_wbPregs_0_bits                          (io_wbPregsFp_0_bits),
+    .io_wbPregs_1_valid                         (io_wbPregsFp_1_valid),
+    .io_wbPregs_1_bits                          (io_wbPregsFp_1_bits),
+    .io_wbPregs_2_valid                         (io_wbPregsFp_2_valid),
+    .io_wbPregs_2_bits                          (io_wbPregsFp_2_bits),
+    .io_wbPregs_3_valid                         (io_wbPregsFp_3_valid),
+    .io_wbPregs_3_bits                          (io_wbPregsFp_3_bits),
+    .io_wbPregs_4_valid                         (io_wbPregsFp_4_valid),
+    .io_wbPregs_4_bits                          (io_wbPregsFp_4_bits),
+    .io_wbPregs_5_valid                         (io_wbPregsFp_5_valid),
+    .io_wbPregs_5_bits                          (io_wbPregsFp_5_bits),
+    .io_wakeUpFp_2_valid                        (io_wakeUpAll_wakeUpFp_2_valid),
+    .io_wakeUpFp_2_bits_fpWen                   (io_wakeUpAll_wakeUpFp_2_bits_fpWen),
+    .io_wakeUpFp_2_bits_pdest                   (io_wakeUpAll_wakeUpFp_2_bits_pdest),
+    .io_wakeUpFp_1_valid                        (io_wakeUpAll_wakeUpFp_1_valid),
+    .io_wakeUpFp_1_bits_fpWen                   (io_wakeUpAll_wakeUpFp_1_bits_fpWen),
+    .io_wakeUpFp_1_bits_pdest                   (io_wakeUpAll_wakeUpFp_1_bits_pdest),
+    .io_wakeUpFp_0_valid                        (io_wakeUpAll_wakeUpFp_0_valid),
+    .io_wakeUpFp_0_bits_fpWen                   (io_wakeUpAll_wakeUpFp_0_bits_fpWen),
+    .io_wakeUpFp_0_bits_pdest                   (io_wakeUpAll_wakeUpFp_0_bits_pdest),
+    .io_wakeUpFp_0_bits_is0Lat                  (io_wakeUpAll_wakeUpFp_0_bits_is0Lat),
+    .io_og0Cancel_8                             (io_og0Cancel_8),
+    .io_read_0_req                              (io_fromRename_0_bits_psrc_0),
+    .io_read_0_resp                             (_fpBusyTable_io_read_0_resp),
+    .io_read_1_req                              (io_fromRename_0_bits_psrc_1),
+    .io_read_1_resp                             (_fpBusyTable_io_read_1_resp),
+    .io_read_2_req                              (io_fromRename_0_bits_psrc_2),
+    .io_read_2_resp                             (_fpBusyTable_io_read_2_resp),
+    .io_read_3_req                              (io_fromRename_1_bits_psrc_0),
+    .io_read_3_resp                             (_fpBusyTable_io_read_3_resp),
+    .io_read_4_req                              (io_fromRename_1_bits_psrc_1),
+    .io_read_4_resp                             (_fpBusyTable_io_read_4_resp),
+    .io_read_5_req                              (io_fromRename_1_bits_psrc_2),
+    .io_read_5_resp                             (_fpBusyTable_io_read_5_resp),
+    .io_read_6_req                              (io_fromRename_2_bits_psrc_0),
+    .io_read_6_resp                             (_fpBusyTable_io_read_6_resp),
+    .io_read_7_req                              (io_fromRename_2_bits_psrc_1),
+    .io_read_7_resp                             (_fpBusyTable_io_read_7_resp),
+    .io_read_8_req                              (io_fromRename_2_bits_psrc_2),
+    .io_read_8_resp                             (_fpBusyTable_io_read_8_resp),
+    .io_read_9_req                              (io_fromRename_3_bits_psrc_0),
+    .io_read_9_resp                             (_fpBusyTable_io_read_9_resp),
+    .io_read_10_req                             (io_fromRename_3_bits_psrc_1),
+    .io_read_10_resp                            (_fpBusyTable_io_read_10_resp),
+    .io_read_11_req                             (io_fromRename_3_bits_psrc_2),
+    .io_read_11_resp                            (_fpBusyTable_io_read_11_resp),
+    .io_read_12_req                             (io_fromRename_4_bits_psrc_0),
+    .io_read_12_resp                            (_fpBusyTable_io_read_12_resp),
+    .io_read_13_req                             (io_fromRename_4_bits_psrc_1),
+    .io_read_13_resp                            (_fpBusyTable_io_read_13_resp),
+    .io_read_14_req                             (io_fromRename_4_bits_psrc_2),
+    .io_read_14_resp                            (_fpBusyTable_io_read_14_resp),
+    .io_read_15_req                             (io_fromRename_5_bits_psrc_0),
+    .io_read_15_resp                            (_fpBusyTable_io_read_15_resp),
+    .io_read_16_req                             (io_fromRename_5_bits_psrc_1),
+    .io_read_16_resp                            (_fpBusyTable_io_read_16_resp),
+    .io_read_17_req                             (io_fromRename_5_bits_psrc_2),
+    .io_read_17_resp                            (_fpBusyTable_io_read_17_resp)
+  );
+
+  BusyTable_2 vecBusyTable (
+    .clock                                      (clock),
+    .reset                                      (reset),
+    .io_allocPregs_0_valid                      (io_fromRename_0_valid & io_fromRename_0_bits_vecWen),
+    .io_allocPregs_0_bits                       (io_fromRename_0_bits_pdest),
+    .io_allocPregs_1_valid                      (io_fromRename_1_valid & io_fromRename_1_bits_vecWen),
+    .io_allocPregs_1_bits                       (io_fromRename_1_bits_pdest),
+    .io_allocPregs_2_valid                      (io_fromRename_2_valid & io_fromRename_2_bits_vecWen),
+    .io_allocPregs_2_bits                       (io_fromRename_2_bits_pdest),
+    .io_allocPregs_3_valid                      (io_fromRename_3_valid & io_fromRename_3_bits_vecWen),
+    .io_allocPregs_3_bits                       (io_fromRename_3_bits_pdest),
+    .io_allocPregs_4_valid                      (io_fromRename_4_valid & io_fromRename_4_bits_vecWen),
+    .io_allocPregs_4_bits                       (io_fromRename_4_bits_pdest),
+    .io_allocPregs_5_valid                      (io_fromRename_5_valid & io_fromRename_5_bits_vecWen),
+    .io_allocPregs_5_bits                       (io_fromRename_5_bits_pdest),
+    .io_wbPregs_0_valid                         (io_wbPregsVec_0_valid),
+    .io_wbPregs_0_bits                          (io_wbPregsVec_0_bits),
+    .io_wbPregs_1_valid                         (io_wbPregsVec_1_valid),
+    .io_wbPregs_1_bits                          (io_wbPregsVec_1_bits),
+    .io_wbPregs_2_valid                         (io_wbPregsVec_2_valid),
+    .io_wbPregs_2_bits                          (io_wbPregsVec_2_bits),
+    .io_wbPregs_3_valid                         (io_wbPregsVec_3_valid),
+    .io_wbPregs_3_bits                          (io_wbPregsVec_3_bits),
+    .io_wbPregs_4_valid                         (io_wbPregsVec_4_valid),
+    .io_wbPregs_4_bits                          (io_wbPregsVec_4_bits),
+    .io_wbPregs_5_valid                         (io_wbPregsVec_5_valid),
+    .io_wbPregs_5_bits                          (io_wbPregsVec_5_bits),
+    .io_wakeUpFp_0_valid                        (io_wakeUpAll_wakeUpFp_0_valid),
+    .io_wakeUpFp_0_bits_vecWen                  (io_wakeUpAll_wakeUpFp_0_bits_vecWen),
+    .io_wakeUpFp_0_bits_pdest                   (io_wakeUpAll_wakeUpFp_0_bits_pdest),
+    .io_wakeUpFp_0_bits_is0Lat                  (io_wakeUpAll_wakeUpFp_0_bits_is0Lat),
+    .io_og0Cancel_8                             (io_og0Cancel_8),
+    .io_read_0_req                              (io_fromRename_0_bits_psrc_0),
+    .io_read_0_resp                             (_vecBusyTable_io_read_0_resp),
+    .io_read_1_req                              (io_fromRename_0_bits_psrc_1),
+    .io_read_1_resp                             (_vecBusyTable_io_read_1_resp),
+    .io_read_2_req                              (io_fromRename_0_bits_psrc_2),
+    .io_read_2_resp                             (_vecBusyTable_io_read_2_resp),
+    .io_read_3_req                              (io_fromRename_1_bits_psrc_0),
+    .io_read_3_resp                             (_vecBusyTable_io_read_3_resp),
+    .io_read_4_req                              (io_fromRename_1_bits_psrc_1),
+    .io_read_4_resp                             (_vecBusyTable_io_read_4_resp),
+    .io_read_5_req                              (io_fromRename_1_bits_psrc_2),
+    .io_read_5_resp                             (_vecBusyTable_io_read_5_resp),
+    .io_read_6_req                              (io_fromRename_2_bits_psrc_0),
+    .io_read_6_resp                             (_vecBusyTable_io_read_6_resp),
+    .io_read_7_req                              (io_fromRename_2_bits_psrc_1),
+    .io_read_7_resp                             (_vecBusyTable_io_read_7_resp),
+    .io_read_8_req                              (io_fromRename_2_bits_psrc_2),
+    .io_read_8_resp                             (_vecBusyTable_io_read_8_resp),
+    .io_read_9_req                              (io_fromRename_3_bits_psrc_0),
+    .io_read_9_resp                             (_vecBusyTable_io_read_9_resp),
+    .io_read_10_req                             (io_fromRename_3_bits_psrc_1),
+    .io_read_10_resp                            (_vecBusyTable_io_read_10_resp),
+    .io_read_11_req                             (io_fromRename_3_bits_psrc_2),
+    .io_read_11_resp                            (_vecBusyTable_io_read_11_resp),
+    .io_read_12_req                             (io_fromRename_4_bits_psrc_0),
+    .io_read_12_resp                            (_vecBusyTable_io_read_12_resp),
+    .io_read_13_req                             (io_fromRename_4_bits_psrc_1),
+    .io_read_13_resp                            (_vecBusyTable_io_read_13_resp),
+    .io_read_14_req                             (io_fromRename_4_bits_psrc_2),
+    .io_read_14_resp                            (_vecBusyTable_io_read_14_resp),
+    .io_read_15_req                             (io_fromRename_5_bits_psrc_0),
+    .io_read_15_resp                            (_vecBusyTable_io_read_15_resp),
+    .io_read_16_req                             (io_fromRename_5_bits_psrc_1),
+    .io_read_16_resp                            (_vecBusyTable_io_read_16_resp),
+    .io_read_17_req                             (io_fromRename_5_bits_psrc_2),
+    .io_read_17_resp                            (_vecBusyTable_io_read_17_resp)
+  );
+
+  BusyTable_3 v0BusyTable (
+    .clock                                      (clock),
+    .reset                                      (reset),
+    .io_allocPregs_0_valid                      (io_fromRename_0_valid & io_fromRename_0_bits_v0Wen),
+    .io_allocPregs_0_bits                       (io_fromRename_0_bits_pdest),
+    .io_allocPregs_1_valid                      (io_fromRename_1_valid & io_fromRename_1_bits_v0Wen),
+    .io_allocPregs_1_bits                       (io_fromRename_1_bits_pdest),
+    .io_allocPregs_2_valid                      (io_fromRename_2_valid & io_fromRename_2_bits_v0Wen),
+    .io_allocPregs_2_bits                       (io_fromRename_2_bits_pdest),
+    .io_allocPregs_3_valid                      (io_fromRename_3_valid & io_fromRename_3_bits_v0Wen),
+    .io_allocPregs_3_bits                       (io_fromRename_3_bits_pdest),
+    .io_allocPregs_4_valid                      (io_fromRename_4_valid & io_fromRename_4_bits_v0Wen),
+    .io_allocPregs_4_bits                       (io_fromRename_4_bits_pdest),
+    .io_allocPregs_5_valid                      (io_fromRename_5_valid & io_fromRename_5_bits_v0Wen),
+    .io_allocPregs_5_bits                       (io_fromRename_5_bits_pdest),
+    .io_wbPregs_0_valid                         (io_wbPregsV0_0_valid),
+    .io_wbPregs_0_bits                          (io_wbPregsV0_0_bits),
+    .io_wbPregs_1_valid                         (io_wbPregsV0_1_valid),
+    .io_wbPregs_1_bits                          (io_wbPregsV0_1_bits),
+    .io_wbPregs_2_valid                         (io_wbPregsV0_2_valid),
+    .io_wbPregs_2_bits                          (io_wbPregsV0_2_bits),
+    .io_wbPregs_3_valid                         (io_wbPregsV0_3_valid),
+    .io_wbPregs_3_bits                          (io_wbPregsV0_3_bits),
+    .io_wbPregs_4_valid                         (io_wbPregsV0_4_valid),
+    .io_wbPregs_4_bits                          (io_wbPregsV0_4_bits),
+    .io_wbPregs_5_valid                         (io_wbPregsV0_5_valid),
+    .io_wbPregs_5_bits                          (io_wbPregsV0_5_bits),
+    .io_wakeUpFp_0_valid                        (io_wakeUpAll_wakeUpFp_0_valid),
+    .io_wakeUpFp_0_bits_v0Wen                   (io_wakeUpAll_wakeUpFp_0_bits_v0Wen),
+    .io_wakeUpFp_0_bits_pdest                   (io_wakeUpAll_wakeUpFp_0_bits_pdest),
+    .io_wakeUpFp_0_bits_is0Lat                  (io_wakeUpAll_wakeUpFp_0_bits_is0Lat),
+    .io_og0Cancel_8                             (io_og0Cancel_8),
+    .io_read_0_req                              (io_fromRename_0_bits_psrc_3),
+    .io_read_0_resp                             (_v0BusyTable_io_read_0_resp),
+    .io_read_1_req                              (io_fromRename_1_bits_psrc_3),
+    .io_read_1_resp                             (_v0BusyTable_io_read_1_resp),
+    .io_read_2_req                              (io_fromRename_2_bits_psrc_3),
+    .io_read_2_resp                             (_v0BusyTable_io_read_2_resp),
+    .io_read_3_req                              (io_fromRename_3_bits_psrc_3),
+    .io_read_3_resp                             (_v0BusyTable_io_read_3_resp),
+    .io_read_4_req                              (io_fromRename_4_bits_psrc_3),
+    .io_read_4_resp                             (_v0BusyTable_io_read_4_resp),
+    .io_read_5_req                              (io_fromRename_5_bits_psrc_3),
+    .io_read_5_resp                             (_v0BusyTable_io_read_5_resp)
+  );
+
+  VlBusyTable vlBusyTable (
+    .clock                                      (clock),
+    .reset                                      (reset),
+    .io_allocPregs_0_valid                      (io_fromRename_0_valid & io_fromRename_0_bits_vlWen),
+    .io_allocPregs_0_bits                       (io_fromRename_0_bits_pdest),
+    .io_allocPregs_1_valid                      (io_fromRename_1_valid & io_fromRename_1_bits_vlWen),
+    .io_allocPregs_1_bits                       (io_fromRename_1_bits_pdest),
+    .io_allocPregs_2_valid                      (io_fromRename_2_valid & io_fromRename_2_bits_vlWen),
+    .io_allocPregs_2_bits                       (io_fromRename_2_bits_pdest),
+    .io_allocPregs_3_valid                      (io_fromRename_3_valid & io_fromRename_3_bits_vlWen),
+    .io_allocPregs_3_bits                       (io_fromRename_3_bits_pdest),
+    .io_allocPregs_4_valid                      (io_fromRename_4_valid & io_fromRename_4_bits_vlWen),
+    .io_allocPregs_4_bits                       (io_fromRename_4_bits_pdest),
+    .io_allocPregs_5_valid                      (io_fromRename_5_valid & io_fromRename_5_bits_vlWen),
+    .io_allocPregs_5_bits                       (io_fromRename_5_bits_pdest),
+    .io_wbPregs_0_valid                         (io_wbPregsVl_0_valid),
+    .io_wbPregs_0_bits                          (io_wbPregsVl_0_bits),
+    .io_wbPregs_1_valid                         (io_wbPregsVl_1_valid),
+    .io_wbPregs_1_bits                          (io_wbPregsVl_1_bits),
+    .io_wbPregs_2_valid                         (io_wbPregsVl_2_valid),
+    .io_wbPregs_2_bits                          (io_wbPregsVl_2_bits),
+    .io_wbPregs_3_valid                         (io_wbPregsVl_3_valid),
+    .io_wbPregs_3_bits                          (io_wbPregsVl_3_bits),
+    .io_read_0_req                              (io_fromRename_0_bits_psrc_4),
+    .io_read_0_resp                             (_vlBusyTable_io_read_0_resp),
+    .io_read_1_req                              (io_fromRename_1_bits_psrc_4),
+    .io_read_1_resp                             (_vlBusyTable_io_read_1_resp),
+    .io_read_2_req                              (io_fromRename_2_bits_psrc_4),
+    .io_read_2_resp                             (_vlBusyTable_io_read_2_resp),
+    .io_read_3_req                              (io_fromRename_3_bits_psrc_4),
+    .io_read_3_resp                             (_vlBusyTable_io_read_3_resp),
+    .io_read_4_req                              (io_fromRename_4_bits_psrc_4),
+    .io_read_4_resp                             (_vlBusyTable_io_read_4_resp),
+    .io_read_5_req                              (io_fromRename_5_bits_psrc_4),
+    .io_read_5_resp                             (_vlBusyTable_io_read_5_resp),
+    .io_vl_Wb_vlWriteBackInfo_vlFromIntIsZero   (io_vlWriteBackInfo_vlFromIntIsZero),
+    .io_vl_Wb_vlWriteBackInfo_vlFromIntIsVlmax  (io_vlWriteBackInfo_vlFromIntIsVlmax),
+    .io_vl_Wb_vlWriteBackInfo_vlFromVfIsZero    (io_vlWriteBackInfo_vlFromVfIsZero),
+    .io_vl_Wb_vlWriteBackInfo_vlFromVfIsVlmax   (io_vlWriteBackInfo_vlFromVfIsVlmax),
+    .io_vl_read_vlReadInfo_0_is_nonzero         (_vlBusyTable_io_vl_read_vlReadInfo_0_is_nonzero),
+    .io_vl_read_vlReadInfo_0_is_vlmax           (_vlBusyTable_io_vl_read_vlReadInfo_0_is_vlmax),
+    .io_vl_read_vlReadInfo_1_is_nonzero         (_vlBusyTable_io_vl_read_vlReadInfo_1_is_nonzero),
+    .io_vl_read_vlReadInfo_1_is_vlmax           (_vlBusyTable_io_vl_read_vlReadInfo_1_is_vlmax),
+    .io_vl_read_vlReadInfo_2_is_nonzero         (_vlBusyTable_io_vl_read_vlReadInfo_2_is_nonzero),
+    .io_vl_read_vlReadInfo_2_is_vlmax           (_vlBusyTable_io_vl_read_vlReadInfo_2_is_vlmax),
+    .io_vl_read_vlReadInfo_3_is_nonzero         (_vlBusyTable_io_vl_read_vlReadInfo_3_is_nonzero),
+    .io_vl_read_vlReadInfo_3_is_vlmax           (_vlBusyTable_io_vl_read_vlReadInfo_3_is_vlmax),
+    .io_vl_read_vlReadInfo_4_is_nonzero         (_vlBusyTable_io_vl_read_vlReadInfo_4_is_nonzero),
+    .io_vl_read_vlReadInfo_4_is_vlmax           (_vlBusyTable_io_vl_read_vlReadInfo_4_is_vlmax),
+    .io_vl_read_vlReadInfo_5_is_nonzero         (_vlBusyTable_io_vl_read_vlReadInfo_5_is_nonzero),
+    .io_vl_read_vlReadInfo_5_is_vlmax           (_vlBusyTable_io_vl_read_vlReadInfo_5_is_vlmax)
+  );
+
+  RegCacheTagTable rcTagTable (
+    .clock                                      (clock),
+    .reset                                      (reset),
+    .io_readPorts_0_ren                         (io_fromRename_0_valid & io_fromRename_0_bits_srcType_0[0]),
+    .io_readPorts_0_tag                         (io_fromRename_0_bits_psrc_0),
+    .io_readPorts_0_valid                       (_rcTagTable_io_readPorts_0_valid),
+    .io_readPorts_0_addr                        (_rcTagTable_io_readPorts_0_addr),
+    .io_readPorts_1_ren                         (io_fromRename_0_valid & io_fromRename_0_bits_srcType_1[0]),
+    .io_readPorts_1_tag                         (io_fromRename_0_bits_psrc_1),
+    .io_readPorts_1_valid                       (_rcTagTable_io_readPorts_1_valid),
+    .io_readPorts_1_addr                        (_rcTagTable_io_readPorts_1_addr),
+    .io_readPorts_2_ren                         (io_fromRename_1_valid & io_fromRename_1_bits_srcType_0[0]),
+    .io_readPorts_2_tag                         (io_fromRename_1_bits_psrc_0),
+    .io_readPorts_2_valid                       (_rcTagTable_io_readPorts_2_valid),
+    .io_readPorts_2_addr                        (_rcTagTable_io_readPorts_2_addr),
+    .io_readPorts_3_ren                         (io_fromRename_1_valid & io_fromRename_1_bits_srcType_1[0]),
+    .io_readPorts_3_tag                         (io_fromRename_1_bits_psrc_1),
+    .io_readPorts_3_valid                       (_rcTagTable_io_readPorts_3_valid),
+    .io_readPorts_3_addr                        (_rcTagTable_io_readPorts_3_addr),
+    .io_readPorts_4_ren                         (io_fromRename_2_valid & io_fromRename_2_bits_srcType_0[0]),
+    .io_readPorts_4_tag                         (io_fromRename_2_bits_psrc_0),
+    .io_readPorts_4_valid                       (_rcTagTable_io_readPorts_4_valid),
+    .io_readPorts_4_addr                        (_rcTagTable_io_readPorts_4_addr),
+    .io_readPorts_5_ren                         (io_fromRename_2_valid & io_fromRename_2_bits_srcType_1[0]),
+    .io_readPorts_5_tag                         (io_fromRename_2_bits_psrc_1),
+    .io_readPorts_5_valid                       (_rcTagTable_io_readPorts_5_valid),
+    .io_readPorts_5_addr                        (_rcTagTable_io_readPorts_5_addr),
+    .io_readPorts_6_ren                         (io_fromRename_3_valid & io_fromRename_3_bits_srcType_0[0]),
+    .io_readPorts_6_tag                         (io_fromRename_3_bits_psrc_0),
+    .io_readPorts_6_valid                       (_rcTagTable_io_readPorts_6_valid),
+    .io_readPorts_6_addr                        (_rcTagTable_io_readPorts_6_addr),
+    .io_readPorts_7_ren                         (io_fromRename_3_valid & io_fromRename_3_bits_srcType_1[0]),
+    .io_readPorts_7_tag                         (io_fromRename_3_bits_psrc_1),
+    .io_readPorts_7_valid                       (_rcTagTable_io_readPorts_7_valid),
+    .io_readPorts_7_addr                        (_rcTagTable_io_readPorts_7_addr),
+    .io_readPorts_8_ren                         (io_fromRename_4_valid & io_fromRename_4_bits_srcType_0[0]),
+    .io_readPorts_8_tag                         (io_fromRename_4_bits_psrc_0),
+    .io_readPorts_8_valid                       (_rcTagTable_io_readPorts_8_valid),
+    .io_readPorts_8_addr                        (_rcTagTable_io_readPorts_8_addr),
+    .io_readPorts_9_ren                         (io_fromRename_4_valid & io_fromRename_4_bits_srcType_1[0]),
+    .io_readPorts_9_tag                         (io_fromRename_4_bits_psrc_1),
+    .io_readPorts_9_valid                       (_rcTagTable_io_readPorts_9_valid),
+    .io_readPorts_9_addr                        (_rcTagTable_io_readPorts_9_addr),
+    .io_readPorts_10_ren                        (io_fromRename_5_valid & io_fromRename_5_bits_srcType_0[0]),
+    .io_readPorts_10_tag                        (io_fromRename_5_bits_psrc_0),
+    .io_readPorts_10_valid                      (_rcTagTable_io_readPorts_10_valid),
+    .io_readPorts_10_addr                       (_rcTagTable_io_readPorts_10_addr),
+    .io_readPorts_11_ren                        (io_fromRename_5_valid & io_fromRename_5_bits_srcType_1[0]),
+    .io_readPorts_11_tag                        (io_fromRename_5_bits_psrc_1),
+    .io_readPorts_11_valid                      (_rcTagTable_io_readPorts_11_valid),
+    .io_readPorts_11_addr                       (_rcTagTable_io_readPorts_11_addr),
+    .io_wakeupFromIQ_6_valid                    (io_wakeUpAll_wakeUpMem_2_valid),
+    .io_wakeupFromIQ_6_bits_rfWen               (io_wakeUpAll_wakeUpMem_2_bits_rfWen),
+    .io_wakeupFromIQ_6_bits_pdest               (io_wakeUpAll_wakeUpMem_2_bits_pdest),
+    .io_wakeupFromIQ_6_bits_loadDependency_0    (io_wakeUpAll_wakeUpMem_2_bits_loadDependency_0),
+    .io_wakeupFromIQ_6_bits_loadDependency_1    (io_wakeUpAll_wakeUpMem_2_bits_loadDependency_1),
+    .io_wakeupFromIQ_6_bits_loadDependency_2    (io_wakeUpAll_wakeUpMem_2_bits_loadDependency_2),
+    .io_wakeupFromIQ_6_bits_rcDest              (io_wakeUpAll_wakeUpMem_2_bits_rcDest),
+    .io_wakeupFromIQ_5_valid                    (io_wakeUpAll_wakeUpMem_1_valid),
+    .io_wakeupFromIQ_5_bits_rfWen               (io_wakeUpAll_wakeUpMem_1_bits_rfWen),
+    .io_wakeupFromIQ_5_bits_pdest               (io_wakeUpAll_wakeUpMem_1_bits_pdest),
+    .io_wakeupFromIQ_5_bits_loadDependency_0    (io_wakeUpAll_wakeUpMem_1_bits_loadDependency_0),
+    .io_wakeupFromIQ_5_bits_loadDependency_1    (io_wakeUpAll_wakeUpMem_1_bits_loadDependency_1),
+    .io_wakeupFromIQ_5_bits_loadDependency_2    (io_wakeUpAll_wakeUpMem_1_bits_loadDependency_2),
+    .io_wakeupFromIQ_5_bits_rcDest              (io_wakeUpAll_wakeUpMem_1_bits_rcDest),
+    .io_wakeupFromIQ_4_valid                    (io_wakeUpAll_wakeUpMem_0_valid),
+    .io_wakeupFromIQ_4_bits_rfWen               (io_wakeUpAll_wakeUpMem_0_bits_rfWen),
+    .io_wakeupFromIQ_4_bits_pdest               (io_wakeUpAll_wakeUpMem_0_bits_pdest),
+    .io_wakeupFromIQ_4_bits_loadDependency_0    (io_wakeUpAll_wakeUpMem_0_bits_loadDependency_0),
+    .io_wakeupFromIQ_4_bits_loadDependency_1    (io_wakeUpAll_wakeUpMem_0_bits_loadDependency_1),
+    .io_wakeupFromIQ_4_bits_loadDependency_2    (io_wakeUpAll_wakeUpMem_0_bits_loadDependency_2),
+    .io_wakeupFromIQ_4_bits_rcDest              (io_wakeUpAll_wakeUpMem_0_bits_rcDest),
+    .io_wakeupFromIQ_3_valid                    (io_wakeUpAll_wakeUpInt_3_valid),
+    .io_wakeupFromIQ_3_bits_rfWen               (io_wakeUpAll_wakeUpInt_3_bits_rfWen),
+    .io_wakeupFromIQ_3_bits_pdest               (io_wakeUpAll_wakeUpInt_3_bits_pdest),
+    .io_wakeupFromIQ_3_bits_loadDependency_0    (io_wakeUpAll_wakeUpInt_3_bits_loadDependency_0),
+    .io_wakeupFromIQ_3_bits_loadDependency_1    (io_wakeUpAll_wakeUpInt_3_bits_loadDependency_1),
+    .io_wakeupFromIQ_3_bits_loadDependency_2    (io_wakeUpAll_wakeUpInt_3_bits_loadDependency_2),
+    .io_wakeupFromIQ_3_bits_rcDest              (io_wakeUpAll_wakeUpInt_3_bits_rcDest),
+    .io_wakeupFromIQ_2_valid                    (io_wakeUpAll_wakeUpInt_2_valid),
+    .io_wakeupFromIQ_2_bits_rfWen               (io_wakeUpAll_wakeUpInt_2_bits_rfWen),
+    .io_wakeupFromIQ_2_bits_pdest               (io_wakeUpAll_wakeUpInt_2_bits_pdest),
+    .io_wakeupFromIQ_2_bits_loadDependency_0    (io_wakeUpAll_wakeUpInt_2_bits_loadDependency_0),
+    .io_wakeupFromIQ_2_bits_loadDependency_1    (io_wakeUpAll_wakeUpInt_2_bits_loadDependency_1),
+    .io_wakeupFromIQ_2_bits_loadDependency_2    (io_wakeUpAll_wakeUpInt_2_bits_loadDependency_2),
+    .io_wakeupFromIQ_2_bits_rcDest              (io_wakeUpAll_wakeUpInt_2_bits_rcDest),
+    .io_wakeupFromIQ_1_valid                    (io_wakeUpAll_wakeUpInt_1_valid),
+    .io_wakeupFromIQ_1_bits_rfWen               (io_wakeUpAll_wakeUpInt_1_bits_rfWen),
+    .io_wakeupFromIQ_1_bits_pdest               (io_wakeUpAll_wakeUpInt_1_bits_pdest),
+    .io_wakeupFromIQ_1_bits_loadDependency_0    (io_wakeUpAll_wakeUpInt_1_bits_loadDependency_0),
+    .io_wakeupFromIQ_1_bits_loadDependency_1    (io_wakeUpAll_wakeUpInt_1_bits_loadDependency_1),
+    .io_wakeupFromIQ_1_bits_loadDependency_2    (io_wakeUpAll_wakeUpInt_1_bits_loadDependency_2),
+    .io_wakeupFromIQ_1_bits_is0Lat              (io_wakeUpAll_wakeUpInt_1_bits_is0Lat),
+    .io_wakeupFromIQ_1_bits_rcDest              (io_wakeUpAll_wakeUpInt_1_bits_rcDest),
+    .io_wakeupFromIQ_0_valid                    (io_wakeUpAll_wakeUpInt_0_valid),
+    .io_wakeupFromIQ_0_bits_rfWen               (io_wakeUpAll_wakeUpInt_0_bits_rfWen),
+    .io_wakeupFromIQ_0_bits_pdest               (io_wakeUpAll_wakeUpInt_0_bits_pdest),
+    .io_wakeupFromIQ_0_bits_loadDependency_0    (io_wakeUpAll_wakeUpInt_0_bits_loadDependency_0),
+    .io_wakeupFromIQ_0_bits_loadDependency_1    (io_wakeUpAll_wakeUpInt_0_bits_loadDependency_1),
+    .io_wakeupFromIQ_0_bits_loadDependency_2    (io_wakeUpAll_wakeUpInt_0_bits_loadDependency_2),
+    .io_wakeupFromIQ_0_bits_is0Lat              (io_wakeUpAll_wakeUpInt_0_bits_is0Lat),
+    .io_wakeupFromIQ_0_bits_rcDest              (io_wakeUpAll_wakeUpInt_0_bits_rcDest),
+    // TODO(步骤2): golden = allocPregsValid_0_0
+    .io_allocPregs_0_valid                      (unresolved_ci_rcTagTable_io_allocPregs_0_valid),
+    .io_allocPregs_0_bits                       (io_fromRename_0_bits_pdest),
+    // TODO(步骤2): golden = allocPregsValid_0_1
+    .io_allocPregs_1_valid                      (unresolved_ci_rcTagTable_io_allocPregs_1_valid),
+    .io_allocPregs_1_bits                       (io_fromRename_1_bits_pdest),
+    // TODO(步骤2): golden = allocPregsValid_0_2
+    .io_allocPregs_2_valid                      (unresolved_ci_rcTagTable_io_allocPregs_2_valid),
+    .io_allocPregs_2_bits                       (io_fromRename_2_bits_pdest),
+    // TODO(步骤2): golden = allocPregsValid_0_3
+    .io_allocPregs_3_valid                      (unresolved_ci_rcTagTable_io_allocPregs_3_valid),
+    .io_allocPregs_3_bits                       (io_fromRename_3_bits_pdest),
+    // TODO(步骤2): golden = allocPregsValid_0_4
+    .io_allocPregs_4_valid                      (unresolved_ci_rcTagTable_io_allocPregs_4_valid),
+    .io_allocPregs_4_bits                       (io_fromRename_4_bits_pdest),
+    // TODO(步骤2): golden = allocPregsValid_0_5
+    .io_allocPregs_5_valid                      (unresolved_ci_rcTagTable_io_allocPregs_5_valid),
+    .io_allocPregs_5_bits                       (io_fromRename_5_bits_pdest),
+    .io_og0Cancel_0                             (io_og0Cancel_0),
+    .io_og0Cancel_2                             (io_og0Cancel_2),
+    .io_og0Cancel_4                             (io_og0Cancel_4),
+    .io_og0Cancel_6                             (io_og0Cancel_6),
+    .io_ldCancel_0_ld2Cancel                    (io_ldCancel_0_ld2Cancel),
+    .io_ldCancel_1_ld2Cancel                    (io_ldCancel_1_ld2Cancel),
+    .io_ldCancel_2_ld2Cancel                    (io_ldCancel_2_ld2Cancel)
+  );
+
+  LsqEnqCtrl lsqEnqCtrl (
+    .clock                                      (clock),
+    .reset                                      (reset),
+    // TODO(步骤2): golden = lsqEnqCtrl_io_redirect_REG_valid
+    .io_redirect_valid                          (unresolved_ci_lsqEnqCtrl_io_redirect_valid),
+    .io_enq_canAccept                           (_lsqEnqCtrl_io_enq_canAccept),
+    // TODO(步骤2): golden = firedVec_0 ? (_GEN_142 ? 2'h2 : {1'h0, _GEN_144}) : 2'h0
+    .io_enq_needAlloc_0                         (unresolved_ci_lsqEnqCtrl_io_enq_needAlloc_0),
+    // TODO(步骤2): golden = firedVec_1 ? (_GEN_145 ? 2'h2 : {1'h0, _GEN_146}) : 2'h0
+    .io_enq_needAlloc_1                         (unresolved_ci_lsqEnqCtrl_io_enq_needAlloc_1),
+    // TODO(步骤2): golden = firedVec_2 ? (_GEN_147 ? 2'h2 : {1'h0, _GEN_148}) : 2'h0
+    .io_enq_needAlloc_2                         (unresolved_ci_lsqEnqCtrl_io_enq_needAlloc_2),
+    // TODO(步骤2): golden = firedVec_3 ? (_GEN_149 ? 2'h2 : {1'h0, _GEN_150}) : 2'h0
+    .io_enq_needAlloc_3                         (unresolved_ci_lsqEnqCtrl_io_enq_needAlloc_3),
+    // TODO(步骤2): golden = firedVec_4 ? (_GEN_151 ? 2'h2 : {1'h0, _GEN_152}) : 2'h0
+    .io_enq_needAlloc_4                         (unresolved_ci_lsqEnqCtrl_io_enq_needAlloc_4),
+    // TODO(步骤2): golden = firedVec_5 ? (_GEN_153 ? 2'h2 : {1'h0, _GEN_154}) : 2'h0
+    .io_enq_needAlloc_5                         (unresolved_ci_lsqEnqCtrl_io_enq_needAlloc_5),
+    // TODO(步骤2): golden = firedVec_0 & ~(io_fromRename_0_valid & io_fromRename_0_bits_fuType[17]
+    .io_enq_req_0_valid                         (unresolved_ci_lsqEnqCtrl_io_enq_req_0_valid),
+    .io_enq_req_0_bits_exceptionVec_0           (io_fromRename_0_bits_exceptionVec_0),
+    .io_enq_req_0_bits_exceptionVec_1           (io_fromRename_0_bits_exceptionVec_1),
+    .io_enq_req_0_bits_exceptionVec_2           (io_fromRename_0_bits_exceptionVec_2),
+    .io_enq_req_0_bits_exceptionVec_3           (io_fromRename_0_bits_exceptionVec_3),
+    .io_enq_req_0_bits_exceptionVec_4           (io_fromRename_0_bits_exceptionVec_4),
+    .io_enq_req_0_bits_exceptionVec_5           (io_fromRename_0_bits_exceptionVec_5),
+    .io_enq_req_0_bits_exceptionVec_6           (io_fromRename_0_bits_exceptionVec_6),
+    .io_enq_req_0_bits_exceptionVec_7           (io_fromRename_0_bits_exceptionVec_7),
+    .io_enq_req_0_bits_exceptionVec_8           (io_fromRename_0_bits_exceptionVec_8),
+    .io_enq_req_0_bits_exceptionVec_9           (io_fromRename_0_bits_exceptionVec_9),
+    .io_enq_req_0_bits_exceptionVec_10          (io_fromRename_0_bits_exceptionVec_10),
+    .io_enq_req_0_bits_exceptionVec_11          (io_fromRename_0_bits_exceptionVec_11),
+    .io_enq_req_0_bits_exceptionVec_12          (io_fromRename_0_bits_exceptionVec_12),
+    .io_enq_req_0_bits_exceptionVec_13          (io_fromRename_0_bits_exceptionVec_13),
+    .io_enq_req_0_bits_exceptionVec_14          (io_fromRename_0_bits_exceptionVec_14),
+    .io_enq_req_0_bits_exceptionVec_15          (io_fromRename_0_bits_exceptionVec_15),
+    .io_enq_req_0_bits_exceptionVec_16          (io_fromRename_0_bits_exceptionVec_16),
+    .io_enq_req_0_bits_exceptionVec_17          (io_fromRename_0_bits_exceptionVec_17),
+    .io_enq_req_0_bits_exceptionVec_18          (io_fromRename_0_bits_exceptionVec_18),
+    .io_enq_req_0_bits_exceptionVec_19          (io_fromRename_0_bits_exceptionVec_19),
+    .io_enq_req_0_bits_exceptionVec_20          (io_fromRename_0_bits_exceptionVec_20),
+    .io_enq_req_0_bits_exceptionVec_21          (io_fromRename_0_bits_exceptionVec_21),
+    .io_enq_req_0_bits_exceptionVec_22          (io_fromRename_0_bits_exceptionVec_22),
+    .io_enq_req_0_bits_exceptionVec_23          (io_fromRename_0_bits_exceptionVec_23),
+    .io_enq_req_0_bits_trigger                  (io_fromRename_0_bits_trigger),
+    .io_enq_req_0_bits_fuType                   (io_fromRename_0_bits_fuType),
+    .io_enq_req_0_bits_fuOpType                 (io_fromRename_0_bits_fuOpType),
+    .io_enq_req_0_bits_rfWen                    (io_fromRename_0_bits_rfWen),
+    .io_enq_req_0_bits_flushPipe                (io_fromRename_0_bits_flushPipe),
+    .io_enq_req_0_bits_vpu_nf                   (io_fromRename_0_bits_vpu_nf),
+    .io_enq_req_0_bits_vpu_veew                 (io_fromRename_0_bits_vpu_veew),
+    .io_enq_req_0_bits_uopIdx                   (io_fromRename_0_bits_uopIdx),
+    .io_enq_req_0_bits_lastUop                  (io_fromRename_0_bits_lastUop),
+    .io_enq_req_0_bits_pdest                    (io_fromRename_0_bits_pdest),
+    .io_enq_req_0_bits_robIdx_flag              (io_fromRename_0_bits_robIdx_flag),
+    .io_enq_req_0_bits_robIdx_value             (io_fromRename_0_bits_robIdx_value),
+    .io_enq_req_0_bits_debugInfo_renameTime     (io_fromRename_0_bits_debugInfo_renameTime),
+    .io_enq_req_0_bits_debug_seqNum_seqNum      (io_fromRename_0_bits_debug_seqNum_seqNum),
+    .io_enq_req_0_bits_debug_seqNum_uopIdx      (io_fromRename_0_bits_debug_seqNum_uopIdx),
+    // TODO(步骤2): golden = isVlsType_0 ? io_fromRename_0_bits_numLsElem : 5'h1
+    .io_enq_req_0_bits_numLsElem                (unresolved_ci_lsqEnqCtrl_io_enq_req_0_bits_numLsElem),
+    // TODO(步骤2): golden = firedVec_1 & ~(io_fromRename_1_valid & io_fromRename_1_bits_fuType[17]
+    .io_enq_req_1_valid                         (unresolved_ci_lsqEnqCtrl_io_enq_req_1_valid),
+    .io_enq_req_1_bits_exceptionVec_0           (io_fromRename_1_bits_exceptionVec_0),
+    .io_enq_req_1_bits_exceptionVec_1           (io_fromRename_1_bits_exceptionVec_1),
+    .io_enq_req_1_bits_exceptionVec_2           (io_fromRename_1_bits_exceptionVec_2),
+    .io_enq_req_1_bits_exceptionVec_3           (io_fromRename_1_bits_exceptionVec_3),
+    .io_enq_req_1_bits_exceptionVec_4           (io_fromRename_1_bits_exceptionVec_4),
+    .io_enq_req_1_bits_exceptionVec_5           (io_fromRename_1_bits_exceptionVec_5),
+    .io_enq_req_1_bits_exceptionVec_6           (io_fromRename_1_bits_exceptionVec_6),
+    .io_enq_req_1_bits_exceptionVec_7           (io_fromRename_1_bits_exceptionVec_7),
+    .io_enq_req_1_bits_exceptionVec_8           (io_fromRename_1_bits_exceptionVec_8),
+    .io_enq_req_1_bits_exceptionVec_9           (io_fromRename_1_bits_exceptionVec_9),
+    .io_enq_req_1_bits_exceptionVec_10          (io_fromRename_1_bits_exceptionVec_10),
+    .io_enq_req_1_bits_exceptionVec_11          (io_fromRename_1_bits_exceptionVec_11),
+    .io_enq_req_1_bits_exceptionVec_12          (io_fromRename_1_bits_exceptionVec_12),
+    .io_enq_req_1_bits_exceptionVec_13          (io_fromRename_1_bits_exceptionVec_13),
+    .io_enq_req_1_bits_exceptionVec_14          (io_fromRename_1_bits_exceptionVec_14),
+    .io_enq_req_1_bits_exceptionVec_15          (io_fromRename_1_bits_exceptionVec_15),
+    .io_enq_req_1_bits_exceptionVec_16          (io_fromRename_1_bits_exceptionVec_16),
+    .io_enq_req_1_bits_exceptionVec_17          (io_fromRename_1_bits_exceptionVec_17),
+    .io_enq_req_1_bits_exceptionVec_18          (io_fromRename_1_bits_exceptionVec_18),
+    .io_enq_req_1_bits_exceptionVec_19          (io_fromRename_1_bits_exceptionVec_19),
+    .io_enq_req_1_bits_exceptionVec_20          (io_fromRename_1_bits_exceptionVec_20),
+    .io_enq_req_1_bits_exceptionVec_21          (io_fromRename_1_bits_exceptionVec_21),
+    .io_enq_req_1_bits_exceptionVec_22          (io_fromRename_1_bits_exceptionVec_22),
+    .io_enq_req_1_bits_exceptionVec_23          (io_fromRename_1_bits_exceptionVec_23),
+    .io_enq_req_1_bits_trigger                  (io_fromRename_1_bits_trigger),
+    .io_enq_req_1_bits_fuType                   (io_fromRename_1_bits_fuType),
+    .io_enq_req_1_bits_fuOpType                 (io_fromRename_1_bits_fuOpType),
+    .io_enq_req_1_bits_rfWen                    (io_fromRename_1_bits_rfWen),
+    .io_enq_req_1_bits_flushPipe                (io_fromRename_1_bits_flushPipe),
+    .io_enq_req_1_bits_vpu_nf                   (io_fromRename_1_bits_vpu_nf),
+    .io_enq_req_1_bits_vpu_veew                 (io_fromRename_1_bits_vpu_veew),
+    .io_enq_req_1_bits_uopIdx                   (io_fromRename_1_bits_uopIdx),
+    .io_enq_req_1_bits_lastUop                  (io_fromRename_1_bits_lastUop),
+    .io_enq_req_1_bits_pdest                    (io_fromRename_1_bits_pdest),
+    .io_enq_req_1_bits_robIdx_flag              (io_fromRename_1_bits_robIdx_flag),
+    .io_enq_req_1_bits_robIdx_value             (io_fromRename_1_bits_robIdx_value),
+    .io_enq_req_1_bits_debugInfo_renameTime     (io_fromRename_1_bits_debugInfo_renameTime),
+    .io_enq_req_1_bits_debug_seqNum_seqNum      (io_fromRename_1_bits_debug_seqNum_seqNum),
+    .io_enq_req_1_bits_debug_seqNum_uopIdx      (io_fromRename_1_bits_debug_seqNum_uopIdx),
+    // TODO(步骤2): golden = isVlsType_1 ? io_fromRename_1_bits_numLsElem : 5'h1
+    .io_enq_req_1_bits_numLsElem                (unresolved_ci_lsqEnqCtrl_io_enq_req_1_bits_numLsElem),
+    // TODO(步骤2): golden = firedVec_2 & ~(io_fromRename_2_valid & io_fromRename_2_bits_fuType[17]
+    .io_enq_req_2_valid                         (unresolved_ci_lsqEnqCtrl_io_enq_req_2_valid),
+    .io_enq_req_2_bits_exceptionVec_0           (io_fromRename_2_bits_exceptionVec_0),
+    .io_enq_req_2_bits_exceptionVec_1           (io_fromRename_2_bits_exceptionVec_1),
+    .io_enq_req_2_bits_exceptionVec_2           (io_fromRename_2_bits_exceptionVec_2),
+    .io_enq_req_2_bits_exceptionVec_3           (io_fromRename_2_bits_exceptionVec_3),
+    .io_enq_req_2_bits_exceptionVec_4           (io_fromRename_2_bits_exceptionVec_4),
+    .io_enq_req_2_bits_exceptionVec_5           (io_fromRename_2_bits_exceptionVec_5),
+    .io_enq_req_2_bits_exceptionVec_6           (io_fromRename_2_bits_exceptionVec_6),
+    .io_enq_req_2_bits_exceptionVec_7           (io_fromRename_2_bits_exceptionVec_7),
+    .io_enq_req_2_bits_exceptionVec_8           (io_fromRename_2_bits_exceptionVec_8),
+    .io_enq_req_2_bits_exceptionVec_9           (io_fromRename_2_bits_exceptionVec_9),
+    .io_enq_req_2_bits_exceptionVec_10          (io_fromRename_2_bits_exceptionVec_10),
+    .io_enq_req_2_bits_exceptionVec_11          (io_fromRename_2_bits_exceptionVec_11),
+    .io_enq_req_2_bits_exceptionVec_12          (io_fromRename_2_bits_exceptionVec_12),
+    .io_enq_req_2_bits_exceptionVec_13          (io_fromRename_2_bits_exceptionVec_13),
+    .io_enq_req_2_bits_exceptionVec_14          (io_fromRename_2_bits_exceptionVec_14),
+    .io_enq_req_2_bits_exceptionVec_15          (io_fromRename_2_bits_exceptionVec_15),
+    .io_enq_req_2_bits_exceptionVec_16          (io_fromRename_2_bits_exceptionVec_16),
+    .io_enq_req_2_bits_exceptionVec_17          (io_fromRename_2_bits_exceptionVec_17),
+    .io_enq_req_2_bits_exceptionVec_18          (io_fromRename_2_bits_exceptionVec_18),
+    .io_enq_req_2_bits_exceptionVec_19          (io_fromRename_2_bits_exceptionVec_19),
+    .io_enq_req_2_bits_exceptionVec_20          (io_fromRename_2_bits_exceptionVec_20),
+    .io_enq_req_2_bits_exceptionVec_21          (io_fromRename_2_bits_exceptionVec_21),
+    .io_enq_req_2_bits_exceptionVec_22          (io_fromRename_2_bits_exceptionVec_22),
+    .io_enq_req_2_bits_exceptionVec_23          (io_fromRename_2_bits_exceptionVec_23),
+    .io_enq_req_2_bits_trigger                  (io_fromRename_2_bits_trigger),
+    .io_enq_req_2_bits_fuType                   (io_fromRename_2_bits_fuType),
+    .io_enq_req_2_bits_fuOpType                 (io_fromRename_2_bits_fuOpType),
+    .io_enq_req_2_bits_rfWen                    (io_fromRename_2_bits_rfWen),
+    .io_enq_req_2_bits_flushPipe                (io_fromRename_2_bits_flushPipe),
+    .io_enq_req_2_bits_vpu_nf                   (io_fromRename_2_bits_vpu_nf),
+    .io_enq_req_2_bits_vpu_veew                 (io_fromRename_2_bits_vpu_veew),
+    .io_enq_req_2_bits_uopIdx                   (io_fromRename_2_bits_uopIdx),
+    .io_enq_req_2_bits_lastUop                  (io_fromRename_2_bits_lastUop),
+    .io_enq_req_2_bits_pdest                    (io_fromRename_2_bits_pdest),
+    .io_enq_req_2_bits_robIdx_flag              (io_fromRename_2_bits_robIdx_flag),
+    .io_enq_req_2_bits_robIdx_value             (io_fromRename_2_bits_robIdx_value),
+    .io_enq_req_2_bits_debugInfo_renameTime     (io_fromRename_2_bits_debugInfo_renameTime),
+    .io_enq_req_2_bits_debug_seqNum_seqNum      (io_fromRename_2_bits_debug_seqNum_seqNum),
+    .io_enq_req_2_bits_debug_seqNum_uopIdx      (io_fromRename_2_bits_debug_seqNum_uopIdx),
+    // TODO(步骤2): golden = isVlsType_2 ? io_fromRename_2_bits_numLsElem : 5'h1
+    .io_enq_req_2_bits_numLsElem                (unresolved_ci_lsqEnqCtrl_io_enq_req_2_bits_numLsElem),
+    // TODO(步骤2): golden = firedVec_3 & ~(io_fromRename_3_valid & io_fromRename_3_bits_fuType[17]
+    .io_enq_req_3_valid                         (unresolved_ci_lsqEnqCtrl_io_enq_req_3_valid),
+    .io_enq_req_3_bits_exceptionVec_0           (io_fromRename_3_bits_exceptionVec_0),
+    .io_enq_req_3_bits_exceptionVec_1           (io_fromRename_3_bits_exceptionVec_1),
+    .io_enq_req_3_bits_exceptionVec_2           (io_fromRename_3_bits_exceptionVec_2),
+    .io_enq_req_3_bits_exceptionVec_3           (io_fromRename_3_bits_exceptionVec_3),
+    .io_enq_req_3_bits_exceptionVec_4           (io_fromRename_3_bits_exceptionVec_4),
+    .io_enq_req_3_bits_exceptionVec_5           (io_fromRename_3_bits_exceptionVec_5),
+    .io_enq_req_3_bits_exceptionVec_6           (io_fromRename_3_bits_exceptionVec_6),
+    .io_enq_req_3_bits_exceptionVec_7           (io_fromRename_3_bits_exceptionVec_7),
+    .io_enq_req_3_bits_exceptionVec_8           (io_fromRename_3_bits_exceptionVec_8),
+    .io_enq_req_3_bits_exceptionVec_9           (io_fromRename_3_bits_exceptionVec_9),
+    .io_enq_req_3_bits_exceptionVec_10          (io_fromRename_3_bits_exceptionVec_10),
+    .io_enq_req_3_bits_exceptionVec_11          (io_fromRename_3_bits_exceptionVec_11),
+    .io_enq_req_3_bits_exceptionVec_12          (io_fromRename_3_bits_exceptionVec_12),
+    .io_enq_req_3_bits_exceptionVec_13          (io_fromRename_3_bits_exceptionVec_13),
+    .io_enq_req_3_bits_exceptionVec_14          (io_fromRename_3_bits_exceptionVec_14),
+    .io_enq_req_3_bits_exceptionVec_15          (io_fromRename_3_bits_exceptionVec_15),
+    .io_enq_req_3_bits_exceptionVec_16          (io_fromRename_3_bits_exceptionVec_16),
+    .io_enq_req_3_bits_exceptionVec_17          (io_fromRename_3_bits_exceptionVec_17),
+    .io_enq_req_3_bits_exceptionVec_18          (io_fromRename_3_bits_exceptionVec_18),
+    .io_enq_req_3_bits_exceptionVec_19          (io_fromRename_3_bits_exceptionVec_19),
+    .io_enq_req_3_bits_exceptionVec_20          (io_fromRename_3_bits_exceptionVec_20),
+    .io_enq_req_3_bits_exceptionVec_21          (io_fromRename_3_bits_exceptionVec_21),
+    .io_enq_req_3_bits_exceptionVec_22          (io_fromRename_3_bits_exceptionVec_22),
+    .io_enq_req_3_bits_exceptionVec_23          (io_fromRename_3_bits_exceptionVec_23),
+    .io_enq_req_3_bits_trigger                  (io_fromRename_3_bits_trigger),
+    .io_enq_req_3_bits_fuType                   (io_fromRename_3_bits_fuType),
+    .io_enq_req_3_bits_fuOpType                 (io_fromRename_3_bits_fuOpType),
+    .io_enq_req_3_bits_rfWen                    (io_fromRename_3_bits_rfWen),
+    .io_enq_req_3_bits_flushPipe                (io_fromRename_3_bits_flushPipe),
+    .io_enq_req_3_bits_vpu_nf                   (io_fromRename_3_bits_vpu_nf),
+    .io_enq_req_3_bits_vpu_veew                 (io_fromRename_3_bits_vpu_veew),
+    .io_enq_req_3_bits_uopIdx                   (io_fromRename_3_bits_uopIdx),
+    .io_enq_req_3_bits_lastUop                  (io_fromRename_3_bits_lastUop),
+    .io_enq_req_3_bits_pdest                    (io_fromRename_3_bits_pdest),
+    .io_enq_req_3_bits_robIdx_flag              (io_fromRename_3_bits_robIdx_flag),
+    .io_enq_req_3_bits_robIdx_value             (io_fromRename_3_bits_robIdx_value),
+    .io_enq_req_3_bits_debugInfo_renameTime     (io_fromRename_3_bits_debugInfo_renameTime),
+    .io_enq_req_3_bits_debug_seqNum_seqNum      (io_fromRename_3_bits_debug_seqNum_seqNum),
+    .io_enq_req_3_bits_debug_seqNum_uopIdx      (io_fromRename_3_bits_debug_seqNum_uopIdx),
+    // TODO(步骤2): golden = isVlsType_3 ? io_fromRename_3_bits_numLsElem : 5'h1
+    .io_enq_req_3_bits_numLsElem                (unresolved_ci_lsqEnqCtrl_io_enq_req_3_bits_numLsElem),
+    // TODO(步骤2): golden = firedVec_4 & ~(io_fromRename_4_valid & io_fromRename_4_bits_fuType[17]
+    .io_enq_req_4_valid                         (unresolved_ci_lsqEnqCtrl_io_enq_req_4_valid),
+    .io_enq_req_4_bits_exceptionVec_0           (io_fromRename_4_bits_exceptionVec_0),
+    .io_enq_req_4_bits_exceptionVec_1           (io_fromRename_4_bits_exceptionVec_1),
+    .io_enq_req_4_bits_exceptionVec_2           (io_fromRename_4_bits_exceptionVec_2),
+    .io_enq_req_4_bits_exceptionVec_3           (io_fromRename_4_bits_exceptionVec_3),
+    .io_enq_req_4_bits_exceptionVec_4           (io_fromRename_4_bits_exceptionVec_4),
+    .io_enq_req_4_bits_exceptionVec_5           (io_fromRename_4_bits_exceptionVec_5),
+    .io_enq_req_4_bits_exceptionVec_6           (io_fromRename_4_bits_exceptionVec_6),
+    .io_enq_req_4_bits_exceptionVec_7           (io_fromRename_4_bits_exceptionVec_7),
+    .io_enq_req_4_bits_exceptionVec_8           (io_fromRename_4_bits_exceptionVec_8),
+    .io_enq_req_4_bits_exceptionVec_9           (io_fromRename_4_bits_exceptionVec_9),
+    .io_enq_req_4_bits_exceptionVec_10          (io_fromRename_4_bits_exceptionVec_10),
+    .io_enq_req_4_bits_exceptionVec_11          (io_fromRename_4_bits_exceptionVec_11),
+    .io_enq_req_4_bits_exceptionVec_12          (io_fromRename_4_bits_exceptionVec_12),
+    .io_enq_req_4_bits_exceptionVec_13          (io_fromRename_4_bits_exceptionVec_13),
+    .io_enq_req_4_bits_exceptionVec_14          (io_fromRename_4_bits_exceptionVec_14),
+    .io_enq_req_4_bits_exceptionVec_15          (io_fromRename_4_bits_exceptionVec_15),
+    .io_enq_req_4_bits_exceptionVec_16          (io_fromRename_4_bits_exceptionVec_16),
+    .io_enq_req_4_bits_exceptionVec_17          (io_fromRename_4_bits_exceptionVec_17),
+    .io_enq_req_4_bits_exceptionVec_18          (io_fromRename_4_bits_exceptionVec_18),
+    .io_enq_req_4_bits_exceptionVec_19          (io_fromRename_4_bits_exceptionVec_19),
+    .io_enq_req_4_bits_exceptionVec_20          (io_fromRename_4_bits_exceptionVec_20),
+    .io_enq_req_4_bits_exceptionVec_21          (io_fromRename_4_bits_exceptionVec_21),
+    .io_enq_req_4_bits_exceptionVec_22          (io_fromRename_4_bits_exceptionVec_22),
+    .io_enq_req_4_bits_exceptionVec_23          (io_fromRename_4_bits_exceptionVec_23),
+    .io_enq_req_4_bits_trigger                  (io_fromRename_4_bits_trigger),
+    .io_enq_req_4_bits_fuType                   (io_fromRename_4_bits_fuType),
+    .io_enq_req_4_bits_fuOpType                 (io_fromRename_4_bits_fuOpType),
+    .io_enq_req_4_bits_rfWen                    (io_fromRename_4_bits_rfWen),
+    .io_enq_req_4_bits_flushPipe                (io_fromRename_4_bits_flushPipe),
+    .io_enq_req_4_bits_vpu_nf                   (io_fromRename_4_bits_vpu_nf),
+    .io_enq_req_4_bits_vpu_veew                 (io_fromRename_4_bits_vpu_veew),
+    .io_enq_req_4_bits_uopIdx                   (io_fromRename_4_bits_uopIdx),
+    .io_enq_req_4_bits_lastUop                  (io_fromRename_4_bits_lastUop),
+    .io_enq_req_4_bits_pdest                    (io_fromRename_4_bits_pdest),
+    .io_enq_req_4_bits_robIdx_flag              (io_fromRename_4_bits_robIdx_flag),
+    .io_enq_req_4_bits_robIdx_value             (io_fromRename_4_bits_robIdx_value),
+    .io_enq_req_4_bits_debugInfo_renameTime     (io_fromRename_4_bits_debugInfo_renameTime),
+    .io_enq_req_4_bits_debug_seqNum_seqNum      (io_fromRename_4_bits_debug_seqNum_seqNum),
+    .io_enq_req_4_bits_debug_seqNum_uopIdx      (io_fromRename_4_bits_debug_seqNum_uopIdx),
+    // TODO(步骤2): golden = isVlsType_4 ? io_fromRename_4_bits_numLsElem : 5'h1
+    .io_enq_req_4_bits_numLsElem                (unresolved_ci_lsqEnqCtrl_io_enq_req_4_bits_numLsElem),
+    // TODO(步骤2): golden = firedVec_5 & ~(io_fromRename_5_valid & io_fromRename_5_bits_fuType[17]
+    .io_enq_req_5_valid                         (unresolved_ci_lsqEnqCtrl_io_enq_req_5_valid),
+    .io_enq_req_5_bits_exceptionVec_0           (io_fromRename_5_bits_exceptionVec_0),
+    .io_enq_req_5_bits_exceptionVec_1           (io_fromRename_5_bits_exceptionVec_1),
+    .io_enq_req_5_bits_exceptionVec_2           (io_fromRename_5_bits_exceptionVec_2),
+    .io_enq_req_5_bits_exceptionVec_3           (io_fromRename_5_bits_exceptionVec_3),
+    .io_enq_req_5_bits_exceptionVec_4           (io_fromRename_5_bits_exceptionVec_4),
+    .io_enq_req_5_bits_exceptionVec_5           (io_fromRename_5_bits_exceptionVec_5),
+    .io_enq_req_5_bits_exceptionVec_6           (io_fromRename_5_bits_exceptionVec_6),
+    .io_enq_req_5_bits_exceptionVec_7           (io_fromRename_5_bits_exceptionVec_7),
+    .io_enq_req_5_bits_exceptionVec_8           (io_fromRename_5_bits_exceptionVec_8),
+    .io_enq_req_5_bits_exceptionVec_9           (io_fromRename_5_bits_exceptionVec_9),
+    .io_enq_req_5_bits_exceptionVec_10          (io_fromRename_5_bits_exceptionVec_10),
+    .io_enq_req_5_bits_exceptionVec_11          (io_fromRename_5_bits_exceptionVec_11),
+    .io_enq_req_5_bits_exceptionVec_12          (io_fromRename_5_bits_exceptionVec_12),
+    .io_enq_req_5_bits_exceptionVec_13          (io_fromRename_5_bits_exceptionVec_13),
+    .io_enq_req_5_bits_exceptionVec_14          (io_fromRename_5_bits_exceptionVec_14),
+    .io_enq_req_5_bits_exceptionVec_15          (io_fromRename_5_bits_exceptionVec_15),
+    .io_enq_req_5_bits_exceptionVec_16          (io_fromRename_5_bits_exceptionVec_16),
+    .io_enq_req_5_bits_exceptionVec_17          (io_fromRename_5_bits_exceptionVec_17),
+    .io_enq_req_5_bits_exceptionVec_18          (io_fromRename_5_bits_exceptionVec_18),
+    .io_enq_req_5_bits_exceptionVec_19          (io_fromRename_5_bits_exceptionVec_19),
+    .io_enq_req_5_bits_exceptionVec_20          (io_fromRename_5_bits_exceptionVec_20),
+    .io_enq_req_5_bits_exceptionVec_21          (io_fromRename_5_bits_exceptionVec_21),
+    .io_enq_req_5_bits_exceptionVec_22          (io_fromRename_5_bits_exceptionVec_22),
+    .io_enq_req_5_bits_exceptionVec_23          (io_fromRename_5_bits_exceptionVec_23),
+    .io_enq_req_5_bits_trigger                  (io_fromRename_5_bits_trigger),
+    .io_enq_req_5_bits_fuType                   (io_fromRename_5_bits_fuType),
+    .io_enq_req_5_bits_fuOpType                 (io_fromRename_5_bits_fuOpType),
+    .io_enq_req_5_bits_rfWen                    (io_fromRename_5_bits_rfWen),
+    .io_enq_req_5_bits_flushPipe                (io_fromRename_5_bits_flushPipe),
+    .io_enq_req_5_bits_vpu_nf                   (io_fromRename_5_bits_vpu_nf),
+    .io_enq_req_5_bits_vpu_veew                 (io_fromRename_5_bits_vpu_veew),
+    .io_enq_req_5_bits_uopIdx                   (io_fromRename_5_bits_uopIdx),
+    .io_enq_req_5_bits_lastUop                  (io_fromRename_5_bits_lastUop),
+    .io_enq_req_5_bits_pdest                    (io_fromRename_5_bits_pdest),
+    .io_enq_req_5_bits_robIdx_flag              (io_fromRename_5_bits_robIdx_flag),
+    .io_enq_req_5_bits_robIdx_value             (io_fromRename_5_bits_robIdx_value),
+    .io_enq_req_5_bits_debugInfo_renameTime     (io_fromRename_5_bits_debugInfo_renameTime),
+    .io_enq_req_5_bits_debug_seqNum_seqNum      (io_fromRename_5_bits_debug_seqNum_seqNum),
+    .io_enq_req_5_bits_debug_seqNum_uopIdx      (io_fromRename_5_bits_debug_seqNum_uopIdx),
+    // TODO(步骤2): golden = isVlsType_5 ? io_fromRename_5_bits_numLsElem : 5'h1
+    .io_enq_req_5_bits_numLsElem                (unresolved_ci_lsqEnqCtrl_io_enq_req_5_bits_numLsElem),
+    // TODO(步骤2): golden = ~io_fromRename_0_valid | firedVec_0
+    .io_enq_iqAccept_0                          (unresolved_ci_lsqEnqCtrl_io_enq_iqAccept_0),
+    // TODO(步骤2): golden = ~io_fromRename_1_valid | firedVec_1
+    .io_enq_iqAccept_1                          (unresolved_ci_lsqEnqCtrl_io_enq_iqAccept_1),
+    // TODO(步骤2): golden = ~io_fromRename_2_valid | firedVec_2
+    .io_enq_iqAccept_2                          (unresolved_ci_lsqEnqCtrl_io_enq_iqAccept_2),
+    // TODO(步骤2): golden = ~io_fromRename_3_valid | firedVec_3
+    .io_enq_iqAccept_3                          (unresolved_ci_lsqEnqCtrl_io_enq_iqAccept_3),
+    // TODO(步骤2): golden = ~io_fromRename_4_valid | firedVec_4
+    .io_enq_iqAccept_4                          (unresolved_ci_lsqEnqCtrl_io_enq_iqAccept_4),
+    // TODO(步骤2): golden = ~io_fromRename_5_valid | firedVec_5
+    .io_enq_iqAccept_5                          (unresolved_ci_lsqEnqCtrl_io_enq_iqAccept_5),
+    .io_enq_resp_0_lqIdx_flag                   (_lsqEnqCtrl_io_enq_resp_0_lqIdx_flag),
+    .io_enq_resp_0_lqIdx_value                  (_lsqEnqCtrl_io_enq_resp_0_lqIdx_value),
+    .io_enq_resp_0_sqIdx_flag                   (_lsqEnqCtrl_io_enq_resp_0_sqIdx_flag),
+    .io_enq_resp_0_sqIdx_value                  (_lsqEnqCtrl_io_enq_resp_0_sqIdx_value),
+    .io_enq_resp_1_lqIdx_flag                   (_lsqEnqCtrl_io_enq_resp_1_lqIdx_flag),
+    .io_enq_resp_1_lqIdx_value                  (_lsqEnqCtrl_io_enq_resp_1_lqIdx_value),
+    .io_enq_resp_1_sqIdx_flag                   (_lsqEnqCtrl_io_enq_resp_1_sqIdx_flag),
+    .io_enq_resp_1_sqIdx_value                  (_lsqEnqCtrl_io_enq_resp_1_sqIdx_value),
+    .io_enq_resp_2_lqIdx_flag                   (_lsqEnqCtrl_io_enq_resp_2_lqIdx_flag),
+    .io_enq_resp_2_lqIdx_value                  (_lsqEnqCtrl_io_enq_resp_2_lqIdx_value),
+    .io_enq_resp_2_sqIdx_flag                   (_lsqEnqCtrl_io_enq_resp_2_sqIdx_flag),
+    .io_enq_resp_2_sqIdx_value                  (_lsqEnqCtrl_io_enq_resp_2_sqIdx_value),
+    .io_enq_resp_3_lqIdx_flag                   (_lsqEnqCtrl_io_enq_resp_3_lqIdx_flag),
+    .io_enq_resp_3_lqIdx_value                  (_lsqEnqCtrl_io_enq_resp_3_lqIdx_value),
+    .io_enq_resp_3_sqIdx_flag                   (_lsqEnqCtrl_io_enq_resp_3_sqIdx_flag),
+    .io_enq_resp_3_sqIdx_value                  (_lsqEnqCtrl_io_enq_resp_3_sqIdx_value),
+    .io_enq_resp_4_lqIdx_flag                   (_lsqEnqCtrl_io_enq_resp_4_lqIdx_flag),
+    .io_enq_resp_4_lqIdx_value                  (_lsqEnqCtrl_io_enq_resp_4_lqIdx_value),
+    .io_enq_resp_4_sqIdx_flag                   (_lsqEnqCtrl_io_enq_resp_4_sqIdx_flag),
+    .io_enq_resp_4_sqIdx_value                  (_lsqEnqCtrl_io_enq_resp_4_sqIdx_value),
+    .io_enq_resp_5_lqIdx_flag                   (_lsqEnqCtrl_io_enq_resp_5_lqIdx_flag),
+    .io_enq_resp_5_lqIdx_value                  (_lsqEnqCtrl_io_enq_resp_5_lqIdx_value),
+    .io_enq_resp_5_sqIdx_flag                   (_lsqEnqCtrl_io_enq_resp_5_sqIdx_flag),
+    .io_enq_resp_5_sqIdx_value                  (_lsqEnqCtrl_io_enq_resp_5_sqIdx_value),
+    .io_lcommit                                 (io_fromMem_lcommit),
+    .io_scommit                                 (io_fromMem_scommit),
+    .io_lqCancelCnt                             (io_fromMem_lqCancelCnt),
+    .io_sqCancelCnt                             (io_fromMem_sqCancelCnt),
+    .io_lqFreeCount                             (_lsqEnqCtrl_io_lqFreeCount),
+    .io_sqFreeCount                             (_lsqEnqCtrl_io_sqFreeCount),
+    .io_enqLsq_needAlloc_0                      (_lsqEnqCtrl_io_enqLsq_needAlloc_0),
+    .io_enqLsq_needAlloc_1                      (_lsqEnqCtrl_io_enqLsq_needAlloc_1),
+    .io_enqLsq_needAlloc_2                      (_lsqEnqCtrl_io_enqLsq_needAlloc_2),
+    .io_enqLsq_needAlloc_3                      (_lsqEnqCtrl_io_enqLsq_needAlloc_3),
+    .io_enqLsq_needAlloc_4                      (_lsqEnqCtrl_io_enqLsq_needAlloc_4),
+    .io_enqLsq_needAlloc_5                      (_lsqEnqCtrl_io_enqLsq_needAlloc_5),
+    .io_enqLsq_req_0_valid                      (_lsqEnqCtrl_io_enqLsq_req_0_valid),
+    .io_enqLsq_req_0_bits_exceptionVec_0        (_lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_0),
+    .io_enqLsq_req_0_bits_exceptionVec_1        (_lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_1),
+    .io_enqLsq_req_0_bits_exceptionVec_2        (_lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_2),
+    .io_enqLsq_req_0_bits_exceptionVec_3        (_lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_3),
+    .io_enqLsq_req_0_bits_exceptionVec_4        (_lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_4),
+    .io_enqLsq_req_0_bits_exceptionVec_5        (_lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_5),
+    .io_enqLsq_req_0_bits_exceptionVec_6        (_lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_6),
+    .io_enqLsq_req_0_bits_exceptionVec_7        (_lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_7),
+    .io_enqLsq_req_0_bits_exceptionVec_8        (_lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_8),
+    .io_enqLsq_req_0_bits_exceptionVec_9        (_lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_9),
+    .io_enqLsq_req_0_bits_exceptionVec_10       (_lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_10),
+    .io_enqLsq_req_0_bits_exceptionVec_11       (_lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_11),
+    .io_enqLsq_req_0_bits_exceptionVec_12       (_lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_12),
+    .io_enqLsq_req_0_bits_exceptionVec_13       (_lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_13),
+    .io_enqLsq_req_0_bits_exceptionVec_14       (_lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_14),
+    .io_enqLsq_req_0_bits_exceptionVec_15       (_lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_15),
+    .io_enqLsq_req_0_bits_exceptionVec_16       (_lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_16),
+    .io_enqLsq_req_0_bits_exceptionVec_17       (_lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_17),
+    .io_enqLsq_req_0_bits_exceptionVec_18       (_lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_18),
+    .io_enqLsq_req_0_bits_exceptionVec_19       (_lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_19),
+    .io_enqLsq_req_0_bits_exceptionVec_20       (_lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_20),
+    .io_enqLsq_req_0_bits_exceptionVec_21       (_lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_21),
+    .io_enqLsq_req_0_bits_exceptionVec_22       (_lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_22),
+    .io_enqLsq_req_0_bits_exceptionVec_23       (_lsqEnqCtrl_io_enqLsq_req_0_bits_exceptionVec_23),
+    .io_enqLsq_req_0_bits_trigger               (_lsqEnqCtrl_io_enqLsq_req_0_bits_trigger),
+    .io_enqLsq_req_0_bits_fuType                (_lsqEnqCtrl_io_enqLsq_req_0_bits_fuType),
+    .io_enqLsq_req_0_bits_fuOpType              (_lsqEnqCtrl_io_enqLsq_req_0_bits_fuOpType),
+    .io_enqLsq_req_0_bits_rfWen                 (_lsqEnqCtrl_io_enqLsq_req_0_bits_rfWen),
+    .io_enqLsq_req_0_bits_flushPipe             (_lsqEnqCtrl_io_enqLsq_req_0_bits_flushPipe),
+    .io_enqLsq_req_0_bits_vpu_nf                (_lsqEnqCtrl_io_enqLsq_req_0_bits_vpu_nf),
+    .io_enqLsq_req_0_bits_vpu_veew              (_lsqEnqCtrl_io_enqLsq_req_0_bits_vpu_veew),
+    .io_enqLsq_req_0_bits_uopIdx                (_lsqEnqCtrl_io_enqLsq_req_0_bits_uopIdx),
+    .io_enqLsq_req_0_bits_lastUop               (_lsqEnqCtrl_io_enqLsq_req_0_bits_lastUop),
+    .io_enqLsq_req_0_bits_pdest                 (_lsqEnqCtrl_io_enqLsq_req_0_bits_pdest),
+    .io_enqLsq_req_0_bits_robIdx_flag           (_lsqEnqCtrl_io_enqLsq_req_0_bits_robIdx_flag),
+    .io_enqLsq_req_0_bits_robIdx_value          (_lsqEnqCtrl_io_enqLsq_req_0_bits_robIdx_value),
+    .io_enqLsq_req_0_bits_debugInfo_eliminatedMove (_lsqEnqCtrl_io_enqLsq_req_0_bits_debugInfo_eliminatedMove),
+    .io_enqLsq_req_0_bits_debugInfo_renameTime  (_lsqEnqCtrl_io_enqLsq_req_0_bits_debugInfo_renameTime),
+    .io_enqLsq_req_0_bits_debugInfo_dispatchTime (_lsqEnqCtrl_io_enqLsq_req_0_bits_debugInfo_dispatchTime),
+    .io_enqLsq_req_0_bits_debugInfo_enqRsTime   (_lsqEnqCtrl_io_enqLsq_req_0_bits_debugInfo_enqRsTime),
+    .io_enqLsq_req_0_bits_debugInfo_selectTime  (_lsqEnqCtrl_io_enqLsq_req_0_bits_debugInfo_selectTime),
+    .io_enqLsq_req_0_bits_debugInfo_issueTime   (_lsqEnqCtrl_io_enqLsq_req_0_bits_debugInfo_issueTime),
+    .io_enqLsq_req_0_bits_debugInfo_writebackTime (_lsqEnqCtrl_io_enqLsq_req_0_bits_debugInfo_writebackTime),
+    .io_enqLsq_req_0_bits_debugInfo_runahead_checkpoint_id (_lsqEnqCtrl_io_enqLsq_req_0_bits_debugInfo_runahead_checkpoint_id),
+    .io_enqLsq_req_0_bits_debugInfo_tlbFirstReqTime (_lsqEnqCtrl_io_enqLsq_req_0_bits_debugInfo_tlbFirstReqTime),
+    .io_enqLsq_req_0_bits_debugInfo_tlbRespTime (_lsqEnqCtrl_io_enqLsq_req_0_bits_debugInfo_tlbRespTime),
+    .io_enqLsq_req_0_bits_debug_seqNum_seqNum   (_lsqEnqCtrl_io_enqLsq_req_0_bits_debug_seqNum_seqNum),
+    .io_enqLsq_req_0_bits_debug_seqNum_uopIdx   (_lsqEnqCtrl_io_enqLsq_req_0_bits_debug_seqNum_uopIdx),
+    .io_enqLsq_req_0_bits_lqIdx_flag            (_lsqEnqCtrl_io_enqLsq_req_0_bits_lqIdx_flag),
+    .io_enqLsq_req_0_bits_lqIdx_value           (_lsqEnqCtrl_io_enqLsq_req_0_bits_lqIdx_value),
+    .io_enqLsq_req_0_bits_sqIdx_flag            (_lsqEnqCtrl_io_enqLsq_req_0_bits_sqIdx_flag),
+    .io_enqLsq_req_0_bits_sqIdx_value           (_lsqEnqCtrl_io_enqLsq_req_0_bits_sqIdx_value),
+    .io_enqLsq_req_0_bits_numLsElem             (_lsqEnqCtrl_io_enqLsq_req_0_bits_numLsElem),
+    .io_enqLsq_req_1_valid                      (_lsqEnqCtrl_io_enqLsq_req_1_valid),
+    .io_enqLsq_req_1_bits_exceptionVec_0        (_lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_0),
+    .io_enqLsq_req_1_bits_exceptionVec_1        (_lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_1),
+    .io_enqLsq_req_1_bits_exceptionVec_2        (_lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_2),
+    .io_enqLsq_req_1_bits_exceptionVec_3        (_lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_3),
+    .io_enqLsq_req_1_bits_exceptionVec_4        (_lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_4),
+    .io_enqLsq_req_1_bits_exceptionVec_5        (_lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_5),
+    .io_enqLsq_req_1_bits_exceptionVec_6        (_lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_6),
+    .io_enqLsq_req_1_bits_exceptionVec_7        (_lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_7),
+    .io_enqLsq_req_1_bits_exceptionVec_8        (_lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_8),
+    .io_enqLsq_req_1_bits_exceptionVec_9        (_lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_9),
+    .io_enqLsq_req_1_bits_exceptionVec_10       (_lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_10),
+    .io_enqLsq_req_1_bits_exceptionVec_11       (_lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_11),
+    .io_enqLsq_req_1_bits_exceptionVec_12       (_lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_12),
+    .io_enqLsq_req_1_bits_exceptionVec_13       (_lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_13),
+    .io_enqLsq_req_1_bits_exceptionVec_14       (_lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_14),
+    .io_enqLsq_req_1_bits_exceptionVec_15       (_lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_15),
+    .io_enqLsq_req_1_bits_exceptionVec_16       (_lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_16),
+    .io_enqLsq_req_1_bits_exceptionVec_17       (_lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_17),
+    .io_enqLsq_req_1_bits_exceptionVec_18       (_lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_18),
+    .io_enqLsq_req_1_bits_exceptionVec_19       (_lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_19),
+    .io_enqLsq_req_1_bits_exceptionVec_20       (_lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_20),
+    .io_enqLsq_req_1_bits_exceptionVec_21       (_lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_21),
+    .io_enqLsq_req_1_bits_exceptionVec_22       (_lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_22),
+    .io_enqLsq_req_1_bits_exceptionVec_23       (_lsqEnqCtrl_io_enqLsq_req_1_bits_exceptionVec_23),
+    .io_enqLsq_req_1_bits_trigger               (_lsqEnqCtrl_io_enqLsq_req_1_bits_trigger),
+    .io_enqLsq_req_1_bits_fuType                (_lsqEnqCtrl_io_enqLsq_req_1_bits_fuType),
+    .io_enqLsq_req_1_bits_fuOpType              (_lsqEnqCtrl_io_enqLsq_req_1_bits_fuOpType),
+    .io_enqLsq_req_1_bits_rfWen                 (_lsqEnqCtrl_io_enqLsq_req_1_bits_rfWen),
+    .io_enqLsq_req_1_bits_flushPipe             (_lsqEnqCtrl_io_enqLsq_req_1_bits_flushPipe),
+    .io_enqLsq_req_1_bits_vpu_nf                (_lsqEnqCtrl_io_enqLsq_req_1_bits_vpu_nf),
+    .io_enqLsq_req_1_bits_vpu_veew              (_lsqEnqCtrl_io_enqLsq_req_1_bits_vpu_veew),
+    .io_enqLsq_req_1_bits_uopIdx                (_lsqEnqCtrl_io_enqLsq_req_1_bits_uopIdx),
+    .io_enqLsq_req_1_bits_lastUop               (_lsqEnqCtrl_io_enqLsq_req_1_bits_lastUop),
+    .io_enqLsq_req_1_bits_pdest                 (_lsqEnqCtrl_io_enqLsq_req_1_bits_pdest),
+    .io_enqLsq_req_1_bits_robIdx_flag           (_lsqEnqCtrl_io_enqLsq_req_1_bits_robIdx_flag),
+    .io_enqLsq_req_1_bits_robIdx_value          (_lsqEnqCtrl_io_enqLsq_req_1_bits_robIdx_value),
+    .io_enqLsq_req_1_bits_debugInfo_eliminatedMove (_lsqEnqCtrl_io_enqLsq_req_1_bits_debugInfo_eliminatedMove),
+    .io_enqLsq_req_1_bits_debugInfo_renameTime  (_lsqEnqCtrl_io_enqLsq_req_1_bits_debugInfo_renameTime),
+    .io_enqLsq_req_1_bits_debugInfo_dispatchTime (_lsqEnqCtrl_io_enqLsq_req_1_bits_debugInfo_dispatchTime),
+    .io_enqLsq_req_1_bits_debugInfo_enqRsTime   (_lsqEnqCtrl_io_enqLsq_req_1_bits_debugInfo_enqRsTime),
+    .io_enqLsq_req_1_bits_debugInfo_selectTime  (_lsqEnqCtrl_io_enqLsq_req_1_bits_debugInfo_selectTime),
+    .io_enqLsq_req_1_bits_debugInfo_issueTime   (_lsqEnqCtrl_io_enqLsq_req_1_bits_debugInfo_issueTime),
+    .io_enqLsq_req_1_bits_debugInfo_writebackTime (_lsqEnqCtrl_io_enqLsq_req_1_bits_debugInfo_writebackTime),
+    .io_enqLsq_req_1_bits_debugInfo_runahead_checkpoint_id (_lsqEnqCtrl_io_enqLsq_req_1_bits_debugInfo_runahead_checkpoint_id),
+    .io_enqLsq_req_1_bits_debugInfo_tlbFirstReqTime (_lsqEnqCtrl_io_enqLsq_req_1_bits_debugInfo_tlbFirstReqTime),
+    .io_enqLsq_req_1_bits_debugInfo_tlbRespTime (_lsqEnqCtrl_io_enqLsq_req_1_bits_debugInfo_tlbRespTime),
+    .io_enqLsq_req_1_bits_debug_seqNum_seqNum   (_lsqEnqCtrl_io_enqLsq_req_1_bits_debug_seqNum_seqNum),
+    .io_enqLsq_req_1_bits_debug_seqNum_uopIdx   (_lsqEnqCtrl_io_enqLsq_req_1_bits_debug_seqNum_uopIdx),
+    .io_enqLsq_req_1_bits_lqIdx_flag            (_lsqEnqCtrl_io_enqLsq_req_1_bits_lqIdx_flag),
+    .io_enqLsq_req_1_bits_lqIdx_value           (_lsqEnqCtrl_io_enqLsq_req_1_bits_lqIdx_value),
+    .io_enqLsq_req_1_bits_sqIdx_flag            (_lsqEnqCtrl_io_enqLsq_req_1_bits_sqIdx_flag),
+    .io_enqLsq_req_1_bits_sqIdx_value           (_lsqEnqCtrl_io_enqLsq_req_1_bits_sqIdx_value),
+    .io_enqLsq_req_1_bits_numLsElem             (_lsqEnqCtrl_io_enqLsq_req_1_bits_numLsElem),
+    .io_enqLsq_req_2_valid                      (_lsqEnqCtrl_io_enqLsq_req_2_valid),
+    .io_enqLsq_req_2_bits_exceptionVec_0        (_lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_0),
+    .io_enqLsq_req_2_bits_exceptionVec_1        (_lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_1),
+    .io_enqLsq_req_2_bits_exceptionVec_2        (_lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_2),
+    .io_enqLsq_req_2_bits_exceptionVec_3        (_lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_3),
+    .io_enqLsq_req_2_bits_exceptionVec_4        (_lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_4),
+    .io_enqLsq_req_2_bits_exceptionVec_5        (_lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_5),
+    .io_enqLsq_req_2_bits_exceptionVec_6        (_lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_6),
+    .io_enqLsq_req_2_bits_exceptionVec_7        (_lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_7),
+    .io_enqLsq_req_2_bits_exceptionVec_8        (_lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_8),
+    .io_enqLsq_req_2_bits_exceptionVec_9        (_lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_9),
+    .io_enqLsq_req_2_bits_exceptionVec_10       (_lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_10),
+    .io_enqLsq_req_2_bits_exceptionVec_11       (_lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_11),
+    .io_enqLsq_req_2_bits_exceptionVec_12       (_lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_12),
+    .io_enqLsq_req_2_bits_exceptionVec_13       (_lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_13),
+    .io_enqLsq_req_2_bits_exceptionVec_14       (_lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_14),
+    .io_enqLsq_req_2_bits_exceptionVec_15       (_lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_15),
+    .io_enqLsq_req_2_bits_exceptionVec_16       (_lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_16),
+    .io_enqLsq_req_2_bits_exceptionVec_17       (_lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_17),
+    .io_enqLsq_req_2_bits_exceptionVec_18       (_lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_18),
+    .io_enqLsq_req_2_bits_exceptionVec_19       (_lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_19),
+    .io_enqLsq_req_2_bits_exceptionVec_20       (_lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_20),
+    .io_enqLsq_req_2_bits_exceptionVec_21       (_lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_21),
+    .io_enqLsq_req_2_bits_exceptionVec_22       (_lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_22),
+    .io_enqLsq_req_2_bits_exceptionVec_23       (_lsqEnqCtrl_io_enqLsq_req_2_bits_exceptionVec_23),
+    .io_enqLsq_req_2_bits_trigger               (_lsqEnqCtrl_io_enqLsq_req_2_bits_trigger),
+    .io_enqLsq_req_2_bits_fuType                (_lsqEnqCtrl_io_enqLsq_req_2_bits_fuType),
+    .io_enqLsq_req_2_bits_fuOpType              (_lsqEnqCtrl_io_enqLsq_req_2_bits_fuOpType),
+    .io_enqLsq_req_2_bits_rfWen                 (_lsqEnqCtrl_io_enqLsq_req_2_bits_rfWen),
+    .io_enqLsq_req_2_bits_flushPipe             (_lsqEnqCtrl_io_enqLsq_req_2_bits_flushPipe),
+    .io_enqLsq_req_2_bits_vpu_nf                (_lsqEnqCtrl_io_enqLsq_req_2_bits_vpu_nf),
+    .io_enqLsq_req_2_bits_vpu_veew              (_lsqEnqCtrl_io_enqLsq_req_2_bits_vpu_veew),
+    .io_enqLsq_req_2_bits_uopIdx                (_lsqEnqCtrl_io_enqLsq_req_2_bits_uopIdx),
+    .io_enqLsq_req_2_bits_lastUop               (_lsqEnqCtrl_io_enqLsq_req_2_bits_lastUop),
+    .io_enqLsq_req_2_bits_pdest                 (_lsqEnqCtrl_io_enqLsq_req_2_bits_pdest),
+    .io_enqLsq_req_2_bits_robIdx_flag           (_lsqEnqCtrl_io_enqLsq_req_2_bits_robIdx_flag),
+    .io_enqLsq_req_2_bits_robIdx_value          (_lsqEnqCtrl_io_enqLsq_req_2_bits_robIdx_value),
+    .io_enqLsq_req_2_bits_debugInfo_eliminatedMove (_lsqEnqCtrl_io_enqLsq_req_2_bits_debugInfo_eliminatedMove),
+    .io_enqLsq_req_2_bits_debugInfo_renameTime  (_lsqEnqCtrl_io_enqLsq_req_2_bits_debugInfo_renameTime),
+    .io_enqLsq_req_2_bits_debugInfo_dispatchTime (_lsqEnqCtrl_io_enqLsq_req_2_bits_debugInfo_dispatchTime),
+    .io_enqLsq_req_2_bits_debugInfo_enqRsTime   (_lsqEnqCtrl_io_enqLsq_req_2_bits_debugInfo_enqRsTime),
+    .io_enqLsq_req_2_bits_debugInfo_selectTime  (_lsqEnqCtrl_io_enqLsq_req_2_bits_debugInfo_selectTime),
+    .io_enqLsq_req_2_bits_debugInfo_issueTime   (_lsqEnqCtrl_io_enqLsq_req_2_bits_debugInfo_issueTime),
+    .io_enqLsq_req_2_bits_debugInfo_writebackTime (_lsqEnqCtrl_io_enqLsq_req_2_bits_debugInfo_writebackTime),
+    .io_enqLsq_req_2_bits_debugInfo_runahead_checkpoint_id (_lsqEnqCtrl_io_enqLsq_req_2_bits_debugInfo_runahead_checkpoint_id),
+    .io_enqLsq_req_2_bits_debugInfo_tlbFirstReqTime (_lsqEnqCtrl_io_enqLsq_req_2_bits_debugInfo_tlbFirstReqTime),
+    .io_enqLsq_req_2_bits_debugInfo_tlbRespTime (_lsqEnqCtrl_io_enqLsq_req_2_bits_debugInfo_tlbRespTime),
+    .io_enqLsq_req_2_bits_debug_seqNum_seqNum   (_lsqEnqCtrl_io_enqLsq_req_2_bits_debug_seqNum_seqNum),
+    .io_enqLsq_req_2_bits_debug_seqNum_uopIdx   (_lsqEnqCtrl_io_enqLsq_req_2_bits_debug_seqNum_uopIdx),
+    .io_enqLsq_req_2_bits_lqIdx_flag            (_lsqEnqCtrl_io_enqLsq_req_2_bits_lqIdx_flag),
+    .io_enqLsq_req_2_bits_lqIdx_value           (_lsqEnqCtrl_io_enqLsq_req_2_bits_lqIdx_value),
+    .io_enqLsq_req_2_bits_sqIdx_flag            (_lsqEnqCtrl_io_enqLsq_req_2_bits_sqIdx_flag),
+    .io_enqLsq_req_2_bits_sqIdx_value           (_lsqEnqCtrl_io_enqLsq_req_2_bits_sqIdx_value),
+    .io_enqLsq_req_2_bits_numLsElem             (_lsqEnqCtrl_io_enqLsq_req_2_bits_numLsElem),
+    .io_enqLsq_req_3_valid                      (_lsqEnqCtrl_io_enqLsq_req_3_valid),
+    .io_enqLsq_req_3_bits_exceptionVec_0        (_lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_0),
+    .io_enqLsq_req_3_bits_exceptionVec_1        (_lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_1),
+    .io_enqLsq_req_3_bits_exceptionVec_2        (_lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_2),
+    .io_enqLsq_req_3_bits_exceptionVec_3        (_lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_3),
+    .io_enqLsq_req_3_bits_exceptionVec_4        (_lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_4),
+    .io_enqLsq_req_3_bits_exceptionVec_5        (_lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_5),
+    .io_enqLsq_req_3_bits_exceptionVec_6        (_lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_6),
+    .io_enqLsq_req_3_bits_exceptionVec_7        (_lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_7),
+    .io_enqLsq_req_3_bits_exceptionVec_8        (_lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_8),
+    .io_enqLsq_req_3_bits_exceptionVec_9        (_lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_9),
+    .io_enqLsq_req_3_bits_exceptionVec_10       (_lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_10),
+    .io_enqLsq_req_3_bits_exceptionVec_11       (_lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_11),
+    .io_enqLsq_req_3_bits_exceptionVec_12       (_lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_12),
+    .io_enqLsq_req_3_bits_exceptionVec_13       (_lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_13),
+    .io_enqLsq_req_3_bits_exceptionVec_14       (_lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_14),
+    .io_enqLsq_req_3_bits_exceptionVec_15       (_lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_15),
+    .io_enqLsq_req_3_bits_exceptionVec_16       (_lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_16),
+    .io_enqLsq_req_3_bits_exceptionVec_17       (_lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_17),
+    .io_enqLsq_req_3_bits_exceptionVec_18       (_lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_18),
+    .io_enqLsq_req_3_bits_exceptionVec_19       (_lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_19),
+    .io_enqLsq_req_3_bits_exceptionVec_20       (_lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_20),
+    .io_enqLsq_req_3_bits_exceptionVec_21       (_lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_21),
+    .io_enqLsq_req_3_bits_exceptionVec_22       (_lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_22),
+    .io_enqLsq_req_3_bits_exceptionVec_23       (_lsqEnqCtrl_io_enqLsq_req_3_bits_exceptionVec_23),
+    .io_enqLsq_req_3_bits_trigger               (_lsqEnqCtrl_io_enqLsq_req_3_bits_trigger),
+    .io_enqLsq_req_3_bits_fuType                (_lsqEnqCtrl_io_enqLsq_req_3_bits_fuType),
+    .io_enqLsq_req_3_bits_fuOpType              (_lsqEnqCtrl_io_enqLsq_req_3_bits_fuOpType),
+    .io_enqLsq_req_3_bits_rfWen                 (_lsqEnqCtrl_io_enqLsq_req_3_bits_rfWen),
+    .io_enqLsq_req_3_bits_flushPipe             (_lsqEnqCtrl_io_enqLsq_req_3_bits_flushPipe),
+    .io_enqLsq_req_3_bits_vpu_nf                (_lsqEnqCtrl_io_enqLsq_req_3_bits_vpu_nf),
+    .io_enqLsq_req_3_bits_vpu_veew              (_lsqEnqCtrl_io_enqLsq_req_3_bits_vpu_veew),
+    .io_enqLsq_req_3_bits_uopIdx                (_lsqEnqCtrl_io_enqLsq_req_3_bits_uopIdx),
+    .io_enqLsq_req_3_bits_lastUop               (_lsqEnqCtrl_io_enqLsq_req_3_bits_lastUop),
+    .io_enqLsq_req_3_bits_pdest                 (_lsqEnqCtrl_io_enqLsq_req_3_bits_pdest),
+    .io_enqLsq_req_3_bits_robIdx_flag           (_lsqEnqCtrl_io_enqLsq_req_3_bits_robIdx_flag),
+    .io_enqLsq_req_3_bits_robIdx_value          (_lsqEnqCtrl_io_enqLsq_req_3_bits_robIdx_value),
+    .io_enqLsq_req_3_bits_debugInfo_eliminatedMove (_lsqEnqCtrl_io_enqLsq_req_3_bits_debugInfo_eliminatedMove),
+    .io_enqLsq_req_3_bits_debugInfo_renameTime  (_lsqEnqCtrl_io_enqLsq_req_3_bits_debugInfo_renameTime),
+    .io_enqLsq_req_3_bits_debugInfo_dispatchTime (_lsqEnqCtrl_io_enqLsq_req_3_bits_debugInfo_dispatchTime),
+    .io_enqLsq_req_3_bits_debugInfo_enqRsTime   (_lsqEnqCtrl_io_enqLsq_req_3_bits_debugInfo_enqRsTime),
+    .io_enqLsq_req_3_bits_debugInfo_selectTime  (_lsqEnqCtrl_io_enqLsq_req_3_bits_debugInfo_selectTime),
+    .io_enqLsq_req_3_bits_debugInfo_issueTime   (_lsqEnqCtrl_io_enqLsq_req_3_bits_debugInfo_issueTime),
+    .io_enqLsq_req_3_bits_debugInfo_writebackTime (_lsqEnqCtrl_io_enqLsq_req_3_bits_debugInfo_writebackTime),
+    .io_enqLsq_req_3_bits_debugInfo_runahead_checkpoint_id (_lsqEnqCtrl_io_enqLsq_req_3_bits_debugInfo_runahead_checkpoint_id),
+    .io_enqLsq_req_3_bits_debugInfo_tlbFirstReqTime (_lsqEnqCtrl_io_enqLsq_req_3_bits_debugInfo_tlbFirstReqTime),
+    .io_enqLsq_req_3_bits_debugInfo_tlbRespTime (_lsqEnqCtrl_io_enqLsq_req_3_bits_debugInfo_tlbRespTime),
+    .io_enqLsq_req_3_bits_debug_seqNum_seqNum   (_lsqEnqCtrl_io_enqLsq_req_3_bits_debug_seqNum_seqNum),
+    .io_enqLsq_req_3_bits_debug_seqNum_uopIdx   (_lsqEnqCtrl_io_enqLsq_req_3_bits_debug_seqNum_uopIdx),
+    .io_enqLsq_req_3_bits_lqIdx_flag            (_lsqEnqCtrl_io_enqLsq_req_3_bits_lqIdx_flag),
+    .io_enqLsq_req_3_bits_lqIdx_value           (_lsqEnqCtrl_io_enqLsq_req_3_bits_lqIdx_value),
+    .io_enqLsq_req_3_bits_sqIdx_flag            (_lsqEnqCtrl_io_enqLsq_req_3_bits_sqIdx_flag),
+    .io_enqLsq_req_3_bits_sqIdx_value           (_lsqEnqCtrl_io_enqLsq_req_3_bits_sqIdx_value),
+    .io_enqLsq_req_3_bits_numLsElem             (_lsqEnqCtrl_io_enqLsq_req_3_bits_numLsElem),
+    .io_enqLsq_req_4_valid                      (_lsqEnqCtrl_io_enqLsq_req_4_valid),
+    .io_enqLsq_req_4_bits_exceptionVec_0        (_lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_0),
+    .io_enqLsq_req_4_bits_exceptionVec_1        (_lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_1),
+    .io_enqLsq_req_4_bits_exceptionVec_2        (_lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_2),
+    .io_enqLsq_req_4_bits_exceptionVec_3        (_lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_3),
+    .io_enqLsq_req_4_bits_exceptionVec_4        (_lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_4),
+    .io_enqLsq_req_4_bits_exceptionVec_5        (_lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_5),
+    .io_enqLsq_req_4_bits_exceptionVec_6        (_lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_6),
+    .io_enqLsq_req_4_bits_exceptionVec_7        (_lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_7),
+    .io_enqLsq_req_4_bits_exceptionVec_8        (_lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_8),
+    .io_enqLsq_req_4_bits_exceptionVec_9        (_lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_9),
+    .io_enqLsq_req_4_bits_exceptionVec_10       (_lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_10),
+    .io_enqLsq_req_4_bits_exceptionVec_11       (_lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_11),
+    .io_enqLsq_req_4_bits_exceptionVec_12       (_lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_12),
+    .io_enqLsq_req_4_bits_exceptionVec_13       (_lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_13),
+    .io_enqLsq_req_4_bits_exceptionVec_14       (_lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_14),
+    .io_enqLsq_req_4_bits_exceptionVec_15       (_lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_15),
+    .io_enqLsq_req_4_bits_exceptionVec_16       (_lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_16),
+    .io_enqLsq_req_4_bits_exceptionVec_17       (_lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_17),
+    .io_enqLsq_req_4_bits_exceptionVec_18       (_lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_18),
+    .io_enqLsq_req_4_bits_exceptionVec_19       (_lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_19),
+    .io_enqLsq_req_4_bits_exceptionVec_20       (_lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_20),
+    .io_enqLsq_req_4_bits_exceptionVec_21       (_lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_21),
+    .io_enqLsq_req_4_bits_exceptionVec_22       (_lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_22),
+    .io_enqLsq_req_4_bits_exceptionVec_23       (_lsqEnqCtrl_io_enqLsq_req_4_bits_exceptionVec_23),
+    .io_enqLsq_req_4_bits_trigger               (_lsqEnqCtrl_io_enqLsq_req_4_bits_trigger),
+    .io_enqLsq_req_4_bits_fuType                (_lsqEnqCtrl_io_enqLsq_req_4_bits_fuType),
+    .io_enqLsq_req_4_bits_fuOpType              (_lsqEnqCtrl_io_enqLsq_req_4_bits_fuOpType),
+    .io_enqLsq_req_4_bits_rfWen                 (_lsqEnqCtrl_io_enqLsq_req_4_bits_rfWen),
+    .io_enqLsq_req_4_bits_flushPipe             (_lsqEnqCtrl_io_enqLsq_req_4_bits_flushPipe),
+    .io_enqLsq_req_4_bits_vpu_nf                (_lsqEnqCtrl_io_enqLsq_req_4_bits_vpu_nf),
+    .io_enqLsq_req_4_bits_vpu_veew              (_lsqEnqCtrl_io_enqLsq_req_4_bits_vpu_veew),
+    .io_enqLsq_req_4_bits_uopIdx                (_lsqEnqCtrl_io_enqLsq_req_4_bits_uopIdx),
+    .io_enqLsq_req_4_bits_lastUop               (_lsqEnqCtrl_io_enqLsq_req_4_bits_lastUop),
+    .io_enqLsq_req_4_bits_pdest                 (_lsqEnqCtrl_io_enqLsq_req_4_bits_pdest),
+    .io_enqLsq_req_4_bits_robIdx_flag           (_lsqEnqCtrl_io_enqLsq_req_4_bits_robIdx_flag),
+    .io_enqLsq_req_4_bits_robIdx_value          (_lsqEnqCtrl_io_enqLsq_req_4_bits_robIdx_value),
+    .io_enqLsq_req_4_bits_debugInfo_eliminatedMove (_lsqEnqCtrl_io_enqLsq_req_4_bits_debugInfo_eliminatedMove),
+    .io_enqLsq_req_4_bits_debugInfo_renameTime  (_lsqEnqCtrl_io_enqLsq_req_4_bits_debugInfo_renameTime),
+    .io_enqLsq_req_4_bits_debugInfo_dispatchTime (_lsqEnqCtrl_io_enqLsq_req_4_bits_debugInfo_dispatchTime),
+    .io_enqLsq_req_4_bits_debugInfo_enqRsTime   (_lsqEnqCtrl_io_enqLsq_req_4_bits_debugInfo_enqRsTime),
+    .io_enqLsq_req_4_bits_debugInfo_selectTime  (_lsqEnqCtrl_io_enqLsq_req_4_bits_debugInfo_selectTime),
+    .io_enqLsq_req_4_bits_debugInfo_issueTime   (_lsqEnqCtrl_io_enqLsq_req_4_bits_debugInfo_issueTime),
+    .io_enqLsq_req_4_bits_debugInfo_writebackTime (_lsqEnqCtrl_io_enqLsq_req_4_bits_debugInfo_writebackTime),
+    .io_enqLsq_req_4_bits_debugInfo_runahead_checkpoint_id (_lsqEnqCtrl_io_enqLsq_req_4_bits_debugInfo_runahead_checkpoint_id),
+    .io_enqLsq_req_4_bits_debugInfo_tlbFirstReqTime (_lsqEnqCtrl_io_enqLsq_req_4_bits_debugInfo_tlbFirstReqTime),
+    .io_enqLsq_req_4_bits_debugInfo_tlbRespTime (_lsqEnqCtrl_io_enqLsq_req_4_bits_debugInfo_tlbRespTime),
+    .io_enqLsq_req_4_bits_debug_seqNum_seqNum   (_lsqEnqCtrl_io_enqLsq_req_4_bits_debug_seqNum_seqNum),
+    .io_enqLsq_req_4_bits_debug_seqNum_uopIdx   (_lsqEnqCtrl_io_enqLsq_req_4_bits_debug_seqNum_uopIdx),
+    .io_enqLsq_req_4_bits_lqIdx_flag            (_lsqEnqCtrl_io_enqLsq_req_4_bits_lqIdx_flag),
+    .io_enqLsq_req_4_bits_lqIdx_value           (_lsqEnqCtrl_io_enqLsq_req_4_bits_lqIdx_value),
+    .io_enqLsq_req_4_bits_sqIdx_flag            (_lsqEnqCtrl_io_enqLsq_req_4_bits_sqIdx_flag),
+    .io_enqLsq_req_4_bits_sqIdx_value           (_lsqEnqCtrl_io_enqLsq_req_4_bits_sqIdx_value),
+    .io_enqLsq_req_4_bits_numLsElem             (_lsqEnqCtrl_io_enqLsq_req_4_bits_numLsElem),
+    .io_enqLsq_req_5_valid                      (_lsqEnqCtrl_io_enqLsq_req_5_valid),
+    .io_enqLsq_req_5_bits_exceptionVec_0        (_lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_0),
+    .io_enqLsq_req_5_bits_exceptionVec_1        (_lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_1),
+    .io_enqLsq_req_5_bits_exceptionVec_2        (_lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_2),
+    .io_enqLsq_req_5_bits_exceptionVec_3        (_lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_3),
+    .io_enqLsq_req_5_bits_exceptionVec_4        (_lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_4),
+    .io_enqLsq_req_5_bits_exceptionVec_5        (_lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_5),
+    .io_enqLsq_req_5_bits_exceptionVec_6        (_lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_6),
+    .io_enqLsq_req_5_bits_exceptionVec_7        (_lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_7),
+    .io_enqLsq_req_5_bits_exceptionVec_8        (_lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_8),
+    .io_enqLsq_req_5_bits_exceptionVec_9        (_lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_9),
+    .io_enqLsq_req_5_bits_exceptionVec_10       (_lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_10),
+    .io_enqLsq_req_5_bits_exceptionVec_11       (_lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_11),
+    .io_enqLsq_req_5_bits_exceptionVec_12       (_lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_12),
+    .io_enqLsq_req_5_bits_exceptionVec_13       (_lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_13),
+    .io_enqLsq_req_5_bits_exceptionVec_14       (_lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_14),
+    .io_enqLsq_req_5_bits_exceptionVec_15       (_lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_15),
+    .io_enqLsq_req_5_bits_exceptionVec_16       (_lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_16),
+    .io_enqLsq_req_5_bits_exceptionVec_17       (_lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_17),
+    .io_enqLsq_req_5_bits_exceptionVec_18       (_lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_18),
+    .io_enqLsq_req_5_bits_exceptionVec_19       (_lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_19),
+    .io_enqLsq_req_5_bits_exceptionVec_20       (_lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_20),
+    .io_enqLsq_req_5_bits_exceptionVec_21       (_lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_21),
+    .io_enqLsq_req_5_bits_exceptionVec_22       (_lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_22),
+    .io_enqLsq_req_5_bits_exceptionVec_23       (_lsqEnqCtrl_io_enqLsq_req_5_bits_exceptionVec_23),
+    .io_enqLsq_req_5_bits_trigger               (_lsqEnqCtrl_io_enqLsq_req_5_bits_trigger),
+    .io_enqLsq_req_5_bits_fuType                (_lsqEnqCtrl_io_enqLsq_req_5_bits_fuType),
+    .io_enqLsq_req_5_bits_fuOpType              (_lsqEnqCtrl_io_enqLsq_req_5_bits_fuOpType),
+    .io_enqLsq_req_5_bits_rfWen                 (_lsqEnqCtrl_io_enqLsq_req_5_bits_rfWen),
+    .io_enqLsq_req_5_bits_flushPipe             (_lsqEnqCtrl_io_enqLsq_req_5_bits_flushPipe),
+    .io_enqLsq_req_5_bits_vpu_nf                (_lsqEnqCtrl_io_enqLsq_req_5_bits_vpu_nf),
+    .io_enqLsq_req_5_bits_vpu_veew              (_lsqEnqCtrl_io_enqLsq_req_5_bits_vpu_veew),
+    .io_enqLsq_req_5_bits_uopIdx                (_lsqEnqCtrl_io_enqLsq_req_5_bits_uopIdx),
+    .io_enqLsq_req_5_bits_lastUop               (_lsqEnqCtrl_io_enqLsq_req_5_bits_lastUop),
+    .io_enqLsq_req_5_bits_pdest                 (_lsqEnqCtrl_io_enqLsq_req_5_bits_pdest),
+    .io_enqLsq_req_5_bits_robIdx_flag           (_lsqEnqCtrl_io_enqLsq_req_5_bits_robIdx_flag),
+    .io_enqLsq_req_5_bits_robIdx_value          (_lsqEnqCtrl_io_enqLsq_req_5_bits_robIdx_value),
+    .io_enqLsq_req_5_bits_debugInfo_eliminatedMove (_lsqEnqCtrl_io_enqLsq_req_5_bits_debugInfo_eliminatedMove),
+    .io_enqLsq_req_5_bits_debugInfo_renameTime  (_lsqEnqCtrl_io_enqLsq_req_5_bits_debugInfo_renameTime),
+    .io_enqLsq_req_5_bits_debugInfo_dispatchTime (_lsqEnqCtrl_io_enqLsq_req_5_bits_debugInfo_dispatchTime),
+    .io_enqLsq_req_5_bits_debugInfo_enqRsTime   (_lsqEnqCtrl_io_enqLsq_req_5_bits_debugInfo_enqRsTime),
+    .io_enqLsq_req_5_bits_debugInfo_selectTime  (_lsqEnqCtrl_io_enqLsq_req_5_bits_debugInfo_selectTime),
+    .io_enqLsq_req_5_bits_debugInfo_issueTime   (_lsqEnqCtrl_io_enqLsq_req_5_bits_debugInfo_issueTime),
+    .io_enqLsq_req_5_bits_debugInfo_writebackTime (_lsqEnqCtrl_io_enqLsq_req_5_bits_debugInfo_writebackTime),
+    .io_enqLsq_req_5_bits_debugInfo_runahead_checkpoint_id (_lsqEnqCtrl_io_enqLsq_req_5_bits_debugInfo_runahead_checkpoint_id),
+    .io_enqLsq_req_5_bits_debugInfo_tlbFirstReqTime (_lsqEnqCtrl_io_enqLsq_req_5_bits_debugInfo_tlbFirstReqTime),
+    .io_enqLsq_req_5_bits_debugInfo_tlbRespTime (_lsqEnqCtrl_io_enqLsq_req_5_bits_debugInfo_tlbRespTime),
+    .io_enqLsq_req_5_bits_debug_seqNum_seqNum   (_lsqEnqCtrl_io_enqLsq_req_5_bits_debug_seqNum_seqNum),
+    .io_enqLsq_req_5_bits_debug_seqNum_uopIdx   (_lsqEnqCtrl_io_enqLsq_req_5_bits_debug_seqNum_uopIdx),
+    .io_enqLsq_req_5_bits_lqIdx_flag            (_lsqEnqCtrl_io_enqLsq_req_5_bits_lqIdx_flag),
+    .io_enqLsq_req_5_bits_lqIdx_value           (_lsqEnqCtrl_io_enqLsq_req_5_bits_lqIdx_value),
+    .io_enqLsq_req_5_bits_sqIdx_flag            (_lsqEnqCtrl_io_enqLsq_req_5_bits_sqIdx_flag),
+    .io_enqLsq_req_5_bits_sqIdx_value           (_lsqEnqCtrl_io_enqLsq_req_5_bits_sqIdx_value),
+    .io_enqLsq_req_5_bits_numLsElem             (_lsqEnqCtrl_io_enqLsq_req_5_bits_numLsElem)
+  );
+
+  // END GENERATED
+
 endmodule
