@@ -17,6 +17,10 @@
 // elaborate 期不变式（见下面 initial）：
 //   WIDTH * STAGES == GOLDEN_REG_BITS —— GOLDEN_REG_BITS 是从 golden 变体里
 //   数出来的 reg 位数总和；载荷宽度或级数抄错，等式立刻不成立。
+//   GOLDEN_HAS_CLOCK == (STAGES > 0) —— 0 级变体（DelayN_225）在 golden 里
+//   连 clock 端口都没有（firtool 把纯直连的时钟消掉了）。这条把「级数」与
+//   「端口表上有没有时钟」绑在一起：STAGES 抄成 0 而 golden 有时钟、或者反过来，
+//   time 0 就炸，不用指望随机激励恰好打到差那一拍。
 //   PORT_BITS_IN / PORT_BITS_OUT 由薄文件用 $bits(golden 端口拼接) 传进来，
 //   必须都等于 WIDTH —— 任何一个端口的位宽抄错（本轮已发生过 3 次这类事故），
 //   拼接总位数就变了，time 0 直接 $fatal，不必指望随机激励打到那一位。
@@ -26,16 +30,18 @@ module xs_DelayN_core #(
   parameter int unsigned STAGES          = 1,          // 延迟级数 n
   parameter int unsigned GOLDEN_REG_BITS = WIDTH * STAGES,  // golden 里 reg 位数总和
   parameter int unsigned PORT_BITS_IN    = WIDTH,      // = $bits({golden io_in_* 全部端口})
-  parameter int unsigned PORT_BITS_OUT   = WIDTH       // = $bits({golden io_out_* 全部端口})
+  parameter int unsigned PORT_BITS_OUT   = WIDTH,      // = $bits({golden io_out_* 全部端口})
+  parameter bit          GOLDEN_HAS_CLOCK = 1'b1       // golden 端口表上有没有 clock
 )(
-  input  logic             clock,
+  input  logic             clock,   // STAGES==0 时本口不被使用（golden 也没有这个口）
   input  logic [WIDTH-1:0] d_in,
   output logic [WIDTH-1:0] d_out
 );
 
   initial begin
-    if (STAGES == 0)
-      $fatal(1, "xs_DelayN_core: STAGES=0 —— DelayN 至少一级（golden 里没有 0 级变体）");
+    if (GOLDEN_HAS_CLOCK != (STAGES > 0))
+      $fatal(1, "xs_DelayN_core: STAGES=%0d 与 golden 端口表有无 clock(%0d) 不相容",
+             STAGES, GOLDEN_HAS_CLOCK);
     if (WIDTH * STAGES != GOLDEN_REG_BITS)
       $fatal(1, "xs_DelayN_core: WIDTH=%0d * STAGES=%0d = %0d != golden reg 位数总和 %0d（参数抄错）",
              WIDTH, STAGES, WIDTH * STAGES, GOLDEN_REG_BITS);
@@ -48,14 +54,23 @@ module xs_DelayN_core #(
   end
 
   // 打拍链：stage[0] 收输入，stage[k] 收上一级；无复位，与 golden 的 reg 一致。
-  logic [WIDTH-1:0] stage [STAGES];
+  // STAGES==0 是 utility.DelayN(x, 0) 的退化情形：一根线直通，没有寄存器也没有时钟。
+  // golden 里确有这种变体（DelayN_225），所以这里必须有这条分支——**不是补全对称**，
+  // 而是照抄 golden 的确有形态。
+  generate
+    if (STAGES == 0) begin : g_bypass
+      assign d_out = d_in;
+    end else begin : g_chain
+      logic [WIDTH-1:0] stage [STAGES];
 
-  always_ff @(posedge clock) begin
-    stage[0] <= d_in;
-    for (int unsigned s = 1; s < STAGES; s++)
-      stage[s] <= stage[s-1];
-  end
+      always_ff @(posedge clock) begin
+        stage[0] <= d_in;
+        for (int unsigned s = 1; s < STAGES; s++)
+          stage[s] <= stage[s-1];
+      end
 
-  assign d_out = stage[STAGES-1];
+      assign d_out = stage[STAGES-1];
+    end
+  endgenerate
 
 endmodule

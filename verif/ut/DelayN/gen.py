@@ -13,12 +13,25 @@ RTL = os.path.abspath(os.path.join(HERE, "../../../rtl/common"))
 
 # Frontend 例化闭包里的 6 个 DelayN 变体 + 各自的使用者（golden 里 grep 出来的父模块）
 VARIANTS = {
-    "DelayN":    "Predictor / Composer —— 分支预测各子预测器的使能位打一拍",
-    "DelayN_1":  "FTB / Backend / PTW 系列 —— 单比特控制位打两拍",
-    "DelayN_7":  "Frontend / TLB 系列 —— satp/vsatp/hgatp/mbmc/priv/pmm 快照打两拍",
-    "DelayN_8":  "Frontend / MemBlock —— 自定义 CSR 分发包（含 trigger）打两拍",
-    "DelayN_9":  "TLB 系列 —— TLB 请求（valid + rs1/rs2/addr/id/flushPipe/hv/hg）打两拍",
-    "DelayN_13": "Frontend / L2TLB / LSQ 系列 —— 单比特控制位打一拍",
+    "DelayN":     "Predictor / Composer —— 分支预测各子预测器的使能位打一拍",
+    "DelayN_1":   "FTB / Backend / PTW 系列 —— 单比特控制位打两拍",
+    "DelayN_7":   "Frontend / TLB 系列 —— satp/vsatp/hgatp/mbmc/priv/pmm 快照打两拍",
+    "DelayN_8":   "Frontend / MemBlock —— 自定义 CSR 分发包（含 trigger）打两拍",
+    "DelayN_9":   "TLB 系列 —— TLB 请求（valid + rs1/rs2/addr/id/flushPipe/hv/hg）打两拍",
+    "DelayN_13":  "Frontend / L2TLB / LSQ 系列 —— 单比特控制位打一拍",
+    "DelayN_15":  "CtrlBlock —— 单比特控制位打四拍",
+    "DelayN_17":  "InterruptFilter / CtrlBlock —— 单比特控制位打五拍",
+    "DelayN_208": "InterruptFilter —— 8 位中断向量打五拍",
+    "DelayN_214": "ExeUnit_7（向量执行单元）—— 183 位微操作包打两拍",
+    "DelayN_215": "ExeUnit_7 —— robIdx(flag+value) 打两拍",
+    "DelayN_220": "L2TLB —— PTW 请求（valid + rs1/rs2/addr/id/hv/hg）打一拍",
+    "DelayN_221": "L2TLB —— 261 位 PTW 响应包打一拍",
+    "DelayN_225": "LqPAddrModule —— ★0 级退化变体★：DelayN(x, 0) 就是一根直连线，"
+                  "golden 里连 clock 端口都没有",
+    "DelayN_297": "LoadQueueRAW —— 单比特控制位打三拍",
+    "DelayN_331": "MemBlock —— 单比特控制位打十拍（本族最深）",
+    "DelayN_333": "MemBlock —— 14 位控制包打两拍",
+    "DelayN_334": "L2Top —— 48 位包打五拍",
 }
 
 
@@ -41,19 +54,31 @@ def gen_variant(name):
     f = facts(name)
     stages, regbits, payload = f["stages"], f["reg_bits"], f["payload"]
     assert payload * stages == regbits, name
+    has_clk = "clock" in f["other"]
+    assert has_clk == (stages > 0), name
     ins = [p["name"] for p in f["ins"]]
     outs = [p["name"] for p in f["outs"]]
     fields = ", ".join(f'{p["name"][len("io_in_"):] or "io_in"}={p["w"]}b'
                        for p in f["ins"][:5])
     more = "" if len(ins) <= 5 else f" …共 {len(ins)} 个字段，明细见端口表"
     ports = f["head_text"].split("\n", 1)[1]
+    # 0 级变体的 golden 没有 clock 端口，核里那条时钟分支也不存在；给核喂常 0，
+    # 并用 GOLDEN_HAS_CLOCK 把「端口表有没有时钟」与「级数是不是 0」绑死。
+    clk_arg = "clock" if has_clk else "1'b0"     # 0 级变体：golden 端口表无 clock
+    # PAYLOAD_W 平时从 golden 的 reg 位数除级数得出（抄错级数或位宽立刻不守恒）；
+    # 0 级变体没有 reg，只能直接写载荷位宽，由下面 PORT_BITS_IN/OUT 的 $bits 核对。
+    payload_expr = ("GOLDEN_REG_BITS / STAGES" if has_clk
+                    else "%d;   // 0 级：无 reg 可除，载荷位宽直接写，由下面 $bits 核对"
+                         % payload)
+    stage_desc = ("%d 级 × %d 位" % (stages, payload) if has_clk
+                  else "0 级 —— golden 模块体里一个 reg 也没有，输出直连输入")
     return f"""// =============================================================================
 // {name} —— 固定级数的载荷打拍链（xs_DelayN_core 家族的一个变体）
 //
 // 本变体的参数与规模（按 G1 golden 现读，不从上一轮继承）：
 //   延迟级数 STAGES = {stages}；载荷宽度 = {payload} 位，分 {len(ins)} 个字段；
-//   golden 模块体 = {regbits} 个 reg 位（{stages} 级 × {payload} 位），无复位 / 无使能 / 无子模块；
-//   端口 {len(f["ports"])} 个 = clock + {len(ins)} 个 io_in_* + {len(outs)} 个 io_out_*。
+//   golden 模块体 = {regbits} 个 reg 位（{stage_desc}），无复位 / 无使能 / 无子模块；
+//   端口 {len(f["ports"])} 个 = {"clock + " if has_clk else ""}{len(ins)} 个 io_in_* + {len(outs)} 个 io_out_*。
 //   载荷字段：{fields}{more}。
 //   使用者：{VARIANTS[name]}。
 //
@@ -70,7 +95,7 @@ module {name}(
 
   localparam int unsigned STAGES          = {stages};
   localparam int unsigned GOLDEN_REG_BITS = {regbits};   // golden 里 reg 位数总和
-  localparam int unsigned PAYLOAD_W       = GOLDEN_REG_BITS / STAGES;
+  localparam int unsigned PAYLOAD_W       = {payload_expr}{";" if has_clk else ""}
 
   // 端口表事实：golden 全部输入 / 输出端口拼起来各有多少位（$bits 只认端口声明）
   localparam int unsigned PORT_BITS_IN = $bits(
@@ -89,9 +114,10 @@ module {name}(
     .STAGES         (STAGES),
     .GOLDEN_REG_BITS(GOLDEN_REG_BITS),
     .PORT_BITS_IN   (PORT_BITS_IN),
-    .PORT_BITS_OUT  (PORT_BITS_OUT)
+    .PORT_BITS_OUT  (PORT_BITS_OUT),
+    .GOLDEN_HAS_CLOCK({int(has_clk)})
   ) u_core (
-    .clock(clock),
+    .clock({clk_arg}),
     .d_in (payload_in),
     .d_out(payload_out)
   );
@@ -170,7 +196,8 @@ def gen_tb():
         L.append(f"  logic [{pw-1}:0] {s}_ones, {s}_zeros, {s}_prev;")
         L.append(f"  int   {s}_checks, {s}_moves;")
         for tag, mod in (("g", name), ("i", name + "_xs")):
-            conn = ["    .clock(clock)"]
+            # 0 级变体（DelayN_225）没有 clock 端口，连都不能连。
+            conn = ["    .clock(clock)"] if "clock" in f["other"] else []
             for nm, hi, lo, w in ins:
                 conn.append(f"    .{nm}({s}_in[{hi}:{lo}])" if w > 1 else f"    .{nm}({s}_in[{hi}])")
             for nm, hi, lo, w in outs:
@@ -239,8 +266,11 @@ def gen_tb():
       check_outputs();
       drive_random_inputs();
     end
-    $display("DelayN family checks=%0d errors=%0d", checks, errors);
 {nl.join(cov)}
+    // ★这一行是判据的唯一出口★：checks / errors / bad_cov 一起打，
+    // scripts/mutant_harness.py 按 `checks=N errors=N bad_cov=N` 整条匹配。
+    // 只打 errors 的话，"一次都没比对"和"比对全过"在日志里长得一模一样。
+    $display("DelayN family checks=%0d errors=%0d bad_cov=%0d", checks, errors, cov_fail);
     if (errors == 0 && cov_fail == 0) begin
       $display("TEST PASSED");
       $finish;
