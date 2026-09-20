@@ -1,0 +1,212 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "TlbStorageWrapper_3",
+ "run_id": "TlbStorageWrapper-20260920T071806Z-c62139c3",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/TlbStorageWrapper_3.sv",
+   "kind": "golden",
+   "sha256": "2338460982d3213031945c75daf1a3ef10f264e9069a4aafa8a8d63c9d8f630f"
+  },
+  {
+   "path": "golden-rtl/TLBFA_3.sv",
+   "kind": "golden",
+   "sha256": "63a2133ac80cb333f1e712bf1cfaa4941ba50c302458c827d5f679dacee7b26f"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/memblock/memblock_common_pkg.sv",
+   "kind": "repo",
+   "sha256": "d5f097b8dff9f709df8da7e75abc9a2f50c598152d5187fc0895d07e840cc04a"
+  },
+  {
+   "path": "rtl/memblock/xs_TlbStorageWrapper_core.sv",
+   "kind": "repo",
+   "sha256": "19ccacc70c184bf9c157bbbfb2b46dce16399053903646366aa2485154ce3a86"
+  },
+  {
+   "path": "rtl/memblock/TlbStorageWrapper.sv",
+   "kind": "repo",
+   "sha256": "2436abb3082b995a661ff9c89ae350dce2cb1381d0a34c8c730e5423fc149a2c"
+  },
+  {
+   "path": "rtl/memblock/TlbStorageWrapper_1.sv",
+   "kind": "repo",
+   "sha256": "ce3294ca2f937813e60b224ba739e4191956a3c6005ff98a14d43aeb798d9bef"
+  },
+  {
+   "path": "rtl/memblock/TlbStorageWrapper_2.sv",
+   "kind": "repo",
+   "sha256": "79dd27ba31a745d8140d0ca971f3e0c4d2f1b03cf0718ca91349a418d329e5ec"
+  },
+  {
+   "path": "rtl/memblock/TlbStorageWrapper_3.sv",
+   "kind": "repo",
+   "sha256": "8fa79f9077f1bd6f0cb5c6120518d1129860133ff33e1546149c59d40242494b"
+  },
+  {
+   "path": "rtl/memblock/xs_TLBFA_core.sv",
+   "kind": "repo",
+   "sha256": "147484b3b6aab4b381391ec294f587168d80d54ee24a77245267e3174b6d9781"
+  },
+  {
+   "path": "rtl/memblock/TLBFA_2.sv",
+   "kind": "repo",
+   "sha256": "eb95b95d8e26bb19a2f2363b1d075151f77bb133655da15e3477da4379643207"
+  },
+  {
+   "path": "rtl/memblock/TLBFA_3.sv",
+   "kind": "repo",
+   "sha256": "5725cbc6db1e05a8fb62f07c5bba201b5378900c3a5fc3a3dcec12af42403baf"
+  },
+  {
+   "path": "golden-rtl/TLBFA.sv",
+   "kind": "golden",
+   "sha256": "38e824116202ea62e9c49307b10efc86c8432e13e1fde8629ebfe1e9bfbf11cb"
+  },
+  {
+   "path": "golden-rtl/TLBFA_1.sv",
+   "kind": "golden",
+   "sha256": "808966117fad3c03f62c48311db3292e671fbe3248710d0c5f340929fb4f5fb8"
+  }
+ ],
+ "impl_commit": "c62139c3f07b4f0e1f67b88719be9c287c157a2c",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "true",
+  "pin_scripts": {
+   "fm_pins.tcl": "87f28cbde8159b14631c48dc329b5cfde32aa6de2cb0d41c24148509c7271a4d"
+  },
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "TlbStorageWrapper-20260920T071806Z-c62139c3",
+  "top": "TlbStorageWrapper_3",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 8262,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "false",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 8262,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "TlbStorageWrapper_3",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}

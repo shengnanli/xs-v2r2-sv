@@ -79,3 +79,8 @@ verif/ut/*/ut_compile.out
 verif/ut/*/ut_run_*.out
 # scripts/full_elab.sh 的整芯片 elaborate 产物（VCS 中间文件 + simv，数百 MB）
 /build_full_elab/
+
+# 变异 harness 的原件快照（mutants.sh 的 cp "$SRC" "$BAK"）——派生态，不进库。
+# 2026-09-20 实测它曾被一次 WIP 抢救提交连带 git add 进来；scripts/check_no_tool_scratch.py
+# 已补上 *.orig.sv 这条判据，这里同时补 ignore，两道一起才拦得住。
+verif/ut/*/.mutants.orig.sv

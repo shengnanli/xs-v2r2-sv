@@ -367,6 +367,37 @@ switch -- $_verify_matched_unread_compare_points {
     #          ★复核判据★: passing 18781 -> 25001（正好 +6220）、failing 仍 0、unread 归 0、
     #          unmatched 保持全零。passing 不增即空转，不算过。
     #          同族先例见上面的 EntriesVfdivVidiv 条目；本条的数字全部是 canary 自己实测的。
+    #   ★Entries* 家族其余 7 个变体(2026-09-20 加，本轮一次性 7 个)★
+    #          与上面 EntriesAluCsrFenceDiv / EntriesVfdivVidiv **同一物种、同一份生成器**：
+    #          golden 把条目负载展平成逐字段寄存器，其中"只为 transEntry 存、本变体发射口
+    #          看不见"的那一段在 Entries 这一层没有任何输出锥 ⇒ 两侧都没人读 ⇒ matched_nc。
+    #          钉点由 verif/ut/<变体>/gen_fm_pins.py 从 golden 实例连线**机械提取**
+    #          （与生成 RTL 用的是同一张 Variant.pl_off 偏移表），不是人工列表。
+    #
+    #          七个变体的六条证据逐个采齐（verif/ut/Entries_common/vmucp_evidence.py，
+    #          每个都打印"申请条件齐备"），加强前的实测如下：
+    #
+    #            变体                                  passing  unread  期望 passing
+    #            EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v  19184    6116  -> 25300
+    #            EntriesAluMulBkuBrhJmp                   18782    6228  -> 25010
+    #            EntriesFaluFcvtF2vFmacFdiv               13491    3128  -> 16619
+    #            EntriesFaluFmacFdiv                      13413    3136  -> 16549
+    #            EntriesFaluFmac                          12794    3140  -> 15934
+    #            EntriesVfmaVialuFixVfalu                 16017    2352  -> 18369
+    #            EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf
+    #                                                     16411    2344  -> 18755
+    #
+    #          七个都满足：unmatched unread **ref/impl 双 0**（不是"先配对再加强"那类，
+    #          本来就全是 matched_nc）；ref/impl 双射严格 1:1；配对**全部**是钉点文件的
+    #          子集、FM 自行猜配 **0 对**；`^ *Error:` 行数 0；unmatched 六项全零；
+    #          dont_verify / elab147 / relaxed_appvars 三项全空；黑盒输出 0；native SUCCEEDED。
+    #
+    #          ★复核判据（事前写死，passing 不增即空转、按 fail 处理）★：
+    #          passing 恰好 +unread、failing 仍 0、unread 归 0、unmatched 六项保持全零。
+    #
+    #          ☆同一个"两行"读数陷阱☆：结果表里 `Constant reg` 与 `Unread` 是两行
+    #          （Alu* 各 12 / Falu* 各 74 / Vfma* 各 134），vmucp 只清 unread 那一行，
+    #          常量寄存器留着**不拦 verdict**。所以期望值是 +unread，不是 +两行之和。
     #   RenameBuffer(2026-09-17 加): 51 个 unread 点，钉点后全部转成 matched_nc
     #          (verif/ut/RenameBuffer/fm_pins.tcl，钉前 unmatched unread 51(51)、
     #          钉后六项 unmatched 全零、matched_unread_notcompared_pairs = 51)。
@@ -458,6 +489,40 @@ switch -- $_verify_matched_unread_compare_points {
     #              passing = golden 闭包的触发器**位数** + 顶层 output 端口**位数**;
     #              该模型在 TlbStorageWrapper_1 8682 / TLBFA_1 8663 / TLBFA_2 8233 /
     #              TLBFA_3 8229 / DelayN_7 657 / DelayN_9 216 上逐位命中过, 本轮三个也逐位命中。
+    # OthersEntry_88 / _104 / _120 加入依据(2026-09-20, agent/othersentry 实测)：
+    # 三个都是 FP 族的 simp 条目。钉点后(verif/ut/<变体>/fm_pins_pre.tcl，1407 对)
+    # strict 跑 native SUCCEEDED / failing 0 / unmatched 六项全 0，只剩 unread 9 卡住。
+    # 9 点**全部** matched_nc，ref 侧 9 个唯一点 ↔ impl 侧 9 个唯一点、非 matched_nc
+    # 项为 0，严格双射；而且这 9 对正是钉点文件自己钉上去的，不是 FM 猜配：
+    #   ref  entryReg_status_srcStatus_<s>_srcLoadDependency_<q>_reg[1]
+    #   impl u_entry/r_ld_dep_reg[s][q][1]            (s,q in 0..2, 共 9 对)
+    # 死因两侧同源、结构性的：FP 族 golden **一个 ldCancel 端口都没有**
+    # (verif/ut/OthersEntry_field_matrix/matrix.tsv 的 nLdCancel / ld1Cancel /
+    #  ld2Cancel / ldDep_pipes 四行在这几列全 0，可 gen_matrix.py --check 复算)，
+    # 于是 LoadShouldCancel 整条不生成，srcLoadDependency 影子的 bit[1] 没有读出点；
+    # 次态是左移(bit1' = bit0)，而 transEntry 露的是**次态**不是寄存器，
+    # 所以寄存器 bit1 是纯写入位 —— golden 与可读核同为死位，不是人工强配。
+    # ★复核判据(跑前预登记)★ 加强后 passing 必须**恰好 +9**：
+    #   OthersEntry_88  3519 -> 3528 / _104 3511 -> 3520 / _120 3507 -> 3516，
+    #   三个都正好等于 predict.py 的模型上界；unread 归 0、failing 仍 0、unmatched 全 0。
+    #   passing 不增而 unread 归 0 = 点被吞掉，不算过。
+    # OthersEntry_164 加入依据(2026-09-20, 同一 lane 实测)：与上面三个 FP simp
+    # **同因同型**，只是源数 3 -> 5，于是死位 9 个 -> 15 个(5 源 x 3 pipe)。
+    # 钉点后 strict 跑 native SUCCEEDED / failing 0 / unmatched 六项全 0，只剩 unread 15；
+    # 15 点**全部** matched_nc、ref 15 <-> impl 15 严格双射，且都是钉点文件自己钉上的：
+    #   ref  entryReg_status_srcStatus_<s>_srcLoadDependency_<q>_reg[1]
+    #   impl u_entry/r_ld_dep_reg[s][q][1]            (s in 0..4, q in 0..2)
+    # 死因两侧同源、结构性的：VEC 族 golden 同样**一个 ldCancel 端口都没有**
+    # (verif/ut/OthersEntry_field_matrix/matrix.tsv 的 nLdCancel / ld1Cancel /
+    #  ld2Cancel / ldDep_pipes 在 _164/_166 两列全 0)，LoadShouldCancel 整条不生成，
+    # 影子 bit[1] 没有读出点；次态左移(bit1'=bit0)，transEntry 露的是次态不是寄存器
+    # ⇒ 寄存器 bit1 是纯写入位。
+    # OthersEntry_150 / _136 与 _164 **同因同型**(都是 VEC 族 simp，5 源 x 3 pipe = 15 死位，
+    # 同样 nLdCancel/ld1Cancel/ld2Cancel/ldDep_pipes 四行全 0)，一并加入。
+    # ★复核判据(跑前预登记)★ 加强后 passing 必须**恰好 +15**：
+    #   _164 3777 -> 3792 / _150 3782 -> 3797 / _136 3844 -> 3859，
+    # 三个都正好等于 predict.py 的模型上界；unread 归 0、failing 仍 0、unmatched 全 0。
+
     #   LoadQueueReplay(2026-09-20 加): 177 个 matched-unread，全部 `matched_nc`，
     #          ref 与 impl 各 177 个互不重复的名字，逐点下标对下标机械核对 **0 违例**
     #          (复跑脚本在 docs/loadqueuereplay_fm_prereg.md)：
@@ -478,11 +543,11 @@ switch -- $_verify_matched_unread_compare_points {
     #            加强后应当: passing **114160**(= 113983 + 177, 一个不多一个不少)、
     #              failing 0、unread 0、unmatched 六项仍全零。
     #              passing 不增而 unread 归 0 = 点被吞掉, 不算过。
-    if {$top ni {Bku Composer DebugModule DuplicatedTagArray EntriesVfdivVidiv FAlu FCVT FTBBank Ftq ICacheCtrlUnit ICacheDataArray ICacheMetaArray ICacheMissUnit InstrUncache ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 LinkMonitor LoadQueueReplay MulUnit Queue1_RegMapperInput_5 RNXbar SNXbar SourceB SSIT TageBTable TlbStorageWrapper TlbStorageWrapper_1 TXDAT_4 TXREQ WritebackQueue IBuffer EntriesAluCsrFenceDiv NCBTransactionQueue NCBTransactionQueue_1 Predictor RenameBuffer TLBFA TLBFA_1 TLBFA_2 TLBFA_3 TLBNonBlock TLBNonBlock_1 TLBNonBlock_2}} {
+    if {$top ni {Bku Composer DebugModule DuplicatedTagArray EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v EntriesAluCsrFenceDiv EntriesAluMulBkuBrhJmp EntriesFaluFcvtF2vFmacFdiv EntriesFaluFmac EntriesFaluFmacFdiv EntriesVfdivVidiv EntriesVfmaVialuFixVfalu EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf FAlu FCVT FTBBank Ftq IBuffer ICacheCtrlUnit ICacheDataArray ICacheMetaArray ICacheMissUnit ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 InstrUncache LinkMonitor LoadQueueReplay MulUnit NCBTransactionQueue NCBTransactionQueue_1 OthersEntry_104 OthersEntry_120 OthersEntry_136 OthersEntry_150 OthersEntry_164 OthersEntry_88 Predictor Queue1_RegMapperInput_5 RNXbar RenameBuffer SNXbar SSIT SourceB TLBFA TLBFA_1 TLBFA_2 TLBFA_3 TLBNonBlock TLBNonBlock_1 TLBNonBlock_2 TXDAT_4 TXREQ TageBTable TlbStorageWrapper TlbStorageWrapper_1 TlbStorageWrapper_2 TlbStorageWrapper_3 WritebackQueue}} {
       # ASCII only: fm.log is not UTF-8 (CONVENTIONS). 2026-09-20 实测：
       # 这行原来是中文，LoadQueueReplay 撞上白名单时 fm.log 里打出来的是
       #   "FM_MODE_ERROR: matched-unread strengthening ????????, ?? LoadQueueReplay"
-      # —— 目标名侥幸是 ASCII 才看得见，说明"是什么问题"的那半句全丢了。
+      # —— 目标名侥幸是 ASCII 才看得见，"是什么问题"那半句全丢了。
       puts "FM_MODE_ERROR: matched-unread strengthening needs an explicit whitelist entry; $top is not on it"
       exit 3
     }
@@ -516,7 +581,11 @@ if {[info exists env(FM_MERGE_DUP)] && [string trim $env(FM_MERGE_DUP)] ne ""} {
     set _mergedup [string trim $env(FM_MERGE_DUP)]
 }
 # ★这段注记必须留在 switch **外面**★（2026-09-20 实测，Entries lane 踩到）
-#   它原先写在 `switch -- $_mergedup {` 的花括号里。Tcl 的 switch 体是一张
+#   它原先写在 `switch -- $_mergedup { ... }` 的花括号里。Tcl 的 switch 体是一张
+#   （★这行的花括号必须成对写★：本文件的结构闸 test_fm_eq_wellformed.py 是**全文**
+#     数左右花括号的，注释里落单一个左花括号就会把它判红。判据粗，但粗得有道理 ——
+#     注释若落在某个 **braced body 里面**，Tcl 收词时照样数它的花括号，那时落单的
+#     花括号是真会炸的。所以宁可让注释配平，不要放宽判据。）
 #   **pattern/body 列表**，不是脚本体 —— `#` 在那里不是注释，整块要按列表语法解析。
 #   下面第 8 行里的 ASCII 双引号 "Merging duplicated registers" 后面紧跟中文逗号，
 #   于是 Tcl 报 `list element in quotes followed by "，★从未到达" instead of space`
@@ -527,6 +596,14 @@ if {[info exists env(FM_MERGE_DUP)] && [string trim $env(FM_MERGE_DUP)] ne ""} {
 #   引入于 ee3aa24（"fm_eq.tcl 加 merge_dup 经验注记"），随 main 合进各 lane。
 #   判据教训：**Tcl 里"加一段注释"不是无副作用操作**，加在哪要看它落进了谁的
 #   花括号；而这类改动没有任何 lint 会响，只有真跑一次 FM 才看得见。
+#   ★独立复现（2026-09-20，Sbuffer lane，同一天另一条 lane）★：
+#   现象与上面逐字一致 —— evidence/4648b236a440/Sbuffer/fm.log:557 存着那次的
+#   `Error: list element in quotes ...` 与 `stopped at line 494`，44 秒、0 比较点、
+#   run_proof rc=2、sidecar/native_facts.json 根本没生成。两条 lane 各自撞到又各自
+#   修好，说明这不是某个人手滑的偶发，而是"Tcl 注释位置"这件事在本仓没有守卫。
+#   两道闸现在都在：scripts/check_fm_eq_tcl_syntax.py（本条的权威判据，带元负例）
+#   与 scripts/test_fm_eq_wellformed.py（另补一条：body **顶层** `#` 即使能解析
+#   也要拒 —— 那种情况 Tcl 把 `#` 当成 pattern，是静默错，上面那道解析闸不会响）。
 # ===== verification_merge_duplicated_registers 的经验注记（codex 0168 裁定） =====
 # ★不翻全局默认★。下面是可复核的经验，不是规则：
 #
