@@ -1,0 +1,20 @@
+Please use '-no_save' simv switch to avoid re-execution or '-suppress=ASLR_DETECTED_INFO' to suppress this message.
+
+Note-[VIUNRD] initreg using ntb_random_seed
+  +vcs+initreg using seed from +ntb_random_seed=1 .
+
+Chronologic VCS simulator copyright 1991-2024
+Contains Synopsys proprietary information.
+Compiler version W-2024.09-SP1_Full64; Runtime version W-2024.09-SP1_Full64;  Sep 20 06:34 2026
+FATAL: warm-up never completed after 200000 cycles
+  enq_seen=07ffffffffffffff800000000000000000000000
+  wb_seen =0000000000000000000000000000000000000000
+checks=0 errors=1  (warm-up failure counts as an error)
+$finish called from file "tb.sv", line 11335.
+$finish at simulation time           2000045000
+           V C S   S i m u l a t i o n   R e p o r t 
+Time: 2000045000 ps
+CPU Time:   1497.170 seconds;       Data structure size:   5.3Mb
+Sun Sep 20 06:59:41 2026
+=== UT FAILED (Rob seed=1) ===
+make: *** [../../../scripts/ut_common.mk:128: run] Error 1
