@@ -212,4 +212,11 @@ run "passing 模型自校准"  python3 scripts/tlbsw_passing_model.py --check
 
 rm -f /tmp/gate_$$.out
 [ $rc -eq 0 ] && echo "=== 全部机器闸 PASS ===" || echo "=== 有闸未过，见上 ==="
+
+# ★终止标记：只有走到脚本结尾才可能打印这一行★（2026-09-20）
+# 判读方只认这一行：没有 GATE_RC= 就是「结果不存在」，既不是绿也不是红。
+# 缘起：一条 lane 拿还在跑的 stdout 前几行当成了结果，写下「其余闸全 PASS」，
+# 跑完实际红三条。「没看见 FAIL」与「还没跑到那一条」在流式输出里长得一模一样。
+# 详见 CONVENTIONS.md ★"闸跑完了没有"本身也要有判据★
+echo "GATE_RC=$rc"
 exit $rc

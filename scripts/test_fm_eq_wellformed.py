@@ -21,7 +21,7 @@ vmucp 白名单 `if {$top ni {...}}`。合并冲突时我两次处理错：
 """
 import pathlib
 import re
-import shutil
+import subprocess
 import sys
 
 HERE = pathlib.Path(__file__).resolve().parent
@@ -32,6 +32,21 @@ PASS, FAIL = [], []
 def ck(name, ok, detail=''):
     (PASS if ok else FAIL).append(name)
     print(f'  {"ok  " if ok else "FAIL"}  {name}{"  " + detail if detail else ""}')
+
+
+def _strip_toplevel_comments(text):
+    """去掉**顶层**（花括号深度为 0）的整行注释，保留花括号里的注释。
+
+    深度按已保留行的代码字符累计 —— 被丢掉的行本来就不参与配平，
+    所以不能拿它去更新深度。
+    """
+    out, depth = [], 0
+    for line in text.split('\n'):
+        if depth == 0 and line.lstrip().startswith('#'):
+            continue
+        out.append(line)
+        depth += line.count('{') - line.count('}')
+    return '\n'.join(out)
 
 
 def check(text):
@@ -45,129 +60,88 @@ def check(text):
     n_if = len(re.findall(r'top ni \{', text))
     if n_if != 1:
         probs.append(f'vmucp 白名单 if 有 {n_if} 条（必须恰 1 —— 多条会串联互拒）')
-    # ★括号配平：数之前先去掉整行注释★（2026-09-20，Rob lane 实测的误报）
-    # 裸计数在 main 4c442c13 上把 fm_eq.tcl 判红：{ 139 vs } 138，而
+    # ★括号配平：数之前先去掉**顶层**整行注释★（2026-09-20，Rob lane）
+    #
+    # 裸全文计数在 main 4c442c13 上把 fm_eq.tcl 判红（{ 139 vs } 138），而
     # `check_fm_eq_tcl_syntax.py` 与 tclsh 的 `info complete` 都说文件是好的 ——
-    # 差的那个 `{` 在一句**注释**里（它逐字引用了 `switch -- $_mergedup` 那行）。
-    # 当时的处置是把那个字符从注释里删掉，让计数配平；但判据不改的话，
-    # 下一句需要引用花括号的注释还会再红一次，而"改注释迁就判据"是反的：
-    # ★判据应当看得懂语法结构，而不是让代码去迁就字符计数★
-    # （同一类坑：check_array_mixed_drive.py 那次也是行级计数看不见结构）。
-    # 这里只去**整行**注释，不碰行尾 `;#`：少去一类只会让判据更严，不会漏。
-    code = _strip_full_line_comments(text)
+    # 差的那个 `{` 在一句顶层**注释**里（它逐字引用了那行 switch）。
+    # 处置过两次，两次都是把那个字符从注释里删掉让计数配平；判据不改的话，
+    # 下一句需要引用花括号的注释还会再红，而"改注释迁就判据"是反的。
+    #
+    # ★但不能一刀切地无视所有注释★（这一条是 main 那边写下的，是对的）：
+    # 注释若落在某个 **braced body 里面**，Tcl 收词时照样数它的花括号，
+    # 那里落单的花括号是真会炸的。所以只去 **depth==0** 的整行注释，
+    # 花括号里的注释照数不误。
+    code = _strip_toplevel_comments(text)
     if code.count('{') != code.count('}'):
-        probs.append('去掉整行注释后花括号仍不配平：'
+        probs.append('去掉顶层整行注释后花括号仍不配平：'
                      f'{{ {code.count("{")} vs }} {code.count("}")}')
-    probs += tcl_parse_probs(text)
+    probs += switch_body_problems(text)
     return probs
 
 
-def _strip_full_line_comments(text):
-    """去掉整行注释（首个非空字符是 `#`）。Tcl 里 `#` 只在命令起始位置才是注释。"""
-    return '\n'.join(l for l in text.split('\n')
-                     if not l.lstrip().startswith('#'))
-
-
 # ---------------------------------------------------------------------------
-# W5：整份脚本必须能被 Tcl **解析**（不是执行）。
+# ★switch 的 body 是一个 **Tcl list**，`#` 在 list 里不是注释★（2026-09-20 实测）
 #
-# ★与 scripts/check_fm_eq_tcl_syntax.py 重叠，这是有意的★：两条 lane（本 lane 与
-#   entries-rest3）在同一天各自独立撞到同一个缺陷、各自写了一道闸，main 合了它们的、
-#   我合了 main。两份实现判的是同一件事但写法不同（那边逐个 switch 块，这里
-#   整份 info complete + 每个 switch 体 llength），同一个缺陷要同时骗过两份才过得去。
-#   合并成一份反而会丢掉这份独立性，所以留着。
+# 括号配平 + 无冲突标记都过，脚本照样可以在运行期炸：ee3aa24 把一段中文注记写进了
+# `switch -- $_mergedup { ... }` 的 body 里，注记中含引号
+# `"Merging duplicated registers"`，于是 Tcl 解析 body 这个 list 时报
+#     Error: list element in quotes followed by "，★从未到达" instead of space
+#     ... stopped at line 494 due to error. (CMD-081)
+# ★fm_eq.tcl 是每个 FM 目标共用的入口★：从 ee3aa24 起，main 上任何
+# `make fm-<target>` 都在 44 秒内死在这里、一个比较点都跑不到。
 #
-# 为什么非加不可（2026-09-20 实测，ee3aa24）：那一版把一段经验注记贴进了
-#   `switch -- $_mergedup { ... }` 的**体内**。★Tcl 的 switch 体里没有注释★——
-#   body 按**列表**解析，`#` 开头的行是 pattern/body 元素，不是注释。其中一行含
-#   `"Merging duplicated registers"，`（引号元素后紧跟非空格字符），Tcl 列表解析报
-#       list element in quotes followed by "，★从未到达" instead of space
-#   于是 **每一个 FM 目标**都在 setup 阶段死掉：fm_shell rc=2、不产 native_facts.json。
-#   而当时 W1~W4 全绿 —— 冲突标记没有、白名单恰一条、括号也配平（switch 体的
-#   花括号本来就配平）。**括号配平挡不住这个形状**，所以要一条真正过解析器的判据。
-#
-# 做法：`tclsh` 里 `info complete` + 一次不执行的解析。用 `proc _p {} { <脚本> }`
-#   让 Tcl 走完整的语法/列表检查而**一条命令都不执行**（fm_shell 的 set_app_var
-#   之类在纯 tclsh 里并不存在，所以绝不能真跑）。
+# 上面那三条不变式（冲突标记 / 白名单条数 / 括号配平）**全都没抓到**它 ——
+# 括号是配平的，冲突标记也没有。所以这里补一条**真解析**：把每个 switch 的 body
+# 交给 tclsh 当 list 解析（`llength`），解析不了就报。用 tclsh 而不是自己写解析器，
+# 判据才和运行时的那一个是同一个。
 # ---------------------------------------------------------------------------
-def tcl_parse_probs(text):
-    """两层：整份 info complete + 每个 switch 体真过一次 Tcl **列表**解析。
-
-    第二层是关键。`proc __probe {} $s` 抓不到这个形状 —— Tcl **惰性编译** proc 体，
-    switch 体的列表检查要到真正执行 switch 那一刻才发生（这也正是 ee3aa24 能一路
-    提交进 main、直到第一个 FM 目标跑起来才炸的原因）。
-    所以这里把每个 switch 的**体**单独喂给 `llength`：它走的就是出事的那个
-    列表解析器，且**不执行任何命令**。
-    """
-    import subprocess, tempfile, os
-    if shutil.which('tclsh') is None:
-        return []          # 没有 tclsh：如实跳过（W0 会打印），不假装通过
-    probs = []
-    snippets = [('<整份脚本>', text, 'complete')]
-    for body in _switch_bodies(text):
-        snippets.append(('switch 体', body, 'llength'))
-    for label, s, mode in snippets:
-        err = _tcl_check(s, mode)
-        if err:
-            probs.append('Tcl 解析失败（%s / %s）：%s' % (label, mode, err))
-    return probs
-
-
 def _switch_bodies(text):
-    """取出每条 switch 命令的体（最外层花括号内的原文）。"""
+    """返回 [(行号, body 原文)]：每个 `switch ...{` 到配对 `}` 之间的内容。"""
     out = []
-    for m in re.finditer(r'(?m)^[ \t]*switch\b[^\n{]*\{', text):
-        i = m.end() - 1                     # 指向开体的 '{'
-        depth, j = 0, i
-        while j < len(text):
-            c = text[j]
-            if c == '\\':
-                j += 2
-                continue
-            if c == '{':
+    for m in re.finditer(r'^[ \t]*switch\b[^\n{]*\{', text, re.M):
+        start = m.end()          # 紧跟在开括号之后
+        depth, i = 1, start
+        while i < len(text) and depth:
+            if text[i] == '{':
                 depth += 1
-            elif c == '}':
+            elif text[i] == '}':
                 depth -= 1
-                if depth == 0:
-                    out.append(text[i + 1:j])
-                    break
-            j += 1
+            i += 1
+        if depth == 0:
+            out.append((text.count('\n', 0, m.start()) + 1, text[start:i - 1]))
     return out
 
 
-def _tcl_check(s, mode):
-    import subprocess, tempfile, os
-    with tempfile.NamedTemporaryFile('w', suffix='.tcl', delete=False,
-                                     encoding='utf-8') as fh:
-        body = fh.name
-        fh.write(s)
-    drv = body + '.drv'
-    with open(drv, 'w', encoding='utf-8') as fh:
-        fh.write('set f [open {%s} r]\n' % body)
-        fh.write('fconfigure $f -encoding utf-8\n')
-        fh.write('set s [read $f]; close $f\n')
-        if mode == 'complete':
-            fh.write('if {![info complete $s]} { puts "脚本不完整(括号/引号未闭合)"; exit 1 }\n')
-        else:
-            # llength 走的就是出事的那个列表解析器；一条命令都不执行。
-            fh.write('if {[catch {llength $s} e]} { puts $e; exit 1 }\n')
-            fh.write('if {[llength $s] % 2} { puts "switch 体元素个数为奇数(pattern/body 不成对)"; exit 1 }\n')
-        fh.write('exit 0\n')
-    try:
-        r = subprocess.run(['tclsh', drv], stdout=subprocess.PIPE,
-                           stderr=subprocess.PIPE, timeout=60)
-    finally:
-        for f in (body, drv):
-            try:
-                os.unlink(f)
-            except OSError:
-                pass
-    if r.returncode != 0:
-        msg = (r.stdout + r.stderr).decode('utf-8', 'replace').strip().splitlines()
-        return msg[0] if msg else '(无输出)'
-    return None
-
-
+def switch_body_problems(text):
+    probs = []
+    bodies = _switch_bodies(text)
+    if not bodies:
+        return ['找不到任何 switch —— 解析器与文件对不上，按 fail-closed 报']
+    for ln, body in bodies:
+        # 交给真正的 Tcl 解析器判：body 能不能当 list 读
+        # 不用 capture_output / text=：本机是 python3.6，两者都不支持。
+        r = subprocess.run(['tclsh'], input=('llength {' + body + '}\n').encode(),
+                           stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if r.returncode != 0:
+            err = r.stderr.decode('utf-8', 'replace')
+            first = (err.strip().splitlines() or [''])[0]
+            probs.append(f'第 {ln} 行的 switch body 不是合法 Tcl list：{first}')
+            continue
+        # 即使能解析，body 的**顶层**出现 `#` 开头的元素也是**静默错**：它会被当成一个
+        # pattern，把紧跟其后的那一段当成它的 script。所以一并拒。
+        # ★只看顶层★：`"true" { ... }` 里面是**脚本**不是 list，那里的 `#` 是正常注释
+        #   （fm_eq.tcl 的 vmucp 白名单依据就写在那儿，几十行，完全合法）。
+        #   第一版判据没分层，把那几十行也报了 —— 判据比坑还宽就会被当噪音关掉。
+        depth = 0
+        for bl in body.splitlines():
+            s = bl.lstrip()
+            if depth == 0 and s.startswith('#'):
+                probs.append(f'第 {ln} 行的 switch body 顶层有 `#` 行 —— '
+                             f'Tcl 会把它当 pattern 而不是注释：{s[:40]}')
+                break
+            depth += bl.count('{') - bl.count('}')
+    return probs
 
 
 print('=== scripts/fm_eq.tcl 结构不变式 ===')
@@ -182,42 +156,48 @@ if not probs:
     ck('W2 白名单非空且都是合法模块名', bool(names) and all(
         re.match(r'^[A-Za-z_]\w*$', n) for n in names), f'{len(names)} 个目标')
 
+def inject_into_switch(text, line):
+    """把 line 插进**第一条真正的** `switch ... {` 语句体（行首匹配，跳过注释里的同形字样）。"""
+    m = re.search(r'^[ \t]*switch\b[^\n{]*\{', text, re.M)
+    assert m, '找不到行首的 switch 语句——对照用例失去意义，直接判失败'
+    return text[:m.end()] + '\n' + line + text[m.end():]
+
+
 # ★对照★：种入每种坏形态都必须被抓，否则 W1 可能是空转。
+# 元负例在这里是**结构自带**的：W1 断言的是真文件上 check() 返回**空**。
+# 任何把判据变成"无条件报警"的改动（例如 switch_body_problems 直接 return ['x']）
+# 都会让 W1 转红，所以下面这几条对照不会退化成"只要出声就算过"。
 cases = [
     ('两条 if',
      txt.replace('if {$top ni {', 'if {$top ni {A B} } ;# dup\n    if {$top ni {', 1)),
     ('残留冲突标记', '<<<<<<< HEAD\n' + txt + '\n>>>>>>> other\n'),
-    ('少一个收口括号', txt + '\nif {1} {\n'),
-    # ★多一个收口括号★：`info complete` 对它返回 **1**（实测
-    #   `info complete "set a 1\n}\n"` = 1），所以解析判据是瞎的，
-    #   只有配平计数抓得到。两条判据各有盲区，都得留着。
-    ('多一个收口括号', txt + '\n}\n'),
-    # 不配平藏在**代码**里（不是注释里）必须被抓。
-    # ★写这条时自己先踩了一次★：用不带换行的 'switch -- $_mergedup {' 定位时，
-    #   文件里第一次出现是在上方那段注释里，种子落进注释 = 等于没种，
-    #   用例会永远"没抓到"。改用 '\nswitch' 定位。
-    ('括号不配平藏在代码里（不是注释里）',
-     txt.replace('\nswitch -- $_mergedup', '\nswitch -- $_mergedup {', 1)),
-    # ★这条就是 ee3aa24 的真实形态★：注记贴进 switch 体。括号仍然配平、
-    #   冲突标记仍然没有 —— 只有 Tcl 解析判据抓得到。
-    # ★同样要用 '\nswitch' 定位★：2026-09-20 把注释里那个被删掉的左花括号
-    #   写回去之后，这条用例当场"没抓到" —— 它的种子落进了上方那段**注释**里
-    #   （注释逐字引用了这条 switch）。同一个坑，两条用例先后各踩一次。
-    ('注释塞进 switch 体',
-     txt.replace('\nswitch -- $_mergedup {',
-                 '\nswitch -- $_mergedup {\n'
-                 '#   卡在 "Merging duplicated registers"，★从未到达 match★', 1)),
+    ('括号不配平', txt + '\nif {1} {\n'),
+    # ★本轮真事故的复现★：注记搬回 switch body 里，必须被抓。
+    # ★注入点必须锚到**行首的真语句**★：文件顶部的注记里现在也写着
+    #   `switch -- $_mergedup { ... }` 这串字样（说明事故长什么样），
+    #   用 str.replace(..., 1) 会打到那条**注释**上、注入等于没发生，
+    #   两条对照就会静默变成"没抓到"——这正是本轮实测踩到的。
+    ('注记写进 switch body（含引号）',
+     inject_into_switch(txt, '# 卡在 "Merging duplicated registers"，★从未到达 match★')),
+    # 引号即使配平、list 能解析，`#` 行照样是静默错（被当 pattern）。
+    ('注记写进 switch body（不含引号）',
+     inject_into_switch(txt, '# 纯中文注记没有引号也不行')),
+    # ★花括号里的注释落单一个左括号仍须被抓★ —— 这是"只去顶层注释"那条放宽
+    #   刻意留下的边界：Tcl 收词时会数 braced body 里注释的花括号。
+    ('花括号里的注释落单一个左括号',
+     inject_into_switch(txt, '# 这里落单一个 { 左括号')),
 ]
 for i, (label, bad) in enumerate(cases, start=3):
     got = check(bad)
     ck(f'W{i} 对照：种入「{label}」必须被抓', bool(got),
        f'报出 {len(got)} 项' if got else '★没抓到★')
 
-# ★反向判据★：不配平只在**注释**里时不许被抓 —— 这正是 2026-09-20 那次误报本身。
-_benign = txt + '\n# 这一行注释里有一个不配平的 { 字面量，它不影响 Tcl 解析\n'
+# ★反向判据★：**顶层**注释里的落单花括号不许被抓 —— 这正是两次被删掉那个
+# 字符的原因。它不影响 Tcl 解析（info complete 对原文返回 1）。
+_benign = txt + '\n# 这一行顶层注释里有一个落单的 { 字面量，不影响 Tcl 解析\n'
 _bp = check(_benign)
-ck('W%d 反向：不配平只在注释里时**不许**被抓' % (3 + len(cases)), not _bp,
-   '注释不参与配平计数' if not _bp else '★误报：又把注释当代码了★ %s' % _bp)
+ck('W%d 反向：**顶层**注释里的落单花括号不许被抓' % (3 + len(cases)), not _bp,
+   '顶层注释不参与配平计数' if not _bp else '★误报：又把顶层注释当代码了★ %s' % _bp)
 
 print()
 print(f'PASS {len(PASS)} / FAIL {len(FAIL)}')
