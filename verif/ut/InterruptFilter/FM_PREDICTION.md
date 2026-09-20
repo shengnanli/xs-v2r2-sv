@@ -155,3 +155,87 @@ intrVec 8 + debugIntr/nmi/viIsHvictlInject/irToHS/irToVS 各 1）。
 ## 5. 实测（FM 跑完后追加，不改上面任何一行）
 
 （待填）
+
+### 5.1 第一跑（`FM_MERGE_DUP` 未设 → `fm_eq.tcl` 默认 `true`）—— **FAILED**
+
+`run_proof.sh` rc=2，证据 `evidence/08a85f26dc67/InterruptFilter/`：
+
+```
+FAILED  {"passing": 145, "failing": 20, "unverified": 258, "unmatched": 10,
+         "failing_matched": 20, "blackbox_out": 0, "constant_reg": 2,
+         "native": "FAILED", "unmatched_ref": 10, "unmatched_impl": 7}
+```
+
+**预测 578 vs 实测 423 个已配对比较点（145+20+258），差 -155。对不上，先报差再解释。**
+
+| 预测 | 实测（第一跑） |
+|---|---|
+| passing 578 | passing 145 / failing 20 / unverified 258 |
+| unmatched 0 | unmatched 10(ref) / 7(impl) |
+
+`failing: 20` 是截断值（`verification_failing_point_limit` 默认 20，撞到就停，
+剩下的全计 unverified）。加 `FM_FAILING_LIMIT=0` 重跑一次**诊断跑**，
+拿到完整数字：**383 passing / 40 failing / 0 unverified**，
+40 个失败点 = `failing.rpt`（本目录 `fm_work/InterruptFilter/failing.rpt`）：
+
+| 失败点 | 个数 |
+|---|---|
+| `io_out_stopi_IID[0..5]` / `io_out_stopi_IPRIO[0..7]` | 14 |
+| `io_out_vstopi_IID[0..5]` / `io_out_vstopi_IPRIO[0..7]` | 14 |
+| `intrVecReg_reg[0..5]` / `irToHSReg` / `irToVSReg` | 8 |
+| `io_out_interruptVec_bits[6]` `[7]` / `io_out_interruptVec_valid` | 3 |
+| `delayedIntrVec_delay/REG_1_reg[6]`（ref DFF0X vs impl DFFX） | 1 |
+
+**`io_out_mtopi_*` 一个都没失败。**
+
+### 5.2 为什么：合并导致的不对称孤儿点，不是逻辑差异
+
+`unmatched.rpt` 里 17 个孤儿点**全部**落在 hs/hv 两族的第 6/7 组：
+ref 侧 `hsipriosReg_6_enable` / `hsipriosReg_7_enable` / `hvipriosReg_6_enable` /
+`hvipriosReg_7_enable` / `hvipriosReg_7_idx[3]` / `hvipriosReg_7_isZero`；
+impl 侧 `hsipriosReg_enable[6]` / `[7]` / `hsipriosReg_idx[6][5]` / `[7][5]` /
+`hvipriosReg_enable[6]` / `[7]` / `hvipriosReg_idx[6][5]`。miprios 一个都没有。
+
+机理：第 6 组是槽位 48..55，六位 idx 的 bit5/bit4 在这 8 个值上恒为 1；
+第 7 组是槽位 56..60，idx 的 bit5/bit4/bit3 恒为 1。而"整组一个都没使能"时
+条目归零（idx 也归零）。于是 **idx 高位 ≡ enable**，是货真价实的重复寄存器。
+`verification_merge_duplicated_registers=true` 把它们合并，两侧各自留下
+**不同的幸存者名字**（`matched.rpt` 里 ref 的 `hsipriosReg_6_idx_reg[3]`/`[5]`
+根本不在配对表里，impl 的 `hsipriosReg_idx_reg[6][5]` 却还在），
+配对表一乱，依赖这些状态的输出锥就整片判不等。
+miprios 族没这个问题，因为 mip 没有 ≥14 的端口，第 6/7 组整组恒不使能。
+
+### 5.3 独立观测手段：把两侧寄存器每拍强制成同一组随机值
+
+按 CONVENTIONS「当 FM 的配对可疑时，换一个独立的观测手段」，做了一个
+**寄存器扰动 tb**（在 scratchpad，不进库）：每拍 `force` 两侧全部 **123 个 / 439 位**
+流水寄存器为同一组随机值（数目与位数正好等于 golden 的寄存器普查结果），
+再逐拍比 13 个输出 —— 这正是 FM「寄存器是自由变量」的语义。
+
+结果：`checks=260000 errors=0`。
+
+也就是说：**在任意寄存器状态下两侧输出函数都相同**，第一跑那 40 个失败点
+来自配对，不是逻辑。
+
+---
+
+## 6. 第二跑预登记（`FM_MERGE_DUP=false`）
+
+改动**只有一处**：`verif/ut/InterruptFilter/Makefile` 增加 `FM_MERGE_DUP = false`，
+RTL 一个字节没动。这正是 `scripts/fm_eq.tcl` 里那条经验注记描述的症状与处置，
+且它是**加强不是放宽**（不黑盒、不跳点、不约束 ref，比较点只增不减）。
+
+预测（跑之前写死）：
+
+| 项 | 预测值 |
+|---|---|
+| passing | **578** = 闭包触发器 504 位 + 顶层 output 74 位 |
+| failing | 0 |
+| unverified | 0 |
+| unmatched | 0（ref）/ 0（impl） |
+| 黑盒 | 0 |
+| unread | 0 |
+| verdict | `SIGNOFF_PASS`，但按 §2 仍记 **条件性证明 / UNCHANGED_GOLDEN_DEP** |
+
+第一跑的 423 个点之所以少于 578，就是被合并吃掉的那些重复寄存器；关掉合并后
+应当回到模型值。**若实测不是 578，照样先报差，不事后改模型。**
