@@ -68,3 +68,40 @@ LsqEnqCtrl,RegCacheTagTable}` 下无 `fm_pins*.tcl`），说明它们单独跑�
 * 只做例化：1116 条连线里**只接那 920 条只引用顶层端口的**；
 * 其余 196 条（`firedVec_*` / `allocPregsValid_*` 等）**维持现状**接 `unresolved_*`/常量；
 * **不写** `allowDispatch` / `uopBlockByIQ` / `thisCanActualOut` —— 那是步骤 2。
+
+---
+
+## ★跑后补记：基线权威数是 7173 不是 7118，且我引错过一次★
+
+**预测区间一个字没改**（下面只更正基线口径并细化分解）。
+
+### 我的错
+
+上面基线表里我写的 `7118(0)` 是从**还在跑**的 `fm.log` 的 Matching Results 块读的。
+权威数应当取 receipt / `unmatched.rpt`：**`unmatched_ref = 7173`**。
+★这正是本轮反复讲的那条「别把中间态当结果」，我自己又犯了一次★ ——
+而且这次特别隐蔽：日志里有 **3 个** Matching Results 块（7220 / 7118 / 7118），
+末块的 7118 看起来就是终值，但 `unmatched.rpt` 记的是 7173。
+
+### 更有用的是：7173 能**按名字**精确二分
+
+| 分类 | 数量 | 归属 |
+|---|---|---|
+| 名字含 `IQSort` | **55** | NewDispatch **自己**的寄存器 → 步骤 2 |
+| 其余 | **7118** | 7 个 child 的寄存器 → 步骤 1 |
+| 合计 | 7173 | |
+
+而那 55 个**恰好就是** `provable_check.py` 静态判出的那 10 个寄存器：
+IQSort_alu 16 / _falu_fmac 9 / _jmp_brh 9 / _ldu 9 / _fdiv 2 / _mul_bku 2 /
+_sta_mou 2 / _vfalu 2 / _vialuFix_vfma 2 / _vldu_vstu 2 = 55 位。
+★静态预判与 FM 实测一一对上，这是对 provable_check.py 的一次强验证。★
+
+### 预测按名字重述（区间不变，只是更锐利）
+
+* **非 IQSort unmatched：7118 → 预测 39 量级**（7118 − 7079 = 39）。
+  仍用登记的可接受区间 **[0, 400]**，★不放宽★。
+* **IQSort unmatched：必须仍然恰好 55**。变少 = 接线解开了控制锥，停下来查；
+  变多 = 例化引入了新问题。
+* 合计 unmatched 预测落在 **[55, 455]**。
+
+反向出口不变：降到接近 0 ⇒ 我对"还缺控制逻辑"判断错了；几乎不降 ⇒ 根因判断整个错了。
