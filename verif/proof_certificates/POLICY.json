@@ -34,6 +34,13 @@
   "verification_verify_matched_unread_compare_points（982 false / 53 true）逐目标不同，",
   "属正当的 per-target 配置，不钉；它们的取值仍进 proof_config 并被 proof_config_sha256 绑定。"
  ],
+ "target_config_dir": "verif/fm_target_config",
+ "_target_config_dir_note": [
+  "per-target 证明数据（vmucp 白名单条目 + 目标专属 appvar）一个目标一份 .tcl。",
+  "存在时由 sidecar 的 source 快照进 script_closure，与 fm_eq.tcl 同等绑定；",
+  "不存在时由 validator 的 green_child_target_config_added 兜底：证书没记它，",
+  "父 commit 上它就必须仍然不存在 —— 否则「事后补一份配置」就是没人绑的缝。"
+ ],
  "script_closure_files": [
   "scripts/fm_eq.tcl",
   "scripts/sidecar/fm_native_emit.tcl"

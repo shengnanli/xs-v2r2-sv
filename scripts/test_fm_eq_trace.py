@@ -11,12 +11,19 @@ gen_receipt_harvest.py 的关二第 (3) 项拿这套差分调用序列当判据�
 四个用例，前两个是负测：
 
   NEG-1 语义突变：把 main 的 fm_eq.tcl 里一个 appvar 的取值翻掉 -> 必须判不同
-  NEG-2 ★判别性负测★：一个**在旧白名单上、不在 main 白名单上**的 top，开着 vmucp
-        跑 -> main 那版会在守卫处 exit 3，旧版一路跑完 -> 必须判不同。
+  NEG-2 ★判别性负测★：一个**在一边的白名单上、不在另一边的**的 top，开着 vmucp
+        跑 -> 不在白名单那一侧会在守卫处 exit 3，另一侧一路跑完 -> 必须判不同。
         这一条是整套判据的要害：白名单差异恰恰是"看上去无关、实际致命"的那类，
         而它只在 (vmucp=true) ∧ (top 在一边不在另一边) 时致命。
+        ★2026-09-20 起白名单不在 fm_eq.tcl 里了★（搬进 verif/fm_target_config/<top>.tcl，
+        理由见那里的 README），所以这条负测改成**两棵树只差一份 per-target 配置**：
+        判据要盯的东西没变，盯的位置跟着数据走。
   POS-1 同一对文件、同一个 top，但 vmucp=false -> 守卫分支根本不进，必须判相同
   POS-2 main 对自己 -> 必须判相同（自反）
+
+★为什么要"搭一棵树"★：fm_eq.tcl 按 `info script` 的上两级去找 verif/fm_target_config，
+所以被测的那份 fm_eq.tcl 必须真的躺在某棵 <root>/scripts/ 里。随手扔进 /tmp 根下，
+它会找不到配置目录而 exit 3 —— 两边都 exit 3 就又成了"四个相同的错误"那种假通过。
 
 ★为什么 NEG-2 不能换成"随便挑一个不在白名单上的 top"★：那样两版都会 exit 3，
 两条 trace 都是那两行，**判据当然说相同** —— 第一版负测就是这么写的，
@@ -36,6 +43,21 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TRACER = os.path.join(REPO, 'scripts', 'fm_eq_trace.tcl')
 FM_EQ = os.path.join(REPO, 'scripts', 'fm_eq.tcl')
 WL_RE = re.compile(r'if \{\$top ni \{([^}]*)\}\}')
+CFG_DIR = os.path.join(REPO, 'verif', 'fm_target_config')
+
+
+def stage(root, fm_eq_text, cfg_src=CFG_DIR):
+    """搭一棵 <root>/scripts/fm_eq.tcl + <root>/verif/fm_target_config/ 的最小树。"""
+    os.makedirs(os.path.join(root, 'scripts'), exist_ok=True)
+    fp = os.path.join(root, 'scripts', 'fm_eq.tcl')
+    with open(fp, 'w') as f:
+        f.write(fm_eq_text)
+    dst = os.path.join(root, 'verif', 'fm_target_config')
+    if os.path.isdir(dst):
+        shutil.rmtree(dst)
+    os.makedirs(os.path.join(root, 'verif'), exist_ok=True)
+    shutil.copytree(cfg_src, dst)
+    return fp
 
 
 def trace(fm_eq, top, vmucp, workdir):
@@ -57,9 +79,19 @@ def trace(fm_eq, top, vmucp, workdir):
 
 
 def whitelist(path):
+    """某一版 fm_eq.tcl 的 vmucp 白名单。
+
+    ★两种形态都认★：拆分前是文件里那条 `if {$top ni {...}}`（evidence/ 里的历史快照
+    仍是这个样子）；拆分后白名单不在这个文件里，返回空集合，由调用方改用
+    verif/fm_target_config/ 的文件名集合。
+    """
     with open(path, errors='replace') as f:
         m = WL_RE.search(f.read())
     return set(m.group(1).split()) if m else set()
+
+
+def config_whitelist(cfg_dir=CFG_DIR):
+    return {fn[:-4] for fn in os.listdir(cfg_dir) if fn.endswith('.tcl')}
 
 
 def main():
@@ -68,55 +100,56 @@ def main():
     os.makedirs(a)
     os.makedirs(b)
     fails = []
-    main_wl = whitelist(FM_EQ)
+    main_wl = config_whitelist()
     if not main_wl:
-        print('FAIL setup: 从 %s 里解析不出 vmucp 白名单' % FM_EQ)
+        print('FAIL setup: verif/fm_target_config/ 里一份 per-target 配置都没有')
         return 1
-
-    # --- NEG-1 语义突变 ---
-    mut = os.path.join(wd, 'mutated_fm_eq.tcl')
     with open(FM_EQ, errors='replace') as f:
         txt = f.read()
+
+    # 两棵结构完整的树：ta 放 main 的 fm_eq.tcl，tb 放被比对的那一版。
+    ta = os.path.join(wd, 'ta')
+    main_staged = stage(ta, txt)
+
+    # --- NEG-1 语义突变 ---
     old = 'set_app_var verification_verify_unread_bbox_inputs false'
     if old not in txt:
         fails.append('NEG-1 setup: 找不到要突变的 appvar 行')
     else:
-        with open(mut, 'w') as f:
-            f.write(txt.replace(old, old[:-5] + 'true'))
+        tb = os.path.join(wd, 'tb_mut')
+        mut = stage(tb, txt.replace(old, old[:-5] + 'true'))
         top = sorted(main_wl)[0]
-        if trace(FM_EQ, top, 'false', a) == trace(mut, top, 'false', b):
+        if trace(main_staged, top, 'false', a) == trace(mut, top, 'false', b):
             fails.append('NEG-1: appvar 取值被翻掉，判据却说调用序列相同')
 
-    # --- NEG-2 判别性：旧白名单有、main 白名单没有的 top ---
-    donor = None
-    for root, _d, files in os.walk(os.path.join(REPO, 'evidence')):
-        if 'sourced_000_fm_eq.tcl' not in files:
-            continue
-        p = os.path.join(root, 'sourced_000_fm_eq.tcl')
-        extra = whitelist(p) - main_wl
-        if extra:
-            donor = (p, sorted(extra)[0])
-            break
-    if donor is None:
-        # 仓内已提交的证据里没有这种历史版本时，就地造一个：往白名单里塞一个
-        # main 没有的名字。判据要验的是"白名单差异致命"，造出来的差异同样有效。
-        donor_path = os.path.join(wd, 'older_fm_eq.tcl')
-        fake = 'ZzTestOnlyTopNotOnMainWhitelist'
-        with open(donor_path, 'w') as f:
-            f.write(WL_RE.sub(lambda m: 'if {$top ni {%s %s}}' % (m.group(1), fake), txt, count=1))
-        donor = (donor_path, fake)
-    dpath, dtop = donor
-    if trace(FM_EQ, dtop, 'true', a) == trace(dpath, dtop, 'true', b):
-        fails.append('NEG-2: %s 在旧白名单上、不在 main 白名单上，开 vmucp 跑'
-                     '两版却判相同（main 应在守卫处 exit 3）' % dtop)
+    # --- NEG-2 判别性：一边的白名单上有、另一边没有的 top ---
+    # 拆分后白名单 = verif/fm_target_config/ 里有没有那份文件，所以"差一个白名单条目"
+    # 这件事就是**两棵树只差一份配置**。这里把 main 白名单上的第一个目标从 tb 树里
+    # 删掉：dtop 在 ta 上在白名单、在 tb 上不在。
+    dtop = sorted(main_wl)[0]
+    tb2 = os.path.join(wd, 'tb_nowl')
+    dpath = stage(tb2, txt)
+    os.remove(os.path.join(tb2, 'verif', 'fm_target_config', dtop + '.tcl'))
+    if trace(main_staged, dtop, 'true', a) == trace(dpath, dtop, 'true', b):
+        fails.append('NEG-2: %s 只在一侧的白名单上，开 vmucp 跑两版却判相同'
+                     '（不在白名单那侧应在守卫处 exit 3）' % dtop)
 
-    # --- POS-1 同一对文件、vmucp 关掉 -> 守卫不进，必须相同 ---
-    if trace(FM_EQ, dtop, 'false', a) != trace(dpath, dtop, 'false', b):
+    # --- POS-1 同一对树、vmucp 关掉 -> 守卫不进，必须相同 ---
+    if trace(main_staged, dtop, 'false', a) != trace(dpath, dtop, 'false', b):
         fails.append('POS-1: vmucp=false 时守卫分支根本不进，两版却判不同')
 
     # --- POS-2 自反 ---
-    if trace(FM_EQ, sorted(main_wl)[0], 'true', a) != trace(FM_EQ, sorted(main_wl)[0], 'true', b):
+    if trace(main_staged, dtop, 'true', a) != trace(main_staged, dtop, 'true', b):
         fails.append('POS-2: main 的 fm_eq.tcl 对自己都判不同（判据不稳定）')
+
+    # --- NEG-3 ★假通过堵死★：trace 里出现 TCL_ERROR 就不算"跑过" ---
+    # 集成者实测踩过：四个 top 全是 1 行、哈希完全相同，查出来是四个相同的
+    # `TCL_ERROR can't read env(FM_REF_SRCS)`。
+    base = trace(main_staged, dtop, 'true', a)
+    if 'TCL_ERROR' in base or len(base.splitlines()) < 15:
+        fails.append('NEG-3: main 这一版自己都没跑到底（%d 行，TCL_ERROR=%s）—— '
+                     '上面每一条"相同/不同"都不可信'
+                     % (len(base.splitlines()), 'TCL_ERROR' in base))
 
     fails += pins_cases(wd)
 
@@ -125,7 +158,7 @@ def main():
         print('FAIL %s' % f)
     if fails:
         return 1
-    print('test_fm_eq_trace: 7/7 通过（fm_eq 4 + fm_pins 3；其中 3 条负测会红）')
+    print('test_fm_eq_trace: 8/8 通过（fm_eq 5 + fm_pins 3；其中 4 条负测会红）')
     return 0
 
 

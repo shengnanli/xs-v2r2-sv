@@ -59,7 +59,7 @@ _TMPDIRS = []
 
 #: 实际会跑到的断言条数。少一条 = 有测试被跳过/提前 return，整体判失败。
 #: 改测试时必须同步改这个数字（这正是它的用途：逼你意识到少跑了）。
-EXPECTED_ASSERTIONS = 75
+EXPECTED_ASSERTIONS = 77
 
 
 def check(name, cond, detail=''):
@@ -185,6 +185,7 @@ class Fixture(object):
             'pinned_entry_appvars': {'hdlin_unresolved_modules': 'black_box'},
             'script_closure_files': ['scripts/fm_eq.tcl',
                                      'scripts/sidecar/fm_native_emit.tcl'],
+            'target_config_dir': 'verif/fm_target_config',
             'g1_canonical_id': CANON,
         }
         if policy_mutate:
@@ -525,6 +526,25 @@ def test_tool_and_appvar_policy():
         {'pinned_entry_appvars': {'hdlin_unresolved_modules': 'error'}}) or p)
     expect_reason('D57-4:appvar_policy_mismatch', h.judge(),
                   'green_child_appvar_policy_mismatch')
+
+
+def test_target_config_added():
+    """★fm_eq.tcl 拆分带出来的新缝★：证书没记 per-target 配置，而父 commit 上补了一份。
+
+    2026-09-20 把 vmucp 白名单与目标专属 appvar 从 scripts/fm_eq.tcl 搬进
+    verif/fm_target_config/<top>.tcl。文件**存在**时由 sidecar 快照进 script_closure，
+    3b 会逐字节复算；难的是**不存在**那一侧 —— 证书里没有这条记录，
+    "没记" 不能推出 "没有"。若不补这一条，给某个 child 事后补一份配置
+    （开 vmucp、改 appvar）之后，它证书里每个 sha256 都还对得上，证明语义却已经变了。
+    """
+    f = control('target_config_absent')
+    if f is None:
+        return
+    g = Fixture(post_commit=lambda fx: fx._w(
+        'verif/fm_target_config/ChildLeaf.tcl',
+        '# 事后补的 per-target 配置\nfm_target_vmucp_allow\n'))
+    expect_reason('D57-4:target_config_added', g.judge(),
+                  'green_child_target_config_added')
 
 
 def test_declaration_changed():

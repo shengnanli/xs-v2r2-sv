@@ -99,16 +99,28 @@ def remap_rtl_instantiations(text, remapped, notes, what):
 
 
 def _whitelist_add(name):
-    """把 vmucp 目标幂等插入 fm_eq.tcl 的精确白名单（继承老战役审计声明）。"""
-    txt = FM_EQ.read_text()
-    m = re.search(r'if \{\$top ni \{([^}]*)\}\} \{', txt)
-    if not m:
-        sys.exit('ERROR: fm_eq.tcl 白名单结构未找到')
-    cur = m.group(1).split()
-    if name in cur:
+    """把 vmucp 目标幂等写成 verif/fm_target_config/<name>.tcl（继承老战役审计声明）。
+
+    ★2026-09-20 起白名单不在 fm_eq.tcl 里★：它一个名字一份文件搬进了
+    verif/fm_target_config/（理由与实测见那里的 README —— 共享文件每改一次，
+    全仓 child 证书一起失效）。本函数跟着改：**不再碰 fm_eq.tcl 一个字节**，
+    否则每继承一个目标就把所有别人的证书打翻一遍。
+    """
+    cfg = NEW / 'verif' / 'fm_target_config' / (name + '.tcl')
+    if cfg.exists():
         return
-    cur = sorted(set(cur + [name]))
-    FM_EQ.write_text(txt[:m.start(1)] + ' '.join(cur) + txt[m.end(1):])
+    if not cfg.parent.is_dir():
+        sys.exit('ERROR: %s 不存在 —— per-target 配置目录没了，不静默新建'
+                 % cfg.parent)
+    cfg.write_text(
+        '# vmucp 白名单条目：%s\n'
+        '#\n'
+        '# 契约见 verif/fm_target_config/README.md。\n'
+        '# ★依据★：由 scripts/inherit_target.py 继承 xs-v2r2-sv 的审计声明自动落盘，\n'
+        '#   **本轮 G1 基线下的实测依据尚未补**（加入时请把基线 passing/unread、\n'
+        '#   双射论证与跑前预登记的复核判据补写在这里，不要只留这一行）。\n'
+        '\n'
+        'fm_target_vmucp_allow\n' % name)
 
 
 def parse_makefile(text):

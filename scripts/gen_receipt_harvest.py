@@ -120,6 +120,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -728,7 +729,21 @@ def _trace(fm_eq_path, r, workdir):
         env.pop(k, None)
     if r['interface_only']:
         env['FM_INTERFACE_ONLY'] = r['interface_only']
-    run(['tclsh', TRACER, fm_eq_path], cwd=workdir, env=env)
+    # ★被测的 fm_eq.tcl 必须躺在一棵 <root>/scripts/ 里★（2026-09-20）：
+    # 拆分 per-target 数据之后，fm_eq.tcl 按 `info script` 的上两级去找
+    # verif/fm_target_config/。receipt 里的历史快照住在 evidence/**/sidecar/ 下，
+    # 直接喂给 tracer 会让**拆分后**那一版找不到配置目录而 exit 3 ——
+    # 那样两版必然 DIFFER，是保守方向（不会误判成 same），但判据就废了。
+    # 所以两版都搭一棵最小树再跑：差异只剩 fm_eq.tcl 本身。
+    tree = os.path.join(workdir, 'tree')
+    if not os.path.isdir(os.path.join(tree, 'scripts')):
+        os.makedirs(os.path.join(tree, 'scripts'))
+    staged = os.path.join(tree, 'scripts', 'fm_eq.tcl')
+    shutil.copyfile(fm_eq_path, staged)
+    link = os.path.join(tree, 'verif')
+    if not os.path.exists(link):
+        os.symlink(os.path.join(REPO, 'verif'), link)
+    run(['tclsh', TRACER, staged], cwd=workdir, env=env)
     try:
         with open(out, errors='replace') as f:
             txt = f.read()

@@ -353,6 +353,10 @@ def validate_policy(doc):
         errs.append('policy_missing_field:pinned_entry_appvars')
     if not isinstance(doc.get('script_closure_files'), list) or not doc['script_closure_files']:
         errs.append('policy_missing_field:script_closure_files')
+    # per-target 证明数据的目录（fm_eq.tcl 拆分后新增）。缺这一格 = 没人验
+    # "事后补一份 per-target 配置"，按 fail-closed 判 policy 不合格。
+    if not _nonempty_str(doc.get('target_config_dir')):
+        errs.append('policy_missing_field:target_config_dir')
     fc = doc.get('freeze_commit')
     if fc is not None and not _hex40(fc):
         errs.append('policy_bad_field:freeze_commit')
@@ -621,6 +625,24 @@ def validate_child_certificate(repo, parent_commit, child, declared_sha,
     if want_scripts - have_scripts:
         return ('green_child_script_closure_incomplete:%s:%s'
                 % (child, sorted(want_scripts - have_scripts)[0]))
+
+    # 3b') ★per-target 配置的"不存在"也要被绑★（2026-09-20，fm_eq.tcl 拆分）
+    #
+    # 白名单与目标专属 appvar 从 scripts/fm_eq.tcl 搬进了
+    # verif/fm_target_config/<top>.tcl（理由：共享文件每改一个字节，全仓 child 证书
+    # 一起失效 —— 实测 6 份证书里 4 个不同的 fm_eq.tcl 哈希、无一等于 HEAD）。
+    # 文件**存在**时它由 sidecar 的 source 快照进 script_closure，上面 3b 已逐字节复算。
+    # 但绝大多数目标**没有**这份文件，而"证书里没记它"不能推出"它不存在" ——
+    # 否则"事后给某个目标补一份配置（开 vmucp / 改 appvar）"就是一条没人绑的缝：
+    # 证书里每个 sha256 都还对得上，而证明语义已经变了。
+    # 所以这里把**不存在**这件事也验一遍：证书没记 ⇒ 父 commit 上必须仍然没有。
+    tcdir = policy.get('target_config_dir')
+    if tcdir:
+        tcpath = '%s/%s.tcl' % (tcdir.rstrip('/'), child)
+        recorded = any(e.get('path') == tcpath and e.get('kind') == 'repo'
+                       for e in doc['script_closure']['entries'])
+        if not recorded and repo.show(parent_commit, tcpath) is not None:
+            return 'green_child_target_config_added:%s:%s' % (child, tcpath)
 
     # 3c) golden 闭包对 G1 MANIFEST（golden 换字节 = 换被比对对象）
     if g1_root:
