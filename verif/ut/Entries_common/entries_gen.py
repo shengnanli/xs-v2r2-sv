@@ -184,13 +184,21 @@ class Variant:
                               (re.fullmatch(r'io_enq_0_bits_status_fuType_(\d+)', n)
                                for n in self.pmap) if m)
 
-        # ---- 每路 WB 的写使能字段名 ----
-        self.wk_wen = []
+        # ---- 每路 WB 的写使能字段名（★逐路一个**列表**，不是一个名字★） ----
+        # 旧写法断言"每路只有一个写使能字段"。那是从单 wen 变体外推出来的假设：
+        # MEM 族一条 lane 同时带 rfWen/fpWen/vecWen，VlduVstu 更是五个全带
+        # （判别轴见 verif/ut/Entries_field_matrix/wakeup_axis.md）。
+        # 断言留着会让那 5 个访存变体连 Variant() 都构造不出来。
+        self.wk_wen_lanes = []
         for w in range(self.n_wk):
-            f = [n for n in self.pmap
-                 if n.startswith(f'io_wakeUpFromWB_{w}_bits_') and not n.endswith('_pdest')]
-            assert len(f) == 1, f'WB{w} 的写使能字段不唯一: {f}'
-            self.wk_wen.append(f[0].split('_bits_')[1])
+            f = sorted(n.split('_bits_')[1] for n in self.pmap
+                       if n.startswith(f'io_wakeUpFromWB_{w}_bits_')
+                       and n.endswith('Wen'))
+            assert f, f'WB{w} 一个写使能字段都没有'
+            self.wk_wen_lanes.append(f)
+        # 兼容旧引用：单 wen 时就是那一个名字；多 wen 时取第一个**只用于注释/激励**，
+        # 逻辑一律走 wen_lane（逐路集合）与 *_WEN_PRESENT（剪项）。
+        self.wk_wen = [f[0] for f in self.wk_wen_lanes]
 
         # ---- 负载字段：DEQ 子集在前，TRANS 独有在后 ----
         ep = port_decls(self.enq_mod)
@@ -424,15 +432,18 @@ class Variant:
                         f'{top}: {other} 的 IQ{w}->src{sx} 路由与 {self.enq_mod} 不一致')
                     if not m:
                         continue
-                    tb = {int(x) for x in re.findall(
-                        r'srcStatus_%d_srcType\[(\d+)\]' % sx, m.group(1))}
-                    assert tb == {self.iq_tbit[sx]}, (
-                        f'{top}: {other} 的 IQ{w}->src{sx} srcType 门控位与 enq 不一致')
-                    f = {x for x in re.findall(
-                        r'wakeUpFromIQ_%d_bits_(\w+)\b' % w, m.group(1))
-                        if x not in ('pdest', 'is0Lat')}
-                    assert f == {self.iq_wen[w]}, (
-                        f'{top}: {other} 的 IQ{w} 写使能字段与 enq 不一致: {f}')
+                    # ★改成比「对表集合」，不是比"那一个门控位/那一个 wen"★：
+                    #   多 wen 的变体上一个源本来就有多对，旧写法会把它判成不一致。
+                    #   这里仍然是**逐条目类型核对**（simp/comp 是另外两个 golden
+                    #   模块），只是把判据从"唯一值相等"换成"对表相等"。
+                    pair_here = {(int(b), wn) for b, wn in re.findall(
+                        r'srcStatus_%d_srcType\[(\d)\] & io_\w+_\d+_bits_(\w+Wen)' % sx,
+                        re.sub(r'\s+', ' ', m.group(1)))}
+                    pair_enq = {(b, wn) for b, wn in KIND_PAIRS[self.src_kind[sx]]
+                                if wn in self.wen_present['iq']}
+                    assert not pair_here or pair_here == pair_enq, (
+                        f'{top}: {other} 的 IQ{w}->src{sx} 唤醒对表与 enq 不一致: '
+                        f'{sorted(pair_here)} vs {sorted(pair_enq)}')
 
         # ★ og0 取消映射也必须逐条目类型核 ★
         # 这份映射我只从 enq 条目提取，而 simp/comp 是**另外两个 golden 模块**。
@@ -596,8 +607,10 @@ def gen_rtl(v):
     A('// 唤醒路由（从 golden currentStatus_srcStatus_<s>_srcState 表达式机械提取）：')
     for s in range(v.n_regsrc):
         lanes = v.src_wb[s]
-        A(f'//   src{s}: WB[{lanes[0]}..{lanes[-1]}]（{v.wk_wen[lanes[0]]}），'
-          f'门控 srcType[{v.src_tbit[s]}]')
+        _pairs = sorted((b, wn) for b, wn in KIND_PAIRS[v.src_kind[s]]
+                        if wn in v.wen_present['wb'])
+        A(f'//   src{s}: WB[{lanes[0]}..{lanes[-1]}]，匹配 '
+          + ' | '.join(f'srcType[{b}]&{wn}' for b, wn in _pairs))
     A('//')
     A(f'// 自动生成：verif/ut/{v.top}/gen.py（共享库 verif/ut/Entries_common/'
       'entries_gen.py）—— 勿手改')
@@ -1042,7 +1055,8 @@ def gen_tb(v):
     A('    // 唤醒总线：pdest 取自小池，写使能高概率有效')
     for w in range(v.n_wk):
         A(f'    io_wakeUpFromWB_{w}_valid <= ($urandom_range(0, 99) < 35);')
-        A(f'    io_wakeUpFromWB_{w}_bits_{v.wk_wen[w]} <= ($urandom_range(0, 99) < 85);')
+        for _f in v.wk_wen_lanes[w]:
+            A(f'    io_wakeUpFromWB_{w}_bits_{_f} <= ($urandom_range(0, 99) < 85);')
         A(f"    io_wakeUpFromWB_{w}_bits_pdest <= {v.pdest_w}'(rnd_reg());")
     if v.has_ignore:
         A('    io_vlFromIntIsZero  <= ($urandom_range(0, 99) < 15);')
@@ -1077,7 +1091,8 @@ def gen_tb(v):
     A('  always @(posedge clock) begin')
     for w in range(v.n_wk):
         A(f'    io_wakeUpFromWBDelayed_{w}_valid <= io_wakeUpFromWB_{w}_valid;')
-        A(f'    io_wakeUpFromWBDelayed_{w}_bits_{v.wk_wen[w]} <= io_wakeUpFromWB_{w}_bits_{v.wk_wen[w]};')
+        for _f in v.wk_wen_lanes[w]:
+            A(f'    io_wakeUpFromWBDelayed_{w}_bits_{_f} <= io_wakeUpFromWB_{w}_bits_{_f};')
         A(f'    io_wakeUpFromWBDelayed_{w}_bits_pdest <= io_wakeUpFromWB_{w}_bits_pdest;')
     for w in range(v.n_wk_iq):
         for f in ([v.iq_wen[w], 'pdest'] + (['rcDest'] if v.has_rc else [])

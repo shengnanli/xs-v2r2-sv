@@ -17,9 +17,9 @@
 //   golden 层次：EnqEntry_10 ×2 + OthersEntry_104 ×2 + OthersEntry_106 ×14 + EnqPolicy_8 ×2，本文件把它们一并扁平化。
 //
 // 唤醒路由（从 golden currentStatus_srcStatus_<s>_srcState 表达式机械提取）：
-//   src0: WB[0..5]（fpWen），门控 srcType[1]
-//   src1: WB[0..5]（fpWen），门控 srcType[1]
-//   src2: WB[0..5]（fpWen），门控 srcType[1]
+//   src0: WB[0..5]，匹配 srcType[1]&fpWen
+//   src1: WB[0..5]，匹配 srcType[1]&fpWen
+//   src2: WB[0..5]，匹配 srcType[1]&fpWen
 //
 // 自动生成：verif/ut/EntriesFaluFmacFdiv/gen.py（共享库 verif/ut/Entries_common/entries_gen.py）—— 勿手改
 // =============================================================================
