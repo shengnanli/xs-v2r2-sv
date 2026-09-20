@@ -35,6 +35,11 @@ CASES = [
     ('verif/ut/X/simv.daidir/x', True),                         # .daidir 目录
     ('verif/ut/X/novas.rc', True),
     ('scripts/__pycache__/m.pyc', True),
+    # 备份副本（2026-09-20 实测事故 3：cf002ce8 把它连带 git add 进库）
+    ('verif/ut/Sbuffer/.mutants.orig.sv', True),
+    ('verif/ut/X/Foo.orig.sv', True),
+    ('rtl/memblock/Sbuffer.sv.bak', True),
+    ('verif/ut/X/tb.orig', True),
 
     # ---- 反向：不许误报 ----
     ('rtl/backend/EntriesAluCsrFenceDiv.sv', False),
@@ -48,6 +53,11 @@ CASES = [
     ('verif/ut/X/Makefile', False),
     ('verif/ut/X/tb.sv', False),
     ('CONVENTIONS.md', False),
+    # ★反向：名字里含 orig / bak 但不是备份副本，一个也不许误伤★
+    ('rtl/common/xs_original_pkg.sv', False),
+    ('docs/origin_map.tsv', False),
+    ('scripts/backfill.py', False),
+    ('verif/ut/X/baking_tb.sv', False),
     # ---- 反向：evidence/ 是有意提交的签核凭据，整棵豁免 ----
     ('evidence/abc123/Top/fm.log', False),
     ('evidence/abc123/Top/sidecar/native_facts.json', False),

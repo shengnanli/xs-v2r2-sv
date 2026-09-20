@@ -360,3 +360,78 @@ tag_mismatch_last_REG_*）」—— 把两组不同复位域的寄存器并列�
 
 ★Q3 是这次最硬的一条★：如果 passing ≠ 28,329，说明"拆 always_ff 不改变比较点
 集合"这个理解错了，必须查清楚，不许事后放宽。
+
+---
+
+# §8 对账：第二次真跑（SUCCEEDED）
+
+```
+PROOF_COMMIT=74f0107f65db644825d4f25c755950423fbb84be \
+  scripts/run_proof.sh Sbuffer Sbuffer
+证据: evidence/74f0107f65db/Sbuffer/{receipt.json,fm.log,unmatched.rpt,black_boxes.rpt,unread_points.txt,sidecar/}
+run_id: Sbuffer-20260920T063720Z-74f0107f     make rc=0     fm_shell rc=0
+Maximum memory usage 1777 MB / CPU 482.64 s / Elapsed 527 s
+```
+
+| # | 预测 | 实测 | 判 |
+|---|---|---|---|
+| Q1 | native `SUCCEEDED` | `SUCCEEDED`（receipt verdict 同） | 符 |
+| Q2 | failing = 0 | 0（`failing_total/matched/unmatched` 皆 0） | 符 |
+| Q3 | **passing = 28,329**，unverified/aborted = 0 | **28,329**，unverified 0，aborted 0 | **符（精确命中）** |
+| Q4a | unmatched 六类仍全 0 | `compare_ref/impl` `unread_ref/impl` `bbout_ref/impl` 全 0；`unmatched.rpt` = "No unmatched points." | 符 |
+| Q4b | `matched by name` 仍 14,283、`by signature` 仍 14,046 | **14,280 / 14,049** | **不符（各差 3）** |
+| Q5 | `unread_notcompared` 0、黑盒 0、无 dont_verify / relaxed appvar | 0；`black_boxes.rpt` FM-249 无黑盒；三个 qualification 列表全空；`unread_points.txt` 0 字节 | 符 |
+| Q6 | `impl_closure` 恰 4 条、无 golden `SbufferData.sv` | 4 条：`rtl/memblock/Sbuffer.sv`(repo, 7cbd887…) `rtl/memblock/SbufferData.sv`(repo, df1ec7f…) `golden-rtl/StorePfWrapper.sv`(golden) `golden-rtl/Serializer.sv`(golden) | 符 |
+| Q7 | UT 六轮仍全绿 | 6/6 errors=0（见 `UT_ROUND2.md`） | 符 |
+| Q8 | 变异体仍 10/10 CAUGHT | 10/10 CAUGHT | 符 |
+
+**7 符 1 不符。**
+
+## Q4b 差的那 3 个，就是被修的那 3 个
+
+`by name` 14,283 → 14,280（−3），`by signature` 14,046 → 14,049（+3），总数 28,329 不变。
+
+差的正是 `g_fwd[0..2].fwd_valid_q_reg`：改复位域之后它们的**签名变了**
+（原来带异步复位、与 golden 的无复位版签名不同却仍按名配上；现在无复位，
+名字对不上但签名对上了），于是从"按名匹配"那一栏挪进了"按签名匹配"那一栏。
+
+★这条不符本身是有信息的★：它说明 Q4b 里「名字与层次都没改 ⇒ 分栏不变」这个推理
+**漏了一个变量** —— FM 的按名匹配对同名点还要过签名一致性，改复位域会改签名。
+分栏口径我原来的理解不准；**总数**（28,329）与**unmatched 全零**这两条硬判据没受影响。
+按规矩这仍记为 fail，不事后放宽区间。
+
+## 两次真跑的差分（只差一处 RTL 改动）
+
+| | 第一次（`5c55add`） | 第二次（`74f0107f`） |
+|---|---|---|
+| verdict | FAILED | **SUCCEEDED** |
+| passing / failing | 28,326 / **3** | **28,329 / 0** |
+| 比较点总数 | 28,329 | 28,329 |
+| unmatched 六类 | 全 0 | 全 0 |
+| unread_notcompared | 0 | 0 |
+| 黑盒 / dont_verify / relaxed appvar | 0 / 无 / 无 | 0 / 无 / 无 |
+| matched by name / signature / topology | 14,283 / 14,046 / 0 | 14,280 / 14,049 / 0 |
+| 峰值内存 / CPU / 墙钟 | 1777 MB / 593 s / 640 s | 1777 MB / 483 s / 527 s |
+
+impl 侧唯一变化：`rtl/memblock/Sbuffer.sv` 的 sha256
+`80f492fc…d2495be` → `7cbd8870…5dd39813`（`fwd_valid_q` 拆出无复位 always_ff）。
+`SbufferData.sv` / `Makefile` / `tb.sv` / golden 四件字节全等。
+
+## ★结论边界仍然照 §2 那张表★
+
+FM 绿了，但**完整目标 `Sbuffer` 仍是 UNPROVEN**：
+
+- `SbufferData` 现在是真比对了，但它**自己的**签核目标还没跑过
+  （`evidence/` 下没有 `SbufferData` 的 receipt）；
+- `StorePfWrapper` / `Serializer` 的 impl 侧仍是 golden 字节，
+  本 target 对它们**零信息量**，记 `UNCHANGED_GOLDEN_DEP / 子依赖未闭合`；
+- 这三条在 `evidence/74f0107f65db/Sbuffer/DEPENDENCIES.md` 里逐条挂着，
+  其中后两条在 `receipt.json` 的 `impl_closure` 里是 `kind: golden`，**机器可核**。
+
+所以本次证明的准确表述是：
+
+> 在「`StorePfWrapper` / `Serializer` 取 golden 定义」这个前提下，
+> 重写的 `Sbuffer` + 重写的 `SbufferData` 与 golden 的四件闭包等价
+> （signoff-strict / 28,329 比较点全过 / 零黑盒 / 零 waiver）。
+
+**不是** `PROVEN_DIRECT`。
