@@ -348,9 +348,37 @@ def lane_worktrees():
     return res
 
 
-def tracked_runs():
-    _, out = run(['git', 'ls-files', 'evidence/'], REPO)
-    return {p.split('/')[1] for p in out.splitlines() if p.count('/') >= 1}
+def tracked_receipts():
+    """版本库里**逐个 (run, target)** 已跟踪的 receipt。
+
+    ★不能按 run 目录粒度算★（2026-09-20 实测，这是我自己造出来的一次静默低计）：
+    收录是**按 target 子目录** `git add -f evidence/<run>/<target>` 做的（必须如此 ——
+    同一个 run 目录里常常混着前提已变的轮次，整目录收会把它们一起带进台账）。
+    于是一个 run 目录可以是**部分跟踪**的：73 个 tracked run 里就有这种。
+
+    第一版 tracked_runs() 只收 run 名字，判 in_vcs 时写 `rundir_name in tracked` ——
+    只要同 run 里**任何一个别的 target** 被收过，这个 target 就被标成"已在版本库里"。
+    实测 20 行被这样误标，其中 DuplicatedTagArray / ICacheMetaArray /
+    ITTageTable{,_1..4} / TageBTable 的 receipt **确实没进 git**，而表说它们
+    `in_vcs=yes COLLECTED` —— 读起来是"没事可做"。
+
+    ★但必须说准：这一次没有因此少算覆盖。★
+    我第一反应是"3,529 golden 行被我自己藏了"，去查才发现错在**我只 grep 了
+    docs/fm_round_20260917.tsv 一份台账**。proven 的口径是 glob `fm_round_*.tsv`
+    加 fastlane —— 这 8 个在 `fm_round_20260914.tsv` 里就已经是 SUCCEEDED，
+    `rewrite_coverage.proven_modules()` 认它们。所以缺陷真实、后果为零。
+    （"这条洞存不存在"与"这条洞有没有实际后果"是两件事，两件都要报，
+      而且**别把没发生的后果写成发生了** —— 虚高的坏消息一样会传下去。）
+
+    判据：`git ls-files evidence/*/*/receipt.json` 逐个取 (run, target)。
+    """
+    _, out = run(['git', 'ls-files', 'evidence/*/*/receipt.json'], REPO)
+    res = set()
+    for p in out.splitlines():
+        q = p.split('/')
+        if len(q) >= 4:
+            res.add((q[1], q[2]))
+    return res
 
 
 def green_of(j):
@@ -365,7 +393,7 @@ def collect(only=None):
     —— `--check` 用它把扫描范围钉死在表里已列出的行上，使逐行重算不受别的 lane
     正在新产出的证据影响（那是新鲜度问题，不是本表对不对的问题）。
     """
-    tracked = tracked_runs()
+    tracked = tracked_receipts()
     recs = []
     # ★按 (run, target) 去重★。两类重复都真实存在，都不该在表里各占一行：
     #   · 已进版本库的 evidence/<run> 是**被 git 跟踪的文件**，于是每一个 worktree
@@ -424,7 +452,7 @@ def collect(only=None):
                 seen[(rundir_name, tgt)] = ev_id
                 recs.append({
                     'wt': wt, 'run': rundir_name, 'target': tgt, 'dir': d,
-                    'ev_id': ev_id, 'in_vcs': rundir_name in tracked,
+                    'ev_id': ev_id, 'in_vcs': (rundir_name, tgt) in tracked,
                     'verdict': v, 'mtime': os.path.getmtime(rc),
                     'commit': j.get('impl_commit'),
                     'dirty': bool(j.get('impl_worktree_dirty')),
@@ -884,11 +912,16 @@ def build(only=None):
 
     for tgt in sorted(by_t):
         cands = by_t[tgt]
-        # 已经进了版本库的那一份就是本目标的既成结论，关三不必再选。
-        already = [r for r in cands if r['in_vcs']]
+        # ★"已经在版本库里"不该压过"判据真的过得了"★（2026-09-20）
+        # 只把**判据也过得了**的那些算作既成结论。若库里那份已经不成立（共享件被改过、
+        # 闭包缺环…），而 lane 里另有一份八项全过的轮次，该轮次是可收的 ——
+        # 收它比重跑便宜得多。第一版按 in_vcs 一刀切，会把那份好的判成 SUPERSEDED、
+        # 把目标判成 NEEDS_RERUN，白白让人去重跑一件已经有答案的事。
+        already = [r for r in cands if r['in_vcs'] and r['_verdict'] == 'OK']
+        stale_vcs = [r for r in cands if r['in_vcs'] and r['_verdict'] != 'OK']
         winner = None
         okc = [r for r in cands if r['_verdict'] == 'OK' and not r['in_vcs']]
-        if okc and not already and tgt not in led:
+        if okc and not already and (tgt not in led or stale_vcs):
             winner = pick_authority(okc)
         for r in cands:
             v = r['_verdict']
@@ -911,13 +944,20 @@ def build(only=None):
                 if already:
                     v = 'SUPERSEDED'
                     r['_why'].append('本目标已有一份进了版本库：evidence/%s' % already[0]['run'])
+                elif r is winner:
+                    # ★winner 要排在 `tgt in led` 前面★：库里那份已经不成立时
+                    # （stale_vcs 非空），台账虽然还记着绿，可收的恰恰是这一份。
+                    # 顺序写反就会把唯一那份好的也判成"多余的一轮"。
+                    v = 'COLLECTED'
+                    if stale_vcs:
+                        r['_why'].append('★库里那份（evidence/%s）判据没过，改收这一份★'
+                                         % stale_vcs[0]['run'])
+                    else:
+                        r['_why'].append('本目标选它：同批 %d 个目标在 %s 上成批重出'
+                                         % (batch_size(r), (r['commit'] or '?')[:8]))
                 elif tgt in led:
                     v = 'SUPERSEDED'
                     r['_why'].append('台账里这个目标已有绿判决，这一份是多余的一轮')
-                elif r is winner:
-                    v = 'COLLECTED'
-                    r['_why'].append('本目标选它：同批 %d 个目标在 %s 上成批重出'
-                                     % (batch_size(r), (r['commit'] or '?')[:8]))
                 else:
                     v = 'SUPERSEDED'
                     r['_why'].append('同目标已选 %s/%s（同批 %d 个）'
