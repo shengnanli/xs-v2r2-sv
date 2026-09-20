@@ -17,6 +17,7 @@ module tb;
 
   integer ncycles;
   integer seed;
+  integer seed0;   // $random(seed) 会就地更新 seed，报告要打初值
   integer i;
   integer cyc;
   integer checks;
@@ -5254,7 +5255,10 @@ module tb;
   integer nmatch; integer ntogg; integer nnever; integer nverified;
   initial begin
     seed = 1; ncycles = 200000;
-    if (!$value$plusargs("seed=%d", seed)) seed = 1;
+    // ★ut_common.mk 下发的是 +ntb_random_seed=，不是 +seed=★
+    // 用错名字的话 3 个 seed 跑的是同一条激励，等于只跑了一轮。
+    if (!$value$plusargs("ntb_random_seed=%d", seed)) seed = 1;
+    seed0 = seed;
     if (!$value$plusargs("ncycles=%d", ncycles)) ncycles = 200000;
     for (i = 0; i < NOUT; i = i + 1) begin
       mism[i] = 0; togg[i] = 0; prev[i] = 128'd0; seen[i] = 1'b0;
@@ -5278,15 +5282,23 @@ module tb;
       if (mism[i] == 0 && togg[i] > 0) nverified = nverified + 1;
     end
     $display("");
-    $display("==== StoreQueue UT (seed=%0d ncycles=%0d) ====", seed, ncycles);
+    $display("==== StoreQueue UT (seed=%0d ncycles=%0d) ====", seed0, ncycles);
     $display("checks          = %0d", checks);
     $display("MATCH_OUTPUTS   = %0d/%0d   (整轮零失配的输出根数)", nmatch, NOUT);
     $display("TOGGLED         = %0d/%0d   (golden 侧真的变过值)", ntogg, NOUT);
     $display("NEVER_TOGGLED   = %0d      (★未被激励覆盖，不算已验证★)", nnever);
     $display("VERIFIED        = %0d/%0d   (零失配 AND 被 toggle 到)", nverified, NOUT);
     $display("errors          = %0d", NOUT - nmatch);
-    if (checks == 0)
+    // ★判绿口径★ ut_common.mk 的 run: 靠 grep "TEST PASSED" 判定。
+    // checks==0 时**不许**打 TEST PASSED —— 那是"什么都没比",不是通过。
+    if (checks == 0) begin
       $display("★checks=0：什么都没比，既不是通过也不是失败★");
+      $display("TEST FAILED (checks=0)");
+    end else if (nmatch == NOUT) begin
+      $display("TEST PASSED");
+    end else begin
+      $display("TEST FAILED (%0d/%0d 根输出失配)", NOUT - nmatch, NOUT);
+    end
     $finish;
   end
 
