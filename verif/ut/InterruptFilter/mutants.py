@@ -8,9 +8,16 @@ greaterThan255 那一支要 xtopei 的高 3 位非零才进得去，均匀随机
 **不**为零，反过来 isZero 那一支要求整整 8 位全零，均匀随机只有 1/256。
 tb 的 drive() 专门给这些分界值加了权，这里就得证明那些加权真的把路走到了。
 
-十个变异各对准本模块一处真实容易写错的地方，其中 M1/M3/M9 是"照 Chisel 语义
-写就会写错"的三处（Mux1H 无选中项 / 递归形状 / last-connect 默认连接），
-M2/M6 一起钉住"与外部中断槽位比大小"的边界（<= vs <、> vs >=）。
+十个变异各对准本模块一处真实容易写错的地方。M9 是"照 Chisel last-connect 语义
+写就会写错"的那处，M2/M6 一起钉住"与外部中断槽位比大小"的边界（<= vs <、> vs >=），
+M1/M3 钉住两路比较的第三层（>255 谁输）与规约树的配对顺序（并列取左）。
+
+★第一版的 M1 曾经打在「两边 greaterThan255 都为 1 -> Mux1H 无选中项 -> 全零」那一行，
+  10 个里就它和当时的 M3 没被抓到。查下来不是 UT 弱：本模块每一族里能把
+  greaterThan255 置 1 的**只有外部中断那一个条目**（M/HS 是 xtopei，VS 根本没有来源），
+  第 2 级更是只有第 3 组留了这一位 —— "两边都 >255" 结构上不可达，UT 和 FM 都看不见它。
+  于是把 M1 换成可达的那条单边分支；RTL 里那行全零照样照抄 golden，不动。
+  当时的 M3（改成线性链）也换成了"最底层配对左右互换"，因为只有并列时配对顺序才可观测。★
 
 变异只发生在 neg_build/（已在 .gitignore 里），不进库。
 用法: python3 mutants.py   （或 make mutants）
@@ -29,17 +36,15 @@ NCYCLES = '20000'
 
 # (说明, 锚点, 替换)
 MUTANTS = [
-    ('M1 把「两边 iprio 都 >255 时 Mux1H 无选中项 -> 全零」顺手「修好」成取 lhs',
-     "      else                                                 byNum = '0;   // ★见上",
-     "      else                                                 byNum = lhs;"),
+    ('M1 >255 的一方本该输，改成赢（greaterThan255 那两条单边分支互换）',
+     "      if      ( lhs.greaterThan255 && !rhs.greaterThan255) byNum = rhs;",
+     "      if      ( lhs.greaterThan255 && !rhs.greaterThan255) byNum = lhs;"),
     ('M2 isZero 一方与外部中断槽位比大小：<= 写成 <（平手时归属翻转）',
      "      else if ( lhs.isZero && !rhs.isZero) byZero = (lhs.idx <= eiSlot) ? lhs : rhs;",
      "      else if ( lhs.isZero && !rhs.isZero) byZero = (lhs.idx <  eiSlot) ? lhs : rhs;"),
-    ('M3 规约树结合顺序改成线性链（形状变了，M1 那条全零路径的结果就不同）',
-     "      lo = iprios_min2(iprios_min2(grp[0], grp[1], eiSlot),\n"
-     "                       iprios_min2(grp[2], grp[3], eiSlot), eiSlot);",
-     "      lo = iprios_min2(iprios_min2(iprios_min2(grp[0], grp[1], eiSlot),\n"
-     "                       grp[2], eiSlot), grp[3], eiSlot);"),
+    ('M3 规约树最底层配对顺序左右互换（并列时"取左"变成"取右"）',
+     "      lo = iprios_min2(iprios_min2(grp[0], grp[1], eiSlot),",
+     "      lo = iprios_min2(iprios_min2(grp[1], grp[0], eiSlot),"),
     ('M4 vstopigather 忘了屏蔽 SEI(9)（VS 外部中断会同时走两条通路）',
      "  assign vstopigather = vsip & vsie & ~(64'h1 << IRQ_SEI);",
      "  assign vstopigather = vsip & vsie;"),

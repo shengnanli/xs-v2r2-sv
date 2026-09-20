@@ -722,6 +722,38 @@ module tb;
         end
       end
       if ($urandom_range(0, 99) < 30) io_in_hviprio2_ALL = 64'h0;
+
+      // ★C1/C5 平手★（变异负测 M9 暴露出来的盲点）：均匀随机下
+      // iprioC1(=vstopeiReg.IPRIO, 11 位) 与 iprioC2C5(={3'h0,hvictlReg.IPRIO})
+      // 相等的概率约 1/2048，再乘上"C1 与 C5 同时成立"，20k 拍基本打不到，
+      // 于是 iidC1C5 那条"默认连接在平手支上生效"的路径从来没被验过。
+      // 这里直接把这个局面摆出来：C1 成立(VGEIN!=0 且 vstopei 非零) + C5 成立
+      // (VTI=1 且 IID!=9) + 两边优先级数值相等 + DPR 随机。
+      if ($urandom_range(0, 99) < 8) begin
+        io_in_hvictl_IPRIO  = 8'($urandom_range(1, 255));
+        io_in_vstopei_IPRIO = {3'h0, io_in_hvictl_IPRIO};
+        io_in_hvictl_VTI    = 1'b1;
+        io_in_hvictl_IID    = 12'h5;
+        io_in_hstatus_VGEIN = 6'h3;
+        io_in_vsip_SEIP     = 1'b1;
+        io_in_vsie_SEIE     = 1'b1;
+        io_in_hvictl_DPR    = 1'($urandom);
+      end
+
+      // ★组内并列★（变异负测 M3 暴露出来的盲点）：规约树是"左手平手取左"的，
+      // 只有当同一组里出现**完全并列**的条目时，配对顺序才可观测。
+      // 让 iprio 数组整片为 0（=全部回退默认优先级）+ 中断位稠密，
+      // 就能稳定造出"同组多个条目并列"的局面。
+      if ($urandom_range(0, 99) < 15) begin
+        io_in_miprios  = 512'h0;
+        io_in_hsiprios = 512'h0;
+        io_in_hviprio2_ALL   = 64'h0;
+        io_in_hviprio1_PrioSSI = 8'h0;
+        io_in_hviprio1_PrioSTI = 8'h0;
+        io_in_hviprio1_PrioCOI = 8'h0;
+        io_in_hviprio1_Prio14  = 8'h0;
+        io_in_hviprio1_Prio15  = 8'h0;
+      end
     end
   endtask
 

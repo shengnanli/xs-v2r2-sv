@@ -239,3 +239,93 @@ RTL 一个字节没动。这正是 `scripts/fm_eq.tcl` 里那条经验注记描�
 
 第一跑的 423 个点之所以少于 578，就是被合并吃掉的那些重复寄存器；关掉合并后
 应当回到模型值。**若实测不是 578，照样先报差，不事后改模型。**
+
+### 6.1 第二跑实测（`FM_MERGE_DUP=false`，commit `55468572`）—— native SUCCEEDED / failing 0，但 PARTIAL
+
+证据 `evidence/55468572146b/InterruptFilter/`：
+
+```
+PARTIAL {"passing": 440, "failing": 0, "unverified": null, "unmatched": 85,
+         "aborted": null, "blackbox_out": 0, "constant_reg": 53,
+         "native": "SUCCEEDED", "dont_verify": false,
+         "reason": "strict_unmatched!=0", "unmatched_ref": 85, "unmatched_impl": 85}
+```
+
+Formality 结果表：
+
+```
+Passing (equivalent)   Port 74   DFF 366   TOTAL 440
+Failing                Port  0   DFF   0   TOTAL   0
+Not Compared  Constant reg      DFF  53
+85(85) Unmatched reference(implementation) compare points
+```
+
+**预测 578 vs 实测 passing 440，差 -138。先报差。**
+
+### 6.2 差在哪：模型算的是「比较点总数」，不是「passing」
+
+把三项加起来：
+
+```
+DFF:  366 passing + 85 unmatched + 53 constant(Not Compared) = 504
+Port: 74 passing                                             =  74
+合计                                                          = 578
+```
+
+**578 一位不差**，等于闭包触发器 504 位 + 顶层 output 74 位 —— 模型算对了
+**比较点的全集**。§3/§6 把它直接写成 `passing` 是我的错：
+Formality 把两侧都恒为常量的寄存器归进 `Not Compared / Constant reg`，
+它们永远不会变成 passing；未配对的点也不在 passing 里。
+所以模型的正确读法是
+
+> passing ≤ 闭包触发器位 + 顶层 output 位，缺口 = 常量寄存器 + 未配对点。
+
+第一跑（merge_dup=true）的 423 也能对上同一本账：合并把重复寄存器吃掉了一批。
+
+### 6.3 那 85(85) 是什么：M 级恒零组的常零寄存器，两侧一一对得上
+
+85 个孤儿点**全部**落在 `mipriosReg` 的第 0/1/2/4/5/6/7 组：
+mip 只有 11 个端口（中断号 1..13），没有任何 ≥14 的位，于是这些组里每个条目的
+`enable` 恒 0、整条目归零 —— 两侧都是常零寄存器（ref 报 `DFF0X`，impl 报 `DFF0`）。
+常零寄存器的次态是常量，**签名分析没有区分度**；名字又对不上：
+
+```
+ref   r:/WORK/InterruptFilter/mipriosReg_0_idx_reg[3]          (firtool 展平 Vec)
+impl  i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[0][3]  (可读核按 SoA 数组存)
+```
+
+`fm_eq.tcl` 自带的 `auto_match_flattened_arrays` 处理的是
+`name_i_j_reg` ↔ `name_reg[i][j]`（下标在**末尾**），这里下标在**字段名中间**，
+规则对不上 —— 这正是 §4 风险 1 写下的那条，按当时写好的处置办。
+
+离线核对双射（不是"数目一样就认"）：把两侧 85 个路径各自规约成
+`(族, 组号, 字段, 位号)` 的 key，两个 key 集合**完全相等**，差集两边都为空。
+
+---
+
+## 7. 第三跑预登记（加 `verif/ut/InterruptFilter/fm_pins.tcl`）
+
+改动只有两处，RTL 逻辑一个字节没动（只加了一段注释，记录 §1 里那条
+「两边 >255 」路径结构上不可达的实测发现）：
+
+1. 新增 `verif/ut/InterruptFilter/fm_pins.tcl` —— 只 `set_user_match` 消名字差，
+   现场用 `report_unmatched_points` discover、按 `(族,组,字段,位)` 规约核对双射、
+   用 `set_user_match` 的**返回值**计数（不是 `catch`，判据 P4）、任何一步不符合就
+   `error` 中止。已过 `test_fm_pins_wellformed.py`（该文件行 `ok`）。
+2. UT 激励与变异负测的改进（不进证明闭包）。
+
+预测（跑之前写死）：
+
+| 项 | 预测值 |
+|---|---|
+| passing | **525** = 440 + 85（钉上的孤儿点全部转成 passing） |
+| failing | 0 |
+| unverified | 0 |
+| unmatched | 0（ref）/ 0（impl） |
+| Not Compared / Constant reg | 53（不变 —— 钉点不改变常量寄存器的归类） |
+| 比较点全集 | 525 + 53 = **578**，仍等于模型值 |
+| 黑盒 | 0 |
+| verdict | `SIGNOFF_PASS`，但按 §2 仍记 **条件性证明 / UNCHANGED_GOLDEN_DEP** |
+
+★判据是 passing 必须 440 → 525（恰好 +85）★：passing 不增而 unmatched 归 0
+就是点被吞掉，不算过。
