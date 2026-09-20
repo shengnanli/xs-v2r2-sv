@@ -15,8 +15,18 @@
 #   1) 注入点是**精确唯一**的整行文本，出现次数≠1 立即判失败 —— 保证 RTL 文本真变了；
 #   2) 每个变异体在**全新**临时目录里编译与仿真（先 rm -rf 自己的唯一路径），
 #      不可能读到上一轮的 sim.log；
-#   3) ★编译/运行失败判 FAIL，不判 CAUGHT★ —— 编不过不等于"抓住了 bug"。
+#   3) ★编不过的变异体判「无效变异体」★ —— 它根本没产生电路，UT 没跑过它，
+#      所以既不计 caught 也不计分母；但整体 rc 非零（变异体本身要修）。
+#      唯一例外：声明期望就是 COMPILE_FAIL 的。
 #   4) CAUGHT 不是二值：逐个报 errors 数，低于 THIN 的点名（换 seed 可能漏）。
+#   5) ★逻辑等价的空变异（VIS=null）从分子分母同时剔除★，并在报告里写明为什么等价。
+#
+# ★2026-09-20：本脚本原来的判据是 fail-open 的，五个变异体被误报成"没抓出来"★
+#   原判据 `grep -oP 'errors=\K\d+' sim.log | head -1` 取到的是日志**第一行**的
+#   `DIRECTED mbmc_sfence errors=0`，不是最后的 `checks=N errors=M` 总结行。
+#   实测对照（C2 变异体 60000 拍）：真值 errors=56350，老判据读出 0 ⇒ 报"★没抓出来"。
+#   判据现在抽成 parse_sim_errors.sh，并带**四向自测**（真错要读出来 / 无错不误报 /
+#   日志不完整要报错不许返 0 / 文件不存在要报错），自测不过本脚本直接退出。
 #
 # ★复位域这一类（C3/C4）UT 按构造可能看不见★：比较窗口在复位之后打开，
 #   两侧都被写成确定值。所以这两个变异体若 UT 报 errors=0，**不算抓出**，
@@ -38,9 +48,26 @@ MUT_NAME=(); MUT_FILE=(); MUT_OLD=(); MUT_NEW=(); MUT_SIM=(); MUT_UTVISIBLE=()
 add() { MUT_NAME+=("$1"); MUT_FILE+=("$2"); MUT_OLD+=("$3"); MUT_NEW+=("$4"); MUT_SIM+=("$5"); MUT_UTVISIBLE+=("$6"); }
 
 # ---- C 组：共享 PLRU 核 ----
-add "C1 PLRU 状态更新不再受 any_touch 门控" xs_TlbStorageWrapper_core.sv \
+# ★C1 是**空变异**（逻辑等价），按规矩从分子分母同时剔除，理由写在这里★
+#   plru_next 在 always_comb 里先被赋成 refill_idx_state_reg，只有在
+#   `io_access[i].valid` 为真时才被 plru_next_state 改写；而 any_touch 恰好就是
+#   这些 valid 的或。所以 any_touch==0 的拍 plru_next === refill_idx_state_reg，
+#   去掉门控后写回的是**寄存器自己的值**，电路没有任何变化。
+#   （UT 报 errors=0 是正确结果，不是判别力缺口 —— 真正能验这条门控的是 C1b。）
+add "C1 PLRU 状态更新不再受 any_touch 门控(空变异:逻辑等价)" xs_TlbStorageWrapper_core.sv \
     "    else if (any_touch) refill_idx_state_reg <= plru_next;" \
-    "    else                refill_idx_state_reg <= plru_next;" 2 yes
+    "    else                refill_idx_state_reg <= plru_next;" 2 null
+
+# C1b：C1 想验的那条门控，换成**真的会变电路**的打法 ——
+#   只认端口 0 的 touch，于是"只有端口 1 命中"的那些拍状态不再更新。
+add "C1b PLRU 更新只认端口 0 的 touch(丢掉端口 1 单独命中的拍)" xs_TlbStorageWrapper_core.sv \
+    "    else if (any_touch) refill_idx_state_reg <= plru_next;" \
+    "    else if (io_access[0].valid) refill_idx_state_reg <= plru_next;" 2 yes
+
+# C5：victim 取**本拍组合后**的状态而不是寄存器值（差一拍），是经典的替换器错法
+add "C5 victim way 取 plru_next 而不是寄存器状态(差一拍)" xs_TlbStorageWrapper_core.sv \
+    "    io_w_bits_wayIdx = plru_replace_way(refill_idx_state_reg, /*state_lo*/0, /*tree_nways*/WAYS);" \
+    "    io_w_bits_wayIdx = plru_replace_way(plru_next, /*state_lo*/0, /*tree_nways*/WAYS);" 2 yes
 
 add "C2 多端口 foldLeft 顺序反过来(端口 0 不再先叠)" xs_TlbStorageWrapper_core.sv \
     "    for (int i = 0; i < PORTS; i++) begin" \
@@ -75,8 +102,13 @@ add "W5 _3 端口 1 的响应 hit 误接端口 0" TlbStorageWrapper_3.sv \
     "    .io_r_resp_1_bits_hit(io_r_resp_1_bits_hit)," \
     "    .io_r_resp_1_bits_hit(io_r_resp_0_bits_hit)," 3 yes
 
+# ★先给判据做自测★：判据自己不过关，下面跑出来的一切都不作数
+if ! bash "$HERE/parse_sim_errors.sh" --selftest; then
+  echo "★errors 判据自测没过，拒绝继续（跑出来的判别力报告不可信）"; exit 2
+fi
+
 mkdir -p "$WORK" || exit 2
-pass=0; fail=0; thinlist=""; blindlist=""
+pass=0; fail=0; thinlist=""; blindlist=""; nulllist=""; invalidlist=""; infralist=""
 for i in "${!MUT_NAME[@]}"; do
   NAME=${MUT_NAME[$i]}; FILE=${MUT_FILE[$i]}; V=${MUT_SIM[$i]}; VIS=${MUT_UTVISIBLE[$i]}
   d=$WORK/m$i
@@ -103,24 +135,54 @@ PY
       "$HERE/Makefile" > "$d/ut/Makefile"
   ( cd "$d/ut" && make compile$V > compile.log 2>&1 && \
     ./simv$V +ntb_random_seed=1 +ncycles=$CYCLES -l sim.log > /dev/null 2>&1 )
-  if [ ! -f "$d/ut/sim.log" ]; then
-    echo "[$NAME] ★编译/运行失败 —— 判 FAIL 不判 CAUGHT（见 $d/ut/compile.log）"
-    fail=$((fail+1)); continue
+  # ---- 基础设施类失败（license / 磁盘）单列一桶，不许混进判别力统计 ----
+  if grep -qEi "License .*(not available|checkout failed|expired)|No space left on device|Cannot allocate memory" \
+       "$d/ut/compile.log" 2>/dev/null; then
+    echo "[$NAME] ☠ 基础设施失败（license/磁盘），本条不作数（见 $d/ut/compile.log）"
+    infralist="$infralist ${NAME%% *}"; continue
   fi
-  errs=$(grep -oP 'errors=\K\d+' "$d/ut/sim.log" | head -1)
+  if [ ! -f "$d/ut/sim.log" ]; then
+    # ★编不过 = 无效变异体★：它没产生电路，UT 根本没跑，既不计 caught 也不计分母。
+    echo "[$NAME] ★无效变异体：编译/运行没产出 sim.log —— 不计 caught 也不计分母（见 $d/ut/compile.log）"
+    invalidlist="$invalidlist ${NAME%% *}"; continue
+  fi
+  # ★判据锚定最终总结行★（见 parse_sim_errors.sh 的文件头：老的 head -1 是 fail-open 的）
+  if ! errs=$(bash "$HERE/parse_sim_errors.sh" "$d/ut/sim.log"); then
+    echo "[$NAME] ★无效变异体：sim.log 读不出总结行（仿真没跑完）—— 不计 caught 也不计分母"
+    invalidlist="$invalidlist ${NAME%% *}"; continue
+  fi
+  covline=$(grep -E "^COVERAGE " "$d/ut/sim.log" | tail -1)
+  covfail=$(grep -c "COVERAGE GATE FAILED" "$d/ut/sim.log")
+  if [ "$VIS" = null ]; then
+    # 逻辑等价的空变异：从分子分母同时剔除（理由见变异体表里的注释）
+    echo "[$NAME] 空变异（逻辑等价）errors=$errs —— ★分子分母都不计★"
+    nulllist="$nulllist ${NAME%% *}"; continue
+  fi
   if [ "${errs:-0}" -gt 0 ]; then
     if [ "$errs" -lt "$THIN" ]; then thin="  ★余量薄(<$THIN)，换 seed 可能漏★"; thinlist="$thinlist ${NAME%% *}(errors=$errs)"; else thin=""; fi
     echo "[$NAME] UT 抓出：errors=$errs (simv$V, $CYCLES 拍)$thin"
+    pass=$((pass+1))
+  elif [ "$covfail" -gt 0 ]; then
+    # errors=0 但覆盖闸红了：这条变异体是被**覆盖闸**抓住的（它把激励打残了）
+    echo "[$NAME] 覆盖闸抓出（errors=0 但 COVERAGE GATE FAILED）：$covline"
     pass=$((pass+1))
   elif [ "$VIS" = no ]; then
     echo "[$NAME] UT 看不见（errors=0）—— 已预期：复位域差异在比较窗口内观测不到，由 FM 兜底"
     blindlist="$blindlist ${NAME%% *}"
   else
-    echo "[$NAME] ★没抓出来 —— 这条逻辑其实没在验"; fail=$((fail+1))
+    echo "[$NAME] ★没抓出来 —— 这条逻辑其实没在验   $covline"; fail=$((fail+1))
   fi
 done
 echo "--------------------------------------------------"
-echo "变异体 ${#MUT_NAME[@]} 个：UT 抓出 $pass，漏 $fail，按构造 UT 不可见 $(echo $blindlist | wc -w)   （工作目录 $WORK）"
-[ -n "$thinlist" ] && echo "★余量薄（errors < $THIN，不许报成\"判别力均匀\"）：$thinlist"
-[ -n "$blindlist" ] && echo "★UT 按构造看不见、只能靠 FM 的：$blindlist"
-[ $fail -eq 0 ]
+nnull=$(echo $nulllist | wc -w); ninv=$(echo $invalidlist | wc -w)
+ninf=$(echo $infralist | wc -w); nblind=$(echo $blindlist | wc -w)
+denom=$((pass + fail + nblind))
+echo "变异体 ${#MUT_NAME[@]} 个，计入分母 $denom（= 抓出 $pass + 漏 $fail + UT 按构造不可见 $nblind）"
+echo "  剔除：空变异(逻辑等价) $nnull、无效变异体(编不过/没跑完) $ninv、基础设施失败 $ninf"
+echo "  工作目录 $WORK"
+[ -n "$thinlist" ]   && echo "★余量薄（errors < $THIN，不许报成\"判别力均匀\"）：$thinlist"
+[ -n "$blindlist" ]  && echo "★UT 按构造看不见、只能靠 FM 的：$blindlist"
+[ -n "$nulllist" ]   && echo "★空变异（逻辑等价，分子分母都不计）：$nulllist"
+[ -n "$invalidlist" ] && echo "★无效变异体（要修锚点或变异内容）：$invalidlist"
+[ -n "$infralist" ]  && echo "☠ 基础设施失败（license/磁盘），整体判失败：$infralist"
+[ $fail -eq 0 ] && [ $ninv -eq 0 ] && [ $ninf -eq 0 ]
