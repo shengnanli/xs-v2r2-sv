@@ -202,6 +202,27 @@ def build(TOP):
     $display("DIRECTED mbmc_sfence errors=%%0d", directed_errors);
   endtask
 """ % CHILD)
+        # -------------------------------------------------------------------
+    # ★每个读端口都要先发一拍 valid 请求，比较窗口才有意义★
+    #   （2026-09-20 实测定位，见本文件下方注释与 selfcmp.sh）
+    # golden 的 hitVecReg_<port>_<way> 是 RegEnable(..., io_r_req_<port>_valid)：
+    #   **该端口收到第一个 valid 请求之前，它一直保持上电随机值**。而 resp.hit /
+    #   resp.ppn 都是这 48 位的或树，于是该端口在被用过之前，响应完全是上电噪声。
+    # 定向段只驱动端口 0，所以端口 1..N-1 的第一拍比较比的是两边各自的随机初值 ——
+    #   ★用 golden 对 golden 的自比实测过：seed=7 + initreg=random 时
+    #     两个**逐字节相同**的 golden 实例在 vec 0 就不一致★（g=ffffffffe / i=fffffffbf）。
+    #   也就是说这一拍任何实现都过不去，它量的不是设计而是随机数。
+    # 加了这段预热后，7 个 seed 的 golden 自比全部 errors=0。
+    # -------------------------------------------------------------------
+    A("  task automatic dir_warm_ports();")
+    A("    dir_clear();")
+    for k in range(nread):
+        A("    io_r_req_%d_valid = 1;" % k)
+    A("    repeat (2) @(posedge clock); #1;")
+    A("    dir_clear();")
+    A("    @(posedge clock); #1;")
+    A("  endtask")
+    A("")
     A("  initial begin")
     A("    void'($value$plusargs(\"ncycles=%d\", NVEC));   // ut_common 统一下发 +ncycles")
     A("    reset = 1;")
@@ -209,6 +230,7 @@ def build(TOP):
     A("    repeat (3) @(posedge clock); #1; reset = 0;")
     A("    @(posedge clock);")
     A("    directed_mbmc_sfence();")
+    A("    dir_warm_ports();")
     A("    errors += directed_errors;")
     A("    for (int t = 0; t < NVEC; t++) begin")
     A("      drive_random();")

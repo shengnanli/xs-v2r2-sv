@@ -761,6 +761,17 @@ module tb;
     $display("DIRECTED mbmc_sfence errors=%0d", directed_errors);
   endtask
 
+  task automatic dir_warm_ports();
+    dir_clear();
+    io_r_req_0_valid = 1;
+    io_r_req_1_valid = 1;
+    io_r_req_2_valid = 1;
+    io_r_req_3_valid = 1;
+    repeat (2) @(posedge clock); #1;
+    dir_clear();
+    @(posedge clock); #1;
+  endtask
+
   initial begin
     void'($value$plusargs("ncycles=%d", NVEC));   // ut_common 统一下发 +ncycles
     reset = 1;
@@ -768,6 +779,7 @@ module tb;
     repeat (3) @(posedge clock); #1; reset = 0;
     @(posedge clock);
     directed_mbmc_sfence();
+    dir_warm_ports();
     errors += directed_errors;
     for (int t = 0; t < NVEC; t++) begin
       drive_random();
