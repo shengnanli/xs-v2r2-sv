@@ -43,13 +43,37 @@
 # deq_ptr_value_q[1]），自动配对无从下手。
 #
 # ★fail-closed★
-# set_user_match 对**不存在的名字不报错**（本仓实测：喂完全不存在的路径照样返回 0，
-# catch 抓不到），所以「钉了 N 条」本身什么都不证明。本脚本判据四层：
-#   1. 每条 ref 未读点必须能被**三条结构规则之一**解析；形状不符即 exit 3
+# set_user_match 对**不存在的名字不报错**（本仓实测：名字存在返回 1，不存在返回 0
+# 并往 fm.log 写一行行首 `Error:`，**从不抛 Tcl 异常**）。所以旧版那句
+# `if {[catch {set_user_match $r $i} _msg]} {... error ...}` 是一个**空守卫** ——
+# catch 恒为 0，中止路径永远走不到，而且随后 `$_pinned != [llength $_impl]`
+# 那道"加强"也继承了这个空洞：_pinned 正是在那个永不触发的 catch 之后无条件自增的。
+# ★新判据的输入必须独立于被判断的对象★ —— 现在用 set_user_match 的**返回值**。
+# 本脚本判据五层：
+#   1. 每条 ref 未读点必须能被**三条结构规则之一**解析；形状不符即 error
 #      （防止别的未读点被这段代码顺手吞掉 —— 情况变了就停下来诊断，不要盲钉）；
 #   2. 由 ref 推出的 impl 路径必须**确实出现在实测 impl 未读集合里**（防凭空造点）；
 #   3. 同一条 impl 路径不许被钉两次（防多钉抢点）；
-#   4. 钉点条数必须等于 impl 侧未读点数（防漏钉）。
+#   4. **每一次 set_user_match 都必须返回 1**（真的配上了），否则 error；
+#   5. 钉点条数必须同时等于 impl 侧未读点数**和**一个声明出来的期望数量
+#      `_expect`（字面整数，钉死）—— 前者防漏钉，后者防"两侧一起漂"。
+#
+# ★_expect 是机械推导的，不是抄来的数字★（本 lane 从 G1 golden 现数）：
+#   A  5 点  golden `reg deqPtrVec_<i>_flag;`   i=1..5            -> 5
+#   B 40 点  golden `reg [7:0] deqPtrVec_<i>_value;` i=1..5       -> 5 × 8 = 40
+#   C  6 点  golden `reg [7:0] io_toVecExcpMod_logicPhyRegMap_<j>_bits_preg_r;`
+#            j=0..5，输出端口只有 7 位，bit7 无读出路径             -> 6
+#   合计 51。复算：
+#     grep -cE '^\s*reg\s+(\[[0-9]+:0\]\s+)?deqPtrVec_[1-9][0-9]*_(flag|value);' RenameBuffer.sv  -> 10
+#     grep -cE 'io_toVecExcpMod_logicPhyRegMap_[0-9]+_bits_preg_r;'              RenameBuffer.sv  -> 6
+#
+# ★中止一律用 `error`，不用 `exit`★（本 lane 实测）：本文件在 sidecar 下跑在
+# `interp create -safe` 建的受限子解释器里，而 **Tcl safe interp 隐藏 `exit`**：
+#     $i eval {info commands exit}  -> ★空（命令不存在）★
+#     $i eval {exit 3}              -> 抛出: invalid command name "exit"
+#     $i eval {error "PIN_MISS"}    -> 抛出: PIN_MISS
+# 旧版那些 `exit 3` 确实会中止，但**是靠"这个命令不存在"中止的**，不是靠写的人
+# 表达的那个意思 —— 与上面那个空守卫是同一族缺陷。
 # 真正的终局判据在外层：fm_eq.tcl 在最后一次 match 之后重新导出 unread_points.txt，
 # validator 要求 unread 归 0；而「加强有没有真去比」要看 passing 是否 +51
 # （5825 → 5876）—— 那一步要 vmucp 白名单，归 reviewer 加，不在本文件。
@@ -65,63 +89,77 @@
 proc rab_unread {side} {
     set out {}
     if {[catch {report_unmatched_points -$side -status unread -list} res]} {
-        puts "RENAMEBUFFER_PIN_ERROR: report_unmatched_points -$side -status unread FAILED: $res"
-        exit 3
+        error "RENAMEBUFFER_PIN_ERROR: report_unmatched_points -$side -status unread FAILED: $res"
     }
     foreach p [lsort -unique $res] { lappend out $p }
     return $out
 }
 
+# 期望钉点数：机械推导自 G1 golden 的寄存器声明（见文件头「_expect 是机械推导的」）。
+set _expect 51
+
 set _ref  [rab_unread reference]
 set _impl [rab_unread implementation]
 
-if {[llength $_ref] == 0 && [llength $_impl] == 0} {
-    puts "RENAMEBUFFER_PINS: no unmatched unread points, nothing to pin"
-} else {
-    set _pinned 0
-    set _used   {}
-    set _nA 0 ; set _nB 0 ; set _nC 0
-    foreach r $_ref {
-        set i ""
-        # A. deqPtrVec_<i>_flag_reg
-        if {[regexp {^r:(/WORK/[^/]+)/deqPtrVec_(\d+)_flag_reg$} $r -> scope idx]} {
-            set i "i:$scope/u_core/deq_ptr_flag_q_reg\[$idx\]"
-            incr _nA
-        # B. deqPtrVec_<i>_value_reg[<b>]
-        } elseif {[regexp {^r:(/WORK/[^/]+)/deqPtrVec_(\d+)_value_reg\[(\d+)\]$} $r -> scope idx bit]} {
-            set i "i:$scope/u_core/deq_ptr_value_q_reg\[$idx\]\[$bit\]"
-            incr _nB
-        # C. io_toVecExcpMod_logicPhyRegMap_<j>_bits_preg_r_reg[<b>]
-        } elseif {[regexp {^r:(/WORK/[^/]+)/io_toVecExcpMod_logicPhyRegMap_(\d+)_bits_preg_r_reg\[(\d+)\]$} $r -> scope idx bit]} {
-            set i "i:$scope/u_core/vec_excp_preg_q_reg\[$idx\]\[$bit\]"
-            incr _nC
-        } else {
-            puts "RENAMEBUFFER_PIN_ERROR: unexpected ref unread point $r"
-            puts "  only 3 families accepted: deqPtrVec_1..5 flag/value, toVecExcpMod preg bit7"
-            puts "  a different shape means something changed -- stop and diagnose, do NOT blind-pin"
-            exit 3
-        }
-        if {[lsearch -exact $_impl $i] < 0} {
-            puts "RENAMEBUFFER_PIN_ERROR: derived impl path not in measured unread set: ref=$r impl=$i"
-            exit 3
-        }
-        if {[lsearch -exact $_used $i] >= 0} {
-            puts "RENAMEBUFFER_PIN_ERROR: impl path pinned twice (over-pinning): $i"
-            exit 3
-        }
-        if {[catch {set_user_match $r $i} _msg]} {
-            puts "RENAMEBUFFER_PIN_ERROR: set_user_match failed $r <-> $i : $_msg"
-            exit 3
-        }
-        lappend _used $i
-        incr _pinned
+# ★标记★：fm.log 里 RENAMEBUFFER_PIN_BEGIN 与 _END 之间的行首 `Error:` 才是本文件
+#   钉点失败（scripts/check_pin_errors.py --marker RENAMEBUFFER_PIN）。
+puts "RENAMEBUFFER_PIN_BEGIN RenameBuffer expect=$_expect"
+# ★不再有"没有未读点就啥也不做"这条 fail-open 支路★：期望值是 51，
+#   一个都发现不了同样说明前提变了，照样要停下来诊断。
+set _pinned 0
+set _used   {}
+set _nA 0 ; set _nB 0 ; set _nC 0
+foreach r $_ref {
+    set i ""
+    # A. deqPtrVec_<i>_flag_reg
+    if {[regexp {^r:(/WORK/[^/]+)/deqPtrVec_(\d+)_flag_reg$} $r -> scope idx]} {
+        set i "i:$scope/u_core/deq_ptr_flag_q_reg\[$idx\]"
+        incr _nA
+    # B. deqPtrVec_<i>_value_reg[<b>]
+    } elseif {[regexp {^r:(/WORK/[^/]+)/deqPtrVec_(\d+)_value_reg\[(\d+)\]$} $r -> scope idx bit]} {
+        set i "i:$scope/u_core/deq_ptr_value_q_reg\[$idx\]\[$bit\]"
+        incr _nB
+    # C. io_toVecExcpMod_logicPhyRegMap_<j>_bits_preg_r_reg[<b>]
+    } elseif {[regexp {^r:(/WORK/[^/]+)/io_toVecExcpMod_logicPhyRegMap_(\d+)_bits_preg_r_reg\[(\d+)\]$} $r -> scope idx bit]} {
+        set i "i:$scope/u_core/vec_excp_preg_q_reg\[$idx\]\[$bit\]"
+        incr _nC
+    } else {
+        puts "RENAMEBUFFER_PIN_ERROR: unexpected ref unread point $r"
+        puts "  only 3 families accepted: deqPtrVec_1..5 flag/value, toVecExcpMod preg bit7"
+        puts "  a different shape means something changed -- stop and diagnose, do NOT blind-pin"
+        error "RENAMEBUFFER_PIN_SHAPE=$r"
     }
-    if {$_pinned != [llength $_impl]} {
-        puts "RENAMEBUFFER_PIN_ERROR: pinned $_pinned but impl has [llength $_impl] unread points -- not a bijection"
-        exit 3
+    if {[lsearch -exact $_impl $i] < 0} {
+        puts "RENAMEBUFFER_PIN_ERROR: derived impl path not in measured unread set: ref=$r impl=$i"
+        error "RENAMEBUFFER_PIN_NOT_MEASURED=$i"
     }
-    puts "RENAMEBUFFER_PINS: pinned $_pinned pairs (A deqPtr flag $_nA / B deqPtr value $_nB / C vecExcp preg bit7 $_nC)"
-    puts "RENAMEBUFFER_PINS: ref [llength $_ref] / impl [llength $_impl] -- bijection holds, no duplicate pins"
-    puts "RENAMEBUFFER_PINS: final criterion is external -- unmatched unread must reach 0 after last match;"
-    puts "RENAMEBUFFER_PINS: to actually COMPARE these $_pinned points a vmucp whitelist entry is still needed (passing 5825 -> 5876)"
+    if {[lsearch -exact $_used $i] >= 0} {
+        puts "RENAMEBUFFER_PIN_ERROR: impl path pinned twice (over-pinning): $i"
+        error "RENAMEBUFFER_PIN_DUP=$i"
+    }
+    # ★用返回值，不用 catch★：set_user_match 从不抛异常（见文件头），
+    # 旧版的中止路径永远走不到，_pinned 也就无条件自增。
+    if {![set_user_match $r $i]} {
+        puts "RENAMEBUFFER_PIN_FAIL: set_user_match returned 0 for $r <-> $i"
+        error "RENAMEBUFFER_PIN_MISS=$r"
+    }
+    lappend _used $i
+    incr _pinned
 }
+puts "RENAMEBUFFER_PIN_END RenameBuffer n=$_pinned miss=0 expect=$_expect"
+# fail-closed 三道，全在最后一次 set_user_match **之后**：
+#   (1) 双射：钉点数 == impl 侧未读点数（防漏钉）
+#   (2) 期望数量：钉点数 == 声明出来的字面整数 51
+#   (3) 每次调用的返回值（在循环里，见上）
+if {$_pinned != [llength $_impl]} {
+    puts "RENAMEBUFFER_PIN_ERROR: pinned $_pinned but impl has [llength $_impl] unread points -- not a bijection"
+    error "RENAMEBUFFER_PIN_BIJECTION=$_pinned"
+}
+if {$_pinned != $_expect} {
+    puts "RENAMEBUFFER_PIN_ERROR: pinned $_pinned but expected $_expect (51 = 5 flag + 40 value + 6 preg bit7)"
+    error "RENAMEBUFFER_PIN_COUNT=$_pinned"
+}
+puts "RENAMEBUFFER_PINS: pinned $_pinned pairs (A deqPtr flag $_nA / B deqPtr value $_nB / C vecExcp preg bit7 $_nC)"
+puts "RENAMEBUFFER_PINS: ref [llength $_ref] / impl [llength $_impl] -- bijection holds, no duplicate pins"
+puts "RENAMEBUFFER_PINS: final criterion is external -- unmatched unread must reach 0 after last match;"
+puts "RENAMEBUFFER_PINS: to actually COMPARE these $_pinned points a vmucp whitelist entry is still needed (passing 5825 -> 5876)"

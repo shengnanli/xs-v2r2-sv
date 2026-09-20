@@ -129,15 +129,6 @@ FAIL_OPEN_LEDGER = {
 CATCH_COUNT_LEDGER = {
     'verif/ut/Bku/fm_pins_pre.tcl',
     'verif/ut/Composer/fm_pins_pre.tcl',
-    'verif/ut/EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v/fm_pins_pre.tcl',
-    'verif/ut/EntriesAluCsrFenceDiv/fm_pins_pre.tcl',
-    'verif/ut/EntriesAluMulBkuBrhJmp/fm_pins_pre.tcl',
-    'verif/ut/EntriesFaluFcvtF2vFmacFdiv/fm_pins_pre.tcl',
-    'verif/ut/EntriesFaluFmac/fm_pins_pre.tcl',
-    'verif/ut/EntriesFaluFmacFdiv/fm_pins_pre.tcl',
-    'verif/ut/EntriesVfdivVidiv/fm_pins_pre.tcl',
-    'verif/ut/EntriesVfmaVialuFixVfalu/fm_pins_pre.tcl',
-    'verif/ut/EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf/fm_pins_pre.tcl',
     'verif/ut/FCVT/fm_pins_pre.tcl',
     'verif/ut/Ftq/fm_pins_pre.tcl',
     'verif/ut/IBuffer/fm_pins.tcl',
@@ -150,11 +141,20 @@ CATCH_COUNT_LEDGER = {
     'verif/ut/ITTageTable_4/fm_pins.tcl',
     'verif/ut/InstrUncache/fm_pins_pre.tcl',
     'verif/ut/Predictor/fm_pins_pre.tcl',
-    'verif/ut/RenameBuffer/fm_pins.tcl',
     'verif/ut/SyncDataModule/fm_pins_pre.tcl',
-    'verif/ut/TLBFA/fm_pins.tcl',
-    'verif/ut/TLBNonBlock/fm_pins.tcl',
+    # ★2026-09-20 再缩 3 条（agent/pindebt）★：RenameBuffer / TLBFA / TLBNonBlock
+    #   三个「匹配后」钉点文件已改成用**返回值**计数，并把原来那几处 `exit 3`
+    #   统一改成 `error`（safe interp 隐藏 exit，见 docs/pin_guard_failclosed.md §二）。
+    #   同批还有两个**根本没有中止路径**的（NCBTransactionQueue / SSIT），
+    #   它们本来就不在本表（本表只记 catch 计数），一并在同一轮补成 fail-closed。
     'verif/ut/TlbStorageWrapper/fm_pins.tcl',
+    # ★2026-09-20 缩表 9 条（agent/pindebt）★：9 个 Entries_* 的钉点文件已由
+    #   verif/ut/Entries_common/gen_fm_pins.py 改成用**返回值**计数 + 两道
+    #   fail-closed（$_miss != 0 / $_n != <字面整数>），不再用 catch。
+    #   注入探针前后对照（同一个变体、同一个注入：让第 7 次 set_user_match 返回 0）：
+    #     旧: `IQE_PINS: 9898 / 9898 tried, 0 threw`，rc=0 —— ★完全没响★
+    #     新: `IQE_PIN_FAIL: ...` + `n=9897 miss=1 expect=9898` + error 真的抛出，rc=1
+    #   receipt 闭包的桥接见 docs/pin_guard_failclosed.md（调用序列逐字节相同）。
     # -- 下面 12 个与上面同一批存量，只是随 main f034da5f（OthersEntry 12 变体）
     #    在我落这张表**之后**才合进来。★分界线是 0920 那条裁定，不是我写表的时刻★；
     #    照裁定它们属于「存量、下次改动/晋升时顺带修」，不是「新长出来的违规」。
