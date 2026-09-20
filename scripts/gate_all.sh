@@ -7,8 +7,32 @@
 set -u
 cd "$(dirname "$0")/.." || exit 2
 rc=0
+
+# ★"跑完了没有"之外，还得答"跑的是哪棵树"★（2026-09-20 实测补上）
+# 缘起：本轮同时有三个 gate_all 实例在跑，其中一个是**陈旧**的（它执行的是还没接进
+# 新闸的旧脚本、读的是还没修的旧树），它照样打印了一行格式完全正确的 `GATE_RC=1`。
+# 那一行**作为"这棵树的判决"是假的**，而从日志上看它和真结果一模一样。
+# 也就是说：`GATE_RC=` 解决了「结果存不存在」，但没解决「结果属于谁」。
+# 所以再钉两件事：
+#   (1) GATE_COMMIT= 记下跑在哪个 commit（带 -dirty 标记）；
+#   (2) 开跑时与收尾时各取一次，**不相等就判红** —— 跑的过程中有人改了树，
+#       这一轮结果就不属于任何一个确定的树状态，不能当判决用。
+gate_stamp() {
+  local h d
+  h="$(git rev-parse --short=10 HEAD 2>/dev/null || echo nogit)"
+  if git diff --quiet HEAD 2>/dev/null; then d=""; else d="-dirty"; fi
+  printf '%s%s' "$h" "$d"
+}
+GATE_COMMIT_BEGIN="$(gate_stamp)"
+echo "GATE_BEGIN commit=$GATE_COMMIT_BEGIN"
 run() { printf '=== %-28s ' "$1"; shift; if "$@" >/tmp/gate_$$.out 2>&1; then echo PASS; else echo "★FAIL"; sed 's/^/    /' /tmp/gate_$$.out | tail -12; rc=1; fi; }
 
+# 闸自身的树指纹判据负测：`GATE_RC=` 只回答"结果存不存在"，回答不了"结果属于谁"。
+# 2026-09-20 实测：一个**陈旧**的 gate_all 实例（跑的是旧脚本、读的是旧树）照样打印了
+# 一行格式完全正确的 `GATE_RC=1` —— 作为"这棵树的判决"那是假的，日志上却和真结果
+# 长得一模一样。所以加了 GATE_COMMIT= 与"跑动期间树被改过即判红"，并给它配这道负测：
+# 树没动必须判同（不能恒红）/ 树动了必须判异（不能恒绿）/ 脏树必须带 -dirty。
+run "闸树指纹判据负测"  bash scripts/test_gate_stamp.sh
 run "可读性 A-G"        python3 scripts/readability_audit.py --quiet
 # A 类禁用命名正则的对照测试。★必须单独有一道★：2026-09-20 收紧那次，收紧前后在
 # 全部 448 个 rtl/*.sv 上都命中 0 —— 拿仓库扫一遍对这次改动毫无分辨力。
@@ -205,7 +229,16 @@ run "perf 分档台账闸"    python3 scripts/check_perf_tier.py
 run "passing 模型自校准"  python3 scripts/tlbsw_passing_model.py --check
 
 rm -f /tmp/gate_$$.out
+
+# 收尾再取一次树指纹：与开跑时不同 = 跑的过程中树被改过，这一轮不属于任何确定状态。
+GATE_COMMIT_END="$(gate_stamp)"
+if [ "$GATE_COMMIT_BEGIN" != "$GATE_COMMIT_END" ]; then
+  echo "★树在本轮跑动期间被改过★ begin=$GATE_COMMIT_BEGIN end=$GATE_COMMIT_END"
+  echo "  这一轮的 PASS/FAIL 不对应任何一个确定的树状态，不能当判决用 —— 树 settle 后重跑。"
+  rc=1
+fi
 [ $rc -eq 0 ] && echo "=== 全部机器闸 PASS ===" || echo "=== 有闸未过，见上 ==="
+echo "GATE_COMMIT=$GATE_COMMIT_END"
 
 # ★终止标记：只有走到脚本结尾才可能打印这一行★（2026-09-20）
 # 判读方只认这一行：没有 GATE_RC= 就是「结果不存在」，既不是绿也不是红。
