@@ -267,6 +267,66 @@ HEAD = r'''// ==================================================================
 '''
 
 
+
+# ---------------------------------------------------------------------------
+# 输出驱动分解（--outmap）
+#
+# 为什么要有这张表：StoreQueue 的 399 根输出不是一个均质的工作量。实测分解后
+# 才看得出「哪些根必须等子模块、哪些根是纯直连」。没有这张表，后续 lane 只能
+# 凭 77145 行这个数字估工，那个数字**严重高估**真实逻辑量（firtool 把每个宽
+# mux 摊成几十行，行数是排版产物不是逻辑量）。
+#
+# 分类口径（全部从 golden 机械提取，不靠人读）：
+#   submodule     该输出在 golden 里直接接某个子模块的输出端口
+#                 ★这类根的正确性取决于子模块，父层证不了★
+#   assign_direct assign io_x = <单个标识符>;  —— firtool 把逻辑提到具名 wire 了，
+#                 真正的逻辑在那根 wire 上，不在这条 assign 上
+#   assign_expr   assign 右边是真表达式（按标识符个数分档）
+# ---------------------------------------------------------------------------
+def outmap(path=GOLDEN):
+    txt = path.read_text()
+    ports = parse_ports(path)
+    outs = [(d, w, n) for d, w, n in ports if d == 'output']
+    onames = set(n for d, w, n in outs)
+    body = txt[txt.index(');', txt.index('module StoreQueue')):]
+    drv = {}
+    for s in body.split(';'):
+        m = re.search(r'assign\s+([A-Za-z_][A-Za-z0-9_]*)\s*=', s)
+        if m and m.group(1) in onames:
+            drv[m.group(1)] = ' '.join(s[m.end():].split())
+    # 子模块实例的端口直连：.someport(io_xxx)
+    inst = {}
+    for im in re.finditer(r'^\s{2}([A-Z][A-Za-z0-9_]*)\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(',
+                          body, re.M):
+        start = im.end()
+        depth, i = 1, start
+        while i < len(body) and depth:
+            if body[i] == '(':
+                depth += 1
+            elif body[i] == ')':
+                depth -= 1
+            i += 1
+        for pm in re.finditer(r'\.\s*([A-Za-z0-9_]+)\s*\(\s*([A-Za-z_][A-Za-z0-9_]*)\s*\)',
+                              body[start:i]):
+            if pm.group(2) in onames:
+                inst[pm.group(2)] = '%s.%s' % (im.group(1), pm.group(1))
+    rows = ['# 由 scripts/gen_storequeue.py --outmap 从 G1 golden 机械生成，勿手改',
+            '# output\twidth\tdriver_kind\tdriver_detail']
+    for d, w, n in outs:
+        if n in inst:
+            kind, det = 'submodule', inst[n]
+        elif n in drv:
+            e = drv[n]
+            ntok = len(re.findall(r'[A-Za-z_][A-Za-z0-9_]*', e))
+            if ntok <= 1:
+                kind, det = 'assign_direct', e
+            else:
+                kind, det = 'assign_expr%d' % ntok, (e[:120] + ('...' if len(e) > 120 else ''))
+        else:
+            kind, det = 'UNDRIVEN', ''
+        rows.append('%s\t%s\t%s\t%s' % (n, w if w else '[0:0]', kind, det))
+    return '\n'.join(rows) + '\n'
+
 def emit(chans, scalars):
     S = []          # (锚点名, 标题) -> 行号，最后回填导航
     out = []
@@ -575,6 +635,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--dump-ports', action='store_true')
     ap.add_argument('--reset-audit', action='store_true')
+    ap.add_argument('--outmap', action='store_true',
+                    help='输出驱动分解表 -> docs/storequeue_output_map.tsv')
     ap.add_argument('--emit', action='store_true')
     ap.add_argument('--check', action='store_true',
                     help='幂等校验：重新生成并与仓库内 rtl/memblock/StoreQueue.sv 比对，'
@@ -589,7 +651,16 @@ def main():
     if a.reset_audit:
         reset_audit()
         return
+    OUTMAP = pathlib.Path(__file__).resolve().parent.parent / 'docs' / 'storequeue_output_map.tsv'
+    if a.outmap:
+        OUTMAP.write_text(outmap())
+        print('wrote %s' % OUTMAP)
+        return 0
     if a.check:
+        want_map = outmap()
+        if not OUTMAP.exists() or OUTMAP.read_text() != want_map:
+            print('FAIL gen_storequeue --check: %s 与 golden 不一致（跑 --outmap 重生成）' % OUTMAP)
+            return 1
         chans, scalars = split_channels(ports)
         want = emit(chans, scalars)
         tgt = pathlib.Path(__file__).resolve().parent.parent / 'rtl' / 'memblock' / 'StoreQueue.sv'
