@@ -1,0 +1,9 @@
+{
+  "target": "NewDispatch",
+  "ut": "NewDispatch",
+  "regs": 358,
+  "outs": 51563,
+  "expected": 51921,
+  "merge_dup": "true",
+  "model_applicable": false
+}
