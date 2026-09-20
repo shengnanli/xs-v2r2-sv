@@ -141,10 +141,12 @@ CATCH_COUNT_LEDGER = {
     'verif/ut/ITTageTable_4/fm_pins.tcl',
     'verif/ut/InstrUncache/fm_pins_pre.tcl',
     'verif/ut/Predictor/fm_pins_pre.tcl',
-    'verif/ut/RenameBuffer/fm_pins.tcl',
     'verif/ut/SyncDataModule/fm_pins_pre.tcl',
-    'verif/ut/TLBFA/fm_pins.tcl',
-    'verif/ut/TLBNonBlock/fm_pins.tcl',
+    # ★2026-09-20 再缩 3 条（agent/pindebt）★：RenameBuffer / TLBFA / TLBNonBlock
+    #   三个「匹配后」钉点文件已改成用**返回值**计数，并把原来那几处 `exit 3`
+    #   统一改成 `error`（safe interp 隐藏 exit，见 docs/pin_guard_failclosed.md §二）。
+    #   同批还有两个**根本没有中止路径**的（NCBTransactionQueue / SSIT），
+    #   它们本来就不在本表（本表只记 catch 计数），一并在同一轮补成 fail-closed。
     'verif/ut/TlbStorageWrapper/fm_pins.tcl',
     # ★2026-09-20 缩表 9 条（agent/pindebt）★：9 个 Entries_* 的钉点文件已由
     #   verif/ut/Entries_common/gen_fm_pins.py 改成用**返回值**计数 + 两道
