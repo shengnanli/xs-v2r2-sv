@@ -108,6 +108,11 @@ run "工具派生态闸"       python3 scripts/check_no_tool_scratch.py
 # 与其改那个大脚本（风险高），不如在源头堵死：rtl/ 下根本没有 .svh，"只扫 .sv"就等于扫全了。
 run "rtl 无 svh 负测"    python3 scripts/test_no_svh_gate.py
 run "rtl 无 svh 闸"      python3 scripts/check_no_svh_in_rtl.py
+# fm_eq.tcl 的 switch 块必须 tclsh 可解析（2026-09-20，Entries lane 踩到）：
+# 一段加错位置的注释（落进 switch 的花括号里）让**本仓每一次 FM 都在 setup 阶段死掉**，
+# 而没有任何现成的闸会响。这道闸不需要 Formality，跑一次几十毫秒。
+run "fm_eq.tcl 语法负测" python3 scripts/check_fm_eq_tcl_syntax.py --selftest
+run "fm_eq.tcl 语法闸"   python3 scripts/check_fm_eq_tcl_syntax.py
 # 覆盖台账的证据链：docs/coverage_three_axis.tsv 宣称的每条证明都要能从**版本库**复现。
 # 2026-09-18 实测出事状态：轴2 标 PROVEN_DIRECT 133 个，版本库里找得到通过 receipt 的
 # 只有 34 个，★189 个找不到★（重算后缺口扩大到 90）。那些证明并非不存在 —— evidence 全
