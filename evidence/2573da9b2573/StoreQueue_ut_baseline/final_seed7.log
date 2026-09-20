@@ -1,0 +1,21 @@
+Command: /home/eda/xs-env/wt-storequeue/verif/ut/StoreQueue/./simv +ntb_random_seed=7 +ncycles=100000 -l final_seed7.log
+Chronologic VCS simulator copyright 1991-2024
+Contains Synopsys proprietary information.
+Compiler version W-2024.09-SP1_Full64; Runtime version W-2024.09-SP1_Full64;  Sep 20 11:19 2026
+
+==== StoreQueue UT (seed=7 ncycles=100000) ====
+checks          = 100000
+MATCH_OUTPUTS   = 67/399   (整轮零失配的输出根数)
+TOGGLED         = 296/399   (golden 侧真的变过值)
+NEVER_TOGGLED   = 103      (★未被激励覆盖，不算已验证★)
+GOLDEN_ALWAYS_X = 70      (golden 侧整轮恒 X，多为无复位寄存器)
+XEQX_FAKE_MATCH = 67      (★零失配里靠 X===X 混进来的，不是真匹配★)
+VERIFIED        = 0/399   (零失配 AND 被 toggle 到)
+errors          = 332
+TEST FAILED (332/399 根输出失配)
+$finish called from file "tb.sv", line 6907.
+$finish at simulation time           1000105000
+           V C S   S i m u l a t i o n   R e p o r t 
+Time: 1000105000 ps
+CPU Time:    162.830 seconds;       Data structure size:   1.6Mb
+Sun Sep 20 11:22:32 2026
