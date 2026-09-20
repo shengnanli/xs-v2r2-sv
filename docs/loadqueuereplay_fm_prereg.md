@@ -539,3 +539,70 @@ allowlist=0，无 dont_verify、无 relaxed appvar、无假白名单），
 下才起作用，而本目标走的是 strict + matched blackbox。
 依赖声明因此只存在于 `verif/ut/LoadQueueReplay/Makefile` 的注释和本文件里 ——
 **这是工具侧的缺口，不是我判断它可以不挂**。集成者接手时请按条件绿处理。
+
+---
+
+# 剩下的缺口（我没修的，以及为什么没修）
+
+## 1. `verif/ut/LoadQueueReplay/fm_pins_pre.tcl` 过不了 `scripts/test_fm_pins_wellformed.py`
+
+四条，其中 **三条是我接手前就有的**（用 run #1 之前的文件版本复算过）：
+
+| 判据 | 内容 | 我改之前 | 现在 |
+|---|---|---|---|
+| P1 | 第 11 行 `setup` | 有 | 有 |
+| P1 | 第 49/50 行 `set_app_var` ×2 | 有 | 有 |
+| P2 | 没有 fail-closed 的 `error` 路径 | 有（裸 catch，完全 fail-open） | **仍报**，但形态变了 |
+
+**P2 这条要说清楚**：本轮已经把钉点改成 fail-closed，但用的是 `exit 3` 而不是
+Tcl 的 `error`，而闸的正则找的是 `if {<比较>} { … error … }`。
+`exit 3` 比 `error` **更强**（直接终止 fm_shell，run #2 实测 make_rc=3 就是这条路径），
+所以这是**闸的形状与实现的形状不匹配**，不是真的 fail-open。
+但我不打算"为了让闸变绿"去改一个已经出了证的钉点文件 ——
+receipt 里记着 `fm_pins_pre.tcl` 的 sha256
+（`42a194a6d0249e7cc03e68ce2f840763dd5b7bd6fd2428fb5587b94953133bcb`），
+proof 之后再动它，文件和证据就对不上了。**留给下一轮：要么闸认 `exit`，要么改钉点文件并重跑。**
+
+fail-closed 路径本身**已经双向负测过**（tclsh stub，不占 Formality，秒级）：
+
+```bash
+# 负例：让 6 条钉点被拒 -> 必须打 FM_PINS_ERROR 且 exit 3
+# 正例：全部接受       -> 必须跑到结尾不 exit
+```
+
+    负例  LQR_PINS: accepted=6284 rejected=6
+          FM_PINS_ERROR: first rejected pair = r:.../blockSqIdx_37_value_reg[0] <-> i:.../blockSqIdx_reg[37]\[value][0]
+          NEGTEST: exit code = 3                       <- fail-closed 生效
+    正例  LQR_PINS: accepted=6290 rejected=0，跑到结尾没有 exit
+
+## 2. ★P1 的两个 `set_app_var` 是真问题，不只是闸的形状问题★
+
+钉点文件里改了两个 appvar：
+
+    set_app_var verification_assume_reg_init none
+    set_app_var verification_set_undriven_signals BINARY
+
+核过 `scripts/fm_eq.tcl`：**它自己一个都不设**，所以这两行是唯一的来源
+（receipt 的 `entry_appvars_readback` 读回 `verification_assume_reg_init = "None"`、
+`verification_set_undriven_signals = "BINARY"`，与之一致）。
+
+- `verification_set_undriven_signals BINARY` 就是 Formality 的默认值，**是个空操作**。
+- `verification_assume_reg_init none` **不是**：默认是 `Auto`，会让 FM 假定寄存器从初值
+  出发，那是在**缩小**状态空间。改成 `none` 取消这个假定 ⇒ 方向上是**加强**。
+
+CONVENTIONS 写得很清楚：★appvar 也是判据，改它之前必须双向负测★
+（造"该抓到"的样本确认仍抓得到，**再**造"可能被遮"的样本确认没被放行）。
+**这两行没有这样的负测，我也没补。** 补它要改证明输入 + 重跑（约一小时），
+而且它本身值得一条独立的 lane（Rob 那次 `verification_set_undriven_signals`
+的四跑实验就是先例）。**记为缺口，不要读成"已经论证过了"。**
+
+## 3. 钉点「被接受」不等于「被采纳」（run #3 那 24 条 Warning）
+
+见 run #3 那一节。缺一条把 `Ignoring user match` 计数与预期对账的判据。
+
+## 4. 条件绿的依赖没有机器可读的载体
+
+`LqVAddrModule` / `AgeDetector_38` 未签核，但 receipt 的
+`green_child_closure_checks` 是空的（那套机制只在 assembly + `verif/allow/<top>.json`
+的 `class: green_child` 下生效，strict + matched blackbox 走不到）。
+依赖声明现在只在 Makefile 注释与本文件里，**人能读、机器读不到**。
