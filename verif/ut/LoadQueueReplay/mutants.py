@@ -15,6 +15,7 @@
 用法:
   python3 mutants.py            # 跑全部
   python3 mutants.py M1 M7      # 只跑指定的
+  python3 mutants.py --check    # 只验变异体表没和 RTL 脱钩（不编译、毫秒级）
 环境:
   MUT_CYCLES  每个变异体跑多少拍（默认 20000）
   MUT_SEED    种子（默认 1）
@@ -82,9 +83,15 @@ MUTANTS = [
      "  assign dtd_robHeadLoadMSHR  = lq_match & matchCause[C_DR];",
      "  assign dtd_robHeadLoadMSHR  = lq_match & matchCause[C_DM];"),
 
+    # ★M9 的 old_str 在 2026-09-20 修过一次，理由记在这里★
+    #  原文是 `      u  = uopR[...]`（u 后两个空格）。commit a01bb65（redirect 打拍
+    #  改成 6 份）顺手把这一行对齐成了 `u    =`（四个空格），于是 old_str 命中 0 次。
+    #  ★这就是"变异体表会和 RTL 脱钩"的实例★：harness 老老实实报了 PATCH_MISS，
+    #  但当时 main() 无论如何都 return 0，所以没人会发现——这一条是本轮把 harness
+    #  改成 fail-closed 之后**第一件被抓出来的事**。
     ("M9", "s1_cancel 读 uop 时加 valid 门控（golden 无条件读）", "EXPECTED_MISSED",
-     "      u  = uopR[s1_oldestSel_bits_q[i]];",
-     "      u  = s1_oldestSel_valid_q[i] ? uopR[s1_oldestSel_bits_q[i]] : uop[0];"),
+     "      u    = uopR[s1_oldestSel_bits_q[i]];",
+     "      u    = s1_oldestSel_valid_q[i] ? uopR[s1_oldestSel_bits_q[i]] : uop[0];"),
 
     ("M10", "给 golden 无复位的 s1_oldestSel_bits 加复位（复位域变异）", "EXPECTED_MISSED",
      "  always_ff @(posedge clock)\n"
@@ -162,8 +169,28 @@ def build_and_run(tag, rtl_text):
     return (int(m.group(2)), int(m.group(1))), "OK"
 
 
+def check_patches(base):
+    """★毫秒级的脱钩闸★：只验每个变异体的 old_str 在当前 RTL 里恰好命中一次。
+
+    为什么单独做一个：M9 的 old_str 被一个无关 commit 的空白对齐改掉了，
+    harness 要**编译并跑完前面几个变异体**才轮到它报 PATCH_MISS——代价是几分钟。
+    而"表和 RTL 脱钩"这件事不需要 VCS 就能查。放进 gate_all 也不占任何工具 license。
+    """
+    bad = 0
+    for mid, desc, _e, old, _n in MUTANTS:
+        n = base.count(old)
+        if n != 1:
+            print(f"  DRIFT {mid}: old_str 命中 {n} 次（须恰 1）—— {desc}")
+            bad += 1
+    print(f"check_patches: {len(MUTANTS)} 个变异体，脱钩 {bad} 个")
+    return 2 if bad else 0
+
+
 def main():
-    want = set(sys.argv[1:])
+    argv = list(sys.argv[1:])
+    if "--check" in argv:
+        return check_patches(RTL.read_text())
+    want = set(argv)
     base = RTL.read_text()
     WORK.mkdir(exist_ok=True)
 
