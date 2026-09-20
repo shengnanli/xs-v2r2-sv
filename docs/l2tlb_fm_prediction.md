@@ -245,3 +245,67 @@ seed 1  ir0/ir1  checks=200000 errors=0 a_fire=4961  (前半 2471 / 后半 2490)
 seed 7  ir0/ir1  checks=200000 errors=0 a_fire=5056  (前半 2571 / 后半 2485)
 seed 42 ir0/ir1  checks=200000 errors=0 a_fire=4886  (前半 2488 / 后半 2398)
 ```
+
+## 5. ★更正：把"结构性阻塞"这句话推翻★（2026-09-20，集成者指出，我自己复算确认）
+
+本 lane 之前在 commit `121085c4` 的说明与汇报里写过一句：
+
+> ★Bitmap / BitmapCache 根本不在 FM target 全集里★ —— 即使将来它们各自证明通过，
+> 只要不进 target 全集，L2TLB 的 assembly 闭包就永远合不上。
+
+**这句话是错的。** 它不是"结构性阻塞"，就是**普通工作量**。
+
+### 依据（自己读实现 + 自己重算，不是转述）
+
+`proof_certificate.py:458` 的 `green_child_not_fm_target` 比对的是
+`fm_target_universe.targets_at(parent_commit)`，而 `targets_at` 的定义是
+（`scripts/fm_target_universe.py:101-120`）：
+
+```
+makefile_paths()    -> git ls-tree -r --name-only <commit> verif/ut/  取所有 */Makefile
+targets_at_regex()  -> 这些 Makefile 里 ★FM_VARIANTS 的并集★
+```
+
+也就是说 **「是不是 FM target」＝「有没有人给它建过证明配置」**，不是某张封闭名单。
+同一个文件 `proof_certificate.py:450-451` 的注释本来就写明了正路：
+
+> 不是 FM target 的 child 只能走两侧 inline elaborate 或 **新建 AUX leaf target**，
+> 不得用 allow 绕过。
+
+自测复算（HEAD 上跑的，不是引用）：
+
+```
+XSSV_HOME=$PWD python3 -c "import sys;sys.path.insert(0,'scripts');
+import fm_target_universe as F; t,u = F.targets_at('$PWD','$(git rev-parse HEAD)')
+print(len(t), [k in t for k in ['Bitmap','BitmapCache','PtwCache','PTW','LLPTW','HPTW',
+                                'L2TlbMissQueue','L2TlbPrefetch']])"
+-> 499 [False, False, False, False, False, False, True, True]   (unresolved = 0)
+```
+
+### 顺带纠正一个更细的错：卡着的不止那两个，是 **6 个**
+
+| 分档 | child | 要做的事 |
+|---|---|---|
+| 还不是 FM target | `Bitmap` `BitmapCache` `PtwCache` `PTW` `LLPTW` `HPTW` | 先建 `verif/ut/<name>/Makefile`（`FM_VARIANTS = <name>`），**建了当场就是 target** |
+| 已是 FM target，只差证书 | `L2TlbMissQueue` `L2TlbPrefetch` | 出证 + 填 `certificate_sha256` |
+
+verdict 只报了 `Bitmap`，是因为 `_assembly_bbox_check` 按声明顺序遍历、撞到第一条就返回 ——
+**不等于只有它一个卡着**。这一点我之前也没说清。
+
+另外：8 个在 `docs/g1_configured_universe.tsv` 里 `in_universe` **全是 yes**
+（`Bitmap`/`BitmapCache` 标 `new_target`，其余 6 个 `from_old_306`）。
+我之前引的"不在那 306 里"是**另一个更窄的历史集合**，不是这条判据用的那个。
+
+### 关门步骤（写清楚，省得下一个人重新查一遍）
+
+1. 给 6 个尚无证明配置的 child 各建 `verif/ut/<name>/Makefile`，写 `FM_VARIANTS = <name>`；
+2. 8 个 child 各自出证，提交 `verif/proof_certificates/<name>.json`；
+3. 把各自 `certificate_sha256` 填回 `verif/allow/L2TLB.json` 对应 objects 条目；
+4. **重跑** `scripts/run_proof.sh L2TLB L2TLB`（★不许只改台账★）。
+
+### 为什么专门留这一节
+
+★一个错误的"此路不通"比一个错误的数字贵得多，因为没人会去验证一条坏消息。★
+本仓刚记过同型教训：过期的"未实现/别碰"注释让下一个人主动放弃了一条已经能走的路。
+所以这句推翻不是藏进 commit message，而是留在这里和 `verif/allow/L2TLB.json` 的
+`closure_path` 字段里，谁读到那个 verdict 都能顺手读到正路。
