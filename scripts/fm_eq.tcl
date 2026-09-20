@@ -785,9 +785,22 @@ set_top_or_die impl i:/WORK/$top
 # ----------------------------------------------------------------------------
 proc match_packed_payload { top } {
     if {![info exists ::env(FM_FIELD_MAP)] || ![file exists $::env(FM_FIELD_MAP)]} return
-    set fh [open $::env(FM_FIELD_MAP) r]
+    # ★2026-09-20 补：把 field map 纳入字节快照★
+    # agent/harvest 在核对 receipt 闭包时发现的洞：sidecar 的字节快照挂在 `source`
+    # 上（sidecar_source_trace / sidecar_pin_source），而这里用 **open** 读 field map，
+    # 于是这个文件一个字节都没进 script_closure.list、也没进 receipt。
+    # 实测 NewPipelineConnectPipe_29 的 fm.log 写着 `PACKED_MATCH: 1023 points pinned`
+    # —— ★1023 个 set_user_match 来自一份字节没留档的文件；换掉它 receipt 的 sha256
+    #    一个都不变★。那不是记账问题，是证据完整性的洞：receipt 声称
+    #    「证明输入的字节都在这里」，而实际少记了一个输入。
+    # 这也是 harvest 那批里仅剩 2 个 NEEDS_RERUN 的全部原因（八项检查其余全过）。
+    set _fmpath $::env(FM_FIELD_MAP)
+    set fh [open $_fmpath rb]
+    set _fmraw [read $fh]
+    close $fh
+    if {$::SIDECAR_ON} { sidecar_snapshot_buffer $_fmpath $_fmraw }
     set n 0
-    foreach ln [split [read $fh] "\n"] {
+    foreach ln [split [encoding convertfrom utf-8 $_fmraw] "\n"] {
         if {![regexp {^(\S+)\s+(\d+)\s+(\d+)$} $ln -> suf lo w]} continue
         for {set b 0} {$b < $w} {incr b} {
             set ipath "i:/WORK/$top/u_core/data_reg\[[expr {$lo + $b}]\]"
@@ -799,7 +812,6 @@ proc match_packed_payload { top } {
             }
         }
     }
-    close $fh
     if {$n > 0} { puts "PACKED_MATCH: $n points pinned" }
 }
 # 模块本地「匹配前」钉点(FM_PIN_PRE_TCL, 可选): 首次 match 前需 set_user_match 的对象。
