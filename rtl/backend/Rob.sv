@@ -53,6 +53,52 @@
 //
 // 生成区：`// BEGIN GENERATED(<tag>)` .. `// END GENERATED` 由
 // scripts/gen_rob.py --write 填写，手写内容一律在标记之外。
+// 本文件导航（共 11796 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+//   L2036  §1 条目存储
+//   L2038  每字段一个非打包数组，名字必须是 `<prefix>_<field>`：pin 契约按
+//   L2377  §2 RobPtr 算术
+//   L2379  RobSize=160 不是 2 的幂，所以 CircularQueuePtr 的 `+` 走"回绕"那条路：
+//   L2422  §3 入队请求的整理
+//   L2424  六路 enq 请求打成数组，后面所有"逐路"逻辑都从这里取，避免六份复制粘贴
+//   L2505  §4 入队许可
+//   L2549  §5 状态机与走回
+//   L2737  §6 入队计数与 allowEnqueue
+//   L2739  ★这里的加法全是 8 位回绕★
+//   L2780  §7 阻塞类状态位
+//   L2835  §8 写回口的整理
+//   L2837  ★写回口的下标是稀疏的，而且每个子集的下标集合只有 golden 能告诉你★
+//   L3066  §9 入队：条目存储的写入
+//   L3068  这里有**两种完全不同的选择结构**，弄混就是真 bug：
+//   L3596  §10 条目存储的时序写入
+//   L3696  §11 提交读口：8 bank x 20 行的 one-hot 读
+//   L3698  robBanks(b) 装 robidx%8==b 的 20 个条目；八个 bank **共用**一个 one-hot 行地址
+//   L3927  §12 robDeqGroup：提交读口的寄存器级
+//   L3929  connectCommitEntry 的逐字段拷贝
+//   L3979  §13 队头读口
+//   L3981  三个名字在 Scala 里是**同一个表达式**
+//   L4097  §14 队头的异常/中断/冲刷判定
+//   L4267  §15 提交 / 走回的对外输出
+//   L4269  ★commit_vDeqGroup / commit_wDeqGroup 是**按 bank 直接取**的★
+//   L4815  §16 RAB
+//   L4817  io.rabCommits := RegNext(rab.io.commits) —— 整条打一拍，纯粹为了时序/面积
+//   L5048  §17 送给 exceptionGen 的三类折算量
+//   L5050  ★io_writeback_<i> 各自只有一部分 exceptionVec 位★
+//   L5087  §18 WFI
+//   L5089  遇到 wfi 指令就挂起提交，等 CSR 说可以恢复、或者被冲刷、或者 2^20 拍超时
+//   L5186  §19 CSR / LSQ / 队头杂项
+//   L5351  §20 trace
+//   L5353  八路提交槽各出一个 trace block，内容直接取 rawInfo
+//   L5417  §21 异常出口
+//   L5419  整条是 RegEnable(..., exceptionHappen)：异常发生那一拍把现场锁下来，
+//   L5573  §22 debug / difftest 规则阵列
+//   L5575  这一段不参与功能，但**一位都不能省**：省掉之后 FM 的 match 会退化成签名
+//   L6095  §23 性能事件
+//   L6097  generatePerfEvent() 出来的 19 个事件，每个都**打两拍**再送出去
+//   L6248  §24 difftest 打包口
+//   L6250  difftest 的三种事件被打包成宽总线从 Rob 直接钻出去
+//   L6636  Rob —— 顶层壳
+//   L6638  这一层不含任何设计逻辑：端口表、局部网、核实例、8 个子模块实例**全部**由
+//
 
 package rob_pkg;
 
