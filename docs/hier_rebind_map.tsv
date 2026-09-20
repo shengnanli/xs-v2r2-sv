@@ -2126,6 +2126,8 @@ SRAMTemplate_92	array	sram_array_1p256x72m72s1h0l1b_dcsh_dat	SAME_PATH	array	sra
 SRAMTemplate_92	rcg	MbistClockGateCell	DEEPER	u_core.g_extcg.rcg	MbistClockGateCell		auto_deeper	
 SSIT	data_array	SyncDataModuleTemplate__1024entry_1	DEEPER	u_core.data_array	SyncDataModuleTemplate__1024entry_1		auto_deeper	
 SSIT	valid_array	SyncDataModuleTemplate__1024entry	DEEPER	u_core.valid_array	SyncDataModuleTemplate__1024entry		auto_deeper	
+Sbuffer	dataModule	SbufferData	SAME_PATH	dataModule	SbufferData		auto_same	
+Sbuffer	prefetcher	StorePfWrapper	SAME_PATH	prefetcher	StorePfWrapper		auto_same	
 SourceB	issueArb	FastArbiter_5	SAME_PATH	issueArb	FastArbiter_5		auto_same	
 SplittedSRAMTemplate	array_0_0_0	SRAMTemplate	SAME_PATH	array_0_0_0	SRAMTemplate		auto_same	
 SplittedSRAMTemplate	array_0_1_0	SRAMTemplate	SAME_PATH	array_0_1_0	SRAMTemplate		auto_same	
