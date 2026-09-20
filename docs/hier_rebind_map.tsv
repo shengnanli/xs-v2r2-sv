@@ -1824,6 +1824,11 @@ LinkMonitor	Decoupled2LCredit_txrspLink	Decoupled2LCredit_1	ONE_SITE	u_core.Deco
 LinkMonitor	LCredit2Decoupled_rxdat	LCredit2Decoupled_2	DEEPER	u_core.LCredit2Decoupled_rxdat	LCredit2Decoupled_2		auto_deeper	
 LinkMonitor	LCredit2Decoupled_rxrsp	LCredit2Decoupled_1	DEEPER	u_core.LCredit2Decoupled_rxrsp	LCredit2Decoupled_1		auto_deeper	
 LinkMonitor	LCredit2Decoupled_rxsnp	LCredit2Decoupled	DEEPER	u_core.LCredit2Decoupled_rxsnp	LCredit2Decoupled		auto_deeper	
+LoadQueueReplay	ageOldest_age	AgeDetector_38	DEEPER	u_core.ageOldest_age	AgeDetector_38		auto_deeper	
+LoadQueueReplay	ageOldest_age_1	AgeDetector_38	DEEPER	u_core.ageOldest_age_1	AgeDetector_38		auto_deeper	
+LoadQueueReplay	ageOldest_age_2	AgeDetector_38	DEEPER	u_core.ageOldest_age_2	AgeDetector_38		auto_deeper	
+LoadQueueReplay	freeList	FreeList_5	DEEPER	u_core.freeList	FreeList_5		auto_deeper	
+LoadQueueReplay	vaddrModule	LqVAddrModule	DEEPER	u_core.vaddrModule	LqVAddrModule		auto_deeper	
 LqVAddrModule	sx_bankWriteAddrDec_resp_pipMod	DelayNWithValid_152	DEEPER	u_core.g_bank[b].g_wport[w].sx_bankWriteAddrDec_resp_pipMod	DelayNWithValid_152		auto_deeper	
 LqVAddrModule	sx_bankWriteAddrDec_resp_pipMod_1	DelayNWithValid_152	GEN_SITE_UNINDEXED	u_core.g_bank[b].g_wport[w].sx_bankWriteAddrDec_resp_pipMod	DelayNWithValid_152		auto_gen_site	
 LqVAddrModule	sx_bankWriteAddrDec_resp_pipMod_10	DelayNWithValid_152	GEN_SITE_UNINDEXED	u_core.g_bank[b].g_wport[w].sx_bankWriteAddrDec_resp_pipMod	DelayNWithValid_152		auto_gen_site	

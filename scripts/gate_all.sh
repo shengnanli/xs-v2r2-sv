@@ -91,6 +91,7 @@ for g in scripts/gen_tlbuffer_ad_family.py scripts/gen_mbist_pipe_family.py \
          scripts/gen_newdispatch_tb.py \
          scripts/gen_tlbnb_family.py scripts/gen_predictor.py \
          scripts/gen_rob.py scripts/gen_rob_ut.py \
+         scripts/gen_lqreplay.py scripts/gen_lqreplay_ut.py \
          scripts/gen_sbuffer.py scripts/gen_sbuffer_tb.py \
          scripts/gen_fubusy_wbarb.py \
          scripts/gen_tlbsw_family.py; do
