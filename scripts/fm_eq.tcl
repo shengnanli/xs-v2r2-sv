@@ -423,7 +423,15 @@ switch -- $_verify_matched_unread_compare_points {
     #          字段，但四个 infoRead 读口的 ParallelMux 只有 38 位
     #          {QoS,TgtID,SrcID,TxnID}，可读核照抄同一结构。非 Return* 的 unread 点 0 个。
     #          ★注意这一族的基线不是 matched_nc 而是 unmatched unread★
-    #          (736(736) / 1472(1472))：FM 自己配不上(既非名字同构、常数间也无签名可比)，
+    #          ★逐个变体点名，不许按行文顺序推★：
+    #              NCBTransactionQueue    槽号 0..63 = 64 槽 x 23 位 = **1472**(1472)
+    #              NCBTransactionQueue_1  槽号 0..31 = 32 槽 x 23 位 = ** 736**( 736)
+    #          （本行原先写作 "(736(736) / 1472(1472))"，照行文顺序会以为无后缀是 32 槽，
+    #            ★现数是反的★。agent/pindebt 在重算期望值时发现，集成者自己数
+    #            golden 的 regQueue_<i>_bits_info_ReturnNID 槽号最大值复核：63 / 31。
+    #            照抄那个顺序会把两个变体的期望值装反，而装反之后**两边都是正数、
+    #            都"有个期望值"，闸不会响** —— 只有真去数槽位才暴露。）
+    #          FM 自己配不上(既非名字同构、常数间也无签名可比)，
     #          所以光开本加强不够，必须先配对。配对在模块本地
     #          verif/ut/NCBTransactionQueue/fm_pins.tcl，按「槽号+字段+位号」三元组从
     #          report_unmatched_points -status unread -list 两侧现场发现后 1:1 钉：
@@ -554,7 +562,73 @@ switch -- $_verify_matched_unread_compare_points {
     #   的 F5 把 cancelCounter 的复位值 0 改成 1，它不再是常量，FM 当场报 failing 1
     #   （`python3 mutants.py --fm`，该条目指定跑在 WBArbiter_3 上）。
     #   一般判据仍然是：passing 不增而 unread 归 0 = 点被吞掉，不算过。
-        if {$top ni {Bku Composer DebugModule DuplicatedTagArray EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v EntriesAluCsrFenceDiv EntriesAluMulBkuBrhJmp EntriesFaluFcvtF2vFmacFdiv EntriesFaluFmac EntriesFaluFmacFdiv EntriesVfdivVidiv EntriesVfmaVialuFixVfalu EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf FAlu FCVT FTBBank Ftq IBuffer ICacheCtrlUnit ICacheDataArray ICacheMetaArray ICacheMissUnit ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 InstrUncache LinkMonitor LoadQueueReplay MulUnit NCBTransactionQueue NCBTransactionQueue_1 OthersEntry_104 OthersEntry_120 OthersEntry_136 OthersEntry_150 OthersEntry_164 OthersEntry_88 Predictor Queue1_RegMapperInput_5 RNXbar RenameBuffer SNXbar SSIT SourceB TLBFA TLBFA_1 TLBFA_2 TLBFA_3 TLBNonBlock TLBNonBlock_1 TLBNonBlock_2 TXDAT_4 TXREQ TageBTable TlbStorageWrapper TlbStorageWrapper_1 TlbStorageWrapper_2 TlbStorageWrapper_3 WBArbiter_3 WBArbiter_38 WBArbiter_58 WBArbiter_66 WritebackQueue}} {
+        if {$top ni {
+            Bku
+            Composer
+            DebugModule
+            DuplicatedTagArray
+            EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v
+            EntriesAluCsrFenceDiv
+            EntriesAluMulBkuBrhJmp
+            EntriesFaluFcvtF2vFmacFdiv
+            EntriesFaluFmac
+            EntriesFaluFmacFdiv
+            EntriesVfdivVidiv
+            EntriesVfmaVialuFixVfalu
+            EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf
+            FAlu
+            FCVT
+            FTBBank
+            Ftq
+            IBuffer
+            ICacheCtrlUnit
+            ICacheDataArray
+            ICacheMetaArray
+            ICacheMissUnit
+            ITTageTable
+            ITTageTable_1
+            ITTageTable_2
+            ITTageTable_3
+            ITTageTable_4
+            InstrUncache
+            LinkMonitor
+            LoadQueueReplay
+            MulUnit
+            NCBTransactionQueue
+            NCBTransactionQueue_1
+            OthersEntry_104
+            OthersEntry_120
+            OthersEntry_136
+            OthersEntry_150
+            OthersEntry_164
+            OthersEntry_88
+            Predictor
+            Queue1_RegMapperInput_5
+            RNXbar
+            RenameBuffer
+            SNXbar
+            SSIT
+            SourceB
+            TLBFA
+            TLBFA_1
+            TLBFA_2
+            TLBFA_3
+            TLBNonBlock
+            TLBNonBlock_1
+            TLBNonBlock_2
+            TXDAT_4
+            TXREQ
+            TageBTable
+            TlbStorageWrapper
+            TlbStorageWrapper_1
+            TlbStorageWrapper_2
+            TlbStorageWrapper_3
+            WBArbiter_3
+            WBArbiter_38
+            WBArbiter_58
+            WBArbiter_66
+            WritebackQueue
+        }} {
       puts "FM_MODE_ERROR: matched-unread strengthening needs an explicit whitelist entry; $top is not on it"
       exit 3
     }
@@ -711,9 +785,22 @@ set_top_or_die impl i:/WORK/$top
 # ----------------------------------------------------------------------------
 proc match_packed_payload { top } {
     if {![info exists ::env(FM_FIELD_MAP)] || ![file exists $::env(FM_FIELD_MAP)]} return
-    set fh [open $::env(FM_FIELD_MAP) r]
+    # ★2026-09-20 补：把 field map 纳入字节快照★
+    # agent/harvest 在核对 receipt 闭包时发现的洞：sidecar 的字节快照挂在 `source`
+    # 上（sidecar_source_trace / sidecar_pin_source），而这里用 **open** 读 field map，
+    # 于是这个文件一个字节都没进 script_closure.list、也没进 receipt。
+    # 实测 NewPipelineConnectPipe_29 的 fm.log 写着 `PACKED_MATCH: 1023 points pinned`
+    # —— ★1023 个 set_user_match 来自一份字节没留档的文件；换掉它 receipt 的 sha256
+    #    一个都不变★。那不是记账问题，是证据完整性的洞：receipt 声称
+    #    「证明输入的字节都在这里」，而实际少记了一个输入。
+    # 这也是 harvest 那批里仅剩 2 个 NEEDS_RERUN 的全部原因（八项检查其余全过）。
+    set _fmpath $::env(FM_FIELD_MAP)
+    set fh [open $_fmpath rb]
+    set _fmraw [read $fh]
+    close $fh
+    if {$::SIDECAR_ON} { sidecar_snapshot_buffer $_fmpath $_fmraw }
     set n 0
-    foreach ln [split [read $fh] "\n"] {
+    foreach ln [split [encoding convertfrom utf-8 $_fmraw] "\n"] {
         if {![regexp {^(\S+)\s+(\d+)\s+(\d+)$} $ln -> suf lo w]} continue
         for {set b 0} {$b < $w} {incr b} {
             set ipath "i:/WORK/$top/u_core/data_reg\[[expr {$lo + $b}]\]"
@@ -725,7 +812,6 @@ proc match_packed_payload { top } {
             }
         }
     }
-    close $fh
     if {$n > 0} { puts "PACKED_MATCH: $n points pinned" }
 }
 # 模块本地「匹配前」钉点(FM_PIN_PRE_TCL, 可选): 首次 match 前需 set_user_match 的对象。
