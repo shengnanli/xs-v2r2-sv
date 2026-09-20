@@ -1,0 +1,96 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/L2TLB
+Implementation : i:/WORK/L2TLB
+Version        : V-2023.12-SP3
+Date           : Sun Sep 20 04:34:53 2026
+**************************************************
+
+20 Failing compare points (20 matched, 0 unmatched):
+
+  Ref  Port       r:/WORK/L2TLB/gatewayIn_packed_44_bore[960]
+  Impl Port       i:/WORK/L2TLB/gatewayIn_packed_44_bore[960]
+
+  Ref  Port       r:/WORK/L2TLB/gatewayIn_packed_44_bore[961]
+  Impl Port       i:/WORK/L2TLB/gatewayIn_packed_44_bore[961]
+
+  Ref  Port       r:/WORK/L2TLB/gatewayIn_packed_44_bore[962]
+  Impl Port       i:/WORK/L2TLB/gatewayIn_packed_44_bore[962]
+
+  Ref  Port       r:/WORK/L2TLB/gatewayIn_packed_44_bore[963]
+  Impl Port       i:/WORK/L2TLB/gatewayIn_packed_44_bore[963]
+
+  Ref  Port       r:/WORK/L2TLB/gatewayIn_packed_44_bore[964]
+  Impl Port       i:/WORK/L2TLB/gatewayIn_packed_44_bore[964]
+
+  Ref  Port       r:/WORK/L2TLB/gatewayIn_packed_44_bore[965]
+  Impl Port       i:/WORK/L2TLB/gatewayIn_packed_44_bore[965]
+
+  Ref  Port       r:/WORK/L2TLB/gatewayIn_packed_44_bore[966]
+  Impl Port       i:/WORK/L2TLB/gatewayIn_packed_44_bore[966]
+
+  Ref  Port       r:/WORK/L2TLB/gatewayIn_packed_44_bore[967]
+  Impl Port       i:/WORK/L2TLB/gatewayIn_packed_44_bore[967]
+
+  Ref  Port       r:/WORK/L2TLB/gatewayIn_packed_45_bore[960]
+  Impl Port       i:/WORK/L2TLB/gatewayIn_packed_45_bore[960]
+
+  Ref  Port       r:/WORK/L2TLB/gatewayIn_packed_45_bore[961]
+  Impl Port       i:/WORK/L2TLB/gatewayIn_packed_45_bore[961]
+
+  Ref  Port       r:/WORK/L2TLB/gatewayIn_packed_45_bore[962]
+  Impl Port       i:/WORK/L2TLB/gatewayIn_packed_45_bore[962]
+
+  Ref  Port       r:/WORK/L2TLB/gatewayIn_packed_45_bore[963]
+  Impl Port       i:/WORK/L2TLB/gatewayIn_packed_45_bore[963]
+
+  Ref  Port       r:/WORK/L2TLB/gatewayIn_packed_45_bore[964]
+  Impl Port       i:/WORK/L2TLB/gatewayIn_packed_45_bore[964]
+
+  Ref  Port       r:/WORK/L2TLB/gatewayIn_packed_45_bore[965]
+  Impl Port       i:/WORK/L2TLB/gatewayIn_packed_45_bore[965]
+
+  Ref  Port       r:/WORK/L2TLB/gatewayIn_packed_45_bore[966]
+  Impl Port       i:/WORK/L2TLB/gatewayIn_packed_45_bore[966]
+
+  Ref  Port       r:/WORK/L2TLB/gatewayIn_packed_45_bore[967]
+  Impl Port       i:/WORK/L2TLB/gatewayIn_packed_45_bore[967]
+
+  Ref  Port       r:/WORK/L2TLB/io_tlb_0_resp_bits_s1_valididx_0
+  Impl Port       i:/WORK/L2TLB/io_tlb_0_resp_bits_s1_valididx_0
+
+  Ref  Port       r:/WORK/L2TLB/io_tlb_0_resp_bits_s1_valididx_1
+  Impl Port       i:/WORK/L2TLB/io_tlb_0_resp_bits_s1_valididx_1
+
+  Ref  Port       r:/WORK/L2TLB/io_tlb_0_resp_bits_s1_valididx_2
+  Impl Port       i:/WORK/L2TLB/io_tlb_0_resp_bits_s1_valididx_2
+
+  Ref  Port       r:/WORK/L2TLB/io_tlb_0_resp_bits_s1_valididx_3
+  Impl Port       i:/WORK/L2TLB/io_tlb_0_resp_bits_s1_valididx_3
+
+ [BBNet: multiply-driven net
+  BBPin: black-box pin
+  Cut:   cut-point
+  DFF:   non-constant DFF register
+  DFF0:  constant 0 DFF register
+  DFF1:  constant 1 DFF register
+  DFFX:  constant X DFF register
+  DFF0X: constrained 0X DFF register
+  DFF1X: constrained 1X DFF register
+  LAT:   non-constant latch register
+  LAT0:  constant 0 latch register
+  LAT1:  constant 1 latch register
+  LATX:  constant X latch register
+  LAT0X: constrained 0X latch register
+  LAT1X: constrained 1X latch register
+  LATCG: clock-gating latch register
+  TLA:   transparent latch register
+  TLA0X: transparent constrained 0X latch register
+  TLA1X: transparent constrained 1X latch register
+  Loop:  cycle break point
+  Port:  primary (top-level) port
+  Und:   undriven signal cut-point
+  Unk:   unknown signal cut-point]
+
+1

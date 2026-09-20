@@ -70,6 +70,7 @@ run "证书 g-i-i 元负例"   env SABOTAGE_GC=1 python3 scripts/test_proof_cert
 # 判据来源必须能机器重算，否则"随机激励没跑到"会被当成"不可达"写进判据里。
 run "WBArb 可达性表"     python3 scripts/wbarbiter_reachability.py --check
 
+
 run "universe 冻结闸"   python3 scripts/check_universe_freeze.py
 run "位置依赖闸"       python3 scripts/test_no_location_dependency.py
 # 台账行序闸：我写了这条测试却没接进来（2026-09-14 由 bkperf worker 撞上才发现——

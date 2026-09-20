@@ -20,8 +20,8 @@
 # tier D_CONST           876
 # tier D_INVARIANT      1003
 # tier X_UNRESOLVED        0
-# status MEASURED       21056
-# status GAP             2953
+# status MEASURED       21034
+# status GAP             2975
 # status BY_CONSTRUCTION   1879
 # total                25888
 kind	scope	name	tier	status	n_bores	n_ctrl	n_gap	owner_modules	owner_rewritten	criterion	evidence
@@ -366,7 +366,7 @@ ASSERT	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.lsq.storeQueue	must be 
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.lsq.storeQueue	must be the same entry 4\n	A_FUNC_ASSERT	MEASURED	1	0	0	StoreQueue	no	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.lsq.storeQueue	must be the same entry 5\n	A_FUNC_ASSERT	MEASURED	1	0	0	StoreQueue	no	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.lsq.storeQueue	should not commit instruction when MMIO has not been finished\n	A_FUNC_ASSERT	MEASURED	1	0	0	StoreQueue	no	assert_is_cycle_visible_behavior	
-ASSERT	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	l2tlb full!	A_FUNC_ASSERT	MEASURED	1	0	0	L2TLB	no	assert_is_cycle_visible_behavior	
+ASSERT	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	l2tlb full!	A_FUNC_ASSERT	GAP	1	0	1	L2TLB	yes	assert_is_cycle_visible_behavior	
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw.cache	l2tlb.cache.l0 ecc error. Should not happen at sim stage	A_FUNC_ASSERT	MEASURED	0	0	0		-	assert_cond_no_bore	golden 里这条断言的条件不依赖任何 bore（如恒 0），两侧同样不会响
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw.cache	l2tlb.cache.l1 ecc error. Should not happen at sim stage	A_FUNC_ASSERT	MEASURED	0	0	0		-	assert_cond_no_bore	golden 里这条断言的条件不依赖任何 bore（如恒 0），两侧同样不会响
 ASSERT	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw.cache	normal page and super page both hit	A_FUNC_ASSERT	MEASURED	1	0	0	PtwCache	no	assert_is_cycle_visible_behavior	
@@ -19027,34 +19027,34 @@ PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.train_filte
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.train_filter	sms_train_filter_raw_enq_pattern_1111	C_DIAG	MEASURED	1	0	0	SMSTrainFilter	no	FC/no_reader:全部 1 条 bore 都不馈入控制	SMSTrainFilter._GEN_32
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.train_filter	sms_train_filter_raw_enq_pattern_11110	C_DIAG	MEASURED	1	0	0	SMSTrainFilter	no	FC/no_reader:全部 1 条 bore 都不馈入控制	SMSTrainFilter._GEN_65
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.prefetcherOpt.train_filter	sms_train_filter_raw_enq_pattern_11111	D_INVARIANT	BY_CONSTRUCTION	0	0	0		-	no_bore_in_backward_cone	值只由 endpoint 自身计数状态与 io_timer/io_clean/io_dump/reset 决定
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	access_fault0	C_DIAG	MEASURED	1	0	0	L2TLB	no	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_461
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	access_fault1	C_DIAG	MEASURED	1	0	0	L2TLB	no	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_464
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	llptw_ppn_af0	C_DIAG	MEASURED	1	0	0	L2TLB	no	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_460
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	llptw_ppn_af1	C_DIAG	MEASURED	1	0	0	L2TLB	no	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_463
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_count	C_DIAG	MEASURED	1	0	0	L2TLB	no	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_456
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_cycle	C_DIAG	MEASURED	1	0	0	L2TLB	no	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_455
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_req_util0	C_DIAG	MEASURED	1	0	0	L2TLB	no	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_438
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_req_util1	C_DIAG	MEASURED	1	0	0	L2TLB	no	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_439
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_req_util10	C_DIAG	MEASURED	1	0	0	L2TLB	no	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_448
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_req_util11	C_DIAG	MEASURED	1	0	0	L2TLB	no	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_449
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_req_util12	C_DIAG	MEASURED	1	0	0	L2TLB	no	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_450
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_req_util13	C_DIAG	MEASURED	1	0	0	L2TLB	no	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_451
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_req_util14	C_DIAG	MEASURED	1	0	0	L2TLB	no	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_452
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_req_util15	C_DIAG	MEASURED	1	0	0	L2TLB	no	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_453
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_req_util16	C_DIAG	MEASURED	1	0	0	L2TLB	no	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_454
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_req_util2	C_DIAG	MEASURED	1	0	0	L2TLB	no	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_440
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_req_util3	C_DIAG	MEASURED	1	0	0	L2TLB	no	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_441
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_req_util4	C_DIAG	MEASURED	1	0	0	L2TLB	no	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_442
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_req_util5	C_DIAG	MEASURED	1	0	0	L2TLB	no	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_443
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_req_util6	C_DIAG	MEASURED	1	0	0	L2TLB	no	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_444
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_req_util7	C_DIAG	MEASURED	1	0	0	L2TLB	no	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_445
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_req_util8	C_DIAG	MEASURED	1	0	0	L2TLB	no	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_446
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_req_util9	C_DIAG	MEASURED	1	0	0	L2TLB	no	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_447
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	req_blocked_by_mq	C_DIAG	MEASURED	1	0	0	L2TLB	no	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_436
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	req_blocked_count_0	C_DIAG	MEASURED	1	0	0	L2TLB	no	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_434
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	req_blocked_count_1	C_DIAG	MEASURED	1	0	0	L2TLB	no	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_435
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	req_count0	B_CONTROL	MEASURED	1	1	0	L2TLB	no	FC/read_by_logic:L2TLB._GEN	else tlbCounter <= 6'(6'(tlbCounter + {4'h0, 2'({1'h0, _GEN} + {1'h0, _GEN_0})}) - {4'h0, 2'({1'h0, respVec_0…
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	req_count1	B_CONTROL	MEASURED	1	1	0	L2TLB	no	FC/read_by_logic:L2TLB._GEN_0	<= 6'(6'(tlbCounter + {4'h0, 2'({1'h0, _GEN} + {1'h0, _GEN_0})}) - {4'h0, 2'({1'h0, respVec_0} + {1'h0, _Arbi…
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	access_fault0	C_DIAG	MEASURED	1	0	0	L2TLB	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_461
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	access_fault1	C_DIAG	MEASURED	1	0	0	L2TLB	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_464
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	llptw_ppn_af0	C_DIAG	GAP	1	0	1	L2TLB	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_460
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	llptw_ppn_af1	C_DIAG	GAP	1	0	1	L2TLB	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_463
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_count	C_DIAG	MEASURED	1	0	0	L2TLB	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_456
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_cycle	C_DIAG	GAP	1	0	1	L2TLB	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_455
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_req_util0	C_DIAG	GAP	1	0	1	L2TLB	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_438
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_req_util1	C_DIAG	GAP	1	0	1	L2TLB	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_439
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_req_util10	C_DIAG	GAP	1	0	1	L2TLB	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_448
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_req_util11	C_DIAG	GAP	1	0	1	L2TLB	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_449
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_req_util12	C_DIAG	GAP	1	0	1	L2TLB	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_450
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_req_util13	C_DIAG	GAP	1	0	1	L2TLB	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_451
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_req_util14	C_DIAG	GAP	1	0	1	L2TLB	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_452
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_req_util15	C_DIAG	GAP	1	0	1	L2TLB	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_453
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_req_util16	C_DIAG	GAP	1	0	1	L2TLB	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_454
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_req_util2	C_DIAG	GAP	1	0	1	L2TLB	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_440
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_req_util3	C_DIAG	GAP	1	0	1	L2TLB	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_441
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_req_util4	C_DIAG	GAP	1	0	1	L2TLB	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_442
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_req_util5	C_DIAG	GAP	1	0	1	L2TLB	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_443
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_req_util6	C_DIAG	GAP	1	0	1	L2TLB	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_444
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_req_util7	C_DIAG	GAP	1	0	1	L2TLB	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_445
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_req_util8	C_DIAG	GAP	1	0	1	L2TLB	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_446
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	mem_req_util9	C_DIAG	GAP	1	0	1	L2TLB	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_447
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	req_blocked_by_mq	C_DIAG	MEASURED	1	0	0	L2TLB	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_436
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	req_blocked_count_0	C_DIAG	MEASURED	1	0	0	L2TLB	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_434
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	req_blocked_count_1	C_DIAG	MEASURED	1	0	0	L2TLB	yes	FC/no_reader:全部 1 条 bore 都不馈入控制	L2TLB._GEN_435
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	req_count0	B_CONTROL	MEASURED	1	1	0	L2TLB	yes	FC/read_by_logic:L2TLB._GEN	else tlbCounter <= 6'(6'(tlbCounter + {4'h0, 2'({1'h0, _GEN} + {1'h0, _GEN_0})}) - {4'h0, 2'({1'h0, respVec_0…
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw	req_count1	B_CONTROL	MEASURED	1	1	0	L2TLB	yes	FC/read_by_logic:L2TLB._GEN_0	<= 6'(6'(tlbCounter + {4'h0, 2'({1'h0, _GEN} + {1'h0, _GEN_0})}) - {4'h0, 2'({1'h0, respVec_0} + {1'h0, _Arbi…
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw.bitmap	bitmap_mem_req	C_DIAG	MEASURED	1	0	0	Bitmap	no	FC/no_reader:全部 1 条 bore 都不馈入控制	Bitmap._GEN_29
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw.bitmap	bitmap_req	B_CONTROL	MEASURED	1	1	0	Bitmap	no	FC/read_by_logic:Bitmap._io_pmp_req_bits_addr_T_4_probe	3'h0); wire _GEN_40 = enq_ptr == 3'h0; wire _GEN_41 = _io_pmp_req_bits_addr_T_4_probe & _GEN_40; wire _GEN_42…
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw.bitmapcache	bitmap_cache_resp	B_CONTROL	MEASURED	1	1	0	BitmapCache	no	FC/read_by_logic:BitmapCache._GEN_5	; wire _GEN_5 = io_resp_ready & valid_1; wire _GEN_6 = _GEN_5 & ~hit; wire [1:0] hitWay = _hitWay_T ? {1'h0, …
@@ -19264,7 +19264,7 @@ PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw.llptw	waiting_uti
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw.llptw	waiting_util4	C_DIAG	MEASURED	1	0	0	LLPTW	no	FC/no_reader:全部 1 条 bore 都不馈入控制	LLPTW._GEN_98
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw.llptw	waiting_util5	C_DIAG	MEASURED	1	0	0	LLPTW	no	FC/no_reader:全部 1 条 bore 都不馈入控制	LLPTW._GEN_101
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw.llptw	waiting_util6	C_DIAG	MEASURED	1	0	0	LLPTW	no	FC/no_reader:全部 1 条 bore 都不馈入控制	LLPTW._GEN_104
-PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw.prefetch	l2tlb_prefetch_input_count	B_CONTROL	MEASURED	1	1	0	L2TLB	no	FC/drives_child_input:L2TLB._probe	喂给子实例 L2TlbPrefetch 的 io_in_valid 端口（input）
+PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw.prefetch	l2tlb_prefetch_input_count	B_CONTROL	GAP	1	1	1	L2TLB	yes	FC/drives_child_input:L2TLB._probe	喂给子实例 L2TlbPrefetch 的 io_in_valid 端口（input）
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw.prefetch	l2tlb_prefetch_output_count	B_CONTROL	MEASURED	1	1	0	L2TlbPrefetch	yes	FC/read_by_logic:L2TlbPrefetch._v_T_probe	4'h0; wire _v_T_probe = io_out_ready & v; wire _GEN = _v_T_probe & old_index == 2'h0; wire _GEN_0 = _v_T_prob…
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw.prefetch	l2tlb_prefetch_valid_count	B_CONTROL	GAP	1	1	1	L2TlbPrefetch	yes	FC/read_by_logic:L2TlbPrefetch.input_valid_probe	old_index <= 2'(old_index + 2'h1); end v <= ~flush & (input_valid_probe | ~_v_T_probe & v); end end `ifdef EN…
 PERF	SimTop.cpu.l_soc.core_with_l2.core.memBlock.inner.ptw.ptw.ptw	fsm_busy	C_DIAG	MEASURED	1	0	0	PTW	no	FC/no_reader:全部 1 条 bore 都不馈入控制	PTW.perfEvents_1_2_probe

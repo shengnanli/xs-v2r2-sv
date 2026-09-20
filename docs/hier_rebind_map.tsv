@@ -1813,6 +1813,35 @@ InterruptFilter	delayedIRToVS_delay	DelayN_17	DEEPER	u_core.delayedIRToVS_delay	
 InterruptFilter	delayedIntrVec_delay	DelayN_208	DEEPER	u_core.delayedIntrVec_delay	DelayN_208		auto_deeper	
 InterruptFilter	delayedNMI_delay	DelayN_17	DEEPER	u_core.delayedNMI_delay	DelayN_17		auto_deeper	
 InterruptFilter	delayedVIIsHvictlInjectReg_delay	DelayN_17	DEEPER	u_core.delayedVIIsHvictlInjectReg_delay	DelayN_17		auto_deeper	
+L2TLB	Arbiter1_L2TLBImp_Anon	Arbiter1_L2TLBImp_Anon	UNRESOLVED				none	
+L2TLB	Arbiter1_L2TLBImp_Anon_1	Arbiter1_L2TLBImp_Anon	UNRESOLVED				none	
+L2TLB	Arbiter3_L2TLBImp_Anon	Arbiter3_L2TLBImp_Anon	UNRESOLVED				none	
+L2TLB	Arbiter3_L2TLBImp_Anon_1	Arbiter3_L2TLBImp_Anon	UNRESOLVED				none	
+L2TLB	PMPChecker	PMPChecker	UNRESOLVED				none	
+L2TLB	PMPChecker_1	PMPChecker	UNRESOLVED				none	
+L2TLB	PMPChecker_2	PMPChecker	UNRESOLVED				none	
+L2TLB	PMPChecker_3	PMPChecker	UNRESOLVED				none	
+L2TLB	PMPChecker_4	PMPChecker	UNRESOLVED				none	
+L2TLB	arb1	Arbiter2_PtwReq	ONE_SITE	u_core.u_arb_tlb	Arbiter2_PtwReq		auto_one_site	
+L2TLB	arb2	Arbiter5_L2TlbWithHptwIdBundle	ONE_SITE	u_core.u_arb_cache_in	Arbiter5_L2TlbWithHptwIdBundle		auto_one_site	
+L2TLB	bitmap	Bitmap	ONE_SITE	u_core.u_bitmap	Bitmap		auto_one_site	
+L2TLB	bitmap_arb	Arbiter3_bitmapReqBundle	ONE_SITE	u_core.u_bitmap_arb	Arbiter3_bitmapReqBundle		auto_one_site	
+L2TLB	bitmapcache	BitmapCache	ONE_SITE	u_core.u_bitmap_cache	BitmapCache		auto_one_site	
+L2TLB	cache	PtwCache	ONE_SITE	u_core.u_page_cache	PtwCache		auto_one_site	
+L2TLB	csr_tmp_delay	DelayN_221	ONE_SITE	u_core.u_csr_delay	DelayN_221		auto_one_site	
+L2TLB	hptw	HPTW	ONE_SITE	u_core.u_hptw	HPTW		auto_one_site	
+L2TLB	hptw_req_arb	Arbiter2_L2TLBImp_Anon	ONE_SITE	u_core.u_arb_hptw_req	Arbiter2_L2TLBImp_Anon		auto_one_site	
+L2TLB	hptw_resp_arb	Arbiter2_L2TLBImp_Anon_1	ONE_SITE	u_core.u_arb_hptw_resp	Arbiter2_L2TLBImp_Anon_1		auto_one_site	
+L2TLB	io_wfi_wfiSafe_delay	DelayN_13	UNRESOLVED				none	
+L2TLB	llptw	LLPTW	ONE_SITE	u_core.u_llptw	LLPTW		auto_one_site	
+L2TLB	mem_arb	Arbiter4_L2TlbMemReqBundle	ONE_SITE	u_core.u_mem_arb	Arbiter4_L2TlbMemReqBundle		auto_one_site	
+L2TLB	missQueue	L2TlbMissQueue	ONE_SITE	u_core.u_miss_queue	L2TlbMissQueue		auto_one_site	
+L2TLB	mq_arb	Arbiter2_L2TlbWithHptwIdBundle	ONE_SITE	u_core.u_arb_mq	Arbiter2_L2TlbWithHptwIdBundle		auto_one_site	
+L2TLB	pmp	PMP	ONE_SITE	u_core.u_pmp	PMP		auto_one_site	
+L2TLB	prefetch	L2TlbPrefetch	ONE_SITE	u_core.u_prefetch	L2TlbPrefetch		auto_one_site	
+L2TLB	ptw	PTW	ONE_SITE	u_core.u_ptw	PTW		auto_one_site	
+L2TLB	sfence_tmp_delay	DelayN_220	ONE_SITE	u_core.u_sfence_delay	DelayN_220		auto_one_site	
+L2TLB	wfiReq_delay	DelayN_13	UNRESOLVED				none	
 L2TlbMissQueue	io_out_q	Queue40_L2TlbMQBundle	INLINE	u_core	-	enq_ptr,deq_ptr,maybe_full	declared	rtl/memblock/L2TlbMissQueue.sv:48,69-114「实例化与 golden 完全相同的 ram_40x47」——队列控制内联，存储叶子仍是 ram_40x47（见 collateral 行）。
 L2TlbMissQueue	io_out_q/ram_ext	ram_40x47	ONE_SITE	u_core.mem_ext	ram_40x47		auto_one_site	父层次已内联，但本层在宿主核里仍是独立实例
 LCredit2Decoupled	queue	Queue4_CHISNP	DEEPER	u_core.queue	Queue4_CHISNP		auto_deeper	
