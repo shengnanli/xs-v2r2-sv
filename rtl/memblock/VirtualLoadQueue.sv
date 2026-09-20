@@ -486,9 +486,16 @@ module xs_VirtualLoadQueue_core
   assign lqDeq       = lqDeq_q;
   assign lqCancelCnt = redirectCancelCount[LQ_CNT_W-1:0];  // 8 位计数器截到 7 位
 
+  // ★bug-for-bug：越界下标读回的是条目 0，不是 0★
+  // deqPtr.value 是 7 位寄存器，可表示 0..127，而队列只有 72 个条目。
+  // golden 把这三个阵列摊成 **128 项** 的读向量，下标 72..127 那 56 项全部
+  // 填 `robIdx_0` / `uopIdx_0`（firtool 对越界常量下标的填法），所以默认值
+  // 必须是条目 0。写成 '0 在仿真里看不出差别（环形加法保证 deqPtr 实际取值
+  // 恒 <= 71），但 Formality 会枚举这些不可达取值 —— 首跑 16 个输出位就栽在
+  // 这里（io_lqDeqRobIdx 9 位 + io_lqDeqUopIdx 7 位，1483 个触发器全绿）。
   always_comb begin
-    lqDeqRobIdx = '0;
-    lqDeqUopIdx = '0;
+    lqDeqRobIdx = rob_ptr_t'{flag: robIdx_flag[0], value: robIdx_value[0]};
+    lqDeqUopIdx = uopIdx[0];
     for (int i = 0; i < LQ_SIZE; i++)
       if (LQ_PTR_W'(i) == deqPtr_q.value) begin
         lqDeqRobIdx = rob_ptr_t'{flag: robIdx_flag[i], value: robIdx_value[i]};
