@@ -93,3 +93,14 @@ verdict=SUCCEEDED。差任何一个（高或低）都按 fail 上报并查清机
 即 3523ac09 对共享核 `xs_DelayN_core.sv` 的改动（把打拍链包进 generate、
 新增 0 级旁路支路与 GOLDEN_HAS_CLOCK 不变式）**对已签核变体零影响**。
 同批重跑的另外 4 个已签核变体也一个数没动：DelayN 10 / _1 3 / _8 822 / _13 2。
+
+## 重跑（注释改动后重新绑字节）
+
+`eee60602` 只给 `xs_DelayN_core.sv` 加了一段头注释（答"三个核能不能合并"）。
+注释也是字节，旧 receipt 绑的是旧字节，所以全 18 个重跑了一遍：
+
+- 证明 commit：`eee60602a12f8d1c3a5b0f0e2b8b2f1a` 的前 12 位目录 `evidence/eee60602a12f/`
+- 复算：`cd verif/ut/DelayN && python3 reconcile.py eee60602` —— RECONCILE_RC=0
+- 结果：18/18 verdict=SUCCEEDED，passing 与模型差全 +0，与 `f0bcd42e` 那批逐个相同。
+
+★不拿「只改了注释，按构造不会变」蒙混过去★ —— 这就是重跑的理由。
