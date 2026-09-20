@@ -704,12 +704,24 @@ endmodule
 //   * io_toIssueQueues_8..19 没有 srcLoadDependency（浮点/向量 IQ 不吃 load 唤醒依赖）
 //
 // ★未追清 / 未实现清单（本文件当前状态）★
-//   a. 9 个子模块本仓都没有实现（golden 里是真逻辑，不是厂商宏），已拆成两条
-//      独立 lane，**本文件不碰它们的实现**：
-//        Lane H  BusyTable(21579) BusyTable_1(2854) BusyTable_2(1539)
-//                BusyTable_3(443) VlBusyTable(1401)
-//        Lane I  LsqEnqCtrl(2595) RegCacheTagTable(1391)
-//                RegCacheTagModule(2025) RegCacheTagModule_1(1347)
+//   a. ★本条已于 2026-09-20 失效，原文保留在下面并标注失效时点与原因★
+//      原文：「9 个子模块本仓都没有实现（golden 里是真逻辑，不是厂商宏），
+//             已拆成两条独立 lane，**本文件不碰它们的实现**：
+//               Lane H  BusyTable(21579) BusyTable_1(2854) BusyTable_2(1539)
+//                       BusyTable_3(443) VlBusyTable(1401)
+//               Lane I  LsqEnqCtrl(2595) RegCacheTagTable(1391)
+//                       RegCacheTagModule(2025) RegCacheTagModule_1(1347)」
+//      ★为什么失效★：它等的那两条 lane **都已经交了**，而且比本文件还早：
+//        dc46365f (2026-09-17)  BusyTable 家族（5 变体 27816 行 golden）
+//        b43c623c (2026-09-17)  Lane I: NewDispatch 辅助子模块
+//                               （RegCacheTag 三件套 + LsqEnqCtrl）
+//      本分支原 tip 23aead25 同为 2026-09-17，此后一直没合 main，
+//      于是这条注释一直在描述一个**已经改变了的世界**。
+//      9 个子模块现在 rtl/backend/ 下全部存在，且 port_contract_lint 对
+//      NewDispatch 直接例化的那 7 个是 7/7 PASS。
+//      ★为什么要留痕而不是改对就算★：本仓的教训是「结论会传下去，限定条件不会」。
+//      一条过期的"未实现"注释会让下一个读者**主动放弃一条已经可走的路** ——
+//      这比数字错了更贵。所以删改它必须写明何时、因何失效。
 //   b. 依赖它们的 payload 位（srcState / srcType_2 经 ignoreOldVd /
 //      srcLoadDependency_0_*,1_* / lqIdx / sqIdx / useRegCache / regCacheIdx /
 //      singleStep）在节 3.2 里声明成 unresolved_* 且**故意不给驱动**：
