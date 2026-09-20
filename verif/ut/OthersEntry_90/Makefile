@@ -26,7 +26,7 @@ FM_REF_DEPS_OthersEntry_90 = UIntCompressor_27_000000000000001010100000000.sv
 #   把这些同值寄存器合并掉，而可读核把同一份负载存在一根向量里、按位不合并，
 #   于是两侧点数对不上。置 false 后两侧都逐个保留 —— 要求逐个比而不是合并后比。
 FM_MERGE_DUP = false
-# 本变体的 FM 点数尚未实测；预测登记在 verif/ut/OthersEntry_90/PREDICT.txt。
+# 本变体未用 vmucp：首跑 unread 即为 0。
 FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = false
 
 include ../../../scripts/ut_common.mk
