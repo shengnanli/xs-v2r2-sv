@@ -31,8 +31,28 @@
 // 【判别力自证】
 //   常态自证：五级回填的 fire 次数与五级命中的 fire 次数**都必须 > 0**，
 //   否则那一段等于什么都没比，tb 自己判 FAIL。
-//   注入过的 mutant（都不进库，结果记在这儿）：
-// MUTANT_TABLE_PLACEHOLDER
+//   注入过的 mutant（都不进库；下表是**一次跑完的一轮**：同一份激励、每个 mutant
+//   都 make clean 全量重建、并先在产物里 grep 确认变异真的进去了，5000 拍 seed=1）：
+//     H1 l1 命中的 asid 用 dup_0 的 csr（dup 归属写错）
+//        -> errors=159138，首个失配 l1_hitvec[1]。抓到。
+//     H2 sp 的 level==1 少比一段 tag（tm1）
+//        -> errors=503184，首个失配 sp_hitvec[4]。抓到。
+//        ★这条一开始是漏的★：只有"整条相同 / 整条随机"两种 vpn 时 errors=0。
+//        补了近失 vpn（池子里的一条翻一位）才抓到 —— 见上面 pick_vpn。
+//     H3 l3 的 vmid 比较去掉 16 位零扩展（只比低 14 位）
+//        -> errors=381252，首个失配 l3_hitvec[0]。抓到。
+//        ★这条一开始也是漏的★：hgatp_vmid 只喂 0..3 时两种写法值恒等。
+//        补了 rand_vmid（四分之一带高位）才抓到。
+//     H4 plru_l2 的三写者优先级：把 l2 命中提到 l3 回填前面（即"修好"那个 golden 真 bug）
+//        -> errors=74774，首个失配 plru_l2。抓到。
+//        ★这条是唯一能证明我们照抄了 golden 的 bug、而不是照抄了直觉的实验★
+//     H5 ParallelPriorityMux 的 tie-break：全不中时取第 0 项而不是最后一项
+//        -> errors=7343，首个失配 l3_ppn_r。抓到。
+//     H6 l1 的 PLRU 命中更新写成 ~l1_hitvec[1] 而不是 l1_hitvec[0]
+//        -> errors=0，**没抓到**。★这条是本对照的已知盲点，不是通过★：
+//        两种写法只在 l1 两路**同时命中**时不同（hitVec=2'b11），那要求同一组里
+//        两路的 tag/asid/vmid/h 全一样；本激励产生不出这种状态。
+//        要覆盖它得专门构造"同组两路同 tag"的回填序列，记在这儿等后续补。
 //   历史（更早只比写端口那一版记的，保留备查）：
 //     A  pte_is_pf 的 napot 分支去掉 `| (level != 0)`  -> errors=0，**没抓到**。
 //        查清了原因：level>0 时 ppn[3:0]==8 蕴含 ppn[8:0]!=0，紧接着的
@@ -1475,27 +1495,49 @@ module tb;
   // 在回填与查找时一致"，不是三份相等，所以这样既能命中又保留 dup 判别力。
   logic [37:0] vpn_pool [0:7];
 
+  // hgatp_vmid ★不能只给低位★：表项里存的是 14 位，而命中比较是
+  // `{2'h0, vmid} == hgatp_vmid`（16 位零扩展），也就是说 hgatp_vmid[15:14] 非零时
+  // 一律不命中。只喂 0..3 的话，"零扩展"和"只比低 14 位"两种写法值恒等——
+  // 实测 mutant「l3 的 vmid 比较去掉零扩展」在那种激励下 errors=0。
+  function automatic logic [15:0] rand_vmid();
+    if ($urandom_range(0,3) == 0) return {$urandom_range(0,3), 14'($urandom_range(0,3))};
+    return 16'($urandom_range(0,3));
+  endfunction
+
   task automatic refresh_csr();
     io_csr_mPBMTE = $urandom_range(0,1);
     io_csr_hPBMTE = $urandom_range(0,1);
     io_csr_dup_0_satp_asid  = $urandom_range(0,3);
     io_csr_dup_0_vsatp_asid = $urandom_range(0,3);
-    io_csr_dup_0_hgatp_vmid = $urandom_range(0,3);
+    io_csr_dup_0_hgatp_vmid = rand_vmid();
     io_csr_dup_0_hgatp_mode = $urandom_range(0,1) ? 4'h8 : 4'h9;
     io_csr_dup_1_satp_asid  = $urandom_range(0,3);
     io_csr_dup_1_vsatp_asid = $urandom_range(0,3);
-    io_csr_dup_1_hgatp_vmid = $urandom_range(0,3);
+    io_csr_dup_1_hgatp_vmid = rand_vmid();
     io_csr_dup_1_hgatp_mode = $urandom_range(0,1) ? 4'h8 : 4'h9;
     io_csr_dup_2_satp_asid  = $urandom_range(0,3);
     io_csr_dup_2_vsatp_asid = $urandom_range(0,3);
-    io_csr_dup_2_hgatp_vmid = $urandom_range(0,3);
+    io_csr_dup_2_hgatp_vmid = rand_vmid();
     io_csr_dup_2_hgatp_mode = $urandom_range(0,1) ? 4'h8 : 4'h9;
   endtask
 
   function automatic logic [37:0] pick_vpn();
-    // 四分之一全随机，保住"vpn 写错位"这类错误的判别力；其余从池子里取，保命中率。
+    logic [37:0] v;
+    int b;
+    // 四分之一全随机，保住"vpn 写错位"这类错误的判别力；
+    // 再四分之一取**近失**：池子里的一条翻掉一位。
+    // ★近失这一路是补上去的，理由是实测的一个漏检★：
+    //   mutant「sp 的 level==1 少比一段 tag（tm1）」在只有"整条相同 / 整条随机"
+    //   两种 vpn 的激励下 errors=0 —— 因为 tm3&tm2 相同就意味着是同一条池子项，
+    //   tm1 必然也相同；而全随机的 vpn 又几乎不可能撞中 tm3&tm2。
+    //   翻一位之后，"高段相同、某一段不同"这种组合才真的会出现。
     if ($urandom_range(0,3) == 0) return {$urandom(), $urandom()};
-    return vpn_pool[$urandom_range(0,3)];
+    v = vpn_pool[$urandom_range(0,3)];
+    if ($urandom_range(0,2) == 0) begin
+      b    = $urandom_range(0,37);   // ★同一个下标，别写成两次 $urandom_range★
+      v[b] = ~v[b];
+    end
+    return v;
   endfunction
 
   task automatic drive_random();
