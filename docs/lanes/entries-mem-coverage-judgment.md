@@ -240,6 +240,31 @@ vecReplayMbIdx}` —— 对不带 vecMem 的变体退化成今天的 2 位。
 - `og1Cancel`：14/14 全空，不写。
 - `deqFuSame` / `isAllComp` / `isAllSimp`：G1 的 14 个变体都不走，5 个访存变体也不走。
 
+
+## 跨 lane：`agent/othersentry` 会在本判断之上接着做（集成者 0920 协调）
+
+记在这里，因为它与 E1/E2 有**合流顺序**和**一条会打回绿的约束**。
+
+1. **它复用同一个核。** 依据：`OthersEntry.scala` 模块体只有四句，`EnqEntry.scala`
+   调同样四句、只是 `isEnq=true` —— golden 的两者本就是一份逻辑的两次单态化，
+   而 `xs_iq_entry` 的 `IS_ENQ`/`IS_TRANS`/`IS_COMP` 正好是这三种条目。
+   **不各写一份。**
+
+2. **它量出一处本判断没有的核改动：7 组 debug/perf 输出**
+   （`entryInValid` / `entryOutDeqValid` / `entryOutTransValid` / `perfLdCancel` /
+   `perfOg0Cancel` / `perfWakeupByWB` / `perfWakeupByIQ`）。这些在 golden
+   `OthersEntry*` 上是真端口（24/24），但在 `Entries*` 那一层被 firtool 消掉了，
+   所以共享核当初没产出。除 `entryInValid` 外都要核内部信号，跨模块边界拿不到
+   ⇒ 必须加端口。
+
+   ★**它必须挂 parameter（`HAS_DBG_OUT`，Entries 侧给 0）**★ —— 否则新输出在
+   `xs_iq_entries_core` 里无人读，会给本轮 7 个变体和已签核的 2 个**引入 unread 点、
+   把 SIGNOFF_PASS 打回 PARTIAL**。这一条不是风格问题，是会直接掉绿的。
+   该改动由 `agent/othersentry` 加（只加输出、对 E1/E2 公共路径零改动）。
+
+3. **合流顺序**：E1/E2 动公共路径 ⇒ 9 个已签核变体 FM 全部重跑（本判断已写明的代价）；
+   `agent/othersentry` 的 24 个变体排在 E1 **之后**，在本 lane 的实现之上做。
+
 ## 工作量估计（给排期，不是承诺）
 
 | 项 | 改哪 | 影响已签核变体？ |
