@@ -23,9 +23,9 @@
 metric	done	total	percent
 fm_targets_configured	252	426	59.2
 unique_design_written	148	1191	12.4
-unique_design_proven	117	1191	9.8
+unique_design_proven	118	1191	9.9
 golden_lines_written	1493343	3902283	38.3
-golden_lines_proven	903797	3902283	23.2
+golden_lines_proven	1042657	3902283	26.7
 #
 # written 里没有绿判决证据的设计族（差额都在这儿，逐个列出不藏）：
 #   AgeDetector                                     12602 行
@@ -42,7 +42,6 @@ golden_lines_proven	903797	3902283	23.2
 #   ICache                                           1754 行
 #   ICacheCtrlUnit                                    335 行
 #   InstrMMIOEntry                                    201 行
-#   LoadQueueReplay                                138860 行
 #   LqVAddrModule                                    1717 行
 #   LsqEnqCtrl                                       2595 行
 #   NCBTransactionQueue                             41240 行
