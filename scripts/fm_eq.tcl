@@ -491,14 +491,20 @@ set _mergedup "true"
 if {[info exists env(FM_MERGE_DUP)] && [string trim $env(FM_MERGE_DUP)] ne ""} {
     set _mergedup [string trim $env(FM_MERGE_DUP)]
 }
-# ===== 下面这段注记必须留在 switch **之外** =====
-# ★Tcl 的 switch 体里没有注释★：body 是按**列表**解析的，`#` 开头的行会被当成
-#   pattern/body 元素，而不是注释。本仓 2026-09-20 实测踩过：ee3aa24 把这段注记
-#   贴进 switch 体，其中一行含 `"Merging duplicated registers"，` —— 引号元素后面
-#   紧跟非空格字符，Tcl 列表解析当场报
-#     list element in quotes followed by "，★从未到达" instead of space
-#   于是 **每一个** FM 目标都在 setup 阶段死掉（fm_shell rc=2、无 native_facts.json）。
-#   最小复现 3 行，见 scripts/test_fm_eq_wellformed.py 的 tcl 语法判据。
+# ★这段注记必须留在 switch **外面**★（2026-09-20 实测，Entries lane 踩到）
+#   它原先写在 `switch -- $_mergedup` 的花括号**里面**。Tcl 的 switch 体是一张
+#   （这行原文带一个裸的左花括号，把本仓既有的「括号配平」判据打红了 ——
+#    Tcl 注释里的花括号并非总是无害，所以这里改成不写出那个字符。）
+#   **pattern/body 列表**，不是脚本体 —— `#` 在那里不是注释，整块要按列表语法解析。
+#   下面第 8 行里的 ASCII 双引号 "Merging duplicated registers" 后面紧跟中文逗号，
+#   于是 Tcl 报 `list element in quotes followed by "，★从未到达" instead of space`
+#   (CMD-013)，fm_eq.tcl 在 line 494 停下。
+#   ★后果不是"这个注记没生效"，是 **本仓每一次 FM 都在 setup 阶段死掉**★ ——
+#   这个 switch 无条件执行（_mergedup 默认 "true"），与目标、与 FM_MERGE_DUP
+#   给没给都无关。实测 EntriesFaluFmac：44 秒、0 个比较点、rc=2。
+#   引入于 ee3aa24（"fm_eq.tcl 加 merge_dup 经验注记"），随 main 合进各 lane。
+#   判据教训：**Tcl 里"加一段注释"不是无副作用操作**，加在哪要看它落进了谁的
+#   花括号；而这类改动没有任何 lint 会响，只有真跑一次 FM 才看得见。
 # ===== verification_merge_duplicated_registers 的经验注记（codex 0168 裁定） =====
 # ★不翻全局默认★。下面是可复核的经验，不是规则：
 #
@@ -516,6 +522,7 @@ if {[info exists env(FM_MERGE_DUP)] && [string trim $env(FM_MERGE_DUP)] ne ""} {
 # ★不要写成因果★：本仓曾出现过"u_core 这种写法必然导致需要关掉它"这类说法，
 # 已被 0179 的判别性实验证伪（NewDispatch 因此从支持集里移出）。
 # 目前能说的只有上面这些 target-scoped 的观测，没有已确立的普遍机制。
+
 switch -- $_mergedup {
   "true" - "false" { set_app_var verification_merge_duplicated_registers $_mergedup }
   default {
