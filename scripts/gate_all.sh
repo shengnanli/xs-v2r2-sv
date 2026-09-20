@@ -87,6 +87,7 @@ for g in scripts/gen_tlbuffer_ad_family.py scripts/gen_mbist_pipe_family.py \
          scripts/gen_tlbnb_family.py scripts/gen_predictor.py \
          scripts/gen_rob.py scripts/gen_rob_ut.py \
          scripts/gen_sbuffer.py scripts/gen_sbuffer_tb.py \
+         scripts/gen_fubusy_wbarb.py \
          scripts/gen_tlbsw_family.py; do
   [ -f "$g" ] && run "生成器幂等 $(basename $g .py | sed 's/^gen_//')" python3 "$g" --check
 done
@@ -97,6 +98,10 @@ for g in verif/ut/TlbStorageWrapper/gen_tb_variant.py; do
 done
 # 闸的完备性闸：任何 scripts/gen_*.py 要么进上面的列表，要么在
 # check_gen_gate_complete.py 的 NO_CHECK 豁免表里写明理由，没有第三条路。
+# WBArbiter 反饥饿状态机的可达性表：verif/ut/WBArbiterVariants/tb.sv 的覆盖判据是
+# 分档的（N=1 全死 / N=2 只有第 1 路够得着 / N>=3 全可达），依据就是这张表。
+# 判据来源必须能机器重算，否则"随机激励没跑到"会被当成"不可达"写进判据里。
+run "WBArb 可达性表"     python3 scripts/wbarbiter_reachability.py --check
 run "生成器闸完备性"     python3 scripts/check_gen_gate_complete.py
 # UT initreg 棘轮：147 个 UT 里 68 个的 Makefile 完全没提 initreg（2026-09-17 实测），
 # 也就是说这些目标的 UT 验收是在"寄存器初值由 VCS 默认决定"下过的。
