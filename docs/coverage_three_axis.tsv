@@ -1,4 +1,4 @@
-# 三轴覆盖（分母 = /home/eda/xs-env/xs-v2-sv/docs/g1_configured_universe.tsv 的 in_universe=yes，共 1814）
+# 三轴覆盖（分母 = /home/eda/xs-env/wt-vlq/docs/g1_configured_universe.tsv 的 in_universe=yes，共 1814）
 # module	rewrite_coverage	formal_coverage	impl_file
 AMOALU	MISSING	UNPROVEN	-
 APLIC	MISSING	UNPROVEN	-
@@ -907,12 +907,12 @@ OthersEntry_104	REWRITTEN	PROVEN_DIRECT	rtl/backend/OthersEntry_104.sv
 OthersEntry_106	REWRITTEN	PROVEN_DIRECT	rtl/backend/OthersEntry_106.sv
 OthersEntry_120	REWRITTEN	PROVEN_DIRECT	rtl/backend/OthersEntry_120.sv
 OthersEntry_122	REWRITTEN	PROVEN_DIRECT	rtl/backend/OthersEntry_122.sv
-OthersEntry_136	MISSING	PROVEN_IN_CONE	-
-OthersEntry_138	MISSING	PROVEN_IN_CONE	-
-OthersEntry_150	MISSING	PROVEN_IN_CONE	-
-OthersEntry_152	MISSING	PROVEN_IN_CONE	-
-OthersEntry_164	MISSING	PROVEN_IN_CONE	-
-OthersEntry_166	MISSING	PROVEN_IN_CONE	-
+OthersEntry_136	REWRITTEN	PROVEN_IN_CONE	rtl/backend/OthersEntry_136.sv
+OthersEntry_138	REWRITTEN	PROVEN_IN_CONE	rtl/backend/OthersEntry_138.sv
+OthersEntry_150	REWRITTEN	PROVEN_IN_CONE	rtl/backend/OthersEntry_150.sv
+OthersEntry_152	REWRITTEN	PROVEN_IN_CONE	rtl/backend/OthersEntry_152.sv
+OthersEntry_164	REWRITTEN	PROVEN_IN_CONE	rtl/backend/OthersEntry_164.sv
+OthersEntry_166	REWRITTEN	PROVEN_IN_CONE	rtl/backend/OthersEntry_166.sv
 OthersEntry_172	MISSING	UNPROVEN	-
 OthersEntry_174	MISSING	UNPROVEN	-
 OthersEntry_200	MISSING	UNPROVEN	-
@@ -1733,7 +1733,7 @@ VfRegFilePart2	MISSING	UNPROVEN	-
 VfRegFilePart3	MISSING	UNPROVEN	-
 VfofBuffer	MISSING	UNPROVEN	-
 VirtualLevelPermitModule	MISSING	UNPROVEN	-
-VirtualLoadQueue	MISSING	UNPROVEN	-
+VirtualLoadQueue	REWRITTEN	PROVEN_DIRECT	rtl/memblock/VirtualLoadQueue.sv
 VlBusyTable	REWRITTEN	UNPROVEN	rtl/backend/VlBusyTable.sv
 VlRFReadArbiter	MISSING	UNPROVEN	-
 VlRFWBCollideChecker	MISSING	UNPROVEN	-
