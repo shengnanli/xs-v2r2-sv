@@ -746,7 +746,17 @@ module xs_Rob_core
     if (reset) state <= S_IDLE;
     else       state <= state_next;
   end
-  always_ff @(posedge clock) state_next_REG <= io_redirect_valid;
+  // ★io.redirect.valid 打一拍在 golden 里是**四个独立寄存器**★
+  //   （state_next_REG / redirectValidReg / REG_7 / REG_8），不是一个扇出四处。
+  //   FM 跑的是 merge_duplicated_registers=false —— 那是**加强**（比较点只增不减），
+  //   所以这四个必须一一对上；合并成一个会让 golden 侧多出三个配不上的比较点。
+  //   各自的去处：state_next_REG -> 状态机；redirectValidReg -> 条目冲刷窗口；
+  //                REG_7 -> shouldWalkVec；REG_8 -> donotNeedWalk。
+  always_ff @(posedge clock) begin
+    state_next_REG <= io_redirect_valid;
+    REG_7          <= io_redirect_valid;
+    REG_8          <= io_redirect_valid;
+  end
 
   // ---- 走回指针的下一拍值 ----
   // (1) redirect：按 snapshot 或 deqPtr_next 的**行首**重装
@@ -871,7 +881,7 @@ module xs_Rob_core
   end
   always_comb begin
     if (io_redirect_valid)    donotNeedWalkNext = {COMMIT_W{1'b1}};
-    else if (state_next_REG)
+    else if (REG_8)
       for (int i = 0; i < COMMIT_W; i++)
         donotNeedWalkNext[i] = (BANK_ADDR_W'(i) < walkPtrLowBits);
     else                      donotNeedWalkNext = {COMMIT_W{1'b0}};
@@ -1673,19 +1683,23 @@ module xs_Rob_core
   end
 
   // ---- lsq 回来的 mmio 标记：打一拍再写 ----
-  logic             loadMmioReg    [3];
-  logic [PTR_W-1:0] loadMmioIdxReg [3];
-  logic             storeMmioReg;
-  logic [PTR_W-1:0] storeMmioIdxReg;
+  // 名字照 golden（REG_3..REG_6 / r_value / r_1..3_value）：这些是 name_lock=free
+  // 的散寄存器，只能靠 FM 按名字配 —— 起个好听的名字换不来任何东西，只会丢配对。
+  //   REG_3/4/5 = RegNext(io_lsq_loadMmio_0/1/2)   REG_6 = RegNext(io_lsq_storeMmio)
+  //   r_value / r_1_value / r_2_value = RegEnable(loadMmioUop_i.robIdx, loadMmio_i)
+  //   r_3_value                        = RegEnable(storeMmioUop.robIdx, storeMmio)
+  logic [PTR_W-1:0] r_1_value;
+  logic [PTR_W-1:0] r_2_value;
+  logic [PTR_W-1:0] r_3_value;
   always_ff @(posedge clock) begin
-    loadMmioReg[0] <= io_lsq_loadMmio_0;
-    loadMmioReg[1] <= io_lsq_loadMmio_1;
-    loadMmioReg[2] <= io_lsq_loadMmio_2;
-    storeMmioReg   <= io_lsq_storeMmio;
-    if (io_lsq_loadMmio_0) loadMmioIdxReg[0] <= io_lsq_loadMmioUop_0_robIdx_value;
-    if (io_lsq_loadMmio_1) loadMmioIdxReg[1] <= io_lsq_loadMmioUop_1_robIdx_value;
-    if (io_lsq_loadMmio_2) loadMmioIdxReg[2] <= io_lsq_loadMmioUop_2_robIdx_value;
-    if (io_lsq_storeMmio)  storeMmioIdxReg   <= io_lsq_storeMmioUop_robIdx_value;
+    REG_3 <= io_lsq_loadMmio_0;
+    if (io_lsq_loadMmio_0) r_value   <= io_lsq_loadMmioUop_0_robIdx_value;
+    REG_4 <= io_lsq_loadMmio_1;
+    if (io_lsq_loadMmio_1) r_1_value <= io_lsq_loadMmioUop_1_robIdx_value;
+    REG_5 <= io_lsq_loadMmio_2;
+    if (io_lsq_loadMmio_2) r_2_value <= io_lsq_loadMmioUop_2_robIdx_value;
+    REG_6 <= io_lsq_storeMmio;
+    if (io_lsq_storeMmio)  r_3_value <= io_lsq_storeMmioUop_robIdx_value;
   end
 
   // ---- redirect 的冲刷窗口 ----
@@ -1796,11 +1810,10 @@ module xs_Rob_core
           robEntries_interrupt_safe[i] <= enqAllowIntr[j];
         end
       // lsq 回来的 mmio 比入队清零更靠后，优先级更高
-      for (int k = 0; k < 3; k++)
-        if (loadMmioReg[k] & (loadMmioIdxReg[k] == PTR_W'(i)))
-          robEntries_mmio[i] <= 1'b1;
-      if (storeMmioReg & (storeMmioIdxReg == PTR_W'(i)))
-        robEntries_mmio[i] <= 1'b1;
+      if (REG_3 & (r_value   == PTR_W'(i))) robEntries_mmio[i] <= 1'b1;
+      if (REG_4 & (r_1_value == PTR_W'(i))) robEntries_mmio[i] <= 1'b1;
+      if (REG_5 & (r_2_value == PTR_W'(i))) robEntries_mmio[i] <= 1'b1;
+      if (REG_6 & (r_3_value == PTR_W'(i))) robEntries_mmio[i] <= 1'b1;
 
       // realDestSize：首次入队置数，之后同一条指令的后续 uop 累加
       if (isFirstEnq[i])
@@ -2319,7 +2332,10 @@ module xs_Rob_core
   assign isVsetFlushPipe = rawInfo[0].commit_w & deqHasFlushed
                          & exceptionGen_io_state_bits_isVset;
   always_ff @(posedge clock) isVsetFlushPipeReg <= isVsetFlushPipe;
-  assign io_isVsetFlushPipe = isVsetFlushPipe;
+  // ★io.isVsetFlushPipe 在 golden 里没有端口★（下游没人用，firtool 把整条输出消了）。
+  //   照 Scala 写 `io_isVsetFlushPipe` 会变成一根**隐式 wire**（VCS 默认 nettype
+  //   是 wire，不报错），安静地悬空。isVsetFlushPipe 本身仍然要算 —— 它喂
+  //   isVsetFlushPipeReg，再进 io_toDecode_isResumeVType。
   assign io_toDecode_isResumeVType = vtypeBuffer_io_toDecode_isResumeVType
                                    | isVsetFlushPipeReg;
 
@@ -2504,7 +2520,7 @@ module xs_Rob_core
   // 走回：T redirect.valid，T+1 用 walkPtrVec 读条目，T+2 才真正走
   always_comb begin
     for (int i = 0; i < COMMIT_W; i++) begin
-      if (io_redirect_valid | state_next_REG)      shouldWalkVec[i] = 1'b0;
+      if (io_redirect_valid | REG_7)               shouldWalkVec[i] = 1'b0;
       else if (state == S_WALK)
         shouldWalkVec[i] = ptrLe(walkingPtrVec_flag[i], walkingPtrVec_value[i],
                                  lastWalkPtr_flag, lastWalkPtr_value)
@@ -2925,6 +2941,538 @@ module xs_Rob_core
   assign io_commits_info_7_debug_otherPdest_4           = commitInfo[7].debug_otherPdest_4;
   assign io_commits_info_7_debug_otherPdest_5           = commitInfo[7].debug_otherPdest_5;
   assign io_commits_info_7_debug_otherPdest_6           = commitInfo[7].debug_otherPdest_6;
+
+
+
+  // ==========================================================================
+  // §16 RAB（重命名缓冲）接口
+  // ==========================================================================
+  // io.rabCommits := RegNext(rab.io.commits) —— 整条打一拍，纯粹为了时序/面积。
+  always_ff @(posedge clock) begin
+    io_rabCommits_REG_isCommit <= rab_io_commits_isCommit;
+    io_rabCommits_REG_isWalk   <= rab_io_commits_isWalk;
+    io_rabCommits_REG_commitValid_0 <= rab_io_commits_commitValid_0;
+    io_rabCommits_REG_commitValid_1 <= rab_io_commits_commitValid_1;
+    io_rabCommits_REG_commitValid_2 <= rab_io_commits_commitValid_2;
+    io_rabCommits_REG_commitValid_3 <= rab_io_commits_commitValid_3;
+    io_rabCommits_REG_commitValid_4 <= rab_io_commits_commitValid_4;
+    io_rabCommits_REG_commitValid_5 <= rab_io_commits_commitValid_5;
+    io_rabCommits_REG_walkValid_0   <= rab_io_commits_walkValid_0;
+    io_rabCommits_REG_walkValid_1   <= rab_io_commits_walkValid_1;
+    io_rabCommits_REG_walkValid_2   <= rab_io_commits_walkValid_2;
+    io_rabCommits_REG_walkValid_3   <= rab_io_commits_walkValid_3;
+    io_rabCommits_REG_walkValid_4   <= rab_io_commits_walkValid_4;
+    io_rabCommits_REG_walkValid_5   <= rab_io_commits_walkValid_5;
+    for (int i = 0; i < RENAME_W; i++) begin
+      // 名字被 fm_pins.tcl 钉死（io_rabCommits_REG_info_<field>_reg[<i>]），不能改
+    end
+    io_rabCommits_REG_info_fpWen [0] <= rab_io_commits_info_0_fpWen;
+    io_rabCommits_REG_info_isMove[0] <= rab_io_commits_info_0_isMove;
+    io_rabCommits_REG_info_ldest [0] <= rab_io_commits_info_0_ldest;
+    io_rabCommits_REG_info_pdest [0] <= rab_io_commits_info_0_pdest;
+    io_rabCommits_REG_info_rfWen [0] <= rab_io_commits_info_0_rfWen;
+    io_rabCommits_REG_info_v0Wen [0] <= rab_io_commits_info_0_v0Wen;
+    io_rabCommits_REG_info_vecWen[0] <= rab_io_commits_info_0_vecWen;
+    io_rabCommits_REG_info_vlWen [0] <= rab_io_commits_info_0_vlWen;
+    io_rabCommits_REG_info_fpWen [1] <= rab_io_commits_info_1_fpWen;
+    io_rabCommits_REG_info_isMove[1] <= rab_io_commits_info_1_isMove;
+    io_rabCommits_REG_info_ldest [1] <= rab_io_commits_info_1_ldest;
+    io_rabCommits_REG_info_pdest [1] <= rab_io_commits_info_1_pdest;
+    io_rabCommits_REG_info_rfWen [1] <= rab_io_commits_info_1_rfWen;
+    io_rabCommits_REG_info_v0Wen [1] <= rab_io_commits_info_1_v0Wen;
+    io_rabCommits_REG_info_vecWen[1] <= rab_io_commits_info_1_vecWen;
+    io_rabCommits_REG_info_vlWen [1] <= rab_io_commits_info_1_vlWen;
+    io_rabCommits_REG_info_fpWen [2] <= rab_io_commits_info_2_fpWen;
+    io_rabCommits_REG_info_isMove[2] <= rab_io_commits_info_2_isMove;
+    io_rabCommits_REG_info_ldest [2] <= rab_io_commits_info_2_ldest;
+    io_rabCommits_REG_info_pdest [2] <= rab_io_commits_info_2_pdest;
+    io_rabCommits_REG_info_rfWen [2] <= rab_io_commits_info_2_rfWen;
+    io_rabCommits_REG_info_v0Wen [2] <= rab_io_commits_info_2_v0Wen;
+    io_rabCommits_REG_info_vecWen[2] <= rab_io_commits_info_2_vecWen;
+    io_rabCommits_REG_info_vlWen [2] <= rab_io_commits_info_2_vlWen;
+    io_rabCommits_REG_info_fpWen [3] <= rab_io_commits_info_3_fpWen;
+    io_rabCommits_REG_info_isMove[3] <= rab_io_commits_info_3_isMove;
+    io_rabCommits_REG_info_ldest [3] <= rab_io_commits_info_3_ldest;
+    io_rabCommits_REG_info_pdest [3] <= rab_io_commits_info_3_pdest;
+    io_rabCommits_REG_info_rfWen [3] <= rab_io_commits_info_3_rfWen;
+    io_rabCommits_REG_info_v0Wen [3] <= rab_io_commits_info_3_v0Wen;
+    io_rabCommits_REG_info_vecWen[3] <= rab_io_commits_info_3_vecWen;
+    io_rabCommits_REG_info_vlWen [3] <= rab_io_commits_info_3_vlWen;
+    io_rabCommits_REG_info_fpWen [4] <= rab_io_commits_info_4_fpWen;
+    io_rabCommits_REG_info_isMove[4] <= rab_io_commits_info_4_isMove;
+    io_rabCommits_REG_info_ldest [4] <= rab_io_commits_info_4_ldest;
+    io_rabCommits_REG_info_pdest [4] <= rab_io_commits_info_4_pdest;
+    io_rabCommits_REG_info_rfWen [4] <= rab_io_commits_info_4_rfWen;
+    io_rabCommits_REG_info_v0Wen [4] <= rab_io_commits_info_4_v0Wen;
+    io_rabCommits_REG_info_vecWen[4] <= rab_io_commits_info_4_vecWen;
+    io_rabCommits_REG_info_vlWen [4] <= rab_io_commits_info_4_vlWen;
+    io_rabCommits_REG_info_fpWen [5] <= rab_io_commits_info_5_fpWen;
+    io_rabCommits_REG_info_isMove[5] <= rab_io_commits_info_5_isMove;
+    io_rabCommits_REG_info_ldest [5] <= rab_io_commits_info_5_ldest;
+    io_rabCommits_REG_info_pdest [5] <= rab_io_commits_info_5_pdest;
+    io_rabCommits_REG_info_rfWen [5] <= rab_io_commits_info_5_rfWen;
+    io_rabCommits_REG_info_v0Wen [5] <= rab_io_commits_info_5_v0Wen;
+    io_rabCommits_REG_info_vecWen[5] <= rab_io_commits_info_5_vecWen;
+    io_rabCommits_REG_info_vlWen [5] <= rab_io_commits_info_5_vlWen;
+  end
+
+  assign io_rabCommits_isCommit = io_rabCommits_REG_isCommit;
+  assign io_rabCommits_isWalk   = io_rabCommits_REG_isWalk;
+  assign io_rabCommits_commitValid_0 = io_rabCommits_REG_commitValid_0;
+  assign io_rabCommits_commitValid_1 = io_rabCommits_REG_commitValid_1;
+  assign io_rabCommits_commitValid_2 = io_rabCommits_REG_commitValid_2;
+  assign io_rabCommits_commitValid_3 = io_rabCommits_REG_commitValid_3;
+  assign io_rabCommits_commitValid_4 = io_rabCommits_REG_commitValid_4;
+  assign io_rabCommits_commitValid_5 = io_rabCommits_REG_commitValid_5;
+  assign io_rabCommits_walkValid_0   = io_rabCommits_REG_walkValid_0;
+  assign io_rabCommits_walkValid_1   = io_rabCommits_REG_walkValid_1;
+  assign io_rabCommits_walkValid_2   = io_rabCommits_REG_walkValid_2;
+  assign io_rabCommits_walkValid_3   = io_rabCommits_REG_walkValid_3;
+  assign io_rabCommits_walkValid_4   = io_rabCommits_REG_walkValid_4;
+  assign io_rabCommits_walkValid_5   = io_rabCommits_REG_walkValid_5;
+  assign io_rabCommits_info_0_fpWen  = io_rabCommits_REG_info_fpWen[0];
+  assign io_rabCommits_info_0_isMove = io_rabCommits_REG_info_isMove[0];
+  assign io_rabCommits_info_0_ldest  = io_rabCommits_REG_info_ldest[0];
+  assign io_rabCommits_info_0_pdest  = io_rabCommits_REG_info_pdest[0];
+  assign io_rabCommits_info_0_rfWen  = io_rabCommits_REG_info_rfWen[0];
+  assign io_rabCommits_info_0_v0Wen  = io_rabCommits_REG_info_v0Wen[0];
+  assign io_rabCommits_info_0_vecWen = io_rabCommits_REG_info_vecWen[0];
+  assign io_rabCommits_info_0_vlWen  = io_rabCommits_REG_info_vlWen[0];
+  assign io_rabCommits_info_1_fpWen  = io_rabCommits_REG_info_fpWen[1];
+  assign io_rabCommits_info_1_isMove = io_rabCommits_REG_info_isMove[1];
+  assign io_rabCommits_info_1_ldest  = io_rabCommits_REG_info_ldest[1];
+  assign io_rabCommits_info_1_pdest  = io_rabCommits_REG_info_pdest[1];
+  assign io_rabCommits_info_1_rfWen  = io_rabCommits_REG_info_rfWen[1];
+  assign io_rabCommits_info_1_v0Wen  = io_rabCommits_REG_info_v0Wen[1];
+  assign io_rabCommits_info_1_vecWen = io_rabCommits_REG_info_vecWen[1];
+  assign io_rabCommits_info_1_vlWen  = io_rabCommits_REG_info_vlWen[1];
+  assign io_rabCommits_info_2_fpWen  = io_rabCommits_REG_info_fpWen[2];
+  assign io_rabCommits_info_2_isMove = io_rabCommits_REG_info_isMove[2];
+  assign io_rabCommits_info_2_ldest  = io_rabCommits_REG_info_ldest[2];
+  assign io_rabCommits_info_2_pdest  = io_rabCommits_REG_info_pdest[2];
+  assign io_rabCommits_info_2_rfWen  = io_rabCommits_REG_info_rfWen[2];
+  assign io_rabCommits_info_2_v0Wen  = io_rabCommits_REG_info_v0Wen[2];
+  assign io_rabCommits_info_2_vecWen = io_rabCommits_REG_info_vecWen[2];
+  assign io_rabCommits_info_2_vlWen  = io_rabCommits_REG_info_vlWen[2];
+  assign io_rabCommits_info_3_fpWen  = io_rabCommits_REG_info_fpWen[3];
+  assign io_rabCommits_info_3_isMove = io_rabCommits_REG_info_isMove[3];
+  assign io_rabCommits_info_3_ldest  = io_rabCommits_REG_info_ldest[3];
+  assign io_rabCommits_info_3_pdest  = io_rabCommits_REG_info_pdest[3];
+  assign io_rabCommits_info_3_rfWen  = io_rabCommits_REG_info_rfWen[3];
+  assign io_rabCommits_info_3_v0Wen  = io_rabCommits_REG_info_v0Wen[3];
+  assign io_rabCommits_info_3_vecWen = io_rabCommits_REG_info_vecWen[3];
+  assign io_rabCommits_info_3_vlWen  = io_rabCommits_REG_info_vlWen[3];
+  assign io_rabCommits_info_4_fpWen  = io_rabCommits_REG_info_fpWen[4];
+  assign io_rabCommits_info_4_isMove = io_rabCommits_REG_info_isMove[4];
+  assign io_rabCommits_info_4_ldest  = io_rabCommits_REG_info_ldest[4];
+  assign io_rabCommits_info_4_pdest  = io_rabCommits_REG_info_pdest[4];
+  assign io_rabCommits_info_4_rfWen  = io_rabCommits_REG_info_rfWen[4];
+  assign io_rabCommits_info_4_v0Wen  = io_rabCommits_REG_info_v0Wen[4];
+  assign io_rabCommits_info_4_vecWen = io_rabCommits_REG_info_vecWen[4];
+  assign io_rabCommits_info_4_vlWen  = io_rabCommits_REG_info_vlWen[4];
+  assign io_rabCommits_info_5_fpWen  = io_rabCommits_REG_info_fpWen[5];
+  assign io_rabCommits_info_5_isMove = io_rabCommits_REG_info_isMove[5];
+  assign io_rabCommits_info_5_ldest  = io_rabCommits_REG_info_ldest[5];
+  assign io_rabCommits_info_5_pdest  = io_rabCommits_REG_info_pdest[5];
+  assign io_rabCommits_info_5_rfWen  = io_rabCommits_REG_info_rfWen[5];
+  assign io_rabCommits_info_5_v0Wen  = io_rabCommits_REG_info_v0Wen[5];
+  assign io_rabCommits_info_5_vecWen = io_rabCommits_REG_info_vecWen[5];
+  assign io_rabCommits_info_5_vlWen  = io_rabCommits_REG_info_vlWen[5];
+
+  // ---- 送给 rab / vtypeBuffer 的提交/走回规模 ----
+  // realDestSize 是"这条 RobEntry 里有几个要写寄存器的 uop"；RAB 要按这个数出队。
+  // ★PriorityMuxDefault(cond.reverse, seq.reverse, 0)★ —— 从**高位往低位**找第一个
+  // 满足的，也就是取"最后一个提交/走回有效"的那个前缀和；一个都不满足取 0。
+  logic [UOPNUM_W-1:0] realDestSizeSeq [COMMIT_W];
+  logic [UOPNUM_W-1:0] walkDestSizeSeq [COMMIT_W];
+  logic [9:0]          commitSizeSumSeq[COMMIT_W];
+  logic [9:0]          walkSizeSumSeq  [COMMIT_W];
+  logic                commitSizeSumCond[COMMIT_W];
+  logic                walkSizeSumCond  [COMMIT_W];
+  logic [9:0]          commitSizeSum, walkSizeSum;
+
+  always_comb begin
+    for (int b = 0; b < COMMIT_W; b++) begin
+      realDestSizeSeq[b] = hasCommittedVec[b]   ? {UOPNUM_W{1'b0}}
+                                                : robDeqGroup_realDestSize[b];
+      walkDestSizeSeq[b] = donotNeedWalkVec[b]  ? {UOPNUM_W{1'b0}}
+                                                : robDeqGroup_realDestSize[b];
+    end
+    for (int i = 0; i < COMMIT_W; i++) begin
+      commitSizeSumSeq[i] = 10'h0;
+      walkSizeSumSeq[i]   = 10'h0;
+      for (int b = 0; b <= i; b++) begin
+        commitSizeSumSeq[i] = commitSizeSumSeq[i] + 10'(realDestSizeSeq[b]);
+        walkSizeSumSeq[i]   = walkSizeSumSeq[i]   + 10'(walkDestSizeSeq[b]);
+      end
+      commitSizeSumCond[i] = (commitValidThisLine[i] | hasCommittedVec[i])
+                           & io_commits_isCommit;
+      walkSizeSumCond[i]   = (shouldWalkVec[i] | donotNeedWalkVec[i])
+                           & io_commits_isWalk;
+    end
+    commitSizeSum = 10'h0;
+    walkSizeSum   = 10'h0;
+    for (int i = 0; i < COMMIT_W; i++) begin
+      if (commitSizeSumCond[i]) commitSizeSum = commitSizeSumSeq[i];
+      if (walkSizeSumCond[i])   walkSizeSum   = walkSizeSumSeq[i];
+    end
+  end
+
+  assign rab_io_fromRob_commitSize = deqVlsExceptionNeedCommit
+      ? {1'b0, deqVlsExceptionCommitSize} : commitSizeSum[PTR_W-1:0];
+  assign rab_io_fromRob_walkSize   = walkSizeSum[PTR_W-1:0];
+
+  // vtypeBuffer 只数 vset 的条数
+  logic [3:0] commitVTypeCnt, walkVTypeCnt;
+  always_comb begin
+    commitVTypeCnt = 4'h0;
+    walkVTypeCnt   = 4'h0;
+    for (int i = 0; i < COMMIT_W; i++) begin
+      commitVTypeCnt = commitVTypeCnt
+        + 4'(io_commits_isCommit & commitValidOut[i] & commitInfo[i].isVset);
+      walkVTypeCnt = walkVTypeCnt
+        + 4'(io_commits_isWalk & shouldWalkVec[i] & walkInfo[i].isVset);
+    end
+  end
+  assign vtypeBuffer_io_fromRob_commitSize = {2'h0, commitVTypeCnt};
+  assign vtypeBuffer_io_fromRob_walkSize   = {2'h0, walkVTypeCnt};
+
+  // 快照入队：有一路带 snapshot 且本拍能进队
+  assign snptEnq = io_enq_canAccept & (
+        (enqValid[0] & io_enq_req_0_bits_snapshot)
+      | (enqValid[1] & io_enq_req_1_bits_snapshot)
+      | (enqValid[2] & io_enq_req_2_bits_snapshot)
+      | (enqValid[3] & io_enq_req_3_bits_snapshot)
+      | (enqValid[4] & io_enq_req_4_bits_snapshot)
+      | (enqValid[5] & io_enq_req_5_bits_snapshot));
+
+  // RAB 要知道"向量 load 出异常了"，好把那几对寄存器一起提交掉
+  always_ff @(posedge clock)
+    rab_io_fromRob_vecLoadExcp_valid_REG <= exceptionGen_io_state_valid
+                                          & exceptionGen_io_state_bits_isVecLoad;
+  assign rab_io_fromRob_vecLoadExcp_valid_REGOut = rab_io_fromRob_vecLoadExcp_valid_REG;
+
+  assign enqPtrGenModule_io_allowEnqueue =
+      allowEnqueue & rab_io_canEnq & ~io_fromVecExcpMod_busy;
+
+  // 提交卡住计数器的输入：这一拍一条都没提交，且队头不是 mmio
+  // （mmio 本来就慢，不算卡住）。wfiResume 在本配置下为真，`wfiResume || !hasWFI`
+  // 被常数折掉了 —— golden 里这一项整个不见了，不是漏写。
+  logic deqIsMmio;
+  always_comb begin
+    deqIsMmio = 1'b0;
+    for (int i = 0; i < ROB_SIZE; i++)
+      if (deqPtrValue[0] == PTR_W'(i))
+        deqIsMmio = robEntries_valid[i] & robEntries_mmio[i];
+  end
+  assign commitStuckCounter_io_stuck =
+      (~(commitValidOut[0] | commitValidOut[1] | commitValidOut[2] | commitValidOut[3]
+       | commitValidOut[4] | commitValidOut[5] | commitValidOut[6] | commitValidOut[7])
+       | ~io_commits_isCommit) & ~deqIsMmio;
+  assign io_error_0 = commitStuckCounter_io_overflow;
+
+
+
+  // ==========================================================================
+  // §17 送给 exceptionGen 的三类折算量
+  // ==========================================================================
+  // ★io_writeback_<i> 各自只有一部分 exceptionVec 位★（7 号只有 7 位、
+  //   13/14 号只有 1 位、15/16/17 号一位没有、18..24 号才是全 24 位）。
+  //   照 24 位写会引用到不存在的端口。索引集见 PORT 段。
+  // ★exceptionGen 的 io_wb 下标 != io_writeback 下标★：
+  //   io_wb_k 对应 io_writeback_{7,13,14,15,16,17,18,19,20,21,22,23,24}[k]，
+  //   一共 13 路。其中 io_wb_1/2 的 hasException 只有一位，golden 直接把那根
+  //   端口连过去（不经过核）；io_wb_3/4/5 那三路一位异常都没有，也不经过核。
+  //   所以核只需要产生下面这 8 根 —— 写成 0..9 会凭空造出
+  //   exceptionGen_io_wb_1..5 这种**隐式线**（VCS 默认 wire，不报错），
+  //   同时漏掉 io_wb_10/11/12。
+  assign exceptionGen_io_wb_0_bits_hasException =   // io_writeback_7
+      |{io_writeback_7_bits_exceptionVec_22, io_writeback_7_bits_exceptionVec_11, io_writeback_7_bits_exceptionVec_10, io_writeback_7_bits_exceptionVec_9, io_writeback_7_bits_exceptionVec_8, io_writeback_7_bits_exceptionVec_3, io_writeback_7_bits_exceptionVec_2};
+  assign exceptionGen_io_wb_6_bits_hasException =   // io_writeback_18
+      |{io_writeback_18_bits_exceptionVec_23, io_writeback_18_bits_exceptionVec_22, io_writeback_18_bits_exceptionVec_21, io_writeback_18_bits_exceptionVec_20, io_writeback_18_bits_exceptionVec_19, io_writeback_18_bits_exceptionVec_18, io_writeback_18_bits_exceptionVec_17, io_writeback_18_bits_exceptionVec_16, io_writeback_18_bits_exceptionVec_15, io_writeback_18_bits_exceptionVec_14, io_writeback_18_bits_exceptionVec_13, io_writeback_18_bits_exceptionVec_12, io_writeback_18_bits_exceptionVec_11, io_writeback_18_bits_exceptionVec_10, io_writeback_18_bits_exceptionVec_9, io_writeback_18_bits_exceptionVec_8, io_writeback_18_bits_exceptionVec_7, io_writeback_18_bits_exceptionVec_6, io_writeback_18_bits_exceptionVec_5, io_writeback_18_bits_exceptionVec_4, io_writeback_18_bits_exceptionVec_3, io_writeback_18_bits_exceptionVec_2, io_writeback_18_bits_exceptionVec_1, io_writeback_18_bits_exceptionVec_0};
+  assign exceptionGen_io_wb_7_bits_hasException =   // io_writeback_19
+      |{io_writeback_19_bits_exceptionVec_23, io_writeback_19_bits_exceptionVec_22, io_writeback_19_bits_exceptionVec_21, io_writeback_19_bits_exceptionVec_20, io_writeback_19_bits_exceptionVec_19, io_writeback_19_bits_exceptionVec_18, io_writeback_19_bits_exceptionVec_17, io_writeback_19_bits_exceptionVec_16, io_writeback_19_bits_exceptionVec_15, io_writeback_19_bits_exceptionVec_14, io_writeback_19_bits_exceptionVec_13, io_writeback_19_bits_exceptionVec_12, io_writeback_19_bits_exceptionVec_11, io_writeback_19_bits_exceptionVec_10, io_writeback_19_bits_exceptionVec_9, io_writeback_19_bits_exceptionVec_8, io_writeback_19_bits_exceptionVec_7, io_writeback_19_bits_exceptionVec_6, io_writeback_19_bits_exceptionVec_5, io_writeback_19_bits_exceptionVec_4, io_writeback_19_bits_exceptionVec_3, io_writeback_19_bits_exceptionVec_2, io_writeback_19_bits_exceptionVec_1, io_writeback_19_bits_exceptionVec_0};
+  assign exceptionGen_io_wb_8_bits_hasException =   // io_writeback_20
+      |{io_writeback_20_bits_exceptionVec_23, io_writeback_20_bits_exceptionVec_22, io_writeback_20_bits_exceptionVec_21, io_writeback_20_bits_exceptionVec_20, io_writeback_20_bits_exceptionVec_19, io_writeback_20_bits_exceptionVec_18, io_writeback_20_bits_exceptionVec_17, io_writeback_20_bits_exceptionVec_16, io_writeback_20_bits_exceptionVec_15, io_writeback_20_bits_exceptionVec_14, io_writeback_20_bits_exceptionVec_13, io_writeback_20_bits_exceptionVec_12, io_writeback_20_bits_exceptionVec_11, io_writeback_20_bits_exceptionVec_10, io_writeback_20_bits_exceptionVec_9, io_writeback_20_bits_exceptionVec_8, io_writeback_20_bits_exceptionVec_7, io_writeback_20_bits_exceptionVec_6, io_writeback_20_bits_exceptionVec_5, io_writeback_20_bits_exceptionVec_4, io_writeback_20_bits_exceptionVec_3, io_writeback_20_bits_exceptionVec_2, io_writeback_20_bits_exceptionVec_1, io_writeback_20_bits_exceptionVec_0};
+  assign exceptionGen_io_wb_9_bits_hasException =   // io_writeback_21
+      |{io_writeback_21_bits_exceptionVec_23, io_writeback_21_bits_exceptionVec_22, io_writeback_21_bits_exceptionVec_21, io_writeback_21_bits_exceptionVec_20, io_writeback_21_bits_exceptionVec_19, io_writeback_21_bits_exceptionVec_18, io_writeback_21_bits_exceptionVec_17, io_writeback_21_bits_exceptionVec_16, io_writeback_21_bits_exceptionVec_15, io_writeback_21_bits_exceptionVec_14, io_writeback_21_bits_exceptionVec_13, io_writeback_21_bits_exceptionVec_12, io_writeback_21_bits_exceptionVec_11, io_writeback_21_bits_exceptionVec_10, io_writeback_21_bits_exceptionVec_9, io_writeback_21_bits_exceptionVec_8, io_writeback_21_bits_exceptionVec_7, io_writeback_21_bits_exceptionVec_6, io_writeback_21_bits_exceptionVec_5, io_writeback_21_bits_exceptionVec_4, io_writeback_21_bits_exceptionVec_3, io_writeback_21_bits_exceptionVec_2, io_writeback_21_bits_exceptionVec_1, io_writeback_21_bits_exceptionVec_0};
+  assign exceptionGen_io_wb_10_bits_hasException =   // io_writeback_22
+      |{io_writeback_22_bits_exceptionVec_23, io_writeback_22_bits_exceptionVec_22, io_writeback_22_bits_exceptionVec_21, io_writeback_22_bits_exceptionVec_20, io_writeback_22_bits_exceptionVec_19, io_writeback_22_bits_exceptionVec_18, io_writeback_22_bits_exceptionVec_17, io_writeback_22_bits_exceptionVec_16, io_writeback_22_bits_exceptionVec_15, io_writeback_22_bits_exceptionVec_14, io_writeback_22_bits_exceptionVec_13, io_writeback_22_bits_exceptionVec_12, io_writeback_22_bits_exceptionVec_11, io_writeback_22_bits_exceptionVec_10, io_writeback_22_bits_exceptionVec_9, io_writeback_22_bits_exceptionVec_8, io_writeback_22_bits_exceptionVec_7, io_writeback_22_bits_exceptionVec_6, io_writeback_22_bits_exceptionVec_5, io_writeback_22_bits_exceptionVec_4, io_writeback_22_bits_exceptionVec_3, io_writeback_22_bits_exceptionVec_2, io_writeback_22_bits_exceptionVec_1, io_writeback_22_bits_exceptionVec_0};
+  assign exceptionGen_io_wb_11_bits_hasException =   // io_writeback_23
+      |{io_writeback_23_bits_exceptionVec_23, io_writeback_23_bits_exceptionVec_22, io_writeback_23_bits_exceptionVec_21, io_writeback_23_bits_exceptionVec_20, io_writeback_23_bits_exceptionVec_19, io_writeback_23_bits_exceptionVec_18, io_writeback_23_bits_exceptionVec_17, io_writeback_23_bits_exceptionVec_16, io_writeback_23_bits_exceptionVec_15, io_writeback_23_bits_exceptionVec_14, io_writeback_23_bits_exceptionVec_13, io_writeback_23_bits_exceptionVec_12, io_writeback_23_bits_exceptionVec_11, io_writeback_23_bits_exceptionVec_10, io_writeback_23_bits_exceptionVec_9, io_writeback_23_bits_exceptionVec_8, io_writeback_23_bits_exceptionVec_7, io_writeback_23_bits_exceptionVec_6, io_writeback_23_bits_exceptionVec_5, io_writeback_23_bits_exceptionVec_4, io_writeback_23_bits_exceptionVec_3, io_writeback_23_bits_exceptionVec_2, io_writeback_23_bits_exceptionVec_1, io_writeback_23_bits_exceptionVec_0};
+  assign exceptionGen_io_wb_12_bits_hasException =   // io_writeback_24
+      |{io_writeback_24_bits_exceptionVec_23, io_writeback_24_bits_exceptionVec_22, io_writeback_24_bits_exceptionVec_21, io_writeback_24_bits_exceptionVec_20, io_writeback_24_bits_exceptionVec_19, io_writeback_24_bits_exceptionVec_18, io_writeback_24_bits_exceptionVec_17, io_writeback_24_bits_exceptionVec_16, io_writeback_24_bits_exceptionVec_15, io_writeback_24_bits_exceptionVec_14, io_writeback_24_bits_exceptionVec_13, io_writeback_24_bits_exceptionVec_12, io_writeback_24_bits_exceptionVec_11, io_writeback_24_bits_exceptionVec_10, io_writeback_24_bits_exceptionVec_9, io_writeback_24_bits_exceptionVec_8, io_writeback_24_bits_exceptionVec_7, io_writeback_24_bits_exceptionVec_6, io_writeback_24_bits_exceptionVec_5, io_writeback_24_bits_exceptionVec_4, io_writeback_24_bits_exceptionVec_3, io_writeback_24_bits_exceptionVec_2, io_writeback_24_bits_exceptionVec_1, io_writeback_24_bits_exceptionVec_0};
+
+  // 11/12 号（= io_writeback_23/24，向量访存）还要给 vstart：
+  // vstartEn = 有异常 或 触发器进 debug mode
+  assign exceptionGen_io_wb_11_bits_vstartEn =
+      exceptionGen_io_wb_11_bits_hasException | (io_writeback_23_bits_trigger == TA_DMODE);
+  assign exceptionGen_io_wb_12_bits_vstartEn =
+      exceptionGen_io_wb_12_bits_hasException | (io_writeback_24_bits_trigger == TA_DMODE);
+  assign exceptionGen_io_wb_11_bits_vstart = {57'h0, io_writeback_23_bits_vls_vpu_vstart};
+  assign exceptionGen_io_wb_12_bits_vstart = {57'h0, io_writeback_24_bits_vls_vpu_vstart};
+
+  // ==========================================================================
+  // §18 WFI
+  // ==========================================================================
+  // 遇到 wfi 指令就挂起提交，等 CSR 说可以恢复、或者被冲刷、或者 2^20 拍超时。
+  logic enqIsWFI [RENAME_W];
+  logic wfi_timeout, wfiSafe, setWFI, clearWFI;
+
+  always_comb begin
+    // isWFI = fuType==csr && fuOpType==CSROpType.wfi；再排除本身带前端异常
+    // 和触发器要求进 debug mode 的情况（那两种要走异常，不是挂起）。
+    enqIsWFI[0] = (io_enq_req_0_bits_fuType == (FUTYPE_W'(1) << FU_CSR))
+                & (io_enq_req_0_bits_fuOpType == 9'h20)
+                & ~(|{io_enq_req_0_bits_exceptionVec_22, io_enq_req_0_bits_exceptionVec_20,
+                      io_enq_req_0_bits_exceptionVec_12, io_enq_req_0_bits_exceptionVec_3,
+                      io_enq_req_0_bits_exceptionVec_2,  io_enq_req_0_bits_exceptionVec_1,
+                      io_enq_req_0_bits_exceptionVec_0})
+                & (io_enq_req_0_bits_trigger != TA_DMODE);
+    enqIsWFI[1] = (io_enq_req_1_bits_fuType == (FUTYPE_W'(1) << FU_CSR))
+                & (io_enq_req_1_bits_fuOpType == 9'h20)
+                & ~(|{io_enq_req_1_bits_exceptionVec_22, io_enq_req_1_bits_exceptionVec_20,
+                      io_enq_req_1_bits_exceptionVec_12, io_enq_req_1_bits_exceptionVec_3,
+                      io_enq_req_1_bits_exceptionVec_2,  io_enq_req_1_bits_exceptionVec_1,
+                      io_enq_req_1_bits_exceptionVec_0})
+                & (io_enq_req_1_bits_trigger != TA_DMODE);
+    enqIsWFI[2] = (io_enq_req_2_bits_fuType == (FUTYPE_W'(1) << FU_CSR))
+                & (io_enq_req_2_bits_fuOpType == 9'h20)
+                & ~(|{io_enq_req_2_bits_exceptionVec_22, io_enq_req_2_bits_exceptionVec_20,
+                      io_enq_req_2_bits_exceptionVec_12, io_enq_req_2_bits_exceptionVec_3,
+                      io_enq_req_2_bits_exceptionVec_2,  io_enq_req_2_bits_exceptionVec_1,
+                      io_enq_req_2_bits_exceptionVec_0})
+                & (io_enq_req_2_bits_trigger != TA_DMODE);
+    enqIsWFI[3] = (io_enq_req_3_bits_fuType == (FUTYPE_W'(1) << FU_CSR))
+                & (io_enq_req_3_bits_fuOpType == 9'h20)
+                & ~(|{io_enq_req_3_bits_exceptionVec_22, io_enq_req_3_bits_exceptionVec_20,
+                      io_enq_req_3_bits_exceptionVec_12, io_enq_req_3_bits_exceptionVec_3,
+                      io_enq_req_3_bits_exceptionVec_2,  io_enq_req_3_bits_exceptionVec_1,
+                      io_enq_req_3_bits_exceptionVec_0})
+                & (io_enq_req_3_bits_trigger != TA_DMODE);
+    enqIsWFI[4] = (io_enq_req_4_bits_fuType == (FUTYPE_W'(1) << FU_CSR))
+                & (io_enq_req_4_bits_fuOpType == 9'h20)
+                & ~(|{io_enq_req_4_bits_exceptionVec_22, io_enq_req_4_bits_exceptionVec_20,
+                      io_enq_req_4_bits_exceptionVec_12, io_enq_req_4_bits_exceptionVec_3,
+                      io_enq_req_4_bits_exceptionVec_2,  io_enq_req_4_bits_exceptionVec_1,
+                      io_enq_req_4_bits_exceptionVec_0})
+                & (io_enq_req_4_bits_trigger != TA_DMODE);
+    enqIsWFI[5] = (io_enq_req_5_bits_fuType == (FUTYPE_W'(1) << FU_CSR))
+                & (io_enq_req_5_bits_fuOpType == 9'h20)
+                & ~(|{io_enq_req_5_bits_exceptionVec_22, io_enq_req_5_bits_exceptionVec_20,
+                      io_enq_req_5_bits_exceptionVec_12, io_enq_req_5_bits_exceptionVec_3,
+                      io_enq_req_5_bits_exceptionVec_2,  io_enq_req_5_bits_exceptionVec_1,
+                      io_enq_req_5_bits_exceptionVec_0})
+                & (io_enq_req_5_bits_trigger != TA_DMODE);
+    setWFI = 1'b0;
+    for (int j = 0; j < RENAME_W; j++) setWFI = setWFI | (canEnqueue[j] & enqIsWFI[j]);
+  end
+
+  assign wfi_timeout = &wfi_cycles;
+  assign wfiSafe     = io_wfi_safeFromMem & io_wfi_safeFromFrontend;
+  // REG_1/REG_2 = io_csr_wfiEvent 打两拍
+  assign clearWFI   = REG_2 | io_flushOut_valid | wfi_timeout;
+
+  // 优先级（Scala 里后写的赢）：!wfi_enable > 入队置位 > 恢复/超时清零 > 保持
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) hasWFI <= 1'b0;
+    else       hasWFI <= io_wfi_enable & (setWFI | (~clearWFI & hasWFI));
+  end
+  always_ff @(posedge clock) begin
+    REG   <= hasWFI;            // RegNext(hasWFI)，只用来判"刚离开 WFI"
+    REG_1 <= io_csr_wfiEvent;
+    REG_2 <= REG_1;
+  end
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset)              wfi_cycles <= 20'h0;
+    else if (hasWFI)        wfi_cycles <= 20'(wfi_cycles + 20'h1);
+    else if (~hasWFI & REG) wfi_cycles <= 20'h0;
+  end
+
+  assign io_wfi_wfiReq = hasWFI;
+  assign io_cpu_halt   = hasWFI & wfiSafe;
+
+
+  // ---- fflags / vxsat 的读口 ----
+  // ★这两个读的是**条目存储**（robEntries）按 deqPtr 直接读，不是 robDeqGroup★：
+  //   robDeqGroup 是打过一拍的，而 CSR 要的是这一拍提交那条的值。
+  //   下标是 8 位 / 深度 160 —— 正是 FMR_ELAB-147 的形状，所以走循环+比较。
+  logic [FFLAGS_W-1:0] fflagsDataRead [COMMIT_W];
+  logic                vxsatDataRead  [COMMIT_W];
+  always_comb begin
+    for (int i = 0; i < COMMIT_W; i++) begin
+      fflagsDataRead[i] = {FFLAGS_W{1'b0}};
+      vxsatDataRead[i]  = 1'b0;
+      for (int k = 0; k < ROB_SIZE; k++)
+        if (deqPtrValue[i] == PTR_W'(k)) begin
+          fflagsDataRead[i] = robEntries_fflags[k];
+          vxsatDataRead[i]  = robEntries_vxsat[k];
+        end
+    end
+  end
+
+  // ==========================================================================
+  // §19 CSR / LSQ / 队头杂项
+  // ==========================================================================
+  logic                fflagsValid, vxsatValid, dirty_fs, dirty_vs, resetVstart;
+  logic [FFLAGS_W-1:0] fflagsBits;
+  logic                vxsatBits;
+
+  always_comb begin
+    fflagsValid = 1'b0;
+    fflagsBits  = {FFLAGS_W{1'b0}};
+    vxsatBits   = 1'b0;
+    dirty_fs    = 1'b0;
+    dirty_vs    = 1'b0;
+    for (int i = 0; i < COMMIT_W; i++) begin
+      fflagsValid = fflagsValid | (commitValidOut[i] & commitInfo[i].wflags);
+      // fflagsDataRead(i) 取的是**条目存储**里那一条的 fflags（按 deqPtr 直接读），
+      // 不是 robDeqGroup 里那一份 —— 两者差一拍。
+      fflagsBits  = fflagsBits
+                  | ({FFLAGS_W{commitValidOut[i] & commitInfo[i].wflags}}
+                     & fflagsDataRead[i]);
+      vxsatBits   = vxsatBits | (commitValidOut[i] & vxsatDataRead[i]);
+      dirty_fs    = dirty_fs  | (commitValidOut[i] & commitInfo[i].dirtyFs);
+      dirty_vs    = dirty_vs  | (commitValidOut[i] & commitInfo[i].dirtyVs);
+    end
+    fflagsValid = fflagsValid & io_commits_isCommit;
+    dirty_fs    = dirty_fs    & io_commits_isCommit;
+    dirty_vs    = dirty_vs    & io_commits_isCommit;
+    vxsatValid  = vxsatBits   & io_commits_isCommit;
+  end
+
+  assign resetVstart = dirty_vs & ~io_vstartIsZero;
+
+  // fflags / vxsat 用的是 RegNextWithEnable：valid 打一拍，bits 只在 valid 时更新
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) begin
+      io_csr_fflags_next_valid_last_REG <= 1'b0;
+      io_csr_vxsat_next_valid_last_REG  <= 1'b0;
+      io_csr_dirty_fs_last_REG          <= 1'b0;
+      io_csr_dirty_vs_last_REG          <= 1'b0;
+    end else begin
+      io_csr_fflags_next_valid_last_REG <= fflagsValid;
+      io_csr_vxsat_next_valid_last_REG  <= vxsatValid;
+      io_csr_dirty_fs_last_REG          <= dirty_fs;
+      io_csr_dirty_vs_last_REG          <= dirty_vs;
+    end
+  end
+  always_ff @(posedge clock) begin
+    if (fflagsValid) io_csr_fflags_next_bits_r <= fflagsBits;
+    if (vxsatValid)  io_csr_vxsat_next_bits_r  <= vxsatBits;
+    io_csr_vstart_valid_REG <= (exceptionHappen & deqHasException)
+                             ? exceptionGen_io_state_bits_vstartEn : resetVstart;
+    io_csr_vstart_bits_REG  <= (exceptionHappen & deqHasException)
+                             ? exceptionGen_io_state_bits_vstart : 64'h0;
+  end
+
+  assign io_csr_fflags_valid = io_csr_fflags_next_valid_last_REG;
+  assign io_csr_fflags_bits  = io_csr_fflags_next_bits_r;
+  assign io_csr_vxsat_valid  = io_csr_vxsat_next_valid_last_REG;
+  assign io_csr_vxsat_bits   = io_csr_vxsat_next_bits_r;
+  assign io_csr_dirty_fs     = io_csr_dirty_fs_last_REG;
+  assign io_csr_dirty_vs     = io_csr_dirty_vs_last_REG;
+  assign io_csr_vstart_valid = io_csr_vstart_valid_REG;
+  assign io_csr_vstart_bits  = io_csr_vstart_bits_REG;
+
+  // ---- LSQ ----
+  // ★lcommit / pendingld / pendingVst / commit / pendingPtrNext 在 golden 里没有端口★
+  //   （下游没人用，firtool 把整条输出消了）。只剩下面这五根。
+  logic [3:0] stCommitCnt;
+  always_comb begin
+    stCommitCnt = 4'h0;
+    for (int i = 0; i < COMMIT_W; i++) begin
+      automatic logic isStore;
+      automatic logic entryVls;
+      entryVls = 1'b0;
+      for (int k = 0; k < ROB_SIZE; k++)
+        if (deqPtrValue[i] == PTR_W'(k)) entryVls = robEntries_vls[k];
+      isStore = commitValidOut[i] & (commitInfo[i].commitType == CT_STORE) & ~entryVls;
+      stCommitCnt = stCommitCnt + 4'(isStore);
+    end
+  end
+
+  always_ff @(posedge clock) begin
+    io_lsq_scommit_REG      <= io_commits_isCommit ? stCommitCnt : 4'h0;
+    io_lsq_pendingMMIOld_REG <= io_commits_isCommit
+                              & (commitInfo[0].commitType == CT_LOAD)
+                              & deqPtrEntryValid & rawInfo[0].mmio;
+    io_lsq_pendingst_REG    <= io_commits_isCommit
+                             & (commitInfo[0].commitType == CT_STORE) & deqPtrEntryValid;
+    io_lsq_pendingPtr_REG_flag  <= deqPtrFlag[0];
+    io_lsq_pendingPtr_REG_value <= deqPtrValue[0];
+  end
+  assign io_lsq_scommit        = io_lsq_scommit_REG;
+  assign io_lsq_pendingMMIOld  = io_lsq_pendingMMIOld_REG;
+  assign io_lsq_pendingst      = io_lsq_pendingst_REG;
+  assign io_lsq_pendingPtr_flag  = io_lsq_pendingPtr_REG_flag;
+  assign io_lsq_pendingPtr_value = io_lsq_pendingPtr_REG_value;
+
+  // ---- 队头指针与"队头没就绪" ----
+  assign io_robDeqPtr_flag  = deqPtrFlag[0];
+  assign io_robDeqPtr_value = deqPtrValue[0];
+  // ★按 bank 低位直接选 robDeqGroup★，不是取 rawInfo[0]（两者同值，但 golden
+  //   在这里生成的是独立的一份选择逻辑）。
+  logic headCommitV, headCommitW;
+  always_comb begin
+    headCommitV = 1'b0;
+    headCommitW = 1'b0;
+    for (int b = 0; b < BANK_N; b++)
+      if (deqBankIdx[0] == BANK_ADDR_W'(b)) begin
+        headCommitV = robDeqGroup_commit_v[b];
+        headCommitW = robDeqGroup_commit_w[b];
+      end
+  end
+  assign io_headNotReady = headCommitV & ~headCommitW;
+
+  // ---- 提交出来的指令条数（送 CSR 的 perfinfo）----
+  logic [9:0] trueCommitCnt;
+  logic [3:0] fuseCommitCnt;
+  logic       isCommitReg;
+  always_comb begin
+    trueCommitCnt = 10'h0;
+    for (int i = 0; i < COMMIT_W; i++)
+      trueCommitCnt = trueCommitCnt
+        + (commitValidOut[i] ? 10'(commitInfo[i].instrSize) : 10'h0);
+    fuseCommitCnt = 4'h0;
+    fuseCommitCnt = fuseCommitCnt + 4'(fuseCommitCnt_r) + 4'(fuseCommitCnt_r_1)
+                  + 4'(fuseCommitCnt_r_2) + 4'(fuseCommitCnt_r_3)
+                  + 4'(fuseCommitCnt_r_4) + 4'(fuseCommitCnt_r_5)
+                  + 4'(fuseCommitCnt_r_6) + 4'(fuseCommitCnt_r_7);
+  end
+  always_ff @(posedge clock) begin
+    if (io_commits_isCommit) begin
+      trueCommitCnt_r  <= trueCommitCnt;
+      fuseCommitCnt_r <= commitValidOut[0] & commitInfo[0].commitType[2];
+      fuseCommitCnt_r_1 <= commitValidOut[1] & commitInfo[1].commitType[2];
+      fuseCommitCnt_r_2 <= commitValidOut[2] & commitInfo[2].commitType[2];
+      fuseCommitCnt_r_3 <= commitValidOut[3] & commitInfo[3].commitType[2];
+      fuseCommitCnt_r_4 <= commitValidOut[4] & commitInfo[4].commitType[2];
+      fuseCommitCnt_r_5 <= commitValidOut[5] & commitInfo[5].commitType[2];
+      fuseCommitCnt_r_6 <= commitValidOut[6] & commitInfo[6].commitType[2];
+      fuseCommitCnt_r_7 <= commitValidOut[7] & commitInfo[7].commitType[2];
+    end
+  end
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) isCommitReg_last_REG <= 1'b0;
+    else       isCommitReg_last_REG <= io_commits_isCommit;
+  end
+  assign isCommitReg = isCommitReg_last_REG;
+
+  logic [10:0] retireCounter;
+  assign retireCounter = isCommitReg
+      ? (11'(trueCommitCnt_r) + 11'(fuseCommitCnt)) : 11'h0;
+  assign io_csr_perfinfo_retiredInstr = retireCounter[6:0];
+
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset)            instrCntReg <= 64'h0;
+    else if (isCommitReg) instrCntReg <= instrCntReg + {53'h0, retireCounter};
+  end
+
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) timer <= 64'h0;
+    else       timer <= timer + 64'h1;
+  end
 
 
 endmodule
