@@ -64,6 +64,29 @@ include ../../../scripts/ut_common.mk
 VCS += +define+SYNTHESIS
 
 # ---------------------------------------------------------------------------
+# 复位域：DelayN 家族的打拍链在 golden 里**一个 reg 都不复位**（gen_facts.py 的
+# 结构判据第 4 条就钉死了「只有一个 always @(posedge clock)、无复位无使能」）。
+# 不开 initreg 时两侧寄存器上电都是 X，tb 的 $isunknown 一跳过，「无复位」这件事
+# 就从来没被验过。故编译期 +vcs+initreg+random 打开机制，运行期用
+# +vcs+initreg+<0|random> 选初值，两种初值都要过。
+# ★ 编译期写 +vcs+initreg+0 是错的：VCS 报 OBSL_OPT_E，那是运行期选项。★
+#
+# ★热身窗口（WARMUP）不是为了绕过失配，是「无复位链」的定义域★：
+# golden 的 REG 与重写侧的 u_core.g_chain.stage[] 是**不同的寄存器**，
+# +vcs+initreg+random 给它们各自独立的随机初值，前 STAGES 拍输出的是这些初值，
+# 本来就不该相等；从第 STAGES+1 拍起链上每一级都已被 tb 驱动的数据覆盖，
+# 此后必须逐拍相等。tb 用 WARMUP = 家族最大级数(10) + 1 = 11 拍，
+# 对任何一个变体都足够；窗口内不比对也不计 checks（20 万拍里扣 11 拍，覆盖闸不受影响）。
+VCS      += +vcs+initreg+random
+SIM_ARGS += +vcs+initreg+random
+
+.PHONY: run-initreg0
+run-initreg0: simv
+	@rm -f sim_ir0_$(SEED).log
+	./simv +vcs+initreg+0 +ntb_random_seed=$(SEED) +ncycles=$(NCYCLES) -l sim_ir0_$(SEED).log
+	@grep -q "TEST PASSED" sim_ir0_$(SEED).log && echo "=== UT PASSED ($(MODULE) initreg=0 seed=$(SEED)) ===" || { echo "=== UT FAILED ($(MODULE) initreg=0 seed=$(SEED)) ==="; exit 1; }
+
+# ---------------------------------------------------------------------------
 # 负测：家族核的 elaborate 期不变式必须真能拦下"位宽静默写错"。
 # negtest.sv 复制 DelayN_9 的薄文件，只把 io_in_bits_addr 从 50 位抄成 49 位
 # （本轮真实事故的形态：端口位宽被改小，逻辑一行没动，UT 按旧位宽驱动照过）。

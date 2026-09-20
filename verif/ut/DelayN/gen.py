@@ -161,6 +161,13 @@ TB_HEAD = """// 自动生成：verif/ut/DelayN/gen.py（读 G1 golden）—— �
 //
 // 打拍链无复位：上电输出为 X，故 $isunknown(golden 输出) 时跳过比对（不计 checks）。
 //
+// ★热身窗口 WARMUP★（开 +vcs+initreg+random 后必须有，不是为了绕过失配）：
+//   golden 的 REG* 与重写侧的 u_core.g_chain.stage[] 是**不同的寄存器**，initreg
+//   给它们各自独立的随机初值。无复位链的等价性只在「链上每一级都被激励覆盖过」
+//   之后才有定义——前 STAGES 拍输出的是初值，本来就不该相等。WARMUP 取家族最大
+//   级数 + 1，窗口内照常驱动但不比对、不计 checks；此后逐拍必须相等，一拍都不放过。
+//   （initreg+0 时两侧初值都是 0，窗口有没有都一样；random 那轮才吃紧。）
+//
 // 覆盖闸（小模块最容易假绿：本轮有 tb 在 20 万拍里只 fire 1 次却报 errors=0）：
 //   每个变体都必须
 //     (1) 有效比对次数 checks >= COV_MIN；
@@ -183,6 +190,12 @@ module tb;
 
 def gen_tb():
     L = [TB_HEAD]
+    # WARMUP 从 **本家族实际级数**现算（不是写死的常数）：最深的那一级过完还要
+    # 多留一拍余量。加了更深的变体时这里自动跟着涨。
+    max_stages = max(facts(n)["stages"] for n in VARIANTS)
+    L.append("  // 热身拍数 = 家族最大级数 %d + 1（gen.py 从 golden 现算）"
+             % max_stages)
+    L.append("  localparam int WARMUP = %d;" % (max_stages + 1))
     infos = []
     for name in VARIANTS:
         f = facts(name)
@@ -261,6 +274,11 @@ def gen_tb():
   initial begin
     if ($value$plusargs("ncycles=%d", NCYCLES)) begin end
 {nl.join(init)}
+    // 热身：只驱动不比对，把两侧各自的随机初值从链上冲干净（见文件头 WARMUP 一节）
+    repeat (WARMUP) begin
+      @(negedge clock);
+      drive_random_inputs();
+    end
     repeat (NCYCLES) begin
       @(negedge clock);   // 输出在 posedge 变，negedge 稳定：先比对上一拍结果，再换激励
       check_outputs();
