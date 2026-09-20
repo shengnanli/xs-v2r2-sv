@@ -357,12 +357,22 @@ def render(mods, prof):
     md.append('')
     md.append('**(B) WB 唤醒匹配要从「单个 wen」扩成「按源分工的多 wen」。**')
     md.append(f'   本表 `wkWB_wen` 实测有 {len(multi)} 种形态：{multi}。')
-    md.append('   其中 `v0Wen,vecWen,vlWen` 那一档（nSrc=5 的向量族）**不是简单按位或**：')
-    md.append('   `EntryBundles.scala:185-193` 对 numRegSrc==5 是'
-              '「源 0..2 用 `wakeUp`、源 3 用 `wakeUpV0`、源 4 用 `wakeUpVl`」，'
-              '按源分工，不是同一个式子 OR 起来。')
-    md.append('   这与 `agent/entries-rest3` 要做的「唤醒匹配从单对改成一串对按位或」'
-              '是同一处代码 —— 请确认它那边是按**按源分工**实现的，不是一律 OR。')
+    md.append('   这与 `agent/entries-rest3` 的 E1'
+              '「唤醒匹配从单对改成一串对按位或」是**同一处代码**，两条 lane 都要它。')
+    md.append('   ★这里有一个 E1 的措辞容易做错的地方★：那张「对表」必须**按源分份**，'
+              '不能全族共用一张。')
+    md.append('   `Bundles.scala:325-348` 三个 helper：')
+    md.append('     - `wakeUp`   = `pdest==psrc && (isFp&&fpWen || isXp&&rfWen'
+              ' || isVp&&vecWen)` —— 三对按位或；')
+    md.append('     - `wakeUpV0` = `pdest==psrc && (isV0&&v0Wen)` —— 一对，'
+              '而且 srcType 判据是 `isV0` 不是 `isVp`；')
+    md.append('     - `wakeUpVl` = `pdest==psrc && (isVp&&vlWen)` —— 一对。')
+    md.append('   `EntryBundles.scala:185-193` 只在 `numRegSrc == 5` 时分工：'
+              '源 0..2 用 `wakeUp`、源 3 用 `wakeUpV0`、源 4 用 `wakeUpVl`。')
+    md.append('   本表 `nSrc` 为 5 的正是 6 个向量变体（`wkWB_wen` = `v0Wen,vecWen,vlWen`）：'
+              '它们源 0..2 的对表退化成只剩 `(isVp, vecWen)` 一对，')
+    md.append('   源 3 / 源 4 各是另一对。若 E1 实现成「全源共用一张对表再按位或」，'
+              '这 6 个变体会把 v0/vl 的唤醒串到源 0..2 上去 —— UT 未必打得到，FM 会炸。')
     md.append('')
     md.append(f'**(C) §11 里已登记的家族维度**：有 IQ 唤醒的变体 {nq}/24 个，'
               '其中 StaMou（needFeedBackSqIdx）、向量族（ignoreOldVd / bypass2）'
