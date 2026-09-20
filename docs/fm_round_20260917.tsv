@@ -104,6 +104,9 @@ IndexableCAMTemplate_33	SUCCEEDED	p144 f0 um0 unread=? const_reg=? mode=signoff-
 IndexableCAMTemplate_41	SUCCEEDED	p36 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/IndexableCAMTemplate_41/receipt.json
 IndexableCAMTemplate_43	SUCCEEDED	p40 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/IndexableCAMTemplate_43/receipt.json
 L1CohMetaArray	SUCCEEDED	p2204 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/L1CohMetaArray/receipt.json
+L1ErrorMetaArray	SUCCEEDED	p2300 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @00765a691d9a evidence/00765a691d9a/L1ErrorMetaArray/receipt.json
+L1FlagMetaArray	SUCCEEDED	p1352 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @00765a691d9a evidence/00765a691d9a/L1FlagMetaArray/receipt.json
+L1PrefetchSourceArray	SUCCEEDED	p3528 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @00765a691d9a evidence/00765a691d9a/L1PrefetchSourceArray/receipt.json
 L2Directory	SUCCEEDED	p898 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/L2Directory/receipt.json
 LCredit2Decoupled	SUCCEEDED	p590 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/LCredit2Decoupled/receipt.json
 LCredit2Decoupled_10	SUCCEEDED	p2125 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/LCredit2Decoupled_10/receipt.json
