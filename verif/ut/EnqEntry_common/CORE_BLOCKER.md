@@ -132,9 +132,17 @@ FAILED  {"passing": 3616, "failing": 2, "unmatched": 0, "unread": null,
 EE_PINS: 1432 accepted / 1432 expected, 0 refused
 ```
 
-（fm.log 里 `grep -c FM-036` 命中 3 条，逐条看**全是 fm_eq.tcl 里那段注释的回显**
-（L472/475/476），真的 Unknown name 一条也没有 —— 正是 CONVENTIONS 记过的那个
-「`grep -c FM-036` 判据永远为假」的坑。）
+★数 fm.log 里的错误一律**行首锚定**★：
+
+```
+grep -cE '^ *Error:' fm_work/EnqEntry/fm.log      ->  0
+grep -c  'FM-036'    fm_work/EnqEntry/fm.log      ->  3   <- 全是注释回显，不是错误
+```
+
+那 3 条在 L472/475/476，逐条看**全是 `fm_eq.tcl` 里那段注释的回显**（fm_shell 把
+入口 Tcl 逐行回显进日志，注释也不例外），而那段注释讲的正好就是这个坑。
+所以「FM-036 行数为 0」这条判据**永远为假** —— 它和 catch 空守卫「永远不响」
+方向相反，**一样没有分辨力**。真正的判据是上面那条行首锚定的 0。
 
 ## 打上那一行之后的 FM（★干跑，不是签核★）
 
