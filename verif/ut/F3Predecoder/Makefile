@@ -10,3 +10,17 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/F3Predecoder.sv
 FM_VARIANTS = F3Predecoder
 
 include ../../../scripts/ut_common.mk
+
+# +vcs+initreg：编译期 +vcs+initreg+random 只是**打开机制**，取值在运行期由
+# ut_common.mk 的 SIM_ARGS 选。编译期不给、只在运行期给，VCS 报 Warning-[VICIU]
+# 然后当没看见，那一轮等于没测（2026-09-20 实测）。
+# 运行期也必须显式钉值：编译期开了 random 而运行期不选，VCS 取 random ——
+# 默认那一轮会悄悄换语义（同日在 TLBuffer_6 上实测到）。
+#
+# ★这里先把话说死：F3Predecoder 是**纯组合**件（golden 闭包寄存器位 = 0，
+#   fm_predict 模型 regs 0 + outs 64）。所以两轮 initreg 对被测件的可观测行为
+#   ★按构造★不可能有任何差别，两轮都绿证明不了复位域的任何事 —— 它只排除
+#   "tb 自己带的状态对上电初值敏感"这一种假绿。别把这两轮读成复位域已验。
+#   实测确实两轮都绿：3 seed x (+0 / +random) 6/6，errors=0（2026-09-20）。
+VCS += +vcs+initreg+random
+SIM_ARGS += +vcs+initreg+0
