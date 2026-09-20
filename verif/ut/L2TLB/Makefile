@@ -75,10 +75,29 @@ FM_REF_DEPS_L2TLB = $(notdir $(RTL_GOLDEN_DEPS))
 # 误判，证明本身就没意义了。
 #
 # ★诚实声明★：这批黑盒目前**都还没有本轮的独立签核**（PtwCache / PTW / LLPTW /
-# HPTW / L2TlbMissQueue / L2TlbPrefetch / PMP / Bitmap / BitmapCache 在本轮台账里
+# HPTW / L2TlbMissQueue / L2TlbPrefetch / Bitmap / BitmapCache 在本轮台账里
 # 都是 MISSING）。所以本目标即便 native SUCCEEDED，也只能算**条件绿**，
-# 要等这 9 个 child 各自 SIGNOFF_PASS 之后才能计入闭包。
-FM_INTERFACE_ONLY = PtwCache PTW LLPTW HPTW L2TlbMissQueue L2TlbPrefetch PMP Bitmap BitmapCache
+# 要等这 8 个 child 各自 SIGNOFF_PASS 之后才能计入闭包。
+#
+# ★2026-09-20 复核修正：把 PMP 从本表里去掉★
+# 落地这份 Makefile 时表里有 9 项（多一个 PMP），而同一个 commit 登记的
+# docs/l2tlb_fm_prediction.md 预测的是 **8 个黑盒**，并白纸黑字写着
+# 「PMP / PMPChecker / 各 Arbiter / DelayN 是两侧 elaborate（不黑盒），
+#   这是照搬 G0 那次成功证明的配置」，预测里 ~1000 条 unread 也全部外推自
+# **被展开的** PMP 的 pmaMapping 死寄存器。两者互相矛盾，跑之前必须选一个。
+#
+# 查 G0 那次证明的原始配置（可复跑核对，不是转述）：
+#   $ grep FM_INTERFACE_ONLY /home/eda/xs-env/xs-v2r2-sv/scripts/sidecar/\
+#       signoff-evidence-delta2/L2TLB/make.out
+#   FM_INTERFACE_ONLY="PtwCache PTW LLPTW HPTW L2TlbMissQueue L2TlbPrefetch"
+#   （6 项，**没有 PMP**；同目录 native_facts.json 的 537 条 unread 全是
+#    r:/WORK/L2TLB/pmp/pmaMapping_*_reg[*] ↔ i:/.../u_pmp/pmaMapping_*_reg[*]
+#    的**配对**点 —— 能配上对，正说明 PMP 当时是两侧展开的。）
+#
+# 按预测 + G0 实证取 8 项。方向也对：黑盒**少**一个 = 证明**强**一分
+# （PMP 内部路径从"只比端口"变成逐位比对），而且 PMP 不是厂商宏、
+# 本轮也没有独立签核，按黑盒边界审核判据它本来就不该随手黑盒。
+FM_INTERFACE_ONLY = PtwCache PTW LLPTW HPTW L2TlbMissQueue L2TlbPrefetch Bitmap BitmapCache
 
 # 子模块黑盒后内部寄存器不参与比对，需要开「合并同值重复寄存器」：golden 顶层把
 # CSR/sfence 复制成 10/11 份，impl 侧同样复制；开启合并让两侧的多副本各自归一后配对。

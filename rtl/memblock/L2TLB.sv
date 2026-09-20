@@ -35,55 +35,59 @@
 //     · LLPTW 的 PMP 口由 1 个变 2 个（故 PMPChecker 由 3 个变 5 个）
 //     · G0 里被常量折叠掉的 toFsm_toLLPTW / toFsm_toPTW 在 G1 是真信号
 // ============================================================================
-// 本文件导航（共 11182 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
-//   L54    设计意图来源：src/main/scala/xiangshan/cache/mmu/L2TLB.scala
-//   L90    l2tlb_pkg —— 本模块私有的参数 / 类型 / 纯函数
-//   L92    参数值由本配置
-//   L140   CSR / sfence 副本
-//   L142   io.csr.tlb / io.sfence 先过 DelayN(1)，再 RegNext 一拍得到多份**同值**副本，
-//   L182   PTE 与合并响应类型
-//   L283   顶层输出给 ITLB/DTLB 的 sector PtwResp
-//   L309   访存数据通路小函数
-//   L311   512bit 块切成 8 个 64bit PTE，取第 index 个
-//   L335   PTE 判定
-//   L379   contiguous_pte_to_merge —— 8 个连续 PTE → PtwMergeResp
-//   L381   顶层调用处 af_first / not_super 都固定为 true，故：
-//   L441   merge_to_sector —— PtwMergeResp → PtwSectorResp
-//   L443   选中条目 sel = OHToUInt(pteidx)
-//   L478   xs_L2TLB_core —— 可读核
-//   L480   端口与 golden L2TLB 逐位同名
-//   L3159  1. CSR / sfence 复制扇出
-//   L3161  io.csr.tlb / io.sfence 先过 DelayN(1) 得到 csr_tmp / sfence_tmp，再各 R
-//   L3330  2. ITLB/DTLB 请求计数与节流
-//   L3332  每拍 进入(req fire) - 离开(resp fire)；flush 清零
-//   L3351  page cache 响应的常用字段
-//   L3353  ★G1★ toFsm_toLLPTW / toFsm_toPTW 在 G0 里被常量折叠成 0
-//   L3373  3. page cache 入口仲裁(arb2) 输入装配 + miss queue 仲裁(mq_arb)
-//   L3375  arb2 五路：HPTW(0) / PTW(1) / MissQueue(2) / TLB(3) / Prefetch(4)
-//   L3405  4. PTW / LLPTW / HPTW 请求分发
-//   L3407  按 cache.resp 的命中深度把 miss 请求送往三个遍历器：
-//   L3424  5. page cache resp.ready 多路选择
-//   L3426  MuxCase：按 hit / isHptwReq / toLLPTW / bypassed 决定 cache 这拍能否被消费
-//   L3439  6. 访存数据通路
-//   L3441  mem_arb 四路
-//   L3620  6b. cache.refill 装配
-//   L3622  访存回来且不丢弃时置 refill_valid，打一拍给 cache.refill.valid；bits 在
-//   L3709  7. HPTW 响应分发
-//   L3711  hptw_resp_arb：in(0)=page cache 命中的 hptw 响应，in(1)=HPTW 自己的响应
-//   L3721  8. 输出合并：mergeArb 三路 + outArb → ITLB/DTLB resp
-//   L3723  每条 PtwWidth(ITLB/DTLB) 各一组 mergeArb(3 路)+outArb(1 路)：
-//   L3728  -- llptw_stage1：LLPTW 入队那拍按 enq_ptr 锁存 cache.resp.stage1，供
-//   L4752  9. PMP checker 请求装配 + prefetch 触发
-//   L4754  ★G1★ 5 个 PMPChecker：ptw / llptw 口0 / llptw 口1 / hptw / bitmap
-//   L4758  mode(ModeS=2'h1) 与 cmd(read) 在 golden 里就是写死的常量，实例区已直接给；
-//   L4770  12. Bitmap 检查引擎接线
-//   L4772  Bitmap 引擎按 PTE 的物理页号去查一张位图，判断该页是否可用
-//   L4788  10. 顶层输出直驱
-//   L4798  11. 性能事件两级打拍
-//   L4800  19 路：0..3 ← LLPTW，4..11 ← PtwCache，12..18 ← PTW
-//   L4852  子模块实例
-//   L4854  BEGIN GENERATED(inst)
-//   L10420 L2TLB —— 与 golden 端口逐位同名的外壳，直通到可读核
+// 本文件导航（共 11490 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+//   L58    设计意图来源：src/main/scala/xiangshan/cache/mmu/L2TLB.scala
+//   L94    l2tlb_pkg —— 本模块私有的参数 / 类型 / 纯函数
+//   L96    参数值由本配置
+//   L144   CSR / sfence 副本
+//   L146   io.csr.tlb / io.sfence 先过 DelayN(1)，再 RegNext 一拍得到多份**同值**副本，
+//   L186   PTE 与合并响应类型
+//   L287   顶层输出给 ITLB/DTLB 的 sector PtwResp
+//   L313   访存数据通路小函数
+//   L315   512bit 块切成 8 个 64bit PTE，取第 index 个
+//   L339   PTE 判定
+//   L383   contiguous_pte_to_merge —— 8 个连续 PTE → PtwMergeResp
+//   L385   顶层调用处 af_first / not_super 都固定为 true，故：
+//   L445   merge_to_sector —— PtwMergeResp → PtwSectorResp
+//   L447   选中条目 sel = OHToUInt(pteidx)
+//   L480   difftest 探针打包
+//   L482   L2TLB 往 difftest gateway 送三条探针，每条是一长串定宽字段的拼接：
+//   L548   xs_L2TLB_core —— 可读核
+//   L550   端口与 golden L2TLB 逐位同名
+//   L3229  1. CSR / sfence 复制扇出
+//   L3231  io.csr.tlb / io.sfence 先过 DelayN(1) 得到 csr_tmp / sfence_tmp，再各 R
+//   L3400  2. ITLB/DTLB 请求计数与节流
+//   L3402  每拍 进入(req fire) - 离开(resp fire)；flush 清零
+//   L3421  page cache 响应的常用字段
+//   L3423  ★G1★ toFsm_toLLPTW / toFsm_toPTW 在 G0 里被常量折叠成 0
+//   L3443  3. page cache 入口仲裁(arb2) 输入装配 + miss queue 仲裁(mq_arb)
+//   L3445  arb2 五路：HPTW(0) / PTW(1) / MissQueue(2) / TLB(3) / Prefetch(4)
+//   L3475  4. PTW / LLPTW / HPTW 请求分发
+//   L3477  按 cache.resp 的命中深度把 miss 请求送往三个遍历器：
+//   L3494  5. page cache resp.ready 多路选择
+//   L3496  MuxCase：按 hit / isHptwReq / toLLPTW / bypassed 决定 cache 这拍能否被消费
+//   L3509  6. 访存数据通路
+//   L3511  mem_arb 四路
+//   L3690  6b. cache.refill 装配
+//   L3692  访存回来且不丢弃时置 refill_valid，打一拍给 cache.refill.valid；bits 在
+//   L3779  7. HPTW 响应分发
+//   L3781  hptw_resp_arb：in(0)=page cache 命中的 hptw 响应，in(1)=HPTW 自己的响应
+//   L3791  8. 输出合并：mergeArb 三路 + outArb → ITLB/DTLB resp
+//   L3793  每条 PtwWidth(ITLB/DTLB) 各一组 mergeArb(3 路)+outArb(1 路)：
+//   L3798  -- llptw_stage1：LLPTW 入队那拍按 enq_ptr 锁存 cache.resp.stage1，供
+//   L4822  9. PMP checker 请求装配 + prefetch 触发
+//   L4824  ★G1★ 5 个 PMPChecker：ptw / llptw 口0 / llptw 口1 / hptw / bitmap
+//   L4828  mode(ModeS=2'h1) 与 cmd(read) 在 golden 里就是写死的常量，实例区已直接给；
+//   L4840  12. Bitmap 检查引擎接线
+//   L4842  Bitmap 引擎按 PTE 的物理页号去查一张位图，判断该页是否可用
+//   L4858  10. 顶层输出直驱
+//   L4974  10b. difftest 探针
+//   L4976  这三条只给 difftest gateway 看，不进功能通路，但它们是**实打实的顶层输出**
+//   L5106  11. 性能事件两级打拍
+//   L5108  19 路：0..3 ← LLPTW，4..11 ← PtwCache，12..18 ← PTW
+//   L5160  子模块实例
+//   L5162  BEGIN GENERATED(inst)
+//   L10728 L2TLB —— 与 golden 端口逐位同名的外壳，直通到可读核
 //
 
 // ============================================================================
@@ -470,6 +474,69 @@ package l2tlb_pkg;
     end
     s.valididx[sel] = 1'b1;   // 选中条目恒有效
     return s;
+  endfunction
+
+  // ==========================================================================
+  // difftest 探针打包
+  // --------------------------------------------------------------------------
+  // L2TLB 往 difftest gateway 送三条探针，每条是一长串定宽字段的拼接：
+  //   refill 探针  601 bit —— 一次 page-table 行填充（地址 + 64B 数据）
+  //   l2tlb 探针   969 bit × 2 —— 两个 TLB 口各一条，内容是这拍发出的 sector 响应
+  // 打包顺序/零扩展宽度就是 difftest 的协议，必须与 golden 逐位一致，故两条
+  // l2tlb 探针共用同一个纯函数，调用处只喂各自那个口的信号（不许各写一遍）。
+  // ★纯函数★：需要的信号全部走形参，函数体内不读任何模块级信号 ——
+  // 否则 FM 报 FMR_VLOG-091（见 CONVENTIONS「Formality elaborate 四条硬约束」）。
+  // ==========================================================================
+  localparam int REFILL_PROBE_W = 601;
+  localparam int L2TLB_PROBE_W  = 969;
+
+  function automatic logic [REFILL_PROBE_W-1:0] pack_refill_probe(
+    input logic                       valid,
+    input logic [47:0]                addr,      // 64B 对齐的 PTE 行地址
+    input logic [CONTIG-1:0][63:0]    ptes,      // 行内 8 条 PTE，低位在前
+    input logic [7:0]                 mask,
+    input logic [7:0]                 coreid,
+    input logic [7:0]                 index
+  );
+    // ptes 是 packed 数组，拼接时**元素 [7] 自然在高位**，正好就是探针要的
+    // data_7..data_0 次序 —— 不要再翻一次（第一版翻了，UT 当场抓到）。
+    return {valid, {16'h0, addr}, ptes, mask, coreid, index};
+  endfunction
+
+  function automatic logic [L2TLB_PROBE_W-1:0] pack_l2tlb_probe(
+    input logic                                 valid,
+    input logic [CONTIG-1:0]                    valididx,
+    input logic [63:0]                          satp,
+    input logic [SECTOR_VPN_W-1:0]              s1_tag,
+    input logic [1:0]                           pbmt,
+    input logic [1:0]                           g_pbmt,
+    input logic [SECTOR_PTE_PPN_W-1:0]          s1_ppn,
+    input logic [CONTIG-1:0][SECTOR_BITS-1:0]   ppn_low,
+    input ptw_perm_t                            perm,
+    input logic [1:0]                           level,
+    input logic                                 pf,
+    input logic [CONTIG-1:0]                    pteidx,
+    input logic [63:0]                          vsatp,
+    input logic [63:0]                          hgatp,
+    input logic [37:0]                          s2_tag,
+    input ptw_perm_t                            g_perm,
+    input logic [1:0]                           g_level,
+    input logic [37:0]                          s2_ppn,
+    input logic                                 gpf,
+    input logic [1:0]                           s2xlate,
+    input logic [7:0]                           coreid,
+    input logic [7:0]                           index
+  );
+    // 探针里按条目的三族字段都是 7..0 高位在前；packed 数组拼接时元素 [7] 本来
+    // 就落在高位，所以**直接拼**即可。
+    // ★第一版在这里多翻了一次（写成 ppn_low[CONTIG-1-i]），UT seed=1 当场报
+    //   gatewayIn_packed_44/45 差在第 291/298 位——正是 pteidx 那 8 位，一眼定位。★
+    logic [CONTIG-1:0][63:0] ppn_full;
+    for (int i = 0; i < CONTIG; i++) ppn_full[i] = {20'h0, s1_ppn, ppn_low[i]};
+    return {valid, valididx, satp, {26'h0, s1_tag, 3'h0}, pbmt, g_pbmt,
+            ppn_full, {1'h0, perm}, {6'h0, level}, pf, pteidx,
+            vsatp, hgatp, {26'h0, s2_tag}, {1'h0, g_perm}, {6'h0, g_level},
+            {26'h0, s2_ppn}, gpf, s2xlate, coreid, index};
   endfunction
 
 endpackage
@@ -4791,8 +4858,246 @@ module xs_L2TLB_core
   assign io_tlb_1_req_0_ready     = u_arb_tlb_in_1_ready;
   assign io_tlb_0_resp_valid      = u_out_arb_0_out_valid;
   assign io_tlb_1_resp_valid      = u_out_arb_1_out_valid;
-  assign io_tlb_0_resp_bits_s1_af = u_out_arb_0_out_bits_s1_af;
-  assign io_tlb_1_resp_bits_s1_af = u_out_arb_1_out_bits_s1_af;
+
+  // resp.bits 全族（s1/s2/s2xlate 共 102 条）是 outArb 输出的 1:1 直驱，没有逻辑，
+  // 故整块机械生成。另有 14 条 golden 直接把 arbiter 的 output pin 连到顶层端口，
+  // 已在实例区连好，本区按 golden 的分法跳过（不许"补齐成对称"）。
+  // BEGIN GENERATED(tlb_resp_out)
+  assign io_tlb_0_resp_bits_s2xlate         = u_out_arb_0_out_bits_s2xlate;
+  assign io_tlb_0_resp_bits_s1_entry_tag    = u_out_arb_0_out_bits_s1_entry_tag;
+  assign io_tlb_0_resp_bits_s1_entry_pbmt   = u_out_arb_0_out_bits_s1_entry_pbmt;
+  assign io_tlb_0_resp_bits_s1_entry_perm_d = u_out_arb_0_out_bits_s1_entry_perm_d;
+  assign io_tlb_0_resp_bits_s1_entry_perm_a = u_out_arb_0_out_bits_s1_entry_perm_a;
+  assign io_tlb_0_resp_bits_s1_entry_perm_g = u_out_arb_0_out_bits_s1_entry_perm_g;
+  assign io_tlb_0_resp_bits_s1_entry_perm_u = u_out_arb_0_out_bits_s1_entry_perm_u;
+  assign io_tlb_0_resp_bits_s1_entry_perm_x = u_out_arb_0_out_bits_s1_entry_perm_x;
+  assign io_tlb_0_resp_bits_s1_entry_perm_w = u_out_arb_0_out_bits_s1_entry_perm_w;
+  assign io_tlb_0_resp_bits_s1_entry_perm_r = u_out_arb_0_out_bits_s1_entry_perm_r;
+  assign io_tlb_0_resp_bits_s1_entry_level  = u_out_arb_0_out_bits_s1_entry_level;
+  assign io_tlb_0_resp_bits_s1_entry_ppn    = u_out_arb_0_out_bits_s1_entry_ppn;
+  assign io_tlb_0_resp_bits_s1_ppn_low_0    = u_out_arb_0_out_bits_s1_ppn_low_0;
+  assign io_tlb_0_resp_bits_s1_ppn_low_1    = u_out_arb_0_out_bits_s1_ppn_low_1;
+  assign io_tlb_0_resp_bits_s1_ppn_low_2    = u_out_arb_0_out_bits_s1_ppn_low_2;
+  assign io_tlb_0_resp_bits_s1_ppn_low_3    = u_out_arb_0_out_bits_s1_ppn_low_3;
+  assign io_tlb_0_resp_bits_s1_ppn_low_4    = u_out_arb_0_out_bits_s1_ppn_low_4;
+  assign io_tlb_0_resp_bits_s1_ppn_low_5    = u_out_arb_0_out_bits_s1_ppn_low_5;
+  assign io_tlb_0_resp_bits_s1_ppn_low_6    = u_out_arb_0_out_bits_s1_ppn_low_6;
+  assign io_tlb_0_resp_bits_s1_ppn_low_7    = u_out_arb_0_out_bits_s1_ppn_low_7;
+  assign io_tlb_0_resp_bits_s1_valididx_0   = u_out_arb_0_out_bits_s1_valididx_0;
+  assign io_tlb_0_resp_bits_s1_valididx_1   = u_out_arb_0_out_bits_s1_valididx_1;
+  assign io_tlb_0_resp_bits_s1_valididx_2   = u_out_arb_0_out_bits_s1_valididx_2;
+  assign io_tlb_0_resp_bits_s1_valididx_3   = u_out_arb_0_out_bits_s1_valididx_3;
+  assign io_tlb_0_resp_bits_s1_valididx_4   = u_out_arb_0_out_bits_s1_valididx_4;
+  assign io_tlb_0_resp_bits_s1_valididx_5   = u_out_arb_0_out_bits_s1_valididx_5;
+  assign io_tlb_0_resp_bits_s1_valididx_6   = u_out_arb_0_out_bits_s1_valididx_6;
+  assign io_tlb_0_resp_bits_s1_valididx_7   = u_out_arb_0_out_bits_s1_valididx_7;
+  assign io_tlb_0_resp_bits_s1_pteidx_0     = u_out_arb_0_out_bits_s1_pteidx_0;
+  assign io_tlb_0_resp_bits_s1_pteidx_1     = u_out_arb_0_out_bits_s1_pteidx_1;
+  assign io_tlb_0_resp_bits_s1_pteidx_2     = u_out_arb_0_out_bits_s1_pteidx_2;
+  assign io_tlb_0_resp_bits_s1_pteidx_3     = u_out_arb_0_out_bits_s1_pteidx_3;
+  assign io_tlb_0_resp_bits_s1_pteidx_4     = u_out_arb_0_out_bits_s1_pteidx_4;
+  assign io_tlb_0_resp_bits_s1_pteidx_5     = u_out_arb_0_out_bits_s1_pteidx_5;
+  assign io_tlb_0_resp_bits_s1_pteidx_6     = u_out_arb_0_out_bits_s1_pteidx_6;
+  assign io_tlb_0_resp_bits_s1_pteidx_7     = u_out_arb_0_out_bits_s1_pteidx_7;
+  assign io_tlb_0_resp_bits_s1_pf           = u_out_arb_0_out_bits_s1_pf;
+  assign io_tlb_0_resp_bits_s1_af           = u_out_arb_0_out_bits_s1_af;
+  assign io_tlb_0_resp_bits_s2_entry_tag    = u_out_arb_0_out_bits_s2_entry_tag;
+  assign io_tlb_0_resp_bits_s2_entry_pbmt   = u_out_arb_0_out_bits_s2_entry_pbmt;
+  assign io_tlb_0_resp_bits_s2_entry_ppn    = u_out_arb_0_out_bits_s2_entry_ppn;
+  assign io_tlb_0_resp_bits_s2_entry_perm_d = u_out_arb_0_out_bits_s2_entry_perm_d;
+  assign io_tlb_0_resp_bits_s2_entry_perm_a = u_out_arb_0_out_bits_s2_entry_perm_a;
+  assign io_tlb_0_resp_bits_s2_entry_perm_g = u_out_arb_0_out_bits_s2_entry_perm_g;
+  assign io_tlb_0_resp_bits_s2_entry_perm_u = u_out_arb_0_out_bits_s2_entry_perm_u;
+  assign io_tlb_0_resp_bits_s2_entry_perm_x = u_out_arb_0_out_bits_s2_entry_perm_x;
+  assign io_tlb_0_resp_bits_s2_entry_perm_w = u_out_arb_0_out_bits_s2_entry_perm_w;
+  assign io_tlb_0_resp_bits_s2_entry_perm_r = u_out_arb_0_out_bits_s2_entry_perm_r;
+  assign io_tlb_0_resp_bits_s2_entry_level  = u_out_arb_0_out_bits_s2_entry_level;
+  assign io_tlb_0_resp_bits_s2_gpf          = u_out_arb_0_out_bits_s2_gpf;
+  assign io_tlb_0_resp_bits_s2_gaf          = u_out_arb_0_out_bits_s2_gaf;
+  assign io_tlb_1_resp_bits_s2xlate         = u_out_arb_1_out_bits_s2xlate;
+  assign io_tlb_1_resp_bits_s1_entry_tag    = u_out_arb_1_out_bits_s1_entry_tag;
+  assign io_tlb_1_resp_bits_s1_entry_pbmt   = u_out_arb_1_out_bits_s1_entry_pbmt;
+  assign io_tlb_1_resp_bits_s1_entry_perm_d = u_out_arb_1_out_bits_s1_entry_perm_d;
+  assign io_tlb_1_resp_bits_s1_entry_perm_a = u_out_arb_1_out_bits_s1_entry_perm_a;
+  assign io_tlb_1_resp_bits_s1_entry_perm_g = u_out_arb_1_out_bits_s1_entry_perm_g;
+  assign io_tlb_1_resp_bits_s1_entry_perm_u = u_out_arb_1_out_bits_s1_entry_perm_u;
+  assign io_tlb_1_resp_bits_s1_entry_perm_x = u_out_arb_1_out_bits_s1_entry_perm_x;
+  assign io_tlb_1_resp_bits_s1_entry_perm_w = u_out_arb_1_out_bits_s1_entry_perm_w;
+  assign io_tlb_1_resp_bits_s1_entry_perm_r = u_out_arb_1_out_bits_s1_entry_perm_r;
+  assign io_tlb_1_resp_bits_s1_entry_level  = u_out_arb_1_out_bits_s1_entry_level;
+  assign io_tlb_1_resp_bits_s1_entry_ppn    = u_out_arb_1_out_bits_s1_entry_ppn;
+  assign io_tlb_1_resp_bits_s1_ppn_low_0    = u_out_arb_1_out_bits_s1_ppn_low_0;
+  assign io_tlb_1_resp_bits_s1_ppn_low_1    = u_out_arb_1_out_bits_s1_ppn_low_1;
+  assign io_tlb_1_resp_bits_s1_ppn_low_2    = u_out_arb_1_out_bits_s1_ppn_low_2;
+  assign io_tlb_1_resp_bits_s1_ppn_low_3    = u_out_arb_1_out_bits_s1_ppn_low_3;
+  assign io_tlb_1_resp_bits_s1_ppn_low_4    = u_out_arb_1_out_bits_s1_ppn_low_4;
+  assign io_tlb_1_resp_bits_s1_ppn_low_5    = u_out_arb_1_out_bits_s1_ppn_low_5;
+  assign io_tlb_1_resp_bits_s1_ppn_low_6    = u_out_arb_1_out_bits_s1_ppn_low_6;
+  assign io_tlb_1_resp_bits_s1_ppn_low_7    = u_out_arb_1_out_bits_s1_ppn_low_7;
+  assign io_tlb_1_resp_bits_s1_valididx_0   = u_out_arb_1_out_bits_s1_valididx_0;
+  assign io_tlb_1_resp_bits_s1_valididx_1   = u_out_arb_1_out_bits_s1_valididx_1;
+  assign io_tlb_1_resp_bits_s1_valididx_2   = u_out_arb_1_out_bits_s1_valididx_2;
+  assign io_tlb_1_resp_bits_s1_valididx_3   = u_out_arb_1_out_bits_s1_valididx_3;
+  assign io_tlb_1_resp_bits_s1_valididx_4   = u_out_arb_1_out_bits_s1_valididx_4;
+  assign io_tlb_1_resp_bits_s1_valididx_5   = u_out_arb_1_out_bits_s1_valididx_5;
+  assign io_tlb_1_resp_bits_s1_valididx_6   = u_out_arb_1_out_bits_s1_valididx_6;
+  assign io_tlb_1_resp_bits_s1_valididx_7   = u_out_arb_1_out_bits_s1_valididx_7;
+  assign io_tlb_1_resp_bits_s1_pteidx_0     = u_out_arb_1_out_bits_s1_pteidx_0;
+  assign io_tlb_1_resp_bits_s1_pteidx_1     = u_out_arb_1_out_bits_s1_pteidx_1;
+  assign io_tlb_1_resp_bits_s1_pteidx_2     = u_out_arb_1_out_bits_s1_pteidx_2;
+  assign io_tlb_1_resp_bits_s1_pteidx_3     = u_out_arb_1_out_bits_s1_pteidx_3;
+  assign io_tlb_1_resp_bits_s1_pteidx_4     = u_out_arb_1_out_bits_s1_pteidx_4;
+  assign io_tlb_1_resp_bits_s1_pteidx_5     = u_out_arb_1_out_bits_s1_pteidx_5;
+  assign io_tlb_1_resp_bits_s1_pteidx_6     = u_out_arb_1_out_bits_s1_pteidx_6;
+  assign io_tlb_1_resp_bits_s1_pteidx_7     = u_out_arb_1_out_bits_s1_pteidx_7;
+  assign io_tlb_1_resp_bits_s1_pf           = u_out_arb_1_out_bits_s1_pf;
+  assign io_tlb_1_resp_bits_s1_af           = u_out_arb_1_out_bits_s1_af;
+  assign io_tlb_1_resp_bits_s2_entry_tag    = u_out_arb_1_out_bits_s2_entry_tag;
+  assign io_tlb_1_resp_bits_s2_entry_pbmt   = u_out_arb_1_out_bits_s2_entry_pbmt;
+  assign io_tlb_1_resp_bits_s2_entry_ppn    = u_out_arb_1_out_bits_s2_entry_ppn;
+  assign io_tlb_1_resp_bits_s2_entry_perm_d = u_out_arb_1_out_bits_s2_entry_perm_d;
+  assign io_tlb_1_resp_bits_s2_entry_perm_a = u_out_arb_1_out_bits_s2_entry_perm_a;
+  assign io_tlb_1_resp_bits_s2_entry_perm_g = u_out_arb_1_out_bits_s2_entry_perm_g;
+  assign io_tlb_1_resp_bits_s2_entry_perm_u = u_out_arb_1_out_bits_s2_entry_perm_u;
+  assign io_tlb_1_resp_bits_s2_entry_perm_x = u_out_arb_1_out_bits_s2_entry_perm_x;
+  assign io_tlb_1_resp_bits_s2_entry_perm_w = u_out_arb_1_out_bits_s2_entry_perm_w;
+  assign io_tlb_1_resp_bits_s2_entry_perm_r = u_out_arb_1_out_bits_s2_entry_perm_r;
+  assign io_tlb_1_resp_bits_s2_entry_level  = u_out_arb_1_out_bits_s2_entry_level;
+  assign io_tlb_1_resp_bits_s2_gpf          = u_out_arb_1_out_bits_s2_gpf;
+  assign io_tlb_1_resp_bits_s2_gaf          = u_out_arb_1_out_bits_s2_gaf;
+  // END GENERATED
+
+  // ==========================================================================
+  // 10b. difftest 探针（refill 一条 + 每个 TLB 口一条）
+  // --------------------------------------------------------------------------
+  // 这三条只给 difftest gateway 看，不进功能通路，但它们是**实打实的顶层输出**
+  // （gatewayIn_packed_43/44/45_bore，601/969/969 bit），golden 里有，这里必须有。
+  //
+  // refill 探针答的是"刚刚填进 page cache 的那一行 PTE 是从哪个物理地址取回来的"：
+  //   · 发请求那拍，按 mem id 把地址存进 difftest_ptw_addr[id]（16 个 id 各一格）；
+  //   · 收到 D 通道响应那拍，把 source 记进 difftest_addr_r；
+  //   · refill 打一拍生效时，用 difftest_addr_r 回查地址。
+  // 也就是说地址表是按 **发** 的 id 写、按 **收** 的 id 读，中间隔着访存延迟。
+  //
+  // ★两条 l2tlb 探针的 valid 条件不对称，是 golden 就这样，照抄不补齐★：
+  //   口 0 用 valid & ready（响应真被 ITLB 取走），口 1 只用 valid。
+  //   本核上面算请求计数时用的 tlb0_resp_fire / tlb1_resp_fire 正是这两个式子。
+  // ==========================================================================
+  wire [7:0] difftest_coreid = {2'h0, io_hartId};
+
+  // 按 mem id 存的 PTE 行地址表。打包数组 + 循环变量下标：非打包数组配信号下标
+  // 会踩 FMR_ELAB-147（见 CONVENTIONS 的 Rob canary 实测表）。
+  logic [15:0][47:0] difftest_ptw_addr;
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) begin
+      difftest_ptw_addr <= '0;
+    end else begin
+      for (int i = 0; i < 16; i++)
+        if (mem_a_fire && (u_mem_arb_out_bits_id == 4'(i)))
+          difftest_ptw_addr[i] <= auto_out_a_bits_address;
+    end
+  end
+
+  // ★无复位★：golden 的 difftest_addr_r 就在无复位的 always 块里，照搬。
+  logic [3:0] difftest_addr_r;
+  always_ff @(posedge clock)
+    if (d_valid) difftest_addr_r <= d_src;
+
+  logic [CONTIG-1:0][63:0] refill_probe_ptes;
+  always_comb
+    for (int i = 0; i < CONTIG; i++)
+      refill_probe_ptes[i] = refill_data_flat[i*64 +: 64];
+
+  assign gatewayIn_packed_43_bore = pack_refill_probe(
+    .valid  (refill_valid_d),
+    .addr   (difftest_ptw_addr[difftest_addr_r]),
+    .ptes   (refill_probe_ptes),
+    .mask   (8'hFF),
+    .coreid (difftest_coreid),
+    .index  (8'h2));
+
+  // 两个口除了 valid 条件外完全同构，用同一个打包函数，只喂各自口的信号。
+  wire [63:0] csr_satp_probe  = {io_csr_tlb_satp_mode,  io_csr_tlb_satp_asid,  io_csr_tlb_satp_ppn};
+  wire [63:0] csr_vsatp_probe = {io_csr_tlb_vsatp_mode, io_csr_tlb_vsatp_asid, io_csr_tlb_vsatp_ppn};
+  wire [63:0] csr_hgatp_probe = {io_csr_tlb_hgatp_mode, io_csr_tlb_hgatp_vmid, io_csr_tlb_hgatp_ppn};
+
+  assign gatewayIn_packed_44_bore = pack_l2tlb_probe(
+    .valid   (tlb0_resp_fire & ~io_tlb_0_resp_bits_s1_af & ~io_tlb_0_resp_bits_s2_gaf),
+    .valididx({io_tlb_0_resp_bits_s1_valididx_7, io_tlb_0_resp_bits_s1_valididx_6,
+               io_tlb_0_resp_bits_s1_valididx_5, io_tlb_0_resp_bits_s1_valididx_4,
+               io_tlb_0_resp_bits_s1_valididx_3, io_tlb_0_resp_bits_s1_valididx_2,
+               io_tlb_0_resp_bits_s1_valididx_1, io_tlb_0_resp_bits_s1_valididx_0}),
+    .satp    (csr_satp_probe),
+    .s1_tag  (io_tlb_0_resp_bits_s1_entry_tag),
+    .pbmt    (io_tlb_0_resp_bits_s1_entry_pbmt),
+    .g_pbmt  (io_tlb_0_resp_bits_s2_entry_pbmt),
+    .s1_ppn  (io_tlb_0_resp_bits_s1_entry_ppn),
+    .ppn_low ({io_tlb_0_resp_bits_s1_ppn_low_7, io_tlb_0_resp_bits_s1_ppn_low_6,
+               io_tlb_0_resp_bits_s1_ppn_low_5, io_tlb_0_resp_bits_s1_ppn_low_4,
+               io_tlb_0_resp_bits_s1_ppn_low_3, io_tlb_0_resp_bits_s1_ppn_low_2,
+               io_tlb_0_resp_bits_s1_ppn_low_1, io_tlb_0_resp_bits_s1_ppn_low_0}),
+    .perm    ({io_tlb_0_resp_bits_s1_entry_perm_d, io_tlb_0_resp_bits_s1_entry_perm_a,
+               io_tlb_0_resp_bits_s1_entry_perm_g, io_tlb_0_resp_bits_s1_entry_perm_u,
+               io_tlb_0_resp_bits_s1_entry_perm_x, io_tlb_0_resp_bits_s1_entry_perm_w,
+               io_tlb_0_resp_bits_s1_entry_perm_r}),
+    .level   (io_tlb_0_resp_bits_s1_entry_level),
+    .pf      (io_tlb_0_resp_bits_s1_pf),
+    .pteidx  ({io_tlb_0_resp_bits_s1_pteidx_7, io_tlb_0_resp_bits_s1_pteidx_6,
+               io_tlb_0_resp_bits_s1_pteidx_5, io_tlb_0_resp_bits_s1_pteidx_4,
+               io_tlb_0_resp_bits_s1_pteidx_3, io_tlb_0_resp_bits_s1_pteidx_2,
+               io_tlb_0_resp_bits_s1_pteidx_1, io_tlb_0_resp_bits_s1_pteidx_0}),
+    .vsatp   (csr_vsatp_probe),
+    .hgatp   (csr_hgatp_probe),
+    .s2_tag  (io_tlb_0_resp_bits_s2_entry_tag),
+    .g_perm  ({io_tlb_0_resp_bits_s2_entry_perm_d, io_tlb_0_resp_bits_s2_entry_perm_a,
+               io_tlb_0_resp_bits_s2_entry_perm_g, io_tlb_0_resp_bits_s2_entry_perm_u,
+               io_tlb_0_resp_bits_s2_entry_perm_x, io_tlb_0_resp_bits_s2_entry_perm_w,
+               io_tlb_0_resp_bits_s2_entry_perm_r}),
+    .g_level (io_tlb_0_resp_bits_s2_entry_level),
+    .s2_ppn  (io_tlb_0_resp_bits_s2_entry_ppn),
+    .gpf     (io_tlb_0_resp_bits_s2_gpf),
+    .s2xlate (io_tlb_0_resp_bits_s2xlate),
+    .coreid  (difftest_coreid),
+    .index   (8'h0));
+
+  assign gatewayIn_packed_45_bore = pack_l2tlb_probe(
+    .valid   (tlb1_resp_fire & ~io_tlb_1_resp_bits_s1_af & ~io_tlb_1_resp_bits_s2_gaf),
+    .valididx({io_tlb_1_resp_bits_s1_valididx_7, io_tlb_1_resp_bits_s1_valididx_6,
+               io_tlb_1_resp_bits_s1_valididx_5, io_tlb_1_resp_bits_s1_valididx_4,
+               io_tlb_1_resp_bits_s1_valididx_3, io_tlb_1_resp_bits_s1_valididx_2,
+               io_tlb_1_resp_bits_s1_valididx_1, io_tlb_1_resp_bits_s1_valididx_0}),
+    .satp    (csr_satp_probe),
+    .s1_tag  (io_tlb_1_resp_bits_s1_entry_tag),
+    .pbmt    (io_tlb_1_resp_bits_s1_entry_pbmt),
+    .g_pbmt  (io_tlb_1_resp_bits_s2_entry_pbmt),
+    .s1_ppn  (io_tlb_1_resp_bits_s1_entry_ppn),
+    .ppn_low ({io_tlb_1_resp_bits_s1_ppn_low_7, io_tlb_1_resp_bits_s1_ppn_low_6,
+               io_tlb_1_resp_bits_s1_ppn_low_5, io_tlb_1_resp_bits_s1_ppn_low_4,
+               io_tlb_1_resp_bits_s1_ppn_low_3, io_tlb_1_resp_bits_s1_ppn_low_2,
+               io_tlb_1_resp_bits_s1_ppn_low_1, io_tlb_1_resp_bits_s1_ppn_low_0}),
+    .perm    ({io_tlb_1_resp_bits_s1_entry_perm_d, io_tlb_1_resp_bits_s1_entry_perm_a,
+               io_tlb_1_resp_bits_s1_entry_perm_g, io_tlb_1_resp_bits_s1_entry_perm_u,
+               io_tlb_1_resp_bits_s1_entry_perm_x, io_tlb_1_resp_bits_s1_entry_perm_w,
+               io_tlb_1_resp_bits_s1_entry_perm_r}),
+    .level   (io_tlb_1_resp_bits_s1_entry_level),
+    .pf      (io_tlb_1_resp_bits_s1_pf),
+    .pteidx  ({io_tlb_1_resp_bits_s1_pteidx_7, io_tlb_1_resp_bits_s1_pteidx_6,
+               io_tlb_1_resp_bits_s1_pteidx_5, io_tlb_1_resp_bits_s1_pteidx_4,
+               io_tlb_1_resp_bits_s1_pteidx_3, io_tlb_1_resp_bits_s1_pteidx_2,
+               io_tlb_1_resp_bits_s1_pteidx_1, io_tlb_1_resp_bits_s1_pteidx_0}),
+    .vsatp   (csr_vsatp_probe),
+    .hgatp   (csr_hgatp_probe),
+    .s2_tag  (io_tlb_1_resp_bits_s2_entry_tag),
+    .g_perm  ({io_tlb_1_resp_bits_s2_entry_perm_d, io_tlb_1_resp_bits_s2_entry_perm_a,
+               io_tlb_1_resp_bits_s2_entry_perm_g, io_tlb_1_resp_bits_s2_entry_perm_u,
+               io_tlb_1_resp_bits_s2_entry_perm_x, io_tlb_1_resp_bits_s2_entry_perm_w,
+               io_tlb_1_resp_bits_s2_entry_perm_r}),
+    .g_level (io_tlb_1_resp_bits_s2_entry_level),
+    .s2_ppn  (io_tlb_1_resp_bits_s2_entry_ppn),
+    .gpf     (io_tlb_1_resp_bits_s2_gpf),
+    .s2xlate (io_tlb_1_resp_bits_s2xlate),
+    .coreid  (difftest_coreid),
+    .index   (8'h1));
 
   // ==========================================================================
   // 11. 性能事件两级打拍

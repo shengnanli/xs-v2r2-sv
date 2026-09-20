@@ -11,6 +11,7 @@ L2TLB（共享 MMU 顶层集成）机械派生区生成器 —— 本轮单文�
   ports   核 xs_L2TLB_core 的扁平端口表（与 golden L2TLB 逐位同名，376 个）
   wires   各子模块输出网声明（可读名 = <可读实例名>_<端口尾巴>）
   driven  核必须手写驱动的 glue 输入网声明
+  tlb_resp_out outArb 输出 -> 顶层 io_tlb_{0,1}_resp_bits_* 的 1:1 直驱（无逻辑）
   inst    全部子模块实例的端口连接表
   wrapper module L2TLB 的端口表与到 u_core 的直通连接
 
@@ -129,6 +130,9 @@ for _m, _g, _r in INSTANCES:
             OUTNETS[out_net_name(_r, p)] = w
 
 DRIVEN = {}
+# 顶层输出里，被实例区**直接**连到子模块 output pin 的那些（golden 就是这么连的）。
+# 它们已经有驱动，tlb_resp_out 区必须跳过，否则就是多驱动。
+INST_DRIVEN_TOPS = set()
 CONST_RE = re.compile(r"^(\d+'[hbodHBOD][0-9a-fA-FxzXZ_]+|\d+)$")
 
 
@@ -140,7 +144,10 @@ def emit_inst(mod, gold, read):
             body.append(f"    .{port:<32}({port})"); continue
         d, w = dirs.get(port, ("input", 1))
         if d == "output":
-            body.append(f"    .{port:<32}({rename_net(rhs)})"); continue
+            rn = rename_net(rhs)
+            if rn in TOPSET:
+                INST_DRIVEN_TOPS.add(rn)
+            body.append(f"    .{port:<32}({rn})"); continue
         if re.fullmatch(r"\w+", rhs) and rhs in TOPSET:
             body.append(f"    .{port:<32}({rhs})"); continue
         if CONST_RE.match(rhs):
@@ -242,6 +249,30 @@ def build():
          for k in (0, 1) for t in tails
          if f"u_out_arb_{k}__in_0_bits_s1_{t}" in DRIVEN
          and not t.startswith("ppn_low_")])   # ppn_low 在 G1 有 napot 改写，手写区处理
+
+    # ★2026-09-20 新增★ outArb_{0,1}.out.bits.<tail>（扁平网）-> 顶层 io_tlb_{k}_resp_bits_<tail>
+    # 为什么必须有这一区：落地那一版**漏了这 100 条**，152 个核输出里 103 个悬空，
+    # UT 一跑 impl 侧整片 `z`（errors=20,600,000）。原来的 check_l2tlb_driven.py 只查
+    # "子模块 glue 输入有没有被驱动"，**没有任何闸看核自己的输出**，于是漏驱动一路绿灯
+    # 走到 UT 才现形。现在这一区由生成器出，配 check_l2tlb_driven.py 的输出闸把守。
+    #
+    # golden 对这一族的写法分两种，这里必须**照抄它的分法**：
+    #   · 14 条（entry_asid/vmid/n/v、addr_low、s2_entry_vmid/n）golden 把 arbiter 的
+    #     output pin **直接**连到顶层端口 —— 实例区已经连好，本区跳过（INST_DRIVEN_TOPS）；
+    #   · 其余 102 条 golden 走一根中间网再 assign —— 本区生成，1:1 无逻辑。
+    def _tlb_resp_pairs():
+        out = []
+        for _d, _w, n in TOP_PORTS:
+            if _d != "output" or n in INST_DRIVEN_TOPS:
+                continue
+            m2 = re.fullmatch(r"io_tlb_(\d)_resp_bits_(.+)", n)
+            if not m2:
+                continue
+            net = f"u_out_arb_{m2.group(1)}_out_bits_{m2.group(2)}"
+            assert net in OUTNETS, f"{n}: 对应的 outArb 输出网 {net} 不存在"
+            out.append((n, net))
+        return out
+    secs["tlb_resp_out"] = emit_flatmap(_tlb_resp_pairs())
 
     # perf 两级打拍结果 -> io_perf_<i>_value
     perf_re = re.compile(r"io_perf_(\d+)_value")
