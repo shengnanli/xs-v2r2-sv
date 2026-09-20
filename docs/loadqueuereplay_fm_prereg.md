@@ -606,3 +606,130 @@ CONVENTIONS 写得很清楚：★appvar 也是判据，改它之前必须双向�
 `green_child_closure_checks` 是空的（那套机制只在 assembly + `verif/allow/<top>.json`
 的 `class: green_child` 下生效，strict + matched blackbox 走不到）。
 依赖声明现在只在 Makefile 注释与本文件里，**人能读、机器读不到**。
+
+---
+---
+
+# run #4：拆掉钉点文件里的两个 appvar 与 `setup`，重跑出证
+
+## 起因：★我守的那个 `exit 3` 一行都执行不到，我的"负测"是空的★
+
+另一条 lane 指出 `set_user_match` 从不抛 Tcl 异常。**我用两容器最小设计实测，它是对的**：
+
+```tcl
+read_verilog -r tiny.v ; set_top r:/WORK/tiny
+read_verilog -i tiny.v ; set_top i:/WORK/tiny
+set rc [catch {set_user_match r:/WORK/tiny/r_reg i:/WORK/tiny/r_reg} m]            ;# 名字都在
+set rc [catch {set_user_match r:/WORK/tiny/r_reg i:/WORK/tiny/THIS_DOES_NOT_EXIST} m]  ;# 名字不在
+```
+
+    名字都在   -> catch_rc=0, 返回值 1
+    名字不存在 -> catch_rc=0, 返回值 0, 并往 fm.log 写行首 `Error: Unknown name: ... (FM-036)`
+
+⇒ 上一版 `if {[catch {set_user_match ...}]} {incr BAD} else {incr OK}` 里 **BAD 恒 0**，
+末尾 `exit 3` **不可达**，日志里那个 `rejected=0` 是恒真的，不是测出来的。
+
+★更该记的是我那个"双向负测"为什么没抓到它★：桩写的是 `error "Unknown name..."`，
+**模拟的是一个不存在的行为**。于是它只证明了"如果它抛异常我能抓到"，而它不抛。
+CONVENTIONS 要求"闸的负测必须双向"，这里补一条：**负测的桩必须照真命令的真行为建模，
+否则负测本身就是空的**。这一条和"变异体必须自证改变了电路"是同一族。
+
+## 两个 appvar：我先前的判断没有测量支撑，这次补测了
+
+钉点文件里原有两行（`fm_eq.tcl` 自己一个都不设，所以它们是唯一来源）：
+
+    set_app_var verification_assume_reg_init      none      # 默认 Auto
+    set_app_var verification_set_undriven_signals BINARY    # 默认 binary:X
+
+**(1) `BINARY` 不等于默认。** `get_app_var` 逐字读回：默认 `binary:X`，设成 `BINARY` 后读回
+`BINARY`。★我先前报告里说它"就是默认值、是个空操作"，错了，这里更正。★
+
+用 Rob 那套四跑探针（`evidence/rob-selfcompare-4aa8838b/undriven_safety/` 的原样源码）
+扩成三档 × 两种 ref 实测（impl 固定为经典缺陷：`o2` 漏驱动）：
+
+| ref 驱动 o2 | `binary:X`（默认） | `BINARY` | `0` |
+|---|---|---|---|
+| `a & b` 真逻辑 | FAILED(1) | FAILED(1) | FAILED(1) |
+| `a & ~a` 死驱动 | FAILED(1) | FAILED(1) | ★SUCCEEDED —— 缺陷被遮★ |
+
+探针**自证有分辨力**：它确实把 `0` 那档和另外两档分开了（复现 Rob 的结论）。
+而 `BINARY` 与 `binary:X` 两档**行为完全相同** ⇒ 没有证据说它是放宽，也没有证据说它有用。
+
+**(2) `verification_assume_reg_init none`：我造了两个探针，两个都分辨不出 `Auto` 与 `None`。**
+
+    探针 A：ref/impl 各有一个从不被写的寄存器，初值 0 vs 1   -> Auto FAILED(1) / None FAILED(1)
+    探针 B：ref 是从不被写的寄存器(初值 0)，impl 折成常量 0  -> Auto FAILED(1) / None FAILED(1)
+
+★两个探针都**没有**自证分辨力，所以它们什么都没证明。★
+我先前报告里写"方向上是加强"，那是**没有测量支撑的推断**，这里更正为：**未确定**。
+
+## 处置：选 (c)，理由
+
+**(c) = 把 `setup` 与两个 `set_app_var` 一并从钉点文件删掉，回到工具默认，并重跑出证。**
+
+- 不选 (a)（挪进 Makefile/共享入口）：那是把一个**未经论证**的目标专属旋钮塞进共享配置，
+  等于把问题换个地方放着；而且 `BINARY` 那档已实测与默认同行为，`none` 那档未确定，
+  两个都没有"必须保留"的理由。
+- 不选 (b)（保留 + 补负测 + 开 P1 豁免）：`P1` 按设计对谁都不豁免，开豁免要动闸；
+  而且我补的负测结论是"一个与默认同行为、一个未确定"，**论证不出"必须保留"**，
+  拿这种结论去申请豁免是本末倒置。
+- (c) 的关键好处：**重跑同时就是那个决定性实验**。删掉之后如果结果逐位不变，
+  就地证明了这两个旋钮对本目标是惰性的；如果结果变了，那才是真发现。
+  ★而且 (a)/(b) 也一样绕不过重跑★（改的是证明输入），所以 (c) 不比它们贵。
+- 顺带：既然要重跑，第二步那些守卫改动（`catch`→返回值、`exit`→`error`、
+  期望数量、marker）就一并进这一跑。**一次真跑强于一次等价性论证**，
+  所以我没有用 `pin_call_equiv` 免跑 —— 但我仍然做了那个比对（见下），当交叉验证。
+
+★没有采用的做法：为了过闸把 appvar 悄悄删掉而不重跑。★ 那等于改了证明输入而证据没动。
+
+## 守卫改动是"守卫专属"的（交叉验证，不用于免跑）
+
+桩照真行为建模（返回 1/0、从不抛），跑两版并逐字节比对实际发生的调用序列：
+
+    已出证版本 75e1d8be : 6290 行  sha256 32344c5ae0c260454d232c432547589f002af80da565a57464515c3da52008d0
+    新版本               : 6290 行  sha256 32344c5ae0c260454d232c432547589f002af80da565a57464515c3da52008d0
+    cmp -> 逐字节相同
+
+新守卫的双向负测（这次桩建模的是**真行为**）：
+
+    正例（全返回 1）  -> LQR_PIN_END n=6290 miss=0 expect=6290，不抛
+    负例（让 6 条返回 0）-> 逐条打 LQR_PIN_FAIL，末尾 error
+                          `LQR_PIN_MISS=LoadQueueReplay miss=6 first=r:.../blockSqIdx_37_value_reg[0] <-> ...`
+
+## 期望数量 6290 是**我自己分析式手算**出来的，不是抄的
+
+按 13 组循环逐组相乘（与桩执行计数两法互证）：
+
+    ent 4 字段 x 72                288
+    dataInLastBeat                  72
+    s0_loadFreeSelMask 72 位        72
+    missMSHRId+tlbHintId 72x5x2    720
+    cause 72x11                    792
+    debug_vaddr 72x50             3600
+    blockSqIdx 72x(1+6)            504
+    s1/s2 oldestSel 3x(2+7x2)       48
+    lastReplay+coldCounter 3x5      15
+    redirect 2x3x(1+1+1+8)          66
+    tl_d blocking_REG 3x(1+4)       15
+    s2 causes+mshr 3x(11+5)         48
+    perf k=3->2 ; 其余 12 组 x4      50
+    ----------------------------------
+                                  6290
+
+（转达里提到有人第一版心算成 1990。**差的正是 `debug_vaddr` 那 3600 那一整族** ——
+1990 + 3600 = 5590 仍不对，说明不止漏一族。这也是为什么这个数必须两法互证。）
+
+## run #4 预登记（★写在跑之前★）
+
+| # | 量 | 预测 | 判 miss |
+|---|---|---|---|
+| R1 | `stats.passing` | **114,160**，与 run #3 **逐位不变** | 任何别的值 |
+| R2 | unread / failing / unverified / aborted | 全 **0** | 任一 ≠ 0 |
+| R3 | `unmatched` 六项 | 全 **0** | 任一 ≠ 0 |
+| R4 | verdict | **SUCCEEDED** | 别的值 |
+| R5 | `grep -cE "^ *Error:" fm.log` | **0** | > 0 |
+| R6 | fm.log 里 | `LQR_PIN_END LoadQueueReplay n=6290 miss=0 expect=6290` | 别的值或没有这一行 |
+| R7 | `scripts/test_fm_pins_wellformed.py` 对本文件 | **ok** | 仍 FAIL |
+
+★R1 是这次的主判据★：如果 passing 变了，说明那两个 appvar 对本目标**不是**惰性的，
+run #3 的绿就建立在一个没论证过的旋钮上 —— 那样的话这一跑才是真正重要的发现。
