@@ -172,21 +172,26 @@ def cmd_check(targets, receipts=None):
         if reg_commit and impl_commit:
             anc, _ = git('merge-base', '--is-ancestor', reg_commit, impl_commit)
         verdict, bad = None, False
-        if not reg['model_applicable']:
-            verdict = f'MODEL_NA（merge_dup={reg["merge_dup"]}，模型不适用）'
-            bad = True
-        elif anc != 0:
-            verdict = '★登记不早于该次证明 —— 可能是事后补的★'
-            bad = True
-        elif actual is None:
+        if actual is None:
             verdict = '★receipt 里没有 passing★'; bad = True
-        elif gap < 0:
-            verdict = f'★实测高于模型上界 {-gap} —— 模型或闭包算漏了★'; bad = True
-        elif gap == explained:
-            verdict = ('逐位相等' if gap == 0 else
-                       f'差额被指认（constant_reg {const} + unread {unread}）')
         else:
-            verdict = f'★余额 {gap - explained} 指认不了★'; bad = True
+            regs = reg.get('regs', 0)
+            bad, why = _judge(reg['expected'], actual, const, unread,
+                              reg['model_applicable'], anc == 0, regs)
+            width = 100.0 * regs / reg['expected'] if reg['expected'] else 0
+            verdict = {
+                'EXACT': '逐位相等',
+                'EXPLAINED': f'差额被指认（constant_reg {const} + unread {unread}）',
+                'REGISTERED_TOO_LATE': '★登记不早于该次证明 —— 可能是事后补的★',
+                'ABOVE_MODEL': f'★实测高于模型上界 {-gap} —— 模型或闭包算漏了★',
+                'UNEXPLAINED': f'★余额 {gap - explained} 指认不了★',
+                'UNEXPLAINED_EVEN_BOUNDED':
+                    f'★连 merge 上界都兜不住：余额 {gap - explained - regs}★',
+            }.get(why, why)
+            if why.startswith('BOUNDED'):
+                verdict = (f'落在 merge 带内 {why}（带宽 {width:.1f}%'
+                           + ('，★带宽过大、这条结论近乎无信息★' if width > 30
+                              else '') + '）')
         print(f'{t:<24}{reg["expected"]:>8}{(actual if actual is not None else 0):>8}'
               f'{gap:>7}{explained:>8}  {verdict}')
         rc_all |= 1 if bad else 0
@@ -196,18 +201,35 @@ def cmd_check(targets, receipts=None):
 
 
 # ---------------------------------------------------------------------------
-def _judge(expected, actual, const, unread, applicable, anc_ok):
-    """纯判据，抽出来才好负测。返回 (是否红, 理由)。"""
-    if not applicable:
-        return True, 'MODEL_NA'
+def _judge(expected, actual, const, unread, applicable, anc_ok, regs=0):
+    """纯判据，抽出来才好负测。返回 (是否红, 理由)。
+
+    ★merge_dup=true 不是"模型不适用"，是"模型带一条上界宽 regs 的带"★
+    （2026-09-20 修正，被 NewDispatch 逼出来的）：
+    `merge_duplicated_registers` 只会把**寄存器**导出的比较点合并掉，
+    顶层 output 端口的比较点一个都不会少。所以它能造成的偏差**上界就是 regs**：
+
+        expected - regs - (const + unread)  <=  actual  <=  expected
+
+    这条带有多宽完全取决于目标形状，必须报出来让人自己判：
+      NewDispatch  regs 358 / outs 51563 -> 带宽占 0.7%，模型仍然很有用
+      IBuffer      regs 7079 / outs 1213 -> 带宽占 85%，★这条带近乎无信息★
+    第一版一律给 MODEL_NA 太钝：它把"带很窄"和"带几乎无限宽"混为一谈。
+    """
     if not anc_ok:
         return True, 'REGISTERED_TOO_LATE'
     gap = expected - actual
     if gap < 0:
         return True, 'ABOVE_MODEL'
-    if gap == (const + unread):
-        return False, 'EXACT' if gap == 0 else 'EXPLAINED'
-    return True, 'UNEXPLAINED'
+    explained = const + unread
+    if applicable:
+        if gap == explained:
+            return False, 'EXACT' if gap == 0 else 'EXPLAINED'
+        return True, 'UNEXPLAINED'
+    # merge_dup=true：落在带内算过，但标明是**弱结论**并附带宽
+    if gap <= explained + regs:
+        return False, f'BOUNDED(<=+{regs})'
+    return True, 'UNEXPLAINED_EVEN_BOUNDED'
 
 
 def selftest():
@@ -222,8 +244,12 @@ def selftest():
          100, 94, 0, 6, True, True, False),
         ('★反例 指认不了（IBuffer 实测 8292/7902，只有 const6+unread6=12）★',
          8292, 7902, 6, 6, True, True, True),
-        ('★反例 模型不适用（merge_dup=true）★',
-         8292, 7902, 6, 6, False, True, True),
+        ('★带宽过大时仍算过、但必须标成弱结论（IBuffer merge_dup=true，regs 7079）★',
+         8292, 7902, 6, 6, False, True, False),
+        ('★反例 merge 上界都兜不住（regs 只有 100，差额 390）★',
+         8292, 7902, 6, 6, False, True, True, 100),
+        ('正例 带很窄时模型仍有用（NewDispatch 形状：regs 358）',
+         51921, 51600, 0, 0, False, True, False, 358),
         ('★反例 登记不早于证明（事后补登记）★',
          1394, 1394, 0, 0, True, False, True),
         ('★反例 实测高于模型上界（模型算漏了）★',
@@ -231,8 +257,10 @@ def selftest():
     ]
     rc = 0
     print('fm_predict --selftest:')
-    for name, e, a, c, u, ap, anc, want_red in cases:
-        red, why = _judge(e, a, c, u, ap, anc)
+    for case in cases:
+        name, e, a, c, u, ap, anc, want_red = case[:8]
+        regs = case[8] if len(case) > 8 else (7079 if not ap else 0)
+        red, why = _judge(e, a, c, u, ap, anc, regs)
         ok = (red == want_red)
         print(f'  [{"OK" if ok else "FAIL"}] {name} -> '
               f'{"红" if red else "绿"}/{why}（期望{"红" if want_red else "绿"}）')
