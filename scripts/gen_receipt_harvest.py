@@ -151,7 +151,17 @@ VERDICT_RANK = {'COLLECTED': 0, 'SUPERSEDED': 1, 'NEEDS_RERUN': 2,
 _band_cache = {}
 
 
-def mdup_band(target):
+def mdup_band(target, merge_dup):
+    # merge_dup=false 时 merge 根本没开，模型是**精确**的，带宽这个概念不适用。
+    # 第一版这一列不看 merge_dup、一律打百分比，于是 InterruptFilter（merge_dup=false，
+    # 模型精确）显示成 `85.6%/wide` —— 读表的人会读成"这行模型近乎无信息"，
+    # 恰好读反。带宽只有在 merge 真的开着的时候才有意义。
+    if merge_dup == 'false':
+        return 'exact'
+    return _mdup_band_pct(target)
+
+
+def _mdup_band_pct(target):
     """merge_dup=true 时，passing 模型的**不确定带宽**有多宽。
 
     ★这一列不参与任何判决★，本表八项判据全是 sha256 与差分调用序列，与 passing
@@ -823,7 +833,7 @@ def build(only=None):
         others.sort(key=lambda r: (r['ev_id'],))
         rows.append([
             tgt, str(gl.get(tgt, 0)), lead['_impl_in_main'],
-            'yes' if lead['in_vcs'] else 'no', lead['merge_dup'], mdup_band(tgt),
+            'yes' if lead['in_vcs'] else 'no', lead['merge_dup'], mdup_band(tgt, lead['merge_dup']),
             lead['_checks']['chk_golden'], lead['_checks']['chk_impl'],
             lead['_checks']['chk_fm_eq'], lead['_checks']['chk_pins'],
             lead['_checks']['chk_emitter'], lead['_checks']['chk_decl'],
@@ -864,6 +874,7 @@ def render(rows, led):
     out.append('#   但"merge_dup=true 就一律模型不适用"太钝：merge 只合并**寄存器**导出的比较点，')
     out.append('#   顶层 output 端口一个不少，所以偏差上界就是 regs，mdup_band = regs/(regs+outs)。')
     out.append('#   带窄（如 NewDispatch 0.7%）模型照样好用，带宽（IBuffer 85%）才真判不了，>30% 标 wide。')
+    out.append('#   merge_dup=false 的行写 `exact`：merge 没开，模型是精确的，"带宽"这个概念不适用。')
     out.append('#   ★本表一项判据都没用模型★：八项全是 sha256 逐项比对 + fm_eq 差分调用序列，')
     out.append('#   与 passing 数无关。这两列是给读表的人防误读用的，不是红灯。')
     out.append('#')
