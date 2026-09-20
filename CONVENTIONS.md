@@ -1620,3 +1620,46 @@ InterruptFilter 实测（`FM_MERGE_DUP=false`）：比较点全集 578 =
 那 138 位就是两侧都恒为常量的寄存器 —— **两侧都有、都是 0、都不产生比较内容**。
 所以做 passing 预测时它们要算进「可指认的缺口」（`scripts/fm_predict.py` 的
 `constant_reg` 项），**不能指望它们变成 passing**。
+
+## ★Makefile 里的**空赋值** `VAR =` 会被按行正则的读表脚本吃掉下一行★（2026-09-20，InterruptFilter 实测）
+
+仓里好几个读表脚本是用正则直接扫 `verif/ut/*/Makefile` 的，形如
+
+```python
+txt = re.sub(r'\\\n', ' ', mk.read_text())          # 先把续行接起来
+m = re.search(r'^RTL_GOLDEN_DEPS\s*=\s*(.*)$', txt, re.M)
+```
+
+★`\s` 匹配换行★。所以当 Makefile 里写了一个**空赋值**：
+
+```make
+RTL_GOLDEN_DEPS =
+
+GOLDEN_SRCS = $(GOLDEN_RTL)/InterruptFilter.sv \
+              $(GOLDEN_RTL)/DelayN_17.sv
+```
+
+`\s*` 会一路吃过换行和空行，`(.*)$` 捕到的是**下一行非空内容**，
+于是脚本认为 `RTL_GOLDEN_DEPS = GOLDEN_SRCS = .../InterruptFilter.sv ...`。
+
+实测后果（`scripts/coverage_three_axis.py` 的 `golden_reuse_set()`）：
+`InterruptFilter` 被判成 `GOLDEN_REUSE`（按裁定"不算重写完成"），
+而它当时明明已经是 impl 侧全重写件、FM `SUCCEEDED` 的目标。
+**这不会报错，只会让台账悄悄记反**。
+
+### 规矩
+
+1. **不要写空赋值**。`scripts/ut_common.mk` 对这类变量已有 `?=` 默认值
+   （`RTL_GOLDEN_DEPS ?=`、`PORTLINT_EXTRA_SRCS ?=` …），不需要的就**整行不写**。
+   要表达"我确实不需要"，写注释，别写空赋值。
+2. `make --eval` 展开值与正则读到的值**可能不一致** —— 前者是权威，后者是近似。
+   判据由正则读表脚本产出时，遇到反直觉的分类先**核对正则读到了什么**，
+   再怀疑设计（`re.finditer` 打一行出来就看见了）。
+3. 读表脚本自己的修法是把 `=` 后面的 `\s*` 收窄成 `[^\S\n]*`；
+   但那是共享脚本，**改它会动全仓分类**，属另一件事，不要顺手在 lane 里改。
+
+### 自查一行
+
+```bash
+for f in verif/ut/*/Makefile; do grep -qE '^[A-Z_]+ *= *$' "$f" && echo "$f"; done
+```

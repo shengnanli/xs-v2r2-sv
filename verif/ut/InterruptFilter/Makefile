@@ -16,7 +16,13 @@ RTL_SRCS = $(RTL_DIR)/backend/InterruptFilter.sv \
 TB_SRCS  = tb.sv
 
 FM_REF_DEPS_InterruptFilter = DelayN_17.sv DelayN_208.sv
-RTL_GOLDEN_DEPS =
+# ★这里**不写** `RTL_GOLDEN_DEPS =`★（ut_common.mk 已有 `RTL_GOLDEN_DEPS ?=` 默认空）。
+# 实测：写成空赋值会被仓里按行正则读 Makefile 的脚本误读 ——
+#   scripts/coverage_three_axis.py 的 golden_reuse_set() 用
+#   `^RTL_GOLDEN_DEPS\s*=\s*(.*)$`，而 `\s` 吃换行，于是空赋值后面那一行
+#   （`GOLDEN_SRCS = .../InterruptFilter.sv ...`）被当成了本变量的值，
+#   InterruptFilter 因此被误判成 GOLDEN_REUSE（"按裁定不算重写完成"）。
+# make 的展开值两种写法完全一样（已 `make --eval` 逐字对照），删掉纯粹是消歧义。
 
 GOLDEN_SRCS = $(GOLDEN_RTL)/InterruptFilter.sv \
               $(GOLDEN_RTL)/DelayN_17.sv \
