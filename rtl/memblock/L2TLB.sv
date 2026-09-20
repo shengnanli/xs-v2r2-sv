@@ -35,7 +35,7 @@
 //     · LLPTW 的 PMP 口由 1 个变 2 个（故 PMPChecker 由 3 个变 5 个）
 //     · G0 里被常量折叠掉的 toFsm_toLLPTW / toFsm_toPTW 在 G1 是真信号
 // ============================================================================
-// 本文件导航（共 11531 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+// 本文件导航（共 11544 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
 //   L59    设计意图来源：src/main/scala/xiangshan/cache/mmu/L2TLB.scala
 //   L95    l2tlb_pkg —— 本模块私有的参数 / 类型 / 纯函数
 //   L97    参数值由本配置
@@ -71,24 +71,24 @@
 //   L3534  mem_arb 四路
 //   L3713  6b. cache.refill 装配
 //   L3715  访存回来且不丢弃时置 refill_valid，打一拍给 cache.refill.valid；bits 在
-//   L3807  7. HPTW 响应分发
-//   L3809  hptw_resp_arb：in(0)=page cache 命中的 hptw 响应，in(1)=HPTW 自己的响应
-//   L3819  8. 输出合并：mergeArb 三路 + outArb → ITLB/DTLB resp
-//   L3821  每条 PtwWidth(ITLB/DTLB) 各一组 mergeArb(3 路)+outArb(1 路)：
-//   L3826  -- llptw_stage1：LLPTW 入队那拍按 enq_ptr 锁存 cache.resp.stage1，供
-//   L4863  9. PMP checker 请求装配 + prefetch 触发
-//   L4865  ★G1★ 5 个 PMPChecker：ptw / llptw 口0 / llptw 口1 / hptw / bitmap
-//   L4869  mode(ModeS=2'h1) 与 cmd(read) 在 golden 里就是写死的常量，实例区已直接给；
-//   L4881  12. Bitmap 检查引擎接线
-//   L4883  Bitmap 引擎按 PTE 的物理页号去查一张位图，判断该页是否可用
-//   L4899  10. 顶层输出直驱
-//   L5015  10b. difftest 探针
-//   L5017  这三条只给 difftest gateway 看，不进功能通路，但它们是**实打实的顶层输出**
-//   L5147  11. 性能事件两级打拍
-//   L5149  19 路：0..3 ← LLPTW，4..11 ← PtwCache，12..18 ← PTW
-//   L5201  子模块实例
-//   L5203  BEGIN GENERATED(inst)
-//   L10769 L2TLB —— 与 golden 端口逐位同名的外壳，直通到可读核
+//   L3820  7. HPTW 响应分发
+//   L3822  hptw_resp_arb：in(0)=page cache 命中的 hptw 响应，in(1)=HPTW 自己的响应
+//   L3832  8. 输出合并：mergeArb 三路 + outArb → ITLB/DTLB resp
+//   L3834  每条 PtwWidth(ITLB/DTLB) 各一组 mergeArb(3 路)+outArb(1 路)：
+//   L3839  -- llptw_stage1：LLPTW 入队那拍按 enq_ptr 锁存 cache.resp.stage1，供
+//   L4876  9. PMP checker 请求装配 + prefetch 触发
+//   L4878  ★G1★ 5 个 PMPChecker：ptw / llptw 口0 / llptw 口1 / hptw / bitmap
+//   L4882  mode(ModeS=2'h1) 与 cmd(read) 在 golden 里就是写死的常量，实例区已直接给；
+//   L4894  12. Bitmap 检查引擎接线
+//   L4896  Bitmap 引擎按 PTE 的物理页号去查一张位图，判断该页是否可用
+//   L4912  10. 顶层输出直驱
+//   L5028  10b. difftest 探针
+//   L5030  这三条只给 difftest gateway 看，不进功能通路，但它们是**实打实的顶层输出**
+//   L5160  11. 性能事件两级打拍
+//   L5162  19 路：0..3 ← LLPTW，4..11 ← PtwCache，12..18 ← PTW
+//   L5214  子模块实例
+//   L5216  BEGIN GENERATED(inst)
+//   L10782 L2TLB —— 与 golden 端口逐位同名的外壳，直通到可读核
 //
 
 // ============================================================================
@@ -3759,12 +3759,25 @@ module xs_L2TLB_core
   end
 
   ptw_req_info_t refill_req_info_r [3];
-  logic [1:0]    refill_level_r    [2];
+  // ★名字不能叫 refill_level_r★（2026-09-20 FM 实测的坑，改名不是美观问题）
+  // golden 里有两个**语义完全不同**的寄存器：refill_level_r（PTW 发访存时锁存的
+  // 级数）和 refill_level_r_1（HPTW 的那份）。本核把它们叫 ptw_/hptw_refill_level_r。
+  // 如果下面这个「送进 page cache 的 level 复制流水」再叫 refill_level_r[2]，
+  // fm_eq.tcl 的 auto_match_flattened_arrays 会按命名规则把
+  //   golden refill_level_r_1_reg[b]  ←→  impl refill_level_r_reg[1][b]
+  // 强行 set_user_match 上 —— 两个不相干的寄存器配成一对，之后整条 refill
+  // level 通路（level_dup_0/2 的 BBPin、5 个 levelOH、连带 cache/llptw/missQueue
+  // 的握手）全线报不等价。实测 evidence/2eb3d25b6e3e/L2TLB/sidecar/failing_points.txt：
+  //   Ref r:/WORK/L2TLB/refill_level_r_1_reg[0]
+  //   Impl i:/WORK/L2TLB/u_core/refill_level_r_reg[1][0]        ← 错配
+  //   Ref r:/WORK/L2TLB/cache_io_refill_bits_level_dup_0_r_reg[0]
+  //   Impl i:/WORK/L2TLB/u_core/hptw_refill_level_r_reg[0]      ← 跟着错配
+  logic [1:0]    cache_level_dup_r [2];
   logic [63:0]   refill_sel_pte_r  [2];
   always_ff @(posedge clock) if (refill_valid) begin
     for (int j = 0; j < 3; j++) refill_req_info_r[j] <= refill_req_info_sel;
     for (int j = 0; j < 2; j++) begin
-      refill_level_r[j]   <= refill_level;
+      cache_level_dup_r[j] <= refill_level;
       refill_sel_pte_r[j] <= get_part(refill_data_tmp, req_addr_low[d_src]);
     end
   end
@@ -3777,8 +3790,8 @@ module xs_L2TLB_core
   assign u_page_cache__refill_bits_req_info_dup_2_vpn     = refill_req_info_r[2].vpn;
   assign u_page_cache__refill_bits_req_info_dup_2_s2xlate = refill_req_info_r[2].s2xlate;
   assign u_page_cache__refill_bits_req_info_dup_2_source  = refill_req_info_r[2].source;
-  assign u_page_cache__refill_bits_level_dup_0   = refill_level_r[0];
-  assign u_page_cache__refill_bits_level_dup_2   = refill_level_r[1];
+  assign u_page_cache__refill_bits_level_dup_0   = cache_level_dup_r[0];
+  assign u_page_cache__refill_bits_level_dup_2   = cache_level_dup_r[1];
   assign u_page_cache__refill_bits_sel_pte_dup_0 = refill_sel_pte_r[0];
   assign u_page_cache__refill_bits_sel_pte_dup_2 = refill_sel_pte_r[1];
 
