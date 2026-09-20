@@ -71,7 +71,7 @@ def golden_reuse_set():
     out = set()
     for mk in (REPO / 'verif' / 'ut').glob('*/Makefile'):
         txt = re.sub(r'\\\n', ' ', mk.read_text())
-        m = re.search(r'^RTL_GOLDEN_DEPS\s*=\s*(.*)$', txt, re.M)
+        m = re.search(r'^RTL_GOLDEN_DEPS[^\S\n]*=[^\S\n]*(.*)$', txt, re.M)
         if m:
             for tok in m.group(1).split():
                 base = tok.split('/')[-1]
