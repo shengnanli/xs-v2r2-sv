@@ -146,7 +146,8 @@ for g in scripts/gen_tlbuffer_ad_family.py scripts/gen_mbist_pipe_family.py \
          scripts/gen_tlbnb_family.py scripts/gen_predictor.py \
          scripts/gen_rob.py scripts/gen_rob_ut.py \
          scripts/gen_sbuffer.py scripts/gen_sbuffer_tb.py \
-         scripts/gen_tlbsw_family.py; do
+         scripts/gen_tlbsw_family.py \
+         scripts/gen_ptwcache.py; do
   [ -f "$g" ] && run "生成器幂等 $(basename $g .py | sed 's/^gen_//')" python3 "$g" --check
 done
 # UT 目录下的生成器不在 check_gen_gate_complete.py 的扫描范围（它只扫 scripts/gen_*.py），
