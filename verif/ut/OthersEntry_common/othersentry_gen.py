@@ -944,6 +944,18 @@ def gen_stub(ov):
             f'sys.exit(main("{ov.mod}"))\n')
 
 
+def gen_pins_stub(mod):
+    """各变体目录下的 gen_fm_pins.py 薄壳：真代码在 OthersEntry_common/gen_fm_pins.py。"""
+    return (
+        "#!/usr/bin/env python3\n"
+        "# 薄壳: 真正的代码在 verif/ut/OthersEntry_common/gen_fm_pins.py\n"
+        "import sys, pathlib\n"
+        "sys.path.insert(0, str(pathlib.Path(__file__).resolve()"
+        ".parents[1] / 'OthersEntry_common'))\n"
+        "from gen_fm_pins import main\n"
+        "sys.exit(main('%s'))\n" % mod)
+
+
 def main(mod):
     check = '--check' in sys.argv
     ov = OthersVariant(mod)
@@ -957,8 +969,26 @@ def main(mod):
         here / 'tb.sv':    tb,
         here / 'Makefile': gen_mk(ov),
         here / 'gen.py':   gen_stub(ov),
+        here / 'gen_fm_pins.py': gen_pins_stub(mod),
     }
     bad = 0
+    # ★ 必须按**路径**导入，不能 `import gen_fm_pins` ★
+    #   本模块把 Entries_common 插进了 sys.path（为了 import entries_gen），
+    #   而那边也有一个同名的 gen_fm_pins.py —— 裸 import 会拿到 Entries 的那份，
+    #   然后它去 Variant("OthersEntry_72") 里找 enqEntries_0 实例，StopIteration。
+    #   （实测就是这么炸的；同名模块在共享 sys.path 下是静默的先到先得。）
+    import importlib.util as _ilu
+    _spec = _ilu.spec_from_file_location(
+        'oe_gen_fm_pins', str(HERE / 'gen_fm_pins.py'))
+    gen_fm_pins = _ilu.module_from_spec(_spec)
+    _spec.loader.exec_module(gen_fm_pins)
+    if check:
+        argv_save = list(sys.argv)
+        sys.argv = [sys.argv[0], '--check']
+        bad |= gen_fm_pins.main(mod)
+        sys.argv = argv_save
+    else:
+        gen_fm_pins.main(mod)
     for p, txt in files.items():
         if check:
             if not p.exists() or p.read_text() != txt:
