@@ -53,6 +53,17 @@ GOLDEN = os.environ.get(
 # random every cycle -- Rob must be bit-exact under arbitrary input, and
 # restricting the stimulus to "sensible" traffic is how a UT ends up only
 # exercising the shapes its author already believed in.
+# ★这 6 个入队 robIdx 走**连续赋值**，不走时钟块★
+# 为什么不能像别的输入那样在 always @(posedge) 里用 NBA 驱动：
+#   NBA 在边沿 N-1 排程 -> 边沿 N 生效，所以输入拿到的是**两个边沿以前**的指针值；
+#   而 DUT 在边沿 N 用的是它自己**边沿前**的 allocatePtr。指针一走就对不上。
+#   实测症状：条目 0 退休了、deqPtr 前进到 1，然后**又卡住**（换条目 1 卡），
+#   因为下一拍的 robIdx 已经陈旧。
+# 连续赋值则让两者在同一个边沿看到同一个值（寄存器都在边沿后才更新）。
+ENQ_ROBIDX = ['io_enq_req_%d_bits_robIdx_value' % j for j in range(6)]
+ENQ_ROBIDX_SRC = ['dut_g.enqPtrVec_0_value'] + [
+    'dut_g.allocatePtrVec_%d_value' % j for j in range(1, 6)]
+
 STRUCTURAL = ('clock', 'reset')
 
 
@@ -119,7 +130,14 @@ def build(ports, digest):
     A('')
     A('  // BEGIN GENERATED(nets)')
     for d, hi, lo, n in ins:
+        if n in ENQ_ROBIDX:
+            # 随机值放影子变量；端口本身是 wire，由下面的连续赋值驱动
+            A('  logic %srnd_%s;' % (rng(hi, lo), n))
+            continue
         A('  logic %s%s;' % (rng(hi, lo), n))
+    for j, n in enumerate(ENQ_ROBIDX):
+        A('  wire [7:0] %s = compare_open ? rnd_%s : %s;'
+          % (n, n, ENQ_ROBIDX_SRC[j]))
     for d, hi, lo, n in outs:
         A('  logic %sg_%s, x_%s;' % (rng(hi, lo), n, n))
     A('  // END GENERATED')
@@ -144,6 +162,9 @@ def build(ports, digest):
     A('  task automatic drive_random();')
     for d, hi, lo, n in ins:
         w = width(hi, lo)
+        if n in ENQ_ROBIDX:
+            A('    rnd_%s <= %d\'($urandom());' % (n, w))
+            continue
         if w <= 32:
             A('    %s <= %d\'($urandom());' % (n, w))
         else:
@@ -156,6 +177,19 @@ def build(ports, digest):
     A('  // is exactly what writes all 160 entries once. Writebacks sweep robIdx')
     A('  // so the exu/store debug arrays get written too.')
     A('  int unsigned wb_sweep = 0;')
+    A('')
+    A('  // ---- phase 0：开跑先来一次 redirect，把随机初值冲掉 ----------------')
+    A('  // ★为什么需要它（实测，不是推测）★：+vcs+initreg+random 那三轮')
+    A('  // (seed 1/7/42, 200k 拍) 全部 checks=0 —— 热身从未完成，')
+    A('  // enq_seen 只填到约 59/160，wb_seen 全 0(phase B 压根没启动)。')
+    A('  // 原因是 phase A 的前提在随机初值下不成立：条目的 uopNum/valid 随机，')
+    A('  // 已在队里的"垃圾条目"永远不满足 uopNum==0，deqPtr 冻住、队列排不空，')
+    A('  // enqPtr 走不满一圈。+vcs+initreg+0 时这些寄存器起始为 0，所以看不到。')
+    A('  // 修法：复位刚放开就发一拍 redirect(level=1, robIdx=0)，让 ROB 自己')
+    A('  // 走回/作废掉那些垃圾条目，进入一个确定的空队列，再开始 phase A。')
+    A('  // redirect 是**输入**，两侧收到的完全一样，不构成"用 golden 的状态造激励"。')
+    A('  int unsigned flush_cyc = 0;')
+    A('  wire phase_0 = flush_cyc < 400;')
     A('')
     A('  // Warm-up runs in TWO phases, because the two obligations fight each')
     A('  // other if you try to satisfy them at once. Diagnosed by watching the')
@@ -176,7 +210,7 @@ def build(ports, digest):
     A('  //      enqPtr=156 deqPtr=1 allowEnq=0 held for thousands of cycles.')
     A('  //   B: fill wb_seen. Sweep (port, robIdx) over all 25x160 pairs, one')
     A('  //      port at a time so uopNum cannot underflow.')
-    A('  wire phase_b = &enq_seen;   // continuous: a `bit` cannot take assign')
+    A('  wire phase_b = (&enq_seen) & ~phase_0;   // continuous: a `bit` cannot take assign')
     A('')
     A('  task automatic drive_warmup();')
     A('    drive_random();')
@@ -192,10 +226,73 @@ def build(ports, digest):
              or n.endswith('_bits_waitForward')
              or n.endswith('_bits_hasException')
              or n.endswith('_bits_isXSTrap')
-             or n == 'io_fromVecExcpMod_busy']
+             or n == 'io_fromVecExcpMod_busy'
+             # ★热身期间必须压住这两个，否则条目永远退不了休★（实测，不是推测）
+             # blockCommitInt = misPredBlock | lastCycleFlush | hasWFI
+             #                | io_redirect_valid | ... | io_trace_blockCommit
+             # · io_trace_blockCommit 是逐拍随机的输入，直接进 blockCommit；
+             # · io_wfi_enable 一旦让 hasWFI 置起来，清除条件是 `&wfi_cycles`
+             #   —— wfi_cycles 是 **20 位**，要跑满约 100 万拍才会自己清掉，
+             #   在 200k 拍的热身里等于**永久阻塞提交**。
+             # 加 phase 0 的 redirect 冲刷之后，enq_seen 从约 59/160 涨到 156/160，
+             # 卡住的正是最后 4 条 —— tb 文件头早写明了："enqPtr must pass 156,
+             # which needs entries to RETIRE"。退不了休的原因就是这两个输入。
+             # ★只在热身期压住；比对窗口打开后 drive_random() 照常全随机。★
+             or n == 'io_trace_blockCommit'
+             or n == 'io_wfi_enable']
     for n in QUIET:
         A("    %-42s <= 1'b0;" % n)
-    A('    if (!phase_b) begin')
+    A('    flush_cyc <= flush_cyc + 1;')
+    A('    if (phase_0) begin')
+    A('      io_redirect_valid            <= (flush_cyc < 8);')
+    A("      io_redirect_bits_level       <= 1'b1;")
+    A("      io_redirect_bits_robIdx_value<= 8'd0;")
+    A("      io_redirect_bits_robIdx_flag <= 1'b0;")
+    A("      io_enq_req_0_valid <= 1'b0;")
+    A("      io_enq_req_1_valid <= 1'b0;")
+    A("      io_enq_req_2_valid <= 1'b0;")
+    A("      io_enq_req_3_valid <= 1'b0;")
+    A("      io_enq_req_4_valid <= 1'b0;")
+    A("      io_enq_req_5_valid <= 1'b0;")
+    A("      io_exuWriteback_0_valid <= 1'b0;")
+    A("      io_exuWriteback_1_valid <= 1'b0;")
+    A("      io_exuWriteback_2_valid <= 1'b0;")
+    A("      io_exuWriteback_3_valid <= 1'b0;")
+    A("      io_exuWriteback_4_valid <= 1'b0;")
+    A("      io_exuWriteback_5_valid <= 1'b0;")
+    A("      io_exuWriteback_6_valid <= 1'b0;")
+    A("      io_exuWriteback_7_valid <= 1'b0;")
+    A("      io_exuWriteback_8_valid <= 1'b0;")
+    A("      io_exuWriteback_9_valid <= 1'b0;")
+    A("      io_exuWriteback_10_valid <= 1'b0;")
+    A("      io_exuWriteback_11_valid <= 1'b0;")
+    A("      io_exuWriteback_12_valid <= 1'b0;")
+    A("      io_exuWriteback_13_valid <= 1'b0;")
+    A("      io_exuWriteback_14_valid <= 1'b0;")
+    A("      io_exuWriteback_15_valid <= 1'b0;")
+    A("      io_exuWriteback_16_valid <= 1'b0;")
+    A("      io_exuWriteback_17_valid <= 1'b0;")
+    A("      io_exuWriteback_18_valid <= 1'b0;")
+    A("      io_exuWriteback_19_valid <= 1'b0;")
+    A("      io_exuWriteback_20_valid <= 1'b0;")
+    A("      io_exuWriteback_21_valid <= 1'b0;")
+    A("      io_exuWriteback_22_valid <= 1'b0;")
+    A("      io_exuWriteback_23_valid <= 1'b0;")
+    A("      io_exuWriteback_24_valid <= 1'b0;")
+    A('    end else if (!phase_b) begin')
+    A('      // ★入队请求里的 robIdx 必须等于 Rob 自己的分配指针★')
+    A('      // 这条不是"方便热身"，是**还原真实接线**：实机里 io_enq_req_*_bits_robIdx')
+    A('      // 来自 Rename，而 Rename 的这个值正是 Rob 给它的 enqPtr/allocatePtr。')
+    A('      // 随机驱动它反而是不现实的激励。')
+    A('      // 后果（实测定位到的 +random 热身真根因）：golden 里')
+    A('      //   valid   由 enqOH 置位     <- 用**内部**分配指针 allocatePtrVec_<j>')
+    A('      //   uopNum  由 instCanEnq 写  <- 用**输入** io_enq_req_<j>_bits_robIdx_value')
+    A('      // 两者用的不是同一个下标。robIdx 随机时，条目在分配指针处变 valid，')
+    A('      // 它的 uopNum 却没人写，于是保留 +vcs+initreg+random 塞进去的随机值')
+    A('      // （实测条目 0 是 127），永远不为 0 ⇒ 退不了休 ⇒ deqPtr 冻死。')
+    A('      // ★这解释了为什么 init_inputs / 压 blockCommit 都没用★：问题不在那一拍，')
+    A('      // 在"valid 和 uopNum 用了两个不同的下标"。两侧收到同一个输入值，')
+    A('      // 不构成"拿 golden 的状态造激励"意义上的作弊。')
     A('      // phase A: entries born committable, no writebacks at all')
     for p_ in range(6):
         A("      io_enq_req_%d_bits_numWB <= 7'd0;" % p_)
@@ -212,8 +309,36 @@ def build(ports, digest):
     A('    end')
     A('  endtask')
     A('')
+    A('  // ★复位期间输入必须是**确定值**，不能让它们带着随机/X 进设计★')
+    A('  // 实测（2026-09-20）：+vcs+initreg+random 下 tb 自己的输入寄存器也被随机化，')
+    A('  // 而驱动语句是 NBA、要到下一拍才生效 —— 于是复位刚放开的那一两拍，')
+    A('  // io_enq_req_*_valid 可能就是随机的 1、numWB 也是随机值。')
+    A('  // 后果不是"多一次无害的入队"：golden 的入队分支是')
+    A('  //     else if (~robEntries_<i>_valid & <enq 命中该条目>)  uopNum <= numWB')
+    A('  // ★只在条目**无效**时才重置 uopNum★。那一拍把条目 0 置成 valid=1、')
+    A('  // uopNum=<随机>（实测 127），之后 phase A 再怎么"入队"到条目 0 都不会')
+    A('  // 重置它（因为它已经 valid），uopNum 永不为 0 ⇒ 条目退不了休 ⇒')
+    A('  // deqPtr 冻在 0 ⇒ 队列排不空 ⇒ enq_seen 卡在 156/160，热身永远完不成。')
+    A('  // 这就是 +random 三个 seed 全 checks=0 的**最终根因**，')
+    A('  // ★两侧一致（golden 侧读到的也是 127），是激励缺口，不是 golden-vs-impl 分歧★。')
+    A('  task automatic init_inputs();')
+    for d, hi, lo, n in ins:
+        A('    %s = \'0;' % ('rnd_' + n if n in ENQ_ROBIDX else n))
+    A('  endtask')
+    A('')
+    A('  // 同一件事的**时钟域**版本：只靠 initial 里那一次阻塞赋值是不够的 ——')
+    A('  // `+vcs+initreg+random` 在时刻 0 给所有 reg 塞随机值，它与 initial 块的')
+    A('  // 先后**不保证**；实测加了 init_inputs() 之后 e0uopNum 仍是 127，说明')
+    A('  // initreg 跑在后面、把刚清好的输入又随机了回去。')
+    A('  // 所以复位期间**每拍**都把输入按 NBA 压成 0，与 initreg 的时刻 0 无关。')
+    A('  task automatic init_inputs_nb();')
+    for d, hi, lo, n in ins:
+        A('    %s <= \'0;' % ('rnd_' + n if n in ENQ_ROBIDX else n))
+    A('  endtask')
+    A('')
     A('  initial begin')
     A('    if (!$value$plusargs("ncycles=%d", ncycles)) ncycles = 200000;')
+    A('    init_inputs();          // ★时刻 0，阻塞赋值：复位期间输入就是确定的 0')
     A('    repeat (4) @(posedge clock);')
     A('    reset <= 1\'b0;')
     A('  end')
@@ -270,15 +395,27 @@ def build(ports, digest):
     A('        $display("  enq_seen=%h", enq_seen);')
     A('        $display("  wb_seen =%h", wb_seen);')
     A('        $display("checks=0 errors=1  (warm-up failure counts as an error)");')
+    A('        $display("TEST FAILED");')
     A('        $finish;')
     A('      end')
     A('      $display("checks=%0d errors=%0d", checks, errors);')
+    A('      // ★判绿字符串必须由 tb 打出来★：ut_common.mk 的 `run` 靠')
+    A('      // `grep -q "TEST PASSED"` 判定。实测(2026-09-20)本 tb 从来不打这个')
+    A('      // 字符串，于是三轮 errors=0 / checks=1.33e8 的干净跑全被判成')
+    A('      // RESULT=FAIL —— 方向是安全的(假阴性)，但判据与 tb 对不上就是没判据。')
+    A('      // ★三个条件同时满足才打★，任何一个不满足都只打 TEST FAILED：')
+    A('      //   errors==0、比对窗口真的开过、checks>0(比过东西)。')
+    A('      // 少任何一条都会让"什么都没比"长得像通过 —— 那正是 +random 那轮的形状。')
+    A('      if (errors == 0 && compare_open && checks > 0) $display("TEST PASSED");')
+    A('      else $display("TEST FAILED");')
     A('      $finish;')
     A('    end')
     A('  end')
     A('')
-    A('  always @(posedge clock) if (!reset) begin')
-    A('    if (!compare_open) drive_warmup(); else drive_random();')
+    A('  always @(posedge clock) begin')
+    A('    if (reset) init_inputs_nb();')
+    A('    else if (!compare_open) drive_warmup();')
+    A('    else drive_random();')
     A('  end')
     A('endmodule')
     return '\n'.join(L) + '\n'
@@ -336,7 +473,7 @@ FM_VARIANTS = Rob
 FM_MERGE_DUP = false
 
 # ---------------------------------------------------------------------------
-# ★Rob's acceptance criterion is TWO RUNS AGREEING, not one run passing★
+# ★Rob's FM sign-off runs under Formality's DEFAULT (binary:X), full stop★
 # ---------------------------------------------------------------------------
 # Formality's `verification_set_undriven_signals` decides how dangling nets
 # behave, and golden Rob has 460 of them. Measured on golden vs a byte-identical
@@ -360,10 +497,17 @@ FM_MERGE_DUP = false
 # by construction -- so the clean run above calibrates the floor and says
 # nothing about whether `0` is safe here.
 #
-#   1. run the proof under BOTH settings
-#   2. verdicts agree      -> nothing was hidden
-#   3. verdicts disagree   -> the difference IS the hidden set, and it must be
-#                             examined before either result is used
+# ★codex 0168 narrowed what the second run means, and it is NOT acceptance★:
+#   the default binary:X remains the sign-off baseline; `0` is a
+#   difference-localisation / sensitivity experiment only. A SUCCEEDED under `0`
+#   does NOT promote anything, and NEITHER DOES "both runs agreed" -- agreement
+#   is a diagnostic consistency report, not a PASS condition. A formal PASS
+#   still requires the functional proof under the default WITH NO UNEXPLAINED
+#   RESIDUE. Disagreement must be flagged and examined point by point.
+#
+#   So: run 2 exists to tell you WHERE a difference lives, not whether you may
+#   ship. The 460 self-compare points cannot be waved through by "the two runs
+#   agreed".
 #
 # ★NOT YET WIRED★: scripts/fm_eq.tcl has no undriven knob (grep: 0 hits), and it
 # is shared by every lane, so this Rob lane did not add one unilaterally. Until
@@ -372,21 +516,24 @@ FM_MERGE_DUP = false
 # adds it should make it fail-closed the way FM_MODE is.
 
 # ---------------------------------------------------------------------------
-# The protocol, as commands. ★The reason lives here next to them on purpose★:
+# The diagnostic, as commands. ★The reason lives here next to them on purpose★:
 # "run the same proof twice" reads like waste, and a reader who has to go find
 # the justification in another file will not go find it. The justification is
 # four runs in evidence/rob-selfcompare-4aa8838b/undriven_safety/, which measure
 # an implementation with a MISSING DRIVER being caught under binary:X and
 # reported SUCCEEDED under 0 when golden's own driver for that net is
 # identically 0. One run cannot distinguish "equivalent" from "the setting hid
-# the difference". Two runs can.
-.PHONY: fm-two-run
-fm-two-run:
+# the difference". The second run localises it. ★It does not promote★:
+# codex 0168 -- a PASS still requires the default-setting proof with no
+# unexplained residue, and "both runs agreed" is NOT a PASS condition.
+.PHONY: fm-undriven-diagnostic
+fm-undriven-diagnostic:
+	@echo "=== DIAGNOSTIC ONLY -- neither run promotes anything (codex 0168) ==="
 	@echo "=== run 1/2: Formality default (binary:X) ==="
 	ROB_UNDRIVEN=binary:X ROB_MERGE_DUP=false $(MAKE) fm-Rob-undriven RUNDIR=fm_run_binaryX
 	@echo "=== run 2/2: undriven pinned to 0 ==="
 	ROB_UNDRIVEN=0        ROB_MERGE_DUP=false $(MAKE) fm-Rob-undriven RUNDIR=fm_run_undriven0
-	@echo "=== acceptance: the two verdicts must agree ==="
+	@echo "=== consistency REPORT, not an acceptance gate ==="
 	python3 $(XSSV_HOME)/scripts/rob_two_run_gate.py fm_run_binaryX fm_run_undriven0
 
 # Until FM_UNDRIVEN exists in the shared fm_eq.tcl, this target drives the

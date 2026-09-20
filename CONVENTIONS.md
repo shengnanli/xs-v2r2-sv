@@ -104,6 +104,33 @@ endmodule
 - G0-canonical 与 xs-v2r2-sv 是上一轮成果，可参考其可读核的写法，
   但**逐字复制前必须对照 G1 golden 确认该模块在 422 个 commit 里没变**。
 
+### ★Chisel 源就在本机，且与 golden 同源（2026-09-20 核实）★
+`/home/eda/xs-env/XiangShan/src/main/scala/` 是生成 golden 的那棵源码树。
+核实方式（在该仓里跑，输出为空即未变）：
+
+```
+git -C /home/eda/xs-env/XiangShan log --oneline b36a1a2a5..HEAD -- src/main/scala/xiangshan/
+```
+
+（`b36a1a2a5` 就是 golden 的 commit；该仓 HEAD 之后的提交都在 `stl/`。）
+
+这件事改变的是**写核的方法**，不是判据：
+- 可读核应当照着**设计意图**写（Chisel 的 Bundle / for / when 结构本身就是
+  "人可以读懂"的那一份），而不是去给 firtool 的展平输出改名。
+  本仓禁 `_GEN_*`/`_T_*` 的那条规矩，正面说法就是这个。
+- ★但 golden 仍是唯一判据★。两点不可替代：
+  (1) **配置**。`KunminghuV2Config` 决定 `OptionWrapper`/`Option.when` 的字段
+      到底存不存在、各 MixedVec 的端口子集是哪几个下标（例如 Rob 里
+      `exuWBs`=0..24 / `stdWBs`={25,26} / `fflagsWBs`={5,8..17}），Scala 源
+      本身看不出来，只有 golden 的端口表能告诉你。
+  (2) **firtool 的实际结果**。DCE 会删掉整条未被使用的输出（Rob 的
+      `io.enq.resp` / `io.robFull` / `io.lsq.lcommit` 在 golden 里根本没有端口）；
+      常数折叠会让每个条目的等式长得不一样。照 Scala 写完必须回对 golden 的
+      端口表与寄存器表。
+- 子模块来源不同：`utility` / `rocket-chip` / `difftest` 不在
+  `src/main/scala/xiangshan/` 下，上面那条核实命令**管不到它们**，
+  要单独确认。
+
 ## 已知环境坑（从上轮继承）
 - generate-for 内禁止用 function 捕获模块级信号（仿真返 X），
   路由/选择用显式 assign 或 always_comb-for。
@@ -2124,6 +2151,47 @@ if {$_n != <expect>} { error "..." }
 48 个文件头只有一行（生成器只发"自动生成"字样，等于没说）、6 个变体文件整段复制了家族头
 （读者打开 `_1` 会看到一串本文件根本没有的模块清单）。两类都已修，且生成器本身已改，
 不会再产出这种文件。**结论：可读性必须和 FM 一样有可机器复跑的闸，否则一定会被工程压力挤掉。**
+
+## ★`set_user_match` 从不抛异常：用 `catch` 数钉点等于没数★（2026-09-20，Rob lane 实测）
+
+本仓有 20+ 个 `fm_pins*.tcl`，多数用这个写法数"钉上了几个"：
+
+```tcl
+if {[catch {set_user_match $r $i}] == 0} {incr _pinned}
+...
+if {$_pinned != $_want} { puts "..._FAIL"; exit 3 }   # 或 error
+```
+
+**这段是空的。** 用真 fm_shell 量过（`scripts/rob_pin_failclosed_probe.py`，
+证据 `docs/rob_pin_failclosed.tsv`，两次独立跑一致，五个探针）：
+
+| 探针 | 名字 | `catch` | 返回值 |
+|---|---|---|---|
+| GOOD   | 两侧都存在（1 位字段）     | 0 | **1** |
+| GOOD_W | 两侧都存在（多位，带位号） | 0 | **1** |
+| X_IMPL | impl 侧不存在              | 0 | **0** |
+| X_REF  | ref 侧不存在               | 0 | **0** |
+| X_BOTH | 两侧都不存在               | 0 | **0** |
+
+`catch` **全是 0** —— `set_user_match` 遇到不存在的名字不抛 Tcl 异常，
+它返回 0 并往 fm.log 写一行 `Error: Unknown name: '...' (FM-036)`。
+所以旧写法下 `_pinned` 恒等于 `_want`：169,168 个 pin 一个都没配上，
+照样打印 "pinned 169168 of 169168" 然后一路绿到底。
+
+**两条真判据，都不依赖 `catch`：**
+1. **用返回值**：`if {[set_user_match $r $i]} {incr _pinned}` —— 返回值有分辨力。
+2. **看日志**：fm.log 里行首锚定的 `Error:` 行数必须为 0（每个坏名字一行 FM-036）。
+   ★判据里不要写出那个错误编号的字面量★：fm_shell 把入口 Tcl 逐行回显进 fm.log，
+   注释也不例外，写出来会命中判据自身。
+
+**这条错误为什么活了这么久**：`gen_rob_pins.py --selftest` 在纯 tclsh 里把
+`set_user_match` **桩掉**，而桩的 refuse 模式写的是 `error "FM-036 ..."` ——
+**桩的行为正是待验的那个假设**。于是自测验的是"如果 FM 会抛，判据就成立"，
+而 FM 不抛。★用桩去验桩自己的假设，是一个闭环，它永远自洽★。
+
+**规矩**：给外部工具打桩做自测时，桩的行为本身必须有**一次真工具的测量**兜底，
+并把那次测量的产物入库。桩是用来省时间的，不是用来定义事实的。
+（与"判据也必须先自证它看得见改变"同源：这里连"改变"长什么样都是桩编的。）
 
 ## ★改共享核的参数名，VCS 只给一条 Warning —— 不变式就此静默失效★（2026-09-20，DelayN lane 实测）
 

@@ -106,6 +106,21 @@ The protocol that follows from both directories:
 Which is why both runs are archived here rather than only the one that looks
 better.
 
+## Label: `ROB_SELF_COMPARE_FLOOR` --- a diagnostic tag, NOT a PASS class
+
+codex 0168: this floor is a tool/modelling baseline artefact. It must **not** be
+folded into `PASS_DEAD_REF` and **nothing about Rob may be promoted on the
+strength of it**. It is reported under its own non-PASS tag,
+`ROB_SELF_COMPARE_FLOOR`, with the two groups below kept separate. The 12
+boundary artefacts in particular are **not a permanent waiver**: they must be
+re-examined whenever the child blackbox boundary changes.
+
+The formal sign-off still runs under Formality's default (`binary:X`) and still
+requires no unexplained residue. "Both undriven settings agreed" is a
+consistency report, not an acceptance condition.
+
+## Localisation: where the 460 come from, and whether they are observable
+
 ## The 460 are not one thing --- they are 56 + 12, and the two behave differently
 
 460 compare points resolve to **68 distinct base signals** (56 signals x 8 bits,
@@ -128,6 +143,59 @@ Rob.sv:264972     .io_next_out_1_flag   (deqPtrVec_next_1_flag),   // NewRobDeqP
 golden leaves them dangling.★ With the children elaborated they would be driven
 by `NewRobDeqPtrWrapper` / `RobEnqPtrWrapper` outputs. So they are an artifact of
 the proof BOUNDARY and would move if the boundary moved; the 448 would not.
+
+### Group A --- 56 signals / 448 points: undriven registers that REACH OUTPUTS
+
+Every occurrence of one of them in golden, e.g.
+`robDeqGroup_0_debug_otherPdest_0`:
+
+```
+ 29948:  reg  [7:0]  robDeqGroup_0_debug_otherPdest_0;      declaration
+ 30696:     {robDeqGroup_0_debug_otherPdest_0}};            a READER
+253750:  robDeqGroup_0_debug_otherPdest_0 = _RANDOM[...];   ← inside RANDOMIZE_REG_INIT
+```
+
+The only assignment is in the simulation-only random-init block. Both UT and FM
+compile with `+define+SYNTHESIS`, so **in the synthesised design these 56
+registers have no driver at all** -- declared, read, never written.
+
+★They are NOT dead.★ The reader chain runs all the way to the port boundary:
+
+```
+robDeqGroup_<bank>_debug_otherPdest_<m>
+  -> _GEN_41 / _GEN_42 / ...            (8x8 packed bus, one per otherPdest index)
+  -> assign io_commits_info_<p>_debug_otherPdest_<m> = _GEN_4x[deqPtrVec_<p>_value[2:0]]
+  -> OUTPUT PORT
+```
+
+So golden's own `io_commits_info_<p>_debug_otherPdest_<m>` outputs are
+**undefined in the synthesised design**. That is a property of golden, and it is
+the single most important thing on this page for whoever writes the core:
+
+> ★A rewrite that drives those outputs with anything definite will DIFFER from
+> golden, and that difference is real, not floor.★ It must be a deliberate,
+> argued decision -- not something absorbed by "the self-compare fails here too".
+
+That is exactly the trap codex 0168 names: the floor must not become a pocket
+that swallows genuine rewrite differences.
+
+### Group B --- 12 signals / 12 points: boundary artefacts with NO reader
+
+`deqPtrVec_next_<1..7>_flag`, `enqPtrVec_<1..5>_flag`. Two occurrences each: a
+bare `wire` declaration, and one child-instance output pin. **Nothing in Rob
+reads them**, so they cannot reach any compare point. They are undriven only
+because the 8 children are blackboxed; elaborate the children and they are
+driven. ★Re-review required whenever the child boundary moves --- not a permanent
+waiver.★
+
+### What is still NOT localised
+
+The exact partition of the 460 into FM's **20 failing** and **440 unverified**
+is not established here. The two archived runs predate the
+`report_failing_points` call added to the probe (commit 46edc8f), so the failing
+points were never named. 56+12 does not line up with 20+440, so the split does
+not follow the two groups above and must not be assumed to. Recovering it costs
+one re-run with the current probe, and that has NOT been done.
 
 A first pass at this check wrongly reported 448-with-no-driver and
 12-with-a-driver, because it compared names like `foo[3]` (carrying FM's bit
@@ -196,3 +264,107 @@ no reason to suspect a floor exists, would never think to spend it.
 | `run_undriven0/fm_summary.txt` | the same under `verification_set_undriven_signals 0` |
 | `run_undriven0/unmatched_empty.rpt` | the (empty) unmatched report under `0` |
 | `undriven_safety/` | the four-run measurement showing where `0` MASKS a real defect |
+
+---
+
+## Addendum 2026-09-20 --- Group A settled at the DESIGN level, from Chisel source
+
+The analysis above was made entirely from the flattened `Rob.sv`. That left one
+unexamined possibility: that `debug_otherPdest` was driven in the Chisel design
+and only *looked* undriven after firtool. It was not. The Chisel source for the
+golden commit is present on this machine and, verified with
+`git log b36a1a2a5..HEAD -- src/main/scala/xiangshan/` (empty), **unchanged
+since golden was generated**:
+
+| | |
+|---|---|
+| `src/main/scala/xiangshan/backend/rob/RobBundles.scala` | declares `debug_otherPdest` in `RobCommitEntryBundle` (`Vec(7, UInt(PhyRegIdxWidth.W))`, guarded by `basicDebugEn`) |
+| same file, `connectCommitEntry(...)` | copies **every other** field of that bundle from the `RobEntryBundle` --- and **never mentions `debug_otherPdest`** |
+| `Rob.scala` | `robDeqGroup = Reg(Vec(bankNum, new RobCommitEntryBundle))`; the only writes to it are the two `connectCommitEntry` calls |
+
+`RobEntryBundle` has no `debug_otherPdest` member at all, so there is nothing
+for `connectCommitEntry` to have copied. The field exists on the commit-entry
+bundle, is read out to `io.commits.info(i).debug_otherPdest`, and is written by
+nobody. ★It is a design-level dangling field, not a firtool artefact and not a
+modelling artefact of this proof.★
+
+Note the near-miss that makes this worth stating precisely: `Rob.scala` DOES
+maintain a similarly named, genuinely driven array
+
+```scala
+val debug_VecOtherPdest = RegInit(VecInit.fill(RobSize)(VecInit.fill(8)(0.U(PhyRegIdxWidth.W))))
+vldWBs.map { vldWb => when (vldWb.fire && ...) { debug_VecOtherPdest(vldWbRobIdx)(vldWbvdIdx) := vldWbPdest } }
+```
+
+`debug_VecOtherPdest` (160 x 8, reset to 0, written by the two vector-load
+writeback ports) is a **different** array that feeds difftest's `otherwpdest`.
+Reading the two as one thing --- they differ by a prefix --- would turn a driven
+array into "the undriven one" or vice versa. They are separate families in the
+register inventory and must stay separate.
+
+### Exact size, measured
+
+| | |
+|---|---|
+| register fields | `robDeqGroup_<0..7>_debug_otherPdest_<0..6>` = 8 x 7 = **56 registers** |
+| register bits | 56 x 8 = **448 bits** |
+| output ports reached | `io_commits_info_<0..7>_debug_otherPdest_<0..6>` = **56 ports**, 8 bits each = **448 output bits** |
+
+(448, not 512: the commit-entry vector is `Vec(7, ...)`, not 8. Difftest's
+`otherwpdest` takes 8 entries from the *other* array, `debug_VecOtherPdest`;
+that is where an "8" in this neighbourhood comes from.)
+
+### What is still open
+
+The design choice itself --- what the rewrite drives onto those 448 undriven
+output bits --- is **still unresolved and still needs a ruling**. This addendum
+only removes one hypothesis (firtool artefact) and pins the exact width. Until
+the ruling lands, the `robDeqGroup` family is the one family deliberately left
+unwritten in the core.
+
+---
+
+## Addendum 2026-09-20 (2) --- 留空整个 `robDeqGroup` 族的射程，量出来了
+
+拆活时的说法是"先写 12 族，`robDeqGroup` 等裁定"。那要先知道这一刀切下去有多深，
+因为 `robDeqGroup` 不是一个普通的数据族，它是**提交读口**：
+
+```scala
+val robDeqGroup = Reg(Vec(bankNum, new RobCommitEntryBundle))
+val rawInfo    = VecInit((0 until CommitWidth).map(i => robDeqGroup(deqPtrVec(i).value(2,0))))
+val commitInfo = ... 同上 ...
+```
+
+`io.commits.info` / `deqPtrEntry`（= `rawInfo(0)`，异常、冲刷、`blockCommit`、
+`io.lsq.*` 全从它出发）/ `io.trace` 都挂在它下游。
+
+`scripts/rob_deqgroup_blast.py` 从 golden 做传导染色（组合网 + 寄存器次态），
+结果：
+
+| 留空范围 | 核能驱动的输出 |
+|---|---|
+| **整个 `robDeqGroup` 族（45 字段）** | **116 / 633（18%）** |
+| 只留空 `debug_otherPdest_0..6`（7 字段 / 56 寄存器） | **577 / 633（91%）** |
+| 差距 | **461 个输出端口** |
+
+（667 个输出里 34 个由子模块引脚直接驱动，不是核的义务，故分母取 633。
+按 667 计，`robDeqGroup` 下游是 517 个，78%。）
+
+★结论：留空整族会得到一个只驱动 18% 输出的文件 —— 正是本轮明令要避免的
+SCAFFOLD，只是更大一号。★ 而未定的设计选择实际只覆盖 56 个输出端口。
+
+所以在裁定之前，`rtl/backend/Rob.sv` **没有建**。需要的裁定是把留空范围从
+"`robDeqGroup` 整族"收窄到"`robDeqGroup.debug_otherPdest_0..6`"；其余 38 个字段
+由 `connectCommitEntry` 逐字段完整给出，没有任何待定之处。
+
+### 量具自己的两个坑（都踩过，都配了反测）
+
+1. **多维 packed wire**：firtool 写 `wire [7:0][6:0] _GEN_8 = {...};`。
+   只允许一个方括号的驱动式正则会静默漏掉它，染色在那里断掉 ——
+   实测 517/667 变成 325/667，**两个数看上去都合理**。
+2. **折行的 `if` 头**：寄存器次态要从 always 语句树里取，而 firtool 会把长
+   `if` 条件折行、下一行就是它的无 `begin` 单语句体。按"累到分号"合并续行会把
+   条件头和语句体粘成一个 token，整棵树错位（把 160 个并列 `if` 解成 160 层
+   else 链）。见 `scripts/test_rob_fold_probe.py`。
+
+两条都进了 `gate_all.sh` 的负测。

@@ -7,28 +7,47 @@ firtool flattened. Those are generated here and marked
 `// BEGIN GENERATED(<tag>)` / `// END GENERATED`; everything outside the markers
 is hand-written and this script must not touch it (CONVENTIONS 单文件规范).
 
-Generated regions
-  ports     the `module Rob` port declarations, name-for-name and width-for-width
-            with golden, in golden's order.
-  children  the 8 child instantiations. All 8 are SYMMETRIC BLACKBOXES: neither
-            the ref nor the impl side is given a body for them (CONVENTIONS
-            §子模块处理). That makes Rob a CONDITIONAL green -- it depends on all
-            8 children being signed off independently. The receipt must carry
-            that dependency; Rob must never be reported as an unconditional pass.
+Generated regions（五个，文件骨架就长这样）
+  core_ports    `module xs_Rob_core` 的端口表。★不是手写的、也不是照 golden 抄的★：
+                它从**核体实际引用到的名字**反推出来（见 analyse_core），
+                所以端口表不可能与用法漂移。
+  ports         `module Rob` 的端口表，逐名逐位宽与 golden 一致、顺序也一致。
+  wrapper_nets  wrapper 局部网的声明（核端口与子模块引脚在这里接头）。
+  core_inst     `xs_Rob_core u_core (...)` 的实例。
+  children      8 个子模块实例。八个全是**对称黑盒**：ref 与 impl 两侧都不给体
+                （CONVENTIONS §子模块处理）。所以 Rob 是**条件绿** —— 依赖这 8 个
+                各自独立签核。receipt 必须带上这条依赖，Rob 永远不得报成无条件通过。
 
-Child pin nets are rewritten as:
-  * a top-level `io_*` port            -> used directly (576 of 868 pins)
-  * `clock` / `reset`                  -> used directly (28)
-  * a literal                          -> kept verbatim (8)
-  * anything else                      -> `n_<golden net name>`, a wrapper-local
-                                          net (256). Each such net is either
-                                          driven by `xs_Rob_core` (child input)
-                                          or by another child's output pin.
+写核的顺序（给下一轮）
+  1. 读三张已入库的契约表，它们是"一位不少"的定义：
+       docs/rob_core_contract.tsv   寄存器：13 族 161 字段 + 452 散寄存器，
+                                    逐条给出位宽/深度/复位域/复位值/名字是否被 pin 锁死
+       docs/rob_iface_contract.tsv  接口：647 个 output 是核的义务、20 个由子模块直接驱动；
+                                    868 个引脚各自接什么；27 个写回口的子集下标
+       docs/rob_pin_failclosed.tsv  钉点判据的地基（set_user_match 不抛异常）
+  2. 在 core_ports 区之后手写核体，驱动 647 个顶层 output + 61 根子模块输入网。
+  3. `python3 scripts/gen_rob.py --write` 填五个生成区。
+     ★它会拒绝一个没驱动全的核★：缺一个 output 或一根网就报
+     "这正是 SCAFFOLD 的形状"并列出缺口（自测里钉着 632/78 这两个数）。
+                ★632/78 是 2026-09-20 修好"跨行引脚"解析之后的数★：修之前钉的是
+                646/61，那是漏掉 32 个折行引脚算出来的（详见 parse_children）。
+     核体里出现 golden 端口表里没有的 io_* 名字（打错名字）同样直接报错。
+
+Child pin nets are rewritten as（实测分布，两次修过：见 classify）：
+  * a top-level `io_*` port  -> used directly                     576
+  * `clock` / `reset`        -> used directly                      28
+  * a literal                -> kept verbatim                       8
+  * `/* unused */`           -> `.pin ()` 显式悬空（**不是网**）     9
+  * 一个表达式               -> `n_<inst>_<pin>`，由核驱动（**不是网**）4
+  * 其余                     -> `n_<net>`，wrapper 局部网          271
+  firtool 的展平中间名（_GEN_/_dispatchNum_T）在核端口与线名上都按 RENAME 换成语义名。
 
 Usage
   python3 scripts/gen_rob.py --check        # regenerate into memory, diff, rc=1 on drift
   python3 scripts/gen_rob.py --write        # rewrite the GENERATED regions in place
   python3 scripts/gen_rob.py --manifest     # print the core<->wrapper net interface
+  python3 scripts/gen_rob.py --regmap       # 寄存器族/位数汇总
+  python3 scripts/gen_rob.py --selftest     # 生成器自测（含"必须看得见 SCAFFOLD"）
 """
 import argparse, collections, hashlib, os, re, sys
 
@@ -67,21 +86,77 @@ def parse_ports(lines):
 
 
 def parse_children(lines, body_start):
-    """The 8 child instances. -> [(type, inst, [(pin, net)])]"""
+    """The 8 child instances. -> [(type, inst, [(pin, net)])]
+
+    ★引脚**不一定写在一行里**★（2026-09-20 实测）：firtool 按 80 列折行，
+    引脚名长了就折成
+        .io_toVecExcpMod_logicPhyRegMap_0_bits_lreg
+          (io_toVecExcpMod_logicPhyRegMap_0_bits_lreg),
+    只认单行的正则会**静默漏掉** 32 个引脚（rab 13 / vtypeBuffer 4 /
+    exceptionGen 13 / enqPtrGenModule 1 / commitStuckCounter 1），
+    真实引脚数是 900 而不是 868。漏掉的后果有三种，全都不报错：
+      · 14 个**直通端口**引脚（rab 的 12 个 logicPhyRegMap lreg/preg +
+        vtypeBuffer 的 2 个 commitVType）会被错判成"核必须驱动"——
+        核真去驱动就与 child 双驱动；
+      · 17 个**表达式引脚**（rab/vtypeBuffer 的 commitSize/walkSize、
+        exceptionGen 的 10 根 hasException/vstartEn/vstart、
+        enqPtrGenModule.io_allowEnqueue、commitStuckCounter.io_stuck）
+        会整根从核的义务表里消失 —— 核少驱动 17 根网而闸不报；
+      · 1 个 child 输出（exceptionGen.io_state_bits_satpFlushFirstFetchFault）
+        的网会悬空。
+    所以这里按**括号配平**扫，不按行扫。
+    """
     out, i = [], body_start
     while i < len(lines):
         m = re.match(r'^\s{0,4}([A-Za-z_]\w*)\s+(\w+)\s*\(\s*$', lines[i])
         if m:
             j, pins = i + 1, []
             while j < len(lines) and not re.match(r'^\s*\);', lines[j]):
-                pm = re.match(r'\s*\.(\w+)\s*\((.*?)\)\s*,?\s*$', lines[j])
+                pm = re.match(r'\s*\.(\w+)\s*(.*)$', lines[j])
                 if pm:
-                    pins.append((pm.group(1), pm.group(2).strip()))
+                    pin, rest, depth, buf, k = pm.group(1), pm.group(2), 0, [], j
+                    started = False
+                    while k < len(lines):
+                        chunk = rest if k == j else lines[k].strip()
+                        buf.append(chunk)
+                        for ch in chunk:
+                            if ch == '(':
+                                depth += 1
+                                started = True
+                            elif ch == ')':
+                                depth -= 1
+                        if started and depth == 0:
+                            break
+                        k += 1
+                    txt = ' '.join(x for x in buf if x)
+                    nm = re.match(r'\((.*)\)\s*,?\s*$', txt)
+                    if nm:
+                        pins.append((pin, ' '.join(nm.group(1).split())))
+                        j = k
                 j += 1
             out.append((m.group(1), m.group(2), pins))
             i = j
         i += 1
     return out
+
+
+def child_pin_widths(golden_dir, ctype):
+    """子模块自己的端口位宽 -> {pin: width}。
+
+    表达式引脚的线宽只能从**被连的那个引脚**上取（golden 里没有这根线的声明）。
+    """
+    path = os.path.join(golden_dir, ctype + '.sv')
+    w = {}
+    with open(path) as f:
+        for l in f:
+            m = re.match(r'\s*(?:input|output)\s+(?:wire\s+)?'
+                         r'(?:\[\s*(\d+)\s*:\s*(\d+)\s*\])?\s*(\w+)', l)
+            if m:
+                w[m.group(3)] = (1 if m.group(1) is None
+                                 else int(m.group(1)) - int(m.group(2)) + 1)
+            if re.match(r'\s*\);', l) and w:
+                break
+    return w
 
 
 def child_output_pins(golden_dir, ctype):
@@ -104,16 +179,39 @@ def child_output_pins(golden_dir, ctype):
 
 
 LITERAL = re.compile(r"^\d*'[hbdHBD][0-9a-fA-FxzXZ_]+$")
+# firtool writes an unconnected child output as `.pin (/* unused */)`.
+# ★这不是一个网名★：不识别它，9 个 deqPtrGenModule 的 io_canCommitPriorityCond_*
+# 会被折成同一个"网" `n_/*`（既不是合法标识符，又把 9 个悬空口连成一根线）。
+UNUSED = re.compile(r'^/\*\s*unused\s*\*/$')
 
 
-def classify(net, portnames):
+IDENT_ONLY = re.compile(r'^[A-Za-z_][A-Za-z_0-9$]*$')
+
+
+def classify(net, portnames, inst=None, pin=None):
+    if UNUSED.match(net):
+        return 'unused', ''
     if net in portnames:
         return 'port', net
     if net in ('clock', 'reset'):
         return 'clk', net
     if LITERAL.match(net):
         return 'const', net
-    return 'net', 'n_' + net
+    if not IDENT_ONLY.match(net):
+        # ★4 个引脚接的是**表达式**不是网★（实测）：
+        #   rab.io_fromRob_walkSize   (walkSizeSum[7:0])     位选
+        #   rab/vtypeBuffer.io_fromRob_walkEnd (state & walkFinished)
+        #   deqPtrGenModule.io_state  ({1'h0, state})        拼接
+        # 不认出来就会 'n_' + 表达式，长出 `n_walkSizeSum[7:0]` /
+        # `n_state &` / `n_{1'h0, state}` 这种既非标识符、又把表达式截断的假网。
+        # 处置：给它一根以**引脚**命名的线，由核驱动（表达式属于核的逻辑）。
+        if inst is None or pin is None:
+            raise SystemExit('gen_rob: 表达式引脚 %r 缺少 inst/pin 上下文' % net)
+        return 'expr', 'n_%s_%s' % (inst, pin)
+    # ★线名也走改名表★：wrapper 是可读文件的一部分，`logic n__GEN_3539;` 这种
+    # golden 展平中间名不该出现在代码区（本仓既有写法是把 golden 名放**注释**里
+    # 做交叉引用，信号本身起语义名 —— 见 rtl/backend/SSIT.sv:245）。
+    return 'net', 'n_' + core_port_name(net)
 
 
 # --------------------------------------------------------------------------
@@ -173,7 +271,7 @@ def emit_children(children, portnames, golden_dir):
         lines.append('  %s %s (' % (ctype, inst))
         pw = max(len(p) for p, _ in pins)
         for k, (pin, net) in enumerate(pins):
-            kind, name = classify(net, portnames)
+            kind, name = classify(net, portnames, inst, pin)
             tail = ',' if k != len(pins) - 1 else ''
             tag = '' if kind != 'net' else ('   // <- core' if pin not in outs
                                             else '   // -> core')
@@ -194,12 +292,18 @@ def wrapper_nets(children, portnames, golden_dir):
     """
     driven_by_child = {}
     consumed = collections.defaultdict(list)
+    golden_of = {}          # wrapper 线名 -> golden 原名（取位宽要用，改名后不能丢）
     for ctype, inst, pins in children:
         outs = child_output_pins(golden_dir, ctype)
         for pin, net in pins:
-            kind, name = classify(net, portnames)
+            kind, name = classify(net, portnames, inst, pin)
+            if kind == 'expr':
+                # 表达式引脚永远是"核驱动"：它就是核里那段逻辑的出口。
+                consumed[name].append((ctype, inst, pin))
+                continue
             if kind != 'net':
                 continue
+            golden_of[name] = net
             if pin in outs:
                 driven_by_child[name] = (ctype, inst, pin)
             else:
@@ -210,7 +314,311 @@ def wrapper_nets(children, portnames, golden_dir):
                   if n not in consumed}
     routed = {n: (driven_by_child[n], consumed[n]) for n in driven_by_child
               if n in consumed}
-    return core_drives, core_reads, routed
+    return core_drives, core_reads, routed, golden_of
+
+
+# --------------------------------------------------------------------------
+# core <-> wrapper interface
+# --------------------------------------------------------------------------
+def net_widths(lines):
+    """golden 里每个网/寄存器的位宽 -> {name: width}。
+
+    wrapper 局部网 `n_<golden net>` 的位宽只能从 golden 的声明拿。猜不得：
+    错一位，子模块引脚宽度对不上，VCS 只给 warning 而不是 error。
+    """
+    w = {}
+    pat = re.compile(r'^\s*(?:wire|reg)\s*(?:\[\s*(\d+)\s*:\s*(\d+)\s*\])?\s*(\w+)\s*[;=]')
+    for l in lines:
+        m = pat.match(l)
+        if m:
+            w[m.group(3)] = (1 if m.group(1) is None
+                             else int(m.group(1)) - int(m.group(2)) + 1)
+    return w
+
+
+# firtool 临时名 -> 核上的语义端口名。
+#
+# ★为什么非改不可★：去掉前导下划线之后，`_GEN_3539` 会变成核的一个端口
+# `GEN_3539`，`_dispatchNum_T` 变成 `dispatchNum_T`。它们是 golden 展平的中间名，
+# 放进一个"可读核"的端口表上说不过去。
+# ★而且本仓的可读性 A 类判据抓不到它们★（实测）：
+#     FORBIDDEN = r'\b_(GEN|T)(_\d+)?\b'
+#     '_GEN_3539'    -> 命中
+#     'n__GEN_3539'  -> **不命中**（`n` 与 `_` 都是词字符，中间没有 \b）
+#     'GEN_3539'     -> **不命中**（前导下划线已经没了）
+# 也就是说靠那道闸兜不住，必须在这里就改名。每条都写出 golden 的原式，
+# 好让人能自己去复核语义，而不是信这张表。
+RENAME = {
+    # wire [1:0] _GEN_3539 = {io_debugInstrAddrTransType_sv48,
+    #                         io_debugInstrAddrTransType_sv39};
+    #   -> 写进 difftest pcTransType 存储的 2 位 AddrTransType
+    '_GEN_3539': 'dtPcTransTypeWdata',
+}
+# wire _dispatchNum_T_<i> = io_enq_req_<i>_valid & io_enq_req_<i>_bits_firstUop;
+#   -> enqPtrGenModule.io_enq_<i>，即"第 i 路 enq 请求是一条指令的首个 uop 且有效"
+RENAME['_dispatchNum_T'] = 'enqFirstUopValid_0'
+for _i in range(1, 6):
+    RENAME['_dispatchNum_T_%d' % _i] = 'enqFirstUopValid_%d' % _i
+
+
+# ★第二类改名：与核内寄存器撞名★（2026-09-20 写核时实测）
+#
+# golden 里这些名字**同时**是一个 Rob 层的寄存器和一根喂给 child 的线
+# （`reg hasBlockBackward;` ... `.io_hasBlockBackward (hasBlockBackward)`）。
+# 核/wrapper 一拆，这根线就变成核的一个 **output 端口**，而那个寄存器要留在核里。
+# 同一个模块里不能既有端口 `hasBlockBackward` 又有变量 `hasBlockBackward`。
+#
+# ★为什么改端口名而不是改寄存器名★：寄存器名是 FM 自动配对的抓手。
+# docs/rob_core_contract.tsv 里这些是 name_lock=free（fm_pins.tcl 不钉它们），
+# 也就是说它们**只能**靠 FM 自己按名字/结构配。把 golden 的 `hasBlockBackward`
+# 对到一个叫 `hasBlockBackward_r` 的 impl 寄存器上，是主动把最强的那条线索扔掉。
+# 端口名反过来无所谓：端口两侧由 wrapper 接线，FM 看到的是同一根网。
+for _n in ('hasBlockBackward', 'hasWaitForward', 'intrBitSetReg',
+           'rab_io_fromRob_vecLoadExcp_valid_REG'):
+    RENAME[_n] = _n + 'Out'
+for _i in range(8):
+    RENAME['hasCommitted_%d' % _i] = 'hasCommittedOut_%d' % _i
+
+
+def core_port_name(net):
+    """wrapper 网名 -> 核上的端口名。
+
+    先查改名表（firtool 临时名必须换成语义名），否则只去掉前导下划线。
+    """
+    if net in RENAME:
+        return RENAME[net]
+    return net.lstrip('_')
+
+
+def expr_pin_widths(children, portnames, golden_dir):
+    """表达式引脚的位宽 -> {核端口名: width}。
+
+    ★这几根线 golden 里根本没有声明★（它们在实例的引脚上就地写成表达式），
+    所以位宽只能从**被连的那个子模块引脚**上取。少了这一步，核端口表在
+    `rab_io_fromRob_walkSize` 这种 8 位线上会拿到 None 并直接报"找不到声明"。
+    """
+    w = {}
+    for ctype, inst, pins in children:
+        cw = None
+        for pin, net in pins:
+            kind, nm = classify(net, portnames, inst, pin)
+            if kind != 'expr':
+                continue
+            if cw is None:
+                cw = child_pin_widths(golden_dir, ctype)
+            if pin not in cw:
+                raise SystemExit('gen_rob: %s 的引脚 %r 在它自己的 golden 里找不到'
+                                 % (ctype, pin))
+            w[nm[2:]] = cw[pin]
+    return w
+
+
+def core_iface(children, ports, golden_dir):
+    """核必须驱动 / 必须读的那两组网，键是**核端口名**。"""
+    portnames = {p[3] for p in ports}
+    drives, reads, routed, golden_of = wrapper_nets(children, portnames, golden_dir)
+    # 核端口名 = 线名去掉 'n_'（线名已在 classify 里改过名）；值留 golden 原名取位宽。
+    # 表达式引脚没有 golden 线，位宽由 expr_pin_widths 从子模块引脚上取。
+    d = {n[2:]: golden_of.get(n) for n in drives}
+    r = {n[2:]: golden_of.get(n) for n in list(reads) + list(routed)}
+    if len(d) != len(drives) or len(r) != len(reads) + len(routed):
+        raise SystemExit('gen_rob: 核端口名撞车，需要扩充 RENAME 表')
+    return d, r
+
+
+def child_driven_outputs(children, ports, golden_dir):
+    """直接由某个子模块输出脚驱动的顶层 output —— 这些**不是**核的义务。"""
+    portnames = {p[3] for p in ports}
+    out = set()
+    for ctype, inst, pins in children:
+        co = child_output_pins(golden_dir, ctype)
+        for pin, net in pins:
+            if net in portnames and pin in co:
+                out.add(net)
+    return out
+
+
+_IDENT = re.compile(r'[A-Za-z_][A-Za-z_0-9$]*')
+# golden 展平中间名的形状：整体以 GEN/T 起头或以 _GEN/_T 结尾（可带下标）。
+FLAT_NAME = re.compile(r'(?:^|_)(GEN|T)(_\d+)?$')
+
+
+def strip_sv_comments(text):
+    text = re.sub(r'/\*.*?\*/', ' ', text, flags=re.S)
+    return re.sub(r'//[^\n]*', ' ', text)
+
+
+def core_body(target_lines):
+    """核的手写体：core_ports 区结束标记之后，到核的 endmodule 为止。"""
+    b = BEGIN % 'core_ports'
+    i = next(k for k, l in enumerate(target_lines) if l.strip() == b)
+    j = next(k for k in range(i + 1, len(target_lines))
+             if target_lines[k].strip() == END)
+    k = next(k for k in range(j + 1, len(target_lines))
+             if target_lines[k].strip() == 'endmodule')
+    return '\n'.join(target_lines[j + 1:k])
+
+
+def analyse_core(target_lines, ports, children, golden_dir, netw):
+    """从**核体实际引用的名字**推出核的端口表，并做双向断言。
+
+    正向：核体里提到的每个 golden 端口名，按 golden 的方向/位宽出现在核端口上。
+    ★反向★（CONVENTIONS 第五条）：核体里任何形如 io_* / gatewayIn_* 的标识符
+    如果不是 golden 的端口，就是打错了名字 —— 这种错的失败模式不是报错，
+    是这个名字在 golden 里一次都不出现、于是安静地变成一个悬空网。
+    另外两条硬断言：核必须驱动的顶层 output 一个都不许漏；
+    必须驱动的 wrapper 网一个都不许漏。
+    """
+    body = strip_sv_comments(core_body(target_lines))
+    idents = set(_IDENT.findall(body))
+    pmap = {p[3]: p for p in ports}
+    drives, reads = core_iface(children, ports, golden_dir)
+    childout = child_driven_outputs(children, ports, golden_dir)
+
+    # ★反向断言：核端口上不许留 firtool 的展平中间名★
+    # 本仓可读性 A 类的正则是 `\b_(GEN|T)(_\d+)?\b`，它**抓不到**
+    # `GEN_3539`（前导下划线已去掉）和 `n__GEN_3539`（`n` 与 `_` 之间没有 \b）。
+    # 所以这条断言必须自己有：漏掉一个就得往 RENAME 里补一条，而不是靠那道闸兜。
+    flat = sorted(n for n in list(drives) + list(reads)
+                  if FLAT_NAME.search(n))
+    if flat:
+        raise SystemExit(
+            'gen_rob: 这些核端口名还是 golden 的展平中间名，往 RENAME 里补语义名：\n  '
+            + '\n  '.join(flat))
+
+    # ★核里**自己声明**的信号不算"像端口的名字"★（2026-09-20 实测踩到）：
+    # golden 有一族寄存器就叫 io_rabCommits_REG_info_<i>_<field>（RegNext(rab.io.commits)
+    # 的流水级），pin 契约要求核里原样叫 io_rabCommits_REG_info_<field>。
+    # 只看前缀会把它们当成"打错的端口名"判红 —— 判据自己看错了，不是核写错了。
+    # ★"核里自己声明的信号"要连**逗号分隔的多个**一起认★（2026-09-20 实测）：
+    # 原来的正则 `logic ... ([A-Za-z_]\w*)\s*;` 只抓分号前的**最后一个**名字，
+    # 于是 `logic io_perf_0_value_REG, io_perf_0_value_REG_1;` 里的前一个
+    # 被当成"打错的端口名"判红 —— 判据自己看错了，不是核写错了。
+    # （同一类坑上一轮已经踩过一次：io_rabCommits_REG_info_* 那族。）
+    declared = set()
+    for line in body.split('\n'):
+        m = re.match(r'\s*(?:logic|reg|wire|bit)\b([^;]*);', line)
+        if not m:
+            continue
+        for piece in m.group(1).split(','):
+            piece = re.sub(r'\[[^\]]*\]', ' ', piece)
+            ids = re.findall(r'[A-Za-z_]\w*', piece)
+            if ids:
+                declared.add(ids[-1])
+    # ★核与 wrapper 之间那些网的端口名也可能以 io_ 开头★：
+    # `n_io_flushOut_valid_0` 的核端口名就是 `io_flushOut_valid_0`，它是**核的
+    # 合法端口**（送 exceptionGen.io_flush），只是顶层没有同名 output。
+    netnames = set(drives) | set(reads)
+    bogus = sorted(i for i in idents
+                   if (i.startswith('io_') or i.startswith('gatewayIn_'))
+                   and i not in pmap and i not in declared and i not in netnames)
+    if bogus:
+        raise SystemExit(
+            'gen_rob: 核体里这些名字长得像顶层端口，但 golden 里没有（打错名字）：\n  '
+            + '\n  '.join(bogus[:40]))
+
+    must_drive = sorted(p[3] for p in ports
+                        if p[0] == 'output' and p[3] not in childout)
+    missing_out = [n for n in must_drive if n not in idents]
+    missing_net = sorted(n for n in drives if n not in idents)
+    if missing_out or missing_net:
+        raise SystemExit(
+            'gen_rob: 核体没有提到这些它必须驱动的东西 —— 这正是 SCAFFOLD 的形状：\n'
+            '  顶层 output 缺 %d 个，前 20：%s\n'
+            '  子模块输入网缺 %d 个，前 20：%s'
+            % (len(missing_out), missing_out[:20],
+               len(missing_net), missing_net[:20]))
+
+    rows = [('input', None, None, 'clock'), ('input', None, None, 'reset')]
+    for p in ports:
+        if p[3] in ('clock', 'reset') or p[3] not in idents:
+            continue
+        if p[0] == 'output' and p[3] in childout:
+            raise SystemExit('gen_rob: 核体提到了由子模块驱动的顶层 output %r' % p[3])
+        rows.append(p)
+    exprw = expr_pin_widths(children, set(pmap), golden_dir)
+    for nm in sorted(drives):
+        w = netw.get(drives[nm]) if drives[nm] is not None else exprw.get(nm)
+        if w is None:
+            raise SystemExit('gen_rob: golden 里找不到网 %r 的声明，位宽无处可取'
+                             % (drives[nm] or nm))
+        rows.append(('output', w - 1, 0, nm) if w > 1 else ('output', None, None, nm))
+    for nm in sorted(reads):
+        if nm not in idents:
+            continue
+        w = netw.get(reads[nm]) if reads[nm] is not None else exprw.get(nm)
+        if w is None:
+            raise SystemExit('gen_rob: golden 里找不到网 %r 的声明，位宽无处可取'
+                             % (reads[nm] or nm))
+        rows.append(('input', w - 1, 0, nm) if w > 1 else ('input', None, None, nm))
+    return rows, drives, reads
+
+
+def emit_core_ports(rows):
+    rng = ['' if hi is None else '[%d:%d]' % (hi, lo) for _, hi, lo, _ in rows]
+    dw = max(len(d) for d, _, _, _ in rows)
+    rw = max(len(r) for r in rng)
+    out = []
+    for k, ((d, hi, lo, n), r) in enumerate(zip(rows, rng)):
+        out.append('  %-*s logic %-*s %s%s'
+                   % (dw, d, rw, r, n, ',' if k != len(rows) - 1 else ''))
+    return out
+
+
+def emit_core_inst(rows, drives, reads):
+    pw = max(len(n) for _, _, _, n in rows)
+    out = ['  xs_Rob_core u_core (']
+    for k, (d, hi, lo, n) in enumerate(rows):
+        if n in drives or n in reads:
+            # ★线名 = 'n_' + **核端口名**★，不是 'n_' + golden 名：
+            # classify 在造线名时已经过 RENAME，emit_wrapper_nets 也按那个名字
+            # 声明。照 golden 名拼会长出 `n__dispatchNum_T` 这种没人声明的线。
+            net = 'n_' + n
+        else:
+            net = n
+        out.append('    .%-*s (%s)%s' % (pw, n, net, ',' if k != len(rows) - 1 else ''))
+    out.append('  );')
+    return out
+
+
+def emit_wrapper_nets(children, ports, golden_dir, netw):
+    """wrapper 局部网的声明 —— 核的端口和子模块引脚在这里接头。
+
+    位宽来源分两种，都不是猜的：
+      · 普通网  -> golden 里那条 wire/reg 声明；
+      · 表达式引脚 -> **被连的那个子模块引脚**自己的位宽（golden 里没有这根线）。
+    改过名的线在行尾注明 golden 原名（本仓既有写法：golden 的展平中间名只出现在
+    注释里做交叉引用，信号本身起语义名）。
+    """
+    portnames = {p[3] for p in ports}
+    plain, expr = {}, {}
+    for ctype, inst, pins in children:
+        cw = None
+        for pin, net in pins:
+            kind, nm = classify(net, portnames, inst, pin)
+            if kind == 'net':
+                plain[nm] = net
+            elif kind == 'expr':
+                if cw is None:
+                    cw = child_pin_widths(golden_dir, ctype)
+                if pin not in cw:
+                    raise SystemExit('gen_rob: %s 的引脚 %r 在它自己的 golden 里找不到'
+                                     % (ctype, pin))
+                expr[nm] = (cw[pin], ctype, inst, pin, net)
+    out = []
+    for nm in sorted(plain):
+        gold = plain[nm]
+        w = netw.get(gold)
+        if w is None:
+            raise SystemExit('gen_rob: golden 里找不到网 %r 的声明' % gold)
+        tag = '' if nm == 'n_' + gold.lstrip('_') else '   // golden: %s' % gold
+        out.append('  logic %s%s;%s'
+                   % ('[%d:0] ' % (w - 1) if w > 1 else '', nm, tag))
+    for nm in sorted(expr):
+        w, ctype, inst, pin, net = expr[nm]
+        out.append('  logic %s%s;   // golden: %s.%s (%s)'
+                   % ('[%d:0] ' % (w - 1) if w > 1 else '', nm, inst, pin, net))
+    return out
 
 
 # --------------------------------------------------------------------------
@@ -236,6 +644,82 @@ module Rob (
   // END GENERATED
 endmodule
 """
+
+
+CORE_SKELETON = """module xs_Rob_core (
+  // BEGIN GENERATED(core_ports)
+  // END GENERATED
+);
+%s
+endmodule
+module Rob(
+  // BEGIN GENERATED(ports)
+  // END GENERATED
+);
+  // BEGIN GENERATED(wrapper_nets)
+  // END GENERATED
+  // BEGIN GENERATED(core_inst)
+  // END GENERATED
+  // BEGIN GENERATED(children)
+  // END GENERATED
+endmodule
+"""
+
+
+def _core_assert_rows(d, ports, children, gdir, netw):
+    """★证明那两条硬断言看得见改变★（CONVENTIONS：判据也要自证）。
+
+    只声明端口、不驱动输出的文件正是上一轮那个 SCAFFOLD 的形状。
+    这里用两个最小样本证明 analyse_core 会对它判红：
+      · 核体里出现一个 golden 里没有的 io_* 名字 -> 报"打错名字"
+      · 核体只驱动 1 个输出          -> 报"这正是 SCAFFOLD 的形状"，
+                                        且缺口计数必须是 647-1 与 61
+    """
+    def probe(body):
+        tgt = os.path.join(d, 'core_probe.sv')
+        with open(tgt, 'w') as f:
+            f.write(CORE_SKELETON % body)
+        with open(tgt) as f:
+            lines = f.read().split('\n')
+        try:
+            analyse_core(lines, ports, children, gdir, netw)
+            return None
+        except SystemExit as e:
+            return str(e)
+
+    typo = probe('  assign io_commits_isCommit = 1\'b0;\n'
+                 '  assign io_typo_that_is_not_a_golden_port = 1\'b0;')
+    scaffold = probe('  assign io_commits_isCommit = 1\'b0;')
+    # 直接看核端口表本身，不看报错文本（报错只列前 20 条，按字典序看不到这几个）
+    _d, _r = core_iface(children, ports, gdir)
+    allnames = set(_d) | set(_r)
+    # 负测：撤掉 RENAME 表，FLAT_NAME 断言必须把 7 个临时名抓出来
+    _saved = dict(RENAME)
+    try:
+        RENAME.clear()
+        _neg = probe('  assign io_commits_isCommit = 1\'b0;')
+    finally:
+        RENAME.clear()
+        RENAME.update(_saved)
+    renamed = ('dtPcTransTypeWdata' in allnames
+               and all('enqFirstUopValid_%d' % i in allnames for i in range(6))
+               and not any(FLAT_NAME.search(n) for n in allnames))
+    return [
+        ('core_rename_negtest',
+         _neg is not None and '展平中间名' in _neg and 'GEN_3539' in _neg,
+         '撤掉 RENAME 表后 7 个 firtool 临时名被抓出来（断言不是空转）'
+         if _neg else '★没抓到：没有改名表也照过★'),
+        ('core_rename_applied', renamed,
+         'firtool 临时名在核端口上已换成语义名（dtPcTransTypeWdata / '
+         'enqFirstUopValid_0），GEN_3539 / dispatchNum_T 不再出现'),
+        ('core_typo_caught', typo is not None and '打错名字' in typo,
+         '核体里假的 io_* 名字被抓（%s）' % (typo or '★没抓到★').splitlines()[0][:44]),
+        ('core_scaffold_caught',
+         scaffold is not None and 'SCAFFOLD' in scaffold
+         and '缺 632 个' in scaffold and '缺 78 个' in scaffold,
+         '只驱动 1 个输出的核被判红，缺口计数 632/78'
+         if scaffold else '★没抓到：SCAFFOLD 能过★'),
+    ]
 
 
 def selftest(golden):
@@ -280,7 +764,14 @@ def selftest(golden):
          'ports region actually populated'),
         ('children_present', 'CommitStuckCounter commitStuckCounter (' in body,
          'children region actually populated'),
-    ]
+        # ★2026-09-20 抓到的真缺陷★：firtool 把悬空的子模块输出写成
+        # `.pin (/* unused */)`。不识别它，9 个 io_canCommitPriorityCond_* 会折成
+        # 同一个"网" `n_/*` —— 既不是合法标识符，又把 9 个悬空口短接成一根线。
+        ('unused_pins_open',
+         'n_/*' not in body
+         and re.search(r'\.io_canCommitPriorityCond_0\s*\(\)', body) is not None,
+         '悬空子模块输出写成 `()`，没有变成名为 `n_/*` 的假网'),
+    ] + _core_assert_rows(d, ports, children, gdir, net_widths(glines))
     # Negative: a splice that ignored the END marker would swallow the trailing
     # sentinel. Simulate by checking the marker pair is still intact and empty
     # regions can be re-emptied.
@@ -375,14 +866,14 @@ def main():
         return 0
 
     if a.manifest:
-        drive, read, routed = wrapper_nets(children, portnames, golden_dir)
+        drive, read, routed, _gold = wrapper_nets(children, portnames, golden_dir)
         print('# ports %d  children %d  child pins %d'
               % (len(ports), len(children),
                  sum(len(p) for _, _, p in children)))
         kinds = collections.Counter()
-        for _, _, pins in children:
+        for _, _inst, pins in children:
             for pin, net in pins:
-                kinds[classify(net, portnames)[0]] += 1
+                kinds[classify(net, portnames, _inst, pin)[0]] += 1
         print('# child pin sources: %s' % dict(kinds))
         print('# NOTE: this lists CHILD PIN nets only. The core may also read'
               ' a `route` net; what it may not do is drive one.')
@@ -405,7 +896,13 @@ def main():
         return _target_absent_is_expected(a.target, 'Rob')
     with open(a.target) as f:
         tgt = f.read().split('\n')
-    new = splice(tgt, 'ports', emit_ports(ports))
+    netw = net_widths(glines)
+    rows, drives, reads = analyse_core(tgt, ports, children, golden_dir, netw)
+    new = splice(tgt, 'core_ports', emit_core_ports(rows))
+    new = splice(new, 'ports', emit_ports(ports))
+    new = splice(new, 'wrapper_nets',
+                 emit_wrapper_nets(children, ports, golden_dir, netw))
+    new = splice(new, 'core_inst', emit_core_inst(rows, drives, reads))
     new = splice(new, 'children',
                  emit_children(children, portnames, golden_dir))
     out = '\n'.join(new)

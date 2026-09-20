@@ -72,8 +72,15 @@ def check(text):
     if n_apply != 1:
         probs.append(f'fm_target_apply_appvars 调用有 {n_apply} 处（必须恰 1 —— '
                      f'丢了它 per-target appvar 静默不生效，没人会报错）')
-    if text.count('{') != text.count('}'):
-        probs.append(f'花括号不配平：{{ {text.count("{")} vs }} {text.count("}")}')
+    # ★括号配平：数之前先去掉**顶层**整行注释★（Rob lane 实测并入）
+    # 裸全文计数曾把 fm_eq.tcl 判红（{ 139 vs } 138），而 tclsh 的 info complete
+    # 说文件是好的 —— 差的那个 `{` 在一句顶层**注释**里（逐字引用了 switch 那行）。
+    # 但不能一刀切无视所有注释：注释若落在 braced body 里面，Tcl 收词时照样数它的
+    # 花括号，那里落单的花括号是真会炸的。所以只去 depth==0 的整行注释。
+    code = _strip_toplevel_comments(text)
+    if code.count('{') != code.count('}'):
+        probs.append('去掉顶层整行注释后花括号仍不配平：'
+                     f'{{ {code.count("{")} vs }} {code.count("}")}')
     probs += switch_body_problems(text)
     return probs
 
@@ -109,6 +116,21 @@ def _switch_bodies(text):
         if depth == 0:
             out.append((text.count('\n', 0, m.start()) + 1, text[start:i - 1]))
     return out
+
+
+def _strip_toplevel_comments(text):
+    """去掉**顶层**（花括号深度为 0）的整行注释，保留花括号里的注释。
+
+    深度按已保留行的代码字符累计 —— 被丢掉的行本来就不参与配平，
+    所以不能拿它去更新深度。
+    """
+    out, depth = [], 0
+    for line in text.split('\n'):
+        if depth == 0 and line.lstrip().startswith('#'):
+            continue
+        out.append(line)
+        depth += line.count('{') - line.count('}')
+    return '\n'.join(out)
 
 
 def switch_body_problems(text):

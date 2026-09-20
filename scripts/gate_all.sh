@@ -142,11 +142,12 @@ for g in scripts/gen_tlbuffer_ad_family.py scripts/gen_mbist_pipe_family.py \
          scripts/gen_npc_missing3.py scripts/gen_splittedsram.py \
          scripts/gen_renamebuffer.py scripts/gen_tlbfa_family.py \
          scripts/gen_sbufferdata.py scripts/gen_newdispatch.py \
-         scripts/gen_newdispatch_tb.py \
-         scripts/gen_tlbnb_family.py scripts/gen_predictor.py \
-         scripts/gen_rob.py scripts/gen_rob_ut.py \
-         scripts/gen_sbuffer.py scripts/gen_sbuffer_tb.py \
-         scripts/gen_tlbsw_family.py; do
+         scripts/gen_newdispatch_tb.py scripts/gen_tlbnb_family.py \
+         scripts/gen_predictor.py scripts/gen_rob.py \
+         scripts/gen_rob_ut.py scripts/gen_sbuffer.py \
+         scripts/gen_sbuffer_tb.py scripts/gen_tlbsw_family.py \
+         scripts/gen_rob_pins.py scripts/gen_rob_contract.py \
+         scripts/gen_rob_iface.py; do
   [ -f "$g" ] && run "生成器幂等 $(basename $g .py | sed 's/^gen_//')" python3 "$g" --check
 done
 # UT 目录下的生成器不在 check_gen_gate_complete.py 的扫描范围（它只扫 scripts/gen_*.py），
@@ -187,6 +188,29 @@ run "rtl 无 svh 闸"      python3 scripts/check_no_svh_in_rtl.py
 # fm_eq.tcl 的 switch 块必须 tclsh 可解析（2026-09-20，Entries lane 踩到）：
 # 一段加错位置的注释（落进 switch 的花括号里）让**本仓每一次 FM 都在 setup 阶段死掉**，
 # 而没有任何现成的闸会响。这道闸不需要 Formality，跑一次几十毫秒。
+# fm_eq.tcl 的 switch 块必须 tclsh 可解析（2026-09-20，Entries lane 踩到）：
+# 一段加错位置的注释（落进 switch 的花括号里）让**本仓每一次 FM 都在 setup 阶段死掉**，
+# 而没有任何现成的闸会响。这道闸不需要 Formality，跑一次几十毫秒。
+# Rob 折叠探针的分词器负测（秒级，不扫 golden）。这把探针的输出被当成"golden 的
+# 每条目逻辑能不能折成一个 for 循环"的证据，而它一旦分词错，**不报错、不为空**，
+# 只是给出一份形状看着很合理的假语句树（实测：把 160 个并列 if 解成 160 层 else 链）。
+# 假证据比没证据更贵，所以它自带负测，负测自带"把修复退回去必须变红"的反测。
+run "Rob 折叠探针负测"   python3 scripts/test_rob_fold_probe.py
+# Rob robDeqGroup 射程量具的负测（秒级）。它给出的 116/633 与 577/633 两个数是
+# 一条工程决定（这一族留不留空）的唯一依据，而让它**偏小且不报错**的那个坑
+# ——多维 packed wire `wire [7:0][6:0] X = ...` 被单方括号正则漏掉——实测会把
+# 517/667 变成 325/667，两个数看着都合理。所以正则本身要有反测钉住。
+run "Rob 射程量具负测"   python3 scripts/rob_deqgroup_blast.py --selftest
+# Rob 接口契约的判据自测：三条负例 + 一条元负例（把 classify 换成"什么都算网"，
+# PIN 分布必须变）。它挡的是"判定字段名打错 -> 安静地得到一个空子集"——
+# 空子集和真结论在表里长得一模一样。
+run "Rob 接口契约负测"   python3 scripts/gen_rob_iface.py --selftest
+# debug_otherPdest 射程：四条从 golden/Scala 现算的事实（56 输出 / 56 寄存器从不被赋值 /
+# ★父层 CtrlBlock 把 56 个全接成 `/* unused */`★ / Scala 源树里只出现 1 次）。
+# 它挡的是"金标准变了而结论没跟着变"——这四条是那个待裁设计选择的全部依据。
+# 先跑负测（三条种病），再跑真闸。
+run "otherPdest 射程负测"  python3 scripts/rob_otherpdest_scope.py --selftest
+run "otherPdest 射程闸"    python3 scripts/rob_otherpdest_scope.py --check
 run "fm_eq.tcl 语法负测" python3 scripts/check_fm_eq_tcl_syntax.py --selftest
 run "fm_eq.tcl 语法闸"   python3 scripts/check_fm_eq_tcl_syntax.py
 # per-target 数据不许回到 fm_eq.tcl（2026-09-20 拆分之后的守门人）：

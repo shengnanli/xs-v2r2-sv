@@ -1,0 +1,20 @@
+=== portlint: Rob [Rob] ===
+[PASS] Rob
+--- portlint: 1 pass, 0 fail, 0 skip ---
+python3 /home/eda/xs-env/wt-rob-v2x/scripts/derive_ut_impl.py --out ut_gen ../../../rtl/backend/Rob.sv
+derive_ut_impl: Rob -> Rob_xs
+./simv +ntb_random_seed=1 +ncycles=200000 +vcs+initreg+0 -l sim_1.log
+Info: [VCS_SAVE_RESTORE_INFO] ASLR (Address Space Layout Randomization) is detected on the machine. To enable $save functionality, ASLR will be switched off and simv re-executed.
+Please use '-no_save' simv switch to avoid re-execution or '-suppress=ASLR_DETECTED_INFO' to suppress this message.
+Chronologic VCS simulator copyright 1991-2024
+Contains Synopsys proprietary information.
+Compiler version W-2024.09-SP1_Full64; Runtime version W-2024.09-SP1_Full64;  Sep 20 05:52 2026
+checks=133072503 errors=0
+$finish called from file "tb.sv", line 11338.
+$finish at simulation time           2000045000
+           V C S   S i m u l a t i o n   R e p o r t 
+Time: 2000045000 ps
+CPU Time:   2467.340 seconds;       Data structure size:   5.3Mb
+Sun Sep 20 06:34:21 2026
+=== UT FAILED (Rob seed=1) ===
+make: *** [../../../scripts/ut_common.mk:128: run] Error 1
