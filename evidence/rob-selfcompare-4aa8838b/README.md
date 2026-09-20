@@ -264,3 +264,60 @@ no reason to suspect a floor exists, would never think to spend it.
 | `run_undriven0/fm_summary.txt` | the same under `verification_set_undriven_signals 0` |
 | `run_undriven0/unmatched_empty.rpt` | the (empty) unmatched report under `0` |
 | `undriven_safety/` | the four-run measurement showing where `0` MASKS a real defect |
+
+---
+
+## Addendum 2026-09-20 --- Group A settled at the DESIGN level, from Chisel source
+
+The analysis above was made entirely from the flattened `Rob.sv`. That left one
+unexamined possibility: that `debug_otherPdest` was driven in the Chisel design
+and only *looked* undriven after firtool. It was not. The Chisel source for the
+golden commit is present on this machine and, verified with
+`git log b36a1a2a5..HEAD -- src/main/scala/xiangshan/` (empty), **unchanged
+since golden was generated**:
+
+| | |
+|---|---|
+| `src/main/scala/xiangshan/backend/rob/RobBundles.scala` | declares `debug_otherPdest` in `RobCommitEntryBundle` (`Vec(7, UInt(PhyRegIdxWidth.W))`, guarded by `basicDebugEn`) |
+| same file, `connectCommitEntry(...)` | copies **every other** field of that bundle from the `RobEntryBundle` --- and **never mentions `debug_otherPdest`** |
+| `Rob.scala` | `robDeqGroup = Reg(Vec(bankNum, new RobCommitEntryBundle))`; the only writes to it are the two `connectCommitEntry` calls |
+
+`RobEntryBundle` has no `debug_otherPdest` member at all, so there is nothing
+for `connectCommitEntry` to have copied. The field exists on the commit-entry
+bundle, is read out to `io.commits.info(i).debug_otherPdest`, and is written by
+nobody. ★It is a design-level dangling field, not a firtool artefact and not a
+modelling artefact of this proof.★
+
+Note the near-miss that makes this worth stating precisely: `Rob.scala` DOES
+maintain a similarly named, genuinely driven array
+
+```scala
+val debug_VecOtherPdest = RegInit(VecInit.fill(RobSize)(VecInit.fill(8)(0.U(PhyRegIdxWidth.W))))
+vldWBs.map { vldWb => when (vldWb.fire && ...) { debug_VecOtherPdest(vldWbRobIdx)(vldWbvdIdx) := vldWbPdest } }
+```
+
+`debug_VecOtherPdest` (160 x 8, reset to 0, written by the two vector-load
+writeback ports) is a **different** array that feeds difftest's `otherwpdest`.
+Reading the two as one thing --- they differ by a prefix --- would turn a driven
+array into "the undriven one" or vice versa. They are separate families in the
+register inventory and must stay separate.
+
+### Exact size, measured
+
+| | |
+|---|---|
+| register fields | `robDeqGroup_<0..7>_debug_otherPdest_<0..6>` = 8 x 7 = **56 registers** |
+| register bits | 56 x 8 = **448 bits** |
+| output ports reached | `io_commits_info_<0..7>_debug_otherPdest_<0..6>` = **56 ports**, 8 bits each = **448 output bits** |
+
+(448, not 512: the commit-entry vector is `Vec(7, ...)`, not 8. Difftest's
+`otherwpdest` takes 8 entries from the *other* array, `debug_VecOtherPdest`;
+that is where an "8" in this neighbourhood comes from.)
+
+### What is still open
+
+The design choice itself --- what the rewrite drives onto those 448 undriven
+output bits --- is **still unresolved and still needs a ruling**. This addendum
+only removes one hypothesis (firtool artefact) and pins the exact width. Until
+the ruling lands, the `robDeqGroup` family is the one family deliberately left
+unwritten in the core.
