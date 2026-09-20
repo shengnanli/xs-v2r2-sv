@@ -813,3 +813,96 @@ run #4 的 fm.log 里出现了 run #3 **一次都没有**的一句（`grep -c` �
 `FM_TARGET_APPVAR:` 进 fm.log，让"这个目标动了哪两个旋钮"在日志里看得见。
 
 run #5 = 恢复之后的重跑，预期逐位回到 run #3。
+
+---
+
+# run #5 对账：**7/7 全中，逐位回到 run #3**
+
+commit `7e8081ff`，证据 `evidence/7e8081ff298c/LoadQueueReplay/`。
+
+| 量 | run #3 (75e1d8be) | run #4 (14cf2a80) | **run #5 (7e8081ff)** |
+|---|---|---|---|
+| verdict | SUCCEEDED | **FAILED** | **SUCCEEDED** |
+| passing | 114,160 | 114,010 | **114,160** |
+| failing | 0 | 3 | **0** |
+| unverified / aborted | 0 / 0 | 0 / 0 | **0 / 0** |
+| unread_notcompared | 0 | 0 | **0** |
+| unmatched 六项 | 全 0 | compare_ref **3** | **全 0** |
+| Constant reg | 0 | **147** | **0** |
+| `constant_reg_toggle_assumed` | false | **true** | **false** |
+| matched by user / name / sig | 6213 / 106471 / 1476 | 6066 / 106494 / 1453 | **6213 / 106471 / 1476** |
+| `grep -cE "^ *Info: *Constant registers have been identified"` | 0 | **2** | **0** |
+| `grep -cE "^ *Error:"` | 0 | 0 | **0** |
+| 峰值内存 | 3959 MB | 4000 MB | **3960 MB** |
+
+**恢复是真的恢复：匹配分解 6213/106471/1476/0 与 run #3 逐个相同。**
+
+`LQR_PIN_END LoadQueueReplay n=6290 miss=0 expect=6290`，
+`FM_TARGET_APPVAR: LoadQueueReplay assume_reg_init=none undriven=BINARY`，
+`fm_pins_pre.tcl` sha256 `be3582f5667eb1539874e8e1664e29df527cd8d5cf604d52885b19a194c76ec9`，
+impl sha256 `b3f0aac0…6794a35e`（与 run #3/#4 逐字相同 —— RTL 一行没动过）。
+
+## ★一个我自己差点报错的假警报，记下来★
+
+我在 run #5 跑到一半时用
+
+    grep -c "Constant registers have been identified" fm.log
+
+量"Auto 的 toggle 假设有没有回来"，读到 **1**，一度判定"恢复没生效"。
+**那个 1 是我自己写进 `fm_eq.tcl` 注释里的那句话被 fm_shell 回显进 fm.log。**
+
+    行首锚定 `^ *Info: *Constant registers...`：run#3=0  run#4=2  run#5=0   ← 正确
+    裸子串                                    ：run#3=0  run#4=2  run#5=1   ← 被我自己的注释污染
+
+这正是 CONVENTIONS「别拿裸错误号当判据」那一条，**而这次踩进去的是我，
+祸首是我自己刚写的注释**。顺带核过：仓库自己的两处判据都是**行首锚定**的
+（`fm_verdict.py` 的 `_CONST_TOGGLE` 要求 `^\s*Info:`，`test_tcl_no_poison.py` PASS），
+所以**没有任何一道闸被我这条注释污染**，被污染的只有我手打的那条 grep。
+
+## ★关于 `relaxed_appvars`：实测结果与预期相反，这条要更正★
+
+集成者提醒："appvar 挪进 `fm_eq.tcl` 之后不在 receipt 的 `relaxed_appvars` 里，
+`agent/harvest` 的红会消失 —— 但那不等于遮蔽风险排除了"。
+
+**实测：红不会消失。** run #5 的 receipt 里
+
+    qualifications.relaxed_appvars = ["verification_assume_reg_init",
+                                      "verification_set_undriven_signals"]
+    entry_appvars_readback: verification_assume_reg_init=None,
+                            verification_set_undriven_signals=BINARY
+
+机理：`scripts/sidecar/fm_native_emit.tcl` 的 `relaxed` 是拿 **verify 前捕获的 entry appvar
+实际值**与默认值逐项比（L772-781），**与它在哪一行被设无关**。
+所以挪位置只改了"谁看得见这个设置"（现在 fm.log 里有 `FM_TARGET_APPVAR:` 一行），
+**没有动摇申报**。★这是好消息：不存在"换个地方设就把申报甩掉"这条后门。★
+
+## ★但缺口仍然在，而且要按 SIDECAR_SCHEMA 的口径读★
+
+`scripts/sidecar/SIDECAR_SCHEMA.md` L126-127 把这两项都判成**非默认 = 放宽**：
+
+| appvar | 默认 | 本目标设成 | schema 裁定 |
+|---|---|---|---|
+| `verification_assume_reg_init` | `Auto` | `none` | 非默认=放宽→须入 relaxed_appvars |
+| `verification_set_undriven_signals` | `BINARY:X` | `BINARY` | 非默认=放宽→须入 relaxed_appvars |
+
+我的实测对这两项给出的**不是同一个结论**，必须分开读：
+
+- **`assume_reg_init none`：实测是加强，与 schema 的一刀切裁定相反。**
+  拿掉它，147 个点从 `passing` 落进**不比较**的 `Constant reg`（FM 自报
+  "identified ... assumed to toggle"）。设成 `none` 让这 147 个点**真的被比**。
+  ★比较点只增不减 = 加强。★ schema 那条"非默认=放宽"是**保守的一刀切，不是测量**；
+  本目标是它的一个反例。（我不改 schema —— 这该由 reviewer 裁定，我只报数据。）
+
+- **`set_undriven_signals BINARY`：实测只证明了"拿掉会红"，没有证明它安全。**
+  拿掉它，3 个 BBPin 比较点（`freeList/io_canAllocate_0..2`）从 passing 变 **failing**。
+  ★"它让 3 个 failing 消失"这件事，与"它遮住了 3 个真失配"是同一个观测★ ——
+  我手上没有任何东西能把这两种读法分开。而 `BINARY` 相对默认 `BINARY:X` 是**收窄**
+  （把 X 移出自由变量域），Rob 实测过同一 appvar 的收窄（设成 `0`）会遮住真缺陷。
+  ⇒ **记为 `EXPLICIT_GAP`：已知未排除遮蔽风险。**
+  ⇒ 谁要动 `LoadQueueReplay` 的 appvar，先读这一条。
+  ⇒ 解除条件：按 Rob 的四跑格式，对 `BINARY:X` vs `BINARY` 造一个**针对
+     "ref 侧悬空网线配对"机制**的判别性探针（我造的三档探针对该机制没有分辨力），
+     证明 `BINARY` 不会放行任何 `BINARY:X` 能抓到的缺陷。
+
+**所以 run #5 绿 ≠ 这两个旋钮都论证过了。** 绿的是等价性；
+第二项的安全性仍然是敞着的，并且 **receipt 里照实申报着**（relaxed_appvars 非空）。
