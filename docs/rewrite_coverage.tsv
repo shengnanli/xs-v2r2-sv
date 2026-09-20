@@ -21,10 +21,10 @@
 #   observation_sink    1 个   9903 端口全 input 的纯观测 sink，19 万行全是端口表
 #
 metric	done	total	percent
-fm_targets_configured	252	425	59.3
-unique_design_written	147	1191	12.3
+fm_targets_configured	252	434	58.1
+unique_design_written	148	1191	12.4
 unique_design_proven	117	1191	9.8
-golden_lines_written	1354483	3902283	34.7
+golden_lines_written	1378469	3902283	35.3
 golden_lines_proven	913590	3902283	23.4
 #
 # written 里没有绿判决证据的设计族（差额都在这儿，逐个列出不藏）：
@@ -38,6 +38,7 @@ golden_lines_proven	913590	3902283	23.4
 #   CSA3                                               99 行
 #   CSA3_2                                           1629 行
 #   DecodeUnitComp                                  45149 行
+#   EnqEntry                                        23986 行
 #   IBuffer                                         23766 行
 #   ICache                                           1754 行
 #   ICacheCtrlUnit                                    335 行
@@ -76,7 +77,6 @@ EntriesVlduVstuVseglduVsegstu	40287	1	REWRITE_L
 EntriesVlduVstu	39935	1	REWRITE_L
 NCB200	36161	2	-
 Scheduler	33927	4	REWRITE_L
-EnqEntry	32174	12	-
 EntriesStdMoud	29601	1	-
 EntriesStaMou	29558	1	-
 EntriesLdu	29386	1	-
@@ -91,3 +91,4 @@ SimTop	19836	1	-
 NewCSR	15945	1	REWRITE_L
 ExeUnit	15312	13	REWRITE_L
 L1ErrorMetaArray	14951	1	-
+MSHRCtl	14590	1	REWRITE_M

@@ -1,4 +1,4 @@
-# 三轴覆盖（分母 = /home/eda/xs-env/xs-v2-sv/docs/g1_configured_universe.tsv 的 in_universe=yes，共 1814）
+# 三轴覆盖（分母 = /home/eda/xs-env/wt-enqentry/docs/g1_configured_universe.tsv 的 in_universe=yes，共 1814）
 # module	rewrite_coverage	formal_coverage	impl_file
 AMOALU	MISSING	UNPROVEN	-
 APLIC	MISSING	UNPROVEN	-
@@ -297,20 +297,20 @@ DretEventModule	MISSING	UNPROVEN	-
 Dscratch0Module	MISSING	UNPROVEN	-
 Dscratch1Module	MISSING	UNPROVEN	-
 DuplicatedTagArray	REWRITTEN	UNPROVEN	rtl/memblock/DuplicatedTagArray.sv
-EnqEntry	MISSING	PROVEN_IN_CONE	-
+EnqEntry	REWRITTEN	PROVEN_IN_CONE	rtl/backend/EnqEntry.sv
 EnqEntryVecMem	MISSING	UNPROVEN	-
 EnqEntryVecMem_2	MISSING	UNPROVEN	-
-EnqEntry_10	MISSING	PROVEN_IN_CONE	-
-EnqEntry_12	MISSING	PROVEN_IN_CONE	-
-EnqEntry_14	MISSING	PROVEN_IN_CONE	-
-EnqEntry_16	MISSING	PROVEN_IN_CONE	-
-EnqEntry_18	MISSING	PROVEN_IN_CONE	-
+EnqEntry_10	REWRITTEN	PROVEN_IN_CONE	rtl/backend/EnqEntry_10.sv
+EnqEntry_12	REWRITTEN	PROVEN_IN_CONE	rtl/backend/EnqEntry_12.sv
+EnqEntry_14	REWRITTEN	PROVEN_IN_CONE	rtl/backend/EnqEntry_14.sv
+EnqEntry_16	REWRITTEN	PROVEN_IN_CONE	rtl/backend/EnqEntry_16.sv
+EnqEntry_18	REWRITTEN	PROVEN_IN_CONE	rtl/backend/EnqEntry_18.sv
 EnqEntry_20	MISSING	UNPROVEN	-
 EnqEntry_24	MISSING	UNPROVEN	-
 EnqEntry_30	MISSING	UNPROVEN	-
-EnqEntry_4	MISSING	PROVEN_IN_CONE	-
-EnqEntry_6	MISSING	PROVEN_IN_CONE	-
-EnqEntry_8	MISSING	PROVEN_IN_CONE	-
+EnqEntry_4	REWRITTEN	PROVEN_IN_CONE	rtl/backend/EnqEntry_4.sv
+EnqEntry_6	REWRITTEN	PROVEN_IN_CONE	rtl/backend/EnqEntry_6.sv
+EnqEntry_8	REWRITTEN	PROVEN_IN_CONE	rtl/backend/EnqEntry_8.sv
 EnqPolicy	MISSING	PROVEN_IN_CONE	-
 EnqPolicy_14	MISSING	PROVEN_IN_CONE	-
 EnqPolicy_18	MISSING	PROVEN_IN_CONE	-
