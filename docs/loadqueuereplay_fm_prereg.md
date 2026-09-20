@@ -906,3 +906,70 @@ impl sha256 `b3f0aac0…6794a35e`（与 run #3/#4 逐字相同 —— RTL 一行
 
 **所以 run #5 绿 ≠ 这两个旋钮都论证过了。** 绿的是等价性；
 第二项的安全性仍然是敞着的，并且 **receipt 里照实申报着**（relaxed_appvars 非空）。
+
+---
+
+# 条件绿可以解除：整条依赖闭包已逐字节核过
+
+集成者交接说 `LqVAddrModule` / `AgeDetector_38` "未签核"。**这条前提已经过期** ——
+我没有信台账，逐份 receipt + 逐个 sha256 核的：
+
+| 目标 | verdict | passing | failing | unmatched 六项 | qualifications | receipt |
+|---|---|---|---|---|---|---|
+| `LoadQueueReplay` | SUCCEEDED | 114,160 | 0 | 全 0 | relaxed_appvars 2 项（见上节） | `evidence/7e8081ff298c/` |
+| `AgeDetector_38`（×3 实例） | SUCCEEDED | 324 | 0 | 全 0 | **全空** | `evidence/b84bf4ee4ead/` |
+| `FreeList_5` | SUCCEEDED | 724 | 0 | 全 0 | **全空**（round 台账记 `const_reg=4`） | `evidence/aad807db4fb6/` |
+| `LqVAddrModule` | SUCCEEDED | 5,340 | 0 | 全 0 | **全空** | `evidence/b84bf4ee4ead/` |
+| └ `DelayN_13` | SUCCEEDED | 2 | 0 | — | — | round 台账 |
+| └ `DelayNWithValid_152` | SUCCEEDED | 18 | 0 | — | — | round 台账 |
+| └ `DelayNWithValid_155` | SUCCEEDED | 100 | 0 | — | — | round 台账 |
+
+四份 receipt 全部 `dirty=False` / `provisional=False` / canonical id 同为
+`G1-a4ea14f2ddf612bb4ad023d26…`（与本目标一致）。
+
+## 组合性：三处字节对齐，逐个核过（不是"看起来对得上"）
+
+**(1) child 证的 golden == 本目标 golden 实例化的那一份**
+
+    AgeDetector_38   receipt golden d1d862e80cfa37beca49e9db == 现场 G1 golden ✓
+    LqVAddrModule    receipt golden a37b88d5d99ed4f4f7f546e7 == 现场 G1 golden ✓
+    FreeList_5       receipt golden fef738761fb622690e05a894 == 现场 G1 golden ✓
+
+**(2) child 证的 impl == 本仓当前 rtl/ 里的那一份**
+
+    AgeDetector_38   receipt impl cb6524113070d6c063cb66ff == rtl/memblock/AgeDetector_38.sv ✓
+    LqVAddrModule    receipt impl cc084edba873860ca3161348 == rtl/memblock/LqVAddrModule.sv  ✓
+    FreeList_5       receipt impl c428a2714882e822ef117229 == rtl/memblock/FreeList_5.sv     ✓
+
+**(3) ★孙子层：`LqVAddrModule` 的 impl 闭包里挂着三份 *golden* DelayN★**
+
+`LqVAddrModule` 那一跑把 `DelayN_13` / `DelayNWithValid_152` / `_155` 的
+**golden 文件同时放进 ref 与 impl 两侧 elaborate**（不黑盒）。所以它的 receipt 里
+impl_closure 列的是 `golden-rtl/DelayN_*.sv`。
+乍看像"golden 逻辑复用"，但闭包是闭的 —— 这三个各自有独立的 clean 证明，
+**而且它们证的 golden 与 `LqVAddrModule` 两侧 elaborate 的 golden 逐字节同一份**：
+
+    DelayN_13            b09d6e57c14d5dc9eb188e42   两处相同 ✓
+    DelayNWithValid_152  9ed6573dc4402e19861cc543   两处相同 ✓
+    DelayNWithValid_155  2a3f4da3299f3bdd44b80163   两处相同 ✓
+
+⇒ 可以逐层替换：`golden DelayN ≡ rtl/common/DelayN`，代进去
+`golden LqVAddrModule ≡ rtl/memblock/LqVAddrModule`，再代进
+`golden LoadQueueReplay ≡ rtl/memblock/LoadQueueReplay`。
+
+★**这一层如果不查就会漏**★：只看 `LqVAddrModule` 的 verdict 是 SUCCEEDED、
+不看它的 impl_closure 里挂着 golden 文件，就会把一个**还带着 golden 依赖**的绿
+当成无条件绿。查了之后它确实是闭的，但"查过"和"绿"是两件事。
+
+## 结论
+
+**本目标的条件绿可以解除**，依赖侧不再欠任何证明。仍然挂着的只剩两条，
+都与子模块无关：
+
+1. `verification_set_undriven_signals BINARY` 的安全性（`EXPLICIT_GAP`，见上节）；
+2. ★**这个解除是我用手核出来的，机器读不到**★ ——
+   receipt 的 `green_child_closure_checks` 仍是空的（那套机制只在
+   assembly + `verif/allow/<top>.json` 的 `class: green_child` 下生效，
+   本目标走 strict + matched blackbox 走不到）。
+   所以上面这张表**没有任何闸在守**：child 哪天换一份实现、哈希变了，
+   没有东西会把本目标重新判红。**这是工具侧缺口，不是可以不挂的理由。**
