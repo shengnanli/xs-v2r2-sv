@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/C53
+Implementation : i:/WORK/C53
+Version        : V-2023.12-SP3
+Date           : Thu Sep 17 16:13:16 2026
+**************************************************
+
+No failing compare points.
+
+1

@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/C32
+Implementation : i:/WORK/C32
+Version        : V-2023.12-SP3
+Date           : Thu Sep 17 16:12:30 2026
+**************************************************
+
+No aborted compare points.
+
+1
