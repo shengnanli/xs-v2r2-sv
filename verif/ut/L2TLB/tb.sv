@@ -4,6 +4,7 @@
 `timescale 1ns/1ps
 module tb;
   int unsigned NVEC = 200000;
+  localparam int WARMUP = 64;   // 暖机拍数（不比较），见 initial 块里的说明
   int errors = 0, checks = 0;
   int unsigned n_a_fire = 0, n_d_fire = 0, n_resp_fire = 0, n_req_fire = 0;
   logic clock = 0, reset;
@@ -1801,18 +1802,18 @@ module tb;
     io_sfence_bits_id = 16'($urandom);
     io_sfence_bits_hv = $urandom_range(0, 1);
     io_sfence_bits_hg = $urandom_range(0, 1);
-    io_wfi_wfiReq = $urandom_range(0, 1);
+    io_wfi_wfiReq = ($urandom_range(0, 31) == 0);
     io_csr_tlb_satp_mode = ($urandom_range(0,1)) ? 4'h8 : 4'h9;
     io_csr_tlb_satp_asid = 16'($urandom_range(0, 3));
-    io_csr_tlb_satp_ppn = 44'($urandom_range(0, 15));
+    io_csr_tlb_satp_ppn = 44'(44'h80000 + $urandom_range(0, 15));
     io_csr_tlb_satp_changed = ($urandom_range(0, 63) == 0);
     io_csr_tlb_vsatp_mode = ($urandom_range(0,1)) ? 4'h8 : 4'h9;
     io_csr_tlb_vsatp_asid = 16'($urandom_range(0, 3));
-    io_csr_tlb_vsatp_ppn = 44'($urandom_range(0, 15));
+    io_csr_tlb_vsatp_ppn = 44'(44'h80000 + $urandom_range(0, 15));
     io_csr_tlb_vsatp_changed = ($urandom_range(0, 63) == 0);
     io_csr_tlb_hgatp_mode = ($urandom_range(0,1)) ? 4'h8 : 4'h9;
     io_csr_tlb_hgatp_vmid = 16'($urandom_range(0, 3));
-    io_csr_tlb_hgatp_ppn = 44'($urandom_range(0, 15));
+    io_csr_tlb_hgatp_ppn = 44'(44'h80000 + $urandom_range(0, 15));
     io_csr_tlb_hgatp_changed = ($urandom_range(0, 63) == 0);
     io_csr_tlb_mbmc_BME = $urandom_range(0, 1);
     io_csr_tlb_mbmc_CMODE = $urandom_range(0, 1);
@@ -1823,7 +1824,7 @@ module tb;
     io_csr_tlb_priv_debug = $urandom_range(0, 1);
     io_csr_tlb_mPBMTE = $urandom_range(0, 1);
     io_csr_tlb_hPBMTE = $urandom_range(0, 1);
-    io_csr_distribute_csr_w_valid = $urandom_range(0, 1);
+    io_csr_distribute_csr_w_valid = ($urandom_range(0, 255) == 0);
     io_csr_distribute_csr_w_bits_addr = 12'($urandom);
     io_csr_distribute_csr_w_bits_data = {$urandom, $urandom};
   endtask
@@ -1840,6 +1841,30 @@ module tb;
   logic [15:0] outstanding;
   logic        d_beat;
   logic [3:0]  d_cur_src;
+
+  // 一拍 D 通道 = 256 bit = 4 条 PTE。按 Sv48 的位域**造合法 PTE**，不要全随机：
+  //   [53:10] ppn  [9:8] rsw  [7]D [6]A [5]G [4]U [3]X [2]W [1]R [0]V
+  // ★ppn 必须落在 DRAM 区★，否则下一级地址一出 PMA 就是 accessFault，
+  // 遍历走一层就断，refill 只发生一次。这里 ppn = 0x80000 + 随机低位。
+  // R/X 随机决定这条是叶子还是中间级：中间级(R=X=0,V=1)会让遍历继续往下走，
+  // 于是一次请求能打出多拍访存 —— 这正是 refill / sector 合并要的激励。
+  function automatic logic [255:0] make_ptes();
+    logic [255:0] blk;
+    logic [43:0]  ppn;
+    logic         leaf;
+    for (int k = 0; k < 4; k++) begin
+      ppn  = 44'h80000 + 44'($urandom_range(0, 255));
+      leaf = ($urandom_range(0, 2) != 0);          // 2/3 概率是叶子
+      blk[k*64 +: 64] = {10'h0, ppn, 2'h0,
+                         1'b1, 1'b1,               // D, A
+                         1'b0, 1'b1,               // G, U
+                         leaf & $urandom_range(0,1), // X
+                         leaf & $urandom_range(0,1), // W
+                         leaf,                      // R
+                         1'b1};                     // V
+    end
+    return blk;
+  endfunction
 
   task automatic tl_reset();
     outstanding = '0;  d_beat = 1'b0;  d_cur_src = '0;
@@ -1869,8 +1894,7 @@ module tb;
         auto_out_d_valid = 1'b0;
       end else begin                       // 继续送第二个 beat
         d_beat = 1'b1;
-        auto_out_d_bits_data = {$urandom, $urandom, $urandom, $urandom,
-                                $urandom, $urandom, $urandom, $urandom};
+        auto_out_d_bits_data = make_ptes();
       end
     end else if (|outstanding && $urandom_range(0, 2) != 0) begin
       // 从在途集合里挑一个开始应答
@@ -1882,11 +1906,7 @@ module tb;
         auto_out_d_bits_source = 4'(pick);
         auto_out_d_valid = 1'b1;
         d_beat = 1'b0;
-        // PTE 内容：大部分位清 0 只留低位，让 v/r/w/x/pbmt/n 这些判定位真的有机会
-        // 取到合法组合；全随机时 reserved 段几乎必非 0，每条 PTE 都直接判 page fault。
-        auto_out_d_bits_data = '0;
-        for (int b = 0; b < 4; b++)
-          auto_out_d_bits_data[b*64 +: 16] = 16'($urandom);
+        auto_out_d_bits_data = make_ptes();
       end
     end
   endtask
@@ -1900,6 +1920,40 @@ module tb;
     reset = 1'b1;
     repeat (8) @(posedge clock);
     #1 reset = 1'b0;
+
+    // ------------------------------------------------------------------
+    // 暖机窗口（不比较）：把两侧推到确定状态，并把 PMP 配成"放行"。
+    //
+    // ★为什么非配不可★（2026-09-20 实测定位，不是猜的）：
+    // L2TLB 给 5 个 PMPChecker 的 mode 在 golden 里写死成 ModeS。S 态下 PMP
+    // 若没有任何表项命中就是**拒绝**，而复位后 pmpcfg/pmpaddr 全 0 ⇒ 没有表项。
+    // 实测 50000/50000 拍 PMPChecker 的 io_resp_ld 都是拒绝，PTW 每次 pmp_check
+    // 之后直接 accessFault，`io_mem_req_valid = ~s_mem_req & ~mem_mask &
+    // ~accessFault & s_pmp_check` 永远为 0：
+    //     ptwmem=0 llmem=0 hpmem=0 marb=0 a_valid=0  -> a_fire=0
+    // 也就是 refill / merge / sector / difftest refill 探针整条路一拍没走到。
+    // 这里写 pmpaddr0=全 1（NAPOT 覆盖全空间）、pmpcfg0=0x1F（A=NAPOT, RWX）。
+    //
+    // 顺带这个窗口也是「不复位寄存器 + 随机读」那条坑的标准修法：比较窗口打开
+    // 之前先跑一段，让两侧的无复位寄存器都被写成确定值。
+    // ------------------------------------------------------------------
+    for (int t = 0; t < WARMUP; t++) begin
+      @(posedge clock); #1;
+      drive_random();
+      drive_dft_zero();
+      if (t == 1) begin
+        io_csr_distribute_csr_w_valid     = 1'b1;
+        io_csr_distribute_csr_w_bits_addr = 12'h3B0;   // pmpaddr0
+        io_csr_distribute_csr_w_bits_data = {64{1'b1}};
+      end else if (t == 2) begin
+        io_csr_distribute_csr_w_valid     = 1'b1;
+        io_csr_distribute_csr_w_bits_addr = 12'h3A0;   // pmpcfg0
+        io_csr_distribute_csr_w_bits_data = 64'h1F;    // A=NAPOT | X|W|R
+      end else begin
+        io_csr_distribute_csr_w_valid     = 1'b0;
+      end
+      tl_step();
+    end
     for (int t = 0; t < NVEC; t++) begin
       @(posedge clock); #1;
       do_check(t);

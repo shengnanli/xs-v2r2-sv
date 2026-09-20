@@ -449,9 +449,32 @@ package l2tlb_pkg;
   // not_merge 由调用方从 mergeArb 输出的 s1.not_merge 传入（仅 llptw 路且有
   // G-stage 时才为真；cache/ptw 路胜出恒合并）。
   // ==========================================================================
+  // ★G1 新增：bitmap 开启且本次翻译没有 G-stage 时，S1 就是**最终一级**★
+  // 这时选中条目要按它自己的 level / napot 位"拍平"到 4KB 粒度：高位保留 PPN，
+  // 低位换成 VPN(tag) 的对应位。和下面 s2 侧的 hptw_gen_ppn_s2 是同一套算法，
+  // 只是这里作用在 **sector** 口径上（ppn/tag 都已经去掉了 3 位 sector 下标），
+  // 所以每个切点都比 s2 侧小 3。
+  function automatic logic [SECTOR_PTE_PPN_W-1:0] sector_gen_ppn(
+    input logic [SECTOR_PTE_PPN_W-1:0] ppn,
+    input logic [SECTOR_VPN_W-1:0]     tag,
+    input logic [1:0]                  level,
+    input logic                        n
+  );
+    case (level)
+      2'h1:    return {ppn[SECTOR_PTE_PPN_W-1:6],  tag[5:0]};    // 2MB
+      2'h2:    return {ppn[SECTOR_PTE_PPN_W-1:15], tag[14:0]};   // 1GB
+      2'h3:    return {ppn[SECTOR_PTE_PPN_W-1:24], tag[23:0]};   // 512GB
+      default: return n ? {ppn[SECTOR_PTE_PPN_W-1:1], tag[0]}    // 64KB napot
+                        : ppn;                                    // 4KB，原样
+    endcase
+  endfunction
+
+  // bm_final：bitmap_enable && 本次没有 G-stage（s2xlate ∈ {noS2, onlyS1}）。
+  // 为真时 level/n 归 0、ppn 拍平，且 valididx 的"同段"判据变严（见函数体）。
   function automatic sector_resp_t merge_to_sector(
     input ptw_merge_resp_t mr,
-    input logic            not_merge
+    input logic            not_merge,
+    input logic            bm_final
   );
     sector_resp_t           s;
     logic [SECTOR_BITS-1:0] sel;
@@ -460,8 +483,12 @@ package l2tlb_pkg;
     sel = oh_to_uint8(mr.pteidx);
     es  = mr.entry[sel];
     s.entry.tag = es.tag;  s.entry.asid = es.asid;  s.entry.vmid = es.vmid;
-    s.entry.ppn = es.ppn;  s.entry.pbmt = es.pbmt;  s.entry.n    = es.n;
-    s.entry.perm= es.perm; s.entry.level= es.level; s.entry.v    = es.v;
+    s.entry.pbmt = es.pbmt; s.entry.perm = es.perm;  s.entry.v    = es.v;
+    // ★bm_final 只改这三项★（golden 逐字段核对过：tag/asid/vmid/pbmt/perm/v/
+    //   addr_low/af/pf 两个分支的表达式完全相同，不许顺手也改）
+    s.entry.ppn   = bm_final ? sector_gen_ppn(es.ppn, es.tag, es.level, es.n) : es.ppn;
+    s.entry.level = bm_final ? 2'h0 : es.level;
+    s.entry.n     = bm_final ? 1'b0 : es.n;
     s.af = es.af;  s.pf = es.pf;  s.cf = es.cf;
     s.addr_low = sel;  s.pteidx = mr.pteidx;
     for (int i = 0; i < CONTIG; i++) begin
@@ -469,10 +496,15 @@ package l2tlb_pkg;
            (mr.entry[i].perm == es.perm) && (mr.entry[i].v    == es.v)    &&
            (mr.entry[i].af   == es.af)   && (mr.entry[i].pf   == es.pf)   &&
            (mr.entry[i].cf   == es.cf);
-      s.valididx[i] = (eq | ~mr.not_super) & ~not_merge;
+      // ★两套"同段"判据★：
+      //   常规      —— 等值 **或** 选中条目是 superpage（整片都算同段）
+      //   bm_final  —— 必须 not_super **且** 等值。拍平之后 superpage 那条捷径
+      //                不再成立（ppn 已经被改写），golden 在这里换了判据。
+      s.valididx[i] = bm_final ? (mr.not_super & eq & ~not_merge)
+                               : ((eq | ~mr.not_super) & ~not_merge);
       s.ppn_low[i]  = mr.entry[i].ppn_low;
     end
-    s.valididx[sel] = 1'b1;   // 选中条目恒有效
+    s.valididx[sel] = 1'b1;   // 选中条目恒有效（两套判据都是 `i==sel |` 打头）
     return s;
   endfunction
 
@@ -4680,9 +4712,18 @@ module xs_L2TLB_core
   assign marb1_out_s1.pteidx[7]        = u_merge_arb_1_out_bits_s1_pteidx_7;
   assign marb1_out_s1.not_super        = u_merge_arb_1_out_bits_s1_not_super;
   // END GENERATED
+  // 本次翻译有没有 G-stage：s2xlate ∈ {noS2, onlyS1} 就是"没有"。
+  wire [1:0] marb0_s2x   = u_merge_arb_0_out_bits_s2xlate;
+  wire [1:0] marb1_s2x   = u_merge_arb_1_out_bits_s2xlate;
+  wire       marb0_nos2  = (marb0_s2x == NO_S2XLATE) | (marb0_s2x == ONLY_STAGE1);
+  wire       marb1_nos2  = (marb1_s2x == NO_S2XLATE) | (marb1_s2x == ONLY_STAGE1);
+  // bitmap 开 + 没有 G-stage ⇒ S1 是最终一级，要拍平（见 merge_to_sector 的 bm_final）。
+  wire       bm_final_0  = bitmap_enable & marb0_nos2;
+  wire       bm_final_1  = bitmap_enable & marb1_nos2;
+
   sector_resp_t sec0, sec1;
-  assign sec0 = merge_to_sector(marb0_out_s1, u_merge_arb_0_out_bits_s1_not_merge);
-  assign sec1 = merge_to_sector(marb1_out_s1, u_merge_arb_1_out_bits_s1_not_merge);
+  assign sec0 = merge_to_sector(marb0_out_s1, u_merge_arb_0_out_bits_s1_not_merge, bm_final_0);
+  assign sec1 = merge_to_sector(marb1_out_s1, u_merge_arb_1_out_bits_s1_not_merge, bm_final_1);
   // BEGIN GENERATED(outarb_in)
   assign u_out_arb_0__in_0_bits_s1_entry_tag    = sec0.entry.tag;
   assign u_out_arb_0__in_0_bits_s1_entry_asid   = sec0.entry.asid;
@@ -4742,12 +4783,8 @@ module xs_L2TLB_core
   //   开了 bitmap 且本次翻译不含 G-stage（s2xlate 是 noS2 或 onlyS1）且选中条目是
   //   superpage 时，8 条 ppn_low 全部改成"选中条目的 sector 下标"；
   //   s2（G-stage）那侧则反过来：不满足该条件时，用 level 把 ppn 低位换成 tag 低位。
-  wire [1:0] marb0_s2x = u_merge_arb_0_out_bits_s2xlate;
-  wire [1:0] marb1_s2x = u_merge_arb_1_out_bits_s2xlate;
-  wire       marb0_nos2 = (marb0_s2x == NO_S2XLATE) | (marb0_s2x == ONLY_STAGE1);
-  wire       marb1_nos2 = (marb1_s2x == NO_S2XLATE) | (marb1_s2x == ONLY_STAGE1);
-  wire       keep_low_0 = ~bitmap_enable | ~marb0_nos2 | u_merge_arb_0_out_bits_s1_not_super;
-  wire       keep_low_1 = ~bitmap_enable | ~marb1_nos2 | u_merge_arb_1_out_bits_s1_not_super;
+  wire       keep_low_0 = ~bm_final_0 | u_merge_arb_0_out_bits_s1_not_super;
+  wire       keep_low_1 = ~bm_final_1 | u_merge_arb_1_out_bits_s1_not_super;
   wire [SECTOR_BITS-1:0] sec0_idx = oh_to_uint8(marb0_out_s1.pteidx);
   wire [SECTOR_BITS-1:0] sec1_idx = oh_to_uint8(marb1_out_s1.pteidx);
   assign u_out_arb_0__in_0_bits_s1_ppn_low_0 =
