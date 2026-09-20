@@ -79,4 +79,13 @@ INITREG ?= +vcs+initreg+random
 #   unmatched 0(0) / unread 0 / 黑盒 0 / 无 dont_verify / 无 ELAB 降级
 #   verdict(signoff-strict) = SUCCEEDED
 #   ★实测 1520 == 预登记 1520，且 Port 37 / DFF 1483 **逐列**对上，差全为 +0。★
+#   官方 receipt: scripts/run_proof.sh 在 detached clean worktree 上重跑一次,
+#   verdict=SUCCEEDED / dirty=False / MAKE_RC=0, 证据 evidence/2844576edd7a/VirtualLoadQueue/。
+#
+# UT 实测: seed 1/7/42 x (+vcs+initreg+0, +vcs+initreg+random) **六轮全跑**,
+#   每轮 200000 拍、逐拍比全部 9 个输出, compared=199994, errors=0 (6/6 PASSED)。
+#   ★两轮 initreg 都绿在这里**不**证明复位域正确★: tb 的 fill 段按构造把三个无复位
+#   阵列在比较窗口打开前写成确定值, 所以两轮必然同结果。复位域的把关在 FM ——
+#   两个 always 块的分组(异步复位域 9 组 / 无复位域 6 组)与 golden 逐个寄存器对齐,
+#   1483 个触发器位全部 passing。
 # ===========================================================================
