@@ -1269,6 +1269,65 @@ TypeError: __init__() got an unexpected keyword argument 'capture_output'
 汇报里的错句子如果没人撤，它会被下一个读者当成事实继承下去
 （见 ★结论会传下去，限定条件不会★ 与 ★继承来的数字与断言，第一次引用时必须重新测量★）。
 
+## ★钉点文件里 `exit` 有两种行为，取决于 sidecar 开没开 —— 一律用 `error`★（2026-09-20）
+
+两条 lane 对 `exit 3` 给出了**相反但都正确**的实测，追下去发现是同一行代码走了两条路：
+
+```tcl
+# scripts/fm_eq.tcl:735 / :814
+if {$SIDECAR_ON} { sidecar_pin_source $env(FM_PIN_TCL) } else { source $env(FM_PIN_TCL) }
+```
+
+`sidecar_pin_source` 把文件喂进 `interp create -safe`（`fm_native_emit.tcl:133`），
+普通 `source` 在顶层执行。而 `SIDECAR_ON` 由 `FM_SIDECAR_OUT` 决定
+（`fm_eq.tcl:16-21`）—— **正式签核 `run_proof.sh` 会设它，本地 `make fm-X` 不设。**
+
+实测（`tclsh` 直接量的）：
+
+| 上下文 | `exit 3` | `error "..."` |
+|---|---|---|
+| **本地调试**（顶层 `source`） | 真退出，退出码 **3** | 抛异常 |
+| **正式签核**（safe interp） | ★抛 `invalid command name "exit"`，宿主进程还活着★ | 抛异常，消息保留 |
+
+```
+safe interp 里 exit 存在吗: ''          (空 = 不存在)
+调用 exit 3 -> 抛出: invalid command name "exit"
+调用 error  -> 抛出: PIN_MISS: 钉点失败
+```
+
+### 为什么这是最坏的一种排列
+
+**同一行代码在你调试时和在出证时走不同机制。**
+本地验证"钉不上会中止"，验的是 `exit` 那条路；正式签核真正跑的是 safe interp 那条路，
+靠"这个命令不存在"中止 —— 它**碰巧**也 fail-closed，但：
+
+- 日志里留下的是 `invalid command name "exit"`，**读的人会以为脚本有语法错**，
+  而不是"钉点没钉上"；作者精心写的失败原因一个字都没留下。
+- 它的 fail-closed 是**副作用**，不是设计。哪天有人把调用包进 `catch`、
+  或者 sidecar 改成非 safe interp，行为就变，而**没有任何判据会提醒**。
+
+这和本文件里 ★空守卫★ / ★必然响的判据★ 是同一族：
+**代码看起来表达了意图，实际起作用的是别的机制。**
+
+### 规矩
+
+★**钉点文件中止一律用 `error "<可读的失败原因>"`。任何值的 `exit` 都不许用。**★
+`error` 是唯一在两种上下文里**行为一致、且保留失败消息**的写法。
+
+`scripts/test_fm_pins_wellformed.py` 的 P2 据此只认 `error`。
+收紧时注意：原来的**正例** `M0b`（"`exit 3` 形态也必须干净"）会变成**反例**，
+`M11`/`M13` 同步调整 —— ★收紧判据时，原来的正例会变成反例★，
+只改主判据不改用例，闸会以"负测自己红了"的形式报出来，容易被读成"收紧收坏了"。
+
+### 连带：已出证文件怎么改
+
+改一个已经出了证的钉点文件，receipt 里记着它的 sha256，文件和证据就对不上。
+**不许为了让闸变绿去动它**（一条 lane 正确地拒绝了这么做）。
+正确路径是用 `scripts/prove_pin_calls_equal_dyn.py` 证明改动是**守卫专属**
+（桩记参数 + tclsh 真跑两版 + 逐字节比对实际调用序列），
+调用序列相同则 receipt 继续有效，并在台账里诚实标注
+"`proof_config.pin_scripts` 的 sha256 与工作树已不同，桥接它的是这张表"。
+
 ## ★转述是丢限定条件的高发点 —— 而且丢的往往是集成者★（2026-09-20，同一天两次）
 
 11 条 lane 并行时，结论不是直接从产生它的人流向使用它的人，而是**经过集成者转述**。
