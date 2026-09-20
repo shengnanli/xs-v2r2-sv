@@ -232,7 +232,10 @@ def cmd_check():
             continue
         bad += 1
         if b is None:
-            print('  FAIL  %s [%s] 基线表里没有这一条 —— 新钉点文件/新变体必须先入表' % k)
+            print('  FAIL  %s [%s] 基线表里没有这一条' % k)
+            print('        新钉点文件/新变体**必须显式登记**（"没登记就算过"等于闸有洞）。')
+            print('        它没有旧基线要桥接，所以直接 `--update` 登记是安全的 ——')
+            print('        ★这与下面"已有条目变了"完全不同：那种情况 --update 等于给旧 receipt 背书★')
         elif c is None:
             print('  FAIL  %s [%s] 基线表里有、现在测不到 —— 文件被删或退回无夹具？' % k)
         else:
