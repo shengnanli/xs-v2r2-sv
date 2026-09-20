@@ -10,6 +10,41 @@
 #  不进 FM_IMPL_SRCS），配成 matched blackbox pair。
 setup
 
+# ---------------------------------------------------------------------------
+# 钉点必须 fail-closed（2026-09-20 实测；改法与 gen_rob_pins.py 同源）
+#
+# 原先每条钉点都是裸的 catch + set_user_match，失败一声不吭。第一次真跑的后果：
+# **573 条钉点被 FM 拒**（FM-036 Unknown name），fm.log 里刷了 573 行
+# "Error: Unknown name: ..."，而脚本照常跑完、还打了 "LQR_PINS: applied"。
+#
+# 真实原因是**名字形状猜错**，不是 RTL 有问题。下面这些形状是从本轮
+# matched.rpt 里逐条读出来的（不是猜的）：
+#   · 非打包数组 + 纯向量元素（cause / missMSHRId / debug_vaddr / s2_cause_q ...）
+#       i:/.../cause_reg[5][3]                          <- 原样可用
+#   · 非打包数组 + **packed struct** 元素（ent / blockSqIdx / red_q_s*）
+#       i:/.../ent_reg[0]\[allocated]                   <- 字段名下标，且带一个反斜杠
+#       i:/.../blockSqIdx_reg[0]\[value][0]             <- 字段名带 \，数字下标不带
+#       i:/.../red_q_s0_reg[0]\[robIdx]\[value][3]
+#     ent_reg[$n]\[allocated] 当初蒙对了，blockSqIdx / red_q 这两族全错。
+#
+# 这 570 个点最后**还是被自动匹配配上了**（blockSqIdx 走 Name、red_q 走 Func），
+# 所以第一版的结论不受影响 —— 但那是运气，不是判据。钉点被拒却静默退回自动匹配，
+# 正是「闸不出声就不是闸」。改成：拒一条就 exit 3，并指名道姓第一条是哪一对。
+#
+# ★进 fm.log 的 puts 一律 ASCII★（CONVENTIONS：fm.log 不是 UTF-8，中文全成问号）。
+# ---------------------------------------------------------------------------
+set ::LQR_PIN_OK 0
+set ::LQR_PIN_BAD 0
+set ::LQR_PIN_FIRSTBAD ""
+proc pin {r i} {
+  if {[catch {set_user_match $r $i} m]} {
+    incr ::LQR_PIN_BAD
+    if {$::LQR_PIN_FIRSTBAD eq ""} { set ::LQR_PIN_FIRSTBAD "$r <-> $i ($m)" }
+  } else {
+    incr ::LQR_PIN_OK
+  }
+}
+
 # FM 的寄存器初值推断（Auto）会把一侧的部分寄存器约束成常量，两侧不对称就成锥失配。关掉。
 if {[catch {set_app_var verification_assume_reg_init none} msg]} { puts "PINS: assume_reg_init failed: $msg" }
 if {[catch {set_app_var verification_set_undriven_signals BINARY} msg]} { puts "PINS: undriven failed: $msg" }
@@ -22,21 +57,21 @@ foreach {gf if} {
   strict    strict
 } {
   for {set n 0} {$n < 72} {incr n} {
-    catch {set_user_match "r:/WORK/$top/${gf}_${n}_reg" \
-                          "i:/WORK/$top/u_core/ent_reg\[$n\]\\\[$if\]"}
+    pin "r:/WORK/$top/${gf}_${n}_reg" \
+                          "i:/WORK/$top/u_core/ent_reg\[$n\]\\\[$if\]"
   }
 }
 
 # ---- dataInLastBeat（1 位 × 72）----
 for {set n 0} {$n < 72} {incr n} {
-  catch {set_user_match "r:/WORK/$top/dataInLastBeatReg_${n}_reg" \
-                        "i:/WORK/$top/u_core/dataInLastBeat_reg\[$n\]"}
+  pin "r:/WORK/$top/dataInLastBeatReg_${n}_reg" \
+                        "i:/WORK/$top/u_core/dataInLastBeat_reg\[$n\]"
 }
 
 # ---- s0_loadFreeSelMask_next_r（72 位）----
 for {set b 0} {$b < 72} {incr b} {
-  catch {set_user_match "r:/WORK/$top/s0_loadFreeSelMask_next_r_reg\[$b\]" \
-                        "i:/WORK/$top/u_core/loadFreeSelMask_q_reg\[$b\]"}
+  pin "r:/WORK/$top/s0_loadFreeSelMask_next_r_reg\[$b\]" \
+                        "i:/WORK/$top/u_core/loadFreeSelMask_q_reg\[$b\]"
 }
 
 # ---- missMSHRId / tlbHintId（两侧都是 5 位：4 位端口零扩展）----
@@ -44,60 +79,60 @@ for {set b 0} {$b < 72} {incr b} {
 #  逐位 1:1 钉满 [4:0]，否则 golden 的 bit[4] 成 unmatched compare_ref。
 for {set n 0} {$n < 72} {incr n} {
   for {set b 0} {$b < 5} {incr b} {
-    catch {set_user_match "r:/WORK/$top/missMSHRId_${n}_reg\[$b\]" \
-                          "i:/WORK/$top/u_core/missMSHRId_reg\[$n\]\[$b\]"}
-    catch {set_user_match "r:/WORK/$top/tlbHintId_${n}_reg\[$b\]" \
-                          "i:/WORK/$top/u_core/tlbHintId_reg\[$n\]\[$b\]"}
+    pin "r:/WORK/$top/missMSHRId_${n}_reg\[$b\]" \
+                          "i:/WORK/$top/u_core/missMSHRId_reg\[$n\]\[$b\]"
+    pin "r:/WORK/$top/tlbHintId_${n}_reg\[$b\]" \
+                          "i:/WORK/$top/u_core/tlbHintId_reg\[$n\]\[$b\]"
   }
 }
 
 # ---- cause（11 位 × 72）----
 for {set n 0} {$n < 72} {incr n} {
   for {set b 0} {$b < 11} {incr b} {
-    catch {set_user_match "r:/WORK/$top/cause_${n}_reg\[$b\]" \
-                          "i:/WORK/$top/u_core/cause_reg\[$n\]\[$b\]"}
+    pin "r:/WORK/$top/cause_${n}_reg\[$b\]" \
+                          "i:/WORK/$top/u_core/cause_reg\[$n\]\[$b\]"
   }
 }
 
 # ---- debug_vaddr（50 位 × 72）----
 for {set n 0} {$n < 72} {incr n} {
   for {set b 0} {$b < 50} {incr b} {
-    catch {set_user_match "r:/WORK/$top/debug_vaddr_${n}_reg\[$b\]" \
-                          "i:/WORK/$top/u_core/debug_vaddr_reg\[$n\]\[$b\]"}
+    pin "r:/WORK/$top/debug_vaddr_${n}_reg\[$b\]" \
+                          "i:/WORK/$top/u_core/debug_vaddr_reg\[$n\]\[$b\]"
   }
 }
 
 # ---- blockSqIdx（packed {flag, value[5:0]} × 72）----
 for {set n 0} {$n < 72} {incr n} {
-  catch {set_user_match "r:/WORK/$top/blockSqIdx_${n}_flag_reg" \
-                        "i:/WORK/$top/u_core/blockSqIdx_reg\[$n\]\[6\]"}
+  pin "r:/WORK/$top/blockSqIdx_${n}_flag_reg" \
+      "i:/WORK/$top/u_core/blockSqIdx_reg\[$n\]\\\[flag\]"
   for {set b 0} {$b < 6} {incr b} {
-    catch {set_user_match "r:/WORK/$top/blockSqIdx_${n}_value_reg\[$b\]" \
-                          "i:/WORK/$top/u_core/blockSqIdx_reg\[$n\]\[$b\]"}
+    pin "r:/WORK/$top/blockSqIdx_${n}_value_reg\[$b\]" \
+        "i:/WORK/$top/u_core/blockSqIdx_reg\[$n\]\\\[value\]\[$b\]"
   }
 }
 
 # ---- s1_oldestSel 流水寄存器（3 路：valid + 7 位下标）----
 for {set i 0} {$i < 3} {incr i} {
-  catch {set_user_match "r:/WORK/$top/s1_oldestSel_${i}_valid_r_reg" \
-                        "i:/WORK/$top/u_core/s1_oldestSel_valid_q_reg\[$i\]"}
-  catch {set_user_match "r:/WORK/$top/s2_oldestSel_${i}_valid_r_reg" \
-                        "i:/WORK/$top/u_core/s2_oldestSel_valid_q_reg\[$i\]"}
+  pin "r:/WORK/$top/s1_oldestSel_${i}_valid_r_reg" \
+                        "i:/WORK/$top/u_core/s1_oldestSel_valid_q_reg\[$i\]"
+  pin "r:/WORK/$top/s2_oldestSel_${i}_valid_r_reg" \
+                        "i:/WORK/$top/u_core/s2_oldestSel_valid_q_reg\[$i\]"
   for {set b 0} {$b < 7} {incr b} {
-    catch {set_user_match "r:/WORK/$top/s1_oldestSel_${i}_bits_r_reg\[$b\]" \
-                          "i:/WORK/$top/u_core/s1_oldestSel_bits_q_reg\[$i\]\[$b\]"}
-    catch {set_user_match "r:/WORK/$top/s2_oldestSel_${i}_bits_r_reg\[$b\]" \
-                          "i:/WORK/$top/u_core/s2_oldestSel_bits_q_reg\[$i\]\[$b\]"}
+    pin "r:/WORK/$top/s1_oldestSel_${i}_bits_r_reg\[$b\]" \
+                          "i:/WORK/$top/u_core/s1_oldestSel_bits_q_reg\[$i\]\[$b\]"
+    pin "r:/WORK/$top/s2_oldestSel_${i}_bits_r_reg\[$b\]" \
+                          "i:/WORK/$top/u_core/s2_oldestSel_bits_q_reg\[$i\]\[$b\]"
   }
 }
 
 # ---- 冷却计数器 / lastReplay（3 路）----
 for {set i 0} {$i < 3} {incr i} {
-  catch {set_user_match "r:/WORK/$top/lastReplay_${i}_reg" \
-                        "i:/WORK/$top/u_core/lastReplay_q_reg\[$i\]"}
+  pin "r:/WORK/$top/lastReplay_${i}_reg" \
+                        "i:/WORK/$top/u_core/lastReplay_q_reg\[$i\]"
   for {set b 0} {$b < 4} {incr b} {
-    catch {set_user_match "r:/WORK/$top/coldCounter_${i}_reg\[$b\]" \
-                          "i:/WORK/$top/u_core/coldCounter_reg\[$i\]\[$b\]"}
+    pin "r:/WORK/$top/coldCounter_${i}_reg\[$b\]" \
+                          "i:/WORK/$top/u_core/coldCounter_reg\[$i\]\[$b\]"
   }
 }
 
@@ -112,15 +147,15 @@ for {set i 0} {$i < 3} {incr i} {
 foreach {gpfx iarr} {s0_can_go_REG red_q_s0  s1_cancel_REG red_q_s1} {
   for {set i 0} {$i < 3} {incr i} {
     set gs [expr {$i == 0 ? "" : "_$i"}]
-    catch {set_user_match "r:/WORK/$top/${gpfx}${gs}_valid_reg" \
-                          "i:/WORK/$top/u_core/${iarr}_reg\[$i\]\[10\]"}
-    catch {set_user_match "r:/WORK/$top/${gpfx}${gs}_bits_robIdx_flag_reg" \
-                          "i:/WORK/$top/u_core/${iarr}_reg\[$i\]\[9\]"}
-    catch {set_user_match "r:/WORK/$top/${gpfx}${gs}_bits_level_reg" \
-                          "i:/WORK/$top/u_core/${iarr}_reg\[$i\]\[0\]"}
+    pin "r:/WORK/$top/${gpfx}${gs}_valid_reg" \
+        "i:/WORK/$top/u_core/${iarr}_reg\[$i\]\\\[valid\]"
+    pin "r:/WORK/$top/${gpfx}${gs}_bits_robIdx_flag_reg" \
+        "i:/WORK/$top/u_core/${iarr}_reg\[$i\]\\\[robIdx\]\\\[flag\]"
+    pin "r:/WORK/$top/${gpfx}${gs}_bits_level_reg" \
+        "i:/WORK/$top/u_core/${iarr}_reg\[$i\]\\\[level\]"
     for {set b 0} {$b < 8} {incr b} {
-      catch {set_user_match "r:/WORK/$top/${gpfx}${gs}_bits_robIdx_value_reg\[$b\]" \
-                            "i:/WORK/$top/u_core/${iarr}_reg\[$i\]\[[expr {$b+1}]\]"}
+      pin "r:/WORK/$top/${gpfx}${gs}_bits_robIdx_value_reg\[$b\]" \
+          "i:/WORK/$top/u_core/${iarr}_reg\[$i\]\\\[robIdx\]\\\[value\]\[$b\]"
     }
   }
 }
@@ -133,10 +168,10 @@ foreach {gpfx iarr} {s0_can_go_REG red_q_s0  s1_cancel_REG red_q_s1} {
 for {set i 0} {$i < 3} {incr i} {
   set gv [expr {$i == 0 ? "blocking_REG" : "blocking_REG_[expr {$i*2}]"}]
   set gi "blocking_REG_[expr {$i*2+1}]"
-  catch {set_user_match "r:/WORK/$top/${gv}_reg" "i:/WORK/$top/u_core/tl_d_valid_q_reg\[$i\]"}
+  pin "r:/WORK/$top/${gv}_reg" "i:/WORK/$top/u_core/tl_d_valid_q_reg\[$i\]"
   for {set b 0} {$b < 4} {incr b} {
-    catch {set_user_match "r:/WORK/$top/${gi}_reg\[$b\]" \
-                          "i:/WORK/$top/u_core/tl_d_mshrid_q_reg\[$i\]\[$b\]"}
+    pin "r:/WORK/$top/${gi}_reg\[$b\]" \
+                          "i:/WORK/$top/u_core/tl_d_mshrid_q_reg\[$i\]\[$b\]"
   }
 }
 
@@ -148,12 +183,12 @@ for {set i 0} {$i < 3} {incr i} {
 for {set i 0} {$i < 3} {incr i} {
   set gsuf [expr {$i == 0 ? "" : "_$i"}]
   for {set b 0} {$b < 11} {incr b} {
-    catch {set_user_match "r:/WORK/$top/s2_replayCauses${gsuf}_reg\[$b\]" \
-                          "i:/WORK/$top/u_core/s2_cause_q_reg\[$i\]\[$b\]"}
+    pin "r:/WORK/$top/s2_replayCauses${gsuf}_reg\[$b\]" \
+                          "i:/WORK/$top/u_core/s2_cause_q_reg\[$i\]\[$b\]"
   }
   for {set b 0} {$b < 5} {incr b} {
-    catch {set_user_match "r:/WORK/$top/s2_replayMSHRId${gsuf}_reg\[$b\]" \
-                          "i:/WORK/$top/u_core/s2_mshr_q_reg\[$i\]\[$b\]"}
+    pin "r:/WORK/$top/s2_replayMSHRId${gsuf}_reg\[$b\]" \
+                          "i:/WORK/$top/u_core/s2_mshr_q_reg\[$i\]\[$b\]"
   }
 }
 
@@ -161,16 +196,23 @@ for {set i 0} {$i < 3} {incr i} {
 for {set k 0} {$k < 13} {incr k} {
   set gs [expr {$k == 0 ? "" : ""}]
   if {$k == 3} {
-    catch {set_user_match "r:/WORK/$top/io_perf_3_value_REG_reg"   "i:/WORK/$top/u_core/perfFull0_reg"}
-    catch {set_user_match "r:/WORK/$top/io_perf_3_value_REG_1_reg" "i:/WORK/$top/u_core/perfFull1_reg"}
+    pin "r:/WORK/$top/io_perf_3_value_REG_reg"   "i:/WORK/$top/u_core/perfFull0_reg"
+    pin "r:/WORK/$top/io_perf_3_value_REG_1_reg" "i:/WORK/$top/u_core/perfFull1_reg"
   } else {
     for {set b 0} {$b < 2} {incr b} {
-      catch {set_user_match "r:/WORK/$top/io_perf_${k}_value_REG_reg\[$b\]" \
-                            "i:/WORK/$top/u_core/perfReg0_reg\[$k\]\[$b\]"}
-      catch {set_user_match "r:/WORK/$top/io_perf_${k}_value_REG_1_reg\[$b\]" \
-                            "i:/WORK/$top/u_core/perfReg1_reg\[$k\]\[$b\]"}
+      pin "r:/WORK/$top/io_perf_${k}_value_REG_reg\[$b\]" \
+                            "i:/WORK/$top/u_core/perfReg0_reg\[$k\]\[$b\]"
+      pin "r:/WORK/$top/io_perf_${k}_value_REG_1_reg\[$b\]" \
+                            "i:/WORK/$top/u_core/perfReg1_reg\[$k\]\[$b\]"
     }
   }
 }
 
-puts "LQR_PINS: applied"
+puts "LQR_PINS: accepted=$::LQR_PIN_OK rejected=$::LQR_PIN_BAD"
+if {$::LQR_PIN_BAD > 0} {
+  puts "FM_PINS_ERROR: $::LQR_PIN_BAD set_user_match calls were rejected (FM-036 etc)."
+  puts "FM_PINS_ERROR: first rejected pair = $::LQR_PIN_FIRSTBAD"
+  puts "FM_PINS_ERROR: a rejected pin silently falls back to automatic matching;"
+  puts "FM_PINS_ERROR: aborting instead of pretending the pins applied."
+  exit 3
+}

@@ -22,6 +22,19 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/LoadQueueReplay.sv \
 #  LqVAddrModule 与 AgeDetector_38 当前 REWRITTEN/UNPROVEN ⇒ 本目标转绿是**条件绿**，
 #  依赖这两个目标各自签核。★不是无条件通过，见 docs 里的依赖声明。★
 FM_REF_DEPS_LoadQueueReplay =
+
+# vmucp（verification_verify_matched_unread_compare_points）= **加强证明，不是 waiver**。
+#  run #1（71138d60，evidence/71138d605681）在 strict 下 native SUCCEEDED、
+#  unmatched 两侧全 0，唯独剩 177 个 matched-unread（FM 配上了但不比），判 PARTIAL。
+#  这 177 点是**对称内部死位**：两侧都存、两侧都不读，且 ref/impl 各 177 个名字
+#  互不重复、逐点下标对下标（机械核对 0 违例，脚本见 docs/loadqueuereplay_fm_prereg.md）：
+#      144  cause_<n>_reg[5]/[6]      <-> cause_reg[<n>][5]/[6]
+#       30  s2_replayCauses*_reg[b]   <-> s2_cause_q_reg[<p>][b]   (b != 4)
+#        3  s2_replayMSHRId*_reg[4]   <-> s2_mshr_q_reg[<p>][4]
+#  打开 vmucp 让 FM **真的去比**这 177 个点：比较点只增不减、不黑盒、不跳点、
+#  不约束 ref，方向与"放宽"相反。★不是豁免★。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 FM_VARIANTS = LoadQueueReplay
 
 include ../../../scripts/ut_common.mk
