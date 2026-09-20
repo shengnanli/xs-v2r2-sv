@@ -8,6 +8,20 @@
 ★重构是保值的★：`--top TlbStorageWrapper_1` 重新生成的 tb_1.sv 与重构前
 **逐字节相同**（判据见 --check-1），所以变体 _1 已签核的那套 UT 语义没有被动过。
 
+★2026-09-20 实测补强：纯均匀随机激励的命中率是 0，UT 等于只在验"两边都 miss"★
+  vpn 是 38 位均匀随机、entry.tag 也是 35 位均匀随机，48 条全相联 ——
+  单端口单拍命中概率 ~ 48 * 2^-35 ~= 1.4e-9，200k 拍的期望命中数 ~ 3e-4。
+  而 do_check 里**除 hit 外的每一个 resp 字段都由 `g_hit &&` 把门**，所以
+  "errors=0 / checks=200000" 实际只证明了 hit 恒等于 0 —— 命中路径、替换器
+  (Tree-PLRU)、每端口的 vpn 路由**一位都没验到**。
+  变异实测佐证（8000 拍）：C1/C2(PLRU 更新)、W1/W2(touch way 与 refill wayIdx 接线)、
+  W3(端口 0 vpn 误接端口 1) 五个真 bug **全都没被抓出来**。
+  修法 = 加 drive_pooled()：读写 vpn/tag 都取自 POOL=64 的小值域（>48 路，
+  按构造强制发生替换），与原均匀随机各占一半拍。原 drive_random() 一字未改，
+  所以它原有的 sfence/s2xlate/边界覆盖一点没丢。
+  并加**覆盖闸**：命中数/替换数/双端口同拍命中数/sfence 数任一为 0 就判 TEST FAILED，
+  防止"激励退化成 miss-only"再次悄悄发生。
+
 结构与变体 0 的手写 tb.sv 一一对应：
   - 随机激励 200k 拍，逐拍比全部输出（resp 数据段只在 golden 命中时比 —— 未命中时
     golden 里是 OR 树残值，是 don't-care）；
@@ -78,6 +92,15 @@ def build(TOP):
     A("module tb;")
     A("  int unsigned NVEC = 200000;")
     A("  int errors = 0, checks = 0;")
+    A("  // ---- 覆盖计数（只看 golden 侧，激励是否真把路径走到了）----")
+    for k in range(nread):
+        A("  longint cov_hit_%d = 0;" % k)
+    A("  longint cov_hit_multi = 0;   // 同一拍两个及以上读端口同时命中（PLRU 多端口叠加序）")
+    A("  longint cov_refill_pool = 0; // 池模式下的 refill 次数（>48 即已强制发生替换）")
+    A("  longint cov_sfence = 0;")
+    A("  longint cov_pool = 0;        // 走池模式的拍数")
+    A("  bit     cov_ok;")
+    A("  int     POOLPCT = 50;        // 池化激励占比（%），+poolpct=<n> 可改")
     A("  logic clock = 0, reset;")
     A("  always #5 clock = ~clock;")
     for _, w, n in ins:
@@ -99,6 +122,11 @@ def build(TOP):
 
     A("  task automatic do_check(int t);")
     A("    checks++;")
+    A("    // 覆盖统计：以 golden 的 hit 为准（比较窗口里它就是黄金事实）")
+    for k in range(nread):
+        A("    if (g_io_r_resp_%d_bits_hit) cov_hit_%d++;" % (k, k))
+    A("    if ((%s) >= 2) cov_hit_multi++;" %
+      " + ".join("32'(g_io_r_resp_%d_bits_hit)" % k for k in range(nread)))
     for _, w, n in outs:
         m = re.match(r'io_r_resp_(\d+)_bits_(.*)', n)
         port, field = m.group(1), m.group(2)
@@ -122,6 +150,62 @@ def build(TOP):
             A("    io_sfence_valid = (act == 0);")
         else:
             A(rnd(w, n))
+    A("  endtask")
+    A("")
+
+    # -----------------------------------------------------------------------
+    # 池化激励：让"命中"真的发生
+    #
+    # 命中条件（见 rtl/memblock/xs_TLBFA_core.sv 的 entry_hit）在 s2xlate=00 下化简为：
+    #     entry.v && entry.s2xlate==req.s2xlate && (entry.asid==asid || entry.perm.g)
+    #  && 全部 tag 段相等 && entry.valididx[vpn[2:0]]
+    # 取 entry.tag = 35'(k)、req.vpn = {35'(k), 3'(j)}，k < POOL <= 64：
+    #   tag_match[0] 比 tag[5:0] vs vpn[8:3] = k[5:0]  → k 不同即不同（POOL<=64 才成立）
+    #   其余各段两边都是 0 → 恒等
+    # 所以命中 ⟺ 该 k 还驻留在阵列里。level 取 0（4KB，非超页）⇒ 全部 tag 段都要比，
+    # 不给"超页放行低段"留后门。perm.g=1 ⇒ asid 不参与，命中不受随机 asid 干扰。
+    #
+    # ★POOL=64 > NWAYS=48 是故意的★：按构造必然发生替换，Tree-PLRU 选错路就会把
+    # 别的 k 顶出去，下一次查那个 k 两侧结果不同 —— 这正是 C1/C2/W1/W2 变异体的抓手。
+    # entry 的 ppn / ppn_low / perm 都做成 k 的函数，所以"命中了但命中的是别的路"
+    # 也会在数据段上暴露，而不只是 hit 位。
+    # -----------------------------------------------------------------------
+    have = {n for _, _, n in ins}
+    A("  localparam int POOL = 64;   // > NWAYS(48)，按构造强制替换")
+    A("  task automatic drive_pooled();")
+    A("    automatic int kw = $urandom_range(0, POOL-1);   // 本拍要写的 tag")
+    for k in range(nread):
+        A("    automatic int kr%d = $urandom_range(0, POOL-1);" % k)
+    A("    drive_random();                                 // 先铺满所有输入，再覆盖池相关的")
+    A("    cov_pool++;")
+    A("    io_sfence_valid = ($urandom_range(0,63) == 0);  // 池模式下少发 sfence，否则驻留留不住")
+    for k in range(nread):
+        if ("io_r_req_%d_bits_vpn" % k) in have:
+            A("    io_r_req_%d_valid     = 1'b1;" % k)
+            A("    io_r_req_%d_bits_vpn  = {35'(kr%d), 3'($urandom_range(0,7))};" % (k, k))
+            A("    io_r_req_%d_bits_s2xlate = 2'b00;" % k)
+    A("    io_w_valid = ($urandom_range(0,3) == 0);")
+    A("    if (io_w_valid) cov_refill_pool++;")
+    A("    io_w_bits_data_s2xlate            = 2'b00;")
+    A("    io_w_bits_data_s1_entry_tag       = 35'(kw);")
+    A("    io_w_bits_data_s1_entry_n         = 1'b0;    // 非 NAPOT：低位也要比")
+    A("    io_w_bits_data_s1_entry_level     = 2'd0;    // 4KB：全部 tag 段都要比")
+    A("    io_w_bits_data_s1_entry_v         = 1'b1;")
+    A("    io_w_bits_data_s1_entry_perm_g    = 1'b1;    // global ⇒ asid 不参与命中")
+    A("    // 数据段做成 kw 的函数：命中错路会在 ppn/perm 上暴露，而不只是 hit 位")
+    A("    io_w_bits_data_s1_entry_ppn       = 41'(kw * 8191 + 1);")
+    for j in range(8):
+        A("    io_w_bits_data_s1_ppn_low_%d      = 3'(kw + %d);" % (j, j))
+        A("    io_w_bits_data_s1_valididx_%d     = 1'b1;" % j)
+        A("    io_w_bits_data_s1_pteidx_%d       = 1'b1;" % j)
+    A("    io_w_bits_data_s1_entry_perm_r    = kw[0];")
+    A("    io_w_bits_data_s1_entry_perm_w    = kw[1];")
+    A("    io_w_bits_data_s1_entry_perm_x    = kw[2];")
+    A("    io_w_bits_data_s1_entry_perm_u    = kw[3];")
+    A("    io_w_bits_data_s1_entry_perm_a    = kw[4];")
+    A("    io_w_bits_data_s1_entry_perm_d    = kw[5];")
+    A("    io_w_bits_data_s1_pf              = kw[0];")
+    A("    io_w_bits_data_s1_af              = kw[1];")
     A("  endtask")
     A("")
 
@@ -225,6 +309,7 @@ def build(TOP):
     A("")
     A("  initial begin")
     A("    void'($value$plusargs(\"ncycles=%d\", NVEC));   // ut_common 统一下发 +ncycles")
+    A("    void'($value$plusargs(\"poolpct=%d\", POOLPCT)); // 诊断用：0 = 退回补强前的纯均匀随机")
     A("    reset = 1;")
     A("    dir_clear();")
     A("    repeat (3) @(posedge clock); #1; reset = 0;")
@@ -233,12 +318,25 @@ def build(TOP):
     A("    dir_warm_ports();")
     A("    errors += directed_errors;")
     A("    for (int t = 0; t < NVEC; t++) begin")
-    A("      drive_random();")
+    A("      // 一半拍走池化激励（制造命中与替换），一半拍走原均匀随机（保住原有覆盖）")
+    A("      // +poolpct=0 可复现补强之前的纯均匀随机激励（用来量它的命中率是 0）")
+    A("      if (32'($urandom_range(0,99)) < POOLPCT) drive_pooled(); else drive_random();")
+    A("      if (io_sfence_valid) cov_sfence++;")
     A("      @(posedge clock); #1;")
     A("      do_check(t);")
     A("    end")
     A('    $display("checks=%0d errors=%0d (含 directed=%0d)", checks, errors, directed_errors);')
-    A('    if (errors == 0 && checks > 1000) $display("TEST PASSED");')
+    A("    // ---- 覆盖闸：任一路径没走到就判 FAILED（防止激励退化成 miss-only 还报绿）----")
+    A('    $display("COVERAGE pool=%%0d refill_pool=%%0d sfence=%%0d hit_multi=%%0d%s",'
+      % "".join(" hit_%d=%%0d" % k for k in range(nread)))
+    A("             cov_pool, cov_refill_pool, cov_sfence, cov_hit_multi%s);" % "".join(
+        ", cov_hit_%d" % k for k in range(nread)))
+    A("    cov_ok = (cov_refill_pool >= 200) && (cov_sfence >= 100) && (cov_hit_multi >= 100)")
+    for k in range(nread):
+        A("            && (cov_hit_%d >= 1000)" % k)
+    A("            ;")
+    A('    if (!cov_ok) $display("COVERAGE GATE FAILED: 某条路径的拍数低于下限，本轮 UT 不算数");')
+    A('    if (errors == 0 && checks > 1000 && cov_ok) $display("TEST PASSED");')
     A('    else $display("TEST FAILED");')
     A("    $finish;")
     A("  end")
