@@ -76,7 +76,8 @@ for g in scripts/gen_tlbuffer_ad_family.py scripts/gen_mbist_pipe_family.py \
          scripts/gen_newdispatch_tb.py \
          scripts/gen_tlbnb_family.py scripts/gen_predictor.py \
          scripts/gen_rob.py scripts/gen_rob_ut.py \
-         scripts/gen_rob_pins.py scripts/gen_rob_contract.py; do
+         scripts/gen_rob_pins.py scripts/gen_rob_contract.py \
+         scripts/gen_rob_iface.py; do
   [ -f "$g" ] && run "生成器幂等 $(basename $g .py | sed 's/^gen_//')" python3 "$g" --check
 done
 # 闸的完备性闸：任何 scripts/gen_*.py 要么进上面的列表，要么在
@@ -122,6 +123,10 @@ run "Rob 折叠探针负测"   python3 scripts/test_rob_fold_probe.py
 # ——多维 packed wire `wire [7:0][6:0] X = ...` 被单方括号正则漏掉——实测会把
 # 517/667 变成 325/667，两个数看着都合理。所以正则本身要有反测钉住。
 run "Rob 射程量具负测"   python3 scripts/rob_deqgroup_blast.py --selftest
+# Rob 接口契约的判据自测：三条负例 + 一条元负例（把 classify 换成"什么都算网"，
+# PIN 分布必须变）。它挡的是"判定字段名打错 -> 安静地得到一个空子集"——
+# 空子集和真结论在表里长得一模一样。
+run "Rob 接口契约负测"   python3 scripts/gen_rob_iface.py --selftest
 run "fm_eq.tcl 语法负测" python3 scripts/check_fm_eq_tcl_syntax.py --selftest
 run "fm_eq.tcl 语法闸"   python3 scripts/check_fm_eq_tcl_syntax.py
 # 覆盖台账的证据链：docs/coverage_three_axis.tsv 宣称的每条证明都要能从**版本库**复现。
