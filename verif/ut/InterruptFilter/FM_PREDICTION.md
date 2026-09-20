@@ -329,3 +329,56 @@ impl  i:/WORK/InterruptFilter/u_core/mipriosReg_idx_reg[0][3]  (可读核按 SoA
 
 ★判据是 passing 必须 440 → 525（恰好 +85）★：passing 不增而 unmatched 归 0
 就是点被吞掉，不算过。
+
+---
+
+## 8. 登记方式更正：改用 `scripts/fm_predict.py`（集成者 0920 更正）
+
+集成者更正了一条我一直当成无条件的前提：
+
+> 模型 `passing = 闭包触发器位 + 顶层输出端口位` **只在
+> `verification_merge_duplicated_registers = false` 时成立**。merge 打开时
+> FM 把重复寄存器合并成一个比较点，低多少**不是能从 golden 静态算出来的量**。
+
+**本目标的两跑正好是这条更正的一个独立实测**：
+
+| 跑 | merge_dup | 模型 | 实测比较点全集 | 能不能静态指认 |
+|---|---|---|---|---|
+| 第一跑 | **true** | 578 | 423（+17 孤儿） | ★指认不了★ —— 合并吃掉多少取决于重复结构 |
+| 第二跑 | **false** | 578 | **578**（440 passing + 85 孤儿 + 53 constant） | 逐位对得上 |
+
+工具（`scripts/fm_predict.py` + `scripts/fm_passing_model.py`）独立算出
+`expected=578 (regs 504 + outs 74)`，与本文件 §3 手算逐位一致，
+并因 Makefile 写了 `FM_MERGE_DUP = false` 判为「模型适用」。
+
+登记已落 `docs/fm_predictions/InterruptFilter.json` 并**在签核跑之前提交**
+（工具的 `check` 只认 git HEAD 里的登记，且要求登记 commit 是 receipt 里
+`impl_commit` 的祖先 —— 跑完再改登记不起作用）。
+
+对账口径（工具定义，不是我手填）：
+
+```
+差额   = expected - passing
+可指认 = constant_reg + unread      （两者都从 receipt 读）
+绿 ⟺ 差额 == 可指认
+```
+
+本目标的预期对账：`578 - 525 = 53`，可指认 `constant_reg 53 + unread 0 = 53` → 相等。
+
+★另一条更正一并照办★：数 `fm.log` 里的错误一律行首锚定 `grep -cE "^ *Error:"` ——
+`fm_shell` 会把入口 Tcl **逐行回显（含注释）**，而 `fm_eq.tcl` 的注释里就写着
+`FM-036`，按裸关键字数必然误报。本目录所有"错误行数"口径都用行首锚定版。
+
+## 9. 第四跑（签核跑）预登记
+
+第三跑（commit `71476fde`）是**验钉点文件能不能用**的一跑，它早于本次登记，
+按工具的"登记必须早于证明"判据**不可用于对账**，只当诊断。
+签核跑是加上本次登记之后的第四跑，预测与 §7 完全相同：
+
+| 项 | 预测值 |
+|---|---|
+| passing | **525** |
+| failing / unverified / unmatched / 黑盒 / unread | 全 0 |
+| Not Compared / Constant reg | 53 |
+| `fm_predict.py check` | 差 53 = 可指认 53 → 绿 |
+| verdict | `SIGNOFF_PASS`，但按 §2 仍记 **条件性证明 / UNCHANGED_GOLDEN_DEP** |
