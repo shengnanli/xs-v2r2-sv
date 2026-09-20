@@ -510,3 +510,197 @@ InterruptFilter              578     440    138     138  差额被指认（const
 
 第 1、3 两跑的预测都没对上，原因分别写在 §5.2/§6.2 与 §10.1。
 第 2 跑正好是集成者那条更正（模型只在 merge_dup=false 时成立）的一个独立实测。
+
+---
+
+## 13. 子依赖闭合升级：impl 侧换成 main 上的 DelayN 重写件（第五跑预登记）
+
+集成者裁定 3：DelayN lane 已合入 main（`80617800`），18 个变体里**包含
+`DelayN_17` 与 `DelayN_208`**。于是 impl 闭包升级：
+
+| 侧 | 升级前（第 1~4 跑） | 升级后（第 5 跑） |
+|---|---|---|
+| ref | golden `InterruptFilter.sv` + golden `DelayN_17.sv` + golden `DelayN_208.sv` | **不变** |
+| impl | 重写 `InterruptFilter.sv` + **golden** `DelayN_17.sv` + **golden** `DelayN_208.sv` | 重写 `InterruptFilter.sv` + **重写** `rtl/common/DelayN_17.sv` + **重写** `rtl/common/DelayN_208.sv` + `xs_DelayN_core.sv` |
+
+两侧从此是**两套不同的字节**，这两个 child 对本 target 不再零信息量，
+`UNCHANGED_GOLDEN_DEP` / 条件性证明随之摘掉 —— **但只有第 5 跑真过了才摘**，
+不许只改台账不重跑。
+
+### 13.1 预测（跑之前写死）
+
+ref 侧一个字节没动，所以**比较点全集不变**：模型仍是
+`504（闭包触发器位）+ 74（顶层 output 位）= 578`，
+`docs/fm_predictions/InterruptFilter.json` 里的 `expected=578` **不需要改**
+（它是从 golden 闭包算的），登记 commit `38b51ce2` 仍是新 `impl_commit` 的祖先。
+
+| 项 | 预测值 |
+|---|---|
+| passing | **440** |
+| Not Compared / Constant reg | **138** |
+| failing / unverified / unmatched / 黑盒 / unread / dont_verify | 全 0 |
+| 比较点全集 | 440 + 138 = **578** |
+| `fm_predict.py check` | 差 138 = 可指认 138 → 绿 |
+| verdict | `SUCCEEDED`，且这次是**子依赖闭合的完整签核**，不再是条件性证明 |
+
+### 13.2 ★这一跑新增的风险：DelayN 链的寄存器叶名变了★
+
+升级前两侧的延迟链是同一份 golden 字节，逐字同名必然配上。升级后：
+
+```
+ref   r:/WORK/InterruptFilter/delayedDebugIntr_delay/REG_reg      (golden 的 REG / REG_1..REG_4)
+impl  i:/WORK/InterruptFilter/u_core/delayedDebugIntr_delay/u_core/stage_reg[0]   (重写核的 stage[0..4])
+```
+
+这 5 实例 × 5 位 + 1 实例 × 5×8 位 = **65 位**名字对不上。
+和 §6.3 那 85 点不同的是：**这些是非常量寄存器**（真载荷在流动），
+签名分析对移位链有区分度，**预期 FM 自己能配上**。
+若配不上会表现为 `unmatched != 0`（不是 failing），那时的处置与 §7 同：
+按 `REG_<k>` ↔ `u_core/stage_reg[<k>]` 的结构规则扩 `fm_pins.tcl`，另立一次预登记。
+
+### 13.3 一条如实记录：`check_closure_symmetry.py` 对本 target 报 ERROR，且**不是**本 target 的问题
+
+升级后 `python3 scripts/check_closure_symmetry.py --only InterruptFilter` 报
+
+```
+[ERROR] InterruptFilter (signoff-strict)  elab_error:未知标识符 io_in in '$bits( {io_in})'
+```
+
+原因是那个轻量静态 elaborator（`verif/allow_gen/sv_elab.py`）**算不了
+localparam 里的 `$bits(端口拼接)`**，而 DelayN 家族的薄 wrapper 正是用它做位宽自检的。
+现查：`--only DelayN` 下 **18 个 DelayN 目标全部报同一个 elab_error**，
+包括 DelayN lane 已签核的那些。也就是说这是**检查器的既有局限**，不是闭包不对称，
+也不是我引入的新缺陷 —— 我只是把 DelayN 拉进了自己的闭包才碰到它。
+
+两点补充：
+1. `scripts/check_closure_symmetry.py` **不在 `gate_all.sh` 里**（grep 计数 0），不会把闸判红；
+2. 对称性的**权威判据**是 FM 实跑导出的 `black_boxes.rpt`（`fm_verdict.py` 用它判
+   `assembly_bbox_not_symmetric`）。第 5 跑跑完会把 `blackbox_out` 与该文件一并核对。
+
+---
+
+## 14. 第五跑（子依赖闭合后的签核跑）实测 —— `UNCHANGED_GOLDEN_DEP` 摘除
+
+★口径说明★：本 lane 被 HTTP 403 打断过一次。打断前曾有一跑落在
+`evidence/e8d0f728dda2/`，但「那一跑有没有出结果、结果是什么」在版本库里没有依据，
+**按集成者要求全部重跑，下面的数字一律来自打断后的重跑，不引用打断前的任何数字**。
+
+证据 `evidence/5254ac5bde44/InterruptFilter/`，`run_proof.sh` rc=0：
+
+```
+verdict: SUCCEEDED          impl_commit 5254ac5bde44
+{"passing": 440, "failing": 0, "unverified": null, "unmatched": 0,
+ "unread": null, "blackbox_out": 0, "dont_verify": false, "elab147": false,
+ "constant_reg": 138, "native": "SUCCEEDED", "unmatched_ref": 0, "unmatched_impl": 0}
+Passing (equivalent)   Port 74   DFF 366   TOTAL 440
+Failing                                     TOTAL   0
+Not Compared  Constant reg      DFF 138
+IF_PIN: pinned 85 pair(s); orphans 85; structural inventory upper bound 378
+grep -cE "^ *Error:" fm.log = 0
+```
+
+impl 闭包（从 fm.log 现读，确认 golden 的 DelayN **不在 impl 侧**）：
+
+```
+.../rtl/backend/InterruptFilter.sv
+.../rtl/common/xs_DelayN_core.sv
+.../rtl/common/DelayN_17.sv
+.../rtl/common/DelayN_208.sv
+```
+
+| 项 | §13.1 预测 | 实测 | 差 |
+|---|---|---|---|
+| passing | 440 | **440** | 0 |
+| Constant reg | 138 | **138** | 0 |
+| failing / unverified / unmatched / 黑盒 / unread / dont_verify | 0 | **0** | 0 |
+| 比较点全集 | 578 | **578** | 0 |
+
+`python3 scripts/fm_predict.py check InterruptFilter` → rc=0：
+`预期 578 / 实测 440 / 差 138 / 可指认 138（constant_reg 138 + unread 0）→ 差额被指认`。
+
+§13.2 担心的风险**没有发生**：DelayN 链那 65 位寄存器叶名虽然从 golden 的
+`REG_<k>` 变成重写核的 `u_core/stage_reg[<k>]`，FM 自己就把它们配上了，
+`unmatched` 仍是 0(0)，不需要为它们扩钉点。
+
+### 14.1 ★自证「没有任何东西被黑盒掉」★
+
+`black_boxes.rpt` 里有一条 `e *  xs_DelayN_core  Instances : 0`。
+这条**不是**真黑盒，两条独立证据：
+
+1. **闭包触发器位逐位对上**：`scripts/fm_predict.py model InterruptFilter` 算出
+   `regs 504`（= InterruptFilter 439 + DelayN_17×5 的 25 + DelayN_208 的 40）。
+   实测 `366 passing DFF + 138 Constant reg DFF = 504`。
+   ★若 `xs_DelayN_core` 真被黑盒，它那 65 位就会从比较点里消失，只剩 439。★
+2. **同形态出现在别人已签核的证据里**（这条我按要求**自己复核了一遍**，不是引用）：
+   `/home/eda/xs-env/xs-v2-sv/evidence/eee60602a12f/DelayN_17/` 是 DelayN lane
+   自己的 `signoff-strict` receipt，`verdict SUCCEEDED / blackbox_out 0`，
+   而它的 `black_boxes.rpt` 里有 **18 条 entry、每一条都是 `Instances : 0`**
+   （逐条解析过，没有一条 `Instances > 0`）。
+   这些是被读进库但在该顶层没有实例的设计条目，Formality 照例列出来。
+
+### 14.2 结论：条件性证明升级为完整签核
+
+| | 升级前（跑 1~4） | 升级后（本跑） |
+|---|---|---|
+| `DelayN_17` / `DelayN_208` 在 impl 侧 | golden 字节 | **重写件** |
+| 本 target 对这两个 child 的信息量 | 零 | **真比对** |
+| 台账 | 条件性证明 · `UNCHANGED_GOLDEN_DEP` / 子依赖未闭合 | ★`UNCHANGED_GOLDEN_DEP` **摘除**★ |
+
+§2 那一节的结论边界**到此失效**，保留在文件里是为了留下当时的前提，
+**不要再引用它来描述当前状态**。
+
+### 14.3 同一 commit 上的另外两项验收（也都是打断后重跑的）
+
+- **UT**：3 seed × {`+vcs+initreg+0`,`+random`} 共 **6/6 轮全过**，
+  每轮 200k 拍 / 2.6M 次比较 / `errors=0`（升级后的闭包，golden 的 DelayN 只在对照侧）。
+- **变异负测**：`mutants.py` **10/10 全被抓到**，基线 `checks=260000 errors=0`。
+
+### 14.4 ★一次自己造成的事故：两跑 mutants 共用固定名目录，互相拆台★
+
+升级后第一次跑变异负测时，基线就报失配（`io_out_irToVS`），一度像是真缺陷。
+查下来是**我自己**在上一跑还活着的时候又起了一跑，两者共用固定名的
+`neg_build/`：一边 `prepare()` 的 `rmtree` 把另一边跑到一半的树删掉
+（那边因此报「M6 编译/运行失败」），另一边 `restore()` 还没跑完，
+这边就把**对方注入的 M10 变异**当成自己的基线量了 —— 失配签名正是 M10 的。
+
+★那两次跑的结论都不作数★，已重跑（见 §14.3）。
+`mutants.py` 已改成 `BUILD = neg_build/run-<pid>`，只删自己那一跑的目录、
+绝不碰 `neg_build` 本身 —— 与 CONVENTIONS ★共享 scratchpad 里禁止 `rm -rf` 语义名★
+是同一条判据：破坏性操作的作用域必须由**自己造的唯一标识**界定。
+（仍放在 `neg_build/` 之下，`.gitignore` 的 `verif/ut/*/neg_build/` 继续覆盖，已实测。）
+
+---
+
+## 15. 收口：最终字节上的三项验收（commit `b3808b86`）
+
+§14 之后又改了一处 **Makefile 的空赋值**（`RTL_GOLDEN_DEPS =` 整行删掉，
+原因见 `CONVENTIONS.md` ★Makefile 里的空赋值会被按行正则的读表脚本吃掉下一行★）。
+`make --eval` 对 `RTL_SRCS` / `RTL_GOLDEN_DEPS` / `FM_REF_DEPS_*` / `GOLDEN_SRCS`
+四个变量逐字对照过，**删前删后展开完全相同**，前提没变；即便如此仍按规矩重出了证。
+
+最终字节（`impl_commit b3808b86`）上的三项：
+
+| 验收 | 结果 |
+|---|---|
+| FM | `evidence/b3808b860b38/InterruptFilter/` —— **verdict SUCCEEDED**，passing 440 / failing 0 / unverified 0 / unmatched 0(0) / 黑盒 0 / unread 0 / dont_verify false / elab147 false / Constant reg 138；`grep -cE "^ *Error:" fm.log = 0`；`IF_PIN: pinned 85 of 85` |
+| `fm_predict.py check` | rc=0 —— 预期 578 / 实测 440 / 差 138 / 可指认 138（`constant_reg`）→ 差额被指认 |
+| UT | 3 seed × {`+vcs+initreg+0`,`+random`} **6/6 全过**，每轮 200k 拍 / 2.6M 次比较 / `errors=0` |
+| 变异负测 | **10/10 全被抓到**，基线 `checks=260000 errors=0`（在 `5254ac5b` 的字节上跑的；此后 RTL 与 tb 一字未动） |
+
+`docs/coverage_three_axis.py` 重算给出
+`InterruptFilter  REWRITTEN  PROVEN_DIRECT  rtl/backend/InterruptFilter.sv`
+—— 空赋值没删之前它会被误判成 `GOLDEN_REUSE`（"按裁定不算重写完成"）。
+
+### 15.1 台账口径
+
+签核 receipt 已入库（`evidence/` 靠 `git add -f` 越过 `.gitignore`，
+`check_no_tool_scratch.py` 的 `EXEMPT_PREFIXES` 含 `evidence/`）。
+`harvest_round_ledger.py` 重算会新增一行：
+
+```
+InterruptFilter  SUCCEEDED  p440 f0 um0 unread=? const_reg=138 mode=signoff-strict vmucp=false
+                 @b3808b860b38  evidence/b3808b860b38/InterruptFilter/receipt.json
+```
+
+**最终结论：`InterruptFilter` = 子依赖闭合的完整签核，`UNCHANGED_GOLDEN_DEP` 已摘除。**
+§2 的条件性结论只反映跑 1~4 的前提，已失效，不要再引用。

@@ -22,6 +22,7 @@ M1/M3 钉住两路比较的第三层（>255 谁输）与规约树的配对顺序
 变异只发生在 neg_build/（已在 .gitignore 里），不进库。
 用法: python3 mutants.py   （或 make mutants）
 """
+import os
 import pathlib
 import re
 import shutil
@@ -30,8 +31,21 @@ import sys
 
 HERE = pathlib.Path(__file__).resolve().parent
 REPO = HERE.parent.parent.parent
-BUILD = HERE / 'neg_build'
+# ★每次跑用自己**带唯一标识**的子目录★（2026-09-20 实测事故）
+# 原先 BUILD 固定叫 neg_build/，两次 mutants.py 同时跑就会互相拆台：
+# 一边 prepare() 的 rmtree 把另一边跑到一半的树删掉（那边报"M6 编译/运行失败"），
+# 另一边的 restore() 还没跑完，这边就把**对方注入的变异**当成自己的基线量了
+# （实测基线出现 io_out_irToVS 失配 = M10 的签名）。两次跑的结论**都不作数**。
+# 这与 CONVENTIONS ★共享 scratchpad 里禁止 rm -rf 语义名★ 是同一条判据：
+# 破坏性操作的作用域必须由**自己造的唯一标识**界定，不能由"看起来是我的"界定。
+# 放在 neg_build/ 之下是为了继续被 .gitignore 的 `verif/ut/*/neg_build/` 覆盖。
+BUILD_ROOT = HERE / 'neg_build'
+BUILD = BUILD_ROOT / ('run-%d' % os.getpid())
 RTL_REL = pathlib.Path('rtl') / 'backend' / 'InterruptFilter.sv'
+# 子依赖闭合升级后 Makefile 还要这三份（DelayN 重写件），neg_build 里必须一并拷，
+# 否则基线就编不过 —— 那会让每个变异都"编译/运行失败"，看着像全被抓到，实则空转。
+DEP_REL = [pathlib.Path('rtl') / 'common' / f
+           for f in ('xs_DelayN_core.sv', 'DelayN_17.sv', 'DelayN_208.sv')]
 NCYCLES = '20000'
 
 # (说明, 锚点, 替换)
@@ -70,9 +84,13 @@ MUTANTS = [
 
 
 def prepare():
+    # 只删**自己**这一跑的目录，绝不碰 BUILD_ROOT（那是语义名，可能有别人在用）
     if BUILD.exists():
         shutil.rmtree(BUILD)
+    BUILD_ROOT.mkdir(parents=True, exist_ok=True)
     (BUILD / RTL_REL.parent).mkdir(parents=True)
+    for d in DEP_REL:
+        (BUILD / d.parent).mkdir(parents=True, exist_ok=True)
     (BUILD / 'verif' / 'ut' / 'InterruptFilter').mkdir(parents=True)
     (BUILD / 'scripts').symlink_to(REPO / 'scripts')
     restore()
@@ -82,6 +100,8 @@ def prepare():
 
 def restore():
     shutil.copy(REPO / RTL_REL, BUILD / RTL_REL)
+    for d in DEP_REL:
+        shutil.copy(REPO / d, BUILD / d)
 
 
 def run_ut():

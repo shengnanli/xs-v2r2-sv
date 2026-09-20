@@ -1,0 +1,96 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/InterruptFilter
+Implementation : i:/WORK/InterruptFilter
+Version        : V-2023.12-SP3
+Date           : Sun Sep 20 05:02:40 2026
+**************************************************
+
+20 Failing compare points (20 matched, 0 unmatched):
+
+  Ref  Port       r:/WORK/InterruptFilter/io_out_stopi_IID[0]
+  Impl Port       i:/WORK/InterruptFilter/io_out_stopi_IID[0]
+
+  Ref  Port       r:/WORK/InterruptFilter/io_out_stopi_IID[1]
+  Impl Port       i:/WORK/InterruptFilter/io_out_stopi_IID[1]
+
+  Ref  Port       r:/WORK/InterruptFilter/io_out_stopi_IID[2]
+  Impl Port       i:/WORK/InterruptFilter/io_out_stopi_IID[2]
+
+  Ref  Port       r:/WORK/InterruptFilter/io_out_stopi_IID[3]
+  Impl Port       i:/WORK/InterruptFilter/io_out_stopi_IID[3]
+
+  Ref  Port       r:/WORK/InterruptFilter/io_out_stopi_IID[4]
+  Impl Port       i:/WORK/InterruptFilter/io_out_stopi_IID[4]
+
+  Ref  Port       r:/WORK/InterruptFilter/io_out_stopi_IID[5]
+  Impl Port       i:/WORK/InterruptFilter/io_out_stopi_IID[5]
+
+  Ref  Port       r:/WORK/InterruptFilter/io_out_stopi_IPRIO[0]
+  Impl Port       i:/WORK/InterruptFilter/io_out_stopi_IPRIO[0]
+
+  Ref  Port       r:/WORK/InterruptFilter/io_out_stopi_IPRIO[1]
+  Impl Port       i:/WORK/InterruptFilter/io_out_stopi_IPRIO[1]
+
+  Ref  Port       r:/WORK/InterruptFilter/io_out_stopi_IPRIO[2]
+  Impl Port       i:/WORK/InterruptFilter/io_out_stopi_IPRIO[2]
+
+  Ref  Port       r:/WORK/InterruptFilter/io_out_stopi_IPRIO[3]
+  Impl Port       i:/WORK/InterruptFilter/io_out_stopi_IPRIO[3]
+
+  Ref  Port       r:/WORK/InterruptFilter/io_out_stopi_IPRIO[4]
+  Impl Port       i:/WORK/InterruptFilter/io_out_stopi_IPRIO[4]
+
+  Ref  Port       r:/WORK/InterruptFilter/io_out_stopi_IPRIO[5]
+  Impl Port       i:/WORK/InterruptFilter/io_out_stopi_IPRIO[5]
+
+  Ref  Port       r:/WORK/InterruptFilter/io_out_stopi_IPRIO[6]
+  Impl Port       i:/WORK/InterruptFilter/io_out_stopi_IPRIO[6]
+
+  Ref  Port       r:/WORK/InterruptFilter/io_out_stopi_IPRIO[7]
+  Impl Port       i:/WORK/InterruptFilter/io_out_stopi_IPRIO[7]
+
+  Ref  Port       r:/WORK/InterruptFilter/io_out_vstopi_IID[0]
+  Impl Port       i:/WORK/InterruptFilter/io_out_vstopi_IID[0]
+
+  Ref  Port       r:/WORK/InterruptFilter/io_out_vstopi_IID[1]
+  Impl Port       i:/WORK/InterruptFilter/io_out_vstopi_IID[1]
+
+  Ref  Port       r:/WORK/InterruptFilter/io_out_vstopi_IID[2]
+  Impl Port       i:/WORK/InterruptFilter/io_out_vstopi_IID[2]
+
+  Ref  Port       r:/WORK/InterruptFilter/io_out_vstopi_IID[3]
+  Impl Port       i:/WORK/InterruptFilter/io_out_vstopi_IID[3]
+
+  Ref  Port       r:/WORK/InterruptFilter/io_out_vstopi_IID[4]
+  Impl Port       i:/WORK/InterruptFilter/io_out_vstopi_IID[4]
+
+  Ref  Port       r:/WORK/InterruptFilter/io_out_vstopi_IID[5]
+  Impl Port       i:/WORK/InterruptFilter/io_out_vstopi_IID[5]
+
+ [BBNet: multiply-driven net
+  BBPin: black-box pin
+  Cut:   cut-point
+  DFF:   non-constant DFF register
+  DFF0:  constant 0 DFF register
+  DFF1:  constant 1 DFF register
+  DFFX:  constant X DFF register
+  DFF0X: constrained 0X DFF register
+  DFF1X: constrained 1X DFF register
+  LAT:   non-constant latch register
+  LAT0:  constant 0 latch register
+  LAT1:  constant 1 latch register
+  LATX:  constant X latch register
+  LAT0X: constrained 0X latch register
+  LAT1X: constrained 1X latch register
+  LATCG: clock-gating latch register
+  TLA:   transparent latch register
+  TLA0X: transparent constrained 0X latch register
+  TLA1X: transparent constrained 1X latch register
+  Loop:  cycle break point
+  Port:  primary (top-level) port
+  Und:   undriven signal cut-point
+  Unk:   unknown signal cut-point]
+
+1

@@ -254,8 +254,8 @@ DelayNWithValid_7	REWRITTEN	PROVEN_DIRECT	rtl/common/DelayNWithValid_7.sv
 DelayN_1	GOLDEN_REUSE	PROVEN_DIRECT	rtl/common/DelayN_1.sv
 DelayN_13	REWRITTEN	PROVEN_DIRECT	rtl/common/DelayN_13.sv
 DelayN_15	REWRITTEN	PROVEN_DIRECT	rtl/common/DelayN_15.sv
-DelayN_17	GOLDEN_REUSE	PROVEN_DIRECT	rtl/common/DelayN_17.sv
-DelayN_208	GOLDEN_REUSE	PROVEN_DIRECT	rtl/common/DelayN_208.sv
+DelayN_17	REWRITTEN	PROVEN_DIRECT	rtl/common/DelayN_17.sv
+DelayN_208	REWRITTEN	PROVEN_DIRECT	rtl/common/DelayN_208.sv
 DelayN_214	REWRITTEN	PROVEN_DIRECT	rtl/common/DelayN_214.sv
 DelayN_215	REWRITTEN	PROVEN_DIRECT	rtl/common/DelayN_215.sv
 DelayN_220	REWRITTEN	PROVEN_DIRECT	rtl/common/DelayN_220.sv

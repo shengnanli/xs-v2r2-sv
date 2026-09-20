@@ -76,7 +76,7 @@ def ut_of(target, explicit=None):
         return explicit
     for mk in sorted((REPO / 'verif' / 'ut').glob('*/Makefile')):
         txt = re.sub(r'\\\n', ' ', mk.read_text(errors='replace'))
-        m = re.search(r'^FM_VARIANTS\s*=\s*(.*)$', txt, re.M)
+        m = re.search(r'^FM_VARIANTS[^\S\n]*=[^\S\n]*(.*)$', txt, re.M)
         if m and target in m.group(1).split():
             return mk.parent.name
     return None

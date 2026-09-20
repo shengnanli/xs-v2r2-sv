@@ -1,16 +1,28 @@
 MODULE = InterruptFilter
 
 RTL_DIR  = ../../../rtl
-RTL_SRCS = $(RTL_DIR)/backend/InterruptFilter.sv
+# ★子依赖已闭合（2026-09-20 升级，集成者裁定 3）★
+#   DelayN_17 / DelayN_208 由 DelayN lane 重写并合入 main（`80617800`），
+#   impl 侧从此用**重写件**，不再喂 golden 字节：
+#     rtl/common/DelayN_17.sv / DelayN_208.sv（薄 wrapper）+ xs_DelayN_core.sv（参数化核）
+#   于是 FM_REF_DEPS（golden 侧）与 impl 侧是**两套不同的字节**，这两个 child
+#   对本 target 不再是零信息量，`UNCHANGED_GOLDEN_DEP` 随之摘掉。
+#   升级前的配置（两侧同取 golden）与它的条件性结论留在 FM_PREDICTION.md §2/§12.1。
+#   ★换了 impl 闭包就是换了前提，必须重出证 —— 不许只改台账不重跑（裁定原话）。★
+RTL_SRCS = $(RTL_DIR)/backend/InterruptFilter.sv \
+           $(RTL_DIR)/common/xs_DelayN_core.sv \
+           $(RTL_DIR)/common/DelayN_17.sv \
+           $(RTL_DIR)/common/DelayN_208.sv
 TB_SRCS  = tb.sv
 
-# ★子依赖未闭合：DelayN_17 / DelayN_208 本轮由另一条 lane（agent/delayn-clz）重写，
-#   尚未合入。这里两侧同取 golden 定义（ref 走 FM_REF_DEPS，impl 走 RTL_GOLDEN_DEPS），
-#   于是本目标对这两个 child **零信息量**，证明是条件性的。
-#   详见 FM_PREDICTION.md §2（UNCHANGED_GOLDEN_DEP / 子依赖未闭合）。
-#   选"两侧白盒同源"而不是"两侧黑盒"：不扩大黑盒，且 glue（6 个实例的接线）真的被比出来。
 FM_REF_DEPS_InterruptFilter = DelayN_17.sv DelayN_208.sv
-RTL_GOLDEN_DEPS = $(GOLDEN_RTL)/DelayN_17.sv $(GOLDEN_RTL)/DelayN_208.sv
+# ★这里**不写** `RTL_GOLDEN_DEPS =`★（ut_common.mk 已有 `RTL_GOLDEN_DEPS ?=` 默认空）。
+# 实测：写成空赋值会被仓里按行正则读 Makefile 的脚本误读 ——
+#   scripts/coverage_three_axis.py 的 golden_reuse_set() 用
+#   `^RTL_GOLDEN_DEPS\s*=\s*(.*)$`，而 `\s` 吃换行，于是空赋值后面那一行
+#   （`GOLDEN_SRCS = .../InterruptFilter.sv ...`）被当成了本变量的值，
+#   InterruptFilter 因此被误判成 GOLDEN_REUSE（"按裁定不算重写完成"）。
+# make 的展开值两种写法完全一样（已 `make --eval` 逐字对照），删掉纯粹是消歧义。
 
 GOLDEN_SRCS = $(GOLDEN_RTL)/InterruptFilter.sv \
               $(GOLDEN_RTL)/DelayN_17.sv \
