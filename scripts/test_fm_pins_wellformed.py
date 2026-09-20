@@ -18,7 +18,16 @@ FM 自己另配的或干脆没配上 —— 与钉点无关。日志里那行 mi
 
   P1  只出现消名差的动词：禁 set_dont_verify_points / set_constant / set_black_box /
       set_app_var 一类**会改变证明语义**的命令。
-  P2  有 fail-closed 的 `error` 路径，且由一个**计数比较**守卫。
+  P2  有 fail-closed 的中止路径（`error` **或** `exit <非零>`），且由一个**计数比较**守卫。
+      ★为什么 `exit <非零>` 也算★（2026-09-20 实测补上）：本仓的 FM 入口是
+      `fm_shell -64 -file scripts/fm_eq.tcl < /dev/null`，钉点文件由它 `source`。
+      `scripts/ut_common.mk` 紧接着 `rc=$?` 并把它当 `--rc` 喂给 fm_verdict.py，
+      所以 `exit 3` 一定会把这一跑判成非 SUCCEEDED —— 这是**由证据确认的**传播链，
+      不是"看着像"。而已知环境坑里，`fm_shell -file` 脚本报 `error` 时不退出、
+      会挂死占 license（`< /dev/null` 就是为它加的），所以 6 条 lane
+      （TLBNonBlock/TLBFA/RenameBuffer/NCBTransactionQueue/SSIT/Rob）各自独立
+      收敛到了 `exit 3`。闸原先只认 `error`，把这 6 个**真 fail-closed** 的文件判红。
+      `exit 0` 不算（负测 M11 钉住）。
   P3  期望数量是声明出来的（字面整数或 `set <var> <整数>`），并且校验发生在
       最后一次 set_user_match **之后**（"钉完再数"，不是钉之前先数一遍空的）。
 
@@ -76,6 +85,93 @@ FAIL_OPEN_LEDGER = {
     'verif/ut/ITTageTable_4/fm_pins.tcl': '同 ITTageTable（变体）',
 }
 
+# ★用 `catch` 数钉点是空的★（2026-09-20 实测，见 docs/rob_pin_failclosed.tsv）
+# `set_user_match` 遇到不存在的名字**不抛 Tcl 异常**：它返回 0 并往 fm.log 写一行
+# `Error: Unknown name: ... (FM-036)`。所以
+#     if {[catch {set_user_match $r $i}] == 0} {incr _pinned}
+# 里 `_pinned` 恒等于 `_want`，随后那句 `if {$_pinned != $_want} {... exit 3}`
+# 永远走不到 —— 一个 pin 都没配上也会打印 "pinned N of N"。
+# 正确写法是用**返回值**：`if {[set_user_match $r $i]} {incr _pinned}`。
+#
+# 落地时仓里 32 个钉点文件有 28 个是这个形态，涉及 28 个 top。
+#
+# ★这里有一句我先写错了的话，留在这里★：commit 43d9cc8b 的说明里写的是
+# "它们对应的目标都已签核"。**没有核对就写了**。照 docs/coverage_three_axis.tsv
+# 现查，28 个 top 里只有 12 个是 PROVEN*（Bku / Composer / EntriesAluCsrFenceDiv /
+# EntriesVfdivVidiv / ITTageTable{,_1..4} / TLBFA / TLBNonBlock / TlbStorageWrapper），
+# 其余 16 个是 UNPROVEN 或 MISSING。
+#
+# ★但也不能反过来照这个分类办事★：那张覆盖台账**自己就是漂的**（本轮实测
+# rewrite_coverage.py --check 在 main 上 rc=1，coverage_three_axis 也漏记了
+# 刚签核的目标）。也就是说"哪些已签核"这件事此刻没有可信的机读来源 ——
+# 例如 main 刚合入的 Entries* 7 个变体日志里写着 SIGNOFF_PASS，台账里却还是 MISSING。
+#
+# 所以当时取保守做法：28 个全部记账，不据一张已知会漂的表单方面打红谁。
+#
+# ★集成者已裁（0920）：不为这件事重跑那 28 个 FM★
+# 他全量扫了 evidence：带 FM-036/Unknown name 的目录 134 个，其中 SUCCEEDED 128、
+# FAILED 5、无 receipt 1；**判了 SUCCEEDED 又有 unread/unmatched 残留的：0 个**。
+# 机理：钉点计数从来不是承重的那道闸 —— 钉失败 => 该点没建立起比较 =>
+# 它以 unmatched 或 unread 的形态留在结果里 => 被 **unread 铁律**（任何 unread
+# 即 PARTIAL）和 unmatched=0 拦下。**空守卫拦的是"我钉的名字对不对"，真判决在下游。**
+# 另外多数 FM-036 出自 match_packed_payload 这类**投机性**辅助（试一批可能的名字，
+# 试不中是常态，不是缺陷）。所以 28 次全量 FM 换不到证据。
+#
+# ★解除条件（写死，免得日后被读成"重跑过就算数"）★
+# 一个文件从本表删除，**不是**因为"它重跑过了"，而是因为两条判据都在位：
+#   (1) 发射端改成**返回值**计数：`if {[set_user_match $r $i]} {incr _pinned}`；
+#   (2) 第二条独立判据在位：fm.log 里**行首锚定**的 `Error:` 行数为 0。
+# 处置节奏：在各自目标**下一次被改动或晋升时顺带修**（与 codex 0168 对 initreg
+# 存量的处置同一口径），不专门为它排 FM。
+# G2b 判据保证表只缩不长；新文件用 catch 一律判红。
+#
+# 每个文件的修法只有一行（catch 形 -> 返回值形）。
+CATCH_COUNT_LEDGER = {
+    'verif/ut/Bku/fm_pins_pre.tcl',
+    'verif/ut/Composer/fm_pins_pre.tcl',
+    'verif/ut/EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v/fm_pins_pre.tcl',
+    'verif/ut/EntriesAluCsrFenceDiv/fm_pins_pre.tcl',
+    'verif/ut/EntriesAluMulBkuBrhJmp/fm_pins_pre.tcl',
+    'verif/ut/EntriesFaluFcvtF2vFmacFdiv/fm_pins_pre.tcl',
+    'verif/ut/EntriesFaluFmac/fm_pins_pre.tcl',
+    'verif/ut/EntriesFaluFmacFdiv/fm_pins_pre.tcl',
+    'verif/ut/EntriesVfdivVidiv/fm_pins_pre.tcl',
+    'verif/ut/EntriesVfmaVialuFixVfalu/fm_pins_pre.tcl',
+    'verif/ut/EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf/fm_pins_pre.tcl',
+    'verif/ut/FCVT/fm_pins_pre.tcl',
+    'verif/ut/Ftq/fm_pins_pre.tcl',
+    'verif/ut/IBuffer/fm_pins.tcl',
+    'verif/ut/ICacheCtrlUnit/fm_pins.tcl',
+    'verif/ut/ICacheMissUnit/fm_pins.tcl',
+    'verif/ut/ITTageTable/fm_pins.tcl',
+    'verif/ut/ITTageTable_1/fm_pins.tcl',
+    'verif/ut/ITTageTable_2/fm_pins.tcl',
+    'verif/ut/ITTageTable_3/fm_pins.tcl',
+    'verif/ut/ITTageTable_4/fm_pins.tcl',
+    'verif/ut/InstrUncache/fm_pins_pre.tcl',
+    'verif/ut/Predictor/fm_pins_pre.tcl',
+    'verif/ut/RenameBuffer/fm_pins.tcl',
+    'verif/ut/SyncDataModule/fm_pins_pre.tcl',
+    'verif/ut/TLBFA/fm_pins.tcl',
+    'verif/ut/TLBNonBlock/fm_pins.tcl',
+    'verif/ut/TlbStorageWrapper/fm_pins.tcl',
+    # -- 下面 12 个与上面同一批存量，只是随 main f034da5f（OthersEntry 12 变体）
+    #    在我落这张表**之后**才合进来。★分界线是 0920 那条裁定，不是我写表的时刻★；
+    #    照裁定它们属于「存量、下次改动/晋升时顺带修」，不是「新长出来的违规」。
+    'verif/ut/OthersEntry/fm_pins_pre.tcl',
+    'verif/ut/OthersEntry_104/fm_pins_pre.tcl',
+    'verif/ut/OthersEntry_106/fm_pins_pre.tcl',
+    'verif/ut/OthersEntry_120/fm_pins_pre.tcl',
+    'verif/ut/OthersEntry_122/fm_pins_pre.tcl',
+    'verif/ut/OthersEntry_44/fm_pins_pre.tcl',
+    'verif/ut/OthersEntry_50/fm_pins_pre.tcl',
+    'verif/ut/OthersEntry_6/fm_pins_pre.tcl',
+    'verif/ut/OthersEntry_66/fm_pins_pre.tcl',
+    'verif/ut/OthersEntry_72/fm_pins_pre.tcl',
+    'verif/ut/OthersEntry_88/fm_pins_pre.tcl',
+    'verif/ut/OthersEntry_90/fm_pins_pre.tcl',
+}
+
 PASS, FAIL = [], []
 
 
@@ -116,16 +212,24 @@ def check(text):
     if 'set_user_match' not in code:
         probs.append('P1 通篇没有 set_user_match —— 这不是一个钉点文件')
 
-    # --- P2 fail-closed：`if {<比较>} {… error …}` --------------------------
+    # --- P2 fail-closed：`if {<比较>} {… error / exit <非零> …}` -------------
+    # 两种中止都认，但 `exit 0` 不认 —— 那是"装成中止的 fail-open"。
+    ABORT = r'(?:\berror\b|\bexit\b\s+(?!0\s*\})[1-9]\d*)'
     guards = [(m.start(), m.group(1))
-              for m in re.finditer(r'if\s*\{([^{}]*)\}\s*\{[^{}]*?\berror\b[^{}]*\}',
+              for m in re.finditer(r'if\s*\{([^{}]*)\}\s*\{[^{}]*?' + ABORT + r'[^{}]*\}',
                                    code, re.S)]
     cmp_guards = [(pos, cond) for pos, cond in guards
                   if re.search(r'(!=|==|<=|>=|<|>)', cond)]
     if not guards:
-        probs.append('P2 没有 fail-closed 的 error 路径（钉不上也照跑 = 等于没钉）')
+        probs.append('P2 没有 fail-closed 的中止路径（error / exit 非零）'
+                     '—— 钉不上也照跑 = 等于没钉')
     elif not cmp_guards:
-        probs.append('P2 有 error 但没有任何一条由**计数比较**守卫')
+        probs.append('P2 有中止路径但没有任何一条由**计数比较**守卫')
+
+    # --- P4 不许用 catch 的返回码数钉点（set_user_match 不抛，见文件头）-------
+    if re.search(r'catch\s*\{\s*set_user_match\b', code):
+        probs.append('P4 用 `catch {set_user_match ...}` 数钉点 —— '
+                     'set_user_match 不抛异常，这个计数恒等于总数（改用返回值）')
 
     # --- P3 期望数量声明 + 钉完再校验 ---------------------------------------
     ints = declared_ints(code)
@@ -158,10 +262,17 @@ else:
 
 bad = 0
 stale_ledger = []
+stale_catch = []
 for f in files:
     rel = str(f.relative_to(REPO))
     probs = check(f.read_text(errors='replace'))
     legacy = rel in FAIL_OPEN_LEDGER
+    catch_legacy = rel in CATCH_COUNT_LEDGER
+    if catch_legacy:
+        p4 = [p for p in probs if p.startswith('P4')]
+        if not p4:
+            stale_catch.append(rel)     # 已经改成用返回值了 -> 该从表里删掉
+        probs = [p for p in probs if not p.startswith('P4')]
     if legacy:
         # 台账只豁免 P2/P3；P1 对谁都不豁免。
         hard = [p for p in probs if p.startswith('P1')]
@@ -176,13 +287,22 @@ for f in files:
         for p in probs:
             print(f'          {p}')
     else:
-        print(f'  ok    {rel}{"   (遗留 fail-open，已记账)" if legacy else ""}')
+        tags = []
+        if legacy:
+            tags.append('遗留 fail-open')
+        if catch_legacy:
+            tags.append('遗留 catch 计数')
+        print(f'  ok    {rel}{"   (" + " / ".join(tags) + "，已记账)" if tags else ""}')
 
 ck('G1 全部钉点文件结构良好', bad == 0, f'{bad} 项问题' if bad else '')
 ck('G2 台账只缩不长：表里的文件确实还 fail-open',
    not stale_ledger,
    f'已修好却还挂在表上：{stale_ledger}' if stale_ledger else '')
+ck('G2b catch 计数台账只缩不长：表里的文件确实还在用 catch',
+   not stale_catch,
+   f'已改用返回值却还挂在表上：{stale_catch}' if stale_catch else '')
 ledger_missing = [p for p in FAIL_OPEN_LEDGER if not (REPO / p).is_file()]
+ledger_missing += [p for p in CATCH_COUNT_LEDGER if not (REPO / p).is_file()]
 ck('G3 台账无幽灵条目', not ledger_missing, str(ledger_missing) if ledger_missing else '')
 
 # ---------------------------------------------------------------------------
@@ -194,10 +314,10 @@ if {$top eq "Demo"} {
   set _n 0
   set _miss 0
   for {set _i 0} {$_i < $_expect} {incr _i} {
-    if {[catch {set_user_match "r:/WORK/$top/a_${_i}_reg" "i:/WORK/$top/u_core/a_reg\\[$_i\\]"}]} {
-      incr _miss
-    } else {
+    if {[set_user_match "r:/WORK/$top/a_${_i}_reg" "i:/WORK/$top/u_core/a_reg\\[$_i\\]"]} {
       incr _n
+    } else {
+      incr _miss
     }
   }
   puts "DEMO_PINS: $_n / $_expect"
@@ -228,7 +348,27 @@ cases = [
          .replace('$_expect', '$_unknown')),
     ('通篇没有 set_user_match',
      GOOD.replace('set_user_match', 'puts')),
+    # --- 下面三条守住 2026-09-20 放宽 P2（认 `exit <非零>`）留下的新缺口 ---
+    ('exit 0 装成中止（其实是 fail-open）',
+     GOOD.replace('{ error "DEMO_PIN_MISS=$_miss" }', '{ puts "miss"; exit 0 }')),
+    ('exit 非零但没有计数守卫',
+     GOOD.replace('if {$_miss != 0 || $_n != $_expect} { error "DEMO_PIN_MISS=$_miss" }',
+                  'if {$_bogus} { exit 3 }')),
+    # ★P4★：用 catch 的返回码数钉点必须被抓（set_user_match 不抛，计数恒等于总数）
+    ('用 catch 数钉点',
+     GOOD.replace('if {[set_user_match ', 'if {[catch {set_user_match ')
+         .replace('u_core/a_reg\\[$_i\\]"]} {', 'u_core/a_reg\\[$_i\\]"}] == 0} {')),
+    ('exit 非零但校验发生在钉点之前',
+     GOOD.replace('if {$_miss != 0 || $_n != $_expect} { error "DEMO_PIN_MISS=$_miss" }', '')
+         .replace('  set _n 0', '  set _n 0\n  if {$_n != $_expect} { exit 3 }')),
 ]
+# ★正向对照★：把样本里的 `error` 换成 `exit 3`，必须**仍然干净** ——
+# 否则这次放宽就没生效，6 个真 fail-closed 的文件还是红的。
+_GOOD_EXIT = GOOD.replace('{ error "DEMO_PIN_MISS=$_miss" }',
+                          '{ puts "DEMO_PIN_MISS=$_miss"; exit 3 }')
+ck('M0b 正向：`exit 3` 形态的样本也必须干净', not check(_GOOD_EXIT),
+   str(check(_GOOD_EXIT)) if check(_GOOD_EXIT) else 'exit 非零被认作 fail-closed')
+
 for i, (label, bad_txt) in enumerate(cases, start=1):
     got = check(bad_txt)
     ck(f'M{i} 种入「{label}」必须被抓', bool(got),
