@@ -1361,8 +1361,8 @@ SNLinkMonitor	MISSING	UNPROVEN	-
 SNXbar	REWRITTEN	UNPROVEN	rtl/uncore/SNXbar.sv
 SQAddrModule	MISSING	UNPROVEN	-
 SQAddrModule_1	MISSING	UNPROVEN	-
-SQData8Module	MISSING	UNPROVEN	-
-SQDataModule	MISSING	UNPROVEN	-
+SQData8Module	REWRITTEN	PROVEN_IN_CONE	rtl/memblock/SQData8Module.sv
+SQDataModule	REWRITTEN	PROVEN_DIRECT	rtl/memblock/SQDataModule.sv
 SRAMTemplate	REWRITTEN	PROVEN_DIRECT	rtl/common/SRAMTemplate.sv
 SRAMTemplateWithFixedWidth	GOLDEN_REUSE	PROVEN_IN_CONE	-
 SRAMTemplateWithFixedWidth_12	GOLDEN_REUSE	PROVEN_IN_CONE	-
@@ -1517,7 +1517,7 @@ StoreExceptionBuffer	MISSING	UNPROVEN	-
 StoreMisalignBuffer	MISSING	UNPROVEN	-
 StorePfWrapper	MISSING	PROVEN_IN_CONE	-
 StorePipe	REWRITTEN	UNPROVEN	rtl/memblock/StorePipe.sv
-StoreQueue	MISSING	UNPROVEN	-
+StoreQueue	REWRITTEN	UNPROVEN	rtl/memblock/StoreQueue.sv
 StoreUnit	MISSING	UNPROVEN	-
 StreamBitVectorArray	MISSING	UNPROVEN	-
 StrideMetaArray	MISSING	UNPROVEN	-

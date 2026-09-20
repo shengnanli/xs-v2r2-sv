@@ -21,11 +21,11 @@
 #   observation_sink    1 个   9903 端口全 input 的纯观测 sink，19 万行全是端口表
 #
 metric	done	total	percent
-fm_targets_configured	516	542	95.2
-unique_design_written	164	1191	13.8
-unique_design_proven	154	1191	12.9
-golden_lines_written	1779289	3902283	45.6
-golden_lines_proven	1568417	3902283	40.2
+fm_targets_configured	517	545	94.9
+unique_design_written	167	1191	14.0
+unique_design_proven	155	1191	13.0
+golden_lines_written	1860870	3902283	47.7
+golden_lines_proven	1569324	3902283	40.2
 #
 # written 里没有绿判决证据的设计族（差额都在这儿，逐个列出不藏）：
 #   EnqEntry                                        23986 行
@@ -37,13 +37,14 @@ golden_lines_proven	1568417	3902283	40.2
 #   L2TLB                                           20101 行
 #   NewDispatch                                    100983 行
 #   OpenLLC                                          4252 行
+#   SQData8Module                                    3529 行
 #   StorePipe                                          93 行
+#   StoreQueue                                      77145 行
 #
 # 剩余最大的 30 个（按 golden 行数）—— 下一波排期的候选
 remaining_design	golden_lines	variants	scope
 Rob	266227	1	REWRITE_L
 Backend	79590	1	REWRITE_L
-StoreQueue	77145	1	REWRITE_L
 TLToAXI4	68788	2	-
 LoadQueueUncache	59051	1	REWRITE_L
 CtrlBlock	57635	1	REWRITE_L
@@ -71,3 +72,4 @@ XSCore	13423	1	REWRITE_L
 LoadUnit	13028	1	REWRITE_L
 Directory	11098	5	REWRITE_M
 Frontend	10940	1	REWRITE_L
+DecodeStage	10850	1	REWRITE_L

@@ -2397,6 +2397,11 @@ SplittedSRAM_2	array_0_1_5	SRAMTemplate_129	SAME_PATH	array_0_1_5	SRAMTemplate_1
 SplittedSRAM_2	array_0_1_6	SRAMTemplate_143	SAME_PATH	array_0_1_6	SRAMTemplate_143		auto_same	
 SplittedSRAM_2	array_0_1_7	SRAMTemplate_143	SAME_PATH	array_0_1_7	SRAMTemplate_143		auto_same	
 StdFreeList	snapshots_snapshotGen	SnapshotGenerator	DEEPER	u_core.snapshots_snapshotGen	SnapshotGenerator		auto_deeper	
+StoreQueue	dataBuffer	DatamoduleResultBuffer	UNRESOLVED				none	
+StoreQueue	dataModule	SQDataModule	UNRESOLVED				none	
+StoreQueue	exceptionBuffer	StoreExceptionBuffer	UNRESOLVED				none	
+StoreQueue	paddrModule	SQAddrModule	UNRESOLVED				none	
+StoreQueue	vaddrModule	SQAddrModule_1	UNRESOLVED				none	
 SubDirectory	lfsr_prng	MaxPeriodFibonacciLFSR_3	SAME_PATH	lfsr_prng	MaxPeriodFibonacciLFSR_3		auto_same	
 SubDirectory	metaArray	SRAMTemplate_193	SAME_PATH	metaArray	SRAMTemplate_193		auto_same	
 SubDirectory	tagArray	SRAMTemplate_192	SAME_PATH	tagArray	SRAMTemplate_192		auto_same	
