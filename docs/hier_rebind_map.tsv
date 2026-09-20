@@ -2401,6 +2401,8 @@ TageTable_3	table_banks_3	FoldedSRAMTemplate_1	GEN_SITE	u_core.g_bank[3].table_b
 TageTable_3	us	FoldedSRAMTemplate	DEEPER	u_core.us	FoldedSRAMTemplate		auto_deeper	
 TlbStorageWrapper	page_itlb_storage_fa	TLBFA	SAME_PATH	page_itlb_storage_fa	TLBFA		auto_same	
 TlbStorageWrapper_1	page_ldtlb_storage_fa	TLBFA_1	SAME_PATH	page_ldtlb_storage_fa	TLBFA_1		auto_same	
+TlbStorageWrapper_2	page_sttlb_storage_fa	TLBFA_2	SAME_PATH	page_sttlb_storage_fa	TLBFA_2		auto_same	
+TlbStorageWrapper_3	page_pftlb_storage_fa	TLBFA_3	SAME_PATH	page_pftlb_storage_fa	TLBFA_3		auto_same	
 UopInfoGen	indexedLSTable	indexedLSNumOfUopTable	INLINE	u_core	-	(function LUT)	declared	rtl/backend/UopInfoGen.sv:88「可读核把这两张表用 function 内联(语义等价),故 wrapper 无子模块」。
 UopInfoGen	stridedLSTable	strdiedLSNumOfUopTable	INLINE	u_core	-	(function LUT)	declared	同上
 VSetRiWi	vsetModule	VsetModule	INLINE	u_core	-	log2_sew,vlmax,illegal,vl	declared	rtl/backend/VSetRiWi.sv:88-101「③ VsetModule 计算」内联（VsetModule 模块本身仍被别的父模块例化，故不在丢失模块清单里，但这条路径没了）。

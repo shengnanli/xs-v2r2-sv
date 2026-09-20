@@ -475,7 +475,7 @@ switch -- $_verify_matched_unread_compare_points {
     #   OthersEntry_88  3519 -> 3528 / _104 3511 -> 3520 / _120 3507 -> 3516，
     #   三个都正好等于 predict.py 的模型上界；unread 归 0、failing 仍 0、unmatched 全 0。
     #   passing 不增而 unread 归 0 = 点被吞掉，不算过。
-    if {$top ni {OthersEntry_88 OthersEntry_104 OthersEntry_120 Bku Composer DebugModule DuplicatedTagArray EntriesVfdivVidiv FAlu FCVT FTBBank Ftq ICacheCtrlUnit ICacheDataArray ICacheMetaArray ICacheMissUnit InstrUncache ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 LinkMonitor MulUnit Queue1_RegMapperInput_5 RNXbar SNXbar SourceB SSIT TageBTable TlbStorageWrapper TlbStorageWrapper_1 TXDAT_4 TXREQ WritebackQueue IBuffer EntriesAluCsrFenceDiv NCBTransactionQueue NCBTransactionQueue_1 Predictor RenameBuffer TLBFA TLBFA_1 TLBFA_2 TLBFA_3 TLBNonBlock TLBNonBlock_1 TLBNonBlock_2}} {
+    if {$top ni {OthersEntry_88 OthersEntry_104 OthersEntry_120 Bku Composer DebugModule DuplicatedTagArray EntriesVfdivVidiv FAlu FCVT FTBBank Ftq ICacheCtrlUnit ICacheDataArray ICacheMetaArray ICacheMissUnit InstrUncache ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 LinkMonitor MulUnit Queue1_RegMapperInput_5 RNXbar SNXbar SourceB SSIT TageBTable TlbStorageWrapper TlbStorageWrapper_1 TlbStorageWrapper_2 TlbStorageWrapper_3 TXDAT_4 TXREQ WritebackQueue IBuffer EntriesAluCsrFenceDiv NCBTransactionQueue NCBTransactionQueue_1 Predictor RenameBuffer TLBFA TLBFA_1 TLBFA_2 TLBFA_3 TLBNonBlock TLBNonBlock_1 TLBNonBlock_2}} {
       puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
       exit 3
     }
@@ -509,7 +509,9 @@ if {[info exists env(FM_MERGE_DUP)] && [string trim $env(FM_MERGE_DUP)] ne ""} {
     set _mergedup [string trim $env(FM_MERGE_DUP)]
 }
 # ★这段注记必须留在 switch **外面**★（2026-09-20 实测，Entries lane 踩到）
-#   它原先写在 `switch -- $_mergedup {` 的花括号里。Tcl 的 switch 体是一张
+#   它原先写在 `switch -- $_mergedup` 的花括号**里面**。Tcl 的 switch 体是一张
+#   （这行原文带一个裸的左花括号，把本仓既有的「括号配平」判据打红了 ——
+#    Tcl 注释里的花括号并非总是无害，所以这里改成不写出那个字符。）
 #   **pattern/body 列表**，不是脚本体 —— `#` 在那里不是注释，整块要按列表语法解析。
 #   下面第 8 行里的 ASCII 双引号 "Merging duplicated registers" 后面紧跟中文逗号，
 #   于是 Tcl 报 `list element in quotes followed by "，★从未到达" instead of space`

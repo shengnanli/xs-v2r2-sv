@@ -1,11 +1,22 @@
-// 自动生成：verif/ut/TlbStorageWrapper/gen_tb_1.py —— 勿手改（改生成器后重跑）
-// TlbStorageWrapper_1（dtlb, 4 读端口 / 48 路全相联）双例化逐拍比对:
+// 自动生成：verif/ut/TlbStorageWrapper/gen_tb_variant.py —— 勿手改（改生成器后重跑）
+// TlbStorageWrapper_1（4 读端口 / 48 路全相联）双例化逐拍比对:
 //   golden TlbStorageWrapper_1  vs  可读重写 TlbStorageWrapper_1_xs。
 // 含 directed_mbmc_sfence(): 钉 io_csr_mbmc_BME/CMODE 必须透传给内层 TLBFA_1。
 `timescale 1ns/1ps
 module tb;
   int unsigned NVEC = 200000;
   int errors = 0, checks = 0;
+  // ---- 覆盖计数（只看 golden 侧，激励是否真把路径走到了）----
+  longint cov_hit_0 = 0;
+  longint cov_hit_1 = 0;
+  longint cov_hit_2 = 0;
+  longint cov_hit_3 = 0;
+  longint cov_hit_multi = 0;   // 同一拍两个及以上读端口同时命中（PLRU 多端口叠加序）
+  longint cov_refill_pool = 0; // 池模式下的 refill 次数（>48 即已强制发生替换）
+  longint cov_sfence = 0;
+  longint cov_pool = 0;        // 走池模式的拍数
+  bit     cov_ok;
+  int     POOLPCT = 50;        // 池化激励占比（%），+poolpct=<n> 可改
   logic clock = 0, reset;
   always #5 clock = ~clock;
   logic io_sfence_valid;
@@ -305,6 +316,12 @@ module tb;
 
   task automatic do_check(int t);
     checks++;
+    // 覆盖统计：以 golden 的 hit 为准（比较窗口里它就是黄金事实）
+    if (g_io_r_resp_0_bits_hit) cov_hit_0++;
+    if (g_io_r_resp_1_bits_hit) cov_hit_1++;
+    if (g_io_r_resp_2_bits_hit) cov_hit_2++;
+    if (g_io_r_resp_3_bits_hit) cov_hit_3++;
+    if ((32'(g_io_r_resp_0_bits_hit) + 32'(g_io_r_resp_1_bits_hit) + 32'(g_io_r_resp_2_bits_hit) + 32'(g_io_r_resp_3_bits_hit)) >= 2) cov_hit_multi++;
     if (g_io_r_resp_0_bits_hit !== i_io_r_resp_0_bits_hit) begin errors++;
       if(errors<=80) $display("vec %0d io_r_resp_0_bits_hit g=%b i=%b",t,g_io_r_resp_0_bits_hit,i_io_r_resp_0_bits_hit); end
     if (g_io_r_resp_0_bits_hit && (g_io_r_resp_0_bits_ppn_0 !== i_io_r_resp_0_bits_ppn_0)) begin errors++;
@@ -602,8 +619,74 @@ module tb;
     io_w_bits_data_s2_gaf = $urandom_range(0,1);
   endtask
 
+  localparam int POOL = 64;   // > NWAYS(48)，按构造强制替换
+  task automatic drive_pooled();
+    automatic int kw = $urandom_range(0, POOL-1);   // 本拍要写的 tag
+    automatic int kr0 = $urandom_range(0, POOL-1);
+    automatic int kr1 = $urandom_range(0, POOL-1);
+    automatic int kr2 = $urandom_range(0, POOL-1);
+    automatic int kr3 = $urandom_range(0, POOL-1);
+    drive_random();                                 // 先铺满所有输入，再覆盖池相关的
+    cov_pool++;
+    io_sfence_valid = ($urandom_range(0,63) == 0);  // 池模式下少发 sfence，否则驻留留不住
+    io_r_req_0_valid     = 1'b1;
+    io_r_req_0_bits_vpn  = {35'(kr0), 3'($urandom_range(0,7))};
+    io_r_req_0_bits_s2xlate = 2'b00;
+    io_r_req_1_valid     = 1'b1;
+    io_r_req_1_bits_vpn  = {35'(kr1), 3'($urandom_range(0,7))};
+    io_r_req_1_bits_s2xlate = 2'b00;
+    io_r_req_2_valid     = 1'b1;
+    io_r_req_2_bits_vpn  = {35'(kr2), 3'($urandom_range(0,7))};
+    io_r_req_2_bits_s2xlate = 2'b00;
+    io_r_req_3_valid     = 1'b1;
+    io_r_req_3_bits_vpn  = {35'(kr3), 3'($urandom_range(0,7))};
+    io_r_req_3_bits_s2xlate = 2'b00;
+    io_w_valid = ($urandom_range(0,3) == 0);
+    if (io_w_valid) cov_refill_pool++;
+    io_w_bits_data_s2xlate            = 2'b00;
+    io_w_bits_data_s1_entry_tag       = 35'(kw);
+    io_w_bits_data_s1_entry_n         = 1'b0;    // 非 NAPOT：低位也要比
+    io_w_bits_data_s1_entry_level     = 2'd0;    // 4KB：全部 tag 段都要比
+    io_w_bits_data_s1_entry_v         = 1'b1;
+    io_w_bits_data_s1_entry_perm_g    = 1'b1;    // global ⇒ asid 不参与命中
+    // 数据段做成 kw 的函数：命中错路会在 ppn/perm 上暴露，而不只是 hit 位
+    io_w_bits_data_s1_entry_ppn       = 41'(kw * 8191 + 1);
+    io_w_bits_data_s1_ppn_low_0      = 3'(kw + 0);
+    io_w_bits_data_s1_valididx_0     = 1'b1;
+    io_w_bits_data_s1_pteidx_0       = 1'b1;
+    io_w_bits_data_s1_ppn_low_1      = 3'(kw + 1);
+    io_w_bits_data_s1_valididx_1     = 1'b1;
+    io_w_bits_data_s1_pteidx_1       = 1'b1;
+    io_w_bits_data_s1_ppn_low_2      = 3'(kw + 2);
+    io_w_bits_data_s1_valididx_2     = 1'b1;
+    io_w_bits_data_s1_pteidx_2       = 1'b1;
+    io_w_bits_data_s1_ppn_low_3      = 3'(kw + 3);
+    io_w_bits_data_s1_valididx_3     = 1'b1;
+    io_w_bits_data_s1_pteidx_3       = 1'b1;
+    io_w_bits_data_s1_ppn_low_4      = 3'(kw + 4);
+    io_w_bits_data_s1_valididx_4     = 1'b1;
+    io_w_bits_data_s1_pteidx_4       = 1'b1;
+    io_w_bits_data_s1_ppn_low_5      = 3'(kw + 5);
+    io_w_bits_data_s1_valididx_5     = 1'b1;
+    io_w_bits_data_s1_pteidx_5       = 1'b1;
+    io_w_bits_data_s1_ppn_low_6      = 3'(kw + 6);
+    io_w_bits_data_s1_valididx_6     = 1'b1;
+    io_w_bits_data_s1_pteidx_6       = 1'b1;
+    io_w_bits_data_s1_ppn_low_7      = 3'(kw + 7);
+    io_w_bits_data_s1_valididx_7     = 1'b1;
+    io_w_bits_data_s1_pteidx_7       = 1'b1;
+    io_w_bits_data_s1_entry_perm_r    = kw[0];
+    io_w_bits_data_s1_entry_perm_w    = kw[1];
+    io_w_bits_data_s1_entry_perm_x    = kw[2];
+    io_w_bits_data_s1_entry_perm_u    = kw[3];
+    io_w_bits_data_s1_entry_perm_a    = kw[4];
+    io_w_bits_data_s1_entry_perm_d    = kw[5];
+    io_w_bits_data_s1_pf              = kw[0];
+    io_w_bits_data_s1_af              = kw[1];
+  endtask
+
   // ---------------------------------------------------------------------------
-  // 定向激励: sfence 的失效范围要看 mbmc.BME/CMODE（golden TLBFA_1.sv:14716-14717）
+  // 定向激励: sfence 的失效范围要看 mbmc.BME/CMODE（golden TLBFA_1.sv）
   //   else if (io_sfence_valid & ~hg & ~hv)
   //     if (rs1 | priv_virt | io_csr_mbmc_BME & ~io_csr_mbmc_CMODE)
   //   本层只透传这两根线。透传漏了 ⇒ 内层输入悬空 ⇒ if(x) 判假 ⇒ 掉进按地址失效的
@@ -761,21 +844,47 @@ module tb;
     $display("DIRECTED mbmc_sfence errors=%0d", directed_errors);
   endtask
 
+  task automatic dir_warm_ports();
+    dir_clear();
+    io_r_req_0_valid = 1;
+    io_r_req_1_valid = 1;
+    io_r_req_2_valid = 1;
+    io_r_req_3_valid = 1;
+    repeat (2) @(posedge clock); #1;
+    dir_clear();
+    @(posedge clock); #1;
+  endtask
+
   initial begin
     void'($value$plusargs("ncycles=%d", NVEC));   // ut_common 统一下发 +ncycles
+    void'($value$plusargs("poolpct=%d", POOLPCT)); // 诊断用：0 = 退回补强前的纯均匀随机
     reset = 1;
     dir_clear();
     repeat (3) @(posedge clock); #1; reset = 0;
     @(posedge clock);
     directed_mbmc_sfence();
+    dir_warm_ports();
     errors += directed_errors;
     for (int t = 0; t < NVEC; t++) begin
-      drive_random();
+      // 一半拍走池化激励（制造命中与替换），一半拍走原均匀随机（保住原有覆盖）
+      // +poolpct=0 可复现补强之前的纯均匀随机激励（用来量它的命中率是 0）
+      if (32'($urandom_range(0,99)) < POOLPCT) drive_pooled(); else drive_random();
+      if (io_sfence_valid) cov_sfence++;
       @(posedge clock); #1;
       do_check(t);
     end
     $display("checks=%0d errors=%0d (含 directed=%0d)", checks, errors, directed_errors);
-    if (errors == 0 && checks > 1000) $display("TEST PASSED");
+    // ---- 覆盖闸：任一路径没走到就判 FAILED（防止激励退化成 miss-only 还报绿）----
+    $display("COVERAGE pool=%0d refill_pool=%0d sfence=%0d hit_multi=%0d hit_0=%0d hit_1=%0d hit_2=%0d hit_3=%0d",
+             cov_pool, cov_refill_pool, cov_sfence, cov_hit_multi, cov_hit_0, cov_hit_1, cov_hit_2, cov_hit_3);
+    cov_ok = (cov_refill_pool >= 200) && (cov_sfence >= 100) && (cov_hit_multi >= 100)
+            && (cov_hit_0 >= 1000)
+            && (cov_hit_1 >= 1000)
+            && (cov_hit_2 >= 1000)
+            && (cov_hit_3 >= 1000)
+            ;
+    if (!cov_ok) $display("COVERAGE GATE FAILED: 某条路径的拍数低于下限，本轮 UT 不算数");
+    if (errors == 0 && checks > 1000 && cov_ok) $display("TEST PASSED");
     else $display("TEST FAILED");
     $finish;
   end

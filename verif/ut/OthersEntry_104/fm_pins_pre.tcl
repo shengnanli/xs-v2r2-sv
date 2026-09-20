@@ -1442,7 +1442,13 @@ if {$top eq "OthersEntry_104"} {
     }
   }
   puts "OE_PINS: $_n / 1407 tried, $_miss threw"
+  # fail-closed 两道，都在最后一次 set_user_match **之后**：
+  #   (1) 一次都不许抛；
+  #   (2) 成功条数必须**恰好**等于生成时算出来的期望数量 —— set_user_match 对不存在的
+  #       名字不抛异常（实测），所以只看"没抛"证明不了钉点真的都下去了；
+  #       把期望数量写成字面整数钉死，少一条就 error。
   if {$_miss != 0} { error "OE_PIN_THREW=$_miss" }
+  if {$_n != 1407} { error "OE_PIN_COUNT=$_n expected 1407" }
 }
 
 # golden 侧不存在、因而未钉点的寄存器：
