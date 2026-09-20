@@ -127,6 +127,13 @@ if not probs:
     ck('W2 白名单非空且都是合法模块名', bool(names) and all(
         re.match(r'^[A-Za-z_]\w*$', n) for n in names), f'{len(names)} 个目标')
 
+def inject_into_switch(text, line):
+    """把 line 插进**第一条真正的** `switch ... {` 语句体（行首匹配，跳过注释里的同形字样）。"""
+    m = re.search(r'^[ \t]*switch\b[^\n{]*\{', text, re.M)
+    assert m, '找不到行首的 switch 语句——对照用例失去意义，直接判失败'
+    return text[:m.end()] + '\n' + line + text[m.end():]
+
+
 # ★对照★：种入每种坏形态都必须被抓，否则 W1 可能是空转。
 # 元负例在这里是**结构自带**的：W1 断言的是真文件上 check() 返回**空**。
 # 任何把判据变成"无条件报警"的改动（例如 switch_body_problems 直接 return ['x']）
@@ -137,14 +144,15 @@ cases = [
     ('残留冲突标记', '<<<<<<< HEAD\n' + txt + '\n>>>>>>> other\n'),
     ('括号不配平', txt + '\nif {1} {\n'),
     # ★本轮真事故的复现★：注记搬回 switch body 里，必须被抓。
+    # ★注入点必须锚到**行首的真语句**★：文件顶部的注记里现在也写着
+    #   `switch -- $_mergedup { ... }` 这串字样（说明事故长什么样），
+    #   用 str.replace(..., 1) 会打到那条**注释**上、注入等于没发生，
+    #   两条对照就会静默变成"没抓到"——这正是本轮实测踩到的。
     ('注记写进 switch body（含引号）',
-     txt.replace('switch -- $_mergedup {',
-                 'switch -- $_mergedup {\n# 卡在 "Merging duplicated registers"，★从未到达 match★',
-                 1)),
+     inject_into_switch(txt, '# 卡在 "Merging duplicated registers"，★从未到达 match★')),
     # 引号即使配平、list 能解析，`#` 行照样是静默错（被当 pattern）。
     ('注记写进 switch body（不含引号）',
-     txt.replace('switch -- $_mergedup {',
-                 'switch -- $_mergedup {\n# 纯中文注记没有引号也不行', 1)),
+     inject_into_switch(txt, '# 纯中文注记没有引号也不行')),
 ]
 for i, (label, bad) in enumerate(cases, start=3):
     got = check(bad)
