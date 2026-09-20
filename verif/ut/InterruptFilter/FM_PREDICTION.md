@@ -668,3 +668,39 @@ impl 闭包（从 fm.log 现读，确认 golden 的 DelayN **不在 impl 侧**�
 绝不碰 `neg_build` 本身 —— 与 CONVENTIONS ★共享 scratchpad 里禁止 `rm -rf` 语义名★
 是同一条判据：破坏性操作的作用域必须由**自己造的唯一标识**界定。
 （仍放在 `neg_build/` 之下，`.gitignore` 的 `verif/ut/*/neg_build/` 继续覆盖，已实测。）
+
+---
+
+## 15. 收口：最终字节上的三项验收（commit `b3808b86`）
+
+§14 之后又改了一处 **Makefile 的空赋值**（`RTL_GOLDEN_DEPS =` 整行删掉，
+原因见 `CONVENTIONS.md` ★Makefile 里的空赋值会被按行正则的读表脚本吃掉下一行★）。
+`make --eval` 对 `RTL_SRCS` / `RTL_GOLDEN_DEPS` / `FM_REF_DEPS_*` / `GOLDEN_SRCS`
+四个变量逐字对照过，**删前删后展开完全相同**，前提没变；即便如此仍按规矩重出了证。
+
+最终字节（`impl_commit b3808b86`）上的三项：
+
+| 验收 | 结果 |
+|---|---|
+| FM | `evidence/b3808b860b38/InterruptFilter/` —— **verdict SUCCEEDED**，passing 440 / failing 0 / unverified 0 / unmatched 0(0) / 黑盒 0 / unread 0 / dont_verify false / elab147 false / Constant reg 138；`grep -cE "^ *Error:" fm.log = 0`；`IF_PIN: pinned 85 of 85` |
+| `fm_predict.py check` | rc=0 —— 预期 578 / 实测 440 / 差 138 / 可指认 138（`constant_reg`）→ 差额被指认 |
+| UT | 3 seed × {`+vcs+initreg+0`,`+random`} **6/6 全过**，每轮 200k 拍 / 2.6M 次比较 / `errors=0` |
+| 变异负测 | **10/10 全被抓到**，基线 `checks=260000 errors=0`（在 `5254ac5b` 的字节上跑的；此后 RTL 与 tb 一字未动） |
+
+`docs/coverage_three_axis.py` 重算给出
+`InterruptFilter  REWRITTEN  PROVEN_DIRECT  rtl/backend/InterruptFilter.sv`
+—— 空赋值没删之前它会被误判成 `GOLDEN_REUSE`（"按裁定不算重写完成"）。
+
+### 15.1 台账口径
+
+签核 receipt 已入库（`evidence/` 靠 `git add -f` 越过 `.gitignore`，
+`check_no_tool_scratch.py` 的 `EXEMPT_PREFIXES` 含 `evidence/`）。
+`harvest_round_ledger.py` 重算会新增一行：
+
+```
+InterruptFilter  SUCCEEDED  p440 f0 um0 unread=? const_reg=138 mode=signoff-strict vmucp=false
+                 @b3808b860b38  evidence/b3808b860b38/InterruptFilter/receipt.json
+```
+
+**最终结论：`InterruptFilter` = 子依赖闭合的完整签核，`UNCHANGED_GOLDEN_DEP` 已摘除。**
+§2 的条件性结论只反映跑 1~4 的前提，已失效，不要再引用。
