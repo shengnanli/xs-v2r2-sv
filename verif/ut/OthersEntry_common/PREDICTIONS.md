@@ -36,3 +36,41 @@ cd verif/ut/OthersEntry_common && python3 predict.py
 
 判据：实测 passing ∈ [可接受下界, 模型]，且 failing=0 / unmatched=0 / unread 可解释。
 落在带外（高于模型上界，或低于下界）一律按 fail 上报，不在事后调带。
+
+---
+
+## 对账（★预测那张表以上原样保留，不改；这里只填实测★）
+
+- 证明 commit：`435655c3b73ed4f62c6446417ffb8357928cd683`
+- 复算：`python3 reconcile.py 435655c3`（实测那一列从
+  `evidence/435655c3*/<top>/receipt.json` 的 `verdict_detail` 机械读，非手抄；非零退出=对不上）
+
+| 变体 | 模型(上界) | 下界 | 实测 passing | 差 | failing | unmatched | unread | verdict | vmucp |
+|---|---|---|---|---|---|---|---|---|---|
+| `OthersEntry_44` | 3639 | 3275 | **3639** | +0 | 0 | 0 | 0 | SUCCEEDED | false |
+| `OthersEntry_50` | 1426 | 1226 | **1426** | +0 | 0 | 0 | 0 | SUCCEEDED | false |
+| `OthersEntry_66` | 3617 | 3255 | **3617** | +0 | 0 | 0 | 0 | SUCCEEDED | false |
+| `OthersEntry_72` | 1394 | 1194 | **1394** | +0 | 0 | 0 | 0 | SUCCEEDED | false |
+| `OthersEntry` | 3619 | 3257 | **3619** | +0 | 0 | 0 | 0 | SUCCEEDED | false |
+| `OthersEntry_6` | 1394 | 1194 | **1394** | +0 | 0 | 0 | 0 | SUCCEEDED | false |
+| `OthersEntry_88` | 3528 | 3175 | **3528** | +0 | 0 | 0 | 0 | SUCCEEDED | true |
+| `OthersEntry_90` | 1301 | 1101 | **1301** | +0 | 0 | 0 | 0 | SUCCEEDED | false |
+| `OthersEntry_104` | 3520 | 3168 | **3520** | +0 | 0 | 0 | 0 | SUCCEEDED | true |
+| `OthersEntry_106` | 1293 | 1093 | **1293** | +0 | 0 | 0 | 0 | SUCCEEDED | false |
+| `OthersEntry_120` | 3516 | 3164 | **3516** | +0 | 0 | 0 | 0 | SUCCEEDED | true |
+| `OthersEntry_122` | 1289 | 1089 | **1289** | +0 | 0 | 0 | 0 | SUCCEEDED | false |
+
+**结果：12/12 SUCCEEDED，实测 passing 逐个正好等于模型上界（差全为 +0）。**
+
+也就是说 predict.py 的模型「golden 寄存器位 + 顶层 output 端口位」在单条目这一档上
+是**精确**的，不是上界估计 —— 12 个变体、两种角色、三个 FP/INT 子族全部逐位命中。
+（Entries 阵列那一档实测差 -12 / -128，是因为阵列层有 Constant 寄存器；
+  单条目这一档 constant_reg 为 null，一个都没有。）
+
+### 带宽反标定
+
+预登记时把可接受下界写成 `min(round(0.90*model), model-200)`，并声明「跑完用实测反标定」。
+实测 12/12 差值为 0 ⇒ 这一族的正确判据其实是 **passing == model**（等号，不是区间）。
+★但不在这里就把带收成等号★：12 个样本全来自 INT/FP 两个子族，
+剩下 12 个（6 个 MEM + 6 个向量）还没跑，MEM 族有 needFeedBack、向量族有 ignoreOldVd，
+都可能引入 Constant 寄存器。等 24 个齐了再收，收窄本身也要有样本依据。

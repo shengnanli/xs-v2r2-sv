@@ -138,7 +138,28 @@ def _null_m14(ov, core):
     return (not ov.is_trans), 'comp 不接 o_trans_ld_dep（golden 无 transEntry 端口），输出悬空'
 
 
-NULL_MUTANTS = {'M3': _null_m3, 'M14': _null_m14}
+
+# ★ 下面三条：锚点里的分支条件在 simp 上是常量，删掉整条分支与不删完全一样 ★
+#   对 comp 它们都是活靶子（OthersEntry_72 上 M7/M8/M10 三条全被抓住），
+#   所以不能从共享表里删掉，只能按角色标成空变异。
+def _null_m7(ov, core):
+    live = not ov.is_trans          # comp 才活
+    return (not live), 'simp 的 IS_COMP=0 ⇒ (IS_COMP ? A : can_issue_plain) ≡ can_issue_plain'
+
+
+def _null_m8(ov, core):
+    live = not ov.is_trans
+    return (not live), 'simp 的 IS_COMP=0 ⇒ (IS_COMP & …) ? DS_FORWARD : X ≡ X'
+
+
+def _null_m10(ov, core):
+    # KEEP_WIDE = IS_ENQ | IS_TRANS；simp 的 IS_TRANS=1 ⇒ KEEP_WIDE=1
+    # ⇒ (KEEP_WIDE || NUM_DEQ_PORTS>1) ≡ KEEP_WIDE，把后半删掉不改变生成条件。
+    return ov.is_trans, 'simp 的 KEEP_WIDE=1 ⇒ (KEEP_WIDE || NUM_DEQ_PORTS>1) ≡ KEEP_WIDE'
+
+
+NULL_MUTANTS = {'M3': _null_m3, 'M14': _null_m14,
+                'M7': _null_m7, 'M8': _null_m8, 'M10': _null_m10}
 
 
 def run(cmd, cwd):
