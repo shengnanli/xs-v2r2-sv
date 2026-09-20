@@ -1807,6 +1807,12 @@ ITTageTable_4	table_0	FoldedSRAMTemplate_24	SAME_PATH	table_0	FoldedSRAMTemplate
 ITTageTable_4	wrbypass	WrBypass_43	SAME_PATH	wrbypass	WrBypass_43		auto_same	
 InstrUncache	entries_0	InstrMMIOEntry	SAME_PATH	entries_0	InstrMMIOEntry		auto_same	
 InstrUncache	resp_arb	Arbiter1_InsUncacheResp	SAME_PATH	resp_arb	Arbiter1_InsUncacheResp		auto_same	
+InterruptFilter	delayedDebugIntr_delay	DelayN_17	DEEPER	u_core.delayedDebugIntr_delay	DelayN_17		auto_deeper	
+InterruptFilter	delayedIRToHS_delay	DelayN_17	DEEPER	u_core.delayedIRToHS_delay	DelayN_17		auto_deeper	
+InterruptFilter	delayedIRToVS_delay	DelayN_17	DEEPER	u_core.delayedIRToVS_delay	DelayN_17		auto_deeper	
+InterruptFilter	delayedIntrVec_delay	DelayN_208	DEEPER	u_core.delayedIntrVec_delay	DelayN_208		auto_deeper	
+InterruptFilter	delayedNMI_delay	DelayN_17	DEEPER	u_core.delayedNMI_delay	DelayN_17		auto_deeper	
+InterruptFilter	delayedVIIsHvictlInjectReg_delay	DelayN_17	DEEPER	u_core.delayedVIIsHvictlInjectReg_delay	DelayN_17		auto_deeper	
 L2TlbMissQueue	io_out_q	Queue40_L2TlbMQBundle	INLINE	u_core	-	enq_ptr,deq_ptr,maybe_full	declared	rtl/memblock/L2TlbMissQueue.sv:48,69-114「实例化与 golden 完全相同的 ram_40x47」——队列控制内联，存储叶子仍是 ram_40x47（见 collateral 行）。
 L2TlbMissQueue	io_out_q/ram_ext	ram_40x47	ONE_SITE	u_core.mem_ext	ram_40x47		auto_one_site	父层次已内联，但本层在宿主核里仍是独立实例
 LCredit2Decoupled	queue	Queue4_CHISNP	DEEPER	u_core.queue	Queue4_CHISNP		auto_deeper	
