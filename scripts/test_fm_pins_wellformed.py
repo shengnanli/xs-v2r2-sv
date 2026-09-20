@@ -18,7 +18,16 @@ FM 自己另配的或干脆没配上 —— 与钉点无关。日志里那行 mi
 
   P1  只出现消名差的动词：禁 set_dont_verify_points / set_constant / set_black_box /
       set_app_var 一类**会改变证明语义**的命令。
-  P2  有 fail-closed 的 `error` 路径，且由一个**计数比较**守卫。
+  P2  有 fail-closed 的中止路径（`error` **或** `exit <非零>`），且由一个**计数比较**守卫。
+      ★为什么 `exit <非零>` 也算★（2026-09-20 实测补上）：本仓的 FM 入口是
+      `fm_shell -64 -file scripts/fm_eq.tcl < /dev/null`，钉点文件由它 `source`。
+      `scripts/ut_common.mk` 紧接着 `rc=$?` 并把它当 `--rc` 喂给 fm_verdict.py，
+      所以 `exit 3` 一定会把这一跑判成非 SUCCEEDED —— 这是**由证据确认的**传播链，
+      不是"看着像"。而已知环境坑里，`fm_shell -file` 脚本报 `error` 时不退出、
+      会挂死占 license（`< /dev/null` 就是为它加的），所以 6 条 lane
+      （TLBNonBlock/TLBFA/RenameBuffer/NCBTransactionQueue/SSIT/Rob）各自独立
+      收敛到了 `exit 3`。闸原先只认 `error`，把这 6 个**真 fail-closed** 的文件判红。
+      `exit 0` 不算（负测 M11 钉住）。
   P3  期望数量是声明出来的（字面整数或 `set <var> <整数>`），并且校验发生在
       最后一次 set_user_match **之后**（"钉完再数"，不是钉之前先数一遍空的）。
 
@@ -116,16 +125,19 @@ def check(text):
     if 'set_user_match' not in code:
         probs.append('P1 通篇没有 set_user_match —— 这不是一个钉点文件')
 
-    # --- P2 fail-closed：`if {<比较>} {… error …}` --------------------------
+    # --- P2 fail-closed：`if {<比较>} {… error / exit <非零> …}` -------------
+    # 两种中止都认，但 `exit 0` 不认 —— 那是"装成中止的 fail-open"。
+    ABORT = r'(?:\berror\b|\bexit\b\s+(?!0\s*\})[1-9]\d*)'
     guards = [(m.start(), m.group(1))
-              for m in re.finditer(r'if\s*\{([^{}]*)\}\s*\{[^{}]*?\berror\b[^{}]*\}',
+              for m in re.finditer(r'if\s*\{([^{}]*)\}\s*\{[^{}]*?' + ABORT + r'[^{}]*\}',
                                    code, re.S)]
     cmp_guards = [(pos, cond) for pos, cond in guards
                   if re.search(r'(!=|==|<=|>=|<|>)', cond)]
     if not guards:
-        probs.append('P2 没有 fail-closed 的 error 路径（钉不上也照跑 = 等于没钉）')
+        probs.append('P2 没有 fail-closed 的中止路径（error / exit 非零）'
+                     '—— 钉不上也照跑 = 等于没钉')
     elif not cmp_guards:
-        probs.append('P2 有 error 但没有任何一条由**计数比较**守卫')
+        probs.append('P2 有中止路径但没有任何一条由**计数比较**守卫')
 
     # --- P3 期望数量声明 + 钉完再校验 ---------------------------------------
     ints = declared_ints(code)
@@ -228,7 +240,23 @@ cases = [
          .replace('$_expect', '$_unknown')),
     ('通篇没有 set_user_match',
      GOOD.replace('set_user_match', 'puts')),
+    # --- 下面三条守住 2026-09-20 放宽 P2（认 `exit <非零>`）留下的新缺口 ---
+    ('exit 0 装成中止（其实是 fail-open）',
+     GOOD.replace('{ error "DEMO_PIN_MISS=$_miss" }', '{ puts "miss"; exit 0 }')),
+    ('exit 非零但没有计数守卫',
+     GOOD.replace('if {$_miss != 0 || $_n != $_expect} { error "DEMO_PIN_MISS=$_miss" }',
+                  'if {$_bogus} { exit 3 }')),
+    ('exit 非零但校验发生在钉点之前',
+     GOOD.replace('if {$_miss != 0 || $_n != $_expect} { error "DEMO_PIN_MISS=$_miss" }', '')
+         .replace('  set _n 0', '  set _n 0\n  if {$_n != $_expect} { exit 3 }')),
 ]
+# ★正向对照★：把样本里的 `error` 换成 `exit 3`，必须**仍然干净** ——
+# 否则这次放宽就没生效，6 个真 fail-closed 的文件还是红的。
+_GOOD_EXIT = GOOD.replace('{ error "DEMO_PIN_MISS=$_miss" }',
+                          '{ puts "DEMO_PIN_MISS=$_miss"; exit 3 }')
+ck('M0b 正向：`exit 3` 形态的样本也必须干净', not check(_GOOD_EXIT),
+   str(check(_GOOD_EXIT)) if check(_GOOD_EXIT) else 'exit 非零被认作 fail-closed')
+
 for i, (label, bad_txt) in enumerate(cases, start=1):
     got = check(bad_txt)
     ck(f'M{i} 种入「{label}」必须被抓', bool(got),
