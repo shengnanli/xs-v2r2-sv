@@ -21,11 +21,11 @@
 #   observation_sink    1 个   9903 端口全 input 的纯观测 sink，19 万行全是端口表
 #
 metric	done	total	percent
-fm_targets_configured	252	396	63.6
-unique_design_written	137	1191	11.5
-unique_design_proven	108	1191	9.1
-golden_lines_written	938013	3902283	24.0
-golden_lines_proven	542028	3902283	13.9
+fm_targets_configured	404	498	81.1
+unique_design_written	157	1191	13.2
+unique_design_proven	126	1191	10.6
+golden_lines_written	1570611	3902283	40.2
+golden_lines_proven	1116577	3902283	28.6
 #
 # written 里没有绿判决证据的设计族（差额都在这儿，逐个列出不藏）：
 #   AgeDetector                                     12602 行
@@ -42,10 +42,12 @@ golden_lines_proven	542028	3902283	13.9
 #   ICache                                           1754 行
 #   ICacheCtrlUnit                                    335 行
 #   InstrMMIOEntry                                    201 行
+#   InterruptFilter                                 13141 行
 #   LqVAddrModule                                    1717 行
 #   LsqEnqCtrl                                       2595 行
 #   NCBTransactionQueue                             41240 行
 #   OpenLLC                                          4252 行
+#   Predictor                                       44908 行
 #   RRArbiterInit                                    7318 行
 #   RegCacheTagModule                                3372 行
 #   RegCacheTagTable                                 1391 行
@@ -61,32 +63,32 @@ golden_lines_proven	542028	3902283	13.9
 # 剩余最大的 30 个（按 golden 行数）—— 下一波排期的候选
 remaining_design	golden_lines	variants	scope
 Rob	266227	1	REWRITE_L
-LoadQueueReplay	138860	1	REWRITE_L
 NewDispatch	100983	1	REWRITE_L
 Backend	79590	1	REWRITE_L
 StoreQueue	77145	1	REWRITE_L
-EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v	69994	1	REWRITE_L
 TLToAXI4	68788	2	-
-EntriesAluMulBkuBrhJmp	64348	1	REWRITE_L
 LoadQueueUncache	59051	1	REWRITE_L
 CtrlBlock	57635	1	REWRITE_L
 MemBlock	57550	1	REWRITE_L
 PtwCache	45308	1	REWRITE_L
 Slice	45020	5	REWRITE_L
-Predictor	44908	1	REWRITE_L
-EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	41795	1	REWRITE_L
 EntriesVlduVstuVseglduVsegstu	40287	1	REWRITE_L
-OthersEntry	40173	24	-
 EntriesVlduVstu	39935	1	REWRITE_L
-EntriesVfmaVialuFixVfalu	38682	1	REWRITE_L
-EntriesFaluFcvtF2vFmacFdiv	36359	1	REWRITE_L
 NCB200	36161	2	-
-EntriesFaluFmacFdiv	34614	1	REWRITE_L
 Scheduler	33927	4	REWRITE_L
 EnqEntry	32174	12	-
-EntriesFaluFmac	31646	1	REWRITE_L
 EntriesStdMoud	29601	1	-
 EntriesStaMou	29558	1	-
 EntriesLdu	29386	1	-
 Domain	26885	2	-
 DataPath	25618	1	REWRITE_L
+DCache	23854	1	REWRITE_L
+NCBTransactionPayload	23532	2	-
+WbDataPath	21416	1	REWRITE_L
+NCBTransactionAgeMatrix	21027	2	-
+L2TLB	20101	1	REWRITE_L
+SimTop	19836	1	-
+NewCSR	15945	1	REWRITE_L
+ExeUnit	15312	13	REWRITE_L
+MSHRCtl	14590	1	REWRITE_M
+GatewayEndpoint	14530	1	-

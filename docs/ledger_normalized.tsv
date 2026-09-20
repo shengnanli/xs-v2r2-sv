@@ -58,6 +58,9 @@ IndexableCAMTemplate	AUX	WORKING_PASS	随WrBypass家族覆盖(base wrapper+核),
 InstrMMIOEntry	MAIN	REWRITE_TODO	与Arbiter1_InsUncacheResp同UT目录模块重名冲突, 需拆分目标
 InstrUncache	MAIN	MERGED	与 InstrUncache 家族同 UT 目录, 由代表目标覆盖
 L1CohMetaArray	MAIN	WORKING_PASS	fm_verdicts=1
+L1ErrorMetaArray	MAIN	WORKING_PASS	★重构为家族共享核后重新出证★(旧证 fbafa76a 绑的是自带核的旧闭包, 不继承): clean strict SUCCEEDED passing2300(=预登记值, 差+0)/failing0/unmatched6项全0/unre
+L1FlagMetaArray	MAIN	WORKING_PASS	DCache accessArray(「这条线被访问过」标志阵列, 喂预取器算命中率): clean strict SUCCEEDED passing1352(=预登记值, 差+0)/failing0/unmatched6项全0/unrea
+L1PrefetchSourceArray	AUX	WORKING_PASS	DCache prefetchArray(每路存3位L1PfSource=这条线最初由哪个预取器引入): clean strict SUCCEEDED passing3528(=预登记值, 差+0)/failing0/unmatched6项
 L2Directory	MAIN	WORKING_PASS	fm_verdicts=1
 L2TlbMissQueue	MAIN	REWRITE_TODO	端口/逻辑改动, _xs例化端口不匹配
 L2TlbPrefetch	MAIN	REWRITE_TODO	端口/逻辑改动, _xs例化端口不匹配
@@ -169,10 +172,11 @@ TXREQ_4	MAIN	WORKING_PASS	fm_verdicts=1
 TXRSP	MAIN	WORKING_PASS	fm_verdicts=1
 TXRSP_4	MAIN	WORKING_PASS	fm_verdicts=1
 TXSNP	MAIN	WORKING_PASS	fm_verdicts=1
-TageTable	MAIN	WORKING_PASS_DEAD_REF	FM native SUCCEEDED 797p/0fail/0unmatched; 唯48条golden-only cone-dead(s1_unhashed_idx[48:1], golden声明49位仅读bit0), 声明精确相等
-TageTable_1	MAIN	WORKING_PASS_DEAD_REF	FM native SUCCEEDED 797p/0fail/0unmatched; 唯48条golden-only cone-dead(s1_unhashed_idx[48:1], golden声明49位仅读bit0), 声明精确相等
-TageTable_2	MAIN	WORKING_PASS_DEAD_REF	FM native SUCCEEDED 797p/0fail/0unmatched; 唯48条golden-only cone-dead(s1_unhashed_idx[48:1], golden声明49位仅读bit0), 声明精确相等
-TageTable_3	MAIN	WORKING_PASS_DEAD_REF	FM native SUCCEEDED 797p/0fail/0unmatched; 唯48条golden-only cone-dead(s1_unhashed_idx[48:1], golden声明49位仅读bit0), 声明精确相等
+TageBTable	MAIN	WORKING_PASS	子模块同样改两侧同源白盒(FoldedSRAMTemplate_20/WrBypass_32): passing 324→381; 残余 10 条 unread 全 matched_nc 严格双射(s1_idx_reg[1..10], 两侧
+TageTable	MAIN	WORKING_PASS_DEAD_REF	子模块由 green_child 黑盒改为两侧同源白盒(golden FoldedSRAMTemplate/_1/WrBypass 闭包同进 ref 与 impl): FM native SUCCEEDED, passing 797→158
+TageTable_1	MAIN	WORKING_PASS_DEAD_REF	同 TageTable(参数变体 HIST_LEN=13): 1585p/0fail/0unmatched, 48 条 dead_ref 精确相等, bbox 10 全 vendor_macro; run_proof clean @e788
+TageTable_2	MAIN	WORKING_PASS_DEAD_REF	同 TageTable(参数变体 HIST_LEN=32): 1585p/0fail/0unmatched, 48 条 dead_ref 精确相等, bbox 10 全 vendor_macro; run_proof clean @e788
+TageTable_3	MAIN	WORKING_PASS_DEAD_REF	同 TageTable(参数变体 HIST_LEN=119): 1585p/0fail/0unmatched, 48 条 dead_ref 精确相等, bbox 10 全 vendor_macro; run_proof clean @e78
 TlbStorageWrapper	MAIN	REWRITE_TODO	需+define+SYNTHESIS(xs_assert_v2)+逻辑改动
 TlbStorageWrapper_1	MAIN	REWRITE_TODO	同上(家族)
 UopInfoGen	MAIN	WORKING_PASS	fm_verdicts=1

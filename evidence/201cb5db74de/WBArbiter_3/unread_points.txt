@@ -1,0 +1,4 @@
+ref	r:/WORK/WBArbiter_3/cancelCounter_0_reg[0]
+ref	r:/WORK/WBArbiter_3/hasFull_reg
+impl	i:/WORK/WBArbiter_3/u_core/cancel_cnt_q_reg[0][0]
+impl	i:/WORK/WBArbiter_3/u_core/has_full_q_reg

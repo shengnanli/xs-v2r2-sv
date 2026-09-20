@@ -1,0 +1,9 @@
+{
+  "target": "L1FlagMetaArray",
+  "ut": "L1FlagMetaArray",
+  "regs": 1332,
+  "outs": 20,
+  "expected": 1352,
+  "merge_dup": "false",
+  "model_applicable": true
+}

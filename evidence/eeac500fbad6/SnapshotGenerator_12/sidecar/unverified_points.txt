@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/SnapshotGenerator_12
+Implementation : i:/WORK/SnapshotGenerator_12
+Version        : V-2023.12-SP3
+Date           : Thu Sep 17 20:43:03 2026
+**************************************************
+
+No unverified compare points.
+
+1
