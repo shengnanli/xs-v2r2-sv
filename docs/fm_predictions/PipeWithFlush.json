@@ -1,0 +1,9 @@
+{
+  "target": "PipeWithFlush",
+  "ut": "PipeWithFlush",
+  "regs": 0,
+  "outs": 51,
+  "expected": 51,
+  "merge_dup": "false",
+  "model_applicable": true
+}
