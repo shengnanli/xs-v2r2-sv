@@ -424,7 +424,41 @@ switch -- $_verify_matched_unread_compare_points {
     #          impl 侧单边未读 585 个不受本开关影响(无对家, 属 PASS_DEAD_IMPL 范畴)。
     #          ★复核判据★: passing 520634 -> 528967(正好 +8333)、failing 仍 0、
     #          unread 归 0、unmatched 0(0)。passing 不增而 unread 归 0 = 点被吞掉, 不算过。
-    if {$top ni {Bku Composer DebugModule DuplicatedTagArray EntriesVfdivVidiv FAlu FCVT FTBBank Ftq ICacheCtrlUnit ICacheDataArray ICacheMetaArray ICacheMissUnit InstrUncache ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 LinkMonitor MulUnit Queue1_RegMapperInput_5 RNXbar SNXbar SourceB SSIT TageBTable TlbStorageWrapper TlbStorageWrapper_1 TXDAT_4 TXREQ WritebackQueue IBuffer EntriesAluCsrFenceDiv NCBTransactionQueue NCBTransactionQueue_1 Predictor RenameBuffer TLBFA TLBFA_1 TLBFA_2 TLBFA_3}} {
+    #   TLBNonBlock / TLBNonBlock_1 / TLBNonBlock_2(2026-09-18 加): 未读点两族，两侧同死。
+    #          (a) 子模块里的对称死位，**两侧是同一份 golden 文件**(DelayN_7/_9 与
+    #              TlbStorageWrapper_N/TLBFA_N 两侧同源 elaborate，不做黑盒)，
+    #              所以逐位同构、FM 自己按名字配上：
+    #                csr_delay/REG{,_1}_priv_debug        (DelayN_7 的 priv.debug 打拍，
+    #                                                      TLB 本层不读 debug)
+    #                sfence_delay/REG{,_1}_bits_addr[0:11] + _bits_flushPipe
+    #                                                     (DelayN_9；TLB 只读 addr[49:12]
+    #                                                      与 rs1/rs2/hv/hg，低 12 位与
+    #                                                      flushPipe 无读者)
+    #                entries/.../reqVpn{,_1}_reg[27..37]  (TLBFA 自己的死位，与 TLBFA
+    #                                                      那一条同因: genPPN 只取 vpn[26:0])
+    #          (b) 本层自己的两族，**FM 配不上**(词干不同)，由
+    #              verif/ut/TLBNonBlock/fm_pins.tcl 按结构 1:1 钉死，钉不上即 exit 3：
+    #                ref r{,_<n>}_reg            <-> impl u_core/first_issue_r{,2}_reg[n/2]
+    #                   golden 的匿名 RegNext(debug_isFirstIssue)，每 lane 两个、值恒等，
+    #                   唯一去处是被 firtool 消掉的 XSPerfAccumulate -> 两侧同为死位。
+    #                ref result_ok_last_REG_reg  <-> impl u_core/result_ok_last_reg[0]
+    #                   `_REG_<n>` 与 `[n]` 同号 FM 自己能配，**只有无后缀的 0 号配不上**。
+    #          ★为什么不能"把这些死寄存器删掉图干净"★：删了它们就从"两侧对称死位"
+    #          变成 golden-only 死位，连双射都没有 —— 与 TLBFA 那条"不要收窄 reqVpn"、
+    #          RenameBuffer 那条"不要只留 head"是同一个结论。
+    #          ★复核判据★(全部实测, 2026-09-18)
+    #            不加强(vmucp=false, 已钉点前): TLBNonBlock_2 passing 10346 /
+    #              matched_unread 51 / unmatched unread 3(ref) 3(impl)。
+    #            加强后(钉点 + vmucp=true): TLBNonBlock_2 passing **10400**(正好 +54
+    #              = 51 个 matched_nc + 3 个钉上的), failing 0, unread 0, unmatched 六项全零。
+    #              passing 不增而 unread 归 0 = 点被吞掉, 不算过。
+    #            另外两个变体同一套配置的终值: TLBNonBlock **13390** / TLBNonBlock_1 **11138**,
+    #              failing 0 / unread 0 / unmatched 六项全零, 钉点 8 对与 4 对(双射自检通过)。
+    #            这三个数在跑之前就被预登记过, 模型是
+    #              passing = golden 闭包的触发器**位数** + 顶层 output 端口**位数**;
+    #              该模型在 TlbStorageWrapper_1 8682 / TLBFA_1 8663 / TLBFA_2 8233 /
+    #              TLBFA_3 8229 / DelayN_7 657 / DelayN_9 216 上逐位命中过, 本轮三个也逐位命中。
+    if {$top ni {Bku Composer DebugModule DuplicatedTagArray EntriesVfdivVidiv FAlu FCVT FTBBank Ftq ICacheCtrlUnit ICacheDataArray ICacheMetaArray ICacheMissUnit InstrUncache ITTageTable ITTageTable_1 ITTageTable_2 ITTageTable_3 ITTageTable_4 LinkMonitor MulUnit Queue1_RegMapperInput_5 RNXbar SNXbar SourceB SSIT TageBTable TlbStorageWrapper TlbStorageWrapper_1 TXDAT_4 TXREQ WritebackQueue IBuffer EntriesAluCsrFenceDiv NCBTransactionQueue NCBTransactionQueue_1 Predictor RenameBuffer TLBFA TLBFA_1 TLBFA_2 TLBFA_3 TLBNonBlock TLBNonBlock_1 TLBNonBlock_2}} {
       puts "FM_MODE_ERROR: matched-unread strengthening 仅允许精确白名单, 当前 $top"
       exit 3
     }
@@ -457,6 +491,36 @@ set _mergedup "true"
 if {[info exists env(FM_MERGE_DUP)] && [string trim $env(FM_MERGE_DUP)] ne ""} {
     set _mergedup [string trim $env(FM_MERGE_DUP)]
 }
+# ★这段注记必须留在 switch **外面**★（2026-09-20 实测，Entries lane 踩到）
+#   它原先写在 `switch -- $_mergedup {` 的花括号里。Tcl 的 switch 体是一张
+#   **pattern/body 列表**，不是脚本体 —— `#` 在那里不是注释，整块要按列表语法解析。
+#   下面第 8 行里的 ASCII 双引号 "Merging duplicated registers" 后面紧跟中文逗号，
+#   于是 Tcl 报 `list element in quotes followed by "，★从未到达" instead of space`
+#   (CMD-013)，fm_eq.tcl 在 line 494 停下。
+#   ★后果不是"这个注记没生效"，是 **本仓每一次 FM 都在 setup 阶段死掉**★ ——
+#   这个 switch 无条件执行（_mergedup 默认 "true"），与目标、与 FM_MERGE_DUP
+#   给没给都无关。实测 EntriesFaluFmac：44 秒、0 个比较点、rc=2。
+#   引入于 ee3aa24（"fm_eq.tcl 加 merge_dup 经验注记"），随 main 合进各 lane。
+#   判据教训：**Tcl 里"加一段注释"不是无副作用操作**，加在哪要看它落进了谁的
+#   花括号；而这类改动没有任何 lint 会响，只有真跑一次 FM 才看得见。
+# ===== verification_merge_duplicated_registers 的经验注记（codex 0168 裁定） =====
+# ★不翻全局默认★。下面是可复核的经验，不是规则：
+#
+# 症状：出现"合并导致的不对称孤儿点"，或 match 阶段长时间不收敛时，
+#       可以 target-scoped 地试 FM_MERGE_DUP=false 并重跑，**对比比较点数与结果**。
+#       关掉它是**加强不是放宽**：不黑盒、不跳点、不约束 ref，只是要求逐个而非
+#       合并后比，比较点只增不减。
+#
+# 实测（2026-09-18，Rob，golden 44,908 行 / 11,639 个寄存器；同设计同机器只差这一个 appvar）：
+#       true   烧掉 5674 s CPU 卡在 "Merging duplicated registers"，★从未到达 match★
+#       false  match 1973 s + verify 1044 s，峰值 14.7 GB，端到端约 72 分钟
+#       证据 evidence/rob-selfcompare-<golden sha256 前缀>/
+# 另有先例：RenameBuffer（failing 20->0、unverified 5147->0、passing 651->5825）、MulUnit。
+#
+# ★不要写成因果★：本仓曾出现过"u_core 这种写法必然导致需要关掉它"这类说法，
+# 已被 0179 的判别性实验证伪（NewDispatch 因此从支持集里移出）。
+# 目前能说的只有上面这些 target-scoped 的观测，没有已确立的普遍机制。
+
 switch -- $_mergedup {
   "true" - "false" { set_app_var verification_merge_duplicated_registers $_mergedup }
   default {

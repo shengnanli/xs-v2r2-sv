@@ -291,6 +291,44 @@ def selftest(golden):
     return 0 if ok else 1
 
 
+
+def _target_absent_is_expected(target, module):
+    """目标文件不存在时，判断这是不是**预期内**的（核还没建），并给出退出码。
+
+    ★不许 fail-open★：目标不在就无脑返回 0，等于"删掉产物即可让闸变绿"。
+    所以要和台账交叉核对：docs/coverage_three_axis.tsv 里该模块若是 MISSING，
+    说明核确实还没写（本仓刻意不建空壳 —— 上一轮那个驱动 0 个输出的 SCAFFOLD
+    就是这么骗过台账一整轮的），此时"无可比对"是事实；
+    若台账说已 REWRITTEN 而文件却不见了，那就是真出事了，必须红。
+    """
+    import io, os
+    repo = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    led = os.path.join(repo, 'docs', 'coverage_three_axis.tsv')
+    status = None
+    try:
+        with io.open(led, encoding='utf-8') as f:
+            for line in f:
+                if line.startswith('#'):
+                    continue
+                p = line.rstrip('\n').split('\t')
+                if len(p) >= 2 and p[0] == module:
+                    status = p[1].strip()
+                    break
+    except IOError:
+        pass
+    if status == 'MISSING':
+        sys.stderr.write(
+            '%s --check: 目标 %s 尚未建立，台账也记着 MISSING —— 无可比对，视为通过。\n'
+            % (module, target))
+        sys.stderr.write(
+            '  （核落地后本条会自动变成真正的逐字节比对；此处不 fail-open：\n'
+            '   台账若已记 REWRITTEN 而文件不见，本闸会红。）\n')
+        return 0
+    sys.stderr.write(
+        '%s --check: 目标 %s 不存在，而台账状态是 %s（不是 MISSING）—— 判失败。\n'
+        % (module, target, status))
+    return 1
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--golden', default=GOLDEN)
@@ -362,6 +400,9 @@ def main():
                 ','.join('%s.%s' % (d[1], d[2]) for d in dsts)))
         return 0
 
+    import os as _os
+    if not _os.path.exists(a.target):
+        return _target_absent_is_expected(a.target, 'Rob')
     with open(a.target) as f:
         tgt = f.read().split('\n')
     new = splice(tgt, 'ports', emit_ports(ports))

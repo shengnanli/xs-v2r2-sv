@@ -46,6 +46,13 @@ run "FM Tcl 毒字符串闸"  python3 scripts/test_tcl_no_poison.py
 # 我两次处理错（"两侧都留"留出两条串联 if 互相拒目标；git add -A 提交了带冲突标记的
 # 文件）。两次都修好却没加闸，于是下次合并原样复发。这道闸把"修好"变成"修住"。
 run "fm_eq 结构闸"     python3 scripts/test_fm_eq_wellformed.py
+# FM 钉点文件结构闸：fm_pins_pre.tcl / fm_pins.tcl 是唯一被 source 进 fm_shell 的
+# 「模块本地代码」，语法上什么都干得了（放宽比较、钉常量、加黑盒、改 appvar），
+# 而 sidecar 下被 source 的脚本**不会**逐行回显进 fm.log，判定未必看得见。
+# 第二件事更隐蔽：钉点文件不 fail-closed 就等于没钉 —— 名字一漂，set_user_match 逐条
+# 失败、脚本只 puts 一行 miss=N，证明照跑照绿，而那行 miss 没人会看。
+# 本闸落地时实测：15 个钉点文件里 12 个是 fail-open 的（期望数量只写在 puts 字符串里）。
+run "FM 钉点结构闸"     python3 scripts/test_fm_pins_wellformed.py
 # 家族生成器幂等：tlbuffer worker 发现 gen_tlbuffer_ad_family.py --check 一直报 DRIFT
 # ——negtest 段是手工贴在生成产物后面的，谁跑一次生成器它就被静默删掉，而那正是该家族
 # 唯一病因形态（位宽）的防护。只有挂了 --check 的生成器进这道闸。
@@ -66,7 +73,9 @@ for g in scripts/gen_tlbuffer_ad_family.py scripts/gen_mbist_pipe_family.py \
          scripts/gen_npc_missing3.py scripts/gen_splittedsram.py \
          scripts/gen_renamebuffer.py scripts/gen_tlbfa_family.py \
          scripts/gen_sbufferdata.py scripts/gen_newdispatch.py \
-         scripts/gen_newdispatch_tb.py; do
+         scripts/gen_newdispatch_tb.py \
+         scripts/gen_tlbnb_family.py scripts/gen_predictor.py \
+         scripts/gen_rob.py scripts/gen_rob_ut.py; do
   [ -f "$g" ] && run "生成器幂等 $(basename $g .py | sed 's/^gen_//')" python3 "$g" --check
 done
 # 闸的完备性闸：任何 scripts/gen_*.py 要么进上面的列表，要么在
@@ -87,6 +96,23 @@ run "UT initreg 棘轮"   python3 scripts/check_ut_initreg.py
 # 故必须有一道**对着已跟踪文件列表**跑的闸。先负测（含"长得像但不是"的反例）再跑真闸。
 run "工具派生态负测"     python3 scripts/test_no_tool_scratch_gate.py
 run "工具派生态闸"       python3 scripts/check_no_tool_scratch.py
+# rtl/ 下不许有 .svh、不许有 `include。CONVENTIONS「单文件规范」早有此禁令，
+# 但一直没有闸 —— 靠的是"没人加过"。2026-09-18 审计上一轮时量出真正的危险，
+# 而且和当初设想的不是同一回事：
+#   上一轮 202 个 .svh / 199,801 非注释行，逐字抄 golden 的**实质逻辑行只有 1.83%**，
+#   而 .sv 同口径 8.19% —— ★.svh 的照抄密度只有 .sv 的一半，"svh 是藏赃点"这个假设是错的★。
+#   真问题更隐蔽：那 204,373 行（占上轮 rtl 的 29%）**整体绕过了可读性闸**，
+#   因为 readability_audit.py 和 prev_round_verbatim_scan.py 都只 rglob('*.sv')。
+#   ★是审计盲点，不是藏赃点。★
+# 本轮 readability_audit.py 至今仍只扫 *.sv（第 81、313 行），同一个盲点机制原样存在。
+# 与其改那个大脚本（风险高），不如在源头堵死：rtl/ 下根本没有 .svh，"只扫 .sv"就等于扫全了。
+run "rtl 无 svh 负测"    python3 scripts/test_no_svh_gate.py
+run "rtl 无 svh 闸"      python3 scripts/check_no_svh_in_rtl.py
+# fm_eq.tcl 的 switch 块必须 tclsh 可解析（2026-09-20，Entries lane 踩到）：
+# 一段加错位置的注释（落进 switch 的花括号里）让**本仓每一次 FM 都在 setup 阶段死掉**，
+# 而没有任何现成的闸会响。这道闸不需要 Formality，跑一次几十毫秒。
+run "fm_eq.tcl 语法负测" python3 scripts/check_fm_eq_tcl_syntax.py --selftest
+run "fm_eq.tcl 语法闸"   python3 scripts/check_fm_eq_tcl_syntax.py
 # 覆盖台账的证据链：docs/coverage_three_axis.tsv 宣称的每条证明都要能从**版本库**复现。
 # 2026-09-18 实测出事状态：轴2 标 PROVEN_DIRECT 133 个，版本库里找得到通过 receipt 的
 # 只有 34 个，★189 个找不到★（重算后缺口扩大到 90）。那些证明并非不存在 —— evidence 全

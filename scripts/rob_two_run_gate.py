@@ -1,48 +1,53 @@
 #!/usr/bin/env python3
-"""rob_two_run_gate.py -- Rob's acceptance criterion, made fail-closed.
+"""rob_two_run_gate.py -- Rob 的**诊断一致性报告**（不是验收判据）。
 
-Rob is accepted when the SAME proof agrees under BOTH treatments of dangling
-nets, not when one run passes. This script is that criterion in executable form:
-it refuses to report success unless it is handed two runs, under two DIFFERENT
-`verification_set_undriven_signals` settings, whose verdicts agree.
-
-Why the criterion is two runs (measured, see
-evidence/rob-selfcompare-4aa8838b/):
-
-    golden vs a byte-identical copy of itself
-                         binary:X (default)   0
-      passing            108,209              108,669
-      failing             20                  0
-      unmatched ref      460                  0
-      verdict            FAILED               SUCCEEDED
-
-`0` looks strictly better and it is tempting to adopt it. The four runs in
-evidence/rob-selfcompare-4aa8838b/undriven_safety/ measure why that is unsafe:
-the app var applies to the IMPLEMENTATION container too, and when the rewrite
-leaves a net undriven while golden's driver for it is identically 0, `binary:X`
-FAILS and `0` reports SUCCEEDED. A golden-vs-self probe cannot expose that,
-because both sides are identical by construction. So a single clean run under
-`0` is not evidence of equivalence -- it is evidence only that nothing on the
-reference side was left indeterminate.
-
-  verdicts agree     -> nothing was hidden by the setting
-  verdicts disagree  -> the difference IS the hidden set; look at it before
-                        using either result
-
-What this gate can and cannot do
+★2026-09-19 codex 0168 裁定收窄★
 --------------------------------
-It CANNOT stop someone invoking `make fm-Rob` directly and taking the single
-verdict that comes out: that would require an `FM_UNDRIVEN` knob inside
-scripts/fm_eq.tcl, which every lane shares and which this lane did not modify
-unilaterally. It CAN make the two-run acceptance mechanical wherever it is
-invoked, and it fails closed on every incomplete input rather than falling back
-to "well, one of them passed".
+本文件原先自称 "Rob's acceptance criterion" / "Rob is accepted when ..."。
+codex 裁定原文：
 
-Usage
+    「默认 `binary:X` 仍是签核基线；`0` 仅作差异定位/敏感性实验，
+      不能凭 `0` 的 SUCCEEDED 或"两次 verdict 相同"转绿。
+      `rob_two_run_gate.py` 可以作为 Rob 的辅助诊断闸，但不要推广为通用签核协议；
+      若它目前把 verdict 一致当作充分 PASS 条件，请收窄为"诊断一致性报告"，
+      正式 PASS 仍须默认设置下的功能证明与无未解释残留。两次不一致必标红并逐点检查。」
+
+所以本脚本的输出**只是一个诊断结论**：
+
+    两次一致  -> 这个 appvar 没有藏东西（**不代表目标可以转绿**）
+    两次不一致 -> ★必标红★，差集就是被藏的集合，逐点检查过之前不许用任何一个结果
+
+★正式 PASS 的判据不在这里★：正式 PASS 仍然是**默认设置 `binary:X` 下**的
+功能证明 + 无未解释残留，由 scripts/fm_verdict.py 出。本脚本退出码 0 只表示
+"一致性检查通过"，**不构成、也不得被引用为签核依据**。
+
+为什么要两跑（实测，见 evidence/rob-selfcompare-<golden sha256 前缀>/）
+---------------------------------------------------------------------
+golden 与自身逐字节相同的副本相比：
+
+                         binary:X (默认)   0
+      passing            108,209           108,669
+      failing             20               0
+      unmatched ref      460               0
+      verdict            FAILED            SUCCEEDED
+
+`0` 看起来严格更好，很容易想采用它。undriven_safety/ 的四跑量出了为什么不安全：
+这个 appvar 对 **implementation 容器同样生效**，当重写件漏驱动一根线、
+而 golden 对它的驱动恰好恒 0 时，`binary:X` 失败而 `0` 报 SUCCEEDED。
+golden-vs-自身的探针**按构造**暴露不了这一点，因为两侧本来就相同。
+所以 `0` 下的一次干净跑不是等价的证据，只说明 reference 侧没有留下不定值。
+
+本脚本拦不住什么
+----------------
+拦不住有人直接 `make fm-Rob` 取单口径判决 —— 那需要在所有 lane 共用的
+scripts/fm_eq.tcl 里加 FM_UNDRIVEN 开关，本 lane 没有擅自改。
+它能做的是：凡是被调用到的地方，让"两跑"这件事机械化，且对任何不完整输入
+fail-closed，而不是退回到"反正有一个过了"。
+
+用法
   python3 scripts/rob_two_run_gate.py <run_dir_a> <run_dir_b>
   python3 scripts/rob_two_run_gate.py --selftest
-Each run dir must contain an fm_summary.txt carrying `PROBE_UNDRIVEN <value>`
-and a Formality verdict line.
+每个 run 目录须有 fm_summary.txt，内含 `PROBE_UNDRIVEN <值>` 与 Formality 判决行。
 """
 import argparse, os, re, subprocess, sys, tempfile
 
@@ -133,7 +138,8 @@ def selftest():
 
     cases = [
         ('positive', (ok_a, ok_b), None,
-         'two settings, both SUCCEEDED -> the only accepting case'),
+         'two settings, both SUCCEEDED -> the only self-consistent case '
+         '(一致性通过；★不构成签核依据★)'),
         ('disagree', (dis_a, ok_b), 'VERDICTS_DISAGREE',
          'the real Rob numbers: FAILED under binary:X, SUCCEEDED under 0'),
         ('same_setting', (same_a, same_b), 'SAME_SETTING',
