@@ -75,6 +75,10 @@ if {$_n != <字面整数>} { error "..._PIN_COUNT=<top> n=$_n expect=<字面整�
 再加一对 `<PREFIX>_PIN_BEGIN/END` 标记，让 `scripts/check_pin_errors.py --marker <PREFIX>_PIN`
 能把 fm.log 里的行首 `Error:` **按区间归因到本文件**（区间外的多半是别处的投机性试名）。
 
+六个前缀（`IQE_PIN` / `NCBQ_PIN` / `SSIT_PIN` / `TLBFA_PIN` / `TLBNONBLOCK_PIN` /
+`RENAMEBUFFER_PIN`）都对着 `check_pin_errors.py` 实测过：干净日志 rc=0，
+在区间内种一行行首 `Error:` 就 rc=1 —— **标记不是写上去好看的，它真的被那道判据读**。
+
 ---
 
 ## 四、★为什么先前的 receipt 不必重跑★
