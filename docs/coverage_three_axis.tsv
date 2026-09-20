@@ -1,4 +1,4 @@
-# 三轴覆盖（分母 = /home/eda/xs-env/xs-v2-sv/docs/g1_configured_universe.tsv 的 in_universe=yes，共 1814）
+# 三轴覆盖（分母 = docs/g1_configured_universe.tsv 的 in_universe=yes，共 1814）
 # module	rewrite_coverage	formal_coverage	impl_file
 AMOALU	MISSING	UNPROVEN	-
 APLIC	MISSING	UNPROVEN	-
@@ -683,7 +683,7 @@ LoadPipe	MISSING	UNPROVEN	-
 LoadQueue	MISSING	UNPROVEN	-
 LoadQueueRAR	MISSING	UNPROVEN	-
 LoadQueueRAW	MISSING	UNPROVEN	-
-LoadQueueReplay	MISSING	UNPROVEN	-
+LoadQueueReplay	REWRITTEN	PROVEN_DIRECT	rtl/memblock/LoadQueueReplay.sv
 LoadQueueUncache	MISSING	UNPROVEN	-
 LoadUnit	MISSING	UNPROVEN	-
 LqExceptionBuffer	MISSING	UNPROVEN	-

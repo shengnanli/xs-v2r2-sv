@@ -21,11 +21,11 @@
 #   observation_sink    1 个   9903 端口全 input 的纯观测 sink，19 万行全是端口表
 #
 metric	done	total	percent
-fm_targets_configured	403	497	81.1
-unique_design_written	156	1191	13.1
-unique_design_proven	125	1191	10.5
-golden_lines_written	1431751	3902283	36.7
-golden_lines_proven	977717	3902283	25.1
+fm_targets_configured	404	498	81.1
+unique_design_written	157	1191	13.2
+unique_design_proven	126	1191	10.6
+golden_lines_written	1570611	3902283	40.2
+golden_lines_proven	1116577	3902283	28.6
 #
 # written 里没有绿判决证据的设计族（差额都在这儿，逐个列出不藏）：
 #   AgeDetector                                     12602 行
@@ -63,7 +63,6 @@ golden_lines_proven	977717	3902283	25.1
 # 剩余最大的 30 个（按 golden 行数）—— 下一波排期的候选
 remaining_design	golden_lines	variants	scope
 Rob	266227	1	REWRITE_L
-LoadQueueReplay	138860	1	REWRITE_L
 NewDispatch	100983	1	REWRITE_L
 Backend	79590	1	REWRITE_L
 StoreQueue	77145	1	REWRITE_L
@@ -92,3 +91,4 @@ SimTop	19836	1	-
 NewCSR	15945	1	REWRITE_L
 ExeUnit	15312	13	REWRITE_L
 MSHRCtl	14590	1	REWRITE_M
+GatewayEndpoint	14530	1	-
