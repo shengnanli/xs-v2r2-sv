@@ -129,13 +129,64 @@ python3 scripts/prove_pin_calls_equal_dyn.py                                    
 
 ---
 
-## 五、5 个动态钉点文件
+## 五、5 个动态钉点文件（`NCBTransactionQueue` / `RenameBuffer` / `SSIT` / `TLBFA` / `TLBNonBlock`）
 
-`NCBTransactionQueue` / `RenameBuffer` / `SSIT` / `TLBFA` / `TLBNonBlock` 不是静态表：
-它们现场调 `report_unmatched_points` 发现点名再按结构配对。所以调用序列是
-**`report_unmatched_points` 输出的函数**，证明必须把那个输入固定住再比。
+这 5 个不是静态表：它们现场调 `report_unmatched_points` 发现点名再按结构配对。
+所以调用序列是 **`report_unmatched_points` 输出的函数**，证明必须把那个输入固定住再比。
 
-`scripts/prove_pin_calls_equal_dyn.py` 就是这么做的：对每个目标喂一组**夹具**
-（按该文件自己声明的结构造出的 ref/impl 点名，含"预期形状"与"异常形状"两类），
-old/new 各跑一遍，逐字节比对 `set_user_match` 调用序列；再对每个夹具做一次注入探针，
-要求**新版必须抛、旧版必须不抛**。结果见 `docs/pin_guard_dyn_proof.tsv`。
+### 5.1 病灶有两种形态
+
+| 文件 | 形态 | 旧状态 |
+|---|---|---|
+| `RenameBuffer` / `TLBFA` / `TLBNonBlock` | **空守卫** | `catch {set_user_match}` 的中止路径永远走不到，`_pinned` 无条件自增，连带把 `$_pinned != [llength $_impl]` 一起架空 |
+| `NCBTransactionQueue` / `SSIT` | **根本没有中止路径** | 通篇只有 `puts`；一个点都没配上也照样跑完、照样绿 |
+
+### 5.2 期望数量的出处（自己重测，不抄现成数字）
+
+| 目标 | 期望 | 出处 |
+|---|---|---|
+| `RenameBuffer` | 51 | golden `RenameBuffer.sv` 现数：5 flag + 5×8 value + 6 preg bit7 |
+| `TLBFA{,_1,_2,_3}` | 33 / 44 / 22 / 22 | 11 位死位 × PORTS(3/4/2/2)；PORTS = golden `reg [37:0] reqVpn[_N];` 条数；11 = bit37..27 无读者（全部读出切片最高只到 bit26：`[26:18]/[17:9]/[8:0]/[3:0]/[2:0]`） |
+| `NCBTransactionQueue{,_1}` | 1472 / 736 | 23 位/槽（ReturnNID 11 + ReturnTxnID 12）× 槽数(64/32)，槽数 = golden `regQueue_*_bits_info_ReturnNID` 条数。★无后缀是 **64** 槽、`_1` 才是 32 槽 —— 与 `fm_eq.tcl` 注释里"736/1472"的行文顺序相反，别照抄顺序★ |
+| `SSIT` | 91 | golden `SSIT.sv` 现数，14 个改名寄存器位宽之和（width = hi+1）：20+11+5+1+10+10+1+10+10+1+1+5+5+1 |
+| `TLBNonBlock{,_1,_2}` | 8 / 4 / 3 | A 族 = golden `reg r[_N];` 条数 8/4/2（机械）；B 族 = 0/0/1（**数声明看不出来**，取已提交 evidence 实测，`evidence/88d4f00d0fe1/` 与 `evidence/522c3fe3d5dd/` 两个独立目录一致） |
+
+### 5.3 证明结果（`scripts/prove_pin_calls_equal_dyn.py`，可复跑）
+
+它对每个变体喂一组按该文件自己声明的结构造出的夹具，old（`git show a2434c2a:<path>`）
+与 new 各跑一遍 tclsh，逐字节比对调用序列；再做一次**注入探针**（让第 1 次调用返回 0），
+要求**旧版不抛、新版必抛**。
+
+| 变体 | 调用数 | 调用序列 sha256（新旧相同） | 注入探针 |
+|---|---|---|---|
+| `RenameBuffer` | 51 | `826824bd925d7861` | 旧 rc=0 没响 / 新 rc=1 抛出 |
+| `TLBFA` | 33 | `e4888a0db5d49ff2` | 同上 |
+| `TLBFA_1` | 44 | `95d4f948afe49a29` | 同上 |
+| `TLBFA_2` | 22 | `d70ea05efb36999a` | 同上 |
+| `TLBFA_3` | 22 | `27e8594f37dc41e4` | 同上 |
+| `TLBNonBlock` | 8 | `d7e074e2e32b6bee` | 同上 |
+| `TLBNonBlock_1` | 4 | `f661478a21871e65` | 同上 |
+| `TLBNonBlock_2` | 3 | `25eaa21b2829a196` | 同上 |
+| `NCBTransactionQueue` | 1472 | `ee20d210319c9ceb` | 同上 |
+| `NCBTransactionQueue_1` | 736 | `359e835e766c77e8` | 同上 |
+| `SSIT` | 91 | `80b225deb5231f7a` | 同上 |
+
+11/11 逐字节相同 ⇒ **先前 receipt 继续有效**；机读结果 `docs/pin_guard_dyn_proof.tsv`。
+★诚实标注★同 §4.1：`proof_config.pin_scripts` 的 sha256 与工作树已不同，桥接它的是这张表。
+
+### 5.4 顺带
+
+`TLBFA` 的 `puts` 原本是中文，落进 `fm.log` 会变成一串问号（`CONVENTIONS.md:880` 里
+存着当年那几行的问号残骸为证）。本轮既然要动这个文件，一并改成 ASCII。
+这不改变任何 `set_user_match` 调用，已被 §5.3 的调用序列比对覆盖。
+
+---
+
+## 六、台账
+
+`scripts/test_fm_pins_wellformed.py` 里的 `CATCH_COUNT_LEDGER` 是 ratchet（只许缩不许长）。
+本轮缩 12 条：9 个 `Entries_*` + `RenameBuffer` / `TLBFA` / `TLBNonBlock`。
+`NCBTransactionQueue` / `SSIT` 本就不在表里（它们不是"用 catch 数"，是**根本没有守卫**），
+同一轮一并补成 fail-closed。
+
+缩表后 `python3 scripts/test_fm_pins_wellformed.py` **rc=0**（21 项全过，含 M0b..M14 负测）。
