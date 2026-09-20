@@ -62,11 +62,22 @@ module tb;
   int cov_iq_wake = 0;
   int cov_og0_cancel_hit = 0;
   int cov_fail = 0;
+  // *** 覆盖桶的下限断言 ***（CONVENTIONS「判据也必须先自证看得见改变」）：
+  //   只判「!= 0」不够 —— 激励退化成「几乎打不到」时计数会掉到个位数，
+  //   而那仍然是非零，闸照样绿。所以按 NCYCLES/1000 设下限。
+  //   量级依据：闸要抓的是「激励整条打不到了」这种数量级的塌陷，不是
+  //   2 倍以内的抖动。本族 72 次实跑里最紧的桶是 flush_hit=456（200k 拍），
+  //   下限 200 留了一倍余量；它真的会红由 +nopool 负测证明（见下）。
+  int MINCOV[string];   // 逐桶下限（见 othersentry_gen.py 的 COV_MIN_200K）
   bit warm = 0;              // 条目被写过 -> 进入比对
   longint warm_cycle = -1;
   task automatic covchk(string nm, int c);
-    $display("  cov %-20s = %0d", nm, c);
-    if (c == 0) begin cov_fail++; $display("  *** COVERAGE HOLE: %s == 0", nm); end
+    int lo = MINCOV[nm];
+    $display("  cov %-20s = %0d  (min %0d)", nm, c, lo);
+    if (c < lo) begin
+      cov_fail++;
+      $display("  *** COVERAGE HOLE: %s = %0d < %0d", nm, c, lo);
+    end
   endtask
 
   logic io_commonIn_flush_valid;
@@ -610,7 +621,16 @@ module tb;
   endtask
 
   localparam int POOL = 8;   // pdest/psrc 共用的小池，保证唤醒能打中
-  function automatic int rnd_reg(); return $urandom_range(0, POOL-1); endfunction
+  // *** +nopool：覆盖闸的双向负测开关 ***
+  //   把小池换成整个 psrc 空间，唤醒就几乎永远打不中在队 uop 的源。
+  //   电路一个字没改，只是激励退化 —— 这一轮**必须**把覆盖闸打红。
+  //   它证明的是「闸看得见激励塌陷」，与变异体证明「自己改了电路」
+  //   互为对偶。正常跑不给这个 plusarg；负测由 check_cov_gate.py 驱动。
+  bit nopool = 0;
+  function automatic int rnd_reg();
+    return nopool ? $urandom_range(0, 255)
+                  : $urandom_range(0, POOL-1);
+  endfunction
 
   // ---- 每拍激励（负沿下非阻塞给出）----
   task automatic drive();
@@ -729,6 +749,19 @@ module tb;
   longint cyc = 0;
   initial begin
     if (!$value$plusargs("ncycles=%d", NCYCLES)) NCYCLES = 200000;
+    nopool = $test$plusargs("nopool");
+    MINCOV["enq_fire"] = ((NCYCLES * 17390) / 200000) > 0 ? ((NCYCLES * 17390) / 200000) : 1;
+    MINCOV["wb_wake"] = ((NCYCLES * 3996) / 200000) > 0 ? ((NCYCLES * 3996) / 200000) : 1;
+    MINCOV["can_issue"] = ((NCYCLES * 5681) / 200000) > 0 ? ((NCYCLES * 5681) / 200000) : 1;
+    MINCOV["deq_fire"] = ((NCYCLES * 3936) / 200000) > 0 ? ((NCYCLES * 3936) / 200000) : 1;
+    MINCOV["resp_succ"] = ((NCYCLES * 5738) / 200000) > 0 ? ((NCYCLES * 5738) / 200000) : 1;
+    MINCOV["resp_block"] = ((NCYCLES * 5772) / 200000) > 0 ? ((NCYCLES * 5772) / 200000) : 1;
+    MINCOV["resp_uncertain"] = ((NCYCLES * 5747) / 200000) > 0 ? ((NCYCLES * 5747) / 200000) : 1;
+    MINCOV["deq_clear"] = ((NCYCLES * 3177) / 200000) > 0 ? ((NCYCLES * 3177) / 200000) : 1;
+    MINCOV["flush_hit"] = ((NCYCLES * 114) / 200000) > 0 ? ((NCYCLES * 114) / 200000) : 1;
+    MINCOV["iq_wake"] = ((NCYCLES * 7502) / 200000) > 0 ? ((NCYCLES * 7502) / 200000) : 1;
+    MINCOV["og0_cancel_hit"] = ((NCYCLES * 335) / 200000) > 0 ? ((NCYCLES * 335) / 200000) : 1;
+    if (nopool) $display("*** +nopool: 覆盖闸负测模式（激励退化，闸必须红）***");
     reset = 1;
     drive();
     io_commonIn_deqSel = 1'b0;

@@ -531,6 +531,45 @@ def gen_rtl_body(ov, L, ctx):
 
 
 # =============================================================================
+# ---------------------------------------------------------------------------
+# 覆盖桶的**逐桶**下限（按 200k 拍标定，运行时按 NCYCLES 线性缩放）。
+#
+# ★为什么不能用一个统一下限★（2026-09-20 本 lane 实测，负测当场打脸）
+#   第一版写的是「统一 NCYCLES/1000」。跑 check_cov_gate.py 的反向那一轮
+#   （+nopool，psrc/pdest 小池换成整个 psrc 空间，电路一个字没改）：
+#     wb_wake 9950 -> 540、iq_wake 29659 -> 1188、og0_cancel_hit 3468 -> 134
+#   桶确实塌了一到两个数量级，**可是一个都没低于统一下限 100** ⇒ 闸全绿。
+#   也就是说那个下限是摆设 —— 正是 CONVENTIONS「判据也必须先自证看得见改变」
+#   要抓的形态。统一下限做不到，是因为各桶的天然发生率差两个数量级：
+#   flush_hit 天然 0.23%，而 wb_wake 塌陷后还有 0.54%。
+#
+# ★下限怎么来的★ = 本族 72 次实跑（12 变体 × 3 seed × 2 initreg × 200k 拍）
+#   里每个桶的**最小值再除以 4**。除 4 给抖动留余量；用全族最小值而不是
+#   逐变体值，是因为一张表要管 12 个变体。这张表是**标定出来的**，不是拍的，
+#   而且它有没有分辨力由 check_cov_gate.py 的反向那一轮当场证明
+#   （下面注释里记的是实测：三个桶转红）。
+#
+#   桶名                实测族内最小(200k)   本表下限 = min/4
+COV_MIN_200K = {
+    'enq_fire':        17390,   # 实测最小 69561
+    'wb_wake':          3996,   # 实测最小 15984   ← 负测转红的桶之一
+    'can_issue':        5681,   # 实测最小 22727
+    'deq_fire':         3936,   # 实测最小 15747
+    'resp_succ':        5738,   # 实测最小 22955
+    'resp_block':       5772,   # 实测最小 23091
+    'resp_uncertain':   5747,   # 实测最小 22990
+    'deq_clear':        3177,   # 实测最小 12711
+    'flush_hit':         114,   # 实测最小   456（天然最稀的一个桶）
+    'trans_fire':       2305,   # 实测最小  9220（simp 专属）
+    'enq_while_valid': 10598,   # 实测最小 42395（simp 专属）
+    'iq_wake':          7502,   # 实测最小 30008   ← 负测转红的桶之一
+    'og0_cancel_hit':    335,   # 实测最小  1343   ← 负测转红的桶之一
+    'ld_cancel_hit':    5674,   # 实测最小 22696
+    'rc_hit':          31909,   # 实测最小 127639
+    'ignore_old_vd':       1,   # 本轮 12 个变体都没有这个桶，未标定，先置 1
+}
+
+
 def cov_names(ov):
     """本变体要守的覆盖闸。逐项都要在 200k 拍里非零，否则判 FAIL。
 
@@ -611,11 +650,22 @@ def gen_tb(ov):
     for nm in cov_names(ov):
         A(f'  int cov_{nm} = 0;')
     A('  int cov_fail = 0;')
+    A('  // *** 覆盖桶的下限断言 ***（CONVENTIONS「判据也必须先自证看得见改变」）：')
+    A('  //   只判「!= 0」不够 —— 激励退化成「几乎打不到」时计数会掉到个位数，')
+    A('  //   而那仍然是非零，闸照样绿。所以按 NCYCLES/1000 设下限。')
+    A('  //   量级依据：闸要抓的是「激励整条打不到了」这种数量级的塌陷，不是')
+    A('  //   2 倍以内的抖动。本族 72 次实跑里最紧的桶是 flush_hit=456（200k 拍），')
+    A('  //   下限 200 留了一倍余量；它真的会红由 +nopool 负测证明（见下）。')
+    A('  int MINCOV[string];   // 逐桶下限（见 othersentry_gen.py 的 COV_MIN_200K）')
     A('  bit warm = 0;              // 条目被写过 -> 进入比对')
     A('  longint warm_cycle = -1;')
     A('  task automatic covchk(string nm, int c);')
-    A('    $display("  cov %-20s = %0d", nm, c);')
-    A('    if (c == 0) begin cov_fail++; $display("  *** COVERAGE HOLE: %s == 0", nm); end')
+    A('    int lo = MINCOV[nm];')
+    A('    $display("  cov %-20s = %0d  (min %0d)", nm, c, lo);')
+    A('    if (c < lo) begin')
+    A('      cov_fail++;')
+    A('      $display("  *** COVERAGE HOLE: %s = %0d < %0d", nm, c, lo);')
+    A('    end')
     A('  endtask')
     A('')
     for n, w in ins:
@@ -638,7 +688,16 @@ def gen_tb(ov):
     A('  endtask')
     A('')
     A('  localparam int POOL = 8;   // pdest/psrc 共用的小池，保证唤醒能打中')
-    A('  function automatic int rnd_reg(); return $urandom_range(0, POOL-1); endfunction')
+    A('  // *** +nopool：覆盖闸的双向负测开关 ***')
+    A('  //   把小池换成整个 psrc 空间，唤醒就几乎永远打不中在队 uop 的源。')
+    A('  //   电路一个字没改，只是激励退化 —— 这一轮**必须**把覆盖闸打红。')
+    A('  //   它证明的是「闸看得见激励塌陷」，与变异体证明「自己改了电路」')
+    A('  //   互为对偶。正常跑不给这个 plusarg；负测由 check_cov_gate.py 驱动。')
+    A('  bit nopool = 0;')
+    A('  function automatic int rnd_reg();')
+    A(f"    return nopool ? $urandom_range(0, {(1 << v.psrc_w) - 1})")
+    A('                  : $urandom_range(0, POOL-1);')
+    A('  endfunction')
     if v.has_rc:
         A('  localparam int RCPOOL = 4;  // regCacheIdx 小池，让 replaceRC 打得中')
         A('  function automatic int rnd_rc(); return $urandom_range(0, RCPOOL-1);'
@@ -799,6 +858,12 @@ def gen_tb_tail(ov, L):
     A('  longint cyc = 0;')
     A('  initial begin')
     A('    if (!$value$plusargs("ncycles=%d", NCYCLES)) NCYCLES = 200000;')
+    A('    nopool = $test$plusargs("nopool");')
+    for nm in cov_names(ov):
+        A("    MINCOV[\"%s\"] = ((NCYCLES * %d) / 200000) > 0 ? "
+          "((NCYCLES * %d) / 200000) : 1;"
+          % (nm, COV_MIN_200K[nm], COV_MIN_200K[nm]))
+    A('    if (nopool) $display("*** +nopool: 覆盖闸负测模式（激励退化，闸必须红）***");')
     A('    reset = 1;')
     A('    drive();')
     A("    io_commonIn_deqSel = 1'b0;")

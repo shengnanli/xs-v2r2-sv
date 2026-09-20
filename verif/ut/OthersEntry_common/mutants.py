@@ -162,6 +162,53 @@ NULL_MUTANTS = {'M3': _null_m3, 'M14': _null_m14,
                 'M7': _null_m7, 'M8': _null_m8, 'M10': _null_m10}
 
 
+
+# ---------------------------------------------------------------------------
+# ★判据也要先自证「它读的是对的那一行」★
+# （CONVENTIONS 2026-09-20，TlbStorageWrapper 实测：
+#   `grep -oP 'errors=\\K\\d+' | head -1` 取到的是日志**第一行**的 errors=0，
+#   于是"抓到了也报成没抓到"，五个变异体的结论全反了。）
+#
+# 本 tb 的日志里 `errors=` 会出现两次（末尾汇总一次、TEST FAILED 那行再一次），
+# 用裸 `re.search` 取的是第一个 —— 恰好是对的那个，但这属于"碰巧"。
+# 这里把解析抽成函数并**取最后一次出现**，再配自测把两种坑都钉住。
+# ---------------------------------------------------------------------------
+def parse_sim_errors(log):
+    """返回 (errors, 是否判失败)。errors 取日志里**最后一次** errors= 的值。"""
+    ms = re.findall(r'errors=(\d+)', log)
+    errs = int(ms[-1]) if ms else -1
+    failed = ('TEST FAILED' in log) or errs > 0 or errs < 0
+    return errs, failed
+
+
+def selftest_parse():
+    cases = [
+        ('正例：只有末尾汇总一行',
+         '=== 200000 cycles, checks=15399230, errors=0 ===\nTEST PASSED\n', 0, False),
+        ('★多行 errors=：必须取最后一次，不是第一次★',
+         'directed warmup: errors=0\n=== 200000 cycles, checks=1, errors=42 ===\n'
+         'TEST FAILED (errors=42 cov_fail=0 checks=1)\n', 42, True),
+        ('★首行是 0、真值在后面：裸 head -1 会在这里翻车★',
+         'errors=0\nerrors=0\n=== errors=7 ===\nTEST FAILED (errors=7 ...)\n', 7, True),
+        ('覆盖闸红但 errors=0：也必须判失败',
+         '=== 200000 cycles, checks=1, errors=0 ===\n'
+         '  *** COVERAGE HOLE: wb_wake = 3 < 3996\n'
+         'TEST FAILED (errors=0 cov_fail=1 checks=1)\n', 0, True),
+        ('日志里根本没有 errors=（仿真崩了）：必须判失败，不能当成 0',
+         'Error-[SOMETHING] crashed\n', -1, True),
+    ]
+    rc = 0
+    print('mutants --selftest-parse:')
+    for name, log, want_e, want_f in cases:
+        e, f = parse_sim_errors(log)
+        ok = (e == want_e) and (f == want_f)
+        print(f'  [{"OK" if ok else "FAIL"}] {name} -> errors={e} failed={f}'
+              f'（期望 {want_e}/{want_f}）')
+        rc |= 0 if ok else 1
+    print('解析器负测', 'PASS' if rc == 0 else 'FAIL')
+    return rc
+
+
 def run(cmd, cwd):
     return subprocess.run(cmd, cwd=str(cwd), stdout=subprocess.PIPE,
                           stderr=subprocess.STDOUT)
@@ -169,12 +216,15 @@ def run(cmd, cwd):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('top')
+    ap.add_argument('top', nargs='?')
     ap.add_argument('--only')
     ap.add_argument('--list', action='store_true')
+    ap.add_argument('--selftest-parse', action='store_true')
     ap.add_argument('--seed', type=int, default=7)
     ap.add_argument('--cycles', type=int, default=60000)
     a = ap.parse_args()
+    if a.selftest_parse:
+        return selftest_parse()
 
     ov = OthersVariant(a.top)
     utdir = REPO / 'verif' / 'ut' / a.top
@@ -271,10 +321,9 @@ def main():
             run(['./simv', f'+ntb_random_seed={a.seed}',
                  f'+ncycles={a.cycles}', '-l', 'mut.log'], ut)
             log = (ut / 'mut.log').read_text(errors='replace')
-            mm = re.search(r'errors=(\d+)', log)
-            errs = int(mm.group(1)) if mm else -1
+            errs, failed = parse_sim_errors(log)
             hole = 'COVERAGE HOLE' in log
-            if ('TEST FAILED' in log) or errs > 0:
+            if failed:
                 why = f'errors={errs}' + (' + 覆盖闸红' if hole else '')
                 caught.append((mid, why))
                 print(f'[{mid}] 抓住 ({why}): {desc}')
