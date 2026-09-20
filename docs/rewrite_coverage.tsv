@@ -21,10 +21,10 @@
 #   observation_sink    1 个   9903 端口全 input 的纯观测 sink，19 万行全是端口表
 #
 metric	done	total	percent
-fm_targets_configured	252	419	60.1
-unique_design_written	147	1191	12.3
+fm_targets_configured	252	426	59.2
+unique_design_written	148	1191	12.4
 unique_design_proven	117	1191	9.8
-golden_lines_written	1344690	3902283	34.5
+golden_lines_written	1493343	3902283	38.3
 golden_lines_proven	903797	3902283	23.2
 #
 # written 里没有绿判决证据的设计族（差额都在这儿，逐个列出不藏）：
@@ -42,6 +42,7 @@ golden_lines_proven	903797	3902283	23.2
 #   ICache                                           1754 行
 #   ICacheCtrlUnit                                    335 行
 #   InstrMMIOEntry                                    201 行
+#   LoadQueueReplay                                138860 行
 #   LqVAddrModule                                    1717 行
 #   LsqEnqCtrl                                       2595 行
 #   NCBTransactionQueue                             41240 行
@@ -62,7 +63,6 @@ golden_lines_proven	903797	3902283	23.2
 # 剩余最大的 30 个（按 golden 行数）—— 下一波排期的候选
 remaining_design	golden_lines	variants	scope
 Rob	266227	1	REWRITE_L
-LoadQueueReplay	138860	1	REWRITE_L
 NewDispatch	100983	1	REWRITE_L
 Backend	79590	1	REWRITE_L
 StoreQueue	77145	1	REWRITE_L
@@ -91,3 +91,4 @@ SimTop	19836	1	-
 NewCSR	15945	1	REWRITE_L
 ExeUnit	15312	13	REWRITE_L
 L1ErrorMetaArray	14951	1	-
+MSHRCtl	14590	1	REWRITE_M
