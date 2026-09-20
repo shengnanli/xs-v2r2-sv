@@ -42,6 +42,13 @@ run "覆盖率台账幂等"   python3 scripts/rewrite_coverage.py --check
 # 完整写出这些串会让**每个目标**的判定中毒。agent/err3 实测撞到过：写全之后
 # MuxBundle 当场从 SUCCEEDED 翻成 elab147=true 的 PARTIAL，而 RTL 一字未动。
 run "FM Tcl 毒字符串闸"  python3 scripts/test_tcl_no_poison.py
+# FM Tcl 输出字符闸：毒字符串闸管的是"注释里写全关键词会污染正则"，
+# 这一条管的是另一个机制 —— `puts`/`error` 里的 U+0080..U+00FF（× § · 这类）
+# 会原样落成单字节进 fm.log，让 fm_verdict.py 的严格 utf-8 读日志当场崩，
+# 于是 verdict 变空、MAKE_RC=2，却照样留下一个看起来齐全的 evidence 目录。
+# 2026-09-20 实测踩到（TlbStorageWrapper_2/_3），判据自带双向自测。
+run "FM Tcl 输出字符闸"  python3 scripts/test_tcl_output_ascii.py
+run "FM Tcl 输出闸负测"  python3 scripts/test_tcl_output_ascii.py --selftest
 # fm_eq.tcl 结构闸：该文件是多 worker 并行改的共享件，冲突全集中在 vmucp 白名单那行。
 # 我两次处理错（"两侧都留"留出两条串联 if 互相拒目标；git add -A 提交了带冲突标记的
 # 文件）。两次都修好却没加闸，于是下次合并原样复发。这道闸把"修好"变成"修住"。
@@ -77,8 +84,14 @@ for g in scripts/gen_tlbuffer_ad_family.py scripts/gen_mbist_pipe_family.py \
          scripts/gen_tlbnb_family.py scripts/gen_predictor.py \
          scripts/gen_rob.py scripts/gen_rob_ut.py \
          scripts/gen_rob_pins.py scripts/gen_rob_contract.py \
-         scripts/gen_rob_iface.py; do
+         scripts/gen_rob_iface.py \
+         scripts/gen_tlbsw_family.py; do
   [ -f "$g" ] && run "生成器幂等 $(basename $g .py | sed 's/^gen_//')" python3 "$g" --check
+done
+# UT 目录下的生成器不在 check_gen_gate_complete.py 的扫描范围（它只扫 scripts/gen_*.py），
+# 所以挂了 --check 的要手动登记。gen_tb_variant.py 生成 tb_1/tb_2/tb_3.sv 三份 tb。
+for g in verif/ut/TlbStorageWrapper/gen_tb_variant.py; do
+  [ -f "$g" ] && run "UT tb 生成器幂等 $(basename $(dirname $g))" bash -c "cd $(dirname $g) && python3 $(basename $g) --check"
 done
 # 闸的完备性闸：任何 scripts/gen_*.py 要么进上面的列表，要么在
 # check_gen_gate_complete.py 的 NO_CHECK 豁免表里写明理由，没有第三条路。
@@ -184,6 +197,11 @@ run "perf 重绑表幂等"    python3 scripts/perf_rebind.py --check
 # 先跑负测（秒级，不扫 golden），再跑真闸（约 80 秒）—— 顺序照层次重绑闸的先例。
 run "perf 分档闸负测"    python3 scripts/test_perf_tier_gate.py
 run "perf 分档台账闸"    python3 scripts/check_perf_tier.py
+
+# passing 预测模型自校准（docs/tlbsw23_passing_prediction.md）：
+# 模型 = 闭包触发器位数 + 顶层 output 位数。6 个已签核点必须逐位命中，
+# 命不中说明量法或模型有问题 —— 那时它做出的预测就不该被引用。
+run "passing 模型自校准"  python3 scripts/tlbsw_passing_model.py --check
 
 rm -f /tmp/gate_$$.out
 [ $rc -eq 0 ] && echo "=== 全部机器闸 PASS ===" || echo "=== 有闸未过，见上 ==="
