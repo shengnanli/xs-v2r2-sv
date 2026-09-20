@@ -26,7 +26,7 @@
 //   14 个 G1 变体全部走 hasCompAndSimp,故本核不实现另一分支(见文件尾 §11 待办)。
 //
 // =============================================================================
-// 本文件导航（共 1909 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+// 本文件导航（共 1915 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
 //   L58    §1 与变体无关的编码
 //   L82    §2 xs_iq_entry
 //   L360   §2.1 冲刷判定
@@ -41,16 +41,16 @@
 //   L823   §2.6b IQ 唤醒子族专属的三组状态
 //   L858   §2.7 组合输出
 //   L966   §2.8 debug / perf 出口
-//   L1021  §3 xs_iq_entries_core
-//   L1206  §3a 阵列层自己持有的两组寄存器(golden Entries.scala:140-142)
-//   L1278  §4 条目例化
-//   L1444  §5 deqSel / deqPortIdxWrite / issueResp
-//   L1487  §6 EnqPolicy
-//   L1518  §7 转移策略
-//   L1595  §8 othersEntryEnq 数据通路
-//   L1746  §9 发射出口
-//   L1814  §10 阵列状态汇聚输出
-//   L1855  §11 本核尚未实现的家族维度(给后续变体 owner 的清单,全部有 golden 依据)
+//   L1027  §3 xs_iq_entries_core
+//   L1212  §3a 阵列层自己持有的两组寄存器(golden Entries.scala:140-142)
+//   L1284  §4 条目例化
+//   L1450  §5 deqSel / deqPortIdxWrite / issueResp
+//   L1493  §6 EnqPolicy
+//   L1524  §7 转移策略
+//   L1601  §8 othersEntryEnq 数据通路
+//   L1752  §9 发射出口
+//   L1820  §10 阵列状态汇聚输出
+//   L1861  §11 本核尚未实现的家族维度(给后续变体 owner 的清单,全部有 golden 依据)
 // 导航由 verif/ut/Entries_common/core_nav.py 重算 —— 改完核跑一次，勿手改
 //
 
@@ -995,8 +995,14 @@ module xs_iq_entry
       assign o_dbg_entry_out_trans_valid = valid_reg & trans_sel
                                          & ~(flushed | deq_success);
       for (genvar s = 0; s < NUM_REGSRC; s++) begin : g_dbg_src
+        // ★门控用 currentStatus 而不是裸寄存器★(golden 逐字如此,本 lane 复核过):
+        //   EnqEntry_6.sv:     …& ~currentStatus_srcStatus_0_srcState & validReg_last_REG
+        //   OthersEntry_72.sv: …& ~entryReg_status_srcStatus_0_srcState & …
+        //   两者只在「入队延迟窗口」那一拍分叉,所以**只有 EnqEntry 族暴露**;
+        //   非 enq 条目里 dly = IS_ENQ & … 是常量 0,cur_src_state 恒等于 r_src_state。
+        //   ★"是 no-op"这句话由 27 目标全量回归证,不由这段注释证。★
         assign o_dbg_perf_wakeup_by_wb[s] = wk_hit[s]
-                                          & (r_src_state[s] == SRC_BUSY)
+                                          & (cur_src_state[s] == SRC_BUSY)
                                           & valid_reg;
         assign o_dbg_perf_ld_cancel[s]    = (ld_trans_cancel[s] | cur_ld_cancel[s])
                                           & valid_reg;
