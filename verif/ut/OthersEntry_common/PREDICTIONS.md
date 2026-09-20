@@ -74,3 +74,26 @@ cd verif/ut/OthersEntry_common && python3 predict.py
 ★但不在这里就把带收成等号★：12 个样本全来自 INT/FP 两个子族，
 剩下 12 个（6 个 MEM + 6 个向量）还没跑，MEM 族有 needFeedBack、向量族有 ignoreOldVd，
 都可能引入 Constant 寄存器。等 24 个齐了再收，收窄本身也要有样本依据。
+
+---
+
+## 向量族 6 个的预登记与对账（第二批）
+
+`_164/_166` 的判据与结论见 `VEC_PROBE_PREREG.md`（跑前写死，实测全中）：
+`OthersEntry_164` 3792 == 模型、`OthersEntry_166` 1713 == 模型，核 sha256 全程未变。
+
+其余 4 个（`_150/_152` VfmaVialuFixVfalu、`_136/_138` …Vsetrvfwvf）★跑前登记如下★：
+这 4 个与 `_164/_166` 的差别是 `numDeq=2`（多 deqPortIdxRead 回读口）与 `nFuTypeBit` 更大，
+按 VEC_PROBE_PREREG.md 的作用域声明，它们不能靠 `_164/_166` 外推，必须各自跑过。
+
+| 变体 | 角色 | regs | outs | **模型 passing** | 可接受下界 | 实测 | 对账 |
+|---|---|---|---|---|---|---|---|
+| `OthersEntry_150` | simp | 1459 | 2338 | **3797** | 3417 | _待填_ | _待填_ |
+| `OthersEntry_152` | comp | 841 | 878 | **1719** | 1519 | _待填_ | _待填_ |
+| `OthersEntry_136` | simp | 1479 | 2380 | **3859** | 3473 | _待填_ | _待填_ |
+| `OthersEntry_138` | comp | 863 | 900 | **1763** | 1563 | _待填_ | _待填_ |
+
+判据与前 12 个一致：`passing ∈ [下界, 模型]` 且 `failing=0 / unmatched=0`，
+且 **核 `xs_iq_entries_core.sv` 的 sha256 必须仍是**
+`e4e4491009971cfaade049d58f977c68b7dba9f0d840f379649b3d25d934ba41` —— 改了核就不算"核够用"。
+若出现 matched_nc unread，按 standing rule 六条处理且增量必须**恰好**等于加强前的 unread 数。
