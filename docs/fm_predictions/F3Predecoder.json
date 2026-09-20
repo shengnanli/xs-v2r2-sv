@@ -1,0 +1,12 @@
+{
+  "target": "F3Predecoder",
+  "ut": "F3Predecoder",
+  "regs": 0,
+  "outs": 64,
+  "expected": 64,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "prior_receipt": "evidence/b5084fb3e0ed/F3Predecoder",
+  "prior_receipt_passing": 64,
+  "prior_receipt_note": "drift re-proof: 旧 receipt 的 impl 闭包与当前字节不同源；本轮预期 = 旧 receipt passing 逐位相等，若不等必须逐位指认"
+}
