@@ -405,6 +405,34 @@ module xs_Rob_core
   logic                   commitsHasWalkInstr;
   logic                   commitsHasCommitInstr;
 
+  logic [31:0]        deqHeadInstr;   // debug_microOp(deqPtr).instr，异常出口要用
+  // ---- §22 debug 段的输入整理数组（声明提前，使用点在后）----
+  logic                dbgEnqLsqAlloc  [RENAME_W];
+  logic [PTR_W-1:0]    dbgEnqLsqRobIdx [RENAME_W];
+  logic [LQ_PTR_W-1:0] dbgEnqLsqLqIdx  [RENAME_W];
+  logic                lsTdS1Valid [3];
+  logic [PTR_W-1:0]    lsTdS1RobIdx[3];
+  logic [VADDR_W-1:0]  lsTdS1Vaddr [3];
+  logic                lsTdS2Valid [3];
+  logic [PTR_W-1:0]    lsTdS2RobIdx[3];
+  logic [PADDR_W-1:0]  lsTdS2Paddr [3];
+  logic             vldWbValid  [VLD_WB_N];
+  logic [PTR_W-1:0] vldWbRobIdx [VLD_WB_N];
+  logic [2:0]       vldWbVdIdx  [VLD_WB_N];
+  logic [PREG_W-1:0] vldWbPdest [VLD_WB_N];
+  logic             vldWbVecWen [VLD_WB_N];
+  logic             vldWbV0Wen  [VLD_WB_N];
+
+  // ---- RegEnable 桶（契约表的 BUCKET 段）----
+  // r_4_0..r_4_23 = RegEnable(exceptionDataRead.bits.exceptionVec, exceptionHappen)
+  // 名字照 golden（name_lock=free，只能靠 FM 按名字配）。
+  logic r_4_0;  logic r_4_1;  logic r_4_2;  logic r_4_3;
+  logic r_4_4;  logic r_4_5;  logic r_4_6;  logic r_4_7;
+  logic r_4_8;  logic r_4_9;  logic r_4_10; logic r_4_11;
+  logic r_4_12; logic r_4_13; logic r_4_14; logic r_4_15;
+  logic r_4_16; logic r_4_17; logic r_4_18; logic r_4_19;
+  logic r_4_20; logic r_4_21; logic r_4_22; logic r_4_23;
+
   // ---- 散寄存器（docs/rob_core_contract.tsv 的 SCALAR 段，132 条）----
   // ★名字照 golden 起★：这些在契约表里是 name_lock=free —— fm_pins.tcl **不钉**
   // 它们，也就是说它们只能靠 FM 自己按名字/结构配对。改名等于把唯一的线索扔掉。
@@ -3474,5 +3502,725 @@ module xs_Rob_core
     else       timer <= timer + 64'h1;
   end
 
+
+
+  // ==========================================================================
+  // §20 trace（指令追踪）
+  // ==========================================================================
+  // 八路提交槽各出一个 trace block，内容直接取 rawInfo（★不是 commitInfo★：
+  // commitInfo 只把 ftqOffset 改成了"最后一条"，trace 要的是条目里存的原值）。
+  // 第 0 路是唯一会被异常改写的：出异常/中断时它变成 Exception/Interrupt，
+  // iretire 清零，并且**无条件 valid**（即便这一拍没有提交）。
+  assign io_trace_traceCommitInfo_blocks_0_bits_ftqIdx_value = rawInfo[0].ftqIdx_value;
+  assign io_trace_traceCommitInfo_blocks_0_bits_ftqOffset    = rawInfo[0].ftqOffset;
+  assign io_trace_traceCommitInfo_blocks_0_bits_tracePipe_ilastsize = rawInfo[0].traceBlockInPipe_ilastsize;
+  assign io_trace_traceCommitInfo_blocks_0_valid = (io_commits_isCommit & commitValidOut[0]) | io_exception_valid;
+  assign io_trace_traceCommitInfo_blocks_0_bits_tracePipe_itype = io_exception_valid
+      ? (io_exception_bits_isInterrupt ? IT_INTR : IT_EXCP)
+      : rawInfo[0].traceBlockInPipe_itype;
+  assign io_trace_traceCommitInfo_blocks_0_bits_tracePipe_iretire = io_exception_valid
+      ? IRETIRE_W'(0) : rawInfo[0].traceBlockInPipe_iretire;
+
+  assign io_trace_traceCommitInfo_blocks_1_bits_ftqIdx_value = rawInfo[1].ftqIdx_value;
+  assign io_trace_traceCommitInfo_blocks_1_bits_ftqOffset    = rawInfo[1].ftqOffset;
+  assign io_trace_traceCommitInfo_blocks_1_bits_tracePipe_ilastsize = rawInfo[1].traceBlockInPipe_ilastsize;
+  assign io_trace_traceCommitInfo_blocks_1_valid = io_commits_isCommit & commitValidOut[1];
+  assign io_trace_traceCommitInfo_blocks_1_bits_tracePipe_itype = rawInfo[1].traceBlockInPipe_itype;
+  assign io_trace_traceCommitInfo_blocks_1_bits_tracePipe_iretire = rawInfo[1].traceBlockInPipe_iretire;
+
+  assign io_trace_traceCommitInfo_blocks_2_bits_ftqIdx_value = rawInfo[2].ftqIdx_value;
+  assign io_trace_traceCommitInfo_blocks_2_bits_ftqOffset    = rawInfo[2].ftqOffset;
+  assign io_trace_traceCommitInfo_blocks_2_bits_tracePipe_ilastsize = rawInfo[2].traceBlockInPipe_ilastsize;
+  assign io_trace_traceCommitInfo_blocks_2_valid = io_commits_isCommit & commitValidOut[2];
+  assign io_trace_traceCommitInfo_blocks_2_bits_tracePipe_itype = rawInfo[2].traceBlockInPipe_itype;
+  assign io_trace_traceCommitInfo_blocks_2_bits_tracePipe_iretire = rawInfo[2].traceBlockInPipe_iretire;
+
+  assign io_trace_traceCommitInfo_blocks_3_bits_ftqIdx_value = rawInfo[3].ftqIdx_value;
+  assign io_trace_traceCommitInfo_blocks_3_bits_ftqOffset    = rawInfo[3].ftqOffset;
+  assign io_trace_traceCommitInfo_blocks_3_bits_tracePipe_ilastsize = rawInfo[3].traceBlockInPipe_ilastsize;
+  assign io_trace_traceCommitInfo_blocks_3_valid = io_commits_isCommit & commitValidOut[3];
+  assign io_trace_traceCommitInfo_blocks_3_bits_tracePipe_itype = rawInfo[3].traceBlockInPipe_itype;
+  assign io_trace_traceCommitInfo_blocks_3_bits_tracePipe_iretire = rawInfo[3].traceBlockInPipe_iretire;
+
+  assign io_trace_traceCommitInfo_blocks_4_bits_ftqIdx_value = rawInfo[4].ftqIdx_value;
+  assign io_trace_traceCommitInfo_blocks_4_bits_ftqOffset    = rawInfo[4].ftqOffset;
+  assign io_trace_traceCommitInfo_blocks_4_bits_tracePipe_ilastsize = rawInfo[4].traceBlockInPipe_ilastsize;
+  assign io_trace_traceCommitInfo_blocks_4_valid = io_commits_isCommit & commitValidOut[4];
+  assign io_trace_traceCommitInfo_blocks_4_bits_tracePipe_itype = rawInfo[4].traceBlockInPipe_itype;
+  assign io_trace_traceCommitInfo_blocks_4_bits_tracePipe_iretire = rawInfo[4].traceBlockInPipe_iretire;
+
+  assign io_trace_traceCommitInfo_blocks_5_bits_ftqIdx_value = rawInfo[5].ftqIdx_value;
+  assign io_trace_traceCommitInfo_blocks_5_bits_ftqOffset    = rawInfo[5].ftqOffset;
+  assign io_trace_traceCommitInfo_blocks_5_bits_tracePipe_ilastsize = rawInfo[5].traceBlockInPipe_ilastsize;
+  assign io_trace_traceCommitInfo_blocks_5_valid = io_commits_isCommit & commitValidOut[5];
+  assign io_trace_traceCommitInfo_blocks_5_bits_tracePipe_itype = rawInfo[5].traceBlockInPipe_itype;
+  assign io_trace_traceCommitInfo_blocks_5_bits_tracePipe_iretire = rawInfo[5].traceBlockInPipe_iretire;
+
+  assign io_trace_traceCommitInfo_blocks_6_bits_ftqIdx_value = rawInfo[6].ftqIdx_value;
+  assign io_trace_traceCommitInfo_blocks_6_bits_ftqOffset    = rawInfo[6].ftqOffset;
+  assign io_trace_traceCommitInfo_blocks_6_bits_tracePipe_ilastsize = rawInfo[6].traceBlockInPipe_ilastsize;
+  assign io_trace_traceCommitInfo_blocks_6_valid = io_commits_isCommit & commitValidOut[6];
+  assign io_trace_traceCommitInfo_blocks_6_bits_tracePipe_itype = rawInfo[6].traceBlockInPipe_itype;
+  assign io_trace_traceCommitInfo_blocks_6_bits_tracePipe_iretire = rawInfo[6].traceBlockInPipe_iretire;
+
+  assign io_trace_traceCommitInfo_blocks_7_bits_ftqIdx_value = rawInfo[7].ftqIdx_value;
+  assign io_trace_traceCommitInfo_blocks_7_bits_ftqOffset    = rawInfo[7].ftqOffset;
+  assign io_trace_traceCommitInfo_blocks_7_bits_tracePipe_ilastsize = rawInfo[7].traceBlockInPipe_ilastsize;
+  assign io_trace_traceCommitInfo_blocks_7_valid = io_commits_isCommit & commitValidOut[7];
+  assign io_trace_traceCommitInfo_blocks_7_bits_tracePipe_itype = rawInfo[7].traceBlockInPipe_itype;
+  assign io_trace_traceCommitInfo_blocks_7_bits_tracePipe_iretire = rawInfo[7].traceBlockInPipe_iretire;
+
+  // ==========================================================================
+  // §21 异常出口（io_exception）
+  // ==========================================================================
+  // 整条是 RegEnable(..., exceptionHappen)：异常发生那一拍把现场锁下来，
+  // 下一拍送出去。★gpaddr 不锁★ —— 它是上一拍 readGPAMemAddr 请求回来的数据，
+  // 组合直通（56 位零扩到 64）。
+  assign io_readGPAMemAddr_valid = exceptionHappen;
+
+  always_ff @(posedge clock) io_exception_valid_REG <= exceptionHappen;
+  assign io_exception_valid = io_exception_valid_REG;
+
+  always_ff @(posedge clock) begin
+    if (exceptionHappen) begin
+      io_exception_bits_instr_r      <= deqHeadInstr;
+      io_exception_bits_commitType_r <= rawInfo[0].commitType;
+      r_4_0  <= exceptionGen_io_state_bits_exceptionVec_0;
+      r_4_1  <= exceptionGen_io_state_bits_exceptionVec_1;
+      r_4_2  <= exceptionGen_io_state_bits_exceptionVec_2;
+      r_4_3  <= exceptionGen_io_state_bits_exceptionVec_3;
+      r_4_4  <= exceptionGen_io_state_bits_exceptionVec_4;
+      r_4_5  <= exceptionGen_io_state_bits_exceptionVec_5;
+      r_4_6  <= exceptionGen_io_state_bits_exceptionVec_6;
+      r_4_7  <= exceptionGen_io_state_bits_exceptionVec_7;
+      r_4_8  <= exceptionGen_io_state_bits_exceptionVec_8;
+      r_4_9  <= exceptionGen_io_state_bits_exceptionVec_9;
+      r_4_10 <= exceptionGen_io_state_bits_exceptionVec_10;
+      r_4_11 <= exceptionGen_io_state_bits_exceptionVec_11;
+      r_4_12 <= exceptionGen_io_state_bits_exceptionVec_12;
+      r_4_13 <= exceptionGen_io_state_bits_exceptionVec_13;
+      r_4_14 <= exceptionGen_io_state_bits_exceptionVec_14;
+      r_4_15 <= exceptionGen_io_state_bits_exceptionVec_15;
+      r_4_16 <= exceptionGen_io_state_bits_exceptionVec_16;
+      r_4_17 <= exceptionGen_io_state_bits_exceptionVec_17;
+      r_4_18 <= exceptionGen_io_state_bits_exceptionVec_18;
+      r_4_19 <= exceptionGen_io_state_bits_exceptionVec_19;
+      r_4_20 <= exceptionGen_io_state_bits_exceptionVec_20;
+      r_4_21 <= exceptionGen_io_state_bits_exceptionVec_21;
+      r_4_22 <= exceptionGen_io_state_bits_exceptionVec_22;
+      r_4_23 <= exceptionGen_io_state_bits_exceptionVec_23;
+      // EX_BP(=3) 的断点：取指触发或执行 ebreak 才算 pcBkpt
+      io_exception_bits_isPcBkpt_r <= exceptionGen_io_state_bits_exceptionVec_3
+          & (exceptionGen_io_state_bits_isEnqExcp
+             | (exceptionGen_io_state_bits_trigger == TA_NONE));
+      io_exception_bits_isFetchMalAddr_r <=
+          exceptionGen_io_state_bits_isFetchMalAddr & deqHasException;
+      io_exception_bits_satpFlushFirstFetchFault_r <=
+          exceptionGen_io_state_bits_satpFlushFirstFetchFault & deqHasException;
+      io_exception_bits_singleStep_r      <= exceptionGen_io_state_bits_singleStep;
+      io_exception_bits_crossPageIPFFix_r <= exceptionGen_io_state_bits_crossPageIPFFix;
+      io_exception_bits_isInterrupt_r     <= intrEnable;
+      io_exception_bits_isHls_r           <= rawInfo[0].isHls;
+      io_exception_bits_trigger_r         <= exceptionGen_io_state_bits_trigger;
+    end
+  end
+
+  assign io_exception_bits_instr      = io_exception_bits_instr_r;
+  assign io_exception_bits_commitType = io_exception_bits_commitType_r;
+  assign io_exception_bits_exceptionVec_0  = r_4_0;
+  assign io_exception_bits_exceptionVec_1  = r_4_1;
+  assign io_exception_bits_exceptionVec_2  = r_4_2;
+  assign io_exception_bits_exceptionVec_3  = r_4_3;
+  assign io_exception_bits_exceptionVec_4  = r_4_4;
+  assign io_exception_bits_exceptionVec_5  = r_4_5;
+  assign io_exception_bits_exceptionVec_6  = r_4_6;
+  assign io_exception_bits_exceptionVec_7  = r_4_7;
+  assign io_exception_bits_exceptionVec_8  = r_4_8;
+  assign io_exception_bits_exceptionVec_9  = r_4_9;
+  assign io_exception_bits_exceptionVec_10 = r_4_10;
+  assign io_exception_bits_exceptionVec_11 = r_4_11;
+  assign io_exception_bits_exceptionVec_12 = r_4_12;
+  assign io_exception_bits_exceptionVec_13 = r_4_13;
+  assign io_exception_bits_exceptionVec_14 = r_4_14;
+  assign io_exception_bits_exceptionVec_15 = r_4_15;
+  assign io_exception_bits_exceptionVec_16 = r_4_16;
+  assign io_exception_bits_exceptionVec_17 = r_4_17;
+  assign io_exception_bits_exceptionVec_18 = r_4_18;
+  assign io_exception_bits_exceptionVec_19 = r_4_19;
+  assign io_exception_bits_exceptionVec_20 = r_4_20;
+  assign io_exception_bits_exceptionVec_21 = r_4_21;
+  assign io_exception_bits_exceptionVec_22 = r_4_22;
+  assign io_exception_bits_exceptionVec_23 = r_4_23;
+  assign io_exception_bits_isPcBkpt                 = io_exception_bits_isPcBkpt_r;
+  assign io_exception_bits_isFetchMalAddr           = io_exception_bits_isFetchMalAddr_r;
+  assign io_exception_bits_satpFlushFirstFetchFault =
+      io_exception_bits_satpFlushFirstFetchFault_r;
+  assign io_exception_bits_singleStep      = io_exception_bits_singleStep_r;
+  assign io_exception_bits_crossPageIPFFix = io_exception_bits_crossPageIPFFix_r;
+  assign io_exception_bits_isInterrupt     = io_exception_bits_isInterrupt_r;
+  assign io_exception_bits_isHls           = io_exception_bits_isHls_r;
+  assign io_exception_bits_trigger         = io_exception_bits_trigger_r;
+  // GPAMem 读回来的是 56 位物理地址，端口是 64 位
+  assign io_exception_bits_gpaddr             = {8'h0, io_readGPAMemData_gpaddr};
+  assign io_exception_bits_isForVSnonLeafPTE  = io_readGPAMemData_isForVSnonLeafPTE;
+
+  // ---- 向量异常信息（送 VecExcpMod）----
+  // vecExcpInfo 的 valid 每拍都算，bits 只在 exceptionHappen 那拍更新。
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) vecExcpInfo_valid <= 1'b0;
+    else vecExcpInfo_valid <= exceptionHappen & ~intrEnable
+                            & exceptionGen_io_state_bits_vstartEn
+                            & exceptionGen_io_state_bits_isVecLoad
+                            & ~exceptionGen_io_state_bits_isEnqExcp;
+  end
+  always_ff @(posedge clock) begin
+    if (exceptionHappen) begin
+      vecExcpInfo_bits_nf        <= exceptionGen_io_state_bits_nf;
+      vecExcpInfo_bits_vsew      <= exceptionGen_io_state_bits_vsew;
+      vecExcpInfo_bits_veew      <= exceptionGen_io_state_bits_veew;
+      vecExcpInfo_bits_vlmul     <= exceptionGen_io_state_bits_vlmul;
+      vecExcpInfo_bits_isStride  <= exceptionGen_io_state_bits_isStrided;
+      vecExcpInfo_bits_isIndexed <= exceptionGen_io_state_bits_isIndexed;
+      vecExcpInfo_bits_isWhole   <= exceptionGen_io_state_bits_isWhole;
+      vecExcpInfo_bits_isVlm     <= exceptionGen_io_state_bits_isVlm;
+      // vstart 端口只有 7 位（VLEN 决定），exceptionGen 那边是 64 位
+      vecExcpInfo_bits_vstart    <= exceptionGen_io_state_bits_vstart[6:0];
+    end
+  end
+  assign io_toVecExcpMod_excpInfo_valid          = vecExcpInfo_valid;
+  assign io_toVecExcpMod_excpInfo_bits_nf        = vecExcpInfo_bits_nf;
+  assign io_toVecExcpMod_excpInfo_bits_vsew      = vecExcpInfo_bits_vsew;
+  assign io_toVecExcpMod_excpInfo_bits_veew      = vecExcpInfo_bits_veew;
+  assign io_toVecExcpMod_excpInfo_bits_vlmul     = vecExcpInfo_bits_vlmul;
+  assign io_toVecExcpMod_excpInfo_bits_isStride  = vecExcpInfo_bits_isStride;
+  assign io_toVecExcpMod_excpInfo_bits_isIndexed = vecExcpInfo_bits_isIndexed;
+  assign io_toVecExcpMod_excpInfo_bits_isWhole   = vecExcpInfo_bits_isWhole;
+  assign io_toVecExcpMod_excpInfo_bits_isVlm     = vecExcpInfo_bits_isVlm;
+  assign io_toVecExcpMod_excpInfo_bits_vstart    = vecExcpInfo_bits_vstart;
+
+  // ---- difftest 用的"最新提交 robIdx" ----
+  // PriorityMuxDefault(commitValid.reverse zip robIdx.reverse, deqPtr)：
+  // 从最后一路往前找第一个提交有效的，一个都没有就用 deqPtr。
+  logic             newestCommitFlag;
+  logic [PTR_W-1:0] newestCommitValue;
+  always_comb begin
+    newestCommitFlag  = deqPtrFlag[0];
+    newestCommitValue = deqPtrValue[0];
+    for (int i = 0; i < COMMIT_W; i++)
+      if (commitValidOut[i]) begin
+        newestCommitFlag  = deqPtrFlag[i];
+        newestCommitValue = deqPtrValue[i];
+      end
+  end
+  logic hasCommitNow;
+  always_comb begin
+    hasCommitNow = 1'b0;
+    for (int i = 0; i < COMMIT_W; i++) hasCommitNow = hasCommitNow | commitValidOut[i];
+    hasCommitNow = hasCommitNow & io_commits_isCommit;
+  end
+  assign io_diffRatCommitRobIdx_valid      = hasCommitNow | deqVlsExceptionNeedCommit;
+  assign io_diffRatCommitRobIdx_bits_flag  = deqVlsExceptionNeedCommit
+                                           ? deqPtrFlag[0]  : newestCommitFlag;
+  assign io_diffRatCommitRobIdx_bits_value = deqVlsExceptionNeedCommit
+                                           ? deqPtrValue[0] : newestCommitValue;
+
+
+
+  // ==========================================================================
+  // §22 debug / difftest 规则阵列
+  // ==========================================================================
+  // 这一段不参与功能，但**一位都不能省**：省掉之后 FM 的 match 会退化成签名
+  // 匹配，在上万个结构相同的寄存器上是 O(N^2)（见文件头 §1 的说明）。
+  //
+  // ★两个方向相反的优先链，别弄反★
+  //   入队侧：Scala `for (i <- 0 until RenameWidth) when(canEnqueue(i))` ——
+  //           后写的赢 ⇒ **第 5 路优先级最高**。
+  //   写回侧：Scala `for (wb <- exuWBs)`（0..24）—— 同样后写的赢 ⇒
+  //           **第 24 路优先级最高**（golden 里就是
+  //           `if (wb24) ... else if (wb23) ...` 这条链）。
+  //   SV 里两者都靠"循环里后一次非阻塞赋值覆盖前一次"实现，所以两个循环的
+  //   方向都是 j 递增；差别在于哪一端是 0。
+
+  logic [XLEN-1:0]  enqRenameTime [RENAME_W];
+  logic [31:0]      enqInstrVec   [RENAME_W];
+  logic [VADDR_W-1:0] enqPcVec    [RENAME_W];
+  logic [FUTYPE_W-1:0] enqFuType  [RENAME_W];
+  logic [FUTYPE_W-1:0] enqDbgFuType[RENAME_W];
+  logic [FUOPTYPE_W-1:0] enqFuOpType[RENAME_W];
+  logic [COMMITTYPE_W-1:0] enqCommitType [RENAME_W];
+  logic             enqSimTrig    [RENAME_W];
+  logic [LQ_PTR_W-1:0] enqLqIdx   [RENAME_W];
+  logic [SQ_PTR_W-1:0] enqSqIdx   [RENAME_W];
+
+  always_comb begin
+    enqRenameTime[0] = io_enq_req_0_bits_debugInfo_renameTime;
+    enqInstrVec[0]   = io_enq_req_0_bits_instr;
+    enqPcVec[0]      = io_enq_req_0_bits_pc;
+    enqFuType[0]     = io_enq_req_0_bits_fuType;
+    enqDbgFuType[0]  = io_enq_req_0_bits_debug_fuType;
+    enqFuOpType[0]   = io_enq_req_0_bits_fuOpType;
+    enqCommitType[0] = io_enq_req_0_bits_commitType;
+    enqSimTrig[0]    = io_enq_req_0_bits_debug_sim_trig;
+    enqLqIdx[0]      = io_enq_req_0_bits_lqIdx_value;
+    enqSqIdx[0]      = io_enq_req_0_bits_sqIdx_value;
+    enqRenameTime[1] = io_enq_req_1_bits_debugInfo_renameTime;
+    enqInstrVec[1]   = io_enq_req_1_bits_instr;
+    enqPcVec[1]      = io_enq_req_1_bits_pc;
+    enqFuType[1]     = io_enq_req_1_bits_fuType;
+    enqDbgFuType[1]  = io_enq_req_1_bits_debug_fuType;
+    enqFuOpType[1]   = io_enq_req_1_bits_fuOpType;
+    enqCommitType[1] = io_enq_req_1_bits_commitType;
+    enqSimTrig[1]    = io_enq_req_1_bits_debug_sim_trig;
+    enqLqIdx[1]      = io_enq_req_1_bits_lqIdx_value;
+    enqSqIdx[1]      = io_enq_req_1_bits_sqIdx_value;
+    enqRenameTime[2] = io_enq_req_2_bits_debugInfo_renameTime;
+    enqInstrVec[2]   = io_enq_req_2_bits_instr;
+    enqPcVec[2]      = io_enq_req_2_bits_pc;
+    enqFuType[2]     = io_enq_req_2_bits_fuType;
+    enqDbgFuType[2]  = io_enq_req_2_bits_debug_fuType;
+    enqFuOpType[2]   = io_enq_req_2_bits_fuOpType;
+    enqCommitType[2] = io_enq_req_2_bits_commitType;
+    enqSimTrig[2]    = io_enq_req_2_bits_debug_sim_trig;
+    enqLqIdx[2]      = io_enq_req_2_bits_lqIdx_value;
+    enqSqIdx[2]      = io_enq_req_2_bits_sqIdx_value;
+    enqRenameTime[3] = io_enq_req_3_bits_debugInfo_renameTime;
+    enqInstrVec[3]   = io_enq_req_3_bits_instr;
+    enqPcVec[3]      = io_enq_req_3_bits_pc;
+    enqFuType[3]     = io_enq_req_3_bits_fuType;
+    enqDbgFuType[3]  = io_enq_req_3_bits_debug_fuType;
+    enqFuOpType[3]   = io_enq_req_3_bits_fuOpType;
+    enqCommitType[3] = io_enq_req_3_bits_commitType;
+    enqSimTrig[3]    = io_enq_req_3_bits_debug_sim_trig;
+    enqLqIdx[3]      = io_enq_req_3_bits_lqIdx_value;
+    enqSqIdx[3]      = io_enq_req_3_bits_sqIdx_value;
+    enqRenameTime[4] = io_enq_req_4_bits_debugInfo_renameTime;
+    enqInstrVec[4]   = io_enq_req_4_bits_instr;
+    enqPcVec[4]      = io_enq_req_4_bits_pc;
+    enqFuType[4]     = io_enq_req_4_bits_fuType;
+    enqDbgFuType[4]  = io_enq_req_4_bits_debug_fuType;
+    enqFuOpType[4]   = io_enq_req_4_bits_fuOpType;
+    enqCommitType[4] = io_enq_req_4_bits_commitType;
+    enqSimTrig[4]    = io_enq_req_4_bits_debug_sim_trig;
+    enqLqIdx[4]      = io_enq_req_4_bits_lqIdx_value;
+    enqSqIdx[4]      = io_enq_req_4_bits_sqIdx_value;
+    enqRenameTime[5] = io_enq_req_5_bits_debugInfo_renameTime;
+    enqInstrVec[5]   = io_enq_req_5_bits_instr;
+    enqPcVec[5]      = io_enq_req_5_bits_pc;
+    enqFuType[5]     = io_enq_req_5_bits_fuType;
+    enqDbgFuType[5]  = io_enq_req_5_bits_debug_fuType;
+    enqFuOpType[5]   = io_enq_req_5_bits_fuOpType;
+    enqCommitType[5] = io_enq_req_5_bits_commitType;
+    enqSimTrig[5]    = io_enq_req_5_bits_debug_sim_trig;
+    enqLqIdx[5]      = io_enq_req_5_bits_lqIdx_value;
+    enqSqIdx[5]      = io_enq_req_5_bits_sqIdx_value;
+  end
+
+  // 写回侧的调试负载（下标集合各不相同：只有访存那几路有 lqIdx/sqIdx/paddr）
+  logic [XLEN-1:0]  wbEnqRsTime   [EXU_N];
+  logic [XLEN-1:0]  wbSelectTime  [EXU_N];
+  logic [XLEN-1:0]  wbIssueTime   [EXU_N];
+  logic [XLEN-1:0]  wbWbTime      [EXU_N];
+  logic [XLEN-1:0]  wbData0       [EXU_N];
+  logic [LQ_PTR_W-1:0] wbLqIdx    [EXU_N];
+  logic [SQ_PTR_W-1:0] wbSqIdx    [EXU_N];
+  logic             wbIsMMIO      [EXU_N];
+  logic             wbIsNCIO      [EXU_N];
+  logic             wbIsPerfCnt   [EXU_N];
+  logic [PADDR_W-1:0] wbPaddr     [EXU_N];
+
+  always_comb begin
+    for (int k = 0; k < EXU_N; k++) begin
+      // 没有这个字段的写回口写 0 —— 与 Scala 的 `.getOrElse(0.U)` 一致
+      wbLqIdx[k]    = {LQ_PTR_W{1'b0}};
+      wbSqIdx[k]    = {SQ_PTR_W{1'b0}};
+      wbIsMMIO[k]   = 1'b0;
+      wbIsNCIO[k]   = 1'b0;
+      wbIsPerfCnt[k]= 1'b0;
+      wbPaddr[k]    = {PADDR_W{1'b0}};
+    end
+    wbEnqRsTime[0]  = io_exuWriteback_0_bits_debugInfo_enqRsTime;
+    wbSelectTime[0] = io_exuWriteback_0_bits_debugInfo_selectTime;
+    wbIssueTime[0]  = io_exuWriteback_0_bits_debugInfo_issueTime;
+    wbWbTime[0]     = io_exuWriteback_0_bits_debugInfo_writebackTime;
+    wbData0[0]      = io_exuWriteback_0_bits_data_0;
+    wbEnqRsTime[1]  = io_exuWriteback_1_bits_debugInfo_enqRsTime;
+    wbSelectTime[1] = io_exuWriteback_1_bits_debugInfo_selectTime;
+    wbIssueTime[1]  = io_exuWriteback_1_bits_debugInfo_issueTime;
+    wbWbTime[1]     = io_exuWriteback_1_bits_debugInfo_writebackTime;
+    wbData0[1]      = io_exuWriteback_1_bits_data_0;
+    wbEnqRsTime[2]  = io_exuWriteback_2_bits_debugInfo_enqRsTime;
+    wbSelectTime[2] = io_exuWriteback_2_bits_debugInfo_selectTime;
+    wbIssueTime[2]  = io_exuWriteback_2_bits_debugInfo_issueTime;
+    wbWbTime[2]     = io_exuWriteback_2_bits_debugInfo_writebackTime;
+    wbData0[2]      = io_exuWriteback_2_bits_data_0;
+    wbEnqRsTime[3]  = io_exuWriteback_3_bits_debugInfo_enqRsTime;
+    wbSelectTime[3] = io_exuWriteback_3_bits_debugInfo_selectTime;
+    wbIssueTime[3]  = io_exuWriteback_3_bits_debugInfo_issueTime;
+    wbWbTime[3]     = io_exuWriteback_3_bits_debugInfo_writebackTime;
+    wbData0[3]      = io_exuWriteback_3_bits_data_0;
+    wbEnqRsTime[4]  = io_exuWriteback_4_bits_debugInfo_enqRsTime;
+    wbSelectTime[4] = io_exuWriteback_4_bits_debugInfo_selectTime;
+    wbIssueTime[4]  = io_exuWriteback_4_bits_debugInfo_issueTime;
+    wbWbTime[4]     = io_exuWriteback_4_bits_debugInfo_writebackTime;
+    wbData0[4]      = io_exuWriteback_4_bits_data_0;
+    wbEnqRsTime[5]  = io_exuWriteback_5_bits_debugInfo_enqRsTime;
+    wbSelectTime[5] = io_exuWriteback_5_bits_debugInfo_selectTime;
+    wbIssueTime[5]  = io_exuWriteback_5_bits_debugInfo_issueTime;
+    wbWbTime[5]     = io_exuWriteback_5_bits_debugInfo_writebackTime;
+    wbData0[5]      = io_exuWriteback_5_bits_data_0;
+    wbEnqRsTime[6]  = io_exuWriteback_6_bits_debugInfo_enqRsTime;
+    wbSelectTime[6] = io_exuWriteback_6_bits_debugInfo_selectTime;
+    wbIssueTime[6]  = io_exuWriteback_6_bits_debugInfo_issueTime;
+    wbWbTime[6]     = io_exuWriteback_6_bits_debugInfo_writebackTime;
+    wbData0[6]      = io_exuWriteback_6_bits_data_0;
+    wbEnqRsTime[7]  = io_exuWriteback_7_bits_debugInfo_enqRsTime;
+    wbSelectTime[7] = io_exuWriteback_7_bits_debugInfo_selectTime;
+    wbIssueTime[7]  = io_exuWriteback_7_bits_debugInfo_issueTime;
+    wbWbTime[7]     = io_exuWriteback_7_bits_debugInfo_writebackTime;
+    wbData0[7]      = io_exuWriteback_7_bits_data_0;
+    wbEnqRsTime[8]  = io_exuWriteback_8_bits_debugInfo_enqRsTime;
+    wbSelectTime[8] = io_exuWriteback_8_bits_debugInfo_selectTime;
+    wbIssueTime[8]  = io_exuWriteback_8_bits_debugInfo_issueTime;
+    wbWbTime[8]     = io_exuWriteback_8_bits_debugInfo_writebackTime;
+    wbData0[8]      = io_exuWriteback_8_bits_data_0;
+    wbEnqRsTime[9]  = io_exuWriteback_9_bits_debugInfo_enqRsTime;
+    wbSelectTime[9] = io_exuWriteback_9_bits_debugInfo_selectTime;
+    wbIssueTime[9]  = io_exuWriteback_9_bits_debugInfo_issueTime;
+    wbWbTime[9]     = io_exuWriteback_9_bits_debugInfo_writebackTime;
+    wbData0[9]      = io_exuWriteback_9_bits_data_0;
+    wbEnqRsTime[10]  = io_exuWriteback_10_bits_debugInfo_enqRsTime;
+    wbSelectTime[10] = io_exuWriteback_10_bits_debugInfo_selectTime;
+    wbIssueTime[10]  = io_exuWriteback_10_bits_debugInfo_issueTime;
+    wbWbTime[10]     = io_exuWriteback_10_bits_debugInfo_writebackTime;
+    wbData0[10]      = io_exuWriteback_10_bits_data_0;
+    wbEnqRsTime[11]  = io_exuWriteback_11_bits_debugInfo_enqRsTime;
+    wbSelectTime[11] = io_exuWriteback_11_bits_debugInfo_selectTime;
+    wbIssueTime[11]  = io_exuWriteback_11_bits_debugInfo_issueTime;
+    wbWbTime[11]     = io_exuWriteback_11_bits_debugInfo_writebackTime;
+    wbData0[11]      = io_exuWriteback_11_bits_data_0;
+    wbEnqRsTime[12]  = io_exuWriteback_12_bits_debugInfo_enqRsTime;
+    wbSelectTime[12] = io_exuWriteback_12_bits_debugInfo_selectTime;
+    wbIssueTime[12]  = io_exuWriteback_12_bits_debugInfo_issueTime;
+    wbWbTime[12]     = io_exuWriteback_12_bits_debugInfo_writebackTime;
+    wbData0[12]      = io_exuWriteback_12_bits_data_0;
+    wbEnqRsTime[13]  = io_exuWriteback_13_bits_debugInfo_enqRsTime;
+    wbSelectTime[13] = io_exuWriteback_13_bits_debugInfo_selectTime;
+    wbIssueTime[13]  = io_exuWriteback_13_bits_debugInfo_issueTime;
+    wbWbTime[13]     = io_exuWriteback_13_bits_debugInfo_writebackTime;
+    wbData0[13]      = io_exuWriteback_13_bits_data_0;
+    wbEnqRsTime[14]  = io_exuWriteback_14_bits_debugInfo_enqRsTime;
+    wbSelectTime[14] = io_exuWriteback_14_bits_debugInfo_selectTime;
+    wbIssueTime[14]  = io_exuWriteback_14_bits_debugInfo_issueTime;
+    wbWbTime[14]     = io_exuWriteback_14_bits_debugInfo_writebackTime;
+    wbData0[14]      = io_exuWriteback_14_bits_data_0;
+    wbEnqRsTime[15]  = io_exuWriteback_15_bits_debugInfo_enqRsTime;
+    wbSelectTime[15] = io_exuWriteback_15_bits_debugInfo_selectTime;
+    wbIssueTime[15]  = io_exuWriteback_15_bits_debugInfo_issueTime;
+    wbWbTime[15]     = io_exuWriteback_15_bits_debugInfo_writebackTime;
+    wbData0[15]      = io_exuWriteback_15_bits_data_0;
+    wbEnqRsTime[16]  = io_exuWriteback_16_bits_debugInfo_enqRsTime;
+    wbSelectTime[16] = io_exuWriteback_16_bits_debugInfo_selectTime;
+    wbIssueTime[16]  = io_exuWriteback_16_bits_debugInfo_issueTime;
+    wbWbTime[16]     = io_exuWriteback_16_bits_debugInfo_writebackTime;
+    wbData0[16]      = io_exuWriteback_16_bits_data_0;
+    wbEnqRsTime[17]  = io_exuWriteback_17_bits_debugInfo_enqRsTime;
+    wbSelectTime[17] = io_exuWriteback_17_bits_debugInfo_selectTime;
+    wbIssueTime[17]  = io_exuWriteback_17_bits_debugInfo_issueTime;
+    wbWbTime[17]     = io_exuWriteback_17_bits_debugInfo_writebackTime;
+    wbData0[17]      = io_exuWriteback_17_bits_data_0;
+    wbEnqRsTime[18]  = io_exuWriteback_18_bits_debugInfo_enqRsTime;
+    wbSelectTime[18] = io_exuWriteback_18_bits_debugInfo_selectTime;
+    wbIssueTime[18]  = io_exuWriteback_18_bits_debugInfo_issueTime;
+    wbWbTime[18]     = io_exuWriteback_18_bits_debugInfo_writebackTime;
+    wbData0[18]      = io_exuWriteback_18_bits_data_0;
+    wbEnqRsTime[19]  = io_exuWriteback_19_bits_debugInfo_enqRsTime;
+    wbSelectTime[19] = io_exuWriteback_19_bits_debugInfo_selectTime;
+    wbIssueTime[19]  = io_exuWriteback_19_bits_debugInfo_issueTime;
+    wbWbTime[19]     = io_exuWriteback_19_bits_debugInfo_writebackTime;
+    wbData0[19]      = io_exuWriteback_19_bits_data_0;
+    wbEnqRsTime[20]  = io_exuWriteback_20_bits_debugInfo_enqRsTime;
+    wbSelectTime[20] = io_exuWriteback_20_bits_debugInfo_selectTime;
+    wbIssueTime[20]  = io_exuWriteback_20_bits_debugInfo_issueTime;
+    wbWbTime[20]     = io_exuWriteback_20_bits_debugInfo_writebackTime;
+    wbData0[20]      = io_exuWriteback_20_bits_data_0;
+    wbEnqRsTime[21]  = io_exuWriteback_21_bits_debugInfo_enqRsTime;
+    wbSelectTime[21] = io_exuWriteback_21_bits_debugInfo_selectTime;
+    wbIssueTime[21]  = io_exuWriteback_21_bits_debugInfo_issueTime;
+    wbWbTime[21]     = io_exuWriteback_21_bits_debugInfo_writebackTime;
+    wbData0[21]      = io_exuWriteback_21_bits_data_0;
+    wbEnqRsTime[22]  = io_exuWriteback_22_bits_debugInfo_enqRsTime;
+    wbSelectTime[22] = io_exuWriteback_22_bits_debugInfo_selectTime;
+    wbIssueTime[22]  = io_exuWriteback_22_bits_debugInfo_issueTime;
+    wbWbTime[22]     = io_exuWriteback_22_bits_debugInfo_writebackTime;
+    wbData0[22]      = io_exuWriteback_22_bits_data_0;
+    wbEnqRsTime[23]  = io_exuWriteback_23_bits_debugInfo_enqRsTime;
+    wbSelectTime[23] = io_exuWriteback_23_bits_debugInfo_selectTime;
+    wbIssueTime[23]  = io_exuWriteback_23_bits_debugInfo_issueTime;
+    wbWbTime[23]     = io_exuWriteback_23_bits_debugInfo_writebackTime;
+    wbData0[23]      = io_exuWriteback_23_bits_data_0;
+    wbEnqRsTime[24]  = io_exuWriteback_24_bits_debugInfo_enqRsTime;
+    wbSelectTime[24] = io_exuWriteback_24_bits_debugInfo_selectTime;
+    wbIssueTime[24]  = io_exuWriteback_24_bits_debugInfo_issueTime;
+    wbWbTime[24]     = io_exuWriteback_24_bits_debugInfo_writebackTime;
+    wbData0[24]      = io_exuWriteback_24_bits_data_0;
+    wbLqIdx[20]     = io_exuWriteback_20_bits_lqIdx_value;
+    wbLqIdx[21]     = io_exuWriteback_21_bits_lqIdx_value;
+    wbLqIdx[22]     = io_exuWriteback_22_bits_lqIdx_value;
+    wbSqIdx[18]     = io_exuWriteback_18_bits_sqIdx_value;
+    wbSqIdx[19]     = io_exuWriteback_19_bits_sqIdx_value;
+    wbIsMMIO[18]    = io_exuWriteback_18_bits_debug_isMMIO;
+    wbIsNCIO[18]    = io_exuWriteback_18_bits_debug_isNCIO;
+    wbPaddr[18]     = io_exuWriteback_18_bits_debug_paddr;
+    wbIsMMIO[19]    = io_exuWriteback_19_bits_debug_isMMIO;
+    wbIsNCIO[19]    = io_exuWriteback_19_bits_debug_isNCIO;
+    wbPaddr[19]     = io_exuWriteback_19_bits_debug_paddr;
+    wbIsMMIO[20]    = io_exuWriteback_20_bits_debug_isMMIO;
+    wbIsNCIO[20]    = io_exuWriteback_20_bits_debug_isNCIO;
+    wbPaddr[20]     = io_exuWriteback_20_bits_debug_paddr;
+    wbIsMMIO[21]    = io_exuWriteback_21_bits_debug_isMMIO;
+    wbIsNCIO[21]    = io_exuWriteback_21_bits_debug_isNCIO;
+    wbPaddr[21]     = io_exuWriteback_21_bits_debug_paddr;
+    wbIsMMIO[22]    = io_exuWriteback_22_bits_debug_isMMIO;
+    wbIsNCIO[22]    = io_exuWriteback_22_bits_debug_isNCIO;
+    wbPaddr[22]     = io_exuWriteback_22_bits_debug_paddr;
+    wbIsMMIO[23]    = io_exuWriteback_23_bits_debug_isMMIO;
+    wbIsNCIO[23]    = io_exuWriteback_23_bits_debug_isNCIO;
+    wbPaddr[23]     = io_exuWriteback_23_bits_debug_paddr;
+    wbIsMMIO[24]    = io_exuWriteback_24_bits_debug_isMMIO;
+    wbIsNCIO[24]    = io_exuWriteback_24_bits_debug_isNCIO;
+    wbPaddr[24]     = io_exuWriteback_24_bits_debug_paddr;
+    wbIsPerfCnt[7] = io_exuWriteback_7_bits_debug_isPerfCnt;
+    wbIsPerfCnt[18] = io_exuWriteback_18_bits_debug_isPerfCnt;
+    wbIsPerfCnt[19] = io_exuWriteback_19_bits_debug_isPerfCnt;
+    wbIsPerfCnt[20] = io_exuWriteback_20_bits_debug_isPerfCnt;
+    wbIsPerfCnt[21] = io_exuWriteback_21_bits_debug_isPerfCnt;
+    wbIsPerfCnt[22] = io_exuWriteback_22_bits_debug_isPerfCnt;
+    wbIsPerfCnt[23] = io_exuWriteback_23_bits_debug_isPerfCnt;
+    wbIsPerfCnt[24] = io_exuWriteback_24_bits_debug_isPerfCnt;
+  end
+
+  // ---- debug_microOp / debug_exuData / dt_exuDebug 的写入 ----
+  always_ff @(posedge clock) begin
+    for (int i = 0; i < ROB_SIZE; i++) begin
+      // 入队：第 5 路优先（循环递增 => 后写的赢）
+      for (int j = 0; j < RENAME_W; j++)
+        if (enqOH[i][j]) begin
+          debug_microOp_debugReg_instr[i]      <= enqInstrVec[j];
+          debug_microOp_debugReg_pc[i]         <= enqPcVec[j];
+          debug_microOp_debugReg_fuType[i]     <= enqFuType[j];
+          debug_microOp_debugReg_fuOpType[i]   <= enqFuOpType[j];
+          debug_microOp_debugReg_commitType[i] <= enqCommitType[j];
+          debug_microOp_debugReg_debug_fuType[i]   <= enqDbgFuType[j];
+          debug_microOp_debugReg_debug_sim_trig[i] <= enqSimTrig[j];
+          debug_microOp_debugReg_lqIdx_value[i]    <= enqLqIdx[j];
+          debug_microOp_debugReg_sqIdx_value[i]    <= enqSqIdx[j];
+          debug_microOp_debugReg_debugInfo_renameTime[i]    <= enqRenameTime[j];
+          // 五个时间戳入队时统一打上当前 timer
+          debug_microOp_debugReg_debugInfo_dispatchTime[i]  <= timer;
+          debug_microOp_debugReg_debugInfo_enqRsTime[i]     <= timer;
+          debug_microOp_debugReg_debugInfo_selectTime[i]    <= timer;
+          debug_microOp_debugReg_debugInfo_issueTime[i]     <= timer;
+          debug_microOp_debugReg_debugInfo_writebackTime[i] <= timer;
+        end
+      // 写回：第 24 路优先（同样循环递增 => 后写的赢）
+      for (int k = 0; k < EXU_N; k++)
+        if (exuWbValid[k] & (exuWbRobIdx[k] == PTR_W'(i))) begin
+          debug_microOp_debugReg_debugInfo_enqRsTime[i]     <= wbEnqRsTime[k];
+          debug_microOp_debugReg_debugInfo_selectTime[i]    <= wbSelectTime[k];
+          debug_microOp_debugReg_debugInfo_issueTime[i]     <= wbIssueTime[k];
+          debug_microOp_debugReg_debugInfo_writebackTime[i] <= wbWbTime[k];
+          debug_microOp_debugReg_lqIdx_value[i]             <= wbLqIdx[k];
+          debug_microOp_debugReg_sqIdx_value[i]             <= wbSqIdx[k];
+          debug_exuData[i]        <= wbData0[k];
+          dt_exuDebug_isMMIO[i]   <= wbIsMMIO[k];
+          dt_exuDebug_isNCIO[i]   <= wbIsNCIO[k];
+          dt_exuDebug_isPerfCnt[i]<= wbIsPerfCnt[k];
+          dt_exuDebug_paddr[i]    <= wbPaddr[k];
+        end
+      // LSQ 入队回来的 lqIdx（比写回更靠后，优先级更高）
+      for (int j = 0; j < RENAME_W; j++)
+        if (dbgEnqLsqAlloc[j] & (dbgEnqLsqRobIdx[j] == PTR_W'(i)))
+          debug_microOp_debugReg_lqIdx_value[i] <= dbgEnqLsqLqIdx[j];
+    end
+  end
+
+  always_comb begin
+    dbgEnqLsqAlloc[0]  = io_debugEnqLsq_canAccept & io_debugEnqLsq_needAlloc_0[0] & io_debugEnqLsq_req_0_valid;
+    dbgEnqLsqRobIdx[0] = io_debugEnqLsq_req_0_bits_robIdx_value;
+    dbgEnqLsqLqIdx[0]  = io_debugEnqLsq_req_0_bits_lqIdx_value;
+    dbgEnqLsqAlloc[1]  = io_debugEnqLsq_canAccept & io_debugEnqLsq_needAlloc_1[0] & io_debugEnqLsq_req_1_valid;
+    dbgEnqLsqRobIdx[1] = io_debugEnqLsq_req_1_bits_robIdx_value;
+    dbgEnqLsqLqIdx[1]  = io_debugEnqLsq_req_1_bits_lqIdx_value;
+    dbgEnqLsqAlloc[2]  = io_debugEnqLsq_canAccept & io_debugEnqLsq_needAlloc_2[0] & io_debugEnqLsq_req_2_valid;
+    dbgEnqLsqRobIdx[2] = io_debugEnqLsq_req_2_bits_robIdx_value;
+    dbgEnqLsqLqIdx[2]  = io_debugEnqLsq_req_2_bits_lqIdx_value;
+    dbgEnqLsqAlloc[3]  = io_debugEnqLsq_canAccept & io_debugEnqLsq_needAlloc_3[0] & io_debugEnqLsq_req_3_valid;
+    dbgEnqLsqRobIdx[3] = io_debugEnqLsq_req_3_bits_robIdx_value;
+    dbgEnqLsqLqIdx[3]  = io_debugEnqLsq_req_3_bits_lqIdx_value;
+    dbgEnqLsqAlloc[4]  = io_debugEnqLsq_canAccept & io_debugEnqLsq_needAlloc_4[0] & io_debugEnqLsq_req_4_valid;
+    dbgEnqLsqRobIdx[4] = io_debugEnqLsq_req_4_bits_robIdx_value;
+    dbgEnqLsqLqIdx[4]  = io_debugEnqLsq_req_4_bits_lqIdx_value;
+    dbgEnqLsqAlloc[5]  = io_debugEnqLsq_canAccept & io_debugEnqLsq_needAlloc_5[0] & io_debugEnqLsq_req_5_valid;
+    dbgEnqLsqRobIdx[5] = io_debugEnqLsq_req_5_bits_robIdx_value;
+    dbgEnqLsqLqIdx[5]  = io_debugEnqLsq_req_5_bits_lqIdx_value;
+  end
+
+  // ---- debug_lsIssued / debug_lsTopdownInfo ----
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) begin
+      for (int i = 0; i < ROB_SIZE; i++) debug_lsIssued[i] <= 1'b0;
+    end else begin
+      for (int i = 0; i < ROB_SIZE; i++) begin
+        for (int j = 0; j < RENAME_W; j++)
+          if (enqOH[i][j]) debug_lsIssued[i] <= 1'b0;
+        if (io_debugHeadLsIssue & (deqPtrValue[0] == PTR_W'(i)))
+          debug_lsIssued[i] <= 1'b1;
+      end
+    end
+  end
+
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) begin
+      for (int i = 0; i < ROB_SIZE; i++) begin
+        debug_lsTopdownInfo_s1_vaddr_valid[i] <= 1'b0;
+        debug_lsTopdownInfo_s1_vaddr_bits[i]  <= {VADDR_W{1'b0}};
+        debug_lsTopdownInfo_s2_paddr_valid[i] <= 1'b0;
+        debug_lsTopdownInfo_s2_paddr_bits[i]  <= {PADDR_W{1'b0}};
+      end
+    end else begin
+      for (int i = 0; i < ROB_SIZE; i++) begin
+        // 入队清零（LsTopdownInfo.init），三路 ldu 的 s1/s2 再按 robIdx 置位
+        for (int j = 0; j < RENAME_W; j++)
+          if (enqOH[i][j]) begin
+            debug_lsTopdownInfo_s1_vaddr_valid[i] <= 1'b0;
+            debug_lsTopdownInfo_s1_vaddr_bits[i]  <= {VADDR_W{1'b0}};
+            debug_lsTopdownInfo_s2_paddr_valid[i] <= 1'b0;
+            debug_lsTopdownInfo_s2_paddr_bits[i]  <= {PADDR_W{1'b0}};
+          end
+        for (int k = 0; k < 3; k++) begin
+          if (lsTdS1Valid[k] & (lsTdS1RobIdx[k] == PTR_W'(i))) begin
+            debug_lsTopdownInfo_s1_vaddr_valid[i] <= 1'b1;
+            debug_lsTopdownInfo_s1_vaddr_bits[i]  <= lsTdS1Vaddr[k];
+          end
+          if (lsTdS2Valid[k] & (lsTdS2RobIdx[k] == PTR_W'(i))) begin
+            debug_lsTopdownInfo_s2_paddr_valid[i] <= 1'b1;
+            debug_lsTopdownInfo_s2_paddr_bits[i]  <= lsTdS2Paddr[k];
+          end
+        end
+      end
+    end
+  end
+
+  always_comb begin
+    lsTdS1Valid[0]  = io_lsTopdownInfo_0_s1_vaddr_valid;
+    lsTdS1RobIdx[0] = io_lsTopdownInfo_0_s1_robIdx;
+    lsTdS1Vaddr[0]  = io_lsTopdownInfo_0_s1_vaddr_bits;
+    lsTdS2Valid[0]  = io_lsTopdownInfo_0_s2_paddr_valid;
+    lsTdS2RobIdx[0] = io_lsTopdownInfo_0_s2_robIdx;
+    lsTdS2Paddr[0]  = io_lsTopdownInfo_0_s2_paddr_bits;
+    lsTdS1Valid[1]  = io_lsTopdownInfo_1_s1_vaddr_valid;
+    lsTdS1RobIdx[1] = io_lsTopdownInfo_1_s1_robIdx;
+    lsTdS1Vaddr[1]  = io_lsTopdownInfo_1_s1_vaddr_bits;
+    lsTdS2Valid[1]  = io_lsTopdownInfo_1_s2_paddr_valid;
+    lsTdS2RobIdx[1] = io_lsTopdownInfo_1_s2_robIdx;
+    lsTdS2Paddr[1]  = io_lsTopdownInfo_1_s2_paddr_bits;
+    lsTdS1Valid[2]  = io_lsTopdownInfo_2_s1_vaddr_valid;
+    lsTdS1RobIdx[2] = io_lsTopdownInfo_2_s1_robIdx;
+    lsTdS1Vaddr[2]  = io_lsTopdownInfo_2_s1_vaddr_bits;
+    lsTdS2Valid[2]  = io_lsTopdownInfo_2_s2_paddr_valid;
+    lsTdS2RobIdx[2] = io_lsTopdownInfo_2_s2_robIdx;
+    lsTdS2Paddr[2]  = io_lsTopdownInfo_2_s2_paddr_bits;
+  end
+
+  // ---- 队头的调试读口 ----
+  // 下标 8 位、深度 160 —— FMR_ELAB-147 的形状，一律循环+比较。
+  logic [FUTYPE_W-1:0] deqHeadDbgFuType;
+  logic               headLsIssued;
+  logic               headS1Valid, headS2Valid;
+  logic [VADDR_W-1:0] headS1Vaddr;
+  logic [PADDR_W-1:0] headS2Paddr;
+  logic [VADDR_W-1:0] storeDbgPc [2];
+
+  always_comb begin
+    deqHeadInstr     = 32'h0;
+    deqHeadDbgFuType = {FUTYPE_W{1'b0}};
+    headLsIssued     = 1'b0;
+    headS1Valid      = 1'b0;
+    headS1Vaddr      = {VADDR_W{1'b0}};
+    headS2Valid      = 1'b0;
+    headS2Paddr      = {PADDR_W{1'b0}};
+    storeDbgPc[0]    = {VADDR_W{1'b0}};
+    storeDbgPc[1]    = {VADDR_W{1'b0}};
+    for (int i = 0; i < ROB_SIZE; i++) begin
+      if (deqPtrValue[0] == PTR_W'(i)) begin
+        deqHeadInstr     = debug_microOp_debugReg_instr[i];
+        deqHeadDbgFuType = debug_microOp_debugReg_debug_fuType[i];
+        headS1Valid      = debug_lsTopdownInfo_s1_vaddr_valid[i];
+        headS1Vaddr      = debug_lsTopdownInfo_s1_vaddr_bits[i];
+        headS2Valid      = debug_lsTopdownInfo_s2_paddr_valid[i];
+        headS2Paddr      = debug_lsTopdownInfo_s2_paddr_bits[i];
+        // debug_lsIssue 是 WireDefault(debug_lsIssued) 再就地覆盖队头那一条
+        headLsIssued     = debug_lsIssued[i] | io_debugHeadLsIssue;
+      end
+      if (io_storeDebugInfo_0_robidx_value == PTR_W'(i))
+        storeDbgPc[0] = debug_microOp_debugReg_pc[i];
+      if (io_storeDebugInfo_1_robidx_value == PTR_W'(i))
+        storeDbgPc[1] = debug_microOp_debugReg_pc[i];
+    end
+  end
+
+  assign io_debugRobHead_debug_fuType = deqHeadDbgFuType;
+  assign io_storeDebugInfo_0_pc       = storeDbgPc[0];
+  assign io_storeDebugInfo_1_pc       = storeDbgPc[1];
+  assign io_debugTopDown_toCore_robHeadVaddr_valid = headS1Valid;
+  assign io_debugTopDown_toCore_robHeadVaddr_bits  = headS1Vaddr;
+  assign io_debugTopDown_toCore_robHeadPaddr_valid = headS2Valid;
+  assign io_debugTopDown_toCore_robHeadPaddr_bits  = headS2Paddr;
+  assign io_debugTopDown_toDispatch_robHeadLsIssue = headLsIssued;
+
+  // ---- debug_VecOtherPdest：向量 load 写回时按 vdIdx 记下另一个 pdest ----
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) begin
+      for (int i = 0; i < ROB_SIZE; i++) begin
+        debug_VecOtherPdest_0[i] <= {PREG_W{1'b0}};
+        debug_VecOtherPdest_1[i] <= {PREG_W{1'b0}};
+        debug_VecOtherPdest_2[i] <= {PREG_W{1'b0}};
+        debug_VecOtherPdest_3[i] <= {PREG_W{1'b0}};
+        debug_VecOtherPdest_4[i] <= {PREG_W{1'b0}};
+        debug_VecOtherPdest_5[i] <= {PREG_W{1'b0}};
+        debug_VecOtherPdest_6[i] <= {PREG_W{1'b0}};
+        debug_VecOtherPdest_7[i] <= {PREG_W{1'b0}};
+      end
+    end else begin
+      for (int i = 0; i < ROB_SIZE; i++)
+        for (int k = 0; k < VLD_WB_N; k++)
+          if (vldWbValid[k] & (vldWbRobIdx[k] == PTR_W'(i)) & robEntries_valid[i]
+              & (vldWbVecWen[k] | vldWbV0Wen[k])) begin
+            if (vldWbVdIdx[k] == 3'd0) debug_VecOtherPdest_0[i] <= vldWbPdest[k];
+            if (vldWbVdIdx[k] == 3'd1) debug_VecOtherPdest_1[i] <= vldWbPdest[k];
+            if (vldWbVdIdx[k] == 3'd2) debug_VecOtherPdest_2[i] <= vldWbPdest[k];
+            if (vldWbVdIdx[k] == 3'd3) debug_VecOtherPdest_3[i] <= vldWbPdest[k];
+            if (vldWbVdIdx[k] == 3'd4) debug_VecOtherPdest_4[i] <= vldWbPdest[k];
+            if (vldWbVdIdx[k] == 3'd5) debug_VecOtherPdest_5[i] <= vldWbPdest[k];
+            if (vldWbVdIdx[k] == 3'd6) debug_VecOtherPdest_6[i] <= vldWbPdest[k];
+            if (vldWbVdIdx[k] == 3'd7) debug_VecOtherPdest_7[i] <= vldWbPdest[k];
+          end
+    end
+  end
+
+  always_comb begin
+    vldWbValid[0]  = io_exuWriteback_23_valid;
+    vldWbRobIdx[0] = io_exuWriteback_23_bits_robIdx_value;
+    vldWbVdIdx[0]  = io_exuWriteback_23_bits_vls_vdIdx;
+    vldWbPdest[0]  = io_exuWriteback_23_bits_pdest;
+    vldWbVecWen[0] = io_exuWriteback_23_bits_vecWen;
+    vldWbV0Wen[0]  = io_exuWriteback_23_bits_v0Wen;
+    vldWbValid[1]  = io_exuWriteback_24_valid;
+    vldWbRobIdx[1] = io_exuWriteback_24_bits_robIdx_value;
+    vldWbVdIdx[1]  = io_exuWriteback_24_bits_vls_vdIdx;
+    vldWbPdest[1]  = io_exuWriteback_24_bits_pdest;
+    vldWbVecWen[1] = io_exuWriteback_24_bits_vecWen;
+    vldWbV0Wen[1]  = io_exuWriteback_24_bits_v0Wen;
+  end
 
 endmodule
