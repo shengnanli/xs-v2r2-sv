@@ -99,7 +99,7 @@ verdict=SUCCEEDED。差任何一个（高或低）都按 fail 上报并查清机
 `eee60602` 只给 `xs_DelayN_core.sv` 加了一段头注释（答"三个核能不能合并"）。
 注释也是字节，旧 receipt 绑的是旧字节，所以全 18 个重跑了一遍：
 
-- 证明 commit：`eee60602a12f8d1c3a5b0f0e2b8b2f1a` 的前 12 位目录 `evidence/eee60602a12f/`
+- 证明 commit：`eee60602a12f28b1366e5be5e27bb62427246d7c`（证据目录 `evidence/eee60602a12f/`，取前 12 位）
 - 复算：`cd verif/ut/DelayN && python3 reconcile.py eee60602` —— RECONCILE_RC=0
 - 结果：18/18 verdict=SUCCEEDED，passing 与模型差全 +0，与 `f0bcd42e` 那批逐个相同。
 
