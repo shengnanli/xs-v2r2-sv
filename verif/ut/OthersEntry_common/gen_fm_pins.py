@@ -139,26 +139,35 @@ HDR = """# {mod} FM 匹配前钉点 —— golden 逐字段寄存器 <-> 可读�
 if {{$top eq "{mod}"}} {{
   set _n 0
   set _miss 0
+  # ★标记★：fm.log 里 OE_PIN_BEGIN 与 OE_PIN_END 之间的 `Error:` 行才是**本文件**
+  #   钉点失败；区间外的 FM-036 多半来自 match_packed_payload 那类**投机性试名**
+  #   （试不中是常态）。判据见 scripts/check_pin_errors.py。
+  puts "OE_PIN_BEGIN {mod} expect={npin}"
   foreach _pair {{
 """
 
 FTR = """  }} {{
     lassign $_pair _r _i
-    if {{[catch {{set_user_match "r:/WORK/$top/$_r" "i:/WORK/$top/u_entry/$_i"}} _msg]}} {{
-      incr _miss
-      if {{$_miss <= 10}} {{ puts "OE_PIN_FAIL: $_r <-> $_i ($_msg)" }}
-    }} else {{
+    # ★用**返回值**判成败，不用 catch★（2026-09-20 本 lane 在真 fm_shell 上实测）：
+    #   名字存在   -> 返回 1
+    #   名字不存在 -> 返回 0，并往 fm.log 写 `Error: Unknown name: ... (FM-036)`
+    #   catch {{...}} -> 恒为 0（**从不抛异常**），msg 就是那个返回值本身
+    # 所以旧写法 `if {{[catch {{set_user_match ...}}]}} ... else {{incr _n}}` 里
+    # else 支恒成立，_miss 恒 0、_n 恒等于总数 —— 两道守卫**都是空的**。
+    # 这正是 P4 判据要抓的形态。
+    if {{[set_user_match "r:/WORK/$top/$_r" "i:/WORK/$top/u_entry/$_i"]}} {{
       incr _n
+    }} else {{
+      incr _miss
+      if {{$_miss <= 10}} {{ puts "OE_PIN_FAIL: $_r <-> $_i" }}
     }}
   }}
-  puts "OE_PINS: $_n / {npin} tried, $_miss threw"
+  puts "OE_PIN_END {mod} n=$_n miss=$_miss expect={npin}"
   # fail-closed 两道，都在最后一次 set_user_match **之后**：
-  #   (1) 一次都不许抛；
-  #   (2) 成功条数必须**恰好**等于生成时算出来的期望数量 —— set_user_match 对不存在的
-  #       名字不抛异常（实测），所以只看"没抛"证明不了钉点真的都下去了；
-  #       把期望数量写成字面整数钉死，少一条就 error。
-  if {{$_miss != 0}} {{ error "OE_PIN_THREW=$_miss" }}
-  if {{$_n != {npin}}} {{ error "OE_PIN_COUNT=$_n expected {npin}" }}
+  #   (1) 一条都不许失败；
+  #   (2) 成功条数必须**恰好**等于生成时算出来的期望数量（字面整数，钉死）。
+  if {{$_miss != 0}} {{ error "OE_PIN_MISS={mod} miss=$_miss" }}
+  if {{$_n != {npin}}} {{ error "OE_PIN_COUNT={mod} n=$_n expect={npin}" }}
 }}
 """
 
@@ -169,7 +178,7 @@ def gen(mod):
     out = [HDR.format(mod=mod, npin=len(pins), nskip=len(skipped))]
     for r, i in pins:
         out.append('    {%s %s}\n' % (r, i))
-    out.append(FTR.format(npin=len(pins)))
+    out.append(FTR.format(npin=len(pins), mod=mod))
     if skipped:
         out.append('\n# golden 侧不存在、因而未钉点的寄存器：\n')
         for s in skipped:

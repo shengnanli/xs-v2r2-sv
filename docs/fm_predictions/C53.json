@@ -1,0 +1,9 @@
+{
+  "target": "C53",
+  "ut": "ArrayMulDataModule",
+  "regs": 0,
+  "outs": 3,
+  "expected": 3,
+  "merge_dup": "false",
+  "model_applicable": true
+}
