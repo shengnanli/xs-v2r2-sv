@@ -24,6 +24,11 @@ run "package 作用域闸"   python3 scripts/check_pkg_scope.py
 # 这里在临时 rtl 树里逐条判据各种一个病（包重名 / 跨文件共享包 / $unit 作用域 import），
 # 要求闸每次都红；同时钉住两种合法的模块头 import 写法不许被误报。
 run "package 闸负测"     python3 scripts/test_pkg_scope_gate.py
+# 参数覆盖闸（2026-09-20，DelayN lane 实测）：把共享核的参数改个名、例化不跟着改，
+# VCS 只给 Warning-[AOUP] 就静默取默认值 —— DelayNWithValid 家族的 elaborate 期
+# 守恒不变式就是这么被无声解除武装的（UT 照过、FM 照绿，六道闸没有一道会响）。
+run "参数覆盖闸"        python3 scripts/check_param_override.py --quiet
+run "参数覆盖闸负测"     python3 scripts/test_param_override_gate.py
 run "universe 冻结闸"   python3 scripts/check_universe_freeze.py
 run "位置依赖闸"       python3 scripts/test_no_location_dependency.py
 # 台账行序闸：我写了这条测试却没接进来（2026-09-14 由 bkperf worker 撞上才发现——
@@ -86,7 +91,9 @@ for g in scripts/gen_tlbuffer_ad_family.py scripts/gen_mbist_pipe_family.py \
          scripts/gen_newdispatch_tb.py \
          scripts/gen_tlbnb_family.py scripts/gen_predictor.py \
          scripts/gen_rob.py scripts/gen_rob_ut.py \
+         scripts/gen_lqreplay.py scripts/gen_lqreplay_ut.py \
          scripts/gen_sbuffer.py scripts/gen_sbuffer_tb.py \
+         scripts/gen_fubusy_wbarb.py \
          scripts/gen_tlbsw_family.py; do
   [ -f "$g" ] && run "生成器幂等 $(basename $g .py | sed 's/^gen_//')" python3 "$g" --check
 done
@@ -97,6 +104,10 @@ for g in verif/ut/TlbStorageWrapper/gen_tb_variant.py; do
 done
 # 闸的完备性闸：任何 scripts/gen_*.py 要么进上面的列表，要么在
 # check_gen_gate_complete.py 的 NO_CHECK 豁免表里写明理由，没有第三条路。
+# WBArbiter 反饥饿状态机的可达性表：verif/ut/WBArbiterVariants/tb.sv 的覆盖判据是
+# 分档的（N=1 全死 / N=2 只有第 1 路够得着 / N>=3 全可达），依据就是这张表。
+# 判据来源必须能机器重算，否则"随机激励没跑到"会被当成"不可达"写进判据里。
+run "WBArb 可达性表"     python3 scripts/wbarbiter_reachability.py --check
 run "生成器闸完备性"     python3 scripts/check_gen_gate_complete.py
 # UT initreg 棘轮：147 个 UT 里 68 个的 Makefile 完全没提 initreg（2026-09-17 实测），
 # 也就是说这些目标的 UT 验收是在"寄存器初值由 VCS 默认决定"下过的。

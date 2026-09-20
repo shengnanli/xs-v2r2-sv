@@ -13,6 +13,11 @@ FM_VARIANTS = IBuffer
 
 PORTLINT_ORDER = fail
 
+# vmucp：6 个 unread 全是两侧对称 matched_nc（deqInBankPtr_<n>_flag_reg <->
+#   u_core/deq_inbank_flag_q_reg[n]，n=0..5，严格双射）。IBuffer 已在 fm_eq.tcl
+#   白名单里（2026-09-17）。★跑前预登记：passing 必须恰好 7902 -> 7908（+6）★
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 include ../../../scripts/ut_common.mk
 
 # golden 的随机初值 initial 块只在 `ifndef SYNTHESIS 下出现，与 FM 侧口径一致：

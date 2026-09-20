@@ -4,48 +4,28 @@
 家族成员（G1 Frontend 闭包内，都由 FTB 例化）：
   DelayNWithValid    载荷 50 位（预测目标地址）
   DelayNWithValid_1  载荷 60 位（FTBEntry：brSlots/tailSlot/pftAddr/…）
-两者时序结构逐字相同（valid 打一拍 + 两级带使能的数据寄存器），只差载荷位宽。
-事实全部从 G1 golden 现读。
+两者时序结构逐字相同（valid 打一拍 + 两级带使能的数据寄存器），只差载荷位宽
+（按家族公式即 STAGES=2 / VALID_CHAIN=1 —— golden 没有 io_out_valid 端口，
+valid 链最后一级没人读，被 firtool 消掉了）。
+
+★事实来源改成 gen_facts.facts()★（2026-09-20）：本文件原有一份自己的 facts()，
+只数「两级数据 reg 位数」。核泛化成 n 级之后，参数表里多了 STAGES / VALID_CHAIN，
+薄文件必须跟着给。gen_facts.facts() 不但给出这三个数，还会把整个 golden 模块体
+**由公式重建并逐字比对**——比原来那份只数位宽的 facts() 强得多，没有理由留两份。
 """
-import os, re, sys
+import os, sys
 
 G = os.environ.get("GOLDEN_RTL", "/home/eda/xs-env/G1-canonical/golden-rtl")
 HERE = os.path.dirname(os.path.abspath(__file__))
 RTL = os.path.abspath(os.path.join(HERE, "../../../rtl/common"))
-PORT = re.compile(r'^\s*(input|output|inout)\s+(?:\[(\d+):(\d+)\]\s+)?(\w+)\s*,?\s*$')
+sys.path.insert(0, HERE)
+from gen_facts import facts     # noqa: E402  （含「模块体由公式重建并逐字比对」）
 
 USE = {
     "DelayNWithValid":   "FTB —— 预测目标地址沿预测流水打两拍",
     "DelayNWithValid_1": "FTB —— FTBEntry（分支槽 / 尾槽 / 预取地址 / strong_bias）打两拍",
 }
 VARIANTS = list(USE)
-
-
-def facts(name):
-    txt = open(f"{G}/{name}.sv").read()
-    body = txt[txt.index(f"\nmodule {name}(") + 1:]
-    head = body[:body.index("\n);")]
-    ports = []
-    for ln in head.splitlines()[1:]:
-        m = PORT.match(ln)
-        if not m:
-            raise SystemExit(f"{name}: 端口行解析失败: {ln!r}")
-        w = int(m.group(2)) - int(m.group(3)) + 1 if m.group(2) else 1
-        ports.append(dict(dir=m.group(1), w=w, name=m.group(4)))
-    ins = [p for p in ports if p["name"].startswith("io_in_bits")]
-    outs = [p for p in ports if p["name"].startswith("io_out_bits")]
-    tot = 0
-    for hi, lo, rn in re.findall(r'^  reg\s+(?:\[(\d+):(\d+)\]\s+)?(\w+);', body, re.M):
-        if rn == "valid_REG":
-            continue
-        tot += (int(hi) - int(lo) + 1) if hi else 1
-    payload = sum(p["w"] for p in ins)
-    assert [p["name"][len("io_in_bits"):] for p in ins] == \
-           [p["name"][len("io_out_bits"):] for p in outs], name
-    assert [p["w"] for p in ins] == [p["w"] for p in outs], name
-    assert payload * 2 == tot, (name, payload, tot)
-    return dict(name=name, ports=ports, head_text=head + "\n);", ins=ins, outs=outs,
-                payload=payload, data_reg_bits=tot)
 
 
 def wrap(names, indent, tail=""):
@@ -72,9 +52,11 @@ def gen_variant(name):
 // {name} —— 带 valid 使能的两级打拍链（xs_DelayNWithValid_core 家族的一个变体）
 //
 // 本变体的参数与规模（按 G1 golden 现读，不从上一轮继承）：
-//   载荷 WIDTH = {f["payload"]} 位，分 {len(ins)} 个字段；级数固定 2 级；
-//   golden 模块体 = 1 个异步复位的 valid 寄存器 + {f["data_reg_bits"]} 个无复位数据 reg 位
-//     （2 级 × {f["payload"]} 位），无子模块；
+//   载荷 WIDTH = {f["payload"]} 位，分 {len(ins)} 个字段；数据级数 STAGES = {f["stages"]}；
+//   valid 链保留 {f["valid_chain"]} 个寄存器（golden {"有" if f["has_out_valid"] else "没有"} io_out_valid 端口，
+//     按家族公式 V = STAGES{"" if f["has_out_valid"] else " - 1"}）；
+//   golden 模块体 = {f["reg_bits"]} 个 reg 位 = {f["valid_chain"]} 个 valid 位（异步复位）
+//     + {f["stages"]} 级 × {f["payload"]} 位数据（无复位），无子模块；
 //   端口 {len(f["ports"])} 个 = clock + reset + io_in_valid + {len(ins)} 入 + {len(outs)} 出。
 //   载荷字段：{fld}{more}。
 //   使用者：{USE[name]}。
@@ -89,8 +71,10 @@ def gen_variant(name):
 module {name}(
 {f["head_text"].split(chr(10), 1)[1]}
 
-  localparam int unsigned GOLDEN_DATA_REG_BITS = {f["data_reg_bits"]};  // golden 两级数据 reg 位数
-  localparam int unsigned PAYLOAD_W            = GOLDEN_DATA_REG_BITS / 2;
+  localparam int unsigned STAGES          = {f["stages"]};   // 数据级数 n
+  localparam int unsigned VALID_CHAIN     = {f["valid_chain"]};   // 保留下来的 valid 寄存器个数
+  localparam int unsigned GOLDEN_REG_BITS = {f["reg_bits"]}; // golden 里 reg 位数总和（含 valid 链）
+  localparam int unsigned PAYLOAD_W       = (GOLDEN_REG_BITS - VALID_CHAIN) / STAGES;
 
   // 端口表事实：$bits 只认端口声明，抄错位宽这些常量立刻跟着变
   localparam int unsigned PORT_BITS_IN = $bits(
@@ -105,16 +89,22 @@ module {name}(
 {wrap(ins, "    ", ";")}
 
   xs_DelayNWithValid_core #(
-    .WIDTH               (PAYLOAD_W),
-    .GOLDEN_DATA_REG_BITS(GOLDEN_DATA_REG_BITS),
-    .PORT_BITS_IN        (PORT_BITS_IN),
-    .PORT_BITS_OUT       (PORT_BITS_OUT)
+    .WIDTH          (PAYLOAD_W),
+    .STAGES         (STAGES),
+    .VALID_CHAIN    (VALID_CHAIN),
+    .GOLDEN_REG_BITS(GOLDEN_REG_BITS),
+    .PORT_BITS_IN   (PORT_BITS_IN),
+    .PORT_BITS_OUT  (PORT_BITS_OUT)
   ) u_core (
     .clock   (clock),
     .reset   (reset),
     .in_valid(io_in_valid),
     .d_in    (payload_in),
-    .d_out   (payload_out)
+    .d_out   (payload_out),
+    // 本变体的 golden 没有 io_out_valid 端口（valid 链最后一级没人读，被 firtool
+    // 消掉，故 VALID_CHAIN = STAGES-1）。核的 out_valid 在这种参数下没有意义，
+    // 悬空 —— 照抄 golden 的端口表，不凭空补一个 golden 没有的输出。
+    .out_valid()
   );
 
   assign
