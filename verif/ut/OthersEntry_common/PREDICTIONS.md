@@ -97,3 +97,41 @@ cd verif/ut/OthersEntry_common && python3 predict.py
 且 **核 `xs_iq_entries_core.sv` 的 sha256 必须仍是**
 `e4e4491009971cfaade049d58f977c68b7dba9f0d840f379649b3d25d934ba41` —— 改了核就不算"核够用"。
 若出现 matched_nc unread，按 standing rule 六条处理且增量必须**恰好**等于加强前的 unread 数。
+
+---
+
+## ★最终对账：18 个目标、同一个 commit★
+
+- 证明 commit：`9c2517d9e886cd6b84be2e2b7cbb04c5f2876760`（18 份 receipt 全在这一个 commit 上）
+- 复算：`python3 reconcile.py 9c2517d9` → rc=0
+
+★为什么要在一个 commit 上重跑一遍★：VEC 那 6 个是分三批出的证
+（`_164/_166` @2e593a57、`_152/_138` @35b364d5、`_150/_136` @36000097）。
+中间我往 `scripts/fm_eq.tcl` 的 vmucp 白名单加过名字，而那个文件**在所有目标的证明脚本闭包里** ——
+也就是说 `_152/_138` 的旧 receipt 是用另一份 fm_eq.tcl 产出的。
+数字不会因此变，但"18 份证据用的是同一套脚本"这件事得是**跑出来的**，不是推出来的。
+
+| 变体 | 模型(上界) | 下界 | 实测 passing | 差 | failing | unmatched | unread | verdict | vmucp |
+|---|---|---|---|---|---|---|---|---|---|
+| `OthersEntry_44` | 3639 | 3275 | **3639** | +0 | 0 | 0 | 0 | SUCCEEDED | false |
+| `OthersEntry_50` | 1426 | 1226 | **1426** | +0 | 0 | 0 | 0 | SUCCEEDED | false |
+| `OthersEntry_66` | 3617 | 3255 | **3617** | +0 | 0 | 0 | 0 | SUCCEEDED | false |
+| `OthersEntry_72` | 1394 | 1194 | **1394** | +0 | 0 | 0 | 0 | SUCCEEDED | false |
+| `OthersEntry` | 3619 | 3257 | **3619** | +0 | 0 | 0 | 0 | SUCCEEDED | false |
+| `OthersEntry_6` | 1394 | 1194 | **1394** | +0 | 0 | 0 | 0 | SUCCEEDED | false |
+| `OthersEntry_88` | 3528 | 3175 | **3528** | +0 | 0 | 0 | 0 | SUCCEEDED | true |
+| `OthersEntry_90` | 1301 | 1101 | **1301** | +0 | 0 | 0 | 0 | SUCCEEDED | false |
+| `OthersEntry_104` | 3520 | 3168 | **3520** | +0 | 0 | 0 | 0 | SUCCEEDED | true |
+| `OthersEntry_106` | 1293 | 1093 | **1293** | +0 | 0 | 0 | 0 | SUCCEEDED | false |
+| `OthersEntry_120` | 3516 | 3164 | **3516** | +0 | 0 | 0 | 0 | SUCCEEDED | true |
+| `OthersEntry_122` | 1289 | 1089 | **1289** | +0 | 0 | 0 | 0 | SUCCEEDED | false |
+| `OthersEntry_164` | 3792 | 3413 | **3792** | +0 | 0 | 0 | 0 | SUCCEEDED | true |
+| `OthersEntry_166` | 1713 | 1513 | **1713** | +0 | 0 | 0 | 0 | SUCCEEDED | false |
+| `OthersEntry_150` | 3797 | 3417 | **3797** | +0 | 0 | 0 | 0 | SUCCEEDED | true |
+| `OthersEntry_152` | 1719 | 1519 | **1719** | +0 | 0 | 0 | 0 | SUCCEEDED | false |
+| `OthersEntry_136` | 3859 | 3473 | **3859** | +0 | 0 | 0 | 0 | SUCCEEDED | true |
+| `OthersEntry_138` | 1763 | 1563 | **1763** | +0 | 0 | 0 | 0 | SUCCEEDED | false |
+
+**18/18 SUCCEEDED，实测 passing 逐个正好等于模型上界（差全为 +0），failing / unmatched / unread 全 0。**
+
+至此 24 个变体里 **18 个签核完毕**；剩 6 个 MEM 族（`_172/_174/_200/_202/_242/_244`）等 `entries-rest3` 的 E4。
