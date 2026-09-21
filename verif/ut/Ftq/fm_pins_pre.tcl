@@ -17,17 +17,35 @@
 # ============================================================================
 
 if {$top eq "Ftq"} {
+  # ★归因标记★：fm.log 里 OE_PIN_BEGIN..OE_PIN_END 之间的 `Error:` 行才是
+  #   **本文件**的钉点失败；区间外的 FM-036 多半来自 match_packed_payload
+  #   那类投机性试名。判据见 scripts/check_pin_errors.py。
+  # ★为什么不再用 catch 数钉点★：set_user_match **从不抛异常**（名字不存在
+  #   时返回 0 并往 fm.log 写 `Error: Unknown name: ... (FM-036)`），所以旧写法
+  #   `if {[catch {set_user_match ...}]} {incr _miss} else {incr _n}` 的 else 支
+  #   恒成立 —— _miss 恒 0、_n 恒等于尝试次数，两道守卫都是空的。
+  #   现改为直接取返回值，并在文件末尾用 `error` fail-closed。
+  #   ★用 `error` 不用 `exit`★：正式签核时本文件跑在 `interp create -safe`
+  #   里（run_proof.sh 设 FM_SIDECAR_OUT），safe interp 隐藏 `exit`，
+  #   只有 `error` 穿得出去。
+  # ★3494 与 3488 是两个不同的量，别混★
+  #   3494 = 本文件发出的 set_user_match **调用**数（本文件的守卫数的就是它）；
+  #   3488 = match 之后 fm.log 里的 "Compare points matched by user"。
+  #   差 6 = toPrefetchPc 的低 6 位：两侧都被 verification_merge_duplicated_registers
+  #   合并掉（见下面 toPrefetchPc 那段的说明），钉的时候成功、match 后不各自成点。
+  puts "OE_PIN_BEGIN Ftq expect=3494"
   set _n 0
   set _miss 0
   for {set i 0} {$i < 64} {incr i} {
     for {set j 0} {$j < 16} {incr j} {
       for {set b 0} {$b < 2} {incr b} {
-        if {[catch {set_user_match \
+        if {[set_user_match \
               "r:/WORK/$top/commitStateQueueReg_${i}_${j}_reg\[$b\]" \
-              "i:/WORK/$top/u_core/commitStateQueue_reg\[$i\]\[$j\]\[$b\]"}]} {
-          incr _miss
-        } else {
+              "i:/WORK/$top/u_core/commitStateQueue_reg\[$i\]\[$j\]\[$b\]"]} {
           incr _n
+        } else {
+          incr _miss
+          if {$_miss <= 10} { puts "FTQ_PIN_FAIL: r:/WORK/$top/commitStateQueueReg_${i}_${j}_reg\[$b\]" }
         }
       }
     }
@@ -40,12 +58,13 @@ if {$top eq "Ftq"} {
   set _n2 0
   set _miss2 0
   foreach _s {5 6} {
-    if {[catch {set_user_match \
+    if {[set_user_match \
           "r:/WORK/$top/copied_last_cycle_bpu_in_REG_${_s}_reg" \
-          "i:/WORK/$top/u_core/copied_last_cycle_bpu_in_REG_${_s}_reg"}]} {
-      incr _miss2
-    } else {
+          "i:/WORK/$top/u_core/copied_last_cycle_bpu_in_REG_${_s}_reg"]} {
       incr _n2
+    } else {
+      incr _miss2
+      if {$_miss2 <= 10} { puts "FTQ_PIN_FAIL: r:/WORK/$top/copied_last_cycle_bpu_in_REG_${_s}_reg" }
     }
   }
   puts "FTQ_PINS: copied_last_cycle_bpu_in_REG_5/6 pinned=$_n2 miss=$_miss2 (expect 2 / 0)"
@@ -59,28 +78,31 @@ if {$top eq "Ftq"} {
   set _miss3 0
   for {set i 0} {$i < 64} {incr i} {
     for {set j 0} {$j < 16} {incr j} {
-      if {[catch {set_user_match \
+      if {[set_user_match \
             "r:/WORK/$top/mispredict_vec_${i}_${j}_reg" \
-            "i:/WORK/$top/u_core/mispred_block_reg\[$i\]\[$j\]"}]} {
-        incr _miss3
-      } else {
+            "i:/WORK/$top/u_core/mispred_block_reg\[$i\]\[$j\]"]} {
         incr _n3
+      } else {
+        incr _miss3
+        if {$_miss3 <= 10} { puts "FTQ_PIN_FAIL: r:/WORK/$top/mispredict_vec_${i}_${j}_reg" }
       }
     }
-    if {[catch {set_user_match \
+    if {[set_user_match \
           "r:/WORK/$top/cfiIndex_vec_${i}_valid_reg" \
-          "i:/WORK/$top/u_core/cfiIndex_valid_reg\[$i\]"}]} {
-      incr _miss3
-    } else {
+          "i:/WORK/$top/u_core/cfiIndex_valid_reg\[$i\]"]} {
       incr _n3
+    } else {
+      incr _miss3
+      if {$_miss3 <= 10} { puts "FTQ_PIN_FAIL: r:/WORK/$top/cfiIndex_vec_${i}_valid_reg" }
     }
     for {set b 0} {$b < 4} {incr b} {
-      if {[catch {set_user_match \
+      if {[set_user_match \
             "r:/WORK/$top/cfiIndex_vec_${i}_bits_reg\[$b\]" \
-            "i:/WORK/$top/u_core/cfiIndex_bits_reg\[$i\]\[$b\]"}]} {
-        incr _miss3
-      } else {
+            "i:/WORK/$top/u_core/cfiIndex_bits_reg\[$i\]\[$b\]"]} {
         incr _n3
+      } else {
+        incr _miss3
+        if {$_miss3 <= 10} { puts "FTQ_PIN_FAIL: r:/WORK/$top/cfiIndex_vec_${i}_bits_reg\[$b\]" }
       }
     }
   }
@@ -100,14 +122,27 @@ if {$top eq "Ftq"} {
   set _miss4 0
   foreach _f {startAddr nextLineAddr} {
     for {set b 0} {$b < 50} {incr b} {
-      if {[catch {set_user_match \
+      if {[set_user_match \
             "r:/WORK/$top/toPrefetchPcBundle_${_f}_reg\[$b\]" \
-            "i:/WORK/$top/u_core/toPrefetchPc_${_f}_reg\[$b\]"}]} {
-        incr _miss4
-      } else {
+            "i:/WORK/$top/u_core/toPrefetchPc_${_f}_reg\[$b\]"]} {
         incr _n4
+      } else {
+        incr _miss4
+        if {$_miss4 <= 10} { puts "FTQ_PIN_FAIL: r:/WORK/$top/toPrefetchPcBundle_${_f}_reg\[$b\]" }
       }
     }
   }
   puts "FTQ_PINS: toPrefetchPc startAddr/nextLineAddr pinned=$_n4 miss=$_miss4 (expect 100 / 0; match 后生效 94，低 6 位两侧对称合并)"
+
+  # ---- fail-closed（都在最后一次 set_user_match 之后）----
+  set _ntot   [expr {$_n + $_n2 + $_n3 + $_n4}]
+  set _misstot [expr {$_miss + $_miss2 + $_miss3 + $_miss4}]
+  puts "OE_PIN_END Ftq n=$_ntot miss=$_misstot expect=3494"
+  if {$_misstot != 0} { error "FTQ_PIN_MISS=Ftq miss=$_misstot (n=$_ntot)" }
+  if {$_ntot != 3494} { error "FTQ_PIN_COUNT=Ftq n=$_ntot expect=3494" }
+  # 分族期望值（2048 + 2 + 1344 + 100 = 3494），任一族少配都要当场炸：
+  if {$_n  != 2048} { error "FTQ_PIN_COUNT=commitStateQueue n=$_n expect=2048" }
+  if {$_n2 != 2}    { error "FTQ_PIN_COUNT=copied_last_cycle_bpu_in n=$_n2 expect=2" }
+  if {$_n3 != 1344} { error "FTQ_PIN_COUNT=mispredict/cfiIndex n=$_n3 expect=1344" }
+  if {$_n4 != 100}  { error "FTQ_PIN_COUNT=toPrefetchPc n=$_n4 expect=100" }
 }

@@ -1,0 +1,96 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/Ftq
+Implementation : i:/WORK/Ftq
+Version        : V-2023.12-SP3
+Date           : Mon Sep 21 01:27:37 2026
+**************************************************
+
+20 Failing compare points (20 matched, 0 unmatched):
+
+  Ref  DFF        r:/WORK/Ftq/commitStateQueueReg_10_10_reg[1]
+  Impl DFF        i:/WORK/Ftq/u_core/commitStateQueue_reg[10][10][1]
+
+  Ref  DFF        r:/WORK/Ftq/commitStateQueueReg_10_11_reg[0]
+  Impl DFF        i:/WORK/Ftq/u_core/commitStateQueue_reg[10][11][0]
+
+  Ref  DFF        r:/WORK/Ftq/commitStateQueueReg_10_12_reg[0]
+  Impl DFF        i:/WORK/Ftq/u_core/commitStateQueue_reg[10][12][0]
+
+  Ref  DFF        r:/WORK/Ftq/commitStateQueueReg_10_12_reg[1]
+  Impl DFF        i:/WORK/Ftq/u_core/commitStateQueue_reg[10][12][1]
+
+  Ref  DFF        r:/WORK/Ftq/commitStateQueueReg_10_13_reg[0]
+  Impl DFF        i:/WORK/Ftq/u_core/commitStateQueue_reg[10][13][0]
+
+  Ref  DFF        r:/WORK/Ftq/commitStateQueueReg_10_13_reg[1]
+  Impl DFF        i:/WORK/Ftq/u_core/commitStateQueue_reg[10][13][1]
+
+  Ref  DFF        r:/WORK/Ftq/commitStateQueueReg_10_15_reg[1]
+  Impl DFF        i:/WORK/Ftq/u_core/commitStateQueue_reg[10][15][1]
+
+  Ref  DFF        r:/WORK/Ftq/commitStateQueueReg_10_1_reg[0]
+  Impl DFF        i:/WORK/Ftq/u_core/commitStateQueue_reg[10][1][0]
+
+  Ref  DFF        r:/WORK/Ftq/commitStateQueueReg_10_2_reg[1]
+  Impl DFF        i:/WORK/Ftq/u_core/commitStateQueue_reg[10][2][1]
+
+  Ref  DFF        r:/WORK/Ftq/commitStateQueueReg_10_3_reg[1]
+  Impl DFF        i:/WORK/Ftq/u_core/commitStateQueue_reg[10][3][1]
+
+  Ref  DFF        r:/WORK/Ftq/commitStateQueueReg_10_6_reg[0]
+  Impl DFF        i:/WORK/Ftq/u_core/commitStateQueue_reg[10][6][0]
+
+  Ref  DFF        r:/WORK/Ftq/commitStateQueueReg_10_7_reg[1]
+  Impl DFF        i:/WORK/Ftq/u_core/commitStateQueue_reg[10][7][1]
+
+  Ref  DFF        r:/WORK/Ftq/commitStateQueueReg_10_8_reg[0]
+  Impl DFF        i:/WORK/Ftq/u_core/commitStateQueue_reg[10][8][0]
+
+  Ref  DFF        r:/WORK/Ftq/commitStateQueueReg_10_8_reg[1]
+  Impl DFF        i:/WORK/Ftq/u_core/commitStateQueue_reg[10][8][1]
+
+  Ref  DFF        r:/WORK/Ftq/commitStateQueueReg_10_9_reg[0]
+  Impl DFF        i:/WORK/Ftq/u_core/commitStateQueue_reg[10][9][0]
+
+  Ref  DFF        r:/WORK/Ftq/commitStateQueueReg_10_9_reg[1]
+  Impl DFF        i:/WORK/Ftq/u_core/commitStateQueue_reg[10][9][1]
+
+  Ref  DFF        r:/WORK/Ftq/commitStateQueueReg_13_3_reg[0]
+  Impl DFF        i:/WORK/Ftq/u_core/commitStateQueue_reg[13][3][0]
+
+  Ref  DFF        r:/WORK/Ftq/commitStateQueueReg_15_3_reg[0]
+  Impl DFF        i:/WORK/Ftq/u_core/commitStateQueue_reg[15][3][0]
+
+  Ref  DFF        r:/WORK/Ftq/commitStateQueueReg_17_3_reg[0]
+  Impl DFF        i:/WORK/Ftq/u_core/commitStateQueue_reg[17][3][0]
+
+  Ref  DFF        r:/WORK/Ftq/commitStateQueueReg_29_3_reg[0]
+  Impl DFF        i:/WORK/Ftq/u_core/commitStateQueue_reg[29][3][0]
+
+ [BBNet: multiply-driven net
+  BBPin: black-box pin
+  Cut:   cut-point
+  DFF:   non-constant DFF register
+  DFF0:  constant 0 DFF register
+  DFF1:  constant 1 DFF register
+  DFFX:  constant X DFF register
+  DFF0X: constrained 0X DFF register
+  DFF1X: constrained 1X DFF register
+  LAT:   non-constant latch register
+  LAT0:  constant 0 latch register
+  LAT1:  constant 1 latch register
+  LATX:  constant X latch register
+  LAT0X: constrained 0X latch register
+  LAT1X: constrained 1X latch register
+  LATCG: clock-gating latch register
+  TLA:   transparent latch register
+  TLA0X: transparent constrained 0X latch register
+  TLA1X: transparent constrained 1X latch register
+  Loop:  cycle break point
+  Port:  primary (top-level) port
+  Und:   undriven signal cut-point
+  Unk:   unknown signal cut-point]
+
+1

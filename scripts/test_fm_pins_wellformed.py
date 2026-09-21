@@ -64,8 +64,6 @@ FAIL_OPEN_LEDGER = {
     # 路径（相对仓根）: 形态记录 —— 期望数量只写在 puts 字符串里，无人校验
     'verif/ut/Bku/fm_pins_pre.tcl':
         'funcReg<->func_s1 9 位；"expect 9 / 0" 只在 puts 里',
-    'verif/ut/Ftq/fm_pins_pre.tcl':
-        '6 组共 2048+2+1024+… 点；每组期望值都只在 puts 里',
     'verif/ut/SyncDataModule/fm_pins_pre.tcl':
         '8 个变体逐位钉；连期望数量都没声明，只 puts pinned/miss',
     # 「匹配后」钉点（FM_PIN_TCL）同一病灶、同一处置
@@ -123,7 +121,6 @@ FAIL_OPEN_LEDGER = {
 CATCH_COUNT_LEDGER = {
     'verif/ut/Bku/fm_pins_pre.tcl',
     'verif/ut/Composer/fm_pins_pre.tcl',
-    'verif/ut/Ftq/fm_pins_pre.tcl',
     'verif/ut/IBuffer/fm_pins.tcl',
     'verif/ut/ICacheMissUnit/fm_pins.tcl',
     'verif/ut/ITTageTable/fm_pins.tcl',
@@ -155,6 +152,18 @@ CATCH_COUNT_LEDGER = {
     #     旧: `OE_PINS: 822 / 822 tried, 0 threw` —— 完全没响
     #     新: `OE_PIN_FAIL` + `n=821 miss=1` + error 真的抛出
     #   台账只许缩，这里按闸 G2b 的要求把它们摘掉。
+    # ★2026-09-21 两张表各缩 1 条（agent/ftqprove）★：verif/ut/Ftq/fm_pins_pre.tcl
+    #   6 处 `catch {set_user_match ...}` 已改成取**返回值**计数，并补上
+    #   OE_PIN_BEGIN/END 归因标记与 5 条由计数比较守卫的 `error`
+    #   （总数 3494 + 分族 2048/2/1344/100；用 error 不用 exit，safe interp 隐藏 exit）。
+    #   tclsh 桩正负对照：正 n=3494 miss=0 正常返回；
+    #   负（让第 7 次 set_user_match 返回 0）-> error "FTQ_PIN_MISS=Ftq miss=1 (n=3493)"。
+    #   真 fm_shell 实跑（evidence/6b056a122fad/Ftq）：OE_PIN_END Ftq n=3494 miss=0 expect=3494，
+    #   scripts/check_pin_errors.py --require-pins rc=0（区间内 Error 0 条）。
+    #   ★别把它读成"闸分提高了"★：本闸在 main(786aed42) 上就是 PASS 20 / FAIL 4，
+    #   摘表后还是 PASS 20 / FAIL 4。中间那一步（守卫改好、表还没缩）才是 18/6。
+    #   变的是 Ftq 那一行的**性质**：从"ok（遗留 fail-open / 遗留 catch，已记账）"
+    #   变成真的干净的 ok，台账少一条豁免。
 }
 
 # ★2026-09-20 两张表各缩 3 条（agent/provefleet2）★
