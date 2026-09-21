@@ -279,16 +279,23 @@ module xs_SQData8Module_core
   // 语义上"下标最大优先" = **最年轻的 store 优先**,这正是前递要的语义:
   //   同一字节被多条老 store 写过时,load 应该拿最后写的那份。
   //   h=1(环绕段)整体比 h=0 下标大,也就整体更年轻。
+  // ★写成「或归约 + 三目链」，不要写成 if (hit) { valid=1; data=... }★
+  //   两者在二值下完全等价（FM 证过），但 X 行为不同：golden 的树是
+  //   `valid = l.valid | r.valid` 与 `data = Mux(r.valid, r.data, l.data)`，
+  //   命中位带 X 时 valid 会被 1 吸收、data 会传出 X；而 `if (hit)` 把 X 当假，
+  //   凭空给出一个确定值。在 StoreQueue_xs 的双例化 UT 里这条直接表现为
+  //   forwardMask/forwardData 的 6 个字节道 × 3 个口共 36 根各失配 1 拍
+  //   （golden=X，重写=确定值）。X 会出现是因为 sta 从 misalign buffer 回灌时
+  //   addrvalid 置起但地址阵列没写，vaddr CAM 的命中位就是 X。
   always_comb begin
     for (int i = 0; i < NUM_FWD; i++) begin
       forwardValid[i] = 1'b0;
       forwardData[i]  = entries[0].data;     // 叶子 0 的数据 —— 全不命中时的缺省
       for (int h = 0; h < 2; h++) begin
         for (int j = 0; j < NUM_ENTRIES; j++) begin
-          if (needCheckReg[i][h][j] & entries[j].valid) begin
-            forwardValid[i] = 1'b1;
-            forwardData[i]  = entries[j].data;   // 后写者胜 = 叶子下标最大者胜
-          end
+          automatic logic hit = needCheckReg[i][h][j] & entries[j].valid;
+          forwardValid[i] = forwardValid[i] | hit;
+          forwardData[i]  = hit ? entries[j].data : forwardData[i];  // 下标最大者胜
         end
       end
     end

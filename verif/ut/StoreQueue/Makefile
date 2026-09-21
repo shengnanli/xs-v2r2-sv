@@ -28,4 +28,16 @@ FM_REF_DEPS_StoreQueue = SQAddrModule.sv SQAddrModule_1.sv SQDataModule.sv SQDat
 
 include ../../../scripts/ut_common.mk
 
-VCS += +define+SYNTHESIS
+# golden 的 `ifndef SYNTHESIS 断言块调用未定义的 xs_assert_v2；与 FM 侧口径一致，
+# UT 也定义 SYNTHESIS。
+#
+# initreg：编译期用 +vcs+initreg+random **打开机制**，运行期由 plusarg 选常量档。
+# ★双例化 UT 不许在运行期用 +vcs+initreg+random★ —— 它给 golden 与重写两个实例
+# 各摇各的随机初值，无复位寄存器（本模块有 2913 个）两侧初态就不同，比出来的
+# 差异与重写无关。两个常量档 +0 / +1 两侧必然同初态、又互不相同，是能用的两轮：
+#   make run SEED=1                                        # 默认带 +vcs+initreg+0
+#   make run SEED=1 SIM_ARGS="+ncycles=200000 +vcs+initreg+1"
+# 两轮的日志分别落到 sim_<seed>_initreg0.log / sim_<seed>_initreg1.log（ut_common.mk
+# 的 INITREG_TAG 负责），不会互相覆盖。
+VCS += +define+SYNTHESIS +vcs+initreg+random
+SIM_ARGS += +vcs+initreg+0

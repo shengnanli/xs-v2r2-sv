@@ -765,8 +765,12 @@ module xs_StoreQueue_core
   logic [SQ_SIZE-1:0] waitStoreS2;     // 仍在等 store_s2 的 mmio/异常裁决；入队置 1
 
   // allvalid 在 golden 里是**组合线**，不是寄存器（Chisel SQ:259 是 Wire）。
+  // ★它只是 addrvalid & datavalid，**不含 allocated**★（golden L4430 逐条可查）。
+  // 转发那边另有一个 allValidVec 才额外 & allocated —— 两个名字很像但不是一回事，
+  // 顺手给 allvalid 加上 allocated 会让 toSbufferVecValid / dataBuffer 入口判据
+  // 在「条目已退队但标志位还没清」的那一拍走错分支。
   logic [SQ_SIZE-1:0] allvalid;
-  assign allvalid = addrvalid & datavalid & allocated;
+  assign allvalid = addrvalid & datavalid;
 
   // ---- 【异步复位块】就绪向量输出寄存器（golden `r_*` / `r_1_*`）----
   // Chisel 是 GatedValidRegNext：使能 =「整条 56 位次态 != 现值」，异步复位 0。

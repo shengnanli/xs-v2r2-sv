@@ -20,4 +20,5 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/StoreQueue.sv \
 FM_VARIANTS =
 NCYCLES ?= 4000
 include ../../../../scripts/ut_common.mk
-VCS += +define+SYNTHESIS
+VCS += +define+SYNTHESIS +vcs+initreg+random
+SIM_ARGS += +vcs+initreg+0
