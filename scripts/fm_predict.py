@@ -130,10 +130,17 @@ def cmd_register(targets, ut=None, note=None):
             p['note'] = note
         f = reg_path(t)
         f.write_text(json.dumps(p, indent=2, ensure_ascii=False) + '\n')
-        note = ('模型适用' if p['model_applicable'] else
+        # ★这一行**不能**再叫 note★（2026-09-20 当场踩到并回滚过一轮）：
+        # 原先它复用了参数名 `note`，于是第一个 target 写完之后，`note` 就变成了
+        # 这句**给人看的提示语**，被原样写进后续每一个 target 的登记 JSON。
+        # 实测后果：8 份登记里有 6 份的 `note` 是「★模型不适用★（merge_dup=true）」，
+        # 而 _166/_178 **本该写的那条 merge 可判别依据被它顶掉了** ——
+        # 登记里挂着一句正确但答非所问的话，比没有话更糟。
+        # 展示用的字符串一律用独立名字，别和数据字段共用一个变量。
+        disp = ('模型适用' if p['model_applicable'] else
                 f'★模型不适用★（merge_dup={p["merge_dup"]}）')
         print(f'登记 {t}: expected={p["expected"]} (regs {p["regs"]} + outs {p["outs"]})'
-              f'  {note}  -> {f.relative_to(REPO)}')
+              f'  {disp}{"  note=" + note if note else ""}  -> {f.relative_to(REPO)}')
     print('\n★下一步：git add docs/fm_predictions && git commit —— '
           'check 只认 git HEAD 里的登记，且要求它早于那次证明★')
     return 0
@@ -320,6 +327,14 @@ def selftest():
     ]
     rc = 0
     print('fm_predict --selftest:')
+    # --- register 的 note 不许被展示串污染（真踩过：6/8 份登记被顶掉）---------
+    import inspect
+    _src = inspect.getsource(cmd_register)
+    _body = _src.split("f.write_text", 1)[1] if "f.write_text" in _src else ''
+    _leak = ("\n        note = (" in _body)   # 循环体里重新赋值给参数名 note
+    print(f'  [{"FAIL" if _leak else "OK"}] register 的展示串不得复用参数名 `note`'
+          f'{"  ★又漏回去了★" if _leak else ""}')
+    rc |= 1 if _leak else 0
     for case in cases:
         name, e, a, c, u, ap, anc, want_red = case[:8]
         regs = case[8] if len(case) > 8 else (7079 if not ap else 0)

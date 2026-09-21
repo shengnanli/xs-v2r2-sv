@@ -14,5 +14,5 @@
       "points": 152
     }
   },
-  "note": "★模型不适用★（merge_dup=true）"
+  "note": "差额预期恰为 1：golden 里 rckEnReg<=rckEn 与 respReg<=rckEn?2'h2:{1'h0,respReg[1]} 使 respReg[1] 与 rckEnReg 同 D/同 clock/同异步复位到 0，是一对重复寄存器，被 verification_merge_duplicated_registers=true 合成一个比较点。可判别依据：本族另外 5 个变体 golden 里 respReg 是 1 位且没有 rckEnReg/wckEnReg，不发生合并，实测 DFF 与模型逐位相等。"
 }
