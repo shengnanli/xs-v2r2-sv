@@ -1,0 +1,139 @@
+**************************************************
+Report         : black_boxes
+
+Reference      : r:/WORK/ICache
+Implementation : i:/WORK/ICache
+Version        : V-2023.12-SP3
+Date           : Mon Sep 21 03:35:28 2026
+**************************************************
+Information: Reporting black boxes for current reference and implementation designs. (FM-184)
+
+ ___________________________________________________
+|                                                   |
+|  Legend:                                          |
+|           Black Box Attributes                    |
+|              s = Set with set_black_box command   |
+|              i = Module read with -interface_only |
+|              u = Unresolved design module         |
+|              e = Empty design module              |
+|              * = Unlinked design module           |
+|             ut = Unread tech cells pins           |
+|              L = Linked to non-black box design   |
+|             cp = Cutpoint blackbox                |
+|             ir = Internal rounded blackbox        |
+|              f = Formality Power Model            |
+|              m = Technology Macro cell (.db)      |
+|___________________________________________________|
+
+
+##################################################################
+####    TECH LIBRARY - i:/FM_BBOX
+##################################################################
+Type  Design Name
+----  ----------
+u      ICacheCtrlUnit
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/ICache/u_core/ctrlUnitOpt
+
+u      ICacheDataArray
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/ICache/u_core/dataArray
+
+u      ICacheMainPipe
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/ICache/u_core/mainPipe
+
+u      ICacheMetaArray
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/ICache/u_core/metaArray
+
+u      ICacheMissUnit
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/ICache/u_core/missUnit
+
+u      ICacheReplacer
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/ICache/u_core/replacer
+
+u      IPrefetchPipe
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/ICache/u_core/prefetcher
+
+u      WayLookup
+
+       Instances : 1 of 1
+       ------------------------
+       i:/WORK/ICache/u_core/wayLookup
+
+
+
+##################################################################
+####    TECH LIBRARY - r:/FM_BBOX
+##################################################################
+Type  Design Name
+----  ----------
+u      ICacheCtrlUnit
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/ICache/ctrlUnitOpt
+
+u      ICacheDataArray
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/ICache/dataArray
+
+u      ICacheMainPipe
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/ICache/mainPipe
+
+u      ICacheMetaArray
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/ICache/metaArray
+
+u      ICacheMissUnit
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/ICache/missUnit
+
+u      ICacheReplacer
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/ICache/replacer
+
+u      IPrefetchPipe
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/ICache/prefetcher
+
+u      WayLookup
+
+       Instances : 1 of 1
+       ------------------------
+       r:/WORK/ICache/wayLookup
+
+
+1
+

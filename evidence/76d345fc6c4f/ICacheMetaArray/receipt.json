@@ -1,0 +1,278 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "ICacheMetaArray",
+ "run_id": "ICacheMetaArray-20260921T072045Z-76d345fc",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/ICacheMetaArray.sv",
+   "kind": "golden",
+   "sha256": "7210ae82378dcb8a50135856018e1ffd2324b69f1e039d3802e30a16e9ddcb2c"
+  },
+  {
+   "path": "golden-rtl/SplittedSRAMTemplate.sv",
+   "kind": "golden",
+   "sha256": "376ba6fb02554da01aff83b1d8ad202169c33f575d87cbb1a23b167a4655aee5"
+  },
+  {
+   "path": "golden-rtl/SplittedSRAMTemplate_1.sv",
+   "kind": "golden",
+   "sha256": "a0baa05d56654e5a597807de5c99d3940a68d6f84c16aec0ec8ee2265c851e4d"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate.sv",
+   "kind": "golden",
+   "sha256": "7d936907e61a8734a188602bd0fb80423c9dd3f80eabcaf0c9bae743e7c3adf1"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_2.sv",
+   "kind": "golden",
+   "sha256": "c658cb6265e67364c02719cac5c530976ceb2a4e9c4aa106759442bbeae47910"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p128x74m37s1h0l1b_icsh_tag.sv",
+   "kind": "golden",
+   "sha256": "5cd07a307e325aa7dbee27c7a12ae47463829caa114b8fda7e8968cf8f91c002"
+  },
+  {
+   "path": "golden-rtl/array.sv",
+   "kind": "golden",
+   "sha256": "06bc1822c55794dcecb95b2c5a61a7cd455e381f197bfa08f5de853abb8e0141"
+  },
+  {
+   "path": "golden-rtl/MbistClockGateCell.sv",
+   "kind": "golden",
+   "sha256": "e362031af5358bb570a59d5eeeae5d1306cd9fbacf6f7af885111eee76c970e1"
+  },
+  {
+   "path": "golden-rtl/ClockGate.sv",
+   "kind": "golden",
+   "sha256": "3a59c31230b388514521e3cb8c7e8140ada1b56ebbb0bb0dadf7962d6624dbc1"
+  },
+  {
+   "path": "golden-rtl/MbistPipeIcacheTag.sv",
+   "kind": "golden",
+   "sha256": "c63ae70437159aaf2d62828c9dbe563ffb7a1dc3ca0be138882e06e2f91d8ff0"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/frontend/ICacheMetaArray.sv",
+   "kind": "repo",
+   "sha256": "fca629b94c805d53f32f4fe25df4f2192e9e3459d4cd3250c7e3483cfe69ffb9"
+  },
+  {
+   "path": "golden-rtl/SplittedSRAMTemplate.sv",
+   "kind": "golden",
+   "sha256": "376ba6fb02554da01aff83b1d8ad202169c33f575d87cbb1a23b167a4655aee5"
+  },
+  {
+   "path": "golden-rtl/SplittedSRAMTemplate_1.sv",
+   "kind": "golden",
+   "sha256": "a0baa05d56654e5a597807de5c99d3940a68d6f84c16aec0ec8ee2265c851e4d"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate.sv",
+   "kind": "golden",
+   "sha256": "7d936907e61a8734a188602bd0fb80423c9dd3f80eabcaf0c9bae743e7c3adf1"
+  },
+  {
+   "path": "golden-rtl/SRAMTemplate_2.sv",
+   "kind": "golden",
+   "sha256": "c658cb6265e67364c02719cac5c530976ceb2a4e9c4aa106759442bbeae47910"
+  },
+  {
+   "path": "golden-rtl/sram_array_1p128x74m37s1h0l1b_icsh_tag.sv",
+   "kind": "golden",
+   "sha256": "5cd07a307e325aa7dbee27c7a12ae47463829caa114b8fda7e8968cf8f91c002"
+  },
+  {
+   "path": "golden-rtl/array.sv",
+   "kind": "golden",
+   "sha256": "06bc1822c55794dcecb95b2c5a61a7cd455e381f197bfa08f5de853abb8e0141"
+  },
+  {
+   "path": "golden-rtl/MbistClockGateCell.sv",
+   "kind": "golden",
+   "sha256": "e362031af5358bb570a59d5eeeae5d1306cd9fbacf6f7af885111eee76c970e1"
+  },
+  {
+   "path": "golden-rtl/ClockGate.sv",
+   "kind": "golden",
+   "sha256": "3a59c31230b388514521e3cb8c7e8140ada1b56ebbb0bb0dadf7962d6624dbc1"
+  },
+  {
+   "path": "golden-rtl/MbistPipeIcacheTag.sv",
+   "kind": "golden",
+   "sha256": "c63ae70437159aaf2d62828c9dbe563ffb7a1dc3ca0be138882e06e2f91d8ff0"
+  }
+ ],
+ "impl_commit": "76d345fc6c4fce999720466c539a8fa998db267e",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "assembly",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "true",
+  "pin_scripts": {},
+  "declarations": {
+   "allow": {
+    "path": "verif/allow/ICacheMetaArray.json",
+    "sha256": "652ac378511a5aaeb4597ba5a2ffae35eaba78a830436633895d64472c79a1c8"
+   }
+  },
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "ICacheMetaArray-20260921T072045Z-76d345fc",
+  "top": "ICacheMetaArray",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 2500,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [
+    {
+     "ref_path": "r:/WORK/ICacheMetaArray/tagArrays_0/array_0_0_0/array/array/array_ext",
+     "impl_path": "i:/WORK/ICacheMetaArray/tagArrays_0/array_0_0_0/array/array/array_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ICacheMetaArray/tagArrays_0/array_0_1_0/array/array/array_ext",
+     "impl_path": "i:/WORK/ICacheMetaArray/tagArrays_0/array_0_1_0/array/array/array_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ICacheMetaArray/tagArrays_1/array_0_0_0/array/array/array_ext",
+     "impl_path": "i:/WORK/ICacheMetaArray/tagArrays_1/array_0_0_0/array/array/array_ext"
+    },
+    {
+     "ref_path": "r:/WORK/ICacheMetaArray/tagArrays_1/array_0_1_0/array/array/array_ext",
+     "impl_path": "i:/WORK/ICacheMetaArray/tagArrays_1/array_0_1_0/array/array/array_ext"
+    }
+   ],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [
+    "r:/WORK/ICacheMetaArray/tagArrays_0/array_0_0_0/array/array/array_ext",
+    "r:/WORK/ICacheMetaArray/tagArrays_0/array_0_1_0/array/array/array_ext",
+    "r:/WORK/ICacheMetaArray/tagArrays_1/array_0_0_0/array/array/array_ext",
+    "r:/WORK/ICacheMetaArray/tagArrays_1/array_0_1_0/array/array/array_ext"
+   ],
+   "unresolved_blackbox_impl": [
+    "i:/WORK/ICacheMetaArray/tagArrays_0/array_0_0_0/array/array/array_ext",
+    "i:/WORK/ICacheMetaArray/tagArrays_0/array_0_1_0/array/array/array_ext",
+    "i:/WORK/ICacheMetaArray/tagArrays_1/array_0_0_0/array/array/array_ext",
+    "i:/WORK/ICacheMetaArray/tagArrays_1/array_0_1_0/array/array/array_ext"
+   ],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 2500,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "assembly",
+  "constant_reg": null,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "ICacheMetaArray",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0,
+  "bbox_objects": 8
+ }
+}
