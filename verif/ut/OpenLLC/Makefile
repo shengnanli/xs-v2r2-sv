@@ -80,6 +80,36 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/OpenLLC.sv \
 
 FM_VARIANTS = OpenLLC
 
+# ★assembly★：唯一的黑盒边界是 9 个存储宏叶子（58 个实例，ref/impl 各 29，见
+# verif/allow/OpenLLC.json 逐条声明）。没有一个 green_child —— 本目标不挂条件绿依赖。
+FM_MODE = assembly
+
+# ★merge_duplicated_registers = false★（2026-09-21 实测定的，不是抄来的默认值）
+#
+# 先用默认 true 跑过一遍（evidence 见 fastlane_ledger 同名条目），结果是
+#   Verification FAILED: 167323 passing / 20 failing / 7 unverified
+#   6(0) Unmatched reference(implementation) compare points
+# 失败点全部集中在 io_rn_0_rx_snp_flit[27..46]（RN 侧 snoop flit 输出），
+# 而 6 个 ref-only 未配对寄存器是
+#   r:/WORK/OpenLLC/rnXbar/snpReqs_{0,1,2,3}_bits_opcode_reg[4]
+#   r:/WORK/OpenLLC/rnLinkMonitor/Decoupled2LCredit_txsnp/out_flit_r_reg[27] 与 [54]
+# —— 正是"四个 bank 的同值复制寄存器"那一类。
+#
+# 这不是重写有 bug：把两侧 OpenLLC 顶层逐项机械对比过，
+#   11 个实例、每个实例的全部端口绑定（mmioDiverger 293 / rnXbar 349 / slices_N 189 …）
+#   全部逐字相同；wire/logic 声明 0 处宽度差、0 处多余/缺失；3 条 assign 逐字相同。
+# 复跑这条机械对比（两边都只读，退出码 0 = 同构）：
+#   python3 scripts/openllc_topology_diff.py
+# 差异只可能来自 FM 自己：impl 侧比 ref 多一层 u_core 层次，
+# merge_duplicated_registers 按名合并复制寄存器时两侧合并深度不对称，
+# 被合掉的那几个在 ref 侧成了未配对点，下游 snp flit 位就跟着判失配。
+# 上一轮 G0 的已签核配置写过同一条结论（"分 bank 扇出复制寄存器按名对称保留,
+# 避免 ref/impl 常数折叠深度不对称造成假失配"），本轮是**独立重现**它。
+#
+# 关掉合并是**加强**不是放松：不合并 = 比较点更多、每个复制副本各自被证。
+FM_MERGE_DUP = false
+
+
 # ---------------------------------------------------------------------------
 # FM elaboration 闭包（两侧同一张清单）与黑盒边界
 #
