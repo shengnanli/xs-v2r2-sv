@@ -183,10 +183,14 @@ Verification FAILED
 
 | 设置 | 地板(自比对) | 漏驱动·参考真逻辑 | 漏驱动·参考恒 0 | 交换两根悬空源 |
 |---|---|---|---|---|
-| `binary:X`（默认） | **FAILED** ✗ | FAILED ✓ | FAILED ✓ | — |
-| `synthesis` | **FAILED** ✗（割点跑到 impl 侧） | FAILED ✓ | FAILED ✓ | — |
-| `0` | SUCCEEDED ✓ | FAILED ✓ | **SUCCEEDED** ✗掩盖 | — |
+| `binary:X`（默认） | **FAILED** ✗ | FAILED ✓ | FAILED ✓ | FAILED (†) |
+| `synthesis` | **FAILED** ✗（割点跑到 impl 侧） | FAILED ✓ | FAILED ✓ | FAILED (†) |
+| `0` | SUCCEEDED ✓ | FAILED ✓ | **SUCCEEDED** ✗掩盖 | **SUCCEEDED** ✗掩盖 |
 | `binary` | SUCCEEDED ✓ | FAILED ✓ | FAILED ✓ | **SUCCEEDED** ✗掩盖 |
+
+(†) ★这两格不算"抓住了"★：`binary:X` / `synthesis` 对**不交换**的那一版也照样
+FAILED（就是第一列的地板），所以它们在这一列上不区分对错，只是把两边都判红。
+如实记在这里，免得后来人把它读成"默认设置能抓交换"。
 
 最后一列是本轮新加的判据，`undriven_floor_min/run_swap.sh`：
 ref 是 `o1=g_0; o2=g_1`，impl 是 `o1=g_1; o2=g_0`（两根悬空源**对调**）。
