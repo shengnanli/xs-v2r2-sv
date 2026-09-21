@@ -1,0 +1,9 @@
+{
+  "target": "RXDAT",
+  "ut": "RXDAT",
+  "regs": 0,
+  "outs": 570,
+  "expected": 570,
+  "merge_dup": "true",
+  "model_applicable": false
+}

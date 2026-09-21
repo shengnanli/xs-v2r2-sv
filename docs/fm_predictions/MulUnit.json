@@ -1,0 +1,9 @@
+{
+  "target": "MulUnit",
+  "ut": "MulUnit",
+  "regs": 3850,
+  "outs": 725,
+  "expected": 4575,
+  "merge_dup": "false",
+  "model_applicable": true
+}

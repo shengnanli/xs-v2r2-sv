@@ -1,0 +1,9 @@
+{
+  "target": "StorePipe",
+  "ut": "StorePipe",
+  "regs": 0,
+  "outs": 0,
+  "expected": 0,
+  "merge_dup": "true",
+  "model_applicable": false
+}

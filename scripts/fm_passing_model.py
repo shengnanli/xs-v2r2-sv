@@ -95,9 +95,34 @@ def model(top, deps):
                 model=regs + outs)
 
 
+def _mk_vars(mk):
+    """收集 Makefile 里的简单赋值（`NAME = ...` / `:=` / `?=`），供 $(NAME) 展开。"""
+    return {m.group(1): m.group(2)
+            for m in re.finditer(r'^([A-Za-z_]\w*)[^\S\n]*[:?]?=[^\S\n]*(.*)$', mk, re.M)}
+
+
+def _expand(s, vars_, depth=0):
+    """展开 `$(NAME)` / `${NAME}`。
+
+    ★为什么必须展开★（2026-09-20 实测）：FCVT / FAlu / MulUnit 三个 UT 把
+    golden 闭包写成 `FM_REF_DEPS_FCVT = $(FCVT_LEAVES)`。不展开时 deps 落成空集，
+    模型只数顶层自己的寄存器 —— FCVT 模型给 2149，而这三个目标的**实测**分别是
+    2514 / 2462 / 4537，全部 **高于**模型上界，于是判据只会报 ABOVE_MODEL
+    （"模型算漏了"），登记本身就是错的。这不是模型不准，是 Makefile 没读全。
+    `$(addprefix ...)` 之类的函数调用不展开（由调用方只取 .sv 结尾的词过滤掉）。
+    """
+    if depth > 8:
+        return s
+    def sub(m):
+        name = m.group(1) or m.group(2)
+        return _expand(vars_.get(name, ''), vars_, depth + 1) if name in vars_ else m.group(0)
+    return re.sub(r'\$\((\w+)\)|\$\{(\w+)\}', sub, s)
+
+
 def from_ut(ut):
     mk = (REPO / 'verif' / 'ut' / ut / 'Makefile').read_text(errors='replace')
     mk = re.sub(r'\\\n', ' ', mk)          # 续行拼起来
+    vars_ = _mk_vars(mk)
     mv = re.search(r'^FM_VARIANTS[^\S\n]*=[^\S\n]*(.*)$', mk, re.M)
     if not mv:
         sys.exit(f'{ut}: Makefile 里没有 FM_VARIANTS')
@@ -105,7 +130,9 @@ def from_ut(ut):
     out = []
     for t in tops:
         d = re.search(r'^FM_REF_DEPS_%s[^\S\n]*=[^\S\n]*(.*)$' % re.escape(t), mk, re.M)
-        deps = [x[:-3] for x in d.group(1).split() if x.endswith('.sv')] if d else []
+        deps = ([x.split('/')[-1][:-3]
+                 for x in _expand(d.group(1), vars_).split() if x.endswith('.sv')]
+                if d else [])
         out.append(model(t, deps))
     return out
 

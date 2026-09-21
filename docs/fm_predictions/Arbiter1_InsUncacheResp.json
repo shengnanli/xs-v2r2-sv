@@ -1,0 +1,9 @@
+{
+  "target": "Arbiter1_InsUncacheResp",
+  "ut": "InstrUncache",
+  "regs": 0,
+  "outs": 34,
+  "expected": 34,
+  "merge_dup": "true",
+  "model_applicable": false
+}

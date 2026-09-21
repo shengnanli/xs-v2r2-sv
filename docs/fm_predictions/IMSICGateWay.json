@@ -1,0 +1,9 @@
+{
+  "target": "IMSICGateWay",
+  "ut": "IMSICGateWay",
+  "regs": 21,
+  "outs": 18,
+  "expected": 39,
+  "merge_dup": "true",
+  "model_applicable": false
+}

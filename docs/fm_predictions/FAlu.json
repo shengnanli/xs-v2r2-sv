@@ -1,0 +1,9 @@
+{
+  "target": "FAlu",
+  "ut": "FAlu",
+  "regs": 2010,
+  "outs": 732,
+  "expected": 2742,
+  "merge_dup": "true",
+  "model_applicable": false
+}

@@ -1,0 +1,9 @@
+{
+  "target": "ICacheCtrlUnit",
+  "ut": "ICacheCtrlUnit",
+  "regs": 149,
+  "outs": 159,
+  "expected": 308,
+  "merge_dup": "true",
+  "model_applicable": false
+}
