@@ -218,7 +218,7 @@ DataStorage_1	MISSING	UNPROVEN	-
 DataStorage_2	MISSING	UNPROVEN	-
 DataStorage_3	MISSING	UNPROVEN	-
 DataStorage_4	MISSING	UNPROVEN	-
-DatamoduleResultBuffer	MISSING	UNPROVEN	-
+DatamoduleResultBuffer	REWRITTEN	PROVEN_DIRECT	rtl/memblock/DatamoduleResultBuffer.sv
 DcsrModule	MISSING	UNPROVEN	-
 DeMultiplexer	GOLDEN_REUSE	PROVEN_DIRECT	rtl/frontend/DeMultiplexer.sv
 DeMultiplexer_1	GOLDEN_REUSE	PROVEN_DIRECT	rtl/frontend/DeMultiplexer_1.sv
@@ -1359,9 +1359,9 @@ SMSPrefetcher	MISSING	UNPROVEN	-
 SMSTrainFilter	MISSING	UNPROVEN	-
 SNLinkMonitor	MISSING	UNPROVEN	-
 SNXbar	REWRITTEN	UNPROVEN	rtl/uncore/SNXbar.sv
-SQAddrModule	MISSING	UNPROVEN	-
-SQAddrModule_1	MISSING	UNPROVEN	-
-SQData8Module	REWRITTEN	PROVEN_IN_CONE	rtl/memblock/SQData8Module.sv
+SQAddrModule	REWRITTEN	PROVEN_DIRECT	rtl/memblock/SQAddrModule.sv
+SQAddrModule_1	REWRITTEN	PROVEN_DIRECT	rtl/memblock/SQAddrModule_1.sv
+SQData8Module	REWRITTEN	PROVEN_DIRECT	rtl/memblock/SQData8Module.sv
 SQDataModule	REWRITTEN	PROVEN_DIRECT	rtl/memblock/SQDataModule.sv
 SRAMTemplate	REWRITTEN	PROVEN_DIRECT	rtl/common/SRAMTemplate.sv
 SRAMTemplateWithFixedWidth	GOLDEN_REUSE	PROVEN_IN_CONE	-
@@ -1513,7 +1513,7 @@ StdFreeList_3	MISSING	UNPROVEN	-
 StimecmpModule	MISSING	UNPROVEN	-
 StopeiModule	MISSING	UNPROVEN	-
 StopiModule	MISSING	UNPROVEN	-
-StoreExceptionBuffer	MISSING	UNPROVEN	-
+StoreExceptionBuffer	REWRITTEN	PROVEN_DIRECT	rtl/memblock/StoreExceptionBuffer.sv
 StoreMisalignBuffer	MISSING	UNPROVEN	-
 StorePfWrapper	MISSING	PROVEN_IN_CONE	-
 StorePipe	REWRITTEN	UNPROVEN	rtl/memblock/StorePipe.sv

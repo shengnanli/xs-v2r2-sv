@@ -21,11 +21,11 @@
 #   observation_sink    1 个   9903 端口全 input 的纯观测 sink，19 万行全是端口表
 #
 metric	done	total	percent
-fm_targets_configured	519	546	95.1
-unique_design_written	168	1191	14.1
-unique_design_proven	156	1191	13.1
-golden_lines_written	2127097	3902283	54.5
-golden_lines_proven	1569839	3902283	40.2
+fm_targets_configured	524	550	95.3
+unique_design_written	171	1191	14.4
+unique_design_proven	160	1191	13.4
+golden_lines_written	2132644	3902283	54.7
+golden_lines_proven	1578915	3902283	40.5
 #
 # written 里没有绿判决证据的设计族（差额都在这儿，逐个列出不藏）：
 #   EnqEntry                                        23986 行
@@ -37,7 +37,6 @@ golden_lines_proven	1569839	3902283	40.2
 #   NewDispatch                                    100983 行
 #   OpenLLC                                          4252 行
 #   Rob                                            266227 行
-#   SQData8Module                                    3529 行
 #   StorePipe                                          93 行
 #   StoreQueue                                      77145 行
 #
