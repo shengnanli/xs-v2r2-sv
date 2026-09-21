@@ -1775,12 +1775,12 @@ module xs_StoreQueue_core
   // robIdx / memBackTypeMM 取的是**提前一拍的读指针再打一拍**（GatedRegNext(rdataPtrExtNext(0))），
   // 不是 rdataPtrExt(0) 的当拍值。golden 为两条通路、两个用途各摇了一份寄存器，
   // 这里照抄成 4 份（§TRAP-F 的同一类坑）。
-  assign mmioReq_robIdx_flag  = uop_robIdx_flag [mmioReqRobIdxPtr.value];
+  assign mmioReq_robIdx_flag  = uop_robIdx_flag_rd [mmioReqRobIdxPtr.value];
   assign mmioReq_robIdx_value = uop_robIdx_value_rd[mmioReqRobIdxPtr.value];
-  assign mmioReq_memBackTypeMM= memBackTypeMM   [mmioReqMemBackPtr.value];
-  assign ncReq_robIdx_flag    = uop_robIdx_flag [ncReqRobIdxPtr.value];
+  assign mmioReq_memBackTypeMM= memBackTypeMM_rd   [mmioReqMemBackPtr.value];
+  assign ncReq_robIdx_flag    = uop_robIdx_flag_rd [ncReqRobIdxPtr.value];
   assign ncReq_robIdx_value   = uop_robIdx_value_rd[ncReqRobIdxPtr.value];
-  assign ncReq_memBackTypeMM  = memBackTypeMM   [ncReqMemBackPtr.value];
+  assign ncReq_memBackTypeMM  = memBackTypeMM_rd   [ncReqMemBackPtr.value];
 
   // ---- CBO.zero 走的是 sbuffer 通路（wline 整行写），不是 uncache 通道 ----
   always_comb begin
@@ -1966,7 +1966,7 @@ module xs_StoreQueue_core
   logic [N_ENSBUF-1:0] toSbufferVecValid;
 
   assign canDeqMisaligned     = dataBuffer_enq_ready[0] & dataBuffer_enq_ready[1];
-  assign firstWithMisalign    = unaligned  [rdataPtrExt[0].value];
+  assign firstWithMisalign    = unaligned_rd  [rdataPtrExt[0].value];
   assign firstWithCross16Byte = cross16Byte_rd[rdataPtrExt[0].value];
   assign isCross4KPage        = io_maControl_toStoreQueue_crossPageWithHit;
   assign isCross4KPageCanDeq  = io_maControl_toStoreQueue_crossPageCanDeq;
@@ -2097,7 +2097,7 @@ module xs_StoreQueue_core
   assign io_maControl_toStoreMisalignBuffer_sqPtr_value = rdataPtrExt[0].value;
   assign io_maControl_toStoreMisalignBuffer_doDeq       =
       isCross4KPage & isCross4KPageCanDeq & dataBuffer_enq_fire[0];
-  assign io_maControl_toStoreMisalignBuffer_uop_uopIdx      = uop_uopIdx     [rdataPtrExt[0].value];
+  assign io_maControl_toStoreMisalignBuffer_uop_uopIdx      = uop_uopIdx_rd     [rdataPtrExt[0].value];
   assign io_maControl_toStoreMisalignBuffer_uop_robIdx_flag = uop_robIdx_flag_rd[rdataPtrExt[0].value];
   assign io_maControl_toStoreMisalignBuffer_uop_robIdx_value= uop_robIdx_value_rd[rdataPtrExt[0].value];
 
@@ -3804,7 +3804,7 @@ module xs_StoreQueue_core
       // ======================= 向量异常旗标 =======================
       if (~vecExceptionFlag_valid && (|vecCommitHasExceptionValid) && ~vecCommitLastFlow) begin
         vecExceptionFlag_valid        <= 1'b1;
-        vecExceptionFlag_robIdx_flag  <= uop_robIdx_flag [vecCommitSelEntry];
+        vecExceptionFlag_robIdx_flag  <= uop_robIdx_flag_rd [vecCommitSelEntry];
         vecExceptionFlag_robIdx_value <= uop_robIdx_value_rd[vecCommitSelEntry];
       end
       else if (vecExceptionFlag_valid && vecExceptionFlagCancel) begin

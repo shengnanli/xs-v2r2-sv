@@ -48,25 +48,25 @@
 //   L478    §2 xs_StoreQueue_core —— 可读核
 //   L798    §3 per-entry 状态 —— ★复位域是 golden 实测，不是照 Chisel 抄★
 //   L1022   §4 组合中间量的声明（按通路分组；方程在后面各节）
-//   L1175   §4.5 读表：把每族 per-entry 状态补齐到 64 项（★下标是 6 位，队列只有 56 项★）
-//   L1309   §5 容量、掩码、若干「指针的当前值」
-//   L1326   §6 dispatch 入队 —— 6 个口，每个口按 numLsElem 占**一段连续条目**
-//   L1432   §7 sta / std / storeMask 三条写入通路
-//   L1477   §8 addrReady / dataReady 两个「发射就绪」指针
-//   L1537   §9 store-to-load 转发（3 个 load 口，队列里做地址 CAM）
-//   L1697   §10 mmio / NC / CBO —— 三条共用 uncache 通道的出队路径
-//   L1811   §11 ROB 提交 —— 把 cmtPtr 起的连续 8 条标成 committed
-//   L1882   §12 出队：读 RAM -> dataBuffer -> Sbuffer
-//   L1930   §13 dataBuffer 入口：三分支（跨 16B 拆分 / 非跨 16B 的非对齐 / 常规）
-//   L2085   §14 difftest 观测口（difftest 关掉时整块是 DontCare，golden 里仍然留着端口）
-//   L2120   §15 子模块例化 —— 5 个，实例名照 golden（dataModule / paddrModule /
-//   L2831   §16 向量异常旗标 + 冲刷判定
-//   L2915   §17 输出驱动
-//   L3173   §18 时序（一）：★不复位★块（对应 golden L20336-58753 的 2913 个寄存器）
-//   L3416   §19 「completed」的 4 个置位源（出队的四条路各有一个）
-//   L3449   §20 perf 观测探针（golden 同名导出；docs/perf_bore_map.tsv 按名字重绑）
-//   L3473   §21 时序（二）：异步复位块（对应 golden L62202-69650 的 1076 个寄存器）
-//   L3833   §22 StoreQueue_xs —— golden 同名 wrapper（1003 根端口，逐位对齐）
+//   L1182   §4.5 读表：把每族 per-entry 状态补齐到 64 项（★下标是 6 位，队列只有 56 项★）
+//   L1316   §5 容量、掩码、若干「指针的当前值」
+//   L1333   §6 dispatch 入队 —— 6 个口，每个口按 numLsElem 占**一段连续条目**
+//   L1453   §7 sta / std / storeMask 三条写入通路
+//   L1498   §8 addrReady / dataReady 两个「发射就绪」指针
+//   L1558   §9 store-to-load 转发（3 个 load 口，队列里做地址 CAM）
+//   L1718   §10 mmio / NC / CBO —— 三条共用 uncache 通道的出队路径
+//   L1832   §11 ROB 提交 —— 把 cmtPtr 起的连续 8 条标成 committed
+//   L1903   §12 出队：读 RAM -> dataBuffer -> Sbuffer
+//   L1951   §13 dataBuffer 入口：三分支（跨 16B 拆分 / 非跨 16B 的非对齐 / 常规）
+//   L2106   §14 difftest 观测口（difftest 关掉时整块是 DontCare，golden 里仍然留着端口）
+//   L2141   §15 子模块例化 —— 5 个，实例名照 golden（dataModule / paddrModule /
+//   L2852   §16 向量异常旗标 + 冲刷判定
+//   L2936   §17 输出驱动
+//   L3194   §18 时序（一）：★不复位★块（对应 golden L20336-58753 的 2913 个寄存器）
+//   L3437   §19 「completed」的 4 个置位源（出队的四条路各有一个）
+//   L3470   §20 perf 观测探针（golden 同名导出；docs/perf_bore_map.tsv 按名字重绑）
+//   L3494   §21 时序（二）：异步复位块（对应 golden L62202-69650 的 1076 个寄存器）
+//   L3854   §22 StoreQueue_xs —— golden 同名 wrapper（1003 根端口，逐位对齐）
 
 // -----------------------------------------------------------------------------
 // §1 storequeue_pkg —— 参数、SqPtr 环形指针、各通道结构体
@@ -1775,12 +1775,12 @@ module xs_StoreQueue_core
   // robIdx / memBackTypeMM 取的是**提前一拍的读指针再打一拍**（GatedRegNext(rdataPtrExtNext(0))），
   // 不是 rdataPtrExt(0) 的当拍值。golden 为两条通路、两个用途各摇了一份寄存器，
   // 这里照抄成 4 份（§TRAP-F 的同一类坑）。
-  assign mmioReq_robIdx_flag  = uop_robIdx_flag [mmioReqRobIdxPtr.value];
+  assign mmioReq_robIdx_flag  = uop_robIdx_flag_rd [mmioReqRobIdxPtr.value];
   assign mmioReq_robIdx_value = uop_robIdx_value_rd[mmioReqRobIdxPtr.value];
-  assign mmioReq_memBackTypeMM= memBackTypeMM   [mmioReqMemBackPtr.value];
-  assign ncReq_robIdx_flag    = uop_robIdx_flag [ncReqRobIdxPtr.value];
+  assign mmioReq_memBackTypeMM= memBackTypeMM_rd   [mmioReqMemBackPtr.value];
+  assign ncReq_robIdx_flag    = uop_robIdx_flag_rd [ncReqRobIdxPtr.value];
   assign ncReq_robIdx_value   = uop_robIdx_value_rd[ncReqRobIdxPtr.value];
-  assign ncReq_memBackTypeMM  = memBackTypeMM   [ncReqMemBackPtr.value];
+  assign ncReq_memBackTypeMM  = memBackTypeMM_rd   [ncReqMemBackPtr.value];
 
   // ---- CBO.zero 走的是 sbuffer 通路（wline 整行写），不是 uncache 通道 ----
   always_comb begin
@@ -1966,7 +1966,7 @@ module xs_StoreQueue_core
   logic [N_ENSBUF-1:0] toSbufferVecValid;
 
   assign canDeqMisaligned     = dataBuffer_enq_ready[0] & dataBuffer_enq_ready[1];
-  assign firstWithMisalign    = unaligned  [rdataPtrExt[0].value];
+  assign firstWithMisalign    = unaligned_rd  [rdataPtrExt[0].value];
   assign firstWithCross16Byte = cross16Byte_rd[rdataPtrExt[0].value];
   assign isCross4KPage        = io_maControl_toStoreQueue_crossPageWithHit;
   assign isCross4KPageCanDeq  = io_maControl_toStoreQueue_crossPageCanDeq;
@@ -2097,7 +2097,7 @@ module xs_StoreQueue_core
   assign io_maControl_toStoreMisalignBuffer_sqPtr_value = rdataPtrExt[0].value;
   assign io_maControl_toStoreMisalignBuffer_doDeq       =
       isCross4KPage & isCross4KPageCanDeq & dataBuffer_enq_fire[0];
-  assign io_maControl_toStoreMisalignBuffer_uop_uopIdx      = uop_uopIdx     [rdataPtrExt[0].value];
+  assign io_maControl_toStoreMisalignBuffer_uop_uopIdx      = uop_uopIdx_rd     [rdataPtrExt[0].value];
   assign io_maControl_toStoreMisalignBuffer_uop_robIdx_flag = uop_robIdx_flag_rd[rdataPtrExt[0].value];
   assign io_maControl_toStoreMisalignBuffer_uop_robIdx_value= uop_robIdx_value_rd[rdataPtrExt[0].value];
 
@@ -3804,7 +3804,7 @@ module xs_StoreQueue_core
       // ======================= 向量异常旗标 =======================
       if (~vecExceptionFlag_valid && (|vecCommitHasExceptionValid) && ~vecCommitLastFlow) begin
         vecExceptionFlag_valid        <= 1'b1;
-        vecExceptionFlag_robIdx_flag  <= uop_robIdx_flag [vecCommitSelEntry];
+        vecExceptionFlag_robIdx_flag  <= uop_robIdx_flag_rd [vecCommitSelEntry];
         vecExceptionFlag_robIdx_value <= uop_robIdx_value_rd[vecCommitSelEntry];
       end
       else if (vecExceptionFlag_valid && vecExceptionFlagCancel) begin
