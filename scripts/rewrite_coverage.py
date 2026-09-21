@@ -124,6 +124,31 @@ def rewritten_modules():
     return out
 
 
+_CANON = re.compile(r'^[A-Za-z_][A-Za-z0-9_]*$')
+
+
+def _add_canonical(dst, name, src):
+    """把台账里的目标名收进集合，★非 canonical 的一律拒绝并出声★（codex 0169 D1）。
+
+    实测事故：docs/fm_round_20260914.tsv:14 的目标名写成 `Bku(vmucp)` ——
+    那不是模块名，是「Bku 这一跑开了 vmucp」的随手注记混进了 target 列。
+    旧代码照单全收，于是集合里多出一个匹配不到任何 universe 成员的名字，
+    **贡献 0 行、不影响任何百分比、也不报错** —— 一个静默的幽灵项。
+
+    幽灵项本身不改数字，但它证明这一列没人校验；同一个位置写错一个**真**模块名
+    （比如 `Bku` 写成 `BKU`）就会静默少计一个目标，那才是它真正的危险。
+    codex 0169 D1：「必须由解析器拒绝或规范化，不能静默形成 0 行幽灵项。」
+
+    这里选**拒绝并出声**而不是规范化：把 `Bku(vmucp)` 规范成 `Bku` 是在替写台账的人
+    猜意图，而猜错的代价是凭空多算一个 proven。
+    """
+    if _CANON.match(name):
+        dst.add(name)
+        return
+    sys.stderr.write('rewrite_coverage: ★拒收非 canonical 目标名★ %r（来自 %s）'
+                     ' —— 台账的 target 列只许是模块名\n' % (name, src))
+
+
 def proven_modules():
     """有**绿判决证据**的模块名集合（proven 口径，头条数字用它）。
 
@@ -149,7 +174,7 @@ def proven_modules():
                 continue
             c = l.split('\t')
             if len(c) > 1 and c[1] in ('SUCCEEDED', 'PASS_DEAD_REF'):
-                ok.add(c[0])
+                _add_canonical(ok, c[0], rnd.name)
     led = REPO / 'docs' / 'fastlane_ledger.tsv'
     if led.exists():
         for l in led.read_text(errors='replace').splitlines():
@@ -157,7 +182,7 @@ def proven_modules():
                 continue
             c = l.split('\t')
             if len(c) > 1 and c[1] in ('WORKING_PASS', 'WORKING_PASS_DEAD_REF'):
-                ok.add(c[0])
+                _add_canonical(ok, c[0], led.name)
     if not ok:
         raise SystemExit('proven_modules: %d 份 round 台账 + fastlane 台账都读不出绿判决'
                          ' —— 拒绝按 0 继续' % len(rounds))
@@ -288,6 +313,39 @@ def build():
                     % (o_done, o_tot, o_done * 100.0 / o_tot if o_tot else 0.0))
         rows.append('outcore_golden_lines_proven\t%d\t%d\t%.1f'
                     % (o_prov, o_tot, o_prov * 100.0 / o_tot if o_tot else 0.0))
+    # ★LEGACY_PROVEN_UNANCHORED（codex 0169 D1）★
+    # proven 口径读的是 docs/fm_round_*.tsv 的**行**，不是 receipt。于是一行手写台账
+    # 就能算数 —— Ftq 的 112754 行就是这么从 09-14 起被计进 proven 的，而当时
+    # 它的终局 verify 从没跑完、evidence 从没入库（后由 agent/ftqprove 补上）。
+    #
+    # codex 0169 D1 裁定：**暂不收紧**（receipt 是可复算性资产，不是 RTL 功能本身；
+    # 当前优先级是继续写 RTL、跑 Formal、转绿），但这些历史结果要——
+    #   · 保留原功能结论，标记 LEGACY_PROVEN_UNANCHORED
+    #   · ★不计作本轮新增进展★
+    #   · 在目标 RTL 被改动、依赖父级晋升或自然回归时，顺带用当前官方流程刷新
+    # 从现在起的新 proven 必须来自实际完成的 FM 结果。
+    import subprocess as _sp
+    try:
+        _tracked = {x.split('/')[2] for x in _sp.check_output(
+            ['git', '-C', str(REPO), 'ls-files', 'evidence/*/receipt.json']
+        ).decode().split() if x.count('/') >= 3}
+    except Exception:
+        _tracked = None
+    if _tracked is not None:
+        _unanchored = sorted(m for m in prov if m not in _tracked)
+        _ul = sum(real[m][1] for m in _unanchored if m in real)
+        rows.append('#')
+        rows.append('# ★LEGACY_PROVEN_UNANCHORED（codex 0169 D1）—— 台账行有绿判决，'
+                    '但仓里没有已跟踪 receipt★')
+        rows.append('#   它们保留原功能结论、仍计在上面的 proven 里，'
+                    '但★不计作本轮新增进展★；')
+        rows.append('#   在各自目标下次被改动/晋升/自然回归时，顺带用当前官方 FM 流程刷新。')
+        rows.append('legacy_proven_unanchored\t%d\t%d\t%.1f'
+                    % (len(_unanchored), len(prov),
+                       len(_unanchored) * 100.0 / len(prov) if prov else 0.0))
+        rows.append('#   合计 %d golden 行' % _ul)
+        for m in _unanchored:
+            rows.append('#   %-40s %8d 行' % (m, real[m][1] if m in real else 0))
     rows.append('#')
     rows.append('# written 里没有绿判决证据的设计族（差额都在这儿，逐个列出不藏）：')
     for b in sorted(fam_done - fam_prov):

@@ -11,7 +11,6 @@ AXI4Xbar	SUCCEEDED	"passing": 2280 "failing": 0 "unmatched": 0 "unread":
 Arbiter2_ICacheMissReq	SUCCEEDED	
 Arbiter5_MSHRAcquire	SUCCEEDED	
 Bku	SUCCEEDED	"passing": 3391 "failing": 0 "unread": 0 (vmucp 加强后 3371->3391)
-Bku(vmucp)	SUCCEEDED	"passing": 3391 "failing": 0 "unread":
 CHILogger	SUCCEEDED	"passing": 1293 "failing": 0 "unmatched": 0 "unread":
 CompressUnit	SUCCEEDED	"passing": 66 "failing": 0 "unmatched": 0 "unread":
 DataModule_BackendPC_16entry	SUCCEEDED	"passing": 1550 "failing": 0 "unmatched": 0 "unread":
