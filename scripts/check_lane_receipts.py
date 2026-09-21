@@ -35,7 +35,15 @@ REPO = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 def tracked_receipt_dirs():
     out = subprocess.run(['git', 'ls-files', 'evidence/'], cwd=REPO,
                          stdout=subprocess.PIPE).stdout.decode()
-    return {p.split('/')[1] for p in out.splitlines() if p.count('/') >= 1}
+    # ★2026-09-20 修：原先按 **run 目录** 粒度判，是个会给出假「全清」的 bug★
+    # 旧写法 {p.split('/')[1] ...} 只收集 run 目录名，于是同一个 run 目录里
+    # 只要收了**任意一个** target，其余未收的一个都不报。
+    # agent/provefleet2 实测撞到：evidence/40ace84c0bea/ 已收 5 个、未收 2 个时，
+    # 本闸输出「没有未收录的绿 receipt」。
+    # ★这条 bug 让集成者整场依赖的那句「合并后清点」一直在给假的全清。★
+    # 正确粒度是 (run, target) 二元组 —— 收录本来就是按 target 子目录做的。
+    return {(p.split('/')[1], p.split('/')[2])
+            for p in out.splitlines() if p.count('/') >= 2}
 
 
 def green(receipt):
@@ -61,12 +69,48 @@ def scan(wt, tracked):
             if not os.path.isfile(rc):
                 continue
             v = green(rc)
-            if v and run not in tracked:
+            if v and (run, tgt) not in tracked:
                 rows.append((run, tgt, v))
     return rows
 
 
+def _selftest():
+    """★判据必须自证看得见改变★：构造 run 目录里「收了一半」的局面。
+
+    旧写法按 run 目录粒度判（p.split('/')[1]），这种局面会被判成「全清」；
+    新写法按 (run, target) 二元组判，必须报出未收的那个。
+    两条都要跑：只验新写法会红，证明不了这次修复改变了什么。
+    """
+    tracked_pairs = {('runA', 'T1')}          # runA 里只收了 T1
+    disk = [('runA', 'T1'), ('runA', 'T2')]   # 磁盘上 runA 有 T1 和 T2
+
+    old_tracked = {r for r, _ in tracked_pairs}          # 旧：只看 run 名
+    old_missed = [t for t in disk if t[0] not in old_tracked]
+    new_missed = [t for t in disk if t not in tracked_pairs]
+
+    bad = []
+    if old_missed:
+        bad.append('旧写法本应漏报却报了 %r —— 这个自测没有分辨力' % (old_missed,))
+    if new_missed != [('runA', 'T2')]:
+        bad.append('新写法应当且只应当报出 (runA, T2)，实得 %r' % (new_missed,))
+    # 反向：全收了就不许报
+    if [t for t in disk if t in {('runA','T1'), ('runA','T2')}] and \
+       [t for t in disk if t not in {('runA','T1'), ('runA','T2')}]:
+        bad.append('全部收录时新写法仍报了未收 —— 会恒红')
+
+    if bad:
+        print('check_lane_receipts --selftest: %d 条不过' % len(bad))
+        for b in bad:
+            print('  ' + b)
+        return 1
+    print('check_lane_receipts --selftest: 通过'
+          '（旧写法在「收了一半」上给假全清，新写法报出 (runA, T2)；全收时不报）')
+    return 0
+
+
 def main(argv):
+    if argv and argv[0] == '--selftest':
+        return _selftest()
     tracked = tracked_receipt_dirs()
     if argv and argv[0] == '--all':
         wts = [l.split()[0] for l in subprocess.run(
