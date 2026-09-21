@@ -1,0 +1,13 @@
+Command: /home/eda/xs-env/wt-sqcore/verif/ut/StoreQueue/dbg_sqcore/./simv +ntb_random_seed=1 +ncycles=200000 +vcs+initreg+0 -l sim_1.log
+Chronologic VCS simulator copyright 1991-2024
+Contains Synopsys proprietary information.
+Compiler version W-2024.09-SP1_Full64; Runtime version W-2024.09-SP1_Full64;  Sep 21 03:19 2026
+[C376] g_nf0=fffffffffffffb x_nf0=fffffffffffffb | g_nf2=fffffffffffff8 x_nf2=fffffffffffff8
+      g_dm_nf0_0=00000000000000 x_dm_nf0_0=00000000000000 | g_fwdD0_0=da x_fwdD0_0=da
+[C377] g_nf0=d415231e24c33b x_nf0=d415231e24c33b | g_nf2=fffffffffffffa x_nf2=fffffffffffffa
+      g_dm_nf0_0=00000000000000 x_dm_nf0_0=00000000000000 | g_fwdD0_0=da x_fwdD0_0=da
+[C378] g_nf0=fffffffffffff8 x_nf0=fffffffffffff8 | g_nf2=fffffffffffff8 x_nf2=fffffffffffff8
+      g_dm_nf0_0=00000000000000 x_dm_nf0_0=00000000000000 | g_fwdD0_0=da x_fwdD0_0=da
+[C379] g_nf0=dbbd59cee7949a x_nf0=dbbd59cee7949a | g_nf2=fffffffffffffd x_nf2=fffffffffffffd
+      g_dm_nf0_0=00000000000000 x_dm_nf0_0=00000000000000 | g_fwdD0_0=da x_fwdD0_0=da
+Command line: ./simv +ntb_random_seed=1 +ncycles=200000 +vcs+initreg+0 -l sim_1.log
