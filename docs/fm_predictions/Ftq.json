@@ -4,6 +4,6 @@
   "regs": 74120,
   "outs": 1993,
   "expected": 76113,
-  "merge_dup": "false",
-  "model_applicable": true
+  "merge_dup": "true",
+  "model_applicable": false
 }

@@ -39,17 +39,34 @@ FM_REF_DEPS_Ftq = FtqPcMemWrapper.sv SyncDataModuleTemplate_FtqPC_64entry.sv Dat
 # （verif/dead_ref/Ftq.json，PASS_DEAD_REF）。依据与实测数据见 scripts/fm_eq.tcl 白名单注释。
 FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 
-# verification_merge_duplicated_registers 关掉（★加强不是放宽★：不黑盒、不跳点、
-# 不约束 ref，只是要求逐个而非合并后比，比较点只增不减）。
-# 动机是"差额要能逐位指认"：merge 打开时 FM 把重复寄存器并成一个比较点，
-# 比较点数就低于寄存器位数，而低多少无法从 golden 静态算出，于是
-# scripts/fm_predict.py 只能给一条宽 regs 的上界带 —— 本目标 regs 74120 /
-# expected 76113，带宽 97.4%，那条结论近乎无信息。
-# 实测对照（同一份 RTL、同一组 pin、只切这一个 appvar）：
-#   true  passing 66481 = Port 1993 + DFF 64488，constant_reg 28，unread 4282；
-#         模型 76113 与之差 9632，减去 28+4282 后仍有 5322 指认不了。
-#   false 见 evidence/<commit>/Ftq（本 Makefile 现在的取值）。
-FM_MERGE_DUP = false
+# ★FM_MERGE_DUP 留在 FM 默认 true —— 实测关掉会把本目标打红★
+#
+# 关掉 merge 本身是加强（不黑盒、不跳点、不约束 ref，比较点只增不减），
+# 别的目标（Rob / RenameBuffer / MulUnit）靠它转绿。本目标反过来：
+#
+#   evidence/2ef304c666ad/Ftq  FM_MERGE_DUP=false  ★FAILED★
+#     matched 3494(user)+65240(name)+1676(signature)=70410
+#     ★unmatched 1382(ref) / 220(impl)★，failing 20（被 limit 截断）、unverified 9437
+#
+# 失配的是**扇出复制的结构差，不是功能差**：golden 为切扇出把 ftq_pc_mem 的读数据
+# 各复制了 5 份（pc_mem_ifu_ptr_rdata_REG / _REG_1.._REG_4 与
+# pc_mem_ifu_plus1_rdata_REG / _REG_1.._REG_4，各 50 位 × startAddr/nextLineAddr
+# 两字段），可读核每族只留一份（toIfuPc_cur_* / toIfuPc_p1_*，合计 200 位，
+# 正是 impl 侧 220 个失配点里的 200 个）。merge 打开时 FM 把 golden 那 5 份并成一个
+# 代表再比，两侧逐点对上；merge 关掉后 golden 多出来的复制找不到对象。
+# 这正是 verification_merge_duplicated_registers 存在的理由，不是可读核的缺陷。
+#
+# ★代价：fm_predict 的模型在 merge=true 时只剩一条宽 regs 的上界带★
+# （本目标 regs 74120 / expected 76113，带宽 97.4%，工具自己标"近乎无信息"）。
+# 那条带留下的 5322 余额**已被上面这次判别性实验测死**，不是推断：
+#   merge=true   比较点 66481（全 matched，unmatched 0）+ unread 4282 + const 28
+#   merge=false  比较点 70410+1382=71792          + unread 4293 + const 28
+#   两次之差      71792-66481 = 5311   4293-4282 = 11   合计 ★5322★
+#   且 merge=false 侧逐列闭合到模型：
+#     Port  passing 1305 + unverified 688                        = 1993 = outs
+#     DFF   (59648+20+8749) + unmatched_ref 1382 + unread 4293 + const 28
+#                                                                = 74120 = regs
+#   即 expected 76113 在 merge 关掉时**逐位成立**，5322 就是被合并掉的寄存器位。
 
 include ../../../scripts/ut_common.mk
 
