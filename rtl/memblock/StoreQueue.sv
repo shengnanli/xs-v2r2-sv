@@ -765,7 +765,31 @@ module xs_StoreQueue_core
   output logic [63:0]               io_diffStore_ncStore_bits_data,
   output logic [7:0]                io_diffStore_ncStore_bits_mask,
   output logic                      io_diffStore_ncStore_bits_memBackTypeMM,
-  output logic [72:0]               gatewayIn_packed_48_bore
+  output logic [72:0]               gatewayIn_packed_48_bore,
+
+  // ---- perf 观测探针（★golden 同名导出，见 TRAP-11★）----
+  // 这 16 根在 golden 里是 StoreQueue 内部的 `*_probe` 线，SimTop 用绝对层次引用
+  // (XMR) 把它们引到 LogPerfEndpoint 去喂性能计数器。可读核把它们**按同名引到
+  // wrapper 层**，perf 台账（scripts/perf_rebind.py）就能按名字原样重绑，
+  // 而不必去复制 golden 的组合锥、更不必接 '0 冒充已绑。
+  // ★这些端口不属于 golden 的 1003 根端口契约★：它们只出现在可读核与 wrapper
+  //   之间，wrapper 的对外端口表一根没多（port_contract_lint 仍然逐位对齐）。
+  output logic [5:0]                validCount_probe,
+  output logic                      _io_sqFull_T_probe,
+  output logic                      _io_sqFull_T_probe_0,
+  output logic                      exHalf_probe,
+  output logic                      empty_probe,
+  output logic                      exHalf_1_probe,
+  output logic                      empty_1_probe,
+  output logic                      mmioDoReq_probe,
+  output logic                      perfEvents_0_2_probe,
+  output logic                      perfEvents_2_2_probe,
+  output logic                      vpmaskNotEqual_probe,
+  output logic                      vpmaskNotEqual_1_probe,
+  output logic                      vpmaskNotEqual_2_probe,
+  output logic                      vaddrMatchFailed_probe,
+  output logic                      vaddrMatchFailed_1_probe,
+  output logic                      vaddrMatchFailed_2_probe
 );
 
 
@@ -1035,6 +1059,7 @@ module xs_StoreQueue_core
   logic [1:0]           sqDeqCnt;
   sqptr_t               deqPtrExtNext   [N_ENSBUF];
   logic [SQ_SIZE-1:0]   deqClear;         // 本拍被退队清掉的条目
+  logic [N_ENSBUF-1:0]  deqSlotClear;     // 同上，但按出队槽位记
 
   // ---- 提交 ----
   logic [N_COMMIT-1:0]  commitVec;
@@ -1143,6 +1168,141 @@ module xs_StoreQueue_core
   logic [N_ENSBUF-1:0]  sbufferWline;     // = deq.wline & deq.vecValid（见 §13）
   logic                 mmioStoutValid, mmioStoutFire;
   logic                 cboZeroStoutValid, cboZeroStoutFire;
+
+
+// -----------------------------------------------------------------------------
+// §4.5 读表：把每族 per-entry 状态补齐到 64 项（★下标是 6 位，队列只有 56 项★）
+// -----------------------------------------------------------------------------
+  // 为什么要这一层：所有 per-entry 读都用 6 位指针做下标，取值范围是 0..63，
+  // 而队列只有 56 项。Formality 不做边界传播，直接用 56 项表会报 FMR_ELAB-147
+  // 并**拒绝 link**（FM-262 -> set_top 失败 FM-156）—— 上一轮 SQData8Module 已经
+  // 踩过同一个坑，那边的修法也是把表补齐到 2**ADDR_W 项。
+  // ★越界槽填第 0 项★：golden 经 firtool 展平出来的读表（形如 `_GEN_2 =
+  //   {{allocated_0}, …, {allocated_0}, allocated_55, …, allocated_0}`）在
+  //   56..63 这 8 个槽里填的正是第 0 项，照抄它，越界时两边逐位相同。
+  // ★不许写成 `arr[idx < 56 ? idx : 0]`★：值虽然对，Formality 照样报 ELAB-147。
+  localparam int RD_SLOTS = 64;   // = 2**SQ_IDX_W
+
+  logic [RD_SLOTS-1:0] allocated_rd;
+  logic [RD_SLOTS-1:0] completed_rd;
+  logic [RD_SLOTS-1:0] addrvalid_rd;
+  logic [RD_SLOTS-1:0] datavalid_rd;
+  logic [RD_SLOTS-1:0] committed_rd;
+  logic [RD_SLOTS-1:0] unaligned_rd;
+  logic [RD_SLOTS-1:0] cross16Byte_rd;
+  logic [RD_SLOTS-1:0] pending_rd;
+  logic [RD_SLOTS-1:0] nc_rd;
+  logic [RD_SLOTS-1:0] mmio_rd;
+  logic [RD_SLOTS-1:0] memBackTypeMM_rd;
+  logic [RD_SLOTS-1:0] isVec_rd;
+  logic [RD_SLOTS-1:0] vecLastFlow_rd;
+  logic [RD_SLOTS-1:0] vecMbCommit_rd;
+  logic [RD_SLOTS-1:0] hasException_rd;
+  logic [RD_SLOTS-1:0] waitStoreS2_rd;
+  logic [RD_SLOTS-1:0] allvalid_rd;
+  logic [RD_SLOTS-1:0] needCancel_rd;   // 冲刷判定也要按指针读（提交那边用）
+
+  assign allocated_rd       = {{(RD_SLOTS-SQ_SIZE){allocated[0]}}, allocated};
+  assign completed_rd       = {{(RD_SLOTS-SQ_SIZE){completed[0]}}, completed};
+  assign addrvalid_rd       = {{(RD_SLOTS-SQ_SIZE){addrvalid[0]}}, addrvalid};
+  assign datavalid_rd       = {{(RD_SLOTS-SQ_SIZE){datavalid[0]}}, datavalid};
+  assign committed_rd       = {{(RD_SLOTS-SQ_SIZE){committed[0]}}, committed};
+  assign unaligned_rd       = {{(RD_SLOTS-SQ_SIZE){unaligned[0]}}, unaligned};
+  assign cross16Byte_rd     = {{(RD_SLOTS-SQ_SIZE){cross16Byte[0]}}, cross16Byte};
+  assign pending_rd         = {{(RD_SLOTS-SQ_SIZE){pending[0]}}, pending};
+  assign nc_rd              = {{(RD_SLOTS-SQ_SIZE){nc[0]}}, nc};
+  assign mmio_rd            = {{(RD_SLOTS-SQ_SIZE){mmio[0]}}, mmio};
+  assign memBackTypeMM_rd   = {{(RD_SLOTS-SQ_SIZE){memBackTypeMM[0]}}, memBackTypeMM};
+  assign isVec_rd           = {{(RD_SLOTS-SQ_SIZE){isVec[0]}}, isVec};
+  assign vecLastFlow_rd     = {{(RD_SLOTS-SQ_SIZE){vecLastFlow[0]}}, vecLastFlow};
+  assign vecMbCommit_rd     = {{(RD_SLOTS-SQ_SIZE){vecMbCommit[0]}}, vecMbCommit};
+  assign hasException_rd    = {{(RD_SLOTS-SQ_SIZE){hasException[0]}}, hasException};
+  assign waitStoreS2_rd     = {{(RD_SLOTS-SQ_SIZE){waitStoreS2[0]}}, waitStoreS2};
+  assign allvalid_rd        = {{(RD_SLOTS-SQ_SIZE){allvalid[0]}}, allvalid};
+  assign needCancel_rd      = {{(RD_SLOTS-SQ_SIZE){needCancel[0]}}, needCancel};
+
+  logic [23:0]       uop_exceptionVec_rd [RD_SLOTS];
+  logic [3:0]        uop_trigger_rd [RD_SLOTS];
+  logic [34:0]       uop_fuType_rd [RD_SLOTS];
+  logic [8:0]        uop_fuOpType_rd [RD_SLOTS];
+  logic              uop_rfWen_rd [RD_SLOTS];
+  logic              uop_flushPipe_rd [RD_SLOTS];
+  logic [2:0]        uop_vpu_nf_rd [RD_SLOTS];
+  logic [1:0]        uop_vpu_veew_rd [RD_SLOTS];
+  logic [6:0]        uop_uopIdx_rd [RD_SLOTS];
+  logic [7:0]        uop_pdest_rd [RD_SLOTS];
+  logic              uop_robIdx_flag_rd [RD_SLOTS];
+  logic [7:0]        uop_robIdx_value_rd [RD_SLOTS];
+  logic              uop_debugInfo_eliminatedMove_rd [RD_SLOTS];
+  logic [63:0]       uop_debugInfo_renameTime_rd [RD_SLOTS];
+  logic [63:0]       uop_debugInfo_dispatchTime_rd [RD_SLOTS];
+  logic [63:0]       uop_debugInfo_enqRsTime_rd [RD_SLOTS];
+  logic [63:0]       uop_debugInfo_selectTime_rd [RD_SLOTS];
+  logic [63:0]       uop_debugInfo_issueTime_rd [RD_SLOTS];
+  logic [63:0]       uop_debugInfo_writebackTime_rd [RD_SLOTS];
+  logic [63:0]       uop_debugInfo_runahead_checkpoint_id_rd [RD_SLOTS];
+  logic [63:0]       uop_debugInfo_tlbFirstReqTime_rd [RD_SLOTS];
+  logic [63:0]       uop_debugInfo_tlbRespTime_rd [RD_SLOTS];
+  logic [55:0]       uop_debug_seqNum_seqNum_rd [RD_SLOTS];
+  logic [7:0]        uop_debug_seqNum_uopIdx_rd [RD_SLOTS];
+  logic [5:0]        debug_vec_unaligned_offset_rd [RD_SLOTS];
+
+  always_comb begin
+    for (int k = 0; k < SQ_SIZE; k++) begin
+      uop_exceptionVec_rd[k] = uop_exceptionVec[k];
+      uop_trigger_rd[k] = uop_trigger[k];
+      uop_fuType_rd[k] = uop_fuType[k];
+      uop_fuOpType_rd[k] = uop_fuOpType[k];
+      uop_rfWen_rd[k] = uop_rfWen[k];
+      uop_flushPipe_rd[k] = uop_flushPipe[k];
+      uop_vpu_nf_rd[k] = uop_vpu_nf[k];
+      uop_vpu_veew_rd[k] = uop_vpu_veew[k];
+      uop_uopIdx_rd[k] = uop_uopIdx[k];
+      uop_pdest_rd[k] = uop_pdest[k];
+      uop_robIdx_flag_rd[k] = uop_robIdx_flag[k];
+      uop_robIdx_value_rd[k] = uop_robIdx_value[k];
+      uop_debugInfo_eliminatedMove_rd[k] = uop_debugInfo_eliminatedMove[k];
+      uop_debugInfo_renameTime_rd[k] = uop_debugInfo_renameTime[k];
+      uop_debugInfo_dispatchTime_rd[k] = uop_debugInfo_dispatchTime[k];
+      uop_debugInfo_enqRsTime_rd[k] = uop_debugInfo_enqRsTime[k];
+      uop_debugInfo_selectTime_rd[k] = uop_debugInfo_selectTime[k];
+      uop_debugInfo_issueTime_rd[k] = uop_debugInfo_issueTime[k];
+      uop_debugInfo_writebackTime_rd[k] = uop_debugInfo_writebackTime[k];
+      uop_debugInfo_runahead_checkpoint_id_rd[k] = uop_debugInfo_runahead_checkpoint_id[k];
+      uop_debugInfo_tlbFirstReqTime_rd[k] = uop_debugInfo_tlbFirstReqTime[k];
+      uop_debugInfo_tlbRespTime_rd[k] = uop_debugInfo_tlbRespTime[k];
+      uop_debug_seqNum_seqNum_rd[k] = uop_debug_seqNum_seqNum[k];
+      uop_debug_seqNum_uopIdx_rd[k] = uop_debug_seqNum_uopIdx[k];
+      debug_vec_unaligned_offset_rd[k] = debug_vec_unaligned_offset[k];
+    end
+    for (int k = SQ_SIZE; k < RD_SLOTS; k++) begin   // 越界槽 = 第 0 项
+      uop_exceptionVec_rd[k] = uop_exceptionVec[0];
+      uop_trigger_rd[k] = uop_trigger[0];
+      uop_fuType_rd[k] = uop_fuType[0];
+      uop_fuOpType_rd[k] = uop_fuOpType[0];
+      uop_rfWen_rd[k] = uop_rfWen[0];
+      uop_flushPipe_rd[k] = uop_flushPipe[0];
+      uop_vpu_nf_rd[k] = uop_vpu_nf[0];
+      uop_vpu_veew_rd[k] = uop_vpu_veew[0];
+      uop_uopIdx_rd[k] = uop_uopIdx[0];
+      uop_pdest_rd[k] = uop_pdest[0];
+      uop_robIdx_flag_rd[k] = uop_robIdx_flag[0];
+      uop_robIdx_value_rd[k] = uop_robIdx_value[0];
+      uop_debugInfo_eliminatedMove_rd[k] = uop_debugInfo_eliminatedMove[0];
+      uop_debugInfo_renameTime_rd[k] = uop_debugInfo_renameTime[0];
+      uop_debugInfo_dispatchTime_rd[k] = uop_debugInfo_dispatchTime[0];
+      uop_debugInfo_enqRsTime_rd[k] = uop_debugInfo_enqRsTime[0];
+      uop_debugInfo_selectTime_rd[k] = uop_debugInfo_selectTime[0];
+      uop_debugInfo_issueTime_rd[k] = uop_debugInfo_issueTime[0];
+      uop_debugInfo_writebackTime_rd[k] = uop_debugInfo_writebackTime[0];
+      uop_debugInfo_runahead_checkpoint_id_rd[k] = uop_debugInfo_runahead_checkpoint_id[0];
+      uop_debugInfo_tlbFirstReqTime_rd[k] = uop_debugInfo_tlbFirstReqTime[0];
+      uop_debugInfo_tlbRespTime_rd[k] = uop_debugInfo_tlbRespTime[0];
+      uop_debug_seqNum_seqNum_rd[k] = uop_debug_seqNum_seqNum[0];
+      uop_debug_seqNum_uopIdx_rd[k] = uop_debug_seqNum_uopIdx[0];
+      debug_vec_unaligned_offset_rd[k] = debug_vec_unaligned_offset[0];
+    end
+  end
 
 // -----------------------------------------------------------------------------
 // §5 容量、掩码、若干「指针的当前值」
@@ -1324,14 +1484,14 @@ module xs_StoreQueue_core
     for (int k = 0; k < N_ISSUE_STRIDE; k++) begin
       automatic sqptr_t pa = sqptr_add(addrReadyPtrExt, 8'(k));
       automatic sqptr_t pd = sqptr_add(dataReadyPtrExt, 8'(k));
-      addrLookup[k] = allocated[pa.value]
-                    & (mmio[pa.value] | addrvalid[pa.value] | vecMbCommit[pa.value])
+      addrLookup[k] = allocated_rd[pa.value]
+                    & (mmio_rd[pa.value] | addrvalid_rd[pa.value] | vecMbCommit_rd[pa.value])
                     & (pa != enqPtrExt);
       // ★dataReady 侧多两条：要求 addrvalid 已经有，且**非对齐的条目一律不算就绪**★
-      dataLookup[k] = allocated[pd.value]
-                    & ((addrvalid[pd.value] & (mmio[pd.value] | datavalid[pd.value]))
-                       | vecMbCommit[pd.value])
-                    & ~unaligned[pd.value]
+      dataLookup[k] = allocated_rd[pd.value]
+                    & ((addrvalid_rd[pd.value] & (mmio_rd[pd.value] | datavalid_rd[pd.value]))
+                       | vecMbCommit_rd[pd.value])
+                    & ~unaligned_rd[pd.value]
                     & (pd != enqPtrExt);
     end
     addrStep = 3'(N_ISSUE_STRIDE);
@@ -1349,7 +1509,7 @@ module xs_StoreQueue_core
     automatic logic [1:0]          firstInGroup;
     for (int i = 0; i < N_ENSBUF; i++)
       inDeqGroup[i] = (dataReadyPtrExt == deqPtrExt[i]) & (sqDeqCnt > 2'(i));
-    unalignedCanMove = (unaligned[deqPtrExt[0].value] | unaligned[deqPtrExt[1].value])
+    unalignedCanMove = (unaligned_rd[deqPtrExt[0].value] | unaligned_rd[deqPtrExt[1].value])
                      & (|inDeqGroup);
     firstInGroup = 2'(N_ENSBUF);
     for (int i = N_ENSBUF - 1; i >= 0; i--) if (inDeqGroup[i]) firstInGroup = 2'(i);
@@ -1436,12 +1596,12 @@ module xs_StoreQueue_core
   end
   // 单根导出，名字与 golden 的 perf 探针逐字相同 —— docs/perf_bore_map.tsv 按名字
   // 重绑到这里。★不许接零冒充已绑★。
-  wire vpmaskNotEqual_probe     = vpmaskNotEqualVec[0];
-  wire vpmaskNotEqual_1_probe   = vpmaskNotEqualVec[1];
-  wire vpmaskNotEqual_2_probe   = vpmaskNotEqualVec[2];
-  wire vaddrMatchFailed_probe   = vaddrMatchFailedVec[0];
-  wire vaddrMatchFailed_1_probe = vaddrMatchFailedVec[1];
-  wire vaddrMatchFailed_2_probe = vaddrMatchFailedVec[2];
+  assign vpmaskNotEqual_probe = vpmaskNotEqualVec[0];
+  assign vpmaskNotEqual_1_probe = vpmaskNotEqualVec[1];
+  assign vpmaskNotEqual_2_probe = vpmaskNotEqualVec[2];
+  assign vaddrMatchFailed_probe = vaddrMatchFailedVec[0];
+  assign vaddrMatchFailed_1_probe = vaddrMatchFailedVec[1];
+  assign vaddrMatchFailed_2_probe = vaddrMatchFailedVec[2];
 
   // ---- 转发结果与两个「谁挡住了我」的 sqIdx ----
   // 挑的是**最年轻**的那个挡路者（OHToUInt(Reverse(PriorityEncoderOH(Reverse(x))))
@@ -1541,12 +1701,12 @@ module xs_StoreQueue_core
   //   CBO  ：cbo.clean/flush/inval 走 cmoOpReq 专用口，**越权覆盖** mmio FSM 的迁移
   // 三者共用一个 5 态 FSM（mmioState）+ 一个 4 态 FSM（ncState）。
 
-  assign mmioIsCboZero = (uop_fuOpType[deqPtr][3:0] == 4'h7);           // LSUOpType.isCboZero
-  assign deqCanDoCbo   = deqCanDoCboReg & memBackTypeMM[deqPtr];
+  assign mmioIsCboZero = (uop_fuOpType_rd[deqPtr][3:0] == 4'h7);           // LSUOpType.isCboZero
+  assign deqCanDoCbo   = deqCanDoCboReg & memBackTypeMM_rd[deqPtr];
 
   // uncache 请求的两个来源，mmio 优先。
   assign mmioReq_valid = (mmioState == S_REQ)
-                       & ~(&uop_fuOpType[deqPtr][3:2] & ~(|uop_fuOpType[deqPtr][6:4])) // !isCbo
+                       & ~(&uop_fuOpType_rd[deqPtr][3:2] & ~(|uop_fuOpType_rd[deqPtr][6:4])) // !isCbo
                        & ~io_wfi_wfiReq;
   assign ncReq_valid   = (ncState == NC_REQ) & ~io_wfi_wfiReq;
 
@@ -1594,10 +1754,10 @@ module xs_StoreQueue_core
   // 不是 rdataPtrExt(0) 的当拍值。golden 为两条通路、两个用途各摇了一份寄存器，
   // 这里照抄成 4 份（§TRAP-F 的同一类坑）。
   assign mmioReq_robIdx_flag  = uop_robIdx_flag [mmioReqRobIdxPtr.value];
-  assign mmioReq_robIdx_value = uop_robIdx_value[mmioReqRobIdxPtr.value];
+  assign mmioReq_robIdx_value = uop_robIdx_value_rd[mmioReqRobIdxPtr.value];
   assign mmioReq_memBackTypeMM= memBackTypeMM   [mmioReqMemBackPtr.value];
   assign ncReq_robIdx_flag    = uop_robIdx_flag [ncReqRobIdxPtr.value];
-  assign ncReq_robIdx_value   = uop_robIdx_value[ncReqRobIdxPtr.value];
+  assign ncReq_robIdx_value   = uop_robIdx_value_rd[ncReqRobIdxPtr.value];
   assign ncReq_memBackTypeMM  = memBackTypeMM   [ncReqMemBackPtr.value];
 
   // ---- CBO.zero 走的是 sbuffer 通路（wline 整行写），不是 uncache 通道 ----
@@ -1607,7 +1767,7 @@ module xs_StoreQueue_core
                           & dataBuffer_deq_vecValid[i]
                           & sbufferWline[i]          // ★是 &vecValid 之后的那根★
                           & allocated    [dataBuffer_deq_sqPtr[i].value]
-                          & memBackTypeMM[dataBuffer_deq_sqPtr[i].value];
+                          & memBackTypeMM_rd[dataBuffer_deq_sqPtr[i].value];
     cboZeroToSb = |isCboZeroToSbVec;
   end
 
@@ -1622,7 +1782,7 @@ module xs_StoreQueue_core
                                     & ~io_flushSbuffer_empty)
                                  | cboZeroFlushSb;
 
-  assign mmioStoutValid   = (mmioState == S_WB) & ~isVec[deqPtr];
+  assign mmioStoutValid   = (mmioState == S_WB) & ~isVec_rd[deqPtr];
   assign mmioStoutFire    = mmioStoutValid & io_mmioStout_ready;
   assign cboZeroStoutValid= cboZeroValid & ~cboZeroWaitFlushSb;
   assign cboZeroStoutFire = cboZeroStoutValid & io_cboZeroStout_ready;
@@ -1634,8 +1794,8 @@ module xs_StoreQueue_core
   //       （FMR_VLOG-481），所以 cmtPtrNext 必须先落成线再取字段。
   assign cboZeroSelEntry = isCboZeroToSbVec[0] ? dataBuffer_deq_sqPtr[0].value
                                                : dataBuffer_deq_sqPtr[1].value;
-  assign deqCanDoCboNext = (&uop_fuOpType[deqPtr][3:2]) & ~(|uop_fuOpType[deqPtr][6:4]) // isCbo
-                         & allocated[deqPtr] & addrvalid[deqPtr] & ~hasException[deqPtr];
+  assign deqCanDoCboNext = (&uop_fuOpType_rd[deqPtr][3:2]) & ~(|uop_fuOpType_rd[deqPtr][6:4]) // isCbo
+                         & allocated_rd[deqPtr] & addrvalid_rd[deqPtr] & ~hasException_rd[deqPtr];
   assign wfiSafeNext     = noPending & io_wfi_wfiReq;
   // cmtPtrExt 的 8 份一起加 commitCount；★只有第 0 份有 flag★（其余被 DCE）。
   always_comb
@@ -1652,44 +1812,65 @@ module xs_StoreQueue_core
   // committed 之后这条 store 就不可撤销了（needCancel 不再碰它），可以往下走。
   // 8 个槽是**串行链**：第 i 槽只有在第 i-1 槽也提交了的情况下才算提交
   // （commitVec(i) := commitVec(i-1)），所以中间卡住一条后面全停。
-  logic [SQ_SIZE-1:0] commitWrEn, commitWrVal;
+  logic [SQ_SIZE-1:0]  commitWrEn, commitWrVal;
+  logic [N_COMMIT-1:0] slotWrEn, slotWrVal, slotNcExcDone;
 
+  // 第一步：按**槽位**算判定（8 个槽，静态下标）
   always_comb begin
-    commitWrEn      = '0;
-    commitWrVal     = '0;
-    commitNcExcDone = '0;
-    commitVec       = '0;
-    isCommit        = '0;
+    commitVec     = '0;
+    isCommit      = '0;
+    slotWrEn      = '0;
+    slotWrVal     = '0;
+    slotNcExcDone = '0;
     for (int i = 0; i < N_COMMIT; i++) begin
       automatic logic [5:0] ptr    = cmtPtrValue[i];
       automatic logic       notAfter =
-        ~rob_after(uop_robIdx_flag[ptr], uop_robIdx_value[ptr],
+        ~rob_after(uop_robIdx_flag_rd[ptr], uop_robIdx_value_rd[ptr],
                    pendingPtrReg_flag[i], pendingPtrReg_value[i]);
       // waitStoreS2：标量 store 必须等到 store_s2 把 mmio/异常裁决写回来才准提交；
       // 向量 store 不受这条限制。
-      automatic logic       baseOk = allocated[ptr] & notAfter & ~needCancel[ptr]
-                                   & (~waitStoreS2[ptr] | isVec[ptr]);
-      automatic logic       vecOk  = (isVec[ptr] & vecMbCommit[ptr]) | ~isVec[ptr];
+      automatic logic       baseOk = allocated_rd[ptr] & notAfter & ~needCancel_rd[ptr]
+                                   & (~waitStoreS2_rd[ptr] | isVec_rd[ptr]);
+      automatic logic       vecOk  = (isVec_rd[ptr] & vecMbCommit_rd[ptr]) | ~isVec_rd[ptr];
       if (i == 0) begin
         // 第 0 槽还要让开 mmio：mmio 没做完不许提交（否则 mmio 指令会被越过去）。
         if (baseOk & ((mmioState == S_IDLE) | ((mmioState == S_WAIT) & (|scommit))) & vecOk) begin
-          isCommit[0]      = 1'b1;
-          commitVec[0]     = 1'b1;
-          commitWrEn[ptr]  = 1'b1;
-          commitWrVal[ptr] = 1'b1;
+          isCommit[0]  = 1'b1;
+          commitVec[0] = 1'b1;
+          slotWrEn[0]  = 1'b1;
+          slotWrVal[0] = 1'b1;
         end
       end
       else begin
         if (baseOk & vecOk) begin
-          isCommit[i]      = commitVec[i-1] | committed[ptr];
-          commitVec[i]     = commitVec[i-1];
-          commitWrEn[ptr]  = 1'b1;
-          commitWrVal[ptr] = commitVec[i-1] | committed[ptr];
+          isCommit[i]  = commitVec[i-1] | committed_rd[ptr];
+          commitVec[i] = commitVec[i-1];
+          slotWrEn[i]  = 1'b1;
+          slotWrVal[i] = commitVec[i-1] | committed_rd[ptr];
         end
       end
       // NC 且带异常的：不用真去发请求，提交的同时直接算「完成」。
-      if (isCommit[i] & nc[ptr] & hasException[ptr]) commitNcExcDone[ptr] = 1'b1;
+      if (isCommit[i] & nc_rd[ptr] & hasException_rd[ptr]) slotNcExcDone[i] = 1'b1;
     end
+  end
+
+  // 第二步：把槽位判定摊到条目上。
+  // ★用「逐条目比较 cmtPtrValue[i]」而不是「用变量下标去写」★：变量下标的写同样
+  // 会让 Formality 报 FMR_ELAB-147（见 §4.5），而 golden 展平出来的形状本来就是
+  // 每条目一组 `cmtPtrExt_<i>_value == 6'hN` 的比较。
+  always_comb begin
+    commitWrEn      = '0;
+    commitWrVal     = '0;
+    commitNcExcDone = '0;
+    for (int j = 0; j < SQ_SIZE; j++)
+      for (int i = 0; i < N_COMMIT; i++)
+        if (cmtPtrValue[i] == 6'(j)) begin
+          if (slotWrEn[i]) begin
+            commitWrEn[j]  = 1'b1;
+            commitWrVal[j] = slotWrVal[i];
+          end
+          if (slotNcExcDone[i]) commitNcExcDone[j] = 1'b1;
+        end
   end
 
   assign commitCount = 4'($countones(commitVec));
@@ -1709,12 +1890,12 @@ module xs_StoreQueue_core
   //   口 1：同上，但 **NC 那一支**额外要求口 0 也走了（口 0 卡住时不许跳号）
   always_comb begin
     readyReadGoVec[0] = (dataBuffer_enq_fire[0] & dataBuffer_enq_sqNeedDeq[0])
-                      | (allocated[rdataPtrExt[0].value] & completed[rdataPtrExt[0].value]
-                         & nc[rdataPtrExt[0].value])
+                      | (allocated_rd[rdataPtrExt[0].value] & completed_rd[rdataPtrExt[0].value]
+                         & nc_rd[rdataPtrExt[0].value])
                       | mmioStoutFire;   // vecmmioStout 恒 0（golden 已折掉），不再列
     readyReadGoVec[1] = (dataBuffer_enq_fire[1] & dataBuffer_enq_sqNeedDeq[1])
-                      | (allocated[rdataPtrExt[1].value] & completed[rdataPtrExt[1].value]
-                         & nc[rdataPtrExt[1].value] & readyReadGoVec[0]);
+                      | (allocated_rd[rdataPtrExt[1].value] & completed_rd[rdataPtrExt[1].value]
+                         & nc_rd[rdataPtrExt[1].value] & readyReadGoVec[0]);
     sqReadCnt = 2'($countones(readyReadGoVec));
     for (int i = 0; i < N_ENSBUF; i++)
       rdataPtrExtNext[i] = sqptr_add(rdataPtrExt[i], {6'h0, sqReadCnt});
@@ -1725,16 +1906,21 @@ module xs_StoreQueue_core
     deqClear = '0;
     sqDeqCnt = 2'd0;
     for (int i = 0; i < N_ENSBUF; i++)
-      readyDeqVec[i] = allocated[deqPtrExt[i].value] & completed[deqPtrExt[i].value];
+      readyDeqVec[i] = allocated_rd[deqPtrExt[i].value] & completed_rd[deqPtrExt[i].value];
     // ★循环内后写者胜★：两条都就绪时 sqDeqCnt = 2。
+    deqSlotClear = '0;
     for (int i = 0; i < N_ENSBUF; i++) begin
       automatic logic allReady = 1'b1;
       for (int k = 0; k <= i; k++) allReady = allReady & readyDeqVec[k];
       if (allReady) begin
-        sqDeqCnt = 2'(i + 1);
-        deqClear[deqPtrExt[i].value] = 1'b1;
+        sqDeqCnt          = 2'(i + 1);
+        deqSlotClear[i]   = 1'b1;
       end
     end
+    // 槽位 -> 条目，用比较而不是变量下标写（见 §4.5）
+    for (int j = 0; j < SQ_SIZE; j++)
+      for (int i = 0; i < N_ENSBUF; i++)
+        if (deqSlotClear[i] && deqPtrExt[i].value == 6'(j)) deqClear[j] = 1'b1;
     for (int i = 0; i < N_ENSBUF; i++)
       deqPtrExtNext[i] = sqptr_add(deqPtrExt[i], {6'h0, sqDeqCnt});
   end
@@ -1759,7 +1945,7 @@ module xs_StoreQueue_core
 
   assign canDeqMisaligned     = dataBuffer_enq_ready[0] & dataBuffer_enq_ready[1];
   assign firstWithMisalign    = unaligned  [rdataPtrExt[0].value];
-  assign firstWithCross16Byte = cross16Byte[rdataPtrExt[0].value];
+  assign firstWithCross16Byte = cross16Byte_rd[rdataPtrExt[0].value];
   assign isCross4KPage        = io_maControl_toStoreQueue_crossPageWithHit;
   assign isCross4KPageCanDeq  = io_maControl_toStoreQueue_crossPageCanDeq;
 
@@ -1774,11 +1960,11 @@ module xs_StoreQueue_core
   end
 
   assign misalignToDataBufferValid =
-      allocated[rdataPtrExt[0].value] & committed[rdataPtrExt[0].value]
-    & ((~isVec[rdataPtrExt[0].value] & allvalid[rdataPtrExt[0].value])
-       | vecMbCommit[rdataPtrExt[0].value])
+      allocated_rd[rdataPtrExt[0].value] & committed_rd[rdataPtrExt[0].value]
+    & ((~isVec_rd[rdataPtrExt[0].value] & allvalid_rd[rdataPtrExt[0].value])
+       | vecMbCommit_rd[rdataPtrExt[0].value])
     & canDeqMisaligned
-    & (~isCross4KPage | isCross4KPageCanDeq | hasException[rdataPtrExt[0].value]);
+    & (~isCross4KPage | isCross4KPageCanDeq | hasException_rd[rdataPtrExt[0].value]);
 
   always_comb begin
     for (int i = 0; i < N_ENSBUF; i++) begin
@@ -1786,24 +1972,24 @@ module xs_StoreQueue_core
       automatic logic mmioStall, ncStall, exceptionValid, vecFlagHit;
 
       // 口 1 要连口 0 一起看：mmio/NC 一旦出现在这一组里，整组都不许走 Sbuffer。
-      mmioStall = (i == 0) ? mmio[rdataPtrExt[0].value]
-                           : (mmio[rdataPtrExt[1].value] | mmio[rdataPtrExt[0].value]);
-      ncStall   = (i == 0) ? nc[rdataPtrExt[0].value]
-                           : (nc[rdataPtrExt[1].value] | nc[rdataPtrExt[0].value]);
+      mmioStall = (i == 0) ? mmio_rd[rdataPtrExt[0].value]
+                           : (mmio_rd[rdataPtrExt[1].value] | mmio_rd[rdataPtrExt[0].value]);
+      ncStall   = (i == 0) ? nc_rd[rdataPtrExt[0].value]
+                           : (nc_rd[rdataPtrExt[1].value] | nc_rd[rdataPtrExt[0].value]);
       // 同一条向量指令的后续 flow 也要一起挡住（robIdx 相同才算同一条）。
       exceptionValid = (i == 0)
-        ? hasException[rdataPtrExt[0].value]
-        : (hasException[rdataPtrExt[1].value]
-           | (hasException[rdataPtrExt[0].value]
-              & ({uop_robIdx_flag[rdataPtrExt[1].value], uop_robIdx_value[rdataPtrExt[1].value]}
-                 == {uop_robIdx_flag[rdataPtrExt[0].value], uop_robIdx_value[rdataPtrExt[0].value]})));
-      vecFlagHit = vecExceptionFlag_valid & isVec[ptr]
+        ? hasException_rd[rdataPtrExt[0].value]
+        : (hasException_rd[rdataPtrExt[1].value]
+           | (hasException_rd[rdataPtrExt[0].value]
+              & ({uop_robIdx_flag_rd[rdataPtrExt[1].value], uop_robIdx_value_rd[rdataPtrExt[1].value]}
+                 == {uop_robIdx_flag_rd[rdataPtrExt[0].value], uop_robIdx_value_rd[rdataPtrExt[0].value]})));
+      vecFlagHit = vecExceptionFlag_valid & isVec_rd[ptr]
                  & ({vecExceptionFlag_robIdx_flag, vecExceptionFlag_robIdx_value}
-                    == {uop_robIdx_flag[ptr], uop_robIdx_value[ptr]});
+                    == {uop_robIdx_flag_rd[ptr], uop_robIdx_value_rd[ptr]});
 
       // 真正写进 Sbuffer 的位（vecValid=0 表示「走个过场，别写内存」）
       toSbufferVecValid[i] =
-          (~isVec[ptr] | (vecMbCommit[ptr] & allvalid[ptr] & (|dataModule_rdata_mask[i])))
+          (~isVec_rd[ptr] | (vecMbCommit_rd[ptr] & allvalid_rd[ptr] & (|dataModule_rdata_mask[i])))
         & ~exceptionValid & ~vecFlagHit;
 
       // ---- valid ----
@@ -1811,10 +1997,10 @@ module xs_StoreQueue_core
         dataBuffer_enq_valid[i] = misalignToDataBufferValid;
       else
         dataBuffer_enq_valid[i] =
-            allocated[ptr] & committed[ptr]
-          & ((~isVec[ptr] & (allvalid[ptr] | hasException[ptr])) | vecMbCommit[ptr])
+            allocated_rd[ptr] & committed_rd[ptr]
+          & ((~isVec_rd[ptr] & (allvalid_rd[ptr] | hasException_rd[ptr])) | vecMbCommit_rd[ptr])
           & ~mmioStall & ~ncStall
-          & (~unaligned[ptr] | (~cross16Byte[ptr] & (allvalid[ptr] | hasException[ptr])));
+          & (~unaligned_rd[ptr] | (~cross16Byte_rd[ptr] & (allvalid_rd[ptr] | hasException_rd[ptr])));
 
       // ---- bits ----
       if (canDeqMisaligned & firstWithMisalign & firstWithCross16Byte) begin
@@ -1840,7 +2026,7 @@ module xs_StoreQueue_core
           dataBuffer_enq_vecValid[1] = toSbufferVecValid[0];
         end
       end
-      else if (~cross16Byte[ptr] & unaligned[ptr]) begin
+      else if (~cross16Byte_rd[ptr] & unaligned_rd[ptr]) begin
         // 不跨 16B 的非对齐：地址砍到 16B 边界，数据按低 4 位左移补齐
         dataBuffer_enq_addr[i]      = {paddrModule_rdata[i][47:4], 4'h0};
         dataBuffer_enq_vaddr[i]     = {vaddrModule_rdata[i][49:4], 4'h0};
@@ -1890,8 +2076,8 @@ module xs_StoreQueue_core
   assign io_maControl_toStoreMisalignBuffer_doDeq       =
       isCross4KPage & isCross4KPageCanDeq & dataBuffer_enq_fire[0];
   assign io_maControl_toStoreMisalignBuffer_uop_uopIdx      = uop_uopIdx     [rdataPtrExt[0].value];
-  assign io_maControl_toStoreMisalignBuffer_uop_robIdx_flag = uop_robIdx_flag[rdataPtrExt[0].value];
-  assign io_maControl_toStoreMisalignBuffer_uop_robIdx_value= uop_robIdx_value[rdataPtrExt[0].value];
+  assign io_maControl_toStoreMisalignBuffer_uop_robIdx_flag = uop_robIdx_flag_rd[rdataPtrExt[0].value];
+  assign io_maControl_toStoreMisalignBuffer_uop_robIdx_value= uop_robIdx_value_rd[rdataPtrExt[0].value];
 
 
 // -----------------------------------------------------------------------------
@@ -1900,12 +2086,12 @@ module xs_StoreQueue_core
   always_comb begin
     for (int i = 0; i < N_ENSBUF; i++) begin
       automatic logic [5:0] p = dataBuffer_enq_sqPtr[i].value;
-      diffStore_diffInfo_out[i].uop_fuType       = uop_fuType[p];
-      diffStore_diffInfo_out[i].uop_fuOpType     = uop_fuOpType[p];
-      diffStore_diffInfo_out[i].uop_vpu_nf       = uop_vpu_nf[p];
-      diffStore_diffInfo_out[i].uop_vpu_veew     = uop_vpu_veew[p];
-      diffStore_diffInfo_out[i].uop_robIdx_value = uop_robIdx_value[p];
-      diffStore_diffInfo_out[i].offset           = debug_vec_unaligned_offset[p];
+      diffStore_diffInfo_out[i].uop_fuType       = uop_fuType_rd[p];
+      diffStore_diffInfo_out[i].uop_fuOpType     = uop_fuOpType_rd[p];
+      diffStore_diffInfo_out[i].uop_vpu_nf       = uop_vpu_nf_rd[p];
+      diffStore_diffInfo_out[i].uop_vpu_veew     = uop_vpu_veew_rd[p];
+      diffStore_diffInfo_out[i].uop_robIdx_value = uop_robIdx_value_rd[p];
+      diffStore_diffInfo_out[i].offset           = debug_vec_unaligned_offset_rd[p];
 
       diffStore_pmaStore_out[i].valid          = dataBuffer_enq_fire[i];
       diffStore_pmaStore_out[i].bits_data      = dataBuffer_enq_data[i];
@@ -2650,9 +2836,9 @@ module xs_StoreQueue_core
     automatic logic robidxEQ, robidxNE, onlyCommit0;
     for (int i = 0; i < N_ENSBUF; i++) begin
       automatic logic [5:0] p = dataBuffer_enq_sqPtr[i].value;
-      vecCommitHasExceptionValid[i]    = isVec[p] & hasException[p]
+      vecCommitHasExceptionValid[i]    = isVec_rd[p] & hasException_rd[p]
                                        & dataBuffer_enq_fire[i] & dataBuffer_enq_sqNeedDeq[i];
-      vecCommitHasExceptionLastFlow[i] = vecLastFlow[p];
+      vecCommitHasExceptionLastFlow[i] = vecLastFlow_rd[p];
     end
     // ParallelPosteriorityMux：**最后**一个命中的赢（要的是最靠后那条异常 uop）。
     vecCommitSelEntry = dataBuffer_enq_sqPtr[0].value;
@@ -2660,15 +2846,15 @@ module xs_StoreQueue_core
       if (vecCommitHasExceptionValid[i]) vecCommitSelEntry = dataBuffer_enq_sqPtr[i].value;
 
     robidxEQ = dataBuffer_enq_fire[0] & dataBuffer_enq_fire[1]
-             & ({uop_robIdx_flag[dataBuffer_enq_sqPtr[0].value],
-                 uop_robIdx_value[dataBuffer_enq_sqPtr[0].value]}
-                == {uop_robIdx_flag[dataBuffer_enq_sqPtr[1].value],
-                    uop_robIdx_value[dataBuffer_enq_sqPtr[1].value]});
+             & ({uop_robIdx_flag_rd[dataBuffer_enq_sqPtr[0].value],
+                 uop_robIdx_value_rd[dataBuffer_enq_sqPtr[0].value]}
+                == {uop_robIdx_flag_rd[dataBuffer_enq_sqPtr[1].value],
+                    uop_robIdx_value_rd[dataBuffer_enq_sqPtr[1].value]});
     robidxNE = dataBuffer_enq_fire[0] & dataBuffer_enq_fire[1]
-             & ({uop_robIdx_flag[dataBuffer_enq_sqPtr[0].value],
-                 uop_robIdx_value[dataBuffer_enq_sqPtr[0].value]}
-                != {uop_robIdx_flag[dataBuffer_enq_sqPtr[1].value],
-                    uop_robIdx_value[dataBuffer_enq_sqPtr[1].value]});
+             & ({uop_robIdx_flag_rd[dataBuffer_enq_sqPtr[0].value],
+                 uop_robIdx_value_rd[dataBuffer_enq_sqPtr[0].value]}
+                != {uop_robIdx_flag_rd[dataBuffer_enq_sqPtr[1].value],
+                    uop_robIdx_value_rd[dataBuffer_enq_sqPtr[1].value]});
     onlyCommit0 = dataBuffer_enq_fire[0] & ~dataBuffer_enq_fire[1];
 
     // 「出异常的那条正好就是 lastFlow」-> 这条指令到此为止，旗标不用立。
@@ -2681,8 +2867,8 @@ module xs_StoreQueue_core
     vecExceptionFlagCancel = 1'b0;
     for (int i = 0; i < N_ENSBUF; i++) begin
       automatic logic [5:0] p = dataBuffer_enq_sqPtr[i].value;
-      if (vecLastFlow[p]
-          & ({uop_robIdx_flag[p], uop_robIdx_value[p]}
+      if (vecLastFlow_rd[p]
+          & ({uop_robIdx_flag_rd[p], uop_robIdx_value_rd[p]}
              == {vecExceptionFlag_robIdx_flag, vecExceptionFlag_robIdx_value})
           & dataBuffer_enq_fire[i] & dataBuffer_enq_sqNeedDeq[i])
         vecExceptionFlagCancel = 1'b1;
@@ -2734,7 +2920,7 @@ module xs_StoreQueue_core
   assign io_sqEmpty         = sqEmptyReg;
   assign io_sqCancelCnt     = redirectCancelCount[5:0];
   assign io_sqDeq           = sqDeqReg;
-  assign io_sqDeqIsVec      = isVec[deqPtr];
+  assign io_sqDeqIsVec      = isVec_rd[deqPtr];
   assign io_force_write     = forceWriteReg;
   assign io_wfi_wfiSafe     = wfiSafeReg;
 
@@ -2745,9 +2931,9 @@ module xs_StoreQueue_core
   assign io_sqDeqPtr_value        = deqPtrExt[0].value;
   assign io_sqCommitPtr_flag      = cmtPtrFlag;
   assign io_sqCommitPtr_value     = cmtPtrValue[0];
-  assign io_sqCommitUopIdx        = uop_uopIdx[cmtPtr];
-  assign io_sqCommitRobIdx_flag   = uop_robIdx_flag[cmtPtr];
-  assign io_sqCommitRobIdx_value  = uop_robIdx_value[cmtPtr];
+  assign io_sqCommitUopIdx        = uop_uopIdx_rd[cmtPtr];
+  assign io_sqCommitRobIdx_flag   = uop_robIdx_flag_rd[cmtPtr];
+  assign io_sqCommitRobIdx_value  = uop_robIdx_value_rd[cmtPtr];
   assign io_stAddrReadySqPtr_flag  = addrReadyPtrExt.flag;
   assign io_stAddrReadySqPtr_value = addrReadyPtrExt.value;
   assign io_stDataReadySqPtr_flag  = dataReadyPtrExt.flag;
@@ -2913,7 +3099,7 @@ module xs_StoreQueue_core
   // shiftDataToLow：按 paddr 第 3 位挑 128 位里的哪半边。
   assign io_mmioStout_bits_data = paddrModule_rdata[0][3] ? dataModule_rdata_data[0][127:64]
                                                           : dataModule_rdata_data[0][63:0];
-  assign io_mmioStout_bits_debug_isMMIO = ~memBackTypeMM[deqPtr];
+  assign io_mmioStout_bits_debug_isMMIO = ~memBackTypeMM_rd[deqPtr];
 
   // ---- cbo.zero 回写 ROB ----
   assign io_cboZeroStout_valid = cboZeroStoutValid;
@@ -2974,8 +3160,8 @@ module xs_StoreQueue_core
 
   // ---- difftest 的 cbo.inval 事件（打包成一根 73 位 bore 送出去）----
   wire        cmoInvalEvent_valid  = mmioStoutFire & deqCanDoCbo
-                                   & (&uop_fuOpType[deqPtr][3:2]) & ~(|uop_fuOpType[deqPtr][6:4])
-                                   & (uop_fuOpType[deqPtr][3:0] == 4'hE);   // LSUOpType.isCboInval
+                                   & (&uop_fuOpType_rd[deqPtr][3:2]) & ~(|uop_fuOpType_rd[deqPtr][6:4])
+                                   & (uop_fuOpType_rd[deqPtr][3:0] == 4'hE);   // LSUOpType.isCboInval
   wire [63:0] cmoInvalEvent_addr   = {16'h0, cboMmioPAddr};
   wire [7:0]  cmoInvalEvent_coreid = {2'h0, io_hartId};
   assign gatewayIn_packed_48_bore = {cmoInvalEvent_valid, cmoInvalEvent_addr, cmoInvalEvent_coreid};
@@ -3102,10 +3288,10 @@ module xs_StoreQueue_core
     // （见 §TRAP-G：读 uop[deqPtr] 的 live 值是真 bug）
     mmioEnterReqReg <=
         io_rob_pendingst
-      & ({uop_robIdx_flag[deqPtr], uop_robIdx_value[deqPtr]}
+      & ({uop_robIdx_flag_rd[deqPtr], uop_robIdx_value_rd[deqPtr]}
          == {io_rob_pendingPtr_flag, io_rob_pendingPtr_value})
-      & pending[deqPtr] & allocated[deqPtr] & datavalid[deqPtr] & addrvalid[deqPtr]
-      & ~hasException[deqPtr];
+      & pending_rd[deqPtr] & allocated_rd[deqPtr] & datavalid_rd[deqPtr] & addrvalid_rd[deqPtr]
+      & ~hasException_rd[deqPtr];
 
     if (mmioState == S_IDLE) begin
       // 进 s_req 时把异常位清零（Chisel: uncacheUop.exceptionVec := 0）
@@ -3121,49 +3307,49 @@ module xs_StoreQueue_core
     end
 
     if ((mmioState == S_IDLE) && mmioEnterReqReg) begin
-      uncacheUop_fuOpType     <= uop_fuOpType[deqPtr];
-      uncacheUop_rfWen        <= uop_rfWen[deqPtr];
-      uncacheUop_uopIdx       <= uop_uopIdx[deqPtr];
-      uncacheUop_pdest        <= uop_pdest[deqPtr];
-      uncacheUop_robIdx_flag  <= uop_robIdx_flag[deqPtr];
-      uncacheUop_robIdx_value <= uop_robIdx_value[deqPtr];
-      uncacheUop_debugInfo_eliminatedMove          <= uop_debugInfo_eliminatedMove[deqPtr];
-      uncacheUop_debugInfo_renameTime              <= uop_debugInfo_renameTime[deqPtr];
-      uncacheUop_debugInfo_dispatchTime            <= uop_debugInfo_dispatchTime[deqPtr];
-      uncacheUop_debugInfo_enqRsTime               <= uop_debugInfo_enqRsTime[deqPtr];
-      uncacheUop_debugInfo_selectTime              <= uop_debugInfo_selectTime[deqPtr];
-      uncacheUop_debugInfo_issueTime               <= uop_debugInfo_issueTime[deqPtr];
-      uncacheUop_debugInfo_writebackTime           <= uop_debugInfo_writebackTime[deqPtr];
-      uncacheUop_debugInfo_runahead_checkpoint_id  <= uop_debugInfo_runahead_checkpoint_id[deqPtr];
-      uncacheUop_debugInfo_tlbFirstReqTime         <= uop_debugInfo_tlbFirstReqTime[deqPtr];
-      uncacheUop_debugInfo_tlbRespTime             <= uop_debugInfo_tlbRespTime[deqPtr];
-      uncacheUop_debug_seqNum_seqNum               <= uop_debug_seqNum_seqNum[deqPtr];
-      uncacheUop_debug_seqNum_uopIdx               <= uop_debug_seqNum_uopIdx[deqPtr];
+      uncacheUop_fuOpType     <= uop_fuOpType_rd[deqPtr];
+      uncacheUop_rfWen        <= uop_rfWen_rd[deqPtr];
+      uncacheUop_uopIdx       <= uop_uopIdx_rd[deqPtr];
+      uncacheUop_pdest        <= uop_pdest_rd[deqPtr];
+      uncacheUop_robIdx_flag  <= uop_robIdx_flag_rd[deqPtr];
+      uncacheUop_robIdx_value <= uop_robIdx_value_rd[deqPtr];
+      uncacheUop_debugInfo_eliminatedMove          <= uop_debugInfo_eliminatedMove_rd[deqPtr];
+      uncacheUop_debugInfo_renameTime              <= uop_debugInfo_renameTime_rd[deqPtr];
+      uncacheUop_debugInfo_dispatchTime            <= uop_debugInfo_dispatchTime_rd[deqPtr];
+      uncacheUop_debugInfo_enqRsTime               <= uop_debugInfo_enqRsTime_rd[deqPtr];
+      uncacheUop_debugInfo_selectTime              <= uop_debugInfo_selectTime_rd[deqPtr];
+      uncacheUop_debugInfo_issueTime               <= uop_debugInfo_issueTime_rd[deqPtr];
+      uncacheUop_debugInfo_writebackTime           <= uop_debugInfo_writebackTime_rd[deqPtr];
+      uncacheUop_debugInfo_runahead_checkpoint_id  <= uop_debugInfo_runahead_checkpoint_id_rd[deqPtr];
+      uncacheUop_debugInfo_tlbFirstReqTime         <= uop_debugInfo_tlbFirstReqTime_rd[deqPtr];
+      uncacheUop_debugInfo_tlbRespTime             <= uop_debugInfo_tlbRespTime_rd[deqPtr];
+      uncacheUop_debug_seqNum_seqNum               <= uop_debug_seqNum_seqNum_rd[deqPtr];
+      uncacheUop_debug_seqNum_uopIdx               <= uop_debug_seqNum_uopIdx_rd[deqPtr];
       // get_block_addr：CBO 的目标是整条 cache line（64B）
       cboMmioPAddr <= {paddrModule_rdata[0][47:6], 6'h0};
     end
 
     // ---- cbo.zero 的 uop 快照（两个口里下标小的赢）----
     if (cboZeroToSb) begin
-      cboZeroUop_exceptionVec  <= uop_exceptionVec[cboZeroSelEntry];
-      cboZeroUop_trigger       <= uop_trigger[cboZeroSelEntry];
-      cboZeroUop_rfWen         <= uop_rfWen[cboZeroSelEntry];
-      cboZeroUop_flushPipe     <= uop_flushPipe[cboZeroSelEntry];
-      cboZeroUop_pdest         <= uop_pdest[cboZeroSelEntry];
-      cboZeroUop_robIdx_flag   <= uop_robIdx_flag[cboZeroSelEntry];
-      cboZeroUop_robIdx_value  <= uop_robIdx_value[cboZeroSelEntry];
-      cboZeroUop_debugInfo_eliminatedMove         <= uop_debugInfo_eliminatedMove[cboZeroSelEntry];
-      cboZeroUop_debugInfo_renameTime             <= uop_debugInfo_renameTime[cboZeroSelEntry];
-      cboZeroUop_debugInfo_dispatchTime           <= uop_debugInfo_dispatchTime[cboZeroSelEntry];
-      cboZeroUop_debugInfo_enqRsTime              <= uop_debugInfo_enqRsTime[cboZeroSelEntry];
-      cboZeroUop_debugInfo_selectTime             <= uop_debugInfo_selectTime[cboZeroSelEntry];
-      cboZeroUop_debugInfo_issueTime              <= uop_debugInfo_issueTime[cboZeroSelEntry];
-      cboZeroUop_debugInfo_writebackTime          <= uop_debugInfo_writebackTime[cboZeroSelEntry];
-      cboZeroUop_debugInfo_runahead_checkpoint_id <= uop_debugInfo_runahead_checkpoint_id[cboZeroSelEntry];
-      cboZeroUop_debugInfo_tlbFirstReqTime        <= uop_debugInfo_tlbFirstReqTime[cboZeroSelEntry];
-      cboZeroUop_debugInfo_tlbRespTime            <= uop_debugInfo_tlbRespTime[cboZeroSelEntry];
-      cboZeroUop_debug_seqNum_seqNum              <= uop_debug_seqNum_seqNum[cboZeroSelEntry];
-      cboZeroUop_debug_seqNum_uopIdx              <= uop_debug_seqNum_uopIdx[cboZeroSelEntry];
+      cboZeroUop_exceptionVec  <= uop_exceptionVec_rd[cboZeroSelEntry];
+      cboZeroUop_trigger       <= uop_trigger_rd[cboZeroSelEntry];
+      cboZeroUop_rfWen         <= uop_rfWen_rd[cboZeroSelEntry];
+      cboZeroUop_flushPipe     <= uop_flushPipe_rd[cboZeroSelEntry];
+      cboZeroUop_pdest         <= uop_pdest_rd[cboZeroSelEntry];
+      cboZeroUop_robIdx_flag   <= uop_robIdx_flag_rd[cboZeroSelEntry];
+      cboZeroUop_robIdx_value  <= uop_robIdx_value_rd[cboZeroSelEntry];
+      cboZeroUop_debugInfo_eliminatedMove         <= uop_debugInfo_eliminatedMove_rd[cboZeroSelEntry];
+      cboZeroUop_debugInfo_renameTime             <= uop_debugInfo_renameTime_rd[cboZeroSelEntry];
+      cboZeroUop_debugInfo_dispatchTime           <= uop_debugInfo_dispatchTime_rd[cboZeroSelEntry];
+      cboZeroUop_debugInfo_enqRsTime              <= uop_debugInfo_enqRsTime_rd[cboZeroSelEntry];
+      cboZeroUop_debugInfo_selectTime             <= uop_debugInfo_selectTime_rd[cboZeroSelEntry];
+      cboZeroUop_debugInfo_issueTime              <= uop_debugInfo_issueTime_rd[cboZeroSelEntry];
+      cboZeroUop_debugInfo_writebackTime          <= uop_debugInfo_writebackTime_rd[cboZeroSelEntry];
+      cboZeroUop_debugInfo_runahead_checkpoint_id <= uop_debugInfo_runahead_checkpoint_id_rd[cboZeroSelEntry];
+      cboZeroUop_debugInfo_tlbFirstReqTime        <= uop_debugInfo_tlbFirstReqTime_rd[cboZeroSelEntry];
+      cboZeroUop_debugInfo_tlbRespTime            <= uop_debugInfo_tlbRespTime_rd[cboZeroSelEntry];
+      cboZeroUop_debug_seqNum_seqNum              <= uop_debug_seqNum_seqNum_rd[cboZeroSelEntry];
+      cboZeroUop_debug_seqNum_uopIdx              <= uop_debug_seqNum_uopIdx_rd[cboZeroSelEntry];
       cboZeroSqIdx_flag  <= isCboZeroToSbVec[0] ? dataBuffer_deq_sqPtr[0].flag
                                                 : dataBuffer_deq_sqPtr[1].flag;
       cboZeroSqIdx_value <= isCboZeroToSbVec[0] ? dataBuffer_deq_sqPtr[0].value
@@ -3236,12 +3422,16 @@ module xs_StoreQueue_core
     mmioCompleteSet    = '0;
     cboZeroCompleteSet = '0;
     ncCompleteSet      = '0;
-    for (int i = 0; i < N_ENSBUF; i++)
-      // ★wline（cbo.zero 整行写）不走这条★：它由 cboZeroStout 那边收尾。
-      if (sbufferFire[i] & dataBuffer_deq_sqNeedDeq[i] & ~sbufferWline[i])
-        sbufferCompleteSet[dataBuffer_deq_sqPtr[i].value] = 1'b1;
-    if (mmioStoutFire)    mmioCompleteSet[deqPtr]                = 1'b1;
-    if (cboZeroStoutFire) cboZeroCompleteSet[cboZeroSqIdx_value] = 1'b1;
+    // ★一律用「逐条目比较」而不是「用变量下标去写」★（见 §4.5）
+    for (int j = 0; j < SQ_SIZE; j++) begin
+      for (int i = 0; i < N_ENSBUF; i++)
+        // ★wline（cbo.zero 整行写）不走这条★：它由 cboZeroStout 那边收尾。
+        if (sbufferFire[i] & dataBuffer_deq_sqNeedDeq[i] & ~sbufferWline[i]
+            & (dataBuffer_deq_sqPtr[i].value == 6'(j)))
+          sbufferCompleteSet[j] = 1'b1;
+      if (mmioStoutFire    & (deqPtr            == 6'(j))) mmioCompleteSet[j]    = 1'b1;
+      if (cboZeroStoutFire & (cboZeroSqIdx_value == 6'(j))) cboZeroCompleteSet[j] = 1'b1;
+    end
     // ★ncPtr 在这里是 6 位★：uncacheIdxBits 是 7 位，但 Chisel 用它去索引
     // Vec(56) 时 firtool 只保留 log2Up(56)=6 位（golden L58933 明写
     // `io_uncache_idResp_bits_mid[5:0]`）。用 7 位全宽比会让 mid[6]=1 的那一半
@@ -3264,16 +3454,16 @@ module xs_StoreQueue_core
     vecValidCount = 6'($countones(vecValidVec));
   end
 
-  wire [5:0] validCount_probe      = validCount;
-  wire       _io_sqFull_T_probe    = ~allowEnqueue;
-  wire       _io_sqFull_T_probe_0  = ~allowEnqueue;
-  wire       exHalf_probe          = validCount > 6'h1C;   // QueuePerf: 过半
-  wire       empty_probe           = validCount == 6'h0;
-  wire       exHalf_1_probe        = vecValidCount > 6'h1C; // 向量条目那一组
-  wire       empty_1_probe         = vecValidCount == 6'h0;
-  wire       mmioDoReq_probe       = mmioDoReq;
-  wire       perfEvents_0_2_probe  = (|mmioState);
-  wire       perfEvents_2_2_probe  = mmioStoutFire;
+  assign validCount_probe = validCount;
+  assign _io_sqFull_T_probe = ~allowEnqueue;
+  assign _io_sqFull_T_probe_0 = ~allowEnqueue;
+  assign exHalf_probe = validCount > 6'h1C;   // QueuePerf: 过半
+  assign empty_probe = validCount == 6'h0;
+  assign exHalf_1_probe = vecValidCount > 6'h1C; // 向量条目那一组
+  assign empty_1_probe = vecValidCount == 6'h0;
+  assign mmioDoReq_probe = mmioDoReq;
+  assign perfEvents_0_2_probe = (|mmioState);
+  assign perfEvents_2_2_probe = mmioStoutFire;
 
 
 // -----------------------------------------------------------------------------
@@ -3373,9 +3563,9 @@ module xs_StoreQueue_core
           addrvalid[j] <= 1'b0;
 
         // datavalid：std 口1-s1 > 口0-s1 > 入队（s1 还要求该条目当拍仍然 allocated）
-        if (storeDataInFireReg[1] && allocated[lastStWbIndex[1]] && lastStWbIndex[1] == 6'(j))
+        if (storeDataInFireReg[1] && allocated_rd[lastStWbIndex[1]] && lastStWbIndex[1] == 6'(j))
           datavalid[j] <= 1'b1;
-        else if (storeDataInFireReg[0] && allocated[lastStWbIndex[0]] && lastStWbIndex[0] == 6'(j))
+        else if (storeDataInFireReg[0] && allocated_rd[lastStWbIndex[0]] && lastStWbIndex[0] == 6'(j))
           datavalid[j] <= 1'b1;
         else if (entryCanEnq[j])
           datavalid[j] <= 1'b0;
@@ -3564,11 +3754,11 @@ module xs_StoreQueue_core
       unique case (ncState)
         NC_IDLE: begin
           // NC 要等提交；而且必须等 resp 回来才退队（SQ 还得给 load 做转发）。
-          if (nc[rdPtr] & allocated[rdPtr] & ~completed[rdPtr] & committed[rdPtr]
-              & allvalid[rdPtr] & ~isVec[rdPtr] & ~hasException[rdPtr] & ~mmio[rdPtr]
+          if (nc_rd[rdPtr] & allocated_rd[rdPtr] & ~completed_rd[rdPtr] & committed_rd[rdPtr]
+              & allvalid_rd[rdPtr] & ~isVec_rd[rdPtr] & ~hasException_rd[rdPtr] & ~mmio_rd[rdPtr]
               // !isCboAll：CBO 全家（含 cbo.zero）不走 NC 通道
-              & ~((&uop_fuOpType[rdPtr][3:2] & ~(|uop_fuOpType[rdPtr][6:4]))
-                  | (uop_fuOpType[rdPtr][3:0] == 4'h7))) begin
+              & ~((&uop_fuOpType_rd[rdPtr][3:2] & ~(|uop_fuOpType_rd[rdPtr][6:4]))
+                  | (uop_fuOpType_rd[rdPtr][3:0] == 4'h7))) begin
             ncState          <= NC_REQ;
             ncWaitRespPtrReg <= {1'b0, rdPtr};
           end
@@ -3591,7 +3781,7 @@ module xs_StoreQueue_core
       if (~vecExceptionFlag_valid && (|vecCommitHasExceptionValid) && ~vecCommitLastFlow) begin
         vecExceptionFlag_valid        <= 1'b1;
         vecExceptionFlag_robIdx_flag  <= uop_robIdx_flag [vecCommitSelEntry];
-        vecExceptionFlag_robIdx_value <= uop_robIdx_value[vecCommitSelEntry];
+        vecExceptionFlag_robIdx_value <= uop_robIdx_value_rd[vecCommitSelEntry];
       end
       else if (vecExceptionFlag_valid && vecExceptionFlagCancel) begin
         vecExceptionFlag_valid        <= 1'b0;
@@ -5407,6 +5597,25 @@ module StoreQueue(
   assign io_diffStore_pmaStore_1_bits_wline = diffStore_pmaStore_out[1].bits_wline;
   assign io_diffStore_pmaStore_1_bits_vecValid = diffStore_pmaStore_out[1].bits_vecValid;
 
+  // ---- perf 观测探针（golden 同名；SimTop 的 XMR 直接引这里）----
+  // 只在 wrapper 内部声明，不进对外端口表。
+  wire [5:0]    validCount_probe;
+  wire          _io_sqFull_T_probe;
+  wire          _io_sqFull_T_probe_0;
+  wire          exHalf_probe;
+  wire          empty_probe;
+  wire          exHalf_1_probe;
+  wire          empty_1_probe;
+  wire          mmioDoReq_probe;
+  wire          perfEvents_0_2_probe;
+  wire          perfEvents_2_2_probe;
+  wire          vpmaskNotEqual_probe;
+  wire          vpmaskNotEqual_1_probe;
+  wire          vpmaskNotEqual_2_probe;
+  wire          vaddrMatchFailed_probe;
+  wire          vaddrMatchFailed_1_probe;
+  wire          vaddrMatchFailed_2_probe;
+
   xs_StoreQueue_core u_core (
     .clock(clock),
     .reset(reset),
@@ -5694,7 +5903,23 @@ module StoreQueue(
     .io_diffStore_ncStore_bits_data(io_diffStore_ncStore_bits_data),
     .io_diffStore_ncStore_bits_mask(io_diffStore_ncStore_bits_mask),
     .io_diffStore_ncStore_bits_memBackTypeMM(io_diffStore_ncStore_bits_memBackTypeMM),
-    .gatewayIn_packed_48_bore(gatewayIn_packed_48_bore)
+    .gatewayIn_packed_48_bore(gatewayIn_packed_48_bore),
+    .validCount_probe(validCount_probe),
+    ._io_sqFull_T_probe(_io_sqFull_T_probe),
+    ._io_sqFull_T_probe_0(_io_sqFull_T_probe_0),
+    .exHalf_probe(exHalf_probe),
+    .empty_probe(empty_probe),
+    .exHalf_1_probe(exHalf_1_probe),
+    .empty_1_probe(empty_1_probe),
+    .mmioDoReq_probe(mmioDoReq_probe),
+    .perfEvents_0_2_probe(perfEvents_0_2_probe),
+    .perfEvents_2_2_probe(perfEvents_2_2_probe),
+    .vpmaskNotEqual_probe(vpmaskNotEqual_probe),
+    .vpmaskNotEqual_1_probe(vpmaskNotEqual_1_probe),
+    .vpmaskNotEqual_2_probe(vpmaskNotEqual_2_probe),
+    .vaddrMatchFailed_probe(vaddrMatchFailed_probe),
+    .vaddrMatchFailed_1_probe(vaddrMatchFailed_1_probe),
+    .vaddrMatchFailed_2_probe(vaddrMatchFailed_2_probe)
   );
 
 endmodule
