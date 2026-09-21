@@ -1,0 +1,9 @@
+{
+  "target": "SRAMTemplate_146",
+  "ut": "SRAMTemplateNewForm",
+  "regs": 23,
+  "outs": 28,
+  "expected": 51,
+  "merge_dup": "true",
+  "model_applicable": false
+}
