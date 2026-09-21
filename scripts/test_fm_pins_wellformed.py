@@ -169,6 +169,10 @@ CATCH_COUNT_LEDGER = {
     #   负（让第 7 次 set_user_match 返回 0）-> error "FTQ_PIN_MISS=Ftq miss=1 (n=3493)"。
     #   真 fm_shell 实跑（evidence/6b056a122fad/Ftq）：OE_PIN_END Ftq n=3494 miss=0 expect=3494，
     #   scripts/check_pin_errors.py --require-pins rc=0（区间内 Error 0 条）。
+    #   ★别把它读成"闸分提高了"★：本闸在 main(786aed42) 上就是 PASS 20 / FAIL 4，
+    #   摘表后还是 PASS 20 / FAIL 4。中间那一步（守卫改好、表还没缩）才是 18/6。
+    #   变的是 Ftq 那一行的**性质**：从"ok（遗留 fail-open / 遗留 catch，已记账）"
+    #   变成真的干净的 ok，台账少一条豁免。
 }
 
 PASS, FAIL = [], []
