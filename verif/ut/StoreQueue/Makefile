@@ -23,6 +23,24 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/StoreQueue.sv \
               $(GOLDEN_RTL)/DatamoduleResultBuffer.sv \
               $(GOLDEN_RTL)/StoreExceptionBuffer.sv
 
+# ★verify_matched_unread_compare_points★：让 FM 真的去比那 41 个「两侧都没人读」
+# 的对称死位，而不是跳过它们。
+#   第 7 轮（不开 vmucp）实报：Verification SUCCEEDED / passing 76971 / failing 0 /
+#   unverified 0 / unmatched 0(0)，但 unread=41 —— strict 下 unread!=0 判 PARTIAL。
+#   这 41 个全是 matched_nc（已配对、未比较），逐条都是**两侧对称**的死位：
+#     golden REG / REG_1                 <-> mmioStoutFireRegChain{,_1}
+#         只喂 assert(!RegNext(RegNext(sbuffer(0).fire) && mmioStout.fire))
+#     golden counter[31:0]               <-> timeoutCounter[31:0]
+#         只喂 TimeOutAssert(vecExceptionFlag.valid, 3000, ...)
+#     golden uncacheUop_fuOpType[8:2]    <-> uncacheUop_fuOpType[8:2]
+#         cmoOpCode 只取 [1:0]，高 7 位两侧都没人读
+#   本仓按 SYNTHESIS 编译，断言不生成，所以这些位在两侧同样是死的；★份数照 golden 留★，
+#   少留一个就会变成 unmatched。开 vmucp 后它们变成真比较点，passing 应当 +41。
+#   前后对照见本轮 receipt（76971 -> 77012），这就是「vmucp 不是空转」的证据。
+# ★开 vmucp 不等于放宽判据★：它只把「配上了但没比」改成「配上了并且比了」，
+#   比不过一样红。不 dont_verify、不加黑盒、不动别的 appvar。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 FM_VARIANTS = StoreQueue
 FM_REF_DEPS_StoreQueue = SQAddrModule.sv SQAddrModule_1.sv SQDataModule.sv SQData8Module.sv DatamoduleResultBuffer.sv StoreExceptionBuffer.sv
 
