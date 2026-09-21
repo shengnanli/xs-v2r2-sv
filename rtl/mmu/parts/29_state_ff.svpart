@@ -1,0 +1,316 @@
+  // ---------------------------------------------------------------------------
+  // §11 时序：两个 always_ff，复位域划分照抄 golden（见 §4 的说明）
+  //
+  //  回填侧、命中侧、响应侧、栅栏失效侧的状态更新都在这里。
+  //  ★golden 里没有 ecc flush★：KunminghuV2Config 下 l2tlbParams.enablePTWECC=false，
+  //  eccError 恒 0，整段 l1eccFlush/l0eccFlush 被 firtool 消光了（golden 全文
+  //  grep 不到一个 "ecc"）。所以这里"不写"就是照抄，不是缺口。
+  always_ff @(posedge clock or posedge reset) begin
+    if (reset) begin
+      l3v <= '0;  l2v <= '0;  l1v <= '0;  l0v <= '0;  spv <= '0;
+      valid_delay <= 1'b0;  valid_check <= 1'b0;  valid_resp <= 1'b0;
+      stage_delay_valid_1cycle <= 1'b0;  stage_check_valid_1cycle <= 1'b0;
+      plru_l3 <= '0;  plru_l2 <= '0;  plru_sp <= '0;
+      for (int s = 0; s < L1_SETS; s++) plru_l1[s] <= 1'b0;
+      for (int s = 0; s < L0_SETS; s++) plru_l0[s] <= '0;
+      for (int s = 0; s < L0_SETS; s++)
+        for (int w = 0; w < L0_WAYS; w++)
+          l0_bitmap[s][w] <= '0;
+      bypass_release <= '0;  bypass_hold <= '0;  hptw_bypass_hold <= '0;
+      wakeup_delay_valid <= 1'b0;  wakeup_valid <= 1'b0;
+    end
+    else begin
+      // PipelineConnect 的 valid 推进。★形状必须照抄：不是「下级 ready 时才更新」，
+      // 而是**每拍无条件赋值**，取值 = ~flush_dup_0 & (本级 fire | 下级没收走就保持)。★
+      // 这两种写法在下级 ready 时同值，但在 ~ready 且 flush 的那一拍**不同**：
+      // golden 会把 valid 清掉，"有条件更新"的写法不会。
+      // 三级 valid 全部只看 flush_dup_0（不是各看各的 dup）——这一点与回填相反。
+      valid_delay <= ~flush_dup_0 & (left_fire_req   | ~stage_check_ready & valid_delay);
+      valid_check <= ~flush_dup_0 & (left_fire_delay | ~stage_resp_ready  & valid_check);
+      valid_resp  <= ~flush_dup_0 & (left_fire_check | ~io_resp_ready     & valid_resp);
+      // 两个 1 拍脉冲：本级这一拍收到了新数据（用作 DataHoldBypass / RegEnable 的使能）
+      stage_delay_valid_1cycle <= ~flush_dup_0 & sram_read_fire;
+      stage_check_valid_1cycle <= ~flush_dup_0 & left_fire_delay;
+
+      // 有效位：回填把被选中的那一位置 1。
+      if (l3_refill) l3v <= l3v | l3_rf_oh;
+      if (l2_refill) l2v <= l2v | l2_rf_oh;
+      if (l1_refill) l1v <= l1v | l1_rfv_oh;
+      if (l0_refill) l0v <= l0v | l0_rfv_oh;
+      if (sp_refill) spv <= spv | sp_rf_oh;
+
+      // ★栅栏失效写在回填之后，顺序就是覆盖优先级★（Chisel 的 last-connect）：
+      //   sfence.vma < hfence.vvma < hfence.gvma，三者又都压过同一拍的回填。
+      //   l1/l2 只在 rs1=1 时被赋值、l3 只在 dup_2 的 rs1=1 时被赋值 ——
+      //   ★这几个门不能省★，见 §21.1 的注释。掩码本身在 §21 算好。
+      if (sfence_plain) begin
+        l0v <= l0v & ~l0_sf_mask;
+        spv <= spv & ~sp_sf_mask;
+        if (sf_rs1) begin
+          l1v <= l1v & ~l1_sf_mask;
+          l2v <= l2v & ~l2_sf_mask;
+        end
+      end
+      if (hfence_vvma) begin
+        l0v <= l0v & ~l0_hv_mask;
+        spv <= spv & ~sp_hv_mask;
+        if (sf_rs1) begin
+          l1v <= l1v & ~l1_hv_mask;
+          l2v <= l2v & ~l2_hv_mask;
+        end
+      end
+      if (hfence_gvma) begin
+        l0v <= l0v & ~l0_hg_mask;
+        spv <= spv & ~sp_hg_mask;
+        if (sf_rs1) begin
+          l1v <= l1v & ~l1_hg_mask;
+          l2v <= l2v & ~l2_hg_mask;
+        end
+      end
+      // l3 那一段在 golden 里独立成块（在三种栅栏之后），且只认 dup_2 的 rs1。
+      if (l3_rs1) begin
+        if (sfence_plain) l3v <= l3v & ~l3_sf_mask;
+        if (hfence_vvma)  l3v <= l3v & ~l3_hv_mask;
+        if (hfence_gvma)  l3v <= l3v & ~l3_hg_mask;
+      end
+
+      // §22 wakeup 的两拍 valid（与主流水一样被 flush_dup_0 清掉）
+      wakeup_delay_valid <= ~flush_dup_0 & wakeup_harzad;
+      wakeup_valid       <= ~flush_dup_0 & wakeup_delay_valid;
+
+      // l0_bitmap 的两个写者。★顺序就是优先级★：golden 里 wakeup 那条写在前面
+      // （l0 命中块内），l0 回填的清零写在后面（回填块内），所以**回填赢** ——
+      // 于是 next = ~清零 & (wakeup 写 ? 新值 : 旧值)。
+      //
+      // ★必须写成"每拍都算一遍的表达式"，不能写成 `if (写使能) 才更新`★：
+      //  wakeup 的写使能里含 wakeup_hitvec，而它来自 l0 SRAM —— 没写过的行在
+      //  `+define+SYNTHESIS` 下回读是 X。golden（firtool 展开的正是上面那个表达式）
+      //  会把 X 写进寄存器，而 `if (X)` 按假走会保住旧值。两者在 0/1 上同值。
+      //  实测：改成本形状之前，20k 拍里这一处贡献 l0_bitmap[4] 的 golden=X/impl=0 失配。
+      for (int s = 0; s < L0_SETS; s++)
+        for (int w = 0; w < L0_WAYS; w++)
+          for (int k = 0; k < SECTOR_N; k++)
+            l0_bitmap[s][w][k] <=
+              ~(l0_refill & l0_rfv_oh[L0_WAYS*s + w])
+              & ((wakeup_write & (wk_set == 6'(s)) & (wakeup_way_idx == 2'(w))
+                  & (wk_idx == 3'(k))) ? wk_ok : l0_bitmap[s][w][k]);
+
+      // 替换状态。★这里就是 §7 记的那个 golden 真 bug 的落点★：
+      //   plru_l3 只有"l3 命中"**一个**写者（l3 回填根本不碰它）；
+      //   plru_l2 有三个写者，优先级 l2 回填 > **l3 回填** > l2 命中，
+      //   而 l3 回填那一支喂进去的是 l3_refill_idx —— 照抄，不许"修好"。
+      if (l3_hit_h & stage_delay_valid_1cycle)
+        plru_l3 <= plru16_access(plru_l3, oh_to_uint16(l3_hitvec));
+
+      if (l2_refill)      plru_l2 <= plru16_access(plru_l2, l2_refill_idx);
+      else if (l3_refill) plru_l2 <= plru16_access(plru_l2, l3_refill_idx);
+      else if (l2_hit_h & stage_delay_valid_1cycle)
+        plru_l2 <= plru16_access(plru_l2, oh_to_uint16(l2_hitvec));
+
+      if (sp_refill) plru_sp <= plru16_access(plru_sp, sp_refill_idx);
+      else if (sp_hit_c & stage_delay_valid_1cycle)
+        plru_sp <= plru16_access(plru_sp, oh_to_uint16(sp_hitvec));
+
+      // l1/l0 是每组一份状态：回填与命中可能落在**不同的组**，两边都要更新；
+      // 落在同一组时回填优先。所以按组写，不能写成两条互不相干的 if。
+      for (int s = 0; s < L1_SETS; s++) begin
+        if (l1_refill & (l1_w_set == s[$clog2(L1_SETS)-1:0]))
+          plru_l1[s] <= ~l1_victim_way;
+        else if (l1_hit & stage_check_valid_1cycle
+                 & (check_vpn[13:12] == s[$clog2(L1_SETS)-1:0]))
+          // 2 路的 access(way) = ~way，而 hitWay 是 ParallelPriorityMux ⇒ ~hitVec[0]，
+          // 两个取反抵消，golden 直接写的就是 hitVec[0]。照抄这个形状。
+          plru_l1[s] <= l1_hitvec[0];
+      end
+      for (int s = 0; s < L0_SETS; s++) begin
+        if (l0_refill & (l0_w_set == s[$clog2(L0_SETS)-1:0]))
+          plru_l0[s] <= plru4_access(plru_l0[s], l0_victim_way);
+        else if (l0_hit & stage_check_valid_1cycle
+                 & (check_vpn[8:3] == s[$clog2(L0_SETS)-1:0]))
+          plru_l0[s] <= plru4_access(plru_l0[s], l0_hitway);
+      end
+
+      // §17 bypass 的三个带复位寄存器组（各 4 位，对应 l0/l1/l2/l3 四级）。
+      // ★两个 hold 的清除条件不一样，别合并★：
+      //   普通口 bypass_hold —— 新一拍进 stageResp 或又来一次 refill 就清；
+      //   hptw 口 hptw_bypass_hold —— 只有 io.resp 真的握手走了才清。
+      // bypass_release 是"新一拍进了 stageResp"的 1 拍脉冲，golden 存了**四份同值**的
+      // 寄存器（每级一份），这里照抄成 4 位向量而不是 1 位，保住与 golden 的点对点对应。
+      bypass_release <= {4{left_fire_check}};
+      for (int i = 0; i < 4; i++) begin
+        bypass_hold[i] <= ~(bypass_release[i] | io_refill_valid)
+                        & (bypass_hit_resp[i] | bypass_hold[i]);
+        hptw_bypass_hold[i] <= ~resp_fire & (bypass_hit_resp[i] | hptw_bypass_hold[i]);
+      end
+    end
+  end
+
+  // ---- 非复位域：全部载荷与影子元数据（golden 的第二个 always，:30763）----
+  always_ff @(posedge clock) begin
+    // l3 表项（无 pbmt —— l3 级 PDE 不带 pbmt）
+    if (l3_refill) begin
+      l3_entry[l3_refill_idx].tag      <= io_refill_bits_req_info_dup_2_vpn[37:27];
+      l3_entry[l3_refill_idx].asid     <= l23_w_asid;
+      l3_entry[l3_refill_idx].vmid     <= io_csr_dup_2_hgatp_vmid[13:0];
+      l3_entry[l3_refill_idx].ppn      <= io_refill_bits_sel_pte_dup_2[47:10];
+      l3_entry[l3_refill_idx].prefetch <= refill_prefetch_2;
+      l3h[l3_refill_idx]               <= refill_h_2;
+      // g 位：G 阶段（onlyStage2）的 PTE 其 g 位硬件要忽略，写 0。
+      l3g <= (l3g & ~l3_rf_oh)
+           | ((io_refill_bits_sel_pte_dup_2[PTE_G]
+               & (io_refill_bits_req_info_dup_2_s2xlate != H_ONLY_STAGE2))
+              ? l3_rf_oh : '0);
+    end
+
+    if (l2_refill) begin
+      l2_entry[l2_refill_idx].tag      <= io_refill_bits_req_info_dup_2_vpn[37:18];
+      l2_entry[l2_refill_idx].asid     <= l23_w_asid;
+      l2_entry[l2_refill_idx].vmid     <= io_csr_dup_2_hgatp_vmid[13:0];
+      l2_entry[l2_refill_idx].pbmt     <= io_refill_bits_sel_pte_dup_2[62:61];
+      l2_entry[l2_refill_idx].ppn      <= io_refill_bits_sel_pte_dup_2[47:10];
+      l2_entry[l2_refill_idx].prefetch <= refill_prefetch_2;
+      l2h[l2_refill_idx]               <= refill_h_2;
+      l2g <= (l2g & ~l2_rf_oh)
+           | ((io_refill_bits_sel_pte_dup_2[PTE_G]
+               & (io_refill_bits_req_info_dup_2_s2xlate != H_ONLY_STAGE2))
+              ? l2_rf_oh : '0);
+    end
+
+    // sp 表项：大页/napot，带完整 perm、level 与 v。
+    // ★v 字段 = ~onlyPf★：onlyPf 的条目也进 sp，但存的是"这条注定 pf"，v=0。
+    if (sp_refill) begin
+      sp_entry[sp_refill_idx].tag      <= io_refill_bits_req_info_dup_0_vpn;
+      sp_entry[sp_refill_idx].asid     <= sp_w_asid;
+      sp_entry[sp_refill_idx].vmid     <= io_csr_dup_0_hgatp_vmid[13:0];
+      sp_entry[sp_refill_idx].n        <= io_refill_bits_sel_pte_dup_0[PTE_N];
+      sp_entry[sp_refill_idx].pbmt     <= io_refill_bits_sel_pte_dup_0[62:61];
+      sp_entry[sp_refill_idx].ppn      <= io_refill_bits_sel_pte_dup_0[47:10];
+      sp_entry[sp_refill_idx].perm.d   <= io_refill_bits_sel_pte_dup_0[PTE_D];
+      sp_entry[sp_refill_idx].perm.a   <= io_refill_bits_sel_pte_dup_0[PTE_A];
+      sp_entry[sp_refill_idx].perm.g   <= io_refill_bits_sel_pte_dup_0[PTE_G]
+                                        & (io_refill_bits_req_info_dup_0_s2xlate
+                                           != H_ONLY_STAGE2);
+      sp_entry[sp_refill_idx].perm.u   <= io_refill_bits_sel_pte_dup_0[PTE_U];
+      sp_entry[sp_refill_idx].perm.x   <= io_refill_bits_sel_pte_dup_0[PTE_X];
+      sp_entry[sp_refill_idx].perm.w   <= io_refill_bits_sel_pte_dup_0[PTE_W];
+      sp_entry[sp_refill_idx].perm.r   <= io_refill_bits_sel_pte_dup_0[PTE_R];
+      sp_entry[sp_refill_idx].level    <= io_refill_bits_level_dup_0;
+      sp_entry[sp_refill_idx].prefetch <= refill_prefetch_0;
+      sp_entry[sp_refill_idx].v        <= ~sp_only_pf;
+      sph[sp_refill_idx]               <= refill_h_0;
+      spg <= (spg & ~sp_rf_oh)
+           | ((io_refill_bits_sel_pte_dup_0[PTE_G]
+               & (io_refill_bits_req_info_dup_0_s2xlate != H_ONLY_STAGE2))
+              ? sp_rf_oh : '0);
+    end
+
+    // l1/l0：载荷在 SRAM 里（写端口见 §6.2），核内只留 g / h / 影子哈希。
+    if (l1_refill) begin
+      l1g <= (l1g & ~l1_rfv_oh)
+           | ((refill_line_all_g
+               & (io_refill_bits_req_info_dup_1_s2xlate != H_ONLY_STAGE2))
+              ? l1_rfv_oh : '0);
+      l1h    [l1_w_set][l1_victim_way] <= refill_h_1;
+      l1asids[l1_w_set][l1_victim_way] <= xorfold3(l1_w_asid);
+      l1vmids[l1_w_set][l1_victim_way] <= xorfold3(io_csr_dup_1_hgatp_vmid);
+    end
+
+    if (l0_refill) begin
+      l0g <= (l0g & ~l0_rfv_oh)
+           | ((refill_line_all_g
+               & (io_refill_bits_req_info_dup_0_s2xlate != H_ONLY_STAGE2))
+              ? l0_rfv_oh : '0);
+      l0h    [l0_w_set][l0_victim_way] <= refill_h_0;
+      l0asids[l0_w_set][l0_victim_way] <= xorfold3(l0_w_asid);
+      l0vmids[l0_w_set][l0_victim_way] <= xorfold3(io_csr_dup_0_hgatp_vmid);
+      l0vpns [l0_w_set][l0_victim_way] <= xorfold6_tag(l0_w_tag);
+    end
+
+    // ---- §17 bypass 的跨拍记忆（不复位）----
+    //  每一级记住"在本级停留期间有没有被 refill 覆盖过"：本级进新数据那一拍直接取
+    //  当拍匹配值（把上一条请求的记忆冲掉），否则把新来的 refill 命中或进去。
+    if (stage_delay_valid_1cycle) bypass_seen_delay <= bypass_hit_delay;
+    else bypass_seen_delay <= ({4{io_refill_valid}} & bypass_hit_delay) | bypass_seen_delay;
+    if (stage_check_valid_1cycle) bypass_seen_check <= bypass_hit_check;
+    else bypass_seen_check <= ({4{io_refill_valid}} & bypass_hit_check) | bypass_seen_check;
+
+    //  往下一级交班时把"当拍匹配 + 本级记忆"并进载荷。
+    //  ★`& ~valid_1cycle` 这一项不是多余的★：本级这一拍刚进新数据时，记忆寄存器里
+    //  还是上一条请求的值（它要到下一拍才更新），必须屏蔽掉。
+    if (left_fire_delay)
+      check_bypassed <= bypass_hit_delay
+                      | (bypass_seen_delay & {4{~stage_delay_valid_1cycle}});
+    if (left_fire_check)
+      resp_bypassed <= check_bypassed | bypass_hit_check
+                     | (bypass_seen_check & {4{~stage_check_valid_1cycle}});
+
+    // ---- §18 命中结果快照（不复位）----
+    if (left_fire_check) begin
+      resp_res_l3.hit  <= l3_hit_ck;
+      resp_res_l3.pre  <= l3_pre_ck;
+      resp_res_l3.ppn  <= l3_ppn_ck;
+
+      resp_res_l2.hit  <= l2_hit_ck;
+      resp_res_l2.pre  <= l2_pre_ck;
+      resp_res_l2.ppn  <= l2_ppn_ck;
+      resp_res_l2.pbmt <= l2_pbmt_ck;
+
+      resp_res_l1.hit  <= l1_hit;
+      resp_res_l1.pre  <= l1_pre;
+      resp_res_l1.ppn  <= l1_hit_ppn;
+      resp_res_l1.pbmt <= l1_hit_pbmt;
+
+      resp_res_l0.hit              <= l0_hit;
+      resp_res_l0.pre              <= l0_pre;
+      resp_res_l0.ppn              <= l0_hitdata.ppns;
+      resp_res_l0.pbmt             <= l0_hitdata.pbmts;
+      resp_res_l0.perm             <= l0_hitdata.perms;
+      resp_res_l0.v                <= l0_valid;
+      resp_res_l0.jmp_bitmap_check <= l0_jmp_bitmap;
+      resp_res_l0.hitway           <= l0_hitway_oh;
+      resp_res_l0.ptes             <= l0_ptes;
+      resp_res_l0.cfs              <= l0_cfs;
+
+      resp_res_sp.hit              <= sp_hit_ck;
+      resp_res_sp.pre              <= sp_pre_ck;
+      resp_res_sp.ppn              <= sp_hitdata_ck.ppn;
+      resp_res_sp.pbmt             <= sp_hitdata_ck.pbmt;
+      resp_res_sp.perm             <= sp_hitdata_ck.perm;
+      resp_res_sp.n                <= sp_hitdata_ck.n;
+      resp_res_sp.level            <= sp_hitdata_ck.level;
+      resp_res_sp.v                <= sp_valid_ck;
+      resp_res_sp.jmp_bitmap_check <= sp_jmp_bitmap_ck;
+      resp_res_sp.pte              <= sp_pte;
+    end
+
+    // ---- §22 wakeup 的载荷与保持寄存器（不复位）----
+    if (wakeup_harzad) begin
+      wk_d_tag <= io_bitmap_wakeup_bits_tag;
+      wk_d_set <= io_bitmap_wakeup_bits_setIndex;
+      wk_d_way <= io_bitmap_wakeup_bits_way_info;
+      wk_d_idx <= io_bitmap_wakeup_bits_pte_index;
+      wk_d_ok  <= io_bitmap_wakeup_bits_check_success;
+      wk_d_s2x <= io_bitmap_wakeup_bits_s2xlate;
+      for (int w = 0; w < L0_WAYS; w++) begin
+        wakeup_vvec_delay[w] <= l0v[L0_WAYS*io_bitmap_wakeup_bits_tag[8:3] + w];
+        wakeup_hvec_delay[w] <= l0h[io_bitmap_wakeup_bits_tag[8:3]][w];
+      end
+    end
+    if (wakeup_delay_valid) begin
+      for (int w = 0; w < L0_WAYS; w++) begin
+        wakeup_rdata_r[w].tag  <= l0_sram_rdata[w].tag;
+        wakeup_rdata_r[w].asid <= l0_sram_rdata[w].asid;
+        wakeup_rdata_r[w].vmid <= l0_sram_rdata[w].vmid;
+        wakeup_rdata_r[w].vs   <= l0_sram_rdata[w].vs;
+        for (int k = 0; k < SECTOR_N; k++)
+          wakeup_rdata_r[w].g[k] <= l0_sram_rdata[w].perms[k].g;
+      end
+      wk_set <= wk_d_set;  wk_way <= wk_d_way;
+      wk_idx <= wk_d_idx;  wk_ok  <= wk_d_ok;
+      wakeup_hitvec <= wakeup_hitvec_delay;
+    end
+
+    // ---- §20 perf 事件打两拍（不复位）----
+    perf_event_d1 <= perf_event;
+    perf_event_d2 <= perf_event_d1;
+  end

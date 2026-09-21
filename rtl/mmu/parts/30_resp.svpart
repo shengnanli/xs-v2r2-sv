@@ -1,0 +1,262 @@
+
+  // ---------------------------------------------------------------------------
+  // §17 refill bypass —— "你要的那条，这一拍正好在回填路上"
+  //      （已追清：golden:30003-30070 / 30773 / 31210-31252 / 6286-6355 / 27226-27241）
+  //
+  //  为什么要它：请求已经进了流水、SRAM 也读过了，这时 io.refill 把同一条 vpn 写进来。
+  //  流水里那份读数是**旧的**，不能当"未命中"直接报出去，否则上层会再走一次内存。
+  //  所以只要 refill 覆盖了流水里这条请求的地址，就给它打上 bypassed 标记，
+  //  让上层知道"这次的 miss 结论作废，重来一次就命中了"。
+  //
+  //  ★形状：每一级各有一份，且每一级都是「本拍匹配 wire + 跨拍记忆 reg」两件套★
+  //    stageDelay 级：bypass_hit_delay / bypass_seen_delay
+  //    stageCheck 级：bypass_hit_check / bypass_seen_check
+  //    stageResp  级：bypass_hit_resp  + 两组 hold（普通口一组、hptw 口一组，清除条件不同）
+  //  四级 index 0..3 = l0/l1/l2/l3，比较的 tag 位数不同（级数越高比得越少）。
+
+  // 一级一级地比 vpn：l0 比 [37:3]（8 条一行，低 3 位是行内序号），
+  // l1 再去掉 9 位 [37:12]，l2 去掉 18 位 [37:21]，l3 去掉 27 位 [37:30]。
+  function automatic logic bypass_vpn_match(input int              level,
+                                            input logic [VPN_W-1:0] a,
+                                            input logic [VPN_W-1:0] b);
+    case (level)
+      0:       return a[37:3]  == b[37:3];
+      1:       return a[37:12] == b[37:12];
+      2:       return a[37:21] == b[37:21];
+      default: return a[37:30] == b[37:30];
+    endcase
+  endfunction
+
+  // 这一拍的 refill 是否正好覆盖了 (vpn, s2xlate) 这条请求的第 level 级。
+  // ★两边都要先过 fold_h★：allStage 的请求查的是它的 stage-1 条目。
+  // ★refill 那三根当参数传，不在函数体里直接读模块级信号★（理由同 §13 的
+  //  sp_level_match：函数体引用非局部量会被 Formality 判 FMR_VLOG-091 / FM-089）。
+  function automatic logic refill_bypass(input int              level,
+                                         input logic [VPN_W-1:0] vpn,
+                                         input logic [1:0]       s2x,
+                                         input logic             rf_valid,
+                                         input logic [1:0]       rf_level,
+                                         input logic [VPN_W-1:0] rf_vpn,
+                                         input logic [1:0]       rf_s2x);
+    return rf_valid
+         & (rf_level == 2'(level))
+         & bypass_vpn_match(level, rf_vpn, vpn)
+         & (fold_h(s2x) == fold_h(rf_s2x));
+  endfunction
+
+  logic [3:0] bypass_hit_delay, bypass_hit_check, bypass_hit_resp;
+  logic [3:0] bypass_seen_delay, bypass_seen_check;
+  logic [3:0] check_bypassed, resp_bypassed;
+
+  // 四份"释放"脉冲，golden 里是四个**独立而同值**的寄存器（OneCycleValid(stageCheck.fire)）。
+  // ★照抄四份，不合并★：合成一份会让 golden 那三个寄存器在 FM 上变成 unmatched。
+  logic [3:0] bypass_release;
+  logic [3:0] bypass_hold;        // 普通口：refill 或新一拍进来就清
+  logic [3:0] hptw_bypass_hold;   // hptw 口：io.resp 握手成功才清
+
+  always_comb begin
+    for (int i = 0; i < 4; i++) begin
+      bypass_hit_delay[i] = refill_bypass(i, delay_vpn, delay_s2x,
+                                          io_refill_valid, io_refill_bits_level_dup_0,
+                                          io_refill_bits_req_info_dup_0_vpn,
+                                          io_refill_bits_req_info_dup_0_s2xlate);
+      bypass_hit_check[i] = refill_bypass(i, check_vpn, check_s2x,
+                                          io_refill_valid, io_refill_bits_level_dup_0,
+                                          io_refill_bits_req_info_dup_0_vpn,
+                                          io_refill_bits_req_info_dup_0_s2xlate);
+      bypass_hit_resp [i] = refill_bypass(i, resp_vpn,  resp_s2x,
+                                          io_refill_valid, io_refill_bits_level_dup_0,
+                                          io_refill_bits_req_info_dup_0_vpn,
+                                          io_refill_bits_req_info_dup_0_s2xlate);
+    end
+  end
+
+  logic resp_fire;
+  assign resp_fire = valid_resp & io_resp_ready;
+
+  // ---------------------------------------------------------------------------
+  // §18 stageResp 的命中结果快照 resp_res（已追清：golden:35843-36085）
+  //
+  //  ★为什么要再存一拍★：stageCheck 的命中结果是组合的，而 io.resp 要在下一拍输出，
+  //  且 stageResp 可能被下游反压住好几拍。所以整份命中结果在 stageCheck 出口
+  //  锁存成 resp_res，之后 io.resp 的两百多根全部只读 resp_res，不再回看流水。
+  //  ★存的字段就是 golden 存的那些★，见 pkg 里四个 res_*_t 的注释。
+  res_l3_t  resp_res_l3;
+  res_l12_t resp_res_l2, resp_res_l1;
+  res_l0_t  resp_res_l0;
+  res_sp_t  resp_res_sp;
+
+  // ---------------------------------------------------------------------------
+  // §19 io.resp 装配（已追清：golden:6396-6536 / 44766-45302）
+  //
+  //  五级的优先级在这里定死：l0 > sp > l1 > l2 > l3（越靠近叶子越优先）。
+  //  两阶段翻译（allStage）时还要拐一道：查到的是 stage-1 的结果，
+  //  上层拿去再查 stage-2，所以 toFsm 的三个 Hit 全都要被 stage1Hit 压住。
+  logic       resp_any_leaf_hit;   // l0 或 sp 命中（"叶子已经拿到了"）
+  logic       stage1_hit;
+  logic       resp_is_all_stage, resp_not_only_s2;
+  logic [2:0] resp_pte_idx;
+
+  assign resp_any_leaf_hit = resp_res_l0.hit | resp_res_sp.hit;
+  assign resp_is_all_stage = &resp_s2x;
+  assign stage1_hit        = resp_any_leaf_hit & resp_is_all_stage;
+  assign resp_not_only_s2  = (resp_s2x != H_ONLY_STAGE2);
+  assign resp_pte_idx      = resp_vpn[2:0];
+
+  // 命中那一条 PTE 的 v 位：l0 命中取行内第 idx 条，否则取 sp 的。
+  logic resp_leaf_v;
+  assign resp_leaf_v = resp_res_l0.hit ? resp_res_l0.v[resp_pte_idx] : resp_res_sp.v;
+
+  // ★io.resp.hit 的第二项是 golden 的"stage1 页错误"判据★：
+  //  allStage 时，只有查到的 stage-1 条目**无效**（注定 pf）才算"命中并可以直接回话"，
+  //  有效的话得让上层继续走 stage-2，所以反而不算 hit。非 allStage 时这一项恒真。
+  assign io_resp_bits_hit = resp_any_leaf_hit
+                          & (~resp_is_all_stage | resp_is_all_stage & ~resp_leaf_v);
+
+  assign io_resp_bits_req_info_vpn     = resp_vpn;
+  assign io_resp_bits_req_info_s2xlate = resp_s2x;
+  assign io_resp_bits_req_info_source  = resp_src;
+  assign io_resp_bits_isFirst          = resp_isfirst;
+  assign io_resp_bits_isHptwReq        = resp_ishptw;
+  assign io_resp_bits_prefetch = resp_res_l0.pre & resp_res_l0.hit
+                               | resp_res_sp.pre & resp_res_sp.hit;
+
+  // bypassed：某一级"这次的结论作废"且那一级确实没命中，才报给上层。
+  // allStage 的请求不报（它本来就要再走一轮）。
+  assign io_resp_bits_bypassed =
+      ((resp_bypassed[0] | bypass_hold[0] | bypass_hit_resp[0]) & ~resp_res_l0.hit
+     | (resp_bypassed[1] | bypass_hold[1] | bypass_hit_resp[1]) & ~resp_res_l1.hit
+     | (resp_bypassed[2] | bypass_hold[2] | bypass_hit_resp[2]) & ~resp_res_l2.hit
+     | (resp_bypassed[3] | bypass_hold[3] | bypass_hit_resp[3]) & ~resp_res_l3.hit)
+    & ~resp_is_all_stage;
+
+  assign io_resp_bits_toHptw_bypassed =
+      ((resp_bypassed[0] | hptw_bypass_hold[0] | bypass_hit_resp[0]) & ~resp_res_l0.hit
+     | (resp_bypassed[1] | hptw_bypass_hold[1] | bypass_hit_resp[1]) & ~resp_res_l1.hit
+     | (resp_bypassed[2] | hptw_bypass_hold[2] | bypass_hit_resp[2]) & ~resp_res_l2.hit
+     | (resp_bypassed[3] | hptw_bypass_hold[3] | bypass_hit_resp[3]) & ~resp_res_l3.hit)
+    & resp_ishptw;
+
+  // ---- toFsm：没查到叶子时，告诉 PTW 状态机"你可以从第几级接着往下走" ----
+  assign io_resp_bits_toFsm_l3Hit =
+    resp_res_l3.hit & ~stage1_hit & resp_not_only_s2 & ~resp_ishptw;
+  assign io_resp_bits_toFsm_l2Hit =
+    resp_res_l2.hit & ~stage1_hit & resp_not_only_s2 & ~resp_ishptw;
+  assign io_resp_bits_toFsm_l1Hit =
+    resp_res_l1.hit & ~stage1_hit & resp_not_only_s2 & ~resp_ishptw;
+  assign io_resp_bits_toFsm_stage1Hit = stage1_hit;
+
+  // 非叶子那三级的 ppn 共用一棵优先级树（l1 > l2 > l3），toFsm 与 toHptw 都取它。
+  logic [PPN_W-1:0] nonleaf_ppn;
+  assign nonleaf_ppn = resp_res_l1.hit ? resp_res_l1.ppn
+                     : resp_res_l2.hit ? resp_res_l2.ppn : resp_res_l3.ppn;
+  assign io_resp_bits_toFsm_ppn  = nonleaf_ppn;
+  assign io_resp_bits_toHptw_ppn = nonleaf_ppn[35:0];
+
+  // ---- toFsm / toHptw 的 bitmapCheck 出口 ----
+  logic       jmp_bitmap_check;
+  logic [1:0] sp_bitmap_level;
+  assign jmp_bitmap_check = resp_res_l0.jmp_bitmap_check | resp_res_sp.jmp_bitmap_check;
+  assign sp_bitmap_level  = resp_res_sp.jmp_bitmap_check ? resp_res_sp.level : 2'h0;
+
+  assign io_resp_bits_toFsm_bitmapCheck_jmp_bitmap_check  = jmp_bitmap_check;
+  assign io_resp_bits_toHptw_bitmapCheck_jmp_bitmap_check = jmp_bitmap_check;
+  // toLLPTW：l0 那一侧要查 bitmap，且这是一阶段请求 —— 转给 LLPTW 去查。
+  assign io_resp_bits_toFsm_bitmapCheck_toLLPTW =
+    resp_res_l0.jmp_bitmap_check
+    & ((resp_s2x == H_NO_S2XLATE) | (resp_s2x == H_ONLY_STAGE1));
+  assign io_resp_bits_toFsm_bitmapCheck_hitway  = resp_res_l0.hitway;
+  assign io_resp_bits_toHptw_bitmapCheck_hitway = resp_res_l0.hitway;
+  assign io_resp_bits_toFsm_bitmapCheck_SPlevel  = sp_bitmap_level;
+  assign io_resp_bits_toHptw_bitmapCheck_SPlevel = sp_bitmap_level;
+  assign io_resp_bits_toHptw_bitmapCheck_fromSP  = resp_res_sp.jmp_bitmap_check;
+  // ★两个口的 pte / ptes 取法不一样，别合并★：
+  //   toFsm  —— sp 要查时整组 8 条全填 sp 那一条；否则给 l0 的 8 条（pte 再按 idx 挑）。
+  //   toHptw —— pte 恒取 sp 的、ptes 恒取 l0 的，不做选择。
+  assign io_resp_bits_toFsm_bitmapCheck_pte =
+    resp_res_sp.jmp_bitmap_check ? resp_res_sp.pte : resp_res_l0.ptes[resp_pte_idx];
+  assign io_resp_bits_toHptw_bitmapCheck_pte = resp_res_sp.pte;
+
+  // ---- stage1：一次回 8 条相邻 PTE（tlbcontiguous），给 TLB 整组回填 ----
+  //  每条的 ppn/pbmt/perm/v 各走各的优先级树；tag/asid/vmid/level/n 八条共用。
+  logic [1:0] stage1_level;
+  logic       stage1_n;
+  logic [1:0] nonleaf_pbmt;
+  assign stage1_level = resp_res_l0.hit ? 2'h0
+                      : resp_res_sp.hit ? resp_res_sp.level
+                      : resp_res_l1.hit ? 2'h1
+                      : {1'b1, ~resp_res_l2.hit};   // l2 命中 -> 2，否则 3（l3）
+  assign stage1_n     = resp_res_sp.hit & resp_res_sp.n;
+  assign nonleaf_pbmt = resp_res_l1.hit ? resp_res_l1.pbmt : resp_res_l2.pbmt;
+
+  logic [SECTOR_N-1:0] stage1_v;
+  always_comb
+    for (int i = 0; i < SECTOR_N; i++)
+      // ★l0 不命中时 v 取 `~sp命中 | sp的v`★：谁都没命中时 v=1（于是 pf=0），
+      //  只有"sp 命中了但那条是 onlyPf"才报 v=0。照抄这个不对称的写法。
+      stage1_v[i] = resp_res_l0.hit ? resp_res_l0.v[i]
+                                    : (~resp_res_sp.hit | resp_res_sp.v);
+
+  // BEGIN GENERATED(stage1_entry_fanout) —— 8 条的展开，逐条同形，见上面注释
+  // END GENERATED(stage1_entry_fanout)
+
+  assign io_resp_bits_stage1_not_super = resp_res_l0.hit;
+  assign io_resp_bits_toHptw_id        = resp_hptwid;
+  assign io_resp_bits_toHptw_resp_entry_tag   = resp_vpn;
+  assign io_resp_bits_toHptw_resp_entry_vmid  = io_csr_dup_0_hgatp_vmid[13:0];
+  assign io_resp_bits_toHptw_resp_entry_n     = stage1_n;
+  assign io_resp_bits_toHptw_resp_entry_level = resp_res_l0.hit ? 2'h0 : resp_res_sp.level;
+  assign io_resp_bits_toHptw_resp_entry_pbmt  =
+    resp_res_l0.hit ? resp_res_l0.pbmt[resp_pte_idx] : resp_res_sp.pbmt;
+  assign io_resp_bits_toHptw_resp_entry_ppn   =
+    {2'h0, resp_res_l0.hit ? resp_res_l0.ppn[resp_pte_idx][35:0]
+                           : resp_res_sp.ppn[35:0]};
+  assign io_resp_bits_toHptw_resp_entry_perm_d =
+    resp_res_l0.hit ? resp_res_l0.perm[resp_pte_idx].d : resp_res_sp.perm.d;
+  assign io_resp_bits_toHptw_resp_entry_perm_a =
+    resp_res_l0.hit ? resp_res_l0.perm[resp_pte_idx].a : resp_res_sp.perm.a;
+  assign io_resp_bits_toHptw_resp_entry_perm_g =
+    resp_res_l0.hit ? resp_res_l0.perm[resp_pte_idx].g : resp_res_sp.perm.g;
+  assign io_resp_bits_toHptw_resp_entry_perm_u =
+    resp_res_l0.hit ? resp_res_l0.perm[resp_pte_idx].u : resp_res_sp.perm.u;
+  assign io_resp_bits_toHptw_resp_entry_perm_x =
+    resp_res_l0.hit ? resp_res_l0.perm[resp_pte_idx].x : resp_res_sp.perm.x;
+  assign io_resp_bits_toHptw_resp_entry_perm_w =
+    resp_res_l0.hit ? resp_res_l0.perm[resp_pte_idx].w : resp_res_sp.perm.w;
+  assign io_resp_bits_toHptw_resp_entry_perm_r =
+    resp_res_l0.hit ? resp_res_l0.perm[resp_pte_idx].r : resp_res_sp.perm.r;
+  // gpf = "G 阶段页错误" = 查到的那条无效
+  assign io_resp_bits_toHptw_resp_gpf = ~resp_leaf_v;
+
+  assign io_resp_bits_toHptw_l3Hit = resp_res_l3.hit & resp_ishptw;
+  assign io_resp_bits_toHptw_l2Hit = resp_res_l2.hit & resp_ishptw;
+  assign io_resp_bits_toHptw_l1Hit = resp_res_l1.hit & resp_ishptw;
+
+  // ---------------------------------------------------------------------------
+  // §20 perf 事件（已追清：golden:8347-8361 / 36097-36113 / 45295-45302）
+  //
+  //  八个计数口都是 1 位事件打**两拍**再零扩展到 6 位输出（HasPerfEvents 的定式）。
+  //  ★access 只统计非预取请求★：prefetch(source==2) 发起的查询不算一次访问。
+  logic perf_access;
+  assign perf_access = (resp_src != 2'd2) & resp_fire;
+
+  logic [7:0] perf_event;
+  assign perf_event[0] = perf_access;
+  assign perf_event[1] = perf_access & io_resp_bits_toFsm_l2Hit
+                       & ~io_resp_bits_toFsm_l1Hit & ~io_resp_bits_hit;
+  assign perf_event[2] = perf_access & io_resp_bits_toFsm_l1Hit & ~io_resp_bits_hit;
+  assign perf_event[3] = perf_access & resp_res_l0.hit;
+  assign perf_event[4] = perf_access & resp_res_sp.hit;
+  assign perf_event[5] = perf_access & io_resp_bits_hit;
+  assign perf_event[6] = io_req_valid & ~stage_req_ready;   // 入口被堵
+  assign perf_event[7] = valid_resp   & ~io_resp_ready;     // 出口被堵
+
+  logic [7:0] perf_event_d1, perf_event_d2;
+  assign io_perf_0_value = {5'h0, perf_event_d2[0]};
+  assign io_perf_1_value = {5'h0, perf_event_d2[1]};
+  assign io_perf_2_value = {5'h0, perf_event_d2[2]};
+  assign io_perf_3_value = {5'h0, perf_event_d2[3]};
+  assign io_perf_4_value = {5'h0, perf_event_d2[4]};
+  assign io_perf_5_value = {5'h0, perf_event_d2[5]};
+  assign io_perf_6_value = {5'h0, perf_event_d2[6]};
+  assign io_perf_7_value = {5'h0, perf_event_d2[7]};

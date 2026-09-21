@@ -147,15 +147,16 @@ for g in scripts/gen_tlbuffer_ad_family.py scripts/gen_mbist_pipe_family.py \
          scripts/gen_rob_ut.py scripts/gen_sbuffer.py \
          scripts/gen_sbuffer_tb.py scripts/gen_tlbsw_family.py \
          scripts/gen_rob_pins.py scripts/gen_rob_contract.py \
-         scripts/gen_rob_iface.py \
-         scripts/gen_fubusy_wbarb.py scripts/gen_l2tlb.py \
-         scripts/gen_lqreplay.py scripts/gen_lqreplay_ut.py \
-         scripts/gen_xstile_closure.py; do
+         scripts/gen_rob_iface.py scripts/gen_fubusy_wbarb.py \
+         scripts/gen_l2tlb.py scripts/gen_lqreplay.py \
+         scripts/gen_lqreplay_ut.py scripts/gen_xstile_closure.py \
+         scripts/gen_ptwcache.py; do
   [ -f "$g" ] && run "生成器幂等 $(basename $g .py | sed 's/^gen_//')" python3 "$g" --check
 done
 # UT 目录下的生成器不在 check_gen_gate_complete.py 的扫描范围（它只扫 scripts/gen_*.py），
 # 所以挂了 --check 的要手动登记。gen_tb_variant.py 生成 tb_1/tb_2/tb_3.sv 三份 tb。
-for g in verif/ut/TlbStorageWrapper/gen_tb_variant.py; do
+for g in verif/ut/TlbStorageWrapper/gen_tb_variant.py \
+         verif/ut/PtwCache/gen_state_cmp.py; do
   [ -f "$g" ] && run "UT tb 生成器幂等 $(basename $(dirname $g))" bash -c "cd $(dirname $g) && python3 $(basename $g) --check"
 done
 # 闸的完备性闸：任何 scripts/gen_*.py 要么进上面的列表，要么在

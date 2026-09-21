@@ -1,0 +1,72 @@
+
+  // ---------------------------------------------------------------------------
+  // §22 bitmap wakeup —— 上层查完 bitmap 回来"补票"
+  //     （已追清：Chisel PageTableCache.scala:613-645；golden wakeup_* 一族寄存器）
+  //
+  //  剧情：l0 命中了但这条 PTE 的 bitmap 还没查过（§16 的 jmp_bitmap_check），
+  //  于是这次不算命中，上层拿着 {setIndex, way_info, pte_index} 去查 bitmap，
+  //  查完从 io.bitmap_wakeup 回来把那一位置上。下次再查同一条就直接命中。
+  //
+  //  ★为什么要重新读一遍 SRAM★：从发出去到回来隔了很多拍，那一路可能已经被
+  //  别的回填顶掉了。所以 wakeup 也占用 l0 的读端口（§5 的入口节流就是为它让路），
+  //  回读之后**重算一次命中**，确认还是同一条，才允许写 bitmap 位。
+  //
+  //  三拍流水，与主流水**完全独立**（各有各的保持寄存器）：
+  //    拍0 fire        发 SRAM 读，锁存请求与该组的 v/h 向量
+  //    拍1 delay_valid SRAM 数据回来，算 hitVec
+  //    拍2 req_valid   按 way_info 取出对应那一路的 hit，命中才写 l0_bitmap
+
+  logic       wakeup_delay_valid, wakeup_valid;
+  l0_wake_t   wakeup_rdata   [L0_WAYS];   // DataHoldBypass 的输出
+  l0_wake_t   wakeup_rdata_r [L0_WAYS];   // 保持寄存器
+  logic [L0_WAYS-1:0] wakeup_vvec_delay;
+  logic [1:0]         wakeup_hvec_delay [L0_WAYS];
+  logic [L0_WAYS-1:0] wakeup_hitvec_delay, wakeup_hitvec;
+
+  // 请求载荷打两拍（拍0->拍1->拍2）。
+  // ★第二拍只留 set/way/idx/ok 四根★：tag 与 s2xlate 到拍2 已经没人读了
+  //  （命中重算在拍1 就做完了），golden 里那两个寄存器被 firtool 消掉，照抄"不存"。
+  //  多存一个就是 FM 上的一个 unread 点。
+  logic [VPN_W-1:0] wk_d_tag;
+  logic [5:0]       wk_d_set,  wk_set;
+  logic [3:0]       wk_d_way,  wk_way;
+  logic [2:0]       wk_d_idx,  wk_idx;
+  logic             wk_d_ok,   wk_ok;
+  logic [1:0]       wk_d_s2x;
+
+  for (genvar w = 0; w < L0_WAYS; w++) begin : g_wakeup_hold
+    always_comb begin
+      wakeup_rdata[w] = wakeup_rdata_r[w];
+      if (wakeup_delay_valid) begin
+        wakeup_rdata[w].tag  = l0_sram_rdata[w].tag;
+        wakeup_rdata[w].asid = l0_sram_rdata[w].asid;
+        wakeup_rdata[w].vmid = l0_sram_rdata[w].vmid;
+        wakeup_rdata[w].vs   = l0_sram_rdata[w].vs;
+        for (int k = 0; k < SECTOR_N; k++)
+          wakeup_rdata[w].g[k] = l0_sram_rdata[w].perms[k].g;
+      end
+    end
+  end
+
+  // 重算命中：与 §16 的 l0 命中同一个 PtwEntries.hit，只是 vpn/h 换成 wakeup 自己的。
+  logic [1:0] wakeup_h;
+  assign wakeup_h = fold_h(wk_d_s2x);
+
+  always_comb
+    for (int w = 0; w < L0_WAYS; w++)
+      wakeup_hitvec_delay[w] =
+          ((wakeup_h == H_ONLY_STAGE2)
+           | (wakeup_rdata[w].asid == ((|wakeup_h) ? io_csr_dup_0_vsatp_asid
+                                                   : io_csr_dup_0_satp_asid))
+           | wakeup_rdata[w].g[wk_d_tag[2:0]])
+        & (~(|wakeup_h) | ({2'h0, wakeup_rdata[w].vmid} == io_csr_dup_0_hgatp_vmid))
+        & (wakeup_rdata[w].tag == wk_d_tag[37:9])
+        & wakeup_rdata[w].vs[wk_d_tag[2:0]]
+        & wakeup_vvec_delay[w] & (wakeup_h == wakeup_hvec_delay[w]);
+
+  // way_info 是 one-hot，转成路号（4 路的 OHToUInt）
+  logic [1:0] wakeup_way_idx;
+  assign wakeup_way_idx = {wk_way[3] | wk_way[2], wk_way[3] | wk_way[1]};
+
+  logic wakeup_write;
+  assign wakeup_write = wakeup_valid & wakeup_hitvec[wakeup_way_idx];

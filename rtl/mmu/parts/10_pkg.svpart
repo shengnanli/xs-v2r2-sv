@@ -1,0 +1,194 @@
+
+// =============================================================================
+// xs_ptwcache_pkg —— 几何、类型与编码（全部从 G1 golden 逐根量出）
+// =============================================================================
+package xs_ptwcache_pkg;
+
+  // ---- 地址与标识宽度（KunminghuV2Config: EnableSv48=1, HasHExtension=1）----
+  localparam int VPN_W      = 38;  // vpnLen = gvpnLen（Sv48x4 的 G 阶段最宽）
+  localparam int PPN_W      = 38;
+  localparam int ASID_W     = 16;
+  localparam int VMID_W     = 14;  // ★golden 实测 14 位，不是 hgatp_vmid 的 16 位★
+  localparam int SOURCE_W   = 2;
+  localparam int HPTWID_W   = 3;
+  localparam int SECTOR_N   = 8;   // tlbcontiguous：一条 l1/l0 表项装 8 个相邻 PTE
+  localparam int PTE_W_BITS = 64;  // 一个 PTE 的位宽
+  localparam int LINE_W     = SECTOR_N * PTE_W_BITS;  // 512 = io_refill_bits_ptes 宽度
+
+  // ---- 五级几何（golden 实测：见文件头表）----
+  localparam int L3_N       = 16;  localparam int L3_TAG_W = 11;  // vpn[37:27]
+  localparam int L2_N       = 16;  localparam int L2_TAG_W = 20;  // vpn[37:18]
+  localparam int L1_SETS    = 4;   localparam int L1_WAYS  = 2;   localparam int L1_TAG_W = 24; // vpn[37:14]
+  localparam int L0_SETS    = 64;  localparam int L0_WAYS  = 4;   localparam int L0_TAG_W = 29; // vpn[37:9]
+  localparam int SP_N       = 16;  localparam int SP_TAG_W = VPN_W;
+
+  // ---- 两阶段翻译标记 h（每条表项都带，用来区分 VS 级 / G 级共存的条目）----
+  //  Chisel: noS2xlate=0, allStage=3, onlyStage1=1, onlyStage2=2
+  //  查找时 allStage 用 onlyStage1 去比（h_search），回填时 refill_h 同理折叠。
+  localparam logic [1:0] H_NO_S2XLATE  = 2'd0;
+  localparam logic [1:0] H_ONLY_STAGE1 = 2'd1;
+  localparam logic [1:0] H_ONLY_STAGE2 = 2'd2;
+  localparam logic [1:0] H_ALL_STAGE   = 2'd3;
+
+  // ---- 影子元数据的折叠宽度（sfence 比对用的是 XORFold 哈希，不是原值）----
+  //  代价是 sfence 会**保守多刷**（哈希撞了就多刷几条），这是 golden 的设计选择，
+  //  不是缺陷；重写必须照抄同一个折叠函数，否则刷的条目集合会不一样。
+  localparam int HASH_ASID_W = 3;
+  localparam int HASH_VMID_W = 3;
+  localparam int HASH_VPN_W  = 6;
+
+  // l3 表项（寄存器阵列，16 项全相联，无 pbmt）
+  typedef struct packed {
+    logic [L3_TAG_W-1:0] tag;
+    logic [ASID_W-1:0]   asid;
+    logic [VMID_W-1:0]   vmid;
+    logic [PPN_W-1:0]    ppn;
+    logic                prefetch;
+  } l3_entry_t;
+
+  // l2 表项（寄存器阵列，16 项全相联，比 l3 多一个 pbmt）
+  typedef struct packed {
+    logic [L2_TAG_W-1:0] tag;
+    logic [ASID_W-1:0]   asid;
+    logic [VMID_W-1:0]   vmid;
+    logic [1:0]          pbmt;
+    logic [PPN_W-1:0]    ppn;
+    logic                prefetch;
+  } l2_entry_t;
+
+  // RISC-V 页表项权限位
+  typedef struct packed {
+    logic d, a, g, u, x, w, r;
+  } pte_perm_t;
+
+  // sp（superpage）表项：大页/Svnapot，带完整权限与 level
+  typedef struct packed {
+    logic [SP_TAG_W-1:0] tag;
+    logic [ASID_W-1:0]   asid;
+    logic [VMID_W-1:0]   vmid;
+    logic                n;        // Svnapot
+    logic [1:0]          pbmt;
+    logic [PPN_W-1:0]    ppn;
+    pte_perm_t           perm;
+    logic [1:0]          level;
+    logic                prefetch;
+    logic                v;        // ★注意：sp 条目自带 v 字段，与 spv 位向量是两回事★
+  } sp_entry_t;
+
+  // l1 / l0 的一条表项（SRAM 里的一行）：整行 8 个 PTE 共享 tag/asid/vmid/prefetch，
+  // 每个 PTE 自己带 pbmt/ppn/vs（有效）。l0 还多一份 onlypf 与完整 perm（它存叶子）。
+  // ★vs 是"本条 PTE 有效"，与 l1v/l0v 的"本路表项有效"是两回事，命中要同时满足★
+  typedef struct packed {
+    logic [L1_TAG_W-1:0]            tag;
+    logic [ASID_W-1:0]              asid;
+    logic [VMID_W-1:0]              vmid;
+    logic [SECTOR_N-1:0][1:0]       pbmts;
+    logic [SECTOR_N-1:0][PPN_W-1:0] ppns;
+    logic [SECTOR_N-1:0]            vs;
+    logic                           prefetch;
+  } l1_line_t;
+
+  // l1/l0 在 stageCheck 级留下的那一份（ramDatas）：★只留下游真用得到的字段★。
+  // golden 里 l1 的 ramDatas 没有 tag/asid/vmid/vs —— 命中判定在上一级就做完了，
+  // 这一级只需要选数用的 ppn/pbmt/prefetch（l0 还多 onlypf 与 perm）。
+  // 把整行都留下来会凭空多出一批永远没人读的寄存器，FM 上就是 unread 点。
+  typedef struct packed {
+    logic [SECTOR_N-1:0][1:0]       pbmts;
+    logic [SECTOR_N-1:0][PPN_W-1:0] ppns;
+    logic                           prefetch;
+  } l1_ram_t;
+
+  typedef struct packed {
+    logic [SECTOR_N-1:0][1:0]       pbmts;
+    logic [SECTOR_N-1:0][PPN_W-1:0] ppns;
+    logic [SECTOR_N-1:0]            onlypf;
+    pte_perm_t [SECTOR_N-1:0]       perms;
+    logic                           prefetch;
+  } l0_ram_t;
+
+  // sp 命中后真正被下游用到的字段（★没有 tag/asid/vmid★：它们在 golden 里
+  // 从来到不了输出，firtool 把那三个寄存器消掉了，这里照抄"不存"）。
+  typedef struct packed {
+    logic            n;
+    logic [1:0]      pbmt;
+    logic [PPN_W-1:0] ppn;
+    pte_perm_t       perm;
+    logic [1:0]      level;
+    logic            v;
+    logic            prefetch;
+  } sp_hit_t;
+
+  typedef struct packed {
+    logic [L0_TAG_W-1:0]            tag;
+    logic [ASID_W-1:0]              asid;
+    logic [VMID_W-1:0]              vmid;
+    logic [SECTOR_N-1:0][1:0]       pbmts;
+    logic [SECTOR_N-1:0][PPN_W-1:0] ppns;
+    logic [SECTOR_N-1:0]            vs;
+    logic [SECTOR_N-1:0]            onlypf;
+    pte_perm_t [SECTOR_N-1:0]       perms;
+    logic                           prefetch;
+  } l0_line_t;
+
+
+  // ---- §17 用：stageCheck -> stageResp 之间那一拍的命中结果快照（golden resp_res）----
+  //  ★只留 golden 真的存了的字段★：l3 没有 pbmt，l0 没有 level，sp 没有 tag/asid/vmid，
+  //  都是 firtool 顺着"到不了输出"消掉的。多存一个字段在 FM 上就是一个 unread 点。
+  typedef struct packed {
+    logic             hit;
+    logic             pre;
+    logic [PPN_W-1:0] ppn;
+  } res_l3_t;
+
+  typedef struct packed {
+    logic             hit;
+    logic             pre;
+    logic [PPN_W-1:0] ppn;
+    logic [1:0]       pbmt;
+  } res_l12_t;
+
+  // l0 一次命中带回整行 8 个 PTE（tlbcontiguous），下游 TLB 一次填 8 条。
+  typedef struct packed {
+    logic                           hit;
+    logic                           pre;
+    logic [SECTOR_N-1:0][PPN_W-1:0] ppn;
+    logic [SECTOR_N-1:0][1:0]       pbmt;
+    pte_perm_t [SECTOR_N-1:0]       perm;
+    logic [SECTOR_N-1:0]            v;        // = ~onlypf，"这条不是注定 pf"
+    logic                           jmp_bitmap_check;
+    logic [L0_WAYS-1:0]             hitway;   // one-hot，给 bitmap wakeup 回来时定位
+    logic [SECTOR_N-1:0][63:0]      ptes;     // 重新拼回 RISC-V PTE 格式，给 bitmap 检查用
+    logic [SECTOR_N-1:0]            cfs;      // Bitmap Check Failed：该条 bitmap 还没过
+  } res_l0_t;
+
+  typedef struct packed {
+    logic             hit;
+    logic             pre;
+    logic [PPN_W-1:0] ppn;
+    logic [1:0]       pbmt;
+    pte_perm_t        perm;
+    logic             n;
+    logic [1:0]       level;
+    logic             v;
+    logic             jmp_bitmap_check;
+    logic [63:0]      pte;
+  } res_sp_t;
+
+  // bitmap wakeup 回读 l0 时只需要比对用的那几根（golden 实测只留了这些寄存器：
+  // tag/asid/vmid/vs/perms.g —— ppn、pbmt、onlypf、其余 perm 位一个都没留）。
+  typedef struct packed {
+    logic [L0_TAG_W-1:0] tag;
+    logic [ASID_W-1:0]   asid;
+    logic [VMID_W-1:0]   vmid;
+    logic [SECTOR_N-1:0] vs;
+    logic [SECTOR_N-1:0] g;
+  } l0_wake_t;
+
+  // 查找/回填两侧共用的 h 折叠：allStage(3) 折成 onlyStage1(1)，其余原样。
+  // （golden 把这同一个折法在 h_search / delay_h / refill_h / refill_bypass 四处各展开一次。）
+  function automatic logic [1:0] fold_h(input logic [1:0] s2x);
+    return (s2x == H_ONLY_STAGE2) ? H_ONLY_STAGE2
+                                  : {1'b0, (s2x == H_ONLY_STAGE1) | (&s2x)};
+  endfunction
+
+endpackage

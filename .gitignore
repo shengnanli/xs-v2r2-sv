@@ -70,6 +70,10 @@ verif/study/*/simv.daidir/
 # study 目录的其余派生物：derive_ut_impl.py 的派生副本、make sig 的信号清单、
 # VCS 的 vc_hdrs.h。都是 `make` / `make sig` 一条命令能重生的，不进版本库。
 verif/study/*/ut_gen/
+# PtwCache_refill 的 Makefile 用的是 `--out gen`（不是 ut_gen），上面那条挡不住它。
+# 2026-09-20 实测：跑一次 make 之后 `git status` 里就多一个未跟踪的
+# verif/study/PtwCache_refill/gen/ —— 派生态差一步就进库了。
+verif/study/*/gen/
 verif/study/*/signals.txt
 verif/study/*/vc_hdrs.h
 verif/study/*/.inter.vpd.uvm

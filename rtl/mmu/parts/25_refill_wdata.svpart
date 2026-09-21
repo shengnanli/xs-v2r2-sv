@@ -1,0 +1,208 @@
+
+  // ---------------------------------------------------------------------------
+  // §6.1 PTE 谓词（对照 Chisel PteBundle 的 isLeaf/isPf/isGpf/canRefill/…）
+  //
+  //  PTE 位布局（PteBundle 声明顺序 = MSB→LSB，KunminghuV2 下 PAddrBits=48）：
+  //    [63]     n         Svnapot
+  //    [62:61]  pbmt
+  //    [60:54]  reserved  ★非零即 page fault★
+  //    [53:46]  ppn_high  ★超出 ppnLen 的高位，非零即 access fault★
+  //    [45:10]  ppn
+  //    [9:8]    rsw
+  //    [7:0]    perm = {d, a, g, u, x, w, r, v}
+  //  getPPN() = Cat(ppn_high, ppn) 截到 gvpnLen=38 位 ⇒ 就是 pte[47:10]。
+  //
+  //  这几个谓词在 golden 里被 firtool 按每个 PTE、每个 s2xlate 取值各展开一遍
+  //  （仅 l1 的 8 个 vs 位就占了约 500 行）。这里写成函数，调用点把 level 传成常量。
+  localparam int PTE_V = 0, PTE_R = 1, PTE_W = 2, PTE_X = 3;
+  localparam int PTE_U = 4, PTE_G = 5, PTE_A = 6, PTE_D = 7, PTE_N = 63;
+
+  function automatic logic pte_is_leaf(input logic [PTE_W_BITS-1:0] p);
+    return (p[PTE_R] | p[PTE_X] | p[PTE_W]) & p[PTE_V];
+  endfunction
+
+  // isNext：指向下一级页表的非叶子项
+  function automatic logic pte_is_next(input logic [PTE_W_BITS-1:0] p);
+    return ~(p[PTE_R] | p[PTE_X] | p[PTE_W]) & p[PTE_V];
+  endfunction
+
+  // 大页的 ppn 低位必须对齐到该级页大小；level 0 是 4KB 叶子，恒对齐。
+  function automatic logic pte_unaligned(input logic [PTE_W_BITS-1:0] p,
+                                         input logic [1:0]            level);
+    logic aligned;
+    aligned = (level == 2'd0)
+            | ((level == 2'd1) & (p[18:10] == 9'd0))
+            | ((level == 2'd2) & (p[27:10] == 18'd0))
+            | ((level == 2'd3) & (p[36:10] == 27'd0));
+    return pte_is_leaf(p) & ~aligned;
+  endfunction
+
+  function automatic logic pte_is_af(input logic [PTE_W_BITS-1:0] p);
+    return (|p[53:46]) & p[PTE_V];
+  endfunction
+
+  // 两阶段翻译下，stage-1 的 PTE 指出的 GPA 若超出 hgatp 模式的 GPA 位宽 ⇒ guest page fault
+  function automatic logic pte_is_stage1_gpf(input logic [PTE_W_BITS-1:0] p,
+                                             input logic [3:0]            mode);
+    logic [14:0] hi;
+    hi = (mode == 4'h8) ? p[53:39]              // Sv39x4: GPAddrBits=41 ⇒ 右移 29 位
+       : (mode == 4'h9) ? {9'h0, p[53:48]}      // Sv48x4: GPAddrBits=50 ⇒ 右移 38 位
+       :                  15'h0;
+    return (|hi) & p[PTE_V];
+  endfunction
+
+  // ★if/else-if 链就是 Chisel 的 when/elsewhen 优先级链，不要改写成一串或★
+  function automatic logic pte_is_pf(input logic [PTE_W_BITS-1:0] p,
+                                     input logic [1:0]            level,
+                                     input logic                  pbmte);
+    if (|p[60:54])                                 return 1'b1;
+    else if ((&p[62:61]) | (~pbmte & (|p[62:61]))) return 1'b1;
+    else if (pte_is_next(p))
+      return p[PTE_U] | p[PTE_A] | p[PTE_D] | p[PTE_N] | (|p[62:61]);
+    else if (~p[PTE_V] | (~p[PTE_R] & p[PTE_W]))   return 1'b1;
+    // 只支持 64KB napot（ppn[3:0]==4'b1000），且 napot 只能出现在叶子级。
+    // ★`| (level != 0)` 这一项在 level>0 时其实是冗余的★：ppn[3:0]==8 蕴含
+    // ppn[8:0]!=0，于是下一条 unaligned(level) 对同一批输入也会给 1。实测：
+    // 把这一项删掉，20000 拍 × 430 根写端口的定向对照 errors 仍是 0（见
+    // verif/ut/PtwCache）。**仍然照抄不删** —— 值恒等不等于可证等价，
+    // 而且它直接对应 Chisel 的那条 elsewhen，删了就对不上意图了。
+    else if (p[PTE_N] & ((p[13:10] != 4'h8) | (level != 2'd0))) return 1'b1;
+    else                                           return pte_unaligned(p, level);
+  endfunction
+
+  // G 阶段对 VS 阶段而言是 LOAD，只查 A 位；D 位留给 L1 TLB 查。
+  function automatic logic pte_is_gpf(input logic [PTE_W_BITS-1:0] p,
+                                      input logic [1:0]            level,
+                                      input logic                  pbmte);
+    if (|p[60:54])                                 return 1'b1;
+    else if ((&p[62:61]) | (~pbmte & (|p[62:61]))) return 1'b1;
+    else if (pte_is_next(p))
+      return p[PTE_U] | p[PTE_A] | p[PTE_D] | p[PTE_N] | (|p[62:61]);
+    else if (~p[PTE_V] | (~p[PTE_R] & p[PTE_W]))   return 1'b1;
+    else if (~p[PTE_U])                            return 1'b1;
+    else if (p[PTE_N] & (p[13:10] != 4'h8))        return 1'b1;
+    else if (pte_unaligned(p, level))              return 1'b1;
+    else if (~p[PTE_A])                            return 1'b1;
+    else                                           return 1'b0;
+  endfunction
+
+  function automatic logic pte_is_napot(input logic [PTE_W_BITS-1:0] p,
+                                        input logic [1:0]            level);
+    return pte_is_leaf(p) & p[PTE_N] & (p[13:10] == 4'h8) & (level == 2'd0);
+  endfunction
+
+  // 能不能进缓存：四种翻译模式各查各的错
+  function automatic logic pte_can_refill(input logic [PTE_W_BITS-1:0] p,
+                                          input logic [1:0]            level,
+                                          input logic [1:0]            s2xlate,
+                                          input logic                  pbmte,
+                                          input logic [3:0]            mode);
+    case (s2xlate)
+      H_ALL_STAGE:   return ~pte_is_stage1_gpf(p, mode) & ~pte_is_pf(p, level, pbmte);
+      H_ONLY_STAGE2: return ~pte_is_af(p)               & ~pte_is_gpf(p, level, pbmte);
+      default:       return ~pte_is_af(p)               & ~pte_is_pf(p, level, pbmte);
+    endcase
+  endfunction
+
+  // onlyPf：非虚拟化场景下"只是 page fault、不是 access fault"的叶子——
+  // 这种项也进缓存（存 onlypf 位），下次命中直接回 pf，不必再走一遍内存。
+  function automatic logic pte_only_pf(input logic [PTE_W_BITS-1:0] p,
+                                       input logic [1:0]            level,
+                                       input logic [1:0]            s2xlate,
+                                       input logic                  pbmte);
+    return (s2xlate == H_NO_S2XLATE) & pte_is_pf(p, level, pbmte) & ~pte_is_af(p);
+  endfunction
+
+  // ---------------------------------------------------------------------------
+  // §6.2 回填写数据（已追清：golden:6548/6910/7418/7497/43311-43380/43931-44300）
+  //
+  //  io.refill.bits.ptes 是从内存取回来的一整行 512 位 = 8 个相邻 PTE。
+  //  l1 与 l0 各把这一整行写进一条表项（组内 8 项），所以写数据是"整行 + 逐项有效位"。
+  //  ★pbmte 只有一份，用的是 dup_0★——即使在 l1（dup_1）的 canRefill 里也是它。
+  //  golden 就是这么混用的，照抄，别"顺手改成 dup_1"。
+  logic [PTE_W_BITS-1:0] refill_pte [SECTOR_N];
+  logic                  pbmte;
+  logic                  l1_w_prefetch, l0_w_prefetch;
+  logic                  l0_refill;
+
+  assign pbmte = ((io_refill_bits_req_info_dup_0_s2xlate == H_ONLY_STAGE1)
+                  | (&io_refill_bits_req_info_dup_0_s2xlate))
+               ? io_csr_hPBMTE : io_csr_mPBMTE;
+
+  for (genvar i = 0; i < SECTOR_N; i++) begin : g_refill_pte
+    assign refill_pte[i] = io_refill_bits_ptes[PTE_W_BITS*i +: PTE_W_BITS];
+  end
+
+  // prefetch 位：请求来源 == 2 即预取（bSourceWidth 的 prefetchID）。每级用自己那份 dup。
+  assign l1_w_prefetch = (io_refill_bits_req_info_dup_1_source == 2'd2);
+  assign l0_w_prefetch = (io_refill_bits_req_info_dup_0_source == 2'd2);
+
+  // l1（level=1，存 PDE）：某一项有效 ⇔ 能回填 且 **不是**叶子。
+  logic [SECTOR_N-1:0] l1_w_vs;
+  for (genvar i = 0; i < SECTOR_N; i++) begin : g_l1_wdata
+    assign l1_w_vs[i] =
+        pte_can_refill(refill_pte[i], 2'd1,
+                       io_refill_bits_req_info_dup_1_s2xlate, pbmte,
+                       io_csr_dup_1_hgatp_mode)
+      & ~pte_is_leaf(refill_pte[i]);
+  end
+
+  // l0（level=0，存 PTE）：某一项有效 ⇔（能回填 且 **是**叶子）或 onlyPf；
+  // 但整行里若有 napot 项就把该项拒掉（napot 归 sp 存，见 spRefill）。
+  logic      [SECTOR_N-1:0] l0_w_vs;
+  logic      [SECTOR_N-1:0] l0_w_onlypf;
+  pte_perm_t                l0_w_perms [SECTOR_N];
+
+  for (genvar i = 0; i < SECTOR_N; i++) begin : g_l0_wdata
+    logic only_pf, deny_napot;
+    assign only_pf    = pte_only_pf(refill_pte[i], 2'd0,
+                                    io_refill_bits_req_info_dup_0_s2xlate, pbmte);
+    assign deny_napot = pte_is_napot(refill_pte[i], 2'd0);
+
+    assign l0_w_vs[i] =
+        (  pte_can_refill(refill_pte[i], 2'd0,
+                          io_refill_bits_req_info_dup_0_s2xlate, pbmte,
+                          io_csr_dup_0_hgatp_mode) & pte_is_leaf(refill_pte[i])
+         | only_pf) & ~deny_napot;
+    assign l0_w_onlypf[i] = only_pf & ~deny_napot;
+
+    // G 位：onlyStage2（G 阶段）的表项不带 global 语义，写进去恒 0。
+    assign l0_w_perms[i].d = refill_pte[i][PTE_D];
+    assign l0_w_perms[i].a = refill_pte[i][PTE_A];
+    assign l0_w_perms[i].g = (io_refill_bits_req_info_dup_0_s2xlate != H_ONLY_STAGE2)
+                           & refill_pte[i][PTE_G];
+    assign l0_w_perms[i].u = refill_pte[i][PTE_U];
+    assign l0_w_perms[i].x = refill_pte[i][PTE_X];
+    assign l0_w_perms[i].w = refill_pte[i][PTE_W];
+    assign l0_w_perms[i].r = refill_pte[i][PTE_R];
+  end
+
+  // l0 回填使能：napot 的叶子不进 l0（它走 sp），其余只看 flush 与 levelOH。
+  // 判 napot 用的是走回来的**被选中那一个** PTE（sel_pte），不是整行。
+  assign l0_refill = ~flush_dup_0 & io_refill_bits_levelOH_l0
+                   & ~pte_is_napot(io_refill_bits_sel_pte_dup_0,
+                                   io_refill_bits_level_dup_0);
+
+
+  // ---- 写端口里**已追清**的部分（golden:6839 / 7497 / 43311-43313 / 43931-43935）----
+  //  dup 归属再强调一次：l1 写用 dup_1，l0 写用 dup_0。写反了 UT 多半测不出来。
+  logic [1:0]  l1_w_set;
+  logic [23:0] l1_w_tag;
+  logic [15:0] l1_w_asid;
+  logic [13:0] l1_w_vmid;
+  logic [5:0]  l0_w_set;
+  logic [28:0] l0_w_tag;
+  logic [15:0] l0_w_asid;
+  logic [13:0] l0_w_vmid;
+
+  assign l1_w_set  = io_refill_bits_req_info_dup_1_vpn[13:12];
+  assign l1_w_tag  = io_refill_bits_req_info_dup_1_vpn[37:14];
+  assign l1_w_vmid = io_csr_dup_1_hgatp_vmid[13:0];
+  assign l1_w_asid = (|io_refill_bits_req_info_dup_1_s2xlate)
+                   ? io_csr_dup_1_vsatp_asid : io_csr_dup_1_satp_asid;
+
+  assign l0_w_set  = io_refill_bits_req_info_dup_0_vpn[8:3];
+  assign l0_w_tag  = io_refill_bits_req_info_dup_0_vpn[37:9];
+  assign l0_w_vmid = io_csr_dup_0_hgatp_vmid[13:0];
+  assign l0_w_asid = (|io_refill_bits_req_info_dup_0_s2xlate)
+                   ? io_csr_dup_0_vsatp_asid : io_csr_dup_0_satp_asid;

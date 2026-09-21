@@ -22,13 +22,13 @@
 #
 metric	done	total	percent
 fm_targets_configured	543	550	98.7
-unique_design_written	170	1191	14.3
+unique_design_written	171	1191	14.4
 unique_design_proven	164	1191	13.8
-golden_lines_written	2055499	3902283	52.7
+golden_lines_written	2100807	3902283	53.8
 golden_lines_proven	1662089	3902283	42.6
 #
 # ★核内口径（XSTile 闭包，docs/xstile_closure.tsv）= 本轮真实范围★
-incore_golden_lines_written	1886793	3349905	56.3
+incore_golden_lines_written	1932101	3349905	57.7
 incore_golden_lines_proven	1497635	3349905	44.7
 # 核外（XSTop 有、XSTile 没有）—— ★本轮范围外，不排期★
 #   已证出来的不作废，只是不该和核内混在一个百分比里报
@@ -64,6 +64,7 @@ legacy_proven_unanchored	18	543	3.3
 #   L2TLB                                           20101 行
 #   NewDispatch                                    100983 行
 #   OpenLLC                                          4252 行
+#   PtwCache                                        45308 行
 #   Rob                                            266227 行
 #   StorePipe                                          93 行
 #
@@ -75,7 +76,6 @@ StoreQueue	77145	1	REWRITE_L
 LoadQueueUncache	59051	1	REWRITE_L
 CtrlBlock	57635	1	REWRITE_L
 MemBlock	57550	1	REWRITE_L
-PtwCache	45308	1	REWRITE_L
 Slice	45020	5	REWRITE_L
 EntriesVlduVstuVseglduVsegstu	40287	1	REWRITE_L
 EntriesVlduVstu	39935	1	REWRITE_L
@@ -100,6 +100,7 @@ DiffRatStateBuffer	10187	1	-
 WaitTable	9481	1	-
 MainPipe	9208	3	REWRITE_L
 MissQueue	9125	1	REWRITE_L
+LoadQueue	8336	1	REWRITE_L
 #
 # ★核外剩余（XSTop 有、XSTile 没有）—— 本轮不排期，列在这里只为
 #   让人看得见它们的存在，别当成"还没人接的活"★  合计 354539 行

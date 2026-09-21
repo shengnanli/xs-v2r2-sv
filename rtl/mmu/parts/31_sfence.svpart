@@ -1,0 +1,261 @@
+
+  // ---------------------------------------------------------------------------
+  // §21 sfence / hfence 失效（已追清：golden 的 l0v/l1v/l2v/spv/l3v 清零支路；
+  //     Chisel PageTableCache.scala:1097-1300）
+  //
+  //  三种栅栏，**同一拍最多来一种**，但 golden 是三段 `when` 顺序覆盖，
+  //  所以优先级是 hfence.gvma > hfence.vvma > sfence.vma。照抄这个顺序。
+  //    sfence.vma    —— hg=0 且 hv=0。刷"当前虚拟化上下文"的一阶段条目。
+  //    hfence.vvma   —— hv=1。刷本 VM 的一阶段条目（VS 级页表）。
+  //    hfence.gvma   —— hg=1。刷二阶段条目（G 级页表）。
+  //  每种再按 rs1（给了地址吗）/ rs2（给了 asid/vmid 吗）分四档：
+  //    rs1=1,rs2=1  全刷      rs1=1,rs2=0  按 asid 刷（global 条目豁免）
+  //    rs1=0,rs2=1  按地址刷  rs1=0,rs2=0  按地址 + asid 刷
+  //  ★rs1=0（指定地址）那两档只碰 l0 与 sp★：l1/l2/l3 存的是非叶子 PDE，
+  //   一个地址落在哪条 PDE 上不唯一，golden 干脆不刷它们。照抄，别"补全"。
+  //
+  //  ★比对用的是 XORFold 哈希副本，不是 SRAM 里的原值★（见 §9.1）：
+  //   哈希撞了就多刷几条，是 golden 有意的保守设计。
+
+  logic sfence_plain, hfence_vvma, hfence_gvma;
+  assign sfence_plain = io_sfence_dup_0_valid
+                      & ~io_sfence_dup_0_bits_hg & ~io_sfence_dup_0_bits_hv;
+  assign hfence_vvma  = io_sfence_dup_0_valid & io_sfence_dup_0_bits_hv;
+  assign hfence_gvma  = io_sfence_dup_0_valid & io_sfence_dup_0_bits_hg;
+
+  // ---- 与栅栏种类无关的 asid 比对（golden 把它们放在三段 when 之外）----
+  //  ★l0/l1 比折叠哈希，l2/sp 比 16 位原值★：l2/sp 是寄存器阵列，原值就在手边。
+  logic [L0_SETS*L0_WAYS-1:0] l0_asid_hit;
+  logic [L1_SETS*L1_WAYS-1:0] l1_asid_hit;
+  logic [L2_N-1:0]            l2_asid_hit;
+  logic [SP_N-1:0]            sp_asid_hit;
+  logic [L3_N-1:0]            l3_asid_hit;
+
+  always_comb begin
+    for (int s = 0; s < L0_SETS; s++)
+      for (int w = 0; w < L0_WAYS; w++)
+        l0_asid_hit[L0_WAYS*s + w] =
+          (l0asids[s][w] == xorfold3(io_sfence_dup_0_bits_id));
+    for (int s = 0; s < L1_SETS; s++)
+      for (int w = 0; w < L1_WAYS; w++)
+        l1_asid_hit[L1_WAYS*s + w] =
+          (l1asids[s][w] == xorfold3(io_sfence_dup_1_bits_id));
+    for (int i = 0; i < L2_N; i++)
+      l2_asid_hit[i] = (l2_entry[i].asid == io_sfence_dup_2_bits_id);
+    for (int i = 0; i < SP_N; i++)
+      sp_asid_hit[i] = (sp_entry[i].asid == io_sfence_dup_0_bits_id);
+    for (int i = 0; i < L3_N; i++)
+      l3_asid_hit[i] = (l3_entry[i].asid == io_sfence_dup_2_bits_id);
+  end
+
+  // ---- vmid 比对：sfence/hfence.vvma 比 hgatp.vmid，hfence.gvma 比 rs2 给的 id ----
+  //  ★各级用各自 dup 的 csr★（l0/sp 用 dup_0、l1 用 dup_1、l2/l3 用 dup_2）。
+  logic [L0_SETS*L0_WAYS-1:0] l0_vmid_csr, l0_vmid_id;
+  logic [L1_SETS*L1_WAYS-1:0] l1_vmid_csr, l1_vmid_id;
+  logic [L2_N-1:0]            l2_vmid_csr, l2_vmid_id;
+  logic [SP_N-1:0]            sp_vmid_csr, sp_vmid_id;
+  logic [L3_N-1:0]            l3_vmid_csr, l3_vmid_id;
+
+  always_comb begin
+    for (int s = 0; s < L0_SETS; s++)
+      for (int w = 0; w < L0_WAYS; w++) begin
+        l0_vmid_csr[L0_WAYS*s + w] =
+          (l0vmids[s][w] == xorfold3(io_csr_dup_0_hgatp_vmid));
+        l0_vmid_id [L0_WAYS*s + w] =
+          (l0vmids[s][w] == xorfold3(io_sfence_dup_0_bits_id));
+      end
+    for (int s = 0; s < L1_SETS; s++)
+      for (int w = 0; w < L1_WAYS; w++) begin
+        l1_vmid_csr[L1_WAYS*s + w] =
+          (l1vmids[s][w] == xorfold3(io_csr_dup_1_hgatp_vmid));
+        l1_vmid_id [L1_WAYS*s + w] =
+          (l1vmids[s][w] == xorfold3(io_sfence_dup_1_bits_id));
+      end
+    // ★14 位存值与 16 位比较值之间是零扩展★：vmid 高两位非零就一条都刷不到。
+    for (int i = 0; i < L2_N; i++) begin
+      l2_vmid_csr[i] = ({2'h0, l2_entry[i].vmid} == io_csr_dup_2_hgatp_vmid);
+      l2_vmid_id [i] = ({2'h0, l2_entry[i].vmid} == io_sfence_dup_2_bits_id);
+    end
+    for (int i = 0; i < SP_N; i++) begin
+      sp_vmid_csr[i] = ({2'h0, sp_entry[i].vmid} == io_csr_dup_0_hgatp_vmid);
+      sp_vmid_id [i] = ({2'h0, sp_entry[i].vmid} == io_sfence_dup_0_bits_id);
+    end
+    for (int i = 0; i < L3_N; i++) begin
+      l3_vmid_csr[i] = ({2'h0, l3_entry[i].vmid} == io_csr_dup_2_hgatp_vmid);
+      l3_vmid_id [i] = ({2'h0, l3_entry[i].vmid} == io_sfence_dup_2_bits_id);
+    end
+  end
+
+  // ---- h 比对：这条表项属不属于本次栅栏要刷的翻译模式 ----
+  //  sfence.vma 在 V=1 时刷 onlyStage1、在 V=0 时刷 noS2xlate（各用各的 dup 的 priv.virt）；
+  //  hfence.vvma 恒刷 onlyStage1；hfence.gvma 刷 onlyStage1 与 onlyStage2 两种。
+  logic [L0_SETS*L0_WAYS-1:0] l0_h_sf, l0_h_s1, l0_h_s2, l0_h_g;
+  logic [L1_SETS*L1_WAYS-1:0] l1_h_sf, l1_h_s1, l1_h_g;
+  logic [L2_N-1:0]            l2_h_sf, l2_h_s1, l2_h_g;
+  logic [SP_N-1:0]            sp_h_sf, sp_h_s1, sp_h_s2, sp_h_g;
+  logic [L3_N-1:0]            l3_h_sf, l3_h_s1, l3_h_g;
+
+  always_comb begin
+    for (int s = 0; s < L0_SETS; s++)
+      for (int w = 0; w < L0_WAYS; w++) begin
+        automatic int k = L0_WAYS*s + w;
+        l0_h_sf[k] = io_csr_dup_0_priv_virt ? (l0h[s][w] == H_ONLY_STAGE1)
+                                            : (l0h[s][w] == H_NO_S2XLATE);
+        l0_h_s1[k] = (l0h[s][w] == H_ONLY_STAGE1);
+        l0_h_s2[k] = (l0h[s][w] == H_ONLY_STAGE2);
+        l0_h_g [k] = l0_h_s1[k] | l0_h_s2[k];
+      end
+    for (int s = 0; s < L1_SETS; s++)
+      for (int w = 0; w < L1_WAYS; w++) begin
+        automatic int k = L1_WAYS*s + w;
+        l1_h_sf[k] = io_csr_dup_1_priv_virt ? (l1h[s][w] == H_ONLY_STAGE1)
+                                            : (l1h[s][w] == H_NO_S2XLATE);
+        l1_h_s1[k] = (l1h[s][w] == H_ONLY_STAGE1);
+        l1_h_g [k] = l1_h_s1[k] | (l1h[s][w] == H_ONLY_STAGE2);
+      end
+    for (int i = 0; i < L2_N; i++) begin
+      l2_h_sf[i] = io_csr_dup_2_priv_virt ? (l2h[i] == H_ONLY_STAGE1)
+                                          : (l2h[i] == H_NO_S2XLATE);
+      l2_h_s1[i] = (l2h[i] == H_ONLY_STAGE1);
+      l2_h_g [i] = l2_h_s1[i] | (l2h[i] == H_ONLY_STAGE2);
+    end
+    for (int i = 0; i < SP_N; i++) begin
+      sp_h_sf[i] = io_csr_dup_0_priv_virt ? (sph[i] == H_ONLY_STAGE1)
+                                          : (sph[i] == H_NO_S2XLATE);
+      sp_h_s1[i] = (sph[i] == H_ONLY_STAGE1);
+      sp_h_s2[i] = (sph[i] == H_ONLY_STAGE2);
+      sp_h_g [i] = sp_h_s1[i] | sp_h_s2[i];
+    end
+    for (int i = 0; i < L3_N; i++) begin
+      l3_h_sf[i] = io_csr_dup_2_priv_virt ? (l3h[i] == H_ONLY_STAGE1)
+                                          : (l3h[i] == H_NO_S2XLATE);
+      l3_h_s1[i] = (l3h[i] == H_ONLY_STAGE1);
+      l3_h_g [i] = l3_h_s1[i] | (l3h[i] == H_ONLY_STAGE2);
+    end
+  end
+
+  // sfence.vma 的"虚拟化上下文命中"：V=1 时还要 vmid 也对上，V=0 时只看 h。
+  logic [L0_SETS*L0_WAYS-1:0] l0_virt_hit;
+  logic [L1_SETS*L1_WAYS-1:0] l1_virt_hit;
+  logic [L2_N-1:0]            l2_virt_hit;
+  logic [SP_N-1:0]            sp_virt_hit;
+  logic [L3_N-1:0]            l3_virt_hit;
+  assign l0_virt_hit = l0_h_sf & (io_csr_dup_0_priv_virt ? l0_vmid_csr : '1);
+  assign l1_virt_hit = l1_h_sf & (io_csr_dup_1_priv_virt ? l1_vmid_csr : '1);
+  assign l2_virt_hit = l2_h_sf & (io_csr_dup_2_priv_virt ? l2_vmid_csr : '1);
+  assign sp_virt_hit = sp_h_sf & (io_csr_dup_0_priv_virt ? sp_vmid_csr : '1);
+  assign l3_virt_hit = l3_h_sf & (io_csr_dup_2_priv_virt ? l3_vmid_csr : '1);
+
+  // ---- 按地址刷时用的 vpn ----
+  //  sfence.vma / hfence.vvma 取 addr[49:12]（addr 是字节地址，去掉 12 位页内偏移）；
+  //  ★hfence.gvma 取的是 (addr << 2)[49:12] = addr[47:10]★——G 阶段的 gpa 在
+  //  sfence 指令里按 4 字节粒度编码（Sv39x4 的根页表大 4 倍），照抄这个移位。
+  logic [VPN_W-1:0] sfence_vpn, hfenceg_gvpn;
+  assign sfence_vpn   = io_sfence_dup_0_bits_addr[49:12];
+  assign hfenceg_gvpn = io_sfence_dup_0_bits_addr[47:10];
+
+  logic [L0_SETS*L0_WAYS-1:0] l0_vpn_hit_sf, l0_vpn_hit_g;
+  logic [L0_SETS*L0_WAYS-1:0] l0_flush_set_sf, l0_flush_set_g;
+  always_comb begin
+    for (int s = 0; s < L0_SETS; s++)
+      for (int w = 0; w < L0_WAYS; w++) begin
+        automatic int k = L0_WAYS*s + w;
+        l0_vpn_hit_sf[k]   = (l0vpns[s][w] == xorfold6_tag(sfence_vpn[37:9]));
+        l0_vpn_hit_g [k]   = (l0vpns[s][w] == xorfold6_tag(hfenceg_gvpn[37:9]));
+        // 只刷地址落到的那一组（组内 4 路都刷，因为 vpn 哈希只能缩到组这一级）
+        l0_flush_set_sf[k] = (6'(s) == sfence_vpn[8:3]);
+        l0_flush_set_g [k] = (6'(s) == hfenceg_gvpn[8:3]);
+      end
+  end
+
+  // ---- sp 在"按地址刷"时用的是完整的 PtwEntry.hit（allType）----
+  //  PtwEntry.hit 的 sfence 分支展开后只剩三项，按栅栏种类取舍：
+  //    asid_hit  —— 只有 rs2=0（指定了 asid）且不是 hfence.gvma 时才查；global 条目豁免
+  //    vmid_hit  —— sfence.vma 仅在 V=1 时查、hfence.vvma 恒查、hfence.gvma 在 rs2=0 时查
+  //    level_match —— 恒查（与查找侧共用 sp_level_match）
+  logic [SP_N-1:0] sp_tag_sf, sp_tag_g, sp_asid_or_g;
+  always_comb
+    for (int i = 0; i < SP_N; i++) begin
+      sp_tag_sf[i]    = sp_level_match(sp_entry[i], sfence_vpn);
+      sp_tag_g [i]    = sp_level_match(sp_entry[i], hfenceg_gvpn);
+      sp_asid_or_g[i] = sp_asid_hit[i] | sp_entry[i].perm.g;
+    end
+
+  // ---------------------------------------------------------------------------
+  // §21.1 五级的失效掩码 —— "这一拍要把哪些位从 v 向量里打掉"
+  //
+  //  写成掩码而不是直接写 v：三种栅栏要按 golden 的顺序覆盖，掩码形让覆盖关系
+  //  在 §11 的 always_ff 里一眼可读（谁在后面谁赢）。
+  logic [L0_SETS*L0_WAYS-1:0] l0_sf_mask, l0_hv_mask, l0_hg_mask;
+  logic [L1_SETS*L1_WAYS-1:0] l1_sf_mask, l1_hv_mask, l1_hg_mask;
+  logic [L2_N-1:0]            l2_sf_mask, l2_hv_mask, l2_hg_mask;
+  logic [SP_N-1:0]            sp_sf_mask, sp_hv_mask, sp_hg_mask;
+  logic [L3_N-1:0]            l3_sf_mask, l3_hv_mask, l3_hg_mask;
+  logic sf_rs1, sf_rs2, l3_rs1, l3_rs2;
+  assign sf_rs1 = io_sfence_dup_0_bits_rs1;
+  assign sf_rs2 = io_sfence_dup_0_bits_rs2;
+  // ★l3 那一段用的是 dup_2 的 rs1/rs2★（golden 里 l3 的 sfence 独立成段）。
+  assign l3_rs1 = io_sfence_dup_2_bits_rs1;
+  assign l3_rs2 = io_sfence_dup_2_bits_rs2;
+
+  always_comb begin
+    // ---- sfence.vma ----
+    if (sf_rs1) begin
+      l0_sf_mask = sf_rs2 ? l0_virt_hit : (l0_virt_hit & ~l0g & l0_asid_hit);
+      l1_sf_mask = sf_rs2 ? l1_virt_hit : (l1_virt_hit & ~l1g & l1_asid_hit);
+      l2_sf_mask = sf_rs2 ? l2_virt_hit : (l2_virt_hit & ~l2g & l2_asid_hit);
+      sp_sf_mask = sf_rs2 ? sp_virt_hit : (sp_virt_hit & ~spg & sp_asid_hit);
+    end
+    else begin
+      l0_sf_mask = l0_virt_hit & l0_vpn_hit_sf & l0_flush_set_sf
+                 & (sf_rs2 ? '1 : (~l0g & l0_asid_hit));
+      // ★rs1=0 时 golden 根本不给 l1v/l2v 赋值★（非叶子 PDE 与地址不是一一对应）。
+      //  这里给掩码填 0 只是让 always_comb 完备；真正的"不刷"靠 §11 里的 sf_rs1 门，
+      //  掩码为 0 的赋值会覆盖掉同一拍的回填结果，不是无害的。
+      l1_sf_mask = '0;
+      l2_sf_mask = '0;
+      sp_sf_mask = sp_h_sf & sp_tag_sf
+                 & (io_csr_dup_0_priv_virt ? sp_vmid_csr : '1)
+                 & (sf_rs2 ? '1 : (~spg & sp_asid_or_g));
+    end
+
+    // ---- hfence.vvma ----
+    if (sf_rs1) begin
+      l0_hv_mask = (l0_h_s1 & l0_vmid_csr) & (sf_rs2 ? '1 : (~l0g & l0_asid_hit));
+      l1_hv_mask = (l1_h_s1 & l1_vmid_csr) & (sf_rs2 ? '1 : (~l1g & l1_asid_hit));
+      l2_hv_mask = (l2_h_s1 & l2_vmid_csr) & (sf_rs2 ? '1 : (~l2g & l2_asid_hit));
+      sp_hv_mask = (sp_h_s1 & sp_vmid_csr) & (sf_rs2 ? '1 : (~spg & sp_asid_hit));
+    end
+    else begin
+      l0_hv_mask = l0_h_s1 & l0_vmid_csr & l0_vpn_hit_sf & l0_flush_set_sf
+                 & (sf_rs2 ? '1 : (~l0g & l0_asid_hit));
+      l1_hv_mask = '0;
+      l2_hv_mask = '0;
+      sp_hv_mask = sp_h_s1 & sp_tag_sf & sp_vmid_csr
+                 & (sf_rs2 ? '1 : (~spg & sp_asid_or_g));
+    end
+
+    // ---- hfence.gvma（★vmid 来自 rs2 寄存器的 id，不是 hgatp★）----
+    if (sf_rs1) begin
+      l0_hg_mask = sf_rs2 ? l0_h_g : (l0_h_g & l0_vmid_id);
+      l1_hg_mask = sf_rs2 ? l1_h_g : (l1_h_g & l1_vmid_id);
+      l2_hg_mask = sf_rs2 ? l2_h_g : (l2_h_g & l2_vmid_id);
+      sp_hg_mask = sf_rs2 ? sp_h_g : (sp_h_g & sp_vmid_id);
+    end
+    else begin
+      // ★按地址刷 G 阶段时只认 onlyStage2 的条目★（不含 onlyStage1）。
+      l0_hg_mask = l0_h_s2 & l0_vpn_hit_g & l0_flush_set_g
+                 & (sf_rs2 ? '1 : l0_vmid_id);
+      l1_hg_mask = '0;
+      l2_hg_mask = '0;
+      sp_hg_mask = sp_h_s2 & sp_tag_g & (sf_rs2 ? '1 : sp_vmid_id);
+    end
+
+    // ---- l3：独立一段，用 dup_2 的 rs1/rs2，且★只有 rs1=1 的两档★ ----
+    //  rs1=0 时 golden 那一段整个不赋值 —— 所以 §11 里那三条都用 l3_rs1 当门，
+    //  ★不能写成"掩码为 0 的无害赋值"★：那会把同一拍 l3 回填刚置上的位又抹回去。
+    l3_sf_mask = l3_rs2 ? l3_virt_hit : (~l3g & l3_h_sf & l3_asid_hit & l3_virt_hit);
+    l3_hv_mask = l3_rs2 ? (l3_h_s1 & l3_vmid_csr)
+                        : (~l3g & l3_h_s1 & l3_asid_hit & l3_vmid_csr);
+    l3_hg_mask = l3_rs2 ? l3_h_g : (l3_h_g & l3_vmid_id);
+  end
