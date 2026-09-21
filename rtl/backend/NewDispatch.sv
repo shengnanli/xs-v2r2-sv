@@ -20,7 +20,7 @@
 //
 // golden 对照：G1-canonical/golden-rtl/NewDispatch.sv（100983 行，单变体）。
 // 机械派生区（端口表 / dyninst_t）由 scripts/gen_newdispatch.py 从 golden 生成。
-// 本文件导航（共 17996 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+// 本文件导航（共 18008 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
 //   L53     节 1】newdispatch_pkg —— 派遣拓扑表与 payload 类型
 //   L79     节 1.1】多队列 FU 组表（10 组）—— 全部来自 golden 实测，不是 Chisel 推断
 //   L134    节 1.2】单队列 FU 组表（6 组）—— 这些 fuType 只有一个 IQ 能收，不用排序
@@ -37,16 +37,16 @@
 //   L677    节 2.7】IQSelUop —— 把 6 条 lane 按前缀计数投到 34 个入队口
 //   L722    节 2.8】派遣流控 —— 这一拍六条 lane 到底谁能走
 //   L785    节 2.9】conserveFlowTotal —— 派遣级对 LSQ 占用量的保守上界
-//   L883    节 2.10】单步调试 —— dret 之后只放行一条机器指令
-//   L940    节 2.11】给 LSQ / busy table 的入队信号
-//   L961    节 2.12】perf / stallReason 的整拍口径
-//   L987    节 3】NewDispatch —— 与 golden 逐位同名的 wrapper（7725 端口）
-//   L8876   节 3.1】7 个 child 的输出线声明
-//   L9051   节 3.2】还接不了的位：集中声明，**故意不给驱动**（清单见文件头 a~d）
-//   L9183   节 3.3】payload 打包：io_fromRename -> rename_uop
-//   L10335  节 3.4】payload 拆包：iq_uop -> io_toIssueQueues
-//   L16385  节 3.5】送 Rob 的入队请求：io_enqRob_req_*
-//   L16776  节 3.6】握手 / perf / stallReason 出口
+//   L895    节 2.10】单步调试 —— dret 之后只放行一条机器指令
+//   L952    节 2.11】给 LSQ / busy table 的入队信号
+//   L973    节 2.12】perf / stallReason 的整拍口径
+//   L999    节 3】NewDispatch —— 与 golden 逐位同名的 wrapper（7725 端口）
+//   L8888   节 3.1】7 个 child 的输出线声明
+//   L9063   节 3.2】还接不了的位：集中声明，**故意不给驱动**（清单见文件头 a~d）
+//   L9195   节 3.3】payload 打包：io_fromRename -> rename_uop
+//   L10347  节 3.4】payload 拆包：iq_uop -> io_toIssueQueues
+//   L16397  节 3.5】送 Rob 的入队请求：io_enqRob_req_*
+//   L16788  节 3.6】握手 / perf / stallReason 出口
 //
 
 // ---------------------------------------------------------------------------
@@ -827,16 +827,28 @@ module xs_NewDispatch_core
   // golden 的分支顺序是 store/vstore -> load/vload -> 其他；AMO 与非访存都只继承前一条。
   logic [RENAME_W-1:0] allowDispatch;
 
-  always_comb
+  // ★级联用一个滚动临时量，不回读 allowDispatch 自己★
+  // 第一版写的是 `automatic logic prev = allowDispatch[l-1];`，功能一样、VCS 编得过，
+  // 但 Formality **拒绝 link**：FMR_VLOG-929「allowDispatch is read and written inside
+  // always_comb, will not be in sensitivity list」被当成 RTL interpretation error，
+  // set_top 直接失败（FM-156 / FM-262），整个证明跑不起来。
+  // 工具给的"解法"是 `set_mismatch_message_filter -warn FMR_VLOG-929` ——
+  // ★那是把仪器的警报关掉，不是把问题修掉，本仓禁止★。真正的修法就是这里：
+  // 让前缀链走一个滚动变量，always_comb 里从头到尾不读 allowDispatch。
+  always_comb begin
+    automatic logic prevAllowed = 1'b1;   // lane 之前没有别人，视为放行
+    automatic logic thisAllowed;
     for (int l = 0; l < RENAME_W; l++) begin
-      automatic logic prev = (l == 0) ? 1'b1 : allowDispatch[l - 1];
       if (isStore[l] | isVStore[l])
-        allowDispatch[l] = ({1'b0, sqFreeCount} > conserveFlowTotal[l]) & prev;
+        thisAllowed = ({1'b0, sqFreeCount} > conserveFlowTotal[l]) & prevAllowed;
       else if (isLoad[l] | isVLoad[l])
-        allowDispatch[l] = (lqFreeCount > conserveFlowTotal[l]) & prev;
+        thisAllowed = (lqFreeCount > conserveFlowTotal[l]) & prevAllowed;
       else
-        allowDispatch[l] = prev;
+        thisAllowed = prevAllowed;
+      allowDispatch[l] = thisAllowed;
+      prevAllowed      = thisAllowed;
     end
+  end
 
   // ---- thisCanActualOut：顺序约束（waitForward / blockBackward）+ Rob 收得下 ----
   // waitForward：这条要求"前面全退休了我才能走"，所以 Rob 非空、或本拍前面还有有效条，
