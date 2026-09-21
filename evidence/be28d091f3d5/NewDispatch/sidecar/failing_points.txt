@@ -1,0 +1,96 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/NewDispatch
+Implementation : i:/WORK/NewDispatch
+Version        : V-2023.12-SP3
+Date           : Mon Sep 21 03:34:43 2026
+**************************************************
+
+20 Failing compare points (20 matched, 0 unmatched):
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_lqIdx_flag
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_lqIdx_flag
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_lqIdx_value[0]
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_lqIdx_value[0]
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_lqIdx_value[1]
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_lqIdx_value[1]
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_lqIdx_value[2]
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_lqIdx_value[2]
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_lqIdx_value[3]
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_lqIdx_value[3]
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_lqIdx_value[4]
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_lqIdx_value[4]
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_lqIdx_value[5]
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_lqIdx_value[5]
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_lqIdx_value[6]
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_lqIdx_value[6]
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_regCacheIdx_0[0]
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_regCacheIdx_0[0]
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_regCacheIdx_0[1]
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_regCacheIdx_0[1]
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_regCacheIdx_0[2]
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_regCacheIdx_0[2]
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_regCacheIdx_0[3]
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_regCacheIdx_0[3]
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_regCacheIdx_0[4]
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_regCacheIdx_0[4]
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_regCacheIdx_1[0]
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_regCacheIdx_1[0]
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_regCacheIdx_1[1]
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_regCacheIdx_1[1]
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_regCacheIdx_1[2]
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_regCacheIdx_1[2]
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_regCacheIdx_1[3]
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_regCacheIdx_1[3]
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_regCacheIdx_1[4]
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_regCacheIdx_1[4]
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_sqIdx_flag
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_sqIdx_flag
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_sqIdx_value[0]
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_sqIdx_value[0]
+
+ [BBNet: multiply-driven net
+  BBPin: black-box pin
+  Cut:   cut-point
+  DFF:   non-constant DFF register
+  DFF0:  constant 0 DFF register
+  DFF1:  constant 1 DFF register
+  DFFX:  constant X DFF register
+  DFF0X: constrained 0X DFF register
+  DFF1X: constrained 1X DFF register
+  LAT:   non-constant latch register
+  LAT0:  constant 0 latch register
+  LAT1:  constant 1 latch register
+  LATX:  constant X latch register
+  LAT0X: constrained 0X latch register
+  LAT1X: constrained 1X latch register
+  LATCG: clock-gating latch register
+  TLA:   transparent latch register
+  TLA0X: transparent constrained 0X latch register
+  TLA1X: transparent constrained 1X latch register
+  Loop:  cycle break point
+  Port:  primary (top-level) port
+  Und:   undriven signal cut-point
+  Unk:   unknown signal cut-point]
+
+1

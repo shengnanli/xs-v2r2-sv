@@ -158,22 +158,47 @@ def report(path):
     return 1 if dead else 0
 
 
+# ★负测夹具★：一个自带的最小样本，**不再从 NewDispatch.sv 现原文里切**。
+#
+# 2026-09-21 踩到的坑：原先的负测把 `assign unresolved_toRenameAllFire = 1'b0;`
+# 当锚点，从当期 RTL 上改一行造出两个样本。步骤 2 把那行常量删掉之后，负测直接
+# 报「找不到锚点」退出 —— ★闸修好了设计，却把自己的自证弄丢了★。
+# 一条只在"被测对象还坏着"时才能自证的闸，在它最该被信任的时刻恰好失效。
+# 所以夹具改成自带的：两份样本只差那一行驱动，与仓库 RTL 的演进无关。
+# 夹具的形状照搬真实案例：`feeder` 的**唯一**消费者是 `kept` 的次态，
+# 而 `kept` 的赋值被 gateIn 门控。gateIn 一钉成常量 0，那条次态边就断了，
+# `feeder` 从此到不了任何输出 —— 这正是 IQSort_* 那 10 个点的成因。
+# （gate 在 wrapper 叫 gate、在核里叫 gateIn，顺带验跨实例端口传播那一步。）
+_FIXTURE = """
+module tiny_core(input logic clock, input logic gateIn, input logic [3:0] d,
+                 output logic [3:0] q);
+  logic [3:0] feeder;
+  logic [3:0] kept;
+  always_ff @(posedge clock) feeder <= d;
+  always_ff @(posedge clock) if (gateIn) kept <= feeder;
+  assign q = kept;
+endmodule
+
+module tiny(input logic clock, input logic io_live, input logic [3:0] io_d,
+            output logic [3:0] io_q);
+  logic gate;
+  %s
+  tiny_core u_core(.clock(clock), .gateIn(gate), .d(io_d), .q(io_q));
+endmodule
+"""
+_CUT = "assign gate = 1'b0;"
+_UNCUT = "assign gate = io_live;"
+
+
 def selftest():
     """★双向负测★：只验"切断会报警"是空的（恒报警的闸也能过），必须两个方向都验。"""
-    base = os.path.abspath(os.path.join(HERE, '..', '..', '..', 'rtl', 'backend', 'NewDispatch.sv'))
-    src = open(base).read()
-    CUT = "assign unresolved_toRenameAllFire = 1'b0;"
-    UNCUT = "assign unresolved_toRenameAllFire = io_redirect_valid;"
     ok = True
     import tempfile
-    for name, text, expect_alarm in (
-            ('切断样本(常量 0，= 当前入库状态)', src, True),
-            ('未切断样本(驱成活信号，= 诊断跑用的那一行)', src.replace(CUT, UNCUT), False)):
-        if CUT not in src:
-            print('SELFTEST 无法进行：在 %s 里找不到锚点 %r' % (base, CUT))
-            return 2
+    for name, drive, expect_alarm in (
+            ('切断样本(门控钉常量 0)', _CUT, True),
+            ('未切断样本(门控驱成活信号)', _UNCUT, False)):
         with tempfile.NamedTemporaryFile('w', suffix='.sv', delete=False) as f:
-            f.write(text)
+            f.write(_FIXTURE % drive)
             tmp = f.name
         _, _, dead = analyze(tmp)
         os.unlink(tmp)

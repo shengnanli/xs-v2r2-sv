@@ -231,10 +231,15 @@ def pack_spec(ports):
 #                     而 firedVec 依赖 LsqEnqCtrl 的 canAccept
 BLOCKED_LEAVES = (
     ['srcState_%d' % j for j in range(5)]
-    + ['srcType_2', 'singleStep', 'lqIdx_flag', 'lqIdx_value',
+    + ['srcType_2', 'lqIdx_flag', 'lqIdx_value',
        'sqIdx_flag', 'sqIdx_value', 'useRegCache_0', 'useRegCache_1',
        'regCacheIdx_0', 'regCacheIdx_1']
     + ['srcLoadDependency_%d_%d' % (s, k) for s in (0, 1) for k in range(3)])
+
+# 步骤 2 起有来源的 leaf：由 xs_NewDispatch_core 的派遣流控算出来。
+# （singleStep 原先在 BLOCKED_LEAVES 里，因为它要 firedVec，而 firedVec 要 LsqEnqCtrl
+#  的 canAccept —— 那条链在步骤 2 已经打通，故从"接不了"移到这里。）
+PACK_RESOLVED = {'singleStep': 'core_updatedSingleStep[%d]'}
 
 
 def gen_pack(ports):
@@ -249,7 +254,9 @@ def gen_pack(ports):
         for leaf in leaves:
             kind, detail = spec[(lane, leaf)]
             tgt = '  assign rename_uop[%d].%s' % (lane, leaf)
-            if leaf in BLOCKED_LEAVES:
+            if leaf in PACK_RESOLVED:
+                out.append('%s = %s;' % (tgt, PACK_RESOLVED[leaf] % lane))
+            elif leaf in BLOCKED_LEAVES:
                 out.append('%s = unresolved_%s_%d;' % (tgt, leaf, lane))
             elif kind == 'PASS':
                 out.append('%s = io_fromRename_%d_bits_%s;' % (tgt, lane, leaf))
@@ -337,13 +344,36 @@ def _child_ports(child):
     return out
 
 
-def gen_childinst(ports):
+# 步骤 2：child 的这些输入由 xs_NewDispatch_core 的派遣流控（节 2.8~2.11）驱动。
+# key 是 (实例名, 端口名正则)，value 是本文件里的信号表达式（%s = 正则第一组）。
+STEP2_SOURCES = [
+    ('intBusyTable', r'io_allocPregs_(\d+)_valid',       'core_allocPregsValid0[%s]'),
+    ('rcTagTable',   r'io_allocPregs_(\d+)_valid',       'core_allocPregsValid0[%s]'),
+    ('lsqEnqCtrl',   r'io_enq_iqAccept_(\d+)',           'core_lsqIqAccept[%s]'),
+    ('lsqEnqCtrl',   r'io_enq_needAlloc_(\d+)',          'core_lsqNeedAlloc[%s]'),
+    ('lsqEnqCtrl',   r'io_enq_req_(\d+)_valid',          'core_lsqReqValid[%s]'),
+    ('lsqEnqCtrl',   r'io_enq_req_(\d+)_bits_numLsElem', 'core_lsqReqNumLsElem[%s]'),
+    ('lsqEnqCtrl',   r'io_redirect_valid',               'lsqEnqCtrl_io_redirect_REG_valid'),
+]
+
+
+def _step2_source(inst, port):
+    for i, rx, tpl in STEP2_SOURCES:
+        if i != inst:
+            continue
+        m = re.match(rx + '$', port)
+        if m:
+            return tpl % m.groups() if m.groups() else tpl
+    return None
+
+
+def _childinst_build(ports):
     nd = '\n'.join(_golden_text())
     topset = {n for _d, _w, n in ports}
     insts = [v for _, v in CHILD_INST]
     instpfx = tuple('_' + v + '_' for v in insts)
     body, wires, unres = [], [], {}
-    conn_a = conn_b = conn_c = 0
+    conn_a = conn_b = conn_c = conn_d = 0
     for child, inst in CHILD_INST:
         cp = _child_ports(child)
         m = re.search(r'^  %s\s+%s\s*\(\s*\n(.*?)^  \);' % (child, inst), nd, re.S | re.M)
@@ -355,7 +385,18 @@ def gen_childinst(ports):
             port, expr = pm.group(1), pm.group(2).strip()
             d, w = cp.get(port, ('input', 1))
             if d == 'output':
-                # child 输出：声明一根与 golden 同名的线（_<inst>_<port>）
+                # ★child 输出直接落到顶层 output 端口★（golden 就是这么接的）：
+                # golden 的 `.io_enqLsq_req_0_valid (io_toMem_lsqEnqIO_req_0_valid)`
+                # 一步把 LsqEnqCtrl 的输出接到 NewDispatch 的输出端口上，中间没有别的逻辑。
+                # 步骤 1 这里一律新开一根 `_<inst>_<port>` 线，于是这 330 个顶层 output
+                # **一个驱动源都没有** —— FM 侧表现为 child 的寄存器前向锥到不了任何
+                # 输出（判 unread），passing 一个点都涨不了（实测 589 -> 589）。
+                # 所以照 golden 接：表达式就是一个顶层端口名时直连，不要中间线。
+                clean = ' '.join(expr.split())
+                if clean in topset:
+                    conns.append('    .%-42s (%s)' % (port, clean))
+                    continue
+                # 其余 child 输出仍走本地线（供本文件内部消费）
                 nm = '_%s_%s' % (inst, port)
                 wires.append('  logic %s%s;' % ('' if w == 1 else '[%d:0] ' % (w - 1), nm))
                 conns.append('    .%-42s (%s)' % (port, nm))
@@ -370,30 +411,104 @@ def gen_childinst(ports):
                 conn_b += 1
                 conns.append('    .%-42s (%s)' % (port, expr))
             else:
-                conn_c += 1
-                nm = 'unresolved_ci_%s_%s' % (inst, port)
-                unres[nm] = w
-                # ★注释必须另起一行★：跟在连线后面的话，join 时逗号会落到注释里
-                #   变成 `... ) // TODO ...,` —— VCS 报 Error-[SE]（实测踩过）
-                conns.append('    // TODO(步骤2): golden = %s\n    .%-42s (%s)'
-                             % (' '.join(expr.split())[:70], port, nm))
+                src = _step2_source(inst, port)
+                if src is None:
+                    conn_c += 1
+                    nm = 'unresolved_ci_%s_%s' % (inst, port)
+                    unres[nm] = w
+                    # ★注释必须另起一行★：跟在连线后面的话，join 时逗号会落到注释里
+                    #   变成 `... ) // TODO ...,` —— VCS 报 Error-[SE]（实测踩过）
+                    conns.append('    // TODO(步骤2): golden = %s\n    .%-42s (%s)'
+                                 % (' '.join(expr.split())[:70], port, nm))
+                else:
+                    conn_d += 1
+                    conns.append('    .%-42s (%s)' % (port, src))
         body.append('  %s %s (' % (child, inst))
         body.append(',\n'.join(conns))
         body.append('  );')
         body.append('')
     head = ['  // 7 个 child 的实例（实例名与 golden 一致）。连线分类：',
-            '  //   只引顶层端口 %d 条 / 只引 child 输出 %d 条 / 待步骤 2 的 %d 条'
-            % (conn_a, conn_b, conn_c),
+            '  //   只引顶层端口 %d 条 / 只引 child 输出 %d 条'
+            % (conn_a, conn_b),
+            '  //   由派遣流控驱动 %d 条 / 仍无来源 %d 条' % (conn_d, conn_c),
+            '  // child 的输出：golden 直接接到顶层 output 端口的那些**照样直接接**',
+            '  // （不经中间线，否则那些顶层 output 就没有驱动源）；其余走下面的本地线。',
             '  // child 输出线：']
     head += sorted(set(wires))
-    head.append('  // 步骤 2 才有真来源的输入，先接 unresolved_ci_*（钉 0，与本文件既有')
-    head.append('  // unresolved_* 的做法一致；命名带 ci_ 前缀便于 grep 出这一批缺口）：')
-    for nm in sorted(unres):
-        w = unres[nm]
-        head.append('  logic %s%s;' % ('' if w == 1 else '[%d:0] ' % (w - 1), nm))
-        head.append("  assign %s = '0;" % nm)
+    if unres:
+        head.append('  // 还没有真来源的 child 输入，接 unresolved_ci_*（命名带 ci_ 前缀便于 grep）：')
+        for nm in sorted(unres):
+            w = unres[nm]
+            head.append('  logic %s%s;' % ('' if w == 1 else '[%d:0] ' % (w - 1), nm))
+            head.append("  assign %s = '0;" % nm)
     head.append('')
-    return head + body
+    return head, body
+
+
+def gen_childwires(ports):
+    """child 实例用到的本地线声明。**必须排在 u_core 实例之前**：
+    核的流控要吃 lsqEnqCtrl 的 canAccept / lq、sqFreeCount，而 SV 要求先声明后引用。"""
+    return _childinst_build(ports)[0]
+
+
+def gen_childinst(ports):
+    return _childinst_build(ports)[1]
+
+# ---------------------------------------------------------------------------
+# ENQROB —— 送 Rob 的入队请求（步骤 2 的第一组：685 个未驱动 output 里的 379 个）
+#
+# golden 对 io_enqRob_req_<lane>_bits_* 只做四件事：
+#   PASS   直接透传 io_fromRename_<lane>_bits_<leaf>（绝大多数，355 个）
+#   CONST  钉常量
+#   LOCAL  需要派遣流控算出来的（valid / hasException / numWB / singleStep，共 24 个）
+# 前两类不需要任何新逻辑，本段直接生成；LOCAL 那 24 个由 ENQROB_LOCAL 决定：
+# 流控还没写时接 unresolved_enqrob_*（悬空，仿真出 X），写好后接核的输出。
+#
+# ★为什么不手抄★：379 个端口逐个对 golden 的 RHS，手抄必然错位；而且
+# golden 对 lane1..5 做过 DCE（snapshot 只有 lane0 有），形状不均匀。
+ENQROB_LOCAL = {
+    'valid':        'core_firedVec[%d]',
+    'hasException': 'io_fromRename_%d_bits_hasException | core_updatedSingleStep[%d]',
+    'numWB':        "core_updatedSingleStep[%d] ? 7'h0 : io_fromRename_%d_bits_numWB",
+    'singleStep':   'core_updatedSingleStep[%d]',
+}
+
+
+def gen_enqrob(ports):
+    """io_enqRob_req_* 的驱动。判据是 golden 原文的 RHS，不是"应该是这样"。"""
+    lines = _golden_text()
+    rhs = _rhs_map(lines)
+    # golden 里 io_enqRob_* 全部是 `assign`，_rhs_map 已收；缺一个就 fail-closed
+    out = ['  // 送 Rob 的入队请求：valid = 本 lane 这拍真 fire，payload 基本是 io_fromRename 直通。',
+           '  // ★hasException / numWB 被 singleStep 改写★（单步调试时这条指令不写回、',
+           '  // 且要带上异常），golden 的两处改写逐字照抄。',
+           '  // valid = 本 lane 这拍真 fire；singleStep 由核的节 2.10 算出来。']
+    npass = nconst = nlocal = 0
+    for _d, w, n in ports:
+        m = re.match(r'io_enqRob_req_(\d+)_(valid|bits_(.+))$', n)
+        if not m:
+            continue
+        lane, leaf = int(m.group(1)), m.group(3) or 'valid'
+        body = rhs.get(n)
+        if body is None:
+            sys.exit('FATAL: golden 里 %s 没有驱动（fail-closed）' % n)
+        if leaf in ENQROB_LOCAL:
+            nlocal += 1
+            tpl = ENQROB_LOCAL[leaf]
+            out.append('  assign %s = %s;' % (n, tpl % ((lane,) * tpl.count('%d'))))
+        elif body == 'io_fromRename_%d_bits_%s' % (lane, leaf):
+            npass += 1
+            out.append('  assign %s = %s;' % (n, body))
+        elif CONST_RE.match(body):
+            nconst += 1
+            out.append('  assign %s = %s;' % (n, body))
+        else:
+            sys.exit('FATAL: %s 的 golden RHS 既不是直通也不是常量，也不在 '
+                     'ENQROB_LOCAL 里：%s' % (n, body[:80]))
+    out.insert(3, '  // 本段 %d 条：直通 %d / 常量 %d / 需流控 %d。'
+               % (npass + nconst + nlocal, npass, nconst, nlocal))
+    return out
+
 
 BEGIN = '  // BEGIN GENERATED(%s)'
 END = '  // END GENERATED'
@@ -427,6 +542,8 @@ def main():
     new = splice(new, 'UNRESOLVED', gen_unresolved(ports))
     new = splice(new, 'PACK', gen_pack(ports))
     new = splice(new, 'UNPACK', gen_unpack(ports))
+    new = splice(new, 'ENQROB', gen_enqrob(ports))
+    new = splice(new, 'CHILDWIRES', gen_childwires(ports))
     new = splice(new, 'CHILDINST', gen_childinst(ports))
     if a.check:
         if new != txt:
