@@ -33,9 +33,15 @@ FM_REF_DEPS_EntriesLdu = EnqEntry_24.sv OthersEntry_200.sv OthersEntry_202.sv En
 # FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=true：配合 fm_pins_pre.tcl 的逐位钉点，
 #   让 FM **真去比**那些「本变体里没有输出锥」的负载位，而不是记 Not-Compared。
 #   白名单在 verif/fm_target_config/<top>.tcl（依据就写在那份文件里），两处须同时生效。
-# 本变体的 FM 点数尚未实测。
+# 本变体实测（2026-09-21，signoff-strict）：加强前 native SUCCEEDED
+# passing 12171 / failing 0 / unmatched 六项全 0 / 黑盒输出 0，
+# 余 2980 未读点**全部** matched_nc，两侧严格 1:1，且 2980/2980 都来自
+# 钉点文件（12648 对，FM 自行猜配 0 对）——构成 = enqEntries_N 1490 位
+# + othersEntriesSimp_N 1490 位的条目内死负载。
+# 加强后期望 passing 12171 -> 15151（恰好 +2980）、unread 归 0、failing 仍 0；
+# 不增即空转，按 fail 处理。
 FM_MERGE_DUP = false
-FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = false
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 
 include ../../../scripts/ut_common.mk
 

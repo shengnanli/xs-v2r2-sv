@@ -21,24 +21,21 @@
 #   observation_sink    1 个   9903 端口全 input 的纯观测 sink，19 万行全是端口表
 #
 metric	done	total	percent
-fm_targets_configured	532	550	96.7
+fm_targets_configured	543	550	98.7
 unique_design_written	170	1191	14.3
-unique_design_proven	161	1191	13.5
+unique_design_proven	164	1191	13.8
 golden_lines_written	2055499	3902283	52.7
-golden_lines_proven	1579116	3902283	40.5
+golden_lines_proven	1662089	3902283	42.6
 #
 # ★核内口径（XSTile 闭包，docs/xstile_closure.tsv）= 本轮真实范围★
 incore_golden_lines_written	1886793	3349905	56.3
-incore_golden_lines_proven	1414662	3349905	42.2
+incore_golden_lines_proven	1497635	3349905	44.7
 # 核外（XSTop 有、XSTile 没有）—— ★本轮范围外，不排期★
 #   已证出来的不作废，只是不该和核内混在一个百分比里报
 outcore_golden_lines_written	168706	552378	30.5
 outcore_golden_lines_proven	164454	552378	29.8
 #
 # written 里没有绿判决证据的设计族（差额都在这儿，逐个列出不藏）：
-#   EnqEntry                                        23986 行
-#   EntriesLdu                                      29386 行
-#   EntriesStdMoud                                  29601 行
 #   ICache                                           1754 行
 #   L2TLB                                           20101 行
 #   NewDispatch                                    100983 行

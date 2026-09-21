@@ -1290,6 +1290,22 @@ FM_NOTES = {
         '# 本变体实测：merge_dup=true 时 ref unread 2250 / impl 2426 对不上；\n'
         '# 置 false 后 ref 2480 / impl 2486，差额 6 个是可读核多出的死寄存器（已修）。\n'
         '# 逐位钉点覆盖 2420 对负载位。',
+    'EntriesLdu':
+        '# 本变体实测（2026-09-21，signoff-strict）：加强前 native SUCCEEDED\n'
+        '# passing 12171 / failing 0 / unmatched 六项全 0 / 黑盒输出 0，\n'
+        '# 余 2980 未读点**全部** matched_nc，两侧严格 1:1，且 2980/2980 都来自\n'
+        '# 钉点文件（12648 对，FM 自行猜配 0 对）——构成 = enqEntries_N 1490 位\n'
+        '# + othersEntriesSimp_N 1490 位的条目内死负载。\n'
+        '# 加强后期望 passing 12171 -> 15151（恰好 +2980）、unread 归 0、failing 仍 0；\n'
+        '# 不增即空转，按 fail 处理。',
+    'EntriesStdMoud':
+        '# 本变体实测（2026-09-21，signoff-strict）：加强前 native SUCCEEDED\n'
+        '# passing 10879 / failing 0 / unmatched 六项全 0 / 黑盒输出 0，\n'
+        '# 余 3160 未读点**全部** matched_nc，两侧严格 1:1，且 3160/3160 都来自\n'
+        '# 钉点文件（12108 对，FM 自行猜配 0 对）——构成 = enqEntries_N 1580 位\n'
+        '# + othersEntriesSimp_N 1580 位的条目内死负载。\n'
+        '# 加强后期望 passing 10879 -> 14039（恰好 +3160）、unread 归 0、failing 仍 0；\n'
+        '# 不增即空转，按 fail 处理。',
     'EntriesAluCsrFenceDiv':
         '# 本变体实测(2026-09-17, 钉点 20308 对)：native SUCCEEDED /\n'
         '# passing 18781 / failing 0 / unverified 0 / aborted 0 /\n'
@@ -1324,6 +1340,13 @@ FM_VMUCP_WHITELISTED = {
     'EntriesFaluFmacFdiv',
     'EntriesVfmaVialuFixVfalu',
     'EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf',
+    # 2026-09-21 本轮加最后 2 个（家族 11 个变体至此全员）：六条证据同样由
+    # vmucp_evidence.py 在**加强前**采齐，两个都打印"申请条件齐备"；依据与
+    # 事前写死的期望值在 verif/fm_target_config/<top>.tcl 里逐条写明。
+    # ★白名单已随 D57 拆进 per-target 文件，所以"两边同时生效"现在是指
+    #   这张表 + verif/fm_target_config/<top>.tcl，两者缺一 fm_eq.tcl 会 exit 3。★
+    'EntriesLdu',
+    'EntriesStdMoud',
 }
 
 
