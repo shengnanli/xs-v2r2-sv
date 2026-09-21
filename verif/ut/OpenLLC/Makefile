@@ -1,3 +1,11 @@
+# ============================================================================
+# ★范围标注（2026-09-21 coordinator 裁定）★
+#   OpenLLC 例化在 XSTop（grep -n 'OpenLLC' $(GOLDEN_RTL)/XSTop.sv -> XSTop.sv:2210），
+#   不在 XSTile 闭包内 —— 属**核外**，本轮不重写、不签核。
+#   下面这些 FM 配置改动只是把旧登记 UNRUNNABLE_RESOURCE_LIMIT_CURRENT_HOST 的
+#   **错误病因**纠正过来备查（真因=闭包里混进厂商 SRAM 行为模型，不是目标太大）。
+#   ★改后的这套配置没有跑完过，不得据此声称任何 PASS★。见 docs/openllc_scope_note.md。
+# ============================================================================
 # 自动生成：scripts/gen_zj_ut.py 的配套 Makefile（零判断批 G0->G1 迁移）
 MODULE = OpenLLC
 
