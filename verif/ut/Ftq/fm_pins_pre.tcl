@@ -28,6 +28,11 @@ if {$top eq "Ftq"} {
   #   ★用 `error` 不用 `exit`★：正式签核时本文件跑在 `interp create -safe`
   #   里（run_proof.sh 设 FM_SIDECAR_OUT），safe interp 隐藏 `exit`，
   #   只有 `error` 穿得出去。
+  # ★3494 与 3488 是两个不同的量，别混★
+  #   3494 = 本文件发出的 set_user_match **调用**数（本文件的守卫数的就是它）；
+  #   3488 = match 之后 fm.log 里的 "Compare points matched by user"。
+  #   差 6 = toPrefetchPc 的低 6 位：两侧都被 verification_merge_duplicated_registers
+  #   合并掉（见下面 toPrefetchPc 那段的说明），钉的时候成功、match 后不各自成点。
   puts "OE_PIN_BEGIN Ftq expect=3494"
   set _n 0
   set _miss 0
