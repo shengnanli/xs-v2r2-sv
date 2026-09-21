@@ -24,24 +24,37 @@
 # 若哪天可读核真把两级写反了，钉成这个对应只会让 FM **失败**，不会掩盖问题。
 # ============================================================================
 
+# ★2026-09-20 改成 fail-closed（agent/provefleet2）★
+#   原来两处都是 `if {[catch {set_user_match ...}]} {incr _miss} else {incr _n}`。
+#   `set_user_match` 找不到名字时**不抛 Tcl 异常**（返回 0，并往 fm.log 写一行
+#   `Error: Unknown name: ... (FM-036)`），所以 `_miss` 恒为 0、`_n` 恒为 128，
+#   那句 "expect 128 / 0" 只是一行字符串，没有任何东西校验它。
+#   改法照 verif/ut/EnqEntry/fm_pins_pre.tcl：用**返回值**计数，最后一次
+#   set_user_match 之后用字面整数守卫，中止一律 `error`（★不许 exit★：正式签核
+#   时钉点跑在 `interp create -safe` 里，safe interp 隐藏 exit）。
+#   发射出去的 set_user_match 调用序列一字未改（scripts/pin_call_equiv.py 守这条）。
 if {$top eq "FCVT"} {
   set _n 0
   set _miss 0
   for {set b 0} {$b < 64} {incr b} {
     # 第 1 级：源按 sew 符号扩展后落寄存器
-    if {[catch {set_user_match "r:/WORK/$top/result_r_reg\[$b\]" \
-                               "i:/WORK/$top/u_core/mvResult_s1_reg\[$b\]"}]} {
-      incr _miss
-    } else {
+    if {[set_user_match "r:/WORK/$top/result_r_reg\[$b\]" \
+                        "i:/WORK/$top/u_core/mvResult_s1_reg\[$b\]"]} {
       incr _n
+    } else {
+      incr _miss
+      if {$_miss <= 10} { puts "FCVT_PIN_FAIL: result_r_reg\[$b\] <-> mvResult_s1_reg\[$b\]" }
     }
     # 第 2 级：对齐到写回级（fireReg_last 使能）
-    if {[catch {set_user_match "r:/WORK/$top/result_r_1_reg\[$b\]" \
-                               "i:/WORK/$top/u_core/mvResult_s2_reg\[$b\]"}]} {
-      incr _miss
-    } else {
+    if {[set_user_match "r:/WORK/$top/result_r_1_reg\[$b\]" \
+                        "i:/WORK/$top/u_core/mvResult_s2_reg\[$b\]"]} {
       incr _n
+    } else {
+      incr _miss
+      if {$_miss <= 10} { puts "FCVT_PIN_FAIL: result_r_1_reg\[$b\] <-> mvResult_s2_reg\[$b\]" }
     }
   }
   puts "FCVT_PINS: fmv bypass 2-stage bijection pinned=$_n miss=$_miss (expect 128 / 0)"
+  if {$_miss != 0} { error "FCVT_PIN_REFUSED=$_miss" }
+  if {$_n != 128} { error "FCVT_PIN_COUNT=$_n expected 128" }
 }

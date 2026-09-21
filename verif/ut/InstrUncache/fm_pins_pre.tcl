@@ -42,11 +42,25 @@
 #   日志里根本不出现该行，采集到 None —— 与 Bku 的 fm_pins_pre.tcl 同一做法。
 # ============================================================================
 
+# ★2026-09-20 改成 fail-closed（agent/provefleet2）★
+#   原来这里是 `if {[catch {set_user_match ...}] } { puts 失败 } else { puts 成功 }`。
+#   `set_user_match` 找不到名字时**不抛 Tcl 异常** —— 它返回 0 并往 fm.log 写一行
+#   `Error: Unknown name: ... (FM-036)`。于是 catch 永远为 0，永远走 else 分支，
+#   **一个点都没钉上也会打印 "1 / 1 point pinned"**。判据挂在一个恒真的条件上。
+#   改法照 verif/ut/EnqEntry/fm_pins_pre.tcl：用**返回值**计数，最后一次
+#   set_user_match 之后用字面整数守卫，中止一律 `error`（★不许 exit★ ——
+#   正式签核时钉点跑在 `interp create -safe` 里，safe interp 隐藏 exit，
+#   `exit 3` 会变成 `invalid command name "exit"`）。
+#   发射出去的 set_user_match 调用序列一字未改（scripts/pin_call_equiv.py 守这条），
+#   所以这次改动只动守卫、不动钉的是哪一对点。
 if {$top eq "InstrUncache"} {
-  if {[catch {set_user_match "r:/WORK/$top/entries_0/req_addr_reg\[0\]" \
-                             "i:/WORK/$top/entries_0/u_core/req_reg\\\[addr\]\[0\]"} _msg]} {
-    puts "INSTRUNCACHE_PINS_FAIL: entries_0 req_addr\[0\] -> $_msg"
+  set _n 0
+  if {[set_user_match "r:/WORK/$top/entries_0/req_addr_reg\[0\]" \
+                      "i:/WORK/$top/entries_0/u_core/req_reg\\\[addr\]\[0\]"]} {
+    incr _n
   } else {
-    puts "INSTRUNCACHE_PINS: entries_0 dead req_addr\[0\] 1 / 1 point pinned"
+    puts "INSTRUNCACHE_PIN_FAIL: entries_0 req_addr\[0\] 被拒（FM-036 Unknown name）"
   }
+  puts "INSTRUNCACHE_PINS: entries_0 dead req_addr\[0\] $_n / 1 point pinned"
+  if {$_n != 1} { error "INSTRUNCACHE_PIN_COUNT=$_n expected 1" }
 }

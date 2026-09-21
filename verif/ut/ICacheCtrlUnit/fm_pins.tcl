@@ -14,11 +14,32 @@
 # 对 Queue1_RegMapperInput_5 变体 (out_back_q 即为 top、data 位是输出端口不死),
 # 下列路径不存在 → set_user_match 抛错被 catch 吞掉, 无副作用。
 # --------------------------------------------------------------------------
-set _n 0
-for {set k 0} {$k < 16} {incr k} {
-  set br [expr {53 + $k}]
-  set bi [expr {48 + $k}]
-  if {![catch {set_user_match "r:/WORK/$top/out_back_q/ram_reg\[$br\]" \
-                              "i:/WORK/$top/out_back_q/slot_reg\\\[data\]\[$bi\]"}]} { incr _n }
+# ★2026-09-20 改成 fail-closed（agent/provefleet2）★
+#   原来是 `if {![catch {set_user_match ...}]} { incr _n }`。`set_user_match`
+#   找不到名字时**不抛 Tcl 异常**（返回 0，往 fm.log 写 `Error: Unknown name: (FM-036)`），
+#   所以 `_n` 恒为 16 —— 上面注释里"下列路径不存在 → set_user_match 抛错被 catch 吞掉"
+#   这句话本身就是错的：它不抛错，它返回 0。那行 "$_n / 16" 从来没有被校验过。
+#   改法照 verif/ut/EnqEntry/fm_pins_pre.tcl：用**返回值**计数，最后一次
+#   set_user_match 之后用字面整数守卫，中止一律 `error`（★不许 exit★：正式签核时
+#   钉点跑在 `interp create -safe` 里，safe interp 隐藏 exit）。
+#   同时把 `$top` 门控显式写出来（本 UT 的 FM_VARIANTS 只有 ICacheCtrlUnit 一个，
+#   写出来是为了让"只对这个 top 钉"成为代码而不是注释）。
+#   发射出去的 set_user_match 调用序列一字未改（scripts/pin_call_equiv.py 守这条）。
+if {$top eq "ICacheCtrlUnit"} {
+  set _n 0
+  set _miss 0
+  for {set k 0} {$k < 16} {incr k} {
+    set br [expr {53 + $k}]
+    set bi [expr {48 + $k}]
+    if {[set_user_match "r:/WORK/$top/out_back_q/ram_reg\[$br\]" \
+                        "i:/WORK/$top/out_back_q/slot_reg\\\[data\]\[$bi\]"]} {
+      incr _n
+    } else {
+      incr _miss
+      puts "ICACHECTRLUNIT_PIN_FAIL: ram_reg\[$br\] <-> slot_reg\\\[data\]\[$bi\]"
+    }
+  }
+  puts "ICACHECTRLUNIT_PINS: out_back_q dead data\[63:48\] $_n / 16 points pinned"
+  if {$_miss != 0} { error "ICACHECTRLUNIT_PIN_REFUSED=$_miss" }
+  if {$_n != 16} { error "ICACHECTRLUNIT_PIN_COUNT=$_n expected 16" }
 }
-puts "ICACHECTRLUNIT_PINS: out_back_q dead data\[63:48\] $_n / 16 points pinned"

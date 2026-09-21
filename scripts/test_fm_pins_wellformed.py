@@ -64,17 +64,11 @@ FAIL_OPEN_LEDGER = {
     # 路径（相对仓根）: 形态记录 —— 期望数量只写在 puts 字符串里，无人校验
     'verif/ut/Bku/fm_pins_pre.tcl':
         'funcReg<->func_s1 9 位；"expect 9 / 0" 只在 puts 里',
-    'verif/ut/FCVT/fm_pins_pre.tcl':
-        'fmv 旁路两级 128 位；"expect 128 / 0" 只在 puts 里',
     'verif/ut/Ftq/fm_pins_pre.tcl':
         '6 组共 2048+2+1024+… 点；每组期望值都只在 puts 里',
-    'verif/ut/InstrUncache/fm_pins_pre.tcl':
-        '单点 req_addr[0]；失败分支只 puts 一行 *_FAIL',
     'verif/ut/SyncDataModule/fm_pins_pre.tcl':
         '8 个变体逐位钉；连期望数量都没声明，只 puts pinned/miss',
     # 「匹配后」钉点（FM_PIN_TCL）同一病灶、同一处置
-    'verif/ut/ICacheCtrlUnit/fm_pins.tcl':
-        'out_back_q 死位 16 点；"$_n / 16" 只在 puts 里',
     'verif/ut/ICacheMissUnit/fm_pins.tcl':
         '单点 beats1 计数器；失败分支只 puts 一行',
     'verif/ut/ITTageTable/fm_pins.tcl':
@@ -129,17 +123,14 @@ FAIL_OPEN_LEDGER = {
 CATCH_COUNT_LEDGER = {
     'verif/ut/Bku/fm_pins_pre.tcl',
     'verif/ut/Composer/fm_pins_pre.tcl',
-    'verif/ut/FCVT/fm_pins_pre.tcl',
     'verif/ut/Ftq/fm_pins_pre.tcl',
     'verif/ut/IBuffer/fm_pins.tcl',
-    'verif/ut/ICacheCtrlUnit/fm_pins.tcl',
     'verif/ut/ICacheMissUnit/fm_pins.tcl',
     'verif/ut/ITTageTable/fm_pins.tcl',
     'verif/ut/ITTageTable_1/fm_pins.tcl',
     'verif/ut/ITTageTable_2/fm_pins.tcl',
     'verif/ut/ITTageTable_3/fm_pins.tcl',
     'verif/ut/ITTageTable_4/fm_pins.tcl',
-    'verif/ut/InstrUncache/fm_pins_pre.tcl',
     'verif/ut/Predictor/fm_pins_pre.tcl',
     'verif/ut/SyncDataModule/fm_pins_pre.tcl',
     # ★2026-09-20 再缩 3 条（agent/pindebt）★：RenameBuffer / TLBFA / TLBNonBlock
@@ -165,6 +156,15 @@ CATCH_COUNT_LEDGER = {
     #     新: `OE_PIN_FAIL` + `n=821 miss=1` + error 真的抛出
     #   台账只许缩，这里按闸 G2b 的要求把它们摘掉。
 }
+
+# ★2026-09-20 两张表各缩 3 条（agent/provefleet2）★
+#   FCVT / ICacheCtrlUnit / InstrUncache 三个钉点文件已改成用**返回值**计数 +
+#   两道建立在返回值上的 fail-closed 守卫（$_miss != 0 / $_n != <字面整数>），
+#   中止一律 `error`。原因是本轮要把这三个目标签成 PROVEN_DIRECT，
+#   而"钉点文件 fail-open"意味着这三次证明里"我钉的名字对不对"这道守卫是空的。
+#   （下游的 unread 铁律与 unmatched=0 仍然承重 —— 0920 裁定说的就是这件事；
+#     这里补的是**上游那道本来就该在的守卫**，不是推翻那条裁定。）
+#   调用序列逐字节未变（scripts/pin_call_equiv.py --check），三个目标已重跑出证。
 
 PASS, FAIL = [], []
 
