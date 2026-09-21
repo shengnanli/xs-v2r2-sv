@@ -105,3 +105,54 @@ _sta_mou 2 / _vfalu 2 / _vialuFix_vfma 2 / _vldu_vstu 2 = 55 位。
 * 合计 unmatched 预测落在 **[55, 455]**。
 
 反向出口不变：降到接近 0 ⇒ 我对"还缺控制逻辑"判断错了；几乎不降 ⇒ 根因判断整个错了。
+
+---
+
+## ★第二段登记：步骤 1 的 FM 实测（本段写于 FM 起跑之前，2026-09-21）★
+
+上一条 lane 写完 RTL（`1b448544` 例化 7 个 child）就断在跑 FM 的路上，
+**步骤 1 从未出过 receipt**。本段由接手 lane 在起跑前写死，跑完不改。
+
+### 我重测过的量（不引用交接里的数）
+
+| 量 | 交接给的 | 我实测 | 出处 |
+|---|---|---|---|
+| `rtl/backend/NewDispatch.sv` 行数 | 17626 | **17626** | `wc -l` @ `d867a0da` |
+| 已驱动 `assign io_` | 5974 | **5974** | `grep -cE '^\s*assign io_'` |
+| child 例化行 | 7 | **7** | 16450/16600/16676/16746/16792/16845/16974 |
+| 基线 unmatched_ref | 7173 | **7173** | `evidence/410fc349f03c/NewDispatch/receipt.json` |
+| 其中 IQSort | 55 | **55** | `unmatched.rpt` 逐行分类 |
+| 其中非 IQSort | 7118 | **7118** | 同上 |
+| passing 模型 | 59000 (regs 7437) | **59000 (regs 7437 + outs 51563)** | `fm_predict.py model`（合 main 取 `$(VAR)` 展开修复后） |
+
+旧登记 `expected=51921 / regs=358` 作废（`$(VAR)` 没展开，7 个 child 一个都没计进来），
+已按修复后的读法重新登记。**注意 `merge_dup=true`，模型不适用**，
+`fm_predict check` 只会给 `BOUNDED`/`MODEL_NA`，不作为绿灯依据。
+
+### ★点估计的一处修正（收紧，不放宽）★
+
+上一段用静态 `reg_bits` 合计 **7079** 推出残差点估计 39。但把基线 `unmatched.rpt`
+按实例名归类，真正落在 7 个 child 实例下的点是：
+
+    lsqEnqCtrl 4653 + intBusyTable 1568 + rcTagTable 388 + fpBusyTable 192
+    + vecBusyTable 128 + vlBusyTable 96 + v0BusyTable 22 = **7047**
+
+（`rcTagTable` 388 ≠ 静态表的 240+180=420，静态表按 module 名算、实测按实例锥算。）
+于是非 IQSort 里 **NewDispatch 自己的寄存器是 7118 − 7047 = 71**，不是 39。
+
+**点估计从 39 改成 71；可接受区间仍是登记的 [0, 400]，一个字不放宽。**
+这修正只可能让判据更难通过（71 比 39 离 0 远），不是事后迁就。
+
+### 本次三条判据（与第一段完全一致，只是把点估计换成 71）
+
+1. 非 IQSort unmatched：7118 → 预期 **71 量级**，可接受区间 **[0, 400]**。
+   落在 400 以上 ⇒「child 悬空是根因」只对了一半，★照实报★。
+2. IQSort unmatched：★必须仍然恰好 55★。变少也要停下来查。
+3. 合计 unmatched 落在 **[55, 455]**；且 FM 仍不是 SUCCEEDED（步骤 2 未写）。
+
+### 已知会误导的一条：`failing` 是截断值
+
+`verification_failing_point_limit` 默认 20，撞上就停止验证、余下全计入 `unverified`。
+基线 `failing 20 / unverified 51056` 就是同一件事的两面。
+**本次签核跑不动这个限值**（动了不出 receipt）；真实失败集合另跑
+`FM_FAILING_LIMIT=0 --mode diagnostic-full`，那份 log ★不出 receipt★。

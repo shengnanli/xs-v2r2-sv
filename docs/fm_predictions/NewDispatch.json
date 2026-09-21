@@ -1,9 +1,9 @@
 {
   "target": "NewDispatch",
   "ut": "NewDispatch",
-  "regs": 358,
+  "regs": 7437,
   "outs": 51563,
-  "expected": 51921,
+  "expected": 59000,
   "merge_dup": "true",
   "model_applicable": false
 }
