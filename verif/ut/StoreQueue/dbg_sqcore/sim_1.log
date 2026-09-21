@@ -1,0 +1,67 @@
+Command: /home/eda/xs-env/wt-sqcore/verif/ut/StoreQueue/dbg_sqcore/./simv +ntb_random_seed=1 +ncycles=3000 -l sim_1.log
+Chronologic VCS simulator copyright 1991-2024
+Contains Synopsys proprietary information.
+Compiler version W-2024.09-SP1_Full64; Runtime version W-2024.09-SP1_Full64;  Sep 21 02:35 2026
+
+==== StoreQueue UT (seed=1 ncycles=3000) ====
+checks          = 3000
+MATCH_OUTPUTS   = 359/399   (整轮零失配的输出根数)
+TOGGLED         = 264/399   (golden 侧真的变过值)
+NEVER_TOGGLED   = 135      (★未被激励覆盖，不算已验证★)
+GOLDEN_ALWAYS_X = 78      (golden 侧整轮恒 X，多为无复位寄存器)
+XEQX_FAKE_MATCH = 146      (★零失配里靠 X===X 混进来的，不是真匹配★)
+VERIFIED        = 224/399   (零失配 AND 被 toggle 到)
+errors          = 40
+TEST FAILED (40/399 根输出失配)
+---- MISMATCHING OUTPUTS (name  mism  togg  firstCycle) ----
+  io_forward_0_forwardMask_0                                      1        2      378
+  io_forward_0_forwardMask_3                                      1        2      378
+  io_forward_0_forwardMask_8                                      1        2      378
+  io_forward_0_forwardMask_10                                     1        2      378
+  io_forward_0_forwardMask_11                                     1        2      378
+  io_forward_0_forwardMask_13                                     1        2      378
+  io_forward_0_forwardData_0                                      1       61      378
+  io_forward_0_forwardData_3                                      1       61      378
+  io_forward_0_forwardData_8                                      1       61      378
+  io_forward_0_forwardData_10                                     1       62      378
+  io_forward_0_forwardData_11                                     1       62      378
+  io_forward_0_forwardData_13                                     1       61      378
+  io_forward_1_forwardMask_0                                      1        2      378
+  io_forward_1_forwardMask_3                                      1        2      378
+  io_forward_1_forwardMask_8                                      1        2      378
+  io_forward_1_forwardMask_10                                     1        2      378
+  io_forward_1_forwardMask_11                                     1        2      378
+  io_forward_1_forwardMask_13                                     1        2      378
+  io_forward_1_forwardData_0                                      1       61      378
+  io_forward_1_forwardData_3                                      1       61      378
+  io_forward_1_forwardData_8                                      1       61      378
+  io_forward_1_forwardData_10                                     1       62      378
+  io_forward_1_forwardData_11                                     1       62      378
+  io_forward_1_forwardData_13                                     1       61      378
+  io_forward_2_forwardMask_0                                      1        2      378
+  io_forward_2_forwardMask_3                                      1        2      378
+  io_forward_2_forwardMask_8                                      1        2      378
+  io_forward_2_forwardMask_10                                     1        2      378
+  io_forward_2_forwardMask_11                                     1        2      378
+  io_forward_2_forwardMask_13                                     1        2      378
+  io_forward_2_forwardData_0                                      1       61      378
+  io_forward_2_forwardData_3                                      1       61      378
+  io_forward_2_forwardData_8                                      1       61      378
+  io_forward_2_forwardData_10                                     1       62      378
+  io_forward_2_forwardData_11                                     1       62      378
+  io_forward_2_forwardData_13                                     1       61      378
+  io_diffStore_pmaStore_0_bits_wline                              2      596     2013
+  io_diffStore_pmaStore_0_bits_vecValid                           2      728     2013
+  io_diffStore_pmaStore_1_bits_data                               1       95       68
+  io_diffStore_pmaStore_1_bits_mask                               1       63       68
+---- earliest firstCycle among mismatching: ----
+  earliest = 68
+  FIRST: io_diffStore_pmaStore_1_bits_data
+  FIRST: io_diffStore_pmaStore_1_bits_mask
+---- INTERNAL PROBES (name  mismatchCount  firstCycle) ----
+$finish called from file "tb_dbg.sv", line 7406.
+$finish at simulation time             30105000
+           V C S   S i m u l a t i o n   R e p o r t 
+Time: 30105000 ps
+CPU Time:     14.520 seconds;       Data structure size:   1.8Mb
+Mon Sep 21 02:36:14 2026

@@ -134,9 +134,32 @@ package storequeue_pkg;
 
   // OHToUInt(Reverse(PriorityEncoderOH(Reverse(x)))) —— 即「x 里**最高**的置位下标」。
   // 全 0 时给 0（与 OHToUInt(0) 一致）。
+  //
+  // ★这里必须写成三目链，不能写成 `if (x[j]) r = j;`★
+  //   x 里**真的会出现 X**：sta 从 misalign buffer 回灌时（isFrmMisAlignBuf=1）
+  //   addrvalid 会置起来但地址阵列**没被写**，于是 vaddr CAM 的命中位是 X，
+  //   一路进到 dataInvalidMask。golden 的优先级链是
+  //       x[55] ? 55 : x[54] ? 54 : … : 0
+  //   X 选择子会让整条结果变 X；`if (x[j])` 却把 X 当假，凭空给出一个确定值。
+  //   实测：写成 if 的版本在 UT 上 3 个 forward 口的 dataInvalidSqIdx 共 191 拍
+  //   失配（golden=X，重写=确定值），换成三目链后归零。
+  //   而且要**照 golden 的两步走**：先用三目链选出 one-hot，再 OHToUInt 按位或
+  //   下标。直接在三目链里选下标值（而不是 one-hot）会让 X 落在不同的位上 ——
+  //   实测两种写法的 X 位模式确实不一样，只有两步版本与 golden 逐位相同。
+  //   （下面的循环从低到高、后写者胜，展开后正好是 golden 那条从高到低的三目链。）
   function automatic logic [SQ_IDX_W-1:0] sq_highest_set(logic [SQ_SIZE-1:0] x);
-    sq_highest_set = '0;
-    for (int j = 0; j < SQ_SIZE; j++) if (x[j]) sq_highest_set = SQ_IDX_W'(j);
+    logic [SQ_SIZE-2:0] rev_oh;   // 55 位；bit k 表示「最高置位下标 = 55-k」
+    logic               acc;
+    // ★j 从 1 起★：golden 的链最内层是常数 0（下标 0 编码成全零，不需要 one-hot 位）
+    rev_oh = '0;
+    for (int j = 1; j < SQ_SIZE; j++)
+      rev_oh = x[j] ? ((SQ_SIZE-1)'(1) << (SQ_SIZE - 1 - j)) : rev_oh;
+    for (int b = 0; b < SQ_IDX_W; b++) begin
+      acc = 1'b0;
+      for (int k = 0; k < SQ_SIZE - 1; k++)
+        if (((SQ_SIZE - 1 - k) >> b) & 1) acc = acc | rev_oh[k];
+      sq_highest_set[b] = acc;
+    end
   endfunction
 
 
@@ -1002,6 +1025,11 @@ module xs_StoreQueue_core
   logic [SQ_SIZE-1:0]   addrInvalidMask1 [N_FWD];
   logic [SQ_SIZE-1:0]   addrInvalidMask2 [N_FWD];
   logic                 hasInvalidAddr [N_FWD];
+  // 「谁挡住了我」的下标与标志（提到模块级：既便于阅读，也便于 UT 打层次探针）
+  logic                 addrInvalidFlag  [N_FWD];
+  logic                 dataInvalidFlag  [N_FWD];
+  logic [SQ_IDX_W-1:0]  addrInvalidSqIdx [N_FWD];
+  logic [SQ_IDX_W-1:0]  dataInvalidSqIdx [N_FWD];
 
   // ---- 子模块的输出线（名字照 golden 的 `_<inst>_<port>` 去掉前导下划线）----
   logic [15:0]          dataModule_rdata_mask [N_ENSBUF];
@@ -1071,6 +1099,7 @@ module xs_StoreQueue_core
 
   // ---- 输出中间量 ----
   logic [N_ENSBUF-1:0]  sbufferFire;
+  logic [N_ENSBUF-1:0]  sbufferWline;     // = deq.wline & deq.vecValid（见 §13）
   logic                 mmioStoutValid, mmioStoutFire;
   logic                 cboZeroStoutValid, cboZeroStoutFire;
 
@@ -1388,6 +1417,10 @@ module xs_StoreQueue_core
                                        : sq_highest_set(addrInvalidMask1Reg[i]);
       dIdx = (|dataInvalidMask2Reg[i]) ? sq_highest_set(dataInvalidMask2Reg[i])
                                        : sq_highest_set(dataInvalidMask1Reg[i]);
+      addrInvalidFlag[i]  = aInvalidFlag;
+      dataInvalidFlag[i]  = dInvalidFlag;
+      addrInvalidSqIdx[i] = aIdx;
+      dataInvalidSqIdx[i] = dIdx;
       // 下标落在哪一圈：没跨圈、或者下标还在 deqPtr 之后 -> 用 deq 侧的 flag；
       // 否则说明它在绕回来的那一段 -> 用 enq 侧的 flag。
       aFlag = (~s2_differentFlag[i] | (aIdx >= s2_deqPtr[i].value)) ? s2_deqPtr[i].flag
@@ -1438,25 +1471,23 @@ module xs_StoreQueue_core
       forward_out[i].addrInvalid  = fwdLoadWaitStrict_inv_q[i] ? fwdHasInvalidAddr_q[i]
                                                                : aInvalidFlag;
 
-      if (fwdLoadWaitStrict_sel_q[i]) begin
-        forward_out[i].addrInvalidSqIdx_flag  = fwdSqIdxMinus1_q[i].flag;
-        forward_out[i].addrInvalidSqIdx_value = fwdSqIdxMinus1_q[i].value;
-      end else if (aInvalidFlag) begin
-        forward_out[i].addrInvalidSqIdx_flag  = aFlag;
-        forward_out[i].addrInvalidSqIdx_value = aIdx;
-      end else begin
-        // 也可能那条 store 早就写进 sbuffer 走了 —— 回自己的 sqIdx，不阻塞。
-        forward_out[i].addrInvalidSqIdx_flag  = fwdSqIdxA_q[i].flag;
-        forward_out[i].addrInvalidSqIdx_value = fwdSqIdxA_q[i].value;
-      end
-
-      if (dInvalidFlag) begin
-        forward_out[i].dataInvalidSqIdx_flag  = dFlag;
-        forward_out[i].dataInvalidSqIdx_value = dIdx;
-      end else begin
-        forward_out[i].dataInvalidSqIdx_flag  = fwdSqIdxD_q[i].flag;
-        forward_out[i].dataInvalidSqIdx_value = fwdSqIdxD_q[i].value;
-      end
+      // ★这三个选择必须写成三目表达式，不能写成 if/else★
+      //   aInvalidFlag / dInvalidFlag 是 `|mask` 的结果，mask 里**真的会有 X**
+      //   （见 sq_highest_set 的注释）。`|X…` 是 X，三目会把 X 传下去，
+      //   而 if/else 会把 X 当假、直接走 else 分支，凭空给出一个确定值。
+      //   实测：写成 if 的版本在 3 个 forward 口上共 191 拍报失配。
+      forward_out[i].addrInvalidSqIdx_flag  =
+          fwdLoadWaitStrict_sel_q[i] ? fwdSqIdxMinus1_q[i].flag
+        : aInvalidFlag               ? aFlag
+                                     // 那条 store 可能早就写进 sbuffer 走了 ——
+                                     // 回自己的 sqIdx，不阻塞。
+                                     : fwdSqIdxA_q[i].flag;
+      forward_out[i].addrInvalidSqIdx_value =
+          fwdLoadWaitStrict_sel_q[i] ? fwdSqIdxMinus1_q[i].value
+        : aInvalidFlag               ? aIdx
+                                     : fwdSqIdxA_q[i].value;
+      forward_out[i].dataInvalidSqIdx_flag  = dInvalidFlag ? dFlag : fwdSqIdxD_q[i].flag;
+      forward_out[i].dataInvalidSqIdx_value = dInvalidFlag ? dIdx  : fwdSqIdxD_q[i].value;
     end
   end
 
@@ -1533,7 +1564,7 @@ module xs_StoreQueue_core
     for (int i = 0; i < N_ENSBUF; i++)
       isCboZeroToSbVec[i] = sbufferFire[i]
                           & dataBuffer_deq_vecValid[i]
-                          & dataBuffer_deq_wline[i]
+                          & sbufferWline[i]          // ★是 &vecValid 之后的那根★
                           & allocated    [dataBuffer_deq_sqPtr[i].value]
                           & memBackTypeMM[dataBuffer_deq_sqPtr[i].value];
     cboZeroToSb = |isCboZeroToSbVec;
@@ -1779,15 +1810,19 @@ module xs_StoreQueue_core
   end
 
   // ---- dataBuffer 出口 -> Sbuffer ----
+  // ★DCacheWordReq.fromDataBufferEntry 里 wline := src.wline && src.vecValid★
+  // —— 不是直通。少这个 & vecValid 会让「整行写」在向量无效流上误触发，
+  // 进而经 isCboZeroToSbVec / completed 一路传到 deqPtr。
   always_comb begin
     for (int i = 0; i < N_ENSBUF; i++) begin
+      sbufferWline[i]                = dataBuffer_deq_wline[i] & dataBuffer_deq_vecValid[i];
       sbufferFire[i]                 = dataBuffer_deq_valid[i] & sbuffer_in[i].ready;
       sbuffer_out[i].valid           = dataBuffer_deq_valid[i];
       sbuffer_out[i].bits_addr       = dataBuffer_deq_addr[i];
       sbuffer_out[i].bits_vaddr      = dataBuffer_deq_vaddr[i];
       sbuffer_out[i].bits_data       = dataBuffer_deq_data[i];
       sbuffer_out[i].bits_mask       = dataBuffer_deq_mask[i];
-      sbuffer_out[i].bits_wline      = dataBuffer_deq_wline[i];
+      sbuffer_out[i].bits_wline      = sbufferWline[i];
       sbuffer_out[i].bits_vecValid   = dataBuffer_deq_vecValid[i];
     end
   end
@@ -1819,7 +1854,8 @@ module xs_StoreQueue_core
       diffStore_pmaStore_out[i].bits_data      = dataBuffer_enq_data[i];
       diffStore_pmaStore_out[i].bits_mask      = dataBuffer_enq_mask[i];
       diffStore_pmaStore_out[i].bits_addr      = dataBuffer_enq_addr[i];
-      diffStore_pmaStore_out[i].bits_wline     = dataBuffer_enq_wline[i];
+      // 同样是 fromDataBufferEntry：wline := wline && vecValid
+      diffStore_pmaStore_out[i].bits_wline     = dataBuffer_enq_wline[i] & dataBuffer_enq_vecValid[i];
       diffStore_pmaStore_out[i].bits_vecValid  = dataBuffer_enq_vecValid[i];
     end
   end
@@ -3147,14 +3183,17 @@ module xs_StoreQueue_core
     ncCompleteSet      = '0;
     for (int i = 0; i < N_ENSBUF; i++)
       // ★wline（cbo.zero 整行写）不走这条★：它由 cboZeroStout 那边收尾。
-      if (sbufferFire[i] & dataBuffer_deq_sqNeedDeq[i] & ~dataBuffer_deq_wline[i])
+      if (sbufferFire[i] & dataBuffer_deq_sqNeedDeq[i] & ~sbufferWline[i])
         sbufferCompleteSet[dataBuffer_deq_sqPtr[i].value] = 1'b1;
     if (mmioStoutFire)    mmioCompleteSet[deqPtr]                = 1'b1;
     if (cboZeroStoutFire) cboZeroCompleteSet[cboZeroSqIdx_value] = 1'b1;
-    // ncPtr 是 7 位（uncacheIdxBits），比条目下标宽；★用全宽比较★——
-    // 截低 6 位会在 ncPtr>=56 时凭空写中一条，golden 那边是一条都不写。
+    // ★ncPtr 在这里是 6 位★：uncacheIdxBits 是 7 位，但 Chisel 用它去索引
+    // Vec(56) 时 firtool 只保留 log2Up(56)=6 位（golden L58933 明写
+    // `io_uncache_idResp_bits_mid[5:0]`）。用 7 位全宽比会让 mid[6]=1 的那一半
+    // 请求一条都命中不到 —— 本轮实测就是靠这条把 completed 的首次失配
+    // （cycle 10，golden 置了条目 22 而重写没置）定下来的。
     for (int j = 0; j < SQ_SIZE; j++)
-      if (ncDeqTrigger && ncPtr == 7'(j)) ncCompleteSet[j] = 1'b1;
+      if (ncDeqTrigger && ncPtr[5:0] == 6'(j)) ncCompleteSet[j] = 1'b1;
   end
 
 
