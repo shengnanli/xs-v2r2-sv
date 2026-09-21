@@ -48,25 +48,25 @@
 //   L478    §2 xs_StoreQueue_core —— 可读核
 //   L798    §3 per-entry 状态 —— ★复位域是 golden 实测，不是照 Chisel 抄★
 //   L1022   §4 组合中间量的声明（按通路分组；方程在后面各节）
-//   L1175   §4.5 读表：把每族 per-entry 状态补齐到 64 项（★下标是 6 位，队列只有 56 项★）
-//   L1309   §5 容量、掩码、若干「指针的当前值」
-//   L1326   §6 dispatch 入队 —— 6 个口，每个口按 numLsElem 占**一段连续条目**
-//   L1432   §7 sta / std / storeMask 三条写入通路
-//   L1477   §8 addrReady / dataReady 两个「发射就绪」指针
-//   L1537   §9 store-to-load 转发（3 个 load 口，队列里做地址 CAM）
-//   L1697   §10 mmio / NC / CBO —— 三条共用 uncache 通道的出队路径
-//   L1811   §11 ROB 提交 —— 把 cmtPtr 起的连续 8 条标成 committed
-//   L1882   §12 出队：读 RAM -> dataBuffer -> Sbuffer
-//   L1930   §13 dataBuffer 入口：三分支（跨 16B 拆分 / 非跨 16B 的非对齐 / 常规）
-//   L2085   §14 difftest 观测口（difftest 关掉时整块是 DontCare，golden 里仍然留着端口）
-//   L2120   §15 子模块例化 —— 5 个，实例名照 golden（dataModule / paddrModule /
-//   L2831   §16 向量异常旗标 + 冲刷判定
-//   L2915   §17 输出驱动
-//   L3173   §18 时序（一）：★不复位★块（对应 golden L20336-58753 的 2913 个寄存器）
-//   L3416   §19 「completed」的 4 个置位源（出队的四条路各有一个）
-//   L3449   §20 perf 观测探针（golden 同名导出；docs/perf_bore_map.tsv 按名字重绑）
-//   L3473   §21 时序（二）：异步复位块（对应 golden L62202-69650 的 1076 个寄存器）
-//   L3833   §22 StoreQueue —— golden 同名 wrapper（1003 根端口，逐位对齐）
+//   L1182   §4.5 读表：把每族 per-entry 状态补齐到 64 项（★下标是 6 位，队列只有 56 项★）
+//   L1316   §5 容量、掩码、若干「指针的当前值」
+//   L1333   §6 dispatch 入队 —— 6 个口，每个口按 numLsElem 占**一段连续条目**
+//   L1453   §7 sta / std / storeMask 三条写入通路
+//   L1498   §8 addrReady / dataReady 两个「发射就绪」指针
+//   L1558   §9 store-to-load 转发（3 个 load 口，队列里做地址 CAM）
+//   L1718   §10 mmio / NC / CBO —— 三条共用 uncache 通道的出队路径
+//   L1832   §11 ROB 提交 —— 把 cmtPtr 起的连续 8 条标成 committed
+//   L1903   §12 出队：读 RAM -> dataBuffer -> Sbuffer
+//   L1951   §13 dataBuffer 入口：三分支（跨 16B 拆分 / 非跨 16B 的非对齐 / 常规）
+//   L2106   §14 difftest 观测口（difftest 关掉时整块是 DontCare，golden 里仍然留着端口）
+//   L2141   §15 子模块例化 —— 5 个，实例名照 golden（dataModule / paddrModule /
+//   L2852   §16 向量异常旗标 + 冲刷判定
+//   L2936   §17 输出驱动
+//   L3194   §18 时序（一）：★不复位★块（对应 golden L20336-58753 的 2913 个寄存器）
+//   L3437   §19 「completed」的 4 个置位源（出队的四条路各有一个）
+//   L3470   §20 perf 观测探针（golden 同名导出；docs/perf_bore_map.tsv 按名字重绑）
+//   L3494   §21 时序（二）：异步复位块（对应 golden L62202-69650 的 1076 个寄存器）
+//   L3854   §22 StoreQueue —— golden 同名 wrapper（1003 根端口，逐位对齐）
 
 // -----------------------------------------------------------------------------
 // §1 storequeue_pkg —— 参数、SqPtr 环形指针、各通道结构体
@@ -1033,7 +1033,14 @@ module xs_StoreQueue_core
   sqptr_t               enqUpBound     [N_ENQ];
   logic [N_ENQ-1:0]     entryCanEnqSeq [SQ_SIZE];  // 每条目 × 每个 dispatch 口
   logic [SQ_SIZE-1:0]   entryCanEnq;
-  logic [2:0]           enqSelPort     [SQ_SIZE];  // ParallelPriorityMux 选中的口号
+  // ParallelPriorityMux 的选择结果（★选出来的是**值**，不是口号★，见 §6）
+  sq_enq_req_t_in       enqSelReq      [SQ_SIZE];
+  logic [23:0]          enqSelExcVec   [SQ_SIZE];
+  sqptr_t               enqSelUpBound  [SQ_SIZE];
+  // §1.2 的结构体按 golden 端口逐根展开（exceptionVec 是 24 根独立端口），
+  // 先收成 24 位向量，后面就能按向量走（拼接体在 §6.5）。
+  logic [23:0]          enqExceptionVec [N_ENQ];
+  logic [23:0]          staExceptionVec [N_STA];
   logic [7:0]           enqNumber;
   logic [7:0]           enqCancelNum;
 
@@ -1357,10 +1364,26 @@ module xs_StoreQueue_core
         entryCanEnqSeq[j][k] = canEnqueue[k] & ~enqCancel[k] & hit;
       end
       entryCanEnq[j] = |entryCanEnqSeq[j];
-      // ParallelPriorityMux：下标最小的命中者胜。倒着扫一遍即得。
-      enqSelPort[j] = 3'd0;
-      for (int k = N_ENQ - 1; k >= 0; k--)
-        if (entryCanEnqSeq[j][k]) enqSelPort[j] = 3'(k);
+    end
+  end
+
+  // ParallelPriorityMux：6 个 dispatch 口里**下标最小**的命中者胜。
+  // ★这里必须写成「从最后一个口起、倒着覆盖」的选择链，不能先算出一个口号
+  //   再拿它当下标去索引 enq_req_in★：口号是 3 位（0..7），端口数组只有 6 个，
+  //   Formality 不做边界传播，会报 FMR_ELAB-147 并**拒绝 link**（见 §4.5）。
+  //   而且 golden 本来就是一条三目链（`entryCanEnqSeq_0 ? req0 : … : req5`），
+  //   倒着覆盖展开后与它同形，连「一个都没命中时取第 5 口」这个缺省都一致。
+  always_comb begin
+    for (int j = 0; j < SQ_SIZE; j++) begin
+      enqSelReq[j]     = enq_req_in[N_ENQ-1];
+      enqSelExcVec[j]  = enqExceptionVec[N_ENQ-1];
+      enqSelUpBound[j] = enqUpBound[N_ENQ-1];
+      for (int k = N_ENQ - 2; k >= 0; k--)
+        if (entryCanEnqSeq[j][k]) begin
+          enqSelReq[j]     = enq_req_in[k];
+          enqSelExcVec[j]  = enqExceptionVec[k];
+          enqSelUpBound[j] = enqUpBound[k];
+        end
     end
   end
 
@@ -1384,8 +1407,6 @@ module xs_StoreQueue_core
 
   // §1.2 的通道结构体按 golden 端口逐根展开（exceptionVec 是 24 根独立端口）。
   // 先把它们收成 24 位向量，后面所有地方就能按向量走，不用再摊开。
-  logic [23:0] enqExceptionVec [N_ENQ];
-  logic [23:0] staExceptionVec [N_STA];
   always_comb begin
     for (int k = 0; k < N_ENQ; k++)
       enqExceptionVec[k] = {
@@ -1767,7 +1788,7 @@ module xs_StoreQueue_core
       isCboZeroToSbVec[i] = sbufferFire[i]
                           & dataBuffer_deq_vecValid[i]
                           & sbufferWline[i]          // ★是 &vecValid 之后的那根★
-                          & allocated    [dataBuffer_deq_sqPtr[i].value]
+                          & allocated_rd [dataBuffer_deq_sqPtr[i].value]
                           & memBackTypeMM_rd[dataBuffer_deq_sqPtr[i].value];
     cboZeroToSb = |isCboZeroToSbVec;
   end
@@ -3235,30 +3256,30 @@ module xs_StoreQueue_core
         uop_debug_seqNum_uopIdx[j] <= storeAddrIn_in[0].bits_uop_debug_seqNum_uopIdx;
       end
       else if (entryCanEnq[j]) begin
-        uop_exceptionVec[j] <= enqExceptionVec[enqSelPort[j]];
-        uop_trigger[j] <= enq_req_in[enqSelPort[j]].bits_trigger;
-        uop_fuType[j] <= enq_req_in[enqSelPort[j]].bits_fuType;
-        uop_fuOpType[j] <= enq_req_in[enqSelPort[j]].bits_fuOpType;
-        uop_rfWen[j] <= enq_req_in[enqSelPort[j]].bits_rfWen;
-        uop_flushPipe[j] <= enq_req_in[enqSelPort[j]].bits_flushPipe;
-        uop_vpu_nf[j] <= enq_req_in[enqSelPort[j]].bits_vpu_nf;
-        uop_vpu_veew[j] <= enq_req_in[enqSelPort[j]].bits_vpu_veew;
-        uop_uopIdx[j] <= enq_req_in[enqSelPort[j]].bits_uopIdx;
-        uop_pdest[j] <= enq_req_in[enqSelPort[j]].bits_pdest;
-        uop_robIdx_flag[j] <= enq_req_in[enqSelPort[j]].bits_robIdx_flag;
-        uop_robIdx_value[j] <= enq_req_in[enqSelPort[j]].bits_robIdx_value;
-        uop_debugInfo_eliminatedMove[j] <= enq_req_in[enqSelPort[j]].bits_debugInfo_eliminatedMove;
-        uop_debugInfo_renameTime[j] <= enq_req_in[enqSelPort[j]].bits_debugInfo_renameTime;
-        uop_debugInfo_dispatchTime[j] <= enq_req_in[enqSelPort[j]].bits_debugInfo_dispatchTime;
-        uop_debugInfo_enqRsTime[j] <= enq_req_in[enqSelPort[j]].bits_debugInfo_enqRsTime;
-        uop_debugInfo_selectTime[j] <= enq_req_in[enqSelPort[j]].bits_debugInfo_selectTime;
-        uop_debugInfo_issueTime[j] <= enq_req_in[enqSelPort[j]].bits_debugInfo_issueTime;
-        uop_debugInfo_writebackTime[j] <= enq_req_in[enqSelPort[j]].bits_debugInfo_writebackTime;
-        uop_debugInfo_runahead_checkpoint_id[j] <= enq_req_in[enqSelPort[j]].bits_debugInfo_runahead_checkpoint_id;
-        uop_debugInfo_tlbFirstReqTime[j] <= enq_req_in[enqSelPort[j]].bits_debugInfo_tlbFirstReqTime;
-        uop_debugInfo_tlbRespTime[j] <= enq_req_in[enqSelPort[j]].bits_debugInfo_tlbRespTime;
-        uop_debug_seqNum_seqNum[j] <= enq_req_in[enqSelPort[j]].bits_debug_seqNum_seqNum;
-        uop_debug_seqNum_uopIdx[j] <= enq_req_in[enqSelPort[j]].bits_debug_seqNum_uopIdx;
+        uop_exceptionVec[j] <= enqSelExcVec[j];
+        uop_trigger[j] <= enqSelReq[j].bits_trigger;
+        uop_fuType[j] <= enqSelReq[j].bits_fuType;
+        uop_fuOpType[j] <= enqSelReq[j].bits_fuOpType;
+        uop_rfWen[j] <= enqSelReq[j].bits_rfWen;
+        uop_flushPipe[j] <= enqSelReq[j].bits_flushPipe;
+        uop_vpu_nf[j] <= enqSelReq[j].bits_vpu_nf;
+        uop_vpu_veew[j] <= enqSelReq[j].bits_vpu_veew;
+        uop_uopIdx[j] <= enqSelReq[j].bits_uopIdx;
+        uop_pdest[j] <= enqSelReq[j].bits_pdest;
+        uop_robIdx_flag[j] <= enqSelReq[j].bits_robIdx_flag;
+        uop_robIdx_value[j] <= enqSelReq[j].bits_robIdx_value;
+        uop_debugInfo_eliminatedMove[j] <= enqSelReq[j].bits_debugInfo_eliminatedMove;
+        uop_debugInfo_renameTime[j] <= enqSelReq[j].bits_debugInfo_renameTime;
+        uop_debugInfo_dispatchTime[j] <= enqSelReq[j].bits_debugInfo_dispatchTime;
+        uop_debugInfo_enqRsTime[j] <= enqSelReq[j].bits_debugInfo_enqRsTime;
+        uop_debugInfo_selectTime[j] <= enqSelReq[j].bits_debugInfo_selectTime;
+        uop_debugInfo_issueTime[j] <= enqSelReq[j].bits_debugInfo_issueTime;
+        uop_debugInfo_writebackTime[j] <= enqSelReq[j].bits_debugInfo_writebackTime;
+        uop_debugInfo_runahead_checkpoint_id[j] <= enqSelReq[j].bits_debugInfo_runahead_checkpoint_id;
+        uop_debugInfo_tlbFirstReqTime[j] <= enqSelReq[j].bits_debugInfo_tlbFirstReqTime;
+        uop_debugInfo_tlbRespTime[j] <= enqSelReq[j].bits_debugInfo_tlbRespTime;
+        uop_debug_seqNum_seqNum[j] <= enqSelReq[j].bits_debug_seqNum_seqNum;
+        uop_debug_seqNum_uopIdx[j] <= enqSelReq[j].bits_debug_seqNum_uopIdx;
       end
 
       // difftest 用的非对齐向量 offset：std 口1 > std 口0
@@ -3643,12 +3664,12 @@ module xs_StoreQueue_core
         // isVec / vecLastFlow：只在入队时写
         if (entryCanEnq[j]) begin
           // FuType.isVStore：fuType 的第 32/34 位
-          isVec[j] <= enq_req_in[enqSelPort[j]].bits_fuType[32]
-                    | enq_req_in[enqSelPort[j]].bits_fuType[34];
+          isVec[j] <= enqSelReq[j].bits_fuType[32]
+                    | enqSelReq[j].bits_fuType[34];
           // 「这条目正好是该向量 uop 区间的最后一条」才带 lastUop。
           // 区间上界绕回 0 时，最后一条是条目 55 —— 所以比的是 (j+1) mod 56。
-          vecLastFlow[j] <= (enqUpBound[enqSelPort[j]].value == 6'((j + 1) % SQ_SIZE))
-                          ? enq_req_in[enqSelPort[j]].bits_lastUop : 1'b0;
+          vecLastFlow[j] <= (enqSelUpBound[j].value == 6'((j + 1) % SQ_SIZE))
+                          ? enqSelReq[j].bits_lastUop : 1'b0;
         end
 
         // vecMbCommit：跨页同指针 > 向量反馈 > 入队清零
