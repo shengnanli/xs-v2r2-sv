@@ -458,6 +458,20 @@ def collect(only=None):
                 if only is not None and (ev_id, tgt) not in only:
                     continue
                 d = os.path.join(rundir, tgt)
+                # ★已进版本库的，复核一律读仓内那份★（2026-09-21）
+                # 发现范围仍是 lane worktree（本表的口径没变），但**读哪一份字节**
+                # 是另一回事。第一版用"worktree 名字排序取第一个"保证了确定性，
+                # 却没保证**可复现性**：实测 542 行里 500 行 in_vcs=yes，
+                # 而它们的复核路径全部指向 wt-* —— lane worktree 是临时的，
+                # 合并后就会被 git worktree remove 掉，届时这 500 张证书
+                # 从干净 clone 出发一张都复核不了。
+                # 确定性和可复现性是两件事，前者当时满足了，后者一直没有。
+                # provenance（evidence 列的 wt-xxx:run）保持不动 —— 它记的是
+                # "这份证据当初从哪来"，那仍然是真的，只是不再是读取路径。
+                if (rundir_name, tgt) in tracked:
+                    _repo_d = os.path.join(REPO, 'evidence', rundir_name, tgt)
+                    if os.path.isfile(os.path.join(_repo_d, 'receipt.json')):
+                        d = _repo_d
                 rc = os.path.join(d, 'receipt.json')
                 if not os.path.isfile(rc):
                     continue

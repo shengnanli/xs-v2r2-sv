@@ -147,7 +147,9 @@ for g in scripts/gen_tlbuffer_ad_family.py scripts/gen_mbist_pipe_family.py \
          scripts/gen_rob_ut.py scripts/gen_sbuffer.py \
          scripts/gen_sbuffer_tb.py scripts/gen_tlbsw_family.py \
          scripts/gen_rob_pins.py scripts/gen_rob_contract.py \
-         scripts/gen_rob_iface.py; do
+         scripts/gen_rob_iface.py \
+         scripts/gen_fubusy_wbarb.py scripts/gen_l2tlb.py \
+         scripts/gen_lqreplay.py scripts/gen_lqreplay_ut.py; do
   [ -f "$g" ] && run "生成器幂等 $(basename $g .py | sed 's/^gen_//')" python3 "$g" --check
 done
 # UT 目录下的生成器不在 check_gen_gate_complete.py 的扫描范围（它只扫 scripts/gen_*.py），
@@ -285,6 +287,11 @@ run "StoreQueue tb 幂等"  python3 scripts/gen_storequeue_ut.py --check
 # 所以这道自测挂了，三张台账同时失去依据。它既要证明能判出空壳（A/G/H/L），
 # 也要证明不会把真驱动误判成空壳（C/D/E/I/J/K/K2/N）——一道只会响的判据和
 # 一道从不响的判据一样没用。
+# receipt 收录表：★慢闸★（逐行重算 542 行，含 tclsh 差分跑，分钟级）。
+# 它要回答的是"这张表还对不对"——表里每一行都是一句"这份 receipt 可以收进台账"，
+# 而那句话依赖 golden/impl 字节、fm_eq.tcl、钉点、emitter、工具版本八项前提。
+# 前提会动，所以这张表必须能被重算，否则它就退化成一句没有复算路径的断言。
+run "receipt 收录表复算"    python3 scripts/gen_receipt_harvest.py --check
 run "written 驱动下限自证"  python3 scripts/rewritten_floor.py --selftest
 run "perf 分档闸负测"    python3 scripts/test_perf_tier_gate.py
 run "perf 分档台账闸"    python3 scripts/check_perf_tier.py
