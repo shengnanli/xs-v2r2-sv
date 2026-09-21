@@ -15,6 +15,23 @@ worker 实测发现：把一个 3,149 行、只实现约两成逻辑的**骨架*
   · ★proven 必须一位不动★（它没有任何绿判决证据）
 
 两条都查，才能区分「判据正确」与「判据把整张表冻住了」。
+
+## ★2026-09-21 改：第一条断言的前提已被推翻，判别力改由第二根探针承担★
+
+`scripts/rewritten_floor.py` 给 written 加了**驱动下限**（输出要真被驱动，
+且驱动链要落到真逻辑上），codex 0169 明确接受：「StoreQueue 空壳和未完成
+NewDispatch 不算 written」。于是**空壳本来就不该让 written 涨** ——
+原来那条「written 必须涨」现在与已裁定的口径直接矛盾，照旧跑就会永远红，
+而红的原因是判据对了，不是台账坏了。
+
+但那条断言的**用意**仍然成立：光验「空壳没抬高 proven」是不够的，
+一张被冻住的表同样满足它。所以判别力不删，改成两根探针：
+
+  探针 A（空壳）    module X; endmodule        -> written 与 proven **都不许动**
+  探针 B（真驱动件）输出全部被真逻辑驱动        -> written **必须涨**
+
+A 单独看无法区分「下限работает」与「表冻住了」，B 补上这一刀。
+★换判据时，被换掉的那条断言的用意要有人接手，不能随它一起消失。★
 """
 import pathlib
 import re
@@ -65,11 +82,33 @@ def main():
         shell.unlink()
 
     fails = []
-    if after.get('golden_lines_written', 0) <= before.get('golden_lines_written', 0):
-        fails.append('空壳没让 written 变化 —— 台账对新文件视而不见，探针无效')
-    for k in ('golden_lines_proven', 'unique_design_proven'):
+    # 探针 A：空壳 written 与 proven 都不许动（驱动下限应当把它挡在 written 之外）
+    for k in ('golden_lines_written', 'unique_design_written',
+              'golden_lines_proven', 'unique_design_proven'):
         if after.get(k) != before.get(k):
             fails.append('★空壳抬高了 %s：%s -> %s★' % (k, before.get(k), after.get(k)))
+
+    # 探针 B：同一个 victim 换成**真驱动件**，written 必须涨。
+    # 没有这一刀，探针 A 在"整张表冻住了"的情况下同样会绿。
+    # ★不必照抄 golden 的端口表★：驱动下限只问"声明的 output 有没有被驱动"，
+    #   一个单端口真驱动件就足以把 written 那一栏推动 —— 而照抄端口表既脆
+    #   （golden 的端口声明形态五花八门）又把探针绑死在被测物的细节上。
+    driven = None
+    shell.write_text('// 闸的探针文件，测完即删\n'
+                     'module %s(output o);\n'
+                     '  assign o = 1\'b0;\n'
+                     'endmodule\n' % victim[0])
+    try:
+        driven = nums()
+    finally:
+        shell.unlink()
+    if driven.get('golden_lines_written', 0) <= before.get('golden_lines_written', 0):
+        fails.append('★真驱动件也没让 written 涨 —— 台账对新文件视而不见，'
+                     '探针 A 的绿说明不了任何事★')
+    for k in ('golden_lines_proven', 'unique_design_proven'):
+        if driven.get(k) != before.get(k):
+            fails.append('★真驱动件抬高了 %s：%s -> %s（它没有绿判决证据）★'
+                         % (k, before.get(k), driven.get(k)))
 
     if fails:
         print('test_coverage_no_shell_inflation: %d 条不过（空壳=%s，%d 行）：'
@@ -77,10 +116,11 @@ def main():
         for f in fails:
             print('  - ' + f)
         return 1
-    print('test_coverage_no_shell_inflation: 空壳 %s 抬高 written %d→%d 行、'
-          'proven 一位未动（%d 行）'
-          % (victim[0], before['golden_lines_written'],
-             after['golden_lines_written'], after['golden_lines_proven']))
+    print('test_coverage_no_shell_inflation: 探针 A 空壳 %s 被驱动下限挡住'
+          '（written/proven 全未动）；探针 B 同名真驱动件让 written 涨到 %d 行'
+          '而 proven 仍是 %d 行'
+          % (victim[0], driven.get('golden_lines_written', -1),
+             before['golden_lines_proven']))
     return 0
 
 

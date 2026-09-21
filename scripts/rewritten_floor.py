@@ -136,12 +136,32 @@ def has_macro_call(body):
     return any(m not in _DIRECTIVES for m in re.findall(r'`(\w+)', body))
 
 
-def classify_body(body):
-    """→ (档位, driven 条数, output 条数)"""
-    outs = output_ports(body)
+def input_ports(body):
+    """ANSI 端口表里的 input/inout 名字。只用来把"全 input 的 sink"和"空壳"分开。"""
+    head = body.split(');', 1)[0] if ');' in body else body
+    return set(re.findall(
+        r'\b(?:input|inout)\s+(?:wire\s+|reg\s+|logic\s+|var\s+)?'
+        r'(?:signed\s+|unsigned\s+)?(?:\[[^\]]*\]\s*)*(\w+)', head))
+
+
+def decide_tier(body, outs, driven):
+    """★分档判定的唯一出处★ —— classify_body 与 classify_rtl 都必须走这里。
+
+    2026-09-21 教训（本文件第二次踩）：这条规则一度有**两份实现** ——
+    classify_body（自测用，单模块口径）与 classify_rtl 里的内联分支（全树口径）。
+    收窄 NO_OUTPUT 那次我只改了前者，于是 `--selftest` 全过、全树实测照错，
+    空壳照样抬高 written 79590 行。本文件顶上早就写过「只有一把尺子」，
+    ★写了不等于做到了★：规则只许有一个函数，两个入口都转调它。
+
+    参数：body 模块体；outs 该模块的 output 端口集合；driven 已判定为有效驱动的集合。
+    """
     if not outs:
-        return 'NO_OUTPUT', 0, 0
-    d = driven_names(body) & outs
+        # "没有 output"要分两种：
+        #   有 input 没 output = 纯观测 sink，判据不适用，放行（全树实测 3 个）
+        #   ★一个端口都没有★  = 空壳，不是 sink
+        # 合并成一档一律放行的话，`module X; endmodule` 三行就能凭空抬覆盖率。
+        return ('NO_OUTPUT' if input_ports(body) else 'SKELETON'), 0, 0
+    d = driven & outs
     if len(d) == len(outs):
         return 'REWRITTEN', len(d), len(outs)
     if has_macro_call(body):
@@ -150,6 +170,12 @@ def classify_body(body):
     if d:
         return 'PARTIAL_DRIVE', len(d), len(outs)
     return 'SKELETON', 0, len(outs)
+
+
+def classify_body(body):
+    """单模块口径（子模块一律当外部黑盒）。→ (档位, driven 条数, output 条数)"""
+    return decide_tier(body, output_ports(body), driven_names(body))
+
 
 
 # ---------------------------------------------------------------------------
@@ -293,9 +319,24 @@ def classify_rtl(repo=None):
     "后扫到的覆盖先扫到的"不同 —— 那条是任意的，这条至少是确定的）。
     """
     global _CACHE
-    if _CACHE is not None and repo is None:
-        return _CACHE
     root = pathlib.Path(repo) if repo else REPO
+    # ★缓存必须带会自动失效的指纹★（2026-09-21，被 test_coverage_no_shell_inflation
+    #   的探针 B 抓到）：第一版是"算过一次就永远返回那一份"的进程级缓存。
+    #   单跑一次脚本没问题，但**同一进程内先量一次、往 rtl/ 放个文件、再量一次**
+    #   就会拿到陈旧结果 —— 台账于是对新文件视而不见。
+    #   那道闸的探针正是这么用的（它 importlib.reload 了 rewrite_coverage，
+    #   却reload 不到这里），于是"真驱动件也没让 written 涨"，判别力那一刀落空。
+    #   指纹取 rtl/ 下全部 .sv 的 (路径, 大小, mtime_ns) —— 只 stat 不读内容，
+    #   比重扫便宜两个数量级，而增删改任一文件都会让它变。
+    fp = None
+    try:
+        fp = tuple(sorted(
+            (str(q), q.stat().st_size, q.stat().st_mtime_ns)
+            for q in (root / 'rtl').rglob('*.sv')))
+    except OSError:
+        fp = None
+    if _CACHE is not None and repo is None and fp is not None and _CACHE[0] == fp:
+        return _CACHE[1]
     bodies, where = {}, {}
     for p in sorted((root / 'rtl').rglob('*.sv')):
         try:
@@ -311,23 +352,15 @@ def classify_rtl(repo=None):
     idx = {}
     for name, body in bodies.items():
         outs = output_ports(body)
-        if not outs:
-            idx[name] = ('NO_OUTPUT', 0, 0, where[name])
-            continue
         eff, opq = effective_driven(name, bodies, memo)
-        d = eff & outs
-        if len(d) == len(outs):
-            # 全驱动，但只要有一条是靠不透明子模块才成立的，就如实降档
-            tier = 'MACRO_OPAQUE' if (opq & outs) else 'REWRITTEN'
-        elif has_macro_call(body):
+        tier, dn, on = decide_tier(body, outs, eff)
+        # 全驱动但有一条是靠不透明子模块才成立的，如实降档（传递闭包特有，
+        # decide_tier 看不到 opq，所以在这里补这一刀）
+        if tier == 'REWRITTEN' and (opq & outs):
             tier = 'MACRO_OPAQUE'
-        elif d:
-            tier = 'PARTIAL_DRIVE'
-        else:
-            tier = 'SKELETON'
-        idx[name] = (tier, len(d), len(outs), where[name])
-    if repo is None:
-        _CACHE = idx
+        idx[name] = (tier, dn, on, where[name])
+    if repo is None and fp is not None:
+        _CACHE = (fp, idx)
     return idx
 
 
@@ -420,6 +453,10 @@ module WrapExpr(input logic clk, input logic x, input logic y, output logic io_a
 endmodule
 ''', 'SKELETON', (0, 1)),
     # 反测：不许把比较当赋值
+    ('F2 一个端口都没有 = 空壳，不是 sink', '''
+module Empty;
+endmodule
+''', 'SKELETON', (0, 0)),
     ('G 比较不是驱动', '''
 module Cmp(input logic clk, input logic [3:0] x, output logic io_b);
   logic t;
