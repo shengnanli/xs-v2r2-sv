@@ -52,21 +52,21 @@
 //   L1316   §5 容量、掩码、若干「指针的当前值」
 //   L1333   §6 dispatch 入队 —— 6 个口，每个口按 numLsElem 占**一段连续条目**
 //   L1453   §7 sta / std / storeMask 三条写入通路
-//   L1498   §8 addrReady / dataReady 两个「发射就绪」指针
-//   L1558   §9 store-to-load 转发（3 个 load 口，队列里做地址 CAM）
-//   L1718   §10 mmio / NC / CBO —— 三条共用 uncache 通道的出队路径
-//   L1832   §11 ROB 提交 —— 把 cmtPtr 起的连续 8 条标成 committed
-//   L1903   §12 出队：读 RAM -> dataBuffer -> Sbuffer
-//   L1951   §13 dataBuffer 入口：三分支（跨 16B 拆分 / 非跨 16B 的非对齐 / 常规）
-//   L2106   §14 difftest 观测口（difftest 关掉时整块是 DontCare，golden 里仍然留着端口）
-//   L2141   §15 子模块例化 —— 5 个，实例名照 golden（dataModule / paddrModule /
-//   L2852   §16 向量异常旗标 + 冲刷判定
-//   L2936   §17 输出驱动
-//   L3194   §18 时序（一）：★不复位★块（对应 golden L20336-58753 的 2913 个寄存器）
-//   L3437   §19 「completed」的 4 个置位源（出队的四条路各有一个）
-//   L3470   §20 perf 观测探针（golden 同名导出；docs/perf_bore_map.tsv 按名字重绑）
-//   L3494   §21 时序（二）：异步复位块（对应 golden L62202-69650 的 1076 个寄存器）
-//   L3854   §22 StoreQueue —— golden 同名 wrapper（1003 根端口，逐位对齐）
+//   L1501   §8 addrReady / dataReady 两个「发射就绪」指针
+//   L1561   §9 store-to-load 转发（3 个 load 口，队列里做地址 CAM）
+//   L1721   §10 mmio / NC / CBO —— 三条共用 uncache 通道的出队路径
+//   L1835   §11 ROB 提交 —— 把 cmtPtr 起的连续 8 条标成 committed
+//   L1906   §12 出队：读 RAM -> dataBuffer -> Sbuffer
+//   L1954   §13 dataBuffer 入口：三分支（跨 16B 拆分 / 非跨 16B 的非对齐 / 常规）
+//   L2109   §14 difftest 观测口（difftest 关掉时整块是 DontCare，golden 里仍然留着端口）
+//   L2144   §15 子模块例化 —— 5 个，实例名照 golden（dataModule / paddrModule /
+//   L2855   §16 向量异常旗标 + 冲刷判定
+//   L2939   §17 输出驱动
+//   L3197   §18 时序（一）：★不复位★块（对应 golden L20336-58753 的 2913 个寄存器）
+//   L3440   §19 「completed」的 4 个置位源（出队的四条路各有一个）
+//   L3473   §20 perf 观测探针（golden 同名导出；docs/perf_bore_map.tsv 按名字重绑）
+//   L3497   §21 时序（二）：异步复位块（对应 golden L62202-69650 的 1076 个寄存器）
+//   L3865   §22 StoreQueue —— golden 同名 wrapper（1003 根端口，逐位对齐）
 
 // -----------------------------------------------------------------------------
 // §1 storequeue_pkg —— 参数、SqPtr 环形指针、各通道结构体
@@ -1481,7 +1481,10 @@ module xs_StoreQueue_core
       else if (isVecStore)
         stdWdata[i] = storeDataIn_in[i].bits_data;
       else begin
-        unique case (storeDataIn_in[i].bits_uop_fuOpType[2:0])
+        // golden 是 5 个 mux 项的按位或：sew 取 5..7 时五项全 0，结果就是 0。
+        // 这里用普通 case（不是 unique case）—— 5..7 确实不命中任何分支，
+        // unique 会在仿真期报一条与设计无关的告警。
+        case (storeDataIn_in[i].bits_uop_fuOpType[2:0])
           3'h0:    stdWdata[i] = {16{storeDataIn_in[i].bits_data[7:0]}};   // sb
           3'h1:    stdWdata[i] = { 8{storeDataIn_in[i].bits_data[15:0]}};  // sh
           3'h2:    stdWdata[i] = { 4{storeDataIn_in[i].bits_data[31:0]}};  // sw
@@ -3714,7 +3717,13 @@ module xs_StoreQueue_core
         redirectCancelCount <= 8'($countones(lastCycleCancelVec)) + lastEnqCancel;
 
       // ======================= mmio 5 态 FSM =======================
-      unique case (mmioState)
+      // ★用普通 case + `default: ;`（保持），不要 unique case + default 归位★
+      //   mmioState 是 3 位、只用了 5 个态；golden 的 FSM 是一条 if/else-if 链，
+      //   5..7 这三个态**一条分支都不命中，寄存器保持原值**。写成
+      //   `default: mmioState <= S_IDLE;` 就是凭空多了一条迁移 —— 随机 UT 永远
+      //   打不到（那三个态不可达），但 FM 是二值穷举，一眼就抓出来：本轮第 6 次
+      //   FM 实报 `u_core/mmioState_reg[1] failed (is not equivalent)`，就是它。
+      case (mmioState)
         S_IDLE: begin
           // 走到 ROB 头、数据地址都齐、没异常，才把它交给 uncache 通道。
           if (mmioEnterReqReg) begin
@@ -3754,7 +3763,7 @@ module xs_StoreQueue_core
           // mmio store 必然在 ROB 头，scommit 一来就说明它提交了。
           if (|scommit) mmioState <= S_IDLE;
         end
-        default: mmioState <= S_IDLE;
+        default: ;   // 5..7 不可达：golden 保持，这里也保持
       endcase
 
       // ★CBO 越权覆盖上面的 FSM 迁移★：走的是 cmoOpReq/cmoOpResp 专用口，
@@ -3775,7 +3784,9 @@ module xs_StoreQueue_core
         cboFlushedSb <= 1'b1;
 
       // ======================= NC 4 态 FSM =======================
-      unique case (ncState)
+      // 同理：ncState 是 2 位、4 个态全用上，default 恒不命中；
+      // 仍写成保持，免得哪天加态时又多出一条 golden 没有的迁移。
+      case (ncState)
         NC_IDLE: begin
           // NC 要等提交；而且必须等 resp 回来才退队（SQ 还得给 load 做转发）。
           if (nc_rd[rdPtr] & allocated_rd[rdPtr] & ~completed_rd[rdPtr] & committed_rd[rdPtr]
@@ -3790,7 +3801,7 @@ module xs_StoreQueue_core
         NC_REQ:     if (ncDoReq)    ncState <= NC_REQ_ACK;
         NC_REQ_ACK: if (ncSlaveAck) ncState <= io_uncacheOutstanding ? NC_IDLE : NC_RESP;
         NC_RESP:    if (ncRespFire) ncState <= NC_IDLE;
-        default:                    ncState <= NC_IDLE;
+        default: ;
       endcase
 
       // ======================= cbo.zero 的回写握手 =======================

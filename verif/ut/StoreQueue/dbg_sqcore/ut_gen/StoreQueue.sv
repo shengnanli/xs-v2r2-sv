@@ -1481,7 +1481,10 @@ module xs_StoreQueue_core
       else if (isVecStore)
         stdWdata[i] = storeDataIn_in[i].bits_data;
       else begin
-        unique case (storeDataIn_in[i].bits_uop_fuOpType[2:0])
+        // golden 是 5 个 mux 项的按位或：sew 取 5..7 时五项全 0，结果就是 0。
+        // 这里用普通 case（不是 unique case）—— 5..7 确实不命中任何分支，
+        // unique 会在仿真期报一条与设计无关的告警。
+        case (storeDataIn_in[i].bits_uop_fuOpType[2:0])
           3'h0:    stdWdata[i] = {16{storeDataIn_in[i].bits_data[7:0]}};   // sb
           3'h1:    stdWdata[i] = { 8{storeDataIn_in[i].bits_data[15:0]}};  // sh
           3'h2:    stdWdata[i] = { 4{storeDataIn_in[i].bits_data[31:0]}};  // sw
@@ -3714,7 +3717,13 @@ module xs_StoreQueue_core
         redirectCancelCount <= 8'($countones(lastCycleCancelVec)) + lastEnqCancel;
 
       // ======================= mmio 5 态 FSM =======================
-      unique case (mmioState)
+      // ★用普通 case + `default: ;`（保持），不要 unique case + default 归位★
+      //   mmioState 是 3 位、只用了 5 个态；golden 的 FSM 是一条 if/else-if 链，
+      //   5..7 这三个态**一条分支都不命中，寄存器保持原值**。写成
+      //   `default: mmioState <= S_IDLE;` 就是凭空多了一条迁移 —— 随机 UT 永远
+      //   打不到（那三个态不可达），但 FM 是二值穷举，一眼就抓出来：本轮第 6 次
+      //   FM 实报 `u_core/mmioState_reg[1] failed (is not equivalent)`，就是它。
+      case (mmioState)
         S_IDLE: begin
           // 走到 ROB 头、数据地址都齐、没异常，才把它交给 uncache 通道。
           if (mmioEnterReqReg) begin
@@ -3754,7 +3763,7 @@ module xs_StoreQueue_core
           // mmio store 必然在 ROB 头，scommit 一来就说明它提交了。
           if (|scommit) mmioState <= S_IDLE;
         end
-        default: mmioState <= S_IDLE;
+        default: ;   // 5..7 不可达：golden 保持，这里也保持
       endcase
 
       // ★CBO 越权覆盖上面的 FSM 迁移★：走的是 cmoOpReq/cmoOpResp 专用口，
@@ -3775,7 +3784,9 @@ module xs_StoreQueue_core
         cboFlushedSb <= 1'b1;
 
       // ======================= NC 4 态 FSM =======================
-      unique case (ncState)
+      // 同理：ncState 是 2 位、4 个态全用上，default 恒不命中；
+      // 仍写成保持，免得哪天加态时又多出一条 golden 没有的迁移。
+      case (ncState)
         NC_IDLE: begin
           // NC 要等提交；而且必须等 resp 回来才退队（SQ 还得给 load 做转发）。
           if (nc_rd[rdPtr] & allocated_rd[rdPtr] & ~completed_rd[rdPtr] & committed_rd[rdPtr]
@@ -3790,7 +3801,7 @@ module xs_StoreQueue_core
         NC_REQ:     if (ncDoReq)    ncState <= NC_REQ_ACK;
         NC_REQ_ACK: if (ncSlaveAck) ncState <= io_uncacheOutstanding ? NC_IDLE : NC_RESP;
         NC_RESP:    if (ncRespFire) ncState <= NC_IDLE;
-        default:                    ncState <= NC_IDLE;
+        default: ;
       endcase
 
       // ======================= cbo.zero 的回写握手 =======================
