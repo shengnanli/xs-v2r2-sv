@@ -106,7 +106,8 @@ HERE   = pathlib.Path(__file__).resolve().parent
 REPO   = HERE.parents[2]
 GOLDEN = pathlib.Path('/home/eda/xs-env/G1-canonical/golden-rtl')
 sys.path.insert(0, str(REPO / 'verif' / 'ut' / 'Entries_common'))
-from entries_gen import Variant, port_decls, read, bitvec   # noqa: E402
+from entries_gen import (Variant, port_decls, read, bitvec,   # noqa: E402
+                          wenpack, wenvec)
 
 
 # 父级 Entries 变体已在本仓实现、因而本 lane 敢做的那几个（见文件头「结论的边界」）。
@@ -385,8 +386,10 @@ def gen_rtl_body(ov, L, ctx):
     if n_iq:
         A('    .IQ_SRC_MASK({' + ', '.join(bitvec(v.iq_mask[s], n_iq)
                                            for s in reversed(range(n_src))) + '}),')
-        A("    .IQ_TYPE_BIT({" + ', '.join(f"3'd{v.iq_tbit[s]}"
-                                           for s in reversed(range(n_src))) + '}),')
+        # E1/E2：唤醒匹配 = 「按源分份的 kind」×「按窗口分份的 wen 存在性」。
+        # 两个窗口各量各的：firtool 对当拍/延迟两条总线独立 DCE，实测不一定相同。
+        A('    .IQ_WEN_PRESENT(' + wenvec(v.wen_present['iq']) + '),')
+        A('    .IQD_WEN_PRESENT(' + wenvec(v.wen_present['iqd']) + '),')
         A('    .IQ_IS_LD_PIPE({' + ', '.join(
             bitvec(set(v.iq_self_pipe[w]), v.ld_pipes)
             for w in reversed(range(n_iq))) + '}),')
@@ -395,8 +398,10 @@ def gen_rtl_body(ov, L, ctx):
           + f'), .RC_TYPE_BIT({v.rc_tbit}),')
     A('    .SRC_WB_MASK({' + ', '.join(bitvec(set(v.src_wb[s]), n_wk)
                                        for s in reversed(range(n_src))) + '}),')
-    A("    .SRC_TYPE_BIT({" + ', '.join(f"3'd{v.src_tbit[s]}"
+    A("    .SRC_MATCH_KIND({" + ', '.join(f"2'd{v.src_kind[s]}"
                                         for s in reversed(range(n_src))) + '}),')
+    A('    .WB_WEN_PRESENT(' + wenvec(v.wen_present['wb']) + '),')
+    A('    .WBD_WEN_PRESENT(' + wenvec(v.wen_present['wbd']) + '),')
     A(f'    .HAS_IGNORE_OLD_VD({int(v.has_ignore)}),')
     A(f'    .VD_SRC({v.vd_src}), .VL_SRC({v.vl_src}),'
       f' .WB_VL_INT({v.wb_vl_int}), .WB_VL_VF({v.wb_vl_vf}),')
@@ -446,30 +451,35 @@ def gen_rtl_body(ov, L, ctx):
             for s in reversed(range(n_src)))) if ov.has(nm) else f".enq_{tag}('0)")
     # ---- WB 唤醒：当拍 + 入队延迟窗口（本族专属，两组都接真信号）----
     c.append('.wk_valid({%s})' % rev('io_commonIn_wakeUpFromWB_%d_valid', n_wk))
-    for w in range(n_wk):
-        assert ov.has(f'io_commonIn_wakeUpFromWB_{w}_bits_{v.wk_wen[w]}'), (
-            f'{ov.mod}: WB{w} 的写使能字段 {v.wk_wen[w]} 在本模块端口表里不存在')
-        assert ov.has(f'io_enqDelayIn1_wakeUpFromWB_{w}_bits_{v.wk_wen[w]}'), (
-            f'{ov.mod}: 延迟 WB{w} 的写使能字段 {v.wk_wen[w]} 不存在')
+    # E1/E2：wen 不再是"每路一位"，而是按核里 WEN_* 顺序打成的 5 位向量；
+    # 该窗口没有的字段填 1'b0，核按 *_WEN_PRESENT 在 elaborate 期整项剪掉（不是喂 0）。
+    # ★逐路★取存在集合：实测同一条总线上各路带的字段并不相同。
+    for _wk_key, _wk_pfx in (('wb', 'io_commonIn_wakeUpFromWB'),
+                             ('wbd', 'io_enqDelayIn1_wakeUpFromWB')):
+        for w in range(n_wk):
+            for _f in v.wen_lane[_wk_key].get(w, set()):
+                assert ov.has(f'{_wk_pfx}_{w}_bits_{_f}'), (
+                    f'{ov.mod}: {_wk_pfx}{w} 的写使能字段 {_f} 在本模块端口表里不存在')
     c.append('.wk_wen({%s})' % ', '.join(
-        f'io_commonIn_wakeUpFromWB_{w}_bits_{v.wk_wen[w]}'
+        wenpack('io_commonIn_wakeUpFromWB', w, v.wen_lane['wb'].get(w, set()))
         for w in reversed(range(n_wk))))
     c.append('.wk_pdest({%s})' % rev('io_commonIn_wakeUpFromWB_%d_bits_pdest', n_wk))
     c.append('  // ★ 入队延迟窗口（IS_ENQ 专属）：派遣与唤醒总线差一拍，入队后的下一拍')
     c.append('  //   用这组延迟总线再匹配一次，否则那一拍的唤醒会被整个漏掉。')
     c.append('.wkd_valid({%s})' % rev('io_enqDelayIn1_wakeUpFromWB_%d_valid', n_wk))
     c.append('.wkd_wen({%s})' % ', '.join(
-        f'io_enqDelayIn1_wakeUpFromWB_{w}_bits_{v.wk_wen[w]}'
+        wenpack('io_enqDelayIn1_wakeUpFromWB', w, v.wen_lane['wbd'].get(w, set()))
         for w in reversed(range(n_wk))))
     c.append('.wkd_pdest({%s})' % rev('io_enqDelayIn1_wakeUpFromWB_%d_bits_pdest', n_wk))
     if n_iq:
         def iq_group(pfx, d):
             # d = '' (当拍总线 iq_*) 或 'd' (延迟窗口总线 iqd_*)
             g = []
+            _iqk = 'iq' if d == '' else 'iqd'
             g.append('.iq%s_wen({%s})' % (d, ', '.join(
-                (f'{pfx}_wakeUpFromIQ_{w}_bits_{v.iq_wen[w]}'
-                 if v.iq_wen[w] and ov.has(
-                     f'{pfx}_wakeUpFromIQ_{w}_bits_{v.iq_wen[w]}') else "1'b0")
+                wenpack(f'{pfx}_wakeUpFromIQ', w,
+                        {f for f in v.wen_lane[_iqk].get(w, set())
+                         if ov.has(f'{pfx}_wakeUpFromIQ_{w}_bits_{f}')})
                 for w in reversed(range(n_iq)))))
             g.append('.iq%s_pdest({%s})' % (d, ', '.join(
                 f'{pfx}_wakeUpFromIQ_{w}_bits_pdest' for w in reversed(range(n_iq)))))
