@@ -355,7 +355,18 @@ def gen_childinst(ports):
             port, expr = pm.group(1), pm.group(2).strip()
             d, w = cp.get(port, ('input', 1))
             if d == 'output':
-                # child 输出：声明一根与 golden 同名的线（_<inst>_<port>）
+                # ★child 输出直接落到顶层 output 端口★（golden 就是这么接的）：
+                # golden 的 `.io_enqLsq_req_0_valid (io_toMem_lsqEnqIO_req_0_valid)`
+                # 一步把 LsqEnqCtrl 的输出接到 NewDispatch 的输出端口上，中间没有别的逻辑。
+                # 步骤 1 这里一律新开一根 `_<inst>_<port>` 线，于是这 330 个顶层 output
+                # **一个驱动源都没有** —— FM 侧表现为 child 的寄存器前向锥到不了任何
+                # 输出（判 unread），passing 一个点都涨不了（实测 589 -> 589）。
+                # 所以照 golden 接：表达式就是一个顶层端口名时直连，不要中间线。
+                clean = ' '.join(expr.split())
+                if clean in topset:
+                    conns.append('    .%-42s (%s)' % (port, clean))
+                    continue
+                # 其余 child 输出仍走本地线（供本文件内部消费）
                 nm = '_%s_%s' % (inst, port)
                 wires.append('  logic %s%s;' % ('' if w == 1 else '[%d:0] ' % (w - 1), nm))
                 conns.append('    .%-42s (%s)' % (port, nm))
@@ -395,6 +406,64 @@ def gen_childinst(ports):
     head.append('')
     return head + body
 
+# ---------------------------------------------------------------------------
+# ENQROB —— 送 Rob 的入队请求（步骤 2 的第一组）
+#
+# golden 对 io_enqRob_req_<lane>_bits_* 只做三件事：
+#   PASS   直接透传 io_fromRename_<lane>_bits_<leaf>（355 个）
+#   CONST  钉常量
+#   LOCAL  需要派遣流控算出来的（valid / hasException / numWB / singleStep，共 24 个）
+# 前两类不需要任何新逻辑，本段直接生成；LOCAL 那 24 个由 ENQROB_LOCAL 决定：
+# 流控还没写时接 unresolved_*（悬空，仿真出 X），写好后改成核的输出。
+#
+# ★为什么不手抄★：379 个端口逐个对 golden 的 RHS，手抄必然错位；而且
+# golden 对 lane1..5 做过 DCE（snapshot 只有 lane0 有），形状不均匀。
+ENQROB_LOCAL = {
+    'valid':        'unresolved_enqRobValid_%d',
+    'hasException': 'io_fromRename_%d_bits_hasException | unresolved_singleStep_%d',
+    'numWB':        "unresolved_singleStep_%d ? 7'h0 : io_fromRename_%d_bits_numWB",
+    'singleStep':   'unresolved_singleStep_%d',
+}
+
+
+def gen_enqrob(ports):
+    """io_enqRob_req_* 的驱动。判据是 golden 原文的 RHS，不是"应该是这样"。"""
+    lines = _golden_text()
+    rhs = _rhs_map(lines)
+    out = ['  // 送 Rob 的入队请求：valid = 本 lane 这拍真 fire，payload 基本是 io_fromRename 直通。',
+           '  // ★hasException / numWB 被 singleStep 改写★（单步调试时这条指令不写回、',
+           '  // 且要带上异常），golden 的两处改写逐字照抄。',
+           '  // ★valid 与 singleStep 这一拨还没有来源★：它们要派遣流控（步骤 2 的第二次',
+           '  // 提交）才算得出来，这里**故意悬空**，仿真必然出 X —— 钉 0 会让 UT 假绿。',
+           '  logic unresolved_enqRobValid_0, unresolved_enqRobValid_1, unresolved_enqRobValid_2;',
+           '  logic unresolved_enqRobValid_3, unresolved_enqRobValid_4, unresolved_enqRobValid_5;']
+    npass = nconst = nlocal = 0
+    for _d, w, n in ports:
+        m = re.match(r'io_enqRob_req_(\d+)_(valid|bits_(.+))$', n)
+        if not m:
+            continue
+        lane, leaf = int(m.group(1)), m.group(3) or 'valid'
+        body = rhs.get(n)
+        if body is None:
+            sys.exit('FATAL: golden 里 %s 没有驱动（fail-closed）' % n)
+        if leaf in ENQROB_LOCAL:
+            nlocal += 1
+            tpl = ENQROB_LOCAL[leaf]
+            out.append('  assign %s = %s;' % (n, tpl % ((lane,) * tpl.count('%d'))))
+        elif body == 'io_fromRename_%d_bits_%s' % (lane, leaf):
+            npass += 1
+            out.append('  assign %s = %s;' % (n, body))
+        elif CONST_RE.match(body):
+            nconst += 1
+            out.append('  assign %s = %s;' % (n, body))
+        else:
+            sys.exit('FATAL: %s 的 golden RHS 既不是直通也不是常量，也不在 '
+                     'ENQROB_LOCAL 里：%s' % (n, body[:80]))
+    out.insert(3, '  // 本段 %d 条：直通 %d / 常量 %d / 需流控 %d。'
+               % (npass + nconst + nlocal, npass, nconst, nlocal))
+    return out
+
+
 BEGIN = '  // BEGIN GENERATED(%s)'
 END = '  // END GENERATED'
 
@@ -427,6 +496,7 @@ def main():
     new = splice(new, 'UNRESOLVED', gen_unresolved(ports))
     new = splice(new, 'PACK', gen_pack(ports))
     new = splice(new, 'UNPACK', gen_unpack(ports))
+    new = splice(new, 'ENQROB', gen_enqrob(ports))
     new = splice(new, 'CHILDINST', gen_childinst(ports))
     if a.check:
         if new != txt:
