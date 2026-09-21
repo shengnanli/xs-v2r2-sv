@@ -69,8 +69,26 @@
 //     B  pbmte 改用 dup_1                             -> errors=6164 / 20000 拍，抓到。
 //     C  pte_only_pf 去掉 `& ~pte_is_af(p)`           -> errors=28536 / 20000 拍，抓到。
 //
-// 【实测（commit 见 git log，产物 sha256 见 evidence/）】
-//   make run NCYCLES=200000 SEED=1|7|42 -> 见 evidence/ 下的 run_seed{1,7,42}.log。
+// 【实测】基线 commit cd59b7cc2389122a7d35bfc7298d208a45103e54
+//   （rtl/mmu/PtwCache.sv sha256 cf3579a77b0349647dfae49282952fa5ad9a8abe780728f9226e65ade68b623c）
+//   golden = G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0
+//
+//   两档 initreg × 3 seed × 200000 拍，每拍 3347 次比较，全部 errors=0：
+//     make run          SEED=1|7|42 NCYCLES=200000   （运行期 +vcs+initreg+0）
+//     make run-initreg1 SEED=1|7|42 NCYCLES=200000   （运行期 +vcs+initreg+1）
+//
+//   档  seed  checks      errors  sfence/hfv/hfg   wakeup/写   l1双命中/l0多命中  判定
+//   ---------------------------------------------------------------------------------
+//   ir0   1   669400000   0       1058/955/1016    8766/75     12318/425          TEST PASSED
+//   ir0   7   669400000   0        994/1009/1062   8962/64     12548/277          TEST PASSED
+//   ir0  42   669400000   0       1038/1029/1010   8924/44     13052/180          TEST PASSED
+//   ir1   1   669400000   0       1058/955/1016    8766/75     12321/428          TEST PASSED
+//   ir1   7   669400000   0        994/1009/1062   8962/64     12555/284          TEST PASSED
+//   ir1  42   669400000   0       1038/1029/1010   8924/44     13054/182          TEST PASSED
+//
+//   ★两档的"双命中"计数**不同**（12318 vs 12321 等）是对的★：那些拍上有不复位
+//   寄存器参与，两档初值不同会让边界拍的命中数差几次。差异**只**出现在计数上、
+//   errors 两档都是 0 —— 也就是说没有 X 依赖的失配。
 `timescale 1ns/1ps
 module tb;
   int errors = 0;          // 已追清信号的失配 —— 一个都不许有
