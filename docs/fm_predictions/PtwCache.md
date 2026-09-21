@@ -59,3 +59,51 @@ golden：G1-canonical/golden-rtl/PtwCache.sv（45308 行，单变体）
 ## 跑后对账
 
 （留空，跑完补。）
+
+## 跑后对账（2026-09-21，本轮到此为止）
+
+★先说结论：FM 没跑完，五条 P 判据**一条都还没有结论**。下面只记已经实测到的事实。★
+
+### 已实测
+
+R1  两侧 elaborate + set_top 都过了（在修掉 FMR_VLOG-091 之后）。
+    ★第一次尝试是死在这儿的★：三个函数（sp_level_match / sp_pick / refill_bypass）
+    在函数体里直接读模块级信号，Formality 判 FMR_VLOG-091，汇总成
+    `FM-262 ... were produced during link` -> `FM-156 Failed to set top design`。
+    修法是把依赖写进参数表（commit 115d072b），不是抑制警告。修完 FMR_VLOG-091 归零。
+
+R2  黑盒边界为空（P5 的前半）：SRAM 一路两侧同源读 golden，
+    elaborate 日志里 SplittedSRAM_1/2、SRAMTemplate_128/129/143、
+    sram_array_*_ptw_*、array_10/11(_ext)、ClockGate、MbistPipePtwL0/L1
+    两侧都展开了，没有一个 FMR_ELAB-147 越界告警。
+    （array_10_ext addr 2 位/深 4、array_11_ext addr 6 位/深 64，2^addr_w == depth，
+      与 Makefile 里写的判据一致。）
+
+R3  ★比较点总数 = 156,400★（`match` 阶段的进度行给出）。
+    这个数**验证了跑前登记的那条判断**：模型给的 23,802 不是"差不多"，
+    而是差了 6.5 倍。登记里手工补算的"模型漏了 ~119,880 位存储、真值应在
+    ~2.4e4 到 ~1.4e5 之间"这条预判，方向与量级都对上了
+    （156,400 略高于登记写的上界 ~1.4e5，登记里也已声明那只是量级不是点值）。
+    ★这是"不给点预测"这个决定的事后验证：给了就必然是错的。★
+
+### 没实测到（卡在哪）
+
+    match 阶段不收敛。实测两个采样点：
+      05:26  142,173 / 156,400 matched (84%)   2654 秒
+      05:57  142,969 / 156,400 matched (84%)   4493 秒
+    即 31 分钟只多匹配 796 个点，还剩 13,431 个未匹配。
+    按这个速率补完要 ~8 小时，超出本轮时间，**没有 passing / failing /
+    unmatched / unread 的最终读数**。所以 P1..P5 全部 UNDETERMINED，
+    不是 PASS 也不是 FAIL。
+
+    下一轮的三条候选（都还没验证过，写在这里当线索不当结论）：
+      · FM_MERGE_DUP=false —— 现在 merge 阶段自己就跑了 7 轮 ref/impl 交替，
+        关掉它同时也让 fm_passing_model 的等式重新成立（模型从 NA 变可用）；
+      · 先证子件再证父 —— 把 SRAM 一路改回两侧对称黑盒（边界从"空"退成
+        "SplittedSRAM_1/2 对称"），比较点会掉掉 ~12 万个存储位，
+        代价是 proof_mode 从 signoff-strict 退成 assembly；
+      · 查那 13,431 个未匹配点集中在哪一族 —— 需要 match 先跑完，
+        或者用 report_unmatched_points 在中途取样。
+
+    ★不许因为跑不完就放松判据★：本轮 receipt 一份都没出，
+    check_lane_receipts.py 报 0 条未收录，这是对的 —— 确实什么都没证出来。
