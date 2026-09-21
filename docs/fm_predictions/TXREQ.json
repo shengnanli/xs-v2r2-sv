@@ -1,9 +1,9 @@
 {
   "target": "TXREQ",
   "ut": "TXREQ",
-  "regs": 9,
+  "regs": 2201,
   "outs": 140,
-  "expected": 149,
+  "expected": 2341,
   "merge_dup": "true",
   "model_applicable": false
 }

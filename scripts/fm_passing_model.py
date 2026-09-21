@@ -37,11 +37,23 @@ GOLDEN = pathlib.Path(os.environ.get('G1_CANONICAL',
                                      '/home/eda/xs-env/G1-canonical')) / 'golden-rtl'
 REPO = pathlib.Path(__file__).resolve().parents[1]
 
-REG_RE = re.compile(r'^\s*reg\s+(?:\[\s*(\d+)\s*:\s*(\d+)\s*\]\s*)?[A-Za-z_]\w*\s*'
-                    r'(?:\[[^\]]*\]\s*)?;', re.M)
+# ★三处收口（2026-09-20，TXREQ 实测逼出来的）★，逐条说明见 CHANGELOG 注释块。
+REG_RE = re.compile(r'^\s*reg\s+(?:\[\s*(\d+)\s*:\s*(\d+)\s*\]\s*)?([A-Za-z_]\w*)\s*'
+                    r'(?:\[\s*(\d+)\s*:\s*(\d+)\s*\]\s*)?;', re.M)
 OUT_RE = re.compile(r'^\s*output\s+(?:\[\s*(\d+)\s*:\s*(\d+)\s*\]\s+)?[A-Za-z_]\w*\s*,?\s*$',
                     re.M)
-INST_RE = re.compile(r'^\s{0,4}([A-Z][A-Za-z0-9_]*)\s+([a-zA-Z_]\w*)\s*\(\s*$', re.M)
+# 模块例化：`<Type> <inst> (` 单独占一行。★首字母不再限定大写★——firtool 生成的
+# SRAM 包装模块叫 `ram_16x137` / `array_0_ext` 这类全小写名字，原来的 `[A-Z]` 把它们
+# 整类漏掉了（TXREQ 实测：模型 149 / 实测 1492，正是漏了 ram_16x137 那块存储）。
+# 放开首字母后要挡住语言关键字，否则 `if (` / `case (` 之类会被当成例化。
+INST_RE = re.compile(r'^\s{0,4}([A-Za-z_]\w*)\s+([a-zA-Z_]\w*)\s*\(\s*$', re.M)
+NOT_A_MODULE = {
+    'if', 'else', 'case', 'casex', 'casez', 'for', 'while', 'repeat', 'always',
+    'always_ff', 'always_comb', 'always_latch', 'initial', 'final', 'assign',
+    'wire', 'reg', 'logic', 'input', 'output', 'inout', 'parameter', 'localparam',
+    'function', 'task', 'module', 'endmodule', 'generate', 'begin', 'end',
+    'return', 'automatic', 'static', 'typedef', 'import', 'export', 'default',
+}
 
 
 def _txt(mod):
@@ -49,9 +61,23 @@ def _txt(mod):
 
 
 def reg_bits(mod):
+    """该模块一份实例的触发器位数（上界）。
+
+    ★两处与原版不同★（2026-09-20）：
+    1. **unpacked 深度要乘进去**。`reg [136:0] Memory[0:15];` 是 16 项 × 137 位
+       = 2192 位，原版只数 137。firtool 的 SRAM 包装模块全长这个样子。
+    2. **`_RANDOM*` 不算**。那些声明只出现在 `ENABLE_INITIAL_MEM_` /
+       `ENABLE_INITIAL_REG_` 块里，而这两个宏只在 **未定义 SYNTHESIS** 时才有；
+       scripts/fm_eq.tcl 的 read_sverilog 是 `-define {SYNTHESIS}`，FM 根本读不到
+       它们。把它们算进去只会让上界虚高。
+    """
     n = 0
-    for hi, lo in REG_RE.findall(_txt(mod)):
-        n += 1 if not hi else int(hi) - int(lo) + 1
+    for hi, lo, name, dhi, dlo in REG_RE.findall(_txt(mod)):
+        if name.startswith('_RANDOM'):
+            continue
+        w = 1 if not hi else int(hi) - int(lo) + 1
+        d = 1 if not dhi else abs(int(dhi) - int(dlo)) + 1
+        n += w * d
     return n
 
 
@@ -79,6 +105,8 @@ def instance_counts(top, allowed):
         if not (GOLDEN / f'{cur}.sv').exists():
             continue
         for child, _inst in INST_RE.findall(_txt(cur)):
+            if child in NOT_A_MODULE:
+                continue
             if child in allowed and (GOLDEN / f'{child}.sv').exists():
                 cnt[child] += 1
                 stack.append(child)
