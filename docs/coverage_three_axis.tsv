@@ -429,7 +429,7 @@ FreeList_6	REWRITTEN	PROVEN_DIRECT	rtl/memblock/FreeList_6.sv
 Frontend	MISSING	UNPROVEN	-
 FrontendBridge	MISSING	UNPROVEN	-
 FrontendTrigger	MISSING	UNPROVEN	-
-Ftq	REWRITTEN	UNPROVEN	rtl/frontend/Ftq.sv
+Ftq	REWRITTEN	PROVEN_DIRECT	rtl/frontend/Ftq.sv
 FtqPcMemWrapper	GOLDEN_REUSE	PROVEN_DIRECT	rtl/frontend/FtqPcMemWrapper.sv
 FuBusyTableRead	REWRITTEN	PROVEN_DIRECT	rtl/backend/FuBusyTableRead.sv
 FuBusyTableRead_105	REWRITTEN	PROVEN_DIRECT	rtl/backend/FuBusyTableRead_105.sv
