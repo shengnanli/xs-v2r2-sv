@@ -74,6 +74,7 @@ def harvest():
         cur = {
             'top': top, 'verdict': verdict, 'commit': commit,
             'passing': q.get('passing'), 'failing': q.get('failing'),
+            'failing_truncated': q.get('failing_truncated'),
             'unmatched': q.get('unmatched'), 'unread': q.get('unread'),
             'constant_reg': q.get('constant_reg'),
             'mode': (d.get('proof_config') or {}).get('fm_mode'),
@@ -114,8 +115,17 @@ def render(rows):
            'target\tverdict\tnote']
     for top in sorted(rows):
         r = rows[top]
+        # ★failing == limit 时措辞必须写成"至少 N，计数被截断"★（codex 0169 D2）
+        # 并且 passing 也要跟着标 ~ —— 撞 limit 时 FM 停止验证，
+        # passing 是"停下来之前先验完了这么多"，不是"证对了这么多"。
+        # 实测：NewDispatch 那次 p589，同一份 RTL 不截断重测是 43410。
+        if r.get('failing_truncated'):
+            _f = '>=%s(截断)' % _n(r['failing'])
+            _p = '~%s(非完整规模)' % _n(r['passing'])
+        else:
+            _f, _p = _n(r['failing']), _n(r['passing'])
         note = ('p%s f%s um%s unread=%s const_reg=%s mode=%s vmucp=%s @%s %s'
-                % (_n(r['passing']), _n(r['failing']), _n(r['unmatched']), _n(r['unread']),
+                % (_p, _f, _n(r['unmatched']), _n(r['unread']),
                    _n(r['constant_reg']), r['mode'], r['vmucp'], r['commit'], r['path']))
         out.append('%s\t%s\t%s' % (top, r['verdict'], note))
     return '\n'.join(out) + '\n'

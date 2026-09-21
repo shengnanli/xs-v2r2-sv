@@ -276,6 +276,27 @@ def _fill_stats(q, log_text):
     q["failing"]    = _row_int(tbl, "failing")
     q["unverified"] = _row_int(tbl, "unverified")
     q["aborted"]    = _row_int(tbl, "aborted")
+    # ★failing == limit 时，passing / unverified 都不是完整规模★（codex 0169 D2）
+    # verification_failing_point_limit 默认 20：撞到第 20 个失败点 FM 就**停止验证**，
+    # 剩下的点一个也没验，全进 Unverified。所以它同时污染三栏：
+    #   failing     只是"至少这么多"
+    #   unverified  含大量"没来得及验"，不是"验不了"
+    #   passing     是"停下来之前先验完了这么多"，不是"证对了这么多"
+    # 本轮两次实测：
+    #   Rob          failing 20 / unverified 78881 -> limit=0 后 631 / 0（passing 不变 107903）
+    #   NewDispatch  passing 589 -> limit=0 后 43410，failing 8271
+    # 第二例尤其要紧：我把 589 当"只证对了 589 个"往外报过，那是错的。
+    # codex 0169 D2：failing==limit 时**只能**写"至少 limit 个失败，计数被截断"，
+    # ★严禁把 passing/unverified 当完整规模★；正式 PASS 本来就要求
+    # failing=0 && unverified=0，所以 limit 不影响 PASS 判定。
+    _flim = os.environ.get("FM_FAILING_LIMIT", "").strip()
+    _flim = int(_flim) if _flim.isdigit() else 20     # FM 默认 20
+    q["failing_limit"] = _flim
+    q["failing_truncated"] = bool(
+        _flim and q["failing"] is not None and q["failing"] >= _flim)
+    if q["failing_truncated"]:
+        q["failing_note"] = ("至少 %d 个失败，计数被截断（verification_failing_point_limit"
+                             "=%d）；passing/unverified 均非完整规模" % (_flim, _flim))
     _nc = _row_int(tbl, "unread_nc")
     # ★作用域必须限定在**最后一个** Matching Results 块★（2026-09-14）
     # 踩到的坑：FM **省略零值行**。一个钉了 fm_pins 的目标会打印多个 Matching Results
