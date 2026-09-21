@@ -378,13 +378,25 @@ def selftest():
                         ['sram_array_1p32x148m74s1h0l1b_pftch_pht',
                          'MbistClockGateCell', 'ClockGate']))
        == {'array_12': 1})
-    # --- deps 读不全时必须拒绝算 BBPin（NewDispatch: $(ND_CHILDREN) 没展开）----
-    nd = next(x for x in from_ut('NewDispatch') if x['top'] == 'NewDispatch')
-    ck('守卫 NewDispatch 的 deps 有未展开的 make 变量，必须记下来',
-       nd.get('deps_unexpanded') == ['ND_CHILDREN'])
+    # --- deps 读不全时必须拒绝算 BBPin -----------------------------------
+    # ★这条原先断言的是「NewDispatch 的 deps 有未展开的 $(ND_CHILDREN)」★，
+    # 也就是**依赖一个真实缺陷继续存在**。2026-09-21 把 provefleet2 的
+    # `_expand`（真展开）与 provefleet3 的未展开检测并起来之后，
+    # 那个变量能展开了 ⇒ 断言当场变红 —— 红得对，但红的是「问题被修好了」。
+    # ★自测不该以某个真实缺陷不被修复为前提★：改成**合成输入**，
+    # 只验守卫本身的行为，与仓库当下有没有这种 Makefile 无关。
+    # 用一个**真实存在**的小 top（它自己无黑盒，上面已验过），
+    # 但喂一个**合成的**未展开变量 —— 只验守卫行为，不依赖任何真实缺陷。
+    synth = model('NewPipelineConnectPipe_29', [], ['UNEXPANDABLE_VAR'])
+    ck('守卫 未展开的 make 变量必须被记下来',
+       synth.get('deps_unexpanded') == ['UNEXPANDABLE_VAR'])
     ck('守卫 deps 读不全时不加 bbin（模型退回 regs+outs，与加项前逐字节相同）',
-       'bbin' not in nd and 'bbox' not in nd
-       and nd['model'] == nd['regs'] + nd['outs'])
+       'bbin' not in synth and 'bbox' not in synth
+       and synth['model'] == synth['regs'] + synth['outs'])
+    # 顺带把真实状态也量一下，但**不作为判据**（它会随仓库变化）：
+    nd = next(x for x in from_ut('NewDispatch') if x['top'] == 'NewDispatch')
+    print('    (参考，非判据) NewDispatch deps_unexpanded=%r deps=%d'
+          % (nd.get('deps_unexpanded'), len(nd.get('deps') or [])))
     # ★判别性★：守卫不是空转 —— 同一个 top 若不声明"deps 没读全"，
     # 那 9 个真子设计就会被整批误判成黑盒、凭空加出上千个点。
     nd_naive = model('NewDispatch', [])
