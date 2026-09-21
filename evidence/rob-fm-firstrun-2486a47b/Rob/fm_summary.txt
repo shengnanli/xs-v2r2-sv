@@ -1,0 +1,31 @@
+# Rob FM first run (pre-fix) -- summary extracted from fm.log
+# run_id: Rob-20260920T162808Z-2486a47b   mode=signoff-strict  merge_dup=false
+
+********************************* Verification Results *********************************
+Verification FAILED
+-------------------
+ Reference design: r:/WORK/Rob
+ Implementation design: i:/WORK/Rob
+ 29628 Passing compare points
+ 25 Failing compare points (20 matched, 5 unmatched)
+ 0 Aborted compare points
+ 78881 Unverified compare points
+----------------------------------------------------------------------------------------
+Matched Compare Points     BBPin    Loop   BBNet     Cut    Port     DFF     LAT   TOTAL
+----------------------------------------------------------------------------------------
+Passing (equivalent)        1266       0       0       0    2662   25700       0   29628
+Failing (not equivalent)       0       0       0       0       0      20       0      20
+Unverified                   195       0      88       0    4096   74502       0   78881
+Not Compared
+  Constant reg                                                      1448       0    1448
+  Unread                       0       0       0       0       0   67689       0   67689
+****************************************************************************************
+
+# line-anchored error count (grep -cE '^ *Error:'):
+0
+# pin report:
+ROB_PINS pinned 168720 of 168720
+# session cost:
+Maximum memory usage for this session: 19433 MB
+CPU usage for this session: 10555.5 seconds ( 2.93 hours )
+Elapsed time: 10678 seconds ( 2.97 hours )
