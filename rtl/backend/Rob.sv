@@ -43,13 +43,18 @@
 //   docs/rob_iface_contract.tsv  接口：647 个 output 是核的义务、20 个由子模块直接驱动
 //   docs/rob_pin_failclosed.tsv  钉点判据的地基
 //
-// 已知残留（集成者 0920 裁定，如实记账，不得用 dont_verify/黑盒/白名单吞掉）：
-//   robDeqGroup_*_debug_otherPdest_0..6 共 56 个寄存器 / 448 bit **不驱动**，
-//   与 golden 一致（golden 里它们只在 RANDOMIZE_REG_INIT 里被写）。
+// ★UNOBSERVED_DEBUG_CLEANUP（codex 0169 D3 裁定，如实记账，
+//   不得用 dont_verify/黑盒/白名单吞掉）★：
+//   golden undriven debug-only output -> deterministic zero，芯片内无消费者。
+//   robDeqGroup_*_debug_otherPdest_0..6 共 56 个寄存器 / 448 bit 在 golden 里
+//   **无驱动**（唯一赋值在 RANDOMIZE_REG_INIT 段内），本文件把它们钉成确定的 0。
 //   射程已量：父层 CtrlBlock 把对应的 56 个输出**全部**接成 `/* unused */`，
 //   整棵 Scala 树里该字段只出现 1 次（Bundle 声明，无写者无读者）——
-//   见 scripts/rob_otherpdest_scope.py 的 F1..F4。
-//   影响只在本层 FM：两侧各 56 个悬空比较点。
+//   见 scripts/rob_otherpdest_scope.py 的 F1..F4（--check 是 gate_all.sh 里的闸，
+//   新增消费者立刻转红）。
+//   ★代价：Rob 这一**原始模块边界**上这 448 位与 golden 不同，因此
+//   Rob 这一层不得声称 strict bit-exact；FM 会照常报这 448 个 Port 失配。
+//   功能正确性以 CtrlBlock / XSTile 这第一个可观测边界为准。
 //
 // 生成区：`// BEGIN GENERATED(<tag>)` .. `// END GENERATED` 由
 // scripts/gen_rob.py --write 填写，手写内容一律在标记之外。
@@ -2113,9 +2118,16 @@ module xs_Rob_core
   logic [FUTYPE_W-1:0]       robDeqGroup_debug_fuType                [BANK_N];
   logic                      robDeqGroup_dirtyFs                     [BANK_N];
   logic                      robDeqGroup_dirtyVs                     [BANK_N];
-  // ★这 7 个刻意不驱动★（见文件头「已知残留」）：与 golden 一致，
-  // golden 里它们只在 RANDOMIZE_REG_INIT 里被写，connectCommitEntry 逐字段
-  // 拷贝时唯独不提它（RobEntryBundle 根本没有这个成员，没得可拷）。
+  // ★UNOBSERVED_DEBUG_CLEANUP（codex 0169 D3 裁定）★ 这 7 个族**确定驱动为 0**。
+  //   golden 里它们只在 RANDOMIZE_REG_INIT 里被写，connectCommitEntry 逐字段
+  //   拷贝时唯独不提它（RobEntryBundle 根本没有这个成员，没得可拷），所以
+  //   golden 综合后这 56 个寄存器 / 448 bit 无驱动、对应的 56 个输出端口未定义。
+  //   裁定选择 (b)：重写把它们钉成确定的 0（见 §13 末尾的驱动块）。
+  //   ★这不是 bit-exact★：Rob 这一层对这 448 位就是与 golden 不同（X vs 0），
+  //   不许在任何台账里把 Rob 边界写成 strict bit-exact，也不许用
+  //   dont_verify / 黑盒 / 白名单把它伪装成相等。功能正确性以 CtrlBlock /
+  //   XSTile 这第一个**可观测**边界为准：那里 56/56 全接 `/* unused */`
+  //   （闸：scripts/rob_otherpdest_scope.py --check，进 gate_all.sh）。
   logic [PREG_W-1:0]         robDeqGroup_debug_otherPdest_0          [BANK_N];
   logic [PREG_W-1:0]         robDeqGroup_debug_otherPdest_1          [BANK_N];
   logic [PREG_W-1:0]         robDeqGroup_debug_otherPdest_2          [BANK_N];
@@ -4052,11 +4064,8 @@ module xs_Rob_core
         deqGroupPacked[b].debug_fuType               = robDeqGroup_debug_fuType[b];
         deqGroupPacked[b].dirtyFs                    = robDeqGroup_dirtyFs[b];
         deqGroupPacked[b].dirtyVs                    = robDeqGroup_dirtyVs[b];
-        // ★这 7 个是全核唯一不驱动的字段★（见文件头「已知残留」）：
-        //   RobEntryBundle 没有这个成员，connectCommitEntry 没得可拷；
-        //   golden 里这 56 个寄存器同样只在 RANDOMIZE_REG_INIT 里被写。
-        //   ★仍然照 golden 的结构从寄存器上读出来送到端口★ —— 这样两侧形状一致，
-        //   残留是"两侧各 56 个从不写的寄存器"，而不是"impl 少驱动 56 个输出"。
+        // ★UNOBSERVED_DEBUG_CLEANUP★：读的是下面被钉成 0 的那 7 个族，
+        //   结构照 golden（从 robDeqGroup 读出来送端口），值是确定的 0。
         deqGroupPacked[b].debug_otherPdest_0         = robDeqGroup_debug_otherPdest_0[b];
         deqGroupPacked[b].debug_otherPdest_1         = robDeqGroup_debug_otherPdest_1[b];
         deqGroupPacked[b].debug_otherPdest_2         = robDeqGroup_debug_otherPdest_2[b];
@@ -4064,6 +4073,37 @@ module xs_Rob_core
         deqGroupPacked[b].debug_otherPdest_4         = robDeqGroup_debug_otherPdest_4[b];
         deqGroupPacked[b].debug_otherPdest_5         = robDeqGroup_debug_otherPdest_5[b];
         deqGroupPacked[b].debug_otherPdest_6         = robDeqGroup_debug_otherPdest_6[b];
+    end
+  end
+
+  // ==========================================================================
+  // ★UNOBSERVED_DEBUG_CLEANUP（codex 0169 D3）★
+  // golden undriven debug-only output -> deterministic zero，芯片内无消费者。
+  // --------------------------------------------------------------------------
+  // golden 的 robDeqGroup_<0..7>_debug_otherPdest_<0..6>（56 个寄存器 / 448 bit）
+  // 在综合口径下**没有任何驱动**（唯一赋值在 RANDOMIZE_REG_INIT 段内），
+  // 却一路读到 io_commits_info_<0..7>_debug_otherPdest_<0..6> 这 56 个输出端口。
+  // 唯一的父级消费者 CtrlBlock 把这 56 个输出 **56/56 全部接成 `/* unused */`**，
+  // 整棵 Scala 树里 `debug_otherPdest` 只出现 1 次（Bundle 声明，无写者无读者）。
+  // 事实与闸：scripts/rob_otherpdest_scope.py（--check 进 gate_all.sh，
+  // 新增消费者会让 F3 立刻转红；--selftest 有 parent_swapped 负例）。
+  //
+  // 于是产品 RTL 选择确定值 0，而不是照抄一片未定义。
+  // ★代价如实记账，不许粉饰★：Rob **原始模块边界**上这 448 位与 golden 不同
+  // （golden 是 undriven，FM 默认 binary:X 下是 X 割点；这里是常数 0），
+  // 所以 Rob 这一层**不得声称 strict bit-exact**，FM 会照常报这 448 个
+  // Port 失配 —— 不用 dont_verify / 黑盒 / 白名单去掩盖它。
+  // 功能正确性的验收点是 CtrlBlock / XSTile 这第一个可观测边界。
+  // ==========================================================================
+  always_comb begin
+    for (int b = 0; b < BANK_N; b++) begin
+      robDeqGroup_debug_otherPdest_0[b] = '0;
+      robDeqGroup_debug_otherPdest_1[b] = '0;
+      robDeqGroup_debug_otherPdest_2[b] = '0;
+      robDeqGroup_debug_otherPdest_3[b] = '0;
+      robDeqGroup_debug_otherPdest_4[b] = '0;
+      robDeqGroup_debug_otherPdest_5[b] = '0;
+      robDeqGroup_debug_otherPdest_6[b] = '0;
     end
   end
 
