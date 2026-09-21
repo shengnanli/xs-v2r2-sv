@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/ICacheCtrlUnit
+Implementation : i:/WORK/ICacheCtrlUnit
+Version        : V-2023.12-SP3
+Date           : Mon Sep 21 03:30:43 2026
+**************************************************
+
+No failing compare points.
+
+1

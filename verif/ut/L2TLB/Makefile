@@ -103,6 +103,13 @@ FM_INTERFACE_ONLY = PtwCache PTW LLPTW HPTW L2TlbMissQueue L2TlbPrefetch Bitmap 
 # CSR/sfence 复制成 10/11 份，impl 侧同样复制；开启合并让两侧的多副本各自归一后配对。
 FM_MERGE_DUP = true
 
+# ★vmucp（verify_matched_unread_compare_points）= true★（2026-09-21 打开）
+# 第一次跑（未开）留下 809 个 matched-unread 点，全部是 PMP 内 pmaMapping_* 那批
+# 本层锥内无读者的寄存器，ref `pmp/<X>` ↔ impl `u_core/u_pmp/<X>` 后缀逐字相同、
+# 809↔809 双射，无任何人工强配。打开 = 让 FM 把这 809 点也证一遍（更严，不是放松）。
+# 白名单条目与逐条依据在 verif/fm_target_config/L2TLB.tcl（没有那份文件就不在白名单上）。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 include ../../../scripts/ut_common.mk
 
 # golden 子模块里的 XSError/XSPerf/assert 段（`ifndef SYNTHESIS）调用 xs_assert_v2，

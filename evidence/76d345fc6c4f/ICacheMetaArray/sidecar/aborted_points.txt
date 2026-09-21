@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/ICacheMetaArray
+Implementation : i:/WORK/ICacheMetaArray
+Version        : V-2023.12-SP3
+Date           : Mon Sep 21 03:22:10 2026
+**************************************************
+
+No aborted compare points.
+
+1

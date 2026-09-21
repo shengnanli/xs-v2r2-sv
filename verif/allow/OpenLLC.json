@@ -1,0 +1,414 @@
+{
+ "schema": "xs-v2-sv-allow-v1",
+ "target": "OpenLLC",
+ "baseline": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "note": "★范围标注（2026-09-21 coordinator 裁定）：OpenLLC 例化在 XSTop、不在 XSTile 闭包内，属**核外**，本轮不重写、不签核。本文件与 verif/ut/OpenLLC/Makefile 的改动只是把旧登记 UNRUNNABLE_RESOURCE_LIMIT_CURRENT_HOST 的**错误病因**纠正过来备查（见 docs/openllc_scope_note.md），★这套配置没有跑完过，不得据此声称任何 PASS★。以下声明保留原文。\n\nassembly 边界声明：OpenLLC 是 L3 顶层装配壳，本轮把 11 个子模块实例**两侧同源 elaborate**（不黑盒），唯一的黑盒边界是 9 个存储宏叶子、共 58 个实例（ref 29 / impl 29，逐条列在下面）。★没有一个 green_child —— 本目标不挂任何条件绿依赖★。array_*_ext.v 是厂商 SRAM 宏的行为模型（array_0_1_ext 一个实例 reg [511:0] ram [65535:0] = 3355 万 flop，把它拉进 elaboration 才是此前误判为『本机不可运行的 XL 任务』的真因）；ram_15x{162,422,73} 是 CHI 信用队列的存储体行为模型，按 L2TlbMissQueue 的先例记 APPROVED_MEMORY_MACRO_MODEL。两类都是两侧读同一份 golden 文件、同名同数、逐实例对称。复跑：make -C verif/ut/OpenLLC fm-OpenLLC；边界静态复核：python3 scripts/check_closure_symmetry.py --only OpenLLC",
+ "objects": [
+  {
+   "side": "i",
+   "design": "array_0_0_ext",
+   "path": "i:/WORK/OpenLLC/u_core/slices_3/directory/selfDir/replacer_sram_opt/array_0/array_0_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_0_0_ext",
+   "path": "i:/WORK/OpenLLC/u_core/slices_0/directory/selfDir/replacer_sram_opt/array_0/array_0_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_0_0_ext",
+   "path": "i:/WORK/OpenLLC/u_core/slices_1/directory/selfDir/replacer_sram_opt/array_0/array_0_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_0_0_ext",
+   "path": "i:/WORK/OpenLLC/u_core/slices_2/directory/selfDir/replacer_sram_opt/array_0/array_0_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_0_1_ext",
+   "path": "i:/WORK/OpenLLC/u_core/slices_3/dataStorage/array/array_0/array_0_1_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_0_1_ext",
+   "path": "i:/WORK/OpenLLC/u_core/slices_0/dataStorage/array/array_0/array_0_1_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_0_1_ext",
+   "path": "i:/WORK/OpenLLC/u_core/slices_1/dataStorage/array/array_0/array_0_1_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_0_1_ext",
+   "path": "i:/WORK/OpenLLC/u_core/slices_2/dataStorage/array/array_0/array_0_1_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_19_ext",
+   "path": "i:/WORK/OpenLLC/u_core/slices_3/directory/clientDir/tagArray/array/array_19_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_19_ext",
+   "path": "i:/WORK/OpenLLC/u_core/slices_0/directory/clientDir/tagArray/array/array_19_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_19_ext",
+   "path": "i:/WORK/OpenLLC/u_core/slices_1/directory/clientDir/tagArray/array/array_19_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_19_ext",
+   "path": "i:/WORK/OpenLLC/u_core/slices_2/directory/clientDir/tagArray/array/array_19_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_20_ext",
+   "path": "i:/WORK/OpenLLC/u_core/slices_3/directory/clientDir/metaArray/array/array_20_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_20_ext",
+   "path": "i:/WORK/OpenLLC/u_core/slices_0/directory/clientDir/metaArray/array/array_20_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_20_ext",
+   "path": "i:/WORK/OpenLLC/u_core/slices_1/directory/clientDir/metaArray/array/array_20_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_20_ext",
+   "path": "i:/WORK/OpenLLC/u_core/slices_2/directory/clientDir/metaArray/array/array_20_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_21_ext",
+   "path": "i:/WORK/OpenLLC/u_core/slices_3/directory/selfDir/tagArray/array/array_21_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_21_ext",
+   "path": "i:/WORK/OpenLLC/u_core/slices_0/directory/selfDir/tagArray/array/array_21_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_21_ext",
+   "path": "i:/WORK/OpenLLC/u_core/slices_1/directory/selfDir/tagArray/array/array_21_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_21_ext",
+   "path": "i:/WORK/OpenLLC/u_core/slices_2/directory/selfDir/tagArray/array/array_21_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_22_ext",
+   "path": "i:/WORK/OpenLLC/u_core/slices_3/directory/selfDir/metaArray/array/array_22_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_22_ext",
+   "path": "i:/WORK/OpenLLC/u_core/slices_0/directory/selfDir/metaArray/array/array_22_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_22_ext",
+   "path": "i:/WORK/OpenLLC/u_core/slices_1/directory/selfDir/metaArray/array/array_22_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "array_22_ext",
+   "path": "i:/WORK/OpenLLC/u_core/slices_2/directory/selfDir/metaArray/array/array_22_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "i",
+   "design": "ram_15x162",
+   "path": "i:/WORK/OpenLLC/u_core/rnLinkMonitor/LCredit2Decoupled_rxreq/queue/ram_ext",
+   "attrs": "u",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "i",
+   "design": "ram_15x422",
+   "path": "i:/WORK/OpenLLC/u_core/snLinkMonitor/LCredit2Decoupled_rxdat/queue/ram_ext",
+   "attrs": "u",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "i",
+   "design": "ram_15x422",
+   "path": "i:/WORK/OpenLLC/u_core/rnLinkMonitor/LCredit2Decoupled_rxdat/queue/ram_ext",
+   "attrs": "u",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "i",
+   "design": "ram_15x73",
+   "path": "i:/WORK/OpenLLC/u_core/snLinkMonitor/LCredit2Decoupled_rxrsp/queue/ram_ext",
+   "attrs": "u",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "i",
+   "design": "ram_15x73",
+   "path": "i:/WORK/OpenLLC/u_core/rnLinkMonitor/LCredit2Decoupled_rxrsp/queue/ram_ext",
+   "attrs": "u",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "r",
+   "design": "array_0_0_ext",
+   "path": "r:/WORK/OpenLLC/slices_3/directory/selfDir/replacer_sram_opt/array_0/array_0_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_0_0_ext",
+   "path": "r:/WORK/OpenLLC/slices_0/directory/selfDir/replacer_sram_opt/array_0/array_0_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_0_0_ext",
+   "path": "r:/WORK/OpenLLC/slices_1/directory/selfDir/replacer_sram_opt/array_0/array_0_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_0_0_ext",
+   "path": "r:/WORK/OpenLLC/slices_2/directory/selfDir/replacer_sram_opt/array_0/array_0_0_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_0_1_ext",
+   "path": "r:/WORK/OpenLLC/slices_3/dataStorage/array/array_0/array_0_1_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_0_1_ext",
+   "path": "r:/WORK/OpenLLC/slices_0/dataStorage/array/array_0/array_0_1_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_0_1_ext",
+   "path": "r:/WORK/OpenLLC/slices_1/dataStorage/array/array_0/array_0_1_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_0_1_ext",
+   "path": "r:/WORK/OpenLLC/slices_2/dataStorage/array/array_0/array_0_1_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_19_ext",
+   "path": "r:/WORK/OpenLLC/slices_3/directory/clientDir/tagArray/array/array_19_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_19_ext",
+   "path": "r:/WORK/OpenLLC/slices_0/directory/clientDir/tagArray/array/array_19_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_19_ext",
+   "path": "r:/WORK/OpenLLC/slices_1/directory/clientDir/tagArray/array/array_19_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_19_ext",
+   "path": "r:/WORK/OpenLLC/slices_2/directory/clientDir/tagArray/array/array_19_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_20_ext",
+   "path": "r:/WORK/OpenLLC/slices_3/directory/clientDir/metaArray/array/array_20_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_20_ext",
+   "path": "r:/WORK/OpenLLC/slices_0/directory/clientDir/metaArray/array/array_20_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_20_ext",
+   "path": "r:/WORK/OpenLLC/slices_1/directory/clientDir/metaArray/array/array_20_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_20_ext",
+   "path": "r:/WORK/OpenLLC/slices_2/directory/clientDir/metaArray/array/array_20_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_21_ext",
+   "path": "r:/WORK/OpenLLC/slices_3/directory/selfDir/tagArray/array/array_21_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_21_ext",
+   "path": "r:/WORK/OpenLLC/slices_0/directory/selfDir/tagArray/array/array_21_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_21_ext",
+   "path": "r:/WORK/OpenLLC/slices_1/directory/selfDir/tagArray/array/array_21_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_21_ext",
+   "path": "r:/WORK/OpenLLC/slices_2/directory/selfDir/tagArray/array/array_21_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_22_ext",
+   "path": "r:/WORK/OpenLLC/slices_3/directory/selfDir/metaArray/array/array_22_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_22_ext",
+   "path": "r:/WORK/OpenLLC/slices_0/directory/selfDir/metaArray/array/array_22_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_22_ext",
+   "path": "r:/WORK/OpenLLC/slices_1/directory/selfDir/metaArray/array/array_22_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "array_22_ext",
+   "path": "r:/WORK/OpenLLC/slices_2/directory/selfDir/metaArray/array/array_22_ext",
+   "attrs": "u",
+   "class": "vendor_macro"
+  },
+  {
+   "side": "r",
+   "design": "ram_15x162",
+   "path": "r:/WORK/OpenLLC/rnLinkMonitor/LCredit2Decoupled_rxreq/queue/ram_ext",
+   "attrs": "u",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "r",
+   "design": "ram_15x422",
+   "path": "r:/WORK/OpenLLC/snLinkMonitor/LCredit2Decoupled_rxdat/queue/ram_ext",
+   "attrs": "u",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "r",
+   "design": "ram_15x422",
+   "path": "r:/WORK/OpenLLC/rnLinkMonitor/LCredit2Decoupled_rxdat/queue/ram_ext",
+   "attrs": "u",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "r",
+   "design": "ram_15x73",
+   "path": "r:/WORK/OpenLLC/snLinkMonitor/LCredit2Decoupled_rxrsp/queue/ram_ext",
+   "attrs": "u",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  },
+  {
+   "side": "r",
+   "design": "ram_15x73",
+   "path": "r:/WORK/OpenLLC/rnLinkMonitor/LCredit2Decoupled_rxrsp/queue/ram_ext",
+   "attrs": "u",
+   "class": "APPROVED_MEMORY_MACRO_MODEL"
+  }
+ ]
+}

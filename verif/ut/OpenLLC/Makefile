@@ -1,3 +1,11 @@
+# ============================================================================
+# ★范围标注（2026-09-21 coordinator 裁定）★
+#   OpenLLC 例化在 XSTop（grep -n 'OpenLLC' $(GOLDEN_RTL)/XSTop.sv -> XSTop.sv:2210），
+#   不在 XSTile 闭包内 —— 属**核外**，本轮不重写、不签核。
+#   下面这些 FM 配置改动只是把旧登记 UNRUNNABLE_RESOURCE_LIMIT_CURRENT_HOST 的
+#   **错误病因**纠正过来备查（真因=闭包里混进厂商 SRAM 行为模型，不是目标太大）。
+#   ★改后的这套配置没有跑完过，不得据此声称任何 PASS★。见 docs/openllc_scope_note.md。
+# ============================================================================
 # 自动生成：scripts/gen_zj_ut.py 的配套 Makefile（零判断批 G0->G1 迁移）
 MODULE = OpenLLC
 
@@ -80,34 +88,84 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/OpenLLC.sv \
 
 FM_VARIANTS = OpenLLC
 
+# ★assembly★：唯一的黑盒边界是 9 个存储宏叶子（58 个实例，ref/impl 各 29，见
+# verif/allow/OpenLLC.json 逐条声明）。没有一个 green_child —— 本目标不挂条件绿依赖。
+FM_MODE = assembly
+
+# ★merge_duplicated_registers = false★（2026-09-21 实测定的，不是抄来的默认值）
+#
+# 先用默认 true 跑过一遍（evidence 见 fastlane_ledger 同名条目），结果是
+#   Verification FAILED: 167323 passing / 20 failing / 7 unverified
+#   6(0) Unmatched reference(implementation) compare points
+# 失败点全部集中在 io_rn_0_rx_snp_flit[27..46]（RN 侧 snoop flit 输出），
+# 而 6 个 ref-only 未配对寄存器是
+#   r:/WORK/OpenLLC/rnXbar/snpReqs_{0,1,2,3}_bits_opcode_reg[4]
+#   r:/WORK/OpenLLC/rnLinkMonitor/Decoupled2LCredit_txsnp/out_flit_r_reg[27] 与 [54]
+# —— 正是"四个 bank 的同值复制寄存器"那一类。
+#
+# 这不是重写有 bug：把两侧 OpenLLC 顶层逐项机械对比过，
+#   11 个实例、每个实例的全部端口绑定（mmioDiverger 293 / rnXbar 349 / slices_N 189 …）
+#   全部逐字相同；wire/logic 声明 0 处宽度差、0 处多余/缺失；3 条 assign 逐字相同。
+# 复跑这条机械对比（两边都只读，退出码 0 = 同构）：
+#   python3 scripts/openllc_topology_diff.py
+# 差异只可能来自 FM 自己：impl 侧比 ref 多一层 u_core 层次，
+# merge_duplicated_registers 按名合并复制寄存器时两侧合并深度不对称，
+# 被合掉的那几个在 ref 侧成了未配对点，下游 snp flit 位就跟着判失配。
+# 上一轮 G0 的已签核配置写过同一条结论（"分 bank 扇出复制寄存器按名对称保留,
+# 避免 ref/impl 常数折叠深度不对称造成假失配"），本轮是**独立重现**它。
+#
+# 关掉合并是**加强**不是放松：不合并 = 比较点更多、每个复制副本各自被证。
+FM_MERGE_DUP = false
+
+
 # ---------------------------------------------------------------------------
-# closure 对称（codex 0153 D68）—— 本轮**第 5 次**撞见 RTL_GOLDEN_DEPS 缺失
-# （前四次：零判断批 8 个目标 / ICacheMissUnit / DuplicatedTagArray / 本条）。
+# FM elaboration 闭包（两侧同一张清单）与黑盒边界
 #
-# 修前实测（scripts/check_closure_symmetry.py --only OpenLLC）：
-#   ref  侧 = $(GOLDEN_RTL)/OpenLLC.sv + FM_REF_DEPS_OpenLLC 的 69 个依赖 -> 黑盒 {}
-#   impl 侧 = $(RTL_SRCS) 一个文件 + RTL_GOLDEN_DEPS(空)                  -> 黑盒 8 种 11 个
-#   => assembly_bbox_not_symmetric:MMIODiverger(ref=0,impl=1)
-#   单侧黑盒清单：MMIODiverger/MMIOMerger/RNXbar/SNXbar/RNLinkMonitor/SNLinkMonitor/
-#                 Slice_4×4/TopDownMonitor_1 —— 都是 rtl/l2/OpenLLC.sv 直接例化的子模块。
-#   这正是 strict 模式下「impl 侧偷偷黑掉一块逻辑」的洞。
+# ★本段推翻了此前 UNRUNNABLE_RESOURCE_LIMIT_CURRENT_HOST 的登记★（2026-09-21）
 #
-# 修法：impl 侧读**同一组**闭包文件。这里直接由 FM_REF_DEPS_OpenLLC 派生而不是再抄一份
-# 69 行清单 —— 抄一份就会再漂一次，而本条的病因就是两张清单各写各的。
-# （RTL_GOLDEN_DEPS 与 GOLDEN_SRCS 在 VCS 命令行上重复给同一文件，是本仓既有形态：
-#   DuplicatedTagArray / FTBBank / ICacheDataArray / SRAMTemplate / TLBuffer_13 五个
-#   WORKING_PASS 的 UT 都是这个样子，故不动 GOLDEN_SRCS。）
+# 病史：本 Makefile 由 scripts/gen_zj_ut.py 的"零判断批"生成，闭包清单是把 golden
+# OpenLLC 的传递闭包**整棵树**平铺出来，其中包含厂商 SRAM 行为模型 *_ext.v。
+# 一次实跑（evidence/3b72cb1a8513/OpenLLC/fm.log）在 elaborate 阶段被人工 SIGTERM
+# 掐掉，随后登记为"本机不可运行的 XL 任务"。
 #
-# ★未验证声明★：本条只改 elaboration 闭包配置，**没有跑过 FM**。
-#   codex 0153 D68：本机（cgroup-v1、无可信 memory containment）不得跑 OpenLLC XL，
-#   状态登记为 UNRUNNABLE_RESOURCE_LIMIT_CURRENT_HOST —— 不算 PASS，也不算 RTL mismatch。
-#   后续须在有 cgroup-v2 memory controller 或更大内存且可独占的主机上重跑；
-#   ★不得以 watcher 人工抢救替代隔离★。见 docs/fastlane_ledger.tsv 同名条目。
-#   静态复核（不跑 FM）：python3 scripts/check_closure_symmetry.py --only OpenLLC
+# 真因不是"OpenLLC 这个目标太大"，是**闭包里混进了厂商存储宏的行为模型**：
+#   $ sed -n '/reg \[511:0\] ram/p' $(GOLDEN_RTL)/array_0_1_ext.v
+#     reg [511:0] ram [65535:0];
+#   65536 × 512 bit = 3355 万个 flop，一个实例。LLC 4 个 slice 各一份、ref/impl
+#   两侧再各一份 => 2.6 亿比较点。fm_shell 在这上面吃内存是必然，与本层装配逻辑无关。
+#
+# 厂商 SRAM 宏本来就属于"无条件绿黑盒"那一类（见 CONVENTIONS 黑盒边界审核判据，
+# 与 ICacheDataArray/SRAMTemplate 家族同处置）。把这 9 个存储叶子从**两侧**闭包里
+# 拿掉、让它们成为对称的 unresolved 黑盒之后，本目标是 NORMAL 量级而非 XL。
+#
+# 对照实证（上一轮 G0 同目标，配置更弱——连 Slice 内 4 个大子模块都是黑盒）：
+#   $ tail -12 /home/eda/xs-env/xs-v2r2-sv/verif/ut/OpenLLC/fm_work/OpenLLC/fm.log
+#     Verification SUCCEEDED / 100949 Passing / 0 Failing
+#     Maximum memory usage for this session: 935 MB   Elapsed time: 25 seconds
+# 本轮的闭包**比 G0 那次强**：G0 把 MemUnit/SnoopUnit/RefillUnit/ResponseUnit、
+# RNXbar/SNXbar 的 FastArbiter、Decoupled2LCredit 全留成黑盒，这里全部两侧 elaborate，
+# 只剩存储宏一类边界。
+#
+# 黑盒边界（两侧对称，逐个写进 verif/allow/OpenLLC.json）：
+#   array_0_0_ext / array_0_1_ext / array_19_ext / array_20_ext / array_21_ext /
+#   array_22_ext          —— 厂商 SRAM 宏（.v 行为模型）
+#   ram_15x162 / ram_15x422 / ram_15x73 —— CHI 队列存储体行为模型；顺带避开 G0 记过的
+#                          FMR_ELAB-147（Memory[0:14] 用 4 bit 下标，第 16 个地址越界）
+# 其余 60 个依赖两侧同源 elaborate，不黑盒。
+#
+# 复跑：  make -C verif/ut/OpenLLC fm-OpenLLC
+# 静态复核：python3 scripts/check_closure_symmetry.py --only OpenLLC
 # ---------------------------------------------------------------------------
+# 两侧共用同一张清单 —— 抄第二份就会再漂一次（D68 的病因正是两张清单各写各的）。
 RTL_GOLDEN_DEPS = $(addprefix $(GOLDEN_RTL)/,$(FM_REF_DEPS_OpenLLC))
 
-FM_REF_DEPS_OpenLLC = DataStorage_4.sv Decoupled2LCredit.sv Decoupled2LCredit_1.sv Decoupled2LCredit_2.sv Decoupled2LCredit_5.sv Directory_4.sv FastArbiter_26.sv FastArbiter_29.sv FastArbiter_30.sv FastArbiter_35.sv FastArbiter_43.sv FastArbiter_45.sv FastArbiter_46.sv FastArbiter_48.sv FastArbiter_49.sv FastArbiter_51.sv LCredit2Decoupled_3.sv LCredit2Decoupled_4.sv LCredit2Decoupled_5.sv MMIODiverger.sv MMIOMerger.sv MainPipe_5.sv MaxPeriodFibonacciLFSR_3.sv MemUnit.sv Queue15_CHIDAT.sv Queue15_CHIREQ.sv Queue15_CHIRSP.sv Queue1_CHIRSP_1.sv RNLinkMonitor.sv RNXbar.sv RXDAT_4.sv RXREQ.sv RXRSP_4.sv RefillUnit.sv RequestArb_4.sv RequestBuffer_4.sv ResponseUnit.sv SNLinkMonitor.sv SNXbar.sv SRAMTemplate_192.sv SRAMTemplate_193.sv SRAMTemplate_194.sv SRAMTemplate_195.sv SRAMTemplate_196.sv SRAMTemplate_197.sv Slice_4.sv SnoopUnit.sv SubDirectory.sv SubDirectory_1.sv TXDAT_4.sv TXREQ_4.sv TXRSP_4.sv TXSNP.sv TopDownMonitor_1.sv array_0_0.sv array_0_0_ext.v array_0_1.sv array_0_1_ext.v array_19.sv array_19_ext.v array_20.sv array_20_ext.v array_21.sv array_21_ext.v array_22.sv array_22_ext.v ram_15x162.sv ram_15x422.sv ram_15x73.sv
+# 厂商/行为存储宏叶子：**不提供给 FM**，两侧同为 unresolved 黑盒。
+# （GOLDEN_SRCS 仍然给 VCS 提供它们——UT 要真存储才能跑激励。）
+FM_MEM_MACRO_LEAVES = array_0_0_ext.v array_0_1_ext.v array_19_ext.v array_20_ext.v \
+                      array_21_ext.v array_22_ext.v \
+                      ram_15x162.sv ram_15x422.sv ram_15x73.sv
+
+FM_REF_DEPS_OpenLLC = DataStorage_4.sv Decoupled2LCredit.sv Decoupled2LCredit_1.sv Decoupled2LCredit_2.sv Decoupled2LCredit_5.sv Directory_4.sv FastArbiter_26.sv FastArbiter_29.sv FastArbiter_30.sv FastArbiter_35.sv FastArbiter_43.sv FastArbiter_45.sv FastArbiter_46.sv FastArbiter_48.sv FastArbiter_49.sv FastArbiter_51.sv LCredit2Decoupled_3.sv LCredit2Decoupled_4.sv LCredit2Decoupled_5.sv MMIODiverger.sv MMIOMerger.sv MainPipe_5.sv MaxPeriodFibonacciLFSR_3.sv MemUnit.sv Queue15_CHIDAT.sv Queue15_CHIREQ.sv Queue15_CHIRSP.sv Queue1_CHIRSP_1.sv RNLinkMonitor.sv RNXbar.sv RXDAT_4.sv RXREQ.sv RXRSP_4.sv RefillUnit.sv RequestArb_4.sv RequestBuffer_4.sv ResponseUnit.sv SNLinkMonitor.sv SNXbar.sv SRAMTemplate_192.sv SRAMTemplate_193.sv SRAMTemplate_194.sv SRAMTemplate_195.sv SRAMTemplate_196.sv SRAMTemplate_197.sv Slice_4.sv SnoopUnit.sv SubDirectory.sv SubDirectory_1.sv TXDAT_4.sv TXREQ_4.sv TXRSP_4.sv TXSNP.sv TopDownMonitor_1.sv array_0_0.sv array_0_1.sv array_19.sv array_20.sv array_21.sv array_22.sv
 
 include ../../../scripts/ut_common.mk
 
