@@ -21,7 +21,7 @@
 //     IQ1: 无取消, is0Lat=const0
 //     IQ2: 无取消, is0Lat=const0
 //   保留的 FuType one-hot 位：FuType[11], FuType[12], FuType[14]
-//   srcLoadDependency 影子：本条目没有（整条通路在 golden 里是死的，被 firtool 删干净）
+//   srcLoadDependency 影子：每源 3 条 load 流水 × 2 位
 //   负载：发射口可见 20 个字段 / 546 位；转移包另带 160 个字段，共 1330 位
 //
 // ★ 没有 commonOut.enqReady 端口 ★：核里照样算 enq_ready（装载条件要用），
@@ -778,7 +778,7 @@ module EnqEntry_10 (
     .NUM_REGSRC(3), .NUM_WK_WB(6), .NUM_FU_BIT(3),
     .ROB_W(8), .PSRC_W(8), .PDEST_W(8),
     .PL_DEQ_W(546), .PL_TRANS_W(1330),
-    .HAS_LD_DEP(0), .HAS_LD1_CANCEL(0),
+    .HAS_LD_DEP(1), .HAS_LD1_CANCEL(0),
     .LD_PIPES(3), .LD_DEP_W(2),
     .NUM_WK_IQ(3), .EXU_W(2),
     .IQ_SRC_MASK({3'b111, 3'b111, 3'b111}),

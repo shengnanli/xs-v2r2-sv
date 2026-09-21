@@ -17,7 +17,7 @@
 //   源寄存器 5 个，发射口 2 个（deqPortIdxRead 有）
 //   WB 唤醒 16 路（无 IQ 唤醒、无 og0Cancel）；延迟窗口同宽
 //   保留的 FuType one-hot 位：FuType[19], FuType[24], FuType[25]
-//   srcLoadDependency 影子：本条目没有（整条通路在 golden 里是死的，被 firtool 删干净）
+//   srcLoadDependency 影子：每源 3 条 load 流水 × 2 位
 //   负载：发射口可见 57 个字段 / 742 位；转移包另带 123 个字段，共 1330 位
 //
 // ★ 没有 commonOut.enqReady 端口 ★：核里照样算 enq_ready（装载条件要用），
@@ -873,7 +873,7 @@ module EnqEntry_16 (
     .NUM_REGSRC(5), .NUM_WK_WB(16), .NUM_FU_BIT(3),
     .ROB_W(8), .PSRC_W(7), .PDEST_W(8),
     .PL_DEQ_W(742), .PL_TRANS_W(1330),
-    .HAS_LD_DEP(0), .HAS_LD1_CANCEL(0),
+    .HAS_LD_DEP(1), .HAS_LD1_CANCEL(0),
     .LD_PIPES(3), .LD_DEP_W(2),
     .NUM_WK_IQ(0), .EXU_W(1),
     .SRC_WB_MASK({16'b1111000000000000, 16'b0000111111000000, 16'b0000000000111111,

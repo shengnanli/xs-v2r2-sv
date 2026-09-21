@@ -165,7 +165,31 @@ class EnqVariant:
                 f'{mod}: 有 enq.status.{f} 输入 —— 与 IS_ENQ 的强制装载不符')
 
         # ---- 逐模块才会不同的那几样 ----
-        self.has_ld_dep = has(
+        # ★ 两件事，分开量 ★（2026-09-21：把它们混成一个标志是本族 6 个变体的真 bug）
+        #   HAS_LD_DEP      = 条目里有没有那组 srcLoadDependency **影子寄存器**
+        #   has_enq_ld_dep  = enq 口带不带 srcLoadDependency **输入**
+        #                     （只决定 .enq_ld_dep 接真信号还是 '0）
+        # 旧写法拿后者去发前者。实测 9 个变体里有 6 个两者不一致
+        # （_8/_10/_12/_14/_16/_18：golden 有影子寄存器、enq 口没有那组输入，
+        #  入队那一拍的值由 `enqDelayValidRegNext | (|_wakeupByIQ_T)` 清 0 而非从 enq 装载）。
+        # 按旧判据这 6 个发 HAS_LD_DEP(0)，核走 g_no_ld_dep 把 r_ld_dep 整组钉成常量 '0；
+        # 而 golden 那组寄存器**是活的** —— EnqEntry_8:1501-1510 每拍从
+        # common_srcLoadDependencyNext 更新，还驱动
+        # io_commonOut_transEntry_bits_status_srcStatus_*_srcLoadDependency_*。
+        # 即：那 6 个变体把一组活的输出钉成了常量 0。
+        # ★这个错以前看不见★：本族 9 个目标此前从未有一次 FM 跑到比对阶段
+        # （先被 perfWakeupByWB 挡住、再被陈旧的参数 API 挡在 elaborate），
+        # 而"跑不起来"和"还没跑"在台账上长得一模一样。
+        # 判据换成与父级同一条（entries_gen:226-230 量 transEntry 那组输出端口），
+        # 也与父级传给 enq 条目的实参一致：9 个已签核 Entries* 给的都是 1。
+        _ld_out = [n for n in self.pmap if re.fullmatch(
+            r'io_commonOut_transEntry_bits_status_srcStatus_0_srcLoadDependency_\d+', n)]
+        self.has_ld_dep = bool(_ld_out)
+        assert self.has_ld_dep == v.has_ld_dep, (
+            f'{mod}: 影子寄存器判定 {self.has_ld_dep} 与父级 {v.has_ld_dep} 不一致')
+        assert not _ld_out or len(_ld_out) == v.ld_pipes, (
+            f'{mod}: transEntry 上 {len(_ld_out)} 条 load 流水 != 父级 {v.ld_pipes}')
+        self.has_enq_ld_dep = has(
             'io_commonIn_enq_bits_status_srcStatus_0_srcLoadDependency_0')
         self.has_deq_port = has('io_commonOut_deqPortIdxRead')
         assert self.has_deq_port == (v.n_deq == 2), (
@@ -435,7 +459,8 @@ def gen_rtl_body(ov, L, ctx):
     c.append(".enq_blocked('0), .enq_issued('0), .enq_first_issue('0)")
     c.append(".enq_issue_timer('0), .enq_deq_port_idx('0)")
     c.append('.enq_payload(enq_payload)')
-    if ov.has_ld_dep:
+    # ★ 接什么由 **enq 口有没有那组输入** 决定，不是由有没有影子寄存器决定 ★
+    if ov.has_enq_ld_dep:
         c.append('.enq_ld_dep({%s})' % ', '.join(
             f'io_commonIn_enq_bits_status_srcStatus_{s}_srcLoadDependency_{q}'
             for s in reversed(range(n_src)) for q in reversed(range(v.ld_pipes))))
