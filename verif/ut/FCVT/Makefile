@@ -42,6 +42,30 @@ FM_REF_DEPS_FCVT = $(FCVT_LEAVES)
 # 2026-09-14（PARTIAL 收口簇）：白名单已在 scripts/fm_eq.tcl 加上 FCVT，本行同时启用。
 FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 
+# ---------------------------------------------------------------------------
+# FM_MERGE_DUP=false —— ★加强，不是放宽★（2026-09-20，agent/provefleet2 实测）
+#
+# 为什么动它：跑前登记的模型预期 2652（闭包每个实例的寄存器位 1920 + 顶层 output 732），
+# 而 merge_duplicated_registers=true（全仓默认）那一跑实测 **2514**：
+#
+#     差额 138，可指认项（constant_reg + unread）只有 16 -> ★剩 122 位指认不了★
+#
+# scripts/fm_predict.py 因为它落在"merge 带"里不判红，但工具自己标了
+# 带宽 72.4%、"这条结论近乎无信息" —— merge 打开时 FM 把多少个重复寄存器合并成
+# 一个比较点，**从 golden 静态算不出来**，于是那个 passing 数没有可复核的含义。
+#
+# 关掉之后（同一份 RTL、同一批 appvar、同一份钉点文件，只差这一个 appvar）：
+#
+#     passing   2514 -> **2625**（多比 111 个点）
+#     failing / unverified / aborted / unread_notcompared   全 0
+#     unmatched 六项全 0 / 零黑盒 / dont_verify=false / 无放宽 appvar
+#     2652(模型) - 2625(实测) = 27 = constant_reg 27   ★逐位指认，余额 0★
+#
+# 不黑盒、不跳点、不约束 ref，只是要求 FM 逐个而不是合并后比，比较点只增不减
+# （先例：verif/ut/MulUnit/Makefile、verif/ut/TXREQ/Makefile，
+#  以及 scripts/fm_eq.tcl 里的经验注记）。
+FM_MERGE_DUP = false
+
 include ../../../scripts/ut_common.mk
 
 # golden 里 `ifndef SYNTHESIS 的断言块调用未定义函数 xs_assert_v2，
