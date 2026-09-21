@@ -1,0 +1,9 @@
+{
+  "target": "PtwCache",
+  "ut": "PtwCache",
+  "regs": 21088,
+  "outs": 2714,
+  "expected": 23802,
+  "merge_dup": "true",
+  "model_applicable": false
+}
