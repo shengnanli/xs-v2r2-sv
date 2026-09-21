@@ -60774,5 +60774,46 @@ _pin "r:/WORK/StoreQueue/vpmaskNotEqual_next_r_reg\[7\]" "i:/WORK/StoreQueue/u_c
 _pin "r:/WORK/StoreQueue/vpmaskNotEqual_next_r_reg\[8\]" "i:/WORK/StoreQueue/u_core/addrRealValid_q_reg\[0\]\[8\]"
 _pin "r:/WORK/StoreQueue/vpmaskNotEqual_next_r_reg\[9\]" "i:/WORK/StoreQueue/u_core/addrRealValid_q_reg\[0\]\[9\]"
 
-puts "SQ_PIN: 钉点 $_n 条"
-if {$_n != 60761} { error "SQ_PIN: 实际 $_n 条，应为 60761" }
+# ---- unread 点（34 条，两侧对称的『只喂断言』寄存器）----
+# golden 的 REG/REG_1 只喂 `assert(!RegNext(RegNext(sbuffer(0).fire) && mmioStout.fire))`，
+# counter 只喂 TimeOutAssert；本仓按 SYNTHESIS 编译，断言不生成，所以两侧都没人读。
+# ★它们是**对称**的死位：golden 有几个、可读核就照样留几个（少留一个就是 unmatched）★。
+# 钉成双射之后它们变成 matched-unread；要让 FM 真的去比，还需要
+# FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS=true（见 Makefile 里的说明与前后读数对照）。
+_pin "r:/WORK/StoreQueue/REG_1_reg" "i:/WORK/StoreQueue/u_core/mmioStoutFireRegChain_1_reg"
+_pin "r:/WORK/StoreQueue/REG_reg" "i:/WORK/StoreQueue/u_core/mmioStoutFireRegChain_reg"
+_pin "r:/WORK/StoreQueue/counter_reg\[0\]" "i:/WORK/StoreQueue/u_core/timeoutCounter_reg\[0\]"
+_pin "r:/WORK/StoreQueue/counter_reg\[10\]" "i:/WORK/StoreQueue/u_core/timeoutCounter_reg\[10\]"
+_pin "r:/WORK/StoreQueue/counter_reg\[11\]" "i:/WORK/StoreQueue/u_core/timeoutCounter_reg\[11\]"
+_pin "r:/WORK/StoreQueue/counter_reg\[12\]" "i:/WORK/StoreQueue/u_core/timeoutCounter_reg\[12\]"
+_pin "r:/WORK/StoreQueue/counter_reg\[13\]" "i:/WORK/StoreQueue/u_core/timeoutCounter_reg\[13\]"
+_pin "r:/WORK/StoreQueue/counter_reg\[14\]" "i:/WORK/StoreQueue/u_core/timeoutCounter_reg\[14\]"
+_pin "r:/WORK/StoreQueue/counter_reg\[15\]" "i:/WORK/StoreQueue/u_core/timeoutCounter_reg\[15\]"
+_pin "r:/WORK/StoreQueue/counter_reg\[16\]" "i:/WORK/StoreQueue/u_core/timeoutCounter_reg\[16\]"
+_pin "r:/WORK/StoreQueue/counter_reg\[17\]" "i:/WORK/StoreQueue/u_core/timeoutCounter_reg\[17\]"
+_pin "r:/WORK/StoreQueue/counter_reg\[18\]" "i:/WORK/StoreQueue/u_core/timeoutCounter_reg\[18\]"
+_pin "r:/WORK/StoreQueue/counter_reg\[19\]" "i:/WORK/StoreQueue/u_core/timeoutCounter_reg\[19\]"
+_pin "r:/WORK/StoreQueue/counter_reg\[1\]" "i:/WORK/StoreQueue/u_core/timeoutCounter_reg\[1\]"
+_pin "r:/WORK/StoreQueue/counter_reg\[20\]" "i:/WORK/StoreQueue/u_core/timeoutCounter_reg\[20\]"
+_pin "r:/WORK/StoreQueue/counter_reg\[21\]" "i:/WORK/StoreQueue/u_core/timeoutCounter_reg\[21\]"
+_pin "r:/WORK/StoreQueue/counter_reg\[22\]" "i:/WORK/StoreQueue/u_core/timeoutCounter_reg\[22\]"
+_pin "r:/WORK/StoreQueue/counter_reg\[23\]" "i:/WORK/StoreQueue/u_core/timeoutCounter_reg\[23\]"
+_pin "r:/WORK/StoreQueue/counter_reg\[24\]" "i:/WORK/StoreQueue/u_core/timeoutCounter_reg\[24\]"
+_pin "r:/WORK/StoreQueue/counter_reg\[25\]" "i:/WORK/StoreQueue/u_core/timeoutCounter_reg\[25\]"
+_pin "r:/WORK/StoreQueue/counter_reg\[26\]" "i:/WORK/StoreQueue/u_core/timeoutCounter_reg\[26\]"
+_pin "r:/WORK/StoreQueue/counter_reg\[27\]" "i:/WORK/StoreQueue/u_core/timeoutCounter_reg\[27\]"
+_pin "r:/WORK/StoreQueue/counter_reg\[28\]" "i:/WORK/StoreQueue/u_core/timeoutCounter_reg\[28\]"
+_pin "r:/WORK/StoreQueue/counter_reg\[29\]" "i:/WORK/StoreQueue/u_core/timeoutCounter_reg\[29\]"
+_pin "r:/WORK/StoreQueue/counter_reg\[2\]" "i:/WORK/StoreQueue/u_core/timeoutCounter_reg\[2\]"
+_pin "r:/WORK/StoreQueue/counter_reg\[30\]" "i:/WORK/StoreQueue/u_core/timeoutCounter_reg\[30\]"
+_pin "r:/WORK/StoreQueue/counter_reg\[31\]" "i:/WORK/StoreQueue/u_core/timeoutCounter_reg\[31\]"
+_pin "r:/WORK/StoreQueue/counter_reg\[3\]" "i:/WORK/StoreQueue/u_core/timeoutCounter_reg\[3\]"
+_pin "r:/WORK/StoreQueue/counter_reg\[4\]" "i:/WORK/StoreQueue/u_core/timeoutCounter_reg\[4\]"
+_pin "r:/WORK/StoreQueue/counter_reg\[5\]" "i:/WORK/StoreQueue/u_core/timeoutCounter_reg\[5\]"
+_pin "r:/WORK/StoreQueue/counter_reg\[6\]" "i:/WORK/StoreQueue/u_core/timeoutCounter_reg\[6\]"
+_pin "r:/WORK/StoreQueue/counter_reg\[7\]" "i:/WORK/StoreQueue/u_core/timeoutCounter_reg\[7\]"
+_pin "r:/WORK/StoreQueue/counter_reg\[8\]" "i:/WORK/StoreQueue/u_core/timeoutCounter_reg\[8\]"
+_pin "r:/WORK/StoreQueue/counter_reg\[9\]" "i:/WORK/StoreQueue/u_core/timeoutCounter_reg\[9\]"
+
+puts "SQ_PIN: pinned $_n points"
+if {$_n != 60795} { error "SQ_PIN: got $_n, expected 60795" }
