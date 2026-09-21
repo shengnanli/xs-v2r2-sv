@@ -247,12 +247,18 @@ def from_ut(ut):
     return out
 
 
-def _receipt_passing(run, top):
-    """从已提交的 receipt 里取 native passing（自证要拿实测对账，不许硬编码期望）。"""
-    f = REPO / 'evidence' / run / top / 'receipt.json'
-    if not f.is_file():
+def _receipt_passing(top):
+    """从已提交的 receipt 里取 native passing（自证要拿实测对账，不许硬编码期望）。
+
+    ★按 target 名 glob，不钉 run id★：钉了 run id 的自证会在证据被重跑/换目录时
+    静默失效，而"自证跑不起来"和"自证通过"必须长得不一样 —— 找不到就返回 None，
+    调用处判红。同名多份取**最新**（与 fm_predict.find_receipt 同口径）。
+    """
+    cands = sorted((REPO / 'evidence').glob('*/%s/receipt.json' % top),
+                   key=lambda x: x.stat().st_mtime)
+    if not cands:
         return None
-    return json.loads(f.read_text())['native_facts']['stats']['passing']
+    return json.loads(cands[-1].read_text())['native_facts']['stats']['passing']
 
 
 def selftest():
@@ -272,19 +278,17 @@ def selftest():
         rc |= 0 if ok else 1
 
     # --- 正向 1：有黑盒 + 无重复寄存器合并 -> 逐位相等 ---------------------
-    for top, run, why in (('SRAMTemplate_145', '7877497350a2', ''),
-                          ('SRAMTemplate_146', '7877497350a2', ''),
-                          ('SRAMTemplate_152', '7877497350a2', '')):
+    for top in ('SRAMTemplate_145', 'SRAMTemplate_146', 'SRAMTemplate_152'):
         r = next(x for x in from_ut('SRAMTemplateNewForm') if x['top'] == top)
-        act = _receipt_passing(run, top)
+        act = _receipt_passing(top)
         ck('正向 %s 有黑盒：模型 %d == 实测 %s' % (top, r['model'], act),
            act is not None and r['model'] == act,
-           'bbin=%d %s' % (r.get('bbin', 0), why))
+           'bbin=%d' % r.get('bbin', 0))
 
     # --- 正向 2：有黑盒 + 有一对重复寄存器被 merge 合掉 -> 恰好差 1 --------
     for top in ('SRAMTemplate_155', 'SRAMTemplate_166', 'SRAMTemplate_178'):
         r = next(x for x in from_ut('SRAMTemplateNewForm') if x['top'] == top)
-        act = _receipt_passing('7877497350a2', top)
+        act = _receipt_passing(top)
         ck('正向 %s 差额恰为 1（merge 合掉 respReg[1]≡rckEnReg 一对）' % top,
            act is not None and r['model'] - act == 1,
            '模型 %d 实测 %s' % (r['model'], act))
@@ -293,7 +297,7 @@ def selftest():
     for top in ('NewPipelineConnectPipe_29', 'NewPipelineConnectPipe_34'):
         r = next(x for x in from_ut('NewPipelineConnectPipe_29_34_35')
                  if x['top'] == top)
-        act = _receipt_passing('6a9e4235497e', top)
+        act = _receipt_passing(top)
         ck('反向 %s 无黑盒：不多出 bbox/bbin 键' % top,
            'bbox' not in r and 'bbin' not in r and 'bbox_unknown' not in r)
         ck('反向 %s 无黑盒：model 仍等于 regs+outs 且等于实测' % top,
