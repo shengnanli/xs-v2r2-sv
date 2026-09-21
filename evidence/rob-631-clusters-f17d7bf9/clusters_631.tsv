@@ -1,0 +1,16 @@
+cluster	points	ref_type	impl_type	star	representative_ref	representative_impl
+robEntries_N_isHls_reg	160	DFF	DFF	no	r:/WORK/Rob/robEntries_0_isHls_reg	i:/WORK/Rob/u_core/robEntries_isHls_reg[0]
+io_commits_info_N_debug_otherPdest_0[*]	64	Port	Port	yes	r:/WORK/Rob/io_commits_info_0_debug_otherPdest_0[0]	i:/WORK/Rob/io_commits_info_0_debug_otherPdest_0[0]
+io_commits_info_N_debug_otherPdest_1[*]	64	Port	Port	yes	r:/WORK/Rob/io_commits_info_0_debug_otherPdest_1[0]	i:/WORK/Rob/io_commits_info_0_debug_otherPdest_1[0]
+io_commits_info_N_debug_otherPdest_2[*]	64	Port	Port	yes	r:/WORK/Rob/io_commits_info_0_debug_otherPdest_2[0]	i:/WORK/Rob/io_commits_info_0_debug_otherPdest_2[0]
+io_commits_info_N_debug_otherPdest_3[*]	64	Port	Port	yes	r:/WORK/Rob/io_commits_info_0_debug_otherPdest_3[0]	i:/WORK/Rob/io_commits_info_0_debug_otherPdest_3[0]
+io_commits_info_N_debug_otherPdest_4[*]	64	Port	Port	yes	r:/WORK/Rob/io_commits_info_0_debug_otherPdest_4[0]	i:/WORK/Rob/io_commits_info_0_debug_otherPdest_4[0]
+io_commits_info_N_debug_otherPdest_5[*]	64	Port	Port	yes	r:/WORK/Rob/io_commits_info_0_debug_otherPdest_5[0]	i:/WORK/Rob/io_commits_info_0_debug_otherPdest_5[0]
+io_commits_info_N_debug_otherPdest_6[*]	64	Port	Port	yes	r:/WORK/Rob/io_commits_info_0_debug_otherPdest_6[0]	i:/WORK/Rob/io_commits_info_0_debug_otherPdest_6[0]
+deqPtrGenModule/io_next_out_N_flag	7	BBPin	BBPin	yes	r:/WORK/Rob/deqPtrGenModule/io_next_out_1_flag	i:/WORK/Rob/deqPtrGenModule/io_next_out_1_flag
+enqPtrGenModule/io_out_N_flag	5	BBPin	None	no	r:/WORK/Rob/enqPtrGenModule/io_out_1_flag	None
+io_csr_fflags_next_bits_r_reg[*]	5	DFF	DFF	no	r:/WORK/Rob/io_csr_fflags_next_bits_r_reg[0]	i:/WORK/Rob/u_core/io_csr_fflags_next_bits_r_reg[0]
+io_lsq_scommit_REG_reg[*]	4	DFF	DFF	no	r:/WORK/Rob/io_lsq_scommit_REG_reg[0]	i:/WORK/Rob/u_core/io_lsq_scommit_REG_reg[0]
+io_csr_vxsat_next_bits_r_reg	1	DFF	DFF	no	r:/WORK/Rob/io_csr_vxsat_next_bits_r_reg	i:/WORK/Rob/u_core/io_csr_vxsat_next_bits_r_reg
+io_csr_vxsat_next_valid_last_REG_reg	1	DFF	DFF	no	r:/WORK/Rob/io_csr_vxsat_next_valid_last_REG_reg	i:/WORK/Rob/u_core/io_csr_vxsat_next_valid_last_REG_reg
+# TOTAL	631

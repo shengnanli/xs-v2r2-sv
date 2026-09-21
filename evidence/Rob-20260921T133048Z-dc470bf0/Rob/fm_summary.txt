@@ -1,0 +1,20 @@
+ 56(0) Unmatched reference(implementation) primary inputs, black-box outputs    
+ 16(0) Unmatched reference(implementation) unread points    
+ Black-box input pins (BBPin)                                              0          56    
+ Black-box output pins (BBPin)                                            56           0    
+ Cut-points (Cut)                                                        460           0    
+ 8941 Compare points matched previously    
+ 99593 Compare points matched by user    
+ 0 Compare points matched by name    
+ 0 Compare points matched by signature analysis    
+ 0 Compare points matched by topology    
+ 460(56) Unmatched reference(implementation) compare points    
+ 56(0) Unmatched reference(implementation) primary inputs, black-box outputs    
+ 16(0) Unmatched reference(implementation) unread points    
+ Black-box input pins (BBPin)                                              0          56    
+ Black-box output pins (BBPin)                                            56           0    
+ Cut-points (Cut)                                                        460           0    
+ 106603 Passing compare points
+ 20 Failing compare points (20 matched, 0 unmatched)
+ 0 Aborted compare points
+ 1911 Unverified compare points

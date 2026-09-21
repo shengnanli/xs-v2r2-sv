@@ -43,61 +43,66 @@
 //   docs/rob_iface_contract.tsv  接口：647 个 output 是核的义务、20 个由子模块直接驱动
 //   docs/rob_pin_failclosed.tsv  钉点判据的地基
 //
-// 已知残留（集成者 0920 裁定，如实记账，不得用 dont_verify/黑盒/白名单吞掉）：
-//   robDeqGroup_*_debug_otherPdest_0..6 共 56 个寄存器 / 448 bit **不驱动**，
-//   与 golden 一致（golden 里它们只在 RANDOMIZE_REG_INIT 里被写）。
+// ★UNOBSERVED_DEBUG_CLEANUP（codex 0169 D3 裁定，如实记账，
+//   不得用 dont_verify/黑盒/白名单吞掉）★：
+//   golden undriven debug-only output -> deterministic zero，芯片内无消费者。
+//   robDeqGroup_*_debug_otherPdest_0..6 共 56 个寄存器 / 448 bit 在 golden 里
+//   **无驱动**（唯一赋值在 RANDOMIZE_REG_INIT 段内），本文件把它们钉成确定的 0。
 //   射程已量：父层 CtrlBlock 把对应的 56 个输出**全部**接成 `/* unused */`，
 //   整棵 Scala 树里该字段只出现 1 次（Bundle 声明，无写者无读者）——
-//   见 scripts/rob_otherpdest_scope.py 的 F1..F4。
-//   影响只在本层 FM：两侧各 56 个悬空比较点。
+//   见 scripts/rob_otherpdest_scope.py 的 F1..F4（--check 是 gate_all.sh 里的闸，
+//   新增消费者立刻转红）。
+//   ★代价：Rob 这一**原始模块边界**上这 448 位与 golden 不同，因此
+//   Rob 这一层不得声称 strict bit-exact；FM 会照常报这 448 个 Port 失配。
+//   功能正确性以 CtrlBlock / XSTile 这第一个可观测边界为准。
 //
 // 生成区：`// BEGIN GENERATED(<tag>)` .. `// END GENERATED` 由
 // scripts/gen_rob.py --write 填写，手写内容一律在标记之外。
-// 本文件导航（共 11796 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
-//   L2036  §1 条目存储
-//   L2038  每字段一个非打包数组，名字必须是 `<prefix>_<field>`：pin 契约按
-//   L2377  §2 RobPtr 算术
-//   L2379  RobSize=160 不是 2 的幂，所以 CircularQueuePtr 的 `+` 走"回绕"那条路：
-//   L2422  §3 入队请求的整理
-//   L2424  六路 enq 请求打成数组，后面所有"逐路"逻辑都从这里取，避免六份复制粘贴
-//   L2505  §4 入队许可
-//   L2549  §5 状态机与走回
-//   L2737  §6 入队计数与 allowEnqueue
-//   L2739  ★这里的加法全是 8 位回绕★
-//   L2780  §7 阻塞类状态位
-//   L2835  §8 写回口的整理
-//   L2837  ★写回口的下标是稀疏的，而且每个子集的下标集合只有 golden 能告诉你★
-//   L3066  §9 入队：条目存储的写入
-//   L3068  这里有**两种完全不同的选择结构**，弄混就是真 bug：
-//   L3596  §10 条目存储的时序写入
-//   L3696  §11 提交读口：8 bank x 20 行的 one-hot 读
-//   L3698  robBanks(b) 装 robidx%8==b 的 20 个条目；八个 bank **共用**一个 one-hot 行地址
-//   L3927  §12 robDeqGroup：提交读口的寄存器级
-//   L3929  connectCommitEntry 的逐字段拷贝
-//   L3979  §13 队头读口
-//   L3981  三个名字在 Scala 里是**同一个表达式**
-//   L4097  §14 队头的异常/中断/冲刷判定
-//   L4267  §15 提交 / 走回的对外输出
-//   L4269  ★commit_vDeqGroup / commit_wDeqGroup 是**按 bank 直接取**的★
-//   L4815  §16 RAB
-//   L4817  io.rabCommits := RegNext(rab.io.commits) —— 整条打一拍，纯粹为了时序/面积
-//   L5048  §17 送给 exceptionGen 的三类折算量
-//   L5050  ★io_writeback_<i> 各自只有一部分 exceptionVec 位★
-//   L5087  §18 WFI
-//   L5089  遇到 wfi 指令就挂起提交，等 CSR 说可以恢复、或者被冲刷、或者 2^20 拍超时
-//   L5186  §19 CSR / LSQ / 队头杂项
-//   L5351  §20 trace
-//   L5353  八路提交槽各出一个 trace block，内容直接取 rawInfo
-//   L5417  §21 异常出口
-//   L5419  整条是 RegEnable(..., exceptionHappen)：异常发生那一拍把现场锁下来，
-//   L5573  §22 debug / difftest 规则阵列
-//   L5575  这一段不参与功能，但**一位都不能省**：省掉之后 FM 的 match 会退化成签名
-//   L6095  §23 性能事件
-//   L6097  generatePerfEvent() 出来的 19 个事件，每个都**打两拍**再送出去
-//   L6248  §24 difftest 打包口
-//   L6250  difftest 的三种事件被打包成宽总线从 Rob 直接钻出去
-//   L6636  Rob —— 顶层壳
-//   L6638  这一层不含任何设计逻辑：端口表、局部网、核实例、8 个子模块实例**全部**由
+// 本文件导航（共 11795 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+//   L2031  §1 条目存储
+//   L2033  每字段一个非打包数组，名字必须是 `<prefix>_<field>`：pin 契约按
+//   L2372  §2 RobPtr 算术
+//   L2374  RobSize=160 不是 2 的幂，所以 CircularQueuePtr 的 `+` 走"回绕"那条路：
+//   L2417  §3 入队请求的整理
+//   L2419  六路 enq 请求打成数组，后面所有"逐路"逻辑都从这里取，避免六份复制粘贴
+//   L2507  §4 入队许可
+//   L2551  §5 状态机与走回
+//   L2739  §6 入队计数与 allowEnqueue
+//   L2741  ★这里的加法全是 8 位回绕★
+//   L2782  §7 阻塞类状态位
+//   L2837  §8 写回口的整理
+//   L2839  ★写回口的下标是稀疏的，而且每个子集的下标集合只有 golden 能告诉你★
+//   L3068  §9 入队：条目存储的写入
+//   L3070  这里有**两种完全不同的选择结构**，弄混就是真 bug：
+//   L3582  §10 条目存储的时序写入
+//   L3682  §11 提交读口：8 bank x 20 行的 one-hot 读
+//   L3684  robBanks(b) 装 robidx%8==b 的 20 个条目；八个 bank **共用**一个 one-hot 行地址
+//   L3913  §12 robDeqGroup：提交读口的寄存器级
+//   L3915  connectCommitEntry 的逐字段拷贝
+//   L3977  §13 队头读口
+//   L3979  三个名字在 Scala 里是**同一个表达式**
+//   L4095  §14 队头的异常/中断/冲刷判定
+//   L4265  §15 提交 / 走回的对外输出
+//   L4267  ★commit_vDeqGroup / commit_wDeqGroup 是**按 bank 直接取**的★
+//   L4813  §16 RAB
+//   L4815  io.rabCommits := RegNext(rab.io.commits) —— 整条打一拍，纯粹为了时序/面积
+//   L5046  §17 送给 exceptionGen 的三类折算量
+//   L5048  ★io_writeback_<i> 各自只有一部分 exceptionVec 位★
+//   L5085  §18 WFI
+//   L5087  遇到 wfi 指令就挂起提交，等 CSR 说可以恢复、或者被冲刷、或者 2^20 拍超时
+//   L5188  §19 CSR / LSQ / 队头杂项
+//   L5355  §20 trace
+//   L5357  八路提交槽各出一个 trace block，内容直接取 rawInfo
+//   L5421  §21 异常出口
+//   L5423  整条是 RegEnable(..., exceptionHappen)：异常发生那一拍把现场锁下来，
+//   L5577  §22 debug / difftest 规则阵列
+//   L5579  这一段不参与功能，但**一位都不能省**：省掉之后 FM 的 match 会退化成签名
+//   L6099  §23 性能事件
+//   L6101  generatePerfEvent() 出来的 19 个事件，每个都**打两拍**再送出去
+//   L6252  §24 difftest 打包口
+//   L6254  difftest 的三种事件被打包成宽总线从 Rob 直接钻出去
+//   L6640  Rob —— 顶层壳
+//   L6642  这一层不含任何设计逻辑：端口表、局部网、核实例、8 个子模块实例**全部**由
 //
 
 package rob_pkg;
@@ -1893,15 +1898,10 @@ module xs_Rob_core
   input  logic [1:0]   dt_pcTransType_ext_R7_data,
   input  logic         enqPtrVec_0_flag,
   input  logic [7:0]   enqPtrVec_0_value,
-  input  logic         enqPtrVec_1_flag,
   input  logic [7:0]   enqPtrVec_1_value,
-  input  logic         enqPtrVec_2_flag,
   input  logic [7:0]   enqPtrVec_2_value,
-  input  logic         enqPtrVec_3_flag,
   input  logic [7:0]   enqPtrVec_3_value,
-  input  logic         enqPtrVec_4_flag,
   input  logic [7:0]   enqPtrVec_4_value,
-  input  logic         enqPtrVec_5_flag,
   input  logic [7:0]   enqPtrVec_5_value,
   input  logic         exceptionGen_io_state_bits_crossPageIPFFix,
   input  logic         exceptionGen_io_state_bits_exceptionVec_0,
@@ -2118,9 +2118,16 @@ module xs_Rob_core
   logic [FUTYPE_W-1:0]       robDeqGroup_debug_fuType                [BANK_N];
   logic                      robDeqGroup_dirtyFs                     [BANK_N];
   logic                      robDeqGroup_dirtyVs                     [BANK_N];
-  // ★这 7 个刻意不驱动★（见文件头「已知残留」）：与 golden 一致，
-  // golden 里它们只在 RANDOMIZE_REG_INIT 里被写，connectCommitEntry 逐字段
-  // 拷贝时唯独不提它（RobEntryBundle 根本没有这个成员，没得可拷）。
+  // ★UNOBSERVED_DEBUG_CLEANUP（codex 0169 D3 裁定）★ 这 7 个族**确定驱动为 0**。
+  //   golden 里它们只在 RANDOMIZE_REG_INIT 里被写，connectCommitEntry 逐字段
+  //   拷贝时唯独不提它（RobEntryBundle 根本没有这个成员，没得可拷），所以
+  //   golden 综合后这 56 个寄存器 / 448 bit 无驱动、对应的 56 个输出端口未定义。
+  //   裁定选择 (b)：重写把它们钉成确定的 0（见 §13 末尾的驱动块）。
+  //   ★这不是 bit-exact★：Rob 这一层对这 448 位就是与 golden 不同（X vs 0），
+  //   不许在任何台账里把 Rob 边界写成 strict bit-exact，也不许用
+  //   dont_verify / 黑盒 / 白名单把它伪装成相等。功能正确性以 CtrlBlock /
+  //   XSTile 这第一个**可观测**边界为准：那里 56/56 全接 `/* unused */`
+  //   （闸：scripts/rob_otherpdest_scope.py --check，进 gate_all.sh）。
   logic [PREG_W-1:0]         robDeqGroup_debug_otherPdest_0          [BANK_N];
   logic [PREG_W-1:0]         robDeqGroup_debug_otherPdest_1          [BANK_N];
   logic [PREG_W-1:0]         robDeqGroup_debug_otherPdest_2          [BANK_N];
@@ -2474,15 +2481,22 @@ module xs_Rob_core
 
   // allocatePtrVec(i) = enqPtrVec(该路之前有几个 firstUop 有效)
   // enqPtrVec 由 enqPtrGenModule 给出（本核只读）。
+  // ★enqPtrVec_1..5 的 flag 位 golden 根本不读★：firtool 把 enqPtrVec_<1..5>_flag
+  //   声明出来接到 RobEnqPtrWrapper 的 io_out_<n>_flag 上，然后**一处也不用**
+  //   （只有 enqPtrVec_0_flag 真在用：isEmpty / numValidEntries / redirect 比较）。
+  //   本核原先把这 5 根也接进来存进 enqPtrFlag[]，而 enqPtrFlag[] 自己又没人读——
+  //   于是 FM 两侧对这 5 个黑盒 pin 推出的方向不一致，报 5 个 unmatched failing
+  //   （failing.rpt: `Ref BBPin enqPtrGenModule/io_out_<1..5>_flag / Impl None`）。
+  //   修法就是照 golden 把它们悬空：wrapper 里那 5 根 n_enqPtrVec_<n>_flag 仍然
+  //   声明并接在黑盒输出上，但不再进本核。
   logic [PTR_W-1:0] enqPtrValue [RENAME_W];
-  logic             enqPtrFlag  [RENAME_W];
   always_comb begin
-    enqPtrValue[0] = enqPtrVec_0_value; enqPtrFlag[0] = enqPtrVec_0_flag;
-    enqPtrValue[1] = enqPtrVec_1_value;   enqPtrFlag[1] = enqPtrVec_1_flag;
-    enqPtrValue[2] = enqPtrVec_2_value;   enqPtrFlag[2] = enqPtrVec_2_flag;
-    enqPtrValue[3] = enqPtrVec_3_value;   enqPtrFlag[3] = enqPtrVec_3_flag;
-    enqPtrValue[4] = enqPtrVec_4_value;   enqPtrFlag[4] = enqPtrVec_4_flag;
-    enqPtrValue[5] = enqPtrVec_5_value;   enqPtrFlag[5] = enqPtrVec_5_flag;
+    enqPtrValue[0] = enqPtrVec_0_value;
+    enqPtrValue[1] = enqPtrVec_1_value;
+    enqPtrValue[2] = enqPtrVec_2_value;
+    enqPtrValue[3] = enqPtrVec_3_value;
+    enqPtrValue[4] = enqPtrVec_4_value;
+    enqPtrValue[5] = enqPtrVec_5_value;
   end
 
   logic [2:0]       allocSel      [RENAME_W];   // PopCount(前 i 路的 firstUop&valid)
@@ -3079,43 +3093,9 @@ module xs_Rob_core
   // 条目下标一律 `for` + 比较，没有一处信号直接索引（FMR_ELAB-147）。
 
   // ---- 六路 enq 的派生量 ----
-  logic enqIsHls        [RENAME_W];   // DynInst.isHls：hlv(ldu) / hsv(stu)
   logic enqNeedWriteRf  [RENAME_W];   // rfWen|fpWen|vecWen|v0Wen|vlWen
   logic enqAllowIntr    [RENAME_W];   // 允许中断：非访存/非 fence/非 csr/非 vset/非 amo
   logic enqNeedFlush    [RENAME_W];   // hasException | flushPipe
-
-  always_comb begin
-    enqIsHls[0] = ((io_enq_req_0_bits_fuType == FUTYPE_W'(1) << FU_LDU)
-                   | (io_enq_req_0_bits_fuType == FUTYPE_W'(1) << FU_STU))
-                  & io_enq_req_0_bits_fuOpType[4]
-                  & ~io_enq_req_0_bits_fuOpType[5]
-                  & ~(|io_enq_req_0_bits_fuOpType[8:7]);
-    enqIsHls[1] = ((io_enq_req_1_bits_fuType == FUTYPE_W'(1) << FU_LDU)
-                   | (io_enq_req_1_bits_fuType == FUTYPE_W'(1) << FU_STU))
-                  & io_enq_req_1_bits_fuOpType[4]
-                  & ~io_enq_req_1_bits_fuOpType[5]
-                  & ~(|io_enq_req_1_bits_fuOpType[8:7]);
-    enqIsHls[2] = ((io_enq_req_2_bits_fuType == FUTYPE_W'(1) << FU_LDU)
-                   | (io_enq_req_2_bits_fuType == FUTYPE_W'(1) << FU_STU))
-                  & io_enq_req_2_bits_fuOpType[4]
-                  & ~io_enq_req_2_bits_fuOpType[5]
-                  & ~(|io_enq_req_2_bits_fuOpType[8:7]);
-    enqIsHls[3] = ((io_enq_req_3_bits_fuType == FUTYPE_W'(1) << FU_LDU)
-                   | (io_enq_req_3_bits_fuType == FUTYPE_W'(1) << FU_STU))
-                  & io_enq_req_3_bits_fuOpType[4]
-                  & ~io_enq_req_3_bits_fuOpType[5]
-                  & ~(|io_enq_req_3_bits_fuOpType[8:7]);
-    enqIsHls[4] = ((io_enq_req_4_bits_fuType == FUTYPE_W'(1) << FU_LDU)
-                   | (io_enq_req_4_bits_fuType == FUTYPE_W'(1) << FU_STU))
-                  & io_enq_req_4_bits_fuOpType[4]
-                  & ~io_enq_req_4_bits_fuOpType[5]
-                  & ~(|io_enq_req_4_bits_fuOpType[8:7]);
-    enqIsHls[5] = ((io_enq_req_5_bits_fuType == FUTYPE_W'(1) << FU_LDU)
-                   | (io_enq_req_5_bits_fuType == FUTYPE_W'(1) << FU_STU))
-                  & io_enq_req_5_bits_fuOpType[4]
-                  & ~io_enq_req_5_bits_fuOpType[5]
-                  & ~(|io_enq_req_5_bits_fuOpType[8:7]);
-  end
 
   always_comb begin
     enqNeedWriteRf[0] = io_enq_req_0_bits_rfWen | io_enq_req_0_bits_fpWen
@@ -3231,13 +3211,20 @@ module xs_Rob_core
     logic                        basicDebug_eliminatedMove;
     logic                        basicDebug_isXSTrap;
     logic [FUTYPE_W-1:0]         debug_fuType;
-    logic                        isHls;
+    // ★不是 isHls，是 fuOpType[8:4]★：golden 的 isHls **不是** Mux1H 选出来的
+    //   per-port isHls，而是拿 Mux1H **之后**的 fuType / fuOpType 再算一次
+    //   （golden: `_GEN_3881 == 35'h8000 & _GEN_11894[0] & ...`，_GEN_3881 /
+    //   _GEN_11894 都是按位或的 Mux1H 结果）。isHls 是 fuType/fuOpType 的
+    //   **非线性**函数，所以 Mux1H 与它不可交换：enqOH 非 one-hot 时
+    //   `Mux1H(f(x))` ≠ `f(Mux1H(x))`，FM 一定抓得到。见下面的 enqSelIsHls。
+    logic [4:0]                  fuOpHi;          // fuOpType[8:4]
     logic                        needFlush;
     logic [LREG_W-1:0]           basicDebug_vd;   // instr[11:7]（XSInstBitFields.VD）
   } rob_enq_sel_t;
 
   rob_enq_sel_t enqBits [RENAME_W];
   rob_enq_sel_t enqSel  [ROB_SIZE];
+  logic         enqSelIsHls [ROB_SIZE];   // Mux1H 之后再算的 isHls（见上面 fuOpHi）
 
   always_comb begin
     enqBits[0].wflags                     = io_enq_req_0_bits_wfflags;
@@ -3264,7 +3251,7 @@ module xs_Rob_core
     enqBits[0].basicDebug_eliminatedMove  = io_enq_req_0_bits_eliminatedMove;
     enqBits[0].basicDebug_isXSTrap        = io_enq_req_0_bits_isXSTrap;
     enqBits[0].debug_fuType               = io_enq_req_0_bits_fuType;
-    enqBits[0].isHls                      = enqIsHls[0];
+    enqBits[0].fuOpHi                     = io_enq_req_0_bits_fuOpType[8:4];
     enqBits[0].needFlush                  = enqNeedFlush[0];
     enqBits[0].basicDebug_vd              = io_enq_req_0_bits_instr[11:7];
 
@@ -3292,7 +3279,7 @@ module xs_Rob_core
     enqBits[1].basicDebug_eliminatedMove  = io_enq_req_1_bits_eliminatedMove;
     enqBits[1].basicDebug_isXSTrap        = io_enq_req_1_bits_isXSTrap;
     enqBits[1].debug_fuType               = io_enq_req_1_bits_fuType;
-    enqBits[1].isHls                      = enqIsHls[1];
+    enqBits[1].fuOpHi                     = io_enq_req_1_bits_fuOpType[8:4];
     enqBits[1].needFlush                  = enqNeedFlush[1];
     enqBits[1].basicDebug_vd              = io_enq_req_1_bits_instr[11:7];
 
@@ -3320,7 +3307,7 @@ module xs_Rob_core
     enqBits[2].basicDebug_eliminatedMove  = io_enq_req_2_bits_eliminatedMove;
     enqBits[2].basicDebug_isXSTrap        = io_enq_req_2_bits_isXSTrap;
     enqBits[2].debug_fuType               = io_enq_req_2_bits_fuType;
-    enqBits[2].isHls                      = enqIsHls[2];
+    enqBits[2].fuOpHi                     = io_enq_req_2_bits_fuOpType[8:4];
     enqBits[2].needFlush                  = enqNeedFlush[2];
     enqBits[2].basicDebug_vd              = io_enq_req_2_bits_instr[11:7];
 
@@ -3348,7 +3335,7 @@ module xs_Rob_core
     enqBits[3].basicDebug_eliminatedMove  = io_enq_req_3_bits_eliminatedMove;
     enqBits[3].basicDebug_isXSTrap        = io_enq_req_3_bits_isXSTrap;
     enqBits[3].debug_fuType               = io_enq_req_3_bits_fuType;
-    enqBits[3].isHls                      = enqIsHls[3];
+    enqBits[3].fuOpHi                     = io_enq_req_3_bits_fuOpType[8:4];
     enqBits[3].needFlush                  = enqNeedFlush[3];
     enqBits[3].basicDebug_vd              = io_enq_req_3_bits_instr[11:7];
 
@@ -3376,7 +3363,7 @@ module xs_Rob_core
     enqBits[4].basicDebug_eliminatedMove  = io_enq_req_4_bits_eliminatedMove;
     enqBits[4].basicDebug_isXSTrap        = io_enq_req_4_bits_isXSTrap;
     enqBits[4].debug_fuType               = io_enq_req_4_bits_fuType;
-    enqBits[4].isHls                      = enqIsHls[4];
+    enqBits[4].fuOpHi                     = io_enq_req_4_bits_fuOpType[8:4];
     enqBits[4].needFlush                  = enqNeedFlush[4];
     enqBits[4].basicDebug_vd              = io_enq_req_4_bits_instr[11:7];
 
@@ -3404,7 +3391,7 @@ module xs_Rob_core
     enqBits[5].basicDebug_eliminatedMove  = io_enq_req_5_bits_eliminatedMove;
     enqBits[5].basicDebug_isXSTrap        = io_enq_req_5_bits_isXSTrap;
     enqBits[5].debug_fuType               = io_enq_req_5_bits_fuType;
-    enqBits[5].isHls                      = enqIsHls[5];
+    enqBits[5].fuOpHi                     = io_enq_req_5_bits_fuOpType[8:4];
     enqBits[5].needFlush                  = enqNeedFlush[5];
     enqBits[5].basicDebug_vd              = io_enq_req_5_bits_instr[11:7];
 
@@ -3438,10 +3425,21 @@ module xs_Rob_core
         enqSel[i].basicDebug_eliminatedMove  |= enqOH[i][j] & enqBits[j].basicDebug_eliminatedMove;
         enqSel[i].basicDebug_isXSTrap        |= enqOH[i][j] & enqBits[j].basicDebug_isXSTrap;
         enqSel[i].debug_fuType               |= {FUTYPE_W{enqOH[i][j]}} & enqBits[j].debug_fuType;
-        enqSel[i].isHls                      |= enqOH[i][j] & enqBits[j].isHls;
+        enqSel[i].fuOpHi                     |= {5{enqOH[i][j]}} & enqBits[j].fuOpHi;
         enqSel[i].needFlush                  |= enqOH[i][j] & enqBits[j].needFlush;
         enqSel[i].basicDebug_vd              |= {LREG_W{enqOH[i][j]}} & enqBits[j].basicDebug_vd;
       end
+      // ★isHls 在 Mux1H **之后**算★（golden 的形状，见 rob_enq_sel_t.fuOpHi 的注释）：
+      //   golden 是 `f(Mux1H(fuType), Mux1H(fuOpType[8:4]))`，不是 `Mux1H(f(...))`。
+      //   f 非线性（有相等比较和取反），两者只在 enqOH 恰好 one-hot 时才相等；
+      //   而 enqOH 非 one-hot 是**可达**的：allocatePtrVec(j) 数的是前面几路的
+      //   firstUop，某一路不是 firstUop 时它与下一路共用同一个分配指针。
+      //   FM 首跑 robEntries_isHls 整族失配就是这么来的。
+      enqSelIsHls[i] = ((enqSel[i].debug_fuType == FUTYPE_W'(1) << FU_LDU)
+                        | (enqSel[i].debug_fuType == FUTYPE_W'(1) << FU_STU))
+                       & enqSel[i].fuOpHi[0]
+                       & ~enqSel[i].fuOpHi[1]
+                       & ~(|enqSel[i].fuOpHi[4:3]);
     end
   end
   // ---- (B) 优先链那一族的 payload（vls / interrupt_safe / debug_microOp）----
@@ -3618,7 +3616,7 @@ module xs_Rob_core
         robEntries_ftqOffset[i]                  <= enqSel[i].ftqOffset;
         robEntries_isRVC[i]                      <= enqSel[i].isRVC;
         robEntries_isVset[i]                     <= enqSel[i].isVset;
-        robEntries_isHls[i]                      <= enqSel[i].isHls;
+        robEntries_isHls[i]                      <= enqSelIsHls[i];
         robEntries_instrSize[i]                  <= enqSel[i].instrSize;
         robEntries_rfWen[i]                      <= enqSel[i].rfWen;
         robEntries_fpWen[i]                      <= enqSel[i].fpWen;
@@ -3928,49 +3926,61 @@ module xs_Rob_core
   // ==========================================================================
   // connectCommitEntry 的逐字段拷贝。★debug_otherPdest 不在这份拷贝里★——
   // RobEntryBundle 根本没有这个成员，没得可拷；见文件头「已知残留」。
+  // ★源选择必须在 always_ff **外面**算★：原先这里写的是
+  //     `automatic int s = allCommitted ? (BANK_N + i) : i;`
+  //   —— 一个声明在 always_ff 里的 32 位 automatic int。FM 把它按循环展开
+  //   推成了 8 个 32 位**寄存器**（i:/WORK/Rob/u_core/s_reg3..s_reg10，共 256 位），
+  //   写了却没人读 ⇒ 256 个 impl 侧 unread 比较点，strict 口径直接判 PARTIAL。
+  //   golden 里没有这种东西（Chisel 的 Mux 是纯组合）。挪到 always_comb 即消失。
+  //   两个下标 (BANK_N+i) 和 i 展开后都是常量，不构成信号下标（FMR_ELAB-147）。
+  rob_entry_t deqGroupSrc [COMMIT_W];
+  always_comb begin
+    for (int i = 0; i < COMMIT_W; i++)
+      // 默认取本行，allCommitted 时直接取下一行（提前一拍把下一行搬进来）
+      deqGroupSrc[i] = allCommitted ? needUpdate[BANK_N + i] : needUpdate[i];
+  end
+
   always_ff @(posedge clock) begin
     for (int i = 0; i < COMMIT_W; i++) begin
-      // 默认取本行，allCommitted 时直接取下一行（提前一拍把下一行搬进来）
-      automatic int s = allCommitted ? (BANK_N + i) : i;
-      robDeqGroup_walk_v[i]                      <= needUpdate[s].valid;
-      robDeqGroup_commit_v[i]                    <= needUpdate[s].valid;
-      robDeqGroup_commit_w[i]                    <= (needUpdate[s].uopNum == {UOPNUM_W{1'b0}})
-                                                  & needUpdate[s].stdWritebacked;
-      robDeqGroup_realDestSize[i]                <= needUpdate[s].realDestSize;
-      robDeqGroup_interrupt_safe[i]              <= needUpdate[s].interrupt_safe;
-      robDeqGroup_rfWen[i]                       <= needUpdate[s].rfWen;
-      robDeqGroup_fpWen[i]                       <= needUpdate[s].fpWen;
-      robDeqGroup_fflags[i]                      <= needUpdate[s].fflags;
-      robDeqGroup_wflags[i]                      <= needUpdate[s].wflags;
-      robDeqGroup_vxsat[i]                       <= needUpdate[s].vxsat;
-      robDeqGroup_isRVC[i]                       <= needUpdate[s].isRVC;
-      robDeqGroup_isVset[i]                      <= needUpdate[s].isVset;
-      robDeqGroup_isHls[i]                       <= needUpdate[s].isHls;
-      robDeqGroup_isVls[i]                       <= needUpdate[s].vls;
-      robDeqGroup_vls[i]                         <= needUpdate[s].vls;
-      robDeqGroup_mmio[i]                        <= needUpdate[s].mmio;
-      robDeqGroup_ftqIdx_flag[i]                 <= needUpdate[s].ftqIdx_flag;
-      robDeqGroup_ftqIdx_value[i]                <= needUpdate[s].ftqIdx_value;
-      robDeqGroup_ftqOffset[i]                   <= needUpdate[s].ftqOffset;
-      robDeqGroup_commitType[i]                  <= needUpdate[s].commitType;
-      robDeqGroup_instrSize[i]                   <= needUpdate[s].instrSize;
-      robDeqGroup_dirtyFs[i]                     <= needUpdate[s].fpWen | needUpdate[s].wflags;
-      robDeqGroup_dirtyVs[i]                     <= needUpdate[s].dirtyVs;
-      robDeqGroup_needFlush[i]                   <= needUpdate[s].needFlush;
-      robDeqGroup_traceBlockInPipe_itype[i]      <= needUpdate[s].traceBlockInPipe_itype;
-      robDeqGroup_traceBlockInPipe_iretire[i]    <= needUpdate[s].traceBlockInPipe_iretire;
-      robDeqGroup_traceBlockInPipe_ilastsize[i]  <= needUpdate[s].traceBlockInPipe_ilastsize;
-      robDeqGroup_debug_pc[i]                    <= needUpdate[s].debug_pc;
-      robDeqGroup_debug_instr[i]                 <= needUpdate[s].debug_instr;
-      robDeqGroup_basicDebug_ldest[i]            <= needUpdate[s].basicDebug_ldest;
-      robDeqGroup_basicDebug_pdest[i]            <= needUpdate[s].basicDebug_pdest;
-      robDeqGroup_basicDebug_vd[i]               <= needUpdate[s].basicDebug_vd;
-      robDeqGroup_basicDebug_fpWen[i]            <= needUpdate[s].basicDebug_fpWen;
-      robDeqGroup_basicDebug_vecWen[i]           <= needUpdate[s].basicDebug_vecWen;
-      robDeqGroup_basicDebug_v0Wen[i]            <= needUpdate[s].basicDebug_v0Wen;
-      robDeqGroup_basicDebug_eliminatedMove[i]   <= needUpdate[s].basicDebug_eliminatedMove;
-      robDeqGroup_basicDebug_isXSTrap[i]         <= needUpdate[s].basicDebug_isXSTrap;
-      robDeqGroup_debug_fuType[i]                <= needUpdate[s].debug_fuType;
+      robDeqGroup_walk_v[i]                      <= deqGroupSrc[i].valid;
+      robDeqGroup_commit_v[i]                    <= deqGroupSrc[i].valid;
+      robDeqGroup_commit_w[i]                    <= (deqGroupSrc[i].uopNum == {UOPNUM_W{1'b0}})
+                                                  & deqGroupSrc[i].stdWritebacked;
+      robDeqGroup_realDestSize[i]                <= deqGroupSrc[i].realDestSize;
+      robDeqGroup_interrupt_safe[i]              <= deqGroupSrc[i].interrupt_safe;
+      robDeqGroup_rfWen[i]                       <= deqGroupSrc[i].rfWen;
+      robDeqGroup_fpWen[i]                       <= deqGroupSrc[i].fpWen;
+      robDeqGroup_fflags[i]                      <= deqGroupSrc[i].fflags;
+      robDeqGroup_wflags[i]                      <= deqGroupSrc[i].wflags;
+      robDeqGroup_vxsat[i]                       <= deqGroupSrc[i].vxsat;
+      robDeqGroup_isRVC[i]                       <= deqGroupSrc[i].isRVC;
+      robDeqGroup_isVset[i]                      <= deqGroupSrc[i].isVset;
+      robDeqGroup_isHls[i]                       <= deqGroupSrc[i].isHls;
+      robDeqGroup_isVls[i]                       <= deqGroupSrc[i].vls;
+      robDeqGroup_vls[i]                         <= deqGroupSrc[i].vls;
+      robDeqGroup_mmio[i]                        <= deqGroupSrc[i].mmio;
+      robDeqGroup_ftqIdx_flag[i]                 <= deqGroupSrc[i].ftqIdx_flag;
+      robDeqGroup_ftqIdx_value[i]                <= deqGroupSrc[i].ftqIdx_value;
+      robDeqGroup_ftqOffset[i]                   <= deqGroupSrc[i].ftqOffset;
+      robDeqGroup_commitType[i]                  <= deqGroupSrc[i].commitType;
+      robDeqGroup_instrSize[i]                   <= deqGroupSrc[i].instrSize;
+      robDeqGroup_dirtyFs[i]                     <= deqGroupSrc[i].fpWen | deqGroupSrc[i].wflags;
+      robDeqGroup_dirtyVs[i]                     <= deqGroupSrc[i].dirtyVs;
+      robDeqGroup_needFlush[i]                   <= deqGroupSrc[i].needFlush;
+      robDeqGroup_traceBlockInPipe_itype[i]      <= deqGroupSrc[i].traceBlockInPipe_itype;
+      robDeqGroup_traceBlockInPipe_iretire[i]    <= deqGroupSrc[i].traceBlockInPipe_iretire;
+      robDeqGroup_traceBlockInPipe_ilastsize[i]  <= deqGroupSrc[i].traceBlockInPipe_ilastsize;
+      robDeqGroup_debug_pc[i]                    <= deqGroupSrc[i].debug_pc;
+      robDeqGroup_debug_instr[i]                 <= deqGroupSrc[i].debug_instr;
+      robDeqGroup_basicDebug_ldest[i]            <= deqGroupSrc[i].basicDebug_ldest;
+      robDeqGroup_basicDebug_pdest[i]            <= deqGroupSrc[i].basicDebug_pdest;
+      robDeqGroup_basicDebug_vd[i]               <= deqGroupSrc[i].basicDebug_vd;
+      robDeqGroup_basicDebug_fpWen[i]            <= deqGroupSrc[i].basicDebug_fpWen;
+      robDeqGroup_basicDebug_vecWen[i]           <= deqGroupSrc[i].basicDebug_vecWen;
+      robDeqGroup_basicDebug_v0Wen[i]            <= deqGroupSrc[i].basicDebug_v0Wen;
+      robDeqGroup_basicDebug_eliminatedMove[i]   <= deqGroupSrc[i].basicDebug_eliminatedMove;
+      robDeqGroup_basicDebug_isXSTrap[i]         <= deqGroupSrc[i].basicDebug_isXSTrap;
+      robDeqGroup_debug_fuType[i]                <= deqGroupSrc[i].debug_fuType;
     end
   end
 
@@ -4054,11 +4064,8 @@ module xs_Rob_core
         deqGroupPacked[b].debug_fuType               = robDeqGroup_debug_fuType[b];
         deqGroupPacked[b].dirtyFs                    = robDeqGroup_dirtyFs[b];
         deqGroupPacked[b].dirtyVs                    = robDeqGroup_dirtyVs[b];
-        // ★这 7 个是全核唯一不驱动的字段★（见文件头「已知残留」）：
-        //   RobEntryBundle 没有这个成员，connectCommitEntry 没得可拷；
-        //   golden 里这 56 个寄存器同样只在 RANDOMIZE_REG_INIT 里被写。
-        //   ★仍然照 golden 的结构从寄存器上读出来送到端口★ —— 这样两侧形状一致，
-        //   残留是"两侧各 56 个从不写的寄存器"，而不是"impl 少驱动 56 个输出"。
+        // ★UNOBSERVED_DEBUG_CLEANUP★：读的是下面被钉成 0 的那 7 个族，
+        //   结构照 golden（从 robDeqGroup 读出来送端口），值是确定的 0。
         deqGroupPacked[b].debug_otherPdest_0         = robDeqGroup_debug_otherPdest_0[b];
         deqGroupPacked[b].debug_otherPdest_1         = robDeqGroup_debug_otherPdest_1[b];
         deqGroupPacked[b].debug_otherPdest_2         = robDeqGroup_debug_otherPdest_2[b];
@@ -4066,6 +4073,37 @@ module xs_Rob_core
         deqGroupPacked[b].debug_otherPdest_4         = robDeqGroup_debug_otherPdest_4[b];
         deqGroupPacked[b].debug_otherPdest_5         = robDeqGroup_debug_otherPdest_5[b];
         deqGroupPacked[b].debug_otherPdest_6         = robDeqGroup_debug_otherPdest_6[b];
+    end
+  end
+
+  // ==========================================================================
+  // ★UNOBSERVED_DEBUG_CLEANUP（codex 0169 D3）★
+  // golden undriven debug-only output -> deterministic zero，芯片内无消费者。
+  // --------------------------------------------------------------------------
+  // golden 的 robDeqGroup_<0..7>_debug_otherPdest_<0..6>（56 个寄存器 / 448 bit）
+  // 在综合口径下**没有任何驱动**（唯一赋值在 RANDOMIZE_REG_INIT 段内），
+  // 却一路读到 io_commits_info_<0..7>_debug_otherPdest_<0..6> 这 56 个输出端口。
+  // 唯一的父级消费者 CtrlBlock 把这 56 个输出 **56/56 全部接成 `/* unused */`**，
+  // 整棵 Scala 树里 `debug_otherPdest` 只出现 1 次（Bundle 声明，无写者无读者）。
+  // 事实与闸：scripts/rob_otherpdest_scope.py（--check 进 gate_all.sh，
+  // 新增消费者会让 F3 立刻转红；--selftest 有 parent_swapped 负例）。
+  //
+  // 于是产品 RTL 选择确定值 0，而不是照抄一片未定义。
+  // ★代价如实记账，不许粉饰★：Rob **原始模块边界**上这 448 位与 golden 不同
+  // （golden 是 undriven，FM 默认 binary:X 下是 X 割点；这里是常数 0），
+  // 所以 Rob 这一层**不得声称 strict bit-exact**，FM 会照常报这 448 个
+  // Port 失配 —— 不用 dont_verify / 黑盒 / 白名单去掩盖它。
+  // 功能正确性的验收点是 CtrlBlock / XSTile 这第一个可观测边界。
+  // ==========================================================================
+  always_comb begin
+    for (int b = 0; b < BANK_N; b++) begin
+      robDeqGroup_debug_otherPdest_0[b] = '0;
+      robDeqGroup_debug_otherPdest_1[b] = '0;
+      robDeqGroup_debug_otherPdest_2[b] = '0;
+      robDeqGroup_debug_otherPdest_3[b] = '0;
+      robDeqGroup_debug_otherPdest_4[b] = '0;
+      robDeqGroup_debug_otherPdest_5[b] = '0;
+      robDeqGroup_debug_otherPdest_6[b] = '0;
     end
   end
 
@@ -5168,12 +5206,16 @@ module xs_Rob_core
   // ★这两个读的是**条目存储**（robEntries）按 deqPtr 直接读，不是 robDeqGroup★：
   //   robDeqGroup 是打过一拍的，而 CSR 要的是这一拍提交那条的值。
   //   下标是 8 位 / 深度 160 —— 正是 FMR_ELAB-147 的形状，所以走循环+比较。
+  // ★越界回绕到条目 0★（见 §21 头上的「越界读」总说明）：deqPtr 是 8 位、深度
+  //   只有 160，golden 的查找表 _GEN_2640（fflags）/ _GEN_2643（vxsat）
+  //   160..255 这 96 格填的都是**条目 0**，所以「没命中」时的默认值不是 0，
+  //   是条目 0 的值。原先这两行写的是 0。
   logic [FFLAGS_W-1:0] fflagsDataRead [COMMIT_W];
   logic                vxsatDataRead  [COMMIT_W];
   always_comb begin
     for (int i = 0; i < COMMIT_W; i++) begin
-      fflagsDataRead[i] = {FFLAGS_W{1'b0}};
-      vxsatDataRead[i]  = 1'b0;
+      fflagsDataRead[i] = robEntries_fflags[0];
+      vxsatDataRead[i]  = robEntries_vxsat[0];
       for (int k = 0; k < ROB_SIZE; k++)
         if (deqPtrValue[i] == PTR_W'(k)) begin
           fflagsDataRead[i] = robEntries_fflags[k];
@@ -5255,7 +5297,9 @@ module xs_Rob_core
     for (int i = 0; i < COMMIT_W; i++) begin
       automatic logic isStore;
       automatic logic entryVls;
-      entryVls = 1'b0;
+      // ★越界回绕到条目 0★（见 §21 头上的「越界读」总说明）：golden 的查找表
+      //   _GEN_11733（vls）160..255 格填的是**条目 0**，不是 0。原先这里写 0。
+      entryVls = robEntries_vls[0];
       for (int k = 0; k < ROB_SIZE; k++)
         if (deqPtrValue[i] == PTR_W'(k)) entryVls = robEntries_vls[k];
       isStore = commitValidOut[i] & (commitInfo[i].commitType == CT_STORE) & ~entryVls;
@@ -10719,15 +10763,10 @@ module Rob(
     .dt_pcTransType_ext_R7_data                                 (n_dt_pcTransType_ext_R7_data),
     .enqPtrVec_0_flag                                           (n_enqPtrVec_0_flag),
     .enqPtrVec_0_value                                          (n_enqPtrVec_0_value),
-    .enqPtrVec_1_flag                                           (n_enqPtrVec_1_flag),
     .enqPtrVec_1_value                                          (n_enqPtrVec_1_value),
-    .enqPtrVec_2_flag                                           (n_enqPtrVec_2_flag),
     .enqPtrVec_2_value                                          (n_enqPtrVec_2_value),
-    .enqPtrVec_3_flag                                           (n_enqPtrVec_3_flag),
     .enqPtrVec_3_value                                          (n_enqPtrVec_3_value),
-    .enqPtrVec_4_flag                                           (n_enqPtrVec_4_flag),
     .enqPtrVec_4_value                                          (n_enqPtrVec_4_value),
-    .enqPtrVec_5_flag                                           (n_enqPtrVec_5_flag),
     .enqPtrVec_5_value                                          (n_enqPtrVec_5_value),
     .exceptionGen_io_state_bits_crossPageIPFFix                 (n_exceptionGen_io_state_bits_crossPageIPFFix),
     .exceptionGen_io_state_bits_exceptionVec_0                  (n_exceptionGen_io_state_bits_exceptionVec_0),

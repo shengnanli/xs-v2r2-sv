@@ -1,0 +1,32 @@
+Command: /home/eda/xs-env/wt-rob631/verif/ut/Rob/./simv +ntb_random_seed=1 +ncycles=200000 +vcs+initreg+random -l sim_1.log
+Chronologic VCS simulator copyright 1991-2024
+Contains Synopsys proprietary information.
+Compiler version W-2024.09-SP1_Full64; Runtime version W-2024.09-SP1_Full64;  Sep 21 06:35 2026
+[7965000] MISMATCH io_commits_info_0_debug_otherPdest_0 g=ff x=00
+[7965000] MISMATCH io_commits_info_0_debug_otherPdest_1 g=ff x=00
+[7965000] MISMATCH io_commits_info_0_debug_otherPdest_2 g=ff x=00
+[7965000] MISMATCH io_commits_info_0_debug_otherPdest_3 g=ff x=00
+[7965000] MISMATCH io_commits_info_0_debug_otherPdest_4 g=ff x=00
+[7965000] MISMATCH io_commits_info_0_debug_otherPdest_5 g=ff x=00
+[7965000] MISMATCH io_commits_info_0_debug_otherPdest_6 g=ff x=00
+[7965000] MISMATCH io_commits_info_1_debug_otherPdest_0 g=ff x=00
+[7965000] MISMATCH io_commits_info_1_debug_otherPdest_1 g=ff x=00
+[7965000] MISMATCH io_commits_info_1_debug_otherPdest_2 g=ff x=00
+[7965000] MISMATCH io_commits_info_1_debug_otherPdest_3 g=ff x=00
+[7965000] MISMATCH io_commits_info_1_debug_otherPdest_4 g=ff x=00
+[7965000] MISMATCH io_commits_info_1_debug_otherPdest_5 g=ff x=00
+[7965000] MISMATCH io_commits_info_1_debug_otherPdest_6 g=ff x=00
+[7965000] MISMATCH io_commits_info_2_debug_otherPdest_0 g=ff x=00
+[7965000] MISMATCH io_commits_info_2_debug_otherPdest_1 g=ff x=00
+[7965000] MISMATCH io_commits_info_2_debug_otherPdest_2 g=ff x=00
+[7965000] MISMATCH io_commits_info_2_debug_otherPdest_3 g=ff x=00
+[7965000] MISMATCH io_commits_info_2_debug_otherPdest_4 g=ff x=00
+[7965000] MISMATCH io_commits_info_2_debug_otherPdest_5 g=ff x=00
+checks=132871736 errors=11155648
+TEST FAILED
+$finish called from file "tb.sv", line 14505.
+$finish at simulation time           2000045000
+           V C S   S i m u l a t i o n   R e p o r t 
+Time: 2000045000 ps
+CPU Time:   2432.000 seconds;       Data structure size:   5.3Mb
+Mon Sep 21 07:16:07 2026

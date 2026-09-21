@@ -1,0 +1,29 @@
+=== FM: Rob (mode=diagnostic-full) ===
+FM_TOP=Rob \
+FM_MODE=diagnostic-full \
+FM_REF_SRCS="/home/eda/xs-env/G1-canonical/golden-rtl/Rob.sv " \
+FM_IMPL_SRCS="/home/eda/xs-env/wt-rob631/rtl/backend/Rob.sv" \
+FM_MERGE_DUP=false \
+ \
+ \
+ \
+ \
+FM_PIN_TCL=/home/eda/xs-env/wt-rob631/verif/ut/Rob/fm_pins.tcl \
+FM_SIDECAR_OUT=/home/eda/xs-env/wt-rob631/verif/ut/Rob/fm_work/Rob/sidecar \
+FM_RUN_ID=Rob-20260921T095147Z-6fb082a8 \
+fm_shell -64 -work_path fm_work/Rob -file /home/eda/xs-env/wt-rob631/scripts/fm_eq.tcl \
+    < /dev/null > fm_work/Rob/fm.log 2>&1; \
+rc=$?; \
+v=$(XSSV_HOME=/home/eda/xs-env/wt-rob631 python3 /home/eda/xs-env/wt-rob631/scripts/fm_verdict.py fm_work/Rob/fm.log --rc $rc --mode diagnostic-full --top Rob --allowlist 0  --bbox-report fm_work/Rob/black_boxes.rpt  --canonical-id "$(cat /home/eda/xs-env/G1-canonical/CANONICAL_ID.txt)" --impl-commit "$(git -C /home/eda/xs-env/wt-rob631 rev-parse HEAD)"); \
+vrc=$?; echo "$v"; \
+XSSV_HOME=/home/eda/xs-env/wt-rob631 python3 /home/eda/xs-env/wt-rob631/scripts/make_receipt.py --top Rob --workdir fm_work/Rob \
+    --ref-srcs "/home/eda/xs-env/G1-canonical/golden-rtl/Rob.sv " \
+    --impl-srcs "/home/eda/xs-env/wt-rob631/rtl/backend/Rob.sv" \
+    --mode diagnostic-full --allowlist 0 \
+    --vmucp "false" \
+    --rc $rc --verdict "$v" --expect-run-id "Rob-20260921T095147Z-6fb082a8" \
+    --parent-commit "$(git -C /home/eda/xs-env/wt-rob631 rev-parse HEAD)" || exit 1; \
+exit $vrc
+FAILED	{"passing": 108074, "failing": 460, "unverified": 0, "unmatched": 460, "aborted": 0, "failing_total": 460, "failing_matched": 460, "failing_unmatched": 0, "unread": 67689, "blackbox_out": 56, "markers": 1, "make_rc": 0, "mode": "diagnostic-full", "constant_reg": 1448, "constant_reg_toggle_assumed": true, "native": "FAILED", "top": "Rob", "dont_verify": false, "elab147": false, "reason": "failed:failing=460,unmatched=460", "unmatched_ref": 460, "unmatched_impl": 56}
+receipt: fm_work/Rob/receipt.json (verdict=FAILED, canonical=G1-a4ea14f2ddf612bb4…, golden=1 files, dirty=False)
+make: *** [../../../scripts/ut_common.mk:166: fm-Rob] Error 1

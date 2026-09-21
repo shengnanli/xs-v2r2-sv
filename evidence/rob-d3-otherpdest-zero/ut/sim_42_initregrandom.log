@@ -1,0 +1,15 @@
+Command: /home/eda/xs-env/wt-rob631/verif/ut/Rob/./simv +ntb_random_seed=42 +ncycles=200000 +vcs+initreg+random -l sim_42.log
+Chronologic VCS simulator copyright 1991-2024
+Contains Synopsys proprietary information.
+Compiler version W-2024.09-SP1_Full64; Runtime version W-2024.09-SP1_Full64;  Sep 21 06:35 2026
+FATAL: warm-up never completed after 200000 cycles
+  enq_seen=0000000000000000000000000000000000000000
+  wb_seen =0000000000000000000000000000000000000000
+checks=0 errors=1  (warm-up failure counts as an error)
+TEST FAILED
+$finish called from file "tb.sv", line 14493.
+$finish at simulation time           2000045000
+           V C S   S i m u l a t i o n   R e p o r t 
+Time: 2000045000 ps
+CPU Time:   1528.690 seconds;       Data structure size:   5.3Mb
+Mon Sep 21 07:00:58 2026

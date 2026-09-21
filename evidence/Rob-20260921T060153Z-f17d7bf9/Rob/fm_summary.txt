@@ -1,0 +1,40 @@
+# 且签核的权威判据是 `Unverified compare points` 是否为 0，不是 failing 这个数。
+ 19565 Compare points matched by name    
+ 0 Compare points matched by signature analysis    
+ 7865 Compare points matched by topology    
+ 82948(82544) Unmatched reference(implementation) compare points    
+ 56(0) Unmatched reference(implementation) primary inputs, black-box outputs    
+ 67536(67520) Unmatched reference(implementation) unread points    
+ Black-box input pins (BBPin)                                              0          56    
+ Black-box output pins (BBPin)                                            56           0    
+ Cut-points (Cut)                                                        460           0    
+ 8941 Compare points matched previously    
+ 99593 Compare points matched by user    
+ 0 Compare points matched by name    
+ 0 Compare points matched by signature analysis    
+ 0 Compare points matched by topology    
+ 460(56) Unmatched reference(implementation) compare points    
+ 56(0) Unmatched reference(implementation) primary inputs, black-box outputs    
+ 16(0) Unmatched reference(implementation) unread points    
+ Black-box input pins (BBPin)                                              0          56    
+ Black-box output pins (BBPin)                                            56           0    
+ Cut-points (Cut)                                                        460           0    
+    puts "FM_RESULT: Verification SUCCEEDED for $top"
+    puts "FM_RESULT: Verification FAILED or INCONCLUSIVE for $top"
+ 8941 Compare points matched previously    
+ 99593 Compare points matched by user    
+ 0 Compare points matched by name    
+ 0 Compare points matched by signature analysis    
+ 0 Compare points matched by topology    
+ 460(56) Unmatched reference(implementation) compare points    
+ 56(0) Unmatched reference(implementation) primary inputs, black-box outputs    
+ 16(0) Unmatched reference(implementation) unread points    
+ Black-box input pins (BBPin)                                              0          56    
+ Black-box output pins (BBPin)                                            56           0    
+ Cut-points (Cut)                                                        460           0    
+Verification FAILED
+ 108074 Passing compare points
+ 460 Failing compare points (460 matched, 0 unmatched)
+ 0 Aborted compare points
+ 0 Unverified compare points
+FM_RESULT: Verification FAILED or INCONCLUSIVE for Rob
