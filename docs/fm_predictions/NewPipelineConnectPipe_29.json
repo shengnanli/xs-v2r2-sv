@@ -1,0 +1,9 @@
+{
+  "target": "NewPipelineConnectPipe_29",
+  "ut": "NewPipelineConnectPipe_29_34_35",
+  "regs": 1024,
+  "outs": 1025,
+  "expected": 2049,
+  "merge_dup": "true",
+  "model_applicable": false
+}

@@ -287,6 +287,13 @@ run "perf 分档台账闸"    python3 scripts/check_perf_tier.py
 # 模型 = 闭包触发器位数 + 顶层 output 位数。6 个已签核点必须逐位命中，
 # 命不中说明量法或模型有问题 —— 那时它做出的预测就不该被引用。
 run "passing 模型自校准"  python3 scripts/tlbsw_passing_model.py --check
+# ★跑前登记那套工具自己的自证也要进闸★（2026-09-20，agent/provefleet3）
+# 落地时这两条都**不在** gate_all 里：`fm_predict --selftest` 从加进来就没人跑，
+# `fm_passing_model --selftest` 是本轮新写的。一条没人跑的自证等于没有自证 ——
+# 本轮就靠它当场抓到两件事（模型缺 BBPin 项、cmd_register 把展示串写进了 note），
+# 而这两件事都是**跑完 FM 才发现**的，正说明缺的是跑在前面的那道闸。
+run "passing 模型 BBPin 自证"  python3 scripts/fm_passing_model.py --selftest
+run "跑前登记判据负测"      python3 scripts/fm_predict.py --selftest
 
 rm -f /tmp/gate_$$.out
 

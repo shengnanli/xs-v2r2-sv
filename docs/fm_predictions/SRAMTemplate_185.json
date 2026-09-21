@@ -1,0 +1,17 @@
+{
+  "target": "SRAMTemplate_185",
+  "ut": "SRAMTemplateNewForm",
+  "regs": 105,
+  "outs": 211,
+  "expected": 440,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "bbin": 124,
+  "bbox": {
+    "array_15_ext": {
+      "insts": 1,
+      "in_bits": 124,
+      "points": 124
+    }
+  }
+}

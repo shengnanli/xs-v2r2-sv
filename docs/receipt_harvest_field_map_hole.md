@@ -136,3 +136,90 @@ for wt in sorted(wts):
             if m: print(run, tgt, m.group(1))
 EOF
 ```
+
+---
+
+# ★2026-09-20 更正：`PACKED_MATCH: N points pinned` 里的 N 是**报多了**的★
+
+本节由 `agent/provefleet3` 在 `NewPipelineConnectPipe_29/_34` 正式出证后补写。
+它更正的不是本文档的结论（那个洞是真的，第 1 条修法也确实落地了），
+而是**本文档和 `scripts/fm_eq.tcl` 注释里共同默认的一句覆盖面描述**：
+
+> 「这里把整个 payload 的逐位双射钉死」
+> 「`NewPipelineConnectPipe_29` 钉了 1023 个点」
+
+★对 `width == 1` 的字段，这句话不成立。★ 上表「钉了多少点」那一列是
+`fm.log` 里 `PACKED_MATCH` 自报的数，它**不是实际 user-match 的点数**。
+
+## 机制
+
+`match_packed_payload` 对每个字段的每一位依次试候选名，1 位字段多一个无下标候选：
+
+```tcl
+set cands [list "r:/WORK/$top/data_${suf}_reg\[$b\]"]
+if {$w == 1} { lappend cands "r:/WORK/$top/data_${suf}_reg" }
+foreach rpath $cands {
+    if {![catch {set_user_match $rpath $ipath}]} { incr n; break }
+}
+```
+
+`set_user_match` **从不抛 Tcl 异常**（V-2023.12-SP3；本仓早有实测，
+见 `docs/pin_guard_failclosed.md` §一 与 `docs/rob_pin_failclosed.tsv`）：
+名字不存在时它返回 0 并往 `fm.log` 写一行行首 `Error: Unknown name ... (FM-036)`。
+于是 `![catch {...}]` **恒为真** ⇒ 第一支候选总是"成功"并 `break`
+⇒ ★`w == 1` 的第二支候选是死代码★，而 `n` 照样自增。
+
+## 实测（`evidence/6a9e4235497e/`，本轮正式 receipt，不是探针）
+
+| 量 | `_29` | `_34` | 怎么数的 |
+|---|---|---|---|
+| `PACKED_MATCH` 自报 | 1023 | 760 | `grep -aE '^PACKED_MATCH' fm.log` |
+| field map `sum(width)` | 1023 | 760 | `awk '{s+=$3}END{print s}' fm_map/<top>.txt` |
+| field map 里 `width==1` 的字段数 | **41** | **30** | `awk '$3==1{o++}END{print o}'` |
+| fm.log 行首锚定 `Error:` | **41** | **30** | `grep -acE "^ *Error:" fm.log`（全是 FM-036 Unknown name）|
+| `matched by signature analysis` | **41** | **30** | fm.log 的 match 统计块 |
+| `matched by name` | 1026 | 763 | 同上统计块 |
+| ★真正 user-matched★ | **982** | **730** | 总比较点 − by name − by signature：`2049−1026−41=982`；`1523−763−30=730` |
+
+三个 41 是同一个 41：**每个 1 位字段各产生一条 FM-036，各有一个点没被钉上，
+最后各由 FM 的签名分析自己配上。**
+
+> 数 `Error:` 必须**行首锚定**：`fm_shell` 把入口 Tcl 逐行回显进 log，
+> 本文档和源码里出现的 `FM-036` 字样不锚定就会被数进去。
+
+## 判决为什么仍然成立（★这一半不要读反★）
+
+`_29` / `_34` 两份 receipt 都是 native SUCCEEDED、`failing 0`、
+unmatched 六项全 0、`unread_notcompared 0`、`dont_verify=false`。
+签名分析是 Formality 正常的配对手段，**配错会直接变成 failing 点**；
+`unmatched_ref/impl = 0` 又保证没有任何点被跳过。
+所以「`_29` 的 2049 个比较点全部配上且等价」是真的；
+不真的只有「这 2049 里有 1023 个是 field map 钉的」——实际是 982。
+与 `docs/pin_guard_failclosed.md` §三同一条结论：
+**空守卫拦的是"我钉的名字对不对"，真判决在下游的 unread 铁律与 unmatched=0。**
+
+## 处置
+
+★现在不改 `scripts/fm_eq.tcl`。★ 集成者已裁（0920 口径），理由比那 28 个
+`fm_pins*.tcl` 更硬：修它**不是守卫专属改动** —— 那 41 个点会从
+signature-matched 变成 user-matched，**配对来源变了 = 证明语义变了**，
+绑着 `fm_eq.tcl` 的 46+ 份既有 receipt 会一起失效；而本仓刚为
+`fm_eq.tcl` 的 per-target 拆分付过一次「既有证书全部过期」的代价
+（见 `verif/fm_target_config/README.md`）。
+
+台账落在 `scripts/test_fm_pins_wellformed.py` 的 `SHARED_SCRIPT_CATCH_LEDGER`，
+由新增的 **G2c** 复核（只许缩不许长；形态一旦修掉，闸会要求把条目摘掉，
+并有三条判别性自证钉住"形态还在/已修掉/只剩注释"三种情形）。
+解除条件与 `CATCH_COUNT_LEDGER` 同口径：**下次该目标被改动或晋升时顺带修**，
+不专门为它排 FM。
+
+## 本文档原有两条修法的现状（如实记）
+
+1. **字节快照 —— 已落地。** `_29` 的
+   `sidecar/script_closure.list` 现在是三行，第三行就是 field map：
+   `…/fm_map/NewPipelineConnectPipe_29.txt  sourced_002_….txt  bc58bc81…`。
+2. **`proof_config` 里给 field map 一个自己的字段 —— ★未做★。**
+   `_29`/`_34`/`InstrMMIOEntry` 的 receipt 里 `pin_scripts` 仍然是
+   `{}`（`_29` 没有 `fm_pins*.tcl`）或只含 `fm_pins_pre.tcl`，
+   **没有 `field_maps`**。也就是说本文档「缺失与否定长得一模一样」那一节
+   描述的病灶**依然在**：读 receipt 的人仍然分不出"没钉"和"钉了但这个字段管不着"。

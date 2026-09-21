@@ -31,7 +31,7 @@
 `--from-ut` 直接读那个 UT 的 Makefile：`FM_VARIANTS` 逐个算，
 依赖取 `FM_REF_DEPS_<名>`（没写就只算自己）。
 """
-import argparse, collections, os, pathlib, re, sys
+import argparse, collections, json, os, pathlib, re, sys
 
 GOLDEN = pathlib.Path(os.environ.get('G1_CANONICAL',
                                      '/home/eda/xs-env/G1-canonical')) / 'golden-rtl'
@@ -54,6 +54,108 @@ NOT_A_MODULE = {
     'function', 'task', 'module', 'endmodule', 'generate', 'begin', 'end',
     'return', 'automatic', 'static', 'typedef', 'import', 'export', 'default',
 }
+
+# ---------------------------------------------------------------------------
+# ★黑盒输入引脚（BBPin）★ —— assembly 档的比较点里有一块模型原先整个漏掉了
+# ---------------------------------------------------------------------------
+# 逼出它的实测（agent/provefleet3，evidence/7877497350a2 8 份正式 receipt）：
+# 8 个 SRAMTemplate 全部 native SUCCEEDED，但 fm_predict 一律判 ABOVE_MODEL
+# （"实测高于模型上界 = 模型算漏了"）。拆开 fm.log 的 `Matched Compare Points` 表：
+#
+#     Passing (equivalent)   BBPin  Loop BBNet Cut  Port  DFF  LAT  TOTAL
+#     SRAMTemplate_145         158     0    0    0   294  149    1    602
+#                              ^^^                   ^^^  ^^^^^^^
+#                          模型漏的       = 模型 outs   = 模型 regs
+#
+# 也就是说 FM 把**未解析黑盒的输入引脚**也当比较点（黑盒的 output 不是比较点，
+# 它算进另一行 "Matched primary inputs, black-box outputs"）。
+# 纯 strict 无黑盒的目标这一项恒为 0，所以加上它对那些目标**逐字节不变**。
+#
+# 黑盒是谁：在 FM 的 **ref 闭包**（`$top.sv` + `FM_REF_DEPS_<top>` 里的 .sv）内部
+# 被例化、而定义文件**不在该闭包里**的模块。厂商 SRAM 宏叶子 `array_N_ext` 就是
+# 这么来的：两侧都读 `array_N.sv`（宏壳），都不读 `array_N_ext.v`（行为模型）。
+#
+# 引脚位宽从哪来：读那份**没被 FM 读**的定义文件的端口表（`.v` 优先，其次 `.sv`）。
+# ★读不到就返回 None，不猜★ —— 上界宁可标成"算不出"，也不能虚报一个数。
+# 8/8 逐位命中见 model() 下方 --selftest 的正向用例。
+#
+# ★为什么另起一个正则，而不是放开 INST_RE 的首字母★：INST_RE 决定 `regs`
+# （寄存器位数）的口径，动它会改变**所有已登记目标**的 expected；这里只是发现黑盒，
+# 两件事的失败方向不同（多数一个实例 = 上界虚高 vs 少发现一个黑盒 = 上界虚低）。
+# 另：agent/provefleet2 正在同一个文件里放开 INST_RE 首字母（commit a5f476fd，
+# 尚未合进本分支）。两边合并后可以把两个正则统一，但那是集成者的一次有意合并，
+# 不该由我在这里抢跑。
+BBOX_INST_RE = re.compile(r'^\s{0,4}([A-Za-z_]\w*)\s+([A-Za-z_]\w*)\s*\(\s*$', re.M)
+# 关键字黑名单：放开首字母后必须有它，否则会把语句当例化。
+_INST_KW = {
+    'if', 'else', 'case', 'casex', 'casez', 'endcase', 'always', 'always_ff',
+    'always_comb', 'always_latch', 'assign', 'initial', 'final', 'module',
+    'endmodule', 'function', 'endfunction', 'task', 'endtask', 'for', 'while',
+    'repeat', 'forever', 'begin', 'end', 'generate', 'endgenerate', 'wire',
+    'reg', 'logic', 'bit', 'byte', 'int', 'integer', 'input', 'output', 'inout',
+    'parameter', 'localparam', 'typedef', 'struct', 'union', 'enum', 'import',
+    'export', 'return', 'automatic', 'static', 'default', 'posedge', 'negedge',
+}
+# 黑盒端口表：`input [h:l] name` / `input wire name`（ANSI 头与非 ANSI 体都能命中）
+BB_IN_RE = re.compile(
+    r'\binput\s+(?:wire\s+|reg\s+|logic\s+)?'
+    r'(?:\[\s*(\d+)\s*:\s*(\d+)\s*\]\s*)?([A-Za-z_]\w*)')
+
+
+def _module_body(text, mod):
+    """取 `module <mod> ... endmodule` 之间的整段（含端口头）。找不到返回 None。"""
+    m = re.search(r'^\s*module\s+%s\b' % re.escape(mod), text, re.M)
+    if not m:
+        return None
+    e = re.search(r'^\s*endmodule\b', text[m.start():], re.M)
+    return text[m.start(): m.start() + e.start()] if e else text[m.start():]
+
+
+def bbox_in_bits(mod):
+    """黑盒的**输入**引脚位宽之和 = FM 给它建的 BBPin 比较点数。
+
+    黑盒 output 不产生比较点（它在 "Matched primary inputs, black-box outputs" 那行）。
+    ★读不到定义文件就返回 None（不猜）。★
+    """
+    for ext in ('.v', '.sv'):
+        f = GOLDEN / (mod + ext)
+        if not f.is_file():
+            continue
+        body = _module_body(f.read_text(errors='replace'), mod)
+        if body is None:
+            continue
+        seen, n = set(), 0
+        for hi, lo, name in BB_IN_RE.findall(body):
+            if name in seen:
+                continue
+            seen.add(name)
+            n += 1 if not hi else int(hi) - int(lo) + 1
+        return n
+    return None
+
+
+def bbox_counts(top, deps):
+    """FM ref 闭包内被例化、但定义文件不在闭包里的模块 -> 实例总数。"""
+    closure = {top} | set(deps)
+    cnt = collections.Counter()
+    stack, guard = [top], 0
+    while stack:
+        cur = stack.pop()
+        guard += 1
+        if guard > 5000:            # 防环（golden 是扁平层次，正常远达不到）
+            break
+        f = GOLDEN / (cur + '.sv')
+        if not f.is_file():
+            continue
+        for child, inst in BBOX_INST_RE.findall(f.read_text(errors='replace')):
+            if child in _INST_KW or inst in _INST_KW:
+                continue
+            if child in closure and (GOLDEN / (child + '.sv')).is_file():
+                stack.append(child)
+            else:
+                cnt[child] += 1
+    return cnt
+
 
 
 def _txt(mod):
@@ -113,14 +215,46 @@ def instance_counts(top, allowed):
     return cnt
 
 
-def model(top, deps):
+def model(top, deps, deps_unexpanded=()):
     allowed = set(deps)
     cnt = instance_counts(top, allowed)
     per = {m: reg_bits(m) for m in cnt}
     regs = sum(cnt[m] * per[m] for m in cnt)
     outs = out_bits(top)
-    return dict(top=top, insts=dict(cnt), per_reg=per, regs=regs, outs=outs,
-                model=regs + outs)
+    r = dict(top=top, insts=dict(cnt), per_reg=per, regs=regs, outs=outs,
+             model=regs + outs)
+    # ★deps 没读全就不许算 BBPin★（2026-09-20，NewDispatch 当场逼出来的）
+    # `verif/ut/NewDispatch/Makefile` 写的是 `FM_REF_DEPS_NewDispatch = $(ND_CHILDREN)`。
+    # from_ut 只挑 `.sv` 结尾的词，于是 deps 读成空 —— 而"闭包为空"和"闭包里真没有
+    # 那几个模块"在下面的 bbox_counts 看来一模一样，NewDispatch 的 9 个真子设计
+    # 会被整批误判成黑盒，凭空加出 2999 个比较点。
+    # ★这正是本文件已经在 bbox_in_bits 里守过的那条：读不到就说读不到，不猜。★
+    # 所以这里直接不加 bbin（模型退回 regs+outs，与加这一项之前逐字节相同），
+    # 只把"为什么没加"记进结果里。
+    # （agent/provefleet2 的 b820e35f 正在修 `$(VAR)` 展开；等它合进来，
+    #   这里的 deps_unexpanded 自然为空，本守卫随之失效——它是兜底不是替代。）
+    if deps_unexpanded:
+        r['deps_unexpanded'] = list(deps_unexpanded)
+        return r
+    # ★只有真有黑盒时才加这几个键★：没有黑盒的目标（绝大多数 strict 目标）
+    # 返回的字典与加这一项之前**逐字节相同**，已有登记不会被无谓地改动。
+    bb = bbox_counts(top, deps)
+    if bb:
+        detail, bbin, unknown = {}, 0, []
+        for m, c in sorted(bb.items()):
+            w = bbox_in_bits(m)
+            if w is None:
+                unknown.append(m)
+                continue
+            detail[m] = dict(insts=c, in_bits=w, points=c * w)
+            bbin += c * w
+        r['bbox'] = detail
+        r['bbin'] = bbin
+        r['model'] = regs + outs + bbin
+        if unknown:
+            # 读不到端口表 = 这一项算不出来，**上界不再是上界**，必须说出来。
+            r['bbox_unknown'] = sorted(unknown)
+    return r
 
 
 def _mk_vars(mk):
@@ -158,11 +292,109 @@ def from_ut(ut):
     out = []
     for t in tops:
         d = re.search(r'^FM_REF_DEPS_%s[^\S\n]*=[^\S\n]*(.*)$' % re.escape(t), mk, re.M)
-        deps = ([x.split('/')[-1][:-3]
-                 for x in _expand(d.group(1), vars_).split() if x.endswith('.sv')]
-                if d else [])
-        out.append(model(t, deps))
+        # ★两条改动的并集，不是二选一★（2026-09-21 集成者并）
+        #   provefleet2：真的展开 $(VAR)（_expand）—— 这是**修复**；
+        #   provefleet3：检测未展开变量并传给 model() 当守卫 —— 这是**兜底**。
+        # provefleet3 自己写着「合进来后我这个守卫自然失效 —— 它是兜底不是替代」。
+        # 所以：先展开，再看展开后**仍然残留**的 $(...)；两者都保留。
+        # 只留展开：展不开的变量会让 deps 读成空、真子设计被整批误判成黑盒
+        #           （NewDispatch 那次凭空 +2999，★缺失与否定长得一样★）。
+        # 只留守卫：能展开的也不展开，白白退回 regs+outs。
+        raw = d.group(1) if d else ''
+        exp = _expand(raw, vars_)
+        deps = [x.split('/')[-1][:-3] for x in exp.split() if x.endswith('.sv')]
+        unexp = sorted(set(re.findall(r'\$\(([A-Za-z_]\w*)\)', exp)))
+        out.append(model(t, deps, unexp))
     return out
+
+
+def _receipt_passing(top):
+    """从已提交的 receipt 里取 native passing（自证要拿实测对账，不许硬编码期望）。
+
+    ★按 target 名 glob，不钉 run id★：钉了 run id 的自证会在证据被重跑/换目录时
+    静默失效，而"自证跑不起来"和"自证通过"必须长得不一样 —— 找不到就返回 None，
+    调用处判红。同名多份取**最新**（与 fm_predict.find_receipt 同口径）。
+    """
+    cands = sorted((REPO / 'evidence').glob('*/%s/receipt.json' % top),
+                   key=lambda x: x.stat().st_mtime)
+    if not cands:
+        return None
+    return json.loads(cands[-1].read_text())['native_facts']['stats']['passing']
+
+
+def selftest():
+    """★BBPin 这一项的双向自证★（用的是本仓已提交的 receipt，不是编的数）。
+
+    正向：有黑盒的目标，加项之后模型必须对得上实测。
+    反向：无黑盒的目标，加项之后行为必须**逐字节不变**（连字典的键都不多一个）。
+    判别性：把黑盒的定义文件名换成一个不存在的，必须落进 bbox_unknown 而不是
+            悄悄按 0 算 —— 否则"算不出"和"没有"又长成一个样。
+    """
+    rc = 0
+
+    def ck(name, ok, detail=''):
+        nonlocal rc
+        print('  [%s] %s%s' % ('OK' if ok else 'FAIL', name,
+                               '  ' + detail if detail else ''))
+        rc |= 0 if ok else 1
+
+    # --- 正向 1：有黑盒 + 无重复寄存器合并 -> 逐位相等 ---------------------
+    for top in ('SRAMTemplate_145', 'SRAMTemplate_146', 'SRAMTemplate_152'):
+        r = next(x for x in from_ut('SRAMTemplateNewForm') if x['top'] == top)
+        act = _receipt_passing(top)
+        ck('正向 %s 有黑盒：模型 %d == 实测 %s' % (top, r['model'], act),
+           act is not None and r['model'] == act,
+           'bbin=%d' % r.get('bbin', 0))
+
+    # --- 正向 2：有黑盒 + 有一对重复寄存器被 merge 合掉 -> 恰好差 1 --------
+    for top in ('SRAMTemplate_155', 'SRAMTemplate_166', 'SRAMTemplate_178'):
+        r = next(x for x in from_ut('SRAMTemplateNewForm') if x['top'] == top)
+        act = _receipt_passing(top)
+        ck('正向 %s 差额恰为 1（merge 合掉 respReg[1]≡rckEnReg 一对）' % top,
+           act is not None and r['model'] - act == 1,
+           '模型 %d 实测 %s' % (r['model'], act))
+
+    # --- 反向：无黑盒的目标，加项前后逐字节不变 ---------------------------
+    for top in ('NewPipelineConnectPipe_29', 'NewPipelineConnectPipe_34'):
+        r = next(x for x in from_ut('NewPipelineConnectPipe_29_34_35')
+                 if x['top'] == top)
+        act = _receipt_passing(top)
+        ck('反向 %s 无黑盒：不多出 bbox/bbin 键' % top,
+           'bbox' not in r and 'bbin' not in r and 'bbox_unknown' not in r)
+        ck('反向 %s 无黑盒：model 仍等于 regs+outs 且等于实测' % top,
+           r['model'] == r['regs'] + r['outs'] == act,
+           'model %d 实测 %s' % (r['model'], act))
+
+    # --- 判别性：黑盒定义文件读不到时必须说"算不出"，不许按 0 算 ----------
+    ck('判别性 bbox_in_bits 读不到定义文件时返回 None（不猜 0）',
+       bbox_in_bits('__NoSuchVendorMacro__') is None)
+    ck('判别性 发现得到黑盒：SRAMTemplate_145 -> array_12_ext x1',
+       dict(bbox_counts('SRAMTemplate_145',
+                        ['sram_array_1p32x148m74s1h0l1b_pftch_pht', 'array_12',
+                         'MbistClockGateCell', 'ClockGate']))
+       == {'array_12_ext': 1})
+    ck('判别性 闭包里的模块不算黑盒：把 array_12 从 deps 里拿掉才会变成黑盒',
+       dict(bbox_counts('SRAMTemplate_145',
+                        ['sram_array_1p32x148m74s1h0l1b_pftch_pht',
+                         'MbistClockGateCell', 'ClockGate']))
+       == {'array_12': 1})
+    # --- deps 读不全时必须拒绝算 BBPin（NewDispatch: $(ND_CHILDREN) 没展开）----
+    nd = next(x for x in from_ut('NewDispatch') if x['top'] == 'NewDispatch')
+    ck('守卫 NewDispatch 的 deps 有未展开的 make 变量，必须记下来',
+       nd.get('deps_unexpanded') == ['ND_CHILDREN'])
+    ck('守卫 deps 读不全时不加 bbin（模型退回 regs+outs，与加项前逐字节相同）',
+       'bbin' not in nd and 'bbox' not in nd
+       and nd['model'] == nd['regs'] + nd['outs'])
+    # ★判别性★：守卫不是空转 —— 同一个 top 若不声明"deps 没读全"，
+    # 那 9 个真子设计就会被整批误判成黑盒、凭空加出上千个点。
+    nd_naive = model('NewDispatch', [])
+    ck('判别性 去掉守卫就会误判（同一 top 的 naive 算法 bbin > 0）',
+       nd_naive.get('bbin', 0) > 0,
+       'naive bbin=%d（%d 个"黑盒"）' % (nd_naive.get('bbin', 0),
+                                        len(nd_naive.get('bbox', {}))))
+
+    print('fm_passing_model --selftest', 'PASS' if rc == 0 else '★FAIL★')
+    return rc
 
 
 def main():
@@ -170,7 +402,10 @@ def main():
     ap.add_argument('target', nargs='?')
     ap.add_argument('--deps', nargs='*', default=[])
     ap.add_argument('--from-ut')
+    ap.add_argument('--selftest', action='store_true')
     a = ap.parse_args()
+    if a.selftest:
+        return selftest()
     rows = from_ut(a.from_ut) if a.from_ut else [
         model(a.target, [d[:-3] if d.endswith('.sv') else d for d in a.deps])]
     print(f'{"target":<24}{"regs":>10}{"outs":>8}{"模型(上界)":>12}   实例构成')
