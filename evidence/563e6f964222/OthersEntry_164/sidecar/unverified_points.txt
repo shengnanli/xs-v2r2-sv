@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/OthersEntry_164
+Implementation : i:/WORK/OthersEntry_164
+Version        : V-2023.12-SP3
+Date           : Mon Sep 21 04:24:52 2026
+**************************************************
+
+No unverified compare points.
+
+1

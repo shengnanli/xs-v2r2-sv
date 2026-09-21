@@ -32,7 +32,8 @@ HERE   = pathlib.Path(__file__).resolve().parent
 REPO   = HERE.parents[2]
 GOLDEN = pathlib.Path('/home/eda/xs-env/G1-canonical/golden-rtl')
 sys.path.insert(0, str(REPO / 'verif' / 'ut' / 'Entries_common'))
-from entries_gen import Variant, port_decls, read, bitvec   # noqa: E402
+from entries_gen import (Variant, port_decls, read, bitvec,   # noqa: E402
+                         wenpack, wenvec, WEN_ORDER, KIND_PAIRS)
 
 
 def parents():
@@ -67,8 +68,40 @@ class OthersVariant:
 
         self.is_trans = (self.role == 'simp')
         # ---- 只有逐模块才会不同的那几样 ----
+        # ★ HAS_LD_DEP 在核里管的是「条目里存不存那组 srcLoadDependency 影子寄存器」
+        #   （xs_iq_entries_core.sv 的 `if (HAS_LD_DEP) g_ld_dep / else g_no_ld_dep`，
+        #    else 支把 r_ld_dep 整组钉成常量 '0）。它**不是**「enq 口有没有那组输入」。
+        #   EnqEntry 族就是把这两件事混成一个标志，害 6 个变体把一组活的输出钉成 0
+        #   （见 commit 6ad7839a）。本族的量法长得一样，所以必须逐个交叉印证，
+        #   不能因为"看起来对"就放过。
+        #
+        #   本族的 enq 口来自上一级的 **transEntry**，而 transEntry 带不带
+        #   srcLoadDependency 恰好就等于「影子寄存器活不活」——所以这里两者同值。
+        #   但这是**量出来的结论，不是推出来的**：下面拿已签核父级传进来的实参
+        #   逐个求值对照（父级 xs_iq_entries_core.sv:1447
+        #   `.HAS_LD_DEP(HAS_LD_DEP && (L_IS_ENQ || L_IS_TRANS || COMP_HAS_LD_DEP))`
+        #   —— simp 段取 v.has_ld_dep，comp 段取 v.has_ld_dep && v.comp_has_ld_dep）。
         self.has_ld_dep = has(
             'io_commonIn_enq_bits_status_srcStatus_0_srcLoadDependency_0')
+        parent_arg = (v.has_ld_dep if self.is_trans
+                      else (v.has_ld_dep and v.comp_has_ld_dep))
+        assert self.has_ld_dep == bool(parent_arg), (
+            f'{mod}: HAS_LD_DEP 自量 {self.has_ld_dep} 与父级 {self.parent} 传给 '
+            f'{self.role} 段的实参 {bool(parent_arg)} 不一致 —— 参数在核里管的是'
+            '「影子寄存器存不存」，两者不一致就说明这里量错了语义')
+        # 影子寄存器在不在，还要与本模块自己的输出端口对得上：
+        #   simp（有 transEntry）看 transEntry 那组；comp 没有 transEntry，
+        #   它的影子寄存器只经 entry 出口露出来。两条都是**本模块**的端口表。
+        _tr_ld = [n for n in self.pmap if re.fullmatch(
+            r'io_commonOut_transEntry_bits_status_srcStatus_0_srcLoadDependency_\d+', n)]
+        _ety_ld = [n for n in self.pmap if re.fullmatch(
+            r'io_commonOut_entry_bits_status_srcStatus_0_srcLoadDependency_\d+', n)]
+        _out_ld = _tr_ld if self.is_trans else _ety_ld
+        assert bool(_out_ld) == self.has_ld_dep, (
+            f'{mod}: 影子寄存器 {self.has_ld_dep} 但 {"transEntry" if self.is_trans else "entry"}'
+            f' 出口上有 {len(_out_ld)} 条 —— 两者必须同生共死')
+        assert not _out_ld or len(_out_ld) == v.ld_pipes, (
+            f'{mod}: 出口上 {len(_out_ld)} 条 load 流水 != 父级 {v.ld_pipes}')
         self.has_deq_port = has('io_commonOut_deqPortIdxRead')
         assert self.has_deq_port == (v.n_deq == 2), (
             f'{mod}: deqPortIdxRead={self.has_deq_port} 但父级 numDeq={v.n_deq}'
@@ -100,6 +133,54 @@ class OthersVariant:
             dn = {n for n, _ in deq_pl}
             assert [(n, w) for n, w in tr if n not in dn] == v.pl_extra, \
                 f'{mod}: TRANS 独有负载字段与 {v.enq_mod} 不同'
+
+        # ---------------------------------------------------------------------
+        # E1/E2 的两样参数：唤醒匹配 =「按源分份的 kind」×「按窗口分份的 wen 存在性」
+        # （29dd150a）。★逐路量、并且量的是**本模块自己的**端口表★：firtool 是
+        # 逐模块 DCE 的，EnqEntry 上有的字段 OthersEntry 上不一定有。量完与父级
+        # （Variant 从 EnqEntry 量的那份）对照，不一致当场失败而不是悄悄挑一个。
+        # ---------------------------------------------------------------------
+        def _wen_by_lane(bus):
+            d = {}
+            for n in self.pmap:
+                mm = re.fullmatch(r'io_%s_(\d+)_bits_(\w+Wen)' % bus, n)
+                if mm and mm.group(2) in WEN_ORDER:
+                    d.setdefault(int(mm.group(1)), set()).add(mm.group(2))
+            return d
+        self.wen_lane = {'wb': _wen_by_lane('commonIn_wakeUpFromWB'),
+                         'iq': _wen_by_lane('commonIn_wakeUpFromIQ')}
+        # OthersEntry 没有 enqDelayIn1 那组总线（入队延迟窗口是 EnqEntry 专属），
+        # 所以延迟窗口的存在集合是**空集**：核在 elaborate 期把那两项整项剪掉。
+        # ★不是"喂 0"★——喂 0 会把 srcType 那几位留在锥里，而 golden 的锥里没有。
+        assert not _wen_by_lane('enqDelayIn1_wakeUpFromWB'), \
+            f'{mod}: 居然有 enqDelayIn1 总线，与 IS_ENQ=0 不符'
+        self.wen_lane['wbd'] = {}
+        self.wen_lane['iqd'] = {}
+        self.wen_present = {k: (set().union(*d.values()) if d else set())
+                            for k, d in self.wen_lane.items()}
+        for k in ('wb', 'iq'):
+            assert self.wen_lane[k] == v.wen_lane[k], (
+                f'{mod}: {k} 的逐路 wen 集合与父级 {self.parent} 量的不同\n'
+                f'  本模块={self.wen_lane[k]}\n  父级={v.wen_lane[k]}')
+        self.src_kind = v.src_kind
+        # ★安全带★：模型（kind × 该总线存在哪些 wen）展开出的对表，必须与本模块
+        # golden 里实测的 `srcStatus_<s>_srcType[b] & io_<bus>_<w>_bits_<f>Wen`
+        # 对表逐条相同。对不上当场退出，而不是生成一份错 RTL 等 FM 去发现。
+        # （与 entries_gen.Variant._check_pairs 同一把尺子，只是量在本模块上。）
+        _body = re.sub(r'\s+', ' ', read(mod))
+        for s in range(v.n_regsrc):
+            for bus, key in (('commonIn_wakeUpFromWB', 'wb'),
+                             ('commonIn_wakeUpFromIQ', 'iq')):
+                want = sorted((b, f) for b, f in KIND_PAIRS[self.src_kind[s]]
+                              if f in self.wen_present[key])
+                got = sorted({(int(b), f) for b, f in re.findall(
+                    r'srcStatus_%d_srcType\[(\d)\] & io_%s_\d+_bits_(\w+Wen)'
+                    % (s, bus), _body)})
+                assert not got or got == want, (
+                    f'{mod} src{s} @{bus}: 唤醒对表与模型不符\n'
+                    f'  模型={want}\n  实测={got}\n'
+                    f'  该总线存在的 wen={sorted(self.wen_present[key])}\n'
+                    '  —— 模型见 Bundles.scala:325-348 / EntryBundles.scala:185,241')
 
     # ---- 端口名小工具 ----
     def has(self, n):
@@ -258,8 +339,10 @@ def gen_rtl_body(ov, L, ctx):
     if n_iq:
         A('    .IQ_SRC_MASK({' + ', '.join(bitvec(v.iq_mask[s], n_iq)
                                            for s in reversed(range(n_src))) + '}),')
-        A("    .IQ_TYPE_BIT({" + ', '.join(f"3'd{v.iq_tbit[s]}"
-                                           for s in reversed(range(n_src))) + '}),')
+        # E1/E2：唤醒匹配 =「按源分份的 kind」×「按窗口分份的 wen 存在性」。
+        # 当拍窗口按本模块实测；延迟窗口 OthersEntry 根本没有，给空集让核剪掉。
+        A('    .IQ_WEN_PRESENT(' + wenvec(ov.wen_present['iq']) + '),')
+        A('    .IQD_WEN_PRESENT(' + wenvec(ov.wen_present['iqd']) + '),')
         A('    .IQ_IS_LD_PIPE({' + ', '.join(
             bitvec(set(v.iq_self_pipe[w]), v.ld_pipes)
             for w in reversed(range(n_iq))) + '}),')
@@ -268,8 +351,10 @@ def gen_rtl_body(ov, L, ctx):
           + f'), .RC_TYPE_BIT({v.rc_tbit}),')
     A('    .SRC_WB_MASK({' + ', '.join(bitvec(set(v.src_wb[s]), n_wk)
                                        for s in reversed(range(n_src))) + '}),')
-    A("    .SRC_TYPE_BIT({" + ', '.join(f"3'd{v.src_tbit[s]}"
+    A("    .SRC_MATCH_KIND({" + ', '.join(f"2'd{ov.src_kind[s]}"
                                         for s in reversed(range(n_src))) + '}),')
+    A('    .WB_WEN_PRESENT(' + wenvec(ov.wen_present['wb']) + '),')
+    A('    .WBD_WEN_PRESENT(' + wenvec(ov.wen_present['wbd']) + '),')
     A(f'    .HAS_IGNORE_OLD_VD({int(v.has_ignore)}),')
     A(f'    .VD_SRC({v.vd_src}), .VL_SRC({v.vl_src}),'
       f' .WB_VL_INT({v.wb_vl_int}), .WB_VL_VF({v.wb_vl_vf}),')
@@ -319,11 +404,16 @@ def gen_rtl_body(ov, L, ctx):
             for s in reversed(range(n_src)))) if ov.has(nm) else f".enq_{tag}('0)")
     # WB 唤醒：当拍总线接真信号，入队延迟窗口是 enq 条目专属，这里全钉 0
     c.append('.wk_valid({%s})' % rev('io_commonIn_wakeUpFromWB_%d_valid', n_wk))
+    # E1/E2：wen 不再是"每路一位"，而是按核里 WEN_* 顺序打成的 5 位向量；
+    # 该总线没有的字段填 1'b0，核按 *_WEN_PRESENT 在 elaborate 期整项剪掉（不是喂 0）。
+    # ★逐路★取存在集合：向量族实测 WB[0..5]=vecWen、[6..11]=v0Wen、[12..15]=vlWen，
+    # 「整条总线一个字段」的旧写法在向量族本来就是错的。
     for w in range(n_wk):
-        assert ov.has(f'io_commonIn_wakeUpFromWB_{w}_bits_{v.wk_wen[w]}'), (
-            f'{ov.mod}: WB{w} 的写使能字段 {v.wk_wen[w]} 在本模块端口表里不存在')
+        for _f in ov.wen_lane['wb'].get(w, set()):
+            assert ov.has(f'io_commonIn_wakeUpFromWB_{w}_bits_{_f}'), (
+                f'{ov.mod}: WB{w} 的写使能字段 {_f} 在本模块端口表里不存在')
     c.append('.wk_wen({%s})' % ', '.join(
-        f'io_commonIn_wakeUpFromWB_{w}_bits_{v.wk_wen[w]}'
+        wenpack('io_commonIn_wakeUpFromWB', w, ov.wen_lane['wb'].get(w, set()))
         for w in reversed(range(n_wk))))
     c.append('.wk_pdest({%s})' % rev('io_commonIn_wakeUpFromWB_%d_bits_pdest', n_wk))
     c.append('  // ★ 入队延迟窗口只有 EnqEntry 有（IS_ENQ=1）；OthersEntry 的 golden')
@@ -333,9 +423,7 @@ def gen_rtl_body(ov, L, ctx):
         # ★ 每一路的写使能字段名逐路量（v.iq_wen[w] 可能是 None：那一路
         #   在 golden 里根本没有到任何源的路由，整路是死的）
         c.append('.iq_wen({%s})' % ', '.join(
-            (f'io_commonIn_wakeUpFromIQ_{w}_bits_{v.iq_wen[w]}'
-             if v.iq_wen[w] and ov.has(
-                 f'io_commonIn_wakeUpFromIQ_{w}_bits_{v.iq_wen[w]}') else "1'b0")
+            wenpack('io_commonIn_wakeUpFromIQ', w, ov.wen_lane['iq'].get(w, set()))
             for w in reversed(range(n_iq))))
         c.append('.iq_pdest({%s})' % rev('io_commonIn_wakeUpFromIQ_%d_bits_pdest', n_iq))
         # ★ IQ 唤醒带不带 loadDependency 是**逐族**的：INT/MEM 族带，FP 族不带。
