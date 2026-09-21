@@ -70,6 +70,9 @@
 //     C  pte_only_pf 去掉 `& ~pte_is_af(p)`           -> errors=28536 / 20000 拍，抓到。
 //
 // 【实测】基线 commit cd59b7cc2389122a7d35bfc7298d208a45103e54
+//   （之后的 1107f3b7 只改了注释文字：剥掉 `//` 注释与空行后两版逐字节相同，
+//     sha256 a640e5b75e7af822e4a68fc532069e5f80b8cf87dddb92e26426d458fd16aa80，
+//     复算：`git show <commit>:rtl/mmu/PtwCache.sv | sed 's://.*::' | grep -v '^\s*$' | sha256sum`）
 //   （rtl/mmu/PtwCache.sv sha256 cf3579a77b0349647dfae49282952fa5ad9a8abe780728f9226e65ade68b623c）
 //   golden = G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0
 //
