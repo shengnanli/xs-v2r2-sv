@@ -22,7 +22,6 @@ DataModule__16entry_4	SIGNED_OFF_TARGET	ABSORBED_DIRECT	SyncDataModuleTemplate__
 DataModule__16entry_8	SIGNED_OFF_TARGET	ABSORBED_DIRECT	SyncDataModuleTemplate__64entry_2	4	SyncDataModuleTemplate__64entry_2	rtl/common/DataModule__16entry_8.sv
 DataModule__64entry	SIGNED_OFF_TARGET	ABSORBED_DIRECT	SyncDataModuleTemplate__1024entry	16	SyncDataModuleTemplate__1024entry	rtl/common/DataModule__64entry.sv
 DataModule__64entry_16	SIGNED_OFF_TARGET	ABSORBED_DIRECT	SyncDataModuleTemplate__1024entry_1	16	SyncDataModuleTemplate__1024entry_1	rtl/common/DataModule__64entry_16.sv
-DatamoduleResultBuffer	SIGNED_OFF_TARGET	ABSORBED_DIRECT	StoreQueue	1	StoreQueue	rtl/memblock/DatamoduleResultBuffer.sv
 EnqEntry	SIGNED_OFF_TARGET	ABSORBED_DIRECT	EntriesAluMulBkuBrhJmp	2	EntriesAluMulBkuBrhJmp	rtl/backend/EnqEntry.sv
 EnqEntry_10	SIGNED_OFF_TARGET	ABSORBED_DIRECT	EntriesFaluFmacFdiv	2	EntriesFaluFmacFdiv	rtl/backend/EnqEntry_10.sv
 EnqEntry_12	SIGNED_OFF_TARGET	ABSORBED_DIRECT	EntriesFaluFmac	2	EntriesFaluFmac	rtl/backend/EnqEntry_12.sv
@@ -87,12 +86,7 @@ RegCacheTagModule	SIGNED_OFF_TARGET	ABSORBED_DIRECT	RegCacheTagTable	1	RegCacheT
 RegCacheTagModule_1	SIGNED_OFF_TARGET	ABSORBED_DIRECT	RegCacheTagTable	1	RegCacheTagTable	rtl/backend/RegCacheTagModule_1.sv
 RightShiftModule	GOLDEN_ONLY	ABSORBED_COLLATERAL	AluDataModule	1	-	$(GOLDEN_RTL)/RightShiftModule.sv
 RightShiftWordModule	GOLDEN_ONLY	ABSORBED_COLLATERAL	AluDataModule	1	-	$(GOLDEN_RTL)/RightShiftWordModule.sv
-SQAddrModule	SIGNED_OFF_TARGET	ABSORBED_DIRECT	StoreQueue	1	StoreQueue	rtl/memblock/SQAddrModule.sv
-SQAddrModule_1	SIGNED_OFF_TARGET	ABSORBED_DIRECT	StoreQueue	1	StoreQueue	rtl/memblock/SQAddrModule_1.sv
-SQData8Module	SIGNED_OFF_TARGET	ABSORBED_COLLATERAL	SQDataModule	16	-	rtl/memblock/SQData8Module.sv
-SQDataModule	SIGNED_OFF_TARGET	ABSORBED_DIRECT	StoreQueue	1	StoreQueue	rtl/memblock/SQDataModule.sv
 ShiftResultSelect	GOLDEN_ONLY	ABSORBED_COLLATERAL	AluDataModule	1	-	$(GOLDEN_RTL)/ShiftResultSelect.sv
-StoreExceptionBuffer	SIGNED_OFF_TARGET	ABSORBED_DIRECT	StoreQueue	1	StoreQueue	rtl/memblock/StoreExceptionBuffer.sv
 SyncDataModuleTemplate_FtqPC_64entry	SIGNED_OFF_TARGET	ABSORBED_DIRECT	FtqPcMemWrapper	1	FtqPcMemWrapper	rtl/common/SyncDataModuleTemplate_FtqPC_64entry.sv
 UIntCompressor_27_000000000000001010100000000	GOLDEN_ONLY	ABSORBED_COLLATERAL	EnqEntry_10,EnqEntry_12,EnqEntry_8,OthersEntry_104,OthersEntry_106,OthersEntry_120,OthersEntry_122,OthersEntry_88,OthersEntry_90	54	-	$(GOLDEN_RTL)/UIntCompressor_27_000000000000001010100000000.sv
 WordResultSelect	GOLDEN_ONLY	ABSORBED_COLLATERAL	AluDataModule	1	-	$(GOLDEN_RTL)/WordResultSelect.sv

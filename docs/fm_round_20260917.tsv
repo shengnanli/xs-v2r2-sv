@@ -434,6 +434,7 @@ SplittedSRAM_1	SUCCEEDED	p2487 f0 um0 unread=? const_reg=? mode=signoff-strict v
 SplittedSRAM_2	SUCCEEDED	p7472 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @a7c0861e14f7 evidence/a7c0861e14f7/SplittedSRAM_2/receipt.json
 StdFreeList	SUCCEEDED	p1593 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/StdFreeList/receipt.json
 StoreExceptionBuffer	SUCCEEDED	p1246 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @f4184ea93fcf evidence/f4184ea93fcf/StoreExceptionBuffer/receipt.json
+StoreQueue	SUCCEEDED	p77012 f0 um0 unread=? const_reg=1 mode=signoff-strict vmucp=true @833cdc83077f evidence/833cdc83077f/StoreQueue/receipt.json
 SyncDataModuleTemplate_BackendPC_64entry	SUCCEEDED	p4097 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @25cdce831a66 evidence/25cdce831a66/SyncDataModuleTemplate_BackendPC_64entry/receipt.json
 SyncDataModuleTemplate_FtqPC_64entry	SUCCEEDED	p7166 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @25cdce831a66 evidence/25cdce831a66/SyncDataModuleTemplate_FtqPC_64entry/receipt.json
 SyncDataModuleTemplate__1024entry	SUCCEEDED	p1070 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @25cdce831a66 evidence/25cdce831a66/SyncDataModuleTemplate__1024entry/receipt.json

@@ -2267,6 +2267,12 @@ ProbeQueue	entries_5	ProbeEntry	GEN_SITE	u_core.g_entry[5].u_entry	ProbeEntry		a
 ProbeQueue	entries_6	ProbeEntry	GEN_SITE	u_core.g_entry[6].u_entry	ProbeEntry		auto_gen_site_suffix	
 ProbeQueue	entries_7	ProbeEntry	GEN_SITE	u_core.g_entry[7].u_entry	ProbeEntry		auto_gen_site_suffix	
 ProbeQueue	pipe_req_arb	Arbiter8_MainPipeReq	DEEPER	u_core.pipe_req_arb	Arbiter8_MainPipeReq		auto_deeper	
+PtwCache	ClockGate	ClockGate	DEEPER	u_core.ClockGate	ClockGate		auto_deeper	
+PtwCache	ClockGate_1	ClockGate	DEEPER	u_core.ClockGate_1	ClockGate		auto_deeper	
+PtwCache	l0	SplittedSRAM_2	ONE_SITE	u_core.u_l0_sram	SplittedSRAM_2		auto_one_site	
+PtwCache	l1	SplittedSRAM_1	ONE_SITE	u_core.u_l1_sram	SplittedSRAM_1		auto_one_site	
+PtwCache	mbistPlL0	MbistPipePtwL0	ONE_SITE	u_core.u_mbist_l0	MbistPipePtwL0		auto_one_site	
+PtwCache	mbistPlL1	MbistPipePtwL1	ONE_SITE	u_core.u_mbist_l1	MbistPipePtwL1		auto_one_site	
 RNXbar	rxdatArbs_0	FastArbiter_45	DEEPER	u_core.rxdatArbs_0	FastArbiter_45		auto_deeper	
 RNXbar	rxrspArbs_0	FastArbiter_26	DEEPER	u_core.rxrspArbs_0	FastArbiter_26		auto_deeper	
 RNXbar	rxsnpArbs_0	FastArbiter_43	DEEPER	u_core.rxsnpArbs_0	FastArbiter_43		auto_deeper	
@@ -2305,6 +2311,22 @@ Rob	snapshots_snapshotGen	SnapshotGenerator_3	SAME_PATH	snapshots_snapshotGen	Sn
 Rob	vtypeBuffer	VTypeBuffer	SAME_PATH	vtypeBuffer	VTypeBuffer		auto_same	
 SNXbar	txdatArb	FastArbiter_45	DEEPER	u_core.txdatArb	FastArbiter_45		auto_deeper	
 SNXbar	txreqArb	FastArbiter_46	DEEPER	u_core.txreqArb	FastArbiter_46		auto_deeper	
+SQDataModule	data16_0	SQData8Module	SAME_PATH	data16_0	SQData8Module		auto_same	
+SQDataModule	data16_1	SQData8Module	SAME_PATH	data16_1	SQData8Module		auto_same	
+SQDataModule	data16_10	SQData8Module	SAME_PATH	data16_10	SQData8Module		auto_same	
+SQDataModule	data16_11	SQData8Module	SAME_PATH	data16_11	SQData8Module		auto_same	
+SQDataModule	data16_12	SQData8Module	SAME_PATH	data16_12	SQData8Module		auto_same	
+SQDataModule	data16_13	SQData8Module	SAME_PATH	data16_13	SQData8Module		auto_same	
+SQDataModule	data16_14	SQData8Module	SAME_PATH	data16_14	SQData8Module		auto_same	
+SQDataModule	data16_15	SQData8Module	SAME_PATH	data16_15	SQData8Module		auto_same	
+SQDataModule	data16_2	SQData8Module	SAME_PATH	data16_2	SQData8Module		auto_same	
+SQDataModule	data16_3	SQData8Module	SAME_PATH	data16_3	SQData8Module		auto_same	
+SQDataModule	data16_4	SQData8Module	SAME_PATH	data16_4	SQData8Module		auto_same	
+SQDataModule	data16_5	SQData8Module	SAME_PATH	data16_5	SQData8Module		auto_same	
+SQDataModule	data16_6	SQData8Module	SAME_PATH	data16_6	SQData8Module		auto_same	
+SQDataModule	data16_7	SQData8Module	SAME_PATH	data16_7	SQData8Module		auto_same	
+SQDataModule	data16_8	SQData8Module	SAME_PATH	data16_8	SQData8Module		auto_same	
+SQDataModule	data16_9	SQData8Module	SAME_PATH	data16_9	SQData8Module		auto_same	
 SRAMTemplate	array	sram_array_1p128x74m37s1h0l1b_icsh_tag	SAME_PATH	array	sram_array_1p128x74m37s1h0l1b_icsh_tag		auto_same	
 SRAMTemplate	rcg	MbistClockGateCell	DEEPER	u_core.g_extcg.rcg	MbistClockGateCell		auto_deeper	
 SRAMTemplate_100	array	sram_array_1p256x72m72s1h0l1b_dcsh_dat	SAME_PATH	array	sram_array_1p256x72m72s1h0l1b_dcsh_dat		auto_same	
@@ -2405,11 +2427,11 @@ SplittedSRAM_2	array_0_1_5	SRAMTemplate_129	SAME_PATH	array_0_1_5	SRAMTemplate_1
 SplittedSRAM_2	array_0_1_6	SRAMTemplate_143	SAME_PATH	array_0_1_6	SRAMTemplate_143		auto_same	
 SplittedSRAM_2	array_0_1_7	SRAMTemplate_143	SAME_PATH	array_0_1_7	SRAMTemplate_143		auto_same	
 StdFreeList	snapshots_snapshotGen	SnapshotGenerator	DEEPER	u_core.snapshots_snapshotGen	SnapshotGenerator		auto_deeper	
-StoreQueue	dataBuffer	DatamoduleResultBuffer	UNRESOLVED				none	
-StoreQueue	dataModule	SQDataModule	UNRESOLVED				none	
-StoreQueue	exceptionBuffer	StoreExceptionBuffer	UNRESOLVED				none	
-StoreQueue	paddrModule	SQAddrModule	UNRESOLVED				none	
-StoreQueue	vaddrModule	SQAddrModule_1	UNRESOLVED				none	
+StoreQueue	dataBuffer	DatamoduleResultBuffer	DEEPER	u_core.dataBuffer	DatamoduleResultBuffer		auto_deeper	
+StoreQueue	dataModule	SQDataModule	DEEPER	u_core.dataModule	SQDataModule		auto_deeper	
+StoreQueue	exceptionBuffer	StoreExceptionBuffer	DEEPER	u_core.exceptionBuffer	StoreExceptionBuffer		auto_deeper	
+StoreQueue	paddrModule	SQAddrModule	DEEPER	u_core.paddrModule	SQAddrModule		auto_deeper	
+StoreQueue	vaddrModule	SQAddrModule_1	DEEPER	u_core.vaddrModule	SQAddrModule_1		auto_deeper	
 SubDirectory	lfsr_prng	MaxPeriodFibonacciLFSR_3	SAME_PATH	lfsr_prng	MaxPeriodFibonacciLFSR_3		auto_same	
 SubDirectory	metaArray	SRAMTemplate_193	SAME_PATH	metaArray	SRAMTemplate_193		auto_same	
 SubDirectory	tagArray	SRAMTemplate_192	SAME_PATH	tagArray	SRAMTemplate_192		auto_same	
