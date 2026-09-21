@@ -1,9 +1,0 @@
-{"vcs1":{"timestamp_begin":1789971803.202452544, "rt":44.25, "ut":42.02, "st":1.58}}
-{"vcselab":{"timestamp_begin":1789971847.723947773, "rt":4.51, "ut":1.52, "st":0.54}}
-{"link":{"timestamp_begin":1789971852.434364462, "rt":0.92, "ut":0.57, "st":0.36}}
-{"SNPS_VCS_INTERNAL_ROOT_START_TIME": 1789971800.088525502}
-{"VCS_COMP_START_TIME": 1789971800.088525502}
-{"VCS_COMP_END_TIME": 1789971853.858838040}
-{"VCS_USER_OPTIONS": "-full64 -sverilog -timescale=1ns/1ps -kdb -lca -debug_access+all +lint=TFIPC-L -l compile.log +define+SYNTHESIS ut_gen/StoreQueue.sv ut_gen/SQDataModule.sv ut_gen/SQData8Module.sv ut_gen/SQAddrModule.sv ut_gen/SQAddrModule_1.sv ut_gen/DatamoduleResultBuffer.sv ut_gen/StoreExceptionBuffer.sv /home/eda/xs-env/G1-canonical/golden-rtl/StoreQueue.sv /home/eda/xs-env/G1-canonical/golden-rtl/SQAddrModule.sv /home/eda/xs-env/G1-canonical/golden-rtl/SQAddrModule_1.sv /home/eda/xs-env/G1-canonical/golden-rtl/SQDataModule.sv /home/eda/xs-env/G1-canonical/golden-rtl/SQData8Module.sv /home/eda/xs-env/G1-canonical/golden-rtl/DatamoduleResultBuffer.sv /home/eda/xs-env/G1-canonical/golden-rtl/StoreExceptionBuffer.sv tb_dbg.sv -top tb -o simv"}
-{"vcs1": {"peak_mem": 682748}}
-{"vcselab": {"peak_mem": 322720}}
