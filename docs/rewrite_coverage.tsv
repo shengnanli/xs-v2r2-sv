@@ -27,6 +27,14 @@ unique_design_proven	161	1191	13.5
 golden_lines_written	1954516	3902283	50.1
 golden_lines_proven	1579116	3902283	40.5
 #
+# ★核内口径（XSTile 闭包，docs/xstile_closure.tsv）= 本轮真实范围★
+incore_golden_lines_written	1785810	3349905	53.3
+incore_golden_lines_proven	1414662	3349905	42.2
+# 核外（XSTop 有、XSTile 没有）—— ★本轮范围外，不排期★
+#   已证出来的不作废，只是不该和核内混在一个百分比里报
+outcore_golden_lines_written	168706	552378	30.5
+outcore_golden_lines_proven	164454	552378	29.8
+#
 # written 里没有绿判决证据的设计族（差额都在这儿，逐个列出不藏）：
 #   EnqEntry                                        23986 行
 #   EntriesLdu                                      29386 行
@@ -38,11 +46,11 @@ golden_lines_proven	1579116	3902283	40.5
 #   StorePipe                                          93 行
 #
 # 剩余最大的 30 个（按 golden 行数）—— 下一波排期的候选
+# ★只列核内★：核外的另列在本表末尾，不要从那里接活
 remaining_design	golden_lines	variants	scope
 NewDispatch	100983	1	REWRITE_L
 Backend	79590	1	REWRITE_L
 StoreQueue	77145	1	REWRITE_L
-TLToAXI4	68788	2	-
 LoadQueueUncache	59051	1	REWRITE_L
 CtrlBlock	57635	1	REWRITE_L
 MemBlock	57550	1	REWRITE_L
@@ -50,22 +58,46 @@ PtwCache	45308	1	REWRITE_L
 Slice	45020	5	REWRITE_L
 EntriesVlduVstuVseglduVsegstu	40287	1	REWRITE_L
 EntriesVlduVstu	39935	1	REWRITE_L
-NCB200	36161	2	-
 Scheduler	33927	4	REWRITE_L
 EntriesStaMou	29558	1	-
-Domain	26885	2	-
 DataPath	25618	1	REWRITE_L
 DCache	23854	1	REWRITE_L
-NCBTransactionPayload	23532	2	-
 WbDataPath	21416	1	REWRITE_L
-NCBTransactionAgeMatrix	21027	2	-
-SimTop	19836	1	-
 NewCSR	15945	1	REWRITE_L
 ExeUnit	15312	13	REWRITE_L
 MSHRCtl	14590	1	REWRITE_M
-GatewayEndpoint	14530	1	-
 VLMergeBufferImp	14173	1	-
 XSCore	13423	1	REWRITE_L
 LoadUnit	13028	1	REWRITE_L
 Directory	11098	5	REWRITE_M
 Frontend	10940	1	REWRITE_L
+DecodeStage	10850	1	REWRITE_L
+LsqWrapper	10584	1	REWRITE_L
+MutiLevelPrefetchFilter	10466	1	-
+LoadQueueRAW	10261	1	REWRITE_L
+DiffRatStateBuffer	10187	1	-
+WaitTable	9481	1	-
+MainPipe	9208	3	REWRITE_L
+#
+# ★核外剩余（XSTop 有、XSTile 没有）—— 本轮不排期，列在这里只为
+#   让人看得见它们的存在，别当成"还没人接的活"★  合计 354539 行
+#   TLToAXI4                                    68788 行  variants=2
+#   NCB200                                      36161 行  variants=2
+#   Domain                                      26885 行  variants=2
+#   NCBTransactionPayload                       23532 行  variants=2
+#   NCBTransactionAgeMatrix                     21027 行  variants=2
+#   SimTop                                      19836 行  variants=1
+#   GatewayEndpoint                             14530 行  variants=1
+#   AXI4UserYanker                              10371 行  variants=5
+#   PreprocessEndpoint                          10296 行  variants=1
+#   ResponseUnit                                 9139 行  variants=1
+#   MemUnit                                      8071 行  variants=1
+#   RefillUnit                                   6061 行  variants=1
+#   TLDebugModuleInner                           5323 行  variants=1
+#   MemMisc                                      4854 行  variants=1
+#   AXI4IntrGenerator                            4389 行  variants=1
+#   OpenNCB                                      4256 行  variants=2
+#   NCBOrderAddressCAM                           3759 行  variants=2
+#   NCBUpstreamTXDAT                             3416 行  variants=2
+#   XSTop                                        3199 行  variants=1
+#   NCBUpstreamRXREQ                             3185 行  variants=2

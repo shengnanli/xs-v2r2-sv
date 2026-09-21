@@ -66,6 +66,7 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from rewritten_floor import classify_rtl, counts_as_written
+from gen_xstile_closure import load as load_tile_closure
 
 REPO = pathlib.Path(__file__).resolve().parent.parent
 GOLDEN = pathlib.Path('/home/eda/xs-env/G1-canonical/golden-rtl')
@@ -260,6 +261,33 @@ def build():
                 % (lines_done, lines_tot, lines_done * 100.0 / lines_tot))
     rows.append('golden_lines_proven\t%d\t%d\t%.1f'
                 % (lines_prov, lines_tot, lines_prov * 100.0 / lines_tot))
+    # ★核内口径（2026-09-21 加）★
+    # 上面四行的分母来自 universe，而 universe 的根是 **XSTop**（见
+    # docs/g1_configured_universe.tsv 表头），装的是整个 SoC —— L3(OpenLLC)、
+    # TileLink/AXI 桥、NCB 家族、APLIC 全在里面。而本轮重写范围是**核**
+    # （用户长期约束：核外面的文件不要重写）。
+    # 两个口径的百分比差别不大（实测 proven 41.2% -> 42.4%），★所以别拿它当进展★；
+    # 真正的损失在排期表：核外大件会排到核内大件前面（实测 30 个候选里 7 个核外、
+    # 合计 21 万行，一直夹在 Backend / LoadQueueUncache / CtrlBlock 中间）。
+    tile = load_tile_closure()
+    if tile:
+        i_tot = sum(n for m, (_, n) in real.items() if m in tile)
+        i_done = sum(n for m, (_, n) in real.items() if m in tile and m in done)
+        i_prov = sum(n for m, (_, n) in real.items() if m in tile and m in prov)
+        o_tot, o_done, o_prov = (lines_tot - i_tot, lines_done - i_done,
+                                 lines_prov - i_prov)
+        rows.append('#')
+        rows.append('# ★核内口径（XSTile 闭包，docs/xstile_closure.tsv）= 本轮真实范围★')
+        rows.append('incore_golden_lines_written\t%d\t%d\t%.1f'
+                    % (i_done, i_tot, i_done * 100.0 / i_tot))
+        rows.append('incore_golden_lines_proven\t%d\t%d\t%.1f'
+                    % (i_prov, i_tot, i_prov * 100.0 / i_tot))
+        rows.append('# 核外（XSTop 有、XSTile 没有）—— ★本轮范围外，不排期★')
+        rows.append('#   已证出来的不作废，只是不该和核内混在一个百分比里报')
+        rows.append('outcore_golden_lines_written\t%d\t%d\t%.1f'
+                    % (o_done, o_tot, o_done * 100.0 / o_tot if o_tot else 0.0))
+        rows.append('outcore_golden_lines_proven\t%d\t%d\t%.1f'
+                    % (o_prov, o_tot, o_prov * 100.0 / o_tot if o_tot else 0.0))
     rows.append('#')
     rows.append('# written 里没有绿判决证据的设计族（差额都在这儿，逐个列出不藏）：')
     for b in sorted(fam_done - fam_prov):
@@ -267,6 +295,7 @@ def build():
         rows.append('#   %-44s %8d 行' % (b, n))
     rows.append('#')
     rows.append('# 剩余最大的 30 个（按 golden 行数）—— 下一波排期的候选')
+    rows.append('# ★只列核内★：核外的另列在本表末尾，不要从那里接活')
     rows.append('remaining_design\tgolden_lines\tvariants\tscope')
     scope = {}
     uni = REPO / 'docs' / 'g1_universe.tsv'
@@ -280,8 +309,17 @@ def build():
     rest = sorted(((sum(real[m][1] for m in ms if m not in done), b, ms)
                    for b, ms in fam.items() if b not in fam_done),
                   reverse=True)
-    for n, b, ms in rest[:30]:
+    incore = [r for r in rest if not tile or any(m in tile for m in r[2])]
+    outcore = [r for r in rest if tile and not any(m in tile for m in r[2])]
+    for n, b, ms in incore[:30]:
         rows.append('%s\t%d\t%d\t%s' % (b, n, len(ms), scope.get(b, '-')))
+    if outcore:
+        rows.append('#')
+        rows.append('# ★核外剩余（XSTop 有、XSTile 没有）—— 本轮不排期，列在这里只为')
+        rows.append('#   让人看得见它们的存在，别当成"还没人接的活"★  合计 %d 行'
+                    % sum(n for n, _, _ in outcore))
+        for n, b, ms in outcore[:20]:
+            rows.append('#   %-40s %8d 行  variants=%d' % (b, n, len(ms)))
     return '\n'.join(rows) + '\n', (len(targets), len(fam_done), len(fam),
                                     lines_done, lines_tot, len(fam_prov), lines_prov)
 

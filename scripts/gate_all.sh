@@ -149,7 +149,8 @@ for g in scripts/gen_tlbuffer_ad_family.py scripts/gen_mbist_pipe_family.py \
          scripts/gen_rob_pins.py scripts/gen_rob_contract.py \
          scripts/gen_rob_iface.py \
          scripts/gen_fubusy_wbarb.py scripts/gen_l2tlb.py \
-         scripts/gen_lqreplay.py scripts/gen_lqreplay_ut.py; do
+         scripts/gen_lqreplay.py scripts/gen_lqreplay_ut.py \
+         scripts/gen_xstile_closure.py; do
   [ -f "$g" ] && run "生成器幂等 $(basename $g .py | sed 's/^gen_//')" python3 "$g" --check
 done
 # UT 目录下的生成器不在 check_gen_gate_complete.py 的扫描范围（它只扫 scripts/gen_*.py），
