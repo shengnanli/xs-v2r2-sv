@@ -1,0 +1,217 @@
+{
+ "schema": "xs-v2-sv-receipt-v1",
+ "top": "StoreQueue",
+ "run_id": "StoreQueue-20260921T105440Z-833cdc83",
+ "g1_canonical_id": "G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0",
+ "golden_closure": [
+  {
+   "path": "golden-rtl/StoreQueue.sv",
+   "kind": "golden",
+   "sha256": "d4f6c54f0c6652790e8c31ff0472669681dbc27a7cbcf4f9d633d8418b40b971"
+  },
+  {
+   "path": "golden-rtl/SQAddrModule.sv",
+   "kind": "golden",
+   "sha256": "2ec9ff761b9e100b997e202e611f8ed6fa02e7a8ae39a09d2a10ebae15b50fd8"
+  },
+  {
+   "path": "golden-rtl/SQAddrModule_1.sv",
+   "kind": "golden",
+   "sha256": "08a134f0fde8a922f4bcb47bcaa7c4a6ff4ea1842ff58c1f2988439713f95186"
+  },
+  {
+   "path": "golden-rtl/SQDataModule.sv",
+   "kind": "golden",
+   "sha256": "d2aee50f87bc17bc195de680c4c0573eca18c1bff3569bca84f6d1f374cb19fd"
+  },
+  {
+   "path": "golden-rtl/SQData8Module.sv",
+   "kind": "golden",
+   "sha256": "2d4f9f4981efc8c8b8521f09fe6388afcad286925a90302701771ea48675e01b"
+  },
+  {
+   "path": "golden-rtl/DatamoduleResultBuffer.sv",
+   "kind": "golden",
+   "sha256": "80ae6331d47cbebf3e17ed2ec3dfaf40ea2ed29f318aaeb9d50a4374db6c4a66"
+  },
+  {
+   "path": "golden-rtl/StoreExceptionBuffer.sv",
+   "kind": "golden",
+   "sha256": "ea53395121934ab56ac2afc6b2cee0d52a43ddd72e8def98eae1703e6899c826"
+  }
+ ],
+ "impl_closure": [
+  {
+   "path": "rtl/memblock/StoreQueue.sv",
+   "kind": "repo",
+   "sha256": "2c76004f4662c5a4a562eebcea677fdfe08d049901b80aee34bcf5d3a57b086d"
+  },
+  {
+   "path": "rtl/memblock/SQDataModule.sv",
+   "kind": "repo",
+   "sha256": "4a82d38c29c19473b7ada47e89fb005f45f89b2a8205752ba38ab52275f0534d"
+  },
+  {
+   "path": "rtl/memblock/SQData8Module.sv",
+   "kind": "repo",
+   "sha256": "50d58fa4e766e8ac42224fcb0c141c7baab1e9d1300958821dc657ff4e21f018"
+  },
+  {
+   "path": "rtl/memblock/SQAddrModule.sv",
+   "kind": "repo",
+   "sha256": "a28f1733c67194201c547a3b6eeb87e50e715e9a94eb18789ed8b7efe46af175"
+  },
+  {
+   "path": "rtl/memblock/SQAddrModule_1.sv",
+   "kind": "repo",
+   "sha256": "76711d0e1cd153feba3300061b84793b83e46469e00912a72c97d9ca7a16578f"
+  },
+  {
+   "path": "rtl/memblock/DatamoduleResultBuffer.sv",
+   "kind": "repo",
+   "sha256": "2e9a189b6e9968a7c086a2f83d2ebdb595175210cd427a64bc0203660350e0b0"
+  },
+  {
+   "path": "rtl/memblock/StoreExceptionBuffer.sv",
+   "kind": "repo",
+   "sha256": "22eb7ac38fca0782d8bc607a3dfee41c59961f59754c9a71faa99ded6b065077"
+  }
+ ],
+ "impl_commit": "833cdc83077f98cb73c785046513925ae2554d94",
+ "impl_worktree_dirty": false,
+ "provisional": false,
+ "impl_closure_hashed_at": "post_run",
+ "proof_config": {
+  "fm_mode": "signoff-strict",
+  "fm_allowlist_numeric_prefilter": "0",
+  "verify_matched_unread_compare_points": "true",
+  "pin_scripts": {
+   "fm_pins_pre.tcl": "995dec55b9269580f84aadf91a294e274784593e5d262bb3d34915e265884f53"
+  },
+  "declarations": {},
+  "entry_appvars_readback": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  }
+ },
+ "green_child_closure_checks": [],
+ "fm_shell_rc": 0,
+ "native_facts": {
+  "schema": "fm-sidecar-native-v1",
+  "run_id": "StoreQueue-20260921T105440Z-833cdc83",
+  "top": "StoreQueue",
+  "native_verdict": "SUCCEEDED",
+  "stats": {
+   "passing": 77012,
+   "failing": 0,
+   "unverified": 0,
+   "aborted": 0,
+   "unread_notcompared": 0
+  },
+  "unmatched": {
+   "compare_ref": 0,
+   "compare_impl": 0,
+   "unread_ref": 0,
+   "unread_impl": 0,
+   "bbout_ref": 0,
+   "bbout_impl": 0
+  },
+  "objects": {
+   "matched_blackbox_pairs": [],
+   "matched_unread_notcompared_pairs": [],
+   "matched_dont_verify_pairs": [],
+   "interface_only_ref": [],
+   "interface_only_impl": [],
+   "unresolved_blackbox_ref": [],
+   "unresolved_blackbox_impl": [],
+   "empty_blackbox_ref": [],
+   "empty_blackbox_impl": [],
+   "unlinked_blackbox_ref": [],
+   "unlinked_blackbox_impl": [],
+   "unmatched_ref": [],
+   "unmatched_impl": [],
+   "unmatched_unread_ref": [],
+   "unmatched_unread_impl": [],
+   "unmatched_dont_verify_ref": [],
+   "unmatched_dont_verify_impl": [],
+   "unmatched_bbox_output_ref": [],
+   "unmatched_bbox_output_impl": [],
+   "unmatched_bbox_input_ref": [],
+   "unmatched_bbox_input_impl": [],
+   "unmatched_primary_input_ref": [],
+   "unmatched_primary_input_impl": []
+  },
+  "qualifications": {
+   "dont_verify_objects": [],
+   "elab147": [],
+   "relaxed_appvars": []
+  },
+  "entry_appvars": {
+   "hdlin_interface_only": "",
+   "hdlin_unresolved_modules": "black_box",
+   "verification_merge_duplicated_registers": "true",
+   "verification_verify_matched_unread_bbox_inputs": "true",
+   "verification_verify_matched_unread_compare_points": "true",
+   "verification_verify_unread_bbox_inputs": "false",
+   "verification_verify_unread_compare_points": "false",
+   "verification_verify_unread_tech_cell_pg_pins": "true",
+   "verification_verify_unread_tech_cell_pins": "true"
+  },
+  "failures": {
+   "cap": 5000,
+   "failing": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "unverified": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   },
+   "aborted": {
+    "total": 0,
+    "truncated": false,
+    "pairs": [],
+    "by_register": [],
+    "by_register_truncated": false
+   }
+  }
+ },
+ "verdict": "SUCCEEDED",
+ "verdict_detail": {
+  "passing": 77012,
+  "failing": 0,
+  "unverified": null,
+  "unmatched": 0,
+  "aborted": null,
+  "failing_total": 0,
+  "failing_matched": 0,
+  "failing_unmatched": 0,
+  "unread": null,
+  "blackbox_out": 0,
+  "markers": 1,
+  "make_rc": 0,
+  "mode": "signoff-strict",
+  "constant_reg": 1,
+  "constant_reg_toggle_assumed": false,
+  "native": "SUCCEEDED",
+  "top": "StoreQueue",
+  "dont_verify": false,
+  "elab147": false,
+  "reason": null,
+  "unmatched_ref": 0,
+  "unmatched_impl": 0
+ }
+}
