@@ -37,12 +37,11 @@ include ../../../scripts/ut_common.mk
 # （`+vcs+initreg+0` 放编译行会 Error-[OBSL_OPT_E]，实测过）。
 VCS += +define+SYNTHESIS +vcs+initreg+random
 
-# ★判据 D 的临时放行★：选择通路（uopSelIQ 的 toRenameAllFire/firedVec）要
-# LsqEnqCtrl 的 canAccept，Lane I 还没落地，于是重写侧只会选中 lane0/lane1，
-# lane2~5 的 payload 根本到不了输出（实测：golden 六条都选，重写只选两条）。
-# 这是真覆盖洞，不是 tb 写错，所以显式放行而不是假装没有。
-# ★Lane I 落地后必须删掉这一行★，判据 D 会重新变成硬闸。
-SIM_ARGS += +known_hole_frozen_select
+# ★判据 D 的临时放行已删除（步骤 2，2026-09-21）★
+# 原来这里有一行 `SIM_ARGS += +known_hole_frozen_select`，理由是选择通路
+# （uopSelIQ 的 toRenameAllFire/firedVec）要 LsqEnqCtrl 的 canAccept，
+# 那时没接，于是重写侧只选得中 lane0/lane1。步骤 2 把那条链接通了，
+# 原注释写的「★Lane I 落地后必须删掉这一行★」在此兑现，判据 D 重新是硬闸。
 
 # ★曾经开过 FM_MERGE_DUP=false，已回退（c35c160 -> 本次）★
 # 当时的假设：N=2 的组里 iqSort[0]/iqSort[1] 互补被 merge 掉，导致 55 个点落进

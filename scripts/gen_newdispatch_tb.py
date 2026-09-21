@@ -33,38 +33,24 @@ MAXW = 128  # vpu_vmask 是最宽的 leaf
 
 # ★静态推断的 blocked 集合，不是跑完回填的★
 #
-# 第一版我按「数据锥」算，错了：payload 的**选择**也还没通。
-# uopSelIQ 的两个写源 toRenameAllFire / firedVec 都要 io_fromRename_*_ready，
-# 而 ready 要 LsqEnqCtrl 的 canAccept —— 现在被钉成 0，于是重写侧 uopSelIQ 永远
-# 停在上电值、oh 恒定、payload mux 永远选同一条 lane；golden 那边子模块是真的，
-# 选择在动。所以**凡是经过这个 mux 的位都必然失配**，不管它的数据接没接。
-#
-# 真正"两侧都与选择无关"的只有一类：golden 六条 lane 的数据全是同一个常量，
-# 于是 mux 输出恒为该常量，重写侧也恒为该常量 —— 这类位才该是 clean。
-#   * pack_spec 里六条 lane 全判 CONST 的 leaf（debugInfo×9 / ssid / storeSetHit /
-#     waitForRobIdx / loadWait* / replayInst / srcLoadDependency_2,3,4_*）
-#   * srcState 中被逐 IQ 掩码折成 0 的那 72 个位
-# 其余 6699-N 个输出**全部**应当红。
-UNCONNECTED_GROUPS = ('io_fromRename_', 'io_toRenameAllFire', 'io_enqRob_',
-                      'io_toMem_', 'io_perf_', 'io_stallReason_')
+# 步骤 1 之前这里写的是「凡是经过 payload mux 的位都必然失配」——理由是重写侧的
+# 选择通路冻住（uopSelIQ 的两个写源都钉在常量 0），mux 永远选同一条 lane。
+# ★步骤 2 之后这条理由整个失效了★：ready/firedVec/toRenameAllFire 已是真值，
+# 选择通路与 golden 同步在动。于是 blocked 集合收缩成**只剩真正悬空的那批位**：
+# io_toIssueQueues 里 leaf ∈ gen_newdispatch.BLOCKED_LEAVES 的（srcState 再按
+# 逐 IQ 掩码扣掉折成常量 0 的 72 位）。其余每一位都改判"必须始终一致"。
+# ★2026-09-21（步骤 2）：本常量已清空，原值与失效理由留在这里★
+#   原值 = ('io_fromRename_', 'io_toRenameAllFire', 'io_enqRob_',
+#           'io_toMem_', 'io_perf_', 'io_stallReason_')
+# 那时这 725 个 output 在重写侧一个驱动源都没有，所以整组进 blocked。
+# 步骤 2 之后它们全部有真驱动（io_toMem 直接来自 lsqEnqCtrl、io_enqRob 基本是
+# io_fromRename 直通、握手/perf/stallReason 由节 2.8~2.12 的派遣流控算出），
+# ★于是它们从"必然红"变成"必须绿"★ —— 判据 B 的原话就是这个意思：
+# 「哪天某位接上了真值，它会从 B 掉出来而不是悄悄混在绿里，那时**必须**同步
+#  把它从 blocked 清单里删掉，判据才会再次成立」。这里就是在做那件事。
+UNCONNECTED_GROUPS = ()
 
 
-def const_both_sides_leaves():
-    """六条 lane 的数据全是同一个常量的 leaf —— 这类位与选择无关，两侧恒等。"""
-    ports = G.golden_ports()
-    spec = G.pack_spec(ports)
-    out = set()
-    for leaf, _ in G.dyninst_leaves(ports):
-        if re.match(r'^srcState_\d$', leaf):
-            continue   # srcState 走 allSrcState 覆写路径，由掩码单独判
-        kinds = {spec[(l, leaf)][0] for l in range(6)}
-        vals = {spec[(l, leaf)][1] for l in range(6)}
-        if kinds == {'CONST'} and len(vals) == 1:
-            out.add(leaf)
-    return out
-
-
-CONST_BOTH = None
 
 
 # srcState 逐 IQ 掩码（与 rtl/backend/NewDispatch.sv 节 1.4 的 SRCSTATE_LIVE 同一张表，
@@ -80,17 +66,19 @@ SRCSTATE_LIVE = [
 
 
 def is_const_both(name):
-    """两侧都与"选择"无关、恒等于同一个常量的位。只有这一类现在可以断言一致。"""
-    m = re.match(r'^io_toIssueQueues_(\d+)_bits_(.+)$', name)
-    if not m:
-        return False
-    q, leaf = int(m.group(1)), m.group(2)
-    ms = re.match(r'^srcState_(\d)$', leaf)
-    if ms:
-        return not SRCSTATE_LIVE[q // 2][int(ms.group(1))]
-    if leaf == 'snapshot' and q % 2 == 1:
-        return True
-    return leaf in CONST_BOTH
+    """必须**始终一致**的位（判据 A 的对象）。
+
+    ★步骤 2 起判据 A 的范围整个变了★，这是本 tb 最重要的一次收紧：
+    在步骤 1 之前，重写侧的**选择通路是冻住的**（uopSelIQ 的两个写源都钉在 0），
+    所以哪怕数据位接对了，mux 也永远选同一条 lane，与 golden 必然对不上 ——
+    那时只有"六条 lane 数据全是同一个常量"的位才敢断言一致。
+    步骤 2 把 ready/firedVec/toRenameAllFire 接成真值之后，选择通路活了，
+    于是判断反过来：**除了仍然悬空的那批位，其余每一位都必须始终一致**。
+
+    判据 A 的覆盖面因此从几百位涨到五万位量级；这也意味着流控但凡写错一位，
+    这条闸就会红 —— 这正是它该有的样子。
+    """
+    return not is_dangling(name)
 
 
 def is_dangling(name):
@@ -103,24 +91,13 @@ def is_dangling(name):
     不红既不是 tb 漏检也不是我接错，只是没被区分开。把它们塞进判据 B 是我
     把判据定过头了，不是 tb 的毛病，所以修判据、不修数据。
     """
-    if name == 'io_toRenameAllFire':
-        return True
-    for g in ('io_fromRename_', 'io_enqRob_', 'io_toMem_', 'io_perf_',
-              'io_stallReason_'):
-        if name.startswith(g):
-            return True
     m = re.match(r'^io_toIssueQueues_(\d+)_(valid|bits_(.+))$', name)
     if not m:
         return False
     q = int(m.group(1))
     if m.group(2) == 'valid':
-        # ★不是无条件悬空★：iq_valid[q] 的尾项是 oh[q][5] & rename_valid[5]，
-        # rename_valid 虽然是 Z，但 SV 四值里 0 & Z = 0 —— 当该 enq 口一次都没被
-        # 选中（oh 全零，initreg=0 时必然如此）时 valid 恒为 0，而不是 Z，
-        # golden 那边同样没人进这个槽也是 0，于是两边恒等、永远不失配。
-        # 实测：seed=7 initreg=0 下正是这 17 个 valid 触发了判据 B。
-        # 所以 valid 只能算"未判定"，不能当判据 B 的对象。bits 则不同：
-        # 六条 lane 的该 leaf 全是 unresolved_*(Z)，选哪条都是 Z，无条件失配。
+        # 步骤 2 起 iq_valid 的每一项都是真值（renameUpdateValid 由节 2.8 算出），
+        # 不再有 Z，所以 valid 归判据 A（必须始终一致），不是悬空位。
         return False
     leaf = m.group(3)
     ms = re.match(r'^srcState_(\d)$', leaf)
@@ -130,36 +107,15 @@ def is_dangling(name):
 
 
 def is_blocked(name):
-    if name.endswith('_ready') and name.startswith('io_fromRename_'):
-        return True
-    for g in UNCONNECTED_GROUPS:
-        if name.startswith(g):
-            return True
-    m = re.match(r'^io_toIssueQueues_(\d+)_(valid|bits_(.+))$', name)
-    if m:
-        q = int(m.group(1))
-        if m.group(2) == 'valid':
-            return True
-        leaf = m.group(3)
-        ms = re.match(r'^srcState_(\d)$', leaf)
-        if ms:
-            return bool(SRCSTATE_LIVE[q // 2][int(ms.group(1))])
-        # snapshot 的二阶常量性（判据 B 替我抓出来的，不是我事先想到的）：
-        # snapshot 只有 lane0 非常量（lane1~5 被 golden 钉成 1'h0，PriorityMux 尾项
-        # 也是 lane5 的 0）。而 golden 自己写着
-        #     uopSelIQMatrix_0_<iq> = {2'h0, uopSelIQ_0_<iq>}      -> 取值只能是 0/1
-        #     oh_IQSelUop_<奇数口>_0 = (uopSelIQMatrix_0_<iq> == 3'h2)
-        # 后者**恒为假** —— lane0 的前缀计数最多是 1，永远占不到第二个 enq 口。
-        # 所以奇数口的 snapshot 在两侧都恒等于 0，属于 clean，不该进 blocked。
-        if leaf == 'snapshot' and q % 2 == 1:
-            return False
-        return leaf not in CONST_BOTH
-    return False
+    """跑前报告用：步骤 2 之后 blocked 与 dangling 是同一个集合。
+
+    步骤 1 之前两者不同：那时"选择通路冻住"让一大批**接对了数据**的位也必然失配，
+    它们算 blocked 但不算 dangling。选择通路接通后这个区别消失了。
+    """
+    return is_dangling(name)
 
 
 def main():
-    global CONST_BOTH
-    CONST_BOTH = const_both_sides_leaves()
     ports = G.golden_ports()
     ins = [(d, w, n) for d, w, n in ports if d == 'input' and n not in ('clock', 'reset')]
     outs = [(d, w, n) for d, w, n in ports if d == 'output']
@@ -169,8 +125,9 @@ def main():
     a('//')
     a('// ★判据不是 errors==0★（见 scripts/gen_newdispatch_tb.py 头注释）：')
     a('//   A 失配位 ⊆ blocked 清单   B blocked 每一位都真红了   C 比较真的发生过')
-    a('// 现在有一批位故意悬空（Lane H/I 的 9 个子模块未实现），仿真里是 Z，必然红；')
-    a('// 它们**必须**红——不红说明 tb 漏检。')
+    a('// 步骤 2 之后只剩 io_toIssueQueues 的 536 个端口故意悬空（srcState/srcType_2/')
+    a('// lqIdx/sqIdx/useRegCache/regCacheIdx/srcLoadDependency 还没接），仿真里是 Z，')
+    a('// 它们**必须**红——不红说明 tb 漏检；其余每一位都**必须**始终一致。')
     a('//')
     a('// 本文件由 scripts/gen_newdispatch_tb.py 生成，不要手改。')
     a('`timescale 1ns/1ps')
@@ -284,9 +241,9 @@ def main():
     a('')
     a('  // 判据 D：重写侧每条 lane 的 payload 都必须真的被某个 enq 口选中过，')
     a('  // 否则"A 清单外失配=0"里有一大半位置根本没被激励碰到过（MA-3 就是这么漏的）。')
-    a('  // 现在选择通路没通（uopSelIQ 冻在上电值），D 必然不满足 —— 所以 Makefile 暂时')
-    a('  // 传 +known_hole_frozen_select 把它降成响亮的 WARNING。★Lane I(LsqEnqCtrl) 落地后')
-    a('  // 必须把那个 plusarg 从 Makefile 删掉★，D 才会重新变成硬闸；洞没补上就会红。')
+    a('  // ★步骤 2 起 D 重新是硬闸★：选择通路已接通，Makefile 里那行')
+    a('  // +known_hole_frozen_select 已经删掉（放行开关的那句"落地后必须删掉"兑现了）。')
+    a('  // known_hole 这条路径留着只为让老命令行不报错，正常跑法下它恒为 0。')
     a('  int unexpected_red = 0, silent_blocked = 0, blocked_red = 0, clean = 0, unsel_lanes = 0, undetermined = 0;')
     a('  bit known_hole = 0;')
     a('  initial begin')

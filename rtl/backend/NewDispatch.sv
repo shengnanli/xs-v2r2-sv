@@ -20,26 +20,33 @@
 //
 // golden 对照：G1-canonical/golden-rtl/NewDispatch.sv（100983 行，单变体）。
 // 机械派生区（端口表 / dyninst_t）由 scripts/gen_newdispatch.py 从 golden 生成。
-// 本文件导航（共 17685 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
-//   L46     节 1】newdispatch_pkg —— 派遣拓扑表与 payload 类型
-//   L62     节 1.1】多队列 FU 组表（10 组）—— 全部来自 golden 实测，不是 Chisel 推断
-//   L117    节 1.2】单队列 FU 组表（6 组）—— 这些 fuType 只有一个 IQ 能收，不用排序
-//   L135    节 1.3】dyninst_t —— 派遣级搬运的 uop payload
-//   L150    节 1.4】srcState 逐 IQ 掩码 —— 每个 IQ 只关心自己 FU 真会读的那几个源
-//   L358    节 1.5】xs_nd_iq_rank —— 「按占用数给同组 IQ 排名」的**唯一一份**逻辑
-//   L403    节 2】xs_NewDispatch_core —— 可读核（选队列网络 + 全部状态）
-//   L437    节 2.1】fuType 归组（组合）
-//   L454    节 2.2】compareMatrix / IQSort —— 按占用数给同组 IQ 排名
-//   L537    节 2.3】minIQSel —— 第 lane 条 uop 在本组里取第 (lane % iqNum) 名
-//   L544    节 2.4】popFuTypeOH —— 本 lane 之前有几条 uop 也要进同一组
-//   L560    节 2.5】uopSelIQ —— 不复位的选择寄存器，两个写源，装入优先于清除
-//   L613    节 2.6】uopSelIQMatrix / uopBlockByIQ —— 前缀计数定「第几个入队口」
-//   L639    节 2.7】IQSelUop —— 把 6 条 lane 按前缀计数投到 34 个入队口
-//   L682    节 3】NewDispatch —— 与 golden 逐位同名的 wrapper（7725 端口）
-//   L8545   节 3.2】还接不了的位：集中声明，**故意不给驱动**（清单见文件头 a~d）
-//   L8686   节 3.3】payload 打包：io_fromRename -> rename_uop
-//   L9817   节 3.4】payload 拆包：iq_uop -> io_toIssueQueues
-//   L15867  节 3.5】送 Rob 的入队请求：io_enqRob_req_*
+// 本文件导航（共 17996 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+//   L53     节 1】newdispatch_pkg —— 派遣拓扑表与 payload 类型
+//   L79     节 1.1】多队列 FU 组表（10 组）—— 全部来自 golden 实测，不是 Chisel 推断
+//   L134    节 1.2】单队列 FU 组表（6 组）—— 这些 fuType 只有一个 IQ 能收，不用排序
+//   L152    节 1.3】dyninst_t —— 派遣级搬运的 uop payload
+//   L167    节 1.4】srcState 逐 IQ 掩码 —— 每个 IQ 只关心自己 FU 真会读的那几个源
+//   L375    节 1.5】xs_nd_iq_rank —— 「按占用数给同组 IQ 排名」的**唯一一份**逻辑
+//   L420    节 2】xs_NewDispatch_core —— 可读核（选队列网络 + 全部状态）
+//   L475    节 2.1】fuType 归组（组合）
+//   L492    节 2.2】compareMatrix / IQSort —— 按占用数给同组 IQ 排名
+//   L575    节 2.3】minIQSel —— 第 lane 条 uop 在本组里取第 (lane % iqNum) 名
+//   L582    节 2.4】popFuTypeOH —— 本 lane 之前有几条 uop 也要进同一组
+//   L598    节 2.5】uopSelIQ —— 不复位的选择寄存器，两个写源，装入优先于清除
+//   L651    节 2.6】uopSelIQMatrix / uopBlockByIQ —— 前缀计数定「第几个入队口」
+//   L677    节 2.7】IQSelUop —— 把 6 条 lane 按前缀计数投到 34 个入队口
+//   L722    节 2.8】派遣流控 —— 这一拍六条 lane 到底谁能走
+//   L785    节 2.9】conserveFlowTotal —— 派遣级对 LSQ 占用量的保守上界
+//   L883    节 2.10】单步调试 —— dret 之后只放行一条机器指令
+//   L940    节 2.11】给 LSQ / busy table 的入队信号
+//   L961    节 2.12】perf / stallReason 的整拍口径
+//   L987    节 3】NewDispatch —— 与 golden 逐位同名的 wrapper（7725 端口）
+//   L8876   节 3.1】7 个 child 的输出线声明
+//   L9051   节 3.2】还接不了的位：集中声明，**故意不给驱动**（清单见文件头 a~d）
+//   L9183   节 3.3】payload 打包：io_fromRename -> rename_uop
+//   L10335  节 3.4】payload 拆包：iq_uop -> io_toIssueQueues
+//   L16385  节 3.5】送 Rob 的入队请求：io_enqRob_req_*
+//   L16776  节 3.6】握手 / perf / stallReason 出口
 //
 
 // ---------------------------------------------------------------------------
@@ -57,6 +64,16 @@ package newdispatch_pkg;
   localparam int MULTI_G  = 10;  // 多队列 FU 组数
   localparam int SINGLE_G = 6;   // 单队列 FU 组数
   localparam int FUTYPE_W = 35;  // fuType 位宽（FuType 共 35 种）
+
+  // 派遣流控（节 2.8）只关心访存那几种 fuType。fuType 是 one-hot 的 35 位向量，
+  // 下标 = FuType.scala 里 addType 的登记序；这几个与 golden 的位下标逐一核对过。
+  localparam int FU_LDU     = 15;  // 标量 load
+  localparam int FU_STU     = 16;  // 标量 store
+  localparam int FU_MOU     = 17;  // 原子访存（AMO）
+  localparam int FU_VLDU    = 31;  // 向量 load
+  localparam int FU_VSTU    = 32;  // 向量 store
+  localparam int FU_VSEGLDU = 33;  // 向量 segment load
+  localparam int FU_VSEGSTU = 34;  // 向量 segment store
 
   // -------------------------------------------------------------------------
   // 【节 1.1】多队列 FU 组表（10 组）—— 全部来自 golden 实测，不是 Chisel 推断
@@ -411,14 +428,12 @@ module xs_NewDispatch_core
   // 来自 Rename 的「预览」通道：只有 valid/fuType/fuOpType，比 fromRename 早一拍用来选 IQ
   input  logic [RENAME_W-1:0]                  renameIn_valid,
   input  logic [RENAME_W-1:0][FUTYPE_W-1:0]    renameIn_fuType,
+  input  logic [RENAME_W-1:0][8:0]             renameIn_fuOpType,
 
   // 各 exu 当前占用条目数；索引 7 和 17 在 golden 里被 DCE 掉了，这里保留完整 25 列，
   // 由 wrapper 把不存在的两列钉死（见 wrapper 里的说明）
   input  logic [EXU_NUM-1:0][4:0]              iqValidNum,
 
-  // 握手
-  input  logic                                 toRenameAllFire, // 6 条全部 fire（scalar，不是 per-lane）
-  input  logic [RENAME_W-1:0]                  firedVec,        // 每条 lane 本拍 fire
   input  logic [IQ_NUM-1:0]                    iqReady,         // 每个 IQ 的 ready（golden 只取每 IQ 第 0 个 enq 口）
 
   // 选择结果
@@ -428,9 +443,32 @@ module xs_NewDispatch_core
 
   // payload 通路：6 条 lane 的 uop 进来，34 个 IQ 入队口的 uop 出去
   input  dyninst_t                             rename_uop  [RENAME_W],
-  input  logic [RENAME_W-1:0]                  rename_valid,
   output dyninst_t                             iq_uop      [IQ_ENQ],
-  output logic [IQ_ENQ-1:0]                    iq_valid
+  output logic [IQ_ENQ-1:0]                    iq_valid,
+
+  // ---- 派遣流控（节 2.8）----
+  input  logic [RENAME_W-1:0]                  fromRename_valid,// Rename 这一拍真正递过来的六条
+  input  logic                                 enqRob_canAccept,// Rob 收得下
+  input  logic                                 enqRob_isEmpty,  // Rob 空（waitForward 判据要）
+  input  logic                                 lsqCanAccept,    // LsqEnqCtrl 的整拍握手（那边是寄存器）
+  input  logic [6:0]                           lqFreeCount,     // LQ 剩余条目
+  input  logic [5:0]                           sqFreeCount,     // SQ 剩余条目
+  input  logic                                 singleStep,      // 调试单步模式
+  input  logic                                 redirect_valid,  // 重定向（冲刷）
+
+  output logic [RENAME_W-1:0]                  fromRename_ready,// 回给 Rename 的 ready
+  output logic [RENAME_W-1:0]                  firedVec_o,      // 本拍真 fire 的 lane（= ready & valid）
+  output logic                                 toRenameAllFire_o,// 六条全 fire（有效的都走了）
+  output logic [RENAME_W-1:0]                  updatedSingleStep,// 这条 uop 要打 singleStep 标记
+  output logic [RENAME_W-1:0][1:0]             lsqNeedAlloc,    // 给 LsqEnqCtrl：0 不占 / 1 LQ / 2 SQ
+  output logic [RENAME_W-1:0]                  lsqReqValid,     // 给 LsqEnqCtrl：这条要入 LSQ
+  output logic [RENAME_W-1:0][4:0]             lsqReqNumLsElem, // 给 LsqEnqCtrl：这条占几个 flow
+  output logic [RENAME_W-1:0]                  lsqIqAccept,     // 给 LsqEnqCtrl：这条不挡后面的
+  output logic [RENAME_W-1:0]                  allocPregsValid0,// 给 int busy table / regcache：本拍分配了整数 pdest
+  output logic                                 canAccept_o,     // 整拍口径的"派遣级没堵"（perf / stallReason 用）
+  output logic [2:0]                           perfDispatchIn,  // 本拍进来几条（lane0 ready 门控，照抄 golden）
+  output logic [2:0]                           perfDispatchUtil,// 本拍 Rename 递了几条
+  output logic [2:0]                           perfDispatchWait // 本拍有几条槽空着却收得下
 );
 
   // -------------------------------------------------------------------------
@@ -560,7 +598,7 @@ module xs_NewDispatch_core
   // 【节 2.5】uopSelIQ —— 不复位的选择寄存器，两个写源，装入优先于清除
   // -------------------------------------------------------------------------
   // golden 展开（always @(posedge clock)，**无复位**）：
-  //   if (toRenameAllFire)  uopSelIQ <= 本拍新选择
+  //   if (toRenameAllFire_o)  uopSelIQ <= 本拍新选择
   //   else                  uopSelIQ <= ~firedVec[lane] & uopSelIQ
   // 对应 Chisel 的 when(toRenameAllFire){...}.elsewhen(fromRename(i).fire){ u := 0 }
   // —— golden 把 elsewhen+保持合成了一个 AND，语义一致。
@@ -603,10 +641,10 @@ module xs_NewDispatch_core
 
   always_ff @(posedge clock) begin   // 无复位：照抄 golden
     for (int l = 0; l < RENAME_W; l++)
-      if (toRenameAllFire) uopSelIQ[l] <= uopSelIQ_next[l];
+      if (toRenameAllFire_o) uopSelIQ[l] <= uopSelIQ_next[l];
       else
         for (int q = 0; q < IQ_NUM; q++)
-          uopSelIQ[l][q] <= ~firedVec[l] & uopSelIQ[l][q];
+          uopSelIQ[l][q] <= ~firedVec_o[l] & uopSelIQ[l][q];
   end
 
   // -------------------------------------------------------------------------
@@ -645,8 +683,12 @@ module xs_NewDispatch_core
   // ★golden 的两处不对称，照抄，别"顺手统一"★：
   //   bits  用的是 PriorityMux **没有默认值** —— oh[0..4] 全 0 时**无条件**取 lane5，
   //         而不是取 0、也不看 oh[5]。
-  //   valid 用的是 PriorityMuxDefault —— 最后一项是 oh[5] & rename_valid[5]，**带门**。
+  //   valid 用的是 PriorityMuxDefault —— 最后一项是 oh[5] & renameUpdateValid[5]，**带门**。
   // 所以 bits 和 valid 的尾项写法不一样；写成一样就是 34 个 valid 失配点。
+  // fromRenameUpdate 侧的 valid：在节 2.8 的汇合处算出来（这里只是声明提前，
+  // 因为 iq_valid 要用它，而流控排在本节之后）。
+  logic [RENAME_W-1:0] renameUpdateValid;
+
   logic [IQ_ENQ-1:0][RENAME_W-1:0] oh;
 
   always_comb
@@ -662,9 +704,9 @@ module xs_NewDispatch_core
         if (oh[q][l]) iq_uop[q] = rename_uop[l];
 
       // valid：带默认值，尾项要与 oh[5] 相与
-      iq_valid[q] = oh[q][RENAME_W-1] & rename_valid[RENAME_W-1];
+      iq_valid[q] = oh[q][RENAME_W-1] & renameUpdateValid[RENAME_W-1];
       for (int l = RENAME_W-2; l >= 0; l--)
-        if (oh[q][l]) iq_valid[q] = rename_valid[l];
+        if (oh[q][l]) iq_valid[q] = renameUpdateValid[l];
 
       // srcState 逐 IQ 掩码：该 IQ 的 FU 不读的源，golden 折成常量 0。
       // dyninst_t 里 srcState 是 5 个独立 leaf（照 golden 端口名），不是数组，故展开写。
@@ -673,6 +715,269 @@ module xs_NewDispatch_core
       if (!SRCSTATE_LIVE[q / 2][2]) iq_uop[q].srcState_2 = 1'b0;
       if (!SRCSTATE_LIVE[q / 2][3]) iq_uop[q].srcState_3 = 1'b0;
       if (!SRCSTATE_LIVE[q / 2][4]) iq_uop[q].srcState_4 = 1'b0;
+    end
+  end
+
+  // -------------------------------------------------------------------------
+  // 【节 2.8】派遣流控 —— 这一拍六条 lane 到底谁能走
+  // -------------------------------------------------------------------------
+  // 出口只有一条式子：
+  //   fromRename_ready[i] = allowDispatch[i] & ~uopBlockByIQ[i] & thisCanActualOut[i]
+  //                       & lsqCanAccept
+  // 四个因子各管一件资源：
+  //   allowDispatch     LSQ 还剩不剩得下（保守流量估计，见节 2.9）
+  //   uopBlockByIQ      目标 IQ 这拍收不下（节 2.6 已算）
+  //   thisCanActualOut  Rob 收得下 + 前面没有 blockBackward + 自己不被 waitForward 挡
+  //   lsqCanAccept      LsqEnqCtrl 的整拍握手（那边是寄存器，所以这里没有组合环）
+  // fire 之后 firedVec 回喂节 2.5 的 uopSelIQ 清位 —— 这是本模块唯一的自举环，
+  // 环里那一拍由 uopSelIQ 这个寄存器断开。
+
+  // ---- 访存分类：全部按 fromRename 的 fuType，且一律与 valid 相与 ----
+  logic [RENAME_W-1:0] isLoad, isStore, isAMO, isVLoad, isVStore, isVls, isSegment;
+  logic [RENAME_W-1:0] isLSType, isUnitStride, isVlsUnitStride, isVlsOther, isFofFixVl;
+
+  always_comb begin
+    for (int l = 0; l < RENAME_W; l++) begin
+      automatic logic [FUTYPE_W-1:0] ft = rename_uop[l].fuType;
+      automatic logic [8:0]          op = rename_uop[l].fuOpType;
+      isLoad   [l] = fromRename_valid[l] & ft[FU_LDU];
+      isStore  [l] = fromRename_valid[l] & ft[FU_STU];
+      isAMO    [l] = fromRename_valid[l] & ft[FU_MOU];
+      isVLoad  [l] = fromRename_valid[l] & (ft[FU_VLDU] | ft[FU_VSEGLDU]);
+      isVStore [l] = fromRename_valid[l] & (ft[FU_VSTU] | ft[FU_VSEGSTU]);
+      isSegment[l] = fromRename_valid[l] & (ft[FU_VSEGLDU] | ft[FU_VSEGSTU]);
+      isVls    [l] = fromRename_valid[l] & (ft[FU_VLDU] | ft[FU_VSTU]
+                                          | ft[FU_VSEGLDU] | ft[FU_VSEGSTU]);
+      isLSType [l] = fromRename_valid[l] & (ft[FU_LDU] | ft[FU_STU]);
+      // LSUOpType.isAllUS：向量访存的 unit-stride 三兄弟（普通 US / whole-register / mask）
+      isUnitStride[l] = (op[6:5] == 2'd0) & (op[8] ^ op[7]);
+      isVlsUnitStride[l] = isVls[l] &  isUnitStride[l];
+      isVlsOther     [l] = isVls[l] & ~isUnitStride[l];
+      // ★golden 怪癖，照抄★：isfofFixVlUop **没有**与 valid 相与。
+      // Chisel 写的是 uop.map{x => x.vpu.isVleff && x.lastUop}，取的是 bits 而不是 fire，
+      // 于是 fromRename 无效时这两位的残值照样能把 LSQ 入队请求压掉。
+      isFofFixVl[l] = rename_uop[l].vpu_isVleff & rename_uop[l].lastUop;
+    end
+  end
+
+  // ---- renameIn 侧的同一套分类（提前一拍，用来预算下一拍的保守流量）----
+  logic [RENAME_W-1:0] renIsVlsUnitStride, renIsVlsOther, renIsLSType;
+
+  always_comb begin
+    for (int l = 0; l < RENAME_W; l++) begin
+      automatic logic [FUTYPE_W-1:0] ft = renameIn_fuType[l];
+      automatic logic [8:0]          op = renameIn_fuOpType[l];
+      automatic logic isVlsR = renameIn_valid[l] & (ft[FU_VLDU] | ft[FU_VSTU]
+                                                  | ft[FU_VSEGLDU] | ft[FU_VSEGSTU]);
+      automatic logic isUSR  = (op[6:5] == 2'd0) & (op[8] ^ op[7]);
+      renIsVlsUnitStride[l] = isVlsR &  isUSR;
+      renIsVlsOther     [l] = isVlsR & ~isUSR;
+      // ★golden 怪癖，照抄★：Chisel 写的是
+      //     x.valid && FuType.isLoad(x.bits.fuType) || FuType.isStore(x.bits.fuType)
+      // Scala 里 && 的优先级高于 ||，所以 **store 那一项没有被 valid 门控**。
+      // renameIn 无效时只要 fuType 的 stu 位是 1，这条就仍会被算进保守流量。
+      // 这是 golden 的真实行为（bug-for-bug 复制），不是本文件写漏了括号。
+      renIsLSType[l] = (renameIn_valid[l] & ft[FU_LDU]) | ft[FU_STU];
+    end
+  end
+
+  // -------------------------------------------------------------------------
+  // 【节 2.9】conserveFlowTotal —— 派遣级对 LSQ 占用量的保守上界
+  // -------------------------------------------------------------------------
+  // 一条访存 uop 到底拆成几个 flow，要算完地址才知道，派遣级不可能知道。
+  // 所以这里取上界：标量访存算 1；向量 unit-stride 算 2；其他向量访存算 16。
+  // conserveFlowTotal[i] = lane 0..i 的保守和，而 golden 的拼法**不是普通加法**：
+  //     {算 16 的条数 (3 位), 算 2 与算 1 的和 (4 位)}
+  // 即 highCount*16 + lowCount；lowCount 最大 2*6=12 不会进位到高位，所以拼接与
+  // 加法同值。照抄拼接写法（写成加法虽同值，但 FM 要多证一次进位，没必要）。
+  function automatic logic [6:0] conserve_total(input logic [RENAME_W-1:0] is16,
+                                                input logic [RENAME_W-1:0] is2,
+                                                input logic [RENAME_W-1:0] is1,
+                                                input int                  lane);
+    logic [2:0] highCount;
+    logic [3:0] lowCount;
+    highCount = '0;
+    lowCount  = '0;
+    for (int p = 0; p <= lane; p++) begin
+      highCount += 3'(is16[p]);
+      lowCount  += 4'({is2[p], is1[p]});   // 2'b10 = 算 2；2'b01 = 算 1
+    end
+    return {highCount, lowCount};
+  endfunction
+
+  logic [RENAME_W-1:0][6:0] conserveFlowTotalDispatch;
+  logic [RENAME_W-1:0][6:0] conserveFlowTotalRename;
+  // ★不复位寄存器★：golden 的 Reg(Vec(...)) 没有 RegInit，always @(posedge clock) 里
+  // 也没有 reset 分支。装 renameIn 版还是 fromRename 版由 toRenameAllFire 选。
+  logic [RENAME_W-1:0][6:0] conserveFlowTotal;
+
+  always_comb
+    for (int l = 0; l < RENAME_W; l++) begin
+      conserveFlowTotalDispatch[l] =
+        conserve_total(isVlsOther, isVlsUnitStride, isLSType, l);
+      conserveFlowTotalRename[l] =
+        conserve_total(renIsVlsOther, renIsVlsUnitStride, renIsLSType, l);
+    end
+
+  always_ff @(posedge clock)   // 无复位：照抄 golden
+    conserveFlowTotal <= toRenameAllFire_o ? conserveFlowTotalRename
+                                           : conserveFlowTotalDispatch;
+
+  // ---- allowDispatch：级联的"前面都放行、且本条要的资源还够" ----
+  // golden 的分支顺序是 store/vstore -> load/vload -> 其他；AMO 与非访存都只继承前一条。
+  logic [RENAME_W-1:0] allowDispatch;
+
+  always_comb
+    for (int l = 0; l < RENAME_W; l++) begin
+      automatic logic prev = (l == 0) ? 1'b1 : allowDispatch[l - 1];
+      if (isStore[l] | isVStore[l])
+        allowDispatch[l] = ({1'b0, sqFreeCount} > conserveFlowTotal[l]) & prev;
+      else if (isLoad[l] | isVLoad[l])
+        allowDispatch[l] = (lqFreeCount > conserveFlowTotal[l]) & prev;
+      else
+        allowDispatch[l] = prev;
+    end
+
+  // ---- thisCanActualOut：顺序约束（waitForward / blockBackward）+ Rob 收得下 ----
+  // waitForward：这条要求"前面全退休了我才能走"，所以 Rob 非空、或本拍前面还有有效条，
+  //              它就被挡；而且一旦挡住，它后面的也一起挡（前缀或）。
+  // blockBackward：这条要求"我之后的不许跟着走"，所以它只挡**后面**的（前缀与）。
+  logic [RENAME_W-1:0] isBlockBackward, isWaitForward;
+  logic [RENAME_W-1:0] blockedByWaitForward, notBlockedByPrevious, thisCanActualOut;
+
+  always_comb begin
+    automatic logic anyPrevValid;
+    for (int l = 0; l < RENAME_W; l++) begin
+      isBlockBackward[l] = fromRename_valid[l] & rename_uop[l].blockBackward;
+      isWaitForward  [l] = fromRename_valid[l] & rename_uop[l].waitForward;
+    end
+    blockedByWaitForward[0] = ~enqRob_isEmpty & isWaitForward[0];
+    notBlockedByPrevious[0] = 1'b1;
+    anyPrevValid            = 1'b0;
+    for (int l = 1; l < RENAME_W; l++) begin
+      anyPrevValid |= fromRename_valid[l - 1];
+      blockedByWaitForward[l] = blockedByWaitForward[l - 1]
+                              | (~enqRob_isEmpty | anyPrevValid) & isWaitForward[l];
+      notBlockedByPrevious[l] = notBlockedByPrevious[l - 1] & ~isBlockBackward[l - 1];
+    end
+    for (int l = 0; l < RENAME_W; l++)
+      thisCanActualOut[l] = ~blockedByWaitForward[l] & notBlockedByPrevious[l]
+                          & enqRob_canAccept;
+  end
+
+  // ---- 汇合：ready / fire / 整拍 allFire ----
+  always_comb
+    for (int l = 0; l < RENAME_W; l++) begin
+      fromRename_ready[l] = allowDispatch[l] & ~uopBlockByIQ_o[l] & thisCanActualOut[l]
+                          & lsqCanAccept;
+      firedVec_o[l]       = fromRename_ready[l] & fromRename_valid[l];
+      // 送进 IQ 的那一路还要再扣三种：被消除的 move、已经有异常的、以及单步标记的。
+      // （它们照样进 Rob，只是不占发射队列。）
+      renameUpdateValid[l] = firedVec_o[l] & ~rename_uop[l].eliminatedMove
+                           & ~rename_uop[l].hasException & ~updatedSingleStep[l];
+    end
+
+  assign toRenameAllFire_o = &(~fromRename_valid | firedVec_o);
+
+  // -------------------------------------------------------------------------
+  // 【节 2.10】单步调试 —— dret 之后只放行一条机器指令
+  // -------------------------------------------------------------------------
+  // 做法：记住"可以停下来的那个 robIdx"（robidxCanCommitStepping），凡 robIdx 与它
+  // 不等的 uop 都打上 singleStep 标记；带这个标记的 uop 进 Rob 时会被当成异常处理
+  // （hasException 置位、numWB 清零，见节 3.5）。
+  // 两个状态：
+  //   S_UPDATE_ROBIDX  还没抓到基准，用本拍 lane0 的 robIdx 当基准
+  //   S_HOLD_ROBIDX    已经抓到，锁住不动；遇到 redirect 就把 flag 翻一位，
+  //                    让"等于基准"这件事对冲刷后的新 robIdx 不再成立
+  localparam logic S_HOLD_ROBIDX   = 1'b0;
+  localparam logic S_UPDATE_ROBIDX = 1'b1;
+
+  logic       singleStepState;
+  logic       robidxStepReg_flag;
+  logic [7:0] robidxStepReg_value;
+  logic       robidxStepHold_flag;
+  logic [7:0] robidxStepHold_value;
+  logic       robidxCanCommit_flag;
+  logic [7:0] robidxCanCommit_value;
+  logic       singleStepCatch;   // 本拍抓到基准（lane0 真走了）
+
+  assign singleStepCatch      = singleStep & firedVec_o[0];
+  assign robidxStepHold_flag  = singleStepCatch & rename_uop[0].robIdx_flag;
+  assign robidxStepHold_value = singleStepCatch ? rename_uop[0].robIdx_value : 8'h0;
+
+  always_comb begin
+    if (singleStepState == S_UPDATE_ROBIDX) begin
+      robidxCanCommit_flag  = robidxStepHold_flag;
+      robidxCanCommit_value = robidxStepHold_value;
+    end else if (redirect_valid) begin
+      // ★照抄 golden：redirect 那一拍只翻 flag，value 走 Wire 的 0 默认值★
+      robidxCanCommit_flag  = ~robidxStepReg_flag;
+      robidxCanCommit_value = 8'h0;
+    end else begin
+      robidxCanCommit_flag  = robidxStepReg_flag;
+      robidxCanCommit_value = robidxStepReg_value;
+    end
+  end
+
+  always_ff @(posedge clock or posedge reset)   // 异步复位：照抄 golden
+    if (reset) begin
+      singleStepState     <= S_UPDATE_ROBIDX;
+      robidxStepReg_flag  <= 1'b0;
+      robidxStepReg_value <= 8'h0;
+    end else begin
+      singleStepState     <= ~singleStep | ~singleStepCatch & singleStepState;
+      robidxStepReg_flag  <= robidxCanCommit_flag;
+      robidxStepReg_value <= robidxCanCommit_value;
+    end
+
+  always_comb
+    for (int l = 0; l < RENAME_W; l++)
+      updatedSingleStep[l] =
+        singleStep & ({rename_uop[l].robIdx_flag, rename_uop[l].robIdx_value}
+                      != {robidxCanCommit_flag, robidxCanCommit_value});
+
+  // -------------------------------------------------------------------------
+  // 【节 2.11】给 LSQ / busy table 的入队信号
+  // -------------------------------------------------------------------------
+  // needAlloc 是给 LsqEnqCtrl 数条目用的；req.valid 是真正的入队请求，比 fire 少三种：
+  // AMO（走别的通道）、向量 segment（只能从 0 号口进）、以及 vleff 的补 vl 尾 uop。
+  always_comb
+    for (int l = 0; l < RENAME_W; l++) begin
+      if (!firedVec_o[l])                      lsqNeedAlloc[l] = 2'd0;
+      else if (isStore[l] | isVStore[l])       lsqNeedAlloc[l] = 2'd2;
+      else if (isLoad[l]  | isVLoad[l])        lsqNeedAlloc[l] = 2'd1;
+      else                                     lsqNeedAlloc[l] = 2'd0;
+      lsqReqValid[l]     = firedVec_o[l] & ~isAMO[l] & ~isSegment[l] & ~isFofFixVl[l];
+      // 非向量访存在 LSQ 里一律按 1 个 flow 记（IQ 那一路仍然发原值 0）
+      lsqReqNumLsElem[l] = isVls[l] ? rename_uop[l].numLsElem : 5'd1;
+      // "这条不挡后面的"：本来就没有效，或者已经走了
+      lsqIqAccept[l]     = ~fromRename_valid[l] | firedVec_o[l];
+      // 整数 busy table / regcache 的分配口：真写整数寄存器堆、且不是被消除的 move
+      allocPregsValid0[l] = fromRename_valid[l] & rename_uop[l].rfWen
+                          & ~rename_uop[l].eliminatedMove;
+    end
+
+  // -------------------------------------------------------------------------
+  // 【节 2.12】perf / stallReason 的整拍口径
+  // -------------------------------------------------------------------------
+  // canAccept 是"派遣级这一拍没有因为自己的原因堵住前级"：没有有效条自然不堵；
+  // 有有效条时，只要没有 blockBackward 且 Rob 收得下就算不堵。
+  // ★注意它与 ready 无关★：ready 是逐条的资源判定，canAccept 是整拍的 topdown 归因。
+  logic hasValidInstr, hasSpecialInstr;
+
+  assign hasValidInstr   = |fromRename_valid;
+  assign hasSpecialInstr = |isBlockBackward;
+  assign canAccept_o     = ~hasValidInstr | ~hasSpecialInstr & enqRob_canAccept;
+
+  always_comb begin
+    perfDispatchIn   = '0;
+    perfDispatchUtil = '0;
+    perfDispatchWait = '0;
+    for (int l = 0; l < RENAME_W; l++) begin
+      // ★照抄 golden★：dispatch_in 数的是"valid 且 **lane0 的** ready"，不是各自的 ready。
+      perfDispatchIn   += 3'(fromRename_valid[l] & fromRename_ready[0]);
+      perfDispatchUtil += 3'(fromRename_valid[l]);
+      perfDispatchWait += 3'(~fromRename_valid[l] & canAccept_o);
     end
   end
 
@@ -708,24 +1013,27 @@ endmodule
 //      ★为什么要留痕而不是改对就算★：本仓的教训是「结论会传下去，限定条件不会」。
 //      一条过期的"未实现"注释会让下一个读者**主动放弃一条已经可走的路** ——
 //      这比数字错了更贵。所以删改它必须写明何时、因何失效。
-//   b. 依赖它们的 payload 位（srcState / srcType_2 经 ignoreOldVd /
-//      srcLoadDependency_0_*,1_* / lqIdx / sqIdx / useRegCache / regCacheIdx /
-//      singleStep）在节 3.2 里声明成 unresolved_* 且**故意不给驱动**：
-//      钉 0 会让 elaborate 和 UT 变绿，反而掩盖缺口；悬空则仿真必然出 X/Z。
-//   c. ★步骤 2 组 A（2026-09-21）已改写★，原文与失效理由如下：
+//   b. ★步骤 2 起 singleStep 已从本条移出★（它要 firedVec，而 firedVec 要
+//      LsqEnqCtrl 的 canAccept —— 那条链在节 2.8 已经打通）。剩下 20 个 leaf
+//      仍在节 3.2 里声明成 unresolved_* 且**故意不给驱动**（钉 0 会让 elaborate
+//      和 UT 变绿而掩盖缺口，悬空则仿真必然出 X/Z）：
+//        srcState_0..4 / srcType_2（经 ignoreOldVd）/ srcLoadDependency_{0,1}_{0,1,2} /
+//        lqIdx / sqIdx / useRegCache_{0,1} / regCacheIdx_{0,1}
+//      它们只影响 io_toIssueQueues_*，合计 608 端口 / 1488 bit。
+//      ★其中 srcState_0..4 与 srcType_2（306 bit）不是"接上就行"★：golden 的
+//      IQSelUop(q).bits.srcState(j) 是按该 IQ 的 FU 会读哪几个寄存器堆、把
+//      allSrcState(lane)(j)(k) 的**逐 IQ 不同子集** OR 起来，所以它不可能用
+//      现在这种"每 lane 一个标量 srcState_j"的形状表达 —— 节 1.4 的掩码只表达了
+//      "这一位是不是恒 0"。要接得先改 payload 通路的形状。
+//   c. ★步骤 2（2026-09-21）已完成，原文与失效理由如下★：
 //      原文：「握手一路（io_fromRename_*_ready / io_toRenameAllFire / io_enqRob /
 //             io_toMem / io_perf / io_stallReason）尚未接 —— 它们都要 LsqEnqCtrl 的
 //             canAccept 与 lq/sqFreeCount。」
-//      ★为什么失效★：io_toMem 那 330 个端口**根本不需要新逻辑** ——
-//      golden 是把 LsqEnqCtrl 的输出直接接到顶层 output 上的，步骤 1 却把它们
-//      接到了一根没人读的本地线上，于是 330 个 output 一个驱动源都没有。
-//      io_enqRob 的 379 个里也有 355 个是 io_fromRename 逐字直通，同样不需要流控。
-//      组 A 把这 685 个接上（见节 3.1 / 节 3.5），未驱动 output 从 725 降到 16。
-//      ★剩下的 16 个才是真要流控的★：io_fromRename_*_ready 6 / io_toRenameAllFire 1 /
-//      io_perf_*_value 8 / io_stallReason_backReason_valid 1；
-//      另有 io_enqRob 的 valid / hasException / numWB / singleStep 共 24 个端口，
-//      现在接在悬空的 unresolved_enqRobValid_* / unresolved_singleStep_* 上。
-//      这一拨是步骤 2 组 B 的范围。
+//      ★为什么失效★：其中 685 个端口**根本不需要新逻辑** —— io_toMem 那 330 个
+//      golden 是把 LsqEnqCtrl 的输出直接接到顶层 output 上的（步骤 1 接到了一根
+//      没人读的本地线上），io_enqRob 的 379 个里 355 个是 io_fromRename 逐字直通。
+//      真正要流控的只有 40 个端口，已由节 2.8~2.12 + 节 3.6 接上。
+//      现在 **7725 个端口全部有驱动源，未驱动 output = 0**。
 //   d. srcState 的逐 IQ「活/死」掩码已追清（节 1.4），但活的那几个具体 OR 哪
 //      几个寄存器堆的 busy 位（Chisel 的 selSrcState）**还没追清**，等 Lane H。
 //   在 a~d 做完之前，任何 UT/FM 的绿都不代表这个模块对。
@@ -8464,22 +8772,29 @@ module NewDispatch
   // 已追清部分：把选队列网络接上可读核。握手类输入依赖 LsqEnqCtrl（未实现），
   // 这里用 unresolved_* 明确标出，**不是**已经算对的值。
   logic [5:0][34:0] core_renameIn_fuType;
+  logic [5:0][8:0]  core_renameIn_fuOpType;
   logic [5:0]       core_renameIn_valid;
   logic [24:0][4:0] core_iqValidNum;
   logic [16:0]      core_iqReady;
 
   assign core_renameIn_valid[0]  = io_renameIn_0_valid;
   assign core_renameIn_fuType[0] = io_renameIn_0_bits_fuType;
+  assign core_renameIn_fuOpType[0] = io_renameIn_0_bits_fuOpType;
   assign core_renameIn_valid[1]  = io_renameIn_1_valid;
   assign core_renameIn_fuType[1] = io_renameIn_1_bits_fuType;
+  assign core_renameIn_fuOpType[1] = io_renameIn_1_bits_fuOpType;
   assign core_renameIn_valid[2]  = io_renameIn_2_valid;
   assign core_renameIn_fuType[2] = io_renameIn_2_bits_fuType;
+  assign core_renameIn_fuOpType[2] = io_renameIn_2_bits_fuOpType;
   assign core_renameIn_valid[3]  = io_renameIn_3_valid;
   assign core_renameIn_fuType[3] = io_renameIn_3_bits_fuType;
+  assign core_renameIn_fuOpType[3] = io_renameIn_3_bits_fuOpType;
   assign core_renameIn_valid[4]  = io_renameIn_4_valid;
   assign core_renameIn_fuType[4] = io_renameIn_4_bits_fuType;
+  assign core_renameIn_fuOpType[4] = io_renameIn_4_bits_fuOpType;
   assign core_renameIn_valid[5]  = io_renameIn_5_valid;
   assign core_renameIn_fuType[5] = io_renameIn_5_bits_fuType;
+  assign core_renameIn_fuOpType[5] = io_renameIn_5_bits_fuOpType;
 
   // exu 7 / 17 在 golden 端口表里不存在（从没参与过任何 compareMatrix，被 DCE）。
   // 这里补成 0 只是为了让核保持规整的 25 列，核里也从不索引这两列。
@@ -8528,18 +8843,209 @@ module NewDispatch
   assign core_iqReady[15] = io_toIssueQueues_30_ready;
   assign core_iqReady[16] = io_toIssueQueues_32_ready;
 
-  // ★以下三个握手输入还没有来源★：toRenameAllFire / 每 lane fire 都要先有
-  // allowDispatch（依赖 LsqEnqCtrl 的 lqFreeCount/sqFreeCount）和 lsqCanAccept。
-  // LsqEnqCtrl 本仓未实现，故此处为占位，UT/FM 都不得在此状态下开跑。
-  logic       unresolved_toRenameAllFire;
-  logic [5:0] unresolved_firedVec;
-  assign unresolved_toRenameAllFire = 1'b0;
-  assign unresolved_firedVec        = 6'd0;
-
-  // 核的输出暂时没有消费者（payload 通路未接），保留信号以便逐步接线。
+  // 核的选择结果（uopSelIQ / uopSelIQMatrix / uopBlockByIQ）在核内部就被流控消费了，
+  // 这里引出来只是为了可观测（golden 对它们打了 dontTouch，端口上没有对应物）。
   logic [5:0][16:0]      core_uopSelIQ;
   logic [5:0][16:0][2:0] core_uopSelIQMatrix;
   logic [5:0]            core_uopBlockByIQ;
+
+  // 派遣流控（节 2.8~2.12）的产物。这一拨在步骤 1 全是占位常量/悬空，
+  // 步骤 2 起由 xs_NewDispatch_core 真算出来。
+  logic [5:0]      core_fromRenameReady;
+  logic [5:0]      core_firedVec;
+  logic            core_toRenameAllFire;
+  logic [5:0]      core_updatedSingleStep;
+  logic [5:0][1:0] core_lsqNeedAlloc;
+  logic [5:0]      core_lsqReqValid;
+  logic [5:0][4:0] core_lsqReqNumLsElem;
+  logic [5:0]      core_lsqIqAccept;
+  logic [5:0]      core_allocPregsValid0;
+  logic            core_canAccept;
+  logic [2:0]      core_perfDispatchIn;
+  logic [2:0]      core_perfDispatchUtil;
+  logic [2:0]      core_perfDispatchWait;
+
+  // 六条 lane 从 Rename 递过来的原始 valid（流控要它，而 rename_uop 里的是
+  // fromRenameUpdate 侧的 payload，两者不是一回事）。
+  logic [5:0] core_fromRenameValid;
+  assign core_fromRenameValid = {io_fromRename_5_valid, io_fromRename_4_valid,
+                                 io_fromRename_3_valid, io_fromRename_2_valid,
+                                 io_fromRename_1_valid, io_fromRename_0_valid};
+
+  // -------------------------------------------------------------------------
+  // 【节 3.1】7 个 child 的输出线声明
+  // -------------------------------------------------------------------------
+  // ★必须排在 u_core 实例之前★：核的派遣流控要吃 lsqEnqCtrl 的
+  // canAccept / lqFreeCount / sqFreeCount，SV 要求先声明后引用。
+  // 本块由 scripts/gen_newdispatch.py 的 gen_childwires() 生成，勿手改。
+  // BEGIN GENERATED(CHILDWIRES)
+  // 7 个 child 的实例（实例名与 golden 一致）。连线分类：
+  //   只引顶层端口 590 条 / 只引 child 输出 0 条
+  //   由派遣流控驱动 37 条 / 仍无来源 0 条
+  // child 的输出：golden 直接接到顶层 output 端口的那些**照样直接接**
+  // （不经中间线，否则那些顶层 output 就没有驱动源）；其余走下面的本地线。
+  // child 输出线：
+  logic [1:0] _intBusyTable_io_read_0_loadDependency_0;
+  logic [1:0] _intBusyTable_io_read_0_loadDependency_1;
+  logic [1:0] _intBusyTable_io_read_0_loadDependency_2;
+  logic [1:0] _intBusyTable_io_read_10_loadDependency_0;
+  logic [1:0] _intBusyTable_io_read_10_loadDependency_1;
+  logic [1:0] _intBusyTable_io_read_10_loadDependency_2;
+  logic [1:0] _intBusyTable_io_read_11_loadDependency_0;
+  logic [1:0] _intBusyTable_io_read_11_loadDependency_1;
+  logic [1:0] _intBusyTable_io_read_11_loadDependency_2;
+  logic [1:0] _intBusyTable_io_read_1_loadDependency_0;
+  logic [1:0] _intBusyTable_io_read_1_loadDependency_1;
+  logic [1:0] _intBusyTable_io_read_1_loadDependency_2;
+  logic [1:0] _intBusyTable_io_read_2_loadDependency_0;
+  logic [1:0] _intBusyTable_io_read_2_loadDependency_1;
+  logic [1:0] _intBusyTable_io_read_2_loadDependency_2;
+  logic [1:0] _intBusyTable_io_read_3_loadDependency_0;
+  logic [1:0] _intBusyTable_io_read_3_loadDependency_1;
+  logic [1:0] _intBusyTable_io_read_3_loadDependency_2;
+  logic [1:0] _intBusyTable_io_read_4_loadDependency_0;
+  logic [1:0] _intBusyTable_io_read_4_loadDependency_1;
+  logic [1:0] _intBusyTable_io_read_4_loadDependency_2;
+  logic [1:0] _intBusyTable_io_read_5_loadDependency_0;
+  logic [1:0] _intBusyTable_io_read_5_loadDependency_1;
+  logic [1:0] _intBusyTable_io_read_5_loadDependency_2;
+  logic [1:0] _intBusyTable_io_read_6_loadDependency_0;
+  logic [1:0] _intBusyTable_io_read_6_loadDependency_1;
+  logic [1:0] _intBusyTable_io_read_6_loadDependency_2;
+  logic [1:0] _intBusyTable_io_read_7_loadDependency_0;
+  logic [1:0] _intBusyTable_io_read_7_loadDependency_1;
+  logic [1:0] _intBusyTable_io_read_7_loadDependency_2;
+  logic [1:0] _intBusyTable_io_read_8_loadDependency_0;
+  logic [1:0] _intBusyTable_io_read_8_loadDependency_1;
+  logic [1:0] _intBusyTable_io_read_8_loadDependency_2;
+  logic [1:0] _intBusyTable_io_read_9_loadDependency_0;
+  logic [1:0] _intBusyTable_io_read_9_loadDependency_1;
+  logic [1:0] _intBusyTable_io_read_9_loadDependency_2;
+  logic [4:0] _rcTagTable_io_readPorts_0_addr;
+  logic [4:0] _rcTagTable_io_readPorts_10_addr;
+  logic [4:0] _rcTagTable_io_readPorts_11_addr;
+  logic [4:0] _rcTagTable_io_readPorts_1_addr;
+  logic [4:0] _rcTagTable_io_readPorts_2_addr;
+  logic [4:0] _rcTagTable_io_readPorts_3_addr;
+  logic [4:0] _rcTagTable_io_readPorts_4_addr;
+  logic [4:0] _rcTagTable_io_readPorts_5_addr;
+  logic [4:0] _rcTagTable_io_readPorts_6_addr;
+  logic [4:0] _rcTagTable_io_readPorts_7_addr;
+  logic [4:0] _rcTagTable_io_readPorts_8_addr;
+  logic [4:0] _rcTagTable_io_readPorts_9_addr;
+  logic [5:0] _lsqEnqCtrl_io_enq_resp_0_sqIdx_value;
+  logic [5:0] _lsqEnqCtrl_io_enq_resp_1_sqIdx_value;
+  logic [5:0] _lsqEnqCtrl_io_enq_resp_2_sqIdx_value;
+  logic [5:0] _lsqEnqCtrl_io_enq_resp_3_sqIdx_value;
+  logic [5:0] _lsqEnqCtrl_io_enq_resp_4_sqIdx_value;
+  logic [5:0] _lsqEnqCtrl_io_enq_resp_5_sqIdx_value;
+  logic [5:0] _lsqEnqCtrl_io_sqFreeCount;
+  logic [6:0] _lsqEnqCtrl_io_enq_resp_0_lqIdx_value;
+  logic [6:0] _lsqEnqCtrl_io_enq_resp_1_lqIdx_value;
+  logic [6:0] _lsqEnqCtrl_io_enq_resp_2_lqIdx_value;
+  logic [6:0] _lsqEnqCtrl_io_enq_resp_3_lqIdx_value;
+  logic [6:0] _lsqEnqCtrl_io_enq_resp_4_lqIdx_value;
+  logic [6:0] _lsqEnqCtrl_io_enq_resp_5_lqIdx_value;
+  logic [6:0] _lsqEnqCtrl_io_lqFreeCount;
+  logic _fpBusyTable_io_read_0_resp;
+  logic _fpBusyTable_io_read_10_resp;
+  logic _fpBusyTable_io_read_11_resp;
+  logic _fpBusyTable_io_read_12_resp;
+  logic _fpBusyTable_io_read_13_resp;
+  logic _fpBusyTable_io_read_14_resp;
+  logic _fpBusyTable_io_read_15_resp;
+  logic _fpBusyTable_io_read_16_resp;
+  logic _fpBusyTable_io_read_17_resp;
+  logic _fpBusyTable_io_read_1_resp;
+  logic _fpBusyTable_io_read_2_resp;
+  logic _fpBusyTable_io_read_3_resp;
+  logic _fpBusyTable_io_read_4_resp;
+  logic _fpBusyTable_io_read_5_resp;
+  logic _fpBusyTable_io_read_6_resp;
+  logic _fpBusyTable_io_read_7_resp;
+  logic _fpBusyTable_io_read_8_resp;
+  logic _fpBusyTable_io_read_9_resp;
+  logic _intBusyTable_io_read_0_resp;
+  logic _intBusyTable_io_read_10_resp;
+  logic _intBusyTable_io_read_11_resp;
+  logic _intBusyTable_io_read_1_resp;
+  logic _intBusyTable_io_read_2_resp;
+  logic _intBusyTable_io_read_3_resp;
+  logic _intBusyTable_io_read_4_resp;
+  logic _intBusyTable_io_read_5_resp;
+  logic _intBusyTable_io_read_6_resp;
+  logic _intBusyTable_io_read_7_resp;
+  logic _intBusyTable_io_read_8_resp;
+  logic _intBusyTable_io_read_9_resp;
+  logic _lsqEnqCtrl_io_enq_canAccept;
+  logic _lsqEnqCtrl_io_enq_resp_0_lqIdx_flag;
+  logic _lsqEnqCtrl_io_enq_resp_0_sqIdx_flag;
+  logic _lsqEnqCtrl_io_enq_resp_1_lqIdx_flag;
+  logic _lsqEnqCtrl_io_enq_resp_1_sqIdx_flag;
+  logic _lsqEnqCtrl_io_enq_resp_2_lqIdx_flag;
+  logic _lsqEnqCtrl_io_enq_resp_2_sqIdx_flag;
+  logic _lsqEnqCtrl_io_enq_resp_3_lqIdx_flag;
+  logic _lsqEnqCtrl_io_enq_resp_3_sqIdx_flag;
+  logic _lsqEnqCtrl_io_enq_resp_4_lqIdx_flag;
+  logic _lsqEnqCtrl_io_enq_resp_4_sqIdx_flag;
+  logic _lsqEnqCtrl_io_enq_resp_5_lqIdx_flag;
+  logic _lsqEnqCtrl_io_enq_resp_5_sqIdx_flag;
+  logic _rcTagTable_io_readPorts_0_valid;
+  logic _rcTagTable_io_readPorts_10_valid;
+  logic _rcTagTable_io_readPorts_11_valid;
+  logic _rcTagTable_io_readPorts_1_valid;
+  logic _rcTagTable_io_readPorts_2_valid;
+  logic _rcTagTable_io_readPorts_3_valid;
+  logic _rcTagTable_io_readPorts_4_valid;
+  logic _rcTagTable_io_readPorts_5_valid;
+  logic _rcTagTable_io_readPorts_6_valid;
+  logic _rcTagTable_io_readPorts_7_valid;
+  logic _rcTagTable_io_readPorts_8_valid;
+  logic _rcTagTable_io_readPorts_9_valid;
+  logic _v0BusyTable_io_read_0_resp;
+  logic _v0BusyTable_io_read_1_resp;
+  logic _v0BusyTable_io_read_2_resp;
+  logic _v0BusyTable_io_read_3_resp;
+  logic _v0BusyTable_io_read_4_resp;
+  logic _v0BusyTable_io_read_5_resp;
+  logic _vecBusyTable_io_read_0_resp;
+  logic _vecBusyTable_io_read_10_resp;
+  logic _vecBusyTable_io_read_11_resp;
+  logic _vecBusyTable_io_read_12_resp;
+  logic _vecBusyTable_io_read_13_resp;
+  logic _vecBusyTable_io_read_14_resp;
+  logic _vecBusyTable_io_read_15_resp;
+  logic _vecBusyTable_io_read_16_resp;
+  logic _vecBusyTable_io_read_17_resp;
+  logic _vecBusyTable_io_read_1_resp;
+  logic _vecBusyTable_io_read_2_resp;
+  logic _vecBusyTable_io_read_3_resp;
+  logic _vecBusyTable_io_read_4_resp;
+  logic _vecBusyTable_io_read_5_resp;
+  logic _vecBusyTable_io_read_6_resp;
+  logic _vecBusyTable_io_read_7_resp;
+  logic _vecBusyTable_io_read_8_resp;
+  logic _vecBusyTable_io_read_9_resp;
+  logic _vlBusyTable_io_read_0_resp;
+  logic _vlBusyTable_io_read_1_resp;
+  logic _vlBusyTable_io_read_2_resp;
+  logic _vlBusyTable_io_read_3_resp;
+  logic _vlBusyTable_io_read_4_resp;
+  logic _vlBusyTable_io_read_5_resp;
+  logic _vlBusyTable_io_vl_read_vlReadInfo_0_is_nonzero;
+  logic _vlBusyTable_io_vl_read_vlReadInfo_0_is_vlmax;
+  logic _vlBusyTable_io_vl_read_vlReadInfo_1_is_nonzero;
+  logic _vlBusyTable_io_vl_read_vlReadInfo_1_is_vlmax;
+  logic _vlBusyTable_io_vl_read_vlReadInfo_2_is_nonzero;
+  logic _vlBusyTable_io_vl_read_vlReadInfo_2_is_vlmax;
+  logic _vlBusyTable_io_vl_read_vlReadInfo_3_is_nonzero;
+  logic _vlBusyTable_io_vl_read_vlReadInfo_3_is_vlmax;
+  logic _vlBusyTable_io_vl_read_vlReadInfo_4_is_nonzero;
+  logic _vlBusyTable_io_vl_read_vlReadInfo_4_is_vlmax;
+  logic _vlBusyTable_io_vl_read_vlReadInfo_5_is_nonzero;
+  logic _vlBusyTable_io_vl_read_vlReadInfo_5_is_vlmax;
+
+  // END GENERATED
 
   // -------------------------------------------------------------------------
   // 【节 3.2】还接不了的位：集中声明，**故意不给驱动**（清单见文件头 a~d）
@@ -8583,12 +9089,6 @@ module NewDispatch
   logic [3:0]    unresolved_srcType_2_3;
   logic [3:0]    unresolved_srcType_2_4;
   logic [3:0]    unresolved_srcType_2_5;
-  logic          unresolved_singleStep_0;
-  logic          unresolved_singleStep_1;
-  logic          unresolved_singleStep_2;
-  logic          unresolved_singleStep_3;
-  logic          unresolved_singleStep_4;
-  logic          unresolved_singleStep_5;
   logic          unresolved_lqIdx_flag_0;
   logic          unresolved_lqIdx_flag_1;
   logic          unresolved_lqIdx_flag_2;
@@ -8674,9 +9174,6 @@ module NewDispatch
   logic [1:0]    unresolved_srcLoadDependency_1_2_4;
   logic [1:0]    unresolved_srcLoadDependency_1_2_5;
   // END GENERATED
-
-  // fromRenameUpdate 的 valid 同样依赖 LsqEnqCtrl 的 canAccept，现在也没有来源。
-  logic [5:0] unresolved_rename_valid;
 
   dyninst_t rename_uop [6];
   dyninst_t iq_uop     [34];
@@ -8868,7 +9365,7 @@ module NewDispatch
   assign rename_uop[0].lqIdx_value = unresolved_lqIdx_value_0;
   assign rename_uop[0].sqIdx_flag = unresolved_sqIdx_flag_0;
   assign rename_uop[0].sqIdx_value = unresolved_sqIdx_value_0;
-  assign rename_uop[0].singleStep = unresolved_singleStep_0;
+  assign rename_uop[0].singleStep = core_updatedSingleStep[0];
   assign rename_uop[0].replayInst = 1'h0;
   assign rename_uop[0].debug_fuType = io_fromRename_0_bits_debug_fuType;
   assign rename_uop[0].debug_sim_trig = io_fromRename_0_bits_debug_sim_trig;
@@ -9052,7 +9549,7 @@ module NewDispatch
   assign rename_uop[1].lqIdx_value = unresolved_lqIdx_value_1;
   assign rename_uop[1].sqIdx_flag = unresolved_sqIdx_flag_1;
   assign rename_uop[1].sqIdx_value = unresolved_sqIdx_value_1;
-  assign rename_uop[1].singleStep = unresolved_singleStep_1;
+  assign rename_uop[1].singleStep = core_updatedSingleStep[1];
   assign rename_uop[1].replayInst = 1'h0;
   assign rename_uop[1].debug_fuType = io_fromRename_1_bits_debug_fuType;
   assign rename_uop[1].debug_sim_trig = io_fromRename_1_bits_debug_sim_trig;
@@ -9236,7 +9733,7 @@ module NewDispatch
   assign rename_uop[2].lqIdx_value = unresolved_lqIdx_value_2;
   assign rename_uop[2].sqIdx_flag = unresolved_sqIdx_flag_2;
   assign rename_uop[2].sqIdx_value = unresolved_sqIdx_value_2;
-  assign rename_uop[2].singleStep = unresolved_singleStep_2;
+  assign rename_uop[2].singleStep = core_updatedSingleStep[2];
   assign rename_uop[2].replayInst = 1'h0;
   assign rename_uop[2].debug_fuType = io_fromRename_2_bits_debug_fuType;
   assign rename_uop[2].debug_sim_trig = io_fromRename_2_bits_debug_sim_trig;
@@ -9420,7 +9917,7 @@ module NewDispatch
   assign rename_uop[3].lqIdx_value = unresolved_lqIdx_value_3;
   assign rename_uop[3].sqIdx_flag = unresolved_sqIdx_flag_3;
   assign rename_uop[3].sqIdx_value = unresolved_sqIdx_value_3;
-  assign rename_uop[3].singleStep = unresolved_singleStep_3;
+  assign rename_uop[3].singleStep = core_updatedSingleStep[3];
   assign rename_uop[3].replayInst = 1'h0;
   assign rename_uop[3].debug_fuType = io_fromRename_3_bits_debug_fuType;
   assign rename_uop[3].debug_sim_trig = io_fromRename_3_bits_debug_sim_trig;
@@ -9604,7 +10101,7 @@ module NewDispatch
   assign rename_uop[4].lqIdx_value = unresolved_lqIdx_value_4;
   assign rename_uop[4].sqIdx_flag = unresolved_sqIdx_flag_4;
   assign rename_uop[4].sqIdx_value = unresolved_sqIdx_value_4;
-  assign rename_uop[4].singleStep = unresolved_singleStep_4;
+  assign rename_uop[4].singleStep = core_updatedSingleStep[4];
   assign rename_uop[4].replayInst = 1'h0;
   assign rename_uop[4].debug_fuType = io_fromRename_4_bits_debug_fuType;
   assign rename_uop[4].debug_sim_trig = io_fromRename_4_bits_debug_sim_trig;
@@ -9788,7 +10285,7 @@ module NewDispatch
   assign rename_uop[5].lqIdx_value = unresolved_lqIdx_value_5;
   assign rename_uop[5].sqIdx_flag = unresolved_sqIdx_flag_5;
   assign rename_uop[5].sqIdx_value = unresolved_sqIdx_value_5;
-  assign rename_uop[5].singleStep = unresolved_singleStep_5;
+  assign rename_uop[5].singleStep = core_updatedSingleStep[5];
   assign rename_uop[5].replayInst = 1'h0;
   assign rename_uop[5].debug_fuType = io_fromRename_5_bits_debug_fuType;
   assign rename_uop[5].debug_sim_trig = io_fromRename_5_bits_debug_sim_trig;
@@ -9800,17 +10297,38 @@ module NewDispatch
     .reset             (reset),
     .renameIn_valid    (core_renameIn_valid),
     .renameIn_fuType   (core_renameIn_fuType),
+    .renameIn_fuOpType (core_renameIn_fuOpType),
     .iqValidNum        (core_iqValidNum),
-    .toRenameAllFire   (unresolved_toRenameAllFire),
-    .firedVec          (unresolved_firedVec),
     .iqReady           (core_iqReady),
     .uopSelIQ_o        (core_uopSelIQ),
     .uopSelIQMatrix_o  (core_uopSelIQMatrix),
     .uopBlockByIQ_o    (core_uopBlockByIQ),
     .rename_uop        (rename_uop),
-    .rename_valid      (unresolved_rename_valid),
     .iq_uop            (iq_uop),
-    .iq_valid          (iq_valid)
+    .iq_valid          (iq_valid),
+
+    // 派遣流控
+    .fromRename_valid  (core_fromRenameValid),
+    .enqRob_canAccept  (io_enqRob_canAccept),
+    .enqRob_isEmpty    (io_enqRob_isEmpty),
+    .lsqCanAccept      (_lsqEnqCtrl_io_enq_canAccept),
+    .lqFreeCount       (_lsqEnqCtrl_io_lqFreeCount),
+    .sqFreeCount       (_lsqEnqCtrl_io_sqFreeCount),
+    .singleStep        (io_singleStep),
+    .redirect_valid    (io_redirect_valid),
+    .fromRename_ready  (core_fromRenameReady),
+    .firedVec_o        (core_firedVec),
+    .toRenameAllFire_o (core_toRenameAllFire),
+    .updatedSingleStep (core_updatedSingleStep),
+    .lsqNeedAlloc      (core_lsqNeedAlloc),
+    .lsqReqValid       (core_lsqReqValid),
+    .lsqReqNumLsElem   (core_lsqReqNumLsElem),
+    .lsqIqAccept       (core_lsqIqAccept),
+    .allocPregsValid0  (core_allocPregsValid0),
+    .canAccept_o       (core_canAccept),
+    .perfDispatchIn    (core_perfDispatchIn),
+    .perfDispatchUtil  (core_perfDispatchUtil),
+    .perfDispatchWait  (core_perfDispatchWait)
   );
 
   // -------------------------------------------------------------------------
@@ -15872,11 +16390,8 @@ module NewDispatch
   // ★hasException / numWB 被 singleStep 改写★（单步调试时这条指令不写回、
   // 且要带上异常），golden 的两处改写逐字照抄。
   // 本段 379 条：直通 355 / 常量 0 / 需流控 24。
-  // ★valid 与 singleStep 这一拨还没有来源★：它们要派遣流控（步骤 2 的第二次
-  // 提交）才算得出来，这里**故意悬空**，仿真必然出 X —— 钉 0 会让 UT 假绿。
-  logic unresolved_enqRobValid_0, unresolved_enqRobValid_1, unresolved_enqRobValid_2;
-  logic unresolved_enqRobValid_3, unresolved_enqRobValid_4, unresolved_enqRobValid_5;
-  assign io_enqRob_req_0_valid = unresolved_enqRobValid_0;
+  // valid = 本 lane 这拍真 fire；singleStep 由核的节 2.10 算出来。
+  assign io_enqRob_req_0_valid = core_firedVec[0];
   assign io_enqRob_req_0_bits_instr = io_fromRename_0_bits_instr;
   assign io_enqRob_req_0_bits_pc = io_fromRename_0_bits_pc;
   assign io_enqRob_req_0_bits_exceptionVec_0 = io_fromRename_0_bits_exceptionVec_0;
@@ -15887,7 +16402,7 @@ module NewDispatch
   assign io_enqRob_req_0_bits_exceptionVec_20 = io_fromRename_0_bits_exceptionVec_20;
   assign io_enqRob_req_0_bits_exceptionVec_22 = io_fromRename_0_bits_exceptionVec_22;
   assign io_enqRob_req_0_bits_isFetchMalAddr = io_fromRename_0_bits_isFetchMalAddr;
-  assign io_enqRob_req_0_bits_hasException = io_fromRename_0_bits_hasException | unresolved_singleStep_0;
+  assign io_enqRob_req_0_bits_hasException = io_fromRename_0_bits_hasException | core_updatedSingleStep[0];
   assign io_enqRob_req_0_bits_trigger = io_fromRename_0_bits_trigger;
   assign io_enqRob_req_0_bits_preDecodeInfo_isRVC = io_fromRename_0_bits_preDecodeInfo_isRVC;
   assign io_enqRob_req_0_bits_crossPageIPFFix = io_fromRename_0_bits_crossPageIPFFix;
@@ -15923,7 +16438,7 @@ module NewDispatch
   assign io_enqRob_req_0_bits_isVset = io_fromRename_0_bits_isVset;
   assign io_enqRob_req_0_bits_firstUop = io_fromRename_0_bits_firstUop;
   assign io_enqRob_req_0_bits_lastUop = io_fromRename_0_bits_lastUop;
-  assign io_enqRob_req_0_bits_numWB = unresolved_singleStep_0 ? 7'h0 : io_fromRename_0_bits_numWB;
+  assign io_enqRob_req_0_bits_numWB = core_updatedSingleStep[0] ? 7'h0 : io_fromRename_0_bits_numWB;
   assign io_enqRob_req_0_bits_commitType = io_fromRename_0_bits_commitType;
   assign io_enqRob_req_0_bits_pdest = io_fromRename_0_bits_pdest;
   assign io_enqRob_req_0_bits_robIdx_flag = io_fromRename_0_bits_robIdx_flag;
@@ -15937,10 +16452,10 @@ module NewDispatch
   assign io_enqRob_req_0_bits_eliminatedMove = io_fromRename_0_bits_eliminatedMove;
   assign io_enqRob_req_0_bits_snapshot = io_fromRename_0_bits_snapshot;
   assign io_enqRob_req_0_bits_debugInfo_renameTime = io_fromRename_0_bits_debugInfo_renameTime;
-  assign io_enqRob_req_0_bits_singleStep = unresolved_singleStep_0;
+  assign io_enqRob_req_0_bits_singleStep = core_updatedSingleStep[0];
   assign io_enqRob_req_0_bits_debug_fuType = io_fromRename_0_bits_debug_fuType;
   assign io_enqRob_req_0_bits_debug_sim_trig = io_fromRename_0_bits_debug_sim_trig;
-  assign io_enqRob_req_1_valid = unresolved_enqRobValid_1;
+  assign io_enqRob_req_1_valid = core_firedVec[1];
   assign io_enqRob_req_1_bits_instr = io_fromRename_1_bits_instr;
   assign io_enqRob_req_1_bits_pc = io_fromRename_1_bits_pc;
   assign io_enqRob_req_1_bits_exceptionVec_0 = io_fromRename_1_bits_exceptionVec_0;
@@ -15951,7 +16466,7 @@ module NewDispatch
   assign io_enqRob_req_1_bits_exceptionVec_20 = io_fromRename_1_bits_exceptionVec_20;
   assign io_enqRob_req_1_bits_exceptionVec_22 = io_fromRename_1_bits_exceptionVec_22;
   assign io_enqRob_req_1_bits_isFetchMalAddr = io_fromRename_1_bits_isFetchMalAddr;
-  assign io_enqRob_req_1_bits_hasException = io_fromRename_1_bits_hasException | unresolved_singleStep_1;
+  assign io_enqRob_req_1_bits_hasException = io_fromRename_1_bits_hasException | core_updatedSingleStep[1];
   assign io_enqRob_req_1_bits_trigger = io_fromRename_1_bits_trigger;
   assign io_enqRob_req_1_bits_preDecodeInfo_isRVC = io_fromRename_1_bits_preDecodeInfo_isRVC;
   assign io_enqRob_req_1_bits_crossPageIPFFix = io_fromRename_1_bits_crossPageIPFFix;
@@ -15987,7 +16502,7 @@ module NewDispatch
   assign io_enqRob_req_1_bits_isVset = io_fromRename_1_bits_isVset;
   assign io_enqRob_req_1_bits_firstUop = io_fromRename_1_bits_firstUop;
   assign io_enqRob_req_1_bits_lastUop = io_fromRename_1_bits_lastUop;
-  assign io_enqRob_req_1_bits_numWB = unresolved_singleStep_1 ? 7'h0 : io_fromRename_1_bits_numWB;
+  assign io_enqRob_req_1_bits_numWB = core_updatedSingleStep[1] ? 7'h0 : io_fromRename_1_bits_numWB;
   assign io_enqRob_req_1_bits_commitType = io_fromRename_1_bits_commitType;
   assign io_enqRob_req_1_bits_pdest = io_fromRename_1_bits_pdest;
   assign io_enqRob_req_1_bits_robIdx_flag = io_fromRename_1_bits_robIdx_flag;
@@ -16000,10 +16515,10 @@ module NewDispatch
   assign io_enqRob_req_1_bits_traceBlockInPipe_ilastsize = io_fromRename_1_bits_traceBlockInPipe_ilastsize;
   assign io_enqRob_req_1_bits_eliminatedMove = io_fromRename_1_bits_eliminatedMove;
   assign io_enqRob_req_1_bits_debugInfo_renameTime = io_fromRename_1_bits_debugInfo_renameTime;
-  assign io_enqRob_req_1_bits_singleStep = unresolved_singleStep_1;
+  assign io_enqRob_req_1_bits_singleStep = core_updatedSingleStep[1];
   assign io_enqRob_req_1_bits_debug_fuType = io_fromRename_1_bits_debug_fuType;
   assign io_enqRob_req_1_bits_debug_sim_trig = io_fromRename_1_bits_debug_sim_trig;
-  assign io_enqRob_req_2_valid = unresolved_enqRobValid_2;
+  assign io_enqRob_req_2_valid = core_firedVec[2];
   assign io_enqRob_req_2_bits_instr = io_fromRename_2_bits_instr;
   assign io_enqRob_req_2_bits_pc = io_fromRename_2_bits_pc;
   assign io_enqRob_req_2_bits_exceptionVec_0 = io_fromRename_2_bits_exceptionVec_0;
@@ -16014,7 +16529,7 @@ module NewDispatch
   assign io_enqRob_req_2_bits_exceptionVec_20 = io_fromRename_2_bits_exceptionVec_20;
   assign io_enqRob_req_2_bits_exceptionVec_22 = io_fromRename_2_bits_exceptionVec_22;
   assign io_enqRob_req_2_bits_isFetchMalAddr = io_fromRename_2_bits_isFetchMalAddr;
-  assign io_enqRob_req_2_bits_hasException = io_fromRename_2_bits_hasException | unresolved_singleStep_2;
+  assign io_enqRob_req_2_bits_hasException = io_fromRename_2_bits_hasException | core_updatedSingleStep[2];
   assign io_enqRob_req_2_bits_trigger = io_fromRename_2_bits_trigger;
   assign io_enqRob_req_2_bits_preDecodeInfo_isRVC = io_fromRename_2_bits_preDecodeInfo_isRVC;
   assign io_enqRob_req_2_bits_crossPageIPFFix = io_fromRename_2_bits_crossPageIPFFix;
@@ -16050,7 +16565,7 @@ module NewDispatch
   assign io_enqRob_req_2_bits_isVset = io_fromRename_2_bits_isVset;
   assign io_enqRob_req_2_bits_firstUop = io_fromRename_2_bits_firstUop;
   assign io_enqRob_req_2_bits_lastUop = io_fromRename_2_bits_lastUop;
-  assign io_enqRob_req_2_bits_numWB = unresolved_singleStep_2 ? 7'h0 : io_fromRename_2_bits_numWB;
+  assign io_enqRob_req_2_bits_numWB = core_updatedSingleStep[2] ? 7'h0 : io_fromRename_2_bits_numWB;
   assign io_enqRob_req_2_bits_commitType = io_fromRename_2_bits_commitType;
   assign io_enqRob_req_2_bits_pdest = io_fromRename_2_bits_pdest;
   assign io_enqRob_req_2_bits_robIdx_flag = io_fromRename_2_bits_robIdx_flag;
@@ -16063,10 +16578,10 @@ module NewDispatch
   assign io_enqRob_req_2_bits_traceBlockInPipe_ilastsize = io_fromRename_2_bits_traceBlockInPipe_ilastsize;
   assign io_enqRob_req_2_bits_eliminatedMove = io_fromRename_2_bits_eliminatedMove;
   assign io_enqRob_req_2_bits_debugInfo_renameTime = io_fromRename_2_bits_debugInfo_renameTime;
-  assign io_enqRob_req_2_bits_singleStep = unresolved_singleStep_2;
+  assign io_enqRob_req_2_bits_singleStep = core_updatedSingleStep[2];
   assign io_enqRob_req_2_bits_debug_fuType = io_fromRename_2_bits_debug_fuType;
   assign io_enqRob_req_2_bits_debug_sim_trig = io_fromRename_2_bits_debug_sim_trig;
-  assign io_enqRob_req_3_valid = unresolved_enqRobValid_3;
+  assign io_enqRob_req_3_valid = core_firedVec[3];
   assign io_enqRob_req_3_bits_instr = io_fromRename_3_bits_instr;
   assign io_enqRob_req_3_bits_pc = io_fromRename_3_bits_pc;
   assign io_enqRob_req_3_bits_exceptionVec_0 = io_fromRename_3_bits_exceptionVec_0;
@@ -16077,7 +16592,7 @@ module NewDispatch
   assign io_enqRob_req_3_bits_exceptionVec_20 = io_fromRename_3_bits_exceptionVec_20;
   assign io_enqRob_req_3_bits_exceptionVec_22 = io_fromRename_3_bits_exceptionVec_22;
   assign io_enqRob_req_3_bits_isFetchMalAddr = io_fromRename_3_bits_isFetchMalAddr;
-  assign io_enqRob_req_3_bits_hasException = io_fromRename_3_bits_hasException | unresolved_singleStep_3;
+  assign io_enqRob_req_3_bits_hasException = io_fromRename_3_bits_hasException | core_updatedSingleStep[3];
   assign io_enqRob_req_3_bits_trigger = io_fromRename_3_bits_trigger;
   assign io_enqRob_req_3_bits_preDecodeInfo_isRVC = io_fromRename_3_bits_preDecodeInfo_isRVC;
   assign io_enqRob_req_3_bits_crossPageIPFFix = io_fromRename_3_bits_crossPageIPFFix;
@@ -16113,7 +16628,7 @@ module NewDispatch
   assign io_enqRob_req_3_bits_isVset = io_fromRename_3_bits_isVset;
   assign io_enqRob_req_3_bits_firstUop = io_fromRename_3_bits_firstUop;
   assign io_enqRob_req_3_bits_lastUop = io_fromRename_3_bits_lastUop;
-  assign io_enqRob_req_3_bits_numWB = unresolved_singleStep_3 ? 7'h0 : io_fromRename_3_bits_numWB;
+  assign io_enqRob_req_3_bits_numWB = core_updatedSingleStep[3] ? 7'h0 : io_fromRename_3_bits_numWB;
   assign io_enqRob_req_3_bits_commitType = io_fromRename_3_bits_commitType;
   assign io_enqRob_req_3_bits_pdest = io_fromRename_3_bits_pdest;
   assign io_enqRob_req_3_bits_robIdx_flag = io_fromRename_3_bits_robIdx_flag;
@@ -16126,10 +16641,10 @@ module NewDispatch
   assign io_enqRob_req_3_bits_traceBlockInPipe_ilastsize = io_fromRename_3_bits_traceBlockInPipe_ilastsize;
   assign io_enqRob_req_3_bits_eliminatedMove = io_fromRename_3_bits_eliminatedMove;
   assign io_enqRob_req_3_bits_debugInfo_renameTime = io_fromRename_3_bits_debugInfo_renameTime;
-  assign io_enqRob_req_3_bits_singleStep = unresolved_singleStep_3;
+  assign io_enqRob_req_3_bits_singleStep = core_updatedSingleStep[3];
   assign io_enqRob_req_3_bits_debug_fuType = io_fromRename_3_bits_debug_fuType;
   assign io_enqRob_req_3_bits_debug_sim_trig = io_fromRename_3_bits_debug_sim_trig;
-  assign io_enqRob_req_4_valid = unresolved_enqRobValid_4;
+  assign io_enqRob_req_4_valid = core_firedVec[4];
   assign io_enqRob_req_4_bits_instr = io_fromRename_4_bits_instr;
   assign io_enqRob_req_4_bits_pc = io_fromRename_4_bits_pc;
   assign io_enqRob_req_4_bits_exceptionVec_0 = io_fromRename_4_bits_exceptionVec_0;
@@ -16140,7 +16655,7 @@ module NewDispatch
   assign io_enqRob_req_4_bits_exceptionVec_20 = io_fromRename_4_bits_exceptionVec_20;
   assign io_enqRob_req_4_bits_exceptionVec_22 = io_fromRename_4_bits_exceptionVec_22;
   assign io_enqRob_req_4_bits_isFetchMalAddr = io_fromRename_4_bits_isFetchMalAddr;
-  assign io_enqRob_req_4_bits_hasException = io_fromRename_4_bits_hasException | unresolved_singleStep_4;
+  assign io_enqRob_req_4_bits_hasException = io_fromRename_4_bits_hasException | core_updatedSingleStep[4];
   assign io_enqRob_req_4_bits_trigger = io_fromRename_4_bits_trigger;
   assign io_enqRob_req_4_bits_preDecodeInfo_isRVC = io_fromRename_4_bits_preDecodeInfo_isRVC;
   assign io_enqRob_req_4_bits_crossPageIPFFix = io_fromRename_4_bits_crossPageIPFFix;
@@ -16176,7 +16691,7 @@ module NewDispatch
   assign io_enqRob_req_4_bits_isVset = io_fromRename_4_bits_isVset;
   assign io_enqRob_req_4_bits_firstUop = io_fromRename_4_bits_firstUop;
   assign io_enqRob_req_4_bits_lastUop = io_fromRename_4_bits_lastUop;
-  assign io_enqRob_req_4_bits_numWB = unresolved_singleStep_4 ? 7'h0 : io_fromRename_4_bits_numWB;
+  assign io_enqRob_req_4_bits_numWB = core_updatedSingleStep[4] ? 7'h0 : io_fromRename_4_bits_numWB;
   assign io_enqRob_req_4_bits_commitType = io_fromRename_4_bits_commitType;
   assign io_enqRob_req_4_bits_pdest = io_fromRename_4_bits_pdest;
   assign io_enqRob_req_4_bits_robIdx_flag = io_fromRename_4_bits_robIdx_flag;
@@ -16189,10 +16704,10 @@ module NewDispatch
   assign io_enqRob_req_4_bits_traceBlockInPipe_ilastsize = io_fromRename_4_bits_traceBlockInPipe_ilastsize;
   assign io_enqRob_req_4_bits_eliminatedMove = io_fromRename_4_bits_eliminatedMove;
   assign io_enqRob_req_4_bits_debugInfo_renameTime = io_fromRename_4_bits_debugInfo_renameTime;
-  assign io_enqRob_req_4_bits_singleStep = unresolved_singleStep_4;
+  assign io_enqRob_req_4_bits_singleStep = core_updatedSingleStep[4];
   assign io_enqRob_req_4_bits_debug_fuType = io_fromRename_4_bits_debug_fuType;
   assign io_enqRob_req_4_bits_debug_sim_trig = io_fromRename_4_bits_debug_sim_trig;
-  assign io_enqRob_req_5_valid = unresolved_enqRobValid_5;
+  assign io_enqRob_req_5_valid = core_firedVec[5];
   assign io_enqRob_req_5_bits_instr = io_fromRename_5_bits_instr;
   assign io_enqRob_req_5_bits_pc = io_fromRename_5_bits_pc;
   assign io_enqRob_req_5_bits_exceptionVec_0 = io_fromRename_5_bits_exceptionVec_0;
@@ -16203,7 +16718,7 @@ module NewDispatch
   assign io_enqRob_req_5_bits_exceptionVec_20 = io_fromRename_5_bits_exceptionVec_20;
   assign io_enqRob_req_5_bits_exceptionVec_22 = io_fromRename_5_bits_exceptionVec_22;
   assign io_enqRob_req_5_bits_isFetchMalAddr = io_fromRename_5_bits_isFetchMalAddr;
-  assign io_enqRob_req_5_bits_hasException = io_fromRename_5_bits_hasException | unresolved_singleStep_5;
+  assign io_enqRob_req_5_bits_hasException = io_fromRename_5_bits_hasException | core_updatedSingleStep[5];
   assign io_enqRob_req_5_bits_trigger = io_fromRename_5_bits_trigger;
   assign io_enqRob_req_5_bits_preDecodeInfo_isRVC = io_fromRename_5_bits_preDecodeInfo_isRVC;
   assign io_enqRob_req_5_bits_crossPageIPFFix = io_fromRename_5_bits_crossPageIPFFix;
@@ -16239,7 +16754,7 @@ module NewDispatch
   assign io_enqRob_req_5_bits_isVset = io_fromRename_5_bits_isVset;
   assign io_enqRob_req_5_bits_firstUop = io_fromRename_5_bits_firstUop;
   assign io_enqRob_req_5_bits_lastUop = io_fromRename_5_bits_lastUop;
-  assign io_enqRob_req_5_bits_numWB = unresolved_singleStep_5 ? 7'h0 : io_fromRename_5_bits_numWB;
+  assign io_enqRob_req_5_bits_numWB = core_updatedSingleStep[5] ? 7'h0 : io_fromRename_5_bits_numWB;
   assign io_enqRob_req_5_bits_commitType = io_fromRename_5_bits_commitType;
   assign io_enqRob_req_5_bits_pdest = io_fromRename_5_bits_pdest;
   assign io_enqRob_req_5_bits_robIdx_flag = io_fromRename_5_bits_robIdx_flag;
@@ -16252,10 +16767,82 @@ module NewDispatch
   assign io_enqRob_req_5_bits_traceBlockInPipe_ilastsize = io_fromRename_5_bits_traceBlockInPipe_ilastsize;
   assign io_enqRob_req_5_bits_eliminatedMove = io_fromRename_5_bits_eliminatedMove;
   assign io_enqRob_req_5_bits_debugInfo_renameTime = io_fromRename_5_bits_debugInfo_renameTime;
-  assign io_enqRob_req_5_bits_singleStep = unresolved_singleStep_5;
+  assign io_enqRob_req_5_bits_singleStep = core_updatedSingleStep[5];
   assign io_enqRob_req_5_bits_debug_fuType = io_fromRename_5_bits_debug_fuType;
   assign io_enqRob_req_5_bits_debug_sim_trig = io_fromRename_5_bits_debug_sim_trig;
   // END GENERATED
+
+  // -------------------------------------------------------------------------
+  // 【节 3.6】握手 / perf / stallReason 出口
+  // -------------------------------------------------------------------------
+  // 这一段是派遣流控在端口上的落点：ready 回 Rename、allFire 给上游整拍用、
+  // perf 的 9 个计数（其中 4 号是常量 false，golden 把端口整个 DCE 掉了）、
+  // 以及 topdown 归因用的 backReason。
+  assign io_fromRename_0_ready = core_fromRenameReady[0];
+  assign io_fromRename_1_ready = core_fromRenameReady[1];
+  assign io_fromRename_2_ready = core_fromRenameReady[2];
+  assign io_fromRename_3_ready = core_fromRenameReady[3];
+  assign io_fromRename_4_ready = core_fromRenameReady[4];
+  assign io_fromRename_5_ready = core_fromRenameReady[5];
+  assign io_toRenameAllFire    = core_toRenameAllFire;
+
+  // backReason：派遣级把前级堵住时才置位（bits 恒为 OtherCoreStall，被 DCE 掉了）
+  assign io_stallReason_backReason_valid = ~core_canAccept;
+
+  // ---- LsqEnqCtrl 的 redirect 打一拍 ----
+  // ★不是笔误★：Chisel 写的就是 lsqEnqCtrl.io.redirect := RegNext(io.redirect)。
+  // 注释里的理由是 dispatch2iq 用 s2_s4_redirect 而 newDispatch 用 s1_s3_redirect，
+  // 差一拍，所以这里补一拍对齐。无复位（golden 的 always 块里没有 reset 分支）。
+  logic lsqEnqCtrl_io_redirect_REG_valid;
+  always_ff @(posedge clock) lsqEnqCtrl_io_redirect_REG_valid <= io_redirect_valid;
+
+  // ---- perf 出口：核算组合值，这里打两拍 ----
+  // ★寄存器用 golden 的名字★（io_perf_<n>_value_REG / _REG_1）：FM 按叶名配对，
+  // 改名就配不上、只能靠人工钉点。这与节 2.2 里 IQSort 用 golden 名是同一条规矩。
+  // 两拍是 Chisel 侧 XSPerfAccumulate/perfEvents 出口的固定形状（RegNext ×2）。
+  logic       hasValidInstr;
+  logic       stallRob;      // 有活干但 Rob 收不下
+  logic       stallDq;       // 有活干且 Rob 收得下（golden 里 int/fp/ls 三个计数同值）
+  assign hasValidInstr = |core_fromRenameValid;
+  assign stallRob      = hasValidInstr & ~io_enqRob_canAccept;
+  assign stallDq       = hasValidInstr &  io_enqRob_canAccept;
+
+  logic [2:0] io_perf_0_value_REG, io_perf_0_value_REG_1;
+  logic       io_perf_1_value_REG, io_perf_1_value_REG_1;
+  logic [2:0] io_perf_2_value_REG, io_perf_2_value_REG_1;
+  logic [2:0] io_perf_3_value_REG, io_perf_3_value_REG_1;
+  logic       io_perf_5_value_REG, io_perf_5_value_REG_1;
+  logic       io_perf_6_value_REG, io_perf_6_value_REG_1;
+  logic       io_perf_7_value_REG, io_perf_7_value_REG_1;
+  logic       io_perf_8_value_REG, io_perf_8_value_REG_1;
+
+  always_ff @(posedge clock) begin   // 无复位：照抄 golden
+    io_perf_0_value_REG   <= core_perfDispatchIn;      // dispatch_in
+    io_perf_0_value_REG_1 <= io_perf_0_value_REG;
+    io_perf_1_value_REG   <= ~hasValidInstr;           // dispatch_empty
+    io_perf_1_value_REG_1 <= io_perf_1_value_REG;
+    io_perf_2_value_REG   <= core_perfDispatchUtil;    // dispatch_utili
+    io_perf_2_value_REG_1 <= io_perf_2_value_REG;
+    io_perf_3_value_REG   <= core_perfDispatchWait;    // dispatch_waitinstr
+    io_perf_3_value_REG_1 <= io_perf_3_value_REG;
+    io_perf_5_value_REG   <= stallRob;                 // stall_cycle_rob
+    io_perf_5_value_REG_1 <= io_perf_5_value_REG;
+    io_perf_6_value_REG   <= stallDq;                  // stall_cycle_int_dq
+    io_perf_6_value_REG_1 <= io_perf_6_value_REG;
+    io_perf_7_value_REG   <= stallDq;                  // stall_cycle_fp_dq
+    io_perf_7_value_REG_1 <= io_perf_7_value_REG;
+    io_perf_8_value_REG   <= stallDq;                  // stall_cycle_ls_dq
+    io_perf_8_value_REG_1 <= io_perf_8_value_REG;
+  end
+
+  assign io_perf_0_value = {3'h0, io_perf_0_value_REG_1};
+  assign io_perf_1_value = {5'h0, io_perf_1_value_REG_1};
+  assign io_perf_2_value = {3'h0, io_perf_2_value_REG_1};
+  assign io_perf_3_value = {3'h0, io_perf_3_value_REG_1};
+  assign io_perf_5_value = {5'h0, io_perf_5_value_REG_1};
+  assign io_perf_6_value = {5'h0, io_perf_6_value_REG_1};
+  assign io_perf_7_value = {5'h0, io_perf_7_value_REG_1};
+  assign io_perf_8_value = {5'h0, io_perf_8_value_REG_1};
 
   // ===========================================================================
   // 步骤 1：7 个 child 的实例化
@@ -16266,265 +16853,20 @@ module NewDispatch
   // 本块由 scripts/gen_newdispatch.py 的 gen_childinst() 生成，勿手改。
   // ===========================================================================
   // BEGIN GENERATED(CHILDINST)
-  // 7 个 child 的实例（实例名与 golden 一致）。连线分类：
-  //   只引顶层端口 590 条 / 只引 child 输出 0 条 / 待步骤 2 的 37 条
-  // child 输出线：
-  logic [1:0] _intBusyTable_io_read_0_loadDependency_0;
-  logic [1:0] _intBusyTable_io_read_0_loadDependency_1;
-  logic [1:0] _intBusyTable_io_read_0_loadDependency_2;
-  logic [1:0] _intBusyTable_io_read_10_loadDependency_0;
-  logic [1:0] _intBusyTable_io_read_10_loadDependency_1;
-  logic [1:0] _intBusyTable_io_read_10_loadDependency_2;
-  logic [1:0] _intBusyTable_io_read_11_loadDependency_0;
-  logic [1:0] _intBusyTable_io_read_11_loadDependency_1;
-  logic [1:0] _intBusyTable_io_read_11_loadDependency_2;
-  logic [1:0] _intBusyTable_io_read_1_loadDependency_0;
-  logic [1:0] _intBusyTable_io_read_1_loadDependency_1;
-  logic [1:0] _intBusyTable_io_read_1_loadDependency_2;
-  logic [1:0] _intBusyTable_io_read_2_loadDependency_0;
-  logic [1:0] _intBusyTable_io_read_2_loadDependency_1;
-  logic [1:0] _intBusyTable_io_read_2_loadDependency_2;
-  logic [1:0] _intBusyTable_io_read_3_loadDependency_0;
-  logic [1:0] _intBusyTable_io_read_3_loadDependency_1;
-  logic [1:0] _intBusyTable_io_read_3_loadDependency_2;
-  logic [1:0] _intBusyTable_io_read_4_loadDependency_0;
-  logic [1:0] _intBusyTable_io_read_4_loadDependency_1;
-  logic [1:0] _intBusyTable_io_read_4_loadDependency_2;
-  logic [1:0] _intBusyTable_io_read_5_loadDependency_0;
-  logic [1:0] _intBusyTable_io_read_5_loadDependency_1;
-  logic [1:0] _intBusyTable_io_read_5_loadDependency_2;
-  logic [1:0] _intBusyTable_io_read_6_loadDependency_0;
-  logic [1:0] _intBusyTable_io_read_6_loadDependency_1;
-  logic [1:0] _intBusyTable_io_read_6_loadDependency_2;
-  logic [1:0] _intBusyTable_io_read_7_loadDependency_0;
-  logic [1:0] _intBusyTable_io_read_7_loadDependency_1;
-  logic [1:0] _intBusyTable_io_read_7_loadDependency_2;
-  logic [1:0] _intBusyTable_io_read_8_loadDependency_0;
-  logic [1:0] _intBusyTable_io_read_8_loadDependency_1;
-  logic [1:0] _intBusyTable_io_read_8_loadDependency_2;
-  logic [1:0] _intBusyTable_io_read_9_loadDependency_0;
-  logic [1:0] _intBusyTable_io_read_9_loadDependency_1;
-  logic [1:0] _intBusyTable_io_read_9_loadDependency_2;
-  logic [4:0] _rcTagTable_io_readPorts_0_addr;
-  logic [4:0] _rcTagTable_io_readPorts_10_addr;
-  logic [4:0] _rcTagTable_io_readPorts_11_addr;
-  logic [4:0] _rcTagTable_io_readPorts_1_addr;
-  logic [4:0] _rcTagTable_io_readPorts_2_addr;
-  logic [4:0] _rcTagTable_io_readPorts_3_addr;
-  logic [4:0] _rcTagTable_io_readPorts_4_addr;
-  logic [4:0] _rcTagTable_io_readPorts_5_addr;
-  logic [4:0] _rcTagTable_io_readPorts_6_addr;
-  logic [4:0] _rcTagTable_io_readPorts_7_addr;
-  logic [4:0] _rcTagTable_io_readPorts_8_addr;
-  logic [4:0] _rcTagTable_io_readPorts_9_addr;
-  logic [5:0] _lsqEnqCtrl_io_enq_resp_0_sqIdx_value;
-  logic [5:0] _lsqEnqCtrl_io_enq_resp_1_sqIdx_value;
-  logic [5:0] _lsqEnqCtrl_io_enq_resp_2_sqIdx_value;
-  logic [5:0] _lsqEnqCtrl_io_enq_resp_3_sqIdx_value;
-  logic [5:0] _lsqEnqCtrl_io_enq_resp_4_sqIdx_value;
-  logic [5:0] _lsqEnqCtrl_io_enq_resp_5_sqIdx_value;
-  logic [5:0] _lsqEnqCtrl_io_sqFreeCount;
-  logic [6:0] _lsqEnqCtrl_io_enq_resp_0_lqIdx_value;
-  logic [6:0] _lsqEnqCtrl_io_enq_resp_1_lqIdx_value;
-  logic [6:0] _lsqEnqCtrl_io_enq_resp_2_lqIdx_value;
-  logic [6:0] _lsqEnqCtrl_io_enq_resp_3_lqIdx_value;
-  logic [6:0] _lsqEnqCtrl_io_enq_resp_4_lqIdx_value;
-  logic [6:0] _lsqEnqCtrl_io_enq_resp_5_lqIdx_value;
-  logic [6:0] _lsqEnqCtrl_io_lqFreeCount;
-  logic _fpBusyTable_io_read_0_resp;
-  logic _fpBusyTable_io_read_10_resp;
-  logic _fpBusyTable_io_read_11_resp;
-  logic _fpBusyTable_io_read_12_resp;
-  logic _fpBusyTable_io_read_13_resp;
-  logic _fpBusyTable_io_read_14_resp;
-  logic _fpBusyTable_io_read_15_resp;
-  logic _fpBusyTable_io_read_16_resp;
-  logic _fpBusyTable_io_read_17_resp;
-  logic _fpBusyTable_io_read_1_resp;
-  logic _fpBusyTable_io_read_2_resp;
-  logic _fpBusyTable_io_read_3_resp;
-  logic _fpBusyTable_io_read_4_resp;
-  logic _fpBusyTable_io_read_5_resp;
-  logic _fpBusyTable_io_read_6_resp;
-  logic _fpBusyTable_io_read_7_resp;
-  logic _fpBusyTable_io_read_8_resp;
-  logic _fpBusyTable_io_read_9_resp;
-  logic _intBusyTable_io_read_0_resp;
-  logic _intBusyTable_io_read_10_resp;
-  logic _intBusyTable_io_read_11_resp;
-  logic _intBusyTable_io_read_1_resp;
-  logic _intBusyTable_io_read_2_resp;
-  logic _intBusyTable_io_read_3_resp;
-  logic _intBusyTable_io_read_4_resp;
-  logic _intBusyTable_io_read_5_resp;
-  logic _intBusyTable_io_read_6_resp;
-  logic _intBusyTable_io_read_7_resp;
-  logic _intBusyTable_io_read_8_resp;
-  logic _intBusyTable_io_read_9_resp;
-  logic _lsqEnqCtrl_io_enq_canAccept;
-  logic _lsqEnqCtrl_io_enq_resp_0_lqIdx_flag;
-  logic _lsqEnqCtrl_io_enq_resp_0_sqIdx_flag;
-  logic _lsqEnqCtrl_io_enq_resp_1_lqIdx_flag;
-  logic _lsqEnqCtrl_io_enq_resp_1_sqIdx_flag;
-  logic _lsqEnqCtrl_io_enq_resp_2_lqIdx_flag;
-  logic _lsqEnqCtrl_io_enq_resp_2_sqIdx_flag;
-  logic _lsqEnqCtrl_io_enq_resp_3_lqIdx_flag;
-  logic _lsqEnqCtrl_io_enq_resp_3_sqIdx_flag;
-  logic _lsqEnqCtrl_io_enq_resp_4_lqIdx_flag;
-  logic _lsqEnqCtrl_io_enq_resp_4_sqIdx_flag;
-  logic _lsqEnqCtrl_io_enq_resp_5_lqIdx_flag;
-  logic _lsqEnqCtrl_io_enq_resp_5_sqIdx_flag;
-  logic _rcTagTable_io_readPorts_0_valid;
-  logic _rcTagTable_io_readPorts_10_valid;
-  logic _rcTagTable_io_readPorts_11_valid;
-  logic _rcTagTable_io_readPorts_1_valid;
-  logic _rcTagTable_io_readPorts_2_valid;
-  logic _rcTagTable_io_readPorts_3_valid;
-  logic _rcTagTable_io_readPorts_4_valid;
-  logic _rcTagTable_io_readPorts_5_valid;
-  logic _rcTagTable_io_readPorts_6_valid;
-  logic _rcTagTable_io_readPorts_7_valid;
-  logic _rcTagTable_io_readPorts_8_valid;
-  logic _rcTagTable_io_readPorts_9_valid;
-  logic _v0BusyTable_io_read_0_resp;
-  logic _v0BusyTable_io_read_1_resp;
-  logic _v0BusyTable_io_read_2_resp;
-  logic _v0BusyTable_io_read_3_resp;
-  logic _v0BusyTable_io_read_4_resp;
-  logic _v0BusyTable_io_read_5_resp;
-  logic _vecBusyTable_io_read_0_resp;
-  logic _vecBusyTable_io_read_10_resp;
-  logic _vecBusyTable_io_read_11_resp;
-  logic _vecBusyTable_io_read_12_resp;
-  logic _vecBusyTable_io_read_13_resp;
-  logic _vecBusyTable_io_read_14_resp;
-  logic _vecBusyTable_io_read_15_resp;
-  logic _vecBusyTable_io_read_16_resp;
-  logic _vecBusyTable_io_read_17_resp;
-  logic _vecBusyTable_io_read_1_resp;
-  logic _vecBusyTable_io_read_2_resp;
-  logic _vecBusyTable_io_read_3_resp;
-  logic _vecBusyTable_io_read_4_resp;
-  logic _vecBusyTable_io_read_5_resp;
-  logic _vecBusyTable_io_read_6_resp;
-  logic _vecBusyTable_io_read_7_resp;
-  logic _vecBusyTable_io_read_8_resp;
-  logic _vecBusyTable_io_read_9_resp;
-  logic _vlBusyTable_io_read_0_resp;
-  logic _vlBusyTable_io_read_1_resp;
-  logic _vlBusyTable_io_read_2_resp;
-  logic _vlBusyTable_io_read_3_resp;
-  logic _vlBusyTable_io_read_4_resp;
-  logic _vlBusyTable_io_read_5_resp;
-  logic _vlBusyTable_io_vl_read_vlReadInfo_0_is_nonzero;
-  logic _vlBusyTable_io_vl_read_vlReadInfo_0_is_vlmax;
-  logic _vlBusyTable_io_vl_read_vlReadInfo_1_is_nonzero;
-  logic _vlBusyTable_io_vl_read_vlReadInfo_1_is_vlmax;
-  logic _vlBusyTable_io_vl_read_vlReadInfo_2_is_nonzero;
-  logic _vlBusyTable_io_vl_read_vlReadInfo_2_is_vlmax;
-  logic _vlBusyTable_io_vl_read_vlReadInfo_3_is_nonzero;
-  logic _vlBusyTable_io_vl_read_vlReadInfo_3_is_vlmax;
-  logic _vlBusyTable_io_vl_read_vlReadInfo_4_is_nonzero;
-  logic _vlBusyTable_io_vl_read_vlReadInfo_4_is_vlmax;
-  logic _vlBusyTable_io_vl_read_vlReadInfo_5_is_nonzero;
-  logic _vlBusyTable_io_vl_read_vlReadInfo_5_is_vlmax;
-  // 步骤 2 才有真来源的输入，先接 unresolved_ci_*（钉 0，与本文件既有
-  // unresolved_* 的做法一致；命名带 ci_ 前缀便于 grep 出这一批缺口）：
-  logic unresolved_ci_intBusyTable_io_allocPregs_0_valid;
-  assign unresolved_ci_intBusyTable_io_allocPregs_0_valid = '0;
-  logic unresolved_ci_intBusyTable_io_allocPregs_1_valid;
-  assign unresolved_ci_intBusyTable_io_allocPregs_1_valid = '0;
-  logic unresolved_ci_intBusyTable_io_allocPregs_2_valid;
-  assign unresolved_ci_intBusyTable_io_allocPregs_2_valid = '0;
-  logic unresolved_ci_intBusyTable_io_allocPregs_3_valid;
-  assign unresolved_ci_intBusyTable_io_allocPregs_3_valid = '0;
-  logic unresolved_ci_intBusyTable_io_allocPregs_4_valid;
-  assign unresolved_ci_intBusyTable_io_allocPregs_4_valid = '0;
-  logic unresolved_ci_intBusyTable_io_allocPregs_5_valid;
-  assign unresolved_ci_intBusyTable_io_allocPregs_5_valid = '0;
-  logic unresolved_ci_lsqEnqCtrl_io_enq_iqAccept_0;
-  assign unresolved_ci_lsqEnqCtrl_io_enq_iqAccept_0 = '0;
-  logic unresolved_ci_lsqEnqCtrl_io_enq_iqAccept_1;
-  assign unresolved_ci_lsqEnqCtrl_io_enq_iqAccept_1 = '0;
-  logic unresolved_ci_lsqEnqCtrl_io_enq_iqAccept_2;
-  assign unresolved_ci_lsqEnqCtrl_io_enq_iqAccept_2 = '0;
-  logic unresolved_ci_lsqEnqCtrl_io_enq_iqAccept_3;
-  assign unresolved_ci_lsqEnqCtrl_io_enq_iqAccept_3 = '0;
-  logic unresolved_ci_lsqEnqCtrl_io_enq_iqAccept_4;
-  assign unresolved_ci_lsqEnqCtrl_io_enq_iqAccept_4 = '0;
-  logic unresolved_ci_lsqEnqCtrl_io_enq_iqAccept_5;
-  assign unresolved_ci_lsqEnqCtrl_io_enq_iqAccept_5 = '0;
-  logic [1:0] unresolved_ci_lsqEnqCtrl_io_enq_needAlloc_0;
-  assign unresolved_ci_lsqEnqCtrl_io_enq_needAlloc_0 = '0;
-  logic [1:0] unresolved_ci_lsqEnqCtrl_io_enq_needAlloc_1;
-  assign unresolved_ci_lsqEnqCtrl_io_enq_needAlloc_1 = '0;
-  logic [1:0] unresolved_ci_lsqEnqCtrl_io_enq_needAlloc_2;
-  assign unresolved_ci_lsqEnqCtrl_io_enq_needAlloc_2 = '0;
-  logic [1:0] unresolved_ci_lsqEnqCtrl_io_enq_needAlloc_3;
-  assign unresolved_ci_lsqEnqCtrl_io_enq_needAlloc_3 = '0;
-  logic [1:0] unresolved_ci_lsqEnqCtrl_io_enq_needAlloc_4;
-  assign unresolved_ci_lsqEnqCtrl_io_enq_needAlloc_4 = '0;
-  logic [1:0] unresolved_ci_lsqEnqCtrl_io_enq_needAlloc_5;
-  assign unresolved_ci_lsqEnqCtrl_io_enq_needAlloc_5 = '0;
-  logic [4:0] unresolved_ci_lsqEnqCtrl_io_enq_req_0_bits_numLsElem;
-  assign unresolved_ci_lsqEnqCtrl_io_enq_req_0_bits_numLsElem = '0;
-  logic unresolved_ci_lsqEnqCtrl_io_enq_req_0_valid;
-  assign unresolved_ci_lsqEnqCtrl_io_enq_req_0_valid = '0;
-  logic [4:0] unresolved_ci_lsqEnqCtrl_io_enq_req_1_bits_numLsElem;
-  assign unresolved_ci_lsqEnqCtrl_io_enq_req_1_bits_numLsElem = '0;
-  logic unresolved_ci_lsqEnqCtrl_io_enq_req_1_valid;
-  assign unresolved_ci_lsqEnqCtrl_io_enq_req_1_valid = '0;
-  logic [4:0] unresolved_ci_lsqEnqCtrl_io_enq_req_2_bits_numLsElem;
-  assign unresolved_ci_lsqEnqCtrl_io_enq_req_2_bits_numLsElem = '0;
-  logic unresolved_ci_lsqEnqCtrl_io_enq_req_2_valid;
-  assign unresolved_ci_lsqEnqCtrl_io_enq_req_2_valid = '0;
-  logic [4:0] unresolved_ci_lsqEnqCtrl_io_enq_req_3_bits_numLsElem;
-  assign unresolved_ci_lsqEnqCtrl_io_enq_req_3_bits_numLsElem = '0;
-  logic unresolved_ci_lsqEnqCtrl_io_enq_req_3_valid;
-  assign unresolved_ci_lsqEnqCtrl_io_enq_req_3_valid = '0;
-  logic [4:0] unresolved_ci_lsqEnqCtrl_io_enq_req_4_bits_numLsElem;
-  assign unresolved_ci_lsqEnqCtrl_io_enq_req_4_bits_numLsElem = '0;
-  logic unresolved_ci_lsqEnqCtrl_io_enq_req_4_valid;
-  assign unresolved_ci_lsqEnqCtrl_io_enq_req_4_valid = '0;
-  logic [4:0] unresolved_ci_lsqEnqCtrl_io_enq_req_5_bits_numLsElem;
-  assign unresolved_ci_lsqEnqCtrl_io_enq_req_5_bits_numLsElem = '0;
-  logic unresolved_ci_lsqEnqCtrl_io_enq_req_5_valid;
-  assign unresolved_ci_lsqEnqCtrl_io_enq_req_5_valid = '0;
-  logic unresolved_ci_lsqEnqCtrl_io_redirect_valid;
-  assign unresolved_ci_lsqEnqCtrl_io_redirect_valid = '0;
-  logic unresolved_ci_rcTagTable_io_allocPregs_0_valid;
-  assign unresolved_ci_rcTagTable_io_allocPregs_0_valid = '0;
-  logic unresolved_ci_rcTagTable_io_allocPregs_1_valid;
-  assign unresolved_ci_rcTagTable_io_allocPregs_1_valid = '0;
-  logic unresolved_ci_rcTagTable_io_allocPregs_2_valid;
-  assign unresolved_ci_rcTagTable_io_allocPregs_2_valid = '0;
-  logic unresolved_ci_rcTagTable_io_allocPregs_3_valid;
-  assign unresolved_ci_rcTagTable_io_allocPregs_3_valid = '0;
-  logic unresolved_ci_rcTagTable_io_allocPregs_4_valid;
-  assign unresolved_ci_rcTagTable_io_allocPregs_4_valid = '0;
-  logic unresolved_ci_rcTagTable_io_allocPregs_5_valid;
-  assign unresolved_ci_rcTagTable_io_allocPregs_5_valid = '0;
-
   BusyTable intBusyTable (
     .clock                                      (clock),
     .reset                                      (reset),
-    // TODO(步骤2): golden = allocPregsValid_0_0
-    .io_allocPregs_0_valid                      (unresolved_ci_intBusyTable_io_allocPregs_0_valid),
+    .io_allocPregs_0_valid                      (core_allocPregsValid0[0]),
     .io_allocPregs_0_bits                       (io_fromRename_0_bits_pdest),
-    // TODO(步骤2): golden = allocPregsValid_0_1
-    .io_allocPregs_1_valid                      (unresolved_ci_intBusyTable_io_allocPregs_1_valid),
+    .io_allocPregs_1_valid                      (core_allocPregsValid0[1]),
     .io_allocPregs_1_bits                       (io_fromRename_1_bits_pdest),
-    // TODO(步骤2): golden = allocPregsValid_0_2
-    .io_allocPregs_2_valid                      (unresolved_ci_intBusyTable_io_allocPregs_2_valid),
+    .io_allocPregs_2_valid                      (core_allocPregsValid0[2]),
     .io_allocPregs_2_bits                       (io_fromRename_2_bits_pdest),
-    // TODO(步骤2): golden = allocPregsValid_0_3
-    .io_allocPregs_3_valid                      (unresolved_ci_intBusyTable_io_allocPregs_3_valid),
+    .io_allocPregs_3_valid                      (core_allocPregsValid0[3]),
     .io_allocPregs_3_bits                       (io_fromRename_3_bits_pdest),
-    // TODO(步骤2): golden = allocPregsValid_0_4
-    .io_allocPregs_4_valid                      (unresolved_ci_intBusyTable_io_allocPregs_4_valid),
+    .io_allocPregs_4_valid                      (core_allocPregsValid0[4]),
     .io_allocPregs_4_bits                       (io_fromRename_4_bits_pdest),
-    // TODO(步骤2): golden = allocPregsValid_0_5
-    .io_allocPregs_5_valid                      (unresolved_ci_intBusyTable_io_allocPregs_5_valid),
+    .io_allocPregs_5_valid                      (core_allocPregsValid0[5]),
     .io_allocPregs_5_bits                       (io_fromRename_5_bits_pdest),
     .io_wbPregs_0_valid                         (io_wbPregsInt_0_valid),
     .io_wbPregs_0_bits                          (io_wbPregsInt_0_bits),
@@ -17002,23 +17344,17 @@ module NewDispatch
     .io_wakeupFromIQ_0_bits_loadDependency_2    (io_wakeUpAll_wakeUpInt_0_bits_loadDependency_2),
     .io_wakeupFromIQ_0_bits_is0Lat              (io_wakeUpAll_wakeUpInt_0_bits_is0Lat),
     .io_wakeupFromIQ_0_bits_rcDest              (io_wakeUpAll_wakeUpInt_0_bits_rcDest),
-    // TODO(步骤2): golden = allocPregsValid_0_0
-    .io_allocPregs_0_valid                      (unresolved_ci_rcTagTable_io_allocPregs_0_valid),
+    .io_allocPregs_0_valid                      (core_allocPregsValid0[0]),
     .io_allocPregs_0_bits                       (io_fromRename_0_bits_pdest),
-    // TODO(步骤2): golden = allocPregsValid_0_1
-    .io_allocPregs_1_valid                      (unresolved_ci_rcTagTable_io_allocPregs_1_valid),
+    .io_allocPregs_1_valid                      (core_allocPregsValid0[1]),
     .io_allocPregs_1_bits                       (io_fromRename_1_bits_pdest),
-    // TODO(步骤2): golden = allocPregsValid_0_2
-    .io_allocPregs_2_valid                      (unresolved_ci_rcTagTable_io_allocPregs_2_valid),
+    .io_allocPregs_2_valid                      (core_allocPregsValid0[2]),
     .io_allocPregs_2_bits                       (io_fromRename_2_bits_pdest),
-    // TODO(步骤2): golden = allocPregsValid_0_3
-    .io_allocPregs_3_valid                      (unresolved_ci_rcTagTable_io_allocPregs_3_valid),
+    .io_allocPregs_3_valid                      (core_allocPregsValid0[3]),
     .io_allocPregs_3_bits                       (io_fromRename_3_bits_pdest),
-    // TODO(步骤2): golden = allocPregsValid_0_4
-    .io_allocPregs_4_valid                      (unresolved_ci_rcTagTable_io_allocPregs_4_valid),
+    .io_allocPregs_4_valid                      (core_allocPregsValid0[4]),
     .io_allocPregs_4_bits                       (io_fromRename_4_bits_pdest),
-    // TODO(步骤2): golden = allocPregsValid_0_5
-    .io_allocPregs_5_valid                      (unresolved_ci_rcTagTable_io_allocPregs_5_valid),
+    .io_allocPregs_5_valid                      (core_allocPregsValid0[5]),
     .io_allocPregs_5_bits                       (io_fromRename_5_bits_pdest),
     .io_og0Cancel_0                             (io_og0Cancel_0),
     .io_og0Cancel_2                             (io_og0Cancel_2),
@@ -17032,23 +17368,15 @@ module NewDispatch
   LsqEnqCtrl lsqEnqCtrl (
     .clock                                      (clock),
     .reset                                      (reset),
-    // TODO(步骤2): golden = lsqEnqCtrl_io_redirect_REG_valid
-    .io_redirect_valid                          (unresolved_ci_lsqEnqCtrl_io_redirect_valid),
+    .io_redirect_valid                          (lsqEnqCtrl_io_redirect_REG_valid),
     .io_enq_canAccept                           (_lsqEnqCtrl_io_enq_canAccept),
-    // TODO(步骤2): golden = firedVec_0 ? (_GEN_142 ? 2'h2 : {1'h0, _GEN_144}) : 2'h0
-    .io_enq_needAlloc_0                         (unresolved_ci_lsqEnqCtrl_io_enq_needAlloc_0),
-    // TODO(步骤2): golden = firedVec_1 ? (_GEN_145 ? 2'h2 : {1'h0, _GEN_146}) : 2'h0
-    .io_enq_needAlloc_1                         (unresolved_ci_lsqEnqCtrl_io_enq_needAlloc_1),
-    // TODO(步骤2): golden = firedVec_2 ? (_GEN_147 ? 2'h2 : {1'h0, _GEN_148}) : 2'h0
-    .io_enq_needAlloc_2                         (unresolved_ci_lsqEnqCtrl_io_enq_needAlloc_2),
-    // TODO(步骤2): golden = firedVec_3 ? (_GEN_149 ? 2'h2 : {1'h0, _GEN_150}) : 2'h0
-    .io_enq_needAlloc_3                         (unresolved_ci_lsqEnqCtrl_io_enq_needAlloc_3),
-    // TODO(步骤2): golden = firedVec_4 ? (_GEN_151 ? 2'h2 : {1'h0, _GEN_152}) : 2'h0
-    .io_enq_needAlloc_4                         (unresolved_ci_lsqEnqCtrl_io_enq_needAlloc_4),
-    // TODO(步骤2): golden = firedVec_5 ? (_GEN_153 ? 2'h2 : {1'h0, _GEN_154}) : 2'h0
-    .io_enq_needAlloc_5                         (unresolved_ci_lsqEnqCtrl_io_enq_needAlloc_5),
-    // TODO(步骤2): golden = firedVec_0 & ~(io_fromRename_0_valid & io_fromRename_0_bits_fuType[17]
-    .io_enq_req_0_valid                         (unresolved_ci_lsqEnqCtrl_io_enq_req_0_valid),
+    .io_enq_needAlloc_0                         (core_lsqNeedAlloc[0]),
+    .io_enq_needAlloc_1                         (core_lsqNeedAlloc[1]),
+    .io_enq_needAlloc_2                         (core_lsqNeedAlloc[2]),
+    .io_enq_needAlloc_3                         (core_lsqNeedAlloc[3]),
+    .io_enq_needAlloc_4                         (core_lsqNeedAlloc[4]),
+    .io_enq_needAlloc_5                         (core_lsqNeedAlloc[5]),
+    .io_enq_req_0_valid                         (core_lsqReqValid[0]),
     .io_enq_req_0_bits_exceptionVec_0           (io_fromRename_0_bits_exceptionVec_0),
     .io_enq_req_0_bits_exceptionVec_1           (io_fromRename_0_bits_exceptionVec_1),
     .io_enq_req_0_bits_exceptionVec_2           (io_fromRename_0_bits_exceptionVec_2),
@@ -17088,10 +17416,8 @@ module NewDispatch
     .io_enq_req_0_bits_debugInfo_renameTime     (io_fromRename_0_bits_debugInfo_renameTime),
     .io_enq_req_0_bits_debug_seqNum_seqNum      (io_fromRename_0_bits_debug_seqNum_seqNum),
     .io_enq_req_0_bits_debug_seqNum_uopIdx      (io_fromRename_0_bits_debug_seqNum_uopIdx),
-    // TODO(步骤2): golden = isVlsType_0 ? io_fromRename_0_bits_numLsElem : 5'h1
-    .io_enq_req_0_bits_numLsElem                (unresolved_ci_lsqEnqCtrl_io_enq_req_0_bits_numLsElem),
-    // TODO(步骤2): golden = firedVec_1 & ~(io_fromRename_1_valid & io_fromRename_1_bits_fuType[17]
-    .io_enq_req_1_valid                         (unresolved_ci_lsqEnqCtrl_io_enq_req_1_valid),
+    .io_enq_req_0_bits_numLsElem                (core_lsqReqNumLsElem[0]),
+    .io_enq_req_1_valid                         (core_lsqReqValid[1]),
     .io_enq_req_1_bits_exceptionVec_0           (io_fromRename_1_bits_exceptionVec_0),
     .io_enq_req_1_bits_exceptionVec_1           (io_fromRename_1_bits_exceptionVec_1),
     .io_enq_req_1_bits_exceptionVec_2           (io_fromRename_1_bits_exceptionVec_2),
@@ -17131,10 +17457,8 @@ module NewDispatch
     .io_enq_req_1_bits_debugInfo_renameTime     (io_fromRename_1_bits_debugInfo_renameTime),
     .io_enq_req_1_bits_debug_seqNum_seqNum      (io_fromRename_1_bits_debug_seqNum_seqNum),
     .io_enq_req_1_bits_debug_seqNum_uopIdx      (io_fromRename_1_bits_debug_seqNum_uopIdx),
-    // TODO(步骤2): golden = isVlsType_1 ? io_fromRename_1_bits_numLsElem : 5'h1
-    .io_enq_req_1_bits_numLsElem                (unresolved_ci_lsqEnqCtrl_io_enq_req_1_bits_numLsElem),
-    // TODO(步骤2): golden = firedVec_2 & ~(io_fromRename_2_valid & io_fromRename_2_bits_fuType[17]
-    .io_enq_req_2_valid                         (unresolved_ci_lsqEnqCtrl_io_enq_req_2_valid),
+    .io_enq_req_1_bits_numLsElem                (core_lsqReqNumLsElem[1]),
+    .io_enq_req_2_valid                         (core_lsqReqValid[2]),
     .io_enq_req_2_bits_exceptionVec_0           (io_fromRename_2_bits_exceptionVec_0),
     .io_enq_req_2_bits_exceptionVec_1           (io_fromRename_2_bits_exceptionVec_1),
     .io_enq_req_2_bits_exceptionVec_2           (io_fromRename_2_bits_exceptionVec_2),
@@ -17174,10 +17498,8 @@ module NewDispatch
     .io_enq_req_2_bits_debugInfo_renameTime     (io_fromRename_2_bits_debugInfo_renameTime),
     .io_enq_req_2_bits_debug_seqNum_seqNum      (io_fromRename_2_bits_debug_seqNum_seqNum),
     .io_enq_req_2_bits_debug_seqNum_uopIdx      (io_fromRename_2_bits_debug_seqNum_uopIdx),
-    // TODO(步骤2): golden = isVlsType_2 ? io_fromRename_2_bits_numLsElem : 5'h1
-    .io_enq_req_2_bits_numLsElem                (unresolved_ci_lsqEnqCtrl_io_enq_req_2_bits_numLsElem),
-    // TODO(步骤2): golden = firedVec_3 & ~(io_fromRename_3_valid & io_fromRename_3_bits_fuType[17]
-    .io_enq_req_3_valid                         (unresolved_ci_lsqEnqCtrl_io_enq_req_3_valid),
+    .io_enq_req_2_bits_numLsElem                (core_lsqReqNumLsElem[2]),
+    .io_enq_req_3_valid                         (core_lsqReqValid[3]),
     .io_enq_req_3_bits_exceptionVec_0           (io_fromRename_3_bits_exceptionVec_0),
     .io_enq_req_3_bits_exceptionVec_1           (io_fromRename_3_bits_exceptionVec_1),
     .io_enq_req_3_bits_exceptionVec_2           (io_fromRename_3_bits_exceptionVec_2),
@@ -17217,10 +17539,8 @@ module NewDispatch
     .io_enq_req_3_bits_debugInfo_renameTime     (io_fromRename_3_bits_debugInfo_renameTime),
     .io_enq_req_3_bits_debug_seqNum_seqNum      (io_fromRename_3_bits_debug_seqNum_seqNum),
     .io_enq_req_3_bits_debug_seqNum_uopIdx      (io_fromRename_3_bits_debug_seqNum_uopIdx),
-    // TODO(步骤2): golden = isVlsType_3 ? io_fromRename_3_bits_numLsElem : 5'h1
-    .io_enq_req_3_bits_numLsElem                (unresolved_ci_lsqEnqCtrl_io_enq_req_3_bits_numLsElem),
-    // TODO(步骤2): golden = firedVec_4 & ~(io_fromRename_4_valid & io_fromRename_4_bits_fuType[17]
-    .io_enq_req_4_valid                         (unresolved_ci_lsqEnqCtrl_io_enq_req_4_valid),
+    .io_enq_req_3_bits_numLsElem                (core_lsqReqNumLsElem[3]),
+    .io_enq_req_4_valid                         (core_lsqReqValid[4]),
     .io_enq_req_4_bits_exceptionVec_0           (io_fromRename_4_bits_exceptionVec_0),
     .io_enq_req_4_bits_exceptionVec_1           (io_fromRename_4_bits_exceptionVec_1),
     .io_enq_req_4_bits_exceptionVec_2           (io_fromRename_4_bits_exceptionVec_2),
@@ -17260,10 +17580,8 @@ module NewDispatch
     .io_enq_req_4_bits_debugInfo_renameTime     (io_fromRename_4_bits_debugInfo_renameTime),
     .io_enq_req_4_bits_debug_seqNum_seqNum      (io_fromRename_4_bits_debug_seqNum_seqNum),
     .io_enq_req_4_bits_debug_seqNum_uopIdx      (io_fromRename_4_bits_debug_seqNum_uopIdx),
-    // TODO(步骤2): golden = isVlsType_4 ? io_fromRename_4_bits_numLsElem : 5'h1
-    .io_enq_req_4_bits_numLsElem                (unresolved_ci_lsqEnqCtrl_io_enq_req_4_bits_numLsElem),
-    // TODO(步骤2): golden = firedVec_5 & ~(io_fromRename_5_valid & io_fromRename_5_bits_fuType[17]
-    .io_enq_req_5_valid                         (unresolved_ci_lsqEnqCtrl_io_enq_req_5_valid),
+    .io_enq_req_4_bits_numLsElem                (core_lsqReqNumLsElem[4]),
+    .io_enq_req_5_valid                         (core_lsqReqValid[5]),
     .io_enq_req_5_bits_exceptionVec_0           (io_fromRename_5_bits_exceptionVec_0),
     .io_enq_req_5_bits_exceptionVec_1           (io_fromRename_5_bits_exceptionVec_1),
     .io_enq_req_5_bits_exceptionVec_2           (io_fromRename_5_bits_exceptionVec_2),
@@ -17303,20 +17621,13 @@ module NewDispatch
     .io_enq_req_5_bits_debugInfo_renameTime     (io_fromRename_5_bits_debugInfo_renameTime),
     .io_enq_req_5_bits_debug_seqNum_seqNum      (io_fromRename_5_bits_debug_seqNum_seqNum),
     .io_enq_req_5_bits_debug_seqNum_uopIdx      (io_fromRename_5_bits_debug_seqNum_uopIdx),
-    // TODO(步骤2): golden = isVlsType_5 ? io_fromRename_5_bits_numLsElem : 5'h1
-    .io_enq_req_5_bits_numLsElem                (unresolved_ci_lsqEnqCtrl_io_enq_req_5_bits_numLsElem),
-    // TODO(步骤2): golden = ~io_fromRename_0_valid | firedVec_0
-    .io_enq_iqAccept_0                          (unresolved_ci_lsqEnqCtrl_io_enq_iqAccept_0),
-    // TODO(步骤2): golden = ~io_fromRename_1_valid | firedVec_1
-    .io_enq_iqAccept_1                          (unresolved_ci_lsqEnqCtrl_io_enq_iqAccept_1),
-    // TODO(步骤2): golden = ~io_fromRename_2_valid | firedVec_2
-    .io_enq_iqAccept_2                          (unresolved_ci_lsqEnqCtrl_io_enq_iqAccept_2),
-    // TODO(步骤2): golden = ~io_fromRename_3_valid | firedVec_3
-    .io_enq_iqAccept_3                          (unresolved_ci_lsqEnqCtrl_io_enq_iqAccept_3),
-    // TODO(步骤2): golden = ~io_fromRename_4_valid | firedVec_4
-    .io_enq_iqAccept_4                          (unresolved_ci_lsqEnqCtrl_io_enq_iqAccept_4),
-    // TODO(步骤2): golden = ~io_fromRename_5_valid | firedVec_5
-    .io_enq_iqAccept_5                          (unresolved_ci_lsqEnqCtrl_io_enq_iqAccept_5),
+    .io_enq_req_5_bits_numLsElem                (core_lsqReqNumLsElem[5]),
+    .io_enq_iqAccept_0                          (core_lsqIqAccept[0]),
+    .io_enq_iqAccept_1                          (core_lsqIqAccept[1]),
+    .io_enq_iqAccept_2                          (core_lsqIqAccept[2]),
+    .io_enq_iqAccept_3                          (core_lsqIqAccept[3]),
+    .io_enq_iqAccept_4                          (core_lsqIqAccept[4]),
+    .io_enq_iqAccept_5                          (core_lsqIqAccept[5]),
     .io_enq_resp_0_lqIdx_flag                   (_lsqEnqCtrl_io_enq_resp_0_lqIdx_flag),
     .io_enq_resp_0_lqIdx_value                  (_lsqEnqCtrl_io_enq_resp_0_lqIdx_value),
     .io_enq_resp_0_sqIdx_flag                   (_lsqEnqCtrl_io_enq_resp_0_sqIdx_flag),
