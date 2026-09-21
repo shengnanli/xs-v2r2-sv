@@ -53,7 +53,7 @@
 //
 // 生成区：`// BEGIN GENERATED(<tag>)` .. `// END GENERATED` 由
 // scripts/gen_rob.py --write 填写，手写内容一律在标记之外。
-// 本文件导航（共 11796 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+// 本文件导航（共 11780 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
 //   L2036  §1 条目存储
 //   L2038  每字段一个非打包数组，名字必须是 `<prefix>_<field>`：pin 契约按
 //   L2377  §2 RobPtr 算术
@@ -69,35 +69,35 @@
 //   L2837  ★写回口的下标是稀疏的，而且每个子集的下标集合只有 golden 能告诉你★
 //   L3066  §9 入队：条目存储的写入
 //   L3068  这里有**两种完全不同的选择结构**，弄混就是真 bug：
-//   L3596  §10 条目存储的时序写入
-//   L3696  §11 提交读口：8 bank x 20 行的 one-hot 读
-//   L3698  robBanks(b) 装 robidx%8==b 的 20 个条目；八个 bank **共用**一个 one-hot 行地址
-//   L3927  §12 robDeqGroup：提交读口的寄存器级
-//   L3929  connectCommitEntry 的逐字段拷贝
-//   L3979  §13 队头读口
-//   L3981  三个名字在 Scala 里是**同一个表达式**
-//   L4097  §14 队头的异常/中断/冲刷判定
-//   L4267  §15 提交 / 走回的对外输出
-//   L4269  ★commit_vDeqGroup / commit_wDeqGroup 是**按 bank 直接取**的★
-//   L4815  §16 RAB
-//   L4817  io.rabCommits := RegNext(rab.io.commits) —— 整条打一拍，纯粹为了时序/面积
-//   L5048  §17 送给 exceptionGen 的三类折算量
-//   L5050  ★io_writeback_<i> 各自只有一部分 exceptionVec 位★
-//   L5087  §18 WFI
-//   L5089  遇到 wfi 指令就挂起提交，等 CSR 说可以恢复、或者被冲刷、或者 2^20 拍超时
-//   L5186  §19 CSR / LSQ / 队头杂项
-//   L5351  §20 trace
-//   L5353  八路提交槽各出一个 trace block，内容直接取 rawInfo
-//   L5417  §21 异常出口
-//   L5419  整条是 RegEnable(..., exceptionHappen)：异常发生那一拍把现场锁下来，
-//   L5573  §22 debug / difftest 规则阵列
-//   L5575  这一段不参与功能，但**一位都不能省**：省掉之后 FM 的 match 会退化成签名
-//   L6095  §23 性能事件
-//   L6097  generatePerfEvent() 出来的 19 个事件，每个都**打两拍**再送出去
-//   L6248  §24 difftest 打包口
-//   L6250  difftest 的三种事件被打包成宽总线从 Rob 直接钻出去
-//   L6636  Rob —— 顶层壳
-//   L6638  这一层不含任何设计逻辑：端口表、局部网、核实例、8 个子模块实例**全部**由
+//   L3580  §10 条目存储的时序写入
+//   L3680  §11 提交读口：8 bank x 20 行的 one-hot 读
+//   L3682  robBanks(b) 装 robidx%8==b 的 20 个条目；八个 bank **共用**一个 one-hot 行地址
+//   L3911  §12 robDeqGroup：提交读口的寄存器级
+//   L3913  connectCommitEntry 的逐字段拷贝
+//   L3963  §13 队头读口
+//   L3965  三个名字在 Scala 里是**同一个表达式**
+//   L4081  §14 队头的异常/中断/冲刷判定
+//   L4251  §15 提交 / 走回的对外输出
+//   L4253  ★commit_vDeqGroup / commit_wDeqGroup 是**按 bank 直接取**的★
+//   L4799  §16 RAB
+//   L4801  io.rabCommits := RegNext(rab.io.commits) —— 整条打一拍，纯粹为了时序/面积
+//   L5032  §17 送给 exceptionGen 的三类折算量
+//   L5034  ★io_writeback_<i> 各自只有一部分 exceptionVec 位★
+//   L5071  §18 WFI
+//   L5073  遇到 wfi 指令就挂起提交，等 CSR 说可以恢复、或者被冲刷、或者 2^20 拍超时
+//   L5170  §19 CSR / LSQ / 队头杂项
+//   L5335  §20 trace
+//   L5337  八路提交槽各出一个 trace block，内容直接取 rawInfo
+//   L5401  §21 异常出口
+//   L5403  整条是 RegEnable(..., exceptionHappen)：异常发生那一拍把现场锁下来，
+//   L5557  §22 debug / difftest 规则阵列
+//   L5559  这一段不参与功能，但**一位都不能省**：省掉之后 FM 的 match 会退化成签名
+//   L6079  §23 性能事件
+//   L6081  generatePerfEvent() 出来的 19 个事件，每个都**打两拍**再送出去
+//   L6232  §24 difftest 打包口
+//   L6234  difftest 的三种事件被打包成宽总线从 Rob 直接钻出去
+//   L6620  Rob —— 顶层壳
+//   L6622  这一层不含任何设计逻辑：端口表、局部网、核实例、8 个子模块实例**全部**由
 //
 
 package rob_pkg;
@@ -3079,43 +3079,9 @@ module xs_Rob_core
   // 条目下标一律 `for` + 比较，没有一处信号直接索引（FMR_ELAB-147）。
 
   // ---- 六路 enq 的派生量 ----
-  logic enqIsHls        [RENAME_W];   // DynInst.isHls：hlv(ldu) / hsv(stu)
   logic enqNeedWriteRf  [RENAME_W];   // rfWen|fpWen|vecWen|v0Wen|vlWen
   logic enqAllowIntr    [RENAME_W];   // 允许中断：非访存/非 fence/非 csr/非 vset/非 amo
   logic enqNeedFlush    [RENAME_W];   // hasException | flushPipe
-
-  always_comb begin
-    enqIsHls[0] = ((io_enq_req_0_bits_fuType == FUTYPE_W'(1) << FU_LDU)
-                   | (io_enq_req_0_bits_fuType == FUTYPE_W'(1) << FU_STU))
-                  & io_enq_req_0_bits_fuOpType[4]
-                  & ~io_enq_req_0_bits_fuOpType[5]
-                  & ~(|io_enq_req_0_bits_fuOpType[8:7]);
-    enqIsHls[1] = ((io_enq_req_1_bits_fuType == FUTYPE_W'(1) << FU_LDU)
-                   | (io_enq_req_1_bits_fuType == FUTYPE_W'(1) << FU_STU))
-                  & io_enq_req_1_bits_fuOpType[4]
-                  & ~io_enq_req_1_bits_fuOpType[5]
-                  & ~(|io_enq_req_1_bits_fuOpType[8:7]);
-    enqIsHls[2] = ((io_enq_req_2_bits_fuType == FUTYPE_W'(1) << FU_LDU)
-                   | (io_enq_req_2_bits_fuType == FUTYPE_W'(1) << FU_STU))
-                  & io_enq_req_2_bits_fuOpType[4]
-                  & ~io_enq_req_2_bits_fuOpType[5]
-                  & ~(|io_enq_req_2_bits_fuOpType[8:7]);
-    enqIsHls[3] = ((io_enq_req_3_bits_fuType == FUTYPE_W'(1) << FU_LDU)
-                   | (io_enq_req_3_bits_fuType == FUTYPE_W'(1) << FU_STU))
-                  & io_enq_req_3_bits_fuOpType[4]
-                  & ~io_enq_req_3_bits_fuOpType[5]
-                  & ~(|io_enq_req_3_bits_fuOpType[8:7]);
-    enqIsHls[4] = ((io_enq_req_4_bits_fuType == FUTYPE_W'(1) << FU_LDU)
-                   | (io_enq_req_4_bits_fuType == FUTYPE_W'(1) << FU_STU))
-                  & io_enq_req_4_bits_fuOpType[4]
-                  & ~io_enq_req_4_bits_fuOpType[5]
-                  & ~(|io_enq_req_4_bits_fuOpType[8:7]);
-    enqIsHls[5] = ((io_enq_req_5_bits_fuType == FUTYPE_W'(1) << FU_LDU)
-                   | (io_enq_req_5_bits_fuType == FUTYPE_W'(1) << FU_STU))
-                  & io_enq_req_5_bits_fuOpType[4]
-                  & ~io_enq_req_5_bits_fuOpType[5]
-                  & ~(|io_enq_req_5_bits_fuOpType[8:7]);
-  end
 
   always_comb begin
     enqNeedWriteRf[0] = io_enq_req_0_bits_rfWen | io_enq_req_0_bits_fpWen
@@ -3231,13 +3197,20 @@ module xs_Rob_core
     logic                        basicDebug_eliminatedMove;
     logic                        basicDebug_isXSTrap;
     logic [FUTYPE_W-1:0]         debug_fuType;
-    logic                        isHls;
+    // ★不是 isHls，是 fuOpType[8:4]★：golden 的 isHls **不是** Mux1H 选出来的
+    //   per-port isHls，而是拿 Mux1H **之后**的 fuType / fuOpType 再算一次
+    //   （golden: `_GEN_3881 == 35'h8000 & _GEN_11894[0] & ...`，_GEN_3881 /
+    //   _GEN_11894 都是按位或的 Mux1H 结果）。isHls 是 fuType/fuOpType 的
+    //   **非线性**函数，所以 Mux1H 与它不可交换：enqOH 非 one-hot 时
+    //   `Mux1H(f(x))` ≠ `f(Mux1H(x))`，FM 一定抓得到。见下面的 enqSelIsHls。
+    logic [4:0]                  fuOpHi;          // fuOpType[8:4]
     logic                        needFlush;
     logic [LREG_W-1:0]           basicDebug_vd;   // instr[11:7]（XSInstBitFields.VD）
   } rob_enq_sel_t;
 
   rob_enq_sel_t enqBits [RENAME_W];
   rob_enq_sel_t enqSel  [ROB_SIZE];
+  logic         enqSelIsHls [ROB_SIZE];   // Mux1H 之后再算的 isHls（见上面 fuOpHi）
 
   always_comb begin
     enqBits[0].wflags                     = io_enq_req_0_bits_wfflags;
@@ -3264,7 +3237,7 @@ module xs_Rob_core
     enqBits[0].basicDebug_eliminatedMove  = io_enq_req_0_bits_eliminatedMove;
     enqBits[0].basicDebug_isXSTrap        = io_enq_req_0_bits_isXSTrap;
     enqBits[0].debug_fuType               = io_enq_req_0_bits_fuType;
-    enqBits[0].isHls                      = enqIsHls[0];
+    enqBits[0].fuOpHi                     = io_enq_req_0_bits_fuOpType[8:4];
     enqBits[0].needFlush                  = enqNeedFlush[0];
     enqBits[0].basicDebug_vd              = io_enq_req_0_bits_instr[11:7];
 
@@ -3292,7 +3265,7 @@ module xs_Rob_core
     enqBits[1].basicDebug_eliminatedMove  = io_enq_req_1_bits_eliminatedMove;
     enqBits[1].basicDebug_isXSTrap        = io_enq_req_1_bits_isXSTrap;
     enqBits[1].debug_fuType               = io_enq_req_1_bits_fuType;
-    enqBits[1].isHls                      = enqIsHls[1];
+    enqBits[1].fuOpHi                     = io_enq_req_1_bits_fuOpType[8:4];
     enqBits[1].needFlush                  = enqNeedFlush[1];
     enqBits[1].basicDebug_vd              = io_enq_req_1_bits_instr[11:7];
 
@@ -3320,7 +3293,7 @@ module xs_Rob_core
     enqBits[2].basicDebug_eliminatedMove  = io_enq_req_2_bits_eliminatedMove;
     enqBits[2].basicDebug_isXSTrap        = io_enq_req_2_bits_isXSTrap;
     enqBits[2].debug_fuType               = io_enq_req_2_bits_fuType;
-    enqBits[2].isHls                      = enqIsHls[2];
+    enqBits[2].fuOpHi                     = io_enq_req_2_bits_fuOpType[8:4];
     enqBits[2].needFlush                  = enqNeedFlush[2];
     enqBits[2].basicDebug_vd              = io_enq_req_2_bits_instr[11:7];
 
@@ -3348,7 +3321,7 @@ module xs_Rob_core
     enqBits[3].basicDebug_eliminatedMove  = io_enq_req_3_bits_eliminatedMove;
     enqBits[3].basicDebug_isXSTrap        = io_enq_req_3_bits_isXSTrap;
     enqBits[3].debug_fuType               = io_enq_req_3_bits_fuType;
-    enqBits[3].isHls                      = enqIsHls[3];
+    enqBits[3].fuOpHi                     = io_enq_req_3_bits_fuOpType[8:4];
     enqBits[3].needFlush                  = enqNeedFlush[3];
     enqBits[3].basicDebug_vd              = io_enq_req_3_bits_instr[11:7];
 
@@ -3376,7 +3349,7 @@ module xs_Rob_core
     enqBits[4].basicDebug_eliminatedMove  = io_enq_req_4_bits_eliminatedMove;
     enqBits[4].basicDebug_isXSTrap        = io_enq_req_4_bits_isXSTrap;
     enqBits[4].debug_fuType               = io_enq_req_4_bits_fuType;
-    enqBits[4].isHls                      = enqIsHls[4];
+    enqBits[4].fuOpHi                     = io_enq_req_4_bits_fuOpType[8:4];
     enqBits[4].needFlush                  = enqNeedFlush[4];
     enqBits[4].basicDebug_vd              = io_enq_req_4_bits_instr[11:7];
 
@@ -3404,7 +3377,7 @@ module xs_Rob_core
     enqBits[5].basicDebug_eliminatedMove  = io_enq_req_5_bits_eliminatedMove;
     enqBits[5].basicDebug_isXSTrap        = io_enq_req_5_bits_isXSTrap;
     enqBits[5].debug_fuType               = io_enq_req_5_bits_fuType;
-    enqBits[5].isHls                      = enqIsHls[5];
+    enqBits[5].fuOpHi                     = io_enq_req_5_bits_fuOpType[8:4];
     enqBits[5].needFlush                  = enqNeedFlush[5];
     enqBits[5].basicDebug_vd              = io_enq_req_5_bits_instr[11:7];
 
@@ -3438,10 +3411,21 @@ module xs_Rob_core
         enqSel[i].basicDebug_eliminatedMove  |= enqOH[i][j] & enqBits[j].basicDebug_eliminatedMove;
         enqSel[i].basicDebug_isXSTrap        |= enqOH[i][j] & enqBits[j].basicDebug_isXSTrap;
         enqSel[i].debug_fuType               |= {FUTYPE_W{enqOH[i][j]}} & enqBits[j].debug_fuType;
-        enqSel[i].isHls                      |= enqOH[i][j] & enqBits[j].isHls;
+        enqSel[i].fuOpHi                     |= {5{enqOH[i][j]}} & enqBits[j].fuOpHi;
         enqSel[i].needFlush                  |= enqOH[i][j] & enqBits[j].needFlush;
         enqSel[i].basicDebug_vd              |= {LREG_W{enqOH[i][j]}} & enqBits[j].basicDebug_vd;
       end
+      // ★isHls 在 Mux1H **之后**算★（golden 的形状，见 rob_enq_sel_t.fuOpHi 的注释）：
+      //   golden 是 `f(Mux1H(fuType), Mux1H(fuOpType[8:4]))`，不是 `Mux1H(f(...))`。
+      //   f 非线性（有相等比较和取反），两者只在 enqOH 恰好 one-hot 时才相等；
+      //   而 enqOH 非 one-hot 是**可达**的：allocatePtrVec(j) 数的是前面几路的
+      //   firstUop，某一路不是 firstUop 时它与下一路共用同一个分配指针。
+      //   FM 首跑 robEntries_isHls 整族失配就是这么来的。
+      enqSelIsHls[i] = ((enqSel[i].debug_fuType == FUTYPE_W'(1) << FU_LDU)
+                        | (enqSel[i].debug_fuType == FUTYPE_W'(1) << FU_STU))
+                       & enqSel[i].fuOpHi[0]
+                       & ~enqSel[i].fuOpHi[1]
+                       & ~(|enqSel[i].fuOpHi[4:3]);
     end
   end
   // ---- (B) 优先链那一族的 payload（vls / interrupt_safe / debug_microOp）----
@@ -3618,7 +3602,7 @@ module xs_Rob_core
         robEntries_ftqOffset[i]                  <= enqSel[i].ftqOffset;
         robEntries_isRVC[i]                      <= enqSel[i].isRVC;
         robEntries_isVset[i]                     <= enqSel[i].isVset;
-        robEntries_isHls[i]                      <= enqSel[i].isHls;
+        robEntries_isHls[i]                      <= enqSelIsHls[i];
         robEntries_instrSize[i]                  <= enqSel[i].instrSize;
         robEntries_rfWen[i]                      <= enqSel[i].rfWen;
         robEntries_fpWen[i]                      <= enqSel[i].fpWen;
