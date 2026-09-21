@@ -1,0 +1,12 @@
+**************************************************
+Report         : unverified_points
+
+Reference      : r:/WORK/FAlu
+Implementation : i:/WORK/FAlu
+Version        : V-2023.12-SP3
+Date           : Sun Sep 20 22:49:19 2026
+**************************************************
+
+No unverified compare points.
+
+1
