@@ -1,0 +1,96 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/NewDispatch
+Implementation : i:/WORK/NewDispatch
+Version        : V-2023.12-SP3
+Date           : Mon Sep 21 02:10:56 2026
+**************************************************
+
+20 Failing compare points (20 matched, 0 unmatched):
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_blockBackward
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_blockBackward
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_canRobCompress
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_canRobCompress
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_commitType[0]
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_commitType[0]
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_commitType[1]
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_commitType[1]
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_commitType[2]
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_commitType[2]
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_crossPageIPFFix
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_crossPageIPFFix
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_debugInfo_renameTime[0]
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_debugInfo_renameTime[0]
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_debugInfo_renameTime[10]
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_debugInfo_renameTime[10]
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_debugInfo_renameTime[11]
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_debugInfo_renameTime[11]
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_debugInfo_renameTime[12]
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_debugInfo_renameTime[12]
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_debugInfo_renameTime[13]
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_debugInfo_renameTime[13]
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_debugInfo_renameTime[14]
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_debugInfo_renameTime[14]
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_debugInfo_renameTime[15]
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_debugInfo_renameTime[15]
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_debugInfo_renameTime[16]
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_debugInfo_renameTime[16]
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_debugInfo_renameTime[17]
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_debugInfo_renameTime[17]
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_debugInfo_renameTime[18]
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_debugInfo_renameTime[18]
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_debugInfo_renameTime[19]
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_debugInfo_renameTime[19]
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_debugInfo_renameTime[1]
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_debugInfo_renameTime[1]
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_debugInfo_renameTime[20]
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_debugInfo_renameTime[20]
+
+  Ref  Port       r:/WORK/NewDispatch/io_toIssueQueues_0_bits_debugInfo_renameTime[21]
+  Impl Port       i:/WORK/NewDispatch/io_toIssueQueues_0_bits_debugInfo_renameTime[21]
+
+ [BBNet: multiply-driven net
+  BBPin: black-box pin
+  Cut:   cut-point
+  DFF:   non-constant DFF register
+  DFF0:  constant 0 DFF register
+  DFF1:  constant 1 DFF register
+  DFFX:  constant X DFF register
+  DFF0X: constrained 0X DFF register
+  DFF1X: constrained 1X DFF register
+  LAT:   non-constant latch register
+  LAT0:  constant 0 latch register
+  LAT1:  constant 1 latch register
+  LATX:  constant X latch register
+  LAT0X: constrained 0X latch register
+  LAT1X: constrained 1X latch register
+  LATCG: clock-gating latch register
+  TLA:   transparent latch register
+  TLA0X: transparent constrained 0X latch register
+  TLA1X: transparent constrained 1X latch register
+  Loop:  cycle break point
+  Port:  primary (top-level) port
+  Und:   undriven signal cut-point
+  Unk:   unknown signal cut-point]
+
+1
