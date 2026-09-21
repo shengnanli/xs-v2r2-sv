@@ -1,0 +1,12 @@
+Command: /home/eda/xs-env/wt-rob631/verif/ut/Rob/./simv +ntb_random_seed=7 +ncycles=200000 +vcs+initreg+0 -l sim_7.log
+Chronologic VCS simulator copyright 1991-2024
+Contains Synopsys proprietary information.
+Compiler version W-2024.09-SP1_Full64; Runtime version W-2024.09-SP1_Full64;  Sep 21 05:53 2026
+checks=132549575 errors=0
+TEST PASSED
+$finish called from file "tb.sv", line 14505.
+$finish at simulation time           2000045000
+           V C S   S i m u l a t i o n   R e p o r t 
+Time: 2000045000 ps
+CPU Time:   2430.520 seconds;       Data structure size:   5.4Mb
+Mon Sep 21 06:34:50 2026
