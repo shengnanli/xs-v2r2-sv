@@ -61,3 +61,20 @@ errors =  11,155,648 =  56 x 199,208     (56 个端口 x 同样的 199,208 拍)
 | 3 | 以 CtrlBlock / XSTile 第一个可观测边界验收功能正确性 | ★不在本 lane★，留给父级 |
 | 4 | 不用 dont_verify / 黑盒 / 白名单伪装 Rob 边界相等 | 本 lane 一处都没动；FM 仍照报这 448 个 Port 失配 |
 | 5 | 文档一句话 | 本文件首段 + `rtl/backend/Rob.sv` 文件头 |
+
+## 本 lane 三份 receipt 的 provenance（★认 sha256，不认 impl_commit★）
+
+`make_receipt.py` 的 `impl_commit` 是**跑完之后**才 `git rev-parse HEAD` 取的，
+所以它记的是收档时的 HEAD，不是 fm_shell 读文件那一刻的 commit（本 lane 期间
+还在往库里加证据 commit，HEAD 一直在动）。**载荷是 `impl_closure[0].sha256`。**
+
+| run_id | mode | impl sha256 (rtl/backend/Rob.sv) | 对应 RTL | verdict |
+|---|---|---|---|---|
+| `Rob-20260921T060153Z-f17d7bf9` | diagnostic-full | `b343179b74d2a109742935f510996ea73970d80b17c42d40f31b1fb7498d83ff` | D3 **之前** | FAILED（failing 460） |
+| `Rob-20260921T095147Z-6fb082a8` | diagnostic-full | `bbd5668c71021b46ecbd7780d471e7bb7eea7977a12bd75c6b5e1792f6957894` | D3 **之后** | FAILED（failing 460） |
+| `Rob-20260921T133048Z-dc470bf0` | signoff-strict | `bbd5668c71021b46ecbd7780d471e7bb7eea7977a12bd75c6b5e1792f6957894` | D3 之后 | FAILED（failing≥20，★截断★） |
+
+golden 三份都是 `golden-rtl/Rob.sv`
+sha256 `4aa8838b95283d5aa1f46161e4abf96de764a6c6cbaff09f189a829ae601f130`，
+canonical `G1-a4ea14f2ddf612bb4ad023d26a2ca1bf33eddcaebe470b0c620e9fba0e7afcf0`，
+`impl_worktree_dirty=false`。
