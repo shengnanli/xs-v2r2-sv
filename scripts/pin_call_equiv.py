@@ -81,6 +81,7 @@ NO_FIXTURE = {
 # （与 NO_FIXTURE 一起构成双向约束：缺口只能缩，覆盖只能涨。）
 COVERED_DYNAMIC = {
     'verif/ut/IBuffer/fm_pins.tcl',
+    'verif/ut/InstrUncache/fm_pins_pre.tcl',
     'verif/ut/NCBTransactionQueue/fm_pins.tcl',
     'verif/ut/RenameBuffer/fm_pins.tcl',
     'verif/ut/SSIT/fm_pins.tcl',
