@@ -130,7 +130,21 @@ if {$top eq "InstrMMIOEntry"} {
   if {[llength $_immio_imp_found] != 1} {
     error "INSTRMMIOENTRY_PIN: impl 侧 $_immio_imp_scope 命中 [llength $_immio_imp_found] 个（应为 1）"
   }
-  set_user_match "r:/WORK/InstrMMIOEntry/req_addr_reg\[0\]" \
-                 "i:/WORK/InstrMMIOEntry/u_core/req_reg\\\[addr\]\[0\]"
-  puts "INSTRMMIOENTRY_PINS: dead req_addr\[0\] 1 / 1 point pinned"
+  # ★钉完再校验（P3）★（2026-09-21 补）
+  #   上面那两条 find_cells 断言是**前置条件**：它们证明"这两个名字各自存在"。
+  #   存在不等于钉上了 —— set_user_match 完全可能因为别的原因拒绝这一对
+  #   （类型不匹配、已被别的 user match 占用、跨 scope 不合法…），
+  #   而它**不抛异常**，只返回 0 并往 fm.log 写一行 FM-036。
+  #   所以后置条件只能取**返回值**，前置断言替代不了它。
+  #   这条原先缺席，而这个文件在 FAIL_OPEN_LEDGER 里挂着，
+  #   于是闸一直不看 P3 —— 台账项把另一个缺陷掩护住了。摘表之后才露出来。
+  set _immio_n 0
+  if {[set_user_match "r:/WORK/InstrMMIOEntry/req_addr_reg\[0\]" \
+                      "i:/WORK/InstrMMIOEntry/u_core/req_reg\\\[addr\]\[0\]"]} {
+    incr _immio_n
+  }
+  puts "INSTRMMIOENTRY_PINS: dead req_addr\[0\] $_immio_n / 1 point pinned"
+  if {$_immio_n != 1} {
+    error "INSTRMMIOENTRY_PIN_COUNT=$_immio_n expected 1"
+  }
 }
