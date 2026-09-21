@@ -53,7 +53,7 @@
 //
 // 生成区：`// BEGIN GENERATED(<tag>)` .. `// END GENERATED` 由
 // scripts/gen_rob.py --write 填写，手写内容一律在标记之外。
-// 本文件导航（共 11783 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+// 本文件导航（共 11795 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
 //   L2031  §1 条目存储
 //   L2033  每字段一个非打包数组，名字必须是 `<prefix>_<field>`：pin 契约按
 //   L2372  §2 RobPtr 算术
@@ -74,30 +74,30 @@
 //   L3684  robBanks(b) 装 robidx%8==b 的 20 个条目；八个 bank **共用**一个 one-hot 行地址
 //   L3913  §12 robDeqGroup：提交读口的寄存器级
 //   L3915  connectCommitEntry 的逐字段拷贝
-//   L3965  §13 队头读口
-//   L3967  三个名字在 Scala 里是**同一个表达式**
-//   L4083  §14 队头的异常/中断/冲刷判定
-//   L4253  §15 提交 / 走回的对外输出
-//   L4255  ★commit_vDeqGroup / commit_wDeqGroup 是**按 bank 直接取**的★
-//   L4801  §16 RAB
-//   L4803  io.rabCommits := RegNext(rab.io.commits) —— 整条打一拍，纯粹为了时序/面积
-//   L5034  §17 送给 exceptionGen 的三类折算量
-//   L5036  ★io_writeback_<i> 各自只有一部分 exceptionVec 位★
-//   L5073  §18 WFI
-//   L5075  遇到 wfi 指令就挂起提交，等 CSR 说可以恢复、或者被冲刷、或者 2^20 拍超时
-//   L5176  §19 CSR / LSQ / 队头杂项
-//   L5343  §20 trace
-//   L5345  八路提交槽各出一个 trace block，内容直接取 rawInfo
-//   L5409  §21 异常出口
-//   L5411  整条是 RegEnable(..., exceptionHappen)：异常发生那一拍把现场锁下来，
-//   L5565  §22 debug / difftest 规则阵列
-//   L5567  这一段不参与功能，但**一位都不能省**：省掉之后 FM 的 match 会退化成签名
-//   L6087  §23 性能事件
-//   L6089  generatePerfEvent() 出来的 19 个事件，每个都**打两拍**再送出去
-//   L6240  §24 difftest 打包口
-//   L6242  difftest 的三种事件被打包成宽总线从 Rob 直接钻出去
-//   L6628  Rob —— 顶层壳
-//   L6630  这一层不含任何设计逻辑：端口表、局部网、核实例、8 个子模块实例**全部**由
+//   L3977  §13 队头读口
+//   L3979  三个名字在 Scala 里是**同一个表达式**
+//   L4095  §14 队头的异常/中断/冲刷判定
+//   L4265  §15 提交 / 走回的对外输出
+//   L4267  ★commit_vDeqGroup / commit_wDeqGroup 是**按 bank 直接取**的★
+//   L4813  §16 RAB
+//   L4815  io.rabCommits := RegNext(rab.io.commits) —— 整条打一拍，纯粹为了时序/面积
+//   L5046  §17 送给 exceptionGen 的三类折算量
+//   L5048  ★io_writeback_<i> 各自只有一部分 exceptionVec 位★
+//   L5085  §18 WFI
+//   L5087  遇到 wfi 指令就挂起提交，等 CSR 说可以恢复、或者被冲刷、或者 2^20 拍超时
+//   L5188  §19 CSR / LSQ / 队头杂项
+//   L5355  §20 trace
+//   L5357  八路提交槽各出一个 trace block，内容直接取 rawInfo
+//   L5421  §21 异常出口
+//   L5423  整条是 RegEnable(..., exceptionHappen)：异常发生那一拍把现场锁下来，
+//   L5577  §22 debug / difftest 规则阵列
+//   L5579  这一段不参与功能，但**一位都不能省**：省掉之后 FM 的 match 会退化成签名
+//   L6099  §23 性能事件
+//   L6101  generatePerfEvent() 出来的 19 个事件，每个都**打两拍**再送出去
+//   L6252  §24 difftest 打包口
+//   L6254  difftest 的三种事件被打包成宽总线从 Rob 直接钻出去
+//   L6640  Rob —— 顶层壳
+//   L6642  这一层不含任何设计逻辑：端口表、局部网、核实例、8 个子模块实例**全部**由
 //
 
 package rob_pkg;
@@ -3914,49 +3914,61 @@ module xs_Rob_core
   // ==========================================================================
   // connectCommitEntry 的逐字段拷贝。★debug_otherPdest 不在这份拷贝里★——
   // RobEntryBundle 根本没有这个成员，没得可拷；见文件头「已知残留」。
+  // ★源选择必须在 always_ff **外面**算★：原先这里写的是
+  //     `automatic int s = allCommitted ? (BANK_N + i) : i;`
+  //   —— 一个声明在 always_ff 里的 32 位 automatic int。FM 把它按循环展开
+  //   推成了 8 个 32 位**寄存器**（i:/WORK/Rob/u_core/s_reg3..s_reg10，共 256 位），
+  //   写了却没人读 ⇒ 256 个 impl 侧 unread 比较点，strict 口径直接判 PARTIAL。
+  //   golden 里没有这种东西（Chisel 的 Mux 是纯组合）。挪到 always_comb 即消失。
+  //   两个下标 (BANK_N+i) 和 i 展开后都是常量，不构成信号下标（FMR_ELAB-147）。
+  rob_entry_t deqGroupSrc [COMMIT_W];
+  always_comb begin
+    for (int i = 0; i < COMMIT_W; i++)
+      // 默认取本行，allCommitted 时直接取下一行（提前一拍把下一行搬进来）
+      deqGroupSrc[i] = allCommitted ? needUpdate[BANK_N + i] : needUpdate[i];
+  end
+
   always_ff @(posedge clock) begin
     for (int i = 0; i < COMMIT_W; i++) begin
-      // 默认取本行，allCommitted 时直接取下一行（提前一拍把下一行搬进来）
-      automatic int s = allCommitted ? (BANK_N + i) : i;
-      robDeqGroup_walk_v[i]                      <= needUpdate[s].valid;
-      robDeqGroup_commit_v[i]                    <= needUpdate[s].valid;
-      robDeqGroup_commit_w[i]                    <= (needUpdate[s].uopNum == {UOPNUM_W{1'b0}})
-                                                  & needUpdate[s].stdWritebacked;
-      robDeqGroup_realDestSize[i]                <= needUpdate[s].realDestSize;
-      robDeqGroup_interrupt_safe[i]              <= needUpdate[s].interrupt_safe;
-      robDeqGroup_rfWen[i]                       <= needUpdate[s].rfWen;
-      robDeqGroup_fpWen[i]                       <= needUpdate[s].fpWen;
-      robDeqGroup_fflags[i]                      <= needUpdate[s].fflags;
-      robDeqGroup_wflags[i]                      <= needUpdate[s].wflags;
-      robDeqGroup_vxsat[i]                       <= needUpdate[s].vxsat;
-      robDeqGroup_isRVC[i]                       <= needUpdate[s].isRVC;
-      robDeqGroup_isVset[i]                      <= needUpdate[s].isVset;
-      robDeqGroup_isHls[i]                       <= needUpdate[s].isHls;
-      robDeqGroup_isVls[i]                       <= needUpdate[s].vls;
-      robDeqGroup_vls[i]                         <= needUpdate[s].vls;
-      robDeqGroup_mmio[i]                        <= needUpdate[s].mmio;
-      robDeqGroup_ftqIdx_flag[i]                 <= needUpdate[s].ftqIdx_flag;
-      robDeqGroup_ftqIdx_value[i]                <= needUpdate[s].ftqIdx_value;
-      robDeqGroup_ftqOffset[i]                   <= needUpdate[s].ftqOffset;
-      robDeqGroup_commitType[i]                  <= needUpdate[s].commitType;
-      robDeqGroup_instrSize[i]                   <= needUpdate[s].instrSize;
-      robDeqGroup_dirtyFs[i]                     <= needUpdate[s].fpWen | needUpdate[s].wflags;
-      robDeqGroup_dirtyVs[i]                     <= needUpdate[s].dirtyVs;
-      robDeqGroup_needFlush[i]                   <= needUpdate[s].needFlush;
-      robDeqGroup_traceBlockInPipe_itype[i]      <= needUpdate[s].traceBlockInPipe_itype;
-      robDeqGroup_traceBlockInPipe_iretire[i]    <= needUpdate[s].traceBlockInPipe_iretire;
-      robDeqGroup_traceBlockInPipe_ilastsize[i]  <= needUpdate[s].traceBlockInPipe_ilastsize;
-      robDeqGroup_debug_pc[i]                    <= needUpdate[s].debug_pc;
-      robDeqGroup_debug_instr[i]                 <= needUpdate[s].debug_instr;
-      robDeqGroup_basicDebug_ldest[i]            <= needUpdate[s].basicDebug_ldest;
-      robDeqGroup_basicDebug_pdest[i]            <= needUpdate[s].basicDebug_pdest;
-      robDeqGroup_basicDebug_vd[i]               <= needUpdate[s].basicDebug_vd;
-      robDeqGroup_basicDebug_fpWen[i]            <= needUpdate[s].basicDebug_fpWen;
-      robDeqGroup_basicDebug_vecWen[i]           <= needUpdate[s].basicDebug_vecWen;
-      robDeqGroup_basicDebug_v0Wen[i]            <= needUpdate[s].basicDebug_v0Wen;
-      robDeqGroup_basicDebug_eliminatedMove[i]   <= needUpdate[s].basicDebug_eliminatedMove;
-      robDeqGroup_basicDebug_isXSTrap[i]         <= needUpdate[s].basicDebug_isXSTrap;
-      robDeqGroup_debug_fuType[i]                <= needUpdate[s].debug_fuType;
+      robDeqGroup_walk_v[i]                      <= deqGroupSrc[i].valid;
+      robDeqGroup_commit_v[i]                    <= deqGroupSrc[i].valid;
+      robDeqGroup_commit_w[i]                    <= (deqGroupSrc[i].uopNum == {UOPNUM_W{1'b0}})
+                                                  & deqGroupSrc[i].stdWritebacked;
+      robDeqGroup_realDestSize[i]                <= deqGroupSrc[i].realDestSize;
+      robDeqGroup_interrupt_safe[i]              <= deqGroupSrc[i].interrupt_safe;
+      robDeqGroup_rfWen[i]                       <= deqGroupSrc[i].rfWen;
+      robDeqGroup_fpWen[i]                       <= deqGroupSrc[i].fpWen;
+      robDeqGroup_fflags[i]                      <= deqGroupSrc[i].fflags;
+      robDeqGroup_wflags[i]                      <= deqGroupSrc[i].wflags;
+      robDeqGroup_vxsat[i]                       <= deqGroupSrc[i].vxsat;
+      robDeqGroup_isRVC[i]                       <= deqGroupSrc[i].isRVC;
+      robDeqGroup_isVset[i]                      <= deqGroupSrc[i].isVset;
+      robDeqGroup_isHls[i]                       <= deqGroupSrc[i].isHls;
+      robDeqGroup_isVls[i]                       <= deqGroupSrc[i].vls;
+      robDeqGroup_vls[i]                         <= deqGroupSrc[i].vls;
+      robDeqGroup_mmio[i]                        <= deqGroupSrc[i].mmio;
+      robDeqGroup_ftqIdx_flag[i]                 <= deqGroupSrc[i].ftqIdx_flag;
+      robDeqGroup_ftqIdx_value[i]                <= deqGroupSrc[i].ftqIdx_value;
+      robDeqGroup_ftqOffset[i]                   <= deqGroupSrc[i].ftqOffset;
+      robDeqGroup_commitType[i]                  <= deqGroupSrc[i].commitType;
+      robDeqGroup_instrSize[i]                   <= deqGroupSrc[i].instrSize;
+      robDeqGroup_dirtyFs[i]                     <= deqGroupSrc[i].fpWen | deqGroupSrc[i].wflags;
+      robDeqGroup_dirtyVs[i]                     <= deqGroupSrc[i].dirtyVs;
+      robDeqGroup_needFlush[i]                   <= deqGroupSrc[i].needFlush;
+      robDeqGroup_traceBlockInPipe_itype[i]      <= deqGroupSrc[i].traceBlockInPipe_itype;
+      robDeqGroup_traceBlockInPipe_iretire[i]    <= deqGroupSrc[i].traceBlockInPipe_iretire;
+      robDeqGroup_traceBlockInPipe_ilastsize[i]  <= deqGroupSrc[i].traceBlockInPipe_ilastsize;
+      robDeqGroup_debug_pc[i]                    <= deqGroupSrc[i].debug_pc;
+      robDeqGroup_debug_instr[i]                 <= deqGroupSrc[i].debug_instr;
+      robDeqGroup_basicDebug_ldest[i]            <= deqGroupSrc[i].basicDebug_ldest;
+      robDeqGroup_basicDebug_pdest[i]            <= deqGroupSrc[i].basicDebug_pdest;
+      robDeqGroup_basicDebug_vd[i]               <= deqGroupSrc[i].basicDebug_vd;
+      robDeqGroup_basicDebug_fpWen[i]            <= deqGroupSrc[i].basicDebug_fpWen;
+      robDeqGroup_basicDebug_vecWen[i]           <= deqGroupSrc[i].basicDebug_vecWen;
+      robDeqGroup_basicDebug_v0Wen[i]            <= deqGroupSrc[i].basicDebug_v0Wen;
+      robDeqGroup_basicDebug_eliminatedMove[i]   <= deqGroupSrc[i].basicDebug_eliminatedMove;
+      robDeqGroup_basicDebug_isXSTrap[i]         <= deqGroupSrc[i].basicDebug_isXSTrap;
+      robDeqGroup_debug_fuType[i]                <= deqGroupSrc[i].debug_fuType;
     end
   end
 
