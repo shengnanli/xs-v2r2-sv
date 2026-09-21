@@ -53,7 +53,7 @@
 //
 // 生成区：`// BEGIN GENERATED(<tag>)` .. `// END GENERATED` 由
 // scripts/gen_rob.py --write 填写，手写内容一律在标记之外。
-// 本文件导航（共 11780 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+// 本文件导航（共 11786 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
 //   L2036  §1 条目存储
 //   L2038  每字段一个非打包数组，名字必须是 `<prefix>_<field>`：pin 契约按
 //   L2377  §2 RobPtr 算术
@@ -85,19 +85,19 @@
 //   L5034  ★io_writeback_<i> 各自只有一部分 exceptionVec 位★
 //   L5071  §18 WFI
 //   L5073  遇到 wfi 指令就挂起提交，等 CSR 说可以恢复、或者被冲刷、或者 2^20 拍超时
-//   L5170  §19 CSR / LSQ / 队头杂项
-//   L5335  §20 trace
-//   L5337  八路提交槽各出一个 trace block，内容直接取 rawInfo
-//   L5401  §21 异常出口
-//   L5403  整条是 RegEnable(..., exceptionHappen)：异常发生那一拍把现场锁下来，
-//   L5557  §22 debug / difftest 规则阵列
-//   L5559  这一段不参与功能，但**一位都不能省**：省掉之后 FM 的 match 会退化成签名
-//   L6079  §23 性能事件
-//   L6081  generatePerfEvent() 出来的 19 个事件，每个都**打两拍**再送出去
-//   L6232  §24 difftest 打包口
-//   L6234  difftest 的三种事件被打包成宽总线从 Rob 直接钻出去
-//   L6620  Rob —— 顶层壳
-//   L6622  这一层不含任何设计逻辑：端口表、局部网、核实例、8 个子模块实例**全部**由
+//   L5174  §19 CSR / LSQ / 队头杂项
+//   L5341  §20 trace
+//   L5343  八路提交槽各出一个 trace block，内容直接取 rawInfo
+//   L5407  §21 异常出口
+//   L5409  整条是 RegEnable(..., exceptionHappen)：异常发生那一拍把现场锁下来，
+//   L5563  §22 debug / difftest 规则阵列
+//   L5565  这一段不参与功能，但**一位都不能省**：省掉之后 FM 的 match 会退化成签名
+//   L6085  §23 性能事件
+//   L6087  generatePerfEvent() 出来的 19 个事件，每个都**打两拍**再送出去
+//   L6238  §24 difftest 打包口
+//   L6240  difftest 的三种事件被打包成宽总线从 Rob 直接钻出去
+//   L6626  Rob —— 顶层壳
+//   L6628  这一层不含任何设计逻辑：端口表、局部网、核实例、8 个子模块实例**全部**由
 //
 
 package rob_pkg;
@@ -5152,12 +5152,16 @@ module xs_Rob_core
   // ★这两个读的是**条目存储**（robEntries）按 deqPtr 直接读，不是 robDeqGroup★：
   //   robDeqGroup 是打过一拍的，而 CSR 要的是这一拍提交那条的值。
   //   下标是 8 位 / 深度 160 —— 正是 FMR_ELAB-147 的形状，所以走循环+比较。
+  // ★越界回绕到条目 0★（见 §21 头上的「越界读」总说明）：deqPtr 是 8 位、深度
+  //   只有 160，golden 的查找表 _GEN_2640（fflags）/ _GEN_2643（vxsat）
+  //   160..255 这 96 格填的都是**条目 0**，所以「没命中」时的默认值不是 0，
+  //   是条目 0 的值。原先这两行写的是 0。
   logic [FFLAGS_W-1:0] fflagsDataRead [COMMIT_W];
   logic                vxsatDataRead  [COMMIT_W];
   always_comb begin
     for (int i = 0; i < COMMIT_W; i++) begin
-      fflagsDataRead[i] = {FFLAGS_W{1'b0}};
-      vxsatDataRead[i]  = 1'b0;
+      fflagsDataRead[i] = robEntries_fflags[0];
+      vxsatDataRead[i]  = robEntries_vxsat[0];
       for (int k = 0; k < ROB_SIZE; k++)
         if (deqPtrValue[i] == PTR_W'(k)) begin
           fflagsDataRead[i] = robEntries_fflags[k];
@@ -5239,7 +5243,9 @@ module xs_Rob_core
     for (int i = 0; i < COMMIT_W; i++) begin
       automatic logic isStore;
       automatic logic entryVls;
-      entryVls = 1'b0;
+      // ★越界回绕到条目 0★（见 §21 头上的「越界读」总说明）：golden 的查找表
+      //   _GEN_11733（vls）160..255 格填的是**条目 0**，不是 0。原先这里写 0。
+      entryVls = robEntries_vls[0];
       for (int k = 0; k < ROB_SIZE; k++)
         if (deqPtrValue[i] == PTR_W'(k)) entryVls = robEntries_vls[k];
       isStore = commitValidOut[i] & (commitInfo[i].commitType == CT_STORE) & ~entryVls;
