@@ -156,3 +156,78 @@ _sta_mou 2 / _vfalu 2 / _vialuFix_vfma 2 / _vldu_vstu 2 = 55 位。
 基线 `failing 20 / unverified 51056` 就是同一件事的两面。
 **本次签核跑不动这个限值**（动了不出 receipt）；真实失败集合另跑
 `FM_FAILING_LIMIT=0 --mode diagnostic-full`，那份 log ★不出 receipt★。
+
+---
+
+## ★步骤 1 跑后对账（2026-09-21，receipt 首次存在）★
+
+证据 `evidence/75c143861c75/NewDispatch/`，run_id `NewDispatch-20260921T054344Z-75c14386`。
+`fm_predict check NewDispatch`：预期 59000 / 实测 589 / 差 58411 / 可指认 5204，
+判决「连 merge 上界都兜不住，余额 45770」—— 与「一个点都没多证」自洽。
+
+### 判据裁决：★3/3 不达标★
+
+| 判据 | 预期 | 实测 | 裁决 |
+|---|---|---|---|
+| 1. 非 IQSort unmatched | [0,400]，点估计 71 | **5309** | ★FAIL★ |
+| 2. IQSort unmatched | **恰好 55** | **0** | ★FAIL（往变少的方向破）★ |
+| 3. 合计 unmatched | [55,455] | **5309** | ★FAIL★ |
+
+### 1864 的去向（逐点归类，不是估算）
+
+    7173 = 5309 (仍 ref-unmatched) + 1848 (matched_nc) + 16 (真配上，落 unverified)
+
+* **1848 matched_nc**（配上但不比较，vmucp=false 故不进 passing）：
+  `lsqEnqCtrl` 1405 / `rcTagTable` 388 / `IQSort` 55。
+  ★基线 `matched_unread_notcompared` 是 **0**，这一整项是本次新出现的。★
+* **16** 真成了比较点。两条独立路线互证：
+  matched compare 51665（51563 name + 102 user）→ 51681（name）= **+16**；
+  unverified 51056 → 51072 = **+16**。
+* **5309** 仍 ref-unmatched，按实例：`lsqEnqCtrl` 3232 / `intBusyTable` 1568 /
+  `fpBusyTable` 192 / `vecBusyTable` 128 / `vlBusyTable` 96 / `v0BusyTable` 22 /
+  **NewDispatch 自己 71**。★自己那 71 与基线的 71 一模一样，顶层自身一点没动。★
+
+### ★判据 2「55 → 0」查清了：是换桶，不是解开★
+
+本次那 55 个是 `matched_nc`，配对逐点可见，例如
+
+    r:/WORK/NewDispatch/IQSort_alu_0_0_reg <-> i:/WORK/NewDispatch/u_core/IQSort_alu_reg[0][0]
+
+基线里它们是**两侧各自 unmatched**（ref 55 在 `unmatched.rpt`，impl 55 在 `unread_points.txt`）。
+所以是 `unmatched` → `matched-but-not-compared`，★一个都没被验证★。
+两条独立佐证：`passing` 589 纹丝不动；`provable_check.py` 在步骤 1 的 RTL 上
+仍报同样那 10 个寄存器（其双向负测本次实跑 PASS）。
+
+**★未定项，不写成结论★**：我没能确定它们这次为什么配得上而基线配不上。
+已排除的混淆项——golden 与 canonical 两次完全相同；`fm_eq.tcl` 这期间被拆过
+（`sourced_000` 65859B → 32343B），但逐行 diff 只动了 per-target 配置装载与
+`FM_FIELD_MAP` 读法，★匹配逻辑一行没改★，`auto_match_flattened_arrays` 逐字相同
+且本次实配 0 个（两个 Matching Results 块数值完全一致）；`sourced_001_*.tcl` 两次
+sha256 相同。唯一输入差异是 impl 闭包 1 份 → 11 份。**留待单独查。**
+
+### 另记两处
+
+* `unmatched_impl` 0 → 1 = `i:/WORK/NewDispatch/lsqEnqCtrl/u_core/canAcceptReg_reg`。
+  `LsqEnqCtrl` 作为**独立 target** 时 `unmatched=0`，进到 NewDispatch 里多出这一个，未查。
+* `failing 20` 与基线**逐字同一批点**（只差日期行），且是 `limit=20` 的**截断值**。
+  真实失败集合要 `FM_FAILING_LIMIT=0` + `--mode diagnostic-full`，
+  ★那种跑法不出 receipt★，本次没跑。
+
+### 机理判读（对步骤 1 的真回答）
+
+> 「child 悬空是根因」★只对了一半★ —— 正好落在登记预留的反向出口第二条上。
+
+例化确实让 7047 个 child 寄存器在 impl 侧**存在**了，但顶层 **725 个 output 仍未驱动**，
+这些寄存器的前向锥在 impl 侧到不了任何输出 → FM 判 unread →
+要么落进 `unmatched_unread_impl`(5204)，要么配成 `matched_nc`(1848) 而不比较。
+
+★光例化、不接输出，换不来一个新的已证点（passing 589 → 589）。★
+这正是步骤 2 的任务：把 725 个未驱动 output 接上，而它们被
+`allowDispatch` / `uopBlockByIQ` / `thisCanActualOut` 三条控制链门控。
+
+### 子模块口径（按 codex 0168 §1 的措辞）
+
+本次 ref 走 golden child、impl 走重写 child。**即便将来证绿**，证的也是这 7 个 child
+**在 NewDispatch 里这一次例化下**等价，台账只能记
+「**在 NewDispatch 上下文中**已被覆盖」，★不许写成独立 `SIGNOFF_PASS`★。
+（它们各自另有独立的 standalone 绿 receipt，那是**另一件事**，两者不得互相冒充。）
