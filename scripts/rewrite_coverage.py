@@ -64,6 +64,9 @@ import pathlib
 import re
 import sys
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+from rewritten_floor import classify_rtl, counts_as_written
+
 REPO = pathlib.Path(__file__).resolve().parent.parent
 GOLDEN = pathlib.Path('/home/eda/xs-env/G1-canonical/golden-rtl')
 OUT = REPO / 'docs' / 'rewrite_coverage.tsv'
@@ -101,14 +104,22 @@ def golden_modules():
 
 
 def rewritten_modules():
-    """可读侧**声明**的模块名集合（written 口径）。
+    """可读侧**声明且过了驱动下限**的模块名集合（written 口径）。
 
-    注意这只说明"rtl/ 里有这个 module 名"，**不说明它写完了**。一个只实现两成
-    逻辑的骨架同样会出现在这里 —— 所以头条数字用的是下面 proven_modules() 的口径。
+    ★2026-09-21 加下限★：原判据只问"rtl/ 里有没有这个 module 名"，于是一个
+    只抄了端口表、模块体空着的骨架照样计进 written。实测后果：StoreQueue 的
+    77145 golden 行进了 written，而它的核驱动 0/241 条输出、UT VERIFIED=0/399。
+    上面那段注释本来就写着"不说明它写完了"——问题是它照样在算分。
+
+    现在改成 scripts/rewritten_floor.py 的驱动闭包判据：输出得真被驱动，
+    而且驱动链要落到真逻辑或外部黑盒上（壳接空核不算）。它只判"驱动没驱动"，
+    不判"驱动得对不对"——对不对是 FM 的事，那是 proven 口径管的。
+    反证过：全树 719 个模块里，凡 FM 判过 SUCCEEDED 的，没有一个掉出这道下限。
     """
     out = set()
-    for p in sorted((REPO / 'rtl').glob('**/*.sv')):
-        out |= set(MODULE_RE.findall(p.read_text(errors='replace')))
+    for name, (tier, _dn, _on, _f) in classify_rtl().items():
+        if counts_as_written(tier):
+            out.add(name)
     return out
 
 
