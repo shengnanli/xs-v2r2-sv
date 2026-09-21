@@ -35,6 +35,9 @@ import pathlib
 import re
 import sys
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+from rewritten_floor import classify_rtl, counts_as_written
+
 REPO = pathlib.Path(os.environ.get('XSSV_HOME') or
                     pathlib.Path(__file__).resolve().parent.parent)
 PASS = {'SUCCEEDED', 'PASS_DEAD_REF'}
@@ -111,6 +114,7 @@ def main():
     vend = vendor_set()
     rtl = rtl_modules()
     reuse = golden_reuse_set()
+    floor = classify_rtl()
     recs = receipts()
 
     proven_direct = {t for t, _, _ in recs}
@@ -127,7 +131,12 @@ def main():
             a1 = a2 = 'VENDOR_BOUNDARY'
         else:
             if m in rtl:
-                a1 = 'GOLDEN_REUSE' if m in reuse else 'REWRITTEN'
+                # ★轴一的下限（2026-09-21 加）★：光有 `module <名字>` 不算重写。
+                #   rewritten_floor 按**驱动闭包**判——输出得真被驱动，
+                #   而且驱动链要落到真逻辑上，不能停在一个空核的端口上。
+                #   加这道下限之前，StoreQueue（壳接空核，163/399）和
+                #   NewDispatch（5974/6699）都在这张表里写着 REWRITTEN。
+                a1 = 'GOLDEN_REUSE' if m in reuse else floor.get(m, ('SKELETON',))[0]
             elif m in reuse:
                 a1 = 'GOLDEN_REUSE'
             else:
@@ -162,8 +171,11 @@ def main():
     n = len(uni)
     print(f'分母（G1 设计 universe 候选）= {n}')
     print('轴1 REWRITE_COVERAGE：', dict(c1.most_common()))
-    print(f'      已重写占比 {100*c1["REWRITTEN"]/n:.1f}%'
-          f'（GOLDEN_REUSE {c1["GOLDEN_REUSE"]} 不计入，按裁定单列）')
+    _wr = sum(v for k, v in c1.items() if counts_as_written(k))
+    print(f'      已重写占比 {100*_wr/n:.1f}%'
+          f'（GOLDEN_REUSE {c1["GOLDEN_REUSE"]} 不计入，按裁定单列；'
+          f'未过驱动下限：PARTIAL_DRIVE {c1["PARTIAL_DRIVE"]} / '
+          f'SKELETON {c1["SKELETON"]}，不计入）')
     print('轴2 FORMAL_COVERAGE：', dict(c2.most_common()))
     cov = c2['PROVEN_DIRECT'] + c2['PROVEN_IN_CONE']
     print(f'      被通过证明真实覆盖 {cov}/{n} = {100*cov/n:.1f}%'

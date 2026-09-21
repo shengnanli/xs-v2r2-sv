@@ -280,6 +280,12 @@ run "StoreQueue tb 幂等"  python3 scripts/gen_storequeue_ut.py --check
 # provider 差异会继续挂着 WAIVED，谁也不会发现豁免早就失效了。
 # 这道闸把三件事钉住：台账能从 golden 现场重算 / 不许有"未分类" / 豁免逐条现算。
 # 先跑负测（秒级，不扫 golden），再跑真闸（约 80 秒）—— 顺序照层次重绑闸的先例。
+# written/REWRITTEN 判据的**下限**自身的正反测。三处口径（三轴轴一 / rewrite_coverage
+# 的 written / perf 归属的 owner_rewritten）共用 scripts/rewritten_floor.py 这一把尺子，
+# 所以这道自测挂了，三张台账同时失去依据。它既要证明能判出空壳（A/G/H/L），
+# 也要证明不会把真驱动误判成空壳（C/D/E/I/J/K/K2/N）——一道只会响的判据和
+# 一道从不响的判据一样没用。
+run "written 驱动下限自证"  python3 scripts/rewritten_floor.py --selftest
 run "perf 分档闸负测"    python3 scripts/test_perf_tier_gate.py
 run "perf 分档台账闸"    python3 scripts/check_perf_tier.py
 

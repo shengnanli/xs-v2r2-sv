@@ -132,6 +132,9 @@ import pathlib
 import re
 import sys
 
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+from rewritten_floor import classify_rtl, counts_as_written
+
 HERE = pathlib.Path(__file__).resolve().parent
 REPO = HERE.parent
 GOLDEN_DEFAULT = '/home/eda/xs-env/G1-canonical/golden-rtl'
@@ -515,10 +518,19 @@ def read_map():
 
 
 def rewritten_modules():
-    """可读侧声明的模块名集合（与 scripts/rewrite_coverage.py 同一判据）。"""
+    """可读侧声明**且过了驱动下限**的模块名集合（与 rewrite_coverage.py 同一判据）。
+
+    ★2026-09-21 加下限★：这条判据喂的是 owner_rewritten，而 owner_rewritten
+    决定 C_DIAG 的 perf 差异能不能 WAIVED（codex 0162 D3）。原判据只看
+    "rtl/ 里有没有这个 module 名"，于是 StoreQueue 的空壳一落地，
+    owner_rewritten 就由 no 翻成 yes，storeQueue/vaddr_match_failed 的豁免失效，
+    check_perf_tier 连挂三条 —— 红的根因不在被量物，在量具。
+    改用 scripts/rewritten_floor.py 的驱动闭包判据，三处口径同一把尺子。
+    """
     out = set()
-    for p in sorted((REPO / 'rtl').glob('**/*.sv')):
-        out |= set(MODULE_RE.findall(p.read_text(errors='replace')))
+    for name, (tier, _dn, _on, _f) in classify_rtl().items():
+        if counts_as_written(tier):
+            out.add(name)
     return out
 
 
