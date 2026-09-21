@@ -26,33 +26,41 @@
 //   14 个 G1 变体全部走 hasCompAndSimp,故本核不实现另一分支(见文件尾 §11 待办)。
 //
 // =============================================================================
-// 本文件导航（共 1999 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
-//   L59    §1 与变体无关的编码
-//   L109   §2 xs_iq_entry
-//   L399   §2.1 冲刷判定
-//   L411   §2.2 唤醒的「类型匹配」
-//   L441   §2.2a WB 唤醒匹配
-//   L471   §2.2b IQ 即时唤醒匹配 + 投机撤销(LoadShouldCancel)
-//   L588   §2.3 ignoreOldVd(向量专属)
-//   L639   §2.3b currentStatus
-//   L710   §2.4 valid / enqReady / clear
-//   L726   §2.5 entryUpdate
-//   L794   §2.6 时序
-//   L834   §2.6a blocked / deqPortIdx
-//   L902   §2.6b IQ 唤醒子族专属的三组状态
-//   L937   §2.7 组合输出
-//   L1045  §2.8 debug / perf 出口
-//   L1106  §3 xs_iq_entries_core
-//   L1294  §3a 阵列层自己持有的两组寄存器(golden Entries.scala:140-142)
-//   L1366  §4 条目例化
-//   L1534  §5 deqSel / deqPortIdxWrite / issueResp
-//   L1577  §6 EnqPolicy
-//   L1608  §7 转移策略
-//   L1685  §8 othersEntryEnq 数据通路
-//   L1836  §9 发射出口
-//   L1904  §10 阵列状态汇聚输出
-//   L1945  §11 本核尚未实现的家族维度(给后续变体 owner 的清单,全部有 golden 依据)
 // 导航由 verif/ut/Entries_common/core_nav.py 重算 —— 改完核跑一次，勿手改
+//
+// 本文件导航（共 2006 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+//   L38    设计源:XiangShan src/main/scala/xiangshan/backend/issue/{Entries,En
+//   L63    导航由 verif/ut/Entries_common/core_nav.py 重算 —— 改完核跑一次，勿手改
+//   L67    §1 与变体无关的编码
+//   L84    唤醒总线上的写使能字段(IssueQueueWakeUpBundle 的 rfWen/fpWen/vecWen/v0Wen/vl
+//   L117   §2 xs_iq_entry —— 单条目
+//   L174   IQ 即时唤醒(hasIQWakeUp 子族:INT/MEM 6 个 + FP 3 个变体)
+//   L407   §2.1 冲刷判定
+//   L419   §2.2 唤醒的「类型匹配」—— WB 与 IQ 共用这一个函数
+//   L449   §2.2a WB 唤醒匹配
+//   L479   §2.2b IQ 即时唤醒匹配 + 投机撤销(LoadShouldCancel)
+//   L596   §2.3 ignoreOldVd(向量专属)
+//   L601   ★ 这 5 个 vpu 控制位的比特位置是按**转移包**布局算的
+//   L647   §2.3b currentStatus —— 入队条目在「入队后那一拍」用延迟唤醒总线打的补丁
+//   L718   §2.4 valid / enqReady / clear
+//   L734   §2.5 entryUpdate —— 不装载时条目的次态,同时也是 transEntry 的内容
+//   L802   §2.6 时序
+//   L842   §2.6a blocked / deqPortIdx —— 这两个状态位 golden 只在**部分**条目类型里
+//   L910   §2.6b IQ 唤醒子族专属的三组状态
+//   L945   §2.7 组合输出
+//   L1053  §2.8 debug / perf 出口
+//   L1114  §3 xs_iq_entries_core —— 条目阵列顶层(golden Entries<变体> 的可读核体)
+//   L1286  本核对家族做的两条形状假设 —— 实测 14/14 成立(见字段矩阵 numEnq / numDeq 两列)
+//   L1302  §3a 阵列层自己持有的两组寄存器(golden Entries.scala:140-142)
+//   L1306  同样按 enq 条目分份(理由见上)
+//   L1374  §4 条目例化
+//   L1542  §5 deqSel / deqPortIdxWrite / issueResp
+//   L1585  §6 EnqPolicy —— golden 的 EnqPolicy 模块(SelectOne("circ", …, 2))
+//   L1616  §7 转移策略
+//   L1693  §8 othersEntryEnq 数据通路
+//   L1844  §9 发射出口
+//   L1912  §10 阵列状态汇聚输出
+//   L1953  §11 本核尚未实现的家族维度(给后续变体 owner 的清单,全部有 golden 依据)
 //
 
 // -----------------------------------------------------------------------------
@@ -1075,11 +1083,11 @@ module xs_iq_entry
                                          & ~(flushed | deq_success);
       for (genvar s = 0; s < NUM_REGSRC; s++) begin : g_dbg_src
         // ★门控用 currentStatus 而不是裸寄存器★(golden 逐字如此,本 lane 复核过):
-        //   EnqEntry_6.sv:  …& ~currentStatus_srcStatus_0_srcState & validReg_last_REG
+        //   EnqEntry_6.sv:     …& ~currentStatus_srcStatus_0_srcState & validReg_last_REG
         //   OthersEntry_72.sv: …& ~entryReg_status_srcStatus_0_srcState & …
         //   两者只在「入队延迟窗口」那一拍分叉,所以**只有 EnqEntry 族暴露**;
-        //   非 enq 条目里 dly = IS_ENQ & … 是常量 0,cur_src_state 恒等于 r_src_state,
-        //   这一改对 OthersEntry 是详细化期的 no-op(但 no-op 要靠回归证,不靠这句话)。
+        //   非 enq 条目里 dly = IS_ENQ & … 是常量 0,cur_src_state 恒等于 r_src_state。
+        //   ★"是 no-op"这句话由 27 目标全量回归证,不由这段注释证。★
         assign o_dbg_perf_wakeup_by_wb[s] = wk_hit[s]
                                           & (cur_src_state[s] == SRC_BUSY)
                                           & valid_reg;
