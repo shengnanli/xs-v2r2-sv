@@ -42,30 +42,31 @@
 //
 // =============================================================================
 // 本文件导航：
-//   L71     §1 storequeue_pkg —— 参数、SqPtr 环形指针、各通道结构体
-//   L100    §1.1 SqPtr —— 56 项环形指针（★不是 2 的幂，加法是比较-减法★）
-//   L200    §1.2 通道结构体（字段集与位宽由 golden 端口表机械推导）
-//   L477    §2 xs_StoreQueue_core —— 可读核
-//   L773    §3 per-entry 状态 —— ★复位域是 golden 实测，不是照 Chisel 抄★
-//   L997    §4 组合中间量的声明（按通路分组；方程在后面各节）
-//   L1144   §5 容量、掩码、若干「指针的当前值」
-//   L1161   §6 dispatch 入队 —— 6 个口，每个口按 numLsElem 占**一段连续条目**
-//   L1267   §7 sta / std / storeMask 三条写入通路
-//   L1312   §8 addrReady / dataReady 两个「发射就绪」指针
-//   L1372   §9 store-to-load 转发（3 个 load 口，队列里做地址 CAM）
-//   L1532   §10 mmio / NC / CBO —— 三条共用 uncache 通道的出队路径
-//   L1630   §11 ROB 提交 —— 把 cmtPtr 起的连续 8 条标成 committed
-//   L1680   §12 出队：读 RAM -> dataBuffer -> Sbuffer
-//   L1723   §13 dataBuffer 入口：三分支（跨 16B 拆分 / 非跨 16B 的非对齐 / 常规）
-//   L1878   §14 difftest 观测口（difftest 关掉时整块是 DontCare，golden 里仍然留着端口）
-//   L1913   §15 子模块例化 —— 5 个，实例名照 golden（dataModule / paddrModule /
-//   L2622   §16 向量异常旗标 + 冲刷判定
-//   L2706   §17 输出驱动
-//   L2964   §18 时序（一）：★不复位★块（对应 golden L20336-58753 的 2913 个寄存器）
-//   L3209   §19 「completed」的 4 个置位源（出队的四条路各有一个）
-//   L3238   §20 perf 观测探针（golden 同名导出；docs/perf_bore_map.tsv 按名字重绑）
-//   L3262   §21 时序（二）：异步复位块（对应 golden L62202-69650 的 1076 个寄存器）
-//   L3635   §22 StoreQueue —— golden 同名 wrapper（1003 根端口，逐位对齐）
+//   L72     §1 storequeue_pkg —— 参数、SqPtr 环形指针、各通道结构体
+//   L101    §1.1 SqPtr —— 56 项环形指针（★不是 2 的幂，加法是比较-减法★）
+//   L201    §1.2 通道结构体（字段集与位宽由 golden 端口表机械推导）
+//   L478    §2 xs_StoreQueue_core —— 可读核
+//   L798    §3 per-entry 状态 —— ★复位域是 golden 实测，不是照 Chisel 抄★
+//   L1022   §4 组合中间量的声明（按通路分组；方程在后面各节）
+//   L1175   §4.5 读表：把每族 per-entry 状态补齐到 64 项（★下标是 6 位，队列只有 56 项★）
+//   L1309   §5 容量、掩码、若干「指针的当前值」
+//   L1326   §6 dispatch 入队 —— 6 个口，每个口按 numLsElem 占**一段连续条目**
+//   L1432   §7 sta / std / storeMask 三条写入通路
+//   L1477   §8 addrReady / dataReady 两个「发射就绪」指针
+//   L1537   §9 store-to-load 转发（3 个 load 口，队列里做地址 CAM）
+//   L1697   §10 mmio / NC / CBO —— 三条共用 uncache 通道的出队路径
+//   L1811   §11 ROB 提交 —— 把 cmtPtr 起的连续 8 条标成 committed
+//   L1882   §12 出队：读 RAM -> dataBuffer -> Sbuffer
+//   L1930   §13 dataBuffer 入口：三分支（跨 16B 拆分 / 非跨 16B 的非对齐 / 常规）
+//   L2085   §14 difftest 观测口（difftest 关掉时整块是 DontCare，golden 里仍然留着端口）
+//   L2120   §15 子模块例化 —— 5 个，实例名照 golden（dataModule / paddrModule /
+//   L2831   §16 向量异常旗标 + 冲刷判定
+//   L2915   §17 输出驱动
+//   L3173   §18 时序（一）：★不复位★块（对应 golden L20336-58753 的 2913 个寄存器）
+//   L3416   §19 「completed」的 4 个置位源（出队的四条路各有一个）
+//   L3449   §20 perf 观测探针（golden 同名导出；docs/perf_bore_map.tsv 按名字重绑）
+//   L3473   §21 时序（二）：异步复位块（对应 golden L62202-69650 的 1076 个寄存器）
+//   L3833   §22 StoreQueue —— golden 同名 wrapper（1003 根端口，逐位对齐）
 
 // -----------------------------------------------------------------------------
 // §1 storequeue_pkg —— 参数、SqPtr 环形指针、各通道结构体
@@ -2119,9 +2120,11 @@ module xs_StoreQueue_core
 // §15 子模块例化 —— 5 个，实例名照 golden（dataModule / paddrModule /
 //                  vaddrModule / dataBuffer / exceptionBuffer）
 // -----------------------------------------------------------------------------
-  // ★下面的端口连线块由 scratchpad/sqbuild/gen_inst.py 机械生成★：
+  // ★下面的端口连线一行一根，不是啰嗦，是硬约束★：
   // golden 把 forwardMmask / forwardMask / forwardData 展平成 168+48 根扁平标量，
-  // 一行一根不是啰嗦，是 FM 按名字配层次的硬约束（generate 循环会多出块名）。
+  // 而 FM 是**按名字**配层次的；用 generate 循环会生成 `g_x[i].inst` 这种带块名的
+  // 路径，两边对不上（上一轮 SQDataModule 实测：17984 个 unmatched，整目标判 FAILED）。
+  // 这一段摊开的是**端口名**，逻辑只有一份。
   //
   //   dataModule      SQDataModule   (56,rd2,wr2,fwd3)  内部 16×SQData8Module 按字节分道
   //   paddrModule     SQAddrModule   (dataWidth=48)     物理地址阵列 + 地址 CAM
@@ -2912,8 +2915,8 @@ module xs_StoreQueue_core
 // §17 输出驱动
 // -----------------------------------------------------------------------------
   // 本节里「一根一行」的几段（readyVec 各 56 根、cboZeroStout 的 24 根 exceptionVec、
-  // 两份 uop 快照的 debugInfo）由 scratchpad/sqbuild/gen_out.py 机械生成：
-  // golden 端口是 firtool 展平的标量，没有向量形态可用。
+  // 两份 uop 快照的 debugInfo）摊开的是**端口名**：golden 的端口是 firtool 展平的
+  // 标量，没有向量形态可用；§1.2 的 packed struct 字段也不能下标访问。逻辑只有一份。
 
   // ---- 队列状态 ----
   assign io_sqFull          = ~allowEnqueue;
