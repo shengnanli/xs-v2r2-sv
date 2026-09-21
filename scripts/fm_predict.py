@@ -51,6 +51,7 @@ golden 静态算出来的量。
     python3 scripts/fm_predict.py model  <target> [--ut <UT目录裸名>]
     python3 scripts/fm_predict.py register <target> [...]     # 写登记，然后你去 commit
     python3 scripts/fm_predict.py check  <target> [...]       # 跑后对账
+    python3 scripts/fm_predict.py recompute                   # ★改完模型必跑★全仓复算
     python3 scripts/fm_predict.py --selftest
 """
 import argparse, json, os, pathlib, re, subprocess, sys
@@ -102,19 +103,31 @@ def predict_one(target, ut=None):
     if r is None:
         r = compute_model(target, [])
     md = merge_dup_of(ut)
-    return dict(target=target, ut=ut, regs=r['regs'], outs=r['outs'],
-                expected=r['model'], merge_dup=md,
-                model_applicable=(md == 'false'))
+    out = dict(target=target, ut=ut, regs=r['regs'], outs=r['outs'],
+               expected=r['model'], merge_dup=md,
+               model_applicable=(md == 'false'))
+    # ★只有真有黑盒（或 deps 没读全）时才多这几个键★：其余目标的登记 JSON
+    # 与加 BBPin 项之前逐字节相同。
+    for k in ('bbin', 'bbox', 'bbox_unknown', 'deps_unexpanded'):
+        if k in r:
+            out[k] = r[k]
+    return out
 
 
 def reg_path(target):
     return REG_DIR / f'{target}.json'
 
 
-def cmd_register(targets, ut=None):
+def cmd_register(targets, ut=None, note=None):
     REG_DIR.mkdir(parents=True, exist_ok=True)
     for t in targets:
         p = predict_one(t, ut)
+        # ★差额的解释写进登记本身，不要靠跑后补一句散文★
+        # （用处见 SRAMTemplate_155/_166/_178：它们的差额来自 merge 合掉一对
+        #   重复寄存器，而 `_judge` 只会给一条宽 regs 的"带内"弱结论；
+        #   带内不等于说清楚了，所以把可判别的依据落在登记里。）
+        if note:
+            p['note'] = note
         f = reg_path(t)
         f.write_text(json.dumps(p, indent=2, ensure_ascii=False) + '\n')
         note = ('模型适用' if p['model_applicable'] else
@@ -194,6 +207,8 @@ def cmd_check(targets, receipts=None):
                               else '') + '）')
         print(f'{t:<24}{reg["expected"]:>8}{(actual if actual is not None else 0):>8}'
               f'{gap:>7}{explained:>8}  {verdict}')
+        if reg.get('note'):
+            print(f'{"":<24}{"":>8}{"":>8}{"":>7}{"":>8}  登记时写明：{reg["note"]}')
         rc_all |= 1 if bad else 0
     print()
     print('结论：' + ('全部对上' if rc_all == 0 else '★有对不上的，按 fail 处理★'))
@@ -230,6 +245,54 @@ def _judge(expected, actual, const, unread, applicable, anc_ok, regs=0):
     if gap <= explained + regs:
         return False, f'BOUNDED(<=+{regs})'
     return True, 'UNEXPLAINED_EVEN_BOUNDED'
+
+
+def cmd_recompute():
+    """★全仓复算★：拿**当前**模型重算每一份已登记的 expected，报出哪些变了。
+
+    模型一旦改动就必须跑这个：登记文件是**静态快照**，模型变了它们不会自己变，
+    于是"登记 vs 实测"的对账会静悄悄地拿旧上界去判新证明。
+    变了的每一份都要有解释；有 receipt 的当场对账，没有的如实标"无 receipt 可对"。
+    ★本命令只读不写★ —— 要不要改登记是人的决定（改了就意味着那次证明作废重跑）。
+    """
+    rows, rc = [], 0
+    for f in sorted(REG_DIR.glob('*.json')):
+        old_reg = json.loads(f.read_text())
+        t = old_reg['target']
+        try:
+            new_reg = predict_one(t, old_reg.get('ut'))
+        except SystemExit as e:
+            rows.append((t, old_reg['expected'], None, f'★模型跑不出来：{e}★'))
+            rc = 1
+            continue
+        if new_reg['expected'] == old_reg['expected']:
+            continue
+        rp = find_receipt(t)
+        if rp is None:
+            note = '★无 receipt 可对账★'
+        else:
+            d = json.loads(rp.read_text())
+            v = d['verdict_detail'] if isinstance(d['verdict_detail'], dict) \
+                else json.loads(d['verdict_detail'])
+            act = v.get('passing')
+            nat = d.get('native_facts', {}).get('native_verdict')
+            if act is None:
+                note = f'receipt 里没有 passing（native={nat}）'
+            elif new_reg['expected'] == act:
+                note = f'★修后逐位等于实测 {act}★'
+            else:
+                note = (f'实测 {act}，修后差 {new_reg["expected"] - act}'
+                        f'（native={nat}）')
+        rows.append((t, old_reg['expected'], new_reg['expected'], note))
+    print(f'全仓复算：{len(list(REG_DIR.glob("*.json")))} 份登记，'
+          f'{len(rows)} 份变了')
+    for t, o, n, note in rows:
+        print(f'  {t:<28}{o:>8} -> {str(n):>8}   {note}')
+    if not rows:
+        print('  （没有变化 —— 模型改动对已有登记逐字节无影响）')
+    print()
+    print('★变了的每一份都要有解释；解释不了就停下来，别改登记也别当没看见。★')
+    return rc
 
 
 def selftest():
@@ -271,9 +334,11 @@ def selftest():
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('cmd', nargs='?', choices=('model', 'register', 'check'))
+    ap.add_argument('cmd', nargs='?',
+                    choices=('model', 'register', 'check', 'recompute'))
     ap.add_argument('targets', nargs='*')
     ap.add_argument('--ut')
+    ap.add_argument('--note', help='登记时把差额的解释一并写进 JSON（见 cmd_register）')
     ap.add_argument('--selftest', action='store_true')
     a = ap.parse_args()
     if a.selftest:
@@ -288,8 +353,10 @@ def main():
             print(f'{t}: expected={p["expected"]} '
                   f'(regs {p["regs"]} + outs {p["outs"]}) ut={p["ut"]} {note}')
         return 0
+    if a.cmd == 'recompute':
+        return cmd_recompute()
     if a.cmd == 'register':
-        return cmd_register(a.targets, a.ut)
+        return cmd_register(a.targets, a.ut, a.note)
     return cmd_check(a.targets)
 
 

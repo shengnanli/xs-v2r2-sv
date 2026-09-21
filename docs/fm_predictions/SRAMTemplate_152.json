@@ -3,7 +3,16 @@
   "ut": "SRAMTemplateNewForm",
   "regs": 105,
   "outs": 211,
-  "expected": 316,
+  "expected": 440,
   "merge_dup": "true",
-  "model_applicable": false
+  "model_applicable": false,
+  "bbin": 124,
+  "bbox": {
+    "array_15_ext": {
+      "insts": 1,
+      "in_bits": 124,
+      "points": 124
+    }
+  },
+  "note": "★模型不适用★（merge_dup=true）"
 }
