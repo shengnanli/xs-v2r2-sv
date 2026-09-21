@@ -1,0 +1,10 @@
+{
+  "target": "OthersEntry_104",
+  "ut": "OthersEntry_104",
+  "regs": 1424,
+  "outs": 2096,
+  "expected": 3520,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "note": "E1/E2 参数 API 重生成后首跑（c4084e32）。模型 = golden 闭包寄存器位 + 顶层 output 位，merge_dup=false 故适用。预测差额为 0；若有差额，可指认量 = constant_reg + unread，指认不了就如实记红。"
+}
