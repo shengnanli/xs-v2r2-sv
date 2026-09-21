@@ -224,6 +224,44 @@ def read_fm_log(d):
     return None
 
 
+def sidecar_path(r, arch, tmpdir=None):
+    """sidecar 里那份字节快照的**可读路径** —— ★压缩过的也要读★。
+
+    2026-09-21 实测踩到：`script_closure.list` 记的是运行时的原名
+    （`sourced_000_fm_eq.tcl`），而 lane 收录时会把 sidecar 里的 .tcl 压成 .gz。
+    于是 `chk_fm_eq` / `chk_pins` / `chk_emitter` 三处按原名 open，
+    在**任何已压缩的 receipt 上**直接抛 FileNotFoundError，
+    `gen_receipt_harvest.py --check` 整条崩掉（实测：
+    wt-dbgfix 的 EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v）。
+
+    ★这是 read_fm_log 那条教训的同一条，只是换了个读者★：
+    同一个文件名在"跑的时候"和"收录之后"不是同一个存在形式，
+    每一个读 sidecar 的地方都得自己处理，漏一个就是一处崩或一处假判。
+    崩掉比假判好（fail-closed），但崩掉会让整张表算不出来，一样得修。
+
+    读不到返回 None —— 让调用方把"没有这份快照"和"快照里没有"分开，
+    缺失和否定不许长成一个样。
+    """
+    plain = os.path.join(r['dir'], 'sidecar', arch)
+    if os.path.isfile(plain):
+        return plain
+    gz = plain + '.gz'
+    if os.path.isfile(gz):
+        import gzip
+        import tempfile
+        d = tmpdir or tempfile.mkdtemp(prefix='harvest_sidecar_')
+        if not os.path.isdir(d):
+            os.makedirs(d)
+        out = os.path.join(d, os.path.basename(arch))
+        try:
+            with gzip.open(gz, 'rb') as fsrc, open(out, 'wb') as fdst:
+                fdst.write(fsrc.read())
+        except Exception:
+            return None
+        return out
+    return None
+
+
 def tcl_exec_text(path):
     """去掉 Tcl 整行注释与 `;#` 行尾注释，只留**可执行文本**。
 
@@ -639,7 +677,10 @@ def chk_emitter(r):
     if es[0]['sha'] == cur:
         return 'same', ''
     for p in _arch(r, 'fm_pins'):
-        txt = tcl_exec_text(os.path.join(r['dir'], 'sidecar', p['arch']))
+        _sp = sidecar_path(r, p['arch'])
+        if _sp is None:
+            return 'UNKNOWN', 'receipt 的钉点字节快照读不到: %s' % p['arch']
+        txt = tcl_exec_text(_sp)
         if re.search(r'\bfind_cells\b', txt):
             return 'DIFFER', 'emitter 差在 find_cells alias，而钉点文件的可执行文本真的调用了它'
     return 'inert', 'emitter 仅差 find_cells alias；本次钉点可执行文本里没有它'
@@ -685,7 +726,10 @@ def chk_pins(r, workdir):
             continue
         if sha_file(cur) == e['sha']:
             continue
-        old = os.path.join(r['dir'], 'sidecar', e['arch'])
+        old = sidecar_path(r, e['arch'], os.path.join(workdir, 'snap'))
+        if old is None:
+            differ.append(rel + '(快照读不到)')
+            continue
         a = _pins_trace(cur, r['target'], os.path.join(workdir, 'a'))
         b = _pins_trace(old, r['target'], os.path.join(workdir, 'b'))
         if a != '<NO TRACE>' and a == b:
@@ -778,7 +822,9 @@ def chk_fm_eq(r, workdir):
         return 'NOT_MODELLED', ('fm_eq 差分跑不覆盖 field map 路径'
                                '（tracer 不设 FM_FIELD_MAP，match_packed_payload 首行即 return），'
                                '而本次证明真的走了那条路径')
-    old = os.path.join(r['dir'], 'sidecar', es[0]['arch'])
+    old = sidecar_path(r, es[0]['arch'], os.path.join(workdir, 'snap'))
+    if old is None:
+        return 'UNKNOWN', 'receipt 的 fm_eq 字节快照读不到: %s' % es[0]['arch']
     a = _trace(cur, r, os.path.join(workdir, 'a'))
     b = _trace(old, r, os.path.join(workdir, 'b'))
     if a == '<NO TRACE>' or b == '<NO TRACE>':

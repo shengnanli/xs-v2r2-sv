@@ -2332,3 +2332,90 @@ GOLDEN_SRCS = $(GOLDEN_RTL)/InterruptFilter.sv \
 ```bash
 for f in verif/ut/*/Makefile; do grep -qE '^[A-Z_]+ *= *$' "$f" && echo "$f"; done
 ```
+
+---
+
+## ★"存在"不是判据：written/REWRITTEN 必须有驱动下限★
+
+**2026-09-21。** 三处覆盖率口径判"这个模块已重写"，用的都是同一条：
+**`rtl/` 下存在一个 `module <名字>`**。
+
+- `scripts/coverage_three_axis.py` 轴一
+- `scripts/rewrite_coverage.py` 的 `written` 列
+- `scripts/perf_tier.py` 的 `owner_rewritten`（喂 codex 0162 D3 的 WAIVED 豁免）
+
+三处各自都在注释里写着"这只说明有这个 module 名，**不说明它写完了**"——
+问题是写归写，它照样在算分。
+
+### 它同时造了一个假绿和一个假红
+
+**假绿**：StoreQueue 的可读核落地，77,145 golden 行进了 `written`。
+而那个核驱动 **0/241** 条输出，UT `VERIFIED=0/399`。
+
+**假红**：同一次落地把 `owner_rewritten` 由 `no` 翻成 `yes`，
+`storeQueue/vaddr_match_failed` 的 `WAIVED` 因此失效变 `BLOCKING`，
+`check_perf_tier.py` 连挂三条判据，挂了好几天。
+**红的根因不在被量物，在量具。**
+
+### 下限怎么定的
+
+`scripts/rewritten_floor.py`：模块的 output 端口必须**真被驱动**，
+且驱动链要**落到真逻辑或外部黑盒上**。分五档，前三档算 written：
+
+| 档 | 含义 | 算 written |
+|---|---|---|
+| `REWRITTEN` | 全部输出有效驱动 | 是 |
+| `NO_OUTPUT` | 全 input 的观测 sink，判据不适用 | 是 |
+| `MACRO_OPAQUE` | 驱动藏在记号粘接宏后面，**判据测不了** | 是（但单列） |
+| `PARTIAL_DRIVE` | 有洞 | 否 |
+| `SKELETON` | 一条都没驱动 | 否 |
+
+**它只判"驱动没驱动"，不判"驱动得对不对"**——对不对是 FM 的事，那是 `proven` 管的。
+
+### 三条踩出来的教训
+
+**一、下限必须是传递的。** 第一版只看单个模块体，于是：
+
+```
+StoreQueue（golden 同名壳）   输出全接到 xs_StoreQueue_core   → REWRITTEN
+xs_StoreQueue_core            驱动 0/241                      → SKELETON
+```
+
+壳和核分开看都"说得通"，合起来就是一个空壳。
+**判据只看一层，就正好看不见它。** 改成驱动闭包后，`StoreQueue` 判 163/399 ——
+和 UT 那个 `VERIFIED=0/399` 的分母对上了。
+
+**二、判据和"已经证明为绿"打架时，错的是量具。**
+每改一版都拿同一条反证测试量：**已 FM `SUCCEEDED` 的模块，一个都不许掉出下限**。
+
+| 版本 | 与 SUCCEEDED 矛盾 |
+|---|---|
+| 初版（只认 `assign foo =`） | 153 |
+| 认拼接 LHS `assign {a,b} = ` | 81 |
+| 认例化拼接回连 `.p({a,b})` | 4 |
+| 认嵌套拼接 `{{a,b},{c,d}}` | 1 |
+| 加 `MACRO_OPAQUE` 档 | 0 → 但改传递闭包后回到 28 |
+| 剥 for 头被 `;` 劈出的孤立 `)` | 9 |
+| 不透明性沿例化往上传播 | **0** |
+
+中间那次"28"尤其要记：**收紧判据的同时会引入新的假阴性**，
+不每一步都跑反证，就会拿一条更严但更错的判据去改台账。
+
+**三、"我测不了"不许写成"它有病"。**
+`xs_iq_entries_core` 的两个端口驱动藏在 `` `IQE_MUX1H `` 宏后面，
+不做预处理就看不见。这种情况判 `MACRO_OPAQUE`——**放行，但一直看得见**，
+并且沿例化链往上传播（Entries 家族 9 个变体因此是 `MACRO_OPAQUE` 而不是 `REWRITTEN`）。
+全树 719 个模块里只有 4 个走这条路，数得清。
+
+### 换判据的规矩
+
+1. **先算全仓 before/after 差集，掉出来的每一个都要有 owner。**
+   本次实测：universe 内旧口径 `REWRITTEN` 402 → 掉出 **2 个**，
+   `NewDispatch`（5974/6699）和 `StoreQueue`（163/399）——两个都有 lane 在跑。
+2. **对账**：`written` 减少 178,128 行 ≡ NewDispatch 100,983 + StoreQueue 77,145，一分不差。
+   `proven` 一行没动（下限不碰 proven 口径）。
+3. **一把尺子**。本文件早先有过两份近似的提取实现，改了一份另一份没跟上，
+   自测立刻和全树实测对不上。规则只许有一个出处，三处一律 `from rewritten_floor import`。
+4. 新判据自己要进闸，且**正反两面都得有测**：
+   `run "written 驱动下限自证"  python3 scripts/rewritten_floor.py --selftest`
+   ——一道只会响的判据，和一道从不响的判据一样没用。
