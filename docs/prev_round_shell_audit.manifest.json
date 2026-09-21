@@ -1,0 +1,18 @@
+{
+  "impl_root": "/home/eda/xs-env/xs-v2r2-sv/rtl",
+  "golden": "/home/eda/xs-env/G0-canonical/golden-rtl",
+  "golden_new": "/home/eda/xs-env/G1-canonical/golden-rtl",
+  "n_files_scanned": 1111,
+  "n_sv": 909,
+  "n_svh": 202,
+  "total_lines": 702125,
+  "n_units": 799,
+  "n_components": 513,
+  "incore_root": "XSTile",
+  "n_incore_modules": 1662,
+  "criteria_from": "scripts/prev_round_verbatim_scan.py (itself from readability_audit.py G)",
+  "script_sha256": "eb0858815390b9ff2d5ea3ba88040dbc0d5fe4f47ac49c604252e040ee1d17e6",
+  "rerun": "python3 scripts/prev_round_shell_audit.py --impl-root /home/eda/xs-env/xs-v2r2-sv/rtl --golden /home/eda/xs-env/G0-canonical/golden-rtl --golden-new /home/eda/xs-env/G1-canonical/golden-rtl --ledger docs/coverage_three_axis.tsv --universe docs/g1_configured_universe.tsv --incore-root XSTile --out-files docs/prev_round_shell_audit_files.tsv --out-modules docs/prev_round_shell_audit_modules.tsv --manifest docs/prev_round_shell_audit.manifest.json",
+  "out_files_sha256": "a2e86925cdd87543435b306806c31d5a46de72b0b1131723b5fa3bfe8a0eb4ae",
+  "out_modules_sha256": "0e115249b2840f3e49a733149636b96528409a339ed8eb07310cacb6a6c8ab94"
+}
