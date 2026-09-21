@@ -166,6 +166,48 @@ CATCH_COUNT_LEDGER = {
     #   台账只许缩，这里按闸 G2b 的要求把它们摘掉。
 }
 
+# ---------------------------------------------------------------------------
+# ★同一个空守卫也长在**共享脚本**里★（2026-09-20 实测，agent/provefleet3）
+# ---------------------------------------------------------------------------
+# 上面两张表扫的是 `verif/ut/*/fm_pins*.tcl`。但 `scripts/fm_eq.tcl` 的
+# `match_packed_payload` 里有**一模一样**的形态，而它一个字节都不在本闸的扫描范围内：
+#
+#     if {![catch {set_user_match $rpath $ipath}]} { incr n; break }
+#
+# 实测证据（不是读代码读出来的，是 evidence/6a9e4235497e/NewPipelineConnectPipe_29）：
+#   · fm.log 行首锚定 `grep -cE "^ *Error:"` = **41**，全是 FM-036 Unknown name；
+#   · 41 **恰等于** verif/ut/NewPipelineConnectPipe_29_34_35/fm_map/*.txt 里
+#     width==1 的字段数（_29 41 个、_34 30 个，awk 复核过）；
+#   · 同一份 fm.log 的 match 统计：`41 Compare points matched by signature analysis`，
+#     user-matched 只有 982 = 1023 - 41。
+# ⇒ `catch` 恒为 0 ⇒ 第一支候选 `data_<suf>_reg[0]` "成功"并 `break`
+#   ⇒ w==1 的第二支候选 `data_<suf>_reg`（无下标）**是死代码**
+#   ⇒ `PACKED_MATCH: 1023 points pinned` 这句 **报多了 41**（真实 982）。
+#
+# ★集成者已裁（0920 同一条口径）：现在不改 `scripts/fm_eq.tcl`。★
+# 理由与那 28 个文件不同、更硬：修它**不是守卫专属改动**。那 41 个字段会从
+# signature-matched 变成 user-matched，**配对来源变了 = 证明语义变了**，
+# 绑着 fm_eq.tcl 的 46+ 份既有 receipt 会一起失效；而本仓刚为 fm_eq.tcl 的
+# per-target 拆分付过一次"既有证书全部过期"的代价（见 verif/fm_target_config/README.md）。
+# 处置节奏同 CATCH_COUNT_LEDGER：**只许缩不许长，下次该目标被改动/晋升时顺带修**。
+#
+# ★为什么不塞进 CATCH_COUNT_LEDGER★：那张表的 staleness 只在扫描 `files` 时才复核，
+# 而 fm_eq.tcl 不在 files 里 —— 塞进去就是一条**没有任何人复核**的台账条目，
+# 正是本仓一直在防的那种"记了账却没人盯"。所以另起一张表，配自己的 G2c 复核。
+#
+# 判决不受影响的理由（与 docs/pin_guard_failclosed.md §三同源）：钉点计数从来不是
+# 承重的那道闸 —— 钉不上的点会以 unmatched/unread 的形态留在结果里，被 unread 铁律
+# 和 unmatched=0 拦下。NPCP_29/_34 两次都是 unmatched 六项全 0、unread 0、failing 0。
+# ★但"field map 把整个 payload 逐位钉死"这句话对 w==1 字段不成立★ ——
+# 措辞更正见 docs/receipt_harvest_field_map_hole.md 的「2026-09-20 更正」一节。
+SHARED_SCRIPT_CATCH_LEDGER = {
+    # 路径（相对仓根）: (还在位时必须能在**去注释后的正文**里找到的形态, 形态记录)
+    'scripts/fm_eq.tcl': (
+        r'catch\s*\{\s*set_user_match\b',
+        'match_packed_payload 的 w==1 回退分支；PACKED_MATCH 计数含 41/30 个未真钉上的点',
+    ),
+}
+
 PASS, FAIL = [], []
 
 
@@ -295,8 +337,29 @@ ck('G2 台账只缩不长：表里的文件确实还 fail-open',
 ck('G2b catch 计数台账只缩不长：表里的文件确实还在用 catch',
    not stale_catch,
    f'已改用返回值却还挂在表上：{stale_catch}' if stale_catch else '')
+
+
+def shared_ledger_stale(rel, pattern):
+    """共享脚本台账条目是否已过期（= 那个空守卫已经被修掉）。
+
+    ★复核去注释后的正文★：修掉代码但在注释里留一句 `catch {set_user_match ...}`
+    （本文件自己就这么干了）不该被读成"还在违规"，否则表永远摘不掉。
+    """
+    f = REPO / rel
+    if not f.is_file():
+        return False          # 幽灵条目由 G3 报，不在这里重复计数
+    return not re.search(pattern, strip_comments(f.read_text(errors='replace')))
+
+
+stale_shared = [rel for rel, (pat, _) in SHARED_SCRIPT_CATCH_LEDGER.items()
+                if shared_ledger_stale(rel, pat)]
+ck('G2c 共享脚本台账只缩不长：表里的文件确实还在用 catch 数钉点',
+   not stale_shared,
+   f'已修好却还挂在表上：{stale_shared}' if stale_shared else
+   f'{len(SHARED_SCRIPT_CATCH_LEDGER)} 条在位（scripts/fm_eq.tcl match_packed_payload）')
 ledger_missing = [p for p in FAIL_OPEN_LEDGER if not (REPO / p).is_file()]
 ledger_missing += [p for p in CATCH_COUNT_LEDGER if not (REPO / p).is_file()]
+ledger_missing += [p for p in SHARED_SCRIPT_CATCH_LEDGER if not (REPO / p).is_file()]
 ck('G3 台账无幽灵条目', not ledger_missing, str(ledger_missing) if ledger_missing else '')
 
 # ---------------------------------------------------------------------------
@@ -372,6 +435,22 @@ for i, (label, bad_txt) in enumerate(cases, start=1):
 fake = 'verif/ut/__NotInLedger__/fm_pins_pre.tcl'
 ck(f'M{len(cases)+1} 台账不是通配符：新文件 fail-open 仍判红',
    fake not in FAIL_OPEN_LEDGER and bool(check(cases[4][1])))
+
+# ---------------------------------------------------------------------------
+# ★G2c 的判别性自证★：一张"写上去就永远绿"的台账等于没有台账。
+# 这三条钉住：形态还在 -> 判在位；形态修掉 -> 判过期该摘表；
+# 只在注释里留一句 -> 也算修好（否则本文件自己那段说明就会把表锁死，永远摘不掉）。
+_SHARED_PAT = SHARED_SCRIPT_CATCH_LEDGER['scripts/fm_eq.tcl'][0]
+_still = 'if {![catch {set_user_match $r $i}]} { incr n; break }'
+_fixed = 'if {[set_user_match $r $i]} { incr n; break }'
+_only_comment = '# 旧写法 catch {set_user_match ...}，已改成返回值\n' + _fixed
+_n = len(cases) + 1
+ck(f'M{_n + 1} G2c 正向：形态还在时必须判「在位」',
+   bool(re.search(_SHARED_PAT, strip_comments(_still))))
+ck(f'M{_n + 2} G2c 负测：形态修掉后必须判「过期、该摘表」',
+   not re.search(_SHARED_PAT, strip_comments(_fixed)))
+ck(f'M{_n + 3} G2c 负测：只剩注释里提一句也算修好',
+   not re.search(_SHARED_PAT, strip_comments(_only_comment)))
 
 print()
 print(f'PASS {len(PASS)} / FAIL {len(FAIL)}')
