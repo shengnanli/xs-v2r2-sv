@@ -1,7 +1,7 @@
 Command: /home/eda/xs-env/wt-sqcore/verif/ut/StoreQueue/dbg_sqcore/./simv +ntb_random_seed=1 +ncycles=3000 +vcs+initreg+0 -l sim_1.log
 Chronologic VCS simulator copyright 1991-2024
 Contains Synopsys proprietary information.
-Compiler version W-2024.09-SP1_Full64; Runtime version W-2024.09-SP1_Full64;  Sep 21 02:44 2026
+Compiler version W-2024.09-SP1_Full64; Runtime version W-2024.09-SP1_Full64;  Sep 21 02:50 2026
 [C376] g_nf0=fffffffffffffb x_nf0=fffffffffffffb | g_nf2=fffffffffffff8 x_nf2=fffffffffffff8
       g_dm_nf0_0=00000000000000 x_dm_nf0_0=00000000000000 | g_fwdD0_0=da x_fwdD0_0=da
 [C377] g_nf0=d415231e24c33b x_nf0=d415231e24c33b | g_nf2=fffffffffffffa x_nf2=fffffffffffffa
@@ -29,5 +29,5 @@ $finish called from file "tb_dbg.sv", line 7415.
 $finish at simulation time             30105000
            V C S   S i m u l a t i o n   R e p o r t 
 Time: 30105000 ps
-CPU Time:     14.840 seconds;       Data structure size:   2.1Mb
-Mon Sep 21 02:44:58 2026
+CPU Time:     14.280 seconds;       Data structure size:   2.1Mb
+Mon Sep 21 02:50:36 2026

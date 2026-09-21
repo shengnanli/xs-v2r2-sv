@@ -5,34 +5,67 @@
 //               同目录 StoreQueueData.scala / sbuffer/DatamoduleResultBuffer.scala
 //  golden 基线：G1-canonical (XiangShan kunminghu-v2 @ b36a1a2a5, KunminghuV2Config)
 //
-//  ★★★ 本文件是**考古阶段的骨架**，不是完成的重写 ★★★
-//  只有「已在 golden 上实测核对过」的东西才写进来：
-//    · 端口契约（1003 根，逐位从 golden 端口表推导，不是手抄）
-//    · per-entry 状态清单与**复位域**（async / 不复位，实测分区见 §3）
-//    · 多源写同一状态位的**优先级骨架**（条件线名已留，方程未追清的标 TODO）
-//    · 5 个子模块的例化形状
-//  功能方程绝大部分**尚未追清**，集中列在文件末尾 §9 待办清单。
-//  任何人不得据本文件声称 StoreQueue 已重写完成。
-//
 //  store 的一生：
 //    dispatch 入队(分配条目) → sta 写地址(s1/s2 两拍) → std 写数据 → ROB 提交
-//    → 读出送 dataBuffer → 写 Sbuffer(可缓存) / 走 uncache(mmio·NC) → 退队
+//    → 读出送 dataBuffer → 写 Sbuffer(可缓存) / 走 uncache(mmio·NC·CBO) → 退队
 //  并行地，load 通过 forward 端口在队列里做地址 CAM 做 store-to-load 转发。
+//
+//  四个指针各司其职（★最容易写错的一段★）：
+//    enqPtr    dispatch 分配到哪了；冲刷后**第 2 拍**才回退（为时序）
+//    rdataPtr  读 RAM 读到哪了；★RAM 的读地址用的是 rdataPtrExtNext（提前一拍）★
+//    deqPtr    条目真正离开队列到哪了；比 rdataPtr 晚
+//    cmtPtr    ROB 提交到哪了；mmio 会让 deqPtr 跑到 cmtPtr 前面，别假设有序
+//
+// -----------------------------------------------------------------------------
+//  ★★★ golden 的怪癖清单（照抄，不许"我这样更合理"）★★★
+//  每一条在正文里都有对应注释，这里只做索引：
+//    TRAP-1  复位域：golden 两个时序块泾渭分明 —— 1076 个异步复位 / 2913 个
+//            ★完全不复位★。把不复位的抄成有复位是真 bug，lint 与 elaborate 都不报。
+//    TRAP-2  memBackTypeMM **入队不清**（同组的 mmio / hasException 都清）。
+//            它会保留上一个占用者的值，直到某次 sta-s2 覆盖。见 §21。
+//    TRAP-3  sta 的 s2 **不是一律压 s1**：口1-s1 压过口0-s2（两条流水是展开的）。
+//    TRAP-4  storeAddrIn 端口表里**没有 flushPipe**（firtool 全局 DCE 判它恒 0），
+//            所以 sta 写入会把 uop.flushPipe **清成 0**，不是保持。见 §18。
+//    TRAP-5  uncacheUop 一族读的是**锁存值**，不是 uop[deqPtr] 的 live 值。
+//            上一轮在 io_cmoOpReq_bits_opcode 上栽过。见 §10 / §18。
+//    TRAP-6  allvalid 只是 addrvalid & datavalid，**不含 allocated**；转发那边的
+//            allValidVec 才额外 & allocated。两个名字很像，不是一回事。见 §3。
+//    TRAP-7  ncPtr 索引 Vec(56) 时只有 **6 位**（uncacheIdxBits 是 7 位）。见 §19。
+//    TRAP-8  wline 不是直通：fromDataBufferEntry 里 wline := wline && vecValid。见 §13。
+//    TRAP-9  同一个表达式 golden 摇了多份寄存器的地方，份数要照抄（否则 FM unmatched）：
+//            RegNext(brqRedirect.valid)×6、RegEnable(loadWaitStrict)×2/口、
+//            GatedRegNext(pendingPtr)×8、GatedRegNext(rdataPtrExtNext(0))×4。
+//    TRAP-10 X 语义：优先级编码与几处选择必须写成**三目**（golden 的形状），
+//            写成 if/else 会把 X 当假、凭空给出确定值。见 sq_highest_set 与 §9。
+//    TRAP-11 perf 探针必须**按 golden 的名字导出**且由真逻辑驱动（§20）。
+//            接零会让 perf 台账把「测不出差异」误报成「一致」。
 //
 // =============================================================================
 // 本文件导航：
-//   L38     §1 storequeue_pkg —— 参数、SqPtr 环形指针、各通道结构体
-//   L66     §1.1 SqPtr —— 56 项环形指针（★不是 2 的幂，加法是比较-减法★）
-//   L95     §1.2 通道结构体（字段集与位宽由 golden 端口表机械推导）
-//   L372    §2 xs_StoreQueue_core —— 可读核
-//   L668    §3 per-entry 状态 —— ★复位域是 golden 实测，不是照 Chisel 抄★
-//   L736    §4 多源写优先级骨架 —— ★条件线名照 golden，方程未追清处标 TODO★
-//   L767    §5 子模块例化 —— ★5 个子模块在本仓一个都没有实现★
-//   L786    §6 组合输出 —— TODO
-//   L792    §7 时序：异步复位块（对应 golden L62202-69650）
-//   L823    §8 时序：★不复位★块（对应 golden L20336-58753，2913 个 reg）
-//   L832    §9 待办清单 —— ★尚未追清的方程，逐条列明，不许含糊★
-//   L887    §10 StoreQueue —— golden 同名 wrapper（1003 根端口，逐位对齐）
+//   L71     §1 storequeue_pkg —— 参数、SqPtr 环形指针、各通道结构体
+//   L100    §1.1 SqPtr —— 56 项环形指针（★不是 2 的幂，加法是比较-减法★）
+//   L200    §1.2 通道结构体（字段集与位宽由 golden 端口表机械推导）
+//   L477    §2 xs_StoreQueue_core —— 可读核
+//   L773    §3 per-entry 状态 —— ★复位域是 golden 实测，不是照 Chisel 抄★
+//   L997    §4 组合中间量的声明（按通路分组；方程在后面各节）
+//   L1144   §5 容量、掩码、若干「指针的当前值」
+//   L1161   §6 dispatch 入队 —— 6 个口，每个口按 numLsElem 占**一段连续条目**
+//   L1267   §7 sta / std / storeMask 三条写入通路
+//   L1312   §8 addrReady / dataReady 两个「发射就绪」指针
+//   L1372   §9 store-to-load 转发（3 个 load 口，队列里做地址 CAM）
+//   L1532   §10 mmio / NC / CBO —— 三条共用 uncache 通道的出队路径
+//   L1630   §11 ROB 提交 —— 把 cmtPtr 起的连续 8 条标成 committed
+//   L1680   §12 出队：读 RAM -> dataBuffer -> Sbuffer
+//   L1723   §13 dataBuffer 入口：三分支（跨 16B 拆分 / 非跨 16B 的非对齐 / 常规）
+//   L1878   §14 difftest 观测口（difftest 关掉时整块是 DontCare，golden 里仍然留着端口）
+//   L1913   §15 子模块例化 —— 5 个，实例名照 golden（dataModule / paddrModule /
+//   L2622   §16 向量异常旗标 + 冲刷判定
+//   L2706   §17 输出驱动
+//   L2964   §18 时序（一）：★不复位★块（对应 golden L20336-58753 的 2913 个寄存器）
+//   L3209   §19 「completed」的 4 个置位源（出队的四条路各有一个）
+//   L3238   §20 perf 观测探针（golden 同名导出；docs/perf_bore_map.tsv 按名字重绑）
+//   L3262   §21 时序（二）：异步复位块（对应 golden L62202-69650 的 1076 个寄存器）
+//   L3635   §22 StoreQueue —— golden 同名 wrapper（1003 根端口，逐位对齐）
 
 // -----------------------------------------------------------------------------
 // §1 storequeue_pkg —— 参数、SqPtr 环形指针、各通道结构体
@@ -744,7 +777,7 @@ module xs_StoreQueue_core
   //   always @(posedge clock)                   L20336-58753  2913 reg  ★完全不复位★
   //   1076 + 2913 = 3989 = golden reg 声明总数（守恒）
   // 把不复位的那 2913 个照抄成「有复位」是真 bug，elaborate 与 lint 都不会报。
-  // 下面每一族状态都标了它属于哪个块；§18/§19 两个 always_ff 与此一一对应。
+  // 下面每一族状态都标了它属于哪个块；§18/§21 两个 always_ff 与此一一对应。
 
   // ---- 【异步复位块】per-entry 标志位（每条 56 位，位 j = 条目 j）----
   logic [SQ_SIZE-1:0] allocated;       // 条目已分配（活 store）
@@ -1100,6 +1133,10 @@ module xs_StoreQueue_core
   logic                 vecCommitLastFlow;
   logic                 vecExceptionFlagCancel;
   logic [SQ_IDX_W-1:0]  vecCommitSelEntry;
+  logic [SQ_IDX_W-1:0]  cboZeroSelEntry;   // cbo.zero 快照取哪个 dataBuffer 出口
+  logic                 deqCanDoCboNext;   // deqCanDoCbo 的打拍前值
+  logic                 wfiSafeNext;
+  sqptr_t               cmtPtrNext [N_COMMIT];
 
   // ---- 输出中间量 ----
   logic [N_ENSBUF-1:0]  sbufferFire;
@@ -1219,7 +1256,7 @@ module xs_StoreQueue_core
         storeAddrIn_in[i].bits_uop_exceptionVec_1,  storeAddrIn_in[i].bits_uop_exceptionVec_0};
   end
 
-  // uncache 的一些公共条件线（在 §20/§21 的时序块里反复用到）
+  // uncache 的一些公共条件线（在 §18/§21 的时序块里反复用到）
   logic uncacheRespFireNonNc, respDenied, respCorrupt;
   logic mmioEnterReqReg;          // golden REG_4：s_idle -> s_req 的那个 RegNext 条件
   logic cmoOpReqFire, cmoOpRespFire;
@@ -1325,7 +1362,7 @@ module xs_StoreQueue_core
                           ? '{flag: cmtPtrFlag, value: cmtPtrValue[0]}
                           : deqPtrExtNext[0];
 
-  // 两条就绪向量的组合次态（输出寄存器在 §19 的复位块里）。
+  // 两条就绪向量的组合次态（输出寄存器在 §21 的复位块里）。
   always_comb begin
     for (int j = 0; j < SQ_SIZE; j++) begin
       stAddrReadyVecReg[j] = allocated[j] & (mmio[j] | addrvalid[j] | (isVec[j] & vecMbCommit[j]));
@@ -1589,6 +1626,22 @@ module xs_StoreQueue_core
   assign mmioStoutFire    = mmioStoutValid & io_mmioStout_ready;
   assign cboZeroStoutValid= cboZeroValid & ~cboZeroWaitFlushSb;
   assign cboZeroStoutFire = cboZeroStoutValid & io_cboZeroStout_ready;
+
+  // ★下面三条一律用模块级组合量，不在 always_ff 里开临时变量★：
+  //   (a) Formality 的 Verilog 前端把 always_ff 里 declare 的变量推断成**寄存器**
+  //       （SQData8Module 上一轮实测踩过：4 组临时量变成 64 个没人读的 reg -> PARTIAL）；
+  //   (b) 它也不接受 `func(...).field` 这种「函数返回值再取结构体成员」的写法
+  //       （FMR_VLOG-481），所以 cmtPtrNext 必须先落成线再取字段。
+  assign cboZeroSelEntry = isCboZeroToSbVec[0] ? dataBuffer_deq_sqPtr[0].value
+                                               : dataBuffer_deq_sqPtr[1].value;
+  assign deqCanDoCboNext = (&uop_fuOpType[deqPtr][3:2]) & ~(|uop_fuOpType[deqPtr][6:4]) // isCbo
+                         & allocated[deqPtr] & addrvalid[deqPtr] & ~hasException[deqPtr];
+  assign wfiSafeNext     = noPending & io_wfi_wfiReq;
+  // cmtPtrExt 的 8 份一起加 commitCount；★只有第 0 份有 flag★（其余被 DCE）。
+  always_comb
+    for (int i = 0; i < N_COMMIT; i++)
+      cmtPtrNext[i] = sqptr_add('{flag: (i == 0) ? cmtPtrFlag : 1'b0, value: cmtPtrValue[i]},
+                                {4'h0, commitCount});
 
   assign io_rob_storeMmio             = mmioReq_valid;
   assign io_rob_storeMmioUop_robIdx_value = uncacheUop_robIdx_value;
@@ -1877,7 +1930,7 @@ module xs_StoreQueue_core
       ncReqFire ? ncReq_memBackTypeMM : mmioReq_memBackTypeMM;
 
 // -----------------------------------------------------------------------------
-// §16 子模块例化 —— 5 个，实例名照 golden（dataModule / paddrModule /
+// §15 子模块例化 —— 5 个，实例名照 golden（dataModule / paddrModule /
 //                  vaddrModule / dataBuffer / exceptionBuffer）
 // -----------------------------------------------------------------------------
   // ★下面的端口连线块由 scratchpad/sqbuild/gen_inst.py 机械生成★：
@@ -2586,7 +2639,7 @@ module xs_StoreQueue_core
   );
 
 // -----------------------------------------------------------------------------
-// §18 向量异常旗标 + 冲刷判定
+// §16 向量异常旗标 + 冲刷判定
 // -----------------------------------------------------------------------------
   // 一条向量 store 会占多条条目。如果其中某条出了异常，**它后面的 flow 就不许再写
   // Sbuffer**。vecExceptionFlag 记住「这条指令已经出过异常」，直到它的 lastFlow
@@ -2670,7 +2723,7 @@ module xs_StoreQueue_core
   end
 
 // -----------------------------------------------------------------------------
-// §19 输出驱动
+// §17 输出驱动
 // -----------------------------------------------------------------------------
   // 本节里「一根一行」的几段（readyVec 各 56 根、cboZeroStout 的 24 根 exceptionVec、
   // 两份 uop 快照的 debugInfo）由 scratchpad/sqbuild/gen_out.py 机械生成：
@@ -2928,7 +2981,7 @@ module xs_StoreQueue_core
   assign gatewayIn_packed_48_bore = {cmoInvalEvent_valid, cmoInvalEvent_addr, cmoInvalEvent_coreid};
 
 // -----------------------------------------------------------------------------
-// §20 时序（一）：★不复位★块（对应 golden L20336-58753 的 2913 个寄存器）
+// §18 时序（一）：★不复位★块（对应 golden L20336-58753 的 2913 个寄存器）
 // -----------------------------------------------------------------------------
   // 这里**故意没有 if (reset)**——golden 这一整块不复位。加上复位就是真 bug：
   // elaborate 与 lint 都不会报，UT 也很难打到，只有 FM 会把初值差异揪出来。
@@ -3092,27 +3145,25 @@ module xs_StoreQueue_core
 
     // ---- cbo.zero 的 uop 快照（两个口里下标小的赢）----
     if (cboZeroToSb) begin
-      automatic logic [5:0] p = isCboZeroToSbVec[0] ? dataBuffer_deq_sqPtr[0].value
-                                                    : dataBuffer_deq_sqPtr[1].value;
-      cboZeroUop_exceptionVec  <= uop_exceptionVec[p];
-      cboZeroUop_trigger       <= uop_trigger[p];
-      cboZeroUop_rfWen         <= uop_rfWen[p];
-      cboZeroUop_flushPipe     <= uop_flushPipe[p];
-      cboZeroUop_pdest         <= uop_pdest[p];
-      cboZeroUop_robIdx_flag   <= uop_robIdx_flag[p];
-      cboZeroUop_robIdx_value  <= uop_robIdx_value[p];
-      cboZeroUop_debugInfo_eliminatedMove         <= uop_debugInfo_eliminatedMove[p];
-      cboZeroUop_debugInfo_renameTime             <= uop_debugInfo_renameTime[p];
-      cboZeroUop_debugInfo_dispatchTime           <= uop_debugInfo_dispatchTime[p];
-      cboZeroUop_debugInfo_enqRsTime              <= uop_debugInfo_enqRsTime[p];
-      cboZeroUop_debugInfo_selectTime             <= uop_debugInfo_selectTime[p];
-      cboZeroUop_debugInfo_issueTime              <= uop_debugInfo_issueTime[p];
-      cboZeroUop_debugInfo_writebackTime          <= uop_debugInfo_writebackTime[p];
-      cboZeroUop_debugInfo_runahead_checkpoint_id <= uop_debugInfo_runahead_checkpoint_id[p];
-      cboZeroUop_debugInfo_tlbFirstReqTime        <= uop_debugInfo_tlbFirstReqTime[p];
-      cboZeroUop_debugInfo_tlbRespTime            <= uop_debugInfo_tlbRespTime[p];
-      cboZeroUop_debug_seqNum_seqNum              <= uop_debug_seqNum_seqNum[p];
-      cboZeroUop_debug_seqNum_uopIdx              <= uop_debug_seqNum_uopIdx[p];
+      cboZeroUop_exceptionVec  <= uop_exceptionVec[cboZeroSelEntry];
+      cboZeroUop_trigger       <= uop_trigger[cboZeroSelEntry];
+      cboZeroUop_rfWen         <= uop_rfWen[cboZeroSelEntry];
+      cboZeroUop_flushPipe     <= uop_flushPipe[cboZeroSelEntry];
+      cboZeroUop_pdest         <= uop_pdest[cboZeroSelEntry];
+      cboZeroUop_robIdx_flag   <= uop_robIdx_flag[cboZeroSelEntry];
+      cboZeroUop_robIdx_value  <= uop_robIdx_value[cboZeroSelEntry];
+      cboZeroUop_debugInfo_eliminatedMove         <= uop_debugInfo_eliminatedMove[cboZeroSelEntry];
+      cboZeroUop_debugInfo_renameTime             <= uop_debugInfo_renameTime[cboZeroSelEntry];
+      cboZeroUop_debugInfo_dispatchTime           <= uop_debugInfo_dispatchTime[cboZeroSelEntry];
+      cboZeroUop_debugInfo_enqRsTime              <= uop_debugInfo_enqRsTime[cboZeroSelEntry];
+      cboZeroUop_debugInfo_selectTime             <= uop_debugInfo_selectTime[cboZeroSelEntry];
+      cboZeroUop_debugInfo_issueTime              <= uop_debugInfo_issueTime[cboZeroSelEntry];
+      cboZeroUop_debugInfo_writebackTime          <= uop_debugInfo_writebackTime[cboZeroSelEntry];
+      cboZeroUop_debugInfo_runahead_checkpoint_id <= uop_debugInfo_runahead_checkpoint_id[cboZeroSelEntry];
+      cboZeroUop_debugInfo_tlbFirstReqTime        <= uop_debugInfo_tlbFirstReqTime[cboZeroSelEntry];
+      cboZeroUop_debugInfo_tlbRespTime            <= uop_debugInfo_tlbRespTime[cboZeroSelEntry];
+      cboZeroUop_debug_seqNum_seqNum              <= uop_debug_seqNum_seqNum[cboZeroSelEntry];
+      cboZeroUop_debug_seqNum_uopIdx              <= uop_debug_seqNum_uopIdx[cboZeroSelEntry];
       cboZeroSqIdx_flag  <= isCboZeroToSbVec[0] ? dataBuffer_deq_sqPtr[0].flag
                                                 : dataBuffer_deq_sqPtr[1].flag;
       cboZeroSqIdx_value <= isCboZeroToSbVec[0] ? dataBuffer_deq_sqPtr[0].value
@@ -3173,7 +3224,7 @@ module xs_StoreQueue_core
   end
 
 // -----------------------------------------------------------------------------
-// §21 「completed」的 4 个置位源（出队的四条路各有一个）
+// §19 「completed」的 4 个置位源（出队的四条路各有一个）
 // -----------------------------------------------------------------------------
   logic [SQ_SIZE-1:0] sbufferCompleteSet;  // 写进 Sbuffer 了
   logic [SQ_SIZE-1:0] mmioCompleteSet;     // mmio 回写 ROB 了
@@ -3202,7 +3253,7 @@ module xs_StoreQueue_core
 
 
 // -----------------------------------------------------------------------------
-// §22 perf 观测探针（golden 同名导出；docs/perf_bore_map.tsv 按名字重绑）
+// §20 perf 观测探针（golden 同名导出；docs/perf_bore_map.tsv 按名字重绑）
 // -----------------------------------------------------------------------------
   // ★这些不是"调试信号"，是 perf 台账的观测点★：名字必须与 golden 逐字相同，
   // 而且必须由真逻辑驱动 —— 接零会让台账把「测不出差异」误报成「一致」。
@@ -3226,7 +3277,7 @@ module xs_StoreQueue_core
 
 
 // -----------------------------------------------------------------------------
-// §23 时序（二）：异步复位块（对应 golden L62202-69650 的 1076 个寄存器）
+// §21 时序（二）：异步复位块（对应 golden L62202-69650 的 1076 个寄存器）
 // -----------------------------------------------------------------------------
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
@@ -3432,12 +3483,8 @@ module xs_StoreQueue_core
         rdataPtrExt[i] <= rdataPtrExtNext[i];
       end
 
-      // cmtPtr 的 8 份一起加 commitCount；★只有第 0 份有 flag★（其余被 DCE）。
-      cmtPtrFlag <= sqptr_add('{flag: cmtPtrFlag, value: cmtPtrValue[0]},
-                              {4'h0, commitCount}).flag;
-      for (int i = 0; i < N_COMMIT; i++)
-        cmtPtrValue[i] <= sqptr_add('{flag: 1'b0, value: cmtPtrValue[i]},
-                                    {4'h0, commitCount}).value;
+      cmtPtrFlag <= cmtPtrNext[0].flag;
+      for (int i = 0; i < N_COMMIT; i++) cmtPtrValue[i] <= cmtPtrNext[i].value;
 
       // 两个 issue 指针：冲刷 > （dataReady 侧还有）非对齐随组跳过 > 正常推进
       if (io_brqRedirect_valid) addrReadyPtrExt <= redirectIssuePtr;
@@ -3479,7 +3526,7 @@ module xs_StoreQueue_core
               cboZeroOffset <= cboZeroOffset + 3'd1;
               mmioState     <= (&cboZeroOffset) ? S_WB : S_REQ;
             end
-            // denied / corrupt 直接结束，异常位在 §20 的不复位块里置起。
+            // denied / corrupt 直接结束，异常位在 §18 的不复位块里置起。
             if (respDenied)  mmioState <= S_WB;
             if (respCorrupt) mmioState <= S_WB;
           end
@@ -3576,17 +3623,8 @@ module xs_StoreQueue_core
       if (cboZeroFlushSb != cboZeroToSb) cboZeroFlushSb <= cboZeroToSb;
 
       // deqCanDoCbo 的寄存器部分（memBackTypeMM 那一项是**当拍**的，不打拍）
-      begin
-        automatic logic deqCanDoCboNext =
-            (&uop_fuOpType[deqPtr][3:2]) & ~(|uop_fuOpType[deqPtr][6:4])   // isCbo
-          & allocated[deqPtr] & addrvalid[deqPtr] & ~hasException[deqPtr];
-        if (deqCanDoCboReg != deqCanDoCboNext) deqCanDoCboReg <= deqCanDoCboNext;
-      end
-
-      begin
-        automatic logic wfiSafeNext = noPending & io_wfi_wfiReq;
-        if (wfiSafeReg != wfiSafeNext) wfiSafeReg <= wfiSafeNext;
-      end
+      if (deqCanDoCboReg != deqCanDoCboNext) deqCanDoCboReg <= deqCanDoCboNext;
+      if (wfiSafeReg     != wfiSafeNext)     wfiSafeReg     <= wfiSafeNext;
 
       // force_write：超过上限就置起，掉到下限以下才落下（带迟滞）。
       forceWriteReg <= (valid_cnt > 6'(FORCE_WR_SET_GT))
@@ -3599,7 +3637,7 @@ endmodule
 
 
 // -----------------------------------------------------------------------------
-// §10 StoreQueue —— golden 同名 wrapper（1003 根端口，逐位对齐）
+// §22 StoreQueue —— golden 同名 wrapper（1003 根端口，逐位对齐）
 // -----------------------------------------------------------------------------
 module StoreQueue(
   input             clock,
