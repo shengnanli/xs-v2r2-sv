@@ -39,6 +39,18 @@ FM_REF_DEPS_Ftq = FtqPcMemWrapper.sv SyncDataModuleTemplate_FtqPC_64entry.sv Dat
 # （verif/dead_ref/Ftq.json，PASS_DEAD_REF）。依据与实测数据见 scripts/fm_eq.tcl 白名单注释。
 FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 
+# verification_merge_duplicated_registers 关掉（★加强不是放宽★：不黑盒、不跳点、
+# 不约束 ref，只是要求逐个而非合并后比，比较点只增不减）。
+# 动机是"差额要能逐位指认"：merge 打开时 FM 把重复寄存器并成一个比较点，
+# 比较点数就低于寄存器位数，而低多少无法从 golden 静态算出，于是
+# scripts/fm_predict.py 只能给一条宽 regs 的上界带 —— 本目标 regs 74120 /
+# expected 76113，带宽 97.4%，那条结论近乎无信息。
+# 实测对照（同一份 RTL、同一组 pin、只切这一个 appvar）：
+#   true  passing 66481 = Port 1993 + DFF 64488，constant_reg 28，unread 4282；
+#         模型 76113 与之差 9632，减去 28+4282 后仍有 5322 指认不了。
+#   false 见 evidence/<commit>/Ftq（本 Makefile 现在的取值）。
+FM_MERGE_DUP = false
+
 include ../../../scripts/ut_common.mk
 
 # golden 里 `ifndef SYNTHESIS 段调用未定义的 xs_assert_v2（Scala assert 的落地），
