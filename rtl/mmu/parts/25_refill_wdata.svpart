@@ -64,7 +64,7 @@
     // ★`| (level != 0)` 这一项在 level>0 时其实是冗余的★：ppn[3:0]==8 蕴含
     // ppn[8:0]!=0，于是下一条 unaligned(level) 对同一批输入也会给 1。实测：
     // 把这一项删掉，20000 拍 × 430 根写端口的定向对照 errors 仍是 0（见
-    // verif/study/PtwCache_refill）。**仍然照抄不删** —— 值恒等不等于可证等价，
+    // verif/ut/PtwCache）。**仍然照抄不删** —— 值恒等不等于可证等价，
     // 而且它直接对应 Chisel 的那条 elsewhen，删了就对不上意图了。
     else if (p[PTE_N] & ((p[13:10] != 4'h8) | (level != 2'd0))) return 1'b1;
     else                                           return pte_unaligned(p, level);
