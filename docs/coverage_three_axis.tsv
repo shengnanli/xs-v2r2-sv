@@ -556,8 +556,8 @@ ICacheMSHR_7	GOLDEN_REUSE	PROVEN_DIRECT	rtl/frontend/ICacheMSHR_7.sv
 ICacheMSHR_8	GOLDEN_REUSE	PROVEN_DIRECT	rtl/frontend/ICacheMSHR_8.sv
 ICacheMSHR_9	GOLDEN_REUSE	PROVEN_DIRECT	rtl/frontend/ICacheMSHR_9.sv
 ICacheMainPipe	MISSING	UNPROVEN	-
-ICacheMetaArray	REWRITTEN	UNPROVEN	rtl/frontend/ICacheMetaArray.sv
-ICacheMissUnit	MACRO_OPAQUE	UNPROVEN	rtl/frontend/ICacheMissUnit.sv
+ICacheMetaArray	REWRITTEN	PROVEN_DIRECT	rtl/frontend/ICacheMetaArray.sv
+ICacheMissUnit	MACRO_OPAQUE	PROVEN_DIRECT	rtl/frontend/ICacheMissUnit.sv
 ICacheReplacer	REWRITTEN	PROVEN_DIRECT	rtl/frontend/ICacheReplacer.sv
 IMSIC	MISSING	UNPROVEN	-
 IMSICGateWay	REWRITTEN	PROVEN_DIRECT	rtl/uncore/IMSICGateWay.sv
@@ -831,7 +831,7 @@ MultiWakeupQueue_2	MISSING	UNPROVEN	-
 MultiWakeupQueue_4	MISSING	UNPROVEN	-
 MultiWakeupQueue_5	MISSING	UNPROVEN	-
 MutiLevelPrefetchFilter	MISSING	UNPROVEN	-
-MuxBundle	GOLDEN_REUSE	UNPROVEN	rtl/frontend/MuxBundle.sv
+MuxBundle	GOLDEN_REUSE	PROVEN_IN_CONE	rtl/frontend/MuxBundle.sv
 MvienModule	MISSING	UNPROVEN	-
 MvipModule	MISSING	UNPROVEN	-
 NCB200	MISSING	UNPROVEN	-
@@ -869,7 +869,7 @@ NCBUpstreamTXRSP_1	MISSING	UNPROVEN	-
 NewAgeDetector	MISSING	UNPROVEN	-
 NewAgeDetector_6	MISSING	UNPROVEN	-
 NewCSR	MISSING	UNPROVEN	-
-NewDispatch	PARTIAL_DRIVE	UNPROVEN	rtl/backend/NewDispatch.sv
+NewDispatch	REWRITTEN	UNPROVEN	rtl/backend/NewDispatch.sv
 NewIFU	MISSING	UNPROVEN	-
 NewPipelineConnectPipe	REWRITTEN	PROVEN_DIRECT	rtl/uncore/NewPipelineConnectPipe.sv
 NewPipelineConnectPipe_1	REWRITTEN	PROVEN_DIRECT	rtl/uncore/NewPipelineConnectPipe_1.sv
