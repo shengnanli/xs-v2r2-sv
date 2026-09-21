@@ -53,51 +53,51 @@
 //
 // 生成区：`// BEGIN GENERATED(<tag>)` .. `// END GENERATED` 由
 // scripts/gen_rob.py --write 填写，手写内容一律在标记之外。
-// 本文件导航（共 11786 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
-//   L2036  §1 条目存储
-//   L2038  每字段一个非打包数组，名字必须是 `<prefix>_<field>`：pin 契约按
-//   L2377  §2 RobPtr 算术
-//   L2379  RobSize=160 不是 2 的幂，所以 CircularQueuePtr 的 `+` 走"回绕"那条路：
-//   L2422  §3 入队请求的整理
-//   L2424  六路 enq 请求打成数组，后面所有"逐路"逻辑都从这里取，避免六份复制粘贴
-//   L2505  §4 入队许可
-//   L2549  §5 状态机与走回
-//   L2737  §6 入队计数与 allowEnqueue
-//   L2739  ★这里的加法全是 8 位回绕★
-//   L2780  §7 阻塞类状态位
-//   L2835  §8 写回口的整理
-//   L2837  ★写回口的下标是稀疏的，而且每个子集的下标集合只有 golden 能告诉你★
-//   L3066  §9 入队：条目存储的写入
-//   L3068  这里有**两种完全不同的选择结构**，弄混就是真 bug：
-//   L3580  §10 条目存储的时序写入
-//   L3680  §11 提交读口：8 bank x 20 行的 one-hot 读
-//   L3682  robBanks(b) 装 robidx%8==b 的 20 个条目；八个 bank **共用**一个 one-hot 行地址
-//   L3911  §12 robDeqGroup：提交读口的寄存器级
-//   L3913  connectCommitEntry 的逐字段拷贝
-//   L3963  §13 队头读口
-//   L3965  三个名字在 Scala 里是**同一个表达式**
-//   L4081  §14 队头的异常/中断/冲刷判定
-//   L4251  §15 提交 / 走回的对外输出
-//   L4253  ★commit_vDeqGroup / commit_wDeqGroup 是**按 bank 直接取**的★
-//   L4799  §16 RAB
-//   L4801  io.rabCommits := RegNext(rab.io.commits) —— 整条打一拍，纯粹为了时序/面积
-//   L5032  §17 送给 exceptionGen 的三类折算量
-//   L5034  ★io_writeback_<i> 各自只有一部分 exceptionVec 位★
-//   L5071  §18 WFI
-//   L5073  遇到 wfi 指令就挂起提交，等 CSR 说可以恢复、或者被冲刷、或者 2^20 拍超时
-//   L5174  §19 CSR / LSQ / 队头杂项
-//   L5341  §20 trace
-//   L5343  八路提交槽各出一个 trace block，内容直接取 rawInfo
-//   L5407  §21 异常出口
-//   L5409  整条是 RegEnable(..., exceptionHappen)：异常发生那一拍把现场锁下来，
-//   L5563  §22 debug / difftest 规则阵列
-//   L5565  这一段不参与功能，但**一位都不能省**：省掉之后 FM 的 match 会退化成签名
-//   L6085  §23 性能事件
-//   L6087  generatePerfEvent() 出来的 19 个事件，每个都**打两拍**再送出去
-//   L6238  §24 difftest 打包口
-//   L6240  difftest 的三种事件被打包成宽总线从 Rob 直接钻出去
-//   L6626  Rob —— 顶层壳
-//   L6628  这一层不含任何设计逻辑：端口表、局部网、核实例、8 个子模块实例**全部**由
+// 本文件导航（共 11783 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+//   L2031  §1 条目存储
+//   L2033  每字段一个非打包数组，名字必须是 `<prefix>_<field>`：pin 契约按
+//   L2372  §2 RobPtr 算术
+//   L2374  RobSize=160 不是 2 的幂，所以 CircularQueuePtr 的 `+` 走"回绕"那条路：
+//   L2417  §3 入队请求的整理
+//   L2419  六路 enq 请求打成数组，后面所有"逐路"逻辑都从这里取，避免六份复制粘贴
+//   L2507  §4 入队许可
+//   L2551  §5 状态机与走回
+//   L2739  §6 入队计数与 allowEnqueue
+//   L2741  ★这里的加法全是 8 位回绕★
+//   L2782  §7 阻塞类状态位
+//   L2837  §8 写回口的整理
+//   L2839  ★写回口的下标是稀疏的，而且每个子集的下标集合只有 golden 能告诉你★
+//   L3068  §9 入队：条目存储的写入
+//   L3070  这里有**两种完全不同的选择结构**，弄混就是真 bug：
+//   L3582  §10 条目存储的时序写入
+//   L3682  §11 提交读口：8 bank x 20 行的 one-hot 读
+//   L3684  robBanks(b) 装 robidx%8==b 的 20 个条目；八个 bank **共用**一个 one-hot 行地址
+//   L3913  §12 robDeqGroup：提交读口的寄存器级
+//   L3915  connectCommitEntry 的逐字段拷贝
+//   L3965  §13 队头读口
+//   L3967  三个名字在 Scala 里是**同一个表达式**
+//   L4083  §14 队头的异常/中断/冲刷判定
+//   L4253  §15 提交 / 走回的对外输出
+//   L4255  ★commit_vDeqGroup / commit_wDeqGroup 是**按 bank 直接取**的★
+//   L4801  §16 RAB
+//   L4803  io.rabCommits := RegNext(rab.io.commits) —— 整条打一拍，纯粹为了时序/面积
+//   L5034  §17 送给 exceptionGen 的三类折算量
+//   L5036  ★io_writeback_<i> 各自只有一部分 exceptionVec 位★
+//   L5073  §18 WFI
+//   L5075  遇到 wfi 指令就挂起提交，等 CSR 说可以恢复、或者被冲刷、或者 2^20 拍超时
+//   L5176  §19 CSR / LSQ / 队头杂项
+//   L5343  §20 trace
+//   L5345  八路提交槽各出一个 trace block，内容直接取 rawInfo
+//   L5409  §21 异常出口
+//   L5411  整条是 RegEnable(..., exceptionHappen)：异常发生那一拍把现场锁下来，
+//   L5565  §22 debug / difftest 规则阵列
+//   L5567  这一段不参与功能，但**一位都不能省**：省掉之后 FM 的 match 会退化成签名
+//   L6087  §23 性能事件
+//   L6089  generatePerfEvent() 出来的 19 个事件，每个都**打两拍**再送出去
+//   L6240  §24 difftest 打包口
+//   L6242  difftest 的三种事件被打包成宽总线从 Rob 直接钻出去
+//   L6628  Rob —— 顶层壳
+//   L6630  这一层不含任何设计逻辑：端口表、局部网、核实例、8 个子模块实例**全部**由
 //
 
 package rob_pkg;
@@ -1893,15 +1893,10 @@ module xs_Rob_core
   input  logic [1:0]   dt_pcTransType_ext_R7_data,
   input  logic         enqPtrVec_0_flag,
   input  logic [7:0]   enqPtrVec_0_value,
-  input  logic         enqPtrVec_1_flag,
   input  logic [7:0]   enqPtrVec_1_value,
-  input  logic         enqPtrVec_2_flag,
   input  logic [7:0]   enqPtrVec_2_value,
-  input  logic         enqPtrVec_3_flag,
   input  logic [7:0]   enqPtrVec_3_value,
-  input  logic         enqPtrVec_4_flag,
   input  logic [7:0]   enqPtrVec_4_value,
-  input  logic         enqPtrVec_5_flag,
   input  logic [7:0]   enqPtrVec_5_value,
   input  logic         exceptionGen_io_state_bits_crossPageIPFFix,
   input  logic         exceptionGen_io_state_bits_exceptionVec_0,
@@ -2474,15 +2469,22 @@ module xs_Rob_core
 
   // allocatePtrVec(i) = enqPtrVec(该路之前有几个 firstUop 有效)
   // enqPtrVec 由 enqPtrGenModule 给出（本核只读）。
+  // ★enqPtrVec_1..5 的 flag 位 golden 根本不读★：firtool 把 enqPtrVec_<1..5>_flag
+  //   声明出来接到 RobEnqPtrWrapper 的 io_out_<n>_flag 上，然后**一处也不用**
+  //   （只有 enqPtrVec_0_flag 真在用：isEmpty / numValidEntries / redirect 比较）。
+  //   本核原先把这 5 根也接进来存进 enqPtrFlag[]，而 enqPtrFlag[] 自己又没人读——
+  //   于是 FM 两侧对这 5 个黑盒 pin 推出的方向不一致，报 5 个 unmatched failing
+  //   （failing.rpt: `Ref BBPin enqPtrGenModule/io_out_<1..5>_flag / Impl None`）。
+  //   修法就是照 golden 把它们悬空：wrapper 里那 5 根 n_enqPtrVec_<n>_flag 仍然
+  //   声明并接在黑盒输出上，但不再进本核。
   logic [PTR_W-1:0] enqPtrValue [RENAME_W];
-  logic             enqPtrFlag  [RENAME_W];
   always_comb begin
-    enqPtrValue[0] = enqPtrVec_0_value; enqPtrFlag[0] = enqPtrVec_0_flag;
-    enqPtrValue[1] = enqPtrVec_1_value;   enqPtrFlag[1] = enqPtrVec_1_flag;
-    enqPtrValue[2] = enqPtrVec_2_value;   enqPtrFlag[2] = enqPtrVec_2_flag;
-    enqPtrValue[3] = enqPtrVec_3_value;   enqPtrFlag[3] = enqPtrVec_3_flag;
-    enqPtrValue[4] = enqPtrVec_4_value;   enqPtrFlag[4] = enqPtrVec_4_flag;
-    enqPtrValue[5] = enqPtrVec_5_value;   enqPtrFlag[5] = enqPtrVec_5_flag;
+    enqPtrValue[0] = enqPtrVec_0_value;
+    enqPtrValue[1] = enqPtrVec_1_value;
+    enqPtrValue[2] = enqPtrVec_2_value;
+    enqPtrValue[3] = enqPtrVec_3_value;
+    enqPtrValue[4] = enqPtrVec_4_value;
+    enqPtrValue[5] = enqPtrVec_5_value;
   end
 
   logic [2:0]       allocSel      [RENAME_W];   // PopCount(前 i 路的 firstUop&valid)
@@ -10709,15 +10711,10 @@ module Rob(
     .dt_pcTransType_ext_R7_data                                 (n_dt_pcTransType_ext_R7_data),
     .enqPtrVec_0_flag                                           (n_enqPtrVec_0_flag),
     .enqPtrVec_0_value                                          (n_enqPtrVec_0_value),
-    .enqPtrVec_1_flag                                           (n_enqPtrVec_1_flag),
     .enqPtrVec_1_value                                          (n_enqPtrVec_1_value),
-    .enqPtrVec_2_flag                                           (n_enqPtrVec_2_flag),
     .enqPtrVec_2_value                                          (n_enqPtrVec_2_value),
-    .enqPtrVec_3_flag                                           (n_enqPtrVec_3_flag),
     .enqPtrVec_3_value                                          (n_enqPtrVec_3_value),
-    .enqPtrVec_4_flag                                           (n_enqPtrVec_4_flag),
     .enqPtrVec_4_value                                          (n_enqPtrVec_4_value),
-    .enqPtrVec_5_flag                                           (n_enqPtrVec_5_flag),
     .enqPtrVec_5_value                                          (n_enqPtrVec_5_value),
     .exceptionGen_io_state_bits_crossPageIPFFix                 (n_exceptionGen_io_state_bits_crossPageIPFFix),
     .exceptionGen_io_state_bits_exceptionVec_0                  (n_exceptionGen_io_state_bits_exceptionVec_0),
