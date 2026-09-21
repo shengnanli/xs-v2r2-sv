@@ -124,6 +124,8 @@ EntriesVfdivVidiv	SUCCEEDED	p12136 f0 um0 unread=? const_reg=128 mode=signoff-st
 EntriesVfmaVialuFixVfalu	SUCCEEDED	p18369 f0 um0 unread=? const_reg=134 mode=signoff-strict vmucp=true @9d2783dcbaf4 evidence/9d2783dcbaf4/EntriesVfmaVialuFixVfalu/receipt.json
 EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	SUCCEEDED	p18755 f0 um0 unread=? const_reg=134 mode=signoff-strict vmucp=true @9d2783dcbaf4 evidence/9d2783dcbaf4/EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf/receipt.json
 F3Predecoder	SUCCEEDED	p64 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @f51166aa4f76 evidence/f51166aa4f76/F3Predecoder/receipt.json
+FAlu	SUCCEEDED	p2575 f0 um0 unread=? const_reg=167 mode=signoff-strict vmucp=true @80e9b96e8eb6 evidence/80e9b96e8eb6/FAlu/receipt.json
+FCVT	SUCCEEDED	p2625 f0 um0 unread=? const_reg=27 mode=signoff-strict vmucp=true @80e9b96e8eb6 evidence/80e9b96e8eb6/FCVT/receipt.json
 FIFOReg	SUCCEEDED	p56 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @7a881579fe64 evidence/7a881579fe64/FIFOReg/receipt.json
 FMA	SUCCEEDED	p4101 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @7a881579fe64 evidence/7a881579fe64/FMA/receipt.json
 FPDecoder	SUCCEEDED	p10 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @f40deba9439d evidence/f40deba9439d/FPDecoder/receipt.json
@@ -178,7 +180,8 @@ FuBusyTableWrite_73	SUCCEEDED	p5 f0 um0 unread=? const_reg=1 mode=signoff-strict
 FuBusyTableWrite_75	SUCCEEDED	p7 f0 um0 unread=? const_reg=1 mode=signoff-strict vmucp=false @201cb5db74de evidence/201cb5db74de/FuBusyTableWrite_75/receipt.json
 FuBusyTableWrite_79	SUCCEEDED	p3 f0 um0 unread=? const_reg=1 mode=signoff-strict vmucp=false @201cb5db74de evidence/201cb5db74de/FuBusyTableWrite_79/receipt.json
 FuBusyTableWrite_80	SUCCEEDED	p9 f0 um0 unread=? const_reg=1 mode=signoff-strict vmucp=false @201cb5db74de evidence/201cb5db74de/FuBusyTableWrite_80/receipt.json
-IBuffer	SUCCEEDED	p7908 f0 um0 unread=? const_reg=6 mode=signoff-strict vmucp=true @5c7eec56325a evidence/5c7eec56325a/IBuffer/receipt.json
+IBuffer	SUCCEEDED	p7908 f0 um0 unread=? const_reg=6 mode=signoff-strict vmucp=true @28d290f239ca evidence/28d290f239ca/IBuffer/receipt.json
+ICacheCtrlUnit	SUCCEEDED	p307 f0 um0 unread=? const_reg=1 mode=signoff-strict vmucp=true @40ace84c0bea evidence/40ace84c0bea/ICacheCtrlUnit/receipt.json
 ICacheDataArray	SUCCEEDED	p8237 f0 um0 unread=? const_reg=? mode=assembly vmucp=true @40ec7fc36bb8 evidence/40ec7fc36bb8/ICacheDataArray/receipt.json
 ICacheMSHR	SUCCEEDED	p170 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @7a881579fe64 evidence/7a881579fe64/ICacheMSHR/receipt.json
 ICacheMSHR_1	SUCCEEDED	p170 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @7a881579fe64 evidence/7a881579fe64/ICacheMSHR_1/receipt.json
@@ -195,6 +198,7 @@ ICacheMSHR_7	SUCCEEDED	p170 f0 um0 unread=? const_reg=? mode=signoff-strict vmuc
 ICacheMSHR_8	SUCCEEDED	p170 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/ICacheMSHR_8/receipt.json
 ICacheMSHR_9	SUCCEEDED	p170 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/ICacheMSHR_9/receipt.json
 ICacheReplacer	SUCCEEDED	p781 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/ICacheReplacer/receipt.json
+IMSICGateWay	SUCCEEDED	p39 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ace84c0bea evidence/40ace84c0bea/IMSICGateWay/receipt.json
 ImmExtractor	SUCCEEDED	p64 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/ImmExtractor/receipt.json
 ImmExtractor_12	SUCCEEDED	p128 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/ImmExtractor_12/receipt.json
 IndexableCAMTemplate	SUCCEEDED	p80 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/IndexableCAMTemplate/receipt.json
@@ -202,6 +206,7 @@ IndexableCAMTemplate_32	SUCCEEDED	p96 f0 um0 unread=? const_reg=? mode=signoff-s
 IndexableCAMTemplate_33	SUCCEEDED	p144 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/IndexableCAMTemplate_33/receipt.json
 IndexableCAMTemplate_41	SUCCEEDED	p36 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/IndexableCAMTemplate_41/receipt.json
 IndexableCAMTemplate_43	SUCCEEDED	p40 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/IndexableCAMTemplate_43/receipt.json
+InstrUncache	SUCCEEDED	p205 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=true @40ace84c0bea evidence/40ace84c0bea/InstrUncache/receipt.json
 InterruptFilter	SUCCEEDED	p440 f0 um0 unread=? const_reg=138 mode=signoff-strict vmucp=false @b3808b860b38 evidence/b3808b860b38/InterruptFilter/receipt.json
 L1CohMetaArray	SUCCEEDED	p2204 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/L1CohMetaArray/receipt.json
 L1ErrorMetaArray	SUCCEEDED	p2300 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @00765a691d9a evidence/00765a691d9a/L1ErrorMetaArray/receipt.json
@@ -240,6 +245,7 @@ MbistPipeSc_2	SUCCEEDED	p190 f0 um0 unread=? const_reg=? mode=signoff-strict vmu
 MbistPipeSc_3	SUCCEEDED	p190 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/MbistPipeSc_3/receipt.json
 MbistPipeSms	SUCCEEDED	p495 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/MbistPipeSms/receipt.json
 MbistPipeTage	SUCCEEDED	p1396 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/MbistPipeTage/receipt.json
+MulUnit	SUCCEEDED	p4544 f0 um0 unread=? const_reg=31 mode=signoff-strict vmucp=true @d7bf827cd009 evidence/d7bf827cd009/MulUnit/receipt.json
 NCBTransactionQueue	SUCCEEDED	p13526 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=true @1a73aaffd324 evidence/1a73aaffd324/NCBTransactionQueue/receipt.json
 NCBTransactionQueue_1	SUCCEEDED	p6743 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=true @1a73aaffd324 evidence/1a73aaffd324/NCBTransactionQueue_1/receipt.json
 NewPipelineConnectPipe	SUCCEEDED	p1665 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/NewPipelineConnectPipe/receipt.json
@@ -315,6 +321,7 @@ RRArbiterInit_7	SUCCEEDED	p88 f0 um0 unread=? const_reg=? mode=signoff-strict vm
 RRArbiterInit_8	SUCCEEDED	p79 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @2ec13c2a8b0f evidence/2ec13c2a8b0f/RRArbiterInit_8/receipt.json
 RRArbiterInit_9	SUCCEEDED	p62 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @2ec13c2a8b0f evidence/2ec13c2a8b0f/RRArbiterInit_9/receipt.json
 RVCExpander	SUCCEEDED	p33 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @f40deba9439d evidence/f40deba9439d/RVCExpander/receipt.json
+RXDAT	SUCCEEDED	p570 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ace84c0bea evidence/40ace84c0bea/RXDAT/receipt.json
 RXDAT_4	SUCCEEDED	p292 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/RXDAT_4/receipt.json
 RXREQ	SUCCEEDED	p128 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/RXREQ/receipt.json
 RXRSP	SUCCEEDED	p49 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/RXRSP/receipt.json
@@ -425,7 +432,9 @@ TLFIFOFixer	SUCCEEDED	p12918 f0 um0 unread=? const_reg=? mode=signoff-strict vmu
 TLLogger	SUCCEEDED	p1434 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/TLLogger/receipt.json
 TLPLIC	SUCCEEDED	p684 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @f40deba9439d evidence/f40deba9439d/TLPLIC/receipt.json
 TLXbar_3	SUCCEEDED	p133 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/TLXbar_3/receipt.json
+TLXbar_4	SUCCEEDED	p342 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ace84c0bea evidence/40ace84c0bea/TLXbar_4/receipt.json
 TXDAT_4	SUCCEEDED	p976 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=true @40ec7fc36bb8 evidence/40ec7fc36bb8/TXDAT_4/receipt.json
+TXREQ	SUCCEEDED	p2287 f0 um0 unread=? const_reg=54 mode=signoff-strict vmucp=true @80e9b96e8eb6 evidence/80e9b96e8eb6/TXREQ/receipt.json
 TXREQ_4	SUCCEEDED	p107 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/TXREQ_4/receipt.json
 TXRSP	SUCCEEDED	p922 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/TXRSP/receipt.json
 TXRSP_4	SUCCEEDED	p63 f0 um0 unread=? const_reg=? mode=signoff-strict vmucp=false @40ec7fc36bb8 evidence/40ec7fc36bb8/TXRSP_4/receipt.json
