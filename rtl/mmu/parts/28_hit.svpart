@@ -64,6 +64,22 @@
     return r;
   endfunction
 
+  // sp 的 allType tag 比较（PtwEntry.hit 的 allType 分支）：按 level 决定比到第几段。
+  //   level 3(512G) 只比最高段；2(1G) 比两段；1(2M) 比三段；0(4K/napot) 四段全比。
+  //   ★napot 条目的最低段只比 vpn[8:4]★——Svnapot 一条覆盖 16 个 4K 页。
+  //   ★查找侧与 sfence 侧共用同一个函数★：两处写两遍是 sfence 失效集合出错的经典来源。
+  function automatic logic sp_level_match(input int i, input logic [VPN_W-1:0] vpn);
+    logic tm0, tm1, tm2, tm3;
+    tm0 = sp_entry[i].n ? (sp_entry[i].tag[8:4]  == vpn[8:4])
+                        : (sp_entry[i].tag[8:0]  == vpn[8:0]);
+    tm1 =                  sp_entry[i].tag[17:9]  == vpn[17:9];
+    tm2 =                  sp_entry[i].tag[26:18] == vpn[26:18];
+    tm3 =                  sp_entry[i].tag[37:27] == vpn[37:27];
+    return (sp_entry[i].level == 2'd0) ? (tm3 & tm2 & tm1 & tm0)
+         : (sp_entry[i].level == 2'd1) ? (tm3 & tm2 & tm1)
+         : (((sp_entry[i].level != 2'd2) | tm2) & tm3);
+  endfunction
+
   // ---------------------------------------------------------------------------
   // §14 l3 / l2 命中（寄存器阵列，stageReq 发起、stageDelay 定型）
   //
@@ -104,21 +120,12 @@
           & (l2_entry[i].tag == io_req_bits_req_info_vpn[37:18])
           & l2v[i] & (h_search == l2h[i]);
       // sp 是 allType 比较：先按 level 决定要比到第几段 tag，napot 再改写最低那段。
-      for (int i = 0; i < SP_N; i++) begin
-        automatic logic tm0, tm1, tm2, tm3, lvl_match;
-        tm0 = sp_entry[i].n ? (sp_entry[i].tag[8:4]  == io_req_bits_req_info_vpn[8:4])
-                            : (sp_entry[i].tag[8:0]  == io_req_bits_req_info_vpn[8:0]);
-        tm1 =                  sp_entry[i].tag[17:9]  == io_req_bits_req_info_vpn[17:9];
-        tm2 =                  sp_entry[i].tag[26:18] == io_req_bits_req_info_vpn[26:18];
-        tm3 =                  sp_entry[i].tag[37:27] == io_req_bits_req_info_vpn[37:27];
-        lvl_match = (sp_entry[i].level == 2'd0) ? (tm3 & tm2 & tm1 & tm0)
-                  : (sp_entry[i].level == 2'd1) ? (tm3 & tm2 & tm1)
-                  : (((sp_entry[i].level != 2'd2) | tm2) & tm3);
+      for (int i = 0; i < SP_N; i++)
         sp_hitvec[i] <=
             (onlyS2 | (sp_entry[i].asid == search_asid_dup0) | sp_entry[i].perm.g)
           & (~(|h_search) | ({2'h0, sp_entry[i].vmid} == io_csr_dup_0_hgatp_vmid))
-          & lvl_match & spv[i] & (sph[i] == h_search);
-      end
+          & sp_level_match(i, io_req_bits_req_info_vpn)
+          & spv[i] & (sph[i] == h_search);
     end
   end
 
@@ -131,23 +138,22 @@
   always_comb begin
     l3_hit_c = |l3_hitvec;
     l2_hit_c = |l2_hitvec;
-    // ★一个都不命中时取最后一项★（ParallelPriorityMux 的 tie-break，照抄）
+    // ★一个都不命中时取最后一项★（ParallelPriorityMux 的 tie-break，照抄）。
+    // ★用三目而不是 `if`★：同 §16 的理由，`if (X)` 按假走会把 X 吃掉。
     l3_ppn_c = l3_entry[L3_N-1].ppn;
     l3_pre_c = l3_entry[L3_N-1].prefetch;
-    for (int i = L3_N-1; i >= 0; i--)
-      if (l3_hitvec[i]) begin
-        l3_ppn_c = l3_entry[i].ppn;
-        l3_pre_c = l3_entry[i].prefetch;
-      end
+    for (int i = L3_N-2; i >= 0; i--) begin
+      l3_ppn_c = l3_hitvec[i] ? l3_entry[i].ppn      : l3_ppn_c;
+      l3_pre_c = l3_hitvec[i] ? l3_entry[i].prefetch : l3_pre_c;
+    end
     l2_ppn_c  = l2_entry[L2_N-1].ppn;
     l2_pbmt_c = l2_entry[L2_N-1].pbmt;
     l2_pre_c  = l2_entry[L2_N-1].prefetch;
-    for (int i = L2_N-1; i >= 0; i--)
-      if (l2_hitvec[i]) begin
-        l2_ppn_c  = l2_entry[i].ppn;
-        l2_pbmt_c = l2_entry[i].pbmt;
-        l2_pre_c  = l2_entry[i].prefetch;
-      end
+    for (int i = L2_N-2; i >= 0; i--) begin
+      l2_ppn_c  = l2_hitvec[i] ? l2_entry[i].ppn      : l2_ppn_c;
+      l2_pbmt_c = l2_hitvec[i] ? l2_entry[i].pbmt     : l2_pbmt_c;
+      l2_pre_c  = l2_hitvec[i] ? l2_entry[i].prefetch : l2_pre_c;
+    end
   end
 
   logic             l3_hit_r,  l2_hit_r;
@@ -202,20 +208,22 @@
   logic    sp_ishptw_delay;
   logic [1:0] sp_s2x_delay;
 
+  function automatic sp_hit_t sp_pick(input int i);
+    sp_pick.n        = sp_entry[i].n;
+    sp_pick.pbmt     = sp_entry[i].pbmt;
+    sp_pick.ppn      = sp_entry[i].ppn;
+    sp_pick.perm     = sp_entry[i].perm;
+    sp_pick.level    = sp_entry[i].level;
+    sp_pick.v        = sp_entry[i].v;
+    sp_pick.prefetch = sp_entry[i].prefetch;
+  endfunction
+
   always_comb begin
-    sp_hitdata_c = '0;
-    // ★一个都不命中时取最后一项★（ParallelPriorityMux 的 tie-break）
-    for (int i = SP_N-1; i >= 0; i--) begin
-      if (sp_hitvec[i] || i == SP_N-1) begin
-        sp_hitdata_c.n        = sp_entry[i].n;
-        sp_hitdata_c.pbmt     = sp_entry[i].pbmt;
-        sp_hitdata_c.ppn      = sp_entry[i].ppn;
-        sp_hitdata_c.perm     = sp_entry[i].perm;
-        sp_hitdata_c.level    = sp_entry[i].level;
-        sp_hitdata_c.v        = sp_entry[i].v;
-        sp_hitdata_c.prefetch = sp_entry[i].prefetch;
-      end
-    end
+    // ★一个都不命中时取最后一项★（ParallelPriorityMux 的 tie-break）。
+    // ★三目而不是 `if`★：同 §16，别把 X 吃掉。
+    sp_hitdata_c = sp_pick(SP_N-1);
+    for (int i = SP_N-2; i >= 0; i--)
+      sp_hitdata_c = sp_hitvec[i] ? sp_pick(i) : sp_hitdata_c;
   end
 
   assign sp_hit_or       = |sp_hitvec;
@@ -359,14 +367,90 @@
   // ★l0_bitmap 的写侧还没追清（§8）★——所以 l0_hit 只在 BME=0 时可信。
   l0_ram_t  l0_hitdata;
   logic     l0_hit_onlypf, l0_bitmap_ok;
-  always_comb begin
-    l0_hitdata = l0_ramdata[L0_WAYS-1];
-    for (int w = L0_WAYS-1; w >= 0; w--)
-      if (l0_hitvec[w]) l0_hitdata = l0_ramdata[w];
-  end
+  // ★写成 golden 的平衡三目树，不写成 `always_comb` 里的 `if (hitvec[w])`★。
+  //  两者在 0/1 上同值，在 X 上**不同**：过程式 `if (X)` 按假走，于是 hitVec 带 X 时
+  //  这里会稳稳地选出最后一路的**确定值**，而 golden 那棵三目树会老老实实吐 X。
+  //  l0 的载荷来自 SRAM，未写过的行在 `+define+SYNTHESIS` 下就是 X —— 也就是说
+  //  X-乐观的写法会让"命中向量算错"这类 bug 在这些拍上**按构造测不出来**。
+  //  实测：改成本形状之前，20k 拍里这一处贡献 275 个 golden=X / impl=定值 的失配。
+  assign l0_hitdata = (l0_hitvec[0] | l0_hitvec[1])
+                    ? (l0_hitvec[0] ? l0_ramdata[0] : l0_ramdata[1])
+                    : (l0_hitvec[2] ? l0_ramdata[2] : l0_ramdata[3]);
   assign l0_hit_onlypf = l0_hitdata.onlypf[check_vpn[2:0]];
-  assign l0_bitmap_ok  = l0_bitmap_ck[l0_hitway][check_vpn[2:0]];
+
+  // ★选路与选位的顺序照抄 golden：先把同一条 PTE 的 4 路 bitmap 位聚成一个 4 宽向量，
+  //  再用 hitWay 去索引★。反过来写（先按路取整条 8 位、再取位）在 0/1 上同值，
+  //  但 hitWay 带 X 时两者不同 —— 实测这一处贡献了 cfs_6 的 5 个 golden=X/impl=1 失配。
+  logic [L0_WAYS-1:0] l0_bitmap_by_pte [SECTOR_N];   // [第几条 PTE][第几路]
+  logic [SECTOR_N-1:0] l0_bitmap_sel;                // 命中那一路的 8 位
+  always_comb
+    for (int k = 0; k < SECTOR_N; k++) begin
+      for (int w = 0; w < L0_WAYS; w++) l0_bitmap_by_pte[k][w] = l0_bitmap_ck[w][k];
+      l0_bitmap_sel[k] = l0_bitmap_by_pte[k][l0_hitway];
+    end
+  assign l0_bitmap_ok  = l0_bitmap_sel[check_vpn[2:0]];
   assign l0_hit = (bitmap_enable & ((check_s2x != H_ALL_STAGE) | check_ishptw)
                    & ~l0_hit_onlypf)
                 ? (l0_hit_raw & l0_bitmap_ok)
                 : l0_hit_raw;
+
+  // ---------------------------------------------------------------------------
+  // §16.1 命中选数 —— stageCheck 级把"命中那一路"的字段挑出来
+  //       （已追清：golden:5790-5820 / 35851-35856 / 35940-36066）
+  //
+  //  五级的选法是同一条：ParallelPriorityMux(hitVec zip ways)，
+  //  ★一路都不命中时取最后一路★（不是 0），与 §13 的 tie-break 同一条约定。
+  //  l1 选完还要再按 vpn[11:9] 从 8 个 PDE 里挑一条；l0 则是整行 8 条全带走。
+  l1_ram_t          l1_hitdata;
+  logic [PPN_W-1:0] l1_hit_ppn;
+  logic [1:0]       l1_hit_pbmt;
+  logic             l1_pre;
+
+  // 同 §16 的理由：三目形，不用过程式 if（l1 的载荷同样来自 SRAM，会有 X）。
+  assign l1_hitdata = l1_hitvec[0] ? l1_ramdata[0] : l1_ramdata[1];
+  assign l1_hit_ppn  = l1_hitdata.ppns [check_vpn[11:9]];
+  assign l1_hit_pbmt = l1_hitdata.pbmts[check_vpn[11:9]];
+  assign l1_pre      = l1_hitdata.prefetch;
+
+  logic                l0_pre;
+  logic [SECTOR_N-1:0] l0_valid;      // 逐条 PTE 的"不是 onlypf"
+  logic [SECTOR_N-1:0] l0_cfs;        // 逐条 PTE 的"bitmap 还没过"
+  logic [SECTOR_N-1:0][63:0] l0_ptes; // 逐条 PTE 重新拼回 RISC-V 格式
+  logic [L0_WAYS-1:0]  l0_hitway_oh;
+  logic                l0_jmp_bitmap;
+
+  assign l0_pre       = l0_hitdata.prefetch;
+  assign l0_hitway_oh = L0_WAYS'(1) << l0_hitway;
+
+  // ★bitmap 门的三个出口共用同一组条件★（golden:36053-36055）：
+  //   命中 -> 要 bitmap 通过才算 hit（§16 的 l0_hit）；
+  //   命中但 bitmap 没过 -> jmp_bitmap_check，让上层去查 bitmap 再回来 wakeup；
+  //   onlypf 的条目不查 bitmap（它注定 pf，没有物理页可查）。
+  assign l0_jmp_bitmap = bitmap_enable
+                       & ((check_s2x != H_ALL_STAGE) | check_ishptw)
+                       & ~l0_hit_onlypf & l0_hit_raw & ~l0_bitmap_ok;
+
+  // RISC-V PTE 位布局：[63]=N [62:61]=PBMT [60:54]=Reserved [53:10]=PPN
+  //                    [9:8]=RSW [7:1]=D A G U X W R [0]=V
+  //  这里 ppn 只有 38 位（gvpnLen），高 6 位补 0 —— 与 Reserved 的 7 位合成 13'h0。
+  //  ★l0 的 N 位恒 0★：napot 的条目在回填时就被踢去 sp 了（§9），l0 里不会有。
+  always_comb begin
+    for (int i = 0; i < SECTOR_N; i++) begin
+      l0_valid[i] = ~l0_hitdata.onlypf[i];
+      l0_cfs[i]   = ~l0_bitmap_sel[i];
+      l0_ptes[i]  = {1'b0, l0_hitdata.pbmts[i], 13'h0, l0_hitdata.ppns[i], 2'h0,
+                     l0_hitdata.perms[i].d, l0_hitdata.perms[i].a,
+                     l0_hitdata.perms[i].g, l0_hitdata.perms[i].u,
+                     l0_hitdata.perms[i].x, l0_hitdata.perms[i].w,
+                     l0_hitdata.perms[i].r, l0_valid[i]};
+    end
+  end
+
+  // sp 命中的那一条也拼成 PTE 格式（sp 的 N 位是真的，可能是 Svnapot 大页）。
+  logic [63:0] sp_pte;
+  assign sp_pte = {sp_hitdata_ck.n, sp_hitdata_ck.pbmt, 13'h0, sp_hitdata_ck.ppn, 2'h0,
+                   sp_hitdata_ck.perm.d, sp_hitdata_ck.perm.a, sp_hitdata_ck.perm.g,
+                   sp_hitdata_ck.perm.u, sp_hitdata_ck.perm.x, sp_hitdata_ck.perm.w,
+                   sp_hitdata_ck.perm.r, sp_hitdata_ck.v};
+  // ★V 位取的是 sp_hitdata_ck.v（表项里那份），不是并排那个 sp_valid_ck 寄存器★——
+  //  两者同值，但 golden 里是两个不同的寄存器，拼 PTE 用的是前者。照抄出处。

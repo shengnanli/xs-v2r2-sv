@@ -130,4 +130,65 @@ package xs_ptwcache_pkg;
     logic                           prefetch;
   } l0_line_t;
 
+
+  // ---- §17 用：stageCheck -> stageResp 之间那一拍的命中结果快照（golden resp_res）----
+  //  ★只留 golden 真的存了的字段★：l3 没有 pbmt，l0 没有 level，sp 没有 tag/asid/vmid，
+  //  都是 firtool 顺着"到不了输出"消掉的。多存一个字段在 FM 上就是一个 unread 点。
+  typedef struct packed {
+    logic             hit;
+    logic             pre;
+    logic [PPN_W-1:0] ppn;
+  } res_l3_t;
+
+  typedef struct packed {
+    logic             hit;
+    logic             pre;
+    logic [PPN_W-1:0] ppn;
+    logic [1:0]       pbmt;
+  } res_l12_t;
+
+  // l0 一次命中带回整行 8 个 PTE（tlbcontiguous），下游 TLB 一次填 8 条。
+  typedef struct packed {
+    logic                           hit;
+    logic                           pre;
+    logic [SECTOR_N-1:0][PPN_W-1:0] ppn;
+    logic [SECTOR_N-1:0][1:0]       pbmt;
+    pte_perm_t [SECTOR_N-1:0]       perm;
+    logic [SECTOR_N-1:0]            v;        // = ~onlypf，"这条不是注定 pf"
+    logic                           jmp_bitmap_check;
+    logic [L0_WAYS-1:0]             hitway;   // one-hot，给 bitmap wakeup 回来时定位
+    logic [SECTOR_N-1:0][63:0]      ptes;     // 重新拼回 RISC-V PTE 格式，给 bitmap 检查用
+    logic [SECTOR_N-1:0]            cfs;      // Bitmap Check Failed：该条 bitmap 还没过
+  } res_l0_t;
+
+  typedef struct packed {
+    logic             hit;
+    logic             pre;
+    logic [PPN_W-1:0] ppn;
+    logic [1:0]       pbmt;
+    pte_perm_t        perm;
+    logic             n;
+    logic [1:0]       level;
+    logic             v;
+    logic             jmp_bitmap_check;
+    logic [63:0]      pte;
+  } res_sp_t;
+
+  // bitmap wakeup 回读 l0 时只需要比对用的那几根（golden 实测只留了这些寄存器：
+  // tag/asid/vmid/vs/perms.g —— ppn、pbmt、onlypf、其余 perm 位一个都没留）。
+  typedef struct packed {
+    logic [L0_TAG_W-1:0] tag;
+    logic [ASID_W-1:0]   asid;
+    logic [VMID_W-1:0]   vmid;
+    logic [SECTOR_N-1:0] vs;
+    logic [SECTOR_N-1:0] g;
+  } l0_wake_t;
+
+  // 查找/回填两侧共用的 h 折叠：allStage(3) 折成 onlyStage1(1)，其余原样。
+  // （golden 把这同一个折法在 h_search / delay_h / refill_h / refill_bypass 四处各展开一次。）
+  function automatic logic [1:0] fold_h(input logic [1:0] s2x);
+    return (s2x == H_ONLY_STAGE2) ? H_ONLY_STAGE2
+                                  : {1'b0, (s2x == H_ONLY_STAGE1) | (&s2x)};
+  endfunction
+
 endpackage

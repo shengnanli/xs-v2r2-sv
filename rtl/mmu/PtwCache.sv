@@ -118,39 +118,47 @@
 //     · 8 个 perf 计数器。
 //   ★所以当前这份核只在"从不发 sfence、从不 ecc 出错、BME=0"的激励下与 golden 同态，
 //    而且它的 io.resp 仍然全是 0 —— 任何人现在引用它的输出都会拿到错值。★
-// 本文件导航（共 6045 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
-//   L48    它在 MMU 里的位置
-//   L55    五级存储
-//   L68    四级流水
-//   L78    三份 dup 各归谁 —— 照抄，绝不合并
-//   L87    复位域 —— golden 实测，别照直觉全复位
-//   L97    子模块
-//   L104   golden 45,308 行里有多少是真逻辑
-//   L111   差分 UT 方案
-//   L130   已追清 / 未追清 —— 当前边界
-//   L157   xs_ptwcache_pkg —— 几何、类型与编码
-//   L750   §1 四级流水与反压
-//   L795   §2 三份 dup 的归属与 flush
-//   L826   §3 存储声明
-//   L867   §4 复位域
-//   L878   §5 时钟门控与 SRAM 端口仲裁
-//   L911   §6 各级 refill 使能
-//   L921   §7 替换策略状态
-//   L940   §6.1 PTE 谓词
-//   L1054  §6.2 回填写数据
-//   L1148  §7.1 PseudoLRU —— 位布局与两个方程
-//   L1205  §7.2 replaceWrapper —— 「有空位先填空位，满了才问 PLRU」
-//   L1234  §7.3 受害者选择
-//   L1277  §9 各级回填使能与回填载荷
-//   L1348  §9.1 XORFold —— 影子元数据存的是折叠哈希，不是原值
-//   L1961  §12 流水载荷与两个 1 拍脉冲
-//   L2008  §13 命中判定的两个公共写法
-//   L2026  §14 l3 / l2 命中
-//   L2149  §15 sp 命中的取数
-//   L2201  §16 l1 / l0 命中
-//   L2760  §11 时序：两个 always_ff，复位域划分照抄 golden
-//   L2917  §8 未追清清单 —— ★占位信号，当前值无意义★
-//   L3760  §9 子模块例化
+// 本文件导航（共 6439 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+//   L56    它在 MMU 里的位置
+//   L63    五级存储
+//   L76    四级流水
+//   L86    三份 dup 各归谁 —— 照抄，绝不合并
+//   L95    复位域 —— golden 实测，别照直觉全复位
+//   L105   子模块
+//   L112   golden 45,308 行里有多少是真逻辑
+//   L119   差分 UT 方案
+//   L138   已追清 / 未追清 —— 当前边界
+//   L165   xs_ptwcache_pkg —— 几何、类型与编码
+//   L819   §1 四级流水与反压
+//   L864   §2 三份 dup 的归属与 flush
+//   L895   §3 存储声明
+//   L936   §4 复位域
+//   L947   §5 时钟门控与 SRAM 端口仲裁
+//   L980   §6 各级 refill 使能
+//   L990   §7 替换策略状态
+//   L1009  §6.1 PTE 谓词
+//   L1123  §6.2 回填写数据
+//   L1217  §7.1 PseudoLRU —— 位布局与两个方程
+//   L1274  §7.2 replaceWrapper —— 「有空位先填空位，满了才问 PLRU」
+//   L1303  §7.3 受害者选择
+//   L1346  §9 各级回填使能与回填载荷
+//   L1417  §9.1 XORFold —— 影子元数据存的是折叠哈希，不是原值
+//   L2030  §12 流水载荷与两个 1 拍脉冲
+//   L2077  §13 命中判定的两个公共写法
+//   L2111  §14 l3 / l2 命中
+//   L2224  §15 sp 命中的取数
+//   L2278  §16 l1 / l0 命中
+//   L2425  §16.1 命中选数 —— stageCheck 级把"命中那一路"的字段挑出来
+//   L2914  §17 refill bypass —— "你要的那条，这一拍正好在回填路上"
+//   L2974  §18 stageResp 的命中结果快照 resp_res
+//   L2986  §19 io.resp 装配
+//   L3460  §20 perf 事件
+//   L3489  §21 sfence / hfence 失效
+//   L3671  §21.1 五级的失效掩码 —— "这一拍要把哪些位从 v 向量里打掉"
+//   L3750  §22 bitmap wakeup —— 上层查完 bitmap 回来"补票"
+//   L3821  §11 时序：两个 always_ff，复位域划分照抄 golden
+//   L4138  §8 未追清清单 —— ★占位信号，当前值无意义★
+//   L4154  §9 子模块例化
 //
 
 // =============================================================================
@@ -283,6 +291,67 @@ package xs_ptwcache_pkg;
     pte_perm_t [SECTOR_N-1:0]       perms;
     logic                           prefetch;
   } l0_line_t;
+
+
+  // ---- §17 用：stageCheck -> stageResp 之间那一拍的命中结果快照（golden resp_res）----
+  //  ★只留 golden 真的存了的字段★：l3 没有 pbmt，l0 没有 level，sp 没有 tag/asid/vmid，
+  //  都是 firtool 顺着"到不了输出"消掉的。多存一个字段在 FM 上就是一个 unread 点。
+  typedef struct packed {
+    logic             hit;
+    logic             pre;
+    logic [PPN_W-1:0] ppn;
+  } res_l3_t;
+
+  typedef struct packed {
+    logic             hit;
+    logic             pre;
+    logic [PPN_W-1:0] ppn;
+    logic [1:0]       pbmt;
+  } res_l12_t;
+
+  // l0 一次命中带回整行 8 个 PTE（tlbcontiguous），下游 TLB 一次填 8 条。
+  typedef struct packed {
+    logic                           hit;
+    logic                           pre;
+    logic [SECTOR_N-1:0][PPN_W-1:0] ppn;
+    logic [SECTOR_N-1:0][1:0]       pbmt;
+    pte_perm_t [SECTOR_N-1:0]       perm;
+    logic [SECTOR_N-1:0]            v;        // = ~onlypf，"这条不是注定 pf"
+    logic                           jmp_bitmap_check;
+    logic [L0_WAYS-1:0]             hitway;   // one-hot，给 bitmap wakeup 回来时定位
+    logic [SECTOR_N-1:0][63:0]      ptes;     // 重新拼回 RISC-V PTE 格式，给 bitmap 检查用
+    logic [SECTOR_N-1:0]            cfs;      // Bitmap Check Failed：该条 bitmap 还没过
+  } res_l0_t;
+
+  typedef struct packed {
+    logic             hit;
+    logic             pre;
+    logic [PPN_W-1:0] ppn;
+    logic [1:0]       pbmt;
+    pte_perm_t        perm;
+    logic             n;
+    logic [1:0]       level;
+    logic             v;
+    logic             jmp_bitmap_check;
+    logic [63:0]      pte;
+  } res_sp_t;
+
+  // bitmap wakeup 回读 l0 时只需要比对用的那几根（golden 实测只留了这些寄存器：
+  // tag/asid/vmid/vs/perms.g —— ppn、pbmt、onlypf、其余 perm 位一个都没留）。
+  typedef struct packed {
+    logic [L0_TAG_W-1:0] tag;
+    logic [ASID_W-1:0]   asid;
+    logic [VMID_W-1:0]   vmid;
+    logic [SECTOR_N-1:0] vs;
+    logic [SECTOR_N-1:0] g;
+  } l0_wake_t;
+
+  // 查找/回填两侧共用的 h 折叠：allStage(3) 折成 onlyStage1(1)，其余原样。
+  // （golden 把这同一个折法在 h_search / delay_h / refill_h / refill_bypass 四处各展开一次。）
+  function automatic logic [1:0] fold_h(input logic [1:0] s2x);
+    return (s2x == H_ONLY_STAGE2) ? H_ONLY_STAGE2
+                                  : {1'b0, (s2x == H_ONLY_STAGE1) | (&s2x)};
+  endfunction
 
 endpackage
 
@@ -2022,6 +2091,22 @@ module xs_PtwCache_core(
     return r;
   endfunction
 
+  // sp 的 allType tag 比较（PtwEntry.hit 的 allType 分支）：按 level 决定比到第几段。
+  //   level 3(512G) 只比最高段；2(1G) 比两段；1(2M) 比三段；0(4K/napot) 四段全比。
+  //   ★napot 条目的最低段只比 vpn[8:4]★——Svnapot 一条覆盖 16 个 4K 页。
+  //   ★查找侧与 sfence 侧共用同一个函数★：两处写两遍是 sfence 失效集合出错的经典来源。
+  function automatic logic sp_level_match(input int i, input logic [VPN_W-1:0] vpn);
+    logic tm0, tm1, tm2, tm3;
+    tm0 = sp_entry[i].n ? (sp_entry[i].tag[8:4]  == vpn[8:4])
+                        : (sp_entry[i].tag[8:0]  == vpn[8:0]);
+    tm1 =                  sp_entry[i].tag[17:9]  == vpn[17:9];
+    tm2 =                  sp_entry[i].tag[26:18] == vpn[26:18];
+    tm3 =                  sp_entry[i].tag[37:27] == vpn[37:27];
+    return (sp_entry[i].level == 2'd0) ? (tm3 & tm2 & tm1 & tm0)
+         : (sp_entry[i].level == 2'd1) ? (tm3 & tm2 & tm1)
+         : (((sp_entry[i].level != 2'd2) | tm2) & tm3);
+  endfunction
+
   // ---------------------------------------------------------------------------
   // §14 l3 / l2 命中（寄存器阵列，stageReq 发起、stageDelay 定型）
   //
@@ -2062,21 +2147,12 @@ module xs_PtwCache_core(
           & (l2_entry[i].tag == io_req_bits_req_info_vpn[37:18])
           & l2v[i] & (h_search == l2h[i]);
       // sp 是 allType 比较：先按 level 决定要比到第几段 tag，napot 再改写最低那段。
-      for (int i = 0; i < SP_N; i++) begin
-        automatic logic tm0, tm1, tm2, tm3, lvl_match;
-        tm0 = sp_entry[i].n ? (sp_entry[i].tag[8:4]  == io_req_bits_req_info_vpn[8:4])
-                            : (sp_entry[i].tag[8:0]  == io_req_bits_req_info_vpn[8:0]);
-        tm1 =                  sp_entry[i].tag[17:9]  == io_req_bits_req_info_vpn[17:9];
-        tm2 =                  sp_entry[i].tag[26:18] == io_req_bits_req_info_vpn[26:18];
-        tm3 =                  sp_entry[i].tag[37:27] == io_req_bits_req_info_vpn[37:27];
-        lvl_match = (sp_entry[i].level == 2'd0) ? (tm3 & tm2 & tm1 & tm0)
-                  : (sp_entry[i].level == 2'd1) ? (tm3 & tm2 & tm1)
-                  : (((sp_entry[i].level != 2'd2) | tm2) & tm3);
+      for (int i = 0; i < SP_N; i++)
         sp_hitvec[i] <=
             (onlyS2 | (sp_entry[i].asid == search_asid_dup0) | sp_entry[i].perm.g)
           & (~(|h_search) | ({2'h0, sp_entry[i].vmid} == io_csr_dup_0_hgatp_vmid))
-          & lvl_match & spv[i] & (sph[i] == h_search);
-      end
+          & sp_level_match(i, io_req_bits_req_info_vpn)
+          & spv[i] & (sph[i] == h_search);
     end
   end
 
@@ -2089,23 +2165,22 @@ module xs_PtwCache_core(
   always_comb begin
     l3_hit_c = |l3_hitvec;
     l2_hit_c = |l2_hitvec;
-    // ★一个都不命中时取最后一项★（ParallelPriorityMux 的 tie-break，照抄）
+    // ★一个都不命中时取最后一项★（ParallelPriorityMux 的 tie-break，照抄）。
+    // ★用三目而不是 `if`★：同 §16 的理由，`if (X)` 按假走会把 X 吃掉。
     l3_ppn_c = l3_entry[L3_N-1].ppn;
     l3_pre_c = l3_entry[L3_N-1].prefetch;
-    for (int i = L3_N-1; i >= 0; i--)
-      if (l3_hitvec[i]) begin
-        l3_ppn_c = l3_entry[i].ppn;
-        l3_pre_c = l3_entry[i].prefetch;
-      end
+    for (int i = L3_N-2; i >= 0; i--) begin
+      l3_ppn_c = l3_hitvec[i] ? l3_entry[i].ppn      : l3_ppn_c;
+      l3_pre_c = l3_hitvec[i] ? l3_entry[i].prefetch : l3_pre_c;
+    end
     l2_ppn_c  = l2_entry[L2_N-1].ppn;
     l2_pbmt_c = l2_entry[L2_N-1].pbmt;
     l2_pre_c  = l2_entry[L2_N-1].prefetch;
-    for (int i = L2_N-1; i >= 0; i--)
-      if (l2_hitvec[i]) begin
-        l2_ppn_c  = l2_entry[i].ppn;
-        l2_pbmt_c = l2_entry[i].pbmt;
-        l2_pre_c  = l2_entry[i].prefetch;
-      end
+    for (int i = L2_N-2; i >= 0; i--) begin
+      l2_ppn_c  = l2_hitvec[i] ? l2_entry[i].ppn      : l2_ppn_c;
+      l2_pbmt_c = l2_hitvec[i] ? l2_entry[i].pbmt     : l2_pbmt_c;
+      l2_pre_c  = l2_hitvec[i] ? l2_entry[i].prefetch : l2_pre_c;
+    end
   end
 
   logic             l3_hit_r,  l2_hit_r;
@@ -2160,20 +2235,22 @@ module xs_PtwCache_core(
   logic    sp_ishptw_delay;
   logic [1:0] sp_s2x_delay;
 
+  function automatic sp_hit_t sp_pick(input int i);
+    sp_pick.n        = sp_entry[i].n;
+    sp_pick.pbmt     = sp_entry[i].pbmt;
+    sp_pick.ppn      = sp_entry[i].ppn;
+    sp_pick.perm     = sp_entry[i].perm;
+    sp_pick.level    = sp_entry[i].level;
+    sp_pick.v        = sp_entry[i].v;
+    sp_pick.prefetch = sp_entry[i].prefetch;
+  endfunction
+
   always_comb begin
-    sp_hitdata_c = '0;
-    // ★一个都不命中时取最后一项★（ParallelPriorityMux 的 tie-break）
-    for (int i = SP_N-1; i >= 0; i--) begin
-      if (sp_hitvec[i] || i == SP_N-1) begin
-        sp_hitdata_c.n        = sp_entry[i].n;
-        sp_hitdata_c.pbmt     = sp_entry[i].pbmt;
-        sp_hitdata_c.ppn      = sp_entry[i].ppn;
-        sp_hitdata_c.perm     = sp_entry[i].perm;
-        sp_hitdata_c.level    = sp_entry[i].level;
-        sp_hitdata_c.v        = sp_entry[i].v;
-        sp_hitdata_c.prefetch = sp_entry[i].prefetch;
-      end
-    end
+    // ★一个都不命中时取最后一项★（ParallelPriorityMux 的 tie-break）。
+    // ★三目而不是 `if`★：同 §16，别把 X 吃掉。
+    sp_hitdata_c = sp_pick(SP_N-1);
+    for (int i = SP_N-2; i >= 0; i--)
+      sp_hitdata_c = sp_hitvec[i] ? sp_pick(i) : sp_hitdata_c;
   end
 
   assign sp_hit_or       = |sp_hitvec;
@@ -2317,17 +2394,93 @@ module xs_PtwCache_core(
   // ★l0_bitmap 的写侧还没追清（§8）★——所以 l0_hit 只在 BME=0 时可信。
   l0_ram_t  l0_hitdata;
   logic     l0_hit_onlypf, l0_bitmap_ok;
-  always_comb begin
-    l0_hitdata = l0_ramdata[L0_WAYS-1];
-    for (int w = L0_WAYS-1; w >= 0; w--)
-      if (l0_hitvec[w]) l0_hitdata = l0_ramdata[w];
-  end
+  // ★写成 golden 的平衡三目树，不写成 `always_comb` 里的 `if (hitvec[w])`★。
+  //  两者在 0/1 上同值，在 X 上**不同**：过程式 `if (X)` 按假走，于是 hitVec 带 X 时
+  //  这里会稳稳地选出最后一路的**确定值**，而 golden 那棵三目树会老老实实吐 X。
+  //  l0 的载荷来自 SRAM，未写过的行在 `+define+SYNTHESIS` 下就是 X —— 也就是说
+  //  X-乐观的写法会让"命中向量算错"这类 bug 在这些拍上**按构造测不出来**。
+  //  实测：改成本形状之前，20k 拍里这一处贡献 275 个 golden=X / impl=定值 的失配。
+  assign l0_hitdata = (l0_hitvec[0] | l0_hitvec[1])
+                    ? (l0_hitvec[0] ? l0_ramdata[0] : l0_ramdata[1])
+                    : (l0_hitvec[2] ? l0_ramdata[2] : l0_ramdata[3]);
   assign l0_hit_onlypf = l0_hitdata.onlypf[check_vpn[2:0]];
-  assign l0_bitmap_ok  = l0_bitmap_ck[l0_hitway][check_vpn[2:0]];
+
+  // ★选路与选位的顺序照抄 golden：先把同一条 PTE 的 4 路 bitmap 位聚成一个 4 宽向量，
+  //  再用 hitWay 去索引★。反过来写（先按路取整条 8 位、再取位）在 0/1 上同值，
+  //  但 hitWay 带 X 时两者不同 —— 实测这一处贡献了 cfs_6 的 5 个 golden=X/impl=1 失配。
+  logic [L0_WAYS-1:0] l0_bitmap_by_pte [SECTOR_N];   // [第几条 PTE][第几路]
+  logic [SECTOR_N-1:0] l0_bitmap_sel;                // 命中那一路的 8 位
+  always_comb
+    for (int k = 0; k < SECTOR_N; k++) begin
+      for (int w = 0; w < L0_WAYS; w++) l0_bitmap_by_pte[k][w] = l0_bitmap_ck[w][k];
+      l0_bitmap_sel[k] = l0_bitmap_by_pte[k][l0_hitway];
+    end
+  assign l0_bitmap_ok  = l0_bitmap_sel[check_vpn[2:0]];
   assign l0_hit = (bitmap_enable & ((check_s2x != H_ALL_STAGE) | check_ishptw)
                    & ~l0_hit_onlypf)
                 ? (l0_hit_raw & l0_bitmap_ok)
                 : l0_hit_raw;
+
+  // ---------------------------------------------------------------------------
+  // §16.1 命中选数 —— stageCheck 级把"命中那一路"的字段挑出来
+  //       （已追清：golden:5790-5820 / 35851-35856 / 35940-36066）
+  //
+  //  五级的选法是同一条：ParallelPriorityMux(hitVec zip ways)，
+  //  ★一路都不命中时取最后一路★（不是 0），与 §13 的 tie-break 同一条约定。
+  //  l1 选完还要再按 vpn[11:9] 从 8 个 PDE 里挑一条；l0 则是整行 8 条全带走。
+  l1_ram_t          l1_hitdata;
+  logic [PPN_W-1:0] l1_hit_ppn;
+  logic [1:0]       l1_hit_pbmt;
+  logic             l1_pre;
+
+  // 同 §16 的理由：三目形，不用过程式 if（l1 的载荷同样来自 SRAM，会有 X）。
+  assign l1_hitdata = l1_hitvec[0] ? l1_ramdata[0] : l1_ramdata[1];
+  assign l1_hit_ppn  = l1_hitdata.ppns [check_vpn[11:9]];
+  assign l1_hit_pbmt = l1_hitdata.pbmts[check_vpn[11:9]];
+  assign l1_pre      = l1_hitdata.prefetch;
+
+  logic                l0_pre;
+  logic [SECTOR_N-1:0] l0_valid;      // 逐条 PTE 的"不是 onlypf"
+  logic [SECTOR_N-1:0] l0_cfs;        // 逐条 PTE 的"bitmap 还没过"
+  logic [SECTOR_N-1:0][63:0] l0_ptes; // 逐条 PTE 重新拼回 RISC-V 格式
+  logic [L0_WAYS-1:0]  l0_hitway_oh;
+  logic                l0_jmp_bitmap;
+
+  assign l0_pre       = l0_hitdata.prefetch;
+  assign l0_hitway_oh = L0_WAYS'(1) << l0_hitway;
+
+  // ★bitmap 门的三个出口共用同一组条件★（golden:36053-36055）：
+  //   命中 -> 要 bitmap 通过才算 hit（§16 的 l0_hit）；
+  //   命中但 bitmap 没过 -> jmp_bitmap_check，让上层去查 bitmap 再回来 wakeup；
+  //   onlypf 的条目不查 bitmap（它注定 pf，没有物理页可查）。
+  assign l0_jmp_bitmap = bitmap_enable
+                       & ((check_s2x != H_ALL_STAGE) | check_ishptw)
+                       & ~l0_hit_onlypf & l0_hit_raw & ~l0_bitmap_ok;
+
+  // RISC-V PTE 位布局：[63]=N [62:61]=PBMT [60:54]=Reserved [53:10]=PPN
+  //                    [9:8]=RSW [7:1]=D A G U X W R [0]=V
+  //  这里 ppn 只有 38 位（gvpnLen），高 6 位补 0 —— 与 Reserved 的 7 位合成 13'h0。
+  //  ★l0 的 N 位恒 0★：napot 的条目在回填时就被踢去 sp 了（§9），l0 里不会有。
+  always_comb begin
+    for (int i = 0; i < SECTOR_N; i++) begin
+      l0_valid[i] = ~l0_hitdata.onlypf[i];
+      l0_cfs[i]   = ~l0_bitmap_sel[i];
+      l0_ptes[i]  = {1'b0, l0_hitdata.pbmts[i], 13'h0, l0_hitdata.ppns[i], 2'h0,
+                     l0_hitdata.perms[i].d, l0_hitdata.perms[i].a,
+                     l0_hitdata.perms[i].g, l0_hitdata.perms[i].u,
+                     l0_hitdata.perms[i].x, l0_hitdata.perms[i].w,
+                     l0_hitdata.perms[i].r, l0_valid[i]};
+    end
+  end
+
+  // sp 命中的那一条也拼成 PTE 格式（sp 的 N 位是真的，可能是 Svnapot 大页）。
+  logic [63:0] sp_pte;
+  assign sp_pte = {sp_hitdata_ck.n, sp_hitdata_ck.pbmt, 13'h0, sp_hitdata_ck.ppn, 2'h0,
+                   sp_hitdata_ck.perm.d, sp_hitdata_ck.perm.a, sp_hitdata_ck.perm.g,
+                   sp_hitdata_ck.perm.u, sp_hitdata_ck.perm.x, sp_hitdata_ck.perm.w,
+                   sp_hitdata_ck.perm.r, sp_hitdata_ck.v};
+  // ★V 位取的是 sp_hitdata_ck.v（表项里那份），不是并排那个 sp_valid_ck 寄存器★——
+  //  两者同值，但 golden 里是两个不同的寄存器，拼 PTE 用的是前者。照抄出处。
 
   // BEGIN GENERATED(sram_rdata_pack)
   // 把 SRAM 回读的扁平线打包成 §16 用的 struct（纯改名，无逻辑）。
@@ -2756,12 +2909,921 @@ module xs_PtwCache_core(
   assign l1_sram_rdata[1].vs[6]                   = l1_rdata_1_vs_6;
   assign l1_sram_rdata[1].vs[7]                   = l1_rdata_1_vs_7;
   // END GENERATED(sram_rdata_pack)
+
+  // ---------------------------------------------------------------------------
+  // §17 refill bypass —— "你要的那条，这一拍正好在回填路上"
+  //      （已追清：golden:30003-30070 / 30773 / 31210-31252 / 6286-6355 / 27226-27241）
+  //
+  //  为什么要它：请求已经进了流水、SRAM 也读过了，这时 io.refill 把同一条 vpn 写进来。
+  //  流水里那份读数是**旧的**，不能当"未命中"直接报出去，否则上层会再走一次内存。
+  //  所以只要 refill 覆盖了流水里这条请求的地址，就给它打上 bypassed 标记，
+  //  让上层知道"这次的 miss 结论作废，重来一次就命中了"。
+  //
+  //  ★形状：每一级各有一份，且每一级都是「本拍匹配 wire + 跨拍记忆 reg」两件套★
+  //    stageDelay 级：bypass_hit_delay / bypass_seen_delay
+  //    stageCheck 级：bypass_hit_check / bypass_seen_check
+  //    stageResp  级：bypass_hit_resp  + 两组 hold（普通口一组、hptw 口一组，清除条件不同）
+  //  四级 index 0..3 = l0/l1/l2/l3，比较的 tag 位数不同（级数越高比得越少）。
+
+  // 一级一级地比 vpn：l0 比 [37:3]（8 条一行，低 3 位是行内序号），
+  // l1 再去掉 9 位 [37:12]，l2 去掉 18 位 [37:21]，l3 去掉 27 位 [37:30]。
+  function automatic logic bypass_vpn_match(input int              level,
+                                            input logic [VPN_W-1:0] a,
+                                            input logic [VPN_W-1:0] b);
+    case (level)
+      0:       return a[37:3]  == b[37:3];
+      1:       return a[37:12] == b[37:12];
+      2:       return a[37:21] == b[37:21];
+      default: return a[37:30] == b[37:30];
+    endcase
+  endfunction
+
+  // 这一拍的 refill 是否正好覆盖了 (vpn, s2xlate) 这条请求的第 level 级。
+  // ★两边都要先过 fold_h★：allStage 的请求查的是它的 stage-1 条目。
+  function automatic logic refill_bypass(input int              level,
+                                         input logic [VPN_W-1:0] vpn,
+                                         input logic [1:0]       s2x);
+    return io_refill_valid
+         & (io_refill_bits_level_dup_0 == 2'(level))
+         & bypass_vpn_match(level, io_refill_bits_req_info_dup_0_vpn, vpn)
+         & (fold_h(s2x) == fold_h(io_refill_bits_req_info_dup_0_s2xlate));
+  endfunction
+
+  logic [3:0] bypass_hit_delay, bypass_hit_check, bypass_hit_resp;
+  logic [3:0] bypass_seen_delay, bypass_seen_check;
+  logic [3:0] check_bypassed, resp_bypassed;
+
+  // 四份"释放"脉冲，golden 里是四个**独立而同值**的寄存器（OneCycleValid(stageCheck.fire)）。
+  // ★照抄四份，不合并★：合成一份会让 golden 那三个寄存器在 FM 上变成 unmatched。
+  logic [3:0] bypass_release;
+  logic [3:0] bypass_hold;        // 普通口：refill 或新一拍进来就清
+  logic [3:0] hptw_bypass_hold;   // hptw 口：io.resp 握手成功才清
+
+  always_comb begin
+    for (int i = 0; i < 4; i++) begin
+      bypass_hit_delay[i] = refill_bypass(i, delay_vpn, delay_s2x);
+      bypass_hit_check[i] = refill_bypass(i, check_vpn, check_s2x);
+      bypass_hit_resp [i] = refill_bypass(i, resp_vpn,  resp_s2x);
+    end
+  end
+
+  logic resp_fire;
+  assign resp_fire = valid_resp & io_resp_ready;
+
+  // ---------------------------------------------------------------------------
+  // §18 stageResp 的命中结果快照 resp_res（已追清：golden:35843-36085）
+  //
+  //  ★为什么要再存一拍★：stageCheck 的命中结果是组合的，而 io.resp 要在下一拍输出，
+  //  且 stageResp 可能被下游反压住好几拍。所以整份命中结果在 stageCheck 出口
+  //  锁存成 resp_res，之后 io.resp 的两百多根全部只读 resp_res，不再回看流水。
+  //  ★存的字段就是 golden 存的那些★，见 pkg 里四个 res_*_t 的注释。
+  res_l3_t  resp_res_l3;
+  res_l12_t resp_res_l2, resp_res_l1;
+  res_l0_t  resp_res_l0;
+  res_sp_t  resp_res_sp;
+
+  // ---------------------------------------------------------------------------
+  // §19 io.resp 装配（已追清：golden:6396-6536 / 44766-45302）
+  //
+  //  五级的优先级在这里定死：l0 > sp > l1 > l2 > l3（越靠近叶子越优先）。
+  //  两阶段翻译（allStage）时还要拐一道：查到的是 stage-1 的结果，
+  //  上层拿去再查 stage-2，所以 toFsm 的三个 Hit 全都要被 stage1Hit 压住。
+  logic       resp_any_leaf_hit;   // l0 或 sp 命中（"叶子已经拿到了"）
+  logic       stage1_hit;
+  logic       resp_is_all_stage, resp_not_only_s2;
+  logic [2:0] resp_pte_idx;
+
+  assign resp_any_leaf_hit = resp_res_l0.hit | resp_res_sp.hit;
+  assign resp_is_all_stage = &resp_s2x;
+  assign stage1_hit        = resp_any_leaf_hit & resp_is_all_stage;
+  assign resp_not_only_s2  = (resp_s2x != H_ONLY_STAGE2);
+  assign resp_pte_idx      = resp_vpn[2:0];
+
+  // 命中那一条 PTE 的 v 位：l0 命中取行内第 idx 条，否则取 sp 的。
+  logic resp_leaf_v;
+  assign resp_leaf_v = resp_res_l0.hit ? resp_res_l0.v[resp_pte_idx] : resp_res_sp.v;
+
+  // ★io.resp.hit 的第二项是 golden 的"stage1 页错误"判据★：
+  //  allStage 时，只有查到的 stage-1 条目**无效**（注定 pf）才算"命中并可以直接回话"，
+  //  有效的话得让上层继续走 stage-2，所以反而不算 hit。非 allStage 时这一项恒真。
+  assign io_resp_bits_hit = resp_any_leaf_hit
+                          & (~resp_is_all_stage | resp_is_all_stage & ~resp_leaf_v);
+
+  assign io_resp_bits_req_info_vpn     = resp_vpn;
+  assign io_resp_bits_req_info_s2xlate = resp_s2x;
+  assign io_resp_bits_req_info_source  = resp_src;
+  assign io_resp_bits_isFirst          = resp_isfirst;
+  assign io_resp_bits_isHptwReq        = resp_ishptw;
+  assign io_resp_bits_prefetch = resp_res_l0.pre & resp_res_l0.hit
+                               | resp_res_sp.pre & resp_res_sp.hit;
+
+  // bypassed：某一级"这次的结论作废"且那一级确实没命中，才报给上层。
+  // allStage 的请求不报（它本来就要再走一轮）。
+  assign io_resp_bits_bypassed =
+      ((resp_bypassed[0] | bypass_hold[0] | bypass_hit_resp[0]) & ~resp_res_l0.hit
+     | (resp_bypassed[1] | bypass_hold[1] | bypass_hit_resp[1]) & ~resp_res_l1.hit
+     | (resp_bypassed[2] | bypass_hold[2] | bypass_hit_resp[2]) & ~resp_res_l2.hit
+     | (resp_bypassed[3] | bypass_hold[3] | bypass_hit_resp[3]) & ~resp_res_l3.hit)
+    & ~resp_is_all_stage;
+
+  assign io_resp_bits_toHptw_bypassed =
+      ((resp_bypassed[0] | hptw_bypass_hold[0] | bypass_hit_resp[0]) & ~resp_res_l0.hit
+     | (resp_bypassed[1] | hptw_bypass_hold[1] | bypass_hit_resp[1]) & ~resp_res_l1.hit
+     | (resp_bypassed[2] | hptw_bypass_hold[2] | bypass_hit_resp[2]) & ~resp_res_l2.hit
+     | (resp_bypassed[3] | hptw_bypass_hold[3] | bypass_hit_resp[3]) & ~resp_res_l3.hit)
+    & resp_ishptw;
+
+  // ---- toFsm：没查到叶子时，告诉 PTW 状态机"你可以从第几级接着往下走" ----
+  assign io_resp_bits_toFsm_l3Hit =
+    resp_res_l3.hit & ~stage1_hit & resp_not_only_s2 & ~resp_ishptw;
+  assign io_resp_bits_toFsm_l2Hit =
+    resp_res_l2.hit & ~stage1_hit & resp_not_only_s2 & ~resp_ishptw;
+  assign io_resp_bits_toFsm_l1Hit =
+    resp_res_l1.hit & ~stage1_hit & resp_not_only_s2 & ~resp_ishptw;
+  assign io_resp_bits_toFsm_stage1Hit = stage1_hit;
+
+  // 非叶子那三级的 ppn 共用一棵优先级树（l1 > l2 > l3），toFsm 与 toHptw 都取它。
+  logic [PPN_W-1:0] nonleaf_ppn;
+  assign nonleaf_ppn = resp_res_l1.hit ? resp_res_l1.ppn
+                     : resp_res_l2.hit ? resp_res_l2.ppn : resp_res_l3.ppn;
+  assign io_resp_bits_toFsm_ppn  = nonleaf_ppn;
+  assign io_resp_bits_toHptw_ppn = nonleaf_ppn[35:0];
+
+  // ---- toFsm / toHptw 的 bitmapCheck 出口 ----
+  logic       jmp_bitmap_check;
+  logic [1:0] sp_bitmap_level;
+  assign jmp_bitmap_check = resp_res_l0.jmp_bitmap_check | resp_res_sp.jmp_bitmap_check;
+  assign sp_bitmap_level  = resp_res_sp.jmp_bitmap_check ? resp_res_sp.level : 2'h0;
+
+  assign io_resp_bits_toFsm_bitmapCheck_jmp_bitmap_check  = jmp_bitmap_check;
+  assign io_resp_bits_toHptw_bitmapCheck_jmp_bitmap_check = jmp_bitmap_check;
+  // toLLPTW：l0 那一侧要查 bitmap，且这是一阶段请求 —— 转给 LLPTW 去查。
+  assign io_resp_bits_toFsm_bitmapCheck_toLLPTW =
+    resp_res_l0.jmp_bitmap_check
+    & ((resp_s2x == H_NO_S2XLATE) | (resp_s2x == H_ONLY_STAGE1));
+  assign io_resp_bits_toFsm_bitmapCheck_hitway  = resp_res_l0.hitway;
+  assign io_resp_bits_toHptw_bitmapCheck_hitway = resp_res_l0.hitway;
+  assign io_resp_bits_toFsm_bitmapCheck_SPlevel  = sp_bitmap_level;
+  assign io_resp_bits_toHptw_bitmapCheck_SPlevel = sp_bitmap_level;
+  assign io_resp_bits_toHptw_bitmapCheck_fromSP  = resp_res_sp.jmp_bitmap_check;
+  // ★两个口的 pte / ptes 取法不一样，别合并★：
+  //   toFsm  —— sp 要查时整组 8 条全填 sp 那一条；否则给 l0 的 8 条（pte 再按 idx 挑）。
+  //   toHptw —— pte 恒取 sp 的、ptes 恒取 l0 的，不做选择。
+  assign io_resp_bits_toFsm_bitmapCheck_pte =
+    resp_res_sp.jmp_bitmap_check ? resp_res_sp.pte : resp_res_l0.ptes[resp_pte_idx];
+  assign io_resp_bits_toHptw_bitmapCheck_pte = resp_res_sp.pte;
+
+  // ---- stage1：一次回 8 条相邻 PTE（tlbcontiguous），给 TLB 整组回填 ----
+  //  每条的 ppn/pbmt/perm/v 各走各的优先级树；tag/asid/vmid/level/n 八条共用。
+  logic [1:0] stage1_level;
+  logic       stage1_n;
+  logic [1:0] nonleaf_pbmt;
+  assign stage1_level = resp_res_l0.hit ? 2'h0
+                      : resp_res_sp.hit ? resp_res_sp.level
+                      : resp_res_l1.hit ? 2'h1
+                      : {1'b1, ~resp_res_l2.hit};   // l2 命中 -> 2，否则 3（l3）
+  assign stage1_n     = resp_res_sp.hit & resp_res_sp.n;
+  assign nonleaf_pbmt = resp_res_l1.hit ? resp_res_l1.pbmt : resp_res_l2.pbmt;
+
+  logic [SECTOR_N-1:0] stage1_v;
+  always_comb
+    for (int i = 0; i < SECTOR_N; i++)
+      // ★l0 不命中时 v 取 `~sp命中 | sp的v`★：谁都没命中时 v=1（于是 pf=0），
+      //  只有"sp 命中了但那条是 onlyPf"才报 v=0。照抄这个不对称的写法。
+      stage1_v[i] = resp_res_l0.hit ? resp_res_l0.v[i]
+                                    : (~resp_res_sp.hit | resp_res_sp.v);
+
+  // BEGIN GENERATED(stage1_entry_fanout) —— 8 条的展开，逐条同形，见上面注释
+  logic [34:0]     stage1_tag;
+  logic [15:0]     stage1_asid;
+  logic [13:0]     stage1_vmid;
+  assign stage1_tag  = resp_vpn[37:3];
+  assign stage1_asid = (|resp_s2x) ? io_csr_dup_0_vsatp_asid : io_csr_dup_0_satp_asid;
+  assign stage1_vmid = io_csr_dup_0_hgatp_vmid[13:0];
+
+  assign io_resp_bits_stage1_entry_0_tag   = stage1_tag;
+  assign io_resp_bits_stage1_entry_0_asid  = stage1_asid;
+  assign io_resp_bits_stage1_entry_0_vmid  = stage1_vmid;
+  assign io_resp_bits_stage1_entry_0_n     = stage1_n;
+  assign io_resp_bits_stage1_entry_0_level = stage1_level;
+  assign io_resp_bits_stage1_entry_0_v     = stage1_v[0];
+  assign io_resp_bits_stage1_entry_0_pf    = ~stage1_v[0];
+  assign io_resp_bits_stage1_entry_0_cf    = resp_res_l0.hit & l0_cfs[0];
+  assign io_resp_bits_stage1_entry_0_pbmt  = resp_res_l0.hit ? resp_res_l0.pbmt[0]
+                              : resp_res_sp.hit ? resp_res_sp.pbmt : nonleaf_pbmt;
+  assign io_resp_bits_stage1_entry_0_perm_d = resp_res_l0.hit ? resp_res_l0.perm[0].d
+                                : resp_res_sp.hit & resp_res_sp.perm.d;
+  assign io_resp_bits_stage1_entry_0_perm_a = resp_res_l0.hit ? resp_res_l0.perm[0].a
+                                : resp_res_sp.hit & resp_res_sp.perm.a;
+  assign io_resp_bits_stage1_entry_0_perm_g = resp_res_l0.hit ? resp_res_l0.perm[0].g
+                                : resp_res_sp.hit & resp_res_sp.perm.g;
+  assign io_resp_bits_stage1_entry_0_perm_u = resp_res_l0.hit ? resp_res_l0.perm[0].u
+                                : resp_res_sp.hit & resp_res_sp.perm.u;
+  assign io_resp_bits_stage1_entry_0_perm_x = resp_res_l0.hit ? resp_res_l0.perm[0].x
+                                : resp_res_sp.hit & resp_res_sp.perm.x;
+  assign io_resp_bits_stage1_entry_0_perm_w = resp_res_l0.hit ? resp_res_l0.perm[0].w
+                                : resp_res_sp.hit & resp_res_sp.perm.w;
+  assign io_resp_bits_stage1_entry_0_perm_r = resp_res_l0.hit ? resp_res_l0.perm[0].r
+                                : resp_res_sp.hit & resp_res_sp.perm.r;
+  assign io_resp_bits_stage1_entry_0_ppn = {6'h0, resp_res_l0.hit ? resp_res_l0.ppn[0][37:3]
+                          : resp_res_sp.hit ? resp_res_sp.ppn[37:3]
+                          : resp_res_l1.hit ? resp_res_l1.ppn[37:3]
+                          : resp_res_l2.hit ? resp_res_l2.ppn[37:3]
+                                            : resp_res_l3.ppn[37:3]};
+  assign io_resp_bits_stage1_entry_0_ppn_low = resp_res_l0.hit ? resp_res_l0.ppn[0][2:0]
+                          : resp_res_sp.hit ? resp_res_sp.ppn[2:0]
+                          : resp_res_l1.hit ? resp_res_l1.ppn[2:0]
+                          : resp_res_l2.hit ? resp_res_l2.ppn[2:0]
+                                            : resp_res_l3.ppn[2:0];
+
+  assign io_resp_bits_stage1_entry_1_tag   = stage1_tag;
+  assign io_resp_bits_stage1_entry_1_asid  = stage1_asid;
+  assign io_resp_bits_stage1_entry_1_vmid  = stage1_vmid;
+  assign io_resp_bits_stage1_entry_1_n     = stage1_n;
+  assign io_resp_bits_stage1_entry_1_level = stage1_level;
+  assign io_resp_bits_stage1_entry_1_v     = stage1_v[1];
+  assign io_resp_bits_stage1_entry_1_pf    = ~stage1_v[1];
+  assign io_resp_bits_stage1_entry_1_cf    = resp_res_l0.hit & l0_cfs[1];
+  assign io_resp_bits_stage1_entry_1_pbmt  = resp_res_l0.hit ? resp_res_l0.pbmt[1]
+                              : resp_res_sp.hit ? resp_res_sp.pbmt : nonleaf_pbmt;
+  assign io_resp_bits_stage1_entry_1_perm_d = resp_res_l0.hit ? resp_res_l0.perm[1].d
+                                : resp_res_sp.hit & resp_res_sp.perm.d;
+  assign io_resp_bits_stage1_entry_1_perm_a = resp_res_l0.hit ? resp_res_l0.perm[1].a
+                                : resp_res_sp.hit & resp_res_sp.perm.a;
+  assign io_resp_bits_stage1_entry_1_perm_g = resp_res_l0.hit ? resp_res_l0.perm[1].g
+                                : resp_res_sp.hit & resp_res_sp.perm.g;
+  assign io_resp_bits_stage1_entry_1_perm_u = resp_res_l0.hit ? resp_res_l0.perm[1].u
+                                : resp_res_sp.hit & resp_res_sp.perm.u;
+  assign io_resp_bits_stage1_entry_1_perm_x = resp_res_l0.hit ? resp_res_l0.perm[1].x
+                                : resp_res_sp.hit & resp_res_sp.perm.x;
+  assign io_resp_bits_stage1_entry_1_perm_w = resp_res_l0.hit ? resp_res_l0.perm[1].w
+                                : resp_res_sp.hit & resp_res_sp.perm.w;
+  assign io_resp_bits_stage1_entry_1_perm_r = resp_res_l0.hit ? resp_res_l0.perm[1].r
+                                : resp_res_sp.hit & resp_res_sp.perm.r;
+  assign io_resp_bits_stage1_entry_1_ppn = {6'h0, resp_res_l0.hit ? resp_res_l0.ppn[1][37:3]
+                          : resp_res_sp.hit ? resp_res_sp.ppn[37:3]
+                          : resp_res_l1.hit ? resp_res_l1.ppn[37:3]
+                          : resp_res_l2.hit ? resp_res_l2.ppn[37:3]
+                                            : resp_res_l3.ppn[37:3]};
+  assign io_resp_bits_stage1_entry_1_ppn_low = resp_res_l0.hit ? resp_res_l0.ppn[1][2:0]
+                          : resp_res_sp.hit ? resp_res_sp.ppn[2:0]
+                          : resp_res_l1.hit ? resp_res_l1.ppn[2:0]
+                          : resp_res_l2.hit ? resp_res_l2.ppn[2:0]
+                                            : resp_res_l3.ppn[2:0];
+
+  assign io_resp_bits_stage1_entry_2_tag   = stage1_tag;
+  assign io_resp_bits_stage1_entry_2_asid  = stage1_asid;
+  assign io_resp_bits_stage1_entry_2_vmid  = stage1_vmid;
+  assign io_resp_bits_stage1_entry_2_n     = stage1_n;
+  assign io_resp_bits_stage1_entry_2_level = stage1_level;
+  assign io_resp_bits_stage1_entry_2_v     = stage1_v[2];
+  assign io_resp_bits_stage1_entry_2_pf    = ~stage1_v[2];
+  assign io_resp_bits_stage1_entry_2_cf    = resp_res_l0.hit & l0_cfs[2];
+  assign io_resp_bits_stage1_entry_2_pbmt  = resp_res_l0.hit ? resp_res_l0.pbmt[2]
+                              : resp_res_sp.hit ? resp_res_sp.pbmt : nonleaf_pbmt;
+  assign io_resp_bits_stage1_entry_2_perm_d = resp_res_l0.hit ? resp_res_l0.perm[2].d
+                                : resp_res_sp.hit & resp_res_sp.perm.d;
+  assign io_resp_bits_stage1_entry_2_perm_a = resp_res_l0.hit ? resp_res_l0.perm[2].a
+                                : resp_res_sp.hit & resp_res_sp.perm.a;
+  assign io_resp_bits_stage1_entry_2_perm_g = resp_res_l0.hit ? resp_res_l0.perm[2].g
+                                : resp_res_sp.hit & resp_res_sp.perm.g;
+  assign io_resp_bits_stage1_entry_2_perm_u = resp_res_l0.hit ? resp_res_l0.perm[2].u
+                                : resp_res_sp.hit & resp_res_sp.perm.u;
+  assign io_resp_bits_stage1_entry_2_perm_x = resp_res_l0.hit ? resp_res_l0.perm[2].x
+                                : resp_res_sp.hit & resp_res_sp.perm.x;
+  assign io_resp_bits_stage1_entry_2_perm_w = resp_res_l0.hit ? resp_res_l0.perm[2].w
+                                : resp_res_sp.hit & resp_res_sp.perm.w;
+  assign io_resp_bits_stage1_entry_2_perm_r = resp_res_l0.hit ? resp_res_l0.perm[2].r
+                                : resp_res_sp.hit & resp_res_sp.perm.r;
+  assign io_resp_bits_stage1_entry_2_ppn = {6'h0, resp_res_l0.hit ? resp_res_l0.ppn[2][37:3]
+                          : resp_res_sp.hit ? resp_res_sp.ppn[37:3]
+                          : resp_res_l1.hit ? resp_res_l1.ppn[37:3]
+                          : resp_res_l2.hit ? resp_res_l2.ppn[37:3]
+                                            : resp_res_l3.ppn[37:3]};
+  assign io_resp_bits_stage1_entry_2_ppn_low = resp_res_l0.hit ? resp_res_l0.ppn[2][2:0]
+                          : resp_res_sp.hit ? resp_res_sp.ppn[2:0]
+                          : resp_res_l1.hit ? resp_res_l1.ppn[2:0]
+                          : resp_res_l2.hit ? resp_res_l2.ppn[2:0]
+                                            : resp_res_l3.ppn[2:0];
+
+  assign io_resp_bits_stage1_entry_3_tag   = stage1_tag;
+  assign io_resp_bits_stage1_entry_3_asid  = stage1_asid;
+  assign io_resp_bits_stage1_entry_3_vmid  = stage1_vmid;
+  assign io_resp_bits_stage1_entry_3_n     = stage1_n;
+  assign io_resp_bits_stage1_entry_3_level = stage1_level;
+  assign io_resp_bits_stage1_entry_3_v     = stage1_v[3];
+  assign io_resp_bits_stage1_entry_3_pf    = ~stage1_v[3];
+  assign io_resp_bits_stage1_entry_3_cf    = resp_res_l0.hit & l0_cfs[3];
+  assign io_resp_bits_stage1_entry_3_pbmt  = resp_res_l0.hit ? resp_res_l0.pbmt[3]
+                              : resp_res_sp.hit ? resp_res_sp.pbmt : nonleaf_pbmt;
+  assign io_resp_bits_stage1_entry_3_perm_d = resp_res_l0.hit ? resp_res_l0.perm[3].d
+                                : resp_res_sp.hit & resp_res_sp.perm.d;
+  assign io_resp_bits_stage1_entry_3_perm_a = resp_res_l0.hit ? resp_res_l0.perm[3].a
+                                : resp_res_sp.hit & resp_res_sp.perm.a;
+  assign io_resp_bits_stage1_entry_3_perm_g = resp_res_l0.hit ? resp_res_l0.perm[3].g
+                                : resp_res_sp.hit & resp_res_sp.perm.g;
+  assign io_resp_bits_stage1_entry_3_perm_u = resp_res_l0.hit ? resp_res_l0.perm[3].u
+                                : resp_res_sp.hit & resp_res_sp.perm.u;
+  assign io_resp_bits_stage1_entry_3_perm_x = resp_res_l0.hit ? resp_res_l0.perm[3].x
+                                : resp_res_sp.hit & resp_res_sp.perm.x;
+  assign io_resp_bits_stage1_entry_3_perm_w = resp_res_l0.hit ? resp_res_l0.perm[3].w
+                                : resp_res_sp.hit & resp_res_sp.perm.w;
+  assign io_resp_bits_stage1_entry_3_perm_r = resp_res_l0.hit ? resp_res_l0.perm[3].r
+                                : resp_res_sp.hit & resp_res_sp.perm.r;
+  assign io_resp_bits_stage1_entry_3_ppn = {6'h0, resp_res_l0.hit ? resp_res_l0.ppn[3][37:3]
+                          : resp_res_sp.hit ? resp_res_sp.ppn[37:3]
+                          : resp_res_l1.hit ? resp_res_l1.ppn[37:3]
+                          : resp_res_l2.hit ? resp_res_l2.ppn[37:3]
+                                            : resp_res_l3.ppn[37:3]};
+  assign io_resp_bits_stage1_entry_3_ppn_low = resp_res_l0.hit ? resp_res_l0.ppn[3][2:0]
+                          : resp_res_sp.hit ? resp_res_sp.ppn[2:0]
+                          : resp_res_l1.hit ? resp_res_l1.ppn[2:0]
+                          : resp_res_l2.hit ? resp_res_l2.ppn[2:0]
+                                            : resp_res_l3.ppn[2:0];
+
+  assign io_resp_bits_stage1_entry_4_tag   = stage1_tag;
+  assign io_resp_bits_stage1_entry_4_asid  = stage1_asid;
+  assign io_resp_bits_stage1_entry_4_vmid  = stage1_vmid;
+  assign io_resp_bits_stage1_entry_4_n     = stage1_n;
+  assign io_resp_bits_stage1_entry_4_level = stage1_level;
+  assign io_resp_bits_stage1_entry_4_v     = stage1_v[4];
+  assign io_resp_bits_stage1_entry_4_pf    = ~stage1_v[4];
+  assign io_resp_bits_stage1_entry_4_cf    = resp_res_l0.hit & l0_cfs[4];
+  assign io_resp_bits_stage1_entry_4_pbmt  = resp_res_l0.hit ? resp_res_l0.pbmt[4]
+                              : resp_res_sp.hit ? resp_res_sp.pbmt : nonleaf_pbmt;
+  assign io_resp_bits_stage1_entry_4_perm_d = resp_res_l0.hit ? resp_res_l0.perm[4].d
+                                : resp_res_sp.hit & resp_res_sp.perm.d;
+  assign io_resp_bits_stage1_entry_4_perm_a = resp_res_l0.hit ? resp_res_l0.perm[4].a
+                                : resp_res_sp.hit & resp_res_sp.perm.a;
+  assign io_resp_bits_stage1_entry_4_perm_g = resp_res_l0.hit ? resp_res_l0.perm[4].g
+                                : resp_res_sp.hit & resp_res_sp.perm.g;
+  assign io_resp_bits_stage1_entry_4_perm_u = resp_res_l0.hit ? resp_res_l0.perm[4].u
+                                : resp_res_sp.hit & resp_res_sp.perm.u;
+  assign io_resp_bits_stage1_entry_4_perm_x = resp_res_l0.hit ? resp_res_l0.perm[4].x
+                                : resp_res_sp.hit & resp_res_sp.perm.x;
+  assign io_resp_bits_stage1_entry_4_perm_w = resp_res_l0.hit ? resp_res_l0.perm[4].w
+                                : resp_res_sp.hit & resp_res_sp.perm.w;
+  assign io_resp_bits_stage1_entry_4_perm_r = resp_res_l0.hit ? resp_res_l0.perm[4].r
+                                : resp_res_sp.hit & resp_res_sp.perm.r;
+  assign io_resp_bits_stage1_entry_4_ppn = {6'h0, resp_res_l0.hit ? resp_res_l0.ppn[4][37:3]
+                          : resp_res_sp.hit ? resp_res_sp.ppn[37:3]
+                          : resp_res_l1.hit ? resp_res_l1.ppn[37:3]
+                          : resp_res_l2.hit ? resp_res_l2.ppn[37:3]
+                                            : resp_res_l3.ppn[37:3]};
+  assign io_resp_bits_stage1_entry_4_ppn_low = resp_res_l0.hit ? resp_res_l0.ppn[4][2:0]
+                          : resp_res_sp.hit ? resp_res_sp.ppn[2:0]
+                          : resp_res_l1.hit ? resp_res_l1.ppn[2:0]
+                          : resp_res_l2.hit ? resp_res_l2.ppn[2:0]
+                                            : resp_res_l3.ppn[2:0];
+
+  assign io_resp_bits_stage1_entry_5_tag   = stage1_tag;
+  assign io_resp_bits_stage1_entry_5_asid  = stage1_asid;
+  assign io_resp_bits_stage1_entry_5_vmid  = stage1_vmid;
+  assign io_resp_bits_stage1_entry_5_n     = stage1_n;
+  assign io_resp_bits_stage1_entry_5_level = stage1_level;
+  assign io_resp_bits_stage1_entry_5_v     = stage1_v[5];
+  assign io_resp_bits_stage1_entry_5_pf    = ~stage1_v[5];
+  assign io_resp_bits_stage1_entry_5_cf    = resp_res_l0.hit & l0_cfs[5];
+  assign io_resp_bits_stage1_entry_5_pbmt  = resp_res_l0.hit ? resp_res_l0.pbmt[5]
+                              : resp_res_sp.hit ? resp_res_sp.pbmt : nonleaf_pbmt;
+  assign io_resp_bits_stage1_entry_5_perm_d = resp_res_l0.hit ? resp_res_l0.perm[5].d
+                                : resp_res_sp.hit & resp_res_sp.perm.d;
+  assign io_resp_bits_stage1_entry_5_perm_a = resp_res_l0.hit ? resp_res_l0.perm[5].a
+                                : resp_res_sp.hit & resp_res_sp.perm.a;
+  assign io_resp_bits_stage1_entry_5_perm_g = resp_res_l0.hit ? resp_res_l0.perm[5].g
+                                : resp_res_sp.hit & resp_res_sp.perm.g;
+  assign io_resp_bits_stage1_entry_5_perm_u = resp_res_l0.hit ? resp_res_l0.perm[5].u
+                                : resp_res_sp.hit & resp_res_sp.perm.u;
+  assign io_resp_bits_stage1_entry_5_perm_x = resp_res_l0.hit ? resp_res_l0.perm[5].x
+                                : resp_res_sp.hit & resp_res_sp.perm.x;
+  assign io_resp_bits_stage1_entry_5_perm_w = resp_res_l0.hit ? resp_res_l0.perm[5].w
+                                : resp_res_sp.hit & resp_res_sp.perm.w;
+  assign io_resp_bits_stage1_entry_5_perm_r = resp_res_l0.hit ? resp_res_l0.perm[5].r
+                                : resp_res_sp.hit & resp_res_sp.perm.r;
+  assign io_resp_bits_stage1_entry_5_ppn = {6'h0, resp_res_l0.hit ? resp_res_l0.ppn[5][37:3]
+                          : resp_res_sp.hit ? resp_res_sp.ppn[37:3]
+                          : resp_res_l1.hit ? resp_res_l1.ppn[37:3]
+                          : resp_res_l2.hit ? resp_res_l2.ppn[37:3]
+                                            : resp_res_l3.ppn[37:3]};
+  assign io_resp_bits_stage1_entry_5_ppn_low = resp_res_l0.hit ? resp_res_l0.ppn[5][2:0]
+                          : resp_res_sp.hit ? resp_res_sp.ppn[2:0]
+                          : resp_res_l1.hit ? resp_res_l1.ppn[2:0]
+                          : resp_res_l2.hit ? resp_res_l2.ppn[2:0]
+                                            : resp_res_l3.ppn[2:0];
+
+  assign io_resp_bits_stage1_entry_6_tag   = stage1_tag;
+  assign io_resp_bits_stage1_entry_6_asid  = stage1_asid;
+  assign io_resp_bits_stage1_entry_6_vmid  = stage1_vmid;
+  assign io_resp_bits_stage1_entry_6_n     = stage1_n;
+  assign io_resp_bits_stage1_entry_6_level = stage1_level;
+  assign io_resp_bits_stage1_entry_6_v     = stage1_v[6];
+  assign io_resp_bits_stage1_entry_6_pf    = ~stage1_v[6];
+  assign io_resp_bits_stage1_entry_6_cf    = resp_res_l0.hit & l0_cfs[6];
+  assign io_resp_bits_stage1_entry_6_pbmt  = resp_res_l0.hit ? resp_res_l0.pbmt[6]
+                              : resp_res_sp.hit ? resp_res_sp.pbmt : nonleaf_pbmt;
+  assign io_resp_bits_stage1_entry_6_perm_d = resp_res_l0.hit ? resp_res_l0.perm[6].d
+                                : resp_res_sp.hit & resp_res_sp.perm.d;
+  assign io_resp_bits_stage1_entry_6_perm_a = resp_res_l0.hit ? resp_res_l0.perm[6].a
+                                : resp_res_sp.hit & resp_res_sp.perm.a;
+  assign io_resp_bits_stage1_entry_6_perm_g = resp_res_l0.hit ? resp_res_l0.perm[6].g
+                                : resp_res_sp.hit & resp_res_sp.perm.g;
+  assign io_resp_bits_stage1_entry_6_perm_u = resp_res_l0.hit ? resp_res_l0.perm[6].u
+                                : resp_res_sp.hit & resp_res_sp.perm.u;
+  assign io_resp_bits_stage1_entry_6_perm_x = resp_res_l0.hit ? resp_res_l0.perm[6].x
+                                : resp_res_sp.hit & resp_res_sp.perm.x;
+  assign io_resp_bits_stage1_entry_6_perm_w = resp_res_l0.hit ? resp_res_l0.perm[6].w
+                                : resp_res_sp.hit & resp_res_sp.perm.w;
+  assign io_resp_bits_stage1_entry_6_perm_r = resp_res_l0.hit ? resp_res_l0.perm[6].r
+                                : resp_res_sp.hit & resp_res_sp.perm.r;
+  assign io_resp_bits_stage1_entry_6_ppn = {6'h0, resp_res_l0.hit ? resp_res_l0.ppn[6][37:3]
+                          : resp_res_sp.hit ? resp_res_sp.ppn[37:3]
+                          : resp_res_l1.hit ? resp_res_l1.ppn[37:3]
+                          : resp_res_l2.hit ? resp_res_l2.ppn[37:3]
+                                            : resp_res_l3.ppn[37:3]};
+  assign io_resp_bits_stage1_entry_6_ppn_low = resp_res_l0.hit ? resp_res_l0.ppn[6][2:0]
+                          : resp_res_sp.hit ? resp_res_sp.ppn[2:0]
+                          : resp_res_l1.hit ? resp_res_l1.ppn[2:0]
+                          : resp_res_l2.hit ? resp_res_l2.ppn[2:0]
+                                            : resp_res_l3.ppn[2:0];
+
+  assign io_resp_bits_stage1_entry_7_tag   = stage1_tag;
+  assign io_resp_bits_stage1_entry_7_asid  = stage1_asid;
+  assign io_resp_bits_stage1_entry_7_vmid  = stage1_vmid;
+  assign io_resp_bits_stage1_entry_7_n     = stage1_n;
+  assign io_resp_bits_stage1_entry_7_level = stage1_level;
+  assign io_resp_bits_stage1_entry_7_v     = stage1_v[7];
+  assign io_resp_bits_stage1_entry_7_pf    = ~stage1_v[7];
+  assign io_resp_bits_stage1_entry_7_cf    = resp_res_l0.hit & l0_cfs[7];
+  assign io_resp_bits_stage1_entry_7_pbmt  = resp_res_l0.hit ? resp_res_l0.pbmt[7]
+                              : resp_res_sp.hit ? resp_res_sp.pbmt : nonleaf_pbmt;
+  assign io_resp_bits_stage1_entry_7_perm_d = resp_res_l0.hit ? resp_res_l0.perm[7].d
+                                : resp_res_sp.hit & resp_res_sp.perm.d;
+  assign io_resp_bits_stage1_entry_7_perm_a = resp_res_l0.hit ? resp_res_l0.perm[7].a
+                                : resp_res_sp.hit & resp_res_sp.perm.a;
+  assign io_resp_bits_stage1_entry_7_perm_g = resp_res_l0.hit ? resp_res_l0.perm[7].g
+                                : resp_res_sp.hit & resp_res_sp.perm.g;
+  assign io_resp_bits_stage1_entry_7_perm_u = resp_res_l0.hit ? resp_res_l0.perm[7].u
+                                : resp_res_sp.hit & resp_res_sp.perm.u;
+  assign io_resp_bits_stage1_entry_7_perm_x = resp_res_l0.hit ? resp_res_l0.perm[7].x
+                                : resp_res_sp.hit & resp_res_sp.perm.x;
+  assign io_resp_bits_stage1_entry_7_perm_w = resp_res_l0.hit ? resp_res_l0.perm[7].w
+                                : resp_res_sp.hit & resp_res_sp.perm.w;
+  assign io_resp_bits_stage1_entry_7_perm_r = resp_res_l0.hit ? resp_res_l0.perm[7].r
+                                : resp_res_sp.hit & resp_res_sp.perm.r;
+  assign io_resp_bits_stage1_entry_7_ppn = {6'h0, resp_res_l0.hit ? resp_res_l0.ppn[7][37:3]
+                          : resp_res_sp.hit ? resp_res_sp.ppn[37:3]
+                          : resp_res_l1.hit ? resp_res_l1.ppn[37:3]
+                          : resp_res_l2.hit ? resp_res_l2.ppn[37:3]
+                                            : resp_res_l3.ppn[37:3]};
+  assign io_resp_bits_stage1_entry_7_ppn_low = resp_res_l0.hit ? resp_res_l0.ppn[7][2:0]
+                          : resp_res_sp.hit ? resp_res_sp.ppn[2:0]
+                          : resp_res_l1.hit ? resp_res_l1.ppn[2:0]
+                          : resp_res_l2.hit ? resp_res_l2.ppn[2:0]
+                                            : resp_res_l3.ppn[2:0];
+
+  assign io_resp_bits_stage1_pteidx_0 = (resp_pte_idx == 3'd0);
+  assign io_resp_bits_stage1_pteidx_1 = (resp_pte_idx == 3'd1);
+  assign io_resp_bits_stage1_pteidx_2 = (resp_pte_idx == 3'd2);
+  assign io_resp_bits_stage1_pteidx_3 = (resp_pte_idx == 3'd3);
+  assign io_resp_bits_stage1_pteidx_4 = (resp_pte_idx == 3'd4);
+  assign io_resp_bits_stage1_pteidx_5 = (resp_pte_idx == 3'd5);
+  assign io_resp_bits_stage1_pteidx_6 = (resp_pte_idx == 3'd6);
+  assign io_resp_bits_stage1_pteidx_7 = (resp_pte_idx == 3'd7);
+
+  assign io_resp_bits_toFsm_bitmapCheck_ptes_0 =
+    resp_res_sp.jmp_bitmap_check ? resp_res_sp.pte : resp_res_l0.ptes[0];
+  assign io_resp_bits_toFsm_bitmapCheck_ptes_1 =
+    resp_res_sp.jmp_bitmap_check ? resp_res_sp.pte : resp_res_l0.ptes[1];
+  assign io_resp_bits_toFsm_bitmapCheck_ptes_2 =
+    resp_res_sp.jmp_bitmap_check ? resp_res_sp.pte : resp_res_l0.ptes[2];
+  assign io_resp_bits_toFsm_bitmapCheck_ptes_3 =
+    resp_res_sp.jmp_bitmap_check ? resp_res_sp.pte : resp_res_l0.ptes[3];
+  assign io_resp_bits_toFsm_bitmapCheck_ptes_4 =
+    resp_res_sp.jmp_bitmap_check ? resp_res_sp.pte : resp_res_l0.ptes[4];
+  assign io_resp_bits_toFsm_bitmapCheck_ptes_5 =
+    resp_res_sp.jmp_bitmap_check ? resp_res_sp.pte : resp_res_l0.ptes[5];
+  assign io_resp_bits_toFsm_bitmapCheck_ptes_6 =
+    resp_res_sp.jmp_bitmap_check ? resp_res_sp.pte : resp_res_l0.ptes[6];
+  assign io_resp_bits_toFsm_bitmapCheck_ptes_7 =
+    resp_res_sp.jmp_bitmap_check ? resp_res_sp.pte : resp_res_l0.ptes[7];
+  assign io_resp_bits_toFsm_bitmapCheck_cfs_0  = resp_res_l0.cfs[0];
+  assign io_resp_bits_toFsm_bitmapCheck_cfs_1  = resp_res_l0.cfs[1];
+  assign io_resp_bits_toFsm_bitmapCheck_cfs_2  = resp_res_l0.cfs[2];
+  assign io_resp_bits_toFsm_bitmapCheck_cfs_3  = resp_res_l0.cfs[3];
+  assign io_resp_bits_toFsm_bitmapCheck_cfs_4  = resp_res_l0.cfs[4];
+  assign io_resp_bits_toFsm_bitmapCheck_cfs_5  = resp_res_l0.cfs[5];
+  assign io_resp_bits_toFsm_bitmapCheck_cfs_6  = resp_res_l0.cfs[6];
+  assign io_resp_bits_toFsm_bitmapCheck_cfs_7  = resp_res_l0.cfs[7];
+  assign io_resp_bits_toHptw_bitmapCheck_ptes_0 = resp_res_l0.ptes[0];
+  assign io_resp_bits_toHptw_bitmapCheck_ptes_1 = resp_res_l0.ptes[1];
+  assign io_resp_bits_toHptw_bitmapCheck_ptes_2 = resp_res_l0.ptes[2];
+  assign io_resp_bits_toHptw_bitmapCheck_ptes_3 = resp_res_l0.ptes[3];
+  assign io_resp_bits_toHptw_bitmapCheck_ptes_4 = resp_res_l0.ptes[4];
+  assign io_resp_bits_toHptw_bitmapCheck_ptes_5 = resp_res_l0.ptes[5];
+  assign io_resp_bits_toHptw_bitmapCheck_ptes_6 = resp_res_l0.ptes[6];
+  assign io_resp_bits_toHptw_bitmapCheck_ptes_7 = resp_res_l0.ptes[7];
+  // END GENERATED(stage1_entry_fanout)
+
+  assign io_resp_bits_stage1_not_super = resp_res_l0.hit;
+  assign io_resp_bits_toHptw_id        = resp_hptwid;
+  assign io_resp_bits_toHptw_resp_entry_tag   = resp_vpn;
+  assign io_resp_bits_toHptw_resp_entry_vmid  = io_csr_dup_0_hgatp_vmid[13:0];
+  assign io_resp_bits_toHptw_resp_entry_n     = stage1_n;
+  assign io_resp_bits_toHptw_resp_entry_level = resp_res_l0.hit ? 2'h0 : resp_res_sp.level;
+  assign io_resp_bits_toHptw_resp_entry_pbmt  =
+    resp_res_l0.hit ? resp_res_l0.pbmt[resp_pte_idx] : resp_res_sp.pbmt;
+  assign io_resp_bits_toHptw_resp_entry_ppn   =
+    {2'h0, resp_res_l0.hit ? resp_res_l0.ppn[resp_pte_idx][35:0]
+                           : resp_res_sp.ppn[35:0]};
+  assign io_resp_bits_toHptw_resp_entry_perm_d =
+    resp_res_l0.hit ? resp_res_l0.perm[resp_pte_idx].d : resp_res_sp.perm.d;
+  assign io_resp_bits_toHptw_resp_entry_perm_a =
+    resp_res_l0.hit ? resp_res_l0.perm[resp_pte_idx].a : resp_res_sp.perm.a;
+  assign io_resp_bits_toHptw_resp_entry_perm_g =
+    resp_res_l0.hit ? resp_res_l0.perm[resp_pte_idx].g : resp_res_sp.perm.g;
+  assign io_resp_bits_toHptw_resp_entry_perm_u =
+    resp_res_l0.hit ? resp_res_l0.perm[resp_pte_idx].u : resp_res_sp.perm.u;
+  assign io_resp_bits_toHptw_resp_entry_perm_x =
+    resp_res_l0.hit ? resp_res_l0.perm[resp_pte_idx].x : resp_res_sp.perm.x;
+  assign io_resp_bits_toHptw_resp_entry_perm_w =
+    resp_res_l0.hit ? resp_res_l0.perm[resp_pte_idx].w : resp_res_sp.perm.w;
+  assign io_resp_bits_toHptw_resp_entry_perm_r =
+    resp_res_l0.hit ? resp_res_l0.perm[resp_pte_idx].r : resp_res_sp.perm.r;
+  // gpf = "G 阶段页错误" = 查到的那条无效
+  assign io_resp_bits_toHptw_resp_gpf = ~resp_leaf_v;
+
+  assign io_resp_bits_toHptw_l3Hit = resp_res_l3.hit & resp_ishptw;
+  assign io_resp_bits_toHptw_l2Hit = resp_res_l2.hit & resp_ishptw;
+  assign io_resp_bits_toHptw_l1Hit = resp_res_l1.hit & resp_ishptw;
+
+  // ---------------------------------------------------------------------------
+  // §20 perf 事件（已追清：golden:8347-8361 / 36097-36113 / 45295-45302）
+  //
+  //  八个计数口都是 1 位事件打**两拍**再零扩展到 6 位输出（HasPerfEvents 的定式）。
+  //  ★access 只统计非预取请求★：prefetch(source==2) 发起的查询不算一次访问。
+  logic perf_access;
+  assign perf_access = (resp_src != 2'd2) & resp_fire;
+
+  logic [7:0] perf_event;
+  assign perf_event[0] = perf_access;
+  assign perf_event[1] = perf_access & io_resp_bits_toFsm_l2Hit
+                       & ~io_resp_bits_toFsm_l1Hit & ~io_resp_bits_hit;
+  assign perf_event[2] = perf_access & io_resp_bits_toFsm_l1Hit & ~io_resp_bits_hit;
+  assign perf_event[3] = perf_access & resp_res_l0.hit;
+  assign perf_event[4] = perf_access & resp_res_sp.hit;
+  assign perf_event[5] = perf_access & io_resp_bits_hit;
+  assign perf_event[6] = io_req_valid & ~stage_req_ready;   // 入口被堵
+  assign perf_event[7] = valid_resp   & ~io_resp_ready;     // 出口被堵
+
+  logic [7:0] perf_event_d1, perf_event_d2;
+  assign io_perf_0_value = {5'h0, perf_event_d2[0]};
+  assign io_perf_1_value = {5'h0, perf_event_d2[1]};
+  assign io_perf_2_value = {5'h0, perf_event_d2[2]};
+  assign io_perf_3_value = {5'h0, perf_event_d2[3]};
+  assign io_perf_4_value = {5'h0, perf_event_d2[4]};
+  assign io_perf_5_value = {5'h0, perf_event_d2[5]};
+  assign io_perf_6_value = {5'h0, perf_event_d2[6]};
+  assign io_perf_7_value = {5'h0, perf_event_d2[7]};
+
+  // ---------------------------------------------------------------------------
+  // §21 sfence / hfence 失效（已追清：golden 的 l0v/l1v/l2v/spv/l3v 清零支路；
+  //     Chisel PageTableCache.scala:1097-1300）
+  //
+  //  三种栅栏，**同一拍最多来一种**，但 golden 是三段 `when` 顺序覆盖，
+  //  所以优先级是 hfence.gvma > hfence.vvma > sfence.vma。照抄这个顺序。
+  //    sfence.vma    —— hg=0 且 hv=0。刷"当前虚拟化上下文"的一阶段条目。
+  //    hfence.vvma   —— hv=1。刷本 VM 的一阶段条目（VS 级页表）。
+  //    hfence.gvma   —— hg=1。刷二阶段条目（G 级页表）。
+  //  每种再按 rs1（给了地址吗）/ rs2（给了 asid/vmid 吗）分四档：
+  //    rs1=1,rs2=1  全刷      rs1=1,rs2=0  按 asid 刷（global 条目豁免）
+  //    rs1=0,rs2=1  按地址刷  rs1=0,rs2=0  按地址 + asid 刷
+  //  ★rs1=0（指定地址）那两档只碰 l0 与 sp★：l1/l2/l3 存的是非叶子 PDE，
+  //   一个地址落在哪条 PDE 上不唯一，golden 干脆不刷它们。照抄，别"补全"。
+  //
+  //  ★比对用的是 XORFold 哈希副本，不是 SRAM 里的原值★（见 §9.1）：
+  //   哈希撞了就多刷几条，是 golden 有意的保守设计。
+
+  logic sfence_plain, hfence_vvma, hfence_gvma;
+  assign sfence_plain = io_sfence_dup_0_valid
+                      & ~io_sfence_dup_0_bits_hg & ~io_sfence_dup_0_bits_hv;
+  assign hfence_vvma  = io_sfence_dup_0_valid & io_sfence_dup_0_bits_hv;
+  assign hfence_gvma  = io_sfence_dup_0_valid & io_sfence_dup_0_bits_hg;
+
+  // ---- 与栅栏种类无关的 asid 比对（golden 把它们放在三段 when 之外）----
+  //  ★l0/l1 比折叠哈希，l2/sp 比 16 位原值★：l2/sp 是寄存器阵列，原值就在手边。
+  logic [L0_SETS*L0_WAYS-1:0] l0_asid_hit;
+  logic [L1_SETS*L1_WAYS-1:0] l1_asid_hit;
+  logic [L2_N-1:0]            l2_asid_hit;
+  logic [SP_N-1:0]            sp_asid_hit;
+  logic [L3_N-1:0]            l3_asid_hit;
+
+  always_comb begin
+    for (int s = 0; s < L0_SETS; s++)
+      for (int w = 0; w < L0_WAYS; w++)
+        l0_asid_hit[L0_WAYS*s + w] =
+          (l0asids[s][w] == xorfold3(io_sfence_dup_0_bits_id));
+    for (int s = 0; s < L1_SETS; s++)
+      for (int w = 0; w < L1_WAYS; w++)
+        l1_asid_hit[L1_WAYS*s + w] =
+          (l1asids[s][w] == xorfold3(io_sfence_dup_1_bits_id));
+    for (int i = 0; i < L2_N; i++)
+      l2_asid_hit[i] = (l2_entry[i].asid == io_sfence_dup_2_bits_id);
+    for (int i = 0; i < SP_N; i++)
+      sp_asid_hit[i] = (sp_entry[i].asid == io_sfence_dup_0_bits_id);
+    for (int i = 0; i < L3_N; i++)
+      l3_asid_hit[i] = (l3_entry[i].asid == io_sfence_dup_2_bits_id);
+  end
+
+  // ---- vmid 比对：sfence/hfence.vvma 比 hgatp.vmid，hfence.gvma 比 rs2 给的 id ----
+  //  ★各级用各自 dup 的 csr★（l0/sp 用 dup_0、l1 用 dup_1、l2/l3 用 dup_2）。
+  logic [L0_SETS*L0_WAYS-1:0] l0_vmid_csr, l0_vmid_id;
+  logic [L1_SETS*L1_WAYS-1:0] l1_vmid_csr, l1_vmid_id;
+  logic [L2_N-1:0]            l2_vmid_csr, l2_vmid_id;
+  logic [SP_N-1:0]            sp_vmid_csr, sp_vmid_id;
+  logic [L3_N-1:0]            l3_vmid_csr, l3_vmid_id;
+
+  always_comb begin
+    for (int s = 0; s < L0_SETS; s++)
+      for (int w = 0; w < L0_WAYS; w++) begin
+        l0_vmid_csr[L0_WAYS*s + w] =
+          (l0vmids[s][w] == xorfold3(io_csr_dup_0_hgatp_vmid));
+        l0_vmid_id [L0_WAYS*s + w] =
+          (l0vmids[s][w] == xorfold3(io_sfence_dup_0_bits_id));
+      end
+    for (int s = 0; s < L1_SETS; s++)
+      for (int w = 0; w < L1_WAYS; w++) begin
+        l1_vmid_csr[L1_WAYS*s + w] =
+          (l1vmids[s][w] == xorfold3(io_csr_dup_1_hgatp_vmid));
+        l1_vmid_id [L1_WAYS*s + w] =
+          (l1vmids[s][w] == xorfold3(io_sfence_dup_1_bits_id));
+      end
+    // ★14 位存值与 16 位比较值之间是零扩展★：vmid 高两位非零就一条都刷不到。
+    for (int i = 0; i < L2_N; i++) begin
+      l2_vmid_csr[i] = ({2'h0, l2_entry[i].vmid} == io_csr_dup_2_hgatp_vmid);
+      l2_vmid_id [i] = ({2'h0, l2_entry[i].vmid} == io_sfence_dup_2_bits_id);
+    end
+    for (int i = 0; i < SP_N; i++) begin
+      sp_vmid_csr[i] = ({2'h0, sp_entry[i].vmid} == io_csr_dup_0_hgatp_vmid);
+      sp_vmid_id [i] = ({2'h0, sp_entry[i].vmid} == io_sfence_dup_0_bits_id);
+    end
+    for (int i = 0; i < L3_N; i++) begin
+      l3_vmid_csr[i] = ({2'h0, l3_entry[i].vmid} == io_csr_dup_2_hgatp_vmid);
+      l3_vmid_id [i] = ({2'h0, l3_entry[i].vmid} == io_sfence_dup_2_bits_id);
+    end
+  end
+
+  // ---- h 比对：这条表项属不属于本次栅栏要刷的翻译模式 ----
+  //  sfence.vma 在 V=1 时刷 onlyStage1、在 V=0 时刷 noS2xlate（各用各的 dup 的 priv.virt）；
+  //  hfence.vvma 恒刷 onlyStage1；hfence.gvma 刷 onlyStage1 与 onlyStage2 两种。
+  logic [L0_SETS*L0_WAYS-1:0] l0_h_sf, l0_h_s1, l0_h_s2, l0_h_g;
+  logic [L1_SETS*L1_WAYS-1:0] l1_h_sf, l1_h_s1, l1_h_g;
+  logic [L2_N-1:0]            l2_h_sf, l2_h_s1, l2_h_g;
+  logic [SP_N-1:0]            sp_h_sf, sp_h_s1, sp_h_s2, sp_h_g;
+  logic [L3_N-1:0]            l3_h_sf, l3_h_s1, l3_h_g;
+
+  always_comb begin
+    for (int s = 0; s < L0_SETS; s++)
+      for (int w = 0; w < L0_WAYS; w++) begin
+        automatic int k = L0_WAYS*s + w;
+        l0_h_sf[k] = io_csr_dup_0_priv_virt ? (l0h[s][w] == H_ONLY_STAGE1)
+                                            : (l0h[s][w] == H_NO_S2XLATE);
+        l0_h_s1[k] = (l0h[s][w] == H_ONLY_STAGE1);
+        l0_h_s2[k] = (l0h[s][w] == H_ONLY_STAGE2);
+        l0_h_g [k] = l0_h_s1[k] | l0_h_s2[k];
+      end
+    for (int s = 0; s < L1_SETS; s++)
+      for (int w = 0; w < L1_WAYS; w++) begin
+        automatic int k = L1_WAYS*s + w;
+        l1_h_sf[k] = io_csr_dup_1_priv_virt ? (l1h[s][w] == H_ONLY_STAGE1)
+                                            : (l1h[s][w] == H_NO_S2XLATE);
+        l1_h_s1[k] = (l1h[s][w] == H_ONLY_STAGE1);
+        l1_h_g [k] = l1_h_s1[k] | (l1h[s][w] == H_ONLY_STAGE2);
+      end
+    for (int i = 0; i < L2_N; i++) begin
+      l2_h_sf[i] = io_csr_dup_2_priv_virt ? (l2h[i] == H_ONLY_STAGE1)
+                                          : (l2h[i] == H_NO_S2XLATE);
+      l2_h_s1[i] = (l2h[i] == H_ONLY_STAGE1);
+      l2_h_g [i] = l2_h_s1[i] | (l2h[i] == H_ONLY_STAGE2);
+    end
+    for (int i = 0; i < SP_N; i++) begin
+      sp_h_sf[i] = io_csr_dup_0_priv_virt ? (sph[i] == H_ONLY_STAGE1)
+                                          : (sph[i] == H_NO_S2XLATE);
+      sp_h_s1[i] = (sph[i] == H_ONLY_STAGE1);
+      sp_h_s2[i] = (sph[i] == H_ONLY_STAGE2);
+      sp_h_g [i] = sp_h_s1[i] | sp_h_s2[i];
+    end
+    for (int i = 0; i < L3_N; i++) begin
+      l3_h_sf[i] = io_csr_dup_2_priv_virt ? (l3h[i] == H_ONLY_STAGE1)
+                                          : (l3h[i] == H_NO_S2XLATE);
+      l3_h_s1[i] = (l3h[i] == H_ONLY_STAGE1);
+      l3_h_g [i] = l3_h_s1[i] | (l3h[i] == H_ONLY_STAGE2);
+    end
+  end
+
+  // sfence.vma 的"虚拟化上下文命中"：V=1 时还要 vmid 也对上，V=0 时只看 h。
+  logic [L0_SETS*L0_WAYS-1:0] l0_virt_hit;
+  logic [L1_SETS*L1_WAYS-1:0] l1_virt_hit;
+  logic [L2_N-1:0]            l2_virt_hit;
+  logic [SP_N-1:0]            sp_virt_hit;
+  logic [L3_N-1:0]            l3_virt_hit;
+  assign l0_virt_hit = l0_h_sf & (io_csr_dup_0_priv_virt ? l0_vmid_csr : '1);
+  assign l1_virt_hit = l1_h_sf & (io_csr_dup_1_priv_virt ? l1_vmid_csr : '1);
+  assign l2_virt_hit = l2_h_sf & (io_csr_dup_2_priv_virt ? l2_vmid_csr : '1);
+  assign sp_virt_hit = sp_h_sf & (io_csr_dup_0_priv_virt ? sp_vmid_csr : '1);
+  assign l3_virt_hit = l3_h_sf & (io_csr_dup_2_priv_virt ? l3_vmid_csr : '1);
+
+  // ---- 按地址刷时用的 vpn ----
+  //  sfence.vma / hfence.vvma 取 addr[49:12]（addr 是字节地址，去掉 12 位页内偏移）；
+  //  ★hfence.gvma 取的是 (addr << 2)[49:12] = addr[47:10]★——G 阶段的 gpa 在
+  //  sfence 指令里按 4 字节粒度编码（Sv39x4 的根页表大 4 倍），照抄这个移位。
+  logic [VPN_W-1:0] sfence_vpn, hfenceg_gvpn;
+  assign sfence_vpn   = io_sfence_dup_0_bits_addr[49:12];
+  assign hfenceg_gvpn = io_sfence_dup_0_bits_addr[47:10];
+
+  logic [L0_SETS*L0_WAYS-1:0] l0_vpn_hit_sf, l0_vpn_hit_g;
+  logic [L0_SETS*L0_WAYS-1:0] l0_flush_set_sf, l0_flush_set_g;
+  always_comb begin
+    for (int s = 0; s < L0_SETS; s++)
+      for (int w = 0; w < L0_WAYS; w++) begin
+        automatic int k = L0_WAYS*s + w;
+        l0_vpn_hit_sf[k]   = (l0vpns[s][w] == xorfold6_tag(sfence_vpn[37:9]));
+        l0_vpn_hit_g [k]   = (l0vpns[s][w] == xorfold6_tag(hfenceg_gvpn[37:9]));
+        // 只刷地址落到的那一组（组内 4 路都刷，因为 vpn 哈希只能缩到组这一级）
+        l0_flush_set_sf[k] = (6'(s) == sfence_vpn[8:3]);
+        l0_flush_set_g [k] = (6'(s) == hfenceg_gvpn[8:3]);
+      end
+  end
+
+  // ---- sp 在"按地址刷"时用的是完整的 PtwEntry.hit（allType）----
+  //  PtwEntry.hit 的 sfence 分支展开后只剩三项，按栅栏种类取舍：
+  //    asid_hit  —— 只有 rs2=0（指定了 asid）且不是 hfence.gvma 时才查；global 条目豁免
+  //    vmid_hit  —— sfence.vma 仅在 V=1 时查、hfence.vvma 恒查、hfence.gvma 在 rs2=0 时查
+  //    level_match —— 恒查（与查找侧共用 sp_level_match）
+  logic [SP_N-1:0] sp_tag_sf, sp_tag_g, sp_asid_or_g;
+  always_comb
+    for (int i = 0; i < SP_N; i++) begin
+      sp_tag_sf[i]    = sp_level_match(i, sfence_vpn);
+      sp_tag_g [i]    = sp_level_match(i, hfenceg_gvpn);
+      sp_asid_or_g[i] = sp_asid_hit[i] | sp_entry[i].perm.g;
+    end
+
+  // ---------------------------------------------------------------------------
+  // §21.1 五级的失效掩码 —— "这一拍要把哪些位从 v 向量里打掉"
+  //
+  //  写成掩码而不是直接写 v：三种栅栏要按 golden 的顺序覆盖，掩码形让覆盖关系
+  //  在 §11 的 always_ff 里一眼可读（谁在后面谁赢）。
+  logic [L0_SETS*L0_WAYS-1:0] l0_sf_mask, l0_hv_mask, l0_hg_mask;
+  logic [L1_SETS*L1_WAYS-1:0] l1_sf_mask, l1_hv_mask, l1_hg_mask;
+  logic [L2_N-1:0]            l2_sf_mask, l2_hv_mask, l2_hg_mask;
+  logic [SP_N-1:0]            sp_sf_mask, sp_hv_mask, sp_hg_mask;
+  logic [L3_N-1:0]            l3_sf_mask, l3_hv_mask, l3_hg_mask;
+  logic sf_rs1, sf_rs2, l3_rs1, l3_rs2;
+  assign sf_rs1 = io_sfence_dup_0_bits_rs1;
+  assign sf_rs2 = io_sfence_dup_0_bits_rs2;
+  // ★l3 那一段用的是 dup_2 的 rs1/rs2★（golden 里 l3 的 sfence 独立成段）。
+  assign l3_rs1 = io_sfence_dup_2_bits_rs1;
+  assign l3_rs2 = io_sfence_dup_2_bits_rs2;
+
+  always_comb begin
+    // ---- sfence.vma ----
+    if (sf_rs1) begin
+      l0_sf_mask = sf_rs2 ? l0_virt_hit : (l0_virt_hit & ~l0g & l0_asid_hit);
+      l1_sf_mask = sf_rs2 ? l1_virt_hit : (l1_virt_hit & ~l1g & l1_asid_hit);
+      l2_sf_mask = sf_rs2 ? l2_virt_hit : (l2_virt_hit & ~l2g & l2_asid_hit);
+      sp_sf_mask = sf_rs2 ? sp_virt_hit : (sp_virt_hit & ~spg & sp_asid_hit);
+    end
+    else begin
+      l0_sf_mask = l0_virt_hit & l0_vpn_hit_sf & l0_flush_set_sf
+                 & (sf_rs2 ? '1 : (~l0g & l0_asid_hit));
+      // ★rs1=0 时 golden 根本不给 l1v/l2v 赋值★（非叶子 PDE 与地址不是一一对应）。
+      //  这里给掩码填 0 只是让 always_comb 完备；真正的"不刷"靠 §11 里的 sf_rs1 门，
+      //  掩码为 0 的赋值会覆盖掉同一拍的回填结果，不是无害的。
+      l1_sf_mask = '0;
+      l2_sf_mask = '0;
+      sp_sf_mask = sp_h_sf & sp_tag_sf
+                 & (io_csr_dup_0_priv_virt ? sp_vmid_csr : '1)
+                 & (sf_rs2 ? '1 : (~spg & sp_asid_or_g));
+    end
+
+    // ---- hfence.vvma ----
+    if (sf_rs1) begin
+      l0_hv_mask = (l0_h_s1 & l0_vmid_csr) & (sf_rs2 ? '1 : (~l0g & l0_asid_hit));
+      l1_hv_mask = (l1_h_s1 & l1_vmid_csr) & (sf_rs2 ? '1 : (~l1g & l1_asid_hit));
+      l2_hv_mask = (l2_h_s1 & l2_vmid_csr) & (sf_rs2 ? '1 : (~l2g & l2_asid_hit));
+      sp_hv_mask = (sp_h_s1 & sp_vmid_csr) & (sf_rs2 ? '1 : (~spg & sp_asid_hit));
+    end
+    else begin
+      l0_hv_mask = l0_h_s1 & l0_vmid_csr & l0_vpn_hit_sf & l0_flush_set_sf
+                 & (sf_rs2 ? '1 : (~l0g & l0_asid_hit));
+      l1_hv_mask = '0;
+      l2_hv_mask = '0;
+      sp_hv_mask = sp_h_s1 & sp_tag_sf & sp_vmid_csr
+                 & (sf_rs2 ? '1 : (~spg & sp_asid_or_g));
+    end
+
+    // ---- hfence.gvma（★vmid 来自 rs2 寄存器的 id，不是 hgatp★）----
+    if (sf_rs1) begin
+      l0_hg_mask = sf_rs2 ? l0_h_g : (l0_h_g & l0_vmid_id);
+      l1_hg_mask = sf_rs2 ? l1_h_g : (l1_h_g & l1_vmid_id);
+      l2_hg_mask = sf_rs2 ? l2_h_g : (l2_h_g & l2_vmid_id);
+      sp_hg_mask = sf_rs2 ? sp_h_g : (sp_h_g & sp_vmid_id);
+    end
+    else begin
+      // ★按地址刷 G 阶段时只认 onlyStage2 的条目★（不含 onlyStage1）。
+      l0_hg_mask = l0_h_s2 & l0_vpn_hit_g & l0_flush_set_g
+                 & (sf_rs2 ? '1 : l0_vmid_id);
+      l1_hg_mask = '0;
+      l2_hg_mask = '0;
+      sp_hg_mask = sp_h_s2 & sp_tag_g & (sf_rs2 ? '1 : sp_vmid_id);
+    end
+
+    // ---- l3：独立一段，用 dup_2 的 rs1/rs2，且★只有 rs1=1 的两档★ ----
+    //  rs1=0 时 golden 那一段整个不赋值 —— 所以 §11 里那三条都用 l3_rs1 当门，
+    //  ★不能写成"掩码为 0 的无害赋值"★：那会把同一拍 l3 回填刚置上的位又抹回去。
+    l3_sf_mask = l3_rs2 ? l3_virt_hit : (~l3g & l3_h_sf & l3_asid_hit & l3_virt_hit);
+    l3_hv_mask = l3_rs2 ? (l3_h_s1 & l3_vmid_csr)
+                        : (~l3g & l3_h_s1 & l3_asid_hit & l3_vmid_csr);
+    l3_hg_mask = l3_rs2 ? l3_h_g : (l3_h_g & l3_vmid_id);
+  end
+
+  // ---------------------------------------------------------------------------
+  // §22 bitmap wakeup —— 上层查完 bitmap 回来"补票"
+  //     （已追清：Chisel PageTableCache.scala:613-645；golden wakeup_* 一族寄存器）
+  //
+  //  剧情：l0 命中了但这条 PTE 的 bitmap 还没查过（§16 的 jmp_bitmap_check），
+  //  于是这次不算命中，上层拿着 {setIndex, way_info, pte_index} 去查 bitmap，
+  //  查完从 io.bitmap_wakeup 回来把那一位置上。下次再查同一条就直接命中。
+  //
+  //  ★为什么要重新读一遍 SRAM★：从发出去到回来隔了很多拍，那一路可能已经被
+  //  别的回填顶掉了。所以 wakeup 也占用 l0 的读端口（§5 的入口节流就是为它让路），
+  //  回读之后**重算一次命中**，确认还是同一条，才允许写 bitmap 位。
+  //
+  //  三拍流水，与主流水**完全独立**（各有各的保持寄存器）：
+  //    拍0 fire        发 SRAM 读，锁存请求与该组的 v/h 向量
+  //    拍1 delay_valid SRAM 数据回来，算 hitVec
+  //    拍2 req_valid   按 way_info 取出对应那一路的 hit，命中才写 l0_bitmap
+
+  logic       wakeup_delay_valid, wakeup_valid;
+  l0_wake_t   wakeup_rdata   [L0_WAYS];   // DataHoldBypass 的输出
+  l0_wake_t   wakeup_rdata_r [L0_WAYS];   // 保持寄存器
+  logic [L0_WAYS-1:0] wakeup_vvec_delay;
+  logic [1:0]         wakeup_hvec_delay [L0_WAYS];
+  logic [L0_WAYS-1:0] wakeup_hitvec_delay, wakeup_hitvec;
+
+  // 请求载荷打两拍（拍0->拍1->拍2）。
+  // ★第二拍只留 set/way/idx/ok 四根★：tag 与 s2xlate 到拍2 已经没人读了
+  //  （命中重算在拍1 就做完了），golden 里那两个寄存器被 firtool 消掉，照抄"不存"。
+  //  多存一个就是 FM 上的一个 unread 点。
+  logic [VPN_W-1:0] wk_d_tag;
+  logic [5:0]       wk_d_set,  wk_set;
+  logic [3:0]       wk_d_way,  wk_way;
+  logic [2:0]       wk_d_idx,  wk_idx;
+  logic             wk_d_ok,   wk_ok;
+  logic [1:0]       wk_d_s2x;
+
+  for (genvar w = 0; w < L0_WAYS; w++) begin : g_wakeup_hold
+    always_comb begin
+      wakeup_rdata[w] = wakeup_rdata_r[w];
+      if (wakeup_delay_valid) begin
+        wakeup_rdata[w].tag  = l0_sram_rdata[w].tag;
+        wakeup_rdata[w].asid = l0_sram_rdata[w].asid;
+        wakeup_rdata[w].vmid = l0_sram_rdata[w].vmid;
+        wakeup_rdata[w].vs   = l0_sram_rdata[w].vs;
+        for (int k = 0; k < SECTOR_N; k++)
+          wakeup_rdata[w].g[k] = l0_sram_rdata[w].perms[k].g;
+      end
+    end
+  end
+
+  // 重算命中：与 §16 的 l0 命中同一个 PtwEntries.hit，只是 vpn/h 换成 wakeup 自己的。
+  logic [1:0] wakeup_h;
+  assign wakeup_h = fold_h(wk_d_s2x);
+
+  always_comb
+    for (int w = 0; w < L0_WAYS; w++)
+      wakeup_hitvec_delay[w] =
+          ((wakeup_h == H_ONLY_STAGE2)
+           | (wakeup_rdata[w].asid == ((|wakeup_h) ? io_csr_dup_0_vsatp_asid
+                                                   : io_csr_dup_0_satp_asid))
+           | wakeup_rdata[w].g[wk_d_tag[2:0]])
+        & (~(|wakeup_h) | ({2'h0, wakeup_rdata[w].vmid} == io_csr_dup_0_hgatp_vmid))
+        & (wakeup_rdata[w].tag == wk_d_tag[37:9])
+        & wakeup_rdata[w].vs[wk_d_tag[2:0]]
+        & wakeup_vvec_delay[w] & (wakeup_h == wakeup_hvec_delay[w]);
+
+  // way_info 是 one-hot，转成路号（4 路的 OHToUInt）
+  logic [1:0] wakeup_way_idx;
+  assign wakeup_way_idx = {wk_way[3] | wk_way[2], wk_way[3] | wk_way[1]};
+
+  logic wakeup_write;
+  assign wakeup_write = wakeup_valid & wakeup_hitvec[wakeup_way_idx];
   // ---------------------------------------------------------------------------
   // §11 时序：两个 always_ff，复位域划分照抄 golden（见 §4 的说明）
   //
-  //  ★这一版追清了**回填侧 + 命中侧**的状态更新★：sfence/hfence 的失效掩码、
-  //  ecc flush、l0_bitmap 的写，都还没追清，见 §8。
-  //  所以当前这份核只在"从不发 sfence、从不 ecc 出错、BME=0"的激励下与 golden 同态。
+  //  回填侧、命中侧、响应侧、栅栏失效侧的状态更新都在这里。
+  //  ★golden 里没有 ecc flush★：KunminghuV2Config 下 l2tlbParams.enablePTWECC=false，
+  //  eccError 恒 0，整段 l1eccFlush/l0eccFlush 被 firtool 消光了（golden 全文
+  //  grep 不到一个 "ecc"）。所以这里"不写"就是照抄，不是缺口。
   always_ff @(posedge clock or posedge reset) begin
     if (reset) begin
       l3v <= '0;  l2v <= '0;  l1v <= '0;  l0v <= '0;  spv <= '0;
@@ -2773,6 +3835,8 @@ module xs_PtwCache_core(
       for (int s = 0; s < L0_SETS; s++)
         for (int w = 0; w < L0_WAYS; w++)
           l0_bitmap[s][w] <= '0;
+      bypass_release <= '0;  bypass_hold <= '0;  hptw_bypass_hold <= '0;
+      wakeup_delay_valid <= 1'b0;  wakeup_valid <= 1'b0;
     end
     else begin
       // PipelineConnect 的 valid 推进。★形状必须照抄：不是「下级 ready 时才更新」，
@@ -2787,12 +3851,68 @@ module xs_PtwCache_core(
       stage_delay_valid_1cycle <= ~flush_dup_0 & sram_read_fire;
       stage_check_valid_1cycle <= ~flush_dup_0 & left_fire_delay;
 
-      // 有效位：回填把被选中的那一位置 1。★sfence 的清零支路未追清（§8）★
+      // 有效位：回填把被选中的那一位置 1。
       if (l3_refill) l3v <= l3v | l3_rf_oh;
       if (l2_refill) l2v <= l2v | l2_rf_oh;
       if (l1_refill) l1v <= l1v | l1_rfv_oh;
       if (l0_refill) l0v <= l0v | l0_rfv_oh;
       if (sp_refill) spv <= spv | sp_rf_oh;
+
+      // ★栅栏失效写在回填之后，顺序就是覆盖优先级★（Chisel 的 last-connect）：
+      //   sfence.vma < hfence.vvma < hfence.gvma，三者又都压过同一拍的回填。
+      //   l1/l2 只在 rs1=1 时被赋值、l3 只在 dup_2 的 rs1=1 时被赋值 ——
+      //   ★这几个门不能省★，见 §21.1 的注释。掩码本身在 §21 算好。
+      if (sfence_plain) begin
+        l0v <= l0v & ~l0_sf_mask;
+        spv <= spv & ~sp_sf_mask;
+        if (sf_rs1) begin
+          l1v <= l1v & ~l1_sf_mask;
+          l2v <= l2v & ~l2_sf_mask;
+        end
+      end
+      if (hfence_vvma) begin
+        l0v <= l0v & ~l0_hv_mask;
+        spv <= spv & ~sp_hv_mask;
+        if (sf_rs1) begin
+          l1v <= l1v & ~l1_hv_mask;
+          l2v <= l2v & ~l2_hv_mask;
+        end
+      end
+      if (hfence_gvma) begin
+        l0v <= l0v & ~l0_hg_mask;
+        spv <= spv & ~sp_hg_mask;
+        if (sf_rs1) begin
+          l1v <= l1v & ~l1_hg_mask;
+          l2v <= l2v & ~l2_hg_mask;
+        end
+      end
+      // l3 那一段在 golden 里独立成块（在三种栅栏之后），且只认 dup_2 的 rs1。
+      if (l3_rs1) begin
+        if (sfence_plain) l3v <= l3v & ~l3_sf_mask;
+        if (hfence_vvma)  l3v <= l3v & ~l3_hv_mask;
+        if (hfence_gvma)  l3v <= l3v & ~l3_hg_mask;
+      end
+
+      // §22 wakeup 的两拍 valid（与主流水一样被 flush_dup_0 清掉）
+      wakeup_delay_valid <= ~flush_dup_0 & wakeup_harzad;
+      wakeup_valid       <= ~flush_dup_0 & wakeup_delay_valid;
+
+      // l0_bitmap 的两个写者。★顺序就是优先级★：golden 里 wakeup 那条写在前面
+      // （l0 命中块内），l0 回填的清零写在后面（回填块内），所以**回填赢** ——
+      // 于是 next = ~清零 & (wakeup 写 ? 新值 : 旧值)。
+      //
+      // ★必须写成"每拍都算一遍的表达式"，不能写成 `if (写使能) 才更新`★：
+      //  wakeup 的写使能里含 wakeup_hitvec，而它来自 l0 SRAM —— 没写过的行在
+      //  `+define+SYNTHESIS` 下回读是 X。golden（firtool 展开的正是上面那个表达式）
+      //  会把 X 写进寄存器，而 `if (X)` 按假走会保住旧值。两者在 0/1 上同值。
+      //  实测：改成本形状之前，20k 拍里这一处贡献 l0_bitmap[4] 的 golden=X/impl=0 失配。
+      for (int s = 0; s < L0_SETS; s++)
+        for (int w = 0; w < L0_WAYS; w++)
+          for (int k = 0; k < SECTOR_N; k++)
+            l0_bitmap[s][w][k] <=
+              ~(l0_refill & l0_rfv_oh[L0_WAYS*s + w])
+              & ((wakeup_write & (wk_set == 6'(s)) & (wakeup_way_idx == 2'(w))
+                  & (wk_idx == 3'(k))) ? wk_ok : l0_bitmap[s][w][k]);
 
       // 替换状态。★这里就是 §7 记的那个 golden 真 bug 的落点★：
       //   plru_l3 只有"l3 命中"**一个**写者（l3 回填根本不碰它）；
@@ -2827,6 +3947,19 @@ module xs_PtwCache_core(
         else if (l0_hit & stage_check_valid_1cycle
                  & (check_vpn[8:3] == s[$clog2(L0_SETS)-1:0]))
           plru_l0[s] <= plru4_access(plru_l0[s], l0_hitway);
+      end
+
+      // §17 bypass 的三个带复位寄存器组（各 4 位，对应 l0/l1/l2/l3 四级）。
+      // ★两个 hold 的清除条件不一样，别合并★：
+      //   普通口 bypass_hold —— 新一拍进 stageResp 或又来一次 refill 就清；
+      //   hptw 口 hptw_bypass_hold —— 只有 io.resp 真的握手走了才清。
+      // bypass_release 是"新一拍进了 stageResp"的 1 拍脉冲，golden 存了**四份同值**的
+      // 寄存器（每级一份），这里照抄成 4 位向量而不是 1 位，保住与 golden 的点对点对应。
+      bypass_release <= {4{left_fire_check}};
+      for (int i = 0; i < 4; i++) begin
+        bypass_hold[i] <= ~(bypass_release[i] | io_refill_valid)
+                        & (bypass_hit_resp[i] | bypass_hold[i]);
+        hptw_bypass_hold[i] <= ~resp_fire & (bypass_hit_resp[i] | hptw_bypass_hold[i]);
       end
     end
   end
@@ -2911,6 +4044,94 @@ module xs_PtwCache_core(
       l0vmids[l0_w_set][l0_victim_way] <= xorfold3(io_csr_dup_0_hgatp_vmid);
       l0vpns [l0_w_set][l0_victim_way] <= xorfold6_tag(l0_w_tag);
     end
+
+    // ---- §17 bypass 的跨拍记忆（不复位）----
+    //  每一级记住"在本级停留期间有没有被 refill 覆盖过"：本级进新数据那一拍直接取
+    //  当拍匹配值（把上一条请求的记忆冲掉），否则把新来的 refill 命中或进去。
+    if (stage_delay_valid_1cycle) bypass_seen_delay <= bypass_hit_delay;
+    else bypass_seen_delay <= ({4{io_refill_valid}} & bypass_hit_delay) | bypass_seen_delay;
+    if (stage_check_valid_1cycle) bypass_seen_check <= bypass_hit_check;
+    else bypass_seen_check <= ({4{io_refill_valid}} & bypass_hit_check) | bypass_seen_check;
+
+    //  往下一级交班时把"当拍匹配 + 本级记忆"并进载荷。
+    //  ★`& ~valid_1cycle` 这一项不是多余的★：本级这一拍刚进新数据时，记忆寄存器里
+    //  还是上一条请求的值（它要到下一拍才更新），必须屏蔽掉。
+    if (left_fire_delay)
+      check_bypassed <= bypass_hit_delay
+                      | (bypass_seen_delay & {4{~stage_delay_valid_1cycle}});
+    if (left_fire_check)
+      resp_bypassed <= check_bypassed | bypass_hit_check
+                     | (bypass_seen_check & {4{~stage_check_valid_1cycle}});
+
+    // ---- §18 命中结果快照（不复位）----
+    if (left_fire_check) begin
+      resp_res_l3.hit  <= l3_hit_ck;
+      resp_res_l3.pre  <= l3_pre_ck;
+      resp_res_l3.ppn  <= l3_ppn_ck;
+
+      resp_res_l2.hit  <= l2_hit_ck;
+      resp_res_l2.pre  <= l2_pre_ck;
+      resp_res_l2.ppn  <= l2_ppn_ck;
+      resp_res_l2.pbmt <= l2_pbmt_ck;
+
+      resp_res_l1.hit  <= l1_hit;
+      resp_res_l1.pre  <= l1_pre;
+      resp_res_l1.ppn  <= l1_hit_ppn;
+      resp_res_l1.pbmt <= l1_hit_pbmt;
+
+      resp_res_l0.hit              <= l0_hit;
+      resp_res_l0.pre              <= l0_pre;
+      resp_res_l0.ppn              <= l0_hitdata.ppns;
+      resp_res_l0.pbmt             <= l0_hitdata.pbmts;
+      resp_res_l0.perm             <= l0_hitdata.perms;
+      resp_res_l0.v                <= l0_valid;
+      resp_res_l0.jmp_bitmap_check <= l0_jmp_bitmap;
+      resp_res_l0.hitway           <= l0_hitway_oh;
+      resp_res_l0.ptes             <= l0_ptes;
+      resp_res_l0.cfs              <= l0_cfs;
+
+      resp_res_sp.hit              <= sp_hit_ck;
+      resp_res_sp.pre              <= sp_pre_ck;
+      resp_res_sp.ppn              <= sp_hitdata_ck.ppn;
+      resp_res_sp.pbmt             <= sp_hitdata_ck.pbmt;
+      resp_res_sp.perm             <= sp_hitdata_ck.perm;
+      resp_res_sp.n                <= sp_hitdata_ck.n;
+      resp_res_sp.level            <= sp_hitdata_ck.level;
+      resp_res_sp.v                <= sp_valid_ck;
+      resp_res_sp.jmp_bitmap_check <= sp_jmp_bitmap_ck;
+      resp_res_sp.pte              <= sp_pte;
+    end
+
+    // ---- §22 wakeup 的载荷与保持寄存器（不复位）----
+    if (wakeup_harzad) begin
+      wk_d_tag <= io_bitmap_wakeup_bits_tag;
+      wk_d_set <= io_bitmap_wakeup_bits_setIndex;
+      wk_d_way <= io_bitmap_wakeup_bits_way_info;
+      wk_d_idx <= io_bitmap_wakeup_bits_pte_index;
+      wk_d_ok  <= io_bitmap_wakeup_bits_check_success;
+      wk_d_s2x <= io_bitmap_wakeup_bits_s2xlate;
+      for (int w = 0; w < L0_WAYS; w++) begin
+        wakeup_vvec_delay[w] <= l0v[L0_WAYS*io_bitmap_wakeup_bits_tag[8:3] + w];
+        wakeup_hvec_delay[w] <= l0h[io_bitmap_wakeup_bits_tag[8:3]][w];
+      end
+    end
+    if (wakeup_delay_valid) begin
+      for (int w = 0; w < L0_WAYS; w++) begin
+        wakeup_rdata_r[w].tag  <= l0_sram_rdata[w].tag;
+        wakeup_rdata_r[w].asid <= l0_sram_rdata[w].asid;
+        wakeup_rdata_r[w].vmid <= l0_sram_rdata[w].vmid;
+        wakeup_rdata_r[w].vs   <= l0_sram_rdata[w].vs;
+        for (int k = 0; k < SECTOR_N; k++)
+          wakeup_rdata_r[w].g[k] <= l0_sram_rdata[w].perms[k].g;
+      end
+      wk_set <= wk_d_set;  wk_way <= wk_d_way;
+      wk_idx <= wk_d_idx;  wk_ok  <= wk_d_ok;
+      wakeup_hitvec <= wakeup_hitvec_delay;
+    end
+
+    // ---- §20 perf 事件打两拍（不复位）----
+    perf_event_d1 <= perf_event;
+    perf_event_d2 <= perf_event_d1;
   end
 
   // ---------------------------------------------------------------------------
@@ -2926,835 +4147,8 @@ module xs_PtwCache_core(
 
 
 
-  // SRAM 读回的扁平线（golden 的端口名，逐根抄）——
-  // 命中判定读的是下面 §16 打包出来的 l1_line_t / l0_line_t。
-  logic [15:0]     l0_rdata_0_asid;
-  logic            l0_rdata_0_onlypf_0;
-  logic            l0_rdata_0_onlypf_1;
-  logic            l0_rdata_0_onlypf_2;
-  logic            l0_rdata_0_onlypf_3;
-  logic            l0_rdata_0_onlypf_4;
-  logic            l0_rdata_0_onlypf_5;
-  logic            l0_rdata_0_onlypf_6;
-  logic            l0_rdata_0_onlypf_7;
-  logic [1:0]      l0_rdata_0_pbmts_0;
-  logic [1:0]      l0_rdata_0_pbmts_1;
-  logic [1:0]      l0_rdata_0_pbmts_2;
-  logic [1:0]      l0_rdata_0_pbmts_3;
-  logic [1:0]      l0_rdata_0_pbmts_4;
-  logic [1:0]      l0_rdata_0_pbmts_5;
-  logic [1:0]      l0_rdata_0_pbmts_6;
-  logic [1:0]      l0_rdata_0_pbmts_7;
-  logic            l0_rdata_0_perms_0_a;
-  logic            l0_rdata_0_perms_0_d;
-  logic            l0_rdata_0_perms_0_g;
-  logic            l0_rdata_0_perms_0_r;
-  logic            l0_rdata_0_perms_0_u;
-  logic            l0_rdata_0_perms_0_w;
-  logic            l0_rdata_0_perms_0_x;
-  logic            l0_rdata_0_perms_1_a;
-  logic            l0_rdata_0_perms_1_d;
-  logic            l0_rdata_0_perms_1_g;
-  logic            l0_rdata_0_perms_1_r;
-  logic            l0_rdata_0_perms_1_u;
-  logic            l0_rdata_0_perms_1_w;
-  logic            l0_rdata_0_perms_1_x;
-  logic            l0_rdata_0_perms_2_a;
-  logic            l0_rdata_0_perms_2_d;
-  logic            l0_rdata_0_perms_2_g;
-  logic            l0_rdata_0_perms_2_r;
-  logic            l0_rdata_0_perms_2_u;
-  logic            l0_rdata_0_perms_2_w;
-  logic            l0_rdata_0_perms_2_x;
-  logic            l0_rdata_0_perms_3_a;
-  logic            l0_rdata_0_perms_3_d;
-  logic            l0_rdata_0_perms_3_g;
-  logic            l0_rdata_0_perms_3_r;
-  logic            l0_rdata_0_perms_3_u;
-  logic            l0_rdata_0_perms_3_w;
-  logic            l0_rdata_0_perms_3_x;
-  logic            l0_rdata_0_perms_4_a;
-  logic            l0_rdata_0_perms_4_d;
-  logic            l0_rdata_0_perms_4_g;
-  logic            l0_rdata_0_perms_4_r;
-  logic            l0_rdata_0_perms_4_u;
-  logic            l0_rdata_0_perms_4_w;
-  logic            l0_rdata_0_perms_4_x;
-  logic            l0_rdata_0_perms_5_a;
-  logic            l0_rdata_0_perms_5_d;
-  logic            l0_rdata_0_perms_5_g;
-  logic            l0_rdata_0_perms_5_r;
-  logic            l0_rdata_0_perms_5_u;
-  logic            l0_rdata_0_perms_5_w;
-  logic            l0_rdata_0_perms_5_x;
-  logic            l0_rdata_0_perms_6_a;
-  logic            l0_rdata_0_perms_6_d;
-  logic            l0_rdata_0_perms_6_g;
-  logic            l0_rdata_0_perms_6_r;
-  logic            l0_rdata_0_perms_6_u;
-  logic            l0_rdata_0_perms_6_w;
-  logic            l0_rdata_0_perms_6_x;
-  logic            l0_rdata_0_perms_7_a;
-  logic            l0_rdata_0_perms_7_d;
-  logic            l0_rdata_0_perms_7_g;
-  logic            l0_rdata_0_perms_7_r;
-  logic            l0_rdata_0_perms_7_u;
-  logic            l0_rdata_0_perms_7_w;
-  logic            l0_rdata_0_perms_7_x;
-  logic [37:0]     l0_rdata_0_ppns_0;
-  logic [37:0]     l0_rdata_0_ppns_1;
-  logic [37:0]     l0_rdata_0_ppns_2;
-  logic [37:0]     l0_rdata_0_ppns_3;
-  logic [37:0]     l0_rdata_0_ppns_4;
-  logic [37:0]     l0_rdata_0_ppns_5;
-  logic [37:0]     l0_rdata_0_ppns_6;
-  logic [37:0]     l0_rdata_0_ppns_7;
-  logic            l0_rdata_0_prefetch;
-  logic [28:0]     l0_rdata_0_tag;
-  logic [13:0]     l0_rdata_0_vmid;
-  logic            l0_rdata_0_vs_0;
-  logic            l0_rdata_0_vs_1;
-  logic            l0_rdata_0_vs_2;
-  logic            l0_rdata_0_vs_3;
-  logic            l0_rdata_0_vs_4;
-  logic            l0_rdata_0_vs_5;
-  logic            l0_rdata_0_vs_6;
-  logic            l0_rdata_0_vs_7;
-  logic [15:0]     l0_rdata_1_asid;
-  logic            l0_rdata_1_onlypf_0;
-  logic            l0_rdata_1_onlypf_1;
-  logic            l0_rdata_1_onlypf_2;
-  logic            l0_rdata_1_onlypf_3;
-  logic            l0_rdata_1_onlypf_4;
-  logic            l0_rdata_1_onlypf_5;
-  logic            l0_rdata_1_onlypf_6;
-  logic            l0_rdata_1_onlypf_7;
-  logic [1:0]      l0_rdata_1_pbmts_0;
-  logic [1:0]      l0_rdata_1_pbmts_1;
-  logic [1:0]      l0_rdata_1_pbmts_2;
-  logic [1:0]      l0_rdata_1_pbmts_3;
-  logic [1:0]      l0_rdata_1_pbmts_4;
-  logic [1:0]      l0_rdata_1_pbmts_5;
-  logic [1:0]      l0_rdata_1_pbmts_6;
-  logic [1:0]      l0_rdata_1_pbmts_7;
-  logic            l0_rdata_1_perms_0_a;
-  logic            l0_rdata_1_perms_0_d;
-  logic            l0_rdata_1_perms_0_g;
-  logic            l0_rdata_1_perms_0_r;
-  logic            l0_rdata_1_perms_0_u;
-  logic            l0_rdata_1_perms_0_w;
-  logic            l0_rdata_1_perms_0_x;
-  logic            l0_rdata_1_perms_1_a;
-  logic            l0_rdata_1_perms_1_d;
-  logic            l0_rdata_1_perms_1_g;
-  logic            l0_rdata_1_perms_1_r;
-  logic            l0_rdata_1_perms_1_u;
-  logic            l0_rdata_1_perms_1_w;
-  logic            l0_rdata_1_perms_1_x;
-  logic            l0_rdata_1_perms_2_a;
-  logic            l0_rdata_1_perms_2_d;
-  logic            l0_rdata_1_perms_2_g;
-  logic            l0_rdata_1_perms_2_r;
-  logic            l0_rdata_1_perms_2_u;
-  logic            l0_rdata_1_perms_2_w;
-  logic            l0_rdata_1_perms_2_x;
-  logic            l0_rdata_1_perms_3_a;
-  logic            l0_rdata_1_perms_3_d;
-  logic            l0_rdata_1_perms_3_g;
-  logic            l0_rdata_1_perms_3_r;
-  logic            l0_rdata_1_perms_3_u;
-  logic            l0_rdata_1_perms_3_w;
-  logic            l0_rdata_1_perms_3_x;
-  logic            l0_rdata_1_perms_4_a;
-  logic            l0_rdata_1_perms_4_d;
-  logic            l0_rdata_1_perms_4_g;
-  logic            l0_rdata_1_perms_4_r;
-  logic            l0_rdata_1_perms_4_u;
-  logic            l0_rdata_1_perms_4_w;
-  logic            l0_rdata_1_perms_4_x;
-  logic            l0_rdata_1_perms_5_a;
-  logic            l0_rdata_1_perms_5_d;
-  logic            l0_rdata_1_perms_5_g;
-  logic            l0_rdata_1_perms_5_r;
-  logic            l0_rdata_1_perms_5_u;
-  logic            l0_rdata_1_perms_5_w;
-  logic            l0_rdata_1_perms_5_x;
-  logic            l0_rdata_1_perms_6_a;
-  logic            l0_rdata_1_perms_6_d;
-  logic            l0_rdata_1_perms_6_g;
-  logic            l0_rdata_1_perms_6_r;
-  logic            l0_rdata_1_perms_6_u;
-  logic            l0_rdata_1_perms_6_w;
-  logic            l0_rdata_1_perms_6_x;
-  logic            l0_rdata_1_perms_7_a;
-  logic            l0_rdata_1_perms_7_d;
-  logic            l0_rdata_1_perms_7_g;
-  logic            l0_rdata_1_perms_7_r;
-  logic            l0_rdata_1_perms_7_u;
-  logic            l0_rdata_1_perms_7_w;
-  logic            l0_rdata_1_perms_7_x;
-  logic [37:0]     l0_rdata_1_ppns_0;
-  logic [37:0]     l0_rdata_1_ppns_1;
-  logic [37:0]     l0_rdata_1_ppns_2;
-  logic [37:0]     l0_rdata_1_ppns_3;
-  logic [37:0]     l0_rdata_1_ppns_4;
-  logic [37:0]     l0_rdata_1_ppns_5;
-  logic [37:0]     l0_rdata_1_ppns_6;
-  logic [37:0]     l0_rdata_1_ppns_7;
-  logic            l0_rdata_1_prefetch;
-  logic [28:0]     l0_rdata_1_tag;
-  logic [13:0]     l0_rdata_1_vmid;
-  logic            l0_rdata_1_vs_0;
-  logic            l0_rdata_1_vs_1;
-  logic            l0_rdata_1_vs_2;
-  logic            l0_rdata_1_vs_3;
-  logic            l0_rdata_1_vs_4;
-  logic            l0_rdata_1_vs_5;
-  logic            l0_rdata_1_vs_6;
-  logic            l0_rdata_1_vs_7;
-  logic [15:0]     l0_rdata_2_asid;
-  logic            l0_rdata_2_onlypf_0;
-  logic            l0_rdata_2_onlypf_1;
-  logic            l0_rdata_2_onlypf_2;
-  logic            l0_rdata_2_onlypf_3;
-  logic            l0_rdata_2_onlypf_4;
-  logic            l0_rdata_2_onlypf_5;
-  logic            l0_rdata_2_onlypf_6;
-  logic            l0_rdata_2_onlypf_7;
-  logic [1:0]      l0_rdata_2_pbmts_0;
-  logic [1:0]      l0_rdata_2_pbmts_1;
-  logic [1:0]      l0_rdata_2_pbmts_2;
-  logic [1:0]      l0_rdata_2_pbmts_3;
-  logic [1:0]      l0_rdata_2_pbmts_4;
-  logic [1:0]      l0_rdata_2_pbmts_5;
-  logic [1:0]      l0_rdata_2_pbmts_6;
-  logic [1:0]      l0_rdata_2_pbmts_7;
-  logic            l0_rdata_2_perms_0_a;
-  logic            l0_rdata_2_perms_0_d;
-  logic            l0_rdata_2_perms_0_g;
-  logic            l0_rdata_2_perms_0_r;
-  logic            l0_rdata_2_perms_0_u;
-  logic            l0_rdata_2_perms_0_w;
-  logic            l0_rdata_2_perms_0_x;
-  logic            l0_rdata_2_perms_1_a;
-  logic            l0_rdata_2_perms_1_d;
-  logic            l0_rdata_2_perms_1_g;
-  logic            l0_rdata_2_perms_1_r;
-  logic            l0_rdata_2_perms_1_u;
-  logic            l0_rdata_2_perms_1_w;
-  logic            l0_rdata_2_perms_1_x;
-  logic            l0_rdata_2_perms_2_a;
-  logic            l0_rdata_2_perms_2_d;
-  logic            l0_rdata_2_perms_2_g;
-  logic            l0_rdata_2_perms_2_r;
-  logic            l0_rdata_2_perms_2_u;
-  logic            l0_rdata_2_perms_2_w;
-  logic            l0_rdata_2_perms_2_x;
-  logic            l0_rdata_2_perms_3_a;
-  logic            l0_rdata_2_perms_3_d;
-  logic            l0_rdata_2_perms_3_g;
-  logic            l0_rdata_2_perms_3_r;
-  logic            l0_rdata_2_perms_3_u;
-  logic            l0_rdata_2_perms_3_w;
-  logic            l0_rdata_2_perms_3_x;
-  logic            l0_rdata_2_perms_4_a;
-  logic            l0_rdata_2_perms_4_d;
-  logic            l0_rdata_2_perms_4_g;
-  logic            l0_rdata_2_perms_4_r;
-  logic            l0_rdata_2_perms_4_u;
-  logic            l0_rdata_2_perms_4_w;
-  logic            l0_rdata_2_perms_4_x;
-  logic            l0_rdata_2_perms_5_a;
-  logic            l0_rdata_2_perms_5_d;
-  logic            l0_rdata_2_perms_5_g;
-  logic            l0_rdata_2_perms_5_r;
-  logic            l0_rdata_2_perms_5_u;
-  logic            l0_rdata_2_perms_5_w;
-  logic            l0_rdata_2_perms_5_x;
-  logic            l0_rdata_2_perms_6_a;
-  logic            l0_rdata_2_perms_6_d;
-  logic            l0_rdata_2_perms_6_g;
-  logic            l0_rdata_2_perms_6_r;
-  logic            l0_rdata_2_perms_6_u;
-  logic            l0_rdata_2_perms_6_w;
-  logic            l0_rdata_2_perms_6_x;
-  logic            l0_rdata_2_perms_7_a;
-  logic            l0_rdata_2_perms_7_d;
-  logic            l0_rdata_2_perms_7_g;
-  logic            l0_rdata_2_perms_7_r;
-  logic            l0_rdata_2_perms_7_u;
-  logic            l0_rdata_2_perms_7_w;
-  logic            l0_rdata_2_perms_7_x;
-  logic [37:0]     l0_rdata_2_ppns_0;
-  logic [37:0]     l0_rdata_2_ppns_1;
-  logic [37:0]     l0_rdata_2_ppns_2;
-  logic [37:0]     l0_rdata_2_ppns_3;
-  logic [37:0]     l0_rdata_2_ppns_4;
-  logic [37:0]     l0_rdata_2_ppns_5;
-  logic [37:0]     l0_rdata_2_ppns_6;
-  logic [37:0]     l0_rdata_2_ppns_7;
-  logic            l0_rdata_2_prefetch;
-  logic [28:0]     l0_rdata_2_tag;
-  logic [13:0]     l0_rdata_2_vmid;
-  logic            l0_rdata_2_vs_0;
-  logic            l0_rdata_2_vs_1;
-  logic            l0_rdata_2_vs_2;
-  logic            l0_rdata_2_vs_3;
-  logic            l0_rdata_2_vs_4;
-  logic            l0_rdata_2_vs_5;
-  logic            l0_rdata_2_vs_6;
-  logic            l0_rdata_2_vs_7;
-  logic [15:0]     l0_rdata_3_asid;
-  logic            l0_rdata_3_onlypf_0;
-  logic            l0_rdata_3_onlypf_1;
-  logic            l0_rdata_3_onlypf_2;
-  logic            l0_rdata_3_onlypf_3;
-  logic            l0_rdata_3_onlypf_4;
-  logic            l0_rdata_3_onlypf_5;
-  logic            l0_rdata_3_onlypf_6;
-  logic            l0_rdata_3_onlypf_7;
-  logic [1:0]      l0_rdata_3_pbmts_0;
-  logic [1:0]      l0_rdata_3_pbmts_1;
-  logic [1:0]      l0_rdata_3_pbmts_2;
-  logic [1:0]      l0_rdata_3_pbmts_3;
-  logic [1:0]      l0_rdata_3_pbmts_4;
-  logic [1:0]      l0_rdata_3_pbmts_5;
-  logic [1:0]      l0_rdata_3_pbmts_6;
-  logic [1:0]      l0_rdata_3_pbmts_7;
-  logic            l0_rdata_3_perms_0_a;
-  logic            l0_rdata_3_perms_0_d;
-  logic            l0_rdata_3_perms_0_g;
-  logic            l0_rdata_3_perms_0_r;
-  logic            l0_rdata_3_perms_0_u;
-  logic            l0_rdata_3_perms_0_w;
-  logic            l0_rdata_3_perms_0_x;
-  logic            l0_rdata_3_perms_1_a;
-  logic            l0_rdata_3_perms_1_d;
-  logic            l0_rdata_3_perms_1_g;
-  logic            l0_rdata_3_perms_1_r;
-  logic            l0_rdata_3_perms_1_u;
-  logic            l0_rdata_3_perms_1_w;
-  logic            l0_rdata_3_perms_1_x;
-  logic            l0_rdata_3_perms_2_a;
-  logic            l0_rdata_3_perms_2_d;
-  logic            l0_rdata_3_perms_2_g;
-  logic            l0_rdata_3_perms_2_r;
-  logic            l0_rdata_3_perms_2_u;
-  logic            l0_rdata_3_perms_2_w;
-  logic            l0_rdata_3_perms_2_x;
-  logic            l0_rdata_3_perms_3_a;
-  logic            l0_rdata_3_perms_3_d;
-  logic            l0_rdata_3_perms_3_g;
-  logic            l0_rdata_3_perms_3_r;
-  logic            l0_rdata_3_perms_3_u;
-  logic            l0_rdata_3_perms_3_w;
-  logic            l0_rdata_3_perms_3_x;
-  logic            l0_rdata_3_perms_4_a;
-  logic            l0_rdata_3_perms_4_d;
-  logic            l0_rdata_3_perms_4_g;
-  logic            l0_rdata_3_perms_4_r;
-  logic            l0_rdata_3_perms_4_u;
-  logic            l0_rdata_3_perms_4_w;
-  logic            l0_rdata_3_perms_4_x;
-  logic            l0_rdata_3_perms_5_a;
-  logic            l0_rdata_3_perms_5_d;
-  logic            l0_rdata_3_perms_5_g;
-  logic            l0_rdata_3_perms_5_r;
-  logic            l0_rdata_3_perms_5_u;
-  logic            l0_rdata_3_perms_5_w;
-  logic            l0_rdata_3_perms_5_x;
-  logic            l0_rdata_3_perms_6_a;
-  logic            l0_rdata_3_perms_6_d;
-  logic            l0_rdata_3_perms_6_g;
-  logic            l0_rdata_3_perms_6_r;
-  logic            l0_rdata_3_perms_6_u;
-  logic            l0_rdata_3_perms_6_w;
-  logic            l0_rdata_3_perms_6_x;
-  logic            l0_rdata_3_perms_7_a;
-  logic            l0_rdata_3_perms_7_d;
-  logic            l0_rdata_3_perms_7_g;
-  logic            l0_rdata_3_perms_7_r;
-  logic            l0_rdata_3_perms_7_u;
-  logic            l0_rdata_3_perms_7_w;
-  logic            l0_rdata_3_perms_7_x;
-  logic [37:0]     l0_rdata_3_ppns_0;
-  logic [37:0]     l0_rdata_3_ppns_1;
-  logic [37:0]     l0_rdata_3_ppns_2;
-  logic [37:0]     l0_rdata_3_ppns_3;
-  logic [37:0]     l0_rdata_3_ppns_4;
-  logic [37:0]     l0_rdata_3_ppns_5;
-  logic [37:0]     l0_rdata_3_ppns_6;
-  logic [37:0]     l0_rdata_3_ppns_7;
-  logic            l0_rdata_3_prefetch;
-  logic [28:0]     l0_rdata_3_tag;
-  logic [13:0]     l0_rdata_3_vmid;
-  logic            l0_rdata_3_vs_0;
-  logic            l0_rdata_3_vs_1;
-  logic            l0_rdata_3_vs_2;
-  logic            l0_rdata_3_vs_3;
-  logic            l0_rdata_3_vs_4;
-  logic            l0_rdata_3_vs_5;
-  logic            l0_rdata_3_vs_6;
-  logic            l0_rdata_3_vs_7;
-  logic [15:0]     l1_rdata_0_asid;
-  logic [1:0]      l1_rdata_0_pbmts_0;
-  logic [1:0]      l1_rdata_0_pbmts_1;
-  logic [1:0]      l1_rdata_0_pbmts_2;
-  logic [1:0]      l1_rdata_0_pbmts_3;
-  logic [1:0]      l1_rdata_0_pbmts_4;
-  logic [1:0]      l1_rdata_0_pbmts_5;
-  logic [1:0]      l1_rdata_0_pbmts_6;
-  logic [1:0]      l1_rdata_0_pbmts_7;
-  logic [37:0]     l1_rdata_0_ppns_0;
-  logic [37:0]     l1_rdata_0_ppns_1;
-  logic [37:0]     l1_rdata_0_ppns_2;
-  logic [37:0]     l1_rdata_0_ppns_3;
-  logic [37:0]     l1_rdata_0_ppns_4;
-  logic [37:0]     l1_rdata_0_ppns_5;
-  logic [37:0]     l1_rdata_0_ppns_6;
-  logic [37:0]     l1_rdata_0_ppns_7;
-  logic            l1_rdata_0_prefetch;
-  logic [23:0]     l1_rdata_0_tag;
-  logic [13:0]     l1_rdata_0_vmid;
-  logic            l1_rdata_0_vs_0;
-  logic            l1_rdata_0_vs_1;
-  logic            l1_rdata_0_vs_2;
-  logic            l1_rdata_0_vs_3;
-  logic            l1_rdata_0_vs_4;
-  logic            l1_rdata_0_vs_5;
-  logic            l1_rdata_0_vs_6;
-  logic            l1_rdata_0_vs_7;
-  logic [15:0]     l1_rdata_1_asid;
-  logic [1:0]      l1_rdata_1_pbmts_0;
-  logic [1:0]      l1_rdata_1_pbmts_1;
-  logic [1:0]      l1_rdata_1_pbmts_2;
-  logic [1:0]      l1_rdata_1_pbmts_3;
-  logic [1:0]      l1_rdata_1_pbmts_4;
-  logic [1:0]      l1_rdata_1_pbmts_5;
-  logic [1:0]      l1_rdata_1_pbmts_6;
-  logic [1:0]      l1_rdata_1_pbmts_7;
-  logic [37:0]     l1_rdata_1_ppns_0;
-  logic [37:0]     l1_rdata_1_ppns_1;
-  logic [37:0]     l1_rdata_1_ppns_2;
-  logic [37:0]     l1_rdata_1_ppns_3;
-  logic [37:0]     l1_rdata_1_ppns_4;
-  logic [37:0]     l1_rdata_1_ppns_5;
-  logic [37:0]     l1_rdata_1_ppns_6;
-  logic [37:0]     l1_rdata_1_ppns_7;
-  logic            l1_rdata_1_prefetch;
-  logic [23:0]     l1_rdata_1_tag;
-  logic [13:0]     l1_rdata_1_vmid;
-  logic            l1_rdata_1_vs_0;
-  logic            l1_rdata_1_vs_1;
-  logic            l1_rdata_1_vs_2;
-  logic            l1_rdata_1_vs_3;
-  logic            l1_rdata_1_vs_4;
-  logic            l1_rdata_1_vs_5;
-  logic            l1_rdata_1_vs_6;
-  logic            l1_rdata_1_vs_7;
-
-  // MBIST 分发级到 SRAM 的线束（宽度逐根抄自 golden）
-  logic            childBd_re;
-  logic            childBd_we;
-  logic            childBd_ack;
-  logic            childBd_1_re;
-  logic            childBd_1_we;
-  logic            childBd_2_re;
-  logic            childBd_2_we;
-  logic            childBd_3_re;
-  logic            childBd_3_we;
-  logic            childBd_4_re;
-  logic            childBd_4_we;
-  logic            childBd_5_re;
-  logic            childBd_5_we;
-  logic            childBd_6_re;
-  logic            childBd_6_we;
-  logic            childBd_7_re;
-  logic            childBd_7_we;
-  logic            childBd_8_re;
-  logic            childBd_8_we;
-  logic            childBd_9_re;
-  logic            childBd_9_we;
-  logic [2:0]      childBd_addr;
-  logic            childBd_10_re;
-  logic            childBd_10_we;
-  logic            childBd_11_re;
-  logic            childBd_11_we;
-  logic            childBd_12_re;
-  logic            childBd_12_we;
-  logic            childBd_13_re;
-  logic            childBd_13_we;
-  logic            childBd_14_re;
-  logic            childBd_14_we;
-  logic            childBd_15_re;
-  logic            childBd_15_we;
-  logic            childBd_16_re;
-  logic            childBd_16_we;
-  logic            childBd_1_ack;
-  logic            childBd_2_ack;
-  logic            childBd_3_ack;
-  logic            childBd_4_ack;
-  logic            childBd_5_ack;
-  logic            childBd_6_ack;
-  logic            childBd_7_ack;
-  logic            childBd_8_ack;
-  logic            childBd_9_ack;
-  logic [5:0]      childBd_array;
-  logic [130:0]    childBd_rdata;
-  logic [130:0]    childBd_wdata;
-  logic            childBd_wmask;
-  logic            childBd_10_ack;
-  logic            childBd_11_ack;
-  logic            childBd_12_ack;
-  logic            childBd_13_ack;
-  logic            childBd_14_ack;
-  logic            childBd_15_ack;
-  logic            childBd_16_ack;
-  logic [6:0]      childBd_1_addr;
-  logic [6:0]      childBd_2_addr;
-  logic [6:0]      childBd_3_addr;
-  logic [6:0]      childBd_4_addr;
-  logic [6:0]      childBd_5_addr;
-  logic [6:0]      childBd_6_addr;
-  logic [6:0]      childBd_7_addr;
-  logic [6:0]      childBd_8_addr;
-  logic [6:0]      childBd_9_addr;
-  logic [6:0]      childBd_10_addr;
-  logic [6:0]      childBd_11_addr;
-  logic [6:0]      childBd_12_addr;
-  logic [6:0]      childBd_13_addr;
-  logic [6:0]      childBd_14_addr;
-  logic [6:0]      childBd_15_addr;
-  logic [6:0]      childBd_16_addr;
-  logic [5:0]      childBd_1_array;
-  logic [113:0]    childBd_1_rdata;
-  logic [113:0]    childBd_1_wdata;
-  logic [1:0]      childBd_1_wmask;
-  logic [5:0]      childBd_2_array;
-  logic [113:0]    childBd_2_rdata;
-  logic [113:0]    childBd_2_wdata;
-  logic [1:0]      childBd_2_wmask;
-  logic [5:0]      childBd_3_array;
-  logic [113:0]    childBd_3_rdata;
-  logic [113:0]    childBd_3_wdata;
-  logic [1:0]      childBd_3_wmask;
-  logic [5:0]      childBd_4_array;
-  logic [113:0]    childBd_4_rdata;
-  logic [113:0]    childBd_4_wdata;
-  logic [1:0]      childBd_4_wmask;
-  logic [5:0]      childBd_5_array;
-  logic [113:0]    childBd_5_rdata;
-  logic [113:0]    childBd_5_wdata;
-  logic [1:0]      childBd_5_wmask;
-  logic [5:0]      childBd_6_array;
-  logic [113:0]    childBd_6_rdata;
-  logic [113:0]    childBd_6_wdata;
-  logic [1:0]      childBd_6_wmask;
-  logic [5:0]      childBd_7_array;
-  logic [113:0]    childBd_7_rdata;
-  logic [113:0]    childBd_7_wdata;
-  logic [1:0]      childBd_7_wmask;
-  logic [5:0]      childBd_8_array;
-  logic [113:0]    childBd_8_rdata;
-  logic [113:0]    childBd_8_wdata;
-  logic [1:0]      childBd_8_wmask;
-  logic [5:0]      childBd_9_array;
-  logic [113:0]    childBd_9_rdata;
-  logic [113:0]    childBd_9_wdata;
-  logic [1:0]      childBd_9_wmask;
-  logic [2:0]      childBd_addr_rd;
-  logic [5:0]      childBd_10_array;
-  logic [113:0]    childBd_10_rdata;
-  logic [113:0]    childBd_10_wdata;
-  logic [1:0]      childBd_10_wmask;
-  logic [5:0]      childBd_11_array;
-  logic [113:0]    childBd_11_rdata;
-  logic [113:0]    childBd_11_wdata;
-  logic [1:0]      childBd_11_wmask;
-  logic [5:0]      childBd_12_array;
-  logic [113:0]    childBd_12_rdata;
-  logic [113:0]    childBd_12_wdata;
-  logic [1:0]      childBd_12_wmask;
-  logic [5:0]      childBd_13_array;
-  logic [113:0]    childBd_13_rdata;
-  logic [113:0]    childBd_13_wdata;
-  logic [1:0]      childBd_13_wmask;
-  logic [5:0]      childBd_14_array;
-  logic [113:0]    childBd_14_rdata;
-  logic [113:0]    childBd_14_wdata;
-  logic [1:0]      childBd_14_wmask;
-  logic [6:0]      childBd_15_array;
-  logic [113:0]    childBd_15_rdata;
-  logic [113:0]    childBd_15_wdata;
-  logic [1:0]      childBd_15_wmask;
-  logic [6:0]      childBd_16_array;
-  logic [113:0]    childBd_16_rdata;
-  logic [113:0]    childBd_16_wdata;
-  logic [1:0]      childBd_16_wmask;
-  logic [6:0]      childBd_1_addr_rd;
-  logic [6:0]      childBd_2_addr_rd;
-  logic [6:0]      childBd_3_addr_rd;
-  logic [6:0]      childBd_4_addr_rd;
-  logic [6:0]      childBd_5_addr_rd;
-  logic [6:0]      childBd_6_addr_rd;
-  logic [6:0]      childBd_7_addr_rd;
-  logic [6:0]      childBd_8_addr_rd;
-  logic [6:0]      childBd_9_addr_rd;
-  logic [6:0]      childBd_10_addr_rd;
-  logic [6:0]      childBd_11_addr_rd;
-  logic [6:0]      childBd_12_addr_rd;
-  logic [6:0]      childBd_13_addr_rd;
-  logic [6:0]      childBd_14_addr_rd;
-  logic [6:0]      childBd_15_addr_rd;
-  logic [6:0]      childBd_16_addr_rd;
-  logic [5:0]      childBd_selectedOH;
-  logic            childBd_1_selectedOH;
-  logic            childBd_2_selectedOH;
-  logic            childBd_3_selectedOH;
-  logic            childBd_4_selectedOH;
-  logic            childBd_5_selectedOH;
-  logic            childBd_6_selectedOH;
-  logic            childBd_7_selectedOH;
-  logic            childBd_8_selectedOH;
-  logic            childBd_9_selectedOH;
-  logic            childBd_10_selectedOH;
-  logic            childBd_11_selectedOH;
-  logic            childBd_12_selectedOH;
-  logic            childBd_13_selectedOH;
-  logic            childBd_14_selectedOH;
-  logic            childBd_15_selectedOH;
-  logic            childBd_16_selectedOH;
-
-  // ★以下 228 个输出还没有真实驱动★——命中判定、响应装配、perf 计数
-  // 都还没追清（见 §8）。钉 0 只为让骨架能 elaborate，不是它们的正确值。
-  assign io_resp_bits_req_info_vpn = '0;
-  assign io_resp_bits_req_info_s2xlate = '0;
-  assign io_resp_bits_req_info_source = '0;
-  assign io_resp_bits_isFirst = '0;
-  assign io_resp_bits_hit = '0;
-  assign io_resp_bits_prefetch = '0;
-  assign io_resp_bits_bypassed = '0;
-  assign io_resp_bits_toFsm_l3Hit = '0;
-  assign io_resp_bits_toFsm_l2Hit = '0;
-  assign io_resp_bits_toFsm_l1Hit = '0;
-  assign io_resp_bits_toFsm_ppn = '0;
-  assign io_resp_bits_toFsm_stage1Hit = '0;
-  assign io_resp_bits_toFsm_bitmapCheck_jmp_bitmap_check = '0;
-  assign io_resp_bits_toFsm_bitmapCheck_toLLPTW = '0;
-  assign io_resp_bits_toFsm_bitmapCheck_hitway = '0;
-  assign io_resp_bits_toFsm_bitmapCheck_pte = '0;
-  assign io_resp_bits_toFsm_bitmapCheck_ptes_0 = '0;
-  assign io_resp_bits_toFsm_bitmapCheck_ptes_1 = '0;
-  assign io_resp_bits_toFsm_bitmapCheck_ptes_2 = '0;
-  assign io_resp_bits_toFsm_bitmapCheck_ptes_3 = '0;
-  assign io_resp_bits_toFsm_bitmapCheck_ptes_4 = '0;
-  assign io_resp_bits_toFsm_bitmapCheck_ptes_5 = '0;
-  assign io_resp_bits_toFsm_bitmapCheck_ptes_6 = '0;
-  assign io_resp_bits_toFsm_bitmapCheck_ptes_7 = '0;
-  assign io_resp_bits_toFsm_bitmapCheck_cfs_0 = '0;
-  assign io_resp_bits_toFsm_bitmapCheck_cfs_1 = '0;
-  assign io_resp_bits_toFsm_bitmapCheck_cfs_2 = '0;
-  assign io_resp_bits_toFsm_bitmapCheck_cfs_3 = '0;
-  assign io_resp_bits_toFsm_bitmapCheck_cfs_4 = '0;
-  assign io_resp_bits_toFsm_bitmapCheck_cfs_5 = '0;
-  assign io_resp_bits_toFsm_bitmapCheck_cfs_6 = '0;
-  assign io_resp_bits_toFsm_bitmapCheck_cfs_7 = '0;
-  assign io_resp_bits_toFsm_bitmapCheck_SPlevel = '0;
-  assign io_resp_bits_stage1_entry_0_tag = '0;
-  assign io_resp_bits_stage1_entry_0_asid = '0;
-  assign io_resp_bits_stage1_entry_0_vmid = '0;
-  assign io_resp_bits_stage1_entry_0_n = '0;
-  assign io_resp_bits_stage1_entry_0_pbmt = '0;
-  assign io_resp_bits_stage1_entry_0_perm_d = '0;
-  assign io_resp_bits_stage1_entry_0_perm_a = '0;
-  assign io_resp_bits_stage1_entry_0_perm_g = '0;
-  assign io_resp_bits_stage1_entry_0_perm_u = '0;
-  assign io_resp_bits_stage1_entry_0_perm_x = '0;
-  assign io_resp_bits_stage1_entry_0_perm_w = '0;
-  assign io_resp_bits_stage1_entry_0_perm_r = '0;
-  assign io_resp_bits_stage1_entry_0_level = '0;
-  assign io_resp_bits_stage1_entry_0_v = '0;
-  assign io_resp_bits_stage1_entry_0_ppn = '0;
-  assign io_resp_bits_stage1_entry_0_ppn_low = '0;
-  assign io_resp_bits_stage1_entry_0_pf = '0;
-  assign io_resp_bits_stage1_entry_0_cf = '0;
-  assign io_resp_bits_stage1_entry_1_tag = '0;
-  assign io_resp_bits_stage1_entry_1_asid = '0;
-  assign io_resp_bits_stage1_entry_1_vmid = '0;
-  assign io_resp_bits_stage1_entry_1_n = '0;
-  assign io_resp_bits_stage1_entry_1_pbmt = '0;
-  assign io_resp_bits_stage1_entry_1_perm_d = '0;
-  assign io_resp_bits_stage1_entry_1_perm_a = '0;
-  assign io_resp_bits_stage1_entry_1_perm_g = '0;
-  assign io_resp_bits_stage1_entry_1_perm_u = '0;
-  assign io_resp_bits_stage1_entry_1_perm_x = '0;
-  assign io_resp_bits_stage1_entry_1_perm_w = '0;
-  assign io_resp_bits_stage1_entry_1_perm_r = '0;
-  assign io_resp_bits_stage1_entry_1_level = '0;
-  assign io_resp_bits_stage1_entry_1_v = '0;
-  assign io_resp_bits_stage1_entry_1_ppn = '0;
-  assign io_resp_bits_stage1_entry_1_ppn_low = '0;
-  assign io_resp_bits_stage1_entry_1_pf = '0;
-  assign io_resp_bits_stage1_entry_1_cf = '0;
-  assign io_resp_bits_stage1_entry_2_tag = '0;
-  assign io_resp_bits_stage1_entry_2_asid = '0;
-  assign io_resp_bits_stage1_entry_2_vmid = '0;
-  assign io_resp_bits_stage1_entry_2_n = '0;
-  assign io_resp_bits_stage1_entry_2_pbmt = '0;
-  assign io_resp_bits_stage1_entry_2_perm_d = '0;
-  assign io_resp_bits_stage1_entry_2_perm_a = '0;
-  assign io_resp_bits_stage1_entry_2_perm_g = '0;
-  assign io_resp_bits_stage1_entry_2_perm_u = '0;
-  assign io_resp_bits_stage1_entry_2_perm_x = '0;
-  assign io_resp_bits_stage1_entry_2_perm_w = '0;
-  assign io_resp_bits_stage1_entry_2_perm_r = '0;
-  assign io_resp_bits_stage1_entry_2_level = '0;
-  assign io_resp_bits_stage1_entry_2_v = '0;
-  assign io_resp_bits_stage1_entry_2_ppn = '0;
-  assign io_resp_bits_stage1_entry_2_ppn_low = '0;
-  assign io_resp_bits_stage1_entry_2_pf = '0;
-  assign io_resp_bits_stage1_entry_2_cf = '0;
-  assign io_resp_bits_stage1_entry_3_tag = '0;
-  assign io_resp_bits_stage1_entry_3_asid = '0;
-  assign io_resp_bits_stage1_entry_3_vmid = '0;
-  assign io_resp_bits_stage1_entry_3_n = '0;
-  assign io_resp_bits_stage1_entry_3_pbmt = '0;
-  assign io_resp_bits_stage1_entry_3_perm_d = '0;
-  assign io_resp_bits_stage1_entry_3_perm_a = '0;
-  assign io_resp_bits_stage1_entry_3_perm_g = '0;
-  assign io_resp_bits_stage1_entry_3_perm_u = '0;
-  assign io_resp_bits_stage1_entry_3_perm_x = '0;
-  assign io_resp_bits_stage1_entry_3_perm_w = '0;
-  assign io_resp_bits_stage1_entry_3_perm_r = '0;
-  assign io_resp_bits_stage1_entry_3_level = '0;
-  assign io_resp_bits_stage1_entry_3_v = '0;
-  assign io_resp_bits_stage1_entry_3_ppn = '0;
-  assign io_resp_bits_stage1_entry_3_ppn_low = '0;
-  assign io_resp_bits_stage1_entry_3_pf = '0;
-  assign io_resp_bits_stage1_entry_3_cf = '0;
-  assign io_resp_bits_stage1_entry_4_tag = '0;
-  assign io_resp_bits_stage1_entry_4_asid = '0;
-  assign io_resp_bits_stage1_entry_4_vmid = '0;
-  assign io_resp_bits_stage1_entry_4_n = '0;
-  assign io_resp_bits_stage1_entry_4_pbmt = '0;
-  assign io_resp_bits_stage1_entry_4_perm_d = '0;
-  assign io_resp_bits_stage1_entry_4_perm_a = '0;
-  assign io_resp_bits_stage1_entry_4_perm_g = '0;
-  assign io_resp_bits_stage1_entry_4_perm_u = '0;
-  assign io_resp_bits_stage1_entry_4_perm_x = '0;
-  assign io_resp_bits_stage1_entry_4_perm_w = '0;
-  assign io_resp_bits_stage1_entry_4_perm_r = '0;
-  assign io_resp_bits_stage1_entry_4_level = '0;
-  assign io_resp_bits_stage1_entry_4_v = '0;
-  assign io_resp_bits_stage1_entry_4_ppn = '0;
-  assign io_resp_bits_stage1_entry_4_ppn_low = '0;
-  assign io_resp_bits_stage1_entry_4_pf = '0;
-  assign io_resp_bits_stage1_entry_4_cf = '0;
-  assign io_resp_bits_stage1_entry_5_tag = '0;
-  assign io_resp_bits_stage1_entry_5_asid = '0;
-  assign io_resp_bits_stage1_entry_5_vmid = '0;
-  assign io_resp_bits_stage1_entry_5_n = '0;
-  assign io_resp_bits_stage1_entry_5_pbmt = '0;
-  assign io_resp_bits_stage1_entry_5_perm_d = '0;
-  assign io_resp_bits_stage1_entry_5_perm_a = '0;
-  assign io_resp_bits_stage1_entry_5_perm_g = '0;
-  assign io_resp_bits_stage1_entry_5_perm_u = '0;
-  assign io_resp_bits_stage1_entry_5_perm_x = '0;
-  assign io_resp_bits_stage1_entry_5_perm_w = '0;
-  assign io_resp_bits_stage1_entry_5_perm_r = '0;
-  assign io_resp_bits_stage1_entry_5_level = '0;
-  assign io_resp_bits_stage1_entry_5_v = '0;
-  assign io_resp_bits_stage1_entry_5_ppn = '0;
-  assign io_resp_bits_stage1_entry_5_ppn_low = '0;
-  assign io_resp_bits_stage1_entry_5_pf = '0;
-  assign io_resp_bits_stage1_entry_5_cf = '0;
-  assign io_resp_bits_stage1_entry_6_tag = '0;
-  assign io_resp_bits_stage1_entry_6_asid = '0;
-  assign io_resp_bits_stage1_entry_6_vmid = '0;
-  assign io_resp_bits_stage1_entry_6_n = '0;
-  assign io_resp_bits_stage1_entry_6_pbmt = '0;
-  assign io_resp_bits_stage1_entry_6_perm_d = '0;
-  assign io_resp_bits_stage1_entry_6_perm_a = '0;
-  assign io_resp_bits_stage1_entry_6_perm_g = '0;
-  assign io_resp_bits_stage1_entry_6_perm_u = '0;
-  assign io_resp_bits_stage1_entry_6_perm_x = '0;
-  assign io_resp_bits_stage1_entry_6_perm_w = '0;
-  assign io_resp_bits_stage1_entry_6_perm_r = '0;
-  assign io_resp_bits_stage1_entry_6_level = '0;
-  assign io_resp_bits_stage1_entry_6_v = '0;
-  assign io_resp_bits_stage1_entry_6_ppn = '0;
-  assign io_resp_bits_stage1_entry_6_ppn_low = '0;
-  assign io_resp_bits_stage1_entry_6_pf = '0;
-  assign io_resp_bits_stage1_entry_6_cf = '0;
-  assign io_resp_bits_stage1_entry_7_tag = '0;
-  assign io_resp_bits_stage1_entry_7_asid = '0;
-  assign io_resp_bits_stage1_entry_7_vmid = '0;
-  assign io_resp_bits_stage1_entry_7_n = '0;
-  assign io_resp_bits_stage1_entry_7_pbmt = '0;
-  assign io_resp_bits_stage1_entry_7_perm_d = '0;
-  assign io_resp_bits_stage1_entry_7_perm_a = '0;
-  assign io_resp_bits_stage1_entry_7_perm_g = '0;
-  assign io_resp_bits_stage1_entry_7_perm_u = '0;
-  assign io_resp_bits_stage1_entry_7_perm_x = '0;
-  assign io_resp_bits_stage1_entry_7_perm_w = '0;
-  assign io_resp_bits_stage1_entry_7_perm_r = '0;
-  assign io_resp_bits_stage1_entry_7_level = '0;
-  assign io_resp_bits_stage1_entry_7_v = '0;
-  assign io_resp_bits_stage1_entry_7_ppn = '0;
-  assign io_resp_bits_stage1_entry_7_ppn_low = '0;
-  assign io_resp_bits_stage1_entry_7_pf = '0;
-  assign io_resp_bits_stage1_entry_7_cf = '0;
-  assign io_resp_bits_stage1_pteidx_0 = '0;
-  assign io_resp_bits_stage1_pteidx_1 = '0;
-  assign io_resp_bits_stage1_pteidx_2 = '0;
-  assign io_resp_bits_stage1_pteidx_3 = '0;
-  assign io_resp_bits_stage1_pteidx_4 = '0;
-  assign io_resp_bits_stage1_pteidx_5 = '0;
-  assign io_resp_bits_stage1_pteidx_6 = '0;
-  assign io_resp_bits_stage1_pteidx_7 = '0;
-  assign io_resp_bits_stage1_not_super = '0;
-  assign io_resp_bits_isHptwReq = '0;
-  assign io_resp_bits_toHptw_l3Hit = '0;
-  assign io_resp_bits_toHptw_l2Hit = '0;
-  assign io_resp_bits_toHptw_l1Hit = '0;
-  assign io_resp_bits_toHptw_ppn = '0;
-  assign io_resp_bits_toHptw_id = '0;
-  assign io_resp_bits_toHptw_resp_entry_tag = '0;
-  assign io_resp_bits_toHptw_resp_entry_vmid = '0;
-  assign io_resp_bits_toHptw_resp_entry_n = '0;
-  assign io_resp_bits_toHptw_resp_entry_pbmt = '0;
-  assign io_resp_bits_toHptw_resp_entry_ppn = '0;
-  assign io_resp_bits_toHptw_resp_entry_perm_d = '0;
-  assign io_resp_bits_toHptw_resp_entry_perm_a = '0;
-  assign io_resp_bits_toHptw_resp_entry_perm_g = '0;
-  assign io_resp_bits_toHptw_resp_entry_perm_u = '0;
-  assign io_resp_bits_toHptw_resp_entry_perm_x = '0;
-  assign io_resp_bits_toHptw_resp_entry_perm_w = '0;
-  assign io_resp_bits_toHptw_resp_entry_perm_r = '0;
-  assign io_resp_bits_toHptw_resp_entry_level = '0;
-  assign io_resp_bits_toHptw_resp_gpf = '0;
-  assign io_resp_bits_toHptw_bypassed = '0;
-  assign io_resp_bits_toHptw_bitmapCheck_jmp_bitmap_check = '0;
-  assign io_resp_bits_toHptw_bitmapCheck_hitway = '0;
-  assign io_resp_bits_toHptw_bitmapCheck_pte = '0;
-  assign io_resp_bits_toHptw_bitmapCheck_ptes_0 = '0;
-  assign io_resp_bits_toHptw_bitmapCheck_ptes_1 = '0;
-  assign io_resp_bits_toHptw_bitmapCheck_ptes_2 = '0;
-  assign io_resp_bits_toHptw_bitmapCheck_ptes_3 = '0;
-  assign io_resp_bits_toHptw_bitmapCheck_ptes_4 = '0;
-  assign io_resp_bits_toHptw_bitmapCheck_ptes_5 = '0;
-  assign io_resp_bits_toHptw_bitmapCheck_ptes_6 = '0;
-  assign io_resp_bits_toHptw_bitmapCheck_ptes_7 = '0;
-  assign io_resp_bits_toHptw_bitmapCheck_fromSP = '0;
-  assign io_resp_bits_toHptw_bitmapCheck_SPlevel = '0;
-  assign io_perf_0_value = '0;
-  assign io_perf_1_value = '0;
-  assign io_perf_2_value = '0;
-  assign io_perf_3_value = '0;
-  assign io_perf_4_value = '0;
-  assign io_perf_5_value = '0;
-  assign io_perf_6_value = '0;
-  assign io_perf_7_value = '0;
+  // ★455 个端口里的全部 236 个输出都已有真实驱动★（本行由生成器实测，不是声明）。
+  // 早先那张"钉 0 占位"表已清空 —— 但**有驱动不等于驱动得对**，对不对是 UT 与 FM 的事。
 
   // ---------------------------------------------------------------------------
   // §9 子模块例化（连线拓扑逐根抄自 golden，见 gen_ptwcache.py）

@@ -12,6 +12,8 @@
     python3 gen_state_cmp.py --check    # 只校验该段与重算结果逐字节一致
 """
 import argparse
+import os
+import re
 import pathlib
 import sys
 
@@ -19,6 +21,11 @@ HERE = pathlib.Path(__file__).resolve().parent
 TB = HERE / 'tb.sv'
 BEGIN = '  // BEGIN GENERATED(state_cmp)'
 END = '  // END GENERATED(state_cmp)'
+PBEGIN = '  // BEGIN GENERATED(port_cmp)'
+PEND = '  // END GENERATED(port_cmp)'
+GOLDEN = pathlib.Path(os.environ.get(
+    'GOLDEN_RTL', '/home/eda/xs-env/G1-canonical/golden-rtl')) / 'PtwCache.sv'
+PORT_FIRST, PORT_LAST = 88, 542     # 与 scripts/gen_ptwcache.py 同一段行号
 
 G = 'dut_g.'
 I = 'dut_i.u_core.'
@@ -193,6 +200,53 @@ def emit():
                   'l0_ramDatas_%d_entries_perms_%d_%s' % (w, k, pm),
                   'l0_ramdata[%d].perms[%d].%s' % (w, k, pm))
 
+    # ---- §22 bitmap：l0BitmapReg 本体 + 两级流水副本 ----
+    #  golden 把 64x4x8 展平成 2048 个标量。逐根 chk 会让本对照慢一个量级，
+    #  所以按"每组 32 位"打包成一次比较（值仍然逐位比，只是少了函数调用）。
+    o.append('    // §22 l0BitmapReg（每组 4 路 x 8 位打成 32 位比一次）')
+    for s in range(L0_SETS):
+        gg = ', '.join('%sl0BitmapReg_%d_%d_%d' % (G, s, w, k)
+                       for w in range(L0_WAYS - 1, -1, -1) for k in range(7, -1, -1))
+        ii = ', '.join('%sl0_bitmap[%d][%d]' % (I, s, w)
+                       for w in range(L0_WAYS - 1, -1, -1))
+        o.append('    chk("l0_bitmap[%d]", {%s}, {%s});' % (s, gg, ii))
+    o.append('    // §22 bitmap 的两级流水副本（golden r_W_K / r_1_W_K）')
+    gg = ', '.join('%sr_%d_%d' % (G, w, k)
+                   for w in range(L0_WAYS - 1, -1, -1) for k in range(7, -1, -1))
+    ii = ', '.join('%sl0_bitmap_delay[%d]' % (I, w) for w in range(L0_WAYS - 1, -1, -1))
+    o.append('    chk("l0_bitmap_delay", {%s}, {%s});' % (gg, ii))
+    gg = ', '.join('%sr_1_%d_%d' % (G, w, k)
+                   for w in range(L0_WAYS - 1, -1, -1) for k in range(7, -1, -1))
+    ii = ', '.join('%sl0_bitmap_ck[%d]' % (I, w) for w in range(L0_WAYS - 1, -1, -1))
+    o.append('    chk("l0_bitmap_ck", {%s}, {%s});' % (gg, ii))
+    # §22 wakeup 流水
+    o.append('    // §22 wakeup 三拍流水')
+    c('wakeup_delay_valid', 'wakeup_req_delay_valid', 'wakeup_delay_valid')
+    c('wakeup_valid', 'wakeup_req_valid', 'wakeup_valid')
+    for f, i2 in (('setIndex', 'wk_d_set'), ('tag', 'wk_d_tag'),
+                  ('way_info', 'wk_d_way'), ('pte_index', 'wk_d_idx'),
+                  ('check_success', 'wk_d_ok'), ('s2xlate', 'wk_d_s2x')):
+        c(i2, 'wakeup_req_delay_%s' % f, i2)
+    for f, i2 in (('setIndex', 'wk_set'), ('way_info', 'wk_way'),
+                  ('pte_index', 'wk_idx'), ('check_success', 'wk_ok')):
+        c(i2, 'wakeup_req_%s' % f, i2)
+    for w in range(L0_WAYS):
+        c('wakeup_hitvec[%d]' % w, 'wakeup_hitVec_%d' % w, 'wakeup_hitvec[%d]' % w)
+        c('wakeup_vvec_delay[%d]' % w, 'wakeup_vVec_delay[%d]' % w,
+          'wakeup_vvec_delay[%d]' % w)
+        c('wakeup_hvec_delay[%d]' % w, 'wakeup_hVec_delay_%d' % w,
+          'wakeup_hvec_delay[%d]' % w)
+        for f in ('tag', 'asid', 'vmid'):
+            c('wakeup_rdata_r[%d].%s' % (w, f),
+              'wakeup_data_resp_r_%d_entries_%s' % (w, f),
+              'wakeup_rdata_r[%d].%s' % (w, f))
+        for k in range(8):
+            c('wakeup_rdata_r[%d].vs[%d]' % (w, k),
+              'wakeup_data_resp_r_%d_entries_vs_%d' % (w, k),
+              'wakeup_rdata_r[%d].vs[%d]' % (w, k))
+            c('wakeup_rdata_r[%d].g[%d]' % (w, k),
+              'wakeup_data_resp_r_%d_entries_perms_%d_g' % (w, k),
+              'wakeup_rdata_r[%d].g[%d]' % (w, k))
     o.append('  endtask')
     o.append(END)
     return '\n'.join(o) + '\n'
@@ -204,15 +258,46 @@ def splice(text):
     return text[:b] + emit() + text[e:]
 
 
+def emit_ports():
+    """compare_outputs()：golden 与重写核的**全部 236 个输出**逐拍逐位比。
+
+    端口表直接从 golden PtwCache.sv 量，不手抄 —— 手抄的名单会漏，
+    而漏掉的那一根在 UT 里就是"按构造测不到"。
+    """
+    o = [PBEGIN,
+         '  // 由 gen_state_cmp.py 生成（golden 端口表逐根量出）。改这段请改生成器。',
+         '  task automatic compare_outputs();']
+    n = 0
+    for ln in GOLDEN.read_text().split('\n')[PORT_FIRST - 1:PORT_LAST]:
+        m = re.match(r'\s+(input|output)\s+(\[[^\]]*\]\s+)?(\w+),?\s*$', ln)
+        if not m:
+            raise SystemExit('端口行解析不了（fail-closed）: %r' % ln)
+        if m.group(1) != 'output':
+            continue
+        p = m.group(3)
+        o.append('    chk("%s", g_%s, i_%s);' % (p, p, p))
+        n += 1
+    if n != 236:
+        raise SystemExit('输出端口数 %d != 236 —— golden 变了，先重新量行号' % n)
+    o += ['  endtask', PEND]
+    return o
+
+
+def splice_ports(text):
+    b = text.index(PBEGIN)
+    e = text.index(PEND) + len(PEND) + 1
+    return text[:b] + '\n'.join(emit_ports()) + '\n' + text[e:]
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--check', action='store_true')
     a = ap.parse_args()
     cur = TB.read_text()
-    if BEGIN not in cur or END not in cur:
-        print('gen_state_cmp: tb.sv 里找不到 GENERATED(state_cmp) 标记（fail-closed）')
+    if BEGIN not in cur or END not in cur or PBEGIN not in cur or PEND not in cur:
+        print('gen_state_cmp: tb.sv 里找不到 GENERATED 标记（fail-closed）')
         return 1
-    new = splice(cur)
+    new = splice_ports(splice(cur))
     if a.check:
         if new != cur:
             print('gen_state_cmp --check: DRIFT —— tb.sv 与重算结果不一致')

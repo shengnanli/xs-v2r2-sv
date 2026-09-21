@@ -1519,6 +1519,98 @@ module tb;
     io_csr_dup_2_vsatp_asid = $urandom_range(0,3);
     io_csr_dup_2_hgatp_vmid = rand_vmid();
     io_csr_dup_2_hgatp_mode = $urandom_range(0,1) ? 4'h8 : 4'h9;
+    // ★priv.virt 三份各给各的★：sfence 的 h 比对每一级用的是自己那份 dup 的 virt
+    //   （l0/sp 用 dup_0、l1 用 dup_1、l2/l3 用 dup_2）。绑成一根线的话
+    //   "virt 取错 dup" 这类错误在本对照里按构造测不出来。
+    io_csr_dup_0_priv_virt = $urandom_range(0,1);
+    io_csr_dup_1_priv_virt = $urandom_range(0,1);
+    io_csr_dup_2_priv_virt = $urandom_range(0,1);
+    // BME=1 才会走 bitmap 门（§16 的 jmp_bitmap_check 与 §22 的 wakeup 写）。
+    // CMODE 多数给 0：CMODE=1 时 bitmap 检查整体关掉，那一段等于没比。
+    io_csr_dup_0_mbmc_BME   = $urandom_range(0,1);
+    io_csr_dup_0_mbmc_CMODE = ($urandom_range(0,7) == 0);
+  endtask
+
+  // ---- 栅栏与 bitmap wakeup 的激励（本轮新增，配合 §21/§22）----
+  //
+  //  ★频率必须低★：sfence_dup_0.valid 直接进 flush_dup_0，整条流水一拍清空。
+  //  发得太勤的话五级命中一次都走不到 —— 那就是"把命中那一段的比对偷偷关掉"。
+  //  实测 1/64 时三种栅栏各触发一千次以上，而五级命中计数与不发栅栏时同量级。
+  //
+  //  ★三份 dup 的 valid / id / rs1 / rs2 各自独立★：golden 里
+  //    l0/sp 的掩码用 dup_0 的 id 与 rs1/rs2，l1 用 dup_1 的 id，
+  //    l2/l3 用 dup_2 的 id，而 l3 那一段的 rs1/rs2 也是 dup_2 的。
+  //  绑成一份的话"取错 dup"在这里按构造测不出来（Predictor 那 504 个失配的形态）。
+  int fire_sfence, fire_hfv, fire_hfg, fire_wakeup, fire_wk_write;
+
+  task automatic drive_fence();
+    int kind;
+    io_sfence_dup_0_valid = 1'b0;
+    io_sfence_dup_1_valid = 1'b0;
+    io_sfence_dup_2_valid = 1'b0;
+    io_csr_dup_0_satp_changed = 1'b0;  io_csr_dup_0_vsatp_changed = 1'b0;
+    io_csr_dup_0_hgatp_changed = 1'b0; io_csr_dup_0_priv_virt_changed = 1'b0;
+    io_csr_dup_1_satp_changed = 1'b0;  io_csr_dup_1_vsatp_changed = 1'b0;
+    io_csr_dup_1_hgatp_changed = 1'b0; io_csr_dup_1_priv_virt_changed = 1'b0;
+    io_csr_dup_2_satp_changed = 1'b0;  io_csr_dup_2_vsatp_changed = 1'b0;
+    io_csr_dup_2_hgatp_changed = 1'b0; io_csr_dup_2_priv_virt_changed = 1'b0;
+
+    if ($urandom_range(0,63) == 0) begin
+      kind = $urandom_range(0,2);        // 0=sfence.vma 1=hfence.vvma 2=hfence.gvma
+      io_sfence_dup_0_valid    = 1'b1;
+      io_sfence_dup_0_bits_hv  = (kind == 1);
+      io_sfence_dup_0_bits_hg  = (kind == 2);
+      io_sfence_dup_0_bits_rs1 = $urandom_range(0,1);
+      io_sfence_dup_0_bits_rs2 = $urandom_range(0,1);
+      // ★两种地址编码都要给★：sfence/hfence.vvma 取 addr[49:12]，
+      //   hfence.gvma 取 (addr<<2)[49:12] = addr[47:10]。只给一种的话
+      //   "gvma 少移那两位"这个错误在本对照里测不出来。
+      io_sfence_dup_0_bits_addr = (kind == 2) ? {2'h0, pick_vpn(), 10'h0}
+                                              : {pick_vpn(), 12'h0};
+      io_sfence_dup_0_bits_id   = rand_vmid();
+      if (kind == 0) fire_sfence++;
+      else if (kind == 1) fire_hfv++;
+      else fire_hfg++;
+    end
+    if ($urandom_range(0,63) == 0) begin
+      io_sfence_dup_1_valid   = 1'b1;
+      io_sfence_dup_1_bits_id = rand_vmid();
+    end
+    if ($urandom_range(0,63) == 0) begin
+      io_sfence_dup_2_valid    = 1'b1;
+      io_sfence_dup_2_bits_rs1 = $urandom_range(0,1);
+      io_sfence_dup_2_bits_rs2 = $urandom_range(0,1);
+      io_sfence_dup_2_bits_id  = rand_vmid();
+    end
+    // csr 变更脉冲：也是 flush 的来源，且三份各自独立。
+    if ($urandom_range(0,255) == 0) io_csr_dup_0_satp_changed      = 1'b1;
+    if ($urandom_range(0,255) == 0) io_csr_dup_1_vsatp_changed     = 1'b1;
+    if ($urandom_range(0,255) == 0) io_csr_dup_2_hgatp_changed     = 1'b1;
+    if ($urandom_range(0,255) == 0) io_csr_dup_0_priv_virt_changed = 1'b1;
+  endtask
+
+  //  wakeup：上层查完 bitmap 回来补票。way_info 是 one-hot。
+  //  ★一半用"刚回填那一路"（io_l0_way_info），一半随机★：
+  //   只给随机的话命中率太低，§22 的写路径几乎走不到；只给回填那一路的话
+  //   "way_info 的 OHToUInt 写错" 这类错误又测不出来。
+  logic [3:0] last_way_info;
+  task automatic drive_wakeup();
+    logic [37:0] v;
+    io_bitmap_wakeup_valid = 1'b0;
+    if ($urandom_range(0,7) == 0) begin
+      v = pick_vpn();
+      io_bitmap_wakeup_valid             = 1'b1;
+      io_bitmap_wakeup_bits_tag          = v;
+      io_bitmap_wakeup_bits_setIndex     = ($urandom_range(0,3) == 0)
+                                             ? 6'($urandom()) : v[8:3];
+      io_bitmap_wakeup_bits_way_info     = ($urandom_range(0,1) && last_way_info != 0)
+                                             ? last_way_info
+                                             : (4'h1 << $urandom_range(0,3));
+      io_bitmap_wakeup_bits_pte_index    = ($urandom_range(0,3) == 0)
+                                             ? 3'($urandom()) : v[2:0];
+      io_bitmap_wakeup_bits_check_success = $urandom_range(0,1);
+      io_bitmap_wakeup_bits_s2xlate      = $urandom_range(0,3);
+    end
   endtask
 
   function automatic logic [37:0] pick_vpn();
@@ -4097,8 +4189,419 @@ module tb;
     chk("l0_ramdata[3].perms[7].x", dut_g.l0_ramDatas_3_entries_perms_7_x, dut_i.u_core.l0_ramdata[3].perms[7].x);
     chk("l0_ramdata[3].perms[7].w", dut_g.l0_ramDatas_3_entries_perms_7_w, dut_i.u_core.l0_ramdata[3].perms[7].w);
     chk("l0_ramdata[3].perms[7].r", dut_g.l0_ramDatas_3_entries_perms_7_r, dut_i.u_core.l0_ramdata[3].perms[7].r);
+    // §22 l0BitmapReg（每组 4 路 x 8 位打成 32 位比一次）
+    chk("l0_bitmap[0]", {dut_g.l0BitmapReg_0_3_7, dut_g.l0BitmapReg_0_3_6, dut_g.l0BitmapReg_0_3_5, dut_g.l0BitmapReg_0_3_4, dut_g.l0BitmapReg_0_3_3, dut_g.l0BitmapReg_0_3_2, dut_g.l0BitmapReg_0_3_1, dut_g.l0BitmapReg_0_3_0, dut_g.l0BitmapReg_0_2_7, dut_g.l0BitmapReg_0_2_6, dut_g.l0BitmapReg_0_2_5, dut_g.l0BitmapReg_0_2_4, dut_g.l0BitmapReg_0_2_3, dut_g.l0BitmapReg_0_2_2, dut_g.l0BitmapReg_0_2_1, dut_g.l0BitmapReg_0_2_0, dut_g.l0BitmapReg_0_1_7, dut_g.l0BitmapReg_0_1_6, dut_g.l0BitmapReg_0_1_5, dut_g.l0BitmapReg_0_1_4, dut_g.l0BitmapReg_0_1_3, dut_g.l0BitmapReg_0_1_2, dut_g.l0BitmapReg_0_1_1, dut_g.l0BitmapReg_0_1_0, dut_g.l0BitmapReg_0_0_7, dut_g.l0BitmapReg_0_0_6, dut_g.l0BitmapReg_0_0_5, dut_g.l0BitmapReg_0_0_4, dut_g.l0BitmapReg_0_0_3, dut_g.l0BitmapReg_0_0_2, dut_g.l0BitmapReg_0_0_1, dut_g.l0BitmapReg_0_0_0}, {dut_i.u_core.l0_bitmap[0][3], dut_i.u_core.l0_bitmap[0][2], dut_i.u_core.l0_bitmap[0][1], dut_i.u_core.l0_bitmap[0][0]});
+    chk("l0_bitmap[1]", {dut_g.l0BitmapReg_1_3_7, dut_g.l0BitmapReg_1_3_6, dut_g.l0BitmapReg_1_3_5, dut_g.l0BitmapReg_1_3_4, dut_g.l0BitmapReg_1_3_3, dut_g.l0BitmapReg_1_3_2, dut_g.l0BitmapReg_1_3_1, dut_g.l0BitmapReg_1_3_0, dut_g.l0BitmapReg_1_2_7, dut_g.l0BitmapReg_1_2_6, dut_g.l0BitmapReg_1_2_5, dut_g.l0BitmapReg_1_2_4, dut_g.l0BitmapReg_1_2_3, dut_g.l0BitmapReg_1_2_2, dut_g.l0BitmapReg_1_2_1, dut_g.l0BitmapReg_1_2_0, dut_g.l0BitmapReg_1_1_7, dut_g.l0BitmapReg_1_1_6, dut_g.l0BitmapReg_1_1_5, dut_g.l0BitmapReg_1_1_4, dut_g.l0BitmapReg_1_1_3, dut_g.l0BitmapReg_1_1_2, dut_g.l0BitmapReg_1_1_1, dut_g.l0BitmapReg_1_1_0, dut_g.l0BitmapReg_1_0_7, dut_g.l0BitmapReg_1_0_6, dut_g.l0BitmapReg_1_0_5, dut_g.l0BitmapReg_1_0_4, dut_g.l0BitmapReg_1_0_3, dut_g.l0BitmapReg_1_0_2, dut_g.l0BitmapReg_1_0_1, dut_g.l0BitmapReg_1_0_0}, {dut_i.u_core.l0_bitmap[1][3], dut_i.u_core.l0_bitmap[1][2], dut_i.u_core.l0_bitmap[1][1], dut_i.u_core.l0_bitmap[1][0]});
+    chk("l0_bitmap[2]", {dut_g.l0BitmapReg_2_3_7, dut_g.l0BitmapReg_2_3_6, dut_g.l0BitmapReg_2_3_5, dut_g.l0BitmapReg_2_3_4, dut_g.l0BitmapReg_2_3_3, dut_g.l0BitmapReg_2_3_2, dut_g.l0BitmapReg_2_3_1, dut_g.l0BitmapReg_2_3_0, dut_g.l0BitmapReg_2_2_7, dut_g.l0BitmapReg_2_2_6, dut_g.l0BitmapReg_2_2_5, dut_g.l0BitmapReg_2_2_4, dut_g.l0BitmapReg_2_2_3, dut_g.l0BitmapReg_2_2_2, dut_g.l0BitmapReg_2_2_1, dut_g.l0BitmapReg_2_2_0, dut_g.l0BitmapReg_2_1_7, dut_g.l0BitmapReg_2_1_6, dut_g.l0BitmapReg_2_1_5, dut_g.l0BitmapReg_2_1_4, dut_g.l0BitmapReg_2_1_3, dut_g.l0BitmapReg_2_1_2, dut_g.l0BitmapReg_2_1_1, dut_g.l0BitmapReg_2_1_0, dut_g.l0BitmapReg_2_0_7, dut_g.l0BitmapReg_2_0_6, dut_g.l0BitmapReg_2_0_5, dut_g.l0BitmapReg_2_0_4, dut_g.l0BitmapReg_2_0_3, dut_g.l0BitmapReg_2_0_2, dut_g.l0BitmapReg_2_0_1, dut_g.l0BitmapReg_2_0_0}, {dut_i.u_core.l0_bitmap[2][3], dut_i.u_core.l0_bitmap[2][2], dut_i.u_core.l0_bitmap[2][1], dut_i.u_core.l0_bitmap[2][0]});
+    chk("l0_bitmap[3]", {dut_g.l0BitmapReg_3_3_7, dut_g.l0BitmapReg_3_3_6, dut_g.l0BitmapReg_3_3_5, dut_g.l0BitmapReg_3_3_4, dut_g.l0BitmapReg_3_3_3, dut_g.l0BitmapReg_3_3_2, dut_g.l0BitmapReg_3_3_1, dut_g.l0BitmapReg_3_3_0, dut_g.l0BitmapReg_3_2_7, dut_g.l0BitmapReg_3_2_6, dut_g.l0BitmapReg_3_2_5, dut_g.l0BitmapReg_3_2_4, dut_g.l0BitmapReg_3_2_3, dut_g.l0BitmapReg_3_2_2, dut_g.l0BitmapReg_3_2_1, dut_g.l0BitmapReg_3_2_0, dut_g.l0BitmapReg_3_1_7, dut_g.l0BitmapReg_3_1_6, dut_g.l0BitmapReg_3_1_5, dut_g.l0BitmapReg_3_1_4, dut_g.l0BitmapReg_3_1_3, dut_g.l0BitmapReg_3_1_2, dut_g.l0BitmapReg_3_1_1, dut_g.l0BitmapReg_3_1_0, dut_g.l0BitmapReg_3_0_7, dut_g.l0BitmapReg_3_0_6, dut_g.l0BitmapReg_3_0_5, dut_g.l0BitmapReg_3_0_4, dut_g.l0BitmapReg_3_0_3, dut_g.l0BitmapReg_3_0_2, dut_g.l0BitmapReg_3_0_1, dut_g.l0BitmapReg_3_0_0}, {dut_i.u_core.l0_bitmap[3][3], dut_i.u_core.l0_bitmap[3][2], dut_i.u_core.l0_bitmap[3][1], dut_i.u_core.l0_bitmap[3][0]});
+    chk("l0_bitmap[4]", {dut_g.l0BitmapReg_4_3_7, dut_g.l0BitmapReg_4_3_6, dut_g.l0BitmapReg_4_3_5, dut_g.l0BitmapReg_4_3_4, dut_g.l0BitmapReg_4_3_3, dut_g.l0BitmapReg_4_3_2, dut_g.l0BitmapReg_4_3_1, dut_g.l0BitmapReg_4_3_0, dut_g.l0BitmapReg_4_2_7, dut_g.l0BitmapReg_4_2_6, dut_g.l0BitmapReg_4_2_5, dut_g.l0BitmapReg_4_2_4, dut_g.l0BitmapReg_4_2_3, dut_g.l0BitmapReg_4_2_2, dut_g.l0BitmapReg_4_2_1, dut_g.l0BitmapReg_4_2_0, dut_g.l0BitmapReg_4_1_7, dut_g.l0BitmapReg_4_1_6, dut_g.l0BitmapReg_4_1_5, dut_g.l0BitmapReg_4_1_4, dut_g.l0BitmapReg_4_1_3, dut_g.l0BitmapReg_4_1_2, dut_g.l0BitmapReg_4_1_1, dut_g.l0BitmapReg_4_1_0, dut_g.l0BitmapReg_4_0_7, dut_g.l0BitmapReg_4_0_6, dut_g.l0BitmapReg_4_0_5, dut_g.l0BitmapReg_4_0_4, dut_g.l0BitmapReg_4_0_3, dut_g.l0BitmapReg_4_0_2, dut_g.l0BitmapReg_4_0_1, dut_g.l0BitmapReg_4_0_0}, {dut_i.u_core.l0_bitmap[4][3], dut_i.u_core.l0_bitmap[4][2], dut_i.u_core.l0_bitmap[4][1], dut_i.u_core.l0_bitmap[4][0]});
+    chk("l0_bitmap[5]", {dut_g.l0BitmapReg_5_3_7, dut_g.l0BitmapReg_5_3_6, dut_g.l0BitmapReg_5_3_5, dut_g.l0BitmapReg_5_3_4, dut_g.l0BitmapReg_5_3_3, dut_g.l0BitmapReg_5_3_2, dut_g.l0BitmapReg_5_3_1, dut_g.l0BitmapReg_5_3_0, dut_g.l0BitmapReg_5_2_7, dut_g.l0BitmapReg_5_2_6, dut_g.l0BitmapReg_5_2_5, dut_g.l0BitmapReg_5_2_4, dut_g.l0BitmapReg_5_2_3, dut_g.l0BitmapReg_5_2_2, dut_g.l0BitmapReg_5_2_1, dut_g.l0BitmapReg_5_2_0, dut_g.l0BitmapReg_5_1_7, dut_g.l0BitmapReg_5_1_6, dut_g.l0BitmapReg_5_1_5, dut_g.l0BitmapReg_5_1_4, dut_g.l0BitmapReg_5_1_3, dut_g.l0BitmapReg_5_1_2, dut_g.l0BitmapReg_5_1_1, dut_g.l0BitmapReg_5_1_0, dut_g.l0BitmapReg_5_0_7, dut_g.l0BitmapReg_5_0_6, dut_g.l0BitmapReg_5_0_5, dut_g.l0BitmapReg_5_0_4, dut_g.l0BitmapReg_5_0_3, dut_g.l0BitmapReg_5_0_2, dut_g.l0BitmapReg_5_0_1, dut_g.l0BitmapReg_5_0_0}, {dut_i.u_core.l0_bitmap[5][3], dut_i.u_core.l0_bitmap[5][2], dut_i.u_core.l0_bitmap[5][1], dut_i.u_core.l0_bitmap[5][0]});
+    chk("l0_bitmap[6]", {dut_g.l0BitmapReg_6_3_7, dut_g.l0BitmapReg_6_3_6, dut_g.l0BitmapReg_6_3_5, dut_g.l0BitmapReg_6_3_4, dut_g.l0BitmapReg_6_3_3, dut_g.l0BitmapReg_6_3_2, dut_g.l0BitmapReg_6_3_1, dut_g.l0BitmapReg_6_3_0, dut_g.l0BitmapReg_6_2_7, dut_g.l0BitmapReg_6_2_6, dut_g.l0BitmapReg_6_2_5, dut_g.l0BitmapReg_6_2_4, dut_g.l0BitmapReg_6_2_3, dut_g.l0BitmapReg_6_2_2, dut_g.l0BitmapReg_6_2_1, dut_g.l0BitmapReg_6_2_0, dut_g.l0BitmapReg_6_1_7, dut_g.l0BitmapReg_6_1_6, dut_g.l0BitmapReg_6_1_5, dut_g.l0BitmapReg_6_1_4, dut_g.l0BitmapReg_6_1_3, dut_g.l0BitmapReg_6_1_2, dut_g.l0BitmapReg_6_1_1, dut_g.l0BitmapReg_6_1_0, dut_g.l0BitmapReg_6_0_7, dut_g.l0BitmapReg_6_0_6, dut_g.l0BitmapReg_6_0_5, dut_g.l0BitmapReg_6_0_4, dut_g.l0BitmapReg_6_0_3, dut_g.l0BitmapReg_6_0_2, dut_g.l0BitmapReg_6_0_1, dut_g.l0BitmapReg_6_0_0}, {dut_i.u_core.l0_bitmap[6][3], dut_i.u_core.l0_bitmap[6][2], dut_i.u_core.l0_bitmap[6][1], dut_i.u_core.l0_bitmap[6][0]});
+    chk("l0_bitmap[7]", {dut_g.l0BitmapReg_7_3_7, dut_g.l0BitmapReg_7_3_6, dut_g.l0BitmapReg_7_3_5, dut_g.l0BitmapReg_7_3_4, dut_g.l0BitmapReg_7_3_3, dut_g.l0BitmapReg_7_3_2, dut_g.l0BitmapReg_7_3_1, dut_g.l0BitmapReg_7_3_0, dut_g.l0BitmapReg_7_2_7, dut_g.l0BitmapReg_7_2_6, dut_g.l0BitmapReg_7_2_5, dut_g.l0BitmapReg_7_2_4, dut_g.l0BitmapReg_7_2_3, dut_g.l0BitmapReg_7_2_2, dut_g.l0BitmapReg_7_2_1, dut_g.l0BitmapReg_7_2_0, dut_g.l0BitmapReg_7_1_7, dut_g.l0BitmapReg_7_1_6, dut_g.l0BitmapReg_7_1_5, dut_g.l0BitmapReg_7_1_4, dut_g.l0BitmapReg_7_1_3, dut_g.l0BitmapReg_7_1_2, dut_g.l0BitmapReg_7_1_1, dut_g.l0BitmapReg_7_1_0, dut_g.l0BitmapReg_7_0_7, dut_g.l0BitmapReg_7_0_6, dut_g.l0BitmapReg_7_0_5, dut_g.l0BitmapReg_7_0_4, dut_g.l0BitmapReg_7_0_3, dut_g.l0BitmapReg_7_0_2, dut_g.l0BitmapReg_7_0_1, dut_g.l0BitmapReg_7_0_0}, {dut_i.u_core.l0_bitmap[7][3], dut_i.u_core.l0_bitmap[7][2], dut_i.u_core.l0_bitmap[7][1], dut_i.u_core.l0_bitmap[7][0]});
+    chk("l0_bitmap[8]", {dut_g.l0BitmapReg_8_3_7, dut_g.l0BitmapReg_8_3_6, dut_g.l0BitmapReg_8_3_5, dut_g.l0BitmapReg_8_3_4, dut_g.l0BitmapReg_8_3_3, dut_g.l0BitmapReg_8_3_2, dut_g.l0BitmapReg_8_3_1, dut_g.l0BitmapReg_8_3_0, dut_g.l0BitmapReg_8_2_7, dut_g.l0BitmapReg_8_2_6, dut_g.l0BitmapReg_8_2_5, dut_g.l0BitmapReg_8_2_4, dut_g.l0BitmapReg_8_2_3, dut_g.l0BitmapReg_8_2_2, dut_g.l0BitmapReg_8_2_1, dut_g.l0BitmapReg_8_2_0, dut_g.l0BitmapReg_8_1_7, dut_g.l0BitmapReg_8_1_6, dut_g.l0BitmapReg_8_1_5, dut_g.l0BitmapReg_8_1_4, dut_g.l0BitmapReg_8_1_3, dut_g.l0BitmapReg_8_1_2, dut_g.l0BitmapReg_8_1_1, dut_g.l0BitmapReg_8_1_0, dut_g.l0BitmapReg_8_0_7, dut_g.l0BitmapReg_8_0_6, dut_g.l0BitmapReg_8_0_5, dut_g.l0BitmapReg_8_0_4, dut_g.l0BitmapReg_8_0_3, dut_g.l0BitmapReg_8_0_2, dut_g.l0BitmapReg_8_0_1, dut_g.l0BitmapReg_8_0_0}, {dut_i.u_core.l0_bitmap[8][3], dut_i.u_core.l0_bitmap[8][2], dut_i.u_core.l0_bitmap[8][1], dut_i.u_core.l0_bitmap[8][0]});
+    chk("l0_bitmap[9]", {dut_g.l0BitmapReg_9_3_7, dut_g.l0BitmapReg_9_3_6, dut_g.l0BitmapReg_9_3_5, dut_g.l0BitmapReg_9_3_4, dut_g.l0BitmapReg_9_3_3, dut_g.l0BitmapReg_9_3_2, dut_g.l0BitmapReg_9_3_1, dut_g.l0BitmapReg_9_3_0, dut_g.l0BitmapReg_9_2_7, dut_g.l0BitmapReg_9_2_6, dut_g.l0BitmapReg_9_2_5, dut_g.l0BitmapReg_9_2_4, dut_g.l0BitmapReg_9_2_3, dut_g.l0BitmapReg_9_2_2, dut_g.l0BitmapReg_9_2_1, dut_g.l0BitmapReg_9_2_0, dut_g.l0BitmapReg_9_1_7, dut_g.l0BitmapReg_9_1_6, dut_g.l0BitmapReg_9_1_5, dut_g.l0BitmapReg_9_1_4, dut_g.l0BitmapReg_9_1_3, dut_g.l0BitmapReg_9_1_2, dut_g.l0BitmapReg_9_1_1, dut_g.l0BitmapReg_9_1_0, dut_g.l0BitmapReg_9_0_7, dut_g.l0BitmapReg_9_0_6, dut_g.l0BitmapReg_9_0_5, dut_g.l0BitmapReg_9_0_4, dut_g.l0BitmapReg_9_0_3, dut_g.l0BitmapReg_9_0_2, dut_g.l0BitmapReg_9_0_1, dut_g.l0BitmapReg_9_0_0}, {dut_i.u_core.l0_bitmap[9][3], dut_i.u_core.l0_bitmap[9][2], dut_i.u_core.l0_bitmap[9][1], dut_i.u_core.l0_bitmap[9][0]});
+    chk("l0_bitmap[10]", {dut_g.l0BitmapReg_10_3_7, dut_g.l0BitmapReg_10_3_6, dut_g.l0BitmapReg_10_3_5, dut_g.l0BitmapReg_10_3_4, dut_g.l0BitmapReg_10_3_3, dut_g.l0BitmapReg_10_3_2, dut_g.l0BitmapReg_10_3_1, dut_g.l0BitmapReg_10_3_0, dut_g.l0BitmapReg_10_2_7, dut_g.l0BitmapReg_10_2_6, dut_g.l0BitmapReg_10_2_5, dut_g.l0BitmapReg_10_2_4, dut_g.l0BitmapReg_10_2_3, dut_g.l0BitmapReg_10_2_2, dut_g.l0BitmapReg_10_2_1, dut_g.l0BitmapReg_10_2_0, dut_g.l0BitmapReg_10_1_7, dut_g.l0BitmapReg_10_1_6, dut_g.l0BitmapReg_10_1_5, dut_g.l0BitmapReg_10_1_4, dut_g.l0BitmapReg_10_1_3, dut_g.l0BitmapReg_10_1_2, dut_g.l0BitmapReg_10_1_1, dut_g.l0BitmapReg_10_1_0, dut_g.l0BitmapReg_10_0_7, dut_g.l0BitmapReg_10_0_6, dut_g.l0BitmapReg_10_0_5, dut_g.l0BitmapReg_10_0_4, dut_g.l0BitmapReg_10_0_3, dut_g.l0BitmapReg_10_0_2, dut_g.l0BitmapReg_10_0_1, dut_g.l0BitmapReg_10_0_0}, {dut_i.u_core.l0_bitmap[10][3], dut_i.u_core.l0_bitmap[10][2], dut_i.u_core.l0_bitmap[10][1], dut_i.u_core.l0_bitmap[10][0]});
+    chk("l0_bitmap[11]", {dut_g.l0BitmapReg_11_3_7, dut_g.l0BitmapReg_11_3_6, dut_g.l0BitmapReg_11_3_5, dut_g.l0BitmapReg_11_3_4, dut_g.l0BitmapReg_11_3_3, dut_g.l0BitmapReg_11_3_2, dut_g.l0BitmapReg_11_3_1, dut_g.l0BitmapReg_11_3_0, dut_g.l0BitmapReg_11_2_7, dut_g.l0BitmapReg_11_2_6, dut_g.l0BitmapReg_11_2_5, dut_g.l0BitmapReg_11_2_4, dut_g.l0BitmapReg_11_2_3, dut_g.l0BitmapReg_11_2_2, dut_g.l0BitmapReg_11_2_1, dut_g.l0BitmapReg_11_2_0, dut_g.l0BitmapReg_11_1_7, dut_g.l0BitmapReg_11_1_6, dut_g.l0BitmapReg_11_1_5, dut_g.l0BitmapReg_11_1_4, dut_g.l0BitmapReg_11_1_3, dut_g.l0BitmapReg_11_1_2, dut_g.l0BitmapReg_11_1_1, dut_g.l0BitmapReg_11_1_0, dut_g.l0BitmapReg_11_0_7, dut_g.l0BitmapReg_11_0_6, dut_g.l0BitmapReg_11_0_5, dut_g.l0BitmapReg_11_0_4, dut_g.l0BitmapReg_11_0_3, dut_g.l0BitmapReg_11_0_2, dut_g.l0BitmapReg_11_0_1, dut_g.l0BitmapReg_11_0_0}, {dut_i.u_core.l0_bitmap[11][3], dut_i.u_core.l0_bitmap[11][2], dut_i.u_core.l0_bitmap[11][1], dut_i.u_core.l0_bitmap[11][0]});
+    chk("l0_bitmap[12]", {dut_g.l0BitmapReg_12_3_7, dut_g.l0BitmapReg_12_3_6, dut_g.l0BitmapReg_12_3_5, dut_g.l0BitmapReg_12_3_4, dut_g.l0BitmapReg_12_3_3, dut_g.l0BitmapReg_12_3_2, dut_g.l0BitmapReg_12_3_1, dut_g.l0BitmapReg_12_3_0, dut_g.l0BitmapReg_12_2_7, dut_g.l0BitmapReg_12_2_6, dut_g.l0BitmapReg_12_2_5, dut_g.l0BitmapReg_12_2_4, dut_g.l0BitmapReg_12_2_3, dut_g.l0BitmapReg_12_2_2, dut_g.l0BitmapReg_12_2_1, dut_g.l0BitmapReg_12_2_0, dut_g.l0BitmapReg_12_1_7, dut_g.l0BitmapReg_12_1_6, dut_g.l0BitmapReg_12_1_5, dut_g.l0BitmapReg_12_1_4, dut_g.l0BitmapReg_12_1_3, dut_g.l0BitmapReg_12_1_2, dut_g.l0BitmapReg_12_1_1, dut_g.l0BitmapReg_12_1_0, dut_g.l0BitmapReg_12_0_7, dut_g.l0BitmapReg_12_0_6, dut_g.l0BitmapReg_12_0_5, dut_g.l0BitmapReg_12_0_4, dut_g.l0BitmapReg_12_0_3, dut_g.l0BitmapReg_12_0_2, dut_g.l0BitmapReg_12_0_1, dut_g.l0BitmapReg_12_0_0}, {dut_i.u_core.l0_bitmap[12][3], dut_i.u_core.l0_bitmap[12][2], dut_i.u_core.l0_bitmap[12][1], dut_i.u_core.l0_bitmap[12][0]});
+    chk("l0_bitmap[13]", {dut_g.l0BitmapReg_13_3_7, dut_g.l0BitmapReg_13_3_6, dut_g.l0BitmapReg_13_3_5, dut_g.l0BitmapReg_13_3_4, dut_g.l0BitmapReg_13_3_3, dut_g.l0BitmapReg_13_3_2, dut_g.l0BitmapReg_13_3_1, dut_g.l0BitmapReg_13_3_0, dut_g.l0BitmapReg_13_2_7, dut_g.l0BitmapReg_13_2_6, dut_g.l0BitmapReg_13_2_5, dut_g.l0BitmapReg_13_2_4, dut_g.l0BitmapReg_13_2_3, dut_g.l0BitmapReg_13_2_2, dut_g.l0BitmapReg_13_2_1, dut_g.l0BitmapReg_13_2_0, dut_g.l0BitmapReg_13_1_7, dut_g.l0BitmapReg_13_1_6, dut_g.l0BitmapReg_13_1_5, dut_g.l0BitmapReg_13_1_4, dut_g.l0BitmapReg_13_1_3, dut_g.l0BitmapReg_13_1_2, dut_g.l0BitmapReg_13_1_1, dut_g.l0BitmapReg_13_1_0, dut_g.l0BitmapReg_13_0_7, dut_g.l0BitmapReg_13_0_6, dut_g.l0BitmapReg_13_0_5, dut_g.l0BitmapReg_13_0_4, dut_g.l0BitmapReg_13_0_3, dut_g.l0BitmapReg_13_0_2, dut_g.l0BitmapReg_13_0_1, dut_g.l0BitmapReg_13_0_0}, {dut_i.u_core.l0_bitmap[13][3], dut_i.u_core.l0_bitmap[13][2], dut_i.u_core.l0_bitmap[13][1], dut_i.u_core.l0_bitmap[13][0]});
+    chk("l0_bitmap[14]", {dut_g.l0BitmapReg_14_3_7, dut_g.l0BitmapReg_14_3_6, dut_g.l0BitmapReg_14_3_5, dut_g.l0BitmapReg_14_3_4, dut_g.l0BitmapReg_14_3_3, dut_g.l0BitmapReg_14_3_2, dut_g.l0BitmapReg_14_3_1, dut_g.l0BitmapReg_14_3_0, dut_g.l0BitmapReg_14_2_7, dut_g.l0BitmapReg_14_2_6, dut_g.l0BitmapReg_14_2_5, dut_g.l0BitmapReg_14_2_4, dut_g.l0BitmapReg_14_2_3, dut_g.l0BitmapReg_14_2_2, dut_g.l0BitmapReg_14_2_1, dut_g.l0BitmapReg_14_2_0, dut_g.l0BitmapReg_14_1_7, dut_g.l0BitmapReg_14_1_6, dut_g.l0BitmapReg_14_1_5, dut_g.l0BitmapReg_14_1_4, dut_g.l0BitmapReg_14_1_3, dut_g.l0BitmapReg_14_1_2, dut_g.l0BitmapReg_14_1_1, dut_g.l0BitmapReg_14_1_0, dut_g.l0BitmapReg_14_0_7, dut_g.l0BitmapReg_14_0_6, dut_g.l0BitmapReg_14_0_5, dut_g.l0BitmapReg_14_0_4, dut_g.l0BitmapReg_14_0_3, dut_g.l0BitmapReg_14_0_2, dut_g.l0BitmapReg_14_0_1, dut_g.l0BitmapReg_14_0_0}, {dut_i.u_core.l0_bitmap[14][3], dut_i.u_core.l0_bitmap[14][2], dut_i.u_core.l0_bitmap[14][1], dut_i.u_core.l0_bitmap[14][0]});
+    chk("l0_bitmap[15]", {dut_g.l0BitmapReg_15_3_7, dut_g.l0BitmapReg_15_3_6, dut_g.l0BitmapReg_15_3_5, dut_g.l0BitmapReg_15_3_4, dut_g.l0BitmapReg_15_3_3, dut_g.l0BitmapReg_15_3_2, dut_g.l0BitmapReg_15_3_1, dut_g.l0BitmapReg_15_3_0, dut_g.l0BitmapReg_15_2_7, dut_g.l0BitmapReg_15_2_6, dut_g.l0BitmapReg_15_2_5, dut_g.l0BitmapReg_15_2_4, dut_g.l0BitmapReg_15_2_3, dut_g.l0BitmapReg_15_2_2, dut_g.l0BitmapReg_15_2_1, dut_g.l0BitmapReg_15_2_0, dut_g.l0BitmapReg_15_1_7, dut_g.l0BitmapReg_15_1_6, dut_g.l0BitmapReg_15_1_5, dut_g.l0BitmapReg_15_1_4, dut_g.l0BitmapReg_15_1_3, dut_g.l0BitmapReg_15_1_2, dut_g.l0BitmapReg_15_1_1, dut_g.l0BitmapReg_15_1_0, dut_g.l0BitmapReg_15_0_7, dut_g.l0BitmapReg_15_0_6, dut_g.l0BitmapReg_15_0_5, dut_g.l0BitmapReg_15_0_4, dut_g.l0BitmapReg_15_0_3, dut_g.l0BitmapReg_15_0_2, dut_g.l0BitmapReg_15_0_1, dut_g.l0BitmapReg_15_0_0}, {dut_i.u_core.l0_bitmap[15][3], dut_i.u_core.l0_bitmap[15][2], dut_i.u_core.l0_bitmap[15][1], dut_i.u_core.l0_bitmap[15][0]});
+    chk("l0_bitmap[16]", {dut_g.l0BitmapReg_16_3_7, dut_g.l0BitmapReg_16_3_6, dut_g.l0BitmapReg_16_3_5, dut_g.l0BitmapReg_16_3_4, dut_g.l0BitmapReg_16_3_3, dut_g.l0BitmapReg_16_3_2, dut_g.l0BitmapReg_16_3_1, dut_g.l0BitmapReg_16_3_0, dut_g.l0BitmapReg_16_2_7, dut_g.l0BitmapReg_16_2_6, dut_g.l0BitmapReg_16_2_5, dut_g.l0BitmapReg_16_2_4, dut_g.l0BitmapReg_16_2_3, dut_g.l0BitmapReg_16_2_2, dut_g.l0BitmapReg_16_2_1, dut_g.l0BitmapReg_16_2_0, dut_g.l0BitmapReg_16_1_7, dut_g.l0BitmapReg_16_1_6, dut_g.l0BitmapReg_16_1_5, dut_g.l0BitmapReg_16_1_4, dut_g.l0BitmapReg_16_1_3, dut_g.l0BitmapReg_16_1_2, dut_g.l0BitmapReg_16_1_1, dut_g.l0BitmapReg_16_1_0, dut_g.l0BitmapReg_16_0_7, dut_g.l0BitmapReg_16_0_6, dut_g.l0BitmapReg_16_0_5, dut_g.l0BitmapReg_16_0_4, dut_g.l0BitmapReg_16_0_3, dut_g.l0BitmapReg_16_0_2, dut_g.l0BitmapReg_16_0_1, dut_g.l0BitmapReg_16_0_0}, {dut_i.u_core.l0_bitmap[16][3], dut_i.u_core.l0_bitmap[16][2], dut_i.u_core.l0_bitmap[16][1], dut_i.u_core.l0_bitmap[16][0]});
+    chk("l0_bitmap[17]", {dut_g.l0BitmapReg_17_3_7, dut_g.l0BitmapReg_17_3_6, dut_g.l0BitmapReg_17_3_5, dut_g.l0BitmapReg_17_3_4, dut_g.l0BitmapReg_17_3_3, dut_g.l0BitmapReg_17_3_2, dut_g.l0BitmapReg_17_3_1, dut_g.l0BitmapReg_17_3_0, dut_g.l0BitmapReg_17_2_7, dut_g.l0BitmapReg_17_2_6, dut_g.l0BitmapReg_17_2_5, dut_g.l0BitmapReg_17_2_4, dut_g.l0BitmapReg_17_2_3, dut_g.l0BitmapReg_17_2_2, dut_g.l0BitmapReg_17_2_1, dut_g.l0BitmapReg_17_2_0, dut_g.l0BitmapReg_17_1_7, dut_g.l0BitmapReg_17_1_6, dut_g.l0BitmapReg_17_1_5, dut_g.l0BitmapReg_17_1_4, dut_g.l0BitmapReg_17_1_3, dut_g.l0BitmapReg_17_1_2, dut_g.l0BitmapReg_17_1_1, dut_g.l0BitmapReg_17_1_0, dut_g.l0BitmapReg_17_0_7, dut_g.l0BitmapReg_17_0_6, dut_g.l0BitmapReg_17_0_5, dut_g.l0BitmapReg_17_0_4, dut_g.l0BitmapReg_17_0_3, dut_g.l0BitmapReg_17_0_2, dut_g.l0BitmapReg_17_0_1, dut_g.l0BitmapReg_17_0_0}, {dut_i.u_core.l0_bitmap[17][3], dut_i.u_core.l0_bitmap[17][2], dut_i.u_core.l0_bitmap[17][1], dut_i.u_core.l0_bitmap[17][0]});
+    chk("l0_bitmap[18]", {dut_g.l0BitmapReg_18_3_7, dut_g.l0BitmapReg_18_3_6, dut_g.l0BitmapReg_18_3_5, dut_g.l0BitmapReg_18_3_4, dut_g.l0BitmapReg_18_3_3, dut_g.l0BitmapReg_18_3_2, dut_g.l0BitmapReg_18_3_1, dut_g.l0BitmapReg_18_3_0, dut_g.l0BitmapReg_18_2_7, dut_g.l0BitmapReg_18_2_6, dut_g.l0BitmapReg_18_2_5, dut_g.l0BitmapReg_18_2_4, dut_g.l0BitmapReg_18_2_3, dut_g.l0BitmapReg_18_2_2, dut_g.l0BitmapReg_18_2_1, dut_g.l0BitmapReg_18_2_0, dut_g.l0BitmapReg_18_1_7, dut_g.l0BitmapReg_18_1_6, dut_g.l0BitmapReg_18_1_5, dut_g.l0BitmapReg_18_1_4, dut_g.l0BitmapReg_18_1_3, dut_g.l0BitmapReg_18_1_2, dut_g.l0BitmapReg_18_1_1, dut_g.l0BitmapReg_18_1_0, dut_g.l0BitmapReg_18_0_7, dut_g.l0BitmapReg_18_0_6, dut_g.l0BitmapReg_18_0_5, dut_g.l0BitmapReg_18_0_4, dut_g.l0BitmapReg_18_0_3, dut_g.l0BitmapReg_18_0_2, dut_g.l0BitmapReg_18_0_1, dut_g.l0BitmapReg_18_0_0}, {dut_i.u_core.l0_bitmap[18][3], dut_i.u_core.l0_bitmap[18][2], dut_i.u_core.l0_bitmap[18][1], dut_i.u_core.l0_bitmap[18][0]});
+    chk("l0_bitmap[19]", {dut_g.l0BitmapReg_19_3_7, dut_g.l0BitmapReg_19_3_6, dut_g.l0BitmapReg_19_3_5, dut_g.l0BitmapReg_19_3_4, dut_g.l0BitmapReg_19_3_3, dut_g.l0BitmapReg_19_3_2, dut_g.l0BitmapReg_19_3_1, dut_g.l0BitmapReg_19_3_0, dut_g.l0BitmapReg_19_2_7, dut_g.l0BitmapReg_19_2_6, dut_g.l0BitmapReg_19_2_5, dut_g.l0BitmapReg_19_2_4, dut_g.l0BitmapReg_19_2_3, dut_g.l0BitmapReg_19_2_2, dut_g.l0BitmapReg_19_2_1, dut_g.l0BitmapReg_19_2_0, dut_g.l0BitmapReg_19_1_7, dut_g.l0BitmapReg_19_1_6, dut_g.l0BitmapReg_19_1_5, dut_g.l0BitmapReg_19_1_4, dut_g.l0BitmapReg_19_1_3, dut_g.l0BitmapReg_19_1_2, dut_g.l0BitmapReg_19_1_1, dut_g.l0BitmapReg_19_1_0, dut_g.l0BitmapReg_19_0_7, dut_g.l0BitmapReg_19_0_6, dut_g.l0BitmapReg_19_0_5, dut_g.l0BitmapReg_19_0_4, dut_g.l0BitmapReg_19_0_3, dut_g.l0BitmapReg_19_0_2, dut_g.l0BitmapReg_19_0_1, dut_g.l0BitmapReg_19_0_0}, {dut_i.u_core.l0_bitmap[19][3], dut_i.u_core.l0_bitmap[19][2], dut_i.u_core.l0_bitmap[19][1], dut_i.u_core.l0_bitmap[19][0]});
+    chk("l0_bitmap[20]", {dut_g.l0BitmapReg_20_3_7, dut_g.l0BitmapReg_20_3_6, dut_g.l0BitmapReg_20_3_5, dut_g.l0BitmapReg_20_3_4, dut_g.l0BitmapReg_20_3_3, dut_g.l0BitmapReg_20_3_2, dut_g.l0BitmapReg_20_3_1, dut_g.l0BitmapReg_20_3_0, dut_g.l0BitmapReg_20_2_7, dut_g.l0BitmapReg_20_2_6, dut_g.l0BitmapReg_20_2_5, dut_g.l0BitmapReg_20_2_4, dut_g.l0BitmapReg_20_2_3, dut_g.l0BitmapReg_20_2_2, dut_g.l0BitmapReg_20_2_1, dut_g.l0BitmapReg_20_2_0, dut_g.l0BitmapReg_20_1_7, dut_g.l0BitmapReg_20_1_6, dut_g.l0BitmapReg_20_1_5, dut_g.l0BitmapReg_20_1_4, dut_g.l0BitmapReg_20_1_3, dut_g.l0BitmapReg_20_1_2, dut_g.l0BitmapReg_20_1_1, dut_g.l0BitmapReg_20_1_0, dut_g.l0BitmapReg_20_0_7, dut_g.l0BitmapReg_20_0_6, dut_g.l0BitmapReg_20_0_5, dut_g.l0BitmapReg_20_0_4, dut_g.l0BitmapReg_20_0_3, dut_g.l0BitmapReg_20_0_2, dut_g.l0BitmapReg_20_0_1, dut_g.l0BitmapReg_20_0_0}, {dut_i.u_core.l0_bitmap[20][3], dut_i.u_core.l0_bitmap[20][2], dut_i.u_core.l0_bitmap[20][1], dut_i.u_core.l0_bitmap[20][0]});
+    chk("l0_bitmap[21]", {dut_g.l0BitmapReg_21_3_7, dut_g.l0BitmapReg_21_3_6, dut_g.l0BitmapReg_21_3_5, dut_g.l0BitmapReg_21_3_4, dut_g.l0BitmapReg_21_3_3, dut_g.l0BitmapReg_21_3_2, dut_g.l0BitmapReg_21_3_1, dut_g.l0BitmapReg_21_3_0, dut_g.l0BitmapReg_21_2_7, dut_g.l0BitmapReg_21_2_6, dut_g.l0BitmapReg_21_2_5, dut_g.l0BitmapReg_21_2_4, dut_g.l0BitmapReg_21_2_3, dut_g.l0BitmapReg_21_2_2, dut_g.l0BitmapReg_21_2_1, dut_g.l0BitmapReg_21_2_0, dut_g.l0BitmapReg_21_1_7, dut_g.l0BitmapReg_21_1_6, dut_g.l0BitmapReg_21_1_5, dut_g.l0BitmapReg_21_1_4, dut_g.l0BitmapReg_21_1_3, dut_g.l0BitmapReg_21_1_2, dut_g.l0BitmapReg_21_1_1, dut_g.l0BitmapReg_21_1_0, dut_g.l0BitmapReg_21_0_7, dut_g.l0BitmapReg_21_0_6, dut_g.l0BitmapReg_21_0_5, dut_g.l0BitmapReg_21_0_4, dut_g.l0BitmapReg_21_0_3, dut_g.l0BitmapReg_21_0_2, dut_g.l0BitmapReg_21_0_1, dut_g.l0BitmapReg_21_0_0}, {dut_i.u_core.l0_bitmap[21][3], dut_i.u_core.l0_bitmap[21][2], dut_i.u_core.l0_bitmap[21][1], dut_i.u_core.l0_bitmap[21][0]});
+    chk("l0_bitmap[22]", {dut_g.l0BitmapReg_22_3_7, dut_g.l0BitmapReg_22_3_6, dut_g.l0BitmapReg_22_3_5, dut_g.l0BitmapReg_22_3_4, dut_g.l0BitmapReg_22_3_3, dut_g.l0BitmapReg_22_3_2, dut_g.l0BitmapReg_22_3_1, dut_g.l0BitmapReg_22_3_0, dut_g.l0BitmapReg_22_2_7, dut_g.l0BitmapReg_22_2_6, dut_g.l0BitmapReg_22_2_5, dut_g.l0BitmapReg_22_2_4, dut_g.l0BitmapReg_22_2_3, dut_g.l0BitmapReg_22_2_2, dut_g.l0BitmapReg_22_2_1, dut_g.l0BitmapReg_22_2_0, dut_g.l0BitmapReg_22_1_7, dut_g.l0BitmapReg_22_1_6, dut_g.l0BitmapReg_22_1_5, dut_g.l0BitmapReg_22_1_4, dut_g.l0BitmapReg_22_1_3, dut_g.l0BitmapReg_22_1_2, dut_g.l0BitmapReg_22_1_1, dut_g.l0BitmapReg_22_1_0, dut_g.l0BitmapReg_22_0_7, dut_g.l0BitmapReg_22_0_6, dut_g.l0BitmapReg_22_0_5, dut_g.l0BitmapReg_22_0_4, dut_g.l0BitmapReg_22_0_3, dut_g.l0BitmapReg_22_0_2, dut_g.l0BitmapReg_22_0_1, dut_g.l0BitmapReg_22_0_0}, {dut_i.u_core.l0_bitmap[22][3], dut_i.u_core.l0_bitmap[22][2], dut_i.u_core.l0_bitmap[22][1], dut_i.u_core.l0_bitmap[22][0]});
+    chk("l0_bitmap[23]", {dut_g.l0BitmapReg_23_3_7, dut_g.l0BitmapReg_23_3_6, dut_g.l0BitmapReg_23_3_5, dut_g.l0BitmapReg_23_3_4, dut_g.l0BitmapReg_23_3_3, dut_g.l0BitmapReg_23_3_2, dut_g.l0BitmapReg_23_3_1, dut_g.l0BitmapReg_23_3_0, dut_g.l0BitmapReg_23_2_7, dut_g.l0BitmapReg_23_2_6, dut_g.l0BitmapReg_23_2_5, dut_g.l0BitmapReg_23_2_4, dut_g.l0BitmapReg_23_2_3, dut_g.l0BitmapReg_23_2_2, dut_g.l0BitmapReg_23_2_1, dut_g.l0BitmapReg_23_2_0, dut_g.l0BitmapReg_23_1_7, dut_g.l0BitmapReg_23_1_6, dut_g.l0BitmapReg_23_1_5, dut_g.l0BitmapReg_23_1_4, dut_g.l0BitmapReg_23_1_3, dut_g.l0BitmapReg_23_1_2, dut_g.l0BitmapReg_23_1_1, dut_g.l0BitmapReg_23_1_0, dut_g.l0BitmapReg_23_0_7, dut_g.l0BitmapReg_23_0_6, dut_g.l0BitmapReg_23_0_5, dut_g.l0BitmapReg_23_0_4, dut_g.l0BitmapReg_23_0_3, dut_g.l0BitmapReg_23_0_2, dut_g.l0BitmapReg_23_0_1, dut_g.l0BitmapReg_23_0_0}, {dut_i.u_core.l0_bitmap[23][3], dut_i.u_core.l0_bitmap[23][2], dut_i.u_core.l0_bitmap[23][1], dut_i.u_core.l0_bitmap[23][0]});
+    chk("l0_bitmap[24]", {dut_g.l0BitmapReg_24_3_7, dut_g.l0BitmapReg_24_3_6, dut_g.l0BitmapReg_24_3_5, dut_g.l0BitmapReg_24_3_4, dut_g.l0BitmapReg_24_3_3, dut_g.l0BitmapReg_24_3_2, dut_g.l0BitmapReg_24_3_1, dut_g.l0BitmapReg_24_3_0, dut_g.l0BitmapReg_24_2_7, dut_g.l0BitmapReg_24_2_6, dut_g.l0BitmapReg_24_2_5, dut_g.l0BitmapReg_24_2_4, dut_g.l0BitmapReg_24_2_3, dut_g.l0BitmapReg_24_2_2, dut_g.l0BitmapReg_24_2_1, dut_g.l0BitmapReg_24_2_0, dut_g.l0BitmapReg_24_1_7, dut_g.l0BitmapReg_24_1_6, dut_g.l0BitmapReg_24_1_5, dut_g.l0BitmapReg_24_1_4, dut_g.l0BitmapReg_24_1_3, dut_g.l0BitmapReg_24_1_2, dut_g.l0BitmapReg_24_1_1, dut_g.l0BitmapReg_24_1_0, dut_g.l0BitmapReg_24_0_7, dut_g.l0BitmapReg_24_0_6, dut_g.l0BitmapReg_24_0_5, dut_g.l0BitmapReg_24_0_4, dut_g.l0BitmapReg_24_0_3, dut_g.l0BitmapReg_24_0_2, dut_g.l0BitmapReg_24_0_1, dut_g.l0BitmapReg_24_0_0}, {dut_i.u_core.l0_bitmap[24][3], dut_i.u_core.l0_bitmap[24][2], dut_i.u_core.l0_bitmap[24][1], dut_i.u_core.l0_bitmap[24][0]});
+    chk("l0_bitmap[25]", {dut_g.l0BitmapReg_25_3_7, dut_g.l0BitmapReg_25_3_6, dut_g.l0BitmapReg_25_3_5, dut_g.l0BitmapReg_25_3_4, dut_g.l0BitmapReg_25_3_3, dut_g.l0BitmapReg_25_3_2, dut_g.l0BitmapReg_25_3_1, dut_g.l0BitmapReg_25_3_0, dut_g.l0BitmapReg_25_2_7, dut_g.l0BitmapReg_25_2_6, dut_g.l0BitmapReg_25_2_5, dut_g.l0BitmapReg_25_2_4, dut_g.l0BitmapReg_25_2_3, dut_g.l0BitmapReg_25_2_2, dut_g.l0BitmapReg_25_2_1, dut_g.l0BitmapReg_25_2_0, dut_g.l0BitmapReg_25_1_7, dut_g.l0BitmapReg_25_1_6, dut_g.l0BitmapReg_25_1_5, dut_g.l0BitmapReg_25_1_4, dut_g.l0BitmapReg_25_1_3, dut_g.l0BitmapReg_25_1_2, dut_g.l0BitmapReg_25_1_1, dut_g.l0BitmapReg_25_1_0, dut_g.l0BitmapReg_25_0_7, dut_g.l0BitmapReg_25_0_6, dut_g.l0BitmapReg_25_0_5, dut_g.l0BitmapReg_25_0_4, dut_g.l0BitmapReg_25_0_3, dut_g.l0BitmapReg_25_0_2, dut_g.l0BitmapReg_25_0_1, dut_g.l0BitmapReg_25_0_0}, {dut_i.u_core.l0_bitmap[25][3], dut_i.u_core.l0_bitmap[25][2], dut_i.u_core.l0_bitmap[25][1], dut_i.u_core.l0_bitmap[25][0]});
+    chk("l0_bitmap[26]", {dut_g.l0BitmapReg_26_3_7, dut_g.l0BitmapReg_26_3_6, dut_g.l0BitmapReg_26_3_5, dut_g.l0BitmapReg_26_3_4, dut_g.l0BitmapReg_26_3_3, dut_g.l0BitmapReg_26_3_2, dut_g.l0BitmapReg_26_3_1, dut_g.l0BitmapReg_26_3_0, dut_g.l0BitmapReg_26_2_7, dut_g.l0BitmapReg_26_2_6, dut_g.l0BitmapReg_26_2_5, dut_g.l0BitmapReg_26_2_4, dut_g.l0BitmapReg_26_2_3, dut_g.l0BitmapReg_26_2_2, dut_g.l0BitmapReg_26_2_1, dut_g.l0BitmapReg_26_2_0, dut_g.l0BitmapReg_26_1_7, dut_g.l0BitmapReg_26_1_6, dut_g.l0BitmapReg_26_1_5, dut_g.l0BitmapReg_26_1_4, dut_g.l0BitmapReg_26_1_3, dut_g.l0BitmapReg_26_1_2, dut_g.l0BitmapReg_26_1_1, dut_g.l0BitmapReg_26_1_0, dut_g.l0BitmapReg_26_0_7, dut_g.l0BitmapReg_26_0_6, dut_g.l0BitmapReg_26_0_5, dut_g.l0BitmapReg_26_0_4, dut_g.l0BitmapReg_26_0_3, dut_g.l0BitmapReg_26_0_2, dut_g.l0BitmapReg_26_0_1, dut_g.l0BitmapReg_26_0_0}, {dut_i.u_core.l0_bitmap[26][3], dut_i.u_core.l0_bitmap[26][2], dut_i.u_core.l0_bitmap[26][1], dut_i.u_core.l0_bitmap[26][0]});
+    chk("l0_bitmap[27]", {dut_g.l0BitmapReg_27_3_7, dut_g.l0BitmapReg_27_3_6, dut_g.l0BitmapReg_27_3_5, dut_g.l0BitmapReg_27_3_4, dut_g.l0BitmapReg_27_3_3, dut_g.l0BitmapReg_27_3_2, dut_g.l0BitmapReg_27_3_1, dut_g.l0BitmapReg_27_3_0, dut_g.l0BitmapReg_27_2_7, dut_g.l0BitmapReg_27_2_6, dut_g.l0BitmapReg_27_2_5, dut_g.l0BitmapReg_27_2_4, dut_g.l0BitmapReg_27_2_3, dut_g.l0BitmapReg_27_2_2, dut_g.l0BitmapReg_27_2_1, dut_g.l0BitmapReg_27_2_0, dut_g.l0BitmapReg_27_1_7, dut_g.l0BitmapReg_27_1_6, dut_g.l0BitmapReg_27_1_5, dut_g.l0BitmapReg_27_1_4, dut_g.l0BitmapReg_27_1_3, dut_g.l0BitmapReg_27_1_2, dut_g.l0BitmapReg_27_1_1, dut_g.l0BitmapReg_27_1_0, dut_g.l0BitmapReg_27_0_7, dut_g.l0BitmapReg_27_0_6, dut_g.l0BitmapReg_27_0_5, dut_g.l0BitmapReg_27_0_4, dut_g.l0BitmapReg_27_0_3, dut_g.l0BitmapReg_27_0_2, dut_g.l0BitmapReg_27_0_1, dut_g.l0BitmapReg_27_0_0}, {dut_i.u_core.l0_bitmap[27][3], dut_i.u_core.l0_bitmap[27][2], dut_i.u_core.l0_bitmap[27][1], dut_i.u_core.l0_bitmap[27][0]});
+    chk("l0_bitmap[28]", {dut_g.l0BitmapReg_28_3_7, dut_g.l0BitmapReg_28_3_6, dut_g.l0BitmapReg_28_3_5, dut_g.l0BitmapReg_28_3_4, dut_g.l0BitmapReg_28_3_3, dut_g.l0BitmapReg_28_3_2, dut_g.l0BitmapReg_28_3_1, dut_g.l0BitmapReg_28_3_0, dut_g.l0BitmapReg_28_2_7, dut_g.l0BitmapReg_28_2_6, dut_g.l0BitmapReg_28_2_5, dut_g.l0BitmapReg_28_2_4, dut_g.l0BitmapReg_28_2_3, dut_g.l0BitmapReg_28_2_2, dut_g.l0BitmapReg_28_2_1, dut_g.l0BitmapReg_28_2_0, dut_g.l0BitmapReg_28_1_7, dut_g.l0BitmapReg_28_1_6, dut_g.l0BitmapReg_28_1_5, dut_g.l0BitmapReg_28_1_4, dut_g.l0BitmapReg_28_1_3, dut_g.l0BitmapReg_28_1_2, dut_g.l0BitmapReg_28_1_1, dut_g.l0BitmapReg_28_1_0, dut_g.l0BitmapReg_28_0_7, dut_g.l0BitmapReg_28_0_6, dut_g.l0BitmapReg_28_0_5, dut_g.l0BitmapReg_28_0_4, dut_g.l0BitmapReg_28_0_3, dut_g.l0BitmapReg_28_0_2, dut_g.l0BitmapReg_28_0_1, dut_g.l0BitmapReg_28_0_0}, {dut_i.u_core.l0_bitmap[28][3], dut_i.u_core.l0_bitmap[28][2], dut_i.u_core.l0_bitmap[28][1], dut_i.u_core.l0_bitmap[28][0]});
+    chk("l0_bitmap[29]", {dut_g.l0BitmapReg_29_3_7, dut_g.l0BitmapReg_29_3_6, dut_g.l0BitmapReg_29_3_5, dut_g.l0BitmapReg_29_3_4, dut_g.l0BitmapReg_29_3_3, dut_g.l0BitmapReg_29_3_2, dut_g.l0BitmapReg_29_3_1, dut_g.l0BitmapReg_29_3_0, dut_g.l0BitmapReg_29_2_7, dut_g.l0BitmapReg_29_2_6, dut_g.l0BitmapReg_29_2_5, dut_g.l0BitmapReg_29_2_4, dut_g.l0BitmapReg_29_2_3, dut_g.l0BitmapReg_29_2_2, dut_g.l0BitmapReg_29_2_1, dut_g.l0BitmapReg_29_2_0, dut_g.l0BitmapReg_29_1_7, dut_g.l0BitmapReg_29_1_6, dut_g.l0BitmapReg_29_1_5, dut_g.l0BitmapReg_29_1_4, dut_g.l0BitmapReg_29_1_3, dut_g.l0BitmapReg_29_1_2, dut_g.l0BitmapReg_29_1_1, dut_g.l0BitmapReg_29_1_0, dut_g.l0BitmapReg_29_0_7, dut_g.l0BitmapReg_29_0_6, dut_g.l0BitmapReg_29_0_5, dut_g.l0BitmapReg_29_0_4, dut_g.l0BitmapReg_29_0_3, dut_g.l0BitmapReg_29_0_2, dut_g.l0BitmapReg_29_0_1, dut_g.l0BitmapReg_29_0_0}, {dut_i.u_core.l0_bitmap[29][3], dut_i.u_core.l0_bitmap[29][2], dut_i.u_core.l0_bitmap[29][1], dut_i.u_core.l0_bitmap[29][0]});
+    chk("l0_bitmap[30]", {dut_g.l0BitmapReg_30_3_7, dut_g.l0BitmapReg_30_3_6, dut_g.l0BitmapReg_30_3_5, dut_g.l0BitmapReg_30_3_4, dut_g.l0BitmapReg_30_3_3, dut_g.l0BitmapReg_30_3_2, dut_g.l0BitmapReg_30_3_1, dut_g.l0BitmapReg_30_3_0, dut_g.l0BitmapReg_30_2_7, dut_g.l0BitmapReg_30_2_6, dut_g.l0BitmapReg_30_2_5, dut_g.l0BitmapReg_30_2_4, dut_g.l0BitmapReg_30_2_3, dut_g.l0BitmapReg_30_2_2, dut_g.l0BitmapReg_30_2_1, dut_g.l0BitmapReg_30_2_0, dut_g.l0BitmapReg_30_1_7, dut_g.l0BitmapReg_30_1_6, dut_g.l0BitmapReg_30_1_5, dut_g.l0BitmapReg_30_1_4, dut_g.l0BitmapReg_30_1_3, dut_g.l0BitmapReg_30_1_2, dut_g.l0BitmapReg_30_1_1, dut_g.l0BitmapReg_30_1_0, dut_g.l0BitmapReg_30_0_7, dut_g.l0BitmapReg_30_0_6, dut_g.l0BitmapReg_30_0_5, dut_g.l0BitmapReg_30_0_4, dut_g.l0BitmapReg_30_0_3, dut_g.l0BitmapReg_30_0_2, dut_g.l0BitmapReg_30_0_1, dut_g.l0BitmapReg_30_0_0}, {dut_i.u_core.l0_bitmap[30][3], dut_i.u_core.l0_bitmap[30][2], dut_i.u_core.l0_bitmap[30][1], dut_i.u_core.l0_bitmap[30][0]});
+    chk("l0_bitmap[31]", {dut_g.l0BitmapReg_31_3_7, dut_g.l0BitmapReg_31_3_6, dut_g.l0BitmapReg_31_3_5, dut_g.l0BitmapReg_31_3_4, dut_g.l0BitmapReg_31_3_3, dut_g.l0BitmapReg_31_3_2, dut_g.l0BitmapReg_31_3_1, dut_g.l0BitmapReg_31_3_0, dut_g.l0BitmapReg_31_2_7, dut_g.l0BitmapReg_31_2_6, dut_g.l0BitmapReg_31_2_5, dut_g.l0BitmapReg_31_2_4, dut_g.l0BitmapReg_31_2_3, dut_g.l0BitmapReg_31_2_2, dut_g.l0BitmapReg_31_2_1, dut_g.l0BitmapReg_31_2_0, dut_g.l0BitmapReg_31_1_7, dut_g.l0BitmapReg_31_1_6, dut_g.l0BitmapReg_31_1_5, dut_g.l0BitmapReg_31_1_4, dut_g.l0BitmapReg_31_1_3, dut_g.l0BitmapReg_31_1_2, dut_g.l0BitmapReg_31_1_1, dut_g.l0BitmapReg_31_1_0, dut_g.l0BitmapReg_31_0_7, dut_g.l0BitmapReg_31_0_6, dut_g.l0BitmapReg_31_0_5, dut_g.l0BitmapReg_31_0_4, dut_g.l0BitmapReg_31_0_3, dut_g.l0BitmapReg_31_0_2, dut_g.l0BitmapReg_31_0_1, dut_g.l0BitmapReg_31_0_0}, {dut_i.u_core.l0_bitmap[31][3], dut_i.u_core.l0_bitmap[31][2], dut_i.u_core.l0_bitmap[31][1], dut_i.u_core.l0_bitmap[31][0]});
+    chk("l0_bitmap[32]", {dut_g.l0BitmapReg_32_3_7, dut_g.l0BitmapReg_32_3_6, dut_g.l0BitmapReg_32_3_5, dut_g.l0BitmapReg_32_3_4, dut_g.l0BitmapReg_32_3_3, dut_g.l0BitmapReg_32_3_2, dut_g.l0BitmapReg_32_3_1, dut_g.l0BitmapReg_32_3_0, dut_g.l0BitmapReg_32_2_7, dut_g.l0BitmapReg_32_2_6, dut_g.l0BitmapReg_32_2_5, dut_g.l0BitmapReg_32_2_4, dut_g.l0BitmapReg_32_2_3, dut_g.l0BitmapReg_32_2_2, dut_g.l0BitmapReg_32_2_1, dut_g.l0BitmapReg_32_2_0, dut_g.l0BitmapReg_32_1_7, dut_g.l0BitmapReg_32_1_6, dut_g.l0BitmapReg_32_1_5, dut_g.l0BitmapReg_32_1_4, dut_g.l0BitmapReg_32_1_3, dut_g.l0BitmapReg_32_1_2, dut_g.l0BitmapReg_32_1_1, dut_g.l0BitmapReg_32_1_0, dut_g.l0BitmapReg_32_0_7, dut_g.l0BitmapReg_32_0_6, dut_g.l0BitmapReg_32_0_5, dut_g.l0BitmapReg_32_0_4, dut_g.l0BitmapReg_32_0_3, dut_g.l0BitmapReg_32_0_2, dut_g.l0BitmapReg_32_0_1, dut_g.l0BitmapReg_32_0_0}, {dut_i.u_core.l0_bitmap[32][3], dut_i.u_core.l0_bitmap[32][2], dut_i.u_core.l0_bitmap[32][1], dut_i.u_core.l0_bitmap[32][0]});
+    chk("l0_bitmap[33]", {dut_g.l0BitmapReg_33_3_7, dut_g.l0BitmapReg_33_3_6, dut_g.l0BitmapReg_33_3_5, dut_g.l0BitmapReg_33_3_4, dut_g.l0BitmapReg_33_3_3, dut_g.l0BitmapReg_33_3_2, dut_g.l0BitmapReg_33_3_1, dut_g.l0BitmapReg_33_3_0, dut_g.l0BitmapReg_33_2_7, dut_g.l0BitmapReg_33_2_6, dut_g.l0BitmapReg_33_2_5, dut_g.l0BitmapReg_33_2_4, dut_g.l0BitmapReg_33_2_3, dut_g.l0BitmapReg_33_2_2, dut_g.l0BitmapReg_33_2_1, dut_g.l0BitmapReg_33_2_0, dut_g.l0BitmapReg_33_1_7, dut_g.l0BitmapReg_33_1_6, dut_g.l0BitmapReg_33_1_5, dut_g.l0BitmapReg_33_1_4, dut_g.l0BitmapReg_33_1_3, dut_g.l0BitmapReg_33_1_2, dut_g.l0BitmapReg_33_1_1, dut_g.l0BitmapReg_33_1_0, dut_g.l0BitmapReg_33_0_7, dut_g.l0BitmapReg_33_0_6, dut_g.l0BitmapReg_33_0_5, dut_g.l0BitmapReg_33_0_4, dut_g.l0BitmapReg_33_0_3, dut_g.l0BitmapReg_33_0_2, dut_g.l0BitmapReg_33_0_1, dut_g.l0BitmapReg_33_0_0}, {dut_i.u_core.l0_bitmap[33][3], dut_i.u_core.l0_bitmap[33][2], dut_i.u_core.l0_bitmap[33][1], dut_i.u_core.l0_bitmap[33][0]});
+    chk("l0_bitmap[34]", {dut_g.l0BitmapReg_34_3_7, dut_g.l0BitmapReg_34_3_6, dut_g.l0BitmapReg_34_3_5, dut_g.l0BitmapReg_34_3_4, dut_g.l0BitmapReg_34_3_3, dut_g.l0BitmapReg_34_3_2, dut_g.l0BitmapReg_34_3_1, dut_g.l0BitmapReg_34_3_0, dut_g.l0BitmapReg_34_2_7, dut_g.l0BitmapReg_34_2_6, dut_g.l0BitmapReg_34_2_5, dut_g.l0BitmapReg_34_2_4, dut_g.l0BitmapReg_34_2_3, dut_g.l0BitmapReg_34_2_2, dut_g.l0BitmapReg_34_2_1, dut_g.l0BitmapReg_34_2_0, dut_g.l0BitmapReg_34_1_7, dut_g.l0BitmapReg_34_1_6, dut_g.l0BitmapReg_34_1_5, dut_g.l0BitmapReg_34_1_4, dut_g.l0BitmapReg_34_1_3, dut_g.l0BitmapReg_34_1_2, dut_g.l0BitmapReg_34_1_1, dut_g.l0BitmapReg_34_1_0, dut_g.l0BitmapReg_34_0_7, dut_g.l0BitmapReg_34_0_6, dut_g.l0BitmapReg_34_0_5, dut_g.l0BitmapReg_34_0_4, dut_g.l0BitmapReg_34_0_3, dut_g.l0BitmapReg_34_0_2, dut_g.l0BitmapReg_34_0_1, dut_g.l0BitmapReg_34_0_0}, {dut_i.u_core.l0_bitmap[34][3], dut_i.u_core.l0_bitmap[34][2], dut_i.u_core.l0_bitmap[34][1], dut_i.u_core.l0_bitmap[34][0]});
+    chk("l0_bitmap[35]", {dut_g.l0BitmapReg_35_3_7, dut_g.l0BitmapReg_35_3_6, dut_g.l0BitmapReg_35_3_5, dut_g.l0BitmapReg_35_3_4, dut_g.l0BitmapReg_35_3_3, dut_g.l0BitmapReg_35_3_2, dut_g.l0BitmapReg_35_3_1, dut_g.l0BitmapReg_35_3_0, dut_g.l0BitmapReg_35_2_7, dut_g.l0BitmapReg_35_2_6, dut_g.l0BitmapReg_35_2_5, dut_g.l0BitmapReg_35_2_4, dut_g.l0BitmapReg_35_2_3, dut_g.l0BitmapReg_35_2_2, dut_g.l0BitmapReg_35_2_1, dut_g.l0BitmapReg_35_2_0, dut_g.l0BitmapReg_35_1_7, dut_g.l0BitmapReg_35_1_6, dut_g.l0BitmapReg_35_1_5, dut_g.l0BitmapReg_35_1_4, dut_g.l0BitmapReg_35_1_3, dut_g.l0BitmapReg_35_1_2, dut_g.l0BitmapReg_35_1_1, dut_g.l0BitmapReg_35_1_0, dut_g.l0BitmapReg_35_0_7, dut_g.l0BitmapReg_35_0_6, dut_g.l0BitmapReg_35_0_5, dut_g.l0BitmapReg_35_0_4, dut_g.l0BitmapReg_35_0_3, dut_g.l0BitmapReg_35_0_2, dut_g.l0BitmapReg_35_0_1, dut_g.l0BitmapReg_35_0_0}, {dut_i.u_core.l0_bitmap[35][3], dut_i.u_core.l0_bitmap[35][2], dut_i.u_core.l0_bitmap[35][1], dut_i.u_core.l0_bitmap[35][0]});
+    chk("l0_bitmap[36]", {dut_g.l0BitmapReg_36_3_7, dut_g.l0BitmapReg_36_3_6, dut_g.l0BitmapReg_36_3_5, dut_g.l0BitmapReg_36_3_4, dut_g.l0BitmapReg_36_3_3, dut_g.l0BitmapReg_36_3_2, dut_g.l0BitmapReg_36_3_1, dut_g.l0BitmapReg_36_3_0, dut_g.l0BitmapReg_36_2_7, dut_g.l0BitmapReg_36_2_6, dut_g.l0BitmapReg_36_2_5, dut_g.l0BitmapReg_36_2_4, dut_g.l0BitmapReg_36_2_3, dut_g.l0BitmapReg_36_2_2, dut_g.l0BitmapReg_36_2_1, dut_g.l0BitmapReg_36_2_0, dut_g.l0BitmapReg_36_1_7, dut_g.l0BitmapReg_36_1_6, dut_g.l0BitmapReg_36_1_5, dut_g.l0BitmapReg_36_1_4, dut_g.l0BitmapReg_36_1_3, dut_g.l0BitmapReg_36_1_2, dut_g.l0BitmapReg_36_1_1, dut_g.l0BitmapReg_36_1_0, dut_g.l0BitmapReg_36_0_7, dut_g.l0BitmapReg_36_0_6, dut_g.l0BitmapReg_36_0_5, dut_g.l0BitmapReg_36_0_4, dut_g.l0BitmapReg_36_0_3, dut_g.l0BitmapReg_36_0_2, dut_g.l0BitmapReg_36_0_1, dut_g.l0BitmapReg_36_0_0}, {dut_i.u_core.l0_bitmap[36][3], dut_i.u_core.l0_bitmap[36][2], dut_i.u_core.l0_bitmap[36][1], dut_i.u_core.l0_bitmap[36][0]});
+    chk("l0_bitmap[37]", {dut_g.l0BitmapReg_37_3_7, dut_g.l0BitmapReg_37_3_6, dut_g.l0BitmapReg_37_3_5, dut_g.l0BitmapReg_37_3_4, dut_g.l0BitmapReg_37_3_3, dut_g.l0BitmapReg_37_3_2, dut_g.l0BitmapReg_37_3_1, dut_g.l0BitmapReg_37_3_0, dut_g.l0BitmapReg_37_2_7, dut_g.l0BitmapReg_37_2_6, dut_g.l0BitmapReg_37_2_5, dut_g.l0BitmapReg_37_2_4, dut_g.l0BitmapReg_37_2_3, dut_g.l0BitmapReg_37_2_2, dut_g.l0BitmapReg_37_2_1, dut_g.l0BitmapReg_37_2_0, dut_g.l0BitmapReg_37_1_7, dut_g.l0BitmapReg_37_1_6, dut_g.l0BitmapReg_37_1_5, dut_g.l0BitmapReg_37_1_4, dut_g.l0BitmapReg_37_1_3, dut_g.l0BitmapReg_37_1_2, dut_g.l0BitmapReg_37_1_1, dut_g.l0BitmapReg_37_1_0, dut_g.l0BitmapReg_37_0_7, dut_g.l0BitmapReg_37_0_6, dut_g.l0BitmapReg_37_0_5, dut_g.l0BitmapReg_37_0_4, dut_g.l0BitmapReg_37_0_3, dut_g.l0BitmapReg_37_0_2, dut_g.l0BitmapReg_37_0_1, dut_g.l0BitmapReg_37_0_0}, {dut_i.u_core.l0_bitmap[37][3], dut_i.u_core.l0_bitmap[37][2], dut_i.u_core.l0_bitmap[37][1], dut_i.u_core.l0_bitmap[37][0]});
+    chk("l0_bitmap[38]", {dut_g.l0BitmapReg_38_3_7, dut_g.l0BitmapReg_38_3_6, dut_g.l0BitmapReg_38_3_5, dut_g.l0BitmapReg_38_3_4, dut_g.l0BitmapReg_38_3_3, dut_g.l0BitmapReg_38_3_2, dut_g.l0BitmapReg_38_3_1, dut_g.l0BitmapReg_38_3_0, dut_g.l0BitmapReg_38_2_7, dut_g.l0BitmapReg_38_2_6, dut_g.l0BitmapReg_38_2_5, dut_g.l0BitmapReg_38_2_4, dut_g.l0BitmapReg_38_2_3, dut_g.l0BitmapReg_38_2_2, dut_g.l0BitmapReg_38_2_1, dut_g.l0BitmapReg_38_2_0, dut_g.l0BitmapReg_38_1_7, dut_g.l0BitmapReg_38_1_6, dut_g.l0BitmapReg_38_1_5, dut_g.l0BitmapReg_38_1_4, dut_g.l0BitmapReg_38_1_3, dut_g.l0BitmapReg_38_1_2, dut_g.l0BitmapReg_38_1_1, dut_g.l0BitmapReg_38_1_0, dut_g.l0BitmapReg_38_0_7, dut_g.l0BitmapReg_38_0_6, dut_g.l0BitmapReg_38_0_5, dut_g.l0BitmapReg_38_0_4, dut_g.l0BitmapReg_38_0_3, dut_g.l0BitmapReg_38_0_2, dut_g.l0BitmapReg_38_0_1, dut_g.l0BitmapReg_38_0_0}, {dut_i.u_core.l0_bitmap[38][3], dut_i.u_core.l0_bitmap[38][2], dut_i.u_core.l0_bitmap[38][1], dut_i.u_core.l0_bitmap[38][0]});
+    chk("l0_bitmap[39]", {dut_g.l0BitmapReg_39_3_7, dut_g.l0BitmapReg_39_3_6, dut_g.l0BitmapReg_39_3_5, dut_g.l0BitmapReg_39_3_4, dut_g.l0BitmapReg_39_3_3, dut_g.l0BitmapReg_39_3_2, dut_g.l0BitmapReg_39_3_1, dut_g.l0BitmapReg_39_3_0, dut_g.l0BitmapReg_39_2_7, dut_g.l0BitmapReg_39_2_6, dut_g.l0BitmapReg_39_2_5, dut_g.l0BitmapReg_39_2_4, dut_g.l0BitmapReg_39_2_3, dut_g.l0BitmapReg_39_2_2, dut_g.l0BitmapReg_39_2_1, dut_g.l0BitmapReg_39_2_0, dut_g.l0BitmapReg_39_1_7, dut_g.l0BitmapReg_39_1_6, dut_g.l0BitmapReg_39_1_5, dut_g.l0BitmapReg_39_1_4, dut_g.l0BitmapReg_39_1_3, dut_g.l0BitmapReg_39_1_2, dut_g.l0BitmapReg_39_1_1, dut_g.l0BitmapReg_39_1_0, dut_g.l0BitmapReg_39_0_7, dut_g.l0BitmapReg_39_0_6, dut_g.l0BitmapReg_39_0_5, dut_g.l0BitmapReg_39_0_4, dut_g.l0BitmapReg_39_0_3, dut_g.l0BitmapReg_39_0_2, dut_g.l0BitmapReg_39_0_1, dut_g.l0BitmapReg_39_0_0}, {dut_i.u_core.l0_bitmap[39][3], dut_i.u_core.l0_bitmap[39][2], dut_i.u_core.l0_bitmap[39][1], dut_i.u_core.l0_bitmap[39][0]});
+    chk("l0_bitmap[40]", {dut_g.l0BitmapReg_40_3_7, dut_g.l0BitmapReg_40_3_6, dut_g.l0BitmapReg_40_3_5, dut_g.l0BitmapReg_40_3_4, dut_g.l0BitmapReg_40_3_3, dut_g.l0BitmapReg_40_3_2, dut_g.l0BitmapReg_40_3_1, dut_g.l0BitmapReg_40_3_0, dut_g.l0BitmapReg_40_2_7, dut_g.l0BitmapReg_40_2_6, dut_g.l0BitmapReg_40_2_5, dut_g.l0BitmapReg_40_2_4, dut_g.l0BitmapReg_40_2_3, dut_g.l0BitmapReg_40_2_2, dut_g.l0BitmapReg_40_2_1, dut_g.l0BitmapReg_40_2_0, dut_g.l0BitmapReg_40_1_7, dut_g.l0BitmapReg_40_1_6, dut_g.l0BitmapReg_40_1_5, dut_g.l0BitmapReg_40_1_4, dut_g.l0BitmapReg_40_1_3, dut_g.l0BitmapReg_40_1_2, dut_g.l0BitmapReg_40_1_1, dut_g.l0BitmapReg_40_1_0, dut_g.l0BitmapReg_40_0_7, dut_g.l0BitmapReg_40_0_6, dut_g.l0BitmapReg_40_0_5, dut_g.l0BitmapReg_40_0_4, dut_g.l0BitmapReg_40_0_3, dut_g.l0BitmapReg_40_0_2, dut_g.l0BitmapReg_40_0_1, dut_g.l0BitmapReg_40_0_0}, {dut_i.u_core.l0_bitmap[40][3], dut_i.u_core.l0_bitmap[40][2], dut_i.u_core.l0_bitmap[40][1], dut_i.u_core.l0_bitmap[40][0]});
+    chk("l0_bitmap[41]", {dut_g.l0BitmapReg_41_3_7, dut_g.l0BitmapReg_41_3_6, dut_g.l0BitmapReg_41_3_5, dut_g.l0BitmapReg_41_3_4, dut_g.l0BitmapReg_41_3_3, dut_g.l0BitmapReg_41_3_2, dut_g.l0BitmapReg_41_3_1, dut_g.l0BitmapReg_41_3_0, dut_g.l0BitmapReg_41_2_7, dut_g.l0BitmapReg_41_2_6, dut_g.l0BitmapReg_41_2_5, dut_g.l0BitmapReg_41_2_4, dut_g.l0BitmapReg_41_2_3, dut_g.l0BitmapReg_41_2_2, dut_g.l0BitmapReg_41_2_1, dut_g.l0BitmapReg_41_2_0, dut_g.l0BitmapReg_41_1_7, dut_g.l0BitmapReg_41_1_6, dut_g.l0BitmapReg_41_1_5, dut_g.l0BitmapReg_41_1_4, dut_g.l0BitmapReg_41_1_3, dut_g.l0BitmapReg_41_1_2, dut_g.l0BitmapReg_41_1_1, dut_g.l0BitmapReg_41_1_0, dut_g.l0BitmapReg_41_0_7, dut_g.l0BitmapReg_41_0_6, dut_g.l0BitmapReg_41_0_5, dut_g.l0BitmapReg_41_0_4, dut_g.l0BitmapReg_41_0_3, dut_g.l0BitmapReg_41_0_2, dut_g.l0BitmapReg_41_0_1, dut_g.l0BitmapReg_41_0_0}, {dut_i.u_core.l0_bitmap[41][3], dut_i.u_core.l0_bitmap[41][2], dut_i.u_core.l0_bitmap[41][1], dut_i.u_core.l0_bitmap[41][0]});
+    chk("l0_bitmap[42]", {dut_g.l0BitmapReg_42_3_7, dut_g.l0BitmapReg_42_3_6, dut_g.l0BitmapReg_42_3_5, dut_g.l0BitmapReg_42_3_4, dut_g.l0BitmapReg_42_3_3, dut_g.l0BitmapReg_42_3_2, dut_g.l0BitmapReg_42_3_1, dut_g.l0BitmapReg_42_3_0, dut_g.l0BitmapReg_42_2_7, dut_g.l0BitmapReg_42_2_6, dut_g.l0BitmapReg_42_2_5, dut_g.l0BitmapReg_42_2_4, dut_g.l0BitmapReg_42_2_3, dut_g.l0BitmapReg_42_2_2, dut_g.l0BitmapReg_42_2_1, dut_g.l0BitmapReg_42_2_0, dut_g.l0BitmapReg_42_1_7, dut_g.l0BitmapReg_42_1_6, dut_g.l0BitmapReg_42_1_5, dut_g.l0BitmapReg_42_1_4, dut_g.l0BitmapReg_42_1_3, dut_g.l0BitmapReg_42_1_2, dut_g.l0BitmapReg_42_1_1, dut_g.l0BitmapReg_42_1_0, dut_g.l0BitmapReg_42_0_7, dut_g.l0BitmapReg_42_0_6, dut_g.l0BitmapReg_42_0_5, dut_g.l0BitmapReg_42_0_4, dut_g.l0BitmapReg_42_0_3, dut_g.l0BitmapReg_42_0_2, dut_g.l0BitmapReg_42_0_1, dut_g.l0BitmapReg_42_0_0}, {dut_i.u_core.l0_bitmap[42][3], dut_i.u_core.l0_bitmap[42][2], dut_i.u_core.l0_bitmap[42][1], dut_i.u_core.l0_bitmap[42][0]});
+    chk("l0_bitmap[43]", {dut_g.l0BitmapReg_43_3_7, dut_g.l0BitmapReg_43_3_6, dut_g.l0BitmapReg_43_3_5, dut_g.l0BitmapReg_43_3_4, dut_g.l0BitmapReg_43_3_3, dut_g.l0BitmapReg_43_3_2, dut_g.l0BitmapReg_43_3_1, dut_g.l0BitmapReg_43_3_0, dut_g.l0BitmapReg_43_2_7, dut_g.l0BitmapReg_43_2_6, dut_g.l0BitmapReg_43_2_5, dut_g.l0BitmapReg_43_2_4, dut_g.l0BitmapReg_43_2_3, dut_g.l0BitmapReg_43_2_2, dut_g.l0BitmapReg_43_2_1, dut_g.l0BitmapReg_43_2_0, dut_g.l0BitmapReg_43_1_7, dut_g.l0BitmapReg_43_1_6, dut_g.l0BitmapReg_43_1_5, dut_g.l0BitmapReg_43_1_4, dut_g.l0BitmapReg_43_1_3, dut_g.l0BitmapReg_43_1_2, dut_g.l0BitmapReg_43_1_1, dut_g.l0BitmapReg_43_1_0, dut_g.l0BitmapReg_43_0_7, dut_g.l0BitmapReg_43_0_6, dut_g.l0BitmapReg_43_0_5, dut_g.l0BitmapReg_43_0_4, dut_g.l0BitmapReg_43_0_3, dut_g.l0BitmapReg_43_0_2, dut_g.l0BitmapReg_43_0_1, dut_g.l0BitmapReg_43_0_0}, {dut_i.u_core.l0_bitmap[43][3], dut_i.u_core.l0_bitmap[43][2], dut_i.u_core.l0_bitmap[43][1], dut_i.u_core.l0_bitmap[43][0]});
+    chk("l0_bitmap[44]", {dut_g.l0BitmapReg_44_3_7, dut_g.l0BitmapReg_44_3_6, dut_g.l0BitmapReg_44_3_5, dut_g.l0BitmapReg_44_3_4, dut_g.l0BitmapReg_44_3_3, dut_g.l0BitmapReg_44_3_2, dut_g.l0BitmapReg_44_3_1, dut_g.l0BitmapReg_44_3_0, dut_g.l0BitmapReg_44_2_7, dut_g.l0BitmapReg_44_2_6, dut_g.l0BitmapReg_44_2_5, dut_g.l0BitmapReg_44_2_4, dut_g.l0BitmapReg_44_2_3, dut_g.l0BitmapReg_44_2_2, dut_g.l0BitmapReg_44_2_1, dut_g.l0BitmapReg_44_2_0, dut_g.l0BitmapReg_44_1_7, dut_g.l0BitmapReg_44_1_6, dut_g.l0BitmapReg_44_1_5, dut_g.l0BitmapReg_44_1_4, dut_g.l0BitmapReg_44_1_3, dut_g.l0BitmapReg_44_1_2, dut_g.l0BitmapReg_44_1_1, dut_g.l0BitmapReg_44_1_0, dut_g.l0BitmapReg_44_0_7, dut_g.l0BitmapReg_44_0_6, dut_g.l0BitmapReg_44_0_5, dut_g.l0BitmapReg_44_0_4, dut_g.l0BitmapReg_44_0_3, dut_g.l0BitmapReg_44_0_2, dut_g.l0BitmapReg_44_0_1, dut_g.l0BitmapReg_44_0_0}, {dut_i.u_core.l0_bitmap[44][3], dut_i.u_core.l0_bitmap[44][2], dut_i.u_core.l0_bitmap[44][1], dut_i.u_core.l0_bitmap[44][0]});
+    chk("l0_bitmap[45]", {dut_g.l0BitmapReg_45_3_7, dut_g.l0BitmapReg_45_3_6, dut_g.l0BitmapReg_45_3_5, dut_g.l0BitmapReg_45_3_4, dut_g.l0BitmapReg_45_3_3, dut_g.l0BitmapReg_45_3_2, dut_g.l0BitmapReg_45_3_1, dut_g.l0BitmapReg_45_3_0, dut_g.l0BitmapReg_45_2_7, dut_g.l0BitmapReg_45_2_6, dut_g.l0BitmapReg_45_2_5, dut_g.l0BitmapReg_45_2_4, dut_g.l0BitmapReg_45_2_3, dut_g.l0BitmapReg_45_2_2, dut_g.l0BitmapReg_45_2_1, dut_g.l0BitmapReg_45_2_0, dut_g.l0BitmapReg_45_1_7, dut_g.l0BitmapReg_45_1_6, dut_g.l0BitmapReg_45_1_5, dut_g.l0BitmapReg_45_1_4, dut_g.l0BitmapReg_45_1_3, dut_g.l0BitmapReg_45_1_2, dut_g.l0BitmapReg_45_1_1, dut_g.l0BitmapReg_45_1_0, dut_g.l0BitmapReg_45_0_7, dut_g.l0BitmapReg_45_0_6, dut_g.l0BitmapReg_45_0_5, dut_g.l0BitmapReg_45_0_4, dut_g.l0BitmapReg_45_0_3, dut_g.l0BitmapReg_45_0_2, dut_g.l0BitmapReg_45_0_1, dut_g.l0BitmapReg_45_0_0}, {dut_i.u_core.l0_bitmap[45][3], dut_i.u_core.l0_bitmap[45][2], dut_i.u_core.l0_bitmap[45][1], dut_i.u_core.l0_bitmap[45][0]});
+    chk("l0_bitmap[46]", {dut_g.l0BitmapReg_46_3_7, dut_g.l0BitmapReg_46_3_6, dut_g.l0BitmapReg_46_3_5, dut_g.l0BitmapReg_46_3_4, dut_g.l0BitmapReg_46_3_3, dut_g.l0BitmapReg_46_3_2, dut_g.l0BitmapReg_46_3_1, dut_g.l0BitmapReg_46_3_0, dut_g.l0BitmapReg_46_2_7, dut_g.l0BitmapReg_46_2_6, dut_g.l0BitmapReg_46_2_5, dut_g.l0BitmapReg_46_2_4, dut_g.l0BitmapReg_46_2_3, dut_g.l0BitmapReg_46_2_2, dut_g.l0BitmapReg_46_2_1, dut_g.l0BitmapReg_46_2_0, dut_g.l0BitmapReg_46_1_7, dut_g.l0BitmapReg_46_1_6, dut_g.l0BitmapReg_46_1_5, dut_g.l0BitmapReg_46_1_4, dut_g.l0BitmapReg_46_1_3, dut_g.l0BitmapReg_46_1_2, dut_g.l0BitmapReg_46_1_1, dut_g.l0BitmapReg_46_1_0, dut_g.l0BitmapReg_46_0_7, dut_g.l0BitmapReg_46_0_6, dut_g.l0BitmapReg_46_0_5, dut_g.l0BitmapReg_46_0_4, dut_g.l0BitmapReg_46_0_3, dut_g.l0BitmapReg_46_0_2, dut_g.l0BitmapReg_46_0_1, dut_g.l0BitmapReg_46_0_0}, {dut_i.u_core.l0_bitmap[46][3], dut_i.u_core.l0_bitmap[46][2], dut_i.u_core.l0_bitmap[46][1], dut_i.u_core.l0_bitmap[46][0]});
+    chk("l0_bitmap[47]", {dut_g.l0BitmapReg_47_3_7, dut_g.l0BitmapReg_47_3_6, dut_g.l0BitmapReg_47_3_5, dut_g.l0BitmapReg_47_3_4, dut_g.l0BitmapReg_47_3_3, dut_g.l0BitmapReg_47_3_2, dut_g.l0BitmapReg_47_3_1, dut_g.l0BitmapReg_47_3_0, dut_g.l0BitmapReg_47_2_7, dut_g.l0BitmapReg_47_2_6, dut_g.l0BitmapReg_47_2_5, dut_g.l0BitmapReg_47_2_4, dut_g.l0BitmapReg_47_2_3, dut_g.l0BitmapReg_47_2_2, dut_g.l0BitmapReg_47_2_1, dut_g.l0BitmapReg_47_2_0, dut_g.l0BitmapReg_47_1_7, dut_g.l0BitmapReg_47_1_6, dut_g.l0BitmapReg_47_1_5, dut_g.l0BitmapReg_47_1_4, dut_g.l0BitmapReg_47_1_3, dut_g.l0BitmapReg_47_1_2, dut_g.l0BitmapReg_47_1_1, dut_g.l0BitmapReg_47_1_0, dut_g.l0BitmapReg_47_0_7, dut_g.l0BitmapReg_47_0_6, dut_g.l0BitmapReg_47_0_5, dut_g.l0BitmapReg_47_0_4, dut_g.l0BitmapReg_47_0_3, dut_g.l0BitmapReg_47_0_2, dut_g.l0BitmapReg_47_0_1, dut_g.l0BitmapReg_47_0_0}, {dut_i.u_core.l0_bitmap[47][3], dut_i.u_core.l0_bitmap[47][2], dut_i.u_core.l0_bitmap[47][1], dut_i.u_core.l0_bitmap[47][0]});
+    chk("l0_bitmap[48]", {dut_g.l0BitmapReg_48_3_7, dut_g.l0BitmapReg_48_3_6, dut_g.l0BitmapReg_48_3_5, dut_g.l0BitmapReg_48_3_4, dut_g.l0BitmapReg_48_3_3, dut_g.l0BitmapReg_48_3_2, dut_g.l0BitmapReg_48_3_1, dut_g.l0BitmapReg_48_3_0, dut_g.l0BitmapReg_48_2_7, dut_g.l0BitmapReg_48_2_6, dut_g.l0BitmapReg_48_2_5, dut_g.l0BitmapReg_48_2_4, dut_g.l0BitmapReg_48_2_3, dut_g.l0BitmapReg_48_2_2, dut_g.l0BitmapReg_48_2_1, dut_g.l0BitmapReg_48_2_0, dut_g.l0BitmapReg_48_1_7, dut_g.l0BitmapReg_48_1_6, dut_g.l0BitmapReg_48_1_5, dut_g.l0BitmapReg_48_1_4, dut_g.l0BitmapReg_48_1_3, dut_g.l0BitmapReg_48_1_2, dut_g.l0BitmapReg_48_1_1, dut_g.l0BitmapReg_48_1_0, dut_g.l0BitmapReg_48_0_7, dut_g.l0BitmapReg_48_0_6, dut_g.l0BitmapReg_48_0_5, dut_g.l0BitmapReg_48_0_4, dut_g.l0BitmapReg_48_0_3, dut_g.l0BitmapReg_48_0_2, dut_g.l0BitmapReg_48_0_1, dut_g.l0BitmapReg_48_0_0}, {dut_i.u_core.l0_bitmap[48][3], dut_i.u_core.l0_bitmap[48][2], dut_i.u_core.l0_bitmap[48][1], dut_i.u_core.l0_bitmap[48][0]});
+    chk("l0_bitmap[49]", {dut_g.l0BitmapReg_49_3_7, dut_g.l0BitmapReg_49_3_6, dut_g.l0BitmapReg_49_3_5, dut_g.l0BitmapReg_49_3_4, dut_g.l0BitmapReg_49_3_3, dut_g.l0BitmapReg_49_3_2, dut_g.l0BitmapReg_49_3_1, dut_g.l0BitmapReg_49_3_0, dut_g.l0BitmapReg_49_2_7, dut_g.l0BitmapReg_49_2_6, dut_g.l0BitmapReg_49_2_5, dut_g.l0BitmapReg_49_2_4, dut_g.l0BitmapReg_49_2_3, dut_g.l0BitmapReg_49_2_2, dut_g.l0BitmapReg_49_2_1, dut_g.l0BitmapReg_49_2_0, dut_g.l0BitmapReg_49_1_7, dut_g.l0BitmapReg_49_1_6, dut_g.l0BitmapReg_49_1_5, dut_g.l0BitmapReg_49_1_4, dut_g.l0BitmapReg_49_1_3, dut_g.l0BitmapReg_49_1_2, dut_g.l0BitmapReg_49_1_1, dut_g.l0BitmapReg_49_1_0, dut_g.l0BitmapReg_49_0_7, dut_g.l0BitmapReg_49_0_6, dut_g.l0BitmapReg_49_0_5, dut_g.l0BitmapReg_49_0_4, dut_g.l0BitmapReg_49_0_3, dut_g.l0BitmapReg_49_0_2, dut_g.l0BitmapReg_49_0_1, dut_g.l0BitmapReg_49_0_0}, {dut_i.u_core.l0_bitmap[49][3], dut_i.u_core.l0_bitmap[49][2], dut_i.u_core.l0_bitmap[49][1], dut_i.u_core.l0_bitmap[49][0]});
+    chk("l0_bitmap[50]", {dut_g.l0BitmapReg_50_3_7, dut_g.l0BitmapReg_50_3_6, dut_g.l0BitmapReg_50_3_5, dut_g.l0BitmapReg_50_3_4, dut_g.l0BitmapReg_50_3_3, dut_g.l0BitmapReg_50_3_2, dut_g.l0BitmapReg_50_3_1, dut_g.l0BitmapReg_50_3_0, dut_g.l0BitmapReg_50_2_7, dut_g.l0BitmapReg_50_2_6, dut_g.l0BitmapReg_50_2_5, dut_g.l0BitmapReg_50_2_4, dut_g.l0BitmapReg_50_2_3, dut_g.l0BitmapReg_50_2_2, dut_g.l0BitmapReg_50_2_1, dut_g.l0BitmapReg_50_2_0, dut_g.l0BitmapReg_50_1_7, dut_g.l0BitmapReg_50_1_6, dut_g.l0BitmapReg_50_1_5, dut_g.l0BitmapReg_50_1_4, dut_g.l0BitmapReg_50_1_3, dut_g.l0BitmapReg_50_1_2, dut_g.l0BitmapReg_50_1_1, dut_g.l0BitmapReg_50_1_0, dut_g.l0BitmapReg_50_0_7, dut_g.l0BitmapReg_50_0_6, dut_g.l0BitmapReg_50_0_5, dut_g.l0BitmapReg_50_0_4, dut_g.l0BitmapReg_50_0_3, dut_g.l0BitmapReg_50_0_2, dut_g.l0BitmapReg_50_0_1, dut_g.l0BitmapReg_50_0_0}, {dut_i.u_core.l0_bitmap[50][3], dut_i.u_core.l0_bitmap[50][2], dut_i.u_core.l0_bitmap[50][1], dut_i.u_core.l0_bitmap[50][0]});
+    chk("l0_bitmap[51]", {dut_g.l0BitmapReg_51_3_7, dut_g.l0BitmapReg_51_3_6, dut_g.l0BitmapReg_51_3_5, dut_g.l0BitmapReg_51_3_4, dut_g.l0BitmapReg_51_3_3, dut_g.l0BitmapReg_51_3_2, dut_g.l0BitmapReg_51_3_1, dut_g.l0BitmapReg_51_3_0, dut_g.l0BitmapReg_51_2_7, dut_g.l0BitmapReg_51_2_6, dut_g.l0BitmapReg_51_2_5, dut_g.l0BitmapReg_51_2_4, dut_g.l0BitmapReg_51_2_3, dut_g.l0BitmapReg_51_2_2, dut_g.l0BitmapReg_51_2_1, dut_g.l0BitmapReg_51_2_0, dut_g.l0BitmapReg_51_1_7, dut_g.l0BitmapReg_51_1_6, dut_g.l0BitmapReg_51_1_5, dut_g.l0BitmapReg_51_1_4, dut_g.l0BitmapReg_51_1_3, dut_g.l0BitmapReg_51_1_2, dut_g.l0BitmapReg_51_1_1, dut_g.l0BitmapReg_51_1_0, dut_g.l0BitmapReg_51_0_7, dut_g.l0BitmapReg_51_0_6, dut_g.l0BitmapReg_51_0_5, dut_g.l0BitmapReg_51_0_4, dut_g.l0BitmapReg_51_0_3, dut_g.l0BitmapReg_51_0_2, dut_g.l0BitmapReg_51_0_1, dut_g.l0BitmapReg_51_0_0}, {dut_i.u_core.l0_bitmap[51][3], dut_i.u_core.l0_bitmap[51][2], dut_i.u_core.l0_bitmap[51][1], dut_i.u_core.l0_bitmap[51][0]});
+    chk("l0_bitmap[52]", {dut_g.l0BitmapReg_52_3_7, dut_g.l0BitmapReg_52_3_6, dut_g.l0BitmapReg_52_3_5, dut_g.l0BitmapReg_52_3_4, dut_g.l0BitmapReg_52_3_3, dut_g.l0BitmapReg_52_3_2, dut_g.l0BitmapReg_52_3_1, dut_g.l0BitmapReg_52_3_0, dut_g.l0BitmapReg_52_2_7, dut_g.l0BitmapReg_52_2_6, dut_g.l0BitmapReg_52_2_5, dut_g.l0BitmapReg_52_2_4, dut_g.l0BitmapReg_52_2_3, dut_g.l0BitmapReg_52_2_2, dut_g.l0BitmapReg_52_2_1, dut_g.l0BitmapReg_52_2_0, dut_g.l0BitmapReg_52_1_7, dut_g.l0BitmapReg_52_1_6, dut_g.l0BitmapReg_52_1_5, dut_g.l0BitmapReg_52_1_4, dut_g.l0BitmapReg_52_1_3, dut_g.l0BitmapReg_52_1_2, dut_g.l0BitmapReg_52_1_1, dut_g.l0BitmapReg_52_1_0, dut_g.l0BitmapReg_52_0_7, dut_g.l0BitmapReg_52_0_6, dut_g.l0BitmapReg_52_0_5, dut_g.l0BitmapReg_52_0_4, dut_g.l0BitmapReg_52_0_3, dut_g.l0BitmapReg_52_0_2, dut_g.l0BitmapReg_52_0_1, dut_g.l0BitmapReg_52_0_0}, {dut_i.u_core.l0_bitmap[52][3], dut_i.u_core.l0_bitmap[52][2], dut_i.u_core.l0_bitmap[52][1], dut_i.u_core.l0_bitmap[52][0]});
+    chk("l0_bitmap[53]", {dut_g.l0BitmapReg_53_3_7, dut_g.l0BitmapReg_53_3_6, dut_g.l0BitmapReg_53_3_5, dut_g.l0BitmapReg_53_3_4, dut_g.l0BitmapReg_53_3_3, dut_g.l0BitmapReg_53_3_2, dut_g.l0BitmapReg_53_3_1, dut_g.l0BitmapReg_53_3_0, dut_g.l0BitmapReg_53_2_7, dut_g.l0BitmapReg_53_2_6, dut_g.l0BitmapReg_53_2_5, dut_g.l0BitmapReg_53_2_4, dut_g.l0BitmapReg_53_2_3, dut_g.l0BitmapReg_53_2_2, dut_g.l0BitmapReg_53_2_1, dut_g.l0BitmapReg_53_2_0, dut_g.l0BitmapReg_53_1_7, dut_g.l0BitmapReg_53_1_6, dut_g.l0BitmapReg_53_1_5, dut_g.l0BitmapReg_53_1_4, dut_g.l0BitmapReg_53_1_3, dut_g.l0BitmapReg_53_1_2, dut_g.l0BitmapReg_53_1_1, dut_g.l0BitmapReg_53_1_0, dut_g.l0BitmapReg_53_0_7, dut_g.l0BitmapReg_53_0_6, dut_g.l0BitmapReg_53_0_5, dut_g.l0BitmapReg_53_0_4, dut_g.l0BitmapReg_53_0_3, dut_g.l0BitmapReg_53_0_2, dut_g.l0BitmapReg_53_0_1, dut_g.l0BitmapReg_53_0_0}, {dut_i.u_core.l0_bitmap[53][3], dut_i.u_core.l0_bitmap[53][2], dut_i.u_core.l0_bitmap[53][1], dut_i.u_core.l0_bitmap[53][0]});
+    chk("l0_bitmap[54]", {dut_g.l0BitmapReg_54_3_7, dut_g.l0BitmapReg_54_3_6, dut_g.l0BitmapReg_54_3_5, dut_g.l0BitmapReg_54_3_4, dut_g.l0BitmapReg_54_3_3, dut_g.l0BitmapReg_54_3_2, dut_g.l0BitmapReg_54_3_1, dut_g.l0BitmapReg_54_3_0, dut_g.l0BitmapReg_54_2_7, dut_g.l0BitmapReg_54_2_6, dut_g.l0BitmapReg_54_2_5, dut_g.l0BitmapReg_54_2_4, dut_g.l0BitmapReg_54_2_3, dut_g.l0BitmapReg_54_2_2, dut_g.l0BitmapReg_54_2_1, dut_g.l0BitmapReg_54_2_0, dut_g.l0BitmapReg_54_1_7, dut_g.l0BitmapReg_54_1_6, dut_g.l0BitmapReg_54_1_5, dut_g.l0BitmapReg_54_1_4, dut_g.l0BitmapReg_54_1_3, dut_g.l0BitmapReg_54_1_2, dut_g.l0BitmapReg_54_1_1, dut_g.l0BitmapReg_54_1_0, dut_g.l0BitmapReg_54_0_7, dut_g.l0BitmapReg_54_0_6, dut_g.l0BitmapReg_54_0_5, dut_g.l0BitmapReg_54_0_4, dut_g.l0BitmapReg_54_0_3, dut_g.l0BitmapReg_54_0_2, dut_g.l0BitmapReg_54_0_1, dut_g.l0BitmapReg_54_0_0}, {dut_i.u_core.l0_bitmap[54][3], dut_i.u_core.l0_bitmap[54][2], dut_i.u_core.l0_bitmap[54][1], dut_i.u_core.l0_bitmap[54][0]});
+    chk("l0_bitmap[55]", {dut_g.l0BitmapReg_55_3_7, dut_g.l0BitmapReg_55_3_6, dut_g.l0BitmapReg_55_3_5, dut_g.l0BitmapReg_55_3_4, dut_g.l0BitmapReg_55_3_3, dut_g.l0BitmapReg_55_3_2, dut_g.l0BitmapReg_55_3_1, dut_g.l0BitmapReg_55_3_0, dut_g.l0BitmapReg_55_2_7, dut_g.l0BitmapReg_55_2_6, dut_g.l0BitmapReg_55_2_5, dut_g.l0BitmapReg_55_2_4, dut_g.l0BitmapReg_55_2_3, dut_g.l0BitmapReg_55_2_2, dut_g.l0BitmapReg_55_2_1, dut_g.l0BitmapReg_55_2_0, dut_g.l0BitmapReg_55_1_7, dut_g.l0BitmapReg_55_1_6, dut_g.l0BitmapReg_55_1_5, dut_g.l0BitmapReg_55_1_4, dut_g.l0BitmapReg_55_1_3, dut_g.l0BitmapReg_55_1_2, dut_g.l0BitmapReg_55_1_1, dut_g.l0BitmapReg_55_1_0, dut_g.l0BitmapReg_55_0_7, dut_g.l0BitmapReg_55_0_6, dut_g.l0BitmapReg_55_0_5, dut_g.l0BitmapReg_55_0_4, dut_g.l0BitmapReg_55_0_3, dut_g.l0BitmapReg_55_0_2, dut_g.l0BitmapReg_55_0_1, dut_g.l0BitmapReg_55_0_0}, {dut_i.u_core.l0_bitmap[55][3], dut_i.u_core.l0_bitmap[55][2], dut_i.u_core.l0_bitmap[55][1], dut_i.u_core.l0_bitmap[55][0]});
+    chk("l0_bitmap[56]", {dut_g.l0BitmapReg_56_3_7, dut_g.l0BitmapReg_56_3_6, dut_g.l0BitmapReg_56_3_5, dut_g.l0BitmapReg_56_3_4, dut_g.l0BitmapReg_56_3_3, dut_g.l0BitmapReg_56_3_2, dut_g.l0BitmapReg_56_3_1, dut_g.l0BitmapReg_56_3_0, dut_g.l0BitmapReg_56_2_7, dut_g.l0BitmapReg_56_2_6, dut_g.l0BitmapReg_56_2_5, dut_g.l0BitmapReg_56_2_4, dut_g.l0BitmapReg_56_2_3, dut_g.l0BitmapReg_56_2_2, dut_g.l0BitmapReg_56_2_1, dut_g.l0BitmapReg_56_2_0, dut_g.l0BitmapReg_56_1_7, dut_g.l0BitmapReg_56_1_6, dut_g.l0BitmapReg_56_1_5, dut_g.l0BitmapReg_56_1_4, dut_g.l0BitmapReg_56_1_3, dut_g.l0BitmapReg_56_1_2, dut_g.l0BitmapReg_56_1_1, dut_g.l0BitmapReg_56_1_0, dut_g.l0BitmapReg_56_0_7, dut_g.l0BitmapReg_56_0_6, dut_g.l0BitmapReg_56_0_5, dut_g.l0BitmapReg_56_0_4, dut_g.l0BitmapReg_56_0_3, dut_g.l0BitmapReg_56_0_2, dut_g.l0BitmapReg_56_0_1, dut_g.l0BitmapReg_56_0_0}, {dut_i.u_core.l0_bitmap[56][3], dut_i.u_core.l0_bitmap[56][2], dut_i.u_core.l0_bitmap[56][1], dut_i.u_core.l0_bitmap[56][0]});
+    chk("l0_bitmap[57]", {dut_g.l0BitmapReg_57_3_7, dut_g.l0BitmapReg_57_3_6, dut_g.l0BitmapReg_57_3_5, dut_g.l0BitmapReg_57_3_4, dut_g.l0BitmapReg_57_3_3, dut_g.l0BitmapReg_57_3_2, dut_g.l0BitmapReg_57_3_1, dut_g.l0BitmapReg_57_3_0, dut_g.l0BitmapReg_57_2_7, dut_g.l0BitmapReg_57_2_6, dut_g.l0BitmapReg_57_2_5, dut_g.l0BitmapReg_57_2_4, dut_g.l0BitmapReg_57_2_3, dut_g.l0BitmapReg_57_2_2, dut_g.l0BitmapReg_57_2_1, dut_g.l0BitmapReg_57_2_0, dut_g.l0BitmapReg_57_1_7, dut_g.l0BitmapReg_57_1_6, dut_g.l0BitmapReg_57_1_5, dut_g.l0BitmapReg_57_1_4, dut_g.l0BitmapReg_57_1_3, dut_g.l0BitmapReg_57_1_2, dut_g.l0BitmapReg_57_1_1, dut_g.l0BitmapReg_57_1_0, dut_g.l0BitmapReg_57_0_7, dut_g.l0BitmapReg_57_0_6, dut_g.l0BitmapReg_57_0_5, dut_g.l0BitmapReg_57_0_4, dut_g.l0BitmapReg_57_0_3, dut_g.l0BitmapReg_57_0_2, dut_g.l0BitmapReg_57_0_1, dut_g.l0BitmapReg_57_0_0}, {dut_i.u_core.l0_bitmap[57][3], dut_i.u_core.l0_bitmap[57][2], dut_i.u_core.l0_bitmap[57][1], dut_i.u_core.l0_bitmap[57][0]});
+    chk("l0_bitmap[58]", {dut_g.l0BitmapReg_58_3_7, dut_g.l0BitmapReg_58_3_6, dut_g.l0BitmapReg_58_3_5, dut_g.l0BitmapReg_58_3_4, dut_g.l0BitmapReg_58_3_3, dut_g.l0BitmapReg_58_3_2, dut_g.l0BitmapReg_58_3_1, dut_g.l0BitmapReg_58_3_0, dut_g.l0BitmapReg_58_2_7, dut_g.l0BitmapReg_58_2_6, dut_g.l0BitmapReg_58_2_5, dut_g.l0BitmapReg_58_2_4, dut_g.l0BitmapReg_58_2_3, dut_g.l0BitmapReg_58_2_2, dut_g.l0BitmapReg_58_2_1, dut_g.l0BitmapReg_58_2_0, dut_g.l0BitmapReg_58_1_7, dut_g.l0BitmapReg_58_1_6, dut_g.l0BitmapReg_58_1_5, dut_g.l0BitmapReg_58_1_4, dut_g.l0BitmapReg_58_1_3, dut_g.l0BitmapReg_58_1_2, dut_g.l0BitmapReg_58_1_1, dut_g.l0BitmapReg_58_1_0, dut_g.l0BitmapReg_58_0_7, dut_g.l0BitmapReg_58_0_6, dut_g.l0BitmapReg_58_0_5, dut_g.l0BitmapReg_58_0_4, dut_g.l0BitmapReg_58_0_3, dut_g.l0BitmapReg_58_0_2, dut_g.l0BitmapReg_58_0_1, dut_g.l0BitmapReg_58_0_0}, {dut_i.u_core.l0_bitmap[58][3], dut_i.u_core.l0_bitmap[58][2], dut_i.u_core.l0_bitmap[58][1], dut_i.u_core.l0_bitmap[58][0]});
+    chk("l0_bitmap[59]", {dut_g.l0BitmapReg_59_3_7, dut_g.l0BitmapReg_59_3_6, dut_g.l0BitmapReg_59_3_5, dut_g.l0BitmapReg_59_3_4, dut_g.l0BitmapReg_59_3_3, dut_g.l0BitmapReg_59_3_2, dut_g.l0BitmapReg_59_3_1, dut_g.l0BitmapReg_59_3_0, dut_g.l0BitmapReg_59_2_7, dut_g.l0BitmapReg_59_2_6, dut_g.l0BitmapReg_59_2_5, dut_g.l0BitmapReg_59_2_4, dut_g.l0BitmapReg_59_2_3, dut_g.l0BitmapReg_59_2_2, dut_g.l0BitmapReg_59_2_1, dut_g.l0BitmapReg_59_2_0, dut_g.l0BitmapReg_59_1_7, dut_g.l0BitmapReg_59_1_6, dut_g.l0BitmapReg_59_1_5, dut_g.l0BitmapReg_59_1_4, dut_g.l0BitmapReg_59_1_3, dut_g.l0BitmapReg_59_1_2, dut_g.l0BitmapReg_59_1_1, dut_g.l0BitmapReg_59_1_0, dut_g.l0BitmapReg_59_0_7, dut_g.l0BitmapReg_59_0_6, dut_g.l0BitmapReg_59_0_5, dut_g.l0BitmapReg_59_0_4, dut_g.l0BitmapReg_59_0_3, dut_g.l0BitmapReg_59_0_2, dut_g.l0BitmapReg_59_0_1, dut_g.l0BitmapReg_59_0_0}, {dut_i.u_core.l0_bitmap[59][3], dut_i.u_core.l0_bitmap[59][2], dut_i.u_core.l0_bitmap[59][1], dut_i.u_core.l0_bitmap[59][0]});
+    chk("l0_bitmap[60]", {dut_g.l0BitmapReg_60_3_7, dut_g.l0BitmapReg_60_3_6, dut_g.l0BitmapReg_60_3_5, dut_g.l0BitmapReg_60_3_4, dut_g.l0BitmapReg_60_3_3, dut_g.l0BitmapReg_60_3_2, dut_g.l0BitmapReg_60_3_1, dut_g.l0BitmapReg_60_3_0, dut_g.l0BitmapReg_60_2_7, dut_g.l0BitmapReg_60_2_6, dut_g.l0BitmapReg_60_2_5, dut_g.l0BitmapReg_60_2_4, dut_g.l0BitmapReg_60_2_3, dut_g.l0BitmapReg_60_2_2, dut_g.l0BitmapReg_60_2_1, dut_g.l0BitmapReg_60_2_0, dut_g.l0BitmapReg_60_1_7, dut_g.l0BitmapReg_60_1_6, dut_g.l0BitmapReg_60_1_5, dut_g.l0BitmapReg_60_1_4, dut_g.l0BitmapReg_60_1_3, dut_g.l0BitmapReg_60_1_2, dut_g.l0BitmapReg_60_1_1, dut_g.l0BitmapReg_60_1_0, dut_g.l0BitmapReg_60_0_7, dut_g.l0BitmapReg_60_0_6, dut_g.l0BitmapReg_60_0_5, dut_g.l0BitmapReg_60_0_4, dut_g.l0BitmapReg_60_0_3, dut_g.l0BitmapReg_60_0_2, dut_g.l0BitmapReg_60_0_1, dut_g.l0BitmapReg_60_0_0}, {dut_i.u_core.l0_bitmap[60][3], dut_i.u_core.l0_bitmap[60][2], dut_i.u_core.l0_bitmap[60][1], dut_i.u_core.l0_bitmap[60][0]});
+    chk("l0_bitmap[61]", {dut_g.l0BitmapReg_61_3_7, dut_g.l0BitmapReg_61_3_6, dut_g.l0BitmapReg_61_3_5, dut_g.l0BitmapReg_61_3_4, dut_g.l0BitmapReg_61_3_3, dut_g.l0BitmapReg_61_3_2, dut_g.l0BitmapReg_61_3_1, dut_g.l0BitmapReg_61_3_0, dut_g.l0BitmapReg_61_2_7, dut_g.l0BitmapReg_61_2_6, dut_g.l0BitmapReg_61_2_5, dut_g.l0BitmapReg_61_2_4, dut_g.l0BitmapReg_61_2_3, dut_g.l0BitmapReg_61_2_2, dut_g.l0BitmapReg_61_2_1, dut_g.l0BitmapReg_61_2_0, dut_g.l0BitmapReg_61_1_7, dut_g.l0BitmapReg_61_1_6, dut_g.l0BitmapReg_61_1_5, dut_g.l0BitmapReg_61_1_4, dut_g.l0BitmapReg_61_1_3, dut_g.l0BitmapReg_61_1_2, dut_g.l0BitmapReg_61_1_1, dut_g.l0BitmapReg_61_1_0, dut_g.l0BitmapReg_61_0_7, dut_g.l0BitmapReg_61_0_6, dut_g.l0BitmapReg_61_0_5, dut_g.l0BitmapReg_61_0_4, dut_g.l0BitmapReg_61_0_3, dut_g.l0BitmapReg_61_0_2, dut_g.l0BitmapReg_61_0_1, dut_g.l0BitmapReg_61_0_0}, {dut_i.u_core.l0_bitmap[61][3], dut_i.u_core.l0_bitmap[61][2], dut_i.u_core.l0_bitmap[61][1], dut_i.u_core.l0_bitmap[61][0]});
+    chk("l0_bitmap[62]", {dut_g.l0BitmapReg_62_3_7, dut_g.l0BitmapReg_62_3_6, dut_g.l0BitmapReg_62_3_5, dut_g.l0BitmapReg_62_3_4, dut_g.l0BitmapReg_62_3_3, dut_g.l0BitmapReg_62_3_2, dut_g.l0BitmapReg_62_3_1, dut_g.l0BitmapReg_62_3_0, dut_g.l0BitmapReg_62_2_7, dut_g.l0BitmapReg_62_2_6, dut_g.l0BitmapReg_62_2_5, dut_g.l0BitmapReg_62_2_4, dut_g.l0BitmapReg_62_2_3, dut_g.l0BitmapReg_62_2_2, dut_g.l0BitmapReg_62_2_1, dut_g.l0BitmapReg_62_2_0, dut_g.l0BitmapReg_62_1_7, dut_g.l0BitmapReg_62_1_6, dut_g.l0BitmapReg_62_1_5, dut_g.l0BitmapReg_62_1_4, dut_g.l0BitmapReg_62_1_3, dut_g.l0BitmapReg_62_1_2, dut_g.l0BitmapReg_62_1_1, dut_g.l0BitmapReg_62_1_0, dut_g.l0BitmapReg_62_0_7, dut_g.l0BitmapReg_62_0_6, dut_g.l0BitmapReg_62_0_5, dut_g.l0BitmapReg_62_0_4, dut_g.l0BitmapReg_62_0_3, dut_g.l0BitmapReg_62_0_2, dut_g.l0BitmapReg_62_0_1, dut_g.l0BitmapReg_62_0_0}, {dut_i.u_core.l0_bitmap[62][3], dut_i.u_core.l0_bitmap[62][2], dut_i.u_core.l0_bitmap[62][1], dut_i.u_core.l0_bitmap[62][0]});
+    chk("l0_bitmap[63]", {dut_g.l0BitmapReg_63_3_7, dut_g.l0BitmapReg_63_3_6, dut_g.l0BitmapReg_63_3_5, dut_g.l0BitmapReg_63_3_4, dut_g.l0BitmapReg_63_3_3, dut_g.l0BitmapReg_63_3_2, dut_g.l0BitmapReg_63_3_1, dut_g.l0BitmapReg_63_3_0, dut_g.l0BitmapReg_63_2_7, dut_g.l0BitmapReg_63_2_6, dut_g.l0BitmapReg_63_2_5, dut_g.l0BitmapReg_63_2_4, dut_g.l0BitmapReg_63_2_3, dut_g.l0BitmapReg_63_2_2, dut_g.l0BitmapReg_63_2_1, dut_g.l0BitmapReg_63_2_0, dut_g.l0BitmapReg_63_1_7, dut_g.l0BitmapReg_63_1_6, dut_g.l0BitmapReg_63_1_5, dut_g.l0BitmapReg_63_1_4, dut_g.l0BitmapReg_63_1_3, dut_g.l0BitmapReg_63_1_2, dut_g.l0BitmapReg_63_1_1, dut_g.l0BitmapReg_63_1_0, dut_g.l0BitmapReg_63_0_7, dut_g.l0BitmapReg_63_0_6, dut_g.l0BitmapReg_63_0_5, dut_g.l0BitmapReg_63_0_4, dut_g.l0BitmapReg_63_0_3, dut_g.l0BitmapReg_63_0_2, dut_g.l0BitmapReg_63_0_1, dut_g.l0BitmapReg_63_0_0}, {dut_i.u_core.l0_bitmap[63][3], dut_i.u_core.l0_bitmap[63][2], dut_i.u_core.l0_bitmap[63][1], dut_i.u_core.l0_bitmap[63][0]});
+    // §22 bitmap 的两级流水副本（golden r_W_K / r_1_W_K）
+    chk("l0_bitmap_delay", {dut_g.r_3_7, dut_g.r_3_6, dut_g.r_3_5, dut_g.r_3_4, dut_g.r_3_3, dut_g.r_3_2, dut_g.r_3_1, dut_g.r_3_0, dut_g.r_2_7, dut_g.r_2_6, dut_g.r_2_5, dut_g.r_2_4, dut_g.r_2_3, dut_g.r_2_2, dut_g.r_2_1, dut_g.r_2_0, dut_g.r_1_7, dut_g.r_1_6, dut_g.r_1_5, dut_g.r_1_4, dut_g.r_1_3, dut_g.r_1_2, dut_g.r_1_1, dut_g.r_1_0, dut_g.r_0_7, dut_g.r_0_6, dut_g.r_0_5, dut_g.r_0_4, dut_g.r_0_3, dut_g.r_0_2, dut_g.r_0_1, dut_g.r_0_0}, {dut_i.u_core.l0_bitmap_delay[3], dut_i.u_core.l0_bitmap_delay[2], dut_i.u_core.l0_bitmap_delay[1], dut_i.u_core.l0_bitmap_delay[0]});
+    chk("l0_bitmap_ck", {dut_g.r_1_3_7, dut_g.r_1_3_6, dut_g.r_1_3_5, dut_g.r_1_3_4, dut_g.r_1_3_3, dut_g.r_1_3_2, dut_g.r_1_3_1, dut_g.r_1_3_0, dut_g.r_1_2_7, dut_g.r_1_2_6, dut_g.r_1_2_5, dut_g.r_1_2_4, dut_g.r_1_2_3, dut_g.r_1_2_2, dut_g.r_1_2_1, dut_g.r_1_2_0, dut_g.r_1_1_7, dut_g.r_1_1_6, dut_g.r_1_1_5, dut_g.r_1_1_4, dut_g.r_1_1_3, dut_g.r_1_1_2, dut_g.r_1_1_1, dut_g.r_1_1_0, dut_g.r_1_0_7, dut_g.r_1_0_6, dut_g.r_1_0_5, dut_g.r_1_0_4, dut_g.r_1_0_3, dut_g.r_1_0_2, dut_g.r_1_0_1, dut_g.r_1_0_0}, {dut_i.u_core.l0_bitmap_ck[3], dut_i.u_core.l0_bitmap_ck[2], dut_i.u_core.l0_bitmap_ck[1], dut_i.u_core.l0_bitmap_ck[0]});
+    // §22 wakeup 三拍流水
+    chk("wakeup_delay_valid", dut_g.wakeup_req_delay_valid, dut_i.u_core.wakeup_delay_valid);
+    chk("wakeup_valid", dut_g.wakeup_req_valid, dut_i.u_core.wakeup_valid);
+    chk("wk_d_set", dut_g.wakeup_req_delay_setIndex, dut_i.u_core.wk_d_set);
+    chk("wk_d_tag", dut_g.wakeup_req_delay_tag, dut_i.u_core.wk_d_tag);
+    chk("wk_d_way", dut_g.wakeup_req_delay_way_info, dut_i.u_core.wk_d_way);
+    chk("wk_d_idx", dut_g.wakeup_req_delay_pte_index, dut_i.u_core.wk_d_idx);
+    chk("wk_d_ok", dut_g.wakeup_req_delay_check_success, dut_i.u_core.wk_d_ok);
+    chk("wk_d_s2x", dut_g.wakeup_req_delay_s2xlate, dut_i.u_core.wk_d_s2x);
+    chk("wk_set", dut_g.wakeup_req_setIndex, dut_i.u_core.wk_set);
+    chk("wk_way", dut_g.wakeup_req_way_info, dut_i.u_core.wk_way);
+    chk("wk_idx", dut_g.wakeup_req_pte_index, dut_i.u_core.wk_idx);
+    chk("wk_ok", dut_g.wakeup_req_check_success, dut_i.u_core.wk_ok);
+    chk("wakeup_hitvec[0]", dut_g.wakeup_hitVec_0, dut_i.u_core.wakeup_hitvec[0]);
+    chk("wakeup_vvec_delay[0]", dut_g.wakeup_vVec_delay[0], dut_i.u_core.wakeup_vvec_delay[0]);
+    chk("wakeup_hvec_delay[0]", dut_g.wakeup_hVec_delay_0, dut_i.u_core.wakeup_hvec_delay[0]);
+    chk("wakeup_rdata_r[0].tag", dut_g.wakeup_data_resp_r_0_entries_tag, dut_i.u_core.wakeup_rdata_r[0].tag);
+    chk("wakeup_rdata_r[0].asid", dut_g.wakeup_data_resp_r_0_entries_asid, dut_i.u_core.wakeup_rdata_r[0].asid);
+    chk("wakeup_rdata_r[0].vmid", dut_g.wakeup_data_resp_r_0_entries_vmid, dut_i.u_core.wakeup_rdata_r[0].vmid);
+    chk("wakeup_rdata_r[0].vs[0]", dut_g.wakeup_data_resp_r_0_entries_vs_0, dut_i.u_core.wakeup_rdata_r[0].vs[0]);
+    chk("wakeup_rdata_r[0].g[0]", dut_g.wakeup_data_resp_r_0_entries_perms_0_g, dut_i.u_core.wakeup_rdata_r[0].g[0]);
+    chk("wakeup_rdata_r[0].vs[1]", dut_g.wakeup_data_resp_r_0_entries_vs_1, dut_i.u_core.wakeup_rdata_r[0].vs[1]);
+    chk("wakeup_rdata_r[0].g[1]", dut_g.wakeup_data_resp_r_0_entries_perms_1_g, dut_i.u_core.wakeup_rdata_r[0].g[1]);
+    chk("wakeup_rdata_r[0].vs[2]", dut_g.wakeup_data_resp_r_0_entries_vs_2, dut_i.u_core.wakeup_rdata_r[0].vs[2]);
+    chk("wakeup_rdata_r[0].g[2]", dut_g.wakeup_data_resp_r_0_entries_perms_2_g, dut_i.u_core.wakeup_rdata_r[0].g[2]);
+    chk("wakeup_rdata_r[0].vs[3]", dut_g.wakeup_data_resp_r_0_entries_vs_3, dut_i.u_core.wakeup_rdata_r[0].vs[3]);
+    chk("wakeup_rdata_r[0].g[3]", dut_g.wakeup_data_resp_r_0_entries_perms_3_g, dut_i.u_core.wakeup_rdata_r[0].g[3]);
+    chk("wakeup_rdata_r[0].vs[4]", dut_g.wakeup_data_resp_r_0_entries_vs_4, dut_i.u_core.wakeup_rdata_r[0].vs[4]);
+    chk("wakeup_rdata_r[0].g[4]", dut_g.wakeup_data_resp_r_0_entries_perms_4_g, dut_i.u_core.wakeup_rdata_r[0].g[4]);
+    chk("wakeup_rdata_r[0].vs[5]", dut_g.wakeup_data_resp_r_0_entries_vs_5, dut_i.u_core.wakeup_rdata_r[0].vs[5]);
+    chk("wakeup_rdata_r[0].g[5]", dut_g.wakeup_data_resp_r_0_entries_perms_5_g, dut_i.u_core.wakeup_rdata_r[0].g[5]);
+    chk("wakeup_rdata_r[0].vs[6]", dut_g.wakeup_data_resp_r_0_entries_vs_6, dut_i.u_core.wakeup_rdata_r[0].vs[6]);
+    chk("wakeup_rdata_r[0].g[6]", dut_g.wakeup_data_resp_r_0_entries_perms_6_g, dut_i.u_core.wakeup_rdata_r[0].g[6]);
+    chk("wakeup_rdata_r[0].vs[7]", dut_g.wakeup_data_resp_r_0_entries_vs_7, dut_i.u_core.wakeup_rdata_r[0].vs[7]);
+    chk("wakeup_rdata_r[0].g[7]", dut_g.wakeup_data_resp_r_0_entries_perms_7_g, dut_i.u_core.wakeup_rdata_r[0].g[7]);
+    chk("wakeup_hitvec[1]", dut_g.wakeup_hitVec_1, dut_i.u_core.wakeup_hitvec[1]);
+    chk("wakeup_vvec_delay[1]", dut_g.wakeup_vVec_delay[1], dut_i.u_core.wakeup_vvec_delay[1]);
+    chk("wakeup_hvec_delay[1]", dut_g.wakeup_hVec_delay_1, dut_i.u_core.wakeup_hvec_delay[1]);
+    chk("wakeup_rdata_r[1].tag", dut_g.wakeup_data_resp_r_1_entries_tag, dut_i.u_core.wakeup_rdata_r[1].tag);
+    chk("wakeup_rdata_r[1].asid", dut_g.wakeup_data_resp_r_1_entries_asid, dut_i.u_core.wakeup_rdata_r[1].asid);
+    chk("wakeup_rdata_r[1].vmid", dut_g.wakeup_data_resp_r_1_entries_vmid, dut_i.u_core.wakeup_rdata_r[1].vmid);
+    chk("wakeup_rdata_r[1].vs[0]", dut_g.wakeup_data_resp_r_1_entries_vs_0, dut_i.u_core.wakeup_rdata_r[1].vs[0]);
+    chk("wakeup_rdata_r[1].g[0]", dut_g.wakeup_data_resp_r_1_entries_perms_0_g, dut_i.u_core.wakeup_rdata_r[1].g[0]);
+    chk("wakeup_rdata_r[1].vs[1]", dut_g.wakeup_data_resp_r_1_entries_vs_1, dut_i.u_core.wakeup_rdata_r[1].vs[1]);
+    chk("wakeup_rdata_r[1].g[1]", dut_g.wakeup_data_resp_r_1_entries_perms_1_g, dut_i.u_core.wakeup_rdata_r[1].g[1]);
+    chk("wakeup_rdata_r[1].vs[2]", dut_g.wakeup_data_resp_r_1_entries_vs_2, dut_i.u_core.wakeup_rdata_r[1].vs[2]);
+    chk("wakeup_rdata_r[1].g[2]", dut_g.wakeup_data_resp_r_1_entries_perms_2_g, dut_i.u_core.wakeup_rdata_r[1].g[2]);
+    chk("wakeup_rdata_r[1].vs[3]", dut_g.wakeup_data_resp_r_1_entries_vs_3, dut_i.u_core.wakeup_rdata_r[1].vs[3]);
+    chk("wakeup_rdata_r[1].g[3]", dut_g.wakeup_data_resp_r_1_entries_perms_3_g, dut_i.u_core.wakeup_rdata_r[1].g[3]);
+    chk("wakeup_rdata_r[1].vs[4]", dut_g.wakeup_data_resp_r_1_entries_vs_4, dut_i.u_core.wakeup_rdata_r[1].vs[4]);
+    chk("wakeup_rdata_r[1].g[4]", dut_g.wakeup_data_resp_r_1_entries_perms_4_g, dut_i.u_core.wakeup_rdata_r[1].g[4]);
+    chk("wakeup_rdata_r[1].vs[5]", dut_g.wakeup_data_resp_r_1_entries_vs_5, dut_i.u_core.wakeup_rdata_r[1].vs[5]);
+    chk("wakeup_rdata_r[1].g[5]", dut_g.wakeup_data_resp_r_1_entries_perms_5_g, dut_i.u_core.wakeup_rdata_r[1].g[5]);
+    chk("wakeup_rdata_r[1].vs[6]", dut_g.wakeup_data_resp_r_1_entries_vs_6, dut_i.u_core.wakeup_rdata_r[1].vs[6]);
+    chk("wakeup_rdata_r[1].g[6]", dut_g.wakeup_data_resp_r_1_entries_perms_6_g, dut_i.u_core.wakeup_rdata_r[1].g[6]);
+    chk("wakeup_rdata_r[1].vs[7]", dut_g.wakeup_data_resp_r_1_entries_vs_7, dut_i.u_core.wakeup_rdata_r[1].vs[7]);
+    chk("wakeup_rdata_r[1].g[7]", dut_g.wakeup_data_resp_r_1_entries_perms_7_g, dut_i.u_core.wakeup_rdata_r[1].g[7]);
+    chk("wakeup_hitvec[2]", dut_g.wakeup_hitVec_2, dut_i.u_core.wakeup_hitvec[2]);
+    chk("wakeup_vvec_delay[2]", dut_g.wakeup_vVec_delay[2], dut_i.u_core.wakeup_vvec_delay[2]);
+    chk("wakeup_hvec_delay[2]", dut_g.wakeup_hVec_delay_2, dut_i.u_core.wakeup_hvec_delay[2]);
+    chk("wakeup_rdata_r[2].tag", dut_g.wakeup_data_resp_r_2_entries_tag, dut_i.u_core.wakeup_rdata_r[2].tag);
+    chk("wakeup_rdata_r[2].asid", dut_g.wakeup_data_resp_r_2_entries_asid, dut_i.u_core.wakeup_rdata_r[2].asid);
+    chk("wakeup_rdata_r[2].vmid", dut_g.wakeup_data_resp_r_2_entries_vmid, dut_i.u_core.wakeup_rdata_r[2].vmid);
+    chk("wakeup_rdata_r[2].vs[0]", dut_g.wakeup_data_resp_r_2_entries_vs_0, dut_i.u_core.wakeup_rdata_r[2].vs[0]);
+    chk("wakeup_rdata_r[2].g[0]", dut_g.wakeup_data_resp_r_2_entries_perms_0_g, dut_i.u_core.wakeup_rdata_r[2].g[0]);
+    chk("wakeup_rdata_r[2].vs[1]", dut_g.wakeup_data_resp_r_2_entries_vs_1, dut_i.u_core.wakeup_rdata_r[2].vs[1]);
+    chk("wakeup_rdata_r[2].g[1]", dut_g.wakeup_data_resp_r_2_entries_perms_1_g, dut_i.u_core.wakeup_rdata_r[2].g[1]);
+    chk("wakeup_rdata_r[2].vs[2]", dut_g.wakeup_data_resp_r_2_entries_vs_2, dut_i.u_core.wakeup_rdata_r[2].vs[2]);
+    chk("wakeup_rdata_r[2].g[2]", dut_g.wakeup_data_resp_r_2_entries_perms_2_g, dut_i.u_core.wakeup_rdata_r[2].g[2]);
+    chk("wakeup_rdata_r[2].vs[3]", dut_g.wakeup_data_resp_r_2_entries_vs_3, dut_i.u_core.wakeup_rdata_r[2].vs[3]);
+    chk("wakeup_rdata_r[2].g[3]", dut_g.wakeup_data_resp_r_2_entries_perms_3_g, dut_i.u_core.wakeup_rdata_r[2].g[3]);
+    chk("wakeup_rdata_r[2].vs[4]", dut_g.wakeup_data_resp_r_2_entries_vs_4, dut_i.u_core.wakeup_rdata_r[2].vs[4]);
+    chk("wakeup_rdata_r[2].g[4]", dut_g.wakeup_data_resp_r_2_entries_perms_4_g, dut_i.u_core.wakeup_rdata_r[2].g[4]);
+    chk("wakeup_rdata_r[2].vs[5]", dut_g.wakeup_data_resp_r_2_entries_vs_5, dut_i.u_core.wakeup_rdata_r[2].vs[5]);
+    chk("wakeup_rdata_r[2].g[5]", dut_g.wakeup_data_resp_r_2_entries_perms_5_g, dut_i.u_core.wakeup_rdata_r[2].g[5]);
+    chk("wakeup_rdata_r[2].vs[6]", dut_g.wakeup_data_resp_r_2_entries_vs_6, dut_i.u_core.wakeup_rdata_r[2].vs[6]);
+    chk("wakeup_rdata_r[2].g[6]", dut_g.wakeup_data_resp_r_2_entries_perms_6_g, dut_i.u_core.wakeup_rdata_r[2].g[6]);
+    chk("wakeup_rdata_r[2].vs[7]", dut_g.wakeup_data_resp_r_2_entries_vs_7, dut_i.u_core.wakeup_rdata_r[2].vs[7]);
+    chk("wakeup_rdata_r[2].g[7]", dut_g.wakeup_data_resp_r_2_entries_perms_7_g, dut_i.u_core.wakeup_rdata_r[2].g[7]);
+    chk("wakeup_hitvec[3]", dut_g.wakeup_hitVec_3, dut_i.u_core.wakeup_hitvec[3]);
+    chk("wakeup_vvec_delay[3]", dut_g.wakeup_vVec_delay[3], dut_i.u_core.wakeup_vvec_delay[3]);
+    chk("wakeup_hvec_delay[3]", dut_g.wakeup_hVec_delay_3, dut_i.u_core.wakeup_hvec_delay[3]);
+    chk("wakeup_rdata_r[3].tag", dut_g.wakeup_data_resp_r_3_entries_tag, dut_i.u_core.wakeup_rdata_r[3].tag);
+    chk("wakeup_rdata_r[3].asid", dut_g.wakeup_data_resp_r_3_entries_asid, dut_i.u_core.wakeup_rdata_r[3].asid);
+    chk("wakeup_rdata_r[3].vmid", dut_g.wakeup_data_resp_r_3_entries_vmid, dut_i.u_core.wakeup_rdata_r[3].vmid);
+    chk("wakeup_rdata_r[3].vs[0]", dut_g.wakeup_data_resp_r_3_entries_vs_0, dut_i.u_core.wakeup_rdata_r[3].vs[0]);
+    chk("wakeup_rdata_r[3].g[0]", dut_g.wakeup_data_resp_r_3_entries_perms_0_g, dut_i.u_core.wakeup_rdata_r[3].g[0]);
+    chk("wakeup_rdata_r[3].vs[1]", dut_g.wakeup_data_resp_r_3_entries_vs_1, dut_i.u_core.wakeup_rdata_r[3].vs[1]);
+    chk("wakeup_rdata_r[3].g[1]", dut_g.wakeup_data_resp_r_3_entries_perms_1_g, dut_i.u_core.wakeup_rdata_r[3].g[1]);
+    chk("wakeup_rdata_r[3].vs[2]", dut_g.wakeup_data_resp_r_3_entries_vs_2, dut_i.u_core.wakeup_rdata_r[3].vs[2]);
+    chk("wakeup_rdata_r[3].g[2]", dut_g.wakeup_data_resp_r_3_entries_perms_2_g, dut_i.u_core.wakeup_rdata_r[3].g[2]);
+    chk("wakeup_rdata_r[3].vs[3]", dut_g.wakeup_data_resp_r_3_entries_vs_3, dut_i.u_core.wakeup_rdata_r[3].vs[3]);
+    chk("wakeup_rdata_r[3].g[3]", dut_g.wakeup_data_resp_r_3_entries_perms_3_g, dut_i.u_core.wakeup_rdata_r[3].g[3]);
+    chk("wakeup_rdata_r[3].vs[4]", dut_g.wakeup_data_resp_r_3_entries_vs_4, dut_i.u_core.wakeup_rdata_r[3].vs[4]);
+    chk("wakeup_rdata_r[3].g[4]", dut_g.wakeup_data_resp_r_3_entries_perms_4_g, dut_i.u_core.wakeup_rdata_r[3].g[4]);
+    chk("wakeup_rdata_r[3].vs[5]", dut_g.wakeup_data_resp_r_3_entries_vs_5, dut_i.u_core.wakeup_rdata_r[3].vs[5]);
+    chk("wakeup_rdata_r[3].g[5]", dut_g.wakeup_data_resp_r_3_entries_perms_5_g, dut_i.u_core.wakeup_rdata_r[3].g[5]);
+    chk("wakeup_rdata_r[3].vs[6]", dut_g.wakeup_data_resp_r_3_entries_vs_6, dut_i.u_core.wakeup_rdata_r[3].vs[6]);
+    chk("wakeup_rdata_r[3].g[6]", dut_g.wakeup_data_resp_r_3_entries_perms_6_g, dut_i.u_core.wakeup_rdata_r[3].g[6]);
+    chk("wakeup_rdata_r[3].vs[7]", dut_g.wakeup_data_resp_r_3_entries_vs_7, dut_i.u_core.wakeup_rdata_r[3].vs[7]);
+    chk("wakeup_rdata_r[3].g[7]", dut_g.wakeup_data_resp_r_3_entries_perms_7_g, dut_i.u_core.wakeup_rdata_r[3].g[7]);
   endtask
   // END GENERATED(state_cmp)
+
+  // BEGIN GENERATED(port_cmp)
+  // 由 gen_state_cmp.py 生成（golden 端口表逐根量出）。改这段请改生成器。
+  task automatic compare_outputs();
+    chk("io_req_ready", g_io_req_ready, i_io_req_ready);
+    chk("io_resp_valid", g_io_resp_valid, i_io_resp_valid);
+    chk("io_resp_bits_req_info_vpn", g_io_resp_bits_req_info_vpn, i_io_resp_bits_req_info_vpn);
+    chk("io_resp_bits_req_info_s2xlate", g_io_resp_bits_req_info_s2xlate, i_io_resp_bits_req_info_s2xlate);
+    chk("io_resp_bits_req_info_source", g_io_resp_bits_req_info_source, i_io_resp_bits_req_info_source);
+    chk("io_resp_bits_isFirst", g_io_resp_bits_isFirst, i_io_resp_bits_isFirst);
+    chk("io_resp_bits_hit", g_io_resp_bits_hit, i_io_resp_bits_hit);
+    chk("io_resp_bits_prefetch", g_io_resp_bits_prefetch, i_io_resp_bits_prefetch);
+    chk("io_resp_bits_bypassed", g_io_resp_bits_bypassed, i_io_resp_bits_bypassed);
+    chk("io_resp_bits_toFsm_l3Hit", g_io_resp_bits_toFsm_l3Hit, i_io_resp_bits_toFsm_l3Hit);
+    chk("io_resp_bits_toFsm_l2Hit", g_io_resp_bits_toFsm_l2Hit, i_io_resp_bits_toFsm_l2Hit);
+    chk("io_resp_bits_toFsm_l1Hit", g_io_resp_bits_toFsm_l1Hit, i_io_resp_bits_toFsm_l1Hit);
+    chk("io_resp_bits_toFsm_ppn", g_io_resp_bits_toFsm_ppn, i_io_resp_bits_toFsm_ppn);
+    chk("io_resp_bits_toFsm_stage1Hit", g_io_resp_bits_toFsm_stage1Hit, i_io_resp_bits_toFsm_stage1Hit);
+    chk("io_resp_bits_toFsm_bitmapCheck_jmp_bitmap_check", g_io_resp_bits_toFsm_bitmapCheck_jmp_bitmap_check, i_io_resp_bits_toFsm_bitmapCheck_jmp_bitmap_check);
+    chk("io_resp_bits_toFsm_bitmapCheck_toLLPTW", g_io_resp_bits_toFsm_bitmapCheck_toLLPTW, i_io_resp_bits_toFsm_bitmapCheck_toLLPTW);
+    chk("io_resp_bits_toFsm_bitmapCheck_hitway", g_io_resp_bits_toFsm_bitmapCheck_hitway, i_io_resp_bits_toFsm_bitmapCheck_hitway);
+    chk("io_resp_bits_toFsm_bitmapCheck_pte", g_io_resp_bits_toFsm_bitmapCheck_pte, i_io_resp_bits_toFsm_bitmapCheck_pte);
+    chk("io_resp_bits_toFsm_bitmapCheck_ptes_0", g_io_resp_bits_toFsm_bitmapCheck_ptes_0, i_io_resp_bits_toFsm_bitmapCheck_ptes_0);
+    chk("io_resp_bits_toFsm_bitmapCheck_ptes_1", g_io_resp_bits_toFsm_bitmapCheck_ptes_1, i_io_resp_bits_toFsm_bitmapCheck_ptes_1);
+    chk("io_resp_bits_toFsm_bitmapCheck_ptes_2", g_io_resp_bits_toFsm_bitmapCheck_ptes_2, i_io_resp_bits_toFsm_bitmapCheck_ptes_2);
+    chk("io_resp_bits_toFsm_bitmapCheck_ptes_3", g_io_resp_bits_toFsm_bitmapCheck_ptes_3, i_io_resp_bits_toFsm_bitmapCheck_ptes_3);
+    chk("io_resp_bits_toFsm_bitmapCheck_ptes_4", g_io_resp_bits_toFsm_bitmapCheck_ptes_4, i_io_resp_bits_toFsm_bitmapCheck_ptes_4);
+    chk("io_resp_bits_toFsm_bitmapCheck_ptes_5", g_io_resp_bits_toFsm_bitmapCheck_ptes_5, i_io_resp_bits_toFsm_bitmapCheck_ptes_5);
+    chk("io_resp_bits_toFsm_bitmapCheck_ptes_6", g_io_resp_bits_toFsm_bitmapCheck_ptes_6, i_io_resp_bits_toFsm_bitmapCheck_ptes_6);
+    chk("io_resp_bits_toFsm_bitmapCheck_ptes_7", g_io_resp_bits_toFsm_bitmapCheck_ptes_7, i_io_resp_bits_toFsm_bitmapCheck_ptes_7);
+    chk("io_resp_bits_toFsm_bitmapCheck_cfs_0", g_io_resp_bits_toFsm_bitmapCheck_cfs_0, i_io_resp_bits_toFsm_bitmapCheck_cfs_0);
+    chk("io_resp_bits_toFsm_bitmapCheck_cfs_1", g_io_resp_bits_toFsm_bitmapCheck_cfs_1, i_io_resp_bits_toFsm_bitmapCheck_cfs_1);
+    chk("io_resp_bits_toFsm_bitmapCheck_cfs_2", g_io_resp_bits_toFsm_bitmapCheck_cfs_2, i_io_resp_bits_toFsm_bitmapCheck_cfs_2);
+    chk("io_resp_bits_toFsm_bitmapCheck_cfs_3", g_io_resp_bits_toFsm_bitmapCheck_cfs_3, i_io_resp_bits_toFsm_bitmapCheck_cfs_3);
+    chk("io_resp_bits_toFsm_bitmapCheck_cfs_4", g_io_resp_bits_toFsm_bitmapCheck_cfs_4, i_io_resp_bits_toFsm_bitmapCheck_cfs_4);
+    chk("io_resp_bits_toFsm_bitmapCheck_cfs_5", g_io_resp_bits_toFsm_bitmapCheck_cfs_5, i_io_resp_bits_toFsm_bitmapCheck_cfs_5);
+    chk("io_resp_bits_toFsm_bitmapCheck_cfs_6", g_io_resp_bits_toFsm_bitmapCheck_cfs_6, i_io_resp_bits_toFsm_bitmapCheck_cfs_6);
+    chk("io_resp_bits_toFsm_bitmapCheck_cfs_7", g_io_resp_bits_toFsm_bitmapCheck_cfs_7, i_io_resp_bits_toFsm_bitmapCheck_cfs_7);
+    chk("io_resp_bits_toFsm_bitmapCheck_SPlevel", g_io_resp_bits_toFsm_bitmapCheck_SPlevel, i_io_resp_bits_toFsm_bitmapCheck_SPlevel);
+    chk("io_resp_bits_stage1_entry_0_tag", g_io_resp_bits_stage1_entry_0_tag, i_io_resp_bits_stage1_entry_0_tag);
+    chk("io_resp_bits_stage1_entry_0_asid", g_io_resp_bits_stage1_entry_0_asid, i_io_resp_bits_stage1_entry_0_asid);
+    chk("io_resp_bits_stage1_entry_0_vmid", g_io_resp_bits_stage1_entry_0_vmid, i_io_resp_bits_stage1_entry_0_vmid);
+    chk("io_resp_bits_stage1_entry_0_n", g_io_resp_bits_stage1_entry_0_n, i_io_resp_bits_stage1_entry_0_n);
+    chk("io_resp_bits_stage1_entry_0_pbmt", g_io_resp_bits_stage1_entry_0_pbmt, i_io_resp_bits_stage1_entry_0_pbmt);
+    chk("io_resp_bits_stage1_entry_0_perm_d", g_io_resp_bits_stage1_entry_0_perm_d, i_io_resp_bits_stage1_entry_0_perm_d);
+    chk("io_resp_bits_stage1_entry_0_perm_a", g_io_resp_bits_stage1_entry_0_perm_a, i_io_resp_bits_stage1_entry_0_perm_a);
+    chk("io_resp_bits_stage1_entry_0_perm_g", g_io_resp_bits_stage1_entry_0_perm_g, i_io_resp_bits_stage1_entry_0_perm_g);
+    chk("io_resp_bits_stage1_entry_0_perm_u", g_io_resp_bits_stage1_entry_0_perm_u, i_io_resp_bits_stage1_entry_0_perm_u);
+    chk("io_resp_bits_stage1_entry_0_perm_x", g_io_resp_bits_stage1_entry_0_perm_x, i_io_resp_bits_stage1_entry_0_perm_x);
+    chk("io_resp_bits_stage1_entry_0_perm_w", g_io_resp_bits_stage1_entry_0_perm_w, i_io_resp_bits_stage1_entry_0_perm_w);
+    chk("io_resp_bits_stage1_entry_0_perm_r", g_io_resp_bits_stage1_entry_0_perm_r, i_io_resp_bits_stage1_entry_0_perm_r);
+    chk("io_resp_bits_stage1_entry_0_level", g_io_resp_bits_stage1_entry_0_level, i_io_resp_bits_stage1_entry_0_level);
+    chk("io_resp_bits_stage1_entry_0_v", g_io_resp_bits_stage1_entry_0_v, i_io_resp_bits_stage1_entry_0_v);
+    chk("io_resp_bits_stage1_entry_0_ppn", g_io_resp_bits_stage1_entry_0_ppn, i_io_resp_bits_stage1_entry_0_ppn);
+    chk("io_resp_bits_stage1_entry_0_ppn_low", g_io_resp_bits_stage1_entry_0_ppn_low, i_io_resp_bits_stage1_entry_0_ppn_low);
+    chk("io_resp_bits_stage1_entry_0_pf", g_io_resp_bits_stage1_entry_0_pf, i_io_resp_bits_stage1_entry_0_pf);
+    chk("io_resp_bits_stage1_entry_0_cf", g_io_resp_bits_stage1_entry_0_cf, i_io_resp_bits_stage1_entry_0_cf);
+    chk("io_resp_bits_stage1_entry_1_tag", g_io_resp_bits_stage1_entry_1_tag, i_io_resp_bits_stage1_entry_1_tag);
+    chk("io_resp_bits_stage1_entry_1_asid", g_io_resp_bits_stage1_entry_1_asid, i_io_resp_bits_stage1_entry_1_asid);
+    chk("io_resp_bits_stage1_entry_1_vmid", g_io_resp_bits_stage1_entry_1_vmid, i_io_resp_bits_stage1_entry_1_vmid);
+    chk("io_resp_bits_stage1_entry_1_n", g_io_resp_bits_stage1_entry_1_n, i_io_resp_bits_stage1_entry_1_n);
+    chk("io_resp_bits_stage1_entry_1_pbmt", g_io_resp_bits_stage1_entry_1_pbmt, i_io_resp_bits_stage1_entry_1_pbmt);
+    chk("io_resp_bits_stage1_entry_1_perm_d", g_io_resp_bits_stage1_entry_1_perm_d, i_io_resp_bits_stage1_entry_1_perm_d);
+    chk("io_resp_bits_stage1_entry_1_perm_a", g_io_resp_bits_stage1_entry_1_perm_a, i_io_resp_bits_stage1_entry_1_perm_a);
+    chk("io_resp_bits_stage1_entry_1_perm_g", g_io_resp_bits_stage1_entry_1_perm_g, i_io_resp_bits_stage1_entry_1_perm_g);
+    chk("io_resp_bits_stage1_entry_1_perm_u", g_io_resp_bits_stage1_entry_1_perm_u, i_io_resp_bits_stage1_entry_1_perm_u);
+    chk("io_resp_bits_stage1_entry_1_perm_x", g_io_resp_bits_stage1_entry_1_perm_x, i_io_resp_bits_stage1_entry_1_perm_x);
+    chk("io_resp_bits_stage1_entry_1_perm_w", g_io_resp_bits_stage1_entry_1_perm_w, i_io_resp_bits_stage1_entry_1_perm_w);
+    chk("io_resp_bits_stage1_entry_1_perm_r", g_io_resp_bits_stage1_entry_1_perm_r, i_io_resp_bits_stage1_entry_1_perm_r);
+    chk("io_resp_bits_stage1_entry_1_level", g_io_resp_bits_stage1_entry_1_level, i_io_resp_bits_stage1_entry_1_level);
+    chk("io_resp_bits_stage1_entry_1_v", g_io_resp_bits_stage1_entry_1_v, i_io_resp_bits_stage1_entry_1_v);
+    chk("io_resp_bits_stage1_entry_1_ppn", g_io_resp_bits_stage1_entry_1_ppn, i_io_resp_bits_stage1_entry_1_ppn);
+    chk("io_resp_bits_stage1_entry_1_ppn_low", g_io_resp_bits_stage1_entry_1_ppn_low, i_io_resp_bits_stage1_entry_1_ppn_low);
+    chk("io_resp_bits_stage1_entry_1_pf", g_io_resp_bits_stage1_entry_1_pf, i_io_resp_bits_stage1_entry_1_pf);
+    chk("io_resp_bits_stage1_entry_1_cf", g_io_resp_bits_stage1_entry_1_cf, i_io_resp_bits_stage1_entry_1_cf);
+    chk("io_resp_bits_stage1_entry_2_tag", g_io_resp_bits_stage1_entry_2_tag, i_io_resp_bits_stage1_entry_2_tag);
+    chk("io_resp_bits_stage1_entry_2_asid", g_io_resp_bits_stage1_entry_2_asid, i_io_resp_bits_stage1_entry_2_asid);
+    chk("io_resp_bits_stage1_entry_2_vmid", g_io_resp_bits_stage1_entry_2_vmid, i_io_resp_bits_stage1_entry_2_vmid);
+    chk("io_resp_bits_stage1_entry_2_n", g_io_resp_bits_stage1_entry_2_n, i_io_resp_bits_stage1_entry_2_n);
+    chk("io_resp_bits_stage1_entry_2_pbmt", g_io_resp_bits_stage1_entry_2_pbmt, i_io_resp_bits_stage1_entry_2_pbmt);
+    chk("io_resp_bits_stage1_entry_2_perm_d", g_io_resp_bits_stage1_entry_2_perm_d, i_io_resp_bits_stage1_entry_2_perm_d);
+    chk("io_resp_bits_stage1_entry_2_perm_a", g_io_resp_bits_stage1_entry_2_perm_a, i_io_resp_bits_stage1_entry_2_perm_a);
+    chk("io_resp_bits_stage1_entry_2_perm_g", g_io_resp_bits_stage1_entry_2_perm_g, i_io_resp_bits_stage1_entry_2_perm_g);
+    chk("io_resp_bits_stage1_entry_2_perm_u", g_io_resp_bits_stage1_entry_2_perm_u, i_io_resp_bits_stage1_entry_2_perm_u);
+    chk("io_resp_bits_stage1_entry_2_perm_x", g_io_resp_bits_stage1_entry_2_perm_x, i_io_resp_bits_stage1_entry_2_perm_x);
+    chk("io_resp_bits_stage1_entry_2_perm_w", g_io_resp_bits_stage1_entry_2_perm_w, i_io_resp_bits_stage1_entry_2_perm_w);
+    chk("io_resp_bits_stage1_entry_2_perm_r", g_io_resp_bits_stage1_entry_2_perm_r, i_io_resp_bits_stage1_entry_2_perm_r);
+    chk("io_resp_bits_stage1_entry_2_level", g_io_resp_bits_stage1_entry_2_level, i_io_resp_bits_stage1_entry_2_level);
+    chk("io_resp_bits_stage1_entry_2_v", g_io_resp_bits_stage1_entry_2_v, i_io_resp_bits_stage1_entry_2_v);
+    chk("io_resp_bits_stage1_entry_2_ppn", g_io_resp_bits_stage1_entry_2_ppn, i_io_resp_bits_stage1_entry_2_ppn);
+    chk("io_resp_bits_stage1_entry_2_ppn_low", g_io_resp_bits_stage1_entry_2_ppn_low, i_io_resp_bits_stage1_entry_2_ppn_low);
+    chk("io_resp_bits_stage1_entry_2_pf", g_io_resp_bits_stage1_entry_2_pf, i_io_resp_bits_stage1_entry_2_pf);
+    chk("io_resp_bits_stage1_entry_2_cf", g_io_resp_bits_stage1_entry_2_cf, i_io_resp_bits_stage1_entry_2_cf);
+    chk("io_resp_bits_stage1_entry_3_tag", g_io_resp_bits_stage1_entry_3_tag, i_io_resp_bits_stage1_entry_3_tag);
+    chk("io_resp_bits_stage1_entry_3_asid", g_io_resp_bits_stage1_entry_3_asid, i_io_resp_bits_stage1_entry_3_asid);
+    chk("io_resp_bits_stage1_entry_3_vmid", g_io_resp_bits_stage1_entry_3_vmid, i_io_resp_bits_stage1_entry_3_vmid);
+    chk("io_resp_bits_stage1_entry_3_n", g_io_resp_bits_stage1_entry_3_n, i_io_resp_bits_stage1_entry_3_n);
+    chk("io_resp_bits_stage1_entry_3_pbmt", g_io_resp_bits_stage1_entry_3_pbmt, i_io_resp_bits_stage1_entry_3_pbmt);
+    chk("io_resp_bits_stage1_entry_3_perm_d", g_io_resp_bits_stage1_entry_3_perm_d, i_io_resp_bits_stage1_entry_3_perm_d);
+    chk("io_resp_bits_stage1_entry_3_perm_a", g_io_resp_bits_stage1_entry_3_perm_a, i_io_resp_bits_stage1_entry_3_perm_a);
+    chk("io_resp_bits_stage1_entry_3_perm_g", g_io_resp_bits_stage1_entry_3_perm_g, i_io_resp_bits_stage1_entry_3_perm_g);
+    chk("io_resp_bits_stage1_entry_3_perm_u", g_io_resp_bits_stage1_entry_3_perm_u, i_io_resp_bits_stage1_entry_3_perm_u);
+    chk("io_resp_bits_stage1_entry_3_perm_x", g_io_resp_bits_stage1_entry_3_perm_x, i_io_resp_bits_stage1_entry_3_perm_x);
+    chk("io_resp_bits_stage1_entry_3_perm_w", g_io_resp_bits_stage1_entry_3_perm_w, i_io_resp_bits_stage1_entry_3_perm_w);
+    chk("io_resp_bits_stage1_entry_3_perm_r", g_io_resp_bits_stage1_entry_3_perm_r, i_io_resp_bits_stage1_entry_3_perm_r);
+    chk("io_resp_bits_stage1_entry_3_level", g_io_resp_bits_stage1_entry_3_level, i_io_resp_bits_stage1_entry_3_level);
+    chk("io_resp_bits_stage1_entry_3_v", g_io_resp_bits_stage1_entry_3_v, i_io_resp_bits_stage1_entry_3_v);
+    chk("io_resp_bits_stage1_entry_3_ppn", g_io_resp_bits_stage1_entry_3_ppn, i_io_resp_bits_stage1_entry_3_ppn);
+    chk("io_resp_bits_stage1_entry_3_ppn_low", g_io_resp_bits_stage1_entry_3_ppn_low, i_io_resp_bits_stage1_entry_3_ppn_low);
+    chk("io_resp_bits_stage1_entry_3_pf", g_io_resp_bits_stage1_entry_3_pf, i_io_resp_bits_stage1_entry_3_pf);
+    chk("io_resp_bits_stage1_entry_3_cf", g_io_resp_bits_stage1_entry_3_cf, i_io_resp_bits_stage1_entry_3_cf);
+    chk("io_resp_bits_stage1_entry_4_tag", g_io_resp_bits_stage1_entry_4_tag, i_io_resp_bits_stage1_entry_4_tag);
+    chk("io_resp_bits_stage1_entry_4_asid", g_io_resp_bits_stage1_entry_4_asid, i_io_resp_bits_stage1_entry_4_asid);
+    chk("io_resp_bits_stage1_entry_4_vmid", g_io_resp_bits_stage1_entry_4_vmid, i_io_resp_bits_stage1_entry_4_vmid);
+    chk("io_resp_bits_stage1_entry_4_n", g_io_resp_bits_stage1_entry_4_n, i_io_resp_bits_stage1_entry_4_n);
+    chk("io_resp_bits_stage1_entry_4_pbmt", g_io_resp_bits_stage1_entry_4_pbmt, i_io_resp_bits_stage1_entry_4_pbmt);
+    chk("io_resp_bits_stage1_entry_4_perm_d", g_io_resp_bits_stage1_entry_4_perm_d, i_io_resp_bits_stage1_entry_4_perm_d);
+    chk("io_resp_bits_stage1_entry_4_perm_a", g_io_resp_bits_stage1_entry_4_perm_a, i_io_resp_bits_stage1_entry_4_perm_a);
+    chk("io_resp_bits_stage1_entry_4_perm_g", g_io_resp_bits_stage1_entry_4_perm_g, i_io_resp_bits_stage1_entry_4_perm_g);
+    chk("io_resp_bits_stage1_entry_4_perm_u", g_io_resp_bits_stage1_entry_4_perm_u, i_io_resp_bits_stage1_entry_4_perm_u);
+    chk("io_resp_bits_stage1_entry_4_perm_x", g_io_resp_bits_stage1_entry_4_perm_x, i_io_resp_bits_stage1_entry_4_perm_x);
+    chk("io_resp_bits_stage1_entry_4_perm_w", g_io_resp_bits_stage1_entry_4_perm_w, i_io_resp_bits_stage1_entry_4_perm_w);
+    chk("io_resp_bits_stage1_entry_4_perm_r", g_io_resp_bits_stage1_entry_4_perm_r, i_io_resp_bits_stage1_entry_4_perm_r);
+    chk("io_resp_bits_stage1_entry_4_level", g_io_resp_bits_stage1_entry_4_level, i_io_resp_bits_stage1_entry_4_level);
+    chk("io_resp_bits_stage1_entry_4_v", g_io_resp_bits_stage1_entry_4_v, i_io_resp_bits_stage1_entry_4_v);
+    chk("io_resp_bits_stage1_entry_4_ppn", g_io_resp_bits_stage1_entry_4_ppn, i_io_resp_bits_stage1_entry_4_ppn);
+    chk("io_resp_bits_stage1_entry_4_ppn_low", g_io_resp_bits_stage1_entry_4_ppn_low, i_io_resp_bits_stage1_entry_4_ppn_low);
+    chk("io_resp_bits_stage1_entry_4_pf", g_io_resp_bits_stage1_entry_4_pf, i_io_resp_bits_stage1_entry_4_pf);
+    chk("io_resp_bits_stage1_entry_4_cf", g_io_resp_bits_stage1_entry_4_cf, i_io_resp_bits_stage1_entry_4_cf);
+    chk("io_resp_bits_stage1_entry_5_tag", g_io_resp_bits_stage1_entry_5_tag, i_io_resp_bits_stage1_entry_5_tag);
+    chk("io_resp_bits_stage1_entry_5_asid", g_io_resp_bits_stage1_entry_5_asid, i_io_resp_bits_stage1_entry_5_asid);
+    chk("io_resp_bits_stage1_entry_5_vmid", g_io_resp_bits_stage1_entry_5_vmid, i_io_resp_bits_stage1_entry_5_vmid);
+    chk("io_resp_bits_stage1_entry_5_n", g_io_resp_bits_stage1_entry_5_n, i_io_resp_bits_stage1_entry_5_n);
+    chk("io_resp_bits_stage1_entry_5_pbmt", g_io_resp_bits_stage1_entry_5_pbmt, i_io_resp_bits_stage1_entry_5_pbmt);
+    chk("io_resp_bits_stage1_entry_5_perm_d", g_io_resp_bits_stage1_entry_5_perm_d, i_io_resp_bits_stage1_entry_5_perm_d);
+    chk("io_resp_bits_stage1_entry_5_perm_a", g_io_resp_bits_stage1_entry_5_perm_a, i_io_resp_bits_stage1_entry_5_perm_a);
+    chk("io_resp_bits_stage1_entry_5_perm_g", g_io_resp_bits_stage1_entry_5_perm_g, i_io_resp_bits_stage1_entry_5_perm_g);
+    chk("io_resp_bits_stage1_entry_5_perm_u", g_io_resp_bits_stage1_entry_5_perm_u, i_io_resp_bits_stage1_entry_5_perm_u);
+    chk("io_resp_bits_stage1_entry_5_perm_x", g_io_resp_bits_stage1_entry_5_perm_x, i_io_resp_bits_stage1_entry_5_perm_x);
+    chk("io_resp_bits_stage1_entry_5_perm_w", g_io_resp_bits_stage1_entry_5_perm_w, i_io_resp_bits_stage1_entry_5_perm_w);
+    chk("io_resp_bits_stage1_entry_5_perm_r", g_io_resp_bits_stage1_entry_5_perm_r, i_io_resp_bits_stage1_entry_5_perm_r);
+    chk("io_resp_bits_stage1_entry_5_level", g_io_resp_bits_stage1_entry_5_level, i_io_resp_bits_stage1_entry_5_level);
+    chk("io_resp_bits_stage1_entry_5_v", g_io_resp_bits_stage1_entry_5_v, i_io_resp_bits_stage1_entry_5_v);
+    chk("io_resp_bits_stage1_entry_5_ppn", g_io_resp_bits_stage1_entry_5_ppn, i_io_resp_bits_stage1_entry_5_ppn);
+    chk("io_resp_bits_stage1_entry_5_ppn_low", g_io_resp_bits_stage1_entry_5_ppn_low, i_io_resp_bits_stage1_entry_5_ppn_low);
+    chk("io_resp_bits_stage1_entry_5_pf", g_io_resp_bits_stage1_entry_5_pf, i_io_resp_bits_stage1_entry_5_pf);
+    chk("io_resp_bits_stage1_entry_5_cf", g_io_resp_bits_stage1_entry_5_cf, i_io_resp_bits_stage1_entry_5_cf);
+    chk("io_resp_bits_stage1_entry_6_tag", g_io_resp_bits_stage1_entry_6_tag, i_io_resp_bits_stage1_entry_6_tag);
+    chk("io_resp_bits_stage1_entry_6_asid", g_io_resp_bits_stage1_entry_6_asid, i_io_resp_bits_stage1_entry_6_asid);
+    chk("io_resp_bits_stage1_entry_6_vmid", g_io_resp_bits_stage1_entry_6_vmid, i_io_resp_bits_stage1_entry_6_vmid);
+    chk("io_resp_bits_stage1_entry_6_n", g_io_resp_bits_stage1_entry_6_n, i_io_resp_bits_stage1_entry_6_n);
+    chk("io_resp_bits_stage1_entry_6_pbmt", g_io_resp_bits_stage1_entry_6_pbmt, i_io_resp_bits_stage1_entry_6_pbmt);
+    chk("io_resp_bits_stage1_entry_6_perm_d", g_io_resp_bits_stage1_entry_6_perm_d, i_io_resp_bits_stage1_entry_6_perm_d);
+    chk("io_resp_bits_stage1_entry_6_perm_a", g_io_resp_bits_stage1_entry_6_perm_a, i_io_resp_bits_stage1_entry_6_perm_a);
+    chk("io_resp_bits_stage1_entry_6_perm_g", g_io_resp_bits_stage1_entry_6_perm_g, i_io_resp_bits_stage1_entry_6_perm_g);
+    chk("io_resp_bits_stage1_entry_6_perm_u", g_io_resp_bits_stage1_entry_6_perm_u, i_io_resp_bits_stage1_entry_6_perm_u);
+    chk("io_resp_bits_stage1_entry_6_perm_x", g_io_resp_bits_stage1_entry_6_perm_x, i_io_resp_bits_stage1_entry_6_perm_x);
+    chk("io_resp_bits_stage1_entry_6_perm_w", g_io_resp_bits_stage1_entry_6_perm_w, i_io_resp_bits_stage1_entry_6_perm_w);
+    chk("io_resp_bits_stage1_entry_6_perm_r", g_io_resp_bits_stage1_entry_6_perm_r, i_io_resp_bits_stage1_entry_6_perm_r);
+    chk("io_resp_bits_stage1_entry_6_level", g_io_resp_bits_stage1_entry_6_level, i_io_resp_bits_stage1_entry_6_level);
+    chk("io_resp_bits_stage1_entry_6_v", g_io_resp_bits_stage1_entry_6_v, i_io_resp_bits_stage1_entry_6_v);
+    chk("io_resp_bits_stage1_entry_6_ppn", g_io_resp_bits_stage1_entry_6_ppn, i_io_resp_bits_stage1_entry_6_ppn);
+    chk("io_resp_bits_stage1_entry_6_ppn_low", g_io_resp_bits_stage1_entry_6_ppn_low, i_io_resp_bits_stage1_entry_6_ppn_low);
+    chk("io_resp_bits_stage1_entry_6_pf", g_io_resp_bits_stage1_entry_6_pf, i_io_resp_bits_stage1_entry_6_pf);
+    chk("io_resp_bits_stage1_entry_6_cf", g_io_resp_bits_stage1_entry_6_cf, i_io_resp_bits_stage1_entry_6_cf);
+    chk("io_resp_bits_stage1_entry_7_tag", g_io_resp_bits_stage1_entry_7_tag, i_io_resp_bits_stage1_entry_7_tag);
+    chk("io_resp_bits_stage1_entry_7_asid", g_io_resp_bits_stage1_entry_7_asid, i_io_resp_bits_stage1_entry_7_asid);
+    chk("io_resp_bits_stage1_entry_7_vmid", g_io_resp_bits_stage1_entry_7_vmid, i_io_resp_bits_stage1_entry_7_vmid);
+    chk("io_resp_bits_stage1_entry_7_n", g_io_resp_bits_stage1_entry_7_n, i_io_resp_bits_stage1_entry_7_n);
+    chk("io_resp_bits_stage1_entry_7_pbmt", g_io_resp_bits_stage1_entry_7_pbmt, i_io_resp_bits_stage1_entry_7_pbmt);
+    chk("io_resp_bits_stage1_entry_7_perm_d", g_io_resp_bits_stage1_entry_7_perm_d, i_io_resp_bits_stage1_entry_7_perm_d);
+    chk("io_resp_bits_stage1_entry_7_perm_a", g_io_resp_bits_stage1_entry_7_perm_a, i_io_resp_bits_stage1_entry_7_perm_a);
+    chk("io_resp_bits_stage1_entry_7_perm_g", g_io_resp_bits_stage1_entry_7_perm_g, i_io_resp_bits_stage1_entry_7_perm_g);
+    chk("io_resp_bits_stage1_entry_7_perm_u", g_io_resp_bits_stage1_entry_7_perm_u, i_io_resp_bits_stage1_entry_7_perm_u);
+    chk("io_resp_bits_stage1_entry_7_perm_x", g_io_resp_bits_stage1_entry_7_perm_x, i_io_resp_bits_stage1_entry_7_perm_x);
+    chk("io_resp_bits_stage1_entry_7_perm_w", g_io_resp_bits_stage1_entry_7_perm_w, i_io_resp_bits_stage1_entry_7_perm_w);
+    chk("io_resp_bits_stage1_entry_7_perm_r", g_io_resp_bits_stage1_entry_7_perm_r, i_io_resp_bits_stage1_entry_7_perm_r);
+    chk("io_resp_bits_stage1_entry_7_level", g_io_resp_bits_stage1_entry_7_level, i_io_resp_bits_stage1_entry_7_level);
+    chk("io_resp_bits_stage1_entry_7_v", g_io_resp_bits_stage1_entry_7_v, i_io_resp_bits_stage1_entry_7_v);
+    chk("io_resp_bits_stage1_entry_7_ppn", g_io_resp_bits_stage1_entry_7_ppn, i_io_resp_bits_stage1_entry_7_ppn);
+    chk("io_resp_bits_stage1_entry_7_ppn_low", g_io_resp_bits_stage1_entry_7_ppn_low, i_io_resp_bits_stage1_entry_7_ppn_low);
+    chk("io_resp_bits_stage1_entry_7_pf", g_io_resp_bits_stage1_entry_7_pf, i_io_resp_bits_stage1_entry_7_pf);
+    chk("io_resp_bits_stage1_entry_7_cf", g_io_resp_bits_stage1_entry_7_cf, i_io_resp_bits_stage1_entry_7_cf);
+    chk("io_resp_bits_stage1_pteidx_0", g_io_resp_bits_stage1_pteidx_0, i_io_resp_bits_stage1_pteidx_0);
+    chk("io_resp_bits_stage1_pteidx_1", g_io_resp_bits_stage1_pteidx_1, i_io_resp_bits_stage1_pteidx_1);
+    chk("io_resp_bits_stage1_pteidx_2", g_io_resp_bits_stage1_pteidx_2, i_io_resp_bits_stage1_pteidx_2);
+    chk("io_resp_bits_stage1_pteidx_3", g_io_resp_bits_stage1_pteidx_3, i_io_resp_bits_stage1_pteidx_3);
+    chk("io_resp_bits_stage1_pteidx_4", g_io_resp_bits_stage1_pteidx_4, i_io_resp_bits_stage1_pteidx_4);
+    chk("io_resp_bits_stage1_pteidx_5", g_io_resp_bits_stage1_pteidx_5, i_io_resp_bits_stage1_pteidx_5);
+    chk("io_resp_bits_stage1_pteidx_6", g_io_resp_bits_stage1_pteidx_6, i_io_resp_bits_stage1_pteidx_6);
+    chk("io_resp_bits_stage1_pteidx_7", g_io_resp_bits_stage1_pteidx_7, i_io_resp_bits_stage1_pteidx_7);
+    chk("io_resp_bits_stage1_not_super", g_io_resp_bits_stage1_not_super, i_io_resp_bits_stage1_not_super);
+    chk("io_resp_bits_isHptwReq", g_io_resp_bits_isHptwReq, i_io_resp_bits_isHptwReq);
+    chk("io_resp_bits_toHptw_l3Hit", g_io_resp_bits_toHptw_l3Hit, i_io_resp_bits_toHptw_l3Hit);
+    chk("io_resp_bits_toHptw_l2Hit", g_io_resp_bits_toHptw_l2Hit, i_io_resp_bits_toHptw_l2Hit);
+    chk("io_resp_bits_toHptw_l1Hit", g_io_resp_bits_toHptw_l1Hit, i_io_resp_bits_toHptw_l1Hit);
+    chk("io_resp_bits_toHptw_ppn", g_io_resp_bits_toHptw_ppn, i_io_resp_bits_toHptw_ppn);
+    chk("io_resp_bits_toHptw_id", g_io_resp_bits_toHptw_id, i_io_resp_bits_toHptw_id);
+    chk("io_resp_bits_toHptw_resp_entry_tag", g_io_resp_bits_toHptw_resp_entry_tag, i_io_resp_bits_toHptw_resp_entry_tag);
+    chk("io_resp_bits_toHptw_resp_entry_vmid", g_io_resp_bits_toHptw_resp_entry_vmid, i_io_resp_bits_toHptw_resp_entry_vmid);
+    chk("io_resp_bits_toHptw_resp_entry_n", g_io_resp_bits_toHptw_resp_entry_n, i_io_resp_bits_toHptw_resp_entry_n);
+    chk("io_resp_bits_toHptw_resp_entry_pbmt", g_io_resp_bits_toHptw_resp_entry_pbmt, i_io_resp_bits_toHptw_resp_entry_pbmt);
+    chk("io_resp_bits_toHptw_resp_entry_ppn", g_io_resp_bits_toHptw_resp_entry_ppn, i_io_resp_bits_toHptw_resp_entry_ppn);
+    chk("io_resp_bits_toHptw_resp_entry_perm_d", g_io_resp_bits_toHptw_resp_entry_perm_d, i_io_resp_bits_toHptw_resp_entry_perm_d);
+    chk("io_resp_bits_toHptw_resp_entry_perm_a", g_io_resp_bits_toHptw_resp_entry_perm_a, i_io_resp_bits_toHptw_resp_entry_perm_a);
+    chk("io_resp_bits_toHptw_resp_entry_perm_g", g_io_resp_bits_toHptw_resp_entry_perm_g, i_io_resp_bits_toHptw_resp_entry_perm_g);
+    chk("io_resp_bits_toHptw_resp_entry_perm_u", g_io_resp_bits_toHptw_resp_entry_perm_u, i_io_resp_bits_toHptw_resp_entry_perm_u);
+    chk("io_resp_bits_toHptw_resp_entry_perm_x", g_io_resp_bits_toHptw_resp_entry_perm_x, i_io_resp_bits_toHptw_resp_entry_perm_x);
+    chk("io_resp_bits_toHptw_resp_entry_perm_w", g_io_resp_bits_toHptw_resp_entry_perm_w, i_io_resp_bits_toHptw_resp_entry_perm_w);
+    chk("io_resp_bits_toHptw_resp_entry_perm_r", g_io_resp_bits_toHptw_resp_entry_perm_r, i_io_resp_bits_toHptw_resp_entry_perm_r);
+    chk("io_resp_bits_toHptw_resp_entry_level", g_io_resp_bits_toHptw_resp_entry_level, i_io_resp_bits_toHptw_resp_entry_level);
+    chk("io_resp_bits_toHptw_resp_gpf", g_io_resp_bits_toHptw_resp_gpf, i_io_resp_bits_toHptw_resp_gpf);
+    chk("io_resp_bits_toHptw_bypassed", g_io_resp_bits_toHptw_bypassed, i_io_resp_bits_toHptw_bypassed);
+    chk("io_resp_bits_toHptw_bitmapCheck_jmp_bitmap_check", g_io_resp_bits_toHptw_bitmapCheck_jmp_bitmap_check, i_io_resp_bits_toHptw_bitmapCheck_jmp_bitmap_check);
+    chk("io_resp_bits_toHptw_bitmapCheck_hitway", g_io_resp_bits_toHptw_bitmapCheck_hitway, i_io_resp_bits_toHptw_bitmapCheck_hitway);
+    chk("io_resp_bits_toHptw_bitmapCheck_pte", g_io_resp_bits_toHptw_bitmapCheck_pte, i_io_resp_bits_toHptw_bitmapCheck_pte);
+    chk("io_resp_bits_toHptw_bitmapCheck_ptes_0", g_io_resp_bits_toHptw_bitmapCheck_ptes_0, i_io_resp_bits_toHptw_bitmapCheck_ptes_0);
+    chk("io_resp_bits_toHptw_bitmapCheck_ptes_1", g_io_resp_bits_toHptw_bitmapCheck_ptes_1, i_io_resp_bits_toHptw_bitmapCheck_ptes_1);
+    chk("io_resp_bits_toHptw_bitmapCheck_ptes_2", g_io_resp_bits_toHptw_bitmapCheck_ptes_2, i_io_resp_bits_toHptw_bitmapCheck_ptes_2);
+    chk("io_resp_bits_toHptw_bitmapCheck_ptes_3", g_io_resp_bits_toHptw_bitmapCheck_ptes_3, i_io_resp_bits_toHptw_bitmapCheck_ptes_3);
+    chk("io_resp_bits_toHptw_bitmapCheck_ptes_4", g_io_resp_bits_toHptw_bitmapCheck_ptes_4, i_io_resp_bits_toHptw_bitmapCheck_ptes_4);
+    chk("io_resp_bits_toHptw_bitmapCheck_ptes_5", g_io_resp_bits_toHptw_bitmapCheck_ptes_5, i_io_resp_bits_toHptw_bitmapCheck_ptes_5);
+    chk("io_resp_bits_toHptw_bitmapCheck_ptes_6", g_io_resp_bits_toHptw_bitmapCheck_ptes_6, i_io_resp_bits_toHptw_bitmapCheck_ptes_6);
+    chk("io_resp_bits_toHptw_bitmapCheck_ptes_7", g_io_resp_bits_toHptw_bitmapCheck_ptes_7, i_io_resp_bits_toHptw_bitmapCheck_ptes_7);
+    chk("io_resp_bits_toHptw_bitmapCheck_fromSP", g_io_resp_bits_toHptw_bitmapCheck_fromSP, i_io_resp_bits_toHptw_bitmapCheck_fromSP);
+    chk("io_resp_bits_toHptw_bitmapCheck_SPlevel", g_io_resp_bits_toHptw_bitmapCheck_SPlevel, i_io_resp_bits_toHptw_bitmapCheck_SPlevel);
+    chk("io_l0_way_info", g_io_l0_way_info, i_io_l0_way_info);
+    chk("io_bitmap_wakeup_ready", g_io_bitmap_wakeup_ready, i_io_bitmap_wakeup_ready);
+    chk("io_perf_0_value", g_io_perf_0_value, i_io_perf_0_value);
+    chk("io_perf_1_value", g_io_perf_1_value, i_io_perf_1_value);
+    chk("io_perf_2_value", g_io_perf_2_value, i_io_perf_2_value);
+    chk("io_perf_3_value", g_io_perf_3_value, i_io_perf_3_value);
+    chk("io_perf_4_value", g_io_perf_4_value, i_io_perf_4_value);
+    chk("io_perf_5_value", g_io_perf_5_value, i_io_perf_5_value);
+    chk("io_perf_6_value", g_io_perf_6_value, i_io_perf_6_value);
+    chk("io_perf_7_value", g_io_perf_7_value, i_io_perf_7_value);
+    chk("boreChildrenBd_bore_ack", g_boreChildrenBd_bore_ack, i_boreChildrenBd_bore_ack);
+    chk("boreChildrenBd_bore_outdata", g_boreChildrenBd_bore_outdata, i_boreChildrenBd_bore_outdata);
+    chk("boreChildrenBd_bore_1_ack", g_boreChildrenBd_bore_1_ack, i_boreChildrenBd_bore_1_ack);
+    chk("boreChildrenBd_bore_1_outdata", g_boreChildrenBd_bore_1_outdata, i_boreChildrenBd_bore_1_outdata);
+  endtask
+  // END GENERATED(port_cmp)
 
   task automatic compare_write_ports();
     chk("l1.io_w_req_valid", dut_g.l1.io_w_req_valid, dut_i.u_core.u_l1_sram.io_w_req_valid);
@@ -4753,6 +5256,7 @@ module tb;
     sigFromSrams_bore_16_ram_mcp_hold = '0;
     sigFromSrams_bore_16_cgen = '0;
     cg_bore_cgen = '0;
+    last_way_info = 4'h0;
     repeat (4) @(posedge clock);
     reset = 1'b0;
     for (int i = 0; i < 8; i++)
@@ -4765,10 +5269,13 @@ module tb;
       // csr 每 512 拍才换一次；换得太勤，回填进去的条目根本等不到被查一次。
       if (c % 512 == 0) refresh_csr();
       drive_random();
+      drive_fence();
+      drive_wakeup();
       #1;
       compare_write_ports();
       compare_state();
       compare_hit();
+      compare_outputs();     // ★全部 236 个输出，逐拍逐位★
       if (dut_g.hit)   fire_hit_l3++;
       if (dut_g.hit_1) fire_hit_l2++;
       if (dut_g.hit_2) fire_hit_sp++;
@@ -4779,6 +5286,11 @@ module tb;
       if (dut_g.l1Refill) fire_l1++;
       if (dut_g.l0Refill) fire_l0++;
       if (dut_g.spRefill) fire_sp++;
+      if (dut_g.wakeup_req_valid) fire_wakeup++;
+      // golden 里 `_GEN_254 = wakeup_req_valid & wakeup_hitVec[OHToUInt(way_info)]`
+      // 就是 l0BitmapReg 的写使能（PtwCache.sv:13282）。
+      if (dut_g._GEN_254) fire_wk_write++;
+      if (io_refill_bits_levelOH_l0) last_way_info = g_io_l0_way_info;
     end
     $display("PtwCache_refill study: cycles=%0d checks=%0d errors=%0d",
              ncycles, checks, errors);
@@ -4786,6 +5298,8 @@ module tb;
              fire_l3, fire_l2, fire_l1, fire_l0, fire_sp);
     $display("PtwCache_refill hit:  l3=%0d l2=%0d l1=%0d l0=%0d sp=%0d",
              fire_hit_l3, fire_hit_l2, fire_hit_l1, fire_hit_l0, fire_hit_sp);
+    $display("PtwCache_refill fence: sfence=%0d hfence.vvma=%0d hfence.gvma=%0d wakeup=%0d wakeup_write=%0d",
+             fire_sfence, fire_hfv, fire_hfg, fire_wakeup, fire_wk_write);
     if (errors != 0)
       $display("STUDY FAIL (已追清信号失配)");
     else if (fire_l3 == 0 || fire_l2 == 0 || fire_l1 == 0 || fire_l0 == 0 || fire_sp == 0)
@@ -4793,6 +5307,10 @@ module tb;
     else if (fire_hit_l3 == 0 || fire_hit_l2 == 0 || fire_hit_l1 == 0
              || fire_hit_l0 == 0 || fire_hit_sp == 0)
       $display("STUDY FAIL (有一级命中一次都没触发 —— 那一段等于什么都没比)");
+    else if (fire_sfence == 0 || fire_hfv == 0 || fire_hfg == 0)
+      $display("STUDY FAIL (有一种栅栏一次都没发 —— §21 那一段等于什么都没比)");
+    else if (fire_wakeup == 0 || fire_wk_write == 0)
+      $display("STUDY FAIL (bitmap wakeup 没走到写 —— §22 那一段等于什么都没比)");
     else
       $display("STUDY PASS");
     $finish;
