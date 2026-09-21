@@ -66,8 +66,6 @@ FAIL_OPEN_LEDGER = {
         'funcReg<->func_s1 9 位；"expect 9 / 0" 只在 puts 里',
     'verif/ut/FCVT/fm_pins_pre.tcl':
         'fmv 旁路两级 128 位；"expect 128 / 0" 只在 puts 里',
-    'verif/ut/Ftq/fm_pins_pre.tcl':
-        '6 组共 2048+2+1024+… 点；每组期望值都只在 puts 里',
     'verif/ut/InstrUncache/fm_pins_pre.tcl':
         '单点 req_addr[0]；失败分支只 puts 一行 *_FAIL',
     'verif/ut/SyncDataModule/fm_pins_pre.tcl':
@@ -130,7 +128,6 @@ CATCH_COUNT_LEDGER = {
     'verif/ut/Bku/fm_pins_pre.tcl',
     'verif/ut/Composer/fm_pins_pre.tcl',
     'verif/ut/FCVT/fm_pins_pre.tcl',
-    'verif/ut/Ftq/fm_pins_pre.tcl',
     'verif/ut/IBuffer/fm_pins.tcl',
     'verif/ut/ICacheCtrlUnit/fm_pins.tcl',
     'verif/ut/ICacheMissUnit/fm_pins.tcl',
@@ -164,6 +161,14 @@ CATCH_COUNT_LEDGER = {
     #     旧: `OE_PINS: 822 / 822 tried, 0 threw` —— 完全没响
     #     新: `OE_PIN_FAIL` + `n=821 miss=1` + error 真的抛出
     #   台账只许缩，这里按闸 G2b 的要求把它们摘掉。
+    # ★2026-09-21 两张表各缩 1 条（agent/ftqprove）★：verif/ut/Ftq/fm_pins_pre.tcl
+    #   6 处 `catch {set_user_match ...}` 已改成取**返回值**计数，并补上
+    #   OE_PIN_BEGIN/END 归因标记与 5 条由计数比较守卫的 `error`
+    #   （总数 3494 + 分族 2048/2/1344/100；用 error 不用 exit，safe interp 隐藏 exit）。
+    #   tclsh 桩正负对照：正 n=3494 miss=0 正常返回；
+    #   负（让第 7 次 set_user_match 返回 0）-> error "FTQ_PIN_MISS=Ftq miss=1 (n=3493)"。
+    #   真 fm_shell 实跑（evidence/6b056a122fad/Ftq）：OE_PIN_END Ftq n=3494 miss=0 expect=3494，
+    #   scripts/check_pin_errors.py --require-pins rc=0（区间内 Error 0 条）。
 }
 
 PASS, FAIL = [], []
