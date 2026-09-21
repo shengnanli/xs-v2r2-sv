@@ -57,7 +57,10 @@ include ../../../scripts/ut_common.mk
 # random 给两个实例**各摇各的**初值，而 PtwCache 有 2749 个不复位寄存器，
 # 两侧初态不同 -> 比出来的差异跟重写无关。+0 与 +1 都是常量档，两侧必然同初态、
 # 又互不相同，是双例化 UT 能用的两档。
-VCS      += +define+SYNTHESIS +vcs+initreg+0
+# ★编译期只能给 +vcs+initreg+random，档位在运行期选★
+# （VCS W-2024.09 直接报 Error-[OBSL_OPT_E]：编译期的 +vcs+initreg+0 是废弃选项。
+#  这里的 random 只是"打开 initreg 这套机制"，实际初值由运行期的 +vcs+initreg+N 定。）
+VCS      += +define+SYNTHESIS +vcs+initreg+random
 SIM_ARGS += +vcs+initreg+0
 
 # 第二档：make run-initreg1 SEED=<n>

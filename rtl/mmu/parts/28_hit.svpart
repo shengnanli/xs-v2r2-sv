@@ -68,16 +68,21 @@
   //   level 3(512G) 只比最高段；2(1G) 比两段；1(2M) 比三段；0(4K/napot) 四段全比。
   //   ★napot 条目的最低段只比 vpn[8:4]★——Svnapot 一条覆盖 16 个 4K 页。
   //   ★查找侧与 sfence 侧共用同一个函数★：两处写两遍是 sfence 失效集合出错的经典来源。
-  function automatic logic sp_level_match(input int i, input logic [VPN_W-1:0] vpn);
+  //  ★表项整条当参数传进来，不在函数体里直接读 sp_entry★：函数体引用模块级信号
+  //  会让 Formality 报 FMR_VLOG-091（"non-local variable ... may cause a simulation
+  //  and synthesis mismatch"），进而汇总成 FM-089。那不是噪声——它说的是综合与仿真
+  //  对函数里的非局部引用理解可能不同。修法是把依赖写进参数表，不是去关警告。
+  function automatic logic sp_level_match(input sp_entry_t e,
+                                          input logic [VPN_W-1:0] vpn);
     logic tm0, tm1, tm2, tm3;
-    tm0 = sp_entry[i].n ? (sp_entry[i].tag[8:4]  == vpn[8:4])
-                        : (sp_entry[i].tag[8:0]  == vpn[8:0]);
-    tm1 =                  sp_entry[i].tag[17:9]  == vpn[17:9];
-    tm2 =                  sp_entry[i].tag[26:18] == vpn[26:18];
-    tm3 =                  sp_entry[i].tag[37:27] == vpn[37:27];
-    return (sp_entry[i].level == 2'd0) ? (tm3 & tm2 & tm1 & tm0)
-         : (sp_entry[i].level == 2'd1) ? (tm3 & tm2 & tm1)
-         : (((sp_entry[i].level != 2'd2) | tm2) & tm3);
+    tm0 = e.n ? (e.tag[8:4]  == vpn[8:4])
+              : (e.tag[8:0]  == vpn[8:0]);
+    tm1 =        e.tag[17:9]  == vpn[17:9];
+    tm2 =        e.tag[26:18] == vpn[26:18];
+    tm3 =        e.tag[37:27] == vpn[37:27];
+    return (e.level == 2'd0) ? (tm3 & tm2 & tm1 & tm0)
+         : (e.level == 2'd1) ? (tm3 & tm2 & tm1)
+         : (((e.level != 2'd2) | tm2) & tm3);
   endfunction
 
   // ---------------------------------------------------------------------------
@@ -124,7 +129,7 @@
         sp_hitvec[i] <=
             (onlyS2 | (sp_entry[i].asid == search_asid_dup0) | sp_entry[i].perm.g)
           & (~(|h_search) | ({2'h0, sp_entry[i].vmid} == io_csr_dup_0_hgatp_vmid))
-          & sp_level_match(i, io_req_bits_req_info_vpn)
+          & sp_level_match(sp_entry[i], io_req_bits_req_info_vpn)
           & spv[i] & (sph[i] == h_search);
     end
   end
@@ -208,22 +213,23 @@
   logic    sp_ishptw_delay;
   logic [1:0] sp_s2x_delay;
 
-  function automatic sp_hit_t sp_pick(input int i);
-    sp_pick.n        = sp_entry[i].n;
-    sp_pick.pbmt     = sp_entry[i].pbmt;
-    sp_pick.ppn      = sp_entry[i].ppn;
-    sp_pick.perm     = sp_entry[i].perm;
-    sp_pick.level    = sp_entry[i].level;
-    sp_pick.v        = sp_entry[i].v;
-    sp_pick.prefetch = sp_entry[i].prefetch;
+  // 同上：整条当参数传，函数体只碰局部量。
+  function automatic sp_hit_t sp_pick(input sp_entry_t e);
+    sp_pick.n        = e.n;
+    sp_pick.pbmt     = e.pbmt;
+    sp_pick.ppn      = e.ppn;
+    sp_pick.perm     = e.perm;
+    sp_pick.level    = e.level;
+    sp_pick.v        = e.v;
+    sp_pick.prefetch = e.prefetch;
   endfunction
 
   always_comb begin
     // ★一个都不命中时取最后一项★（ParallelPriorityMux 的 tie-break）。
     // ★三目而不是 `if`★：同 §16，别把 X 吃掉。
-    sp_hitdata_c = sp_pick(SP_N-1);
+    sp_hitdata_c = sp_pick(sp_entry[SP_N-1]);
     for (int i = SP_N-2; i >= 0; i--)
-      sp_hitdata_c = sp_hitvec[i] ? sp_pick(i) : sp_hitdata_c;
+      sp_hitdata_c = sp_hitvec[i] ? sp_pick(sp_entry[i]) : sp_hitdata_c;
   end
 
   assign sp_hit_or       = |sp_hitvec;
@@ -267,9 +273,17 @@
   logic [1:0]         l1_hvec_delay [L1_WAYS];
   logic [1:0]         l0_hvec_delay [L0_WAYS];
 
-  // bitmap 读路径的两级寄存器（与 SRAM 数据同步；写侧未追清，见 §8）
+  // bitmap 读路径的两级寄存器（与 SRAM 数据同步）
   logic [SECTOR_N-1:0] l0_bitmap_delay [L0_WAYS];
   logic [SECTOR_N-1:0] l0_bitmap_ck    [L0_WAYS];
+
+  // ★l0 的 bitmap 门自己另存了一份 isHptwReq / s2xlate / vpn[2:0]★
+  //  （golden 的 ishptw / s2x_info / pte_index）。它们与流水载荷 check_* 同值、
+  //  同一个使能，看起来是三个多余的寄存器 —— 但 golden 里确实是**另外三个寄存器**，
+  //  合并掉会让那三个 golden 比较点在 FM 上变成 unmatched。照抄这份冗余。
+  logic       l0_ishptw;
+  logic [1:0] l0_s2x;
+  logic [2:0] l0_pte_idx;
 
   l1_line_t l1_resp_r [L1_WAYS];
   l0_line_t l0_resp_r [L0_WAYS];
@@ -336,6 +350,9 @@
       for (int w = 0; w < L0_WAYS; w++) l0_resp_r[w] <= l0_sram_rdata[w];
     end
     if (left_fire_delay) begin
+      l0_ishptw  <= delay_ishptw;
+      l0_s2x     <= delay_s2x;
+      l0_pte_idx <= delay_vpn[2:0];
       for (int w = 0; w < L1_WAYS; w++) begin
         l1_ramdata[w].pbmts    <= l1_resp_h[w].pbmts;
         l1_ramdata[w].ppns     <= l1_resp_h[w].ppns;
@@ -376,7 +393,7 @@
   assign l0_hitdata = (l0_hitvec[0] | l0_hitvec[1])
                     ? (l0_hitvec[0] ? l0_ramdata[0] : l0_ramdata[1])
                     : (l0_hitvec[2] ? l0_ramdata[2] : l0_ramdata[3]);
-  assign l0_hit_onlypf = l0_hitdata.onlypf[check_vpn[2:0]];
+  assign l0_hit_onlypf = l0_hitdata.onlypf[l0_pte_idx];
 
   // ★选路与选位的顺序照抄 golden：先把同一条 PTE 的 4 路 bitmap 位聚成一个 4 宽向量，
   //  再用 hitWay 去索引★。反过来写（先按路取整条 8 位、再取位）在 0/1 上同值，
@@ -388,8 +405,8 @@
       for (int w = 0; w < L0_WAYS; w++) l0_bitmap_by_pte[k][w] = l0_bitmap_ck[w][k];
       l0_bitmap_sel[k] = l0_bitmap_by_pte[k][l0_hitway];
     end
-  assign l0_bitmap_ok  = l0_bitmap_sel[check_vpn[2:0]];
-  assign l0_hit = (bitmap_enable & ((check_s2x != H_ALL_STAGE) | check_ishptw)
+  assign l0_bitmap_ok  = l0_bitmap_sel[l0_pte_idx];
+  assign l0_hit = (bitmap_enable & ((l0_s2x != H_ALL_STAGE) | l0_ishptw)
                    & ~l0_hit_onlypf)
                 ? (l0_hit_raw & l0_bitmap_ok)
                 : l0_hit_raw;
@@ -427,7 +444,7 @@
   //   命中但 bitmap 没过 -> jmp_bitmap_check，让上层去查 bitmap 再回来 wakeup；
   //   onlypf 的条目不查 bitmap（它注定 pf，没有物理页可查）。
   assign l0_jmp_bitmap = bitmap_enable
-                       & ((check_s2x != H_ALL_STAGE) | check_ishptw)
+                       & ((l0_s2x != H_ALL_STAGE) | l0_ishptw)
                        & ~l0_hit_onlypf & l0_hit_raw & ~l0_bitmap_ok;
 
   // RISC-V PTE 位布局：[63]=N [62:61]=PBMT [60:54]=Reserved [53:10]=PPN

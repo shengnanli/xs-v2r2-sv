@@ -29,13 +29,19 @@
 
   // 这一拍的 refill 是否正好覆盖了 (vpn, s2xlate) 这条请求的第 level 级。
   // ★两边都要先过 fold_h★：allStage 的请求查的是它的 stage-1 条目。
+  // ★refill 那三根当参数传，不在函数体里直接读模块级信号★（理由同 §13 的
+  //  sp_level_match：函数体引用非局部量会被 Formality 判 FMR_VLOG-091 / FM-089）。
   function automatic logic refill_bypass(input int              level,
                                          input logic [VPN_W-1:0] vpn,
-                                         input logic [1:0]       s2x);
-    return io_refill_valid
-         & (io_refill_bits_level_dup_0 == 2'(level))
-         & bypass_vpn_match(level, io_refill_bits_req_info_dup_0_vpn, vpn)
-         & (fold_h(s2x) == fold_h(io_refill_bits_req_info_dup_0_s2xlate));
+                                         input logic [1:0]       s2x,
+                                         input logic             rf_valid,
+                                         input logic [1:0]       rf_level,
+                                         input logic [VPN_W-1:0] rf_vpn,
+                                         input logic [1:0]       rf_s2x);
+    return rf_valid
+         & (rf_level == 2'(level))
+         & bypass_vpn_match(level, rf_vpn, vpn)
+         & (fold_h(s2x) == fold_h(rf_s2x));
   endfunction
 
   logic [3:0] bypass_hit_delay, bypass_hit_check, bypass_hit_resp;
@@ -50,9 +56,18 @@
 
   always_comb begin
     for (int i = 0; i < 4; i++) begin
-      bypass_hit_delay[i] = refill_bypass(i, delay_vpn, delay_s2x);
-      bypass_hit_check[i] = refill_bypass(i, check_vpn, check_s2x);
-      bypass_hit_resp [i] = refill_bypass(i, resp_vpn,  resp_s2x);
+      bypass_hit_delay[i] = refill_bypass(i, delay_vpn, delay_s2x,
+                                          io_refill_valid, io_refill_bits_level_dup_0,
+                                          io_refill_bits_req_info_dup_0_vpn,
+                                          io_refill_bits_req_info_dup_0_s2xlate);
+      bypass_hit_check[i] = refill_bypass(i, check_vpn, check_s2x,
+                                          io_refill_valid, io_refill_bits_level_dup_0,
+                                          io_refill_bits_req_info_dup_0_vpn,
+                                          io_refill_bits_req_info_dup_0_s2xlate);
+      bypass_hit_resp [i] = refill_bypass(i, resp_vpn,  resp_s2x,
+                                          io_refill_valid, io_refill_bits_level_dup_0,
+                                          io_refill_bits_req_info_dup_0_vpn,
+                                          io_refill_bits_req_info_dup_0_s2xlate);
     end
   end
 

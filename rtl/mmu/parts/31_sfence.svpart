@@ -176,8 +176,8 @@
   logic [SP_N-1:0] sp_tag_sf, sp_tag_g, sp_asid_or_g;
   always_comb
     for (int i = 0; i < SP_N; i++) begin
-      sp_tag_sf[i]    = sp_level_match(i, sfence_vpn);
-      sp_tag_g [i]    = sp_level_match(i, hfenceg_gvpn);
+      sp_tag_sf[i]    = sp_level_match(sp_entry[i], sfence_vpn);
+      sp_tag_g [i]    = sp_level_match(sp_entry[i], hfenceg_gvpn);
       sp_asid_or_g[i] = sp_asid_hit[i] | sp_entry[i].perm.g;
     end
 

@@ -1,8 +1,11 @@
-// tb.sv —— PtwCache **回填侧 + 命中侧**锥体的定向差分对照（verif/study，不是验收 UT）。
+// tb.sv —— PtwCache 的双例化逐拍差分 UT（verif/ut/PtwCache）。
 //
-// 双例化 golden PtwCache 与派生的 PtwCache_xs，驱动 req / refill / csr
-// （io_sfence_dup_*_valid / *_changed / io_bitmap_wakeup_valid / mbmc_* 全程钉 0），
-// 用层次引用逐拍比两侧：
+// ★这份 tb 原来在 verif/study/PtwCache_refill/，头注释写着"不是验收 UT"，理由是
+//  它只比 l1/l0 SRAM 的 430 根写端口、覆盖面窄得多。★那条理由已经不成立★：
+//  现在它比的是 golden 端口表逐根量出的**全部 236 个输出** + 约 5000 根核内状态，
+//  激励也覆盖了 sfence/hfence 三种栅栏与 bitmap wakeup。所以本轮把它移进 verif/ut/。
+//
+// 双例化 golden PtwCache 与派生的 PtwCache_xs，同拍同激励，用层次引用逐拍比两侧：
 //   A  l1/l0 SRAM 的**全部写端口**（430 根，含 waymask）；
 //   B  核内**回填侧状态**：l3v/l2v/l1v/l0v/spv、l3g..spg、五级 h、
 //      l1asids/l1vmids/l0asids/l0vmids/l0vpns 影子哈希、三个 15 位 PLRU state_reg
@@ -13,11 +16,16 @@
 //      l1/l0 的 v/h/g 延迟向量与 data_resp_r / ramDatas 两级寄存器。
 //   B+C 的两侧层次路径表由 gen_state_cmp.py 生成（支持 --check，已进 gate_all）。
 //
-// ★它不能替代验收 UT★：
-//   · 覆盖到回填与命中，**不含** sfence/hfence 失效、ecc flush、l0_bitmap 写侧、
-//     io.resp 装配、perf；
-//   · 激励里 sfence 与 mbmc 恒 0，所以"sfence 掩码没写""bitmap 门写错"在这里
-//     按构造测不出来 —— 那几段仍在 rtl/mmu/PtwCache.sv 的 §8 未追清清单里。
+//   D  ★全部 236 个输出★（由 gen_state_cmp.py 从 golden 端口表逐根量出，不手抄）；
+//   E  §21 栅栏失效与 §22 bitmap wakeup 的状态：l0BitmapReg（64 组打包）、
+//      bitmap 的两级流水副本、wakeup 三拍流水。
+//
+// ★它仍然不覆盖的★（如实列出，不是"应该没问题"）：
+//   · ecc flush —— golden 里根本没有这段（enablePTWECC=false，golden 全文
+//     grep 不到一个 "ecc"），所以不是缺口；
+//   · MBIST/DFT 通路只被钉 0 驱动，boreChildrenBd_* 那一族输出比的是"两侧都不动"；
+//   · 激励是随机的，不是定向的协议序列 —— 覆盖率由下面几个 fire 计数自证，
+//     没有覆盖率工具的数据。
 //
 // 【激励为什么长这样（两条都是实测逼出来的，别"简化"回去）】
 //   1. vpn 从一个 4 项的池子里取（四分之一仍全随机），csr 每 512 拍才换一次。
@@ -1587,6 +1595,67 @@ module tb;
     if ($urandom_range(0,255) == 0) io_csr_dup_1_vsatp_changed     = 1'b1;
     if ($urandom_range(0,255) == 0) io_csr_dup_2_hgatp_changed     = 1'b1;
     if ($urandom_range(0,255) == 0) io_csr_dup_0_priv_virt_changed = 1'b1;
+  endtask
+
+  // ---- twin-fill：专门造"同一组两路装同一条 tag"的状态（本轮补的判别力缺口）----
+  //
+  //  ★为什么要有它★：l1 的 PLRU 命中更新，golden 写的是 `hitVec[0]`
+  //  （2 路的 access(way)=~way，而 hitWay=~hitVec[0]，两个取反抵消）。
+  //  把它写成 `~hitVec[1]` 在**只有一路命中**时值恒等 —— 两种写法只有在
+  //  l1 两路**同时命中**（hitVec=2'b11）时才不同。
+  //  原来的激励每拍 vpn/s2xlate/ptes 全新随机，产生不出"同组两路同 tag"的状态，
+  //  于是 tb 头注释里的 mutant H6 errors=0 —— 那是**已知盲点，不是通过**。
+  //
+  //  ★造法★：固定一组 (vpn, s2xlate, 干净的 next 型 ptes) 用 128 拍，
+  //  让 l1 回填反复用同一组。第一次落在某一路上；第二次时另一路还无效，
+  //  而 replaceWrapper 优先挑无效路，于是落到另一路 —— 两路同 tag。
+  //  之后拿同一条 vpn 去查，两路就会同时命中。
+  //  同一组激励对 l0（4 路）同样有效，顺带把 l0 的多路同时命中也造出来。
+  logic [37:0]  twin_vpn;
+  logic [1:0]   twin_s2x;
+  logic [511:0] twin_ptes;
+  logic [63:0]  twin_sel;
+  int           twin_cnt;
+  int           fire_l1_double, fire_l0_double;
+
+  //  非叶子、且各项 pf 判据都干净的 PTE：v=1，r/w/x=0，d/a/u/n/pbmt/reserved/
+  //  ppn_high 全清。这样 canRefill 必过、vs 位必为 1，两次回填才真的都写进去。
+  function automatic logic [63:0] clean_next_pte();
+    logic [63:0] p;
+    p        = '0;
+    p[0]     = 1'b1;                                  // v
+    p[45:10] = {4'($urandom()), $urandom()};          // ppn（高 8 位留 0）
+    return p;
+  endfunction
+
+  task automatic drive_twin();
+    if (twin_cnt <= 0) begin
+      twin_cnt = 128;
+      twin_vpn = pick_vpn();
+      twin_s2x = $urandom_range(0,3);
+      for (int k = 0; k < 8; k++) twin_ptes[64*k +: 64] = clean_next_pte();
+      twin_sel = clean_next_pte();
+    end
+    twin_cnt--;
+    // 四分之一的拍用同一组参数回填（dup_1 管 l1、dup_0 管 l0，两份都给同一组，
+    // 这样 l1 与 l0 都能造出多路同 tag；三份 dup 的**独立性**由其余四分之三的拍保住）。
+    if ($urandom_range(0,3) == 0) begin
+      io_refill_valid                       = 1'b1;
+      io_refill_bits_levelOH_l1             = 1'b1;
+      io_refill_bits_levelOH_l0             = 1'b1;
+      io_refill_bits_ptes                   = twin_ptes;
+      io_refill_bits_sel_pte_dup_0          = twin_sel;
+      io_refill_bits_req_info_dup_1_vpn     = twin_vpn;
+      io_refill_bits_req_info_dup_1_s2xlate = twin_s2x;
+      io_refill_bits_req_info_dup_0_vpn     = twin_vpn;
+      io_refill_bits_req_info_dup_0_s2xlate = twin_s2x;
+    end
+    // 四分之一的拍查这条 vpn（s2xlate 必须同源，否则 h/asid 对不上，白填）
+    if ($urandom_range(0,3) == 0) begin
+      io_req_valid                 = 1'b1;
+      io_req_bits_req_info_vpn     = twin_vpn;
+      io_req_bits_req_info_s2xlate = twin_s2x;
+    end
   endtask
 
   //  wakeup：上层查完 bitmap 回来补票。way_info 是 one-hot。
@@ -5257,6 +5326,7 @@ module tb;
     sigFromSrams_bore_16_cgen = '0;
     cg_bore_cgen = '0;
     last_way_info = 4'h0;
+    twin_cnt = 0;
     repeat (4) @(posedge clock);
     reset = 1'b0;
     for (int i = 0; i < 8; i++)
@@ -5271,6 +5341,7 @@ module tb;
       drive_random();
       drive_fence();
       drive_wakeup();
+      drive_twin();
       #1;
       compare_write_ports();
       compare_state();
@@ -5291,6 +5362,10 @@ module tb;
       // 就是 l0BitmapReg 的写使能（PtwCache.sv:13282）。
       if (dut_g._GEN_254) fire_wk_write++;
       if (io_refill_bits_levelOH_l0) last_way_info = g_io_l0_way_info;
+      // ★多路同时命中的计数★：H6 那个 mutant 只在这种拍上才与 golden 不同。
+      if (dut_g.l1_hitVec_0 & dut_g.l1_hitVec_1) fire_l1_double++;
+      if (dut_g.l0_hitVec_0 + dut_g.l0_hitVec_1
+          + dut_g.l0_hitVec_2 + dut_g.l0_hitVec_3 >= 2) fire_l0_double++;
     end
     $display("PtwCache_refill study: cycles=%0d checks=%0d errors=%0d",
              ncycles, checks, errors);
@@ -5300,6 +5375,8 @@ module tb;
              fire_hit_l3, fire_hit_l2, fire_hit_l1, fire_hit_l0, fire_hit_sp);
     $display("PtwCache_refill fence: sfence=%0d hfence.vvma=%0d hfence.gvma=%0d wakeup=%0d wakeup_write=%0d",
              fire_sfence, fire_hfv, fire_hfg, fire_wakeup, fire_wk_write);
+    $display("PtwCache_refill double-hit: l1=%0d l0=%0d",
+             fire_l1_double, fire_l0_double);
     if (errors != 0)
       $display("STUDY FAIL (已追清信号失配)");
     else if (fire_l3 == 0 || fire_l2 == 0 || fire_l1 == 0 || fire_l0 == 0 || fire_sp == 0)
@@ -5311,8 +5388,23 @@ module tb;
       $display("STUDY FAIL (有一种栅栏一次都没发 —— §21 那一段等于什么都没比)");
     else if (fire_wakeup == 0 || fire_wk_write == 0)
       $display("STUDY FAIL (bitmap wakeup 没走到写 —— §22 那一段等于什么都没比)");
+    else if (fire_l1_double == 0)
+      $display("STUDY FAIL (l1 两路从没同时命中 —— H6 那类 PLRU 写法错按构造测不出来)");
     else
       $display("STUDY PASS");
+    // ut_common.mk 的 run 目标按 "TEST PASSED" 判绿；上面那几行 STUDY 判据
+    // 一条不过就不打这行。★两处判据必须同源★，所以这里重算一遍同一个布尔式，
+    // 不许在上面打完 STUDY PASS 之后无条件补一行 TEST PASSED。
+    if (errors == 0
+        && fire_l3 != 0 && fire_l2 != 0 && fire_l1 != 0 && fire_l0 != 0 && fire_sp != 0
+        && fire_hit_l3 != 0 && fire_hit_l2 != 0 && fire_hit_l1 != 0
+        && fire_hit_l0 != 0 && fire_hit_sp != 0
+        && fire_sfence != 0 && fire_hfv != 0 && fire_hfg != 0
+        && fire_wakeup != 0 && fire_wk_write != 0
+        && fire_l1_double != 0)
+      $display("TEST PASSED");
+    else
+      $display("TEST FAILED");
     $finish;
   end
 endmodule

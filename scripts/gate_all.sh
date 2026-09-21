@@ -153,7 +153,7 @@ done
 # UT 目录下的生成器不在 check_gen_gate_complete.py 的扫描范围（它只扫 scripts/gen_*.py），
 # 所以挂了 --check 的要手动登记。gen_tb_variant.py 生成 tb_1/tb_2/tb_3.sv 三份 tb。
 for g in verif/ut/TlbStorageWrapper/gen_tb_variant.py \
-         verif/study/PtwCache_refill/gen_state_cmp.py; do
+         verif/ut/PtwCache/gen_state_cmp.py; do
   [ -f "$g" ] && run "UT tb 生成器幂等 $(basename $(dirname $g))" bash -c "cd $(dirname $g) && python3 $(basename $g) --check"
 done
 # 闸的完备性闸：任何 scripts/gen_*.py 要么进上面的列表，要么在

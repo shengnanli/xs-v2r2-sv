@@ -118,7 +118,7 @@
 //     · 8 个 perf 计数器。
 //   ★所以当前这份核只在"从不发 sfence、从不 ecc 出错、BME=0"的激励下与 golden 同态，
 //    而且它的 io.resp 仍然全是 0 —— 任何人现在引用它的输出都会拿到错值。★
-// 本文件导航（共 6439 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
+// 本文件导航（共 6471 行；按"一个 golden 模块一个文件"的规范不拆分，用下面的分节定位）：
 //   L56    它在 MMU 里的位置
 //   L63    五级存储
 //   L76    四级流水
@@ -145,20 +145,20 @@
 //   L1417  §9.1 XORFold —— 影子元数据存的是折叠哈希，不是原值
 //   L2030  §12 流水载荷与两个 1 拍脉冲
 //   L2077  §13 命中判定的两个公共写法
-//   L2111  §14 l3 / l2 命中
-//   L2224  §15 sp 命中的取数
-//   L2278  §16 l1 / l0 命中
-//   L2425  §16.1 命中选数 —— stageCheck 级把"命中那一路"的字段挑出来
-//   L2914  §17 refill bypass —— "你要的那条，这一拍正好在回填路上"
-//   L2974  §18 stageResp 的命中结果快照 resp_res
-//   L2986  §19 io.resp 装配
-//   L3460  §20 perf 事件
-//   L3489  §21 sfence / hfence 失效
-//   L3671  §21.1 五级的失效掩码 —— "这一拍要把哪些位从 v 向量里打掉"
-//   L3750  §22 bitmap wakeup —— 上层查完 bitmap 回来"补票"
-//   L3821  §11 时序：两个 always_ff，复位域划分照抄 golden
-//   L4138  §8 未追清清单 —— ★占位信号，当前值无意义★
-//   L4154  §9 子模块例化
+//   L2116  §14 l3 / l2 命中
+//   L2229  §15 sp 命中的取数
+//   L2284  §16 l1 / l0 命中
+//   L2442  §16.1 命中选数 —— stageCheck 级把"命中那一路"的字段挑出来
+//   L2931  §17 refill bypass —— "你要的那条，这一拍正好在回填路上"
+//   L3006  §18 stageResp 的命中结果快照 resp_res
+//   L3018  §19 io.resp 装配
+//   L3492  §20 perf 事件
+//   L3521  §21 sfence / hfence 失效
+//   L3703  §21.1 五级的失效掩码 —— "这一拍要把哪些位从 v 向量里打掉"
+//   L3782  §22 bitmap wakeup —— 上层查完 bitmap 回来"补票"
+//   L3853  §11 时序：两个 always_ff，复位域划分照抄 golden
+//   L4170  §8 未追清清单 —— ★占位信号，当前值无意义★
+//   L4186  §9 子模块例化
 //
 
 // =============================================================================
@@ -2095,16 +2095,21 @@ module xs_PtwCache_core(
   //   level 3(512G) 只比最高段；2(1G) 比两段；1(2M) 比三段；0(4K/napot) 四段全比。
   //   ★napot 条目的最低段只比 vpn[8:4]★——Svnapot 一条覆盖 16 个 4K 页。
   //   ★查找侧与 sfence 侧共用同一个函数★：两处写两遍是 sfence 失效集合出错的经典来源。
-  function automatic logic sp_level_match(input int i, input logic [VPN_W-1:0] vpn);
+  //  ★表项整条当参数传进来，不在函数体里直接读 sp_entry★：函数体引用模块级信号
+  //  会让 Formality 报 FMR_VLOG-091（"non-local variable ... may cause a simulation
+  //  and synthesis mismatch"），进而汇总成 FM-089。那不是噪声——它说的是综合与仿真
+  //  对函数里的非局部引用理解可能不同。修法是把依赖写进参数表，不是去关警告。
+  function automatic logic sp_level_match(input sp_entry_t e,
+                                          input logic [VPN_W-1:0] vpn);
     logic tm0, tm1, tm2, tm3;
-    tm0 = sp_entry[i].n ? (sp_entry[i].tag[8:4]  == vpn[8:4])
-                        : (sp_entry[i].tag[8:0]  == vpn[8:0]);
-    tm1 =                  sp_entry[i].tag[17:9]  == vpn[17:9];
-    tm2 =                  sp_entry[i].tag[26:18] == vpn[26:18];
-    tm3 =                  sp_entry[i].tag[37:27] == vpn[37:27];
-    return (sp_entry[i].level == 2'd0) ? (tm3 & tm2 & tm1 & tm0)
-         : (sp_entry[i].level == 2'd1) ? (tm3 & tm2 & tm1)
-         : (((sp_entry[i].level != 2'd2) | tm2) & tm3);
+    tm0 = e.n ? (e.tag[8:4]  == vpn[8:4])
+              : (e.tag[8:0]  == vpn[8:0]);
+    tm1 =        e.tag[17:9]  == vpn[17:9];
+    tm2 =        e.tag[26:18] == vpn[26:18];
+    tm3 =        e.tag[37:27] == vpn[37:27];
+    return (e.level == 2'd0) ? (tm3 & tm2 & tm1 & tm0)
+         : (e.level == 2'd1) ? (tm3 & tm2 & tm1)
+         : (((e.level != 2'd2) | tm2) & tm3);
   endfunction
 
   // ---------------------------------------------------------------------------
@@ -2151,7 +2156,7 @@ module xs_PtwCache_core(
         sp_hitvec[i] <=
             (onlyS2 | (sp_entry[i].asid == search_asid_dup0) | sp_entry[i].perm.g)
           & (~(|h_search) | ({2'h0, sp_entry[i].vmid} == io_csr_dup_0_hgatp_vmid))
-          & sp_level_match(i, io_req_bits_req_info_vpn)
+          & sp_level_match(sp_entry[i], io_req_bits_req_info_vpn)
           & spv[i] & (sph[i] == h_search);
     end
   end
@@ -2235,22 +2240,23 @@ module xs_PtwCache_core(
   logic    sp_ishptw_delay;
   logic [1:0] sp_s2x_delay;
 
-  function automatic sp_hit_t sp_pick(input int i);
-    sp_pick.n        = sp_entry[i].n;
-    sp_pick.pbmt     = sp_entry[i].pbmt;
-    sp_pick.ppn      = sp_entry[i].ppn;
-    sp_pick.perm     = sp_entry[i].perm;
-    sp_pick.level    = sp_entry[i].level;
-    sp_pick.v        = sp_entry[i].v;
-    sp_pick.prefetch = sp_entry[i].prefetch;
+  // 同上：整条当参数传，函数体只碰局部量。
+  function automatic sp_hit_t sp_pick(input sp_entry_t e);
+    sp_pick.n        = e.n;
+    sp_pick.pbmt     = e.pbmt;
+    sp_pick.ppn      = e.ppn;
+    sp_pick.perm     = e.perm;
+    sp_pick.level    = e.level;
+    sp_pick.v        = e.v;
+    sp_pick.prefetch = e.prefetch;
   endfunction
 
   always_comb begin
     // ★一个都不命中时取最后一项★（ParallelPriorityMux 的 tie-break）。
     // ★三目而不是 `if`★：同 §16，别把 X 吃掉。
-    sp_hitdata_c = sp_pick(SP_N-1);
+    sp_hitdata_c = sp_pick(sp_entry[SP_N-1]);
     for (int i = SP_N-2; i >= 0; i--)
-      sp_hitdata_c = sp_hitvec[i] ? sp_pick(i) : sp_hitdata_c;
+      sp_hitdata_c = sp_hitvec[i] ? sp_pick(sp_entry[i]) : sp_hitdata_c;
   end
 
   assign sp_hit_or       = |sp_hitvec;
@@ -2294,9 +2300,17 @@ module xs_PtwCache_core(
   logic [1:0]         l1_hvec_delay [L1_WAYS];
   logic [1:0]         l0_hvec_delay [L0_WAYS];
 
-  // bitmap 读路径的两级寄存器（与 SRAM 数据同步；写侧未追清，见 §8）
+  // bitmap 读路径的两级寄存器（与 SRAM 数据同步）
   logic [SECTOR_N-1:0] l0_bitmap_delay [L0_WAYS];
   logic [SECTOR_N-1:0] l0_bitmap_ck    [L0_WAYS];
+
+  // ★l0 的 bitmap 门自己另存了一份 isHptwReq / s2xlate / vpn[2:0]★
+  //  （golden 的 ishptw / s2x_info / pte_index）。它们与流水载荷 check_* 同值、
+  //  同一个使能，看起来是三个多余的寄存器 —— 但 golden 里确实是**另外三个寄存器**，
+  //  合并掉会让那三个 golden 比较点在 FM 上变成 unmatched。照抄这份冗余。
+  logic       l0_ishptw;
+  logic [1:0] l0_s2x;
+  logic [2:0] l0_pte_idx;
 
   l1_line_t l1_resp_r [L1_WAYS];
   l0_line_t l0_resp_r [L0_WAYS];
@@ -2363,6 +2377,9 @@ module xs_PtwCache_core(
       for (int w = 0; w < L0_WAYS; w++) l0_resp_r[w] <= l0_sram_rdata[w];
     end
     if (left_fire_delay) begin
+      l0_ishptw  <= delay_ishptw;
+      l0_s2x     <= delay_s2x;
+      l0_pte_idx <= delay_vpn[2:0];
       for (int w = 0; w < L1_WAYS; w++) begin
         l1_ramdata[w].pbmts    <= l1_resp_h[w].pbmts;
         l1_ramdata[w].ppns     <= l1_resp_h[w].ppns;
@@ -2403,7 +2420,7 @@ module xs_PtwCache_core(
   assign l0_hitdata = (l0_hitvec[0] | l0_hitvec[1])
                     ? (l0_hitvec[0] ? l0_ramdata[0] : l0_ramdata[1])
                     : (l0_hitvec[2] ? l0_ramdata[2] : l0_ramdata[3]);
-  assign l0_hit_onlypf = l0_hitdata.onlypf[check_vpn[2:0]];
+  assign l0_hit_onlypf = l0_hitdata.onlypf[l0_pte_idx];
 
   // ★选路与选位的顺序照抄 golden：先把同一条 PTE 的 4 路 bitmap 位聚成一个 4 宽向量，
   //  再用 hitWay 去索引★。反过来写（先按路取整条 8 位、再取位）在 0/1 上同值，
@@ -2415,8 +2432,8 @@ module xs_PtwCache_core(
       for (int w = 0; w < L0_WAYS; w++) l0_bitmap_by_pte[k][w] = l0_bitmap_ck[w][k];
       l0_bitmap_sel[k] = l0_bitmap_by_pte[k][l0_hitway];
     end
-  assign l0_bitmap_ok  = l0_bitmap_sel[check_vpn[2:0]];
-  assign l0_hit = (bitmap_enable & ((check_s2x != H_ALL_STAGE) | check_ishptw)
+  assign l0_bitmap_ok  = l0_bitmap_sel[l0_pte_idx];
+  assign l0_hit = (bitmap_enable & ((l0_s2x != H_ALL_STAGE) | l0_ishptw)
                    & ~l0_hit_onlypf)
                 ? (l0_hit_raw & l0_bitmap_ok)
                 : l0_hit_raw;
@@ -2454,7 +2471,7 @@ module xs_PtwCache_core(
   //   命中但 bitmap 没过 -> jmp_bitmap_check，让上层去查 bitmap 再回来 wakeup；
   //   onlypf 的条目不查 bitmap（它注定 pf，没有物理页可查）。
   assign l0_jmp_bitmap = bitmap_enable
-                       & ((check_s2x != H_ALL_STAGE) | check_ishptw)
+                       & ((l0_s2x != H_ALL_STAGE) | l0_ishptw)
                        & ~l0_hit_onlypf & l0_hit_raw & ~l0_bitmap_ok;
 
   // RISC-V PTE 位布局：[63]=N [62:61]=PBMT [60:54]=Reserved [53:10]=PPN
@@ -2940,13 +2957,19 @@ module xs_PtwCache_core(
 
   // 这一拍的 refill 是否正好覆盖了 (vpn, s2xlate) 这条请求的第 level 级。
   // ★两边都要先过 fold_h★：allStage 的请求查的是它的 stage-1 条目。
+  // ★refill 那三根当参数传，不在函数体里直接读模块级信号★（理由同 §13 的
+  //  sp_level_match：函数体引用非局部量会被 Formality 判 FMR_VLOG-091 / FM-089）。
   function automatic logic refill_bypass(input int              level,
                                          input logic [VPN_W-1:0] vpn,
-                                         input logic [1:0]       s2x);
-    return io_refill_valid
-         & (io_refill_bits_level_dup_0 == 2'(level))
-         & bypass_vpn_match(level, io_refill_bits_req_info_dup_0_vpn, vpn)
-         & (fold_h(s2x) == fold_h(io_refill_bits_req_info_dup_0_s2xlate));
+                                         input logic [1:0]       s2x,
+                                         input logic             rf_valid,
+                                         input logic [1:0]       rf_level,
+                                         input logic [VPN_W-1:0] rf_vpn,
+                                         input logic [1:0]       rf_s2x);
+    return rf_valid
+         & (rf_level == 2'(level))
+         & bypass_vpn_match(level, rf_vpn, vpn)
+         & (fold_h(s2x) == fold_h(rf_s2x));
   endfunction
 
   logic [3:0] bypass_hit_delay, bypass_hit_check, bypass_hit_resp;
@@ -2961,9 +2984,18 @@ module xs_PtwCache_core(
 
   always_comb begin
     for (int i = 0; i < 4; i++) begin
-      bypass_hit_delay[i] = refill_bypass(i, delay_vpn, delay_s2x);
-      bypass_hit_check[i] = refill_bypass(i, check_vpn, check_s2x);
-      bypass_hit_resp [i] = refill_bypass(i, resp_vpn,  resp_s2x);
+      bypass_hit_delay[i] = refill_bypass(i, delay_vpn, delay_s2x,
+                                          io_refill_valid, io_refill_bits_level_dup_0,
+                                          io_refill_bits_req_info_dup_0_vpn,
+                                          io_refill_bits_req_info_dup_0_s2xlate);
+      bypass_hit_check[i] = refill_bypass(i, check_vpn, check_s2x,
+                                          io_refill_valid, io_refill_bits_level_dup_0,
+                                          io_refill_bits_req_info_dup_0_vpn,
+                                          io_refill_bits_req_info_dup_0_s2xlate);
+      bypass_hit_resp [i] = refill_bypass(i, resp_vpn,  resp_s2x,
+                                          io_refill_valid, io_refill_bits_level_dup_0,
+                                          io_refill_bits_req_info_dup_0_vpn,
+                                          io_refill_bits_req_info_dup_0_s2xlate);
     end
   end
 
@@ -3662,8 +3694,8 @@ module xs_PtwCache_core(
   logic [SP_N-1:0] sp_tag_sf, sp_tag_g, sp_asid_or_g;
   always_comb
     for (int i = 0; i < SP_N; i++) begin
-      sp_tag_sf[i]    = sp_level_match(i, sfence_vpn);
-      sp_tag_g [i]    = sp_level_match(i, hfenceg_gvpn);
+      sp_tag_sf[i]    = sp_level_match(sp_entry[i], sfence_vpn);
+      sp_tag_g [i]    = sp_level_match(sp_entry[i], hfenceg_gvpn);
       sp_asid_or_g[i] = sp_asid_hit[i] | sp_entry[i].perm.g;
     end
 
