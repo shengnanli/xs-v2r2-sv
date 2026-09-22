@@ -1,0 +1,1054 @@
+ATTENTION: Only a subset of the compare points was verified.
+Found 134 Required Inputs
+--------------------------------
+A required input is one that is designated as required
+for all failing patterns for one or more cpoints and fans out 
+to more failing than passing points.
+This implies that it may be driving downstream logic that is related to
+the failure(s)
+--------------------------------
+i:/WORK/NewDispatch/lsqEnqCtrl/u_core/canAcceptReg_reg
+    Fans out to 6 failing and 2 passing points and has
+    logic value '1' for 6 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/u_core/conserveFlowTotal_reg[0][4]
+    Fans out to 6 failing and 2 passing points and has
+    logic value '0' for 4 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/u_core/conserveFlowTotal_reg[1][1]
+    Fans out to 6 failing and 1 passing points and has
+    logic value '0' for 3 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/u_core/conserveFlowTotal_reg[1][2]
+    Fans out to 6 failing and 1 passing points and has
+    logic value '0' for 3 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/u_core/conserveFlowTotal_reg[1][5]
+    Fans out to 6 failing and 1 passing points and has
+    logic value '0' for 4 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/u_core/conserveFlowTotal_reg[2][1]
+    Fans out to 6 failing and 0 passing points and has
+    logic value '0' for 5 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/u_core/conserveFlowTotal_reg[2][2]
+    Fans out to 6 failing and 0 passing points and has
+    logic value '0' for 5 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/u_core/conserveFlowTotal_reg[2][3]
+    Fans out to 6 failing and 0 passing points and has
+    logic value '0' for 5 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/u_core/conserveFlowTotal_reg[2][5]
+    Fans out to 6 failing and 0 passing points and has
+    logic value '0' for 6 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/lsqEnqCtrl/u_core/sqCounter_reg[2]
+    Fans out to 6 failing and 2 passing points and has
+    logic value '0' for 5 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/lsqEnqCtrl/u_core/sqCounter_reg[3]
+    Fans out to 6 failing and 2 passing points and has
+    logic value '0' for 5 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/lsqEnqCtrl/u_core/sqCounter_reg[5]
+    Fans out to 6 failing and 2 passing points and has
+    logic value '0' for 6 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[0][11]
+    Fans out to 6 failing and 2 passing points and has
+    logic value '0' for 6 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[0][2]
+    Fans out to 6 failing and 2 passing points and has
+    logic value '0' for 6 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[0][4]
+    Fans out to 6 failing and 2 passing points and has
+    logic value '0' for 6 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[1][0]
+    Fans out to 6 failing and 1 passing points and has
+    logic value '0' for 6 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[1][14]
+    Fans out to 6 failing and 1 passing points and has
+    logic value '0' for 6 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[1][6]
+    Fans out to 6 failing and 1 passing points and has
+    logic value '0' for 5 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[2][0]
+    Fans out to 6 failing and 0 passing points and has
+    logic value '0' for 6 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/io_enqRob_canAccept
+    Fans out to 6 failing and 2 passing points and has
+    logic value '1' for 6 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/io_fromRename_0_bits_blockBackward
+    Fans out to 6 failing and 1 passing points and has
+    logic value '0' for 4 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/io_fromRename_0_bits_waitForward
+    Fans out to 6 failing and 2 passing points and has
+    logic value '0' for 4 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/io_fromRename_1_bits_blockBackward
+    Fans out to 6 failing and 0 passing points and has
+    logic value '0' for 4 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/io_fromRename_1_bits_fuType[34]
+    Fans out to 6 failing and 1 passing points and has
+    logic value '1' for 3 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/io_fromRename_1_bits_waitForward
+    Fans out to 6 failing and 1 passing points and has
+    logic value '0' for 4 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/io_fromRename_2_bits_fuType[32]
+    Fans out to 6 failing and 0 passing points and has
+    logic value '1' for 3 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/io_fromRename_2_bits_waitForward
+    Fans out to 6 failing and 0 passing points and has
+    logic value '0' for 6 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/io_fromRename_2_valid
+    Fans out to 6 failing and 0 passing points and has
+    logic value '1' for 6 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/io_toIssueQueues_0_ready
+    Fans out to 6 failing and 2 passing points and has
+    logic value '1' for 4 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/io_toIssueQueues_10_ready
+    Fans out to 6 failing and 2 passing points and has
+    logic value '1' for 5 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/io_toIssueQueues_12_ready
+    Fans out to 6 failing and 2 passing points and has
+    logic value '1' for 6 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/io_toIssueQueues_14_ready
+    Fans out to 6 failing and 2 passing points and has
+    logic value '1' for 5 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/io_toIssueQueues_18_ready
+    Fans out to 6 failing and 2 passing points and has
+    logic value '1' for 5 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/io_toIssueQueues_20_ready
+    Fans out to 6 failing and 2 passing points and has
+    logic value '1' for 4 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/io_toIssueQueues_24_ready
+    Fans out to 6 failing and 2 passing points and has
+    logic value '1' for 6 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/io_toIssueQueues_2_ready
+    Fans out to 6 failing and 2 passing points and has
+    logic value '1' for 5 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/io_toIssueQueues_32_ready
+    Fans out to 6 failing and 2 passing points and has
+    logic value '1' for 5 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/io_toIssueQueues_6_ready
+    Fans out to 6 failing and 2 passing points and has
+    logic value '1' for 4 compare point(s):
+        i:/WORK/NewDispatch/io_enqRob_req_2_valid
+        i:/WORK/NewDispatch/io_fromRename_2_ready
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[0][0]
+    Fans out to 6 failing and 2 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[1][9]
+    Fans out to 6 failing and 1 passing points and has
+    logic value '0' for 3 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[3][0]
+    Fans out to 4 failing and 0 passing points and has
+    logic value '0' for 3 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[3][10]
+    Fans out to 4 failing and 0 passing points and has
+    logic value '0' for 3 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[3][11]
+    Fans out to 4 failing and 0 passing points and has
+    logic value '0' for 3 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[3][16]
+    Fans out to 4 failing and 0 passing points and has
+    logic value '0' for 3 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[3][1]
+    Fans out to 4 failing and 0 passing points and has
+    logic value '0' for 3 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[3][2]
+    Fans out to 4 failing and 0 passing points and has
+    logic value '0' for 3 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[3][3]
+    Fans out to 4 failing and 0 passing points and has
+    logic value '0' for 3 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[3][4]
+    Fans out to 4 failing and 0 passing points and has
+    logic value '0' for 3 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[3][5]
+    Fans out to 4 failing and 0 passing points and has
+    logic value '0' for 3 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[3][7]
+    Fans out to 4 failing and 0 passing points and has
+    logic value '0' for 3 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[3][8]
+    Fans out to 4 failing and 0 passing points and has
+    logic value '0' for 3 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[3][9]
+    Fans out to 4 failing and 0 passing points and has
+    logic value '0' for 3 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/io_fromRename_2_bits_blockBackward
+    Fans out to 4 failing and 0 passing points and has
+    logic value '0' for 3 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/io_fromRename_3_valid
+    Fans out to 4 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_toRenameAllFire
+
+-----------
+i:/WORK/NewDispatch/io_toIssueQueues_16_ready
+    Fans out to 6 failing and 2 passing points and has
+    logic value '1' for 3 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/io_toIssueQueues_22_ready
+    Fans out to 6 failing and 2 passing points and has
+    logic value '1' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+
+-----------
+i:/WORK/NewDispatch/io_toIssueQueues_26_ready
+    Fans out to 6 failing and 2 passing points and has
+    logic value '1' for 3 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/io_toIssueQueues_28_ready
+    Fans out to 6 failing and 2 passing points and has
+    logic value '1' for 3 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/io_toIssueQueues_30_ready
+    Fans out to 6 failing and 2 passing points and has
+    logic value '1' for 3 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_3_ready
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/conserveFlowTotal_reg[2][0]
+    Fans out to 6 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/conserveFlowTotal_reg[3][0]
+    Fans out to 4 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/conserveFlowTotal_reg[3][1]
+    Fans out to 4 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/conserveFlowTotal_reg[3][2]
+    Fans out to 4 failing and 0 passing points and has
+    logic value '1' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/conserveFlowTotal_reg[3][3]
+    Fans out to 4 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/conserveFlowTotal_reg[3][4]
+    Fans out to 4 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/conserveFlowTotal_reg[3][5]
+    Fans out to 4 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/conserveFlowTotal_reg[3][6]
+    Fans out to 4 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/conserveFlowTotal_reg[4][0]
+    Fans out to 3 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/conserveFlowTotal_reg[4][1]
+    Fans out to 3 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/conserveFlowTotal_reg[4][2]
+    Fans out to 3 failing and 0 passing points and has
+    logic value '1' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/conserveFlowTotal_reg[4][3]
+    Fans out to 3 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/conserveFlowTotal_reg[4][4]
+    Fans out to 3 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/conserveFlowTotal_reg[4][5]
+    Fans out to 3 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/conserveFlowTotal_reg[4][6]
+    Fans out to 3 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/lsqEnqCtrl/u_core/lqCounter_reg[0]
+    Fans out to 6 failing and 2 passing points and has
+    logic value '1' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/lsqEnqCtrl/u_core/lqCounter_reg[1]
+    Fans out to 6 failing and 2 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/lsqEnqCtrl/u_core/lqCounter_reg[2]
+    Fans out to 6 failing and 2 passing points and has
+    logic value '1' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/lsqEnqCtrl/u_core/lqCounter_reg[3]
+    Fans out to 6 failing and 2 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/lsqEnqCtrl/u_core/lqCounter_reg[4]
+    Fans out to 6 failing and 2 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/lsqEnqCtrl/u_core/lqCounter_reg[5]
+    Fans out to 6 failing and 2 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/lsqEnqCtrl/u_core/lqCounter_reg[6]
+    Fans out to 6 failing and 2 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/lsqEnqCtrl/u_core/sqCounter_reg[0]
+    Fans out to 6 failing and 2 passing points and has
+    logic value '1' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[4][0]
+    Fans out to 3 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[4][10]
+    Fans out to 3 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[4][11]
+    Fans out to 3 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[4][12]
+    Fans out to 3 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[4][13]
+    Fans out to 3 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[4][14]
+    Fans out to 3 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[4][15]
+    Fans out to 3 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[4][16]
+    Fans out to 3 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[4][1]
+    Fans out to 3 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[4][2]
+    Fans out to 3 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[4][3]
+    Fans out to 3 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[4][4]
+    Fans out to 3 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[4][5]
+    Fans out to 3 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[4][7]
+    Fans out to 3 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[4][8]
+    Fans out to 3 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[4][9]
+    Fans out to 3 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/io_fromRename_2_bits_fuType[34]
+    Fans out to 6 failing and 0 passing points and has
+    logic value '1' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/io_fromRename_3_bits_blockBackward
+    Fans out to 3 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/io_fromRename_3_bits_fuType[16]
+    Fans out to 4 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/io_fromRename_3_bits_fuType[32]
+    Fans out to 4 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/io_fromRename_3_bits_fuType[34]
+    Fans out to 4 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/io_fromRename_3_bits_waitForward
+    Fans out to 4 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/io_fromRename_4_bits_fuType[16]
+    Fans out to 3 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/io_fromRename_4_bits_fuType[32]
+    Fans out to 3 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/io_fromRename_4_bits_fuType[34]
+    Fans out to 3 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/io_fromRename_4_bits_waitForward
+    Fans out to 3 failing and 0 passing points and has
+    logic value '0' for 2 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_4_ready
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/conserveFlowTotal_reg[5][2]
+    Fans out to 2 failing and 0 passing points and has
+    logic value '0' for 1 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/conserveFlowTotal_reg[5][3]
+    Fans out to 2 failing and 0 passing points and has
+    logic value '0' for 1 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/conserveFlowTotal_reg[5][4]
+    Fans out to 2 failing and 0 passing points and has
+    logic value '0' for 1 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/conserveFlowTotal_reg[5][5]
+    Fans out to 2 failing and 0 passing points and has
+    logic value '0' for 1 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/conserveFlowTotal_reg[5][6]
+    Fans out to 2 failing and 0 passing points and has
+    logic value '0' for 1 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[5][0]
+    Fans out to 2 failing and 0 passing points and has
+    logic value '0' for 1 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[5][10]
+    Fans out to 2 failing and 0 passing points and has
+    logic value '0' for 1 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[5][11]
+    Fans out to 2 failing and 0 passing points and has
+    logic value '0' for 1 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[5][12]
+    Fans out to 2 failing and 0 passing points and has
+    logic value '0' for 1 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[5][13]
+    Fans out to 2 failing and 0 passing points and has
+    logic value '0' for 1 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[5][14]
+    Fans out to 2 failing and 0 passing points and has
+    logic value '0' for 1 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[5][15]
+    Fans out to 2 failing and 0 passing points and has
+    logic value '0' for 1 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[5][16]
+    Fans out to 2 failing and 0 passing points and has
+    logic value '0' for 1 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[5][1]
+    Fans out to 2 failing and 0 passing points and has
+    logic value '0' for 1 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[5][2]
+    Fans out to 2 failing and 0 passing points and has
+    logic value '0' for 1 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[5][3]
+    Fans out to 2 failing and 0 passing points and has
+    logic value '0' for 1 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[5][4]
+    Fans out to 2 failing and 0 passing points and has
+    logic value '0' for 1 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[5][5]
+    Fans out to 2 failing and 0 passing points and has
+    logic value '0' for 1 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[5][6]
+    Fans out to 2 failing and 0 passing points and has
+    logic value '0' for 1 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[5][7]
+    Fans out to 2 failing and 0 passing points and has
+    logic value '0' for 1 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/u_core/uopSelIQ_reg[5][9]
+    Fans out to 2 failing and 0 passing points and has
+    logic value '0' for 1 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/io_fromRename_4_bits_blockBackward
+    Fans out to 2 failing and 0 passing points and has
+    logic value '0' for 1 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/io_fromRename_5_bits_fuType[16]
+    Fans out to 2 failing and 0 passing points and has
+    logic value '0' for 1 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/io_fromRename_5_bits_fuType[32]
+    Fans out to 2 failing and 0 passing points and has
+    logic value '0' for 1 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/io_fromRename_5_bits_fuType[34]
+    Fans out to 2 failing and 0 passing points and has
+    logic value '0' for 1 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+i:/WORK/NewDispatch/io_fromRename_5_bits_waitForward
+    Fans out to 2 failing and 0 passing points and has
+    logic value '0' for 1 compare point(s):
+        i:/WORK/NewDispatch/io_fromRename_5_ready
+
+-----------
+--------------------------------
+****************************************************************************************
+Analysis Completed
+1

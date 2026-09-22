@@ -111,3 +111,39 @@ bit 6 由此在两侧都是结构常量（字面 0），不再有自由寄存器
 
 ## 4. 实测（待填）
 
+### 4.1 pre-fix：对 ready_2..5 的局部验证 + analyze_points + diagnose（FM 自己的话）
+
+跑在 **修法之前** 的字节上（impl 11 个文件的快照 = main `b804a4f00c5d3f736dbbecc8386317fadb7fdab1`，
+摘要见 `evidence/b804a4f00c5d/NewDispatch-nd3-analyze/impl_snapshot.sha256`），脚本 = `scripts/fm_eq.tcl`
+截到 `verify` 之前 + `set_verify_points` 8 个点（`analyze.tcl` 同目录归档）。可复跑：
+
+    cd <scratch> && FM_TOP=NewDispatch FM_MODE=diagnostic-full FM_FAILING_LIMIT=0 XSSV_HOME=<wt> \
+      FM_REF_SRCS="<golden 10 文件>" FM_IMPL_SRCS="<快照 11 文件>" \
+      fm_shell -64 -work_path fm_work/NewDispatch -file analyze.tcl < /dev/null > fm_work/NewDispatch/fm.log 2>&1
+
+* 局部 verify（只验这 8 个点）：**passing 2 / failing 6**：
+  `io_fromRename_0_ready`、`io_fromRename_1_ready` passing；
+  `io_fromRename_{2,3,4,5}_ready`、`io_toRenameAllFire`、`io_enqRob_req_2_valid` failing —— 与全量诊断跑的分界一致。
+* `report_failing_points -inputs unmatched`：**6 个失败点全部被列出**（= 锥里含 unmatched 输入点）；
+  `-inputs undriven`：0 个。
+* `diagnose -all`（impl 侧）→ `report_error_candidates`：
+
+      Single error detected in implementation.
+      Recommended error candidate:
+          Prim    u_core/conserveFlowTotal_reg[2][6]
+
+  ★FM 自己把唯一错误候选钉在这一个寄存器位上★（备选 1–6 全是它下游的 `gt_843`
+  比较器与 mux 引脚，即 `lqFreeCount > conserveFlowTotal[2]` 那条比较）。
+  ref 侧 `diagnose -r` 给的候选是 `conserveFlowTotal_0_reg[2]`（golden 侧的另一个 DFF0X），同一族。
+* `analyze_points -all -limit 0 -effort high`：报 134 个 "Required Inputs"（失败模式里被钉住取值的
+  **已配对**输入），全部 `i:/`。ready_2 的 38 个逐条在
+  `evidence/b804a4f00c5d/NewDispatch-nd3-analyze/ready2_required_inputs.tsv`
+  （sha256 `48a98ba8b1628e51fde0a8bb92c9a80be9e54924a19ab15235056c2f18295d21`）。
+  其中 `conserveFlowTotal_reg[2][1,2,3,5]` 全被钉 0、`[0][4]`/`[1][1,2,5]` 钉 0、`lsqEnqCtrl canAcceptReg=1`——
+  就是"低位全 0、只靠那个不在表里的自由位 [2][6] 把 `lqFreeCount > conserveFlowTotal[2]` 翻掉"的形状。
+  ★`[2][6]` 本身**不在** Required Inputs 里★：它是 unmatched 输入，FM 不把它列进"已配对输入"表，
+  而是在 diagnose 里直接点名。`report_failing_pattern*` 这类命令本版本不存在（FM_NOCMD），
+  失败模式的完整赋值只能从 Required Inputs（已配对）+ error candidate（未配对）两份拼出，已如上归档。
+* 会话已存：`nd3_sel_session.fss`（scratch，未归档，太大）。
+
+归档目录 `evidence/b804a4f00c5d/NewDispatch-nd3-analyze/`（`MANIFEST.sha256` 覆盖全部 12 个文件，`git add -f`）。
