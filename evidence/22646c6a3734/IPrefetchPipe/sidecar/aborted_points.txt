@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/IPrefetchPipe
+Implementation : i:/WORK/IPrefetchPipe
+Version        : V-2023.12-SP3
+Date           : Tue Sep 22 03:12:00 2026
+**************************************************
+
+No aborted compare points.
+
+1
