@@ -31,6 +31,11 @@ FM_REF_DEPS_BitmapCache = ClockGate.sv SplittedSRAM.sv SRAMTemplate_124.sv \
                           MbistBitmapCache.sv
 # 关掉重复寄存器合并：让 passing 与 fm_predict.py 的模型可逐位对账。
 FM_MERGE_DUP = false
+# vmucp = true（2026-09-22 打开）：第一次跑（未开）留下 42 个 matched-unread 点，全部是
+# golden 自身存了但本锥内无读者的位（data_1_tag 高低位 / data_tag[2:0] / mbist 地址高位 /
+# SRAM 模型的 ren 寄存器），42<->42 按后缀逐字双射、无人工强配。打开 = 让 FM 把这 42 点
+# 也证一遍（更严，不是放松）。逐条依据在 verif/fm_target_config/BitmapCache.tcl。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
 
 include ../../../scripts/ut_common.mk
 
