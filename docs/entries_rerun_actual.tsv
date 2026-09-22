@@ -8,3 +8,4 @@ EntriesVfdivVidiv	signoff-strict	SUCCEEDED	12136	12136	0	0	0	0	0	0	0	0	ce38adb9f
 EntriesFaluFmac	signoff-strict	SUCCEEDED	15934	15934	0	0	0	0	0	0	0	0	5131c364a051ee620ce37fdd49b9ed719aace7934391782c90017d90bc11012b
 EntriesFaluFmacFdiv	signoff-strict	SUCCEEDED	16549	16549	0	0	0	0	0	0	0	0	bab0da04e0349f2c446e776f198b487ab5ec6f432ad57c016b18da662d6e68a1
 EntriesFaluFcvtF2vFmacFdiv	signoff-strict	SUCCEEDED	16619	16619	0	0	0	0	0	0	0	0	c8a4ba31c8cb56c1729c76cb24c52eecbd6a3cb93c1c09d8c9cbb0f28de65c00
+EntriesVfmaVialuFixVfalu	signoff-strict	SUCCEEDED	18369	18369	0	0	0	0	0	0	0	0	3ad80c640968dc0e6d38efc5ca0a3eba11c6bc11a1d5405ce0425aa073fdd896

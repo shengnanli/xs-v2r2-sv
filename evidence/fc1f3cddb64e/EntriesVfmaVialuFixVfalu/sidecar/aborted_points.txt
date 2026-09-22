@@ -1,0 +1,12 @@
+**************************************************
+Report         : aborted_points
+
+Reference      : r:/WORK/EntriesVfmaVialuFixVfalu
+Implementation : i:/WORK/EntriesVfmaVialuFixVfalu
+Version        : V-2023.12-SP3
+Date           : Tue Sep 22 02:34:36 2026
+**************************************************
+
+No aborted compare points.
+
+1
