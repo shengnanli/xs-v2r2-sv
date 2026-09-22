@@ -1,0 +1,8 @@
+# run	2026-09-22T07:35:56Z	ut_dir=LLPTW
+commit	5a41405d9708a52751e23a7c750b660bdd38aee7
+head_before	5a41405d9708a52751e23a7c750b660bdd38aee7
+head_after	5a41405d9708a52751e23a7c750b660bdd38aee7
+worktree_digest_before	38df1386b001b5dae44af788b75867255c5d10b6abb78e3ab3f92ab6c3ed4bee
+worktree_digest_after	38df1386b001b5dae44af788b75867255c5d10b6abb78e3ab3f92ab6c3ed4bee
+targets	LLPTW
+driver	mmu5-lane proof.sh（= run_proof.sh 去掉 readability_audit 拦截；该审计在本 commit 上 rc=1，红项为 rtl/backend/Rob.sv 的 E 类导航腐烂，main 继承）

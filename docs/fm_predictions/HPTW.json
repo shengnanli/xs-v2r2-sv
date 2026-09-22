@@ -1,0 +1,9 @@
+{
+  "target": "HPTW",
+  "ut": "HPTW",
+  "regs": 184,
+  "outs": 334,
+  "expected": 518,
+  "merge_dup": "false",
+  "model_applicable": true
+}

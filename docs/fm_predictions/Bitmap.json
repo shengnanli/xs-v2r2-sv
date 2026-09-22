@@ -1,0 +1,9 @@
+{
+  "target": "Bitmap",
+  "ut": "Bitmap",
+  "regs": 1471,
+  "outs": 317,
+  "expected": 1788,
+  "merge_dup": "false",
+  "model_applicable": true
+}

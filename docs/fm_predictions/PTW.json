@@ -1,0 +1,9 @@
+{
+  "target": "PTW",
+  "ut": "PTW",
+  "regs": 1347,
+  "outs": 1473,
+  "expected": 2820,
+  "merge_dup": "false",
+  "model_applicable": true
+}
