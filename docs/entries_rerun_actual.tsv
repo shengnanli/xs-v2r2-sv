@@ -1,0 +1,7 @@
+# Entries* 九变体重验批次 —— 实测（预测见 docs/entries_rerun_prereg.md，写在跑之前）
+# 输入 commit（9 个目标同一个）: fc1f3cddb64e677e4fcd7d0977c88cdd33c2cc00
+# G1 golden: /home/eda/xs-env/G1-canonical/golden-rtl（只读）
+# 复跑: cd verif/ut/<target> && make fm-<target>      （FM_MODE=signoff-strict 默认）
+# delta = 实测 passing - 预测 passing；预测容差 0
+target	mode	verdict	passing	pred_passing	delta	failing	unverified	aborted	unread_notcompared	unmatched_6	dont_verify	relaxed_appvars	receipt_sha256
+EntriesVfdivVidiv	signoff-strict	SUCCEEDED	12136	12136	0	0	0	0	0	0	0	0	ce38adb9fe485460ecf528656f83a3356133c9b67021b0e5b7babcd0232320c3
