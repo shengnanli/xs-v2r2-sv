@@ -118,7 +118,8 @@ def rewritten_modules():
     反证过：全树 719 个模块里，凡 FM 判过 SUCCEEDED 的，没有一个掉出这道下限。
     """
     out = set()
-    for name, (tier, _dn, _on, _f) in classify_rtl().items():
+    for name, v in classify_rtl().items():
+        tier = v[0]   # ★按下标取，不按元组宽度解包★（该元组 2026-09-21 加过第 5 列）
         if counts_as_written(tier):
             out.add(name)
     return out
@@ -147,6 +148,53 @@ def _add_canonical(dst, name, src):
         return
     sys.stderr.write('rewrite_coverage: ★拒收非 canonical 目标名★ %r（来自 %s）'
                      ' —— 台账的 target 列只许是模块名\n' % (name, src))
+
+
+def stale_impl_targets():
+    """★当前实现字节与 receipt 认证的不一致 -> 不是当前 proven★（codex 0170，选 A）。
+
+    判据不是新造的，仓里早就有、每次重算都在算：
+    `scripts/gen_receipt_harvest.py` 的 `chk_impl()` 逐个比对 receipt 的 `impl_closure`
+    里每个 kind=repo 文件的 sha256 与仓里当前字节，对不上就判 `DIFFER`。
+    ★问题一直是这张表算完了没人用★ —— proven 口径读的是 fm_round_*.tsv 的行，
+    于是同一个目标一边被收录表判 NEEDS_RERUN、一边被覆盖率台账计作 proven，
+    两张表就在同一个 docs/ 目录里彼此不说话。
+
+    codex 0170 的裁定与 D1 的分野（原文）：
+      「D1 是缺归档但没有已知代码漂移；0184 是 receipt 明确认证旧 closure，
+        而当前 closure 已改变，并已有 OthersEntry 合并后无法 elaborate 的反例。
+        ★这会造成当前 RTL 的假绿，属于正确性问题，不是证据美化。★」
+
+    实测过的反例（不是假想）：OthersEntry 全族 18 个 wrapper 在
+    `29dd150a`(改共享核参数 API) 与 `809aebb6`(签核出 receipt) 这两条**互不为祖先**的
+    并行 lane 分别合入后，坏到连 elaborate 都过不去
+    （FMR_VLOG-273 Parameter 'IQ_TYPE_BIT' not defined），而 30 份 tracked receipt
+    照样让台账记绿，直到 `check_param_override` 偶然撞见。
+
+    ★这一类靠"下次注意"防不住★：两条 lane 内部都自洽，谁都没做错。
+
+    返回被判 STALE_IMPL_NEEDS_RERUN 的目标名集合。收录表不存在时返回空集
+    并在 stderr 出声 —— 判据读不到时**不许静默放行**。
+    """
+    f = REPO / 'docs' / 'receipt_harvest.tsv'
+    if not f.exists():
+        sys.stderr.write('rewrite_coverage: ★读不到 docs/receipt_harvest.tsv★ —— '
+                         'STALE_IMPL 判据本轮未生效，proven 可能含陈旧实现\n')
+        return set()
+    hdr, out = None, set()
+    for line in f.read_text(errors='replace').splitlines():
+        if line.startswith('#') or not line.strip():
+            continue
+        c = line.split('\t')
+        if hdr is None:
+            hdr = c
+            continue
+        try:
+            if c[hdr.index('chk_impl')] != 'same':
+                out.add(c[hdr.index('target')])
+        except (ValueError, IndexError):
+            continue
+    return out
 
 
 def proven_modules():
@@ -212,7 +260,9 @@ def fm_targets():
 def build():
     gold = golden_modules()
     done = rewritten_modules()
-    prov = rewritten_modules() & proven_modules()   # written 且有绿判决证据
+    # ★codex 0170 选 A：chk_impl != same 的一律不计当前 proven★
+    stale = stale_impl_targets()
+    prov = (rewritten_modules() & proven_modules()) - stale
     targets = fm_targets()
 
     excl = collections.Counter()

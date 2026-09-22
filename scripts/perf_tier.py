@@ -528,7 +528,8 @@ def rewritten_modules():
     改用 scripts/rewritten_floor.py 的驱动闭包判据，三处口径同一把尺子。
     """
     out = set()
-    for name, (tier, _dn, _on, _f) in classify_rtl().items():
+    for name, v in classify_rtl().items():
+        tier = v[0]   # ★按下标取，不按元组宽度解包★（该元组 2026-09-21 加过第 5 列）
         if counts_as_written(tier):
             out.add(name)
     return out

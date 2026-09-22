@@ -23,13 +23,13 @@
 metric	done	total	percent
 fm_targets_configured	544	551	98.7
 unique_design_written	172	1191	14.4
-unique_design_proven	165	1191	13.9
+unique_design_proven	155	1191	13.0
 golden_lines_written	2177952	3902283	55.8
-golden_lines_proven	1739234	3902283	44.6
+golden_lines_proven	1299583	3902283	33.3
 #
 # ★核内口径（XSTile 闭包，docs/xstile_closure.tsv）= 本轮真实范围★
 incore_golden_lines_written	2009246	3349905	60.0
-incore_golden_lines_proven	1574780	3349905	47.0
+incore_golden_lines_proven	1135129	3349905	33.9
 # 核外（XSTop 有、XSTile 没有）—— ★本轮范围外，不排期★
 #   已证出来的不作废，只是不该和核内混在一个百分比里报
 outcore_golden_lines_written	168706	552378	30.5
@@ -38,7 +38,7 @@ outcore_golden_lines_proven	164454	552378	29.8
 # ★LEGACY_PROVEN_UNANCHORED（codex 0169 D1）—— 台账行有绿判决，但仓里没有已跟踪 receipt★
 #   它们保留原功能结论、仍计在上面的 proven 里，但★不计作本轮新增进展★；
 #   在各自目标下次被改动/晋升/自然回归时，顺带用当前官方 FM 流程刷新。
-legacy_proven_unanchored	18	544	3.3
+legacy_proven_unanchored	18	534	3.4
 #   合计 7776 golden 行
 #   DuplicatedTagArray                            651 行
 #   ITTageTable                                   336 行
@@ -60,12 +60,22 @@ legacy_proven_unanchored	18	544	3.3
 #   TageBTable                                    396 行
 #
 # written 里没有绿判决证据的设计族（差额都在这儿，逐个列出不藏）：
+#   EntriesAluBrhJmpI2fVsetriwiVsetriwvfI2v         69994 行
+#   EntriesAluCsrFenceDiv                           62428 行
+#   EntriesAluMulBkuBrhJmp                          64348 行
+#   EntriesFaluFcvtF2vFmacFdiv                      36359 行
+#   EntriesFaluFmac                                 31646 行
+#   EntriesFaluFmacFdiv                             34614 行
+#   EntriesVfdivVidiv                               24681 行
+#   EntriesVfmaVialuFixVfalu                        38682 行
+#   EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf    41795 行
 #   ICache                                           1754 行
 #   L2TLB                                           20101 行
 #   NewDispatch                                    100983 行
 #   OpenLLC                                          4252 行
 #   PtwCache                                        45308 行
 #   Rob                                            266227 行
+#   SSIT                                            35104 行
 #   StorePipe                                          93 行
 #
 # 剩余最大的 30 个（按 golden 行数）—— 下一波排期的候选
