@@ -1,0 +1,26 @@
+q=6 valid='b1
+  fuType = 'b00000000000000000000000000000100000
+  robIdx_value = 'b00000000
+  pdest = 'b00000000
+  srcState_0 = 'b1
+  srcState_1 = 'b1
+  srcState_2 = 'b0
+  srcState_3 = 'b0
+  srcState_4 = 'b0
+  srcType_2 = 'b0000
+  lqIdx_flag = 'b0
+  lqIdx_value = 'b0000000
+  sqIdx_flag = 'b0
+  sqIdx_value = 'b000000
+  useRegCache_0 = 'b0
+  useRegCache_1 = 'b0
+  regCacheIdx_0 = 'b10000
+  regCacheIdx_1 = 'b10000
+  srcLoadDependency_0_0 = 'b00
+  srcLoadDependency_0_1 = 'b00
+  srcLoadDependency_0_2 = 'b00
+  srcLoadDependency_1_0 = 'b00
+  srcLoadDependency_1_1 = 'b00
+  srcLoadDependency_1_2 = 'b00
+toMem_req_0_bits? 0 'b1101001
+toMem_req_0_bits? 0 'b101001

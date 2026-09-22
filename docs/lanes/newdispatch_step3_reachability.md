@@ -200,3 +200,44 @@ useRegCache_0,1 各 34 / lqIdx_flag 34 / sqIdx_flag 34 / srcState_0 34 / srcStat
 
 台账措辞（codex 0168 §1）：本 target ref 走 golden child、impl 走重写 child；将来转绿也只能记
 「**在 NewDispatch 上下文中**已被覆盖」，不许写成 9 个 child 各自的独立 `SIGNOFF_PASS`。
+
+## 5. 整芯片二分（coordinator 外部证据）怎么纳入可达性判定
+
+coordinator 的二分：只有 NewDispatch 用重写件时芯片 `instrCnt=0`（`sim-work-perfbind2/diag3`，
+RTL = main `b804a4f0` 即 **修法之前** 的 NewDispatch）。这条证据是真的，但它推不出「FM 反例可达」——
+两者是两件事。直接在 diag3 / diag2 的 simv 上（`-debug_access+all`，`-ucli` 逐拍 `get`，不重建）量了：
+
+    cd <scratch>/chip3/diag3 && simv -ucli -do ../sample.tcl <同 plusargs>   # 3000 拍 × 95 个握手信号
+    python3 cmp_samples.py diag3/samples.txt diag2/samples.txt
+
+* **握手从复位起 3000 拍与 golden 逐拍逐位相同**（`io_fromRename_*_valid/ready`、`io_toRenameAllFire`、
+  `io_enqRob_req_*_valid`、`io_enqRob_canAccept`、34 个 IQ 的 valid/ready、`io_toMem_lsqEnqIO_req_*_valid`）；
+  唯一不同的是拍 0–2（reset=1、valid 全 0，`+vcs+initreg+random` 的上电噪声，两侧都没 fire）。
+  第一条真派遣在拍 1132：两侧都是 lane 0 fire、进 Rob、进 IQ 口 6，之后两侧都是 `enqRob_canAccept=0`。
+  ★重写侧握手信号 3000 拍里没有一位 X/Z。★ 所以「派遣停死」不成立，`ready` 不是芯片不提交的原因。
+* **payload 才是**（`payload.tcl`，拍 1132 的 IQ 口 6，两侧同一条 uop：fuType/robIdx/pdest 逐位相同）：
+
+  | leaf | golden | 重写（b804a4f0） |
+  |---|---|---|
+  | srcState_0 / srcState_1 | 1 / 1（源就绪） | **0 / 0** |
+  | srcType_2 | 0000 | 1001 |
+  | lqIdx / sqIdx | 0/0000000, 0/000000 | 0/1110011, 1/111001 |
+  | useRegCache_0/1, regCacheIdx_0/1 | 0/0, 10000/10000 | **1/1**, 10111/10001 |
+  | srcLoadDependency_*_* | 全 0 | 10/11/11/00/01/01 |
+
+  这些正是步骤 2 §4 列的 **20 个 unresolved leaf / 1488 bit**：wrapper 节 3.2 里"集中声明、故意不给驱动"，
+  在 `+vcs+initreg+random` 下不是 X 而是随机常量。srcState=0 ⇒ 这条 uop 永远等不到源就绪 ⇒ 永不发射 ⇒ instrCnt=0。
+  与 FM 的 1416 个失败点是**同一族**（§4.3），与 `conserveFlowTotal[2][6]` 无关。
+
+结论不变：**FM 那组反例不可达；芯片不启动是"没接完"，不是"接错了"。** 两条交接嫌疑维持排除。
+
+### 5.1 芯片验收跑前登记（先写后跑）
+
+用 coordinator 的 `perfbind2_diag.sh`（本 lane 只改成可钉 commit 的副本 `perfbind2_diag_nd3.sh`），
+`TAG=nd3fix COMMIT=333dbae2 EXCLUDE="rtl/backend/Rob.sv rtl/mmu/PtwCache.sv" JOBS=16`。
+**预测：仍然 `instrCnt = 0`、"does not commit after 15000 cycles"。** 本轮修法只改了 FM 的可证性形状，
+没有接那 1488 bit；按 §5 的机理，srcState 仍是随机常量。若反而提交了 ⇒ §5 的机理判断有错，照实报。
+要让 diag3 配置启动，需要的是组 C（lqIdx/sqIdx/useRegCache/regCacheIdx/srcLoadDependency 接线 1182 bit）
+**加** srcState/srcType_2 的逐 IQ 新逻辑（306 bit）——这是下一条 lane 的工作量，不在本轮范围。
+
+证据：`evidence/chip-perfbind2-diag3-vs-diag2/`（采样脚本 + 两侧 3000 拍样本 + payload 样本，MANIFEST.sha256）。
