@@ -241,3 +241,12 @@ RTL = main `b804a4f0` 即 **修法之前** 的 NewDispatch）。这条证据是�
 **加** srcState/srcType_2 的逐 IQ 新逻辑（306 bit）——这是下一条 lane 的工作量，不在本轮范围。
 
 证据：`evidence/chip-perfbind2-diag3-vs-diag2/`（采样脚本 + 两侧 3000 拍样本 + payload 样本，MANIFEST.sha256）。
+
+### 5.2 芯片验收实测（`sim-work-perfbind2/nd3fix/`，commit `b0e10289d1f884d3100dad4455e6830fb48d5596`，Rob/PtwCache 回落 golden）
+
+    TAG=nd3fix COMMIT=b0e10289d1f884d3100dad4455e6830fb48d5596 EXCLUDE="rtl/backend/Rob.sv rtl/mmu/PtwCache.sv" JOBS=16 bash perfbind2_diag_nd3.sh
+    BUILD ok 04:13→04:26；RESULT: does not commit after 15000 cycles, instrCnt = 0（与 diag3 相同）
+
+★与 §5.1 登记一致：仍不提交。★ 本轮修法（只改 FM 可证性形状）**没有、也不可能**让 diag3 配置启动；
+让它启动的前提是接完 1488 bit（组 C 接线 + srcState/srcType_2 逐 IQ 新逻辑），留给下一条 lane。
+coordinator 的验收条 3 在本轮**未达成**，原因如上，不是被掩盖的失败。
