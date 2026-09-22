@@ -71,3 +71,31 @@ codex 0170 选 A：`chk_impl != same` 一律不计当前 proven，统一 `STALE_
     # 判定权威 scripts/fm_verdict.py（fail-closed），receipt 由 scripts/make_receipt.py 出
 
 ## 实测（跑完回填，见本文件 ACTUAL 段与 docs/entries_rerun_actual.tsv）
+
+---
+
+## ACTUAL（跑完回填。★上面的预测一字未改★：git log --follow docs/entries_rerun_prereg.md
+##   在本次追加之前只有 fc1f3cdd 一个 commit，就是写下预测的那一次。）
+
+**9/9 SUCCEEDED，9/9 passing 与预测逐位相同，delta 全 0，容差 0 的预测全中。**
+逐条读数在 `docs/entries_rerun_actual.tsv`，UT 在 `docs/entries_rerun_ut.tsv`，
+receipt 在 `evidence/fc1f3cddb64e/<target>/`（已 `git add -f`）。
+
+预测里写下的三条「可能证伪它」，实跑逐条落空——这三条是**先写后验**的，不是事后补的：
+1. 悬空 `o_dbg_*` 没产生任何 unread 点：9/9 `unread_notcompared=0`，strict 铁律下 allowlist 为空。
+2. 新的钉点 fail-closed 守卫 9/9 `miss=0` 且 `n` 恰等于生成时钉死的 `expect`；
+   9 份 fm.log 行首 `Error:` 计数全为 0。
+3. 白名单迁到 `verif/fm_target_config/` 没有造成任何点数偏移。
+
+**D2 措辞规矩在本批不触发**（记下来是为了说明我核对过、而不是忘了）：
+`failing == limit` 的截断措辞只在失败计数被截断时才用；本批 9/9 的
+`native_facts.failures.failing.total == 0` 且 `truncated == False`，
+没有任何一个数是截断值，所以 passing 可以按完整规模读。
+
+**验收**：在 main worktree 里只读重跑 `gen_receipt_harvest.py`，9 行全部
+`chk_impl=same`、`verdict=COLLECTED`、证据指向 `wt-entrerun:fc1f3cddb64e`；
+全表 `NEEDS_RERUN` 由 25 降到 16，正好少这 9 个。
+
+**证明期间实现字节没动过**：起跑前对 10 个 impl 文件取的 sha256 快照，
+在最后一份 receipt 产出之后 `sha256sum -c` 逐个复核仍全部一致；
+全程 `git status --porcelain -- rtl verif scripts` 为空（本 lane 只提交 docs/ 与 evidence/）。
