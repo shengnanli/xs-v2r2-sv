@@ -1,0 +1,12 @@
+# Entries* 九变体重验批次 —— UT 回归（3 seed × 200k cycles × 两档 initreg）
+# 输入 commit: fc1f3cddb64e677e4fcd7d0977c88cdd33c2cc00（与 FM 同一批次基线）
+# 复跑: cd verif/ut/<target> && make simv && for s in 1 7 42; do make run SEED=$s NCYCLES=200000; make run-initreg0 SEED=$s NCYCLES=200000; done
+#   两档按各族 Makefile 既有做法：编译期 +vcs+initreg+random 打开能力，
+#   运行期 `make run` 用 +vcs+initreg+random，`make run-initreg0` 用 +vcs+initreg+0。
+target	seed	initreg	verdict	checks	errors
+EntriesVfdivVidiv	seed=1	initreg=random	PASS	checks=27597378	errors=0
+EntriesVfdivVidiv	seed=1	initreg=0	PASS	checks=27597378	errors=0
+EntriesVfdivVidiv	seed=7	initreg=random	PASS	checks=27597654	errors=0
+EntriesVfdivVidiv	seed=7	initreg=0	PASS	checks=27597654	errors=0
+EntriesVfdivVidiv	seed=42	initreg=random	PASS	checks=27597654	errors=0
+EntriesVfdivVidiv	seed=42	initreg=0	PASS	checks=27597654	errors=0
