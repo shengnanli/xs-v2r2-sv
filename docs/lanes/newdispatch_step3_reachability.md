@@ -162,3 +162,41 @@ bit 6 由此在两侧都是结构常量（字面 0），不再有自由寄存器
 | 42 | 1 | 6163 位 | 536 位 | 0 | 0 | 0 | 40971/40971 82823/82823 121303/121303 152881/152881 173666/173666 184550/184550 |
 
 六档全部 `TEST PASSED`，checks=199944，NOUT=6699=6163+536；六条 lane 被选中拍数与 golden 逐个相等，且与步骤 2 表里同 seed 的数字一模一样（修法没改任何可观测行为）。★R6 PASS★
+
+### 4.3 post-fix FM（RTL = `bbf769b701a2325f43199f3758054dbd998bf394`；`git diff bbf769b7 c28e6ec0 -- rtl/` 为空）
+
+诊断跑 `ND3fix-diag`（`FM_MODE=diagnostic-full FM_FAILING_LIMIT=0`，worktree `wt-nd3`；receipt 里 `impl_commit`
+记的是起跑后本 lane 又提交了证据的 `c28e6ec0`，rtl/ 与 `bbf769b7` 逐字节相同），证据 `evidence/bbf769b701a2/NewDispatch-diag/`
+（receipt sha256 `b893cca0c9eb9d6d8c6653c0f194fb33db7513c295e9609927e680fb5feb0b4e`）：
+
+| 量 | 步骤 2 组 B（`be28d091`） | **本轮（`bbf769b7`）** | 差 |
+|---|---|---|---|
+| passing | 51745（Port 50104 / DFF 1641） | **55027**（Port 50147 / DFF **4880**） | **+3282** |
+| failing | 4698（Port 1459 / DFF 3239） | **1416**（Port 1416 / DFF **0**） | −3282 |
+| unverified / aborted | 0 / 0 | 0 / 0 | — |
+| unmatched_ref / unmatched_impl | 2006 / 6 | 2006 / 6 | 0 |
+| impl 侧 `DFF0X` | 1（`conserveFlowTotal_reg[2][6]`） | **0**（该位现为 `DFF0`，与 lane 0/1 的 5 个同类） | −1 |
+
+    cd verif/ut/NewDispatch && XSSV_HOME=<wt> FM_MODE=diagnostic-full FM_FAILING_LIMIT=0 make fm-NewDispatch
+
+**1416 个失败点逐 leaf 清点（和为 1416，无余项）**——全部是步骤 2 §4 那 20 个 unresolved leaf 的 `io_toIssueQueues_*` 端口位：
+lqIdx_value 238 / sqIdx_value 204 / regCacheIdx_0,1 各 170 / srcType_2 136 / srcLoadDependency_{0,1}_{0,1,2} 各 44 /
+useRegCache_0,1 各 34 / lqIdx_flag 34 / sqIdx_flag 34 / srcState_0 34 / srcState_1 28 / srcState_2 16 / srcState_3 10 / srcState_4 10。
+（= 1488 − 72：`srcState` 里被 `SRCSTATE_LIVE` 两侧同折成常量的 72 位如登记所料仍 pass。）
+
+| 登记 | 实测 | 裁决 |
+|---|---|---|
+| R1 `ready_2..5` / `toRenameAllFire` / `enqRob_req_*_valid` 转 passing | 失败点里这三族 **0 个** | ★PASS★ |
+| R2 失败点 ⊆ unresolved-leaf 端口及其锥 | 1416 个全是 unresolved-leaf 端口位；`io_enqRob/io_toMem/io_fromRename_*_ready/io_toRenameAllFire/io_perf/io_stallReason` 失败点 **0**；DFF 失败点 **0**（`lsqEnqCtrl`/`uopSelIQ`/`conserveFlowTotal` 全部回绿） | ★PASS★ |
+| R3 failing ∈ [1400, 1600] | 1416 | ★PASS★ |
+| R4 无 DFF0X、unmatched_ref 不上升 | impl DFF0X 0；2006 → 2006 | ★PASS★ |
+| R5 signoff-strict 仍 FAILED | FAILED | ★PASS★（见下） |
+
+签核跑 `ND3fix-sign`（signoff-strict，limit 默认 20，detached worktree `wt-nd3-sign` @ `bbf769b7`，`impl_worktree_dirty=false`），
+证据 `evidence/bbf769b701a2/NewDispatch/`（receipt sha256 `7022356e6266fb1a56d3aa49e1ccad8406691b437c964f8d468fb98c7c737d72`）：
+`verdict=FAILED`，passing 25225 / failing **至少 20 个（计数被截断，limit=20）** / unverified 31198 / unmatched 2006；
+那 20 个截断点全是 `io_toIssueQueues_*_bits_{lqIdx,sqIdx,regCacheIdx}`，握手族 0 个。
+★strict 下 unread 铁律：unread_ref 72 / unread_impl 2006 仍在，本 target 不可能在 unresolved 接完之前转绿；本轮没有任何东西转绿。★
+
+台账措辞（codex 0168 §1）：本 target ref 走 golden child、impl 走重写 child；将来转绿也只能记
+「**在 NewDispatch 上下文中**已被覆盖」，不许写成 9 个 child 各自的独立 `SIGNOFF_PASS`。
