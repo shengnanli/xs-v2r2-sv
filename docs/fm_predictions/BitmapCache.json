@@ -1,0 +1,17 @@
+{
+  "target": "BitmapCache",
+  "ut": "BitmapCache",
+  "regs": 1415,
+  "outs": 110,
+  "expected": 1925,
+  "merge_dup": "false",
+  "model_applicable": true,
+  "bbin": 400,
+  "bbox": {
+    "array_9_ext": {
+      "insts": 4,
+      "in_bits": 100,
+      "points": 400
+    }
+  }
+}
