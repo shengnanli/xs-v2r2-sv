@@ -20,6 +20,13 @@ RTL_GOLDEN_DEPS = \
 FM_VARIANTS = ICacheMainPipe
 FM_REF_DEPS_ICacheMainPipe = Arbiter2_ICacheMissReq.sv
 
+# vmucp = 加强证明（让 FM 真的去比 matched-unread 点），不是放宽。
+# strict 首跑（commit 22646c6a，evidence/22646c6a3734/ICacheMainPipe）：native SUCCEEDED、
+# passing 4002、failing 0、unmatched 0(0)，唯一残余 matched-unread 32 = cntFtqFireInterval
+# 32 位（XSPerfHistogram 死计数器，两侧对称保留、FM 按名 1↔1 配上）。依据与白名单条目见
+# verif/fm_target_config/ICacheMainPipe.tcl。开 vmucp 后 passing 应 4002 -> 4034。
+FM_VERIFY_MATCHED_UNREAD_COMPARE_POINTS = true
+
 # 端口顺序也当硬闸（wrapper 与 golden 端口表逐位同序）
 PORTLINT_ORDER = fail
 
