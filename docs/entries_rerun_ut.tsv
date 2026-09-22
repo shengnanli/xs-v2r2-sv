@@ -10,3 +10,15 @@ EntriesVfdivVidiv	seed=7	initreg=random	PASS	checks=27597654	errors=0
 EntriesVfdivVidiv	seed=7	initreg=0	PASS	checks=27597654	errors=0
 EntriesVfdivVidiv	seed=42	initreg=random	PASS	checks=27597654	errors=0
 EntriesVfdivVidiv	seed=42	initreg=0	PASS	checks=27597654	errors=0
+EntriesVfmaVialuFixVfalu	seed=1	initreg=random	PASS	checks=49592560	errors=0
+EntriesVfmaVialuFixVfalu	seed=1	initreg=0	PASS	checks=49592560	errors=0
+EntriesVfmaVialuFixVfalu	seed=7	initreg=random	PASS	checks=49587600	errors=0
+EntriesVfmaVialuFixVfalu	seed=7	initreg=0	PASS	checks=49587600	errors=0
+EntriesVfmaVialuFixVfalu	seed=42	initreg=random	PASS	checks=49589088	errors=0
+EntriesVfmaVialuFixVfalu	seed=42	initreg=0	PASS	checks=49589088	errors=0
+EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	seed=1	initreg=random	PASS	checks=52390306	errors=0
+EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	seed=1	initreg=0	PASS	checks=52390306	errors=0
+EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	seed=7	initreg=random	PASS	checks=52394236	errors=0
+EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	seed=7	initreg=0	PASS	checks=52394236	errors=0
+EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	seed=42	initreg=random	PASS	checks=52388734	errors=0
+EntriesVfmaVialuFixVimacVppuVfaluVfcvtVipuVsetrvfwvf	seed=42	initreg=0	PASS	checks=52388734	errors=0
