@@ -9,9 +9,13 @@
 # 寄存器：`perfEvents_5_2`（喂 io_perf_5_value 的两拍打拍链）与 `r`（只接到一根悬空的
 # `wire r_probe = r;`，任何输出锥都不含它）。二者次态方程逐字相同：
 #     <= perfEvents_4_2_probe | ~io_mem_resp_valid & <自身>      （PTW.sv:1441-1442）
-# 可读核 rtl/mmu/PTW.sv 照抄两份：mem_cycle_watch（喂 perf_5）与 mem_cycle_watch_probe
-# （无人读）。于是两侧各恰有 **1 个** matched-unread 点：
-#     r:/WORK/PTW/r_reg  <->  i:/WORK/PTW/u_core/mem_cycle_watch_probe_reg
+# 可读核 rtl/mmu/PTW.sv 照抄两份：mem_cycle_watch（喂 perf_5）与 r（无人读，名字沿用 golden）。
+# 于是两侧各恰有 **1 个** matched-unread 点：
+#     r:/WORK/PTW/r_reg  <->  i:/WORK/PTW/u_core/r_reg
+# ★首跑实测（commit 24ac2260，impl 侧当时叫 mem_cycle_watch_probe）：native SUCCEEDED /
+#   passing 2819 / failing 0 / unmatched 0，但 unread_ref 1 + unread_impl 1 —— 无扇出的寄存器
+#   没有签名可配，FM 只能按名配对，两侧名字不同就各成一个 unmatched-unread，验收判 PARTIAL。
+#   修法是改名而不是 set_user_match（同 L2TLB lane 的 refill_level_r 教训）。
 # 双射为 1↔1，非 matched_nc 的 unread 项预期为 0，无人工强配。打开 vmucp 后 FM 会把这一点
 # 也证一遍（passing 应比关着时多 1），这是加强而不是放松。
 # 复核判据（跑后对账）：receipt.native_facts.objects.matched_unread_notcompared_pairs 为空、

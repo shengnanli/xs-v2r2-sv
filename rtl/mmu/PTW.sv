@@ -54,24 +54,25 @@
 // 【golden 的两个怪癖，照抄】
 //   · perf 的 mem_cycle 用 BoolStopWatch，golden 里留了**两份**同样的寄存器：一份喂
 //     io_perf_5，另一份（golden 名 r）只接到一根悬空探针 r_probe，谁也不读。impl 同样
-//     保留两份（mem_cycle_watch / mem_cycle_watch_probe），不多不少，与 golden 对称；
+//     保留两份（mem_cycle_watch / r），不多不少，与 golden 对称；无扇出的寄存器 FM 只能按名
+//     配对，所以第二份沿用 golden 的名字 r（首跑实测：叫 mem_cycle_watch_probe 时两侧各 1 个 unmatched-unread）；
 //     它是"两侧都有、都没人读"的 matched-unread 点，依据见 verif/fm_target_config/PTW.tcl。
 //   · stage1 的输入没有 af 字段（父级喂进来的恒 0 被 firtool 消了端口），但输出 entry 有 af：
 //     用 stage1 回应时 af 恒 0。
 //
 // 【本文件导航】（行号由分节注释量出；改动后请重新对一遍）
-//   L75  package xs_ptw_pkg
-//   L538  §1 全局控制与 CSR 选择
-//   L569  §2 寄存器声明
-//   L612  §3 当前 PTE / 故障判定
-//   L653  §4 地址生成
-//   L692  §5 事件与握手（注明 golden 的 _GEN_ 编号）
-//   L778  §6 状态机（异步复位域）—— 按 Chisel 的 when 顺序转写，后写者赢
-//   L919  §7 载荷寄存器（不复位域）
-//   L1046  §8 响应装配
-//   L1091  §9 输出
-//   L1196  §10 perf：fsm_count / fsm_busy / fsm_idle / resp_blocked / mem_count / mem_cycle / mem_blocked
-//   L1208  wrapper PTW（生成段）
+//   L76  package xs_ptw_pkg
+//   L539  §1 全局控制与 CSR 选择
+//   L570  §2 寄存器声明
+//   L614  §3 当前 PTE / 故障判定
+//   L655  §4 地址生成
+//   L694  §5 事件与握手（注明 golden 的 _GEN_ 编号）
+//   L780  §6 状态机（异步复位域）—— 按 Chisel 的 when 顺序转写，后写者赢
+//   L921  §7 载荷寄存器（不复位域）
+//   L1048  §8 响应装配
+//   L1093  §9 输出
+//   L1198  §10 perf：fsm_count / fsm_busy / fsm_idle / resp_blocked / mem_count / mem_cycle / mem_blocked
+//   L1210  wrapper PTW（生成段）
 package xs_ptw_pkg;
   // PtwMergeResp 一条表项（PTW 输出 / stage1 输入用同一形状；stage1 输入没有 af）
   typedef struct packed {
@@ -585,7 +586,8 @@ module xs_PTW_core
   logic        accessFault;               // RegEnable(pmp.ld | pmp.mmio, 0, sent_to_pmp)
   logic        update_full_gvpn_mem_resp; // mem.resp 后一拍把 pte.getPPN 写进 full_gvpn_reg
   logic        mem_cycle_watch;           // BoolStopWatch(mem.req.fire, mem.resp.fire)，喂 perf_5
-  logic        mem_cycle_watch_probe;     // golden 的第二份同样寄存器（r），无人读，照抄
+  logic        r;                         // golden 的第二份同样寄存器，无人读，照抄；★名字沿用 golden 的 r★：
+                                          //   它没有扇出，FM 配不出签名，只能靠名字配对（改名不用 set_user_match）
   // ---- 不复位域 ----
   logic [43:0] ppn;                       // PtwCache 命中级给的 ppn / satp.ppn
   logic [37:0] vpn;                       // vpn，onlyStage2 时是 gvpn
@@ -789,7 +791,7 @@ module xs_PTW_core
       hptw_pageFault <= 1'b0; hptw_accessFault <= 1'b0;
       need_last_s2xlate <= 1'b0; first_gvpn_check_fail <= 1'b0;
       pte_valid <= 1'b0; accessFault <= 1'b0; update_full_gvpn_mem_resp <= 1'b0;
-      mem_cycle_watch <= 1'b0; mem_cycle_watch_probe <= 1'b0;
+      mem_cycle_watch <= 1'b0; r <= 1'b0;
     end else begin
       // accessFault 的基值：RegEnable(pmp.ld | pmp.mmio, sent_to_pmp)
       if (sent_to_pmp) accessFault <= io_pmp_resp_ld | io_pmp_resp_mmio;
@@ -911,7 +913,7 @@ module xs_PTW_core
       end
       // ---- perf：mem.req.fire 起、mem.resp 止的秒表（golden 有两份同样的）----
       mem_cycle_watch       <= mem_req_fire | (~io_mem_resp_valid & mem_cycle_watch);
-      mem_cycle_watch_probe <= mem_req_fire | (~io_mem_resp_valid & mem_cycle_watch_probe);
+      r                     <= mem_req_fire | (~io_mem_resp_valid & r);
     end
   end
 

@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/PTW
+Implementation : i:/WORK/PTW
+Version        : V-2023.12-SP3
+Date           : Tue Sep 22 03:14:36 2026
+**************************************************
+
+No failing compare points.
+
+1
