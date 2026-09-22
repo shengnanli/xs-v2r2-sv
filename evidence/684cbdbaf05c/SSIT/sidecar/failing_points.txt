@@ -1,0 +1,12 @@
+**************************************************
+Report         : failing_points
+
+Reference      : r:/WORK/SSIT
+Implementation : i:/WORK/SSIT
+Version        : V-2023.12-SP3
+Date           : Tue Sep 22 02:25:43 2026
+**************************************************
+
+No failing compare points.
+
+1
