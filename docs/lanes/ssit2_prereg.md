@@ -113,9 +113,10 @@ passing 14525 / failing 0**。今天的 impl 字节 == receipt A 的字节；
 
 | | 完整 64/40 位 hash |
 |---|---|
-| main 基线 | `9b6f73cb7ee73e1e8a28e5...`（见下方可复算命令，短号 `9b6f73cb`） |
+| main 基线 | `9b6f73cbe313ea8282b0faaafeb91e6c67501435` |
 | 跑前登记 commit（= receipt 的 `impl_commit`） | `684cbdbaf05c366d99f1937f64bc185f9f91d07b` |
-| 证据 commit | `09f7f7f8...`（本节所在提交之前一条） |
+| 证据 commit | `09f7f7f856e9ed02043b12cf8042a91d66189f62` |
+| 对账 commit | `8d4f214b13b4bbb32a1e6700f943f919517e7443`（本节首次提交；本行补全 hash 后为其后继） |
 
 FM 起跑时 HEAD = `684cbdba...`，跑完取 HEAD 仍是 `684cbdba...`
 （★跑证明期间没有动被证明的文件★；权威仍以 `impl_closure[0].sha256` 为准）。
