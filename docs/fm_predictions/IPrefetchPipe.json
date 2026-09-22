@@ -1,0 +1,10 @@
+{
+  "target": "IPrefetchPipe",
+  "ut": "IPrefetchPipe",
+  "regs": 584,
+  "outs": 435,
+  "expected": 1019,
+  "merge_dup": "true",
+  "model_applicable": false,
+  "note": "merge_dup=true（fm_eq.tcl 默认，未改）⇒ 模型 1019 不直接适用。手工推算：golden 里逐字相同的重复寄存器有 RegNext(s0_fire)×7（s0_fire_r/REG/REG_1/s1_need_itlb_REG/_1/tlb_valid_pulse_REG/_1，-6）、RegNext(s1_real_fire)×2（s2_pmp_exception_REG/s2_pmp_mmio_REG，-1）、s1_backendException_0/_1 同 D 同使能（-1）；impl 侧各只写一份。若 FM 把这 3 组全部合并，预期 passing = 1019 - 8 = 1011；若一组都不合并则 impl 侧会出 unmatched（strict 判红），那就是要停下来诊断的信号。"
+}
