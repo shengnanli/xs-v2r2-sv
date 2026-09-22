@@ -104,3 +104,130 @@ passing 14525 / failing 0**。今天的 impl 字节 == receipt A 的字节；
   **不把 passing/unverified 当完整规模**。
 - 诊断跑（`FM_MODE=diagnostic-full FM_FAILING_LIMIT=0`）的日志**不用来出 receipt**。
 - 跑证明期间不动被证明的文件；认 `impl_closure[0].sha256`。
+
+---
+
+# 对账（跑完追加；上文 §2 未改一字）
+
+## A. 起止 commit
+
+| | 完整 64/40 位 hash |
+|---|---|
+| main 基线 | `9b6f73cb7ee73e1e8a28e5...`（见下方可复算命令，短号 `9b6f73cb`） |
+| 跑前登记 commit（= receipt 的 `impl_commit`） | `684cbdbaf05c366d99f1937f64bc185f9f91d07b` |
+| 证据 commit | `09f7f7f8...`（本节所在提交之前一条） |
+
+FM 起跑时 HEAD = `684cbdba...`，跑完取 HEAD 仍是 `684cbdba...`
+（★跑证明期间没有动被证明的文件★；权威仍以 `impl_closure[0].sha256` 为准）。
+
+## B. FM 读数（`evidence/684cbdbaf05c/SSIT/`）
+
+```
+run_id      SSIT-20260922T061944Z-684cbdba
+mode        signoff-strict      allowlist 0（空）     vmucp true
+native      SUCCEEDED           verdict SUCCEEDED     fm_shell rc 0
+passing     14525
+failing     0        （failing_limit 20，failing_truncated=false —— 没有截断）
+unverified  0
+aborted     0
+unread_notcompared 0
+unmatched   compare_ref 0 / compare_impl 0 / unread_ref 0 / unread_impl 0
+            / bbout_ref 0 / bbout_impl 0
+black boxes FM-249 No black boxes
+dont_verify_objects []   elab147 []   relaxed_appvars []
+fm.log 行首 Error: 计数 = 0
+钉点        SSIT_PIN_END SSIT n=91 miss=0 expect=91
+            SSIT_PINS_TRIED: ref_unread=91 impl_unread=91 tried=91 miss=0
+```
+
+Formality 自己的表：`Passing (equivalent) ... DFF 14525 ... TOTAL 14525`，
+`Failing (not equivalent)` 一行全 0。
+
+## C. 逐条对账（★预测 vs 实测★）
+
+| 项 | §2 预测 | 实测 | 结论 |
+|---|---|---|---|
+| `passing` | 正好 14525 | **14525** | ✅ 对上 |
+| `failing` | 0 | 0 | ✅ |
+| `unverified` / `aborted` | 0 / 0 | 0 / 0 | ✅ |
+| `unread_notcompared` | 0 | 0 | ✅ |
+| `unmatched` 六项 | 全 0 | 全 0 | ✅ |
+| 钉点数 | 正好 91，Error: 0 | 91（miss=0），Error: 0 | ✅ |
+| mode / verdict | signoff-strict / SUCCEEDED | 同 | ✅ |
+| UT 3 seed × 200k × 两档 | errors=0 | 6/6 `checks=8800176 errors=0` + `TEST PASSED` | ✅ |
+
+§2 里列的三个「可能出错的地方」**一个都没发生**：钉点守卫没中止、
+`verif/fm_target_config/SSIT.tcl` 的 `fm_target_vmucp_allow` 仍在、elaborate 一次过。
+⇒ 本轮**无需修 wrapper/API**，也没有动任何 RTL。
+
+## D. UT 两档读数（`verif/ut/SSIT/sim_<seed>_<档>.log`）
+
+| seed | `+vcs+initreg+random` | `+vcs+initreg+0` |
+|---|---|---|
+| 1 | `checks=8800176 errors=0` TEST PASSED | `checks=8800176 errors=0` TEST PASSED |
+| 7 | `checks=8800176 errors=0` TEST PASSED | `checks=8800176 errors=0` TEST PASSED |
+| 42 | `checks=8800176 errors=0` TEST PASSED | `checks=8800176 errors=0` TEST PASSED |
+
+覆盖项（random/seed=1 那轮）每一项都 > 0，含最稀的两项
+`整表冲刷走完一轮 119` / `中途异步复位 1`。
+
+复跑：
+```
+cd verif/ut/SSIT
+make run SEED=1 INITREG=+vcs+initreg+random     # 另两档 SEED=7 / 42
+make run SEED=1 INITREG=+vcs+initreg+0
+```
+
+## E. 验收标准：`chk_impl` 回到 `same` 了吗 —— ★是★
+
+`gen_receipt_harvest.py` 故意**不扫自己所在的那个 worktree**
+（`lane_worktrees()` 排除 `REPO` 与 main），所以在 wt-ssit2 里跑它看不到本轮证据。
+为此另起一个一次性 worktree 复算（跑完即 `git worktree remove`）：
+
+```
+cd /home/eda/xs-env/xs-v2-sv
+git worktree add --detach <scratch>/ssit2-harvestcheck-k9x2 agent/ssit2
+cd <scratch>/ssit2-harvestcheck-k9x2
+python3 scripts/gen_receipt_harvest.py --out <scratch>/harvest_from_check.tsv
+```
+
+SSIT 行（列名见 `COLUMNS`）：
+
+```
+target       SSIT
+golden_lines 35104
+impl_in_main yes
+in_vcs       yes
+merge_dup    true          mdup_band 100.0%/wide
+chk_golden   same
+chk_impl     same     <-- ★验收标准：回到 same★
+chk_fm_eq    same
+chk_pins     same     <-- 原来的 DIFFER（cdd922a5 改的钉点文件）也一并消掉了
+chk_emitter  same
+chk_decl     none
+chk_tool     same
+chk_facts    same
+verdict      COLLECTED     （原 NEEDS_RERUN）
+evidence     wt-ssit2:684cbdbaf05c
+rounds       3    other_rounds  wt-agedet:82fe3881c4d9(NEEDS_RERUN) wt-ssit:2382bd685523(NEEDS_RERUN)
+why          已在版本库里（evidence/684cbdbaf05c 已被 git 跟踪）
+```
+
+全表统计同时从 `NEEDS_RERUN 25` 降到 `NEEDS_RERUN 24`，`COLLECTED 501 -> 502`。
+
+★诚实标注两件事★：
+1. 那两份旧 receipt（`82fe3881c4d9` / `2382bd685523`）**仍然是 NEEDS_RERUN**，
+   本轮没有、也不该去把它们「救活」—— 它们认证的前提确实过期了。
+   新结论只由 `684cbdbaf05c` 这一份承担。
+2. 上面那张表是在 `agent/ssit2` 分支上算的。合进 main 之后，main 侧要重跑一次
+   `gen_receipt_harvest.py` 才会在 `docs/receipt_harvest.tsv` 里体现
+   —— 本 lane 不碰主工作树，所以这一步留给集成者。
+
+## F. 其它闸
+
+```
+python3 scripts/check_lane_receipts.py /home/eda/xs-env/wt-ssit2
+  -> check_lane_receipts: 扫了 1 个 worktree，没有未收录的绿 receipt   (rc=0)
+python3 scripts/check_ut_initreg.py
+  -> check_ut_initreg: 58/218 个 UT 未配置 initreg（基线 58）           (rc=0)
+```
