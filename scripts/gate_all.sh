@@ -294,6 +294,14 @@ run "StoreQueue tb 幂等"  python3 scripts/gen_storequeue_ut.py --check
 # 而那句话依赖 golden/impl 字节、fm_eq.tcl、钉点、emitter、工具版本八项前提。
 # 前提会动，所以这张表必须能被重算，否则它就退化成一句没有复算路径的断言。
 run "receipt 收录表复算"    python3 scripts/gen_receipt_harvest.py --check
+# 共享件止损闸的**自证**（codex 0170 批准）。★闸本身不进 gate_all 的红线★：
+# 它在有 rtl/ 改动时必然报出受影响目标（那是"有账要记"不是"错"），
+# 天天红会让人脱敏；而且 codex 明确「只做 hash/依赖检查，不自动启动 Formal，
+# 不把每次提交变成长阻塞闸」。受影响目标的**自动失效**已由 rewrite_coverage 的
+# STALE_IMPL 判据承担（chk_impl != same 不计当前 proven）。
+# 这里守的是工具自身的判别力：正例会响、负例不乱响、索引写空时正例必须转红。
+# 用法（改了 rtl/ 之后自己跑）：python3 scripts/check_shared_impl_impact.py
+run "共享件影响闸自证"  python3 scripts/check_shared_impl_impact.py --selftest
 run "written 驱动下限自证"  python3 scripts/rewritten_floor.py --selftest
 run "perf 分档闸负测"    python3 scripts/test_perf_tier_gate.py
 run "perf 分档台账闸"    python3 scripts/check_perf_tier.py
